@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Converters.c,v 1.14 88/02/03 23:55:09 swick Locked $";
+static char rcsid[] = "$Header: Converters.c,v 1.17 88/02/05 21:24:55 swick Locked $";
 #endif lint
 
 /*
@@ -73,6 +73,42 @@ static void CvtStringToFont();
 static void CvtStringToFontStruct();
 static void CvtStringToInt();
 static void CvtStringToPixel();
+
+void XtCondStringConversionWarning(from, toType, name, class)
+    char *from, *toType;
+    XrmName name;
+    XrmClass class;
+{
+    static enum {Check, Report, Ignore} report_it = Check;
+
+    if (report_it == Check) {
+	XrmName xrm_name[3];
+	XrmClass xrm_class[3];
+	XrmRepresentation rep_type;
+	XrmValue value;
+	xrm_name[0] = name;
+	xrm_name[1] = StringToQuark( "stringConversionWarnings" );
+	xrm_name[2] = NULL;
+	xrm_class[0] = class;
+	xrm_class[1] = StringToQuark( "StringConversionWarnings" );
+	xrm_class[2] = NULL;
+	if (XrmQGetResource( XtDefaultDB, xrm_name, xrm_class,
+			     &rep_type, &value ))
+	{
+	    if (rep_type == StringToQuark(XtRBoolean) && value.addr)
+		report_it = Report;
+	    else if (rep_type == StringToQuark(XtRString)) {
+		XrmValue toVal;
+		XtDirectConvert( CvtStringToBoolean, NULL, 0, &value, &toVal );
+		if (toVal.addr && *(Boolean*)toVal.addr)
+		    report_it = Report;
+	    }
+	}
+    }
+
+    if (report_it == Report)
+	XtStringConversionWarning(from, toType);
+}
 
 /*ARGSUSED*/
 static void CvtIntToBoolean(args, num_args, fromVal, toVal)
@@ -336,7 +372,9 @@ static void CvtStringToCursor(args, num_args, fromVal, toVal)
     static Cursor cursor;
     char *name = (char *)fromVal->addr;
     register int i;
-    Screen	    *screen;
+    Screen *screen;
+    XrmName app_name;
+    XrmClass app_class;
     static char* bitmap_file_path = NULL;
     char filename[MAXNAMLEN+5];
     Pixmap source, mask;
@@ -345,7 +383,7 @@ static void CvtStringToCursor(args, num_args, fromVal, toVal)
     int width, height, xhot, yhot;
 
     if (*num_args != 3)
-     XtError("String to cursor conversion needs screen argument");
+     XtError("String to cursor conversion needs screen, name and class arguments");
 
     screen = *((Screen **) args[0].addr);
     for (i=0, cache=cursor_names; i < XtNumber(cursor_names); i++, cache++ ) {
@@ -356,17 +394,18 @@ static void CvtStringToCursor(args, num_args, fromVal, toVal)
 	    return;
 	}
     }
-
     /* isn't a standard cursor in cursorfont; try to open a bitmap file */
+    app_name = *((XrmName *) args[1].addr);
+    app_class = *((XrmClass *) args[2].addr);
     if (bitmap_file_path == NULL) {
 	XrmName xrm_name[3];
 	XrmClass xrm_class[3];
 	XrmRepresentation rep_type;
 	XrmValue value;
-	xrm_name[0] = *((XrmName *) args[1].addr);
+	xrm_name[0] = app_name;
 	xrm_name[1] = StringToQuark( "bitmapFilePath" );
 	xrm_name[2] = NULL;
-	xrm_class[0] = *((XrmClass *) args[2].addr);
+	xrm_class[0] = app_class;
 	xrm_class[1] = StringToQuark( "BitmapFilePath" );
 	xrm_class[2] = NULL;
 	if (XrmQGetResource( XtDefaultDB, xrm_name, xrm_class,
@@ -381,7 +420,7 @@ static void CvtStringToCursor(args, num_args, fromVal, toVal)
     if (XReadBitmapFile( DisplayOfScreen(screen), RootWindowOfScreen(screen),
 			 filename, &width, &height, &source, &xhot, &yhot )
 	!= BitmapSuccess) {
-	XtStringConversionWarning(name, "Cursor");
+	XtCondStringConversionWarning( name, "Cursor", app_name, app_class );
 	cursor = None;		/* absolute fall-back for failed conversion */
 	done(&cursor, Cursor);
 	return;
