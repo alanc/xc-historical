@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.65 87/11/05 17:37:35 rws Locked $ */
+/* $Header: connection.c,v 1.66 88/01/30 10:22:18 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -497,6 +497,8 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 		} 
 		else 
 		{
+		    ClientPtr next = (ClientPtr)NULL;
+
 #ifdef TCP_NODELAY
 		    fromlen = sizeof (from);
                     if (!getpeername (newconn, &from.sa, &fromlen))
@@ -511,8 +513,6 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 #endif /* TCP_NODELAY */
 		    if (ClientAuthorized(newconn, &swapped, &reason))
 		    {
-			ClientPtr next;
-
 		        fcntl (newconn, F_SETFL, FNDELAY);
 			inputBuffers[newconn].used = 1; 
                         if (! inputBuffers[newconn].size) 
@@ -545,8 +545,15 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 			   priv->fd = newconn;
 			   next->osPrivate = (pointer)priv;
 		        }
+			else
+			{
+#define STR "Maximum number of clients exceeded"
+			   reason = (char *)Xalloc(sizeof(STR));
+			   strcpy(reason, STR);
+#undef STR
+			}
 		    }
-		    else
+		    if (next == (ClientPtr)NULL)
 		    {
 			xConnSetupPrefix c;
 
