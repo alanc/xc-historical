@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: startup.c,v 1.26 92/06/11 15:42:57 rws Exp $
  */
 
 #include "stdio.h"
@@ -112,6 +112,9 @@ extern	int 	io_err();
 		return;
 	}
 
+#ifdef XTEST_THREADS
+	XInitThreads();
+#endif
 	Dsp = XOpenDisplay(disp);
 
 	if (Dsp == (Display *)0) {
