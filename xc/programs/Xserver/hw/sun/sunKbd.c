@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.18 92/11/24 10:49:19 rws Exp $ */
+/* $XConsortium: sunKbd.c,v 5.19 92/11/30 09:22:47 rws Exp $ */
 /*-
  * sunKbd.c --
  *	Functions for retrieving data from a keyboard.
@@ -223,16 +223,6 @@ sunKbdProc (pKeyboard, what)
 		    (sunModMap[sysKbPriv.type]),
 		    sunBell,
 		    sunKbdCtrl);
-#ifdef SVR4
-	    {
-		struct sigaction act;
-
-		act.sa_handler = sunAlarmHandler;
-		sigemptyset(&act.sa_mask);
-		act.sa_flags = 0;
-		sigaction(SIGALRM, &act, NULL);
-	    }
-#endif
 	    break;
 
 	case DEVICE_ON:
@@ -377,6 +367,7 @@ sunBell (loudness, pKeyboard)
 	struct itimerval ival;
 	sigset_t nmask, omask;
 
+	Signal(SIGALRM, sunAlarmHandler);
 	ival.it_interval.tv_sec = 0;
 	ival.it_interval.tv_usec = 0;
 	ival.it_value.tv_sec = 0;
@@ -388,9 +379,12 @@ sunBell (loudness, pKeyboard)
 	}
 	sigemptyset(&nmask);
 	sigaddset(&nmask, SIGALRM);
+	sigaddset(&nmask, SIGPOLL);
 	sigprocmask(SIG_BLOCK, &nmask, &omask);
+	nmask = omask;
+	sigaddset(&nmask, SIGPOLL);
 	setitimer(ITIMER_REAL, &ival, NULL);
-	sigsuspend(&omask);
+	sigsuspend(&nmask);
 	ival.it_value.tv_sec = 0;
 	ival.it_value.tv_usec = 0;
 	setitimer(ITIMER_REAL, &ival, NULL);
