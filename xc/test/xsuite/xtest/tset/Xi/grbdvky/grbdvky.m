@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: grbdvky.m,v 1.4 94/01/29 15:15:55 rws Exp $
  */
 >>TITLE XGrabDeviceKey XEXTENSIONS
 void
@@ -817,7 +817,7 @@ a BadValue error results.
 	device = Devs.Key;
 	modifier_device = Devs.Key;
 
-	modifiers = -1;
+	modifiers = ~0;
 	XCALL;
 	XSync(display,0);
 

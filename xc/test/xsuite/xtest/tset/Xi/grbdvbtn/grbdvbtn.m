@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: grbdvbtn.m,v 1.4 94/01/29 15:16:34 rws Exp $
  */
 >>TITLE XGrabDeviceButton XEXTENSIONS
 void
@@ -798,7 +798,7 @@ Verify that a BadValue error occurs.
 	    }
 	device = Devs.Button;
 	modifier_device = NULL;
-	modifiers = -1;
+	modifiers = ~0;
 
 	button = 1;
 	XCALL;
