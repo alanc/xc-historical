@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: XMultibuf.c,v 1.1 89/09/22 17:00:16 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,6 +37,11 @@ typedef struct _XmbufDisplayInfo {
     struct _XmbufDisplayInfo *next;	/* keep a linked list */
     Display *display;			/* which display this is */
     XExtCodes *codes;			/* the extension protocol codes */
+    struct {
+	int count;			/* how many valid ids in cache */
+	int total;			/* max ids in cache */
+	XID *contents;			/* array of XID's */
+    } id_cache;
 } XmbufDisplayInfo;
 
 static XmbufDisplayInfo *mbuf_display_list;	/* starts out NULL */
@@ -51,7 +56,7 @@ static int mbuf_wire_to_event();	/* when reading an event */
 static int mbuf_event_to_wire();	/* when writing an event */
 
 
-static XExtCodes *mbuf_find_display_codes (dpy)
+static XmbufDisplayInfo *find_display (dpy)
     register Display *dpy;
 {
     XmbufDisplayInfo *dpyinfo;
@@ -60,7 +65,7 @@ static XExtCodes *mbuf_find_display_codes (dpy)
      * see if this was the most recently accessed display
      */
     if (mbuf_cached_display && mbuf_cached_display->display == dpy) {
-	return mbuf_cached_display->codes;
+	return mbuf_cached_display;
     }
 
 
@@ -89,6 +94,9 @@ static XExtCodes *mbuf_find_display_codes (dpy)
 	if (dpyinfo->codes) {
 	    int i, j;
 
+	    dpyinfo->id_cache.count = 0;
+	    dpyinfo->id_cache.total = 0;
+	    dpyinfo->id_cache.contents = NULL;
 	    XESetCloseDisplay (dpy, dpyinfo->codes->extension,
 			       mbuf_close_display);
 	    for (i = 0, j = dpyinfo->codes->first_event;
@@ -108,7 +116,7 @@ static XExtCodes *mbuf_find_display_codes (dpy)
      * set this display to be the most recently used and return
      */
     mbuf_cached_display = dpyinfo;
-    return dpyinfo->codes;
+    return dpyinfo;
 }
 
 				    
@@ -146,7 +154,9 @@ static int mbuf_close_display (dpy, codes)
     if (dpyinfo == mbuf_cached_display)
 	mbuf_cached_display = (XmbufDisplayInfo *) NULL;
 
-    Xfree (dpyinfo);
+    if (dpyinfo->id_cache.contents)
+      Xfree ((char *) dpyinfo->id_cache.contents);
+    Xfree ((char *) dpyinfo);
     return 0;
 }
 
@@ -160,11 +170,10 @@ static int mbuf_wire_to_event (dpy, re, event)
     XEvent *re;
     xEvent *event;
 {
-    XExtCodes *codes;
+    XmbufDisplayInfo *info = find_display (dpy);
 
-    codes = mbuf_find_display_codes (dpy);
-    if (!codes) return False;
-    switch ((event->u.u.type & 0x7f) - codes->first_event) {
+    if (!info && !info->codes) return 0;
+    switch ((event->u.u.type & 0x7f) - info->codes->first_event) {
       case ClobberNotify:
 	{
 	    XClobberNotifyEvent	*se;
@@ -193,11 +202,10 @@ static int mbuf_event_to_wire (dpy, re, event)
     XEvent  *re;
     xEvent  *event;
 {
-    XExtCodes *codes;
+    XmbufDisplayInfo *info = find_display (dpy);
 
-    codes = mbuf_find_display_codes (dpy);
-    if (!codes) return False;
-    switch ((re->type & 0x7f) - codes->first_event) {
+    if (!info && !info->codes) return 0;
+    switch ((re->type & 0x7f) - info->codes->first_event) {
       case ClobberNotify:
 	{
 	    XClobberNotifyEvent	*se;
@@ -216,79 +224,85 @@ static int mbuf_event_to_wire (dpy, re, event)
 
 
 
+
 /*
  * Multibuffering/stereo public interfaces
  */
 
 
-Bool
-XBufferQueryExtension (dpy)
+Bool XmbufQueryExtension (dpy, event_base_return, error_base_return)
     Display *dpy;
+    int *event_base_return, *error_base_return;
 {
-    return mbuf_find_display_codes (dpy) != 0;
+    XmbufDisplayInfo *info = find_display (dpy);
+    
+    if (info && info->codes) {
+	*event_base_return = info->codes->first_event;
+	*error_base_return = info->codes->first_error;
+	return True;
+    } else {
+	return False;
+    }
 }
 
-int
-XBufferGetEventBase (dpy)
+
+Status XmbufGetVersion (dpy, major_version_return, minor_version_return)
     Display *dpy;
+    int *major_version_return, *minor_version_return;
 {
-    XExtCodes	*codes;
+    XmbufDisplayInfo *info = find_display (dpy);
+    xGetBufferVersionReply rep;
+    register xGetBufferVersionReq *req;
 
-    codes = mbuf_find_display_codes (dpy);
-    if (!codes)
-	return -1;
-    return codes->first_event;
-}
+    if (!(info && info->codes)) return 0;
 
-Bool
-XGetBufferVersion(dpy, majorVersion, minorVersion)
-    Display *dpy;
-    int	    *majorVersion, *minorVersion;
-{
-    XExtCodes			    *codes;
-    xGetBufferVersionReply	    rep;
-    register xGetBufferVersionReq  *req;
-
-    if (!(codes = mbuf_find_display_codes (dpy)))
-	return 0;
     LockDisplay (dpy);
     GetReq (GetBufferVersion, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->bufferReqType = X_GetBufferVersion;
     if (!_XReply (dpy, (xReply *) &rep, 0, xTrue)) {
 	UnlockDisplay (dpy);
 	SyncHandle ();
 	return 0;
     }
-    *majorVersion = rep.majorVersion;
-    *minorVersion = rep.minorVersion;
+    *major_version_return = rep.majorVersion;
+    *minor_version_return = rep.minorVersion;
     UnlockDisplay (dpy);
+
     SyncHandle ();
     return 1;
 }
 
-int
-XCreateImageBuffers (dpy, window, updateAction, updateHint, count, buffers)
-    Display *dpy;
-    Window  window;
-    int	    updateAction;
-    int	    updateHint;
-    int	    count;
-    Buffer  *buffers;
-{
-    XExtCodes			    *codes;
-    xCreateImageBuffersReply	    rep;
-    register xCreateImageBuffersReq *req;
-    int				    i;
-    int				    result;
 
-    if (!(codes = mbuf_find_display_codes (dpy)))
-	return 0;
-    for (i = 0; i < count; i++)
-	buffers[i] = XAllocID (dpy);
+int XCreateImageBuffers (dpy, w, count, update_action, update_hint,
+			 buffers_return)
+    Display *dpy;
+    Window w;
+    int count;
+    int update_action, update_hint;
+    Multibuffer *buffers;
+{
+    XmbufDisplayInfo *info = find_display (dpy);
+    xCreateImageBuffersReply rep;
+    register xCreateImageBuffersReq *req;
+    int i, result;
+
+    if (!(info && info->codes)) return 0;
+
+    /*
+     * allocate the id; hopefully, it would be nice to be able to 
+     * get rid of the ones we don't need, but this would require access
+     * various Xlib internals, so we do caching on this side
+     */
+    for (i = 0; i < count; i++) {
+	buffers[i] = ((info->id_cache.count > 0)
+		      ? info->id_cache.contents[info->id_cache.count--]
+		      : XAllocID (dpy));
+    }
+
     LockDisplay (dpy);
     GetReq (CreateImageBuffers, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->bufferReqType = X_CreateImageBuffers;
     req->window = window;
     req->updateAction = updateAction;
@@ -302,9 +316,46 @@ XCreateImageBuffers (dpy, window, updateAction, updateHint, count, buffers)
     }
     result = rep.numberBuffer;
     UnlockDisplay (dpy);
+
+    /*
+     * we need to add the ones that we already have to our id cache
+     */
+    if (result < count) {
+	int leftover = (count - result);
+	Multibuffer *extra;
+
+	/*
+	 * make sure that cache is big enough to hold new ids
+	 */
+	info->id_cache.count += leftover;
+	if (info->id_cache.count > info->id_cache.total) {  /* grow cache */
+	    info->id_cache.total += 16;			    /* a few extra */
+	    if (info->id_cache.contents) {
+		info->id_cache.contents = Xrealloc (info->id_cache.contents,
+						    (info->id_cache.total *
+						     sizeof(XID)));
+	    } else {
+		info->id_cache.contents = Xmalloc (info->id_cache.total *
+						   sizeof(XID));
+	    }
+	}
+	
+	if (info->id_cache.contents) {
+	    /*
+	     * copy extra ids into cache
+	     */
+	    for (extra = buffers + result; leftover > 0; leftover--, extra++) {
+		info->id_cache.contents[info->id_cache.count++] = *extra;
+	    }
+	} else {
+	    info->id_cache.count = info->id_cache.total = 0;
+	}
+    }
+
     SyncHandle ();
     return result;
 }
+
 
 void
 XDisplayImageBuffers (dpy, count, buffers, min_delay, max_delay)
