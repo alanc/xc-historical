@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.130 92/12/16 17:46:50 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.131 92/12/29 15:01:12 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -902,10 +902,14 @@ static String ParseKeyAndModifiers(str, closure, event,error)
     Boolean* error;
 {
     str = ParseKeySym(str, closure, event,error);
-
-    event->event.modifiers |= (unsigned long)closure;
-    event->event.modifierMask |= (unsigned long)closure;
-
+    if ((unsigned long) closure == 0) {
+	Value metaMask; /* unused */
+	(void) _XtLookupModifier(QMeta, &event->event.lateModifiers, False,
+				 &metaMask, False);
+    } else {
+	event->event.modifiers |= (unsigned long) closure;
+	event->event.modifierMask |= (unsigned long) closure;
+    }
     return str;
 }
 
