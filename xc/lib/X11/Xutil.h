@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.47 89/05/30 15:31:46 jim Exp $ */
+/* $XConsortium: Xutil.h,v 11.48 89/07/25 13:03:44 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -279,46 +279,272 @@ typedef int XContext;
 #define XUniqueContext()       ((XContext) XrmUniqueQuark())
 #define XStringToContext(string)   ((XContext) XrmStringToQuark(string))
 
-extern int XSaveContext(); /* window, context, data */
-    /* Window       window;		*/
-    /* XContext    context;		*/
-    /* caddr_t      data;		*/
+extern int XSaveContext(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XContext		/* context */,
+    caddr_t		/* data */
+#endif
+);
 
-extern int XFindContext(); /* display, window, context, data */
-    /* Display	    *display;		*/
-    /* Window       window;		*/
-    /* XContext    context;		*/
-    /* caddr_t      *data;  *//* RETURN */
+extern int XFindContext(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XContext		/* context */,
+    caddr_t*		/* data_return */
+#endif
+);
 
-extern int XDeleteContext(); /* window, context */
-    /* Window       window;		*/
-    /* XContext    context;		*/
+extern int XDeleteContext(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XContext		/* context */
+#endif
+);
 
 
-XWMHints *XGetWMHints();
-Region XCreateRegion(), XPolygonRegion();
-XImage *XCreateImage();
+XWMHints *XGetWMHints(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    window		/* w */		      
+#endif
+);
+Region XCreateRegion(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+Region XPolygonRegion(
+#if NeedFunctionPrototypes
+    XPoint*		/* points */,
+    int			/* n */,
+    int			/* fill_rule */
+#endif
+);
+XImage *XCreateImage(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Visual*		/* visual */,
+    unsigned int	/* depth */,
+    int			/* format */,
+    int			/* offset */,
+    char*		/* data */,
+    unsigned int	/* width */,
+    unsigned int	/* height */,
+    int			/* bitmap_pad */,
+    int			/* bytes_per_line */
+#endif
+);
 
-XVisualInfo *XGetVisualInfo();
+XVisualInfo *XGetVisualInfo(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    long		/* vinfo_mask */,
+    XVisualInfo*	/* vinfo_template */,
+    int*		/* nitems_return */
+#endif
+);
 
 /* Allocation routines for properties that may get longer */
-XSizeHints *XAllocSizeHints ();
-XStandardColormap *XAllocStandardColormap ();
-XWMHints *XAllocWMHints ();
-XClassHint *XAllocClassHint ();
-XIconSize *XAllocIconSize ();
+XSizeHints *XAllocSizeHints (
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+XStandardColormap *XAllocStandardColormap (
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+XWMHints *XAllocWMHints (
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+XClassHint *XAllocClassHint (
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+XIconSize *XAllocIconSize (
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
 /* ICCCM routines for data structures defined in this file */
-Status XGetWMSizeHints(), XGetWMNormalHints();
-Status XGetRGBColormaps();
-Status XGetTextProperty(), XGetWMName(), XGetWMIconName();
-Status XGetWMClientMachine(), XGetWMCommand();
-Status XGetWMColormapWindows(), XSetWMColormapWindows();
-void XSetWMProperties(), XSetWMSizeHints(), XSetWMNormalHints();
-void XSetRGBColormaps();
-void XSetTextProperty(), XSetWMName(), XSetWMIconName();
-void XSetWMClientMachine(), XSetWMCommand();
-Status XStringListToTextProperty(), XTextPropertyToStringList();
-void XFreeStringList();
+Status XGetWMSizeHints(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XSizeHints*		/* hints_return */,
+    long*		/* supplied_return */,
+    Atom		/* property */
+#endif
+);
+Status XGetWMNormalHints(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XSizeHints*		/* hints_return */,
+    long*		/* supplied_return */ 
+#endif
+);
+Status XGetRGBColormaps(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XStandardColormap** /* stdcmap_return */,
+    int*		/* count_return */,
+    Atom		/* property */
+#endif
+);
+Status XGetTextProperty(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* window */,
+    XTextProperty*	/* text_property_return */,
+    Atom		/* property */
+#endif
+);
+Status XGetWMName(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XTextProperty*	/* text_property_return */
+#endif
+);
+Status XGetWMIconName(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XTextProperty*	/* text_property_return */
+#endif
+);
+Status XGetWMClientMachine(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XTextProperty*	/* text_property_return */
+#endif
+);
+Status XGetWMCommand(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XTextProperty*	/* text_property_return */
+#endif
+);
+Status XGetWMColormapWindows(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    Window**		/* colormap_windows_return */,
+    int*		/* count_return */
+#endif
+);
+Status XSetWMColormapWindows(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    Window*		/* windows */,
+    int			/* count */
+#endif
+);
+void XSetWMProperties(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XTextProperty*	/* windowName */,
+    XTextProperty*	/* iconName */,
+    char**		/* argv */,
+    int			/* argc */,
+    XSizeHints*		/* sizeHints */,
+    XWMHints*		/* wmHints */,
+    XClassHint*		/* classHints */
+#endif
+);
+void XSetWMSizeHints(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XSizeHints*		/* hints */,
+    Atom		/* property */
+#endif
+);
+void XSetWMNormalHints(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XSizeHints*		/* hints */
+#endif
+);
+void XSetRGBColormaps(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XStandardColormap*	/* cmaps */,
+    int			/* count */,
+    Atom		/* property */
+#endif
+);
+void XSetTextProperty(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    Atom		/* property */,
+    XTextProperty*	/* text_property */
+#endif
+);
+void XSetWMName(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XTextProperty*	/* text_property */
+#endif
+);
+void XSetWMIconName(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XTextProperty*	/* text_property */
+#endif
+);
+void XSetWMClientMachine(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XTextProperty	/* text_property */
+#endif
+);
+void XSetWMCommand(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    XTextProperty	/* text_property */
+#endif
+);
+Status XStringListToTextProperty(
+#if NeedFunctionPrototypes
+    char**		/* argv */,
+    int			/* argc */,
+    XTextProperty*	/* text_property */
+#endif
+);
+Status XTextPropertyToStringList(
+#if NeedFunctionPrototypes
+    XTextProperty*	/* text_property */,
+    char***		/* list_return */,
+    int*		/* count_return */
+#endif
+);
+void XFreeStringList(
+#if NeedFunctionPrototypes
+    char**		/* list */
+#endif
+);
 
 #endif /* _XUTIL_H_ */
