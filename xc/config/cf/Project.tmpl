@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.28 89/07/18 13:53:09 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.29 89/07/18 16:35:04 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -176,9 +176,6 @@
 #ifndef XdmConfigurationSubdirectory		/* under xdm sources */
 #define XdmConfigurationSubdirectory config/default
 #endif
-#ifndef UwmDir
-#define UwmDir $(LIBDIR)/uwm
-#endif
 #ifndef AwmDir
 #define AwmDir $(LIBDIR)/awm
 #endif
@@ -255,7 +252,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.28 89/07/18 13:53:09 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.29 89/07/18 16:35:04 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -277,7 +274,6 @@ Berklib.c: sysV/Berklib.c					@@\
           FONTDIR = FontDir		/* font directories */
          XINITDIR = XinitDir		/* xinit config files */
            XDMDIR = XdmDir		/* xdm config files */
-           UWMDIR = UwmDir		/* uwm config files */
            AWMDIR = AwmDir		/* awm config files */
            TWMDIR = TwmDir		/* twm config files */
           MANPATH = ManPath		/* top of manual page tree */
