@@ -1,6 +1,6 @@
-.TH BITMAP 1 "10 December 1990" "X Version 11"
+.TH BITMAP 1 "Release 5" "X Version 11"
 .SH NAME
-bitmap \- bitmap editor for the X Window System.
+bitmap \- bitmap editor for the X Window System
 .SH SYNOPSIS
 .B bitmap
 [-options ...]\fI [filename] [basename]\fP
