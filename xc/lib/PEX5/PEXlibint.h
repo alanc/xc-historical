@@ -1,4 +1,4 @@
-/* $XConsortium: PEXlibint.h,v 1.11 92/05/07 22:47:07 mor Exp $ */
+/* $XConsortium: PEXlibint.h,v 1.1 92/05/08 15:12:41 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -195,9 +195,9 @@ extern PEXDisplayInfo *PEXDisplayInfoHeader;
  * Memory related macros.
  * ------------------------------------------------------------------------- */
 
-#define PEXAllocBuf(size)          malloc(size)
-#define PEXFreeBuf(ptr)            free(ptr)
-#define PEXReallocBuf(ptr, size)   realloc(ptr, size)
+#define PEXAllocBuf(size)          Xmalloc(size)
+#define PEXFreeBuf(ptr)            Xfree(ptr)
+#define PEXReallocBuf(ptr, size)   Xrealloc(ptr, size)
 
 #define COPY_LARGE_AREA(_from, _to, _size) \
     memcpy (_to, _from, _size)
@@ -246,6 +246,13 @@ extern PEXDisplayInfo *PEXDisplayInfoHeader;
  * ------------------------------------------------------------------------- */
 
 /*
+ * The maximum protocol request size.
+ */
+
+#define MAX_REQUEST_SIZE ((1<<16) - 1)
+
+
+/*
  * Has the X transport buffer been flushed?
  */
 
@@ -267,14 +274,6 @@ extern PEXDisplayInfo *PEXDisplayInfoHeader;
 
 #define WordsLeftInXBuffer(_display) \
     (((_display)->bufmax - (_display)->bufptr) >> 2)
-
-
-/*
- * Is the OC bigger than the server's max request size?
- */
-
-#define OCIsTooLarge(_display, _ocLength) \
-    (_ocLength + LENOF (pexOCRequestHeader) > (_display)->max_request_size)
 
 
 /*
@@ -457,8 +456,8 @@ extern PEXDisplayInfo *PEXDisplayInfoHeader;
  */
 
 #define InitializeColorSpecifier(_dst, _src, _type)\
-    (_dst).color_type = _type; \
-    COPY_SMALL_AREA ((_src), &((_dst).color), GetColorSize (_type));
+    (_dst).type = _type; \
+    COPY_SMALL_AREA ((_src), &((_dst).value), GetColorSize (_type));
 
 
 /*
@@ -468,12 +467,12 @@ extern PEXDisplayInfo *PEXDisplayInfoHeader;
 
 #define PackColorSpecifier(srcBuf, dstBuf, sizeColor) \
 { \
-    ((PEXColorSpecifier *) (dstBuf))->color_type = \
-        ((PEXColorSpecifier *) (srcBuf))->color_type; \
+    ((PEXColorSpecifier *) (dstBuf))->type = \
+        ((PEXColorSpecifier *) (srcBuf))->type; \
     sizeColor = \
-        GetColorSize (((PEXColorSpecifier *) (srcBuf))->color_type); \
-    COPY_SMALL_AREA (&(((PEXColorSpecifier *) (srcBuf))->color), \
-        &(((PEXColorSpecifier *) (dstBuf))->color), sizeColor); \
+        GetColorSize (((PEXColorSpecifier *) (srcBuf))->type); \
+    COPY_SMALL_AREA (&(((PEXColorSpecifier *) (srcBuf))->value), \
+        &(((PEXColorSpecifier *) (dstBuf))->value), sizeColor); \
 }
 
 
@@ -548,15 +547,14 @@ typedef struct {
 
 
 /*
- * Success and Failure codes.
+ * Pick path cache.
  */
 
-#ifndef	Success
-#define	Success	-1
-#endif
-#ifndef	Failure
-#define	Failure 0
-#endif
+#define MAX_PICK_CACHE_SIZE 2048
+
+extern PEXPickPath	*PickCache;
+extern unsigned int	PickCacheSize;
+extern int		PickCacheInUse;
 
 
 /*
