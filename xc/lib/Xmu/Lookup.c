@@ -1,5 +1,5 @@
 static char rcsid[] =
-	"$XConsortium: Lookup.c,v 1.0 88/09/05 19:00:48 rws Exp $";
+	"$XConsortium: Lookup.c,v 1.0 88/10/09 14:25:16 rws Exp $";
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -20,6 +20,7 @@ static char rcsid[] =
 #include <X11/Xutil.h>
 
 /* return 7-bit ASCII plus least significant byte from specified keysym set */
+/* XXX for LatinN, we need to reincorporate missing chars from Latin<N-1> */
 int XmuLookupString (event, buffer, nbytes, keysym, status, keysymSet)
     register XKeyEvent *event;
     char *buffer;
