@@ -1,7 +1,7 @@
 /*
  * xdm - X display manager
  *
- * $XConsortium: netaddr.c,v 1.1 91/07/15 15:59:05 gildea Exp $
+ * $XConsortium: netaddr.c,v 1.2 91/07/16 22:19:54 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -201,6 +201,8 @@ addressEqual (a1, len1, a2, len2)
     return TRUE;
 }
 
+#ifdef DEBUG
+/*ARGSUSED*/
 PrintSockAddr (a, len)		/* Debugging routine */
     struct sockaddr *a;
     int		    len;
@@ -221,5 +223,6 @@ PrintSockAddr (a, len)		/* Debugging routine */
     }
 #endif
 }
+#endif
 
 #endif /* XDMCP */
