@@ -1,4 +1,4 @@
-/* $XConsortium: XawI18n.h,v 1.1 94/01/31 09:56:29 kaleb Exp $ */
+/* $XConsortium: XawI18n.h,v 1.2 94/02/06 13:47:46 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by The Massachusetts Institute of Technology
@@ -70,7 +70,7 @@ extern int _iswspace(wchar_t);
 #define iswprint(c) isjalphanum(c) || isjpunct(c) || isjspace(c)
 #endif
 
-#if defined(ultrix) || (defined(sun) && !defined(SVR4)) || defined(macII) || defined(bsdi)
+#if defined(ultrix) || (defined(sun) && !defined(SVR4)) || defined(macII) || defined(bsdi) || defined(CRAY)
 #define wcslen(c) _Xwcslen(c)
 #define wcscpy(d,s) _Xwcscpy(d,s)
 #define wcsncpy(d,s,l) _Xwcsncpy(d,s,l)
