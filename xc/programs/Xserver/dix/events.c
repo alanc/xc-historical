@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.58 92/04/11 13:41:58 rws Exp $ */
+/* $XConsortium: events.c,v 5.59 92/04/11 17:23:07 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -144,6 +144,10 @@ extern int AddPassiveGrabToList();
 
 extern Bool permitOldBugs;
 extern Bool Must_have_memory;
+extern int lastEvent;
+#ifdef XINPUT
+extern int DeviceMotionNotify, DeviceButtonPress;
+#endif
 
 static Mask lastEventMask;
 
@@ -1040,8 +1044,6 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 #ifdef XINPUT
 	else
 	{
-	    extern int DeviceMotionNotify;
-
 	    if ((type == DeviceMotionNotify) &&
 		MaybeSendDeviceMotionNotifyHint (pEvents, mask) != 0)
 		return 1;
@@ -1159,8 +1161,6 @@ DeliverEventsToWindow(pWin, pEvents, count, filter, grab, mskidx)
 #ifdef XINPUT
     else
     {
-	extern int DeviceMotionNotify, DeviceButtonPress;
-
 	if (((type == DeviceMotionNotify) || (type == DeviceButtonPress)) &&
 	    deliveries)
 	    CheckDeviceGrabAndHintWindow (pWin, type, pEvents, grab, client, 
@@ -1788,10 +1788,18 @@ DeliverGrabbedEvent(xE, thisDev, deactivateGrab, count)
 	deliveries = TryClientEvents(rClient(grab), xE, count,
 				     (Mask)grab->eventMask,
 				     filters[xE->u.u.type], grab);
-	if (deliveries && (xE->u.u.type == MotionNotify))
+	if (deliveries && (xE->u.u.type == MotionNotify
+#ifdef XINPUT
+			   || xE->u.u.type == DeviceMotionNotify
+#endif
+			   ))
 	    thisDev->valuator->motionHintWindow = grab->window;
     }
-    if (deliveries && !deactivateGrab && (xE->u.u.type != MotionNotify))
+    if (deliveries && !deactivateGrab && (xE->u.u.type != MotionNotify
+#ifdef XINPUT
+					  && xE->u.u.type != DeviceMotionNotify
+#endif
+					  ))
 	switch (thisDev->sync.state)
 	{
 	case FREEZE_BOTH_NEXT_EVENT:
@@ -3001,7 +3009,6 @@ int
 ProcSendEvent(client)
     ClientPtr client;
 {
-    extern int lastEvent; 		/* Defined in extension.c */
     WindowPtr pWin;
     WindowPtr effectiveFocus = NullWindow; /* only set if dest==InputFocus */
     REQUEST(xSendEventReq);
