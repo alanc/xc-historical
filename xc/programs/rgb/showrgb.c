@@ -1,5 +1,5 @@
 /*
- * $XConsortium: showrgb.c,v 1.8 91/06/30 16:39:03 rws Exp $
+ * $XConsortium: showrgb.c,v 1.9 93/09/20 17:58:21 hersh Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,6 +23,7 @@
  * Author:  Jim Fulton, MIT X Consortium
  */
 
+#ifndef USE_RGB_TXT
 #ifdef NDBM
 #include <ndbm.h>
 #else
@@ -36,6 +37,7 @@
 #define dbm_fetch(db,key) (fetch(key))
 #define dbm_close(db) dbmclose()
 #endif
+#endif /* USE_RGB_TXT */
 
 #undef NULL
 #include <stdio.h>
@@ -59,6 +61,8 @@ main (argc, argv)
     dumprgb (dbname);
     exit (0);
 }
+
+#ifndef USE_RGB_TXT
 
 dumprgb (filename)
     char *filename;
@@ -89,7 +93,7 @@ dumprgb (filename)
 	if (value.dptr) {
 	    RGB rgb;
 	    unsigned short r, g, b;
-	    memmove( (char *)&rgb, value.dptr, sizeof rgb);
+	    memcpy( (char *)&rgb, value.dptr, sizeof rgb);
 #define N(x) (((x) >> 8) & 0xff)
 	    r = N(rgb.red);
 	    g = N(rgb.green);
@@ -107,3 +111,49 @@ dumprgb (filename)
 
     dbm_close (rgb_dbm);
 }
+
+#else /* USE_RGB_TXT */
+
+dumprgb (filename)
+    char *filename;
+{
+    FILE *rgb;
+    char *path;
+    char line[BUFSIZ];
+    char name[BUFSIZ];
+    int lineno = 0;
+    int red, green, blue;
+   
+    path = (char *)malloc(strlen(filename) + 5);
+    strcpy(path, filename);
+    strcat(path, ".txt");
+
+    if (!(rgb = fopen(path, "r"))) {
+	fprintf (stderr, "%s:  unable to open rgb database \"%s\"\n",
+		 ProgramName, filename);
+	free(path);
+	exit (1);
+    }
+
+    while(fgets(line, sizeof(line), rgb)) {
+	lineno++;
+	if (sscanf(line, "%d %d %d %[^\n]\n", &red, &green, &blue, name) == 4) {
+	    if (red >= 0 && red <= 0xff &&
+		green >= 0 && green <= 0xff &&
+		blue >= 0 && blue <= 0xff) {
+		printf ("%3u %3u %3u\t\t%s\n", red, green, blue, name);
+	    } else {
+		fprintf(stderr, "%s:  value for \"%s\" out of range: %s:%d\n",
+		        ProgramName, name, path, lineno);
+	    }
+	} else if (*line && *line != '!') {
+	    fprintf(stderr, "%s:  syntax error: %s:%d\n", ProgramName,
+		    path, lineno);
+	}
+    }
+
+    free(path);
+    fclose(rgb);
+}
+
+#endif /* USE_RGB_TXT */
