@@ -1,4 +1,4 @@
-.\" $XConsortium: protocol.ms,v 1.12 94/04/13 19:23:19 rws Exp $
+.\" $XConsortium: protocol.ms,v 1.13 94/04/17 20:05:07 rws Exp $
 .\" Use tbl, -ms, and macros.t
 .EH ''''
 .OH ''''
@@ -61,8 +61,8 @@ in this Software without prior written authorization from the X Consortium.
 .ps 11
 .nr PS 11
 .bp 1
-.EH '\fBX Font Service Protocol\fP''\fBX11, Release 5\fP'
-.OH '\fBX Font Service Protocol\fP''\fBX11, Release 5\fP'
+.EH '\fBX Font Service Protocol\fP''\fBX11, Release 6\fP'
+.OH '\fBX Font Service Protocol\fP''\fBX11, Release 6\fP'
 .EF ''\fB\\\\n(PN\fP''
 .OF ''\fB\\\\n(PN\fP''
 .NH 1

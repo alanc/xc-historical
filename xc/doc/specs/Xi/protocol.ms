@@ -1,4 +1,4 @@
-.\" $XConsortium: protocol.ms,v 1.11 94/04/17 20:06:05 rws Exp $
+.\" $XConsortium: protocol.ms,v 1.12 94/04/17 23:55:31 rws Exp $
 .\" Input Extension
 .EH ''''
 .OH ''''
@@ -66,8 +66,8 @@ in this Software without prior written authorization from the X Consortium.
 .ps
 .vs
 .bp 1
-.EH '\fBX Input Extension Protocol Specification\fP''\fBX11, Release 5\fP'
-.OH '\fBX Input Extension Protocol Specification\fP''\fBX11, Release 5\fP'
+.EH '\fBX Input Extension Protocol Specification\fP''\fBX11, Release 6\fP'
+.OH '\fBX Input Extension Protocol Specification\fP''\fBX11, Release 6\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
 .\"  Force the heading counter for level 1 to one
