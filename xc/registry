@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.12 90/11/10 17:32:11 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.13 90/11/15 09:19:55 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -15,6 +15,7 @@ Name						Reference
 "FXD"						[55]
 "IBM"						[33]
 "ICS"						[31]
+"ILA"						[62]
 "IPSYS"						[59]
 "IXI"						[20]
 "LJK"						[56]
@@ -616,6 +617,8 @@ Name						Reference
 	internal representation scheme
 "DEC.DTSCS.1990-2"				[54]
 	DEC Taiwan Supplemental Character Set
+"ILA"						[62]
+	registry prefix
 
 
 REFERENCES
@@ -895,4 +898,9 @@ REFERENCES
 	Bolt Beranek and Newman Inc.
 	150 CambridgePark Drive
 	Cambridge MA 02140
+
+[62]	Glenn Adams
+	International Lisp Associates
+	114 Mount Auburn Street
+	Cambridge, MA 02138
 Sumitomo Electric Workstation Corp.	[77]
