@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.1 91/01/09 19:20:31 converse Exp $ */
+/* $XConsortium: InitialI.h,v 1.46 91/02/03 13:51:26 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -240,6 +240,9 @@ typedef struct _XtPerDisplayStruct {
     InternalCallbackList mapping_callbacks;  /* special case for TM */
     XtPerDisplayInputRec pdi;	       /* state for modal grabs & kbd focus */
     struct _WWTable *WWtable;	       /* window to widget table */
+    XrmDatabase *per_screen_db;        /* per screen resource databases */
+    XrmDatabase cmd_db;		       /* db from command line, if needed */
+    Bool def_db_screen_specific;       /* true of SCREEN_RESOURCES used */
 } XtPerDisplayStruct, *XtPerDisplay;
 
 typedef struct _PerDisplayTable {
