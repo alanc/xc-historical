@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.57 91/07/02 18:00:58 converse Exp $
+ * $XConsortium: init.c,v 2.58 91/07/05 15:17:35 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -412,9 +412,9 @@ char **argv;
     InitPick();
     IconInit();
     BBoxInit();
+    PopupInit(app);
 
-    XtAppAddActions( XtWidgetToApplicationContext(toplevel),
-		    actions, XtNumber(actions));
+    XtAppAddActions(app, actions, XtNumber(actions));
     XtRegisterGrabAction(XmhPopupFolderMenu, True, 
 			 ButtonPressMask | ButtonReleaseMask,
 			 GrabModeAsync, GrabModeAsync);
