@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.65 89/11/29 19:32:20 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.66 89/12/06 16:25:20 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -96,7 +96,7 @@ static void ClassInitialize();
 #ifdef SHAPE
 static Boolean ShapeButton();
 static void Realize(), Resize();
-#endif SHAPE
+#endif /* SHAPE */
 
 static XtActionsRec actionsList[] =
 {
@@ -152,7 +152,7 @@ CommandClassRec commandClassRec = {
     Resize,				/* resize		  */
 #else
     XtInheritResize,			/* resize		  */
-#endif SHAPE
+#endif /* SHAPE */
     Redisplay,				/* expose		  */
     SetValues,				/* set_values		  */
     NULL,				/* set_values_hook	  */
