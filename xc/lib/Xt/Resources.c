@@ -1,7 +1,7 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Resources.c,v 1.48 88/09/02 20:30:35 swick Exp $";
-/* $oHeader: Resources.c,v 1.5 88/08/26 14:49:54 asente Exp $ */
+    "$XConsortium: Resources.c,v 1.49 88/09/03 17:05:49 swick Exp $";
+/* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
 
@@ -42,7 +42,8 @@ void XtCopyFromParent(widget, offset, value)
     XrmValue    *value;
 {
     if (widget->core.parent == NULL) {
-	XtWarningMsg("invalidParent","xtCopyFromParent","XtToolkitError",
+	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		"invalidParent","xtCopyFromParent","XtToolkitError",
                   "CopyFromParent must have non-NULL parent",
 		  (String *)NULL, (Cardinal *)NULL);
         value->addr = NULL;
@@ -441,7 +442,8 @@ static void GetResources(widget, base, names, classes,
     Display	    *dpy;
 
     if ((args == NULL) && (num_args != 0)) {
-    	XtWarningMsg("invalidArgCount","getResources","XtToolkitError",
+    	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		"invalidArgCount","getResources","XtToolkitError",
                  "argument count > 0 on NULL argument list",
                    (String *)NULL, (Cardinal *)NULL);
 	num_args = 0;
@@ -449,7 +451,8 @@ static void GetResources(widget, base, names, classes,
     if (num_resources == 0) {
 	return;
     } else if (table == NULL) {
-    	XtWarningMsg("invalidResourceCount","getResources","XtToolkitError",
+    	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		"invalidResourceCount","getResources","XtToolkitError",
               "resource count > 0 on NULL resource list",
 	      (String *)NULL, (Cardinal *)NULL);
 	return;
@@ -776,7 +779,8 @@ void XtGetValues(w, args, num_args)
 
     if (num_args == 0) return;
     if ((args == NULL) && (num_args != 0)) {
-	XtErrorMsg("invalidArgCount","xtGetValues","XtToolkitError",
+	XtAppErrorMsg(XtWidgetToApplicationContext(w),
+		"invalidArgCount","xtGetValues","XtToolkitError",
             "Argument count > 0 on NULL argument list in XtGetValues",
               (String *)NULL, (Cardinal *)NULL);
     }
@@ -865,7 +869,8 @@ static Boolean CallConstraintSetValues (class, current, request, new)
 
     if ((WidgetClass)class != constraintWidgetClass) {
 	if (class == NULL)
-	    XtErrorMsg("invalidClass","constraintSetValue","XtToolkitError",
+	    XtAppErrorMsg(XtWidgetToApplicationContext(current),
+		    "invalidClass","constraintSetValue","XtToolkitError",
                  "Subclass of Constraint required in CallConstraintSetValues",
                   (String *)NULL, (Cardinal *)NULL);
 	redisplay = CallConstraintSetValues(
@@ -909,7 +914,8 @@ void XtSetValues(w, args, num_args)
     ConstraintWidgetClass cwc;
 
     if ((args == NULL) && (num_args != 0)) {
-        XtErrorMsg("invalidArgCount","xtSetValues","XtToolkitError",
+        XtAppErrorMsg(XtWidgetToApplicationContext(w),
+		"invalidArgCount","xtSetValues","XtToolkitError",
                 "Argument count > 0 on NULL argument list in XtSetValues",
                  (String *)NULL, (Cardinal *)NULL);
     }
@@ -978,7 +984,8 @@ void XtSetValues(w, args, num_args)
     
 	if (geoReq.request_mode != 0) {
 	    if (isShell) {
-		XtWarningMsg("invalidGeometry","xtMakeGeometryRequest",
+		XtAppWarningMsg(XtWidgetToApplicationContext(w),
+			"invalidGeometry","xtMakeGeometryRequest",
 		  "XtToolkitError",
 		  "Shell subclass did not take care of geometry in XtSetValues",
 		  (String *)NULL, (Cardinal *)NULL);
@@ -1006,7 +1013,8 @@ void XtSetValues(w, args, num_args)
 		    /* An almost reply.  Call widget and let it munge
 		       request, reply */
 		    if (wc->core_class.set_values_almost == NULL) {
-			XtWarningMsg("invalidProcedure","set_values_almost",
+			XtAppWarningMsg(XtWidgetToApplicationContext(w),
+				"invalidProcedure","set_values_almost",
 			      "XtToolkitError",
 			      "set_values_almost procedure shouldn't be NULL",
 			      (String *)NULL, (Cardinal *)NULL);
@@ -1105,16 +1113,6 @@ void XtGetResourceList(widget_class, resources, num_resources)
 	}
 	*num_resources = dest;
 }
-
-
-
-
-
-
-
-
-
-
 
 static Boolean initialized = FALSE;
 
