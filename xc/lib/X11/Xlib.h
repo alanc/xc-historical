@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.193 91/04/02 21:46:39 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.194 91/04/02 22:04:01 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -38,6 +38,7 @@
 
 #include <X11/X.h>
 
+/* applications should not depend on these two headers being included! */
 #include <X11/Xfuncproto.h>
 #include <X11/Xosdefs.h>
 
@@ -1115,7 +1116,6 @@ typedef struct {
 #define XNLineSpace "lineSpace"
 #define XNCursor "cursor"
 
-#define XBufferOverFlow		1
 #define XLookupNone		2
 #define XLookupChars		3
 #define XLookupKeySym		4
@@ -1132,7 +1132,7 @@ typedef struct {
     XIMProc callback;
 } XIMCallback;
 
-typedef unsigned char XIMFeedback;
+typedef unsigned long XIMFeedback;
 
 #define XIMReverse	1
 #define XIMUnderline	(1<<1) 
@@ -4112,36 +4112,6 @@ extern int XwcTextPerCharExtents(
 #endif
 );
 
-extern int XmbComputeTextRedraw(
-#if NeedFunctionPrototypes
-    Display*		/* display */,
-    XFontSet		/* font_set */,
-    _Xconst char*	/* text */,
-    int			/* bytes_text */,
-    int			/* del_start */,
-    int			/* bytes_del */,
-    _Xconst char*	/* rep_text */,
-    int			/* bytes_rep */,
-    int*		/* change_start_return */,
-    int*		/* change_len_return */
-#endif
-);
-
-extern int XwcComputeTextRedraw(
-#if NeedFunctionPrototypes
-    Display*		/* display */,
-    XFontSet		/* font_set */,
-    wchar_t*		/* text */,
-    int			/* num_wchars */,
-    int			/* del_start */,
-    int			/* num_wchars_del */,
-    wchar_t*		/* rep_text */,
-    int			/* num_wchars_rep */,
-    int*		/* change_start_return */,
-    int*		/* change_len_return */
-#endif
-);
-
 extern void XmbDrawText(
 #if NeedFunctionPrototypes
     Display*		/* display */,
@@ -4233,6 +4203,24 @@ extern Status XCloseIM(
 #endif
 );
 
+extern void XGetIMValues(
+#if NeedVarargsPrototypes
+    XIM /* im */, ...
+#endif
+);
+
+extern Display *XDisplayOfIM(
+#if NeedFunctionPrototypes
+    XIM /* im */
+#endif
+);
+
+extern char *XLocaleOfIM(
+#if NeedFunctionPrototypes
+    XIM /* im*/
+#endif
+);
+
 extern XIC XCreateIC(
 #if NeedVarargsPrototypes
     XIM /* im */, ...
@@ -4278,6 +4266,12 @@ extern char *XSetICValues(
 extern char *XGetICValues(
 #if NeedVarargsPrototypes
     XIC /* ic */, ...
+#endif
+);
+
+extern XIM XIMOfIC(
+#if NeedFunctionPrototypes
+    XIC /* ic */
 #endif
 );
 
@@ -4341,24 +4335,6 @@ extern int XwcLookupString(
     int			/* wchars_buffer */,
     KeySym*		/* keysym_return */,
     Status*		/* status_return */
-#endif
-);
-
-extern Display *XDisplayOfIM(
-#if NeedFunctionPrototypes
-    XIM /* im */
-#endif
-);
-
-extern XIM XIMOfIC(
-#if NeedFunctionPrototypes
-    XIC /* ic */
-#endif
-);
-
-extern char *XLocaleOfIM(
-#if NeedFunctionPrototypes
-    XIM /* im*/
 #endif
 );
 
