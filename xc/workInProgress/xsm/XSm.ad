@@ -40,13 +40,6 @@
 *shutdownOkButton.label:	OK
 *shutdownCancelButton.label:	Cancel
 
-*nameSessionDialog.label:	Warning: You are about to assign the\n\
-session a new name.\n\n\
-Make sure you are satisfied with the\n\
-state of the current session.  This\n\
-may require a checkpoint.\n\n\
-Give the session a name...
-
 *nameSessionPopup.title:	Name Session
 *nameSessionPopup*font:		10x20
 *nameSessionOkButton.label:	OK
