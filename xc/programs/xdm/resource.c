@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.22 89/10/09 14:59:02 keith Exp $
+ * $XConsortium: resource.c,v 1.23 89/11/08 17:20:58 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -166,6 +166,8 @@ struct displayResources {
 				DEF_AUTH_NAME,
 "authFile",	"AuthFile",	DM_STRING,	boffset(authFile),
 				DEF_AUTH_FILE,
+"resetForAuth",	"ResetForAuth",	DM_BOOL,	boffset(resetForAuth),
+				"false",
 "userAuthDir",	"UserAuthDir",	DM_STRING,	boffset(userAuthDir),
 				DEF_AUTH_DIR,
 };

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.23 89/11/03 14:44:45 keith Exp $
+ * $XConsortium: dm.c,v 1.24 89/11/08 17:20:47 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -372,6 +372,14 @@ struct display	*d;
 	    Debug ("SetServerAuthorization %s, file %s, auth %s\n",
 		    d->name, d->authFile, d->authName);
 	    SetLocalAuthorization (d);
+	    /*
+	     * reset the server after writing the authorization information
+	     * to make it read the file (for compatibility with old
+	     * servers which read auth file only on reset instead of
+	     * at first connection)
+	     */
+	    if (d->serverPid != -1 && d->resetForAuth)
+		kill (d->serverPid, SIGHUP);
     	}
 	if (d->serverPid == -1 && !StartServer (d))
 	{

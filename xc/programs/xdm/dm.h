@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.18 89/10/09 14:57:22 keith Exp $
+ * $XConsortium: dm.h,v 1.20 89/11/03 14:44:43 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -125,6 +125,7 @@ struct display {
 	int		startAttempts;	/* number of attempts at starting */
 	int		terminateServer;/* restart for each session */
 	int		grabTimeout;	/* time to wait for grab */
+	int		resetForAuth;	/* server reads auth file at reset */
 	DisplayType	displayType;	/* method to handle with */
 	CARD32		sessionID;	/* ID of active session */
 	struct sockaddr	*peer;		/* sockaddr of display peer */
