@@ -518,9 +518,9 @@ data to the \*(xI is of type
 .LP
 .IN "XtConvertSelectionProc" "" "@DEF@"
 .FD 0
-typedef Boolean (*XtConvertSelectionProc)(Widget, Atom *, Atom *, Atom *,
+typedef Boolean (*XtConvertSelectionProc)(Widget, Atom*, Atom*, Atom*,
 .br
-                      XtPointer *, unsigned long *, int *);
+                      XtPointer*, unsigned long*, int*);
 .br
     Widget \fIw\fP;
 .br
@@ -653,7 +653,7 @@ notification upon losing ownership is of type
 .LP
 .IN "XtLoseSelectionProc" "" "@DEF@"
 .FD 0
-typedef void (*XtLoseSelectionProc)(Widget, Atom *);
+typedef void (*XtLoseSelectionProc)(Widget, Atom*);
 .br
     Widget \fIw\fP;
 .br
@@ -677,7 +677,7 @@ containing the data is of type
 .LP
 .IN "XtSelectionDoneProc" "" "@DEF@"
 .FD 0
-typedef void (*XtSelectionDoneProc)(Widget, Atom *, Atom *);
+typedef void (*XtSelectionDoneProc)(Widget, Atom*, Atom*);
 .br
       Widget \fIw\fP;
 .br
@@ -1704,7 +1704,7 @@ The high-level error and warning handler procedure pointers are of type
 .IN "XtErrorMsgHandler" "" "@DEF@"
 .FD 0
 typedef void (*XtErrorMsgHandler)(String, String, String, String, \
-String *, Cardinal *);
+String*, Cardinal*);
 .br
     String \fIname\fP;
 .br
@@ -2157,7 +2157,9 @@ fashion by an
 .IN "XtFilePredicate" "" "@DEF@"
 procedure.
 .FD 0
-typedef Boolean (*XtFilePredicate)(String \fIfilename\fP);
+typedef Boolean (*XtFilePredicate)(String);
+.br
+      String \fIfilename\fP;
 .FN
 .IP \fIfilename\fP 1i
 Specifies a potential filename.
