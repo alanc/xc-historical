@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.96 90/04/03 16:34:19 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.97 90/04/04 11:25:56 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -759,7 +759,7 @@ static unsigned long GetTime(tm, event)
 
 
 /* ARGSUSED */
-static void _XtTranslateEvent (w, closure, event, continue_to_dispatch)
+void _XtTranslateEvent (w, closure, event, continue_to_dispatch)
     Widget w;
     XtPointer closure;		/* XtTM */
     register    XEvent * event;
@@ -1185,7 +1185,7 @@ void _XtInstallTranslations(widget, stateTable)
 void XtUninstallTranslations(widget)
     Widget widget;
 {
-    XtRemoveEventHandler(widget,(EventMask)~0L,TRUE,_XtTranslateEvent,
+    XtRemoveEventHandler(widget, XtAllEvents, TRUE, _XtTranslateEvent,
                      (XtPointer)&widget->core.tm);
     widget->core.tm.translations = NULL;
     if (widget->core.tm.proc_table != NULL)
