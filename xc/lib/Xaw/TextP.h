@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.20 88/09/06 16:42:34 jim Exp $
+* $XConsortium: TextP.h,v 1.21 88/09/13 18:05:00 swick Exp $
 */
 
 
@@ -73,7 +73,7 @@ typedef struct {
    stream sources in TextKinds.c */
 
 typedef struct _XtTextSource {
-    int			(*Read)();
+    XtTextPosition	(*Read)();
     int			(*Replace)();
     XtTextPosition	(*GetLastPos)();
     int			(*SetLastPos)();
