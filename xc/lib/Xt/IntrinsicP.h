@@ -1,5 +1,5 @@
 /*
-* $Header: IntrinsicP.h,v 6.19 88/02/04 19:34:27 swick Locked $
+* $Header: IntrinsicP.h,v 6.20 88/02/05 15:52:19 swick Locked $
 */
 
 /*
@@ -137,16 +137,6 @@ extern GC XtGetGC(); /* widget, valueMask, values */
 
 extern void XtDestroyGC (); /* gc */
     /* GC gc; */
-
-typedef struct _XtResource {
-    String     resource_name;	/* Resource name			    */
-    String     resource_class;	/* Resource class			    */
-    String     resource_type;	/* Representation type desired		    */
-    Cardinal    resource_size;	/* Size in bytes of representation	    */
-    Cardinal    resource_offset;/* Offset from base to put resource value   */
-    String     default_type;	/* representation type of specified default */
-    caddr_t     default_addr;   /* Address of default resource		    */
-} XtResource;
 
 extern void XtReadBinaryDatabase ();
     /* FILE    *f;			*/
