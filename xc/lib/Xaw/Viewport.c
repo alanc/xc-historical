@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.42 89/05/31 10:08:15 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.43 89/07/21 14:22:46 jim Exp $";
 #endif /* lint */
 
 
@@ -701,6 +701,8 @@ static void ScrollUpDownProc(widget, closure, call_data)
     int pix = (int)call_data;
     Position x, y;
 
+    if (child == NULL) return;	/* no child to scroll. */
+
     x = child->core.x - ((widget == w->viewport.horiz_bar) ? pix : 0);
     y = child->core.y - ((widget == w->viewport.vert_bar) ? pix : 0);
     MoveChild(w, x, y);
@@ -716,6 +718,8 @@ static void ThumbProc(widget, closure, percent)
     ViewportWidget w = (ViewportWidget)closure;
     register Widget child = w->viewport.child;
     Position x, y;
+
+    if (child == NULL) return;	/* no child to scroll. */
 
     if (widget == w->viewport.horiz_bar)
 #ifdef macII				/* bug in the macII A/UX 1.0 cc */
