@@ -308,6 +308,10 @@ This option specifies the X server to contact; see \fIX(1)\fP.
 .B \-xrm \fIresourcestring\fP
 This option specifies a resource string to be used.  This is especially
 useful for setting resources that do not have separate command line options.
+.TP 8
+.B \-iconic
+This option indicates that \fIxterm\fP should ask the window manager to 
+start it as an icon rather than as the normal window.
 .SH "X DEFAULTS"
 The program understands all of the core X Toolkit resource names and
 classes as well as:
