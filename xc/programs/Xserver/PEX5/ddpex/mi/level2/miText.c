@@ -1,4 +1,4 @@
-/* $XConsortium: miText.c,v 5.2 91/03/19 20:59:38 hersh Exp $ */
+/* $XConsortium: miText.c,v 5.3 91/05/01 14:36:57 hersh Exp $ */
 
 
 /***********************************************************
@@ -26,6 +26,8 @@ SOFTWARE.
 ******************************************************************/
 #include <math.h>
 
+#include <stdio.h>
+
 #include "miLUT.h"
 #include "misc.h"
 #include "miscstruct.h"
@@ -40,8 +42,6 @@ SOFTWARE.
 #include "miClip.h"
 #include "extnsionst.h"
 #include "gcstruct.h"
-
-#include <stdio.h>
 
 #ifndef PADDING
 #define PADDING(n) ( (n)%4 ? (4 - (n)%4) : 0)

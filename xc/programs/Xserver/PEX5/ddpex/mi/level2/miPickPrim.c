@@ -1,4 +1,4 @@
-/* $XConsortium: miPickPrim.c,v 5.1 91/02/16 09:55:48 rws Exp $ */
+/* $XConsortium: miPickPrim.c,v 5.2 91/05/01 14:45:12 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -23,6 +23,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+#include <stdio.h>
+
 #include "miWks.h"
 #include "misc.h"
 #include "miscstruct.h"
@@ -34,8 +36,6 @@ SOFTWARE.
 #include "miText.h"
 #include "miClip.h"
 #include "extnsionst.h"
-
-#include <stdio.h>
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)<(b))?(a):(b))
