@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.155 94/03/08 14:27:19 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.156 94/03/08 16:57:41 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2233,7 +2233,7 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
     ApplicationShellWidget cw = (ApplicationShellWidget) current;
     unsigned long set_mask = 0L;
     unsigned long unset_mask = 0L;
-    Boolean initialize;
+    Boolean initialize = False;
 
     if (cw->application.argv != nw->application.argv) {
 	nw->application.argv = NewStringArray(nw->application.argv);
@@ -2254,18 +2254,6 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
     if (cw->application.session_id != nw->application.session_id) {
 	nw->application.session_id = XtNewString(nw->application.session_id);
 	XtFree(cw->application.session_id);
-    }
-
-    if (cw->application.join_session != nw->application.join_session) {
-	if (nw->application.join_session)
-	    JoinSession(nw);
-	else
-	    StopManagingSession(nw, nw->application.connection);
-    } else if (cw->application.connection != nw->application.connection) {
-	if (cw->application.connection)
-	    JoinSession(nw);
-	else
-	    StopManagingSession(nw, NULL);
     }
 
     if (cw->application.clone_command != nw->application.clone_command) {
@@ -2343,9 +2331,19 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	FreeStringArray(cw->application.shutdown_command);
     }
 
-    initialize = (cw->application.connection != nw->application.connection);
+    if ((!cw->application.join_session && nw->application.join_session) ||
+	(!cw->application.connection && nw->application.connection)) {
+	JoinSession(nw);
+	initialize = True;
+    }
+
     if (nw->application.connection && (set_mask || unset_mask || initialize))
 	SetSessionProperties(new, initialize, set_mask, unset_mask);
+
+    if ((cw->application.join_session && !nw->application.join_session) ||
+	(cw->application.connection && !nw->application.connection))
+	StopManagingSession(nw, nw->application.connection);
+
     return False;
 }
 
@@ -2649,7 +2647,6 @@ static void SetSessionProperties(w, initialize, set_mask, unset_mask)
     int n;
     int num_props = 0;
     XtPointer *addr;
-    String user_name;
     unsigned long mask;
     SmProp *props[XT_NUM_SM_PROPS];
     char *pnames[XT_NUM_SM_PROPS];
@@ -2658,7 +2655,11 @@ static void SetSessionProperties(w, initialize, set_mask, unset_mask)
 	return;
 
     if (initialize) {
-	/* set all non-NULL session properties and the UserID */
+	String user_name;
+	char pid[12];
+	String pidp = pid;
+
+	/* set all non-NULL session properties, the UserID and the ProcessID */
 	for (n = XtNumber(propertyTable); n; n--, p++) {
 	    addr = (XtPointer *) ((char *) w + p->offset);
 	    if (p->proc == CardPack) {
@@ -2672,6 +2673,9 @@ static void SetSessionProperties(w, initialize, set_mask, unset_mask)
 	user_name = _XtGetUserName();
 	if (user_name)
 	    props[num_props++] = ArrayPack(SmUserID, &user_name);
+	sprintf(pid, "%d", getpid());
+	props[num_props++] = ArrayPack(SmProcessID, &pidp);
+
 	if (num_props) {
 	    SmcSetProperties(w->application.connection, num_props, props);
 	    FreePacks(props, num_props);
