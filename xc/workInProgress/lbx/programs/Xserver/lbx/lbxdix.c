@@ -1,4 +1,4 @@
-/* $XConsortium: lbxdix.c,v 1.2 94/02/20 10:49:24 dpw Exp $ */
+/* $XConsortium: lbxdix.c,v 1.3 94/03/08 20:32:04 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxdix.c,v 1.17 1994/03/08 02:16:29 dct Exp $
+ * $NCDId: @(#)lbxdix.c,v 1.18 1994/03/10 00:18:48 lemke Exp $
  *
  * Author:  Dave Lemke, Network Computing Devices
  */
@@ -244,8 +244,8 @@ LbxFlushConnInfoTag()
 {
 
     if (conn_info_tag) {
-	TagDeleteTag(conn_info_tag);
 	LbxSendInvalidateTagToProxies(conn_info_tag, LbxTagTypeConnInfo);
+	TagDeleteTag(conn_info_tag);
 	conn_info_tag = 0;
     }
 }
@@ -311,8 +311,8 @@ LbxFlushModifierMapTag()
 {
 
     if (modifier_map_tag) {
-	TagDeleteTag(modifier_map_tag);
 	LbxSendInvalidateTagToProxies(modifier_map_tag, LbxTagTypeModmap);
+	TagDeleteTag(modifier_map_tag);
 	modifier_map_tag = 0;
     }
 }
@@ -404,8 +404,8 @@ LbxFlushKeyboardMapTag()
 {
 
     if (keyboard_map_tag) {
-	TagDeleteTag(keyboard_map_tag);
 	LbxSendInvalidateTagToProxies(keyboard_map_tag, LbxTagTypeKeymap);
+	TagDeleteTag(keyboard_map_tag);
 	keyboard_map_tag = 0;
     }
 }
@@ -810,6 +810,28 @@ LbxQueryTagData(client, owner_pid, tag, tagtype, infop)
     int         tagtype;
     pointer     infop;
 {
+    TagData	td;
+    PropertyPtr pProp;
+
+    /* make sure the proxy is there */
+    if (!LbxPidToProxy(owner_pid)) {	
+	/* its dead, so pretend data is already there
+	 * XXX value will be junk, but its better than gettting stuck
+	 */
+	td = TagGetTag(tag);
+	switch (td->data_type) {
+	case LbxTagTypeProperty:
+	    /* mark it as known by server */
+	    pProp = (PropertyPtr) infop;
+	    pProp->owner_pid = 0;
+	    break;
+	default:
+	    /* don't do others yet (ever?) */
+	    break;
+	}
+	AttendClient(client);
+	return;
+    }
     /* save the info and the client being stalled */
     if (LbxQueueSendTag(client, tag, tagtype, infop) == LbxSendTagSendIt) {
 	LbxSendSendTagData(owner_pid, tag, tagtype);

@@ -1,4 +1,4 @@
-/* $XConsortium: lbxmain.c,v 1.7 94/02/23 15:53:00 dpw Exp $ */
+/* $XConsortium: lbxmain.c,v 1.8 94/03/08 20:32:11 dpw Exp $ */
 /*
  * $NCDId: @(#)lbxmain.c,v 1.36 1994/03/08 02:16:33 dct Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
@@ -165,6 +165,11 @@ LbxCloseClient (client)
 	    master = proxy->lbxClients[LbxMasterClientIndex]->client;
 	if (master && !master->clientGone)
 	{
+#ifdef noneed
+/* any i/o errors should percolate up to proxy anyways, and
+ * noClientException is also used for problems fatal only to
+ * the client (access control)
+ */
 	    if (client->noClientException != Success &&
 		client->noClientException != CloseLbxClient)
 	    {
@@ -172,6 +177,7 @@ LbxCloseClient (client)
 		CloseDownClient (master);
 	    }
 	    else
+#endif
 	    {
 		closeEvent.type = LbxEventCode;
 		closeEvent.lbxType = LbxCloseEvent;
