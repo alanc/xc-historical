@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.59 91/07/23 15:32:01 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.60 91/07/23 15:36:47 rws Exp $
 
 #define OSName            SunOS 4.1.1
 XCOMM operating system:  OSName
@@ -44,10 +44,12 @@ XCOMM operating system:  OSName
 #define LibraryCcCmd cc		/* until gcc can generate -pic code */
 #endif
 
+#if !HasGcc
 #ifdef mc68000
 #define DefaultCCOptions -f68881 -pipe
 #else
 #define DefaultCCOptions -pipe
+#endif
 #endif
 
 #define LibraryCCOptions /* don't want special floating point */
