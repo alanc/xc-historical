@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcutsel.c,v 1.7 89/07/21 13:42:43 jim Exp $
+ * $XConsortium: xcutsel.c,v 1.8 89/07/24 10:30:35 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xcutsel.c,v 1.7 89/07/21 13:42:43 jim Exp $";
+static char rcsid[] = "$XConsortium: xcutsel.c,v 1.8 89/07/24 10:30:35 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -140,26 +140,18 @@ static Boolean ConvertSelection(w, selection, target,
 	return True;
     }
     if (*target == XA_LIST_LENGTH(d)) {
-	*value = XtMalloc(4);
-	if (sizeof(long) == 4)
-	    *(long*)*value = 1;
-	else {
-	    long temp = 1;
-	    bcopy( ((char*)&temp)+sizeof(long)-4, (char*)*value, 4);
-	}
+	long *temp = (long *) XtMalloc (sizeof(long));
+	*temp = 1L;
+	*value = (caddr_t) temp;
 	*type = XA_INTEGER;
 	*length = 1;
 	*format = 32;
 	return True;
     }
     if (*target == XA_LENGTH(d)) {
-	*value = XtMalloc(4);
-	if (sizeof(long) == 4)
-	    *(long*)*value = app_resources.length;
-	else {
-	    long temp = app_resources.length;
-	    bcopy( ((char*)&temp)+sizeof(long)-4, (char*)*value, 4);
-	}
+	long *temp = (long *) XtMalloc (sizeof(long));
+	*temp = app_resources.length;
+	*value = (caddr_t) temp;
 	*type = XA_INTEGER;
 	*length = 1;
 	*format = 32;
@@ -167,16 +159,16 @@ static Boolean ConvertSelection(w, selection, target,
     }
 #ifdef notdef
     if (*target == XA_CHARACTER_POSITION(d)) {
-	*value = XtMalloc(8);
-	(*(long**)value)[0] = ctx->text.s.left + 1;
-	(*(long**)value)[1] = ctx->text.s.right;
+	long *temp = (long *) XtMalloc (2 * sizeof(long));
+	temp[0] = ctx->text.s.left + 1;
+	temp[1] = ctx->text.s.right;
+	*value = (caddr_t) temp;
 	*type = XA_SPAN(d);
 	*length = 2;
 	*format = 32;
 	return True;
     }
-#endif /*notdef*/
-
+#endif /* notdef */
     if (XmuConvertStandardSelection(w, CurrentTime, selection, target, type,
 				    value, length, format))
 	return True;
