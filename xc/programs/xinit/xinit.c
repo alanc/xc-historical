@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.31 88/10/04 14:59:30 jim Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.32 88/10/05 09:27:45 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -99,6 +99,8 @@ union wait	status;
 int serverpid = -1;
 int clientpid = -1;
 extern int	errno;
+
+static shutdown();
 
 sigCatch(sig)
 	int	sig;
