@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.23 89/06/07 16:50:58 jim Exp $
+ * $XConsortium: Converters.h,v 1.1 89/07/14 17:51:54 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -84,6 +84,30 @@ extern void XmuCvtStringToOrientation();
  */
 extern void XmuCvtStringToPixmap();
 
+
+/******************************************************************************
+ * XmuCvtStringToShapeStyle; is XtTypeConverter (i.e. new style)
+ * no conversion arguments, not particularly useful to cache the results.
+ */
+
+#define XtRShapeStyle "ShapeStyle"
+#define XtERectangle "Rectangle"
+#define XtEOval "Oval"
+#define XtEEllipse "Ellipse"
+#define XtERoundedRectangle "RoundedRectangle"
+
+#define XmuShapeRectangle 1
+#define XmuShapeOval 2
+#define XmuShapeEllipse 3
+#define XmuShapeRoundedRectangle 4
+
+extern Boolean XmuCvtStringToShapeStyle();
+extern Boolean XmuReshapeWidget( /*
+    Widget w,
+    int shape_style,
+    int corner_width,
+    int corner_height
+    */ );
 
 /******************************************************************************
  * XmuCvtStringToWidget
