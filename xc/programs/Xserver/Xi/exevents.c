@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.11 90/05/18 11:09:56 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.12 90/05/18 11:34:58 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -653,14 +653,12 @@ AddExtensionClient (pWin, client, mask, mskidx)
     return Success;
     }
 
-Bool
+static Bool
 MakeInputMasks (pWin)
     WindowPtr	pWin;
     {
     struct _OtherInputMasks *imasks;
 
-    if (pWin->optional->inputMasks)
-	return TRUE;
     imasks = (struct _OtherInputMasks *) 
 	xalloc (sizeof (struct _OtherInputMasks));
     if (!imasks)
@@ -770,6 +768,9 @@ SendEvent (client, d, dest, propagate, ev, mask, count)
     else if (dest == InputFocus)
     {
 	WindowPtr inputFocus = d->focus->win;
+
+	if (inputFocus == FollowKeyboardWin)
+	    inputFocus = inputInfo.keyboard->focus->win;
 
 	if (inputFocus == NoneWin)
 	    return Success;
