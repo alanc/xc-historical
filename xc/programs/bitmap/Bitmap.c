@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.28 91/02/08 18:12:54 dave Exp $
+ * $XConsortium: Bitmap.c,v 1.29 91/02/10 17:11:59 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -58,58 +58,59 @@ Boolean DEBUG;
 #define DefaultSquareHeight  16
 #define DefaultFilename      ""
 
+#define Offset(field) XtOffsetOf(BitmapRec, bitmap.field)
+
 static XtResource resources[] = {
-#define offset(field) XtOffset(BitmapWidget, bitmap.field)
 {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-     offset(foreground_pixel), XtRString, XtDefaultForeground},
+     Offset(foreground_pixel), XtRString, XtDefaultForeground},
 {XtNhighlight, XtCHighlight, XtRPixel, sizeof(Pixel),
-     offset(highlight_pixel), XtRString, XtDefaultForeground},
+     Offset(highlight_pixel), XtRString, XtDefaultForeground},
 {XtNframe, XtCFrame, XtRPixel, sizeof(Pixel),
-     offset(frame_pixel), XtRString, XtDefaultForeground},
+     Offset(frame_pixel), XtRString, XtDefaultForeground},
 {XtNgridTolerance, XtCGridTolerance, XtRDimension, sizeof(Dimension),
-     offset(grid_tolerance), XtRImmediate, (XtPointer) DefaultGridTolerance},
+     Offset(grid_tolerance), XtRImmediate, (XtPointer) DefaultGridTolerance},
 {XtNsize, XtCSize, XtRString, sizeof(String),
-     offset(size), XtRImmediate, (XtPointer) DefaultBitmapSize},
+     Offset(size), XtRImmediate, (XtPointer) DefaultBitmapSize},
 {XtNdashed, XtCDashed, XtRBoolean, sizeof(Boolean),
-     offset(dashed), XtRImmediate, (XtPointer) DefaultDashed},
+     Offset(dashed), XtRImmediate, (XtPointer) DefaultDashed},
 {XtNgrid, XtCGrid, XtRBoolean, sizeof(Boolean),
-     offset(grid), XtRImmediate, (XtPointer) DefaultGrid},
+     Offset(grid), XtRImmediate, (XtPointer) DefaultGrid},
 {XtNstippled, XtCStippled, XtRBoolean, sizeof(Boolean),
-     offset(stippled), XtRImmediate, (XtPointer) DefaultStippled},
+     Offset(stippled), XtRImmediate, (XtPointer) DefaultStippled},
 {XtNproportional, XtCProportional, XtRBoolean, sizeof(Boolean),
-     offset(proportional), XtRImmediate, (XtPointer) DefaultProportional},
+     Offset(proportional), XtRImmediate, (XtPointer) DefaultProportional},
 {XtNaxes, XtCAxes, XtRBoolean, sizeof(Boolean),
-     offset(axes), XtRImmediate, (XtPointer) DefaultAxes},
+     Offset(axes), XtRImmediate, (XtPointer) DefaultAxes},
 {XtNsquareWidth, XtCSquareWidth, XtRDimension, sizeof(Dimension),
-     offset(squareW), XtRImmediate, (XtPointer) DefaultSquareWidth},
+     Offset(squareW), XtRImmediate, (XtPointer) DefaultSquareWidth},
 {XtNsquareHeight, XtCSquareHeight, XtRDimension, sizeof(Dimension),
-     offset(squareH), XtRImmediate, (XtPointer) DefaultSquareHeight},
+     Offset(squareH), XtRImmediate, (XtPointer) DefaultSquareHeight},
 {XtNmargin, XtCMargin, XtRDimension, sizeof(Dimension),
-     offset(margin), XtRImmediate, (XtPointer) DefaultMargin},
+     Offset(margin), XtRImmediate, (XtPointer) DefaultMargin},
 {XtNxHot, XtCXHot, XtRPosition, sizeof(Position),
-     offset(hot.x), XtRImmediate, (XtPointer) NotSet},
+     Offset(hot.x), XtRImmediate, (XtPointer) NotSet},
 {XtNyHot, XtCYHot, XtRPosition, sizeof(Position),
-     offset(hot.y), XtRImmediate, (XtPointer) NotSet},
+     Offset(hot.y), XtRImmediate, (XtPointer) NotSet},
 {XtNbutton1Function, XtCButton1Function, XtRButtonFunction, sizeof(int),
-     offset(button_function[0]), XtRImmediate, (XtPointer) Set},
+     Offset(button_function[0]), XtRImmediate, (XtPointer) Set},
 {XtNbutton2Function, XtCButton2Function, XtRButtonFunction, sizeof(int),
-     offset(button_function[1]), XtRImmediate, (XtPointer) Invert},
+     Offset(button_function[1]), XtRImmediate, (XtPointer) Invert},
 {XtNbutton3Function, XtCButton3Function, XtRButtonFunction, sizeof(int),
-     offset(button_function[2]), XtRImmediate, (XtPointer) Clear},
+     Offset(button_function[2]), XtRImmediate, (XtPointer) Clear},
 {XtNbutton4Function, XtCButton4Function, XtRButtonFunction, sizeof(int),
-     offset(button_function[3]), XtRImmediate, (XtPointer) Clear},
+     Offset(button_function[3]), XtRImmediate, (XtPointer) Clear},
 {XtNbutton5Function, XtCButton5Function, XtRButtonFunction, sizeof(int),
-     offset(button_function[4]), XtRImmediate, (XtPointer) Clear},
+     Offset(button_function[4]), XtRImmediate, (XtPointer) Clear},
 {XtNfilename, XtCFilename, XtRString, sizeof(String),
-     offset(filename), XtRImmediate, (XtPointer) DefaultFilename},
+     Offset(filename), XtRImmediate, (XtPointer) DefaultFilename},
 {XtNbasename, XtCBasename, XtRString, sizeof(String),
-     offset(basename), XtRImmediate, (XtPointer) DefaultFilename},
+     Offset(basename), XtRImmediate, (XtPointer) DefaultFilename},
 {XtNdashes, XtCDashes, XtRBitmap, sizeof(Pixmap),
-     offset(dashes), XtRImmediate, (XtPointer) XtUnspecifiedPixmap},
+     Offset(dashes), XtRImmediate, (XtPointer) XtUnspecifiedPixmap},
 {XtNstipple, XtCStipple, XtRBitmap, sizeof(Pixmap),
-     offset(stipple), XtRImmediate, (XtPointer) XtUnspecifiedPixmap},
-#undef offset
+     Offset(stipple), XtRImmediate, (XtPointer) XtUnspecifiedPixmap},
 };
+#undef Offset
 
 void BWDebug();
 void BWChangeNotify();
