@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.15 94/07/18 15:05:52 mor Exp $ */
+/* $XConsortium: saveutil.c,v 1.16 94/07/25 13:32:09 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -71,6 +71,7 @@ char **sm_id;
     PendingValue	*val;
     FILE		*f;
     int			state;
+    int			version_number;
 
     PendingList = ListInit();
     if(!PendingList) nomem();
@@ -87,6 +88,18 @@ char **sm_id;
 
     buf = NULL;
     buflen = 0;
+
+    /* Read version # */
+    getline(&buf, &buflen, f);
+    if(p = strchr(buf, '\n')) *p = '\0';
+    version_number = atoi (buf);
+    if (version_number != SAVEFILE_VERSION)
+    {
+	if (verbose)
+	    printf("Incompatible version of session save file.\n");
+	*sm_id = NULL;
+	return 0;
+    }
 
     /* Read SM's id */
     getline(&buf, &buflen, f);
@@ -199,6 +212,7 @@ char *sm_id;
     {
 	perror("open session save file for write");
     } else {
+	fprintf(f, "%d\n", SAVEFILE_VERSION);
 	fprintf(f, "%s\n", sm_id);
 	for(client = ClientList; client; client = client->next)
 	{
@@ -241,6 +255,7 @@ char *session_name;
     int		state;
     int		foundDiscard;
     char	filename[256];
+    int		version_number;
 
     dir = (char *) getenv ("SM_SAVE_DIR");
     if (!dir)
@@ -259,6 +274,17 @@ char *session_name;
 
     buf = NULL;
     buflen = 0;
+
+    /* Read version # */
+    getline(&buf, &buflen, f);
+    if(p = strchr(buf, '\n')) *p = '\0';
+    version_number = atoi (buf);
+    if (version_number != SAVEFILE_VERSION)
+    {
+	if (verbose)
+	    printf("Can't delete session save file - incompatible version.\n");
+	return;
+    }
 
     /* Read SM's id */
     getline(&buf, &buflen, f);
