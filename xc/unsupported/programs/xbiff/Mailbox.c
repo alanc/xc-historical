@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.36 89/10/10 15:18:05 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.37 90/04/11 17:02:57 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -354,8 +354,7 @@ static void Realize (gw, valuemaskp, attr)
     attr->bit_gravity = ForgetGravity;
     attr->cursor = XCreateFontCursor (dpy, XC_top_left_arrow);
 
-    XtCreateWindow (gw, InputOutput, (Visual *) CopyFromParent,
-		    *valuemaskp, attr);
+    (*XtSuperclass(gw)->core_class.realize) (gw, valuemaskp, attr);
 
     /*
      * build up the pixmaps that we'll put into the image
