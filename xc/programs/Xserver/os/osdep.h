@@ -21,12 +21,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.27 91/07/23 19:04:22 rws Exp $ */
+/* $XConsortium: osdep.h,v 1.28 92/08/20 17:38:13 rws Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
 #define BUFWATERMARK 8192
-#define MAXBUFSIZE (1 << 18)
+#define MAXBUFSIZE (1 << 22)
 
 #ifndef sgi	    /* SGI defines OPEN_MAX in a useless way */
 #ifndef X_NOT_POSIX
