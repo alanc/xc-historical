@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.112 89/03/11 16:48:39 rws Exp $ */
+/* $XConsortium: gc.c,v 1.113 89/03/12 14:08:00 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -558,6 +558,8 @@ CopyGC(pgcSrc, pgcDst, mask)
     int i;
     int 		error = 0;
 
+    if (pgcSrc == pgcDst)
+	return Success;
     pgcDst->serialNumber |= GC_CHANGE_SERIAL_BIT;
     pgcDst->stateChanges |= mask;
     maskQ = mask;
@@ -1021,7 +1023,7 @@ SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
     }
 
     prectsNew = (xRectangle *) xalloc(size);
-    if (!prects)
+    if (!prects && size)
 	return BadAlloc;
 
     pGC->serialNumber |= GC_CHANGE_SERIAL_BIT;
@@ -1032,7 +1034,8 @@ SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
     pGC->stateChanges |= GCClipYOrigin;
 
     size = nrects * sizeof(xRectangle);
-    bcopy((char *)prects, (char *)prectsNew, size);
+    if (size)
+	bcopy((char *)prects, (char *)prectsNew, size);
     (*pGC->ChangeClip)(pGC, newct, prectsNew, nrects);
     pQ = pGC->pNextGCInterest;
     pQInit = (GCInterestPtr) &pGC->pNextGCInterest;
