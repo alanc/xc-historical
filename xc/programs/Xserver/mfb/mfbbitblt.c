@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 1.58 89/03/18 12:29:33 rws Exp $ */
+/* $XConsortium: mfbbitblt.c,v 1.59 89/03/23 18:55:54 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -884,11 +884,11 @@ DDXPointPtr pptSrc;
 		            {
 				getunalignedword (psrc, xoffSrc, tmpSrc)
 #ifndef PURDUE
-				*pdst++ = DoRop (alu, tmpSrc, *pdst);
+				*pdst = DoRop (alu, tmpSrc, *pdst);
 #else
 				DoRop (*pdst, alu, tmpSrc, *pdst);
-				pdst++;
 #endif
+				pdst++;
 				psrc++;
 			    }
 			}
