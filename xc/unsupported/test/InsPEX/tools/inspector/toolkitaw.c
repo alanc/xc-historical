@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: toolkitaw.c,v 5.1 91/02/16 09:59:44 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -209,6 +209,7 @@ XID
 tk_get_xid(window)
     TK_Main_Window window;
 {
+    XtRealizeWidget(topLevel);
     return (XID) XtWindow(window);
 }
 
@@ -388,7 +389,7 @@ tk_create_list(control_win,row,col,notify_proc)
     }
 
     /* create the viewport */
-    viewport = XtCreateWidget("viewport",
+    viewport = XtCreateManagedWidget("viewport",
 			      viewportWidgetClass,
 			      control_win,
 			      args,
@@ -398,9 +399,10 @@ tk_create_list(control_win,row,col,notify_proc)
     i=0;
     XtSetArg(args[i], XtNverticalList, (XtArgVal) TRUE); i++;
     XtSetArg(args[i], XtNheight, (XtArgVal) 100); i++;
+    XtSetArg(args[i], XtNwidth, 100); i++;
     XtSetArg(args[i], XtNcallback, (XtArgVal) notify_proc); i++;
 
-    list = XtCreateWidget("list",
+    list = XtCreateManagedWidget("list",
 			    listWidgetClass,
 			    viewport,
 			    args,
@@ -531,7 +533,6 @@ void
 tk_main_loop(main_win)
     TK_Main_Window main_win;
 {
-    XtRealizeWidget(topLevel);
     XtMainLoop();
 }
 
