@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.13 92/08/10 17:50:38 eswu Exp $
+XCOMM $XConsortium: Imakefile,v 1.14 93/09/04 16:44:23 rws Exp $
 XCOMM
 XCOMM Make file for font handling routines
 XCOMM
@@ -6,17 +6,20 @@ XCOMM
 
         INCLUDES = -I$(FONTINCSRC) -I../include
          HEADERS = 
-            SRCS = fsconvert.c fserve.c fsio.c
-            OBJS = fsconvert.o fserve.o fsio.o
+            SRCS = fsconvert.c fserve.c fsio.c transport.c
+            OBJS = fsconvert.o fserve.o fsio.o transport.o
          DEFINES = $(SIGNAL_DEFINES)
-    CONN_DEFINES = ConnectionFlags
+    CONN_DEFINES = ConnectionFlags -DFONT
 #if HasBSD44Sockets
     SOCK_DEFINES = -DBSD44SOCKETS
 #endif
+  DEPEND_DEFINES = $(TRANS_INCLUDES) $(CONN_DEFINES)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 SpecialCObjectRule(fsio,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))
+SpecialCObjectRule(transport,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES) $(SOCK_DEFINES))
+LinkSourceFile(transport.c,$(TRANSCOMMSRC))
 
 NormalLintTarget($(SRCS))
 
