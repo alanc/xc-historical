@@ -1,5 +1,5 @@
 /*
- * $XConsortium: handler.c,v 1.19 91/04/04 21:35:25 gildea Exp $
+ * $XConsortium: handler.c,v 1.20 91/05/22 16:27:57 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -341,9 +341,9 @@ XtPointer any_info_ptr, state_ptr;
 {
     AnyInfo * any_info = (AnyInfo *) any_info_ptr;
     Boolean state = (Boolean) state_ptr;
+    Arg args[1];
 
     if (state) {
-	Arg args[1];
 
 	if (any_info->left_count == 0) {
 	    XtSetSensitive(any_info->left_dot, FALSE);
@@ -374,11 +374,17 @@ XtPointer any_info_ptr, state_ptr;
 	if (any_info->left_count == 0) {
 	    XtSetSensitive(any_info->left_dot, TRUE);
 	    XtSetSensitive(any_info->left_star, TRUE);
+
+	    XtSetArg(args[0], XtNstate, TRUE);
+	    XtSetValues(any_info->left_dot, args, ONE);
 	}
 
 	if ((any_info->right_count == NULL)||(*any_info->right_count == 0)) {
 	    XtSetSensitive(any_info->right_dot, TRUE);
 	    XtSetSensitive(any_info->right_star, TRUE);
+
+	    XtSetArg(args[0], XtNstate, TRUE);
+	    XtSetValues(any_info->right_dot, args, ONE);
 	}
     }
     SetResourceString(NULL, (XtPointer) any_info->node, NULL);
@@ -436,7 +442,7 @@ XtPointer node_ptr, call_data;
 }
 
 /*	Function Name: SetResourceString
- *	Description: Sets the resource label to corrospond to the currently
+ *	Description: Sets the resource label to correspond to the currently
  *                   chosen string.
  *	Arguments: w - The widget that invoked this callback, or NULL.
  *                 node_ptr - pointer to widget node contating this res box.
