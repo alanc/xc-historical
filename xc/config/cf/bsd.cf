@@ -1,10 +1,12 @@
-XCOMM platform:  $XConsortium: bsd.cf,v 1.11 91/03/27 09:12:58 rws Exp $
+XCOMM platform:  $XConsortium: bsd.cf,v 1.12 91/06/06 14:13:08 rws Exp $
 
 #define OSName            4.3bsd
 XCOMM operating system:  OSName
 #define OSMajorVersion    4
 #define OSMinorVersion    3
 
+#define BootstrapCFlags -DNOSTDHDRS
+#define StandardDefines -DNOSTDHDRS
 #define HasVoidSignalReturn NO
 #define HasBsearch NO
 
@@ -12,9 +14,10 @@ XCOMM operating system:  OSName
 
 #ifdef VaxArchitecture
 #define XqvssServer YES
-#define XqdssServer NO
-#define ServerOSDefines -DNOSTDHDRS -DX11R4
+#define BuildPexExt NO
 #define HasSaberC YES
+#else
+#define BuildServer NO
 #endif
 
 #ifdef VaxArchitecture
