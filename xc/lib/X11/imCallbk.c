@@ -1,4 +1,4 @@
-/* $XConsortium: imCallbk.c,v 1.10 95/05/12 15:44:03 kaleb Exp kaleb $ */
+/* $XConsortium: imCallbk.c,v 1.11 95/05/22 19:18:11 kaleb Exp kaleb $ */
 /***********************************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1994 by FUJITSU LIMITED
@@ -376,7 +376,7 @@ _XimStrConversionCallback(im, ic, proto, len)
 	int p = XIM_HEADER_SIZE;
 	cbrec.position = (XIMStringConversionPosition)
 	    *(CARD32*)&proto[p]; p += sz_CARD32;
-	cbrec.type = (XIMStringConversionType)
+	cbrec.direction = (XIMCaretDirection)
 	    *(CARD32*)&proto[p]; p += sz_CARD32;
 	cbrec.operation = (XIMStringConversionOperation)
 	    *(CARD32*)&proto[p]; p += sz_CARD32;
