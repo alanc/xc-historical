@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.33 94/12/12 22:43:49 mor Exp mor $ */
+/* $XConsortium: xsm.h,v 1.34 94/12/13 20:34:51 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -25,34 +25,19 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 ******************************************************************************/
 
-#include <X11/StringDefs.h>
-#include <X11/Intrinsic.h>
-#include <X11/Xaw/Box.h>
-#include <X11/Xaw/Command.h>
-#include <X11/Xaw/Dialog.h>
-#include <X11/Xaw/Toggle.h>
-#include <X11/Xaw/List.h>
-#include <X11/Xaw/SimpleMenu.h>
-#include <X11/Xaw/MenuButton.h>
-#include <X11/Xaw/SmeBSB.h>
-#include <X11/Xaw/AsciiText.h>
+#include <X11/Xos.h>
 #include <X11/Xfuncs.h>
-#ifndef _POSIX_SOURCE
-#define _POSIX_SOURCE
-#include <stdio.h>
-#undef _POSIX_SOURCE
-#else
-#include <stdio.h>
-#endif
-#include <X11/Shell.h>
-#include <X11/ICE/ICEutil.h>
-#include <X11/SM/SMlib.h>
-#include <ctype.h>
-#ifndef X_NOT_STDC_ENV
-#include <stdlib.h>
-#endif
-#include <setjmp.h>
+
+#ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
 #include <limits.h>
+#else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif /* X_NOT_POSIX */
+#ifndef PATH_MAX
 #include <sys/param.h>
 #ifndef PATH_MAX
 #ifdef MAXPATHLEN
@@ -61,13 +46,25 @@ in this Software without prior written authorization from the X Consortium.
 #define PATH_MAX 1024
 #endif
 #endif
-#include <X11/Xos.h>
-#include <X11/Xatom.h>
+#endif /* PATH_MAX */
 
-/* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
-#if defined(ISC) && __STDC__
-extern FILE *fdopen(int, char const *);
+#ifndef _POSIX_SOURCE
+#define _POSIX_SOURCE
+#include <stdio.h>
+#undef _POSIX_SOURCE
+#else
+#include <stdio.h>
 #endif
+
+#include <ctype.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
+
+#include <X11/StringDefs.h>
+#include <X11/Intrinsic.h>
+
+#include <X11/SM/SMlib.h>
 
 #include "list.h"
 
@@ -180,4 +177,12 @@ extern void fprintfhex ();
 extern char *Strstr();
 #endif
 
-extern strbw ();
+/* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
+#if defined(ISC) && __STDC__
+extern FILE *fdopen(int, char const *);
+#endif
+
+#if defined(sun) && defined(SVR4)
+extern int System();
+#define system(s) System(s)
+#endif
