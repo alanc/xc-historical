@@ -65,12 +65,6 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
     int			w;
     unsigned int	*pdstStart;
     unsigned int	*pdstNext;
-#ifdef NOTDEF
-    DDXPointPtr	  	pptInit;
-    int	    	  	*pwidthInit;
-#endif
-    int	    	  	*pwidthPadded;
-    int	    	  	i;
 
     switch (pDrawable->depth) {
 	case 1:
@@ -81,13 +75,6 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 	    FatalError("cfbGetSpans: invalid depth\n");
     }
     pptLast = ppt + nspans;
-#ifdef NOTDEF
-    pptInit = ppt;
-    pwidthInit = pwidth;
-#endif
-    pwidthPadded = (int *)ALLOCATE_LOCAL(nspans * sizeof(int));
-    if (!pwidthPadded)
-	return (unsigned int *)NULL;
 
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
@@ -104,12 +91,10 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
     pdstStart = (unsigned int *)xalloc(nspans * PixmapBytePad(wMax, PSZ));
     if (!pdstStart)
     {
-	DEALLOCATE_LOCAL(pwidthPadded);
 	return (unsigned int*)NULL;
     }
     pdst = pdstStart;
 
-    i = 0;
     while(ppt < pptLast)
     {
 	xEnd = min(ppt->x + *pwidth, widthSrc << (PWSH-2) );
@@ -118,8 +103,6 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 	srcBit = ppt->x & PIM;
 	/* This shouldn't be needed */
 	pdstNext = pdst + PixmapWidthInPadUnits(w, PSZ);
-	pwidthPadded[i] = PixmapWidthInPadUnits(w, PSZ) * PPW;
-	i++;
 
 	if (srcBit + w <= PPW) 
 	{ 
@@ -173,35 +156,5 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
         ppt++;
 	pwidth++;
     }
-#ifdef NOTDEF
-    /*
-     * If the drawable is a window with some form of backing-store, consult
-     * the backing-store module to fetch any invalid spans from the window's
-     * backing-store. The pixmap is made into one long scanline and the
-     * backing-store module takes care of the rest. We do, however, have
-     * to tell the backing-store module exactly how wide each span is, padded
-     * to the correct boundary, so we allocate pwidthPadded and set those
-     * widths into it.
-     */
-    if ((pDrawable->type == DRAWABLE_WINDOW) &&
-	(((WindowPtr)pDrawable)->backingStore != NotUseful))
-    {
-	PixmapRec pixmap;
-
-	pixmap.drawable.type = DRAWABLE_PIXMAP;
-	pixmap.drawable.pScreen = pDrawable->pScreen;
-	pixmap.drawable.depth = pDrawable->depth;
-	pixmap.drawable.serialNumber = NEXT_SERIAL_NUMBER;
-	pixmap.devKind = PixmapBytePad(wMax, PSZ) * nspans;
-	pixmap.width = (pixmap.devKind >> 2) * PPW;
-	pixmap.height = 1;
-	pixmap.refcnt = 1;
-	pixmap.devPrivate = (pointer)pdstStart;
-	miBSGetSpans(pDrawable, &pixmap, wMax, pptInit, pwidthInit,
-		     pwidthPadded, nspans);
-    }
-#endif
-    DEALLOCATE_LOCAL(pwidthPadded);
     return(pdstStart);
 }
-

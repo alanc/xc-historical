@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgetsp.c,v 5.0 89/06/09 15:06:36 keith Exp $ */
+/* $XConsortium: mfbgetsp.c,v 5.1 89/07/09 16:00:10 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 
@@ -64,25 +64,8 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
     int	 		startmask, endmask, nlMiddle, nl, srcBit;
     int			w;
     unsigned int	*pdstStart;
-#ifdef NOTDEF
-    DDXPointPtr	  	pptInit;
-    int	    	  	*pwidthInit;
-    int	    	  	*pwidthPadded;
-    int	    	  	i;
-#endif
   
     pptLast = ppt + nspans;
-#ifdef NOTDEF
-    pptInit = ppt;
-    pwidthInit = pwidth;
-
-    /*
-     * XXX: Should probably only do this if going to use backing-store
-     */
-    pwidthPadded = (int *)ALLOCATE_LOCAL(nspans * sizeof(int));
-    if (!pwidthPadded)
-	return (unsigned int *)NULL;
-#endif
 
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
@@ -99,16 +82,10 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
     pdstStart = (unsigned int *)xalloc(nspans * PixmapBytePad(wMax, 1));
     if (!pdstStart)
     {
-#ifdef NOTDEF
-	DEALLOCATE_LOCAL(pwidthPadded);
-#endif
 	return (unsigned int*)NULL;
     }
     pdst = pdstStart;
 
-#ifdef NOTDEF
-    i = 0;
-#endif
     while(ppt < pptLast)
     {
 	xEnd = min(ppt->x + *pwidth, widthSrc << 3);
@@ -116,11 +93,6 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 	psrc = psrcBase + (ppt->y * (widthSrc >> 2)) + (ppt->x >> 5); 
 	w = xEnd - ppt->x;
 	srcBit = ppt->x & 0x1f;
-
-#ifdef NOTDEF
-	pwidthPadded[i] = PixmapBytePad(w, 1) << 3;
-	i++;
-#endif
 
 	if (srcBit + w <= 32) 
 	{ 
@@ -183,36 +155,6 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
         ppt++;
     }
 
-#ifdef NOTDEF
-    /*
-     * If the drawable is a window with some form of backing-store, consult
-     * the backing-store module to fetch any invalid spans from the window's
-     * backing-store. The pixmap is made into one long scanline and the
-     * backing-store module takes care of the rest. 
-     */
-    if ((pDrawable->type == DRAWABLE_WINDOW) &&
-	(((WindowPtr)pDrawable)->backingStore != NotUseful))
-    {
-	PixmapRec pixmap;
-
-	pixmap.drawable.type = DRAWABLE_PIXMAP;
-	pixmap.drawable.pScreen = pDrawable->pScreen;
-	pixmap.drawable.depth = 1;
-	pixmap.drawable.serialNumber = NEXT_SERIAL_NUMBER;
-	pixmap.devKind = PixmapBytePad(wMax, 1) * nspans;
-	pixmap.drawable.x = 0;
-	pixmap.drawable.y = 0;
-	pixmap.drawable.width = pixmap.devKind << 3;
-	pixmap.drawable.height = 1;
-	pixmap.refcnt = 1;
-	pixmap.devPrivate.ptr = (pointer)pdstStart;
-	miBSGetSpans(pDrawable, &pixmap, wMax, pptInit, pwidthInit,
-		     pwidthPadded, nspans);
-    }
-
-    DEALLOCATE_LOCAL(pwidthPadded);
-#endif
-	
     return(pdstStart);
 }
 
