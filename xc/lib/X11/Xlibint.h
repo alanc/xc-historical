@@ -1,6 +1,6 @@
-#include "copyright.h"
+#include <X/copyright.h>
 
-/* $Header: Xlibint.h,v 11.41 87/10/19 20:17:51 newman Exp $ */
+/* $Header: Xlibint.h,v 11.42 88/01/30 10:12:02 swick Locked $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
