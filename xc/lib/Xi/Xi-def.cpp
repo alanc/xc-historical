@@ -28,7 +28,6 @@ EXPORTS
  XGrabDevice
  XGrabDeviceButton
  XGrabDeviceKey
- XInputEventToWire
  XListInputDevices
  XOpenDevice
  XQueryDeviceState
