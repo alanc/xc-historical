@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontdir.c,v 1.5 91/07/16 20:13:27 keith Exp $
+ * $XConsortium: fontdir.c,v 1.6 91/12/11 19:46:47 eswu Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -425,6 +425,12 @@ FontFileAddFontFile (dir, fontName, fileName)
 					     &vals, FONT_XLFD_REPLACE_NONE)) ||
 	  vals.pixel != 0)
     {
+        /* If the fontname says it is nonScalable, make sure that the
+         * renderer supports OpenBitmap and GetInfoBitmap.
+         */
+        if (!renderer->OpenBitmap || !renderer->GetInfoBitmap)
+	    return FALSE;
+
 	entry.type = FONT_ENTRY_BITMAP;
 	entry.u.bitmap.renderer = renderer;
 	entry.u.bitmap.pFont = NullFont;
@@ -442,6 +448,12 @@ FontFileAddFontFile (dir, fontName, fileName)
      */
     if (isscale)
     {
+        /* If the fontname says it is scalable, make sure that the
+         * renderer supports OpenScalable and GetInfoScalable.
+         */
+        if (!renderer->OpenScalable || !renderer->GetInfoScalable)
+	    return FALSE;
+
 	if (vals.pixel != 0)
 	{
 	    zeroVals.pixel = 0;
