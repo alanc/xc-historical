@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.18 89/07/07 13:26:26 jim Exp $
+ * $XConsortium: handle.c,v 1.19 89/12/10 16:39:46 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -322,7 +322,6 @@ static int do_keycode (line, len)
     char *line;
     int len;
 {
-    int n;
     int dummy;
     char *fmt = "%d";
     KeyCode keycode;
@@ -366,8 +365,6 @@ static int do_keysym (line, len)
     int n;
     KeyCode keycode;
     KeySym keysym;
-    KeySym *kslist;
-    struct op_keycode *opk;
     char *tmpname;
 
     if (len < 3 || !line || *line == '\0') {  /* a=b minimum */
