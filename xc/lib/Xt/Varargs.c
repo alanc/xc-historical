@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Varargs.c,v 1.16 90/03/13 18:24:15 kit Exp $";
+    "$XConsortium: Varargs.c,v 1.17 90/03/19 13:00:58 swick Exp $";
 #endif
 /*
 
@@ -25,6 +25,7 @@ without express or implied warranty.
 #include "IntrinsicI.h"
 #include "VarargsI.h"
 
+static String XtNxtConvertVarToArgList = "xtConvertVarToArgList";
 
 /*
  *    Given a nested list, _XtCountNestedList() returns counts of the
@@ -196,7 +197,7 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources)
 
     if (widget == NULL) {
         XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-            "nullWidget", "xtConvertVarTArgList", "XtToolkitError",
+            "nullWidget", XtNxtConvertVarToArgList, XtCXtToolkitError,
 	    "XtVaTypedArg conversion needs non-NULL widget handle",
             (String *)NULL, (Cardinal *)NULL);
         return(0);
@@ -214,7 +215,7 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources)
 
     if (to_type == NULL) {
         XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-            "unknownType", "xtConvertVarTArgList", "XtToolkitError",
+            "unknownType", XtNxtConvertVarToArgList, XtCXtToolkitError,
             "Unable to find type of resource for conversion",
             (String *)NULL, (Cardinal *)NULL);
         return(0);
@@ -233,7 +234,7 @@ _XtTypedArgToArg(widget, typed_arg, arg_return, resources, num_resources)
  
     if (to_val.addr == NULL) {
         XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-            "conversionFailed", "xtConvertVarToArgList", "XtToolkitError",
+            "conversionFailed", XtNxtConvertVarToArgList, XtCXtToolkitError,
             "Type conversion failed", (String *)NULL, (Cardinal *)NULL);
         return(0);
     }

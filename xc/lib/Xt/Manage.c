@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Manage.c,v 1.20 89/09/14 10:34:44 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Manage.c,v 1.21 90/03/19 12:55:46 swick Exp $";
 /* $oHeader: Manage.c,v 1.3 88/09/01 11:41:51 asente Exp $ */
 #endif /* lint */
 
@@ -29,6 +29,10 @@ SOFTWARE.
 
 #include "IntrinsicI.h"
 
+static String XtNinvalidChild = "invalidChild";
+static String XtNxtUnmanageChildren = "xtUnmanageChildren";
+static String XtNxtManageChildren = "xtManageChildren";
+
 void XtUnmanageChildren(children, num_children)
     WidgetList children;
     Cardinal num_children;
@@ -41,7 +45,7 @@ void XtUnmanageChildren(children, num_children)
 
     if (num_children == 0) return;
     if (children[0] == NULL) {
-	XtWarningMsg("invalidChild","xtUnmanageChildren","XtToolkitError",
+	XtWarningMsg(XtNinvalidChild,XtNxtUnmanageChildren,XtCXtToolkitError,
                   "Null child passed to XtUnmanageChildren",
 		  (String *)NULL, (Cardinal *)NULL);
 	return;
@@ -59,14 +63,14 @@ void XtUnmanageChildren(children, num_children)
     for (i = 0; i < num_children; i++) {
 	child = children[i];
 	if (child == NULL) {
-        XtWarningMsg("invalidChild","xtUnmanageChildren","XtToolkitError",
+        XtWarningMsg(XtNinvalidChild,XtNxtUnmanageChildren,XtCXtToolkitError,
                   "Null child passed to XtUnmanageChildren",
 		  (String *)NULL, (Cardinal *)NULL);
 	    return;
 	}
         if ((CompositeWidget) child->core.parent != parent) {
 	   XtAppWarningMsg(XtWidgetToApplicationContext((Widget)parent),
-		   "ambigiousParent","xtUnmanageChildren","XtToolkitError",
+		   "ambiguousParent",XtNxtUnmanageChildren,XtCXtToolkitError,
            "Not all children have same parent in XtUnmanageChildren",
              (String *)NULL, (Cardinal *)NULL);
 	} else
@@ -120,7 +124,7 @@ void XtManageChildren(children, num_children)
 
     if (num_children == 0) return;
     if (children[0] == NULL) {
-	XtWarningMsg("invalidChild","xtManageChildren","XtToolkitError",
+	XtWarningMsg(XtNinvalidChild,XtNxtManageChildren,XtCXtToolkitError,
          "null child passed to XtManageChildren",
 	 (String *)NULL, (Cardinal *)NULL);
 	return;
@@ -133,7 +137,7 @@ void XtManageChildren(children, num_children)
 
     } else {
 	XtAppErrorMsg(XtWidgetToApplicationContext((Widget)parent),
-		"invalidParent","xtManageChildren", "XtToolkitError",
+		"invalidParent",XtNxtManageChildren, XtCXtToolkitError,
 	    "Attempt to manage a child when parent is not Composite",
 	    (String *) NULL, (Cardinal *) NULL);
     }
@@ -149,7 +153,7 @@ void XtManageChildren(children, num_children)
     for (i = 0; i < num_children; i++) {
 	child = children[i];
 	if (child == NULL) {
-	    XtWarningMsg("invalidChild","xtManageChildren","XtToolkitError",
+	    XtWarningMsg(XtNinvalidChild,XtNxtManageChildren,XtCXtToolkitError,
 		"null child passed to XtManageChildren",
 		(String *)NULL, (Cardinal *)NULL);
 	    if (unique_children != cache) XtFree((char *) unique_children);
@@ -162,7 +166,7 @@ void XtManageChildren(children, num_children)
 	    params[0] = XtName(child);
 	    params[1] = child->core.widget_class->core_class.class_name;
 	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)parent),
-			    "notRectObj","xtManageChildren","XtToolkitError",
+			    "notRectObj",XtNxtManageChildren,XtCXtToolkitError,
 			    "child \"%s\", class %s is not a RectObj",
 			    params, &num_params);
 	    continue;
@@ -170,7 +174,7 @@ void XtManageChildren(children, num_children)
 #endif /*DEBUG*/
         if ((CompositeWidget) child->core.parent != parent) {
 	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)parent),
-		    "ambigiousParent","xtManageChildren","XtToolkitError",
+		    "ambiguousParent",XtNxtManageChildren,XtCXtToolkitError,
 		"Not all children have same parent in XtManageChildren",
 		(String *)NULL, (Cardinal *)NULL);
 	} else if (! child->core.managed && !child->core.being_destroyed) {
