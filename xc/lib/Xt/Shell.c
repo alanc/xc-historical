@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.63 89/09/21 13:21:32 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.64 89/09/21 15:52:10 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -800,11 +800,14 @@ static void TopLevelInitialize(req, new)
 {
 	TopLevelShellWidget w = (TopLevelShellWidget) new;
 
-	if(w->topLevel.icon_name == NULL) {
+	if (w->topLevel.icon_name == NULL) {
 	    w->topLevel.icon_name = XtNewString(w->core.name);
 	} else {
 	    w->topLevel.icon_name = XtNewString(w->topLevel.icon_name);
 	}
+
+	if (w->topLevel.iconic)
+	    w->wm.wm_hints.initial_state = IconicState;
 }
 
 /* ARGSUSED */
@@ -1766,36 +1769,47 @@ static Boolean TransientSetValues(oldW, refW, newW, args, num_args)
 
 
 /* ARGSUSED */
-static Boolean TopLevelSetValues(old, ref, new, args, num_args)
-	Widget old, ref, new;
-	ArgList args;		/* unused */
-	Cardinal *num_args;	/* unused */
+static Boolean TopLevelSetValues(oldW, refW, newW, args, num_args)
+     Widget oldW, refW, newW;
+     ArgList args;		/* unused */
+     Cardinal *num_args;	/* unused */
 {
-	TopLevelShellWidget otlshell = (TopLevelShellWidget) old;
-	TopLevelShellWidget ntlshell = (TopLevelShellWidget) new;
-	Boolean name_changed;
+    TopLevelShellWidget old = (TopLevelShellWidget)oldW;
+    TopLevelShellWidget new = (TopLevelShellWidget)newW;
+    Boolean name_changed;
 
- 	if (otlshell->topLevel.icon_name != ntlshell->topLevel.icon_name) {
-	    XtFree(otlshell->topLevel.icon_name);
-	    ntlshell->topLevel.icon_name = XtNewString(
-		ntlshell->topLevel.icon_name);
-	    name_changed = True;
-	} else
-	    name_changed = False;
+    if (old->topLevel.icon_name != new->topLevel.icon_name) {
+	XtFree((XtPointer)old->topLevel.icon_name);
+	new->topLevel.icon_name = XtNewString(
+	    new->topLevel.icon_name);
+	name_changed = True;
+    } else
+	name_changed = False;
 
-	if (XtIsRealized(new) && !ntlshell->shell.override_redirect
-	    && (name_changed ||
-		otlshell->topLevel.icon_name_encoding
-		   != ntlshell->topLevel.icon_name_encoding)) {
+    if (XtIsRealized(newW) && !new->shell.override_redirect) {
+	if (new->topLevel.iconic != old->topLevel.iconic) {
+	    if (new->topLevel.iconic)
+		XIconifyWindow(XtDisplay(newW),
+			       XtWindow(newW),
+			       XScreenNumberOfScreen(XtScreen(newW))
+			       );
+	    else
+		XtPopup(newW, XtGrabNone);
+	}
+
+	if (name_changed ||
+	    (old->topLevel.icon_name_encoding
+	     != new->topLevel.icon_name_encoding)) {
 
 	    XTextProperty icon_name;
-	    icon_name.value = (unsigned char *)ntlshell->topLevel.icon_name;
-	    icon_name.encoding = ntlshell->topLevel.icon_name_encoding;
+	    icon_name.value = (unsigned char *)new->topLevel.icon_name;
+	    icon_name.encoding = new->topLevel.icon_name_encoding;
 	    icon_name.format = 8;
 	    icon_name.nitems = strlen(icon_name.value) + 1;
-	    XSetWMIconName(XtDisplay(new), XtWindow(new), &icon_name);
+	    XSetWMIconName(XtDisplay(newW), XtWindow(newW), &icon_name);
 	}
-	return FALSE;
+    }
+    return False;
 }
 
 
