@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.70 89/10/05 10:59:29 swick Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.71 89/10/05 12:19:54 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif /* lint */
 
@@ -633,13 +633,8 @@ static void _RefreshMapping(event)
 {
     XtPerDisplay pd = _XtGetPerDisplay(event->xmapping.display);
     if (pd != NULL) {
-	/* %%% bad abstraction boundary here; should be a callback */
-	XtFree( (XtPointer)pd->keysyms );	pd->keysyms = NULL;
-	XtFree( (XtPointer)pd->modKeysyms);	pd->modKeysyms = NULL;
-	XtFree( (XtPointer)pd->modsToKeysyms);	pd->modsToKeysyms = NULL;
-	_XtBuildKeysymTable( event->xmapping.display, pd );
-	pd->modsToKeysyms =
-	    _XtBuildModsToKeysymTable( event->xmapping.display, pd );
+	if (pd->keysyms != NULL)
+	    _XtBuildKeysymTables( event->xmapping.display, pd );
 	if (pd->mapping_callbacks != NULL)
 	    _XtCallCallbacks( &pd->mapping_callbacks, (XtPointer)event );
     }
