@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpixmap.c,v 5.3 89/07/16 21:05:01 rws Exp $ */
+/* $XConsortium: mfbpixmap.c,v 5.4 89/07/27 09:38:11 rws Exp $ */
 
 /* pixmap management
    written by drewry, september 1986
@@ -115,10 +115,8 @@ mfbCopyPixmap(pSrc)
    for each scanline of pattern
       zero out area to be filled with replicate
       left shift and or in original as many times as needed
-
-   returns TRUE iff pixmap was, or could be padded to be, 32 bits wide.
 */
-Bool
+void
 mfbPadPixmap(pPixmap)
     PixmapPtr pPixmap;
 {
@@ -130,14 +128,12 @@ mfbPadPixmap(pPixmap)
     register int i;
     int rep;			/* repeat count for pattern */
 
-    if (width == 32)
-	return(TRUE);
-    if (width > 32)
-	return(FALSE);
+    if (width >= 32)
+	return;
 
     rep = 32/width;
     if (rep*width != 32)
-	return(FALSE);
+	return;
 
     mask = endtab[width];
 
@@ -154,13 +150,13 @@ mfbPadPixmap(pPixmap)
 	p++;
     }
     pPixmap->drawable.width = 32;
-    return(TRUE);
 }
 
 /* Rotates pixmap pPix by w pixels to the right on the screen. Assumes that
  * words are 32 bits wide, and that the least significant bit appears on the
  * left.
  */
+void
 mfbXRotatePixmap(pPix, rw)
     PixmapPtr	pPix;
     register int rw;
@@ -195,10 +191,12 @@ mfbXRotatePixmap(pPix, rw)
     }
 
 }
+
 /* Rotates pixmap pPix by h lines.  Assumes that h is always less than
    pPix->height
    works on any width.
  */
+void
 mfbYRotatePixmap(pPix, rh)
     register PixmapPtr	pPix;
     int	rh;
@@ -229,4 +227,36 @@ mfbYRotatePixmap(pPix, rh)
     bcopy(pbase+nbyUp, pbase, nbyDown);	/* slide the top rows down */
     bcopy(ptmp, pbase+nbyDown, nbyUp);	/* move lower rows up to row rh */
     DEALLOCATE_LOCAL(ptmp);
+}
+
+void
+mfbCopyRotatePixmap(psrcPix, ppdstPix, xrot, yrot)
+    register PixmapPtr psrcPix, *ppdstPix;
+    int	xrot, yrot;
+{
+    register PixmapPtr pdstPix;
+
+    if ((pdstPix = *ppdstPix) &&
+	(pdstPix->devKind == psrcPix->devKind) &&
+	(pdstPix->drawable.height == psrcPix->drawable.height))
+    {
+	bcopy((char *)psrcPix->devPrivate.ptr,
+	      (char *)pdstPix->devPrivate.ptr,
+	      psrcPix->drawable.height * psrcPix->devKind);
+	pdstPix->drawable.width = psrcPix->drawable.width;
+	pdstPix->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+    }
+    else
+    {
+	if (pdstPix)
+	    mfbDestroyPixmap(pdstPix);
+	*ppdstPix = pdstPix = mfbCopyPixmap(psrcPix);
+	if (!pdstPix)
+	    return;
+    }
+    mfbPadPixmap(pdstPix);
+    if (xrot)
+	mfbXRotatePixmap(pdstPix, xrot);
+    if (yrot)
+	mfbYRotatePixmap(pdstPix, yrot);
 }
