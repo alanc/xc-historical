@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.53 88/09/23 16:41:36 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.54 88/09/23 17:08:43 swick Exp $";
 #endif lint
 
 
@@ -49,24 +49,20 @@ SOFTWARE.
 
 /* Private Data */
 
-static Dimension defIWidth = 4;
-static Dimension defIHeight = 2;
-static XtJustify defJustify = XtJustifyCenter;
-
 #define offset(field) XtOffset(LabelWidget, field)
 static XtResource resources[] = {
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-	offset(label.foreground), XtRString, "Black"},
+	offset(label.foreground), XtRString, "XtDefaultForeground"},
     {XtNfont,  XtCFont, XtRFontStruct, sizeof(XFontStruct *),
 	offset(label.font),XtRString, "Fixed"},
     {XtNlabel,  XtCLabel, XtRString, sizeof(String),
 	offset(label.label), XtRString, NULL},
     {XtNjustify, XtCJustify, XtRJustify, sizeof(XtJustify),
-	offset(label.justify), XtRJustify, (caddr_t)&defJustify},
+	offset(label.justify), XtRImmediate, (caddr_t)XtJustifyCenter},
     {XtNinternalWidth, XtCWidth, XtRDimension,  sizeof(Dimension),
-	offset(label.internal_width), XtRDimension, (caddr_t)&defIWidth},
+	offset(label.internal_width), XtRImmediate, (caddr_t)4},
     {XtNinternalHeight, XtCHeight, XtRDimension, sizeof(Dimension),
-	offset(label.internal_height), XtRDimension, (caddr_t)&defIHeight},
+	offset(label.internal_height), XtRImmediate, (caddr_t)2},
 };
 
 static void Initialize();
@@ -205,12 +201,7 @@ static void Realize(w, valueMask, attributes)
     XSetWindowAttributes *attributes;
 {
     *valueMask |= CWBitGravity;
-    switch (((LabelWidget)w)->label.justify) {
-	case XtJustifyLeft:	attributes->bit_gravity = WestGravity;   break;
-	case XtJustifyCenter:	attributes->bit_gravity = CenterGravity; break;
-	case XtJustifyRight:	attributes->bit_gravity = EastGravity;   break;
-    }
-
+    attributes->bit_gravity = NorthWestGravity;
     (*superclass->core_class.realize) (w, valueMask, attributes);
     
 } /* Realize */
@@ -253,38 +244,26 @@ static void _Reposition(lw, width, height, dx, dy)
     Dimension width, height;
     Position *dx, *dy;
 {
-    Position newPos, delta;
+    Position newPos;
     switch (lw->label.justify) {
 
 	case XtJustifyLeft   :
-	    lw->label.label_x = lw->label.internal_width;
-	    *dx = 0;
+	    newPos = lw->label.internal_width;
 	    break;
 
 	case XtJustifyRight  :
-	    lw->label.label_x = width -
-		 (lw->label.label_width + lw->label.internal_width);
-	    *dx = 0;
+	    newPos = width -
+		(lw->label.label_width + lw->label.internal_width);
 	    break;
 
 	case XtJustifyCenter :
-	    delta = lw->label.label_x -
-		(newPos = (width - lw->label.label_width) / 2);
-	    if (delta & 1)
-		*dx = (lw->label.label_x > newPos) ? 1 : -1;
-	    else
-		*dx = 0;
-	    lw->label.label_x = newPos;
+	    newPos = (width - lw->label.label_width) / 2;
 	    break;
     }
-    if (lw->label.label_x < 0) lw->label.label_x = 0;
-    newPos = (height - lw->label.label_height) / 2;
-    delta = lw->label.label_y -
-	(newPos = (height - lw->label.label_height) / 2);
-    if (delta & 1)
-	*dy = (lw->label.label_y > newPos) ? 1 : -1;
-    else
-	*dy = 0;
+    if (newPos < 0) newPos = 0;
+    *dx = newPos - lw->label.label_x;
+    lw->label.label_x = newPos;
+    *dy = (newPos = (height - lw->label.label_height) / 2) - lw->label.label_y;
     lw->label.label_y = newPos;
     return;
 }
@@ -297,10 +276,8 @@ static void Resize(w)
     Position dx, dy;
     _Reposition(lw, w->core.width, w->core.height, &dx, &dy);
     if ((dx || dy) && XtIsRealized(w)) {
-	/* size went from odd to even; gravity didn't
-	   move bits far enough */
-	int old_x = lw->label.label_x + dx;
-	int old_y = lw->label.label_y + dy;
+	int old_x = lw->label.label_x - dx;
+	int old_y = lw->label.label_y - dy;
 	XCopyArea(XtDisplay(w), XtWindow(w), XtWindow(w), lw->label.normal_GC,
 		  (int)old_x, (int)old_y,
 		  (unsigned)lw->label.label_width,
@@ -308,14 +285,18 @@ static void Resize(w)
 		  (int)lw->label.label_x, (int)lw->label.label_y);
 	if (dx) {
 	    XClearArea(XtDisplay(w), XtWindow(w),
-		       (dx < 0) ? old_x : old_x + lw->label.label_width,
-		       old_y, 1, (unsigned)lw->label.label_height, False);
+		       (dx > 0) ? old_x
+		             : (int)lw->label.label_x + lw->label.label_width,
+		       old_y, (unsigned) ((dx < 0) ? -dx : dx),
+		       (unsigned)lw->label.label_height, False);
 	}
 	if (dy) {
 	    XClearArea(XtDisplay(w), XtWindow(w),
 		       old_x,
-		       (dy < 0) ? old_y : old_y + lw->label.label_height,
-		       (unsigned)lw->label.label_width, 1, False);
+		       (dy > 0) ? old_y
+			     : (int)lw->label.label_y + lw->label.label_height,
+		       (unsigned)lw->label.label_width, 
+		       (unsigned) ((dy < 0) ? -dy : dy), False);
 	}
     }
 }
