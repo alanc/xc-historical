@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: input.c,v 1.10 90/06/07 15:49:57 jim Exp $
+ *	$XConsortium: input.c,v 1.11 91/01/06 12:47:40 rws Exp $
  */
 
 /*
@@ -27,13 +27,11 @@
 
 /* input.c */
 
-#include <X11/Xlib.h>
+#include "ptyx.h"		/* gets Xt headers, too */
 #include <X11/keysym.h>
 #include <X11/DECkeysym.h>
-#include <X11/Intrinsic.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
-#include "ptyx.h"
 
 static XComposeStatus compose_status = {NULL, 0};
 static char *kypd_num = " XXXXXXXX\tXXX\rXXXxxxxXXXXXXXXXXXXXXXXXXXXX*+,-./0123456789XXX=";
@@ -43,7 +41,7 @@ static char *cur = "DACB";
 static int funcvalue(), sunfuncvalue();
 extern Boolean sunFunctionKeys;
 
-void
+static void
 AdjustAfterInput (screen)
 register TScreen *screen;
 {
@@ -53,24 +51,24 @@ register TScreen *screen;
 		int col = screen->max_col - screen->nmarginbell;
 		if(screen->bellarmed >= 0) {
 			if(screen->bellarmed == screen->cur_row) {
-				if(screen->cur_col >= col) {
-					if(screen->cur_col == col)
-						Bell();
-					screen->bellarmed = -1;
-				}
+			    if(screen->cur_col >= col) {
+				if(screen->cur_col == col)
+				    Bell();
+				screen->bellarmed = -1;
+			    }
 			} else
-				screen->bellarmed = screen->cur_col <
-				 col ? screen->cur_row : -1;
+			    screen->bellarmed =
+				screen->cur_col < col ? screen->cur_row : -1;
 		} else if(screen->cur_col < col)
 			screen->bellarmed = screen->cur_row;
 	}
 }
 
 Input (keyboard, screen, event, eightbit)
-register TKeyboard	*keyboard;
-register TScreen		*screen;
-register XKeyPressedEvent *event;
-Bool eightbit;
+    register TKeyboard	*keyboard;
+    register TScreen	*screen;
+    register XKeyPressedEvent *event;
+    Bool eightbit;
 {
 
 #define STRBUFSIZE 100
