@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.27 91/03/27 09:13:01 rws Exp $
+XCOMM platform:  $XConsortium: cray.cf,v 1.28 91/04/09 14:39:35 rws Exp $
 
 #define OSName			UNICOS 5.1
 XCOMM operating system:  OSName
@@ -6,6 +6,7 @@ XCOMM operating system:  OSName
 #define OSMinorVersion		1
 
 #define SystemV			YES
+#define Malloc0ReturnsNull	YES
 #define RemoveTargetProgramByMoving YES
 #define InstallCmd		sh $(SCRIPTSRC)/install.sh
 #define ArCmd			bld cr
