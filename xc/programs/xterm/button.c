@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.32 89/01/05 12:47:45 swick Exp $
+ *	$XConsortium: button.c,v 1.33 89/03/01 20:00:16 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.32 89/01/05 12:47:45 swick Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.33 89/03/01 20:00:16 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -1404,9 +1404,7 @@ register Menu **menu;
 		if(xlog = screen->logging)
 			CheckItem(*menu, XMENU_LOG);
 		DisableItem(*menu, XMENU_LINE);
-		if((screen->inhibit & I_LOG) ||
-		   /* if login window, check for completed login */
-		   (L_flag && !checklogin()))
+		if(screen->inhibit & I_LOG)
 			DisableItem(*menu, XMENU_LOG);
 		if(screen->inhibit & I_SIGNAL)
 			for(i = XMENU_SUSPEND ; i <= XMENU_KILL ; i++)
@@ -1417,9 +1415,6 @@ register Menu **menu;
 #endif	/* defined(SYSV) && !defined(JOBCONTROL) */
 		return(*menu);
 	}
-	/* if login window, check for completed login */
-	if (!(L_flag && !checklogin()) && !(screen->inhibit & I_LOG))
-		EnableItem(*menu, XMENU_LOG);
 	if (xkgrab != screen->grabbedKbd)
 		SetItemCheck(*menu, XMENU_GRABKBD, (xkgrab =
 		 screen->grabbedKbd));
