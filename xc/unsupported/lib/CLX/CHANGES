@@ -1,12 +1,18 @@
-R4 changes:
+R5 changes: (see below for details)
 
 o Numerous bug fixes
+
+o Continued gradual conversion towards ANSI Common Lisp
+
+o Performance improvements to image code
 
 o Multiprocess locking and error reporting made more robust
 
 o Event queue consing reduced
 
 o ICCCM support
+
+Details of changes since R4:
 
 R4.1 changes:
 
@@ -311,3 +317,15 @@ Descriptive comment added to holding-lock
 
 Added typep transformers for all CLX types.
 	--						excldep.cl
+
+R5.0 changes:
+
+o Changed occurrances STRING-CHAR to BASE-CHAR.
+
+o Fixed some type declarations to use type NULL instead of NIL.
+
+o Various fixes to vendor-specific code.
+
+o Detect attempts to use images an incorrect depth.
+
+o Stop doing case conversion on resource names be default.
