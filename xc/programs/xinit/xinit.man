@@ -13,15 +13,15 @@ that use multiple window systems.  When this first client exits,
 .PP
 If no specific client program is given on the command line,
 \fIxinit\fP will look for a file in the user's home directory
-called \fI.xinit\fP to run as a shell script to start up client programs.
+called \fI.xinitrc\fP to run as a shell script to start up client programs.
 If no such file exists, \fIxinit\fP will use the following as a default:
 .sp
 	xterm -geometry +1+1 -n login -display :0
 .sp
 .PP
 If no specific server program is given on the command line,
-\fIxinit\fP will look for a file in the user's home directory called
-\fI.xserverrc\fP to run as a shell script to start up the server.
+\fIxinit\fP will look for a file in the user's home directory
+called \fI.xserverrc\fP to run as a shell script to start up the server.
 If no such file exists, \fIxinit\fP will use the following as a default:
 .sp
         X :0
@@ -33,10 +33,11 @@ server.  The site administrator should, therefore, make a link to the
 appropriate type of server on the machine, or create a shell script that
 runs \fIxinit\fP with the appropriate server.
 .PP
-It is important that \fI\.xinitrc\fP and \fI.xserverrc\fP files 
-run programs that don't exit
-right away in the background so that they don't prevent other programs
-from starting up.  However, the last long-lived program started (usually
+An important point is that programs which are run by \fI\.xinitrc\fP
+and by \fI\.xserverrc\fP should be run in the background if they do 
+not exit right away, so that they don't prevent other programs from
+starting up.
+However, the last long-lived program started (usually
 a window manager or terminal emulator) should be
 left in the foreground so that the script won't exit (which
 indicates that the user is done and that \fIxinit\fP should exit).
@@ -87,7 +88,7 @@ to display back on the local workstation.
 Below is a sample \fI\.xinitrc\fP that starts a clock, several terminals, and
 leaves the window manager running as the ``last'' application.  Assuming that
 the window manager has been configured properly, the user
-then choose the ``Exit'' menu item to shut down X.
+then chooses the ``Exit'' menu item to shut down X.
 .sp
 .in +8
 .nf
@@ -102,11 +103,12 @@ uwm
 .in -8
 .sp
 Sites that want to create a common startup environment could simply create
-a default \fI\.xinitrc\fP that referenced a site-wide startup file:
+a default \fI\.xinitrc\fP that references a site-wide startup file:
 .sp
 .in +8
 .nf
-\. /usr/local/lib/site.xinitrc
+#!/bin/sh
+\&. /usr/local/lib/site.xinitrc
 .fi
 .in -8
 .sp
