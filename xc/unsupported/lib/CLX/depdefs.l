@@ -585,3 +585,32 @@
 
   #+Genera (debug-io nil :type (or null stream))
   ) 
+
+;;-----------------------------------------------------------------------------
+;; Printing routines.
+;;-----------------------------------------------------------------------------
+
+#-lispm
+(defun print-object (object stream &optional function)
+  (princ "#<" stream)
+  (prin1 (type-of object) stream)
+  (when function
+    (princ " " stream)
+    (funcall function object stream))
+  #+lcl3.0
+  (let ((*print-base* 16))
+    (princ " " stream)
+    (princ (sys:%pointer object) stream))
+  (princ ">" stream))
+
+#-lispm
+(defmacro printing-object ((object stream) &body body)
+  `(print-object
+     ,object ,stream
+     ,@(and body `(#'(lambda (,object ,stream) ,@body)))))
+
+#+lispm
+(defmacro printing-object ((object stream) &body body)
+  `(si:printing-random-object (,object ,stream :typep)
+     ,@body))
+
