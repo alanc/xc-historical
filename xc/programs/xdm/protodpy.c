@@ -1,5 +1,5 @@
 /*
- * $XConsortium: protodpy.c,v 1.7 91/04/02 12:00:48 rws Exp $
+ * $XConsortium: protodpy.c,v 1.8 91/05/06 23:53:39 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -35,58 +35,9 @@
 
 #ifdef XDMCP
 
-# include	<sys/types.h>
-# include	<sys/socket.h>
-# include	<netinet/in.h>
-# include	<sys/un.h>
+#include <sys/types.h>
 
 static struct protoDisplay	*protoDisplays;
-
-addressEqual (a1, len1, a2, len2)
-struct sockaddr	*a1, *a2;
-int		len1, len2;
-{
-    char    *c1, *c2;
-
-    if (a1->sa_family != a2->sa_family)
-    {
-	return FALSE;
-    }
-    if (len1 != len2)
-    {
-	return FALSE;
-    }
-    switch (a1->sa_family) {
-#ifdef AF_INET
-    case AF_INET:
-#define in(a)	((struct sockaddr_in *) a)
-	if (in(a1)->sin_port == in(a2)-> sin_port &&
-	    in(a1)->sin_addr.s_addr == in(a2)->sin_addr.s_addr)
-	    return TRUE;
-#endif
-    }
-    return FALSE;
-}
-
-static
-PrintSockAddr (a, len)
-    struct sockaddr *a;
-    int		    len;
-{
-    unsigned char    *t, *p;
-
-    Debug ("family %d, ", a->sa_family);
-    switch (a->sa_family) {
-    case AF_INET:
-
-	p = (unsigned char *) &((struct sockaddr_in *) a)->sin_port;
-	t = (unsigned char *) &((struct sockaddr_in *) a)->sin_addr;
-
-	Debug ("port %d, host %d.%d.%d.%d\n",
-		(p[0] << 8) + p[1], t[0], t[1], t[2], t[3]);
-	break;
-    }
-}
 
 static
 PrintProtoDisplay (pdpy)
@@ -102,7 +53,7 @@ PrintProtoDisplay (pdpy)
 
 struct protoDisplay *
 FindProtoDisplay (address, addrlen, displayNumber)
-    struct sockaddr *address;
+    XdmcpNetaddr    address;
     int		    addrlen;
     CARD16	    displayNumber;
 {
@@ -137,7 +88,7 @@ TimeoutProtoDisplays (now)
 struct protoDisplay *
 NewProtoDisplay (address, addrlen, displayNumber,
 		 connectionType, connectionAddress, sessionID)
-    struct sockaddr *address;
+    XdmcpNetaddr    address;
     int		    addrlen;
     CARD16	    displayNumber;
     CARD16	    connectionType;
@@ -153,7 +104,7 @@ NewProtoDisplay (address, addrlen, displayNumber,
     pdpy = (struct protoDisplay *) malloc (sizeof *pdpy);
     if (!pdpy)
 	return NULL;
-    pdpy->address = (struct sockaddr *) malloc (addrlen);
+    pdpy->address = (XdmcpNetaddr) malloc (addrlen);
     if (!pdpy->address)
     {
 	free ((char *) pdpy);
