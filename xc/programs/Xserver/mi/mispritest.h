@@ -4,7 +4,7 @@
  * mi sprite structures
  */
 
-/* $XConsortium: mispritest.h,v 5.6 89/08/04 14:26:33 rws Exp $ */
+/* $XConsortium: mispritest.h,v 5.7 89/09/12 14:16:36 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -52,6 +52,7 @@ typedef struct {
     Bool	    shouldBeUp;
     Bool	    checkPixels;
     xColorItem	    colors[2];
+    ColormapPtr	    pInstalledMap;
     ColormapPtr	    pColormap;
     VisualPtr	    pVisual;
     miSpriteCursorFuncPtr    funcs;

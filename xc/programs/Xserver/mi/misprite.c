@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.20 89/09/12 14:16:22 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.21 89/09/25 16:14:58 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -255,6 +255,8 @@ miSpriteInitialize (pScreen, spriteFuncs, pointerFuncs)
     pPriv->isUp = FALSE;
     pPriv->shouldBeUp = FALSE;
     pPriv->checkPixels = TRUE;
+    pPriv->pInstalledMap = NULL;
+    pPriv->pColormap = NULL;
     pPriv->funcs = spriteFuncs;
     pScreen->devPrivates[miSpriteScreenIndex].ptr = (pointer) pPriv;
     pScreen->CloseScreen = miSpriteCloseScreen;
@@ -474,8 +476,13 @@ miSpriteInstallColormap (pMap)
 
     SCREEN_EPILOGUE(pScreen, InstallColormap, miSpriteInstallColormap);
 
-    pPriv->pColormap = pMap;
-    pPriv->checkPixels = TRUE;
+    if (pPriv->pColormap != pMap)
+    {
+    	pPriv->pInstalledMap = pMap;
+    	pPriv->checkPixels = TRUE;
+	if (pPriv->isUp && pPriv->shouldBeUp)
+	    miSpriteRemoveCursor (pScreen);
+    }
 }
 
 static void
@@ -533,8 +540,10 @@ miSpriteFindColors (pScreen)
           pCursor->foreBlue == sourceColor->blue &&
 	  pCursor->backRed == maskColor->red &&
 	  pCursor->backGreen == maskColor->green &&
-	  pCursor->backBlue == maskColor->blue))
+	  pCursor->backBlue == maskColor->blue) ||
+	 pScreenPriv->pColormap != pScreenPriv->pInstalledMap)
     {
+	pScreenPriv->pColormap = pScreenPriv->pInstalledMap;
 	red = sourceColor->red = pCursor->foreRed;
 	green = sourceColor->green = pCursor->foreGreen;
 	blue = sourceColor->blue = pCursor->foreBlue;
