@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.93 91/03/13 17:15:40 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.94 91/03/23 16:48:00 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1273,9 +1273,9 @@ CppScriptTarget(name,name.cpp,defs, /**/)
 #ifndef MakeDirectories
 #define MakeDirectories(step,dirs)					@@\
 step::									@@\
-	@case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
+	@case '${MFLAGS}' in *[i]*) set +e;; esac;			@@\
 	@for i in dirs; do \						@@\
-		(set -x; $(MKDIRHIER) $(DESTDIR)$$i) \			@@\
+		(set -x; $(MKDIRHIER) $(DESTDIR)$$i); \			@@\
 	done
 #endif /* MakeDirectories */
 
