@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.50 94/07/13 10:57:51 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.51 94/07/15 10:07:26 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -77,8 +77,6 @@ char **argv;
     char	*progName;
     char 	errormsg[256];
     static	char environment_name[] = "SESSION_MANAGER";
-    Dimension   width, height;
-    Position	x, y;
     int		success, found_command_line_name, i;
 
     for (i = 1; i < argc; i++)
@@ -205,61 +203,17 @@ char **argv;
 	    }
     }
 
-    if (!success || found_command_line_name || sessionNameCount == 1)
+    if (!success || found_command_line_name)
     {
-	char title[256];
-
 	if (!found_command_line_name)
-	{
-	    if (sessionNameCount == 1)
-		session_name = sessionNames[0];
-	    else
-		session_name = XtNewString (DEFAULT_SESSION_NAME);
-	}
+	    session_name = XtNewString (DEFAULT_SESSION_NAME);
 
-	sprintf (title, "xsm: %s", session_name);
-
-	XtVaSetValues (topLevel,
-	    XtNtitle, title,		/* session name */
-	    NULL);
-
-	XtRealizeWidget (topLevel);
-
-    	StartSession (session_name);
+    	StartSession (session_name,
+	    True /* Use ~/.xsmstartup if found, else system.xsm */);
     }
     else
     {
-	/*
-	 * Add the session names to the list
-	 */
-
-	AddSessionNames (sessionNameCount, sessionNames);
-
-
-	/*
-	 * Center popup containing choice of sessions
-	 */
-
-	XtRealizeWidget (chooseSessionPopup);
-
-	XtVaGetValues (chooseSessionPopup,
-	    XtNwidth, &width,
-	    XtNheight, &height,
-	    NULL);
-
-	x = (Position)(WidthOfScreen (XtScreen (topLevel)) - width) / 2;
-	y = (Position)(HeightOfScreen (XtScreen (topLevel)) - height) / 3;
-
-	XtVaSetValues (chooseSessionPopup,
-	    XtNx, x,
-	    XtNy, y,
-	    NULL);
-
-	XtVaSetValues (chooseSessionListWidget,
-	    XtNlongest, width,
-	    NULL);
-
-	XtPopup (chooseSessionPopup, XtGrabNone);
+	ChooseSession ();
     }
     
 
@@ -295,12 +249,27 @@ Boolean *continue_to_dispatch;
 
 
 void
-StartSession (name)
+StartSession (name, use_default)
 
 char *name;
+Bool use_default;
 
 {
-    int database_read;
+    int database_read = 0;
+    char title[256];
+
+
+    /*
+     * Set the main window's title to the session name.
+     */
+
+    sprintf (title, "xsm: %s", name);
+
+    XtVaSetValues (topLevel,
+	XtNtitle, title,		/* session name */
+	NULL);
+
+    XtRealizeWidget (topLevel);
 
 
     /*
@@ -309,7 +278,9 @@ char *name;
      * identify it.
      */
 
-    database_read = ReadSave (name, &sm_id);
+    if (!use_default)
+	database_read = ReadSave (name, &sm_id);
+
     if (!sm_id)
 	sm_id = SmsGenerateClientID (NULL);
     XChangeProperty (XtDisplay (topLevel), XtWindow (topLevel),
