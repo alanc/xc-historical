@@ -48,7 +48,7 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.26 89/09/06 15:29:04 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.27 89/09/13 15:24:25 rws Exp $
 /**/# operating system:  OSName
 
 #if SunOSPlatform
@@ -67,15 +67,15 @@
 
 /* define this as you like for server compilation */
 #if OSMajorVersion >= 4 || defined(SparcArchitecture)
-#define HWOSDefines -DINCLUDE_ALLOCA_H
+#define AllocateLocalDefines -DINCLUDE_ALLOCA_H
 #else
-#define HWOSDefines /* as nothing */
+#define AllocateLocalDefines /**/
 #endif
 
 #undef ExtensionDefines
 #define ExtensionDefines -DSHAPE -DMITSHM
 
-#define ServerDefines SunWindowsDefines ExtensionDefines HWOSDefines
+#define ServerDefines SunWindowsDefines ExtensionDefines AllocateLocalDefines
 
 #if OSMajorVersion >= 4 && OSMinorVersion >= 0
 #define SetTtyGroup YES

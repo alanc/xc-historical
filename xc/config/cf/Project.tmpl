@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.37 89/08/24 10:40:17 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.38 89/09/19 09:15:07 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -225,6 +225,9 @@
 #ifndef RemoveTargetProgramByMoving
 #define RemoveTargetProgramByMoving NO
 #endif
+#ifndef AllocateLocalDefines
+#define AllocateLocalDefines /**/
+#endif
 
 #ifndef SharedLibX
 #if HasSunOSSharedLibraries
@@ -306,7 +309,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.37 89/08/24 10:40:17 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.38 89/09/19 09:15:07 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
