@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.19 91/07/25 01:08:49 rws Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.20 91/08/20 13:51:23 keith Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -835,8 +835,8 @@ FreeSCCData:
  *	SYNOPSIS
  */
 static void
-LINEAR_RGB_FreeSCCData(pScreenData)
-    LINEAR_RGB_SCCData *pScreenData;
+LINEAR_RGB_FreeSCCData(pScreenDataTemp)
+    XPointer pScreenDataTemp;
 /*
  *	DESCRIPTION
  *
@@ -846,6 +846,8 @@ LINEAR_RGB_FreeSCCData(pScreenData)
  *
  */
 {
+    LINEAR_RGB_SCCData *pScreenData = (LINEAR_RGB_SCCData *) pScreenDataTemp;
+
     if (pScreenData) {
 	if (pScreenData->pRedTbl) {
 	    if (pScreenData->pGreenTbl) {
