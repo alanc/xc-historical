@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.2 89/07/03 13:22:26 rws Exp $ */
+/* $XConsortium: events.c,v 5.3 89/07/06 13:27:37 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -356,7 +356,7 @@ CheckVirtualMotion(qe, pWin)
 	    sprite.hot.pScreen = pWin->drawable.pScreen;
 	    sprite.hot.x = sprite.hot.y = 0;
 	}
-	lims = *(*pWin->drawable.pScreen->RegionExtents)(pWin->borderSize);
+	lims = *(*pWin->drawable.pScreen->RegionExtents)(&pWin->borderSize);
 	if (sprite.hot.x < lims.x1)
 	    sprite.hot.x = lims.x1;
 	else if (sprite.hot.x >= lims.x2)
@@ -367,7 +367,7 @@ CheckVirtualMotion(qe, pWin)
 	    sprite.hot.y = lims.y2 - 1;
 #ifdef SHAPE
 	if (wBoundingShape(pWin))
-	    ConfineToShape(pWin->borderSize, &sprite.hot.x, &sprite.hot.y);
+	    ConfineToShape(&pWin->borderSize, &sprite.hot.x, &sprite.hot.y);
 #endif
 	if (qe)
 	{
@@ -393,9 +393,10 @@ ConfineCursorToWindow(pWin, generateEvents)
     }
     else
     {
-	sprite.hotLimits = *(* pScreen->RegionExtents)(pWin->borderSize);
+	sprite.hotLimits = *(* pScreen->RegionExtents)(&pWin->borderSize);
 #ifdef SHAPE
-	sprite.hotShape = wBoundingShape(pWin) ? pWin->borderSize : NullRegion;
+	sprite.hotShape = wBoundingShape(pWin) ? &pWin->borderSize
+					       : NullRegion;
 #endif
 	CheckPhysLimits(sprite.current, generateEvents, pScreen);
 	(* pScreen->ConstrainCursor)(pScreen, &sprite.physLimits);
@@ -1197,7 +1198,7 @@ XYToWindow(x, y)
 		 */
 		&& (!wBoundingShape(pWin) ||
 		    (*pWin->drawable.pScreen->PointInRegion)
-			    (pWin->borderSize, x, y, &box))
+			    (&pWin->borderSize, x, y, &box))
 #endif
 		)
 	{
@@ -2395,7 +2396,7 @@ ProcGrabPointer(client)
 	     (confineTo &&
 		!(confineTo->realized &&
 		  (* confineTo->drawable.pScreen->RegionNotEmpty)
-			(confineTo->borderSize))))
+			(&confineTo->borderSize))))
 	rep.status = GrabNotViewable;
     else if (device->sync.frozen &&
 	     ((device->sync.other && (device->sync.other->client != client)) ||
@@ -4158,7 +4159,7 @@ CheckCursorConfinement(pWin)
     if (grab && (confineTo = grab->confineTo))
     {
 	if (!(* confineTo->drawable.pScreen->RegionNotEmpty)
-			(confineTo->borderSize))
+			(&confineTo->borderSize))
 	    DeactivatePointerGrab(inputInfo.pointer);
 	else if ((pWin == confineTo) || IsParent(pWin, confineTo))
 	    ConfineCursorToWindow(confineTo, TRUE);
