@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.43 92/08/22 16:42:41 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.44 92/09/03 19:55:01 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -29,7 +29,7 @@
 #define imake_ccflags "-DSYSV"
 #endif
 
-#ifdef att
+#if defined(att) || defined(Oki)
 #define imake_ccflags "-Xc -DSVR4"
 #endif
 
