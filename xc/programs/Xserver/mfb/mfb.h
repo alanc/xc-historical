@@ -123,6 +123,8 @@ extern void mfbUninstallColormap();
 
 extern void mfbResolveColor();
 
+extern void mfbCopyGCDest();
+
 /*
    private filed of pixmap
    pixmap.devPrivate = (unsigned int *)pointer_to_bits
