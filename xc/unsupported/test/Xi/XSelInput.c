@@ -1,4 +1,4 @@
-/* $XConsortium: XSelInput.c,v 1.2 91/02/17 11:14:35 rws Exp $ */
+/* $XConsortium: XSelInput.c,v 1.1 91/02/18 10:25:26 rws Exp $ */
 /************************************************************************
  *
  * XSelInput.c   - Test case for XSelectInput function.
@@ -124,7 +124,6 @@ XDeviceInfoPtr	savlist[256];
 XDevice		*sdev[256];
 XDevice		*newpointer = NULL;
 XDevice		*newkeyboard = NULL;
-XEventClass	bogusclass[] = {-1,-1,-1};
 
 Window		root;
 int		printmode = 1;

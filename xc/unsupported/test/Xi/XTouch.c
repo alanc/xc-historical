@@ -1,4 +1,4 @@
-/* $XConsortium: XTouch.c,v 1.2 91/02/17 11:14:35 rws Exp $ */
+/* $XConsortium: XTouch.c,v 1.1 91/02/18 10:25:32 rws Exp $ */
 /************************************************************************
  *
  * XTouch.c
@@ -97,7 +97,6 @@ struct	classes
 XDeviceInfoPtr	savlist[256];
 XDevice		*sdev[256];
 XDevice		*keydevice;
-XEventClass	bogusclass[] = {-1,-1,-1};
 
 Window		root;
 
