@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.109 87/10/02 15:31:47 rws Locked $ */
+/* $Header: events.c,v 1.110 87/10/22 09:05:38 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1636,7 +1636,11 @@ EnterLeaveEvent(type, mode, detail, pWin)
     xEvent		event;
     DeviceIntPtr	keybd = inputInfo.keyboard;
     WindowPtr		focus = keybd->u.keybd.focus.win;
+    GrabPtr		grab = inputInfo.pointer->grab;
 
+    if ((mode == NotifyNormal) &&
+	grab && !grab->ownerEvents && (grab->window != pWin))
+	return;
     event.u.u.type = type;
     event.u.u.detail = detail;
     event.u.enterLeave.time = currentTime.milliseconds;
@@ -1651,7 +1655,7 @@ EnterLeaveEvent(type, mode, detail, pWin)
 	((pWin == focus) || (focus == PointerRootWin) ||
 	 IsParent(focus, pWin)))
 	event.u.enterLeave.flags |= ELFlagFocus;
-    DeliverEventsToWindow(pWin, &event, 1, filters[type], NullGrab);
+    DeliverEventsToWindow(pWin, &event, 1, filters[type], grab);
     if (type == EnterNotify)
     {
 	xKeymapEvent ke;
