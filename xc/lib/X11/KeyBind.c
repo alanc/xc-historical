@@ -1,4 +1,4 @@
-/* $XConsortium: XKeyBind.c,v 11.66 91/05/04 13:51:17 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.67 92/05/19 11:23:14 converse Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -128,8 +128,8 @@ XLookupKeysym(event, col)
     return KeyCodetoKeySym(event->display, event->keycode, col);
 }
 
-static int
-InitModMap(dpy)
+static void
+ResetModMap(dpy)
     Display *dpy;
 {
     register XModifierKeymap *map;
@@ -137,12 +137,7 @@ InitModMap(dpy)
     KeySym sym;
     register struct _XKeytrans *p;
 
-    if (! (dpy->modifiermap = map = XGetModifierMapping(dpy)))
-	return 0;
-    dpy->free_funcs->modifiermap = XFreeModifiermap;
-    if ((! dpy->keysyms) && (! Initialize(dpy)))
-	return 0;
-    LockDisplay(dpy);
+    map = dpy->modifiermap;
     /* If any Lock key contains Caps_Lock, then interpret as Caps_Lock,
      * else if any contains Shift_Lock, then interpret as Shift_Lock,
      * else ignore Lock altogether.
@@ -173,6 +168,23 @@ InitModMap(dpy)
     }
     for (p = dpy->key_bindings; p; p = p->next)
 	ComputeMaskFromKeytrans(dpy, p);
+}
+
+static int
+InitModMap(dpy)
+    Display *dpy;
+{
+    register XModifierKeymap *map;
+
+    if (! (map = XGetModifierMapping(dpy)))
+	return 0;
+    LockDisplay(dpy);
+    if (dpy->modifiermap)
+	XFreeModifiermap(dpy->modifiermap);
+    dpy->modifiermap = map;
+    dpy->free_funcs->modifiermap = XFreeModifiermap;
+    if (dpy->keysyms)
+	ResetModMap(dpy);
     UnlockDisplay(dpy);
     return 1;
 }
@@ -200,7 +212,8 @@ XRefreshKeyboardMapping(event)
 	}
 	UnlockDisplay(event->display);
 	/* go ahead and get it now, since initialize test may not fail */
-	(void) InitModMap(event->display);
+	if (event->display->keysyms)
+	    (void) InitModMap(event->display);
     }
 }
 
@@ -222,8 +235,12 @@ Initialize(dpy)
 	if (! keysyms) return 0;
 
 	LockDisplay(dpy);
+	if (dpy->keysyms)
+	    Xfree ((char *)dpy->keysyms);
 	dpy->keysyms = keysyms;
 	dpy->keysyms_per_keycode = per;
+	if (dpy->modifiermap)
+	    ResetModMap(dpy);
 	UnlockDisplay(dpy);
     }
     if (!dpy->modifiermap)
