@@ -37,7 +37,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 */
-/* $XConsortium: cfbpush8.c,v 1.1 93/12/31 11:21:49 rob Exp $ */
+/* $XConsortium: cfbpush8.c,v 1.2 94/01/04 00:02:10 rob Exp $ */
 
 #if PSZ == 8
 
@@ -90,7 +90,7 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     bbox.y2 = bbox.y1 + dy;
     devPriv = cfbGetGCPrivate(pGC);
     
-    switch ((*pGC->pScreen->RectIn)(devPriv->pCompositeClip, &bbox))
+    switch (RECT_IN_REGION(pGC->pScreen, devPriv->pCompositeClip, &bbox))
     {
       case rgnPART:
 #if defined(MTX) && defined(TRANSLATE_COORDS)

@@ -38,7 +38,7 @@ OF THIS SOFTWARE.
 
 */
 
-/* $XConsortium: cfbfillrct.c,v 1.1 93/12/31 11:21:41 rob Exp $ */
+/* $XConsortium: cfbfillrct.c,v 1.2 94/01/04 00:02:07 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -240,7 +240,7 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     {
 	int x1, y1, x2, y2, bx2, by2;
 
-	pextent = (*pGC->pScreen->RegionExtents)(prgnClip);
+	pextent = REGION_EXTENTS(pGC->pScreen, prgnClip);
 	x1 = pextent->x1;
 	y1 = pextent->y1;
 	x2 = pextent->x2;

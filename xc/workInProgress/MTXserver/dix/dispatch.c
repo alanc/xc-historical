@@ -128,16 +128,7 @@ static void DeleteClientFromAnySelections(
 #endif
 );
 
-/*
- * XXX:SM For MTX this is referenced in connection.c.
- *   - Choice: either do what I've done here or do what the original MTX
- *     did and globally declare it in cit.c.
- */
-#ifdef MTX
-int nextFreeClientID;        /* always MIN free client ID */
-#else
-static int nextFreeClientID;
-#endif
+static int nextFreeClientID; /* always MIN free client ID */
 
 static int	nClients;	/* number active clients */
 
@@ -1341,8 +1332,8 @@ ProcTranslateCoords(client)
 		 * borderSize
 		 */
 		&& (!wBoundingShape(pWin) ||
-		    (*pWin->drawable.pScreen->PointInRegion)
-			    (&pWin->borderSize, x, y, &box))
+		    POINT_IN_REGION(pWin->drawable.pScreen, 
+			    &pWin->borderSize, x, y, &box))
 #endif
 		)
             {
@@ -1890,7 +1881,7 @@ ProcCopyArea(client)
 	(*pDst->pScreen->SendGraphicsExpose)
  		(client, pRgn, stuff->dstDrawable, X_CopyArea, 0);
 	if (pRgn)
-	    (*pDst->pScreen->RegionDestroy) (pRgn);
+	    REGION_DESTROY(pDst->pScreen, pRgn);
     }
 
     MTX_UNLOCK_TWO_DRAWABLES_AND_GC(pSrc, pDst, pGC, stuff->srcDrawable, 
@@ -1931,7 +1922,7 @@ ProcCopyPlane(client)
 	(*pDst->pScreen->SendGraphicsExpose)
  		(client, pRgn, stuff->dstDrawable, X_CopyPlane, 0);
 	if (pRgn)
-	    (*pDst->pScreen->RegionDestroy) (pRgn);
+	    REGION_DESTROY(pDst->pScreen, pRgn);
     }
     MTX_UNLOCK_TWO_DRAWABLES_AND_GC(pSrc, pDst, pGC, stuff->srcDrawable, 
 			        stuff->dstDrawable, stuff->gc, client);

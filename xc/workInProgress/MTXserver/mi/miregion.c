@@ -43,7 +43,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.1 93/12/27 12:23:11 rob Exp $ */
+/* $XConsortium: miregion.c,v 1.2 93/12/27 19:38:29 rob Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -182,8 +182,8 @@ if (((numRects) < ((reg)->data->size >> 1)) && ((reg)->data->size > 50)) \
 }
 
 
-static BoxRec EmptyBox = {0, 0, 0, 0};
-static RegDataRec EmptyData = {0, 0};
+BoxRec EmptyBox = {0, 0, 0, 0};
+RegDataRec EmptyData = {0, 0};
 
 #ifdef DEBUG
 int

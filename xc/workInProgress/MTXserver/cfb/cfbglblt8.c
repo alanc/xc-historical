@@ -1,4 +1,4 @@
-/* $XConsortium: cfbglblt8.c,v 1.1 93/12/31 11:21:43 rob Exp $ */
+/* $XConsortium: cfbglblt8.c,v 1.2 94/01/04 00:02:09 rob Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 
@@ -207,7 +207,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     	bbox.y1 += y;
     	bbox.y2 += y;
     
-    	switch ((*pGC->pScreen->RectIn)(clip, &bbox))
+    	switch (RECT_IN_REGION(pGC->pScreen, clip, &bbox))
     	{
       	  case rgnPART:
 	    cfbPolyGlyphBlt8Clipped(pDrawable, pGC, x, y,

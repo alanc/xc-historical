@@ -198,7 +198,7 @@ static GCOps miSpriteGCOps = {
 		(pWin)->drawable.y < pScreenPriv->saved.y2 &&	    \
 		pScreenPriv->saved.y1 < (pWin)->drawable.y +	    \
 				    (int) (pWin)->drawable.height &&\
-		(pWin)->drawable.pScreen->RectIn (&(pWin)->borderClip, \
+		RECT_IN_REGION((pWin)->drawable.pScreen, &(pWin)->borderClip, \
 			&pScreenPriv->saved) != rgnOUT))))
 #else /* MTX */
 #define GC_CHECK(pWin)						    \
@@ -209,7 +209,7 @@ static GCOps miSpriteGCOps = {
 		(pWin)->drawable.y < pScreenPriv->saved.y2 &&	    \
 		pScreenPriv->saved.y1 < (pWin)->drawable.y +	    \
 				    (int) (pWin)->drawable.height &&\
-		(pWin)->drawable.pScreen->RectIn (&(pWin)->borderClip, \
+		RECT_IN_REGION((pWin)->drawable.pScreen, &(pWin)->borderClip, \
 			&pScreenPriv->saved) != rgnOUT)
 #endif /* MTX */
 
@@ -847,7 +847,7 @@ miSpriteSaveDoomedAreas (pWin, pObscured, dx, dy)
 	    cursorBox.x2 += dx;
 	    cursorBox.y2 += dy;
 	}
-	if ((* pScreen->RectIn) (pObscured, &cursorBox) != rgnOUT)
+	if (RECT_IN_REGION(pScreen, pObscured, &cursorBox) != rgnOUT)
 	{
 #ifdef MTX
 	    if (miPointerLock())
@@ -903,7 +903,7 @@ miSpriteRestoreAreas (pWin, prgnExposed)
     if (pScreenPriv->isUp)
 #endif /* MTX */
     {
-	if ((* pScreen->RectIn) (prgnExposed, &pScreenPriv->saved) != rgnOUT)
+	if (RECT_IN_REGION(pScreen, prgnExposed, &pScreenPriv->saved) != rgnOUT)
 #ifdef MTX
 	if(miPointerLock())
 	{
@@ -966,7 +966,7 @@ miSpritePaintWindowBackground (pWin, pRegion, what)
 	 * If the cursor is on the same screen as the window, check the
 	 * region to paint for the cursor and remove it as necessary
 	 */
-	if ((* pScreen->RectIn) (pRegion, &pScreenPriv->saved) != rgnOUT)
+	if (RECT_IN_REGION(pScreen, pRegion, &pScreenPriv->saved) != rgnOUT)
 #ifdef MTX
 	if(miPointerLock())
 	{
@@ -1024,7 +1024,7 @@ miSpritePaintWindowBorder (pWin, pRegion, what)
 	 * If the cursor is on the same screen as the window, check the
 	 * region to paint for the cursor and remove it as necessary
 	 */
-	if ((* pScreen->RectIn) (pRegion, &pScreenPriv->saved) != rgnOUT)
+	if (RECT_IN_REGION(pScreen, pRegion, &pScreenPriv->saved) != rgnOUT)
 #ifdef MTX
 	if(miPointerLock())
 	{
@@ -1092,8 +1092,8 @@ miSpriteCopyWindow (pWin, ptOldOrg, pRegion)
 	cursorBox.x2 -= dx;
 	cursorBox.y1 -= dy;
 	cursorBox.y2 -= dy;
-	if ((* pScreen->RectIn) (pRegion, &pScreenPriv->saved) != rgnOUT ||
-	    (* pScreen->RectIn) (pRegion, &cursorBox) != rgnOUT)
+	if (RECT_IN_REGION(pScreen, pRegion, &pScreenPriv->saved) != rgnOUT ||
+	    RECT_IN_REGION(pScreen, pRegion, &cursorBox) != rgnOUT)
 #ifdef MTX
 	if(miPointerLock())
 	{
@@ -1220,7 +1220,7 @@ miSpriteValidateGC (pGC, changes, pDrawable)
 	    pRegion = &pWin->clipList;
 	    if (pGC->subWindowMode == IncludeInferiors)
 		pRegion = &pWin->borderClip;
-	    if ((*pDrawable->pScreen->RegionNotEmpty) (pRegion))
+	    if (REGION_NOTEMPTY(pDrawable->pScreen, pRegion))
 		pGCPriv->wrapOps = pGC->ops;
         }
     }

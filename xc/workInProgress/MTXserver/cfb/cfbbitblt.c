@@ -39,7 +39,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 */
-/* $XConsortium: cfbbitblt.c,v 1.2 94/01/04 00:02:06 rob Exp $ */
+/* $XConsortium: cfbbitblt.c,v 1.3 94/01/04 00:33:16 rob Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -198,8 +198,8 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
     }
     else
     {
-	(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
-	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, prgnSrcClip);
+	REGION_INIT(pGC->pScreen, &rgnDst, &fastBox, 1);
+	REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst, prgnSrcClip);
     }
 
     dstx += pDstDrawable->x;
@@ -210,9 +210,9 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
 	if (!((WindowPtr)pDstDrawable)->realized)
 	{
 	    if (!fastClip)
-		(*pGC->pScreen->RegionUninit)(&rgnDst);
+		REGION_UNINIT(pGC->pScreen, &rgnDst);
 	    if (freeSrcClip)
-		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+		REGION_DESTROY(pGC->pScreen, prgnSrcClip);
 	    return NULL;
 	}
     }
@@ -252,9 +252,9 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
 
 	    /* Check to see if the region is empty */
 	    if (fastBox.x1 >= fastBox.x2 || fastBox.y1 >= fastBox.y2)
-		(*pGC->pScreen->RegionInit)(&rgnDst, NullBox, 0);
+		REGION_INIT(pGC->pScreen, &rgnDst, NullBox, 0);
 	    else
-		(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
+		REGION_INIT(pGC->pScreen, &rgnDst, &fastBox, 1);
 	}
         else
 	{
@@ -262,17 +262,17 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
 	       a full blown region.  It is intersected with the
 	       composite clip below. */
 	    fastClip = 0;
-	    (*pGC->pScreen->RegionInit)(&rgnDst, &fastBox,1);
+	    REGION_INIT(pGC->pScreen, &rgnDst, &fastBox,1);
 	}
     }
     else
     {
-        (*pGC->pScreen->TranslateRegion)(&rgnDst, -dx, -dy);
+        REGION_TRANSLATE(pGC->pScreen, &rgnDst, -dx, -dy);
     }
 
     if (!fastClip)
     {
-	(*pGC->pScreen->Intersect)(&rgnDst,
+	REGION_INTERSECT(pGC->pScreen, &rgnDst,
 				   &rgnDst,
 				   cfbGetCompositeClip(pGC));
     }
@@ -284,9 +284,9 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
 	if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL(numRects *
 						  sizeof(DDXPointRec))))
 	{
-	    (*pGC->pScreen->RegionUninit)(&rgnDst);
+	    REGION_UNINIT(pGC->pScreen, &rgnDst);
 	    if (freeSrcClip)
-		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+		REGION_DESTROY(pGC->pScreen, prgnSrcClip);
 	    return NULL;
 	}
 	pbox = REGION_RECTS(&rgnDst);
@@ -321,9 +321,9 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
 				  (int)origSource.height,
 				  origDest.x, origDest.y, bitPlane);
     }
-    (*pGC->pScreen->RegionUninit)(&rgnDst);
+    REGION_UNINIT(pGC->pScreen, &rgnDst);
     if (freeSrcClip)
-	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+	REGION_DESTROY(pGC->pScreen, prgnSrcClip);
     return prgnExposed;
 }
 

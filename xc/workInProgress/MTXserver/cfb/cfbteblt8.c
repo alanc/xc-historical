@@ -39,7 +39,7 @@ OF THIS SOFTWARE.
 
 */
 
-/* $XConsortium: cfbteblt8.c,v 1.1 93/12/31 11:21:51 rob Exp $ */
+/* $XConsortium: cfbteblt8.c,v 1.2 94/01/04 00:02:12 rob Exp $ */
 
 #if PSZ == 8
 
@@ -393,7 +393,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     bbox.y1 = y;
     bbox.y2 = y + h;
 
-    switch ((*pGC->pScreen->RectIn)( cfbGetCompositeClip(pGC), &bbox))
+    switch (RECT_IN_REGION(pGC->pScreen,  cfbGetCompositeClip(pGC), &bbox))
     {
       case rgnPART:
 	cfbImageGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
