@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.3 89/03/29 13:16:06 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.4 89/03/30 16:54:48 jim Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -394,7 +394,8 @@ Widget w;
     return;
   }
   local->prev = list;		/* Adding to previous list. */
-  local->next = list->next;
+  if ((local->next = list->next) != NULL)
+      local->next->prev = local;
   list->next = local;
 }
 
