@@ -1,6 +1,6 @@
 
 /*
- * $XConsortium: Xrm.c,v 1.35 90/06/11 13:33:54 rws Exp $
+ * $XConsortium: Xrm.c,v 1.36 90/06/12 11:58:13 kit Exp $
  */
 
 /***********************************************************
@@ -113,7 +113,7 @@ static int     maxResourceQuark = -1;
 static char * global_ptr;
 static unsigned int space_left = 0;
 
-char *
+static char *
 LocalMalloc(size)
 unsigned int size;
 {
@@ -880,7 +880,7 @@ void XrmQPutStringResource(pdb, bindings, quarks, str)
 #define LIST_SIZE 101
 #define BUFFER_SIZE 100
 
-int
+static int
 GetDatabase(db, str)
 XrmDatabase * db;
 register char * str;
@@ -1199,7 +1199,7 @@ register char * str;
  *	Returns: An allocated string containing the contents of the file.
  */
 
-char * 
+static char * 
 ReadInFile(filename)
 char * filename;
 {
