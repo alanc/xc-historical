@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: XShape.c,v 1.9 89/04/22 12:03:06 rws Exp $ */
+/* $XConsortium: XShape.c,v 1.10 89/08/21 08:58:53 rws Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -455,11 +455,12 @@ XShapeInputSelected (dpy, window)
 }
 
 XRectangle *
-XShapeGetRectangles (dpy, window, kind, count)
+XShapeGetRectangles (dpy, window, kind, count, ordering)
     register Display	*dpy;
     Window		window;
     int			kind;
     int			*count;	/* RETURN */
+    int			*ordering; /* RETURN */
 {
     register xShapeGetRectanglesReq   *req;
     XExtCodes			    *codes;
@@ -482,6 +483,7 @@ XShapeGetRectangles (dpy, window, kind, count)
 	return (XRectangle *)NULL;
     }
     *count = rep.nrects;
+    *ordering = rep.ordering;
     rects = 0;
     if (*count) {
 	xrects = (xRectangle *) Xmalloc (*count * sizeof (xRectangle));
