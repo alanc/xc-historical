@@ -1,4 +1,4 @@
-/* $XConsortium: XPolyReg.c,v 11.18 90/12/12 09:18:57 rws Exp $ */
+/* $XConsortium: XPolyReg.c,v 11.19 91/01/12 11:21:52 rws Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -200,8 +200,10 @@ CreateETandAET(count, pts, ET, AET, pETEs, pSLLBlock)
 
             InsertEdgeInET(ET, pETEs, top->y, &pSLLBlock, &iSLLBlock);
 
-            ET->ymax = MAX(ET->ymax, PrevPt->y);
-            ET->ymin = MIN(ET->ymin, PrevPt->y);
+	    if (PrevPt->y > ET->ymax)
+		ET->ymax = PrevPt->y;
+	    if (PrevPt->y < ET->ymin)
+		ET->ymin = PrevPt->y;
             pETEs++;
         }
 
@@ -375,6 +377,7 @@ static int PtsToRegion(numFullPtBlocks, iCurPtBlock, FirstPtBlock, reg)
     register int i;
     register BOX *extents;
     int numRects;
+    Bool first;
  
     extents = &reg->extents;
  
@@ -385,50 +388,46 @@ static int PtsToRegion(numFullPtBlocks, iCurPtBlock, FirstPtBlock, reg)
  
     reg->size = numRects;
     CurPtBlock = FirstPtBlock;
-    rects = reg->rects;
- 
+    rects = reg->rects - 1;
+    first = True;
     extents->x1 = MAXSHORT,  extents->x2 = MINSHORT;
  
-    while (numFullPtBlocks--) {
-        i = NUMPTSTOBUFFER >> 1;  /* the loop uses 2 points per iteration */
-        pts = CurPtBlock->pts;
-        while (i--) {
-            rects->x1 = pts->x,  rects->y1 = pts->y;
-            pts++;
-	    if (pts->x == rects->x1) {
+    for ( ; numFullPtBlocks >= 0; numFullPtBlocks--) {
+	/* the loop uses 2 points per iteration */
+	i = NUMPTSTOBUFFER >> 1;
+	if (!numFullPtBlocks)
+	    i = iCurPtBlock >> 1;
+	for (pts = CurPtBlock->pts; i--; pts += 2) {
+	    if (pts->x == pts[1].x) {
 		numRects--;
-	    } else {
-		rects->x2 = pts->x,  rects->y2 = pts->y + 1;
-		extents->x1 = MIN(extents->x1, rects->x1);
-		extents->x2 = MAX(extents->x2, rects->x2);
-		rects++;
+		continue;
 	    }
-	    pts++;
+	    if (!first && pts->x == rects->x1 && pts->y == rects->y2 &&
+		pts[1].x == rects->x2) {
+		rects->y2 = pts[1].y + 1;
+		numRects--;
+		continue;
+	    }
+	    first = False;
+	    rects++;
+	    rects->x1 = pts->x;  rects->y1 = pts->y;
+	    rects->x2 = pts[1].x;  rects->y2 = pts[1].y + 1;
+	    if (rects->x1 < extents->x1)
+		extents->x1 = rects->x1;
+	    if (rects->x2 > extents->x2)
+		extents->x2 = rects->x2;
         }
-        CurPtBlock = CurPtBlock->next;
-    }
-
-    if (iCurPtBlock) {
-	pts = CurPtBlock->pts;
-	iCurPtBlock >>= 1;
-	while (iCurPtBlock--) {
-	    rects->x1 = pts->x,  rects->y1 = pts->y;
-	    pts++;
-	    if (pts->x == rects->x1) {
-		numRects--;
-	    } else {
-		rects->x2 = pts->x,  rects->y2 = pts->y + 1;
-		extents->x1 = MIN(extents->x1, rects->x1);
-		extents->x2 = MAX(extents->x2, rects->x2);
-		rects++;
-	    }
-	    pts++;
-	}
+	CurPtBlock = CurPtBlock->next;
     }
 
     if (numRects) {
 	extents->y1 = reg->rects->y1;
-	extents->y2 = rects[-1].y2;
+	extents->y2 = rects->y2;
+    } else {
+	extents->x1 = 0;
+	extents->y1 = 0;
+	extents->x2 = 0;
+	extents->y2 = 0;
     }
     reg->numRects = numRects;
  
