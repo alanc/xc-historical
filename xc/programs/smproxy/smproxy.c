@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.11 94/07/06 16:26:34 mor Exp $ */
+/* $XConsortium: smproxy.c,v 1.12 94/07/07 10:10:04 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -42,6 +42,7 @@ Bool debug = 0;
 
 SmcConn proxy_smcConn;
 XtInputId proxy_iceInputId;
+char *proxy_clientId = NULL;
 
 WinInfo win_list[256];
 int win_count = 0;
@@ -49,8 +50,6 @@ int proxy_count = 0;
 int die_count = 0;
 
 Bool ok_to_die = 0;
-
-Bool gotFirstSave = 0;
 
 int Argc;
 char **Argv;
@@ -258,7 +257,7 @@ SmPointer clientData;
     if (die_count == proxy_count && ok_to_die)
     {
 	SmcCloseConnection (proxy_smcConn, 0, NULL);
-	exit();
+	exit (0);
     }
 }
 
@@ -649,72 +648,22 @@ Bool fast;
 
 {
     FILE *proxyFile;
-    char *home, filename[128];
+    char *path, *filename;
     Bool success = True;
-    int i;
+    SmProp prop1, prop2, prop3, prop4, prop5, *props[5];
+    SmPropValue prop3val, prop4val, prop5val;
+    char discardCommand[80], userId[20];
+    int numVals, i;
 
-    if (!gotFirstSave)
+    path = getenv ("SM_SAVE_DIR");
+    if (!path)
     {
-	SmProp prop1, prop2, prop3, prop4, *props[4];
-	SmPropValue prop3val, prop4val;
-	char userId[20];
-	int i;
-
-	prop1.name = SmRestartCommand;
-	prop1.type = SmLISTofARRAY8;
-	prop1.num_vals = Argc;
-
-	prop1.vals = (SmPropValue *) malloc (
-	    Argc * sizeof (SmPropValue));
-
-	for (i = 0; i < Argc; i++)
-	{
-	    prop1.vals[i].value = (SmPointer) Argv[i];
-	    prop1.vals[i].length = strlen (Argv[i]) + 1;
-	}
-
-	prop2.name = SmCloneCommand;
-	prop2.type = SmLISTofARRAY8;
-	prop2.num_vals = Argc;
-	prop2.vals = prop1.vals;
-    
-	prop3.name = SmProgram;
-	prop3.type = SmARRAY8;
-	prop3.num_vals = 1;
-	prop3.vals = &prop3val;
-	prop3val.value = Argv[0];
-	prop3val.length = strlen (Argv[0]) + 1;
-
-	sprintf (userId, "%d", getuid());
-	prop4.name = SmUserID;
-	prop4.type = SmARRAY8;
-	prop4.num_vals = 1;
-	prop4.vals = &prop4val;
-	prop4val.value = (SmPointer) userId;
-	prop4val.length = strlen (userId);
-
-	props[0] = &prop1;
-	props[1] = &prop2;
-	props[2] = &prop3;
-	props[3] = &prop4;
-
-	SmcSetProperties (smcConn, 4, props);
-
-	free (prop1.vals);
-	
-	SmcSaveYourselfDone (smcConn, True);
-
-	gotFirstSave = 1;
-	return;
+	path = getenv ("HOME");
+	if (!path)
+	    path = ".";
     }
 
-    /* We should really get a phase 2 */
-
-    home = (char *) getenv ("HOME");
-    if (!home)
-	home = ".";
-
-    sprintf (filename, "%s/.smproxy", home);
+    filename = tempnam (path, ".SM");
     proxyFile = fopen (filename, "wb");
 
     for (i = 0; i < win_count; i++)
@@ -725,6 +674,80 @@ Bool fast;
     }
 
     fclose (proxyFile);
+
+    prop1.name = SmRestartCommand;
+    prop1.type = SmLISTofARRAY8;
+    prop1.num_vals = Argc;
+
+    prop1.vals = (SmPropValue *) malloc (
+	(Argc + 4) * sizeof (SmPropValue));
+
+    numVals = 0;
+
+    for (i = 0; i < Argc; i++)
+    {
+	if (strcmp (Argv[i], "-clientId") == 0 ||
+	    strcmp (Argv[i], "-restore") == 0)
+	{
+	    i++;
+	}
+	else
+	{
+	    prop1.vals[numVals].value = (SmPointer) Argv[i];
+	    prop1.vals[numVals++].length = strlen (Argv[i]);
+	}
+    }
+
+    prop1.vals[numVals].value = (SmPointer) "-clientId";
+    prop1.vals[numVals++].length = 9;
+
+    prop1.vals[numVals].value = (SmPointer) proxy_clientId;
+    prop1.vals[numVals++].length = strlen (proxy_clientId);
+
+    prop1.vals[numVals].value = (SmPointer) "-restore";
+    prop1.vals[numVals++].length = 8;
+
+    prop1.vals[numVals].value = (SmPointer) filename;
+    prop1.vals[numVals++].length = strlen (filename);
+
+    prop1.num_vals = numVals;
+
+    prop2.name = SmCloneCommand;
+    prop2.type = SmLISTofARRAY8;
+    prop2.num_vals = numVals - 4;		/* don't included restart */
+    prop2.vals = prop1.vals;
+    
+    prop3.name = SmProgram;
+    prop3.type = SmARRAY8;
+    prop3.num_vals = 1;
+    prop3.vals = &prop3val;
+    prop3val.value = Argv[0];
+    prop3val.length = strlen (Argv[0]);
+
+    sprintf (discardCommand, "rm %s", filename);
+    prop4.name = SmDiscardCommand;
+    prop4.type = SmARRAY8;
+    prop4.num_vals = 1;
+    prop4.vals = &prop4val;
+    prop4val.value = (SmPointer) discardCommand;
+    prop4val.length = strlen (discardCommand);
+
+    sprintf (userId, "%d", getuid());
+    prop5.name = SmUserID;
+    prop5.type = SmARRAY8;
+    prop5.num_vals = 1;
+    prop5.vals = &prop5val;
+    prop5val.value = (SmPointer) userId;
+    prop5val.length = strlen (userId);
+
+    props[0] = &prop1;
+    props[1] = &prop2;
+    props[2] = &prop3;
+    props[3] = &prop4;
+    props[4] = &prop5;
+
+    SmcSetProperties (smcConn, 5, props);
+    free (prop1.vals);
 
     SmcSaveYourselfDone (smcConn, success);
 }
@@ -745,7 +768,7 @@ SmPointer clientData;
     if (die_count == proxy_count)
     {
 	SmcCloseConnection (proxy_smcConn, 0, NULL);
-	exit();
+	exit (0);
     }
     else
 	XtRemoveInput (proxy_iceInputId);
@@ -777,14 +800,15 @@ SmPointer clientData;
 
 
 
-ConnectProxyToSM ()
+ConnectProxyToSM (previous_id)
+
+char *previous_id;
 
 {
     char errorMsg[256];
     unsigned long mask;
     SmcCallbacks callbacks;
     IceConn iceConn;
-    char *clientId;
 
     mask = SmcSaveYourselfProcMask | SmcDieProcMask |
 	SmcSaveCompleteProcMask | SmcShutdownCancelledProcMask;
@@ -808,8 +832,8 @@ ConnectProxyToSM ()
 	SmProtoMinor,
 	mask,
 	&callbacks,
-	NULL,			/* previous ID */
-	&clientId,
+	previous_id,
+	&proxy_clientId,
 	256, errorMsg);
 
     if (proxy_smcConn == NULL)
@@ -879,21 +903,42 @@ int argc;
 char **argv;
 
 {
-    int zero = 0;
+    char *restore_filename = NULL;
+    char *client_id = NULL;
+    int i, zero = 0;
 
     Argc = argc;
     Argv = argv;
 
-    if (argc > 1)
+    for (i = 1; i < argc; i++)
     {
-	debug = (argc == 2 && strcmp (argv[1], "-debug") == 0);
-
-	if (!debug)
+	if (argv[i][0] == '-')
 	{
-	    printf ("usage: smproxy [-debug]\n");
-	    exit (1);
+	    switch (argv[i][1])
+	    {
+	      case 'd':				/* -debug */
+		debug = 1;
+		continue;
+
+	      case 'c':				/* -clientId */
+		if (++i >= argc) goto usage;
+		client_id = argv[i];
+		continue;
+
+	      case 'r':				/* -restore */
+		if (++i >= argc) goto usage;
+		restore_filename = argv[i];
+		continue;
+	    }
 	}
+
+    usage:
+
+	fprintf (stderr,
+	    "usage:  %s [-clientId id] [-restore file] [-debug]\n", argv[0]);
+	exit (1);
     }
+
 
     XtToolkitInitialize ();
     appContext = XtCreateApplicationContext ();
@@ -909,8 +954,10 @@ char **argv;
     XSetErrorHandler (my_error);
 #endif
 
-    ReadProxyFile ();
-    ConnectProxyToSM ();
+    if (restore_filename)
+	ReadProxyFile (restore_filename);
+
+    ConnectProxyToSM (client_id);
 
     root = DefaultRootWindow (disp);
 
