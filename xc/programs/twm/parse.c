@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.9 89/11/13 10:52:56 jim Exp $
+ * $XConsortium: parse.c,v 1.10 89/11/13 15:16:26 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.9 89/11/13 10:52:56 jim Exp $";
+"$XConsortium: parse.c,v 1.10 89/11/13 15:16:26 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -282,9 +282,8 @@ typedef struct _TwmKeyword {
 #define kws_MenuFont			4
 #define kws_TitleFont			5
 #define kws_IconManagerFont		6
-#define kws_IconManagerGeometry		7
-#define kws_UnknownIcon			8
-#define kws_IconDirectory		9
+#define kws_UnknownIcon			7
+#define kws_IconDirectory		8
 
 #define kwn_ConstrainedMoveTime		1
 #define kwn_MoveDelta			2
@@ -656,10 +655,6 @@ int do_string_keyword (keyword, s)
 
       case kws_IconManagerFont:
 	if (!Scr->HaveFonts) Scr->IconManagerFont.name = s;
-	return 1;
-
-      case kws_IconManagerGeometry:
-	Scr->iconmgr.geometry = s;
 	return 1;
 
       case kws_UnknownIcon:
