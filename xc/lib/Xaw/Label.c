@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.31 87/12/29 11:06:55 swick Locked $";
+static char rcsid[] = "$Header: Label.c,v 1.32 88/01/22 13:45:12 swick Locked $";
 #endif lint
 
 /*
@@ -40,10 +40,10 @@ static char rcsid[] = "$Header: Label.c,v 1.31 87/12/29 11:06:55 swick Locked $"
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include "Intrinsic.h"
-#include "Label.h"
+#include <X/Intrinsic.h>
+#include <X/Atoms.h>
+#include <X/Label.h>
 #include "LabelP.h"
-#include "Atoms.h"
 
 #define IsSensitive(w)	((w)->core.sensitive && (w)->core.ancestor_sensitive)
 
