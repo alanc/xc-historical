@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.171 89/12/10 21:08:38 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.172 89/12/10 21:31:07 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -1072,7 +1072,7 @@ typedef union { Display *display;
 extern XFontStruct *XLoadQueryFont(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    char*		/* name */
+    const char*		/* name */
 #endif
 );
 
@@ -1178,7 +1178,7 @@ extern XImage *XGetSubImage(
  */
 extern Display *XOpenDisplay(
 #if NeedFunctionPrototypes
-    char*		/* display_name */
+    const char*		/* display_name */
 #endif
 );
 
@@ -1210,13 +1210,13 @@ extern char *XGetAtomName(
 extern char *XGetDefault(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    char*		/* program */,
-    char*		/* option */		  
+    const char*		/* program */,
+    const char*		/* option */		  
 #endif
 );
 extern char *XDisplayName(
 #if NeedFunctionPrototypes
-    char*		/* string */
+    const char*		/* string */
 #endif
 );
 extern char *XKeysymToString(
@@ -1241,7 +1241,7 @@ extern int (*XSetAfterFunction(
 extern Atom XInternAtom(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    char*		/* atom_name */,
+    const char*		/* atom_name */,
     Bool		/* only_if_exists */		 
 #endif
 );
@@ -1290,7 +1290,7 @@ extern Cursor XCreateFontCursor(
 extern Font XLoadFont(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    char*		/* name */
+    const char*		/* name */
 #endif
 );
 extern GC XCreateGC(
@@ -1319,7 +1319,7 @@ extern Pixmap XCreateBitmapFromData(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Drawable		/* d */,
-    char*		/* data */,
+    const char*		/* data */,
     unsigned int	/* width */,
     unsigned int	/* height */
 #endif
@@ -1381,7 +1381,7 @@ extern Colormap *XListInstalledColormaps(
 extern char **XListFonts(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    char*		/* pattern */,
+    const char*		/* pattern */,
     int			/* maxnames */,
     int*		/* actual_count_return */
 #endif
@@ -1389,7 +1389,7 @@ extern char **XListFonts(
 extern char **XListFontsWithInfo(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    char*		/* pattern */,
+    const char*		/* pattern */,
     int			/* maxnames */,
     int*		/* count_return */,
     XFontStruct**	/* info_return */
@@ -1452,7 +1452,7 @@ extern KeySym *XGetKeyboardMapping(
 );
 extern KeySym XStringToKeysym(
 #if NeedFunctionPrototypes
-    char*		/* string */
+    const char*		/* string */
 #endif
 );
 extern long XMaxRequestSize(
@@ -1481,7 +1481,7 @@ extern VisualID XVisualIDFromVisual(
 extern XExtCodes *XInitExtension(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    char*		/* name */
+    const char*		/* name */
 #endif
 );
 
@@ -1821,7 +1821,7 @@ extern Status XAllocNamedColor(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Colormap		/* colormap */,
-    char*		/* color_name */,
+    const char*		/* color_name */,
     XColor*		/* screen_def_return */,
     XColor*		/* exact_def_return */
 #endif
@@ -1933,7 +1933,7 @@ extern XChangeProperty(
     Atom		/* type */,
     int			/* format */,
     int			/* mode */,
-    unsigned char*	/* data */,
+    const unsigned char*	/* data */,
     int			/* nelements */
 #endif
 );
@@ -2263,7 +2263,7 @@ extern XDrawImageString(
     GC			/* gc */,
     int			/* x */,
     int			/* y */,
-    char*		/* string */,
+    const char*		/* string */,
     int			/* length */
 #endif
 );
@@ -2363,7 +2363,7 @@ extern XDrawString(
     GC			/* gc */,
     int			/* x */,
     int			/* y */,
-    char*		/* string */,
+    const char*		/* string */,
     int			/* length */
 #endif
 );
@@ -2583,8 +2583,8 @@ extern int XGeometry(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     int			/* screen */,
-    char*		/* position */,
-    char*		/* default_position */,
+    const char*		/* position */,
+    const char*		/* default_position */,
     unsigned int	/* bwidth */,
     unsigned int	/* fwidth */,
     unsigned int	/* fheight */,
@@ -2600,9 +2600,9 @@ extern int XGeometry(
 extern XGetErrorDatabaseText(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    char*		/* name */,
-    char*		/* message */,
-    char*		/* default_string */,
+    const char*		/* name */,
+    const char*		/* message */,
+    const char*		/* default_string */,
     char*		/* buffer_return */,
     int			/* length */
 #endif
@@ -2850,7 +2850,7 @@ extern Status XLookupColor(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Colormap		/* colormap */,
-    char*		/* color_name */,
+    const char*		/* color_name */,
     XColor*		/* exact_def_return */,
     XColor*		/* screen_def_return */
 #endif
@@ -2941,14 +2941,14 @@ extern Status XParseColor(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Colormap		/* colormap */,
-    char*		/* spec */,
+    const char*		/* spec */,
     XColor*		/* exact_def_return */
 #endif
 );
 
 extern int XParseGeometry(
 #if NeedFunctionPrototypes
-    char*		/* parsestring */,
+    const char*		/* parsestring */,
     int*		/* x_return */,
     int*		/* y_return */,
     unsigned int*	/* width_return */,
@@ -3094,7 +3094,7 @@ extern XQueryColors(
 extern Bool XQueryExtension(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    char*		/* name */,
+    const char*		/* name */,
     int*		/* major_opcode_return */,
     int*		/* first_event_return */,
     int*		/* first_error_return */
@@ -3126,7 +3126,7 @@ extern XQueryTextExtents(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     XID			/* font_ID */,
-    char*		/* string */,
+    const char*		/* string */,
     int			/* nchars */,
     int*		/* direction_return */,
     int*		/* font_ascent_return */,
@@ -3170,7 +3170,7 @@ extern int XReadBitmapFile(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Drawable 		/* d */,
-    char*		/* filename */,
+    const char*		/* filename */,
     unsigned int*	/* width_return */,
     unsigned int*	/* height_return */,
     Pixmap*		/* bitmap_return */,
@@ -3185,7 +3185,7 @@ extern XRebindKeysym(
     KeySym		/* keysym */,
     KeySym*		/* list */,
     int			/* mod_count */,
-    unsigned char*	/* string */,
+    const unsigned char*	/* string */,
     int			/* bytes_string */
 #endif
 );
@@ -3374,7 +3374,7 @@ extern XSetDashes(
     Display*		/* display */,
     GC			/* gc */,
     int			/* dash_offset */,
-    char*		/* dash_list */,
+    const char*		/* dash_list */,
     int			/* n */
 #endif
 );
@@ -3439,7 +3439,7 @@ extern XSetIconName(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
-    char*		/* icon_name */
+    const char*		/* icon_name */
 #endif
 );
 
@@ -3481,7 +3481,7 @@ extern XSetPlaneMask(
 extern int XSetPointerMapping(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    unsigned char*	/* map */,
+    const unsigned char*	/* map */,
     int			/* nmap */
 #endif
 );
@@ -3600,7 +3600,7 @@ extern XSetWindowColormap(
 extern XStoreBuffer(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    char*		/* bytes */,
+    const char*		/* bytes */,
     int			/* nbytes */,
     int			/* buffer */
 #endif
@@ -3609,7 +3609,7 @@ extern XStoreBuffer(
 extern XStoreBytes(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    char*		/* bytes */,
+    const char*		/* bytes */,
     int			/* nbytes */
 #endif
 );
@@ -3635,7 +3635,7 @@ extern XStoreName(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
-    char*		/* window_name */
+    const char*		/* window_name */
 #endif
 );
 
@@ -3643,7 +3643,7 @@ extern XStoreNamedColor(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Colormap		/* colormap */,
-    char*		/* color */,
+    const char*		/* color */,
     unsigned long	/* pixel */,
     int			/* flags */
 #endif
@@ -3659,7 +3659,7 @@ extern XSync(
 extern XTextExtents(
 #if NeedFunctionPrototypes
     XFontStruct*	/* font_struct */,
-    char*		/* string */,
+    const char*		/* string */,
     int			/* nchars */,
     int*		/* direction_return */,
     int*		/* font_ascent_return */,
@@ -3683,7 +3683,7 @@ extern XTextExtents16(
 extern int XTextWidth(
 #if NeedFunctionPrototypes
     XFontStruct*	/* font_struct */,
-    char*		/* string */,
+    const char*		/* string */,
     int			/* count */
 #endif
 );
@@ -3826,7 +3826,7 @@ extern XWindowEvent(
 extern int XWriteBitmapFile(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    char*		/* filename */,
+    const char*		/* filename */,
     Pixmap		/* bitmap */,
     unsigned int	/* width */,
     unsigned int	/* height */,

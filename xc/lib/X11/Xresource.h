@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.21 89/12/09 20:53:15 jim Exp $ */
+/* $XConsortium: Xresource.h,v 1.22 89/12/10 21:39:48 jim Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -97,7 +97,7 @@ typedef char *XrmString;
 /* find quark for string, create new quark if none already exists */
 extern XrmQuark XrmStringToQuark(
 #if NeedFunctionPrototypes
-    XrmString 		/* string */
+    const XrmString 	/* string */
 #endif
 );
 
@@ -127,14 +127,14 @@ typedef enum {XrmBindTightly, XrmBindLoosely} XrmBinding, *XrmBindingList;
 
 extern void XrmStringToQuarkList(
 #if NeedFunctionPrototypes
-    char*		/* string */,
+    const char*		/* string */,
     XrmQuarkList	/* quarks_return */
 #endif
 );
 
 extern void XrmStringToBindingQuarkList(
 #if NeedFunctionPrototypes
-    char*		/* string */,
+    const char*		/* string */,
     XrmBindingList	/* bindings_return */,
     XrmQuarkList	/* quarks_return */
 #endif
@@ -207,8 +207,8 @@ extern void XrmQPutResource(
 extern void XrmPutResource(
 #if NeedFunctionPrototypes
     XrmDatabase*	/* database */,
-    char*		/* specifier */,
-    char*		/* type */,
+    const char*		/* specifier */,
+    const char*		/* type */,
     XrmValue*		/* value */
 #endif
 );
@@ -218,22 +218,22 @@ extern void XrmQPutStringResource(
     XrmDatabase*	/* database */,
     XrmBindingList      /* bindings */,
     XrmQuarkList	/* quarks */,
-    char*		/* value */
+    const char*		/* value */
 #endif
 );
 
 extern void XrmPutStringResource(
 #if NeedFunctionPrototypes
     XrmDatabase*	/* database */,
-    char*		/* specifier */,
-    char*		/* value */
+    const char*		/* specifier */,
+    const char*		/* value */
 #endif
 );
 
 extern void XrmPutLineResource(
 #if NeedFunctionPrototypes
     XrmDatabase*	/* database */,
-    char*		/* line */
+    const char*		/* line */
 #endif
 );
 
@@ -250,8 +250,8 @@ extern  XrmQGetResource(
 extern Bool XrmGetResource(
 #if NeedFunctionPrototypes
     XrmDatabase		/* database */,
-    char*		/* str_name */,
-    char*		/* str_class */,
+    const char*		/* str_name */,
+    const char*		/* str_class */,
     char**		/* str_type_return */,
     XrmValue*		/* value_return */
 #endif
@@ -285,20 +285,20 @@ extern Bool XrmQGetSearchResource(
 
 extern XrmDatabase XrmGetFileDatabase(
 #if NeedFunctionPrototypes
-    char*		/* filename */
+    const char*		/* filename */
 #endif
 );
 
 extern XrmDatabase XrmGetStringDatabase(
 #if NeedFunctionPrototypes
-    char*		/* data */  /*  null terminated string */
+    const char*		/* data */  /*  null terminated string */
 #endif
 );
 
 extern void XrmPutFileDatabase(
 #if NeedFunctionPrototypes
     XrmDatabase		/* database */,
-    char*		/* filename */
+    const char*		/* filename */
 #endif
 );
 
@@ -342,7 +342,7 @@ extern void XrmParseCommand(
     XrmDatabase*	/* database */,
     XrmOptionDescList	/* table */,
     int			/* table_count */,
-    char*		/* name */,
+    const char*		/* name */,
     int*		/* argc_in_out */,
     char**		/* argv_in_out */		     
 #endif

@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.52 89/12/09 18:54:40 rws Exp $ */
+/* $XConsortium: Xutil.h,v 11.53 89/12/10 21:39:45 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -296,7 +296,7 @@ extern int XSaveContext(
     Display*		/* display */,
     Window		/* w */,
     XContext		/* context */,
-    caddr_t		/* data */
+    const caddr_t	/* data */
 #endif
 );
 
@@ -703,8 +703,8 @@ extern XSetStandardProperties(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
-    char*		/* window_name */,
-    char*		/* icon_name */,
+    const char*		/* window_name */,
+    const char*		/* icon_name */,
     Pixmap		/* icon_pixmap */,
     char**		/* argv */,
     int			/* argc */,
@@ -781,8 +781,8 @@ extern int XWMGeometry(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     int			/* screen_number */,
-    char*		/* user_geometry */,
-    char*		/* default_geometry */,
+    const char*		/* user_geometry */,
+    const char*		/* default_geometry */,
     unsigned int	/* border_width */,
     XSizeHints*		/* hints */,
     int*		/* x_return */,
