@@ -3,7 +3,7 @@
 
     CDEBUGFLAGS = -g
         SUBDIRS = clients
-       INCLUDES = -I. -I$(OLDXRMSRC) -I$(XLIBSRC) -I$(TOP) -I$(TOP)/X11
+       INCLUDES = -I. -I$(XRMSRC) -I$(XLIBSRC) -I$(TOP) -I$(TOP)/X11
 #if BigEndianArchitecture == YES
         DEFINES = -DLIBDIR=\"$(LIBDIR)\" -DBIGENDIAN
 #else
