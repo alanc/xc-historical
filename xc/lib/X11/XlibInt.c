@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.125 90/09/11 08:47:49 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.126 90/12/09 16:29:28 rws Exp $
  */
 
 #include "copyright.h"
@@ -1585,9 +1585,9 @@ void _XFreeQ ()
     register _XQEvent *qelt = _qfree;
   
     while (qelt) {
-	register _XQEvent *qnext = qelt->next;
+	register _XQEvent *qnxt = qelt->next;
 	Xfree ((char *) qelt);
-	qelt = qnext;
+	qelt = qnxt;
     }
     _qfree = NULL;
     return;
