@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.130 88/01/04 08:25:36 rws Exp $ */
+/* $Header: main.c,v 1.131 88/02/14 16:30:39 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -374,19 +374,6 @@ CreateConnectionBlock()
     connSetupPrefix.length = lenofblock/4;
     connSetupPrefix.majorVersion = X_PROTOCOL;
     connSetupPrefix.minorVersion = X_PROTOCOL_REVISION;
-}
-
-
-/*VARARGS1*/
-FatalError (msg, v0, v1, v2, v3, v4, v5, v6, v7, v8)
-    char *msg;
-    char *v0, *v1, *v2, *v3, *v4, *v5, *v6, *v7, *v8;
-{
-    ErrorF("\nFatal server bug!\n");
-    ErrorF(msg, v0, v1, v2, v3, v4, v5, v6, v7, v8);
-    ErrorF("\n");
-    AbortServer();
-    /*NOTREACHED*/
 }
 
 /*
