@@ -23,10 +23,14 @@
  * Author:  Dale Tonogai, Network Computing Devices
  */
 
+#include <X11/Xos.h>
 #include <errno.h>
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
 #include <sys/param.h>
 #include <sys/uio.h>
-#include "bufferstr.h"
+#include "lbxbufstr.h"
 
 #define NULL		0
 
