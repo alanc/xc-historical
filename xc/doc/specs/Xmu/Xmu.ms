@@ -22,7 +22,7 @@ Introduction
 .LP
 The Xmu Library is a collection of miscellaneous (some might say random)
 utility functions that have been useful in building various applications
-and widgets.
+and widgets.  This library is required by the Athena Widgets.
 .LP
 .NH 1
 Atom Functions
@@ -127,8 +127,16 @@ void XmuInternStrings(\fId\fP, \fInames\fP, \fIcount\fP, \fIatoms\fP)
 .br
       Cardinal \fIcount\fP;
 .br
-      Atom *\fIatoms\fP; /* RETURN */
+      Atom *\fIatoms\fP;
 .FN
+.IP \fId\fP 1i
+specifies the connection to the X server
+.IP \fInames\fP 1i
+specifies the strings to intern
+.IP \fIcount\fP 1i
+specifies the number of strings
+.IP \fIatoms\fP 1i
+returns the list of Atom values
 .LP
 Convert a list of atom names into
 .PN Atom
@@ -372,11 +380,23 @@ This function frees a pixmap created with
 .sp
 .FD 0
 int XmuReadBitmapData(\fIfstream\fP, \fIwidth\fP, \fIheight\fP, \fIdatap\fP, \fIx_hot\fP, \fIy_hot\fP)
-    FILE *\fIfstream\fP;			/* handle on file  */
-    unsigned int *\fIwidth\fP, *\fIheight\fP;	/* RETURNED */
-    unsigned char **\fIdatap\fP;		/* RETURNED */
-    int *\fIx_hot\fP, *\fIy_hot\fP;			/* RETURNED */
+    FILE *\fIfstream\fP;
+    unsigned int *\fIwidth\fP, *\fIheight\fP;
+    unsigned char **\fIdatap\fP;
+    int *\fIx_hot\fP, *\fIy_hot\fP;
 .FN
+.IP \fIstream\fP 1i
+specifies the stream to read from
+.IP \fIwidth\fP 1i
+returns the width of the bitmap
+.IP \fIheight\fP 1i
+returns the height of the bitmap
+.IP \fIdatap\fP 1i
+returns the parsed bitmap data
+.IP \fIx_hot\fP 1i
+returns the x coordinate of the hotspot
+.IP \fIy_hot\fP 1i
+returns the y coordinate of the hotspot
 .LP
 This function reads a standard bitmap file description from the specified
 stream, and returns the parsed data in a format suitable for passing to
@@ -388,10 +408,22 @@ interpretation as the return value for
 .FD 0
 int XmuReadBitmapDataFromFile(\fIfilename\fP, \fIwidth\fP, \fIheight\fP, \fIdatap\fP, \fIx_hot\fP, \fIy_hot\fP)
     char *\fIfilename\fP;
-    unsigned int *\fIwidth\fP, *\fIheight\fP;	/* RETURNED */
-    unsigned char **\fIdatap\fP;		/* RETURNED */
-    int *\fIx_hot\fP, *\fIy_hot\fP;			/* RETURNED */
+    unsigned int *\fIwidth\fP, *\fIheight\fP;
+    unsigned char **\fIdatap\fP;
+    int *\fIx_hot\fP, *\fIy_hot\fP;
 .FN
+.IP \fIfilename\fP 1i
+specifies the file to read from
+.IP \fIwidth\fP 1i
+returns the width of the bitmap
+.IP \fIheight\fP 1i
+returns the height of the bitmap
+.IP \fIdatap\fP 1i
+returns the parsed bitmap data
+.IP \fIx_hot\fP 1i
+returns the x coordinate of the hotspot
+.IP \fIy_hot\fP 1i
+returns the y coordinate of the hotspot
 .LP
 This function reads a standard bitmap file description from the specified
 file, and returns the parsed data in a format suitable for passing to
@@ -404,10 +436,24 @@ interpretation as the return value for
 Pixmap XmuLocateBitmapFile(\fIscreen\fP, \fIname\fP, \fIsrcname\fP, \fIsrcnamelen\fP, \fIwidthp\fP, \fIheightp\fP, \fIxhotp\fP, \fIyhotp\fP)
     Screen *\fIscreen\fP;
     char *\fIname\fP;
-    char *\fIsrcname\fP; /* RETURN */
+    char *\fIsrcname\fP;
     int \fIsrcnamelen\fP;
-    int *\fIwidthp\fP, *\fIheightp\fP, *\fIxhotp\fP, *\fIyhotp\fP; /* RETURN */
+    int *\fIwidthp\fP, *\fIheightp\fP, *\fIxhotp\fP, *\fIyhotp\fP;
 .FN
+.IP \fIname\fP 1i
+specifies the file to read from
+.IP \fIsrcname\fP 1i
+returns the full filename of the bitmap
+.IP \fIsrcnamelen\fP 1i
+specifies the length of the srcname buffer
+.IP \fIwidth\fP 1i
+returns the width of the bitmap
+.IP \fIheight\fP 1i
+returns the height of the bitmap
+.IP \fIxhotp\fP 1i
+returns the x coordinate of the hotspot
+.IP \fIyhotp\fP 1i
+returns the y coordinate of the hotspot
 .LP
 This function reads a file in standard bitmap file format, using
 .PN XReadBitmapFile ,
@@ -416,18 +462,34 @@ absolute, or relative to the global resource named bitmapFilePath with class
 BitmapFilePath.  If the resource is not defined, the default value is the
 build symbol BITMAPDIR, which is typically "/usr/include/X11/bitmaps".  If
 srcnamelen is greater than zero and srcname is not NULL, the null terminated
-filename will be copied into srcname.  The size of hotspot of the bitmap are
+filename will be copied into srcname.  The size and hotspot of the bitmap are
 also returned.
 .sp
 .FD 0
 Pixmap XmuCreatePixmapFromBitmap(\fIdpy\fP, \fId\fP, \fIbitmap\fP, \fIwidth\fP, \fIheight\fP, \fIdepth\fP, \fIfore\fP, \fIback\fP)
-    Display *\fIdpy\fP;			/* connection to X server */
-    Drawable \fId\fP;				/* drawable indicating screen */
-    Pixmap \fIbitmap\fP;			/* single plane pixmap */
-    unsigned int \fIwidth\fP, \fIheight\fP;		/* dimensions of bitmap and pixmap */
-    unsigned int \fIdepth\fP;			/* depth of pixmap to create */
-    unsigned long \fIfore\fP, \fIback\fP;		/* colors to use */
+    Display *\fIdpy\fP;
+    Drawable \fId\fP;
+    Pixmap \fIbitmap\fP;
+    unsigned int \fIwidth\fP, \fIheight\fP;
+    unsigned int \fIdepth\fP;
+    unsigned long \fIfore\fP, \fIback\fP;
 .FN
+.IP \fIdpy\fP 1i
+specifies the connection to the X server
+.IP \fId\fP 1i
+specifies the screen the pixmap is created on
+.IP \fIbitmap\fP 1i
+specifies the bitmap source
+.IP \fIwidth\fP 1i
+specifies the width of the pixmap
+.IP \fIheight\fP 1i
+specifies the height of the pixmap
+.IP \fIdepth\fP 1i
+specifies the depth of the pixmap
+.IP \fIfore\fP 1i
+specifies the foreground pixel value
+.IP \fIback\fP 1i
+specifies the background pixel value
 .LP
 This function creates a pixmap of the specified width, height, and depth, on
 the same screen as the specified drawable, and then performs an
@@ -476,32 +538,48 @@ file
 .FD 0
 void XmuCvtFunctionToCallback(\fIargs\fP, \fInum_args\fP, \fIfromVal\fP, \fItoVal\fP)
 .br
-      XrmValue *\fIargs\fP; /* unused */
+      XrmValue *\fIargs\fP;
 .br
-      Cardinal *\fInum_args\fP;	/* unused */
+      Cardinal *\fInum_args\fP;
 .br
       XrmValuePtr \fIfromVal\fP;
 .br
       XrmValuePtr \fItoVal\fP;
 .FN
+.IP \fIargs\fP 1i
+this argument is ignored
+.IP \fInum_args\fP 1i
+this argument is ignored
+.IP \fIfromVal\fP 1i
+the function to convert
+.IP \fItoVal\fP
+the place to store the converted value
 .LP
 This function converts a callback procedure to a callback list containing
 that procedure, with NULL closure data.  To use this converter, include the
-following in your ClassInitialize procedure:
+following in your widget's ClassInitialize procedure:
 .LP
 XtAddConverter(XtRCallProc, XtRCallback, XmuCvtFunctionToCallback, NULL, 0);
 .sp
 .FD 0
 void XmuCvtStringToBackingStore(\fIargs\fP, \fInum_args\fP, \fIfromVal\fP, \fItoVal\fP)
 .br
-      XrmValue *\fIargs\fP; /* unused */
+      XrmValue *\fIargs\fP;
 .br
-      Cardinal *\fInum_args\fP; /* unused */
+      Cardinal *\fInum_args\fP;
 .br
       XrmValuePtr \fIfromVal\fP;
 .br
       XrmValuePtr \fItoVal\fP;
 .FN
+.IP \fIargs\fP 1i
+this argument is ignored
+.IP \fInum_args\fP 1i
+this argument is ignored
+.IP \fIfromVal\fP 1i
+specifies the string to convert
+.IP \fItoVal\fP
+returns the converted value
 .LP
 This function converts a string to a backing-store integer as defined in
 .Pn < X11/X.h >.
@@ -517,7 +595,7 @@ The string "default" converts to the value
 .PN NotUseful .
 The case of the string does not matter.
 To use this converter, include the following
-in your ClassInitialize procedure:
+in your widget's ClassInitialize procedure:
 .LP
 XtAddConverter(XtRString, XtRBackingStore, XmuCvtStringToBackingStore, NULL, 0);
 .sp
@@ -532,12 +610,20 @@ void XmuCvtStringToBitmap(\fIargs\fP, \fInum_args\fP, \fIfromVal\fP, \fItoVal\fP
 .br
       XrmValuePtr \fItoVal\fP;
 .FN
+.IP \fIargs\fP 1i
+the sole argument specifies the Screen on which to create the bitmap
+.IP \fInum_args\fP 1i
+must be the value 1
+.IP \fIfromVal\fP 1i
+specifies the string to convert
+.IP \fItoVal\fP
+returns the converted value
 .LP
 This function creates a bitmap (a Pixmap of depth one) suitable for window
 manager icons.  The string argument is the name of a file in standard bitmap
 file format.  For the possible filename specifications, see
 .PN XmuLocateBitmapFile .
-To use this converter, include the following in your
+To use this converter, include the following in your widget's
 ClassInitialize procedure:
 .LP
 static XtConvertArgRec screenConvertArg[] = {
@@ -561,6 +647,14 @@ void XmuCvtStringToCursor(\fIargs\fP, \fInum_args\fP, \fIfromVal\fP, \fItoVal\fP
 .br
       XrmValuePtr \fItoVal\fP;
 .FN
+.IP \fIargs\fP 1i
+this argument is ignored
+.IP \fInum_args\fP 1i
+this argument is ignored
+.IP \fIfromVal\fP 1i
+specifies the string to convert
+.IP \fItoVal\fP
+returns the converted value
 .LP
 This function converts a string to a
 .PN Cursor .
@@ -571,7 +665,7 @@ glyph index of the form "FONT fontname index [[font] index]", or a bitmap
 filename acceptable to
 .PN XmuLocateBitmapFile .
 To use this converter, include
-the following in your ClassInitialize procedure:
+the following in your widget's ClassInitialize procedure:
 .LP
 static XtConvertArgRec screenConvertArg[] = {
 .br
@@ -586,25 +680,33 @@ XtAddConverter(XtRString, XtRCursor, XmuCvtStringToCursor,
 .FD 0
 void XmuCvtStringToJustify(\fIargs\fP, \fInum_args\fP, \fIfromVal\fP, \fItoVal\fP)
 .br
-      XrmValuePtr *\fIargs\fP;	/* unused */
+      XrmValuePtr *\fIargs\fP;
 .br
-      Cardinal *\fInum_args\fP;	/* unused */
+      Cardinal *\fInum_args\fP;
 .br
       XrmValuePtr \fIfromVal\fP;
 .br
       XrmValuePtr \fItoVal\fP;
 .FN
+.IP \fIargs\fP 1i
+this argument is ignored
+.IP \fInum_args\fP 1i
+this argument is ignored
+.IP \fIfromVal\fP 1i
+specifies the string to convert
+.IP \fItoVal\fP
+returns the converted value
 .LP
 This function converts a string to an
 .PN XtJustify
 enumeration value.  The string "left" converts to
-.PN XtELeft ,
+.PN XtJustifyLeft ,
 "center" converts to
-.PN XtEcenter ,
+.PN XtJustifyCenter ,
 and "right" converts to
-.PN XtERight .
-The case of the string does not matter.  To
-use this converter, include the following in your ClassInitialize procedure:
+.PN XtJustifyRight .
+The case of the string does not matter.  To use this converter,
+include the following in your widget's ClassInitialize procedure:
 .LP
 XtAddConverter(XtRString, XtRJustify, XmuCvtStringToJustify, NULL, 0);
 .sp
@@ -619,26 +721,42 @@ void XmuCvtStringToLong(\fIargs\fP, \fInum_args\fP, \fIfromVal\fP, \fItoVal\fP)
 .br
       XrmValuePtr \fItoVal\fP;
 .FN
+.IP \fIargs\fP 1i
+this argument is ignored
+.IP \fInum_args\fP 1i
+this argument must be zero
+.IP \fIfromVal\fP 1i
+specifies the string to convert
+.IP \fItoVal\fP
+returns the converted value
 .LP
 This function converts a string to an integer of type long.  It parses the
 string using
 .PN sscanf
 with a format of "%ld".  To use this converter, include
-the following in your ClassInitialize procedure:
+the following in your widget's ClassInitialize procedure:
 .LP
 XtAddConverter(XtRString, XtRLong, XmuCvtStringToLong, NULL, 0);
 .sp
 .FD 0
 void XmuCvtStringToOrientation(\fIargs\fP, \fInum_args\fP, \fIfromVal\fP, \fItoVal\fP)
 .br
-      XrmValuePtr *\fIargs\fP; /* unused */
+      XrmValuePtr *\fIargs\fP;
 .br
-      Cardinal *\fInum_args\fP; /* unused */
+      Cardinal *\fInum_args\fP;
 .br
       XrmValuePtr \fIfromVal\fP;
 .br
       XrmValuePtr \fItoVal\fP;
 .FN
+.IP \fIargs\fP 1i
+this argument is ignored
+.IP \fInum_args\fP 1i
+this argument is ignored
+.IP \fIfromVal\fP 1i
+specifies the string to convert
+.IP \fItoVal\fP
+returns the converted value
 .LP
 This function converts a string to an
 .PN XtOrientation
@@ -646,8 +764,8 @@ enumeration value.  The string "horizontal" converts to
 .PN XtorientHorizontal
 and "vertical" converts to
 .PN XtorientVertical .
-The case of the string does not matter.  To use this
-converter, include the following in your ClassInitialize procedure:
+The case of the string does not matter.  To use this converter,
+include the following in your widget's ClassInitialize procedure:
 .LP
 XtAddConverter(XtRString, XtROrientation, XmuCvtStringToOrientation, NULL, 0);
 .sp
@@ -656,33 +774,46 @@ Boolean XmuCvtStringToShapeStyle(\fIdpy\fP, \fIargs\fP, \fInum_args\fP, \fIfrom\
 .br
       Display *\fIdpy\fP;
 .br
-      XrmValue *\fIargs\fP;		/* unused */
+      XrmValue *\fIargs\fP;
 .br
-      Cardinal *\fInum_args\fP;		/* unused */
+      Cardinal *\fInum_args\fP;
 .br
       XrmValue *\fIfrom\fP;
 .br
       XrmValue *\fItoVal\fP;
 .br
-      XtPointer *\fIdata\fP;		/* unused */
+      XtPointer *\fIdata\fP;
 .FN
+.IP \fIdpy\fP 1i
+the display to use for conversion warnings
+.IP \fIargs\fP 1i
+this argument is ignored
+.IP \fInum_args\fP 1i
+this argument is ignored
+.IP \fIfromVal\fP 1i
+the value to convert from
+.IP \fItoVal\fP
+the place to store the converted value
+.IP \fIdata\fP 1i
+this argument is ignored
 .LP
 This function converts a string to an integer shape style.  The string
-"Rectangle" converts to
+"rectangle" converts to
 .PN XmuShapeRectangle ,
-"Oval" converts to
+"oval" converts to
 .PN XmuShapeOval ,
-"Ellipse" converts to
+"ellipse" converts to
 .PN XmuShapeEllipse ,
-and "RoundedRectangle" converts to
+and "roundedRectangle" converts to
 .PN XmuShapeRoundedRectangle .
-The case of the string does not matter.  To use
-this converter, include the following in your ClassInitialize procedure:
+The case of the string does not matter.  To use this converter,
+include the following in your widget's ClassInitialize procedure:
 .LP
 XtSetTypeConverter(XtRString, XtRShapeStyle, XmuCvtStringToShapeStyle,
 .br
 		     NULL, 0, XtCacheNone, NULL);
-.LP
+.sp
+.FD 0
 Boolean XmuReshapeWidget(w, \fIshape_style\fP, \fIcorner_width\fP, \fIcorner_height\fP)
 .br
       Widget \fIw\fP;
@@ -690,9 +821,25 @@ Boolean XmuReshapeWidget(w, \fIshape_style\fP, \fIcorner_width\fP, \fIcorner_hei
       int \fIshape_style\fP;
 .br
       int \fIcorner_width\fP, \fIcorner_height\fP;
+.FN
+.IP \fIw\fP 1i
+specifies the widget to reshape
+.IP \fIshape_style\fP 1i
+specifies the new shape
+.IP \fIcorner_width\fP 1i
+specifies the width of the rounded rectangle corner
+.IP \fIcorner_height\fP 1i
+specified the height of the rounded rectangle corner
 .LP
 This function reshapes the specified widget, using the Shape extension, to a
-rectangle, oval, ellipse, or rounded rectangle, as specified by shape_style.
+rectangle, oval, ellipse, or rounded rectangle, as specified by shape_style
+(
+.PN XmuShapeRectangle ,
+.PN XmuShapeOval ,
+.PN XmuShapeEllipse ,
+and
+.PN XmuShapeRoundedRectangle ,
+respectively).
 The shape is bounded by the outside edges of the rectangular extents of the
 widget.  If the shape is a rounded rectangle, corner_width and corner_height
 specify the size of the bounding box that the corners are drawn inside of
@@ -704,23 +851,33 @@ The origin of the widget within its parent remains unchanged.
 .FD 0
 void XmuCvtStringToWidget(\fIargs\fP, \fInum_args\fP, \fIfromVal\fP, \fItoVal\fP)
 .br
-      XrmValuePtr \fIargs\fP;		/* parent */
+      XrmValuePtr \fIargs\fP;
 .br
-      Cardinal *\fInum_args\fP;      /* 1 */
+      Cardinal *\fInum_args\fP;
 .br
       XrmValuePtr \fIfromVal\fP;
 .br
       XrmValuePtr \fItoVal\fP;
 .FN
+.IP \fIargs\fP 1i
+this sole argument is the parent Widget
+.IP \fInum_args\fP 1i
+this argument must be 1
+.IP \fIfromVal\fP 1i
+specifies the string to convert
+.IP \fItoVal\fP
+returns the converted value
 .LP
 This function converts a string to an immediate child widget of the parent
-widget passed as an argument.  The string is first compared against the
+widget passed as an argument.  Note that this converter only works for
+child widgets that have already been created; there is no lazy evaluation.
+The string is first compared against the
 names of the normal and popup children, and if a match is found the
 corresponding child is returned.  If no match is found, the string is
 compared against the classes of the normal and popup children, and if a
 match is found the corresponding child is returned.  The case of the string
 is significant.  To use this converter, include the following in your
-ClassInitialize procedure:
+widget's ClassInitialize procedure:
 .LP
 static XtConvertArgRec parentCvtArg[] = {
 .br
@@ -1055,13 +1212,13 @@ according to
 .LP
 .PN XctAcceptC1Extensions
 -- This means that if the Compound Text string is from
-a higher version than this code is implemented to, then unknown C0
-characters should be treated as if they were legal, and returned as C0
+a higher version than this code is implemented to, then unknown C1
+characters should be treated as if they were legal, and returned as C1
 characters (regardless of how
 .PN XctProvideExtensions
 is set) by
 .PN XctNextItem .
-If this flag is not set, then all unknown C0 characters are treated
+If this flag is not set, then all unknown C1 characters are treated
 according to
 .PN XctProvideExtensions .
 .LP
@@ -1198,10 +1355,14 @@ CloseHook XmuAddCloseDisplayHook(\fIdpy\fP, \fIfunc\fP, \fIarg\fP)
 .br
       Display *\fIdpy\fP;
 .br
-      int (*\fIfunc\fP)(); /* function to call on close display */
+      int (*\fIfunc\fP)();
 .br
-      caddr_t \fIarg\fP;   /* arg to pass */
+      caddr_t \fIarg\fP;
 .FN
+.IP \fIfunc\fP 1i
+specifies the function to call at display close
+.IP \fIarg\fP 1i
+specifies arbitrary data to pass to func
 .LP
 This function adds a callback for the given display.  When the display is
 closed, the given function will be called with the given display and
@@ -1220,12 +1381,20 @@ Bool XmuRemoveCloseDisplayHook(\fIdpy\fP, \fIhandle\fP, \fIfunc\fP, \fIarg\fP)
 .br
       Display *\fIdpy\fP;
 .br
-      CloseHook \fIhandle\fP; /* value from XmuAddCloseDisplayHook */
+      CloseHook \fIhandle\fP;
 .br
-      int (*\fIfunc\fP)();    /* function to call on close display */
+      int (*\fIfunc\fP)();
 .br
-      caddr_t \fIarg\fP;      /* arg to pass */
+      caddr_t \fIarg\fP;
 .FN
+.IP \fIdpy\fP 1i
+specifies the connection to the X server
+.IP \fIhandle\fP 1i
+specifies the callback by id, or NULL
+.IP \fIfunc\fP 1i
+specifies the callback by function
+.IP \fIarg\fP 1i
+specifies the function data to match
 .LP
 This function deletes a callback that has been added with
 .PN XmuAddCloseDisplayHook .
@@ -1242,12 +1411,20 @@ Bool XmuLookupCloseDisplayHook(\fIdpy\fP, \fIhandle\fP, \fIfunc\fP, \fIarg\fP)
 .br
       Display *\fIdpy\fP;
 .br
-      CloseHook \fIhandle\fP; /* value from XmuAddCloseDisplayHook */
+      CloseHook \fIhandle\fP;
 .br
-      int (*\fIfunc\fP)();    /* function to call on close display */
+      int (*\fIfunc\fP)();
 .br
-      caddr_t \fIarg\fP;      /* arg to pass */
+      caddr_t \fIarg\fP;
 .FN
+.IP \fdpy\fP 1i
+specifies the connection to the X server
+.IP \fIhandle\fP 1i
+specifies the callback by id, or NULL
+.IP \fIfunc\fP 1i
+specifies the callback by function
+.IP \fIarg\fP 1i
+specifies the function data to match
 .LP
 This function determines if a callback is installed.  If handle is not NULL,
 it specifies the callback to look for, and the func and arg parameters are
@@ -1315,7 +1492,7 @@ queue is closed, as follows:
 .LP
 	(*freefunc)(queue)
 .LP
-The appllication is responsible for actually freeing the queue, by calling
+The application is responsible for actually freeing the queue, by calling
 .PN XmuDQDestroy .
 .sp
 .FD 0
@@ -1400,9 +1577,9 @@ void XmuAddInitializer(\fIfunc\fP, \fIdata\fP)
       caddr_t \fIdata\fP;
 .FN
 .LP
-This function registers a callback, to be invoked the first time
+This function registers a procedure, to be invoked the first time
 .PN XmuCallInitializers
-is called on a given application context.  The function
+is called on a given application context.  The procedure
 is called with the application context and the specified data:
 .LP
 	(*func)(app_con, data)
@@ -1413,7 +1590,7 @@ void XmuCallInitializers(\fIapp_con\fP)
       XtAppContext \fIapp_con\fP;
 .FN
 .LP
-This function calls each of the callbacks that have been registered with
+This function calls each of the procedures that have been registered with
 .PN XmuAddInitializer ,
 if this is the first time the application context has been passed to
 .PN XmuCallInitializers .
@@ -1448,7 +1625,8 @@ at the start of a session.
 .LP
 The standard colormaps of a screen are defined by properties associated with
 the screen's root window.  The property names of standard colormaps are
-predefined, and each property name may describe at most one colormap.
+predefined, and each property name except RGB_DEFAULT_MAP may describe at
+most one colormap.
 .LP  
 The standard colormaps are: RGB_BEST_MAP, RGB_RED_MAP, RGB_GREEN_MAP,
 RGB_BLUE_MAP, RGB_DEFAULT_MAP, and RGB_GRAY_MAP.  Therefore a screen may
@@ -1485,194 +1663,6 @@ will remain.
 See
 .PN XmuVisualStandardColormaps
 for which standard colormaps are meaningful under these classes of visuals.
-.sp
-.FD 0
-Status XmuGetColormapAllocation(\fIvinfo\fP, \fIproperty\fP, \fIred_max\fP, \fIgreen_max\fP, \fIblue_max\fP)
-.br
-      XVisualInfo *\fIvinfo\fP;
-.br
-      Atom \fIproperty\fP;
-.br
-      unsigned long *\fIred_max\fP, *\fIgreen_max\fP, *\fIblue_max\fP;
-.FN
-.IP \fIvinfo\fP 1i
-specifies visual information for a chosen visual
-.IP \fIproperty\fP 1i
-specifies one of the standard colormap property names
-.IP \fIred_max\fP 1i
-returns maximum red value 
-.IP \fIgreen_max\fP 1i
-returns maximum green value
-.IP \fIblue_max\fP 1i
-returns maximum blue value
-.LP
-To determine the best allocation of reds, greens, and blues in a standard
-colormap, use
-.PN XmuGetColormapAllocation .
-.LP
-.PN XmuGetColormapAllocation
-returns 0 on failure, non-zero on success.  It is
-assumed that the visual is appropriate for the colormap property.
-.sp
-.FD 0
-Status XmuCreateColormap(\fIdpy\fP, \fIcolormap\fP)
-.br
-      Display *\fIdpy\fP;
-.br
-      XStandardColormap *\fIcolormap\fP;
-.FN
-.IP \fIdpy\fP 1i
-specifies the connection under which the map is created
-.IP \fIcolormap\fP 1i
-specifies the map to be created
-.FN
-.LP
-To create any one colormap which is described by an
-.PN XStandardColormap
-structure, use
-.PN XmuCreateColormap .
-.LP
-This function returns 0 on failure, and non-zero on success.  The base_pixel
-of the colormap is set on success.  Resources created by this function are
-not made permanent.  No argument error checking is provided; use at your own
-risk.
-.LP
-All colormaps are created with read-only allocations, with the exception of
-read-only allocations of colors in the default map or which otherwise fail
-to return the expected pixel value, and these are individually defined as
-read/write allocations.  This is done so that all the cells defined in the
-default map are contiguous, for use in image processing.  This typically
-happens with White and Black in the default map.
-.LP 
-Colormaps of static visuals are considered to be successfully created if the
-map of the static visual matches the definition given in the standard
-colormap structure.
-.sp
-.FD 0
-void XmuDeleteStandardColormap(\fIdpy\fP, \fIscreen\fP, \fIproperty\fP)
-.br
-      Display *\fIdpy\fP;
-.br
-      int \fIscreen\fP;
-.br
-      Atom \fIproperty\fP;
-.FN
-.IP \fIdpy\fP 1i
-specifies the connection to the X server
-.IP \fIscreen\fP 1i
-specifies the screen of the display
-.IP \fIproperty\fP 1i
-specified the standard colormap property
-.LP
-To remove any standard colormap property, use
-.PN XmuDeleteStandardColormap .
-This function will remove the specified property from the specified screen,
-releasing any resources used by the colormap(s) of the property, if
-possible.
-.sp
-.FD 0
-Status XmuLookupStandardColormap(\fIdpy\fP, \fIscreen\fP, \fIvisualid\fP, \fIdepth\fP, \fIproperty\fP, \fIreplace\fP, \fIretain\fP)
-.br
-      Display *\fIdpy\fP;
-.br
-      int \fIscreen\fP;
-.br
-      VisualID \fIvisualid\fP;
-.br
-      unsigned int \fIdepth\fP;
-.br
-      Atom \fIproperty\fP;
-.br
-      Bool \fIreplace\fP;
-.br
-      Bool \fIretain\fP;
-.FN
-.IP \fIdpy\fP 1i
-specifies the connection to the X server
-.IP \fIscreen\fP 1i
-specifies the screen of the display
-.IP \fIvisualid\fP 1i
-specifies the visual type
-.IP \fIdepth\fP 1i
-specifies the visual type
-.IP \fIproperty\fP 1i
-specifies the standard colormap property
-.IP \fIreplace\fP 1i
-specifies whether or not to replace
-.IP \fIretain\fP 1i
-specifies whether or not to retain
-.LP
-To create a standard colormap if one does not currently exist, or replace
-the currently existing standard colormap, use
-.PN XmuLookupStandardColormap .
-.LP
-Given a screen, a visual, and a property, this function will determine the
-best allocation for the property under the specified visual, and determine
-the whether to create a new colormap or to use the default colormap of the
-screen.
-.LP
-If replace is True, any previous definition of the property will be
-replaced.  If retain is True, the property and the colormap will be made
-permanent for the duration of the server session.  However, pre-existing
-property definitions which are not replaced cannot be made permanent by a
-call to this function; a request to retain resources pertains to newly
-created resources.
-.LP
-This function returns 0 on failure, non-zero on success.  A request to
-create a standard colormap upon a visual which cannot support such a map is
-considered a failure.  An example of this would be requesting any standard
-colormap property on a monochrome visual, or, requesting an RGB_BEST_MAP on
-a display whose colormap size is 16.
-.sp
-.FD 0
-XStandardColormap *XmuStandardColormap(\fIdpy\fP, \fIscreen\fP, \fIvisualid\fP, \fIdepth\fP, \fIproperty\fP,
-                                       \fIcmap\fP, \fIred_max\fP, \fIgreen_max\fP, \fIblue_max\fP)
-.br
-      Display \fIdpy\fP;
-.br
-      int \fIscreen\fP;
-.br
-      VisualID \fIvisualid\fP;
-.br
-      unsigned int \fIdepth\fP;
-.br
-      Atom \fIproperty\fP;
-.br
-      Colormap \fIcmap\fP;
-.br
-      unsigned long \fIred_max\fP, \fIgreen_max\fP, \fIblue_max\fP;
-.FN
-.IP \fIdpy\fP 1i
-specifies the connection to the X server
-.IP \fIscreen\fP 1i
-specifies the screen of the display
-.IP \fIvisualid\fP 1i
-specifies the visual type
-.IP \fIdepth\fP 1i
-specifies the visual depth
-.IP \fIproperty\fP 1i
-specifies the standard colormap property
-.IP \fIcmap\fP 1i
-specifies the colormap ID, or None
-.IP \fIred_max\fP 1i
-specifies the red allocation
-.IP \fIgreen_max\fP 1i
-specifies the green allocation
-.IP \fIblue_max\fP 1i
-specifies the blue allocation
-.LP
-To create any one standard colormap, use
-.PN XmuStandardColormap .
-.LP
-This function creates a standard colormap for the given screen, visualid,
-and visual depth, with the given red, green, and blue maximum values, with
-the given standard property name.  Upon success, it returns a pointer to an
-.PN XStandardColormap
-structure which describes the newly created colormap.
-Upon failure, it returns NULL.
-.LP 
-Resources created by this function are not made permanent; that is the
-caller's responsibility.
 .sp
 .FD 0
 Status XmuVisualStandardColormaps(\fIdpy\fP, \fIscreen\fP, \fIvisualid\fP, \fIdepth\fP, \fIreplace\fP, \fIretain\fP)
@@ -1733,3 +1723,193 @@ RGB_BEST_MAP.  For
 and
 .PN StaticGray :
 RGB_GRAY_MAP.
+.sp
+.FD 0
+Status XmuLookupStandardColormap(\fIdpy\fP, \fIscreen\fP, \fIvisualid\fP, \fIdepth\fP, \fIproperty\fP, \fIreplace\fP, \fIretain\fP)
+.br
+      Display *\fIdpy\fP;
+.br
+      int \fIscreen\fP;
+.br
+      VisualID \fIvisualid\fP;
+.br
+      unsigned int \fIdepth\fP;
+.br
+      Atom \fIproperty\fP;
+.br
+      Bool \fIreplace\fP;
+.br
+      Bool \fIretain\fP;
+.FN
+.IP \fIdpy\fP 1i
+specifies the connection to the X server
+.IP \fIscreen\fP 1i
+specifies the screen of the display
+.IP \fIvisualid\fP 1i
+specifies the visual type
+.IP \fIdepth\fP 1i
+specifies the visual depth
+.IP \fIproperty\fP 1i
+specifies the standard colormap property
+.IP \fIreplace\fP 1i
+specifies whether or not to replace
+.IP \fIretain\fP 1i
+specifies whether or not to retain
+.LP
+To create a standard colormap if one does not currently exist, or replace
+the currently existing standard colormap, use
+.PN XmuLookupStandardColormap .
+.LP
+Given a screen, a visual, and a property, this function will determine the
+best allocation for the property under the specified visual, and determine
+the whether to create a new colormap or to use the default colormap of the
+screen.
+.LP
+If replace is True, any previous definition of the property will be
+replaced.  If retain is True, the property and the colormap will be made
+permanent for the duration of the server session.  However, pre-existing
+property definitions which are not replaced cannot be made permanent by a
+call to this function; a request to retain resources pertains to newly
+created resources.
+.LP
+This function returns 0 on failure, non-zero on success.  A request to
+create a standard colormap upon a visual which cannot support such a map is
+considered a failure.  An example of this would be requesting any standard
+colormap property on a monochrome visual, or, requesting an RGB_BEST_MAP on
+a display whose colormap size is 16.
+.sp
+.FD 0
+Status XmuGetColormapAllocation(\fIvinfo\fP, \fIproperty\fP, \fIred_max\fP, \fIgreen_max\fP, \fIblue_max\fP)
+.br
+      XVisualInfo *\fIvinfo\fP;
+.br
+      Atom \fIproperty\fP;
+.br
+      unsigned long *\fIred_max\fP, *\fIgreen_max\fP, *\fIblue_max\fP;
+.FN
+.IP \fIvinfo\fP 1i
+specifies visual information for a chosen visual
+.IP \fIproperty\fP 1i
+specifies one of the standard colormap property names
+.IP \fIred_max\fP 1i
+returns maximum red value 
+.IP \fIgreen_max\fP 1i
+returns maximum green value
+.IP \fIblue_max\fP 1i
+returns maximum blue value
+.LP
+To determine the best allocation of reds, greens, and blues in a standard
+colormap, use
+.PN XmuGetColormapAllocation .
+.LP
+.PN XmuGetColormapAllocation
+returns 0 on failure, non-zero on success.  It is
+assumed that the visual is appropriate for the colormap property.
+.sp
+.FD 0
+XStandardColormap *XmuStandardColormap(\fIdpy\fP, \fIscreen\fP, \fIvisualid\fP, \fIdepth\fP, \fIproperty\fP,
+                                       \fIcmap\fP, \fIred_max\fP, \fIgreen_max\fP, \fIblue_max\fP)
+.br
+      Display \fIdpy\fP;
+.br
+      int \fIscreen\fP;
+.br
+      VisualID \fIvisualid\fP;
+.br
+      unsigned int \fIdepth\fP;
+.br
+      Atom \fIproperty\fP;
+.br
+      Colormap \fIcmap\fP;
+.br
+      unsigned long \fIred_max\fP, \fIgreen_max\fP, \fIblue_max\fP;
+.FN
+.IP \fIdpy\fP 1i
+specifies the connection to the X server
+.IP \fIscreen\fP 1i
+specifies the screen of the display
+.IP \fIvisualid\fP 1i
+specifies the visual type
+.IP \fIdepth\fP 1i
+specifies the visual depth
+.IP \fIproperty\fP 1i
+specifies the standard colormap property
+.IP \fIcmap\fP 1i
+specifies the colormap ID, or None
+.IP \fIred_max\fP 1i
+specifies the red allocation
+.IP \fIgreen_max\fP 1i
+specifies the green allocation
+.IP \fIblue_max\fP 1i
+specifies the blue allocation
+.LP
+To create any one standard colormap, use
+.PN XmuStandardColormap .
+.LP
+This function creates a standard colormap for the given screen, visualid,
+and visual depth, with the given red, green, and blue maximum values, with
+the given standard property name.  Upon success, it returns a pointer to an
+.PN XStandardColormap
+structure which describes the newly created colormap.
+Upon failure, it returns NULL.
+If cmap is the default colormap of the screen, the standard colormap
+will be defined on the default colormap; otherwise a new colormap is created.
+.LP 
+Resources created by this function are not made permanent; that is the
+caller's responsibility.
+.sp
+.FD 0
+Status XmuCreateColormap(\fIdpy\fP, \fIcolormap\fP)
+.br
+      Display *\fIdpy\fP;
+.br
+      XStandardColormap *\fIcolormap\fP;
+.FN
+.IP \fIdpy\fP 1i
+specifies the connection under which the map is created
+.IP \fIcolormap\fP 1i
+specifies the map to be created
+.FN
+.LP
+To create any one colormap which is described by an
+.PN XStandardColormap
+structure, use
+.PN XmuCreateColormap .
+.LP
+This function returns 0 on failure, and non-zero on success.  The base_pixel
+of the colormap is set on success.  Resources created by this function are
+not made permanent.  No argument error checking is provided; use at your own
+risk.
+.LP
+All colormaps are created with read-only allocations, with the exception of
+read-only allocations of colors which fail
+to return the expected pixel value, and these are individually defined as
+read/write allocations.  This is done so that all the cells defined in the
+colormap are contiguous, for use in image processing.  This typically
+happens with White and Black in the default map.
+.LP 
+Colormaps of static visuals are considered to be successfully created if the
+map of the static visual matches the definition given in the standard
+colormap structure.
+.sp
+.FD 0
+void XmuDeleteStandardColormap(\fIdpy\fP, \fIscreen\fP, \fIproperty\fP)
+.br
+      Display *\fIdpy\fP;
+.br
+      int \fIscreen\fP;
+.br
+      Atom \fIproperty\fP;
+.FN
+.IP \fIdpy\fP 1i
+specifies the connection to the X server
+.IP \fIscreen\fP 1i
+specifies the screen of the display
+.IP \fIproperty\fP 1i
+specifies the standard colormap property
+.LP
+To remove any standard colormap property, use
+.PN XmuDeleteStandardColormap .
+This function will remove the specified property from the specified screen,
+releasing any resources used by the colormap(s) of the property, if
+possible.
