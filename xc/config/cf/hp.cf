@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.33 91/03/27 09:13:07 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.34 91/03/27 09:34:25 rws Exp $
 
 #define OSName                 HP-UX 7.0
 XCOMM operating system:  OSName
@@ -22,8 +22,8 @@ XCOMM operating system:  OSName
 
 #define BuildBdfFonts		NO		/* XXX remove in R5 */
 /* This defines the server you want */
-#define XhpServer              Xnon /* Xhp */	/* XXX fix in R5 */
 #define BuildServer            YES
+#define XnonServer              Xnon		/* XXX fix in R5 */
 #define NeedBerklib            BuildServer
 
 /* define this as you like for server compilation */
