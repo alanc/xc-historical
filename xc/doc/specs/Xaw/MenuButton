@@ -58,7 +58,7 @@ destroyCallback	Callback	XtCallbackList		NULL
 font	Font	XFontStruct		XtDefaultFont
 foreground	Foreground	Pixel		XtDefaultForeground
 height	Height	Dimension	A	Font height + 2 * \fBinternalHeight\fP
-highlightThickness	Thickness	Dimension	 	2 (0 if Shaped)
+highlightThickness	Thickness	Dimension	A	2 (0 if Shaped)
 insensitiveBorder	Insensitive	Pixmap		GreyPixmap
 internalHeight	Height	Dimension		2
 internalWidth	Width	Dimension		4
