@@ -1,4 +1,4 @@
-/* $XConsortium: XPolyTxt16.c,v 11.21 91/01/06 11:47:22 rws Exp $ */
+/* $XConsortium: XPolyTxt16.c,v 11.22 92/04/13 19:45:21 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -152,7 +152,7 @@ XDrawText16(dpy, d, gc, x, y, items, nitems)
 		}
 	    	elt->len = 254;
 
-#ifdef MUSTCOPY
+#if defined(MUSTCOPY) || defined(MUSTCOPY2B)
 		{
 		    register int i;
 		    register unsigned char *cp;
@@ -197,7 +197,7 @@ XDrawText16(dpy, d, gc, x, y, items, nitems)
 		}
 	    	elt->len = PartialNChars;
 
-#ifdef MUSTCOPY
+#if defined(MUSTCOPY) || defined(MUSTCOPY2B)
 		{
 		    register int i;
 		    register unsigned char *cp;

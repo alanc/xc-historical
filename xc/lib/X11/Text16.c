@@ -1,4 +1,4 @@
-/* $XConsortium: XText16.c,v 11.20 90/12/12 09:19:54 rws Exp $ */
+/* $XConsortium: XText16.c,v 11.21 91/01/06 11:48:27 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -77,7 +77,7 @@ XDrawString16(dpy, d, gc, x, y, string, length)
 	    BufAlloc (xTextElt *, elt, nbytes);
 	    elt->delta = 0;
 	    elt->len = 254;
-#ifdef MUSTCOPY
+#if defined(MUSTCOPY) || defined(MUSTCOPY2B)
 	    {
 		register int i;
 		register unsigned char *cp;
@@ -99,7 +99,7 @@ XDrawString16(dpy, d, gc, x, y, string, length)
 	    BufAlloc (xTextElt *, elt, nbytes); 
 	    elt->delta = 0;
 	    elt->len = PartialNChars;
-#ifdef MUSTCOPY
+#if defined(MUSTCOPY) || defined(MUSTCOPY2B)
 	    {
 		register int i;
 		register unsigned char *cp;
