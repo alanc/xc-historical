@@ -1,6 +1,6 @@
-/* $Header: Converters.c,v 1.12 88/01/29 17:05:35 asente Exp $ */
+/* $Header: Converters.c,v 1.13 88/02/02 18:17:02 swick Exp $ */
 #ifndef lint
-static char *sccsid = "@(#)Conversion.c	1.11	3/19/87";
+static char rcsid[] = "$Header: Converters.c,v 1.13 88/02/02 18:17:02 swick Exp $";
 #endif lint
 
 /*
@@ -31,12 +31,12 @@ static char *sccsid = "@(#)Conversion.c	1.11	3/19/87";
 
 #include	"IntrinsicP.h"
 #include	"CoreP.h"
-#include	"Atoms.h"
+#include	<X/Atoms.h>
 #include	<stdio.h>
 #include	<sys/file.h>
-#include	"cursorfont.h"
-#include	"Convert.h"
-#include	"Quarks.h"
+#include	<X/cursorfont.h>
+#include	<X/Convert.h>
+#include	<X/Quarks.h>
 
 #define	done(address, type) \
 	{ (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
