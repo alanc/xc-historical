@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.148 93/08/17 22:24:42 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.149 93/08/18 10:16:47 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -757,9 +757,9 @@ depend::								@@\
 DependDependency()							@@\
 									@@\
 depend::								@@\
-	RunProgram(DEPEND,$(DEPENDFLAGS) -s "# DO NOT DELETE" -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs1)	@@\
-	RunProgram(DEPEND,-a $(DEPENDFLAGS) -s "# DO NOT DELETE" -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs2)	@@\
-	RunProgram(DEPEND,-a $(DEPENDFLAGS) -s "# DO NOT DELETE" -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs3)
+	RunProgram(DEPEND,$(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs1)	@@\
+	RunProgram(DEPEND,-a $(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs2)	@@\
+	RunProgram(DEPEND,-a $(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs3)
 #endif /* DependTarget3 */
 
 
