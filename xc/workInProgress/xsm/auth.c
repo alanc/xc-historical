@@ -1,4 +1,4 @@
-/* $XConsortium: auth.c,v 1.10 94/12/14 20:02:21 mor Exp mor $ */
+/* $XConsortium: auth.c,v 1.11 94/12/21 17:00:43 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -29,7 +29,8 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <X11/ICE/ICEutil.h>
 
-static char *remAuthFile;
+static char *addAuthFile = NULL;
+static char *remAuthFile = NULL;
 
 
 
@@ -88,12 +89,21 @@ char *prefix;
 
 {
 #ifndef X_NOT_POSIX
-    return ((char *) XtNewString ((char *) tempnam (path, prefix)));
+    return ((char *) tempnam (path, prefix));
 #else
     char tempFile[PATH_MAX];
+    char *tmp;
 
     sprintf (tempFile, "%s/%sXXXXXX", path, prefix);
-    return ((char *) XtNewString ((char *) mktemp (tempFile)));
+    tmp = (char *) mktemp (tempFile);
+    if (tmp)
+    {
+	char *ptr = (char *) malloc (strlen (tmp) + 1);
+	strcpy (ptr, tmp);
+	return (ptr);
+    }
+    else
+	return (NULL);
 #endif
 }
 
@@ -114,11 +124,10 @@ IceListenObj		*listenObjs;
 IceAuthDataEntry	**authDataEntries;
 
 {
-    FILE	*addfp;
-    FILE	*removefp;
+    FILE	*addfp = NULL;
+    FILE	*removefp = NULL;
     char	*path;
     int		original_umask;
-    char	*addAuthFile;
     char	command[256];
     int		i;
 
@@ -133,19 +142,20 @@ IceAuthDataEntry	**authDataEntries;
     }
 
     if ((addAuthFile = unique_filename (path, ".xsm")) == NULL)
-	return (0);
+	goto bad;
 
     if (!(addfp = fopen (addAuthFile, "w")))
-	return (0);
+	goto bad;
 
     if ((remAuthFile = unique_filename (path, ".xsm")) == NULL)
-	return (0);
+	goto bad;
 
     if (!(removefp = fopen (remAuthFile, "w")))
-	return (0);
+	goto bad;
 
-    *authDataEntries = (IceAuthDataEntry *) XtMalloc (
-	count * 2 * sizeof (IceAuthDataEntry));
+    if ((*authDataEntries = (IceAuthDataEntry *) XtMalloc (
+	count * 2 * sizeof (IceAuthDataEntry))) == NULL)
+	goto bad;
 
     for (i = 0; i < count * 2; i += 2)
     {
@@ -183,12 +193,30 @@ IceAuthDataEntry	**authDataEntries;
     sprintf (command, "iceauth source %s", addAuthFile);
     execute_system_command (command);
 
-    sprintf (command, "rm %s", addAuthFile);
-    execute_system_command (command);
-
-    XtFree (addAuthFile);
+    unlink (addAuthFile);
 
     return (1);
+
+ bad:
+
+    if (addfp)
+	fclose (addfp);
+
+    if (removefp)
+	fclose (removefp);
+
+    if (addAuthFile)
+    {
+	unlink (addAuthFile);
+	free (addAuthFile);
+    }
+    if (remAuthFile)
+    {
+	unlink (remAuthFile);
+	free (remAuthFile);
+    }
+
+    return (0);
 }
 
 
@@ -220,8 +248,8 @@ IceAuthDataEntry 	*authDataEntries;
     sprintf (command, "iceauth source %s", remAuthFile);
     execute_system_command (command);
 
-    sprintf (command, "rm %s", remAuthFile);
-    execute_system_command (command);
+    unlink (remAuthFile);
 
-    XtFree (remAuthFile);
+    free (addAuthFile);
+    free (remAuthFile);
 }
