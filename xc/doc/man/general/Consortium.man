@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.18 91/11/21 09:43:24 rws Exp $
+.\" $XConsortium: Consortium.man,v 1.19 91/12/20 09:39:56 rws Exp $
 .TH XCONSORTIUM 1 "Release 5"  "X Version 11"
 .SH NAME
 MIT X Consortium \- MIT X Consortium information
@@ -152,6 +152,7 @@ Japan Computer Corporation
 Jupiter Systems
 KAIST - Korean Advanced Institute of Science and Technology
 Labtam Australia
+Liant Software Corporation
 Locus Computing Corporation
 Metro Link, Inc.
 University of Lowell
@@ -178,7 +179,6 @@ Stardent Computer
 Strategic Research Institute Inc.
 Sumitomo Electric Workstation
 Tatung Science and Technology
-Template Graphics Software
 Tyan Computer
 Unipalm XTech
 VisionWare Ltd.
