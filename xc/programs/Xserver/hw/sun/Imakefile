@@ -1,4 +1,3 @@
-#ifdef NOTDEF
 SRCS1 =	\
 	sunInit.c \
 	sunBW2.c \
@@ -13,25 +12,11 @@ SRCS1 =	\
 	sunCG3C.c \
 	sunCG4C.c \
 	sunKeyMap.c
-#else
-SRCS1 =	\
-	sunInit.c \
-	sunBW2.c \
-	sunBW2zoid.c \
-	sunCG4C.c \
-	sunCursor.c \
-	sunIo.c \
-	sunKbd.c \
-	sunMouse.c \
-	sunUtils.c \
-	sunKeyMap.c
-#endif
 
 SRCS =	$(SRCS1) kbd_mode.c constype.c 
 
 OFILES = sunInit.o
 
-#ifdef NOTDEF
 OBJS = \
 	sunBW2.o \
 	sunBW2zoid.o \
@@ -45,18 +30,6 @@ OBJS = \
 	sunCG3C.o \
 	sunCG4C.o \
 	sunKeyMap.o
-#else
-OBJS = \
-	sunBW2.o \
-	sunBW2zoid.o \
-	sunCursor.o \
-	sunIo.o \
-	sunKbd.o \
-	sunMouse.o \
-	sunUtils.o \
-	sunCG4C.o \
-	sunKeyMap.o
-#endif
 
 STD_DEFINES = ServerDefines
 CDEBUGFLAGS = ServerCDebugFlags
