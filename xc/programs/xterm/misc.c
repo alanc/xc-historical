@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.19 88/07/11 16:52:36 jim Exp $
+ *	$Header: misc.c,v 1.20 88/07/12 16:43:21 jim Exp $
  */
 
 
@@ -53,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.19 88/07/11 16:52:36 jim Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.20 88/07/12 16:43:21 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -89,11 +89,12 @@ Cursor make_colored_cursor (cursorindex, fg, bg)
 	return (c);
 }
 
-/*ARGSUSED*/
-void HandleKeyPressed(w, eventdata, event)
-Widget w;
-XKeyPressedEvent *event;
-caddr_t eventdata;
+/* ARGSUSED */
+void HandleKeyPressed(w, event, params, nparams)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *nparams;
 {
     register TScreen *screen = &term->screen;
 
@@ -101,6 +102,22 @@ caddr_t eventdata;
     if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term))
 #endif
 	Input (&term->keyboard, screen, event);
+}
+
+/* ARGSUSED */
+void HandleStringEvent(w, event, params, nparams)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *nparams;
+{
+    register TScreen *screen = &term->screen;
+
+#ifdef ACTIVEWINDOWINPUTONLY
+    if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term))
+#endif
+      if (*nparams == 1)
+	StringInput (screen, *params);
 }
 
 /*ARGSUSED*/

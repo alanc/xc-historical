@@ -153,6 +153,7 @@ extern int scstable[];
 
 /* event handlers */
 extern void HandleKeyPressed();
+extern void HandleStringEvent();
 extern void HandleEnterWindow();
 extern void HandleLeaveWindow();
 extern void HandleFocusChange();
@@ -175,6 +176,14 @@ static  int	defaultIntBorder   = DEFBORDER;
 static  int	defaultSaveLines   = SAVELINES;
 static  int	defaultNMarginBell = N_MARGINBELL;
 static  int	defaultMultiClickTime = MULTICLICKTIME;
+
+static char defaultTranslations[] = 
+    "<KeyPress>: insert()";
+
+static XtActionsRec actionsList[] = { 
+    { "string",	HandleStringEvent },
+    { "insert",	HandleKeyPressed },
+};
 
 static XtResource resources[] = {
 {XtNfont, XtCFont, XtRString, sizeof(char *),
@@ -302,8 +311,8 @@ WidgetClassRec xtermClassRec = {
     /* initialize	  */	VTInitialize,
     /* initialize_hook    */    NULL,				
     /* realize		  */	VTRealize,
-    /* actions		  */	NULL,
-    /* num_actions	  */	0,
+    /* actions		  */	actionsList,
+    /* num_actions	  */	XtNumber(actionsList),
     /* resources	  */	resources,
     /* num_resources	  */	XtNumber(resources),
     /* xrm_class	  */	NULLQUARK,
@@ -321,7 +330,7 @@ WidgetClassRec xtermClassRec = {
     /* accept_focus	  */	NULL,
     /* version            */    XtVersion,
     /* callback_offsets   */    NULL,
-    /* tm_table           */    NULL,				
+    /* tm_table           */    defaultTranslations,
     /* query_geometry     */    XtInheritQueryGeometry,
     /* display_accelerator*/    XtInheritDisplayAccelerator,
     /* extension          */    NULL
@@ -1906,8 +1915,6 @@ static void VTInitialize (request, new)
 		VTButtonReleased, (Opaque)NULL);
    XtAddEventHandler(new, ButtonMotionMask, FALSE,
 		VTMouseMoved, (Opaque)NULL);
-   XtAddEventHandler(new, KeyPressMask, FALSE,
-		HandleKeyPressed, (Opaque)NULL);
    XtAddEventHandler(new, 0L, TRUE,
 		VTNonMaskableEvent, (Opaque)NULL);
 

@@ -1,9 +1,9 @@
 /*
- *	$Header: input.c,v 1.2 88/07/12 11:35:16 jim Exp $
+ *	$Header: input.c,v 1.3 88/07/28 19:18:50 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_input_c = "$Header: input.c,v 1.2 88/07/12 11:35:16 jim Exp $";
+static char *rcsid_input_c = "$Header: input.c,v 1.3 88/07/28 19:18:50 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -34,7 +34,7 @@ static char *rcsid_input_c = "$Header: input.c,v 1.2 88/07/12 11:35:16 jim Exp $
 /* input.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: input.c,v 1.2 88/07/12 11:35:16 jim Exp $";
+static char rcs_id[] = "$Header: input.c,v 1.3 88/07/28 19:18:50 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -55,6 +55,28 @@ static char *cur = "DACB";
 static int funcvalue(), sunfuncvalue();
 extern Boolean sunFunctionKeys;
 
+void
+AdjustAfterInput (screen)
+register TScreen *screen;
+{
+	if(screen->scrollkey && screen->topline != 0)
+		WindowScroll(screen, 0);
+	if(screen->marginbell) {
+		int col = screen->max_col - screen->nmarginbell;
+		if(screen->bellarmed >= 0) {
+			if(screen->bellarmed == screen->cur_row) {
+				if(screen->cur_col >= col) {
+					if(screen->cur_col == col)
+						Bell();
+					screen->bellarmed = -1;
+				}
+			} else
+				screen->bellarmed = screen->cur_col <
+				 col ? screen->cur_row : -1;
+		} else if(screen->cur_col < col)
+			screen->bellarmed = screen->cur_row;
+	}
+}
 
 Input (keyboard, screen, event)
 register TKeyboard	*keyboard;
@@ -66,7 +88,7 @@ register XKeyPressedEvent *event;
 
 	 char strbuf[STRBUFSIZE];
 	register char *string;
-	register int col, key = FALSE;
+	register int key = FALSE;
 	int	pty	= screen->respond;
 	int	nbytes;
 	int 	keycode;
@@ -133,29 +155,31 @@ register XKeyPressedEvent *event;
 			unparseputc(*string++, pty);
 		key = TRUE;
 	}
-	if(key && !screen->TekEmu) {
-		if(screen->scrollkey && screen->topline != 0)
-			WindowScroll(screen, 0);
-		if(screen->marginbell) {
-			col = screen->max_col - screen->nmarginbell;
-			if(screen->bellarmed >= 0) {
-				if(screen->bellarmed == screen->cur_row) {
-					if(screen->cur_col >= col) {
-						if(screen->cur_col == col)
-							Bell();
-						screen->bellarmed = -1;
-					}
-				} else
-					screen->bellarmed = screen->cur_col <
-					 col ? screen->cur_row : -1;
-			} else if(screen->cur_col < col)
-				screen->bellarmed = screen->cur_row;
-		}
-	}
+	if(key && !screen->TekEmu)
+	        AdjustAfterInput(screen);
 #ifdef ENABLE_PRINT
 	if (keycode == XK_F2) TekPrint();
 #endif
 	return;
+}
+
+StringInput (screen, string)
+register TScreen	*screen;
+register char *string;
+{
+	int	pty	= screen->respond;
+	int	nbytes;
+
+	nbytes = strlen(string);
+	if(nbytes && screen->TekGIN) {
+		TekEnqMouse(*string++);
+		TekGINoff();
+		nbytes--;
+	}
+	while (nbytes-- > 0)
+		unparseputc(*string++, pty);
+	if(!screen->TekEmu)
+	        AdjustAfterInput(screen);
 }
 
 static int funcvalue (keycode)

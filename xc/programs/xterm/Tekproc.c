@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.37 88/08/18 21:45:34 jim Exp $
+ * $Header: Tekproc.c,v 1.38 88/08/30 17:18:37 swick Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -119,7 +119,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.37 88/08/18 21:45:34 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.38 88/08/30 17:18:37 swick Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -162,10 +162,19 @@ static int *Tparsestate = Talptable;
 
 /* event handlers */
 extern void HandleKeyPressed();
+extern void HandleStringEvent();
 extern void HandleEnterWindow();
 extern void HandleLeaveWindow();
 extern void HandleFocusChange();
 extern void TekButtonPressed();
+
+static char defaultTranslations[] = 
+    "<KeyPress>: insert()";
+
+static XtActionsRec actionsList[] = { 
+    { "string",	HandleStringEvent },
+    { "insert",	HandleKeyPressed },
+};
 
 static Dimension defOne = 1;
 
@@ -191,8 +200,8 @@ WidgetClassRec tekClassRec = {
     /* initialize	  */	TekInitialize,
     /* initialize_hook    */    NULL,				
     /* realize		  */	TekRealize,
-    /* actions		  */	NULL,
-    /* num_actions	  */	0,
+    /* actions		  */	actionsList,
+    /* num_actions	  */	XtNumber(actionsList),
     /* resources	  */	resources,
     /* num_resources	  */	XtNumber(resources),
     /* xrm_class	  */	NULLQUARK,
@@ -210,7 +219,7 @@ WidgetClassRec tekClassRec = {
     /* accept_focus	  */	NULL,
     /* version            */    XtVersion,
     /* callback_offsets   */    NULL,
-    /* tm_table           */    NULL,
+    /* tm_table           */    defaultTranslations,
     /* query_geometry     */    XtInheritQueryGeometry,
     /* display_accelerator*/    XtInheritDisplayAccelerator,
     /* extension          */    NULL
@@ -1079,8 +1088,6 @@ static void TekInitialize(request, new)
 		      HandleFocusChange, (caddr_t)NULL);
     XtAddEventHandler(new, ButtonPressMask, FALSE,
 		      TekButtonPressed, (caddr_t)NULL);
-    XtAddEventHandler(new, KeyPressMask, FALSE,
-		      HandleKeyPressed, (caddr_t)NULL);
 }
 
 
