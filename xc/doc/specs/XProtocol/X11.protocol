@@ -2118,6 +2118,10 @@ The new parent is not on the same screen as the old parent.
 .IP \(bu 5
 The new parent is the window itself or an inferior of the window.
 .IP \(bu 5
+The new parent is
+.PN InputOnly
+and the window is not.
+.IP \(bu 5
 The window has a 
 .PN ParentRelative
 background, and the new parent is not the same depth as the window.
