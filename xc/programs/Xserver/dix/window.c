@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.88 92/05/01 17:10:19 keith Exp $ */
+/* $XConsortium: window.c,v 5.89 92/07/23 10:16:41 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -535,6 +535,7 @@ SetWindowToDefaults(pWin)
     pWin->eventMask = 0;
     pWin->deliverableEvents = 0;
     pWin->dontPropagate = 0;
+    pWin->forcedBS = FALSE;
 }
 
 static void
@@ -738,6 +739,7 @@ InitRootWindow(pWin)
     rootCursor->refcnt++;
     MakeRootTile(pWin);
     pWin->backingStore = defaultBackingStore;
+    pWin->forcedBS = (defaultBackingStore != NotUseful);
     /* We SHOULD check for an error value here XXX */
     (*pScreen->ChangeWindowAttributes)(pWin,
 		       CWBackPixmap|CWBorderPixel|CWCursor|CWBackingStore);
@@ -1006,6 +1008,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     {
         XID value = defaultBackingStore;
 	(void)ChangeWindowAttributes(pWin, CWBackingStore, &value, wClient (pWin));
+	pWin->forcedBS = TRUE;
     }
 
     if (SubSend(pParent))
@@ -1375,6 +1378,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		goto PatchUp;
 	    }
 	    pWin->backingStore = val;
+	    pWin->forcedBS = FALSE;
 	    break;
 	  case CWBackingPlanes:
 	    if (pWin->optional || ((CARD32)*pVlist != ~0L)) {
@@ -1678,7 +1682,10 @@ GetWindowAttributes(pWin, client)
     wa.type = X_Reply;
     wa.bitGravity = pWin->bitGravity;
     wa.winGravity = pWin->winGravity;
-    wa.backingStore  = pWin->backingStore;
+    if (pWin->forcedBS && pWin->backingStore != Always)
+	wa.backingStore = NotUseful;
+    else
+	wa.backingStore = pWin->backingStore;
     wa.length = (sizeof(xGetWindowAttributesReply) -
 		 sizeof(xGenericReply)) >> 2;
     wa.sequenceNumber = client->sequence;
