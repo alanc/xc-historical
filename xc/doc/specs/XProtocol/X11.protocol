@@ -3786,7 +3786,7 @@ the server generates a
 .PN SelectionNotify 
 event to the requestor with property 
 .PN None .
-The arguments are passed on unchanged in either event.
+The arguments are passed on unchanged in either of the events.
 .LP
 .IN "SendEvent" "" "@DEF@"
 .PN SendEvent
