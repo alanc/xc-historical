@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.46 91/01/30 16:15:45 gildea Exp $
+ *	$XConsortium: ptyx.h,v 1.48 91/04/15 13:53:13 gildea Exp $
  */
 
 /*
@@ -428,7 +428,7 @@ typedef struct _TekWidgetRec {
 #define INVERSE		0x01	/* invert the characters to be output */
 #define UNDERLINE	0x02	/* true if underlining */
 #define BOLD		0x04
-#define WRAPAROUND	0x08
+#define WRAPAROUND	0x08	/* true if auto wraparound mode */
 #define REVERSE_VIDEO	0x10	/* true if screen white on black */
 #define ORIGIN		0x20	/* true if in origin mode */
 #define INSERT		0x40	/* true if in insert mode */
@@ -442,7 +442,7 @@ typedef struct _TekWidgetRec {
 				 */
 #define SMOOTHSCROLL	0x100	/* true if in smooth scroll mode */
 #define IN132COLUMNS	0x200	/* true if in 132 column mode */
-#define LINEFEED	0x400
+#define LINEFEED	0x400	/* true if in auto linefeed mode */
 #define	REVERSEWRAP	0x800	/* true if reverse wraparound mode */
 
 #define	ATTRIBUTES	0x07	/* attributes mask */
@@ -500,3 +500,6 @@ typedef struct Tek_Link
 #define	I_TEK		0x04
 
 extern Cursor make_colored_cursor();
+extern int GetBytesAvailable();
+extern void first_map_occurred();
+extern int kill_process_group();
