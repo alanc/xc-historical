@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.6 89/07/10 19:06:10 jim Exp $
+ * $XConsortium: listres.c,v 1.7 89/07/10 19:07:51 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -158,8 +158,8 @@ main (argc, argv)
 		    wl->extra = (caddr_t) ep;
 		}
 		ep = (struct _extra *) wl->extra;
-		if (strcmp (*argv, ep->data) == 0 ||
-		    strcmp (*argv, ep->data + ep->off_cl) == 0) {
+		if (strcmp (buf, ep->data) == 0 ||
+		    strcmp (buf, ep->data + ep->off_cl) == 0) {
 		    list_resources (listres_resources.format,
 				    wl->label, wl->widget_class[0], top,
 				    toplevel);
