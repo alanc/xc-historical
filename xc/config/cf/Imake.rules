@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.141 93/08/11 09:56:51 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.142 93/08/13 13:53:49 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -91,6 +91,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.141 93/08/11 09:56:51 rws Exp $
  * ObjectFromSpecialSource	(dst,src,flags)
  * SpecialObjectRule		(objs,depends,options)
  * SpecialCObjectRule		(basename,depends,options)
+ * MakeLibrary			(libname,objlist)
  * NormalLibraryTarget		(libname,objlist)
  * NormalLibraryTarget2		(libname,objlist1,objlist2)
  * NormalLibraryTarget3		(libname,objlist1,objlist2,objlist3)
@@ -1010,6 +1011,10 @@ clean::									@@\
 	$(RM) dst.c
 #endif /* ObjectFromSpecialSource */
 
+#ifndef MakeLibrary
+#define MakeLibrary(libname,objlist) $(AR) libname objlist
+#endif
+
 /*
  * NormalLibraryTarget - generate rules to create a library.
  */
@@ -1019,7 +1024,7 @@ AllTarget(LibraryTargetName(libname))					@@\
 									@@\
 LibraryTargetName(libname): objlist					@@\
 	$(RM) $@							@@\
-	$(AR) $@ objlist						@@\
+	MakeLibrary($@,objlist)						@@\
 	RanLibrary($@)
 #endif /* NormalLibraryTarget */
 
@@ -1034,8 +1039,8 @@ AllTarget(LibraryTargetName(libname))					@@\
 									@@\
 LibraryTargetName(libname): objlist1 objlist2				@@\
 	$(RM) $@							@@\
-	$(AR) $@ objlist1						@@\
-	$(AR) $@ objlist2						@@\
+	MakeLibrary($@,objlist1)					@@\
+	MakeLibrary($@,objlist2)					@@\
 	RanLibrary($@)
 #endif /* NormalLibraryTarget2 */
 
@@ -1050,9 +1055,9 @@ AllTarget(LibraryTargetName(libname))					@@\
 									@@\
 LibraryTargetName(libname): objlist1 objlist2 objlist3			@@\
 	$(RM) $@							@@\
-	$(AR) $@ objlist1						@@\
-	$(AR) $@ objlist2						@@\
-	$(AR) $@ objlist3						@@\
+	MakeLibrary($@,objlist1)					@@\
+	MakeLibrary($@,objlist2)					@@\
+	MakeLibrary($@,objlist3)					@@\
 	RanLibrary($@)
 #endif /* NormalLibraryTarget3 */
 
@@ -1066,7 +1071,7 @@ AllTarget(LibraryTargetName(libname))					@@\
 									@@\
 LibraryTargetName(libname): deplist					@@\
 	$(RM) $@							@@\
-	$(AR) $@ objlist						@@\
+	MakeLibrary($@,objlist)						@@\
 	RanLibrary($@)
 #endif /* NormalDepLibraryTarget */
 
@@ -1096,7 +1101,7 @@ AllTarget(LibraryTargetNameSuffix(libname,_p))				@@\
 									@@\
 LibraryTargetNameSuffix(libname,_p): objlist				@@\
 	$(RM) $@							@@\
-	cd profiled; $(AR) ../$@ objlist				@@\
+	cd profiled; MakeLibrary(../$@,objlist)				@@\
 	RanLibrary($@)
 
 #endif /* ProfiledLibraryTarget */
@@ -1111,7 +1116,7 @@ AllTarget(LibraryTargetNameSuffix(libname,_d))				@@\
 									@@\
 LibraryTargetNameSuffix(libname,_d): objlist				@@\
 	$(RM) $@							@@\
-	cd debugger; $(AR) ../$@ objlist				@@\
+	cd debugger; MakeLibrary(../$@,objlist)				@@\
 	RanLibrary($@)
 
 #endif /* DebuggedLibraryTarget */
