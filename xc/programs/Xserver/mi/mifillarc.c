@@ -17,7 +17,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.c,v 5.9 89/11/05 13:03:44 rws Exp $ */
+/* $XConsortium: mifillarc.c,v 5.10 90/02/09 10:12:04 rws Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -45,7 +45,7 @@ typedef struct _miFillArcD {
     int xorg, yorg;
     int y;
     int dx, dy;
-    double e, ex;
+    double e;
     double ym, yk, xm, xk;
 } miFillArcDRec;
 
@@ -54,30 +54,31 @@ miFillArcSetup(arc, info)
     register xArc *arc;
     register miFillArcRec *info;
 {
+    info->y = arc->height >> 1;
+    info->dy = arc->height & 1;
+    info->yorg = arc->y + info->y;
+    info->dx = arc->width & 1;
+    info->xorg = arc->x + (arc->width >> 1) + info->dx;
+    info->dx = 1 - info->dx;
     if (arc->width == arc->height)
     {
 	/* (2x - 2xorg)^2 = d^2 - (2y - 2yorg)^2 */
 	/* even: xorg = yorg = 0   odd:  xorg = .5, yorg = -.5 */
 	info->ym = 8;
 	info->xm = 8;
-	info->y = arc->width >> 1;
-	info->dy = arc->width & 1;
-	info->yorg = arc->y + info->y;
-	info->xorg = arc->x + info->y + info->dy;
-	info->dx = 1 - info->dy;
-	if (arc->width & 1)
+	info->yk = info->y << 3;
+	if (!info->dx)
 	{
-	    info->e = -1;
 	    info->xk = 0;
+	    info->e = -1;
 	}
 	else
 	{
 	    info->y++;
+	    info->yk += 4;
+	    info->xk = -4;
 	    info->e = - (info->y << 3);
-	    info->xk = 4;
 	}
-	info->ex = -info->xk;
-	info->yk = info->xk;
     }
     else
     {
@@ -85,17 +86,10 @@ miFillArcSetup(arc, info)
 	/* even: xorg = yorg = 0   odd:  xorg = .5, yorg = -.5 */
 	info->ym = (arc->width * arc->width) << 3;
 	info->xm = (arc->height * arc->height) << 3;
-	info->y = arc->height >> 1;
-	info->yorg = arc->y + info->y;
-	info->dy = arc->height & 1;
-	info->dx = arc->width & 1;
-	info->xorg = arc->x + (arc->width >> 1) + info->dx;
-	info->dx = 1 - info->dx;
-	if (arc->height & 1)
-	    info->yk = 0;
-	else
-	    info->yk = info->ym >> 1;
-	if (arc->width & 1)
+	info->yk = info->y * info->ym;
+	if (!info->dy)
+	    info->yk -= info->ym >> 1;
+	if (!info->dx)
 	{
 	    info->xk = 0;
 	    info->e = - (info->xm >> 3);
@@ -103,10 +97,10 @@ miFillArcSetup(arc, info)
 	else
 	{
 	    info->y++;
-	    info->xk = info->xm >> 1;
-	    info->e = info->yk - (info->ym * info->y) - info->xk;
+	    info->yk += info->ym;
+	    info->xk = -(info->xm >> 1);
+	    info->e = info->xk - info->yk;
 	}
-	info->ex = -info->xk;
     }
 }
 
@@ -117,19 +111,20 @@ miFillArcDSetup(arc, info)
 {
     /* h^2 * (2x - 2xorg)^2 = w^2 * h^2 - w^2 * (2y - 2yorg)^2 */
     /* even: xorg = yorg = 0   odd:  xorg = .5, yorg = -.5 */
-    info->ym = ((double)arc->width) * (arc->width * 8);
-    info->xm = ((double)arc->height) * (arc->height * 8);
     info->y = arc->height >> 1;
-    info->yorg = arc->y + info->y;
     info->dy = arc->height & 1;
+    info->yorg = arc->y + info->y;
     info->dx = arc->width & 1;
     info->xorg = arc->x + (arc->width >> 1) + info->dx;
     info->dx = 1 - info->dx;
-    if (arc->height & 1)
+    info->ym = ((double)arc->width) * (arc->width * 8);
+    info->xm = ((double)arc->height) * (arc->height * 8);
+    info->yk = info->y * info->ym;
+    if (!info->dy)
 	info->yk = 0.0;
     else
 	info->yk = info->ym / 2.0;
-    if (arc->width & 1)
+    if (!info->dx)
     {
 	info->xk = 0;
 	info->e = - (info->xm / 8.0);
@@ -137,10 +132,10 @@ miFillArcDSetup(arc, info)
     else
     {
 	info->y++;
-	info->xk = info->xm / 2.0;
-	info->e = info->yk - (info->ym * info->y) - info->xk;
+	info->yk += info->ym;
+	info->xk = -info->xm / 2.0;
+	info->e = info->xk - info->yk;
     }
-    info->ex = -info->xk;
 }
 
 static void
@@ -475,7 +470,7 @@ miFillEllipseI(pDraw, pGC, arc)
     GCPtr pGC;
     xArc *arc;
 {
-    register int x, y, e, ex;
+    register int x, y, e;
     int yk, xk, ym, xm, dx, dy, xorg, yorg;
     int slw;
     miFillArcRec info;
@@ -502,21 +497,10 @@ miFillEllipseI(pDraw, pGC, arc)
     }
     pts = points;
     wids = widths;
-    if (arc->width == arc->height)
+    while (y > 0)
     {
-	while (y)
-	{
-	    MIFILLCIRCSTEP(slw);
-	    ADDSPANS();
-	}
-    }
-    else
-    {
-	while (y > 0)
-	{
-	    MIFILLELLSTEP(slw);
-	    ADDSPANS();
-	}
+	MIFILLARCSTEP(slw);
+	ADDSPANS();
     }
     (*pGC->ops->FillSpans)(pDraw, pGC, pts - points, points, widths, FALSE);
     DEALLOCATE_LOCAL(widths);
@@ -531,7 +515,7 @@ miFillEllipseD(pDraw, pGC, arc)
 {
     register int x, y;
     int xorg, yorg, dx, dy, slw;
-    double e, yk, xk, ym, xm, ex;
+    double e, yk, xk, ym, xm;
     miFillArcDRec info;
     DDXPointPtr points;
     register DDXPointPtr pts;
@@ -558,7 +542,7 @@ miFillEllipseD(pDraw, pGC, arc)
     wids = widths;
     while (y > 0)
     {
-	MIFILLELLSTEP(slw);
+	MIFILLARCSTEP(slw);
 	ADDSPANS();
     }
     (*pGC->ops->FillSpans)(pDraw, pGC, pts - points, points, widths, FALSE);
@@ -595,11 +579,10 @@ miFillArcSliceI(pDraw, pGC, arc)
     xArc *arc;
 {
     int yk, xk, ym, xm, dx, dy, xorg, yorg, slw;
-    register int x, y, e, ex;
+    register int x, y, e;
     miFillArcRec info;
     miArcSliceRec slice;
     int ya, xl, xr, xc;
-    int iscircle;
     DDXPointPtr points;
     register DDXPointPtr pts;
     int *widths;
@@ -620,7 +603,6 @@ miFillArcSliceI(pDraw, pGC, arc)
 	DEALLOCATE_LOCAL(points);
 	return;
     }
-    iscircle = (arc->width == arc->height);
     if (pGC->miTranslate)
     {
 	xorg += pDraw->x;
@@ -632,14 +614,7 @@ miFillArcSliceI(pDraw, pGC, arc)
     wids = widths;
     while (y > 0)
     {
-	if (iscircle)
-	{
-	    MIFILLCIRCSTEP(slw);
-	}
-	else
-	{
-	    MIFILLELLSTEP(slw);
-	}
+	MIFILLARCSTEP(slw);
 	MIARCSLICESTEP(slice.edge1);
 	MIARCSLICESTEP(slice.edge2);
 	if (miFillSliceUpper(slice))
@@ -668,7 +643,7 @@ miFillArcSliceD(pDraw, pGC, arc)
 {
     register int x, y;
     int dx, dy, xorg, yorg, slw;
-    double e, yk, xk, ym, xm, ex;
+    double e, yk, xk, ym, xm;
     miFillArcDRec info;
     miArcSliceRec slice;
     int ya, xl, xr, xc;
@@ -703,7 +678,7 @@ miFillArcSliceD(pDraw, pGC, arc)
     wids = widths;
     while (y > 0)
     {
-	MIFILLELLSTEP(slw);
+	MIFILLARCSTEP(slw);
 	MIARCSLICESTEP(slice.edge1);
 	MIARCSLICESTEP(slice.edge2);
 	if (miFillSliceUpper(slice))
