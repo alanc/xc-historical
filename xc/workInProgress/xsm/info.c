@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.4 94/07/13 11:04:34 mor Exp $ */
+/* $XConsortium: info.c,v 1.5 94/07/15 10:05:25 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -179,12 +179,35 @@ XtPointer 	callData;
 
 
 
+static char *
+GetProgramName (fullname)
+
+char *fullname;
+
+{
+    char *lastSlash = NULL;
+    int i;
+
+    for (i = 0; i < strlen (fullname); i++)
+	if (fullname[i] == '/')
+	    lastSlash = &fullname[i];
+    
+    if (lastSlash)
+	return (lastSlash + 1);
+    else
+	return (fullname);
+}
+
+
+
 void
 UpdateClientList ()
 
 {
-    ClientRec *client = ClientList;
+    ClientRec *client;
     char *progName;
+    int maxlen1, maxlen2;
+    char extraBuf1[80], extraBuf2[80];
     int i, j, k;
 
     if (clientNames)
@@ -199,8 +222,30 @@ UpdateClientList ()
 	free ((char *) clientNames);
     }
 
+    maxlen1 = maxlen2 = 0;
+    client = ClientList;
+
+    for (i = 0; i < numClients; i++, client = client->next)
+    {
+	for (j = 0; j < client->numProps; j++)
+	    if (strcmp (client->props[j]->name, SmProgram) == 0)
+	    {
+		char *temp = GetProgramName (client->props[j]->vals[0].value);
+
+		if (strlen (temp) > maxlen1)
+		    maxlen1 = strlen (temp);
+
+		if (strlen (client->clientHostname) > maxlen2)
+		    maxlen2 = strlen (client->clientHostname);
+
+		break;
+	    }
+    }
+
     clientNames = (String *) malloc (numClients * sizeof (String));
     numClientNames = numClients;
+
+    client = ClientList;
 
     for (i = 0; i < numClients; i++, client = client->next)
     {
@@ -209,19 +254,23 @@ UpdateClientList ()
 	for (j = 0; j < client->numProps && !progName; j++)
 	    if (strcmp (client->props[j]->name, SmProgram) == 0)
 	    {
-		char *temp = client->props[j]->vals[0].value;
-		char *lastSlash = NULL;
+		char *temp = GetProgramName (client->props[j]->vals[0].value);
+		int extra1 = maxlen1 - strlen (temp);
+		int extra2 = maxlen2 - strlen (client->clientHostname);
 
-		for (k = 0; k < strlen (temp); k++)
-		    if (temp[k] == '/')
-			lastSlash = &temp[k];
+		progName = (String) XtMalloc (strlen (temp) +
+		    extra1 + extra2 + 4 + strlen (client->clientHostname));
 
-		if (lastSlash)
-		    temp = lastSlash + 1;
+		for (k = 0; k < extra1; k++)
+		    extraBuf1[k] = ' ';
+		extraBuf1[extra1] = '\0';
 
-		progName = (String) XtMalloc (
-		    strlen (client->clientHostname) + strlen (temp) + 4);
-		sprintf (progName, "%s : %s", client->clientHostname, temp);
+		for (k = 0; k < extra2; k++)
+		    extraBuf2[k] = ' ';
+		extraBuf2[extra2] = '\0';
+
+		sprintf (progName, "%s%s (%s%s)", temp, extraBuf1,
+		    client->clientHostname, extraBuf2);
 	    }
 
 	if (!progName)
@@ -290,7 +339,6 @@ create_client_info_popup ()
 	"viewPropButton", commandWidgetClass, clientInfoForm,
         XtNfromHoriz, NULL,
         XtNfromVert, NULL,
-	XtNresizable, True,
         NULL);
     
     XtAddCallback (viewPropButton, XtNcallback, GetClientInfoXtProc, 0);
@@ -300,7 +348,6 @@ create_client_info_popup ()
 	"killClientButton", commandWidgetClass, clientInfoForm,
         XtNfromHoriz, viewPropButton,
         XtNfromVert, NULL,
-	XtNresizable, True,
         NULL);
     
     XtAddCallback (killClientButton, XtNcallback, KillClientXtProc, 0);
@@ -310,7 +357,6 @@ create_client_info_popup ()
 	"clientInfoDoneButton", commandWidgetClass, clientInfoForm,
         XtNfromHoriz, killClientButton,
         XtNfromVert, NULL,
-	XtNresizable, True,
         NULL);
 
     XtAddCallback (clientInfoDoneButton, XtNcallback, listDoneXtProc, 0);
