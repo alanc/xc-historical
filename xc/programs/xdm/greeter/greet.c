@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.16 89/11/03 14:44:50 keith Exp $
+ * $XConsortium: greet.c,v 1.17 89/11/17 18:43:09 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -87,47 +87,50 @@ Display *
 InitGreet (d)
 struct display	*d;
 {
-	Arg		arglist[10];
-	int		i;
-	static int	argc;
-	Screen		*scrn;
-	static char	*argv[] = { "xlogin", 0 };
-	Display		*dpy;
+    Arg		arglist[10];
+    int		i;
+    static int	argc;
+    Screen		*scrn;
+    static char	*argv[] = { "xlogin", 0 };
+    Display		*dpy;
 
-	Debug ("greet %s\n", d->name);
-	argc = 1;
-	XtToolkitInitialize ();
-	context = XtCreateApplicationContext();
-	dpy = XtOpenDisplay (context, d->name, "xlogin", "Xlogin", 0,0,
-				&argc, argv);
+    Debug ("greet %s\n", d->name);
+    argc = 1;
+    XtToolkitInitialize ();
+    context = XtCreateApplicationContext();
+    dpy = XtOpenDisplay (context, d->name, "xlogin", "Xlogin", 0,0,
+			    &argc, argv);
 
-	SecureDisplay (d, dpy);
+    SecureDisplay (d, dpy);
 
-	i = 0;
-	scrn = DefaultScreenOfDisplay(dpy);
-        XtSetArg(arglist[i], XtNscreen, scrn);	i++;
-	XtSetArg(arglist[i], XtNargc, argc);	i++;
-	XtSetArg(arglist[i], XtNargv, argv);	i++;
+    i = 0;
+    scrn = DefaultScreenOfDisplay(dpy);
+    XtSetArg(arglist[i], XtNscreen, scrn);	i++;
+    XtSetArg(arglist[i], XtNargc, argc);	i++;
+    XtSetArg(arglist[i], XtNargv, argv);	i++;
 
-	toplevel = XtAppCreateShell ((String) NULL, "Xlogin",
-			applicationShellWidgetClass, dpy, arglist, i);
+    toplevel = XtAppCreateShell ((String) NULL, "Xlogin",
+		    applicationShellWidgetClass, dpy, arglist, i);
 
-	i = 0;
-	XtSetArg (arglist[i], XtNnotifyDone, GreetDone); i++;
-	if (!d->authorize || d->authorization)
-		XtSetArg (arglist[i], XtNsecureSession, True); i++;
-	login = XtCreateManagedWidget ("login", loginWidgetClass, toplevel,
-					arglist, i);
-	XtRealizeWidget (toplevel);
+    i = 0;
+    XtSetArg (arglist[i], XtNnotifyDone, GreetDone); i++;
+    if (!d->authorize || d->authorization)
+	    XtSetArg (arglist[i], XtNsecureSession, True); i++;
+    login = XtCreateManagedWidget ("login", loginWidgetClass, toplevel,
+				    arglist, i);
+    XtRealizeWidget (toplevel);
 
-	XWarpPointer(dpy, None, RootWindowOfScreen (scrn),
-			0, 0, 0, 0,
-			WidthOfScreen(scrn) / 2,
- 			HeightOfScreen(scrn) / 2);
+    XWarpPointer(dpy, None, RootWindowOfScreen (scrn),
+		    0, 0, 0, 0,
+		    WidthOfScreen(scrn) / 2,
+		    HeightOfScreen(scrn) / 2);
 
-	pingTimeout = XtAppAddTimeOut (context, d->pingInterval * 60 * 1000,
+    if (d->pingInterval)
+    {
+    	pingTimeout = XtAppAddTimeOut (context, d->pingInterval * 60 * 1000,
 				       GreetPingServer, (XtPointer) d);
-	return dpy;
+    }
+    return dpy;
 }
 
 CloseGreet (d)
