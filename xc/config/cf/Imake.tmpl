@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.47 89/08/07 10:17:55 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.48 89/08/21 10:08:58 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -251,7 +251,29 @@
 #endif
 #endif
 #ifndef HasSaberC
-#define HasSaberC		NO	/* silly people */
+#define HasSaberC		NO	/* for people unclear on the concept */
+#endif
+
+#ifndef HasSunOSSharedLibraries
+#define HasSunOSSharedLibraries NO
+#endif
+
+#ifndef SharedLibraryDef
+#if HasSunOSSharedLibraries
+#define SharedLibraryDef -DSUNSHLIB	/* eventually will be SVR4SHLIB... */
+#ifndef HasSharedLibraries
+#define HasSharedLibraries YES
+#endif
+#else
+#define SharedLibraryDef /**/
+#ifndef HasSharedLibraries
+#define HasSharedLibraries NO
+#endif
+#endif
+#else
+#ifndef HasSharedLibraries
+#define HasSharedLibraries NO
+#endif
 #endif
 
 #ifndef DestDir
@@ -463,6 +485,9 @@
 #if ConstructMFLAGS
            MFLAGS = -$(MAKEFLAGS)
 #endif
+#if HasSharedLibraries
+         SHLIBDEF = SharedLibraryDef
+#endif
 
      INSTBINFLAGS = InstBinFlags	/* install flags for programs */
      INSTUIDFLAGS = InstUidFlags	/* install flags for setuid programs */
@@ -508,6 +533,8 @@
  */
 
 #include <Project.tmpl>
+
+
 
 #include <Imake.rules>
 
