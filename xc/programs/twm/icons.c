@@ -1,6 +1,6 @@
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.5 89/05/10 01:25:54 keith Exp $
+ * $XConsortium: icons.c,v 1.6 89/05/10 17:26:22 keith Exp $
  *
  * Icon releated routines
  *
@@ -289,6 +289,7 @@ CreateIconWindow(tmp_win, def_x, def_y)
 TwmWindow *tmp_win;
 int def_x, def_y;
 {
+    unsigned long event_mask;
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
     Pixmap pm;			/* tmp pixmap variable */
@@ -448,6 +449,7 @@ int def_x, def_y;
     tmp_win->icon_y = tmp_win->icon_height + Scr->IconFont.height;
     tmp_win->icon_w_height = tmp_win->icon_height + Scr->IconFont.height + 4;
 
+    event_mask = 0;
     if (tmp_win->wmhints && tmp_win->wmhints->flags & IconWindowHint)
     {
 	tmp_win->icon_w = tmp_win->wmhints->icon_window;
@@ -471,11 +473,12 @@ int def_x, def_y;
 	    0,0,
 	    tmp_win->icon_w_width, tmp_win->icon_w_height,
 	    Scr->IconBorderWidth, tmp_win->icon_border, tmp_win->iconc.back);
+	event_mask = ExposureMask;
     }
 
     XSelectInput(dpy, tmp_win->icon_w,
 	KeyPressMask | VisibilityChangeMask |
-	ButtonPressMask | ButtonReleaseMask | ExposureMask);
+	ButtonPressMask | ButtonReleaseMask | event_mask);
 
     tmp_win->icon_bm_w = NULL;
     if (pm != NULL &&
