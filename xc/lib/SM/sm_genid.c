@@ -1,4 +1,4 @@
-/* $XConsortium: sm_genid.c,v 1.2 94/02/06 14:29:16 rws Exp $ */
+/* $XConsortium: sm_genid.c,v 1.3 94/03/18 16:03:14 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -24,6 +24,14 @@ Author: Ralph Mor, X Consortium
 #include "SMlibint.h"
 #include <X11/Xtrans.h>
 #include <stdio.h>
+
+#ifdef X_NOT_STDC_ENV
+#define Time_t long
+extern Time_t time ();
+#else
+#include <time.h>
+#define Time_t time_t
+#endif
 
 #ifndef WIN32
 
@@ -97,7 +105,6 @@ SmsConn smsConn;
     char temp[256];
     char *id;
     static int sequence = 0;
-    struct timeval time;
 
     if (gethostname (hostname, sizeof (hostname)))
 	return (NULL);
@@ -134,13 +141,7 @@ SmsConn smsConn;
     return (NULL);
 #endif
 
-#if defined(SVR4) || defined(WIN32) || defined(VMS)
-    gettimeofday (&time);
-#else
-    gettimeofday (&time, NULL);
-#endif
-
-    sprintf (temp, "1%s%.13ld%.10d%.4d", address, time.tv_sec,
+    sprintf (temp, "1%s%.13ld%.10d%.4d", address, time((Time_t*)0),
         getpid (), sequence);
 
     if (++sequence > 9999)
