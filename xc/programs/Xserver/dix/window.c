@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.218 88/10/13 21:27:49 rws Exp $ */
+/* $XConsortium: window.c,v 1.219 88/10/15 09:11:24 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -533,6 +533,10 @@ InitProcedures(pWin)
 
 /* hack for forcing backing store on all windows */
 int	defaultBackingStore = NotUseful;
+/* hack to force no backing store */
+Bool	disableBackingStore = FALSE;
+/* hack to force no save unders */
+Bool	disableSaveUnders = FALSE;
 
 static void
 SetWindowToDefaults(pWin, pScreen)
@@ -731,6 +735,9 @@ CreateRootWindow(screen)
     /* We SHOULD check for an error value here XXX */
     (*pScreen->ChangeWindowAttributes)(pWin, CWBackingStore);
 
+    if (disableBackingStore)
+	pScreen->backingStoreSupport = NotUseful;
+
 #ifdef DO_SAVE_UNDERS
     if ((pScreen->backingStoreSupport != NotUseful) &&
 	(pScreen->saveUnderSupport == NotUseful))
@@ -743,6 +750,9 @@ CreateRootWindow(screen)
     }
 #endif /* DO_SAVE_UNDERS */
 		
+    if (disableSaveUnders)
+	pScreen->saveUnderSupport = NotUseful;
+
     return(Success);
 }
 
