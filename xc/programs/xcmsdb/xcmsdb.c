@@ -1,4 +1,4 @@
-/* $XConsortium: xcmsdb.c,v 1.6 91/07/22 16:45:45 rws Exp $ */
+/* $XConsortium: xcmsdb.c,v 1.7 91/07/22 17:23:15 rws Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -68,7 +68,7 @@ void Syntax ()
     fprintf (stderr, 
 	     "    -remove                      remove Screen Color Characterization Data\n");
     fprintf (stderr, 
-	     "    -color                       use color as def<ault\n");
+	     "    -color                       use color as default\n");
 #ifdef GRAY
     fprintf (stderr, 
 	     "    -gray                        use gray-scale as default\n");
