@@ -413,6 +413,7 @@ Display_Stats_Info(window)
   printf("         ==> Border width: %s\n", bscale(win_attributes.border_width));
   printf("         ==> Window class: %s\n",
   	 Lookup(win_attributes.class, _window_classes));
+  printf("         ==> Colormap: 0x%lx\n", win_attributes.colormap);
   printf("         ==> Window Bit Gravity State: %s\n",
   	 Lookup(win_attributes.bit_gravity, _bit_gravity_states));
   printf("         ==> Window Window Gravity State: %s\n",
