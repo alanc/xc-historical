@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.23 92/02/06 16:22:11 rws Exp $
+.\" $XConsortium: Consortium.man,v 1.24 92/03/19 11:41:15 rws Exp $
 .TH XCONSORTIUM 1 "Release 5"  "X Version 11"
 .SH NAME
 MIT X Consortium \- MIT X Consortium information
@@ -61,7 +61,6 @@ Stephen Gildea, gildea@expo.lcs.mit.edu
 Susan Hardy, sh@expo.lcs.mit.edu
 Jay Hersh, hersh@expo.lcs.mit.edu
 Ralph Mor,  mor@expo.lcs.mit.edu
-Keith Packard, keith@expo.lcs.mit.edu
 Dave Sternlicht, dave@expo.lcs.mit.edu
 .fi
 
@@ -160,6 +159,7 @@ Metro Link, Inc.
 University of Lowell
 Megatek Corporation
 Metheus Corporation
+MicroUnity Systems Engineering
 MITRE Corporation
 Objectivity, Inc.
 Open Software Foundation
