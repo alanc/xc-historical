@@ -4,7 +4,11 @@ LOCAL_LIBRARIES = XawClientLibs
   SYS_LIBRARIES = -lkvm
 #endif
 #if SystemV4
+#ifdef SonyArchitecture
+  SYS_LIBRARIES = -lmld
+#else
   SYS_LIBRARIES = -lelf
+#endif
 #endif
            SRCS = xload.c get_load.c
            OBJS = xload.o get_load.o
