@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: 00.header,v 1.2 92/06/30 17:13:58 rws Exp $
 .de TP
 .sp 1
 .tl \\*(}t
@@ -53,15 +53,14 @@ Printed: May 15, 1992
 .TE
 .SP 2
 .S 10
-.TS
-expand;
-l l.
-UniSoft Group Limited,			Tel: +44 71 729 3773
-Spa House,				Fax: +44 71 729 3273
+.nf
+UniSoft Group Limited,
+Spa House,
 Chapel Place,
 Rivington Street,
 LONDON EC2A 3DQ
-.TE
+.fi
+.sp
 Copyright \(co 1991, 1992 by the Massachusetts Institute of Technology and
 UniSoft Group Limited
 .P
