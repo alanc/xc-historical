@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.68 91/03/29 09:34:07 rws Exp $ */
+/* $XConsortium: io.c,v 1.69 92/08/21 19:28:47 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -43,8 +43,6 @@ SOFTWARE.
 #include "opaque.h"
 #include "dixstruct.h"
 #include "misc.h"
-
-#define XBIGREQ
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
@@ -80,7 +78,7 @@ extern int errno;
 #define get_req_len(req,cli) ((cli)->swapped ? \
 			      lswaps((req)->length) : (req)->length)
 
-#ifdef XBIGREQ
+#ifdef BIGREQS
 typedef struct {
 	CARD8 reqType;
 	CARD8 data;
@@ -138,7 +136,7 @@ ReadRequestFromClient(client)
     int result;
     register xReq *request;
     Bool need_header;
-#ifdef XBIGREQ
+#ifdef BIGREQS
     Bool move_header;
 #endif
 
@@ -177,7 +175,7 @@ ReadRequestFromClient(client)
     oci->bufptr += oci->lenLastReq;
 
     need_header = FALSE;
-#ifdef XBIGREQ
+#ifdef BIGREQS
     move_header = FALSE;
 #endif
     gotnow = oci->bufcnt + oci->buffer - oci->bufptr;
@@ -190,7 +188,7 @@ ReadRequestFromClient(client)
     {
 	request = (xReq *)oci->bufptr;
 	needed = get_req_len(request, client);
-#ifdef XBIGREQ
+#ifdef BIGREQS
 	if (!needed && client->big_requests)
 	{
 	    move_header = TRUE;
@@ -267,7 +265,7 @@ ReadRequestFromClient(client)
 	{
 	    request = (xReq *)oci->bufptr;
 	    needed = get_req_len(request, client);
-#ifdef XBIGREQ
+#ifdef BIGREQS
 	    if (!needed && client->big_requests)
 	    {
 		move_header = TRUE;
@@ -288,7 +286,7 @@ ReadRequestFromClient(client)
     }
     if (needed == 0)
     {
-#ifdef XBIGREQ
+#ifdef BIGREQS
 	if (client->big_requests)
 	    needed = sizeof(xBigReq);
 	else
@@ -309,7 +307,7 @@ ReadRequestFromClient(client)
     {
 	request = (xReq *)(oci->bufptr + needed);
 	if (gotnow >= (result = (get_req_len(request, client) << 2))
-#ifdef XBIGREQ
+#ifdef BIGREQS
 	    && (result ||
 		(client->big_requests &&
 		 (gotnow >= sizeof(xBigReq) &&
@@ -328,7 +326,7 @@ ReadRequestFromClient(client)
     }
     if (++timesThisConnection >= MAX_TIMES_PER)
 	YieldControl();
-#ifdef XBIGREQ
+#ifdef BIGREQS
     if (move_header)
     {
 	request = (xReq *)oci->bufptr;
@@ -447,7 +445,7 @@ ResetCurrentRequest(client)
     {
 	request = (xReq *)oci->bufptr;
 	needed = get_req_len(request, client);
-#ifdef XBIGREQ
+#ifdef BIGREQS
 	if (!needed && client->big_requests)
 	{
 	    oci->bufptr -= sizeof(xBigReq) - sizeof(xReq);
