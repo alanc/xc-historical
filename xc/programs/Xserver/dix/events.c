@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.124 87/11/27 16:27:17 rws Locked $ */
+/* $Header: events.c,v 1.125 87/11/27 17:38:29 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -140,6 +140,7 @@ extern void NormalKeyboardEvent();
 extern int DeliverDeviceEvents();
 extern void DoFocusEvents();
 extern Mask EventMaskForClient();
+extern WindowPtr CheckMotion();
 
 extern GrabPtr CreateGrab();		/* Defined in grabs.c */
 extern void  DeleteGrab();
@@ -254,16 +255,37 @@ CheckPhysLimits(cursor)
 	    currentScreen, sprite.hot.x, sprite.hot.y, FALSE);
 }
 
+/*
+ * XXX this routine probably wants pointer position changes to be noticed,
+ * but we don't seem to be in a position to do that.
+ */
 static void
-NewCursorConfines(x1, x2, y1, y2)
-    int x1, x2, y1, y2;
+ConfineCursorToWindow(pWin, x, y)
+    WindowPtr pWin;
+    int x, y;
 {
-    sprite.hotLimits.x1 = x1;
-    sprite.hotLimits.x2 = x2;
-    sprite.hotLimits.y1 = y1;
-    sprite.hotLimits.y2 = y2;
-    CheckPhysLimits(sprite.current);
-    (* currentScreen->ConstrainCursor)(currentScreen, &sprite.physLimits);
+    ScreenPtr pScreen = pWin->drawable.pScreen;
+
+    sprite.hotLimits = *(* pScreen->RegionExtents)(pWin->borderSize);
+    if (currentScreen != pScreen)
+    {
+	currentScreen = pScreen;
+	ROOT = &WindowTable[pScreen->myNum];
+	if (x < sprite.hotLimits.x1)
+	    x = sprite.hotLimits.x1;
+	else if (x >= sprite.hotLimits.x2)
+	    x = sprite.hotLimits.x2 - 1;
+	if (y < sprite.hotLimits.y1)
+	    y = sprite.hotLimits.y1;
+	else if (y >= sprite.hotLimits.y2)
+	    y = sprite.hotLimits.y2 - 1;
+	sprite.hot.x = x;
+	sprite.hot.y = y;
+	(* pScreen->SetCursorPosition)(pScreen, x, y, FALSE); /* XXX see above */
+	(void) CheckMotion(x, y, TRUE);
+    }
+    CheckPhysLimits(sprite.current); /* XXX see above */
+    (* pScreen->ConstrainCursor)(pScreen, &sprite.physLimits);
 }
 
 static void
@@ -448,16 +470,11 @@ ActivatePointerGrab(mouse, grab, time, autoGrab)
     TimeStamp time;
     Bool autoGrab;
 {
-    WindowPtr w;
     WindowPtr oldWin = (mouse->grab) ? mouse->grab->window
 				     : sprite.win;
 
-    if (w = grab->u.ptr.confineTo)
-    {
-	NewCursorConfines(
-	    w->absCorner.x, w->absCorner.x + (int)w->clientWinSize.width,
-	    w->absCorner.y, w->absCorner.y + (int)w->clientWinSize.height);
-    }
+    if (grab->u.ptr.confineTo)
+	ConfineCursorToWindow(grab->u.ptr.confineTo, 0, 0);
     DoEnterLeaveEvents(oldWin, grab->window, NotifyGrab);
     motionHintWindow = NullWindow;
     mouse->grabTime = time;
@@ -484,10 +501,10 @@ DeactivatePointerGrab(mouse)
     if (keybd->sync.other == grab)
 	keybd->sync.other = NullGrab;
     DoEnterLeaveEvents(grab->window, sprite.win, NotifyUngrab);
-    ComputeFreezes(keybd, mouse);
     if (grab->u.ptr.confineTo)
-	NewCursorConfines(0, currentScreen->width, 0, currentScreen->height);
+	ConfineCursorToWindow(ROOT, 0, 0);
     PostNewCursor();
+    ComputeFreezes(keybd, mouse);
 }
 
 static void
@@ -1061,12 +1078,8 @@ NewCurrentScreen(newScreen, x, y)
     ScreenPtr newScreen;
     int x,y;
 {
-    if (newScreen == currentScreen)
-        return;
-    ROOT = &WindowTable[newScreen->myNum];
-    currentScreen = newScreen;
-    NewCursorConfines(0, currentScreen->width, 0, currentScreen->height);
-    (void) CheckMotion(x, y, TRUE);
+    if (newScreen != currentScreen)
+	ConfineCursorToWindow(&WindowTable[newScreen->myNum], x, y);
 }
 
 int
@@ -1075,6 +1088,8 @@ ProcWarpPointer(client)
 {
     WindowPtr	dest = NULL;
     int		x, y;
+    ScreenPtr	newScreen;
+    GrabPtr	grab = inputInfo.pointer->grab;
 
     REQUEST(xWarpPointerReq);
 
@@ -1111,23 +1126,27 @@ ProcWarpPointer(client)
     }
     if (dest)
     {
-	if (currentScreen != dest->drawable.pScreen)
-	    NewCurrentScreen(dest->drawable.pScreen, 
-			     dest->absCorner.x + stuff->dstX,
-			     dest->absCorner.y + stuff->dstY);
-    
 	x = dest->absCorner.x + stuff->dstX;
 	y = dest->absCorner.y + stuff->dstY;
-
+	newScreen = dest->drawable.pScreen;
     } else {
 	x = sprite.hot.x + stuff->dstX;
 	y = sprite.hot.y + stuff->dstY;
+	newScreen = currentScreen;
     }
- 
-    /* Send a pointer motion event to ProcessPointerEvent, just as the
-	device dependent driver does when the hardware moves the pointer. */
+    if (x < 0)
+	x = 0;
+    else if (x >= newScreen->width)
+	x = newScreen->width - 1;
+    if (y < 0)
+	y = 0;
+    else if (y >= newScreen->height)
+	y = newScreen->height - 1;
 
-    (*currentScreen->SetCursorPosition)( currentScreen, x, y, TRUE);
+    if (newScreen == currentScreen)
+	(*newScreen->SetCursorPosition)(newScreen, x, y, TRUE);
+    else if (!grab || !grab->u.ptr.confineTo)
+	NewCurrentScreen(newScreen, x, y);
 
     return Success;
 }
@@ -2093,7 +2112,7 @@ ProcGrabPointer(client)
 	GrabRec tempGrab;
 
 	if (grab && grab->u.ptr.confineTo && !confineTo)
-	    NewCursorConfines(0, currentScreen->width, 0, currentScreen->height);
+	    ConfineCursorToWindow(ROOT, 0, 0);
 	tempGrab.u.ptr.cursor = cursor;
 	tempGrab.client = client;
 	tempGrab.ownerEvents = stuff->ownerEvents;
@@ -3621,7 +3640,9 @@ DeleteWindowFromAnyEvents(pWin, freeResources)
     /* Deactivate any grabs performed on this window, before making any
 	input focus changes. */
 
-    if ((mouse->grab) && (mouse->grab->window == pWin))
+    if ((mouse->grab) &&
+	((mouse->grab->window == pWin) ||
+	 (mouse->grab->u.ptr.confineTo == pWin)))
 	DeactivatePointerGrab(mouse);
 
     /* Deactivating a keyboard grab should cause focus events. */
@@ -3677,6 +3698,23 @@ DeleteWindowFromAnyEvents(pWin, freeResources)
 	while (passive = PASSIVEGRABS(pWin))
 	    FreeResource(passive->resource, RC_NONE);
      }
+}
+
+/* Call this whenever some window at or below pWin has changed geometry */
+
+/*ARGSUSED*/
+void
+CheckCursorConfinement(pWin)
+    WindowPtr pWin;
+{
+    GrabPtr grab = inputInfo.pointer->grab;
+
+    /* We could traverse the tree rooted at pWin to see if it contained confineTo,
+     * and only then call ConfineCursorToWindow, but it hardly seems worth it.
+     */
+    if (grab && grab->u.ptr.confineTo &&
+	(pWin->firstChild || (pWin == grab->u.ptr.confineTo)))
+	ConfineCursorToWindow(grab->u.ptr.confineTo, sprite.hot.x, sprite.hot.y);
 }
 
 Mask
