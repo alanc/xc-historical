@@ -166,8 +166,6 @@ NameValueRec propertyChanged[] = {
 #define DetailImmed 3
 
 EventKey events[] = {
-{"BtnDown",	    NULL, BPM, ButtonPress, DetailTable,(caddr_t)buttonNames},
-{"BtnUp", 	    NULL, BRM, ButtonRelease,DetailTable,(caddr_t)buttonNames},
 {"KeyPress",	    NULL, KPM, KeyPress,	DetailKeySym,	NULL},
 {"KeyRelease",	    NULL, KRM, KeyRelease,	DetailKeySym,	NULL},
 {"ButtonPress",     NULL, BPM, ButtonPress, DetailTable,(caddr_t)buttonNames},
@@ -203,6 +201,8 @@ EventKey events[] = {
 {"MappingNotify",   NULL, 0,   0/*mapping*/,	DetailNone,	NULL},
 
 {"Key", 	    NULL, KPM, KeyPress,	DetailKeySym,	NULL},
+{"BtnDown",	    NULL, BPM, ButtonPress, DetailTable,(caddr_t)buttonNames},
+{"BtnUp", 	    NULL, BRM, ButtonRelease,DetailTable,(caddr_t)buttonNames},
 {"Btn1Down",	    NULL, BPM, ButtonPress,	DetailImmed,(caddr_t)Button1},
 {"Btn1Up", 	    NULL, BRM, ButtonRelease,	DetailImmed,(caddr_t)Button1},
 {"Btn2Down", 	    NULL, BPM, ButtonPress,	DetailImmed,(caddr_t)Button2},
@@ -818,11 +818,7 @@ static void ParseTranslationTableProduction(w, compiledActionTable, str)
     str = ScanWhitespace(str);
     str = ParseActionSeq(str, &actions);
 
-    /* run down the event list:  */
-    /* change translation manager events into real x events */
-    /* make sure the event is registered in the event table */
     for (esp=eventSeq; esp!=NULL; esp=esp->next) {
-	esp->eventType = events[esp->eventType].eventType;
 	XtAddEventHandler(
 	    w,
 	    events[esp->eventType].mask,
@@ -842,6 +838,9 @@ static void ParseTranslationTableProduction(w, compiledActionTable, str)
 	    /* put the action procs in at the end */
 	    esp->actions = actions;
 	}
+        /* change translation manager events into real x events */
+	esp->eventType = events[esp->eventType].eventType;
+	/* don't use esp->eventType as an index into event from here on... */
 	w->core.translations->eventObjTbl = EventMapObjectCreate(
 	    w->core.translations, esp);
     }
