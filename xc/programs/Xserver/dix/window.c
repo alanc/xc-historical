@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.61 91/04/09 20:30:00 keith Exp $ */
+/* $XConsortium: window.c,v 5.62 91/05/04 23:09:31 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3332,7 +3332,7 @@ ReparentWindow(pWin, pParent, x, y, client)
 
     if (WasMapped)
         MapWindow(pWin, client);
-    RecalculateDeliverableEvents(pParent);
+    RecalculateDeliverableEvents(pWin);
     return(Success);
 }
 
