@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.57 94/07/26 14:15:07 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.58 94/07/26 18:20:33 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -385,8 +385,13 @@ Bool use_default;
 
     set_session_save_file_name (name);
 
-    if (!use_default)
+    if (use_default)
+	need_to_name_session = True;
+    else
+    {
 	database_read = ReadSave (name, &sm_id);
+	need_to_name_session = !database_read;
+    }
 
     if (!sm_id)
 	sm_id = SmsGenerateClientID (NULL);
