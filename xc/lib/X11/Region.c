@@ -1,4 +1,4 @@
-/* $XConsortium: XRegion.c,v 11.31 91/01/26 14:02:09 rws Exp $ */
+/* $XConsortium: XRegion.c,v 11.32 91/01/30 14:42:04 rws Exp $ */
 /************************************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -23,8 +23,8 @@ SOFTWARE.
 
 ************************************************************************/
 /*
- * The functions in this file implement the Region abstraction used extensively
- * throughout the X11 sample server. A Region is simply an area, as the name
+ * The functions in this file implement the Region abstraction, similar to one
+ * used in the X11 sample server. A Region is simply an area, as the name
  * implies, and is implemented as a "y-x-banded" array of rectangles. To
  * explain: Each Region is made up of a certain number of rectangles sorted
  * by y coordinate first, and then by x coordinate.
@@ -101,6 +101,8 @@ XUnionRectWithRegion(rect, source, dest)
 {
     REGION region;
 
+    if (!rect->width || !rect->height)
+	return;
     region.rects = &region.extents;
     region.numRects = 1;
     region.extents.x1 = rect->x;
