@@ -1,7 +1,7 @@
 /*
  * xkill - simple program for destroying unwanted clients
  *
- * $XHeader: xkill.c,v 1.1 88/07/14 19:43:22 jim Exp $
+ * $XHeader: xkill.c,v 1.2 88/07/15 10:29:50 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -239,8 +239,9 @@ XID get_window_id (dpy, button)
 	switch (event.type) {
 	  case ButtonPress:
 	    if (retwin == None) {
-		retwin = event.xbutton.subwindow;
 		retbutton = event.xbutton.button;
+		retwin = ((event.xbutton.subwindow != None) ?
+			  event.xbutton.subwindow : root);
 	    }
 	    pressed++;
 	    continue;
@@ -254,6 +255,7 @@ XID get_window_id (dpy, button)
     XFreeCursor (dpy, cursor);
     XSync (dpy, 0);
 
+    if (retwin == root) retwin = None;
     return ((button == -1 || retbutton == button) ? retwin : None);
 }
 
