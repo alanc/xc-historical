@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetImage.c,v 11.18 88/01/31 09:55:30 jim Locked $ */
+/* $Header: XGetImage.c,v 11.19 88/02/07 11:41:29 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -14,7 +14,7 @@ extern XImage *XCreateImage();
 static unsigned int Ones(mask)                /* HACKMEM 169 */
     unsigned long mask;
 {
-    register int y;
+    register unsigned long y;
 
     y = (mask >> 1) &033333333333;
     y = mask - y - ((y >>1) & 033333333333);
