@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtDisplay-Initialize XtOpen-Display XtClose-Display wid-get
+.hw XtDisplay-Initialize XtOpen-Display XtClose-Display XtDatabase XtScreen-Database wid-get
 .na
 .de Ds
 .nf
@@ -99,10 +99,8 @@
 .ny0
 .TH XtDisplayInitialize 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtDisplayInitialize, XtOpenDisplay, XtDatabase, XtCloseDisplay \- initialize, open, or close a display
+XtDisplayInitialize, XtOpenDisplay, XtDatabase, XtScreenDatabase, XtCloseDisplay \- initialize, open, or close a display
 .SH SYNTAX
-void XtToolkitInitialize()
-.LP
 void XtDisplayInitialize(\fIapp_context\fP, \fIdisplay\fP, \
 \fIapplication_name\fP, \fIapplication_class\fP,
 .br
@@ -152,6 +150,10 @@ void XtCloseDisplay(\fIdisplay\fP)
 XrmDatabase XtDatabase(\fIdisplay\fP)
 .br
       Display *\fIdisplay\fP;
+.LP
+XrmDatabase XtScreenDatabase(\fIscreen\fP)
+.br
+      Screen* \fIscreen\fP;
 .SH ARGUMENTS
 .IP \fIargc\fP 1i
 Specifies a pointer to the number of command line parameters.
@@ -175,6 +177,8 @@ The options argument is passed as a parameter to
 .ZN XrmParseCommand .
 For further information,
 see \fI\*(xL\fP.
+.IP \fIscreen\fP 1i
+Specifies the screen whose resource database is to be returned.
 .SH DESCRIPTION
 The
 .ZN XtDisplayInitialize
@@ -257,6 +261,15 @@ associated with the display that was passed in.
 If this display has not been initialized by
 .ZN XtDisplayInitialize ,
 the results are not defined.
+.LP
+The
+.ZN XtScreenDatabase
+function returns the fully merged resoruce database associated with the
+specified screen. If the \fIscreen\fP does not belong to a 
+.ZN Display
+initilized by
+.ZN XtDisplayInitialize ,
+the results are undefined.
 .SH "SEE ALSO"
 XtAppCreateShell(3Xt),
 XtCreateApplicationContext(3Xt)
