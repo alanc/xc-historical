@@ -1,4 +1,4 @@
-/* $XConsortium: Geometry.c,v 1.56 93/05/13 16:04:14 kaleb Exp $ */
+/* $XConsortium: Geometry.c,v 1.57 93/08/27 16:27:28 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -520,7 +520,6 @@ void XtTranslateCoords(w, x, y, rootx, rooty)
 #endif
 {
     Position garbagex, garbagey;
-    Widget passed = w;
     XtAppContext app = XtWidgetToApplicationContext(w);
 
     LOCK_APP(app);
