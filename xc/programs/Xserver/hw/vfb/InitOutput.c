@@ -1,4 +1,4 @@
-/* $XConsortium: InitOutput.c,v 1.11 94/04/17 20:30:25 gildea Exp $ */
+/* $XConsortium: InitOutput.c,v 1.12 94/07/28 16:10:06 dpw Exp dpw $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -215,6 +215,7 @@ ddxUseMsg()
 {
     ErrorF("-screen scrn WxHxD     set screen's width, height, depth\n");
     ErrorF("-pixdepths list-of-int support given pixmap depths\n");
+    ErrorF("-linebias n            adjust thin line pixelization\n");
 
 #ifdef HAS_MMAP
     ErrorF("-fbdir directory       put framebuffers in mmap'ed files in directory\n");
