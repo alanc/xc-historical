@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 2.22 91/07/13 13:30:08 converse Exp $
+/* $XConsortium: main.c,v 2.23 91/07/13 22:55:27 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -34,7 +34,7 @@ static void NeedToCheckScans(client_data, id)
 {
     int i;
     (void) XtAppAddTimeOut((XtAppContext)client_data,
-			   (unsigned long) app_resources.checkpoint_interval,
+			   (unsigned long) app_resources.rescan_interval,
 			   NeedToCheckScans, client_data);
     if (!subProcessRunning) {
         DEBUG("[magic toc check ...")
