@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.56 89/12/05 11:21:57 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.57 89/12/10 13:47:07 keith Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -305,6 +305,9 @@
 #define SharedXextRev 4.0
 #endif
 
+#ifndef HasInputExtension
+#define HasInputExtension YES
+#endif
 #ifndef DoInstallExtensionsIntoXlib
 #define DoInstallExtensionsIntoXlib NO	/* merge libXext.a into libX11.a */
 #endif
@@ -333,7 +336,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.56 89/12/05 11:21:57 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.57 89/12/10 13:47:07 keith Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
