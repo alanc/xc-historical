@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xlcint.h,v 11.11 91/05/01 09:20:16 rws Exp $
+ * $XConsortium: Xlcint.h,v 11.12 91/06/05 08:51:16 rws Exp $
  */
 
 /*
@@ -52,7 +52,7 @@ typedef struct _XIMFilter {
     struct _XIMFilter *next;
     Window window;
     unsigned long event_mask;
-    Bool nonmaskable;
+    int start_type, end_type;
     Bool (*filter)(
 #if NeedFunctionPrototypes
 	Display*, Window, XEvent*, XPointer
@@ -522,6 +522,57 @@ extern char ** _XParseBaseFontNameList(
 extern XrmMethods _XrmInitParseInfo(
 #if NeedFunctionPrototypes
 	XPointer*	/* statep */
+#endif
+);
+
+extern void _XRegisterFilterByMask(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    Window		/* window */,
+    unsigned long	/* event_mask */,
+    Bool (*)(
+#if NeedNestedPrototypes
+	     Display*	/* display */,
+	     Window	/* window */,
+	     XEvent*	/* event */,
+	     XPointer	/* client_data */
+#endif
+	     )		/* filter */,
+    XPointer		/* client_data */
+#endif
+);
+
+extern void _XRegisterFilterByType(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    Window		/* window */,
+    int			/* start_type */,
+    int			/* end_type */,
+    Bool (*)(
+#if NeedNestedPrototypes
+	     Display*	/* display */,
+	     Window	/* window */,
+	     XEvent*	/* event */,
+	     XPointer	/* client_data */
+#endif
+	     )		/* filter */,
+    XPointer		/* client_data */
+#endif
+);
+
+extern void _XUnregisterFilter(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    Window		/* window */,
+    Bool (*)(
+#if NeedNestedPrototypes
+	     Display*	/* display */,
+	     Window	/* window */,
+	     XEvent*	/* event */,
+	     XPointer	/* client_data */
+#endif
+	     )		/* filter */,
+    XPointer		/* client_data */
 #endif
 );
 
