@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.h,v 1.3 93/10/26 14:34:11 rws Exp $ */
+/* $XConsortium: xieperf.h,v 1.4 93/10/27 21:53:00 rws Exp $ */
 
 /**** module xieperf.h ****/
 /******************************************************************************
@@ -96,10 +96,6 @@ extern Bool NullInitProc    (/* XParms xp; Parms p */);
 
 typedef unsigned char Version;		/* ditto */
 
-static struct stat _Stat_Buffer;
-#define file_size(path) ( stat(path,&_Stat_Buffer)== 0 ? \
-                _Stat_Buffer.st_size :  -1)
-
 #define	ClampInputs	1
 #define	ClampOutputs	2
 
@@ -182,7 +178,7 @@ typedef struct _Image {
     int		width[ 3 ];	/* width of image */
     int         height[ 3 ];    /* height of image */
     int         depth[ 3 ];     /* pixel depth */
-    int         levels[ 3 ];	/* 1 << depth */
+    unsigned long levels[ 3 ];	/* 1 << depth */
     int		decode;	     	/* decode method */
     int         fill_order;	
     int         pixel_order;	
