@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 5.6 89/07/16 10:36:21 rws Exp $ */
+/* $XConsortium: miexpose.c,v 5.7 89/07/16 17:24:04 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -505,8 +505,6 @@ tossGC (pGC, id)
 GCPtr pGC;
 GContext id;
 {
-    int i;
-
     screenContext[pGC->pScreen->myNum] = (GCPtr)NULL;
     FreeGC (pGC, id);
     numGCs--;

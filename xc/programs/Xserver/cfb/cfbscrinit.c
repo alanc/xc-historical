@@ -117,7 +117,6 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     VisualID	*pVids;
     register PixmapPtr pPixmap;
     int	i, j;
-    ColormapPtr cmap;
 
     pScreen->myNum = index;
     pScreen->width = xsize;

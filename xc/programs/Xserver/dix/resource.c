@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.73 89/03/23 19:08:51 rws Exp $ */
+/* $XConsortium: resource.c,v 1.74 89/07/16 17:24:30 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -299,9 +299,8 @@ RebuildTable(client)
 
 void
 FreeResource(id, skipDeleteFuncType)
-XID id;
-int skipDeleteFuncType;
-
+    XID id;
+    RESTYPE skipDeleteFuncType;
 {
     int		cid;
     register    ResourcePtr res;

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.3 89/07/13 11:54:23 rws Exp $ */
+/* $XConsortium: mibitblt.c,v 5.4 89/07/14 17:14:03 keith Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -251,7 +251,7 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
     int			sx, sy, w, h;
     unsigned long	*result;
 {
-    int			i, j, k, depth, width, bitsPerPixel, widthInBytes;
+    int			i, j, k, width, bitsPerPixel, widthInBytes;
     DDXPointRec 	pt;
     unsigned int 	*pline;
     unsigned int	bit;
@@ -260,7 +260,6 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
     CARD32		*pLongsOut;
     int			delta;
 
-    depth = pDraw->depth;
     sx += pDraw->x;
     sy += pDraw->y;
     widthInBytes = PixmapBytePad(w, 1);
@@ -636,9 +635,7 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
     depth = pDraw->depth;
     if(format == ZPixmap)
     {
-	if ( (((1<<pDraw->depth)-1)&planeMask) != 
-	     (1<<pDraw->depth)-1
-	   )
+	if ( (((1<<depth)-1)&planeMask) != (1<<depth)-1 )
 	{
 	    pGC = GetScratchGC(depth, pDraw->pScreen);
 	    if (!pGC)
