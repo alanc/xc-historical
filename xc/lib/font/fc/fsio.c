@@ -413,7 +413,7 @@ int
 _fs_any_bit_set(mask)
     unsigned long *mask;
 {
-    return ANYSET(mask);
+    return _FSANYSET(mask);
 }
 
 int
