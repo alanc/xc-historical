@@ -8,7 +8,7 @@ SRCS = connection.c WaitFor.c utils.c io.c fileio.c filenames.c access.c \
 OBJS = connection.o WaitFor.o utils.o io.o fileio.o filenames.o access.o \
 	 osinit.o oscolor.o
 DEFINES= -DTCPCONN -DUNIXCONN
-CDEBUGFLAGS = -g -DDEBUG
+CDEBUGFLAGS = ServerCDebugFlags
 INCLUDES = -I.  -I../../include -I../../../include
 
 NormalLibraryObjectRule()

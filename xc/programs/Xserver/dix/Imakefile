@@ -4,7 +4,7 @@ SRCS = dixutils.c globals.c window.c dispatch.c resource.c main.c \
 OBJS = dixutils.o main.o globals.o window.o dispatch.o resource.o \
 	 property.o gc.o grabs.o events.o atom.o fonts.o cursor.o glyphcurs.o \
 	 extension.o colormap.o  initatoms.o tables.o swapreq.o swaprep.o
-CDEBUGFLAGS = -g -DDEBUG
+CDEBUGFLAGS = ServerCDebugFlags
 INCLUDES = -I. -I../include -I../../include
 
 NormalLibraryObjectRule()

@@ -5,7 +5,7 @@ SRCS =	 mfbgc.c mfbwindow.c mfbfont.c \
 	 mfbfillsp.c mfbsetsp.c mfbscrinit.c mfbclip.c mfbbitblt.c \
 	 mfbgetsp.c mfbpolypnt.c \
 	 mfbplygblt.c mfbimggblt.c mfbcmap.c \
-	 mfbpntarea.c mfbtile.c
+	 mfbpntarea.c mfbscrclose.c mfbtile.c mfbmisc.c
 
 OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbfillrct.o mfbpntwin.o maskbits.o mfbpixmap.o \
@@ -15,9 +15,9 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbgetsp.o mfbpolypnt.o \
 	 mfbpgbwht.o mfbpgbblak.o mfbpgbinv.o \
 	 mfbigbwht.o mfbigbblak.o mfbcmap.o \
-	 mfbpawhite.o mfbpablack.o mfbpainv.o mfbtile.o
+	 mfbpawhite.o mfbpablack.o mfbpainv.o mfbscrclose.o mfbtile.o mfbmisc.o
 
-CDEBUGFLAGS = -g
+CDEBUGFLAGS = ServerCDebugFlags
 INCLUDES = -I. -I../../include -I../../../include
 
 NormalLibraryObjectRule()

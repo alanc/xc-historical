@@ -1,7 +1,7 @@
 SRCS =	\
 	sunInit.c \
 	sunBW2.c \
-	sunBW2zoids.c \
+	sunBW2zoid.c \
 	sunCursor.c \
 	sunIo.c \
 	sunKbd.c \
@@ -17,7 +17,7 @@ OFILES = sunInit.o
 
 OBJS = \
 	sunBW2.o \
-	sunBW2zoids.o \
+	sunBW2zoid.o \
 	sunCursor.o \
 	sunIo.o \
 	sunKbd.o \
@@ -29,7 +29,7 @@ OBJS = \
 	sunCG4C.o \
 	sunKeyMap.o
 
-CDEBUGFLAGS = -g
+CDEBUGFLAGS = ServerCDebugFlags
    INCLUDES = -I.  -I../../include -I../mfb -I../../dix -I../../../include
      LFLAGS = -buxz
 
