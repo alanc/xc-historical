@@ -15,7 +15,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbpush8.c,v 1.1 89/07/28 12:51:27 keith Exp $ */
+/* $XConsortium: cfbpush8.c,v 5.0 89/07/28 13:53:19 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -53,8 +53,8 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     unsigned long   rightMask;
     BoxRec	    bbox;
 
-    bbox.x1 = xOrg + pDrawable->x;
-    bbox.y1 = yOrg + pDrawable->y;
+    bbox.x1 = xOrg;
+    bbox.y1 = yOrg;
     bbox.x2 = bbox.x1 + dx;
     bbox.y2 = bbox.y1 + dy;
     
@@ -83,15 +83,12 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     psrcLine = (unsigned long *) pBitmap->devPrivate.ptr;
     srcWidth = (int) pBitmap->devKind >> 2;
     
-    xOrg += pDrawable->x;
-    yOrg += pDrawable->y;
-
     pixel = PFILL (pGC->fgPixel);
     xoff = xOrg & 03;
-    nBitmapLongs = (dx + 31) >> 5;
+    nBitmapLongs = (dx + xoff) >> 5;
     nPixmapLongs = (dx + 3 + xoff) >> 2;
 
-    rightMask = ~cfb8BitLenMasks[(dx & 0x1f)];
+    rightMask = ~cfb8BitLenMasks[((dx + xoff) & 0x1f)];
 
     pdstLine = pdstBase + (yOrg * dstWidth) + (xOrg >> 2);
 
@@ -99,7 +96,7 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     {
 	c = 0;
 	nPixmapTmp = nPixmapLongs;
-	nBitmapTmp = nBitmapLongs - 1;
+	nBitmapTmp = nBitmapLongs;
 	src = psrcLine;
 	dst = pdstLine;
 	while (nBitmapTmp--)
