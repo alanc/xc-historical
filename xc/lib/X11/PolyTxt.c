@@ -1,4 +1,4 @@
-/* $XConsortium: PolyTxt.c,v 11.20 92/04/13 19:45:13 rws Exp $ */
+/* $XConsortium: PolyTxt.c,v 11.21 93/09/07 21:32:09 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -215,5 +215,5 @@ XDrawText(dpy, d, gc, x, y, items, nitems)
        _XFlush (dpy);
     UnlockDisplay(dpy);
     SyncHandle();
-    return;
+    return 0;
     }
