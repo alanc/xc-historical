@@ -1,4 +1,13 @@
 # @(#)termcap	X10/6.6	11/7/86
+# if you don't insert mode applications very often (e.g. vi), replace the 
+# line that reads
+#
+# 	:im=\E[4h:ei=\E[4l:mi:\
+#
+# with one that reads
+#
+# 	:ic=\E[@:\
+#
 vs|xterm|vs100|xterm terminal emulator (X window system):\
 	:cr=^M:do=^J:nl=^J:bl=^G:le=^H:ho=\E[H:\
 	:co#80:li#65:cl=\E[H\E[2J:bs:cm=\E[%i%d;%dH:nd=\E[C:up=\E[A:\
@@ -6,7 +15,8 @@ vs|xterm|vs100|xterm terminal emulator (X window system):\
 	:md=\E[1m:mr=\E[7m:me=\E[m:\
 	:ku=\EOA:kd=\EOB:kr=\EOC:kl=\EOD:kb=^H:\
 	:k1=\EOP:k2=\EOQ:k3=\EOR:k4=\EOS:ta=^I:pt:sf=\n:sr=\EM:\
-	:al=\E[L:dl=\E[M:ic=\E[@:dc=\E[P:\
+	:al=\E[L:dl=\E[M:dc=\E[P:\
+	:im=\E[4h:ei=\E[4l:mi:\
 	:MT:ks=\E[?1h\E=:ke=\E[?1l\E>:\
 	:is=\E[r\E[m\E[2J\E[H\E[?7h\E[?1;3;4;6l:\
 	:rs=\E[r\E<\E[m\E[2J\E[H\E[?7h\E[?1;3;4;6l:xn:\
