@@ -1,5 +1,5 @@
 /*
- * $XConsortium: SimpleMenu.h,v 1.18 90/04/30 17:04:23 converse Exp $
+ * $XConsortium: SimpleMenu.h,v 1.19 90/05/08 15:22:11 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,6 +45,7 @@
 
 #include <X11/Shell.h>
 #include <X11/Xmu/Converters.h>
+#include <X11/Xfuncproto.h>
 
 /****************************************************************
  *
@@ -105,9 +106,7 @@ extern WidgetClass simpleMenuWidgetClass;
  *
  ************************************************************/
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 /*	Function Name: XawSimpleMenuAddGlobalActions
  *	Description: adds the global actions to the simple menu widget.
@@ -145,8 +144,6 @@ extern void XawSimpleMenuClearActiveEntry(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _SimpleMenu_h */

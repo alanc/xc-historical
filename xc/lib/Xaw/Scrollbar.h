@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Scrollbar.h,v 1.4 90/10/22 14:37:41 converse Exp $
+* $XConsortium: Scrollbar.h,v 1.5 90/12/01 13:02:50 rws Exp $
 */
 
 
@@ -37,6 +37,7 @@ SOFTWARE.
  ****************************************************************/
 
 #include <X11/Xmu/Converters.h>
+#include <X11/Xfuncproto.h>
 
 /* Parameters:
 
@@ -86,9 +87,7 @@ typedef struct _ScrollbarClassRec *ScrollbarWidgetClass;
 
 extern WidgetClass scrollbarWidgetClass;
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 extern void XawScrollbarSetThumb(
 #if NeedFunctionPrototypes
@@ -103,8 +102,6 @@ extern void XawScrollbarSetThumb(
 #endif		 
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _Scrollbar_h */

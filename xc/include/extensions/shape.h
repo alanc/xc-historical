@@ -24,18 +24,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.h,v 1.13 91/01/11 20:51:06 converse Exp $ */
+/* $XConsortium: shape.h,v 1.14 91/01/12 11:19:05 rws Exp $ */
 
 #ifndef _SHAPE_H_
 #define _SHAPE_H_
 
-#ifndef NeedFunctionPrototypes
-#if defined(FUNCPROTO) || __STDC__ || defined(__cplusplus) || defined(c_plusplus)
-#define NeedFunctionPrototypes 1
-#else
-#define NeedFunctionPrototypes 0
-#endif /* __STDC__ */
-#endif /* NeedFunctionPrototypes */
+#include <X11/Xfuncproto.h>
 
 #define X_ShapeQueryVersion		0
 #define X_ShapeRectangles		1
@@ -75,9 +69,7 @@ typedef struct {
     Bool shaped;	    /* true if the region exists */
 } XShapeEvent;
 
-#ifdef __cplusplus			/* do not leave open across includes */
-extern "C" {					/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 extern Bool XShapeQueryExtension (
 #if NeedFunctionPrototypes
@@ -198,9 +190,7 @@ extern XRectangle *XShapeGetRectangles (
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _SHAPE_SERVER_ */
 

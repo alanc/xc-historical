@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.h,v 1.8 90/04/13 16:39:52 jim Exp $
+ * $XConsortium: Tree.h,v 1.9 90/04/19 13:52:40 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -32,6 +32,7 @@
 #define _XawTree_h
 
 #include <X11/Xmu/Converters.h>
+#include <X11/Xfuncproto.h>
 
 /******************************************************************************
  * 
@@ -86,10 +87,14 @@ extern WidgetClass treeWidgetClass;
 typedef struct _TreeClassRec *TreeWidgetClass;
 typedef struct _TreeRec      *TreeWidget;
 
+_XFUNCPROTOBEGIN
+
 extern void XawTreeForceLayout (
 #if NeedFunctionPrototypes
     Widget /* tree */
 #endif
 );
+
+_XFUNCPROTOEND
 
 #endif /* _XawTree_h */

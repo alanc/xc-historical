@@ -1,5 +1,5 @@
 /*
- * $XConsortium: List.h,v 1.17 90/05/08 15:18:37 converse Exp $
+ * $XConsortium: List.h,v 1.18 90/12/01 13:01:42 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -41,6 +41,7 @@
  ***********************************************************************/
 
 #include <X11/Xaw/Simple.h>
+#include <X11/Xfuncproto.h>
 
 /* Resources:
 
@@ -148,9 +149,7 @@ typedef struct _XawListReturnStruct {
  *
  *****************************************************************/
 
-#ifdef __cplusplus
-extern "C" {				/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 /*	Function Name: XawListChange.
  *	Description: Changes the list being used and shown.
@@ -219,9 +218,7 @@ extern XawListReturnStruct * XawListShowCurrent(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _XawList_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TextSrc.h,v 1.7 90/12/01 13:02:13 rws Exp $
+ * $XConsortium: TextSrc.h,v 1.8 91/01/02 11:41:09 gildea Exp $
  */
 
 /***********************************************************
@@ -36,6 +36,7 @@ SOFTWARE.
  ***********************************************************************/
 
 #include <X11/Object.h>
+#include <X11/Xfuncproto.h>
 
 /* Resources:
 
@@ -72,9 +73,7 @@ typedef enum {XawactionStart, XawactionAdjust, XawactionEnd}
  *
  ************************************************************/
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 /*	Function Name: XawTextSourceRead
  *	Description: This function reads the source.
@@ -209,9 +208,7 @@ extern void XawTextSourceSetSelection(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _XawTextSrc_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

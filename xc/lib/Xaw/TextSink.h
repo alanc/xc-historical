@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TextSink.h,v 1.6 90/04/30 17:46:17 converse Exp $
+ * $XConsortium: TextSink.h,v 1.7 90/05/08 15:18:18 converse Exp $
  */
 
 /***********************************************************
@@ -36,6 +36,7 @@ SOFTWARE.
  ***********************************************************************/
 
 #include <X11/Object.h>
+#include <X11/Xfuncproto.h>
 
 /* Resources:
 
@@ -62,9 +63,7 @@ typedef enum {XawisOn, XawisOff} XawTextInsertState;
  *
  ************************************************************/
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 /*	Function Name: XawTextSinkDisplayText
  *	Description: Stub function that in subclasses will display text. 
@@ -291,8 +290,6 @@ extern void XawTextSinkGetCursorBounds(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _XawTextSrc_h -- DON'T ADD STUFF AFTER THIS #endif */

@@ -1,4 +1,4 @@
-/* $XConsortium: Form.h,v 1.25 90/05/08 15:18:32 converse Exp $ */
+/* $XConsortium: Form.h,v 1.26 90/12/01 13:02:10 rws Exp $ */
 
 
 /***********************************************************
@@ -29,6 +29,7 @@ SOFTWARE.
 #define _XawForm_h
 
 #include <X11/Constraint.h>
+#include <X11/Xfuncproto.h>
 
 /***********************************************************************
  *
@@ -125,9 +126,7 @@ typedef struct _FormRec		*FormWidget;
 
 extern WidgetClass formWidgetClass;
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 extern void XawFormDoLayout(
 #if NeedFunctionPrototypes
@@ -140,8 +139,6 @@ extern void XawFormDoLayout(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
  
 #endif /* _XawForm_h */
