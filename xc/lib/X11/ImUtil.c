@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XImUtil.c,v 11.33 89/05/15 14:17:13 jim Exp $ */
+/* $XConsortium: XImUtil.c,v 11.34 89/07/13 13:09:34 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -133,7 +133,7 @@ static _normalizeimagebits (bpt, nb, byteorder, unitsize, bitorder)
 
 static _putbits (src, dstoffset, numbits, dst)
     register char *src;	/* address of source bit string */
-    long dstoffset;	/* bit offset into destination; range is 0-31 */
+    int dstoffset;	/* bit offset into destination; range is 0-31 */
     register int numbits;/* number of bits to copy to destination */
     register char *dst;	/* address of destination bit string */
 {
@@ -511,7 +511,7 @@ static int _XPutPixel (ximage, x, y, pixel)
 		for (i=0; i < nbytes; i++) *dst++ = *src++;
 		ZNORMALIZE(&px, nbytes, ximage);
 		_putbits ((char *)&pixel, 
-			  (long) (x * ximage->bits_per_pixel) & 7, 
+			  (x * ximage->bits_per_pixel) & 7, 
 			  ximage->bits_per_pixel, (char *)&px);
 		ZNORMALIZE(&px, nbytes, ximage);
 		src = (char *)&px;
