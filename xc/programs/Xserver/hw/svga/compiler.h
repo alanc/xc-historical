@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: compiler.h,v 1.1 93/09/18 16:07:36 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -27,9 +27,6 @@
 #define _COMPILER_H
 
 #ifdef __GNUC__
-
-#define asm __asm__
-#define inline __inline__
 
 static __inline__ void
 outb(
@@ -98,8 +95,17 @@ inl(
 }
 
 #else /* ! __GNUC__ */
+#ifndef XSVGA_NO_INLINE
 #define asm __asm
 #include <sys/inline.h>
+#else
+extern void outb();
+extern void outw();
+extern void outl();
+extern unchar inb();
+extern ushort inw();
+extern ulong inl();
+#endif
 #endif
 
 #endif /* _COMPILER_H */
