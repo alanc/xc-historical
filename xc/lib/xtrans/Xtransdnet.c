@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransdnet.c,v 1.9 94/03/02 12:16:04 mor Exp $ */
+/* $XConsortium: Xtransdnet.c,v 1.10 94/03/15 13:20:57 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -38,7 +38,7 @@
 #define DNETOBJ X$FONT
 #endif
 #if defined(ICE_t)
-#define DNETOBJ ICE$
+#define DNETOBJ ""
 #endif
 #if defined(TEST_t)
 #define DNETOBJ X$TEST
@@ -48,22 +48,6 @@
 /*
  * This is the DNET implementation of the X Transport service layer
  */
-
-static int
-is_numeric (str)
-
-char *str;
-
-{
-    int i;
-
-    for (i = 0; i < (int) strlen (str); i++)
-	if (!isdigit (str[i]))
-	    return (0);
-
-    return (1);
-}
-
 
 /*
  * This function gets the local address of the socket and stores it in the
