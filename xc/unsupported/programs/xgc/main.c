@@ -89,7 +89,7 @@ static Widget percentchoice;	/* form for choosing percentage of test */
 
 void
 main(argc,argv)
-     Cardinal argc;
+     int argc;
      char **argv;
 {
   static Arg testformargs[] = {	
@@ -257,10 +257,11 @@ main(argc,argv)
   /* Now do things we couldn't do until we had a window available */
 
   X.win = XtWindow(test);
-  X.tile = XCreatePixmapFromBitmapData(X.dpy,X.win,tile_bits,tile_width,
+  X.tile = XCreatePixmapFromBitmapData(X.dpy,X.win,
+				       (char *)tile_bits,tile_width,
 				       tile_height,Black,White,
 				       DefaultDepthOfScreen(X.scr));
-  X.stipple = XCreateBitmapFromData(X.dpy,X.win,tile_bits,tile_width,
+  X.stipple = XCreateBitmapFromData(X.dpy,X.win,(char *)tile_bits,tile_width,
 				    tile_height);
 
   XSetTile(X.dpy,X.gc,X.tile);
