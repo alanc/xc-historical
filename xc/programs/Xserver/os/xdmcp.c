@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
