@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.18 89/11/21 15:31:25 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.19 89/11/21 18:02:28 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -1521,6 +1521,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 		    pGC, srcx, srcy, width, height, dstx, dsty);
 	doBitBlt = cfbDoBitblt;
     }
+    else
 #endif
     {
 	ret = miCopyPlane (pSrcDrawable, pDstDrawable,
