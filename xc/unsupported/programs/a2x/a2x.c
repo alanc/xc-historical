@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.57 92/04/16 09:59:21 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.58 92/04/16 19:55:55 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -1083,6 +1083,9 @@ compute_distance(rec, univ)
 	    y = box.y1;
 	else
 	    y = rec->rooty;
+	if (((x - rec->rootx) * (x - rec->rootx) +
+	     (y - rec->rooty) * (y - rec->rooty)) >= rec->best_dist)
+	    return -1;
 	return compute_best_close(rec, univ, x, y);
     }
 }
