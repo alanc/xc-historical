@@ -1,4 +1,4 @@
-/* $Xconsortium: CIELuv.c,v 1.12 91/01/28 14:31:03 alt Exp $" */
+/* $XConsortium: CIELuv.c,v 1.12 91/01/28 14:31:03 alt Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.

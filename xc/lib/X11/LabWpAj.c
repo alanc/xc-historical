@@ -1,4 +1,4 @@
-/* $XConsortium: CIELabWpAj.c,v 1.8 91/01/22 22:13:39 alt Exp $" */
+/* $XConsortium: CIELabWpAj.c,v 1.1 91/01/30 16:55:28 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.

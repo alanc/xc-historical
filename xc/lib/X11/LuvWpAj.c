@@ -1,4 +1,4 @@
-/* $Xconsortium: CIELuvWpAj.c,v 1.8 91/01/22 22:13:48 alt Exp $" */
+/* $XConsortium: CIELuvWpAj.c,v 1.8 91/01/22 22:13:48 alt Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
