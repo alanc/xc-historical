@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.18 90/02/05 21:46:14 jim Exp $
+ * $XConsortium: viewres.c,v 1.19 90/02/05 22:24:18 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -255,39 +255,61 @@ static void select_callback (gw, closure, data)
     caddr_t closure;			/* TRUE or FALSE */
     caddr_t data;			/* undefined */
 {
+    register int i;
+    int nselected = selected_list.n_elements;
     Arg args[1];
-    int i;
-    WidgetNode *node;
 
     switch ((int) closure) {
       case SELECT_NOTHING:		/* clear selection_list */
 	XtSetArg (args[0], XtNstate, FALSE);
-	for (i = 0; i < selected_list.n_elements; i++) {
+	for (i = 0; i < nselected; i++) {
 	    register WidgetNode *p = selected_list.elements[i];
 	    REMOVE_NODE (p);
 	    XtSetValues (p->instance, args, ONE);
 	}
 	selected_list.n_elements = 0;
 	break;
+
       case SELECT_PARENTS:		/* chain up adding to selection_list */
+	nselected = selected_list.n_elements;
+	for (i = 0; i < nselected; i++) {
+	    WidgetNode *parent = selected_list.elements[i];
+
+	    while (parent = parent->superclass) {  /* do parents */
+		if (parent->selection_index >= 0 &&  /* hit already selected */
+		    parent->selection_index < nselected) break;	 /* later... */
+		add_to_selected_list (parent, True);
+	    }
+	}
 	break;
+
       case SELECT_ALL:			/* put everything on selection_list */
 	if (selected_list.max_elements < nwidgets) {
 	    initialize_widgetnode_list (&selected_list.elements,
 					&selected_list.max_elements,
 					nwidgets);
 	}
-	XtSetArg (args[0], XtNstate, TRUE);
-	for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
-	    INSERT_NODE (node, i);
-	    XtSetValues (node->instance, args, ONE);
+	for (i = 0; i < nwidgets; i++) {
+	    add_to_selected_list (&widget_list[i], True);
 	}
-	selected_list.n_elements = nwidgets;
 	break;
+
       case SELECT_WITH_RESOURCES:	/* put all w/ rescnt > 0 on sel_list */
+	for (i = 0; i < nwidgets; i++) {
+	    WidgetNode *node = &widget_list[i];
+
+	    if (node->nresources > 0) add_to_selected_list (node, True);
+	}
 	break;
+
       case SELECT_WITHOUT_RESOURCES:	/* put all w recnt == 0 on sel_list */
+	for (i = 0; i < nwidgets; i++) {
+	    WidgetNode *node = &widget_list[i];
+
+	    if (node->nresources == 0) add_to_selected_list (node, True);
+	}
 	break;
+
       default:				/* error!!! */
 	XBell (XtDisplay(gw), 0);
 	return;
