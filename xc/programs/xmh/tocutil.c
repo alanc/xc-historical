@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: tocutil.c,v 2.25 89/06/30 15:19:31 kit Exp $";
+    "$XConsortium: tocutil.c,v 2.26 89/07/21 18:56:22 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -102,8 +102,8 @@ void TUScanFileForToc(toc)
 	{XtNx, (XtArgVal) 30},
 	{XtNy, (XtArgVal) 20}
     };
-
-    Widget parent, label;
+    Widget parent, popup = NULL;
+    Position x, y;
     Scrn scrn;
     char  **argv, str[100];
     if (toc) {
@@ -112,12 +112,8 @@ void TUScanFileForToc(toc)
 	else scrn = scrnList[0];
 	parent = (Widget) scrn->tocwidget;
 	(void) sprintf(str, "Rescanning %s", toc->foldername);
-	arglist[0].value = (XtArgVal) str;
-/* %%% Need to reimplement message box. */
-	label = XtCreateWidget( "alert", labelWidgetClass, parent,
-			        arglist, XtNumber(arglist) );
-	XtRealizeWidget(label);
-	XtMapWidget(label);
+	XtTranslateCoords(parent, 30, 15, &x, &y);
+	popup = PopupAlert(str, parent, x, y);
 
 	argv = MakeArgv(4);
 	argv[0] = "scan";
@@ -128,7 +124,8 @@ void TUScanFileForToc(toc)
 	DoCommand(argv, (char *) NULL, toc->scanfile);
 	XtFree(argv[1]);
 	XtFree((char *) argv);
-	XtDestroyWidget(label);
+
+	DestroyPopupAlert(popup);
 	toc->validity = valid;
 	toc->curmsg = NULL;	/* Get cur msg somehow! %%% */
     }
