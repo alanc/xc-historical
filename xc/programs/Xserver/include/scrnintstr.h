@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 1.6 89/06/09 14:53:00 keith Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.0 89/06/09 15:00:36 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -143,8 +143,10 @@ typedef struct _Screen {
     /* Region procedures */
 
     RegionPtr (* RegionCreate)(); 	/* rect, size */
+    void (* RegionInit)();		/* pRegion, rect, size */
     void (* RegionCopy)();		/* dstrgn, srcrgn */
     void (* RegionDestroy)();		/* pRegion */
+    void (* RegionUninit)();		/* pRegion */
     int (* Intersect)();		/* newReg, reg1, reg2 */
     int (* Union)();			/* newReg, reg1, reg2 */
     int (* Subtract)();			/* regD, regM, regS */
@@ -155,7 +157,11 @@ typedef struct _Screen {
     Bool (* PointInRegion)();		/* pRegion, x, y, pBox */
     Bool (* RegionNotEmpty)();      	/* pRegion: RegionPtr */
     void (* RegionEmpty)();        	/* pRegion: RegionPtr */
-    BoxPtr (*RegionExtents)(); 		/* pRegion: RegionPtr */
+    BoxPtr (* RegionExtents)(); 	/* pRegion: RegionPtr */
+    void (* RegionAppend)();		/* pRegion, pRegion */
+    Bool (* RegionValidate)();		/* pRegion */
+    RegionPtr (* BitmapToRegion)();	/* PixmapPtr */
+    RegionPtr (* RectsToRegion)();	/* nrects, pRects, ordering */
     void (* SendGraphicsExpose)();	/* client, rgn, draw, major, minor */
 
     /* os layer procedures */
