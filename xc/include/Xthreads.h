@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xthreads.h,v 1.7 93/09/11 11:04:08 rws Exp $
+ * $XConsortium: Xthreads.h,v 1.8 93/09/14 11:47:12 rws Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -41,7 +41,7 @@ typedef cthread_t xthread_t;
 typedef condition_t xcondition_t;
 typedef mutex_t xmutex_t;
 #define xthread_init() cthread_init()
-#define xthread_self() cthread_self()
+#define xthread_self cthread_self
 #define xthread_fork(func,closure) cthread_fork(func,closure)
 #define xmutex_malloc() (xmutex_t)xmalloc(sizeof(struct mutex))
 #define xmutex_init(m) mutex_init(m)
@@ -60,7 +60,7 @@ typedef mutex_t xmutex_t;
 typedef thread_t xthread_t;
 typedef cond_t *xcondition_t;
 typedef mutex_t *xmutex_t;
-#define xthread_self() thr_self()
+#define xthread_self thr_self
 #define xthread_fork(func,closure) thr_create(NULL,0,func,closure,THR_DETACHED,NULL)
 #define xmutex_malloc() (xmutex_t)xmalloc(sizeof(mutex_t))
 #define xmutex_init(m) mutex_init(m,USYNC_THREAD,0)
@@ -97,7 +97,7 @@ typedef struct _xcondition_t {
 } *xcondition_t;
 typedef CRITICAL_SECTION *xmutex_t;
 #define xthread_init() _Xthread_init()
-#define xthread_self() GetCurrentThreadId()
+#define xthread_self GetCurrentThreadId
 #define xthread_fork(func,closure) { \
     DWORD _tmptid; \
     CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)func, (LPVOID)closure, 0, \
@@ -147,7 +147,7 @@ extern struct _xthread_waiter *_Xthread_self();
 typedef pthread_t xthread_t;
 typedef pthread_cond_t *xcondition_t;
 typedef pthread_mutex_t *xmutex_t;
-#define xthread_self() pthread_self()
+#define xthread_self pthread_self
 #define xthread_fork(func,closure) { pthread_t _tmpxthr; \
 	pthread_create(&_tmpxthr,pthread_attr_default,func,closure); }
 #define xmutex_malloc() (xmutex_t)xmalloc(sizeof(pthread_mutex_t))
