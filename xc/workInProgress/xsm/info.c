@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.21 94/12/14 20:00:15 mor Exp mor $ */
+/* $XConsortium: info.c,v 1.22 94/12/16 17:28:49 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -52,6 +52,7 @@ Widget		restartAnyway;
 Widget		restartImmediately;
 Widget		restartNever;
 Widget     clientListWidget;
+Widget	   noClientsLabel;
 Widget	   manualRestartLabel;
 Widget	   manualRestartCommands;
 
@@ -415,6 +416,7 @@ UpdateClientList ()
     char *restart_service_prop;
     List *cl, *pl;
     int i, k;
+    static int reenable_asap = 0;
 
     if (clientListNames)
     {
@@ -489,6 +491,34 @@ UpdateClientList ()
 	    maxlen2 = strlen (hostname);
 
 	numClientListNames++;
+    }
+
+    if (numClientListNames == 0)
+    {
+	XtSetSensitive (viewPropButton, 0);
+	XtSetSensitive (cloneButton, 0);
+	XtSetSensitive (killClientButton, 0);
+	XtSetSensitive (restartHintButton, 0);
+
+	XtUnmanageChild (clientListWidget);
+	XtManageChild (noClientsLabel);
+
+	reenable_asap = 1;
+
+	return;
+    }
+
+    if (reenable_asap)
+    {
+	XtSetSensitive (viewPropButton, 1);
+	XtSetSensitive (cloneButton, 1);
+	XtSetSensitive (killClientButton, 1);
+	XtSetSensitive (restartHintButton, 1);
+
+	XtUnmanageChild (noClientsLabel);
+	XtManageChild (clientListWidget);
+
+	reenable_asap = 0;
     }
 
     clientListNames = (String *) XtMalloc (
@@ -685,7 +715,9 @@ Boolean *continue_to_dispatch;
     if (event->type == MapNotify)
     {
 	UpdateClientList ();
-	XawListHighlight (clientListWidget, current_client_selected);
+
+	if (current_client_selected >= 0)
+	    XawListHighlight (clientListWidget, current_client_selected);
 
 	XtRemoveEventHandler (clientInfoPopup, StructureNotifyMask, False,
 	    ClientInfoStructureNotifyXtHandler, NULL);
@@ -888,6 +920,15 @@ create_client_info_popup ()
 	NULL);
 
     XtAddCallback (clientListWidget, XtNcallback, ClientListXtProc, 0);
+
+    noClientsLabel = XtVaCreateWidget (
+	"noClientsLabel", labelWidgetClass, clientInfoForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, viewPropButton,
+        XtNborderWidth, 0,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainTop,
+	NULL);
 
     manualRestartLabel = XtVaCreateManagedWidget (
 	"manualRestartLabel", labelWidgetClass, clientInfoForm,
