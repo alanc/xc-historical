@@ -1,4 +1,4 @@
-/* $XConsortium: cp_rcom.c,v 5.5 91/03/31 16:59:08 rws Exp $ */
+/* $XConsortium: cp_rcom.c,v 5.6 91/07/12 20:33:38 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -140,28 +140,51 @@ phg_cpr_fread( f, ptr, count)
 }
 
 
+static int
+wait_for_write(s)
+    int s;
+{
+    unsigned long	wfd[MSKCNT];
+
+    CLEARBITS(wfd);
+    BITSET(wfd, s);
+    if (select(s+1, NULL, wfd, NULL, (struct timeval *)NULL) < 0 &&
+	errno != EINTR){
+	perror("phg_cpr_send(select)");
+	return 0;
+    }
+    return 1;
+}
+
 int
 phg_cpr_send( s, msg, size)
     register int	s;
     register char	*msg;
     register int	size;
 {
-    register int	c, wc;
-    unsigned long	wfd[MSKCNT];
+    register int	c, wc, todo;
 
     c = 0;
-    CLEARBITS(wfd);
-    while ( c < size) {
-	BITSET(wfd, s);
-	if ( select( s+1, NULL, wfd, NULL, (struct timeval *)NULL) == 1) {
-	    if ( (wc = write( s, msg + c, size - c)) >= 0) {
-		c += wc;
-	    } else if ( ETEST(errno) || errno == EINTR) {
-		continue;
-	    } else {
-		perror("phg_cpr_send()");
+    todo = size;
+    while ( todo) {
+	if ( (wc = write( s, msg + c, size - c)) >= 0) {
+	    c += wc;
+	    todo = size - c;
+	} else if ( ETEST(errno)) {
+	    if (!wait_for_write(s))
 		break;
-	    }
+	} else if ( errno == EINTR) {
+	    continue;
+#ifdef EMSGSIZE
+	} else if (errno == EMSGSIZE) {
+	    if (todo > 1)
+		todo >>= 1;
+	    else if (!wait_for_write(s))
+		break;
+#endif
+	} else {
+	    perror("phg_cpr_send(write)");
+	    break;
 	}
     }
     return c;
