@@ -1,4 +1,4 @@
-/* $XConsortium: miBldXform.c,v 5.2 91/05/01 14:42:33 hersh Exp $ */
+/* $XConsortium: miBldXform.c,v 5.3 91/10/24 18:03:18 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -24,10 +24,15 @@ SOFTWARE.
 
 ******************************************************************/
 
+#include "X.h"
+#include "Xproto.h"
+#include "misc.h"
 #include "miLUT.h"
 #include "PEXErr.h"
 #include "pixmap.h"
 #include "windowstr.h"
+#include "gcstruct.h"
+#include "scrnintstr.h"
 #include "regionstr.h"
 #include "miscstruct.h"
 #include "miRender.h"
@@ -36,6 +41,7 @@ SOFTWARE.
 extern	void		miMatMult();
 extern  void		miMatCopy();
 extern  ddpex3rtn	InquireLUTEntryAddress();
+extern  void		SetViewportClip();
 
 
 /*++
@@ -251,13 +257,79 @@ ng
       Tz = 0.0;
 
       if ((pRend->render_mode == MI_REND_DRAWING) && pDrawable && pddc) {
-      /* Set the GC clip mask to clip to the viewport */
-    
-          SetClipRects(pddc->Static.misc.pPolylineGC,  0, 0, 1, &viewport,YXBanded);
-          SetClipRects(pddc->Static.misc.pFillAreaGC,  0, 0, 1, &viewport,YXBanded);
-          SetClipRects(pddc->Static.misc.pEdgeGC,      0, 0, 1, &viewport,YXBanded);
-          SetClipRects(pddc->Static.misc.pPolyMarkerGC,0, 0, 1, &viewport,YXBanded);
-          SetClipRects(pddc->Static.misc.pTextGC,      0, 0, 1, &viewport,YXBanded);
+	  /* Set the GC clip mask to clip to the viewport */
+
+	  ddLONG numrects = pRend->clipList->numObj;
+
+	  if (numrects > 0) {
+	      xRectangle      *xrects, *p;
+	      ddDeviceRect    *ddrects;
+	      RegionPtr	      clipRegion;
+	      RegionRec	      tempRegion;
+	      GCPtr	      pGC;
+	      BoxRec	      box;
+	      int             i;
+
+	      ddrects = (ddDeviceRect *) pRend->clipList->pList;
+	      xrects = (xRectangle*) Xalloc (numrects * sizeof(xRectangle));
+	      if (!xrects) return BadAlloc;
+	      /* Need to convert to XRectangle format */
+	      for (i = 0, p = xrects; i < numrects; i++, p++, ddrects++) {
+		  p->x = ddrects->xmin;
+		  p->y = pRend->pDrawable->height - ddrects->ymax;
+		  p->width = ddrects->xmax - ddrects->xmin + 1;
+		  p->height = ddrects->ymax - ddrects->ymin + 1;
+	      }
+
+	      /*
+	       * Compute the intersection of the viewport and the GC's
+               * clip region.  Note that there is a GC for each of the
+               * primitive types, and we only have to compute the
+	       * intersected region for one of them.  This computed region
+	       * will be good for all of the GC's.
+	       */
+
+	      pGC = pddc->Static.misc.pPolylineGC;
+
+	      clipRegion = (*pGC->pScreen->RectsToRegion)(numrects,
+	          xrects, Unsorted);
+
+	      Xfree((char *) xrects);
+
+	      box.x1 = viewport.x;
+	      box.y1 = viewport.y;
+	      box.x2 = viewport.x + viewport.width;
+	      box.y2 = viewport.y + viewport.height;
+
+	      (*pGC->pScreen->RegionInit)(&tempRegion, &box, 1);
+	      (*pGC->pScreen->Intersect)(clipRegion, clipRegion, &tempRegion);
+	      (*pGC->pScreen->RegionUninit)(&tempRegion);
+
+
+	      /*
+	       * Now set the GC clip regions.
+	       */
+
+	      SetViewportClip (pddc->Static.misc.pPolylineGC, clipRegion);
+	      SetViewportClip (pddc->Static.misc.pFillAreaGC, clipRegion);
+	      SetViewportClip (pddc->Static.misc.pEdgeGC, clipRegion);
+	      SetViewportClip (pddc->Static.misc.pPolyMarkerGC, clipRegion);
+	      SetViewportClip (pddc->Static.misc.pTextGC, clipRegion);
+
+	      (*pGC->pScreen->RegionDestroy)(clipRegion);
+	  }
+	  else {
+	      SetClipRects(pddc->Static.misc.pPolylineGC,
+		0, 0, 1, &viewport,YXBanded);
+	      SetClipRects(pddc->Static.misc.pFillAreaGC,
+		0, 0, 1, &viewport,YXBanded);
+	      SetClipRects(pddc->Static.misc.pEdgeGC,
+		0, 0, 1, &viewport,YXBanded);
+	      SetClipRects(pddc->Static.misc.pPolyMarkerGC,
+		0, 0, 1, &viewport,YXBanded);
+	      SetClipRects(pddc->Static.misc.pTextGC,
+		0, 0, 1, &viewport,YXBanded);
+	  }
       }
     }
 
@@ -593,3 +665,26 @@ pddc->Dynamic->clipFlags = viewbundle->entry.clipFlags;
 }
 
 
+void SetViewportClip(pGC, clipRegion)
+    GCPtr pGC;
+    RegionPtr clipRegion;
+{
+    /*
+     * When we call the GC's ChangeClip function, it destroys
+     * the region we pass to it.  Since this function is called
+     * for each of the GC's, we copy clipRegion into tempRegion
+     * and use tempRegion when calling ChangeClip.
+     */
+
+    RegionPtr tempRegion = (*pGC->pScreen->RegionCreate)(NullBox, 0);
+
+    (*pGC->pScreen->RegionCopy)(tempRegion, clipRegion);
+
+    pGC->serialNumber |= GC_CHANGE_SERIAL_BIT;
+    pGC->clipOrg.x = 0;
+    pGC->clipOrg.y = 0;
+    pGC->stateChanges |= GCClipXOrigin|GCClipYOrigin;
+    (*pGC->funcs->ChangeClip)(pGC, CT_REGION, tempRegion, 0);
+    if (pGC->funcs->ChangeGC)
+	(*pGC->funcs->ChangeGC) (pGC, GCClipXOrigin|GCClipYOrigin|GCClipMask);
+}
