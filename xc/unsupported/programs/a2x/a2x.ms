@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.32 93/03/31 16:00:21 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.33 93/04/02 12:19:36 rws Exp $
 .de Ds
 .RS
 .nf
@@ -1143,7 +1143,12 @@ The command line options for \fBa2x\fP are:
 .LP
 .B \-b
 .IP
-Prevents translating Backspace characters into Delete characters.
+Prevents \fBa2x\fP from translating Backspace characters into Delete
+characters on output to the X server.
+.LP
+.B
+If your DOS telnet program sends Delete when you type {Backspace} and
+Backspace when you type {Del}, then use this option so that \fBa2x\fP knows.
 .LP
 .B \-c
 .IP
