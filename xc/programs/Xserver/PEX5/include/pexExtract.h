@@ -1,4 +1,4 @@
-/* $XConsortium: pexExtract.h,v 5.3 91/06/25 16:25:52 hersh Exp $ */
+/* $XConsortium: pexExtract.h,v 5.4 91/07/01 16:25:41 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
