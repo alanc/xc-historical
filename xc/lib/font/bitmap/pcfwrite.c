@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfwrite.c,v 1.3 92/03/26 17:37:17 gildea Exp $
+ * $XConsortium: pcfwrite.c,v 1.4 93/09/17 18:26:53 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -39,7 +39,7 @@ pcfWrite(file, b, c)
     int         c;
 {
     current_position += c;
-    FontFileWrite(file, b, c);
+    return FontFileWrite(file, b, c);
 }
 
 static int
