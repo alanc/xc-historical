@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: ibmInit.c,v 1.3 91/07/16 13:06:35 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -315,9 +315,7 @@ extern  int ibmQuietFlag ;
     if (skip=OS_ProcessArgument(argc,argv,i))           return(skip);
     else                                                skip= 1;
 #endif
-    if ( strcmp( argv[i], "-bs" ) == 0 )                ibmAllowBackingStore= 1;
-    else if ( strcmp( argv[i], "-nobs" ) == 0 )         ibmAllowBackingStore= 0;
-    else if ( strcmp( argv[i], "-pckeys" ) == 0 )       ibmUsePCKeys= 1;
+    if ( strcmp( argv[i], "-pckeys" ) == 0 )       ibmUsePCKeys= 1;
     else if ( strcmp( argv[i], "-quiet" ) == 0 )        ibmQuietFlag = 1;
     else if ( strcmp( argv[i], "-rtkeys" ) == 0 )       ibmUsePCKeys= 0;
     else if ( strcmp( argv[i], "-verbose" ) == 0 )      ibmQuietFlag = 0;
