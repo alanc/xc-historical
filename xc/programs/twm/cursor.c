@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: cursor.c,v 1.9 89/12/10 19:20:07 jim Exp $
+ * $XConsortium: cursor.c,v 1.10 89/12/14 14:52:23 jim Exp $
  *
  * cursor creation code
  *
@@ -150,12 +150,6 @@ char *source, *mask;
     int sx, sy, mx, my;
     unsigned int sw, sh, mw, mh;
     Pixmap spm, mpm;
-    Colormap cmap = Scr->TwmRoot.cmaps.cwins[0]->colormap->c;
-
-    fore.pixel = Scr->Black;
-    XQueryColor(dpy, cmap, &fore);
-    back.pixel = Scr->White;
-    XQueryColor(dpy, cmap, &back);
 
     spm = GetBitmap(source);
     if ((hotx = HotX) < 0) hotx = 0;
@@ -173,5 +167,6 @@ char *source, *mask;
 		 ProgramName, source, mask);
 	return;
     }
-    *cp = XCreatePixmapCursor(dpy, spm, mpm, &fore, &back, hotx,hoty);
+    *cp = XCreatePixmapCursor(dpy, spm, mpm, &Scr->PointerForeground,
+			      &Scr->PointerBackground, hotx,hoty);
 }

@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.61 90/03/15 14:23:04 jim Exp $
+ * $XConsortium: screen.h,v 1.62 91/05/01 17:33:09 keith Exp $
  *
  * twm per-screen data include file
  *
@@ -127,6 +127,8 @@ typedef struct ScreenInfo
     ColorPair MenuTitleC;	/* menu title colors */
     ColorPair IconC;		/* icon colors */
     ColorPair IconManagerC;	/* icon manager colors */
+    XColor PointerForeground;	/* pointer foreground color */
+    XColor PointerBackground;	/* pointer background color */
     ColorPair DefaultC;		/* default colors */
     Pixel BorderColor;		/* color of window borders */
     Pixel MenuShadowColor;	/* menu shadow color */

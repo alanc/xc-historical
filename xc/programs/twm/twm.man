@@ -1,4 +1,4 @@
-.\" $XConsortium: twm.man,v 1.55 92/04/28 12:16:39 dave Exp $
+.\" $XConsortium: twm.man,v 1.56 92/05/11 15:05:36 dave Exp $
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1
@@ -255,8 +255,10 @@ display is capable of displaying more than simple black and white.  The
 \fBMenuBackground\fP,
 \fBMenuForeground\fP,
 \fBMenuTitleBackground\fP,
-\fBMenuTitleForeground\fP, and
-\fBMenuShadowColor\fP.
+\fBMenuTitleForeground\fP,
+\fBMenuShadowColor\fP,
+\fBPointerForeground\fP, and
+\fBPointerBackground\fP.
 The following
 color variables may also be given a list of window and color name pairs to
 allow per-window colors to be specified (see \fBBorderColor\fP for details):

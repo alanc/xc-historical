@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.124 91/05/08 11:01:54 dave Exp $
+ * $XConsortium: twm.c,v 1.125 92/05/11 15:04:27 dave Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -586,6 +586,12 @@ InitVariables()
     Scr->IconC.fore = black;
     Scr->IconC.back = white;
     Scr->IconBorderColor = black;
+    Scr->PointerForeground.pixel = black;
+    XQueryColor(dpy, Scr->TwmRoot.cmaps.cwins[0]->colormap->c,
+		&Scr->PointerForeground);
+    Scr->PointerBackground.pixel = white;
+    XQueryColor(dpy, Scr->TwmRoot.cmaps.cwins[0]->colormap->c,
+		&Scr->PointerBackground);
     Scr->IconManagerC.fore = black;
     Scr->IconManagerC.back = white;
     Scr->IconManagerHighlight = black;
