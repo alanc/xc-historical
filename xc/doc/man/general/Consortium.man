@@ -2,7 +2,7 @@
 .SH NAME
 MIT X Consortium
 .SH SYNOPSIS
-X11R5beta is brought to you by the MIT X Consortium.
+Release 5 of X Version 11 is brought to you by the MIT X Consortium.
 .SH DESCRIPTION
 X Window System research began in the summer of 1984 at MIT as an informal
 joint undertaking between the Laboratory for Computer Science and
