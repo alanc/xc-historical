@@ -57,6 +57,8 @@ IMPORTS = \
 	$(AWIDGETSRC)/LoadP.h \
 	$(AWIDGETSRC)/Logo.h \
 	$(AWIDGETSRC)/LogoP.h \
+	$(AWIDGETSRC)/Mailbox.h \
+	$(AWIDGETSRC)/MailboxP.h \
 	$(AWIDGETSRC)/Scroll.h \
 	$(AWIDGETSRC)/ScrollP.h \
 	$(AWIDGETSRC)/Simple.h \
