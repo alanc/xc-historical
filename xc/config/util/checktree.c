@@ -1,4 +1,4 @@
-/* $XConsortium: checktree.c,v 1.3 93/09/17 11:08:46 rws Exp $ */
+/* $XConsortium: checktree.c,v 1.4 93/09/24 16:04:16 rws Exp $ */
 
 /*
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -163,8 +163,12 @@ Strncmp(cp1, cp2, n)
 	    c2 = *cp2;
 	    if (c1 >= 'A' && c1 <= 'Z')
 		c1 += 'a' - 'A';
+	    else if (c1 == '-')
+		c1 = '_';
 	    if (c2 >= 'A' && c2 <= 'Z')
 		c2 += 'a' - 'A';
+	    else if (c2 == '-')
+		c2 = '_';
 	    if (c1 != c2)
 		return (int)c1 - (int)c2;
 	}
