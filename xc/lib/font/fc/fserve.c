@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.21 92/05/12 18:07:27 gildea Exp $ */
+/* $XConsortium: fserve.c,v 1.22 92/05/13 15:41:49 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -47,6 +47,12 @@
 #ifndef MIN
 #define MIN(a,b)    ((a)<(b)?(a):(b))
 #endif
+
+#define NONZEROMETRICS(pci) ((pci)->leftSideBearing || \
+			     (pci)->rightSideBearing || \
+			     (pci)->ascent || \
+			     (pci)->descent || \
+			     (pci)->characterWidth)
 
 extern int  errno;
 
@@ -696,8 +702,6 @@ fs_read_extent_info(fpe, blockrec)
 	fsfont->inkMetrics = pCI + rep.num_extents;
     else
         fsfont->inkMetrics = pCI;
-/* XXX - hack - use real default char */
-    fsfont->pDefault = &pCI[0];
 
     if (_fs_read_pad(conn, (char *) fsci,
 		     sizeof(fsCharInfo) * rep.num_extents) == -1) {
@@ -715,15 +719,49 @@ fs_read_extent_info(fpe, blockrec)
     if (haveInk)
     {
 	FontInfoRec *fi = &bfont->pfont->info;
+	CharInfoPtr ii;
 
 	ci = fsfont->encoding;
-	for (i = 0; i < rep.num_extents; i++, ci++)
+	ii = fsfont->inkMetrics;
+	for (i = 0; i < rep.num_extents; i++, ci++, ii++)
 	{
-	    ci->metrics.leftSideBearing = FONT_MIN_LEFT(fi);
-	    ci->metrics.rightSideBearing = FONT_MAX_RIGHT(fi);
-	    ci->metrics.ascent = FONT_MAX_ASCENT(fi);
-	    ci->metrics.descent = FONT_MAX_DESCENT(fi);
-	    ci->metrics.characterWidth = FONT_MAX_WIDTH(fi);
+	    if (NONZEROMETRICS(&ii->metrics))
+	    {
+		ci->metrics.leftSideBearing = FONT_MIN_LEFT(fi);
+		ci->metrics.rightSideBearing = FONT_MAX_RIGHT(fi);
+		ci->metrics.ascent = FONT_MAX_ASCENT(fi);
+		ci->metrics.descent = FONT_MAX_DESCENT(fi);
+		ci->metrics.characterWidth = FONT_MAX_WIDTH(fi);
+		ci->metrics.attributes = ii->metrics.attributes;
+	    }
+	    else
+	    {
+		ci->metrics = ii->metrics;
+	    }
+	}
+    }
+    {
+	unsigned int r, c, numCols, firstCol;
+
+	firstCol = bfont->pfont->info.firstCol;
+	numCols = bfont->pfont->info.lastCol - firstCol + 1;
+	c = bfont->pfont->info.defaultCh;
+	fsfont->pDefault = 0;
+	if (bfont->pfont->info.lastRow)
+	{
+	    r = c >> 8;
+	    r -= bfont->pfont->info.firstRow;
+	    c &= 0xff;
+	    c -= firstCol;
+	    if (r < bfont->pfont->info.lastRow-bfont->pfont->info.firstRow+1 &&
+		c < numCols)
+		fsfont->pDefault = &pCI[r * numCols + c];
+	}
+	else
+	{
+	    c -= firstCol;
+	    if (c < numCols)
+		fsfont->pDefault = &pCI[c];
 	}
     }
     bfont->state = FS_GLYPHS_REPLY;
@@ -1376,7 +1414,7 @@ fs_read_glyphs(fpe, blockrec)
     }
     /* adjust them */
     for (i = 0; i < rep.num_chars; i++) {
-	if (ppbits[i].length)
+	if (ppbits[i].length || NONZEROMETRICS(&fsdata->encoding[i].metrics))
 	    bits = (char *) pbitmaps + ppbits[i].position;
 	else
 	    bits = 0;
