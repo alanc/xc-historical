@@ -1,6 +1,6 @@
 .\"#! troff -Q -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
-.\" $XConsortium: ctlseqs.ms,v 1.4 91/05/31 20:12:05 gildea Exp $
+.\" $XConsortium: ctlseqs.ms,v 1.5 91/07/01 10:55:40 gildea Exp $
 .\"
 .\" Originally written by Edward Moy, University of California,
 .\" Berkeley, edmoy@violet.berkeley.edu, for the X.V10R4 xterm.
@@ -111,7 +111,10 @@
 .[] T T
 .[] Z Z
 .[] [[ [
+.[] bS \\e
 .[] ] ]
+.[] ^ ^
+.[] _ _
 .[] ` \`
 .[] a a
 .[] b b
@@ -257,6 +260,10 @@ Reverse Index (RI)
 Single Shift Select of G2 Character Set (SS2): affects next character only
 .IP \\*(Es\\*O
 Single Shift Select of G3 Character Set (SS3): affects next character only
+.IP \\*(Es\\*P\\*(Pt\|\\*(Es\\*(bS
+Device Control String (DCS)
+  \fIxterm\fP implements no DCS functions; \*(Pt is ignored.
+\*(Pt need not be printable characters.
 .IP \\*(Es\\*Z
 Return Terminal ID (DECID).  Obsolete form of \*(Es\*([[\*c (DA).
 .IP \\*(Es\\*([[\\*(Ps\|\\*@
@@ -384,6 +391,14 @@ Set Text Parameters
   \*(Ps = \*4\*6 \(-> Change Log File to \*(Pt (normally disabled by a
 compile-time option)
   \*(Ps = \*5\*0 \(-> Set Font to \*(Pt
+.IP \\*(Es\\*^\\*(Pt\|\\*(Es\\*(bS
+Privacy Message (PM)
+  \fIxterm\fP implements no PM functions; \*(Pt is ignored.
+\*(Pt need not be printable characters.
+.IP \\*(Es\\*_\\*(Pt\|\\*(Es\\*(bS
+Application Program Command (APC)
+  \fIxterm\fP implements no APC functions; \*(Pt is ignored.
+\*(Pt need not be printable characters.
 .IP \\*(Es\\*c
 Full Reset (RIS)
 .IP \\*(Es\\*n
