@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.87 93/02/10 15:30:20 converse Exp $ */
+/* $XConsortium: Display.c,v 1.88 93/03/12 13:31:29 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -504,6 +504,7 @@ static void CloseDisplay(dpy)
 	    XtFree((char*)xtpd->pdi.trace);
 	    _XtHeapFree(&xtpd->heap);
 	    _XtFreeWWTable(xtpd);
+	    xtpd->per_screen_db[DefaultScreen(dpy)] = (XrmDatabase)NULL;
 	    for (i = ScreenCount(dpy); --i >= 0; ) {
 		db = xtpd->per_screen_db[i];
 		if (db)
