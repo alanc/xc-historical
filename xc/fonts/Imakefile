@@ -5,12 +5,12 @@
 PEXDIRS = PEX
 #endif
 
-#if BuildBdfFonts
-BDFDIRS = bdf
+#if BuildFonts
+FONTDIRS = bdf scaled
 #endif
 
-/* tools must be built before bdf */
-        SUBDIRS = lib tools $(BDFDIRS) $(PEXDIRS)
+/* tools must be built before font dirs */
+        SUBDIRS = lib tools $(FONTDIRS) $(PEXDIRS)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
