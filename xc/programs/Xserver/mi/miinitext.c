@@ -21,10 +21,13 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miinitext.c,v 1.3 88/09/29 18:20:24 rws Exp $ */
+/* $XConsortium: miinitext.c,v 1.4 89/02/06 17:44:28 keith Exp $ */
 
+/*ARGSUSED*/
 void
-InitExtensions()
+InitExtensions(argc, argv)
+    int		argc;
+    char	*argv[];
 {
 #ifdef ZOID
     ZoidExtensionInit();
