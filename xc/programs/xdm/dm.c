@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.57 91/04/11 09:34:38 rws Exp $
+ * $XConsortium: dm.c,v 1.58 91/04/17 10:01:33 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -121,6 +121,8 @@ char	**argv;
     InitErrorLog ();
 #ifdef XDMCP
     CreateWellKnownSockets ();
+#else
+    Debug ("xdm: not compiled for XDMCP\n");
 #endif
     (void) Signal (SIGTERM, StopAll);
     (void) Signal (SIGINT, StopAll);
