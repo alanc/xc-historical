@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_enc.c,v 1.3 92/07/24 13:47:03 mor Exp $ */
+/* $XConsortium: pl_oc_enc.c,v 1.4 92/08/06 22:56:31 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -1428,19 +1428,19 @@ char		**ocDest;
 	    pTCHead->tMax = (float) ptrimCurve->tmax;
 	    pTCHead->numKnots = thisLength;
 	    pTCHead->numCoord = ptrimCurve->count;
+	
+	    PEXEncodeWords ((char *) ptrimCurve->knots.floats,
+	        *ocDest, thisLength);
+	
+	    thisLength = ptrimCurve->count *
+	        ((ptrimCurve->rationality == PEXRational) ?
+	        LENOF (pexCoord3D) : LENOF (pexCoord2D));
+	
+	    PEXEncodeWords ((char *) ptrimCurve->control_points.point,
+	        *ocDest, thisLength);
+	
+	    ptrimCurve++;
 	}
-	
-	PEXEncodeWords ((char *) ptrimCurve->knots.floats,
-	    *ocDest, thisLength);
-	
-	thisLength = ptrimCurve->count *
-	    ((ptrimCurve->rationality == PEXRational) ?
-	    LENOF (pexCoord3D) : LENOF (pexCoord2D));
-	
-	PEXEncodeWords ((char *) ptrimCurve->control_points.point,
-	    *ocDest, thisLength);
-	
-	ptrimCurve++;
     }
 }
 
