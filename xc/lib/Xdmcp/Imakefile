@@ -147,7 +147,7 @@ DependTarget()
 
 NormalLintTarget($(SRCS))
 
-NormalProgramTarget(verify,verify.o,libXdmcp.a,libXdmcp.a,/**/)
+NormalProgramTarget(verify,verify.o,libXdmcp.a,libXdmcp.a, /**/)
 
 saber_verify: verify.c $(SRCS)
 	XCOMM load $(INCLUDES) $(DEFINES) verify.c $(SRCS)
