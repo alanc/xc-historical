@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.10 93/10/30 13:27:00 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.11 93/11/05 17:08:08 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -71,7 +71,7 @@ static Pixmap   tileToQuery     = None;
 static Bool     labels		= False;
 static Bool 	loadTests 	= False;
 static char 	*loadTestsFile;
-static int      repeat		= 5;
+static int      repeat		= 2;
 static int	seconds		= 5;
 Bool 	dontClear;
 unsigned short capabilities = 0;
@@ -279,7 +279,6 @@ void ReportTimes(usecs, n, str, average)
 	printf("%6d %sreps @ 0.0 msec (unmeasurably fast): %s\n",
 	    n, average ? "t" : "", str);
     }
-
 }
 
 /************************************************
@@ -381,7 +380,7 @@ void usage()
 "    -timeout <s>              timeout value for certain tests (default=60 secs)",
 "    -sync                     do the tests in synchronous mode",
 "    -script file              read tests from a file, ``-'' to use console",
-"    -repeat <n>               do tests <n> times (outer loop) (default = 5)",
+"    -repeat <n>               do tests <n> times (outer loop) (default = 2)",
 "    -time <s>                 do tests for <s> seconds each (default = 5)",
 "    -depth <depth>            use a visual with <depth> planes per pixel",
 "    -GrayScale                use a GrayScale visual",
@@ -525,36 +524,35 @@ Window CreatePerfWindowUnmapped(xp, x, y, width, height)
 }
 
 void
-InstallThisColormap( display, window, cmap )
-Display	*display;
-Window	window;
+InstallThisColormap( xp, cmap )
+XParms xp;
 Colormap cmap;
 {
-	XSetWindowColormap( display, window, cmap );
 	if ( WMSafe == False )
-		XInstallColormap( display, cmap );
+	{
+		XSetWindowColormap( xp->d, xp->w, cmap );
+		XSetWindowColormap( xp->d, drawableWindow, cmap );
+		XInstallColormap( xp->d, cmap );
+	}
+	else
+	{	
+		XSetWindowColormap( xp->d, xp->p, cmap );
+	}
 }
 
 void
-InstallDefaultColormap( display, window )
-Display	*display;
-Window	window;
+InstallDefaultColormap( xp )
+XParms xp;
 {
-	XSetWindowColormap( display, window, 
-		DefaultColormap( display, DefaultScreen( display ) ) );
-	if ( WMSafe == False )
-		XInstallColormap( display, 
-			DefaultColormap( display, DefaultScreen( display ) ) );
+	InstallThisColormap( xp,
+			DefaultColormap( xp->d, DefaultScreen( xp->d ) ) );
 }
 
 void
-InstallCustomColormap( display, window )
-Display	*display;
-Window	window;
+InstallCustomColormap( xp )
+XParms xp;
 {
-	XSetWindowColormap( display, window, cmap );
-	if ( WMSafe == False )
-		XInstallColormap( display, cmap );
+	InstallThisColormap( xp, cmap );
 }
 
 void CreateClipWindows(xp, clips)
@@ -3452,6 +3450,7 @@ XieLTriplet levels;
 			free( color_parm );
 		return( 0 );
 	}
+	/* ??? Why not do GetXIETriplePhotomap, and add dither element below */
 	if ( ( ditheredPhoto = GetXIEDitheredTriplePhotomap( xp, p, which,
 		ditherTech, threshold, levels ) ) == ( XiePhotomap ) NULL )
 	{
@@ -3508,6 +3507,7 @@ XieLTriplet levels;
         WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
         XieFreePhotofloGraph(flograph,3);
         XieDestroyPhotospace( xp->d, photospace );
+	XieDestroyPhotomap( xp->d, ditheredPhoto );
 	if ( clist )
 		XieDestroyColorList( xp->d, clist );
 	if ( color_parm )
@@ -3534,6 +3534,7 @@ XStandardColormap *stdCmap;
 	XieConstant c1;
 	float bias;
 
+	/* ??? Why not do GetXIETriplePhotomap, and add dither element below */
 	if ( ( ditheredPhoto = GetXIEDitheredTriplePhotomap( xp, p, which,
 		ditherTech, threshold, levels ) ) == ( XiePhotomap ) NULL )
 	{
@@ -3545,7 +3546,7 @@ XStandardColormap *stdCmap;
         flograph = XieAllocatePhotofloGraph(3);
         if ( flograph == ( XiePhotoElement * ) NULL )
         {
-                fprintf( stderr, "GetXIEDitheredTripleWindow: XieAllocatePhotofloGraph failed\n" );
+                fprintf( stderr, "GetXIEDitheredStdTripleWindow: XieAllocatePhotofloGraph failed\n" );
 		return( 0 );
         }
 
@@ -3579,6 +3580,7 @@ XStandardColormap *stdCmap;
         WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
         XieFreePhotofloGraph(flograph,3);
         XieDestroyPhotospace( xp->d, photospace );
+	XieDestroyPhotomap( xp->d, ditheredPhoto );
 	return( 1 );
 }
 
