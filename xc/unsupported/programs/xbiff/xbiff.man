@@ -9,11 +9,13 @@ The
 .I xbiff
 program displays a little image of a mailbox.  When there is no mail, the flag
 on the mailbox is down.  When mail arrives, the flag goes up and the mailbox beeps.
-Pressing any mouse button in the image forces \fIxbiff\fP to remember the
+By default,
+pressing any mouse button in the image forces \fIxbiff\fP to remember the
 current size of the mail file as being the ``empty'' size and to lower
 the flag.
 .PP
-This program is nothing more than a wrapper around the Athena Mailbox widget.
+This program is nothing more than a wrapper around the Athena \fIMailbox\fP
+widget.
 .SH OPTIONS
 .I Xbiff
 accepts all of the standard X Toolkit command line options along with the
@@ -97,6 +99,26 @@ The default is ``black'' since the core default for background is ``white.''
 .TP 8
 .B reverseVideo (\fPclass\fB ReverseVideo)
 Specifies that the foreground and background should be reversed.
+.SH ACTIONS
+The \fIMailbox\fP widget provides the following actions for use in event
+translations:
+.TP 8
+.B check()
+This action causes the widget to check for new mail and display the flag
+appropriately.
+.TP 8
+.B unset()
+This action causes the widget to lower the flag until new mail comes in.
+.TP 8
+.B set()
+This action causes the widget to raise the flag until the user resets it.
+.PP
+The default translation is 
+.sp
+.nf
+        <ButtonPress>:  unset()
+.fi
+.sp
 .SH ENVIRONMENT
 .PP
 .TP 8
