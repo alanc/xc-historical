@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cpx_pm.c,v 5.1 91/02/16 09:48:43 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -90,7 +90,7 @@ phg_cpm_load_monitor_funcs( cph )
     f[(int)CP_FUNC_OP_INQ_INP_DEV_STATE]	= phg_cp_inq_inp_dev_state;
     f[(int)CP_FUNC_OP_INQ_REPRESENTATION]	= phg_cpx_inq_rep;
     f[(int)CP_FUNC_OP_INQ_VIEW_REP]		= phg_cpx_inq_view_rep;
-    f[(int)CP_FUNC_OP_INQ_HLHSR_MODE]		= phg_cpx_set_hlhsr_mode;
+    f[(int)CP_FUNC_OP_INQ_HLHSR_MODE]		= phg_cpx_inq_hlhsr_mode;
     f[(int)CP_FUNC_OP_INQ_DISP_UPDATE_STATE]	= phg_cpx_inq_disp_update_state;
     f[(int)CP_FUNC_OP_INQ_COLOUR_MODEL]	= phg_cpx_inq_colour_model;
     f[(int)CP_FUNC_OP_INQ_WS_XFORM]		= phg_cpx_inq_ws_xform;
