@@ -25,12 +25,7 @@
 
 #include <Server.tmpl>
 
-INCLUDES = \
-	-I$(EXTENSIONSRC)/include \
-	-I$(EXTENSIONSRC)/include/lbx \
-	-I$(EXTENSIONSRC)/lbxcommon/delta \
-	-I$(INCLUDESRC) \
-	-I$(SERVERSRC)/include
+INCLUDES =  -I$(TOP)/include -I$(SERVERSRC)/include  -I$(EXTINCSRC)
 
 SRCS =	\
 	lbxmain.c lbxdix.c lbxtags.c
