@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.36 91/07/13 22:52:16 converse Exp $
+ *  $XConsortium: globals.h,v 2.37 91/07/17 12:27:53 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -37,6 +37,8 @@ ext char	*progName;	/* Program name. */
 ext char	*homeDir;	/* User's home directory. */
 ext Atom	wm_protocols;	/* WM_PROTOCOLS atom for this display */
 ext Atom	wm_delete_window;	/* see ICCCM on Window Deletion */
+ext Atom	wm_save_yourself;	/* see ICCCM on session management */
+ext Atom	protocolList[2];	/* contains the two above */
 
 ext struct _resources {
     Boolean	debug;
@@ -50,7 +52,7 @@ ext struct _resources {
     int		send_line_width;	/* How long to break lines on send. */
     int		break_send_line_width;	/* Minimum length of a line before
 					   we'll break it. */
-    char	*print_command;	/* Printing command. */
+    char	*print_command;		/* Printing command. */
     int		toc_width;	/* How many characters wide to use in tocs */
     Boolean	skip_deleted;		/* If true, skip over deleted msgs. */
     Boolean	skip_moved;		/* If true, skip over moved msgs. */
@@ -85,6 +87,7 @@ ext struct _resources {
     int		command_button_count;	/* number of buttons in command box */
     int		app_defaults_version;	/* for sanity check */
     char 	*banner;		/* defaults to xmh version string */
+    XtTranslations wm_protocols_translations; /* for all shells seen by WM */
 } app_resources;
 
 ext char	*draftFile;	/* Filename of draft. */
