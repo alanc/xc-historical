@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.13 89/11/22 17:02:56 rws Exp $ */
+/* $XConsortium: mibitblt.c,v 5.14 91/04/07 17:09:36 keith Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -274,7 +274,7 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 
     sx += pDraw->x;
     sy += pDraw->y;
-    widthInBytes = PixmapBytePad(w, 1);
+    widthInBytes = BitmapBytePad(w);
     if(!result)
         result = (unsigned long *)xalloc(h * widthInBytes);
     if (!result)
@@ -726,7 +726,7 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	gcv[0] = ~0L;
 	gcv[1] = 0;
 	DoChangeGC(pGC, GCForeground | GCBackground, gcv, 0);
-	bytesPer = (long)h * PixmapBytePad(w + leftPad, 1);
+	bytesPer = (long)h * BitmapBytePad(w + leftPad);
 
 	for (i = 1 << (depth-1); i != 0; i >>= 1, pImage += bytesPer)
 	{

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipushpxl.c,v 5.0 89/06/09 15:08:43 keith Exp $ */
+/* $XConsortium: mipushpxl.c,v 5.1 89/07/26 12:18:19 rws Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "scrnintstr.h"
@@ -62,7 +62,7 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     DDXPointRec	pt[NPT], ptThisLine;
     int		width[NPT];
 
-    pwLineStart = (unsigned long *)xalloc(PixmapBytePad(dx, 1));
+    pwLineStart = (unsigned long *)xalloc(BitmapBytePad(dx));
     if (!pwLineStart)
 	return;
     ipt = 0;

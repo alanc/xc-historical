@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miglblt.c,v 5.4 91/01/27 13:01:30 keith Exp $ */
+/* $XConsortium: miglblt.c,v 5.5 91/07/18 22:53:03 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -112,7 +112,7 @@ miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
     DoChangeGC(pGCtmp, GCFunction|GCForeground|GCBackground, gcvals, 0);
 
-    nbyLine = PixmapBytePad(width, 1);
+    nbyLine = BitmapBytePad(width);
     pbits = (unsigned char *)ALLOCATE_LOCAL(height*nbyLine);
     if (!pbits)
     {
@@ -129,7 +129,7 @@ miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	if (gWidth && gHeight)
 	{
 	    nbyGlyphWidth = GLYPHWIDTHBYTESPADDED(pci);
-	    nbyPadGlyph = PixmapBytePad(gWidth, 1);
+	    nbyPadGlyph = BitmapBytePad(gWidth);
 
 	    if (nbyGlyphWidth == nbyPadGlyph
 #if GLYPHPADBYTES != 4
