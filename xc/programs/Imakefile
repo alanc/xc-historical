@@ -2,7 +2,7 @@
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
 SUBDIRS = \
-	bitmap uwm x10tox11 xauth xbiff xcalc xclipboard xclock xcmap \
+	bitmap oclock uwm x10tox11 xauth xbiff xcalc xclipboard xclock xcmap \
  	xditview xdm xdpyinfo xedit xev xfd xhost xinit xkill \
  	xload xlogo xlsclients xlsfonts xlswins xmag xman xmessage xmh \
 	xmodmap xpr xprop xrdb xrefresh \
