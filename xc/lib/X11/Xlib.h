@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.188 91/02/19 22:37:30 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.189 91/03/13 20:06:19 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -40,12 +40,10 @@
 
 #include <X11/Xfuncproto.h>
 
-#if __STDC__ && !defined(NOSTDHDRS)
+#ifndef X_NOT_STDC_ENV
 #include <stddef.h>
 #else
-#ifndef wchar_t
-#define wchar_t unsigned int
-#endif
+typedef unsigned int wchar_t;
 #endif
 
 #define Bool int
