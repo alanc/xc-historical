@@ -9,20 +9,22 @@
 /* Vendor-specific definitions */
 
 /*
- * The directories to search.  Assume that the manual directories are more 
+ * The directories to search.  Assume that the manual directories are more
  * complete than the cat directories.
  */
 
 #if ( defined(UTEK) || defined(apollo) )
 #  define SEARCHDIR  CAT
-#  define LSEARCHDIR LCAT
 #else
 #  define SEARCHDIR  MAN
-#  define LSEARCHDIR LMAN
+#endif
+
+#if defined(sgi)
+# define SEARCHOTHER CAT
 #endif
 
 /*
- * The default manual page directory. 
+ * The default manual page directory.
  *
  * The MANPATH enviornment variable will override this.
  */
@@ -30,22 +32,24 @@
 #ifndef DEFAULTMANPATH
 
 #ifdef macII
-#  define MANDIR "/usr/catman/u_man:/usr/catman/a_man"	
-#else /* macII */
+#  define MANDIR "/usr/catman/u_man:/usr/catman/a_man"
+#endif /* macII */
 #ifdef SVR4
 #  define MANDIR "/usr/share/man"
-#else /* SVR4 */
+#endif /* SVR4 */
 #ifdef hcx
 #  define MANDIR "/usr/catman/local_man:/usr/catman/u_man:/usr/catman/a_man:/usr/catman/p_man:/usr/catman/ada_man"
-#else
+#endif /* hcx */
 #if defined(SYSV) && defined(SYSV386)
-#  define MANDIR "/usr/catman/u_man:/usr/catman/p_man"	
-#else
-#  define MANDIR "/usr/man"
+#  define MANDIR "/usr/catman/u_man:/usr/catman/p_man"
 #endif /* SYSV386 */
-#endif /* hcx else */
-#endif /* SVR4 else */
-#endif /* macII else */
+#ifdef sgi
+#  define MANDIR "/usr/catman/a_man:/usr/catman/g_man:/usr/catman/p_man:/usr/catman/u_man:/usr/man/p_man:/usr/man/u_man:/usr/man"
+#endif /* sgi */
+
+#ifndef MANDIR
+#  define MANDIR "/usr/man"
+#endif
 
 #else
 #define MANDIR DEFAULTMANPATH
@@ -55,12 +59,12 @@
  * Compression Definitions.
  */
 
-#if defined( macII ) || defined( hcx ) || (defined(SYSV) && defined(SYSV386))
+#if defined( macII ) || defined( hcx ) || (defined(SYSV) && defined(SYSV386)) || defined(sgi)
 #  define COMPRESSION_EXTENSION   "z"
 #  define UNCOMPRESS_FORMAT       "pcat %s > %s"
 #  define NO_COMPRESS		/* mac can't handle using pack as a filter and
 				   xman needs it to be done that way. */
-#else 
+#else
 #  if defined ( UTEK )
 #    define COMPRESSION_EXTENSION "C"
 #    define UNCOMPRESS_FORMAT     "ccat < %s > %s"
@@ -70,7 +74,7 @@
 #    define UNCOMPRESS_FORMAT     "zcat < %s > %s"
 #    define COMPRESS              "compress"
 #  endif /* UTEK */
-#endif /* macII */
+#endif /* macII, hcx, SYSV386, sgi */
 
 
 
@@ -95,7 +99,7 @@
 #endif
 
 /*
- * Names of the man and cat dirs. 
+ * Names of the man and cat dirs.
  */
 
 #define MAN "man"
@@ -105,7 +109,7 @@
  * The Apple, Cray,, SYSV386, and HCX folks put the preformatted pages in the
  * "man" directories.
  */
-#  define CAT MAN		
+#  define CAT MAN
 #else
 #  define CAT "cat"
 #endif
