@@ -1,4 +1,4 @@
-/* $XConsortium: TextSrc.c,v 1.8 90/11/30 18:30:10 rws Exp $ */
+/* $XConsortium: TextSrc.c,v 1.9 91/01/02 11:42:35 gildea Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -47,7 +47,7 @@
 
 /* Private Data */
 
-#define offset(field) XtOffset(TextSrcObject, textSrc.field)
+#define offset(field) XtOffsetOf(TextSrcRec, textSrc.field)
 static XtResource resources[] = {
     {XtNeditType, XtCEditType, XtREditMode, sizeof(XawTextEditType), 
         offset(edit_mode), XtRString, "read"},

@@ -1,4 +1,4 @@
-/* $XConsortium: TextSink.c,v 1.12 90/05/08 15:14:07 converse Exp $ */
+/* $XConsortium: TextSink.c,v 1.13 91/01/06 16:08:41 rws Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -51,7 +51,7 @@ static int MaxHeight(), MaxLines();
 static void DisplayText(), InsertCursor(), ClearToBackground(), FindPosition();
 static void FindDistance(), Resolve(), SetTabs(), GetCursorBounds();
 
-#define offset(field) XtOffset(TextSinkObject, text_sink.field)
+#define offset(field) XtOffsetOf(TextSinkRec, text_sink.field)
 static XtResource resources[] = {
   {XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
      offset(font), XtRString, XtDefaultFont},
