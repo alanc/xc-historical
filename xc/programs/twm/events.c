@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.69 89/06/30 18:38:00 jim Exp $
+ * $XConsortium: events.c,v 1.70 89/06/30 19:33:13 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.69 89/06/30 18:38:00 jim Exp $";
+"$XConsortium: events.c,v 1.70 89/06/30 19:33:13 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1307,9 +1307,6 @@ HandleButtonPress()
 	}
 	else if (Event.xany.window == Tmp_win->title_w)
 	{
-		int width;
-
-		width = 2 * Scr->TitleHeight;
 	    Context = C_TITLE;
 	}
 	else if (Event.xany.window == Tmp_win->w)
