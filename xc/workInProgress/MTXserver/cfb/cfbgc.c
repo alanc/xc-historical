@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 1.4 94/01/06 23:03:27 rob Exp $ */
+/* $XConsortium: cfbgc.c,v 1.5 94/01/11 20:43:00 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -539,7 +539,9 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    pixbounds.y2 = pDrawable->height;
 
 	    if (devPriv->freeCompClip)
+	    {
 		REGION_RESET(pScreen, devPriv->pCompositeClip, &pixbounds);
+	    }
 	    else {
 		devPriv->freeCompClip = TRUE;
 		devPriv->pCompositeClip = REGION_CREATE(pScreen, &pixbounds,
