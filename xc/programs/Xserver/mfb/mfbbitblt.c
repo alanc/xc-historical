@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbbitblt.c,v 1.43 87/11/08 17:03:22 rws Locked $ */
+/* $Header: mfbbitblt.c,v 1.44 87/11/08 17:20:04 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -171,32 +171,28 @@ int dstx, dsty;
 		prgnDst,
 		((mfbPrivGC *)(pGC->devPriv))->pCompositeClip);
 
-    if (!prgnDst->numRects)
+    if (prgnDst->numRects)
     {
-        miSendNoExpose(pGC);
-	(*pGC->pScreen->RegionDestroy)(prgnDst);
-	if (realSrcClip)
-	    (*pGC->pScreen->RegionDestroy)(prgnSrcClip);
-	return;
+	if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL( prgnDst->numRects *
+						   sizeof(DDXPointRec))))
+	{
+	    (*pGC->pScreen->RegionDestroy)(prgnDst);
+	    if (realSrcClip)
+		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+	    return;
+	}
+	pbox = prgnDst->rects;
+	ppt = pptSrc;
+	for (i=0; i<prgnDst->numRects; i++, pbox++, ppt++)
+	{
+	    ppt->x = pbox->x1 + dx;
+	    ppt->y = pbox->y1 + dy;
+	}
+    
+	if (pGC->planemask & 1)
+	    mfbDoBitblt(pSrcDrawable, pDstDrawable, pGC->alu, prgnDst, pptSrc);
+	DEALLOCATE_LOCAL(pptSrc);
     }
-    if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL( prgnDst->numRects *
-        sizeof(DDXPointRec))))
-    {
-	(*pGC->pScreen->RegionDestroy)(prgnDst);
-	if (realSrcClip)
-	    (*pGC->pScreen->RegionDestroy)(prgnSrcClip);
-	return;
-    }
-    pbox = prgnDst->rects;
-    ppt = pptSrc;
-    for (i=0; i<prgnDst->numRects; i++, pbox++, ppt++)
-    {
-	ppt->x = pbox->x1 + dx;
-	ppt->y = pbox->y1 + dy;
-    }
-
-    if (pGC->planemask & 1)
-	mfbDoBitblt(pSrcDrawable, pDstDrawable, pGC->alu, prgnDst, pptSrc);
 
     if (((mfbPrivGC *)(pGC->devPriv))->fExpose)
         miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
@@ -204,7 +200,6 @@ int dstx, dsty;
 		          origSource.width, origSource.height,
 		          origDest.x, origDest.y);
 		
-    DEALLOCATE_LOCAL(pptSrc);
     (*pGC->pScreen->RegionDestroy)(prgnDst);
     if (realSrcClip)
 	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
