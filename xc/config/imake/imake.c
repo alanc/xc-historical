@@ -1,21 +1,21 @@
 /*
- * $Header: imake.c,v 1.7 87/08/02 12:04:34 toddb Locked $
+ * $Header: imake.c,v 1.8 87/08/03 09:25:43 toddb Locked $
  * $Locker: toddb $
  *
  * imake: the include-make program.
  *
- * Usage: imake [-f imakefile ] [-s] [-t] [-v] [ make flags ]
+ * Usage: imake [ -Idir ] [-T] [-f imakefile ] [-s] [-v] [ make flags ]
  *
  * Imake takes a template makefile (Imake.template) and runs cpp on it
  * producing a temporary makefile in /usr/tmp.  It then runs make on
  * this pre-processed makefile.
  * Options:
  *		-I	Include directory.  Same as cpp -I argument.
+ *		-T	template.  Designate a template other
+ * 			than Imake.template
  *		-s	show.  Show the produced makefile on the standard
  *			output.  Make is not run is this case.  If a file
  *			argument is provided, the output is placed there.
- *		-t	template.  Designate a template other
- * 			than Imake.template
  *		-v	verbose.  Show the make command line executed.
  *
  * Environment variables:
@@ -257,13 +257,13 @@ SetOpts(argc, argv)
 			Makefile = argv[0];
 		    }
 		    show = TRUE;
-		} else if (argv[0][1] == 't') {
+		} else if (argv[0][1] == 'T') {
 		    if (argv[0][2])
 			Template = argv[0]+2;
 		    else {
 			argc--, argv++;
 			if (! argc)
-			    LogFatal("No description arg after -t flag\n");
+			    LogFatal("No description arg after -T flag\n");
 			Template = argv[0];
 		    }
 		} else if (argv[0][1] == 'v') {
