@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: main.cxx,v 1.6 94/06/03 21:41:05 matt Exp matt $ */
 
 /*
  * Copyright (c) 1992-1993 Silicon Graphics, Inc.
@@ -336,7 +336,7 @@ void App::finish() {
     stage("finish");
 }
 
-#if !defined(AIXV3) && !defined(__DECCXX)
+#if !defined(AIXV3) && !defined(__osf__)
 extern "C" {
     void* sbrk(int);
 }
