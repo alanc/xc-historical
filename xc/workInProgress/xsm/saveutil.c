@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.27 94/12/21 16:55:36 mor Exp mor $ */
+/* $XConsortium: saveutil.c,v 1.28 94/12/29 00:24:50 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -95,6 +95,8 @@ char **sm_id;
 	if (verbose)
 	    printf("Unsupported version number of session save file.\n");
 	*sm_id = NULL;
+	if (buf)
+	    free (buf);
 	return 0;
     }
 
@@ -249,6 +251,9 @@ char **sm_id;
     }
 
     fclose(f);
+
+    if (buf)
+	free (buf);
 
     return 1;
 }
@@ -450,6 +455,8 @@ char *session_name;
     {
 	if (verbose)
 	    printf("Can't delete session save file - incompatible version.\n");
+	if (buf)
+	    free (buf);
 	return (0);
     }
 
@@ -511,6 +518,9 @@ char *session_name;
 
     fclose(f);
 
+    if (buf)
+	free (buf);
+
     return ((unlink (filename) == -1) ? 0 : 1);
 }
 
@@ -531,7 +541,7 @@ FILE	*f;
 		if(*plen) *plen *= 2;
 		else *plen = BUFSIZ;
 		if(*pbuf) *pbuf = (char *) realloc(*pbuf, *plen + 1);
-		else *pbuf = (char *) XtMalloc(*plen + 1);
+		else *pbuf = (char *) malloc(*plen + 1);
 	    }
 	    c = getc(f);
 	    if(c == EOF) break;
