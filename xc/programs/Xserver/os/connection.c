@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.61 87/09/07 12:07:24 rws Locked $ */
+/* $Header: connection.c,v 1.62 87/09/07 17:12:18 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -403,7 +403,7 @@ ClientAuthorized(conn, pswapped, reason)
 	(xccp.minorVersion != X_PROTOCOL_REVISION))
     {        
 #define STR "Protocol version mismatch"
-        *reason = (char *)Xalloc(strlen(STR) + 1);
+        *reason = (char *)Xalloc(sizeof(STR));
         strcpy(*reason, STR);
 	if (debug_conns)
 	    ErrorF("%s\n", STR);
@@ -415,7 +415,7 @@ ClientAuthorized(conn, pswapped, reason)
         InvalidHost (&from.sa, fromlen)) 
     {
 #define STR "Server is not authorized to connect to host"	
-        *reason = (char *)Xalloc(strlen(STR));
+        *reason = (char *)Xalloc(sizeof(STR));
         strcpy(*reason, STR);
 #undef STR
         return 0;
@@ -426,7 +426,7 @@ ClientAuthorized(conn, pswapped, reason)
         if (!ReadBuffer(conn, auth_proto, slen))
         {
 #define STR "Length error in xConnClientPrefix for protocol authorization "
-            *reason = (char *)Xalloc(strlen(STR));
+            *reason = (char *)Xalloc(sizeof(STR));
             strcpy(*reason, STR);
             return 0;
 #undef STR
@@ -438,7 +438,7 @@ ClientAuthorized(conn, pswapped, reason)
         if (!ReadBuffer(conn, auth_string, slen))
         {
 #define STR "Length error in xConnClientPrefix for protocol string"
-            *reason = (char *)Xalloc(strlen(STR));
+            *reason = (char *)Xalloc(sizeof(STR));
             strcpy(*reason, STR);
             return 0;
 #undef STR
