@@ -369,7 +369,7 @@ genericarc_test(fill)
      Boolean fill;
 {
   XArc *arcs;
-  int num_arcs = 50;
+  int num_arcs = 180;
   int i;
   long totaltime;
   char buf[80];
@@ -383,8 +383,8 @@ genericarc_test(fill)
     arcs[i].y = i;
     arcs[i].width = i;
     arcs[i].height = i;
-    arcs[i].angle1 = i * 50;
-    arcs[i].angle2 = i * 50;
+    arcs[i].angle1 = i * 128;
+    arcs[i].angle2 = i * 128;
   }
 
   XSync(X.dpy,0);
