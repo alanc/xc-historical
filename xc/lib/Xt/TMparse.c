@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.83 89/10/02 15:40:54 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.84 89/10/02 16:04:51 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif /*lint*/
 
@@ -428,7 +428,7 @@ static Cardinal LookupTMEventType(eventStr,error)
  * status
  ***********************************************************************/
 
-Boolean _XtLookupTableSym(table, name, valueP)
+static Boolean _XtLookupTableSym(table, name, valueP)
     NameValueTable	table;
     String name;
     Value *valueP;
@@ -1764,21 +1764,6 @@ static String ParseTranslationTableProduction(stateTable, str,acc)
 
     FreeEventSeq(eventSeq);
     return (str);
-}
-
-XtTranslations _XtParseTranslationTable (source)
-    String   source;
-{
-    String str = source;
-    XtTranslations stateTable;
-    if (str == NULL) return ((XtTranslations)(NULL));
-    _XtInitializeStateTable(&stateTable);
-
-
-    while (str != NULL && *str != '\0') {
-       str =  ParseTranslationTableProduction(stateTable,str,FALSE);
-    }
-    return(stateTable);
 }
 
 /*ARGSUSED*/
