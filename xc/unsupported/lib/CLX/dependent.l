@@ -886,6 +886,7 @@
 
 #-(or lispm excl lcl3.0)
 (defun process-block (whostate predicate &rest predicate-args)
+  (declare (ignore whostate))
   (or (apply predicate predicate-args)
       (error "Program tried to wait with no scheduler.")))
 
