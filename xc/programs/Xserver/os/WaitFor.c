@@ -245,11 +245,8 @@ WaitForSomething(pClientsReady)
 
 	    MASKANDSETBITS(devicesReadable, LastSelectMask, EnabledDevices);
 #ifdef	hpux
-#ifdef notdef
-	    if (ANYSET(devicesReadable)) store_inputs (devicesReadable);
-#endif
-	    if (devicesReadable[0]) store_inputs (devicesReadable[0]);
 		    /* call the HIL driver to gather inputs. 	*/
+	    if (ANYSET(devicesReadable)) store_inputs (devicesReadable);
 #endif /* hpux */
 
 	    MASKANDSETBITS(clientsReadable, LastSelectMask, AllClients); 
