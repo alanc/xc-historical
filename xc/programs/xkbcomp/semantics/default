@@ -1,8 +1,4 @@
 xkb_semantics "default"
 
-xkb_types	{ 
-    include "basic"
-    override "cancel"
-    augment "ctrlalt"
-};
+xkb_types		{ include "default" 	};
 xkb_compatibility	{ include "default"	};
