@@ -85,3 +85,9 @@ o Since ANSI Common Lisp doesn't have CHAR-BIT, the implementation of
   implementations, with the default doing nothing to character objects.  In
   non-ANSI Common Lisps and lispms, it still uses CHAR-BIT. The definition of
   DEFAULT-KEYSYM-TRANSLATE has been moved to dependent.l.
+
+o The image putting, getting, and copying code has been sped up a bit for lispm, 
+  lcl3.0, and excl.
+
+o The lcl3.0 io code has been sped up a bit by using read-array instead of
+  fast-read-byte.

@@ -105,21 +105,33 @@
 ;;
 (excl:defcmacro aref-card8 (a i)
   `(locally ,(declare-bufmac)
-	    (the card8 (aref (the buffer-bytes ,a) (the array-index ,i)))))
-
+     (the card8 (sys:memref (the buffer-bytes ,a)
+			    #.(comp::mdparam 'comp::md-svector-data0-adj)
+			    (the array-index ,i)
+			    :unsigned-byte))))
+  
 (excl:defcmacro aset-card8 (v a i)
   `(locally ,(declare-bufmac)
-	    (setf (aref (the buffer-bytes ,a) (the array-index ,i))
-	      (the card8 ,v))))
-
+     (setf (sys:memref (the buffer-bytes ,a)
+		       #.(comp::mdparam 'comp::md-svector-data0-adj)
+		       (the array-index ,i)
+		       :unsigned-byte)
+	   (the card8 ,v))))
+  
 (excl:defcmacro aref-int8 (a i)
   `(locally ,(declare-bufmac)
-	    (card8->int8 (aref (the buffer-bytes ,a) (the array-index ,i)))))
-
+     (the int8 (sys:memref (the buffer-bytes ,a)
+			   #.(comp::mdparam 'comp::md-svector-data0-adj)
+			   (the array-index ,i)
+			   :signed-byte))))
+  
 (excl:defcmacro aset-int8 (v a i)
   `(locally ,(declare-bufmac)
-	    (setf (aref (the buffer-bytes ,a) (the array-index ,i))
-	      (int8->card8 ,v))))
+     (setf (sys:memref (the buffer-bytes ,a)
+		       #.(comp::mdparam 'comp::md-svector-data0-adj)
+		       (the array-index ,i)
+		       :signed-byte)
+       (the int8 ,v))))
 
 (excl:defcmacro aref-card16 (a i)
   `(locally ,(declare-bufmac)
@@ -131,10 +143,10 @@
 (excl:defcmacro aset-card16 (v a i)
   `(locally ,(declare-bufmac)
      (setf (sys:memref (the buffer-bytes ,a)
-			     #.(comp::mdparam 'comp::md-svector-data0-adj)
-			     (the array-index ,i)
-			     :unsigned-word)
-       (the card16 ,v))))
+		       #.(comp::mdparam 'comp::md-svector-data0-adj)
+		       (the array-index ,i)
+		       :unsigned-word)
+	   (the card16 ,v))))
   
 (excl:defcmacro aref-int16 (a i)
   `(locally ,(declare-bufmac)
