@@ -35,12 +35,14 @@ extern void InitDashedLines100();
 extern void DoLines();
 extern void EndLines();
 
-extern void InitSmallCircles();
-extern void InitMedCircles();
-extern void InitCircles();
-extern void InitSmallEllipses();
-extern void InitMedEllipses();
-extern void InitEllipses();
+extern void InitCircles1();
+extern void InitCircles10();
+extern void InitCircles100();
+extern void InitCircles500();
+extern void InitEllipses1();
+extern void InitEllipses10();
+extern void InitEllipses100();
+extern void InitEllipses500();
 extern void DoArcs();
 extern void EndArcs();
 
@@ -177,7 +179,7 @@ Test test[] = {
 		{50, POLY, 0}},
   {"-segs500", "500-pixel line segment",
 		InitSegs500, DoSegs, NullProc, EndSegs, False, False,
-		{10, POLY, 0}},
+		{20, POLY, 0}},
   {"-segs100c1", "100-pixel line segment (1 occluding window)",
 		InitSegs100, DoSegs, NullProc, EndSegs, False, False,
 		{50, POLY, 1}},
@@ -198,44 +200,50 @@ Test test[] = {
 		{50, POLY, 0}},
   {"-lines500", "500-pixel line",
 		InitLines500, DoLines, NullProc, EndLines, False, False,
-		{10, POLY, 0}},
+		{20, POLY, 0}},
   {"-dlines", "100-pixel dashed line",
 		InitDashedLines100, DoLines, NullProc, EndLines, False, False,
 		{10, POLY, 0}},
-  {"-smallcircles", "1-pixel circle",
-		InitSmallCircles, DoArcs, NullProc, EndArcs, False, False,
-		{10, POLY, 0}},
-  {"-medcircles", "10-pixel circle",
-		InitMedCircles, DoArcs, NullProc, EndArcs, False, False,
-		{5, POLY, 0}},
-  {"-circles", "Circles",
-		InitCircles, DoArcs, NullProc, EndArcs, False, False,
-		{2, POLY/20, 0}},
-  {"-smallellipses", "1-pixel ellipse",
-		InitSmallEllipses, DoArcs, NullProc, EndArcs, False, False,
-		{10, POLY, 0}},
-  {"-medellipses", "10-pixel ellipse",
-		InitMedEllipses, DoArcs, NullProc, EndArcs, False, False,
-		{5, POLY, 0}},
-  {"-ellipses", "Ellipses",
-		InitEllipses, DoArcs, NullProc, EndArcs, False, False,
-		{2, POLY/20, 0}},
-  {"-ftext", "line/'fixed'",
+  {"-circles1", "1-pixel diameter circle",
+		InitCircles1, DoArcs, NullProc, EndArcs, False, False,
+		{20, POLY/2, 0}},
+  {"-circles10", "10-pixel diameter circle",
+		InitCircles10, DoArcs, NullProc, EndArcs, False, False,
+		{20, POLY/4, 0}},
+  {"-circles100", "100-pixel diameter circle",
+		InitCircles100, DoArcs, NullProc, EndArcs, False, False,
+		{20, POLY/40, 0}},
+  {"-circles500", "500-pixel diameter circle",
+		InitCircles500, DoArcs, NullProc, EndArcs, False, False,
+		{20, POLY/100, 0}},
+  {"-ellipses1", "1-pixel major-axis diameter ellipse",
+		InitEllipses1, DoArcs, NullProc, EndArcs, False, False,
+		{20, POLY/2, 0}},
+  {"-ellipses10", "10-pixel major-axis diameter ellipse",
+		InitEllipses10, DoArcs, NullProc, EndArcs, False, False,
+		{20, POLY/4, 0}},
+  {"-ellipses100", "100-pixel major-axis diameter ellipse",
+		InitEllipses100, DoArcs, NullProc, EndArcs, False, False,
+		{20, POLY/40, 0}},
+  {"-ellipses500", "500-pixel major-axis diameter ellipse",
+		InitEllipses500, DoArcs, NullProc, EndArcs, False, False,
+		{10, POLY/100, 0}},
+  {"-ftext", "100-character line/'fixed'",
 		InitText, DoText, ClearTextWin, EndText, False, False,
 		{100, 1, False, "fixed", NULL}},
-  {"-tr10text", "line/'Times Roman 10'",
+  {"-tr10text", "100 character line/'Times Roman 10'",
 		InitText, DoText, ClearTextWin, EndText, False, False,
 		{100, 1, False, "times_roman10", NULL}},
-  {"-tr24text", "line/'Times Roman 24'",
+  {"-tr24text", "100 character line/'Times Roman 24'",
 		InitText, DoText, ClearTextWin, EndText, False, False,
 		{100, 1, False, "times_roman24", NULL}},
-  {"-fitext", "image line/'fixed'",
+  {"-fitext", "100 character image line/'fixed'",
 		InitText, DoImageText, ClearTextWin, EndText, False, False,
 		{100, 1, False, "fixed", NULL}},
-  {"-tr10itext", "image line/'Times Roman 10'",
+  {"-tr10itext", "100 character image line/'Times Roman 10'",
 		InitText, DoImageText, ClearTextWin, EndText, False, False,
 		{100, 1, False, "times_roman10", NULL}},
-  {"-tr24itext", "image line/'Times Roman 24'",
+  {"-tr24itext", "100 character image line/'Times Roman 24'",
 		InitText, DoImageText, ClearTextWin, EndText, False, False,
 		{100, 1, False, "times_roman24", NULL}},
   {"-polytext1", "poly text/'8x13', '8x13bold'",
