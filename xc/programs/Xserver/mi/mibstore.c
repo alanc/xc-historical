@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.48 91/07/02 21:02:29 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.49 91/07/03 10:26:21 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -117,7 +117,8 @@ static void	    miCreateBSPixmap();
 static void	    miDestroyBSPixmap();
 static void	    miTileVirtualBS();
 static void	    miBSAllocate(), miBSFree();
-static Bool	    miBSCreateGCPrivate();
+static Bool	    miBSCreateGCPrivate	();
+static void	    miBSClearBackingRegion ();
 
 #define MoreCopy0 /* */
 #define MoreCopy2 *dstCopy++ = *srcCopy++; *dstCopy++ = *srcCopy++;
@@ -1315,32 +1316,37 @@ miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc, ppRgn)
     DEALLOCATE_LOCAL(boxes);
 
     pGC->graphicsExposures = graphicsExposures;
-    if (graphicsExposures)
-    {
-	/*
-	 * Form union of rgnExp and rgnObs and see if covers entire area
-	 * to be copied.  Store the resultant region for miBSCopyArea
-	 * to return to dispatch which will send the appropriate expose
-	 * events.
-	 */
-	(* pGC->pScreen->Union) (pRgnExp, pRgnExp, pRgnObs);
-	box.x1 = srcx;
-	box.x2 = srcx + w;
-	box.y1 = srcy;
-	box.y2 = srcy + h;
-	if ((* pGC->pScreen->RectIn) (pRgnExp, &box) == rgnIN)
-	    (*pGC->pScreen->RegionEmpty) (pRgnExp);
-	else
-	{
-	    (* pGC->pScreen->Inverse) (pRgnExp, pRgnExp, &box);
-	    (* pGC->pScreen->TranslateRegion) (pRgnExp, dx, dy);
-	}
-	*ppRgn = pRgnExp;
-    }
+    /*
+     * Form union of rgnExp and rgnObs and see if covers entire area
+     * to be copied.  Store the resultant region for miBSCopyArea
+     * to return to dispatch which will send the appropriate expose
+     * events.
+     */
+    (*pGC->pScreen->Union) (pRgnExp, pRgnExp, pRgnObs);
+    box.x1 = srcx;
+    box.x2 = srcx + w;
+    box.y1 = srcy;
+    box.y2 = srcy + h;
+    if ((*pGC->pScreen->RectIn) (pRgnExp, &box) == rgnIN)
+	(*pGC->pScreen->RegionEmpty) (pRgnExp);
     else
     {
-	(*pGC->pScreen->RegionDestroy) (pRgnExp);
+	(* pGC->pScreen->Inverse) (pRgnExp, pRgnExp, &box);
+	(* pGC->pScreen->TranslateRegion) (pRgnExp,
+					   dx + pWin->drawable.x,
+ 					   dy + pWin->drawable.y);
+	(* pGC->pScreen->Intersect) (pRgnObs, pRgnExp, &pWin->clipList);
+	(*pWin->drawable.pScreen->PaintWindowBackground) (pWin,
+						pRgnObs, PW_BACKGROUND);
+	(* pGC->pScreen->TranslateRegion) (pRgnExp,
+					   -pWin->drawable.x,
+ 					   -pWin->drawable.y);
+	miBSClearBackingRegion (pWin, pRgnExp);
     }
+    if (graphicsExposures)
+	*ppRgn = pRgnExp;
+    else
+	(*pGC->pScreen->RegionDestroy) (pRgnExp);
     (*pGC->pScreen->RegionDestroy) (pRgnObs);
 
     return (TRUE);
@@ -2306,6 +2312,26 @@ miBSClearBackingStore(pWin, x, y, w, h, generateExposures)
     return pRgn;
 }
 
+static void
+miBSClearBackingRegion (pWin, pRgn)
+    WindowPtr	pWin;
+    RegionPtr	pRgn;
+{
+    BoxPtr	pBox;
+    int		i;
+
+    i = REGION_NUM_RECTS(pRgn);
+    pBox = REGION_RECTS(pRgn);
+    while (i--)
+    {
+	(void) miBSClearBackingStore(pWin, pBox->x1, pBox->y1,
+					pBox->x2 - pBox->x1,
+					pBox->y2 - pBox->y1,
+					FALSE);
+	pBox++;
+    }
+}
+
 /*
  * fill a region of the destination with virtual bits
  *
@@ -3088,26 +3114,7 @@ miBSTranslateBackingStore(pWin, windx, windy, oldClip, oldx, oldy)
  	 */
     	if ((* pScreen->RegionNotEmpty) (newSaved))
     	{
-	    BoxPtr	pBox;
-	    int		i;
-
-	    /*
-	     * Used to swap newSaved with pSaved and call Clear on
-	     * the extents of newSaved.  This really doesn't work
-	     * because the background of the window may have changed,
-	     * and portions may need to be painted in the old bg.
-	     * Yes this could be optimized by adding an interface.
-	     */
-	    i = REGION_NUM_RECTS(newSaved);
-	    pBox = REGION_RECTS(newSaved);
-	    while (i--)
-	    {
-	    	(void) miBSClearBackingStore(pWin, pBox->x1, pBox->y1,
-					    	pBox->x2 - pBox->x1,
-					    	pBox->y2 - pBox->y1,
-					    	FALSE);
-		pBox++;
-	    }
+	    miBSClearBackingRegion (pWin, newSaved);
 	    /*
 	     * Make the exposed region absolute
 	     */
