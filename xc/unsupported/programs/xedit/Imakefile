@@ -2,5 +2,6 @@ LOCAL_LIBRARIES = $(XTOOLLIB) $(XLIB)
   SYS_LIBRARIES = -lm
            SRCS = xedit.c EDiskSrc.c ap.c commands.c ps.c util.c
            OBJS = xedit.o EDiskSrc.o ap.o commands.o ps.o util.o
+        DEFINES = -DX11
 
-ComplexProgramTarget(xedit, $(BINDIR))
+ComplexProgramTarget(xedit)
