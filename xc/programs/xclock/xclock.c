@@ -1,6 +1,4 @@
-#ifndef lint
-static char rcsid[] = "$XConsortium: xclock.c,v 1.30 91/01/09 16:48:06 gildea Exp $";
-#endif /* lint */
+/* $XConsortium: xclock.c,v 1.31 91/01/10 21:30:43 gildea Exp $ */
 
 /*
  * xclock --  Hacked from Tony Della Fera's much hacked clock program.
@@ -27,12 +25,10 @@ static char rcsid[] = "$XConsortium: xclock.c,v 1.30 91/01/09 16:48:06 gildea Ex
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-
 #include <X11/Xatom.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
-
 #include <X11/Xaw/Clock.h>
 #include <X11/Xaw/Cardinals.h>
 #include "clock.bit"
