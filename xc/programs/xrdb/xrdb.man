@@ -32,25 +32,12 @@ is optionally passed through the C preprocessor with the
 following symbols defined, based on the capabilities of the server
 being used:
 .TP 8
-.B BITS_PER_RGB=num
-the number of significant bits in an RGB color specification.  This is the
-log base 2 of the number of distinct shades of each primary that the hardware
-can generate.  Note that it usually is not related to PLANES.
-.TP 8
-.B CLASS=visualclass
-one of StaticGray, GrayScale, StaticColor, PseudoColor, TrueColor,
-DirectColor.  This is the visual class of the root window of the
-default screen.
-.TP 8
-.B COLOR
-defined only if CLASS is one of StaticColor, PseudoColor, TrueColor, or
-DirectColor.
-.TP 8
-.B HEIGHT=num
-the height of the default screen in pixels.
-.TP 8
 .B SERVERHOST=hostname
 the hostname portion of the display to which you are connected.
+.TP 8
+.B SRVR_\fIname\fB
+the SERVERHOST hostname string turned into a legal identifier.
+For example, "my-dpy.lcs.mit.edu" becomes SRVR_my_dpy_lcs_mit_edu.
 .TP 8
 .B HOST=hostname
 the same as
@@ -61,8 +48,9 @@ the name of the host on which
 .I xrdb
 is running.
 .TP 8
-.B PLANES=num
-the number of bit planes (the depth) of the root window of the default screen.
+.B CLNT_\fIname\fB
+the CLIENTHOST hostname string turned into a legal identifier.
+For example, "expo.lcs.mit.edu" becomes CLNT_expo_lcs_mit_edu.
 .TP 8
 .B RELEASE=num
 the vendor release number for the server.  The interpretation of this
@@ -77,19 +65,49 @@ the X protocol major version supported by this server (should always be 11).
 .B VENDOR=vendor
 a string specifying the vendor of the server.
 .TP 8
-.B WIDTH=num
-the width of the default screen in pixels.
-.TP 8
-.B X_RESOLUTION=num
-the x resolution of the default screen in pixels per meter.
-.TP 8
-.B Y_RESOLUTION=num
-the y resolution of the default screen in pixels per meter.
+.B VNDR_\fIname\fP
+the VENDOR name string turned into a legal identifier.
+For example, "MIT X Consortium" becomes VNDR_MIT_X_Consortium.
 .TP 8
 .B EXT_\fIname\fP
 A symbol is defined for each protocol extension supported by the server.
-Each hyphen in the extension name is replaced with an underscore, and
-then the name is prefixed with ``EXT_'', e.g., X3D-PEX becomes EXT_X3D_PEX.
+Each extension string name is turned into a legal identifier.
+For example, "X3D-PEX" becomes EXT_X3D_PEX.
+.TP 8
+.B SCREEN_NUM=num
+the number of the screen (from zero).
+.TP 8
+.B BITS_PER_RGB=num
+the number of significant bits in an RGB color specification.  This is the
+log base 2 of the number of distinct shades of each primary that the hardware
+can generate.  Note that it usually is not related to PLANES.
+.TP 8
+.B CLASS=visualclass
+one of StaticGray, GrayScale, StaticColor, PseudoColor, TrueColor,
+DirectColor.  This is the visual class of the root window.
+.TP 8
+.B COLOR
+defined only if CLASS is one of StaticColor, PseudoColor, TrueColor, or
+DirectColor.
+.TP 8
+.B HEIGHT=num
+the height of the root window in pixels.
+.TP 8
+.B WIDTH=num
+the width of the root window in pixels.
+.TP 8
+.B PLANES=num
+the number of bit planes (the depth) of the root window.
+.TP 8
+.B X_RESOLUTION=num
+the x resolution of the screen in pixels per meter.
+.TP 8
+.B Y_RESOLUTION=num
+the y resolution of the screen in pixels per meter.
+.LP
+SRVR_\fIname\fB, CLNT_\fIname\fB, VNDR_\fIname\fP, and EXT_\fIname\fP
+identifiers are formed by changing all characters other than letters
+and digits into underscores (_).
 .LP
 Lines that begin with an exclamation mark (!) are ignored and may
 be used as comments.
