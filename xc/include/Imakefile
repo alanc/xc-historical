@@ -85,7 +85,7 @@ SUBDIRS = bitmaps
 
 INSTALLFLAGS = $(INSTINCFLAGS)
 
-all: $(IMPORTS1) $(IMPORTS2) $(SUBIMPORTS) extensions
+all:: $(IMPORTS1) $(IMPORTS2) $(SUBIMPORTS) extensions
 	@-(list=`echo $(IMPORTS1) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
 	$(LN) $(IMPORTS1) .
 	@-(list=`echo $(IMPORTS2) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
