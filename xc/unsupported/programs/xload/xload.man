@@ -1,6 +1,6 @@
 .TH XLOAD 1 "Release 5" "X Version 11"
 .SH NAME
-xload - load average display for X
+xload \- system load average display for X
 .SH SYNOPSIS
 .ta 6n
 \fBxload\fP	[-\fItoolkitoption\fP ...] [-scale \fIinteger\fP] [-update \fIseconds\fP] [-hl \fIcolor\fP] [-highlight \fIcolor\fP] 
