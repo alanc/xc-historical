@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.169 91/05/11 14:55:07 converse Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.170 91/06/11 20:26:02 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -805,7 +805,7 @@ String XtFindFile(path, substitutions, num_substitutions, predicate)
 	    start = colon+1;
 	}
 	if (colon != NULL)
-	    len = colon - start;
+	    len = colon - path;
 	else
 	    len = strlen(path);
 	if (Resolve(path, len, substitutions, num_substitutions,
