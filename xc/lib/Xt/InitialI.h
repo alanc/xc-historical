@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.8 88/10/19 08:35:49 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.9 89/01/18 17:05:57 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -78,7 +78,15 @@ typedef struct
 	int	count;
 } FdStruct;
 
+typedef struct _ProcessContextRec {
+    XtAppContext	defaultAppContext;
+    XtAppContext	appContextList;
+    ConverterTable	globalConverterTable;
+} ProcessContextRec, *ProcessContext;
+
 typedef struct _XtAppStruct {
+    XtAppContext next;		/* link to next app in process context */
+    ProcessContext process;	/* back pointer to our process context */
     Display **list;
     TimerEventRec *timerQueue;
     WorkProcRec *workQueue;
@@ -102,6 +110,7 @@ extern void _XtSetDefaultConverterTable();
 extern void _XtFreeConverterTable();
 
 extern XtAppContext _XtDefaultAppContext();
+extern ProcessContext _XtGetProcessContext();
 extern void _XtDestroyAppContexts();
 extern void _XtCloseDisplays();
 extern int _XtAppDestroyCount;
