@@ -1197,9 +1197,10 @@
 			 &body body)
   ;; Changes gcontext components within the dynamic scope of the body (i.e.,
   ;; indefinite scope and dynamic extent), on a per-process basis in a multi-process
-  ;; environment.  The body is not surrounded by a with-display.  If cache-p is nil
-  ;; or the some component states are unknown, this will implement save/restore by
-  ;; creating a temporary gcontext and doing copy-gcontext-components to and from it.
+  ;; environment.  The values are all evaluated before bindings are performed.  The
+  ;; body is not surrounded by a with-display.  If cache-p is nil or the some
+  ;; component states are unknown, this will implement save/restore by creating a
+  ;; temporary gcontext and doing copy-gcontext-components to and from it.
   )
 
 (defun copy-gcontext-components (src dst &rest keys)
@@ -2537,10 +2538,8 @@ drawable-plist
 
 
 
-;;; These have had perhaps even less review, and only the images functions are
-;;; currently implemented.
+;;; These have had perhaps even less review.
 
-;;; Proposed additions to CLX
 ;;; Add some of the functionality provided by the C XLIB library.
 ;;;
 ;;; LaMott G. Oren, Texas Instruments  10/87
@@ -2549,7 +2548,7 @@ drawable-plist
 ;;;	Robert W. Scheifler, MIT
 
 ;;;-----------------------------------------------------------------------------
-;;; Regions
+;;; Regions (not yet implemented)
 
 ;;; Regions are arbitrary collections of pixels.  This is represented
 ;;; in the region structure as either a list of rectangles or a bitmap.
