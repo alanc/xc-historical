@@ -11,7 +11,7 @@
          EXTDIR = $(EXTENSIONSRC)/server
     FONTUTILDIR = $(FONTSRC)/mkfontdir
        FONTUTIL = $(FONTUTILDIR)/fontdir.o
-            BSD = os/4.2bsd/libos.a $(XAULIB)
+            BSD = os/4.2bsd/libos.a $(XAULIB) $(XDMCPLIB)
         BSDEMUL = os/bsdemul/libbsdemul.a
            SYSV = os/sysV/libos.a
             MFB = ddx/mfb/libmfb.a
@@ -26,6 +26,7 @@
           MACII = ddx/macII/libmacII.a
             PLX = ddx/plx/libplx.a
          XAULIB = $(TOP)/lib/Xau/libXau.a
+       XDMCPLIB = $(TOP)/lib/Xdmcp/libXdmcp.a
         SYSLIBS = -lm -ldbm
 
 /**/#
