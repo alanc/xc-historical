@@ -1,4 +1,4 @@
-/* $XConsortium: Atoms.c,v 1.4 88/10/07 16:35:09 swick Exp $
+/* $XConsortium: Atoms.c,v 1.5 89/07/14 18:26:32 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -16,7 +16,6 @@
 
 #include <X11/copyright.h>
 
-#define _Xmu_Atoms_c_
 #include "Xmu.h"
 
 typedef struct _DisplayRec {
@@ -30,6 +29,38 @@ struct _AtomRec {
     DisplayRec* head;
 };
 
+#if defined(__STDC__) && !defined(UNIXCPP)
+#define DeclareAtom(atom,text) \
+static struct _AtomRec __##atom = { text, NULL }; \
+AtomPtr _##atom = &__##atom;
+#else
+#define DeclareAtom(atom,text) \
+static struct _AtomRec __/**/atom = { text, NULL }; \
+AtomPtr _/**/atom = &__/**/atom;
+#endif
+
+DeclareAtom(XA_TEXT,			"TEXT"			)
+DeclareAtom(XA_TIMESTAMP,		"TIMESTAMP"		)
+DeclareAtom(XA_LIST_LENGTH,		"LIST_LENGTH"		)
+DeclareAtom(XA_LENGTH,			"LENGTH"		)
+DeclareAtom(XA_TARGETS,			"TARGETS"		)
+DeclareAtom(XA_CHARACTER_POSITION,	"CHARACTER_POSITION"	)
+DeclareAtom(XA_DELETE,			"DELETE"		)
+DeclareAtom(XA_HOSTNAME,		"HOSTNAME"		)
+DeclareAtom(XA_IP_ADDRESS,		"IP_ADDRESS"		)
+DeclareAtom(XA_DECNET_ADDRESS,		"DECNET_ADDRESS"	)
+DeclareAtom(XA_USER,			"USER"			)
+DeclareAtom(XA_CLASS,			"CLASS"			)
+DeclareAtom(XA_NAME,			"NAME"			)
+DeclareAtom(XA_CLIENT_WINDOW,		"CLIENT_WINDOW"		)
+DeclareAtom(XA_ATOM_PAIR,		"ATOM_PAIR"		)
+DeclareAtom(XA_SPAN,			"SPAN"			)
+DeclareAtom(XA_NET_ADDRESS,		"NET_ADDRESS"		)
+DeclareAtom(XA_NULL,			"NULL"			)
+DeclareAtom(XA_FILENAME,		"FILENAME"		)
+DeclareAtom(XA_OWNER_OS,		"OWNER_OS"		)
+DeclareAtom(XA_CLIPBOARD,		"CLIPBOARD"		)
+
 typedef struct _CacheEntry {
     struct _CacheEntry* next;
     Display *dpy;
@@ -38,7 +69,6 @@ typedef struct _CacheEntry {
 
 static CacheEntry** cache = NULL;
 static max_atom = 0;
-static Boolean inited = False;
 
 static CacheEntry* CacheLookup(d, atom)
     Display *d;
@@ -77,52 +107,6 @@ static CacheEntry* CacheEnter(d, atom, name)
 }
 
 
-static void _DeclareAtoms()
-{
-    /* note: this list must contain the same elements as Xmu.h */
-    static struct _AtomRec
-	__XA_TEXT, __XA_TIMESTAMP, __XA_LIST_LENGTH, __XA_LENGTH,
-	__XA_TARGETS, __XA_CHARACTER_POSITION, __XA_DELETE, __XA_HOSTNAME,
-	__XA_IP_ADDRESS, __XA_DECNET_ADDRESS, __XA_USER, __XA_CLASS,
-	__XA_NAME, __XA_CLIENT_WINDOW, __XA_ATOM_PAIR, __XA_SPAN,
-	__XA_NET_ADDRESS, __XA_NULL, __XA_FILENAME, __XA_OWNER_OS,
-	__XA_CLIPBOARD;
-
-#if defined(__STDC__) && !defined(UNIXCPP)
-#define DeclareAtom(atom, text) \
-    _##atom = &__##atom; __##atom.name = text; __##atom.head = NULL;
-#else
-#define DeclareAtom(atom, text) \
-    _/**/atom = &__/**/atom; __/**/atom.name = text; __/**/atom.head = NULL;
-#endif
-
-    DeclareAtom(XA_TEXT,		"TEXT"			)
-    DeclareAtom(XA_TIMESTAMP,		"TIMESTAMP"		)
-    DeclareAtom(XA_LIST_LENGTH,		"LIST_LENGTH"		)
-    DeclareAtom(XA_LENGTH,		"LENGTH"		)
-    DeclareAtom(XA_TARGETS,		"TARGETS"		)
-    DeclareAtom(XA_CHARACTER_POSITION,	"CHARACTER_POSITION"	)
-    DeclareAtom(XA_DELETE,		"DELETE"		)
-    DeclareAtom(XA_HOSTNAME,		"HOSTNAME"		)
-    DeclareAtom(XA_IP_ADDRESS,		"IP_ADDRESS"		)
-    DeclareAtom(XA_DECNET_ADDRESS,	"DECNET_ADDRESS"	)
-    DeclareAtom(XA_USER,		"USER"			)
-    DeclareAtom(XA_CLASS,		"CLASS"			)
-    DeclareAtom(XA_NAME,		"NAME"			)
-    DeclareAtom(XA_CLIENT_WINDOW,	"CLIENT_WINDOW"		)
-    DeclareAtom(XA_ATOM_PAIR,		"ATOM_PAIR"		)
-    DeclareAtom(XA_SPAN,		"SPAN"			)
-    DeclareAtom(XA_NET_ADDRESS,		"NET_ADDRESS"		)
-    DeclareAtom(XA_NULL,		"NULL"			)
-    DeclareAtom(XA_FILENAME,		"FILENAME"		)
-    DeclareAtom(XA_OWNER_OS,		"OWNER_OS"		)
-    DeclareAtom(XA_CLIPBOARD,		"CLIPBOARD"		)
-
-#undef DeclareAtom
-}
-
-
-
 /******************************************************************
 
   Public procedures
@@ -151,13 +135,6 @@ Atom XmuInternAtom(d, atom_ptr)
     AtomPtr atom_ptr;
 {
     DisplayRec* display_rec;
-    if (!inited) {
-	_DeclareAtoms();
-	inited = True;
-    }
-    if (atom_ptr == NULL)
-	XtErrorMsg( "uninitializedAtom", "xmuInternAtom", "XmuError",
-		    "AtomPtr was not initialized", NULL, 0 );
     for (display_rec = atom_ptr->head; display_rec != NULL;
 	 display_rec = display_rec->next) {
 	if (display_rec->dpy == d)
