@@ -4,7 +4,7 @@
  * 8 bit color frame buffer utility routines
  */
 
-/* $XConsortium: Exp $ */
+/* $XConsortium: cfb8bit.c,v 1.1 89/07/28 12:51:54 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -24,16 +24,12 @@
 
 #include "cfb8bit.h"
 
-#ifndef AVOID_SCREEN_READ
-
 unsigned long cfb8PixelMasks[16] = {
     0x00000000, 0x000000ff, 0x0000ff00, 0x0000ffff,
     0x00ff0000, 0x00ff00ff, 0x00ffff00, 0x00ffffff,
     0xff000000, 0xff0000ff, 0xff00ff00, 0xff00ffff,
     0xffff0000, 0xffff00ff, 0xffffff00, 0xffffffff,
 };
-
-#endif
 
 unsigned long	cfb8Pixels[16];
 unsigned long	cfb8Pixelsfg, cfb8Pixelsbg;
