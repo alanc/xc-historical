@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.148 89/03/18 16:21:04 rws Exp $ */
+/* $XConsortium: main.c,v 1.149 89/03/20 11:09:59 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -219,11 +219,13 @@ main(argc, argv)
 
 	if (SetDefaultFontPath(defaultFontPath) != Success)
 	    ErrorF("failed to set default font path\n");
-	if ( ! SetDefaultFont(defaultTextFont))
+	if (!SetDefaultFont(defaultTextFont))
 	    FatalError("could not open default font '%s'", defaultTextFont);
-	if ( ! (rootCursor = CreateRootCursor(defaultCursorFont, 0)))
+	if (!(rootCursor = CreateRootCursor(defaultCursorFont, 0)))
 	    FatalError("could not open default cursor font '%s'",
 		       defaultCursorFont);
+	for (i = 0; i < screenInfo.numScreens; i++)
+	    InitRootWindow(WindowTable[i]);
 
 	if (!CreateConnectionBlock())
 	    FatalError("could not create connection block info");
