@@ -13,7 +13,7 @@
 ..
 .TH BEACH_BALL 1 "Release 5" "X Version 11"
 .SH NAME
-beach_ball \- a bouncing sphere
+beach_ball \- display a bouncing sphere using PHIGS
 .SH SYNOPSIS
 .B beach_ball
 .SH DESCRIPTION
