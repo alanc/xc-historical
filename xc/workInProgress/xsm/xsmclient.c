@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.4 93/12/30 11:09:26 mor Exp $ */
+/* $XConsortium: xsmclient.c,v 1.5 94/01/19 21:06:03 converse Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -75,8 +75,8 @@ Widget		    dialogOkButton;
 Widget		    dialogCancelButton;
 
 static XrmOptionDescRec options[] = {
-    { "-smid", "*smid", XrmoptionSepArg, (caddr_t) NULL },
-    { "-verbose", "*verbose", XrmoptionSepArg, True},
+    { "-smid", "*smid", XrmoptionSepArg, (XPointer) NULL },
+    { "-verbose", "*verbose", XrmoptionSepArg, (XPointer) False},
 };
 
 /*	resources specific to the application */
