@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbzerarc.c,v 5.3 89/09/09 19:03:31 rws Exp $ */
+/* $XConsortium: cfbzerarc.c,v 5.4 89/09/10 13:49:56 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -214,7 +214,7 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
 	    *(yorgb + yoffset + info.xorg + x) = pixel;
 	if (mask & 2)
 	    *(yorgb + yoffset + info.xorgo - x) = pixel;
-	if (arc->height & 1)
+	if (!arc->height || (arc->height & 1))
 	{
 	    if (mask & 4)
 		*(yorgob - yoffset + info.xorgo - x) = pixel;
@@ -243,8 +243,7 @@ cfbZeroPolyArcSS8Copy(pDraw, pGC, narcs, parcs)
 	box.y1 = arc->y + pDraw->y;
 	box.x2 = box.x1 + (int)arc->width + 1;
 	box.y2 = box.y1 + (int)arc->height + 1;
-	if (arc->width && arc->height &&
-	    (*pDraw->pScreen->RectIn)(cclip, &box) == rgnIN)
+	if ((*pDraw->pScreen->RectIn)(cclip, &box) == rgnIN)
 	    cfbZeroArcSS8Copy(pDraw, pGC, arc);
 	else
 	    miZeroPolyArc(pDraw, pGC, 1, arc);

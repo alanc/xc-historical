@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.9 89/09/09 19:09:11 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.10 89/09/10 13:50:26 rws Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -65,7 +65,7 @@ miZeroArcSetup(arc, info)
 	info->d = info->b - (info->a >> 1) - ((info->beta >> 2) * (2 + l)) +
 		 (info->alpha >> 2);
     }
-    info->x = 1;
+    info->x = arc->width ? 1 : 0;
     info->y = 0;
     info->dx1 = 1;
     info->dy1 = 0;
@@ -119,7 +119,7 @@ miZeroArcSetup(arc, info)
 	return;
     }
     startseg = startAngle / OCTANT;
-    if ((startseg + 1) & 2)
+    if (!arc->height || (((startseg + 1) & 2) && arc->width))
     {
 	info->startx = Dcos((double)startAngle/64.0) * (arc->width / 2.0);
 	if (info->startx < 0)
@@ -135,7 +135,7 @@ miZeroArcSetup(arc, info)
 	info->startx = 65536;
     }
     endseg = endAngle / OCTANT;
-    if ((endseg + 1) & 2)
+    if (!arc->height || (((endseg + 1) & 2) && arc->width))
     {
 	info->endx = Dcos((double)endAngle/64.0) * (arc->width / 2.0);
 	if (info->endx < 0)
@@ -303,7 +303,7 @@ miZeroArcPts(arc, pts)
 	    pts->y = info.yorg + y;
 	    pts++;
 	}
-	if (arc->height & 1)
+	if (!arc->height || (arc->height & 1))
 	{
 	    if (mask & 4)
 	    {
@@ -384,7 +384,7 @@ miZeroArcDashPts(pGC, arc, points, maxPts, evenPts, oddPts)
 	if ((x == info.startx) || (y == info.starty))
 	{
 	    mask = info.startMask;
-	    startPt = circPts[info.startAngle / QUADRANT];
+	    startPt = circPts[startseg];
 	}
 	DoPix(0, info.xorg + x, info.yorg + y);
 	DoPix(1, info.xorgo - x, info.yorg + y);
@@ -412,7 +412,7 @@ miZeroArcDashPts(pGC, arc, points, maxPts, evenPts, oddPts)
     {
 	DoPix(0, info.xorg + x, info.yorg + y);
 	DoPix(1, info.xorgo - x, info.yorg + y);
-	if (arc->height & 1)
+	if (!arc->height || (arc->height & 1))
 	{
 	    DoPix(2, info.xorgo - x, info.yorgo - y);
 	    DoPix(3, info.xorg + x, info.yorgo - y);
@@ -513,7 +513,7 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
 
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
-	if (arc->width > 800 || arc->height > 800)
+	if (!miCanZeroArc(arc))
 	    miPolyArc(pDraw, pGC, 1, arc);
 	else
 	{
@@ -549,7 +549,7 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
     }
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
-	if (arc->width <= 800 && arc->height <= 800)
+	if (miCanZeroArc(arc))
 	{
 	    if (pGC->lineStyle == LineSolid)
 		pts = miZeroArcPts(arc, points);
