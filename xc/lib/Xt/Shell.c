@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.56 89/06/19 13:35:44 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.57 89/07/05 15:19:42 kit Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -61,14 +61,6 @@ extern void XSetClassHint(); /* this was not declared in Xlib.h... */
  *
  ***************************************************************************/
 
-static Boolean false = FALSE;
-static Bool longFalse = FALSE;
-static Boolean true = TRUE;
-static int minusOne = -1;
-static int one = 1;
-static int zero = 0;
-static int fivesecond = 5000;
-
 static void ShellDepth();
 static void ShellColormap();
 static void ShellAncestorSensitive();
@@ -83,29 +75,29 @@ static void ShellAncestorSensitive();
 static XtResource shellResources[]=
 {
 	{ XtNdepth, XtCDepth, XtRInt, sizeof(int),
-	    Offset(core.depth), XtRCallProc, (caddr_t) ShellDepth},
+	    Offset(core.depth), XtRCallProc, (XtPointer) ShellDepth},
 	{ XtNcolormap, XtCColormap, XtRPointer, sizeof(Colormap),
-	    Offset(core.colormap), XtRCallProc, (caddr_t) ShellColormap},
+	    Offset(core.colormap), XtRCallProc, (XtPointer) ShellColormap},
 	{ XtNancestorSensitive, XtCSensitive, XtRBoolean, sizeof(Boolean),
 	    Offset(core.ancestor_sensitive), XtRCallProc,
-	    (caddr_t) ShellAncestorSensitive},
+	    (XtPointer) ShellAncestorSensitive},
 	{ XtNallowShellResize, XtCAllowShellResize, XtRBoolean,
 	    sizeof(Boolean), Offset(shell.allow_shell_resize),
-	    XtRBoolean, (caddr_t) &false},
-	{ XtNgeometry, XtCGeometry, XtRString, sizeof(caddr_t), 
-	    Offset(shell.geometry), XtRString, (caddr_t) NULL},
+	    XtRImmediate, (XtPointer)False},
+	{ XtNgeometry, XtCGeometry, XtRString, sizeof(XtPointer), 
+	    Offset(shell.geometry), XtRString, (XtPointer) NULL},
 	{ XtNcreatePopupChildProc, XtCCreatePopupChildProc, XtRFunction,
 	    sizeof(XtCreatePopupChildProc), Offset(shell.create_popup_child_proc),
 	    XtRFunction, NULL},
 	{ XtNsaveUnder, XtCSaveUnder, XtRBoolean, sizeof(Boolean),
-	    Offset(shell.save_under), XtRBoolean, (caddr_t) &false},
-	{ XtNpopupCallback, XtCCallback, XtRCallback, sizeof(caddr_t),
-	    Offset(shell.popup_callback), XtRCallback, (caddr_t) NULL},
-	{ XtNpopdownCallback, XtCCallback, XtRCallback, sizeof(caddr_t),
-	    Offset(shell.popdown_callback), XtRCallback, (caddr_t) NULL},
+	    Offset(shell.save_under), XtRImmediate, (XtPointer)False},
+	{ XtNpopupCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
+	    Offset(shell.popup_callback), XtRCallback, (XtPointer) NULL},
+	{ XtNpopdownCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
+	    Offset(shell.popdown_callback), XtRCallback, (XtPointer) NULL},
 	{ XtNoverrideRedirect, XtCOverrideRedirect,
 	    XtRBoolean, sizeof(Boolean), Offset(shell.override_redirect),
-	    XtRBoolean, (caddr_t) &false}
+	    XtRImmediate, (XtPointer)False}
 };
 
 static void Initialize();
@@ -172,9 +164,9 @@ static XtResource overrideResources[]=
 {
 	{ XtNoverrideRedirect, XtCOverrideRedirect,
 	    XtRBoolean, sizeof(Boolean), Offset(shell.override_redirect),
-	    XtRBoolean, (caddr_t) &true},
+	    XtRImmediate, (XtPointer)True},
 	{ XtNsaveUnder, XtCSaveUnder, XtRBoolean, sizeof(Boolean),
-	    Offset(shell.save_under), XtRBoolean, (caddr_t) &true},
+	    Offset(shell.save_under), XtRImmediate, (XtPointer)True},
 };
 
 externaldef(overrideshellclassrec) OverrideShellClassRec overrideShellClassRec = {
@@ -241,55 +233,71 @@ static XtResource wmResources[]=
 	{ XtNtitle, XtCTitle, XtRString, sizeof(char *),
 	    Offset(wm.title), XtRString, NULL},
 	{ XtNwmTimeout, XtCWmTimeout, XtRInt, sizeof(int),
-	    Offset(wm.wm_timeout), XtRInt, (caddr_t) &fivesecond},
+	    Offset(wm.wm_timeout), XtRImmediate, (XtPointer)5000},
 	{ XtNwaitForWm, XtCWaitForWm, XtRBoolean, sizeof(Boolean),
-	    Offset(wm.wait_for_wm), XtRBoolean, (caddr_t) &true},
+	    Offset(wm.wait_for_wm), XtRImmediate, (XtPointer)True},
 	{ XtNtransient, XtCTransient, XtRBoolean, sizeof(Boolean),
-	    Offset(wm.transient), XtRBoolean, (caddr_t) &false},
+	    Offset(wm.transient), XtRImmediate, (XtPointer)False},
 /* size_hints minus things stored in core */
 	{ XtNbaseWidth, XtCBaseWidth, XtRInt, sizeof(int),
-	    Offset(wm.size_hints.base_width), XtRInt, (caddr_t) &minusOne},
+	    Offset(wm.size_hints.base_width),
+	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 	{ XtNbaseHeight, XtCBaseHeight, XtRInt, sizeof(int),
-	    Offset(wm.size_hints.base_height), XtRInt, (caddr_t) &minusOne},
+	    Offset(wm.size_hints.base_height),
+	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 	{ XtNwinGravity, XtCWinGravity, XtRInt, sizeof(int),
-	    Offset(wm.size_hints.win_gravity), XtRInt, (caddr_t) &minusOne},
+	    Offset(wm.size_hints.win_gravity),
+	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 	{ XtNminWidth, XtCMinWidth, XtRInt, sizeof(int),
-	    Offset(wm.size_hints.min_width), XtRInt, (caddr_t) &minusOne},
+	    Offset(wm.size_hints.min_width),
+	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 	{ XtNminHeight, XtCMinHeight, XtRInt, sizeof(int),
-	    Offset(wm.size_hints.min_height), XtRInt, (caddr_t) &minusOne},
+	    Offset(wm.size_hints.min_height),
+	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 	{ XtNmaxWidth, XtCMaxWidth, XtRInt, sizeof(int),
-	    Offset(wm.size_hints.max_width), XtRInt, (caddr_t) &minusOne},
+	    Offset(wm.size_hints.max_width),
+	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 	{ XtNmaxHeight, XtCMaxHeight, XtRInt, sizeof(int),
-	    Offset(wm.size_hints.max_height), XtRInt, (caddr_t) &minusOne},
+	    Offset(wm.size_hints.max_height),
+	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 	{ XtNwidthInc, XtCWidthInc, XtRInt, sizeof(int),
-	    Offset(wm.size_hints.width_inc), XtRInt, (caddr_t) &minusOne},
+	    Offset(wm.size_hints.width_inc),
+	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 	{ XtNheightInc, XtCHeightInc, XtRInt, sizeof(int),
-	    Offset(wm.size_hints.height_inc), XtRInt, (caddr_t) &minusOne},
+	    Offset(wm.size_hints.height_inc),
+	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 	{ XtNminAspectX, XtCMinAspectX, XtRInt, sizeof(int),
-	    Offset(wm.size_hints.min_aspect.x), XtRInt, (caddr_t) &minusOne},
+	    Offset(wm.size_hints.min_aspect.x),
+	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 	{ XtNminAspectY, XtCMinAspectY, XtRInt, sizeof(int),
-	    Offset(wm.size_hints.min_aspect.y), XtRInt, (caddr_t) &minusOne},
+	    Offset(wm.size_hints.min_aspect.y),
+	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 	{ XtNmaxAspectX, XtCMaxAspectX, XtRInt, sizeof(int),
-	    Offset(wm.size_hints.max_aspect.x), XtRInt, (caddr_t) &minusOne},
+	    Offset(wm.size_hints.max_aspect.x),
+	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 	{ XtNmaxAspectY, XtCMaxAspectY, XtRInt, sizeof(int),
-	    Offset(wm.size_hints.max_aspect.y), XtRInt, (caddr_t) &minusOne},
+	    Offset(wm.size_hints.max_aspect.y),
+	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 /* wm_hints */
 	{ XtNinput, XtCInput, XtRBool, sizeof(Bool),
-	    Offset(wm.wm_hints.input), XtRBool, (caddr_t) &longFalse},
+	    Offset(wm.wm_hints.input), XtRImmediate, (XtPointer)False},
 	{ XtNinitialState, XtCInitialState, XtRInt, sizeof(int),
-	    Offset(wm.wm_hints.initial_state), XtRInt, (caddr_t) &one},
-	{ XtNiconPixmap, XtCIconPixmap, XtRPixmap, sizeof(caddr_t),
+	    Offset(wm.wm_hints.initial_state), XtRImmediate, (XtPointer)1},
+	{ XtNiconPixmap, XtCIconPixmap, XtRBitmap, sizeof(XtPointer),
 	    Offset(wm.wm_hints.icon_pixmap), XtRPixmap, NULL},
-	{ XtNiconWindow, XtCIconWindow, XtRWindow, sizeof(caddr_t),
-	    Offset(wm.wm_hints.icon_window), XtRWindow,   (caddr_t) NULL},
+	{ XtNiconWindow, XtCIconWindow, XtRWindow, sizeof(XtPointer),
+	    Offset(wm.wm_hints.icon_window), XtRWindow,   (XtPointer) NULL},
 	{ XtNiconX, XtNiconX, XtRInt, sizeof(int),
-	    Offset(wm.wm_hints.icon_x), XtRInt, (caddr_t) &minusOne},
+	    Offset(wm.wm_hints.icon_x),
+	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 	{ XtNiconY, XtNiconY, XtRInt, sizeof(int),
-	    Offset(wm.wm_hints.icon_y), XtRInt, (caddr_t) &minusOne},
-	{ XtNiconMask, XtCIconMask, XtRPixmap, sizeof(caddr_t),
+	    Offset(wm.wm_hints.icon_y),
+	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
+	{ XtNiconMask, XtCIconMask, XtRBitmap, sizeof(XtPointer),
 	    Offset(wm.wm_hints.icon_mask), XtRPixmap, NULL},
 	{ XtNwindowGroup, XtCWindowGroup, XtRWindow, sizeof(XID),
-	    Offset(wm.wm_hints.window_group), XtRWindow, None}
+	    Offset(wm.wm_hints.window_group),
+	    XtRImmediate, (XtPointer)XtUnspecifiedWindow}
 };
 
 static void WMInitialize();
@@ -354,9 +362,9 @@ externaldef(wmshellwidgetclass) WidgetClass wmShellWidgetClass = (WidgetClass) (
 static XtResource transientResources[]=
 {
 	{ XtNtransient, XtCTransient, XtRBoolean, sizeof(Boolean),
-	    Offset(wm.transient), XtRBoolean, (caddr_t) &true},
+	    Offset(wm.transient), XtRImmediate, (XtPointer)True},
 	{ XtNsaveUnder, XtCSaveUnder, XtRBoolean, sizeof(Boolean),
-	    Offset(shell.save_under), XtRBoolean, (caddr_t) &true},
+	    Offset(shell.save_under), XtRImmediate, (XtPointer)True},
 };
 
 externaldef(transientshellclassrec) TransientShellClassRec transientShellClassRec = {
@@ -424,10 +432,10 @@ externaldef(transientshellwidgetclass) WidgetClass transientShellWidgetClass =
 
 static XtResource topLevelResources[]=
 {
-	{ XtNiconName, XtCIconName, XtRString, sizeof(caddr_t),
-	    Offset(topLevel.icon_name), XtRString, (caddr_t) NULL},
+	{ XtNiconName, XtCIconName, XtRString, sizeof(XtPointer),
+	    Offset(topLevel.icon_name), XtRString, (XtPointer) NULL},
 	{ XtNiconic, XtCIconic, XtRBoolean, sizeof(Boolean),
-	    Offset(topLevel.iconic), XtRBoolean, (caddr_t) &false}
+	    Offset(topLevel.iconic), XtRImmediate, (XtPointer)False}
 };
 
 static void TopLevelInitialize();
@@ -500,9 +508,9 @@ externaldef(toplevelshellwidgetclass) WidgetClass topLevelShellWidgetClass =
 static XtResource applicationResources[]=
 {
 	{ XtNargc, XtCArgc, XtRInt, sizeof(int),
-	    Offset(application.argc), XtRInt, (caddr_t) &zero}, 
-	{ XtNargv, XtCArgv, XtRPointer, sizeof(caddr_t),
-	    Offset(application.argv), XtRPointer, (caddr_t) NULL}
+	    Offset(application.argc), XtRImmediate, (XtPointer)0}, 
+	{ XtNargv, XtCArgv, XtRPointer, sizeof(XtPointer),
+	    Offset(application.argv), XtRPointer, (XtPointer) NULL}
 };
 
 static void ApplicationDestroy();
@@ -594,7 +602,8 @@ static void ShellAncestorSensitive(widget,closure,value)
     int closure;
     XrmValue *value;
 {
-   if (widget->core.parent == NULL) value->addr = (caddr_t)(&true);
+   static Boolean true = True;
+   if (widget->core.parent == NULL) value->addr = (XtPointer)(&true);
    else XtCopyFromParent (widget,closure,value);
 }
 
@@ -609,7 +618,7 @@ static void Initialize(req, new)
 	    _XtShellNotReparented | _XtShellPositionValid;
 
 	XtAddEventHandler(new, (EventMask) StructureNotifyMask,
-		TRUE, EventHandler, (caddr_t) NULL);
+		TRUE, EventHandler, (XtPointer) NULL);
 }
 
 /* ARGSUSED */
@@ -691,7 +700,8 @@ static void SetWindowGroups(widget, window)
 	    pop = widget->core.popup_list[i];
 	    if (pop->core.num_popups > 0) SetWindowGroups(pop, window);
 	    if (XtIsSubclass(pop, wmShellWidgetClass) &&
-		    ((WMShellWidget) pop)->wm.wm_hints.window_group == None) {
+		    ((WMShellWidget) pop)->wm.wm_hints.window_group
+		    == XtUnspecifiedWindow) {
 		XtSetValues(pop, &a, (Cardinal)1);
 	    }
 	}
@@ -791,29 +801,41 @@ static void EvaluateSizeHints(w)
 	if (!(sizep->flags & USSize)) sizep->flags |= PSize;
 	if (!(sizep->flags & USPosition)) sizep->flags |= PPosition;
 
-	if (sizep->min_aspect.x != -1 || sizep->min_aspect.y != -1 || 
-		sizep->max_aspect.x != -1 || sizep->max_aspect.y != -1) {
+	if (sizep->min_aspect.x != XtUnspecifiedShellInt
+	    || sizep->min_aspect.y != XtUnspecifiedShellInt
+	    || sizep->max_aspect.x != XtUnspecifiedShellInt
+	    || sizep->max_aspect.y != XtUnspecifiedShellInt) {
 	    sizep->flags |= PAspect;
 	}
-	if(sizep->base_width != -1 || sizep->base_height != -1) {
+	if(sizep->base_width != XtUnspecifiedShellInt
+	   || sizep->base_height != XtUnspecifiedShellInt) {
 	    sizep->flags |= PBaseSize;
-	    if (sizep->base_width == -1) sizep->base_width = 0;
-	    if (sizep->base_height == -1) sizep->base_height = 0;
+	    if (sizep->base_width == XtUnspecifiedShellInt)
+		sizep->base_width = 0;
+	    if (sizep->base_height == XtUnspecifiedShellInt)
+		sizep->base_height = 0;
 	}
-	if (sizep->width_inc != -1 || sizep->height_inc != -1) {
+	if (sizep->width_inc != XtUnspecifiedShellInt
+	    || sizep->height_inc != XtUnspecifiedShellInt) {
 	    if (sizep->width_inc < 1) sizep->width_inc = 1;
 	    if (sizep->height_inc < 1) sizep->height_inc = 1;
 	    sizep->flags |= PResizeInc;
 	}
-	if (sizep->max_width != -1 || sizep->max_height != -1) {
+	if (sizep->max_width != XtUnspecifiedShellInt
+	    || sizep->max_height != XtUnspecifiedShellInt) {
 	    sizep->flags |= PMaxSize;
-	    if (sizep->max_width == -1) sizep->max_width = BIGSIZE;
-	    if (sizep->max_height == -1) sizep->max_height = BIGSIZE;
+	    if (sizep->max_width == XtUnspecifiedShellInt)
+		sizep->max_width = BIGSIZE;
+	    if (sizep->max_height == XtUnspecifiedShellInt)
+		sizep->max_height = BIGSIZE;
 	}
-	if(sizep->min_width != -1 || sizep->min_height != -1) {
+	if(sizep->min_width != XtUnspecifiedShellInt
+	   || sizep->min_height != XtUnspecifiedShellInt) {
 	    sizep->flags |= PMinSize;
-	    if (sizep->min_width == -1) sizep->min_width = 1;
-	    if (sizep->min_height == -1) sizep->min_height = 1;
+	    if (sizep->min_width == XtUnspecifiedShellInt)
+		sizep->min_width = 1;
+	    if (sizep->min_height == XtUnspecifiedShellInt)
+		sizep->min_height = 1;
 	}
 }
 
@@ -858,21 +880,23 @@ static void _popup_set_prop(w)
 		    tlshell->topLevel.iconic) {
 		hintp->initial_state = IconicState;
 	    }
-	    if(hintp->icon_x != -1 || hintp->icon_y != -1) {
+	    if(hintp->icon_x != XtUnspecifiedShellInt
+	       || hintp->icon_y != XtUnspecifiedShellInt) {
 		hintp->flags |= IconPositionHint;
 	    }
-	    if(hintp->icon_pixmap != NULL) hintp->flags |=  IconPixmapHint;
-	    if(hintp->icon_mask != NULL) hintp->flags |=  IconMaskHint;
-	    if(hintp->icon_window != NULL) hintp->flags |=  IconWindowHint;
+	    if(hintp->icon_pixmap != NULL) hintp->flags |= IconPixmapHint;
+	    if(hintp->icon_mask != NULL)   hintp->flags |= IconMaskHint;
+	    if(hintp->icon_window != NULL) hintp->flags |= IconWindowHint;
 
-	    if(hintp->window_group == None) {
+	    if(hintp->window_group == XtUnspecifiedWindow) {
 		if(w->core.parent) {
 		    for (ptr = w->core.parent; ptr->core.parent;
 			    ptr = ptr->core.parent) {}
 		    hintp->window_group = XtWindow(ptr);
 		    hintp->flags |=  WindowGroupHint;
 		}
-	    } else hintp->flags |=  WindowGroupHint;
+	    } else if (hintp->window_group != XtUnspecifiedWindowGroup)
+		hintp->flags |=  WindowGroupHint;
 
 	    XSetWMHints(dpy, win, hintp);
 
@@ -880,7 +904,8 @@ static void _popup_set_prop(w)
     
 	    XSetWMNormalHints(dpy, win, &wmshell->wm.size_hints);
 
-	    if (wmshell->wm.transient) {
+	    if (wmshell->wm.transient
+		&& hintp->window_group != XtUnspecifiedWindowGroup) {
 		XSetTransientForHint(dpy, win, hintp->window_group);
 	    }
 
@@ -908,7 +933,7 @@ static void _popup_set_prop(w)
 /* ARGSUSED */
 static void EventHandler(wid, closure, event)
 	Widget wid;
-	caddr_t closure;
+	XtPointer closure;
 	XEvent *event;
 {
 	register ShellWidget w = (ShellWidget) wid;
@@ -1128,12 +1153,13 @@ static void ChangeManaged(wid)
 
 	if (is_wmshell) {
 	    WMShellWidget wmshell = (WMShellWidget) w;
-	    if (wmshell->wm.size_hints.win_gravity == -1) {
-		if (win_gravity != -1) {
+	    if (wmshell->wm.size_hints.win_gravity == XtUnspecifiedShellInt) {
+		if (win_gravity != -1)
 		    wmshell->wm.size_hints.win_gravity = win_gravity;
-		    wmshell->wm.size_hints.flags |= PWinGravity;
-		}
-	    } else  wmshell->wm.size_hints.flags |= PWinGravity;
+		else
+		    wmshell->wm.size_hints.win_gravity = NorthWestGravity;
+	    }
+	    wmshell->wm.size_hints.flags |= PWinGravity;
 	    if ((flag & (XValue|YValue)) == (XValue|YValue))
 		wmshell->wm.size_hints.flags |= USPosition;
 	    if ((flag & (WidthValue|HeightValue)) == (WidthValue|HeightValue))
@@ -1522,25 +1548,32 @@ static Boolean WMSetValues(old, ref, new)
 #define EQS(x) (nsize->x == osize->x)
 
 	if (! EQS(min_width) || ! EQS(min_height)) {
-	    if (nsize->min_width != -1 || nsize->min_height != -1) {
+	    if (nsize->min_width != XtUnspecifiedShellInt
+		|| nsize->min_height != XtUnspecifiedShellInt) {
 		nsize->flags |= PMinSize;
-		if (nsize->min_width == -1) nsize->min_width = 1;
-		if (nsize->min_height == -1) nsize->min_height = 1;
+		if (nsize->min_width == XtUnspecifiedShellInt)
+		    nsize->min_width = 1;
+		if (nsize->min_height == XtUnspecifiedShellInt)
+		    nsize->min_height = 1;
 	    }
 	    size = TRUE;
 	}
 
 	if ( ! EQS(max_width) || ! EQS(max_height) ) {
-	    if (nsize->max_width != -1 || nsize->max_height != -1) {
+	    if (nsize->max_width != XtUnspecifiedShellInt
+		|| nsize->max_height != XtUnspecifiedShellInt) {
 		nsize->flags |= PMaxSize;
-		if (nsize->max_width == -1) nsize->max_width = BIGSIZE;
-		if (nsize->max_height == -1) nsize->max_height = BIGSIZE;
+		if (nsize->max_width == XtUnspecifiedShellInt)
+		    nsize->max_width = BIGSIZE;
+		if (nsize->max_height == XtUnspecifiedShellInt)
+		    nsize->max_height = BIGSIZE;
 	    }
 	    size = TRUE;
 	}
 
 	if ( ! EQS(width_inc) || ! EQS(height_inc) ) {
-	    if (nsize->width_inc != -1 || nsize->height_inc != -1) {
+	    if (nsize->width_inc != XtUnspecifiedShellInt
+		|| nsize->height_inc != XtUnspecifiedShellInt) {
 		nsize->flags |= PResizeInc;
 	    }
 	    size = TRUE;
@@ -1549,8 +1582,10 @@ static Boolean WMSetValues(old, ref, new)
 	if ( ! EQS(min_aspect.x) ||! EQS(min_aspect.y) ||
 		! EQS(max_aspect.x) ||! EQS(max_aspect.y)) {
 		
-	    if (nsize->min_aspect.x != -1 || nsize->min_aspect.y != -1 ||
-		  nsize->max_aspect.x != -1 || nsize->max_aspect.y != -1) {
+	    if (nsize->min_aspect.x != XtUnspecifiedShellInt
+		|| nsize->min_aspect.y != XtUnspecifiedShellInt
+		|| nsize->max_aspect.x != XtUnspecifiedShellInt
+		|| nsize->max_aspect.y != XtUnspecifiedShellInt) {
 		nsize->flags |= PAspect;
 	    }
 	    size = TRUE;
@@ -1587,7 +1622,9 @@ static Boolean WMSetValues(old, ref, new)
 	if (! EQW(input)) nhints->flags |= InputHint;
 	if (! EQW(icon_mask)) nhints->flags |= IconMaskHint;
 	if (! EQW(icon_window)) nhints->flags |= IconWindowHint;
-	if (! EQW(window_group)) nhints->flags |= WindowGroupHint;
+	if (! EQW(window_group)
+	    && nhints->window_group != XtUnspecifiedWindowGroup)
+	    nhints->flags |= WindowGroupHint;
 
 	if (nhints->flags && XtIsRealized(new) &&
 		!nwmshell->shell.override_redirect) {

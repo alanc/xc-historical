@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Destroy.c,v 1.18 89/06/16 19:34:22 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Destroy.c,v 1.19 89/09/11 17:42:49 swick Exp $";
 /* $oHeader: Destroy.c,v 1.3 88/09/01 11:27:27 asente Exp $ */
 #endif /* lint */
 
@@ -68,7 +68,7 @@ static void Phase2Callbacks(widget)
     if (widget->core.destroy_callbacks != NULL) {
 	_XtCallCallbacks(
 	      _XtCallbackList((CallbackStruct*)widget->core.destroy_callbacks),
-	      (caddr_t) NULL);
+	      (XtPointer) NULL);
     }
 } /* Phase2Callbacks */
 
@@ -101,8 +101,8 @@ static void Phase2Destroy(widget)
 /*ARGSUSED*/
 static void XtPhase2Destroy (widget, closure, call_data)
     register Widget widget;
-    caddr_t	    closure;
-    caddr_t	    call_data;
+    XtPointer	    closure;
+    XtPointer	    call_data;
 {
     Display	    *display;
     Window	    window ;
@@ -152,10 +152,10 @@ void XtDestroyWidget (widget)
     if (_XtSafeToDestroy) _XtDestroyList = &tempDestroyList;
 
     Recursive(widget, Phase1Destroy);
-    _XtAddCallback(widget, _XtDestroyList, XtPhase2Destroy, (Opaque) NULL);
+    _XtAddCallback(widget, _XtDestroyList, XtPhase2Destroy, (XtPointer)NULL);
 
     if (_XtDestroyList == &tempDestroyList) {
-        _XtCallCallbacks(_XtDestroyList, (Opaque) NULL);
+        _XtCallCallbacks(_XtDestroyList, (XtPointer)NULL);
 	_XtRemoveAllCallbacks(_XtDestroyList);
 	_XtDestroyList = NULL;
     }

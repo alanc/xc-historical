@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Popup.c,v 1.21 89/04/28 09:41:55 swick Exp $";
+    "$XConsortium: Popup.c,v 1.22 89/06/16 19:35:06 jim Exp $";
 /* $oHeader: Popup.c,v 1.3 88/09/01 11:45:34 asente Exp $ */
 #endif /* lint */
 
@@ -48,7 +48,7 @@ void _XtPopup(widget, grab_kind, spring_loaded)
     }
 
     if (! shell_widget->shell.popped_up) {
-	XtCallCallbacks(widget, XtNpopupCallback, (caddr_t)NULL);
+	XtCallCallbacks(widget, XtNpopupCallback, (XtPointer)NULL);
 	shell_widget->shell.popped_up = TRUE;
 	shell_widget->shell.grab_kind = grab_kind;
 	shell_widget->shell.spring_loaded = spring_loaded;
@@ -91,8 +91,8 @@ void XtPopup (widget, grab_kind)
 /* ARGSUSED */
 void XtCallbackNone(widget, closure, call_data)
     Widget  widget;
-    caddr_t closure;
-    caddr_t call_data;
+    XtPointer closure;
+    XtPointer call_data;
 {
     XtSetSensitive(widget, FALSE);
     _XtPopup((Widget) closure, XtGrabNone, FALSE);
@@ -101,8 +101,8 @@ void XtCallbackNone(widget, closure, call_data)
 /* ARGSUSED */
 void XtCallbackNonexclusive(widget, closure, call_data)
     Widget  widget;
-    caddr_t closure;
-    caddr_t call_data;
+    XtPointer closure;
+    XtPointer call_data;
 {
 
     XtSetSensitive(widget, FALSE);
@@ -112,8 +112,8 @@ void XtCallbackNonexclusive(widget, closure, call_data)
 /* ARGSUSED */
 void XtCallbackExclusive(widget, closure, call_data)
     Widget  widget;
-    caddr_t closure;
-    caddr_t call_data;
+    XtPointer closure;
+    XtPointer call_data;
 {
     XtSetSensitive(widget, FALSE);
     _XtPopup((Widget) closure, XtGrabExclusive, FALSE);
@@ -140,15 +140,15 @@ void XtPopdown(widget)
 	    XtRemoveGrab(widget);
 	}
 	shell_widget->shell.popped_up = FALSE;
-	XtCallCallbacks(widget, XtNpopdownCallback, (caddr_t)NULL);
+	XtCallCallbacks(widget, XtNpopdownCallback, (XtPointer)NULL);
     }
 } /* XtPopdown */
 
 /* ARGSUSED */
 void XtCallbackPopdown(widget, closure, call_data)
     Widget  widget;
-    caddr_t closure;
-    caddr_t call_data;
+    XtPointer closure;
+    XtPointer call_data;
 {
     register XtPopdownID id = (XtPopdownID) closure;
 

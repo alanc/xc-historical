@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.5 88/09/06 16:29:00 jim Exp $ */
+/* $XConsortium: SelectionI.h,v 1.6 89/06/16 18:09:17 jim Exp $ */
 /* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -38,51 +38,51 @@ typedef void (*XtLoseSelectionIncrProc) ();
 	/* widget, selection, closure) */
 	/*	Widget	widget,*/
 	/*	Atom	*selection,*/
-	/*	Opaque	closure*/	/* selection owner specified */
+	/*	XtPointer closure*/	/* selection owner specified */
 
 typedef void (*XtSelectionDoneIncrProc) ();
-/* widget, selection, target, receiver_id, closure */
+/* widget, selection, target, request_id, closure */
 	/*	Widget	widget,*/
 	/*	Atom	*selection,*/
 	/*	Atom	*target,*/
-	/*	Opaque	receiver_id */
-	/*	Opaque	closure */
+	/*	XtRequestId request_id */
+	/*	XtPointer closure */
 
 typedef Boolean (*XtConvertSelectionIncrProc)();
  /* widget, selection, target, type, value, length,
-    format, max_length, closure, receiver_id */
+    format, max_length, closure, request_id */
 	/*	Widget	widget,*/
 	/*	Atom	*selection,*/
 	/*	Atom	*target,*/
 	/*	Atom	*type, */
-	/*	caddr_t	*value, */
+	/*	XtPointer	*value, */
 	/*	unsigned long	*length, */
 	/*	int	*format */	 
 	/*	unsigned long	max_length,*/
-	/*	Opaque	closure,*/
-	/*	Opaque	receiver_id,*/
+	/*	XtPointer	closure,*/
+	/*	XtRequestId	request_id,*/
 
 typedef void (*XtCancelSelectionCallbackProc)();
 /* widget, selection, target, closure */
 	/*	Widget	widget,*/
 	/*	Atom	*selection,*/
-	/*	Opaque	closure*/
+	/*	XtPointer	closure*/
 
 typedef void (*XtCancelConvertSelectionProc)();
 /* widget, selection, target, closure */
 	/*	Widget	widget,*/
 	/*	Atom	*selection,*/
 	/*	Atom	*target, */
-	/*	Opaque	receiver_id*/
-	/*	Opaque	closure*/
+	/*	XtRequestId	request_id*/
+	/*	XtPointer	closure*/
 
 typedef void (*XtSelectionIncrCallbackProc) ();
 /* widget, closure, selection, type, value, length, format */
 	/*	Widget	widget,*/
-	/*	Opaque	closure, */
+	/*	XtPointer	closure, */
 	/*	Atom	*selection,*/
 	/*	Atom	*type,*/
-	/*	caddr_t	value,*/
+	/*	XtPointer	value,*/
 	/*	unsigned long	*length,*/
 	/*	int	*format  */
 
@@ -97,7 +97,7 @@ typedef struct _IncrementalRec {
    Boolean incr_callback;
    XtConvertSelectionIncrProc convert;
    XtCancelSelectionCallbackProc owner_cancel;
-   Opaque owner_closure;
+   XtPointer owner_closure;
    char *value;
    int bytelength;
    int offset;
@@ -116,14 +116,14 @@ typedef struct {
     XtCancelSelectionCallbackProc owner_cancel;
     Incremental incrList;
     Boolean incremental;
-    Opaque owner_closure;
+    XtPointer owner_closure;
     Atom incremental_atom; 		/* constant */
     Atom indirect_atom; 		/* constant */
 } SelectRec, *Select;
 
 typedef struct {
     XtSelectionCallbackProc callback;
-    Opaque *req_closure;
+    XtPointer *req_closure;
     Atom property;
     Atom *target;
     XtIntervalId timeout;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.63 89/06/19 11:38:49 jim Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.64 89/06/30 15:06:41 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif /* lint */
 
@@ -278,7 +278,7 @@ static void IeCallProc(ptr)
 static void TeCallProc(ptr)
 	TimerEventRec *ptr;
 {
-	(* (ptr->te_proc))( ptr->te_closure, &ptr);
+	(* (ptr->te_proc))( ptr->te_closure, (XtIntervalId*)&ptr);
 }
 
 /*
@@ -288,7 +288,7 @@ static void TeCallProc(ptr)
 XtIntervalId XtAddTimeOut(interval, proc, closure)
 	unsigned long interval;
 	XtTimerCallbackProc proc;
-	caddr_t closure;
+	XtPointer closure;
 {
 	return XtAppAddTimeOut(_XtDefaultAppContext(), 
 		interval, proc, closure); 
@@ -299,7 +299,7 @@ XtIntervalId XtAppAddTimeOut(app, interval, proc, closure)
 	XtAppContext app;
 	unsigned long interval;
 	XtTimerCallbackProc proc;
-	caddr_t closure;
+	XtPointer closure;
 {
 	TimerEventRec *tptr;
         struct timeval current_time;
@@ -340,7 +340,7 @@ void  XtRemoveTimeOut(id)
 
 XtWorkProcId XtAddWorkProc(proc, closure)
 	XtWorkProc proc;
-	caddr_t closure;
+	XtPointer closure;
 {
 	return XtAppAddWorkProc(_XtDefaultAppContext(), proc, closure);
 }
@@ -348,7 +348,7 @@ XtWorkProcId XtAddWorkProc(proc, closure)
 XtWorkProcId XtAppAddWorkProc(app, proc, closure)
 	XtAppContext app;
 	XtWorkProc proc;
-	caddr_t closure;
+	XtPointer closure;
 {
 	WorkProcRec *wptr;
 
@@ -380,9 +380,9 @@ void  XtRemoveWorkProc(id)
 
 XtInputId XtAddInput( source, Condition, proc, closure)
 	int source;
-	caddr_t Condition;
+	XtPointer Condition;
 	XtInputCallbackProc proc;
-	caddr_t closure;
+	XtPointer closure;
 {
 	return XtAppAddInput(_XtDefaultAppContext(),
 		source, Condition, proc, closure);
@@ -391,9 +391,9 @@ XtInputId XtAddInput( source, Condition, proc, closure)
 XtInputId XtAppAddInput(app, source, Condition, proc, closure)
 	XtAppContext app;
 	int source;
-	caddr_t Condition;
+	XtPointer Condition;
 	XtInputCallbackProc proc;
-	caddr_t closure;
+	XtPointer closure;
 {
 	InputEvent *sptr;
 	XtInputMask condition = (XtInputMask) Condition;

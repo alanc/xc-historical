@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.61 89/07/21 12:06:45 swick Exp $";
+    "$XConsortium: Resources.c,v 1.62 89/09/11 17:43:26 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -50,7 +50,7 @@ void XtCopyFromParent(widget, offset, value)
         value->addr = NULL;
         return;
     }
-    value->addr = (caddr_t)((char*)widget->core.parent) + offset;
+    value->addr = ((XtPointer)widget->core.parent) + offset;
 } /* XtCopyFromParent */
 
 /*ARGSUSED*/
@@ -59,7 +59,7 @@ void XtCopyScreen(widget, offset, value)
     int		offset;
     XrmValue    *value;
 {
-    value->addr = (caddr_t)(&widget->core.screen);
+    value->addr = (XtPointer)(&widget->core.screen);
 } /* XtCopyScreen */
 
 /*ARGSUSED*/
@@ -68,7 +68,7 @@ void XtCopyDefaultColormap(widget, offset, value)
     int		offset;
     XrmValue    *value;
 {
-    value->addr = (caddr_t)(&DefaultColormapOfScreen(XtScreen(widget)));
+    value->addr = (XtPointer)(&DefaultColormapOfScreen(XtScreen(widget)));
 } /* XtCopyDefaultColormap */
 
 
@@ -82,7 +82,7 @@ void XtCopyAncestorSensitive(widget, offset, value)
 	   Widget   parent = widget->core.parent;
 
     sensitive = (parent->core.ancestor_sensitive & parent->core.sensitive);
-    value->addr = (caddr_t)(&sensitive);
+    value->addr = (XtPointer)(&sensitive);
 } /* XtCopyAncestorSensitive */
 
 /*ARGSUSED*/
@@ -91,7 +91,7 @@ void XtCopyDefaultDepth(widget, offset, value)
     int		offset;
     XrmValue    *value;
 {
-    value->addr = (caddr_t)(&DefaultDepthOfScreen(XtScreen(widget)));
+    value->addr = (XtPointer)(&DefaultDepthOfScreen(XtScreen(widget)));
 } /* XtCopyDefaultDepth */
 
 /* If the alignment characteristics of your machine are right, these may be
@@ -107,8 +107,8 @@ static void CopyFromArg(src, dst, size)
     if	    (size == sizeof(long))	*(long *)dst = (long)src;
     else if (size == sizeof(short))	*(short *)dst = (short)src;
     else if (size == sizeof(char))	*(char *)dst = (char)src;
+    else if (size == sizeof(XtPointer))	*(XtPointer *)dst = (XtPointer)src;
     else if (size == sizeof(char*))	*(char **)dst = (char*)src;
-    else if (size == sizeof(caddr_t))	*(caddr_t *)dst = (caddr_t)src;
     else if (size == sizeof(XtArgVal))	*(XtArgVal *)dst = src;
     else if (size > sizeof(XtArgVal))
 	bcopy((char *)  src, (char *) dst, (int) size);
@@ -128,8 +128,8 @@ static void CopyToArg(src, dst, size)
         if	(size == sizeof(long))	   *dst = (XtArgVal)*(long*)src;
 	else if (size == sizeof(short))    *dst = (XtArgVal)*(short*)src;
 	else if (size == sizeof(char))	   *dst = (XtArgVal)*(char*)src;
+	else if (size == sizeof(XtPointer)) *dst = (XtArgVal)*(XtPointer*)src;
 	else if (size == sizeof(char*))    *dst = (XtArgVal)*(char**)src;
-	else if (size == sizeof(caddr_t))  *dst = (XtArgVal)*(caddr_t*)src;
 	else if (size == sizeof(XtArgVal)) *dst = *(XtArgVal*)src;
 	else bcopy((char*)src, (char*)dst, (int)size);
     }
@@ -138,8 +138,8 @@ static void CopyToArg(src, dst, size)
 	if	(size == sizeof(long))	   *((long*)*dst) = *(long*)src;
 	else if (size == sizeof(short))    *((short*)*dst) = *(short*)src;
 	else if (size == sizeof(char))	   *((char*)*dst) = *(char*)src;
+	else if (size == sizeof(XtPointer)) *((XtPointer*)*dst) = *(XtPointer*)src;
 	else if (size == sizeof(char*))    *((char**)*dst) = *(char**)src;
-	else if (size == sizeof(caddr_t))  *((caddr_t*)*dst) = *(caddr_t*)src;
 	else if (size == sizeof(XtArgVal)) *((XtArgVal*)*dst)= *(XtArgVal*)src;
 	else bcopy((char*)src, (char*)*dst, (int)size);
     }
@@ -159,14 +159,14 @@ static void CopyFromArg(src, dst, size)
 	    short	shortval;
 	    char	charval;
 	    char*	charptr;
-	    caddr_t	ptr;
+	    XtPointer	ptr;
 	} u;
 	char *p = (char*)&u;
 	if	(size == sizeof(long))	    u.longval = (long)src;
 	else if (size == sizeof(short))	    u.shortval = (short)src;
 	else if (size == sizeof(char))	    u.charval = (char)src;
+	else if (size == sizeof(XtPointer)) u.ptr = (XtPointer)src;
 	else if (size == sizeof(char*))	    u.charptr = (char*)src;
-	else if (size == sizeof(caddr_t))   u.ptr = (caddr_t)src;
 	else				    p = (char*)&src;
 
 	bcopy(p, (char *) dst, (int) size);
@@ -187,7 +187,7 @@ static void CopyToArg(src, dst, size)
 	    short	shortval;
 	    char	charval;
 	    char*	charptr;
-	    caddr_t	ptr;
+	    XtPointer	ptr;
 	} u;
 	if (size <= sizeof(XtArgVal)) {
 	    bcopy( (char*)src, (char*)&u, (int)size );
@@ -195,7 +195,7 @@ static void CopyToArg(src, dst, size)
 	    else if (size == sizeof(short))	*dst = (XtArgVal)u.shortval;
 	    else if (size == sizeof(char))	*dst = (XtArgVal)u.charval;
 	    else if (size == sizeof(char*))	*dst = (XtArgVal)u.charptr;
-	    else if (size == sizeof(caddr_t))	*dst = (XtArgVal)u.ptr;
+	    else if (size == sizeof(XtPointer))	*dst = (XtArgVal)u.ptr;
 	    else bcopy( (char*)src, (char*)dst, (int)size );
 	}
 	else
@@ -376,7 +376,7 @@ void _XtResourceDependencies(wc)
     if (sc == NULL) {
 	_XtDependencies(&(wc->core_class.resources),
 			&(wc->core_class.num_resources),
-			(XrmResourceList *) NULL, 0, 0);
+			(XrmResourceList *) NULL, (unsigned)0, (unsigned)0);
     } else {
 	_XtDependencies(&(wc->core_class.resources),
 			&(wc->core_class.num_resources),
@@ -394,7 +394,7 @@ void _XtConstraintResDependencies(wc)
     if (wc == (ConstraintWidgetClass) constraintWidgetClass) {
 	_XtDependencies(&(wc->constraint_class.resources),
 			&(wc->constraint_class.num_resources),
-			(XrmResourceList *)NULL, 0, 0);
+			(XrmResourceList *)NULL, (unsigned)0, (unsigned)0);
     } else {
 	sc = (ConstraintWidgetClass) wc->core_class.superclass;
 	_XtDependencies(&(wc->constraint_class.resources),
@@ -424,7 +424,7 @@ static XrmResourceList* CreateIndirectionTable (resources, num_resources)
 static XtCacheRef *GetResources(widget, base, names, classes,
 	table, num_resources, quark_args, args, num_args)
     Widget	    widget;	    /* Widget resources are associated with */
-    caddr_t	    base;	    /* Base address of memory to write to   */
+    char*	    base;	    /* Base address of memory to write to   */
     XrmNameList     names;	    /* Full inheritance name of widget      */
     XrmClassList    classes;	    /* Full inheritance class of widget     */
     XrmResourceList*  table;	    /* The list of resources required.      */
@@ -494,7 +494,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		if (argName == rx->xrm_name) {
 		    CopyFromArg(
 			arg->value,
-			(char*) base - rx->xrm_offset - 1,
+			base - rx->xrm_offset - 1,
 			rx->xrm_size);
 		    found[j] = TRUE;
 		    break;
@@ -564,7 +564,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		    if (rawType != xrm_type) {
 			rawValue = *pv;
 			value.size = rx->xrm_size;
-			value.addr = base - rx->xrm_offset - 1;
+			value.addr = (XtPointer)(base - rx->xrm_offset - 1);
 			already_copied = have_value =
 			    _XtConvert(widget, rawType, &rawValue,
 				       xrm_type, &value,
@@ -584,21 +584,21 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		    } else if (xrm_default_type == QImmediate) {
 			if (rx->xrm_size == sizeof(int)) {
 			    int_val = (int)rx->xrm_default_addr;
-			    pv->addr = (caddr_t) &int_val;
+			    pv->addr = (XtPointer) &int_val;
 			} else if (rx->xrm_size == sizeof(short)) {
 			    short_val = (short)rx->xrm_default_addr;
-			    pv->addr = (caddr_t) &short_val;
+			    pv->addr = (XtPointer) &short_val;
 			} else if (rx->xrm_size == sizeof(char)) {
 			    char_val = (char)rx->xrm_default_addr;
-			    pv->addr = (caddr_t) &char_val;
+			    pv->addr = (XtPointer) &char_val;
 			} else if (rx->xrm_size == sizeof(long)) {
 			    long_val = (long)rx->xrm_default_addr;
-			    pv->addr = (caddr_t) &long_val;
+			    pv->addr = (XtPointer) &long_val;
 			} else if (rx->xrm_size == sizeof(char*)) {
 			    char_ptr = (char*)rx->xrm_default_addr;
-			    pv->addr = (caddr_t) &char_ptr;
+			    pv->addr = (XtPointer) &char_ptr;
 			} else {
-			    pv->addr = (caddr_t) &(rx->xrm_default_addr);
+			    pv->addr = (XtPointer) &(rx->xrm_default_addr);
 			}
 		    } else if (xrm_default_type == xrm_type) {
 			pv->addr = rx->xrm_default_addr;
@@ -607,10 +607,10 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 			if (xrm_default_type == QString) {
 			    rawValue.size = strlen((char *)rawValue.addr) + 1;
 			} else {
-			    rawValue.size = sizeof(caddr_t);
+			    rawValue.size = sizeof(XtPointer);
 			}
 			value.size = rx->xrm_size;
-			value.addr = base - rx->xrm_offset - 1;
+			value.addr = (XtPointer)(base - rx->xrm_offset - 1);
 			already_copied =
 			    _XtConvert(widget, xrm_default_type,
 				       &rawValue, xrm_type, &value,
@@ -622,7 +622,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		if (!already_copied) {
 		    if (pv->addr != NULL) {
 			if (xrm_type == QString) {
-			    *((char* *)(base - rx->xrm_offset - 1)) = pv->addr;
+			    *((String*)(base - rx->xrm_offset - 1)) = pv->addr;
 			} else {
 			    XtBCopy(pv->addr, base - rx->xrm_offset - 1,
 				    rx->xrm_size);
@@ -637,8 +637,8 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     }
     if (searchList != stackSearchList) XtFree((char*)searchList);
     if (cache_ref_size > 0) {
-	XtCacheRef *refs =
-	    (XtCacheRef*)XtMalloc(sizeof(XtCacheRef)*(cache_ref_size+1));
+	XtCacheRef *refs = (XtCacheRef*)
+	    XtMalloc((unsigned)sizeof(XtCacheRef)*(cache_ref_size + 1));
 	bcopy( cache_ref, refs, sizeof(XtCacheRef)*cache_ref_size );
 	refs[cache_ref_size] = NULL;
 	return refs;
@@ -701,12 +701,12 @@ XtCacheRef *_XtGetResources(w, args, num_args)
     /* Compile arg list into quarks */
     CacheArgs(args, num_args, quark_cache, XtNumber(quark_cache), &quark_args);
     /* Get normal resources */
-    cache_refs = GetResources(w, (caddr_t) w, names, classes,
+    cache_refs = GetResources(w, (char*)w, names, classes,
 	(XrmResourceList *) wc->core_class.resources,
 	wc->core_class.num_resources, quark_args, args, num_args);
     if (w->core.constraints != NULL) {
 	cwc = (ConstraintWidgetClass) XtClass(w->core.parent);
-	GetResources(w, w->core.constraints, names, classes,
+	GetResources(w, (char*)w->core.constraints, names, classes,
 	    (XrmResourceList *) cwc->constraint_class.resources,
 	    cwc->constraint_class.num_resources,
 	    quark_args, args, num_args);
@@ -719,7 +719,7 @@ XtCacheRef *_XtGetResources(w, args, num_args)
 void XtGetSubresources
 	(w, base, name, class, resources, num_resources, args, num_args)
     Widget	  w;		  /* Widget "parent" of subobject   */
-    caddr_t	  base;		  /* Base address to write to       */
+    XtPointer	  base;		  /* Base address to write to       */
     String	  name;		  /* name of subobject		    */
     String	  class;	  /* class of subobject		    */
     XtResourceList resources;	  /* resource list for subobject    */
@@ -751,7 +751,7 @@ void XtGetSubresources
 	XrmCompileResourceList(resources, num_resources);
     }
     table = CreateIndirectionTable(resources, num_resources); 
-    (void) GetResources(w, base, names, classes,
+    (void) GetResources(w, (char*)base, names, classes,
         table, num_resources, quark_args, args, num_args);
     FreeCache(quark_cache, quark_args);
     XtFree((char *)table);
@@ -761,7 +761,7 @@ void XtGetSubresources
 void XtGetApplicationResources
 	(w, base, resources, num_resources, args, num_args)
     Widget	    w;		  /* Application shell widget       */
-    caddr_t	    base;	  /* Base address to write to       */
+    XtPointer	    base;	  /* Base address to write to       */
     XtResourceList  resources;	  /* resource list for subobject    */
     Cardinal	    num_resources;
     ArgList	    args;	  /* arg list to override resources */
@@ -796,7 +796,7 @@ void XtGetApplicationResources
     }
     table = CreateIndirectionTable(resources,num_resources);
 
-    (void) GetResources(w, base, names, classes,
+    (void) GetResources(w, (char*)base, names, classes,
         table, num_resources, quark_args, args, num_args);
     FreeCache(quark_cache, quark_args);
     XtFree((char *)table);
@@ -804,7 +804,7 @@ void XtGetApplicationResources
 
 
 static void GetValues(base, res, num_resources, args, num_args)
-  caddr_t		base;		/* Base address to fetch values from */
+  char*			base;		/* Base address to fetch values from */
   XrmResourceList*      res;		/* The current resource values.      */
   register Cardinal	num_resources;	/* number of items in resources      */
   ArgList 		args;		/* The resource values requested     */
@@ -830,14 +830,14 @@ static void GetValues(base, res, num_resources, args, num_args)
 		     * It helps performance, too...
 		     */
 		    XtCallbackList callback = _XtGetCallbackList(
-			      (char*)base - (*xrmres)->xrm_offset - 1);
+			      base - (*xrmres)->xrm_offset - 1);
 		    CopyToArg(
 			      (char*)&callback, &arg->value,
 			      (*xrmres)->xrm_size);
 		}
 		else {
 		    CopyToArg(
-			      (char*) base - (*xrmres)->xrm_offset - 1,
+			      base - (*xrmres)->xrm_offset - 1,
 			      &arg->value,
 			      (*xrmres)->xrm_size);
 		}
@@ -878,14 +878,14 @@ void XtGetValues(w, args, num_args)
               (String *)NULL, (Cardinal *)NULL);
     }
     /* Get widget values */
-    GetValues((caddr_t) w, (XrmResourceList *) wc->core_class.resources,
+    GetValues((char*)w, (XrmResourceList *) wc->core_class.resources,
 	wc->core_class.num_resources, args, num_args);
 
     /* Get constraint values if necessary */
     if (w->core.constraints != NULL) {
 	ConstraintWidgetClass cwc;
 	cwc = (ConstraintWidgetClass) XtClass(w->core.parent);
-	GetValues(w->core.constraints, 
+	GetValues((char*)w->core.constraints, 
 	    (XrmResourceList *)(cwc->constraint_class.resources),
 	    cwc->constraint_class.num_resources, args, num_args);
     }
@@ -894,7 +894,7 @@ void XtGetValues(w, args, num_args)
 } /* XtGetValues */
 
 void XtGetSubvalues(base, resources, num_resources, args, num_args)
-  caddr_t	    base;           /* Base address to fetch values from */
+  XtPointer	    base;           /* Base address to fetch values from */
   XtResourceList    resources;      /* The current resource values.      */
   Cardinal	    num_resources;  /* number of items in resources      */
   ArgList	    args;           /* The resource values requested     */
@@ -902,14 +902,14 @@ void XtGetSubvalues(base, resources, num_resources, args, num_args)
 {
       XrmResourceList* xrmres;
       xrmres = CreateIndirectionTable(resources, num_resources);
-      GetValues(base, xrmres, num_resources, args, num_args);
+      GetValues((char*)base, xrmres, num_resources, args, num_args);
       XtFree((char *)xrmres);
 }
 
 
 static void SetValues(base, res, num_resources, args, num_args)
-  caddr_t		base;		/* Base address to write values to   */
-  XrmResourceList* res;			/* The current resource values.      */
+  char*			base;		/* Base address to write values to   */
+  XrmResourceList*	res;		/* The current resource values.      */
   register Cardinal	num_resources;	/* number of items in resources      */
   ArgList 		args;		/* The resource values to set        */
   Cardinal		num_args;	/* number of items in arg list       */
@@ -927,7 +927,7 @@ static void SetValues(base, res, num_resources, args, num_args)
 	for (xrmres = res, i = 0; i < num_resources; i++, xrmres++) {
 	    if (argName == (*xrmres)->xrm_name) {
 		CopyFromArg(arg->value,
-		    (char*) base - (*xrmres)->xrm_offset - 1,
+		    base - (*xrmres)->xrm_offset - 1,
 		    (*xrmres)->xrm_size);
 		break;
 	    }
@@ -977,7 +977,7 @@ static Boolean CallConstraintSetValues (class, current, request, new)
 }
 
 void XtSetSubvalues(base, resources, num_resources, args, num_args)
-  caddr_t               base;           /* Base address to write values to   */
+  XtPointer             base;           /* Base address to write values to   */
   register XtResourceList resources;    /* The current resource values.      */
   register Cardinal     num_resources;  /* number of items in resources      */
   ArgList               args;           /* The resource values to set        */
@@ -985,7 +985,7 @@ void XtSetSubvalues(base, resources, num_resources, args, num_args)
 {
       register XrmResourceList*   xrmres;
       xrmres = CreateIndirectionTable (resources, num_resources);
-      SetValues(base,xrmres,num_resources, args, num_args);
+      SetValues((char*)base,xrmres,num_resources, args, num_args);
       XtFree((char *)xrmres);
 }
 
@@ -1024,7 +1024,7 @@ void XtSetValues(w, args, num_args)
 
     /* Set resource values */
 
-    SetValues((caddr_t) w, (XrmResourceList *) wc->core_class.resources,
+    SetValues((char*)w, (XrmResourceList *) wc->core_class.resources,
 	wc->core_class.num_resources, args, num_args);
 
     bcopy ((char *) w, (char *) reqw, (int) widgetSize);
@@ -1033,15 +1033,13 @@ void XtSetValues(w, args, num_args)
 	/* Allocate and copy current constraints into oldw */
 	cwc = (ConstraintWidgetClass) XtClass(w->core.parent);
 	constraintSize = cwc->constraint_class.constraint_size;
-	oldw->core.constraints =
-	    (caddr_t) XtStackAlloc(constraintSize, oldcCache);
-	reqw->core.constraints =
-	    (caddr_t) XtStackAlloc(constraintSize, reqcCache);
+	oldw->core.constraints = XtStackAlloc(constraintSize, oldcCache);
+	reqw->core.constraints = XtStackAlloc(constraintSize, reqcCache);
 	bcopy((char *) w->core.constraints, 
 		(char *) oldw->core.constraints, (int) constraintSize);
 
 	/* Set constraint values */
-	SetValues(w->core.constraints,
+	SetValues((char*)w->core.constraints,
 	    (XrmResourceList *)(cwc->constraint_class.resources),
 	    cwc->constraint_class.num_resources, args, num_args);
 	bcopy((char *) w->core.constraints,
@@ -1155,12 +1153,12 @@ void XtSetValues(w, args, num_args)
 
     /* Free dynamic storage */
     if (w->core.constraints != NULL) {
-        XtStackFree((char *) oldw->core.constraints, oldcCache);
-        XtStackFree((char *) reqw->core.constraints,
+        XtStackFree(oldw->core.constraints, oldcCache);
+        XtStackFree(reqw->core.constraints,
         reqcCache);
     }
-    XtStackFree((char *) oldw, oldwCache);
-    XtStackFree((char *) reqw, reqwCache);
+    XtStackFree((XtPointer)oldw, oldwCache);
+    XtStackFree((XtPointer)reqw, reqwCache);
 
 } /* XtSetValues */
  

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicI.h,v 1.31 89/09/08 17:36:21 swick Exp $
+* $XConsortium: IntrinsicI.h,v 1.32 89/09/11 17:42:52 swick Exp $
 * $oHeader: IntrinsicI.h,v 1.5 88/08/31 16:21:08 asente Exp $
 */
 
@@ -102,11 +102,11 @@ extern int bcmp();
 
 #define XtStackAlloc(size, stack_cache_array)     \
     (size <= sizeof(stack_cache_array)		  \
-    ?  stack_cache_array			  \
+    ?  (XtPointer)stack_cache_array		  \
     :  XtMalloc((unsigned) size))
 
 #define XtStackFree(pointer, stack_cache_array) \
-    if ((pointer) != (stack_cache_array)) XtFree(pointer)
+    if ((pointer) != ((XtPointer)stack_cache_array)) XtFree(pointer); else
 
 /***************************************************************
  *

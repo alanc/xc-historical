@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Composite.c,v 1.10 89/06/16 19:34:02 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Composite.c,v 1.11 89/09/08 17:45:12 swick Exp $";
 /* $oHeader: Composite.c,v 1.2 88/08/18 15:35:39 asente Exp $ */
 #endif /* lint */
 
@@ -94,10 +94,17 @@ void CompositeClassPartInitialize(widgetClass)
     register CompositePartPtr wcPtr;
     register CompositePartPtr superPtr;
 
-    wcPtr =  (CompositePartPtr)&(((CompositeWidgetClass)widgetClass)
-                           ->composite_class);
-    superPtr = (CompositePartPtr)&(((CompositeWidgetClass)widgetClass
-            ->core_class.superclass)->composite_class);
+    wcPtr = (CompositePartPtr)
+	&(((CompositeWidgetClass)widgetClass)->composite_class);
+
+    if (widgetClass != compositeWidgetClass)
+	/* don't compute possible bogus pointer */
+	superPtr = (CompositePartPtr)&(((CompositeWidgetClass)widgetClass
+			->core_class.superclass)->composite_class);
+#ifdef lint
+    else
+	superPtr = NULL;
+#endif
 
     /* We don't need to check for null super since we'll get to composite
        eventually, and it had better define them!  */
@@ -149,7 +156,7 @@ void CompositeInsertChild(w)
 	/* Allocate more space */
 	cw->composite.num_slots +=  (cw->composite.num_slots / 2) + 2;
 	cw->composite.children = children = 
-	    (WidgetList) XtRealloc((caddr_t) children,
+	    (WidgetList) XtRealloc((XtPointer) children,
 	    (unsigned) (cw->composite.num_slots) * sizeof(Widget));
     }
     /* Ripple children up one space from "position" */

@@ -1,4 +1,4 @@
-/* $XConsortium: CompositeP.h,v 1.8 88/09/06 16:27:14 jim Exp $ */
+/* $XConsortium: CompositeP.h,v 1.9 89/06/16 18:08:55 jim Exp $ */
 /* $oHeader: CompositeP.h,v 1.2 88/08/18 15:54:11 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -59,7 +59,7 @@ typedef struct _CompositeClassPart {
     XtWidgetProc      change_managed;	  /* change managed state of child   */
     XtWidgetProc      insert_child;	  /* physically add child to parent  */
     XtWidgetProc      delete_child;	  /* physically remove child	     */
-    caddr_t	    extension;		/* pointer to extension record      */
+    XtPointer	    extension;		/* pointer to extension record      */
 } CompositeClassPart,*CompositePartPtr;
 
 typedef struct _CompositeClassRec {

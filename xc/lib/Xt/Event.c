@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.92 89/06/02 10:18:15 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.93 89/06/16 19:34:33 jim Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -31,8 +31,10 @@ SOFTWARE.
 #include "Shell.h"
 #include "StringDefs.h"
 
+#ifdef notdef
 static XtAsyncHandler asyncHandler = NULL;
-static caddr_t asyncClosure = NULL;
+static XtPointer asyncClosure = NULL;
+#endif
 
 static GrabList grabList;	/* %%% should this be in the AppContext? */
 static GrabList focusList;	/* %%% should this be in the AppContext? */
@@ -65,7 +67,7 @@ static void RemoveEventHandler(widget, eventMask, other, proc, closure, raw,
     EventMask   eventMask;
     Boolean	other;
     XtEventHandler proc;
-    caddr_t	closure;
+    XtPointer	closure;
     Boolean	raw;
     Boolean	check_closure;
 {
@@ -118,7 +120,7 @@ static void AddEventHandler(widget, eventMask, other, proc, closure, raw,
     EventMask   eventMask;
     Boolean         other;
     XtEventHandler  proc;
-    caddr_t	closure;
+    XtPointer	closure;
     Boolean	raw;
     Boolean	check_closure;
 {
@@ -182,7 +184,7 @@ void XtRemoveEventHandler(widget, eventMask, other, proc, closure)
     EventMask   eventMask;
     Boolean	other;
     XtEventHandler proc;
-    caddr_t	closure;
+    XtPointer	closure;
 {
     RemoveEventHandler(widget, eventMask, other, proc, closure, FALSE, TRUE);
 }
@@ -193,7 +195,7 @@ void XtAddEventHandler(widget, eventMask, other, proc, closure)
     EventMask   eventMask;
     Boolean         other;
     XtEventHandler  proc;
-    caddr_t	closure;
+    XtPointer	closure;
 {
     AddEventHandler(widget, eventMask, other, proc, closure, FALSE, TRUE);
 }
@@ -204,7 +206,7 @@ void XtRemoveRawEventHandler(widget, eventMask, other, proc, closure)
     EventMask   eventMask;
     Boolean	other;
     XtEventHandler proc;
-    caddr_t	closure;
+    XtPointer	closure;
 {
     RemoveEventHandler(widget, eventMask, other, proc, closure, TRUE, TRUE);
 }
@@ -215,7 +217,7 @@ void XtAddRawEventHandler(widget, eventMask, other, proc, closure)
     EventMask   eventMask;
     Boolean         other;
     XtEventHandler  proc;
-    caddr_t	closure;
+    XtPointer	closure;
 {
     AddEventHandler(widget, eventMask, other, proc, closure, TRUE, TRUE);
 }
@@ -366,7 +368,7 @@ static void DispatchEvent(event, widget, mask)
 {
     XtEventRec *p;   
     XtEventHandler proc[100];
-    caddr_t closure[100];
+    XtPointer closure[100];
     int numprocs, i;
     XEvent nextEvent;
 
@@ -722,7 +724,7 @@ void XtDispatchEvent (event)
     while (destroyList != NULL) {
 	CallbackList newList = NULL;
 	_XtDestroyList = &newList;
-	_XtCallCallbacks (&destroyList, (caddr_t) NULL);
+	_XtCallCallbacks (&destroyList, (XtPointer) NULL);
 	_XtRemoveAllCallbacks (&destroyList);
 	destroyList = newList;
     }
@@ -740,8 +742,8 @@ static Boolean RemoveGrab();
 /* ARGSUSED */
 static void GrabDestroyCallback(widget, closure, call_data)
     Widget  widget;
-    caddr_t closure;
-    caddr_t call_data;
+    XtPointer closure;
+    XtPointer call_data;
 {
     /* Remove widget from grab list if it destroyed */
     (void)RemoveGrab(widget, False);
@@ -750,8 +752,8 @@ static void GrabDestroyCallback(widget, closure, call_data)
 /* ARGSUSED */
 static void FocusDestroyCallback(widget, closure, call_data)
     Widget  widget;
-    caddr_t closure;		/* Widget */
-    caddr_t call_data;
+    XtPointer closure;		/* Widget */
+    XtPointer call_data;
 {
     /* Remove widget from grab list if it destroyed */
     (void)RemoveGrab((Widget)closure, True);
@@ -795,7 +797,7 @@ void XtAddGrab(widget, exclusive, spring_loaded)
     grabList = gl;
 
     XtAddCallback (widget, XtNdestroyCallback, 
-	    GrabDestroyCallback, (caddr_t) NULL);
+	    GrabDestroyCallback, (XtPointer) NULL);
 }
 
 /* add a focus record to the list, or replace the focus widget in an
@@ -836,7 +838,7 @@ static Boolean InsertFocusEntry(widget, keyboard_focus)
     ge->next = gl;
 
     XtAddCallback(keyboard_focus, XtNdestroyCallback,
-	    FocusDestroyCallback, (caddr_t)widget);
+	    FocusDestroyCallback, (XtPointer)widget);
 
     return True;
 }
@@ -873,7 +875,7 @@ static Boolean RemoveGrab(widget, keyboard_focus)
 	if (gl == focusList) focusList = gl->next;
 	else prev->next = gl->next;
 	XtRemoveCallback(gl->keyboard_focus, XtNdestroyCallback,
-		FocusDestroyCallback, widget);
+		FocusDestroyCallback, (XtPointer)widget);
 	XtFree((char *)gl);
 	focusTraceGood = False;	/* invalidate the cache */
 	return True;
@@ -884,7 +886,7 @@ static Boolean RemoveGrab(widget, keyboard_focus)
 	done = (gl->widget == widget);
 	grabList = gl->next;
 	XtRemoveCallback(gl->widget, XtNdestroyCallback,
-		GrabDestroyCallback, (caddr_t)NULL);
+		GrabDestroyCallback, (XtPointer)NULL);
 	XtFree((char *)gl);
     } while (! done);
     return True;
@@ -962,10 +964,10 @@ void _XtFreeEventTable(event_table)
     }
 }
 
-
+#ifdef notdef
 /*ARGSUSED*/
 void _XtAsyncMainLoop(closure)
-    caddr_t closure;
+    XtPointer closure;
 {
     XEvent event;
 
@@ -975,13 +977,13 @@ void _XtAsyncMainLoop(closure)
 }
 
 void XtMakeToolkitAsync() {
-    XtSetAsyncEventHandler(_XtAsyncMainLoop, (caddr_t) NULL);
+    XtSetAsyncEventHandler(_XtAsyncMainLoop, (XtPointer) NULL);
 }
 
 
 void XtSetAsyncEventHandler(handler, closure)
     XtAsyncHandler handler;
-    caddr_t closure;
+    XtPointer closure;
 {
     asyncHandler = handler;
     asyncClosure = closure;
@@ -991,7 +993,6 @@ void XtSetAsyncEventHandler(handler, closure)
 extern void _XtRegisterAsyncHandlers(widget)
     Widget widget;
 {
-#ifdef notdef
     EventMask mask;
 
     if (asyncHandler == NULL) return;
@@ -1001,15 +1002,15 @@ extern void _XtRegisterAsyncHandlers(widget)
     XSelectAsyncInput(
 	XtDisplay(widget), XtWindow(widget), mask,
 	asyncHandler, (unsigned long)XtDisplay(widget));
-#endif /*notdef*/
 }
+#endif /*notdef*/
 
 /* Stuff for XtSetKeyboardFocus */
 
 /* ARGSUSED */
 static void ForwardEvent(widget, client_data, event)
     Widget widget;
-    caddr_t client_data;
+    XtPointer client_data;
     XEvent *event;
 {
     /* this shouldn't have been necessary, as the keyboard grab will cause
@@ -1027,7 +1028,7 @@ static void ForwardEvent(widget, client_data, event)
 /* ARGSUSED */
 static void HandleFocus(widget, client_data, event)
     Widget widget;
-    caddr_t client_data;	/* child who wants focus */
+    XtPointer client_data;	/* child who wants focus */
     XEvent *event;
 {
     Boolean add;
@@ -1080,7 +1081,7 @@ static void AddForwardingHandler(w, descendant)
 	Boolean have_focus = False;
 	register GrabRec *gl;
 	AddEventHandler(w, eventMask, False, 
-		ForwardEvent, (caddr_t)descendant, FALSE, FALSE);
+		ForwardEvent, (XtPointer)descendant, FALSE, FALSE);
 	/* if we already have the focus, we'll have to change the target */
 	for (gl = focusList; gl != NULL; gl = gl->next) {
 	    if (gl->widget == w) {
@@ -1123,7 +1124,7 @@ static void AddForwardingHandler(w, descendant)
 /* ARGSUSED */
 static void QueryEventMask(widget, client_data, event)
     Widget widget;		/* child who gets focus */
-    caddr_t client_data;	/* ancestor giving it */
+    XtPointer client_data;	/* ancestor giving it */
     XEvent *event;
 {
     if (event->type == MapNotify) {
@@ -1131,7 +1132,7 @@ static void QueryEventMask(widget, client_data, event)
 	register XtEventRec* p = ((Widget)client_data)->core.event_table;
 	register XtEventHandler proc = HandleFocus; /* compiler bug */
 	while (p != NULL && p->proc != proc) p = p->next;
-	if (p != NULL && p->closure == (caddr_t)widget)
+	if (p != NULL && p->closure == (XtPointer)widget)
 	    AddForwardingHandler((Widget) client_data, widget);
 	RemoveEventHandler(widget, XtAllEvents, True,
 			   QueryEventMask, client_data, FALSE, FALSE);
@@ -1171,14 +1172,14 @@ void XtSetKeyboardFocus(widget, descendant)
 	mask |= EnterWindowMask | LeaveWindowMask;
     }
 
-    AddEventHandler(widget, mask, False, HandleFocus, (caddr_t)descendant,
+    AddEventHandler(widget, mask, False, HandleFocus, (XtPointer)descendant,
 		    FALSE, FALSE);
 
     /* If his translations aren't installed, we'll have to wait 'till later */
 
     if (XtIsRealized(descendant)) AddForwardingHandler(widget, descendant);
     else AddEventHandler(descendant, (EventMask)StructureNotifyMask, False,
-		QueryEventMask, (caddr_t)widget, FALSE, FALSE);
+		QueryEventMask, (XtPointer)widget, FALSE, FALSE);
 }
 
 static SendFocusNotify(child, type)

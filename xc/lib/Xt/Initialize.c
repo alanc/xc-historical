@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.134 89/06/19 14:02:34 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.135 89/08/23 19:02:33 jim Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -64,29 +64,29 @@ SOFTWARE.
 */
 
 static XrmOptionDescRec opTable[] = {
-{"+rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "off"},
-{"+synchronous","*synchronous",	XrmoptionNoArg,		(caddr_t) "off"},
-{"-background",	"*background",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bd",		"*borderColor",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bg",		"*background",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bordercolor","*borderColor",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-borderwidth",".borderWidth",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bw",		".borderWidth",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-display",	".display",     XrmoptionSepArg,	(caddr_t) NULL},
-{"-fg",		"*foreground",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-fn",		"*font",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-font",	"*font",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-foreground",	"*foreground",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-geometry",	".geometry",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-iconic",	".iconic",	XrmoptionNoArg,		(caddr_t) "on"},
-{"-name",	".name",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-reverse",	"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
-{"-rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
+{"+rv",		"*reverseVideo", XrmoptionNoArg,	(XtPointer) "off"},
+{"+synchronous","*synchronous",	XrmoptionNoArg,		(XtPointer) "off"},
+{"-background",	"*background",	XrmoptionSepArg,	(XtPointer) NULL},
+{"-bd",		"*borderColor",	XrmoptionSepArg,	(XtPointer) NULL},
+{"-bg",		"*background",	XrmoptionSepArg,	(XtPointer) NULL},
+{"-bordercolor","*borderColor",	XrmoptionSepArg,	(XtPointer) NULL},
+{"-borderwidth",".borderWidth",	XrmoptionSepArg,	(XtPointer) NULL},
+{"-bw",		".borderWidth",	XrmoptionSepArg,	(XtPointer) NULL},
+{"-display",	".display",     XrmoptionSepArg,	(XtPointer) NULL},
+{"-fg",		"*foreground",	XrmoptionSepArg,	(XtPointer) NULL},
+{"-fn",		"*font",	XrmoptionSepArg,	(XtPointer) NULL},
+{"-font",	"*font",	XrmoptionSepArg,	(XtPointer) NULL},
+{"-foreground",	"*foreground",	XrmoptionSepArg,	(XtPointer) NULL},
+{"-geometry",	".geometry",	XrmoptionSepArg,	(XtPointer) NULL},
+{"-iconic",	".iconic",	XrmoptionNoArg,		(XtPointer) "on"},
+{"-name",	".name",	XrmoptionSepArg,	(XtPointer) NULL},
+{"-reverse",	"*reverseVideo", XrmoptionNoArg,	(XtPointer) "on"},
+{"-rv",		"*reverseVideo", XrmoptionNoArg,	(XtPointer) "on"},
 {"-selectionTimeout",
-		".selectionTimeout", XrmoptionSepArg,	(caddr_t) NULL},
-{"-synchronous","*synchronous",	XrmoptionNoArg,		(caddr_t) "on"},
-{"-title",	".title",	XrmoptionSepArg,	(caddr_t) NULL},
-{"-xrm",	NULL,		XrmoptionResArg,	(caddr_t) NULL},
+		".selectionTimeout", XrmoptionSepArg,	(XtPointer) NULL},
+{"-synchronous","*synchronous",	XrmoptionNoArg,		(XtPointer) "on"},
+{"-title",	".title",	XrmoptionSepArg,	(XtPointer) NULL},
+{"-xrm",	NULL,		XrmoptionResArg,	(XtPointer) NULL},
 };
 
 
@@ -249,8 +249,7 @@ static XrmDatabase GetUserDefaults(dpy)
 	return rdb;
 }
 
-static XrmDatabase GetEnvironmentDefaults(dpy)
-	Display *dpy;
+static XrmDatabase GetEnvironmentDefaults()
 {
 	XrmDatabase rdb;
 	extern char *getenv();
@@ -292,7 +291,7 @@ static void GetInitialResourceDatabase(dpy, classname)
 	rdb = GetUserDefaults(dpy);
 	if (rdb != NULL) XrmMergeDatabases(rdb, &(dpy->db));
 
-	rdb = GetEnvironmentDefaults(dpy);
+	rdb = GetEnvironmentDefaults();
 	if (rdb != NULL) XrmMergeDatabases(rdb, &(dpy->db));
 }
 
@@ -470,6 +469,7 @@ void _XtDisplayInitialize(dpy, app, name, classname, urlist, num_urs, argc, argv
 #define XtInitialize _XtInitialize
 #endif
 
+/*ARGSUSED*/
 Widget XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	char *name;		/* unused in R3 */
 	char *classname;

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ShellP.h,v 1.21 89/03/16 16:45:13 swick Exp $
+* $XConsortium: ShellP.h,v 1.22 89/06/16 18:09:22 jim Exp $
 * $oHeader: ShellP.h,v 1.2 88/08/18 15:56:19 asente Exp $
 */
 
@@ -54,7 +54,7 @@ SOFTWARE.
 /* New fields for the Shell widget class record */
 
 typedef struct {
-    caddr_t         extension;          /* pointer to extension record      */
+    XtPointer       extension;          /* pointer to extension record      */
 } ShellClassPart;
 
 typedef struct _ShellClassRec {
@@ -99,7 +99,7 @@ typedef  struct {
 /* New fields for the OverrideShell widget class record */
 
 typedef struct {
-    caddr_t         extension;          /* pointer to extension record      */
+    XtPointer       extension;          /* pointer to extension record      */
 } OverrideShellClassPart;
 
 typedef struct _OverrideShellClassRec {
@@ -131,7 +131,7 @@ typedef  struct {
 /* New fields for the WMShell widget class record */
 
 typedef struct {
-    caddr_t         extension;          /* pointer to extension record      */
+    XtPointer       extension;          /* pointer to extension record      */
 } WMShellClassPart;
 
 typedef struct _WMShellClassRec {
@@ -173,7 +173,7 @@ typedef  struct {
 /* New fields for the TransientShell widget class record */
 
 typedef struct {
-    caddr_t         extension;          /* pointer to extension record      */
+    XtPointer       extension;          /* pointer to extension record      */
 } TransientShellClassPart;
 
 typedef struct _TransientShellClassRec {
@@ -209,7 +209,7 @@ typedef  struct {
 /* New fields for the TopLevelShell widget class record */
 
 typedef struct {
-    caddr_t         extension;          /* pointer to extension record      */
+    XtPointer       extension;          /* pointer to extension record      */
 } TopLevelShellClassPart;
 
 typedef struct _TopLevelShellClassRec {
@@ -248,7 +248,7 @@ typedef  struct {
 /* New fields for the ApplicationShell widget class record */
 
 typedef struct {
-    caddr_t         extension;          /* pointer to extension record      */
+    XtPointer       extension;          /* pointer to extension record      */
 } ApplicationShellClassPart;
 
 typedef struct _ApplicationShellClassRec {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.74 89/07/21 12:02:35 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.75 89/09/11 17:43:37 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -576,7 +576,7 @@ static unsigned long GetTime(tm, event)
 /* ARGSUSED */
 static void _XtTranslateEvent (w, closure, event)
     Widget w;
-    caddr_t closure;
+    XtPointer closure;
     register    XEvent * event;
 {
     register XtTranslations stateTable = ((XtTM)closure)->translations;
@@ -917,7 +917,7 @@ void _XtInstallTranslations(widget, stateTable)
 
     XtAddEventHandler(
         widget, eventMask, nonMaskable,
-             _XtTranslateEvent, (caddr_t)&widget->core.tm);
+             _XtTranslateEvent, (XtPointer)&widget->core.tm);
 
 }
 
@@ -925,7 +925,7 @@ void XtUninstallTranslations(widget)
     Widget widget;
 {
     XtRemoveEventHandler(widget,(EventMask)~0L,TRUE,_XtTranslateEvent,
-                     (caddr_t)&widget->core.tm);
+                     (XtPointer)&widget->core.tm);
     widget->core.tm.translations = NULL;
     if (widget->core.tm.proc_table != NULL)
         XtFree((char *)widget->core.tm.proc_table);
@@ -1481,7 +1481,7 @@ Boolean _XtCvtMergeTranslations(dpy, args, num_args, from, to, closure_ret)
     XrmValuePtr args;
     Cardinal    *num_args;
     XrmValuePtr from,to;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     XtTranslations old, new, merged;
     TMkind operation;
@@ -1511,7 +1511,7 @@ Boolean _XtCvtMergeTranslations(dpy, args, num_args, from, to, closure_ret)
     else {
 	static XtTranslations staticStateTable;
 	staticStateTable = merged;
-	to->addr= (caddr_t)&staticStateTable;
+	to->addr= (XtPointer)&staticStateTable;
 	to->size = sizeof(XtTranslations);
     }
     return True;
@@ -1528,12 +1528,12 @@ void XtOverrideTranslations(widget, new)
     TMConvertRec foo;
     XtTranslations newTable;
     XtCacheRef cache_ref;
-    from.addr = (caddr_t)&foo;
+    from.addr = (XtPointer)&foo;
     from.size = sizeof(TMConvertRec);
     foo.old = widget->core.tm.translations;
     foo.new = new;
     foo.operation = override;
-    to.addr = (caddr_t)&newTable;
+    to.addr = (XtPointer)&newTable;
     to.size = sizeof(XtTranslations);
     if ( ! XtCallConverter( XtDisplay(widget), _XtCvtMergeTranslations,
 			    (XrmValuePtr)NULL, (Cardinal)0, &from, &to,
@@ -1558,7 +1558,7 @@ void XtOverrideTranslations(widget, new)
 void _XtFreeTranslations(app, toVal, closure, args, num_args)
     XtAppContext app;
     XrmValuePtr	toVal;
-    caddr_t	closure;
+    XtPointer	closure;
     XrmValuePtr	args;
     Cardinal	*num_args;
 {
@@ -1602,7 +1602,7 @@ void _XtFreeTranslations(app, toVal, closure, args, num_args)
 /* ARGSUSED */
 static void RemoveAccelerators(widget,closure,data)
     Widget widget;
-    caddr_t closure,data;
+    XtPointer closure, data;
 {
     int i;
     XtTranslations table = (XtTranslations)closure;
@@ -1667,7 +1667,7 @@ void XtInstallAccelerators(destination,source)
         _XtInstallTranslations(destination,
              destination->core.tm.translations);
     XtAddCallback(source, XtNdestroyCallback,
-        RemoveAccelerators,(caddr_t)destination->core.tm.translations);
+        RemoveAccelerators,(XtPointer)destination->core.tm.translations);
     if (XtClass(source)->core_class.display_accelerator != NULL){
 	 char *buf = XtMalloc((Cardinal)100);
 	 int len = 100;
@@ -1719,12 +1719,12 @@ void XtAugmentTranslations(widget, new)
     TMConvertRec foo;
     XtTranslations newTable;
     XtCacheRef cache_ref;
-    from.addr = (caddr_t)&foo;
+    from.addr = (XtPointer)&foo;
     from.size = sizeof(TMConvertRec);
     foo.old = widget->core.tm.translations;
     foo.new = new;
     foo.operation = augment;
-    to.addr = (caddr_t)&newTable;
+    to.addr = (XtPointer)&newTable;
     to.size = sizeof(XtTranslations);
     if ( ! XtCallConverter( XtDisplay(widget), _XtCvtMergeTranslations,
 			    (XrmValue*)NULL, (Cardinal)0, &from, &to,

@@ -1,4 +1,4 @@
-/* $XConsortium: ConstrainP.h,v 1.10 88/09/06 16:27:16 jim Exp $ */
+/* $XConsortium: ConstrainP.h,v 1.11 89/06/16 18:08:56 jim Exp $ */
 /* $oHeader: ConstrainP.h,v 1.2 88/08/18 15:54:15 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -29,7 +29,7 @@ SOFTWARE.
 
 
 typedef struct _ConstraintPart {
-    caddr_t     mumble;		/* No new fields, keep C compiler happy */
+    XtPointer   mumble;		/* No new fields, keep C compiler happy */
 } ConstraintPart;
 
 typedef struct _ConstraintRec {
@@ -45,7 +45,7 @@ typedef struct _ConstraintClassPart {
     XtInitProc initialize;            /* constraint initialization           */
     XtWidgetProc destroy;             /* constraint destroy proc             */
     XtSetValuesFunc set_values;       /* constraint set_values proc          */
-    caddr_t	    extension;		/* pointer to extension record      */
+    XtPointer	    extension;		/* pointer to extension record      */
 } ConstraintClassPart;
 
 typedef struct _ConstraintClassRec {

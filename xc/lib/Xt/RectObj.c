@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: RectObj.c,v 1.8 89/06/16 19:35:09 jim Exp $";
+static char Xrcsid[] = "$XConsortium: RectObj.c,v 1.9 89/09/11 17:43:23 swick Exp $";
 /* $oHeader: RectObj.c,v 1.2 88/08/18 15:51:21 asente Exp $ */
 #endif /* lint */
 
@@ -41,19 +41,19 @@ static XtResource resources[] = {
 
     {XtNancestorSensitive, XtCSensitive, XtRBoolean, sizeof(Boolean),
       XtOffset(RectObj,rectangle.ancestor_sensitive),XtRCallProc,
-      (caddr_t)XtCopyAncestorSensitive},
+      (XtPointer)XtCopyAncestorSensitive},
     {XtNx, XtCPosition, XtRPosition, sizeof(Position),
-         XtOffset(RectObj,rectangle.x), XtRImmediate, (caddr_t) 0},
+         XtOffset(RectObj,rectangle.x), XtRImmediate, (XtPointer)0},
     {XtNy, XtCPosition, XtRPosition, sizeof(Position),
-         XtOffset(RectObj,rectangle.y), XtRImmediate, (caddr_t) 0},
+         XtOffset(RectObj,rectangle.y), XtRImmediate, (XtPointer)0},
     {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-         XtOffset(RectObj,rectangle.width), XtRImmediate, (caddr_t) 0},
+         XtOffset(RectObj,rectangle.width), XtRImmediate, (XtPointer)0},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-         XtOffset(RectObj,rectangle.height), XtRImmediate, (caddr_t) 0},
+         XtOffset(RectObj,rectangle.height), XtRImmediate, (XtPointer)0},
     {XtNborderWidth, XtCBorderWidth, XtRDimension, sizeof(Dimension),
-         XtOffset(RectObj,rectangle.border_width), XtRImmediate, (caddr_t) 1},
+         XtOffset(RectObj,rectangle.border_width), XtRImmediate, (XtPointer)1},
     {XtNsensitive, XtCSensitive, XtRBoolean, sizeof(Boolean),
-         XtOffset(RectObj,rectangle.sensitive), XtRImmediate, (caddr_t) True}
+         XtOffset(RectObj,rectangle.sensitive), XtRImmediate, (XtPointer)True}
     };
 
 static void RectObjInitialize();
@@ -110,11 +110,6 @@ static void RectClassPartInitialize(wc)
 {
     register RectObjClass roc = (RectObjClass)wc;
     register RectObjClass super = ((RectObjClass)roc->rect_class.superclass);
-#ifdef lint
-    /* ||| GROSS!!! do the right thing after .h split!!! */
-    extern void  XrmCompileResourceList();
-    extern Opaque _CompileActionTable();
-#endif
 
     /* We don't need to check for null super since we'll get to object
        eventually, and it had better define them!  */

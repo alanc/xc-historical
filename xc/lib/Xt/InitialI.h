@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.14 89/07/21 16:06:45 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.15 89/07/21 17:07:51 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -47,26 +47,26 @@ SOFTWARE.
 #include "fd.h"
 
 typedef struct _TimerEventRec {
-        struct timeval   te_timer_value;
+        struct timeval        te_timer_value;
 	struct _TimerEventRec *te_next;
-	Display *te_dpy;
-	XtTimerCallbackProc	te_proc;
-	XtAppContext app;
-	caddr_t	te_closure;
+	Display		      *te_dpy;
+	XtTimerCallbackProc   te_proc;
+	XtAppContext	      app;
+	XtPointer	      te_closure;
 } TimerEventRec;
 
 typedef struct _InputEvent {
-	XtInputCallbackProc  ie_proc;
-	caddr_t ie_closure;
-	struct	_InputEvent	*ie_next;
-	struct  _InputEvent	*ie_oq;
-	XtAppContext app;
-	int	ie_source;
+	XtInputCallbackProc   ie_proc;
+	XtPointer	      ie_closure;
+	struct	_InputEvent   *ie_next;
+	struct  _InputEvent   *ie_oq;
+	XtAppContext	      app;
+	int		      ie_source;
 } InputEvent;
 
 typedef struct _WorkProcRec {
 	XtWorkProc proc;
-	caddr_t closure;
+	XtPointer closure;
 	struct _WorkProcRec *next;
 	XtAppContext app;
 } WorkProcRec;
@@ -171,4 +171,4 @@ extern void _XtDisplayInitialize();
 
 extern void _XtCacheFlushTag();
     /*  XtAppContext app; */
-    /*	caddr_t tag;	  */
+    /*	XtPointer tag;	  */

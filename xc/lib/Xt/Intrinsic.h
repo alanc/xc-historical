@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.93 89/09/08 17:37:22 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.94 89/09/11 17:39:06 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -79,12 +79,12 @@ typedef int		XtCacheType;
  * same base types!
  *
  *
- * XtArgVal ought to be a union of caddr_t, char *, long, int *, and proc *
+ * XtArgVal ought to be a union of XtPointer, char *, long, int *, and proc *
  * but casting to union types is not really supported.
  *
  * So the typedef for XtArgVal should be chosen such that
  *
- *      sizeof (XtArgVal) >=	sizeof(caddr_t)
+ *      sizeof (XtArgVal) >=	sizeof(XtPointer)
  *				sizeof(char *)
  *				sizeof(long)
  *				sizeof(int *)
@@ -132,7 +132,7 @@ typedef Boolean (*XtNewConverter)();
     /* Xrmvalue		    *to;	    */
 
 typedef void (*XtDestructor)();
-    /* caddr_t		    client_data;    */
+    /* XtPointer		    client_data;    */
 
 typedef char* XtCacheRef;
 
@@ -149,7 +149,7 @@ typedef enum {
 
 typedef struct {
     XtAddressMode   address_mode;
-    caddr_t	    address_id;
+    XtPointer	    address_id;
     Cardinal	    size;
 } XtConvertArgRec, *XtConvertArgList;
 
@@ -318,11 +318,13 @@ extern void XtConvertCase();
 
 typedef void (*XtEventHandler)(); /* widget, closure, event */
     /* Widget  widget   */
-    /* caddr_t closure  */
+    /* XtPointer closure  */
     /* XEvent  *event;  */
 
+#ifdef notdef
 typedef void (*XtAsyncHandler)(); /* closure */
     /* Opaque closure; */
+#endif
 
 typedef unsigned long EventMask;
 #define XtAllEvents ((EventMask) -1L)
@@ -332,28 +334,28 @@ extern void XtAddEventHandler(); /* widget, eventMask, nonmaskable, proc, closur
     /* EventMask        eventMask;  */
     /* Boolean          nonmaskable; */
     /* XtEventHandler   proc;       */
-    /* caddr_t		closure ;   */
+    /* XtPointer		closure ;   */
 
 extern void XtRemoveEventHandler(); /* widget, eventMask, nonmaskable, proc, closure */
     /* Widget		widget      */
     /* EventMask        eventMask;  */
     /* Boolean          nonmaskable;*/
     /* XtEventHandler   proc;       */
-    /* caddr_t		closure ;   */
+    /* XtPointer		closure ;   */
 
 extern void XtAddRawEventHandler(); /* widget, eventMask, nonmaskable, proc, closure */
     /* Widget		widget      */
     /* EventMask        eventMask;  */
     /* Boolean          nonmaskable; */
     /* XtEventHandler   proc;       */
-    /* caddr_t		closure ;   */
+    /* XtPointer		closure ;   */
 
 extern void XtRemoveRawEventHandler(); /* widget, eventMask, nonmaskable, proc, closure */
     /* Widget		widget      */
     /* EventMask        eventMask;  */
     /* Boolean          nonmaskable;*/
     /* XtEventHandler   proc;       */
-    /* caddr_t		closure ;   */
+    /* XtPointer		closure ;   */
 
 extern EventMask XtBuildEventMask(); /* widget */
     /* Widget widget; */
@@ -385,11 +387,13 @@ extern void XtAddExposureToRegion();
     /* XEvent   *event;	*/
     /* Region   region;	*/
 
+#ifdef notdef
 extern void XtSetAsyncEventHandler(); /* handler, closure */
     /* XtAsyncHandler handler; */
     /* Opaque	closure; */
 
 extern void XtMakeToolkitAsync();
+#endif
 
 extern void XtSetKeyboardFocus();
     /* Widget subtree, descendent; */
@@ -408,40 +412,40 @@ typedef unsigned long	XtInputMask;
 #define XtInputExceptMask	(1L<<2)
 
 typedef void (*XtTimerCallbackProc)();
-    /* caddr_t closure         */
+    /* XtPointer closure       */
     /* XtIntervalId   *id      */
 
 extern XtIntervalId XtAddTimeOut();
     /* unsigned long interval */
     /* XtTimerCallbackProc  proc  */
-    /* caddr_t   closure      */
+    /* XtPointer closure      */
 
 extern XtIntervalId XtAppAddTimeOut();
     /* XtAppContext app */
     /* unsigned long interval */
     /* XtTimerCallbackProc  proc  */
-    /* caddr_t   closure       */
+    /* XtPointer closure       */
 
 extern void XtRemoveTimeOut();
     /* XtIntervalId timer;      */
 
 typedef void (* XtInputCallbackProc)();
-    /* caddr_t closure;          */
+    /* XtPointer closure;        */
     /* int    *source;           */
     /* XtInputId  *id;           */
 
 extern XtInputId XtAddInput(); /* source, condition, proc, closure */
     /* int source;		*/
-    /* Opaque condition;        */
+    /* XtPointer condition;     */
     /* XtInputCallbackProc proc;*/
-    /* caddr_t closure;         */
+    /* XtPointer closure;       */
 
 extern XtInputId XtAppAddInput(); /* source, condition, proc, closure */
     /*  XtAppContext app; */
     /* int source;		*/
-    /* Opaque condition;        */
+    /* XtPointer condition;     */
     /* XtInputCallbackProc proc;*/
-    /* caddr_t closure;         */
+    /* XtPointer closure;       */
 
 extern void XtRemoveInput(); /* id */
     /* XtInputid id;		*/
@@ -601,25 +605,25 @@ typedef struct _XtCallbackRec*    XtCallbackList;
 
 typedef void (*XtCallbackProc)();
     /* Widget widget; */
-    /* caddr_t closure;  data the application registered */
-    /* caddr_t callData; widget instance specific data passed to application*/
+    /* XtPointer closure;  data the application registered */
+    /* XtPointer callData; widget instance specific data passed to application*/
 
 typedef struct _XtCallbackRec {
     XtCallbackProc  callback;
-    caddr_t         closure;
+    XtPointer       closure;
 } XtCallbackRec;
 
 extern void XtAddCallback ();
     /* Widget           widget;         */
     /* String           callback_name;  */
     /* XtCallbackProc   callback;       */
-    /* caddr_t          closure;        */
+    /* XtPointer        closure;        */
 
 extern void XtRemoveCallback ();
     /* Widget           widget;         */
     /* String           callback_name;  */
     /* XtCallbackProc   callback;       */
-    /* caddr_t          closure;        */
+    /* XtPointer        closure;        */
 
 extern void XtAddCallbacks ();
     /* Widget           widget;         */
@@ -639,7 +643,7 @@ extern void XtRemoveAllCallbacks ();
 extern void XtCallCallbacks ();
     /* Widget           widget;         */
     /* String           callback_name;   */
-    /* caddr_t          callData;       */
+    /* XtPointer        callData;       */
 
 /* These utilities are here on Leo's request. We should think about them */
 /* and decide if they really belong in the intrinsics, or a level above */
@@ -725,18 +729,18 @@ extern void XtPopup();
 
 extern void XtCallbackNone();
     /* Widget       widget;         */
-    /* caddr_t      closure;        */
-    /* caddr_t      call_data;      */
+    /* XtPointer    closure;        */
+    /* XtPointer    call_data;      */
 
 extern void XtCallbackNonexclusive();
     /* Widget       widget;         */
-    /* caddr_t      closure;        */
-    /* caddr_t      call_data;      */
+    /* XtPointer    closure;        */
+    /* XtPointer    call_data;      */
 
 extern void XtCallbackExclusive();
     /* Widget       widget;         */
-    /* caddr_t      closure;        */
-    /* caddr_t      call_data;      */
+    /* XtPointer    closure;        */
+    /* XtPointer    call_data;      */
 
 extern void XtPopdown();
     /* Widget       widget;         */
@@ -748,8 +752,8 @@ typedef struct {
 
 extern void XtCallbackPopdown();
     /* Widget       widget;         */
-    /* caddr_t      closure;        */
-    /* caddr_t      call_data;      */
+    /* XtPointer    closure;        */
+    /* XtPointer    call_data;      */
 
 
 extern Widget XtCreateWidget ();
@@ -838,7 +842,7 @@ typedef struct {
     Cardinal	xrm_size;	  /* Size in bytes of representation	*/
     long int	xrm_offset;	  /* -offset-1				*/
     XrmQuark	xrm_default_type; /* Default representation type quark 	*/
-    caddr_t	xrm_default_addr; /* Default resource address		*/
+    XtPointer	xrm_default_addr; /* Default resource address		*/
 } XrmResource, *XrmResourceList;
 
 extern void XtCopyFromParent();
@@ -860,7 +864,7 @@ extern void XrmCompileResourceList(); /* resources, num_resources */
 
 extern void XtGetSubresources();
     /* Widget           widget;         */
-    /* caddr_t          base;           */
+    /* XtPointer        base;           */
     /* String           name;           */
     /* String           class;          */
     /* XtResourceList   resources;      */
@@ -879,14 +883,14 @@ extern void XtGetValues();
     /* Cardinal         num_args;       */
 
 extern void XtSetSubvalues();
-    /* caddr_t          base;           */
+    /* XtPointer        base;           */
     /* XtResourceList   resources;      */
     /* Cardinal         num_resources;  */
     /* ArgList          args;           */
     /* Cardinal         num_args;       */
 
 extern void XtGetSubvalues();
-    /* caddr_t          base;           */
+    /* XtPointer        base;           */
     /* XtResourceList   resources;      */
     /* Cardinal         num_resources;  */
     /* ArgList          args;           */
@@ -904,10 +908,13 @@ typedef struct _XtResource {
     Cardinal    resource_size;  /* Size in bytes of representation          */
     Cardinal    resource_offset;/* Offset from base to put resource value   */
     String     default_type;    /* representation type of specified default */
-    caddr_t     default_addr;   /* Address of default resource              */
+    XtPointer   default_addr;   /* Address of default resource              */
 } XtResource;
 
 #define XtUnspecifiedPixmap	((Pixmap)2)
+#define XtUnspecifiedShellInt	(-1)
+#define XtUnspecifiedWindow	((Window)2)
+#define XtUnspecifiedWindowGroup ((Window)3)
 #define XtDefaultForeground	"XtDefaultForeground"
 #define XtDefaultBackground	"XtDefaultBackground"
 #define XtDefaultFont		"XtDefaultFont"
@@ -1067,17 +1074,17 @@ extern void XtFree(); /* ptr */
  **************************************************************/
 
 typedef Boolean (*XtWorkProc)();
-    /* caddr_t closure;  data the application registered */
+    /* XtPointer closure;  data the application registered */
     /* returns whether to remove this work procedure or not */
 
 extern XtWorkProcId XtAddWorkProc();
     /*  XtWorkProc proc; */
-    /*  caddr_t closure; */
+    /*  XtPointer closure; */
 
 extern XtWorkProcId XtAppAddWorkProc();
     /*  XtAppContext app; */
     /*  XtWorkProc proc; */
-    /*  caddr_t closure; */
+    /*  XtPointer closure; */
 
 extern void  XtRemoveWorkProc();
     /*  XtWorkProcId id; */
@@ -1104,13 +1111,13 @@ extern void XtReleaseCacheRef(); /* cache_ref */
 
 extern void XtCallbackReleaseCacheRef(); /* widget, closure, call_data */
     /* Widget widget;	*/
-    /* caddr_t closure; */	/* XtCacheRef */
-    /* caddr_t call_data */
+    /* XtPointer closure; */	/* XtCacheRef */
+    /* XtPointer call_data */
 
 extern void XtCallbackReleaseCacheRefList(); /* widget, closure, call_data */
     /* Widget widget;	*/
-    /* caddr_t closure; */	/* XtCacheRef* */
-    /* caddr_t call_data */
+    /* XtPointer closure; */	/* XtCacheRef* */
+    /* XtPointer call_data */
 
 #endif /*_XtIntrinsic_h*/
 /* DON'T ADD STUFF AFTER THIS #endif */

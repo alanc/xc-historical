@@ -1,5 +1,5 @@
 /*
-* $XConsortium: CoreP.h,v 1.12 89/09/07 17:49:01 swick Exp $
+* $XConsortium: CoreP.h,v 1.13 89/09/08 17:46:04 swick Exp $
 * $oHeader: CoreP.h,v 1.2 88/08/18 15:54:37 asente Exp $
 */
 
@@ -54,7 +54,7 @@ typedef struct _CorePart {
     XrmName         xrm_name;		/* widget resource name quarkified   */
     Boolean         being_destroyed;	/* marked for destroy		     */
     XtCallbackList  destroy_callbacks;	/* who to call when widget destroyed */
-    caddr_t         constraints;        /* constraint record                 */
+    XtPointer       constraints;        /* constraint record                 */
     Position        x, y;		/* window position		     */
     Dimension       width, height;	/* window dimensions		     */
     Dimension       border_width;	/* window border width		     */
@@ -132,7 +132,7 @@ typedef struct _CoreClassPart {
     String          tm_table;           /* state machine                    */
     XtGeometryHandler query_geometry;	/* return preferred geometry        */
     XtStringProc    display_accelerator;/* display your accelerator	    */
-    caddr_t	    extension;		/* pointer to extension record      */
+    XtPointer	    extension;		/* pointer to extension record      */
  } CoreClassPart;
 
 typedef struct _WidgetClassRec {

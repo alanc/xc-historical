@@ -1,5 +1,5 @@
 /*
-* $XConsortium: StringDefs.h,v 1.44 89/03/13 09:37:21 swick Exp $
+* $XConsortium: StringDefs.h,v 1.46 89/07/21 12:03:40 swick Exp $
 * $oHeader: StringDefs.h,v 1.3 88/08/19 16:39:44 asente Exp $
 */
 
@@ -186,6 +186,7 @@ SOFTWARE.
 /* Representation types */
 
 #define XtRAcceleratorTable "AcceleratorTable"
+#define XtRBitmap "Bitmap"
 #define XtRBool "Bool"
 #define XtRBoolean "Boolean"
 #define XtRCallback "Callback"
@@ -202,9 +203,11 @@ SOFTWARE.
 #define XtRFunction "Function"
 #define XtRGeometry "Geometry"
 #define XtRImmediate "Immediate"
+#define XtRInitialState "InitialState"
 #define XtRInt "Int"
 #define XtRJustify "Justify"
 #define XtRLongBoolean XtRBool
+#define XtRObject "Object"
 #define XtROrientation "Orientation"
 #define XtRPixel "Pixel"
 #define XtRPixmap "Pixmap"
@@ -215,6 +218,7 @@ SOFTWARE.
 #define XtRStringTable "StringTable"
 #define XtRUnsignedChar "UnsignedChar"
 #define XtRTranslationTable "TranslationTable"
+#define XtRVisual "Visual"
 #define XtRWidget "Widget"
 #define XtRWindow "Window"
 

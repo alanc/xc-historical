@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Object.c,v 1.7 89/06/16 19:35:03 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Object.c,v 1.8 89/09/08 17:43:58 swick Exp $";
 /* $oHeader: Object.c,v 1.2 88/08/18 15:51:09 asente Exp $ */
 #endif /* lint */
 
@@ -33,8 +33,8 @@ SOFTWARE.
 #include "StringDefs.h"
 
 static XtResource resources[] = {
-        {XtNdestroyCallback, XtCCallback, XtRCallback,sizeof(caddr_t),
-         XtOffset(Object,object.destroy_callbacks), XtRCallback, (caddr_t)NULL}
+        {XtNdestroyCallback, XtCCallback, XtRCallback,sizeof(XtPointer),
+         XtOffset(Object,object.destroy_callbacks), XtRCallback, (XtPointer)NULL}
     };
 
 static void ObjectClassPartInitialize();
@@ -118,11 +118,7 @@ static void ObjectClassPartInitialize(wc)
     register WidgetClass wc;
 {
    ObjectClass oc = (ObjectClass)wc;
-#ifdef lint
-    /* ||| GROSS!!! do the right thing after .h split!!! */
-    extern void  XrmCompileResourceList();
-    extern Opaque _CompileActionTable();
-#endif
+   extern void  XrmCompileResourceList();
 
     if (oc->object_class.resources != NULL) {
 	XrmCompileResourceList(oc->object_class.resources,
@@ -133,6 +129,7 @@ static void ObjectClassPartInitialize(wc)
 }
 
 
+/*ARGSUSED*/
 static Boolean ObjectSetValues(old, request, widget)
     Widget	old, request, widget;
 {
@@ -152,7 +149,9 @@ static Boolean ObjectSetValues(old, request, widget)
 		_XtFreeCallbackList(oldCallbacks);
 
 	    if (*newCallbacksP != NULL)
-		*newCallbacksP = _XtCompileCallbackList(widget,*newCallbacksP);
+		*newCallbacksP =
+		    _XtCompileCallbackList(widget,
+					   (XtCallbackList)*newCallbacksP);
 	}
 	offset = offset->next;
     }

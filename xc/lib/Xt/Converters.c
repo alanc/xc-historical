@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Converters.c,v 1.39 89/07/21 12:07:27 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Converters.c,v 1.40 89/09/07 17:48:07 swick Exp $";
 /* $oHeader: Converters.c,v 1.6 88/09/01 09:26:23 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -49,7 +49,7 @@ SOFTWARE.
 		static type static_val;				\
 		static_val = (value);				\
 		toVal->size = sizeof(type);			\
-		toVal->addr = (caddr_t)&static_val;		\
+		toVal->addr = (XtPointer)&static_val;		\
 	    }							\
 	    return True;					\
 	}
@@ -144,7 +144,7 @@ static Boolean CvtIntToBoolean(dpy, args, num_args, fromVal, toVal, closure_ret)
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     if (*num_args != 0)
 	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
@@ -162,7 +162,7 @@ static Boolean CvtIntToShort(dpy, args, num_args, fromVal, toVal, closure_ret)
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     if (*num_args != 0)
 	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
@@ -180,7 +180,7 @@ static Boolean CvtStringToBoolean(dpy, args, num_args, fromVal, toVal, closure_r
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     XrmQuark	q;
     char	lowerName[1000];
@@ -212,7 +212,7 @@ static Boolean CvtIntToBool(dpy, args, num_args, fromVal, toVal, closure_ret)
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     if (*num_args != 0)
 	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
@@ -230,7 +230,7 @@ static Boolean CvtStringToBool(dpy, args, num_args, fromVal, toVal, closure_ret)
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     XrmQuark	q;
     char	lowerName[1000];
@@ -256,8 +256,8 @@ static Boolean CvtStringToBool(dpy, args, num_args, fromVal, toVal, closure_ret)
 }
 
 XtConvertArgRec colorConvertArgs[] = {
-    {XtWidgetBaseOffset, (caddr_t)XtOffset(Widget, core.screen),  sizeof(Screen *)},
-    {XtWidgetBaseOffset, (caddr_t)XtOffset(Widget, core.colormap),sizeof(Colormap)}
+    {XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.screen),  sizeof(Screen *)},
+    {XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.colormap),sizeof(Colormap)}
 };
 
 
@@ -268,7 +268,7 @@ static Boolean CvtIntOrPixelToXColor(dpy, args, num_args, fromVal, toVal, closur
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {    
     XColor	c;
     Screen	*screen;
@@ -295,7 +295,7 @@ static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, closure_ret
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     XColor	    screenColor;
     XColor	    exactColor;
@@ -359,7 +359,7 @@ static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, closure_ret
 static void FreePixel(app, toVal, closure, args, num_args)
     XtAppContext app;
     XrmValuePtr	toVal;
-    caddr_t	closure;
+    XtPointer	closure;
     XrmValuePtr	args;
     Cardinal	*num_args;
 {
@@ -383,7 +383,7 @@ static void FreePixel(app, toVal, closure, args, num_args)
 
 
 XtConvertArgRec screenConvertArg[] = {
-    {XtWidgetBaseOffset, (caddr_t)XtOffset(Widget, core.screen), sizeof(Screen *)}
+    {XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.screen), sizeof(Screen *)}
 };
 
 /*ARGSUSED*/
@@ -394,7 +394,7 @@ static Boolean CvtStringToCursor(dpy, args, num_args, fromVal, toVal, closure_re
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
 
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     static struct _CursorName {
 	char		*name;
@@ -505,7 +505,7 @@ static Boolean CvtStringToCursor(dpy, args, num_args, fromVal, toVal, closure_re
 static void FreeCursor(app, toVal, closure, args, num_args)
     XtAppContext app;
     XrmValuePtr	toVal;
-    caddr_t	closure;	/* unused */
+    XtPointer	closure;	/* unused */
     XrmValuePtr	args;		/* unused */
     Cardinal	*num_args;
 {
@@ -528,7 +528,7 @@ static Boolean CvtStringToDisplay(dpy, args, num_args, fromVal, toVal, closure_r
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     Display	*d;
 
@@ -554,7 +554,7 @@ static Boolean CvtStringToFile(dpy, args, num_args, fromVal, toVal, closure_ret)
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     FILE *f;
 
@@ -576,7 +576,7 @@ static Boolean CvtStringToFile(dpy, args, num_args, fromVal, toVal, closure_ret)
 static void FreeFile(app, toVal, closure, args, num_args)
     XtAppContext app;
     XrmValuePtr	toVal;
-    caddr_t	closure;	/* unused */
+    XtPointer	closure;	/* unused */
     XrmValuePtr	args;		/* unused */
     Cardinal	*num_args;
 {
@@ -596,7 +596,7 @@ static Boolean CvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     Font	    f;
     Screen	    *screen;
@@ -630,7 +630,7 @@ static Boolean CvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
 static void FreeFont(app, toVal, closure, args, num_args)
     XtAppContext app;
     XrmValuePtr	toVal;
-    caddr_t	closure;	/* unused */
+    XtPointer	closure;	/* unused */
     XrmValuePtr	args;
     Cardinal	*num_args;
 {
@@ -652,7 +652,7 @@ static Boolean CvtIntToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     if (*num_args != 0)
 	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
@@ -670,7 +670,7 @@ static Boolean CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closur
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     XFontStruct	    *f;
     Screen	    *screen;
@@ -709,7 +709,7 @@ static Boolean CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closur
 static void FreeFontStruct(app, toVal, closure, args, num_args)
     XtAppContext app;
     XrmValuePtr	toVal;
-    caddr_t	closure;	/* unused */
+    XtPointer	closure;	/* unused */
     XrmValuePtr	args;
     Cardinal	*num_args;
 {
@@ -731,7 +731,7 @@ static Boolean CvtStringToInt(dpy, args, num_args, fromVal, toVal, closure_ret)
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     int	i;
 
@@ -754,7 +754,7 @@ static Boolean CvtStringToShort(dpy, args, num_args, fromVal, toVal, closure_ret
     Cardinal    *num_args;
     XrmValuePtr fromVal;
     XrmValuePtr toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     short i;
 
@@ -777,7 +777,7 @@ static Boolean CvtStringToUnsignedChar(dpy, args, num_args, fromVal, toVal, clos
     Cardinal    *num_args;
     XrmValuePtr fromVal;
     XrmValuePtr toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     int i;
 
@@ -805,7 +805,7 @@ static Boolean CvtXColorToPixel(dpy, args, num_args, fromVal, toVal, closure_ret
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     if (*num_args != 0)
 	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
@@ -822,7 +822,7 @@ static Boolean CvtIntToPixel(dpy, args, num_args, fromVal, toVal, closure_ret)
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     if (*num_args != 0)
 	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
@@ -839,7 +839,7 @@ static Boolean CvtIntToPixmap(dpy, args, num_args, fromVal, toVal, closure_ret)
     Cardinal    *num_args;
     XrmValuePtr fromVal;
     XrmValuePtr toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     if (*num_args != 0)
         XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
@@ -856,7 +856,7 @@ static Boolean CvtStringToGeometry(dpy, args, num_args, fromVal, toVal, closure_
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     if (*num_args != 0)
 	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),

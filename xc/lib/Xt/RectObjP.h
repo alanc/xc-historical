@@ -1,4 +1,4 @@
-/* $XConsortium: RectObjP.h,v 1.6 88/09/26 11:43:50 swick Exp $ */
+/* $XConsortium: RectObjP.h,v 1.7 89/09/08 17:44:57 swick Exp $ */
 /* $oHeader: RectObjP.h,v 1.2 88/08/18 15:55:52 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -93,7 +93,7 @@ typedef struct _RectObjClassPart {
     String          rect10;             /* NULL                             */
     XtGeometryHandler query_geometry;   /* return preferred geometry        */
     XtProc          rect11;             /* NULL                             */
-    caddr_t         extension;          /* pointer to extension record      */
+    XtPointer       extension;          /* pointer to extension record      */
 } RectObjClassPart;
 
 typedef struct _RectObjClassRec {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.55 89/09/08 17:35:36 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.56 89/09/11 17:42:26 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif /*lint*/
 
@@ -77,7 +77,7 @@ void XtInitializeWidgetClass(wc)
     CallClassPartInit(wc, wc);
     {
 	WidgetClass pc;
-	Boolean inited = 0x01;
+	XtEnum inited = 0x01;
 #define LeaveIfClass(c, d) if (pc == c) { inited = d; break; }
 	for (pc = wc; pc; pc = pc->core_class.superclass) {
 	    LeaveIfClass(rectObjClass,		   0x03);
@@ -138,7 +138,7 @@ Widget _XtCreate(
     char                    widget_cache[600];
     Widget                  req_widget;
     char                    constraint_cache[100];
-    char                    *req_constraints;
+    XtPointer               req_constraints;
     Cardinal                size;
     register Widget widget;
     XtCacheRef		    *cache_refs;
@@ -156,7 +156,7 @@ Widget _XtCreate(
     widget->core.constraints = NULL;
     if (parent_constraint_class != NULL) 
        	widget->core.constraints = 
-	    (caddr_t) XtMalloc((unsigned)parent_constraint_class->
+	    (XtPointer) XtMalloc((unsigned)parent_constraint_class->
                        constraint_class.constraint_size);
     if (XtIsWidget(widget)) {
 	widget->core.name = XtNewString((name != NULL) ? name : "");
@@ -188,7 +188,7 @@ Widget _XtCreate(
     if (cache_refs != NULL) {
 	extern void _XtCallbackReleaseCacheRefs();
 	XtAddCallback( widget, XtNdestroyCallback,
-		       XtCallbackReleaseCacheRefList, (caddr_t)cache_refs );
+		       XtCallbackReleaseCacheRefList, (XtPointer)cache_refs );
     }
 
     size = XtClass(widget)->core_class.widget_size;
@@ -198,12 +198,12 @@ Widget _XtCreate(
     if (parent_constraint_class != NULL) {
 	size = parent_constraint_class->constraint_class.constraint_size;
 	req_constraints = XtStackAlloc(size, constraint_cache);
-	bcopy(widget->core.constraints, req_constraints, (int) size);
-	req_widget->core.constraints = (caddr_t) req_constraints;
+	bcopy(widget->core.constraints, (char*)req_constraints, (int) size);
+	req_widget->core.constraints = req_constraints;
 	CallConstraintInitialize(parent_constraint_class, req_widget, widget);
 	XtStackFree(req_constraints, constraint_cache);
     }
-    XtStackFree((char *) req_widget, widget_cache);
+    XtStackFree((XtPointer)req_widget, widget_cache);
     return (widget);
 }
 
@@ -272,8 +272,8 @@ Widget XtCreateManagedWidget(name, widgetClass, parent, args, num_args)
 /*ARGSUSED*/
 static void RemovePopupFromParent(widget,closure,call_data)
     Widget  widget;
-    caddr_t closure;
-    caddr_t call_data;
+    XtPointer closure;
+    XtPointer call_data;
 {
     int i;
     Boolean found = FALSE;
@@ -343,11 +343,11 @@ Widget XtCreatePopupShell(name, widgetClass, parent, args, num_args)
 	args, num_args, (ConstraintWidgetClass) NULL);
 
     parent->core.popup_list =
-	(WidgetList) XtRealloc((caddr_t) parent->core.popup_list,
+	(WidgetList) XtRealloc((XtPointer) parent->core.popup_list,
                (unsigned) (parent->core.num_popups+1) * sizeof(Widget));
     parent->core.popup_list[parent->core.num_popups++] = widget;
     XtAddCallback(
-       widget,XtNdestroyCallback,RemovePopupFromParent, (caddr_t)NULL);
+       widget,XtNdestroyCallback,RemovePopupFromParent, (XtPointer)NULL);
     return(widget);
 } /* XtCreatePopupShell */
 

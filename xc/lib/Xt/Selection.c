@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Selection.c,v 1.13 89/06/09 08:18:30 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Selection.c,v 1.14 89/06/16 19:35:19 jim Exp $";
 /* $oHeader: Selection.c,v 1.8 88/09/01 11:53:42 asente Exp $ */
 #endif /* lint */
 
@@ -35,7 +35,7 @@ SOFTWARE.
 
 extern void bcopy();
 
-#define LOCAL (Opaque) 0x80000000
+#define LOCAL ((XtPointer)0x80000000)
 
 void _XtSetDefaultSelectionTimeout(timeout)
 	unsigned long *timeout;
@@ -134,7 +134,7 @@ Atom prop;
 static CallBackInfo MakeInfo(
 	callback, closures, count, widget, time, incremental)
 XtSelectionCallbackProc callback;
-Opaque *closures;
+XtPointer *closures;
 int count;
 Widget widget;
 Time time;
@@ -145,8 +145,9 @@ Boolean incremental;
 	info = (CallBackInfo) XtMalloc(
 		(unsigned) sizeof(CallBackInfoRec));
 	info->callback = callback;
-	info->req_closure = (Opaque *)XtMalloc((unsigned) (count * sizeof(Opaque)));
-	bcopy((char *) closures, (char *) info->req_closure, count * sizeof(Opaque));
+	info->req_closure =
+	    (XtPointer*)XtMalloc((unsigned) (count * sizeof(XtPointer)));
+	bcopy((char*)closures, (char*)info->req_closure, count * sizeof(XtPointer));
         info->property = GetSelectionProperty(XtDisplay(widget));
 	info->proc = HandleSelectionReplies;
 	info->widget = widget;
@@ -166,10 +167,10 @@ Atom target;
 #ifndef DEBUG
     XtAppContext app = XtWidgetToApplicationContext(info->widget);
 	info->timeout = XtAppAddTimeOut(app,
-			 app->selectionTimeout, ReqTimedOut, (Opaque) info);
+			 app->selectionTimeout, ReqTimedOut, (XtPointer)info);
 #endif 
 	XtAddEventHandler(info->widget, (EventMask) NULL, TRUE,
-			  HandleSelectionReplies, (Opaque) info);
+			  HandleSelectionReplies, (XtPointer)info);
 	XConvertSelection(ctx->dpy, selection, target, 
 			  info->property, XtWindow(info->widget), info->time);
 }
@@ -217,7 +218,7 @@ static Incremental FindIncr(ctx, window, prop)
 /*ARGSUSED*/
 static void WidgetDestroyed(widget, closure, data)
 Widget widget;
-Opaque closure, data;
+XtPointer closure, data;
 {
     Select ctx = (Select) closure;
     if (ctx->widget == widget)
@@ -239,9 +240,9 @@ Time time;
        && ((time == CurrentTime) || (time >= ctx->time))) {
 	    if (--ctx->refcount) {
 		XtRemoveEventHandler(widget, (EventMask) NULL, TRUE,
-			HandleSelectionEvents, (Opaque) ctx); 
+			HandleSelectionEvents, (XtPointer)ctx); 
 	        XtRemoveCallback(widget, XtNdestroyCallback, 
-			WidgetDestroyed, (Opaque) ctx); 
+			WidgetDestroyed, (XtPointer)ctx); 
 	    };
 	    ctx->widget = NULL; /* widget officially loses ownership */
 	    /* now inform widget */
@@ -261,7 +262,7 @@ Window window;
 Widget widget;
 EventMask mask;
 XtEventHandler proc;
-Opaque closure;
+XtPointer closure;
 {
     /* see if there is already a widget associated with the window */
     if (XtWindowToWidget(dpy, window)==NULL) {
@@ -282,7 +283,7 @@ Window window;
 Widget widget;
 EventMask mask;
 XtEventHandler proc;
-Opaque closure;
+XtPointer closure;
 {
     if ((XtWindowToWidget(dpy, window) == widget) && 
         (XtWindow(widget) != window)) {
@@ -297,7 +298,7 @@ Opaque closure;
 
 /* ARGSUSED */
 static void OwnerTimedOut(closure, id)
-Opaque closure;
+XtPointer closure;
 XtIntervalId   *id;
 {
     PropGone rec = (PropGone)closure;
@@ -309,7 +310,7 @@ XtIntervalId   *id;
     if (incr != NULL) {
 	if ((incr->incr_callback) && (incr->owner_cancel != NULL)) 
 		(*incr->owner_cancel)(rec->widget, &ctx->selection, 
-		&rec->target, (Opaque)((int)rec->property | (int)rec->window),
+		&rec->target, (XtRequestId)((int)rec->property | (int)rec->window),
 		incr->owner_closure);
 	if (incr->prev==NULL) ctx->incrList = ctx->incrList->next;
 	else incr->prev->next = incr->next;
@@ -365,7 +366,7 @@ PropGone rec;
 
 static void HandlePropertyGone(widget, closure, ev)
 Widget widget;
-Opaque closure;
+XtPointer closure;
 XEvent *ev;
 {
 
@@ -402,7 +403,7 @@ XEvent *ev;
 			    &incr->type, &incr->value, 
 			    &incr->bytelength, &incr->format,
 			    MAX_SELECTION_INCR(ctx->dpy), incr->owner_closure,
-			    (Opaque)((int)rec->property | (int)rec->window));
+			    (XtRequestId)((int)rec->property | (int)rec->window));
 		incr->bytelength = BYTELENGTH(incr->bytelength,incr->format);
 		incr->offset = 0;
 	    }
@@ -415,7 +416,7 @@ XEvent *ev;
 	  {
 	  XtAppContext app = XtWidgetToApplicationContext(rec->widget);
     	   rec->timeout = XtAppAddTimeOut(app,
-			 app->selectionTimeout, OwnerTimedOut, (Opaque) rec);
+			 app->selectionTimeout, OwnerTimedOut, (XtPointer)rec);
 	  }
 #endif 
      }
@@ -429,7 +430,7 @@ Window window;
 Atom target;
 Atom property;
 Atom targetType;
-caddr_t value;
+XtPointer value;
 int length, format;
 {
     Incremental incr;
@@ -463,12 +464,12 @@ int length, format;
 	{
 	XtAppContext app = XtWidgetToApplicationContext(rec->widget);
 	rec->timeout = XtAppAddTimeOut(app,
-			 app->selectionTimeout, OwnerTimedOut, (Opaque) rec);
+			 app->selectionTimeout, OwnerTimedOut, (XtPointer)rec);
 	}
 #endif 
 	AddHandler(ctx->dpy, window, widget, 
 			(EventMask) PropertyChangeMask, 
-	       		HandlePropertyGone, (Opaque) rec);
+	       		HandlePropertyGone, (XtPointer)rec);
 /* now send client INCREMENT property */
 	size = BYTELENGTH(length,format);
 	XChangeProperty(ctx->dpy, window,
@@ -487,7 +488,7 @@ Widget widget;
 Window window;
 Boolean *incremental;
 {
-    caddr_t value;
+    XtPointer value;
     int length, format;
     Atom targetType;
     PropGone rec;
@@ -496,7 +497,7 @@ Boolean *incremental;
          if ((*ctx->convert)(ctx->widget, &selection, &target,
 			    &targetType, &value, &length, &format,
 			    MAX_SELECTION_INCR(ctx->dpy), ctx->owner_closure,
-			    (Opaque)((int)property | (int)window)) == FALSE)
+			    (XtRequestId)((int)property | (int)window)) == FALSE)
 		return(FALSE);
 	 PrepareIncremental(ctx, widget, window,  property, target,
 			    targetType, value, length, format);
@@ -520,12 +521,12 @@ Boolean *incremental;
 		  {
 		  XtAppContext app = XtWidgetToApplicationContext(rec->widget);
 		  rec->timeout = XtAppAddTimeOut(app,
-			 app->selectionTimeout, OwnerTimedOut, (Opaque) rec);
+			 app->selectionTimeout, OwnerTimedOut, (XtPointer)rec);
 		  }
 #endif 
 	          AddHandler(ctx->dpy, window,
 		        ctx->widget, (EventMask) PropertyChangeMask, 
-	       		HandlePropertyGone, (Opaque) rec);
+	       		HandlePropertyGone, (XtPointer)rec);
         }
 	XChangeProperty(ctx->dpy, window, property, 
 			    targetType, format, PropModeReplace,
@@ -544,7 +545,7 @@ Boolean *incremental;
 /*ARGSUSED*/
 static void HandleSelectionEvents(widget, closure, event)
 Widget widget;
-Opaque closure;
+XtPointer closure;
 XEvent *event;
 {
     Select ctx;
@@ -653,9 +654,9 @@ XtSelectionDoneProc newnotify;
     ctx->incremental = FALSE;
     ctx->refcount += 1;
     XtAddEventHandler(widget, (EventMask)NULL, TRUE,
-		      HandleSelectionEvents, (Opaque) ctx);
+		      HandleSelectionEvents, (XtPointer)ctx);
     XtAddCallback(widget, XtNdestroyCallback, 
-	WidgetDestroyed, (Opaque) ctx);
+	WidgetDestroyed, (XtPointer)ctx);
    return(TRUE);
 }
 
@@ -674,7 +675,7 @@ Time time;
 
 static void ReqCleanup(widget, closure, ev)
 Widget widget;
-Opaque closure;
+XtPointer closure;
 XEvent *ev;
 {
     CallBackInfo info = (CallBackInfo)closure;
@@ -688,19 +689,19 @@ XEvent *ev;
 	XSelectionEvent *event = (XSelectionEvent *) ev;
 	if (!MATCH_SELECT(event, info)) return; /* not really for us */
          XtRemoveEventHandler(widget, (EventMask) NULL, TRUE,
-			   ReqCleanup, (Opaque) info );
+			   ReqCleanup, (XtPointer) info );
 	if (event->target != info->ctx->incremental_atom) {
 	   if (event->property != None) 
 		XDeleteProperty(event->display, XtWindow(widget),
 				event->property);
            FreeSelectionProperty(XtDisplay(widget), info->property);
-	   XtFree((caddr_t)info->req_closure);
-	   XtFree((caddr_t)info->target);
-           XtFree((caddr_t) info);
+	   XtFree((XtPointer)info->req_closure);
+	   XtFree((XtPointer)info->target);
+           XtFree((XtPointer) info);
 	} else {
 	   info->proc = HandleGetIncrement;
 	   XtAddEventHandler(info->widget, (EventMask) PropertyChangeMask, 
-		FALSE, ReqCleanup, (Opaque) info);
+		FALSE, ReqCleanup, (XtPointer) info);
 	}
     } else if (((ev->type & 0x7f) == PropertyNotify) && 
 		(ev->xproperty.state == PropertyNewValue) &&
@@ -713,21 +714,21 @@ XEvent *ev;
 	XtFree(value);
 	if (length == 0) {
            XtRemoveEventHandler(widget, (EventMask) PropertyChangeMask, FALSE,
-			   ReqCleanup, (Opaque) info );
+			   ReqCleanup, (XtPointer) info );
            FreeSelectionProperty(XtDisplay(widget), info->property);
-	   XtFree((caddr_t)info->req_closure);
-	   XtFree((caddr_t)info->target);
-           XtFree((caddr_t) info);
+	   XtFree((XtPointer)info->req_closure);
+	   XtFree((XtPointer)info->target);
+           XtFree((XtPointer) info);
 	}
     }
 }
 
 /* ARGSUSED */
 static void ReqTimedOut(closure, id)
-Opaque closure;
+XtPointer closure;
 XtIntervalId   *id;
 {
-    caddr_t value = NULL;
+    XtPointer value = NULL;
     int length = 0;
     int format = 8;
     Atom resulttype = XT_CONVERT_FAIL;
@@ -737,7 +738,7 @@ XtIntervalId   *id;
     unsigned long proplength;
     Atom type;
     IndirectPair *pairs;
-    Opaque *c;
+    XtPointer *c;
     static void HandleSelectionReplies();
     /* call requestor with XT_CONVERT_FAIL */
     if ((info->incremental) && (info->req_cancel != NULL))
@@ -748,7 +749,7 @@ XtIntervalId   *id;
 			   XtWindow(info->widget), info->property, 0L,
 			   10000000, True, AnyPropertyType, &type, &format,
 			   &proplength, &bytesafter, (unsigned char **) &pairs);
-       XtFree((caddr_t)pairs);
+       XtFree((XtPointer)pairs);
        for (proplength = proplength / IndirectPairWordSize, c = info->req_closure;
 	           proplength; proplength--, c++) 
 	    (*info->callback)(info->widget, *c, 
@@ -770,21 +771,21 @@ XtIntervalId   *id;
     /* change event handlers for straggler events */
     if (info->proc == (XtEventHandler)HandleSelectionReplies) {
         XtRemoveEventHandler(info->widget, (EventMask) NULL, 
-			TRUE, info->proc, (Opaque) info);
+			TRUE, info->proc, (XtPointer) info);
 	XtAddEventHandler(info->widget, (EventMask) NULL, TRUE,
-		ReqCleanup, (Opaque) info);
+		ReqCleanup, (XtPointer) info);
     } else {
         XtRemoveEventHandler(info->widget,(EventMask) PropertyChangeMask, 
-			FALSE, info->proc, (Opaque) info);
+			FALSE, info->proc, (XtPointer) info);
 	XtAddEventHandler(info->widget, (EventMask) PropertyChangeMask, 
-		FALSE, ReqCleanup, (Opaque) info);
+		FALSE, ReqCleanup, (XtPointer) info);
     }
 
 }
 
 static void HandleGetIncrement(widget, closure, ev)
 Widget widget;
-Opaque closure;
+XtPointer closure;
 XEvent *ev;
 {
     XPropertyEvent *event = (XPropertyEvent *) ev;
@@ -816,11 +817,11 @@ XEvent *ev;
 			  (incr->offset == 0 ? NULL : incr->value), 
 			  &incr->offset, &incr->format);
        XtRemoveEventHandler(widget, (EventMask) PropertyChangeMask, FALSE, 
-		HandleGetIncrement, (Opaque) info);
+		HandleGetIncrement, (XtPointer) info);
        FreeSelectionProperty(event->display, info->property);
-       XtFree((caddr_t)info->req_closure);
-       XtFree((caddr_t)info->target);
-       XtFree((caddr_t) info);
+       XtFree((XtPointer)info->req_closure);
+       XtFree((XtPointer)info->target);
+       XtFree((XtPointer) info);
     } else { /* add increment to collection */
       if (info->incremental) {
         (*info->callback)(widget, *info->req_closure, &ctx->selection, 
@@ -841,7 +842,7 @@ XEvent *ev;
      {
      XtAppContext app = XtWidgetToApplicationContext(info->widget);
      info->timeout = XtAppAddTimeOut(app,
-			 app->selectionTimeout, ReqTimedOut, (Opaque) info);
+			 app->selectionTimeout, ReqTimedOut, (XtPointer) info);
      }
 #endif 
    }
@@ -849,7 +850,7 @@ XEvent *ev;
 static HandleNone(widget, callback, closure, selection)
 Widget widget;
 XtSelectionCallbackProc callback;
-Opaque closure;
+XtPointer closure;
 Atom selection;
 {
     unsigned long length = 0;
@@ -865,7 +866,7 @@ Display *dpy;
 Widget widget;
 Atom property;
 XtSelectionCallbackProc callback;
-Opaque closure;
+XtPointer closure;
 Atom selection;
 {
     unsigned long bytesafter;
@@ -897,7 +898,7 @@ Select ctx;
     Incremental incr;
 
     XtAddEventHandler(widget, (EventMask) PropertyChangeMask, FALSE,
-	  	HandleGetIncrement, (Opaque) info);
+	  	HandleGetIncrement, (XtPointer) info);
     (void) XGetWindowProperty(dpy, XtWindow(widget), property, 0L,
 			   10000000, True, AnyPropertyType, &type, &format,
 			   &length, &bytesafter, (unsigned char **) &size);
@@ -921,14 +922,14 @@ Select ctx;
     {
     XtAppContext app = XtWidgetToApplicationContext(info->widget);
     info->timeout = XtAppAddTimeOut(app,
-			 app->selectionTimeout, ReqTimedOut, (Opaque) info);
+			 app->selectionTimeout, ReqTimedOut, (XtPointer) info);
     }
 #endif 
 }
 
 static void HandleSelectionReplies(widget, closure, ev)
 Widget widget;
-Opaque closure;
+XtPointer closure;
 XEvent *ev;
 {
     XSelectionEvent *event = (XSelectionEvent *) ev;
@@ -940,7 +941,7 @@ XEvent *ev;
     unsigned long length;
     int format;
     Atom type;
-    Opaque *c;
+    XtPointer *c;
     Atom *t;
     CallBackInfo newinfo;
 
@@ -950,7 +951,7 @@ XEvent *ev;
     XtRemoveTimeOut(info->timeout); 
 #endif 
     XtRemoveEventHandler(widget, (EventMask) NULL, TRUE,
-		HandleSelectionReplies, (Opaque) info );
+		HandleSelectionReplies, (XtPointer) info );
     ctx = FindCtx(dpy, event->selection);
     if (event->target == ctx->indirect_atom) {
         (void) XGetWindowProperty(dpy, XtWindow(widget), info->property, 0L,
@@ -973,7 +974,7 @@ XEvent *ev;
 			(unsigned) sizeof(CallBackInfoRec));
 		newinfo->callback = info->callback;
 		newinfo->req_closure =
-		    (Opaque *)XtMalloc((unsigned)sizeof(Opaque));
+		    (XtPointer *)XtMalloc((unsigned)sizeof(XtPointer));
 		*newinfo->req_closure = *c;
 		newinfo->property = p->property;
 		newinfo->widget = info->widget;
@@ -984,24 +985,24 @@ XEvent *ev;
 		HandleIncremental(dpy, widget, p->property, newinfo, ctx);
 	    }
        }
-       XtFree((caddr_t)pairs);
+       XtFree((XtPointer)pairs);
        FreeSelectionProperty(dpy, info->property);
-       XtFree((caddr_t)info->req_closure); 
-       XtFree((caddr_t)info->target); 
-       XtFree((caddr_t) info);
+       XtFree((XtPointer)info->req_closure); 
+       XtFree((XtPointer)info->target); 
+       XtFree((XtPointer) info);
     } else if (event->property == None) {
 	HandleNone(widget, info->callback, *info->req_closure, event->selection);
         FreeSelectionProperty(XtDisplay(widget), info->property);
-        XtFree((caddr_t)info->req_closure);
-        XtFree((caddr_t)info->target); 
-        XtFree((caddr_t) info);
+        XtFree((XtPointer)info->req_closure);
+        XtFree((XtPointer)info->target); 
+        XtFree((XtPointer) info);
     } else if (event->target != ctx->incremental_atom) {
 	HandleNormal(dpy, widget, event->property, info->callback, 
 			*info->req_closure, event->selection);
         FreeSelectionProperty(XtDisplay(widget), info->property);
-        XtFree((caddr_t)info->req_closure);
-        XtFree((caddr_t)info->target); 
-        XtFree((caddr_t) info);
+        XtFree((XtPointer)info->req_closure);
+        XtFree((XtPointer)info->target); 
+        XtFree((XtPointer) info);
     } else {
 	HandleIncremental(dpy, widget, event->property, info, ctx); 
     }
@@ -1012,12 +1013,12 @@ static DoLocalTransfer(ctx, selection, target, widget,
 Select ctx;
 Atom selection;
 Atom target;
-Widget widget;			/* The widget requesting the value. */
+Widget widget;		/* The widget requesting the value. */
 XtSelectionCallbackProc callback;
-Opaque closure;			/* the closure for the callback, not the conversion */
+XtPointer closure;	/* the closure for the callback, not the conversion */
 Boolean incremental;
 {
-    caddr_t value, temp, total = NULL;
+    XtPointer value, temp, total = NULL;
     int length, format;
     Atom resulttype;
     int totallength = 0;
@@ -1028,7 +1029,7 @@ Boolean incremental;
 	   if (!(*ctx->convert)(ctx->widget, &selection, &target,
 			    &resulttype, &value, &length, &format,
 			    MAX_SELECTION_INCR(ctx->dpy), ctx->owner_closure,
-			    (Opaque)LOCAL)) {
+			    (XtPointer)LOCAL)) {
 	    HandleNone(widget, callback, closure, selection);
 	  } else {
 		if (incremental) {
@@ -1046,7 +1047,7 @@ Boolean incremental;
 		     (*ctx->convert)(ctx->widget, &selection, &target,
 			    &resulttype, &value, &length, &format,
 			    MAX_SELECTION_INCR(ctx->dpy), ctx->owner_closure,
-			    (Opaque)LOCAL);
+			    (XtPointer)LOCAL);
 		  }
 	        } else {
 	          while (length) {
@@ -1058,7 +1059,7 @@ Boolean incremental;
 		    (*ctx->convert)(ctx->widget, &selection, &target, 
 			    &resulttype, &value, &length, &format,
 			    MAX_SELECTION_INCR(ctx->dpy), ctx->owner_closure,
-			    (Opaque)LOCAL);
+			    (XtPointer)LOCAL);
 		  }
 		  totallength = NUMELEM(totallength, format); 
 		  (*callback)(widget, closure, &selection, &resulttype, 
@@ -1066,7 +1067,7 @@ Boolean incremental;
 		}
 	        if (ctx->notify) 
 		   (*ctx->notify)(ctx->widget, &selection, &target, 
-				  (Opaque)LOCAL, ctx->owner_closure);
+				  (XtPointer)LOCAL, ctx->owner_closure);
          }
 	} else { /* not incremental owner */
 	  if (!(*ctx->convert)(ctx->widget, &selection, &target, 
@@ -1094,7 +1095,7 @@ Widget widget;
 Atom selection;
 Atom target;
 XtSelectionCallbackProc callback;
-Opaque closure;
+XtPointer closure;
 Time time;
 {
     Select ctx;
@@ -1120,7 +1121,7 @@ Atom selection;
 Atom *targets;
 int count;
 XtSelectionCallbackProc callback;
-Opaque *closures;
+XtPointer *closures;
 Time time;
 {
     Select ctx;

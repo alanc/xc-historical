@@ -1,5 +1,5 @@
 /*
-* $XConsortium: VendorP.h,v 1.16 88/09/06 16:29:31 jim Exp $
+* $XConsortium: VendorP.h,v 1.17 89/06/16 18:09:28 jim Exp $
 * $oHeader: VendorP.h,v 1.2 88/08/18 15:56:48 asente Exp $
 */
 
@@ -48,7 +48,7 @@ SOFTWARE.
 /* New fields for the VendorShell widget class record */
 
 typedef struct {
-    caddr_t         extension;          /* pointer to extension record      */
+    XtPointer       extension;          /* pointer to extension record      */
 } VendorShellClassPart;
 
 typedef struct _VendorShellClassRec {

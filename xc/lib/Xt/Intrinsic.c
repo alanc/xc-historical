@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.128 89/09/08 17:36:52 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.129 89/09/11 17:43:08 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -195,7 +195,7 @@ static void RealizeWidget(widget)
     if (!XtIsWidget(widget) || XtIsRealized(widget)) return;
 
     if (widget->core.tm.proc_table == NULL)
-	_XtBindActions(widget, &widget->core.tm,0);
+	_XtBindActions(widget, &widget->core.tm, (unsigned)0);
     _XtInstallTranslations(widget, widget->core.tm.translations);
 
     ComputeWindowAttributes (widget, &value_mask, &values);
@@ -210,7 +210,9 @@ static void RealizeWidget(widget)
     if (_XtIdentifyWindows)
 	XStoreName( XtDisplay(widget), window, widget->core.name );
 #endif
+#ifdef notdef
     _XtRegisterAsyncHandlers(widget);
+#endif
     _XtRegisterGrabs(widget,&widget->core.tm);
     _XtRegisterWindow (window, widget);
 

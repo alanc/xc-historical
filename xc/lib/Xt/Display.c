@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.22 89/07/21 17:08:42 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.23 89/09/11 17:42:54 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -272,7 +272,7 @@ static void DestroyAppContext(app)
 	while (app->count-- > 0) XtCloseDisplay(app->list[app->count]);
 	if (app->list != NULL) XtFree((char *)app->list);
 	_XtFreeConverterTable(app->converterTable);
-	_XtCacheFlushTag(app, (caddr_t)&app->heap);
+	_XtCacheFlushTag(app, (XtPointer)&app->heap);
 	_XtHeapFree(&app->heap);
 	while (*prev_app != app) prev_app = &(*prev_app)->next;
 	*prev_app = app->next;
@@ -364,14 +364,14 @@ static void _XtHeapInit(heap)
 
 char* _XtHeapAlloc(heap, bytes)
     Heap*	heap;
-    int		bytes;
+    Cardinal	bytes;
 {
     register char* heap_loc;
     if (heap == NULL) return XtMalloc(bytes);
     if (heap->bytes_remaining < bytes) {
 	int segment_size = ((bytes + sizeof(char*)) > HEAP_SEGMENT_SIZE)
 			    ? bytes + sizeof(char*) : HEAP_SEGMENT_SIZE;
-	heap_loc = XtMalloc(segment_size);
+	heap_loc = XtMalloc((unsigned)segment_size);
 	*(char**)heap_loc = heap->start;
 	heap->start = heap_loc;
 	heap->current = heap_loc + sizeof(char*);
@@ -453,7 +453,7 @@ static void CloseDisplay(dpy)
             xtpd->modKeysyms = NULL;
             xtpd->modsToKeysyms = NULL;
 	    XDestroyRegion(xtpd->region);
-	    _XtCacheFlushTag(xtpd->appContext, (caddr_t)&xtpd->heap);
+	    _XtCacheFlushTag(xtpd->appContext, (XtPointer)&xtpd->heap);
 	    _XtHeapFree(&xtpd->heap);
 	    _XtGClistFree(xtpd->GClist);
 	    XtFree((char *) xtpd->drawables);

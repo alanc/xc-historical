@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Callback.c,v 1.15 89/06/16 19:33:57 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Callback.c,v 1.16 89/09/08 17:45:46 swick Exp $";
 /* $oHeader: Callback.c,v 1.4 88/09/01 11:08:37 asente Exp $ */
 #endif /* lint */
 
@@ -41,7 +41,7 @@ typedef struct _CallbackRec {
     CallbackList  next;
     Widget	    widget;
     XtCallbackProc  callback;
-    caddr_t	    closure;
+    XtPointer	    closure;
 } CallbackRec;
 
 typedef struct _CallbackStruct {
@@ -94,7 +94,7 @@ void _XtAddCallback(widget, callbacks, callback, closure)
     Widget		    widget;
     register CallbackList   *callbacks;
     XtCallbackProc	    callback;
-    caddr_t		    closure;
+    XtPointer		    closure;
 {
     register CallbackRec *new;
 
@@ -112,7 +112,7 @@ void XtAddCallback(widget, name, callback, closure)
     Widget	    widget;
     String	    name;
     XtCallbackProc  callback;
-    caddr_t	    closure;
+    XtPointer	    closure;
 {
     CallbackList *callbacks;
 
@@ -162,7 +162,7 @@ void RemoveCallback (widget, callbacks, callback, closure)
     Widget		    widget;
     register CallbackList   *callbacks;
     XtCallbackProc	    callback;
-    caddr_t		    closure;
+    XtPointer		    closure;
 
 {
     register CallbackList cl;
@@ -181,7 +181,7 @@ void XtRemoveCallback (widget, name, callback, closure)
     Widget	    widget;
     String	    name;
     XtCallbackProc  callback;
-    caddr_t	    closure;
+    XtPointer	    closure;
 {
 
     CallbackList *callbacks;
@@ -273,7 +273,7 @@ void XtRemoveAllCallbacks(widget, name)
 
 void _XtCallCallbacks (callbacks, call_data)
     CallbackList *callbacks;
-    caddr_t       call_data;
+    XtPointer     call_data;
 {
     register CallbackRec *cl;
     CallbackRec		 stack_cache [CALLBACK_CACHE_SIZE];
@@ -386,7 +386,7 @@ XtCallbackList _XtGetCallbackList(list)
 void XtCallCallbacks(widget, name, call_data)
     Widget   widget;
     String   name;
-    caddr_t  call_data;
+    XtPointer call_data;
 {
     CallbackList *callbacks;
 

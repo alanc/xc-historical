@@ -1,4 +1,4 @@
-/* $XConsortium: ObjectP.h,v 1.6 88/09/26 11:43:41 swick Exp $ */
+/* $XConsortium: ObjectP.h,v 1.7 89/09/08 17:44:20 swick Exp $ */
 /* $oHeader: ObjectP.h,v 1.2 88/08/18 15:55:35 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -40,7 +40,7 @@ typedef struct _ObjectPart {
     XrmName         xrm_name;           /* widget resource name quarkified   */
     Boolean         being_destroyed;    /* marked for destroy                */
     XtCallbackList  destroy_callbacks;  /* who to call when widget destroyed */
-    caddr_t         constraints;        /* constraint record                 */
+    XtPointer       constraints;        /* constraint record                 */
 } ObjectPart;
 
 typedef struct _ObjectRec {
@@ -89,7 +89,7 @@ typedef struct _ObjectClassPart {
     String          obj12;              /* NULL                             */
     XtProc          obj13;              /* NULL                             */
     XtProc          obj14;              /* NULL                             */
-    caddr_t         extension;          /* pointer to extension record      */
+    XtPointer       extension;          /* pointer to extension record      */
 }ObjectClassPart;
 
 typedef struct _ObjectClassRec {

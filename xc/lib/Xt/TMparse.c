@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.4 89/07/20 14:38:11 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.77 89/07/21 12:06:55 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif /*lint*/
 
@@ -456,7 +456,7 @@ static void StoreLateBindings(keysymL,notL,keysymR,notR,lateBindings)
              number = 2;pair = TRUE;
         }
           
-        temp = (LateBindingsPtr)XtRealloc((caddr_t)temp,
+        temp = (LateBindingsPtr)XtRealloc((XtPointer)temp,
             (unsigned)((count+number+1) * sizeof(LateBindings)) );
         *lateBindings = temp;
         temp[count].knot = notL;
@@ -1705,7 +1705,7 @@ static Boolean CvtStringToAccelerators(dpy, args, num_args, from, to, closure)
     XrmValuePtr args;
     Cardinal    *num_args;
     XrmValuePtr from,to;
-    caddr_t	*closure;
+    XtPointer	*closure;
 {
     String str;
 
@@ -1728,7 +1728,7 @@ static Boolean CvtStringToAccelerators(dpy, args, num_args, from, to, closure)
     else {
 	static XtAccelerators staticStateTable;
 	staticStateTable = XtParseAcceleratorTable(str);
-	to->addr= (caddr_t)&staticStateTable;
+	to->addr= (XtPointer)&staticStateTable;
 	to->size = sizeof(XtAccelerators);
     }
     return True;
@@ -1771,7 +1771,7 @@ CvtStringToTranslations(dpy, args, num_args, from, to, closure_ret)
     XrmValuePtr args;
     Cardinal    *num_args;
     XrmValuePtr from,to;
-    caddr_t	*closure_ret;
+    XtPointer	*closure_ret;
 {
     String str;
 
@@ -1794,7 +1794,7 @@ CvtStringToTranslations(dpy, args, num_args, from, to, closure_ret)
     else {
 	static XtTranslations staticStateTable;
 	staticStateTable = XtParseTranslationTable(str);
-	to->addr= (caddr_t)&staticStateTable;
+	to->addr= (XtPointer)&staticStateTable;
 	to->size = sizeof(XtTranslations);
     }
     return True;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Core.c,v 1.24 89/09/07 17:48:45 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Core.c,v 1.25 89/09/11 17:43:52 swick Exp $";
 /* $oHeader: Core.c,v 1.2 88/08/18 15:37:59 asente Exp $ */
 #endif /* lint */
 
@@ -29,6 +29,7 @@ SOFTWARE.
 
 #define CORE
 #include "IntrinsicP.h"
+#include "EventI.h"
 #include "TranslateI.h"
 
 #include "RectObj.h"
@@ -41,38 +42,38 @@ SOFTWARE.
  *
  ******************************************************************/
 
-static Boolean true = TRUE;
 externaldef(xtinherittranslations) int _XtInheritTranslations = NULL;
+
 static XtResource resources[] = {
     {XtNscreen, XtCScreen, XtRPointer, sizeof(int),
-      XtOffset(CoreWidget,core.screen), XtRCallProc, (caddr_t)XtCopyScreen},
+      XtOffset(CoreWidget,core.screen), XtRCallProc, (XtPointer)XtCopyScreen},
 /*XtCopyFromParent does not work for screen because the Display
 parameter is not passed through to the XtRCallProc routines */
     {XtNdepth, XtCDepth, XtRInt,sizeof(int),
-         XtOffset(CoreWidget,core.depth), XtRCallProc, (caddr_t)XtCopyFromParent},
+         XtOffset(CoreWidget,core.depth), XtRCallProc, (XtPointer)XtCopyFromParent},
     {XtNcolormap, XtCColormap, XtRPointer, sizeof(Colormap),
-      XtOffset(CoreWidget,core.colormap), XtRCallProc,(caddr_t)XtCopyFromParent},
+      XtOffset(CoreWidget,core.colormap), XtRCallProc,(XtPointer)XtCopyFromParent},
     {XtNbackground, XtCBackground, XtRPixel,sizeof(Pixel),
          XtOffset(CoreWidget,core.background_pixel),
-	 XtRString,(caddr_t)"XtDefaultBackground"},
+	 XtRString,(XtPointer)"XtDefaultBackground"},
     {XtNbackgroundPixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
          XtOffset(CoreWidget,core.background_pixmap),
-	 XtRImmediate, (caddr_t)XtUnspecifiedPixmap},
+	 XtRImmediate, (XtPointer)XtUnspecifiedPixmap},
     {XtNborderColor, XtCBorderColor, XtRPixel,sizeof(Pixel),
          XtOffset(CoreWidget,core.border_pixel),
-         XtRString,(caddr_t)"XtDefaultForeground"},
+         XtRString,(XtPointer)"XtDefaultForeground"},
     {XtNborderPixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
          XtOffset(CoreWidget,core.border_pixmap),
-	 XtRImmediate, (caddr_t)XtUnspecifiedPixmap},
+	 XtRImmediate, (XtPointer)XtUnspecifiedPixmap},
     {XtNmappedWhenManaged, XtCMappedWhenManaged, XtRBoolean, sizeof(Boolean),
          XtOffset(CoreWidget,core.mapped_when_managed),
-	 XtRBoolean, (caddr_t)&true},
+	 XtRImmediate, (XtPointer)True},
     {XtNtranslations, XtCTranslations, XtRTranslationTable,
         sizeof(XtTranslations), XtOffset(CoreWidget,core.tm.translations),
-        XtRTranslationTable, (caddr_t)NULL},
+        XtRTranslationTable, (XtPointer)NULL},
     {XtNaccelerators, XtCAccelerators, XtRAcceleratorTable,
         sizeof(XtTranslations), XtOffset(CoreWidget,core.accelerators),
-        XtRTranslationTable, (caddr_t)NULL}
+        XtRTranslationTable, (XtPointer)NULL}
     };
 
 static void CoreInitialize();
@@ -168,11 +169,7 @@ externaldef (WidgetClass) WidgetClass coreWidgetClass = &widgetClassRec;
 static void CoreClassPartInitialize(wc)
     register WidgetClass wc;
 {
-#ifdef lint
-    /* ||| GROSS!!! do the right thing after .h split!!! */
-    extern void  XrmCompileResourceList();
     extern Opaque _CompileActionTable();
-#endif
 
     /* We don't need to check for null super since we'll get to object
        eventually, and it had better define them!  */
@@ -249,8 +246,6 @@ static void CoreRealize(widget, value_mask, attributes)
 static void CoreDestroy (widget)
      Widget    widget;
 {
-    int i;
-
     XtFree((char *) (widget->core.name));
     _XtFreeEventTable(&widget->core.event_table);
     XtFree((char *) widget->core.tm.proc_table);
