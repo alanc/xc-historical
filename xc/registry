@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.25 91/04/15 10:34:24 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.26 91/04/15 10:44:28 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -492,9 +492,15 @@ Name						Reference
 "JISX0208.1983-0"				[40],[12]
 	Japanese Graphic Character Set,
 	GL encoding
+"JISX0208.1990-0"				[71]
+	Japanese Graphic Character Set,
+	GL encoding
 "JISX0208.1983-1"				[40],[12]
 	(deprecated)
 	Japanese Graphic Character Set,
+	GL encoding
+"JISX0212.1990-0"				[72]
+	Supplementary Japanese Graphic Character Set,
 	GL encoding
 "KSC5601.1987-0"				[41],[12]
 	Korean Graphic Character Set,
@@ -794,11 +800,11 @@ REFERENCES
 	6-7-35 Kitasinagawa Sinagawa-ku
 	Tokyo, Japan
 
-[38]	JIS X0201-1976 (reaffirmed 1984)
+[38]	JIS X 0201-1976 (reaffirmed 1984)
 
 [39]	GB2312-1980
 
-[40]	JIS X0208-1983
+[40]	JIS X 0208-1983
 
 [41]	KS C5601-1987
 
@@ -976,4 +982,8 @@ REFERENCES
 
 [70]	Adrian Bereanu
 	Human Designed Systems
+
+[71]	JIS X 0208-1990
+
+[72]	JIS X 0212-1990
 Sumitomo Electric Workstation Corp.	[77]
