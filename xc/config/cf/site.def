@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.56 92/07/14 10:15:00 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.57 92/08/15 11:19:56 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -10,9 +10,8 @@ XCOMM site:  $XConsortium: site.def,v 1.56 92/07/14 10:15:00 rws Exp $
  * after-half should be protected by #ifdef AfterVendorCF.                   *
  *                                                                           *
  * The before-half should only set things that the .cf file depends on.      *
- * For the .cf files shipped in this release, the only variables in this     *
- * category are HasGcc (for multiple .cf files), and UseSunWindowsInServer   *
- * (sun.cf only).                                                            *
+ * For the .cf files shipped in this release, the main variables in this     *
+ * category are HasGcc and HasGcc2.                                          *
  *                                                                           *
  * The after-half should contain all other definitions.  For example,        *
  * place your ProjectRoot definition here.  Beware that several of the       *
@@ -44,6 +43,12 @@ XCOMM site:  $XConsortium: site.def,v 1.56 92/07/14 10:15:00 rws Exp $
 #endif /* BeforeVendorCF */
 
 #ifdef AfterVendorCF
+
+#if HasGcc2
+#ifdef Sun3Architecture
+#define GccIncDir /usr/local/lib/gcc-lib/sun3-sunos/2.1/include
+#endif
+#endif
 
 #define BuildScreenSaverExt	YES
 #define BuildScreenSaverLib	YES
