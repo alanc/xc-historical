@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.134 90/03/15 14:22:51 jim Exp $
+ * $XConsortium: add_window.c,v 1.135 90/03/16 12:04:27 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.134 90/03/15 14:22:51 jim Exp $";
+"$XConsortium: add_window.c,v 1.135 90/03/16 12:04:27 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1252,6 +1252,8 @@ CreateTwmColormap(c)
     }
     cmap->c = c;
     cmap->state = 0;
+    cmap->install_req = 0;
+    cmap->w = None;
     cmap->refcnt = 1;
     return (cmap);
 }
