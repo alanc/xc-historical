@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.62 89/10/16 16:47:26 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.63 89/10/16 18:06:56 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -312,6 +312,15 @@ install:: lib/**/libname.a						@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.a dest		@@\
 	$(RANLIB) $(RANLIBINSTFLAGS) dest/lib/**/libname.a
 #endif /* InstallLibrary */
+
+/*
+ * MergeIntoInstalledLibrary - generate rules to merge one library into another
+ */
+#ifndef MergeIntoInstalledLibrary
+#define MergeIntoInstalledLibrary(tolib,fromlib)			@@\
+install::  fromlib							@@\
+	$(SCRIPTSRC)/mergelib tolib fromlib
+#endif /* MergeIntoInstalledLibrary */
 
 /*
  * InstallSharedLibrary - generate rules to install the shared library.
