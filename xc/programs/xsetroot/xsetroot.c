@@ -14,8 +14,7 @@
  */
 
 /* Include routines to handle parsing defaults */
-#include "jowindow.h"
-#include "ostuff.h"
+#include "wsimple.h"
 
 #include "X11/bitmaps/gray"
 
