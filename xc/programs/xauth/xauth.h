@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xauth.h,v 1.12 91/01/09 17:16:37 rws Exp $
+ * $XConsortium: xauth.h,v 1.13 94/04/17 20:37:53 rws Exp kaleb $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -41,7 +41,13 @@ typedef int Bool;
 
 extern char *ProgramName;
 
-extern char *copystring(), *malloc(), *realloc();
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern char *malloc(), *realloc();
+#endif
+
+extern char *copystring();
 int process_command(), auth_initialize(), auth_finalize();
 extern int print_help();
 extern int verbose;
