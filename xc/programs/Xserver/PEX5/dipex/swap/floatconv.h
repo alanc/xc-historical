@@ -1,4 +1,4 @@
-/* $XConsortium: floatconv.h,v 5.2 91/02/16 09:47:06 rws Exp $ */
+/* $XConsortium: floatconv.h,v 5.3 91/02/17 12:27:22 rws Exp $ */
 
 /*
  * Copyright (c) 1988-1991 by Sun Microsystems and the X Consortium.
@@ -38,8 +38,9 @@
 #define FLOAT_CON_H
 
 #include <X11/Xmd.h>
-#include <X11/extensions/PEX.h>
-#include <X11/extensions/floatdef.h>
+#include "X.h"
+#include "Xproto.h"
+#include "dipex.h"
 
 #ifdef vax			/* probably not good enough yet */
 #define MyFloatType DEC_F_Floating
@@ -47,7 +48,7 @@
 #define MyFloatType Ieee_754_32
 #endif
 
-extern FLOAT ConvertIEEEtoVax();
-extern FLOAT ConvertVaxToIEEE();
+extern PEXFLOAT ConvertIEEEtoVax();
+extern PEXFLOAT ConvertVaxToIEEE();
 
 #endif /* FLOAT_CON_H */
