@@ -1,5 +1,5 @@
 /*
- * $XConsortium: access.c,v 1.2 90/09/14 17:51:56 keith Exp $
+ * $XConsortium: access.c,v 1.3 90/09/29 09:56:09 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -39,9 +39,13 @@
 
 #define ALIAS_CHARACTER	    '%'
 #define NEGATE_CHARACTER    '!'
+#define CHOOSER_STRING	    "CHOOSER"
+#define BROADCAST_STRING    "BROADCAST"
 
 #define HOST_ALIAS	0
 #define HOST_ADDRESS	1
+#define HOST_BROADCAST	2
+#define HOST_CHOOSER	3
 
 typedef struct _hostEntry {
     struct _hostEntry	*next;
@@ -60,6 +64,7 @@ typedef struct _displayEntry {
     struct _displayEntry    *next;
     int			    type;
     int			    notAllowed;
+    int			    chooser;
     union _displayType {
 	char		    *aliasName;
 	char		    *displayPattern;
@@ -75,7 +80,7 @@ DisplayEntry	*database;
 
 ARRAY8		localAddress;
 
-static ARRAY8Ptr
+ARRAY8Ptr
 getLocalAddress ()
 {
     static int	haveLocalAddress;
@@ -101,6 +106,8 @@ FreeHostEntry (h)
 	break;
     case HOST_ADDRESS:
 	XdmcpDisposeARRAY8 (&h->entry.hostAddress);
+	break;
+    case HOST_CHOOSER:
 	break;
     }
     free ((char *) h);
@@ -172,10 +179,10 @@ ReadWord (file, EOFatEOL)
 		break;
 	    }
 	    while ((c = getc (file)) != EOF && c != '\n')
-		/* SUPPRESS 530 */
 		;
-	case EOF:
 	case '\n':
+	    Debug ("Found newline, quoted is %d\n", quoted);
+	case EOF:
 	    if (c == EOF || (EOFatEOL && !quoted))
 	    {
 		ungetc (c, file);
@@ -216,7 +223,9 @@ ReadHostEntry (file)
     HostEntry	    *h;
     struct hostent  *hostent;
 
+tryagain:
     hostOrAlias = ReadWord (file, TRUE);
+    Debug ("Found word %s\n", hostOrAlias);
     if (!hostOrAlias)
 	return NULL;
     h = (HostEntry *) malloc (sizeof (DisplayEntry));
@@ -230,19 +239,28 @@ ReadHostEntry (file)
 	}
 	strcpy (h->entry.aliasName, hostOrAlias);
     }
+    else if (!strcmp (hostOrAlias, CHOOSER_STRING))
+    {
+	h->type = HOST_CHOOSER;
+    }
+    else if (!strcmp (hostOrAlias, BROADCAST_STRING))
+    {
+	h->type = HOST_BROADCAST;
+    }
     else
     {
+	h->type = HOST_ADDRESS;
 	hostent = gethostbyname (hostOrAlias);
 	if (!hostent)
 	{
 	    Debug ("No such host %s\n", hostOrAlias);
 	    LogError ("Access file \"%s\", host \"%s\" not found\n", accessFile, hostOrAlias);
 	    free ((char *) h);
-	    return NULL;
+	    goto tryagain;
 	}
-	h->type = HOST_ADDRESS;
 	if (!XdmcpAllocARRAY8 (&h->entry.hostAddress, hostent->h_length))
 	{
+	    LogOutOfMem ("ReadHostEntry\n");
 	    free ((char *) h);
 	    return NULL;
 	}
@@ -280,6 +298,7 @@ ReadDisplayEntry (file)
     	return NULL;
     d = (DisplayEntry *) malloc (sizeof (DisplayEntry));
     d->notAllowed = 0;
+    d->chooser = 0;
     if (*displayOrAlias == ALIAS_CHARACTER)
     {
 	d->type = DISPLAY_ALIAS;
@@ -349,11 +368,16 @@ ReadDisplayEntry (file)
     	}
     }
     prev = &d->hosts;
-    /* SUPPRESS 560 */
     while (h = ReadHostEntry (file))
     {
-	*prev = h;
-	prev = &h->next;
+	if (h->type == HOST_CHOOSER)
+	{
+	    FreeHostEntry (h);
+	    d->chooser = 1;
+	} else {
+	    *prev = h;
+	    prev = &h->next;
+	}
     }
     *prev = NULL;
     return d;
@@ -366,7 +390,6 @@ ReadAccessDatabase (file)
     DisplayEntry    *d, **prev;
 
     prev = &database;
-    /* SUPPRESS 560 */
     while (d = ReadDisplayEntry (file))
     {
 	*prev = d;
@@ -396,13 +419,14 @@ ScanAccessDatabase ()
 #define MAX_DEPTH   32
 
 static int
-scanHostlist (h, clientAddress, connectionType, function, closure, depth)
+scanHostlist (h, clientAddress, connectionType, function, closure, depth, broadcast)
     HostEntry	*h;
     ARRAY8Ptr	clientAddress;
     CARD16	connectionType;
     int		(*function)();
     char	*closure;
     int		depth;
+    int		broadcast;
 {
     int	haveLocalhost = 0;
     static int indirectAlias ();
@@ -420,6 +444,19 @@ scanHostlist (h, clientAddress, connectionType, function, closure, depth)
 		haveLocalhost = 1;
 	    else if (function)
 		(*function) (connectionType, &h->entry.hostAddress, closure);
+	    break;
+	case HOST_BROADCAST:
+	    if (broadcast)
+	    {
+		ARRAY8	temp;
+
+		if (function)
+		{
+		    temp.data = (BYTE *) BROADCAST_STRING;
+		    temp.length = strlen (temp.data);
+		    (*function) (connectionType, &temp, closure);
+		}
+	    }
 	    break;
 	}
     }
@@ -520,7 +557,17 @@ ForEachMatchingIndirectHost (clientAddress, connectionType, function, closure)
 	    continue;
 	if (d->notAllowed)
 	    break;
-	if (scanHostlist (d->hosts, clientAddress, connectionType,
+	if (d->chooser)
+	{
+	    ARRAY8Ptr	choice, IndirectChoice ();
+
+	    choice = IndirectChoice (clientAddress, connectionType);
+	    if (!choice || XdmcpARRAY8Equal (getLocalAddress(), choice))
+		haveLocalhost = 1;
+	    else
+		(*function) (connectionType, choice, closure);
+	}
+	else if (scanHostlist (d->hosts, clientAddress, connectionType,
 			  function, closure, 0))
 	{
 	    haveLocalhost = 1;
@@ -530,6 +577,95 @@ ForEachMatchingIndirectHost (clientAddress, connectionType, function, closure)
     if (clientName)
 	free (clientName);
     return haveLocalhost;
+}
+
+UseChooser (clientAddress, connectionType)
+    ARRAY8Ptr	clientAddress;
+    CARD16	connectionType;
+{
+    DisplayEntry    *d;
+    char	    *clientName = 0, *NetworkAddressToHostname ();
+
+    for (d = database; d; d = d->next)
+    {
+    	switch (d->type) {
+    	case DISPLAY_ALIAS:
+	    continue;
+    	case DISPLAY_PATTERN:
+	    if (!clientName)
+		clientName = NetworkAddressToHostname (connectionType,
+						       clientAddress);
+	    if (!patternMatch (clientName, d->entry.displayPattern))
+		continue;
+	    break;
+    	case DISPLAY_ADDRESS:
+	    if (d->entry.displayAddress.connectionType != connectionType ||
+	    	!XdmcpARRAY8Equal (&d->entry.displayAddress.clientAddress,
+				  clientAddress))
+	    {
+		continue;
+	    }
+	    break;
+    	}
+	if (!d->hosts)
+	    continue;
+	if (d->notAllowed)
+	    break;
+	if (d->chooser && !IndirectChoice (clientAddress, connectionType))
+	    return 1;
+	break;
+    }
+    return 0;
+}
+
+ForEachChooserHost (clientAddress, connectionType, function, closure)
+    ARRAY8Ptr	clientAddress;
+    CARD16	connectionType;
+    int		(*function)();
+    char	*closure;
+{
+    int		    haveLocalhost = 0;
+    DisplayEntry    *d;
+    char	    *clientName = 0, *NetworkAddressToHostname ();
+
+    for (d = database; d; d = d->next)
+    {
+    	switch (d->type) {
+    	case DISPLAY_ALIAS:
+	    continue;
+    	case DISPLAY_PATTERN:
+	    if (!clientName)
+		clientName = NetworkAddressToHostname (connectionType,
+						       clientAddress);
+	    if (!patternMatch (clientName, d->entry.displayPattern))
+		continue;
+	    break;
+    	case DISPLAY_ADDRESS:
+	    if (d->entry.displayAddress.connectionType != connectionType ||
+	    	!XdmcpARRAY8Equal (&d->entry.displayAddress.clientAddress,
+				  clientAddress))
+	    {
+		continue;
+	    }
+	    break;
+    	}
+	if (!d->hosts)
+	    continue;
+	if (d->notAllowed)
+	    break;
+	if (!d->chooser)
+	    break;
+	if (scanHostlist (d->hosts, clientAddress, connectionType,
+			  function, closure, 0))
+	{
+	    haveLocalhost = 1;
+	}
+	break;
+    }
+    if (clientName)
+	free (clientName);
+    if (haveLocalhost)
+	(*function) (connectionType, getLocalAddress(), closure);
 }
 
 /*
