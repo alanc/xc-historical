@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.94 89/05/19 08:55:12 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.95 89/06/09 14:55:07 keith Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.124 89/04/22 11:54:07 rws Exp $ */
+/* $XConsortium: gc.c,v 1.125 89/06/09 14:55:57 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

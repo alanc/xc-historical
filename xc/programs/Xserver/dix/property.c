@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 1.68 89/05/19 08:56:24 rws Exp $ */
+/* $XConsortium: property.c,v 1.69 89/06/09 14:56:10 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.243 89/05/01 18:27:04 keith Exp $ */
+/* $XConsortium: window.c,v 1.244 89/06/09 14:56:13 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES

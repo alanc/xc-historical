@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: glyphcurs.c,v 1.16 89/03/18 16:24:02 rws Exp $ */
+/* $XConsortium: glyphcurs.c,v 1.17 89/06/09 14:56:03 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

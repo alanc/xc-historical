@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.158 89/05/10 11:33:48 jim Exp $ */
+/* $XConsortium: main.c,v 1.159 89/06/09 14:56:07 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
