@@ -1,4 +1,4 @@
-/* $XConsortium: miFont.c,v 5.2 91/02/18 18:20:11 rws Exp $ */
+/* $XConsortium: miFont.c,v 5.3 92/11/24 13:19:56 mor Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -318,26 +318,30 @@ ListPEXFontsPlus(patLen, pPattern, maxNames, pNumNames, pBuffer)
     /* guess at a large number of bytes for the reply, and make sure
        we have this many (can always realloc later) */
     for (i=0; i<n; i++)
-	guess_size += strlen(names[i]);
-    guess_size += n * EST_MAX_FONT_PROPS * sizeof(pexFontProp);
-    guess_size += n * (sizeof(CARD32) + sizeof(pexFontInfo));
+	guess_size += (strlen(names[i]) + 4);
+    guess_size += (sizeof(CARD32) + (n * sizeof(pexFontInfo)));
+    guess_size += (n * EST_MAX_FONT_PROPS * sizeof(pexFontProp));
     if (PU_BUF_TOO_SMALL(pBuffer, guess_size))
 	if (puBuffRealloc(pBuffer, guess_size) != Success) goto free_names;
 
     /* write names into reply buffer */
     pBuf = pBuffer->pBuf;
+    pBuffer->dataSize = 0;
     for (i = 0; i < n; i++) {
 	len = strlen(names[i]);
 	PACK_CARD16(len, pBuf);
 	PACK_LISTOF_STRUCT(len, CARD8, names[i], pBuf);
-	SKIP_PADDING(pBuf, PADDING(2 + len)); }
+	SKIP_PADDING(pBuf, PADDING(sizeof(CARD16) + len));
+	pBuffer->dataSize += sizeof(CARD16) + len +
+	    PADDING(sizeof(CARD16) + len);
+    }
 
 
     /* read in the font info, write it into the reply buffer */
     ddFont.deviceData = (ddPointer)&(fontData);
     fontData.properties = 0;
     PACK_CARD32(n, pBuf);
-    pBuffer->dataSize = pBuffer->pBuf - pBuffer->pHead;
+    pBuffer->dataSize += sizeof(CARD32);
     for (i = 0; i < n; i++) {
     
 	err = LoadPEXFontFile(	(ddULONG)(strlen(names[i])),
