@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miLightLUT.c,v 5.1 91/02/16 09:56:29 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -32,7 +32,6 @@ SOFTWARE.
 #include "PEXErr.h"
 #include "PEXprotost.h"
 
-extern double	cos();
 
 /*  Level 4 Shared Resources  */
 /* Lookup Table Procedures */
