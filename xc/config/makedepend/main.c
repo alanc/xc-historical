@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.60 92/08/22 12:39:50 rws Exp $
+ * $XConsortium: main.c,v 1.61 92/08/22 12:46:14 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -133,7 +133,7 @@ main(argc, argv)
 					*p++ = '\0';
 					break;
 				}
-			symp->s_value = p;
+			symp->s_value = *p == '\0' ? "1" : p;
 			symp++;
 			break;
 		case 'I':
