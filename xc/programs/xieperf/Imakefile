@@ -1,8 +1,4 @@
-XCOMM $XConsortium$
-# Imakefile to build device independent processing element objects
-#include <Server.tmpl>
-
-   XIELIB = ../../../lib/xielib/libCxie.a 
+XCOMM $XConsortium: Imakefile,v 1.1 93/07/19 13:01:44 rws Exp $
 
    SRCS = xieperf.c do_tests.c do_simpleflo.c do_simpleflomap.c \
 	  do_constrain.c do_dither.c do_point.c do_import.c \
@@ -18,15 +14,8 @@ XCOMM $XConsortium$
 	  do_abort.o do_await.o do_exportclient.o do_unconstrain.o \
 	  do_blend.o do_pasteup.o do_geometry.o do_converttoindex.o
 
-   INCLUDES = -I../../../include/xie -Iinclude -I../../../include \
-              -I../../../../include -I../../../../server/include \
-	      -I../../../../extensions/lib/xielib \
-              -I$(INCLUDESRC)
-   LOCAL_LIBRARIES = $(XLIB) $(XIELIB)
+   LOCAL_LIBRARIES = $(XIELIB) $(XLIB)
+           DEPLIBS = $(DEPXIELIB) $(DEPXLIB)
      SYS_LIBRARIES = -lm
-
-SubdirLibraryRule($(OBJS))
-NormalLibraryObjectRule()
-NormalLintTarget($(SRCS))
 
 ComplexProgramTarget(xieperf)
