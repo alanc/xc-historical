@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.224 93/09/13 20:33:31 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.225 93/09/14 17:14:30 gildea Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -1163,6 +1163,24 @@ typedef struct _XIMStatusDrawCallbackStruct {
 	Pixmap  bitmap;
     } data;
 } XIMStatusDrawCallbackStruct;
+
+typedef struct _XIMHotKeyTrigger {
+    KeySym	 keysym;
+    int		 modifier;
+    int		 modifier_mask;
+} XIMHotKeyTrigger;
+
+typedef struct _XIMHotKeyTriggers {
+    int			 num_hot_key;
+    XIMHotKeyTrigger	*key;
+} XIMHotKeyTriggers;
+
+typedef unsigned char *XIMOptions;
+
+typedef struct _XIMOptionsList {
+    unsigned short	 count_options;
+    XIMOptions		*supported_options;
+} XIMOptionsList;
 
 _XFUNCPROTOBEGIN
 
@@ -4322,6 +4340,21 @@ extern XVaNestedList XVaCreateNestedList(
 );
 
 /* internal connections for IMs */
+
+extern Bool XRegisterIMInstantiateCallback(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    XIMProc	/* callback */,
+    XPointer*	/* client_data */
+#endif
+);
+
+extern Bool XUnregisterIMInstantiateCallback(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    XIMProc	/* callback */
+#endif
+);
 
 typedef void (*XConnectionWatchProc)(
 #if NeedFunctionPrototypes
