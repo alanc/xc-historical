@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: CH09,v 1.7 91/07/31 20:24:20 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -57,6 +57,7 @@ Resources are obtained first from the argument list,
 then from the resource database for all resources not specified
 in the argument list,
 and last, from the internal default, if needed.
+
 .NH 2
 Resource Lists
 .XS
@@ -533,6 +534,7 @@ the widget class names of all the widget's parents up to the
 top of the widget tree,
 the widget class name of the widget itself,
 and the resource class of the specified field of the widget.
+
 .NH 2
 Byte Offset Calculations
 .XS
@@ -900,6 +902,7 @@ Conversions that require much computation or space
 (for example, string-to-translation-table)
 or that require round-trips to the server
 (for example, string-to-font or string-to-color) are performed only once.
+
 .NH 3
 Predefined Resource Converters
 .XS
@@ -1450,13 +1453,8 @@ static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, converter_d
 	if (strcmp(message, "xtdefaultbackground") == 0) done(&WhitePixelOfScreen(screen), Pixel);
 	if (strcmp(message, "xtdefaultforeground") == 0) done(&BlackPixelOfScreen(screen), Pixel);
 
-	if ((char) fromVal->addr[0] == '#') {  /* some rgb spec */
-		status = XParseColor(DisplayOfScreen(screen), colormap, (char*)fromVal->addr, 
-			&screenColor);
-		if (status != 0) status = XAllocColor(DisplayOfScreen(screen), colormap, &screenColor);
-	} else  /* some color name */
-		status = XAllocNamedColor(DisplayOfScreen(screen), colormap, (char*)fromVal->addr, 
-			&screenColor, &exactColor);
+	status = XAllocNamedColor(DisplayOfScreen(screen), colormap, (char*)fromVal->addr, 
+				&screenColor, &exactColor);
 
 	if (status == 0) {
 		String params[1];
@@ -1952,7 +1950,7 @@ or
 .PN XtCallConverter .
 .sp
 .Ds 0
-typedef Opaque XtCacheRef;
+typedef XtPointer XtCacheRef;
 .De
 .IN "XtCallConverter" "" "@DEF@"
 .FD 0
@@ -2249,6 +2247,7 @@ Any resource field in a widget can be read or written by a client.
 On a write operation,
 the widget decides what changes it will actually allow and updates all
 derived fields appropriately.
+
 .NH 3
 Obtaining Widget State
 .XS
@@ -2420,6 +2419,7 @@ The widget with subpart resources should call
 .PN XtGetSubvalues
 in the get_values_hook procedure
 and pass in its subresource list and the \fIargs\fP and \fInum_args\fP parameters.
+
 .NH 4
 Widget Subpart State
 .XS
@@ -2768,6 +2768,7 @@ Note that it is permissible to call
 .PN XtSetValues
 before a widget is realized.
 Therefore, the set_values procedure must not assume that the widget is realized.
+
 .NH 4
 Widget State: the set_values_almost Procedure
 .XS
@@ -2872,6 +2873,7 @@ For example, if a constraint for the maximum height of a widget is changed
 to a value smaller than the widget's current height,
 the constraint set_values procedure may reset the \fIheight\fP field in the
 widget.
+
 .NH 4
 Widget Subpart State
 .XS
