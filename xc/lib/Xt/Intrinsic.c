@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.146 90/04/04 11:28:05 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.147 90/04/10 15:57:53 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -613,16 +613,23 @@ Boolean XtIsObject(object)
     Widget object;
 {
     WidgetClass wc;
+    String class_name;
+
     /* perform basic sanity checks */
-    if (object->core.self != object) return False;
+    if (object->core.self != object || object->core.xrm_name == NULLQUARK)
+	return False;
 
     wc = object->core.widget_class;
-    if (wc->core_class.class_name
-	!= XrmClassToString(wc->core_class.xrm_class))
+    if (wc->core_class.class_name == NULL ||
+	wc->core_class.xrm_class == NULLQUARK ||
+	(class_name = XrmClassToString(wc->core_class.xrm_class)) == NULL ||
+	strcmp(wc->core_class.class_name, class_name) != 0)
 	    return False;
 
     if (XtIsWidget(object)) {
-	if (object->core.name != XrmNameToString(object->core.xrm_name))
+	if (object->core.name == NULL ||
+	    (class_name = XrmNameToString(object->core.xrm_name)) == NULL ||
+	    strcmp(object->core.name, class_name) != 0)
 	    return False;
     }
     return True;
