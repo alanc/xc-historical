@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.c,v 5.4 89/10/26 20:01:34 rws Exp $ */
+/* $XConsortium: mifillarc.c,v 5.5 89/10/27 17:14:51 rws Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -274,15 +274,12 @@ miFillArcSliceSetup(arc, slice)
     *wids = slw; \
     pts++; \
     wids++; \
-    n++; \
     if (miFillArcLower(slw)) \
     { \
 	pts->x = xorg - x; \
 	pts->y = yorg + y + dy; \
-	*wids = slw; \
 	pts++; \
-	wids++; \
-	n++; \
+	*wids++ = slw; \
     }
 
 static void
@@ -299,7 +296,6 @@ miFillEllipseI(pDraw, pGC, arc)
     register DDXPointPtr pts;
     int *widths;
     register int *wids;
-    int n;
 
     points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * arc->height);
     if (!points)
@@ -317,7 +313,6 @@ miFillEllipseI(pDraw, pGC, arc)
 	xorg += pDraw->x;
 	yorg += pDraw->y;
     }
-    n = 0;
     pts = points;
     wids = widths;
     if (arc->width == arc->height)
@@ -336,7 +331,7 @@ miFillEllipseI(pDraw, pGC, arc)
 	    ADDSPANS();
 	}
     }
-    (*pGC->ops->FillSpans)(pDraw, pGC, n, points, widths, FALSE);
+    (*pGC->ops->FillSpans)(pDraw, pGC, pts - points, points, widths, FALSE);
     DEALLOCATE_LOCAL(widths);
     DEALLOCATE_LOCAL(points);
 }
@@ -355,7 +350,6 @@ miFillEllipseD(pDraw, pGC, arc)
     register DDXPointPtr pts;
     int *widths;
     register int *wids;
-    int n;
 
     points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * arc->height);
     if (!points)
@@ -398,7 +392,6 @@ miFillEllipseD(pDraw, pGC, arc)
 	xorg += pDraw->x;
 	yorg += pDraw->y;
     }
-    n = 0;
     pts = points;
     wids = widths;
     while (y > 0)
@@ -406,7 +399,7 @@ miFillEllipseD(pDraw, pGC, arc)
 	MIFILLELLSTEP(slw);
 	ADDSPANS();
     }
-    (*pGC->ops->FillSpans)(pDraw, pGC, n, points, widths, FALSE);
+    (*pGC->ops->FillSpans)(pDraw, pGC, pts - points, points, widths, FALSE);
     DEALLOCATE_LOCAL(widths);
     DEALLOCATE_LOCAL(points);
 }
@@ -416,10 +409,8 @@ miFillEllipseD(pDraw, pGC, arc)
     { \
 	pts->x = l; \
 	pts->y = ya; \
-	*wids = r - l + 1; \
 	pts++; \
-	wids++; \
-	n++; \
+	*wids++ = r - l + 1; \
     }
 
 #define ADDSLICESPANS(flip) \
@@ -451,18 +442,17 @@ miFillArcSliceI(pDraw, pGC, arc)
     register DDXPointPtr pts;
     int *widths;
     register int *wids;
-    int n;
 
     miFillArcSetup(arc, &info);
     miFillArcSliceSetup(arc, &slice);
     MIFILLARCSETUP();
-    n = arc->height;
+    slw = arc->height;
     if (slice.flip_top || slice.flip_bot)
-	n += (arc->height >> 1) + 1;
-    points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * n);
+	slw += (arc->height >> 1) + 1;
+    points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * slw);
     if (!points)
 	return;
-    widths = (int *)ALLOCATE_LOCAL(sizeof(int) * n);
+    widths = (int *)ALLOCATE_LOCAL(sizeof(int) * slw);
     if (!widths)
     {
 	DEALLOCATE_LOCAL(points);
@@ -476,7 +466,6 @@ miFillArcSliceI(pDraw, pGC, arc)
 	slice.edge1.x += pDraw->x;
 	slice.edge2.x += pDraw->x;
     }
-    n = 0;
     pts = points;
     wids = widths;
     while (y > 0)
@@ -504,7 +493,7 @@ miFillArcSliceI(pDraw, pGC, arc)
 	    ADDSLICESPANS(slice.flip_bot);
 	}
     }
-    (*pGC->ops->FillSpans)(pDraw, pGC, n, points, widths, FALSE);
+    (*pGC->ops->FillSpans)(pDraw, pGC, pts - points, points, widths, FALSE);
     DEALLOCATE_LOCAL(widths);
     DEALLOCATE_LOCAL(points);
 }
