@@ -106,6 +106,10 @@ sets default cursor font
 .TP 8
 .B \-fn \fIfont\fP
 sets the default font
+.TP 8
+.B \-wm
+forces the default backing-store of all windows to be WhenMapped;
+a cheap trick way of getting backing-store to apply to all windows.
 .PP
 Specific implementations may have other command line options.
 .SH "RUNNING FROM INIT"
