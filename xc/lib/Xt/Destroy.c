@@ -1,6 +1,7 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: Destroy.c,v 1.2 88/08/18 15:38:29 asente Exp $";
-/* $oHeader: Destroy.c,v 1.2 88/08/18 15:38:29 asente Exp $ */
+static char rcsid[] =
+    "$XConsortium: Destroy.c,v 1.12 88/09/04 12:17:57 swick Exp $";
+/* $oHeader: Destroy.c,v 1.3 88/09/01 11:27:27 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -126,7 +127,8 @@ static void XtPhase2Destroy (widget, closure, call_data)
 		composite_class.delete_child;
         };
 	if (delete_child == NULL) {
-	    XtWarningMsg("invalidProcedure","deleteChild","XtToolkitError",
+	    XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		"invalidProcedure","deleteChild","XtToolkitError",
 		"null delete_child procedure in XtDestroy",
 		(String *)NULL, (Cardinal *)NULL);
 	} else {
