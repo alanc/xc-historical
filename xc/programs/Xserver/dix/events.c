@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.184 89/04/22 15:57:39 rws Exp $ */
+/* $XConsortium: events.c,v 1.185 89/04/23 17:38:54 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -248,21 +248,39 @@ SyntheticMotion(x, y)
 
 #ifdef SHAPE
 static void
-ConfineToShape(x, y)
-    int *x, *y;
+ConfineToShape(px, py)
+    int *px, *py;
 {
     BoxRec box;
-    int inc = 1;
+    int x = *px, y = *py;
+    int incx = 1, incy = 1;
 
+    /* this is rather crude */
     while (!(*sprite.hotPhys.pScreen->PointInRegion)(sprite.hotShape,
-						     *x, *y, &box))
+						     x, y, &box))
     {
-	if (*x <= sprite.physLimits.x1)
-	    inc = 1;
-	else if (*x >= sprite.physLimits.x2)
-	    inc = -1;
-	*x += inc;
+	x += incx;
+	if (x >= sprite.physLimits.x2)
+	{
+	    incx = -1;
+	    x = *px - 1;
+	}
+	else if (x < sprite.physLimits.x1)
+	{
+	    incx = 1;
+	    x = *px;
+	    y += incy;
+	    if (y >= sprite.physLimits.y2)
+	    {
+		incy = -1;
+		y = *py - 1;
+	    }
+	    else if (y < sprite.physLimits.y1)
+		return; /* should never get here! */
+	}
     }
+    *px = x;
+    *py = y;
 }
 #endif
 
