@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: db_tools.c,v 5.1 91/02/16 10:07:25 rws Exp $ */
 /***********************************************************
 Copyright(c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -118,11 +118,15 @@ SOFTWARE.
 |	Include files
 \*--------------------------------------------------------------------*/
 #include <stdio.h>
-#ifdef SYSV
-#include <malloc.h>
+#include <X11/Xosdefs.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
 #else
-extern char *malloc();
+char *malloc();
 #endif
+#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
+char *malloc();
+#endif /* macII */
 #include "biftypes.h"
 #include "bifparse.h"
 #include "new_ents.h"
