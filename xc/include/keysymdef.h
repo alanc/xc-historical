@@ -1,4 +1,4 @@
-/* $Header: keysymdef.h,v 1.5 88/01/28 16:10:49 rws Locked $ */
+/* $Header: keysymdef.h,v 1.6 88/01/30 13:11:35 rws Locked $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -475,13 +475,11 @@ SOFTWARE.
 #define XK_Gabovedot           0x2d5
 #define XK_Gcircumflex         0x2d8
 #define XK_Ubreve              0x2dd
-#define XK_scircumflex         0x2de
 #define XK_cabovedot           0x2e5
 #define XK_ccircumflex         0x2e6
 #define XK_gabovedot           0x2f5
 #define XK_gcircumflex         0x2f8
 #define XK_ubreve              0x2fd
-#define XK_scircumflex         0x2fe
 #endif XK_LATIN3
 
 
