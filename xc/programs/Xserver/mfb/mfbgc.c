@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbgc.c,v 1.114 87/08/30 22:29:21 drewry Exp $ */
+/* $Header: mfbgc.c,v 1.113 87/09/01 16:47:23 toddb Locked $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -1001,5 +1001,37 @@ mfbCopyClip (pgcDst, pgcSrc)
 				       (RegionPtr)(pgcSrc->clientClip));
 	mfbChangeClip(pgcDst, CT_REGION, prgnNew, 0);
 	break;
+    }
+}
+
+void
+mfbCopyGCDest (pGC, pQ, changes, pGCSrc)
+    GCPtr	pGC;
+    GCInterestPtr	pQ;
+    Mask 		changes;
+    GCPtr		pGCSrc;
+{
+    RegionPtr		pClip;
+
+    if(changes & GCClipMask)
+    {
+	if(pGC->clientClipType == CT_PIXMAP)
+	{
+	    ((PixmapPtr)pGC->clientClip)->refcnt++;
+	}
+	else if(pGC->clientClipType == CT_REGION)
+	{
+	    BoxRec pixbounds;
+
+	    pixbounds.x1 = 0;
+	    pixbounds.y1 = 0;
+	    pixbounds.x2 = 0;
+	    pixbounds.y2 = 0;
+
+	    pClip = (RegionPtr) pGC->clientClip;
+	    pGC->clientClip =
+	        (pointer)(* pGC->pScreen->RegionCreate)(&pixbounds, 1);
+	    (* pGC->pScreen->RegionCopy)(pGC->clientClip, pClip);
+	}
     }
 }
