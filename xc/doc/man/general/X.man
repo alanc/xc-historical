@@ -387,7 +387,7 @@ font database, reset the font path with the \fIxset\fP program.  For example,
 to add a font to a private directory, the following commands could be used:
 .sp
 .nf
-        %  cp newfont.snf ~/myfonts
+        %  cp newfont.pcf ~/myfonts
         %  mkfontdir ~/myfonts
         %  xset fp rehash 
 .fi
@@ -811,9 +811,9 @@ administrator for instructions on how to submit an X Bug Report.
 .PP
 XConsortium(1),
 XStandards(1),
-appres(1), bdftosnf(1), bitmap(1), imake(1), listres(1), maze(1),
+appres(1), bdftopcf(1), bitmap(1), imake(1), listres(1), maze(1),
 mkfontdir(1),
-muncher(1), oclock(1), puzzle(1), resize(1), showsnf(1), twm(1),
+muncher(1), oclock(1), puzzle(1), resize(1), showpcf(1), twm(1),
 xauth(1), xbiff(1),
 xcalc(1), xclipboard(1), xclock(1), xditview(1), xdm(1),
 xdpyinfo(1), xedit(1), xev(1), xeyes(1), xfd(1), xfontsel(1), xhost(1),
