@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.54 88/07/20 11:52:52 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.55 88/07/20 18:05:25 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -48,7 +48,6 @@ SOFTWARE.
 #ifdef macII
 #include <sys/ioctl.h>
 #include <sys/termio.h>
-#define VSWITCH VSWTCH
 #include <sys/stat.h>
 #include <sys/ttychars.h>
 #include <compat.h>
@@ -407,9 +406,9 @@ char **argv;
 	d_tio.c_cc[VKILL] = '@';		/* '@'	*/
     	d_tio.c_cc[VEOF] = 'D' & 0x3f;		/* '^D'	*/
 	d_tio.c_cc[VEOL] = '@' & 0x3f;		/* '^@'	*/
-#ifdef VSWITCH
-	d_tio.c_cc[VSWITCH] = '@' & 0x3f;	/* '^@'	*/
-#endif	/* VSWITCH */
+#ifdef VSWTCH
+	d_tio.c_cc[VSWTCH] = '@' & 0x3f;	/* '^@'	*/
+#endif	/* VSWTCH */
 	/* now, try to inherit tty settings */
 	{
 	    int i;
@@ -423,9 +422,9 @@ char **argv;
 		    d_tio.c_cc[VKILL] = deftio.c_cc[VKILL];
 		    d_tio.c_cc[VEOF] = deftio.c_cc[VEOF];
 		    d_tio.c_cc[VEOL] = deftio.c_cc[VEOL];
-#ifdef VSWITCH
-		    d_tio.c_cc[VSWITCH] = deftio.c_cc[VSWITCH];
-#endif
+#ifdef VSWTCH
+		    d_tio.c_cc[VSWTCH] = deftio.c_cc[VSWTCH];
+#endif /* VSWTCH */
 		    break;
 		}
 	    }
