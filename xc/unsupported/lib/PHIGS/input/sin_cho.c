@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sin_cho.c,v 5.1 91/02/16 09:49:49 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -37,7 +37,7 @@ SOFTWARE.
 #include <X11/Xaw/List.h>
 
 
-static XtCallbackProc
+static void
 choice_notify( w, client_data, call_data )
     Widget	w;
     XtPointer	*client_data;
@@ -93,7 +93,7 @@ enable_choice( device )
 	    NULL );
     XawListHighlight( device->item_handle.choice.list, data->cur_choice - 1 );
     XtAddCallback( device->item_handle.choice.list,
-	XtNcallback, choice_notify, device );
+	XtNcallback, choice_notify, (XtPointer)device );
 
     XtPopup( device->item_handle.choice.shell, XtGrabNone );
     if ( device->mode == SIN_REQUEST_PENDING )
