@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: XShm.h,v 1.5 91/07/12 09:54:34 rws Exp $ */
+/* $XConsortium: XShm.h,v 1.6 94/04/17 20:11:16 rws Exp dpw $ */
 
 #ifndef _XSHM_H_
 #define _XSHM_H_
@@ -70,6 +70,12 @@ typedef struct {
 } XShmSegmentInfo;
 
 _XFUNCPROTOBEGIN
+
+Bool XShmQueryExtension(
+#if NeedFunctionPrototypes
+    Display*            /* dpy */
+#endif
+);
 
 Bool XShmQueryVersion(
 #if NeedFunctionPrototypes
