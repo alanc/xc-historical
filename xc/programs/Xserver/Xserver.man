@@ -1,4 +1,4 @@
-.\" $XConsortium: Xserver.man,v 1.47 92/10/20 09:33:04 rws Exp $
+.\" $XConsortium: Xserver.man,v 1.48 93/09/18 13:48:29 dpw Exp $
 .TH XSERVER 1 "Release 5"  "X Version 11"
 .SH NAME
 Xserver \- X Window System server
@@ -384,6 +384,9 @@ Color database
 .TP 30
 /tmp/.X11-unix/X*
 Unix domain socket
+.TP 30
+/tmp/rcX*
+Kerberos 5 replay cache
 .TP 30
 /usr/adm/X*msgs
 Error log file
