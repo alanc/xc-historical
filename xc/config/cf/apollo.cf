@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: apollo.cf,v 1.25 91/01/08 12:21:29 rws Exp $
+XCOMM platform:  $XConsortium: apollo.cf,v 1.26 91/03/27 09:12:49 rws Exp $
 
 #define OSName            Domain/OS SR10.3
 XCOMM operating system:  OSName
@@ -8,7 +8,8 @@ XCOMM operating system:  OSName
 #define CCompilerMajorVersion   6
 #define CCompilerMinorVersion   6
 
-#define XapolloServer     Xapollo
+#define BuildServer	  NO
+#define XapolloServer     YES
 
 #define HasNdbm YES
 

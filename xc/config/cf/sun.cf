@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.54 91/04/05 15:35:34 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.55 91/05/14 10:17:39 rws Exp $
 
 #define OSName            SunOS 4.1.1
 XCOMM operating system:  OSName
@@ -11,7 +11,7 @@ XCOMM operating system:  OSName
 #define HasSecureRPC	  YES
 #define SetTtyGroup	  YES
 #define HasPutenv	  YES
-#define XsunServer Xsun
+#define XsunServer	  YES
 
 #ifdef sparc
 #undef sparc

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.23 91/05/30 09:04:48 jap Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.24 91/05/31 17:38:35 rws Exp $
 
 #ifdef RsArchitecture
 #define OSName		AIX 3.1.5
@@ -34,7 +34,7 @@ XCOMM operating system:  OSName
 #define CppCmd			/usr/lpp/X11/Xamples/util/cpp/cpp
 #define BuildServer		YES
 #define StandardDefines         -DSYSV -DAIXV3
-#define XibmServer 		Xibm
+#define XibmServer 		YES
 #define ibmIncludeSKYWAY	YES
 #define OPERATING_SYSTEM 	AIX /* directory name under server/ddx/ibm/ */
 #define ProjectRoot		/usr/local
@@ -160,7 +160,7 @@ XCOMM operating system:  OSName
  * This defines the name of server you want.
  * affected: .../X11/server/Makefile
  */
-#define XibmServer Xibm
+#define XibmServer YES
 
 /*****************************************************************************
  *                        Platform-specfic parameters                        *

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: macII.cf,v 1.32 91/05/06 19:46:46 rws Exp $
+XCOMM platform:  $XConsortium: macII.cf,v 1.33 91/05/11 10:24:30 rws Exp $
 
 #define OSName            A/UX 2.0.1
 #define OSMajorVersion    2
@@ -19,7 +19,7 @@ XCOMM operating system:  OSName
 #define HasSockets        YES
 #define HasVoidSignalReturn NO
 #define BuildFonts	  NO		/* XXX remove in R5 */
-#define XmacIIServer      XmacII
+#define XmacIIServer      YES
 #define BuildServer	  YES
 
 #if !HasGcc

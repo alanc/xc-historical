@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.37 91/05/11 10:24:36 rws Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.38 91/05/14 10:17:41 rws Exp $
 
 #define OSName            Ultrix-32 4.2
 XCOMM operating system:  OSName
@@ -12,8 +12,8 @@ XCOMM operating system:  OSName
 #define LintOpts -ax
 
 #ifdef VaxArchitecture
-#define XqvssServer Xqvss
-/* #define XqdssServer Xqdss */
+#define XqvssServer YES
+#define XqdssServer NO
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
 #define ServerOSDefines -DX11R4
 /* #define HasGcc YES */
@@ -25,10 +25,10 @@ XCOMM operating system:  OSName
 
 #ifdef MipsArchitecture
 #if OSMajorVersion > 4 || (OSMajorVersion == 4 && OSMinorVersion >= 2)
-#define XdecServer Xdec
+#define XdecServer YES
 #else
-/* #define XmfbpmaxServer Xmfbpmax - why bother, no one needs it... */
-#define XcfbpmaxServer Xcfbpmax
+#define XmfbpmaxServer NO
+#define XcfbpmaxServer YES
 #endif
 #define NeedFunctionPrototypes YES
 #define PexCCOptions -Wf,-XNp15000,-XNd15000

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.25 91/05/08 11:08:38 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.26 91/05/14 09:51:19 rws Exp $
 
 #ifdef bsd43
 #define OSName                  NEWS-OS 3.3
@@ -23,4 +23,4 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.25 91/05/08 11:08:38 rws Exp $
 XCOMM operating system:  OSName
 
 #define BuildServer             YES /* XXX change to NO in R5 */
-#define XnonServer Xnon /* XXX remove in R5 */
+#define XnonServer		YES /* XXX remove in R5 */
