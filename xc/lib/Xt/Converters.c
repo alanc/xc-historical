@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.94 94/02/08 20:21:47 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.95 94/02/08 20:59:52 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -44,6 +44,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include        <X11/cursorfont.h>
 #include	<X11/keysym.h>
 #include	<X11/Xlocale.h>
+#include	<errno.h>	/* for StringToDirectoryString */
+
+#ifdef X_NOT_STDC_ENV
+extern int errno;	
+#endif
 
 #if __STDC__
 #define Const const
@@ -57,18 +62,19 @@ static Const String XtNmissingCharsetList = "missingCharsetList";
 
 /* Representation types */
 
-#define XtQAtom		XrmPermStringToQuark(XtRAtom)
-#define XtQCursor	XrmPermStringToQuark(XtRCursor)
-#define XtQDisplay	XrmPermStringToQuark(XtRDisplay)
-#define XtQFile		XrmPermStringToQuark(XtRFile)
-#define XtQFloat	XrmPermStringToQuark(XtRFloat)
-#define XtQInitialState	XrmPermStringToQuark(XtRInitialState)
-#define XtQPixmap	XrmPermStringToQuark(XtRPixmap)
-#define XtQRestartStyle XrmPermStringToQuark(XtRRestartStyle)
-#define XtQShort	XrmPermStringToQuark(XtRShort)
-#define XtQStringArray	XrmPermStringToQuark(XtRStringArray)
-#define XtQUnsignedChar	XrmPermStringToQuark(XtRUnsignedChar)
-#define XtQVisual	XrmPermStringToQuark(XtRVisual)
+#define XtQAtom			XrmPermStringToQuark(XtRAtom)
+#define XtQCommandArgArray	XrmPermStringToQuark(XtRCommandArgArray)
+#define XtQCursor		XrmPermStringToQuark(XtRCursor)
+#define XtQDirectoryString	XrmPermStringToQuark(XtRDirectoryString)
+#define XtQDisplay		XrmPermStringToQuark(XtRDisplay)
+#define XtQFile			XrmPermStringToQuark(XtRFile)
+#define XtQFloat		XrmPermStringToQuark(XtRFloat)
+#define XtQInitialState		XrmPermStringToQuark(XtRInitialState)
+#define XtQPixmap		XrmPermStringToQuark(XtRPixmap)
+#define XtQRestartStyle 	XrmPermStringToQuark(XtRRestartStyle)
+#define XtQShort		XrmPermStringToQuark(XtRShort)
+#define XtQUnsignedChar		XrmPermStringToQuark(XtRUnsignedChar)
+#define XtQVisual		XrmPermStringToQuark(XtRVisual)
 
 static XrmQuark  XtQBool;
 static XrmQuark  XtQBoolean;
@@ -1472,9 +1478,41 @@ Boolean XtCvtStringToAtom(dpy, args, num_args, fromVal, toVal, closure_ret)
 }
 
 /*ARGSUSED*/
+Boolean XtCvtStringToDirectoryString(dpy, args, num_args, fromVal, toVal,
+				     closure_ret)
+    Display	*dpy;
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr fromVal;
+    XrmValuePtr toVal;
+    XtPointer	*closure_ret;
+{
+    String str;
+    int len;
+    char directory[PATH_MAX+1];
+
+    if (*num_args != 0)
+	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+           XtNwrongParameters,"cvtStringToDirectoryString",XtCXtToolkitError,
+           "String to DirectoryString conversion needs no extra arguments",
+           (String *)NULL, (Cardinal *)NULL);
+
+    str = (String)fromVal->addr;
+    if (CompareISOLatin1(str, "XtCurrentDirectory")) {
+	str = getcwd(directory, PATH_MAX + 1);
+	if (!str) {
+	    if (errno == EACCES)
+		errno = 0;	    /* reset errno */
+	    return False;
+	}
+    }
+    done(String, str);	/* core dumps, don't use this converter yet */
+}
+
+/*ARGSUSED*/
 Boolean XtCvtStringToRestartStyle(dpy, args, num_args, fromVal, toVal,
 				  closure_ret)
-    Display* dpy;
+    Display	*dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
     XrmValuePtr fromVal;
@@ -1499,49 +1537,87 @@ Boolean XtCvtStringToRestartStyle(dpy, args, num_args, fromVal, toVal,
 }
 
 /*ARGSUSED*/
-Boolean XtCvtStringToStringArray(dpy, args, num_args, fromVal, toVal,
+Boolean XtCvtStringToCommandArgArray(dpy, args, num_args, fromVal, toVal,
 				 closure_ret)
-    Display* dpy;
+    Display	*dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
     XrmValuePtr fromVal;
     XrmValuePtr toVal;
     XtPointer	*closure_ret;
 {
-    int n;
-    char *s;
-    String *strarray, *ptr, *optr;
-    char *tmp[50]; /* XXX */
+    String *strarray, *ptr;
+    char *src, *src_str;
+    char *dst, *dst_str;
+    char *start;
+    int tokens, len;
 
-    s = XtNewString((char *) fromVal->addr);
-    n = 0;
-    while (*s) {
-	tmp[n++] = s;
-	while (*s && (*s != ' ')) {
-	    if ((*s == '\\') && (*(s+1) == ' '))
-		s++;
-            s++;
-	}
-	if (!*s)
+    if (*num_args != 0)
+	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+            XtNwrongParameters,"cvtStringToCommandArgArray",XtCXtToolkitError,
+            "String to CommandArgArray conversion needs no extra arguments",
+            (String *)NULL, (Cardinal *)NULL);
+
+    src = src_str = fromVal->addr;
+    dst = dst_str = XtMalloc((unsigned) strlen(src) + 1);
+    tokens = 0;
+
+    while (*src != '\0') {
+	/* skip whitespace */
+	while (*src == ' ' || *src == '\t' || *src == '\n')
+	    src++;
+	/* test for end of string */
+	if (*src == '\0')
 	    break;
-	if (*s == ' ') {
-	    *s = '\0';
-	    s++;
+	
+	/* start new token */
+	tokens++;
+	start = src;
+	while (*src != '\0' && *src != ' ' && *src != '\t' && *src != '\n') {
+	    if (*src == '\\' &&
+		(*(src+1) == ' ' || *(src+1) == '\t' || *(src+1) == '\n')) {
+		len = src - start;
+		if (len) {
+		    /* copy preceeding part of token */
+		    memcpy(dst, start, len);
+		    dst += len;
+		}
+		/* skip backslash */
+		src++;
+		/* next part of token starts at whitespace */
+		start = src;
+	    }
+	    src++;
 	}
-	while (*s && (*s == ' '))
-	    s++;
+	len = src - start;
+	if (len) {
+	    /* copy last part of token */
+	    memcpy(dst, start, len);
+	    dst += len;
+	}
+	*dst = '\0';
+	if (*src != '\0')
+	    dst++;
     }
-    tmp[n++] = NULL;
-    ptr = strarray = (String *) XtMalloc((Cardinal) n * sizeof(String));
-    optr = tmp;
-    for (; --n >= 0; ptr++, optr++)
-	*ptr = *optr;
+
+    ptr = strarray = (String*) XtMalloc((Cardinal)(tokens+1) * sizeof(String));
+    src = dst_str;
+    while (--tokens >= 0) {
+	*ptr = src;
+	ptr++;
+	if (tokens) {
+	    len = strlen(src);
+	    src = src + len + 1;
+	}
+    }
+    *ptr = NULL;
+
     *closure_ret = (XtPointer) strarray;
     done(char**, strarray)
 }
 
 /*ARGSUSED*/
-static void StringArrayDestructor(app, toVal, closure, args, num_args)
+static void ArgArrayDestructor(app, toVal, closure, args, num_args)
     XtAppContext app;
     XrmValuePtr	toVal;
     XtPointer	closure;
@@ -1556,6 +1632,7 @@ static void StringArrayDestructor(app, toVal, closure, args, num_args)
 	XtFree((char *) strarray);
     }
 }
+
 /*ARGSUSED*/
 Boolean XtCvtStringToGravity (dpy, args, num_args, fromVal, toVal, closure_ret)
     Display* dpy;
@@ -1660,10 +1737,14 @@ void _XtAddDefaultConverters(table)
 	displayConvertArg, XtNumber(displayConvertArg), XtCacheNone);
     Add(_XtQString, XtQBool,      XtCvtStringToBool,    NULL, 0, XtCacheNone);
     Add(_XtQString, XtQBoolean,   XtCvtStringToBoolean, NULL, 0, XtCacheNone);
+   Add2(_XtQString, XtQCommandArgArray,  XtCvtStringToCommandArgArray,
+	NULL, 0, XtCacheNone | XtCacheRefCount, ArgArrayDestructor);
    Add2(_XtQString, XtQCursor,    XtCvtStringToCursor,
 	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeCursor);
     Add(_XtQString, XtQDimension, XtCvtStringToDimension,NULL, 0, XtCacheNone);
+    Add(_XtQString, XtQDirectoryString,
+                          XtCvtStringToDirectoryString, NULL, 0, XtCacheNone);
     Add(_XtQString, XtQDisplay,   XtCvtStringToDisplay, NULL, 0, XtCacheAll);
    Add2(_XtQString, XtQFile,      XtCvtStringToFile,    NULL, 0,
 	XtCacheAll | XtCacheRefCount, FreeFile);
@@ -1690,8 +1771,6 @@ void _XtAddDefaultConverters(table)
     Add(_XtQString, XtQRestartStyle, XtCvtStringToRestartStyle, NULL, 0,
 	XtCacheNone);
     Add(_XtQString, XtQShort,        XtCvtStringToShort,  NULL, 0, XtCacheAll);
-   Add2(_XtQString, XtQStringArray,  XtCvtStringToStringArray,
-	NULL, 0, XtCacheNone, StringArrayDestructor);
     Add(_XtQString, XtQUnsignedChar, XtCvtStringToUnsignedChar,
 	NULL, 0, XtCacheAll);
    Add2(_XtQString, XtQVisual,       XtCvtStringToVisual,
