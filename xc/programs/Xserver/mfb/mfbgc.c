@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.21 91/01/27 13:02:16 keith Exp $ */
+/* $XConsortium: mfbgc.c,v 5.22 91/05/03 17:00:22 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -901,8 +901,8 @@ mfbValidateGC(pGC, changes, pDrawable)
     {
 	if ((pGC->font) &&
 	    (FONTMAXBOUNDS(pGC->font,rightSideBearing) -
-	     FONTMINBOUNDS(pGC->font,leftSideBearing)) > 32 ||
-	     FONTMINBOUNDS(pGC->font,characterWidth) < 0)
+	     FONTMINBOUNDS(pGC->font,leftSideBearing) > 32 ||
+	     FONTMINBOUNDS(pGC->font,characterWidth) < 0))
 	{
 	    pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
 	    pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
