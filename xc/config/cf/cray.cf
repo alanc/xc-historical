@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.23 91/02/15 21:11:31 rws Exp $
+XCOMM platform:  $XConsortium: cray.cf,v 1.24 91/02/18 17:35:52 rws Exp $
 
 
 /*
@@ -21,6 +21,7 @@ XCOMM platform:  $XConsortium: cray.cf,v 1.23 91/02/15 21:11:31 rws Exp $
 #define BuildServer		NO
 #define CcCmd			scc
 #define ConnectionFlags		-DTCPCONN 
+#define HasShm			NO
 
 #ifdef CRAY2
 #define DefaultCCOptions	-hpagelm -hlimitlm
