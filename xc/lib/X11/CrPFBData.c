@@ -1,8 +1,9 @@
 #include "copyright.h"
 
-/* $XConsortium: XCrPFBData.c,v 1.2 88/02/22 19:33:51 rws Exp $ */
+/* $XConsortium: XCrPFBData.c,v 1.3 88/09/06 16:05:57 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
+#include <stdio.h>
 #include "Xlib.h"
 
 /*
@@ -37,11 +38,10 @@ Pixmap XCreatePixmapFromBitmapData(display,d,data,width,height,fg,bg,depth)
     Pixmap pix;
 
     pix = XCreatePixmap(display, d, width, height, depth);
-    if (!pix)
-      return(0);
     gcv.foreground = fg;
     gcv.background = bg;
-    gc = XCreateGC(display, pix, GCForeground|GCBackground, &gcv);
+    if (! (gc = XCreateGC(display, pix, GCForeground|GCBackground, &gcv)))
+	return (Pixmap) NULL;
     ximage.height = height;
     ximage.width = width;
     ximage.depth = 1;

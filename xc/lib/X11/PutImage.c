@@ -1,11 +1,10 @@
 #include "copyright.h"
 
-/* $XConsortium: XPutImage.c,v 11.48 88/12/29 09:17:51 rws Exp $ */
+/* $XConsortium: XPutImage.c,v 11.49 89/05/15 14:17:19 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
 #include "Xlibint.h"
-#include <errno.h>
 
 /* assumes pad is a power of 2 */
 #define ROUNDUP(nbytes, pad) (((nbytes) + ((pad) - 1)) & ~(long)((pad) - 1))
@@ -510,6 +509,18 @@ static int HalfOrder[12] = {
 		     + (((bitmap_bit_order == MSBFirst) ? 0 : 3)		\
 		     + ((byte_order == MSBFirst) ? 0 : 6)))
 
+/* Cancel a GetReq operation, before doing _XSend or Data */
+
+#if defined(__STDC__) && !(defined(UNIXCPP))
+#define UnGetReq(name)\
+    dpy->bufptr -= SIZEOF(x##name##Req);\
+    dpy->request--
+#else
+#define UnGetReq(name)\
+    dpy->bufptr -= SIZEOF(x/**/name/**/Req);\
+    dpy->request--
+#endif
+
 static void
 SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
     register Display *dpy;
@@ -568,10 +579,14 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
     }
 
     length = ROUNDUP(length, 4);
-    if ((dpy->bufptr + length) > dpy->bufmax)
-	buf = _XAllocScratch(dpy, (unsigned long)(length));
+    if (((dpy->bufptr + length) > dpy->bufmax) && 
+	((buf = _XAllocScratch(dpy, (unsigned long) (length))) == NULL)) {
+	UnGetReq(PutImage);
+	return;	
+    }
     else
 	buf = dpy->bufptr;
+
     bytes_per_src = ((long)req->width + req->leftPad + 7) >> 3;
     bytes_per_line = image->bytes_per_line;
     bytes_per_src_plane = bytes_per_line * image->height;
@@ -586,10 +601,17 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
 	src -= total_xoffset;
 	bytes_per_temp_plane = bytes_per_line * req->height;
 	temp_length = ROUNDUP(bytes_per_temp_plane * image->depth, 4);
-	if (buf == dpy->bufptr)
-	    temp = _XAllocScratch(dpy, (unsigned long)temp_length);
+	if ((buf == dpy->bufptr) &&
+	    (! (temp = _XAllocScratch(dpy, (unsigned long) temp_length)))) {
+	    UnGetReq(PutImage);
+	    return;
+	}
 	else
-	    extra = temp = Xmalloc(temp_length);
+	    if ((extra = temp = Xmalloc((unsigned) temp_length)) == NULL) {
+		UnGetReq(PutImage);
+		return;
+	    }
+
 	swapfunc = SwapFunction[ComposeIndex(image->bitmap_unit,
 					     image->bitmap_bit_order,
 					     image->byte_order)]
@@ -654,8 +676,12 @@ SendZImage(dpy, req, image, req_xoffset, req_yoffset,
 	  (req_yoffset * image->bytes_per_line) +
 	  ((req_xoffset * image->bits_per_pixel) >> 3);
     if ((image->bits_per_pixel == 4) && ((unsigned int) req_xoffset & 0x01)) {
-	shifted_src = (unsigned char *) Xmalloc(req->height *
-						image->bytes_per_line);
+	if (! (shifted_src = (unsigned char *)
+	       Xmalloc((unsigned) (req->height * image->bytes_per_line)))) {
+	    UnGetReq(PutImage);
+	    return;
+	}
+
 	ShiftNibblesLeft(src, shifted_src, bytes_per_src,
 			 (long) image->bytes_per_line,
 			 (long) image->bytes_per_line, req->height);
@@ -680,7 +706,12 @@ SendZImage(dpy, req, image, req_xoffset, req_yoffset,
     if ((dpy->bufptr + length) <= dpy->bufmax)
 	dest = (unsigned char *)dpy->bufptr;
     else
-	dest = (unsigned char *)_XAllocScratch(dpy, (unsigned long)(length));
+	if ((dest = (unsigned char *)
+	     _XAllocScratch(dpy, (unsigned long)(length))) == NULL) {
+	    if (shifted_src) Xfree((char *) shifted_src);
+	    UnGetReq(PutImage);
+	    return;
+	}
 
     if ((image->byte_order == dpy->byte_order) ||
 	(image->bits_per_pixel == 8))
@@ -698,6 +729,7 @@ SendZImage(dpy, req, image, req_xoffset, req_yoffset,
     else
 	SwapNibbles(src, dest, bytes_per_src, (long)image->bytes_per_line,
 		    bytes_per_dest, req->height);
+
     if (dest == (unsigned char *)dpy->bufptr)
 	dpy->bufptr += length;
     else
@@ -858,7 +890,9 @@ XPutImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
 	    img.bits_per_pixel = dest_bits_per_pixel;
 	    img.bytes_per_line = ROUNDUP((dest_bits_per_pixel * width),
 					 dest_scanline_pad) >> 3;
-	    img.data = Xmalloc(img.bytes_per_line * height);
+	    img.data = Xmalloc((unsigned) (img.bytes_per_line * height));
+	    if (img.data == NULL)
+		return;
 	    _XInitImageFuncPtrs(&img);
 	    for (j = height; --j >= 0; )
 		for (i = width; --i >= 0; )

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetHints.c,v 1.6 89/03/17 17:21:04 jim Exp $ */
+/* $XConsortium: XGetHints.c,v 11.25 89/03/28 18:14:08 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -28,6 +28,7 @@ SOFTWARE.
 
 #include <stdio.h>
 #include "Xlibint.h"
+#include "Xos.h"
 #include "Xutil.h"
 #include "Xatomtype.h"
 #include "Xatom.h"
@@ -104,19 +105,20 @@ XWMHints *XGetWMHints (dpy, w)
                 return(NULL);
 		}
 	/* static copies not allowed in library, due to reentrancy constraint*/
-	hints = (XWMHints *) Xcalloc (1, (unsigned) sizeof(XWMHints));
-	hints->flags = prop->flags;
-	hints->input = (prop->input ? True : False);
-	hints->initial_state = cvtINT32toInt (prop->initialState);
-	hints->icon_pixmap = prop->iconPixmap;
-	hints->icon_window = prop->iconWindow;
-	hints->icon_x = cvtINT32toInt (prop->iconX);
-	hints->icon_y = cvtINT32toInt (prop->iconY);
-	hints->icon_mask = prop->iconMask;
-	if (nitems >= NumPropWMHintsElements)
-	    hints->window_group = prop->windowGroup;
-	else
-	    hints->window_group = 0;
+	if (hints = (XWMHints *) Xcalloc (1, (unsigned) sizeof(XWMHints))) {
+	    hints->flags = prop->flags;
+	    hints->input = (prop->input ? True : False);
+	    hints->initial_state = cvtINT32toInt (prop->initialState);
+	    hints->icon_pixmap = prop->iconPixmap;
+	    hints->icon_window = prop->iconWindow;
+	    hints->icon_x = cvtINT32toInt (prop->iconX);
+	    hints->icon_y = cvtINT32toInt (prop->iconY);
+	    hints->icon_mask = prop->iconMask;
+	    if (nitems >= NumPropWMHintsElements)
+		hints->window_group = prop->windowGroup;
+	    else
+		hints->window_group = 0;
+	}
 	Xfree ((char *)prop);
 	return(hints);
 }
@@ -148,8 +150,8 @@ XGetNormalHints (dpy, w, hints)
 Status XGetIconSizes (dpy, w, size_list, count)
 	Display *dpy;
 	Window w;	/* typically, root */
-	XIconSize **size_list;
-	int *count; /* number of items on the list */
+	XIconSize **size_list;	/* RETURN */
+	int *count; 		/* RETURN number of items on the list */
 {
 	xPropIconSize *prop = NULL;
 	register xPropIconSize *pp;
@@ -172,18 +174,20 @@ Status XGetIconSizes (dpy, w, size_list, count)
 		if (prop != NULL) Xfree ((char *)prop);
                 return(0);
 		}
+
 	/* static copies not allowed in library, due to reentrancy constraint*/
-	*count = nitems / NumPropIconSizeElements;
-	if (*count < 1) {
-	  if (prop != NULL) Xfree((char *)prop);
-	  return(0);
+
+	nitems /= NumPropIconSizeElements;
+	if (! (hp = hints = (XIconSize *) 
+	  Xcalloc ((unsigned) nitems, (unsigned) sizeof(XIconSize)))) {
+	    if (prop) Xfree ((char *) prop);
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return 0;
 	}
 
-	hp = hints =  (XIconSize *) 
-	  Xcalloc ((unsigned)*count, (unsigned) sizeof(XIconSize));
-
 	/* march down array putting things into native form */
-	for (i = 0; i < *count; i++) {
+	for (i = 0; i < nitems; i++) {
 	    hp->min_width  = cvtINT32toInt (pp->minWidth);
 	    hp->min_height = cvtINT32toInt (pp->minHeight);
 	    hp->max_width  = cvtINT32toInt (pp->maxWidth);
@@ -192,12 +196,13 @@ Status XGetIconSizes (dpy, w, size_list, count)
 	    hp->height_inc = cvtINT32toInt (pp->heightInc);
 	    hp += 1;
 	    pp += 1;
-	  }
+	}
+	*count = nitems;
 	*size_list = hints;
-	if (prop != NULL) Xfree ((char *)prop);
+	Xfree ((char *)prop);
 	return(1);
-	
 }
+
 
 Status XGetCommand (dpy, w, argvp, argcp)
     Display *dpy;
@@ -271,9 +276,10 @@ Status
 XGetClassHint(dpy, w, classhint)
 	Display *dpy;
 	Window w;
-	XClassHint *classhint;
+	XClassHint *classhint;	/* RETURN */
 {
     int len_name, len_class;
+
     Atom actual_type;
     int actual_format;
     unsigned long nitems;
@@ -286,13 +292,21 @@ XGetClassHint(dpy, w, classhint)
            return (0);
 	
    if ( (actual_type == XA_STRING) && (actual_format == 8) ) {
-	len_name = strlen(data);
-	classhint->res_name = Xmalloc(len_name+1);
-	strcpy(classhint->res_name, data);
+	len_name = strlen((char *) data);
+	if (! (classhint->res_name = Xmalloc((unsigned) (len_name+1)))) {
+	    Xfree((char *) data);
+	    return (0);
+	}
+	strcpy(classhint->res_name, (char *) data);
 	if (len_name == nitems) len_name--;
-	len_class = strlen(data+len_name+1);
-	classhint->res_class = Xmalloc(len_class+1);
-	strcpy(classhint->res_class, data+len_name+1);
+	len_class = strlen((char *) (data+len_name+1));
+	if (! (classhint->res_class = Xmalloc((unsigned) (len_class+1)))) {
+	    Xfree(classhint->res_name);
+	    classhint->res_name = (char *) NULL;
+	    Xfree((char *) data);
+	    return (0);
+	}
+	strcpy(classhint->res_class, (char *) (data+len_name+1));
 	Xfree( (char *) data);
 	return(1);
 	}

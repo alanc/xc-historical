@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetPntMap.c,v 1.8 88/08/12 12:50:22 jim Exp $ */
+/* $XConsortium: XGetPntMap.c,v 1.9 88/09/06 16:10:20 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -13,7 +13,7 @@
 
 int XGetPointerMapping (dpy, map, nmaps)
     register Display *dpy;
-    unsigned char map[];
+    unsigned char map[];	/* RETURN */
     int nmaps;
 
 {
@@ -42,7 +42,7 @@ KeySym *XGetKeyboardMapping (dpy, first_keycode, count, keysyms_per_keycode)
     register Display *dpy;
     KeyCode first_keycode;
     int count;
-     int *keysyms_per_keycode;		/* RETURN */
+    int *keysyms_per_keycode;		/* RETURN */
 {
     long nbytes;
     unsigned long nkeysyms;
@@ -54,16 +54,26 @@ KeySym *XGetKeyboardMapping (dpy, first_keycode, count, keysyms_per_keycode)
     GetReq(GetKeyboardMapping, req);
     req->firstKeyCode = first_keycode;
     req->count = count;
-    (void) _XReply(dpy, (xReply *)&rep, 0, xFalse);
+    if (! _XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return (KeySym *) NULL;
+    }
 
     nkeysyms = (unsigned long) rep.length;
     if (nkeysyms > 0) {
-        *keysyms_per_keycode = rep.keySymsPerKeyCode;
 	nbytes = nkeysyms * sizeof (KeySym);
 	mapping = (KeySym *) Xmalloc ((unsigned) nbytes);
-	nbytes = nkeysyms * 4;
+	nbytes = nkeysyms << 2;
+	if (! mapping) {
+	    _XEatData(dpy, (unsigned long) nbytes);
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return (KeySym *) NULL;
+	}
 	_XRead32 (dpy, (char *) mapping, nbytes);
     }
+    *keysyms_per_keycode = rep.keySymsPerKeyCode;
     UnlockDisplay(dpy);
     SyncHandle();
     return (mapping);

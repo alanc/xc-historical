@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XFontNames.c,v 11.18 87/10/29 23:59:20 newman Exp $ */
+/* $XConsortium: XFontNames.c,v 11.19 88/09/06 16:07:25 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -18,6 +18,7 @@ int *actualCount;	/* RETURN */
     char *ch;
     xListFontsReply rep;
     register xListFontsReq *req;
+    register long rlen;
 
     LockDisplay(dpy);
     GetReq(ListFonts, req);
@@ -25,27 +26,39 @@ int *actualCount;	/* RETURN */
     nbytes = req->nbytes = pattern ? strlen (pattern) : 0;
     req->length += (nbytes + 3) >> 2;
     _XSend (dpy, pattern, nbytes);
-       /* use _XSend instead of Data, since following _XReply will flush buffer */
+    /* use _XSend instead of Data, since following _XReply will flush buffer */
 
     (void) _XReply (dpy, (xReply *)&rep, 0, xFalse);
-    *actualCount = rep.nFonts;
-    if (*actualCount) {
-	    flist = (char **)Xmalloc ((unsigned)rep.nFonts * sizeof(char *));
-	    ch = (char *) Xmalloc((unsigned)(rep.length * 4) + 1);
-        	/* +1 to leave room for last null-terminator */
-	    _XReadPad (dpy, ch, (long)(rep.length * 4));
-	    /*
-	     * unpack into null terminated strings.
-	     */
-	    length = *ch;
-	    for (i = 0; i < rep.nFonts; i++) {
-		flist[i] = ch + 1;  /* skip over length */
-		ch += length + 1;  /* find next length ... */
-		length = *ch;
-		*ch = '\0';  /* and replace with null-termination */
-	    }
+
+    if (rep.nFonts) {
+	flist = (char **)Xmalloc ((unsigned)rep.nFonts * sizeof(char *));
+	rlen = rep.length << 2;
+	ch = (char *) Xmalloc((unsigned) (rlen + 1));
+	    /* +1 to leave room for last null-terminator */
+
+	if ((! flist) || (! ch)) {
+	    if (flist) Xfree((char *) flist);
+	    if (ch) Xfree(ch);
+	    _XEatData(dpy, (unsigned long) rlen);
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return (char **) NULL;
 	}
-    else flist = NULL;
+
+	_XReadPad (dpy, ch, rlen);
+	/*
+	 * unpack into null terminated strings.
+	 */
+	length = *ch;
+	for (i = 0; i < rep.nFonts; i++) {
+	    flist[i] = ch + 1;  /* skip over length */
+	    ch += length + 1;  /* find next length ... */
+	    length = *ch;
+	    *ch = '\0';  /* and replace with null-termination */
+	}
+    }
+    else flist = (char **) NULL;
+    *actualCount = rep.nFonts;
     UnlockDisplay(dpy);
     SyncHandle();
     return (flist);

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XLiICmaps.c,v 11.14 88/08/11 11:49:03 jim Exp $ */
+/* $XConsortium: XLiICmaps.c,v 11.15 88/09/06 16:08:56 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -23,16 +23,24 @@ int *n;  /* RETURN */
 	    UnlockDisplay(dpy);
 	    SyncHandle();
 	    *n = 0;
-	    return((Colormap *)None);
+	    return((Colormap *) NULL);
 	}
-	
 
+    if (rep.nColormaps) {
+	nbytes = rep.nColormaps * sizeof(Colormap);
+	cmaps = (Colormap *) Xmalloc((unsigned) nbytes);
+	nbytes = rep.nColormaps << 2;
+	if (! cmaps) {
+	    _XEatData(dpy, (unsigned long) nbytes);
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return((Colormap *) NULL);
+	}
+	_XRead32 (dpy, (char *) cmaps, nbytes);
+    }
+    else cmaps = (Colormap *) NULL;
+    
     *n = rep.nColormaps;
-    nbytes = rep.nColormaps * sizeof(Colormap);
-    cmaps = (Colormap *) Xmalloc(nbytes);
-    nbytes = rep.nColormaps * 4;
-    _XRead32 (dpy, (char *) cmaps, nbytes);
-
     UnlockDisplay(dpy);
     SyncHandle();
     return(cmaps);

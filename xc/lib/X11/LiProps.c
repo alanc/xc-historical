@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XLiProps.c,v 11.17 88/08/11 16:40:44 jim Exp $ */
+/* $XConsortium: XLiProps.c,v 11.18 88/09/06 16:08:58 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -22,15 +22,24 @@ int *n_props;  /* RETURN */
 	*n_props = 0;
 	UnlockDisplay(dpy);
         SyncHandle();
-	return (NULL);
+	return ((Atom *) NULL);
+    }
+
+    if (rep.nProperties) {
+	nbytes = rep.nProperties * sizeof(Atom);
+	properties = (Atom *) Xmalloc ((unsigned) nbytes);
+	nbytes = rep.nProperties << 2;
+	if (! properties) {
+	    _XEatData(dpy, (unsigned long) nbytes);
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return (Atom *) NULL;
 	}
+	_XRead32 (dpy, (char *) properties, nbytes);
+    }
+    else properties = (Atom *) NULL;
 
     *n_props = rep.nProperties;
-    nbytes = rep.nProperties * sizeof(Atom);
-    properties = (Atom *) Xmalloc (nbytes);
-    nbytes = rep.nProperties * 4;
-    _XRead32 (dpy, (char *) properties, nbytes);
-
     UnlockDisplay(dpy);
     SyncHandle();
     return (properties);

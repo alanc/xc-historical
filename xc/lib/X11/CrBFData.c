@@ -1,15 +1,16 @@
 #include "copyright.h"
 
-/* $XConsortium: XCrBFData.c,v 1.5 88/02/22 19:33:47 rws Exp $ */
+/* $XConsortium: XCrBFData.c,v 1.6 88/09/06 16:05:38 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlib.h"
 
 /*
- * XCreateBitmapFromData: Routine to make a pixmap of depth 1 from user supplied data.
- *             D is any drawable on the same screen that the pixmap will be used in.
- *             Data is a pointer to the bit data, and 
- *             width & height give the size in bits of the pixmap.
+ * XCreateBitmapFromData: Routine to make a pixmap of depth 1 from user 
+ *	                  supplied data.
+ *	D is any drawable on the same screen that the pixmap will be used in.
+ *	Data is a pointer to the bit data, and 
+ *	width & height give the size in bits of the pixmap.
  *
  * The following format is assumed for data:
  *
@@ -32,9 +33,8 @@ Pixmap XCreateBitmapFromData(display, d, data, width, height)
     Pixmap pix;
 
     pix = XCreatePixmap(display, d, width, height, 1);
-    if (!pix)
-      return(0);
-    gc = XCreateGC(display, pix, (unsigned long)0, (XGCValues *)0);
+    if (! (gc = XCreateGC(display, pix, (unsigned long) 0, (XGCValues *) 0)))
+	return (Pixmap) None;
     ximage.height = height;
     ximage.width = width;
     ximage.depth = 1;

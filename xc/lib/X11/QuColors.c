@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XQuColors.c,v 11.16 88/08/11 14:52:13 jim Exp $ */
+/* $XConsortium: XQuColors.c,v 11.17 88/09/06 16:09:54 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -22,7 +22,6 @@ XQueryColors(dpy, cmap, defs, ncolors)
     GetReq(QueryColors, req);
 
     req->cmap = cmap;
-
     req->length += ncolors; /* each pixel is a CARD32 */
 
     for (i = 0; i < ncolors; i++)
@@ -30,9 +29,9 @@ XQueryColors(dpy, cmap, defs, ncolors)
        /* XXX this isn't very efficient */
 
     if (_XReply(dpy, (xReply *) &rep, 0, xFalse) != 0) {
+	if (color = (xrgb *)
+	    Xmalloc((unsigned) (nbytes = (long) ncolors * SIZEOF(xrgb)))) {
 
-	    color = (xrgb *) Xmalloc(
-		(unsigned)(nbytes = (long)ncolors * SIZEOF(xrgb)));
 	    _XRead(dpy, (char *) color, nbytes);
 
 	    for (i = 0; i < ncolors; i++) {
@@ -43,11 +42,11 @@ XQueryColors(dpy, cmap, defs, ncolors)
 		def->blue = rgb->blue;
 		def->flags = DoRed | DoGreen | DoBlue;
 	    }
-
 	    Xfree((char *)color);
 	}
+	else _XEatData(dpy, (unsigned long) nbytes);
+    }
     UnlockDisplay(dpy);
-
     SyncHandle();
 }
 

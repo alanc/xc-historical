@@ -1,7 +1,7 @@
 #include "copyright.h"
 
 /* Copyright 	Massachusetts Institute of Technology  1986 */
-/* $XConsortium: XPutBEvent.c,v 11.8 87/09/11 08:05:41 toddb Exp $ */
+/* $XConsortium: XPutBEvent.c,v 11.9 88/09/06 16:09:49 jim Exp $ */
 /* XPutBackEvent puts an event back at the head of the queue. */
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -16,9 +16,12 @@ XPutBackEvent (dpy, event)
 
 	LockDisplay(dpy);
 	if (!_qfree) {
-    	    _qfree = (_XQEvent *) Xmalloc (sizeof (_XQEvent));
-	    _qfree->next = NULL;
+    	    if ((_qfree = (_XQEvent *) Xmalloc (sizeof (_XQEvent))) == NULL) {
+		UnlockDisplay(dpy);
+		return;
 	    }
+	    _qfree->next = NULL;
+	}
 	qelt = _qfree;
 	_qfree = qelt->next;
 	qelt->next = dpy->head;

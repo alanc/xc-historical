@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XVisUtil.c,v 11.9 88/09/06 16:11:22 jim Exp $ */
+/* $XConsortium: XVisUtil.c,v 11.10 89/03/24 14:57:13 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -30,7 +30,7 @@
  */
 
 XVisualInfo *XGetVisualInfo( dpy, visual_info_mask, 
-	visual_info_template, nitems)
+			    visual_info_template, nitems)
 Display *dpy;
 register long visual_info_mask; 
 register XVisualInfo *visual_info_template;
@@ -47,12 +47,16 @@ int *nitems;	/* RETURN */
 
   LockDisplay(dpy);
 
-  /* ALLOCATE THE ORIGINAL BUFFER; REALLOCED LATER OF OVERFLOW OCCURS;
+  /* ALLOCATE THE ORIGINAL BUFFER; REALLOCED LATER IF OVERFLOW OCCURS;
      FREED AT END IF NO VISUALS ARE FOUND */
 
   count = 0;
   total = 10;
-  vip_base = vip = (XVisualInfo *)Xmalloc(sizeof(XVisualInfo)*total);
+  if (! (vip_base = vip = (XVisualInfo *) 
+	 Xmalloc((unsigned) (sizeof(XVisualInfo) * total)))) {
+      UnlockDisplay(dpy);
+      return (XVisualInfo *) NULL;
+  }
 
   /* DETERMINE IF WE DO ALL SCREENS OR ONLY ONE */
 
@@ -100,8 +104,15 @@ int *nitems;	/* RETURN */
  
               if (count+1 > total)
                 {
+		  XVisualInfo *old_vip_base = vip_base;
                   total += 10;
-                  vip_base = (XVisualInfo *)Xrealloc(vip_base,sizeof(XVisualInfo)*total);
+                  if (! (vip_base = (XVisualInfo *)
+			 Xrealloc((char *) vip_base, 
+				  (unsigned) (sizeof(XVisualInfo) * total)))) {
+		      Xfree((char *) old_vip_base);
+		      UnlockDisplay(dpy);
+		      return (XVisualInfo *) NULL;
+		  }
                   vip = &vip_base[count];
                 }
 
@@ -135,13 +146,9 @@ int *nitems;	/* RETURN */
       return vip_base;
     }
 
-
-  Xfree(vip_base);
-
+  Xfree((char *) vip_base);
   *nitems = 0;
-
   return NULL;
-
 }
 
 

@@ -9,13 +9,10 @@
 
 XPixmapFormatValues *XListPixmapFormats (dpy, count)
     Display *dpy;
-    int *count;
+    int *count;	/* RETURN */
 {
-    XPixmapFormatValues *formats =
-      (XPixmapFormatValues *) Xmalloc (dpy->nformats *
-				       sizeof (XPixmapFormatValues));
-
-    *count = dpy->nformats;
+    XPixmapFormatValues *formats = (XPixmapFormatValues *)
+	Xmalloc((unsigned) (dpy->nformats * sizeof (XPixmapFormatValues)));
 
     if (formats) {
 	register int i;
@@ -31,6 +28,8 @@ XPixmapFormatValues *XListPixmapFormats (dpy, count)
 	    f->bits_per_pixel = sf->bits_per_pixel;
 	    f->scanline_pad = sf->scanline_pad;
 	}
+
+	*count = dpy->nformats;
     }
     return formats;
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: XRegion.c,v 11.22 88/09/06 16:10:15 jim Exp $ */
+/* $XConsortium: XRegion.c,v 11.23 89/10/08 14:41:49 rws Exp $ */
 /************************************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -70,8 +70,12 @@ XCreateRegion()
 {
     Region temp;
 
-    temp = ( Region )Xmalloc( (unsigned) sizeof( REGION ));
-    temp->rects = ( BOX * )Xmalloc( (unsigned) sizeof( BOX ));
+    if (! (temp = ( Region )Xmalloc( (unsigned) sizeof( REGION ))))
+	return (Region) NULL;
+    if (! (temp->rects = ( BOX * )Xmalloc( (unsigned) sizeof( BOX )))) {
+	Xfree((char *) temp);
+	return (Region) NULL;
+    }
     temp->numRects = 0;
     temp->extents.x1 = 0;
     temp->extents.y1 = 0;
@@ -181,15 +185,16 @@ XSetRegion( dpy, gc, r )
     register XRectangle *xr, *pr;
     register BOX *pb;
     LockDisplay (dpy);
-    xr = (XRectangle *) 
-    	_XAllocScratch(dpy, (unsigned long)(r->numRects * sizeof (XRectangle)));
-    for (pr = xr, pb = r->rects, i = r->numRects; --i >= 0; pr++, pb++) {
-        pr->x = pb->x1;
-	pr->y = pb->y1;
-	pr->width = pb->x2 - pb->x1;
-	pr->height = pb->y2 - pb->y1;
-      }
-    _XSetClipRectangles(dpy, gc, 0, 0, xr, r->numRects, YXBanded);
+    if (xr = (XRectangle *)
+	_XAllocScratch(dpy, (unsigned long) (r->numRects * sizeof (XRectangle)))) {
+	for (pr = xr, pb = r->rects, i = r->numRects; --i >= 0; pr++, pb++) {
+	    pr->x = pb->x1;
+	    pr->y = pb->y1;
+	    pr->width = pb->x2 - pb->x1;
+	    pr->height = pb->y2 - pb->y1;
+	}
+	_XSetClipRectangles(dpy, gc, 0, 0, xr, r->numRects, YXBanded);
+    }
     UnlockDisplay(dpy);
     SyncHandle();
 }
@@ -294,12 +299,11 @@ XShrinkRegion(r, dx, dy)
     int grow;
 
     if (!dx && !dy) return;
-    s = XCreateRegion();
-    t = XCreateRegion();
+    if ((! (s = XCreateRegion()))  || (! (t = XCreateRegion()))) return;
     if (grow = (dx < 0)) dx = -dx;
-    if (dx) Compress(r, s, t, 2*dx, TRUE, grow);
+    if (dx) Compress(r, s, t, (unsigned) 2*dx, TRUE, grow);
     if (grow = (dy < 0)) dy = -dy;
-    if (dy) Compress(r, s, t, 2*dy, FALSE, grow);
+    if (dy) Compress(r, s, t, (unsigned) 2*dy, FALSE, grow);
     XOffsetRegion(r, dx, dy);
     XDestroyRegion(s);
     XDestroyRegion(t);
@@ -441,8 +445,10 @@ miRegionCopy(dstrgn, rgn)
         {
             if (dstrgn->rects)
             {
-                dstrgn->rects = (BOX *) Xrealloc(dstrgn->rects, 
-                                 rgn->numRects * (sizeof(BOX)));
+                if (! (dstrgn->rects = (BOX *)
+		       Xrealloc((char *) dstrgn->rects,
+				(unsigned) rgn->numRects * (sizeof(BOX)))))
+		    return;
             }
             dstrgn->size = rgn->numRects;
 	}
@@ -452,7 +458,8 @@ miRegionCopy(dstrgn, rgn)
         dstrgn->extents.x2 = rgn->extents.x2;
         dstrgn->extents.y2 = rgn->extents.y2;
 
-	bcopy(rgn->rects, dstrgn->rects, rgn->numRects * sizeof(BOX));   
+	bcopy((char *) rgn->rects, (char *) dstrgn->rects,
+	      (int) (rgn->numRects * sizeof(BOX)));
     }
 }
 
@@ -477,7 +484,8 @@ combineRegs(newReg, reg1, reg2)
     rects2 = reg2->rects;
 
     total = reg1->numRects + reg2->numRects;
-    tempReg = XCreateRegion();
+    if (! (tempReg = XCreateRegion()))
+	return;
     tempReg->size = total;
     /*  region 1 is below region 2  */
     if (reg1->extents.y1 > reg2->extents.y1)
@@ -816,7 +824,11 @@ miRegionOp(newReg, reg1, reg2, overlapFunc,  nonOverlap1Func, nonOverlap2Func)
      */
     newReg->size = max(reg1->numRects,reg2->numRects) * 2;
 
-    newReg->rects = (BoxPtr) Xmalloc (sizeof(BoxRec) * newReg->size);
+    if (! (newReg->rects = (BoxPtr)
+	   Xmalloc ((unsigned) (sizeof(BoxRec) * newReg->size)))) {
+	newReg->size = 0;
+	return;
+    }
     
     /*
      * Initialize ybot and ytop.
@@ -1002,9 +1014,12 @@ miRegionOp(newReg, reg1, reg2, overlapFunc,  nonOverlap1Func, nonOverlap2Func)
     {
 	if (REGION_NOT_EMPTY(newReg))
 	{
+	    BoxPtr prev_rects = newReg->rects;
 	    newReg->size = newReg->numRects;
-	    newReg->rects = (BoxPtr) Xrealloc (newReg->rects,
-					       sizeof(BoxRec) * newReg->size);
+	    newReg->rects = (BoxPtr) Xrealloc ((char *) newReg->rects,
+				   (unsigned) (sizeof(BoxRec) * newReg->size));
+	    if (! newReg->rects)
+		newReg->rects = prev_rects;
 	}
 	else
 	{
@@ -1469,8 +1484,8 @@ XXorRegion( sra, srb, dr )
 {
     Region tra, trb;
 
-    tra = XCreateRegion();
-    trb = XCreateRegion();
+    if ((! (tra = XCreateRegion())) || (! (trb = XCreateRegion())))
+	return;
     (void) XSubtractRegion(sra,srb,tra);
     (void) XSubtractRegion(srb,sra,trb);
     (void) XUnionRegion(tra,trb,dr);

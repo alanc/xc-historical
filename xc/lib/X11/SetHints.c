@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XSetHints.c,v 11.31 89/06/12 16:31:00 jim Exp $ */
+/* $XConsortium: XSetHints.c,v 11.32 89/10/08 14:43:42 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -132,21 +132,22 @@ XSetIconSizes (dpy, w, list, count)
 #define size_of_the_real_thing sizeof	/* avoid grepping screwups */
 	unsigned nbytes = count * size_of_the_real_thing(xPropIconSize);
 #undef size_of_the_real_thing
-	prop = pp = (xPropIconSize *) Xmalloc (nbytes);
-	for (i = 0; i < count; i++) {
-	    pp->minWidth  = list->min_width;
-	    pp->minHeight = list->min_height;
-	    pp->maxWidth  = list->max_width;
-	    pp->maxHeight = list->max_height;
-	    pp->widthInc  = list->width_inc;
-	    pp->heightInc = list->height_inc;
-	    pp += 1;
-	    list += 1;
+	if (prop = pp = (xPropIconSize *) Xmalloc (nbytes)) {
+	    for (i = 0; i < count; i++) {
+		pp->minWidth  = list->min_width;
+		pp->minHeight = list->min_height;
+		pp->maxWidth  = list->max_width;
+		pp->maxHeight = list->max_height;
+		pp->widthInc  = list->width_inc;
+		pp->heightInc = list->height_inc;
+		pp += 1;
+		list += 1;
+	    }
+	    XChangeProperty (dpy, w, XA_WM_ICON_SIZE, XA_WM_ICON_SIZE, 32, 
+			     PropModeReplace, (unsigned char *) prop, 
+			     count * NumPropIconSizeElements);
+	    Xfree ((char *)prop);
 	}
-	XChangeProperty (dpy, w, XA_WM_ICON_SIZE, XA_WM_ICON_SIZE, 32, 
-		 PropModeReplace, (unsigned char *) prop, 
-			 count * NumPropIconSizeElements);
-	Xfree ((char *)prop);
 }
 
 XSetCommand (dpy, w, argv, argc)
@@ -161,19 +162,20 @@ XSetCommand (dpy, w, argv, argc)
 	for (i = 0, nbytes = 0; i < argc; i++) {
 		nbytes += safestrlen(argv[i]) + 1;
 	}
-	bp = buf = Xmalloc(nbytes);
-	/* copy arguments into single buffer */
-	for (i = 0; i < argc; i++) {
+	if (bp = buf = Xmalloc((unsigned) nbytes)) { 
+	    /* copy arguments into single buffer */
+	    for (i = 0; i < argc; i++) {
 		if (argv[i]) { 
-		   (void) strcpy(bp, argv[i]);
-		   bp += strlen(argv[i]) + 1;
-		   }
+		    (void) strcpy(bp, argv[i]);
+		    bp += strlen(argv[i]) + 1;
+		}
 		else
-		   *bp++ = '\0';
+		    *bp++ = '\0';
+	    }
+	    XChangeProperty (dpy, w, XA_WM_COMMAND, XA_STRING, 8,
+			     PropModeReplace, (unsigned char *)buf, nbytes);
+	    Xfree(buf);		
 	}
-	XChangeProperty (dpy, w, XA_WM_COMMAND, XA_STRING, 8, PropModeReplace,
-		(unsigned char *)buf, nbytes);
-	Xfree(buf);		
 }
 /* 
  * XSetStandardProperties sets the following properties:
@@ -235,19 +237,20 @@ XSetClassHint(dpy, w, classhint)
 
 	len_nm = safestrlen(classhint->res_name);
 	len_cl = safestrlen(classhint->res_class);
-	class_string = s = Xmalloc(len_nm + len_cl + 2);
-	if (len_nm) {
-	     strcpy(s, classhint->res_name);
-	     s += len_nm + 1;
-	     }
-	else
-	     *s++ = '\0';
-	if (len_cl)
-             strcpy(s, classhint->res_class);
-	else
-	     *s = '\0';
-	XChangeProperty(dpy, w, XA_WM_CLASS, XA_STRING, 8,
-		PropModeReplace, (unsigned char *) class_string, 
-		len_nm+len_cl+2);
-	Xfree(class_string);
+	if (class_string = s = Xmalloc((unsigned) (len_nm + len_cl + 2))) { 
+	    if (len_nm) {
+		strcpy(s, classhint->res_name);
+		s += len_nm + 1;
+	    }
+	    else
+		*s++ = '\0';
+	    if (len_cl)
+		strcpy(s, classhint->res_class);
+	    else
+		*s = '\0';
+	    XChangeProperty(dpy, w, XA_WM_CLASS, XA_STRING, 8,
+			    PropModeReplace, (unsigned char *) class_string, 
+			    len_nm+len_cl+2);
+	    Xfree(class_string);
+	}
 }

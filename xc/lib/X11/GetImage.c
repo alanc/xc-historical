@@ -1,11 +1,10 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetImage.c,v 11.22 88/12/31 16:27:38 rws Exp $ */
+/* $XConsortium: XGetImage.c,v 11.23 89/01/18 08:22:36 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
 #include "Xlibint.h"
-#include <errno.h>
 
 #define ROUNDUP(nbytes, pad) (((((nbytes) - 1) + (pad)) / (pad)) * (pad))
 
@@ -55,6 +54,12 @@ XImage *XGetImage (dpy, d, x, y, width, height, plane_mask, format)
 		
 	nbytes = (long)rep.length << 2;
 	data = (char *) Xmalloc((unsigned) nbytes);
+	if (! data) {
+	    _XEatData(dpy, (unsigned long) nbytes);
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return (XImage *) NULL;
+	}
         _XReadPad (dpy, data, nbytes);
         if (format == XYPixmap)
 	   image = XCreateImage(dpy, _XVIDtoVisual(dpy, rep.visual),

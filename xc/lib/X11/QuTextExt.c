@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XQuTextExt.c,v 11.12 88/09/06 16:10:03 jim Exp $ */
+/* $XConsortium: XQuTextExt.c,v 11.13 89/01/11 18:03:21 converse Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986, 1987	*/
 
 #define NEED_REPLIES
@@ -24,12 +24,16 @@ XQueryTextExtents (dpy, fid, string, nchars, dir, font_ascent, font_descent,
     register xQueryTextExtentsReq *req;
 
     LockDisplay(dpy);
+    nbytes = nchars << 1;
+    if (! (buf = _XAllocScratch (dpy, (unsigned long) nbytes))) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return 0;
+    }
     GetReq(QueryTextExtents, req);
     req->fid = fid;
-    nbytes = nchars << 1;
     req->length += (nbytes + 3)>>2;
     req->oddLength = nchars & 1;
-    buf = _XAllocScratch (dpy, (unsigned long)nbytes);
     for (ptr = buf, i = nchars; --i >= 0;) {
 	*ptr++ = 0;
 	*ptr++ = *string++;

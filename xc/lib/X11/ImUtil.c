@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XImUtil.c,v 11.34 89/07/13 13:09:34 rws Exp $ */
+/* $XConsortium: XImUtil.c,v 11.35 89/10/09 17:39:59 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -236,7 +236,9 @@ XImage *XCreateImage (dpy, visual, depth, format, offset, data, width, height,
 	register XImage *image;
 	int bits_per_pixel = 1;
 
-	image = (XImage *) Xcalloc (1, (unsigned) sizeof (XImage));
+	if ((image = (XImage *) Xcalloc(1, (unsigned) sizeof(XImage))) == NULL)
+	    return (XImage *) NULL;
+
 	image->width = width;
 	image->height = height;
 	image->format = format;
@@ -279,7 +281,6 @@ XImage *XCreateImage (dpy, visual, depth, format, offset, data, width, height,
 	_XInitImageFuncPtrs (image);
 
 	return image;
-
 }
 
 static int _XReportBadImage();
@@ -590,7 +591,9 @@ static XImage *_XSubImage (ximage, x, y, width, height)
 	register int row, col;
 	register unsigned long pixel;
 	char *data;
-	subimage = (XImage *) Xcalloc (1, sizeof (XImage));
+
+	if ((subimage = (XImage *) Xcalloc (1, sizeof (XImage))) == NULL)
+	    return (XImage *) NULL;
 	subimage->width = width;
 	subimage->height = height;
 	subimage->xoffset = 0;
@@ -602,7 +605,7 @@ static XImage *_XSubImage (ximage, x, y, width, height)
 	subimage->bits_per_pixel = ximage->bits_per_pixel;
 	subimage->depth = ximage->depth;
 	/*
-	 * compute per line accelarator.
+	 * compute per line accelerator.
 	 */
 	if (subimage->format == ZPixmap) 	
 	    subimage->bytes_per_line = 
@@ -615,7 +618,10 @@ static XImage *_XSubImage (ximage, x, y, width, height)
 	_XInitImageFuncPtrs (subimage);
 	dsize = subimage->bytes_per_line * height;
 	if (subimage->format == XYPixmap) dsize = dsize * subimage->depth;
-	data = Xcalloc (1, (unsigned) dsize);
+	if (((data = Xcalloc (1, (unsigned) dsize)) == NULL) && (dsize > 0)) {
+	    Xfree((char *) subimage);
+	    return (XImage *) NULL;
+	}
 	subimage->data = data;
 
 	/*

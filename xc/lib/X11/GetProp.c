@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetProp.c,v 11.14 88/08/12 17:03:35 jim Exp $ */
+/* $XConsortium: XGetProp.c,v 11.15 88/09/06 16:07:05 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -14,12 +14,12 @@ XGetWindowProperty(dpy, w, property, offset, length, delete,
     Atom property;
     Bool delete;
     Atom req_type;
-    Atom *actual_type;
-    int *actual_format;  /* 8, 16, or 32 */
+    Atom *actual_type;		/* RETURN */
+    int *actual_format;  	/* RETURN  8, 16, or 32 */
     long offset, length;
-    unsigned long *nitems;  /* # of 8-, 16-, or 32-bit entities */
-    unsigned long *bytesafter;
-    unsigned char **prop;
+    unsigned long *nitems; 	/* RETURN  # of 8-, 16-, or 32-bit entities */
+    unsigned long *bytesafter;	/* RETURN */
+    unsigned char **prop;	/* RETURN */
     {
     xGetPropertyReply reply;
     register xGetPropertyReq *req;
@@ -34,69 +34,72 @@ XGetWindowProperty(dpy, w, property, offset, length, delete,
     
     if (!_XReply (dpy, (xReply *) &reply, 0, xFalse)) {
 	UnlockDisplay(dpy);
-	return (1);
+	SyncHandle();
+	return (1);	/* not Success */
 	}	
+
+    *prop = (unsigned char *) NULL;
+    if (reply.propertyType != None) {
+	long nbytes, netbytes;
+	switch (reply.format) {
+      /* 
+       * One extra byte is malloced than is needed to contain the property
+       * data, but this last byte is null terminated and convenient for 
+       * returning string properties, so the client doesn't then have to 
+       * recopy the string to make it null terminated. 
+       */
+	  case 8:
+	    nbytes = netbytes = reply.nItems;
+	    if (*prop = (unsigned char *) Xmalloc ((unsigned)nbytes + 1))
+		_XReadPad (dpy, (char *) *prop, netbytes);
+	    break;
+
+	  case 16:
+	    nbytes = reply.nItems * sizeof (short);
+	    netbytes = reply.nItems << 1;
+	    if (*prop = (unsigned char *) Xmalloc ((unsigned)nbytes + 1))
+		_XRead16Pad (dpy, (short *) *prop, netbytes);
+	    break;
+
+	  case 32:
+	    nbytes = reply.nItems * sizeof (long);
+	    netbytes = reply.nItems << 2;
+	    if (*prop = (unsigned char *) Xmalloc ((unsigned)nbytes + 1))
+		_XRead32 (dpy, (long *) *prop, netbytes);
+	    break;
+
+	  default:
+	    /*
+	     * This part of the code should never be reached.  If it is,
+	     * the server sent back a property with an invalid format.
+	     * This is a BadImplementation error. 
+	     */
+	    {
+		xError error;
+		error.sequenceNumber = dpy->request;
+		error.type = X_Error;
+		error.majorCode = X_GetProperty;
+		error.minorCode = 0;
+		error.errorCode = BadImplementation;
+		_XError(dpy, &error);
+	    }
+	    netbytes = 0L;
+	    break;
+	}
+	if (! *prop) {
+	    _XEatData(dpy, (unsigned long) netbytes);
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return(BadAlloc);	/* not Success */
+	}
+	(*prop)[nbytes] = '\0';
+    }
     *actual_type = reply.propertyType;
     *actual_format = reply.format;
     *nitems = reply.nItems;
     *bytesafter = reply.bytesAfter;
-
-    *prop = NULL;
-    if (*actual_type != None) switch (reply.format) {
-      long nbytes, netbytes;
-      /* 
-       * One extra byte is malloced than is needed to contain the property
-       * data, but this last byte is null terminated and convenient for 
-       * returing string properties, so the client doesn't then have to 
-       * recopy the string to make it null terminated. 
-       */
-      case 8:
-        nbytes = (*nitems);
-	*prop = (unsigned char *) Xmalloc ((unsigned)nbytes + 1);
-        netbytes = (*nitems);
-        _XReadPad (dpy, (char *) *prop, netbytes);
-	(*prop)[nbytes] = '\0';
-        break;
-
-      case 16:
-        nbytes = (*nitems) * sizeof (short);
-        *prop = (unsigned char *) Xmalloc ((unsigned)nbytes + 1);
-        netbytes = (*nitems) * 2;
-        _XRead16Pad (dpy, (short *) *prop, netbytes);
-	(*prop)[nbytes] = '\0';
-        break;
-
-      case 32:
-        nbytes = (*nitems) * sizeof (long);
-        *prop = (unsigned char *) Xmalloc ((unsigned)nbytes + 1);
-        netbytes = (*nitems) * 4;
-        _XRead32 (dpy, (long *) *prop, netbytes);
-	(*prop)[nbytes] = '\0';
-        break;
-
-      default:
-	/*
-	 * This part of the code should never be reached.  If it is, the server
-	 * send back a property with an invalid format.  This is a
-	 * BadImplementation error. 
-	 */
-
-        {
-	    xError error;
-
-	    error.sequenceNumber = dpy->request;
-  	    error.type = X_Error;
-	    error.majorCode = X_GetProperty;
-	    error.minorCode = 0;
-	    error.errorCode = BadImplementation;
-	
-	    _XError(dpy, &error);
-	}
-	break;
-      }
     UnlockDisplay(dpy);
     SyncHandle();
     return(Success);
-
-    }
+}
 

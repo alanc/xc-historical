@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetFPath.c,v 11.11 87/09/11 08:03:58 toddb Exp $ */
+/* $XConsortium: XGetFPath.c,v 11.12 88/09/06 16:07:45 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -8,7 +8,7 @@
 
 char **XGetFontPath(dpy, npaths)
 register Display *dpy;
-int *npaths;
+int *npaths;	/* RETURN */
 {
 	xGetFontPathReply rep;
 	register long nbytes;
@@ -21,11 +21,23 @@ int *npaths;
 	LockDisplay(dpy);
 	GetEmptyReq (GetFontPath, req);
 	(void) _XReply (dpy, (xReply *) &rep, 0, xFalse);
-	if (*npaths = rep.nPaths) {
-	    flist = (char **) Xmalloc ((unsigned)*npaths * sizeof (char *));
+
+	if (rep.nPaths) {
+	    flist = (char **)
+		Xmalloc((unsigned) rep.nPaths * sizeof (char *));
 	    nbytes = (long)rep.length << 2;
 	    ch = (char *) Xmalloc ((unsigned) (nbytes + 1));
                 /* +1 to leave room for last null-terminator */
+
+	    if ((! flist) || (! ch)) {
+		if (flist) Xfree((char *) flist);
+		if (ch) Xfree(ch);
+		_XEatData(dpy, (unsigned long) nbytes);
+		UnlockDisplay(dpy);
+		SyncHandle();
+		return (char **) NULL;
+	    }
+
 	    _XReadPad (dpy, ch, nbytes);
 	    /*
 	     * unpack into null terminated strings.
@@ -39,6 +51,7 @@ int *npaths;
 	    }
 	}
 	else flist = NULL;
+	*npaths = rep.nPaths;
 	UnlockDisplay(dpy);
 	SyncHandle();
 	return (flist);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.13 88/09/19 13:55:48 jim Exp $
+ * $XConsortium: Quarks.c,v 1.14 89/06/15 18:44:34 jim Exp $
  */
 
 /***********************************************************
@@ -58,10 +58,14 @@ char *Xpermalloc(length)
     /* round to nearest 4-byte boundary */
     length = (length + 3) & (~3);
 #endif /* WORD64 */
+
     if (neverFreeTableSize < length) {
 	neverFreeTableSize =
 	    (length > NEVERFREETABLESIZE ? length : NEVERFREETABLESIZE);
-	neverFreeTable = Xmalloc(neverFreeTableSize);
+	if (! (neverFreeTable = Xmalloc((unsigned) neverFreeTableSize))) {
+	    neverFreeTableSize = 0;
+	    return (char *) NULL;
+	}
     }
     ret = neverFreeTable;
     neverFreeTable += length;
@@ -111,17 +115,29 @@ static XrmQuark  XrmQEon;
 static XrmQuark  XrmQEtrue;
 static XrmQuark  XrmQEyes;
 
-static XrmAllocMoreQuarkToStringTable()
+static int XrmAllocMoreQuarkToStringTable()
 {
     unsigned	size;
+    XrmString *newTable;
+
+    /* Return 1 on success, 0 on failure. */
 
     maxQuarks += QUARKQUANTUM;
     size = (unsigned) maxQuarks * sizeof(XrmString);
-    if (quarkToStringTable == (XrmString *)NULL)
-	quarkToStringTable = (XrmString *) Xmalloc(size);
-    else
-	quarkToStringTable =
-		(XrmString *) Xrealloc((char *) quarkToStringTable, size);
+
+    if (! quarkToStringTable) {
+	if (! (quarkToStringTable = (XrmString *) Xmalloc(size))) 
+	    return 0;
+    }
+    else {
+	if (! (newTable = (XrmString *) Xrealloc((char *) quarkToStringTable,
+						 size))) {
+	    maxQuarks -= QUARKQUANTUM;
+	    return 0;
+	}
+	quarkToStringTable = newTable;
+    }
+    return 1;
 }
 
 XrmQuark XrmStringToQuark(name)
@@ -157,28 +173,30 @@ XrmQuark XrmStringToQuark(name)
     }
 
     /* Not found, add string to hash table */
-    np = (Node) Xpermalloc(sizeof(NodeRec));
+
+    if ((! (np = (Node) Xpermalloc(sizeof(NodeRec)))) ||
+	(! (np->name = Xpermalloc(strLength))))
+	return NULLQUARK;
     np->next = *hashp;
-    *hashp = np;
     np->sig = sig;
-    bcopy(name, (np->name = Xpermalloc(strLength)), (int) strLength);
+    bcopy(name, np->name, (int) strLength);
     np->quark = nextQuark;
+    if ((nextQuark >= maxQuarks) && (! XrmAllocMoreQuarkToStringTable()))
+	    return NULLQUARK;
 
-    if (nextQuark >= maxQuarks)
-	XrmAllocMoreQuarkToStringTable();
-
+    *hashp = np;
     quarkToStringTable[nextQuark] = np->name;
     ++nextQuark;
     return np->quark;
 }
 
-extern XrmQuark XrmUniqueQuark()
+XrmQuark XrmUniqueQuark()
 {
     XrmQuark quark;
 
     quark = nextQuark;
-    if (nextQuark >= maxQuarks)
-	XrmAllocMoreQuarkToStringTable();
+    if ((nextQuark >= maxQuarks) && (! XrmAllocMoreQuarkToStringTable()))
+	    return NULLQUARK;
     quarkToStringTable[nextQuark] = NULLSTRING;
     ++nextQuark;
     return (quark);

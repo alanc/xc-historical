@@ -1,7 +1,5 @@
-/* $XConsortium: Context.c,v 1.3 88/08/11 15:07:31 jim Exp $ */
-#ifndef lint
-static char *sccsid = "@(#)Context.c	1.5	2/24/87";
-#endif /* lint */
+/* $XConsortium: Context.c,v 1.4 88/09/06 16:08:12 jim Exp $ */
+/* static char *sccsid = "@(#)Context.c	1.5	2/24/87"; */
 
 
 /***********************************************************
@@ -133,19 +131,31 @@ Display *display;
     Dsp dsp;
     for (i=0 ; i<numDsp ; i++)
 	if (DspArray[i]->display == display) return DspArray[i];
-    numDsp++;
+
     if (DspArray == NULL)
-	DspArray = (Dsp *) Xmalloc(sizeof(Dsp));
-    else
-	DspArray = (Dsp *) Xrealloc(
-		(char *)DspArray, (unsigned) sizeof(Dsp) * numDsp);
-    dsp = DspArray[numDsp - 1] = (Dsp) Xmalloc(sizeof(DspRec));
+	if (! (DspArray = (Dsp *) Xmalloc(sizeof(Dsp))))
+	    return (Dsp) NULL;
+    else {
+	Dsp *tmp;
+	if (! (tmp = (Dsp *) Xrealloc((char *) DspArray,
+				      (unsigned) sizeof(Dsp) * (numDsp + 1))))
+	    return (Dsp) NULL;
+	DspArray = tmp;
+    }
+
+    if (! (dsp = DspArray[numDsp] = (Dsp) Xmalloc(sizeof(DspRec))))
+	return (Dsp) NULL;
+
+    numDsp++;
     dsp->display = display;
     dsp->table = NULL;
     dsp->size = INITHASHSIZE / 2;
     dsp->numentries = 0;
     dsp->maxentries = -1;
-    (void) ResizeTable(dsp, dsp->size * 2);
+    if (ResizeTable(dsp, dsp->size * 2) == XCNOMEM) {
+	Xfree((char *) dsp);
+	return (Dsp) NULL;
+    }
     return dsp;
 }
 
@@ -171,6 +181,8 @@ caddr_t data;
     register TableEntry CurEntry;
     register Dsp dsp;
     FindCorrectDsp;
+    if (dsp == NULL)
+	return XCNOMEM;
     if (++(dsp->numentries) > dsp->maxentries) 
 	if (ResizeTable(dsp, dsp->size * 2) == XCNOMEM)
 	    return XCNOMEM;
@@ -201,6 +213,7 @@ caddr_t *data;			/* RETURN */
     register TableEntry CurEntry;
     register Dsp dsp;
     FindCorrectDsp;
+    if (dsp == NULL) return XCNOENT;
     for (CurEntry = dsp->table[HashValue(window, context, dsp->size)];
 	 CurEntry != NULL;
 	 CurEntry = CurEntry->next)
@@ -231,6 +244,7 @@ register XContext context;
     register Dsp dsp;
 
     FindCorrectDsp;
+    if (dsp == NULL) return XCNOENT;
     Result = XCNOENT;
     CurHash = HashValue(window, context, dsp->size);
     PrevEntry = NULL;

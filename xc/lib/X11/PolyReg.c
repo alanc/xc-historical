@@ -1,4 +1,4 @@
-/* $XConsortium: XPolyReg.c,v 11.15 88/09/06 16:09:19 jim Exp $ */
+/* $XConsortium: XPolyReg.c,v 11.16 89/09/12 09:08:53 rws Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -466,7 +466,7 @@ XPolygonRegion(Pts, Count, rule)
     POINTBLOCK *tmpPtBlock;
     int numFullPtBlocks = 0;
  
-    region = XCreateRegion();
+    if (! (region = XCreateRegion())) return (Region) NULL;
 
     /* special case a rectangle */
     pts = Pts;
@@ -492,7 +492,10 @@ XPolygonRegion(Pts, Count, rule)
 	return(region);
     }
 
-    pETEs = (EdgeTableEntry *)Xmalloc(sizeof(EdgeTableEntry) * Count);
+    if (! (pETEs = (EdgeTableEntry *)
+	   Xmalloc((unsigned) (sizeof(EdgeTableEntry) * Count))))
+	return (Region) NULL;
+
     pts = FirstPtBlock.pts;
     CreateETandAET(Count, Pts, &ET, &AET, pETEs, &SLLBlock);
     pSLL = ET.scanlines.next;

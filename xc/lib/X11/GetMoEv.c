@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetMoEv.c,v 11.16 89/03/27 12:05:27 jim Exp $ */
+/* $XConsortium: XGetMoEv.c,v 11.17 89/08/15 14:36:15 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -14,7 +14,7 @@ XTimeCoord *XGetMotionEvents(dpy, w, start, stop, nEvents)
 {       
     xGetMotionEventsReply rep;
     register xGetMotionEventsReq *req;
-    XTimeCoord *tc;
+    XTimeCoord *tc = NULL;
     long nbytes;
     LockDisplay(dpy);
     GetReq(GetMotionEvents, req);
@@ -25,21 +25,21 @@ XTimeCoord *XGetMotionEvents(dpy, w, start, stop, nEvents)
     if (!_XReply (dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
         SyncHandle();
-	*nEvents = 0;
 	return (NULL);
 	}
     
-    *nEvents = rep.nEvents;
-    tc = (XTimeCoord *) Xmalloc (
-		(unsigned)(nbytes = (long)rep.nEvents * sizeof (XTimeCoord)));
-    if (!tc) {
-	_XEatData (dpy, nbytes);		/* throw it away */
-	*nEvents = 0;
-	UnlockDisplay(dpy);
-        SyncHandle();
-	return (NULL);
+    if (rep.nEvents) {
+	if (! (tc = (XTimeCoord *)
+	       Xmalloc( (unsigned) 
+		       (nbytes = (long) rep.nEvents * sizeof(XTimeCoord))))) {
+	    _XEatData (dpy, (unsigned long) nbytes);
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return (NULL);
 	}
+    }
 
+    *nEvents = rep.nEvents;
     nbytes = SIZEOF (xTimecoord);
     {
 	register XTimeCoord *tcptr;

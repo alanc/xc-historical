@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XModMap.c,v 11.6 88/08/11 11:45:45 jim Exp $ */
+/* $XConsortium: XModMap.c,v 11.7 88/09/06 16:09:18 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -21,9 +21,15 @@ XGetModifierMapping(dpy)
 
     nbytes = (unsigned long)rep.length << 2;
     res = (XModifierKeymap *) Xmalloc(sizeof (XModifierKeymap));
-    res->modifiermap = (KeyCode *) Xmalloc (nbytes);
-    _XReadPad(dpy, (char *) res->modifiermap, nbytes);
-    res->max_keypermod = rep.numKeyPerModifier;
+    if (res) res->modifiermap = (KeyCode *) Xmalloc ((unsigned) nbytes);
+    if ((! res) || (! res->modifiermap)) {
+	if (res) Xfree((char *) res);
+	res = (XModifierKeymap *) NULL;
+	_XEatData(dpy, nbytes);
+    } else {
+	_XReadPad(dpy, (char *) res->modifiermap, (long) nbytes);
+	res->max_keypermod = rep.numKeyPerModifier;
+    }
 
     UnlockDisplay(dpy);
     SyncHandle();
@@ -50,7 +56,7 @@ XSetModifierMapping(dpy, modifier_map)
 
     req->numKeyPerModifier = modifier_map->max_keypermod;
 
-    bcopy (modifier_map->modifiermap, 
+    bcopy ((char *) modifier_map->modifiermap, 
     	   (char *) NEXTPTR(req,xSetModifierMappingReq), mapSize);
 
     (void) _XReply(dpy, (xReply *) & rep,
@@ -65,15 +71,20 @@ XNewModifiermap(keyspermodifier)
     int keyspermodifier;
 {
     XModifierKeymap *res = (XModifierKeymap *) Xmalloc((sizeof (XModifierKeymap)));
-
-    res->max_keypermod = keyspermodifier;
-    res->modifiermap = (keyspermodifier > 0 ?
-			(KeyCode *) Xmalloc(8 * keyspermodifier)
-			: (KeyCode *) NULL);
+    if (res) {
+	res->max_keypermod = keyspermodifier;
+	res->modifiermap = (keyspermodifier > 0 ?
+			    (KeyCode *) Xmalloc((unsigned) (8 * keyspermodifier))
+			    : (KeyCode *) NULL);
+	if (keyspermodifier && (res->modifiermap == NULL)) {
+	    Xfree((char *) res);
+	    return (XModifierKeymap *) NULL;
+	}
+    }
     return (res);
 }
 
-void
+
 XFreeModifiermap(map)
     XModifierKeymap *map;
 {
@@ -106,7 +117,8 @@ XInsertModifiermapEntry(map, keysym, modifier)
     }   
 
     /* stretch the map */
-    newmap = XNewModifiermap(map->max_keypermod+1);
+    if ((newmap = XNewModifiermap(map->max_keypermod+1)) == NULL)
+	return (XModifierKeymap *) NULL;
     newrow = row = 0;
     lastrow = map->max_keypermod * 8;
     while (row < lastrow) {

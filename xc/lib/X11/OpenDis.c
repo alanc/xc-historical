@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.87 89/06/21 10:13:19 jim Exp $
+ * $XConsortium: XOpenDis.c,v 11.88 89/07/18 11:06:11 jim Exp $
  */
 
 #include "copyright.h"
@@ -56,7 +56,7 @@ void XSetAuthorization (name, namelen, data, datalen)
     if (datalen < 0) datalen = 0;	/* maybe should return? */
 
     if (namelen > 0)  {			/* try to allocate space */
-	tmpname = Xmalloc (namelen);
+	tmpname = Xmalloc ((unsigned) namelen);
 	if (!tmpname) return;
 	bcopy (name, tmpname, namelen);
     } else {
@@ -64,7 +64,7 @@ void XSetAuthorization (name, namelen, data, datalen)
     }
 
     if (datalen > 0)  {
-	tmpdata = Xmalloc (datalen);
+	tmpdata = Xmalloc ((unsigned) datalen);
 	if (!tmpdata) {
 	    if (tmpname) (void) Xfree (tmpname);
 	    return;
@@ -333,15 +333,19 @@ Display *XOpenDisplay (display)
  * now extract the vendor string...  String must be null terminated,
  * padded to multiple of 4 bytes.
  */
-	dpy->vendor = (char *) Xmalloc (u.setup->nbytesVendor + 1);
+	dpy->vendor = (char *) Xmalloc((unsigned) (u.setup->nbytesVendor + 1));
+	if (dpy->vendor == NULL) {
+	    OutOfMemory(dpy, setup);
+	    UnlockMutex(&lock);
+	    return (NULL);
+	}
 	vendorlen = u.setup->nbytesVendor;
-
  	u.setup = (xConnSetup *) (((char *) u.setup) + sz_xConnSetup);
   	(void) strncpy(dpy->vendor, u.vendor, vendorlen);
 	dpy->vendor[vendorlen] = '\0';
  	vendorlen = (vendorlen + 3) & ~3;	/* round up */
 	bcopy (u.vendor + vendorlen, setup,
-	       setuplength - sz_xConnSetup - vendorlen);
+	       (int) setuplength - sz_xConnSetup - vendorlen);
  	u.vendor = setup;
 /*
  * Now iterate down setup information.....
@@ -507,8 +511,13 @@ Display *XOpenDisplay (display)
 	    XGCValues values;
 	    values.foreground = sp->black_pixel;
 	    values.background = sp->white_pixel;
-	    sp->default_gc = XCreateGC (dpy, sp->root,
-			GCForeground|GCBackground, &values);
+	    if ((sp->default_gc = XCreateGC (dpy, sp->root,
+					     GCForeground|GCBackground,
+					     &values)) == NULL) {
+		OutOfMemory(dpy, setup);
+		UnlockMutex (&lock);
+		return (NULL);
+	    }
 	}
 /*
  * call into synchronization routine so that all programs can be
