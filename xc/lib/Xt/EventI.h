@@ -1,4 +1,4 @@
-/* $XConsortium: EventI.h,v 1.16 90/12/30 16:28:33 rws Exp $ */
+/* $XConsortium: EventI.h,v 1.17 90/12/31 14:55:11 rws Exp $ */
 /* $oHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 
 /***********************************************************
@@ -65,7 +65,6 @@ typedef struct _XtEventRec {
      XtEventHandler	proc;
      XtPointer		closure;
      unsigned int	select:1;
-     unsigned int	raw:1;
      unsigned int	async:1; /* not used, here for Digital extension? */
 } XtEventRec;
 
