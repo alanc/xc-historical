@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbply1rct.c,v 1.6 91/04/10 11:42:16 keith Exp $
+ * $XConsortium: cfbply1rct.c,v 1.7 91/05/30 16:28:35 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -164,10 +164,12 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	    	c = *--vertex1p;
 	    	Setup (c,x1,vertex1,dx1,dy1,e1,sign1,step1)
 	    } while (y == intToY(vertex1));
+	    h = dy1;
 	}
 	else
 	{
 	    Step(x1,dx1,dy1,e1,sign1,step1)
+	    h = intToY(vertex1) - y;
 	}
 	if (y == intToY(vertex2))
 	{
@@ -178,15 +180,16 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 		    vertex2p = (int *) ptsIn;
 	    	Setup (c,x2,vertex2,dx2,dy2,e2,sign2,step2)
 	    } while (y == intToY(vertex2));
+	    if (dy2 < h)
+		h = dy2;
 	}
 	else
 	{
 	    Step(x2,dx2,dy2,e2,sign2,step2)
+	    if ((c = (intToY(vertex2) - y)) < h)
+		h = c;
 	}
 	/* fill spans for this segment */
-	h = dy1;
-	if (dy2 < dy1)
-	    h = dy2;
 	y += h;
 	for (;;)
 	{
