@@ -1,4 +1,4 @@
-/* $XConsortium: XPolyReg.c,v 11.14 88/08/15 18:20:04 jim Exp $ */
+/* $XConsortium: XPolyReg.c,v 11.15 88/09/06 16:09:19 jim Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -383,10 +383,10 @@ static int PtsToRegion(numFullPtBlocks, iCurPtBlock, FirstPtBlock, reg)
     if (!(reg->rects = (BOX *)Xrealloc((char *)reg->rects, 
 	    (unsigned) (sizeof(BOX) * numRects))))       return(0);
  
+    reg->size = numRects;
     CurPtBlock = FirstPtBlock;
     rects = reg->rects;
  
-    extents->y1 = FirstPtBlock->pts[0].y;
     extents->x1 = MAXSHORT,  extents->x2 = MINSHORT;
  
     while (numFullPtBlocks--) {
@@ -394,11 +394,16 @@ static int PtsToRegion(numFullPtBlocks, iCurPtBlock, FirstPtBlock, reg)
         pts = CurPtBlock->pts;
         while (i--) {
             rects->x1 = pts->x,  rects->y1 = pts->y;
-            extents->x1 = MIN(extents->x1, pts->x);
             pts++;
-            rects->x2 = pts->x,  rects->y2 = pts->y + 1;
-            extents->x2 = MAX(extents->x2, pts->x);
-            rects++,  pts++;
+	    if (pts->x == rects->x1) {
+		numRects--;
+	    } else {
+		rects->x2 = pts->x,  rects->y2 = pts->y + 1;
+		extents->x1 = MIN(extents->x1, rects->x1);
+		extents->x2 = MAX(extents->x2, rects->x2);
+		rects++;
+	    }
+	    pts++;
         }
         CurPtBlock = CurPtBlock->next;
     }
@@ -408,16 +413,24 @@ static int PtsToRegion(numFullPtBlocks, iCurPtBlock, FirstPtBlock, reg)
 	iCurPtBlock >>= 1;
 	while (iCurPtBlock--) {
 	    rects->x1 = pts->x,  rects->y1 = pts->y;
-	    extents->x1 = MIN(extents->x1, pts->x);
 	    pts++;
-	    rects->x2 = pts->x,  rects->y2 = pts->y + 1;
-	    extents->x2 = MAX(extents->x2, pts->x);
-	    rects++,  pts++;
+	    if (pts->x == rects->x1) {
+		numRects--;
+	    } else {
+		rects->x2 = pts->x,  rects->y2 = pts->y + 1;
+		extents->x1 = MIN(extents->x1, rects->x1);
+		extents->x2 = MAX(extents->x2, rects->x2);
+		rects++;
+	    }
+	    pts++;
 	}
     }
 
-    extents->y2 = pts[-1].y + 1;
-    reg->size = reg->numRects = numRects;
+    if (numRects) {
+	extents->y1 = reg->rects->y1;
+	extents->y2 = rects[-1].y2;
+    }
+    reg->numRects = numRects;
  
     return(TRUE);
 }
@@ -471,8 +484,11 @@ XPolygonRegion(Pts, Count, rule)
 	region->extents.y1 = min(pts[0].y, pts[2].y);
 	region->extents.x2 = max(pts[0].x, pts[2].x);
 	region->extents.y2 = max(pts[0].y, pts[2].y);
-	region->numRects = 1;
-	*(region->rects) = region->extents;
+	if ((region->extents.x1 != region->extents.x2) &&
+	    (region->extents.y1 != region->extents.y2)) {
+	    region->numRects = 1;
+	    *(region->rects) = region->extents;
+	}
 	return(region);
     }
 
