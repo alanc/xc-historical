@@ -1,4 +1,4 @@
-/* $XConsortium: registry,v 1.105 94/12/13 21:02:07 rws Exp rws $ */
+/* $XConsortium: registry,v 1.106 95/01/20 23:33:46 rws Exp rws $ */
 
 				  X Registry
 
@@ -63,6 +63,7 @@ Name						Reference
 "LJK"						[56]
 "LTA"						[60]
 "MEGATEK"					[112]
+"Metheus"					[117]
 "MIT"						[8]
 "MOTIF"						[7]
 "NCD"						[66]
@@ -317,6 +318,7 @@ String						Reference
 "Kubota Pacific Computer"			[98]
 "Matsushita Electric Industrial Co., Ltd."	[52]
 "Megatek Corporation"				[112]
+"Metheus Corporation"				[117]
 "MIT X Consortium"				[8]
 "Network Computing Devices Inc."		[66]
 "OMRON Corporation"				[45]
@@ -369,6 +371,7 @@ Name						Reference
 "FUJITSU-VX-DeviceControl"			[87]
 "JUPMISC"					[93]
 "KPC-XPeer"					[98]
+"MEX-Metheus-Extension-to-X"			[117]
 "MIT-SCREEN-SAVER"				[96]
 "MIT-SHM"					[8]
 "MIT-SUNDRY-NONSTANDARD"			[8]
@@ -409,6 +412,7 @@ Name						Reference
 "XKEYBOARD"					[111]
 "XTEST"						[8]
 "XTestExtension1"				[35]
+"XVideo"					[118]
 "ZoidExtension"					[34]
 
 6. HOST FAMILIES
@@ -608,6 +612,7 @@ Name						Reference
 "FujiXerox"					[64]
 "IBM"						[33]
 "IPSYS"						[59]
+"Metheus"					[117]
 "MISC"						[8]
 "NCD"						[66]
 "omron"						[45]
@@ -843,6 +848,7 @@ Name						Reference
 "Window"					[26]
 "Xai" (prefix)					[59]
 "Xi" (prefix)					[31]
+"XMex" (prefix)					[117]
 
 17. APPLICATION CLASSES
 
@@ -900,6 +906,7 @@ Name						Reference
 "JCC"						[90]
 "Jupiter"					[93]
 "TD"						[63]
+"Metheus"					[117]
 "MIT"						[8]
 "NCD"						[66]
 "PERITEK"					[116]
@@ -959,6 +966,7 @@ Value	Name					Reference
 18	Hitachi, Ltd.				[100]
 19	Megatek Corporation			[112]
 20	The XFree86 Project, Inc		[113]
+21	Metheus Corp.				[117]
 
 
 22. XIM ENCODINGS
@@ -1535,3 +1543,12 @@ REFERENCES
 	Peritek Corp.
 	5550 Redwood Road
 	Oakland, CA 94619
+
+[117]	Alan Ricker
+	Metheus Coporation
+	1600 NW Compton Dr.
+	Beaverton OR, 97006
+
+[118]	X Video Extension Protocol Description
+	Version 2, 25-JUL-91
+	David Carver
