@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$Header: xpr.c,v 1.21 87/10/09 11:15:25 rws Exp $";
+static char *rcsid_xpr_c = "$Header: xpr.c,v 1.22 87/10/10 02:31:46 rws Locked $";
 #endif
 
 #include <sys/types.h>
@@ -496,9 +496,8 @@ XWDFileHeader *win;
     struct iovec linevec[6];
     unsigned char line[6][500];
     register unsigned char *c;
-    register int i, j, k, m;
+    register int i, j;
     register int sixel;
-    static int mask[] = {~1, ~2, ~4, ~8, ~16, ~32, ~64, ~128};
 
     c = (unsigned char *)sixmap;
 
@@ -544,14 +543,12 @@ XWDFileHeader *win;
 #else
 	for (i = 0, w = iw; w > 0; i++) {
 	    for (j = 0; j <= 7; j++) {
-		m = mask[j];
-		k = -j;
-		sixel =  ((line[0][i] & ~m) << k++);
-		sixel |= ((line[1][i] & ~m) << k++);
-		sixel |= ((line[2][i] & ~m) << k++);
-		sixel |= ((line[3][i] & ~m) << k++);
-		sixel |= ((line[4][i] & ~m) << k++);
-		sixel |= ((line[5][i] & ~m) << k);
+		sixel =  ((line[0][i] >> j) & 1);
+		sixel |= ((line[1][i] >> j) & 1) << 1;
+		sixel |= ((line[2][i] >> j) & 1) << 2;
+		sixel |= ((line[3][i] >> j) & 1) << 3;
+		sixel |= ((line[4][i] >> j) & 1) << 4;
+		sixel |= ((line[5][i] >> j) & 1) << 5;
 		*c++ = sixel;
 		if (--w == 0) break;
 	    }
