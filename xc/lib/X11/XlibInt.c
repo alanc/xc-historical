@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.123 90/06/15 09:57:20 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.124 90/06/15 13:09:20 rws Exp $
  */
 
 #include "copyright.h"
@@ -544,14 +544,20 @@ _XSend (dpy, data, size)
 XID _XAllocID(dpy)
 register Display *dpy;
 {
-   if (dpy->resource_id <= dpy->resource_mask)
-     return (dpy->resource_base + (dpy->resource_id++ << dpy->resource_shift));
-   if (dpy->resource_id != 0x10000000) {
+   XID id;
+
+   id = dpy->resource_id << dpy->resource_shift;
+   if (id <= dpy->resource_mask) {
+       dpy->resource_id++;
+       return (dpy->resource_base + id);
+   }
+   if (id != 0x10000000) {
        (void) fprintf(stderr,
 		      "Xlib: resource ID allocation space exhausted!\n");
-       dpy->resource_id = 0x10000000;
+       id = 0x10000000;
+       dpy->resource_id = id >> dpy->resource_shift;
    }
-   return dpy->resource_id;
+   return id;
 }
 
 /*
