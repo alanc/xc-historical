@@ -20,6 +20,7 @@ MenuFont	"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 IconFont	"-adobe-helvetica-bold-r-normal--*-80-*-*-*-*-*-*"
 ResizeFont	"fixed"
 NoSaveUnders
+XORvalue 1
 
 
 ###############################################################################
@@ -83,8 +84,6 @@ Button2 = m    : window                   : f.resize
 Button2 =      : icon                     : f.iconify
 Button2 = m    : icon                     : f.iconify
 Button3 =      : root                     : f.menu "apps"
-Button3 = m    : root                     : f.showiconmgr
-Button3 =      : iconmgr                  : f.hideiconmgr
 Button3 =      : title                    : f.zoom
 Button3 = m    : window|icon|frame|title  : f.function "move-or-raiselower"
 "Left"  = m    : all                      : f.raiselower
@@ -159,10 +158,10 @@ menu "twmops"
 "Twm Operations"	f.title
 "Restart"		f.restart
 ""			f.nop
-"Exit"			f.quit
-""			f.nop
 "Show Iconmgr"		f.showiconmgr
 "Hide Iconmgr"		f.hideiconmgr
+""			f.nop
+"Exit"			f.quit
 }
 
 menu "windowops"
