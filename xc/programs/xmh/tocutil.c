@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocutil.c,v 1.8 88/01/07 09:34:44 swick Exp $";
+static char rcs_id[] = "$Header: tocutil.c,v 1.9 88/01/19 14:43:04 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -110,7 +110,7 @@ void TUScanFileForToc(toc)
 
     Widget parent, label;
     Scrn scrn;
-    char  **argv, str[100], str2[10];
+    char  **argv, str[100];
     if (toc) {
 	TUGetFullFolderInfo(toc);
 	if (toc->num_scrns) scrn = toc->scrn[0];
@@ -127,12 +127,12 @@ void TUScanFileForToc(toc)
 
 	argv = MakeArgv(4);
 	argv[0] = "scan";
-	(void) sprintf(str, "+%s", toc->foldername);
-	argv[1] = str;
+	argv[1] = TocMakeFolderName(toc);
 	argv[2] = "-width";
-	(void) sprintf(str2, "%d", defTocWidth);
-	argv[3] = str2;
+	(void) sprintf(str, "%d", defTocWidth);
+	argv[3] = str;
 	DoCommand(argv, (char *) NULL, toc->scanfile);
+	XtFree(argv[1]);
 	XtFree((char *) argv);
 	XtDestroyWidget(label);
 	toc->validity = valid;
