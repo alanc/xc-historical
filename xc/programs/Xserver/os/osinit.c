@@ -21,9 +21,10 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: osinit.c,v 1.7 87/06/21 11:27:39 swick Locked $ */
+/* $Header: osinit.c,v 1.8 87/08/19 15:39:43 todd Exp $ */
 #include "os.h"
 #include "site.h"
+#include "opaque.h"
 #undef NULL
 #include <dbm.h>
 
@@ -31,8 +32,6 @@ int	havergb = 0;
 OsInit()
 {
     if(!havergb)
-        if(dbminit (RGB_DB) == 0)
-	    havergb = 1;
-	else if (dbminit (RGB_DB_ALTERNATE) == 0)
+        if(dbminit (rgbPath) == 0)
 	    havergb = 1;
 }
