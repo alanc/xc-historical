@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.112 93/02/25 17:17:40 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.113 94/01/17 16:41:50 kaleb Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -47,6 +47,14 @@
 #include <errno.h>
 #include <setjmp.h>
 #include <signal.h>
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#define Time_t long
+extern Time_t time ();
+#else
+#include <time.h>
+#define Time_t time_t
+#endif
 
 /*
  * Check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
@@ -1568,14 +1576,9 @@ void TekSimulatePageButton (reset)
 
 TekCopy()
 {
-#if defined(sony) || defined(luna)
-#define TIME_T long
-#else
-#define TIME_T time_t
-#endif
 	register TScreen *screen = &term->screen;
 	register struct tm *tp;
-	TIME_T l;
+	Time_t l;
 	char buf[32];
 	int waited;
 	int pid;
