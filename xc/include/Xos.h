@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.66 94/04/17 20:10:51 rws Exp kaleb $
+ * $XConsortium: Xos.h,v 1.67 94/11/30 20:48:05 kaleb Exp gildea $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -197,11 +197,15 @@ struct timeval {
 #endif /* SYSV */
 
 /* define X_GETTIMEOFDAY macro, a portable gettimeofday() */
+#if defined(_XOPEN_XPG4) || defined(_XOPEN_UNIX) /* _XOPEN_UNIX is XPG4.2 */
+#define X_GETTIMEOFDAY(t) gettimeofday(t, (struct timezone*)0)
+#else
 #if defined(SVR4) || defined(VMS) || defined(WIN32)
 #define X_GETTIMEOFDAY(t) gettimeofday(t)
 #else
 #define X_GETTIMEOFDAY(t) gettimeofday(t, (struct timezone*)0)
 #endif
+#endif /* XPG4 else */
 
 /* use POSIX name for signal */
 #if defined(X_NOT_POSIX) && defined(SYSV) && !defined(SIGCHLD)
