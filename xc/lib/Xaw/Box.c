@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Box.c,v 1.40 89/09/19 16:29:23 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Box.c,v 1.41 89/10/09 16:19:57 jim Exp $";
 #endif /* lint */
 
 
@@ -46,10 +46,15 @@ SOFTWARE.
  ****************************************************************/
 
 static XtResource resources[] = {
-    {XtNhSpace, XtCHSpace, XtRDimension, sizeof(Dimension),
-	 XtOffset(BoxWidget, box.h_space), XtRImmediate, (caddr_t)4},
-    {XtNvSpace, XtCVSpace, XtRDimension, sizeof(Dimension),
-	 XtOffset(BoxWidget, box.v_space), XtRImmediate, (caddr_t)4},
+    { XtNhSpace, XtCHSpace, XtRDimension, sizeof(Dimension),
+		XtOffsetOf(BoxRec, box.h_space),
+		XtRImmediate, (XtPointer)4 },
+    { XtNvSpace, XtCVSpace, XtRDimension, sizeof(Dimension),
+		XtOffsetOf(BoxRec, box.v_space),
+		XtRImmediate, (XtPointer)4 },
+    { XtNorientation, XtCOrientation, XtROrientation, sizeof(XtOrientation),
+		XtOffsetOf(BoxRec, box.orientation),
+		XtRImmediate, (XtPointer)XtorientVertical },
 };
 
 /****************************************************************
@@ -58,6 +63,7 @@ static XtResource resources[] = {
  *
  ****************************************************************/
 
+static void ClassInitialize();
 static void Initialize();
 static void Realize();
 static void Resize();
@@ -72,7 +78,7 @@ BoxClassRec boxClassRec = {
     /* superclass         */    (WidgetClass) &compositeClassRec,
     /* class_name         */    "Box",
     /* widget_size        */    sizeof(BoxRec),
-    /* class_initialize   */    XawInitializeWidgetSet,
+    /* class_initialize   */    ClassInitialize,
     /* class_part_init    */	NULL,
     /* class_inited       */	FALSE,
     /* initialize         */    Initialize,
@@ -133,10 +139,11 @@ WidgetClass boxWidgetClass = (WidgetClass)&boxClassRec;
 /* ARGSUSED */
 static DoLayout(bbw, width, height, reply_width, reply_height, position)
     BoxWidget	bbw;
-    Dimension	width, height;	/* height not currently used */
+    Dimension	width, height;
     Dimension	*reply_width, *reply_height; /* bounding box */
     Boolean	position;	/* actually reposition the windows? */
 {
+    Boolean vbox = (bbw->box.orientation == XtorientVertical);
     Cardinal  i;
     Dimension w, h;	/* Width and height needed for box 		*/
     Dimension lw, lh;	/* Width and height needed for current line 	*/
@@ -163,12 +170,14 @@ static DoLayout(bbw, width, height, reply_width, reply_height, position)
 	    if (lw + bw > width) {
 		if (lw > h_space) {
 		    /* At least one widget on this line, and
-		     * can't fit any more.  Start new line.
+		     * can't fit any more.  Start new line if vbox.
 		     */
 		    AssignMax(w, lw);
-		    h += lh + bbw->box.v_space;
-		    lh = 0;
-		    lw = h_space;
+		    if (vbox) {
+			h += lh + bbw->box.v_space;
+			lh = 0;
+			lw = h_space;
+		    }
 		}
 		else if (!position) {
 		    /* too narrow for this widget; we'll assume we can grow */
@@ -199,6 +208,25 @@ static DoLayout(bbw, width, height, reply_width, reply_height, position)
 	    AssignMax(lh, bh);
 	} /* if managed */
     } /* for */
+
+    if (!vbox && width && lw > width && lh < height) {
+	/* reduce width if too wide and height not filled */
+	Dimension sw = lw, sh = lh;
+	Dimension width_needed;
+	XtOrientation orientation = bbw->box.orientation;
+	bbw->box.orientation = XtorientVertical;
+	while (sh < height && sw > width) {
+	    width_needed = sw;
+	    DoLayout(bbw, sw-1, height, &sw, &sh, False);
+	}
+	if (sh < height) width_needed = sw;
+	if (width_needed != lw) {
+	    DoLayout(bbw,width_needed,height,reply_width,reply_height,position);
+	    bbw->box.orientation = orientation;
+	    return;
+	}
+	bbw->box.orientation = orientation;
+    }
 
     if (position && XtIsRealized((Widget)bbw)) {
 	if (bbw->composite.num_children == num_mapped_children)
@@ -507,6 +535,13 @@ static void ChangeManaged(w)
     /* Reconfigure the box */
     (void) TryNewLayout((BoxWidget)w);
     Resize(w);
+}
+
+static void ClassInitialize()
+{
+    XawInitializeWidgetSet();
+    XtAddConverter( XtRString, XtROrientation, XmuCvtStringToOrientation,
+		    NULL, (Cardinal)0 );
 }
 
 /* ARGSUSED */

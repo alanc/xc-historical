@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Box.h,v 1.17 89/05/11 15:11:36 kit Exp $
+* $XConsortium: Box.h,v 1.18 89/07/21 01:51:23 kit Exp $
 */
 
 
@@ -47,6 +47,7 @@ SOFTWARE.
  hSpace 	     HSpace		Dimension	4
  height		     Height		Dimension	0
  mappedWhenManaged   MappedWhenManaged	Boolean		True
+ orientation	     Orientation	XtOrientation	vertical
  vSpace 	     VSpace		Dimension	4
  width		     Width		Dimension	0
  x		     Position		Position	0

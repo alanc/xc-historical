@@ -1,5 +1,5 @@
 /*
-* $XConsortium: BoxP.h,v 1.14 89/03/30 16:05:14 jim Exp $
+* $XConsortium: BoxP.h,v 1.15 89/05/11 01:04:48 kit Exp $
 */
 
 
@@ -43,6 +43,7 @@ SOFTWARE.
 
 #include <X11/Xaw/Box.h>
 #include <X11/CompositeP.h>
+#include <X11/Xmu/Converters.h>
 
 /* New fields for the Box widget class record */
 typedef struct {int empty;} BoxClassPart;
@@ -58,7 +59,11 @@ extern BoxClassRec boxClassRec;
 
 /* New fields for the Box widget record */
 typedef struct {
+    /* resources */
     Dimension   h_space, v_space;
+    XtOrientation orientation;
+
+    /* private state */
     Dimension	preferred_width, preferred_height;
     Dimension	last_query_width, last_query_height;
     XtGeometryMask last_query_mode;
