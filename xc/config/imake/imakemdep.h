@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.66 94/02/04 18:15:40 matt Exp $
+ * $XConsortium: imakemdep.h,v 1.67 94/02/04 19:50:30 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -96,6 +96,14 @@
 #define imake_ccflags "-DSYSV -DUSG -DNOSTDHDRS"
 #endif
 
+#ifdef sequent
+#define imake_ccflags "-DX_NOT_STDC_ENV -DX_NOT_POSIX"
+#endif
+
+#ifdef _SEQUENT_
+#define imake_ccflags "-DSYSV -DUSG"
+#endif
+
 #else /* not CCIMAKE */
 #ifndef MAKEDEPEND
 /*
@@ -104,7 +112,7 @@
  *     descriptor onto another, define such a mechanism here (if you don't
  *     already fall under the existing category(ies).
  */
-#if defined(SYSV) && !defined(CRAY) && !defined(Mips)
+#if defined(SYSV) && !defined(CRAY) && !defined(Mips) && !defined(_SEQUENT_)
 #define	dup2(fd1,fd2)	((fd1 == fd2) ? fd1 : (close(fd2), \
 					       fcntl(fd1, F_DUPFD, fd2)))
 #endif
