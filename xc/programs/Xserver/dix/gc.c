@@ -618,6 +618,7 @@ FreeGC(pGC, gid)
 	pQ = pQnext;
     }
     while(pQ != pQInit);
+    Xfree(pGC->dash);
     Xfree(pGC);
 }
 
