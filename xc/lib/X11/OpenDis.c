@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.112 91/02/11 20:53:23 keith Exp $
+ * $XConsortium: XOpenDis.c,v 11.113 91/02/20 21:20:20 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -70,7 +70,7 @@ static char *xauth_data = NULL;	 /* NULL means get default data */
 
 static char *default_xauth_names[] = {
 #ifdef SECURE_RPC
-    "SECURE-RPC",
+    "SUN-DES-1",
 #endif
 #ifdef HASDES
     "XDM-AUTHORIZATION-1",
@@ -80,7 +80,7 @@ static char *default_xauth_names[] = {
 
 static int default_xauth_lengths[] = {
 #ifdef SECURE_RPC
-    10,	    /* strlen ("SECURE-RPC") */
+    9,	    /* strlen ("SUN-DES-1") */
 #endif
 #ifdef HASDES
     19,	    /* strlen ("XDM-AUTHORIZATION-1") */
@@ -395,11 +395,11 @@ Display *XOpenDisplay (display)
 #endif /* HASDES */
 #ifdef SECURE_RPC
         /*
-         * The SECURE-RPC authorization protocol uses the
+         * The SUN-DES-1 authorization protocol uses the
          * "secure RPC" mechanism in SunOS 4.0+.
          */
-        if (conn_auth_namelen == 10 && !strncmp(conn_auth_name,
-            "SECURE-RPC", 10)) {
+        if (conn_auth_namelen == 9 && !strncmp(conn_auth_name,
+            "SUN-DES-1", 9)) {
             static char servernetname[MAXNETNAMELEN + 1];
 
             /*
