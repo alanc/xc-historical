@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.sample,v 1.10 94/05/13 16:43:11 matt Exp $
+XCOMM site:  $XConsortium: site.sample,v 1.11 94/06/03 19:50:12 matt Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -48,10 +48,12 @@ XCOMM site:  $XConsortium: site.sample,v 1.10 94/05/13 16:43:11 matt Exp $
 #define HasCplusplus YES
 #endif 
 */
- 
+
+
 #endif /* BeforeVendorCF */
 
 #ifdef AfterVendorCF
+
 
 #define ProjectRoot /usr/X11R6
 
@@ -84,6 +86,10 @@ XCOMM site:  $XConsortium: site.sample,v 1.10 94/05/13 16:43:11 matt Exp $
 
 /*
 #define HasSentinel	YES
+*/
+
+/*
+#define DefaultUserPath /bin:/usr/bin:$(BINDIR):/usr/ucb:/usr/local/bin
 */
 
 /*

@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.127 94/05/13 16:01:18 dpw Exp $
+XCOMM site:  $XConsortium: site.def,v 1.128 94/06/03 21:38:49 matt Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -121,9 +121,11 @@ XCOMM site:  $XConsortium: site.def,v 1.127 94/05/13 16:01:18 dpw Exp $
 #endif
 #endif
 
+
 #endif /* BeforeVendorCF */
 
 #ifdef AfterVendorCF
+
 
 #ifdef CrayArchitecture
 #define ProjectRoot /X11R4/X11R6/X11
@@ -237,11 +239,13 @@ clean::									@@\
 #ifndef XlbiffMailPath
 #define XlbiffMailPath /site/spool/mail/%s
 #endif
+
 #ifndef XmhLibDir
 #define XmhLibDir /usr/local/lib/mh
 #endif
 
+#define DefaultUserPath /bin:/usr/bin:$(BINDIR):/usr/ucb:/usr/local/bin:/usr/local/bin/mh:/site/local/scripts
+
 #include <host.def>
 
 #endif /* AfterVendorCF */
-
