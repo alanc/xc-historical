@@ -1,4 +1,4 @@
-/* "$XConsortium: Initialize.c,v 1.156 90/04/04 11:28:01 swick Exp $"; */
+/* "$XConsortium: Initialize.c,v 1.157 90/06/15 18:42:24 rws Exp $"; */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 
 /***********************************************************
@@ -60,10 +60,12 @@ extern void _XtConvertInitialize();
 #define XtInitialize _XtInitialize
 #endif /* SUNSHLIB && SHAREDCODE */
 
+/*
+ * hpux
+ * Hand-patched versions of HP-UX prior to version 7.0 can usefully add
+ * -DUSE_UNAME in the appropriate config file to get long hostnames.
+ */
 
-#ifdef hpux
-#define USE_UNAME
-#endif
 #ifdef USG
 #define USE_UNAME
 #endif
