@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Clock.h,v 1.27 89/07/20 14:52:47 jim Exp $
+* $XConsortium: Clock.h,v 1.28 89/07/20 14:54:38 jim Exp $
 */
 
 
@@ -56,7 +56,6 @@ SOFTWARE.
  highlight	     Foreground		Pixel		black
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  padding	     Margin		int		8
- reverseVideo	     ReverseVideo	Boolean		False
  update		     Interval		int		60 (seconds)
  width		     Width		Dimension	164
  x		     Position		Position	0

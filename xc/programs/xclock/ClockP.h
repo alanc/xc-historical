@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ClockP.h,v 1.19 89/12/06 15:23:06 kit Exp $
+* $XConsortium: ClockP.h,v 1.20 90/04/11 17:27:28 jim Exp $
 */
 
 
@@ -51,7 +51,6 @@ typedef struct {
 	 int	update;		/* update frequence */
 	 Dimension radius;		/* radius factor */
 	 int	backing_store;	/* backing store type */
-	 Boolean reverse_video;
 	 Boolean chime;
 	 Boolean beeped;
 	 Boolean analog;
