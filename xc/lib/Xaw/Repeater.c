@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Repeater.c,v 1.4 90/03/02 15:46:55 jim Exp $
+ * $XConsortium: Repeater.c,v 1.5 90/03/15 11:08:58 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -159,7 +159,7 @@ WidgetClass repeaterWidgetClass = (WidgetClass) &repeaterClassRec;
 
 /* ARGSUSED */
 static void tic (client_data, id)
-    caddr_t client_data;
+    XtPointer client_data;
     XtIntervalId *id;
 {
     RepeaterWidget rw = (RepeaterWidget) client_data;
