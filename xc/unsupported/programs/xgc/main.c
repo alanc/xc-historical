@@ -44,7 +44,7 @@ static Widget planemaskchoice;	/* form for choosing the plane mask */
 static Widget dashlistchoice;	/* form for choosing the dash list */
 static Widget linewidthchoice;	/* form for choosing line width */
 static Widget fontchoice;	/* form for choosing the font */
-static Widget foregroundchoice;	/* form for choosing foreground */
+       Widget foregroundchoice;	/* form for choosing foreground */
 static Widget backgroundchoice;	/* form for choosing background */
 static Widget percentchoice;	/* form for choosing percentage of test */
 
@@ -203,8 +203,8 @@ void main(argc,argv)
   XSetTile(X.dpy,X.miscgc,X.tile);
   XSetStipple(X.dpy,X.miscgc,X.stipple);
 
-  GC_change_foreground(X.foreground);
-  GC_change_background(X.background);
+  GC_change_foreground(X.foreground,TRUE);
+  GC_change_background(X.background,TRUE);
     
   /* Act like the user picked the first choice in each group */
 

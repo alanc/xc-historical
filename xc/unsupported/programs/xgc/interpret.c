@@ -20,6 +20,7 @@ extern XgcStuff ArcmodeStuff;
 extern XStuff X;
 extern Widget test;
 extern Widget GCform;
+extern Widget foregroundchoice;
 
 /* interpret(string)
 ** -----------------
@@ -54,7 +55,7 @@ void interpret(string)
     else if (!strcmp(word1,FunctionStuff.choice.text)) {
       for (i=0;i<NUM_FUNCTIONS;++i) {
 	if (!strcmp(word2,(FunctionStuff.data)[i].text)) {
-	  GC_change_function((FunctionStuff.data)[i].code);
+	  GC_change_function((FunctionStuff.data)[i].code,FALSE);
 	  break;
 	}
       }
@@ -62,17 +63,17 @@ void interpret(string)
     else if (!strcmp(word1,LinestyleStuff.choice.text)) {
       for (i=0;i<NUM_LINESTYLES;++i) {
 	if (!strcmp(word2,(LinestyleStuff.data)[i].text)) {
-	  GC_change_linestyle((LinestyleStuff.data)[i].code);
+	  GC_change_linestyle((LinestyleStuff.data)[i].code,FALSE);
 	  break;
 	}
       }
     }
     else if (!strcmp(word1,"linewidth"))
-      GC_change_linewidth(atoi(word2));
+      GC_change_linewidth(atoi(word2),FALSE);
     else if (!strcmp(word1,CapstyleStuff.choice.text)) {
       for (i=0;i<NUM_CAPSTYLES;++i) {
 	if (!strcmp(word2,(CapstyleStuff.data)[i].text)) {
-	  GC_change_capstyle((CapstyleStuff.data)[i].code);
+	  GC_change_capstyle((CapstyleStuff.data)[i].code,FALSE);
 	  break;
 	}
       }
@@ -80,7 +81,7 @@ void interpret(string)
     else if (!strcmp(word1,JoinstyleStuff.choice.text)) {
       for (i=0;i<NUM_JOINSTYLES;++i) {
 	if (!strcmp(word2,(JoinstyleStuff.data)[i].text)) {
-	  GC_change_joinstyle((JoinstyleStuff.data)[i].code);
+	  GC_change_joinstyle((JoinstyleStuff.data)[i].code,FALSE);
 	  break;
 	}
       }
@@ -88,7 +89,7 @@ void interpret(string)
     else if (!strcmp(word1,FillstyleStuff.choice.text)) {
       for (i=0;i<NUM_FILLSTYLES;++i) {
 	if (!strcmp(word2,(FillstyleStuff.data)[i].text)) {
-	  GC_change_fillstyle((FillstyleStuff.data)[i].code);
+	  GC_change_fillstyle((FillstyleStuff.data)[i].code,FALSE);
 	  break;
 	}
       }
@@ -96,7 +97,7 @@ void interpret(string)
     else if (!strcmp(word1,FillruleStuff.choice.text)) {
       for (i=0;i<NUM_FILLRULES;++i) {
 	if (!strcmp(word2,(FillruleStuff.data)[i].text)) {
-	  GC_change_fillrule((FillruleStuff.data)[i].code);
+	  GC_change_fillrule((FillruleStuff.data)[i].code,FALSE);
 	  break;
 	}
       }
@@ -104,21 +105,21 @@ void interpret(string)
     else if (!strcmp(word1,ArcmodeStuff.choice.text)) {
       for (i=0;i<NUM_ARCMODES;++i) {
 	if (!strcmp(word2,(ArcmodeStuff.data)[i].text)) {
-	  GC_change_arcmode((ArcmodeStuff.data)[i].code);
+	  GC_change_arcmode((ArcmodeStuff.data)[i].code,FALSE);
 	  break;
 	}
       }
     }
     else if (!strcmp(word1,"planemask")) 
-      GC_change_planemask(atoi(word2));
+      GC_change_planemask((unsigned int) atoi(word2));
     else if (!strcmp(word1,"dashlist"))
       GC_change_dashlist(atoi(word2));
     else if (!strcmp(word1,"font"))
       GC_change_font(word2);
     else if (!strcmp(word1,"foreground"))
-      GC_change_foreground((unsigned int) atoi(word2));
+      GC_change_foreground((unsigned int) atoi(word2),FALSE);
     else if (!strcmp(word1,"background"))
-      GC_change_background((unsigned int) atoi(word2));
+      GC_change_background((unsigned int) atoi(word2),FALSE);
     else fprintf(stderr,"Ack... %s %s\n",word1,word2);
   }
 }
@@ -142,8 +143,12 @@ void GC_change_foreground(foreground,feedback)
      unsigned long foreground;
      Boolean feedback;
 {
+  char text[40];
+
   XSetForeground(X.dpy,X.gc,foreground);
   X.gcv.foreground = foreground;
+  sprintf(text,"%d",foreground);
+  change_text(foregroundchoice,TForeground,text);
 }
 
 void GC_change_background(background,feedback)

@@ -58,7 +58,7 @@ void create_planemask_choice(w)
 
   planemask = (1<<num_planes)-1;
   sprintf(buf,"planemask %d",planemask);
-  interpret(buf,FALSE);
+  interpret(buf);
 
   pm = (Widget *) malloc(num_planes * sizeof(Widget));
   pminfo = (int *) malloc(num_planes * sizeof(int));
