@@ -5,6 +5,22 @@
 #include <ctype.h>
 #include "DviP.h"
 
+DviGetAndPut(dw, cp)
+    DviWidget	dw;
+    char	*cp;
+{
+    if (dw->dvi.ungot)
+    {
+	dw->dvi.ungot = 0;
+	*cp = getc (dw->dvi.file);
+    }
+    else
+    {
+	putc ((*cp = getc(dw->dvi.file)), dw->dvi.tmpFile);
+    }
+    return *cp;
+}
+
 char *
 GetLine(dw, Buffer, Length)
 	DviWidget	dw;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DviP.h,v 1.3 89/04/13 13:34:59 keith Exp $
+ * $XConsortium: DviP.h,v 1.4 89/05/16 14:24:42 keith Exp $
  */
 
 /* 
@@ -152,13 +152,7 @@ typedef struct {
 
 #define DviGetIn(dw,cp)\
     (dw->dvi.tmpFile ? (\
-	dw->dvi.ungot ? (\
-	    (dw->dvi.ungot = 0),\
-	    (*cp = getc(dw->dvi.file))\
-	) : (\
-	    putc ((*cp = getc(dw->dvi.file)), dw->dvi.tmpFile),\
-	    *cp\
-	)\
+	DviGetAndPut (dw, cp) \
     ) :\
 	(*cp = getc (dw->dvi.file))\
 )
@@ -196,6 +190,6 @@ typedef struct _DviRec {
 extern XFontStruct	*QueryFont ();
 
 extern DviCharNameMap	*QueryFontMap ();
-#endif _XtDviP_h
+#endif /* _XtDviP_h */
 
 
