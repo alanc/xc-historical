@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicP.h,v 1.59 93/09/11 16:02:12 rws Exp $ */
+/* $XConsortium: IntrinsicP.h,v 1.60 93/09/30 13:46:29 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -162,6 +162,35 @@ typedef void (*XtStringProc)(
 #if NeedFunctionPrototypes
     Widget	/* widget */,
     String	/* str */
+#endif
+);
+
+typedef struct {
+    String	name;	/* resource name */
+    String	type;	/* representation type name */
+    XtArgVal	value;	/* representation */
+    int		size;	/* size of representation */
+} XtTypedArg, *XtTypedArgList;
+
+typedef void (*XtAllocateProc)(
+#if NeedFunctionPrototypes
+    WidgetClass		/* widget_class */,
+    WidgetClass		/* constraint_class */,
+    Cardinal		/* more_bytes */,
+    Widget		/* parent */,
+    ArgList		/* args */,
+    Cardinal		/* num_args */,
+    XtTypedArgList	/* typed_args */,
+    Cardinal		/* num_typed_args */,
+    Widget *		/* new_return */,
+    XtPointer *		/* more_bytes_return */
+#endif
+);
+
+typedef void (*XtDeallocateProc)(
+#if NeedFunctionPrototypes
+    Widget		/* widget */,
+    XtPointer		/* more_bytes */
 #endif
 );
 
