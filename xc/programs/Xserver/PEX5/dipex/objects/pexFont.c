@@ -1,4 +1,4 @@
-/* $XConsortium: pexFont.c,v 5.3 91/07/02 09:51:45 rws Exp $ */
+/* $XConsortium: pexFont.c,v 5.4 91/12/09 17:14:26 converse Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -96,7 +96,7 @@ pexOpenFontReq  *strmPtr;
 
 	/* has this server already loaded this font */
 	CopyISOLatin1Lowered(	fName, (unsigned char *)(strmPtr+1),
-				(int)(strmPtr->length));
+				(int)(strmPtr->numBytes));
 
 	dif = FindPEXFontEntry(fName);
 
@@ -110,12 +110,22 @@ pexOpenFontReq  *strmPtr;
 	    dif->ddFont.id = strmPtr->font;
 	    dif->refcnt = 1;
 
-	    err = OpenPEXFont(	(ddULONG)(strmPtr->length), 
+	    err = OpenPEXFont(	(ddULONG)(strmPtr->numBytes), 
 				(ddUCHAR *)(strmPtr + 1), &(dif->ddFont));
 	    if (err) {
 		Xfree((pointer)dif);
 		PEX_ERR_EXIT(err,0,cntxtPtr);
 	    }
+
+	/*
+         * Note that fonts resources are stored with the type (dipexFont *),
+         * and they are referenced sometimes in the DD layer as diFontHandle
+         * (which is a pointer to a ddFontResource).  Since the first part
+         * of the dipexFont structure consists of a ddFontResource, this
+         * works.  Even though it is ugly, it's best not to start changing
+         * all of the font code at this time (right before a public release),
+         * and hopefully, it will get cleaned up for PEX 6.0.
+	 */
 
 	ADDRESOURCE(strmPtr->font, PEXFontType, dif);
 
