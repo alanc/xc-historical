@@ -1,6 +1,4 @@
-#ifndef NOIDENT
-#ident	"@(#)nameserver:itserver.c	1.3"
-#endif
+/* $XConsortium: ittserver.c,v 1.2 91/02/17 12:49:24 rws Exp $ */
 
 /*
  * Copyright 1988, 1989 AT&T, Inc.
@@ -26,10 +24,17 @@
 
 #define _USHORT_H	/* prevent conflicts between BSD sys/types.h and
                            interlan/il_types.h */
+#ifdef LACHMAN
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#else
 #include <interlan/il_types.h>
 #include <interlan/socket.h>
 #include <interlan/netdb.h>
 #include <interlan/in.h>
+#endif
 #include <tiuser.h>
 #include <sys/param.h>
 #include <sys/utsname.h>
@@ -37,11 +42,18 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <X11/Xproto.h>
 #include "Xstreams.h"				/* in Xlib sources */
 #include <X11/X.h>
 
 #include "osdep.h"
+
+#ifdef	LACHMAN
+#define	INADDRSIZE 16
+#else
+#define	INADDRSIZE 8
+#endif
 
 extern	char	*calloc(), *realloc(), *alialloc();
 extern  char    *program;
@@ -257,7 +269,7 @@ int	n, len;
 	unsigned long	address;
 	int	port;
         char    *ptr;
-	int	entlen = 8; 
+	int	entlen = INADDRSIZE;
 	int	rndlen;
 
 #ifdef DEBUG
@@ -266,8 +278,16 @@ fprintf(stderr, "in ConvertEthernetName %s\n", entry);
 
 	rndlen = ((sizeof(xHostEntry) + entlen + 3) >> 2) << 2;
 
-	hp = gethostbyname(entry);
-	if (hp == NULL) 
+	if (isascii(entry[0]) && isdigit(entry[0]))
+	    address = inet_addr (entry);
+	else
+	    address = (unsigned long)~0L;
+	if (address == (unsigned long)~0L) {
+	    hp = gethostbyname(entry);
+	    if (hp)
+		address = *(unsigned long *)hp->h_addr;
+	}
+	if (address == (unsigned long)~0L) 
 	{
 		entlen = strlen(display) + len + 2;
 		rndlen = ((sizeof(xHostEntry) + entlen + 3) >> 2) << 2;
@@ -283,7 +303,6 @@ fprintf(stderr, "in ConvertEthernetName %s\n", entry);
 	}
 	port = atoi(display);
         port += X_TCP_PORT;
-	address = *(long *)hp->h_addr;
 
 	if((*pktptr = alialloc(*pktptr, n+rndlen)) == NULL)
 		return(-1);
@@ -300,7 +319,7 @@ fprintf(stderr, "in ConvertEthernetName %s\n", entry);
 	*(int *) ptr = address;
 
 #ifdef DEBUG
-fprintf(stderr, "creating address for host %s address<%d>\n", entry, address);
+fprintf(stderr, "creating address for host %s address<0x%x>\n", entry, address);
 #endif
 
 	return(n+rndlen);
@@ -315,7 +334,7 @@ int	n, len;
 	unsigned long	address;
 	int	port;
 	char	*ptr;
-	int	entlen = 8;
+	int	entlen = INADDRSIZE;
 	int	rndlen;
 
 #ifdef DEBUG
@@ -324,14 +343,21 @@ fprintf(stderr, "in ConvertEthernetName %s\n", entry);
 
 	rndlen = ((sizeof(xHostEntry) + entlen + 3) >> 2) << 2;
 
-	hp = gethostbyname(entry);
-	if (hp == NULL)
+	if (isascii(entry[0]) && isdigit(entry[0]))
+	    address = inet_addr (entry);
+	else
+	    address = (unsigned long)~0L;
+	if (address == (unsigned long)~0L) {
+	    hp = gethostbyname(entry);
+	    if (hp)
+		address = *(unsigned long *)hp->h_addr;
+	}
+	if (address == (unsigned long)~0L) 
 	{
 	   return(-1);
 	}
 	port = atoi(display);
 	port += X_TCP_PORT;
-	address = *(long *)hp->h_addr;
 
 	if((*pktptr = alialloc(*pktptr, n+rndlen)) == NULL)
 		return(-1);
@@ -340,12 +366,16 @@ fprintf(stderr, "in ConvertEthernetName %s\n", entry);
 	((xHostEntry *)ptr)->family = AF_INET;
 	((xHostEntry *)ptr)->length = entlen;
 	ptr += sizeof(xHostEntry);
+#ifdef LACHMAN
+	*(short *) ptr = AF_INET;
+#else
 	*(short *) ptr = htons(AF_INET);
+#endif
 	*(short *) (ptr + sizeof(short)) = htons(port);
 	*(int *) (ptr + sizeof(short) + sizeof(short)) = address;
 
 #ifdef DEBUG
-fprintf(stderr, "creating address for host %s address<%d>\n", entry, address);
+fprintf(stderr, "creating address for host %s address<0x%x>\n", entry, address);
 #endif
 
 	return(n+rndlen);
@@ -370,7 +400,7 @@ int	n, len;
 fprintf(stderr, "in MakeEthernetCall %s\n", entry);
 #endif
 
-        a  = 8;
+        a  = INADDRSIZE;
 	o  = 0;
 	u  = 0;
 
@@ -384,13 +414,21 @@ fprintf(stderr, "in MakeEthernetCall %s\n", entry);
 		return(-1);
 
 
-        hp = gethostbyname(entry);
-	if (hp == NULL) {
+	if (isascii(entry[0]) && isdigit(entry[0]))
+	    address = inet_addr (entry);
+	else
+	    address = (unsigned long)~0L;
+	if (address == (unsigned long)~0L) {
+	    hp = gethostbyname(entry);
+	    if (hp)
+		address = *(unsigned long *)hp->h_addr;
+	}
+	if (address == (unsigned long)~0L) 
+	{
 		return(-1);
 	}
         port = atoi(display);
 	port += X_TCP_PORT;
-	address = *(long *)hp->h_addr;
 
         if((*pktptr = alialloc(*pktptr, n+rndlen)) == NULL)
 		return(-1);
@@ -399,7 +437,11 @@ fprintf(stderr, "in MakeEthernetCall %s\n", entry);
 	((xHostEntry *)ptr)->length = a;
 
 	ptr += sizeof(xHostEntry);
+#ifdef LACHMAN
+	*(short *) ptr = AF_INET;
+#else
 	*(short *) ptr = htons(AF_INET);
+#endif
 	*(short *) (ptr + sizeof(short)) = htons(port);
 	*(int *) (ptr + sizeof(short) + sizeof(short)) = address;
 
@@ -410,7 +452,7 @@ fprintf(stderr, "in MakeEthernetCall %s\n", entry);
 	((xHostEntry *)ptr)->length = u;
 
 #ifdef DEBUG
-fprintf(stderr, "creating address for host %s address<%d> and returning +%d\n",
+fprintf(stderr, "creating address for host %s address<0x%x> and returning +%d\n",
 		 entry, address, rndlen);
 #endif
 
