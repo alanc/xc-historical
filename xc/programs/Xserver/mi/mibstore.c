@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.28 89/03/30 09:27:49 rws Exp $ */
+/* $XConsortium: mibstore.c,v 1.29 89/03/31 13:19:57 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2611,6 +2611,11 @@ miSaveAreas(pWin)
 	miDestroyBSPixmap (pWin);
 	return;
     }
+
+    /* Don't even pretend to save anything for a virtual background None */
+    if ((pBackingStore->status == StatusVirtual) &&
+	(pBackingStore->backgroundTile == (PixmapPtr)None))
+	return;
 
     /*
      * Translate the region to be window-relative, then copy the region from
