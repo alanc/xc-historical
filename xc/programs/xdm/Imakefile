@@ -30,7 +30,4 @@ $(XDMDIR):
 
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),)
 SingleProgramTarget(xdmshell,$(OBJS2),,)
-
-#ifdef MacIIArchitecture
 InstallProgramWithFlags(xdmshell,$(BINDIR), )
-#endif
