@@ -1,4 +1,4 @@
-/* $XConsortium: PassivGrab.c,v 1.18 91/05/24 12:42:35 swick Exp $ */
+/* $XConsortium: PassivGrab.c,v 1.19 91/07/21 16:04:41 converse Exp $ */
 
 /********************************************************
 
@@ -536,9 +536,7 @@ XtServerGrabPtr _XtCheckServerGrabsOnWidget (event, widget, isKeyboard)
 
 /*
  * This handler is needed to guarantee that we see releases on passive
- * grabs for widgets that haven't selected for keyrelease. Also
- * potentially for tracking focusOuts in order to know that the grab
- * widget has been unmapped.
+ * button grabs for widgets that haven't selected for button release.
  */
 
 /*ARGSUSED*/
@@ -562,12 +560,8 @@ static void  MakeGrab(grab, passiveListPtr, isKeyboard, pdi, pwi)
     XtPerDisplayInput	pdi;
     XtPerWidgetInput	pwi;
 {
-    if (!pwi->active_handler_added)
-    {
-	Mask mask = (isKeyboard ? 
-		     (KeyPressMask | KeyReleaseMask) :
-		     (ButtonPressMask | ButtonReleaseMask));
-	XtAddEventHandler(grab->widget, mask, FALSE,
+    if (!isKeyboard && !pwi->active_handler_added) {
+	XtAddEventHandler(grab->widget, ButtonReleaseMask, FALSE,
 			  ActiveHandler, (XtPointer)pdi);
 	pwi->active_handler_added = TRUE;
     }
