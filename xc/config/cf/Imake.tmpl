@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.125 91/05/14 10:15:56 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.126 91/05/14 11:37:06 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -381,9 +381,16 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #endif
 
 #ifndef UsrLibDir
+#ifdef ProjectRoot
+#define UsrLibDir Concat(ProjectRoot,/lib)
+#ifndef AlternateUsrLibDir
+#define AlternateUsrLibDir YES
+#endif
+#else
 #define UsrLibDir /usr/lib
 #ifndef AlternateUsrLibDir
 #define AlternateUsrLibDir NO
+#endif
 #endif
 #else
 #ifndef AlternateUsrLibDir
@@ -391,9 +398,16 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #endif
 #endif
 #ifndef IncRoot
+#ifdef ProjectRoot
+#define IncRoot Concat(ProjectRoot,/include)
+#ifndef AlternateIncRoot
+#define AlternateIncRoot YES
+#endif
+#else
 #define IncRoot /usr/include
 #ifndef AlternateIncRoot
 #define AlternateIncRoot NO
+#endif
 #endif
 #else
 #ifndef AlternateIncRoot
@@ -715,6 +729,9 @@ XCOMM site-specific configuration parameters - edit site.def to change
      INSTDATFLAGS = InstDatFlags	/* install flags for data files */
     INSTKMEMFLAGS = InstKmemFlags	/* install flags for /dev/kmem progs */
 
+#ifdef ProjectRoot
+      PROJECTROOT = ProjectRoot
+#endif
 #ifdef UseInstalled
 #if AlternateIncRoot
      TOP_INCLUDES = -I$(INCROOT)	/* def: for alternative /usr/include */
