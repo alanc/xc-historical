@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: StrToLong.c,v 1.1 89/06/07 16:48:26 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,6 +23,7 @@
 
 
 #include <X11/Intrinsic.h>
+#include "Converters.h"
 
 #define done(address, type) \
         { (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
@@ -42,6 +43,6 @@ void XmuCvtStringToLong (args, num_args, fromVal, toVal)
     if (sscanf((char *)fromVal->addr, "%ld", &l) == 1) {
         done(&l, long);
     } else {
-        XtStringConversionWarning((char *) fromVal->addr, "Long");
+        XtStringConversionWarning((char *) fromVal->addr, XtRLong);
     }
 }
