@@ -10,10 +10,12 @@ OBJS = atom.o colormap.o cursor.o dispatch.o dixutils.o events.o \
 CDEBUGFLAGS = ServerCDebugFlags
    INCLUDES = -I. -I../include -I../../include
 EXT_DEFINES = ExtensionDefines
+   LINTLIBS = -lc ../os/4.2bsd/llib-los.ln
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(dix,$(OBJS))
 LintLibraryTarget(dix,$(SRCS))
+NormalLintTarget($(SRCS))
 
 DependTarget()
 
@@ -28,9 +30,6 @@ DependTarget()
 #
 initext.o: ./Makefile
 	$(CC) -c $(CFLAGS) $(EXT_DEFINES) initext.c
-
-lint:
-	lint -Cdix $(INCLUDES) $(SRCS) > lint.out
 
 ../../include/Xatom.h initatoms.c:	BuiltInAtoms buildatoms
 	sh buildatoms
