@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.19 89/08/31 19:13:00 converse Exp $
+ * $XConsortium: externs.h,v 2.20 89/09/01 17:36:35 kit Exp $
  */
 
 /*
@@ -35,12 +35,43 @@ extern char *getenv();
 extern char *	DoCommandToFile();
 extern char *	DoCommandToString();
 
+	/* from compfuncs.c */
+
+extern void	XmhResetCompose();
+extern void	XmhSend();
+extern void	XmhSave();
+
+	/* from folder.c */
+
+extern void	XmhClose();
+extern void	XmhComposeMessage();
+extern void 	XmhOpenFolder();
+extern void	XmhOpenFolderInNewWindow();
+extern void	XmhCreateFolder();
+extern void	XmhDeleteFolder();
+extern void 	MenuAddEntry();		/* crap-o-la */
+extern void	DeleteMenuEntry();
+extern void	XmhPopupFolderMenu();
+extern void	XmhSetCurrentFolder();
+extern void	XmhLeaveFolderButton();
+extern void	XmhOpenFolderFromMenu();
+
 	/* from icon.c */
 
 extern void	IconInit();
 
+	/* from menu.c */
+extern void	CreateMenu();
+extern void 	AddMenuEntry();
+
+	/* from msg.c */
+
+extern Widget   CreateFileSource();
+extern void	XmhInsert();
+
 	/* from popup.c */
 
+extern void	XmhPromptOkayAction();
 extern void	PopupPrompt();
 extern void	PopupConfirm();
 extern void	PopupNotice();
@@ -59,9 +90,50 @@ extern void	DestroyScrn();
 extern void	MapScrn();
 extern Scrn	ScrnFromWidget();
 
-	/* from msg.c */
+	/* from tocfuncs.c */
 
-extern Widget   CreateFileSource();
+extern void	XmhIncorporateNewMail();
+extern void 	Inc();
+extern void	XmhCommitChanges();
+extern void 	DoCommit();
+extern void	DoPack();
+extern void	XmhPackFolder();
+extern void	DoSort();
+extern void	XmhSortFolder();
+extern void 	Rescan();
+extern void	XmhForceRescan();
+extern void	DoNextView();
+extern void	XmhViewNextMessage();
+extern void	DoPrevView();
+extern void	XmhViewPreviousMessage();
+extern void	DoDelete();
+extern void	XmhMarkDelete();
+extern void	DoMove();
+extern void	XmhMarkMove();
+extern void	DoCopy();
+extern void	XmhMarkCopy();
+extern void	DoUnmark();
+extern void	XmhUnmark();
+extern void	DoViewNew();
+extern void	XmhViewInNewWindow();
+extern void	Reply();
+extern void	XmhReply();
+extern void	DoForward();
+extern void	XmhForward();
+extern void	DoTocUseAsComp();
+extern void	XmhUseAsComposition();
+extern void	DoPrint();
+extern void	XmhPrint();
+extern void	DoPickMessages();
+extern void	XmhPickMessages();
+extern void	DoOpenSeq();
+extern void	XmhOpenSequence();
+extern void 	DoAddToSeq();
+extern void	XmhAddToSequence();
+extern void 	DoRemoveFromSeq();
+extern void	XmhRemoveFromSequence();
+extern void	DoDeleteSeq();
+extern void	XmhDeleteSequence();
 
 	/* from util.c */
 
@@ -99,3 +171,20 @@ extern void 	StoreWindowName();
 	/* from version.c */
 
 extern char *	Version();
+
+	/* from viewfuncs.c */
+
+extern void	DoCloseView();
+extern void	XmhCloseView();
+extern void	DoViewReply();
+extern void	XmhViewReply();
+extern void 	DoViewForward();
+extern void	XmhViewForward();
+extern void	DoViewUseAsComposition();
+extern void	XmhViewUseAsComposition();
+extern void	DoEditView();
+extern void	XmhEditView();
+extern void	DoSaveView();
+extern void	XmhSaveView();
+extern void	DoPrintView();
+extern void	XmhPrintView();

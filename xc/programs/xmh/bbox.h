@@ -1,4 +1,4 @@
-/* $XConsortium: bbox.h,v 2.6 89/07/07 18:04:17 converse Exp $ */
+/* $XConsortium: bbox.h,v 2.7 89/07/11 16:16:53 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -10,38 +10,50 @@
  * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
  * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
  *
- * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT RIGHTS,
- * APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN ADDITION TO THAT
- * SET FORTH ABOVE.
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
+ * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
+ * ADDITION TO THAT SET FORTH ABOVE.
  *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting documen-
+ * tation, and that the name of Digital Equipment Corporation not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission.
  */
 
 #ifndef _bbox_h
 #define _bbox_h
 
-extern ButtonBox BBoxMenuCreate();
-extern ButtonBox BBoxRadioCreate();
-extern ButtonBox BBoxCreate();
-extern void BBoxSetRadio();
-extern char *BBoxGetRadioName();
-extern void BBoxAddButton();
-extern void BBoxDeleteButton();
-extern void BBoxDeleteMenuEntry();
-extern void BBoxEnable();
-extern void BBoxDisable();
-extern Button BBoxFindButtonNamed();
-extern Button BBoxFindButton();
-extern Button BBoxButtonNumber();
-extern int BBoxNumButtons();
-extern char *BBoxNameOfButton();
-extern void BBoxLockSize();
-extern void BBoxChangeBorderWidth();
+	/* for radio button boxes only */
+
+extern ButtonBox RadioBBoxCreate      (/*  Scrn, char *  */);
+extern void	 RadioBBoxAddButton   (/*  ButtonBox, char *, int, Boolean */);
+extern void	 RadioBBoxSet	      (/*  Button  */);
+extern char *	 RadioBBoxGetCurrent  (/*  ButtonBox  */);
+extern void	 RadioBBoxDeleteButton(/*  Button  */);
+
+
+	/* for other kinds of button boxes */
+
+extern ButtonBox BBoxCreate	      (/*  Scrn, char *  */);
+extern void	 BBoxAddButton	      (/*  ButtonBox, char *, WidgetClass, int,
+ 				           Boolean  */);
+extern void	 BBoxDeleteButton     (/*  Button  */);
+
+
+	/* for all kinds of button boxes */
+
+extern void	 BBoxInit             (/*  void  */);
+extern void	 BBoxEnable	      (/*  Button  */);
+extern void	 BBoxDisable	      (/*  Button  */);
+extern Button	 BBoxFindButtonNamed  (/*  ButtonBox, char *  */);
+extern Button	 BBoxFindButton	      (/*  ButtonBox, Widget  */);
+extern Button	 BBoxButtonNumber     (/*  ButtonBox, int  */);
+extern int	 BBoxNumButtons	      (/*  ButtonBox  */);
+extern char *	 BBoxNameOfButton     (/*  Button  */);
+extern void	 BBoxLockSize	      (/*  ButtonBox  */);
+
 #endif /* _bbox_h */

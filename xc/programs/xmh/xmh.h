@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xmh.h,v 2.20 89/07/12 13:58:03 kit Exp $
+ * $XConsortium: xmh.h,v 2.22 89/07/20 21:15:03 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -12,18 +12,17 @@
  * DIGITAL MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THIS SOFTWARE FOR
  * ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
  *
- * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT RIGHTS,
- * APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN ADDITION TO THAT
- * SET FORTH ABOVE.
- *
+ * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
+ * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
+ * ADDITION TO THAT SET FORTH ABOVE.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
  */
 
 #ifndef _xmh_h
@@ -109,6 +108,8 @@ typedef struct _ScrnRec {
    Toc		toc;		/* The table of contents. */
    Msg		msg;		/* The message being viewed. */
    Pick		pick;		/* Pick in this screen. */
+   XtTranslations edit_translations;	/* Text widget translations */
+   XtTranslations read_translations;	/* overridden by accelerators */
    Msg		assocmsg;	/* Associated message for reply, etc. */
 } ScrnRec, *Scrn;
 

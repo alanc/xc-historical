@@ -1,4 +1,4 @@
-/* $XConsortium: toc.h,v 2.6 89/06/28 16:52:19 converse Exp $ */
+/* $XConsortium: toc.h,v 2.7 89/07/20 21:15:44 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION

@@ -1,4 +1,4 @@
-/* $XConsortium: bboxint.h,v 2.8 89/07/07 18:04:28 converse Exp $ 
+/* $XConsortium: bboxint.h,v 2.9 89/07/20 21:15:51 converse Exp $ 
  *
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -30,10 +30,9 @@
 
 typedef struct _ButtonRec {
     Widget	widget;		/* Widget containing this button. */
-    Widget	menu;		/* Menu widget, for folder buttons only */
     ButtonBox	buttonbox;	/* Button box containing this button. */
     char	*name;		/* Name of the button. */
-    char	*menu_name;	/* Name of the menu, for folder buttons only */
+    Widget	menu;		/* Menu widget, for menu buttons only */
 } ButtonRec;
 
 typedef struct _XmhButtonBoxRec {
@@ -42,8 +41,6 @@ typedef struct _XmhButtonBoxRec {
     Scrn	scrn;		/* Scrn containing this button box. */
     int		numbuttons;	/* How many buttons in this box. */
     Button	*button;	/* Array of pointers to buttons. */
-    int		maxheight;	/* Current maximum height. */
-    WidgetClass button_type;	/* Type of buttons in this button box */
 } ButtonBoxRec;
 
 #endif /* _bboxint_h */

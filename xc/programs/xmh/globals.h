@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.22 89/08/14 15:43:48 converse Exp $
+ *  $XConsortium: globals.h,v 2.23 89/09/01 17:36:22 kit Exp $
  */
 
 /*
@@ -32,7 +32,6 @@
 #else
 #define ext extern
 #endif
-ext int *dptr;
 
 ext Display	*theDisplay;	/* Display variable. */
 ext Widget	toplevel;	/* The top level widget (A hack %%%). */
@@ -79,7 +78,7 @@ ext Toc		DraftsFolder;	/* Toc containing drafts. */
 ext Scrn	*scrnList;	/* Array of scrns in use. */
 ext int		numScrns;	/* Number of scrns in above array. */
 ext Widget	NoMenuForButton;/* Flag menu widget value: no menu */
-ext Widget      NullSource;
+ext Widget      NullSource;	/* null text widget source */
 ext Dimension	rootwidth;	/* Dimensions of root window.  */
 ext Dimension	rootheight;
 ext Pixmap	NoMailPixmap;	/* Icon pixmap if no new mail. */
