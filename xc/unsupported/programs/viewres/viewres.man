@@ -30,7 +30,7 @@ share the same name (such as \fIText\fP).
 This option indicates that the tree should be displayed top to bottom
 rather left to right.
 .SH "VIEW MENU"
-The way in which the tree is displayed may be changed with through the 
+The way in which the tree is displayed may be changed through the 
 entries in the \fBView\fP menu:
 .TP 8
 .B "Show Variable Names"
