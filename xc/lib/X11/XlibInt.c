@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.64 88/04/09 16:31:17 rws Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.65 88/05/13 10:17:17 jim Exp $";
 #endif
 
 /*
@@ -99,7 +99,7 @@ _XEventsQueued (dpy, mode)
 	if (BytesReadable(dpy->fd, (char *) &pend) < 0)
 	    (*_XIOErrorFunction)(dpy);
 	if ((len = pend) < sizeof(xReply))
-	    return(0);
+	    return(dpy->qlen);	/* _XFlush can enqueue events */
 	else if (len > BUFSIZE)
 	    len = BUFSIZE;
 	len /= sizeof(xReply);
@@ -115,7 +115,7 @@ _XEventsQueued (dpy, mode)
 }
 
 /* _XReadEvents - Flush the output queue,
- * then read as many events as possible and enqueue them
+ * then read as many events as possible (but at least 1) and enqueue them
  */
 _XReadEvents(dpy)
 	register Display *dpy;
@@ -124,8 +124,11 @@ _XReadEvents(dpy)
 	long pend_not_register; /* because can't "&" a register variable */
 	register long pend;
 	register xEvent *ev;
+	int qlen = dpy->qlen;
 
 	_XFlush (dpy);
+	if (qlen != dpy->qlen)
+	    return;
 	do {
 	    /* find out how much data can be read */
 	    if (BytesReadable(dpy->fd, (char *) &pend_not_register) < 0)
