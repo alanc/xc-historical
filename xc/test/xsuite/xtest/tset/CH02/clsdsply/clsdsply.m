@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: clsdsply.m,v 1.22 92/06/11 15:56:15 rws Exp $
+ * $XConsortium: clsdsply.m,v 1.23 92/06/29 18:14:34 rws Exp $
  */
 >>TITLE XCloseDisplay CH02
 
@@ -175,6 +175,7 @@ Atom	selection = XA_PRIMARY;
 		CHECK;
 
 	PROTECT(XCloseDisplay(display))
+	sleep(config.speedfactor);
 
 	if(XGetSelectionOwner(Dsp, selection) != (Window) None) {
 		report("%s() did not disown selection XA_PRIMARY.", TestName);
@@ -227,6 +228,7 @@ Window	gw, ow;
 		CHECK;
 
 	PROTECT(XCloseDisplay(display))
+	sleep(config.speedfactor);
 
 	if(XGrabPointer(Dsp, ow, True, 0L, GrabModeAsync, GrabModeAsync, None, None, CurrentTime) != GrabSuccess) {
 		report("%s() did not ungrab the pointer.", TestName);
@@ -280,6 +282,7 @@ Window	gw, ow;
 		CHECK;
 
 	PROTECT(XCloseDisplay(display))
+	sleep(config.speedfactor);
 
 	if(XGrabKeyboard(Dsp, ow, True, GrabModeAsync, GrabModeAsync, CurrentTime) != GrabSuccess) {
 		report("%s() did not ungrab the keyboard.", TestName);
@@ -405,6 +408,7 @@ GC		gc;
 	gc = XDefaultGC(display, DefaultScreen(display));
 
 	PROTECT(XCloseDisplay(display))
+	sleep(config.speedfactor);
 
 	startcall(Dsp);
 	XDrawPoint(Dsp, DRW(Dsp), gc, 0,0);
@@ -569,6 +573,7 @@ int 	pass = 0, fail = 0;
 	XSync(Dsp, False);
 
 	PROTECT(XCloseDisplay(display));
+	sleep(config.speedfactor);
 
 	XSync(Dsp, False);
 	XSync(client2, False);
@@ -915,6 +920,7 @@ char		*fontname = "xtfont1";
 			"XCreateGC.");
 
 	PROTECT(XCloseDisplay(display))
+	sleep(config.speedfactor);
 
 	FAIL_ONERR3(XFreeGC(Dsp, gc), BadGC,
 			"%s() did not destroy GC id %lx", gc);
