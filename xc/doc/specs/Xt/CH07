@@ -1,4 +1,4 @@
-.\" $XConsortium: CH07,v 1.7 91/08/26 13:34:16 swick Exp $
+.\" $XConsortium: CH07,v 1.8 91/08/26 14:58:22 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -74,7 +74,7 @@ Adding and Deleting Additional Event Sources
 .LP
 While most applications are driven only by X events,
 some applications need to incorporate other sources of input 
-into the \*(tk event-handling mechanism.
+into the \*(xI event-handling mechanism.
 The event manager provides routines to integrate notification of timer events
 and file data pending into this mechanism.
 .LP
@@ -161,7 +161,7 @@ typedef void (*XtInputCallbackProc)(XtPointer, int*, XtInputId*);
 .FN
 .IP \fIclient_data\fP 1i
 Passes the client data argument that was registered for this procedure in
-.PN XtAppAddInput .
+.PN XtApp\%AddInput .
 .IP \fIsource\fP 1i
 Passes the source file descriptor generating the event.
 .IP \fIid\fP 1i
@@ -248,7 +248,7 @@ typedef void (*XtTimerCallbackProc)(XtPointer, XtIntervalId*);
 .FN
 .IP \fIclient_data\fP 1i
 Passes the client data argument that was registered for this procedure in
-.PN XtAppAddTimeOut .
+.PN XtApp\%AddTimeOut .
 .IP \fItimer\fP 1i
 Passes the id returned from the corresponding
 .PN XtAppAddTimeOut
