@@ -5,25 +5,25 @@ FONTBOUNDINGBOX 16 12 -1 -2
 STARTPROPERTIES 23
 COMMENT Begin LogicalFontDescription
 FONTNAME_REGISTRY ""
-FAMILY_NAME "New Century Schoolbook" 
-FOUNDRY "Adobe" 
-WEIGHT_NAME "Bold" 
-SLANT "R" 
-SETWIDTH_NAME "Normal" 
+FAMILY_NAME "New Century Schoolbook"
+FOUNDRY "Adobe"
+WEIGHT_NAME "Bold"
+SLANT "R"
+SETWIDTH_NAME "Normal"
 ADD_STYLE_NAME ""
 PIXEL_SIZE 10
 POINT_SIZE 100
 RESOLUTION_X 75
 RESOLUTION_Y 75
-SPACING "P" 
+SPACING "P"
 AVERAGE_WIDTH 66
-CHARSET_REGISTRY "ISO8859" 
+CHARSET_REGISTRY "ISO8859"
 CHARSET_ENCODING "1"
-DEVICE_NAME "NewCenturySchlbk-Bold"
+DEVICE_FONT_NAME "NewCenturySchlbk-Bold"
 COMMENT END LogicalFontDescription
-CHARSET_COLLECTIONS "ASCII ISOLATIN1 ADOBESTANDARD" 
-FULL_NAME "New Century Schoolbook Bold" 
-COPYRIGHT "Copyright (c) 1984,1987 Adobe Systems, Inc., Portions Copyright 1988 Digital Equipment Corp." 
+CHARSET_COLLECTIONS "ASCII ISOLATIN1 ADOBESTANDARD"
+FULL_NAME "New Century Schoolbook Bold"
+COPYRIGHT "Copyright (c) 1984,1987 Adobe Systems, Inc., Portions Copyright 1988 Digital Equipment Corp."
 COMMENT ***** end of inserted font properties
 FONT_ASCENT 9
 FONT_DESCENT 2
