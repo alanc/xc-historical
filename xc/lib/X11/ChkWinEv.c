@@ -1,12 +1,16 @@
 #include "copyright.h"
 
-/* $Header: XChkWinEv.c,v 11.9 87/09/08 14:30:29 newman Exp $ */
+/* $Header: XChkWinEv.c,v 11.10 88/02/03 20:43:10 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1987	*/
 #define NEED_EVENTS
 #include "Xlibint.h"
 
 extern _XQEvent *_qfree;
 extern long _event_to_mask[];
+#define AllPointers (PointerMotionMask|PointerMotionHintMask|ButtonMotionMask)
+#define AllButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
+		    Button4MotionMask|Button5MotionMask)
+
 /* 
  * Check existing events in queue to find if any match.  If so, return.
  * If not, flush buffer and see if any more events are readable. If one
@@ -29,7 +33,10 @@ Bool XCheckWindowEvent (dpy, w, mask, event)
 		 qelt;
 		 prev = qelt, qelt = qelt->next) {
 		if ((qelt->event.xany.window == w) &&
-		    (_event_to_mask[qelt->event.type] & mask)) {
+		    (_event_to_mask[qelt->event.type] & mask) &&
+		    ((qelt->event.type != MotionNotify) ||
+		     (mask & AllPointers) ||
+		     (mask & AllButtons & qelt->event.xmotion.state))) {
 		    *event = qelt->event;
 		    if (prev) {
 			if ((prev->next = qelt->next) == NULL)

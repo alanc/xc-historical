@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XMaskEvent.c,v 11.14 87/09/11 08:05:11 toddb Exp $ */
+/* $Header: XMaskEvent.c,v 11.15 88/02/03 20:41:25 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_EVENTS
@@ -8,6 +8,9 @@
 
 extern _XQEvent *_qfree;
 extern long _event_to_mask[];
+#define AllPointers (PointerMotionMask|PointerMotionHintMask|ButtonMotionMask)
+#define AllButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
+		    Button4MotionMask|Button5MotionMask)
 
 /* 
  * return the next event in the queue matching one of the events in the mask.
@@ -28,7 +31,10 @@ XMaskEvent (dpy, mask, event)
 	    for (qelt = prev ? prev->next : dpy->head;
 		 qelt;
 		 prev = qelt, qelt = qelt->next) {
-		if (_event_to_mask[qelt->event.type] & mask) {
+		if ((_event_to_mask[qelt->event.type] & mask) &&
+		    ((qelt->event.type != MotionNotify) ||
+		     (mask & AllPointers) ||
+		     (mask & AllButtons & qelt->event.xmotion.state))) {
 		    *event = qelt->event;
 		    if (prev) {
 			if ((prev->next = qelt->next) == NULL)

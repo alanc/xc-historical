@@ -1,12 +1,15 @@
 #include "copyright.h"
 
-/* $Header: XChkMaskEv.c,v 11.11 87/09/08 14:29:58 newman Exp $ */
+/* $Header: XChkMaskEv.c,v 11.12 88/02/03 20:43:16 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1987	*/
 #define NEED_EVENTS
 #include "Xlibint.h"
 
 extern _XQEvent *_qfree;
 extern long _event_to_mask[];
+#define AllPointers (PointerMotionMask|PointerMotionHintMask|ButtonMotionMask)
+#define AllButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
+		    Button4MotionMask|Button5MotionMask)
 
 /* 
  * Check existing events in queue to find if any match.  If so, return.
@@ -28,7 +31,10 @@ Bool XCheckMaskEvent (dpy, mask, event)
 	    for (qelt = prev ? prev->next : dpy->head;
 		 qelt;
 		 prev = qelt, qelt = qelt->next) {
-		if (_event_to_mask[qelt->event.type] & mask) {
+		if ((_event_to_mask[qelt->event.type] & mask) &&
+		    ((qelt->event.type != MotionNotify) ||
+		     (mask & AllPointers) ||
+		     (mask & AllButtons & qelt->event.xmotion.state))) {
 		    *event = qelt->event;
 		    if (prev) {
 			if ((prev->next = qelt->next) == NULL)
