@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.158 88/10/02 17:59:24 rws Exp $ */
+/* $XConsortium: events.c,v 1.159 88/10/03 08:19:36 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1509,6 +1509,8 @@ ProcessPointerEvent (xE, mouse)
 	    buttonMotionMask = ButtonMotionMask;
 	    *kptr |= bit;
 	    xE->u.u.detail = mouse->u.ptr.map[key];
+	    if (xE->u.u.detail == 0)
+		return;
 	    if (xE->u.u.detail <= 5)
 		keyButtonState |= keyModifiersList[xE->u.u.detail];
 	    filters[MotionNotify] = Motion_Filter(keyButtonState);
@@ -1523,6 +1525,8 @@ ProcessPointerEvent (xE, mouse)
 		buttonMotionMask = 0;
 	    *kptr &= ~bit;
 	    xE->u.u.detail = mouse->u.ptr.map[key];
+	    if (xE->u.u.detail == 0)
+		return;
 	    if (xE->u.u.detail <= 5)
 		keyButtonState &= ~keyModifiersList[xE->u.u.detail];
 	    filters[MotionNotify] = Motion_Filter(keyButtonState);
