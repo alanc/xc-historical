@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miinitext.c,v 1.27 93/09/27 22:57:08 rws Exp $ */
+/* $XConsortium: miinitext.c,v 1.28 93/10/24 11:13:34 rws Exp $ */
 
 #include "misc.h"
 
@@ -85,6 +85,9 @@ extern void XkbExtensionInit();
 #ifdef XCMISC
 extern void XCMiscExtensionInit();
 #endif
+#ifdef XRECORD
+extern void XRecordExtensionInit();
+#endif
 
 /*ARGSUSED*/
 void
@@ -145,5 +148,8 @@ InitExtensions(argc, argv)
 #endif
 #ifdef XCMISC
     XCMiscExtensionInit();
+#endif
+#ifdef XRECORD
+    if (!noTestExtensions) XRecordExtensionInit(); 
 #endif
 }
