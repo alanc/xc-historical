@@ -1,5 +1,5 @@
 /*
-* $Header: Text.h,v 1.6 88/01/08 07:41:03 swick Locked $
+* $Header: Text.h,v 1.7 88/01/22 11:13:25 swick Locked $
 */
 
 /*
@@ -42,6 +42,7 @@
  borderWidth	     BorderWidth	int		1
  destroyCallback     Callback		Pointer		NULL
  displayPosition     TextPosition	int		0
+ editType	     EditType		XtTextEditType	XttextRead
  height		     Height		int		font height
  insertPosition	     TextPosition	int		0
  leftMargin	     Margin		int		2
