@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.2 93/08/19 10:23:48 mor Exp $ */
+/* $XConsortium: accept.c,v 1.1 93/08/19 18:25:20 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -19,6 +19,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #include <stdio.h>
 #include <sys/types.h>
+#ifndef WIN32
+
 #include <sys/socket.h>
 
 #ifdef TCPCONN
@@ -46,6 +48,20 @@ purpose.  It is provided "as is" without express or implied warranty.
 static int _IceUnixDomainConnection = -1;
 #endif
 
+#else
+
+#define BOOL wBOOL
+#undef Status
+#define Status wStatus
+#include <winsock.h>
+#undef Status
+#define Status int
+#undef BOOL
+#include <X11/Xw32defs.h>
+#undef close
+#define close closesocket
+
+#endif
 
 #define MAX_LISTEN_CONNECTIONS 3  	/* TCP, DECnet, and Unix Domain */
 
@@ -323,6 +339,14 @@ char **networkIdRet;
     int 		retry = 20;
     char		hostnamebuf[256];
     char		portnumbuf[10];
+#ifdef WIN32
+    static WSADATA wsadata;
+#endif
+
+#ifdef WIN32
+    if (!wsadata.wVersion && WSAStartup(MAKEWORD(1,1), &wsadata))
+	return -1;
+#endif
 
     *networkIdRet = NULL;
 

@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.1 93/08/17 18:58:58 mor Exp $ */
+/* $XConsortium: misc.c,v 1.1 93/08/19 18:25:27 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -18,6 +18,10 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <X11/ICE/ICElibint.h>
 #include <stdio.h>
 
+#ifdef WIN32
+#undef close
+#define close closesocket
+#endif
 
 /*
  * scratch buffer
@@ -159,10 +163,16 @@ register char	 *ptr;
     nleft = nbytes;
     while (nleft > 0)
     {
+#ifdef WIN32
+	nread = recv (iceConn->fd, ptr, nleft, 0);
+#else
 	nread = read (iceConn->fd, ptr, nleft);
-
+#endif
 	if (nread <= 0)
 	{
+#ifdef WIN32
+	    errno = WSAGetLastError();
+#endif
 	    (*_IceIOErrorHandler) (iceConn);
 	    exit (1);
 	}
@@ -192,10 +202,17 @@ register char	 *ptr;
     nleft = nbytes;
     while (nleft > 0)
     {
+#ifdef WIN32
+	nwritten = send (iceConn->fd, ptr, nleft, 0);
+#else
 	nwritten = write (iceConn->fd, ptr, nleft);
+#endif
 
 	if (nwritten <= 0)
 	{
+#ifdef WIN32
+	    errno = WSAGetLastError();
+#endif
 	    (*_IceIOErrorHandler) (iceConn);
 	    exit (1);
 	}
