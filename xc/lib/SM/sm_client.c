@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.18 93/12/15 20:16:43 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.19 93/12/28 11:47:10 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -100,7 +100,15 @@ char 		*errorStringRet;
 	return (NULL);
     }
 
+    if ((smcConn = (SmcConn) malloc (sizeof (struct _SmcConn))) == NULL)
+    {
+	strncpy (errorStringRet, "Can't malloc", errorLength);
+	IceCloseConnection (iceConn);
+	return (NULL);
+    }
+
     setupstat = IceProtocolSetup (iceConn, _SmcOpcode,
+	(IcePointer) smcConn,
 	False /* mustAuthenticate */,
 	&majorVersion, &minorVersion,
 	&vendor, &release, errorLength, errorStringRet);
@@ -108,37 +116,20 @@ char 		*errorStringRet;
     if (setupstat == IceProtocolSetupFailure)
     {
 	IceCloseConnection (iceConn);
+	free ((char *) smcConn);
 	return (NULL);
     }
     else if (setupstat == IceProtocolAlreadyActive)
     {
 	/*
-	 * The protocol is already active on this connection.
-	 * Return the previously opened connection object.
+	 * This case should never happen, because when we called
+	 * IceOpenConnection, we required that the ICE connection
+	 * may not already have XSMP active on it.
 	 */
 
-	int i;
-
-	for (i = 0; i < _SmcConnectionCount; i++)
-	    if (_SmcConnectionObjs[i]->iceConn == iceConn)
-		return (_SmcConnectionObjs[i]);
-
-	/*
-	 * If we get here, there is an error.
-	 */
-
-	IceProtocolShutdown (iceConn, _SmcOpcode);
-	IceCloseConnection (iceConn);
-	return (NULL);
-    }
-
-    if ((smcConn = (SmcConn) malloc (sizeof (struct _SmcConn))) == NULL)
-    {
-	strncpy (errorStringRet, "Can't malloc", errorLength);
-	IceProtocolShutdown (iceConn, _SmcOpcode);
-	IceCloseConnection (iceConn);
-	free (vendor);
-	free (release);
+	free ((char *) smcConn);
+	strncpy (errorStringRet, "Internal error in IceOpenConnection",
+		errorLength);
 	return (NULL);
     }
 
@@ -155,8 +146,6 @@ char 		*errorStringRet;
     smcConn->prop_reply_waits = NULL;
 
     smcConn->shutdown_in_progress = False;
-
-    _SmcConnectionObjs[_SmcConnectionCount++] = smcConn;
 
 
     /*
@@ -261,45 +250,30 @@ char    **reasonMsgs;
     IceSetShutdownNegotiation (iceConn, False);
     IceCloseConnection (iceConn);
 
-    for (i = 0; i < _SmcConnectionCount; i++)
-	if (_SmcConnectionObjs[i] == smcConn)
-	    break;
+    if (smcConn->vendor)
+	free (smcConn->vendor);
 
-    if (i < _SmcConnectionCount)
+    if (smcConn->release)
+	free (smcConn->release);
+
+    if (smcConn->client_id)
+	free (smcConn->client_id);
+
+    if (smcConn->prop_reply_waits)
     {
-	if (i < _SmcConnectionCount - 1)
+	_SmcPropReplyWait *ptr = smcConn->prop_reply_waits;
+	_SmcPropReplyWait *next;
+
+	while (ptr)
 	{
-	    _SmcConnectionObjs[i] =
-		_SmcConnectionObjs[_SmcConnectionCount - 1];
+	    next = ptr->next;
+	    free ((char *) ptr);
+	    ptr = next;
 	}
-
-	_SmcConnectionCount--;
-
-	if (smcConn->vendor)
-	    free (smcConn->vendor);
-
-	if (smcConn->release)
-	    free (smcConn->release);
-
-	if (smcConn->client_id)
-	    free (smcConn->client_id);
-
-	if (smcConn->prop_reply_waits)
-	{
-	    _SmcPropReplyWait *ptr = smcConn->prop_reply_waits;
-	    _SmcPropReplyWait *next;
-
-	    while (ptr)
-	    {
-		next = ptr->next;
-		free ((char *) ptr);
-		ptr = next;
-	    }
-
-	}
-
-	free ((char *) smcConn);
+	
     }
+
+    free ((char *) smcConn);
 }
 
 

@@ -1,4 +1,4 @@
-/* $XConsortium: sm_manager.c,v 1.16 94/01/31 11:08:21 mor Exp $ */
+/* $XConsortium: sm_manager.c,v 1.17 94/02/21 09:15:13 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -73,13 +73,14 @@ char 		 		*errorStringRet;
 
 void
 _SmsProtocolSetupNotifyProc (iceConn,
-    majorVersion, minorVersion, vendor, release)
+    majorVersion, minorVersion, vendor, release, clientDataRet)
 
-IceConn iceConn;
-int	majorVersion;
-int	minorVersion;
-char  	*vendor;
-char 	*release;
+IceConn    iceConn;
+int	   majorVersion;
+int	   minorVersion;
+char  	   *vendor;
+char 	   *release;
+IcePointer *clientDataRet;
 
 {
     SmsConn  	smsConn;
@@ -98,7 +99,7 @@ char 	*release;
     smsConn->can_cancel_shutdown = False;
     smsConn->interact_in_progress = False;
 
-    _SmsConnectionObjs[_SmsConnectionCount++] = smsConn;
+    *clientDataRet = (IcePointer) smsConn;
 
 
     /*
@@ -294,33 +295,16 @@ SmsCleanUp (smsConn)
 SmsConn smsConn;
 
 {
-    int i;
+    IceProtocolShutdown (smsConn->iceConn, _SmsOpcode);
 
-    for (i = 0; i < _SmsConnectionCount; i++)
-	if (_SmsConnectionObjs[i] == smsConn)
-	    break;
+    if (smsConn->vendor)
+	free (smsConn->vendor);
 
-    if (i < _SmsConnectionCount)
-    {
-	IceProtocolShutdown (smsConn->iceConn, _SmsOpcode);
+    if (smsConn->release)
+	free (smsConn->release);
 
-	if (i < _SmsConnectionCount - 1)
-	{
-	    _SmsConnectionObjs[i] =
-		_SmsConnectionObjs[_SmsConnectionCount - 1];
-	}
+    if (smsConn->client_id)
+	free (smsConn->client_id);
 
-	_SmsConnectionCount--;
-
-	if (smsConn->vendor)
-	    free (smsConn->vendor);
-
-	if (smsConn->release)
-	    free (smsConn->release);
-
-	if (smsConn->client_id)
-	    free (smsConn->client_id);
-
-	free ((char *) smsConn);
-    }
+    free ((char *) smsConn);
 }

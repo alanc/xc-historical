@@ -1,4 +1,4 @@
-/* $XConsortium: sm_process.c,v 1.19 93/12/15 20:17:08 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.20 93/12/28 11:47:54 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -22,25 +22,18 @@ Author: Ralph Mor, X Consortium
 
 
 Bool
-_SmcProcessMessage (iceConn, opcode, length, swap, replyWait)
+_SmcProcessMessage (iceConn, clientData, opcode, length, swap, replyWait)
 
 IceConn		 iceConn;
+IcePointer	 clientData;
 int		 opcode;
 unsigned long	 length;
 Bool		 swap;
 IceReplyWaitInfo *replyWait;
 
 {
-    SmcConn	smcConn = NULL;
+    SmcConn	smcConn = (SmcConn) clientData;
     Bool	replyReady = False;
-    int		i;
-
-    for (i = 0; i < _SmcConnectionCount; i++)
-	if (_SmcConnectionObjs[i]->iceConn == iceConn)
-	{
-	    smcConn = _SmcConnectionObjs[i];
-	    break;
-	}
 
     if (smcConn == NULL)
     {
@@ -244,23 +237,16 @@ IceReplyWaitInfo *replyWait;
 
 
 void
-_SmsProcessMessage (iceConn, opcode, length, swap)
+_SmsProcessMessage (iceConn, clientData, opcode, length, swap)
 
 IceConn		 iceConn;
+IcePointer       clientData;
 int		 opcode;
 unsigned long	 length;
 Bool		 swap;
 
 {
-    SmsConn	smsConn = NULL;
-    int		i;
-
-    for (i = 0; i < _SmsConnectionCount; i++)
-	if (_SmsConnectionObjs[i]->iceConn == iceConn)
-	{
-	    smsConn = _SmsConnectionObjs[i];
-	    break;
-	}
+    SmsConn	smsConn = (SmsConn) clientData;
 
     if (smsConn == NULL)
     {
