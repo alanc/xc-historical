@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.34 89/04/10 14:41:54 jim Exp $
+ *	$XConsortium: misc.c,v 1.35 89/05/05 16:43:37 jim Exp $
  */
 
 
@@ -54,7 +54,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.34 89/04/10 14:41:54 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.35 89/05/05 16:43:37 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -819,6 +819,38 @@ char *s1, *s2;
   return(0);
 }
 
+static void withdraw_window (dpy, w, scr)
+    Display *dpy;
+    Window w;
+    int scr;
+{
+    static XSizeHints *shp = NULL;
+    long supp;
+    int dstx, dsty;
+    Window dw;
+    int di;
+    unsigned int dui, width, height;
+
+    if (!shp) shp = XAllocSizeHints();
+
+    if (shp && XGetWMNormalHints (dpy, w, shp, supp) &&
+	XTranslateCoordinates (dpy, w, RootWindow(dpy,scr), 0, 0, 
+			       &dstx, &dsty, &dw) &&
+	XGetGeometry (dpy, w, &dw, &di, &di, &width, &height, &dui, &dui)) {
+	shp->x = dstx;				/* for old window managers */
+	shp->y = dsty;
+	shp->width = width;
+	shp->height = height;
+	shp->flags &= ~(PPosition|PSize);	/* tell it user pref */
+	shp->flags |= (USPosition|USSize);
+				   
+	XSetWMNormalHints (dpy, w, shp);
+    }
+    XWithdrawWindow (dpy, w, scr);
+    return;
+}
+
+
 void set_vt_visibility (on)
     Boolean on;
 {
@@ -832,7 +864,9 @@ void set_vt_visibility (on)
 	}
     } else {
 	if (screen->Vshow && term) {
-	    XtUnmapWidget (term->core.parent);
+	    withdraw_window (XtDisplay (term), 
+			     XtWindow(XtParent(term)),
+			     XScreenNumberOfScreen(XtScreen(term)));
 	    screen->Vshow = FALSE;
 	}
     }
@@ -852,7 +886,9 @@ void set_tek_visibility (on)
 	}
     } else {
 	if (screen->Tshow && tekWidget) {
-	    XtUnmapWidget (tekWidget->core.parent);
+	    withdraw_window (XtDisplay (tekWidget), 
+			     XtWindow(XtParent(tekWidget)),
+			     XScreenNumberOfScreen(XtScreen(tekWidget)));
 	    screen->Tshow = FALSE;
 	}
     }
