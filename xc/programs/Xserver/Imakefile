@@ -23,14 +23,16 @@
 
      EXTENSIONS = $(OTHEREXTS) $(EXTENSIONSRC)/server/libext.a $(PEXLIBS)
          EXTDIR = $(EXTENSIONSRC)/server
+         XAULIB = $(XAUTHSRC)/libXau.a
+       XDMCPLIB = $(XDMCPLIBSRC)/libXdmcp.a
              OS = os/libos.a $(XAULIB) $(XDMCPLIB)
-        BSDEMUL = $(TOP)/lib/Berk/Berklib.o
+        BSDEMUL = $(LIBSRC)/Berk/Berklib.o
            SYSV = os/sysV/libos.a
             MFB = ddx/mfb/libmfb.a
             CFB = ddx/cfb/libcfb.a
              MI = ddx/mi/libmi.a
             DIX = dix/libdix.a
-           FONT = $(TOP)/fonts/lib/libfont.a
+           FONT = $(FONTSRC)/lib/libfont.a
          APOLLO = ddx/apollo/libapollo.a
             APC = ddx/apollo/apc/libapc.a
             SUN = ddx/sun/libsun.a
@@ -40,8 +42,6 @@
            LUNA = ddx/omron/libomron.a
           DECWS = ddx/dec/ws/libdec.a
           HPMIT = ddx/hp.mit/libhp.a
-         XAULIB = $(TOP)/lib/Xau/libXau.a
-       XDMCPLIB = $(TOP)/lib/Xdmcp/libXdmcp.a
         SYSLIBS = -lm -ldbm
            CBRT = ddx/mi/cbrt.o
 
