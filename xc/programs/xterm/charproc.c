@@ -1,11 +1,6 @@
 /*
- * $XConsortium: charproc.c,v 1.140 91/03/13 14:05:36 gildea Exp $
+ * $XConsortium: charproc.c,v 1.142 91/04/15 13:53:20 gildea Exp $
  */
-
-
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-#include <X11/Xmu/Atoms.h>
 
 /*
  * Copyright 1988 Massachusetts Institute of Technology
@@ -40,6 +35,9 @@
 #include "error.h"
 #include "main.h"
 #include "menu.h"
+#include <X11/Xatom.h>
+#include <X11/Xmu/Atoms.h>
+#include <X11/Xmu/CharSet.h>
 #include <X11/Xos.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
