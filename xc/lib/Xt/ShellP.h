@@ -1,6 +1,5 @@
-
 /*
-* $Header: ShellP.h,v 1.9 87/10/09 13:11:51 swick Locked $
+* $Header: ShellP.h,v 6.10 88/01/29 13:01:17 asente Exp $
 */
 
 /*
@@ -26,21 +25,24 @@
  * SOFTWARE.
  */
 /* 
- * ShellPrivate.h - Private definitions for Shell widget
+ * ShellP.h - Private definitions for Shell widget
  * 
- * Author:	Ricahrd Hyde
+ * Author:	Paul Asente
  * 		Digital Equipment Corporation
  * 		Western Software Laboratory
- * Date:	Thu Sept 24, 1987
+ * Date:	Thu Dec 3, 1987
  */
 
 #ifndef _XtShellPrivate_h
 #define _XtShellPrivate_h
-#ifndef VMS
+
 #include <X11/Xutil.h>
-#else
-#include Xutil
-#endif
+
+/* *****
+ * ***** VendorP.h is included later on; it needs fields defined in the first
+ * ***** part of this header file
+ * *****
+ */
 
 /***********************************************************************
  *
@@ -52,48 +54,219 @@
 
 typedef struct {int foo;} ShellClassPart;
 
-
 typedef struct _ShellClassRec {
   	CoreClassPart      core_class;
 	CompositeClassPart composite_class;
 	ShellClassPart  shell_class;
 } ShellClassRec;
 
-extern ShellClassRec shellClassRec;
+globalref ShellClassRec shellClassRec;
 
 /* New fields for the shell widget */
 
 typedef struct {
-	int	    argc;
-	char      **argv;
-	char	   *icon_name;
-	char	   *title;
-	char       *geostr;
-	XtCreatePopupChildProc	create_popup_child;
+	char       *geometry;
+	XtCreatePopupChildProc	create_popup_child_proc;
 	XtGrabKind	grab_kind;
-	Boolean		spring_loaded;
-	Boolean		popped_up;
-	Boolean	    iconic;
-	Boolean	    resizeable;
-	Boolean	    clientspecified;
-	Boolean	    transient;
+	Boolean	    spring_loaded;
+	Boolean	    popped_up;
+	Boolean	    allow_shell_resize;
+	Boolean	    client_specified;
 	Boolean	    save_under;
 	Boolean	    override_redirect;
-	XSizeHints  sizehints;
-	XWMHints    wmhints;
-	caddr_t     wm_private;
-} ShellPart;
 
-/****************************************************************
- *
- * Full instance record declaration
- *
- ****************************************************************/
+	XtCallbackList popup_callback;
+	XtCallbackList popdown_callback;
+} ShellPart;
 
 typedef  struct {
 	CorePart 	core;
 	CompositePart 	composite;
 	ShellPart 	shell;
 } ShellRec, *ShellWidget;
+
+/***********************************************************************
+ *
+ * OverrideShell Widget Private Data
+ *
+ ***********************************************************************/
+
+/* New fields for the OverrideShell widget class record */
+
+typedef struct {int foo;} OverrideShellClassPart;
+
+typedef struct _OverrideShellClassRec {
+  	CoreClassPart      core_class;
+	CompositeClassPart composite_class;
+	ShellClassPart  shell_class;
+	OverrideShellClassPart  override_shell_class;
+} OverrideShellClassRec;
+
+globalref OverrideShellClassRec overrideShellClassRec;
+
+/* No new fields for the override shell widget */
+
+typedef struct {int frabjous;} OverrideShellPart;
+
+typedef  struct {
+	CorePart 	core;
+	CompositePart 	composite;
+	ShellPart 	shell;
+	OverrideShellPart override;
+} OverrideShellRec, *OverrideShellWidget;
+
+/***********************************************************************
+ *
+ * WMShell Widget Private Data
+ *
+ ***********************************************************************/
+
+/* New fields for the WMShell widget class record */
+
+typedef struct {int foo;} WMShellClassPart;
+
+typedef struct _WMShellClassRec {
+  	CoreClassPart      core_class;
+	CompositeClassPart composite_class;
+	ShellClassPart  shell_class;
+	WMShellClassPart wm_shell_class;
+} WMShellClassRec;
+
+globalref WMShellClassRec wmShellClassRec;
+
+/* New fields for the WM shell widget */
+
+typedef struct {
+	char	   *title;
+	int 	    wm_timeout;
+	Boolean	    wait_for_wm;
+	Boolean	    transient;
+	XSizeHints  size_hints;
+	XWMHints    wm_hints;
+} WMShellPart;
+
+typedef  struct {
+	CorePart 	core;
+	CompositePart 	composite;
+	ShellPart 	shell;
+	WMShellPart	wm;
+} WMShellRec, *WMShellWidget;
+
+#include "VendorP.h"
+
+/***********************************************************************
+ *
+ * TransientShell Widget Private Data
+ *
+ ***********************************************************************/
+
+/* New fields for the TransientShell widget class record */
+
+typedef struct {int foo;} TransientShellClassPart;
+
+typedef struct _TransientShellClassRec {
+  	CoreClassPart      core_class;
+	CompositeClassPart composite_class;
+	ShellClassPart  shell_class;
+	WMShellClassPart   wm_shell_class;
+	VendorShellClassPart vendor_shell_class;
+	TransientShellClassPart transient_shell_class;
+} TransientShellClassRec;
+
+globalref TransientShellClassRec transientShellClassRec;
+
+/* New fields for the transient shell widget */
+
+typedef struct {int brillig;} TransientShellPart;
+
+typedef  struct {
+	CorePart 	core;
+	CompositePart 	composite;
+	ShellPart 	shell;
+	WMShellPart	wm;
+	VendorShellPart	vendor;
+	TransientShellPart transient;	
+} TransientShellRec, *TransientShellWidget;
+
+/***********************************************************************
+ *
+ * TopLevelShell Widget Private Data
+ *
+ ***********************************************************************/
+
+/* New fields for the TopLevelShell widget class record */
+
+typedef struct {int foo;} TopLevelShellClassPart;
+
+typedef struct _TopLevelShellClassRec {
+  	CoreClassPart      core_class;
+	CompositeClassPart composite_class;
+	ShellClassPart  shell_class;
+	WMShellClassPart   wm_shell_class;
+	VendorShellClassPart vendor_shell_class;
+	TopLevelShellClassPart top_level_shell_class;
+} TopLevelShellClassRec;
+
+globalref TopLevelShellClassRec topLevelShellClassRec;
+
+/* New fields for the top level shell widget */
+
+typedef struct {
+	char	   *icon_name;
+	Boolean	    iconic;
+} TopLevelShellPart;
+
+typedef  struct {
+	CorePart 	core;
+	CompositePart 	composite;
+	ShellPart 	shell;
+	WMShellPart	wm;
+	VendorShellPart	vendor;
+	TopLevelShellPart topLevel;
+} TopLevelShellRec, *TopLevelShellWidget;
+
+/***********************************************************************
+ *
+ * ApplicationShell Widget Private Data
+ *
+ ***********************************************************************/
+
+/* New fields for the ApplicationShell widget class record */
+
+typedef struct {int foo;} ApplicationShellClassPart;
+
+typedef struct _ApplicationShellClassRec {
+  	CoreClassPart      core_class;
+	CompositeClassPart composite_class;
+	ShellClassPart  shell_class;
+	WMShellClassPart   wm_shell_class;
+	VendorShellClassPart vendor_shell_class;
+	TopLevelShellClassPart top_level_shell_class;
+	ApplicationShellClassPart application_shell_class;
+} ApplicationShellClassRec;
+
+globalref ApplicationShellClassRec applicationShellClassRec;
+
+/* New fields for the application shell widget */
+
+typedef struct {
+	int	    argc;
+	char      **argv;
+} ApplicationShellPart;
+
+typedef  struct {
+	CorePart 	core;
+	CompositePart 	composite;
+	ShellPart 	shell;
+	WMShellPart	wm;
+	VendorShellPart	vendor;
+	TopLevelShellPart topLevel;
+	ApplicationShellPart application;
+} ApplicationShellRec, *ApplicationShellWidget;
+
+
+
+Atom WM_CONFIGURE_DENIED;
+Atom WM_MOVED;
 
 #endif  _XtShellPrivate_h
