@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fresco.cxx,v 1.9 94/08/17 21:48:05 matt Exp matt $
+ * $XConsortium: fresco.cxx,v 1.10 94/08/23 18:56:00 matt Exp matt $
  */
 
 /*
@@ -288,6 +288,10 @@ void Fresco::unref(BaseObjectRef r) {
 #if defined(USE_POLL) && !defined(__osf__)
 
 #include <sys/poll.h>
+
+#if defined(sun) && !defined(SVR4)
+extern "C" int poll(struct pollfds *, unsigned long, int);
+#endif
 
 Boolean Fresco::delay(Float seconds) {
     return poll(NULL, 0, int(1000.0 * seconds + 0.5)) == 0;
