@@ -1,4 +1,4 @@
-/* $XConsortium: miWks.c,v 5.2 91/03/15 18:24:36 hersh Exp $ */
+/* $XConsortium: miWks.c,v 5.3 91/05/01 14:23:02 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -570,7 +570,7 @@ FreePhigsWks(pWKS, WKSid)
 
 /* depends on 'mask' being defined */
 #define	WKS_CHECK_BITMASK( bitIndex )		\
-	if (mask[((bitIndex)/32)] & (1L << ((bitIndex) % 32)))
+	if (mask[((bitIndex)/32)] & (((unsigned long)1) << ((bitIndex) % 32)))
 
 /* depends on 'mask' and needbytes being there */
 #define COUNTBYTES( type, bytes ) 		\
