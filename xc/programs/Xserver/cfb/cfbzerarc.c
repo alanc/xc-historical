@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbzerarc.c,v 5.0 89/09/02 17:09:56 rws Exp $ */
+/* $XConsortium: cfbzerarc.c,v 5.1 89/09/04 11:07:19 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -68,43 +68,86 @@ cfbZeroCircleSS8Copy(pDraw, pGC, arc)
     dn = info.dn;
     dp = info.dp;
     mask = info.initialMask;
-    for (x = info.x, xoffset = nlwidth * x; x <= y; x++, xoffset += nlwidth)
-    {
-	if (x == info.startx)
-	    mask = info.startMask;
-	else if (x == info.endx)
-	    mask = info.endMask;
-	if (mask & 1)
+    if ((mask == 0xff) && (info.startx < 0))
+	for (x = info.x, xoffset = nlwidth * x;
+	     x <= y;
+	     x++, xoffset += nlwidth)
+	{
 	    *(yorgob - xoffset + info.xorg + y) = pixel;
-	if (mask & 4)
 	    *(yorgob - yoffset + info.xorgo - x) = pixel;
-	if (mask & 16)
 	    *(yorgb + xoffset + info.xorgo - y) = pixel;
-	if (mask & 64)
 	    *(yorgb + yoffset + info.xorg + x) = pixel;
-	if ((x == y) || (x == 0))
-	    continue;
-	if (mask & 2)
-	    *(yorgob - yoffset + info.xorg + x) = pixel;
-	if (mask & 8)
-	    *(yorgob - xoffset + info.xorgo - y) = pixel;
-	if (mask & 32)
-	    *(yorgb + yoffset + info.xorgo - x) = pixel;
-	if (mask & 128)
-	    *(yorgb + xoffset + info.xorg + y) = pixel;
-	if (d < 0)
-	{
-	    d += (x << 2) + dn;
+	    if (x == y)
+		break;
+	    if (x)
+	    {
+		*(yorgob - yoffset + info.xorg + x) = pixel;
+		*(yorgob - xoffset + info.xorgo - y) = pixel;
+		*(yorgb + yoffset + info.xorgo - x) = pixel;
+		*(yorgb + xoffset + info.xorg + y) = pixel;
+	    }
+	    if (d < 0)
+	    {
+		d += (x << 2) + dn;
+	    }
+	    else
+	    {
+		d += ((x - y) << 2) + dp;
+		y--;
+		yoffset -= nlwidth;
+	    }
 	}
-	else
+    else
+	for (x = info.x, xoffset = nlwidth * x;
+	     x <= y;
+	     x++, xoffset += nlwidth)
 	{
-	    d += ((x - y) << 2) + dp;
-	    y--;
-	    yoffset -= nlwidth;
+	    if (x == info.startx)
+		mask = info.startMask;
+	    if (mask & 1)
+		*(yorgob - xoffset + info.xorg + y) = pixel;
+	    if (mask & 4)
+		*(yorgob - yoffset + info.xorgo - x) = pixel;
+	    if (mask & 16)
+		*(yorgb + xoffset + info.xorgo - y) = pixel;
+	    if (mask & 64)
+		*(yorgb + yoffset + info.xorg + x) = pixel;
+	    if (x == y)
+		break;
+	    if (x)
+	    {
+		if (mask & 2)
+		    *(yorgob - yoffset + info.xorg + x) = pixel;
+		if (mask & 8)
+		    *(yorgob - xoffset + info.xorgo - y) = pixel;
+		if (mask & 32)
+		    *(yorgb + yoffset + info.xorgo - x) = pixel;
+		if (mask & 128)
+		    *(yorgb + xoffset + info.xorg + y) = pixel;
+	    }
+	    if (x == info.endx)
+		mask = info.endMask;
+	    if (d < 0)
+	    {
+		d += (x << 2) + dn;
+	    }
+	    else
+	    {
+		d += ((x - y) << 2) + dp;
+		y--;
+		yoffset -= nlwidth;
+	    }
 	}
-    }
 }
 #endif
+
+#define DoPix(bit, x, y) \
+if (mask & bit) \
+{ \
+    addrl = x + ((y) >> PWSH); \
+    pmask = cfbmask[(y) & PIM] & planemask; \
+    *addrl = (*addrl & ~pmask) | (DoRop(rop, pixel, *addrl) & pmask); \
+}
 
 static void
 cfbZeroCircleSS(pDraw, pGC, arc)
@@ -116,7 +159,7 @@ cfbZeroCircleSS(pDraw, pGC, arc)
     register int mask;
     miZeroCircleRec info;
     register int *addrl;
-    int *xorgb, *yorgb, *xorgob, *yorgob;
+    int *xorgl, *yorgl, *xorgol, *yorgol;
     unsigned long pixel = PFILL(pGC->fgPixel);
     unsigned long planemask = PFILL(pGC->planemask);
     unsigned long pmask;
@@ -137,10 +180,10 @@ cfbZeroCircleSS(pDraw, pGC, arc)
     }
     nlwidth >>= 2;
     miZeroCircleSetup(arc, &info);
-    xorgb = addrl + ((info.xorg + pDraw->y) * nlwidth);
-    yorgb = addrl + ((info.yorg + pDraw->y) * nlwidth);
-    xorgob = addrl + ((info.xorgo + pDraw->y) * nlwidth);
-    yorgob = addrl + ((info.yorgo + pDraw->y) * nlwidth);
+    xorgl = addrl + ((info.xorg + pDraw->y) * nlwidth);
+    yorgl = addrl + ((info.yorg + pDraw->y) * nlwidth);
+    xorgol = addrl + ((info.xorgo + pDraw->y) * nlwidth);
+    yorgol = addrl + ((info.yorgo + pDraw->y) * nlwidth);
     info.xorg += pDraw->x;
     info.xorgo += pDraw->x;
     y = info.y;
@@ -153,58 +196,21 @@ cfbZeroCircleSS(pDraw, pGC, arc)
     {
 	if (x == info.startx)
 	    mask = info.startMask;
-	else if (x == info.endx)
+	DoPix(1, yorgol - xoffset, info.xorg + y);
+	DoPix(4, yorgol - yoffset, info.xorgo - x);
+	DoPix(16, yorgl + xoffset, info.xorgo - y);
+	DoPix(64, yorgl + yoffset, info.xorg + x);
+	if (x == y)
+	    break;
+	if (x)
+	{
+	    DoPix(2, yorgol - yoffset, info.xorg + x);
+	    DoPix(8, yorgol - xoffset, info.xorgo - y);
+	    DoPix(32, yorgl + yoffset, info.xorgo - x);
+	    DoPix(128, yorgl + xoffset, info.xorg + y);
+	}
+	if (x == info.endx)
 	    mask = info.endMask;
-	if (mask & 1)
-	{
-	    addrl = yorgob - xoffset + ((info.xorg + y) >> PWSH);
-	    pmask = cfbmask[(info.xorg + y) & PIM] & planemask;
-	    *addrl = (*addrl & ~pmask) | (DoRop(rop, pixel, *addrl) & pmask);
-	}
-	if (mask & 4)
-	{
-	    addrl = yorgob - yoffset + ((info.xorgo - x) >> PWSH);
-	    pmask = cfbmask[(info.xorgo - x) & PIM] & planemask;
-	    *addrl = (*addrl & ~pmask) | (DoRop(rop, pixel, *addrl) & pmask);
-	}
-	if (mask & 16)
-	{
-	    addrl = yorgb + xoffset + ((info.xorgo - y) >> PWSH);
-	    pmask = cfbmask[(info.xorgo - y) & PIM] & planemask;
-	    *addrl = (*addrl & ~pmask) | (DoRop(rop, pixel, *addrl) & pmask);
-	}
-	if (mask & 64)
-	{
-	    addrl = yorgb + yoffset + ((info.xorg + x) >> PWSH);
-	    pmask = cfbmask[(info.xorg + x) & PIM] & planemask;
-	    *addrl = (*addrl & ~pmask) | (DoRop(rop, pixel, *addrl) & pmask);
-	}
-	if ((x == y) || (x == 0))
-	    continue;
-	if (mask & 2)
-	{
-	    addrl = yorgob - yoffset + ((info.xorg + x) >> PWSH);
-	    pmask = cfbmask[(info.xorg + x) & PIM] & planemask;
-	    *addrl = (*addrl & ~pmask) | (DoRop(rop, pixel, *addrl) & pmask);
-	}
-	if (mask & 8)
-	{
-	    addrl = yorgob - xoffset + ((info.xorgo - y) >> PWSH);
-	    pmask = cfbmask[(info.xorgo - y) & PIM] & planemask;
-	    *addrl = (*addrl & ~pmask) | (DoRop(rop, pixel, *addrl) & pmask);
-	}
-	if (mask & 32)
-	{
-	    addrl = yorgb + yoffset + ((info.xorgo - x) >> PWSH);
-	    pmask = cfbmask[(info.xorgo - x) & PIM] & planemask;
-	    *addrl = (*addrl & ~pmask) | (DoRop(rop, pixel, *addrl) & pmask);
-	}
-	if (mask & 128)
-	{
-	    addrl = yorgb + xoffset + ((info.xorg + y) >> PWSH);
-	    pmask = cfbmask[(info.xorg + y) & PIM] & planemask;
-	    *addrl = (*addrl & ~pmask) | (DoRop(rop, pixel, *addrl) & pmask);
-	}
 	if (d < 0)
 	{
 	    d += (x << 2) + dn;
