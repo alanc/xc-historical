@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.199 93/10/24 16:38:35 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.200 93/10/25 13:14:57 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -499,7 +499,7 @@ static _XFlushInt (dpy, cv)
 	register char *bufindex;
 	_XExtension *ext;
 
-	if (dpy->flags & XlibDisplayIOError) return;
+	if (dpy->flags & XlibDisplayIOError) return 0;
 
 	size = todo = dpy->bufptr - dpy->buffer;
 	bufindex = dpy->bufptr = dpy->buffer;
@@ -556,6 +556,7 @@ static _XFlushInt (dpy, cv)
 	    dpy->synchandler = _XSeqSyncFunction;
 	    dpy->flags |= XlibDisplayPrivSync;
 	}
+	return 0;
 }
 
 int
@@ -611,7 +612,7 @@ _XEventsQueued (dpy, mode)
 	    while (qev) {
 		if (qev->qserial_num > entry_event_serial_num) {
 		    UnlockNextEventReader(dpy);
-		    return;
+		    return 0;
 		}
 		qev = qev->next;
 	    }
@@ -899,7 +900,7 @@ _XRead (dpy, data, size)
 	int original_size = size;
 #endif
 
-	if ((dpy->flags & XlibDisplayIOError) || size == 0) return;
+	if ((dpy->flags & XlibDisplayIOError) || size == 0) return 0;
 	ESET(0);
 	while ((bytes_read = ReadFromServer(dpy->fd, data, (int)size))
 		!= size) {
@@ -937,6 +938,7 @@ _XRead (dpy, data, size)
                UnlockNextReplyReader(dpy);
        }
 #endif /* XTHREADS*/
+	return 0;
 }
 
 #ifdef LONG64
@@ -1096,7 +1098,7 @@ _XReadPad (dpy, data, size)
         int original_size;
 #endif
 
-	if ((dpy->flags & XlibDisplayIOError) || size == 0) return;
+	if ((dpy->flags & XlibDisplayIOError) || size == 0) return 0;
 	iov[0].iov_len = (int)size;
 	iov[0].iov_base = data;
 	/* 
@@ -1153,6 +1155,7 @@ _XReadPad (dpy, data, size)
                UnlockNextReplyReader(dpy);
        }
 #endif /* XTHREADS*/
+	return 0;
 }
 
 /*
@@ -1176,7 +1179,7 @@ _XSend (dpy, data, size)
 	long todo = total;
 	_XExtension *ext;
 
-	if (dpy->flags & XlibDisplayIOError) return;
+	if (dpy->flags & XlibDisplayIOError) return 0;
 
 	for (ext = dpy->flushes; ext; ext = ext->next_flush) {
 	    (*ext->before_flush)(dpy, &ext->codes, dpy->bufptr, dpybufsize);
@@ -1276,6 +1279,7 @@ _XSend (dpy, data, size)
 	    dpy->synchandler = _XSeqSyncFunction;
 	    dpy->flags |= XlibDisplayPrivSync;
 	}
+	return 0;
 }
 
 static int
