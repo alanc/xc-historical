@@ -1,5 +1,6 @@
 /*
- * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
+ * SET VERSION NUMBERS BEFORE MAKING MAKEFILES; also, you'll need to install
+ * util/scripts/bsdinstall.sh before doing a "make install"
  */
 
 #define SystemV                YES
@@ -24,7 +25,7 @@
 #define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 
 
-/**/# platform:  $XConsortium: hp.cf,v 1.8 89/03/20 13:43:12 jim Exp $
+/**/# platform:  $XConsortium: hp.cf,v 1.9 89/03/20 13:47:54 jim Exp $
 /**/# operating system:  OSName
 
 /*
