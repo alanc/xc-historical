@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.27 91/05/16 16:22:39 swick Exp $
+ * $XConsortium: xfd.c,v 1.28 91/05/20 16:45:38 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -147,7 +147,7 @@ main (argc, argv)
     XtOverrideTranslations
         (toplevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: Quit()"));
 
-    XtGetApplicationResources (toplevel, (caddr_t) &xfd_resources, Resources,
+    XtGetApplicationResources (toplevel, (XtPointer) &xfd_resources, Resources,
 			       XtNumber (Resources), NULL, ZERO);
 
 
@@ -234,10 +234,10 @@ main (argc, argv)
     XtAppMainLoop (xtcontext);
 }
 
-
+/*ARGSUSED*/
 static void SelectChar (w, closure, data)
     Widget w;
-    caddr_t closure, data;
+    XtPointer closure, data;
 {
     FontGridCharRec *p = (FontGridCharRec *) data;
     XFontStruct *fs = p->thefont;
@@ -280,7 +280,7 @@ static void SelectChar (w, closure, data)
 }
 
 
-
+/*ARGSUSED*/
 static void do_quit (w, event, params, num_params)
     Widget w;
     XEvent *event;
@@ -294,7 +294,7 @@ static void change_page (page)
     int page;
 {
     long oldstart, newstart;
-    unsigned int ncols, nrows;
+    int ncols, nrows;
     char buf[256];
     Arg arg;
 
