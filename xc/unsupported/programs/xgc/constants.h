@@ -1,7 +1,12 @@
 /*
+** xgc
+**
 ** constants.h
+**
+** Lots of constants which many files need.
 */
 
+/* Find the max of two numbers */
 #define max(x,y) (((x)>(y))?(x):(y))
 
 #ifndef TRUE
@@ -44,17 +49,18 @@
 #define NUMCHOICES    7
 #define CTest         7
 
-#define TLineWidth     0
+#define TLineWidth     0	/* different editable text widgets */
 #define TFont          1
 #define TForeground    2
 #define TBackground    3
 #define NUMTEXTWIDGETS 4
 
-#define StartTimer   0
+#define StartTimer   0		/* flags for timing tests */
 #define EndTimer     1
 #define start_timer()   timer(StartTimer)
 #define end_timer()     timer(EndTimer)
 
+/* the number of toggle widgets in various groups */
 #define NUM_TESTS       16
 #define NUM_FUNCTIONS   16
 #define NUM_LINESTYLES   3
@@ -64,7 +70,5 @@
 #define NUM_FILLRULES    2
 #define NUM_ARCMODES     2
 
-#define NormalChoice     0
-#define TextChoice       1
-#define DashlistChoice   2
-#define PlanemaskChoice  3
+/* The number of bits in the dash description */
+#define DASHLENGTH       8
