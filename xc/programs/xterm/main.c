@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.88 88/09/15 09:27:15 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.89 88/09/16 14:21:17 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -153,46 +153,48 @@ static int d_disipline = NTTYDISC;
 static long int d_lmode = LCRTBS|LCRTERA|LCRTKIL|LCTLECH;
 #endif /* USE_SYSV_TERMIO */
 
-static unsigned long parse_tty_modes ();
+static int parse_tty_modes ();
 /*
  * SYSV has the termio.c_cc[V] and ltchars; BSD has tchars and ltchars
  */
+static int override_tty_modes = 0;
 struct _xttymodes {
     char *name;
     int len;
+    int set;
     char value;
 } ttymodelist[] = {
-{ "intr", 4, 0 },			/* tchars.t_intrc ; VINTR */
+{ "intr", 4, 0, '\0' },			/* tchars.t_intrc ; VINTR */
 #define XTTYMODE_intr 0
-{ "quit", 4, 0 },			/* tchars.t_quitc ; VQUIT */
+{ "quit", 4, 0, '\0' },			/* tchars.t_quitc ; VQUIT */
 #define XTTYMODE_quit 1
-{ "erase", 5, 0 },			/* sgttyb.sg_erase ; VERASE */
+{ "erase", 5, 0, '\0' },		/* sgttyb.sg_erase ; VERASE */
 #define XTTYMODE_erase 2
-{ "kill", 4, 0 },			/* sgttyb.sg_kill ; VKILL */
+{ "kill", 4, 0, '\0' },			/* sgttyb.sg_kill ; VKILL */
 #define XTTYMODE_kill 3
-{ "eof", 3, 0 },			/* tchars.t_eofc ; VEOF */
+{ "eof", 3, 0, '\0' },			/* tchars.t_eofc ; VEOF */
 #define XTTYMODE_eof 4
-{ "eol", 3, 0 },			/* VEOL */
+{ "eol", 3, 0, '\0' },			/* VEOL */
 #define XTTYMODE_eol 5
-{ "swtch", 5, 0 },			/* VSWTCH */
+{ "swtch", 5, 0, '\0' },		/* VSWTCH */
 #define XTTYMODE_swtch 6
-{ "start", 5, 0 },			/* tchars.t_startc */
+{ "start", 5, 0, '\0' },		/* tchars.t_startc */
 #define XTTYMODE_start 7
-{ "stop", 4, 0 },			/* tchars.t_stopc */
+{ "stop", 4, 0, '\0' },			/* tchars.t_stopc */
 #define XTTYMODE_stop 8
-{ "brk", 3, 0 },			/* tchars.t_brkc */
+{ "brk", 3, 0, '\0' },			/* tchars.t_brkc */
 #define XTTYMODE_brk 9
-{ "susp", 4, 0 },			/* ltchars.t_suspc */
+{ "susp", 4, 0, '\0' },			/* ltchars.t_suspc */
 #define XTTYMODE_susp 10
-{ "dsusp", 5, 0 },			/* ltchars.t_dsuspc */
+{ "dsusp", 5, 0, '\0' },		/* ltchars.t_dsuspc */
 #define XTTYMODE_dsusp 11
-{ "rprnt", 5, 0 },			/* ltchars.t_rprntc */
+{ "rprnt", 5, 0, '\0' },		/* ltchars.t_rprntc */
 #define XTTYMODE_rprnt 12
-{ "flush", 5, 0 },			/* ltchars.t_flushc */
+{ "flush", 5, 0, '\0' },		/* ltchars.t_flushc */
 #define XTTYMODE_flush 13
-{ "weras", 5, 0 },			/* ltchars.t_werasc */
+{ "weras", 5, 0, '\0' },		/* ltchars.t_werasc */
 #define XTTYMODE_weras 14
-{ "lnext", 5, 0 },			/* ltchars.t_lnextc */
+{ "lnext", 5, 0, '\0' },		/* ltchars.t_lnextc */
 #define XTTYMODE_lnext 15
 #define NXTTYMODES 16
 };
@@ -592,6 +594,20 @@ char **argv;
 	XtGetApplicationResources( toplevel, &resource, application_resources,
 				   XtNumber(application_resources), NULL, 0 );
 
+	/*
+	 * fill in terminal modes
+	 */
+	if (resource.tty_modes) {
+	    int n = parse_tty_modes (resource.tty_modes,
+				     ttymodelist, NXTTYMODES);
+	    if (n < 0) {
+		fprintf (stderr, "%s:  bad tty modes \"%s\"\n",
+			 ProgramName, resource.tty_modes);
+	    } else if (n > 0) {
+		override_tty_modes = 1;
+	    }
+	}
+
 	xterm_name = resource.xterm_name;
 	sunFunctionKeys = resource.sunFunctionKeys;
 	if (strcmp(xterm_name, "-") == 0) xterm_name = "xterm";
@@ -737,56 +753,6 @@ char **argv;
 
 	if(screen->TekEmu && !TekInit())
 		exit(ERROR_INIT);
-
-	/*
-	 * fill in terminal modes
-	 */
-	if (resource.tty_modes) {
-	    unsigned long mask = parse_tty_modes (resource.tty_modes, 
-						  ttymodelist, NXTTYMODES);
-	    if (mask) {
-#define assign(ind,var) if (mask & (1L << ind)) var = ttymodelist[ind].value;
-#ifdef USE_SYSV_TERMIO
-		/* sysv-specific */
-		assign (XTTYMODE_intr, d_tio.c_cc[VINTR]);
-		assign (XTTYMODE_quit, d_tio.c_cc[VQUIT]);
-		assign (XTTYMODE_erase, d_tio.c_cc[VERASE]);
-		assign (XTTYMODE_kill, d_tio.c_cc[VKILL]);
-		assign (XTTYMODE_eof, d_tio.c_cc[VEOF]);
-		assign (XTTYMODE_eol, d_tio.c_cc[VEOL]);
-#ifdef VSWTCH
-		assign (XTTYMODE_swtch, d_tio.c_cc[VSWTCH]);
-#endif
-#ifdef TIOCSLTC
-#define NEED_LTCHARS
-#endif
-#else
-		/* bsd-specific */
-		assign (XTTYMODE_intr, d_tc.t_intrc);
-		assign (XTTYMODE_quit, d_tc.t_quitc);
-		assign (XTTYMODE_erase, d_sg.sg_erase);
-		assign (XTTYMODE_kill, d_sg.sg_kill);
-		assign (XTTYMODE_eof, d_tc.t_eofc);
-		assign (XTTYMODE_start, d_tc.t_startc);
-		assign (XTTYMODE_stop, d_tc.t_stopc);
-		assign (XTTYMODE_brk, d_tc.t_brkc);
-#define NEED_LTCHARS
-#endif
-
-#ifdef NEED_LTCHARS
-		/* both SYSV and BSD have ltchars */
-		assign (XTTYMODE_susp, d_ltc.t_suspc);
-		assign (XTTYMODE_dsusp, d_ltc.t_dsuspc);
-		assign (XTTYMODE_rprnt, d_ltc.t_rprntc);
-		assign (XTTYMODE_flush, d_ltc.t_flushc);
-		assign (XTTYMODE_weras, d_ltc.t_werasc);
-		assign (XTTYMODE_lnext, d_ltc.t_lnextc);
-#undef NEED_LTCHARS
-#endif
-#undef assign
-	    }
-	}
-
 
 	/* set up stderr properly */
 	i = -1;
@@ -1485,6 +1451,31 @@ spawn ()
 		    tio.c_cc[VEOL] = '@' & 0x3f;		/* '^@'	*/
 		    /* certain shells (ksh & csh) change EOF as well */
 		    tio.c_cc[VEOF] = 'D' & 0x3f;		/* '^D'	*/
+
+#define TMODE(ind,var) if (ttymodelist[ind].set) var = ttymodelist[ind].value;
+		    if (override_tty_modes) {
+			/* sysv-specific */
+			TMODE (XTTYMODE_intr, tio.c_cc[VINTR]);
+			TMODE (XTTYMODE_quit, tio.c_cc[VQUIT]);
+			TMODE (XTTYMODE_erase, tio.c_cc[VERASE]);
+			TMODE (XTTYMODE_kill, tio.c_cc[VKILL]);
+			TMODE (XTTYMODE_eof, tio.c_cc[VEOF]);
+			TMODE (XTTYMODE_eol, tio.c_cc[VEOL]);
+#ifdef VSWTCH
+			TMODE (XTTYMODE_swtch, d_tio.c_cc[VSWTCH]);
+#endif
+#ifdef TIOCSLTC
+			/* both SYSV and BSD have ltchars */
+			TMODE (XTTYMODE_susp, ltc.t_suspc);
+			TMODE (XTTYMODE_dsusp, ltc.t_dsuspc);
+			TMODE (XTTYMODE_rprnt, ltc.t_rprntc);
+			TMODE (XTTYMODE_flush, ltc.t_flushc);
+			TMODE (XTTYMODE_weras, ltc.t_werasc);
+			TMODE (XTTYMODE_lnext, ltc.t_lnextc);
+#endif
+		    }
+#undef TMODE
+
 		    if (ioctl (tty, TCSETA, &tio) == -1)
 			    HsSysError(cp_pipe[1], ERROR_TIOCSETP);
 #ifdef TIOCSLTC
@@ -1510,6 +1501,26 @@ spawn ()
 		    sg.sg_ospeed = B9600;
 		    /* reset t_brkc to default value */
 		    tc.t_brkc = -1;
+
+#define TMODE(ind,var) if (ttymodelist[ind].set) var = ttymodelist[ind].value;
+		    if (override_tty_modes) {
+			TMODE (XTTYMODE_intr, tc.t_quitc);
+			TMODE (XTTYMODE_quit, tc.t_quitc);
+			TMODE (XTTYMODE_erase, sg.sg_erase);
+			TMODE (XTTYMODE_kill, sg.sg_kill);
+			TMODE (XTTYMODE_eof, tc.t_eofc);
+			TMODE (XTTYMODE_start, tc.t_startc);
+			TMODE (XTTYMODE_stop, tc.t_stopc);
+			TMODE (XTTYMODE_brk, tc.t_brkc);
+			/* both SYSV and BSD have ltchars */
+			TMODE (XTTYMODE_susp, ltc.t_suspc);
+			TMODE (XTTYMODE_dsusp, ltc.t_dsuspc);
+			TMODE (XTTYMODE_rprnt, ltc.t_rprntc);
+			TMODE (XTTYMODE_flush, ltc.t_flushc);
+			TMODE (XTTYMODE_weras, ltc.t_werasc);
+			TMODE (XTTYMODE_lnext, ltc.t_lnextc);
+		    }
+#undef TMODE
 
 		    if (ioctl (tty, TIOCSETP, (char *)&sg) == -1)
 			    HsSysError (cp_pipe[1], ERROR_TIOCSETP);
@@ -2195,27 +2206,27 @@ remove_termcap_entry (buf, str)
  * where setting consists of the words in the modelist followed by a character
  * or ^char.
  */
-static unsigned long parse_tty_modes (s, modelist, nmodes)
+static int parse_tty_modes (s, modelist, nmodes)
     char *s;
     struct _xttymodes *modelist;
     int nmodes;
 {
     struct _xttymodes *mp;
     int c, i;
-    unsigned long mask = 0;
+    int count = 0;
 
     while (1) {
 	while (*s && isascii(*s) && isspace(*s)) s++;
-	if (!*s) return mask;
+	if (!*s) return count;
 
 	for (mp = modelist, i = 0; mp->name; mp++, i++) {
 	    if (strncmp (s, mp->name, mp->len) == 0) break;
 	}
-	if (!mp->name) return 0L;
+	if (!mp->name) return -1;
 
 	s += mp->len;
 	while (*s && isascii(*s) && isspace(*s)) s++;
-	if (!*s) return 0L;
+	if (!*s) return -1;
 
 	if (*s == '^') {
 	    s++;
@@ -2224,7 +2235,8 @@ static unsigned long parse_tty_modes (s, modelist, nmodes)
 	    c = *s;
 	}
 	mp->value = c;
-	mask |= (1L << i);
+	mp->set = 1;
+	count++;
 	s++;
     }
 }
