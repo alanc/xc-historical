@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.11 91/06/27 10:52:31 dave Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.12 91/07/14 13:29:34 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -56,6 +56,8 @@
  */
 extern char XcmsRGB_prefix[];
 extern char XcmsRGBi_prefix[];
+extern unsigned long _XcmsGetElement();
+extern void _XcmsFreeIntensityMaps();
 
 
 /*
@@ -93,6 +95,8 @@ Status XcmsRGBiToRGB();
 static int LINEAR_RGB_InitSCCData();
 int XcmsLRGB_RGB_ParseString();
 int XcmsLRGB_RGBi_ParseString();
+Status _XcmsGetTableType0();
+Status _XcmsGetTableType1();
 
 /*
  *      LOCALS VARIABLES
@@ -100,26 +104,6 @@ int XcmsLRGB_RGBi_ParseString();
  *		    Usage example:
  *		        static int	ExampleLocalVar;
  */
-
-static unsigned short Const HALF[17] = {
-    0x0000,	/*  0 bitsPerRGB */
-    0x3fff,	/*  1 bitsPerRGB */
-    0x1fff,	/*  2 bitsPerRGB */
-    0x0fff,	/*  3 bitsPerRGB */
-    0x07ff,	/*  4 bitsPerRGB */
-    0x03ff,	/*  5 bitsPerRGB */
-    0x01ff,	/*  6 bitsPerRGB */
-    0x00ff,	/*  7 bitsPerRGB */
-    0x007f,	/*  8 bitsPerRGB */
-    0x003f,	/*  9 bitsPerRGB */
-    0x001f,	/* 10 bitsPerRGB */
-    0x000f,	/* 11 bitsPerRGB */
-    0x0007,	/* 12 bitsPerRGB */
-    0x0003,	/* 13 bitsPerRGB */
-    0x0001,	/* 14 bitsPerRGB */
-    0x0000,	/* 15 bitsPerRGB */
-    0x0000	/* 16 bitsPerRGB */
-};
 
 static unsigned short Const MASK[17] = {
     0x0000,	/*  0 bitsPerRGB */
@@ -254,166 +238,166 @@ XcmsSCCFuncSet	XcmsLinearRGBFunctionSet =
 static IntensityRec Const Default_RGB_RedTuples[] = {
     /* {unsigned short value, XcmsFloat intensity} */
             0x0000,    0.000000,
-            0x0900,    0.000000,
-            0x0a00,    0.000936,
-            0x0f00,    0.001481,
-            0x1400,    0.002329,
-            0x1900,    0.003529,
-            0x1e00,    0.005127,
-            0x2300,    0.007169,
-            0x2800,    0.009699,
-            0x2d00,    0.012759,
-            0x3200,    0.016392,
-            0x3700,    0.020637,
-            0x3c00,    0.025533,
-            0x4100,    0.031119,
-            0x4600,    0.037431,
-            0x4b00,    0.044504,
-            0x5000,    0.052373,
-            0x5500,    0.061069,
-            0x5a00,    0.070624,
-            0x5f00,    0.081070,
-            0x6400,    0.092433,
-            0x6900,    0.104744,
-            0x6e00,    0.118026,
-            0x7300,    0.132307,
-            0x7800,    0.147610,
-            0x7d00,    0.163958,
-            0x8200,    0.181371,
-            0x8700,    0.199871,
-            0x8c00,    0.219475,
-            0x9100,    0.240202,
-            0x9600,    0.262069,
-            0x9b00,    0.285089,
-            0xa000,    0.309278,
-            0xa500,    0.334647,
-            0xaa00,    0.361208,
-            0xaf00,    0.388971,
-            0xb400,    0.417945,
-            0xb900,    0.448138,
-            0xbe00,    0.479555,
-            0xc300,    0.512202,
-            0xc800,    0.546082,
-            0xcd00,    0.581199,
-            0xd200,    0.617552,
-            0xd700,    0.655144,
-            0xdc00,    0.693971,
-            0xe100,    0.734031,
-            0xe600,    0.775322,
-            0xeb00,    0.817837,
-            0xf000,    0.861571,
-            0xf500,    0.906515,
-            0xfa00,    0.952662,
-            0xff00,    1.000000
+            0x0909,    0.000000,
+            0x0a0a,    0.000936,
+            0x0f0f,    0.001481,
+            0x1414,    0.002329,
+            0x1919,    0.003529,
+            0x1e1e,    0.005127,
+            0x2323,    0.007169,
+            0x2828,    0.009699,
+            0x2d2d,    0.012759,
+            0x3232,    0.016392,
+            0x3737,    0.020637,
+            0x3c3c,    0.025533,
+            0x4141,    0.031119,
+            0x4646,    0.037431,
+            0x4b4b,    0.044504,
+            0x5050,    0.052373,
+            0x5555,    0.061069,
+            0x5a5a,    0.070624,
+            0x5f5f,    0.081070,
+            0x6464,    0.092433,
+            0x6969,    0.104744,
+            0x6e6e,    0.118026,
+            0x7373,    0.132307,
+            0x7878,    0.147610,
+            0x7d7d,    0.163958,
+            0x8282,    0.181371,
+            0x8787,    0.199871,
+            0x8c8c,    0.219475,
+            0x9191,    0.240202,
+            0x9696,    0.262069,
+            0x9b9b,    0.285089,
+            0xa0a0,    0.309278,
+            0xa5a5,    0.334647,
+            0xaaaa,    0.361208,
+            0xafaf,    0.388971,
+            0xb4b4,    0.417945,
+            0xb9b9,    0.448138,
+            0xbebe,    0.479555,
+            0xc3c3,    0.512202,
+            0xc8c8,    0.546082,
+            0xcdcd,    0.581199,
+            0xd2d2,    0.617552,
+            0xd7d7,    0.655144,
+            0xdcdc,    0.693971,
+            0xe1e1,    0.734031,
+            0xe6e6,    0.775322,
+            0xebeb,    0.817837,
+            0xf0f0,    0.861571,
+            0xf5f5,    0.906515,
+            0xfafa,    0.952662,
+            0xffff,    1.000000
 };
 
 static IntensityRec Const Default_RGB_GreenTuples[] = {
     /* {unsigned short value, XcmsFloat intensity} */
-            0x0000,      0.000000,
-            0x1300,    0.000000,
-            0x1400,    0.000832,
-            0x1900,    0.001998,
-            0x1e00,    0.003612,
-            0x2300,    0.005736,
-            0x2800,    0.008428,
-            0x2d00,    0.011745,
-            0x3200,    0.015740,
-            0x3700,    0.020463,
-            0x3c00,    0.025960,
-            0x4100,    0.032275,
-            0x4600,    0.039449,
-            0x4b00,    0.047519,
-            0x5000,    0.056520,
-            0x5500,    0.066484,
-            0x5a00,    0.077439,
-            0x5f00,    0.089409,
-            0x6400,    0.102418,
-            0x6900,    0.116485,
-            0x6e00,    0.131625,
-            0x7300,    0.147853,
-            0x7800,    0.165176,
-            0x7d00,    0.183604,
-            0x8200,    0.203140,
-            0x8700,    0.223783,
-            0x8c00,    0.245533,
-            0x9100,    0.268384,
-            0x9600,    0.292327,
-            0x9b00,    0.317351,
-            0xa000,    0.343441,
-            0xa500,    0.370580,
-            0xaa00,    0.398747,
-            0xaf00,    0.427919,
-            0xb400,    0.458068,
-            0xb900,    0.489165,
-            0xbe00,    0.521176,
-            0xc300,    0.554067,
-            0xc800,    0.587797,
-            0xcd00,    0.622324,
-            0xd200,    0.657604,
-            0xd700,    0.693588,
-            0xdc00,    0.730225,
-            0xe100,    0.767459,
-            0xe600,    0.805235,
-            0xeb00,    0.843491,
-            0xf000,    0.882164,
-            0xf500,    0.921187,
-            0xfa00,    0.960490,
-            0xff00,    1.000000
+            0x0000,    0.000000,
+            0x1313,    0.000000,
+            0x1414,    0.000832,
+            0x1919,    0.001998,
+            0x1e1e,    0.003612,
+            0x2323,    0.005736,
+            0x2828,    0.008428,
+            0x2d2d,    0.011745,
+            0x3232,    0.015740,
+            0x3737,    0.020463,
+            0x3c3c,    0.025960,
+            0x4141,    0.032275,
+            0x4646,    0.039449,
+            0x4b4b,    0.047519,
+            0x5050,    0.056520,
+            0x5555,    0.066484,
+            0x5a5a,    0.077439,
+            0x5f5f,    0.089409,
+            0x6464,    0.102418,
+            0x6969,    0.116485,
+            0x6e6e,    0.131625,
+            0x7373,    0.147853,
+            0x7878,    0.165176,
+            0x7d7d,    0.183604,
+            0x8282,    0.203140,
+            0x8787,    0.223783,
+            0x8c8c,    0.245533,
+            0x9191,    0.268384,
+            0x9696,    0.292327,
+            0x9b9b,    0.317351,
+            0xa0a0,    0.343441,
+            0xa5a5,    0.370580,
+            0xaaaa,    0.398747,
+            0xafaf,    0.427919,
+            0xb4b4,    0.458068,
+            0xb9b9,    0.489165,
+            0xbebe,    0.521176,
+            0xc3c3,    0.554067,
+            0xc8c8,    0.587797,
+            0xcdcd,    0.622324,
+            0xd2d2,    0.657604,
+            0xd7d7,    0.693588,
+            0xdcdc,    0.730225,
+            0xe1e1,    0.767459,
+            0xe6e6,    0.805235,
+            0xebeb,    0.843491,
+            0xf0f0,    0.882164,
+            0xf5f5,    0.921187,
+            0xfafa,    0.960490,
+            0xffff,    1.000000
 };
 
 static IntensityRec Const Default_RGB_BlueTuples[] = {
     /* {unsigned short value, XcmsFloat intensity} */
             0x0000,    0.000000,
-            0x0e00,    0.000000,
-            0x0f00,    0.001341,
-            0x1400,    0.002080,
-            0x1900,    0.003188,
-            0x1e00,    0.004729,
-            0x2300,    0.006766,
-            0x2800,    0.009357,
-            0x2d00,    0.012559,
-            0x3200,    0.016424,
-            0x3700,    0.021004,
-            0x3c00,    0.026344,
-            0x4100,    0.032489,
-            0x4600,    0.039481,
-            0x4b00,    0.047357,
-            0x5000,    0.056154,
-            0x5500,    0.065903,
-            0x5a00,    0.076634,
-            0x5f00,    0.088373,
-            0x6400,    0.101145,
-            0x6900,    0.114968,
-            0x6e00,    0.129862,
-            0x7300,    0.145841,
-            0x7800,    0.162915,
-            0x7d00,    0.181095,
-            0x8200,    0.200386,
-            0x8700,    0.220791,
-            0x8c00,    0.242309,
-            0x9100,    0.264937,
-            0x9600,    0.288670,
-            0x9b00,    0.313499,
-            0xa000,    0.339410,
-            0xa500,    0.366390,
-            0xaa00,    0.394421,
-            0xaf00,    0.423481,
-            0xb400,    0.453547,
-            0xb900,    0.484592,
-            0xbe00,    0.516587,
-            0xc300,    0.549498,
-            0xc800,    0.583291,
-            0xcd00,    0.617925,
-            0xd200,    0.653361,
-            0xd700,    0.689553,
-            0xdc00,    0.726454,
-            0xe100,    0.764013,
-            0xe600,    0.802178,
-            0xeb00,    0.840891,
-            0xf000,    0.880093,
-            0xf500,    0.919723,
-            0xfa00,    0.959715,
-            0xff00,    1.00000
+            0x0e0e,    0.000000,
+            0x0f0f,    0.001341,
+            0x1414,    0.002080,
+            0x1919,    0.003188,
+            0x1e1e,    0.004729,
+            0x2323,    0.006766,
+            0x2828,    0.009357,
+            0x2d2d,    0.012559,
+            0x3232,    0.016424,
+            0x3737,    0.021004,
+            0x3c3c,    0.026344,
+            0x4141,    0.032489,
+            0x4646,    0.039481,
+            0x4b4b,    0.047357,
+            0x5050,    0.056154,
+            0x5555,    0.065903,
+            0x5a5a,    0.076634,
+            0x5f5f,    0.088373,
+            0x6464,    0.101145,
+            0x6969,    0.114968,
+            0x6e6e,    0.129862,
+            0x7373,    0.145841,
+            0x7878,    0.162915,
+            0x7d7d,    0.181095,
+            0x8282,    0.200386,
+            0x8787,    0.220791,
+            0x8c8c,    0.242309,
+            0x9191,    0.264937,
+            0x9696,    0.288670,
+            0x9b9b,    0.313499,
+            0xa0a0,    0.339410,
+            0xa5a5,    0.366390,
+            0xaaaa,    0.394421,
+            0xafaf,    0.423481,
+            0xb4b4,    0.453547,
+            0xb9b9,    0.484592,
+            0xbebe,    0.516587,
+            0xc3c3,    0.549498,
+            0xc8c8,    0.583291,
+            0xcdcd,    0.617925,
+            0xd2d2,    0.653361,
+            0xd7d7,    0.689553,
+            0xdcdc,    0.726454,
+            0xe1e1,    0.764013,
+            0xe6e6,    0.802178,
+            0xebeb,    0.840891,
+            0xf0f0,    0.880093,
+            0xf5f5,    0.919723,
+            0xfafa,    0.959715,
+            0xffff,    1.00000
 };
 
 static IntensityTbl Default_RGB_RedTbl = {
@@ -487,55 +471,68 @@ LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
 {
     Atom  CorrectAtom = XInternAtom (dpy, XDCCC_CORRECT_ATOM_NAME, True);
     Atom  MatrixAtom  = XInternAtom (dpy, XDCCC_MATRIX_ATOM_NAME, True);
-    int	  format_return, count, cType, nTables, nElements;
-    unsigned long nitems_return, nbytes_return;
+    int	  format_return, count, cType, nTables;
+    unsigned long nitems, nbytes_return;
     char *property_return, *pChar;
     XcmsFloat *pValue;
+#ifdef ALLDEBUG
     IntensityRec *pIRec;
+#endif /* ALLDEBUG */
+    VisualID visualID;
 
-    LINEAR_RGB_SCCData *pScreenData;
+    LINEAR_RGB_SCCData *pScreenData, *pScreenDefaultData;
+    XcmsIntensityMap *pNewMap;
 
     /*
      * Allocate memory for pScreenData
      */
-    if (!(pScreenData = (LINEAR_RGB_SCCData *) 
+    if (!(pScreenData = pScreenDefaultData = (LINEAR_RGB_SCCData *) 
 		      Xcalloc (1, sizeof(LINEAR_RGB_SCCData)))) {
 	return(XcmsFailure);
     }
 
-    /*
-     *	1. Get the XYZ to RGB Matrix
-     *	2. Get the RGB to XYZ Matrix
-     *	3. Compute the white point of the matrix
-     */
-
     /* 
-     *  First try to see if the XDXcmsCCC.conversion matrices property is
-     *  loaded on the root window.  If it is then read it and set the
-     *  screen info using this property.  If it is not use the default.
+     *  1. Get the XYZ->RGB and RGB->XYZ matrices
      */
-    if (MatrixAtom != None &&
-	_XcmsGetProperty (dpy, RootWindow(dpy, screenNumber), MatrixAtom, 
-	   &format_return, &nitems_return, &nbytes_return, &property_return) &&
-	   nitems_return == 18) {
 
-	/* Get the RGBtoXYZ and XYZtoRGB matrices */
+    if (MatrixAtom == None ||
+	!_XcmsGetProperty (dpy, RootWindow(dpy, screenNumber), MatrixAtom, 
+	   &format_return, &nitems, &nbytes_return, &property_return) ||
+	   nitems != 18 || format_return != 32) {
+	/*
+	 * As per the XDCCC, there must be 18 data items and each must be
+	 * in 32 bits !
+	 */
+	goto FreeSCCData;
+
+    } else {
+
+	/*
+	 * RGBtoXYZ and XYZtoRGB matrices
+	 */
 	pValue = (XcmsFloat *) pScreenData;
 	pChar = property_return;
 	for (count = 0; count < 18; count++) {
-	    *pValue++ = (XcmsFloat)_XcmsGetElement(format_return, &pChar)
-		    / (XcmsFloat)XDCCC_NUMBER;
+	    *pValue++ = (long)_XcmsGetElement(format_return, &pChar,
+		    &nitems) / (XcmsFloat)XDCCC_NUMBER;
 	}
 	XFree (property_return);
-	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.X = pScreenData->RGBtoXYZmatrix[0][0] +
-					      pScreenData->RGBtoXYZmatrix[0][1] +
-					      pScreenData->RGBtoXYZmatrix[0][2];
-	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y = pScreenData->RGBtoXYZmatrix[1][0] +
-					      pScreenData->RGBtoXYZmatrix[1][1] +
-					      pScreenData->RGBtoXYZmatrix[1][2];
-	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Z = pScreenData->RGBtoXYZmatrix[2][0] +
-					      pScreenData->RGBtoXYZmatrix[2][1] +
-					      pScreenData->RGBtoXYZmatrix[2][2];
+	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.X =
+		pScreenData->RGBtoXYZmatrix[0][0] +
+		pScreenData->RGBtoXYZmatrix[0][1] +
+		pScreenData->RGBtoXYZmatrix[0][2];
+	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y =
+		pScreenData->RGBtoXYZmatrix[1][0] +
+		pScreenData->RGBtoXYZmatrix[1][1] +
+		pScreenData->RGBtoXYZmatrix[1][2];
+	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Z =
+		pScreenData->RGBtoXYZmatrix[2][0] +
+		pScreenData->RGBtoXYZmatrix[2][1] +
+		pScreenData->RGBtoXYZmatrix[2][2];
+
+	/*
+	 * Compute the Screen White Point
+	 */
 	if ((pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y < (1.0 - EPS) )
 		|| (pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y > (1.0 + EPS))) {
 	    goto FreeSCCData;
@@ -544,8 +541,9 @@ LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
 	}
 	pPerScrnInfo->screenWhitePt.format = XcmsCIEXYZFormat;
 	pPerScrnInfo->screenWhitePt.pixel = 0;
+
 #ifdef PDEBUG
-	printf ("A Matrix values:\n");
+	printf ("RGB to XYZ Matrix values:\n");
 	printf ("       %f %f %f\n       %f %f %f\n       %f %f %f\n",
 		pScreenData->RGBtoXYZmatrix[0][0],
 		pScreenData->RGBtoXYZmatrix[0][1],
@@ -556,7 +554,7 @@ LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
 		pScreenData->RGBtoXYZmatrix[2][0],
 		pScreenData->RGBtoXYZmatrix[2][1],
 		pScreenData->RGBtoXYZmatrix[2][2]);
-	printf ("A- Matrix values:\n");
+	printf ("XYZ to RGB Matrix values:\n");
 	printf ("       %f %f %f\n       %f %f %f\n       %f %f %f\n",
 		pScreenData->XYZtoRGBmatrix[0][0],
 		pScreenData->XYZtoRGBmatrix[0][1],
@@ -572,41 +570,136 @@ LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
 		pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y,
 		pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Z);
 #endif /* PDEBUG */
-    } else {
-	/* when debug is on then use the statics otherwise just return. */
-	goto FreeSCCData;
     }
 
     /*
-     *	4. Get the Intensity Profile if it exists
+     *	2. Get the Intensity Profile
      */
-    if (CorrectAtom != None &&
-	_XcmsGetProperty (dpy, RootWindow(dpy, screenNumber), CorrectAtom,
-	   &format_return, &nitems_return, &nbytes_return, &property_return) &&
-	    nitems_return > 3) {
+    if (CorrectAtom == None ||
+	!_XcmsGetProperty (dpy, RootWindow(dpy, screenNumber), CorrectAtom,
+	   &format_return, &nitems, &nbytes_return, &property_return)) {
+	XFree (property_return);
+	goto FreeSCCData;
+    }
 
-	pChar = property_return;
-	cType = _XcmsGetElement(format_return, &pChar);
-	nTables = _XcmsGetElement(format_return, &pChar);
+    pChar = property_return;
+
+    while (nitems) {
+	switch (format_return) {
+	  case 8:
+	    /*
+	     * Must have at lease:
+	     *		VisualID0
+	     *		VisualID1
+	     *		VisualID2
+	     *		VisualID3
+	     *		type
+	     *		count
+	     *		length
+	     *		intensity1
+	     *		intensity2
+	     */
+	    if (nitems < 9) {
+		XFree (property_return);
+		goto FreeSCCData;
+	    }
+	    count = 3;
+	    break;
+	  case 16:
+	    /*
+	     * Must have at lease:
+	     *		VisualID0
+	     *		VisualID3
+	     *		type
+	     *		count
+	     *		length
+	     *		intensity1
+	     *		intensity2
+	     */
+	    if (nitems < 7) {
+		XFree (property_return);
+		goto FreeSCCData;
+	    }
+	    count = 1;
+	    break;
+	  case 32:
+	    /*
+	     * Must have at lease:
+	     *		VisualID0
+	     *		type
+	     *		count
+	     *		length
+	     *		intensity1
+	     *		intensity2
+	     */
+	    if (nitems < 6) {
+		XFree (property_return);
+		goto FreeSCCData;
+	    }
+	    count = 0;
+	    break;
+	  default:
+	    XFree (property_return);
+	    goto FreeSCCData;
+	    break;
+	}
+
+	/*
+	 * Get VisualID
+	 */
+	visualID = _XcmsGetElement(format_return, &pChar, &nitems);
+	while (count--) {
+	    visualID = visualID << 8;
+	    visualID |= _XcmsGetElement(format_return, &pChar, &nitems);
+	}
+
+	if (visualID == 0) {
+	    /*
+	     * This is a shared intensity table
+	     */
+	    pScreenData = pScreenDefaultData;
+	} else {
+	    /*
+	     * This is a per-Visual intensity table
+	     */
+	    if (!(pScreenData = (LINEAR_RGB_SCCData *) 
+			      Xcalloc (1, sizeof(LINEAR_RGB_SCCData)))) {
+		return(XcmsFailure);
+	    }
+	    /* copy matrices */
+	    bcopy((char *)pScreenDefaultData, (char *)pScreenData,
+		    18 * sizeof(XcmsFloat));
+
+	    /* Create, initialize, and add map */
+	    if (!(pNewMap = (XcmsIntensityMap *) 
+			      Xcalloc (1, sizeof(XcmsIntensityMap)))) {
+		Xfree(pScreenData);
+		return(XcmsFailure);
+	    }
+	    pNewMap->visualID = visualID;
+	    pNewMap->screenData = (XPointer)pScreenData;
+	    pNewMap->pFreeScreenData = LINEAR_RGB_FreeSCCData;
+	    pNewMap->pNext =
+		    (XcmsIntensityMap *)dpy->cms.perVisualIntensityMaps;
+	    (XcmsIntensityMap *)dpy->cms.perVisualIntensityMaps = pNewMap;
+	    dpy->free_funcs->intensityMaps = _XcmsFreeIntensityMaps;
+	}
+
+	cType = _XcmsGetElement(format_return, &pChar, &nitems);
+	nTables = _XcmsGetElement(format_return, &pChar, &nitems);
 
 	if (cType == 0) {
+
 	    /* Red Intensity Table */
 	    if (!(pScreenData->pRedTbl = (IntensityTbl *)
 		    Xcalloc (1, sizeof(IntensityTbl)))) {
 		goto FreeSCCData;
 	    }
-	    nElements = pScreenData->pRedTbl->nEntries = 
-		    _XcmsGetElement(format_return, &pChar);
-	    if (!(pScreenData->pRedTbl->pBase = (IntensityRec *)
-		  Xcalloc (nElements, sizeof(IntensityRec)))) {
+	    if (_XcmsGetTableType0(pScreenData->pRedTbl, format_return, &pChar,
+		    &nitems) == XcmsFailure) {
 		goto FreeRedTbl;
 	    }
-	    pIRec = (IntensityRec *) pScreenData->pRedTbl->pBase;
-	    for (; nElements--; pIRec++) {
-		pIRec->value = _XcmsGetElement (format_return, &pChar);
-		pIRec->intensity = (XcmsFloat) 
-		 _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
-	    }
+
 	    if (nTables == 1) {
 		/* Green Intensity Table */
 		pScreenData->pGreenTbl = pScreenData->pRedTbl;
@@ -618,97 +711,66 @@ LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
 			Xcalloc (1, sizeof(IntensityTbl)))) {
 		    goto FreeRedTblElements;
 		}
-		nElements = pScreenData->pGreenTbl->nEntries =
-			(int) _XcmsGetElement (format_return, &pChar);
-		if (!(pScreenData->pGreenTbl->pBase = (IntensityRec *)
-		      Xcalloc (nElements, sizeof(IntensityRec)))) {
+		if (_XcmsGetTableType0(pScreenData->pGreenTbl, format_return, &pChar,
+			&nitems) == XcmsFailure) {
 		    goto FreeGreenTbl;
 		}
-		pIRec = (IntensityRec *) pScreenData->pGreenTbl->pBase;
-		for (; nElements--; pIRec++) {
-		    pIRec->value = _XcmsGetElement (format_return, &pChar);
-		    pIRec->intensity = (XcmsFloat)
-		     _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
-		}
+
 		/* Blue Intensity Table */
 		if (!(pScreenData->pBlueTbl = (IntensityTbl *)
 			Xcalloc (1, sizeof(IntensityTbl)))) {
 		    goto FreeGreenTblElements;
 		}
-		nElements = pScreenData->pBlueTbl->nEntries =
-			(int) _XcmsGetElement (format_return, &pChar);
-		if (!(pScreenData->pBlueTbl->pBase = (IntensityRec *)
-		      Xcalloc (nElements, sizeof(IntensityRec)))) {
+		if (_XcmsGetTableType0(pScreenData->pBlueTbl, format_return, &pChar,
+			&nitems) == XcmsFailure) {
 		    goto FreeBlueTbl;
-		}
-		pIRec = (IntensityRec *) pScreenData->pBlueTbl->pBase;
-		for (; nElements--; pIRec++) {
-		    pIRec->value = _XcmsGetElement (format_return, &pChar);
-		    pIRec->intensity = (XcmsFloat)
-		     _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
 		}
 	    }	    
-	} else {
+	} else if (cType == 1) {
 	    /* Red Intensity Table */
 	    if (!(pScreenData->pRedTbl = (IntensityTbl *)
 		    Xcalloc (1, sizeof(IntensityTbl)))) {
 		goto FreeSCCData;
 	    }
-	    nElements = pScreenData->pRedTbl->nEntries =
-		    (int) _XcmsGetElement (format_return, &pChar);
-	    if (!(pScreenData->pRedTbl->pBase = (IntensityRec *)
-		  Xcalloc (nElements, sizeof(IntensityRec)))) {
+	    if (_XcmsGetTableType1(pScreenData->pRedTbl, format_return, &pChar,
+		    &nitems) == XcmsFailure) {
 		goto FreeRedTbl;
 	    }
-	    pIRec = (IntensityRec *) pScreenData->pRedTbl->pBase;
-	    for (; nElements--; pIRec++) {
-		pIRec->value = count;
-		pIRec->intensity = (XcmsFloat) 
-		  _XcmsGetElement (format_return,&pChar)/(XcmsFloat)XDCCC_NUMBER;
-	    }
+
 	    if (nTables == 1) {
+
 		/* Green Intensity Table */
 		pScreenData->pGreenTbl = pScreenData->pRedTbl;
 		/* Blue Intensity Table */
 		pScreenData->pBlueTbl = pScreenData->pRedTbl;
+
 	    } else {
+
 		/* Green Intensity Table */
 		if (!(pScreenData->pGreenTbl = (IntensityTbl *)
 			Xcalloc (1, sizeof(IntensityTbl)))) {
 		    goto FreeRedTblElements;
 		}
-		nElements = pScreenData->pGreenTbl->nEntries =
-			(int) _XcmsGetElement (format_return, &pChar);
-		if (!(pScreenData->pGreenTbl->pBase =(IntensityRec *)
-		      Xcalloc (nElements, sizeof(IntensityRec)))) {
+		if (_XcmsGetTableType1(pScreenData->pGreenTbl, format_return, &pChar,
+			&nitems) == XcmsFailure) {
 		    goto FreeGreenTbl;
 		}
-		pIRec = (IntensityRec *) pScreenData->pGreenTbl->pBase;
-		for (; nElements; pIRec++) {
-		    pIRec->value = count;
-		    pIRec->intensity = (XcmsFloat) 
-		     _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
-		}
+
 		/* Blue Intensity Table */
 		if (!(pScreenData->pBlueTbl = (IntensityTbl *)
 			Xcalloc (1, sizeof(IntensityTbl)))) {
 		    goto FreeGreenTblElements;
 		}
-		nElements = pScreenData->pBlueTbl->nEntries =
-			(int) _XcmsGetElement (format_return, &pChar);
-		if (!(pScreenData->pBlueTbl->pBase =(IntensityRec *)
-		      Xcalloc (nElements, sizeof(IntensityRec)))) {
+		if (_XcmsGetTableType1(pScreenData->pBlueTbl, format_return, &pChar,
+			&nitems) == XcmsFailure) {
 		    goto FreeBlueTbl;
 		}
-		pIRec = (IntensityRec *) pScreenData->pBlueTbl->pBase;
-		for (; nElements--; pIRec++) {
-		    pIRec->value = count;
-		    pIRec->intensity = (XcmsFloat)
-		     _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
-		}
 	    }
+	} else {
+	    XFree (property_return);
+	    goto FreeSCCData;
 	}
-	XFree (property_return);
+
 #ifdef ALLDEBUG
 	printf ("Intensity Table  RED    %d\n", pScreenData->pRedTbl->nEntries);
 	pIRec = (IntensityRec *) pScreenData->pRedTbl->pBase;
@@ -730,10 +792,10 @@ LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
 	    }
 	}
 #endif /* ALLDEBUG */
-    } else {
-	XFree (property_return);
-	goto FreeSCCData;
     }
+
+    XFree (property_return);
+
     /* Free the old memory and use the new structure created. */
     LINEAR_RGB_FreeSCCData((LINEAR_RGB_SCCData *) pPerScrnInfo->screenData);
 
@@ -828,6 +890,130 @@ LINEAR_RGB_FreeSCCData(pScreenData)
  *			API PRIVATE ROUTINES				*
  *									*
  ************************************************************************/
+
+/*
+ *	NAME
+ *		_XcmsGetTableType0
+ *
+ *	SYNOPSIS
+ */
+Status
+_XcmsGetTableType0(pTbl, format, pChar, pCount)
+    IntensityTbl *pTbl;
+    int	  format;
+    char **pChar;
+    unsigned long *pCount;
+/*
+ *	DESCRIPTION
+ *
+ *	RETURNS
+ *		XcmsFailure if failed.
+ *		XcmsSuccess if succeeded.
+ *
+ */
+{
+    unsigned int nElements;
+    IntensityRec *pIRec;
+
+    nElements = pTbl->nEntries =
+	    _XcmsGetElement(format, pChar, pCount) + 1;
+    if (!(pIRec = pTbl->pBase = (IntensityRec *)
+	  Xcalloc (nElements, sizeof(IntensityRec)))) {
+	return(XcmsFailure);
+    }
+
+    switch (format) {
+      case 8: 
+	for (; nElements--; pIRec++) {
+	    /* 0xFFFF/0xFF = 0x101 */
+	    pIRec->value = _XcmsGetElement (format, pChar, pCount) * 0x101;
+	    pIRec->intensity =
+		    _XcmsGetElement (format, pChar, pCount) / (XcmsFloat)255.0;
+	}
+	break;
+      case 16: 
+	for (; nElements--; pIRec++) {
+	    pIRec->value = _XcmsGetElement (format, pChar, pCount);
+	    pIRec->intensity = _XcmsGetElement (format, pChar, pCount)
+		    / (XcmsFloat)65535.0;
+	}
+	break;
+      case 32: 
+	for (; nElements--; pIRec++) {
+	    pIRec->value = _XcmsGetElement (format, pChar, pCount);
+	    pIRec->intensity = _XcmsGetElement (format, pChar, pCount)
+		    / (XcmsFloat)4294967295.0;
+	}
+	break;
+      default:
+	return(XcmsFailure);
+    }
+    return(XcmsSuccess);
+}
+
+
+/*
+ *	NAME
+ *		_XcmsGetTableType1
+ *
+ *	SYNOPSIS
+ */
+Status
+_XcmsGetTableType1(pTbl, format, pChar, pCount)
+    IntensityTbl *pTbl;
+    int	  format;
+    char **pChar;
+    unsigned long *pCount;
+/*
+ *	DESCRIPTION
+ *
+ *	RETURNS
+ *		XcmsFailure if failed.
+ *		XcmsSuccess if succeeded.
+ *
+ */
+{
+    int count;
+    unsigned int max_index;
+    IntensityRec *pIRec;
+
+    max_index = _XcmsGetElement(format, pChar, pCount);
+    pTbl->nEntries = max_index + 1;
+    if (!(pIRec = pTbl->pBase = (IntensityRec *)
+	  Xcalloc (max_index+1, sizeof(IntensityRec)))) {
+	return(XcmsFailure);
+    }
+
+    switch (format) {
+      case 8: 
+	for (count = 0; count < max_index+1; count++, pIRec++) {
+	    pIRec->value = (count * 65535) / max_index;
+	    pIRec->intensity = _XcmsGetElement (format, pChar, pCount)
+		    / (XcmsFloat)255.0;
+	}
+	break;
+      case 16: 
+	for (count = 0; count < max_index+1; count++, pIRec++) {
+	    pIRec->value = (count * 65535) / max_index;
+	    pIRec->intensity = _XcmsGetElement (format, pChar, pCount)
+		    / (XcmsFloat)65535.0;
+	}
+	break;
+      case 32: 
+	for (count = 0; count < max_index+1; count++, pIRec++) {
+	    pIRec->value = (count * 65535) / max_index;
+	    pIRec->intensity = _XcmsGetElement (format, pChar, pCount)
+		    / (XcmsFloat)4294967295.0;
+	}
+	break;
+      default:
+	return(XcmsFailure);
+    }
+
+    return(XcmsSuccess);
+}
+
+
 /*
  *	NAME
  *		ValueCmp
@@ -936,11 +1122,28 @@ _XcmsIntensityInterpolation (key, lo, hi, answer, bitsPerRGB)
  */
 {
     XcmsFloat ratio;
-    int tmp;
+    long target, up, down;
+    int shift = 16 - bitsPerRGB;
+    int max_color = (1 << bitsPerRGB) - 1;
+
     ratio = (key->intensity - lo->intensity) / (hi->intensity - lo->intensity);
     answer->intensity = key->intensity;
-    tmp = (((XcmsFloat)hi->value - (XcmsFloat)lo->value) * ratio);
-    answer->value = (lo->value + tmp + HALF[bitsPerRGB]) & MASK[bitsPerRGB];
+    target = hi->value - lo->value;
+    target *= ratio;
+    target += lo->value;
+
+    /*
+     * Ok now, lets find the closest in respects to bits per RGB
+     */
+    up = ((target >> shift) * 0xFFFF) / max_color;
+    if (up < target) {
+	down = up;
+	up = (MIN((down >> shift) + 1, max_color) * 0xFFFF) / max_color;
+    } else {
+	down = (MAX((up >> shift) - 1, 0) * 0xFFFF) / max_color;
+    }
+    answer->value = ((up - target) < (target - down) ? up : down);
+    answer->value &= MASK[bitsPerRGB];
     return (XcmsSuccess);
 }
 
@@ -974,11 +1177,13 @@ _XcmsTableSearch (key, bitsPerRGB, base, nel, nKeyPtrSize, compar, interpol, ans
     char *hi, *lo, *mid, *last;
     int result;
 
-    /* for value, use only the significant high order bits */
-    ((IntensityRec *)key)->value &= MASK[bitsPerRGB];
-
     last = hi = base + ((nel - 1) * nKeyPtrSize);
     mid = lo = base;
+
+    /* use only the significants bits, then scale into 16 bits */
+    ((IntensityRec *)key)->value = ((unsigned long)
+	    (((IntensityRec *)key)->value >> (16 - bitsPerRGB)) * 0xFFFF)
+	    / ((1 << bitsPerRGB) - 1);
 
     while (mid != last) {
 	last = mid;
@@ -988,6 +1193,7 @@ _XcmsTableSearch (key, bitsPerRGB, base, nel, nKeyPtrSize, compar, interpol, ans
 	if (result == 0) {
 
 	    bcopy(mid, answer, nKeyPtrSize);
+	    ((IntensityRec *)answer)->value &= MASK[bitsPerRGB];
 	    return (XcmsSuccess);
 	} else if (result < 0) {
 	    hi = mid;
@@ -1058,7 +1264,7 @@ XcmsLRGB_RGB_ParseString(spec, pColor)
  */
 {
     register int n, i;
-    int r, g, b;
+    unsigned short r, g, b;
     char c;
     char *pchar;
     unsigned short *pShort;
