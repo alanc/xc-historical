@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.17 94/07/28 11:25:08 mor Exp $ */
+/* $XConsortium: saveutil.c,v 1.18 94/07/28 14:53:15 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -216,6 +216,9 @@ char *sm_id;
 	fprintf(f, "%s\n", sm_id);
 	for(client = ClientList; client; client = client->next)
 	{
+	    if (client->restartHint == SmRestartNever)
+		continue;
+
 	    fprintf(f, "%s\n", client->clientId);
 	    fprintf(f, "%s\n", client->clientHostname);
 	    for(i = 0; i < client->numProps; i++) {
