@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.18 87/10/15 11:34:40 rws Locked $ */
+/* $Header: dispatch.c,v 1.19 87/10/28 13:58:51 rws Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2973,6 +2973,7 @@ KillServerResources()
     int i;
 
     KillAllClients();
+    CloseDownExtensions();
     /* Good thing we stashed these two in globals so we could get at them
      * here. */
     CloseDownDevices(argcGlobal, argvGlobal);
