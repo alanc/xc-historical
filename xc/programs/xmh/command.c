@@ -1,4 +1,4 @@
-/* $XConsortium: command.c,v 2.35 91/02/07 15:23:31 rws Exp $ */
+/* $XConsortium: command.c,v 2.36 91/02/08 10:48:32 rws Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -33,6 +33,9 @@
 #ifndef SYSV
 #include <sys/wait.h>
 #endif	/* SYSV */
+#ifdef SVR4
+#include <sys/filio.h>
+#endif
 
 /* number of user input events to queue before malloc */
 #define TYPEAHEADSIZE 20
