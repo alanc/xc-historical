@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.41 91/05/30 10:12:18 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.42 91/05/30 15:04:25 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -690,6 +690,7 @@ Value	Name					Reference
 7	Hewlett-Packard Co.			[78]
 8	Metro Link Inc.				[79]
 9	Stardent Computer			[80]
+10	Sony Microsystems			[81]
 
 
 REFERENCES
@@ -1061,3 +1062,8 @@ REFERENCES
 	6 New England Tech Center
 	521 Virginia Road
 	Concord, MA 01742
+
+[81]	Mark Patrick
+	Sony Microsystems
+	651 River Oaks Parkway
+	San Jose, CA 95134
