@@ -27,7 +27,6 @@
        XDMCPLIB = $(XDMCPLIBSRC)/libXdmcp.a
              OS = os/libos.a $(XAULIB) $(XDMCPLIB)
         BSDEMUL = $(LIBSRC)/Berk/Berklib.o
-           SYSV = os/sysV/libos.a
             MFB = ddx/mfb/libmfb.a
             CFB = ddx/cfb/libcfb.a
              MI = ddx/mi/libmi.a
