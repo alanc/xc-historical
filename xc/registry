@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.73 92/09/29 11:58:11 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.74 92/09/29 12:00:39 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -132,7 +132,7 @@ IXK_B6			0x10004206		[50]
 IXK_B7			0x10004207		[50]
 IXK_B8			0x10004208		[50]
 IXK_B9			0x10004209		[50]
-IXK_B10			0x1000420B		[50]
+IXK_B10			0x1000420A		[50]
 IXK_B11			0x1000420B		[50]
 IXK_B12			0x1000420C		[50]
 IXK_B13			0x1000420D		[50]
