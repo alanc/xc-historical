@@ -488,18 +488,25 @@ XkbFreeInfo(xkb)
 	    register unsigned i;
 	    XkbKeyTypeRec	*type= xkb->desc.map->types;
 	    for (i=0;i<xkb->desc.map->num_types;i++,type++) {
-		if (type->map&&(!(type->free&XkbNoFreeKTMap)))
+		if (type->map&&(!(type->free&XkbNoFreeKTMap))) {
 		    Xfree(type->map);
-		type->map= NULL;
-		if (type->preserve&&(!(type->free&XkbNoFreeKTPreserve)))
+		    type->map_count= 0;
+		    type->map= NULL;
+		}
+		if (type->preserve&&(!(type->free&XkbNoFreeKTPreserve))) {
 		    Xfree(type->preserve);
-		type->preserve= NULL;
+		    type->preserve= NULL;
+		}
+		if (type->lvl_names&&(!(type->free&XkbNoFreeKTLevelNames))) {
+		    Xfree(type->lvl_names);
+		    type->lvl_names= NULL;
+		}
 	    }
 	    type= xkb->desc.map->types;
 	    if (!(type->free&XkbNoFreeKTStruct)) {
 		Xfree(type);
-		xkb->desc.map->types= NULL;
 	    }
+	    xkb->desc.map->types= NULL;
 	}
 	if (xkb->desc.map->syms) {
 	    Xfree(xkb->desc.map->syms);
