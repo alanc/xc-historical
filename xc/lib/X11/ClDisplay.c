@@ -1,4 +1,4 @@
-/* $XConsortium: XClDisplay.c,v 11.24 91/12/19 18:06:28 rws Exp $ */
+/* $XConsortium: XClDisplay.c,v 11.25 92/12/31 15:39:06 rws Exp $ */
 /*
 
 Copyright 1985, 1990 by the Massachusetts Institute of Technology
@@ -28,7 +28,6 @@ XCloseDisplay (dpy)
 {
 	register _XExtension *ext;
 	register int i;
-	extern void _XFreeQ();
 
 	if (!(dpy->flags & XlibDisplayClosing))
 	{
@@ -49,6 +48,5 @@ XCloseDisplay (dpy)
 	}
 	_XDisconnectDisplay(dpy->fd);
 	_XFreeDisplayStructure (dpy);
-	_XFreeQ ();
 	return;
 }
