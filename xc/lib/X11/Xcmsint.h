@@ -1,4 +1,4 @@
-/* $XConsortium: Xcmsint.h,v 1.16 91/11/05 11:01:36 rws Exp $ */
+/* $XConsortium: Xcmsint.h,v 1.17 91/11/05 11:06:51 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -44,14 +44,13 @@
 #define	_XCMS_NEWNAME	-1
 
 	/*
-	 * Color Space ID's are of XcmsColorFormat type, which is an
-	 *	unsigned short (16 bits).  
+	 * Color Space ID's are of XcmsColorFormat type.
 	 *
-	 *	bit 15 (most significant bit):
+	 *	bit 31
 	 *	    0 == Device-Independent
 	 *	    1 == Device-Dependent
 	 *
-	 *	bit 14:
+	 *	bit 30:
          *          0 == Registered with X Consortium
          *          1 == Unregistered
          */
