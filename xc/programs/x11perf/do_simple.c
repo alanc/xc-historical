@@ -108,7 +108,7 @@ void DoGetProperty(xp, p, reps)
 
     for (i = 0; i != reps; i++) {
 	status = XGetWindowProperty (
-		xp->d, root, XA_PK_TEMP, 0, sizeof (int),
+		xp->d, root, XA_PK_TEMP, 0, 4,
 		False, AnyPropertyType, &actual_type, &actual_format,
 		&actual_length, &bytes_remaining, &prop);
     }
