@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: $
+ * $XConsortium: Xauth.h,v 1.1 88/11/22 15:27:19 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -20,10 +20,11 @@
 
 # include   <stdio.h>
 
-# define FamilyLocal 255	/* not part of X standard (i.e. X.h) yet */
+# define FamilyLocal (256)	/* not part of X standard (i.e. X.h) yet */
+# define FamilyWild  (65535)
 
 typedef struct xauth {
-    char    family;
+    unsigned short   family;
     unsigned short   address_length;
     char    *address;
     unsigned short   number_length;
@@ -34,7 +35,7 @@ typedef struct xauth {
     char    *data;
 } Xauth;
 
-#ifdef _STDC_
+#ifdef __STDC__
 extern char *XauFileName	();
 Xauth	    *XauReadAuth	(FILE   *auth_file);
 int	    XauLockAuth		(char   *file_name,	int	retries, 
@@ -42,7 +43,7 @@ int	    XauLockAuth		(char   *file_name,	int	retries,
 int	    XauUnlockAuth	(char   *file_name);
 int	    XauWriteAuth	(FILE   *auth_file,	Xauth	*auth);
 Xauth	    *XauGetAuthByName	(char	*display_name);
-Xauth	    *XauGetAuthByAddr	(char	family, 
+Xauth	    *XauGetAuthByAddr	(unsigned short	family, 
 			         unsigned short	address_length,	char	*address, 
 			         unsigned short	number_length,	char	*number,
 				 unsigned short name_length,	char	*name);

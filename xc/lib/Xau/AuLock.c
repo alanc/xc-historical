@@ -59,7 +59,8 @@ long	dead;
 		    return LOCK_ERROR;
 	    } else
 		(void) close (creat_fd);
-	} else {
+	}
+	if (creat_fd != -1) {
 	    if (link (creat_name, link_name) != -1)
 		return LOCK_SUCCESS;
 	    if (errno != EEXIST)

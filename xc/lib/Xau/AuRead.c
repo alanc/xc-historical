@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: $
+ * $XConsortium: AuRead.c,v 1.1 88/11/22 15:27:21 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -21,6 +21,19 @@
 #include    "Xauth.h"
 
 static
+read_short (shortp, file)
+unsigned short	*shortp;
+FILE		*file;
+{
+    unsigned char   file_short[2];
+
+    if (fread ((char *) file_short, (int) sizeof (file_short), 1, file) != 1)
+	return 0;
+    *shortp = file_short[0] * 256 + file_short[1];
+    return 1;
+}
+
+static
 read_counted_string (countp, stringp, file)
 unsigned short	*countp;
 char	**stringp;
@@ -30,9 +43,8 @@ FILE	*file;
     unsigned short  len;
     char	    *data, *malloc ();
 
-    if (fread ((char *) file_short, (int) sizeof (file_short), 1, file) != 1)
+    if (read_short (&len, file) == 0)
 	return 0;
-    len = file_short[0] * 256 + file_short[1];
     if (len == 0) {
 	data = 0;
     } else {
@@ -56,8 +68,9 @@ FILE	*auth_file;
     Xauth   local;
     Xauth   *ret;
     char    *malloc ();
+    unsigned char    file_short[2];
 
-    if (fread (&local.family, sizeof (local.family), 1, auth_file) != 1)
+    if (read_short (&local.family, auth_file) == 0)
 	return 0;
     if (read_counted_string (&local.address_length, &local.address, auth_file) == 0)
 	return 0;

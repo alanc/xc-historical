@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: $
+ * $XConsortium: AuGetAddr.c,v 1.1 88/11/22 15:27:20 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -35,7 +35,7 @@ Xauth *
 XauGetAuthByAddr (family, address_length, address,
 			  number_length, number,
 			  name_length, name)
-char	family;
+unsigned short	family;
 unsigned short	address_length;
 char	*address;
 unsigned short	number_length;
@@ -58,18 +58,30 @@ char	*name;
 	if (!entry)
 	    break;
 	/*
-	 * entries with empty address/number match all requests
+	 * Match when:
+	 *   either family or entry->family are FamilyWild or
+	 *    family and entry->family are the same
+	 *  and
+	 *   either address or entry->address are empty or
+	 *    address and entry->address are the same
+	 *  and
+	 *   either number or entry->number are empty or
+	 *    number and entry->number are the same
+	 *  and
+	 *   either name or entry->name are empty or
+	 *    name and entry->name are the same
 	 */
-	if (entry->address_length == 0 && entry->number_length == 0)
-	    break;
-	if (entry->family == family &&
-	    entry->address_length == address_length &&
-	    entry->number_length == number_length &&
-	    binaryEqual (entry->address, address, address_length) &&
-	    binaryEqual (entry->number, number, number_length) &&
-	    (name_length == 0 ||
-	     entry->name_length == name_length &&
- 	     binaryEqual (entry->name, name, name_length)))
+
+	if ((family == FamilyWild || entry->family == FamilyWild ||
+	     (entry->family == family &&
+	      address_length == entry->address_length &&
+	      binaryEqual (entry->address, address, address_length))) &&
+	    (number_length == 0 || entry->number_length == 0 ||
+	     (number_length == entry->number_length &&
+	      binaryEqual (entry->number, number, number_length))) &&
+	    (name_length == 0 || entry->name_length == 0 ||
+	     (entry->name_length == name_length &&
+ 	      binaryEqual (entry->name, name, name_length))))
 	    break;
 	XauDisposeAuth (entry);
     }
