@@ -1,7 +1,5 @@
-#ifndef lint
-static char Xrcsid[] =
-    "$XConsortium: Varargs.c,v 1.20 90/06/25 12:26:15 swick Exp $";
-#endif
+/* $XConsortium: Varargs.c,v 1.21 90/12/12 14:53:57 rws Exp $ */
+
 /*
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
@@ -293,7 +291,9 @@ _XtNestedArgtoArg(widget, avlist, args, resources, num_resources)
 
     return(count);
 }
- 
+
+static void		GetResources();
+
  
 /* 
  *    Given a variable argument list, _XtVaToArgList() returns the 
@@ -325,7 +325,6 @@ _XtVaToArgList(widget, var, max_count, args_return, num_args_return)
     XtResourceList	resources = (XtResourceList)NULL;
     Cardinal		num_resources;
     Boolean		fetched_resource_list = False;
-    static void		GetResources();
 
     if (max_count  == 0) {
 	*num_args_return = 0;
