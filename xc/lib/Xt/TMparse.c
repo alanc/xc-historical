@@ -1,6 +1,7 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: TMparse.c,v 1.63 88/08/31 11:44:08 swick Exp $";
-/* $oHeader: TMparse.c,v 1.2 88/08/18 15:51:46 asente Exp $ */
+static char rcsid[] =
+    "$XConsortium: TMparse.c,v 1.65 88/09/04 12:22:01 swick Exp $";
+/* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -1777,10 +1778,19 @@ void _XtTranslateInitialize()
     CompileNameValueTable( visibilityNotify );
     CompileNameValueTable( circulation );
     CompileNameValueTable( propertyChanged );
-     XtAddConverter(XtRString, XtRTranslationTable, 
+    _XtPopupInitialize();
+}
+
+_XtAddTMConverters(table)
+    ConverterTable table;
+{
+    XrmQuark q;
+     _XtTableAddConverter(table,
+	     q = XrmStringToRepresentation(XtRString), 
+	     XrmStringToRepresentation(XtRTranslationTable), 
  	    (XtConverter) _CompileTranslations, (XtConvertArgList) NULL, 0);
-     XtAddConverter(XtRString, XtRAcceleratorTable,
+     _XtTableAddConverter(table, q,
+	     XrmStringToRepresentation(XtRAcceleratorTable),
  	    (XtConverter) _CompileAccelerators,
             (XtConvertArgList) NULL, 0);
-    _XtPopupInitialize();
 }
