@@ -1,6 +1,6 @@
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.21 89/04/13 10:01:13 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.22 89/05/05 17:10:18 jim Exp $
  *
  * Icon Manager routines
  *
@@ -611,7 +611,6 @@ TwmWindow *tmp_win;
 
     if (ip->count == 0)
     {
-	XUnmapWindow(dpy, ip->w);
 	XUnmapWindow(dpy, ip->twm_win->frame);
     }
 
