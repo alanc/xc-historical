@@ -1,4 +1,4 @@
-/* $XConsortium: miWks.h,v 5.1 91/02/16 09:54:41 rws Exp $ */
+/* $XConsortium: miWks.h,v 5.2 92/10/15 16:13:27 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -30,11 +30,6 @@ SOFTWARE.
 #include "miLUT.h"
 #include "miInfo.h"
 #include "miPick.h"
-
-#ifdef MULTIBUFFER
-#define _MULTIBUF_SERVER_
-#include <X11/extensions/multibuf.h>
-#endif
 
 #ifndef MIWKS_H
 #define MIWKS_H
