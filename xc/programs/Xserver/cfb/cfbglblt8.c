@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.6 89/11/21 15:31:12 keith Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.7 90/01/31 12:31:34 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -31,6 +31,12 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include	"cfb.h"
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
+
+#define BOX_OVERLAP(box1, box2, xoffset, yoffset) \
+ 	((box1)->x1 <= ((int) (box2)->x2 + (xoffset)) && \
+ 	 ((int) (box2)->x1 + (xoffset)) <= (box1)->x2 && \
+	 (box1)->y1 <= ((int) (box2)->y2 + (yoffset)) && \
+ 	 ((int) (box2)->y1 + (yoffset)) <= (box1)->y2)
 
 #if PPW == 4
 
@@ -63,6 +69,8 @@ typedef unsigned long	*glyphPointer;
 
 #endif
 
+static void cfbPolyGlyphBlt8Clipped();
+
 void
 cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DrawablePtr pDrawable;
@@ -92,6 +100,8 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     BoxRec		bbox;		/* for clipping */
     int			widthDiff;
     int			w;
+    RegionPtr		clip;
+    BoxPtr		extents;
 #ifdef USE_LEFTBITS
     int			widthGlyph;
     unsigned long	widthMask;
@@ -111,13 +121,22 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     bbox.y1 = -pfi->maxbounds.metrics.ascent;
     bbox.y2 = pfi->maxbounds.metrics.descent;
 
-    bbox.x1 += x + pDrawable->x;
-    bbox.x2 += x + pDrawable->x;
-    bbox.y1 += y + pDrawable->y;
-    bbox.y2 += y + pDrawable->y;
+    clip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+    extents = &clip->extents;
 
-    switch ((*pGC->pScreen->RectIn)(
-                ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
+    x += pDrawable->x;
+    y += pDrawable->y;
+
+    /* check to make sure some of the text appears on the screen */
+    if (!BOX_OVERLAP (extents, &bbox, x, y))
+	return;
+
+    bbox.x1 += x;
+    bbox.x2 += x;
+    bbox.y1 += y;
+    bbox.y2 += y;
+
+    switch ((*pGC->pScreen->RectIn)(clip, &bbox))
     {
       case rgnPART:
 	cfbPolyGlyphBlt8Clipped(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
@@ -143,8 +162,6 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
-    x += pDrawable->x;
-    y += pDrawable->y;
     while (nglyph--)
     {
 	pci = *ppci++;
@@ -254,6 +271,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     }
 }
 
+static void
 cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DrawablePtr pDrawable;
     GCPtr	pGC;
@@ -311,8 +329,6 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
-    x += pDrawable->x;
-    y += pDrawable->y;
     maxAscent = pfi->maxbounds.metrics.ascent;
     maxDescent = pfi->maxbounds.metrics.descent;
 
