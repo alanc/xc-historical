@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.45 93/09/19 13:02:39 rws Exp $ */
+/* $XConsortium: x11perf.c,v 2.49 94/02/28 21:57:25 dpw Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 

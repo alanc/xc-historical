@@ -1,4 +1,4 @@
-/* $XConsortium: do_tests.c,v 2.31 93/09/20 21:21:45 rws Exp $ */
+/* $XConsortium: do_tests.c,v 2.32 94/02/28 21:57:25 dpw Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
