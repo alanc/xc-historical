@@ -1,4 +1,4 @@
-/* $XConsortium: Composite.h,v 1.13 94/01/06 18:15:18 kaleb Exp $ */
+/* $XConsortium: Composite.h,v 1.14 94/02/10 17:51:59 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -66,10 +66,10 @@ extern void XtUnmanageChild(
 typedef void (*XtDoChangeProc)(
 #if NeedFunctionPrototypes
     Widget		/* composite_parent */,
-    WidgetList		/* manage_children */,
-    Cardinal		/* num_manage_children */,
     WidgetList		/* unmanage_children */,
-    Cardinal		/* num_unmanage_children */,
+    Cardinal *		/* num_unmanage_children */,
+    WidgetList		/* manage_children */,
+    Cardinal *		/* num_manage_children */,
     XtPointer		/* client_data */
 #endif
 );
