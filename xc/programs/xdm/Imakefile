@@ -30,4 +30,10 @@ $(XDMDIR):
 
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),)
 SingleProgramTarget(xdmshell,$(OBJS2),,)
-InstallProgramWithFlags(xdmshell,$(BINDIR), )
+
+/*
+ * Don't install; let people read the instructions about putting in the
+ * abort-display() resource:
+ *
+ * InstallProgramWithFlags(xdmshell,$(BINDIR), )
+ */
