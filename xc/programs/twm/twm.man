@@ -622,10 +622,17 @@ no bitmap.
 This variable causes the pointer cursor to be warped to a window which
 is being deiconified.  The default is to not warp the cursor.
 .IP "\fBWindowFunction\fP \fIfunction\fP" 8
-This variable is the function to perform when a window is selected 
+This variable specifies the function to perform when a window is selected 
 from the \fBTwmWindows\fP menu.  If this variable is not set, a window
 selected from the \fBTwmWindows\fP menu will be deiconified (if it is
 an icon) and then raised to the top of the window stacking order.
+.IP "\fBXORValue\fP \fInumber\fP" 8
+This variable specifies the value to use when drawing temporary lines when
+resizing or moving a window.  The default is to use a value that causes 
+colors at the opposite end of the colormap to be displayed.  However, if your
+default colormap tends to have distinct colors next to one and another, setting
+this variable to 1 or 15 (make sure the low bit is set if you are using a 
+monochrome display) often yields nice results.
 .IP "\fBZoom\fP [ \fIcount\fP ]" 8
 This variable causes a series of outlines to be drawn when a window is
 iconified or deiconified.  The optional count is a number which will be
