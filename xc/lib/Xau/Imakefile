@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.20 93/09/04 18:05:27 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.21 93/09/26 15:41:00 gildea Exp $
 #define DoNormalLib NormalLibXau
 #define DoSharedLib SharedLibXau
 #define DoDebugLib DebugLibXau
@@ -10,20 +10,17 @@ XCOMM $XConsortium: Imakefile,v 1.20 93/09/04 18:05:27 rws Exp $
        LINTLIBS = $(LINTXLIB)
 
 #if HasKrb5
-K5ENCINC = k5encode.h
 K5ENCSRC = k5encode.c
 K5ENCOBJ = k5encode.o
 INCLUDES = Krb5Includes
 #else
-K5ENCINC =
 K5ENCSRC =
 K5ENCOBJ =
 INCLUDES =
 #endif
 
 HEADERS = \
-	Xauth.h \
-	$(K5ENCINC)
+	Xauth.h
 
 SRCS =	AuDispose.c AuFileName.c AuGetAddr.c AuGetBest.c AuLock.c \
 	AuRead.c AuUnlock.c AuWrite.c $(K5ENCSRC)
