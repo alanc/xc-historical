@@ -4925,6 +4925,7 @@ If the value of the index member is XT_LIST_NONE,
 .IN "XT_LIST_NONE"
 the string member is undefined,
 which indicates that no item is currently selected.
+.\"------------------------------------------------------------------------
 .NH 2
 Grip Widget
 .LP
@@ -5064,4 +5065,278 @@ and specify the class variable
 To destroy a Command button widget instance, use
 .PN XtDestroyWidget
 and specify the ID of the Grip widget.
+.\"------------------------------------------------------------------------
+.NH 2
+Template Widget - Creating A Custom Widget
+.LP
+.XS
+\*(SN Template Widget - Creating A Custom Widget
+.XE
+.IN "Template widget" "" "@DEF@"
+.LP
+Although the task of creating a new widget may at first appear a little
+daunting, there is a basic simple pattern that all widgets follow.  The
+Athena widget library contains three files that are intended to assist
+in writing a custom widget.
+.LP
+Reasons for wishing to write a custom widget include:
+.IP \(bu 5
+Convenient access to resource management procedures to obtain fonts,
+colors, etc., even if user customization is not desired.
+.IP \(bu 5
+Convenient access to user input dispatch and translation management procedures.
+.IP \(bu 5
+Access to callback mechanism for building higher-level application libraries.
+.IP \(bu 5
+Customizing the interface or behavior of an existing widget to suit a
+special application need.
+.IP \(bu 5
+Desire to allow user customization of resources such as fonts, colors,
+etc. or to allow convenient re-binding of keys and buttons to internal
+functions.
+.IP \(bu 5
+Converting a non-Toolkit application to use the Toolkit.
+.LP
+In each of these cases, the operation needed to create a new widget is
+to "subclass" an existing one.  If the desired semantics of the new
+widget are similar to an existing one, then the implementation of the
+existing widget should be examined to see how much work would be
+required to create a subclass of the existing widget that will then be
+able to share the existing class methods.  Much time will be saved in
+writing the new widget if an existing widget class Expose, Resize and/or
+GeometryManager methods can be shared by the subclass.
+.LP
+It is very often the case than an application will have a special need
+for a certain set of functions and that many copies of these functions
+will be needed.  For example, when converting an older application to use
+the Toolkit, it is often desireable to have a "Window Widget" class that
+might have the following semantics:
+.IP \(bu 5
+Allocate 2 drawing colors in addition to a background color.
+.IP \(bu 5
+Execute an application-supplied function to handle exposure events.
+.IP \(bu 5
+Execute an application-supplied function to handle user input events.
+.LP
+It is obvious that a completely general-purpose WindowWidgetClass could
+be constructed that would export all class methods as callbacks lists,
+but such a widget would be very large and would have to choose some
+arbitrary number of resources such as colors to allocate.  An application
+that used many instances of the general-purpose widget would therefore
+un-necessarily waste many resources.
+.LP
+.sp
+In this section, an outline will be given of the procedure to follow to
+construct a special-purpose widget to address the items listed above.
+The reader should refer to the appropriate sections of the \fI\*(xT\fP
+for complete details of the material outlined here.  Section 1.4 of
+the \fI\*(xI\fP should be read in conjunction with the following.
+.LP
+All Athena widgets have three separate files associated with them:
+.LP
+.IP \(bu 5
+A "public" header file containing declarations needed by
+applications programmers
+.IP \(bu 5
+A "private" header file containing additional declarations needed by the
+widget and any subclasses
+.IP \(bu 5
+A source code file containing the implementation of the widget
+.LP
+This separation of functions into three files is suggested for all
+widgets, but nothing in the Toolkit actually requires this format.  In
+particular, a private widget created for a single application may easily
+combine the "public" and "private" header files into a single file, or
+merge the contents into another application header file.  Similarly, the
+widget implementation can be merged into other application code.
+.LP
+.sp
+In the following example, the public header file
+.Pn < X11/Template.h >,
+the private header file
+.Pn < X11/TemplateP.h >
+and the source code file
+.Pn < X11/Template.c >
+will be modified to produce the "WindowWidget" described above.
+In each case, the files have been designed so that a global string
+replacement of ``Template'' with the name of your new widget, using
+the appropriate case, can be done.
+.LP
+The public header file contains declarations that will be required by any
+application module that needs to refer to the widget; whether to create
+an instance of the class, to perform an
+.PN XtSetValues
+operation, or to call a public routine implemented by the widget class.
+.LP
+The contents of the Template public header file are:
+.de CB
+.ps 9
+.nr PS 9
+.Ds 0
+.TA .5i 2i
+.ta .5i 2i
+..
+.de CE
+.De
+.ps 11
+.nr PS 11
+..
+.CB
+.so ../../lib/Xaw/Template.h
+.CE
+.LP
+.sp
+You will notice that most of this file is documentation.  The crucial
+parts are the last 8 lines where macros for any private resource names
+and classes are defined and where the widget class datatypes and class
+record pointer are declared.
+.LP
+For the "WindowWidget", we want 2 drawing colors and an
+\fBexposeCallback\fP callback list, so we need to add
+.LP
+.sp
+.CB
+#define XtNdrawingColor1	"drawingColor1"
+#define XtNdrawingColor2	"drawingColor2"
+#define XtNexposeCallback	"exposeCallback"
+.CE
+.LP
+The private header file contains the complete declaration of the class
+and instance structure for the widget and any additional private data
+that will be required by anticipated subclasses of the widget.
+Information in the private header file is normally hidden from the
+application and is designed to be accesses only by other public
+procedures; e.g.
+.PN XtSetValues .
+.LP
+The contents of the Template private header file are:
+.CB
+.so ../../lib/Xaw/TemplateP.h
+.CE
+.LP
+.sp
+The private header file includes the private header file of its
+superclass, thereby exposing the entire internal structure of the widget.
+It may not always be advantageous to do this; your own project
+development style will dictate the appropriate level of detail to expose
+in each module.
+.LP
+The "WindowWidget" needs to declare 2 fields in its instance structure to
+hold the drawing colors and a field for the expose and user input
+callback lists:
+.CB
+typedef struct {
+    /* resources */
+    Pixel color_1;
+    Pixel color_2;
+    XtCallbackList expose_callback;
+    XtCallbackList input_callback;
+    /* private state */
+    /* (none) */
+} WindowPart;
+.CE
+.LP
+.sp
+The source code file implements the widget class itself.  The most
+important part of this file is the declaration and initialization of the
+widget class record structure and the declaration of all resources and
+action routines added by the widget class.
+.LP
+The contents of the Template implementation file are:
+.CB
+.so ../../lib/Xaw/Template.c
+.CE
+.LP
+.sp
+The resource list for the "WindowWidget" might look like the following:
+.CB
+static XtResource resources[] = {
+#define offset(field) XtOffset(WindowWidget, window.field)
+    /* {name, class, type, size, offset, default_type, default_addr}, */
+    { XtNdrawingColor1, XtCPixel, XtRPixel, sizeof(Pixel),
+          offset(color_1), XtRString, XtDefaultForeground },
+    { XtNdrawingColor2, XtCPixel, XtRPixel, sizeof(Pixel),
+          offset(color_2), XtRString, XtDefaultForeground },
+    { XtNexposeCallback, XtCCallback, XtRCallback, sizeof(XtCallbackList),
+          offset(expose_callback), XtRCallback, NULL },
+    { XtNcallback, XtCCallback, XtRCallback, sizeof(XtCallbackList),
+          offset(input_callback), XtRCallback, NULL },
+#undef offset
+};
+.CE
+.LP
+The user input callback will be implemented by an action procedure which
+is declared as:
+.LP
+.CB
+static void InputAction(w, params, num_params)
+    Widget w;
+    String *params;
+    Cardinal *num_params;
+{
+    XtCallCallbacks(w, XtNcallback, NULL);
+}
+
+static XtActionsRec actions[] =
+{
+  /* {name, procedure}, */
+    {"input",        InputAction},
+};
+.CE
+.LP
+and the default input binding will be to execute the input callbacks on
+.PN KeyPress
+and
+.PN ButtonPress :
+.LP
+.CB
+static char translations[] =
+"<Key>:         input()      \n\
+ <BtnDown>:     input()      \
+";
+.CE
+.LP
+In the class record declaration and initialization, the only field that
+is different from the Template is the expose method:
+.CB
+static void Redisplay(w, event, region)
+    Widget w;
+    XEvent *event;
+    Region region;
+{
+    XtCallCallbacks(w, XtNexposeCallback, (caddr_t)region);
+}
+
+...
+
+    /* expose                   */      Redisplay,
+.CE
+.LP
+.sp
+The "WindowWidget" will also declare two public procedures to return the
+drawing colors, saving the application the effort of constructing an
+argument list for a call to
+.PN XtGetValues :
+.LP
+.CB
+Pixel WindowColor1(w)
+    Widget w;
+{
+    return ((WindowWidget)w)->window.color_1;
+}
+
+Pixel WindowColor2(w)
+    Widget w;
+{
+    return ((WindowWidget)w)->window.color_2;
+}
+.CE
+.LP
+The "WindowWidget" is now complete.  The application can retrieve the two
+drawing colors from the widget instance by calling either
+.PN XtGetValues ,
+or the \fBWindowColor\fP functions.  The actual window created for the
+"WindowWidget" is available by calling the
+.PN XtWindow
+function.
 .TC
