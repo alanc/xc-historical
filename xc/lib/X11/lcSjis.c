@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lcSjis.c,v 1.1 93/09/17 13:31:30 rws Exp $ */
 /****************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -44,28 +44,26 @@ OF THIS SOFTWARE.
 #define GR	0x80	/* begins right-side (non-ascii) region */
 #define GL	0x7f    /* ends left-side (ascii) region        */
 
-#ifndef       AIXV3
-typedef unsigned char   uchar;
-#endif
+typedef unsigned char   Uchar;
 
 /* Acceptable range for 2nd byte of SJIS multibyte char */
 #define VALID_MULTIBYTE(c) \
-			((0x40<=((uchar)c) && ((uchar)c)<=0x7e) \
-			|| (0x80<=((uchar)c) && ((uchar)c)<=0xfc))
+			((0x40<=((Uchar)c) && ((Uchar)c)<=0x7e) \
+			|| (0x80<=((Uchar)c) && ((Uchar)c)<=0xfc))
 
 #ifndef iskanji
-#define iskanji(c)	((0x81<=((uchar)c) && ((uchar)c)<=0x9f) \
-			|| (0xe0<=((uchar)c) && ((uchar)c)<=0xef))
+#define iskanji(c)	((0x81<=((Uchar)c) && ((Uchar)c)<=0x9f) \
+			|| (0xe0<=((Uchar)c) && ((Uchar)c)<=0xef))
 #endif /* !iskanji */
 
 #ifndef iskana
-#define iskana(c)	(0xa1<=((uchar)c) && ((uchar)c)<=0xdf)
+#define iskana(c)	(0xa1<=((Uchar)c) && ((Uchar)c)<=0xdf)
 #endif /* !iskana */
 
-#define	isuserdef(c)	(0xf0<=((uchar)c) && ((uchar)c)<=0xfc)
+#define	isuserdef(c)	(0xf0<=((Uchar)c) && ((Uchar)c)<=0xfc)
 
-#define isundef(c)	((0xfd<=((uchar)c) && ((uchar)c)<=0xff) \
-			|| ((uchar)c)==0x80 || ((uchar)c)==0xa0)
+#define isundef(c)	((0xfd<=((Uchar)c) && ((Uchar)c)<=0xff) \
+			|| ((Uchar)c)==0x80 || ((Uchar)c)==0xa0)
 
 #define isleftside(c)	(((c) & GR) ? 0 : 1)
 #define isrightside(c)	(!isleftside(c))
