@@ -298,6 +298,7 @@ static XtEventType LookupXtEventType(eventStr)
     for (i = 0; events[i].event != NULL; i++)
         if (events[i].signature == signature) return i;
 
+    Syntax("Unknown event type.");
     return i;
 }
 
@@ -361,7 +362,7 @@ static ActionProc InterpretAction(compiledActionTable, action)
 {
     ActionProc actionProc;
 
-    if (LookupTableSym(compiledActionTable, action, (Value *)&actionProc))
+    if (LookupTableSym(compiledActionTable, action, &actionProc))
 	return actionProc;
 
     return NULL;
@@ -630,9 +631,9 @@ static char * ParseQuotedStringEvent(str, eventP)
     char	c;
     char	s[2];
 
-    (void) LookupTableSym(modifiers, "Ctrl", (Value *)&ctrlMask);
-    (void) LookupTableSym(modifiers, "Meta", (Value *)&metaMask);
-    (void) LookupTableSym(modifiers, "Shift", (Value *)&shiftMask);
+    (void) LookupTableSym(modifiers, "Ctrl", &ctrlMask);
+    (void) LookupTableSym(modifiers, "Meta", &metaMask);
+    (void) LookupTableSym(modifiers, "Shift", &shiftMask);
 
     eventP->modifierMask = ctrlMask | metaMask | shiftMask;
 
