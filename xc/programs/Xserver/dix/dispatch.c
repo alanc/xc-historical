@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.40 88/02/03 19:37:50 rws Exp $ */
+/* $Header: dispatch.c,v 1.41 88/02/11 13:58:03 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2901,17 +2901,19 @@ ProcChangeHosts(client)
     REQUEST_AT_LEAST_SIZE(xChangeHostsReq);
 
     if(stuff->mode == HostInsert)
-	result = AddHost(client->index, (int)stuff->hostFamily,
+	result = AddHost(client, (int)stuff->hostFamily,
 			 stuff->hostLength, (pointer)&stuff[1]);
     else if (stuff->mode == HostDelete)
-	result = RemoveHost(client->index, (int)stuff->hostFamily, 
+	result = RemoveHost(client, (int)stuff->hostFamily, 
 			    stuff->hostLength, (pointer)&stuff[1]);  
     else
     {
 	client->errorValue = stuff->mode;
         return BadValue;
     }
-    return (result || client->noClientException);
+    if (!result)
+	result = client->noClientException;
+    return (result);
 }
 
 int
@@ -2942,6 +2944,7 @@ int
 ProcChangeAccessControl(client)
     register ClientPtr client;
 {
+    int result;
     REQUEST(xSetAccessControlReq);
 
     REQUEST_SIZE_MATCH(xSetAccessControlReq);
@@ -2950,8 +2953,10 @@ ProcChangeAccessControl(client)
 	client->errorValue = stuff->mode;
         return BadValue;
     }
-    ChangeAccessControl(client, stuff->mode == EnableAccess);
-    return (client->noClientException);
+    result = ChangeAccessControl(client, stuff->mode == EnableAccess);
+    if (!result)
+	result = client->noClientException;
+    return (result);
 }
 
 int
