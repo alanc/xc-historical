@@ -1,5 +1,5 @@
 /* 
- * $Header: xset.c,v 1.1 87/05/07 16:31:50 dkk Locked $ 
+ * $Header: xset.c,v 1.2 87/05/07 17:23:58 dkk Locked $ 
  * $Locker: dkk $ 
  */
 #include <X11/copyright.h>
@@ -7,7 +7,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.1 87/05/07 16:31:50 dkk Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.2 87/05/07 17:23:58 dkk Locked $";
 #endif
 
 #include <X11/X.h>      /*  Should be transplanted to X11/Xlibwm.h     %*/
@@ -46,6 +46,9 @@ char **argv;
 	int prefer_blank, allow_exp, timeout, interval;
 	int repeat = -1;
 	int dosaver = 0;
+	int blank, expose;
+	int dummy1, dummy2;
+	int discard = TRUE;
 	int pixels[512];
 	caddr_t colors[512];
 	int numpixels = 0;
@@ -117,22 +120,35 @@ char **argv;
 		} 
 		else if (strcmp(arg, "-led") == 0) {
 			values.led = 0;
-			value_mask |= (KBLed | KBLedMode);
+			values.led_mode = 0;
+			value_mask |= KBLedMode;
+			i++;
+
+		        arg = nextarg(i, argv);
+			if (atoi(arg) == 0)
+			         i++;
+			else if (isnumber(arg, 32) == 0) {
+			         values.led = atoi(arg);
+				 value_mask |= KBLed;
+				 i++;
+			}
 		} 
+
 		else if (strcmp(arg, "led") == 0) {
-		        values.led = ~0L;
-			value_mask |= (KBLed | KBLedMode);
+		        values.led = 0;
+			values.led_mode = ~0L;
+			value_mask |= KBLedMode;
 
 			arg = nextarg(i, argv);
 			if (strcmp(arg, "on") == 0) {
 				i++;
 			} 
 			else if (strcmp(arg, "off") == 0) {
-				values.led = 0;
+				values.led_mode = 0;
 				i++;
 			}
-			else if (isnumber(arg, 31) == 0) {
-			        values.led = 1L<<(atoi(arg));
+			else if (isnumber(arg, 32) == 0) {
+			        values.led = atoi(arg);
 			        i++;
 			}
 		}
@@ -159,16 +175,19 @@ char **argv;
  *			}
  *		} 
  %*/
+
 		else if (strcmp(arg, "s") == 0 || strcmp(arg, "saver") == 0 ||
 		    strcmp(arg, "v") == 0 || strcmp(arg, "video") == 0) {
 			timeout = 10;
 			interval = 60;
-			prefer_blank = *arg == 's' ? 1 : 0;
+			blank = (*arg == 's' ? DontPreferBlanking :
+				 PreferBlanking);
 			dosaver = TRUE;
 			if (i >= argc)
 				break;
 			arg = argv[i];
 			if (strcmp(arg, "default") == 0) {
+			        blank = DefaultBlanking;
 				i++;
 			} 
 			else if (*arg >= '0' && *arg <= '9') {
@@ -212,19 +231,20 @@ char **argv;
  *			colors[numpixels] = argv[i];
 			i++;
 			numpixels++;
- *		} 
- */
+		} 
+%*/
+
 		else if (index(arg, ':')) {
 			disp = arg;
 		} 
 		else
 			usage(argv[0]);
 	}
-	if (value_mask)
+	if (!value_mask && !repeat)
 		usage(argv[0]);
 
 	dpy = XOpenDisplay(disp);
-
+	
 	if (dpy == NULL) {
 		fprintf(stderr, "%s: Can't open display '%s'\n",
 		argv[0], XDisplayName(argc ? argv[1] : "\0"));
@@ -232,6 +252,19 @@ char **argv;
 	}
 
 	XChangeKeyboardControl(dpy, value_mask, &values);
+
+	XGetKeyboardControl(dpy, &values);
+
+	printf ("Display: %d \n", *dpy);
+	printf ("Key Click Percent: %d \n", values.key_click_percent);
+	printf ("Bell Percent: %d \n", values.bell_percent);
+	printf ("Bell Pitch (Hz): %d \n", values.bell_pitch);
+	printf ("Bell Duration (msec): %d \n", values.bell_duration);
+	printf ("LED: %d \n", values.led);
+	printf ("LED Mode: %d \n", values.led_mode);
+	printf ("Key: %d \n", values.key);
+	printf ("Auto Repeat: %d \n", values.auto_repeat_mode);
+
 /*
  *      OBSOLETE -- TO BE DELETED
  *	if (doclick) XKeyClickControl(click);
@@ -244,6 +277,7 @@ char **argv;
 	        XAutoRepeatOn(dpy);
 	else if (repeat == FALSE)
 		XAutoRepeatOff(dpy);
+
 /*
  *     OBSOLETE -- DELETE
  *	if (dobell) XFeepControl(bell);
@@ -254,12 +288,12 @@ char **argv;
  *  pre-xset values; so if they aren't specified in xset, they don't
  *  get changed.
  */
-	XGetScreenSaver(dpy, &timeout, &interval, &prefer_blank, &allow_exp);
+/*	XGetScreenSaver(dpy, dummy1, dummy2, &prefer_blank, &allow_exp); %%*/
 
 	if (dosaver) XSetScreenSaver(dpy, timeout, interval, 
 				     prefer_blank, allow_exp);
 
-	screen = DefaultScreen(dpy);
+/*	screen = DefaultScreen(dpy);
 	if (DisplayCells(dpy, screen) >= 2) {
 		while (--numpixels >= 0) {
 			def.pixel = pixels[numpixels];
@@ -269,7 +303,8 @@ char **argv;
 				fprintf(stderr, "%s: No such color\n", colors[numpixels]);
 		}
 	}
-	XSync(0);
+ %%*/
+	XSync(dpy, discard);
 	exit(0);
 }
 
