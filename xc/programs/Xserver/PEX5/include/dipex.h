@@ -1,4 +1,4 @@
-/* $XConsortium: dipex.h,v 5.1 91/02/16 09:57:56 rws Exp $ */
+/* $XConsortium: dipex.h,v 5.2 91/02/18 21:08:05 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -134,7 +134,7 @@ LOCAL_FLAG unsigned int ColourSpecSizes[];
     (DATA)->type = X_Reply; \
     (DATA)->sequenceNumber = (CONTEXT)->client->sequence; \
     if ((CONTEXT)->pexSwapReply) \
-	(CONTEXT)->pexSwapReply[(CONTEXT)->current_req->reqType]\
+	(CONTEXT)->pexSwapReply[(CONTEXT)->current_req->opcode]\
 		((CONTEXT), (PEXREQUEST), (DATA)); \
     (void) WriteToClient ((CONTEXT)->client, num_bytes, (char *)(DATA)); }
 
