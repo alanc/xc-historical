@@ -1,4 +1,4 @@
-/* $XConsortium: regions.h,v 1.3 94/02/04 10:00:46 gildea Exp $ */
+/* $XConsortium: regions.h,v 1.4 94/02/06 16:17:33 gildea Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -95,9 +95,17 @@ void t1_UnJumble();           /* sort the edges and reset the jumbled flag    */
    else if (x2 > R->edgexmax) R->edgexmax = x2; \
 }
  
- 
+#include <limits.h>
+#ifdef SHRT_MIN
+#define MINPEL SHRT_MIN
+#else
 #define MINPEL ((pel)(-1<<(8*sizeof(pel)-1)))  /* smallest value fitting in a pel */
+#endif
+#ifdef SHRT_MAX
+#define MAXPEL SHRT_MAX
+#else
 #define MAXPEL ((pel)((1<<(8*sizeof(pel)-1))-1))/* largest value fitting in a pel */
+#endif
  
 /*
 The "Unique"-type macro is different (unique?) for regions, because some
