@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.72 94/12/16 17:35:51 mor Exp mor $ */
+/* $XConsortium: xsm.c,v 1.73 94/12/27 17:46:04 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -1286,6 +1286,16 @@ XtInputId	*id;
     IceConn 	ice_conn;
     char	*connstr;
     IceAcceptStatus status;
+
+    if (shutdownInProgress)
+    {
+	/*
+	 * Don't accept new connections if we are in the middle
+	 * of a shutdown.
+	 */
+
+	return;
+    }
 
     ice_conn = IceAcceptConnection((IceListenObj) client_data, &status);
     if (! ice_conn) {
