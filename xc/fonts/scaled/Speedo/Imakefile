@@ -1,10 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.3 91/07/16 23:04:03 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 91/08/21 17:27:55 rws Exp $
 OBJS = font0648.spd font0649.spd font0709.spd font0710.spd \
 	font0419.spd font0582.spd font0583.spd font0611.spd
 
 FONTINSTDIR = $(FONTDIR)/Speedo
 
-MakeFontsDir()
+MakeFontsDir(NullParameter)
 
 InstallFonts($(FONTINSTDIR))
 InstallFontScale($(FONTINSTDIR))
