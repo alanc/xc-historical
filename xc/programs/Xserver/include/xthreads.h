@@ -28,13 +28,17 @@
  *
  ************************************************************************/
 
-/* $XConsortium: xthreads.h,v 1.4 94/01/11 20:54:55 rob Exp $ */
+/* $XConsortium: xthreads.h,v 1.5 94/01/11 20:59:44 rob Exp $ */
 
 #ifndef XTHREADS_H
 #define XTHREADS_H
 
 #ifdef XTHREADS
+#ifndef AIXV3
 #include "pthread.h"
+#else
+#include <dce/pthread.h>
+#endif /* !AIXV3 */
 
 /******************************
  * Default attributes
