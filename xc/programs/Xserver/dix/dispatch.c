@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.29 91/05/10 17:39:54 keith Exp $ */
+/* $XConsortium: dispatch.c,v 5.30 91/05/11 11:48:07 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2324,6 +2324,11 @@ ProcAllocColorCells           (client)
 	    client->errorValue = npixels;
 	    return (BadValue);
 	}
+	if (stuff->contiguous != xTrue && stuff->contiguous != xFalse)
+	{
+	    client->errorValue = stuff->contiguous;
+	    return (BadValue);
+	}
 	nmasks = stuff->planes;
 	length = ((long)npixels + (long)nmasks) * sizeof(Pixel);
 	ppixels = (Pixel *)ALLOCATE_LOCAL(length);
@@ -2378,6 +2383,11 @@ ProcAllocColorPlanes(client)
 	if (!npixels)
 	{
 	    client->errorValue = npixels;
+	    return (BadValue);
+	}
+	if (stuff->contiguous != xTrue && stuff->contiguous != xFalse)
+	{
+	    client->errorValue = stuff->contiguous;
 	    return (BadValue);
 	}
 	acpr.type = X_Reply;
