@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.78 93/09/07 20:03:30 rws Exp $
+ * $XConsortium: Xrm.c,v 1.79 93/09/07 21:33:22 rws Exp $
  */
 
 /***********************************************************
@@ -33,6 +33,9 @@ SOFTWARE.
 #include	<X11/Xresource.h>
 #include 	"XrmI.h"
 #include	"Xlcint.h"
+#ifdef XTHREADS
+#include	"locking.h"
+#endif
 
 #if __STDC__
 #define Const const
@@ -168,6 +171,9 @@ typedef struct _XrmHashBucketRec {
     NTable table;
     XPointer mbstate;
     XrmMethods methods;
+#ifdef XTHREADS
+    LockInfoRec linfo;
+#endif
 } XrmHashBucketRec;
 
 /* closure used in get/put resource */
@@ -293,14 +299,20 @@ void XrmInitialize()
 XrmDatabase XrmGetDatabase(display)
     Display *display;
 {
-    return display->db;
+    XrmDatabase retval;
+    LockDisplay(display);
+    retval = display->db;
+    UnlockDisplay(display);
+    return retval;
 }
 
 void XrmSetDatabase(display, database)
     Display *display;
     XrmDatabase database;
 {
+    LockDisplay(display);
     display->db = database;
+    UnlockDisplay(display);
 }
 
 #if NeedFunctionPrototypes
@@ -446,6 +458,10 @@ static XrmDatabase NewDatabase()
 
     db = (XrmDatabase) Xmalloc(sizeof(XrmHashBucketRec));
     if (db) {
+#ifdef XTHREADS
+	db->linfo.lock = xmutex_malloc();
+	xmutex_init(db->linfo.lock);
+#endif
 	db->table = (NTable)NULL;
 	db->methods = _XrmInitParseInfo(&db->mbstate);
 	if (!db->methods)
@@ -715,6 +731,8 @@ void XrmCombineDatabase(from, into, override)
     if (!*into) {
 	*into = from;
     } else if (from) {
+	LockMutex(&from->linfo);
+	LockMutex(&(*into)->linfo);
 	if (ftable = from->table) {
 	    prev = &(*into)->table;
 	    ttable = *prev;
@@ -746,7 +764,12 @@ void XrmCombineDatabase(from, into, override)
 	    }
 	}
 	(from->methods->destroy)(from->mbstate);
+#ifdef XTHREADS
+	xmutex_clear(from->linfo.lock);
+	xmutex_free(from->linfo.lock);
+#endif
 	Xfree((char *)from);
+	UnlockMutex(&(*into)->linfo);
     }
 }
 
@@ -953,7 +976,9 @@ void XrmQPutResource(pdb, bindings, quarks, type, value)
     XrmValuePtr		value;
 {
     if (!*pdb) *pdb = NewDatabase();
+    LockMutex(&(*pdb)->linfo);
     PutEntry(*pdb, bindings, quarks, type, value);
+    UnlockMutex(&(*pdb)->linfo);
 }
 
 #if NeedFunctionPrototypes
@@ -974,8 +999,10 @@ void XrmPutResource(pdb, specifier, type, value)
     XrmQuark	    quarks[MAXDBDEPTH+1];
 
     if (!*pdb) *pdb = NewDatabase();
+    LockMutex(&(*pdb)->linfo);
     XrmStringToBindingQuarkList(specifier, bindings, quarks);
     PutEntry(*pdb, bindings, quarks, XrmStringToQuark(type), value);
+    UnlockMutex(&(*pdb)->linfo);
 }
 
 #if NeedFunctionPrototypes
@@ -997,7 +1024,9 @@ void XrmQPutStringResource(pdb, bindings, quarks, str)
     if (!*pdb) *pdb = NewDatabase();
     value.addr = (XPointer) str;
     value.size = strlen(str)+1;
+    LockMutex(&(*pdb)->linfo);
     PutEntry(*pdb, bindings, quarks, XrmQString, &value);
+    UnlockMutex(&(*pdb)->linfo);
 }
 
 /*	Function Name: GetDatabase
@@ -1435,7 +1464,9 @@ void XrmPutStringResource(pdb, specifier, str)
     XrmStringToBindingQuarkList(specifier, bindings, quarks);
     value.addr = (XPointer) str;
     value.size = strlen(str)+1;
+    LockMutex(&(*pdb)->linfo);
     PutEntry(*pdb, bindings, quarks, XrmQString, &value);
+    UnlockMutex(&(*pdb)->linfo);
 }
 
 
@@ -1450,7 +1481,9 @@ void XrmPutLineResource(pdb, line)
 #endif
 {
     if (!*pdb) *pdb = NewDatabase();
+    LockMutex(&(*pdb)->linfo);
     GetDatabase(*pdb, line, (char *)NULL, False);
+    UnlockMutex(&(*pdb)->linfo);
 }
 
 #if NeedFunctionPrototypes
@@ -1464,7 +1497,9 @@ XrmDatabase XrmGetStringDatabase(data)
     XrmDatabase     db;
 
     db = NewDatabase();
+    LockMutex(&db->linfo);
     GetDatabase(db, data, (char *)NULL, True);
+    UnlockMutex(&db->linfo);
     return db;
 }
 
@@ -1548,7 +1583,9 @@ XrmDatabase XrmGetFileDatabase(filename)
 	return (XrmDatabase)NULL;
 
     db = NewDatabase();
+    LockMutex(&db->linfo);
     GetDatabase(db, str, filename, True);
+    UnlockMutex(&db->linfo);
     Xfree(str);
     return db;
 }
@@ -1576,7 +1613,9 @@ Status XrmCombineFileDatabase(filename, target, override)
 	    *target = db = NewDatabase();
     } else
 	db = NewDatabase();
+    LockMutex(&db->linfo);
     GetDatabase(db, str, filename, True);
+    UnlockMutex(&db->linfo);
     Xfree(str);
     if (!override)
 	XrmCombineDatabase(db, target, False);
@@ -1837,9 +1876,11 @@ Bool XrmEnumerateDatabase(db, names, classes, mode, proc, closure)
     XrmQuark	quarks[MAXDBDEPTH+2];
     register NTable table;
     EClosureRec	eclosure;
+    Bool retval = False;
 
     if (!db)
 	return False;
+    LockMutex(&db->linfo);
     eclosure.db = db;
     eclosure.proc = proc;
     eclosure.closure = closure;
@@ -1851,11 +1892,12 @@ Bool XrmEnumerateDatabase(db, names, classes, mode, proc, closure)
 	table = table->next;
     if (table) {
 	if (!table->leaf)
-	    return EnumNTable(table, names, classes, 0, &eclosure);
+	    retval = EnumNTable(table, names, classes, 0, &eclosure);
 	else
-	    return EnumLTable((LTable)table, names, classes, 0, &eclosure);
+	    retval = EnumLTable((LTable)table, names, classes, 0, &eclosure);
     }
-    return False;
+    UnlockMutex(&db->linfo);
+    return retval;
 }
 
 static void PrintBindingQuarkList(bindings, quarks, stream)
@@ -2134,21 +2176,30 @@ Bool XrmQGetSearchList(db, names, classes, searchList, listLength)
     closure.idx = -1;
     closure.limit = listLength - 2;
     if (db) {
+	LockMutex(&db->linfo);
 	table = db->table;
 	if (*names) {
 	    if (table && !table->leaf) {
-		if (SearchNEntry(table, names, classes, &closure))
+		if (SearchNEntry(table, names, classes, &closure)) {
+		    UnlockMutex(&db->linfo);
 		    return False;
+		}
 	    } else if (table && table->hasloose &&
 		       AppendLooseLEntry((LTable)table, names, classes,
-					 &closure))
+					 &closure)) {
+		UnlockMutex(&db->linfo);
 		return False;
+	    }
 	} else {
 	    if (table && !table->leaf)
 		table = table->next;
-	    if (table && AppendLEntry((LTable)table, names, classes, &closure))
+	    if (table && 
+		AppendLEntry((LTable)table, names, classes, &closure)) {
+		UnlockMutex(&db->linfo);
 		return False;
+	    }
 	}
+	UnlockMutex(&db->linfo);
     }
     closure.list[closure.idx + 1] = (LTable)NULL;
     return True;
@@ -2399,22 +2450,30 @@ Bool XrmQGetResource(db, names, classes, pType, pValue)
     VClosureRec closure;
 
     if (db && *names) {
+	LockMutex(&db->linfo);
 	closure.type = pType;
 	closure.value = pValue;
 	table = db->table;
 	if (names[1]) {
 	    if (table && !table->leaf) {
-		if (GetNEntry(table, names, classes, &closure))
+		if (GetNEntry(table, names, classes, &closure)) {
+		    UnlockMutex(&db->linfo);
 		    return True;
+		}
 	    } else if (table && table->hasloose &&
-		       GetLooseVEntry((LTable)table, names, classes, &closure))
+		    GetLooseVEntry((LTable)table, names, classes, &closure)) {
+		UnlockMutex (&db->linfo);
 		return True;
+	    }
 	} else {
 	    if (table && !table->leaf)
 		table = table->next;
-	    if (table && GetVEntry((LTable)table, names, classes, &closure))
+	    if (table && GetVEntry((LTable)table, names, classes, &closure)) {
+		UnlockMutex(&db->linfo);
 		return True;
+	    }
 	}
+	UnlockMutex(&db->linfo);
     }
     *pType = NULLQUARK;
     pValue->addr = (XPointer)NULL;
@@ -2493,7 +2552,11 @@ static void DestroyNTable(table)
 char *XrmLocaleOfDatabase(db)
     XrmDatabase db;
 {
-    return (*db->methods->lcname)(db->mbstate);
+    char* retval;
+    LockMutex(&db->linfo);
+    retval = (*db->methods->lcname)(db->mbstate);
+    UnlockMutex(&db->linfo);
+    return retval;
 }
 
 void XrmDestroyDatabase(db)
@@ -2502,6 +2565,7 @@ void XrmDestroyDatabase(db)
     register NTable table, next;
 
     if (db) {
+	LockMutex(&db->linfo);
 	for (next = db->table; table = next; ) {
 	    next = table->next;
 	    if (table->leaf)
@@ -2509,6 +2573,10 @@ void XrmDestroyDatabase(db)
 	    else
 		DestroyNTable(table);
 	}
+#ifdef XTHREADS
+	xmutex_clear(db->linfo.lock);
+	xmutex_free(db->linfo.lock);
+#endif
 	(*db->methods->destroy)(db->mbstate);
 	Xfree((char *)db);
     }
