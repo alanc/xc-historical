@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.24 90/04/03 16:17:53 swick Exp $ */
+/* $XConsortium: SelectionI.h,v 1.25 90/08/22 14:13:49 swick Exp $ */
 /* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -76,6 +76,8 @@ typedef struct _SelectRec {
     PropList prop_list;
     Request req;			/* state for local non-incr xfer */
     Boolean incremental;
+    Boolean is_active;
+    Boolean free_when_done;
 } SelectRec;
 
 typedef struct {

@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.49 90/07/27 13:56:53 swick Exp $ */
+/* $XConsortium: Selection.c,v 1.50 90/08/22 14:19:56 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -197,25 +197,35 @@ Atom target;
 }
 
 
+static XContext selectContext = 0;
+
+static Select NewContext(dpy, selection)
+Display *dpy;
+Atom selection;
+{
+    /* assert(selectContext != 0) */
+    Select ctx = XtNew(SelectRec);
+    ctx->dpy = dpy;
+    ctx->selection = selection;
+    ctx->widget = NULL;
+    ctx->prop_list = GetPropList(dpy);
+    ctx->is_active = FALSE;
+    ctx->free_when_done = FALSE;
+    (void)XSaveContext(dpy, (Window)selection, selectContext, (caddr_t)ctx);
+    return ctx;
+}
 
 static Select FindCtx(dpy, selection)
 Display *dpy;
 Atom selection;
 {
     Select ctx;
-    static XContext selectContext = 0;
 
     if (selectContext == 0)
 	selectContext = XUniqueContext();
-    if (XFindContext(dpy, (Window)selection, selectContext, (caddr_t *)&ctx)) {
-	PropList sarray = GetPropList(dpy);
-	ctx = XtNew(SelectRec);
-	ctx->dpy = dpy;
-	ctx->selection = selection;
-	ctx->widget = NULL;
-	ctx->prop_list = sarray;
-	(void)XSaveContext(dpy, (Window)selection, selectContext, (caddr_t)ctx);
-    }
+    if (XFindContext(dpy, (Window)selection, selectContext, (caddr_t *)&ctx))
+	ctx = NewContext(dpy, selection);
+
     return ctx;
 }
 
@@ -225,8 +235,12 @@ Widget widget;
 XtPointer closure, data;
 {
     Select ctx = (Select) closure;
-    if (ctx->widget == widget)
-	ctx->widget = NULL;
+    if (ctx->widget == widget) {
+	if (ctx->free_when_done)
+	    XtFree((char*)ctx);
+	else
+	    ctx->widget = NULL;
+    }
 }
 
 /* Selection Owner code */
@@ -351,6 +365,10 @@ XtIntervalId   *id;
     RemoveHandler(ctx->dpy, req->requestor, req->widget,
 	  	(EventMask) PropertyChangeMask, HandlePropertyGone, closure); 
     XtFree((char*)req);
+    if (ctx->free_when_done)
+	XtFree((char*)ctx);
+    else
+	ctx->is_active = FALSE;
 }
 
 static void SendIncrement(incr)
@@ -410,6 +428,10 @@ XEvent *ev;
 	RemoveHandler(event->display, event->window, widget,
 	  	(EventMask) PropertyChangeMask, HandlePropertyGone, closure); 
 	XtFree((char*)req);
+	if (ctx->free_when_done)
+	    XtFree((char*)ctx);
+	else
+	    ctx->is_active = FALSE;
     } else  { /* is this part of an incremental transfer? */ 
 	if (ctx->incremental) {
 	     if (req->bytelength == 0)
@@ -528,6 +550,7 @@ Boolean *incremental;
 	     PrepareIncremental(req, widget, event->requestor, property,
 				target, targetType, value, length, format);
 	     *incremental = True;
+	     ctx->is_active = TRUE;
 	     return(TRUE);
 	}
 	ctx->req = req;
@@ -556,6 +579,7 @@ Boolean *incremental;
 	          AddHandler(ctx->dpy, event->requestor,
 			     widget, (EventMask) PropertyChangeMask, 
 			     HandlePropertyGone, (XtPointer)req);
+		  ctx->is_active = TRUE;
         }
 	XChangeProperty(ctx->dpy, event->requestor, property, 
 			targetType, format, PropModeReplace,
@@ -570,6 +594,7 @@ Boolean *incremental;
 	 PrepareIncremental(req, widget, event->requestor, property,
 			    target, targetType, value, length, format);
 	 *incremental = True;
+	 ctx->is_active = TRUE;
     }
     return(TRUE);
 }
@@ -694,7 +719,12 @@ Boolean incremental;
 	    XtAddCallback(widget, XtNdestroyCallback,
 			  WidgetDestroyed, (XtPointer)ctx);
 
-	    if (ctx->widget) {
+	    if (ctx->is_active) {
+		oldctx = *ctx;
+		old_context = TRUE;
+		ctx->free_when_done = TRUE;
+		ctx = NewContext(XtDisplay(widget), selection);
+	    } else if (ctx->widget) {
 		oldctx = *ctx;
 		old_context = TRUE;
 	    }
@@ -780,6 +810,7 @@ static Boolean IsINCRtype(info, window, prop)
     return (type == info->ctx->prop_list->incremental_atom);
 }
 
+/*ARGSUSED*/
 static void ReqCleanup(widget, closure, ev, cont)
 Widget widget;
 XtPointer closure;
@@ -1205,6 +1236,7 @@ Boolean incremental;
 	       HandleNone(widget, callback, closure, selection);
 	   }
 	   else {
+	        ctx->is_active = TRUE;
 		if (incremental) {
 		  Boolean allSent = FALSE;
 	          while (!allSent) {
@@ -1254,12 +1286,17 @@ Boolean incremental;
 				(ctx->widget, &selection, &target, 
 				 (XtRequestId*)&req, ctx->owner_closure);
 	      else XtFree((char*)value);
+	      if (ctx->free_when_done)
+		  XtFree((char*)ctx);
+	      else
+		  ctx->is_active = FALSE;
 	  }
 	} else { /* not incremental owner */
 	  if (!(*ctx->convert)(ctx->widget, &selection, &target, 
 			     &resulttype, &value, &length, &format)) {
 	    HandleNone(widget, callback, closure, selection);
 	  } else {
+	      ctx->is_active = TRUE;
 	      if (ctx->notify && (value != NULL)) {
                 int bytelength = BYTELENGTH(length,format);
 	        /* both sides think they own this storage; better copy */
@@ -1272,6 +1309,10 @@ Boolean incremental;
 			  value, &length, &format);
 	      if (ctx->notify)
 	         (*ctx->notify)(ctx->widget, &selection, &target);
+	      if (ctx->free_when_done)
+		  XtFree((char*)ctx);
+	      else
+		  ctx->is_active = FALSE;
 	  }
       }
 }
