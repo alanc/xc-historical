@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: globals.h,v 5.1 91/02/16 10:07:37 rws Exp $ */
 
 /*
  */
@@ -143,7 +143,7 @@ VGLOBAL Wk_info     wk_info;
 #endif /* MAIN_FUNCTION */
 
 #ifdef USING_PHIGS
-VGLOBAL user_background;
+VGLOBAL int user_background;
 VGLOBAL int Argc;
 VGLOBAL char **Argv;
 
