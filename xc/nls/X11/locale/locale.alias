@@ -1,4 +1,4 @@
-#	$XConsortium: locale.alias,v 1.3 94/01/22 14:04:19 rws Exp $
+#	$XConsortium: locale.alias,v 1.4 94/03/23 10:29:15 kaleb Exp $
 #
 #	This file contains alias name of locale.
 #	Each alias name is described within one line.
@@ -6,9 +6,11 @@
 #	the second word is full locale name.
 #
 POSIX		C
-C.en		en_US.ISO8859-1
+POSIX-UTF2	C
+C.en		C
 Cextend		en_US.ISO8859-1
 Cextend.en	en_US.ISO8859-1
+English_United-States.437	C
 #
 ar		ar_AA.ISO8859-6
 ar_AA		ar_AA.ISO8859-6
@@ -126,7 +128,6 @@ zh_CN		zh_CN.eucCN
 zh_CN.EUC	zh_CN.eucCN
 zh_TW		zh_TW.eucTW
 zh_TW.EUC	zh_TW.eucTW
-#
 arabic		ar_AA.ISO8859-6
 bulgarian	bg_BG.ISO8859-5
 chinese-s	zh_CN.eucCN
@@ -143,9 +144,11 @@ hebrew		iw_IL.ISO8859-8
 hungarian	hu_HU.ISO8859-2
 icelandic	is_IS.ISO8859-1
 iso_8859_1	en_US.ISO8859-1
+ISO8859-1	en_US.ISO8859-1
 italian		it_CH.ISO8859-1
 japan		ja_JP.eucJP
 japanese	ja_JP.eucJP
+Japanese-EUC	ja_JP.eucJP
 korean		ko_KR.eucKR
 norwegian	no_NO.ISO8859-1
 polish		pl_PL.ISO8859-2
