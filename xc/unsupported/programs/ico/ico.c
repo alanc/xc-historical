@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.29 89/12/14 09:52:11 rws Exp $ */
+/* $XConsortium: ico.c,v 1.30 89/12/19 13:45:17 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -89,7 +89,6 @@ DBufPair dbpair;
 
 XColor bgcolor,fgcolor;
 
-extern GC XCreateGC();
 extern long time();
 
 #ifdef SYSV

@@ -475,7 +475,6 @@ register Display	*dpy;
 	 * return value from XInitExtension
 	 */
 	XExtCodes		*ret;
-	XExtCodes		*XInitExtension();
 
 	/*
 	 * attempt to initialize the extension
