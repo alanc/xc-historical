@@ -4,6 +4,9 @@
 #define DoProfileLib ProfileOldLibX
 #include <Library.tmpl>
 
+#if Malloc0ReturnsNull
+        DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
        INCLUDES = -I$(INCLUDESRC) -I$(XLIBSRC)
    INSTALLFLAGS = $(INSTINCFLAGS)
            SRCS = *.c

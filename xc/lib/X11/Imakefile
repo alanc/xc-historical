@@ -4,6 +4,9 @@
 #define DoProfileLib ProfileLibX
 #include <Library.tmpl>
 
+#if Malloc0ReturnsNull
+        DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
 #if HasDESLibrary
         DESDEFS = -DHASDES
         DESOBJS = Encrypt.o Crypt.o
