@@ -1,4 +1,4 @@
-/* $XConsortium: RectObj.c,v 1.12 91/01/06 13:32:38 rws Exp $ */
+/* $XConsortium: RectObj.c,v 1.13 91/02/17 14:07:56 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,6 +32,8 @@ SOFTWARE.
  * Rectangle Object Resources
  *
  ******************************************************************/
+
+static void XtCopyAncestorSensitive();
 
 static XtResource resources[] = {
 
@@ -97,6 +99,20 @@ externaldef(rectobjclassrec) RectObjClassRec rectObjClassRec = {
 
 externaldef(rectObjClass)
 WidgetClass rectObjClass = (WidgetClass)&rectObjClassRec;
+
+/*ARGSUSED*/
+static void XtCopyAncestorSensitive(widget, offset, value)
+    Widget      widget;
+    int		offset;
+    XrmValue    *value;
+{
+    static Boolean  sensitive;
+    Widget parent = widget->core.parent;
+
+    sensitive = (parent->core.ancestor_sensitive & parent->core.sensitive);
+    value->addr = (XPointer)(&sensitive);
+}
+
 
 /*
  * Start of rectangle object methods
