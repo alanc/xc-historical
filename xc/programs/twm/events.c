@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.106 89/11/14 13:22:22 jim Exp $
+ * $XConsortium: events.c,v 1.107 89/11/14 15:02:36 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.106 89/11/14 13:22:22 jim Exp $";
+"$XConsortium: events.c,v 1.107 89/11/14 15:02:36 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -684,7 +684,10 @@ HandlePropertyNotify()
 	break;
 
     case XA_WM_NORMAL_HINTS:
-	(void) XGetWMNormalHints (dpy, Tmp_win->w, &Tmp_win->hints, &supplied);
+	if (XGetWMNormalHints (dpy, Tmp_win->w, &Tmp_win->hints, &supplied) &&
+	    !(supplied & PWinGravity)) {
+	    SimulateWinGravity (Tmp_win);
+	}
 	break;
 
     default:

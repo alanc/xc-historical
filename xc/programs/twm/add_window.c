@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.107 89/11/13 18:11:06 jim Exp $
+ * $XConsortium: add_window.c,v 1.108 89/11/14 15:03:10 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.107 89/11/13 18:11:06 jim Exp $";
+"$XConsortium: add_window.c,v 1.108 89/11/14 15:03:10 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -278,6 +278,7 @@ IconMgr *iconp;
 	tmp_win->wmhints->flags |= StateHint;
     }
 
+    if (!(supplied & PWinGravity)) SimulateWinGravity (tmp_win);
     GetGravityOffsets (tmp_win, &gravx, &gravy);
 
 
@@ -1418,4 +1419,20 @@ static void InsertResizeAndIconify ()
 	fprintf (stderr, "twm:  unable to add resize button\n");
     }
     return;
+}
+
+
+SimulateWinGravity (tmp)
+    TwmWindow *tmp;
+{
+    if (tmp->hints.flags & USPosition) {
+	static int gravs[] = { SouthEastGravity, SouthWestGravity,
+			       NorthEastGravity, NorthWestGravity };
+	int right =  tmp->attr.x + tmp->attr.width + 2 * tmp->old_bw;
+	int bottom = tmp->attr.y + tmp->attr.height + 2 * tmp->old_bw;
+	tmp->hints.win_gravity = 
+	  gravs[((Scr->MyDisplayHeight - bottom < tmp->title_height) ? 0 : 2) |
+		((Scr->MyDisplayWidth - right   < tmp->title_height) ? 0 : 1)];
+	tmp->hints.flags |= PWinGravity;
+    }
 }
