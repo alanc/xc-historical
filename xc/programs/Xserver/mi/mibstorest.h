@@ -4,7 +4,7 @@
  * internal structure definitions for mi backing store
  */
 
-/* $XConsortium: mibstorest.h,v 5.6 90/03/12 14:03:35 rws Exp $ */
+/* $XConsortium: mibstorest.h,v 5.7 90/06/12 17:46:12 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -60,7 +60,8 @@ typedef struct {
 #define StatusNoPixmap	1	/* pixmap has not been created */
 #define StatusVirtual	2	/* pixmap is virtual, tiled with background */
 #define StatusVDirty	3	/* pixmap is virtual, visiblt has contents */
-#define StatusContents	4	/* pixmap is created, has valid contents */
+#define StatusBadAlloc	4	/* pixmap create failed, do not try again */
+#define StatusContents	5	/* pixmap is created, has valid contents */
 
 typedef struct {
     /*
