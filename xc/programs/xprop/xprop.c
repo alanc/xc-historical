@@ -1,4 +1,4 @@
-/* $XConsortium: xprop.c,v 1.36 91/05/04 19:42:29 rws Exp $*/
+/* $XConsortium: xprop.c,v 1.37 91/05/12 18:23:07 rws Exp $*/
 /*
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -249,7 +249,9 @@ typedef struct _propertyRec {
 \t\tgreen-mult: $4\n\
 \t\tblue-max: $5\n\
 \t\tblue-mult: $6\n\
-\t\tbase-pixel: $7\n"
+\t\tbase-pixel: $7\n\
+\t\tvisual id #: $8\n\
+\t\tkill id #: $9\n"
 
 #define WM_HINTS_DFORMAT	":\n\
 ?m0(\t\tClient accepts input or input focus: $1\n)\
@@ -313,7 +315,7 @@ propertyRec windowPropTable[] = {
     {"PIXMAP",		XA_PIXMAP,	 "32x",	      ": pixmap id # $0\n" },
     {"POINT",		XA_POINT,	 "16ii",      " = $0, $1\n" },
     {"RECTANGLE",	XA_RECTANGLE,	 "16iicc",    RECTANGLE_DFORMAT },
-    {"RGB_COLOR_MAP",	XA_RGB_COLOR_MAP,"32xccccccc",RGB_COLOR_MAP_DFORMAT},
+    {"RGB_COLOR_MAP",	XA_RGB_COLOR_MAP,"32xcccccccxx",RGB_COLOR_MAP_DFORMAT},
     {"STRING",		XA_STRING,	 "8s",	      0 },
     {"WINDOW",		XA_WINDOW,	 "32x",	      ": window id # $0\n" },
     {"VISUALID",	XA_VISUALID,	 "32x",	      ": visual id # $0\n" },
