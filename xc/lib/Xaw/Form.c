@@ -1,4 +1,4 @@
-/* $XConsortium: Form.c,v 1.46 91/04/01 15:16:31 dave Exp $ */
+/* $XConsortium: Form.c,v 1.47 91/05/02 16:19:26 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -191,7 +191,7 @@ static void _CvtStringToEdgeType(args, num_args, fromVal, toVal)
 static void ClassInitialize()
 {
     static XtConvertArgRec parentCvtArgs[] = {
-	{XtBaseOffset, (caddr_t)XtOffsetOf(WidgetRec, core.parent),
+	{XtBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.parent),
 	     sizeof(Widget)}
     };
     XawInitializeWidgetSet();
@@ -202,8 +202,9 @@ static void ClassInitialize()
     XtQRubber      = XrmPermStringToQuark("rubber");
 
     XtAddConverter( XtRString, XtREdgeType, _CvtStringToEdgeType, NULL, 0 );
-    XtAddConverter( XtRString, XtRWidget, XmuCvtStringToWidget,
-		    parentCvtArgs, XtNumber(parentCvtArgs) );
+    XtSetTypeConverter (XtRString, XtRWidget, XmuNewCvtStringToWidget,
+			parentCvtArgs, XtNumber(parentCvtArgs), XtCacheNone,
+			NULL);
 }
 
 static void ClassPartInitialize(class)
