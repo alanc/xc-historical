@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.203 93/12/27 18:07:25 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.204 94/01/11 12:35:05 mor Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -34,6 +34,7 @@ without express or implied warranty.
 
 /* these pointers get initialized by XInitThreads */
 void (*_XCreateMutex_fn)() = NULL;
+void (*_XFreeMutex_fn)() = NULL;
 void (*_XLockMutex_fn)() = NULL;
 void (*_XUnlockMutex_fn)() = NULL;
 xthread_t (*_Xthread_self_fn)() = NULL;
