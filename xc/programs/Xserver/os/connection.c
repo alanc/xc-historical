@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.146 92/06/11 10:38:45 rws Exp $ */
+/* $XConsortium: connection.c,v 1.147 92/08/10 17:46:55 eswu Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -138,6 +138,7 @@ static int SavedClientsWithInput[mskcnt];
 int GrabInProgress = 0;
 
 int ConnectionTranslation[MAXSOCKS];
+extern int auditTrailLevel;
 extern ClientPtr NextAvailableClient();
 
 extern SIGVAL AutoResetServer();
@@ -504,6 +505,52 @@ ResetWellKnownSockets ()
 #endif
 }
 
+static void
+AuthAudit (client, letin, saddr, len, proto_n, auth_proto)
+    int client;
+    Bool letin;
+    struct sockaddr *saddr;
+    int len;
+    unsigned short proto_n;
+    char *auth_proto;
+{
+    char addr[128];
+
+    if (!len)
+        strcpy(addr, "local host");
+    else
+	switch (saddr->sa_family)
+	{
+	case AF_UNSPEC:
+#ifdef UNIXCONN
+	case AF_UNIX:
+#endif
+	    strcpy(addr, "local host");
+	    break;
+#ifdef TCPCONN
+	case AF_INET:
+	    sprintf(addr, "IP %s port %d",
+		    inet_ntoa(((struct sockaddr_in *) saddr)->sin_addr),
+		    ((struct sockaddr_in *) saddr)->sin_port);
+	    break;
+#endif
+#ifdef DNETCONN
+	case AF_DECnet:
+	    sprintf(addr, "DN %s",
+		    dnet_ntoa(&((struct sockaddr_dn *) saddr)->sdn_add));
+	    break;
+#endif
+	default:
+	    strcpy(addr, "unknown address");
+	}
+    if (letin)
+	AuditF("client %d connected from %s\n", client, addr);
+    else
+	AuditF("client %d rejected from %s\n", client, addr);
+    if (proto_n)
+	AuditF("  Auth name: %.*s\n", proto_n, auth_proto);
+}
+
 /*****************************************************************
  * ClientAuthorized
  *
@@ -549,15 +596,30 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
 				  string_n, auth_string);
 
     priv = (OsCommPtr)client->osPrivate;
-    if (auth_id == (XID) ~0L && 
-   	getpeername (priv->fd, &from.sa, &fromlen) != -1 &&
-        !InvalidHost (&from.sa, fromlen))
-    {
-	auth_id = (XID) 0;
-    }
-
     if (auth_id == (XID) ~0L)
-	return "Client is not authorized to connect to Server";
+    {
+	if (getpeername (priv->fd, &from.sa, &fromlen) != -1)
+	{
+	    if (InvalidHost (&from.sa, fromlen))
+		AuthAudit(client->index, FALSE, &from.sa, fromlen,
+			  proto_n, auth_proto);
+	    else
+	    {
+		auth_id = (XID) 0;
+		if (auditTrailLevel > 1)
+		    AuthAudit(client->index, TRUE, &from.sa, fromlen,
+			      proto_n, auth_proto);
+	    }
+	}
+	if (auth_id == (XID) ~0L)
+	    return "Client is not authorized to connect to Server";
+    }
+    else if (auditTrailLevel > 1)
+    {
+	if (getpeername (priv->fd, &from.sa, &fromlen) != -1)
+	    AuthAudit(client->index, TRUE, &from.sa, fromlen,
+		      proto_n, auth_proto);
+    }
 
     priv->auth_id = auth_id;
     priv->conn_time = 0;
@@ -844,6 +906,8 @@ CloseDownConnection(client)
 #endif
     CloseDownFileDescriptor(oc);
     client->osPrivate = (pointer)NULL;
+    if (auditTrailLevel > 1)
+	AuditF("client %d disconnected\n", client->index);
 }
 
 
