@@ -1,4 +1,4 @@
-/* $XConsortium: lbx.h,v 1.3 94/02/20 11:13:39 dpw Exp $ */
+/* $XConsortium: gfx.c,v 1.2 94/02/21 08:04:30 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
- * $NCDId: @(#)gfx.c,v 1.1 1994/02/09 19:20:53 lemke Exp $
+ * $NCDId: @(#)gfx.c,v 1.3 1994/03/24 17:54:44 lemke Exp $
  */
 /*
  * graphics acceleration
@@ -110,6 +110,7 @@ reencode_poly(client, lbxreq, reencode_rtn)
     return Success;
 }
 
+/* ARGSUSED */
 static int
 reencode_points_origin(client, in, out, count)
     ClientPtr   client;
@@ -134,6 +135,7 @@ reencode_points_origin(client, in, out, count)
     return out - start_out;
 }
 
+/* ARGSUSED */
 static int
 reencode_points_previous(client, in, out, count)
     ClientPtr   client;
@@ -141,8 +143,6 @@ reencode_points_previous(client, in, out, count)
     register char *out;
     int         count;
 {
-    register short coord;
-    register short diff;
     int         i;
     char       *start_out = out;
 
@@ -153,6 +153,7 @@ reencode_points_previous(client, in, out, count)
     return out - start_out;
 }
 
+/* ARGSUSED */
 static int
 reencode_segment(client, in, out, count)
     ClientPtr   client;
@@ -185,6 +186,7 @@ reencode_segment(client, in, out, count)
     return out - start_out;
 }
 
+/* ARGSUSED */
 static int
 reencode_rectangle(client, in, out, count)
     ClientPtr   client;
@@ -215,6 +217,7 @@ reencode_rectangle(client, in, out, count)
     return out - start_out;
 }
 
+/* ARGSUSED */
 static int
 reencode_arc(client, in, out, count)
     ClientPtr   client;

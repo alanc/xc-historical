@@ -1,5 +1,5 @@
 XCOMM $NCDId$: Imakefile,v 1.1 94/02/17 15:26:09 dpw Exp $
-XCOMM $XConsortium: Imakefile,v 1.1 94/02/17 15:26:09 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 94/02/20 11:14:35 dpw Exp $
 
 #include <Server.tmpl>
 
@@ -10,12 +10,12 @@ INCLUDES = -I$(TOP)/include -I$(SERVERSRC)/include -I$(EXTINCSRC) \
 		utils.c stubs.c tables.c init.c \
 		cache.c colormap.c lbxfuncs.c reqtype.c \
                 resource.c tags.c atomcache.c gfx.c lbxutil.c \
-                props.c
+                props.c swapreq.c swaprep.c
     OBJS = main.o dispatch.o wire.o globals.o \
 		utils.o stubs.o tables.o init.o \
 		cache.o colormap.o lbxfuncs.o reqtype.o \
                 resource.o tags.o atomcache.o gfx.o lbxutil.o \
-                props.o
+                props.o swapreq.o swaprep.o
 	
     EXTRA_DEFINES = AllocateLocalDefines
 

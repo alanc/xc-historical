@@ -1,4 +1,4 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: reqtype.c,v 1.3 94/02/20 11:14:11 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
- * $NCDId: @(#)reqtype.c,v 1.2 1994/02/09 19:25:24 lemke Exp $
+ * $NCDId: @(#)reqtype.c,v 1.4 1994/03/24 17:54:59 lemke Exp $
  */
 
 /* decides what tupe of request it is */
@@ -277,6 +277,7 @@ static Bool cause_events[] = {
 };
 
 
+/* ARGSUSED */
 Bool
 generates_errors(req)
     int         req;

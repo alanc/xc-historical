@@ -1,4 +1,4 @@
-/* $XConsortium: tags.c,v 1.3 94/02/20 11:14:20 dpw Exp $ */
+/* $XConsortium: tags.c,v 1.4 94/03/08 20:51:34 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)tags.c,v 1.9 1994/03/07 19:02:24 lemke Exp $
+ * $NCDId: @(#)tags.c,v 1.10 1994/03/24 17:55:03 lemke Exp $
  */
 
 #include	"cache.h"
@@ -51,6 +51,7 @@ FreeTags()
     CacheFreeCache(prop_cache);
 }
 
+/* ARGSUSED */
 static void
 cache_free(id, data, reason)
     CacheID     id;

@@ -1,7 +1,7 @@
-/* $XConsortium: tables.c,v 1.3 94/02/20 11:14:18 dpw Exp $ */
+/* $XConsortium: tables.c,v 1.4 94/03/08 20:51:29 dpw Exp $ */
 /*
  * $NCDOr$
- * $NCDId: @(#)tables.c,v 1.12 1994/03/04 00:11:02 lemke Exp $
+ * $NCDId: @(#)tables.c,v 1.13 1994/03/21 21:08:30 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -429,8 +429,6 @@ int (* ProcVector[256]) () =
     ProcStandardRequest,
 };
 
-#ifdef NOTDEF	/* XXX no swapping yet */
-
 int (* SwappedProcVector[256]) () =
 {
     ProcStandardRequest,
@@ -563,6 +561,7 @@ int (* SwappedProcVector[256]) () =
     SProcNoOperation
 };
 
+#ifdef notyet
 void (* EventSwapVector[128]) () =
 {
     SErrorEvent,
@@ -736,6 +735,7 @@ void (* ReplySwapVector[256]) () =
 };
 
 #endif
+
 
 extern int  ServerProcError (), ServerProcReply (),
 	    ServerProcStandardEvent ();

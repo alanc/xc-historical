@@ -1,4 +1,4 @@
-/* $XConsortium: lbxutil.c,v 1.2 94/02/20 13:30:31 dpw Exp $ */
+/* $XConsortium: lbxutil.c,v 1.3 94/03/08 20:51:24 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxutil.c,v 1.10 1994/03/08 01:41:14 dct Exp $
+ * $NCDId: @(#)lbxutil.c,v 1.14 1994/03/24 17:55:07 lemke Exp $
  */
 /*
  * utility routines for LBX requests
@@ -39,6 +39,7 @@
 #include	"lbx.h"		/* gets dixstruct.h */
 #include	"resource.h"
 #include	"wire.h"
+#include	"swap.h"
 #define _XLBX_SERVER_
 #include	"lbxstr.h"	/* gets dixstruct.h */
 
@@ -136,9 +137,6 @@ WriteToClientPad(client, len, data)
     char       *data;
     int         len;
 {
-    char        pad[3];
-    int         ret;
-
     WriteToClient(client, len, data);
 
 /*
@@ -182,6 +180,7 @@ GetQueryTagReply(client, data)
     pointer     tdata;
     int         len;
     QueryTagPtr qtp;
+    char        n;
 
     nr = GetReply(client);
 
@@ -190,12 +189,44 @@ GetQueryTagReply(client, data)
     len = rep->real_length;
 
     qtp = &(nr->request_info.lbxquerytag.info);
-
-    if (TagStoreData(global_cache, qtp->tag, len, qtp->tagtype, tdata)) {
-    	/* lost tag again... */
-	SendInvalidateTag(client, qtp->tag);
+    /* put reply data into proxy order */
+    if (client->swapped) {
+	swapl(&len, n);
+	switch (qtp->tagtype) {
+	case LbxTagTypeModmap:
+	    break;
+	case LbxTagTypeProperty:
+	    {
+		switch (qtp->typedata.getprop.ptd.format) {
+		case 32:
+		    SwapLongs((CARD32 *) tdata, len / 4);
+		    break;
+		case 16:
+		    SwapShorts((short *) tdata, len / 2);
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    }
+	case LbxTagTypeKeymap:
+	    SwapLongs((CARD32 *) tdata, len / 4);
+	    break;
+	case LbxTagTypeFont:
+	    SwapFont((xQueryFontReply *) tdata, FALSE);
+	    break;
+	case LbxTagTypeConnInfo:
+	    SwapConnectionInfo((xConnSetup *) tdata);
+	    break;
+	default:
+	    assert(0);
+	}
     }
 
+    if (TagStoreData(global_cache, qtp->tag, len, qtp->tagtype, tdata)) {
+	/* lost tag again... */
+	SendInvalidateTag(client, qtp->tag);
+    }
     /* and now finish off request */
     /* XXX ever have a case where there isn't one to finish? */
     switch (qtp->tagtype) {
@@ -238,6 +269,7 @@ void
 LbxFreeTag(tag, tagtype)
     XID         tag;
     int         tagtype;
+
 {
     TagData     td;
     Cache       tag_cache;
@@ -265,13 +297,14 @@ LbxFreeTag(tag, tagtype)
 
 void
 LbxSendTagData(tag, tagtype)
-    XID	tag;
-    int	tagtype;
+    XID         tag;
+    int         tagtype;
+
 {
     TagData     td;
     Cache       tag_cache;
-    unsigned long	len = 0;
-    pointer	tdata = NULL;
+    unsigned long len = 0;
+    pointer     tdata = NULL;
     PropertyTagDataPtr ptdp;
 
     switch (tagtype) {
@@ -332,17 +365,17 @@ int         missed_tag;		/* QueryTag required */
 
 int         tag_bytes_unsent;	/* approx data kept off wire by tags */
 
-int	    delta_out_total;
-int	    delta_out_attempts;
-int	    delta_out_hits;
-int	    delta_in_total;
-int	    delta_in_attempts;
-int	    delta_in_hits;
+int         delta_out_total;
+int         delta_out_attempts;
+int         delta_out_hits;
+int         delta_in_total;
+int         delta_in_attempts;
+int         delta_in_hits;
 
-int	    lzw_out_compressed;
-int	    lzw_out_plain;
-int	    lzw_in_compressed;
-int	    lzw_in_plain;
+int         lzw_out_compressed;
+int         lzw_out_plain;
+int         lzw_in_compressed;
+int         lzw_in_plain;
 
 void
 DumpStats()
@@ -366,15 +399,15 @@ DumpStats()
 
     fprintf(stderr, "Delta Compressor stats\n");
     fprintf(stderr, "Sent: total msgs = %d, cacheable = %d, cache hits = %d\n",
-		delta_out_total, delta_out_attempts, delta_out_hits);
+	    delta_out_total, delta_out_attempts, delta_out_hits);
     fprintf(stderr, "Received: total = %d, cacheable = %d, cache hits = %d\n",
-		delta_in_total, delta_in_attempts, delta_in_hits);
+	    delta_in_total, delta_in_attempts, delta_in_hits);
 
     fprintf(stderr, "LZW Compressor stats\n");
     fprintf(stderr, "Sent: compressed bytes = %d (plain text = %d)\n",
-		lzw_out_compressed, lzw_out_plain);
+	    lzw_out_compressed, lzw_out_plain);
     fprintf(stderr, "Received: compressed bytes = %d (plain text = %d)\n",
-		lzw_in_compressed, lzw_in_plain);
+	    lzw_in_compressed, lzw_in_plain);
 }
 
 void
@@ -423,8 +456,9 @@ static      have_client_setup_info = FALSE;
  */
 GetConnectionInfo(client, cs, changes)
     ClientPtr   client;
-    xConnSetup	*cs;
-    CARD32	*changes;
+    xConnSetup *cs;
+    CARD32     *changes;
+
 {
     xWindowRoot *root;
     xDepth     *depth;
@@ -477,6 +511,7 @@ GetConnectionInfo(client, cs, changes)
 Bool
 MakeLBXStuff(client)
     ClientPtr   client;
+
 {
     LBXDataPtr  new;
 
@@ -492,6 +527,7 @@ MakeLBXStuff(client)
 LBXDataPtr
 lbx_data_stuff(client)
     ClientPtr   client;
+
 {
     return (LBXDataPtr) client->screenPrivate[0];
 }
@@ -501,6 +537,7 @@ lbx_data_stuff(client)
 void
 FreeLBXStuff(client)
     ClientPtr   client;
+
 {
     xfree(client->screenPrivate[0]);
 }

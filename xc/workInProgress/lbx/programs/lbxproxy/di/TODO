@@ -5,20 +5,19 @@ what's left
 new work
     protocol reencoding
     large request splitting at OS layer
-    byte swapping
     image compression
 
 tuning
     motion compression (what's the proper number?  does it even work?)
     properties (determining what's worth sending)
+    scheduler
 
 Bugs
     AttendClient()/IgnoreClient() need to handle proxy clients
 	w/o blocking entire proxy
-    ServerGrab from a non-LBX client will mess things up
     fix BIGREQS
 
 -------
-$NCDId: @(#)TODO,v 1.5 1994/03/07 21:49:16 dct Exp $
-$XConsortium: TODO,v 1.1 94/03/08 13:17:21 dpw Exp $
+$NCDId: @(#)TODO,v 1.8 1994/03/25 19:10:11 lemke Exp $
+$XConsortium: TODO,v 1.2 94/03/08 20:51:40 dpw Exp $
 

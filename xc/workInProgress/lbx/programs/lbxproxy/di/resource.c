@@ -1,6 +1,6 @@
 /* Copyright 1988, 1989 Network Computing Devices, Inc.  All rights reserved. */
 
-#ident "$NCDId: @(#)resource.c,v 1.3 1994/02/11 00:09:50 lemke Exp $"
+/* $NCDId: @(#)resource.c,v 1.5 1994/03/24 17:54:47 lemke Exp $ */
 
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -26,7 +26,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.88 92/04/20 17:34:59 rws Exp $ */
+/* $XConsortium: resource.c,v 1.3 94/02/20 11:14:15 dpw Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -59,6 +59,7 @@ SOFTWARE.
 #include "lbxdata.h" 
 #include "lbx.h" 
 #include "opaque.h"
+#include "colormap.h"
 
 static void RebuildTable();
 
@@ -127,9 +128,6 @@ ClientResourceRec clientTable[MAXCLIENTS];
 
 InitDeleteFuncs()
 {
-    extern int  DestroyColormap();
-    extern int  FreeClientPixels();
-
     lastResourceType = RT_LASTPREDEF;
     lastResourceClass = RC_LASTPREDEF;
     TypeMask = RC_LASTPREDEF - 1;
@@ -139,20 +137,9 @@ InitDeleteFuncs()
 					sizeof(DeleteType));
     if (!DeleteFuncs)
 	return FALSE;
-#ifdef notyet
-    DeleteFuncs[RT_NONE & TypeMask] = (int (*) ()) NoopDDA;
-    DeleteFuncs[RT_WINDOW & TypeMask] = DeleteWindow;
-    DeleteFuncs[RT_PIXMAP & TypeMask] = dixDestroyPixmap;
-    DeleteFuncs[RT_GC & TypeMask] = FreeGC;
-    DeleteFuncs[RT_FONT & TypeMask] = CloseFont;
-    DeleteFuncs[RT_CURSOR & TypeMask] = FreeCursor;
-#endif
     DeleteFuncs[RT_COLORMAP & TypeMask] = DestroyColormap;
     DeleteFuncs[RT_CMAPENTRY & TypeMask] = FreeClientPixels;
-#ifdef notyet
-    DeleteFuncs[RT_OTHERCLIENT & TypeMask] = OtherClientGone;
-    DeleteFuncs[RT_PASSIVEGRAB & TypeMask] = DeletePassiveGrab;
-#endif
+    return TRUE;
 }
 
 /*****************
