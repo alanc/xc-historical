@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.34 90/09/13 18:28:33 keith Exp $
+ * $XConsortium: dm.h,v 1.35 90/09/14 17:51:42 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -222,6 +222,7 @@ extern int	removeDomainname;
 extern char	*keyFile;
 extern char	*accessFile;
 extern char	**exportList;
+extern char	*randomFile;
 
 extern struct display	*FindDisplayByName (),
 			*FindDisplayBySessionID (),

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: mitauth.c,v 1.5 89/12/19 15:43:08 keith Exp $
+ * $XConsortium: mitauth.c,v 1.6 90/09/14 17:51:33 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -36,7 +36,6 @@ MitInitAuth (name_len, name)
     unsigned short  name_len;
     char	    *name;
 {
-    InitCryptoKey ();
     if (name_len > 256)
 	name_len = 256;
     auth_name_len = name_len;

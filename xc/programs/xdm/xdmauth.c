@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmauth.c,v 1.4 90/09/27 20:07:47 rws Exp $
+ * $XConsortium: xdmauth.c,v 1.5 90/09/29 12:00:13 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -64,7 +64,6 @@ XdmInitAuth (name_len, name)
     unsigned short  name_len;
     char	    *name;
 {
-    InitCryptoKey ();
     if (name_len > 256)
 	name_len = 256;
     auth_name_len = name_len;

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.35 90/09/13 18:28:44 keith Exp $
+ * $XConsortium: resource.c,v 1.36 90/09/14 17:51:50 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -44,6 +44,7 @@ int	removeDomainname;
 char	*keyFile;
 char	*accessFile;
 char	**exportList;
+char	*randomFile;
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -101,6 +102,9 @@ char	**exportList;
 #ifndef DEF_ACCESS_FILE
 #define DEF_ACCESS_FILE	"/usr/lib/X11/xdm/Xaccess"
 #endif
+#ifndef DEF_RANDOM_FILE
+#define DEF_RANDOM_FILE "/dev/mem"
+#endif
 
 #define DEF_UDP_PORT	"177"	    /* registered XDMCP port, dont change */
 
@@ -136,6 +140,8 @@ struct dmResources {
 				DEF_ACCESS_FILE,
 "exportList",	"ExportList",	DM_ARGV,	(char **) &exportList,
 				"",
+"randomFile",	"RandomFile",	DM_STRING,	&randomFile,
+				DEF_RANDOM_FILE,
 };
 
 # define NUM_DM_RESOURCES	(sizeof DmResources / sizeof DmResources[0])
