@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.26 94/12/16 17:31:08 mor Exp mor $ */
+/* $XConsortium: saveutil.c,v 1.27 94/12/21 16:55:36 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -327,7 +327,16 @@ char *sm_id;
 	fprintf (f, "%d\n", SAVEFILE_VERSION);
 	fprintf (f, "%s\n", sm_id);
 
-	count = ListCount (RunningList) + ListCount (RestartAnywayList);
+	count = 0;
+	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
+	{
+	    client = (ClientRec *) cl->thing;
+
+	    if (client->restartHint != SmRestartNever)
+		count++;
+	}
+	count += ListCount (RestartAnywayList);
+
 	fprintf (f, "%d\n", count);
 	if (count == 0)
 	    fprintf (f, "\n");
