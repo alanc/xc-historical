@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: nameserver.c,v 1.1 91/07/12 15:54:54 gildea Exp $ */
 /*	nameserver.c - included by Xstreams.c			*/
 /*	Used for System V Release 3.2 networking code ONLY	*/
 
@@ -428,11 +428,7 @@ outofloop:
 	       memcpy(Network._net[Network._nnets], netbuffer, netlen+1);
 	       type = Network._nnets++;
 	}
-#ifndef USL_COMPAT
 	_XsTypeOfStream[fd] = type;
-#else
-	TypeOfStream[fd] = type;
-#endif 
 	PRMSG("A Connection has been established to %s ... \n", host,0);
 	PRMSG("CallTliServer() returns success\n",0,0);
 
@@ -466,11 +462,7 @@ OpenAndBind(name, port, maxcon, nettype, type)
 		return(-1);
 	}
 
-#ifndef USL_COMPAT
 	_XsTypeOfStream[fd] = type;
-#else
-	TypeOfStream[fd] = type;
-#endif
 	/* fill in the request call structure with necessary infomation */
 
 	if(name != NULL)
@@ -582,11 +574,7 @@ int _XMakeStreamsConnection (name, idisplay, retries,
 	     * auth information for local connection set above
 	     */
 
-#ifndef USL_COMPAT
 	    fd = ((*_XsStream[X_LOCAL_STREAM].CallTheListener)
-#else
-	    fd = ((*xstream[X_LOCAL_STREAM].CallTheListener)
-#endif
 		  ("unix", idisplay, "local"));
 	    if (fd >= 0) {
 		*familyp = FamilyLocal;
@@ -618,11 +606,7 @@ int _XMakeStreamsConnection (name, idisplay, retries,
 
 		if((netpath = (char *) getenv("NETPATH")) == NULL)
 				netpath = "";
-#ifndef USL_COMPAT
 		return (*_XsStream[X_TLI_STREAM].CallTheListener)
-#else
-		return (*xstream[X_TLI_STREAM].CallTheListener)
-#endif
 				(name, idisplay, netpath);
 	}
 
@@ -644,11 +628,7 @@ int _XMakeStreamsConnection (name, idisplay, retries,
 			strcmp(name, sysname) == 0
 		  ){
 			nfound++;
-#ifndef USL_COMPAT
 		        fd = (*_XsStream[X_TLI_STREAM].CallTheListener)
-#else
-		        fd = (*xstream[X_TLI_STREAM].CallTheListener)
-#endif
 						(nodname, idisplay, netype);
 			if(fd >= 0)
 			{
@@ -659,11 +639,7 @@ int _XMakeStreamsConnection (name, idisplay, retries,
 		else if(strcmp(sysname, "*") == 0 || strcmp(nodname, "*") == 0) 
 		   {
 			sprintf(nodname, name);
-#ifndef USL_COMPAT
 			fd = (*_XsStream[X_TLI_STREAM].CallTheListener)     
-#else
-			fd = (*xstream[X_TLI_STREAM].CallTheListener)     
-#endif
                                                 (nodname, idisplay, netype);
 			fclose(file);
                         return(fd);
@@ -847,9 +823,5 @@ OpenVirtualCircuit(lfd)
     int	lfd;
 {
 	return(OpenAndBind(NULL, -1, 0,
-#ifndef USL_COMPAT
 		 	Network._net[_XsTypeOfStream[lfd]], _XsTypeOfStream[lfd]));
-#else
-		 	Network._net[TypeOfStream[lfd]], TypeOfStream[lfd]));
-#endif
 }
