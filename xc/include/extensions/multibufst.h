@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibufst.h,v 1.10 92/10/19 09:27:55 rws Exp $
+ * $XConsortium: multibufst.h,v 1.11 93/02/08 09:57:26 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,7 +26,6 @@
 
 /*
  * Protocol requests constants and alignment values
- * These would really be in Multi-Buffering's X.h and Xproto.h equivalents
  */
 
 #include "multibuf.h"
@@ -44,6 +43,9 @@
 	req->mbufReqType = X_/**/name;
 #endif
 
+#define Window CARD32
+#define Drawable CARD32
+#define VisualID CARD32
 #define Multibuffer CARD32
 
 typedef struct {
@@ -280,6 +282,9 @@ typedef struct {
 } xMbufClearImageBufferAreaReq;
 #define sz_xMbufClearImageBufferAreaReq 20
 
+#undef Window
+#undef Drawable
+#undef VisualID
 #undef Multibuffer
 
 
