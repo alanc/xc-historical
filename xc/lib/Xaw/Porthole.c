@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Porthole.c,v 1.9 90/03/07 16:05:34 jim Exp $
+ * $XConsortium: Porthole.c,v 1.10 90/03/07 18:12:53 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -356,6 +356,6 @@ static void ChangeManaged (gw)
 	XtResizeWidget (child, Max (child->core.width, pw->core.width),
 			Max (child->core.height, pw->core.height), 0);
 
-	SendReport (pw, XawPRAll);
+	SendReport (pw, (unsigned int) XawPRAll);
     }
 }
