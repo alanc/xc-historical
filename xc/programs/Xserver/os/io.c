@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.55 89/03/23 09:04:51 rws Exp $ */
+/* $XConsortium: io.c,v 1.56 89/04/20 16:20:46 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -552,6 +552,9 @@ WriteToClient (who, count, buf)
 {
     OsCommPtr oc = (OsCommPtr)who->osPrivate;
     int padBytes;
+
+    if (!count)
+	return;
 
     padBytes =  padlength[count & 3];
 
