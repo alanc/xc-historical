@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.69 91/07/22 13:54:51 converse Exp $
+ * $XConsortium: init.c,v 2.70 91/07/22 21:30:31 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -298,8 +298,8 @@ char **argv;
 	{"XmhReply",			XmhReply},
 	{"XmhForward",			XmhForward},
 	{"XmhUseAsComposition",		XmhUseAsComposition},
-	{"XmhShellCommand",		XmhShellCommand},
 	{"XmhPrint",			XmhPrint},
+	{"XmhShellCommand",		XmhShellCommand},
 
 	/* actions upon sequences */
 
@@ -337,6 +337,10 @@ char **argv;
 	/* popup dialog box button action procedures */
 
 	{"XmhPromptOkayAction",		XmhPromptOkayAction},
+
+	/* retained for backward compatibility with user resources */
+	
+	{"XmhCancelPick",		XmhWMProtocols}
     };
 
     static Arg shell_args[] = {
