@@ -19,6 +19,8 @@ SRCS = \
 	left_ptr \
 	left_ptrmsk \
 	light_gray \
+	mailempty \
+	mailfull \
 	mensetmanus \
 	opendot \
 	opendotMask \
