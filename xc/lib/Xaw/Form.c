@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Form.c,v 1.35 90/01/09 16:25:15 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Form.c,v 1.36 90/01/24 18:13:27 kit Exp $";
 #endif /* lint */
 
 
@@ -37,8 +37,6 @@ SOFTWARE.
 /* Private Definitions */
 
 static int default_value = -99999;
-
-#define NOT_LAYED_OUT -12345	/* Magic number. */
 
 #define Offset(field) XtOffset(FormWidget, form.field)
 static XtResource resources[] = {
@@ -360,7 +358,8 @@ static Boolean Layout(fw, width, height, force_relayout)
 	if (force_relayout)
 	    ret_val = TRUE;
 
-	ResizeChildren((Widget) fw, ret_val);
+	if (ret_val)
+	    ResizeChildren((Widget) fw);
     }
     else
 	ret_val = False;
@@ -369,16 +368,13 @@ static Boolean Layout(fw, width, height, force_relayout)
 }
 
 /*	Function Name: ResizeChildren
- *	Description: Resets all childrens new_x and new_y to NOT_LAYED_OUT,
- *                   and optionally resizes them the the new size.
+ *	Description: Resizes all children to new_x and new_y.
  *	Arguments: w - the form widget.
- *                 resize_them - whether or not to resize the children.
  *	Returns: none.
  */
 
-static void ResizeChildren(w, resize_them) 
+static void ResizeChildren(w) 
 Widget w;
-Boolean resize_them;
 {
     FormWidget fw = (FormWidget) w;
     int num_children = fw->composite.num_children;
@@ -392,8 +388,7 @@ Boolean resize_them;
 	    continue;
 
 	form = (FormConstraints)(*childP)->core.constraints;
-	if (resize_them)
-	    if (fw->form.no_refigure) {
+	if (fw->form.no_refigure) {
 /* 
  * I am changing the widget wrapper w/o modifing the window.  This is
  * risky, but I can get away with it since I am the parent of this
@@ -401,13 +396,11 @@ Boolean resize_them;
  *
  * The window will be updated when no_refigure is set back to False.
  */	
-		(*childP)->core.x = form->form.new_x;
-		(*childP)->core.y = form->form.new_y;
-	    }
-	    else
-		XtMoveWidget(*childP, form->form.new_x, form->form.new_y);
-
-	form->form.new_x = form->form.new_y = NOT_LAYED_OUT;
+	    (*childP)->core.x = form->form.new_x;
+	    (*childP)->core.y = form->form.new_y;
+	}
+	else
+	    XtMoveWidget(*childP, form->form.new_x, form->form.new_y);
     }
 }
 
@@ -440,13 +433,6 @@ static void LayoutChild(w)
 	return;
 	}
     }
-
-/*
- * Only lay each child out once.
- */
-
-    if ( form->form.new_x != NOT_LAYED_OUT)
-	return;
 
     form->form.new_x = form->form.dx;
     form->form.new_y = form->form.dy;
@@ -657,7 +643,6 @@ static void ConstraintInitialize(request, new)
 
     form->form.virtual_width = (int) new->core.width;
     form->form.virtual_height = (int) new->core.height;
-    form->form.new_x = form->form.new_y = NOT_LAYED_OUT;
 
     if (form->form.dx == default_value)
         form->form.dx = fw->form.default_spacing;
