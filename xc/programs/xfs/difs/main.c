@@ -42,6 +42,10 @@ int         ConnInfoLen;
 
 Cache       serverCache;
 
+#ifndef DEFAULT_CONFIG_FILE
+#define DEFAULT_CONFIG_FILE "/usr/lib/X11/fs/config"
+#endif
+
 #define	SERVER_CACHE_SIZE	10000	/* for random server cacheables */
 
 extern void InitProcVectors();
