@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.150 90/06/05 14:56:25 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.151 90/06/08 14:04:37 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1458,7 +1458,7 @@ spawn ()
 #endif	/* USE_SYSV_PGRP */
 		while (1) {
 #ifdef TIOCNOTTY
-			if ((tty = open ("/dev/tty", 2)) >= 0) {
+			if (!no_dev_tty && (tty = open ("/dev/tty", 2)) >= 0) {
 				ioctl (tty, TIOCNOTTY, (char *) NULL);
 				close (tty);
 			}
