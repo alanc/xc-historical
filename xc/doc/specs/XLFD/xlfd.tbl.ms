@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.11 91/07/28 15:45:59 rws Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.12 91/07/30 17:05:12 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -292,6 +292,9 @@ numeric property values are represented as signed or unsigned integers,
 as appropriate.
 .NH 3
 FontName Syntax
+.XS
+\*(SN FontName Syntax
+.XE
 .LP
 The
 .PN FontName 
@@ -788,6 +791,9 @@ The ISO Latin-1 character set shall be registered by the X Consortium as the
 CHARSET_REGISTRY-CHARSET_ENCODING value pair: ``ISO8859-1''.
 .NH 3
 Examples
+.XS
+\*(SN Examples
+.XE
 .LP
 The following examples of font names are derived from the screen fonts 
 shipped with the MIT X distribution.
@@ -1883,6 +1889,9 @@ _
 .TE
 .NH 2
 Built-in Font Property Atoms
+.XS
+\*(SN Built-in Font Property Atoms
+.XE
 .LP
 The following font property atom definitions were predefined in the initial 
 version of the core protocol:
