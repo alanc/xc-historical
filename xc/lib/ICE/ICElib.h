@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.38 94/04/08 14:32:28 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.39 94/04/17 20:15:25 mor Exp $ */
 /******************************************************************************
 
 
@@ -232,6 +232,8 @@ typedef void (*IceIOErrorHandler) (
 /*
  * Function prototypes
  */
+
+_XFUNCPROTOBEGIN
 
 extern int IceRegisterForProtocolSetup (
 #if NeedFunctionPrototypes
@@ -520,5 +522,7 @@ extern void IceAppUnlockConn (
     IceConn		/* iceConn */
 #endif
 );
+
+_XFUNCPROTOEND
 
 #endif /* _ICELIB_H_ */
