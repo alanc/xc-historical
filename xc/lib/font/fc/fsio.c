@@ -123,14 +123,18 @@ _fs_connect(servername)
 	return -1;
     }
 
+    /* ultrix reads hang on Unix sockets, hpux reads fail */
+#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux))
+    (void) fcntl (fd, F_SETFL, O_NONBLOCK);
+#else
 #ifdef FIOSNBIO
     {
-	int         arg = 1;
-
-	ioctl(fd, FIOSNBIO, &arg);
+	int arg = 1;
+	ioctl (fd, FIOSNBIO, &arg);
     }
 #else
-    (void) fcntl(fd, F_SETFL, FNDELAY);
+    (void) fcntl (fd, F_SETFL, FNDELAY);
+#endif
 #endif
 
     return fd;
