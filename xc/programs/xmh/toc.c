@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: toc.c,v 1.7 87/10/09 14:01:51 weissman Exp $";
+static char rcs_id[] = "$Header: toc.c,v 1.8 87/12/24 10:38:50 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -95,6 +95,9 @@ static void LoadCheckFiles()
 	    }
 	}
 	myfclose(fid);
+    } else if (initialIncFile) {
+        if (*initialIncFile != '\0')
+	    InitialFolder->incfile = initialIncFile;
     } else {
 	ptr = getenv("MAIL");
 	if (ptr == NULL) ptr = getenv("mail");
