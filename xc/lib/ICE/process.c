@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.1 93/08/19 18:25:29 mor Exp $ */
+/* $XConsortium: process.c,v 1.2 93/08/26 17:31:59 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -1582,10 +1582,14 @@ IceReplyWaitInfo *replyWait;
 
     case ICE_PingReply:
 
-	if (iceConn->ping_reply_cb)
+	if (iceConn->ping_waits)
 	{
-	    (*iceConn->ping_reply_cb) (iceConn);
-	    iceConn->ping_reply_cb = NULL;
+	    _IcePingWait *next = iceConn->ping_waits->next;
+
+	    (*iceConn->ping_waits->ping_reply_cb) (iceConn);
+
+	    free ((char *) iceConn->ping_waits);
+	    iceConn->ping_waits = next;
 	}
 	else
 	{

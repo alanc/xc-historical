@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.3 93/08/20 15:36:38 rws Exp $ */
+/* $XConsortium: connect.c,v 1.4 93/08/26 17:06:34 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -102,7 +102,6 @@ char *errorStringRet;
     iceConn->my_ice_version_index = 0;
     iceConn->ref_count = 1;
     iceConn->sequence = 0;
-    iceConn->ping_reply_cb = NULL;
 
     if ((iceConn->inbuf = iceConn->inbufptr =
 	(char *) malloc (ICE_INBUFSIZE)) == NULL)
@@ -130,6 +129,7 @@ char *errorStringRet;
     iceConn->process_msg_info = NULL;
 
     iceConn->saved_reply_waits = NULL;
+    iceConn->ping_waits = NULL;
 
     iceConn->connect_to_you = (_IceConnectToYouInfo *) malloc (
 	sizeof (_IceConnectToYouInfo));

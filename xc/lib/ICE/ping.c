@@ -1,4 +1,4 @@
-/* $XConsortium: ping.c,v 1.1 93/08/17 18:58:59 mor Exp $ */
+/* $XConsortium: ping.c,v 1.1 93/08/19 18:25:28 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -24,11 +24,20 @@ IceConn		iceConn;
 IcePingReplyCB	pingReplyCB;
 
 {
-    if (iceConn->ping_reply_cb == NULL)
-    {
-	IceSimpleMessage (iceConn, 0, ICE_Ping);
-	IceFlush (iceConn);
+    _IcePingWait *newping = (_IcePingWait *) malloc (sizeof (_IcePingWait));
+    _IcePingWait *ptr = iceConn->ping_waits;
 
-	iceConn->ping_reply_cb = pingReplyCB;
-    }
+    newping->ping_reply_cb = pingReplyCB;
+    newping->next = NULL;
+
+    while (ptr && ptr->next)
+	ptr = ptr->next;
+
+    if (ptr == NULL)
+	iceConn->ping_waits = newping;
+    else
+	ptr->next = newping;
+
+    IceSimpleMessage (iceConn, 0, ICE_Ping);
+    IceFlush (iceConn);
 }

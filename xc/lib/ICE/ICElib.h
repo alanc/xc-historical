@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.1 93/08/19 18:25:16 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.2 93/08/26 17:07:34 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -58,12 +58,6 @@ typedef struct {
     int			minor_opcode_of_request;
     IcePointer		reply;
 } IceReplyWaitInfo;
-
-typedef struct _IceSavedReplyWait {
-    IceReplyWaitInfo		*reply_wait;
-    Bool			reply_ready;
-    struct _IceSavedReplyWait	*next;
-} _IceSavedReplyWait;
 
 typedef struct _IceConn *IceConn;
 
@@ -170,6 +164,17 @@ typedef void (*IceIOErrorHandler) (
  * Internal stuff.  Put in ICElibint.h???
  */
 
+typedef struct _IceSavedReplyWait {
+    IceReplyWaitInfo		*reply_wait;
+    Bool			reply_ready;
+    struct _IceSavedReplyWait	*next;
+} _IceSavedReplyWait;
+
+typedef struct _IcePingWait {
+    IcePingReplyCB		ping_reply_cb;
+    struct _IcePingWait 	*next;
+} _IcePingWait;
+
 typedef struct {
     char		*vendor;
     char		*release;
@@ -257,8 +262,6 @@ struct _IceConn {
     int fd;				/* Socket descriptor */
     unsigned long sequence;     	/* Sequence number of last message */
 
-    IcePingReplyCB ping_reply_cb;	/* Are we waiting for a Ping Reply? */
-
     char *connection_string;		/* network connection string */
     char *vendor;			/* other client's vendor */
     char *release;			/* other client's release */
@@ -302,6 +305,14 @@ struct _IceConn {
      */
 
     _IceSavedReplyWait		*saved_reply_waits;
+
+
+    /*
+     * We keep track of all Pings sent from the client.  When the Ping reply
+     * arrives, we remove it from the list.
+     */
+
+    _IcePingWait		*ping_waits;
 
 
     /*

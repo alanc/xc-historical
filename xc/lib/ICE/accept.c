@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.3 93/08/26 17:06:06 mor Exp $ */
+/* $XConsortium: accept.c,v 1.4 93/08/26 17:53:02 rws Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -248,8 +248,6 @@ int fd;
     iceConn->vendor = NULL;
     iceConn->release = NULL;
 
-    iceConn->ping_reply_cb = NULL;
-
     if ((iceConn->inbuf = iceConn->inbufptr =
 	(char *) malloc (ICE_INBUFSIZE)) != NULL)
     {
@@ -279,6 +277,7 @@ int fd;
     iceConn->scratch_size = 0;
 
     iceConn->saved_reply_waits = NULL;
+    iceConn->ping_waits = NULL;
 
     iceConn->process_msg_info = NULL;
 
