@@ -1,4 +1,4 @@
-/* $XConsortium: objects.h,v 1.5 91/10/10 11:18:38 rws Exp $ */
+/* $XConsortium: objects.h,v 1.6 92/03/20 14:35:56 keith Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -40,19 +40,19 @@
 #define   Pragmatics(f,v)   t1_Pragmatics(f,v)
 #define   ErrorMsg()        t1_ErrorMsg()
  
-struct xobject *t1_Permanent();  /* make an object permanent                  */
-struct xobject *t1_Temporary();  /* make an object temporary                  */
-struct xobject *t1_Destroy();    /* destroy an object                         */
-struct xobject *t1_Dup();     /* duplicate an object                          */
-void t1_InitImager();         /* initialize TYPE1IMAGER                           */
-void t1_TermImager();         /* terminate TYPE1IMAGER                            */
-void t1_Pragmatics();         /* set debug flags, etc.                        */
-char *t1_ErrorMsg();          /* return last TYPE1IMAGER error message            */
+struct xobject *t1_Permanent();  /* make an object permanent                 */
+struct xobject *t1_Temporary();  /* make an object temporary                 */
+struct xobject *t1_Destroy();    /* destroy an object                        */
+struct xobject *t1_Dup();     /* duplicate an object                         */
+void t1_InitImager();         /* initialize TYPE1IMAGER                      */
+void t1_TermImager();         /* terminate TYPE1IMAGER                       */
+void t1_Pragmatics();         /* set debug flags, etc.                       */
+char *t1_ErrorMsg();          /* return last TYPE1IMAGER error message       */
  
 /*END SHARED*/
 /*SHARED*/
  
-#define   abort(line)       t1_abort(line)
+#define   abort(line)       FatalError(line)
 #define   Allocate(n,t,s)   t1_Allocate(n,t,s)
 #define   Free(obj)         t1_Free(obj)
 #define   NonObjectFree(a)  xiFree(a)
@@ -62,14 +62,13 @@ char *t1_ErrorMsg();          /* return last TYPE1IMAGER error message          
 #define   Copy(obj)         t1_Copy(obj)
 #define   Unique(obj)       t1_Unique(obj)
  
-void t1_abort();              /* crash; software logic error                  */
-struct xobject *t1_Allocate();    /* allocate memory                          */
-void t1_Free();               /* free memory                                  */
-struct xobject *t1_Unique();  /* make a unique temporary copy of an object    */
-struct xobject *t1_ArgErr();  /* handle argument errors                       */
-struct xobject *t1_TypeErr(); /* handle 'bad type' argument errors            */
-void t1_Consume();            /* consume a variable number of arguments       */
-struct xobject *t1_Copy();    /* make a new copy, not reference bump PNM      */
+struct xobject *t1_Allocate();    /* allocate memory                         */
+void t1_Free();               /* free memory                                 */
+struct xobject *t1_Unique();  /* make a unique temporary copy of an object   */
+struct xobject *t1_ArgErr();  /* handle argument errors                      */
+struct xobject *t1_TypeErr(); /* handle 'bad type' argument errors           */
+void t1_Consume();            /* consume a variable number of arguments      */
+struct xobject *t1_Copy();    /* make a new copy, not reference bump PNM     */
  
 /*END SHARED*/
 /*SHARED*/
@@ -101,10 +100,10 @@ out of memory.
 /*SHARED*/
  
 struct xobject {
-       char type;           /* encoded type of object                         */
-       unsigned char flag;  /* flag byte for temporary object characteristics */
+       char type;           /* encoded type of object                        */
+       unsigned char flag;  /* flag byte for temporary object characteristics*/
        short references;    /* count of pointers to this object
-                               (plus 1 for permanent objects) PNM             */
+                               (plus 1 for permanent objects) PNM            */
 } ;
  
 /*END SHARED*/
@@ -276,11 +275,11 @@ We define other routines formatting parameters
 #define    DumpEdges(e)      t1_DumpEdges(e)
 #define    FormatFP(s,p)     t1_FormatFP(s,p)
  
-void t1_DumpArea();           /* dump a region structure                      */
-void t1_DumpText();           /* dump a textpath structure                    */
-void t1_DumpPath();           /* dump a path list                             */
-void t1_DumpSpace();          /* dump a coordinate space structure            */
-void t1_DumpEdges();          /* dump a region's edge list                    */
-void t1_FormatFP();           /* dump a format a "fractpel" coordinate        */
+void t1_DumpArea();           /* dump a region structure                     */
+void t1_DumpText();           /* dump a textpath structure                   */
+void t1_DumpPath();           /* dump a path list                            */
+void t1_DumpSpace();          /* dump a coordinate space structure           */
+void t1_DumpEdges();          /* dump a region's edge list                   */
+void t1_FormatFP();           /* dump a format a "fractpel" coordinate       */
  
 /*END SHARED*/

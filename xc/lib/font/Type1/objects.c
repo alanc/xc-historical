@@ -1,4 +1,4 @@
-/* $XConsortium: objects.c,v 1.7 93/09/10 10:47:23 rws Exp $ */
+/* $XConsortium: objects.c,v 1.8 93/09/20 15:56:38 gildea Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -1053,22 +1053,8 @@ struct xobject *ArgErr(string, obj, ret) /* non-ANSI avoids overly strict type c
 /*
 :h3.abort() - Crash Due to Error
  
-We divide by zero, and if that doesn't work, call exit(), the results of
-which is system dependent (and thus is part of the Hourglass required
-environment).
+Defined in objects.h to be FatalError(), the server's abort routine.
 */
-static int test = 0;
- 
-/*ARGSUSED*/
-void abort(string)
-       char *string;
-{
-       LineIOTrace = TRUE;
-       IfTrace1(TRUE,"\nABORT: reason='%s'\n", string);
-       TraceClose();
-       test = 1/test;
-       exit(99);
-}
  
 /*
 :h3.REAL Miscellaneous Stuff
