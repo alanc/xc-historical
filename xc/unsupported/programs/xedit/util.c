@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: util.c,v 1.12 89/07/21 19:52:54 kit Exp $";
+static char Xrcsid[] = "$XConsortium: util.c,v 1.13 89/08/31 13:16:35 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -29,6 +29,9 @@ static char Xrcsid[] = "$XConsortium: util.c,v 1.12 89/07/21 19:52:54 kit Exp $"
 
 #include <stdio.h>
 #include "xedit.h"
+
+#include <X11/Xos.h>		/* for types.h */
+#include <sys/stat.h>
 
 extern Widget messwidget;
 
@@ -93,6 +96,66 @@ Widget w;
   Arg arglist[1];
   
   XtSetArg(arglist[0], XtNstring, &str);
-  XtGetValues(w, arglist, ONE);
+  XtGetValues( w, arglist, ONE);
   return(str);
 }
+
+/*	Function Name: MaybeCreateFile
+ *	Description: Checks to see if file exists, and if no creates it.
+ *	Arguments: file - name of file to check.
+ *	Returns: none.
+ */
+
+FileAccess
+MaybeCreateFile(file)
+char * file;
+{
+    Boolean exists;
+
+/*
+ * If file doesn't exit create it.
+ */
+
+    if (access(file, F_OK) != 0) 
+	creat(file, 0777);
+
+    return(CheckFilePermissions(file, &exists));
+}
+
+/*	Function Name: MaybeCreateFile
+ *	Description: Checks to see if file exists, and if no creates it.
+ *	Arguments: file - name of file to check.
+ *	Returns: none.
+ */
+
+FileAccess
+CheckFilePermissions(file, exists)
+char * file;
+Boolean *exists;
+{
+    char temp[BUFSIZ], *ptr;
+
+    if (access(file, F_OK) == 0) {
+	*exists = TRUE;
+
+	if (access(file, R_OK) != 0) 
+	    return(NO_READ);
+	
+	if (access(file, R_OK | W_OK) == 0) 
+	    return(WRITE_OK);
+	return(READ_OK);
+    }
+
+    *exists = FALSE;
+    
+    strcpy(temp, file);
+    if ( (ptr = rindex(temp, '/')) == NULL) 
+	strcpy(temp, ".");
+    else 
+	*ptr = '\0';
+    
+    if (access(temp, R_OK | W_OK | X_OK) == 0)
+	return(WRITE_OK);
+    return(NO_READ);
+}
+

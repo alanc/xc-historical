@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: xedit.c,v 1.20 89/07/21 19:52:55 kit Exp $";
+static char Xrcsid[] = "$XConsortium: xedit.c,v 1.21 89/08/31 13:16:52 kit Exp $";
 #endif /* lint && SABER */
  
 /*
@@ -62,9 +62,33 @@ char **argv;
 
   CurDpy = XtDisplay(top);
 
-  if (argc > 1) 
+  if (argc > 1) {
+    Boolean exists;
     filename = argv[1];
-  makeButtonsAndBoxes(top, filename);
+
+    switch ( CheckFilePermissions(filename, &exists)) {
+    case NO_READ:
+	if (exists)
+	    fprintf(stderr, 
+		    "File %s exists, and could not opened for reading.\n", 
+		    filename);
+	else
+	    fprintf(stderr, "File %s %s %s",  filename, "does not exist,",
+		    "and the directory could not be opened for writing.\n");
+	exit(1);
+    case READ_OK:
+    case WRITE_OK:
+	makeButtonsAndBoxes(top, filename);
+	break;
+    default:
+	fprintf(stderr, "%s %s", "Internal function MaybeCreateFile()",
+		"returned unexpected value.\n");
+	exit(1);
+    }
+  }  
+  else
+      makeButtonsAndBoxes(top, NULL);
+
   XtRealizeWidget(top);
   XDefineCursor(XtDisplay(top),XtWindow(top),
 		XCreateFontCursor( XtDisplay(top), XC_left_ptr));
@@ -77,7 +101,6 @@ Widget parent;
 char * filename;
 {
   Widget outer, b_row;
-
   Arg arglist[10];
   Cardinal num_args;
 
@@ -106,11 +129,13 @@ char * filename;
 				      outer, arglist, num_args);
 
   num_args = 0;
-  XtSetArg(arglist[num_args], XtNstring, filename); num_args++;
   XtSetArg(arglist[num_args], XtNtype, XawAsciiFile); num_args++;
   XtSetArg(arglist[num_args], XtNeditType, XawtextEdit); num_args++;
   textwindow =  XtCreateManagedWidget("editWindow", asciiTextWidgetClass, 
 				      outer, arglist, num_args);
+
+  if (filename != NULL)
+      DoLoad();
 }
 
 /*	Function Name: Feep

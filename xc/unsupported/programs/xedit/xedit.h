@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$XConsortium: xedit.h,v 1.17 89/07/09 16:05:46 kit Exp $";
+ *	rcs_id[] = "$XConsortium: xedit.h,v 1.18 89/07/21 19:52:58 kit Exp $";
  */
  
 /*
@@ -47,6 +47,8 @@ extern struct _app_resources {
     char *backupNameSuffix;
 } app_resources;
 
+typedef enum {NO_READ, READ_OK, WRITE_OK} FileAccess;
+
 /*	externals in xedit.c 	*/
 
 extern void Feep();
@@ -57,6 +59,7 @@ extern void   XeditPrintf();
 extern Widget MakeCommandButton();
 extern Widget MakeStringBox();
 extern String GetString();
+extern FileAccess MaybeCreateFile(), CheckFilePermissions();
 
 /*	externs in commands.c 	*/
 

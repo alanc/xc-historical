@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: commands.c,v 1.22 89/07/21 19:52:50 kit Exp $";
+static char Xrcsid[] = "$XConsortium: commands.c,v 1.23 89/10/06 13:55:19 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -29,6 +29,9 @@ static char Xrcsid[] = "$XConsortium: commands.c,v 1.22 89/07/21 19:52:50 kit Ex
 
 #include <stdio.h>
 #include "xedit.h"
+#ifdef CRAY
+#include <sys/unistd.h>		/* Cray folks say they need this... */
+#endif
 
 extern Widget textwindow, labelwindow, filenamewindow;
 
@@ -101,7 +104,7 @@ String buf, filename;
 void
 DoSave()
 {
-  String filename = GetString(textwindow);
+  String filename = GetString(filenamewindow);
   char buf[BUFSIZ];
 
   if( (filename == NULL) || (strlen(filename) == 0) ){
@@ -126,10 +129,21 @@ DoSave()
     }
   }
   
-  if ( XawAsciiSave(XawTextGetSource(textwindow)) ) 
-    sprintf(buf, "Saved file:  %s\n", filename);
-  else 
-    sprintf(buf, "Error saving file:  %s\n",  filename);
+  switch( MaybeCreateFile(filename)) {
+  case NO_READ:
+  case READ_OK:
+      sprintf(buf, "File %s could not be opened for writing.\n", filename);
+      break;
+  case WRITE_OK:
+      if ( XawAsciiSaveAsFile(XawTextGetSource(textwindow), filename) ) 
+	  sprintf(buf, "Saved file:  %s\n", filename);
+      else 
+	  sprintf(buf, "Error saving file:  %s\n",  filename);
+      break;
+  default:
+      sprintf(buf, "%s %s", "Internal function MaybeCreateFile()",
+	      "returned unexpected value.\n");
+  }
 
   XeditPrintf(buf);
 }
@@ -137,31 +151,70 @@ DoSave()
 void
 DoLoad()
 {
-  Arg args[5];
-  Cardinal num_args = 0;
-  String filename = GetString(filenamewindow);
+    Arg args[5];
+    Cardinal num_args = 0;
+    String filename = GetString(filenamewindow);
+    char buf[BUFSIZ], label_buf[BUFSIZ];
 
-  if ( XawAsciiSourceChanged(XawTextGetSource(textwindow)) && !double_click) {
-    XeditPrintf("Unsaved changes. Save them, or press Load again.\n");
+    if ( XawAsciiSourceChanged(XawTextGetSource(textwindow)) &&
+	 !double_click) {
+	XeditPrintf("Unsaved changes. Save them, or press Load again.\n");
+	Feep();
+	double_click = TRUE;
+	AddDoubleClickCallback(textwindow, TRUE);
+	return;
+    }
+    double_click = FALSE;
+    
+    if ( (filename != NULL) &&  (strlen(filename) > 0) ) {
+	Boolean exists;
+
+	switch( CheckFilePermissions(filename, &exists) ) {
+	case NO_READ:
+	    if (exists)
+		sprintf(buf, "File %s, %s", filename,
+			"exists, and could not opened for reading.\n");
+	    else
+		sprintf(buf, "File %s %s %s",  filename, "does not exist, and",
+			"the directory could not be opened for writing.\n");
+
+	    XeditPrintf(buf);
+	    Feep();
+	    return;
+	case READ_OK:
+	    XtSetArg(args[num_args], XtNeditType, XawtextRead); num_args++;
+	    sprintf(label_buf, "%s       READ ONLY", filename);
+	    sprintf(buf, "File %s opened READ ONLY.\n", filename);
+	    break;
+	case WRITE_OK:
+	    XtSetArg(args[num_args], XtNeditType, XawtextEdit); num_args++;
+	    sprintf(label_buf, "%s       Read - Write", filename);
+	    sprintf(buf, "File %s opened read - write.\n", filename);
+	    break;
+	default:
+	    sprintf(buf, "%s %s", "Internal function MaybeCreateFile()",
+		    "returned unexpected value.\n");
+	    XeditPrintf(buf);
+	    return;
+	}
+
+	XeditPrintf(buf);
+	
+	if (exists) {
+	    XtSetArg(args[num_args], XtNstring, filename); num_args++;
+	}
+	else {
+	    XtSetArg(args[num_args], XtNstring, NULL); num_args++;
+	}
+
+	XtSetValues( textwindow, args, num_args);
+	
+	num_args = 0;
+	XtSetArg(args[num_args], XtNlabel, label_buf); num_args++;
+	XtSetValues( labelwindow, args, num_args);
+	return;
+    }
+
+    XeditPrintf("Load: No file specified.\n");
     Feep();
-    double_click = TRUE;
-    AddDoubleClickCallback(textwindow, TRUE);
-    return;
-  }
-  double_click = FALSE;
-
-  if ((strlen(filename)&&access(filename, R_OK) == 0)) {
-    XtSetArg(args[num_args], XtNstring, filename); num_args++;
-    XtSetValues( textwindow, args, num_args);
-
-    num_args = 0;
-    XtSetArg(args[num_args], XtNlabel, filename); num_args++;
-    XtSetValues( labelwindow, args, num_args);
-  }
-  else {
-    char buf[BUFSIZ];
-    sprintf(buf, "Load: couldn't access file ` %s '.\n", filename);
-    XeditPrintf(buf);
-    Feep();
-  }
 }
