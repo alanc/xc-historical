@@ -28,7 +28,7 @@
 #define MAX_SIZE 255
 
 /* shared data for the image read/parse logic */
-static short hexTable[255];		/* conversion value */
+static short hexTable[256];		/* conversion value */
 static Bool initialized = False;	/* easier to fill in at run time */
 
 
