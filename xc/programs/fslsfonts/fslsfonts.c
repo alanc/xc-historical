@@ -1,4 +1,4 @@
-/* $XConsortium: fslsfonts.c,v 1.2 91/05/13 16:34:14 gildea Exp $ */
+/* $XConsortium: fslsfonts.c,v 1.3 92/11/18 21:31:22 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -25,7 +25,9 @@
 #include "FSlib.h"
 #include <stdio.h>
 
+#ifndef N_START
 #define N_START 1000		/* Maximum # of fonts to start with */
+#endif
 
 int         max_output_line_width = 79;
 int         output_line_padding = 3;
@@ -165,6 +167,7 @@ next:	;
     }
     if (argcnt == 0)
 	get_list("*");
+    FSCloseServer(svr);
     show_fonts();
     exit(0);
 }
@@ -193,6 +196,7 @@ get_list(pattern)
 
 	if (long_list >= L_MEDIUM) {
 	    for (i = 0; i < available; i++) {
+		FSFree((char *) fonts[i]);
 		FSFree((char *) info[i]);
 		FSFree((char *) props[i]);
 		FSFree((char *) offsets[i]);
@@ -203,11 +207,9 @@ get_list(pattern)
 	    FSFree((char *) props);
 	    FSFree((char *) offsets);
 	    FSFree((char *) pdata);
+	} else {
+	    FSFreeFontNames(fonts);
 	}
-	for (i = 0; i < available; i++) {
-	    FSFree((char *) fonts[i]);
-	}
-	FSFree((char *) fonts);
 	nnames = available * 2;
     }
 
