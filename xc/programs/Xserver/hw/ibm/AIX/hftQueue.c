@@ -1,5 +1,5 @@
 /*
- * $XConsortium: hftQueue.c,v 1.1 91/05/10 08:28:54 jap Exp $
+ * $XConsortium: hftQueue.c,v 1.2 91/05/10 08:53:05 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -78,6 +78,7 @@
 #define HFT_ESC_KEYBOARD        0x77
 #define HFT_ESC_LOCATOR         'y'
 #define HFT_ESC_ADAPT           'r'
+#define HFT_ESC_FOCUSIN         'z'
 
 	/*
 	 * Package global variables.
@@ -453,6 +454,7 @@ hftDispatchEvents()
 	if      (input[sink]==HFT_ESC_KEYBOARD)         device= HFT_KEYBOARD;
 	else if (input[sink]==HFT_ESC_LOCATOR)          device= HFT_LOCATOR;
 	else if (input[sink]==HFT_ESC_ADAPT)            device= HFT_ADAPT;
+	else if (input[sink]==HFT_ESC_FOCUSIN)          ;
 	else                                            goto illegal;
 	HFT_INCR(sink);
 	nPending= hftEvSize[device];
@@ -515,7 +517,8 @@ incomplete:
 	 */
 illegal:
 	TRACE((" sink is %d  input char is %d \n",sink, input[sink]));
-	ErrorF("illegal character in ring buffer header");
+	ErrorF("Illegal character in ring buffer header - ");
+	ErrorF("sink is %02x  input char is %02x \n",sink, input[sink]);
 	while (sink!=hftRingbuf.hf_source) {
 	    if (input[sink]==27) {
 	        hftRingbuf.hf_sink= sink;
