@@ -2206,6 +2206,7 @@
 
 #-(or ansi-common-lisp Genera)
 (defun with-standard-io-syntax-function (function)
+  (declare (downward-funarg function))
   (let ((*package* (find-package :user))
 	(*print-array* t)
 	(*print-base* 10)
@@ -2245,7 +2246,7 @@
 ;;; When MASK-MODIFIERS is missing, all other modifiers are ignored.
 ;;; In ambiguous cases, the most specific translation is used.
 
-#-(and ansi-common-lisp (not Genera))
+#-(and ansi-common-lisp (not lispm))
 (defun default-keysym-translate (display state object)
   (declare (type display display)
 	   (type card16 state)
@@ -2265,7 +2266,7 @@
       (setf (char-bit object :hyper) 1)))
   object)
 
-#+(and ansi-common-lisp (not Genera))
+#+(and ansi-common-lisp (not lispm))
 (defun default-keysym-translate (display state object)
   (declare (type display display)
 	   (type card16 state)
