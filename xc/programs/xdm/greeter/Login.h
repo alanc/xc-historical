@@ -1,5 +1,25 @@
 /*
-* $XConsortium: Login.h,v 1.3 88/09/06 17:55:27 jim Exp $
+ * xdm - display manager daemon
+ *
+ * $XConsortium: $
+ *
+ * Copyright 1988 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * Author:  Keith Packard, MIT X Consortium
+ */
+
+/*
+* $XConsortium: Login.h,v 1.3 88/09/16 15:32:36 keith Exp $
 */
 
 #ifndef _XtLogin_h
@@ -57,6 +77,7 @@ typedef struct _LoginData {
 # define NOTIFY_OK	0
 # define NOTIFY_ABORT	1
 # define NOTIFY_RESTART	2
+# define NOTIFY_ABORT_DISPLAY	3
 
 typedef struct _LoginRec *LoginWidget;  /* completely defined in LoginPrivate.h */
 typedef struct _LoginClassRec *LoginWidgetClass;    /* completely defined in LoginPrivate.h */

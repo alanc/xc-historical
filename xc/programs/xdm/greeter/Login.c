@@ -1,4 +1,24 @@
 /*
+ * xdm - display manager daemon
+ *
+ * $XConsortium: $
+ *
+ * Copyright 1988 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * Author:  Keith Packard, MIT X Consortium
+ */
+
+/*
  * Login.c
  */
 
@@ -16,29 +36,29 @@ char	defaultLoginTranslations[];
 
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-	goffset(width), XtRString, "0"},
+	goffset(width), XtRString,	"0"},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-	goffset(height), XtRString, "0"},
+	goffset(height), XtRString,	"0"},
     {XtNx, XtCX, XtRPosition, sizeof (Position),
-	goffset(x), XtRString, "-1"},
+	goffset(x), XtRString,		"-1"},
     {XtNy, XtCY, XtRPosition, sizeof (Position),
-	goffset(y), XtRString, "-1"},
+	goffset(y), XtRString,		"-1"},
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(textpixel), XtRString, "Black"},
+        offset(textpixel), XtRString,	"Black"},
     {XtNpromptColor, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(promptpixel), XtRString, "Black"},
+        offset(promptpixel), XtRString,	"Black"},
     {XtNgreetColor, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(greetpixel), XtRString, "Black"},
+        offset(greetpixel), XtRString,	"Black"},
     {XtNfailColor, XtCForeground, XtRPixel, sizeof (Pixel),
-	offset(failpixel), XtRString, "Black"},
+	offset(failpixel), XtRString,	"Black"},
     {XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-    	offset (font), XtRString, XtDefaultFont},
+    	offset (font), XtRString,	"vr-20"},
     {XtNpromptFont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-    	offset (promptFont), XtRString, XtDefaultFont},
+    	offset (promptFont), XtRString, "vr-20"},
     {XtNgreetFont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-    	offset (greetFont), XtRString, XtDefaultFont},
+    	offset (greetFont), XtRString,	"vri-30"},
     {XtNfailFont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-	offset (failFont), XtRString, XtDefaultFont},
+	offset (failFont), XtRString,	"fgi-20"},
     {XtNgreeting, XtCGreeting, XtRString, sizeof (char *),
     	offset(greeting), XtRString, "Welcome to the X Window System"},
     {XtNnamePrompt, XtCNamePrompt, XtRString, sizeof (char *),
@@ -425,6 +445,18 @@ AbortSession (ctx, event)
     XorCursor (ctx);
 }
 
+static void
+AbortDisplay (ctx, event)
+    LoginWidget	ctx;
+    XEvent	*event;
+{
+    XorCursor (ctx);
+    ctx->login.state = DONE;
+    ctx->login.cursor = 0;
+    (*ctx->login.notify_done) (ctx, &ctx->login.data, NOTIFY_ABORT_DISPLAY);
+    XorCursor (ctx);
+}
+
 ResetLogin (w)
     LoginWidget	w;
 {
@@ -616,6 +648,7 @@ XtActionsRec loginActionsTable [] = {
   {"erase-line",		EraseLine},
   {"finish-field", 		FinishField},
   {"abort-session",		AbortSession},
+  {"abort-display",		AbortDisplay},
   {"restart-session",		RestartSession},
   {"insert-char", 		InsertChar},
 };
