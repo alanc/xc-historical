@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.18 91/05/10 11:42:42 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.19 91/05/11 10:26:16 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -963,8 +963,7 @@ SetFontPath(client, npaths, paths, error)
                 err = Success;
 
     if (npaths == 0) {
-	if (!SetDefaultFontPath(defaultFontPath))
-	    return BadName;
+	return SetDefaultFontPath(defaultFontPath, error);
     } else {
 	len = strlen(paths) + 1;
 	new_font_path_string = (unsigned char *) xalloc(len);
@@ -984,8 +983,9 @@ SetFontPath(client, npaths, paths, error)
     return err;
 }
 
-SetDefaultFontPath(path)
+SetDefaultFontPath(path, error)
     char       *path;
+    int	       *error;
 {
     unsigned char *cp,
                *pp,
@@ -995,8 +995,7 @@ SetDefaultFontPath(path)
     int         num = 1,
                 len,
                 err,
-                size = 0,
-                bad;
+                size = 0;
 
     /* get enough for string, plus values -- use up commas */
     len = strlen(path) + 1;
@@ -1022,7 +1021,7 @@ SetDefaultFontPath(path)
     if (!new_font_path_string)
 	return BadAlloc;
 
-    err = SetFontPathElements(num, newpath, &bad);
+    err = SetFontPathElements(num, newpath, error);
 
     /* stash it for GetFontPath */
     if (err == Success) {
