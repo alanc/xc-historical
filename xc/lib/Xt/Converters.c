@@ -1,4 +1,4 @@
-/* "$XConsortium: Converters.c,v 1.56 90/08/31 14:09:11 swick Exp $"; */
+/* "$XConsortium: Converters.c,v 1.57 90/11/30 18:31:10 rws Exp $"; */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1311,7 +1311,7 @@ _XtAddDefaultConverters(table)
 	XtCacheByDisplay, NULL);
 
     Add(XtQString,  XtQAtom,	    CvtStringToAtom,
-	displayConvertArg, XtNumber(displayConvertArg), XtCacheByDisplay);
+	displayConvertArg, XtNumber(displayConvertArg), XtCacheNone);
 
    _XtAddTMConverters(table);
 }
