@@ -1,4 +1,4 @@
-/* $Header: XExtInt.c,v 1.23 91/07/23 12:30:32 rws Exp $ */
+/* $Header: XExtInt.c,v 1.24 91/07/24 15:44:34 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -476,7 +476,7 @@ XInputWireToEvent (dpy, re, event)
 	    deviceStateNotify *sev = (deviceStateNotify *) event;
 	    char *data;
 
-	    stev->window 	= dpy->current;
+	    stev->window 	= None;
 	    stev->deviceid 	= sev->deviceid & DEVICE_BITS;
 	    stev->time     	= sev->time;
 	    stev->num_classes	= Ones (sev->classes_reported & InputClassBits);
