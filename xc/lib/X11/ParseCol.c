@@ -1,4 +1,4 @@
-/* $XConsortium: XParseCol.c,v 11.22 91/02/07 17:35:14 dave Exp $ */
+/* $XConsortium: XParseCol.c,v 11.23 91/02/12 16:11:38 dave Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -18,6 +18,8 @@ without express or implied warranty.
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
+extern void _XcmsRGB_to_XColor();
+
 #if NeedFunctionPrototypes
 Status XParseColor (
 	register Display *dpy,
@@ -35,7 +37,7 @@ Status XParseColor (dpy, cmap, spec, def)
 	register int n, i;
 	int r, g, b;
 	char c;
-	XcmsCCC *pCCC;
+	XcmsCCC ccc;
 	XcmsColor cmsColor;
 	char tmpName[BUFSIZ];
 
@@ -82,9 +84,9 @@ Status XParseColor (dpy, cmap, spec, def)
 	 */
 	/* copy string to allow overwrite by _XcmsResolveColorString() */
 	strncpy(tmpName, spec, BUFSIZ - 1);
-	if ((pCCC = XcmsCCCofColormap(dpy, cmap)) != (XcmsCCC *)NULL) {
-	    if (_XcmsResolveColorString(pCCC, tmpName,
-		    &cmsColor, XCMS_RGB_FORMAT) == XCMS_SUCCESS) {
+	if ((ccc = XcmsCCCOfColormap(dpy, cmap)) != (XcmsCCC)NULL) {
+	    if (_XcmsResolveColorString(ccc, tmpName,
+		    &cmsColor, XcmsRGBFormat) == XcmsSuccess) {
 		_XcmsRGB_to_XColor(&cmsColor, def, 1);
 		return(1);
 	    }

@@ -18,6 +18,8 @@ without express or implied warranty.
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
+extern void _XcmsRGB_to_XColor();
+
 #if NeedFunctionPrototypes
 Status XAllocNamedColor(
 register Display *dpy,
@@ -40,7 +42,7 @@ XColor *exact_def; /* RETURN */
     xAllocNamedColorReq *req;
 
     char tmpName[BUFSIZ];
-    XcmsCCC *pCCC;
+    XcmsCCC ccc;
     XcmsColor cmsColor_exact;
     Status ret;
 
@@ -49,9 +51,9 @@ XColor *exact_def; /* RETURN */
      */
     /* copy string to allow overwrite by _XcmsResolveColorString() */
     strncpy(tmpName, colorname, BUFSIZ - 1);
-    if ((pCCC = XcmsCCCofColormap(dpy, cmap)) != (XcmsCCC *)NULL) {
-	if (_XcmsResolveColorString(pCCC, tmpName, &cmsColor_exact,
-		XCMS_RGB_FORMAT) == XCMS_SUCCESS) {
+    if ((ccc = XcmsCCCOfColormap(dpy, cmap)) != (XcmsCCC)NULL) {
+	if (_XcmsResolveColorString(ccc, tmpName, &cmsColor_exact,
+		XcmsRGBFormat) == XcmsSuccess) {
 	    _XcmsRGB_to_XColor(&cmsColor_exact, exact_def, 1);
 	    bcopy((char *)exact_def, (char *)hard_def, sizeof(XColor));
 	    ret = XAllocColor(dpy, cmap, hard_def);
@@ -71,7 +73,7 @@ XColor *exact_def; /* RETURN */
     GetReq(AllocNamedColor, req);
 
     req->cmap = cmap;
-    nbytes = req->nbytes = tmpName ? strlen(tmpName) : 0;
+    nbytes = req->nbytes = tmpName[0] == '\0' ? strlen(tmpName) : 0;
     req->length += (nbytes + 3) >> 2; /* round up to mult of 4 */
 
     _XSend(dpy, tmpName, nbytes);

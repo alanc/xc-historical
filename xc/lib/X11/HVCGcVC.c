@@ -1,30 +1,46 @@
-/* $XConsortium: TekHVCGcVC.c,v 1.4 91/02/12 16:10:01 dave Exp $" */
+/* $XConsortium: TekHVCGcVC.c,v 1.5 91/02/15 18:33:27 dave Exp $" */
 
 /*
- * (c) Copyright 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * This code, which implements the TekColor Human Interface and/or the TekHVC
- * Color Space algorithms, is proprietary to Tektronix, Inc., and permission
- * is granted for use only in the form supplied.  Revisions, modifications,
- * or * adaptations are not permitted without the prior written approval of
- * Tektronix, Inc., Beaverton, OR 97077.  Code and supporting documentation
- * copyright Tektronix, Inc. 1990 1991 All rights reserved.  TekColor and TekHVC
- * are trademarks of Tektronix, Inc.  U.S. and foreign patents pending.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of Xcms based on the TekColor Color Management System.  TekColor is a
+ * trademark of Tektronix, Inc.  The term "TekHVC" designates a particular
+ * color space that is the subject of U.S. Patent No. 4,985,853 (equivalent
+ * foreign patents pending).  Permission is hereby granted to use, copy,
+ * modify, sell, and otherwise distribute this software and its
+ * documentation for any purpose and without fee, provided that:
+ * 
+ * 1. This copyright, permission, and disclaimer notice is reproduced in
+ *    all copies of this software and any modification thereof and in
+ *    supporting documentation; 
+ * 2. Any color-handling application which displays TekHVC color
+ *    cooordinates identifies these as TekHVC color coordinates in any
+ *    interface that displays these coordinates and in any associated
+ *    documentation;
+ * 3. The term "TekHVC" is always used, and is only used, in association
+ *    with the mathematical derivations of the TekHVC Color Space,
+ *    including those provided in this file and any equivalent pathways and
+ *    mathematical derivations, regardless of digital (e.g., floating point
+ *    or integer) representation.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *	NAME
  *		TekHVCGcVC.c
  *
  *	DESCRIPTION
- *		Source for XcmsTekHVC_ShortestValueChroma() gamut
+ *		Source for XcmsTekHVCClipVC() gamut
  *		compression function.
  */
 
@@ -43,8 +59,8 @@
  *	EXTERNS
  */
 extern int _XcmsTekHVC_CheckModify();
-extern Status _XcmsTekHVC_MaxValueChromaRGB();
-extern XcmsColorSpace XcmsTekHVC_ColorSpace;
+extern Status _XcmsTekHVCQueryMaxVCRGB();
+extern XcmsColorSpace XcmsTekHVCColorSpace;
 
 
 /************************************************************************
@@ -55,14 +71,14 @@ extern XcmsColorSpace XcmsTekHVC_ColorSpace;
 
 /*
  *	NAME
- *		XcmsTekHVC_ShortestValueChroma - Return the closest value and chroma
+ *		XcmsTekHVCClipVC - Return the closest value and chroma
  *
  *	SYNOPSIS
  */
 /* ARGSUSED */
 Status
-XcmsTekHVC_ShortestValueChroma (pCCC, pColors_in_out, nColors, i, pCompressed)
-    XcmsCCC *pCCC;
+XcmsTekHVCClipVC (ccc, pColors_in_out, nColors, i, pCompressed)
+    XcmsCCC ccc;
     XcmsColor *pColors_in_out;
     unsigned int nColors;
     unsigned int i;
@@ -78,13 +94,13 @@ XcmsTekHVC_ShortestValueChroma (pCCC, pColors_in_out, nColors, i, pCompressed)
  *		even though it may be invalid.
  *
  *	RETURNS
- *		XCMS_FAILURE - Failure
- *              XCMS_SUCCESS - Succeeded
+ *		XcmsFailure - Failure
+ *              XcmsSuccess - Succeeded
  *
  */
 {
     Status retval;
-    XcmsCCC    myCCC;
+    XcmsCCCRec	myCCC;
     XcmsColor  *pColor;
     XcmsColor  hvc_max;
     XcmsRGBi   rgb_max;
@@ -94,57 +110,57 @@ XcmsTekHVC_ShortestValueChroma (pCCC, pColors_in_out, nColors, i, pCompressed)
     /*
      * Insure TekHVC installed
      */
-    if (XcmsAddDIColorSpace(&XcmsTekHVC_ColorSpace) == XCMS_FAILURE) {
-	return(XCMS_FAILURE);
+    if (XcmsAddColorSpace(&XcmsTekHVCColorSpace) == XcmsFailure) {
+	return(XcmsFailure);
     }
 
     /* Use my own CCC */
-    bcopy ((char *)pCCC, (char *)&myCCC, sizeof (XcmsCCC));
-    myCCC.clientWhitePt.format = XCMS_UNDEFINED_FORMAT;/* inherit screen white pt */
-    myCCC.gamutCompFunc = (XcmsFuncPtr)NULL;	/* no gamut compression func */
+    bcopy ((char *)ccc, (char *)&myCCC, sizeof(XcmsCCCRec));
+    myCCC.clientWhitePt.format = XcmsUndefinedFormat;/* inherit screen white pt */
+    myCCC.gamutCompProc = (XcmsFuncPtr)NULL;	/* no gamut compression func */
 
     /*
      * Color specification passed as input can be assumed to:
-     *	1. Be in XCMS_CIEXYZ_FORMAT
+     *	1. Be in XcmsCIEXYZFormat
      *	2. Already be white point adjusted for the Screen White Point.
      *	    This means that the white point now associated with this
      *	    color spec is the Screen White Point (even if the
-     *	    pCCC->clientWhitePt differs).
+     *	    ccc->clientWhitePt differs).
      */
 
     pColor = pColors_in_out + i;
 
-    if (pCCC->visual->class < PseudoColor) {
+    if (ccc->visual->class < StaticColor) {
 	/*
 	 * GRAY !
 	 */
-	_XcmsDIConvertColors(pCCC, pColor, &pCCC->pPerScrnInfo->screenWhitePt,
-		1, XCMS_TekHVC_FORMAT);
+	_XcmsDIConvertColors(ccc, pColor, &ccc->pPerScrnInfo->screenWhitePt,
+		1, XcmsTekHVCFormat);
 	pColor->spec.TekHVC.H = pColor->spec.TekHVC.C = 0.0;
-	_XcmsDIConvertColors(pCCC, pColor, &pCCC->pPerScrnInfo->screenWhitePt,
-		1, XCMS_CIEXYZ_FORMAT);
+	_XcmsDIConvertColors(ccc, pColor, &ccc->pPerScrnInfo->screenWhitePt,
+		1, XcmsCIEXYZFormat);
 	if (pCompressed) {
 	    *(pCompressed + i) = True;
 	}
-	return(XCMS_SUCCESS);
+	return(XcmsSuccess);
     } else {
 	/* Convert from CIEXYZ to TekHVC format */
 	if (_XcmsDIConvertColors(&myCCC, pColor,
-		&myCCC.pPerScrnInfo->screenWhitePt, 1, XCMS_TekHVC_FORMAT)
-		== XCMS_FAILURE) {
-	    return(XCMS_FAILURE);
+		&myCCC.pPerScrnInfo->screenWhitePt, 1, XcmsTekHVCFormat)
+		== XcmsFailure) {
+	    return(XcmsFailure);
 	}
 
 	if (!_XcmsTekHVC_CheckModify(pColor)) {
-	    return (XCMS_FAILURE);
+	    return (XcmsFailure);
 	}
 
 	/* Step 1: compute the maximum value and chroma for this hue. */
 	/*         This copy may be overkill but it preserves the pixel etc. */
 	bcopy((char *)pColor, (char *)&hvc_max, sizeof(XcmsColor));
-	if (_XcmsTekHVC_MaxValueChromaRGB (&myCCC, &hvc_max, &rgb_max)
-		== XCMS_FAILURE) {
-	    return (XCMS_FAILURE);
+	if (_XcmsTekHVCQueryMaxVCRGB (&myCCC, hvc_max.spec.TekHVC.H, &hvc_max,
+		&rgb_max) == XcmsFailure) {
+	    return (XcmsFailure);
 	}
 
 	/* Now check and return the appropriate value */
@@ -153,7 +169,7 @@ XcmsTekHVC_ShortestValueChroma (pCCC, pColors_in_out, nColors, i, pCompressed)
 	    /* merely return the chroma for that value. */
 	    pColor->spec.TekHVC.C = hvc_max.spec.TekHVC.C;
 	    retval = _XcmsDIConvertColors(&myCCC, pColor,
-		    &myCCC.pPerScrnInfo->screenWhitePt, 1, XCMS_CIEXYZ_FORMAT);
+		    &myCCC.pPerScrnInfo->screenWhitePt, 1, XcmsCIEXYZFormat);
 	}
 
 	if (pColor->spec.TekHVC.V < hvc_max.spec.TekHVC.V) {
@@ -173,7 +189,7 @@ XcmsTekHVC_ShortestValueChroma (pCCC, pColors_in_out, nColors, i, pCompressed)
 				    hvc_max.spec.TekHVC.V / hvc_max.spec.TekHVC.C;
 	    }
 	    retval = _XcmsDIConvertColors(&myCCC, pColor,
-		    &myCCC.pPerScrnInfo->screenWhitePt, 1, XCMS_CIEXYZ_FORMAT);
+		    &myCCC.pPerScrnInfo->screenWhitePt, 1, XcmsCIEXYZFormat);
 	}
 
 	/* return the closest point on the upper part of the hue leaf. */
@@ -191,17 +207,17 @@ XcmsTekHVC_ShortestValueChroma (pCCC, pColors_in_out, nColors, i, pCompressed)
 	    pColor->spec.RGBi.red   = rgb_max.red * (1.0 - nT) + nT;
 	    pColor->spec.RGBi.green = rgb_max.green * (1.0 - nT) + nT;
 	    pColor->spec.RGBi.blue  = rgb_max.blue * (1.0 - nT) + nT;
-	    pColor->format = XCMS_RGBi_FORMAT;
+	    pColor->format = XcmsRGBiFormat;
 
 	    /* Convert from RGBi to HVC */
 	    if (_XcmsConvertColorsWithWhitePt(&myCCC, pColor,
-		    &myCCC.pPerScrnInfo->screenWhitePt, 1, XCMS_TekHVC_FORMAT,
+		    &myCCC.pPerScrnInfo->screenWhitePt, 1, XcmsTekHVCFormat,
 		    (Bool *) NULL)
-		    == XCMS_FAILURE) {
-		return (XCMS_FAILURE);
+		    == XcmsFailure) {
+		return (XcmsFailure);
 	    }
 	    if (!_XcmsTekHVC_CheckModify(pColor)) {
-		return (XCMS_FAILURE);
+		return (XcmsFailure);
 	    }
 	    tmpDist = (XcmsFloat) sqrt ((double) 
 			(((Chroma - pColor->spec.TekHVC.C) *
@@ -231,12 +247,12 @@ XcmsTekHVC_ShortestValueChroma (pCCC, pColors_in_out, nColors, i, pCompressed)
 	    pColor->spec.TekHVC.V = bestValue;
 	}
 	if (!_XcmsTekHVC_CheckModify(pColor)) {
-	    return (XCMS_FAILURE);
+	    return (XcmsFailure);
 	}
 	retval = _XcmsDIConvertColors(&myCCC, pColor,
-		&myCCC.pPerScrnInfo->screenWhitePt, 1, XCMS_CIEXYZ_FORMAT);
+		&myCCC.pPerScrnInfo->screenWhitePt, 1, XcmsCIEXYZFormat);
 
-	if (retval != XCMS_FAILURE && pCompressed != NULL) {
+	if (retval != XcmsFailure && pCompressed != NULL) {
 	    *(pCompressed + i) = True;
 	}
 	return(retval);

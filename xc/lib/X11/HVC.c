@@ -1,24 +1,40 @@
-/* $XConsortium: TekHVC.c,v 1.4 91/02/12 16:09:51 dave Exp $" */
+/* $XConsortium: TekHVC.c,v 1.5 91/02/15 18:33:16 dave Exp $" */
 
 /*
- * (c) Copyright 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * This code, which implements the TekColor Human Interface and/or the TekHVC
- * Color Space algorithms, is proprietary to Tektronix, Inc., and permission
- * is granted for use only in the form supplied.  Revisions, modifications,
- * or * adaptations are not permitted without the prior written approval of
- * Tektronix, Inc., Beaverton, OR 97077.  Code and supporting documentation
- * copyright Tektronix, Inc. 1990 1991 All rights reserved.  TekColor and TekHVC
- * are trademarks of Tektronix, Inc.  U.S. and foreign patents pending.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of Xcms based on the TekColor Color Management System.  TekColor is a
+ * trademark of Tektronix, Inc.  The term "TekHVC" designates a particular
+ * color space that is the subject of U.S. Patent No. 4,985,853 (equivalent
+ * foreign patents pending).  Permission is hereby granted to use, copy,
+ * modify, sell, and otherwise distribute this software and its
+ * documentation for any purpose and without fee, provided that:
+ * 
+ * 1. This copyright, permission, and disclaimer notice is reproduced in
+ *    all copies of this software and any modification thereof and in
+ *    supporting documentation; 
+ * 2. Any color-handling application which displays TekHVC color
+ *    cooordinates identifies these as TekHVC color coordinates in any
+ *    interface that displays these coordinates and in any associated
+ *    documentation;
+ * 3. The term "TekHVC" is always used, and is only used, in association
+ *    with the mathematical derivations of the TekHVC Color Space,
+ *    including those provided in this file and any equivalent pathways and
+ *    mathematical derivations, regardless of digital (e.g., floating point
+ *    or integer) representation.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *	NAME
  *		TekHVC.c
@@ -78,8 +94,8 @@
  */
 
 extern char XcmsTekHVC_prefix[];
-extern Status XcmsCIEuvY_to_CIEXYZ();
-extern Status XcmsCIEXYZ_to_CIEuvY();
+extern Status XcmsCIEuvYToCIEXYZ();
+extern Status XcmsCIEXYZToCIEuvY();
 
 /*
  *	FORWARD DECLARATIONS
@@ -87,8 +103,8 @@ extern Status XcmsCIEXYZ_to_CIEuvY();
 
 static int TekHVC_ParseString();
 Status XcmsTekHVC_ValidSpec();
-Status XcmsTekHVC_to_CIEuvY();
-Status XcmsCIEuvY_to_TekHVC();
+Status XcmsTekHVCToCIEuvY();
+Status XcmsCIEuvYToTekHVC();
 
 
 
@@ -100,8 +116,8 @@ Status XcmsCIEuvY_to_TekHVC();
      * NULL terminated list of functions applied to get from TekHVC to CIEXYZ
      */
 static XcmsFuncPtr Fl_TekHVC_to_CIEXYZ[] = {
-    XcmsTekHVC_to_CIEuvY,
-    XcmsCIEuvY_to_CIEXYZ,
+    XcmsTekHVCToCIEuvY,
+    XcmsCIEuvYToCIEXYZ,
     NULL
 };
 
@@ -109,8 +125,8 @@ static XcmsFuncPtr Fl_TekHVC_to_CIEXYZ[] = {
      * NULL terminated list of functions applied to get from CIEXYZ to TekHVC
      */
 static XcmsFuncPtr Fl_CIEXYZ_to_TekHVC[] = {
-    XcmsCIEXYZ_to_CIEuvY,
-    XcmsCIEuvY_to_TekHVC,
+    XcmsCIEXYZToCIEuvY,
+    XcmsCIEuvYToTekHVC,
     NULL
 };
 
@@ -121,13 +137,14 @@ static XcmsFuncPtr Fl_CIEXYZ_to_TekHVC[] = {
     /*
      * TekHVC Color Space
      */
-XcmsColorSpace	XcmsTekHVC_ColorSpace =
+XcmsColorSpace	XcmsTekHVCColorSpace =
     {
 	XcmsTekHVC_prefix,	/* prefix */
-	XCMS_TekHVC_FORMAT,		/* id */
+	XcmsTekHVCFormat,		/* id */
 	TekHVC_ParseString,	/* parseString */
 	Fl_TekHVC_to_CIEXYZ,	/* to_CIEXYZ */
-	Fl_CIEXYZ_to_TekHVC	/* from_CIEXYZ */
+	Fl_CIEXYZ_to_TekHVC,	/* from_CIEXYZ */
+	1
     };
 
 
@@ -152,7 +169,7 @@ TekHVC_ParseString(spec, pColor)
 /*
  *	DESCRIPTION
  *		This routines takes a string and attempts to convert
- *		it into a XcmsColor structure with XCMS_TekHVC_FORMAT.
+ *		it into a XcmsColor structure with XcmsTekHVCFormat.
  *		The assumed TekHVC string syntax is:
  *		    TekHVC:<H>/<V>/<C>
  *		Where H, V, and C are in string input format for floats
@@ -163,15 +180,15 @@ TekHVC_ParseString(spec, pColor)
  *			followed by a possibly signed integer string.
  *
  *	RETURNS
- *		XCMS_FAILURE if invalid;
- *		XCMS_SUCCESS if valid.
+ *		XcmsFailure if invalid;
+ *		XcmsSuccess if valid.
  */
 {
     int n;
     char *pchar;
 
     if ((pchar = strchr(spec, ':')) == NULL) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
     n = (int)(pchar - spec);
 
@@ -179,7 +196,7 @@ TekHVC_ParseString(spec, pColor)
      * Check for proper prefix.
      */
     if (strncmp(spec, XcmsTekHVC_prefix, n) != 0) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /*
@@ -189,9 +206,9 @@ TekHVC_ParseString(spec, pColor)
 	    &pColor->spec.TekHVC.H,
 	    &pColor->spec.TekHVC.V,
 	    &pColor->spec.TekHVC.C) != 3) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
-    pColor->format = XCMS_TekHVC_FORMAT;
+    pColor->format = XcmsTekHVCFormat;
     pColor->pixel = 0;
     return(XcmsTekHVC_ValidSpec(pColor));
 }
@@ -220,20 +237,20 @@ ThetaOffset(pWhitePt, pThetaOffset)
  *	ASSUMPTIONS
  *		Assumes:
  *			pWhitePt != NULL
- *			pWhitePt->format == XCMS_CIEuvY_FORMAT
+ *			pWhitePt->format == XcmsCIEuvYFormat
  *
  */
 {
     double div, slopeuv;
 
-    if (pWhitePt == NULL || pWhitePt->format != XCMS_CIEuvY_FORMAT) {
+    if (pWhitePt == NULL || pWhitePt->format != XcmsCIEuvYFormat) {
 	return(0);
     }
 
-    if ((div = u_BR - pWhitePt->spec.CIEuvY.u) == 0.0) {
+    if ((div = u_BR - pWhitePt->spec.CIEuvY.u_prime) == 0.0) {
 	return(0);
     }
-    slopeuv = (v_BR - pWhitePt->spec.CIEuvY.v) / div;
+    slopeuv = (v_BR - pWhitePt->spec.CIEuvY.v_prime) / div;
     *pThetaOffset = degrees(atan(slopeuv));
     return(1);
 }
@@ -266,13 +283,13 @@ XcmsTekHVC_ValidSpec(pColor)
  *
  */
 {
-    if (pColor->format != XCMS_TekHVC_FORMAT) {
-	return(XCMS_FAILURE);
+    if (pColor->format != XcmsTekHVCFormat) {
+	return(XcmsFailure);
     }
     if (pColor->spec.TekHVC.V < (0.0 - XMY_DBL_EPSILON)
 	    || pColor->spec.TekHVC.V > (100.0 + XMY_DBL_EPSILON)
 	    || (pColor->spec.TekHVC.C < 0.0 - XMY_DBL_EPSILON)) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     if (pColor->spec.TekHVC.V < 0.0) {
@@ -291,18 +308,18 @@ XcmsTekHVC_ValidSpec(pColor)
     while (pColor->spec.TekHVC.H >= 360.0) {
 	pColor->spec.TekHVC.H -= 360.0;
     } 
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 }
 
 /*
  *	NAME
- *		XcmsTekHVC_to_CIEuvY - convert TekHVC to CIEuvY
+ *		XcmsTekHVCToCIEuvY - convert TekHVC to CIEuvY
  *
  *	SYNOPSIS
  */
 Status
-XcmsTekHVC_to_CIEuvY(pCCC, pHVC_WhitePt, pColors_in_out, nColors)
-    XcmsCCC *pCCC;
+XcmsTekHVCToCIEuvY(ccc, pHVC_WhitePt, pColors_in_out, nColors)
+    XcmsCCC ccc;
     XcmsColor *pHVC_WhitePt;
     XcmsColor *pColors_in_out;
     unsigned int nColors;
@@ -313,7 +330,7 @@ XcmsTekHVC_to_CIEuvY(pCCC, pHVC_WhitePt, pColors_in_out, nColors)
  *		specifications.
  *
  *	RETURNS
- *		XCMS_FAILURE if failed, XCMS_SUCCESS otherwise.
+ *		XcmsFailure if failed, XcmsSuccess otherwise.
  *
  */
 {
@@ -329,29 +346,29 @@ XcmsTekHVC_to_CIEuvY(pCCC, pHVC_WhitePt, pColors_in_out, nColors)
      * Check arguments
      */
     if (pHVC_WhitePt == NULL || pColors_in_out == NULL) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /*
      * Make sure white point is in CIEuvY form
      */
-    if (pHVC_WhitePt->format != XCMS_CIEuvY_FORMAT) {
+    if (pHVC_WhitePt->format != XcmsCIEuvYFormat) {
 	/* Make copy of the white point because we're going to modify it */
 	bcopy((char *)pHVC_WhitePt, (char *)&whitePt, sizeof(XcmsColor));
-	if (!_XcmsDIConvertColors(pCCC, &whitePt, (XcmsColor *)NULL, 1,
-		XCMS_CIEuvY_FORMAT)) {
-	    return(XCMS_FAILURE);
+	if (!_XcmsDIConvertColors(ccc, &whitePt, (XcmsColor *)NULL, 1,
+		XcmsCIEuvYFormat)) {
+	    return(XcmsFailure);
 	}
 	pHVC_WhitePt = &whitePt;
     }
     /* Make sure it is a white point, i.e., Y == 1.0 */
     if (pHVC_WhitePt->spec.CIEuvY.Y != 1.0) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /* Get the thetaOffset */
     if (!ThetaOffset(pHVC_WhitePt, &thetaOffset)) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /*
@@ -361,7 +378,7 @@ XcmsTekHVC_to_CIEuvY(pCCC, pHVC_WhitePt, pColors_in_out, nColors)
 
 	/* Make sure original format is TekHVC and is valid */
 	if (!XcmsTekHVC_ValidSpec(pColor)) {
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
 
 	if (pColor->spec.TekHVC.V == 0.0 || pColor->spec.TekHVC.V == 100.0) {
@@ -370,8 +387,8 @@ XcmsTekHVC_to_CIEuvY(pCCC, pHVC_WhitePt, pColors_in_out, nColors)
 	    } else { /* pColor->spec.TekHVC.V == 0.0 */
 		uvY_return.Y = 0.0;
 	    }
-	    uvY_return.u = pHVC_WhitePt->spec.CIEuvY.u;
-	    uvY_return.v = pHVC_WhitePt->spec.CIEuvY.v;
+	    uvY_return.u_prime = pHVC_WhitePt->spec.CIEuvY.u_prime;
+	    uvY_return.v_prime = pHVC_WhitePt->spec.CIEuvY.v_prime;
 	} else {
 
 	    /* Find the hue based on the white point offset */
@@ -393,8 +410,8 @@ XcmsTekHVC_to_CIEuvY(pCCC, pHVC_WhitePt, pColors_in_out, nColors)
 		    (pColor->spec.TekHVC.V * (double)CHROMA_SCALE_FACTOR));
 
 	    /* Based on the white point get the offset from best red */
-	    uvY_return.u = u + pHVC_WhitePt->spec.CIEuvY.u;
-	    uvY_return.v = v + pHVC_WhitePt->spec.CIEuvY.v;
+	    uvY_return.u_prime = u + pHVC_WhitePt->spec.CIEuvY.u_prime;
+	    uvY_return.v_prime = v + pHVC_WhitePt->spec.CIEuvY.v_prime;
 
 	    /* Calculate the Y value based on the L* = V. */
 	    if (pColor->spec.TekHVC.V < 7.99953624) {
@@ -409,21 +426,21 @@ XcmsTekHVC_to_CIEuvY(pCCC, pHVC_WhitePt, pColors_in_out, nColors)
 	bcopy ((char *)&uvY_return, (char *)&pColor->spec, sizeof(XcmsCIEuvY));
 
 	/* Identify that the format is now CIEuvY */
-	pColor->format = XCMS_CIEuvY_FORMAT;
+	pColor->format = XcmsCIEuvYFormat;
     }
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 }
 
 
 /*
  *	NAME
- *		XcmsCIEuvY_to_TekHVC - convert CIEuvY to TekHVC
+ *		XcmsCIEuvYToTekHVC - convert CIEuvY to TekHVC
  *
  *	SYNOPSIS
  */
 Status
-XcmsCIEuvY_to_TekHVC(pCCC, pHVC_WhitePt, pColors_in_out, nColors)
-    XcmsCCC *pCCC;
+XcmsCIEuvYToTekHVC(ccc, pHVC_WhitePt, pColors_in_out, nColors)
+    XcmsCCC ccc;
     XcmsColor *pHVC_WhitePt;
     XcmsColor *pColors_in_out;
     unsigned int nColors;
@@ -433,7 +450,7 @@ XcmsCIEuvY_to_TekHVC(pCCC, pHVC_WhitePt, pColors_in_out, nColors)
  *		their assiciated white point, to TekHVC specifications.
  *
  *	RETURNS
- *		XCMS_FAILURE if failed, XCMS_SUCCESS otherwise.
+ *		XcmsFailure if failed, XcmsSuccess otherwise.
  *
  */
 {
@@ -448,27 +465,27 @@ XcmsCIEuvY_to_TekHVC(pCCC, pHVC_WhitePt, pColors_in_out, nColors)
      * Check arguments
      */
     if (pHVC_WhitePt == NULL || pColors_in_out == NULL) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /*
      * Make sure white point is in CIEuvY form
      */
-    if (pHVC_WhitePt->format != XCMS_CIEuvY_FORMAT) {
+    if (pHVC_WhitePt->format != XcmsCIEuvYFormat) {
 	/* Make copy of the white point because we're going to modify it */
 	bcopy((char *)pHVC_WhitePt, (char *)&whitePt, sizeof(XcmsColor));
-	if (!_XcmsDIConvertColors(pCCC, &whitePt, (XcmsColor *)NULL, 1,
-		XCMS_CIEuvY_FORMAT)) {
-	    return(XCMS_FAILURE);
+	if (!_XcmsDIConvertColors(ccc, &whitePt, (XcmsColor *)NULL, 1,
+		XcmsCIEuvYFormat)) {
+	    return(XcmsFailure);
 	}
 	pHVC_WhitePt = &whitePt;
     }
     /* Make sure it is a white point, i.e., Y == 1.0 */
     if (pHVC_WhitePt->spec.CIEuvY.Y != 1.0) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
     if (!ThetaOffset(pHVC_WhitePt, &thetaOffset)) {
-	return(XCMS_FAILURE);
+	return(XcmsFailure);
     }
 
     /*
@@ -476,12 +493,12 @@ XcmsCIEuvY_to_TekHVC(pCCC, pHVC_WhitePt, pColors_in_out, nColors)
      */
     for (i = 0; i < nColors; i++, pColor++) {
 	if (!XcmsCIEuvY_ValidSpec(pColor)) {
-	    return(XCMS_FAILURE);
+	    return(XcmsFailure);
 	}
 
 	/* Use the white point offset to determine HVC */
-	u = pColor->spec.CIEuvY.u - pHVC_WhitePt->spec.CIEuvY.u;
-	v = pColor->spec.CIEuvY.v - pHVC_WhitePt->spec.CIEuvY.v;
+	u = pColor->spec.CIEuvY.u_prime - pHVC_WhitePt->spec.CIEuvY.u_prime;
+	v = pColor->spec.CIEuvY.v_prime - pHVC_WhitePt->spec.CIEuvY.v_prime;
 
 	/* Calculate the offset */
 	if (u == 0.0) {
@@ -542,9 +559,9 @@ XcmsCIEuvY_to_TekHVC(pCCC, pHVC_WhitePt, pColors_in_out, nColors)
 	bcopy ((char *)&HVC_return, (char *)&pColor->spec, sizeof(XcmsTekHVC));
 
 	/* Identify that the format is now CIEuvY */
-	pColor->format = XCMS_TekHVC_FORMAT;
+	pColor->format = XcmsTekHVCFormat;
     }
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 }
 
 
@@ -570,7 +587,7 @@ _XcmsTekHVC_CheckModify(pColor)
  */
 {
     /* For now only use the TekHVC numbers as inputs */
-    if (pColor->format != XCMS_TekHVC_FORMAT) {
+    if (pColor->format != XcmsTekHVCFormat) {
 	return(0);
     }
 

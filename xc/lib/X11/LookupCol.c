@@ -1,4 +1,4 @@
-/* $XConsortium: XLookupCol.c,v 11.13 91/02/07 17:35:41 dave Exp $ */
+/* $XConsortium: XLookupCol.c,v 11.14 91/02/12 16:11:32 dave Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -18,6 +18,9 @@ without express or implied warranty.
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
+extern void _XcmsRGB_to_XColor();
+extern void _XcmsResolveColor();
+
 #if NeedFunctionPrototypes
 Status XLookupColor (
 	register Display *dpy,
@@ -36,7 +39,7 @@ Status XLookupColor (dpy, cmap, spec, def, scr)
 	register int n;
 	xLookupColorReply reply;
 	register xLookupColorReq *req;
-	XcmsCCC *pCCC;
+	XcmsCCC ccc;
 	char tmpName[BUFSIZ];
 	XcmsColor cmsColor_exact;
 
@@ -45,12 +48,12 @@ Status XLookupColor (dpy, cmap, spec, def, scr)
 	 */
 	/* copy string to allow overwrite by _XcmsResolveColorString() */
 	strncpy(tmpName, spec, BUFSIZ - 1);
-	if ((pCCC = XcmsCCCofColormap(dpy, cmap)) != (XcmsCCC *)NULL) {
-	    if (_XcmsResolveColorString(pCCC, tmpName,
-		    &cmsColor_exact, XCMS_RGB_FORMAT) == XCMS_SUCCESS) {
+	if ((ccc = XcmsCCCOfColormap(dpy, cmap)) != (XcmsCCC)NULL) {
+	    if (_XcmsResolveColorString(ccc, tmpName,
+		    &cmsColor_exact, XcmsRGBFormat) == XcmsSuccess) {
 		_XcmsRGB_to_XColor(&cmsColor_exact, def, 1);
 		bcopy((char *)def, (char *)scr, sizeof(XColor));
-		_XcmsResolveColor(pCCC, scr, 1);
+		_XcmsResolveColor(ccc, scr, 1);
 		return(1);
 	    }
 	    /*
@@ -66,7 +69,7 @@ Status XLookupColor (dpy, cmap, spec, def, scr)
 	 * overwritten by XcmsResolveColorString().
 	 */
 
-	n = tmpName ? strlen (tmpName) : 0;
+	n = tmpName[0] == '\0' ? strlen (tmpName) : 0;
 	LockDisplay(dpy);
 	GetReq (LookupColor, req);
 	req->cmap = cmap;

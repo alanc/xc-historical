@@ -1,30 +1,46 @@
-/* $XConsortium: TekHVCMxVs.c,v 1.3 91/02/11 18:17:11 dave Exp $" */
+/* $XConsortium: TekHVCMxVs.c,v 1.4 91/02/12 16:10:22 dave Exp $" */
 
 /*
- * (c) Copyright 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * This code, which implements the TekColor Human Interface and/or the TekHVC
- * Color Space algorithms, is proprietary to Tektronix, Inc., and permission
- * is granted for use only in the form supplied.  Revisions, modifications,
- * or * adaptations are not permitted without the prior written approval of
- * Tektronix, Inc., Beaverton, OR 97077.  Code and supporting documentation
- * copyright Tektronix, Inc. 1990 1991 All rights reserved.  TekColor and TekHVC
- * are trademarks of Tektronix, Inc.  U.S. and foreign patents pending.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of Xcms based on the TekColor Color Management System.  TekColor is a
+ * trademark of Tektronix, Inc.  The term "TekHVC" designates a particular
+ * color space that is the subject of U.S. Patent No. 4,985,853 (equivalent
+ * foreign patents pending).  Permission is hereby granted to use, copy,
+ * modify, sell, and otherwise distribute this software and its
+ * documentation for any purpose and without fee, provided that:
+ * 
+ * 1. This copyright, permission, and disclaimer notice is reproduced in
+ *    all copies of this software and any modification thereof and in
+ *    supporting documentation; 
+ * 2. Any color-handling application which displays TekHVC color
+ *    cooordinates identifies these as TekHVC color coordinates in any
+ *    interface that displays these coordinates and in any associated
+ *    documentation;
+ * 3. The term "TekHVC" is always used, and is only used, in association
+ *    with the mathematical derivations of the TekHVC Color Space,
+ *    including those provided in this file and any equivalent pathways and
+ *    mathematical derivations, regardless of digital (e.g., floating point
+ *    or integer) representation.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *	NAME
  *		TekHVCMxVs.c
  *
  *	DESCRIPTION
- *		Source for the XcmsTekHVC_MaxValueSamples() gamut boundary
+ *		Source for the XcmsTekHVCQueryMaxVSamples() gamut boundary
  *		querying routine.
  */
 
@@ -34,9 +50,9 @@
 /*
  *	EXTERNS
  */
-extern Status _XcmsTekHVC_MaxValueChromaRGB();
+extern Status _XcmsTekHVCQueryMaxVCRGB();
 extern Status _XcmsTekHVC_CheckModify();
-extern XcmsColorSpace XcmsTekHVC_ColorSpace;
+extern XcmsColorSpace XcmsTekHVCColorSpace;
 
 
 
@@ -48,14 +64,14 @@ extern XcmsColorSpace XcmsTekHVC_ColorSpace;
 
 /*
  *	NAME
- *		XcmsTekHVC_MaxValueSamples - Compute a set of value/chroma
+ *		XcmsTekHVCQueryMaxVSamples - Compute a set of value/chroma
  *						pairs.
  *
  *	SYNOPSIS
  */
 Status
-XcmsTekHVC_MaxValueSamples(pCCC, hue, pColor_in_out, nSamples)
-    XcmsCCC *pCCC;
+XcmsTekHVCQueryMaxVSamples(ccc, hue, pColor_in_out, nSamples)
+    XcmsCCC ccc;
     XcmsFloat hue;
     XcmsColor *pColor_in_out;
     unsigned short nSamples;
@@ -77,35 +93,35 @@ XcmsTekHVC_MaxValueSamples(pCCC, hue, pColor_in_out, nSamples)
  *		returned color specification.
  *
  *	RETURNS
- *		XCMS_FAILURE - Failure
- *		XCMS_SUCCESS - Succeeded
+ *		XcmsFailure - Failure
+ *		XcmsSuccess - Succeeded
  *
  */
 {
-    XcmsCCC	    myCCC;
-    XcmsColor       *pHVC;
-    XcmsRGBi        rgb_saved;
+    XcmsCCCRec myCCC;
+    XcmsColor *pHVC;
+    XcmsRGBi rgb_saved;
     unsigned short nI;
-    XcmsFloat       nT;
+    XcmsFloat nT;
 
     /*
      * Check Arguments
      */
-    if (pCCC == NULL || pColor_in_out == NULL || nSamples == 0) {
-	return(XCMS_FAILURE);
+    if (ccc == NULL || pColor_in_out == NULL || nSamples == 0) {
+	return(XcmsFailure);
     }
 
     /*
      * Insure TekHVC installed
      */
-    if (XcmsAddDIColorSpace(&XcmsTekHVC_ColorSpace) == XCMS_FAILURE) {
-	return(XCMS_FAILURE);
+    if (XcmsAddColorSpace(&XcmsTekHVCColorSpace) == XcmsFailure) {
+	return(XcmsFailure);
     }
 
     /* setup the CCC to use for the conversions. */
-    bcopy ((char *) pCCC, (char *) &myCCC, sizeof(XcmsCCC));
-    myCCC.clientWhitePt.format = XCMS_UNDEFINED_FORMAT;
-    myCCC.gamutCompFunc = (XcmsFuncPtr) NULL;
+    bcopy ((char *) ccc, (char *) &myCCC, sizeof(XcmsCCCRec));
+    myCCC.clientWhitePt.format = XcmsUndefinedFormat;
+    myCCC.gamutCompProc = (XcmsFuncPtr) NULL;
 
     /* Step 1: compute the maximum value and chroma for this hue. */
 
@@ -118,12 +134,12 @@ XcmsTekHVC_MaxValueSamples(pCCC, hue, pColor_in_out, nSamples)
 	hue -= 360.0;
     }
     pColor_in_out->spec.TekHVC.H = hue;
-    pColor_in_out->format = XCMS_TekHVC_FORMAT;
+    pColor_in_out->format = XcmsTekHVCFormat;
 
     /* Get the maximum value and chroma point for this hue */
-    if (_XcmsTekHVC_MaxValueChromaRGB (&myCCC, pColor_in_out,
-	    (XcmsRGBi *)&rgb_saved) == XCMS_FAILURE) {
-	return (XCMS_FAILURE);
+    if (_XcmsTekHVCQueryMaxVCRGB(&myCCC, pColor_in_out->spec.TekHVC.H,
+	    pColor_in_out, (XcmsRGBi *)&rgb_saved) == XcmsFailure) {
+	return (XcmsFailure);
     }
 
     /* Step 2:  Convert each of the RGBi's to HVC's */
@@ -133,18 +149,18 @@ XcmsTekHVC_MaxValueSamples(pCCC, hue, pColor_in_out, nSamples)
 	pHVC->spec.RGBi.red   = rgb_saved.red * (1.0 - nT) + nT;
 	pHVC->spec.RGBi.green = rgb_saved.green * (1.0 - nT) + nT;
 	pHVC->spec.RGBi.blue  = rgb_saved.blue * (1.0 - nT) + nT;
-	pHVC->format          = XCMS_RGBi_FORMAT;
+	pHVC->format          = XcmsRGBiFormat;
 	pHVC->pixel           = pColor_in_out->pixel;
 	/* convert from RGB to HVC */
 	if (_XcmsConvertColorsWithWhitePt(&myCCC, pHVC,
-		&myCCC.pPerScrnInfo->screenWhitePt, 1, XCMS_TekHVC_FORMAT,
-		(Bool *) NULL) == XCMS_FAILURE) {
-	    return(XCMS_FAILURE);
+		&myCCC.pPerScrnInfo->screenWhitePt, 1, XcmsTekHVCFormat,
+		(Bool *) NULL) == XcmsFailure) {
+	    return(XcmsFailure);
 	}
 
 	/* make sure to return the input hue */
 	pHVC->spec.TekHVC.H = hue;
     }
 
-    return(XCMS_SUCCESS);
+    return(XcmsSuccess);
 }
