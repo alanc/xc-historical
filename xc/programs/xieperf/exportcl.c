@@ -1,4 +1,4 @@
-/* $XConsortium: exportcl.c,v 1.2 93/10/26 10:06:18 rws Exp $ */
+/* $XConsortium: exportcl.c,v 1.3 93/10/26 15:08:29 rws Exp $ */
 
 /**** module exportcl.c ****/
 /******************************************************************************
@@ -216,6 +216,7 @@ int InitExportClientPhoto(xp, p, reps)
 			else
 			{
 	        		encode_params = ( char * ) XieTecEncodeG42D(
+					False,
 					False,
 					xieValLSFirst
 				);
