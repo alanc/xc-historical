@@ -9,7 +9,7 @@
  * LibName, SoRev, HasSharedData, and optionally HugeLibrary and IncSubdir
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.28 94/01/16 16:21:33 gildea Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.29 94/03/28 17:13:21 matt Exp $
 
 #ifndef LibraryCplusplusOptions
 #if DoSharedLib && defined(SharedLibraryCplusplusOptions)
@@ -250,12 +250,12 @@ LintLibraryTarget($(LIBNAME),$(SRCS))
 InstallLintLibrary($(LIBNAME),$(LINTLIBDIR))
 #ifdef IncSubdir
 BuildIncludes($(HEADERS),IncSubdir,..)
-InstallMultiple($(HEADERS),$(INCDIR)/IncSubdir)
+InstallMultipleFlags($(HEADERS),$(INCDIR)/IncSubdir,$(INSTINCFLAGS))
 #else
 #ifndef CplusplusSource
 #if !defined(LibHeaders) || LibHeaders
 BuildIncludesTop($(HEADERS))
-InstallMultiple($(HEADERS),$(INCDIR))
+InstallMultipleFlags($(HEADERS),$(INCDIR),$(INSTINCFLAGS))
 #endif
 #endif
 #endif
