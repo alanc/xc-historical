@@ -10,7 +10,6 @@
 #include "constants.h"
 
 extern int yylineno;
-extern int yydebug;
 extern FILE *yyin;
 
 extern void GC_change_function();
