@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.65 89/03/30 16:53:57 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.66 89/05/11 01:05:29 kit Exp $";
 #endif /* lint */
 
 
@@ -69,7 +69,6 @@ static XtResource resources[] = {
 };
 
 static void Initialize();
-static void Realize();
 static void Resize();
 static void Redisplay();
 static Boolean SetValues();
@@ -90,7 +89,7 @@ LabelClassRec labelClassRec = {
     /* class_inited       	*/	FALSE,
     /* initialize	  	*/	Initialize,
     /* initialize_hook		*/	NULL,
-    /* realize		  	*/	Realize,
+    /* realize		  	*/	XtInheritRealize,
     /* actions		  	*/	NULL,
     /* num_actions	  	*/	0,
     /* resources	  	*/	resources,
@@ -227,20 +226,6 @@ static void Initialize(request, new)
 
 } /* Initialize */
 
-
-static void Realize(w, valueMask, attributes)
-    register Widget w;
-    Mask *valueMask;
-    XSetWindowAttributes *attributes;
-{
-    *valueMask |= CWBitGravity;
-    attributes->bit_gravity = NorthWestGravity;
-    (*superclass->core_class.realize) (w, valueMask, attributes);
-    
-} /* Realize */
-
-
-
 /*
  * Repaint the widget window
  */
@@ -315,37 +300,12 @@ static void _Reposition(lw, width, height, dx, dy)
     return;
 }
 
-
 static void Resize(w)
     Widget w;
 {
     LabelWidget lw = (LabelWidget)w;
     Position dx, dy;
     _Reposition(lw, w->core.width, w->core.height, &dx, &dy);
-    if ((dx || dy) && XtIsRealized(w)) {
-	int old_x = lw->label.label_x - dx;
-	int old_y = lw->label.label_y - dy;
-	XCopyArea(XtDisplay(w), XtWindow(w), XtWindow(w), lw->label.normal_GC,
-		  (int)old_x, (int)old_y,
-		  (unsigned)lw->label.label_width,
-		  (unsigned)lw->label.label_height,
-		  (int)lw->label.label_x, (int)lw->label.label_y);
-	if (dx) {
-	    XClearArea(XtDisplay(w), XtWindow(w),
-		       (dx > 0) ? old_x
-		             : (int)lw->label.label_x + lw->label.label_width,
-		       old_y, (unsigned) ((dx < 0) ? -dx : dx),
-		       (unsigned)lw->label.label_height, False);
-	}
-	if (dy) {
-	    XClearArea(XtDisplay(w), XtWindow(w),
-		       old_x,
-		       (dy > 0) ? old_y
-			     : (int)lw->label.label_y + lw->label.label_height,
-		       (unsigned)lw->label.label_width, 
-		       (unsigned) ((dy < 0) ? -dy : dy), False);
-	}
-    }
 }
 
 /*
