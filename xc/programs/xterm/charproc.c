@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.66 89/01/18 16:29:31 jim Exp $
+ * $XConsortium: charproc.c,v 1.67 89/03/01 20:00:22 jim Exp $
  */
 
 
@@ -136,7 +136,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.66 89/01/18 16:29:31 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.67 89/03/01 20:00:22 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -541,41 +541,41 @@ VTparse()
 
 		 case CASE_ICH:
 			/* ICH */
-			if((c = param[0]) < 1)
-				c = 1;
-			InsertChar(screen, c);
+			if((row = param[0]) < 1)
+				row = 1;
+			InsertChar(screen, row);
 			parsestate = groundtable;
 			break;
 
 		 case CASE_CUU:
 			/* CUU */
-			if((c = param[0]) < 1)
-				c = 1;
-			CursorUp(screen, c);
+			if((row = param[0]) < 1)
+				row = 1;
+			CursorUp(screen, row);
 			parsestate = groundtable;
 			break;
 
 		 case CASE_CUD:
 			/* CUD */
-			if((c = param[0]) < 1)
-				c = 1;
-			CursorDown(screen, c);
+			if((row = param[0]) < 1)
+				row = 1;
+			CursorDown(screen, row);
 			parsestate = groundtable;
 			break;
 
 		 case CASE_CUF:
 			/* CUF */
-			if((c = param[0]) < 1)
-				c = 1;
-			CursorForward(screen, c);
+			if((row = param[0]) < 1)
+				row = 1;
+			CursorForward(screen, row);
 			parsestate = groundtable;
 			break;
 
 		 case CASE_CUB:
 			/* CUB */
-			if((c = param[0]) < 1)
-				c = 1;
-			CursorBack(screen, c);
+			if((row = param[0]) < 1)
+				row = 1;
+			CursorBack(screen, row);
 			parsestate = groundtable;
 			break;
 
@@ -627,25 +627,25 @@ VTparse()
 
 		 case CASE_IL:
 			/* IL */
-			if((c = param[0]) < 1)
-				c = 1;
-			InsertLine(screen, c);
+			if((row = param[0]) < 1)
+				row = 1;
+			InsertLine(screen, row);
 			parsestate = groundtable;
 			break;
 
 		 case CASE_DL:
 			/* DL */
-			if((c = param[0]) < 1)
-				c = 1;
-			DeleteLine(screen, c);
+			if((row = param[0]) < 1)
+				row = 1;
+			DeleteLine(screen, row);
 			parsestate = groundtable;
 			break;
 
 		 case CASE_DCH:
 			/* DCH */
-			if((c = param[0]) < 1)
-				c = 1;
-			DeleteChar(screen, c);
+			if((row = param[0]) < 1)
+				row = 1;
+			DeleteChar(screen, row);
 			parsestate = groundtable;
 			break;
 
@@ -676,9 +676,9 @@ VTparse()
 
 		 case CASE_TBC:
 			/* TBC */
-			if ((c = param[0]) <= 0) /* less than means default */
+			if ((row = param[0]) <= 0) /* less than means default */
 				TabClear(term->tabs, screen->cur_col);
-			else if (c == 3)
+			else if (row == 3)
 				TabZonk(term->tabs);
 			parsestate = groundtable;
 			break;
@@ -697,8 +697,8 @@ VTparse()
 
 		 case CASE_SGR:
 			/* SGR */
-			for (c=0; c<nparam; ++c) {
-				switch (param[c]) {
+			for (row=0; row<nparam; ++row) {
+				switch (param[row]) {
 				 case DEFAULT:
 				 case 0:
 					term->flags &= ~(INVERSE|BOLD|UNDERLINE);
@@ -719,7 +719,7 @@ VTparse()
 
 		 case CASE_CPR:
 			/* CPR */
-			if ((c = param[0]) == 5) {
+			if ((row = param[0]) == 5) {
 				reply.a_type = CSI;
 				reply.a_pintro = 0;
 				reply.a_nparam = 1;
@@ -727,7 +727,7 @@ VTparse()
 				reply.a_inters = 0;
 				reply.a_final  = 'n';
 				unparseseq(&reply, screen->respond);
-			} else if (c == 6) {
+			} else if (row == 6) {
 				reply.a_type = CSI;
 				reply.a_pintro = 0;
 				reply.a_nparam = 2;
@@ -760,13 +760,13 @@ VTparse()
 
 		 case CASE_DECREQTPARM:
 			/* DECREQTPARM */
-			if ((c = param[0]) == DEFAULT)
-				c = 0;
-			if (c == 0 || c == 1) {
+			if ((row = param[0]) == DEFAULT)
+				row = 0;
+			if (row == 0 || row == 1) {
 				reply.a_type = CSI;
 				reply.a_pintro = 0;
 				reply.a_nparam = 7;
-				reply.a_param[0] = c + 2;
+				reply.a_param[0] = row + 2;
 				reply.a_param[1] = 1;	/* no parity */
 				reply.a_param[2] = 1;	/* eight bits */
 				reply.a_param[3] = 112;	/* transmit 9600 baud */
