@@ -13,7 +13,7 @@
 #define XsunServer Xsun
 /* #define Xplx Xplx */
 
-/**/# platform:  $XConsortium: sun.sys,v 1.1 89/01/10 18:15:21 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.2 89/01/11 14:58:33 jim Exp $
 /**/# operating system:  OSName
 
 
@@ -34,8 +34,8 @@
 
 /* define this as you like for server compilation */
 #if SunOSPlatform && (OSMajorVersion >= 4 || defined(sparc))
-#define ServerDefines SunWindowsDefines -DINCLUDE_ALLOCA_H
+#define ServerDefines SunWindowsDefines ExtensionDefines -DINCLUDE_ALLOCA_H
 #else
-#define ServerDefines SunWindowsDefines
+#define ServerDefines SunWindowsDefines ExtensionDefines
 #endif
 

@@ -1,4 +1,4 @@
-/**/# platform:  $XConsortium: cray.macros,v 1.28 88/11/14 09:48:54 jim Exp $
+/**/# platform:  $XConsortium: cray.cf,v 1.1 89/01/10 18:15:23 jim Exp $
 
 #define StandardSystemDefines -DSYSV
 #define StandardDefines StandardSystemDefines
@@ -44,7 +44,7 @@ Berklib.c: sysV/Berklib.c					@@\
 /* #define ServerMallocLib		YES	*//* use -lmalloc for server */
 /* take out -DMALLOC_0_RETURNS_NULL if you have ServerMallocLib NO */
 #define ServerExtra		-DCOMPRESSED_FONTS -DMULTI_X_HACK
-#define ServerDefines		StandardDefines ServerExtra
+#define ServerDefines		StandardDefines ServerExtra ExtensionDefines
 
 /* -DTCPCONN allows TCP connections */
 /* -DUNIXCONN allows Unix domain connections */

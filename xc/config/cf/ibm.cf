@@ -78,7 +78,7 @@
  * define this as you like for server compilation 
  * affected: all makefiles in .../X11/server
  */
-#define ServerDefines		-DUNIXCPP -DNOSTDHDRS GlobalDefines
+#define ServerDefines  -DUNIXCPP -DNOSTDHDRS GlobalDefines ExtensionDefines
 
 /* define this as you like for server font support */
 #define FontDefines	-DFONT_SNF -DFONT_BDF -DCOMPRESSED_FONTS GlobalDefines

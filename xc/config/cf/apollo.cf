@@ -12,13 +12,13 @@
             PAS = /com/pas
 
 
-/**/# platform:  $XConsortium$
+/**/# platform:  $XConsortium: apollo.cf,v 1.2 89/01/11 14:58:17 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
  *			  Platform-specfic parameters                        *
  *****************************************************************************/
 
-#define ServerDefines		-DSWITCHER
+#define ServerDefines	ExtensionDefines -DSWITCHER
 #define FontDefines	-DFONT_SNF -DFONT_BDF
 
