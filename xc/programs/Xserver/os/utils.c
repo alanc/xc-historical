@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.119 92/10/19 17:19:22 rws Exp $ */
+/* $XConsortium: utils.c,v 1.120 93/07/12 09:33:57 dpw Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -74,6 +74,9 @@ Bool noTestExtensions;
 int auditTrailLevel = 1;
 
 void ddxUseMsg();
+#if NeedVarargsPrototypes
+void VErrorF(char*, va_list);
+#endif
 
 #if !defined(SVR4) && !defined(hpux)
 extern char *sbrk();
@@ -682,7 +685,7 @@ AuditF(
     }
 #if NeedVarargsPrototypes
     Va_start(args, f);
-    ErrorF(f, args);
+    VErrorF(f, args);
     va_end(args);
 #else
     ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
@@ -706,7 +709,7 @@ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     ErrorF("\nFatal server error:\n");
 #if NeedVarargsPrototypes
     Va_start(args, f);
-    ErrorF(f, args);
+    VErrorF(f, args);
     va_end(args);
 #else
     ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
@@ -716,6 +719,22 @@ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     /*NOTREACHED*/
 }
 
+#if NeedVarargsPrototypes
+void
+VErrorF(f, args)
+    char *f;
+    va_list args;
+{
+#ifdef AIXV3
+    vfprintf(aixfd, f, args);
+    fflush (aixfd);
+    if (SyncOn)
+        sync();
+#else
+    vfprintf(stderr, f, args);
+#endif /* AIXV3 */
+}
+#endif
 
 /*VARARGS1*/
 void
@@ -731,29 +750,18 @@ ErrorF(
 #if NeedVarargsPrototypes
     va_list args;
     Va_start(args, f);
-#endif
-
-#ifdef AIXV3
-
-#if NeedVarargsPrototypes
-    vfprintf(aixfd, f, args);
+    VErrorF(f, args);
     va_end(args);
 #else
+#ifdef AIXV3
     fprintf(aixfd, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-#endif
     fflush (aixfd);
     if (SyncOn)
         sync();
-
 #else /* not AIXV3 */
-
-#if NeedVarargsPrototypes
-    vfprintf(stderr, f, args);
-    va_end(args);
-#else
     fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-#endif
 #endif /* AIXV3 */
+#endif
 }
 
 #ifdef AIXV3
