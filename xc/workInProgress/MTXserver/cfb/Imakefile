@@ -19,6 +19,17 @@ NormalLibraryTarget(cfb,$(OBJS))
 
 DependTarget()
 
+#ifdef vax
+#
+# 4.3bsd and Ultrix cc does not pass -J flag (compile long jumps)
+# to the assembler, as.  cfbbitblt.c needs long jumps to build.
+#
+cfbbitblt.o:
+	$(CC) -S $(CFLAGS) cfbbitblt.c
+	as -o cfbbitblt.o -J cfbbitblt.s
+	rm cfbbitblt.s
+#endif
+
 lint: ${SRCS}
 	@echo 'Expect the following warnings from lint:' >lint.out
 	@echo '  cfbpntwin.c: srcStartOver set but not used' >>lint.out
