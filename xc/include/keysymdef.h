@@ -1,4 +1,4 @@
-/* $XConsortium: keysymdef.h,v 1.11 89/04/17 16:41:46 rws Exp $ */
+/* $XConsortium: keysymdef.h,v 1.12 89/09/18 10:15:37 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -48,7 +48,26 @@ SOFTWARE.
 /* International & multi-key character composition */
 
 #define XK_Multi_key		0xFF20  /* Multi-key character compose */
+
+/* Japanese keyboard support */
+
 #define XK_Kanji		0xFF21	/* Kanji, Kanji convert */
+#define XK_Muhenkan		0xFF22  /* Cancel Conversion */
+#define XK_Henkan_Mode		0xFF23  /* Start/Stop Conversion */
+#define XK_Henkan		0xFF23  /* Alias for Henkan_Mode */
+#define XK_Romaji		0xFF24  /* to Romaji */
+#define XK_Hiragana		0xFF25  /* to Hiragana */
+#define XK_Katakana		0xFF26  /* to Katakana */
+#define XK_Hiragana_Katakana	0xFF27  /* Hiragana/Katakana toggle */
+#define XK_Zenkaku		0xFF28  /* to Zenkaku */
+#define XK_Hankaku		0xFF29  /* to Hankaku */
+#define XK_Zenkaku_Hankaku	0xFF2A  /* Zenkaku/Hankaku toggle */
+#define XK_Touroku		0xFF2B  /* Add to Dictionary */
+#define XK_Massyo		0xFF2C  /* Delete from Dictionary */
+#define XK_Kana_Lock		0xFF2D  /* Kana Lock */
+#define XK_Kana_Shift		0xFF2E  /* Kana Shift */
+#define XK_Eisu_Shift		0xFF2F  /* Alphanumeric Shift */
+#define XK_Eisu_toggle		0xFF30  /* Alphanumeric toggle */
 
 /* Cursor control & motion */
 
