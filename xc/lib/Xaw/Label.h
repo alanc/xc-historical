@@ -1,4 +1,4 @@
-/* $XConsortium: Label.h,v 1.29 91/06/22 21:25:13 rws Exp $ */
+/* $XConsortium: Label.h,v 1.30 91/07/24 16:55:26 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -44,6 +44,7 @@ SOFTWARE.
  border		     BorderColor	Pixel		XtDefaultForeground
  borderWidth	     BorderWidth	Dimension	1
  cursor		     Cursor		Cursor		None
+ cursorName	     Cursor		String		NULL
  destroyCallback     Callback		XtCallbackList	NULL
  encoding	     Encoding		unsigned char	XawTextEncoding8bit
  font		     Font		XFontStruct*	XtDefaultFont
@@ -56,6 +57,8 @@ SOFTWARE.
  label		     Label		String		NULL
  leftBitmap	     LeftBitmap		Pixmap		None
  mappedWhenManaged   MappedWhenManaged	Boolean		True
+ pointerColor	     Foreground		Pixel		XtDefaultForeground
+ pointerColorBackground Background	Pixel		XtDefaultBackground
  resize		     Resize		Boolean		True
  sensitive	     Sensitive		Boolean		True
  width		     Width		Dimension	text width
