@@ -2,11 +2,13 @@
 
 Name						Reference
 ----						---------
+"Acorn"						[49]
 "AIX"						[33]
 "APOLLO"					[1]
 "Apple"						[22]
 "ARDENT"					[2]
 "CRUC"						[30]
+"DG"						[48]
 "IBM"						[33]
 "ICS"						[31]
 "IXI"						[20]
@@ -53,6 +55,92 @@ apXK_Repeat             0x1000FF14		[1]
 apXK_KP_parenleft       0x1000FFA8		[1]
 apXK_KP_parenright      0x1000FFA9		[1]
 
+IXK_2ND_FUNC_L		0x10004001		[50]
+IXK_2ND_FUNC_R		0x10004002		[50]
+IXK_REMOVE		0x10004003		[50]
+IXK_REPEAT		0x10004004		[50]
+IXK_A1			0x10004101		[50]
+IXK_A2			0x10004102		[50]
+IXK_A3			0x10004103		[50]
+IXK_A4			0x10004104		[50]
+IXK_A5			0x10004105		[50]
+IXK_A6			0x10004106		[50]
+IXK_A7			0x10004107		[50]
+IXK_A8			0x10004108		[50]
+IXK_A9			0x10004109		[50]
+IXK_A10			0x1000410A		[50]
+IXK_A11			0x1000410B		[50]
+IXK_A12			0x1000410C		[50]
+IXK_A13			0x1000410D		[50]
+IXK_A14			0x1000410E		[50]
+IXK_A15			0x1000410F		[50]
+IXK_B1			0x10004201		[50]
+IXK_B2			0x10004202		[50]
+IXK_B3			0x10004203		[50]
+IXK_B4			0x10004204		[50]
+IXK_B5			0x10004205		[50]
+IXK_B6			0x10004206		[50]
+IXK_B7			0x10004207		[50]
+IXK_B8			0x10004208		[50]
+IXK_B9			0x10004209		[50]
+IXK_B10			0x1000420B		[50]
+IXK_B11			0x1000420B		[50]
+IXK_B12			0x1000420C		[50]
+IXK_B13			0x1000420D		[50]
+IXK_B14			0x1000420E		[50]
+IXK_B15			0x1000420F		[50]
+IXK_B16			0x10004210		[50]
+
+DXK_Remove		0x1000FF00		[27]
+DXK_ring_accent		0x1000FEB0		[27]
+DXK_circumflex_accent	0x1000FE5E		[27]
+DXK_cedilla_accent	0x1000FE2C		[27]
+DXK_acute_accent	0x1000FE27		[27]
+DXK_grave_accent	0x1000FE60		[27]
+DXK_tilde		0x1000FE7E		[27]
+DXK_diaeresis		0x1000FE22		[27]
+
+osfXK_Copy		0x1004FF02		[7]
+osfXK_Cut		0x1004FF03		[7]
+osfXK_Paste		0x1004FF04		[7]
+osfXK_BackTab		0x1004FF07		[7]
+osfXK_BackSpace		0x1004FF08		[7]
+osfXK_Clear		0x1004FF0B		[7]
+osfXK_Escape		0x1004FF1B		[7]
+osfXK_PageLeft		0x1004FF41		[7]
+osfXK_PageUp		0x1004FF42		[7]
+osfXK_PageRight		0x1004FF43		[7]
+osfXK_PageDown		0x1004FF44		[7]
+osfXK_Left		0x1004FF51		[7]
+osfXK_Up		0x1004FF52		[7]
+osfXK_Right		0x1004FF53		[7]
+osfXK_Down		0x1004FF54		[7]
+osfXK_EndLine		0x1004FF57   		[7]
+osfXK_BeginLine		0x1004FF58   		[7]
+osfXK_EndData		0x1004FF59		[7]
+osfXK_BeginData		0x1004FF5A   		[7]
+osfXK_PrevMenu		0x1004FF5B		[7]
+osfXK_NextMenu		0x1004FF5C		[7]
+osfXK_PrevField		0x1004FF5D		[7]
+osfXK_NextField		0x1004FF5E		[7]
+osfXK_Select		0x1004FF60		[7]
+osfXK_Insert		0x1004FF63		[7]
+osfXK_Undo		0x1004FF65		[7]
+osfXK_Menu		0x1004FF67		[7]
+osfXK_Cancel		0x1004FF69		[7]
+osfXK_Help		0x1004FF6A		[7]
+osfXK_Activate		0x1004FF70		[7]
+osfXK_SelectAll		0x1004FF71		[7]
+osfXK_DeselectAll	0x1004FF72		[7]
+osfXK_Reselect		0x1004FF73		[7]
+osfXK_Extend		0x1004FF74		[7]
+osfXK_PrimaryPaste	0x1004FF75		[7]
+osfXK_QuickPaste	0x1004FF76		[7]
+osfXK_MenuBar		0x1004FF77		[7]
+osfXK_Restore		0x1004FF78		[7]
+osfXK_AddMode		0x1004FF7C		[7]
+osfXK_Delete		0x1004FFFF		[7]
+
 3. AUTHORIZATION PROTOCOL NAMES
 
 Name						Reference
@@ -66,14 +154,17 @@ Name						Reference
       
 String						Reference
 ----						---------
+"Acorn Computers Ltd"				[49]
 "Apollo Computer Inc."				[1]
 "Apple Computer, Inc."				[22]
 "Ardent Computer Corporation"			[2]
 "Crucible"					[30]
+"Data General Corporation"			[48]
 "International Business Machines"		[33]
 "MIT X Consortium"				[8]
 "OMRON TATEISI ELECTRONICS CO."			[45]
 "PFU Limited"					[32]
+"Silicon Graphics Computer Systems"		[6]
 "Sony Corporation"				[37]
 "Stellar Computer Inc."				[28]
 "VIT-Visual Information Technologies, Inc (VITec)"	[46]
@@ -93,9 +184,13 @@ Name						Reference
 "ARDENT-XDoubleBuffer"				[2], [3]
 "ARDENT-XTitan"					[2], [4]
 "bezier"					[34]
+"DEC-XTRAP"					[51]
 "MIT-SHM"					[8]
 "MIT-SUNDRY-NONSTANDARD"			[8]
 "Multi-Buffering"				[8], [10]
+"SGI-GLX"					[6]
+"SGI-XGL"					[6]
+"SGI-MISCELLANEOUS"				[6]
 "SHAPE"						[8], [13]
 "SonyKeyboardExtension"				[37]
 "SonySoundExtension"				[37]
@@ -148,6 +243,7 @@ Name						Reference
 "WM_STATE"					[16]
 "WM_TRANSIENT_FOR"				[16]
 "WM_ZOOM_HINTS"					[17], [18]
+"_SGI_GL_COLORMAP"				[6]
 
 8. PROPERTY TYPE NAMES
 
@@ -181,10 +277,11 @@ Name						Reference
 
 Name						Reference
 ----						---------
+"CLIPBOARD"					[16]
 "PD_SELECTION"					[37]
 "PRIMARY"					[16]
+"PRIMARY_FONT"					[47]
 "SECONDARY"					[16]
-"CLIPBOARD"					[16]
 "_JAPANESE_CONVERSION"				[37]
 "_CHINESE_CONVERSION"				[37]
 "_HUNGLE_CONVERSION"				[37]
@@ -254,6 +351,7 @@ Name						Reference
 
 13. FONT FOUNDRY NAMES
 
+"Acorn"						[49]
 "Adobe"						[24]
 "AIX"						[33]
 "Apple"						[22]
@@ -452,6 +550,7 @@ Name						Reference
 
 19. DISPLAY MANUFACTURER ID
 
+"Acorn"						[49]
 "MIT"						[8]
 
 REFERENCES
@@ -475,9 +574,16 @@ REFERENCES
 
 [5]	Visual Technology, Inc.
 
-[6]	Silicon Graphics, Inc.
+[6]	Philip Karlton
+	System Software Division
+	Silicon Graphics Computer Systems
+	2011 N. Shoreline Blvd.
+	Mountain View, CA 94309-7311
 
-[7]	Open Software Foundation
+[7]	Ellis Cohen
+	Open Softare Foundation
+	11 Cambridge Center
+	Cambridge MA 02142
 
 [8]	MIT X Consortium
 	Laboratory for Computer Science
@@ -648,4 +754,27 @@ REFERENCES
 	Plano, TX 75075
 
 [47]	X11R4
+
+[48]	Data General Corp.
+	62 T.W. Alexander Dr.
+	R.T.P. NC, 27709
+	Attn: Janet Leising
+
+[49]	John Bowler
+	Acorn Computers Limited
+	Cambridge Technopark
+	645 Newmarket Road
+	Cambridge
+	CB5 8PB
+	England
+
+[50]	Rick Franklin
+	Intergraph Corporation
+	One Madison Industrial Park
+	Huntsville, Al.  35894-0001
+
+[51]	Dan Coutu
+	Digital Equipment Corporation ZKO 3-3/T13
+	110 Spitbrook Rd.
+	Nashua, NH 03062-2698
 Sumitomo Electric Workstation Corp.	[77]
