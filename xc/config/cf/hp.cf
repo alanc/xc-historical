@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.55 92/12/22 17:45:11 gildea Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.56 93/02/06 10:11:17 rws Exp $
 
 #define OSName                 HP-UX 9.1
 XCOMM operating system:  OSName
@@ -19,8 +19,14 @@ XCOMM operating system:  OSName
 #define ServerOSDefines -DXOS -DBSTORE -DSOFTWARE_CURSOR -DNO_ALLOCA -DSCREEN_PIXMAPS -DMERGE_SAVE_UNDERS -DR5 -DHAS_IFREQ -DFORCE_SEPARATE_PRIVATE
 /* #include <hpLib.rules> */
 #else
+#define StandardDefines        -Dhpux -DSYSV
+#if OSMajorVersion < 8
 #define DefaultCCOptions       -Wc,-Nd4000,-Ns4100,-Ne700,-Np200,-Nw300
 #define PexCCOptions           -Wp,-H150000 -Wc,-Nd4000,-Ns8100,-Ne700,-Np200
+#else
+#define OptimizedCDebugFlags   +O1
+#define PexCCOptions           -Wp,-H250000
+#endif
 #define PexShmIPC              NO
 #define LintOpts               -ax -Nd4000 -Ns8000 -Ne700 -Np200 -Na25000
 #define BuildServer            NO
@@ -33,7 +39,10 @@ XCOMM operating system:  OSName
 #define RemoveTargetProgramByMoving YES
 #define ExpandManNames         YES
 #define HasPutenv              YES
+#define HasFortran	       YES
 #define NeedBerklib            YES
+#define HasNdbm		       YES
+#define PrimaryScreenResolution	91
 
 #if OSMajorVersion < 6 || (OSMajorVersion == 6 && OSMinorVersion < 2)
 #define ConnectionFlags		-DTCPCONN	/* no unix sockets */
