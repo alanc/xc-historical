@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.46 91/07/17 19:17:32 rws Exp $ */
+/* $XConsortium: xhost.c,v 11.47 91/07/19 17:39:34 gildea Exp $ */
  
 /*
 
@@ -17,6 +17,12 @@ this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 
 */
+
+/* sorry, streams support does not really work yet */
+#if defined(STREAMSCONN) && defined(SVR4)
+#undef STREAMSCONN
+#define TCPCONN
+#endif
 
 #ifdef TCPCONN
 #define NEEDSOCKETS

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: gethost.c,v 1.11 91/01/29 13:44:24 rws Exp $
+ * $XConsortium: gethost.c,v 1.12 91/05/11 15:16:09 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -22,6 +22,12 @@
  *
  * Author:  Jim Fulton, MIT X Consortium
  */
+
+/* sorry, streams support does not really work yet */
+#if defined(STREAMSCONN) && defined(SVR4)
+#undef STREAMSCONN
+#define TCPCONN
+#endif
 
 #include "xauth.h"
 #include <X11/X.h>
