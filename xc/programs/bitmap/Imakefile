@@ -39,15 +39,28 @@ BUTTONPICTURES = \
         DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
   SYS_LIBRARIES = -lm
-           SRCS = BitEdit.c CutPaste.c Graphics.c ReqMach.c Bitmap.c \
+          SRCS1 = BitEdit.c CutPaste.c Graphics.c ReqMach.c Bitmap.c \
                   Dialog.c Handlers.c 
-
-           OBJS = BitEdit.o CutPaste.o Graphics.o ReqMach.o Bitmap.o \
+          OBJS1 = BitEdit.o CutPaste.o Graphics.o ReqMach.o Bitmap.o \
                   Dialog.o Handlers.o 
-
+	  SRCS2 = bmtoa.c
+	  OBJS2 = bmtoa.o
+          SRCS3 = atobm.c
+	  OBJS3 = atobm.o
        INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
+       PROGRAMS = bitmap bmtoa atobm
 
+ComplexProgramTarget_1(bitmap, $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB), -lm)
+SingleProgramTarget(bmtoa,$(OBJS2),$(XMULIB), /**/)
+SingleProgramTarget(atobm,$(OBJS3), /**/, /**/)
 
-ComplexProgramTarget(bitmap)
 InstallAppDefaults(Bitmap)
 InstallMultiple($(BUTTONPICTURES),$(INCDIR)/bitmaps)
+
+InstallProgramWithFlags(bmtoa,$(BINDIR), /**/)
+InstallProgramWithFlags(atobm,$(BINDIR), /**/)
+
+#ifdef notdef
+ComplexProgramTarget_2(bmtoa,$(XMULIB), /**/)
+ComplexProgramTarget_3(atobm, /**/, /**/)
+#endif
