@@ -1,10 +1,11 @@
 #include "copyright.h"
 
-/* $Header: XClDisplay.c,v 11.12 87/08/26 23:41:24 jg Exp $ */
+/* $Header: XClDisplay.c,v 11.16 87/08/31 14:08:53 toddb Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #include "Xlibint.h"
 
+extern Display *_XHeadOfDisplayList;
 /* 
  * XCloseDisplay - XSync the connection to the X Server, close the connection,
  * and free all associated storage.
@@ -15,6 +16,8 @@ XCloseDisplay (dpy)
 {
 	register _XExtension *ext;
 	register int i;
+	register Display **dp = &_XHeadOfDisplayList;
+	register Display *cp = _XHeadOfDisplayList;
 	for (i = 0; i < dpy->nscreens; i++) {
 		register Screen *sp = &dpy->screens[i];
 		XFreeGC (dpy, sp->default_gc);
@@ -28,6 +31,13 @@ XCloseDisplay (dpy)
 	}    
         LockDisplay(dpy);
 	_XDisconnectDisplay(dpy->fd);
-	_XFreeDisplayStructure (dpy);
-                                    /* XXX Should there be an UnlockDisplay? */
+	while (cp != NULL) {
+		if (cp == dpy) {
+			*dp = cp->next;
+			_XFreeDisplayStructure (dpy);
+			return;
+			}
+		dp = &(cp->next);
+		cp = *dp;
+		}
 }
