@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.7 94/07/26 14:11:39 mor Exp $ */
+/* $XConsortium: globals.c,v 1.8 94/07/28 13:23:35 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -47,9 +47,6 @@ IceAuthDataEntry *authDataEntries = NULL;
 int		numTransports = 0;
 
 Bool		client_info_visible = False;
-
-String 		*clientNames = NULL;
-int		numClientNames = 0;
 
 int		sessionNameCount = 0;
 String		*sessionNames = NULL;
@@ -102,6 +99,11 @@ Widget			    cloneButton;
 Widget			    killClientButton;
 Widget			    clientInfoDoneButton;
 Widget			    clientListWidget;
+Widget			    restartHintLabel;
+Widget			    restartIfRunning;
+Widget			    restartAnyway;
+Widget			    restartImmediately;
+Widget			    restartNever;
 
 Widget		    clientPropPopup;
 
