@@ -4,7 +4,7 @@ xwininfo - window information utility for X
 .SH SYNOPSIS
 .B "xwininfo"
 [-help] [-id \fIid\fP] [-root] [-name \fIname\fP] [-int]
-[-tree] [-stats] [-bits] [-events] [-size] [-wm ] [-frame] [-all]
+[-children] [-tree] [-stats] [-bits] [-events] [-size] [-wm ] [-frame] [-all]
 [-english] [-metric]
 [-display \fIdisplay\fP]
 .SH DESCRIPTION
@@ -53,9 +53,13 @@ This option specifies that all X window ids should be displayed as
 integer values.  The default is to display them as hexadecimal values.
 .PP
 .TP 8
-.B -tree
+.B -children
 This option causes the root, parent, and children windows' ids and names of
 the selected window to be displayed.
+.PP
+.TP 8
+.B -tree
+This option is like -children but displays all children recursively.
 .PP
 .TP 8
 .B -stats
@@ -123,27 +127,29 @@ This option allows you to specify the server to connect to; see \fIX(1)\fP.
 .PP
 The following is a sample summary taken with no options specified:
 
-xwininfo ==> Please select the window about which you
-         ==> would like information by clicking the
-         ==> mouse in that window.
+xwininfo: Please select the window about which you
+          would like information by clicking the
+          mouse in that window.
 
-xwininfo ==> Window id: 0x60000f (xterm)
+xwininfo: Window id: 0x60000f "xterm"
 
-         ==> Upper left X: 4
-         ==> Upper left Y: 19
-         ==> Width: 726
-         ==> Height: 966
-         ==> Depth: 4
-         ==> Border width: 3
-         ==> Window class: InputOutput
-         ==> Colormap: 0x80065
-         ==> Window Bit Gravity State: NorthWestGravity
-         ==> Window Window Gravity State: NorthWestGravity
-         ==> Window Backing Store State: NotUseful
-         ==> Window Save Under State: no
-         ==> Window Map State: IsViewable
-         ==> Window Override Redirect State: no
-         ==> Corners:  +4+19  -640+19  -640-33  +4-33
+  Absolute upper-left X: 2
+  Absolute upper-left Y: 85
+  Relative upper-left X:  0
+  Relative upper-left Y:  25
+  Width: 579
+  Height: 316
+  Depth: 8
+  Border width: 0
+  Class: InputOutput
+  Colormap: 0x27 (installed)
+  Bit Gravity State: NorthWestGravity
+  Window Gravity State: NorthWestGravity
+  Backing Store State: NotUseful
+  Save Under State: no
+  Map State: IsViewable
+  Override Redirect State: no
+  Corners:  +2+85  -699+85  -699-623  +2-623
 
 .SH ENVIRONMENT
 .PP
