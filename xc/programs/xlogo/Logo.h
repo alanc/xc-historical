@@ -1,5 +1,5 @@
 /*
-* $Header: Logo.h,v 1.1 88/02/14 15:24:33 jim Exp $
+* $Header: Logo.h,v 1.2 88/08/12 13:39:57 swick Exp $
 */
 
 /*
@@ -39,6 +39,7 @@ without express or implied warranty.
 
 */
 
+#define XtCReverseVideo		"ReverseVideo"
 
 typedef struct _LogoRec *LogoWidget;
 typedef struct _LogoClassRec *LogoWidgetClass;
