@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.16 87/09/12 21:40:28 rws Locked $ */
+/* $Header: dispatch.c,v 1.17 87/10/15 09:40:19 rws Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1390,6 +1390,7 @@ ProcSetClipRectangles(client)
     register ClientPtr client;
 {
     int	nr;
+    int result;
     register GC *pGC;
     REQUEST(xSetClipRectanglesReq);
 
@@ -1398,17 +1399,14 @@ ProcSetClipRectangles(client)
 	(stuff->ordering != YXSorted) && (stuff->ordering != YXBanded))
         return BadValue;
     VERIFY_GC(pGC,stuff->gc, client);
-    pGC->clipOrg.x = stuff->xOrigin;
-    pGC->stateChanges |= GCClipXOrigin;
-		 
-    pGC->clipOrg.y = stuff->yOrigin;
-    pGC->stateChanges |= GCClipYOrigin;
 		 
     nr = ((stuff->length  << 2) - sizeof(xSetClipRectanglesReq)) >> 3;
-    SetClipRects(pGC, nr, &stuff[1], stuff->ordering);
-    pGC->stateChanges |= GCClipMask;
-    pGC->serialNumber = 0;
-    return(client->noClientException);
+    result = SetClipRects(pGC, stuff->xOrigin, stuff->yOrigin,
+			  nr, &stuff[1], stuff->ordering);
+    if (client->noClientException != Success)
+        return(client->noClientException);
+    else
+        return(result);
 }
 
 int
