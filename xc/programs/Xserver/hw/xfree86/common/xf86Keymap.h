@@ -1,5 +1,5 @@
-/* $XConsortium: xf86Keymap.h,v 1.3 94/12/10 12:12:18 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.0 1994/11/22 02:38:53 dawes Exp $ */
+/* $XConsortium: xf86Keymap.h,v 1.4 95/01/05 20:40:37 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.1 1994/12/11 10:54:42 dawes Exp $ */
 /*
  * For Scancodes see notes in atKeynames.h  !!!!
  */
@@ -132,6 +132,31 @@ static KeySym map[NUM_KEYCODES * GLYPHS_PER_KEY] = {
     /* 0x7c */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x7d */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x7e */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x7f */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
+
+    /* These are for ServerNumLock handling */
+    /* 0x80 */  XK_KP_7,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x81 */  XK_KP_8,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x82 */  XK_KP_9,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x83 */  XK_KP_4,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x84 */  XK_KP_5,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x85 */  XK_KP_6,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x86 */  XK_KP_1,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x87 */  XK_KP_2,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x88 */  XK_KP_3,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x89 */  XK_KP_0,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x8a */  XK_KP_Decimal,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x8b */  XK_KP_Home,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x8c */  XK_KP_Up,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x8d */  XK_KP_Prior,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x8e */  XK_KP_Left,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x8f */  XK_KP_Begin,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x90 */  XK_KP_Right,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x91 */  XK_KP_End,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x92 */  XK_KP_Down,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x93 */  XK_KP_Next,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x94 */  XK_KP_Insert,	NoSymbol,	NoSymbol,	NoSymbol,
+    /* 0x95 */  XK_KP_Delete,	NoSymbol,	NoSymbol,	NoSymbol,
     /* 0x7f */  NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,
 
     /* These are for ServerNumLock handling */

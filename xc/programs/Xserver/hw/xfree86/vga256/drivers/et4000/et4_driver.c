@@ -1,6 +1,6 @@
 /*
- * $XConsortium: et4_driver.c,v 1.3 94/10/13 13:24:00 kaleb Exp kaleb $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.6 1994/11/19 07:58:28 dawes Exp $
+ * $XConsortium: et4_driver.c,v 1.4 95/01/05 20:49:40 kaleb Exp kaleb $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.7 1994/12/11 10:57:12 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -641,10 +641,10 @@ ET4000Init(mode)
 
   new->OverflowHigh = (mode->Flags & V_INTERLACE ? 0x80 : 0x00)
     | 0x10
-      | ((mode->VSyncStart & 0x400) >> 7 )
-	| (((mode->VDisplay -1) & 0x400) >> 8 )
-	  | (((mode->VTotal -2) & 0x400) >> 9 )
-	    | (((mode->VSyncStart) & 0x400) >> 10 );
+      | ((mode->CrtcVSyncStart & 0x400) >> 7 )
+	| (((mode->CrtcVDisplay -1) & 0x400) >> 8 )
+	  | (((mode->CrtcVTotal -2) & 0x400) >> 9 )
+	    | (((mode->CrtcVSyncStart) & 0x400) >> 10 );
 
 #ifdef MONOVGA
   new->Misc = 0x00;

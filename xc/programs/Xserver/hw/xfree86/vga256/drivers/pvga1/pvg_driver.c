@@ -1,6 +1,6 @@
 /*
- * $XConsortium: pvg_driver.c,v 1.1 94/10/05 13:54:47 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.10 1994/09/27 10:32:41 dawes Exp $
+ * $XConsortium: pvg_driver.c,v 1.3 94/10/13 13:26:38 kaleb Exp kaleb $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.11 1994/12/11 10:57:28 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -870,9 +870,11 @@ PVGA1Init(mode)
   /* WD90Cxx */
   if (mode->Flags & V_INTERLACE) 
     {
-      new->InterlaceStart = (mode->HSyncStart >> 3) - (mode->HTotal >> 4);
+      new->InterlaceStart = (mode->CrtcHSyncStart >> 3) -
+			    (mode->CrtcHTotal >> 4);
       new->InterlaceEnd = 0x20 |
-                          ((mode->HSyncEnd >> 3) - (mode->HTotal >> 4)) & 0x1F;
+                          ((mode->CrtcHSyncEnd >> 3) -
+			   (mode->CrtcHTotal >> 4)) & 0x1F;
     }
   else
     {

@@ -1,5 +1,5 @@
-/* $XConsortium: mach8im.c,v 1.4 94/10/14 19:01:31 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8im.c,v 3.3 1994/11/26 12:43:32 dawes Exp $ */
+/* $XConsortium: mach8im.c,v 1.5 95/01/05 20:28:29 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8im.c,v 3.4 1994/12/10 02:08:11 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -347,11 +347,11 @@ mach8ImageStipple(
     int			w,
     int			h,
     char		*psrc,
+    int			pwidth,
     int			pw, 
     int			ph,
     int			pox,
     int			poy,
-    int			pwidth,
     Pixel		fgPixel,
     Pixel		bgPixel,
     short		alu,
@@ -365,8 +365,8 @@ mach8ImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
     int			w;
     int			h;
     char		*psrc;
-    int			pw, ph, pox, poy;
     int			pwidth;
+    int			pw, ph, pox, poy;
     Pixel		fgPixel;
     Pixel		bgPixel;
     short		alu;

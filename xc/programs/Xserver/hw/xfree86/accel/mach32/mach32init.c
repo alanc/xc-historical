@@ -1,5 +1,5 @@
-/* $XConsortium: mach32init.c,v 1.2 94/10/12 19:59:09 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.3 1994/11/19 13:18:17 dawes Exp $ */
+/* $XConsortium: mach32init.c,v 1.3 95/01/05 20:27:25 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.6 1994/12/25 12:23:21 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -72,10 +72,10 @@ void mach32CalcCRTCRegs(crtcRegs, mode)
      mach32CRTCRegPtr crtcRegs;
      DisplayModePtr mode;
 {
-    crtcRegs->h_total = (mode->HTotal >> 3) - 1;
-    crtcRegs->h_disp = (mode->HDisplay >> 3) - 1;
-    crtcRegs->h_sync_strt = (mode->HSyncStart >> 3) - 1;
-    crtcRegs->h_sync_wid = (mode->HSyncEnd - mode->HSyncStart) >> 3;
+    crtcRegs->h_total = (mode->CrtcHTotal >> 3) - 1;
+    crtcRegs->h_disp = (mode->CrtcHDisplay >> 3) - 1;
+    crtcRegs->h_sync_strt = (mode->CrtcHSyncStart >> 3) - 1;
+    crtcRegs->h_sync_wid = (mode->CrtcHSyncEnd - mode->CrtcHSyncStart) >> 3;
 
     if (crtcRegs->h_sync_wid > 0x1f) {
 	ErrorF("%s %s: Horizontal Sync width (%d) in mode \"%s\"\n",
@@ -87,10 +87,10 @@ void mach32CalcCRTCRegs(crtcRegs, mode)
 
     if (mode->Flags & V_NHSYNC) crtcRegs->h_sync_wid |= H_POLARITY_NEG;
 
-    crtcRegs->v_total = SKIP_2(mode->VTotal - 1);
-    crtcRegs->v_disp = SKIP_2(mode->VDisplay - 1);
-    crtcRegs->v_sync_strt = SKIP_2(mode->VSyncStart - 1);
-    crtcRegs->v_sync_wid = mode->VSyncEnd - mode->VSyncStart;
+    crtcRegs->v_total = SKIP_2(mode->CrtcVTotal - 1);
+    crtcRegs->v_disp = SKIP_2(mode->CrtcVDisplay - 1);
+    crtcRegs->v_sync_strt = SKIP_2(mode->CrtcVSyncStart - 1);
+    crtcRegs->v_sync_wid = mode->CrtcVSyncEnd - mode->CrtcVSyncStart;
 
     if (crtcRegs->v_sync_wid > 0x1f) {
 	ErrorF("%s %s: Vertical Sync width (%d) in mode \"%s\"\n",
@@ -384,7 +384,7 @@ void mach32SetRamdac(clock)
 	    old_EXT_GE_CONFIG |= PIXEL_WIDTH_8 |
 		(mach32DAC8Bit ? DAC_8_BIT_EN : 0);
 
-	    if (mach32InfoRec.clock[(*clock >> 2) & 0xf] > 80000) {
+	    if (mach32InfoRec.clock[(*clock >> 2) & 0x1f] > 80000) {
 	    
 		/* pixel clock is SCLK/2 and VCLK/2 */
 		outb(OUTPUT_CLK_SEL, 0x09);
@@ -419,7 +419,7 @@ void mach32SetRamdac(clock)
 	MaskOn = 0;
 	switch (mach32Ramdac) {
 	case DAC_TLC34075:
-	    if (mach32InfoRec.clock[(*clock >> 2) & 0xf] > 80000) {
+	    if (mach32InfoRec.clock[(*clock >> 2) & 0x1f] > 80000) {
 		ErrorF("Pixel multiplexing not supported at this depth\n");
 		break;
 	    }

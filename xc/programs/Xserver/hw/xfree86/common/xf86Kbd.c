@@ -1,5 +1,5 @@
-/* $XConsortium: xf86Kbd.c,v 1.2 94/10/12 20:33:21 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.2 1994/11/30 20:41:15 dawes Exp $ */
+/* $XConsortium: xf86Kbd.c,v 1.3 95/01/05 20:40:37 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.3 1994/12/11 10:54:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -385,6 +385,9 @@ xf86KbdGetMapping (pKeySyms, pModMap)
   pKeySyms->mapWidth   = GLYPHS_PER_KEY;
   pKeySyms->minKeyCode = MIN_KEYCODE;
   if (xf86Info.serverNumLock)
+    pKeySyms->maxKeyCode = MAX_KEYCODE;
+  else
+    pKeySyms->maxKeyCode = MAX_STD_KEYCODE;
     pKeySyms->maxKeyCode = MAX_KEYCODE;
   else
     pKeySyms->maxKeyCode = MAX_STD_KEYCODE;

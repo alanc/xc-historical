@@ -1,5 +1,5 @@
-/* $XConsortium: cir_im.c,v 1.1 94/10/05 13:52:22 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_im.c,v 3.5 1994/09/19 13:45:51 dawes Exp $ */
+/* $XConsortium: cir_im.c,v 1.2 94/10/13 13:21:46 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_im.c,v 3.6 1995/01/04 04:42:27 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
@@ -135,7 +135,7 @@ void _CirrusBLTImageWrite(pdstBase, psrcBase, widthSrc, widthDst, x, y,
     {
       int width, height;
 
-      if (!HAVE543X() && h > 1024) {
+      if (h > 1024) {
           /* Split into two. */
           _CirrusBLTImageWrite(pdstBase, psrcBase, widthSrc, widthDst, x, y,
               x1, y1, w, 1024, xdir, ydir, alu, planemask);
@@ -203,7 +203,7 @@ CirrusBLTImageRead (pdstBase, psrcBase, widthSrc, widthDst, x, y,
     {
       int width, height;
 
-      if (!HAVE543X() && h > 1024) {
+      if (h > 1024) {
           /* Split into two. */
           CirrusBLTImageRead(pdstBase, psrcBase, widthSrc, widthDst, x, y,
               x1, y1, w, 1024, xdir, ydir, alu, planemask);
@@ -353,7 +353,7 @@ destpitch)
 	unsigned char *srcp;
 	unsigned char *base;
 
-	if (!HAVE543X() && h > 1024) {
+	if (h > 1024) {
 		/* Split into two. */
 		_CirrusBLTWriteBitmap(x, y, w, 1024, src, bwidth, srcx,
 			srcy, bg, fg, destpitch);

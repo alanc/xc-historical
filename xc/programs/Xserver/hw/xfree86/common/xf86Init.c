@@ -1,6 +1,6 @@
 /*
- * $XConsortium: xf86Init.c,v 1.4 94/12/13 20:12:32 kaleb Exp kaleb $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.10 1994/10/23 12:58:46 dawes Exp $
+ * $XConsortium: xf86Init.c,v 1.5 94/12/14 14:25:59 kaleb Exp kaleb $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.13 1994/12/29 10:07:29 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -61,7 +61,9 @@ static void xf86PrintConfig();
 extern ScrnInfoPtr xf86Screens[];
 extern int xf86MaxScreens;
 extern double pow();
+#ifdef USE_XF86_SERVERLOCK
 extern void xf86UnlockServer();
+#endif
 
 xf86InfoRec xf86Info;
 int         xf86ScreenIndex;
@@ -322,6 +324,25 @@ InitInput(argc, argv)
 }
 
 
+/*
+ * OsVendorInit --
+ *      OS/Vendor-specific initialisations.  Called from OsInit(), which
+ *      is called by dix before establishing the well known sockets.
+ */
+ 
+void
+OsVendorInit()
+{
+#ifdef USE_XF86_SERVERLOCK
+  extern void xf86LockServer();
+  static Bool been_here = FALSE;
+
+  if (!been_here) {
+    xf86LockServer();
+    been_here = TRUE;
+  }
+#endif
+}
 
 /*
  * ddxGiveUp --
@@ -333,7 +354,9 @@ InitInput(argc, argv)
 void
 ddxGiveUp()
 {
+#ifdef USE_XF86_SERVERLOCK
   xf86UnlockServer();
+#endif
 
   xf86CloseConsole();
 
@@ -550,7 +573,7 @@ xf86PrintConfig()
 {
   int i;
 
-  ErrorF("XFree86 Version%s/ X Window System\n",XF86_VERSION);
+  ErrorF("\nXFree86 Version%s/ X Window System\n",XF86_VERSION);
   ErrorF("(protocol Version %d, revision %d, vendor release %d)\n",
          X_PROTOCOL, X_PROTOCOL_REVISION, VENDOR_RELEASE );
   ErrorF("Operating System: %s %s\n", OSNAME, OSVENDOR);

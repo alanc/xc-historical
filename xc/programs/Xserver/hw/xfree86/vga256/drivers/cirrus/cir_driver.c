@@ -1,5 +1,5 @@
-/* $XConsortium: cir_driver.c,v 1.2 94/10/13 13:21:46 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.22 1994/12/05 03:48:02 dawes Exp $ */
+/* $XConsortium: cir_driver.c,v 1.3 95/01/05 20:47:57 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.25 1995/01/04 04:42:21 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -103,11 +103,13 @@
  */
 
 #include "cir_driver.h"
+#include "cir_alloc.h"
 #ifndef MONOVGA
 #include "vga256.h"
 #endif
 
 int cirrusChip;
+int cirrusChipRevision;
 int cirrusBusType;
 Bool cirrusUseBLTEngine = FALSE;
 Bool cirrusUseMMIO = FALSE;
@@ -117,6 +119,7 @@ Bool cirrusUseLinear = FALSE;
 Bool cirrusFavourBLT = FALSE;
 int cirrusDRAMBandwidth;
 int cirrusDRAMBandwidthLimit;
+int cirrusReprogrammedMCLK = 0;
 
 #define CLAVGA2_ID  0x06
 #define CLGD5420_ID 0x22
@@ -143,7 +146,7 @@ int cirrusDRAMBandwidthLimit;
  * The 543x should be compatible. -HH
  */
 
-#define Has_HWCursor(x) (((x) >= CLGD5420 && (x) <= CLGD5429) || \
+#define Has_HWCursor(x) (((x) >= CLGD5422 && (x) <= CLGD5429) || \
     (x) == CLGD5430 || (x) == CLGD5434)
 
 /* Define a structure for the HIDDEN DAC cursor colours */
@@ -289,10 +292,11 @@ static cirrusClockRec cirrusClockTab[] = {
   /* These are all too high according to the databook.  They can be enabled
      with the "16clocks" option  *if* this driver has been compiled with
      ALLOW_OUT_OF_SPEC_CLOCKS defined. [542x only] */
-  { 0x7E, 0x28 },		/* 90.203 */
-  { 0x7E, 0x26 },		/* 94.950 */
-  { 0x7E, 0x24 },		/* 100.226 */
-  { 0x7B, 0x20 },		/* 110.069 */
+  { 0x58, 0x1C },		/* 89.998 */
+  { 0x49, 0x16 },		/* 95.019 */
+  { 0x46, 0x14 },		/* 100.226 */
+  { 0x53, 0x16 },		/* 108.035 */
+  { 0x5C, 0x18 },		/* 110.248 */
 };
 
 /* Doubled clocks for 16-bit clocking mode with pixel clock ~< 45 MHz. */
@@ -352,7 +356,7 @@ static int cirrusClockLimit[] = {
    * Multiplexing has now been added, but is untested -- HH.
    */
 #if defined(ALLOW_8BPP_MULTIPLEXING)
-  110100,	/* 5434 */
+  110300,	/* 5434 */
 #else
   85500,	/* 5434 */
 #endif
@@ -589,7 +593,7 @@ cirrusProbe()
 {  
      int cirrusClockNo, i;
      unsigned char lockreg,IdentVal;
-     unsigned char id, rev;
+     unsigned char id, rev, partstatus;
      unsigned char temp;
      
      /*
@@ -660,11 +664,21 @@ cirrusProbe()
 	  id  = (IdentVal & 0xFc) >> 2;
 	  rev = (IdentVal & 0x03);
 
+	  outb(vgaIOBase + 0x04, 0x25); partstatus = inb(vgaIOBase + 0x05);
+          cirrusChipRevision = 0x00;
+
 	  switch( id )
 	       {
 	     case CLGD5420_ID:
 	     case CLAVGA2_ID:		/* AVGA2 uses 5402 */
 	       cirrusChip = CLGD5420;	/* 5420 or 5402 */
+	       /* Check for CL-GD5420-75QC-B */
+	       /* It has a Hidden-DAC register. */
+	       outb(0x3C6, 0x00);
+	       outb(0x3C6, 0xFF);
+	       inb(0x3C6); inb(0x3c6); inb(0x3C6); inb(0x3C6);
+	       if (inb(0x3C6) != 0xFF)
+	           cirrusChipRevision = 0x01;	/* 5420-75QC-B */
 	       break;
 	     case CLGD5422_ID:
 	       cirrusChip = CLGD5422;
@@ -679,6 +693,8 @@ cirrusProbe()
 	       cirrusChip = CLGD5428;
 	       break;
 	     case CLGD5429_ID:
+	       if (partstatus >= 0x67)
+	           cirrusChipRevision = 0x01;	/* >= Rev. B, fixes BLT */
 	       cirrusChip = CLGD5429;
 	       break;
 
@@ -709,7 +725,9 @@ cirrusProbe()
 
 	     /* 'Alpine' family. */
 	     case CLGD5434_ID:
-	       cirrusChip = CLGD5434;
+	       if ((partstatus & 0xC0) == 0xC0)
+	          cirrusChipRevision = 0x01;	/* Better than rev. D/E. */
+	       cirrusChip = CLGD5434;		/* handles 60 MHz MCLK. */
 	       break;
 
 	     case CLGD5430_ID:
@@ -920,23 +938,26 @@ cirrusProbe()
 
 #ifndef MONOVGA
      /*
+      * Determine the MCLK that will be used (possibly reprogrammed).
       * Calculate the available DRAM bandwidth from the MCLK setting.
-      * Take dram options into account (MCLK is set in FbInit).
       */
      {
          unsigned char MCLK, SRF;
          outb(0x3c4, 0x0f);
          SRF = inb(0x3c5);
+         if (cirrusChip == CLGD5434 && cirrusChipRevision >= 0x01)
+             /* 5434 rev. E+ supports 60 MHz MCLK in packed-pixel mode. */
+             cirrusReprogrammedMCLK = 0x22;
          if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) ||
          cirrusChip == CLGD5430 || cirrusChip == CLGD5434) {
              outb(0x3c4, 0x1f);
              MCLK = inb(0x3c5) & 0x3f;
              if (OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options))
-                 MCLK = 0x1c;
+                 cirrusReprogrammedMCLK = 0x1c;
              if (OFLG_ISSET(OPTION_MED_DRAM, &vga256InfoRec.options))
-                 MCLK = 0x1f;
+                 cirrusReprogrammedMCLK = 0x1f;
              if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
-                 MCLK = 0x22;
+                 cirrusReprogrammedMCLK = 0x22;
          }
          else
              /* 5420/22/62x5 have fixed MCLK settings. */
@@ -946,9 +967,11 @@ cirrusProbe()
              case 2 : MCLK = 0x17; break;
              case 3 : MCLK = 0x15; break;
              }
+         if (cirrusReprogrammedMCLK > 0)
+             MCLK = cirrusReprogrammedMCLK;
+
          /* Approximate DRAM bandwidth in K/s (8-bit page mode accesses),
           * corresponds with MCLK frequency / 2 (2 cycles per access). */
-/*          cirrusDRAMBandwidth = 14.31818 * MCLK * 1000 / 16); */
          cirrusDRAMBandwidth = 14318 * MCLK / 16;
          if (vga256InfoRec.videoRam >= 512)
              /* At least 16-bit access. */
@@ -1028,6 +1051,11 @@ cirrusProbe()
 		       vga256InfoRec.clock[i] =
 		          CLOCKVAL(cirrusClockTab[i].numer, cirrusClockTab[i].denom);
 		   }
+	       else
+	           if (xf86Verbose)
+                       ErrorF("%s %s: %s: Using programmable clocks\n",
+	                   XCONFIG_PROBED, vga256InfoRec.name,
+	                   vga256InfoRec.chipset);
 	       }
      else
           if (vga256InfoRec.clocks > cirrusClockNo)
@@ -1068,7 +1096,8 @@ cirrusProbe()
          OFLG_SET(OPTION_FAVOUR_BITBLT, &CIRRUS.ChipOptionFlags);
      }
 #ifdef CIRRUS_SUPPORT_MMIO
-     if (cirrusChip == CLGD5434 || cirrusChip == CLGD5430)
+     if (cirrusChip == CLGD5434 || cirrusChip == CLGD5430 ||
+     cirrusChip == CLGD5429)
          OFLG_SET(OPTION_MMIO, &CIRRUS.ChipOptionFlags);
 #endif
 
@@ -1137,6 +1166,13 @@ cirrusFbInit()
       cirrusUseBLTEngine = TRUE;
       if (OFLG_ISSET(OPTION_NO_BITBLT, &vga256InfoRec.options))
           cirrusUseBLTEngine = FALSE;
+      else {
+          if (cirrusChip == CLGD5429 && cirrusChipRevision == 0) {
+              ErrorF("%s %s: %s: CL-GD5429 Rev A detected, BitBLT disabled\n",
+                XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
+              cirrusUseBLTEngine = FALSE;
+              }
+          }
       }
 
 #endif
@@ -1160,40 +1196,35 @@ cirrusFbInit()
               XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset,
               SR1F & 0x3f, (SRF & 4) ? "Standard" : "Extended");
       
-      if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
-          {
+      if (cirrusReprogrammedMCLK > 0)
       	  /*
-      	   * Change MCLK value to a more aggressive value. The official
-      	   * spec for the 542x is 50 MHz, but some cards are overclocked.
+      	   * The MCLK will be programmed to a different value.
+      	   * 
+      	   * 0x1c, 51 MHz	Option "slow_dram"
+      	   * 0x1f, 55 MHz	Option "med_dram"
+      	   * 0x22, 61 MHz	Option "fast_dram"
+      	   * 
+	   * The official spec for the 542x is 50 MHz, but some cards are
+	   * overclocked.
       	   *
-      	   * The 5434 is specified for 50 MHz, but may be speced for
+      	   * The 5434 is specified for 50 MHz, but new revisions can do
       	   * 60 MHz in packed-pixel mode. The 5429 and 5430 are probably
       	   * speced for 60 MHz.
       	   */
-      	  outb(0x3c4, 0x1f);
-      	  outb(0x3c5, (SR1F & 0xc0) | 0x22); /* Set to 0x22 (about 60 MHz). */
-	  if (xf86Verbose)
-              ErrorF("%s %s: %s: Internal memory clock register set to 0x22\n",
-                XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
+	  if (xf86Verbose) {
+	      if (cirrusChip == CLGD5434 && cirrusChipRevision >= 0x01) {
+                  ErrorF("%s %s: %s: CL-GD5434 rev. E+, will program 0x22 MCLK\n",
+                      XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
+	          if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options) ||
+	          OFLG_ISSET(OPTION_MED_DRAM, &vga256InfoRec.options) ||
+	          OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options))
+                  ErrorF("%s %s: %s: Memory clock overridden by option\n",
+                      XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
+	      }
+              ErrorF("%s %s: %s: Internal memory clock register set to 0x%02x\n",
+                XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset,
+                cirrusReprogrammedMCLK);
 	  }
-
-      if (OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options))
-          {
-          outb(0x3c4, 0x1f);
-          outb(0x3c5, (SR1F & 0xc0) | 0x1c);	/* Set to 0x1c (50.1 MHz). */
-          if (xf86Verbose)
-              ErrorF("%s %s: %s: Internal memory clock register set to 0x1c\n",
-                XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
-          }
-
-      if (OFLG_ISSET(OPTION_MED_DRAM, &vga256InfoRec.options))
-          {
-          outb(0x3c4, 0x1f);
-          outb(0x3c5, (SR1F & 0xc0) | 0x1f);	/* Set to 0x1f. */
-          if (xf86Verbose)
-              ErrorF("%s %s: %s: Internal memory clock register set to 0x1f\n",
-                XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
-          }
       }
 
 #ifndef MONOVGA
@@ -1307,15 +1338,16 @@ nolinear:
 	}
     }	  
 
-  if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) {
+  if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)
+  && !(cirrusChip == CLGD5420 && cirrusChipRevision == 1)) {
     if (xf86Verbose)
       {
         ErrorF ("%s %s: %s: Using accelerator functions\n",
 	    XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
       }
 
-    /* Accel functions are available on all chips; some use the BitBLT */
-    /* engine if available. */
+    /* Accel functions are available on all chips except 5420-75QC-B; some
+     * use the BitBLT engine if available. */
 
     if (vgaBitsPerPixel == 8) {
         vga256LowlevFuncs.doBitbltCopy = CirrusDoBitbltCopy;
@@ -1377,7 +1409,7 @@ nolinear:
                 cirrusFavourBLT = TRUE;
 	}
     }
-    if (vga256InfoRec.virtualX & 31 != 0)
+    if ((vga256InfoRec.virtualX & 31) != 0)
         ErrorF("%s %s: %s: Warning: virtual screen width not multiple of 32\n",
             XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
 
@@ -1388,7 +1420,7 @@ nolinear:
         cirrusUseMMIO = TRUE;
         /* We can't set cirrusMMIOBase, since vgaBase hasn't been */
         /* mapped yet. For now we do that in the init function. */
-        ErrorF("%s %s: %s: Using Memory-Mapped I/O\n",
+        ErrorF("%s %s: %s: Using memory-mapped I/O\n",
             XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
         if (cirrusUseBLTEngine) {
             if (vgaBitsPerPixel == 8) {
@@ -1397,15 +1429,62 @@ nolinear:
                 vga256LowlevFuncs.teGlyphBlt8 = CirrusMMIOImageGlyphBlt;
                 vga256TEOps1Rect.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
                 vga256TEOps.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+		/* These functions need to be initialized in the GC handling */
+		/* of vga256. */
+	        vga256TEOps1Rect.FillSpans = CirrusFillSolidSpansGeneral;
+	        vga256TEOps.FillSpans = CirrusFillSolidSpansGeneral;
+	        vga256LowlevFuncs.fillSolidSpans = CirrusFillSolidSpansGeneral;
+
+		vga256TEOps1Rect.Polylines = CirrusMMIOLineSS;
+		vga256NonTEOps1Rect.Polylines = CirrusMMIOLineSS;
+		vga256TEOps.Polylines = CirrusMMIOLineSS;
+		vga256NonTEOps.Polylines = CirrusMMIOLineSS;
+		vga256TEOps1Rect.PolySegment = CirrusMMIOSegmentSS;
+		vga256NonTEOps1Rect.PolySegment = CirrusMMIOSegmentSS;
+		vga256TEOps.PolySegment = CirrusMMIOSegmentSS;
+		vga256TEOps.PolySegment = CirrusMMIOSegmentSS;
+
+		vga256TEOps1Rect.PolyRectangle = Cirrus8PolyRectangle;
+		vga256NonTEOps1Rect.PolyRectangle = Cirrus8PolyRectangle;
+		vga256TEOps.PolyRectangle = Cirrus8PolyRectangle;
+		vga256NonTEOps.PolyRectangle = Cirrus8PolyRectangle;
+#if 0
+	        vga256LowlevFuncs.fillRectSolidCopy = CirrusMMIOFillRectSolid;
+	        vga256LowlevFuncs.fillBoxSolid = CirrusMMIOFillBoxSolid;
+#endif
              }
             else
             if (vgaBitsPerPixel == 16) {
 		cfb16TEOps1Rect.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
 	        cfb16TEOps.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+	        cfb16TEOps1Rect.FillSpans = CirrusFillSolidSpansGeneral;
+	        cfb16TEOps.FillSpans = CirrusFillSolidSpansGeneral;
+	        cfb16NonTEOps1Rect.FillSpans = CirrusFillSolidSpansGeneral;
+	        cfb16NonTEOps.FillSpans = CirrusFillSolidSpansGeneral;
+	        cfb16TEOps1Rect.PolyFillRect = CirrusPolyFillRect;
+	        cfb16TEOps.PolyFillRect = CirrusPolyFillRect;
+	        cfb16NonTEOps1Rect.PolyFillRect = CirrusPolyFillRect;
+	        cfb16NonTEOps.PolyFillRect = CirrusPolyFillRect;
+	        cfb16TEOps1Rect.PolyRectangle = Cirrus16PolyRectangle;
+	        cfb16TEOps.PolyRectangle = Cirrus16PolyRectangle;
+	        cfb16NonTEOps1Rect.PolyRectangle = Cirrus16PolyRectangle;
+	        cfb16NonTEOps.PolyRectangle = Cirrus16PolyRectangle;
             }
             else { /* vgaBitsPerPixel == 32 */
 		cfb32TEOps1Rect.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
 	        cfb32TEOps.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+	        cfb32TEOps1Rect.FillSpans = CirrusFillSolidSpansGeneral;
+	        cfb32TEOps.FillSpans = CirrusFillSolidSpansGeneral;
+	        cfb32NonTEOps1Rect.FillSpans = CirrusFillSolidSpansGeneral;
+	        cfb32NonTEOps.FillSpans = CirrusFillSolidSpansGeneral;
+	        cfb32TEOps1Rect.PolyFillRect = CirrusPolyFillRect;
+	        cfb32TEOps.PolyFillRect = CirrusPolyFillRect;
+	        cfb32NonTEOps1Rect.PolyFillRect = CirrusPolyFillRect;
+	        cfb32NonTEOps.PolyFillRect = CirrusPolyFillRect;
+	        cfb32TEOps1Rect.PolyRectangle = Cirrus32PolyRectangle;
+	        cfb32TEOps.PolyRectangle = Cirrus32PolyRectangle;
+	        cfb32NonTEOps1Rect.PolyRectangle = Cirrus32PolyRectangle;
+	        cfb32NonTEOps.PolyRectangle = Cirrus32PolyRectangle;
             }
         }
     }
@@ -1594,9 +1673,12 @@ cirrusRestore(restore)
        {
        outb(0x3C4,0x1E);
        outb(0x3C5,restore->SR1E);
-       outb(0x3c4, 0x1f);	/* Contains 'Use MCLK as VCLK' bit. */
-       outb(0x3c5, restore->SR1F);
        }
+
+  if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) || HAVE543X()) {
+      outb(0x3c4, 0x1f);	/* MCLK register */
+      outb(0x3c5, restore->SR1F);
+  }
 
   outb(vgaIOBase + 4,0x19);
   outb(vgaIOBase + 5,restore->CR19);
@@ -1740,8 +1822,10 @@ cirrusSave(save)
   outb(0x3C4,0x1E);
   save->SR1E = inb(0x3C5);
 
-  outb(0x3c4, 0x1f);		/* Save the MCLK register because the */
-  save->SR1F = inb(0x3c5);	/* 'Use MCLK as VCLK' bit may be used. */
+  if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) || HAVE543X()) {
+      outb(0x3c4, 0x1f);		/* Save the MCLK register. */
+      save->SR1F = inb(0x3c5);
+  }
 
   outb(vgaIOBase + 4,0x19);
   save->CR19 = inb(vgaIOBase + 5);
@@ -1818,10 +1902,13 @@ cirrusInit(mode)
          /* The actual DAC register value is set later. */
          /* The CRTC is clocked at VCLK / 2, so we must half the */
          /* horizontal timings. */
-         mode->HDisplay >>= 1;
-         mode->HSyncStart >>= 1;
-         mode->HTotal >>= 1;
-         mode->HSyncEnd >>= 1;
+         if (!mode->CrtcHAdjusted) {
+            mode->CrtcHDisplay >>= 1;
+            mode->CrtcHSyncStart >>= 1;
+            mode->CrtcHTotal >>= 1;
+            mode->CrtcHSyncEnd >>= 1;
+            mode->CrtcHAdjusted = TRUE;
+         }
      }
 #endif
 #endif
@@ -1872,8 +1959,12 @@ cirrusInit(mode)
 	  if (!cirrusCheckClock(cirrusChip, new->std.NoClock))
 	       return (FALSE);
 
-	  outb(0x3c4, 0x1f);		/* MCLK register. */
-	  new->SR1F = inb(0x3c5);
+	  if (cirrusReprogrammedMCLK > 0)
+	      new->SR1F = cirrusReprogrammedMCLK;
+	  else {
+ 	      outb(0x3c4, 0x1f);		/* MCLK register. */
+	      new->SR1F = inb(0x3c5);
+	  }
 
 	  if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) {
 	      if (vgaBitsPerPixel == 16 && cirrusChip <= CLGD5424)
@@ -1985,43 +2076,45 @@ cirrusInit(mode)
 	     }
          else {
 		 /* XXXX Is 0 required for interlaced modes on some chips? */
-	         int pixelrate, bandwidth, threshold;
+	         int pixelrate, bandwidth, percent, threshold;
 	         pixelrate = vga256InfoRec.clock[new->std.NoClock];
 	         if (vgaBitsPerPixel == 16)
 		 	bandwidth = cirrusDRAMBandwidth - pixelrate * 2;
 		 else
 		 	bandwidth = cirrusDRAMBandwidth - pixelrate;
+		 /* Relative amount of bandwidth left for drawing. */
+		 percent = bandwidth * 100 / cirrusDRAMBandwidth;
 	         threshold = 8;
 	         if (OFLG_ISSET(OPTION_FIFO_CONSERV, &vga256InfoRec.options)) {
 	         	/* Conservative FIFO threshold setting. */
-	         	if (bandwidth <= 36000)	/* >= 64 MHz at 8bpp */
+	         	if (percent <= 36)	/* >= 64 MHz at 8bpp */
 	                	threshold = 12;
-	         	if (bandwidth <= 29000)	/* >= 71 MHz at 8bpp */
+	         	if (percent <= 29)	/* >= 71 MHz at 8bpp */
 	         		threshold = 14;
-	         	if (bandwidth <= 15000)
+	         	if (percent <= 15)
 	         		threshold = 15;	/* >= 86 MHz at 8bpp */
 	         }
 	         else
 		 if (!OFLG_ISSET(OPTION_FIFO_AGGRESSIVE, &vga256InfoRec.options)) {
 		 	/* Default FIFO threshold setting. */
-		 	if (bandwidth <= 36000)	/* >= 64 MHz at 8bpp */
+		 	if (percent <= 36)	/* >= 64 MHz at 8bpp */
 		 		threshold = 10;
-		 	if (bandwidth <= 29000) /* >= 71 MHz at 8bpp */
+		 	if (percent <= 29)	/* >= 71 MHz at 8bpp */
 		 		threshold = 12;
 		 	if (cirrusChip < CLGD5428) {
-		 		if (bandwidth <= 26000) /* >= 74 MHz at 8bpp */
+		 		if (percent <= 26) /* >= 74 MHz at 8bpp */
 		 			threshold = 13;
-		 		if (bandwidth <= 16000) /* >= 84 MHz at 8bpp */
+		 		if (percent <= 16) /* >= 84 MHz at 8bpp */
 		 			threshold = 14;
-		 		if (bandwidth <= 12000) /* >= 44 MHz at 16bpp */
+		 		if (percent <= 12) /* >= 44 MHz at 16bpp */
 					threshold = 15;
 		 	}
 		 	else {
 		 		/* Based on the observation that the 5428 */
 		 		/* BIOS 77 MHz 1024x768 mode uses 12. */
-		 		if (bandwidth <= 16000) /* >= 84 MHz at 8bpp */
+		 		if (percent <= 16) /* >= 84 MHz at 8bpp */
 		 			threshold = 13;
-		 		if (bandwidth <= 12000) /* >= 44 MHz at 16bpp */
+		 		if (percent <= 12) /* >= 44 MHz at 16bpp */
 					threshold = 14;
 		 	}
 		 }
@@ -2102,25 +2195,25 @@ cirrusInit(mode)
 
 				/* Fill up all the overflows - ugh! */
 #ifdef DEBUG_CIRRUS
-     fprintf(stderr,"Init: VSyncStart + 1 = %x\n\
-HsyncEnd>>3 = %x\n\
-HDisplay>>3 -1 = %x\n\
+     fprintf(stderr,"Init: CrtcVSyncStart + 1 = %x\n\
+CrtcHsyncEnd>>3 = %x\n\
+CrtcHDisplay>>3 -1 = %x\n\
 VirtX = %x\n",
-	     mode->VSyncStart + 1,
-	     mode->HSyncEnd >> 3, 
-	     (mode->HDisplay >> 3) - 1,
+	     mode->CrtcVSyncStart + 1,
+	     mode->CrtcHSyncEnd >> 3, 
+	     (mode->CrtcHDisplay >> 3) - 1,
 	     vga256InfoRec.virtualX>>4);
 #endif
      
-     new->CR1A = (((mode->VSyncStart + 1) & 0x300 ) >> 2)
-	  | (((mode->HSyncEnd >> 3) & 0xC0) >> 2);
+     new->CR1A = (((mode->CrtcVSyncStart + 1) & 0x300 ) >> 2)
+	  | (((mode->CrtcHSyncEnd >> 3) & 0xC0) >> 2);
 
      if (mode->Flags & V_INTERLACE) 
 	    {
 				/* ``Half the Horizontal Total'' which is */
 				/* really half the value in CR0 */
 
-	    new->CR19 = ((mode->HTotal >> 3) - 5) >> 1;
+	    new->CR19 = ((mode->CrtcHTotal >> 3) - 5) >> 1;
 	    new->CR1A |= 0x01;
 	    }
      else new->CR19 = 0x00;
@@ -2181,11 +2274,7 @@ VirtX = %x\n",
 
 #ifdef ALLOW_8BPP_MULTIPLEXING
      if (multiplexing) {
-         new->HIDDENDAC = 0x6a;
-         mode->HDisplay <<= 1;	/* Restore horizontal timing values. */
-         mode->HSyncStart <<= 1;
-         mode->HTotal <<= 1;
-         mode->HSyncEnd <<= 1;
+         new->HIDDENDAC = 0x4A;
      }
 #endif
 #endif

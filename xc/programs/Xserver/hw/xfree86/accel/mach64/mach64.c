@@ -1,5 +1,5 @@
-/* $XConsortium: $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.2 1994/12/05 03:45:36 dawes Exp $ */
+/* $XConsortium: mach64.c,v 1.1 94/12/14 15:04:34 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.3 1994/12/29 10:02:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -124,6 +124,9 @@ ScrnInfoRec mach64InfoRec = {
     0,                  /* int COPbase */
     0,                  /* int POSbase */
     0,                  /* int instance */
+    0,                  /* int s3Madjust */
+    0,                  /* int s3Nadjust */
+    0,                  /* int s3MClk */
 };
 
 int mach64alu[16] = {

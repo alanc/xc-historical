@@ -1,5 +1,5 @@
-/* $XConsortium: mach32.c,v 1.2 94/10/12 19:59:09 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.24 1994/11/19 13:18:10 dawes Exp $ */
+/* $XConsortium: mach32.c,v 1.3 95/01/05 20:27:25 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.26 1994/12/29 09:47:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -117,6 +117,7 @@ ScrnInfoRec mach32InfoRec = {
     0,			/* int instance */
     0,			/* int s3Madjust */
     0,			/* int s3Nadjust */
+    0,			/* int s3MClk */
 };
 
 short mach32alu[16] = {
@@ -270,6 +271,10 @@ static ATIInformationBlock *GetATIInformationBlock()
 
 				/* Test for ATI accelerator product */
    info.ATI_Accelerator_Present = 1;
+
+   /* Reset the 8514/A, and disable all interrupts. */
+   outw(SUBSYS_CNTL, GPCTRL_RESET | CHPTEST_NORMAL);
+   outw(SUBSYS_CNTL, GPCTRL_ENAB | CHPTEST_NORMAL);
 
    tmp = inw( ROM_ADDR_1 );
    outw( ROM_ADDR_1, 0x5555 );

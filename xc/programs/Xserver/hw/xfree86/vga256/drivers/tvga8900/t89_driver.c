@@ -1,5 +1,5 @@
-/* $XConsortium: t89_driver.c,v 1.1 94/10/05 13:55:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.4 1994/09/23 10:26:49 dawes Exp $ */
+/* $XConsortium: t89_driver.c,v 1.2 94/10/13 13:27:09 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.5 1994/12/11 10:57:35 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -652,22 +652,18 @@ TVGA8900Init(mode)
 		/*
 		 * Double horizontal timings.
 		 */
-		mode->HTotal <<= 1;
-		mode->HDisplay <<= 1;
-		mode->HSyncStart <<= 1;
-		mode->HSyncEnd <<= 1;
+		if (!mode->CrtcHAdjusted)
+		{
+			mode->CrtcHTotal <<= 1;
+			mode->CrtcHDisplay <<= 1;
+			mode->CrtcHSyncStart <<= 1;
+			mode->CrtcHSyncEnd <<= 1;
+			mode->CrtcHAdjusted = TRUE;
+		}
 		/*
 		 * Initialize generic VGA registers.
 		 */
 		vgaHWInit(mode, sizeof(vgaTVGA8900Rec));
-		/*
-		 * Put horizontal numbers back, so the virtual-screen
-		 * stuff doesn't get screwed up.
-		 */
-		mode->HTotal >>= 1;
-		mode->HDisplay >>= 1;
-		mode->HSyncStart >>= 1;
-		mode->HSyncEnd >>= 1;
   
 		/*
 		 * Now do Trident-specific stuff.  This one is also

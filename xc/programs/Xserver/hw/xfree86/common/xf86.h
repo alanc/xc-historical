@@ -1,5 +1,5 @@
-/* $XConsortium: xf86.h,v 1.2 94/10/12 20:33:21 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.10 1994/10/29 22:37:09 dawes Exp $ */
+/* $XConsortium: xf86.h,v 1.3 95/01/05 20:39:33 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.12 1994/12/29 10:07:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -38,7 +38,8 @@
 typedef struct _DispM {
   struct _DispM	*prev,*next;
   char		*name;              /* identifier of this mode */
-  int		Clock;              /* doclock */
+  /* These are the values that the user sees/provides */
+  int		Clock;              /* pixel clock */
   int           HDisplay;           /* horizontal timing */
   int           HSyncStart;
   int           HSyncEnd;
@@ -48,7 +49,18 @@ typedef struct _DispM {
   int           VSyncEnd;
   int           VTotal;
   int           Flags;
+  /* These are the values the hardware uses */
   int		SynthClock;         /* Actual clock freq to be programmed */
+  int		CrtcHDisplay;
+  int		CrtcHSyncStart;
+  int		CrtcHSyncEnd;
+  int		CrtcHTotal;
+  int		CrtcVDisplay;
+  int		CrtcVSyncStart;
+  int		CrtcVSyncEnd;
+  int		CrtcVTotal;
+  Bool		CrtcHAdjusted;
+  Bool		CrtcVAdjusted;
 } DisplayModeRec, *DisplayModePtr;
 
 #define V_PHSYNC    0x0001
@@ -134,6 +146,7 @@ typedef struct {
   unsigned int   instance;        /* AGX - video card instance number */
   int s3Madjust;
   int s3Nadjust;
+  int s3MClk;
 } ScrnInfoRec, *ScrnInfoPtr;
 
 typedef struct {

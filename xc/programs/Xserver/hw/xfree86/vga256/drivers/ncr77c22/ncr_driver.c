@@ -1,5 +1,5 @@
-/* $XConsortium: ncr_driver.c,v 1.1 94/10/05 13:54:34 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.3 1994/09/11 00:52:57 dawes Exp $ */
+/* $XConsortium: ncr_driver.c,v 1.2 94/10/13 13:25:18 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.4 1994/12/11 10:57:20 dawes Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -492,17 +492,17 @@ NCRInit(mode)
 	/* These value have to be doubled to compensate for the 4 bit
 	   character clock */
 #if !defined(MONOVGA) && !defined(XF86VGA16)
-  new->ExtHTime = ((((mode->HTotal>>2)-5)&0x100)>>8) |
-		  ((((mode->HDisplay>>2)-1)&0x100)>>7) |
-		  ((((mode->HSyncStart>>2)-1)&0x100)>>6) |
-		   (((mode->HSyncStart>>2)&0x100)>>5);
-  new->std.CRTC[0]  = (mode->HTotal >> 2) - 5;
-  new->std.CRTC[1]  = (mode->HDisplay >> 2) - 1;
-  new->std.CRTC[2]  = (mode->HSyncStart >> 2) -1;
-  new->std.CRTC[3]  = ((mode->HSyncEnd >> 2) & 0x1F) | 0x80;
-  new->std.CRTC[4]  = (mode->HSyncStart >> 2);
-  new->std.CRTC[5]  = (((mode->HSyncEnd >> 2) & 0x20 ) << 2 )
-    | (((mode->HSyncEnd >> 2)) & 0x1F);
+  new->ExtHTime = ((((mode->CrtcHTotal>>2)-5)&0x100)>>8) |
+		  ((((mode->CrtcHDisplay>>2)-1)&0x100)>>7) |
+		  ((((mode->CrtcHSyncStart>>2)-1)&0x100)>>6) |
+		   (((mode->CrtcHSyncStart>>2)&0x100)>>5);
+  new->std.CRTC[0]  = (mode->CrtcHTotal >> 2) - 5;
+  new->std.CRTC[1]  = (mode->CrtcHDisplay >> 2) - 1;
+  new->std.CRTC[2]  = (mode->CrtcHSyncStart >> 2) -1;
+  new->std.CRTC[3]  = ((mode->CrtcHSyncEnd >> 2) & 0x1F) | 0x80;
+  new->std.CRTC[4]  = (mode->CrtcHSyncStart >> 2);
+  new->std.CRTC[5]  = (((mode->CrtcHSyncEnd >> 2) & 0x20 ) << 2 )
+    | (((mode->CrtcHSyncEnd >> 2)) & 0x1F);
   new->std.CRTC[19] = vga256InfoRec.virtualX >> 3; /* we are in byte-mode */
   new->std.CRTC[23] = 0xE3;		/* Countbytwo=0 */
 #else

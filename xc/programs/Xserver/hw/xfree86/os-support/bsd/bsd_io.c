@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: bsd_io.c,v 1.1 94/03/28 21:28:06 dpw Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_io.c,v 3.1 1994/12/10 03:03:18 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -43,8 +44,12 @@ int duration;
 {
     	if (loudness && pitch)
 	{
+#ifdef CODRV_SUPPORT
 		struct kbd_sound s;
+#endif
+#ifdef PCCONS_SUPPORT
 		int data[2];
+#endif
 
 	    	switch (xf86Info.consType) {
 

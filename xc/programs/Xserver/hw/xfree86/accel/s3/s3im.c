@@ -1,5 +1,5 @@
-/* $XConsortium: s3im.c,v 1.4 94/12/27 11:29:42 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.10 1994/11/26 12:44:56 dawes Exp $ */
+/* $XConsortium: s3im.c,v 1.5 94/12/29 18:17:29 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.12 1995/01/02 04:52:11 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 

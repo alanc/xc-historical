@@ -1,5 +1,5 @@
-/* $XConsortium: xf86_OSlib.h,v 1.4 94/12/01 16:57:59 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.8 1994/12/05 03:46:56 dawes Exp $ */
+/* $XConsortium: xf86_OSlib.h,v 1.5 95/01/05 20:43:31 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.11 1994/12/18 11:02:02 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@physics.su.oz.au>
@@ -48,12 +48,16 @@
 /* SYSV386 (SVR3, SVR4)                                                   */
 /**************************************************************************/
 #if defined(SYSV) || defined(SVR4)
+# if defined(sun) && defined(i386) && defined(SVR4)
+#  /* Fix for Solaris ANSI compilation */
+#  define __EXTENSIONS__
+# endif
 # include <sys/ioctl.h>
 # include <signal.h>
 # include <termio.h>
 # include <sys/stat.h>
 # include <sys/types.h>
-# ifdef SCO
+# if defined(SCO) || defined(ISC)
 # include <sys/param.h>
 # endif
 
@@ -208,22 +212,10 @@ extern int errno;
 # include <errno.h>
 extern int errno;
 
-/*
- * XXXX Note, for 386BSD, FreeBSD and NetBSD, things may not yet work right if
- * all of these are not defined
- */
-# ifndef __bsdi__
-#  define PCCONS_SUPPORT
-#  define CODRV_SUPPORT
-#  define SYSCONS_SUPPORT
-#  define PCVT_SUPPORT
-# endif
-
 /* PCVT support requires SYSCONS support */
 # if defined(PCVT_SUPPORT) && !defined(SYSCONS_SUPPORT)
 #  define SYSCONS_SUPPORT
 # endif
-
 
 # if !defined(LINKKIT)
   /* Don't need this stuff for the Link Kit */

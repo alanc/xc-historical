@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.2 94/10/13 13:18:06 kaleb Exp kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/Imakefile,v 3.3 1994/09/25 12:30:38 dawes Exp $
+XCOMM $XConsortium: Imakefile,v 1.3 95/01/05 20:50:11 kaleb Exp kaleb $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/Imakefile,v 3.4 1994/12/25 12:34:25 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -20,6 +20,3 @@ DependSubdirs($(SUBDIRS))
 
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256)
 
-#if XF86LinkKit
-#include <LinkKit.tmpl>
-#endif

@@ -1,5 +1,5 @@
-/* $XConsortium: cir_driver.h,v 1.2 94/10/13 13:21:46 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.10 1994/12/02 05:48:14 dawes Exp $ */
+/* $XConsortium: cir_driver.h,v 1.3 95/01/05 20:47:57 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.12 1995/01/04 04:42:24 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -118,13 +118,13 @@ extern void CirrusMMIOBLTColorExpand8x8PatternFill( unsigned destaddr, int fg,
 	int bg,	int w, int h, int destpitch, int rop, unsigned long pword1,
 	unsigned long pword2 );
 extern void CirrusBLT8x8PatternFill( unsigned destaddr, int w, int h,
-	void *pattern, int destpitch, int rop );
+	unsigned char *pattern, int patternpitch, int destpitch, int rop );
 extern void CirrusMMIOBLT8x8PatternFill( unsigned destaddr, int w, int h,
-	void *pattern, int destpitch, int rop );
+	unsigned char *pattern, int patternpitch, int destpitch, int rop );
 extern void CirrusBLT16x16PatternFill( unsigned destaddr, int w, int h,
-	unsigned char *pattern, int destpitch, int rop );
+	unsigned char *pattern, int patternpitch, int destpitch, int rop );
 extern void CirrusMMIOBLT16x16PatternFill( unsigned destaddr, int w, int h,
-	unsigned char *pattern, int destpitch, int rop );
+	unsigned char *pattern, int patternpitch, int destpitch, int rop );
 extern void CirrusBLTBitBlt( unsigned dstAddr, unsigned srcAddr,
 	int dstPitch, int srcPitch, int w, int h, int dir );
 extern void CirrusMMIOBLTBitBlt( unsigned dstAddr, unsigned srcAddr,
@@ -155,6 +155,20 @@ extern void CirrusMMIOBLTWriteBitmap();
 extern RegionPtr Cirrus16CopyArea();
 extern RegionPtr Cirrus32CopyArea();
 extern void CirrusCopyWindow();
+/* cir_fillsp.c */
+extern void CirrusFillSolidSpansGeneral();
+extern void CirrusMMIOFillRectSolid();
+extern void CirrusMMIOFillBoxSolid();
+extern void CirrusMMIOBanded32x32PatternFill();
+extern void CirrusMMIOPoly32x32PatternFill();
+extern void CirrusWriteSolidPattern();
+/* cir_line.c */
+extern void CirrusMMIOLineSS();
+extern void CirrusMMIOSegmentSS();
+/* cir_orect.c */
+extern void Cirrus8PolyRectangle();
+extern void Cirrus16PolyRectangle();
+extern void Cirrus32PolyRectangle();
 
 _XFUNCPROTOEND
 
@@ -248,26 +262,6 @@ typedef struct
   CursorPtr pCurs;
   int skewed;
 } cirrusCurRec, *cirrusCurRecPtr;
-
-_XFUNCPROTOBEGIN
-
-/* In cir_alloc.c: */
-#if NeedFunctionPrototypes
-extern int CirrusInitializeAllocator ( int base );
-extern int CirrusAllocate ( int size );
-extern int CirrusCursorAllocate ( cirrusCurRecPtr cirrusCur );
-extern void CirrusFree ( int vidaddr );
-extern void CirrusUploadPattern ( unsigned char *pattern, int width,
-				 int height, int vidaddr, int srcpitch );
-#else
-extern int CirrusInitializeAllocator ();
-extern int CirrusAllocate ();
-extern int CirrusCursorAllocate ();
-extern void CirrusFree ();
-extern void CirrusUploadPattern();
-#endif
-
-_XFUNCPROTOEND
 
 #define HAVE543X() (cirrusChip == CLGD5434 || cirrusChip == CLGD5430)
 
