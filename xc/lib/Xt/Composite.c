@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Composite.c,v 1.13 89/09/13 13:13:04 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Composite.c,v 1.14 89/12/07 20:24:39 kit Exp $";
 /* $oHeader: Composite.c,v 1.2 88/08/18 15:35:39 asente Exp $ */
 #endif /* lint */
 
@@ -194,8 +194,10 @@ void CompositeInsertChild(w)
 }
 
 /* ARGSUSED */
-void CompositeInitialize(requested_widget, new_widget)
+void CompositeInitialize(requested_widget, new_widget, args, num_args)
     Widget   new_widget, requested_widget;
+    ArgList args;
+    Cardinal *num_args;
 {
     register CompositeWidget cw;
 
