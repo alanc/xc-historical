@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xboxes.c,v 1.15 88/09/23 09:27:33 swick Exp $";
+static char rcsid[] = "$XConsortium: xcutsel.c,v 1.1 88/10/14 17:42:41 swick Exp $";
 #endif	lint
 
 #include <stdio.h>
@@ -224,11 +224,11 @@ void main(argc, argv)
 	XtAddCallback( button, XtNcallback, Quit, NULL );
 
     button =
-	XtCreateManagedWidget("getSel", commandWidgetClass, box, NULL, ZERO);
+	XtCreateManagedWidget("cut->sel", commandWidgetClass, box, NULL, ZERO);
 	XtAddCallback( button, XtNcallback, GetSelection, NULL );
 
     button =
-	XtCreateManagedWidget("getCut", commandWidgetClass, box, NULL, ZERO);
+	XtCreateManagedWidget("sel->cut", commandWidgetClass, box, NULL, ZERO);
 	XtAddCallback( button, XtNcallback, GetBuffer, NULL );
     
     XtRealizeWidget(shell);
