@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbline.c,v 5.10 90/01/23 15:14:37 keith Exp $ */
+/* $XConsortium: mfbline.c,v 5.11 91/05/26 08:36:44 rws Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -456,8 +456,8 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     */
 
     if ((pGC->capStyle != CapNotLast) &&
-	((ppt->x != pptInit->x) ||
-	 (ppt->y != pptInit->y) ||
+	((ppt->x + xorg != pptInit->x + pDrawable->x) ||
+	 (ppt->y + yorg != pptInit->y + pDrawable->y) ||
 	 (ppt == pptInit + 1)))
     {
 	unsigned int _mask;
@@ -782,8 +782,8 @@ dontStep:	;
 
     if ((pGC->capStyle != CapNotLast) &&
         ((dashIndex & 1) == 0 || isDoubleDash) &&
-	((ppt->x != pptInit->x) ||
-	 (ppt->y != pptInit->y) ||
+	((ppt->x + xorg != pptInit->x + pDrawable->x) ||
+	 (ppt->y + yorg != pptInit->y + pDrawable->y) ||
 	 (ppt == pptInit + 1)))
     {
 	nbox = nboxInit;
