@@ -1,4 +1,4 @@
-.\" $XConsortium: CH02,v 1.10 91/08/26 20:15:03 swick Exp $
+.\" $XConsortium: CH02,v 1.11 91/08/27 09:59:40 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -490,7 +490,7 @@ to be used, or NULL.
 .IP \fIproc\fP 1i
 Specifies the language procedure.
 .IP \fIclient_data\fP 1i
-Specified additional client data to be passed to the language
+Specifies additional client data to be passed to the language
 procedure when it is called.
 .LP
 .PN XtSetLanguageProc
@@ -1656,7 +1656,7 @@ instance, an application may use
 .PN XtAppInitialize
 or
 .PN XtVaAppInitialize .
-.IN "XtVaAppInitialize" "" "@DEF@"
+.IN "XtAppInitialize" "" "@DEF@"
 .FD 0
 Widget XtAppInitialize(\fIapp_context_return\fP, \fIapplication_class\fP, \
 \fIoptions\fP, \fInum_options\fP,
@@ -1841,7 +1841,7 @@ It is not necessary to allocate space for or to copy callback lists.
 .NE
 .IP \(bu 5
 Computes values for unspecified resource fields.
-For example, \fIif\fP width and \fIheight\fP are zero,
+For example, if \fIwidth\fP and \fIheight\fP are zero,
 the widget should compute an appropriate width and height 
 based on its other resources.
 .NT
