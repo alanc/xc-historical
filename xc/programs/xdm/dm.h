@@ -27,7 +27,7 @@
 # include	<X11/Xos.h>
 # include	<X11/Xmd.h>
 # include	<X11/Xauth.h>
-# include	<X11/Xdmcp/Xdmcp.h>
+# include	<X11/Xdmcp.h>
 
 # include	<sys/param.h>	/* for NGROUPS */
 
@@ -150,7 +150,11 @@ struct protoDisplay {
 	CARD16			connectionType;
 	ARRAY8			connectionAddress;
 	CARD32			sessionID;
-	Xauth			*authorization;
+	Xauth			*fileAuthorization;
+	Xauth			*xdmcpAuthorization;
+	ARRAY8			authenticationName;
+	ARRAY8			authenticationData;
+	XdmAuthKeyRec		key;
 };
 
 struct greet_info {
@@ -193,6 +197,7 @@ extern int	flockPidFile;
 extern char	*remoteAuthDir;
 extern int	autoRescan;
 extern int	removeDomainname;
+extern char	*keyFile;
 
 extern struct display	*FindDisplayByName (),
 			*FindDisplayBySessionID (),
