@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.10 89/10/04 16:51:56 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.11 89/10/09 16:20:48 jim Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -308,11 +308,8 @@ Widget current, request, new;
       XawToggleChangeRadioGroup(new, tw->toggle.widget);
 
     if (oldtw->command.set != tw->command.set) {
-      if (tw->command.set) {
-	ToggleSet(new, NULL, NULL, 0); /* Does a redisplay. */
-      }
-      else
-	class->toggle_class.Unset(new, NULL, NULL, 0); /* Does a redisplay. */
+	tw->command.set = oldtw->command.set;
+	Toggle(new, NULL, NULL, 0); /* Does a redisplay. */
     }
     return(FALSE);
 }
