@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fmalloc.c,v 1.2 92/04/08 10:34:41 keith Exp $
+ * $XConsortium: fmalloc.c,v 1.3 92/04/08 14:31:19 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -142,6 +142,7 @@ int		FindLeakWarnMiddlePointers = 0;
 unsigned long	FindLeakAllocBreakpoint = ~0;
 unsigned long	FindLeakFreeBreakpoint = ~0;
 unsigned long	FindLeakTime;
+int		FindLeakCheckAlways = 0;
 
 static void MarkActiveBlock ();
 static int  tree_insert (), tree_delete ();
@@ -530,6 +531,8 @@ malloc (desiredsize)
 
     if (!endOfStaticMemory)
 	endOfStaticMemory = (mem *) sbrk(0);
+    if (FindLeakCheckAlways)
+	CheckMemory ();
     size = RoundUp(desiredsize);
     totalsize = TotalSize (size);
     
@@ -609,6 +612,8 @@ free (p)
     getStackTrace (h->returnStack, MAX_RETURN_STACK);
 #endif
     AddFreedBlock (h);
+    if (FindLeakCheckAlways)
+	CheckMemory ();
 }
 
 char *
