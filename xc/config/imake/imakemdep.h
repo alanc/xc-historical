@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.3 89/10/16 13:25:02 jim Exp $
+ * $XConsortium: imakemdep.h,v 1.4 89/11/03 10:25:17 jim Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -113,11 +113,14 @@ char *cpp_argv[ARGUMENTS] = {
 #ifdef att
 	"-Datt",	/* AT&T products */
 #endif
-#ifdef ibm
-	"-Dibm",	/* IBM PS/2 and RT under both AOS and AIX */
-#endif
 #ifdef aix
 	"-Daix",	/* AIX instead of AOS */
+#ifndef ibm
+#define ibm		/* allow BOOTSTRAPCFLAGS="-Daix" */
+#endif
+#endif
+#ifdef ibm
+	"-Dibm",	/* IBM PS/2 and RT under both AOS and AIX */
 #endif
 };
 #else /* else MAKEDEPEND */

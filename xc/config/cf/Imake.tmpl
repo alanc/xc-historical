@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.63 89/11/01 09:57:00 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.64 89/11/01 10:02:22 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -150,9 +150,14 @@
 
 
 /*
- * A convenience for people running on rt's
+ * A convenience for people running on rt's since they define ibm032, and for
+ * people running AIX (note that AOS will no longer be supported by IBM).
  */
 #if defined(ibm032) && !defined(ibm)
+#define ibm
+#endif
+
+#if defined(aix) && !defined(ibm)
 #define ibm
 #endif
 

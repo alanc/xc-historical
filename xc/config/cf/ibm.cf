@@ -2,15 +2,32 @@
  * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
  */
 
-#define OSMajorVersion         0
-#define OSMinorVersion         0
+#ifdef AIXArchitecture
+#ifdef RtArchitecture
+#define OSMajorVersion         2	/* RT AIX v2.2 */
+#define OSMinorVersion         2
+#else
+#define OSMajorVersion         1	/* PS/2 AIX v1.1 (same as rt v2.2) */
+#define OSMinorVersion         1
+#endif
+#else
+#define OSMajorVersion         4	/* AOS 4.3 (going away) */
+#define OSMinorVersion         3
+#endif
+
+#ifdef ATHENA
+#define ibmAthenaDefs -DATHENA
+#else
+#define ibmAthenaDefs /**/
+#endif
 
 #ifdef AIXArchitecture
 #define SystemV YES
 #define OSName AIX
-#define ibmbootstrapcflags -Daix
+#define BootstrapCFlags -Daix
 #define OSDefines /**/
 #define OPERATING_SYSTEM AIX /* directory name under server/ddx/ibm/ */
+
 #ifdef USE_PCC
 #define CcCmd i386cc
 #define ibmosdefs -DHCVERSION=HCRevision
@@ -20,13 +37,15 @@
 #define LibraryDefines -Hcpp -DUNIXCPP
 #define ibmosdefs -DSYSV -Nd4000 -Nn3000
 #endif /* USE_PCC */
-#else /* else not aix */
+
+#else /* else AOS - warning: AOS is going away... */
 #define SystemV NO
 #define OSName AOS
 #define CcCmd hc
 #define ibmosdefs -DHCVERSION=HCRevision
 #define OSDefines -DBSDrt
 #define OPERATING_SYSTEM BSDrt
+#define BootstrapCFlags -Dibm
 #endif /* AIXArchitecture */
 
 #define HasVoidSignalReturn    NO
@@ -37,15 +56,13 @@
  * affected:    .../server/ddx/ibm/Makefile
  *              .../server/ddx/ibm/common/Makefile
  * Also, be sure to remove .../server/ddx/ibm/common/ibmscreen.o
- * 
- *                                        PS2, Rt, ...
  */
 #define ibmInclude8514  NO /* YES */
 #define ibmIncludeAED   NO /* YES */
 #define ibmIncludeAPA16 YES
 #define ibmIncludeAPA8c NO
 #define ibmIncludeEGA   NO /* YES */
-#define ibmIncludeMPEL  NO /* YES */
+#define ibmIncludeMPEL  YES
 #define ibmIncludeVGA   NO /* YES */
 #define ibmIncludeGEN   NO
 #endif /* RtArchitecture */
@@ -88,11 +105,7 @@
 #ifndef ibmarchdefs
 #define ibmarchdefs /**/
 #endif
-#ifndef ibmbootstrapcflags
-#define ibmbootstrapcflags /**/
-#endif
 
-#define BootstrapCFlags -Dibm ibmbootstrapcflags
 #define StandardDefines -Dibm ibmosdefs ibmarchdefs
 #define LintOpts -ax -Dibm ibmosdefs ibmarchdefs
 
@@ -101,7 +114,6 @@
  * affected: .../X11/server/Makefile
  */
 #define XibmServer Xibm
-/* #define BuildServer NO */
 
 /*****************************************************************************
  *                        Platform-specfic parameters                        *
@@ -116,14 +128,14 @@
 	 *		.../server/os/4.2bsd/utils.o
 	 */
 
-#define	SpecialMalloc		YES
 /* Need This Also For our IBM Imakefiles */
+#define	SpecialMalloc		YES
 #define	ibmSpecialMalloc		YES
 
  LDCOMBINEFLAGS = -X -r
             PCC = pcc
 
-#ifndef AIXArchitecture
+#ifndef AIXArchitecture				/* AOS-specific */
 /*
  * It's real useful to know the version of hc we're using, but hc doesn't
  * identify itself in the pre-processor, so we have to do it by hand.
@@ -156,7 +168,8 @@
 #undef MacroFile
 #define MacroFile ibm.cf $(IRULESRC)/rtcchack.bac
 #endif
-#endif /* not AIX */
+#endif /* AOS */
+
 
 /* 
  * define this as you like for server compilation 
@@ -171,11 +184,11 @@
 /* define the following line for easily debuggable servers, the */
 /* second line for especially speedy servers.			*/
 /* #define ServerCDebugFlags	-O -DDEBUG -DTRACE_X */
-#define	ServerCDebugFlags -O -DATHENA
+#define	ServerCDebugFlags -O ibmAthenaDefs
 
 /* define this as you like for normal library compilation */
 #define LibraryDefines -DUNIXCPP StandardDefines
 
-/**/# platform:  $XConsortium: ibm.cf,v 1.11 89/10/11 16:57:55 jim Exp $
+/**/# platform:  $XConsortium: ibm.cf,v 1.12 89/10/11 18:55:09 jim Exp $
 /**/# operating system:  OSName
 
