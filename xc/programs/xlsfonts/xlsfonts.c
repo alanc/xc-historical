@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlsfonts.c,v 1.25 89/06/08 09:40:02 jim Exp $
+ * $XConsortium: xlsfonts.c,v 1.26 89/06/30 14:18:24 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -526,7 +526,7 @@ print_character_metrics (info)
 {
     register XCharStruct *pc = info->per_char;
     register int i, j;
-    int unsigned n, saven;
+    unsigned n, saven;
 
     printf ("  character metrics:\n");
     saven = ((info->min_byte1 << 8) | info->min_char_or_byte2);
