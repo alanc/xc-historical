@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.35 91/02/08 16:57:07 converse Exp $ */
+/* $XConsortium: TranslateI.h,v 1.36 91/03/28 15:36:01 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -401,15 +401,6 @@ extern void _XtTranslateEvent(
 #if NeedFunctionPrototypes
     Widget		/* widget */,
     XEvent*		/* event */
-#endif
-);
-
-extern void _XtConvertCase(
-#if NeedFunctionPrototypes
-    Display*		/* display */,
-    KeySym		/* sym */,
-    KeySym*		/* lower */,
-    KeySym*		/* upper */
 #endif
 );
 
