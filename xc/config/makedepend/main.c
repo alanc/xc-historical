@@ -1,7 +1,10 @@
 /*
- * $Header: main.c,v 1.5 87/06/29 16:16:50 toddb Locked $
+ * $Header: main.c,v 1.6 87/08/14 17:59:51 rws Locked $
  *
  * $Log:	main.c,v $
+ * Revision 1.6  87/08/14  17:59:51  toddb
+ * Added call to inc_clean() after traversing graph.
+ * 
  * Revision 1.5  87/06/29  16:16:50  toddb
  * One too few bytes allocated.
  * 
@@ -29,6 +32,9 @@
  * 
  */
 #include "def.h"
+#ifdef hpux
+#define sigvec sigvector
+#endif /* hpux */
 #include	<sys/signal.h>
 
 #ifdef DEBUG
