@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.92 87/12/04 16:49:46 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.93 87/12/08 16:34:14 swick Locked $";
 #endif lint
 
 /*
@@ -349,7 +349,6 @@ static void CoreInitialize(reqWidget,newWidget,args,num_args)
     newWidget->core.background_pixmap = (Pixmap) NULL;
     newWidget->core.border_pixmap = (Pixmap) NULL;
     newWidget->core.event_table = NULL;
-    newWidget->core.destroy_callbacks = NULL;
     newWidget->core.popup_list = NULL;
     newWidget->core.num_popups = 0;
 
