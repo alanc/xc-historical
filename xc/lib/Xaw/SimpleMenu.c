@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.19 89/08/10 12:11:24 keith Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.20 89/08/10 13:46:59 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -1462,11 +1462,13 @@ XawRefreshTypes type;
   }
 
 /*
- * Clear the entry, get an exposure if it should be painted
+ * Clear the entry, and repaint the new one.
  */
 
   XClearArea(XtDisplay(w), XtWindow(w), 0, y,
-	     w->core.width, height, TRUE);
+	     w->core.width, height, FALSE);
+
+  PaintEntry(w, entry, y, e_num);
 }
 
 /*      Function Name: GetMenuEntry
