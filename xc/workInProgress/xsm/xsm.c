@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.25 94/02/18 19:59:30 converse Exp $ */
+/* $XConsortium: xsm.c,v 1.26 94/02/21 10:01:32 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -1412,6 +1412,56 @@ char *Strstr(s1, s2)
 }
 #endif
 
+
+/*
+ * rstart requires that any spaces inside of a string be represented by
+ * octal escape sequences.
+ */
+
+static char *
+spaces_to_octal (str)
+
+char *str;
+
+{
+    int space_count = 0;
+    char *temp = str;
+
+    while (*temp != '\0')
+    {
+	if (*temp == ' ')
+	    space_count++;
+	temp++;
+    }
+
+    if (space_count == 0)
+	return (str);
+    else
+    {
+	int len = strlen (str) + 1 + (space_count * 4);
+	char *ret = malloc (len);
+	char *ptr = ret;
+
+	temp = str;
+	while (*temp != '\0')
+	{
+	    if (*temp != ' ')
+		*(ptr++) = *temp;
+	    else
+	    {
+		ptr[0] = '\\'; ptr[1] = '0'; ptr[2] = '4'; ptr[3] = '0';
+		ptr += 4;
+	    }
+	    temp++;
+	}
+
+	*ptr = '\0';
+	return (ret);
+    }
+}
+
+
+
 restart_everything()
 {
     List *cl;
@@ -1651,17 +1701,24 @@ restart_everything()
 			fprintf (fp, "CONTEXT X\n");
 			fprintf (fp, "DIR %s\n", cwd);
 
-/*
- * There are spaces inside some of the damn env values, and rstartd
- * will barf on spaces.  Need to fix this, but for now, just set the
- * important env variables.
- */
+			/*
+			 * There may be spaces inside some of the environment
+			 * values, and rstartd will barf on spaces.  Need
+			 * to replace space characters with their equivalent
+			 * octal escape sequences.
+			 */
 
 			for (i = 0; env[i]; i++)
-			    if (Strstr (env[i], "PATH"))
-				fprintf (fp, "MISC X %s\n", env[i]);
+			{
+			    char *temp = spaces_to_octal (env[i]);
+			    fprintf (fp, "MISC X %s\n", temp);
+			    if (temp != env[i])
+				free (temp);
+			}
+
 			fprintf (fp, "MISC X %s\n", non_local_display_env);
 			fprintf (fp, "MISC X %s\n", non_local_session_env);
+
 /*
  * To do: set the auth data.
  *   use AUTH authscheme authdata
