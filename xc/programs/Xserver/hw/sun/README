@@ -1,5 +1,4 @@
-
-	Sun X11 drivers -  10 September 1987
+	Sun X11 drivers -  25 February 1988
 
 A joint production of:
 
@@ -39,7 +38,7 @@ if you have problems installing or using it you are on your own.
 
 Things to check before building:
 
-1)	server/include/site.h - replace the font and rgb paths.
+1)	util/imake.includes/Imake.tmpl - check LIBDIR, FONTDIR, etc.
 
 2)	Make sure the fonts/Makefile uses the pad flag on the font
 	compiler to pad the glyphs to 4-byte boundaries.
@@ -50,35 +49,35 @@ Things to check before building:
 
 Then build the system by:
 
-1)	Make the dependency generator:
+1)	Go for it.  In the top-level directory, type
 
-	cd makedepend ; make ; cd ..
-
-2)	Update the dependencies by:
-
-	find . -name Makefile -exec chmod u+w {} \;
-	make depend
-	find . -name Makefile -exec chmod u-w {} \;
-
-3)	Go for it.  In the top-level directory, type
-
-	    make
+	make World
 
 	This takes about forty minutes on a 4/260, and somewhat longer
 	on other Suns.
 
+2)	Go for it.  In the top-level directory, type
+
+	make install
+
+	Otherwise, you'll want to create a bunch of symbolic links to
+	the various executables and data files scattered throughout
+	the hierarchy.
+
 3)	Exit suntools or whatever other window system you use.
 
-4)	On the console, or from an rlogin connection,  start the server:
+4)	On the console, or from an rlogin connection, put whatever you
+	chose for BINDIR (in Imake.tmpl) in your search path, and then
+	start the server:
 
-	    clients/xinit/xinit
+	    xinit
 	or
-	    clients/xinit/xinit -- -dev /dev/??? [see below]
+	    xinit -- -dev /dev/??? [see below]
 
 	If it's from the console,  you probably want to redirect the
 	output thus:
 
-	    clients/xinit/xinit >& /tmp/x11.out
+	    xinit >& /tmp/x11.out
 
 5)	xinit should start up an xterm window that acts as a console.  When
 	this xterm terminates, the xinit will kill the server.  You can also
@@ -86,7 +85,7 @@ Then build the system by:
 	first set the DISPLAY environment variable:
 
 	    setenv DISPLAY unix:0
-	    clients/xterm/xterm &
+	    xterm &
 
 
 6)	In general,  Xsun auto-configures to use all the available
@@ -104,7 +103,7 @@ Then build the system by:
 
 	    xinit -- -dev /dev/cgtwo0
 
-7)	To shut the server down,  it  it with a Hangup or Terminate signal.
+7)	To shut the server down,  hit  it with a Hangup or Terminate signal.
 
 8)	Xsun coexists with the SunWindows environment.  If you run Xsun
 	from a shell window under suntools, then Xsun will overlay that
