@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.15 94/07/11 15:38:51 mor Exp $ */
+/* $XConsortium: smproxy.c,v 1.16 94/07/11 18:20:15 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -511,9 +511,9 @@ Bool errorCheck;
     XGetClassHint (disp, event->window, &win_list[index].class);
 
     if (XGetWindowProperty (disp, event->window, wmStateAtom,
-	0L, 2L, False, wmStateAtom,
+	0L, 2L, False, AnyPropertyType,
 	&actual_type, &actual_format, &nitems, &bytesafter,
-	(unsigned char **) &datap) && datap)
+	(unsigned char **) &datap) == Success && datap)
     {
 	if (nitems > 0)
 	    win_list[index].got_wm_state = 1;
@@ -916,7 +916,7 @@ char *previous_id;
 
 
 void
-CheckFirst ()
+CheckForExistingWindows ()
 
 {
     Window dontCare1, dontCare2, *children, client_window;
@@ -1025,7 +1025,7 @@ char **argv;
 
     XSelectInput (disp, root, SubstructureNotifyMask | PropertyChangeMask);
 
-    CheckFirst ();
+    CheckForExistingWindows ();
 
     while (1)
     {
