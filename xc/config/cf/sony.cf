@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.36 91/08/21 11:16:04 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.37 92/05/31 15:44:45 rws Exp $
 
 #ifdef SonyBsdArchitecture
 
@@ -9,7 +9,7 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.36 91/08/21 11:16:04 rws Exp $
 #define HasVoidSignalReturn     NO
 #define HasNdbm                 YES
 #define DirFailPrefix -
-#define InstKmemFlags		-g sys -m 2755
+#define InstKmemFlags		-g kmem -m 2755
 #define DefaultUserPath :/bin:/usr/bin:$(BINDIR):/usr/ucb:/usr/sony/bin:
 #define DefaultSystemPath /etc:/usr/etc:/bin:/usr/bin:$(BINDIR):/usr/ucb:/usr/sony/bin:
 #ifdef MipsArchitecture
