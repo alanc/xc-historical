@@ -47,15 +47,6 @@ static char *sccsid = "@(#)Initialize.c	1.0	8/2787";
  level.
 */
 
-#define XtNinput	"input"
-#define XtCInput	"Input"
-#define XtNiconic	"iconic"
-#define XtCIconic	"Iconic"
-#define XtNinitial	"initialstate"
-#define XtCInitial	"InitialState"
-#define XtNgeometry	"geometry"
-#define XtCGeometry	"Geometry"
-
 static XrmOptionDescRec opTable[] = {
 {"=",		XtNgeometry,	XrmoptionIsArg,		(caddr_t) NULL},
 {"-bd",		XtNborder,	XrmoptionSepArg,	(caddr_t) NULL},
