@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.5 92/06/08 18:54:51 rws Exp $
 
 #define BuildWithXTest
 
@@ -23,3 +23,5 @@ LOCAL_LIBRARIES = $(XMULIB) $(GENLIB) $(XLIB)
   SYS_LIBRARIES = -lm
 
 SimpleProgramTarget(a2x)
+
+InstallNamedProg(DragonDictate,DragonDictate,$(BINDIR))
