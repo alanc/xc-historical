@@ -1,5 +1,5 @@
 /*
-* $Header: Text.h,v 1.2 87/09/11 21:24:44 swick Locked $
+* $Header: Text.h,v 1.3 87/12/23 07:51:24 swick Locked $
 */
 
 /*
@@ -142,13 +142,37 @@ extern Window XtTextGetInnerWindow(); /* w */
  * Stuff from AsciiSink
  */
 
-extern caddr_t XtAsciiSinkCreate(); /* dpy, font, ink, background */
-    /* Display *dpy; */
-    /* XFontStruct  *font; */
-    /* int	    ink, background */
+extern XtTextSink XtAsciiSinkCreate(); /* parent, args, num_args */
+    /* Widget parent;		*/
+    /* ArgList args;		*/
+    /* Cardinal num_args;	*/
 
 extern void XtAsciiSinkDestroy(); /* sink */
     /* XtTextSink  sink */
+
+/*
+ * from DiskSrc
+ */
+extern XtTextSource XtDiskSourceCreate(); /* parent, args, num_args */
+    /* Widget	parent;		*/
+    /* ArgList	args;		*/
+    /* Cardinal	num_args;	*/
+
+extern void XtDiskSourceDestroy(); /* src */
+    /* XtTextSource src;	*/
+
+/*
+ * from StringSrc
+ */
+
+extern XtTextSource XtStringSourceCreate(); /* parent, args, num_args */
+    /* Widget parent;		*/
+    /* ArgList args;		*/
+    /* Cardinal num_args;	*/
+
+extern void XtStringSourceDestroy(); /* src */
+    /* XtTextSource src;	*/
+
 
 #endif _XtText_h
 /* DON'T ADD STUFF AFTER THIS #endif */
