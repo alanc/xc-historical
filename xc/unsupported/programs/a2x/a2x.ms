@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.19 92/09/09 17:58:16 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.20 92/09/09 20:08:44 rws Exp $
 .de Ds
 .RS
 .nf
@@ -10,8 +10,6 @@
 .sp .5
 .RE
 ..
-.TA 1.5i
-.ta 1.5i
 .EH ''Using a2x''
 .OH ''Using a2x''
 .EF ''\fB % \fP''
@@ -98,7 +96,7 @@ a network connection, it should be possible to use a terminal program and log
 in to the workstation over a serial line, but performance over a serial line
 will likely not be as good as over a network.  In the telnet session, run the
 script "DragonDictate" provided with the \fBa2x\fP distribution.  You should
-be able to speak this, by saying "DragonDictate", "[enter key]", "OK" (the
+be able to speak this, by saying "DragonDictate", "[enter\ key]", "OK" (the
 "OK" being necessary to pop down the menu to permit execution to continue).
 This script simply clears the screen and starts up \fBa2x\fP.  Clearing the
 screen is a convenience so that the focus of attention on the PC screen will
@@ -109,13 +107,17 @@ You will probably find it convenient to force the DragonDictate menus to
 appear in a fixed position on the PC screen.  For example, in the "Parameters"
 menu from "Voice Console", set
 .Ds
-pop-up-row		0
-pop-up-col		30
+.TA 1.5i
+.ta 1.5i
+pop-up-row	0
+pop-up-col	24
 .De
 .LP
 You should also set
 .Ds
-pop-up-delay		0
+.TA 1.5i
+.ta 1.5i
+pop-up-delay	0
 compatibility-delay	0
 .De
 for quickest operation.
@@ -136,13 +138,13 @@ confusing \fBa2x\fP.  (One simple exception to this rule is that you can use
 \fBa2x\fP to press/release buttons and keys while directly moving the pointer
 with your hand.)
 .LP
-\fBa2x\fP interprets the character {c-t} specially; it introduces a control
-sequence for special \fBa2x\fP operations.  The character {c-t} was chosen
+\fBa2x\fP interprets the character {c\-t} specially; it introduces a control
+sequence for special \fBa2x\fP operations.  The character {c\-t} was chosen
 because it occurs infrequently in normal text; escape was not chosen because
 you might use it frequently in voice macros to send escape sequences to
-applications.  There are two types of \fBa2x\fP control sequences: {c-t}
-followed by a single control character, and {c-t} followed by a string of
-characters terminated by another {c-t}.  Control sequences are described in
+applications.  There are two types of \fBa2x\fP control sequences: {c\-t}
+followed by a single control character, and {c\-t} followed by a string of
+characters terminated by another {c\-t}.  Control sequences are described in
 detail below.
 .LP
 \fBa2x\fP also interprets the backspace character ({c-h} or {Backspace})
@@ -162,10 +164,10 @@ more detail below).  As such, it is recommended that you change some
 predefined DragonDictate voice macros to replace backspace characters with
 delete characters or with control sequences to generate backspace.  For
 example, you should modify the keystrokes of the built-in commands
-"[backspace]", "[back 1]", "[back 2]", "[back 3]", "[back 4]", and "[back 5]",
-replacing each "{Backspace}" with "{Del}" to generate delete instead of
-backspace.  If you really want to generate backspace, then replace each
-"{Backspace}" with the sequence "{c-t}{c-c}h" instead.
+"[backspace]", "[back\ 1]", "[back\ 2]", "[back\ 3]", "[back\ 4]", and
+"[back\ 5]", replacing each "{Backspace}" with "{Del}" to generate delete
+instead of backspace.  If you really want to generate backspace, then replace
+each "{Backspace}" with the sequence "{c\-t}{c\-c}h" instead.
 .LP
 If you are using a terminal program over a serial line, make sure your program
 is not automatically converting backspace to delete, as this will cause
@@ -199,7 +201,7 @@ called "sticky" modifiers.  For example:
 add-word /t "[meta key]" "{c-t}Meta_L{c-t}" left right
 .De
 would set the Meta modifier if a key labeled with Meta_L is attached to a
-modifier.  So, you could say "[meta key]" "x" to generate meta-x.  However,
+modifier.  So, you could say "[meta\ key]" "x" to generate meta-x.  However,
 since there are both Meta_L and Meta_R keysyms, and since Meta is commonly
 used, there is a special control sequence for this:
 .Ds
@@ -228,21 +230,22 @@ add-word /t "[dismiss window]" "{c-t}{c-c}{c-t}{c-s}{c-t}{c-m}{c-t}F3{c-t}" invi
 generates control-shift-meta-F3, which might, e.g., be bound in a .twmrc
 as:
 .Ds
-"F3" = c|s|m : window	: f.delete
+"F3" = c|s|m : window : f.delete
 .De
 .LP
 The Control sequence would not normally be needed in conjunction with
 character keys, since DragonDictate can output control characters, but the
 edit mechanism DragonDictate uses has problems with control characters.
-Specifically, when DragonDictate generates backspaces as a result of "choose
-\fI<n>\fP" or "[scratch that]", it will not generate backspaces for control
-characters.  This is a problem, because it prevents \fBa2x\fP from properly
-undoing control characters.  For example, if you defined:
+Specifically, when DragonDictate generates backspaces as a result of
+"choose\ \fI<n>\fP" or "[scratch\ that]", it will not generate backspaces for
+control characters.  This is a problem, because it prevents \fBa2x\fP from
+properly undoing control characters.  For example, if you defined:
+
 .Ds
 add-word /t "[move right]" "{c-f}" invisible
 .De
 in order to use emacs-style positioning control, then \fBa2x\fP would be
-unable to provide the undo help of generating {c-b} to compensate when
+unable to provide the undo help of generating {c\-b} to compensate when
 DragonDictate mistakenly matched this voice command, because DragonDictate
 would not output any backspaces.  Instead, you should define:
 .Ds
@@ -264,8 +267,8 @@ characters if there are noncontrol characters in the sequence.  For example:
 add-word /t "[split window]" "{c-x}2" invisible
 .De
 .LP
-DragonDictate will output a backspace for the '2', so the {c-x} does not need
-to be expanded to "{c-t}{c-c}x" (although it doesn't hurt).
+DragonDictate will output a backspace for the '2', so the {c\-x} does not need
+to be expanded to "{c\-t}{c\-c}x" (although it doesn't hurt).
 .NH 1
 Autorepeat
 .LP
@@ -285,9 +288,9 @@ will autorepeat every 1.5 seconds.  So, you might have defined:
 .Ds
 add-word /t "[search for]" "{c-s}" left right
 .De
-for incremental search in \fBemacs\fP.  You can say "[search for]" to start a
-search, say what you are searching for, say "[search for]" again, and then say
-"[autorepeat it]" to autorepeat the search.
+for incremental search in \fBemacs\fP.  You can say "[search\ for]" to start a
+search, say what you are searching for, say "[search\ for]" again, and then
+say "[autorepeat\ it]" to autorepeat the search.
 .LP
 When autorepeat is in progress, it continues until you explicitly stop it or
 until the next keystroke is generated through \fBa2x\fP.  You can explicitly
@@ -313,8 +316,11 @@ To toggle the state of a button, use the control sequence:
 .De
 where \fI<button>\fP is the decimal button number.  For example:
 .Ds
+.TA 1.5i
+.ta 1.5i
 add-word /t "[click it]" "{c-t}{c-b}1{c-t}{c-t}{c-b}1{c-t}" invisible
-add-word /t "[double click]" "{c-t}{c-b}1{c-t}{c-t}{c-b}1{c-t}{c-t}{c-b}1{c-t}{c-t}{c-b}1{c-t}" invisible
+add-word /t "[double click]" "{c-t}{c-b}1{c-t}{c-t}{c-b}1{c-t}{c-t}{c-b}1{c-t}{c-t}{c-b}1{c-t}"
+	invisible
 .De
 will single-click and double-click button 1.
 .LP
@@ -328,8 +334,8 @@ For example:
 add-word /t "[press 1]" "{c-t}{c-b}1{c-t}" invisible
 add-word /t "[button up]" "{c-t}{c-b}0{c-t}" invisible
 .De
-so that you can say "[press 1]" to press button 1, move the pointer to a final
-position, and then say "[button up]" to release the button.
+so that you can say "[press\ 1]" to press button 1, move the pointer to a
+final position, and then say "[button\ up]" to release the button.
 .LP
 Modifiers can be set for buttons, for example:
 .Ds
@@ -425,13 +431,14 @@ add-word /t "[slow down]" "{c-t}{c-a}2 1 0{c-t}" invisible
 .LP
 The autorepeat sequence is designed to cover both keystrokes and motion so
 that you can use a single voice command to govern speed.  For example, you
-might say "[search for]", "[autorepeat]", then "[slow down]" if things are
-going by too fast, and finally "[stop moving]".  Similarly, you might say "[go
-left]", then "[slow down]" when you get close, and finally "[stop moving]".
-Notice that "[slow down]" in the example treats keyboard repeat differently
-from pointer motion; the repeat rate for the keyboard is slowed down, but the
-repeat rate for pointer motion remains the same and the delta motion is made
-smaller instead.  This permits finer-grained positioning of the pointer.
+might say "[search\ for]", "[autorepeat]", then "[slow\ down]" if things are
+going by too fast, and finally "[stop\ moving]".  Similarly, you might say
+"[go\ left]", then "[slow\ down]" when you get close, and finally
+"[stop\ moving]".  Notice that "[slow\ down]" in the example treats keyboard
+repeat differently from pointer motion; the repeat rate for the keyboard is
+slowed down, but the repeat rate for pointer motion remains the same and the
+delta motion is made smaller instead.  This permits finer-grained positioning
+of the pointer.
 .NH 1
 Undo
 .LP
@@ -463,16 +470,16 @@ the corresponding \fI<undo-sequence>\fP just as if it had come from
 DragonDictate.
 .LP
 As a simple example, the undo entries for emacs-style forward/backward
-character motion ({c-f} and {c-b}) are:
+character motion ({c-f} and {c\-b}) are:
 .Ds
 ^T^Cb:^T^Cf
 ^T^Cf:^T^Cb
 .De
 .LP
-Note that these are specified for undoing "{c-t}{c-c}b" and "{c-t}{c-c}f", not
-for {c-b} and {c-f}.  This is because {c-b} and {c-f} will not have backspaces
-generated for them by DragonDictate (refer to the backspace discussion
-earlier).
+Note that these are specified for undoing "{c\-t}{c\-c}b" and "{c\-t}{c\-c}f",
+not for {c\-b} and {c\-f}.  This is because {c\-b} and {c\-f} will not have
+backspaces generated for them by DragonDictate (refer to the backspace
+discussion earlier).
 .LP
 While you are building up your voice macros for \fBa2x\fP, you will probably
 be editing your undo file from time to time.  To tell \fBa2x\fP to reload the
@@ -496,7 +503,7 @@ or
 .Ds
 {c-t}{c-j}\fI<options>\fP \fI<mult>\fP{c-t}
 .De
-where \fI<mult>\fP is a positive floating point number, and \fI<options>
+where \fI<mult>\fP is a positive floating point number, and \fI<options>\fP
 consists of some subset of the following options:
 .Ds
 Z  (this is optional)
@@ -507,7 +514,9 @@ one of {n, p, N, P}  (this is optional, and must be last)
 .De
 The options are defined as follows:
 .LP
-Z		no-op
+.TA .5i
+.ta .5i
+Z	no-op
 .IP
 This letter is a "no-op"; it is provided so that you can place it at the
 beginning of the control sequence to "soak up" an uppercase conversion
@@ -518,12 +527,14 @@ option is not normally needed if you set the punctuation of your macro to
 "invisible".
 .LP
 .nf
-C		closest top-level window
-D		top-level window going down
-U		top-level window going up
-L		top-level window going left
-R		top-level window going right
-O		skip overlapping top-level windows
+.TA .5i
+.ta .5i
+C	closest top-level window
+D	top-level window going down
+U	top-level window going up
+L	top-level window going left
+R	top-level window going right
+O	skip overlapping top-level windows
 .fi
 .IP
 These options permit you to jump up ('U'), down ('D'), right ('R'), left
@@ -541,11 +552,13 @@ add-word /t "[way up]" "{c-t}{c-j}UO{c-t}" invisible
 .De
 .LP
 .nf
-c		closest widget
-d		widget going down
-l		widget going left
-r		widget going right
-u		widget going up
+.TA .5i
+.ta .5i
+c	closest widget
+d	widget going down
+l	widget going left
+r	widget going right
+u	widget going up
 .fi
 .IP
 These options permit you to jump to a new widget within the current top-level
@@ -570,8 +583,10 @@ The default multiplier is 10.  You can override this default by explicitly
 providing a \fI<mult>\fP floating point value in the jump control sequence.
 .LP
 .nf
-k		require keyboard interest
-b		require button interest
+.TA .5i
+.ta .5i
+k	require keyboard interest
+b	require button interest
 .fi
 .IP
 It is often useful to restrict the set of windows to those that select for
@@ -588,14 +603,16 @@ add-word /t "[jump right]" "{c-t}{c-j}rkb{c-t}" invisible
 .De
 .LP
 .nf
-n\fI<name>\fP			require WM_NAME name
-p\fI<name>\fP			require WM_NAME name prefix
-N\fI<name>\fP			require name
-N.\fI<class>\fP		require class
-N\fI<name>\fP.\fI<class>\fP		require name and class
-P\fI<name>\fP			require name prefix
-P.\fI<class>\fP		require class prefix
-P\fI<name>\fP.\fI<class>\fP		require name prefix and class prefix
+.TA 1.5i
+.ta 1.5i
+n\fI<name>\fP	require WM_NAME name
+p\fI<name>\fP	require WM_NAME name prefix
+N\fI<name>\fP	require name
+N.\fI<class>\fP	require class
+N\fI<name>\fP.\fI<class>\fP	require name and class
+P\fI<name>\fP	require name prefix
+P.\fI<class>\fP	require class prefix
+P\fI<name>\fP.\fI<class>\fP	require name prefix and class prefix
 .fi
 .IP
 These options further restrict the set of windows considered to those with a
@@ -636,12 +653,13 @@ add-word /t "[start skip]" "{c-t}{c-j}ZCp" left right
 add-word /t "[go there]" "{c-t}" invisible
 .De
 .IP
-With these macros, you can say sequences like "[start skip]", "emacs", "[go
-there]", to jump to the closest \fBemacs\fP application window, or "[start
-jump]", "inbox", "[go there]" within an \fBxmh\fP application to jump to the
-folder button named "inbox".  Note that it is OK to split a control sequence
-across utterances, \fBa2x\fP cannot tell the difference.  If you make a
-mistake saying the name, you can use "choose \fI<n>\fP" to make corrections.
+With these macros, you can say sequences like "[start\ skip]", "emacs",
+"[go\ there]", to jump to the closest \fBemacs\fP application window, or
+"[start\ jump]", "inbox", "[go\ there]" within an \fBxmh\fP application to
+jump to the folder button named "inbox".  Note that it is OK to split a
+control sequence across utterances, \fBa2x\fP cannot tell the difference.  If
+you make a mistake saying the name, you can use "choose \fI<n>\fP" to make
+corrections.
 .NH 1
 Triggers
 .LP
@@ -671,14 +689,16 @@ To establish a trigger for a window unmapping, use the control sequence:
 In both cases, the available options are:
 .LP
 .nf
-n\fI<name>\fP			require WM_NAME name
-p\fI<name>\fP			require WM_NAME name prefix
-N\fI<name>\fP			require name
-N.\fI<class>\fP		require class
-N\fI<name>\fP.\fI<class>\fP		require name and class
-P\fI<name>\fP			require name prefix
-P.\fI<class>\fP		require class prefix
-P\fI<name>\fP.\fI<class>\fP		require name prefix and class prefix
+.TA 1.5i
+.ta 1.5i
+n\fI<name>\fP	require WM_NAME name
+p\fI<name>\fP	require WM_NAME name prefix
+N\fI<name>\fP	require name
+N.\fI<class>\fP	require class
+N\fI<name>\fP.\fI<class>\fP	require name and class
+P\fI<name>\fP	require name prefix
+P.\fI<class>\fP	require class prefix
+P\fI<name>\fP.\fI<class>\fP	require name prefix and class prefix
 .fi
 .LP
 These options have the same interpretation as in the jump control sequence.
@@ -711,8 +731,10 @@ Only one trigger can be outstanding at one time.  You should set the trigger
 before you execute an action that will cause the trigger to be satisfied.  For
 example:
 .Ds
-add-word /t "[reply to]" "{c-t}{c-y}Mpdrafts:{c-t}{c-t}F17{c-t}{c-t}{c-y}W{c-t}{c-t}{c-j}Cpdrafts:{c-t}"
-	capitalize left right
+.TA 1.5i
+.ta 1.5i
+add-word /t "[reply to]" "{c-t}{c-y}Mpdrafts:{c-t}{c-t}F17{c-t}{c-t}{c-y}W{c-t}
+	{c-t}{c-j}Cpdrafts:{c-t}" capitalize left right
 .De
 .LP
 As a more complex example, consider searching for the letter '@' in an Athena
@@ -722,25 +744,29 @@ entering the '@'.  After entering the Return key at the box, you must wait for
 the box to pop down before generating further commands to the text widget (or
 else they would be executed by the search box).  For example:
 .Ds
+.TA 1.5i
+.ta 1.5i
 add-word /t "[select address]" "{c-t}{c-y}Mnsearch{c-t}{c-s}{c-t}{c-y}W{c-t}@
 	{c-t}{c-y}Unsearch{c-t}{Enter}{c-t}{c-y}W{c-t}{c-t}{c-m}@" invisible
 .De
 .LP
-This sets a map trigger before typing {c-s}, waits for the map before entering
+This sets a map trigger before typing {c\-s}, waits for the map before entering
 the '@', sets an unmap trigger before typing Return, then waits for the unmap
-before selecting text (assume that {c-t}{c-m}@ does this).
+before selecting text (assume that {c\-t}{c\-m}@ does this).
 .LP
 Another example:
 .Ds
+.TA 1.5i
+.ta 1.5i
 add-word /t "[bad paste single]" "{c-@}{c-e}{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}
 	{c-t}{c-m}{c-y}" invisible
 .De
 .LP
-This macro selects text in the current window (assume that {c-@} sets a mark
-at the current text position, {c-e} moves to the end of the text line, and
+This macro selects text in the current window (assume that {c\-@} sets a mark
+at the current text position, {c\-e} moves to the end of the text line, and
 {c-t}{c-m}{c-w} selects the text between the mark and the current text
 position), then jumps to a top-level window with "drafts:" as a name prefix,
-and then pastes the selection into that window (assume that {c-t}{c-m}{c-y}
+and then pastes the selection into that window (assume that {c\-t}{c\-m}{c\-y}
 causes a paste).  Unfortunately, if you try this, you probably discover that
 it doesn't work correctly.  The problem is that it takes an application a
 while to actually assert a selection in X, and \fBa2x\fP can usually jump to
@@ -750,6 +776,8 @@ will often get the previous selection contents, rather than the expected
 contents.  So you need to wait for the application to take ownership of the
 selection.  For example:
 .Ds
+.TA 1.5i
+.ta 1.5i
 add-word /t "[paste single]" "{c-@}{c-e}{c-t}{c-y}SPRIMARY{c-t}{c-t}{c-m}{c-w}
 	{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-y}W{c-t}{c-t}{c-m}{c-y}" invisible
 .De
@@ -848,8 +876,8 @@ string can be empty, in which case it is equivalent to ":0".  For example:
 add-word /t "[start display]" "{c-t}{c-r}D" left right
 add-word /t "[go there]" "{c-t}" invisible
 .De
-permits you to say "[start display]", "expo", "[go there]" to go to the
-display "expo:0".  Note that in this example, the terminating {c-t} of the
+permits you to say "[start\ display]", "expo", "[go\ there]" to go to the
+display "expo:0".  Note that in this example, the terminating {c\-t} of the
 control sequence is in a separate voice macro, and is part of a separate
 utterance.  This is fine; \fBa2x\fP does not know where utterance boundaries
 are, it simply interprets a stream of characters.  If you make a mistake
@@ -874,7 +902,7 @@ characters received using the control sequence:
 .De
 This will print out on your PC screen.
 .LP
-You can generate a {c-t} with the control sequence:
+You can generate a {c\-t} with the control sequence:
 .Ds
 {c-t}{c-t}
 .De
@@ -917,6 +945,8 @@ patch for the R5 Text widget is available with the \fBa2x\fP distribution.
 With this patch, you can use translations such as:
 .LP
 .Ds
+.TA .5i
+.ta .5i
 *Text.translations: #override\\n\\
 	!:Ctrl<Key>@: select-start()\\n\\
 	!:Ctrl<Key>space: select-start()\\n\\
@@ -980,13 +1010,13 @@ In the Advanced Options, make the field for "Maximum Expanded Memory Size"
 blank, and clear the toggle for "Wait for Window to Open".  Now create a
 file A2XINI.BAT, containing something like:
 .Ds
-CD \\DICTATE\\USERS		(or wherever your voice files are)
+CD \\DICTATE\\USERS        \fI(or wherever your voice files are)\fP
 CALL DT /s \fI<your-name>\fP
 TELNET \fI<workstation-hostname>\fP
 .De
 if you use telnet, or:
 .Ds
-CD \\DICTATE\\USERS		(or wherever your voice files are)
+CD \\DICTATE\\USERS        \fI(or wherever your voice files are)\fP
 CALL DT /s \fI<your-name>\fP
 A2X -display \fI<display-spec>\fP
 .De
@@ -1029,10 +1059,10 @@ width of at least 56 and a height of at least 19.
 The DOS window will not display a text cursor unless it is explicitly given
 the input focus (just moving the pointer into the window is not good enough).
 This makes it a bit difficult to tell when DragonDictate has recognized
-"[begin spell mode]", or to see where you are when editing keystrokes of voice
-macros.  To work around this \fBa2x\fP will, by default, send a synthetic
-FocusIn event to the DOS window (if you have specified one with the -w
-option), causing the DOS window to think it has the input focus.  If you do
+"[begin\ spell\ mode]", or to see where you are when editing keystrokes of
+voice macros.  To work around this \fBa2x\fP will, by default, send a
+synthetic FocusIn event to the DOS window (if you have specified one with the
+-w option), causing the DOS window to think it has the input focus.  If you do
 not want this behavior, specify -f on the command line.
 .LP
 You will need a key on your X keyboard to act as the DragonDictate HOTKEY.  By
