@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibuf.h,v 1.11 89/10/08 19:22:39 jim Exp $
+ * $XConsortium: multibuf.h,v 1.12 89/11/01 09:09:56 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -33,8 +33,8 @@
 #define X_MbufCreateImageBuffers	1
 #define X_MbufDestroyImageBuffers	2
 #define X_MbufDisplayImageBuffers	3
-#define X_MbufSetMultiBufferAttributes	4
-#define X_MbufGetMultiBufferAttributes	5
+#define X_MbufSetMBufferAttributes	4
+#define X_MbufGetMBufferAttributes	5
 #define X_MbufSetBufferAttributes	6
 #define X_MbufGetBufferAttributes	7
 #define X_MbufGetBufferInfo		8
