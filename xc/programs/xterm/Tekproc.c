@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.51 89/03/06 10:41:10 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.52 89/03/06 11:02:10 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -121,7 +121,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.51 89/03/06 10:41:10 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.52 89/03/06 11:02:10 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1130,8 +1130,16 @@ static void TekRealize (gw, valuemaskp, values)
     screen->Tcursorcolor = screen->foreground;
 
     if (term->misc.T_geometry == NULL) {
-	sprintf (Tdefault, "=%dx%d",
-		TEKDEFWIDTH + border, TEKDEFHEIGHT + border);
+	int defwidth, defheight;
+
+	if (term->misc.tekSmall) {
+	    defwidth = TEKMINWIDTH;
+	    defheight = TEKMINHEIGHT;
+	} else {
+	    defwidth = TEKDEFWIDTH;
+	    defheight = TEKDEFHEIGHT;
+	}
+	sprintf (Tdefault, "=%dx%d", defwidth + border, defheight + border);
 	term->misc.T_geometry = Tdefault;
     }
 

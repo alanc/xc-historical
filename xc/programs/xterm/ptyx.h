@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.22 89/03/01 20:00:38 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.23 89/03/02 12:05:12 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -375,6 +375,7 @@ typedef struct _Misc {
     Boolean tekInhibit;
     Boolean scrollbar;
     Boolean titeInhibit;
+    Boolean tekSmall;	/* start tek window in small size */
 } Misc;
 
 typedef struct {int foo;} XtermClassPart, TekClassPart;

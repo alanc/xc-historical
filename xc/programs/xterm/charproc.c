@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.73 89/03/22 14:11:56 jim Exp $
+ * $XConsortium: charproc.c,v 1.74 89/03/22 14:42:59 jim Exp $
  */
 
 
@@ -99,6 +99,7 @@ static void VTallocbuf();
 #define XtNscrollPos    	"scrollPos"
 #define	XtNsignalInhibit	"signalInhibit"
 #define	XtNtekInhibit		"tekInhibit"
+#define XtNtekSmall		"tekSmall"
 #define	XtNtekStartup		"tekStartup"
 #define XtNtiteInhibit		"titeInhibit"
 #define	XtNvisualBell		"visualBell"
@@ -130,6 +131,7 @@ static void VTallocbuf();
 #define	XtCScrollCond		"ScrollCond"
 #define	XtCSignalInhibit	"SignalInhibit"
 #define	XtCTekInhibit		"TekInhibit"
+#define XtCTekSmall		"TekSmall"
 #define	XtCTekStartup		"TekStartup"
 #define XtCTiteInhibit		"TiteInhibit"
 #define	XtCVisualBell		"VisualBell"
@@ -138,7 +140,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.73 89/03/22 14:11:56 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.74 89/03/22 14:42:59 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -340,6 +342,9 @@ static XtResource resources[] = {
 	XtRBoolean, (caddr_t) &defaultFALSE},
 {XtNtekInhibit, XtCTekInhibit, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, misc.tekInhibit),
+	XtRBoolean, (caddr_t) &defaultFALSE},
+{XtNtekSmall, XtCTekSmall, XtRBoolean, sizeof(Boolean),
+	XtOffset(XtermWidget, misc.tekSmall),
 	XtRBoolean, (caddr_t) &defaultFALSE},
 {XtNtekStartup, XtCTekStartup, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.TekEmu),
