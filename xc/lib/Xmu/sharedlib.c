@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sharedlib.c,v 1.2 89/10/09 14:13:10 jim Exp $
+ * $XConsortium: sharedlib.c,v 1.3 89/10/09 14:28:56 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,8 +25,7 @@ WidgetClass get_wmShellWidgetClass()
 {
     return wmShellWidgetClass;
 }
-
-#else
-static int dummy;                       /* avoid warning from ranlib */
 #endif /* SHAREDCODE && SUNSHLIB */
 
+/* this is really gross, but it works around bizarre Sun shared library bugs */
+#include "xtsharedlib.c"
