@@ -122,7 +122,7 @@ typedef struct _Xtransport {
 	int	flags;
 
 	XtransConnInfo (*OpenCOTSClient)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		struct _Xtransport *,
 		char *,
 		char *,
@@ -131,7 +131,7 @@ typedef struct _Xtransport {
 );
 
 	XtransConnInfo (*OpenCOTSServer)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		struct _Xtransport *,
 		char *,
 		char *,
@@ -140,7 +140,7 @@ typedef struct _Xtransport {
 );
 
 	XtransConnInfo (*OpenCLTSClient)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		struct _Xtransport *,
 		char *,
 		char *,
@@ -149,7 +149,7 @@ typedef struct _Xtransport {
 );
 
 	XtransConnInfo (*OpenCLTSServer)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		struct _Xtransport *,
 		char *,
 		char *,
@@ -158,7 +158,7 @@ typedef struct _Xtransport {
 );
 
 	int	(*SetOption)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		XtransConnInfo,
 		int,
 		int
@@ -166,20 +166,20 @@ typedef struct _Xtransport {
 );
 
 	int	(*CreateListener)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		XtransConnInfo,
 		char *
 #endif
 );
 
 	XtransConnInfo (*Accept)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		XtransConnInfo
 #endif
 );
 
 	int	(*Connect)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		XtransConnInfo,
 		char *,
 		char *
@@ -187,14 +187,14 @@ typedef struct _Xtransport {
 );
 
 	int	(*BytesReadable)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		XtransConnInfo,
 		BytesReadable_t *
 #endif
 );
 
 	int	(*Read)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		XtransConnInfo,
 		char *,
 		int
@@ -202,7 +202,7 @@ typedef struct _Xtransport {
 );
 
 	int	(*Write)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		XtransConnInfo,
 		char *,
 		int
@@ -210,7 +210,7 @@ typedef struct _Xtransport {
 );
 
 	int	(*Readv)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		XtransConnInfo,
 		struct iovec *,
 		int
@@ -218,7 +218,7 @@ typedef struct _Xtransport {
 );
 
 	int	(*Writev)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		XtransConnInfo,
 		struct iovec *,
 		int
@@ -226,25 +226,25 @@ typedef struct _Xtransport {
 );
 
 	int	(*Disconnect)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		XtransConnInfo
 #endif
 );
 
 	int	(*Close)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		XtransConnInfo
 #endif
 );
 
 	int	(*NameToAddr)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		XtransConnInfo
 #endif
 );
 
 	int	(*AddrToName)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 		XtransConnInfo
 #endif
 );
