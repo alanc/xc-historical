@@ -1,4 +1,4 @@
-/* $XConsortium: xtesttest.c,v 1.6 93/02/05 17:08:51 rws Exp $ */
+/* $XConsortium: xtesttest.c,v 1.7 93/02/09 16:18:59 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -358,7 +358,7 @@ test_xinput_devices(dpy, w, major_version, minor_version)
     }
 
     if (motiondevice) {
-	XTestFakeDeviceMotionEvent(dpy, motiondevice, False, axes, 6, 0);
+	XTestFakeDeviceMotionEvent(dpy, motiondevice, False, 0, axes, 6, 0);
 	XNextEvent(dpy, &ev);
 	M = (XDeviceMotionEvent *) &ev;
 	if (M->type != dm ||
