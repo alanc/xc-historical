@@ -1,4 +1,4 @@
-/* $XConsortium: XExtInt.c,v 1.5 89/09/25 16:20:07 gms Exp $ */
+/* $XConsortium: XExtInt.c,v 1.6 89/11/08 17:30:09 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -107,11 +107,11 @@ CheckExtInit(dpy, major_version)
 	connections[dpy->fd] = ret;
 	IReqCode = ret->major_opcode;
 
-	BadDevice += ret->first_error;
-	BadEvent += ret->first_error;
-	BadMode += ret->first_error;
-	BadClass += ret->first_error;
-	_devicevaluator  += ret->first_event;
+	BadDevice = ret->first_error;
+	BadEvent = BadDevice+1;
+	BadMode = BadEvent+1;
+	BadClass = BadClass+1;
+	_devicevaluator  = ret->first_event;
 	_devicekeyPress = _devicevaluator+1;
 	_devicekeyRelease = _devicekeyPress+1;
 	_devicebuttonPress = _devicekeyRelease+1;
