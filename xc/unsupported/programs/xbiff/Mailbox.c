@@ -1,6 +1,6 @@
 /*
  * $Source: /usr/expo/X/src/lib/Xaw/RCS/Mailbox.c,v $
- * $Header: Mailbox.c,v 1.5 88/03/03 16:23:19 swick Exp $
+ * $Header: Mailbox.c,v 1.6 88/03/03 16:41:43 swick Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -251,13 +251,15 @@ static void check_mailbox (w, force_redraw, reset)
     struct stat st;
     long mailboxsize = 0;
 
-    if (w->mailbox.check_command != NULL)
+    if (w->mailbox.check_command != NULL) {
 	if (system (w->mailbox.check_command) == 0)
 	    mailboxsize = w->mailbox.last_size + 1;
-    else
+    }
+    else {
 	if (stat (w->mailbox.filename, &st) == 0) {
 	    mailboxsize = st.st_size;
 	}
+    }
 
     /*
      * Now check for changes.  If reset is set then we want to pretent that
