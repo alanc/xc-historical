@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.90 92/05/07 17:13:51 eswu Exp $
+ * $XConsortium: XConnDis.c,v 11.91 92/05/19 11:44:56 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -427,9 +427,6 @@ static int MakeDECnetConnection (phostname, idisplay, retries,
 
 #ifdef UNIXCONN
 #include <sys/un.h>
-#if defined(__OSF1__) && !defined(_SOCKADDR_LEN)
-#undef SUN_LEN
-#endif
 
 /*ARGSUSED*/
 static int MakeUNIXSocketConnection (phostname, idisplay, retries,
@@ -451,14 +448,14 @@ static int MakeUNIXSocketConnection (phostname, idisplay, retries,
     int oaddrlen;			/* length of addr */
 #endif
 
-#ifdef SUN_LEN
-    unaddr.sun_len = strlen(unaddr.sun_path) + 1;
-#endif
     unaddr.sun_family = AF_UNIX;
     sprintf (unaddr.sun_path, "%s%d", X_UNIX_PATH, idisplay);
+#ifdef BSD44SOCKETS
+    unaddr.sun_len = strlen(unaddr.sun_path);
+#endif
 
     addr = (struct sockaddr *) &unaddr;
-#ifdef SUN_LEN
+#ifdef BSD44SOCKETS
     addrlen = SUN_LEN(&unaddr);
 #else
     addrlen = strlen(unaddr.sun_path) + sizeof(unaddr.sun_family);
@@ -587,7 +584,7 @@ static int MakeTCPConnection (phostname, idisplay, retries,
 
     addr = (struct sockaddr *) &inaddr;
     addrlen = sizeof (struct sockaddr_in);
-#ifdef SUN_LEN
+#ifdef BSD44SOCKETS
     inaddr.sin_len = addrlen;
 #endif
     inaddr.sin_port = X_TCP_PORT + idisplay;
