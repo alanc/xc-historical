@@ -1,12 +1,12 @@
 /* 
- * $XConsortium: xset.c,v 1.51 89/07/17 17:42:22 jim Exp $ 
+ * $XConsortium: xset.c,v 1.52 89/07/17 17:55:00 jim Exp $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.51 89/07/17 17:42:22 jim Exp $";
+static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.52 89/07/17 17:55:00 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -19,6 +19,9 @@ static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.51 89/07/17 17:42:22 jim E
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/Xmu/Error.h>
+#ifdef MITMISC
+#include <X11/extensions/MITMisc.h>
+#endif
 
 #define ON 1
 #define OFF 0
@@ -108,10 +111,10 @@ for (i = 1; i < argc; ) {
     }
     set_click(dpy, percent);
   } 
-  else if (*arg == '-' && *(arg + 1) == 'b') {  /* Does arg start w/ "-b" */
+  else if (strcmp(arg, "-b") == 0) {
     set_bell_vol(dpy, 0);           /* Then turn off bell.    */
   } 
-  else if (*arg == 'b') {                       /* Does it start w/ "b".  */
+  else if (strcmp(arg, "b") == 0) {
     percent = SERVER_DEFAULT;		/* Set bell to default. */
     if (i >= argc) {
 	set_bell_vol (dpy, percent);	/* set bell to default */
@@ -147,6 +150,22 @@ for (i = 1; i < argc; ) {
     else
       set_bell_vol (dpy, percent);		/* set bell to default */
   }
+#ifdef MITMISC
+  else if (strcmp(arg, "bc") == 0) {
+      int dummy;
+      if (XMITMiscQueryExtension(dpy, &dummy, &dummy))
+	  XMITMiscSetBugMode(dpy, True);
+      else
+	  fprintf(stderr, "server does not have extension for bc option\n");
+  }
+  else if (strcmp(arg, "-bc") == 0) {
+      int dummy;
+      if (XMITMiscQueryExtension(dpy, &dummy, &dummy))
+	  XMITMiscSetBugMode(dpy, False);
+      else
+	  fprintf(stderr, "server does not have extension for -bc option\n");
+  }
+#endif
   else if (strcmp(arg, "fp") == 0) {	       /* set font path */
     if (i >= argc) {
 	arg = "default";
@@ -248,7 +267,7 @@ for (i = 1; i < argc; ) {
     }
       set_mouse(dpy, acc_num, acc_denom, threshold);
   } 
-  else if (*arg == 's') {   /*  If arg starts with "s".  */
+  else if (strcmp(arg, "s") == 0) {
     if (i >= argc) {
       set_saver(dpy, ALL, 0);  /* Set everything to default  */
       break;
@@ -327,7 +346,7 @@ for (i = 1; i < argc; ) {
   } 
     set_repeat(dpy, key, auto_repeat_mode);
   } 
-  else if (*arg == 'p') {           /*  If arg starts with "p"       */
+  else if (strcmp(arg, "p") == 0) {
     if (i + 1 >= argc)
       usage ("missing argument to p", NULL);
     arg = argv[i];
@@ -340,13 +359,13 @@ for (i = 1; i < argc; ) {
     i++;
     numpixels++;
   }
-  else if (*arg == '-' && *(arg + 1) == 'k') {
+  else if (strcmp(arg, "-k") == 0) {
     set_lock(dpy, OFF);
   }
-  else if (*arg == 'k') {         /*  Set modifier keys.               */
+  else if (strcmp(arg, "k") == 0) {
     set_lock(dpy, ON);
   }
-  else if (*arg == 'q' || strncmp(arg, "-q", 2) == 0) {	 /* query status */
+  else if (strcmp(arg, "q") == 0 || strcmp(arg, "-q") == 0) {
     query(dpy);
   }
   else
@@ -806,6 +825,19 @@ if (npaths) {
 } else {
     printf ("  (empty)\n");
 }
+
+#ifdef MITMISC
+{
+    int dummy;
+    if (XMITMiscQueryExtension(dpy, &dummy, &dummy)) {
+	if (XMITMiscGetBugMode(dpy))
+	    printf ("Bug Mode: compatibility mode is enabled\n");
+	else
+	    printf ("Bug Mode: compatibility mode is disabled\n");
+    }
+}
+#endif
+
 return;
 }
 
@@ -827,6 +859,12 @@ usage (fmt, arg)
     fprintf (stderr, "\t-b                b off               b 0\n");
     fprintf (stderr, "    To set bell volume, pitch and duration:\n");
     fprintf (stderr, "\t b [vol [pitch [dur]]]          b on\n");
+#ifdef MITMISC
+    fprintf (stderr, "    To disable bug compatibility mode:\n");
+    fprintf (stderr, "\t-bc\n");
+    fprintf (stderr, "    To enable bug compatibility mode:\n");
+    fprintf (stderr, "\tbc\n");
+#endif
     fprintf (stderr, "    To turn keyclick off:\n");
     fprintf (stderr, "\t-c                c off               c 0\n");
     fprintf (stderr, "    To set keyclick volume:\n");
