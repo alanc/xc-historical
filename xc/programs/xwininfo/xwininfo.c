@@ -146,6 +146,37 @@ main(argc, argv)
 
 
 /*
+ * Lookup: lookup a code in a table.
+ */
+typedef struct {
+	long code;
+	char *name;
+} binding;
+
+static char _lookup_buffer[100];
+
+char *Lookup(code, table)
+long code;
+binding *table;
+{
+	char *name;
+
+	sprintf(_lookup_buffer, "unknown (code = %ld. = 0x%lx)", code, code);
+	name = _lookup_buffer;
+
+	while (table->name) {
+		if (table->code == code) {
+			name = table->name;
+			break;
+		}
+		table++;
+	}
+
+	return(name);
+}
+
+
+/*
  * Routine to display a window id in dec/hex with name if window has one
  */
 
@@ -178,11 +209,21 @@ Display_Window_Id(window)
 /*
  * Display Stats on window
  */
+static binding _window_classes[] = {
+	{ InputOutput, "InputOutput" },
+	{ InputOnly, "InputOnly" },
+        { 0, 0 } };
+
+static binding _map_states[] = {
+	{ IsUnmapped, "IsUnMapped" },
+	{ IsUnviewable, "IsUnviewable" },
+	{ IsViewable, "IsViewable" },
+	{ 0, 0 } };
+
 Display_Stats_Info(window)
      Window window;
 {
   XWindowAttributes win_attributes;
-  char buffer[100];
 
   if (!XGetWindowAttributes(dpy, window, &win_attributes))
     Fatal_Error("Can't get window attributes.");
@@ -193,115 +234,103 @@ Display_Stats_Info(window)
   printf("         ==> Height: %d\n", win_attributes.height);
   printf("         ==> Depth: %d\n", win_attributes.depth);
   printf("         ==> Border width: %d\n", win_attributes.border_width);
-
-  sprintf(buffer, "unknown (code = %d)", win_attributes.class);
-  if (win_attributes.class == InputOutput)
-    strcpy(buffer, "InputOutput");
-  if (win_attributes.class == InputOnly)
-    strcpy(buffer, "InputOnly");
-  printf("         ==> Window class: %s\n", buffer);
-
-  sprintf(buffer, "unknown (code = %d)", win_attributes.map_state);
-  if (win_attributes.map_state == IsUnmapped)
-    strcpy(buffer, "IsUnmapped");
-  if (win_attributes.map_state == IsUnviewable)
-    strcpy(buffer, "IsUnviewable");
-  if (win_attributes.map_state == IsViewable)
-    strcpy(buffer, "IsViewable");
-  printf("         ==> Window Map State: %s\n", buffer);
+  printf("         ==> Window class: %s\n", Lookup(win_attributes.class,
+						   _window_classes));
+  printf("         ==> Window Map State: %s\n",
+	 Lookup(win_attributes.map_state, _map_states));
 }
 
 
 /*
- * Routine to deterimine what name of gravity code is
+ * Display bits info:
  */
+static binding _gravities[] = {
+	{ UnmapGravity, "UnMapGravity" },      /* WARNING: both of these have*/
+	{ ForgetGravity, "ForgetGravity" },    /* the same value - see code */
+	{ NorthWestGravity, "NorthWestGravity" },
+	{ NorthGravity, "NorthGravity" },
+	{ NorthEastGravity, "NorthEastGravity" },
+	{ WestGravity, "WestGravity" },
+	{ CenterGravity, "CenterGravity" },
+	{ EastGravity, "EastGravity" },
+	{ SouthWestGravity, "SouthWestGravity" },
+	{ SouthGravity, "SouthGravity" },
+	{ SouthEastGravity, "SouthEastGravity" },
+	{ StaticGravity, "StaticGravity" },
+	{ 0, 0 } };
 
-static char *gravity_name[] = { "ForgetGravity", "NorthWestGravity",
-			       "NorthGravity", "NorthEastGravity",
-			       "WestGravity", "CenterGravity",
-			       "EastGravity", "SouthWestGravity",
-			       "SouthGravity", "SouthEastGravity",
-			       "StaticGravity" };
+static binding _backing_store_hint[] = {
+	{ NotUseful, "NotUseful" },
+	{ WhenMapped, "WhenMapped" },
+	{ Always, "Always" },
+	{ 0, 0 } };
 
-Get_Gravity(buffer, gravity)
-     char *buffer;
-{
-  sprintf(buffer, "unknown (code = %d)", gravity);
-  if (gravity>=0 && gravity < 11)
-    strcpy(buffer, gravity_name[gravity]);
-}
+static binding _bool[] = {
+	{ 0, "No" },
+	{ 1, "Yes" },
+	{ 0, 0 } };
 
-
-/*
- * Display bits info
- */
 Display_Bits_Info(window)
      Window window;
 {
   XWindowAttributes win_attributes;
-  char buffer[100];
 
   if (!XGetWindowAttributes(dpy, window, &win_attributes))
     Fatal_Error("Can't get window attributes.");
 
-  Get_Gravity(buffer, win_attributes.bit_gravity);
-  printf("\n         ==> Bit gravity: %s\n", buffer);
-
-  Get_Gravity(buffer, win_attributes.win_gravity);
-  if(!win_attributes.win_gravity)
-    strcpy(buffer, "UnmapGravity");
-  printf("         ==> Window gravity: %s\n", buffer);
-
-  sprintf(buffer, "unknown (code = %d)", win_attributes.backing_store);
-  if (win_attributes.backing_store == NotUseful)
-    strcpy(buffer, "NotUseful");
-  if (win_attributes.backing_store == WhenMapped)
-    strcpy(buffer, "WhenMapped");
-  if (win_attributes.backing_store == Always)
-    strcpy(buffer, "Always");
-  printf("         ==> Backing-store hint: %s\n", buffer);
-
+  printf("\n         ==> Bit gravity: %s\n",
+	 Lookup(win_attributes.bit_gravity, _gravities+1));
+  printf("         ==> Window gravity: %s\n",
+	 Lookup(win_attributes.win_gravity, _gravities));
+  printf("         ==> Backing-store hint: %s\n",
+	 Lookup(win_attributes.backing_store, _backing_store_hint));
   printf("         ==> Backing-planes to be preserved: 0x%x\n",
 	 win_attributes.backing_planes);
   printf("         ==> Backing pixel: %d\n", win_attributes.backing_pixel);
-
-  strcpy(buffer, "yes");
-  if (!win_attributes.save_under)
-    strcpy(buffer, "no");
-  printf("         ==> Save-under?: %s\n", buffer);
+  printf("         ==> Save-under?: %s\n",
+	 Lookup(win_attributes.save_under, _bool));
 }
 
 
 /*
  * Routine to display all events in an event mask
  */
+static binding _event_mask_names[] = {
+	{ KeyPressMask, "KeyPress" },
+	{ KeyReleaseMask, "KeyRelease" },
+	{ ButtonPressMask, "ButtonPress" },
+	{ ButtonReleaseMask, "ButtonRelease" },
+	{ EnterWindowMask, "EnterWindow" },
+	{ LeaveWindowMask, "LeaveWindow" },
+	{ PointerMotionMask, "PointerMotion" },
+	{ PointerMotionHintMask, "PointerMotionHint" },
+	{ Button1MotionMask, "Button1Motion" },
+	{ Button2MotionMask, "Button2Motion" },
+	{ Button3MotionMask, "Button3Motion" },
+	{ Button4MotionMask, "Button4Motion" },
+	{ Button5MotionMask, "Button5Motion" },
+	{ ButtonMotionMask, "ButtonMotion" },
+	{ KeymapStateMask, "KeymapState" },
+	{ ExposureMask, "Exposure" },
+	{ VisibilityChangeMask, "VisibilityChange" },
+	{ StructureNotifyMask, "StructureNotify" },
+	{ ResizeRedirectMask, "ResizeRedirect" },
+	{ SubstructureNotifyMask, "SubstructureNotify" },
+	{ FocusChangeMask, "FocusChange" },
+	{ PropertyChangeMask, "PropertyChange" },
+	{ ColormapChangeMask, "ColormapChange" },
+	{ OwnerGrabButtonMask, "OwnerGrabButton" },
+	{ 0, 0 } };
 
-static char *event_names[] = { "KeyPress", "KeyRelease", "ButtonPress",
-			      "ButtonRelease", "EnterWindow",
-			      "LeaveWindow", "PointerMotion",
-			      "PointerMotionHint", "Button1Motion",
-			      "Button2Motion", "Button3Motion",
-			      "Button4Motion", "Button5Motion",
-			      "ButtonMotion", "KeymapState",
-			      "Exposure", "VisibilityChange",
-			      "StructureNotify", "ResizeRedirect",
-			      "SubstructureNotify", "FocusChange",
-			      "PropertyChange", "ColormapChange",
-			      "OwnerGrabButton" };
 Display_Event_Mask(mask)
      long mask;
 {
-  long bit;
-  long bit_mask;
-  char buffer[100];
+  long bit, bit_mask;
 
   for (bit=0, bit_mask=1; bit<sizeof(long)*8; bit++, bit_mask <<= 1)
-    if (mask & bit_mask) {
-	    sprintf(buffer, "unknown event mask bit (bit # = %ld)", bit);
-	    if (bit<24)
-	      strcpy(buffer, event_names[bit]);
-	    printf("             ==> %s\n", buffer);
-    }
+    if (mask & bit_mask)
+      printf("             ==> %s\n",
+	     Lookup(bit_mask, _event_mask_names));
 }
 
 
@@ -312,7 +341,6 @@ Display_Events_Info(window)
      Window window;
 {
   XWindowAttributes win_attributes;
-  char buffer[100];
 
   if (!XGetWindowAttributes(dpy, window, &win_attributes))
     Fatal_Error("Can't get window attributes.");
@@ -323,10 +351,8 @@ Display_Events_Info(window)
   printf("         ==> Do not prograte these events:\n");
   Display_Event_Mask(win_attributes.do_not_propagate_mask);
 
-  strcpy(buffer, "yes");
-  if (!win_attributes.override_redirect)
-    strcpy(buffer, "no");
-  printf("         ==> Overide redirection?: %s\n", buffer);
+  printf("         ==> Overide redirection?: %s\n",
+	 Lookup(win_attributes.override_redirect, _bool));
 }
 
 
@@ -437,30 +463,25 @@ Display_Size_Hints(window)
 		printf("\n         ==> Zoom window size hints:\n\n");
 		Display_Hints(hints);
 	}
-
-/*
-  int w0, h0, w_inc, h_inc;
-
-  XGetResizeHint(dpy, window, &w0, &h0, &w_inc, &h_inc);
-
-  printf("\n         ==> Resize base width: %d\n", w0);
-  printf("         ==> Resize base height: %d\n", h0);
-  printf("         ==> Resize width increment: %d\n", w_inc);
-  printf("         ==> Resize height increment: %d\n", h_inc);
-*/
-
 }
 
 
 /*
  * Display Window Manager Info
  */
+static binding _state_hints[] = {
+	{ DontCareState, "Don't Care State" },
+	{ NormalState, "Normal State" },
+	{ ZoomState, "Zoomed State" },
+	{ IconicState, "Iconic State" },
+	{ InactiveState, "Inactive State" },
+	{ 0, 0 } };
+
 Display_WM_Info(window)
      Window window;
 {
         XWMHints *wmhints;
 	long flags;
-	char *bool;
 
 	wmhints = XGetWMHints(dpy, window);
 	if (!wmhints) {
@@ -471,13 +492,9 @@ Display_WM_Info(window)
 
 	printf("\n         ==> Window manager hints:\n\n");
 
-	if (flags & InputHint) {
-		bool = "no";
-		if (wmhints->input == True)
-		  bool = "yes";
-		printf("             ==> Application accepts input?  %s\n",
-		       bool);
-	}
+	if (flags & InputHint)
+	  printf("             ==> Application accepts input?  %s\n",
+		 Lookup(wmhints->input, _bool));
 
 	if (flags & IconWindowHint) {
 		printf("             ==> Icon window id:");
@@ -488,18 +505,9 @@ Display_WM_Info(window)
 	  printf("             ==> Initial icon position: %d, %d\n",
 		 wmhints->icon_x, wmhints->icon_y);
 
-	if (flags & StateHint) {
-		if (wmhints->initial_state == DontCareState)
-		  printf("             ==> Initial state is Don't care\n");
-		else if (wmhints->initial_state == NormalState)
-		  printf("             ==> Initial state is Normal state\n");
-		else if (wmhints->initial_state == ZoomState)
-		  printf("             ==> Initial state is Zoomed state\n");
-		else if (wmhints->initial_state == IconicState)
-		  printf("             ==> Initial state is Iconic state\n");
-		else if (wmhints->initial_state == InactiveState)
-		  printf("             ==> Initial state is Inactive state\n");
-	}
+	if (flags & StateHint)
+	  printf("             ==> Initial state is %s\n",
+		 Lookup(wmhints->initial_state, _state_hints));
 }
 
 
