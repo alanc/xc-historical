@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XFont.c,v 11.26 88/09/06 16:05:50 jim Exp $ */
+/* $XConsortium: XFont.c,v 11.27 89/03/28 17:19:00 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -106,19 +106,19 @@ XFontStruct *_XQueryFont (dpy, fid)	/* Internal-only entry point */
 	xCharInfo *xcip;
 
 	xcip = (xCharInfo *) &reply.minBounds;
-	fs->min_bounds.lbearing = xcip->leftSideBearing;
-	fs->min_bounds.rbearing = xcip->rightSideBearing;
-	fs->min_bounds.width = xcip->characterWidth;
-	fs->min_bounds.ascent = xcip->ascent;
-	fs->min_bounds.descent = xcip->descent;
+	fs->min_bounds.lbearing = cvtINT16toInt(xcip->leftSideBearing);
+	fs->min_bounds.rbearing = cvtINT16toInt(xcip->rightSideBearing);
+	fs->min_bounds.width = cvtINT16toInt(xcip->characterWidth);
+	fs->min_bounds.ascent = cvtINT16toInt(xcip->ascent);
+	fs->min_bounds.descent = cvtINT16toInt(xcip->descent);
 	fs->min_bounds.attributes = xcip->attributes;
 
 	xcip = (xCharInfo *) &reply.maxBounds;
-	fs->max_bounds.lbearing = xcip->leftSideBearing;
-	fs->max_bounds.rbearing = xcip->rightSideBearing;
-	fs->max_bounds.width = xcip->characterWidth;
-	fs->max_bounds.ascent = xcip->ascent;
-	fs->max_bounds.descent = xcip->descent;
+	fs->max_bounds.lbearing = cvtINT16toInt(xcip->leftSideBearing);
+	fs->max_bounds.rbearing =  cvtINT16toInt(xcip->rightSideBearing);
+	fs->max_bounds.width =  cvtINT16toInt(xcip->characterWidth);
+	fs->max_bounds.ascent =  cvtINT16toInt(xcip->ascent);
+	fs->max_bounds.descent =  cvtINT16toInt(xcip->descent);
 	fs->max_bounds.attributes = xcip->attributes;
     }
 #else
@@ -146,10 +146,29 @@ XFontStruct *_XQueryFont (dpy, fid)	/* Internal-only entry point */
     /* have to unpack charinfos on some machines (CRAY) */
     fs->per_char = NULL;
     if (reply.nCharInfos > 0){
-	    nbytes = reply.nCharInfos * sizeof(XCharStruct);
-	    fs->per_char = (XCharStruct *) Xmalloc (nbytes);
-	    nbytes = reply.nCharInfos * SIZEOF(xCharInfo);
-	    _XRead16 (dpy, (char *)fs->per_char, nbytes);
+	nbytes = reply.nCharInfos * sizeof(XCharStruct);
+	fs->per_char = (XCharStruct *) Xmalloc (nbytes);
+#ifdef MUSTCOPY
+	{
+	    register XCharStruct *cs = fs->per_char;
+	    register int i;
+
+	    for (i = 0; i < reply.nCharInfos; i++, cs++) {
+		xCharInfo xcip;
+
+		_XRead(dpy, &xcip, SIZEOF(xCharInfo));
+		cs->lbearing = cvtINT16toInt(xcip.leftSideBearing);
+		cs->rbearing = cvtINT16toInt(xcip.rightSideBearing);
+		cs->width =  cvtINT16toInt(xcip.characterWidth);
+		cs->ascent =  cvtINT16toInt(xcip.ascent);
+		cs->descent =  cvtINT16toInt(xcip.descent);
+		cs->attributes = xcip.attributes;
+	    }
+	}
+#else
+	nbytes = reply.nCharInfos * SIZEOF(xCharInfo);
+	_XRead16 (dpy, (char *)fs->per_char, nbytes);
+#endif
     }
 
     ext = dpy->ext_procs;
