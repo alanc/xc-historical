@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.28 92/03/19 18:41:31 rws Exp $ */
+/* $XConsortium: sunInit.c,v 5.29 92/11/18 14:10:30 rws Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -44,15 +44,16 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
+#ifdef SVR4
+#include    <unistd.h>
+#include    <stdlib.h>
+#endif
 #include    "sun.h"
 #include    <servermd.h>
 #include    "dixstruct.h"
 #include    "dix.h"
 #include    "opaque.h"
 #include    "mipointer.h"
-#ifdef SVR4
-#include    <unistd.h>
-#endif
 
 extern int sunMouseProc();
 extern int sunKbdProc();
@@ -164,8 +165,13 @@ static PixmapFormatRec	format24 = {
  *-----------------------------------------------------------------------
  */
 /*ARGSUSED*/
+#ifdef SVR4
+void
+sunNonBlockConsoleOff()
+#else
 sunNonBlockConsoleOff(arg)
     char	*arg;
+#endif
 {
     register int i;
 
@@ -217,7 +223,11 @@ InitOutput(pScreenInfo, argc, argv)
      */
     if (nonBlockConsole) {
 	if (!setup_on_exit) {
+#ifdef SVR4
+	    if (atexit(sunNonBlockConsoleOff))
+#else
 	    if (on_exit(sunNonBlockConsoleOff, (char *)0))
+#endif
 		ErrorF("InitOutput: can't register NBIO exit handler\n");
 	    setup_on_exit = 1;
 	}
