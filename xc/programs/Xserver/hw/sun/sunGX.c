@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sunGX.c,v 1.8 91/10/24 11:39:49 keith Exp $
+ * $XConsortium: sunGX.c,v 1.9 91/11/01 17:44:19 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -251,7 +251,7 @@ int	sunGXGeneration;
   =============
   Bit Blit for all window to window blits.
 */
-int
+static void
 sunGXDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     DrawablePtr	    pSrc, pDst;
     int		    alu;
@@ -732,6 +732,7 @@ sunGXPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	FILLSPAN(gx, y, xl, xc, r) \
     }
 
+static void
 sunGXFillEllipse (pDraw, gx, arc)
     DrawablePtr	pDraw;
     sunGXPtr	gx;
@@ -1316,7 +1317,7 @@ sunGXPolyFillRect1Rect (pDrawable, pGC, nrect, prect)
     GXResetClip (gx, pDrawable->pScreen);
 }
 
-void
+static void
 sunGXFillBoxSolid (pDrawable, nBox, pBox, pixel)
     DrawablePtr	    pDrawable;
     int		    nBox;
@@ -1370,7 +1371,7 @@ sunGXCheckTile (pPixmap, stipple)
     sunGXStipplePtr stipple;
 {
     unsigned short  *sbits;
-    unsigned int    fg = ~0, bg = ~0;
+    unsigned int    fg = (unsigned int)~0, bg = (unsigned int)~0;
     unsigned char   *tilebitsLine, *tilebits, tilebit;
     unsigned short  sbit, mask;
     int		    nbwidth;
@@ -2365,11 +2366,10 @@ sunGXPaintWindow(pWin, pRegion, what)
 	case BackgroundPixmap:
 	    if (stipple)
 	    {
-		sunGXFillBoxStipple (pWin,
+		sunGXFillBoxStipple ((DrawablePtr)pWin,
 				  (int)REGION_NUM_RECTS(pRegion),
 				  REGION_RECTS(pRegion),
 				  stipple);
-		return;
 	    }
 	    else if (pPrivWin->fastBackground)
 	    {
@@ -2377,7 +2377,6 @@ sunGXPaintWindow(pWin, pRegion, what)
 				  (int)REGION_NUM_RECTS(pRegion),
 				  REGION_RECTS(pRegion),
 				  pPrivWin->pRotatedBackground);
-		return;
 	    }
 	    else
 	    {
@@ -2386,11 +2385,10 @@ sunGXPaintWindow(pWin, pRegion, what)
 				   REGION_RECTS(pRegion),
 				   pWin->background.pixmap,
 				   (int) pWin->drawable.x, (int) pWin->drawable.y);
-		return;
 	    }
-	    break;
+	    return;
 	case BackgroundPixel:
-	    sunGXFillBoxSolid(pWin,
+	    sunGXFillBoxSolid((DrawablePtr)pWin,
 			     (int)REGION_NUM_RECTS(pRegion),
 			     REGION_RECTS(pRegion),
 			     pWin->background.pixel);
@@ -2400,7 +2398,7 @@ sunGXPaintWindow(pWin, pRegion, what)
     case PW_BORDER:
 	if (pWin->borderIsPixel)
 	{
-	    sunGXFillBoxSolid(pWin,
+	    sunGXFillBoxSolid((DrawablePtr)pWin,
 			     (int)REGION_NUM_RECTS(pRegion),
 			     REGION_RECTS(pRegion),
 			     pWin->border.pixel);
@@ -2414,7 +2412,7 @@ sunGXPaintWindow(pWin, pRegion, what)
 			      pPrivWin->pRotatedBorder);
 	    return;
 	}
-	else if (pWin->border.pixmap->drawable.width >= PPW/2)
+	else if ((int)pWin->border.pixmap->drawable.width >= PPW/2)
 	{
 	    cfbFillBoxTileOdd ((DrawablePtr)pWin,
 			       (int)REGION_NUM_RECTS(pRegion),
