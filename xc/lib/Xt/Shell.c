@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Shell.c,v 1.31 88/09/03 09:19:08 swick Exp $";
+    "$XConsortium: Shell.c,v 1.32 88/09/03 09:34:09 swick Exp $";
 /* $oHeader: Shell.c,v 1.6 88/08/19 16:49:51 asente Exp $ */
 #endif lint
 
@@ -51,6 +51,8 @@ extern void XSetClassHint(); /* this was not declared in Xlib.h... */
 
 #define WM_CONFIGURE_DENIED(w) (((WMShellWidget) (w))->wm.wm_configure_denied)
 #define WM_MOVED(w) (((WMShellWidget) (w))->wm.wm_moved)
+
+#define BIGSIZE ((Dimension)32123)
 
 /***************************************************************************
  *
@@ -829,8 +831,8 @@ static void _popup_set_prop(w)
 
 	    if (sizep->max_width != -1 || sizep->max_height != -1) {
 		sizep->flags |= PMaxSize;
-		if (sizep->max_width == -1) sizep->max_width = 9999;
-		if (sizep->max_height == -1) sizep->max_height = 9999;
+		if (sizep->max_width == -1) sizep->max_width = BIGSIZE;
+		if (sizep->max_height == -1) sizep->max_height = BIGSIZE;
 	    }
 
 	    if(sizep->min_width != -1 || sizep->min_height != -1) {
@@ -1455,8 +1457,8 @@ static Boolean WMSetValues(old, ref, new)
 	if ( ! EQS(max_width) || ! EQS(max_height) ) {
 	    if (nsize->max_width != -1 || nsize->max_height != -1) {
 		nsize->flags |= PMaxSize;
-		if (nsize->max_width == -1) nsize->max_width = 9999;
-		if (nsize->max_height == -1) nsize->max_height = 9999;
+		if (nsize->max_width == -1) nsize->max_width = BIGSIZE;
+		if (nsize->max_height == -1) nsize->max_height = BIGSIZE;
 	    }
 	    size = TRUE;
 	}
