@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miglblt.c,v 5.1 89/08/24 19:51:46 keith Exp $ */
+/* $XConsortium: miglblt.c,v 5.2 89/08/25 14:57:38 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -130,7 +130,11 @@ miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    nbyGlyphWidth = GLYPHWIDTHBYTESPADDED(pci);
 	    nbyPadGlyph = PixmapBytePad(gWidth, 1);
 
-	    if (nbyGlyphWidth == nbyPadGlyph)
+	    if (nbyGlyphWidth == nbyPadGlyph
+#if GLYPHPADBYTES != 4
+	        && (((int) pglyph) & 3) == 0
+#endif
+		)
 	    {
 		pb = pglyph;
 	    }
