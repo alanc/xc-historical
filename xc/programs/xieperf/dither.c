@@ -1,4 +1,4 @@
-/* $XConsortium: dither.c,v 1.1 93/07/19 13:02:31 rws Exp $ */
+/* $XConsortium: dither.c,v 1.2 93/07/26 14:14:55 rws Exp $ */
 
 /**** module do_dither.c ****/
 /******************************************************************************
@@ -180,6 +180,9 @@ void DoDitherFloMapImmediate(xp, p, reps)
                		flograph,       /* photoflo specification */
                		4               /* number of elements */
        		);
+		if ( tech_parms )
+		    free( tech_parms );	
+
 		XSync( xp->d, 0 );
     	}
 	if ( dithertech_parms )
@@ -267,8 +270,6 @@ void DoDitherFloMapStored(xp, p, reps)
                 tech_parms
 	);
 
-	if ( tech_parms )
-		free( tech_parms );	
 	if ( ( ( DitherParms * ) p->ts )->drawable == Drawable )
 		XieFloExportDrawable(&flograph[3],
 			3,              /* source phototag number */
@@ -287,6 +288,9 @@ void DoDitherFloMapStored(xp, p, reps)
 		);
 
 	flo = XieCreatePhotoflo( xp->d, flograph, 4 );
+
+	if ( tech_parms )
+		free( tech_parms );	
 
 	/* crank it */
 
