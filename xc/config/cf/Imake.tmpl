@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.50 89/08/31 17:26:59 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.51 89/08/31 17:45:11 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -356,6 +356,9 @@
 #ifndef CcCmd
 #define CcCmd                  cc
 #endif
+#ifndef FortranCmd			/* for xgks */
+#define FortranCmd f77
+#endif
 #ifndef AsCmd
 #define AsCmd                  as
 #endif
@@ -468,6 +471,7 @@
                AR = ArCmd
   BOOTSTRAPCFLAGS = BootstrapCFlags	/* set if cpp doesn't have uniq sym */
                CC = CcCmd
+               FC = FortranCmd
          COMPRESS = CompressCmd
               CPP = CppCmd $(STD_CPP_DEFINES)		/* simple filters */
     PREPROCESSCMD = PreProcessCmd $(STD_CPP_DEFINES)	/* prefered; mdep */
