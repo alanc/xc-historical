@@ -1,15 +1,15 @@
-XCOMM $XConsortium: osfLib.tmpl,v 1.11 93/08/26 16:25:51 rws Exp $
+XCOMM $XConsortium: osfLib.tmpl,v 1.12 93/09/03 11:57:08 mor Exp $
 
 /*
  * OSF/1 shared library template
  */
 
-#define SharedOldXReqs $(XLIBONLY)
-#define SharedXtReqs $(XLIBONLY)
-#define SharedXawReqs $(XMULIB) $(XTOOLLIB) $(XLIB) -init _XawFixupVendorShell
-#define SharedXmuReqs $(XTOOLLIB) $(XLIB)
-#define SharedXextReqs $(XLIBONLY)
-#define SharedXinputReqs $(XLIB)
-#define SharedPexReqs $(XLIBONLY) MathLibrary
-#define SharedXieReqs $(XLIBONLY)
-#define SharedSMReqs $(ICELIB)
+#define SharedOldXReqs $(LDPRELIB) $(XLIBONLY)
+#define SharedXtReqs $(LDPRELIB) $(XLIBONLY)
+#define SharedXawReqs $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XLIB) -init _XawFixupVendorShell
+#define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB) $(XLIB)
+#define SharedXextReqs $(LDPRELIB) $(XLIBONLY)
+#define SharedXinputReqs $(LDPRELIB) $(XLIB)
+#define SharedPexReqs $(LDPRELIB) $(XLIBONLY) MathLibrary
+#define SharedXieReqs $(LDPRELIB) $(XLIBONLY)
+#define SharedSMReqs $(LDPRELIB) $(ICELIB)
