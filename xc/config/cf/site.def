@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.105 94/03/07 17:23:54 matt Exp $
+XCOMM site:  $XConsortium: site.def,v 1.106 94/03/24 16:34:08 matt Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -46,13 +46,12 @@ XCOMM #define HasGcc2 YES
 
 #ifdef SunArchitecture
 #define HasCplusplus YES
-#define CplusplusCmd /obj/CenterLine/bin/CC
+#if HasCenterLineCplusplus
 #define DefaultCplusplusOptions -Xa
+#endif
 #ifdef SVR4
-#define PositionIndependentCplusplusFlags -Kpic
 #define CplusplusDependIncludes -I/obj/CenterLine/clc++/sparc-solaris2/incl
 #else
-#define PositionIndependentCplusplusFlags -pic
 #define CplusplusDependIncludes -I/obj/CenterLine/clc++/sparc-sunos4/incl
 #endif
 #endif
