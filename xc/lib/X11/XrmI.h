@@ -1,4 +1,4 @@
-/* $XConsortium: XrmI.h,v 1.6 90/12/01 16:04:54 rws Exp $ */
+/* $XConsortium: XrmI.h,v 1.7 91/04/23 18:25:52 rws Exp $ */
 /*
 
 Copyright 1990 by the Massachusetts Institute of Technology
@@ -24,7 +24,11 @@ without express or implied warranty.
 #include	<X11/Xos.h>
 #include        <sys/stat.h>                        
 
+#ifdef WIN32
+#define OpenFile(name) 		open((name), O_RDONLY|O_TEXT)
+#else
 #define OpenFile(name) 		open((name), O_RDONLY)
+#endif
 #define CloseFile(fd)           close((fd))
 #define ReadFile(fd,buf,size)	read((fd), (buf), (size))
 #define GetSizeOfFile(name,size)                    \
