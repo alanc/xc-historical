@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.50 89/06/09 13:42:52 jim Exp $
+ * $XConsortium: twm.c,v 1.51 89/06/09 16:19:21 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.50 89/06/09 13:42:52 jim Exp $";
+"$XConsortium: twm.c,v 1.51 89/06/09 16:19:21 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -590,6 +590,46 @@ InitVariables()
 
 }
 
+
+RestoreWithdrawnLocation (tmp)
+    TwmWindow *tmp;
+{
+    int gravx, gravy, bw;
+    unsigned int mask;
+    XWindowChanges xwc;
+
+    if (XGetGeometry (dpy, tmp->w, &JunkRoot, &xwc.x, &xwc.y, 
+		      &JunkWidth, &JunkHeight, &bw, &JunkDepth)) {
+
+	GetGravityOffsets (tmp, &gravx, &gravy);
+	if (gravy < 0) xwc.y -= tmp->title_height;
+
+	if (bw != tmp->old_bw) {
+	    int xoff, yoff;
+
+	    if (!Scr->ClientBorderWidth) {
+		xoff = gravx;
+		yoff = gravy;
+	    } else {
+		xoff = 0;
+		yoff = 0;
+	    }
+
+	    xwc.x -= (xoff + 1) * tmp->old_bw;
+	    xwc.y -= (yoff + 1) * tmp->old_bw;
+	}
+
+	mask = (CWX | CWY);
+	if (bw != tmp->old_bw) {
+	    xwc.border_width = tmp->old_bw;
+	    mask |= CWBorderWidth;
+	}
+
+	XConfigureWindow (dpy, tmp->w, mask, &xwc);
+    }
+}
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -614,11 +654,7 @@ void
 Reborder ()
 {
     TwmWindow *tmp;			/* temp twm window structure */
-    int x, y;
-    XWindowChanges xwc;		/* change window structure */
-    unsigned int xwcm;		/* change window mask */
     int scrnum;
-    int gravx, gravy;
 
     /* put a border back around all windows */
 
@@ -629,33 +665,7 @@ Reborder ()
 
 	for (tmp = Scr->TwmRoot.next; tmp != NULL; tmp = tmp->next)
 	{
-	    GetGravityOffsets (tmp, &gravx, &gravy);
-	    XGetGeometry(dpy, tmp->w, &JunkRoot, &x,&y, &JunkWidth,&JunkHeight,
-			 &JunkBW, &JunkDepth);
-
-	    xwcm = CWX | CWY;
-	    xwc.x = x;
-	    xwc.y = y + ((gravy < 0) ? (gravy * tmp->title_height) : 0);
-
-	    if (JunkBW != tmp->old_bw) {
-		int xoff, yoff;
-
-		/*
-		 * restore the window position if gravitated
-		 */
-		if (!Scr->ClientBorderWidth) {
-		    xoff = gravx;
-		    yoff = gravy;
-		} else
-		  xoff = yoff = 0;
-
-	    	xwc.x -= (xoff + 1) * tmp->old_bw;
-	    	xwc.y -= (yoff + 1) * tmp->old_bw;
-	    	xwc.border_width = tmp->old_bw;
-		xwcm |= CWBorderWidth;
-	    }
-
-	    XConfigureWindow(dpy, tmp->w, xwcm, &xwc);
+	    RestoreWithdrawnLocation (tmp);
 	}
     }
 
