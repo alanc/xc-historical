@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.40 91/11/18 17:30:46 gildea Exp $
+ * $XConsortium: Bitmap.c,v 1.41 93/02/24 09:47:03 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -676,28 +676,28 @@ static void CvtStringToButtonFunction(args, num_args, from_val, to_val)
   
   if (!strcmp(lower_name, XtClear)) {
     button_function = Clear;
-    to_val->addr = (caddr_t) &button_function;
+    to_val->addr = (XPointer) &button_function;
     to_val->size = sizeof(button_function);
     return;
   }
   
   if (!strcmp(lower_name, XtSet)) {
     button_function = Set;
-    to_val->addr = (caddr_t) &button_function;
+    to_val->addr = (XPointer) &button_function;
     to_val->size = sizeof(button_function);
     return;
   }
 
   if (!strcmp(lower_name, XtInvert)) {
     button_function = Invert;
-    to_val->addr = (caddr_t) &button_function;
+    to_val->addr = (XPointer) &button_function;
     to_val->size = sizeof(button_function);
     return;
   }
   
   XtStringConversionWarning(from_val->addr, XtRButtonFunction);
   button_function = Clear;
-  to_val->addr = (caddr_t) &button_function;
+  to_val->addr = (XPointer) &button_function;
   to_val->size = sizeof(button_function);
   
 }

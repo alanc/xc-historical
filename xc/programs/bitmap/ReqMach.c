@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ReqMach.c,v 1.10 91/07/24 15:23:52 converse Exp $
+ * $XConsortium: ReqMach.c,v 1.11 91/11/18 17:30:56 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -69,7 +69,7 @@ Boolean BWAddRequest(w, name, trap, call_data, call_data_size)
     Widget    w;
     BWRequest name;
     Boolean   trap;
-    caddr_t   call_data;
+    XtPointer call_data;
     Cardinal  call_data_size;
 {
     BitmapWidget BW = (BitmapWidget) w;
@@ -250,7 +250,7 @@ Boolean BWEngageRequest(w, name, trap, call_data, call_data_size)
     Widget w;
     BWRequest name;
     Boolean trap;
-    caddr_t call_data;
+    XtPointer call_data;
     Cardinal call_data_size;
 {
     BitmapWidget BW = (BitmapWidget) w;

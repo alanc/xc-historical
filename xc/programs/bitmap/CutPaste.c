@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CutPaste.c,v 1.6 91/07/24 15:33:34 converse Exp $
+ * $XConsortium: CutPaste.c,v 1.7 91/11/18 17:30:49 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -52,7 +52,7 @@ Boolean ConvertSelection(w, selection, target, type, val_ret, length, format)
     unsigned long *length;
     int *format;
 {
-    caddr_t *value = (caddr_t *)val_ret;
+    XPointer *value = (XPointer *)val_ret;
     BitmapWidget BW = (BitmapWidget) w;
     Pixmap *pixmap;
     char *data;
@@ -65,7 +65,7 @@ Boolean ConvertSelection(w, selection, target, type, val_ret, length, format)
 
     case XA_TARGETS:
 	*type = XA_ATOM;
-	*value = (caddr_t) bitmapClassRec.bitmap_class.targets;
+	*value = (XPointer) bitmapClassRec.bitmap_class.targets;
 	*length = bitmapClassRec.bitmap_class.num_targets;
 	*format = 32;
 	return True;
@@ -92,7 +92,7 @@ Boolean ConvertSelection(w, selection, target, type, val_ret, length, format)
 	}
 	else return False;
 	*type = XA_PIXMAP;
-	*value = (caddr_t) pixmap;
+	*value = (XPointer) pixmap;
 	*length = 1;
 	*format = 32;
 	return True;
@@ -156,7 +156,7 @@ void SelectionCallback(w, cldat, selection, type, val, length, format)
     unsigned long *length;
     int *format;
 {
-    caddr_t value = (caddr_t)val;
+    XPointer value = (XPointer)val;
     BitmapWidget BW = (BitmapWidget) w;
     Pixmap *pixmap;
 

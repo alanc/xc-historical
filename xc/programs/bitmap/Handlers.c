@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Handlers.c,v 1.10 91/07/24 15:25:01 converse Exp $
+ * $XConsortium: Handlers.c,v 1.11 91/11/18 17:30:53 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -128,7 +128,7 @@ void DragOnePointEngage(w, status, draw, state)
 void DragOnePointTerminate(w, status, client_data)
     Widget     w;
     BWStatus  *status;
-    caddr_t    client_data;
+    XtPointer  client_data;
 {
     
     if (status->success) {
@@ -496,7 +496,7 @@ void TwoPointsTerminateTimed(w, status, draw)
 /* ARGSUSED */
 void Interface(w, status, action)
     Widget     w;
-    caddr_t    status;
+    XtPointer  status;
     void     (*action)();
 {
  	(*action)(w);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitmapP.h,v 1.10 91/01/04 13:22:44 dmatic Exp $
+ * $XConsortium: BitmapP.h,v 1.11 91/02/01 16:39:28 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -54,11 +54,11 @@ struct _BWRequestRec {
   char       *name;
   int         status_size;
   void      (*engage)();
-  caddr_t     engage_client_data;
+  XtPointer   engage_client_data;
   void      (*terminate)();
-  caddr_t     terminate_client_data;
+  XtPointer   terminate_client_data;
   void      (*remove)();
-  caddr_t     remove_client_data;
+  XtPointer   remove_client_data;
 } ;
 
 typedef struct {
@@ -68,9 +68,9 @@ typedef struct {
 
 typedef struct {
     BWRequestRec *request;
-    caddr_t       status;
+    XtPointer     status;
     Boolean       trap;
-    caddr_t       call_data;
+    XtPointer     call_data;
 } BWRequestStack;
 
 typedef struct {
@@ -124,7 +124,7 @@ typedef struct {
   Boolean          fold;
   Boolean          zooming;
   BWZoom           zoom;
-  caddr_t         *value;
+  XtPointer        *value;
   char             status[80];
   BWSelection      selection;
   Boolean          stipple_change_expose_event;
