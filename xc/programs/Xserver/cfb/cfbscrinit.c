@@ -76,7 +76,7 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     int xsize, ysize;		/* in pixels */
     int dpi;			/* dots per inch */
 {
-    long	*pVids;
+    VisualID	*pVids;
     register PixmapPtr pPixmap;
     int	i;
     void cfbInitialize332Colormap();
@@ -100,7 +100,7 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     pScreen->numVisuals = NUMVISUALS;
     pScreen->visuals = visuals;
 
-    pPixmap = (PixmapPtr )Xalloc(sizeof(PixmapRec));
+    pPixmap = (PixmapPtr )xalloc(sizeof(PixmapRec));
     pPixmap->drawable.type = DRAWABLE_PIXMAP;
     pPixmap->drawable.depth = 8;
     pPixmap->drawable.pScreen = pScreen;
@@ -169,7 +169,8 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     for (i = 0; i < NUMVISUALS; i++) {
 	visuals[i].vid = FakeClientID(0);
 	visuals[i].screen = index;
-	AddResource(visuals[i].vid, RT_VISUALID, &visuals[i], NoopDDA, RC_CORE);
+	AddResource(visuals[i].vid, RT_VISUALID, (pointer)&visuals[i],
+		    NoopDDA, RC_CORE);
 	switch (visuals[i].class) {
 	case StaticGray:
 	case StaticColor:
@@ -194,7 +195,8 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     /*  Set up the remaining fields in the depths[] array */
     for (i = 0; i < NUMDEPTHS; i++) {
 	if (depths[i].numVids > 0) {
-	    depths[i].vids = pVids = (long *) Xalloc(sizeof (long) * depths[i].numVids);
+	    depths[i].vids = pVids = (VisualID *) xalloc(sizeof (VisualID) *
+							 depths[i].numVids);
 	    /* XXX - here we offer only the 8-bit visual */
 	    pVids[0] = visuals[ROOTVISUAL].vid;
 	}
