@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.21 91/07/29 21:35:05 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.22 91/08/16 19:30:08 gildea Exp $
         RGB_DB = DefaultRGBDatabase
    SITE_RGB_DB = -DRGB_DB=\"$(RGB_DB)\"
       DEPLIBS = 
@@ -20,6 +20,7 @@ XCOMM $XConsortium: Imakefile,v 1.21 91/07/29 21:35:05 gildea Exp $
 #if defined(SparcArchitecture) && HasGcc
            CC = cc
     CCOPTIONS = /**/
+    EXTRA_LOAD_FLAGS = /**/
 #endif
 #if defined(i386SVR4Architecture)
        DBMLIB = -ldbm -lucb
