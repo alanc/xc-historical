@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.52 87/08/10 13:25:32 newman Locked $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.53 87/08/06 16:57:22 jg Exp $";
 #endif
 
 /*
@@ -284,7 +284,7 @@ Status _XReply (dpy, rep, extra, discard)
 		 * error,  but we still need to figure out how to handle it...
 		 */
 		_XRead (dpy, (char *) (rep+1), (long) (rep->generic.length<<2));
-		(*_XIOErrorFunction) (dpy);  /* XXX is this right? */
+		(*_XIOErrorFunction) (dpy);
 		return (0);
 
     	    case X_Error:
@@ -298,16 +298,16 @@ Status _XReply (dpy, rep, extra, discard)
 			   "can't grab" failures */
 			switch ((int)err->errorCode) {
 			case BadName:
-				switch (err->majorCode)
-				   case X_OpenFont:
-				   case X_LookupColor:
-				   case X_AllocNamedColor:
-					return (0);
+			    switch (err->majorCode)
+				case X_OpenFont:
+				case X_LookupColor:
+				case X_AllocNamedColor:
+				    return(0);
 				break;
 			case BadFont:
-				if (err->majorCode == X_QueryFont)
-				        return (0);
-				break;
+			    if (err->majorCode == X_QueryFont)
+				return (0);
+			    break;
 			case BadAlloc:
 			case BadAccess:
 				return (0);
