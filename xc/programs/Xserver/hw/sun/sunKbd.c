@@ -63,7 +63,7 @@ typedef struct {
     int	    	  trans;          	/* Original translation form */
 } SunKbPrivRec, *SunKbPrivPtr;
 
-extern ModifierMapRec sunMapRec[];
+extern CARD8 *sunModMap[];
 extern KeySymsRec sunKeySyms[];
 
 static void 	  sunBell();
@@ -155,7 +155,7 @@ sunKbdProc (pKeyboard, what)
 	    InitKeyboardDeviceStruct(
 		    pKeyboard,
 		    &(sunKeySyms[sysKbPriv.type]),
-		    &(sunMapRec[sysKbPriv.type]),
+		    (sunModMap[sysKbPriv.type]),
 		    sunBell,
 		    sunKbdCtrl);
 	    break;
