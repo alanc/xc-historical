@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbimage.c,v 1.31 87/09/07 19:07:51 rws Locked $ */
+/* $Header: mfbimage.c,v 1.32 87/10/09 17:27:21 rws Exp $ */
 
 #include "X.h"
 
@@ -138,14 +138,11 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
 	    yorg = 0;
         }
 
-        sx += xorg;
-        sy += yorg;
-
         pPixmap = (PixmapPtr)mfbCreatePixmap(pDrawable->pScreen, w, h, 1);
         pspare = pPixmap->devPrivate;
         pPixmap->devPrivate = pdstLine;
-        ptSrc.x = sx;
-        ptSrc.y = sy;
+        ptSrc.x = sx + xorg;
+        ptSrc.y = sy + yorg;
         box.x1 = 0;
         box.y1 = 0;
         box.x2 = w;
@@ -153,6 +150,14 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
 
         prgnDst = (*pDrawable->pScreen->RegionCreate)(&box, 1);
         mfbDoBitblt(pDrawable, pPixmap, GXcopy, prgnDst, &ptSrc);
+
+	if ((pDrawable->type == DRAWABLE_WINDOW) &&
+	    (((WindowPtr)pDrawable)->backingStore != NotUseful))
+	{
+	    miBSGetImage(pDrawable, pPixmap, sx, sy, w, h, format,
+			 planeMask, (pointer) 0);
+	}
+
         (*pDrawable->pScreen->RegionDestroy)(prgnDst);
         pPixmap->devPrivate = pspare;
         mfbDestroyPixmap(pPixmap);
