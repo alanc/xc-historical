@@ -1,4 +1,4 @@
-/* $XConsortium: XImUtil.c,v 11.55 91/12/23 09:32:47 rws Exp $ */
+/* $XConsortium: ImUtil.c,v 11.56 93/08/14 17:50:43 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -327,6 +327,39 @@ XImage *XCreateImage (dpy, visual, depth, format, offset, data, width, height,
 	_XInitImageFuncPtrs (image);
 
 	return image;
+}
+
+Status XInitImage (image)
+    XImage *image;
+{
+	if (image->depth == 0 || image->depth > 32 ||
+	    (image->format != XYBitmap &&
+	     image->format != XYPixmap &&
+	     image->format != ZPixmap) ||
+	    (image->format == XYBitmap && image->depth != 1) ||
+	    (image->bitmap_pad != 8 &&
+	     image->bitmap_pad != 16 &&
+	     image->bitmap_pad != 32) ||
+	    image->xoffset < 0 || image->bytes_per_line < 0)
+	    return 0;
+
+	/*
+	 * compute per line accelerator.
+	 */
+	if (image->bytes_per_line == 0)
+	{
+	if (image->format == ZPixmap)
+	    image->bytes_per_line = 
+	       ROUNDUP((image->bits_per_pixel * image->width),
+		       image->bitmap_pad);
+	else
+	    image->bytes_per_line =
+	        ROUNDUP((image->width + image->xoffset), image->bitmap_pad);
+	}
+
+	_XInitImageFuncPtrs (image);
+
+	return 1;
 }
 
 /*
