@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: commands.c,v 1.14 88/07/27 09:49:47 jim Exp $";
+static char rcs_id[] = "$XConsortium: commands.c,v 1.15 88/09/06 17:34:28 jim Exp $";
 #endif
 
 /*
@@ -30,6 +30,7 @@ static char rcs_id[] = "$XConsortium: commands.c,v 1.14 88/07/27 09:49:47 jim Ex
 #include "xedit.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/param.h>
 
 static int loadChangeNumber;
 static int quitChangeNumber;
@@ -255,15 +256,16 @@ setSavedFile(name)
 char *makeTempName()
 {
   extern char* mktemp();
-  char *tempname = malloc(1024);
+  char *tempname = malloc(MAXPATHLEN);
     sprintf(tempname, "%s.XXXXXX", filename);
     return(mktemp(tempname));
 }
 	
 char *makeBackupName()
 {
-  char *backupName = malloc(1024);
-    sprintf(backupName, "%s.BAK", filename);
+  char *backupName = malloc(MAXPATHLEN);
+    sprintf(backupName, "%s%s%s", app_resources.backupNamePrefix,
+	    filename, app_resources.backupNameSuffix);
     return (backupName);
 }
 /*
@@ -312,7 +314,7 @@ DoSave()
 	PSsetROsource(source, dsource);
         backedup = 1;
     }
-    if(editInPlace){
+    if(app_resources.editInPlace){
 	if(!(outStream = fopen(filename, "w"))){
 	    XeditPrintf("\nfile is not writable: %s", filename);
 	    return;
@@ -337,13 +339,13 @@ DoSave()
 	}
     }
     fclose(outStream);
-    if(!editInPlace)
+    if(!app_resources.editInPlace)
 	if(rename(tempName, filename) < 0){
 	    XeditPrintf("\nerror writing file.  Edits will be left in: %s",
 		tempName);
 	    Feep();
 	}
-    if(!enableBackups && backupFilename)
+    if(!app_resources.enableBackups && backupFilename)
 	if(unlink(backupFilename) < 0)
 	    XeditPrintf("\nerror deleting backupfile:  %s",  backupFilename);        lastChangeNumber = PSchanges(source);
     setSavedFile(filename);

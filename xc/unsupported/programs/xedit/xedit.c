@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: xedit.c,v 1.13 88/08/26 15:48:09 swick Exp $";
+static char rcs_id[] = "$XConsortium: xedit.c,v 1.14 88/09/06 17:34:31 jim Exp $";
 #endif
 
 /*
@@ -116,11 +116,10 @@ makeButtonsAndBoxes()
         replacestringwindow = makeStringBox(Row2, replacestring, 120); 
     {
     int _Min, _Max;
-    static Dimension boxHeight;
-	static Arg getargs[] = {
-	    { XtNheight, (XtArgVal)&boxHeight }
-        };
-        XtGetValues(quitbutton, getargs, XtNumber(getargs));
+    Dimension boxHeight;
+    Arg getargs[1];
+    XtSetArg(getargs[0], XtNheight, &boxHeight);
+    XtGetValues(quitbutton, getargs, XtNumber(getargs));
     boxHeight += 8;
     XtPanedSetMinMax((Widget) Row1, (int)boxHeight, (int)boxHeight);
     XtPanedSetMinMax((Widget) Row2, (int)boxHeight, (int)boxHeight);
@@ -143,30 +142,27 @@ makeButtonsAndBoxes()
     XtPanedSetRefigureMode(outer, TRUE); 
 }
 
-static char *backupNamePrefix;
-static char *backupNameSuffix;
-int editInPlace;
-int enableBackups;
+struct _app_resources app_resources;
 
+#define offset(field) XtOffset(struct _app_resources*, field)
 static XtResource resources[] = {
    {"editInPlace", "EditInPlace", XtRBoolean, sizeof(int),
-         (Cardinal)&editInPlace, XtRString, "False"},
+         offset(editInPlace), XtRString, "False"},
    {"enableBackups", "EnableBackups", XtRBoolean, sizeof(int),
-         (Cardinal)&enableBackups, XtRString, "FALSE"},
+         offset(enableBackups), XtRString, "FALSE"},
    {"backupNamePrefix", "BackupNamePrefix", XtRString, sizeof(char *),
-         (Cardinal)&backupNamePrefix,XtRString, ""},
+         offset(backupNamePrefix),XtRString, ""},
    {"backupNameSuffix", "BackupNameSuffix", XtRString, sizeof(char *),
-         (Cardinal)&backupNameSuffix,XtRString, ".BAK"}
+         offset(backupNameSuffix),XtRString, ".BAK"}
 };
+#undef offset
 
 main(argc, argv)
   int argc;
   char **argv;
 {
     static Dimension width, height;
-    static Arg args[]={
-	{XtNwidth, (XtArgVal) &width},
-	{XtNheight, (XtArgVal)&height} };
+    Arg args[2];
      static Arg setargs[]={
         {XtNwidth, 500},
         {XtNheight,700} };
@@ -176,11 +172,13 @@ main(argc, argv)
     searchstring = malloc(1000);
     replacestring = malloc(1000);
     toplevel = XtInitialize( "xedit", "Xedit", NULL, 0, &argc, argv);
+    XtSetArg(args[0], XtNwidth, &width);
+    XtSetArg(args[1], XtNheight, &height);
     XtGetValues(toplevel, args, XtNumber(args));
     if(!width || !height){
 	XtSetValues(toplevel, setargs, XtNumber(setargs));
     }
-    XtGetApplicationResources(toplevel, 0, resources,
+    XtGetApplicationResources(toplevel, &app_resources, resources,
                                   XtNumber(resources),NULL, 0);
     CurDpy = XtDisplay(toplevel);
     dsource = PseudoDiskSourceCreate(""); 

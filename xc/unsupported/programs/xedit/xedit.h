@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$XConsortium: xedit.h,v 1.12 88/09/06 09:43:39 rws Exp $";
+ *	rcs_id[] = "$XConsortium: xedit.h,v 1.13 88/09/06 17:34:33 jim Exp $";
  */
 
 /*
@@ -93,10 +93,13 @@ extern Widget labelwindow;
 extern XtTextSource source, asource, dsource, psource, messsource;
 extern XtTextSource PseudoDiskSourceCreate();
 extern void PseudoDiskSourceDestroy();
-extern editInPlace;
-extern enableBackups;
-extern char *backupNamePrefix;
-extern char *backupNameSuffix;
+
+extern struct _app_resources {
+    int editInPlace;
+    int enableBackups;
+    char *backupNamePrefix;
+    char *backupNameSuffix;
+} app_resources;
 
 extern Display *CurDpy;
 
