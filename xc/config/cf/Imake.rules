@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.139 93/08/10 21:19:05 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.140 93/08/11 09:47:05 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -209,7 +209,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.139 93/08/10 21:19:05 rws Exp $
 #endif
 #endif /* _UseCat */
 
-#ifndef ProgramTargetName(target)
+#ifndef ProgramTargetName
 #define ProgramTargetName(target) target
 #endif
 
