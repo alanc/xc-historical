@@ -52,6 +52,12 @@ extern int  errno;		/* Internal system error number. */
 #ifndef WIN32
 #include <sys/socket.h>
 
+/*
+ * makedepend screws up on #undef OPEN_MAX, so we define a new symbol
+ */
+
+#ifndef TRANS_OPEN_MAX
+
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
 #include <limits.h>
@@ -77,9 +83,13 @@ extern int  errno;		/* Internal system error number. */
 #endif
 
 #if OPEN_MAX > 256
-#undef OPEN_MAX
-#define OPEN_MAX 256
+#define TRANS_OPEN_MAX 256
+#else
+#define TRANS_OPEN_MAX OPEN_MAX
 #endif
+
+#endif /* TRANS_OPEN_MAX */
+
 
 #define ESET(val) errno = val
 #define EGET() errno

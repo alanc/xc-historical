@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibos.h,v 1.17 93/09/25 13:38:27 rws Exp $ */
+/* $XConsortium: FSlibos.h,v 1.18 94/01/31 11:47:19 mor Exp $ */
 
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -32,6 +32,12 @@
 
 #ifndef WIN32
 
+/*
+ * makedepend screws up on #undef OPEN_MAX, so we define a new symbol
+ */
+
+#ifndef FS_OPEN_MAX
+
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
 #include <limits.h>
@@ -56,15 +62,18 @@
 #endif
 #endif
 
+#if OPEN_MAX > 256
+#define FS_OPEN_MAX 256
+#else
+#define FS_OPEN_MAX OPEN_MAX
+#endif
+
+#endif /* FS_OPEN_MAX */
+
 /* Utek leaves kernel macros around in include files (bleah) */
 
 #ifdef dirty
 #undef dirty
-#endif
-
-#if OPEN_MAX > 256
-#undef OPEN_MAX
-#define OPEN_MAX 256
 #endif
 
 #ifdef WORD64
@@ -73,7 +82,7 @@
 #define NMSKBITS 32
 #endif
 
-#define MSKCNT ((OPEN_MAX + NMSKBITS - 1) / NMSKBITS)
+#define MSKCNT ((FS_OPEN_MAX + NMSKBITS - 1) / NMSKBITS)
 
 #ifdef LONG64
 typedef unsigned int FdSet[MSKCNT];

@@ -1,4 +1,4 @@
-/* $XConsortium: fslibos.h,v 1.11 93/09/25 13:40:07 rws Exp $ */
+/* $XConsortium: fslibos.h,v 1.12 94/01/31 12:20:10 mor Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -12,6 +12,12 @@
 #include <X11/Xtrans.h>
 
 #ifndef WIN32
+
+/*
+ * makedepend screws up on #undef OPEN_MAX, so we define a new symbol
+ */
+
+#ifndef FONT_OPEN_MAX
 
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
@@ -38,9 +44,12 @@
 #endif
 
 #if OPEN_MAX > 256
-#undef OPEN_MAX
-#define OPEN_MAX 256
+#define FONT_OPEN_MAX 256
+#else
+#define FONT_OPEN_MAX OPEN_MAX
 #endif
+
+#endif /* FONT_OPEN_MAX */
 
 #ifdef WORD64
 #define NMSKBITS 64
@@ -48,7 +57,7 @@
 #define NMSKBITS 32
 #endif
 
-#define MSKCNT ((OPEN_MAX + NMSKBITS - 1) / NMSKBITS)
+#define MSKCNT ((FONT_OPEN_MAX + NMSKBITS - 1) / NMSKBITS)
 
 typedef unsigned long FdSet[MSKCNT];
 typedef FdSet FdSetPtr;

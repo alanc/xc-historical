@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.36 94/01/11 12:35:09 mor Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.37 94/01/28 23:30:06 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -28,6 +28,13 @@ without express or implied warranty.
  */
 #define XCONN_CHECK_FREQ 256
 
+
+/*
+ * makedepend screws up on #undef OPEN_MAX, so we define a new symbol
+ */
+
+#ifndef X11_OPEN_MAX
+
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
 #include <limits.h>
@@ -53,9 +60,13 @@ without express or implied warranty.
 #endif
 
 #if OPEN_MAX > 256
-#undef OPEN_MAX
-#define OPEN_MAX 256
+#define X11_OPEN_MAX 256
+#else
+#define X11_OPEN_MAX OPEN_MAX
 #endif
+
+#endif /* X11_OPEN_MAX */
+
 
 #ifdef USE_POLL
 #include <sys/poll.h>
@@ -69,7 +80,7 @@ without express or implied warranty.
 #define NMSKBITS 32
 #endif
 
-#define MSKCNT ((OPEN_MAX + NMSKBITS - 1) / NMSKBITS)
+#define MSKCNT ((X11_OPEN_MAX + NMSKBITS - 1) / NMSKBITS)
 
 #ifdef LONG64
 typedef unsigned int FdSet[MSKCNT];
