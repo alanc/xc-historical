@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.196 93/10/23 12:02:32 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.197 93/10/23 17:23:29 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -450,16 +450,19 @@ int _XSeqSyncFunction(dpy)
 {
     xGetInputFocusReply rep;
     register xReq *req;
-    int (*func)();
 
     LockDisplay(dpy);
-    dpy->synchandler = func = dpy->savedsynchandler;
     if ((dpy->request - dpy->last_request_read) >= (BUFSIZE / SIZEOF(xReq))) {
 	GetEmptyReq(GetInputFocus, req);
 	(void) _XReply (dpy, (xReply *)&rep, 0, xTrue);
     }
+    /* could get XID handler while waiting for reply in MT env */
+    if (dpy->synchandler == _XSeqSyncFunction) {
+	dpy->synchandler = dpy->savedsynchandler;
+	dpy->flags &= ~XlibDisplayPrivSync;
+    }
     UnlockDisplay(dpy);
-    if (func) (*func)(dpy);
+    SyncHandle();
     return 0;
 }
 
@@ -548,9 +551,10 @@ static _XFlushInt (dpy, cv)
 	}
 	dpy->last_req = (char *)&_dummy_request;
 	if ((dpy->request - dpy->last_request_read) >= SEQLIMIT &&
-	    !dpy->savedsynchandler) {
+	    !(dpy->flags & XlibDisplayPrivSync)) {
 	    dpy->savedsynchandler = dpy->synchandler;
 	    dpy->synchandler = _XSeqSyncFunction;
+	    dpy->flags |= XlibDisplayPrivSync;
 	}
 }
 
@@ -1267,9 +1271,10 @@ _XSend (dpy, data, size)
 	dpy->bufptr = dpy->buffer;
 	dpy->last_req = (char *) & _dummy_request;
 	if ((dpy->request - dpy->last_request_read) >= SEQLIMIT &&
-	    !dpy->savedsynchandler) {
+	    !(dpy->flags & XlibDisplayPrivSync)) {
 	    dpy->savedsynchandler = dpy->synchandler;
 	    dpy->synchandler = _XSeqSyncFunction;
+	    dpy->flags |= XlibDisplayPrivSync;
 	}
 }
 
@@ -1277,20 +1282,36 @@ static int
 _XIDHandler(dpy)
     register Display *dpy;
 {
-    int (*func)();
     xQueryExtensionReply qrep;
     register xQueryExtensionReq *qreq;
+    xXCMiscGetVersionReply vrep;
+    register xXCMiscGetVersionReq *vreq;
     xXCMiscGetXIDRangeReply grep;
     register xXCMiscGetXIDRangeReq *greq;
 
     LockDisplay(dpy);
-    GetReq(QueryExtension, qreq);
-    qreq->nbytes = sizeof(XCMiscExtensionName) - 1;
-    qreq->length += (qreq->nbytes+(unsigned)3)>>2;
-    _XSend(dpy, XCMiscExtensionName, (long)qreq->nbytes);
-    if (_XReply (dpy, (xReply *)&qrep, 0, xTrue) && qrep.major_opcode) {
+    if (!dpy->xcmisc_opcode) {
+	GetReq(QueryExtension, qreq);
+	qreq->nbytes = sizeof(XCMiscExtensionName) - 1;
+	qreq->length += (qreq->nbytes+(unsigned)3)>>2;
+	_XSend(dpy, XCMiscExtensionName, (long)qreq->nbytes);
+	if (!_XReply (dpy, (xReply *)&qrep, 0, xTrue))
+	    dpy->xcmisc_opcode = -1;
+	else {
+	    GetReq(XCMiscGetVersion, vreq);
+	    vreq->reqType = qrep.major_opcode;
+	    vreq->miscReqType = X_XCMiscGetXIDRange;
+	    vreq->majorVersion = XCMiscMajorVersion;
+	    vreq->minorVersion = XCMiscMinorVersion;
+	    if (!_XReply (dpy, (xReply *)&vrep, 0, xTrue))
+		dpy->xcmisc_opcode = -1;
+	    else
+		dpy->xcmisc_opcode = qrep.major_opcode;
+	}
+    }
+    if (dpy->xcmisc_opcode > 0) {
 	GetReq(XCMiscGetXIDRange, greq);
-	greq->reqType = qrep.major_opcode;
+	greq->reqType = dpy->xcmisc_opcode;
 	greq->miscReqType = X_XCMiscGetXIDRange;
 	if (_XReply (dpy, (xReply *)&grep, 0, xTrue) && grep.count) {
 	    dpy->resource_id = ((grep.start_id - dpy->resource_base) >>
@@ -1301,12 +1322,12 @@ _XIDHandler(dpy)
 	    dpy->resource_max <<= dpy->resource_shift;
 	}
     }
-    if (func = dpy->savedsynchandler) {
-	dpy->synchandler = func;
-	dpy->savedsynchandler = NULL;
+    if (dpy->flags & XlibDisplayPrivSync) {
+	dpy->synchandler = dpy->savedsynchandler;
+	dpy->flags &= ~XlibDisplayPrivSync;
     }
     UnlockDisplay(dpy);
-    if (func) (*func)(dpy);
+    SyncHandle();
     return 0;
 }
 
@@ -1320,8 +1341,10 @@ XID _XAllocID(dpy)
 
    id = dpy->resource_id << dpy->resource_shift;
    if (id >= dpy->resource_max) {
-       if (!dpy->savedsynchandler)
+       if (!(dpy->flags & XlibDisplayPrivSync)) {
 	   dpy->savedsynchandler = dpy->synchandler;
+	   dpy->flags |= XlibDisplayPrivSync;
+       }
        dpy->synchandler = _XIDHandler;
        dpy->resource_max = dpy->resource_mask + 1;
    }
