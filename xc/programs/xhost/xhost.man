@@ -39,10 +39,19 @@ display.
 X(8C), xterm(1)
 .SH ENVIRONMENT
 DISPLAY	-	To find out which X you are using.
+.SH BUGS
+.PP
+You can't specify a display on the command line.  Furthermore, 
+.B \-display 
+is already a valid command line argument (indicating that you want
+to remove the machine named 
+.I ``display''
+from the access list).
 .SH AUTHOR
 Copyright 1985 by Massachusetts Institute of Technology.
-.br
+.PP
 See \fIX(1)\fP for a complete copyright notice.
-.br
+.PP
 Bob Scheifler, MIT Laboratory for Computer Science,
+.br
 Jim Gettys, MIT Project Athena (DEC).
