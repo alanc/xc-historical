@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.8 91/07/16 23:06:23 gildea Exp $
       XDMCONFIG = xdm-config
    XDMRESOURCES = Xresources
      XDMSERVERS = Xservers
@@ -9,17 +9,19 @@ all:: Xservers.ws xdm-config
 CppScriptTarget(Xservers.ws,Xserv.ws.cpp,-DBINDIR=$(BINDIR),NullParameter)
 CppScriptTarget(xdm-config,xdm-conf.cpp,-DXDMDIR=$(XDMDIR),NullParameter)
 
-InstallNonExecFile($(XDMCONFIG),$(XDMDIR))
-InstallNonExecFile($(XDMRESOURCES),$(XDMDIR))
-InstallNonExecFile($(XDMSERVERS),$(XDMDIR))
-InstallNamedProg($(XDMSESSION),$(XDMSESSION),$(XDMDIR))
-
 #ifdef XdmServersType
 LinkFile(Xservers,Xservers.XdmServersType)
 #else
 Xservers:
 	echo "Choose one of" Xservers.* "and copy it to Xservers"
 	exit 1
+#endif
+
+#if InstallXdmConfig
+InstallNonExecFile($(XDMCONFIG),$(XDMDIR))
+InstallNonExecFile($(XDMRESOURCES),$(XDMDIR))
+InstallNonExecFile($(XDMSERVERS),$(XDMDIR))
+InstallNamedProg($(XDMSESSION),$(XDMSESSION),$(XDMDIR))
 #endif
 
 depend::
