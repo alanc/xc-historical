@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XKeyBind.c,v 11.44 88/10/09 12:18:19 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.45 89/01/09 18:12:41 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -13,6 +13,7 @@
 #include <stdio.h>
 
 static ComputeMaskFromKeytrans();
+static int Initialize();
 
 struct XKeytrans {
 	struct XKeytrans *next;/* next on list */
