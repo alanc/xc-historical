@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbfillrct.c,v 5.2 89/07/27 18:58:28 keith Exp $ */
+/* $XConsortium: cfbfillrct.c,v 5.3 89/07/28 12:03:01 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -331,25 +331,25 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
     prgnClip = priv->pCompositeClip;
 
-    numRects = REGION_NUM_RECTS(prgnClip);
-    pboxClippedBase = (BoxPtr)ALLOCATE_LOCAL(numRects * sizeof(BoxRec));
-
-    if (!pboxClippedBase)
-	return;
-
-    if (pGC->fillStyle == FillTiled)
+    switch (pGC->fillStyle)
     {
-	pTile = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-							pRotatedPixmap;
-	fillTiled = TRUE;
-    }
-    else
-    {
+    case FillSolid:
     	isCopy = pGC->alu == GXcopy;
     	pixel = pGC->fgPixel;
     	if (pGC->alu == GXinvert)
 	    pixel = pGC->planemask;
-	fillTiled = FALSE;
+	break;
+    case FillTiled:
+	pTile = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
+							pRotatedPixmap;
+	break;
+#if (PPW == 4)
+    case FillStippled:
+    case FillOpaqueStippled:
+	pTile = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
+							pRotatedPixmap;
+	break;
+#endif
     }
     prect = prectInit;
     xorg = pDrawable->x;
@@ -409,12 +409,33 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	  case rgnOUT:
 	    break;
 	  case rgnIN:
-	    if (fillTiled)
-		cfbFillBoxTile32 (pDrawable, 1, &box, pTile);
-	    else
+	    switch (pGC->fillStyle)
+	    {
+	    case FillSolid:
 		cfbFillBoxSolid (pDrawable, 1, &box, pixel, isCopy);
+		break;
+	    case FillTiled:
+		cfbFillBoxTile32 (pDrawable, 1, &box, pTile);
+		break;
+#if (PPW == 4)
+	    case FillStippled:
+		cfb8FillBoxTransparentStippled32 (pDrawable, 1, &box, pTile,
+						 pGC->fgPixel);
+		break;
+	    case FillOpaqueStippled:
+		cfb8FillBoxOpaqueStippled32 (pDrawable, 1, &box, pTile,
+						 pGC->fgPixel, pGC->bgPixel);
+		break;
+#endif
+	    }
 	    break;
 	  case rgnPART:
+	    numRects = REGION_NUM_RECTS(prgnClip);
+	    pboxClippedBase = (BoxPtr)ALLOCATE_LOCAL(numRects * sizeof(BoxRec));
+
+	    if (!pboxClippedBase)
+		return;
+
 	    pboxClipped = pboxClippedBase;
 	    pbox = REGION_RECTS(prgnClip);
 	    n = numRects;
@@ -437,14 +458,31 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 		    pboxClipped++;
 	        }
 	    }
-	    if (fillTiled)
-		cfbFillBoxTile32 (pDrawable, pboxClipped-pboxClippedBase, 
-				 pboxClippedBase, pTile);
-	    else
+	    switch (pGC->fillStyle)
+	    {
+	    case FillSolid:
 		cfbFillBoxSolid (pDrawable, pboxClipped-pboxClippedBase, 
 				 pboxClippedBase, pixel, isCopy);
+		break;
+	    case FillTiled:
+		cfbFillBoxTile32 (pDrawable, pboxClipped-pboxClippedBase, 
+				 pboxClippedBase, pTile);
+		break;
+#if (PPW == 4)
+	    case FillStippled:
+		cfb8FillBoxTransparentStippled32 (pDrawable,
+		    pboxClipped-pboxClippedBase, pboxClippedBase,
+ 		    pTile, pGC->fgPixel);
+		break;
+	    case FillOpaqueStippled:
+		cfb8FillBoxOpaqueStippled32 (pDrawable,
+		    pboxClipped-pboxClippedBase, pboxClippedBase,
+ 		    pTile, pGC->fgPixel, pGC->bgPixel);
+		break;
+#endif
+	    }
+	    DEALLOCATE_LOCAL(pboxClippedBase);
 	    break;
 	}
     }
-    DEALLOCATE_LOCAL(pboxClippedBase);
 }
