@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Scrollbar.h,v 1.1 89/12/15 11:40:43 kit Exp $
+* $XConsortium: Scrollbar.h,v 1.2 90/04/30 17:03:58 converse Exp $
 */
 
 
@@ -87,13 +87,26 @@ typedef struct _ScrollbarClassRec *ScrollbarWidgetClass;
 
 extern WidgetClass scrollbarWidgetClass;
 
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
 extern void XawScrollbarSetThumb(
 #if NeedFunctionPrototypes
     Widget		/* scrollbar */,
+#if NeedWidePrototypes
+    /* float */ double	/* top */,
+    /* float */	double	/* shown */
+#else
     float		/* top */,
     float		/* shown */
+#endif
 #endif		 
 );
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #ifdef XAW_BC
 /*************************************************************

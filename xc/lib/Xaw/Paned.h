@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Paned.h,v 1.9 90/04/20 17:08:17 kit Exp $
+* $XConsortium: Paned.h,v 1.10 90/04/30 17:05:51 converse Exp $
 */
 
 
@@ -150,6 +150,9 @@ typedef struct _PanedRec	*PanedWidget;
  *
  ************************************************************/
 
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
 
 /*	Function Name: XawPanedSetMinMax
  *	Description: Sets the min and max size for a pane.
@@ -192,7 +195,11 @@ extern void XawPanedGetMinMax(
 extern void XawPanedSetRefigureMode(
 #if NeedFunctionPrototypes
     Widget		/* w */,
+#if NeedWidePrototypes
+    /* Boolean */ int	/* mode */
+#else
     Boolean		/* mode */
+#endif
 #endif
 );
 
@@ -218,9 +225,17 @@ extern int XawPanedGetNumSub(
 extern void XawPanedAllowResize(
 #if NeedFunctionPrototypes
     Widget		/* w */,
+#if NeedWidePrototypes
+    /* Boolean */ int	/* allow_resize */
+#else
     Boolean		/* allow_resize */
 #endif
+#endif
 );
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #ifdef XAW_BC
 /*************************************************************

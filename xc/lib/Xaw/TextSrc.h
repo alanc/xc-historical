@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TextSrc.h,v 1.4 89/10/31 17:12:42 kit Exp $
+ * $XConsortium: TextSrc.h,v 1.5 90/04/30 17:46:11 converse Exp $
  */
 
 /***********************************************************
@@ -72,6 +72,10 @@ typedef enum {XawactionStart, XawactionAdjust, XawactionEnd}
  *
  ************************************************************/
 
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
 /*	Function Name: XawTextSourceRead
  *	Description: This function reads the source.
  *	Arguments: w - the TextSrc Object.
@@ -125,10 +129,19 @@ extern XawTextPosition XawTextSourceScan(
 #if NeedFunctionPrototypes
     Widget		/* w */,
     XawTextPosition	/* position */,
+#if NeedWidePrototypes
+    /* XawTextScanType */ int		/* type */,
+    /* XawTextScanDirection */ int	/* dir */,
+#else
     XawTextScanType	/* type */,
     XawTextScanDirection /* dir */,
+#endif
     int			/* count */,
+#if NeedWidePrototypes
+    /* Boolean */ int	/* include */
+#else
     Boolean		/* include */
+#endif
 #endif
 );
 
@@ -146,7 +159,11 @@ extern XawTextPosition XawTextSourceSearch(
 #if NeedFunctionPrototypes
     Widget		/* w */,
     XawTextPosition	/* position */,
+#if NeedWidePrototypes
+    /* XawTextScanDirection */ int	/* dir */,
+#else
     XawTextScanDirection /* dir */,
+#endif
     XawTextBlock*	/* text */
 #endif
 );
@@ -191,6 +208,10 @@ extern void XawTextSourceSetSelection(
     Atom		/* selection */
 #endif
 );
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #ifdef XAW_BC
 /*************************************************************

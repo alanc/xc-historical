@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.33 90/03/16 16:24:03 converse Exp $
+* $XConsortium: Text.h,v 1.34 90/04/30 17:46:22 converse Exp $
 */
 
 
@@ -195,6 +195,10 @@ typedef long XtTextPosition;
 #define XtStringSourceCreate       XawStringSourceCreate
 #define XtStringSourceDestroy      XawStringSourceDestroy
 
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
 extern void XawTextChangeOptions(
 #if NeedFunctionPrototypes
     Widget		/* w */,
@@ -215,8 +219,16 @@ extern void XawTextSetLastPos(
 #endif
 );
 
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
 /*************************************************************/
 #endif /* XAW_BC */
+
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
 
 extern void XawTextDisplay(
 #if NeedFunctionPrototypes
@@ -318,7 +330,11 @@ extern Widget XawTextGetSource(
 extern XawTextPosition XawTextSearch(
 #if NeedFunctionPrototypes
     Widget			/* w */,
+#if NeedWidePrototypes
+    /* XawTextScanDirection */ int /* dir */,
+#else
     XawTextScanDirection	/* dir */,
+#endif
     XawTextBlock*		/* text */
 #endif
 );
@@ -326,9 +342,17 @@ extern XawTextPosition XawTextSearch(
 extern void XawTextDisplayCaret(
 #if NeedFunctionPrototypes
     Widget		/* w */,
+#if NeedWidePrototypes
+    /* Boolean */ int	/* visible */
+#else
     Boolean		/* visible */
 #endif
+#endif
 );
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 /*
  * For R3 compatability only. 

@@ -1,4 +1,4 @@
-/* $XConsortium: Form.h,v 1.23 90/03/23 18:01:03 kit Exp $ */
+/* $XConsortium: Form.h,v 1.24 90/04/30 17:05:36 converse Exp $ */
 
 
 /***********************************************************
@@ -134,11 +134,23 @@ extern WidgetClass formWidgetClass;
 /*************************************************************/
 #endif /* XAW_BC */
 
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
 extern void XawFormDoLayout(
 #if NeedFunctionPrototypes
-    Widget	/* w */,
-    Boolean	/* do_layout */
+    Widget		/* w */,
+#if NeedWidePrototypes
+    /* Boolean */ int	/* do_layout */
+#else
+    Boolean		/* do_layout */
+#endif
 #endif
 );
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
  
 #endif /* _XawForm_h */

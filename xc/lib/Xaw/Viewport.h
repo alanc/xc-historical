@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Viewport.h,v 1.16 90/04/25 16:36:54 converse Exp $
+ * $XConsortium: Viewport.h,v 1.17 90/04/30 17:06:04 converse Exp $
  * Public definitions for Viewport widget
  */
 
@@ -68,20 +68,38 @@ extern WidgetClass viewportWidgetClass;
 typedef struct _ViewportClassRec *ViewportWidgetClass;
 typedef struct _ViewportRec  *ViewportWidget;
 
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
 extern void XawViewportSetLocation (
 #if NeedFunctionPrototypes
     Widget		/* gw */,
+#if NeedWidePrototypes
+    /* float */ double	/* xoff */,
+    /* float */ double	/* yoff */
+#else
     float		/* xoff */,
     float		/* yoff */
+#endif
 #endif
 );
 
 extern void XawViewportSetCoordinates (
 #if NeedFunctionPrototypes
     Widget		/* gw */,
+#if NeedWidePrototypes
+    /* Position */ int	/* x */,
+    /* Position */ int	/* y */
+#else
     Position		/* x */,
     Position		/* y */
 #endif
+#endif
 );
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #endif /* _Viewport_h */

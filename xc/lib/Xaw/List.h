@@ -1,5 +1,5 @@
 /*
- * $XConsortium: List.h,v 1.15 89/12/11 15:08:59 kit Exp $
+ * $XConsortium: List.h,v 1.16 90/04/30 17:03:41 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -163,6 +163,10 @@ typedef struct _XawListReturnStruct {
  *
  *****************************************************************/
 
+#ifdef __cplusplus
+extern "C" {				/* for C++ V2.0 */
+#endif
+
 /*	Function Name: XawListChange.
  *	Description: Changes the list being used and shown.
  *	Arguments: w - the list widget.
@@ -183,7 +187,11 @@ extern void XawListChange(
     String*		/* list */,
     int			/* nitems */,
     int			/* longest */,
+#if NeedWidePrototypes
+    /* Boolean */ int	/* resize */
+#else
     Boolean		/* resize */
+#endif
 #endif
 );
 
@@ -225,6 +233,10 @@ extern XawListReturnStruct * XawListShowCurrent(
     Widget		/* w */
 #endif
 );
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #endif /* _XawList_h */
 /* DON'T ADD STUFF AFTER THIS #endif */
