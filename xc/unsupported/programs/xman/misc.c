@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.12 89/04/28 15:05:48 kit Exp $
+ * $XConsortium: misc.c,v 1.13 89/05/09 16:35:14 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -136,7 +136,6 @@ ManpageGlobals * man_globals;
 char * entry;
 {
   FILE * file;
-  Widget w = man_globals->manpagewidgets.directory;
   Widget manpage = man_globals->manpagewidgets.manpage;
   char cmdbuf[BUFSIZ], tmp[BUFSIZ], catdir[BUFSIZ];
   char path[BUFSIZ], section[BUFSIZ], error_buf[BUFSIZ];
@@ -152,11 +151,11 @@ char * entry;
  */
 
   Popup(XtParent(man_globals->standby), XtGrabExclusive);
-  while ( !XCheckTypedWindowEvent(XtDisplay(w), 
-				 XtWindow(man_globals->standby), 
-				 Expose, &event) );
+  while ( !XCheckTypedWindowEvent(XtDisplay(man_globals->standby), 
+				  XtWindow(man_globals->standby), 
+				  Expose, &event) );
   XtDispatchEvent( &event );
-  XFlush(XtDisplay(w));
+  XFlush(XtDisplay(man_globals->standby));
 
 /* End replacement. */
 
