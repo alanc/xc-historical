@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.113 92/04/20 14:45:54 rws Exp $ */
+/* $XConsortium: utils.c,v 1.114 92/05/10 17:28:56 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -103,8 +103,10 @@ char *dev_tty_from_init = NULL;		/* since we need to parse it anyway */
 
 /* Force connections to close on SIGHUP from init */
 
+/*ARGSUSED*/
 SIGVAL
-AutoResetServer ()
+AutoResetServer (sig)
+    int sig;
 {
     dispatchException |= DE_RESET;
     isItTimeToYield = TRUE;
@@ -119,8 +121,10 @@ AutoResetServer ()
 
 /* Force connections to close and then exit on SIGTERM, SIGINT */
 
+/*ARGSUSED*/
 SIGVAL
-GiveUp()
+GiveUp(sig)
+    int sig;
 {
     dispatchException |= DE_TERMINATE;
     isItTimeToYield = TRUE;
