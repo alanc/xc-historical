@@ -23,6 +23,7 @@ HEADERS = \
 	CvtCache.h \
 	DisplayQue.h \
 	Drawing.h \
+	Editres.h \
 	Error.h \
 	Initer.h \
 	Misc.h \
@@ -50,6 +51,7 @@ SRCS = \
 	DisplayQue.c \
 	DrawLogo.c \
 	DrRndRect.c \
+	EditresCom.c \
 	FToCback.c \
 	GetHost.c \
 	GrayPixmap.c \
@@ -94,6 +96,7 @@ OBJS = \
 	DisplayQue.o \
 	DrawLogo.o \
 	DrRndRect.o \
+	EditresCom.c \
 	FToCback.o \
 	GetHost.o \
 	GrayPixmap.o \
