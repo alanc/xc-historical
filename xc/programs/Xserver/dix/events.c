@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.135 88/01/18 17:56:34 rws Locked $ */
+/* $Header: events.c,v 1.136 88/01/19 07:31:24 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1686,8 +1686,7 @@ EnterLeaveEvent(type, mode, detail, pWin)
     WindowPtr		focus = keybd->u.keybd.focus.win;
     GrabPtr		grab = inputInfo.pointer->grab;
 
-    if ((pWin == motionHintWindow) && (type == LeaveNotify) &&
-	(detail != NotifyInferior))
+    if ((pWin == motionHintWindow) && (detail != NotifyInferior))
 	motionHintWindow = NullWindow;
     if ((mode == NotifyNormal) &&
 	grab && !grab->ownerEvents && (grab->window != pWin))
