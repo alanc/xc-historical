@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.60 88/07/28 14:24:36 rws Exp $ */
+/* $Header: mibitblt.c,v 1.61 88/07/29 11:26:50 keith Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -291,6 +291,8 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 	pLongsOut = (CARD32 *) result;
     if(bitsPerPixel == 1)
 	pCharsOut = (unsigned char *) result;
+    else if (IMAGE_BYTE_ORDER == MSBFirst)
+	planeNum += (32 - bitsPerPixel);
     for(i = sy; i < sy + h; i++)
     {
 	if(bitsPerPixel == 1)
@@ -318,20 +320,13 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 		                                   &width, 1);
 		/*
 		 * Now get the bit and insert into a bitmap in XY format.
-		 * XXX - note that this code implies BITMAP_BIT_ORDER
-		 * == BYTE_ORDER
 		 */
+		bit = (unsigned int) ((*pline >> planeNum) & 1);
+		/* XXX assuming bit order == byte order */
 	        if(BITMAP_BIT_ORDER == LSBFirst) {
-		    bit = (unsigned int) ((*pline >> planeNum) & 1);
 		    bit <<= k;
 		}
 		else {
-		    shifted_pline = (
-			((*pline&0xff) << 24) +
-			((*pline&0xff00) << 8) +
-			((*pline&0xff0000) >> 8) +
-			((*pline&0xff000000) >> 24));
-		    bit = (unsigned int) ((shifted_pline >> planeNum) & 1);
 		    bit <<= ((BITMAP_SCANLINE_UNIT - 1) - k);
 		}
 		if(BITMAP_SCANLINE_UNIT == 8)
