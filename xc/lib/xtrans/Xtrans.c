@@ -266,6 +266,8 @@ get_port:
     else
         strcpy (*port, _port);
 
+    free (tmpptr);
+
     return 1;
 }
 
