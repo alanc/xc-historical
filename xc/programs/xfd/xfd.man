@@ -3,8 +3,16 @@
 xfd - font displayer for X
 .SH SYNOPSIS
 .B xfd
-[-options ...] [fontname]
+[-options ...] -fn fontname
 .SH "OPTIONS"
+.TP 8
+.B \-display \fIdisplay\fP
+Specifies the display to use; see \fIX(1)\fP.
+.PP
+.TP 8
+.B \-geometry \fIgeometry\fP
+Specifies an initial window geometry; see \fIX(1)\fP.
+.PP
 .TP 8
 .B \-bw \fInumber\fP
 Allows you to specify the width of the window border in pixels.
@@ -59,14 +67,6 @@ Specifies that a gray background should be used.
 .B \-start \fIcharnum\fP
 Specifies that character number \fIcharnum\fP should be the first character
 displayed.
-.PP
-.TP 8
-.B \-geometry \fIgeometry\fP
-Specifies an initial window geometry; see \fIX(1)\fP.
-.PP
-.TP 8
-.B \-display \fIdisplay\fP
-Specifies the display to use; see \fIX(1)\fP.
 .PP
 .SH DESCRIPTION
 .I Xfd
