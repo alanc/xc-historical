@@ -1,8 +1,5 @@
-#ifndef lint
-static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.84 90/04/04 11:28:21 swick Exp $";
-/* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
-#endif /*lint*/
+/* $XConsortium: Resources.c,v 1.85 90/06/12 16:29:30 kit Exp $ */
+
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -694,13 +691,13 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 			if (xrm_type == QString) {
 			    pv->addr = rx->xrm_default_addr;
 			} else if (rx->xrm_size == sizeof(int)) {
-			    int_val = (int)rx->xrm_default_addr;
+			    int_val = (int)(long)rx->xrm_default_addr;
 			    pv->addr = (XtPointer) &int_val;
 			} else if (rx->xrm_size == sizeof(short)) {
-			    short_val = (short)rx->xrm_default_addr;
+			    short_val = (short)(long)rx->xrm_default_addr;
 			    pv->addr = (XtPointer) &short_val;
 			} else if (rx->xrm_size == sizeof(char)) {
-			    char_val = (char)rx->xrm_default_addr;
+			    char_val = (char)(long)rx->xrm_default_addr;
 			    pv->addr = (XtPointer) &char_val;
 			} else if (rx->xrm_size == sizeof(long)) {
 			    long_val = (long)rx->xrm_default_addr;
@@ -860,8 +857,8 @@ XtCacheRef *_XtGetResources(w, args, num_args, typed_args, num_typed_args)
 } /* _XtGetResources */
 
 
-void XtGetSubresources
-	(w, base, name, class, resources, num_resources, args, num_args)
+void XtGetSubresources (w, base, name, class, resources, num_resources,
+			args, num_args)
     Widget	  w;		  /* Widget "parent" of subobject   */
     XtPointer	  base;		  /* Base address to write to       */
     String	  name;		  /* name of subobject		    */
