@@ -1,4 +1,4 @@
-/* $XConsortium: XKeysymStr.c,v 11.1 90/12/02 17:54:47 rws Exp $ */
+/* $XConsortium: XKeysymStr.c,v 11.2 90/12/11 11:08:19 rws Exp $ */
 /* Copyright 1990 Massachusetts Institute of Technology */
 
 #include "Xlibint.h"
@@ -33,12 +33,14 @@ static Bool SameValue(db, bindings, quarks, type, value, data)
     XrmQuarkList	quarks;
     XrmRepresentation   *type;
     XrmValuePtr		value;
-    GRNData		*data;
+    caddr_t		data;
 {
-    if ((*type == data->type) && (value->size == data->value->size) &&
-	!strncmp((char *)value->addr, (char *)data->value->addr, value->size))
+    GRNData *gd = (GRNData *)data;
+
+    if ((*type == gd->type) && (value->size == gd->value->size) &&
+	!strncmp((char *)value->addr, (char *)gd->value->addr, value->size))
     {
-	data->name = XrmQuarkToString(*quarks); /* XXX */
+	gd->name = XrmQuarkToString(*quarks); /* XXX */
 	return True;
     }
     return False;
