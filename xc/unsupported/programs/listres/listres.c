@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.15 89/07/24 13:47:19 jim Exp $
+ * $XConsortium: listres.c,v 1.16 89/10/20 13:36:06 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -35,7 +35,6 @@ extern int nwidgets;
 
 
 static XrmOptionDescRec Options[] = {
-  { "-known", "*listKnown", XrmoptionNoArg, (caddr_t) "on" },
   { "-top", "*topObject", XrmoptionSepArg, (caddr_t) NULL },
   { "-format", "*resourceFormat", XrmoptionSepArg, (caddr_t) NULL },
   { "-nosuper", "*showSuper", XrmoptionNoArg, (caddr_t) "off" },
@@ -43,7 +42,7 @@ static XrmOptionDescRec Options[] = {
 };
 
 static struct _appresources {
-    Boolean known;
+    Boolean show_all;
     Boolean show_variable;
     Boolean show_superclass;
     char *top_object;
@@ -53,8 +52,6 @@ static struct _appresources {
 
 static XtResource Resources[] = {
 #define offset(field) XtOffset(struct _appresources *, field)
-  { "listKnown", "ListKnown", XtRBoolean, sizeof(Boolean),
-      offset(known), XtRImmediate, (caddr_t) FALSE },
   { "showSuper", "ShowSuper", XtRBoolean, sizeof(Boolean),
       offset(show_superclass), XtRImmediate, (caddr_t) TRUE },
   { "showVariable", "ShowVariable", XtRBoolean, sizeof(Boolean),
@@ -75,7 +72,7 @@ usage ()
     fprintf(stderr, "usage:  %s [-options...]\n", ProgramName);
     fprintf(stderr, "\nwhere options include:\n");
     fprintf(stderr,
-	    "    -known           list known widget classes\n");
+	    "    -all             list all known widget and object classes\n");
     fprintf(stderr,
 	    "    -nosuper         do not print superclass resources\n");
     fprintf(stderr,
@@ -116,6 +113,7 @@ main (argc, argv)
     int i;
     WidgetNode *topnode;
     Widget toplevel, container;
+    Bool list_all = False;
 
     ProgramName = argv[0];
 
@@ -126,18 +124,22 @@ main (argc, argv)
     XtGetApplicationResources (toplevel, (caddr_t) &Appresources,
 			       Resources, XtNumber(Resources), NULL, ZERO);
     initialize_nodes (widget_list, nwidgets);
-    if (Appresources.known) list_known_widgets ();
+    if (argc == 1) list_known_widgets();
 
     topnode = name_to_node (widget_list, nwidgets, Appresources.top_object);
-    argc--, argv++;
+    argc--, argv++;			/* skip command */
 
-    if (argc == 0) {
-	WidgetNode *wn;
-	for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
-	    list_resources (wn, Appresources.format, topnode, container,
-			    (Bool) Appresources.show_superclass,
-			    (Bool) Appresources.show_variable);
-	}
+    if (argc > 0 && argv[0][0] == '-') {
+	int len = strlen (argv[0]);
+	if (len >= 2 && strncmp(argv[0], "-all", len) == 0) {
+	    WidgetNode *wn;
+	    for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
+		list_resources (wn, Appresources.format, topnode, container,
+				(Bool) Appresources.show_superclass,
+				(Bool) Appresources.show_variable);
+	    }
+	} else
+	  usage();
     } else {
 	for (; argc > 0; argc--, argv++) {
 	    WidgetNode *node;
