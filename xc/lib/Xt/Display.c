@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.55 90/12/11 12:20:03 rws Exp $ */
+/* $XConsortium: Display.c,v 1.56 90/12/12 14:51:09 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -221,6 +221,8 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 	return d;
 }
 
+static XtPerDisplay NewPerDisplay();
+
 #if NeedFunctionPrototypes
 void
 XtDisplayInitialize(
@@ -246,7 +248,6 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 #endif
 {
 	XtPerDisplay pd;
-	static XtPerDisplay NewPerDisplay();
 	extern void _XtAllocWWTable();
 
 	XtAddToAppContext(dpy, app);
