@@ -172,6 +172,12 @@ typedef struct _Xtransport {
 #endif
     );
 
+    int	(*ResetListener)(
+#if NeedNestedPrototypes
+	XtransConnInfo
+#endif
+    );
+
     XtransConnInfo (*Accept)(
 #if NeedNestedPrototypes
 	XtransConnInfo
