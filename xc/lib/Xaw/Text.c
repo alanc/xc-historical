@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.52 88/09/13 17:01:30 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.53 88/09/13 17:44:34 swick Exp $";
 #endif
 
 
@@ -1857,9 +1857,6 @@ static void MoveToLineEnd(ctx, event)
 }
 
 
-static int LineLastWidth = 0;
-static XtTextPosition LineLastPosition = 0;
-
 static void MoveNextLine(ctx, event)
   TextWidget ctx;
    XEvent *event;
@@ -1874,10 +1871,7 @@ static void MoveNextLine(ctx, event)
 	_XtTextScroll(ctx, 1);
 	line = LineForPosition(ctx, ctx->text.insertPos);
     }
-    if (LineLastPosition == ctx->text.insertPos)
-	width = LineLastWidth;
-    else
-	(*ctx->text.sink->FindDistance)(ctx,
+    (*ctx->text.sink->FindDistance)(ctx,
 		ctx->text.lt.info[line].position, ctx->text.lt.info[line].x,
 		ctx->text.insertPos, &width, &position, &height);
     line++;
@@ -1895,8 +1889,6 @@ static void MoveNextLine(ctx, event)
     if (position > maxp)
 	position = maxp;
     ctx->text.insertPos = position;
-    LineLastWidth = width;
-    LineLastPosition = position;
    EndAction(ctx);
 }
 
@@ -1914,10 +1906,7 @@ static void MovePreviousLine(ctx, event)
 	line = LineForPosition(ctx, ctx->text.insertPos);
     }
     if (line > 0) {
-	if (LineLastPosition == ctx->text.insertPos)
-	    width = LineLastWidth;
-	else
-	    (*ctx->text.sink->FindDistance)(ctx,
+	(*ctx->text.sink->FindDistance)(ctx,
 		    ctx->text.lt.info[line].position, 
 		    ctx->text.lt.info[line].x,
 		    ctx->text.insertPos, &width, &position, &height);
@@ -1931,8 +1920,6 @@ static void MovePreviousLine(ctx, event)
 	if (position > maxp)
 	    position = maxp;
 	ctx->text.insertPos = position;
-	LineLastWidth = width;
-	LineLastPosition = position;
     }
    EndAction(ctx);
 }
