@@ -1,5 +1,5 @@
 .\" Use tbl, -ms, and macros.t
-.\" $XConsortium: xsmp.ms,v 1.3 94/04/14 21:00:43 rws Exp $
+.\" $XConsortium: xsmp.ms,v 1.4 94/04/17 18:43:51 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -1387,8 +1387,7 @@ message.
 .PN SaveYourselfPhase2Request
 	1	?	XSMP
 	1	16	opcode
-	1	BOOL	success
-	1		unused
+	2		unused
 	4	0	length of remaining data in 8-byte units
 .ne 4
 .sp
