@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.5 89/07/22 15:01:22 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.6 89/10/06 17:46:25 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -763,75 +763,92 @@ AllocColor (pmap, pred, pgreen, pblue, pPix, client)
  * is that this routine will never return failure.
  */
 
-FakeAllocColor (pmap, pred, pgreen, pblue, pPix, read_only)
-    ColormapPtr		pmap;
-    unsigned short 	*pred, *pgreen, *pblue;
-    Pixel		*pPix;
-    Bool		*read_only;
+FakeAllocColor (pmap, item)
+    register ColormapPtr pmap;
+    register xColorItem  *item;
 {
     Pixel	pixR, pixG, pixB;
     int		entries;
     xrgb	rgb;
     int		class;
-    VisualPtr	pVisual;
-
+    register VisualPtr	pVisual;
 
     pVisual = pmap->pVisual;
-    (*pmap->pScreen->ResolveColor) (pred, pgreen, pblue, pVisual);
-    rgb.red = *pred;
-    rgb.green = *pgreen;
-    rgb.blue = *pblue;
+    rgb.red = item->red;
+    rgb.green = item->green;
+    rgb.blue = item->blue;
+    (*pmap->pScreen->ResolveColor) (&rgb.red, &rgb.green, &rgb.blue, pVisual);
     class = pmap->class;
     entries = pVisual->ColormapEntries;
 
-    /* If this is one of the static storage classes, and we're not initializing
-     * it, the best we can do is to find the closest color entry to the
-     * requested one and return that.
-     */
     switch (class) {
     case GrayScale:
     case PseudoColor:
-	if (FindColor(pmap, pmap->red, entries, &rgb, pPix, PSEUDOMAP,
+	if (FindColor(pmap, pmap->red, entries, &rgb, &item->pixel, PSEUDOMAP,
 		      -1, AllComp) == Success)
-	{
 	    break;
-	}
 	/* fall through ... */
     case StaticColor:
     case StaticGray:
-	*pPix = pixR = FindBestPixel(pmap->red, entries, &rgb, PSEUDOMAP);
-	*pred = pmap->red[pixR].co.local.red;
-	*pgreen = pmap->red[pixR].co.local.green;
-	*pblue = pmap->red[pixR].co.local.blue;
-	*read_only = TRUE;
+	item->pixel = FindBestPixel(pmap->red, entries, &rgb, PSEUDOMAP);
 	break;
 
     case DirectColor:
-	pixR = (*pPix & pVisual->redMask) >> pVisual->offsetRed; 
-	pixG = (*pPix & pVisual->greenMask) >> pVisual->offsetGreen; 
-	pixB = (*pPix & pVisual->blueMask) >> pVisual->offsetBlue; 
+	/* Look up each component in its own map, then OR them together */
+	pixR = (item->pixel & pVisual->redMask) >> pVisual->offsetRed; 
+	pixG = (item->pixel & pVisual->greenMask) >> pVisual->offsetGreen; 
+	pixB = (item->pixel & pVisual->blueMask) >> pVisual->offsetBlue; 
 	if (FindColor(pmap, pmap->red, entries, &rgb, &pixR, REDMAP,
-		      -1, RedComp) == Success &&
-	    FindColor(pmap, pmap->green, entries, &rgb, &pixG, GREENMAP,
-		      -1, GreenComp) == Success &&
-	    FindColor(pmap, pmap->blue, entries, &rgb, &pixB, BLUEMAP,
-		      -1, BlueComp) == Success)
-	{
-	    break;
-	}
-	/* fall through ... */
+		      -1, RedComp) != Success)
+	    pixR = FindBestPixel(pmap->red, entries, &rgb, REDMAP);
+	if (FindColor(pmap, pmap->green, entries, &rgb, &pixG, GREENMAP,
+		      -1, GreenComp) != Success)
+	    pixG = FindBestPixel(pmap->green, entries, &rgb, GREENMAP);
+	if (FindColor(pmap, pmap->blue, entries, &rgb, &pixB, BLUEMAP,
+		      -1, BlueComp) != Success)
+	    pixB = FindBestPixel(pmap->blue, entries, &rgb, BLUEMAP);
+	item->pixel = (pixR << pVisual->offsetRed) |
+		      (pixG << pVisual->offsetGreen) |
+		      (pixB << pVisual->offsetBlue);
+	break;
+
     case TrueColor:
 	/* Look up each component in its own map, then OR them together */
 	pixR = FindBestPixel(pmap->red, entries, &rgb, REDMAP);
 	pixG = FindBestPixel(pmap->green, entries, &rgb, GREENMAP);
 	pixB = FindBestPixel(pmap->blue, entries, &rgb, BLUEMAP);
-	*pPix = (pixR << pVisual->offsetRed) |
-		(pixG << pVisual->offsetGreen) |
-		(pixB << pVisual->offsetBlue);
-	*pred = pmap->red[pixR].co.local.red;
-	*pgreen = pmap->green[pixG].co.local.green;
-	*pblue = pmap->blue[pixB].co.local.blue;
-	*read_only = TRUE;
+	item->pixel = (pixR << pVisual->offsetRed) |
+		      (pixG << pVisual->offsetGreen) |
+		      (pixB << pVisual->offsetBlue);
+	break;
+    }
+}
+
+/* free a pixel value obtained from FakeAllocColor */
+FakeFreeColor(pmap, pixel)
+    register ColormapPtr pmap;
+    Pixel pixel;
+{
+    register VisualPtr pVisual;
+    Pixel pixR, pixG, pixB;
+
+    switch (pmap->class) {
+    case GrayScale:
+    case PseudoColor:
+	if (pmap->red[pixel].refcnt == AllocTemporary)
+	    pmap->red[pixel].refcnt = 0;
+	break;
+    case DirectColor:
+	pVisual = pmap->pVisual;
+	pixR = (pixel & pVisual->redMask) >> pVisual->offsetRed; 
+	pixG = (pixel & pVisual->greenMask) >> pVisual->offsetGreen; 
+	pixB = (pixel & pVisual->blueMask) >> pVisual->offsetBlue; 
+	if (pmap->red[pixR].refcnt == AllocTemporary)
+	    pmap->red[pixR].refcnt = 0;
+	if (pmap->green[pixG].refcnt == AllocTemporary)
+	    pmap->green[pixG].refcnt = 0;
+	if (pmap->blue[pixB].refcnt == AllocTemporary)
+	    pmap->blue[pixB].refcnt = 0;
 	break;
     }
 }
@@ -962,8 +979,7 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
 	return (BadAlloc);
     pent = pentFirst + Free;
     pent->fShared = FALSE;
-    if (client != -1)
-	pent->refcnt = 1;
+    pent->refcnt = (client >= 0) ? 1 : AllocTemporary;
 
     def.flags = 0;
     switch (channel)
@@ -983,7 +999,8 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
         pent->co.local.red = prgb->red;
         def.red = prgb->red;
 	def.flags |= DoRed;
-	pmap->freeRed--;
+	if (client >= 0)
+	    pmap->freeRed--;
 	def.pixel = (channel == PSEUDOMAP) ? Free
 					   : Free << pmap->pVisual->offsetRed;
 	break;
@@ -992,7 +1009,8 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
 	pent->co.local.green = prgb->green;
         def.green = prgb->green;
 	def.flags |= DoGreen;
-	pmap->freeGreen--;
+	if (client >= 0)
+	    pmap->freeGreen--;
 	def.pixel = Free << pmap->pVisual->offsetGreen;
 	break;
 
@@ -1000,7 +1018,8 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
 	pent->co.local.blue = prgb->blue;
 	def.blue = prgb->blue;
 	def.flags |= DoBlue;
-	pmap->freeBlue--;
+	if (client >= 0)
+	    pmap->freeBlue--;
 	def.pixel = Free << pmap->pVisual->offsetBlue;
 	break;
     }
