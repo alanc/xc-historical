@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.118 89/11/08 17:20:43 rws Exp $ */
+/* $XConsortium: connection.c,v 1.119 89/11/11 14:21:10 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -156,6 +156,14 @@ open_tcp_socket ()
 #endif /* SO_LINGER */
 #endif /* SO_DONTLINGER */
 
+#if defined(AIX) && defined(IBM_OS_HAS_HFT) && !defined(IBM_OS_HAS_X_QUEUE)
+#ifndef FORCE_DISPLAY_NUM
+    extern int AIXTCPSocket;
+    if (AIXTCPSocket>=0) {
+        request= AIXTCPSocket;
+    } else
+#endif /* FORCE_DISPLAY_NUM */
+#endif /* AIX && etc. */
     if ((request = socket (AF_INET, SOCK_STREAM, 0)) < 0) 
     {
 	Error ("Creating TCP socket");
@@ -172,6 +180,12 @@ open_tcp_socket ()
     }
 #endif
 #endif /* SO_REUSEADDR */
+#if defined(AIX) && defined(IBM_OS_HAS_HFT) && !defined(IBM_OS_HAS_X_QUEUE)
+#ifndef FORCE_DISPLAY_NUMBER
+    if (AIXTCPSocket<0)
+#endif
+#endif
+    {
     bzero ((char *)&insock, sizeof (insock));
     insock.sin_family = AF_INET;
     insock.sin_port = htons ((unsigned short)(X_TCP_PORT + atoi (display)));
@@ -189,6 +203,7 @@ open_tcp_socket ()
 #else
 	sleep (10);
 #endif /* SO_REUSEDADDR */
+    }
     }
 #ifdef SO_DONTLINGER
     if(setsockopt (request, SOL_SOCKET, SO_DONTLINGER, (char *)NULL, 0))
@@ -924,3 +939,55 @@ AttendClient (client)
 	    BITSET(SavedClientsWithInput, connection);
     }
 }
+
+#if defined(AIX) && defined(IBM_OS_HAS_HFT) && !defined(IBM_OS_HAS_X_QUEUE)
+
+static int grabbingClient;
+static int reallyGrabbed;
+
+/****************
+* DontListenToAnybody:
+*   Don't listen to requests from any clients. Continue to handle new
+*   connections, but don't take any protocol requests from anybody.
+*   We have to take care if there is already a grab in progress, though.
+*   Undone by PayAttentionToClientsAgain. We also have to be careful
+*   not to accept any more input from the currently dispatched client.
+*   we do this be telling dispatch it is time to yield.
+
+*   We call this when the server loses access to the glass
+*   (user hot-keys away).  This looks like a grab by the 
+*   server itself, but gets a little tricky if there is already
+*   a grab in progress.
+******************/
+
+void
+DontListenToAnybody()
+{
+    if (!GrabInProgress) {
+	COPYBITS(ClientsWithInput, SavedClientsWithInput);
+	COPYBITS(AllSockets, SavedAllSockets);
+	COPYBITS(AllClients, SavedAllClients);
+	GrabInProgress = TRUE;
+	reallyGrabbed = FALSE;
+    } else {
+	reallyGrabbed = TRUE;
+    }
+    CLEARBITS(ClientsWithInput);
+    UNSETBITS(AllSockets, AllClients);
+    CLEARBITS(AllClients);
+    isItTimeToYield = TRUE;
+}
+
+void
+PayAttentionToClientsAgain()
+{
+    if (reallyGrabbed) {
+	BITSET(AllSockets, grabbingClient);
+	BITSET(AllClients, grabbingClient);
+    } else {
+	ListenToAllClients();
+    }
+    reallyGrabbed = FALSE;
+}
+
+#endif
