@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.3 94/01/12 20:47:08 rws Exp $ */
+/* $XConsortium: math.c,v 1.4 94/01/29 11:08:31 rws Exp $ */
 
 /**** module math.c ****/
 /******************************************************************************
@@ -352,7 +352,7 @@ Parms	p;
 {
 	if ( parms )
 	{
-		free( parms );
+		XFree( parms );
 		parms = ( XieClipScaleParam * ) NULL;
 	}
 	if ( XIELut )

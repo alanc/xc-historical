@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.27 94/01/29 10:59:39 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.28 94/01/29 11:09:05 rws Exp $ */
 
 /**** module xieperf.c ****/
 /******************************************************************************
@@ -1129,7 +1129,7 @@ main(argc, argv)
     if (depth == -1 && visualClass == -1) {
         /* use the default visual and colormap */
         xparms.vinfo = *vinfolist;
-	free( vinfolist );
+	XFree( vinfolist );
     } else {
         /* find the specified visual */
 	vmask = VisualScreenMask;
@@ -1149,7 +1149,7 @@ main(argc, argv)
 #endif
 	}
 	if ( vinfolist )
-		free( vinfolist );
+		XFree( vinfolist );
         vinfolist = XGetVisualInfo(xparms.d, vmask, &vinfotempl, &n);
         if (!vinfolist) {
             fprintf (stderr, 
@@ -1157,7 +1157,7 @@ main(argc, argv)
             exit(1);
         }
         xparms.vinfo = *vinfolist;  /* use the first one in list */
-	free( vinfolist );
+	XFree( vinfolist );
     }
 
 #if	defined(__cplusplus) || defined(c_plusplus)
@@ -1989,7 +1989,7 @@ int	*done;
 
 		memcpy( ptr, cp, nbytes_ret * sizeof( char ) ); 
 		ptr += nbytes_ret * sizeof( char );
-		free( cp );
+		XFree( cp );
 
 		cnt += nbytes_ret;	
 		bytes -= nbytes_ret;
@@ -2105,7 +2105,7 @@ int	*done;
 
 			memcpy( ptr, cp, nbytes_ret * sizeof( char ) ); 
 			ptr += nbytes_ret * sizeof( char );
-			free( cp );
+			XFree( cp );
 
 			cnt += nbytes_ret;	
 			bytes -= nbytes_ret;
@@ -2276,7 +2276,7 @@ Bool 	radiometric;
                 fprintf( stderr, "GetXIEFAXPhotomap: XieAllocatePhotofloGraph failed\n" );
 		XieDestroyPhotomap( xp->d, tmp );
 		if ( decode_params )
-			free( decode_params );
+			XFree( decode_params );
                 return( XiePhotomap ) NULL;
         }
 
@@ -2307,7 +2307,7 @@ Bool 	radiometric;
         WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
         XieFreePhotofloGraph(flograph,2);
         XieDestroyPhotospace(xp->d, photospace);
-	free( decode_params );
+	XFree( decode_params );
 	AddToCache( image, tmp );
     	return tmp;
 }
@@ -2474,7 +2474,7 @@ int	which;
         XieFreePhotofloGraph(flograph,2);
         XieDestroyPhotospace(xp->d, photospace);
 	if ( decode_params )
-		free( decode_params );
+		XFree( decode_params );
 	AddToCache( image, tmp );
     	return tmp;
 }
@@ -2584,7 +2584,7 @@ int	which;
         XieFreePhotofloGraph(flograph,2);
         XieDestroyPhotospace(xp->d, photospace);
 	if ( decode_params )
-		free( decode_params );
+		XFree( decode_params );
 	AddToCache( image, tmp );
     	return tmp;
 }
@@ -3348,7 +3348,7 @@ XieLTriplet levels;
         XieFreePhotofloGraph(flograph,3);
         XieDestroyPhotospace( xp->d, photospace );
         if ( dithertech_parms )
-                free( dithertech_parms );
+                XFree( dithertech_parms );
     	return tmp;
 }
 
@@ -3439,7 +3439,7 @@ XieLTriplet out_low,out_high;
         WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo_id, 0, False );
         XieFreePhotofloGraph(flograph,3);
 	if ( tech_parms )
-		free( tech_parms );
+		XFree( tech_parms );
     	return XIEPhotomap;
 }
 
@@ -3535,7 +3535,7 @@ XieLTriplet out_low,out_high;
         XieFreePhotofloGraph(flograph,3);
         XieDestroyPhotospace( xp->d, photospace );
         if ( tech_parms )
-                free( tech_parms );
+                XFree( tech_parms );
     	return XIEPhotomap;
 }
 
@@ -3647,7 +3647,7 @@ GeometryParms *geo;
         XieFreePhotofloGraph(flograph,4);
         XieDestroyPhotospace( xp->d, photospace );
         if ( tech_parms )
-                free( tech_parms );
+                XFree( tech_parms );
     	return XIEPhotomap;
 }
 
@@ -3730,7 +3730,7 @@ GeometryParms *geo;
         XieFreePhotofloGraph(flograph,3);
         XieDestroyPhotospace( xp->d, photospace );
         if ( tech_parms )
-                free( tech_parms );
+                XFree( tech_parms );
     	return XIEPhotomap;
 }
 
@@ -3765,7 +3765,7 @@ XieLTriplet levels;
 	if ( ( clist = XieCreateColorList( xp->d ) ) == ( XieColorList ) NULL )
 	{
 		if ( color_parm )
-			free( color_parm );
+			XFree( color_parm );
 		return( 0 );
 	}
 
@@ -3775,7 +3775,7 @@ XieLTriplet levels;
 		if ( clist )
 			XieDestroyColorList( xp->d, clist );
 		if ( color_parm )
-			free( color_parm );
+			XFree( color_parm );
 		return( 0 );
 	}
 
@@ -3786,7 +3786,7 @@ XieLTriplet levels;
         {
                 fprintf( stderr, "GetXIEDitheredTripleWindow: XieAllocatePhotofloGraph failed\n" );
 		if ( color_parm )
-			free( color_parm );
+			XFree( color_parm );
 		if ( clist )
 			XieDestroyColorList( xp->d, clist );
 		return( 0 );
@@ -3832,7 +3832,7 @@ XieLTriplet levels;
 	if ( clist )
 		XieDestroyColorList( xp->d, clist );
 	if ( color_parm )
-		free( color_parm );
+		XFree( color_parm );
 	return( 1 );
 }
 
@@ -4188,9 +4188,11 @@ unsigned int		tech;
 			{
 				gotIt = True;
 			}
-			free( techVector[ i ].name ); 	
+			if ( techVector[ i ].name )
+				XFree( techVector[ i ].name ); 	
 		}
-		free( techVector );
+		if ( techVector )
+			XFree( techVector );
 	}
 	
 	return( gotIt );
@@ -4477,13 +4479,13 @@ Atom	atom;
 				memcpy( ( char * ) stdColormap,
 					( char * ) &colormapsReturned[ i ],
 					sizeof( XStandardColormap ) );
-				free( colormapsReturned );
+				XFree( colormapsReturned );
 				if ( atom == XA_RGB_BEST_MAP )
 					RGB_BESTStandardColormapObtained = True;
 				return( True );
 			}
 		}
-		free( colormapsReturned );
+		XFree( colormapsReturned );
 	}
 	return( False );
 }

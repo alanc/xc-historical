@@ -1,4 +1,4 @@
-/* $XConsortium: query.c,v 1.7 94/01/12 20:47:45 rws Exp $ */
+/* $XConsortium: query.c,v 1.8 94/01/29 11:08:45 rws Exp $ */
 
 /**** module query.c ****/
 /******************************************************************************
@@ -205,9 +205,14 @@ void DoQueryTechniques(xp, p, reps)
 
 		for ( j = 0; j < numTech; j++ )
 		{
-			free( techVector[ j ].name );
+			if ( techVector[ j ].name )
+				XFree( techVector[ j ].name );
 		}
-		free( techVector );
+		if ( techVector )
+		{
+			XFree( techVector );
+			techVector = ( XieTechnique * ) NULL;
+		}
 	}
 }
 
@@ -320,9 +325,13 @@ void DoQueryPhotoflo(xp, p, reps)
 			fprintf( stderr, "XieQueryPhotoflo failed\n" );
 		}
 		if ( expected )
-			free( expected );
+		{
+			XFree( expected );
+		}
 		if ( avail )
-			free( avail );
+		{
+			XFree( avail );
+		}
 	}
 }
 

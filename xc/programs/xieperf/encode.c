@@ -1,4 +1,4 @@
-/* $XConsortium: encode.c,v 1.5 94/01/12 20:46:08 rws Exp $ */
+/* $XConsortium: encode.c,v 1.6 94/01/29 11:08:06 rws Exp $ */
 /**** module encode.c ****/
 /******************************************************************************
 				NOTICE
@@ -411,11 +411,11 @@ int     reps;
 		dontClear = True;
 	}
 	if ( decodeTechParms )
-		free( decodeTechParms );
+		XFree( decodeTechParms );
 	if ( RGBToYCbCrParm )
-		free( (char *) RGBToYCbCrParm );
+		XFree( (char *) RGBToYCbCrParm );
 	if ( YCbCrToRGBParm )
-		free( (char *) YCbCrToRGBParm );
+		XFree( (char *) YCbCrToRGBParm );
 	return( reps );
 }
 

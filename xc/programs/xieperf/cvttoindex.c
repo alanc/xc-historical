@@ -1,4 +1,4 @@
-/* $XConsortium: cvttoindex.c,v 1.7 94/01/12 20:45:57 rws Exp $ */
+/* $XConsortium: cvttoindex.c,v 1.8 94/01/29 11:08:01 rws Exp $ */
 
 /**** module cvttoindex.c ****/
 /******************************************************************************
@@ -258,7 +258,7 @@ Parms	p;
 
 	flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
 	XSync( xp->d, 0 );
-	free( color_param );
+	XFree( color_param );
 	flo_notify = ( ( CvtToIndexParms * ) p->ts )->flo_notify;
 	return( 1 );
 }

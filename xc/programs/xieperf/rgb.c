@@ -1,4 +1,4 @@
-/* $XConsortium: rgb.c,v 1.4 94/01/12 20:47:57 rws Exp $ */
+/* $XConsortium: rgb.c,v 1.5 94/01/29 11:08:49 rws Exp $ */
 
 /**** module rgb.c ****/
 /******************************************************************************
@@ -410,15 +410,15 @@ Parms	p;
 	XSync( xp->d, 0 );
 out:
 	if ( whiteAdjustParm )
-		free( whiteAdjustParm );
+		XFree( whiteAdjustParm );
 	if ( colorParm1 )
-		free( colorParm1 );
+		XFree( colorParm1 );
 	if ( colorParm2 )
-		free( colorParm2 );
+		XFree( colorParm2 );
 	if ( techParms )
-		free( techParms );
+		XFree( techParms );
 	if ( ditherTech )
-		free( ditherTech );
+		XFree( ditherTech );
 	flo_notify = False;
 	return( retval );
 }

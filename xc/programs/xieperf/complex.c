@@ -1,4 +1,4 @@
-/* $XConsortium: complex.c,v 1.1 94/01/12 20:49:28 rws Exp $ */
+/* $XConsortium: complex.c,v 1.2 94/02/09 14:30:05 mor Exp $ */
 /**** module complex.c ****/
 /******************************************************************************
 				NOTICE
@@ -758,17 +758,17 @@ Parms	p;
 out:
 	if ( techParms1 )
 	{
-		free( techParms1 );
+		XFree( techParms1 );
 		techParms1 = ( char * ) NULL;
 	}
 	if ( techParms2 )
 	{
-		free( techParms2 );
+		XFree( techParms2 );
 		techParms2 = ( char * ) NULL;
 	}
 	if ( techParms3 )
 	{
-		free( techParms3 );
+		XFree( techParms3 );
 		techParms3 = ( char * ) NULL;
 	}
 	return( retval );

@@ -1,4 +1,4 @@
-/* $XConsortium: convolve.c,v 1.3 94/01/12 20:45:46 rws Exp $ */
+/* $XConsortium: convolve.c,v 1.4 94/01/29 11:07:55 rws Exp $ */
 
 /**** module convolve.c ****/
 /******************************************************************************
@@ -285,7 +285,7 @@ InitConvolve(xp, p, reps)
 		flo_notify = True;
 	}
 	if ( tech_parm )
-		free( tech_parm );
+		XFree( tech_parm );
 	if ( !reps )
 		FreeConvolveStuff( xp, p );
 	return( reps );

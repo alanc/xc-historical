@@ -1,4 +1,4 @@
-/* $XConsortium: constrain.c,v 1.7 94/01/12 20:45:40 rws Exp $ */
+/* $XConsortium: constrain.c,v 1.8 94/01/29 11:07:52 rws Exp $ */
 
 /**** module constrain.c ****/
 /******************************************************************************
@@ -292,7 +292,7 @@ Parms	p;
 
         if ( parms )
         {
-                free( parms );
+                XFree( parms );
                 parms = ( XieClipScaleParam * ) NULL;
         }
 

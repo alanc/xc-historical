@@ -1,4 +1,4 @@
-/* $XConsortium: arith.c,v 1.3 94/01/12 20:44:52 rws Exp $ */
+/* $XConsortium: arith.c,v 1.4 94/01/29 11:07:35 rws Exp $ */
 
 /**** module arith.c ****/
 /******************************************************************************
@@ -401,7 +401,7 @@ Parms	p;
 {
         if ( parms )
         {
-                free( parms );
+                XFree( parms );
                 parms = ( XieClipScaleParam * ) NULL;
 	}
 

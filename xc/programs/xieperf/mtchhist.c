@@ -1,4 +1,4 @@
-/* $XConsortium: mtchhist.c,v 1.3 94/01/12 20:47:20 rws Exp $ */
+/* $XConsortium: mtchhist.c,v 1.4 94/01/29 11:08:36 rws Exp $ */
 
 /**** module mtchhist.c ****/
 /******************************************************************************
@@ -409,7 +409,7 @@ Parms	p;
 	}
 	if ( shape_parms )
 	{
-		free( shape_parms );
+		XFree( shape_parms );
 		shape_parms = ( char * ) NULL;
 	}
 }	

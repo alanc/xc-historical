@@ -1,4 +1,4 @@
-/* $XConsortium: events.c,v 1.7 94/01/17 19:18:01 rws Exp $ */
+/* $XConsortium: events.c,v 1.8 94/01/29 11:08:11 rws Exp $ */
 /**** module events.c ****/
 /******************************************************************************
 				NOTICE
@@ -470,7 +470,7 @@ int	reps;
 	if ( !reps )
 		FreeDecodeNotifyEventStuff( xp, p );
 	if ( decode_params )
-		free( decode_params );
+		XFree( decode_params );
     	return reps;
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: exportcl.c,v 1.11 94/01/12 20:46:27 rws Exp $ */
+/* $XConsortium: exportcl.c,v 1.12 94/01/29 11:08:14 rws Exp $ */
 
 /**** module exportcl.c ****/
 /******************************************************************************
@@ -281,7 +281,7 @@ int InitExportClientPhoto(xp, p, reps)
 			XieFreeEncodeJPEGBaseline( 
 			( XieEncodeJPEGBaselineParam * ) encode_params );
 		else
-			free( encode_params );	
+			XFree( encode_params );	
 	}
 	if ( !reps )
 		FreeExportClientPhotoStuff( xp, p );

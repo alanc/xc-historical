@@ -1,4 +1,4 @@
-/* $XConsortium: importcl.c,v 1.8 94/01/12 20:46:56 rws Exp $ */
+/* $XConsortium: importcl.c,v 1.9 94/01/29 11:08:26 rws Exp $ */
 
 /**** module importcl.c ****/
 /******************************************************************************
@@ -235,7 +235,7 @@ int InitImportClientPhoto(xp, p, reps)
 		}
 	}
 	if ( decode_params )
-		free( decode_params );
+		XFree( decode_params );
 	if ( !reps )
 	{
 		FreeImportClientPhotoStuff( xp, p );
@@ -356,7 +356,7 @@ int InitImportClientPhotoExportDrawable(xp, p, reps)
 		}
 	}
 	if ( decode_params )
-		free( decode_params );
+		XFree( decode_params );
 	if ( !reps )
 	{
 		FreeImportClientPhotoStuff( xp, p );

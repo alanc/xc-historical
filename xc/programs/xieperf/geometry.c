@@ -1,4 +1,4 @@
-/* $XConsortium: geometry.c,v 1.9 94/01/12 20:46:39 rws Exp $ */
+/* $XConsortium: geometry.c,v 1.10 94/01/29 11:08:19 rws Exp $ */
 
 /**** module geometry.c ****/
 /******************************************************************************
@@ -661,27 +661,27 @@ Parms	p;
 
 	if ( G42Ddecode_params )
 	{
-		free( G42Ddecode_params );
+		XFree( G42Ddecode_params );
 		G42Ddecode_params = ( XieDecodeG42DParam * ) NULL;
 	}
 	else if ( G32Ddecode_params )
 	{
-		free( G32Ddecode_params );
+		XFree( G32Ddecode_params );
 		G32Ddecode_params = ( XieDecodeG32DParam * ) NULL;
 	}
 	else if ( G31Ddecode_params )
 	{
-		free( G31Ddecode_params );
+		XFree( G31Ddecode_params );
 		G31Ddecode_params = ( XieDecodeG31DParam * ) NULL;
 	}
 	else if ( TIFF2decode_params )
 	{
-		free( TIFF2decode_params );
+		XFree( TIFF2decode_params );
 		TIFF2decode_params = ( XieDecodeTIFF2Param * ) NULL;
 	}
 	else if ( TIFFPackBitsdecode_params )
 	{
-		free( TIFFPackBitsdecode_params );
+		XFree( TIFFPackBitsdecode_params );
 		TIFFPackBitsdecode_params = 
 			( XieDecodeTIFFPackBitsParam * ) NULL;
 	}

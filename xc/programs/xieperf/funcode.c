@@ -1,4 +1,4 @@
-/* $XConsortium: funcode.c,v 1.3 94/01/12 20:46:33 rws Exp $ */
+/* $XConsortium: funcode.c,v 1.4 94/01/29 11:08:17 rws Exp $ */
 
 /**** module funcode.c ****/
 /******************************************************************************
@@ -531,7 +531,7 @@ Parms	p;
 
 	if ( parms )
 	{
-		free( parms );
+		XFree( parms );
 		parms = ( char * ) NULL;
 	}
 	if ( encode_parms )
@@ -539,7 +539,7 @@ Parms	p;
 		for ( i = 0; i < testSize; i++ )
 		{
 			if ( encode_parms[ i ] )
-				free( encode_parms[ i ] ); 
+				XFree( encode_parms[ i ] ); 
 		}
 		free( encode_parms );
 		encode_parms = ( char ** ) NULL;

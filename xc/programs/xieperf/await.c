@@ -1,4 +1,4 @@
-/* $XConsortium: await.c,v 1.9 94/01/12 20:44:58 rws Exp $ */
+/* $XConsortium: await.c,v 1.10 94/01/29 11:07:38 rws Exp $ */
 
 /**** module await.c ****/
 /******************************************************************************
@@ -336,9 +336,9 @@ void DoAwait(xp, p, reps)
 				break;
 			}				
 			if ( expected )
-				free( expected );
+				XFree( expected );
 			if ( avail )
-				free( avail );
+				XFree( avail );
 			if ( state != xieValInactive )
 			{
 				fprintf( stderr, 

@@ -1,4 +1,4 @@
-/* $XConsortium: errors.c,v 1.7 94/01/12 20:46:14 rws Exp $ */
+/* $XConsortium: errors.c,v 1.8 94/01/29 11:08:08 rws Exp $ */
 /**** module errors.c ****/
 /******************************************************************************
 				NOTICE
@@ -763,7 +763,7 @@ int     reps;
 		);
 
 		flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
-		free( color_param );
+		XFree( color_param );
 	} 
 
 	/* this should cause a FloColorList error */
@@ -861,7 +861,7 @@ int     reps;
 		);
 
 		flo = XieCreatePhotoflo( xp->d, flograph, flo_elements );
-		free( color_param );
+		XFree( color_param );
 	} 
 	if ( !reps )
 	{
@@ -1209,9 +1209,14 @@ int     reps;
 
                 for ( j = 0; j < numTech; j++ )
                 {
-                        free( techVector[ j ].name );
+			if ( techVector[ j ].name )
+				XFree( techVector[ j ].name );
                 }
-                free( techVector );
+		if ( techVector )
+		{
+			XFree( techVector );
+			techVector = ( XieTechnique * ) NULL;
+		}
 	}
 }
 

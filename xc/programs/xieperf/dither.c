@@ -1,4 +1,4 @@
-/* $XConsortium: dither.c,v 1.6 94/01/12 20:46:02 rws Exp $ */
+/* $XConsortium: dither.c,v 1.7 94/01/29 11:08:03 rws Exp $ */
 
 /**** module dither.c ****/
 /******************************************************************************
@@ -179,7 +179,7 @@ void DoDither(xp, p, reps)
 		in_high[ 2 ] =  0.0;
 		if ( tech_parms )
 		{
-			free( tech_parms );
+			XFree( tech_parms );
 			tech_parms = ( char * ) NULL;
 		}
 		parms = XieTecClipScale( in_low, in_high, out_low, out_high);
@@ -247,7 +247,7 @@ void DoDither(xp, p, reps)
     	}
 	if ( tech_parms )
 	{
-		free( tech_parms );
+		XFree( tech_parms );
 		tech_parms = ( char * ) NULL;
 	}
 }
@@ -272,7 +272,7 @@ Parms	p;
 	}
 	if ( dithertech_parms )
 	{
-		free( dithertech_parms );
+		XFree( dithertech_parms );
 		dithertech_parms = ( char * ) NULL;
 	}
 	if ( flograph != (XiePhotoElement *) NULL )
