@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/02/02 08:42:24 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 94/02/04 23:38:43 rws Exp $
 #define DoNormalLib NO
 #define DoSharedLib YES
 #define DoDebugLib NO
@@ -24,6 +24,29 @@ KRB5_INCLUDE = Krb5Includes
 
 #ifdef SharedXmuReqs
 REQUIREDLIBS = $(LDPRELIB) XawClientLibs
+#endif
+
+#ifdef OSF1Architecture
+SHLIBLDFLAGS = \
+	-expect_unresolved PingServer \
+	-expect_unresolved SessionPingFailed \
+	-expect_unresolved Debug \
+	-expect_unresolved RegisterCloseOnFork \
+	-expect_unresolved SecureDisplay \
+	-expect_unresolved UnsecureDisplay \
+	-expect_unresolved ClearCloseOnFork \
+	-expect_unresolved SetupDisplay \
+	-expect_unresolved LogError \
+	-expect_unresolved SessionExit \
+	-expect_unresolved DeleteXloginResources \
+	-expect_unresolved source \
+	-expect_unresolved defaultEnv \
+	-expect_unresolved setEnv \
+	-expect_unresolved parseArgs \
+	-expect_unresolved printEnv \
+	-expect_unresolved systemEnv \
+	-expect_unresolved LogOutOfMem \
+	SharedLibraryLoadFlags
 #endif
 
 INCLUDES = -I.. $(KRB5_INCLUDE)
