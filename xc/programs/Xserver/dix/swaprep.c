@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swaprep.c,v 1.31 89/03/03 10:25:23 rws Exp $ */
+/* $XConsortium: swaprep.c,v 1.32 89/03/11 16:53:39 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1289,7 +1289,7 @@ WriteSConnectionInfo(pClient, size, pInfo)
 
     for(i = 0; i < screenInfo.numScreens; i++)
     {
-	pScreen = (ScreenPtr)&screenInfo.screen[i];
+	pScreen = screenInfo.screens[i];
 	SwapWinRoot((xWindowRoot *)pInfo, (xWindowRoot *)pInfoT);
 	pInfo += sizeof(xWindowRoot);
 	pInfoT += sizeof(xWindowRoot);

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 1.36 88/10/15 12:18:11 rws Exp $ */
+/* $XConsortium: miexpose.c,v 1.37 89/02/16 11:56:45 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -41,7 +41,7 @@ SOFTWARE.
 #include "mi.h"
 #include "Xmd.h"
 
-extern WindowRec WindowTable[];
+extern WindowPtr *WindowTable;
 
 /*
     machine-independent graphics exposure code.  any device that uses
@@ -568,7 +568,7 @@ int what;
     gcmask |= GCFunction | GCClipMask;
 
     i = pScreen->myNum;
-    pRoot = &WindowTable[i];
+    pRoot = WindowTable[i];
 
     if (pWin->visual != pRoot->visual)
     {

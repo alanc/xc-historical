@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.146 89/03/11 16:49:29 rws Exp $ */
+/* $XConsortium: main.c,v 1.147 89/03/14 14:07:32 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -51,7 +51,7 @@ extern char *display;
 char *ConnectionInfo;
 xConnSetupPrefix connSetupPrefix;
 
-extern WindowRec WindowTable[];
+extern WindowPtr *WindowTable;
 extern FontPtr defaultFont;
 
 extern void SetInputCheck();
@@ -190,9 +190,9 @@ main(argc, argv)
 	SetInputCheck(&alwaysCheckForInput[0], &alwaysCheckForInput[1]);
 	screenInfo.arraySize = MAXSCREENS;
 	screenInfo.numScreens = 0;
-	screenInfo.screen = (ScreenPtr)xalloc(MAXSCREENS * sizeof(ScreenRec));
-	if (!screenInfo.screen)
-	    FatalError("couldn't create screen structures");
+	WindowTable = (WindowPtr *)xalloc(MAXSCREENS * sizeof(WindowPtr));
+	if (!WindowTable)
+	    FatalError("couldn't create root window table");
 
 	/*
 	 * Just in case the ddx doesnt supply a format for depth 1 (like qvss).
@@ -223,10 +223,10 @@ main(argc, argv)
 
 	for (i=0; i<screenInfo.numScreens; i++) 
 	{
-	    if (CreateRootWindow(i) != Success)
+	    if (!CreateRootWindow(i))
 		FatalError("could not create root window for all screens");
 	}
-        DefineInitialRootWindow(&WindowTable[0]);
+        DefineInitialRootWindow(WindowTable[0]);
 	if (!CreateConnectionBlock())
 	    FatalError("could not create connection block info");
 
@@ -240,11 +240,11 @@ main(argc, argv)
 	{
 	    FreeGCperDepth(i);
 	    FreeDefaultStipple(i);
-	    (* screenInfo.screen[i].CloseScreen)(i, &screenInfo.screen[i]);
+	    (* screenInfo.screens[i]->CloseScreen)(i, screenInfo.screens[i]);
+	    xfree(screenInfo.screens[i]);
 	    screenInfo.numScreens = i;
 	}
-	xfree(screenInfo.screen);
-	screenInfo.screen = (ScreenPtr)NULL;
+	xfree(WindowTable);
 
         CloseFont(defaultFont);
         defaultFont = (FontPtr)NULL;
@@ -335,8 +335,8 @@ CreateConnectionBlock()
 	DepthPtr	pDepth;
 	VisualPtr	pVisual;
 
-	pScreen = &(screenInfo.screen[i]);
-	root.windowId = WindowTable[i].wid;
+	pScreen = screenInfo.screens[i];
+	root.windowId = WindowTable[i]->wid;
 	root.defaultColormap = pScreen->defColormap;
 	root.whitePixel = pScreen->whitePixel;
 	root.blackPixel = pScreen->blackPixel;
@@ -415,6 +415,7 @@ AddScreen(pfnInit, argc, argv)
 
     int i = screenInfo.numScreens;
     int scanlinepad, format, depth, bitsPerPixel, j, k;
+    ScreenPtr pScreen;
 #ifdef DEBUG
     void	(**jNI) ();
 #endif /* DEBUG */
@@ -422,11 +423,15 @@ AddScreen(pfnInit, argc, argv)
     if (screenInfo.numScreens == MAXSCREENS)
 	return -1;
 
+    pScreen = (ScreenPtr) xalloc(sizeof(ScreenRec));
+    if (!pScreen)
+	return -1;
+    screenInfo.screens[i] = pScreen;
 #ifdef DEBUG
-	    for (jNI = &screenInfo.screen[i].QueryBestSize; 
-		 jNI < (void (**) ()) &screenInfo.screen[i].SendGraphicsExpose;
-		 jNI++)
-		*jNI = NotImplemented;
+    for (jNI = &pScreen->QueryBestSize; 
+	 jNI < (void (**) ()) &pScreen->SendGraphicsExpose;
+	 jNI++)
+	*jNI = NotImplemented;
 #endif /* DEBUG */
 
 
@@ -461,16 +466,16 @@ AddScreen(pfnInit, argc, argv)
        any of the strings pointed to by argv.  They may be passed to
        multiple screens. 
     */ 
-    screenInfo.screen[i].rgf = ~0;  /* there are no scratch GCs yet*/
-    screenInfo.screen[i].myNum = i;
-    if ((*pfnInit)(i, &screenInfo.screen[i], argc, argv))
+    pScreen->rgf = ~0L;  /* there are no scratch GCs yet*/
+    pScreen->myNum = i;
+    if ((*pfnInit)(i, pScreen, argc, argv))
     {
 	screenInfo.numScreens++;
         CreateGCperDepthArray(i);
 	CreateDefaultStipple(i);
     }
     else
-	ErrorF("screen %d failed initialization\n", i);
+	xfree(pScreen);
 
     return screenInfo.numScreens;
 }

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.229 89/03/18 11:36:12 rws Exp $ */
+/* $XConsortium: window.c,v 1.230 89/03/18 14:45:59 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -69,7 +69,7 @@ int screenIsSaved = SCREEN_SAVER_OFF;
 
 static ScreenSaverStuffRec savedScreenInfo[MAXSCREENS];
 
-extern WindowRec WindowTable[];
+extern WindowPtr *WindowTable;
 extern void (* ReplySwapVector[256]) ();
 
 static void ResizeChildrenWinSize();
@@ -403,7 +403,7 @@ PrintWindowTree()
     for (i=0; i<screenInfo.numScreens; i++)
     {
 	ErrorF( "WINDOW %d\n", i);
-	pWin = &WindowTable[i];
+	pWin = WindowTable[i];
         miprintRects(pWin->clipList); 
 	p1 = pWin->firstChild;
 	PrintChildren(p1, 4);
@@ -449,10 +449,7 @@ WalkTree(pScreen, func, data)
     int (* func)();
     pointer data;
 {
-    WindowPtr pWin;
-    
-    pWin = &WindowTable[pScreen->myNum];
-    return(TraverseTree(pWin, func, data));
+    return(TraverseTree(WindowTable[pScreen->myNum], func, data));
 }
 
 /*****
@@ -630,7 +627,7 @@ MakeRootTile(pWin)
  *    Makes a window at initialization time for specified screen
  *****/
 
-int
+Bool
 CreateRootWindow(screen)
     int		screen;
 {
@@ -638,12 +635,16 @@ CreateRootWindow(screen)
     BoxRec	box;
     ScreenPtr	pScreen;
 
+    pWin = (WindowPtr)xalloc(sizeof(WindowRec));
+    if (!pWin)
+	return FALSE;
+
     savedScreenInfo[screen].pWindow = NULL;
     savedScreenInfo[screen].wid = FakeClientID(0);
     screenIsSaved = SCREEN_SAVER_OFF;
     
-    pWin = &WindowTable[screen];
-    pScreen = &screenInfo.screen[screen];
+    WindowTable[screen] = pWin;
+    pScreen = screenInfo.screens[screen];
     InitProcedures(pWin);
 
     pWin->drawable.pScreen = pScreen;
@@ -693,14 +694,14 @@ CreateRootWindow(screen)
 
     if (!AddResource(pWin->wid, RT_WINDOW, (pointer)pWin, DeleteWindow,
 		     RC_CORE))
-	return BadAlloc;
+	return FALSE;
 
     /* re-validate GC for use with root Window */
 
     if (!(*pScreen->CreateWindow)(pWin))
     {
 	DeleteWindow(pWin, pWin->wid);
-	return BadAlloc;
+	return FALSE;
     }
     (*pScreen->PositionWindow)(pWin, 0, 0);
 
@@ -735,7 +736,7 @@ CreateRootWindow(screen)
     if (disableSaveUnders)
 	pScreen->saveUnderSupport = NotUseful;
 
-    return(Success);
+    return TRUE;
 }
 
 /* Set the region to the intersection of the rectangle and the
@@ -1436,7 +1437,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    {
 	        if (pWin->cursor != (CursorPtr)None)
 		    FreeCursor(pWin->cursor, None);
-                if (pWin == &WindowTable[pWin->drawable.pScreen->myNum])
+                if (pWin == WindowTable[pWin->drawable.pScreen->myNum])
 		{
 		   pWin->cursor = rootCursor;
 		   rootCursor->refcnt++;
@@ -3585,13 +3586,14 @@ SaveScreens(on, mode)
     {
         if (on == SCREEN_SAVER_FORCER)
         {
-           (* screenInfo.screen[i].SaveScreen) (&screenInfo.screen[i], on);
+           (* screenInfo.screens[i]->SaveScreen) (screenInfo.screens[i], on);
         }
         if (what == SCREEN_SAVER_OFF)
         {
 	    if (savedScreenInfo[i].blanked == SCREEN_IS_BLANKED)
 	    {
-	       (* screenInfo.screen[i].SaveScreen) (&screenInfo.screen[i], on);
+	       (* screenInfo.screens[i]->SaveScreen) (screenInfo.screens[i],
+						      on);
 	    }
             else if (savedScreenInfo[i].blanked == SCREEN_IS_TILED)
 	    {
@@ -3624,8 +3626,8 @@ SaveScreens(on, mode)
 	    }
             if (ScreenSaverBlanking != DontPreferBlanking) 
 	    {
-	       if ((* screenInfo.screen[i].SaveScreen)
-		   (&screenInfo.screen[i], what))
+	       if ((* screenInfo.screens[i]->SaveScreen)
+		   (screenInfo.screens[i], what))
 	       {
 	           savedScreenInfo[i].blanked = SCREEN_IS_BLANKED;
                    continue;
@@ -3656,10 +3658,10 @@ TileScreenSaver(i)
     unsigned char *srcbits, *mskbits;
     CursorPtr cursor;
 
-    if (WindowTable[i].backgroundTile == 
+    if (WindowTable[i]->backgroundTile == 
 	(PixmapPtr)USE_BACKGROUND_PIXEL)
     {
-	attributes[0] = WindowTable[i].backgroundPixel;
+	attributes[0] = WindowTable[i]->backgroundPixel;
 	mask = CWBackPixel;
     }
     else
@@ -3667,12 +3669,12 @@ TileScreenSaver(i)
 
     pWin = savedScreenInfo[i].pWindow = 
 	 CreateWindow(savedScreenInfo[i].wid,
-	      &WindowTable[i], 
+	      WindowTable[i], 
 	      -RANDOM_WIDTH, -RANDOM_WIDTH,
-	      (unsigned short)screenInfo.screen[i].width + RANDOM_WIDTH, 
-	      (unsigned short)screenInfo.screen[i].height + RANDOM_WIDTH,
+	      (unsigned short)screenInfo.screens[i]->width + RANDOM_WIDTH, 
+	      (unsigned short)screenInfo.screens[i]->height + RANDOM_WIDTH,
 	      0, InputOutput, mask, attributes, 0, (ClientPtr)NULL,
-	      WindowTable[i].visual, &result);
+	      WindowTable[i]->visual, &result);
     if (!pWin)
 	return FALSE;
     if (mask & CWBackPixmap)
@@ -3680,7 +3682,7 @@ TileScreenSaver(i)
 
 	pWin->backgroundTile = pWin->parent->backgroundTile;
 	pWin->backgroundTile->refcnt++;
-	(* screenInfo.screen[i].ChangeWindowAttributes)(pWin, CWBackPixmap);
+	(* screenInfo.screens[i]->ChangeWindowAttributes)(pWin, CWBackPixmap);
     }
     if (!AddResource(pWin->wid, RT_WINDOW, 
 		     (pointer)savedScreenInfo[i].pWindow,
@@ -3705,7 +3707,7 @@ TileScreenSaver(i)
 	if (cursor)
 	{
 	    pWin->cursor = cursor;
-	    (* screenInfo.screen[i].ChangeWindowAttributes)(pWin, CWCursor);
+	    (* screenInfo.screens[i]->ChangeWindowAttributes)(pWin, CWCursor);
 	}
     }
     pWin->overrideRedirect = TRUE;

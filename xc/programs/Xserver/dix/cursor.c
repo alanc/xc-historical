@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: cursor.c,v 1.30 88/09/06 15:40:29 jim Exp $ */
+/* $XConsortium: cursor.c,v 1.31 89/03/11 16:54:18 rws Exp $ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -51,10 +51,9 @@ FreeCursor( pCurs, cid)
     if ( --pCurs->refcnt > 0)
 	return(Success);
 
-    for ( nscr=0, pscr=screenInfo.screen;
-	  nscr<screenInfo.numScreens;
-	  nscr++, pscr++)
+    for (nscr = 0; nscr < screenInfo.numScreens; nscr++)
     {
+	pscr = screenInfo.screens[nscr];
         if ( pscr->UnrealizeCursor)
 	    ( *pscr->UnrealizeCursor)( pscr, pCurs);
     }
@@ -106,10 +105,9 @@ AllocCursor( psrcbits, pmaskbits, cm,
     /*
      * realize the cursor for every screen
      */
-    for ( nscr=0, pscr=screenInfo.screen;
-	  nscr<screenInfo.numScreens;
-	  nscr++, pscr++)
+    for (nscr = 0; nscr < screenInfo.numScreens; nscr++)
     {
+	pscr = screenInfo.screens[nscr];
         if ( pscr->RealizeCursor)
 	    ( *pscr->RealizeCursor)( pscr, pCurs);
     }

@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 1.11 89/03/16 14:46:52 jim Exp $ */
+/* $XConsortium: mfbwindow.c,v 1.12 89/03/18 12:28:58 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,7 +31,7 @@ SOFTWARE.
 #include "mistruct.h"
 #include "regionstr.h"
 
-extern WindowRec WindowTable[];
+extern WindowPtr *WindowTable;
 
 Bool
 mfbCreateWindow(pWin)
@@ -178,7 +178,7 @@ mfbCopyWindow(pWin, ptOldOrg, prgnSrc)
     register int i, nbox;
     WindowPtr pwinRoot;
 
-    pwinRoot = &WindowTable[pWin->drawable.pScreen->myNum];
+    pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 
     prgnDst = (* pWin->drawable.pScreen->RegionCreate)(NULL, 
 					       pWin->borderClip->numRects);

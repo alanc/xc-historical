@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.87 89/03/14 17:41:36 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.88 89/03/15 10:46:01 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -40,7 +40,7 @@ SOFTWARE.
 #include "input.h"
 #include "servermd.h"
 
-extern WindowRec WindowTable[];
+extern WindowPtr *WindowTable;
 extern xConnSetupPrefix connSetupPrefix;
 extern char *ConnectionInfo;
 extern void ProcessInputEvents();
@@ -614,7 +614,7 @@ ProcGetGeometry(client)
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.root = WindowTable[pDraw->pScreen->myNum].wid;
+    rep.root = WindowTable[pDraw->pScreen->myNum]->wid;
     rep.depth = pDraw->depth;
 
     if (pDraw->type == DRAWABLE_PIXMAP)
@@ -654,7 +654,7 @@ ProcQueryTree(client)
     if (!pWin)
         return(BadWindow);
     reply.type = X_Reply;
-    reply.root = WindowTable[pWin->drawable.pScreen->myNum].wid;
+    reply.root = WindowTable[pWin->drawable.pScreen->myNum]->wid;
     reply.sequenceNumber = client->sequence;
     if (pWin->parent)
 	reply.parent = pWin->parent->wid;
@@ -3472,7 +3472,7 @@ ProcEstablishConnection(client)
 	register int j;
 	register xDepth *pDepth;
 
-        root->currentInputMask = WindowTable[i].allEventMasks;
+        root->currentInputMask = WindowTable[i]->allEventMasks;
 	pDepth = (xDepth *)(root + 1);
 	for (j = 0; j < root->nDepths; j++)
 	{

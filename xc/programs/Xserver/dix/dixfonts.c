@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.3 88/09/06 15:41:42 jim Exp $ */
+/* $XConsortium: dixfonts.c,v 1.4 89/03/11 16:49:08 rws Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -91,10 +91,9 @@ OpenFont(lenfname, pfontname)
      * realize it.
      */
     pfont->refcnt = 1;
-    for ( nscr=0, pscr=screenInfo.screen;
-	  nscr<screenInfo.numScreens;
-	  nscr++, pscr++)
+    for (nscr = 0; nscr < screenInfo.numScreens; nscr++)
     {
+	pscr = screenInfo.screens[nscr];
         if ( pscr->RealizeFont)
 	    ( *pscr->RealizeFont)( pscr, pfont);
     }
@@ -119,10 +118,9 @@ CloseFont( pfont)
 	 * since the last reference is gone, ask each screen to
 	 * free any storage it may have allocated locally for it.
 	 */
-	for ( nscr=0, pscr=screenInfo.screen;
-	      nscr<screenInfo.numScreens;
-	      nscr++, pscr++)
+	for (nscr = 0; nscr < screenInfo.numScreens; nscr++)
 	{
+	    pscr = screenInfo.screens[nscr];
 	    if ( pscr->UnrealizeFont)
 		( *pscr->UnrealizeFont)( pscr, pfont);
 	}

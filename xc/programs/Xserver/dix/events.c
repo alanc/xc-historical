@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.171 89/03/15 13:36:20 rws Exp $ */
+/* $XConsortium: events.c,v 1.172 89/03/16 14:44:42 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -38,7 +38,7 @@ SOFTWARE.
 
 #include "dixstruct.h"
 
-extern WindowRec WindowTable[];
+extern WindowPtr *WindowTable;
 
 extern void (* EventSwapVector[128]) ();
 extern void (* ReplySwapVector[256]) ();
@@ -281,7 +281,7 @@ ConfineCursorToWindow(pWin, x, y, generateEvents)
 	 * the pointer might be frozen.
 	 */
 	currentScreen = pScreen;
-	ROOT = &WindowTable[pScreen->myNum];
+	ROOT = WindowTable[pScreen->myNum];
 	if (x < sprite.hotLimits.x1)
 	    x = sprite.hotLimits.x1;
 	else if (x >= sprite.hotLimits.x2)
@@ -891,7 +891,7 @@ static WindowPtr
 RootForWindow(pWin)
     WindowPtr pWin;
 {
-    return &WindowTable[pWin->drawable.pScreen->myNum];
+    return WindowTable[pWin->drawable.pScreen->myNum];
 }
 
 static void
@@ -1172,7 +1172,7 @@ NewCurrentScreen(newScreen, x, y)
 {
     /* XXX need to distinguish logical/physical screens when frozen */
     if (newScreen != currentScreen)
-	ConfineCursorToWindow(&WindowTable[newScreen->myNum], x, y, TRUE);
+	ConfineCursorToWindow(WindowTable[newScreen->myNum], x, y, TRUE);
 }
 
 int
@@ -1993,7 +1993,7 @@ DoFocusEvents(fromWin, toWin, mode)
 		FocusOutEvents(sprite.win, ROOT, mode, NotifyPointer, TRUE);
 	    /* Notify all the roots */
 	    for (i=0; i<screenInfo.numScreens; i++)
-	        FocusEvent(FocusOut, mode, out, &WindowTable[i]);
+	        FocusEvent(FocusOut, mode, out, WindowTable[i]);
 	}
 	else
 	{
@@ -2006,7 +2006,7 @@ DoFocusEvents(fromWin, toWin, mode)
 	}
 	/* Notify all the roots */
 	for (i=0; i<screenInfo.numScreens; i++)
-	    FocusEvent(FocusIn, mode, in, &WindowTable[i]);
+	    FocusEvent(FocusIn, mode, in, WindowTable[i]);
 	if (toWin == PointerRootWin)
 	    (void)FocusInEvents(
 		ROOT, sprite.win, NullWindow, mode, NotifyPointer, TRUE);
@@ -2018,7 +2018,7 @@ DoFocusEvents(fromWin, toWin, mode)
 	    if (fromWin == PointerRootWin)
 		FocusOutEvents(sprite.win, ROOT, mode, NotifyPointer, TRUE);
 	    for (i=0; i<screenInfo.numScreens; i++)
-	      FocusEvent(FocusOut, mode, out, &WindowTable[i]);
+	      FocusEvent(FocusOut, mode, out, WindowTable[i]);
 	    if (toWin->parent != NullWindow)
 	      (void)FocusInEvents(
 		ROOT, toWin, toWin, mode, NotifyNonlinearVirtual, TRUE);
@@ -2482,7 +2482,7 @@ InitEvents()
     curKeySyms.maxKeyCode = 0;
     curKeySyms.mapWidth = 0;
 
-    currentScreen = &screenInfo.screen[0];
+    currentScreen = screenInfo.screens[0];
     inputInfo.numDevices = 0;
     if (spriteTraceSize == 0)
     {
@@ -3975,10 +3975,9 @@ ProcRecolorCursor(client)
     pCursor->backGreen = stuff->backGreen;
     pCursor->backBlue = stuff->backBlue;
 
-    for ( nscr=0, pscr=screenInfo.screen;
-	  nscr<screenInfo.numScreens;
-	  nscr++, pscr++)
+    for (nscr = 0; nscr < screenInfo.numScreens; nscr++)
     {
+	pscr = screenInfo.screens[nscr];
 	( *pscr->RecolorCursor)(pscr, pCursor,
 		(pCursor == sprite.current) && (pscr == currentScreen));
     }

@@ -29,7 +29,7 @@ SOFTWARE.
 #include "mistruct.h"
 #include "regionstr.h"
 
-extern WindowRec WindowTable[];
+extern WindowPtr *WindowTable;
 
 Bool cfbCreateWindow(pWin)
 WindowPtr pWin;
@@ -144,7 +144,7 @@ cfbCopyWindow(pWin, ptOldOrg, prgnSrc)
     register int i, nbox;
     WindowPtr pwinRoot;
 
-    pwinRoot = &WindowTable[pWin->drawable.pScreen->myNum];
+    pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 
     prgnDst = (* pWin->drawable.pScreen->RegionCreate)(NULL, 
 						       pWin->borderClip->numRects);

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.116 89/03/17 16:41:29 rws Exp $ */
+/* $XConsortium: gc.c,v 1.117 89/03/18 09:47:36 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -848,7 +848,7 @@ FreeGCperDepth(screenNum)
     register ScreenPtr pScreen;
     GCPtr *ppGC;
 
-    pScreen = &screenInfo.screen[screenNum];
+    pScreen = screenInfo.screens[screenNum];
     ppGC = (GCPtr *) pScreen->GCperDepth;
 
     /* do depth 1 seperately because it's not included in list */
@@ -868,7 +868,7 @@ CreateGCperDepthArray(screenNum)
     register ScreenPtr pScreen;
     DepthPtr pDepth;
 
-    pScreen = &screenInfo.screen[screenNum];
+    pScreen = screenInfo.screens[screenNum];
     pScreen->rgf = 0;
     /* do depth 1 seperately because it's not included in list */
     if (!(pScreen->GCperDepth[0] = CreateScratchGC(pScreen, 1)))
@@ -894,7 +894,7 @@ CreateDefaultStipple(screenNum)
     short w, h;
     GCPtr pgcScratch;
 
-    pScreen = &screenInfo.screen[screenNum];
+    pScreen = screenInfo.screens[screenNum];
 
     w = 16;
     h = 16;
@@ -921,7 +921,7 @@ CreateDefaultStipple(screenNum)
 FreeDefaultStipple(screenNum)
     int screenNum;
 {
-    ScreenPtr pScreen = &screenInfo.screen[screenNum];
+    ScreenPtr pScreen = screenInfo.screens[screenNum];
     (*pScreen->DestroyPixmap)(pScreen->PixmapPerDepth[0]);
 }
 

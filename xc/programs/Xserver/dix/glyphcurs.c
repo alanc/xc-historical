@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: glyphcurs.c,v 1.14 88/09/06 15:41:10 jim Exp $ */
+/* $XConsortium: glyphcurs.c,v 1.15 89/03/17 16:37:46 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -83,7 +83,7 @@ ServerBitsFromGlyph(fontID, pfont, ch, cm, ppbits)
     char2b[0] = (unsigned char)(ch >> 8);
     char2b[1] = (unsigned char)(ch & 0xff);
 
-    pScreen = &screenInfo.screen[0];
+    pScreen = screenInfo.screens[0];
     nby = PixmapBytePad(cm->width, 1) * cm->height;
     pbits = (unsigned char *)xalloc(nby);
     if (!pbits)

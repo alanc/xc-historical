@@ -100,7 +100,7 @@ cfbResolveStaticColor(pred, pgreen, pblue, pVisual)
 
 #endif
 
-void
+Bool
 cfbInitialize332Colormap(pmap)
     ColormapPtr	pmap;
 {
@@ -113,4 +113,5 @@ cfbInitialize332Colormap(pmap)
 	pmap->red[i].co.local.green = (i & 0x38) << 10;
 	pmap->red[i].co.local.blue = (i & 0xc0) << 8;
     }
+    return TRUE;
 }

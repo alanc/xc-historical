@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.30 88/09/06 15:40:46 jim Exp $ */
+/* $XConsortium: dixutils.c,v 1.31 89/03/11 16:54:26 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -236,8 +236,8 @@ pointer pReadmask;	/* nor how it represents the set of descriptors */
 {
     register int i;
     for (i = 0; i < screenInfo.numScreens; i++)
-	(* screenInfo.screen[i].BlockHandler)(i, 
-				screenInfo.screen[i].blockData,
+	(* screenInfo.screens[i]->BlockHandler)(i, 
+				screenInfo.screens[i]->blockData,
 				pTimeout, pReadmask);
 }
 
@@ -248,8 +248,8 @@ pointer pReadmask;	/* the resulting descriptor mask */
 {
     register int i;
     for (i = 0; i < screenInfo.numScreens; i++)
-	(* screenInfo.screen[i].WakeupHandler)(i, 
-				screenInfo.screen[i].wakeupData,
+	(* screenInfo.screens[i]->WakeupHandler)(i, 
+				screenInfo.screens[i]->wakeupData,
 				result, pReadmask);
 }
 
