@@ -29,6 +29,12 @@
 
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/wait.h>
+#include <errno.h>
+extern int errno;
+extern int sys_nerr;
+extern char *sys_errlist[];
+
 #ifdef macII
 #define ON_CONSOLE_ONLY
 #endif
@@ -46,16 +52,59 @@
 #define BINDIR "/usr/bin/X11"
 #endif
 
-
+/*
+ * HP-UX does have vfork, but A/UX doesn't
+ */
+#if (defined(SYSV) || defined(macII)) && !defined(hpux)
+#define vfork() fork()
+#endif
 
 char *ProgramName;
+
+static char *SysErrorMsg (n)
+    int n;
+{
+    char *s = (n > 0 && n < sys_nerr) ? sys_errlist[n] : "unknown";
+    return (s ? s : "null system error");
+}
+
+
+static int exec_one_arg (filename, arg)
+    char *filename;
+    char *arg;
+{
+    int pid, deadpid;
+    union wait status;
+
+    if (!filename) return -1;
+
+    if (access (filename, X_OK) != 0) return -1;
+
+    status.w_retcode = 0;
+    switch (pid = vfork ()) {
+      case -1:						/* error */
+	return -1;
+      case 0:    					/* child */
+	execl (filename, filename, arg, 0);
+	_exit (1);
+	/* NOTREACHED */
+      default:						/* parent */
+	deadpid = wait (&status);
+	if (deadpid != pid) {
+	    fprintf (stderr, "%s:  got back bad pid %d != %d\n",
+		     ProgramName, deadpid, pid);
+	}
+    }
+    return (int) status.w_retcode;
+}
+
 
 main (argc, argv)
     int argc;
     char *argv[];
 {
     int ttyfd;
-    char cmdbuf[256], *cp;
+    char cmdbuf[256];
 #ifdef ON_CONSOLE_ONLY
     int consfd;
     int ttypgrp, conspgrp;
@@ -64,6 +113,11 @@ main (argc, argv)
 #endif
 
     ProgramName = argv[0];
+
+    if (argc > 1) {
+	fprintf (stderr, "usage:  %s\r\n", ProgramName);
+	exit (1);
+    }
 
     ttyfd = open ("/dev/tty", O_RDWR, 0);
     if (ttyfd < 3) {			/* stdin = 0, stdout = 1, stderr = 2 */
@@ -114,33 +168,28 @@ main (argc, argv)
 #endif
 
 
-
-
     /*
      * exec /usr/bin/X11/xdm -nodaemon
      */
-    strcpy (cmdbuf, "exec ");
-    cp = cmdbuf + 5;			/* exec space */
-    strcpy (cp, BINDIR);
-    strcat (cp, "/xdm");
-    if (access (cp, X_OK) != 0) {
-	fprintf (stderr, "%s:  xdm not installed as %s\r\n", ProgramName, cp);
+    strcpy (cmdbuf, BINDIR);
+    strcat (cmdbuf, "/xdm");
+    if (exec_one_arg (cmdbuf, "-nodaemon") == -1) {
+	fprintf (stderr, "%s:  unable to execute %s (error %d, %s)\r\n",
+		 ProgramName, cmdbuf, errno, SysErrorMsg(errno));
 	exit (1);
     }
 
-    strcat (cp, " -nodaemon");
-    if (system (cmdbuf) == 127) {
-	fprintf (stderr, "%s:  unable to execute %s\r\n",
-		 ProgramName, cmdbuf);
-	exit (1);
-    }
+#ifdef macII
+    strcpy (cmdbuf, BINDIR);
+    strcat (cmdbuf, "/Xrepair");
+    (void) exec_one_arg (cmdbuf, NULL);
+    (void) exec_one_arg ("/usr/bin/screenrestore", NULL);
+#endif
 
-#ifdef ON_CONSOLE_ONLY
-    strcpy (cp, BINDIR);
-    strcat (cp, "/Xrepair");
-    (void) system (cmdbuf);
-
-    (void) system ("exec /usr/bin/screenrestore");
+#ifdef sun
+    strcpy (cmdbuf, BINDIR);
+    strcat (cmdbuf, "/kbd_mode");
+    (void) exec_one_arg (cmdbuf, "-a");
 #endif
 
     exit (0);
