@@ -1,4 +1,4 @@
-/* $XConsortium: cache.h,v 1.3 94/03/08 20:51:12 dpw Exp $ */
+/* $XConsortium: cache.h,v 1.4 94/04/12 22:01:23 dpw Exp mor $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -24,7 +24,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)cache.h,v 1.3 1994/03/04 00:06:34 lemke Exp $
+ * $NCDId: @(#)cache.h,v 1.4 1994/11/16 02:27:57 lemke Exp $
  *
  */
 
@@ -47,6 +47,7 @@ extern int  CacheFreeMemory();
 extern void CacheSimpleFree();
 extern Cache CacheInit();
 extern void CacheReset();
+extern void CacheFreeAll();
 extern void CacheResize();
 extern void CacheFreeCache();
 extern pointer CacheFetchMemory();

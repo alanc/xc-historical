@@ -1,7 +1,7 @@
-/* $XConsortium: main.c,v 1.5 94/03/08 20:51:26 dpw Exp $ */
+/* $XConsortium: main.c,v 1.6 94/03/27 13:44:50 dpw Exp mor $ */
 /*
  * $NCDOr$
- * $NCDId: @(#)main.c,v 1.15 1994/03/24 17:54:31 lemke Exp $
+ * $NCDId: @(#)main.c,v 1.17 1994/11/16 02:27:55 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -39,6 +39,7 @@
 #include "atomcache.h"
 #include "colormap.h"
 #include "tags.h"
+#include "lbxext.h"
 
 char	*display = "10";
 
@@ -64,6 +65,7 @@ main (argc, argv)
 	if (serverGeneration == 1)
 	{
 	    CreateWellKnownSockets ();
+	    RegisterAllExtensions();
 	    clients = (ClientPtr *)xalloc(MAXCLIENTS * sizeof(ClientPtr));
 	    if (!clients)
 		FatalError("couldn't create client array");
@@ -87,15 +89,18 @@ main (argc, argv)
         if (!InitClientResources(serverClient))
             FatalError("couldn't init server resources");
         InitDeleteFuncs();
+	InitExtensions();
         clients[0] = serverClient;
         currentMaxClients = 1;
 
 	if (Dispatch () != 0)
 	    break;
+	ShutdownExtensions();
         FreeAllResources();
         FreeAtoms();
         FreeColors();
         FreeTags();
+	CacheFreeAll();
     }
     exit (0);
 }

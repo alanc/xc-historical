@@ -1,4 +1,4 @@
-/* $XConsortium: colormap.c,v 1.5 94/03/08 20:51:14 dpw Exp $ */
+/* $XConsortium: colormap.c,v 1.6 94/03/27 13:35:25 dpw Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)colormap.c,v 1.10 1994/03/24 17:54:51 lemke Exp $
+ * $NCDId: @(#)colormap.c,v 1.11 1994/09/07 01:50:28 lemke Exp $
  */
 /*
  * XXX
@@ -45,6 +45,7 @@
 
 #include	<stdio.h>
 #include	<X11/X.h>	/* for KeymapNotify */
+#define	NEED_REPLIES
 #include	<X11/Xproto.h>
 #include	"lbxdata.h"
 #include	"assert.h"

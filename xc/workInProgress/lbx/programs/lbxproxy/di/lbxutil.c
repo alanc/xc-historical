@@ -1,4 +1,4 @@
-/* $XConsortium: lbxutil.c,v 1.4 94/03/27 14:08:16 dpw Exp mor $ */
+/* $XConsortium: lbxutil.c,v 1.5 94/11/29 19:18:54 mor Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxutil.c,v 1.14 1994/03/24 17:55:07 lemke Exp $
+ * $NCDId: @(#)lbxutil.c,v 1.20 1994/11/29 19:57:19 lemke Exp $
  */
 /*
  * utility routines for LBX requests
@@ -50,6 +50,10 @@ static int  pad[4] = {0, 3, 2, 1};
  * if preformance becomes an issue, the reply stuff can be reworked
  * to use a quicker allocation strategy.  we're at least guarenteed
  * that they'll come back in the order requested.
+ *
+ * this has some safety features in case replies come back out of
+ * order -- this is probably completly useless, but it makes it easier
+ * to debug strange sequence bugs...
  */
 ReplyStuffPtr
 NewReply(client)
@@ -79,15 +83,27 @@ NewReply(client)
 }
 
 void
-RemoveReply(client)
+RemoveReply(client, rp)
     ClientPtr   client;
+    ReplyStuffPtr rp;
 {
-    ReplyStuffPtr old;
+    ReplyStuffPtr cur,
+                prev = NULL;
 
-    old = LBXReplyList(client);
-    assert(old);
-    LBXReplyList(client) = old->next;
-    xfree(old);
+    cur = LBXReplyList(client);
+    assert(cur);
+
+    while (cur != rp) {
+	prev = cur;
+	cur = cur->next;
+    }
+    assert(cur);
+    if (prev)
+	prev->next = cur->next;
+    else
+	LBXReplyList(client) = cur->next;
+
+    xfree(cur);
 }
 
 ReplyStuffPtr
@@ -95,6 +111,21 @@ GetReply(client)
     ClientPtr   client;
 {
     return LBXReplyList(client);
+}
+
+ReplyStuffPtr
+GetMatchingReply(client, seqno)
+    ClientPtr   client;
+    int         seqno;
+{
+    ReplyStuffPtr t;
+
+    t = LBXReplyList(client);
+    while (t && (t->sequenceNumber & 0xffff) != seqno) {
+	t = t->next;
+    }
+    assert(t);
+    return t;
 }
 
 int
@@ -111,6 +142,118 @@ NumReplies(client)
 	t = t->next;
     }
     return num;
+}
+
+int
+NumGuessedReplies(client)
+    ClientPtr	client;
+{
+    int         num = 0;
+    ReplyStuffPtr t;
+
+    assert(LBXReplyList(client));
+    t = LBXReplyList(client);
+    while (t) {
+	if (t->guessed)
+	    num++;
+	t = t->next;
+    }
+    return num;
+}
+
+int
+LargestReplySeqNo(client)
+    ClientPtr	client;
+{
+    int         seqno = 0;
+    ReplyStuffPtr t;
+
+    assert(LBXReplyList(client));
+    t = LBXReplyList(client);
+    while (t) {
+	if (t->sequenceNumber > seqno)
+	    seqno = t->sequenceNumber;
+	t = t->next;
+    }
+    return seqno;
+}
+
+/*
+ * this is used for stashing short-circuited replies for later.
+ * it currently assumes that all of them will be 32 bytes for the reply
+ * plus some amount of extra data
+ */
+
+Bool
+SaveReplyData(client, rep, len, data)
+    ClientPtr   client;
+    xReply     *rep;
+    pointer     data;
+{
+    ReplyDataPtr new,
+                list;
+
+    new = (ReplyDataPtr) xalloc(sizeof(ReplyDataRec));
+    if (!new)
+	return FALSE;
+    bzero((char *) new, sizeof(ReplyDataRec));
+    if (len) {
+	new->data = (pointer) xalloc(len);
+	if (!new->data) {
+	    xfree(new);
+	    return FALSE;
+	} else {
+	    bcopy((char *) data, (char *) new->data, len);
+	}
+    }
+    new->reply = *rep;
+    new->dlen = len;
+    new->delay_seq_no = LargestReplySeqNo(client);
+
+    list = LBXReplyData(client);
+    if (!list) {
+	LBXReplyData(client) = new;
+    } else {
+	while (list) {
+	    if (!list->next) {
+		list->next = new;
+		break;
+	    }
+	    list = list->next;
+	}
+    }
+    return TRUE;
+}
+
+static void
+send_delayed_reply(client, rd)
+    ClientPtr   client;
+    ReplyDataPtr rd;
+{
+    WriteToClient(client, sizeof(xReply), (char *) &rd->reply);
+    if (rd->dlen)
+	WriteToClient(client, rd->dlen, (char *) rd->data);
+}
+
+ 
+Bool
+FlushDelayedReply(client, seqno)
+    ClientPtr   client;
+    int         seqno;
+{
+    ReplyDataPtr list,
+                next;
+
+    list = LBXReplyData(client);
+    while (list) {
+	next = list->next;
+	if (list->delay_seq_no <= seqno) {
+	    send_delayed_reply(client, list);
+	    LBXReplyData(client) = next;
+	    xfree(list);
+	}
+	list = next;
+    }
 }
 
 void
@@ -222,7 +365,6 @@ GetQueryTagReply(client, data)
 	    assert(0);
 	}
     }
-
     if (TagStoreData(global_cache, qtp->tag, len, qtp->tagtype, tdata)) {
 	/* lost tag again... */
 	SendInvalidateTag(client, qtp->tag);
@@ -372,10 +514,17 @@ int         delta_in_total;
 int         delta_in_attempts;
 int         delta_in_hits;
 
-int         lzw_out_compressed;
-int         lzw_out_plain;
-int         lzw_in_compressed;
-int         lzw_in_plain;
+extern int  lzw_out_compressed;
+extern int  lzw_out_plain;
+extern int  lzw_in_compressed;
+extern int  lzw_in_plain;
+
+extern int	    gfx_gc_hit;
+extern int	    gfx_gc_miss;
+extern int	    gfx_draw_hit;
+extern int	    gfx_draw_miss;
+extern int	    gfx_total;
+extern int	    gfx_bail;
 
 void
 DumpStats()
@@ -408,6 +557,19 @@ DumpStats()
 	    lzw_out_compressed, lzw_out_plain);
     fprintf(stderr, "Received: compressed bytes = %d (plain text = %d)\n",
 	    lzw_in_compressed, lzw_in_plain);
+    fprintf(stderr, "GFX Cache stats\n");
+    fprintf(stderr, "Bailed = %d reencoded = %d\n", gfx_bail, gfx_total);
+#define percent(s,t)	((t) ? ((s) * 100) / (t) : 0)
+    
+#define ratios(h,m)	(h), percent (h, (h)+(m)), (m), percent (m, (h) + (m))
+    fprintf(stderr, "Draw hit = %d (%d%%) miss = %d (%d%%) GC hit = %d (%d%%) miss = %d (%d%%)\n",
+	    ratios (gfx_draw_hit, gfx_draw_miss), 
+	    ratios (gfx_gc_hit, gfx_gc_miss));
+#define savings(h,m)	(((h) + (m)) * 4) - ((h) + (m) * 5)
+    fprintf(stderr, "Total bytes saved = %d Draw = %d GC = %d\n",
+	    savings (gfx_gc_hit + gfx_draw_hit, gfx_gc_miss + gfx_draw_miss),
+	    savings (gfx_draw_hit, gfx_draw_miss),
+	    savings (gfx_gc_hit, gfx_gc_miss));
 }
 
 void
@@ -434,6 +596,13 @@ ZeroStats()
     delta_in_total = delta_in_attempts = delta_in_hits = 0;
 
     lzw_out_compressed = lzw_out_plain = lzw_in_compressed = lzw_in_plain = 0;
+
+    gfx_gc_hit = 0;
+    gfx_gc_miss = 0;
+    gfx_draw_hit = 0;
+    gfx_draw_miss = 0;
+    gfx_total = 0;
+    gfx_bail = 0;
 }
 
 #endif

@@ -45,8 +45,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.7 94/03/28 18:33:11 gildea Exp $ */
-/* $NCDId: @(#)utils.c,v 1.7 1994/03/11 20:02:07 lemke Exp $ */
+/* $XConsortium: utils.c,v 1.8 94/04/17 21:17:22 gildea Exp mor $ */
+/* $NCDId: @(#)utils.c,v 1.8 1994/11/16 02:27:25 lemke Exp $ */
 
 #include "Xos.h"
 #include <stdio.h>
@@ -214,12 +214,14 @@ AdjustWaitForDelay (waitTime, newdelay)
 void UseMsg()
 {
 #if !defined(AIXrt) && !defined(AIX386)
-    ErrorF("use: X [:<display>] [option]\n");
+    ErrorF("use: lbxproxy [:<display>] [option]\n");
     ErrorF("-ac                    disable access control restrictions\n");
 #ifdef MEMBUG
     ErrorF("-alloc int             chance alloc should fail\n");
 #endif
+/*
     ErrorF("-auth string           select authorization file\n");	
+*/
     ErrorF("-help                  prints message with these options\n");
     ErrorF("-I                     ignore all remaining arguments\n");
     ErrorF("-to #                  connection time out\n");
@@ -500,7 +502,7 @@ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
 #if NeedVarargsPrototypes
     va_list args;
 #endif
-    ErrorF("\nFatal server error:\n");
+    ErrorF("\nFatal proxy error:\n");
 #if NeedVarargsPrototypes
     va_start(args, f);
     VErrorF(f, args);

@@ -1,4 +1,4 @@
-/* $XConsortium: props.c,v 1.4 94/03/13 12:45:03 dpw Exp $ */
+/* $XConsortium: props.c,v 1.5 94/03/27 14:05:19 dpw Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -19,8 +19,8 @@
  * OR PROFITS, EVEN IF ADVISED OF THE POSSIBILITY THEREOF, AND REGARDLESS OF
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- * 
- * $NCDId: @(#)props.c,v 1.12 1994/03/24 17:54:57 lemke Exp $
+ *
+ * $NCDId: @(#)props.c,v 1.13 1994/09/07 00:43:39 lemke Exp $
  */
 /*
  * property handling
@@ -229,7 +229,7 @@ GetLbxChangePropertyReply(client, data)
     	swapl(&rep->tag, n);
     }
 
-    nr = GetReply(client);
+    nr = GetMatchingReply(client, rep->sequenceNumber);
     assert(nr);
     ptdp = &nr->request_info.lbxchangeprop.ptd;
     if (rep->tag) {
@@ -310,7 +310,7 @@ FinishGetPropertyReply(client, seqnum, offset, length, ptdp, pdata)
     if (!pdata)
 	pdata = ptdp->data;
 
-    pdata = (pointer) ((char *)pdata + (4 * offset));
+    pdata = (pointer) ((char *) pdata + (4 * offset));
 
     reply.type = X_Reply;
     reply.sequenceNumber = seqnum;
@@ -359,7 +359,7 @@ GetLbxGetPropertyReply(client, data)
 
     rep = (xLbxGetPropertyReply *) data;
 
-    nr = GetReply(client);
+    nr = GetMatchingReply(client, rep->sequenceNumber);
     assert(nr);
 
     ptd.type = rep->propertyType;

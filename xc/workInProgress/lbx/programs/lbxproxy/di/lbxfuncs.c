@@ -18,11 +18,11 @@
  * OR PROFITS, EVEN IF ADVISED OF THE POSSIBILITY THEREOF, AND REGARDLESS OF
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- * 
- * $NCDId: @(#)lbxfuncs.c,v 1.31 1994/03/24 17:54:54 lemke Exp $
+ *
+ * $NCDId: @(#)lbxfuncs.c,v 1.40 1994/11/18 20:39:18 lemke Exp $
  */
 
-/* $XConsortium: lbxfuncs.c,v 1.5 94/03/27 13:42:04 dpw Exp mor $ */
+/* $XConsortium: lbxfuncs.c,v 1.6 94/11/08 20:01:14 mor Exp mor $ */
 
 /*
  * top level LBX request & reply handling
@@ -60,8 +60,10 @@
 #include	"resource.h"
 #include	"wire.h"
 #include	"swap.h"
+#include	"reqtype.h"
 #define _XLBX_SERVER_
-#include	"lbxstr.h"	/* gets dixstruct.h */
+#include	"lbxstr.h"
+#include	"lbxext.h"
 
 #define reply_length(cp,rep) ((rep)->type==X_Reply ? \
         32 + (HostUnswapLong((cp),(rep)->length) << 2) \
@@ -193,7 +195,7 @@ intern_atom_req(client, data)
     xInternAtomReq *req;
     char       *s;
     Atom        atom,
-                a;
+                a = None;
     xInternAtomReply reply;
     ReplyStuffPtr nr;
     char        n;
@@ -211,28 +213,29 @@ intern_atom_req(client, data)
     s = data + sizeof(xInternAtomReq);
 
     atom = LbxMakeAtom(s, nbytes, a, FALSE);
-    if (atom != None) {
-	/* found preset atom */
-	if (LBXCacheSafe(client)) {
-	    reply.type = X_Reply;
-	    reply.length = 0;
-	    reply.sequenceNumber = LBXSequenceNumber(client);
-	    reply.atom = atom;
-	    if (client->swapped) {
-		SwapInternAtomReply(&reply);
-	    }
+    if (atom != None && LBXCanDelayReply(client)) {
+	reply.type = X_Reply;
+	reply.length = 0;
+	reply.sequenceNumber = LBXSequenceNumber(client);
+	reply.atom = atom;
+	if (client->swapped) {
+	    SwapInternAtomReply(&reply);
+	}
+	if (LBXCacheSafe(client))
 	    WriteToClient(client, sizeof(xInternAtomReply), &reply);
+	else			/* store for later */
+	    SaveReplyData(client, (xReply *) & reply, 0, NULL);
 
 #ifdef LBX_STATS
-	    intern_good++;
+	intern_good++;
 #endif
 
-	    return REQ_YANK;
-	}
+	return REQ_YANK;
     } else if (nbytes < MAX_ATOM_LENGTH) {
 	nr = NewReply(client);
 	if (nr) {
 	    strncpy(nr->request_info.lbxatom.str, s, nbytes);
+	    nr->request_info.lbxatom.str[nbytes] = '\0';
 	    nr->request_info.lbxatom.len = nbytes;
 	    nr->sequenceNumber = LBXSequenceNumber(client);
 	    nr->request = X_InternAtom;
@@ -260,7 +263,7 @@ intern_atom_reply(client, data)
 
     reply = (xInternAtomReply *) data;
 
-    nr = GetReply(client);
+    nr = GetMatchingReply(client, reply->sequenceNumber);
     assert(nr);
     str = nr->request_info.lbxatom.str;
     len = nr->request_info.lbxatom.len;
@@ -297,27 +300,27 @@ get_atom_name_req(client, data)
     }
     str = NameForAtom(id);
 
-    if (str) {
-	/* found the value */
+    if (str && LBXCanDelayReply(client)) {	/* found the value */
+	len = strlen(str);
+	reply.type = X_Reply;
+	reply.length = (len + 3) >> 2;
+	reply.sequenceNumber = LBXSequenceNumber(client);
+	reply.nameLength = len;
+	if (client->swapped) {
+	    SwapGetAtomNameReply(&reply);
+	}
 	if (LBXCacheSafe(client)) {
-
-	    len = strlen(str);
-	    reply.type = X_Reply;
-	    reply.length = (len + 3) >> 2;
-	    reply.sequenceNumber = LBXSequenceNumber(client);
-	    reply.nameLength = len;
-	    if (client->swapped) {
-		SwapGetAtomNameReply(&reply);
-	    }
 	    WriteToClient(client, sizeof(xGetAtomNameReply), &reply);
 	    WriteToClientPad(client, len, str);
+	} else {
+	    SaveReplyData(client, (xReply *) & reply, len, str);
+	}
 
 #ifdef LBX_STATS
-	    getatom_good++;
+	getatom_good++;
 #endif
 
-	    return REQ_YANK;
-	}
+	return REQ_YANK;
     } else {
 	nr = NewReply(client);
 	if (nr) {
@@ -355,7 +358,7 @@ get_atom_name_reply(client, data)
     s = data + sizeof(xGetAtomNameReply);
 
     len -= sizeof(xGetAtomNameReply);
-    nr = GetReply(client);
+    nr = GetMatchingReply(client, reply->sequenceNumber);
     assert(nr);
     atom = nr->request_info.lbxatom.atom;
 
@@ -394,32 +397,32 @@ lookup_color_req(client, data)
 
     rgbe = FindColorName((char *) &req[1], len, cmap);
 
-    if (rgbe) {
-	/* found the value */
-	if (LBXCacheSafe(client)) {
-	    reply.type = X_Reply;
-	    reply.length = 0;
-	    reply.sequenceNumber = LBXSequenceNumber(client);
+    if (rgbe && LBXCanDelayReply(client)) {	/* found the value */
+	reply.type = X_Reply;
+	reply.length = 0;
+	reply.sequenceNumber = LBXSequenceNumber(client);
 
-	    reply.exactRed = rgbe->xred;
-	    reply.exactBlue = rgbe->xblue;
-	    reply.exactGreen = rgbe->xgreen;
+	reply.exactRed = rgbe->xred;
+	reply.exactBlue = rgbe->xblue;
+	reply.exactGreen = rgbe->xgreen;
 
-	    reply.screenRed = rgbe->vred;
-	    reply.screenBlue = rgbe->vblue;
-	    reply.screenGreen = rgbe->vgreen;
+	reply.screenRed = rgbe->vred;
+	reply.screenBlue = rgbe->vblue;
+	reply.screenGreen = rgbe->vgreen;
 
-	    if (client->swapped) {
-		SwapLookupColorReply(&reply);
-	    }
+	if (client->swapped) {
+	    SwapLookupColorReply(&reply);
+	}
+	if (LBXCacheSafe(client))
 	    WriteToClient(client, sizeof(xLookupColorReply), &reply);
+	else
+	    SaveReplyData(client, (xReply *) & reply, 0, NULL);
 
 #ifdef LBX_STATS
-	    luc_good++;
+	luc_good++;
 #endif
 
-	    return REQ_YANK;
-	}
+	return REQ_YANK;
     } else {
 	nr = NewReply(client);
 	if (nr) {
@@ -451,7 +454,7 @@ lookup_color_reply(client, data)
 
     reply = (xLookupColorReply *) data;
 
-    nr = GetReply(client);
+    nr = GetMatchingReply(client, reply->sequenceNumber);
     assert(nr);
 
     rgbe.xred = reply->exactRed;
@@ -506,36 +509,35 @@ alloc_color_req(client, data)
     }
     FindPixel(client, cmap, (int) red, (int) green,
 	      (int) blue, &pent);
-    if (pent) {
+    if (pent && LBXCanDelayReply(client)) {	/* found the value */
 	/* always inc the pixel, so our refcounts match the server's */
 	IncrementPixel(client, cmap, pent);
 
-	/* found the value */
-	if (LBXCacheSafe(client)) {
+	/* must tell server to bump refcnt */
+	SendIncrementPixel(client, req->cmap, pent->pixel);
 
-	    /* must tell server to bump refcnt */
-	    SendIncrementPixel(client, req->cmap, pent->pixel);
+	reply.type = X_Reply;
+	reply.length = 0;
+	reply.sequenceNumber = LBXSequenceNumber(client);
 
-	    reply.type = X_Reply;
-	    reply.length = 0;
-	    reply.sequenceNumber = LBXSequenceNumber(client);
+	reply.red = pent->rep_red;
+	reply.green = pent->rep_green;
+	reply.blue = pent->rep_blue;
+	reply.pixel = pent->pixel;
 
-	    reply.red = pent->rep_red;
-	    reply.green = pent->rep_green;
-	    reply.blue = pent->rep_blue;
-	    reply.pixel = pent->pixel;
-
-	    if (client->swapped) {
-		SwapAllocColorReply(&reply);
-	    }
+	if (client->swapped) {
+	    SwapAllocColorReply(&reply);
+	}
+	if (LBXCacheSafe(client))
 	    WriteToClient(client, sizeof(xAllocColorReply), &reply);
+	else
+	    SaveReplyData(client, (xReply *) & reply, 0, NULL);
 
 #ifdef LBX_STATS
-	    ac_good++;
+	ac_good++;
 #endif
 
-	    return REQ_REPLACE;	/* packet sent anyways */
-	}
+	return REQ_REPLACE;	/* packet sent anyways */
     } else {
 	nr = NewReply(client);
 	if (nr) {
@@ -570,7 +572,7 @@ alloc_color_reply(client, data)
 
     reply = (xAllocColorReply *) data;
 
-    nr = GetReply(client);
+    nr = GetMatchingReply(client, reply->sequenceNumber);
     assert(nr);
 
     pixel = reply->pixel;
@@ -625,39 +627,39 @@ alloc_named_color_req(client, data)
     rgbe = FindColorName((char *) &req[1], nbytes, cmap);
 
     /* better get both if we got one... */
-    if (pent && rgbe) {
+    if (pent && rgbe && LBXCanDelayReply(client)) {	/* found the value */
+
 	/* always inc the pixel, so our refcounts match the server's */
 	IncrementPixel(client, cmap, pent);
-	/* found the value */
-	if (LBXCacheSafe(client)) {
+	/* must tell server to bump refcnt */
+	SendIncrementPixel(client, cmap, pent->pixel);
 
-	    /* must tell server to bump refcnt */
-	    SendIncrementPixel(client, cmap, pent->pixel);
+	reply.type = X_Reply;
+	reply.length = 0;
+	reply.sequenceNumber = LBXSequenceNumber(client);
 
-	    reply.type = X_Reply;
-	    reply.length = 0;
-	    reply.sequenceNumber = LBXSequenceNumber(client);
+	reply.screenRed = pent->rep_red;
+	reply.screenGreen = pent->rep_green;
+	reply.screenBlue = pent->rep_blue;
+	reply.exactRed = rgbe->xred;
+	reply.exactGreen = rgbe->xgreen;
+	reply.exactBlue = rgbe->xblue;
 
-	    reply.screenRed = pent->rep_red;
-	    reply.screenGreen = pent->rep_green;
-	    reply.screenBlue = pent->rep_blue;
-	    reply.exactRed = rgbe->xred;
-	    reply.exactGreen = rgbe->xgreen;
-	    reply.exactBlue = rgbe->xblue;
+	reply.pixel = pent->pixel;
 
-	    reply.pixel = pent->pixel;
-
-            if (client->swapped) {
-		SwapAllocNamedColorReply(&reply);
-            }
+	if (client->swapped) {
+	    SwapAllocNamedColorReply(&reply);
+	}
+	if (LBXCacheSafe(client))
 	    WriteToClient(client, sizeof(xAllocNamedColorReply), &reply);
+	else			/* store for later */
+	    SaveReplyData(client, (xReply *) & reply, 0, NULL);
 
 #ifdef LBX_STATS
-	    anc_good++;
+	anc_good++;
 #endif
 
-	    return REQ_REPLACE;	/* packet sent anyways */
-	}
+	return REQ_REPLACE;	/* packet sent anyways */
     } else {
 	nr = NewReply(client);
 	if (nr) {
@@ -696,7 +698,7 @@ alloc_named_color_reply(client, data)
 
     reply = (xAllocNamedColorReply *) data;
 
-    nr = GetReply(client);
+    nr = GetMatchingReply(client, reply->sequenceNumber);
     assert(nr);
 
     xred = reply->exactRed;
@@ -901,7 +903,7 @@ get_mod_map_reply(client, data)
 
     rep = (xLbxGetModifierMappingReply *) data;
 
-    nr = GetReply(client);
+    nr = GetMatchingReply(client, rep->sequenceNumber);
     assert(nr);
 
     tag = rep->tag;
@@ -1001,8 +1003,8 @@ FinishKeymapReply(client, seqnum, kpk, first, count, data)
 {
     xGetKeyboardMappingReply reply;
     int         len = (kpk * count) << 2;
-    char	*sdata;
-    Bool	freedata = FALSE;
+    char       *sdata;
+    Bool        freedata = FALSE;
 
     reply.type = X_Reply;
     reply.keySymsPerKeyCode = kpk;
@@ -1013,7 +1015,7 @@ FinishKeymapReply(client, seqnum, kpk, first, count, data)
     if (client->swapped) {
 	SwapKeymapReply(&reply);
 	/* have to copy data because we could be handed the tag storage */
-	sdata = (char *)ALLOCATE_LOCAL(len);
+	sdata = (char *) ALLOCATE_LOCAL(len);
 	if (sdata) {
 	    bcopy(data, sdata, len);
 	    SwapLongs((CARD32 *) sdata, len / 4);
@@ -1044,7 +1046,7 @@ get_key_map_reply(client, data)
 
     rep = (xLbxGetKeyboardMappingReply *) data;
 
-    nr = GetReply(client);
+    nr = GetMatchingReply(client, rep->sequenceNumber);
     assert(nr);
     tag = rep->tag;
     if (client->swapped) {
@@ -1193,7 +1195,7 @@ get_queryfont_reply(client, data)
 
     rep = (xLbxQueryFontReply *) data;
 
-    nr = GetReply(client);
+    nr = GetMatchingReply(client, rep->sequenceNumber);
     assert(nr);
 
     tag = rep->tag;
@@ -1381,16 +1383,19 @@ MakeLBXReply(client)
     ClientPtr   client;
 {
     ReplyStuffPtr nr;
+    int	gen;
 
     REQUEST(xReq);
 
     /* create the reply struct for requests we don't do anything with */
-    if (generates_replies(stuff->reqType)) {
+    if (gen = GeneratesReplies(stuff)) {
 	nr = NewReply(client);
 	if (nr) {
 	    nr->sequenceNumber = LBXSequenceNumber(client);
 	    nr->request = stuff->reqType;
-	    nr->extension = (stuff->reqType > X_NoOperation) ? stuff->reqType : 0;
+	    nr->extension = (stuff->reqType > X_NoOperation) ? stuff->data : 0;
+	    if (gen == REQ_TYPE_MAYBE)
+	    	nr->guessed = TRUE;
 	}
     }
     return FinishLBXRequest(client, REQ_PASSTHROUGH);
@@ -1411,9 +1416,9 @@ FinishLBXRequest(client, yank)
 #endif
 
 #ifdef PROTOCOL_FULL
-    if (!yankable(yank) && (generates_events(stuff->reqType) ||
-			    generates_replies(stuff->reqType)
-			    || generates_errors(stuff->reqType)))
+    if (!yankable(yank) && (GeneratesEvents(stuff) ||
+			    GeneratesReplies(stuff)
+			    || GeneratesErrors(stuff)))
 	LBXCacheSafe(client) = FALSE;
     else
 	LBXCacheSafe(client) = TRUE;
@@ -1421,7 +1426,7 @@ FinishLBXRequest(client, yank)
 
 #ifdef PROTOCOL_MOST
     if (!yankable(yank)
-     (generates_events(stuff->reqType) || generates_replies(stuff->reqType)))
+	    (GeneratesEvents(stuff) || GeneratesReplies(stuff)))
 	LBXCacheSafe(client) = FALSE;
     else
 	LBXCacheSafe(client) = TRUE;
@@ -1430,6 +1435,27 @@ FinishLBXRequest(client, yank)
 #ifdef PROTOCOL_POOR
     LBXCacheSafe(client) = TRUE;
 #endif
+
+    /* never safe to short-circuit if requests are outstanding */
+    if (NumReplies(client) > 0)
+	LBXCacheSafe(client) = FALSE;
+
+/* XXX is this correct for anything but PROTOCOL_POOR ??? */
+    /*
+     * if we can't write it instantly, and there *may* be a reply pending,
+     * (unknown, because its an unrecognized extension request) we can't even
+     * delay a short-circuit, cause we'll never know when its safe to send the
+     * delayed reply
+     */
+    if (!LBXCacheSafe(client))	{
+    	if (NumReplies(client) && NumGuessedReplies(client) == 0)
+	    LBXCanDelayReply(client) = TRUE;
+	else
+	    LBXCanDelayReply(client) = FALSE;
+    } else {	/* always true if cacheable, so we get a chance to write */
+	LBXCanDelayReply(client) = TRUE;
+    }
+    	
 
     if (yank == REQ_YANK) {
 	LBXSequenceLost(client)++;
@@ -1465,7 +1491,7 @@ patchup_error(client, err, nr)
     ReplyStuffPtr nr;
 {
     QueryTagPtr qtp;
-    int         retval = 0;
+    int         retval = 1;
     CARD16      minor_code;
     char        n;
 
@@ -1513,7 +1539,8 @@ patchup_error(client, err, nr)
 	}
 	break;
     default:
-	assert(0);
+	retval = 0;		/* error caused by some LBX req that shouldn't
+				 * have an error, so eat it */
 	break;
     }
     if (client->swapped) {
@@ -1584,7 +1611,7 @@ DoLBXReply(client, data, len)
 		if (client->swapped) {
 		    SwapConnectionInfo((xConnSetup *) & prefix[1]);
 		}
-		GetConnectionInfo(client, (xConnSetup *) &prefix[1], NULL);
+		GetConnectionInfo(client, (xConnSetup *) & prefix[1], NULL);
 	    }
 	}
 	return TRUE;
@@ -1608,21 +1635,25 @@ DoLBXReply(client, data, len)
 		(reply->type & 0x7f), reply->sequenceNumber, client->XRemId);
 #endif
 
-	if ((reply->type & 0x7f) >= LASTEvent)
-	    fprintf(stderr, "Extension event or BOGUS REPLY TYPE\n");
-
 	/* clear out pending replies that resulted in errors */
 	if (reply->type == X_Error) {
 	    err = (xError *) reply;
-	    nr = GetReply(client);
+	    nr = GetMatchingReply(client, reply->sequenceNumber);
 	    if (error_matches(client, nr, err)) {
 		if (err->majorCode == client->server->lbxReq) {
-		    if (patchup_error(client, err, nr) < 0) {
+		    int         eret;
+
+		    if ((eret = patchup_error(client, err, nr)) < 0) {
 			CloseDownClient(client);
 			return FALSE;
+		    } else if (eret == 0) {
+			/* error for proxy -- eat it */
+			ret = FALSE;
 		    }
 		}
-		RemoveReply(client);
+		/* handle extension error */
+		HandleExtensionError(client, err);
+		RemoveReply(client, nr);
 	    }
 	}
 	/* KeymapNotify has no sequence # */
@@ -1645,13 +1676,14 @@ DoLBXReply(client, data, len)
 	if (reply->type == MotionNotify) {
 	    AllowMotion(client, 1);
 	}
+	HandleExtensionEvent(client, reply);
 	if (client->swapped) {	/* put seq & length back */
 	    swaps(&reply->sequenceNumber, n);
 	    swapl(&reply->length, n);
 	}
-	return TRUE;
+	return ret;
     }
-    nr = GetReply(client);
+    nr = GetMatchingReply(client, reply->sequenceNumber);
 
     if (!nr)			/* what is this???? */
 	return TRUE;
@@ -1663,13 +1695,16 @@ DoLBXReply(client, data, len)
      * either a safe reply struct, or an extension struct that has a matching
      * sequence number.
      */
+
+#ifdef old
     while (!nr->lbx_req && nr->extension && NumReplies(client) > 1) {
 	if ((nr->sequenceNumber & 0xffff) == reply->sequenceNumber)
 	    break;
-	RemoveReply(client);
+	RemoveReply(client, nr);
 	nr = GetReply(client);
 	assert(nr);
     }
+#endif
 
 
 #ifdef TRACE
@@ -1738,14 +1773,19 @@ DoLBXReply(client, data, len)
 	    remove_it = GetLbxImageReply(client, (char *) reply);
 	    ret = FALSE;
 	    break;
+	case X_LbxQueryExtension:
+	    remove_it = HandleLbxQueryExtensionReply(client, (char *) reply);
+	    ret = FALSE;
+	    break;
 	default:
 	    break;
 	}
     } else {
 	/* XXX handle any other extensions we may know about */
+	remove_it = HandleExtensionReply(client, reply, nr);
     }
     if (remove_it)
-	RemoveReply(client);
+	RemoveReply(client, nr);
     if (client->swapped) {	/* put seq & length back */
 	swaps(&reply->sequenceNumber, n);
 	swapl(&reply->length, n);

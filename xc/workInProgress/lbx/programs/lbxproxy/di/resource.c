@@ -1,6 +1,6 @@
 /* Copyright 1988, 1989 Network Computing Devices, Inc.  All rights reserved. */
 
-/* $NCDId: @(#)resource.c,v 1.5 1994/03/24 17:54:47 lemke Exp $ */
+/* $NCDId: @(#)resource.c,v 1.6 1994/09/07 01:50:30 lemke Exp $ */
 
 /************************************************************
 
@@ -50,7 +50,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.4 94/03/27 13:52:48 dpw Exp $ */
+/* $XConsortium: resource.c,v 1.5 94/04/17 21:17:19 dpw Exp mor $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -76,6 +76,7 @@ SOFTWARE.
  */
 
 #include <X11/X.h>
+#define	NEED_REPLIES
 #include <X11/Xproto.h>
 #include "misc.h"
 #include "os.h"

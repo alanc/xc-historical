@@ -1,7 +1,7 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: wire.c,v 1.8 94/11/08 20:05:17 mor Exp mor $ */
 /*
  * $NCDOr: wire.h,v 1.1 1993/11/16 17:58:49 keithp Exp keithp $
- * $NCDId: @(#)wire.h,v 1.5 1994/01/18 19:27:47 dct Exp $
+ * $NCDId: @(#)wire.h,v 1.7 1994/09/15 22:43:04 dct Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -39,7 +39,7 @@ typedef struct _XServer {
     ClientPtr		serverClient;
     int			recv_expect;
     int			motion_allowed;
-    void		*lzwHandle;
+    pointer		compHandle;
     LBXDeltasRec	indeltas;
     LBXDeltasRec	outdeltas;
 } XServerRec;
