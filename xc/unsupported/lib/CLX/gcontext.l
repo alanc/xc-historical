@@ -222,6 +222,13 @@
 		    (type ,type value))
 	   (modify-gcontext (gcontext local-state)
 	     (setf (,internal-accessor local-state) (encode-type ,type value))
+	     ,@(when (eq type 'pixmap)
+		 ;; write-through pixmaps, because the protocol allows
+		 ;; the server to copy the pixmap contents at the time
+		 ;; of the store, rather than continuing to share with
+		 ;; the pixmap.
+		 `((let ((server-state (gcontext-server-state gcontext)))
+		     (setf (,internal-accessor server-state) nil))))
 	     value))
        
 	 (defsetf ,gcontext-name ,internal-setfer)))))
@@ -292,7 +299,14 @@
 	  (cons (encode-type (or null (member :unsorted :y-sorted :yx-sorted :yx-banded))
 			     ordering)
 		(typecase clip-mask
-		  (pixmap (list (pixmap-id clip-mask)))
+		  (pixmap
+		   (let ((server-state (gcontext-server-state gcontext)))
+		     ;; write-through clip-mask pixmap, because the
+		     ;; protocol allows the server to copy the pixmap
+		     ;; contents at the time of the store, rather than
+		     ;; continuing to share with the pixmap.
+		     (setf (gcontext-internal-clip-mask server-state) nil))
+		   (list (pixmap-id clip-mask)))
 		  ((member :none) '(0))
 		  (sequence (list nil clip-mask))
 		  (otherwise (x-type-error clip-mask '(or (member :none) pixmap rect-seq))))))
