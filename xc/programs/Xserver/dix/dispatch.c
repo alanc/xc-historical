@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.22 87/11/18 09:24:47 rws Locked $ */
+/* $Header: dispatch.c,v 1.23 87/12/07 18:09:43 rws Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -258,6 +258,9 @@ StartOver:
 		ErrorF( "HORRIBLE ERROR, unused client %d\n", nready);
 		continue;
 	    }
+	    /* GrabServer activation can cause this to be true */
+	    if (grabbingClient && (client != onlyClient))
+		break;
 	    isItTimeToYield = FALSE;
  
             requestingClient = client;
