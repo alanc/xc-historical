@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.88 87/08/29 21:47:27 drewry Exp $ */
+/* $Header: gc.c,v 1.89 87/09/01 17:04:25 newman Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -763,9 +763,9 @@ CreateDefaultStipple(screenNum)
 
     pScreen = &screenInfo.screen[screenNum];
 
-    (* pScreen->QueryBestSize)(StippleShape, &w, &h);
     w = 16;
     h = 16;
+    (* pScreen->QueryBestSize)(StippleShape, &w, &h);
     pScreen->PixmapPerDepth[0] = 
 		(*pScreen->CreatePixmap)(pScreen, w, h, 1);
 
