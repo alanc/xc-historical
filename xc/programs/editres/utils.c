@@ -717,7 +717,7 @@ WidgetResources * resources;
 	    XtFree(resources->normal[i].class);
 	    XtFree(resources->normal[i].type);
 	}
-	XFree(resources->normal);
+	XFree((char *)resources->normal);
     }
 
     if (resources->num_constraint > 0) {
@@ -726,10 +726,10 @@ WidgetResources * resources;
 	    XtFree(resources->constraint[i].class);
 	    XtFree(resources->constraint[i].type);
 	}
-	XFree(resources->constraint);
+	XFree((char *)resources->constraint);
     }
 
-    XFree(resources);
+    XFree((char *)resources);
 }
 	
 
@@ -841,7 +841,7 @@ WNode * node;
     for (i = 0; i < num_widgets; i++) 	/* insert Widgets themselves. */
 	_EresInsert32(stream, widget_list[i]);
     
-    XtFree(widget_list);
+    XtFree((char *)widget_list);
 }
 
 /*	Function Name: GetFailureMesssage

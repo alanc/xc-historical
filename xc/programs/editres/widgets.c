@@ -481,8 +481,8 @@ WNode * node;
     }
 
     name_info->next = NULL;
-    XtFree(names);		/* Free what you allocate... */
-    XtFree(classes);
+    XtFree((char *)names);		/* Free what you allocate... */
+    XtFree((char *)classes);
 }
 
 /*	Function Name: SetToggleGroupLeaders

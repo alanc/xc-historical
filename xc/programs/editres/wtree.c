@@ -43,8 +43,8 @@ Event * event;
 
     if (global_tree_info != NULL) {
 	XtDestroyWidget(global_tree_info->tree_widget);
-	XtFree(global_tree_info->active_nodes);
-	XtFree(global_tree_info);
+	XtFree((char *)global_tree_info->active_nodes);
+	XtFree((char *)global_tree_info);
     }
 
     global_tree_info = CreateTree(event);
@@ -575,7 +575,7 @@ WNode * parent, * child;
 {
     if (parent->num_children >= parent->alloc_children) {
 	parent->alloc_children += NUM_INC;
-	parent->children = (WNode **) XtRealloc(parent->children, 
+	parent->children = (WNode **) XtRealloc((char *)parent->children, 
 				     sizeof(WNode *) * parent->alloc_children);
     }
 

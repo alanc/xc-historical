@@ -761,10 +761,10 @@ XtPointer info_ptr;
 	info->count++;
     }
 
-    XtFree(names);
-    XtFree(classes);
-    XtFree(name_quarks);
-    XtFree(class_quarks);
+    XtFree((char *)names);
+    XtFree((char *)classes);
+    XtFree((char *)name_quarks);
+    XtFree((char *)class_quarks);
 }
 
 /*	Function Name: ActivateResourceWidgets
@@ -840,8 +840,8 @@ XtPointer info_ptr;
     XtSetValues(node->widget, args, ONE);
     TreeToggle(node->widget, (XtPointer) node, (XtPointer) state);
 
-    XtFree(names);
-    XtFree(classes);
-    XtFree(name_quarks);
-    XtFree(class_quarks);
+    XtFree((char *)names);
+    XtFree((char *)classes);
+    XtFree((char *)name_quarks);
+    XtFree((char *)class_quarks);
 }

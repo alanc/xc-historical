@@ -1,5 +1,5 @@
 /*
- * $XConsortium: geometry.c,v 1.7 90/06/28 12:10:56 kit Exp $
+ * $XConsortium: geometry.c,v 1.8 90/06/28 12:17:57 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -372,7 +372,7 @@ unsigned int width, height;
     if (tree_info->num_flash_widgets + 1 > tree_info->alloc_flash_widgets) {
 	tree_info->alloc_flash_widgets += MORE_FLASH_WIDGETS;
 	tree_info->flash_widgets =
-	    (Widget *) XtRealloc(tree_info->flash_widgets,
+	    (Widget *) XtRealloc((char *)tree_info->flash_widgets,
 			      sizeof(Widget) * tree_info->alloc_flash_widgets);
     }
 
@@ -484,7 +484,7 @@ XtIntervalId * id;
     for (i = 0; i < tree_info->num_flash_widgets; i++) 
 	XtDestroyWidget(tree_info->flash_widgets[i]);
 
-    XtFree(tree_info->flash_widgets);
+    XtFree((char *)tree_info->flash_widgets);
     tree_info->flash_widgets = NULL;
     tree_info->num_flash_widgets = tree_info->alloc_flash_widgets = 0;
 }
