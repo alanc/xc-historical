@@ -1,4 +1,4 @@
-/* $XConsortium: remote.c,v 1.6 94/07/08 14:06:18 mor Exp $ */
+/* $XConsortium: remote.c,v 1.7 94/07/27 15:54:42 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -54,6 +54,7 @@ char	*non_local_session_env;
 {
     FILE *fp;
     int	 pipefd[2];
+    extern char **environ;
     int  i;
 
     if (strcmp (restart_protocol, "rstart-rsh") != 0)
@@ -106,6 +107,9 @@ char	*non_local_session_env;
 
 	    fprintf (fp, "CONTEXT X\n");
 	    fprintf (fp, "DIR %s\n", cwd);
+
+	    if (!env)
+		env = environ;
 
 	    if (env)
 		for (i = 0; env[i]; i++)
