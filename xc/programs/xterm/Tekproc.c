@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.94 91/05/04 18:21:44 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.95 91/05/04 18:57:42 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -1181,7 +1181,7 @@ static void TekRealize (gw, valuemaskp, values)
 
     screen->Tbackground = term->core.background_pixel;
     screen->Tforeground = screen->foreground;
-    screen->Tcursorcolor = screen->foreground;
+    screen->Tcursorcolor = screen->cursorcolor;
 
     if (term->misc.T_geometry == NULL) {
 	int defwidth, defheight;
