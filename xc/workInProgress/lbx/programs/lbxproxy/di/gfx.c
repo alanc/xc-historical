@@ -1,4 +1,4 @@
-/* $XConsortium: gfx.c,v 1.8 94/11/08 20:22:47 mor Exp mor $ */
+/* $XConsortium: gfx.c,v 1.9 94/11/09 17:16:20 mor Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -584,9 +584,7 @@ char       *data;
     }
 
     if ((imageData = (pointer) xalloc (rep->xLength << 2)) == NULL)
-    {
-	/* what to do here ??? */
-    }
+	return FALSE;
 
     if (rep->compressionMethod == LbxImageCompressFaxG42D)
     {
