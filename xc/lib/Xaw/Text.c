@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.131 89/12/08 15:47:56 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.132 89/12/11 19:36:59 converse Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -2483,7 +2483,7 @@ Cardinal *num_args;
     if (newtw->text.scroll_horiz == XawtextScrollNever) 
       DestroyHScrollBar(newtw);
     else if (newtw->text.scroll_horiz == XawtextScrollAlways)
-      CreateVScrollBar(newtw);
+      CreateHScrollBar(newtw);
     redisplay = TRUE;
   }
 
