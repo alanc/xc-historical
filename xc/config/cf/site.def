@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.97 94/02/03 20:32:56 gildea Exp $
+XCOMM site:  $XConsortium: site.def,v 1.98 94/02/06 18:40:25 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -47,7 +47,7 @@ XCOMM #define HasGcc2 YES
 #ifdef SunArchitecture
 #define HasCplusplus YES
 #define CplusplusCmd /obj/CenterLine/bin/CC
-#define CplusplusOptions -Xa
+#define DefaultCplusplusOptions -Xa
 #ifdef SVR4
 #define CplusplusDependIncludes -I/obj/CenterLine/clc++/sparc-solaris2/incl
 #else
