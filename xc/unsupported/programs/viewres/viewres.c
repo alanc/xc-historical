@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.16 90/02/05 17:16:58 jim Exp $
+ * $XConsortium: viewres.c,v 1.17 90/02/05 18:20:09 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -87,6 +87,7 @@ static char *fallback_resources[] = {
 };
 
 static void HandleQuit(), HandleSetLableType(), HandleSetOrientation();
+static void HandleSelect();
 static void set_labeltype_menu(), set_orientation_menu();
 static void build_tree(), set_node_labels();
 
@@ -94,6 +95,7 @@ static XtActionsRec viewres_actions[] = {
     { "Quit", HandleQuit },
     { "SetLabelType", HandleSetLableType },
     { "SetOrientation", HandleSetOrientation },
+    { "Select", HandleSelect },
 };
 
 #define FORMAT_VARIABLES 0
@@ -237,9 +239,9 @@ static Boolean remove_from_selected_list (node, updatewidget)
 }
 
 static void select_callback (gw, closure, data)
-    Widget gw;
+    Widget gw;				/* entry widget */
     caddr_t closure;			/* TRUE or FALSE */
-    caddr_t data;
+    caddr_t data;			/* undefined */
 {
     Arg args[1];
     int i;
@@ -249,7 +251,7 @@ static void select_callback (gw, closure, data)
 	remove_allowed = FALSE;
 	XtSetArg (args[0], XtNstate, FALSE);
 	for (i = 0; i < selected_list.n_elements; i++) {
-	    XtSetValues (selected_list.elements[i], args, ONE);
+	    XtSetValues ((Widget) selected_list.elements[i]->data, args, ONE);
 	    selected_list.elements[i] = NULL;
 	}
 	selected_list.n_elements = 0;
@@ -257,6 +259,21 @@ static void select_callback (gw, closure, data)
       case SELECT_PARENTS:		/* chain up adding to selection_list */
 	break;
       case SELECT_ALL:			/* put everything on selection_list */
+	if (selected_list.max_elements < nwidgets) {
+	    initialize_widgetnode_list (&selected_list.elements,
+					&selected_list.max_elements,
+					nwidgets);
+	}
+	XtSetArg (args[0], XtNstate, TRUE);
+	add_allowed = FALSE;
+	for (i = 0; i < nwidgets; i++) {
+	    Widget w = (Widget) widget_list[i].data;
+
+	    XtSetValues (w, args, ONE);
+	    selected_list.elements[i] = &widget_list[i];
+	}
+	selected_list.n_elements = nwidgets;
+	add_allowed = TRUE;
 	break;
       case SELECT_WITH_RESOURCES:	/* put all w/ rescnt > 0 on sel_list */
 	break;
@@ -475,6 +492,44 @@ static void HandleSetOrientation (w, event, params, num_params)
 }
 
 
+static void HandleSelect (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    int obj;
+    char *cmd;
+
+    if (*num_params != 1) {
+	XBell (XtDisplay(w), 0);
+	return;
+    }
+
+    cmd = (char *) params[0];
+
+    if (XmuCompareISOLatin1 (cmd, "nothing") == 0) {
+	obj = SELECT_NOTHING;
+    } else if (XmuCompareISOLatin1 (cmd, "parents") == 0) {
+	obj = SELECT_PARENTS;
+    } else if (XmuCompareISOLatin1 (cmd, "all") == 0) {
+	obj = SELECT_ALL;
+    } else if (XmuCompareISOLatin1 (cmd, "resources") == 0) {
+	obj = SELECT_WITH_RESOURCES;
+    } else if (XmuCompareISOLatin1 (cmd, "noresources") == 0) {
+	obj = SELECT_WITHOUT_RESOURCES;
+    } else {
+	XBell (XtDisplay(w), 0);
+	return;
+    }
+
+    /*
+     * use any old widget
+     */
+    select_callback (w, (caddr_t) obj, (caddr_t) NULL);
+}
+
+
 
 static void build_tree (node, tree, super)
     WidgetNode *node;
@@ -492,7 +547,7 @@ static void build_tree (node, tree, super)
     XtSetArg (args[n], XtNparent, super); n++;
     XtSetArg (args[n], XtNlabel, (Appresources.show_variable ?
 				  node->label : WnClassname(node))); n++;
-    XtSetArg (args[n], XtNcallback, callback_rec);
+    XtSetArg (args[n], XtNcallback, callback_rec); n++;
 
     callback_rec[0].closure = (caddr_t) node;
     w = XtCreateManagedWidget (node->label, toggleWidgetClass, tree, args, n);
