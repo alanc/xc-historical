@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 1.66 89/03/13 07:39:10 rws Exp $ */
+/* $XConsortium: property.c,v 1.67 89/03/23 09:23:30 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -80,6 +80,7 @@ ProcRotateProperties(client)
     xEvent event;
 
     REQUEST_FIXED_SIZE(xRotatePropertiesReq, stuff->nAtoms << 2);
+    UpdateCurrentTime();
     pWin = (WindowPtr) LookupWindow(stuff->window, client);
     if (!pWin)
         return(BadWindow);
@@ -157,6 +158,7 @@ ProcChangeProperty(client)
     REQUEST(xChangePropertyReq);
 
     REQUEST_AT_LEAST_SIZE(xChangePropertyReq);
+    UpdateCurrentTime();
     format = stuff->format;
     mode = stuff->mode;
     if ((mode != PropModeReplace) && (mode != PropModeAppend) &&
@@ -365,6 +367,8 @@ ProcGetProperty(client)
     REQUEST(xGetPropertyReq);
 
     REQUEST_SIZE_MATCH(xGetPropertyReq);
+    if (stuff->delete)
+	UpdateCurrentTime();
     pWin = (WindowPtr)LookupWindow(stuff->window, client);
     if (pWin)
     {
