@@ -1,4 +1,4 @@
-/* $XConsortium: speedo.h,v 1.4 91/05/11 14:18:41 rws Exp $ */
+/* $XConsortium: speedo.h,v 1.5 93/09/11 15:29:21 rws Exp $ */
 
 /*
 
@@ -783,17 +783,9 @@ fix31 sp_get_pair_kern(PROTO_DECL2 ufix16 char_index1,ufix16 char_index2);
 boolean sp_get_char_bbox(PROTO_DECL2 ufix16 char_index, bbox_t *bbox);
 #endif
 
-static boolean sp_make_simp_char(PROTO_DECL2 ufix8 FONTFAR *pointer,ufix8 format);
-static boolean sp_make_comp_char(PROTO_DECL2 ufix8 FONTFAR *pointer);
-static ufix8 FONTFAR *sp_get_char_org(PROTO_DECL2 ufix16 char_index,boolean top_level);
-static fix15 sp_get_posn_arg(PROTO_DECL2 ufix8 FONTFAR *STACKFAR *ppointer,ufix8 format);
-static fix15 sp_get_scale_arg(PROTO_DECL2 ufix8 FONTFAR *STACKFAR *ppointer,ufix8 format);
-
 /* do_trns.c functions */
 ufix8 FONTFAR *sp_read_bbox(PROTO_DECL2 ufix8 FONTFAR *pointer,point_t STACKFAR *pPmin,point_t STACKFAR *pPmax,boolean set_flag);
 void sp_proc_outl_data(PROTO_DECL2 ufix8 FONTFAR *pointer);
-static void sp_split_curve(PROTO_DECL2 point_t P1,point_t P2,point_t P3,fix15 depth);
-static ufix8 FONTFAR *sp_get_args(PROTO_DECL2 ufix8 FONTFAR *pointer,ufix8  format,point_t STACKFAR *pP);
 
 /* out_blk.c functions */
 #if INCL_BLACK
@@ -802,9 +794,6 @@ boolean sp_begin_char_black(PROTO_DECL2 point_t Psw,point_t Pmin,point_t Pmax);
 void sp_begin_contour_black(PROTO_DECL2 point_t P1,boolean outside);
 void sp_line_black(PROTO_DECL2 point_t P1);
 boolean sp_end_char_black(PROTO_DECL1);
-
-static void sp_add_intercept_black(PROTO_DECL2 fix15 y, fix15 x);
-static void sp_proc_intercepts_black(PROTO_DECL1);
 #endif
 
 /* out_scrn.c functions */
@@ -818,9 +807,6 @@ void sp_vert_line_screen(PROTO_DECL2   fix31 x, fix15 y1, fix15 y2);
 void sp_line_screen(PROTO_DECL2 point_t P1);
 void sp_end_contour_screen(PROTO_DECL1);
 boolean sp_end_char_screen(PROTO_DECL1);
-
-static void sp_add_intercept_screen(PROTO_DECL2 fix15 y,fix31 x);
-static void sp_proc_intercepts_screen(PROTO_DECL1);
 #endif
 
 /* out_outl.c functions */
@@ -848,10 +834,6 @@ boolean sp_begin_char_2d(PROTO_DECL2 point_t Psw,point_t Pmin,point_t Pmax);
 void sp_begin_contour_2d(PROTO_DECL2 point_t P1,boolean outside);
 void sp_line_2d(PROTO_DECL2 point_t P1);
 boolean sp_end_char_2d(PROTO_DECL1);
-
-static void sp_draw_vector_to_2d(PROTO_DECL2 fix15 x0,fix15 y0,fix15 x1,fix15 y1,band_t GLOBALFAR *band);
-static void sp_add_intercept_2d(PROTO_DECL2 fix15 y,fix15 x);
-static void sp_proc_intercepts_2d(PROTO_DECL1);
 #endif
 
 /* out_util.c functions */
@@ -889,11 +871,6 @@ ufix16 sp_get_cust_no(PROTO_DECL2 buff_t font_buff);
 boolean sp_set_specs(PROTO_DECL2 specs_t STACKFAR *specsarg);
 void sp_type_tcb(PROTO_DECL2 tcb_t GLOBALFAR *ptcb);
 
-static boolean sp_setup_consts(PROTO_DECL2 fix15 xmin, fix15 xmax,
-	fix15 ymin, fix15 ymax);
-static void sp_setup_tcb(PROTO_DECL2 tcb_t GLOBALFAR *ptcb);
-static fix15 sp_setup_mult(PROTO_DECL2 fix31 input_mult);
-static fix31 sp_setup_offset(PROTO_DECL2 fix31 input_offset);
 fix31 sp_read_long(PROTO_DECL2 ufix8 FONTFAR *pointer);
 fix15 sp_read_word_u(PROTO_DECL2 ufix8 FONTFAR *pointer);
 
@@ -904,7 +881,6 @@ ufix8 FONTFAR *sp_plaid_tcb(PROTO_DECL2 ufix8 FONTFAR *pointer,ufix8 format);
 ufix8 FONTFAR *sp_skip_interpolation_table(PROTO_DECL2 ufix8 FONTFAR *pointer, ufix8 format);
 ufix8 FONTFAR *sp_skip_control_zone(PROTO_DECL2 ufix8 FONTFAR *pointer, ufix8 format);
 
-static void sp_constr_update(PROTO_DECL1);
 ufix8 FONTFAR *sp_read_oru_table(PROTO_DECL2 ufix8 FONTFAR *pointer);
 #if INCL_SQUEEZING || INCL_ISW
 static void sp_calculate_x_pix(PROTO_DECL2 ufix8 start_edge,ufix8 end_edge,ufix16 constr_nr,fix31 x_scale,fix31 x_offset,fix31 ppo,fix15 setwidth_pix);
@@ -914,8 +890,6 @@ static void sp_calculate_y_pix(PROTO_DECL2 ufix8 start_edge,ufix8 end_edge,ufix1
 boolean sp_calculate_x_scale(PROTO_DECL2 fix31 *x_factor,fix31 *x_offset,fix15 no_x_ctrl_zones);
 boolean sp_calculate_y_scale(PROTO_DECL2 fix31 *top_scale,fix31 *bottom_scale,fix15 first_y_zone, fix15 no_Y_ctrl_zones);
 #endif
-static ufix8 FONTFAR *sp_setup_pix_table(PROTO_DECL2 ufix8 FONTFAR *pointer,boolean short_form,fix15 no_X_ctrl_zones,fix15 no_Y_ctrl_zones);
-static ufix8 FONTFAR *sp_setup_int_table(PROTO_DECL2 ufix8 FONTFAR *pointer,fix15 no_X_int_zones,fix15 no_Y_int_zones);
                   
 
 /* user defined functions */
@@ -978,17 +952,9 @@ fix31   sp_get_pair_kern();      /* Get kerning for specified char pair */
 boolean sp_get_char_bbox();
 #endif
 
-static boolean sp_make_simp_char(); /* Process simple character data */
-static boolean sp_make_comp_char(); /* Process compound character data */
-static ufix8 FONTFAR *sp_get_char_org();   /* Look up char in character directory */
-static fix15   sp_get_posn_arg();   /* Read Xpos Ypos args in DOCH instruction */
-static fix15   sp_get_scale_arg();  /* read Xscale Yscale args in DOCH instruction */
-
 /* do_trns.c functions */
 ufix8 FONTFAR *sp_read_bbox();              /* Read bounding box */
 void   sp_proc_outl_data();         /* Process outline data */
-static void   sp_split_curve();            /* Split Bezier curve into vectors */
-static ufix8 FONTFAR *sp_get_args();      /* Read X Y argument pair */
 
 /* out_0c.c functions */
 boolean sp_init_black();
@@ -996,9 +962,6 @@ boolean sp_begin_char_black();
 void sp_begin_contour_black();
 void sp_line_black();
 boolean sp_end_char_black();
-
-static void    sp_add_intercept_black();
-static void    sp_proc_intercepts_black();
 
 /* out_util.c functions */
 #if INCL_BLACK || INCL_SCREEN || INCL_2D
@@ -1031,10 +994,6 @@ ufix16 sp_get_cust_no();
 boolean    sp_set_specs();       /* Set specifications */
 void       sp_type_tcb();           /* Update transformation class in tcb */
 
-static void    sp_setup_tcb();      /* Set up transformation control block */
-static fix15 sp_setup_mult();       /* Convert mult to internal form */
-static fix31 sp_setup_offset();     /* Convert offset to internal form */
-static boolean sp_setup_consts();   /* Set up scaling constants */
 fix31   sp_read_long();      /* Read long as 3 bytes encrypted */
 fix15   sp_read_word_u();    /* Read word as 2 bytes unencrypted */
 
@@ -1045,7 +1004,6 @@ ufix8 FONTFAR *sp_plaid_tcb();             /* Enable intelligent transformation 
 ufix8 FONTFAR *sp_skip_interpolation_table();
 ufix8 FONTFAR *sp_skip_control_zone();
 
-static void sp_constr_update();     /* Update constraint table */
 ufix8 FONTFAR *sp_read_oru_table();    /* Read controlled coord table */
 #if INCL_SQUEEZING || INCL_ISW
 static void sp_calculate_x_pix();
@@ -1055,8 +1013,6 @@ static void sp_calculate_y_pix();
 boolean sp_calculate_x_scale();
 boolean sp_calculate_y_scale() ;
 #endif
-static ufix8 FONTFAR *sp_setup_pix_table();   /* Read control zone table */
-static ufix8 FONTFAR *sp_setup_int_table();   /* Read interpolation zone table */
 
 /* user defined functions */
 
@@ -1101,9 +1057,6 @@ void sp_vert_line_screen();
 void sp_end_contour_screen();
 boolean sp_end_char_screen();        /* If screenwriter mode supported */
 
-static void    sp_add_intercept_screen();
-static void    sp_proc_intercepts_screen();
-
 
 boolean sp_init_outline();        /* If only vector output mode supported */
 boolean sp_begin_char_outline();      /* If only vector output mode supported */
@@ -1120,10 +1073,6 @@ boolean sp_begin_char_2d();     /* If screen-writer and other modes supported */
 void    sp_begin_contour_2d();  /* If screen-writer and other modes supported */
 void    sp_line_2d();           /* If screen-writer and other modes supported */
 boolean sp_end_char_2d();       /* If screen-writer and other modes supported */
-
-static void    sp_add_intercept_2d();
-static void    sp_proc_intercepts_2d();
-static void    sp_draw_vector_to_2d();
 
 #endif
 

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: out_blk.c,v 1.3 91/05/11 09:52:21 rws Exp $ */
 
 /*
 
@@ -56,6 +56,16 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 /***** STATIC VARIABLES *****/
 
 /***** STATIC FUNCTIONS *****/
+
+#if INCL_BLACK
+#if PROTOS_AVAIL
+static void sp_add_intercept_black(PROTO_DECL2 fix15 y, fix15 x);
+static void sp_proc_intercepts_black(PROTO_DECL1);
+#else
+static void    sp_add_intercept_black();
+static void    sp_proc_intercepts_black();
+#endif
+#endif
 
 
 #if INCL_BLACK
@@ -190,14 +200,14 @@ if ( (temp1 = (x1 - x0)) == 0)  /* check for vertical line */
         {   /* Vector down */
         if ((how_many_y += yc + 1) < 0) how_many_y = 0; /* can't go below 0 */
         for (i = yc; i >= how_many_y; i--)
-            add_intercept_black(i,temp1); 
+            sp_add_intercept_black(i,temp1); 
         }
     else
         {   /* Vector up */
      /* check to see that line doesn't extend beyond top of band */
         if ((how_many_y += yc) > sp_globals.no_y_lists) how_many_y = sp_globals.no_y_lists;
         for (i = yc; i != how_many_y; i++)
-            add_intercept_black(i,temp1); 
+            sp_add_intercept_black(i,temp1); 
         }
     return;
     }
@@ -241,14 +251,14 @@ yc -= sp_globals.y_band.band_min; /* yc is now an offset relative to the band */
 if (how_many_y < 0)
     {   /* Vector down */
     if (how_many_y == -1)
-        add_intercept_black(yc, (fix15) (xc >> 16));
+        sp_add_intercept_black(yc, (fix15) (xc >> 16));
     else
         {
         if ((how_many_y += yc + 1) < 0) how_many_y = 0; /* can't go below 0 */
         for (i = yc; i >= how_many_y; i--)
             {
             temp1 = (fix15)(xc >> 16); 
-            add_intercept_black(i,temp1); 
+            sp_add_intercept_black(i,temp1); 
             xc -= dx_dy;
             }
         }
@@ -257,14 +267,14 @@ if (how_many_y < 0)
     {   /* Vector up */
      /* check to see that line doesn't extend beyond top of band */
     if (how_many_y == 1)
-        add_intercept_black(yc, (fix15) (xc >> 16));
+        sp_add_intercept_black(yc, (fix15) (xc >> 16));
     else
         {
         if ((how_many_y += yc) > sp_globals.no_y_lists) how_many_y = sp_globals.no_y_lists;
         for (i = yc; i != how_many_y; i++)
             {
             temp1 = (fix15)(xc >> 16);
-            add_intercept_black(i,temp1); 
+            sp_add_intercept_black(i,temp1); 
             xc += dx_dy;
             }
         }
@@ -483,7 +493,7 @@ if ( !(sp_globals.specs.flags & CLIP_BOTTOM))
         }
     else
         {
-        proc_intercepts_black();
+        sp_proc_intercepts_black();
         close_bitmap();
         return TRUE;
         }
@@ -498,7 +508,7 @@ else
         }
     else
         {
-        proc_intercepts_black();
+        sp_proc_intercepts_black();
         if (next_band_out())
             {
             init_intercepts_out();
@@ -512,7 +522,7 @@ else
 #endif
 
 #if INCL_BLACK
-FUNCTION LOCAL  void add_intercept_black(y, x)
+FUNCTION LOCAL  void sp_add_intercept_black(y, x)
 GDECL
 fix15 y;                 /* Y coordinate in relative pixel units */
                          /* (0 is lowest sample in band) */
@@ -576,7 +586,7 @@ if (++sp_globals.next_offset >= MAX_INTERCEPTS) /* Intercept buffer full? */
 #endif
 
 #if INCL_BLACK
-FUNCTION LOCAL  void proc_intercepts_black()
+FUNCTION LOCAL  void sp_proc_intercepts_black()
 GDECL
 
 /*  Called by sp_make_char to output accumulated intercept lists

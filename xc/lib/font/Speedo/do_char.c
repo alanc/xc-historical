@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_char.c,v 1.2 91/05/11 09:47:31 rws Exp $ */
 
 /*
 
@@ -52,6 +52,20 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
 /***** STATIC FUNCTIONS *****/
 
+#if PROTOS_AVAIL
+static boolean sp_make_simp_char(PROTO_DECL2 ufix8 FONTFAR *pointer,ufix8 format);
+static boolean sp_make_comp_char(PROTO_DECL2 ufix8 FONTFAR *pointer);
+static ufix8 FONTFAR *sp_get_char_org(PROTO_DECL2 ufix16 char_index,boolean top_level);
+static fix15 sp_get_posn_arg(PROTO_DECL2 ufix8 FONTFAR *STACKFAR *ppointer,ufix8 format);
+static fix15 sp_get_scale_arg(PROTO_DECL2 ufix8 FONTFAR *STACKFAR *ppointer,ufix8 format);
+#else
+static boolean sp_make_simp_char(); /* Process simple character data */
+static boolean sp_make_comp_char(); /* Process compound character data */
+static ufix8 FONTFAR *sp_get_char_org();   /* Look up char in character directory */
+static fix15   sp_get_posn_arg();   /* Read Xpos Ypos args in DOCH instruction */
+static fix15   sp_get_scale_arg();  /* read Xscale Yscale args in DOCH instruction */
+#endif
+
 
 FUNCTION ufix16 get_char_id(char_index)
 GDECL
@@ -71,7 +85,7 @@ if (!sp_globals.specs_valid)     /* Font specs not defined? */
     return (ufix16)0;            /* Return zero character id */
     }
 
-pointer = get_char_org(char_index, TRUE); /* Get pointer to character data */
+pointer = sp_get_char_org(char_index, TRUE); /* Get pointer to character data */
 if (pointer == NULL)             /* Character data not available? */
     {
     report_error(12);            /* Report character data not avail */
@@ -102,7 +116,7 @@ if (!sp_globals.specs_valid)                /* Font specs not defined? */
     return (fix31)0;             /* Return zero character width */
     }
 
-pointer = get_char_org(char_index, TRUE); /* Get pointer to character data */
+pointer = sp_get_char_org(char_index, TRUE); /* Get pointer to character data */
 if (pointer == NULL)             /* Character data not available? */
     {
     report_error(12);            /* Report character data not avail */
@@ -326,7 +340,7 @@ if (!sp_globals.specs_valid)                /* Font specs not defined? */
 
 init_tcb();                      /* Initialize transformation control block */
 
-pointer = get_char_org(char_index, TRUE); /* Point to start of character data */
+pointer = sp_get_char_org(char_index, TRUE); /* Point to start of character data */
 if (pointer == NULL)             /* Character data not available? */
     {
     report_error(12);            /* Report character data not avail */
@@ -386,7 +400,7 @@ if (!sp_globals.specs_valid)                /* Font specs not defined? */
 
 init_tcb();                      /* Initialize transformation control block */
 
-pointer = get_char_org(char_index, TRUE); /* Point to start of character data */
+pointer = sp_get_char_org(char_index, TRUE); /* Point to start of character data */
 if (pointer == NULL)             /* Character data not available? */
     {
     report_error(12);            /* Report character data not avail */
@@ -535,7 +549,7 @@ else
 
 init_tcb();                      /* Initialize transformation control block */
 
-pointer = get_char_org(char_index, TRUE); /* Point to start of character data */
+pointer = sp_get_char_org(char_index, TRUE); /* Point to start of character data */
 SHOW(pointer);
 if (pointer == NULL)             /* Character data not available? */
     {
@@ -572,15 +586,15 @@ if (format & BIT1)               /* Optional data in header? */
     }
 if (format & BIT0)
     {
-    return make_comp_char(pointer); /* Output compound character */
+    return sp_make_comp_char(pointer); /* Output compound character */
     }
 else
     {
-    return make_simp_char(pointer, format); /* Output simple character */
+    return sp_make_simp_char(pointer, format); /* Output simple character */
     }
 }
 
-FUNCTION static boolean make_simp_char(pointer, format)
+FUNCTION static boolean sp_make_simp_char(pointer, format)
 GDECL
 ufix8 FONTFAR  *pointer;      /* Pointer to first byte of position argument */
 ufix8    format;       /* Character format byte */
@@ -641,7 +655,7 @@ if (fn_begin_char(sp_globals.Psw, Pmin, Pmax))     /* Signal start of character 
 return TRUE;
 }
 
-FUNCTION static boolean make_comp_char(pointer)
+FUNCTION static boolean sp_make_comp_char(pointer)
 GDECL
 ufix8 FONTFAR  *pointer;      /* Pointer to first byte of position argument */
 /*
@@ -736,15 +750,15 @@ if (fn_begin_char(sp_globals.Psw, Pmin, Pmax)) /* Signal start of character data
 	    while (format = NEXT_BYTE(pointer))    /* DOCH instruction? */
 	        {
 	        init_tcb();                        /* Initialize transformation control block */
-	        x_posn = get_posn_arg(&pointer, format);
-	        y_posn = get_posn_arg(&pointer, (ufix8)(format >> 2));
-	        x_scale = get_scale_arg(&pointer, (ufix8)(format & BIT4));
-	        y_scale = get_scale_arg(&pointer, (ufix8)(format & BIT5));
+	        x_posn = sp_get_posn_arg(&pointer, format);
+	        y_posn = sp_get_posn_arg(&pointer, (ufix8)(format >> 2));
+	        x_scale = sp_get_scale_arg(&pointer, (ufix8)(format & BIT4));
+	        y_scale = sp_get_scale_arg(&pointer, (ufix8)(format & BIT5));
 	        scale_tcb(&sp_globals.tcb, x_posn, y_posn, x_scale, y_scale); /* Scale for sub-char */
 	        sub_char_index = (format & BIT6)?  /* Read sub-char index */
 	            (ufix16)NEXT_WORD(pointer):
 	            (ufix16)NEXT_BYTE(pointer);          
-	        sub_pointer = get_char_org(sub_char_index, FALSE); /* Point to start of sub-char */
+	        sub_pointer = sp_get_char_org(sub_char_index, FALSE); /* Point to start of sub-char */
 	        if (sub_pointer == NULL)           /* Character data not available? */
 	            {
 	            return FALSE;                  /* Abort character output */
@@ -782,13 +796,13 @@ return TRUE;
 }
 
 #if INCL_LCD           /* Dynamic load character data supported? */
-FUNCTION static ufix8 FONTFAR *get_char_org(char_index, top_level)
+FUNCTION static ufix8 FONTFAR *sp_get_char_org(char_index, top_level)
 GDECL
 ufix16   char_index;   /* Index of character to be accessed */
 boolean  top_level;    /* Not a compound character element
 /*
  * Called by sp_get_char_id(), sp_get_char_width(), sp_make_char() and
- * make_comp_char() to get a pointer to the start of the character data
+ * sp_make_comp_char() to get a pointer to the start of the character data
  * for the specified character index.
  * Version for configuration supporting dynamic character data loading.
  * Calls load_char_data() to load character data if not already loaded
@@ -850,13 +864,13 @@ return pchar_data->org;               /* Return pointer into character data buff
 
 #if INCL_LCD
 #else                  /* Dynamic load character data not supported? */
-FUNCTION static ufix8 FONTFAR *get_char_org(char_index, top_level)
+FUNCTION static ufix8 FONTFAR *sp_get_char_org(char_index, top_level)
 GDECL
 ufix16   char_index;   /* Index of character to be accessed */
 boolean  top_level;    /* Not a compound character element
 /*
  * Called by sp_get_char_id(), sp_get_char_width(), sp_make_char() and
- * make_comp_char() to get a pointer to the start of the character data
+ * sp_make_comp_char() to get a pointer to the start of the character data
  * for the specified character index.
  * Version for configuration not supporting dynamic character data loading.
  * Returns NULL if character data not available
@@ -901,12 +915,12 @@ return sp_globals.pfont->org + char_offset;      /* Return pointer into font buf
 #endif
 
 
-FUNCTION static fix15 get_posn_arg(ppointer, format)
+FUNCTION static fix15 sp_get_posn_arg(ppointer, format)
 GDECL
 ufix8 FONTFAR * STACKFAR *ppointer;     /* Pointer to first byte of position argument */
 ufix8    format;       /* Format of DOCH arguments */
 /*
- * Called by make_comp_char() to read a position argument from the
+ * Called by sp_make_comp_char() to read a position argument from the
  * specified point in the font/char buffer.
  * Updates pointer to byte following position argument.
  * Returns value of position argument in outline resolution units
@@ -925,12 +939,12 @@ default:
     }
 }
 
-FUNCTION static fix15 get_scale_arg(ppointer, format)
+FUNCTION static fix15 sp_get_scale_arg(ppointer, format)
 GDECL
 ufix8 FONTFAR *STACKFAR *ppointer;     /* Pointer to first byte of position argument */
 ufix8    format;       /* Format of DOCH arguments */
 /*
- * Called by make_comp_char() to read a scale argument from the
+ * Called by sp_make_comp_char() to read a scale argument from the
  * specified point in the font/char buffer.
  * Updates pointer to byte following scale argument.
  * Returns value of scale argument in scale units (normally 1/4096)

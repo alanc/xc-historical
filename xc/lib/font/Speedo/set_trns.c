@@ -1,4 +1,4 @@
-/* $XConsortium: set_trns.c,v 1.2 91/05/11 09:54:57 rws Exp $ */
+/* $XConsortium: set_trns.c,v 1.3 94/02/03 15:44:29 gildea Exp $ */
 
 /*
 
@@ -64,6 +64,17 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 /***** STATIC VARIABLES *****/
 
 /***** STATIC FUNCTIONS *****/
+
+#if PROTOS_AVAIL
+static void sp_constr_update(PROTO_DECL1);
+static ufix8 FONTFAR *sp_setup_pix_table(PROTO_DECL2 ufix8 FONTFAR *pointer,boolean short_form,fix15 no_X_ctrl_zones,fix15 no_Y_ctrl_zones);
+static ufix8 FONTFAR *sp_setup_int_table(PROTO_DECL2 ufix8 FONTFAR *pointer,fix15 no_X_int_zones,fix15 no_Y_int_zones);
+#else
+static void sp_constr_update();     /* Update constraint table */
+static ufix8 FONTFAR *sp_setup_pix_table();   /* Read control zone table */
+static ufix8 FONTFAR *sp_setup_int_table();   /* Read interpolation zone table */
+#endif
+
 
 FUNCTION void init_tcb()
 GDECL
@@ -222,7 +233,7 @@ fix15 no_Y_int_zones;
 begin_plaid_data();
 #endif
 
-constr_update();           /* Update constraint table if required */
+sp_constr_update();           /* Update constraint table if required */
 
 sp_globals.no_X_orus = (format & BIT2)?  
     (fix15)NEXT_BYTE(pointer):
@@ -240,7 +251,7 @@ if (sp_globals.no_Y_orus > 1)         /* 2 or more controlled Y coordinates? */
 
 no_X_ctrl_zones = sp_globals.no_X_orus - 1;
 no_Y_ctrl_zones = sp_globals.no_Y_orus - 1;
-pointer = setup_pix_table(pointer, (boolean)(format & BIT4), 
+pointer = sp_setup_pix_table(pointer, (boolean)(format & BIT4), 
     no_X_ctrl_zones, no_Y_ctrl_zones);
 
 no_X_int_zones = (format & BIT6)?
@@ -250,7 +261,7 @@ no_Y_int_zones = (format & BIT7)?
     (fix15)NEXT_BYTE(pointer):
     0;
 sp_globals.Y_int_org = no_X_int_zones;
-pointer = setup_int_table(pointer, no_X_int_zones, no_Y_int_zones);
+pointer = sp_setup_int_table(pointer, no_X_int_zones, no_Y_int_zones);
 
 #if INCL_PLAID_OUT         /* Plaid data monitoring included? */
 end_plaid_data();
@@ -261,7 +272,7 @@ return pointer;
 #endif
 
 #if INCL_RULES
-FUNCTION static void constr_update()
+FUNCTION static void sp_constr_update()
 GDECL
 /*
  * Called by plaid_tcb() to update the constraint table for the current
@@ -524,7 +535,7 @@ fix31 x_offset;
 fix31 ppo;
 fix15    setwidth_pix;
 /*
- * Called by setup_pix_table() when X squeezing is necessary
+ * Called by sp_setup_pix_table() when X squeezing is necessary
  * to insert the correct edge in the global pix array
  */
 {
@@ -592,7 +603,7 @@ fix31 ppo;
 fix15 em_top_pix, em_bot_pix;
 
 /*
- * Called by setup_pix_table() when Y squeezing is necessary
+ * Called by sp_setup_pix_table() when Y squeezing is necessary
  * to insert the correct edge in the global pix array
  */
 {
@@ -690,7 +701,7 @@ fix31 *x_factor;
 fix31 *x_offset;
 fix15   no_X_ctrl_zones; /* Number of X control zones */
 /*
- * Called by setup_pix_table() when squeezing is included
+ * Called by sp_setup_pix_table() when squeezing is included
  * to determine whether X scaling is necessary.  If it is, the
  * scale factor and offset are computed.  This function returns
  * a boolean value TRUE = X squeezind is necessary, FALSE = no
@@ -846,7 +857,7 @@ fix31   *top_scale, *bottom_scale;
 fix15  first_Y_zone;
 fix15  no_Y_ctrl_zones;
 /*
- * Called by setup_pix_table() when squeezing is included
+ * Called by sp_setup_pix_table() when squeezing is included
  * to determine whether Y scaling is necessary.  If it is, 
  * two scale factors are computed, one for above the baseline,
  * and one for below the basline.
@@ -917,7 +928,7 @@ return TRUE;
 #endif
 
 #if INCL_RULES
-FUNCTION static ufix8 FONTFAR *setup_pix_table(
+FUNCTION static ufix8 FONTFAR *sp_setup_pix_table(
     pointer, short_form, no_X_ctrl_zones, no_Y_ctrl_zones)
 GDECL
 ufix8 FONTFAR *pointer;   /* Pointer to first byte in control zone table */
@@ -1144,7 +1155,7 @@ return pointer;
 
 
 #if INCL_RULES
-FUNCTION static ufix8 FONTFAR *setup_int_table(pointer, no_X_int_zones, no_Y_int_zones)
+FUNCTION static ufix8 FONTFAR *sp_setup_int_table(pointer, no_X_int_zones, no_Y_int_zones)
 GDECL
 ufix8 FONTFAR *pointer;   /* Pointer to first byte in interpolation zone table */
 fix15  no_X_int_zones; /* Number of X interpolation zones */

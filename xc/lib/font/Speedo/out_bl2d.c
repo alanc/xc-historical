@@ -1,4 +1,4 @@
-/* $XConsortium: out_bl2d.c,v 1.3 91/05/11 09:51:53 rws Exp $ */
+/* $XConsortium: out_bl2d.c,v 1.4 94/02/03 17:20:59 gildea Exp $ */
 
 /*
 
@@ -52,6 +52,18 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 /***** STATIC VARIABLES *****/
 
 /***** STATIC FUNCTIONS *****/
+
+#if INCL_2D
+#if PROTOS_AVAIL
+static void sp_draw_vector_to_2d(PROTO_DECL2 fix15 x0,fix15 y0,fix15 x1,fix15 y1,band_t GLOBALFAR *band);
+static void sp_add_intercept_2d(PROTO_DECL2 fix15 y,fix15 x);
+static void sp_proc_intercepts_2d(PROTO_DECL1);
+#else
+static void    sp_add_intercept_2d();
+static void    sp_proc_intercepts_2d();
+static void    sp_draw_vector_to_2d();
+#endif
+#endif
 
 #if INCL_2D
 FUNCTION boolean init_2d(specsarg)
@@ -150,14 +162,14 @@ if (sp_globals.extents_running)
 
 if (!sp_globals.intercept_oflo)
     {
-    draw_vector_to_2d(sp_globals.x0_spxl,
+    sp_draw_vector_to_2d(sp_globals.x0_spxl,
                   sp_globals.y0_spxl,
                   P1.x,
                   P1.y,
                   &sp_globals.y_band); /* y-scan */
 
     if (sp_globals.x_scan_active)
-        draw_vector_to_2d(sp_globals.y0_spxl,
+        sp_draw_vector_to_2d(sp_globals.y0_spxl,
                       sp_globals.x0_spxl,
                       P1.y,
                       P1.x,
@@ -168,7 +180,7 @@ sp_globals.x0_spxl = P1.x;
 sp_globals.y0_spxl = P1.y; /* update endpoint */
 }
 
-FUNCTION static void draw_vector_to_2d(x0, y0, x1, y1, band)
+FUNCTION static void sp_draw_vector_to_2d(x0, y0, x1, y1, band)
 GDECL
 fix15 x0;                /* X coordinate */
 fix15 y0;                /* Y coordinate */
@@ -256,7 +268,7 @@ if (how_many_y < 0)
     while(yc >= how_many_y)
         {
         temp1 = (fix15)(xc >> 16); 
-        add_intercept_2d(yc--,temp1); 
+        sp_add_intercept_2d(yc--,temp1); 
         xc -= dx_dy;
         }
     }
@@ -268,7 +280,7 @@ if (how_many_y < 0)
     while(yc < how_many_y)
         {
         temp1 = (fix15)(xc >> 16);
-        add_intercept_2d(yc++,temp1); 
+        sp_add_intercept_2d(yc++,temp1); 
         xc += dx_dy;
         }
     }
@@ -489,7 +501,7 @@ if ( !(sp_globals.specs.flags & CLIP_BOTTOM))
         }
     else
         {
-        proc_intercepts_2d();
+        sp_proc_intercepts_2d();
         close_bitmap();
         return TRUE;
         }
@@ -504,7 +516,7 @@ else
         }
     else
         {
-        proc_intercepts_2d();
+        sp_proc_intercepts_2d();
         if (next_band_out())
             {
             init_intercepts_out();
@@ -518,7 +530,7 @@ else
 #endif
 
 #if INCL_2D
-FUNCTION static  void add_intercept_2d(y, x)
+FUNCTION static  void sp_add_intercept_2d(y, x)
 GDECL
 fix15 y;                 /* Y coordinate in relative pixel units */
                          /* (0 is lowest sample in band) */
@@ -596,7 +608,7 @@ if (++sp_globals.next_offset >= MAX_INTERCEPTS) /* Intercept buffer full? */
 #endif
 
 #if INCL_2D
-FUNCTION static  void proc_intercepts_2d()
+FUNCTION static  void sp_proc_intercepts_2d()
 GDECL
 /*  Called by sp_make_char to output accumulated intercept lists
  *  Clips output to xmin, xmax, sp_globals.ymin, ymax boundaries

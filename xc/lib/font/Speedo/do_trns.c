@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_trns.c,v 1.2 91/05/11 09:48:24 rws Exp $ */
 
 /*
 
@@ -54,6 +54,13 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
 /***** STATIC FUNCTIONS *****/
 
+#if PROTOS_AVAIL
+static void sp_split_curve(PROTO_DECL2 point_t P1,point_t P2,point_t P3,fix15 depth);
+static ufix8 FONTFAR *sp_get_args(PROTO_DECL2 ufix8 FONTFAR *pointer,ufix8  format,point_t STACKFAR *pP);
+#else
+static void   sp_split_curve();            /* Split Bezier curve into vectors */
+static ufix8 FONTFAR *sp_get_args();      /* Read X Y argument pair */
+#endif
 
 
 FUNCTION ufix8 FONTFAR *read_bbox(pointer, pPmin, pPmax, set_flag)
@@ -81,7 +88,7 @@ sp_globals.x_int = 0;
 sp_globals.y_int = sp_globals.Y_int_org;
 sp_globals.x_orus = sp_globals.y_orus = 0;
 format1 = NEXT_BYTE(pointer);
-pointer = get_args(pointer, format1, pPmin);
+pointer = sp_get_args(pointer, format1, pPmin);
 #if INCL_SQUEEZING || INCL_ISW
 if (set_flag)
     {
@@ -115,7 +122,7 @@ for (i = 1; i < 4; i++)
 		break;
         }
 
-    pointer = get_args(pointer, format, &P);
+    pointer = sp_get_args(pointer, format, &P);
 #if INCL_SQUEEZING || INCL_ISW
     if (set_flag && (i==2))
 	{
@@ -181,7 +188,7 @@ while(TRUE)
     switch(format1 >> 4)
         {
     case 0:                        /* LINE */
-        pointer = get_args(pointer, format1, &P1);
+        pointer = sp_get_args(pointer, format1, &P1);
 #if DEBUG
         printf("LINE %6.1f, %6.1f\n",
             (real)P1.x / (real)sp_globals.onepix, (real)P1.y / (real)sp_globals.onepix);
@@ -251,7 +258,7 @@ record_yint((fix15)(sp_globals.y_int - sp_globals.Y_int_org)); /* Record yint da
             fn_end_contour();
             }                                
 		
-        pointer = get_args(pointer, format1, &P0);
+        pointer = sp_get_args(pointer, format1, &P0);
 		sp_globals.P0 = P0;
 #if DEBUG
         printf("MOVE %6.1f, %6.1f\n",
@@ -274,9 +281,9 @@ record_yint((fix15)(sp_globals.y_int - sp_globals.Y_int_org)); /* Record yint da
 
     default:                        /* CRVE */
         format2 = NEXT_BYTE(pointer);
-        pointer = get_args(pointer, format1, &P1);
-        pointer = get_args(pointer, format2, &P2);
-        pointer = get_args(pointer, (ufix8)(format2 >> 4), &P3);
+        pointer = sp_get_args(pointer, format1, &P1);
+        pointer = sp_get_args(pointer, format2, &P2);
+        pointer = sp_get_args(pointer, (ufix8)(format2 >> 4), &P3);
         depth = (format1 >> 4) & 0x07;
 #if DEBUG
         printf("CRVE %6.1f, %6.1f, %6.1f, %6.1f, %6.1f, %6.1f, %d\n",
@@ -298,13 +305,13 @@ record_yint((fix15)(sp_globals.y_int - sp_globals.Y_int_org)); /* Record yint da
             sp_globals.P0 = P3;
             continue;
             }   
-        split_curve(P1, P2, P3, depth);
+        sp_split_curve(P1, P2, P3, depth);
         continue;
         }
     }
 }
 
-FUNCTION static void split_curve(P1, P2, P3, depth)
+FUNCTION static void sp_split_curve(P1, P2, P3, depth)
 GDECL
 point_t P1;    /* First control point of Bezier curve */
 point_t P2;    /* Second  control point of Bezier curve */
@@ -314,7 +321,7 @@ fix15   depth; /* Levels of recursive subdivision required */
  * Called by proc_outl_data() to subdivide Bezier curves into an
  * appropriate number of vectors, whenever curves are not enabled
  * for output to the currently selected output module.
- * split_curve() calls itself recursively to the depth specified
+ * sp_split_curve() calls itself recursively to the depth specified
  * at which point it calls line() to deliver each vector resulting
  * from the spliting process.
  */
@@ -354,16 +361,16 @@ else
     Pctrl1.y = (Y0 + Y1 + 1) >> 1;
     Pctrl2.x = (X0 + (X1 << 1) + X2 + 2) >> 2;
     Pctrl2.y = (Y0 + (Y1 << 1) + Y2 + 2) >> 2;
-    split_curve(Pctrl1, Pctrl2, Pmid, depth);
+    sp_split_curve(Pctrl1, Pctrl2, Pmid, depth);
     Pctrl1.x = (X1 + (X2 << 1) + X3 + 2) >> 2;
     Pctrl1.y = (Y1 + (Y2 << 1) + Y3 + 2) >> 2;
     Pctrl2.x = (X2 + X3 + 1) >> 1;
     Pctrl2.y = (Y2 + Y3 + 1) >> 1;
-    split_curve(Pctrl1, Pctrl2, P3, depth);
+    sp_split_curve(Pctrl1, Pctrl2, P3, depth);
     }
 }
 
-FUNCTION static ufix8 FONTFAR *get_args(pointer, format, pP)
+FUNCTION static ufix8 FONTFAR *sp_get_args(pointer, format, pP)
 GDECL
 ufix8 FONTFAR  *pointer;  /* Pointer to next byte in char data */
 ufix8     format;    /* Format specifiaction of argument pair */

@@ -1,4 +1,4 @@
-/* $XConsortium: set_spcs.c,v 1.3 93/10/28 15:27:12 gildea Exp $ */
+/* $XConsortium: set_spcs.c,v 1.4 94/02/03 16:38:21 gildea Exp $ */
 
 /*
 
@@ -51,6 +51,20 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
 
 /****** STATIC FUNCTIONS *****/
+
+#if PROTOS_AVAIL
+static boolean sp_setup_consts(PROTO_DECL2 fix15 xmin, fix15 xmax,
+	fix15 ymin, fix15 ymax);
+static void sp_setup_tcb(PROTO_DECL2 tcb_t GLOBALFAR *ptcb);
+static fix15 sp_setup_mult(PROTO_DECL2 fix31 input_mult);
+static fix31 sp_setup_offset(PROTO_DECL2 fix31 input_offset);
+#else
+static void    sp_setup_tcb();      /* Set up transformation control block */
+static fix15 sp_setup_mult();       /* Convert mult to internal form */
+static fix31 sp_setup_offset();     /* Convert offset to internal form */
+static boolean sp_setup_consts();   /* Set up scaling constants */
+#endif
+
 
 
 FUNCTION boolean set_specs(specsarg)
@@ -185,7 +199,7 @@ xmax = read_word_u(sp_globals.font_org + FH_FXMAX);
 ymin = read_word_u(sp_globals.font_org + FH_FYMIN);
 ymax = read_word_u(sp_globals.font_org + FH_FYMAX);
 
-if (!setup_consts(xmin,xmax,ymin,ymax))
+if (!sp_setup_consts(xmin,xmax,ymin,ymax))
     {
     report_error(3);           /* Requested specs out of range */
     return FALSE;
@@ -196,7 +210,7 @@ sp_globals.isw_xmax = xmax;
 #endif
 
 /* Setup transformation control block */
-setup_tcb(&sp_globals.tcb0);
+sp_setup_tcb(&sp_globals.tcb0);
 
 
 /* Select output module */
@@ -355,9 +369,9 @@ sp_globals.outline_device_set = TRUE;
 
 
 #ifdef old
-FUNCTION boolean setup_consts(xmin, xmax, ymin, ymax)
+FUNCTION boolean sp_setup_consts(xmin, xmax, ymin, ymax)
 #else
-static FUNCTION boolean setup_consts(xmin, xmax, ymin, ymax)
+static FUNCTION boolean sp_setup_consts(xmin, xmax, ymin, ymax)
 #endif
 GDECL
 fix15   xmin;          /* Minimum X ORU value in font */
@@ -518,9 +532,9 @@ return TRUE;
 }
 
 #ifdef old
-FUNCTION void setup_tcb(ptcb)
+FUNCTION void sp_setup_tcb(ptcb)
 #else
-static FUNCTION void setup_tcb(ptcb)
+static FUNCTION void sp_setup_tcb(ptcb)
 #endif
 GDECL
 tcb_t GLOBALFAR *ptcb;           /* Pointer to transformation control bloxk */
@@ -529,12 +543,12 @@ tcb_t GLOBALFAR *ptcb;           /* Pointer to transformation control bloxk */
  */
 {
 
-ptcb->xxmult = setup_mult(sp_globals.pspecs->xxmult);
-ptcb->xymult = setup_mult(sp_globals.pspecs->xymult);
-ptcb->xoffset = setup_offset(sp_globals.pspecs->xoffset);
-ptcb->yxmult = setup_mult(sp_globals.pspecs->yxmult);
-ptcb->yymult = setup_mult(sp_globals.pspecs->yymult);
-ptcb->yoffset = setup_offset(sp_globals.pspecs->yoffset);
+ptcb->xxmult = sp_setup_mult(sp_globals.pspecs->xxmult);
+ptcb->xymult = sp_setup_mult(sp_globals.pspecs->xymult);
+ptcb->xoffset = sp_setup_offset(sp_globals.pspecs->xoffset);
+ptcb->yxmult = sp_setup_mult(sp_globals.pspecs->yxmult);
+ptcb->yymult = sp_setup_mult(sp_globals.pspecs->yymult);
+ptcb->yoffset = sp_setup_offset(sp_globals.pspecs->yoffset);
 
 SHOW(ptcb->xxmult);
 SHOW(ptcb->xymult);
@@ -546,11 +560,11 @@ SHOW(ptcb->yoffset);
 type_tcb(ptcb); /* Classify transformation type */
 }
 
-FUNCTION static fix15 setup_mult(input_mult)
+FUNCTION static fix15 sp_setup_mult(input_mult)
 GDECL
 fix31   input_mult;    /* Multiplier in input format */
 /*
- * Called by setup_tcb() to convert multiplier in transformation
+ * Called by sp_setup_tcb() to convert multiplier in transformation
  * matrix from external to internal form.
  */
 {
@@ -569,11 +583,11 @@ else
     return -(fix15)((-input_mult + imrnd) / imdenom);
 }
 
-FUNCTION static fix31 setup_offset(input_offset)
+FUNCTION static fix31 sp_setup_offset(input_offset)
 GDECL
 fix31   input_offset;   /* Multiplier in input format */
 /*
- * Called by setup_tcb() to convert offset in transformation
+ * Called by sp_setup_tcb() to convert offset in transformation
  * matrix from external to internal form.
  */
 {

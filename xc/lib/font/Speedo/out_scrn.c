@@ -1,4 +1,4 @@
-/* $XConsortium: out_scrn.c,v 1.2 91/05/11 09:53:11 rws Exp $ */
+/* $XConsortium: out_scrn.c,v 1.3 94/02/03 17:26:10 gildea Exp $ */
 
 /*
 
@@ -55,6 +55,14 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 /***** STATIC VARIABLES *****/
 
 /***** STATIC FUNCTIONS *****/
+
+#if PROTOS_AVAIL
+static void sp_add_intercept_screen(PROTO_DECL2 fix15 y,fix31 x);
+static void sp_proc_intercepts_screen(PROTO_DECL1);
+#else
+static void    sp_add_intercept_screen();
+static void    sp_proc_intercepts_screen();
+#endif
 
 
 #if INCL_SCREEN
@@ -253,7 +261,7 @@ if (y1 > y2)                                   /* Line goes downwards ? */
 
 	while (y2 < y1)                            /* At least one intercept left? */
 		{
-		add_intercept_screen(--y1, x);           /* Add intercept */
+		sp_add_intercept_screen(--y1, x);           /* Add intercept */
 		}
 	}
 else if (y2 > y1)                              /* Line goes upwards ? */
@@ -268,7 +276,7 @@ else if (y2 > y1)                              /* Line goes upwards ? */
 
 	while (y1 < y2)                            /* At least one intercept left? */
 		{
-		add_intercept_screen(y1++, x);           /* Add intercept */
+		sp_add_intercept_screen(y1++, x);           /* Add intercept */
 		}
 	}
 
@@ -401,7 +409,7 @@ if (how_many_y < 0)
     if ((how_many_y += yc + 1) < 0) how_many_y = 0; /* can't go below 0 */
     while(yc >= how_many_y)
         {
-        add_intercept_screen(yc--,xc); 
+        sp_add_intercept_screen(yc--,xc); 
         xc -= dx_dy;
         }
     }
@@ -411,7 +419,7 @@ if (how_many_y < 0)
     if ((how_many_y += yc) > sp_globals.no_y_lists) how_many_y = sp_globals.no_y_lists;
     while(yc != how_many_y)
         {
-        add_intercept_screen(yc++,xc); 
+        sp_add_intercept_screen(yc++,xc); 
         xc += dx_dy;
         }
     }
@@ -646,7 +654,7 @@ if ( !(sp_globals.specs.flags & CLIP_BOTTOM))
         }
     else
         {
-        proc_intercepts_screen();
+        sp_proc_intercepts_screen();
         close_bitmap();
         return TRUE;
         }
@@ -661,7 +669,7 @@ else
         }
     else
         {
-        proc_intercepts_screen();
+        sp_proc_intercepts_screen();
         if (next_band_out())
             {
             init_intercepts_out();
@@ -675,7 +683,7 @@ else
 #endif
 
 #if INCL_SCREEN
-FUNCTION LOCAL  void add_intercept_screen(y, x)
+FUNCTION LOCAL  void sp_add_intercept_screen(y, x)
 GDECL
 fix15 y;                 /* Y coordinate in relative pixel units */
                          /* (0 is lowest sample in band) */
@@ -744,7 +752,7 @@ if (++sp_globals.next_offset >= MAX_INTERCEPTS) /* Intercept buffer full? */
 #endif
 
 #if INCL_SCREEN
-FUNCTION LOCAL  void proc_intercepts_screen()
+FUNCTION LOCAL  void sp_proc_intercepts_screen()
 GDECL
 
 /*  Called by sp_make_char to output accumulated intercept lists
