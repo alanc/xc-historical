@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.17 91/04/10 11:42:01 keith Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.18 91/05/03 17:02:44 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -37,6 +37,12 @@ purpose.  It is provided "as is" without express or implied warranty.
  	 ((int) (box2)->x1 + (xoffset)) <= (box1)->x2 && \
 	 (box1)->y1 <= ((int) (box2)->y2 + (yoffset)) && \
  	 ((int) (box2)->y1 + (yoffset)) <= (box1)->y2)
+
+#define BOX_CONTAINS(box1, box2, xoffset, yoffset) \
+ 	((box1)->x1 <= ((int) (box2)->x1 + (xoffset)) && \
+ 	 ((int) (box2)->x2 + (xoffset)) <= (box1)->x2 && \
+	 (box1)->y1 <= ((int) (box2)->y1 + (yoffset)) && \
+ 	 ((int) (box2)->y2 + (yoffset)) <= (box1)->y2)
 
 #if PPW == 4
 
@@ -124,39 +130,51 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	stipple = stipplestackte;
 #endif
     
+    x += pDrawable->x;
+    y += pDrawable->y;
+
     /* compute an approximate (but covering) bounding box */
+    bbox.x1 = 0;
     if ((ppci[0]->metrics.leftSideBearing < 0))
 	bbox.x1 = ppci[0]->metrics.leftSideBearing;
-    else
-	bbox.x1 = 0;
     h = nglyph - 1;
     w = ppci[h]->metrics.rightSideBearing;
     while (--h >= 0)
 	w += ppci[h]->metrics.characterWidth;
+    bbox.x2 = w;
     bbox.y1 = -FONTMAXBOUNDS(pfont,ascent);
     bbox.y2 = FONTMAXBOUNDS(pfont,descent);
 
     clip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
     extents = &clip->extents;
 
-    x += pDrawable->x;
-    y += pDrawable->y;
-
-    /* check to make sure some of the text appears on the screen */
-    if (!BOX_OVERLAP (extents, &bbox, x, y))
-	return;
-
-    bbox.x1 += x;
-    bbox.x2 += x;
-    bbox.y1 += y;
-    bbox.y2 += y;
-
-    switch ((*pGC->pScreen->RectIn)(clip, &bbox))
+    if (!clip->data) 
     {
-      case rgnPART:
-	cfbPolyGlyphBlt8Clipped(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
-      case rgnOUT:
-	return;
+	if (!BOX_CONTAINS(extents, &bbox, x, y))
+	{
+	    if (BOX_OVERLAP (extents, &bbox, x, y))
+		cfbPolyGlyphBlt8Clipped(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+	    return;
+	}
+    }
+    else
+    {
+    	/* check to make sure some of the text appears on the screen */
+    	if (!BOX_OVERLAP (extents, &bbox, x, y))
+	    return;
+    
+    	bbox.x1 += x;
+    	bbox.x2 += x;
+    	bbox.y1 += y;
+    	bbox.y2 += y;
+    
+    	switch ((*pGC->pScreen->RectIn)(clip, &bbox))
+    	{
+      	  case rgnPART:
+	    cfbPolyGlyphBlt8Clipped(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+      	  case rgnOUT:
+	    return;
+    	}
     }
 
 #ifdef GLYPHROP
