@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: XShape.c,v 1.3 89/03/23 20:17:46 keith Exp $ */
+/* $XConsortium: XShape.c,v 1.4 89/03/28 14:19:12 keith Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -107,6 +107,9 @@ shapeWireToEvent (dpy, re, event)
     	se->width = sevent->width;
     	se->height = sevent->height;
 	se->time = sevent->time;
+	se->shaped = True;
+	if (sevent->shaped == xFalse)
+	    se->shaped = False;
     	return True;
     }
     return False;
@@ -195,6 +198,33 @@ XShapeGetEventBase (dpy)
     if (!codes)
 	return -1;
     return codes->first_event;
+}
+
+Bool
+XShapeQueryVersion(dpy, majorVersion, minorVersion)
+    Display *dpy;
+    int	    *majorVersion, *minorVersion;
+{
+    XExtCodes			    *codes;
+    xShapeQueryVersionReply	    rep;
+    register xShapeQueryVersionReq  *req;
+
+    if (!(codes = CheckExtension (dpy)))
+	return 0;
+    LockDisplay (dpy);
+    GetReq (ShapeQueryVersion, req);
+    req->reqType = codes->major_opcode;
+    req->shapeReqType = X_ShapeQueryVersion;
+    if (!_XReply (dpy, (xReply *) &rep, 0, xTrue)) {
+	UnlockDisplay (dpy);
+	SyncHandle ();
+	return 0;
+    }
+    *majorVersion = rep.majorVersion;
+    *minorVersion = rep.minorVersion;
+    UnlockDisplay (dpy);
+    SyncHandle ();
+    return 1;
 }
 
 XShapeRegion(dpy, dest, destKind, r, op, xOff, yOff)
@@ -370,9 +400,10 @@ XShapeQuery (dpy, window, wShaped, bShaped,
     return 1;
 }
 
-XShapeSelectInput (dpy, window)
+XShapeSelectInput (dpy, window, enable)
     register Display	*dpy;
     Window		window;
+    Bool		enable;
 {
     register xShapeSelectInputReq   *req;
     XExtCodes			    *codes;
@@ -384,6 +415,10 @@ XShapeSelectInput (dpy, window)
     req->reqType = codes->major_opcode;
     req->shapeReqType = X_ShapeSelectInput;
     req->window = window;
+    if (enable)
+	req->enable = xTrue;
+    else
+	req->enable = xFalse;
     UnlockDisplay (dpy);
     SyncHandle ();
 }

@@ -35,7 +35,32 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "shape.h"
 
-#define SHAPENAME "SHAPE-1"
+#define SHAPENAME "SHAPE"
+
+#define SHAPE_MAJOR_VERSION	1	/* current version numbers */
+#define SHAPE_MINOR_VERSION	0
+
+typedef struct _ShapeQueryVersion {
+	CARD8	reqType;		/* always ShapeReqCode */
+	CARD8	shapeReqType;		/* always X_ShapeQueryVersion */
+	CARD16	length B16;
+} xShapeQueryVersionReq;
+#define sz_xShapeQueryVersionReq	4
+
+typedef struct {
+	BYTE	type;			/* X_Reply */
+	CARD8	unused;			/* not used */
+	CARD16	sequenceNumber B16;
+	CARD32	length B32;
+	CARD16	majorVersion B16;	/* major version of SHAPE protocol */
+	CARD16	minorVersion B16;	/* minor version of SHAPE protocol */
+	CARD32	pad0 B32;
+	CARD32	pad1 B32;
+	CARD32	pad2 B32;
+	CARD32	pad3 B32;
+	CARD32	pad4 B32;
+} xShapeQueryVersionReply;
+#define sz_xShapeQueryVersionReply	32
 
 typedef struct _ShapeRectangles {
 	CARD8	reqType;	/* always ShapeReqCode */
@@ -118,16 +143,20 @@ typedef struct {
 	INT16	yBorderShape B16;
 	CARD16	widthBorderShape B16;
 	CARD16	heightBorderShape B16;
-	CARD32	pad1;
+	CARD32	pad1 B32;
 } xShapeQueryReply;
+#define sz_xShapeQueryReply	32
 
 typedef struct _ShapeSelectInput {
 	CARD8	reqType;	/* always ShapeReqCode */
 	CARD8	shapeReqType;	/* always X_ShapeSelectInput */
 	CARD16	length B16;
 	CARD32	window;		/* request destination id */
+	BYTE	enable;		/* xTrue -> send events */
+	BYTE	pad1;
+	CARD16	pad2;
 } xShapeSelectInputReq;
-#define sz_xShapeSelectInputReq	8
+#define sz_xShapeSelectInputReq	12
 
 typedef struct _ShapeNotify {
 	BYTE	type;		/* always eventBase + ShapeNotify */
@@ -139,9 +168,11 @@ typedef struct _ShapeNotify {
 	CARD16	width B16;
 	CARD16	height B16;
 	Time	time B32;	/* time of change */
-	CARD32	pad0 B32;
-	CARD32	pad1 B32;
+	BYTE	shaped;		/* set when a shape actual exists */
+	BYTE	pad0;
+	CARD16	pad1 B16;
 	CARD32	pad2 B32;
+	CARD32	pad3 B32;
 } xShapeNotifyEvent;
 #define sz_xShapeNotifyEvent	32
 
