@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetHints.c,v 11.17 87/10/20 16:17:25 newman Locked $ */
+/* $Header: XGetHints.c,v 11.18 87/10/20 16:53:04 jim Locked $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -41,7 +41,7 @@ Status XGetSizeHints (dpy, w, hints, property)
 	xPropSizeHints *prop = NULL;
         Atom actual_type;
         int actual_format;
-        long leftover;
+        unsigned long leftover;
         unsigned long nitems;
 	if (XGetWindowProperty(dpy, w, property, 0L, (long)NumPropSizeElements,
 	    False, XA_WM_SIZE_HINTS, &actual_type, &actual_format,
@@ -86,7 +86,7 @@ XWMHints *XGetWMHints (dpy, w)
 	register XWMHints *hints;
         Atom actual_type;
         int actual_format;
-        long leftover;
+        unsigned long leftover;
         unsigned long nitems;
 	if (XGetWindowProperty(dpy, w, XA_WM_HINTS, 
 	    0L, (long)NumPropWMHintsElements,
@@ -151,7 +151,7 @@ Status XGetIconSizes (dpy, w, size_list, count)
 	register XIconSize *hp, *hints;
         Atom actual_type;
         int actual_format;
-        long leftover;
+        unsigned long leftover;
         unsigned long nitems;
 	register int i;
 
@@ -203,12 +203,13 @@ XGetTransientForHint(dpy, w, propWindow)
     Atom actual_type;
     int actual_format;
     unsigned long nitems;
-    long leftover;
+    unsigned long leftover;
     Window *data = NULL;
     if (XGetWindowProperty(dpy, w, XA_WM_TRANSIENT_FOR, 0L, 1L, False,
         XA_WINDOW, 
 	&actual_type,
-	&actual_format, &nitems, &leftover, (char **) &data) != Success) {
+	&actual_format, &nitems, &leftover, (unsigned char **) &data)
+	!= Success) {
 	*propWindow = None;
 	return (0);
 	}
@@ -232,7 +233,7 @@ XGetClassHint(dpy, w, classhint)
     Atom actual_type;
     int actual_format;
     unsigned long nitems;
-    long leftover;
+    unsigned long leftover;
     unsigned char *data = NULL;
     if (XGetWindowProperty(dpy, w, XA_WM_CLASS, 0L, (long)BUFSIZ, False,
         XA_STRING, 
