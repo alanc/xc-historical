@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XMacros.c,v 11.16 87/09/01 14:56:28 swick Locked $ */
+/* $Header: XMacros.c,v 11.17 87/09/08 13:06:44 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlibint.h"
@@ -139,7 +139,7 @@ int XMaxCmapsOfScreen(s) Screen *s; { return (MaxCmapsOfScreen(s)); }
 
 Bool XDoesSaveUnders(s) Screen *s; { return (DoesSaveUnders(s)); }
 
-Bool XDoesBackingStore(s) Screen *s; { return (DoesBackingStore(s)); }
+int XDoesBackingStore(s) Screen *s; { return (DoesBackingStore(s)); }
 
 long XEventMaskOfScreen(s) Screen *s; { return (EventMaskOfScreen(s)); }
 
