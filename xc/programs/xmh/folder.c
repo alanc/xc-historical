@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: folder.c,v 2.5 88/08/22 13:03:23 swick Exp $";
+static char rcs_id[] = "$XConsortium: folder.c,v 2.6 88/09/06 17:23:16 jim Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -147,7 +147,7 @@ Scrn scrn;
     char *foldername, str[100];
     Toc toc;
     int i;
-    foldername = BBoxNameOfButton(scrn->curfolder);
+    foldername = BBoxGetRadioName(scrn->folderbuttons);
     toc = TocGetNamed(foldername);
     if (TocConfirmCataclysm(toc)) return;
     (void) sprintf(str, "Are you sure you want to destroy %s?", foldername);

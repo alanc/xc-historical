@@ -1,4 +1,4 @@
-/* $XConsortium: bboxint.h,v 2.3 88/01/25 15:39:35 swick Exp $ */
+/* $XConsortium: bboxint.h,v 2.4 88/09/06 17:23:09 jim Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -51,8 +51,7 @@ typedef struct _XmhButtonBoxRec {
     int		needsadding;	/* There are buttons that need to be added. */
     int		updatemode;	/* TRUE if refreshing; FALSE if refreshing is
 				   currently inhibited. */
-    Button	*radio;		/* Pointer to where to keep which radio button
-				   is selected. */
+    Bool	radio;		/* True if radio buttonbox */
 } ButtonBoxRec;
 
 #endif _bboxint_h

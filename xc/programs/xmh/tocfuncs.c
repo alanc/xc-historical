@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: tocfuncs.c,v 2.15 88/09/02 18:19:30 swick Exp $";
+static char rcs_id[] = "$XConsortium: tocfuncs.c,v 2.16 88/09/06 17:23:37 jim Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -349,9 +349,8 @@ Scrn scrn;
     Scrn nscrn;
     char *toseq;
     if (toc == NULL) return;
-    if (scrn->curseq)
-	toseq = BBoxNameOfButton(scrn->curseq);
-    else toseq = "temp";
+    if ((toseq = BBoxGetRadioName(scrn->seqbuttons)) == (char *) NULL)
+	toseq = "temp";
     if (strcmp(toseq, "all") == 0)
 	toseq = "temp";
     nscrn = CreateNewScrn(STpick);
@@ -370,8 +369,9 @@ Scrn scrn;
 {
     Toc toc = scrn->toc;
     if (toc == NULL) return;
-    TocChangeViewedSeq(toc, TocGetSeqNamed(toc,
-					   BBoxNameOfButton(scrn->curseq)));
+    TocChangeViewedSeq(toc, 
+		       TocGetSeqNamed(toc,
+				      BBoxGetRadioName(scrn->seqbuttons)));
 }
 
 /*ARGSUSED*/
@@ -397,8 +397,8 @@ TwiddleOperation op;
     char **argv, str[100], *seqname;
     int i;
     MsgList mlist;
-    if (toc == NULL || scrn->curseq == NULL) return;
-    seqname = BBoxNameOfButton(scrn->curseq);
+    if (toc == NULL || (seqname = BBoxGetRadioName(scrn->seqbuttons)) == NULL)
+	return;
     if (strcmp(seqname, "all") == 0) {
 	Feep();
 	return;

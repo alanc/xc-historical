@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$XConsortium: xmh.h,v 2.13 88/08/22 13:16:06 swick Exp $";
+ *	rcs_id[] = "$XConsortium: xmh.h,v 2.14 88/09/06 17:23:57 jim Exp $";
  */
 
 /*
@@ -45,6 +45,7 @@
 #include <X11/Label.h>
 #include <X11/Scroll.h>
 #include <X11/Shell.h>
+#include <X11/Toggle.h>
 #include <X11/Viewport.h>
 #include <X11/VPaned.h>
 
@@ -93,13 +94,11 @@ typedef struct _ScrnRec {
    int		mapped;		/* TRUE only if we've mapped this screen. */
    ScrnKind	kind;		/* What kind of scrn we have. */
    ButtonBox	folderbuttons;	/* Folder buttons. */
-   Button	curfolder;	/* Which is the current folder. */
    ButtonBox	mainbuttons;	/* Main xmh control buttons. */
    Widget	toclabel;	/* Toc titlebar. */
    Widget	tocwidget;	/* Toc text. */
    ButtonBox	tocbuttons;	/* Toc control buttons. */
    ButtonBox 	seqbuttons;	/* Sequence buttons. */
-   Button	curseq;		/* Which is the current sequence. */
    Widget	viewlabel;	/* View titlebar. */
    Widget	viewwidget;	/* View text. */
    ButtonBox 	viewbuttons;	/* View control buttons. */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: pick.c,v 2.24 89/02/03 09:17:09 swick Exp $";
+static char rcs_id[] = "$XConsortium: pick.c,v 2.25 89/03/11 09:52:28 rws Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -52,12 +52,13 @@ static int stdwidth = -1;	/* Width to make text fields, and other
 				   text fields. */
 
 static char *TypeName[NUMROWTYPE];
+static short true_data = 1;	/* radio data */
+static short false_data = 0;	/* radio data */
 
 typedef struct {
    WidgetClass	type;		/* Encode what type of Widget this is. */
    Widget 	widget;		/* The widget id itself. */
    struct _RowListRec *row;	/* Which row this widget is in. */
-   short	hilite;		/* Whether to hilight (if button subwidget) */
    char		*ptr;		/* Data (if text subwidget) */
 } FormEntryRec, *FormEntry;
 
@@ -107,23 +108,6 @@ InitPick()
     TypeName[RTother]	= NULL;
 }
 
-static PickFlipColors(widget)
-Widget widget;
-{
-    static Arg arglist[] = {
-	{XtNforeground, NULL},
-	{XtNbackground, NULL},
-    };
-    Pixel foreground, background;
-
-    arglist[0].value = (XtArgVal)&foreground;
-    arglist[1].value = (XtArgVal)&background;
-    XtGetValues(widget, arglist, XtNumber(arglist));
-    arglist[0].value = (XtArgVal)background;
-    arglist[1].value = (XtArgVal)foreground;
-    XtSetValues(widget, arglist, XtNumber(arglist));
-}
-
 
 static PrepareToUpdate(form)
   FormBox form;
@@ -144,7 +128,6 @@ static void AddLabel(row, text, usestd)
   char *text;
   int usestd;
 {
-    Widget widget;
     static Arg arglist[] = {
 	{XtNlabel, NULL},
 	{XtNborderWidth, (XtArgVal) 0},
@@ -159,11 +142,10 @@ static void AddLabel(row, text, usestd)
 }
 
 
-static void AddButton(row, text, func, hilite)
+static void AddButton(row, text, func)
   RowList row;
   char *text;
   void (*func)();
-  int hilite;
 {
     FormEntry entry;
     static Arg args[] = {
@@ -173,8 +155,28 @@ static void AddButton(row, text, func, hilite)
     args[0].value = (XtArgVal)text;
     entry = CreateWidget( row, WTbutton, args, XtNumber(args) );
     XtAddCallback( entry->widget, XtNcallback, func, (caddr_t)entry );
-    entry->hilite = hilite;
-    if (hilite) PickFlipColors(entry->widget);
+}
+
+
+static void AddToggle(row, text, initial_state, radio_group, radio_data)
+    RowList	row;
+    char	*text;
+    int		initial_state;
+    Widget	radio_group;
+    caddr_t	radio_data;
+{
+    FormEntry	entry;
+    Arg		args[4];
+    int		n = 0;
+    XtTranslations	translations;
+
+    XtSetArg(args[n], XtNlabel, text);			n++;
+    XtSetArg(args[n], XtNstate, initial_state);		n++;
+    XtSetArg(args[n], XtNradioGroup, radio_group);	n++;
+    XtSetArg(args[n], XtNradioData, radio_data);	n++;
+    entry = CreateWidget(row, toggleWidgetClass, args, (Cardinal)n);
+    translations = XtParseTranslationTable("<Btn1Down>,<Btn1Up>:set()\n");
+    XtOverrideTranslations(entry->widget, translations);
 }
 
 
@@ -191,7 +193,7 @@ static void AddTextEntry(row, str)
     };
     char *ptr;
     FormEntry entry;
-    ptr = XtMalloc(310);
+    ptr = XtMalloc((Cardinal)310);
     arglist[0].value = (XtArgVal) ptr;
     arglist[1].value = (XtArgVal) stdwidth;
     (void) strcpy(ptr, str);
@@ -222,32 +224,6 @@ char *str;
 }
 
 
-/* ARGSUSED */
-static void ExecYesNo(w, closure, call_data)
-    Widget w;			/* unused */
-    caddr_t closure;		/* FormEntry */
-    caddr_t call_data;		/* unused */
-{
-    FormEntry entry = (FormEntry)closure;
-    RowList row = entry->row;
-    int i;
-    if (!entry->hilite) {
-	entry->hilite = TRUE;
-	PickFlipColors(entry->widget);
-	for (i = 0; i < row->numwidgets; i++)
-	    if (entry == row->wlist[i])
-		break;
-	if (i > 0 && row->wlist[i-1]->type == WTbutton)
-	    i--;
-	else
-	    i++;
-	entry = row->wlist[i];
-	entry->hilite = FALSE;
-	PickFlipColors(entry->widget);
-    }
-}
-
-
 
 /* ARGSUSED */
 static void ExecRowOr(w, closure, call_data)
@@ -264,7 +240,7 @@ static void ExecRowOr(w, closure, call_data)
     DeleteWidget(entry);
     AddLabel(row, "or", FALSE);
     AddTextEntry(row, "");
-    AddButton(row, "Or", ExecRowOr, FALSE);
+    AddButton(row, "Or", ExecRowOr);
     ExecuteUpdate(form);
 }
     
@@ -320,7 +296,8 @@ static ParseRow(row)
 	if (*(entry->ptr)) {
 	    if (!result) {
 		result = TRUE;
-		if (row->wlist[1]->hilite)
+		if (! (*((short *)
+			 (XtToggleGetCurrent(row->wlist[0]->widget)))))
 		    AppendArgv("-not");
 		AppendArgv("-lbrace");
 	    }
@@ -344,7 +321,7 @@ static ParseRow(row)
 		    AppendArgv("-search");
 		    break;
 		case RTother: 
-		    sprintf(str, "--%s", row->wlist[2]->ptr);
+		    (void) sprintf(str, "--%s", row->wlist[2]->ptr);
 		    AppendArgv(str);
 		    break;
 	    }
@@ -378,7 +355,7 @@ static ParseGroup(group)
 }
 
 
-
+/* ARGSUSED */
 static void DestroyErrorWidget(w, client_data, call_data)
     Widget w;			/* unused */
     caddr_t client_data;	/* Pick */
@@ -397,7 +374,7 @@ char *str;
 {
     Arg args[1];
 
-    DestroyErrorWidget(NULL, (caddr_t)pick, NULL);
+    DestroyErrorWidget((Widget)NULL, (caddr_t)pick, (caddr_t)NULL);
     XtSetArg( args[0], XtNlabel, str );
     pick->errorwidget = XtCreateWidget( "error", dialogWidgetClass,
 				        pick->scrn->widget,
@@ -431,12 +408,12 @@ static void ExecOK(w, closure, call_data)
     char *fromdate = row1->wlist[1]->ptr;
     char *todate = row1->wlist[3]->ptr;
     char *datefield = row1->wlist[5]->ptr;
-    short removeoldmsgs = row2->wlist[1]->hilite;
+    short removeoldmsgs = *(XtToggleGetCurrent(row2->wlist[1]->widget));
     char str[1000];
     int i, found;
     char *folderpath;
 
-    DestroyErrorWidget(NULL, (caddr_t)pick, NULL);
+    DestroyErrorWidget((Widget)NULL, (caddr_t)pick, (caddr_t)NULL);
     if (strcmp(toseq, "all") == 0) {
 	MakeErrorWidget(pick, "Can't create a sequence called \"all\".");
 	return;
@@ -603,17 +580,18 @@ static RowList AddRow(group, type)
 	arglist[1].value = (XtArgVal)group->rlist[group->numrows - 2]->widget;
     else
 	arglist[1].value = (XtArgVal) NULL;
-    row->widget = XtCreateWidget( NULL, formWidgetClass, group->widget,
+    row->widget = XtCreateWidget((String)NULL, formWidgetClass, group->widget,
 				  arglist, XtNumber(arglist) );
     if (type == RTignore) return row;
-    AddButton(row, "Pick", ExecYesNo, TRUE);
-    AddButton(row, "Skip", ExecYesNo, FALSE);
+    AddToggle(row, "Pick", TRUE, (Widget)NULL, (caddr_t)(&true_data));
+    AddToggle(row, "Skip", FALSE, row->wlist[row->numwidgets - 1]->widget,
+	      (caddr_t)(&false_data));
     if (TypeName[type])
 	AddLabel(row, TypeName[type], TRUE);
     else
 	AddTextEntry(row, "");
     AddTextEntry(row, "");
-    AddButton(row, "Or", ExecRowOr, FALSE);
+    AddButton(row, "Or", ExecRowOr);
     XtManageChild(row->widget);
     return row;
 }
@@ -645,7 +623,7 @@ static Group AddGroup(form)
 	arglist[1].value = (XtArgVal)form->glist[form->numgroups - 2]->widget;
     else
 	arglist[1].value = (XtArgVal)NULL;
-    group->widget = XtCreateWidget( NULL, formWidgetClass, form->inner,
+    group->widget = XtCreateWidget((String)NULL, formWidgetClass, form->inner,
 				    arglist, XtNumber(arglist) );
     return group;
 }
@@ -668,7 +646,7 @@ static AddDetailGroup(form)
     for (type = FIRSTROWTYPE; type <= LASTUSEFULROWTYPE; type++)
 	(void) AddRow(group, type);
     row =  AddRow(group, RTignore);
-    AddButton(row, "- Or -", ExecGroupOr, FALSE);
+    AddButton(row, "- Or -", ExecGroupOr);
     XtManageChild(row->widget);
     XtManageChild(group->widget);
 }
@@ -698,12 +676,13 @@ static AddGeneralGroup(form)
     row =  AddRow(group, RTignore);
     widgetList[2] = row->widget;
     AddLabel(row, "Clear old entries from sequence?", FALSE);
-    AddButton(row, "Yes", ExecYesNo, TRUE);
-    AddButton(row, "No", ExecYesNo, FALSE);
+    AddToggle(row, "Yes", TRUE, (Widget) NULL, (caddr_t)(&true_data));
+    AddToggle(row, "No", FALSE, row->wlist[row->numwidgets - 1]->widget,
+	      (caddr_t)(&false_data));
     row =  AddRow(group, RTignore);
     widgetList[3] = row->widget;
-    AddButton(row, "OK", ExecOK, FALSE);
-    AddButton(row, "Cancel", ExecCancel, FALSE);
+    AddButton(row, "OK", ExecOK);
+    AddButton(row, "Cancel", ExecCancel);
     XtManageChildren(widgetList, XtNumber(widgetList));
     XtManageChild(group->widget);
 }

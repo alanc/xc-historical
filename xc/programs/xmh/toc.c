@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: toc.c,v 2.16 88/08/22 13:11:26 swick Exp $";
+static char rcs_id[] = "$XConsortium: toc.c,v 2.17 88/09/06 17:23:33 jim Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -297,8 +297,8 @@ Scrn scrn;
 	StoreWindowName(scrn, toc->foldername);
 	TURedisplayToc(scrn);
 
-	BBoxSetRadio(scrn->folderbuttons,
-		 BBoxFindButtonNamed(scrn->folderbuttons, toc->foldername));
+	BBoxSetRadio
+	    (BBoxFindButtonNamed(scrn->folderbuttons, toc->foldername));
 
 	EnableProperButtons(scrn);
     }
@@ -498,8 +498,7 @@ void TocChangeViewedSeq(toc, seq)
     TURefigureWhatsVisible(toc);
     for (i=0 ; i<toc->num_scrns ; i++) {
 	if (toc->scrn[i]->seqbuttons)
-	    BBoxSetRadio(toc->scrn[i]->seqbuttons,
-			 BBoxFindButtonNamed(toc->scrn[i]->seqbuttons,
+	    BBoxSetRadio(BBoxFindButtonNamed(toc->scrn[i]->seqbuttons,
 					     seq->name));
 	TUResetTocLabel(toc->scrn[i]);
     }

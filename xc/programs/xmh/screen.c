@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcs_id[] =
-    "$XConsortium: screen.c,v 2.29 88/10/18 12:03:08 swick Exp $";
+    "$XConsortium: screen.c,v 2.30 88/10/18 13:32:23 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -182,13 +182,12 @@ Scrn scrn;
  *	{XtNselectionArrayCount, (XtArgVal) XtNumber(sarray)}
  */
 
-    scrn->folderbuttons = BBoxRadioCreate(scrn, 0, "folders",
-					  &(scrn->curfolder));
+    scrn->folderbuttons = BBoxRadioCreate(scrn, 0, "folders", True);
     scrn->mainbuttons = BBoxCreate(scrn, 1, "folderButtons");
     scrn->toclabel = CreateTitleBar(scrn, 2);
     scrn->tocwidget = CreateTextSW(scrn, 3, "toc", 0);
 /* %%%				   arglist2, XtNumber(arglist2)); */
-    scrn->seqbuttons = BBoxRadioCreate(scrn, 4, "seqButtons", &scrn->curseq);
+    scrn->seqbuttons = BBoxRadioCreate(scrn, 4, "seqButtons", True);
     scrn->tocbuttons = BBoxCreate(scrn, 5, "tocButtons");
     scrn->viewlabel = CreateTitleBar(scrn, 6);
     scrn->viewwidget = CreateTextSW(scrn, 7, "view", wordBreak);

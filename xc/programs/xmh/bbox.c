@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: bbox.c,v 2.18 88/09/06 17:22:57 jim Exp $";
+static char rcs_id[] = "$XConsortium: bbox.c,v 2.19 88/09/16 13:31:14 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -54,8 +54,7 @@ ButtonBox BBoxRadioCreate(scrn, position, name, radio)
   Scrn scrn;
   int position;			/* Position to put it in the pane. */
   char *name;			/* Name of the buttonbox widget. */
-  Button *radio;		/* Pointer to place to store which radio
-				   button is active. */
+  Bool radio;			/* True if this is a radio buttonbox */
 {
     static Arg arglist[] = {
 	{XtNallowVert, True},
@@ -72,12 +71,11 @@ ButtonBox BBoxRadioCreate(scrn, position, name, radio)
 			      arglist, XtNumber(arglist));
     buttonbox->inner =
 	XtCreateManagedWidget(name, boxWidgetClass, buttonbox->outer,
-			      NULL, (Cardinal)0);
+			      (ArgList)NULL, (Cardinal)0);
     buttonbox->numbuttons = 0;
     buttonbox->button = (Button *) XtMalloc((unsigned) 1);
     buttonbox->maxheight = 5;
     buttonbox->radio = radio;
-    if (radio) *radio = NULL;
     return buttonbox;
 }
 
@@ -90,22 +88,27 @@ ButtonBox BBoxCreate(scrn, position, name)
   int position;
   char *name;
 {
-    return BBoxRadioCreate(scrn, position, name, (Button *)NULL);
+    return BBoxRadioCreate(scrn, position, name, False);
 }
 
 
 
 /* Set the current button in a radio buttonbox. */
 
-void BBoxSetRadio(buttonbox, button)
-ButtonBox buttonbox;
+void BBoxSetRadio(button)
 Button button;
 {
-    if (buttonbox->radio && *(buttonbox->radio) != button) {
-	if (*(buttonbox->radio)) FlipColors(*(buttonbox->radio));
-	FlipColors(button);
-	*(buttonbox->radio) = button;
-    }
+    XtToggleSetCurrent(button->widget, button->name);
+}
+
+
+
+/* Get the name of the current button in a radio buttonbox. */
+
+char *BBoxGetRadioName(buttonbox)
+ButtonBox buttonbox;
+{
+    return ((char *) XtToggleGetCurrent(buttonbox->button[0]->widget));
 }
 
 
@@ -155,7 +158,7 @@ char **extra;			/* Extra translation bindings. */
     Button button;
     int i;
     static XtCallbackRec callback[] = { {DoButtonPress, NULL}, {NULL, NULL} };
-    Arg arglist[1];
+    Arg arglist[2];
 
     if (position > buttonbox->numbuttons) position = buttonbox->numbuttons;
     buttonbox->numbuttons++;
@@ -169,9 +172,32 @@ char **extra;			/* Extra translation bindings. */
     callback[0].closure = (caddr_t)button;
     button->buttonbox = buttonbox;
     button->name = MallocACopy(name);
-    XtSetArg(arglist[0], XtNcallback, callback);
-    button->widget = XtCreateWidget(name, commandWidgetClass,
-				    buttonbox->inner, arglist, ONE);
+
+    i = 0;
+    if (buttonbox->radio)
+    {
+	Widget	radio_group = NULL;
+	if (buttonbox->numbuttons > 1)
+	    radio_group = (button == buttonbox->button[0]) 
+		? (buttonbox->button[1]->widget)
+	        : (buttonbox->button[0]->widget);
+	XtSetArg(arglist[i], XtNradioGroup, radio_group);	i++;
+	XtSetArg(arglist[i], XtNradioData, button->name);	i++;
+    }
+    else
+    {
+	XtSetArg(arglist[0], XtNcallback, callback);		i++;
+    }
+    button->widget = XtCreateWidget(name, (buttonbox->radio) 
+				    ? toggleWidgetClass
+				    : commandWidgetClass,
+				    buttonbox->inner, arglist, i);
+
+    if (buttonbox->radio)
+	XtOverrideTranslations(button->widget,
+			       XtParseTranslationTable
+			       ("<Btn1Down>,<Btn1Up>:set()\n"));
+
 /*    if (extra) XtAugmentTranslations(button->widget,
 				     XtParseTranslationTable(extra));*/
     button->func = func;
@@ -179,10 +205,6 @@ char **extra;			/* Extra translation bindings. */
     button->enabled = TRUE;
     if (!enabled) BBoxDisable(button);
     ProcessAddedButtons(buttonbox);
-    if (buttonbox->radio && *(buttonbox->radio) == NULL) {
-	*(buttonbox->radio) = button;
-	FlipColors(button);
-    }
 }
 
 
@@ -196,23 +218,26 @@ Button button;
 {
     ButtonBox buttonbox = button->buttonbox;
     int i, found, reradio;
-    found = FALSE;
+    found = reradio = FALSE;
     for (i=0 ; i<buttonbox->numbuttons; i++) {
 	if (found) buttonbox->button[i-1] = buttonbox->button[i];
 	else if (buttonbox->button[i] == button) {
 	    found = TRUE;
-	    XtDestroyWidget(button->widget);
-	    reradio = (buttonbox->radio && *(buttonbox->radio) == button);
-	    FreeButton(button);
+	    if (buttonbox->radio)
+	    {
+		if (strcmp((char *) XtToggleGetCurrent(button->widget),
+			   button->name) == 0)
+		    reradio = TRUE;
+		XtDestroyWidget(button->widget);
+		FreeButton(button);
+	    }
+	    
 	}
     }
     if (found) {
 	buttonbox->numbuttons--;
-	if (reradio) {
-	    *(buttonbox->radio) = NULL;
-	    if (buttonbox->numbuttons)
-		BBoxSetRadio(buttonbox, buttonbox->button[0]);
-	}
+	if (reradio && buttonbox->numbuttons)
+		BBoxSetRadio(buttonbox->button[0]);
     }
 }
 	    
@@ -354,7 +379,6 @@ ButtonBox buttonbox;
 void BBoxDeleteBox(buttonbox)
 ButtonBox buttonbox;
 {
-    if (buttonbox->radio) *(buttonbox->radio) = NULL;
     XtDestroyWidget(buttonbox->outer);
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: tocutil.c,v 2.19 88/09/06 17:23:47 jim Exp $";
+static char rcs_id[] = "$XConsortium: tocutil.c,v 2.20 88/09/16 13:41:32 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -91,8 +91,7 @@ Toc toc;
 	    BBoxStartUpdate(scrn->seqbuttons);
 	}
 	if (scrn->seqbuttons) 
-	    BBoxSetRadio(scrn->seqbuttons,
-			 BBoxFindButtonNamed(scrn->seqbuttons,
+	    BBoxSetRadio(BBoxFindButtonNamed(scrn->seqbuttons,
 					     toc->viewedseq->name));
     }
 }

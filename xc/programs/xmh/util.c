@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcs_id[] =
-    "$XConsortium: util.c,v 2.19 88/09/02 17:04:55 swick Exp $";
+    "$XConsortium: util.c,v 2.20 88/09/16 13:41:49 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -409,7 +409,7 @@ int GetWidth(w)
 Toc SelectedToc(scrn)
 Scrn scrn;
 {
-    return TocGetNamed(BBoxNameOfButton(scrn->curfolder));
+    return TocGetNamed(BBoxGetRadioName(scrn->folderbuttons));
 }
 
 

@@ -1,4 +1,4 @@
-/* $XConsortium: bbox.h,v 2.2 88/01/25 15:35:15 swick Exp $ */
+/* $XConsortium: bbox.h,v 2.3 88/09/06 17:23:03 jim Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -30,6 +30,7 @@
 extern ButtonBox BBoxRadioCreate();
 extern ButtonBox BBoxCreate();
 extern void BBoxSetRadio();
+extern char *BBoxGetRadioName();
 extern void BBoxAddButton();
 extern void BBoxDeleteButton();
 extern void BBoxEnable();
