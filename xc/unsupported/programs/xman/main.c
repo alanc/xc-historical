@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: main.c,v 1.6 89/04/28 15:05:42 kit Exp $
+ * $XConsortium: main.c,v 1.7 89/05/06 21:16:26 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -54,6 +54,8 @@ static XtResource my_resources[] = {
      Offset(help_file), XtRString, HELPFILE},
   {"topBox", XtCBoolean, XtRBoolean, sizeof(Boolean),
      Offset(top_box_active), XtRString, "True"},
+  {"clearSearchString", "ClearSearchString", XtRBoolean, sizeof(Boolean),
+     Offset(clear_search_string), XtRImmediate, (caddr_t) TRUE},
 };
 
 /*
@@ -137,7 +139,7 @@ int argc;
   if (resources.top_box_active) 
     MakeTopBox();	
   else
-    CreateManpage();
+    (void) CreateManpage(NULL);
 
 /*
  * We need to keep track of the number of manual pages that are shown on

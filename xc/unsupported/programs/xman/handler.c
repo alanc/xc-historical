@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: handler.c,v 1.8 89/05/03 17:22:44 kit Exp $
+ * $XConsortium: handler.c,v 1.9 89/05/06 21:16:22 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -198,30 +198,22 @@ ManpageGlobals * man_globals;
 FILE * file;
 {
   String params = "ManualPage";
-  Cardinal num_params = 1, num_args = 0;
-  FILE * old_file;
-  Arg arglist[1];
+  Cardinal num_params = 1;
   
   if (file == NULL)
     return;
 
-  XtSetArg(arglist[num_args], XtNfile, &old_file); num_args++;
-  XtGetValues(man_globals->manpagewidgets.manpage, arglist, num_args);
-
-  num_args = 0;
-  XtSetArg(arglist[num_args], XtNfile, file); num_args++;
-  XtSetValues(man_globals->manpagewidgets.manpage, arglist, num_args);
-
-  if (old_file != NULL)
-    fclose(file);
+  OpenFile(man_globals, file);
+  fclose(file);
 
   if (!man_globals->both_shown) {
     Arg arglist[1];
     XtSetArg(arglist[0], XtNsensitive, TRUE);
     XawSimpleMenuSetEntryValues(man_globals->option_menu, MANPAGE,
 			     arglist, (Cardinal) 1);
+    XawSimpleMenuSetEntryValues(man_globals->option_menu, BOTH_SCREENS,
+			     arglist, (Cardinal) 1);
   }
-
   GotoPage(man_globals->manpagewidgets.manpage, NULL, &params, &num_params);
 }
 
@@ -512,7 +504,7 @@ XEvent * event;
 String * params;
 Cardinal * num_params;
 {
-  CreateManpage();
+  (void) CreateManpage(NULL);
   man_pages_shown++;
 }
 
@@ -570,9 +562,9 @@ Cardinal * num_params;
 
   XtPopdown(  XtParent(XtParent(w)) );       /* popdown the search widget */
 
-  if (*num_params != 1) {
+  if ( (*num_params < 1) || (*num_params > 2) ) {
     XtAppWarning(XtWidgetToApplicationContext(w), 
-		"Xman - Search: This action routine requires one argument.");
+      "Xman - Search: This action routine requires one or two arguments.");
     return;
   }
 
@@ -591,11 +583,38 @@ Cardinal * num_params;
     break;
   default:
     XtAppWarning(XtWidgetToApplicationContext(w), 
-		 "Xman - Search: Unknown parameter.");
+		 "Xman - Search: First parameter unknown.");
     file = NULL;
     break;
   }
-  PutUpManpage(man_globals, file);
+
+  if ( *num_params == 2 ) 
+    switch (params[1][0]) {
+    case 'O':
+    case 'o':
+      if (file != NULL) {
+	Widget w;
+	char * label;
+
+	w = CreateManpage(file);
+	man_pages_shown++;
+
+	/* Put title into new manual page. */
+
+	label = man_globals->manpage_title;
+	man_globals = GetGlobals(w);
+	strcpy(man_globals->manpage_title, label);
+	ChangeLabel(man_globals->label, label);
+      }
+      break;
+    default:
+      XtAppWarning(XtWidgetToApplicationContext(w), 
+		   "Xman - Search: Second parameter unknown.");
+      break;
+    }
+  else {
+    PutUpManpage(man_globals, file);
+  }
 }
 
 /*      Function Name: ShowVersion

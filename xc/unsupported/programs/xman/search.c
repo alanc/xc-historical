@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.6 89/02/16 18:18:29 kit Exp $
+ * $XConsortium: search.c,v 1.7 89/04/28 15:05:50 kit Exp $
  * $oHeader: search.c,v 4.0 88/08/31 22:13:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -46,16 +46,22 @@ ManpageGlobals * man_globals;
 Widget parent;
 {
   Widget dialog, command, text, cancel;
+  Arg arglist[1];
+  Cardinal num_args = 0;
 
   man_globals->search_widget = XtCreatePopupShell(SEARCHNAME, 
 						  transientShellWidgetClass, 
 						  parent,
 						  NULL, (Cardinal) 0);  
 
-  
+
+  if (resources.clear_search_string) {
+    XtSetArg(arglist[0], XtNvalue, ""); num_args++;  
+  }
+
   dialog = XtCreateManagedWidget(DIALOG, dialogWidgetClass,
 				 man_globals->search_widget, 
-				 NULL, (Cardinal) 0); 
+				 arglist, num_args);
 
   if ( (text = XtNameToWidget(dialog, "value")) == (Widget) NULL)
     PrintWarning(NULL, "Could not find text widget in MakeSearchWidget.");
@@ -144,7 +150,7 @@ int type;
 {
   char cmdbuf[BUFSIZ],*mantmp,*manpath;
   char tmp[BUFSIZ],path[BUFSIZ];
-  char string_buf[BUFSIZ], cmp_str[BUFSIZ], error_buf[BUFSIZ],label[BUFSIZ];
+  char string_buf[BUFSIZ], cmp_str[BUFSIZ], error_buf[BUFSIZ];
   char * search_string = SearchString(man_globals);
   FILE * file;
   int count;
@@ -154,8 +160,13 @@ int type;
 
   /* If the string is empty or starts with a space then do not search */
 
-  if ( streq(search_string,"") || (search_string[0] == ' ')) {
-    PrintWarning(man_globals, "You want me to search for what???");
+  if ( streq(search_string,"") ) {
+    PrintWarning(man_globals, "Search string is empty.");
+    return(NULL);
+  }
+
+  if (search_string[0] == ' ') {
+    PrintWarning(man_globals, "First character cannot be a space.");
     return(NULL);
   }
 
@@ -171,6 +182,8 @@ int type;
     strcpy(path,manpath);
 
   if (type == APROPOS) {
+    char label[BUFSIZ];
+
     sprintf(cmdbuf, APROPOSFILTER, path, search_string, mantmp);
     sprintf(label,"Results of apropos search on: %s", search_string);
 
@@ -228,10 +241,23 @@ int type;
     file = DoManualSearch(man_globals, search_string);
     if (file == NULL) {
       sprintf(string_buf,"No manual entry for %s.", search_string);
-      ChangeLabel(man_globals->label,string_buf);
+      ChangeLabel(man_globals->label, string_buf);
       return(NULL);
     }
   }
+
+  if (resources.clear_search_string) {
+    Arg arglist[1];
+    Widget dialog;
+
+    dialog = XtNameToWidget(man_globals->search_widget, DIALOG);
+    if (dialog == NULL) 
+      PrintWarning(man_globals, "Could not clear the search string.");
+
+    XtSetArg(arglist[0], XtNvalue, "");
+    XtSetValues(dialog, arglist, (Cardinal) 1);
+  }
+
   return(file);
 }
 
@@ -263,7 +289,7 @@ char * string;
 				   be the one we used. */
     while ( TRUE ) {
       if (i == man_globals->current_directory)
-	if (++i >= sections) break;
+	if (++i >= sections) return(NULL);
       e_num = BEntrySearch(string, manual[i].entries, manual[i].nentries);
       if (e_num != NO_ENTRY) break;
       if (++i >= sections) return(NULL);
@@ -272,16 +298,17 @@ char * string;
 /*
  * Manual page found in some other section, unhighlight the current one.
  */
-    XtListUnhighlight(
-            man_globals->manpagewidgets.box[man_globals->current_directory]);
+    if ( man_globals->manpagewidgets.box != NULL)
+      XtListUnhighlight(
+	man_globals->manpagewidgets.box[man_globals->current_directory]);
   }
   else {
     /* 
      * Highlight the element we are searching for if it is in the directory
      * listing currently being shown.
      */
-   
-    XtListHighlight(man_globals->manpagewidgets.box[i], e_num);
+    if ( man_globals->manpagewidgets.box != NULL)
+      XtListHighlight(man_globals->manpagewidgets.box[i], e_num);
   }
   return(FindFilename(man_globals, manual[i].entries[e_num]));
 }

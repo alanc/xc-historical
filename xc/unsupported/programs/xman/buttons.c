@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.11 89/05/03 17:35:11 kit Exp $
- * $Header: buttons.c,v 1.11 89/05/03 17:35:11 kit Exp $
+ * $XConsortium: buttons.c,v 1.12 89/05/06 21:16:51 kit Exp $
+ * $Header: buttons.c,v 1.12 89/05/06 21:16:51 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -49,6 +49,7 @@ MakeTopBox()
   Widget top, form, command, label; /* widgets. */
   Arg arglist[TOPARGS];		/* An argument list */
   Cardinal num_args = 0;	/* The number of arguments. */
+  ManpageGlobals * man_globals;
   static char * full_size[] = {
     "topLabel", MANPAGE_BUTTON, NULL
   };
@@ -93,7 +94,18 @@ MakeTopBox()
   help_widget = NULL;		/* We have not seen the help yet. */
 
   FormUpWidgets(form, full_size, half_size);
+
+  man_globals = (ManpageGlobals*) XtMalloc( (Cardinal) sizeof(ManpageGlobals));
+  man_globals->label = NULL;
+  man_globals->manpagewidgets.directory = NULL;
+  man_globals->manpagewidgets.manpage = NULL;
+  man_globals->manpagewidgets.box = NULL;
+  man_globals->current_directory = 0;
+  MakeSearchWidget(man_globals, top);
+  MakeSaveWidgets(man_globals, top);
+
   XtRealizeWidget(top);
+  SaveGlobals( (man_globals->This_Manpage = top), man_globals);
   XtMapWidget(top);
   AddCursor(top, resources.cursors.top);
 }
@@ -104,15 +116,23 @@ MakeTopBox()
  *	Returns: none.
  */
 
-void
-CreateManpage()
+Widget
+CreateManpage( file )
+FILE * file;
 {
   ManpageGlobals * man_globals;	/* The psuedo global structure. */
   static void StartManpage();
 
   man_globals = InitPsuedoGlobals();
   CreateManpageWidget(man_globals, MANNAME, TRUE);
-  StartManpage( man_globals, OpenHelpfile(man_globals) );
+  
+  if (file == NULL)
+    StartManpage( man_globals, OpenHelpfile(man_globals), FALSE );
+  else {
+    OpenFile(man_globals, file);
+    StartManpage( man_globals, FALSE, TRUE);
+  }
+  return(man_globals->This_Manpage);
 }
 
 /*	Function Name: InitPsuedoGlobals
@@ -132,12 +152,13 @@ InitPsuedoGlobals()
 
   man_globals = (ManpageGlobals *) 
                 XtMalloc( (Cardinal) sizeof(ManpageGlobals));
+
   man_globals->section_name = (char **) XtMalloc( (Cardinal) (sections *
 							      sizeof(char *)));
   man_globals->manpagewidgets.box = (Widget *) XtCalloc( (Cardinal) sections,
 						    (Cardinal) sizeof(Widget));
-
-/* Initialize the number of screens that will be shown */
+  
+  /* Initialize the number of screens that will be shown */
 
   man_globals->both_shown = resources.both_shown_initial;
   
@@ -258,14 +279,15 @@ Boolean full_instance;
 /*	Function Name: StartManpage
  *	Description: Starts up a new manpage.
  *	Arguments: man_globals - the psuedo globals variable.
- *                 help - Is help avaliable?
+ *                 help - is this a help file?
+ *                 page - Is there a page to display?
  *	Returns: none.
  */
 
 static void
-StartManpage(man_globals, help)
+StartManpage(man_globals, help, page)
 ManpageGlobals * man_globals;
-Boolean help;
+Boolean help, page;
 {
   Widget dir = man_globals->manpagewidgets.directory;
   Widget manpage = man_globals->manpagewidgets.manpage;
@@ -276,8 +298,10 @@ Boolean help;
  * If there is a helpfile then put up both screens if both_show is set.
  */
 
-  if (help) {
-    strcpy(man_globals->manpage_title, "Xman Help");
+  if (page || help) {
+    if (help) 
+      strcpy(man_globals->manpage_title, "Xman Help");
+
     if (man_globals->both_shown) {
       XtManageChild(dir);
       man_globals->dir_shown = TRUE;
@@ -304,7 +328,7 @@ Boolean help;
     man_globals->dir_shown = FALSE;
   }
 /*
- * Since There is no help file, put up directory and do not allow change
+ * Since There is file to display, put up directory and do not allow change
  * to manpage, show both, or help.
  */
   else {			

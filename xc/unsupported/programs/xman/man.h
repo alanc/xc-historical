@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.7 89/04/28 15:05:46 kit Exp $
+ * $XConsortium: man.h,v 1.8 89/05/06 21:16:28 kit Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -138,7 +138,9 @@ typedef struct _Xman_Resources {
   XmanCursors cursors;		/* The cursors for xman. */
   Boolean both_shown_initial;	/* The initial state of the manual pages
 				   show two screens or only one. */
-  Boolean top_box_active;	        /* Put up the Top Box. */
+  Boolean top_box_active;	/* Put up the Top Box. */
+  Boolean clear_search_string;	/* clear the search string each time it
+				   is popped down? */
   int directory_height;	        /* The default height of directory in 
 				   both_shown mode. */
   char * help_file;		/* The name of the help file. */
@@ -167,10 +169,11 @@ void XtResizeWidget(), XtMoveWidget();
 
 /* buttons.c */
 
-void MakeTopBox(), CreateManpage(), FormUpWidgets();
+void MakeTopBox(), FormUpWidgets();
 void CreateManpageWidget(), MakeSaveWidgets(), WriteLabel();
 void MakeTopPopUpWidget(),MakeDirPopUpWidget(), MakeDirectoryBox();
 char * CreateManpageName();
+Widget CreateManpage();
 
 /* handler.c */
 
@@ -196,7 +199,7 @@ int Man();
 
 /* misc.c */
 
-void PrintError(),PrintWarning(), ChangeLabel();
+void PrintError(),PrintWarning(), ChangeLabel(), OpenFile();
 void RemovePixmaps(),PositionCenter(),AddCursor(),ParseEntry();
 FILE *FindFilename(),*Format(), *OpenEntryFile();
 ManpageGlobals * GetGlobals();

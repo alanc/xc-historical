@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.11 89/02/16 13:31:21 kit Exp $
+ * $XConsortium: misc.c,v 1.12 89/04/28 15:05:48 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -67,6 +67,26 @@ char * string;
 #endif
   exit(42);
 }
+
+/*	Function Name: OpenFile
+ *	Description: Assignes a file to the manpage.
+ *	Arguments: man_globals - global structure.
+ *                 file        - the file pointer.
+ *	Returns: none
+ */
+
+void
+OpenFile(man_globals, file)
+ManpageGlobals * man_globals;
+FILE * file;
+{
+  Arg arglist[1];
+  Cardinal num_args = 0;
+
+  XtSetArg(arglist[num_args], XtNfile, file); num_args++;
+  XtSetValues(man_globals->manpagewidgets.manpage, arglist, num_args);
+}
+
 
 /*	Function Name: FindFilename
  *	Description: Opens the entry file given the entry struct.
@@ -181,7 +201,9 @@ char * entry;
 
   XtPopdown( XtParent(man_globals->standby) );
   
-  if( (access(catdir,W_OK)) == 0)  {
+  if ( (man_globals->save != NULL) && 
+       (man_globals->manpagewidgets.manpage != NULL) &&
+       ((access(catdir,W_OK)) == 0) )  {
     x = (Position) Width(man_globals->manpagewidgets.manpage)/2;
     y = (Position) Height(man_globals->manpagewidgets.manpage)/2;
     XtTranslateCoords(manpage, x, y, &x, &y);
@@ -250,6 +272,8 @@ Widget w;
 char * str;
 {
   Arg arglist[3];		/* An argument list. */
+
+  if (w == NULL) return;
 
   XtSetArg(arglist[0], XtNlabel, str);
 
