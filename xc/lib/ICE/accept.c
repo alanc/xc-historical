@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.9 93/09/14 15:33:35 mor Exp $ */
+/* $XConsortium: accept.c,v 1.10 93/09/22 11:14:47 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -520,7 +520,7 @@ char **networkIdRet;
 #endif
 
     strcpy (unsock.sun_path, ICE_UNIX_DIR);
-    sprintf (pidbuf, "\/%d", getpid ());
+    sprintf (pidbuf, "/%d", getpid ());
     strcat (unsock.sun_path, pidbuf);
 
 #ifdef BSD44SOCKETS
