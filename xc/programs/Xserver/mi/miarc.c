@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.8 89/09/05 20:39:50 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.9 89/09/14 16:29:48 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -248,7 +248,7 @@ miArcSegment(pDraw, pGC, tarc, right, left)
 	endAngle = FULLCIRCLE - (-endAngle) % FULLCIRCLE;
     if (endAngle > FULLCIRCLE)
 	endAngle = (endAngle-1) % FULLCIRCLE + 1;
-    if (startAngle == endAngle) {
+    if ((startAngle == endAngle) && a1) {
 	startAngle = 0;
 	endAngle = FULLCIRCLE;
     }
