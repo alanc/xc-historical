@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $Header: colormap.h,v 1.16 87/09/11 07:50:36 rws Locked $ */
+/* $Header: colormap.h,v 1.17 87/12/07 18:05:48 rws Locked $ */
 #ifndef CMAP_H
 #define CMAP_H 1
 
@@ -69,7 +69,8 @@ extern int CreateColormap();
 extern Pixel FindColor();
 extern int FreeColormap();
 extern int TellNoMap();
-extern int TellNewMap();
+extern int TellLostMap();
+extern int TellGainedMap();
 extern int IsMapInstalled();
 extern void UninstallColormap();
 
