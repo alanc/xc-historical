@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.126 94/04/04 17:17:27 gildea Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.127 94/04/05 11:20:13 matt Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -121,6 +121,7 @@ XCOMM operating system:  OSName
 #else
 #define StandardDefines	  -Dsun -DSVR4
 #endif
+#define ExtraLibraries    -lsocket -lnsl
 #if OSMinorVersion > 1
 #define ThreadedX	  YES
 #if HasSunC && CCompilerMajorVersion > 2
@@ -136,23 +137,6 @@ XCOMM operating system:  OSName
 #define ThreadsCplusplusLibraries -lthread
 #endif
 #endif 		/* OSMinorVersion > 1 */
-#if OSMinorVersion == 2 || OSMinorVersion == 3
-/* 
- * over-ride for broken thread stubs in libc -- fixed in 2.4 ??? 
- *
- * Using -lthr_stubs requires an explicit -lthread even when using the 
- * Sun compiler -mt flags, because -mt puts -lthread at the *end* of the 
- * link line, and we need it *before* -lthr_stubs.  If you're not using
- * the libthr_stubs hack, then you don't need this hack either.
- */
-#define ExtraLibraries    -lsocket -lnsl -L$(TOP)/util/misc -lthr_stubs
-#if HasSunC && CCompilerMajorVersion > 2
-#define ThreadsLibraries -lthread
-#endif
-#if HasSunCplusplus && CplusplusCompilerMajorVersion > 3
-#define ThreadsCplusplusLibraries -lthread
-#endif
-#endif /* OSMinorVersion == 2 || OSMinorVersion == 3 */
 #define HasVFork          NO
 #define InstKmemFlags	  -g sys -m 2755
 #define ShLibIncludeFile <sunLib.tmpl>
