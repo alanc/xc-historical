@@ -1,5 +1,5 @@
 /*
- * $XConsortium: gethost.c,v 1.8 89/12/06 20:39:14 jim Exp $
+ * $XConsortium: gethost.c,v 1.9 89/12/06 20:54:35 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -65,6 +65,10 @@ nameserver_lost(sig)
 {
   nameserver_timedout = True;
   longjmp (env, -1);
+  /* NOTREACHED */
+#ifdef SIGNALRETURNSINT
+  return -1;				/* for picky compilers */
+#endif
 }
 
 
@@ -175,8 +179,8 @@ char *get_address_info (family, fulldpyname, prefix, host, lenp)
     int *lenp;
 {
     char *retval = NULL;
-    int len;
-    char *src;
+    int len = 0;
+    char *src = NULL;
 #ifdef TCPCONN
     unsigned long hostinetaddr;
     struct sockaddr_in inaddr;		/* dummy variable for size calcs */

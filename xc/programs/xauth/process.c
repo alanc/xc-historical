@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.28 89/12/07 10:36:39 rws Exp $
+ * $XConsortium: process.c,v 1.29 89/12/10 16:59:22 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -504,7 +504,7 @@ static int cvthexkey (hexstr, ptrp)	/* turn hex key string into octets */
     int len = 0;
     char *retval, *s;
     unsigned char *us;
-    char savec;
+    char savec = '\0';
     int whichchar;
     static char *hexdigits = "0123456789abcdef";
 
@@ -594,6 +594,9 @@ static _signal_t die ()
     dieing = True;
     exit (auth_finalize ());
     /* NOTREACHED */
+#ifdef SIGNALRETURNSINT
+    return -1;				/* for picky compilers */
+#endif
 }
 
 static _signal_t catchsig (sig)
@@ -605,6 +608,9 @@ static _signal_t catchsig (sig)
     if (verbose && xauth_modified) printf ("\r\n");
     die ();
     /* NOTREACHED */
+#ifdef SIGNALRETURNSINT
+    return -1;				/* for picky compilers */
+#endif
 }
 
 static void register_signals ()
@@ -1525,6 +1531,9 @@ static int do_quit (inputfilename, lineno, argc, argv)
     /* allow bogus stuff */
     die (0);
     /* NOTREACHED */
+#ifdef SIGNALRETURNSINT
+    return -1;				/* for picky compilers */
+#endif
 }
 
 
