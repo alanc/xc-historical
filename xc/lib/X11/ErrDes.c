@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: XErrDes.c,v 11.22 88/02/10 18:04:56 rws Exp $";
+static char rcsid[] = "$Header: XErrDes.c,v 11.23 88/02/14 11:55:21 rws Exp $";
 #endif lint
 
 /*
@@ -29,6 +29,10 @@ static char rcsid[] = "$Header: XErrDes.c,v 11.22 88/02/10 18:04:56 rws Exp $";
 #include <X11/Xos.h>
 #include "Xlibint.h"
 #include "Xresource.h"
+
+#ifndef ERRORDB
+#define ERRORDB "/usr/lib/X11/XErrorDB"
+#endif
 
 char *XErrorList[] = {
 	/* No error	*/	"",
@@ -109,7 +113,7 @@ _XInitErrorHandling (db)
     {
     XrmDatabase errordb;
     XrmInitialize();
-    errordb = XrmGetFileDatabase(ErrorDataBase);
+    errordb = XrmGetFileDatabase(ERRORDB);
     XrmMergeDatabases(errordb, db);
      }
 

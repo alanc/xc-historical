@@ -2,6 +2,7 @@
     CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I. -I$(TOP) -I$(INCLUDESRC)
         DEFINES = ConnectionFlags
+     DB_DEFINES = -DERRORDB=\"$(LIBDIR)/XErrorDB\"
    INSTALLFLAGS = $(INSTINCFLAGS)
 #if BandAidLibrary
         AIDSRCS = BandAidLibrarySources
@@ -237,14 +238,18 @@ OBJS =\
 
 #if DebugLibX && ProfileLibX
 DebuggedAndProfiledLibraryObjectRule()
+SpecialDebuggedAndProfiledObjectRule(XErrDes.o,$(IRULESRC)/Imake.tmpl,$(DB_DEFINES))
 #else
 # if DebugLibX
 DebuggedLibraryObjectRule()
+SpecialDebuggedObjectRule(XErrDes.o,$(IRULESRC)/Imake.tmpl,$(DB_DEFINES))
 # else
 #  if ProfileLibX
 ProfiledLibraryObjectRule()
+SpecialProfiledObjectRule(XErrDes.o,$(IRULESRC)/Imake.tmpl,$(DB_DEFINES))
 #  else
 NormalLibraryObjectRule()
+SpecialObjectRule(XErrDes.o,$(IRULESRC)/Imake.tmpl,$(DB_DEFINES))
 #  endif
 # endif
 #endif
