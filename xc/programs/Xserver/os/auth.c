@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.6 89/10/10 14:21:11 jim Exp $
+ * $XConsortium: auth.c,v 1.7 89/11/08 17:19:34 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -39,11 +39,25 @@ extern int  MitResetCookie ();
 extern XID  MitToID ();
 extern int  MitFromID (), MitRemoveCookie ();
 
+#ifdef HASDES
+extern int  XdmAddCookie ();
+extern XID  XdmCheckCookie ();
+extern int  XdmResetCookie ();
+extern XID  XdmToID ();
+extern int  XdmFromID (), XdmRemoveCookie ();
+#endif
+
 static struct protocol   protocols[] = {
 {   (unsigned short) 18,    "MIT-MAGIC-COOKIE-1",
 		MitAddCookie,	MitCheckCookie,	MitResetCookie,
 		MitToID,	MitFromID,	MitRemoveCookie,
 },
+#ifdef HASDES
+{   (unsigned short) 19,    "XDM-AUTHORIZATION-1",
+		XdmAddCookie,	XdmCheckCookie,	XdmResetCookie,
+		XdmToID,	XdmFromID,	XdmRemoveCookie,
+},
+#endif
 };
 
 # define NUM_AUTHORIZATION  (sizeof (protocols) /\
