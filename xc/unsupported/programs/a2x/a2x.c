@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.123 93/05/19 10:57:55 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.124 93/05/19 15:05:57 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -132,6 +132,10 @@ extern char *malloc(), *getenv();
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+#ifdef XTRAP
+#define NEED_EVENTS
+#define NEED_REPLIES
+#endif
 #include <X11/Xproto.h>
 #include <X11/extensions/shape.h>
 #ifdef XTEST
