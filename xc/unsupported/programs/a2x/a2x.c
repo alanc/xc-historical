@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.89 92/08/18 20:18:04 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.90 92/09/02 09:39:34 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -534,7 +534,7 @@ reset_mapping()
 		    hotwin = w;
 		XFree(name);
 	    }
-	    XFree(children);
+	    XFree((char *)children);
 	}
 	if (hotwin) {
 	    XGrabKey(dpy, hotkey, 0, DefaultRootWindow(dpy), False,
@@ -1352,7 +1352,7 @@ find_closest(parent, pwa, puniv, level)
 	found = True;
     }
     if (children)
-	XFree((XPointer)children);
+	XFree((char *)children);
     return found;
 }
 
