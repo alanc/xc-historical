@@ -5,7 +5,7 @@
    where red/green/blue are decimal values, and inserts them in a database.
  */
 #ifndef lint
-static char *rcsid_rgb_c = "$XConsortium: rgb.c,v 11.15 93/07/29 12:51:44 rws Exp $";
+static char *rcsid_rgb_c = "$XConsortium: rgb.c,v 11.16 93/09/20 17:58:25 hersh Exp $";
 #endif
 
 #ifdef NDBM
@@ -107,6 +107,8 @@ main(argc, argv)
     lineno = 0;
     while (fgets (line, sizeof (line), stdin)) {
 	lineno++;
+	if (line[0] == '!')
+	    continue;
 	items = sscanf (line, "%d %d %d %[^\n]\n", &red, &green, &blue, name);
 	if (items != 4) {
 	    fprintf (stderr, "syntax error on line %d\n", lineno);
