@@ -66,7 +66,19 @@ SpecialObjectRule(misc.o,NullParameter,$(MISC_DEFINES))
 SpecialObjectRule(charproc.o,NullParameter,$(MISC_DEFINES))
 
 NormalProgramTarget(xterm,$(OBJS1),$(DEPLIBS1),XawClientLibs,$(TERMCAPLIB) $(PTYLIB))
+#if defined(SunArchitecture) && HasSharedLibraries
+#if AlternateUsrLibDir
+LDOVERRIDE = -L$(USRLIBDIR)
+#endif
+install:: xterm
+	MakeDir($(DESTDIR)$(BINDIR))
+	$(RM) xterm.inst
+	$(CC) -o xterm.inst $(OBJS1) $(LDOPTIONS) $(LDOVERRIDE) -lXaw -lXmu -lXt -lXext -lX11 $(LDLIBS) $(TERMCAPLIB) $(PTYLIB) $(EXTRA_LOAD_FLAGS)
+	$(INSTALL) -c $(INSTPGMFLAGS) $(INSTUIDFLAGS) xterm.inst $(DESTDIR)$(BINDIR)/xterm
+	$(RM) xterm.inst
+#else
 InstallProgramWithFlags(xterm,$(BINDIR),$(INSTUIDFLAGS))
+#endif
 
 NormalProgramTarget(resize,$(OBJS2),$(DEPLIBS2),NullParameter,$(TERMCAPLIB))
 InstallProgramWithFlags(resize,$(BINDIR),NullParameter)
