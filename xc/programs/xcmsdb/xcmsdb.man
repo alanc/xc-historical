@@ -51,14 +51,15 @@ window.
 .B \-color
 This option sets the query and remove options to only check for the
 XDCCC_LINEAR_RGB_MATRICES and XDCCC_LINEAR_RGB_CORRECTION properties.
-If neither the \fB\-color\fP nor the \fB\-gray\fP option is set then
+If the \fB\-color\fP option is not set then
 the query and remove options check for all the properties.
 .TP 8
-.B \-gray
-This option sets the query and remove options to only check for the
-XDCCC_GRAY_SCREENWWHITEPOINT and XDCCC_GRAY_CORRECTION properties.
-If neither the \fB\-color\fP nor the \fB\-gray\fP option is set then
-the query and remove options check for all the properties.
+.B \-f 32 | 16 | 8
+Specifies the property format (32, 16, or 8 bits per entry) for the
+XDCCC_LINEAR_RGB_CORRECTION property.
+Precision of encoded floating point values increases with the increase
+in bits per entry.
+The default is 32 bits per entry.
 .SH "SEE ALSO"
 xprop(1), Xlib documentation
 .SH ENVIRONMENT
@@ -69,6 +70,6 @@ to figure out which display and screen to use.
 .PP
 Unknown
 .SH COPYRIGHT
-Copyright 1990, Tektronix Inc..
+Copyright 1990, Tektronix Inc.
 .SH AUTHOR
-Chuck Adams, renamed from xsccd by the X Consortium.
+Chuck Adams, Tektronix Inc.
