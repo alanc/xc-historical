@@ -50,7 +50,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 5.13 90/05/15 18:40:16 keith Exp $ */
+/* $XConsortium: cfbfillsp.c,v 5.14 91/04/10 11:41:35 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -323,7 +323,7 @@ int fSorted;
 		    MaskRRopFourBits(pdst,GetFourBits(inputBits),endmask)
 		}
 	    }
-	    else if (nextPartBits < partBitsLeft + bitsLeft)
+	    else if (bitsLeft != bitsWhole && nextPartBits < partBitsLeft + bitsLeft)
 	    {
 	    	NextUnnaturalStippleBitsFast
 	    	if (startmask)
