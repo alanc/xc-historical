@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
 ** lex file for xgc syntax
 */
