@@ -1,0 +1,391 @@
+/* $XConsortium$ */
+
+/******************************************************************************
+
+				NOTICE
+                              
+This software is being provided by AGE Logic, Inc. and MIT under the
+following license.  By obtaining, using and/or copying this software,
+you agree that you have read, understood, and will comply with these
+terms and conditions:
+
+     Permission to use, copy, modify, distribute and sell this
+     software and its documentation for any purpose and without
+     fee or royalty and to grant others any or all rights granted
+     herein is hereby granted, provided that you agree to comply
+     with the following copyright notice and statements, including
+     the disclaimer, and that the same appears on all copies and
+     derivative works of the software and documentation you make.
+     
+     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     Institute of Technology"
+     
+     THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
+     REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED.  By way of
+     example, but not limitation, AGE LOGIC AND MIT MAKE NO
+     REPRESENTATIONS OR WARRANTIES OF MERCHANTABILITY OR FITNESS
+     FOR ANY PARTICULAR PURPOSE OR THAT THE SOFTWARE DOES NOT
+     INFRINGE THIRD-PARTY PROPRIETARY RIGHTS.  AGE LOGIC AND MIT
+     SHALL BEAR NO LIABILITY FOR ANY USE OF THIS SOFTWARE.  IN NO
+     EVENT SHALL EITHER PARTY BE LIABLE FOR ANY INDIRECT,
+     INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS
+     OF PROFITS, REVENUE, DATA OR USE, INCURRED BY EITHER PARTY OR
+     ANY THIRD PARTY, WHETHER IN AN ACTION IN CONTRACT OR TORT OR
+     BASED ON A WARRANTY, EVEN IF AGE LOGIC OR MIT OR LICENSEES
+     HEREUNDER HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH
+     DAMAGES.
+    
+     The names of AGE Logic, Inc. and MIT may not be used in
+     advertising or publicity pertaining to this software without
+     specific, written prior permission from AGE Logic and MIT.
+
+     Title to this software shall at all times remain with AGE
+     Logic, Inc.
+
+******************************************************************************/
+
+#ifndef XIE_H
+#define XIE_H
+
+
+/* Extension Name and version number */
+
+#define xieExtName		"XIE"
+
+#define xieMajorVersion		4
+#define xieMinorVersion		13
+#define xieEarliestMinorVersion	13
+#define xieLatestMinorVersion	13
+
+
+/* Limits */
+
+#define xieValMaxBands		3
+
+
+/* Alignment */
+
+#define xieValAlignable		1
+#define xieValArbitrary		2
+
+
+/* ArithmeticOp */
+
+#define xieValAdd		1
+#define xieValSub		2
+#define xieValSubRev		3
+#define xieValMul		4
+#define xieValDiv		5
+#define xieValDivRev		6
+#define xieValMin		7
+#define xieValMax		8
+#define xieValGamma		9
+
+
+/* ColorAllocTechnique */
+
+#define xieValColorAllocDefault		0
+#define xieValColorAllocAll		2
+#define xieValColorAllocMatch		4
+#define xieValColorAllocRequantize	6
+
+
+/* Colorspace */
+
+#define xieValCIELab	2
+#define xieValCIEXYZ	4
+#define xieValYCbCr	6
+#define xieValYCC	8
+
+
+/* CompareOp */
+
+#define xieValLT	1
+#define xieValLE	2
+#define xieValEQ	3
+#define xieValNE	4
+#define xieValGT	5
+#define xieValGE	6
+
+
+/* ConstrainTechnique */
+
+#define xieValConstrainClipScale	2
+#define xieValConstrainHardClip		4
+
+
+/* ConvolveTechnique */
+
+#define xieValConvolveDefault		0
+#define xieValConvolveConstant		2
+#define xieValConvolveReplicate		4
+
+
+/* DataClass */
+
+#define xieValSingleBand	1
+#define xieValTripleBand	2
+
+/* DataType */
+
+#define xieValConstrained	1
+#define xieValUnconstrained	2
+
+
+/* DecodeTechnique */
+
+#define xieValDecodeUncompressedSingle	2     	/* bitonal & grayscale */
+#define xieValDecodeUncompressedTriple	3     	/* color */
+#define xieValDecodeG31D		4     	/* FAX */
+#define xieValDecodeG32D		6     	/* FAX */
+#define xieValDecodeG42D		8     	/* FAX */
+#define xieValDecodeJPEGBaseline	10     	/* grayscale & color */
+#define xieValDecodeJPEGLossless	12     	/* grayscale & color */
+#define xieValDecodeTIFF2		14     	/* TIFF modified G31D */
+#define xieValDecodeTIFFPackBits	16     	/* TIFF APPLE FORMAT */
+
+
+/* DitherTechnique */
+
+#define xieValDitherDefault		0
+#define xieValDitherErrorDiffusion	2
+#define xieValDitherOrdered		4
+
+
+/* EncodeTechnique */
+
+#define xieValEncodeServerChoice	1	/* (to photomaps) */
+#define xieValEncodeUncompressedSingle	2     	/* bitonal & grayscale */
+#define xieValEncodeUncompressedTriple	3     	/* color */
+#define xieValEncodeG31D		4    	/* FAX */
+#define xieValEncodeG32D		6     	/* FAX */
+#define xieValEncodeG42D		8     	/* FAX */
+#define xieValEncodeJPEGBaseline	10     	/* grayscale & color */
+#define xieValEncodeJPEGLossless	12     	/* grayscale & color */
+#define xieValEncodeTIFF2		14     	/* TIFF modified G31D */
+#define xieValEncodeTIFFPackBits	16     	/* TIFF APPLE FORMAT */
+
+
+/* JPEG-Lossless predictor */
+
+#define xieValPredictorNone	0
+#define xieValPredictorA	1
+#define xieValPredictorB	2
+#define xieValPredictorC	3
+#define xieValPredictorABC	4
+#define xieValPredictorABC2	5
+#define xieValPredictorBAC2	6
+#define xieValPredictorAB2	7
+
+
+/* ExportNotify */
+
+#define xieValDisable		1
+#define xieValFirstData		2
+#define xieValNewData		3
+
+
+/* ExportState */
+
+#define xieValExportDone	1
+#define xieValExportMore	2
+#define xieValExportEmpty	3
+#define xieValExportError	4
+
+
+/* GamutTechnique */
+
+#define xieValGamutDefault	0
+#define xieValGamutNone		1
+#define xieValGamutClipRGB	2
+
+
+/* GeometryTechnique */
+
+#define xieValGeomDefault		0
+#define xieValGeomAntialias		2
+#define xieValGeomAntialiasByArea	4
+#define xieValGeomAntialiasByLPF	6
+#define xieValGeomBilinearInterp	8
+#define xieValGeomGaussian		10
+#define xieValGeomNearestNeighbor	12
+
+
+/* NearestNeighbor modify */
+
+#define xieValFavorDown		1
+#define xieValFavorUp		2
+#define xieValRoundNW		3
+#define xieValRoundNE		4
+#define xieValRoundSE		5
+#define xieValRoundSW		6
+
+
+/* HistogramShape */
+
+#define	xieValHistogramFlat		2
+#define	xieValHistogramGaussian		4
+#define	xieValHistogramHyperbolic	6
+
+
+/* Interleave */
+
+#define xieValBandByPixel	1
+#define xieValBandByPlane	2
+
+
+/* MathOp */
+
+#define xieValExp	1
+#define xieValLn	2
+#define xieValLog2	3
+#define xieValLog10	4
+#define xieValSquare	5
+#define xieValSqrt	6
+
+
+/* Orientation */
+
+#define xieValLSFirst		1
+#define xieValMSFirst		2
+
+
+/* PhotofloOutcome */
+
+#define xieValFloSuccess	1
+#define xieValFloAbort		2
+#define xieValFloError		3
+
+
+/* PhotofloState */
+
+#define xieValInactive		1
+#define xieValActive		2
+#define xieValNonexistent	3
+
+
+/* ServiceClass */
+
+#define xieValFull	1
+#define xieValDIS	2
+
+
+/* TechniqueGroup */
+
+#define	xieValDefault		0
+#define	xieValAll		1
+#define	xieValColorAlloc	2
+#define	xieValConstrain		4
+#define	xieValConvertFromRGB	6
+#define	xieValConvertToRGB	8
+#define	xieValConvolve		10
+#define	xieValDecode		12
+#define	xieValDither		14
+#define	xieValEncode		16
+#define	xieValGamut		18
+#define	xieValGeometry		20
+#define	xieValHistogram		22
+#define	xieValWhiteAdjust	24
+
+#define xieValMaxTechGroup	24
+
+
+/* WhiteAdjustTechnique */
+
+#define	xieValWhiteAdjustDefault	0
+#define	xieValWhiteAdjustNone		1
+#define	xieValWhiteAdjustCIELabShift	2
+
+
+/* Photoflo elements */
+
+#define xieElemImportClientLUT		1
+#define xieElemImportClientPhoto	2
+#define xieElemImportClientROI		3
+#define xieElemImportDrawable		4
+#define xieElemImportDrawablePlane	5
+#define xieElemImportLUT		6
+#define xieElemImportPhotomap		7
+#define xieElemImportROI		8
+#define xieElemArithmetic		9
+#define xieElemBandCombine		10
+#define xieElemBandExtract		11
+#define xieElemBlend			12
+#define xieElemCompare			13
+#define xieElemConstrain		14
+#define xieElemConvertFromIndex		15
+#define xieElemConvertFromRGB		16
+#define xieElemConvertToIndex		17
+#define xieElemConvertToRGB		18
+#define xieElemConvolve			19
+#define xieElemDither			20
+#define xieElemGeometry			21
+#define xieElemLogical			22
+#define xieElemMatchHistogram		23
+#define xieElemMath			24
+#define xieElemPasteUp			25
+#define xieElemPoint			26
+#define xieElemUnconstrain		27
+#define xieElemExportClientHistogram	28
+#define xieElemExportClientLUT		29
+#define xieElemExportClientPhoto	30
+#define xieElemExportClientROI		31
+#define xieElemExportDrawable		32
+#define xieElemExportDrawablePlane	33
+#define xieElemExportLUT		34
+#define xieElemExportPhotomap		35
+#define xieElemExportROI		36
+
+#define xieMaxElem			36
+
+
+/*
+ * Event Codes
+ */
+
+#define xieEvnNoColorAlloc		0
+#define xieEvnNoDecodeNotify		1
+#define xieEvnNoExportAvailable		2
+#define xieEvnNoImportObscured		3
+#define xieEvnNoPhotofloDone		4
+
+#define xieNumEvents			5	
+
+
+
+/*
+ * Error Codes
+ */
+
+#define xieErrNoColorList	0
+#define xieErrNoLUT		1
+#define xieErrNoPhotoflo	2
+#define xieErrNoPhotomap	3
+#define xieErrNoPhotospace	4
+#define xieErrNoROI		5
+#define xieErrNoFlo		6
+
+#define xieNumErrors		7	
+
+#define xieErrNoFloAccess	   1
+#define xieErrNoFloAlloc	   2
+#define xieErrNoFloColormap	   3
+#define xieErrNoFloColorList	   4
+#define xieErrNoFloDomain	   5
+#define xieErrNoFloDrawable	   6
+#define xieErrNoFloElement	   7
+#define xieErrNoFloGC		   8
+#define xieErrNoFloID		   9
+#define xieErrNoFloLength	  10
+#define xieErrNoFloLUT		  11
+#define xieErrNoFloMatch	  12
+#define xieErrNoFloOperator	  13
+#define xieErrNoFloPhotomap	  14
+#define xieErrNoFloROI		  15
+#define xieErrNoFloSource	  16
+#define xieErrNoFloTechnique	  17
+#define xieErrNoFloValue	  18
+#define xieErrNoFloImplementation 19
+
+
+#endif /* XIE_H */

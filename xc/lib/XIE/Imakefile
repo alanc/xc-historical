@@ -1,0 +1,104 @@
+XCOMM $XConsortium$
+XCOMM
+XCOMM Copyright 1992 by the Massachusetts Institute of Technology
+XCOMM 
+XCOMM Permission to use, copy, modify, distribute, and sell this software and
+XCOMM its documentation for any purpose is hereby granted without fee, provided
+XCOMM that the above copyright notice appear in all copies and that both that
+XCOMM copyright notice and this permission notice appear in supporting
+XCOMM documentation, and that the name of M.I.T. not be used in advertising or
+XCOMM publicity pertaining to distribution of the software without specific,
+XCOMM written prior permission.  M.I.T. makes no representations about the
+XCOMM suitability of this software for any purpose.  It is provided "as is"
+XCOMM without express or implied warranty.
+XCOMM
+
+#define DoNormalLib NormalLibXie
+#define DoSharedLib SharedLibXie
+#define DoDebugLib DebugLibXie
+#define DoProfileLib ProfileLibXie
+#include <Library.tmpl>
+
+#ifdef SharedXieReqs
+REQUIREDLIBS = SharedXieReqs
+#endif
+
+#if Malloc0ReturnsNull
+ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
+#endif
+
+DEFINES = $(ALLOC_DEFINES)
+
+HEADERS = XIElib.h \
+          XIElibint.h
+
+SRCS = abort.c \
+       await.c \
+       clientdata.c \
+       colorlist.c \
+       conven.c \
+       elements.c \
+       free.c \
+       errors.c \
+       events.c \
+       ieee.c \
+       init.c \
+       lut.c \
+       photoflo.c \
+       photomap.c \
+       photospace.c \
+       roi.c \
+       technique.c \
+       utils.c
+
+OBJS = abort.o \
+       await.o \
+       clientdata.o \
+       colorlist.o \
+       conven.o \
+       elements.o \
+       errors.o \
+       events.o \
+       free.o \
+       ieee.o \
+       init.o \
+       lut.o \
+       photoflo.o \
+       photomap.o \
+       photospace.o \
+       roi.o \
+       technique.o \
+       utils.o
+
+LibraryObjectRule()
+
+#if DoSharedLib
+#if DoNormalLib
+SharedLibraryTarget(XIE,$(SOXIEREV),$(OBJS),shared,..)
+#else
+SharedLibraryTarget(XIE,$(SOXIEREV),$(OBJS),.,.)
+#endif
+InstallSharedLibrary(XIE,$(SOXIEREV),$(SHLIBDIR))
+#endif
+#if DoNormalLib
+NormalLibraryTarget(XIE,$(OBJS))
+InstallLibrary(XIE,$(USRLIBDIR))
+#endif
+#if DoProfileLib
+ProfiledLibraryTarget(XIE,$(OBJS))
+InstallLibrary(XIE_p,$(USRLIBDIR))
+#endif
+#if DoDebugLib
+DebuggedLibraryTarget(XIE,$(OBJS))
+InstallLibrary(XIE_d,$(USRLIBDIR))
+#endif
+
+LintLibraryTarget(XIE,$(SRCS))
+InstallLintLibrary(XIE,$(LINTLIBDIR))
+
+BuildIncludes($(HEADERS),extensions,..)
+InstallMultiple($(HEADERS),$(INCDIR)/extensions)
+
+DependTarget()
+
+NormalLintTarget($(SRCS))
