@@ -61,9 +61,10 @@ Keith Packard, keith@expo.lcs.mit.edu
 Dave Sternlicht, dave@expo.lcs.mit.edu
 .fi
 
-Ralph Swick, swick@athena.mit.edu, an employee of Digital Equipment
-Corporation working at MIT Project Athena, also worked directly with
-the Consortium staff on this release.
+Ralph Swick, an employee of Digital Equipment Corporation working at
+MIT Project Athena, also worked directly with the Consortium staff
+on this release.  Former MIT staff members Jim Fulton and Chris Peterson
+contributed to the early development of the release.
 
 .SH "POSTAL ADDRESS"
 The MIT X Consortium can be reached by writing to
