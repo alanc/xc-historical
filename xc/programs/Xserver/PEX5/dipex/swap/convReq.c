@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: convReq.c,v 5.1 91/02/16 09:57:09 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -420,7 +420,8 @@ pexRenderOutputCommandsReq	*strmPtr;
     SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_RENDERER (strmPtr->rdr);
     SWAP_CARD32 (strmPtr->numCommands);
-    /* LISTof OutputCommand(numCommands) -- get swapped in PEXRenderOC*/
+    SwapListOfOutputCommands (cntxtPtr, strmPtr->numCommands,
+	(CARD32 *) (strmPtr + 1));
     CALL_REQUEST;
 }
 /* individual output commands may be found in the section "Output Commands" */
@@ -612,6 +613,8 @@ pexStoreElementsReq	*strmPtr;
     SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_STRUCTURE (strmPtr->sid);
     SWAP_CARD32 (strmPtr->numCommands);
+    SwapListOfOutputCommands (cntxtPtr, strmPtr->numCommands,
+	(CARD32 *) (strmPtr + 1));
     CALL_REQUEST;
 }
 
@@ -1513,7 +1516,6 @@ pexSwap		    *swapPtr;
 pexEdgeBundleEntry  *p_data;
 {
     unsigned char *ptr = (unsigned char *)p_data;
-    SWAP_CARD16 (p_data->edges);
     SWAP_ENUM_TYPE_INDEX (p_data->edgeType); 
     SWAP_FLOAT (p_data->edgeWidth);
     ptr = SWAP_FUNC_PREFIX(SwapColourSpecifier)(swapPtr, &(p_data->edgeColour));
