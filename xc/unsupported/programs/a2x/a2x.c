@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.105 92/11/03 16:39:26 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.106 92/12/23 09:33:53 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -2207,6 +2207,7 @@ init_display(dname)
 #endif
 #ifdef XTRAP
     XETC *ntc;
+    ReqFlags requests;
 #endif
 #ifdef XTESTEXT1
     int majop;
@@ -2240,6 +2241,11 @@ init_display(dname)
 	if (clean_up)
 	    (*clean_up)();
 	(void)XEStartTrapRequest(ntc);
+	bzero((char *)requests, sizeof(requests));
+	BitTrue(requests, X_GrabServer);
+	BitTrue(requests, X_UngrabServer);
+	XETrapSetRequests(ntc, True, requests);
+	(void)XETrapSetGrabServer(ntc, True);
 	tc = ntc;
 	generate_key = xtrap_generate_key;
 	generate_button = xtrap_generate_button;
