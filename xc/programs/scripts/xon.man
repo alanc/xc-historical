@@ -8,15 +8,15 @@ remote-host [-access] [-debug] [-name window-name] [-nols] [-screen screen-no]
 .SH DESCRIPTION
 .I Xon
 runs the specified command (default xterm -ls) on the remote machine using
-rsh.  Xon passes the DISPLAY, XAUTHORITY and XUSERFILESEARCHPATH environment
-variables to the remote command.
+rsh, remsh, or rcmd.  Xon passes the DISPLAY, XAUTHORITY and
+XUSERFILESEARCHPATH environment variables to the remote command.
 .PP
 When no command is specified, xon runs 'xterm -ls'.  It additionally
 specifies the application name to be 'xterm-\fIremote-host\fP' and the
 window title to be '-fIremote-host\fP'.
 .PP
-Xon can only work when the remote host will allow you to use rsh, by having
-an entry in the .rhosts file permitting access.
+Xon can only work when the remote host will allow you to log in without a
+password, by having an entry in the .rhosts file permitting access.
 .SH OPTIONS
 .PP
 Note that the options follow the remote host name (as they do with rlogin).
@@ -41,10 +41,11 @@ suspends that behaviour.
 This changes the screen number of the DISPLAY variable passed to the remote
 command.
 .IP "\fB-user user-name\fP"
-By default, xon simply uses rsh to connect to the remote machine using the
+By default, xon simply uses rsh/remsh/rcmd to connect to the remote machine
+using the
 same user name as on the local machine.  This option cause xon to specify an
 alternative user name.  This will not work unless you have authorization to
-access the remote account via rsh by placing an appropriate entry in the
+access the remote account, by placing an appropriate entry in the
 remote users .rhosts file.
 .SH BUGS
 Xon can get easily confused when the remote-host, user-name or various
