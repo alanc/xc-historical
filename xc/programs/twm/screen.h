@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.46 89/11/05 17:47:18 jim Exp $
+ * $XConsortium: screen.h,v 1.47 89/11/05 18:10:58 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -67,9 +67,6 @@ typedef struct ScreenInfo
 
     name_list *Icons;		/* list of icon pixmaps */
     Pixmap UnknownPm;		/* the unknown icon pixmap */
-    Pixmap iconifyPm;		/* the titlebar iconify pixmap */
-    Pixmap focusPm;		/* the titlebar focus pixmap */
-    Pixmap resizePm;		/* the titlebar resize pixmap */
     Pixmap siconifyPm;		/* the icon manager iconify pixmap */
     Pixmap pullPm;		/* pull right menu arrow */
     Pixmap hilitePm;		/* focus highlight window background */
