@@ -1,4 +1,4 @@
-! $XConsortium: string.list,v 1.7 94/02/08 20:22:31 converse Exp $
+! $XConsortium: string.list,v 1.8 94/04/01 14:13:38 converse Exp $
 ! NOTE: To maintain binary compatibility, you can only APPEND items within
 !	a given list!!!!
 
@@ -230,6 +230,36 @@ RDirectoryString
 REnvironmentArray
 RRestartStyle
 RSmcConn
+Hcreate
+HsetValues
+HmanageChildren
+HunmanageChildren
+HmanageSet
+HunmanageSet
+HrealizeWidget
+HunrealizeWidget
+HaddCallback
+HaddCallbacks
+HremoveCallback
+HremoveCallbacks
+HremoveAllCallbacks
+HaugmentTranslations
+HoverrideTranslations
+HuninstallTranslations
+HsetKeyboardFocus
+HsetWMColormapWindows
+HsetMappedWhenManaged
+HmapWidget
+HunmapWidget
+Hpopup
+HpopupSpringLoaded
+Hpopdown
+HpreConfigure
+HpostConfigure
+HpreGeometry
+HpostGeometry
+Hdestroy
+
 
 :ShellStr.h XtShellStrings
 
