@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: complex.c,v 1.1 94/01/12 20:49:28 rws Exp $ */
 /**** module complex.c ****/
 /******************************************************************************
 				NOTICE
@@ -725,8 +725,8 @@ Parms	p;
 	tiles[ 4 ].dst_y = 64;
 
         XieFloPasteUp( &flograph[idx], 256, 256, constant, tiles, 5 ); /* 38 */
-	idx++;
 	pasteSrc = idx;
+	idx++;
 
 	if ( pointflag )
 	{
