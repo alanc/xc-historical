@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: commands.c,v 1.10 87/12/19 12:17:26 rws Locked $";
+static char rcs_id[] = "$Header: commands.c,v 1.9 87/09/11 08:22:06 toddb Exp $";
 #endif
 
 /*
@@ -28,6 +28,7 @@ static char rcs_id[] = "$Header: commands.c,v 1.10 87/12/19 12:17:26 rws Locked 
  */
 
 #include "xedit.h"
+#include <sys/types.h>
 #include <sys/stat.h>
 
 static int loadChangeNumber;
@@ -52,7 +53,7 @@ static int FileMode = 0640;
 ReplaceOne()
 {
   int searchlen = strlen(searchstring);
-  int startpos  = QXtTextGetInsertionPoint(CurDpy, textwindow);
+  int startpos  = XtTextGetInsertionPoint( textwindow);
   int  count, result;
   XtTextPosition pos, destpos;
   char *buf;
@@ -66,7 +67,7 @@ ReplaceOne()
     destpos = 0;
     pos = searchBegPos;
     while(count){
-        pos = (*source->read)(source, pos, text, count);
+        pos = (*source->Read)(source, pos, text, count);
         strncpy(&buf[destpos], text->ptr, text->length);
 	count -= text->length;
         destpos += text->length;
@@ -77,7 +78,7 @@ ReplaceOne()
 	text->length = (strlen(replacestring));
 	text->firstPos = 0;
 	text->ptr = replacestring;
-	if(QXtTextReplace(CurDpy, textwindow, searchBegPos,searchEndPos,text) != EDITDONE) 
+	if(XtTextReplace( textwindow, searchBegPos,searchEndPos,text) != EditDone) 
 	    result = 0;
 	else 
 	    result = 1;
@@ -92,16 +93,16 @@ DoReplaceOne()
 	Feep();
     }
     else 
-	QXtTextUnsetSelection(CurDpy, textwindow);
+	XtTextUnsetSelection( textwindow);
     if(SearchRight())
-        QXtTextSetNewSelection(CurDpy, textwindow, searchBegPos, searchEndPos);
+        XtTextSetSelection(textwindow, searchBegPos, searchEndPos);
 }
 
 DoReplaceAll()
 {
   int count;
     count = 0;
-    QXtTextSetInsertionPoint(CurDpy, textwindow, 0); 
+    XtTextSetInsertionPoint( textwindow, 0); 
     while(SearchRight()){
 	if(!ReplaceOne())
 	    break;
@@ -118,7 +119,7 @@ DoReplaceAll()
 DoSearchRight()
 {
     if(SearchRight()){
-	QXtTextSetNewSelection(CurDpy, textwindow, searchBegPos, searchEndPos);
+	XtTextSetSelection(textwindow, searchBegPos, searchEndPos);
     } else {
         Feep();  
 	XeditPrintf("\nSearch: couldn't find ` %s ' ", searchstring);
@@ -127,27 +128,28 @@ DoSearchRight()
 
 SearchRight()
 {
-  XtTextPosition pos, startpos = QXtTextGetInsertionPoint(CurDpy, textwindow);
+  XtTextPosition pos, startpos = XtTextGetInsertionPoint( textwindow);
   int searchlen;
-  int n, i, destpos, size = (*source->getLastPos)(source) - startpos;
+  int n, i, destpos, size = (*source->Scan)(source, 0, XtstAll, 
+		XtsdRight, 0,0) - startpos;
   char *s1, *s2, *buf = malloc(size);
   XtTextBlock t, *text;
     text = &t;
     destpos = 0;
     searchlen = strlen(searchstring);
     if(!searchlen){
-	text->ptr = QXFetchBuffer(CurDpy, &(text->length), 0);
+	text->ptr = XFetchBuffer(CurDpy, &(text->length), 0);
 	if(!text->length){
 	    Feep();
 	    XeditPrintf("\nSearch: nothing selected.");
 	    return 0;
 	}
 	searchlen = text->length;
-	QXtTextReplace(CurDpy, searchstringwindow, 0,0, text); 
+	XtTextReplace( searchstringwindow, 0,0, text); 
 	free(text->ptr);
     }
     for(pos = startpos; pos < startpos + size; ){
-        pos = (*source->read)(source, pos, text, size);
+        pos = (*source->Read)(source, pos, text, size);
 	strncpy(&buf[destpos], text->ptr, text->length);
 	destpos += text->length;
     }
@@ -162,7 +164,7 @@ SearchRight()
     free(buf);
     if( n < 0){
         i += startpos;
-        QXtTextSetInsertionPoint(CurDpy, textwindow, i + searchlen); 
+        XtTextSetInsertionPoint( textwindow, i + searchlen); 
         searchBegPos = i;
         searchEndPos = i + searchlen;
 	return(1);
@@ -173,8 +175,8 @@ SearchRight()
 
 DoSearchLeft()
 {
-  XtTextPosition end = (*source->getLastPos)(source);
-  XtTextPosition pos, startpos = QXtTextGetInsertionPoint(CurDpy, textwindow);
+  XtTextPosition end = (*source->Scan)(source, 0, XtstAll, XtsdRight, 0,0);
+  XtTextPosition pos, startpos = XtTextGetInsertionPoint( textwindow);
   int searchlen = strlen(searchstring);
   int n, i, destpos, count =  startpos + searchlen;
   char *s1, *s2, *buf = calloc(1, count);
@@ -183,19 +185,19 @@ DoSearchLeft()
     destpos = 0;
     /* if there's a string in the window, use it, otherwize, use selected */
     if(!searchlen){
-	text->ptr = QXFetchBuffer(CurDpy, &(text->length), 0);
+	text->ptr = XFetchBuffer(CurDpy, &(text->length), 0);
 	if(!text->length){
 	    XeditPrintf("\nSearch: nothing selected.");
 	    Feep();
 	    return;
 	}
 	searchlen = text->length;
-	QXtTextReplace(CurDpy, searchstringwindow, 0,0, text); 
+	XtTextReplace( searchstringwindow, 0,0, text); 
 	free(text->ptr);
     }
     /* buffer portion of file from insertion point, on */
     for(pos = 0; pos < min(count, end);){
-        pos = (*source->read)(source, pos, text, (count - pos));
+        pos = (*source->Read)(source, pos, text, (count - pos));
 	strncpy(&buf[destpos], text->ptr, text->length);
 	destpos += text->length;
     }
@@ -210,10 +212,10 @@ DoSearchLeft()
     }
     /* process result */
     if(n < 0){
-        QXtTextSetInsertionPoint(CurDpy, textwindow, i); 
+        XtTextSetInsertionPoint( textwindow, i); 
         searchBegPos = i;
         searchEndPos = i + searchlen;
-	QXtTextSetNewSelection(CurDpy, textwindow, searchBegPos, searchEndPos);
+	XtTextSetSelection(textwindow, searchBegPos, searchEndPos);
     }
     else {
 	XeditPrintf("\nSearch: couldn't find ` %s ' ", searchstring);
@@ -224,13 +226,13 @@ DoSearchLeft()
 DoUndo()
 {
   XtTextPosition from;
-    from = (*source->replace)(source, -1, 0, 0); 
+    from = (*source->Replace)(source, -1, 0, 0); 
     FixScreen(from);
 }
 DoUndoMore()
 {
   XtTextPosition from;
-    from = (*source->replace)(source, 0, -1, 0); 
+    from = (*source->Replace)(source, 0, -1, 0); 
     FixScreen(from);
 }
 setLoadedFile(name)
@@ -305,8 +307,8 @@ DoSave()
 	    Feep();
 	    return;
 	}
-	TDestroyEDiskSource(dsource);  
-	dsource = (XtTextSource*)TCreateEDiskSource(backupFilename, XttextRead);  
+	PseudoDiskSourceDestroy(dsource);  
+	dsource = PseudoDiskSourceCreate(backupFilename);  
 	PSsetROsource(source, dsource);
         backedup = 1;
     }
@@ -324,9 +326,9 @@ DoSave()
 	outStream = fdopen(outfid, "w");
     }
 /* WRITE ALL THE BITS OUT TO THE OUTPUT STREAM */
-    end = (*source->scan)(source, 0, XtstFile, XtsdRight, 1, FALSE);
+    end = (*source->Scan)(source, 0, XtstAll, XtsdRight, 1, FALSE);
     for(pos = 0; pos < end; ){
-	pos = (*source->read)(source, pos, text, 1024);
+	pos = (*source->Read)(source, pos, text, 1024);
 	if(text->length == 0)
 	    break;
 	if(fwrite(text->ptr, 1, text->length, outStream) < text->length){
@@ -368,29 +370,29 @@ DoLoad()
         return;
     }
     numargs = 0;
-    MakeArg(XtNwindow, (caddr_t)editbutton);
-    MakeArg(XtNindex,  (caddr_t)2);
+    MakeArg(XtNwindow, (XtArgVal)editbutton);
+    MakeArg(XtNindex,  (XtArgVal)2);
     if ((strlen(filename)&&access(filename, R_OK) == 0)) {
 	stat(filename, &stats);
 	FileMode = stats.st_mode;
-	TDestroyEDiskSource(dsource);  
-	TDestroyApAsSource(asource);
-	DestroyPSource(source);
-	dsource = (XtTextSource*)TCreateEDiskSource(filename, XttextRead);  
-	asource = TCreateApAsSource();
+	PseudoDiskSourceDestroy(dsource);  
+	PseudoDiskSourceDestroy(asource);
+	PSourceDestroy(source);
+	dsource = PseudoDiskSourceCreate(filename);  
+	asource = PseudoDiskSourceCreate("");
 	source = CreatePSource(dsource, asource);
-	QXtTextNewSource(CurDpy, textwindow, dsource, 0);
+	XtTextSetSource( textwindow, source, 0);
         if(Editable){
-            QXtButtonBoxAddButton(CurDpy, Row1, args, numargs);
+/*            XtButtonBoxAddButton( Row1, args, numargs); */
 	    Editable = 0;
 	}
         backedup = 0;
 	{
 	    static Arg setargs[] = {
-	        { XtNlabel,	 (caddr_t)0 }
+	        { XtNlabel,	 (XtArgVal)0 }
 	    };
-	    setargs[0].value = (caddr_t)filename;
-	    QXtLabelSetValues(CurDpy, labelwindow, setargs, XtNumber(setargs));
+	    setargs[0].value = (XtArgVal)filename;
+	    XtSetValues( labelwindow, setargs, XtNumber(setargs));
 	}
 	setLoadedFile(filename);
 	lastChangeNumber = 0;
@@ -403,16 +405,16 @@ DoLoad()
 
 DoEdit()
 {
-  XtTextPosition newInsertPos = QXtTextGetInsertionPoint(CurDpy, textwindow);
+  XtTextPosition newInsertPos = XtTextGetInsertionPoint( textwindow);
   int numargs;
   Arg args[1];
     numargs = 0;
-    MakeArg(XtNwindow, (caddr_t)editbutton);
+    MakeArg(XtNwindow, (XtArgVal)editbutton);
     if (access(filename, W_OK) == 0) {
-        QXtTextNewSource(CurDpy, textwindow, source, 0);  
-        QXUnmapWindow(CurDpy, editbutton);
-        QXtButtonBoxDeleteButton(CurDpy, Row1, args, numargs); 
-	QXtTextSetInsertionPoint(CurDpy, textwindow, newInsertPos);
+        XtTextSetSource( textwindow, source, 0);  
+/*        XUnmapWindow(CurDpy, editbutton); */
+/*        XtButtonBoxDeleteButton( Row1, args, numargs);  */
+	XtTextSetInsertionPoint(textwindow, newInsertPos);
         Editable = 1;
     } else {
 	XeditPrintf("\nEdit: File is not writable");
@@ -427,8 +429,8 @@ static Jump(line)
     if(line <= 1)
 	pos = 0;
     else
-        pos =  (*source->scan)(source, 0, XtstEOL, XtsdRight, line-1, 1);
-    QXtTextSetInsertionPoint(CurDpy, textwindow, pos); 
+        pos =  (*source->Scan)(source, 0, XtstEOL, XtsdRight, line-1, 1);
+    XtTextSetInsertionPoint( textwindow, pos); 
 }
 
 DoJump()
@@ -436,7 +438,7 @@ DoJump()
     char *XcutBuf, *buf;
     int   XcutSize, line;
 	
-    XcutBuf = QXFetchBuffer( CurDpy, &(XcutSize), 0);
+    XcutBuf = XFetchBuffer( CurDpy, &(XcutSize), 0);
     buf = malloc(XcutSize+1);
     strncpy(buf, XcutBuf, XcutSize);
     free(XcutBuf);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 1.6 87/08/20 15:03:16 gringort Exp $";
+static char rcs_id[] = "$Header: util.c,v 1.6 87/09/11 08:22:16 toddb Exp $";
 #endif
 
 /*
@@ -28,63 +28,47 @@ static char rcs_id[] = "$Header: util.c,v 1.6 87/08/20 15:03:16 gringort Exp $";
  */
 
 #include "xedit.h"
-
 XeditPrintf(fmt, arg1, arg2, arg3, arg4)
   char *fmt;
 {
   char buf[1024];
   XtTextBlock text;
   
-  XtTextPosition pos = (*messsource->scan)(messsource, 0, XtstFile, XtsdRight,1,0);
+  XtTextPosition pos = (*messsource->Scan)(messsource, 0, XtstAll, XtsdRight,1,0);
     sprintf(buf, fmt, arg1, arg2, arg3, arg4);
     text.length = strlen(buf);
     text.ptr = buf;
-    QXtTextReplace(CurDpy, messwindow, pos, pos, &text);
-    QXtTextSetInsertionPoint(CurDpy, messwindow, pos + text.length);
+    XtTextReplace( messwidget, pos, pos, &text);
+    XtTextSetInsertionPoint(messwidget, pos + text.length);
 }
 
-Window makeCommandButton(box, name, function)
+Widget makeCommandButton(box, name, function)
   Window box;
   char *name;
-  int (*function)();
+  XtCallbackProc function;
 {
-  int numargs;
-  Arg args[3];
-    numargs = 0;
-    MakeArg(XtNlabel, (caddr_t)name);
-    MakeArg(XtNfunction, (caddr_t)function);
-    MakeArg(XtNname, (caddr_t)name);
-    return(QXtCommandCreate(CurDpy, box, args, numargs));
+  static XtCallbackRec callbackList[] = { {NULL, NULL}, {NULL, NULL} };
+  static Arg arg[] = { {XtNcallback,(XtArgVal)callbackList} };
+    callbackList[0].callback = function;
+    return (XtCreateManagedWidget(name, commandWidgetClass, box, arg, 1));
 }
-/*
-Window makeBooleanButton(box, name, value)
-  Window box;
-  char *name;
-  int *value;
-{
-  Arg args[2];
-  int numargs;
-    numargs = 0;
-    MakeArg(XtNlabel, (caddr_t)name);
-    MakeArg(XtNvalue, (caddr_t)value);
-    return(QXtBooleanCreate(CurDpy, box, args, numargs));
-}
-*/
 
-Window makeStringBox(parentBox, string, length)
-  Window parentBox;
+
+Widget makeStringBox(parentBox, string, length)
+  Widget parentBox;
   char *string;
 {
-  XtEditType edittype;
-  Arg args[4];
-  Window StringW;
+  Arg args[5];
+  Widget StringW;
   int numargs;
     numargs = 0;
-    MakeArg(XtNtextOptions, (caddr_t)(/* editable |*/ resizeWidth));
-    MakeArg(XtNeditType, (caddr_t)XttextEdit);
-    MakeArg(XtNstring,(caddr_t)string); 
-    MakeArg(XtNwidth,  (caddr_t)length);
-    StringW = QXtTextStringCreate(CurDpy, parentBox, args, numargs);
+    MakeArg(XtNeditType, (XtArgVal)XttextEdit );
+    MakeArg(XtNtextOptions, (XtArgVal)( resizeWidth)); 
+    MakeArg(XtNstring,(XtArgVal)string);     
+    MakeArg(XtNwidth,  (XtArgVal)length);
+    MakeArg(XtNlength, (XtArgVal)1000);
+    StringW = XtCreateManagedWidget("stringthing", asciiStringWidgetClass, 
+					parentBox, args, numargs);
     return(StringW);  
 }
  
@@ -93,11 +77,12 @@ FixScreen(from)
 {
     XtTextPosition to;
     if(from >= 0){
-        to = (*source->getLastPos)(source) + 10;
-	QXtTextInvalidate(CurDpy,textwindow, (from > 0 ) ? from -1 : from, to); 
-	QXtTextSetInsertionPoint(CurDpy, textwindow, from); 
+        to = (*source->Scan)(source, 0, XtstAll, XtsdRight, 0,0) + 10;
+	XtTextInvalidate(textwindow, (from > 0 ) ? from -1 : from, to); 
+	XtTextSetInsertionPoint(textwindow, from); 
     } else {
 	Feep();
     }
 }
+
 
