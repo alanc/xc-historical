@@ -1,4 +1,4 @@
-/* $XConsortium: server.c,v 1.9 94/02/08 13:43:31 mor Exp $ */
+/* $XConsortium: server.c,v 1.10 94/03/29 19:47:53 rws Exp mor $ */
 
 /************************************************************************/
 /* Copyright (c) 1993 Quarterdeck Office Systems			*/
@@ -187,7 +187,7 @@ FILE *f;
 int *pargc;
 char ***pargv;
 {
-	char buf[BUFSIZ];
+	char buf[2048];
 	char *p;
 	int c;
 	char **pa;
