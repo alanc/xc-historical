@@ -1,4 +1,4 @@
-/* $XConsortium: Dialog.h,v 1.9 88/09/06 09:44:40 swick Exp $ */
+/* $XConsortium: Dialog.h,v 1.10 88/09/06 16:41:14 jim Exp $ */
 
 
 /***********************************************************
@@ -38,19 +38,19 @@ SOFTWARE.
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
- background	     Background		pixel		White
- border		     BorderColor	pixel		Black
- borderWidth	     BorderWidth	int		1
+ background	     Background		Pixel		XtDefaultBackground
+ border		     BorderColor	Pixel		XtDefaultForeground
+ borderWidth	     BorderWidth	Dimension	1
  destroyCallback     Callback		Pointer		NULL
- height		     Height		int		0
+ height		     Height		Dimension	computed at create
  label		     Label		String		NULL
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  maximumLength	     Max		int		256
  sensitive	     Sensitive		Boolean		True
  value		     Value		String		NULL
- width		     Width		int		0
- x		     Position		int		0
- y		     Position		int		0
+ width		     Width		Dimension	computed at create
+ x		     Position		Position	0
+ y		     Position		Position	0
 
 */
 
