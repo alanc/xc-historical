@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xconsole.c,v 1.16 93/10/12 21:18:37 rws Exp $
+ * $XConsortium: xconsole.c,v 1.17 93/10/12 21:20:52 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -30,7 +30,6 @@
 #include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/StdSel.h>
 
-#include <X11/Shell.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/Command.h>
@@ -50,6 +49,7 @@
 #else
 #include <stdio.h>
 #endif
+#include <X11/Shell.h>
 #include <ctype.h>
 
 /* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
