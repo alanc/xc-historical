@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.112 94/03/28 21:04:18 matt Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.113 94/03/29 15:42:17 gildea Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -23,13 +23,37 @@ XCOMM operating system:  OSName
 #endif
 
 /*
+ * Compiler setup.  This sun.cf file knows what options to use with 
+ * certain compilers, including Sun C, CenterLine C, and gcc.  If you
+ * don't tell us which compiler you have, we assume you have Sun C.
+ * If you have CenterLine C, you can just define HasCenterLineC to YES
+ * in site.def, or if you have gcc or gcc2, you can just define HasGcc 
+ * or HasGcc2 to YES in site.def
+ * 
+ * If you have some other compiler, you must define HasSunC to NO in
+ * site.def, then provide appropriate values for the various compiler
+ * related configuration varibles used here.  If you submit changes to
+ * support other compilers as an X11 request for enhancement, we'll
+ * consider adding them in the future.  It's always easier to add and
+ * support such changes if we have a copy of the compiler in question.
+ */
+
+#ifndef HasSunC
+#if (HasCenterLineC || HasGcc || HasGcc2)
+#define HasSunC NO
+#else
+#define HasSunC YES
+#endif
+#endif
+
+/*
  * If you say you have the unbundled Sun C compiler, we assume you have
  * version 2.0.x of the compiler unless you say otherwise.  If you have
  * version 3.0.x of the C compiler, define CCompilerMajorVersion as 3
  * in site.def
  */
 
-#ifdef HasSunC
+#if HasSunC
 #ifndef CCompilerMajorVersion
 #define CCompilerMajorVersion 2
 #endif
@@ -45,7 +69,7 @@ XCOMM operating system:  OSName
  * define CplusplusCompilerMajorVersion as 4 in site.def
  */
 
-#ifdef HasSunCplusplus
+#if HasSunCplusplus
 #ifndef CplusplusCompilerMajorVersion
 #define CplusplusCompilerMajorVersion 3
 #endif
@@ -83,13 +107,13 @@ XCOMM operating system:  OSName
 #endif
 #if OSMinorVersion > 1
 #define ThreadedX	  YES
-#if defined(HasSunC) && CCompilerMajorVersion > 2
+#if HasSunC && CCompilerMajorVersion > 2
 #define ThreadsCompileFlags -mt
 #else
 #define SystemMTDefines -D_REENTRANT
 #define ThreadsLibraries -lthread
 #endif
-#if defined(HasSunCplusplus) && CplusplusCompilerMajorVersion > 3
+#if HasSunCplusplus && CplusplusCompilerMajorVersion > 3
 #define ThreadsCplusplusCompileFlags -mt
 #else
 #define CplusplusSystemMTDefines -D_REENTRANT
@@ -107,10 +131,10 @@ XCOMM operating system:  OSName
  * Set flags for position independent code before including sv4Lib.rules
  * if the compiler in use doesn't use standard SVR4 flags
  */
-#if defined(HasSunC) || defined(HasCenterLineC)
+#if HasSunC || HasCenterLineC
 #define PositionIndependentCFlags -Kpic
 #endif
-#if defined(HasSunCplusplus) || defined(HasCenterLineCplusplus)
+#if HasSunCplusplus || HasCenterLineCplusplus
 #define PositionIndependentCplusplusFlags -Kpic
 #endif
 #include <svr4.cf>
@@ -153,11 +177,18 @@ XCOMM operating system:  OSName
 #define DefaultCCOptions -f68881 -pipe
 #else
 #if OSMajorVersion < 5
+#if HasSunC
 #define DefaultCCOptions -pipe
-#else
+#endif
+#else 	/* OSMajorVersion */
+#if HasSunC
 #define DefaultCCOptions -Xc
 #endif
-#endif
+#if HasCenterLineC
+#define DefaultCCOptions -ansi
+#endif 
+#endif	/* OSMajorVersion */
+#endif	/* Sun3Architecture */
 
 #define PexCCOptions DefaultCCOptions
 
