@@ -1,4 +1,4 @@
-/* $XConsortium: xcmsdb.c,v 1.2 91/05/14 15:00:13 dave Exp $ */
+/* $XConsortium: xcmsdb.c,v 1.3 91/07/22 14:57:35 rws Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -43,7 +43,12 @@
 #include "Xcmsint.h"
 #include "SCCDFile.h"
 
-extern unsigned long _XcmsGetElement();
+#ifdef CRAY
+#define WORD64
+#endif
+
+static unsigned long _XcmsGetElement();
+static int _XcmsGetProperty();
 
 char *ProgramName;
 
@@ -771,4 +776,105 @@ RemoveSCCData(dpy, root, colorFlag)
 	}
     }
 #endif /* GRAY */
+}
+
+static unsigned long
+_XcmsGetElement (format, pValue, pCount) 
+    int             format;
+    char            **pValue;
+    unsigned long   *pCount;
+/*
+ *	DESCRIPTION
+ *	    Get the next element from the property and return it.
+ *	    Also increment the pointer the amount needed.
+ *
+ *	Returns
+ *	    unsigned long
+ */
+{
+    unsigned long value;
+
+    switch (format) {
+      case 32:
+#ifdef WORD64
+	value = ((unsigned long)(((unsigned char *)(*pValue))[0])) << 24 ||
+		((unsigned long)(((unsigned char *)(*pValue))[1])) << 16 ||
+		((unsigned long)(((unsigned char *)(*pValue))[2])) << 8 ||
+		((unsigned long)(((unsigned char *)(*pValue))[0]));
+#else
+	value = *((unsigned long *)(*pValue));
+#endif
+	*pValue += 4;
+	*pCount -= 1;
+      case 16:
+#ifdef WORD64
+	value = ((unsigned long)(((unsigned char *)(*pValue))[0])) << 8 ||
+		((unsigned long)(((unsigned char *)(*pValue))[1]));
+#else
+	value = *((unsigned short *)(*pValue));
+#endif
+	*pValue += 2;
+	*pCount -= 1;
+      case 8:
+	value = *((unsigned char *) (*pValue));
+	*pValue += 1;
+	*pCount -= 1;
+      default:
+	value = 0;
+	break;
+    }
+    return(value);
+}
+
+
+/*
+ *	NAME
+ *		_XcmsGetProperty -- Determine the existance of a property
+ *
+ *	SYNOPSIS
+ */
+static int
+_XcmsGetProperty (pDpy, w, property, pFormat, pNItems, pNBytes, pValue) 
+    Display *pDpy;
+    Window  w;
+    Atom property;
+    int             *pFormat;
+    unsigned long   *pNItems;
+    unsigned long   *pNBytes;
+    char            **pValue;
+/*
+ *	DESCRIPTION
+ *
+ *	Returns
+ *	    0 if property does not exist.
+ *	    1 if property exists.
+ */
+{
+    char *prop_ret;
+    int format_ret;
+    long len = 6516;
+    unsigned long nitems_ret, after_ret;
+    Atom atom_ret;
+    
+    while (XGetWindowProperty (pDpy, w, property, 0, len, False, 
+			       XA_INTEGER, &atom_ret, &format_ret, 
+			       &nitems_ret, &after_ret, 
+			       (unsigned char **)&prop_ret)) {
+	if (after_ret > 0) {
+	    len += nitems_ret * (format_ret >> 3);
+	    XFree (prop_ret);
+	} else {
+	    break;
+	}
+    }
+    if (format_ret == 0 || nitems_ret == 0) { 
+	/* the property does not exist or is of an unexpected type */
+	return(XcmsFailure);
+    }
+
+    *pFormat = format_ret;
+    *pNItems = nitems_ret;
+    *pNBytes = nitems_ret * (format_ret >> 3);
+    *pValue = prop_ret;
+    return(XcmsSuccess);
 }
