@@ -1,4 +1,4 @@
-/* $XConsortium: importcl.c,v 1.2 93/10/26 10:06:05 rws Exp $ */
+/* $XConsortium: importcl.c,v 1.3 93/10/26 15:09:35 rws Exp $ */
 
 /**** module importcl.c ****/
 /******************************************************************************
@@ -185,8 +185,7 @@ int InitImportClientPhoto(xp, p, reps)
 		{
 			decode_params = ( char * ) XieTecDecodeTIFFPackBits(
 				image->fill_order,
-				True,
-				False
+				True
 			);
 		}
 		else if ( image->decode == xieValDecodeUncompressedSingle )
