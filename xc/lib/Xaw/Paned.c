@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Paned.c,v 1.2 89/03/07 14:26:39 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Paned.c,v 1.3 89/03/08 16:21:00 keith Exp $";
 #endif lint
 
 
@@ -28,11 +28,11 @@ SOFTWARE.
 ******************************************************************/
 
 /*
- * Paned.c - Paned composite Widget.
+ * Paned.c - Paned Composite Widget.
  *
- * Updated and significantly modifided from the Athena VPaned widget.
+ * Updated and significantly modifided from the Athena VPaned Widget.
  *
- * Date:    March 1, 1988
+ * Date:    March 1, 1989
  *
  * By:      Chris D. Peterson
  *          MIT X Consortium / Project Athena.
@@ -107,14 +107,14 @@ static XtResource resources[] = {
     {XtNcursor, XtCCursor, XtRCursor, sizeof(Cursor),
          offset(cursor), XtRImmediate, None},
     {XtNgripCursor, XtCCursor, XtRCursor, sizeof(Cursor),
-         offset(grip_cursor), XtRImmediate, NO_CURSOR},
+         offset(grip_cursor), XtRImmediate, None},
     {XtNverticalGripCursor, XtCCursor, XtRCursor, sizeof(Cursor),
          offset(v_grip_cursor), XtRString, "sb_v_double_arrow"},
     {XtNhorizontalGripCursor, XtCCursor, XtRCursor, sizeof(Cursor),
          offset(h_grip_cursor), XtRString, "sb_h_double_arrow"},
 
     {XtNbetweenCursor, XtCCursor, XtRCursor, sizeof(Cursor),
-         offset(adjust_this_cursor), XtRString, NO_CURSOR},
+         offset(adjust_this_cursor), XtRString, None},
     {XtNverticalBetweenCursor, XtCCursor, XtRCursor, sizeof(Cursor),
          offset(v_adjust_this_cursor), XtRString, "sb_left_arrow"},
     {XtNhorizontalBetweenCursor, XtCCursor, XtRCursor, sizeof(Cursor),
@@ -882,7 +882,7 @@ Direction dir;
 	    else if (dir == LowRightPane) 
   	        cursor = pw->paned.adjust_lower_cursor;
 	    else {
-	        if ( pw->paned.adjust_this_cursor == NO_CURSOR)
+	        if ( pw->paned.adjust_this_cursor == None)
 		    cursor = pw->paned.v_adjust_this_cursor;
 		else
 		    cursor = pw->paned.adjust_this_cursor;
@@ -894,7 +894,7 @@ Direction dir;
 	    else if (dir == LowRightPane) 
   	        cursor = pw->paned.adjust_right_cursor;
 	    else {
-	        if (pw->paned.adjust_this_cursor == NO_CURSOR)
+	        if (pw->paned.adjust_this_cursor == None)
 		    cursor = pw->paned.h_adjust_this_cursor;
 		else
 		    cursor = pw->paned.adjust_this_cursor;
@@ -1146,7 +1146,7 @@ Widget child;
      
     XtSetArg(arglist[num_args], XtNtranslations, pw->paned.grip_translations);
     num_args++;
-    if ( (cursor = pw->paned.grip_cursor) == NO_CURSOR )
+    if ( (cursor = pw->paned.grip_cursor) == None )
         if (IsVert(pw))
 	    cursor = pw->paned.v_grip_cursor;
 	else
@@ -1262,7 +1262,7 @@ PanedWidget pw;
 	Arg arglist[1];
 	Cursor cursor;
       
-	if ( (cursor = pw->paned.grip_cursor) == NO_CURSOR )
+	if ( (cursor = pw->paned.grip_cursor) == None )
 	    if ( IsVert(pw) )
 	        cursor = pw->paned.v_grip_cursor;
 	    else
@@ -1703,7 +1703,7 @@ Widget old, request, new;
 	new_pw->paned.resize_children_to_pref = TRUE;
         ChangeManaged(new);	/* Seems weird, but does the right thing. */
 	new_pw->paned.resize_children_to_pref = FALSE;
-	if (new_pw->paned.grip_cursor == NO_CURSOR)
+	if (new_pw->paned.grip_cursor == None)
 	    ChangeAllGripCursors(new_pw);
 	return(TRUE);
     }

@@ -1,6 +1,6 @@
 /***********************************************************
 
-  $XConsortium: PanedP.h,v 1.18 89/02/10 18:58:00 kit Exp $
+  $XConsortium: PanedP.h,v 1.1 89/03/06 18:11:48 kit Exp $
 
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -26,13 +26,19 @@ SOFTWARE.
 ******************************************************************/
 
 /*
- *  Paned.h - Private definitions for Paned widget
+ * PanedP.h - Paned Composite Widget's private header file.
  *
+ * Updated and significantly modifided from the Athena VPaned Widget.
+ *
+ * Date:    March 1, 1989
+ *
+ * By:      Chris D. Peterson
+ *          MIT X Consortium / Project Athena.
+ *          kit@athena.mit.edu
  */
 
 #ifndef _PanedP_h
 #define _PanedP_h
-
 #include <X11/Paned.h>
 #include <X11/Constraint.h>
 
@@ -41,8 +47,6 @@ SOFTWARE.
  * Paned Widget Private Data
  *
  *********************************************************************/
-
-#define NO_CURSOR 0
 
 #define XtInheritSetMinMax	((void (*)())_XtInherit)
 #define XtInheritRefigureMode	((void (*)())_XtInherit)
