@@ -1,5 +1,5 @@
 /*
-* $Header: ShellP.h,v 1.11 88/02/02 08:31:08 swick Exp $
+* $Header: ShellP.h,v 1.12 88/02/14 14:53:58 rws Exp $
 */
 
 /*
@@ -266,7 +266,7 @@ typedef  struct {
 
 
 
-Atom WM_CONFIGURE_DENIED;
-Atom WM_MOVED;
+extern Atom WM_CONFIGURE_DENIED;
+extern Atom WM_MOVED;
 
 #endif  _XtShellPrivate_h
