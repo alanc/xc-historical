@@ -79,29 +79,29 @@
 (defun card8p (x)
   (declare (optimize (speed 3) (safety 0))
 	   (fixnum x))
-  (if (and (fixnump x) (> #.(expt 2 8) x) (>= x 0))
+  (if (and (excl:fixnump x) (> #.(expt 2 8) x) (>= x 0))
       t
     nil))
 
 (defun card16p (x)
   (declare (optimize (speed 3) (safety 0))
 	   (fixnum x))
-  (if (and (fixnump x) (> #.(expt 2 16) x) (>= x 0))
+  (if (and (excl:fixnump x) (> #.(expt 2 16) x) (>= x 0))
       t
     nil))
 
 (defun card29p (x)
   (declare (optimize (speed 3) (safety 0)))
-  (if (or (and (fixnump x) (>= (the fixnum x) 0))
-	  (and (bignump x) (> #.(expt 2 29) (the bignum x))
+  (if (or (and (excl:fixnump x) (>= (the fixnum x) 0))
+	  (and (excl:bignump x) (> #.(expt 2 29) (the bignum x))
 	       (>= (the bignum x) 0)))
       t
     nil))
 
 (defun card32p (x)
   (declare (optimize (speed 3) (safety 0)))
-  (if (or (and (fixnump x) (>= (the fixnum x) 0))
-	  (and (bignump x) (> #.(expt 2 32) (the bignum x))
+  (if (or (and (excl:fixnump x) (>= (the fixnum x) 0))
+	  (and (excl:bignump x) (> #.(expt 2 32) (the bignum x))
 	       (>= (the bignum x) 0)))
       t
     nil))
@@ -109,21 +109,21 @@
 (defun int8p (x)
   (declare (optimize (speed 3) (safety 0))
 	   (fixnum x))
-  (if (and (fixnump x) (> #.(expt 2 7) x) (>= x #.(expt -2 7)))
+  (if (and (excl:fixnump x) (> #.(expt 2 7) x) (>= x #.(expt -2 7)))
       t
     nil))
 
 (defun int16p (x)
   (declare (optimize (speed 3) (safety 0))
 	   (fixnum x))
-  (if (and (fixnump x) (> #.(expt 2 15) x) (>= x #.(expt -2 15)))
+  (if (and (excl:fixnump x) (> #.(expt 2 15) x) (>= x #.(expt -2 15)))
       t
     nil))
 
 (defun int32p (x)
   (declare (optimize (speed 3) (safety 0)))
-  (if (or (fixnump x)
-	  (and (bignump x) (> #.(expt 2 31) (the bignum x))
+  (if (or (excl:fixnump x)
+	  (and (excl:bignump x) (> #.(expt 2 31) (the bignum x))
 	       (>= (the bignum x) #.(expt -2 31))))
       t
     nil))
@@ -351,7 +351,7 @@
 	(when (>= msecs 1000)
 	  (decf msecs 1000)
 	  (incf secs))
-	(unless (fixnump secs) (setq secs most-positive-fixnum))
+	(unless (excl:fixnump secs) (setq secs most-positive-fixnum))
 	(setf (clock-event-secs clock-event) secs
 	      (clock-event-msecs clock-event) msecs
 	      (clock-event-function clock-event) fnc
@@ -480,7 +480,7 @@
     (stream-or-fd &key (wait-function #'listen)
 		       (whostate "waiting for input")
 		       timeout)
-  (let ((fd (if* (fixnump stream-or-fd) then stream-or-fd
+  (let ((fd (if* (excl:fixnump stream-or-fd) then stream-or-fd
 	     elseif (streamp stream-or-fd)
 	       then (excl::stream-input-fn stream-or-fd)
 	       else (error "wait-for-input-available expects a stream or file descriptor: ~s" stream-or-fd))))
