@@ -16,8 +16,9 @@ The name of the host is displayed in the upper left corner.  This program
 is nothing more than a wrapper around the Athena Load widget.
 .SH OPTIONS
 .PP
-This program accepts all of the standard X toolkit options along with its
-own specific options shown below:
+.I Xload
+accepts all of the standard X Toolkit command line options along with the 
+additional options listed below:
 .PP
 .TP 8
 .B \-scale \fIinteger\fP
