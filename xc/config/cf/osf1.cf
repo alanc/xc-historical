@@ -43,6 +43,11 @@ XCOMM operating system:  OSName
  * 
  * For DEC C++, define HasDECCplusplus to YES in site.def.  
  *
+ * For g++ 2.6.x, define HasGcc2ForCplusplus to YES in site.def, and
+ *    check the definition of CplusplusLibC below to make sure it's 
+ *    correct for your version of OSF/1 and g++.  If not, add the 
+ *    correct definition to site.def.
+ *
  * For other compilers, define HasCplusplus to YES in site.def, and 
  *    check to see if you need to provide values for CplusplusOptions
  *    and/or DefaultCplusplusOptions.
@@ -74,6 +79,18 @@ XCOMM operating system:  OSName
 #define CplusplusOptions -call_shared
 #endif
 #endif /* HasDECCplusplus */
+
+
+#if HasGcc2ForCplusplus
+#ifndef CplusplusLibC
+#ifdef AlphaArchitecture
+#define CplusplusLibC /usr/local/lib/gcc-lib/alpha-dec-osf2.0/2.6.0/libgcc.a
+#endif 
+#ifdef MipsArchitecture
+#define CplusplusLibC /usr/local/lib/gcc-lib/mips-dec-osf1.0/2.6.0/libgcc.a
+#endif
+#endif /* CplusplusLibC */
+#endif /* HasGcc2ForCplusplus */
 
 #include <osfLib.rules>
 #define NoRConst		YES
