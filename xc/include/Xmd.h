@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $XConsortium: Xmd.h,v 1.32 88/09/06 15:56:00 jim Exp $ */
+/* $XConsortium: Xmd.h,v 1.33 88/09/12 11:06:15 jim Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
@@ -48,15 +48,19 @@ SOFTWARE.
 
 /*
  * Definition of macro used to set constants for size of network structures;
- * machines with preprocessors that can't handle all of the sizeof_ symbols
+ * machines with preprocessors that can't handle all of the sz_ symbols
  * can define this macro to be sizeof(x) if and only if their compiler doesn't
  * pad out structures (esp. the xTextElt structure which contains only two 
- * one-byte fields).  Network structures should always define sizeof_symbols.
+ * one-byte fields).  Network structures should always define sz_symbols.
+ *
+ * The sz_ prefix is used instead of something more descriptive so that the
+ * symbols are no more than 32 characters long (which causes problems for some
+ * compilers and preprocessors).
  */
 #if defined(__STDC__) && !defined(UNIXCPP)
-#define SIZEOF(x) sizeof_##x
+#define SIZEOF(x) sz_##x
 #else
-#define SIZEOF(x) sizeof_/**/x
+#define SIZEOF(x) sz_/**/x
 #endif /* if ANSI C compiler else not */
 
 

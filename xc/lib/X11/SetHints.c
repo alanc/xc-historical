@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XSetHints.c,v 11.26 88/09/06 16:03:55 jim Exp $ */
+/* $XConsortium: XSetHints.c,v 11.27 88/09/12 15:12:07 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -117,7 +117,8 @@ XSetNormalHints (dpy, w, hints)
 
 /*
  * Note, the following is one of the few cases were we really do want sizeof
- * when examining a protocol structure.  -John Freeman, Cray
+ * when examining a protocol structure.  This is because the XChangeProperty
+ * routine will take care of converting to host to network data structures.
  */
 
 XSetIconSizes (dpy, w, list, count)
@@ -128,9 +129,9 @@ XSetIconSizes (dpy, w, list, count)
 {
 	register int i;
 	xPropIconSize *pp, *prop;
-#define sizeof_the_real_thing sizeof	/* avoid grepping screwups */
-	unsigned nbytes = count * sizeof_the_real_thing(xPropIconSize);
-#undef sizeof_the_real_thing
+#define size_of_the_real_thing sizeof	/* avoid grepping screwups */
+	unsigned nbytes = count * size_of_the_real_thing(xPropIconSize);
+#undef size_of_the_real_thing
 	prop = pp = (xPropIconSize *) Xmalloc (nbytes);
 	for (i = 0; i < count; i++) {
 	    pp->minWidth  = list->min_width;
