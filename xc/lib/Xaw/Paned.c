@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Paned.c,v 1.7 89/07/16 14:47:21 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Paned.c,v 1.8 89/08/22 14:35:13 kit Exp $";
 #endif /* lint */
 
 
@@ -1509,6 +1509,7 @@ Widget request, new;
     pw->paned.recursively_called = False;
     pw->paned.stack = NULL;
     pw->paned.resize_children_to_pref = TRUE;
+    pw->paned.num_panes = 0;
 }
 
 static void 
