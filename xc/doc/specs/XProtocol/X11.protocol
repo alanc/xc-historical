@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: X11.protocol,v 1.31 94/04/11 17:59:02 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -4273,9 +4273,12 @@ This request loads the specified font, if necessary,
 and associates identifier fid with it.
 The font name should use the ISO Latin-1 encoding, 
 and uppercase and lowercase do not matter.
-The interpretation of characters ``?'' (octal value 77) and ``*''
-(octal value 52) in the name is not defined by the core protocol,
-but is reserved for future definition.
+When the characters ``?'' and ``*'' are used in a font name, a
+pattern match is performed and any matching font is used.
+In the pattern, 
+the ``?'' character (octal value 77) will match any single character, 
+and the ``*'' character (octal value 52) will match any number 
+of characters.
 A structured format for font names is specified in the
 X Consortium standard \fIX Logical Font Description Conventions\fP.
 .LP
