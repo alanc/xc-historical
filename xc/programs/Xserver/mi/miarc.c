@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.4 89/07/21 13:54:01 keith Exp $ */
+/* $XConsortium: miarc.c,v 5.5 89/07/28 12:09:49 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -1307,15 +1307,24 @@ miComputeArcs (parcs, narcs, pGC)
 				}
 				if (iphase == 0 || isDoubleDash) {
 					xarc = parcs[i];
-					xarc.angle1 = prevDashAngle;
+					spanAngle = prevDashAngle;
+    					if (spanAngle < 0)
+					    spanAngle = FULLCIRCLE - (-spanAngle) % FULLCIRCLE;
+					if (spanAngle >= FULLCIRCLE)
+					    spanAngle = spanAngle % FULLCIRCLE;
+					xarc.angle1 = spanAngle;
 					spanAngle = dashAngle - prevDashAngle;
 					if (backwards) {
 						if (dashAngle > prevDashAngle)
-							spanAngle = - 360 * 64 + spanAngle;
+							spanAngle = - FULLCIRCLE + spanAngle;
 					} else {
 						if (dashAngle < prevDashAngle)
-							spanAngle = 360 * 64 + spanAngle;
+							spanAngle = FULLCIRCLE + spanAngle;
 					}
+					if (spanAngle > FULLCIRCLE)
+					    spanAngle = FULLCIRCLE;
+					if (spanAngle < -FULLCIRCLE)
+					    spanAngle = -FULLCIRCLE;
 					xarc.angle2 = spanAngle;
 					arc = addArc (&arcs[iphase].arcs, &arcs[iphase].narcs,
  							&arcSize[iphase], xarc);
