@@ -1,14 +1,11 @@
-XCOMM $XConsortium: Imakefile,v 1.11 93/03/14 16:57:34 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.13 93/09/24 12:43:05 gildea Exp $
 
-#if ThreadedX
-   THREADS_LIBS = ThreadsLibraries
-THREADS_LDFLAGS = ThreadsLoadFlags
-THREADS_DEFINES = -DMULTITHREAD ThreadTypeDefines SystemMTDefines
-#endif
-        DEFINES = ExtensionDefines $(THREADS_DEFINES)
+#define LocalThreadsDefines -DMULTITHREAD
+#include <Threads.tmpl>
+
+        DEFINES = ExtensionDefines
         DEPLIBS = $(DEPXLIB)
 LOCAL_LIBRARIES = $(XLIB)
-  LOCAL_LDFLAGS = $(THREADS_LDFLAGS)
-  SYS_LIBRARIES = MathLibrary $(THREADS_LIBS)
+  SYS_LIBRARIES = MathLibrary
 
 SimpleProgramTarget(ico)

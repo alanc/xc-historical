@@ -1,16 +1,13 @@
-XCOMM $XConsortium: Imakefile,v 1.2 94/02/10 20:40:05 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.3 94/03/22 16:22:58 matt Exp $
 XCOMM
 XCOMM Interface translator
 XCOMM
 
+#include <Threads.tmpl>
+
         YFLAGS = -d
 DEPEND_DEFINES = CplusplusDependIncludes
        DEPLIBS =
-
-#if ThreadedX
- LOCAL_LDFLAGS = ThreadsLoadFlags
- SYS_LIBRARIES = ThreadsLibraries
-#endif
 
 SRCS = gram.CCsuf main.CCsuf err.CCsuf expr.CCsuf generator.CCsuf \
        gen-hdr.CCsuf gen-impl.CCsuf gen-stubs.CCsuf os.CCsuf resolve.CCsuf \

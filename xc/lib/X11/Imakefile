@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.176 94/02/05 15:55:44 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.177 94/02/06 15:31:42 mor Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -6,6 +6,8 @@ XCOMM $XConsortium: Imakefile,v 1.176 94/02/05 15:55:44 rws Exp $
 #define LibName X11
 #define SoRev SOXLIBREV
 #define HugeLibrary YES
+
+#include <Threads.tmpl>
 
 #ifndef MotifBC
 #define MotifBC NO
@@ -54,8 +56,6 @@ EXTRA_LIBRARIES = /**/
 #if NoRConst
  RCONST_DEFINES = -DNORCONST
 #endif
-    MTX_DEFINES = XMTDefines
-    MTT_DEFINES = ThreadTypeDefines
     XLC_DEFINES = -DXLOCALEDIR=\"$(XLOCALEDIR)\"
 #if HasKrb5
          K5OBJS = k5encode.o
@@ -67,8 +67,8 @@ EXTRA_LIBRARIES = /**/
     LIB_DEFINES = -D_XLIBINT_
 #endif
 
-        DEFINES = $(MALLOC_DEFINES) $(MTX_DEFINES) $(LIB_DEFINES)
-   OPEN_DEFINES = -I$(EXTINCSRC) $(MTT_DEFINES) $(K5INCL) $(K5DEFS)
+        DEFINES = $(MALLOC_DEFINES) $(LIB_DEFINES)
+   OPEN_DEFINES = -I$(EXTINCSRC) $(K5INCL) $(K5DEFS)
  DEPEND_DEFINES = $(OPEN_DEFINES) $(TRANS_INCLUDES) $(CONN_DEFINES)
    INSTALLFLAGS = $(INSTINCFLAGS)
        AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o
@@ -890,13 +890,11 @@ SpecialCLibObjectRule(ximtrans,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES)
 LinkFile(ximtrans.c,$(TRANSCOMMSRC)/transport.c)
 SpecialCLibObjectRule(OpenDis,$(ICONFIGFILES),$(BC_DEFINES) $(OPEN_DEFINES) $(XTRANS_X_DEFINES) $(XKB_DEFINES))
 SpecialCLibObjectRule(Wrap,$(ICONFIGFILES),$(XDMAUTHDEFS))
-SpecialCLibObjectRule(XlibInt,$(ICONFIGFILES),-I$(EXTINCSRC) $(CONN_DEFINES) $(MTT_DEFINES) $(POLL_DEFINES) $(XTRANS_X_DEFINES))
+SpecialCLibObjectRule(XlibInt,$(ICONFIGFILES),-I$(EXTINCSRC) $(CONN_DEFINES) $(POLL_DEFINES) $(XTRANS_X_DEFINES))
 SpecialCLibObjectRule(cmsColNm,$(ICONFIGFILES),$(CMS_DEFINES))
 SpecialCLibObjectRule(globals,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialCLibObjectRule(Context,$(ICONFIGFILES),$(BC_DEFINES) $(MTT_DEFINES))
-SpecialCLibObjectRule(Xrm,$(_NOOP_),$(RCONST_DEFINES) $(MTT_DEFINES))
-SpecialCLibObjectRule(locking,$(ICONFIGFILES),$(MTT_DEFINES))
-SpecialCLibObjectRule(LockDis,$(ICONFIGFILES),$(MTT_DEFINES))
+SpecialCLibObjectRule(Context,$(ICONFIGFILES),$(BC_DEFINES))
+SpecialCLibObjectRule(Xrm,$(_NOOP_),$(RCONST_DEFINES))
 SpecialCLibObjectRule(imTransR,$(ICONFIGFILES),$(CONN_DEFINES) $(XTRANS_XIM_DEFINES))
 SpecialCLibObjectRule(imTrans,$(ICONFIGFILES),$(CONN_DEFINES) $(XTRANS_XIM_DEFINES))
 SpecialCLibObjectRule(lcFile,$(ICONFIGFILES),$(XLC_DEFINES))

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.107 94/02/04 21:30:37 converse Exp $
+XCOMM $XConsortium: Imakefile,v 1.108 94/03/22 15:41:16 gildea Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -6,6 +6,8 @@ XCOMM $XConsortium: Imakefile,v 1.107 94/02/04 21:30:37 converse Exp $
 #define HasSharedData YES
 #define LibName Xt
 #define SoRev SOXTREV
+
+#include <Threads.tmpl>
 
 #ifndef MotifBC
 #define MotifBC NO
@@ -39,9 +41,7 @@ XTWARNINGPREFIX = XtWarningPrefix
 #if HasPoll
    POLL_DEFINES = -DUSE_POLL
 #endif
-        DEFINES = AllocateLocalDefines $(ALIGN_DEFINES) $(POLL_DEFINES) XtExtraDefines XMTDefines
-    MTT_DEFINES = ThreadTypeDefines
- DEPEND_DEFINES = ThreadTypeDefines
+        DEFINES = AllocateLocalDefines $(ALIGN_DEFINES) $(POLL_DEFINES) XtExtraDefines
 
      DB_DEFINES = -DERRORDB=\"$(LIBDIR)/XtErrorDB\" \
 		  -DXTERROR_PREFIX=\"$(XTERRORPREFIX)\" \
@@ -211,6 +211,5 @@ SpecialCLibObjectRule(TMaction,$(_NOOP_),$(RCONST_DEFINES))
 #if DoSharedLib
 SpecialCObjectRule(sharedlib,$(_NOOP_),$(SHLIBDEF))
 #endif
-SpecialCLibObjectRule(Threads,$(ICONFIGFILES),$(MTT_DEFINES))
 
 DependTarget()
