@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.128 92/12/29 14:42:48 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.129 92/12/30 19:06:00 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -17,7 +17,8 @@ without express or implied warranty.
 */
 
 #define NEED_REPLIES
-#include <X11/Xlibint.h>
+#define NEED_EVENTS
+#include "Xlibint.h"
 #include <X11/Xos.h>
 #include <X11/Xatom.h>
 #include "bigreqstr.h"
@@ -178,7 +179,10 @@ Display *XOpenDisplay (display)
 	dpy->cms.defaultCCCs	= NULL;
 	dpy->cms.perVisualIntensityMaps = NULL;
 	dpy->im_filters		= NULL;
-	dpy->bigreq_size	= 0;
+ 	dpy->bigreq_size	= 0;
+	dpy->lock		= NULL;
+	dpy->qfree		= NULL;
+	dpy->next_event_serial_num = 1;
 
 /*
  * Setup other information in this display structure.
@@ -662,5 +666,15 @@ _XFreeDisplayStructure(dpy)
  	    Xfree (dpy->scratch_buffer);
 	FreeDisplayLock(dpy);
 
+	if (dpy->qfree) {
+	    register _XQEvent *qelt = dpy->qfree;
+
+	    while (qelt) {
+		register _XQEvent *qnxt = qelt->next;
+		Xfree ((char *) qelt);
+		qelt = qnxt;
+	    }
+	}
+	
 	Xfree ((char *)dpy);
 }
