@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.89 89/10/05 19:11:28 rws Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.90 89/10/06 09:29:51 rws Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -589,7 +589,7 @@ static int MatchEvent(translations, eventSeq)
  */
     for (i=0; i < translations->numEvents; i++) {
         if (eventTbl[i].event.eventType ==
-                (eventSeq->event.eventType & 0x7f)
+                (eventSeq->event.eventType /* & 0x7f */)
             && (eventTbl[i].event.matchEvent != NULL) 
             && ((*eventTbl[i].event.matchEvent)(
                        &eventTbl[i].event,eventSeq)))
@@ -2560,9 +2560,9 @@ void XtTranslateKeycode (dpy, keycode, modifiers,
     KeySym *keysym_return;
 
 {
-    XtPerDisplay perDisplay;
-    perDisplay = _XtGetPerDisplay(dpy);
-    (*perDisplay->defaultKeycodeTranslator)(
+    XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    _InitializeKeysymTables(dpy, pd);
+    (*pd->defaultKeycodeTranslator)(
             dpy,keycode,modifiers,modifiers_return,keysym_return);
 }
 
@@ -2765,7 +2765,6 @@ void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
 		KeyCode *old = keycodes;
 		maxcodes += KEYCODE_ARRAY_SIZE;
 		keycodes = (KeyCode*)XtMalloc(maxcodes*sizeof(KeyCode));
-		if (keycodes == NULL) _XtAllocError("alloca");
 		if (ncodes) {
 		    bcopy( old, keycodes, ncodes*sizeof(KeyCode) );
 		    XtFree((XtPointer)old);
