@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.29 91/06/05 14:49:54 dave Exp $
+ * $XConsortium: buttons.c,v 1.30 91/07/21 18:58:54 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -99,6 +99,7 @@ MakeTopBox()
 
   FormUpWidgets(form, full_size, half_size);
 
+  XtRealizeWidget(top);
   man_globals = (ManpageGlobals*) XtMalloc( (Cardinal) sizeof(ManpageGlobals));
   man_globals->label = NULL;
   man_globals->manpagewidgets.directory = NULL;
@@ -108,7 +109,6 @@ MakeTopBox()
   MakeSearchWidget(man_globals, top);
   MakeSaveWidgets(man_globals, top);
 
-  XtRealizeWidget(top);
   SaveGlobals( (man_globals->This_Manpage = top), man_globals);
   XtMapWidget(top);
   AddCursor(top, resources.cursors.top);
@@ -361,8 +361,14 @@ Boolean help, page;
   XtRealizeWidget( man_globals->This_Manpage );
   SaveGlobals( man_globals->This_Manpage, man_globals);
   XtMapWidget( man_globals->This_Manpage );
-
   AddCursor( man_globals->This_Manpage, resources.cursors.manpage);
+  XtSetArg(arglist[0], XtNtransientFor, man_globals->This_Manpage);
+  XtSetValues(XtParent(man_globals->standby), arglist, (Cardinal)1);
+  XtSetValues(XtParent(man_globals->save), arglist, (Cardinal) 1);
+  XtRealizeWidget(XtParent(man_globals->standby));
+  XtRealizeWidget(XtParent(man_globals->save));
+  AddCursor( XtParent(man_globals->standby), resources.cursors.top);
+  AddCursor( XtParent(man_globals->save), resources.cursors.top);
 
 /*
  * Set up ICCCM delete window.
@@ -566,7 +572,7 @@ int section;
  *	Description: This functions creates two popup widgets, the please 
  *                   standby widget and the would you like to save widget.
  *	Arguments: man_globals - the psuedo globals structure for each man page
- *                 parent - the parent for both popups.
+ *                 parent - the realized parent for both popups.
  *	Returns: none.
  */
 
@@ -577,21 +583,21 @@ Widget parent;
 {
   Widget shell, dialog; /* misc. widgets. */
   Arg warg[1];
+  Cardinal n = 0;
 
 /* make the please stand by popup widget. */
-  XtSetArg(warg[0], XtNtransientFor, parent);
+  if (XtIsRealized(parent)) {
+      XtSetArg(warg[0], XtNtransientFor, parent);	n++;
+  }
   shell = XtCreatePopupShell( "pleaseStandBy", transientShellWidgetClass,
-			      parent, warg, (Cardinal) 1);
+			      parent, warg, (Cardinal) n);
 
   man_globals->standby = XtCreateManagedWidget("label", labelWidgetClass, 
 					       shell, NULL, (Cardinal) 0);
-  XtRealizeWidget(shell);
-  AddCursor(shell,resources.cursors.top);
 
-  XtSetArg(warg[0], XtNtransientFor, parent);
   man_globals->save = XtCreatePopupShell("likeToSave",
 					 transientShellWidgetClass,
-					 parent, warg, 1);
+					 parent, warg, n);
 
   dialog = XtCreateManagedWidget("dialog", dialogWidgetClass, 
 				 man_globals->save, NULL, (Cardinal) 0);
@@ -599,8 +605,12 @@ Widget parent;
   XawDialogAddButton(dialog, FILE_SAVE, NULL, NULL);
   XawDialogAddButton(dialog, CANCEL_FILE_SAVE, NULL, NULL);
 
-  /*XtRealizeWidget(man_globals->save);*/
-  /*AddCursor(man_globals->save, resources.cursors.top);*/
+  if (XtIsRealized(parent)) {
+      XtRealizeWidget(shell);
+      AddCursor(shell,resources.cursors.top);
+      XtRealizeWidget(man_globals->save);
+      AddCursor(man_globals->save, resources.cursors.top);
+  }
 }
 
 /*      Function Name: FormUpWidgets
