@@ -1,4 +1,4 @@
-/* $XConsortium: phg.h,v 5.3 91/04/02 09:04:03 rws Exp $ */
+/* $XConsortium: phg.h,v 5.4 91/04/04 21:55:01 gildea Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -54,10 +54,10 @@ SOFTWARE.
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #else
-char *malloc(), *realloc();
+char *malloc(), *realloc(), *calloc();
 #endif
 #if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
-char *malloc(), *realloc();
+char *malloc(), *realloc(), *calloc();
 #endif /* macII */
 
 /* Not all environments declare errno in <errno.h> (Sony, in particular) */
