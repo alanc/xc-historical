@@ -1,10 +1,10 @@
-SRCS =	 cfbgc.c cfbwindow.c cfbmisc.c \
+SRCS =	 cfbgc.c cfbwindow.c \
 	 cfbpntwin.c cfbmskbits.c cfbpixmap.c cfbbitblt.c \
 	 cfbfillsp.c cfbsetsp.c cfbscrinit.c \
 	 cfbgetsp.c cfbutils.c \
 	 cfbcmap.c cfboldmfb.c
 
-OBJS =   cfbgc.o cfbwindow.o cfbmisc.o \
+OBJS =   cfbgc.o cfbwindow.o \
 	 cfbgetsp.o cfbutils.o \
 	 cfbfillsp.o cfbsetsp.o cfbscrinit.o \
 	 cfbpntwin.o cfbmskbits.o cfbpixmap.o cfbbitblt.o \
