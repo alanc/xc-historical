@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AIXV3.c,v 1.2 91/05/10 07:43:11 jap Exp $
+ * $XConsortium: ibmInit.c,v 1.1 91/05/10 08:59:22 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -308,7 +308,6 @@ int                     skip= 1;
 extern  char *ibmArenaFile;
 extern  int ibmQuietFlag ;
 
-    OpenDebug();
     TRACE(("ddxProcessArgument( argc= %d, argv= 0x%x, i=%d )\n",argc,argv,i));
 
 #ifdef OS_ProcessArgument
