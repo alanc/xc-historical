@@ -1,12 +1,13 @@
 /*
- * $XConsortium: sharedlib.c,v 1.3 89/10/09 14:28:56 jim Exp $
+ * $XConsortium: sharedlib.c,v 1.4 90/07/02 17:17:38 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
  * This file is used to force shared libraries to get the right routines.
  */
 
-#if defined(SUNSHLIB) && !defined(SHAREDCODE)
+#ifdef SUNSHLIB
+#ifndef SHAREDCODE
 #include <X11/IntrinsicP.h>
 
 /*
@@ -25,7 +26,13 @@ WidgetClass get_wmShellWidgetClass()
 {
     return wmShellWidgetClass;
 }
-#endif /* SHAREDCODE && SUNSHLIB */
 
 /* this is really gross, but it works around bizarre Sun shared library bugs */
 #include "xtsharedlib.c"
+
+#endif /* not SHAREDCODE */
+#endif /* SUNSHLIB */
+
+#if !defined(SUNSHLIB) || defined(SHAREDCODE)
+static int dummy;			/* avoid warning from ranlib */
+#endif
