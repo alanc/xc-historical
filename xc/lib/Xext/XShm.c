@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShm.c,v 1.11 90/05/03 14:44:08 keith Exp $
+ * $XConsortium: XShm.c,v 1.12 91/01/05 14:45:27 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -329,7 +329,7 @@ Status XShmPutImage (dpy, d, gc, image, src_x, src_y, dst_x, dst_y,
     req->format = image->format;
     req->sendEvent = send_event;
     req->shmseg = shminfo->shmseg;
-    req->offset = shminfo->shmaddr - image->data;
+    req->offset = image->data - shminfo->shmaddr;
     UnlockDisplay(dpy);
     SyncHandle();
     return 1;
@@ -364,7 +364,7 @@ Status XShmGetImage(dpy, d, image, x, y, plane_mask)
     req->planeMask = plane_mask;
     req->format = image->format;
     req->shmseg = shminfo->shmseg;
-    req->offset = shminfo->shmaddr - image->data;
+    req->offset = image->data - shminfo->shmaddr;
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
