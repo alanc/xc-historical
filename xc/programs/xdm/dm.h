@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.15 89/08/31 11:34:50 keith Exp $
+ * $XConsortium: dm.h,v 1.16 89/09/08 14:34:03 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -126,6 +126,8 @@ struct display {
 	int		grabTimeout;	/* time to wait for grab */
 	DisplayType	displayType;	/* method to handle with */
 	CARD32		sessionID;	/* ID of active session */
+	struct sockaddr	*peer;		/* sockaddr of display peer */
+	int		peerlen;	/* length of peer name */
 	struct sockaddr	*from;		/* XDMCP port of display */
 	int		fromlen;
 	CARD16		displayNumber;

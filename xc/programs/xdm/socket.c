@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.7 89/08/31 11:35:02 keith Exp $
+ * $XConsortium: socket.c,v 1.8 89/09/08 14:34:20 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -46,6 +46,7 @@ int	socketFd = -1;
 FD_TYPE	WellKnownSocketsMask;
 int	WellKnownSocketsMax;
 
+#define pS(s)	((s) ? ((char *) (s)) : "empty string")
 
 CreateWellKnownSockets ()
 {
@@ -456,10 +457,10 @@ send_willing (from, fromlen, authenticationName, status)
 
     Debug ("Send willing %*.*s %*.*s\n", authenticationName->length,
 					 authenticationName->length,
-					 authenticationName->data,
+					 pS(authenticationName->data),
 					 status->length,
 					 status->length,
-					 status->data);
+					 pS(status->data));
     header.version = XDM_PROTOCOL_VERSION;
     header.opcode = (CARD16) WILLING;
     header.length = 6 + authenticationName->length +
@@ -481,10 +482,10 @@ send_unwilling (from, fromlen, authenticationName, status)
 
     Debug ("Send unwilling %*.*s %*.*s\n", authenticationName->length,
 					 authenticationName->length,
-					 authenticationName->data,
+					 pS(authenticationName->data),
 					 status->length,
 					 status->length,
-					 status->data);
+					 pS(status->data));
     header.version = XDM_PROTOCOL_VERSION;
     header.opcode = (CARD16) UNWILLING;
     header.length = 4 + Hostname.length + status->length;
@@ -670,7 +671,7 @@ send_decline (to, tolen, authenticationName, authenticationData, status)
 {
     XdmcpHeader	header;
 
-    Debug ("Decline %*.*s\n", status->length, status->length, status->data);
+    Debug ("Decline %*.*s\n", status->length, status->length, pS(status->data));
     header.version = XDM_PROTOCOL_VERSION;
     header.opcode = (CARD16) DECLINE;
     header.length = 0;

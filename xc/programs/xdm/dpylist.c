@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dpylist.c,v 1.9 89/01/16 17:11:26 keith Exp $
+ * $XConsortium: dpylist.c,v 1.10 89/08/31 11:35:09 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -158,7 +158,11 @@ char		*class;
 	d->authorization = 0;
 	d->from = 0;
 	d->fromlen = 0;
+	d->peer = 0;
+	d->peerlen = 0;
 	displays = d;
 	LoadDisplayResources (d);
+	if (d->authName)
+		d->authNameLen = strlen (d->authName);
 	return d;
 }

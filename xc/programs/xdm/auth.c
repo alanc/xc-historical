@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.9 89/08/31 11:35:48 keith Exp $
+ * $XConsortium: auth.c,v 1.10 89/09/08 14:34:24 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -123,7 +123,7 @@ char		*name;
     Debug ("GenerateAuthorization %*.*s\n",
 	    name_length, name_length, name);
     a = findProtocol (name_length, name);
-    if (a)
+    if (a && a->inited)
     {
 	auth = (*a->GetAuth) (name_length, name);
 	if (auth)
@@ -357,11 +357,11 @@ char	*addr;
 FILE	*file;
 Xauth	*auth;
 {
-	Debug ("writeAddr ");
-	dumpAuth (auth);
+	Debug ("writeAddr\n");
 	auth->family = (unsigned short) family;
 	auth->address_length = addr_length;
 	auth->address = addr;
+	dumpAuth (auth);
 	writeAuth (file, auth);
 }
 
@@ -429,7 +429,6 @@ ConvertAddr (saddr, len, addr)
     return (-1);
 }
 
-#if defined (TCPCONN) || defined (DNETCONN)
 #ifdef hpux
 /* Define this host for access control.  Find all the hosts the OS knows about 
  * for this fd and add them to the selfhosts list.
@@ -507,7 +506,7 @@ DefineSelf (fd, file, auth)
 		addr = (char *)ifr->ifr_addr.sa_data;
 		family = FamilyDECnet;
 	} else
-#endif /* DNETCONN */
+#endif
 	{
         	if (ConvertAddr (&ifr->ifr_addr, &len, &addr) <= 0)
 	    	    continue;
@@ -532,153 +531,199 @@ DefineSelf (fd, file, auth)
     }
 }
 #endif /* hpux */
-#endif
+
+setAuthNumber (auth, name)
+    Xauth   *auth;
+    char    *name;
+{
+    char	*colon, *malloc ();
+    char	*dot;
+
+    Debug ("setAuthNumber %s\n", name);
+    colon = rindex (name, ':');
+    if (colon) {
+	++colon;
+	if (dot = index (colon, '.'))
+	    auth->number_length = dot - colon;
+	else
+	    auth->number_length = strlen (colon);
+	auth->number = malloc (auth->number_length + 1);
+	if (auth->number) {
+	    strncpy (auth->number, colon, auth->number_length);
+	    auth->number[auth->number_length] = '\0';
+	} else {
+	    LogOutOfMem ("setAuthNumber");
+	    auth->number_length = 0;
+	}
+	Debug ("setAuthNumber: %s\n", auth->number);
+    }
+}
 
 writeLocalAuth (file, auth, name)
 FILE	*file;
 Xauth	*auth;
 char	*name;
 {
-	int	fd;
-	char	*colon, *malloc ();
-	char	*dot;
-
-	colon = rindex (name, ':');
-	if (colon) {
-		++colon;
-		if (dot = index (colon, '.'))
-			auth->number_length = dot - colon;
-		else
-			auth->number_length = strlen (colon);
-		auth->number = malloc (auth->number_length + 1);
-		if (auth->number) {
-			strncpy (auth->number, colon, auth->number_length);
-			auth->number[auth->number_length] = '\0';
-		} else {
-			LogOutOfMem ("writeLocalAuth");
-			auth->number_length = 0;
-		}
-	}
-	Debug ("writeLocalAuth\n");
+    int	fd;
+    Debug ("writeLocalAuth\n");
+    setAuthNumber (auth, name);
 #ifdef TCPCONN
-	fd = socket (AF_INET, SOCK_STREAM, 0);
-	DefineSelf (fd, file, auth);
-	close (fd);
+    fd = socket (AF_INET, SOCK_STREAM, 0);
+    DefineSelf (fd, file, auth);
+    close (fd);
 #endif
 #ifdef DNETCONN
-	fd = socket (AF_DECnet, SOCK_STREAM, 0);
-	DefineSelf (fd, file, auth);
-	close (fd);
+    fd = socket (AF_DECnet, SOCK_STREAM, 0);
+    DefineSelf (fd, file, auth);
+    close (fd);
 #endif
-	DefineLocal (file, auth);
+    DefineLocal (file, auth);
+}
+
+static
+writeRemoteAuth (file, auth, peer, peerlen, name)
+    FILE	    *file;
+    Xauth	    *auth;
+    struct sockaddr *peer;
+    int		    peerlen;
+    char	    *name;
+{
+    int	    family = FamilyLocal;
+    char    *addr;
+    
+    if (!peer || peerlen < 2)
+	return;
+    setAuthNumber (auth, name);
+    switch (ConvertAddr (peer, &peerlen, &addr))
+    {
+    case AF_UNIX:
+	family = FamilyLocal;
+	break;
+    case AF_INET:
+	family = FamilyInternet;
+	break;
+    case AF_DECnet:
+	family = FamilyDECnet;
+	break;
+    case AF_CHAOS:
+	family = FamilyChaos;
+	break;
+    }
+    Debug ("writeRemoteAuth: family %d\n", family);
+    if (family != FamilyLocal)
+    {
+	Debug ("writeRemoteAuth: %d, %d, %x\n",
+		family, peerlen, *(int *)addr);
+	writeAddr (family, peerlen, addr, file, auth);
+    }
 }
 
 SetUserAuthorization (d, verify)
 struct display		*d;
 struct verify_info	*verify;
 {
-	FILE	*old, *new;
-	char	home_name[1024], backup_name[1024], new_name[1024];
-	char	*name;
-	char	*home;
-	char	*envname = 0;
-	int	lockStatus;
-	Xauth	*entry, *auth;
-	int	setenv;
-	char	**setEnv (), *getEnv ();
-	struct stat	statb;
+    FILE	*old, *new;
+    char	home_name[1024], backup_name[1024], new_name[1024];
+    char	*name;
+    char	*home;
+    char	*envname = 0;
+    int	lockStatus;
+    Xauth	*entry, *auth;
+    int	setenv;
+    char	**setEnv (), *getEnv ();
+    struct stat	statb;
 
-	Debug ("SetUserAuthorization\n");
-	if (auth = d->authorization) {
-		home = getEnv (verify->userEnviron, "HOME");
-		lockStatus = LOCK_ERROR;
-		if (home) {
-			sprintf (home_name, "%s/.Xauthority", home);
-			Debug ("XauLockAuth %s\n", home_name);
-			lockStatus = XauLockAuth (home_name, 1, 2, 10);
-			Debug ("Lock is %d\n", lockStatus);
-			if (lockStatus == LOCK_SUCCESS) {
-				if (openFiles (home_name, new_name, &old, &new)) {
-					name = home_name;
-					setenv = 0;
-				} else {
-					Debug ("openFiles failed\n");
-					XauUnlockAuth (home_name);
-					lockStatus = LOCK_ERROR;
-				}	
-			}
-		}
-		if (lockStatus != LOCK_SUCCESS) {
-			sprintf (backup_name, "%s/.XauthXXXXXX", d->userAuthDir);
-			mktemp (backup_name);
-			lockStatus = XauLockAuth (backup_name, 1, 2, 10);
-			Debug ("backup lock is %d\n", lockStatus);
-			if (lockStatus == LOCK_SUCCESS) {
-				if (openFiles (backup_name, new_name, &old, &new)) {
-					name = backup_name;
-					setenv = 1;
-				} else {
-					XauUnlockAuth (backup_name);
-					lockStatus = LOCK_ERROR;
-				}	
-			}
-		}
-		if (lockStatus != LOCK_SUCCESS) {
-			Debug ("can't lock auth file %s or backup %s\n",
-					home_name, backup_name);
-			LogError ("can't lock authorization file %s or backup %s\n",
-					home_name, backup_name);
-			return;
-		}
-		initAddrs ();
-		if (d->displayType.location == Local)
-			writeLocalAuth (new, auth, d->name);
-		else
-	 		writeAuth (new, auth);
-		if (old) {
-			if (fstat (fileno (old), &statb) != -1)
-				chmod (new_name, (int) (statb.st_mode & 0777));
-			while (entry = XauReadAuth (old)) {
-				if (!checkAddr (entry->family,
-					       entry->address_length, entry->address,
-					       entry->number_length, entry->number))
-				{
-					Debug ("Saving an entry\n");
-					dumpAuth (entry);
-					writeAuth (new, entry);
-				}
-				XauDisposeAuth (entry);
-			}
-			fclose (old);
-		}
-		doneAddrs ();
-		fclose (new);
-		if (unlink (name) == -1)
-			Debug ("unlink %s failed\n", name);
-		envname = name;
-		if (link (new_name, name) == -1) {
-			Debug ("link failed %s %s\n", new_name, name);
-			LogError ("Can't move authorization into place\n");
-			setenv = 1;
-			envname = new_name;
+    Debug ("SetUserAuthorization\n");
+    if (auth = d->authorization) {
+	home = getEnv (verify->userEnviron, "HOME");
+	lockStatus = LOCK_ERROR;
+	if (home) {
+	    sprintf (home_name, "%s/.Xauthority", home);
+	    Debug ("XauLockAuth %s\n", home_name);
+	    lockStatus = XauLockAuth (home_name, 1, 2, 10);
+	    Debug ("Lock is %d\n", lockStatus);
+	    if (lockStatus == LOCK_SUCCESS) {
+		if (openFiles (home_name, new_name, &old, &new)) {
+		    name = home_name;
+		    setenv = 0;
 		} else {
-			Debug ("new is in place, go for it!\n");
-			unlink (new_name);
-		}
-		if (setenv) {
-			verify->userEnviron = setEnv (verify->userEnviron,
-						"XAUTHORITY", envname);
-			verify->systemEnviron = setEnv (verify->systemEnviron,
-						"XAUTHORITY", envname);
-		}
-		XauUnlockAuth (name);
-		if (envname) {
-#ifdef NGROUPS
-			chown (envname, verify->uid, verify->groups[0]);
-#else
-			chown (envname, verify->uid, verify->gid);
-#endif
-		}
+		    Debug ("openFiles failed\n");
+		    XauUnlockAuth (home_name);
+		    lockStatus = LOCK_ERROR;
+		}	
+	    }
 	}
-	Debug ("done SetUserAuthorization\n");
+	if (lockStatus != LOCK_SUCCESS) {
+	    sprintf (backup_name, "%s/.XauthXXXXXX", d->userAuthDir);
+	    mktemp (backup_name);
+	    lockStatus = XauLockAuth (backup_name, 1, 2, 10);
+	    Debug ("backup lock is %d\n", lockStatus);
+	    if (lockStatus == LOCK_SUCCESS) {
+		if (openFiles (backup_name, new_name, &old, &new)) {
+		    name = backup_name;
+		    setenv = 1;
+		} else {
+		    XauUnlockAuth (backup_name);
+		    lockStatus = LOCK_ERROR;
+		}	
+	    }
+	}
+	if (lockStatus != LOCK_SUCCESS) {
+	    Debug ("can't lock auth file %s or backup %s\n",
+			    home_name, backup_name);
+	    LogError ("can't lock authorization file %s or backup %s\n",
+			    home_name, backup_name);
+	    return;
+	}
+	initAddrs ();
+	if (d->displayType.location == Local)
+	    writeLocalAuth (new, auth, d->name);
+	else
+	    writeRemoteAuth (new, auth, d->peer, d->peerlen, d->name);
+	if (old) {
+	    if (fstat (fileno (old), &statb) != -1)
+		chmod (new_name, (int) (statb.st_mode & 0777));
+	    while (entry = XauReadAuth (old)) {
+		if (!checkAddr (entry->family,
+			       entry->address_length, entry->address,
+			       entry->number_length, entry->number))
+		{
+		    Debug ("Saving an entry\n");
+		    dumpAuth (entry);
+		    writeAuth (new, entry);
+		}
+		XauDisposeAuth (entry);
+	    }
+	    fclose (old);
+	}
+	doneAddrs ();
+	fclose (new);
+	if (unlink (name) == -1)
+	    Debug ("unlink %s failed\n", name);
+	envname = name;
+	if (link (new_name, name) == -1) {
+	    Debug ("link failed %s %s\n", new_name, name);
+	    LogError ("Can't move authorization into place\n");
+	    setenv = 1;
+	    envname = new_name;
+	} else {
+	    Debug ("new is in place, go for it!\n");
+	    unlink (new_name);
+	}
+	if (setenv) {
+	    verify->userEnviron = setEnv (verify->userEnviron,
+				    "XAUTHORITY", envname);
+	    verify->systemEnviron = setEnv (verify->systemEnviron,
+				    "XAUTHORITY", envname);
+	}
+	XauUnlockAuth (name);
+	if (envname) {
+#ifdef NGROUPS
+	    chown (envname, verify->uid, verify->groups[0]);
+#else
+	    chown (envname, verify->uid, verify->gid);
+#endif
+	}
+    }
+    Debug ("done SetUserAuthorization\n");
 }

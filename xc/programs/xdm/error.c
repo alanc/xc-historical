@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: error.c,v 1.7 88/12/15 18:32:05 keith Exp $
+ * $XConsortium: error.c,v 1.8 89/01/16 17:09:47 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -46,31 +46,31 @@ InitErrorLog ()
 }
 
 /*VARARGS1*/
-LogError (fmt, arg1, arg2, arg3, arg4, arg5)
+LogError (fmt, arg1, arg2, arg3, arg4, arg5, arg6)
 char	*fmt;
-int	arg1, arg2, arg3, arg4, arg5;
+int	arg1, arg2, arg3, arg4, arg5, arg6;
 {
-	fprintf (stderr, fmt, arg1, arg2, arg3, arg4, arg5);
+	fprintf (stderr, fmt, arg1, arg2, arg3, arg4, arg5, arg6);
 	fflush (stderr);
 }
 
 /*VARARGS1*/
-LogPanic (fmt, arg1, arg2, arg3, arg4, arg5)
+LogPanic (fmt, arg1, arg2, arg3, arg4, arg5, arg6)
 char	*fmt;
-int	arg1, arg2, arg3, arg4, arg5;
+int	arg1, arg2, arg3, arg4, arg5, arg6;
 {
 	LogError ("panic: ");
-	LogError (fmt, arg1, arg2, arg3, arg4, arg5);
+	LogError (fmt, arg1, arg2, arg3, arg4, arg5, arg6);
 	exit (1);
 }
 
 /*VARARGS1*/
-LogOutOfMem (fmt, arg1, arg2, arg3, arg4, arg5)
+LogOutOfMem (fmt, arg1, arg2, arg3, arg4, arg5, arg6)
 char	*fmt;
-int	arg1, arg2, arg3, arg4, arg5;
+int	arg1, arg2, arg3, arg4, arg5, arg6;
 {
 	fprintf (stderr, "xdm: out of memory in routine ");
-	fprintf (stderr, fmt, arg1, arg2, arg3, arg4, arg5);
+	fprintf (stderr, fmt, arg1, arg2, arg3, arg4, arg5, arg6);
 	fflush (stderr);
 }
 
@@ -87,11 +87,11 @@ char	*mesg;
 
 
 /*VARARGS1*/
-Debug (fmt, arg1, arg2, arg3, arg4, arg5)
+Debug (fmt, arg1, arg2, arg3, arg4, arg5, arg6)
 char	*fmt;
-int	arg1, arg2, arg3, arg4, arg5;
+int	arg1, arg2, arg3, arg4, arg5, arg6;
 {
 	if (debugLevel > 1) {
-		printf (fmt, arg1, arg2, arg3, arg4, arg5);
+		printf (fmt, arg1, arg2, arg3, arg4, arg5, arg6);
 	}
 }

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.18 89/07/18 21:30:28 keith Exp $
+ * $XConsortium: session.c,v 1.19 89/09/08 14:34:15 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -80,7 +80,11 @@ struct display	*d;
 	 * Step 8: Run system-wide initialization file
 	 */
 	if (source (&verify, d->startup) != 0)
+	{
+		Debug ("Startup program %s exited with non-zero status\n",
+			d->startup);
 		SessionExit (OBEYTERM_DISPLAY);
+	}
 	clientPid = 0;
 	if (!setjmp (abortSession)) {
 		signal (SIGTERM, catchTerm);
@@ -111,6 +115,7 @@ struct display	*d;
 	/*
 	 * Step 15: run system-wide reset file
 	 */
+	Debug ("Source reset program %s\n", d->reset);
 	source (&verify, d->reset);
 	SessionExit (OBEYTERM_DISPLAY);
 }
