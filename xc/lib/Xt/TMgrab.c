@@ -1,4 +1,4 @@
-/* $XConsortium: TMgrab.c,v 1.7 92/12/22 18:10:46 converse Exp $ */
+/* $XConsortium: TMgrab.c,v 1.7 92/12/23 12:21:33 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -73,7 +73,7 @@ static void GrabAllCorrectKeys(widget, typeMatch, modMatch, grabP)
 	    Modifiers modifiers_return;
 	    XtTranslateKeycode( dpy, *keycodeP, (Modifiers)0,
 			        &modifiers_return, &keysym );
-	    if (careMask & modifiers_return)
+	    if (careOn & modifiers_return)
 		return;
 	    if (keysym == typeMatch->eventCode) {
 		XtGrabKey(widget, *keycodeP, careOn,
