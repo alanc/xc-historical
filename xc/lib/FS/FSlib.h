@@ -1,4 +1,4 @@
-/* $XConsortium: FSlib.h,v 1.5 91/05/13 15:11:57 gildea Exp $ */
+/* $XConsortium: FSlib.h,v 1.6 91/07/16 20:32:18 keith Exp $ */
 /*
  * Font server C interface library
  */
@@ -7,32 +7,28 @@
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * @(#)FSlib.h	4.1	91/05/02
- *
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
 
 #ifndef _FSLIB_H_
 #define _FSLIB_H_
 
 #include	<FS.h>
-#include	<FSproto.h>
 
 #define	Bool	int
 #define	Status	int
@@ -159,6 +155,61 @@ typedef struct _FSQEvent {
     struct _FSQEvent *next;
     FSEvent     event;
 }           _FSQEvent;
+
+
+/* protocol-related stuctures */
+
+typedef unsigned long  FSBitmapFormat;
+typedef unsigned long  FSBitmapFormatMask;
+
+typedef struct _FSChar2b {
+    unsigned char       high;
+    unsigned char       low;
+} FSChar2b;
+
+typedef struct _FSRange {
+    FSChar2b    min_char;
+    FSChar2b    max_char;
+} FSRange;
+
+typedef struct _FSOffset {
+    unsigned int position;
+    unsigned int length;
+} FSOffset;
+
+/* use names as in xCharInfo? */
+typedef struct _FSXCharInfo {
+    short 	left;
+    short       right;
+    short 	width;
+    short 	ascent;
+    short       descent;
+    unsigned short 	attributes;
+} FSXCharInfo;
+
+typedef struct _FSPropOffset {
+    FSOffset	name;
+    FSOffset	value;
+    unsigned char 	type;
+} FSPropOffset;
+
+typedef struct _FSPropInfo {
+    unsigned int	num_offsets;
+    unsigned int	data_len;
+} FSPropInfo;
+
+/* should names match FontInfoRec? */
+typedef struct _FSXFontInfoHeader {
+    int		flags;
+    FSRange     char_range;
+    unsigned	draw_direction;
+    FSChar2b    default_char;
+    FSXCharInfo	min_bounds;
+    FSXCharInfo	max_bounds;
+    short 	font_ascent;
+    short	font_descent;
+} FSXFontInfoHeader;
+
 
 /* function decls */
 
