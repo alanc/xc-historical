@@ -555,7 +555,7 @@ static Boolean CvtStringToCursor(dpy, args, num_args, fromVal, toVal, closure_re
 
     for (i=0, nP=cursor_names; i < XtNumber(cursor_names); i++, nP++ ) {
 	if (strcmp(name, nP->name) == 0) {
-	    Display *display = *((Display **) args->addr);
+	    Display *display = (Display*)args[0].addr;
 	    Cursor cursor = XCreateFontCursor(display, nP->shape );
 	    done(Cursor, cursor);
 	}
@@ -580,7 +580,7 @@ static void FreeCursor(app, toVal, closure, args, num_args)
              "Free Cursor requires display argument",
               (String *)NULL, (Cardinal *)NULL);
 
-    display = *((Display **) args->addr);
+    display = (Display*)args[0].addr;
     XFreeCursor( display, *(Cursor*)toVal->addr );
 }
 
@@ -692,7 +692,7 @@ static Boolean CvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
              "String to font conversion needs display argument",
               (String *) NULL, (Cardinal *)NULL);
 
-    display = *((Display **) args[0].addr);
+    display = (Display*)args[0].addr;
 
     if (CompareISOLatin1((String)fromVal->addr, XtDefaultFont) != 0) {
 	f = XLoadFont(display, (char *)fromVal->addr);
@@ -760,7 +760,7 @@ static void FreeFont(app, toVal, closure, args, num_args)
              "Free Font needs display argument",
               (String *) NULL, (Cardinal *)NULL);
 
-    display = *((Display **) args[0].addr);
+    display = (Display*)args[0].addr;
     XUnloadFont( display, *(Font*)toVal->addr );
 }
 
@@ -801,7 +801,7 @@ CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
              "String to font conversion needs display argument",
               (String *) NULL, (Cardinal *)NULL);
 
-    display = *((Display **) args[0].addr);
+    display = (Display*)args[0].addr;
 
     if (CompareISOLatin1((String)fromVal->addr, XtDefaultFont) != 0) {
 	f = XLoadQueryFont(display, (char *)fromVal->addr);
@@ -872,7 +872,7 @@ static void FreeFontStruct(app, toVal, closure, args, num_args)
              "Free FontStruct requires display argument",
               (String *) NULL, (Cardinal *)NULL);
 
-    display = *((Display **) args[0].addr);
+    display = (Display*)args[0].addr;
     XFreeFont( display, *(XFontStruct**)toVal->addr );
 }
 
