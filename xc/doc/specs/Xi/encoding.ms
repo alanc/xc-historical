@@ -1665,7 +1665,7 @@ DEVICECONTROL		DEVICERESOLUTIONCTL
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 DEVICERESOLUTIONCTL
- 	2	0		control type
+ 	2	1		control type
  	2	8 + 4n		length
  	1	CARD8		first_valuator
  	1	n    		num_valuators
