@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.203 88/06/06 10:59:36 keith Exp $ */
+/* $Header: window.c,v 1.204 88/07/01 16:50:31 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -84,6 +84,7 @@ extern Mask EventMaskForClient();
 extern void WindowHasNewCursor();
 extern void RecalculateDeliverableEvents();
 extern long random();
+static Bool MarkSiblingsBelowMe();
 
 #define INPUTONLY_LEGAL_MASK (CWWinGravity | CWEventMask | \
 			      CWDontPropagate | CWOverrideRedirect | CWCursor )
