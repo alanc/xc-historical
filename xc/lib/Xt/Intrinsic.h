@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.85 88/09/06 16:28:05 jim Exp $
+* $XConsortium: Intrinsic.h,v 1.86 88/09/26 11:43:05 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -43,7 +43,7 @@ SOFTWARE.
 
 #ifndef FALSE
 #define FALSE 0
-#define TRUE  1
+#define TRUE 1
 #endif
 
 #define XtNumber(arr)		((Cardinal) (sizeof(arr) / sizeof(arr[0])))
