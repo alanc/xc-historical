@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.8 93/09/13 16:32:59 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.9 93/09/13 17:54:24 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -55,7 +55,7 @@ typedef enum {
 typedef enum {
     IceProtocolSetupSuccess,
     IceProtocolSetupFailure,
-    IceProtocolAlreadyActive,
+    IceProtocolAlreadyActive
 } IceProtocolSetupStatus;
 
 typedef struct {
@@ -301,8 +301,6 @@ struct _IceConn {
 
     char *scratch;			/* scratch buffer */
     unsigned long scratch_size;		/* scratch size */
-
-    IcePointer watch_data;		/* Watch Procedure sets this pointer */
 
 
     /*
