@@ -1,8 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: defs.h,v 1.22 91/02/08 11:32:09 gildea Exp $
- * $Athena: defs.h,v 4.8 89/01/06 15:56:19 kit Exp $
+ * $XConsortium: defs.h,v 1.23 91/02/11 18:51:08 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -82,26 +81,6 @@
 
 #define NO_SECTION_DEFAULTS ("no default sections")
 
-/*
- * The command filters for the manual and apropos searches.
- */
-
-#if ( defined(hpux) || defined(macII) || defined(CRAY) || defined(ultrix) )
-#  define NO_MANPATH_SUPPORT
-#endif
-
-#ifdef NO_MANPATH_SUPPORT
-#  define APROPOS_FORMAT ("man -k %s | pr -h Apropos >> %s")
-#else
-#  define APROPOS_FORMAT ("man -M %s -k %s | pr -h Apropos > %s")
-#endif
-
-#if defined( ultrix )
-#  define FORMAT "| nroff -man"             /* The format command. */
-#else
-#  define FORMAT "| neqn | nroff -man"      /* The format command. */
-#endif
-
 #define TBL "tbl"
 
 #define DEFAULT_WIDTH 500	/* The default width of xman. */
@@ -112,55 +91,9 @@
 
 #define INITIAL_DIR 0		/* The Initial Directory displayed. */
 
-/*
- * Names of the man and cat dirs. 
- */
-
-#define MAN "man"
-
-#if ( defined(macII) || defined(CRAY) )
-/*
- * The Apple and Cray folks put the preformatted pages in the "man" 
- * directories, what a bunch of BOZOs. 
- */
-#  define CAT MAN		
-#else
-#  define CAT "cat"
-#endif
-
-/*
- * The directories to search we are making the assumption that the manual
- * directories are more complete that the cat directories, but you can
- * change it if you like. 
- */
-
-#if ( defined(UTEK) || defined(apollo) )
-#  define SEARCHDIR  CAT
-#  define LSEARCHDIR LCAT
-#else
-#  define SEARCHDIR  MAN
-#  define LSEARCHDIR LMAN
-#endif
-
 #define COPY "cp"		/* copy command */
 #define CHMOD_MODE 00666	/* permissions set on saved formatted files */
 #define MANDESC "mandesc"	/* name of the mandesc files */
-
-/*
- * The default manual page directory. 
- *
- * The MANPATH enviornment variable will override this.
- */
-
-#ifdef macII
-#  define MANDIR "/usr/catman/u_man:/usr/catman/a_man"	
-#else /* macII */
-#ifdef SVR4
-#  define MANDIR "/usr/share/man"
-#else /* SVR4 */
-#  define MANDIR "/usr/man"
-#endif /* SVR4 else */
-#endif /* macII else */
 
 #define INDENT 15
 #define TYP20STR "MMMMMMMMMMMMMMMMMMMM"
@@ -168,28 +101,6 @@
 #define FILE_SAVE "yes"
 #define CANCEL_FILE_SAVE "no"
 #define MANTEMP "/tmp/xmanXXXXXX"
-
-/*
- * Compression Definitions.
- */
-
-#if defined( macII )
-#  define COMPRESSION_EXTENSION   "z"
-#  define UNCOMPRESS_FORMAT       "pcat %s > %s"
-#  define NO_COMPRESS		/* mac can't handle using pack as a filter and
-				   xman needs it to be done that way. */
-#else 
-#  if defined ( UTEK )
-#    define COMPRESSION_EXTENSION "C"
-#    define UNCOMPRESS_FORMAT     "ccat < %s > %s"
-#    define COMPRESS              "compact"
-#  else
-#    define COMPRESSION_EXTENSION "Z"
-#    define UNCOMPRESS_FORMAT     "zcat < %s > %s"
-#    define COMPRESS              "compress"
-#  endif /* UTEK */
-#endif /* macII */
-
 
 /*
  * Macro Definitions.
