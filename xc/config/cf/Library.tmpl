@@ -4,9 +4,12 @@
  *
  * Before including this, you must set the following boolean variables:
  * DoNormalLib, DoSharedLib, DoDebugLib, DoProfileLib
+ *
+ * To get automatic generation of standard rules, also set the variables:
+ * LibName and SoRev, and optionally HugLibrary and IncSubdir
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.15 93/01/25 16:27:13 mor Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.16 93/08/14 16:19:45 rws Exp $
 
 #ifndef LibraryCcCmd
 #if DoSharedLib && defined(SharedLibraryCcCmd)
@@ -120,3 +123,45 @@ SpecialLibObjectRule(basename.Osuf,basename.c depends,options)		@@\
 									@@\
 SaberLoadTarget(saber,basename.c,NullParameter,$(ALLDEFINES) options)
 #endif /* SpecialCLibObjectRule */
+
+#ifdef LibName
+
+LibraryObjectRule()
+
+#if DoSharedLib
+#if DoNormalLib
+SharedLibraryTarget(LibName,$(SoRev),$(OBJS),shared,..)
+#else
+SharedLibraryTarget(LibName,$(SoRev),$(OBJS),.,.)
+#endif
+InstallSharedLibrary(LibName,$(SoRev),$(SHLIBDIR))
+#endif
+#if DoNormalLib
+#if HugeLibrary
+NormalLibraryTarget3(X11,$(OBJS1),$(OBJS2),$(OBJS3))
+#else
+NormalLibraryTarget(LibName,$(OBJS))
+#endif
+InstallLibrary(LibName,$(USRLIBDIR))
+#endif
+#if DoProfileLib
+ProfiledLibraryTarget(LibName,$(OBJS))
+InstallLibrary(Concat(LibName,_p),$(USRLIBDIR))
+#endif
+#if DoDebugLib
+DebuggedLibraryTarget(LibName,$(OBJS))
+InstallLibrary(Concat(LibName,_d),$(USRLIBDIR))
+#endif
+
+LintLibraryTarget(LibName,$(SRCS))
+InstallLintLibrary(LibName,$(LINTLIBDIR))
+#ifdef IncSubdir
+BuildIncludes($(HEADERS),IncSubdir,..)
+InstallMultiple($(HEADERS),$(INCDIR)/IncSubdir)
+#else
+BuildIncludes($(HEADERS),.,.)
+InstallMultiple($(HEADERS),$(INCDIR))
+#endif
+
+NormalLintTarget($(SRCS))
+#endif
