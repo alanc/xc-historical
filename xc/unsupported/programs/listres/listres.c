@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.8 89/07/10 19:21:12 jim Exp $
+ * $XConsortium: listres.c,v 1.4 89/07/11 18:51:09 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -27,36 +27,38 @@
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
 #include <X11/Xaw/Cardinals.h>
+#include "defs.h"
 
-#define coreWidgetClass widgetClass
-#include "widgets.h"
+extern WidgetNode widget_list[];
+extern int nwidgets;
 
 
-static XrmOptionDescRec listres_options[] = {
+static XrmOptionDescRec Options[] = {
   { "-known", "*listKnown", XrmoptionNoArg, (caddr_t) "on" },
-  { "-objects", "*showObjects", XrmoptionNoArg, (caddr_t) "on" },
+  { "-top", "*topWidget", XrmoptionNoArg, (caddr_t) "on" },
   { "-format", "*resourceFormat", XrmoptionSepArg, (caddr_t) NULL },
-  { "-nosort", "*sortEntries", XrmoptionNoArg, (caddr_t) "off" },
+  { "-nosuper", "*showSuper", XrmoptionNoArg, (caddr_t) "off" },
 };
 
 static struct _appresources {
     Boolean known;
-    Boolean objects;
     Boolean sort;
+    Boolean show_superclass;
+    char *top_object;
     char *format;
-} listres_resources;
+} Appresources;
 
 
 static XtResource Resources[] = {
 #define offset(field) XtOffset(struct _appresources *, field)
   { "listKnown", "ListKnown", XtRBoolean, sizeof(Boolean),
       offset(known), XtRImmediate, (caddr_t) FALSE },
-  { "showObjects", "ShowObjects", XtRBoolean, sizeof(Boolean),
-      offset(objects), XtRImmediate, (caddr_t) FALSE },
-  { "sortEntries", "SortEntries", XtRBoolean, sizeof(Boolean),
-      offset(sort), XtRImmediate, (caddr_t) TRUE },
+  { "showSuper", "ShowSuper", XtRBoolean, sizeof(Boolean),
+      offset(show_superclass), XtRImmediate, (caddr_t) TRUE },
+  { "topObject", "TopObject", XtRString, sizeof(char *),
+      offset(top_object), XtRString, (caddr_t) "core" },
   { "resourceFormat", "ResourceFormat", XtRString, sizeof(char *),
-      offset(format), XtRString, " %27s  %-27s    %s" },
+      offset(format), XtRString, (caddr_t) " %-16s %20s  %-20s  %s" },
 #undef offset
 };
 
@@ -71,11 +73,11 @@ usage ()
     fprintf(stderr,
 	    "    -known            list known widget classes\n");
     fprintf(stderr,
-	    "    -objects          include object prefixes in listings\n");
+	    "    -nosuper          do not print superclass resources\n");
+    fprintf(stderr,
+	    "    -top name         name of top object or widget to display\n");
     fprintf(stderr,
 	    "    -format string    printf format for instance, class, type\n");
-    fprintf(stderr,
-	    "    -nosort           do not sort output\n");
     fprintf(stderr, "\n");
     exit (1);
 }
@@ -83,10 +85,10 @@ usage ()
 static void list_known_widgets ()
 {
     int i;
+    WidgetNode *wn;
 
-    for (i = 0; i < nwidgets; i++) {
-	printf ("%s:  %s\n", widget_list[i].label, 
-		widget_list[i].widget_class[0]->core_class.class_name);
+    for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
+	printf ("%-24s  %s\n", wn->label, WnClass(wn)->core_class.class_name);
     }
     exit (0);
 }
@@ -97,90 +99,41 @@ main (argc, argv)
     char **argv;
 {
     int i;
-    WidgetClass top;
-    WidgetNameList *wl;
+    WidgetNode *topnode;
     Widget toplevel;
-    struct _extra { 
-	int off_cl;
-	char data[2];	/* nuls plus alloced off end */
-    } *ep;
 
     ProgramName = argv[0];
 
-    toplevel = XtInitialize (NULL, "Listres", listres_options, 
-			     XtNumber(listres_options), &argc, argv);
-    XtGetApplicationResources (toplevel, (caddr_t) &listres_resources,
+    toplevel = XtInitialize (NULL, "Listres", Options, XtNumber (Options),
+			     &argc, argv);
+    XtGetApplicationResources (toplevel, (caddr_t) &Appresources,
 			       Resources, XtNumber(Resources), NULL, ZERO);
+    if (Appresources.known) list_known_widgets ();
 
-    if (listres_resources.known) list_known_widgets ();
-    top = (listres_resources.objects ? NULL : coreWidgetClass);
+    initialize_nodes (widget_list, nwidgets);
+    topnode = name_to_node (widget_list, nwidgets, Appresources.top_object);
     argc--, argv++;
 
     if (argc == 0) {
-	for (i = 0, wl = widget_list; i < nwidgets; i++, wl++) {
-	    list_resources (listres_resources.format,
-			    wl->label, wl->widget_class[0], top, toplevel,
-			    listres_resources.sort);
+	WidgetNode *wn;
+	for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
+	    list_resources (wn, Appresources.format, topnode, toplevel,
+			    (Bool) Appresources.show_superclass);
 	}
     } else {
-	char tmpbuf[1024];
-	char *buf = tmpbuf;
-	int len = sizeof tmpbuf - 1;
-
 	for (; argc > 0; argc--, argv++) {
-	    int found = 0;
+	    WidgetNode *node;
 
 	    if (argv[0][0] == '-') usage ();
-
-	    if (strlen(*argv) > len) {
-		len = strlen (*argv) * 2 + 2;
-		if (buf != tmpbuf) free (buf);
-		buf = (char *) malloc (len);
-		if (!buf) {
-		    fprintf (stderr, "%s: can't alloc %d byte argv buffer\n",
-			     ProgramName, len);
-		    exit (1);
-		}
-	    }
-	    XmuCopyISOLatin1Lowered (buf, *argv);
-	    for (i = 0, wl = widget_list; i < nwidgets; i++, wl++) {
-		CoreClassPart *cl = &wl->widget_class[0]->core_class;
-
-		if (!wl->extra) {
-		    int lablen = strlen (wl->label);
-		    int cllen = strlen (cl->class_name);
-
-		    ep = (struct _extra *) malloc (sizeof(struct _extra) +
-						   lablen + cllen);
-		    if (!ep) {
-			fprintf (stderr,
-				 "%s:  unable to alloc %d byte name buffer\n",
-				 ProgramName, (sizeof(struct _extra) + 
-					       lablen + cllen));
-			exit (1);
-		    }
-		    ep->off_cl = lablen + 1;
-		    XmuCopyISOLatin1Lowered (ep->data, wl->label);
-		    XmuCopyISOLatin1Lowered (ep->data + ep->off_cl,
-					     cl->class_name);
-		    wl->extra = (caddr_t) ep;
-		}
-		ep = (struct _extra *) wl->extra;
-		if (strcmp (buf, ep->data) == 0 ||
-		    strcmp (buf, ep->data + ep->off_cl) == 0) {
-		    list_resources (listres_resources.format,
-				    wl->label, wl->widget_class[0], top,
-				    toplevel, listres_resources.sort);
-
-		    found++;
-		}
-	    }
-	    if (found == 0) {
+	    node = name_to_node (widget_list, nwidgets, *argv);
+	    if (!node) {
 		fprintf (stderr, "%s:  unable to find widget \"%s\"\n",
 			 ProgramName, *argv);
+		continue;
 	    }
+	    list_resources (node, Appresources.format, topnode, toplevel,
+			    (Bool) Appresources.show_superclass);
 	}
-	if (buf != tmpbuf) free (buf);
     }
     exit (0);
 }
