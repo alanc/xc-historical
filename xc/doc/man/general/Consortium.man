@@ -1,193 +1,175 @@
-.\" $XConsortium: Consortium.man,v 1.28 92/08/15 11:29:57 rws Exp $
-.TH XCONSORTIUM 1 "Release 5"  "X Version 11"
+.\" $XConsortium: Consortium.man,v 1.29 92/08/17 10:54:49 rws Exp $
+.TH XCONSORTIUM 1 "Release 6"  "X Version 11"
 .SH NAME
-MIT X Consortium \- MIT X Consortium information
+X Consortium \- X Consortium information
 .SH SYNOPSIS
-Release 5 of X Version 11 is brought to you by the MIT X Consortium.
+Release 6 of X Version 11 is brought to you by X Consortium, Inc.
 .SH DESCRIPTION
-X Window System research began in the summer of 1984 at MIT as an informal
-joint undertaking between the Laboratory for Computer Science and
-Project Athena.  Since that time,
-researchers and engineers at numerous other universities and companies
-have been involved in the design and implementation.
+The X Consortium is an independent, not-for-profit Delaware membership
+corporation.  It was formed in 1993 as the successor to the MIT X Consortium.
+The purpose of the X Consortium is to foster the development, evolution, and
+maintenance of the X Window System, a comprehensive set of vendor-neutral,
+system-architecture neutral, network-transparent windowing and user interface
+standards.
 .PP
-The MIT X Consortium was formed in January of 1988 to further the
-development of the X Window System.  It is part of
-the Laboratory for Computer Science at MIT, and has as its major goal the
-promotion of cooperation within the computer industry in the creation of
-standard software interfaces at all layers in the X Window System
-environment.  MIT's role is to provide the vendor-neutral architectural
-and administrative leadership required to make this work.  The
-Consortium is financially self-supporting, with membership open to any
-organization.  There are two categories of membership, Member (for
-large organizations) and Affiliate (for smaller organizations).
-A list of members as of the release of X11R5 is given below.
+The X Window System was created in the mid-1980s at the Massachusetts
+Institute of Technology.  In 1988, MIT formed a member-funded consortium to
+provide the technical and administrative leadership necessary to support
+further development of the X Window System.  In 1992, MIT and the membership
+decided it was in their best interests to move the consortium out of MIT and
+create an independent, stand-alone organization.
 .PP
-The Director of the X Consortium acts as the ultimate architect for all X
-specifications and software.  The activities of the Consortium are overseen
-by an MIT Steering Committee, which helps set policy and provides strategic
-guidance and review of the Consortium's activities.  An Advisory Committee
-made up of member representatives meets regularly to review the Consortium's
-plans, assess its progress, and suggest future directions.
+The X Consortium is financially self-supporting through membership fees.
+There are no license fees associated with the use of X Window System standards
+and code developed by the X Consortium.  Membership in the X Consortium is
+open to any organization willing to execute a membership agreement.
 .PP
-Most of the Consortium's activities take place via electronic mail, with
-meetings when required.  As designs and specifications take shape,
-interest groups are formed from experts in the participating
-organizations.  Typically a small multi-organization architecture team
-leads the design, with others acting as close observers and reviewers.
-Once a complete specification is produced, it may be submitted for
-formal technical review by the Consortium as a proposed standard.  The
-standards process includes public review (outside the Consortium) and a
-demonstration of proof of concept, typically established
-with a public, portable implementation of the specification,
-(although other methods are possible on a case by case basis).
+The X Consortium is a highly participative body.  Members are encouraged to
+actively cooperate with the staff and other members in the design and review
+of proposed specifications, and in the design, coding and testing of sample
+implementations of those specifications.
 .PP
-The MIT staff of the Consortium also maintains a software and
-documentation collection, containing both Consortium-developed and
-user-contributed materials, and endeavors to make periodic distributions
-of this collection available to the public without license and for a
-minimal fee.  X11R5 is the fifth such distribution.
-The Consortium also sponsors an annual conference, open to
-the public, to promote the exchange of technical information about X.
+The X Consortium accomplishes most of its work using electronic mail over the
+Internet, with individual mailing lists for working groups.  Internet
+electronic mail connectivity should be viewed as a requirement for useful
+participation in X Consortium activities.  Meetings are held as necessary,
+often in conjunction with industry conferences and trade shows.
 .SH STAFF
-The Director of the X Consortium is Bob Scheifler, rws@expo.lcs.mit.edu.
-The staff of the X Consortium are all full-time research staff employed
-by the MIT Laboratory for Computer Science.
-The staff members are as follows.
 .nf
+President:
+Bob Scheifler, rws@x.org, phone: (617) 374-1010
 
-Donna Converse, converse@expo.lcs.mit.edu
-Stephen Gildea, gildea@expo.lcs.mit.edu
-Susan Hardy, sh@expo.lcs.mit.edu
-Jay Hersh, hersh@expo.lcs.mit.edu
-Ralph Mor,  mor@expo.lcs.mit.edu
-Dave Sternlicht, dave@expo.lcs.mit.edu
+Office Manager:
+Janet O'Halloran, joh@x.org, phone: (617) 374-1011
+
+Technical Director, Integration Technology:
+Ralph Swick, swick@x.org
+
+Technical Director, Application Toolkits:
+Matt Landau, matt@x.org
+
+Technical Staff:
+
+Donna Converse, converse@x.org
+Stephen Gildea, gildea@x.org
+Jay Hersh, hersh@x.org
+Kaleb Keithley, kaleb@x.org
+Ralph Mor, mor@x.org
+Dave Wiggins, dpw@x.org
+
+SysAdmin:
+Gary Cutbill, rgary@x.org
 .fi
 
-Ralph Swick, an employee of Digital Equipment Corporation working at
-MIT Project Athena, also worked directly with the Consortium staff
-on this release.  Former MIT staff members Jim Fulton and Chris Peterson
-contributed to the early development of the release.
+.SH "BOARD OF DIRECTORS"
+The X Consortium's activities and affairs are managed under the direction and
+oversight of a Board of Directors, elected annually by the Members.  The Board
+is responsible for reviewing the achievements of the Consortium, approving
+planned work, appointing a President and other officers of the Consortium, and
+setting membership dues.  The current Directors are:
 
-.SH "POSTAL ADDRESS"
-The MIT X Consortium can be reached by writing to
 .nf
-
-Bob Scheifler
-MIT X Consortium
-Laboratory for Computer Science
-545 Technology Square
-Cambridge, MA 02139
+Robert W. Scheifler, President, X Consortium
+Dr. Forest Baskett, Senior VP of R&D, Silicon Graphics Computer Systems
+Harold D. Blair, Partner, Partnerwerks
+Bruce Cleveland, Senior Director of Open Systems, Apple Computer
+Roger S. Gourd, VP and Chief of Staff, Open Software Foundation
+David Harris, Director, Adobe Systems [ex officio as Chairman, X Industry Association]
+Dr. Robin Hillyard, Chairman and Chief Technical Officer, Novasoft Systems
+Therese E. Myers, President and CEO, Quarterdeck Office Systems
+Dan N. Turner, President and CEO, Petrotechnical Open Software Corporation
 .fi
-.SH MEMBERS
+
+.SH "ADDRESS"
+The X Consortium can be reached at:
+.nf
+
+X Consortium
+One Memorial Drive
+Cambridge MA 02142-1301
+Tel: (617) 374-1000
+Fax: (617) 374-1025
+membership@x.org
+.fi
+.SH FULL MEMBERS
 
 .nf
+Adobe Systems Inc.
 Apple Computer, Inc.
-Bull S.A.
-Computervision Corp.
-Control Data Corporation
 Convex Computer Corporation
 Cray Research, Inc.
-Data General Corporation
 Digital Equipment Corp.
-E.I. DuPont de Nemours & Company, Inc.
-Eastman Kodak Company
-Evans & Sutherland
 Fujitsu Limited
 Hewlett-Packard Company
 Hitachi Ltd.
 Hughes Aircraft Company
 IBM Corporation
-Intergraph Corp.
 Kubota Corp.
-Matsushita Electric Industrical Co., Ltd.
-MIPS Computer Systems
-Mitsubishi Electric Corporation
 Motorola, Inc.
-NCR Corporation
+NCR Corporation (includes American Telephone & Telegraph Company)
 NEC Corporation
-Network Computing Devices
 Nippon Telegraph and Telephone Corporation
 Oki Electric Industry Co., Ltd.
-Olivetti Systems & Networks
 OMRON Corporation
 The Santa Cruz Operation, Inc.
-Sequent Computer Systems Inc.
 Siemens Nixdorf Informationssysteme AG
 Silicon Graphics, Inc.
 Sony Corporation
 Sun Microsystems, Inc.
-Tandberg Data A/S
 Tektronix, Inc.
-Texas Instruments, Inc.
-Unisys Corporation
-Unix Systems Laboratories/American Telephone & Telegraph Company
-Xerox Corporation
+Unix Systems Laboratories (includes Novell)
 .fi
 
-.SH AFFILIATES
+.SH ASSOCIATE MEMBERS
 
 .nf
-Adobe Systems Inc.
-AGE Logic, Inc.
-Aptronix, Inc.
-ASTEC, Inc.
-Athenix Corporation
-Bellcore
-Bitstream, Inc.
 CETIA - Compagnie Europeene des Techniques de l'Ingenierie Assistee
-Chromatics, Inc.
-Codonics, Inc.
-Data Connection Ltd.
-Frame Technology Corp.
-Gfxbase, Inc.
-GIPSI S.A.
-HaL Computer Systems, Inc.
+Network Computing Devices
+Quarterdeck Office Systems
+Walker Richer & Quinn, Inc.
+.fi
+
+.SH AFFILIATE MEMBERS
+
+.nf
+AGE Logic, Inc.
+ASTEC, Inc.
+ATR
+BARCO Chromatics, Inc.
+Congruent Corp.
+Diagnostic/Retrieval Systems, Inc.
+Gallium Software, Inc.
 Hummingbird Communications Ltd.
-Industrial Technology Research Institute
 Institute for Information Industry
 Integrated Computer Solutions, Inc.
-Ithaca Software
+Investment Management Services, Inc.
 IXI Limited
 Japan Computer Corporation
 Jupiter Systems
 KAIST - Korean Advanced Institute of Science and Technology
 Labtam Australia
-Liant Software Corporation
 Locus Computing Corporation
-University of Lowell
-Megatek Corporation
-Metro Link, Inc.
+Mercury Interactive Corp.
 Metheus Corporation
-MicroUnity Systems Engineering
-MITRE Corporation
-Objectivity, Inc.
+Metro Link, Inc.
+Object Management Group, Inc.
 Open Software Foundation
 O'Reilly & Associates, Inc.
+ParcPlace Systems
 PCS Computer Systeme GmbH
+Performance Awareness Corp.
 Peritek Corp.
-PsiTech, Inc.
-Quarterdeck Office Systems
-Ramtek Corporation
-Samsung Electronics Corp.
-ShoGraphics, Inc.
+Petrotechnical Open Software Corp.
+Phase X Systems, Inc.
 Snitily Graphics Consulting Services
-Solbourne Computer, Inc.
 SOUM Corporation
-SPARC International
-Spectragraphics Corp.
-Stanford University
-Stardent Computer
-Strategic Research Institute Inc.
-Sumitomo Electric Workstation
 Tatung Science and Technology
-Tyan Computer
-Unipalm XTech
+Tech-Source, Inc.
+User Interface Technologies Ltd.
+Veritas Software, Inc.
 VisionWare Ltd.
 Visix Software, Inc.
 Visual Information Technologies, Inc.
-Visual Technology, Inc.
-Walker Richer & Quinn, Inc.
-Widget, Inc.
-X/Open Company Ltd.
+White Pine Software, Inc.
+The XFree86 Project, Inc.
 .fi
