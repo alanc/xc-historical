@@ -1,4 +1,15 @@
-        DEFINES = -DMODEMENU -DUTMP
+/**/###########################################################################
+/**/#                                                                         #
+/**/#                         Attention xterm porters                         #
+/**/#                                                                         #
+/**/#                                                                         #
+/**/# Xterm assumes that bcopy can handle overlapping arguments.  If your     #
+/**/# bcopy (or memcpy) can't, write a routine called Bcopy that can and      #
+/**/# the -DBcopy argument from the DEFINES list given below.                 #
+/**/#                                                                         #
+/**/###########################################################################
+
+        DEFINES = -DMODEMENU -DUTMP -DBcopy=bcopy
           SRCS1 = button.c charproc.c cursor.c data.c input.c \
 		  main.c menu.c misc.c screen.c scrollbar.c tabs.c \
 		  TekPrsTbl.c Tekproc.c util.c VTPrsTbl.c
@@ -13,6 +24,8 @@
 #ifdef RtArchitecture
              CC = pcc
 #endif
+
+
 
 ComplexProgramTarget_1(xterm,$(XAWLIB) $(XTOOLLIB) $(XLIB),-ltermcap)
 
