@@ -1,6 +1,6 @@
 
 /*
- *	$Header: charproc.c,v 1.1 88/02/08 20:29:03 newman Locked $
+ *	$Header: charproc.c,v 1.1 88/02/10 13:08:03 jim Exp $
  */
 
 
@@ -57,7 +57,7 @@ extern void exit(), bcopy();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.1 88/02/08 20:29:03 newman Locked $";
+static char rcs_id[] = "$Header: charproc.c,v 1.1 88/02/10 13:08:03 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1703,6 +1703,27 @@ XSetWindowAttributes *values;
 
 	xgcv.font = screen->fnt_norm->fid;
 
+	/*
+	 * Let's see, there are three things that have "color":
+	 *
+	 *     background
+	 *     text
+	 *     cursorblock
+	 *
+	 * And, there are four situation when drawing a cursor, if we decide
+	 * that we like have a solid block of cursor color with the letter
+	 * that it is highlighting shown in the background color to make it
+	 * stand out:
+	 *
+	 *     selected window, normal video - background on cursor
+	 *     selected window, reverse video - foreground on cursor
+	 *     unselected window, normal video - cursor on background
+	 *     unselected window, reverse video - cursor on foreground
+	 *
+	 * Note that these are only used in ShowCursor, not in HideCursor,
+	 * since latter's job is to paint a normal character.  
+	 */
+
 	if (screen->cursorcolor != screen->foreground) {
 		xgcv.foreground = screen->cursorcolor;
 		xgcv.background = screen->foreground;
@@ -1826,7 +1847,7 @@ XSetWindowAttributes *values;
 ShowCursor()
 {
 	register TScreen *screen = &term->screen;
-	register int x, y, flags, y1, x1;
+	register int x, y, flags;
 	char c;
 	GC	currentGC;
 
@@ -1878,12 +1899,7 @@ ShowCursor()
 	if(flags & UNDERLINE) 
 		XDrawLine(screen->display, TextWindow(screen), currentGC,
 			x, y+1, x + FontWidth(screen), y+1);
-	if(screen->select) {
- 	       y1 = y - screen->fnt_norm->max_bounds.ascent;
-	       x1 = x + screen->fnt_norm->max_bounds.lbearing;
-               XDrawLine(screen->display, TextWindow(screen), currentGC,
-		         x1, y1, x1, y1 + FontHeight(screen)-1);
-	} else {
+	if (!screen->select) {
 		screen->box->x = x + screen->fnt_norm->max_bounds.lbearing;
 		screen->box->y = y - screen->fnt_norm->max_bounds.ascent;
 		XDrawLines(screen->display, TextWindow(screen), currentGC,
