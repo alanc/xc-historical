@@ -137,7 +137,6 @@ miPointerDisplayCursor (pScreen, pCursor)
 
     pPriv = (miPointerScreenPtr) pScreen->devPrivates[miPointerScreenIndex].ptr;
     pPointer = pPriv->pPointer;
-    miPointerCheckScreen (pScreen, pPointer);
     pPointer->pCursor = pCursor;
     (*pPriv->funcs->DisplayCursor) (pScreen, pCursor, pPointer->x, pPointer->y);
 }
@@ -153,10 +152,6 @@ miPointerConstrainCursor (pScreen, pBox)
     pPriv = (miPointerScreenPtr) pScreen->devPrivates[miPointerScreenIndex].ptr;
     pPointer = pPriv->pPointer;
     pPointer->limits = *pBox;
-    /*
-     * make sure the cursor is within the constraints
-     */
-    miPointerSetCursor (pScreen, pPointer->x, pPointer->y, TRUE, TRUE);
 }
 
 /*ARGSUSED*/
@@ -209,15 +204,21 @@ miPointerCheckScreen (pScreen, pPointer)
      * if the cursor has switched screens, disable the sprite
      * on the old screen
      */
-    if (pPointer->pScreen && pPointer->pScreen != pScreen && pPointer->pCursor)
+    if (pPointer->pScreen != pScreen)
     {
-	miPointerScreenPtr  pOldPriv;
-
-	pOldPriv = (miPointerScreenPtr) pPointer->pScreen->
-				devPrivates[miPointerScreenIndex].ptr;
-	(*pOldPriv->funcs->UndisplayCursor)
-				(pPointer->pScreen, pPointer->pCursor);
-	(*pPointer->funcs->CrossScreen) (pPointer->pScreen, FALSE);
+	if (pPointer->pScreen)
+	{
+	    if (pPointer->pCursor)
+	    {
+	    	miPointerScreenPtr  pOldPriv;
+    	
+	    	pOldPriv = (miPointerScreenPtr) pPointer->pScreen->
+				    	devPrivates[miPointerScreenIndex].ptr;
+	    	(*pOldPriv->funcs->UndisplayCursor)
+				    	(pPointer->pScreen, pPointer->pCursor);
+	    }
+	    (*pPointer->funcs->CrossScreen) (pPointer->pScreen, FALSE);
+	}
 	(*pPointer->funcs->CrossScreen) (pScreen, TRUE);
     }
     pPointer->pScreen = pScreen;
@@ -265,11 +266,11 @@ miPointerMoveCursor (pScreen, x, y, generateEvent)
  */
 
 static void
-miPointerSetCursor (pScreen, x, y, generateEvent, processEvents)
+miPointerSetCursor (pScreen, x, y, generateEvent, afterEvents)
     ScreenPtr	pScreen;
     int		x, y;
     Bool	generateEvent;
-    Bool	processEvents;
+    Bool	afterEvents;
 {
     miPointerScreenPtr  pPriv;
     miPointerPtr	pPointer;
@@ -278,7 +279,6 @@ miPointerSetCursor (pScreen, x, y, generateEvent, processEvents)
 
     pPriv = (miPointerScreenPtr) pScreen->devPrivates[miPointerScreenIndex].ptr;
     pPointer = pPriv->pPointer;
-    miPointerCheckScreen (pScreen, pPointer);
     if (x < 0 || x >= pScreen->width || y < 0 || y >= pScreen->height)
     {
 	/*
@@ -311,16 +311,15 @@ miPointerSetCursor (pScreen, x, y, generateEvent, processEvents)
 	y = pPointer->limits.y1;
     if (y > pPointer->limits.y2)
 	y = pPointer->limits.y2;
-    if (pPointer->x == x && pPointer->y == y)
+    if (pPointer->x == x && pPointer->y == y && pPointer->pScreen == pScreen)
 	return;
     pPointer->x = x;
     pPointer->y = y;
+    miPointerCheckScreen (pScreen, pPointer);
     if (generateEvent)
     {
 	xEvent	xE;
 
-	if (processEvents)
-	    ProcessInputEvents();
 	xE.u.u.type = MotionNotify;
 	xE.u.keyButtonPointer.rootX = x;
 	xE.u.keyButtonPointer.rootY = y;
@@ -329,13 +328,26 @@ miPointerSetCursor (pScreen, x, y, generateEvent, processEvents)
 	 * this call may change the cursor shape, in which case the
 	 * new cursor will end up on the screen in the correct place.
 	 */
-	(*pPointer->pPointer->processInputProc) (&xE, pPointer->pPointer);
+	if (afterEvents)
+	    (*pPointer->funcs->QueueEvent) (&xE, pPointer->pPointer, pScreen);
+	else
+	    (*pPointer->pPointer->processInputProc) (&xE, pPointer->pPointer);
     }
     /*
      * avoid problems when this routine recurses
      */
     pPriv = (miPointerScreenPtr) pPointer->pScreen->devPrivates[miPointerScreenIndex].ptr;
     (*pPriv->funcs->DisplayCursor) (pPointer->pScreen, pPointer->pCursor, pPointer->x, pPointer->y);
+}
+
+/*ARGSUSED*/
+void
+miPointerQueueEvent (pxE, pPointer, pScreen)
+    xEvent	*pxE;
+    DevicePtr	pPointer;
+    ScreenPtr	pScreen;
+{
+    (*pPointer->processInputProc) (pxE, pPointer);
 }
 
 void
