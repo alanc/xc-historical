@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbfillrct.c,v 5.5 89/09/08 14:25:05 keith Exp $ */
+/* $XConsortium: cfbfillrct.c,v 5.6 89/09/14 17:04:23 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -70,26 +70,53 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel, isCopy)
     fill = PFILL(pixel);
     for (; nBox; nBox--, pBox++)
     {
-    	pdstRect = pdstBase + pBox->y1 * widthDst + (pBox->x1 >> PWSH);
+    	pdstRect = pdstBase + pBox->y1 * widthDst;
     	h = pBox->y2 - pBox->y1;
 	w = pBox->x2 - pBox->x1;
+#if PPW == 4
+	if (w == 1)
+	{
+	    char    *pdstb = ((char *) pdstRect) + pBox->x1;
+	    int	    incr = widthDst << 2;
+
+	    if (isCopy)
+	    {
+		while (h--)
+		{
+		    *pdstb = fill;
+		    pdstb += incr;
+		}
+	    }
+	    else
+	    {
+		while (h--)
+		{
+		    *pdstb ^= fill;
+		    pdstb += incr;
+		}
+	    }
+	}
+	else
+	{
+#endif
+	pdstRect += (pBox->x1 >> PWSH);
 	if ((pBox->x1 & PIM) + w <= PPW)
 	{
 	    maskpartialbits(pBox->x1, w, leftMask);
 	    pdst = pdstRect;
 	    if (isCopy)
 	    {
-	    	while (h--) {
+		while (h--) {
 		    *pdst = (*pdst & ~leftMask) | (fill & leftMask);
 		    pdst += widthDst;
-	    	}
+		}
 	    }
 	    else
 	    {
-	    	while (h--) {
+		while (h--) {
 		    *pdst = (*pdst & ~leftMask) | ((fill ^ *pdst) & leftMask);
 		    pdst += widthDst;
-	    	}
+		}
 	    }
 	}
 	else
@@ -101,42 +128,42 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel, isCopy)
 		{
 		    if (rightMask)
 		    {
-    	    	    	while (h--) {
-	    	    	    pdst = pdstRect;
-	    	    	    *pdst = (*pdst & ~leftMask) | (fill & leftMask);
-		    	    pdst++;
-	    	    	    m = nmiddle;
-	    	    	    while (m--)
-	    	    	    	*pdst++ = fill;
-	    	    	    *pdst = (*pdst & ~rightMask) | (fill & rightMask);
-		    	    pdstRect += widthDst;
-    	    	    	}
+			while (h--) {
+			    pdst = pdstRect;
+			    *pdst = (*pdst & ~leftMask) | (fill & leftMask);
+			    pdst++;
+			    m = nmiddle;
+			    while (m--)
+				*pdst++ = fill;
+			    *pdst = (*pdst & ~rightMask) | (fill & rightMask);
+			    pdstRect += widthDst;
+			}
 		    }
 		    else
 		    {
-    	    	    	while (h--) {
-	    	    	    pdst = pdstRect;
-	    	    	    *pdst = (*pdst & ~leftMask) | (fill & leftMask);
-		    	    pdst++;
-	    	    	    m = nmiddle;
-	    	    	    while (m--)
-	    	    	    	*pdst++ = fill;
-		    	    pdstRect += widthDst;
-    	    	    	}
+			while (h--) {
+			    pdst = pdstRect;
+			    *pdst = (*pdst & ~leftMask) | (fill & leftMask);
+			    pdst++;
+			    m = nmiddle;
+			    while (m--)
+				*pdst++ = fill;
+			    pdstRect += widthDst;
+			}
 		    }
 		}
 		else
 		{
 		    if (rightMask)
 		    {
-    	    	    	while (h--) {
-	    	    	    pdst = pdstRect;
-	    	    	    m = nmiddle;
-	    	    	    while (m--)
-	    	    	    	*pdst++ = fill;
-	    	    	    *pdst = (*pdst & ~rightMask) | (fill & rightMask);
-		    	    pdstRect += widthDst;
-    	    	    	}
+			while (h--) {
+			    pdst = pdstRect;
+			    m = nmiddle;
+			    while (m--)
+				*pdst++ = fill;
+			    *pdst = (*pdst & ~rightMask) | (fill & rightMask);
+			    pdstRect += widthDst;
+			}
 		    }
 		    else
 		    {
@@ -153,22 +180,25 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel, isCopy)
 	    }
 	    else
 	    {
-    	    	while (h--) {
-	    	    pdst = pdstRect;
-	    	    if (leftMask)
+		while (h--) {
+		    pdst = pdstRect;
+		    if (leftMask)
 		    {
-	    	    	*pdst = (*pdst & ~leftMask) | ((fill ^ *pdst) & leftMask);
-		    	pdst++;
+			*pdst = (*pdst & ~leftMask) | ((fill ^ *pdst) & leftMask);
+			pdst++;
 		    }
-	    	    m = nmiddle;
-	    	    while (m--)
-	    	    	*pdst++ ^= fill;
-	    	    if (rightMask)
-	    	    	*pdst = (*pdst & ~rightMask) | ((fill ^ *pdst) & rightMask);
+		    m = nmiddle;
+		    while (m--)
+			*pdst++ ^= fill;
+		    if (rightMask)
+			*pdst = (*pdst & ~rightMask) | ((fill ^ *pdst) & rightMask);
 		    pdstRect += widthDst;
-    	    	}
+		}
 	    }
 	}
+#if PPW == 4
+	}
+#endif
     }
 }
 
@@ -333,6 +363,7 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     PixmapPtr	pRoTile;
     PixmapPtr	pTile;
     int		xrot, yrot;
+    int		rgnResult;
 
     priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
     prgnClip = priv->pCompositeClip;
@@ -340,9 +371,9 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     switch (pGC->fillStyle)
     {
     case FillSolid:
-    	isCopy = pGC->alu == GXcopy;
-    	pixel = pGC->fgPixel;
-    	if (pGC->alu == GXinvert)
+	isCopy = pGC->alu == GXcopy;
+	pixel = pGC->fgPixel;
+	if (pGC->alu == GXinvert)
 	    pixel = pGC->planemask;
 	break;
     case FillTiled:
@@ -368,14 +399,14 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     yorg = pDrawable->y;
     if (xorg || yorg)
     {
-        prect = prectInit;
+	prect = prectInit;
 	n = nrectFill;
-        while(n--)
-        {
+	while(n--)
+	{
 	    prect->x += xorg;
 	    prect->y += yorg;
 	    prect++;
-        }
+	}
     }
 
     prect = prectInit;
@@ -416,11 +447,9 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	if ((box.x1 >= box.x2) || (box.y1 >= box.y2))
 	    continue;
 
-	switch((*pGC->pScreen->RectIn)(prgnClip, &box))
+	if (REGION_NUM_RECTS (prgnClip) == 1 ||
+	    (rgnResult = (*pGC->pScreen->RectIn)(prgnClip, &box)) == rgnIN)
 	{
-	  case rgnOUT:
-	    break;
-	  case rgnIN:
 	    switch (pGC->fillStyle)
 	    {
 	    case FillSolid:
@@ -443,8 +472,9 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 		break;
 #endif
 	    }
-	    break;
-	  case rgnPART:
+	} 
+	else if (rgnResult == rgnPART)
+	{
 	    numRects = REGION_NUM_RECTS(prgnClip);
 	    pboxClippedBase = (BoxPtr)ALLOCATE_LOCAL(numRects * sizeof(BoxRec));
 
@@ -460,18 +490,18 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	    */
 	    while(n--)
 	    {
-	        pboxClipped->x1 = max(box.x1, pbox->x1);
-	        pboxClipped->y1 = max(box.y1, pbox->y1);
-	        pboxClipped->x2 = min(box.x2, pbox->x2);
-	        pboxClipped->y2 = min(box.y2, pbox->y2);
+		pboxClipped->x1 = max(box.x1, pbox->x1);
+		pboxClipped->y1 = max(box.y1, pbox->y1);
+		pboxClipped->x2 = min(box.x2, pbox->x2);
+		pboxClipped->y2 = min(box.y2, pbox->y2);
 		pbox++;
 
-	        /* see if clipping left anything */
-	        if(pboxClipped->x1 < pboxClipped->x2 && 
-	           pboxClipped->y1 < pboxClipped->y2)
-	        {
+		/* see if clipping left anything */
+		if(pboxClipped->x1 < pboxClipped->x2 && 
+		   pboxClipped->y1 < pboxClipped->y2)
+		{
 		    pboxClipped++;
-	        }
+		}
 	    }
 	    switch (pGC->fillStyle)
 	    {
@@ -494,17 +524,16 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	    case FillStippled:
 		cfb8FillBoxTransparentStippled32 (pDrawable,
 		    pboxClipped-pboxClippedBase, pboxClippedBase,
- 		    pTile, pGC->fgPixel);
+		    pTile, pGC->fgPixel);
 		break;
 	    case FillOpaqueStippled:
 		cfb8FillBoxOpaqueStippled32 (pDrawable,
 		    pboxClipped-pboxClippedBase, pboxClippedBase,
- 		    pTile, pGC->fgPixel, pGC->bgPixel);
+		    pTile, pGC->fgPixel, pGC->bgPixel);
 		break;
 #endif
 	    }
 	    DEALLOCATE_LOCAL(pboxClippedBase);
-	    break;
 	}
     }
 }
