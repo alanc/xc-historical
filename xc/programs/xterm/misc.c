@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.65 90/03/12 10:30:17 jim Exp $
+ *	$XConsortium: misc.c,v 1.66 90/04/30 16:53:26 converse Exp $
  */
 
 
@@ -58,7 +58,7 @@ static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.65 90/03/12 10:30:17 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.66 90/04/30 16:53:26 converse Exp $";
 #endif	/* lint */
 
 xevents()
@@ -431,7 +431,7 @@ register TScreen *screen;
 			old_bufend = _bufend(stderr);
 #endif	/* SYSV */
 			close(fileno(stderr));
-			fileno(stderr) = 2;
+			stderr->_file = 2;
 #ifdef SYSV
 			_bufend(stderr) = old_bufend;
 #endif	/* SYSV */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.154 90/06/08 14:23:46 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.155 90/07/10 13:46:22 rws Exp $";
 #endif	/* lint */
 
 /*
@@ -844,10 +844,10 @@ char **argv;
 		unsigned char *old_bufend;
 
 		old_bufend = (unsigned char *) _bufend(stderr);
-		fileno(stderr) = i;
+		stderr->_file = i;
 		_bufend(stderr) = old_bufend;
 #else	/* USE_SYSV_TERMIO */
-		fileno(stderr) = i;
+		stderr->_file = i;
 #endif	/* USE_SYSV_TERMIO */
 
 		/* mark this file as close on exec */
