@@ -1,4 +1,4 @@
-/* $XConsortium: mplogic.c,v 1.1 93/10/26 09:47:21 rws Exp $ */
+/* $XConsortium: mplogic.c,v 1.2 93/10/31 09:48:21 dpw Exp $ */
 /**** module mplogic.c ****/
 /******************************************************************************
 				NOTICE
@@ -183,13 +183,13 @@ static int ActivateLogicM(flo,ped,pet)
 	int pitch = sband->format->pitch; /* bits */
 	LogInt *svoid, *dvoid;
 
-    	if (!(svoid = GetCurrentSrc(void,flo,pet,sband)) ||
-	    !(dvoid = GetCurrentDst(void,flo,pet,dband))) continue;
+    	if (!(svoid = GetCurrentSrc(LogInt *,flo,pet,sband)) ||
+	    !(dvoid = GetCurrentDst(LogInt *,flo,pet,dband))) continue;
 
 	do {
 	    (*(pvt->action)) (dvoid, svoid, pvt->cnst, pitch);
-	    svoid = GetNextSrc(void,flo,pet,sband,FLUSH);
-	    dvoid = GetNextDst(void,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(LogInt *,flo,pet,sband,FLUSH);
+	    dvoid = GetNextDst(LogInt *,flo,pet,dband,FLUSH);
 	} while (!ferrCode(flo) && svoid && dvoid) ;
 
 	FreeData(flo, pet, sband, sband->current);
@@ -211,18 +211,18 @@ static int ActivateLogicD(flo,ped,pet)
     for(band = 0; band < nbands; band++, pvt++, sband++, tband++, dband++) {
 	LogInt *svoid, *tvoid, *dvoid;
 
-    	if (!(svoid = GetCurrentSrc(void,flo,pet,sband)) ||
-	    !(tvoid = GetCurrentSrc(void,flo,pet,tband)) ||
-	    !(dvoid = GetCurrentDst(void,flo,pet,dband))   ) continue;
+    	if (!(svoid = GetCurrentSrc(LogInt *,flo,pet,sband)) ||
+	    !(tvoid = GetCurrentSrc(LogInt *,flo,pet,tband)) ||
+	    !(dvoid = GetCurrentDst(LogInt *,flo,pet,dband))   ) continue;
 
 	do {
 	    /* This is the code that might rather utilize INPLACE */
 	    (*(pvt->action)) (dvoid, svoid, tvoid, pvt->endix);
 	    if (pvt->action2)
 		(*(pvt->action2)) (dvoid, svoid, pvt->endrun, pvt->endix);
-	    svoid = GetNextSrc(void,flo,pet,sband,FLUSH);
-	    tvoid = GetNextSrc(void,flo,pet,tband,FLUSH);
-	    dvoid = GetNextDst(void,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(LogInt *,flo,pet,sband,FLUSH);
+	    tvoid = GetNextSrc(LogInt *,flo,pet,tband,FLUSH);
+	    dvoid = GetNextDst(LogInt *,flo,pet,dband,FLUSH);
 	} while (!ferrCode(flo) && svoid && tvoid && dvoid) ;
 
 	if(!svoid && sband->final)	/* when sr1 runs out, kill sr2 too  */
@@ -248,11 +248,11 @@ static int ActivateLogicMROI(flo,ped,pet)
     bandPtr dband     = &(pet->emitter[0]);
 
     for(band = 0; band < nbands; band++, pvt++, sband++, dband++) {
-	void *svoid, *dvoid;
+	pointer svoid, dvoid;
 	CARD32 shift;
 
-    	if (!(svoid = GetCurrentSrc(void,flo,pet,sband)) ||
-	    !(dvoid = GetCurrentDst(void,flo,pet,dband))) continue;
+    	if (!(svoid = GetCurrentSrc(pointer,flo,pet,sband)) ||
+	    !(dvoid = GetCurrentDst(pointer,flo,pet,dband))) continue;
 
 	SHIFT_FROM_LEVELS(shift, dband->format->levels)
 
@@ -270,8 +270,8 @@ static int ActivateLogicMROI(flo,ped,pet)
 		} else
 		    ix -= run;
 	    }
-	    svoid = GetNextSrc(void,flo,pet,sband,FLUSH);
-	    dvoid = GetNextDst(void,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(pointer,flo,pet,sband,FLUSH);
+	    dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
 	}
 
 	FreeData(flo, pet, sband, sband->current);
@@ -291,15 +291,15 @@ static int ActivateLogicDROI(flo,ped,pet)
     bandPtr dband     = &(pet->emitter[0]);
 
     for(band = 0; band < nbands; band++, pvt++, sband++, tband++, dband++) {
-	void *svoid, *tvoid, *dvoid;
+	pointer svoid, tvoid, dvoid;
 	CARD32 shift, w;
 
 	w = sband->format->width;
 	if (w > tband->format->width) w = tband->format->width;
 
-    	if (!(svoid = GetCurrentSrc(void,flo,pet,sband)) ||
-    	    !(tvoid = GetCurrentSrc(void,flo,pet,tband)) ||
-	    !(dvoid = GetCurrentDst(void,flo,pet,dband))) continue;
+    	if (!(svoid = GetCurrentSrc(pointer,flo,pet,sband)) ||
+    	    !(tvoid = GetCurrentSrc(pointer,flo,pet,tband)) ||
+	    !(dvoid = GetCurrentDst(pointer,flo,pet,dband))) continue;
 
 	SHIFT_FROM_LEVELS(shift, dband->format->levels)
 
@@ -322,9 +322,9 @@ static int ActivateLogicDROI(flo,ped,pet)
 		} else
 		    ix -= run;
 	    }
-	    svoid = GetNextSrc(void,flo,pet,sband,FLUSH);
-	    tvoid = GetNextSrc(void,flo,pet,tband,FLUSH);
-	    dvoid = GetNextDst(void,flo,pet,dband,FLUSH);
+	    svoid = GetNextSrc(pointer,flo,pet,sband,FLUSH);
+	    tvoid = GetNextSrc(pointer,flo,pet,tband,FLUSH);
+	    dvoid = GetNextDst(pointer,flo,pet,dband,FLUSH);
 	}
 
 	if(!svoid && sband->final)	/* when sr1 runs out, kill sr2 too  */
