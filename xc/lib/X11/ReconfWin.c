@@ -1,9 +1,12 @@
 #include "copyright.h"
 
-/* $Header: XReconfWin.c,v 11.9 87/05/29 03:19:23 jg Exp $ */
+/* $Header: XReconfWin.c,v 11.9 87/09/11 08:06:30 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
+
+#define AllMaskBits (CWX|CWY|CWWidth|CWHeight|\
+		     CWBorderWidth|CWSibling|CWStackMode)
 
 XConfigureWindow(dpy, w, mask, changes)
     register Display *dpy;
@@ -19,6 +22,7 @@ XConfigureWindow(dpy, w, mask, changes)
     LockDisplay(dpy);
     GetReq(ConfigureWindow, req);
     req->window = w;
+    mask &= AllMaskBits;
     req->mask = mask;
 
     /* Warning!  This code assumes that "unsigned long" is 32-bits wide */
