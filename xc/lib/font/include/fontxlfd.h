@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontxlfd.h,v 1.3 93/09/04 09:45:05 gildea Exp $
+ * $XConsortium: fontxlfd.h,v 1.4 93/09/17 16:02:34 dpw Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -46,10 +46,9 @@
 #define PIXELSIZE_WILDCARD		0x10
 #define POINTSIZE_WILDCARD		0x20
 
-#define ENHANCEMENT_SPECIFY_MASK	0xc0
+#define ENHANCEMENT_SPECIFY_MASK	0x40
 
-#define EMBOLDENING_SPECIFIED		0x40
-#define CHARSUBSET_SPECIFIED		0x80
+#define CHARSUBSET_SPECIFIED		0x40
 
 #define EPS		1.0e-20
 #define XLFD_NDIGITS	3		/* Round numbers in pixel and
@@ -74,9 +73,6 @@ typedef struct _FontScalable {
     int         x,
                 y,
                 width;
-    /* Elements for HP enhancements to XLFD string */
-    int		horiz_weight;
-    int		vert_weight;
     char	*xlfdName;
     int		nranges;
     fsRange	*ranges;

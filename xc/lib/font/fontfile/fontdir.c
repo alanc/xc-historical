@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontdir.c,v 1.16 94/02/03 10:07:07 gildea Exp $
+ * $XConsortium: fontdir.c,v 1.17 94/02/04 17:07:09 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -389,8 +389,6 @@ FontFileFindNameInScalableDir(table, pat, vals)
 		if (((vs & PIXELSIZE_MASK) == PIXELSIZE_ARRAY ||
 		     (vs & POINTSIZE_MASK) == POINTSIZE_ARRAY) &&
 		    !(cap & CAP_MATRIX) ||
-		    (vs & EMBOLDENING_SPECIFIED) &&
-		    !(cap & CAP_EMBOLDENING) ||
 		    (vs & CHARSUBSET_SPECIFIED) &&
 		    !(cap & CAP_CHARSUBSETTING))
 		    continue;
@@ -460,8 +458,6 @@ FontFileFindNamesInScalableDir(table, pat, max, names, vals,
 		if (((vs & PIXELSIZE_MASK) == PIXELSIZE_ARRAY ||
 		     (vs & POINTSIZE_MASK) == POINTSIZE_ARRAY) &&
 		    !(cap & CAP_MATRIX) ||
-		    (vs & EMBOLDENING_SPECIFIED) &&
-		    !(cap & CAP_EMBOLDENING) ||
 		    (vs & CHARSUBSET_SPECIFIED) &&
 		    !(cap & CAP_CHARSUBSETTING))
 		    continue;

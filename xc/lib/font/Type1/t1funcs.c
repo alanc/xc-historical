@@ -1,4 +1,4 @@
-/* $XConsortium: t1funcs.c,v 1.15 94/02/04 17:07:14 gildea Exp $ */
+/* $XConsortium: t1funcs.c,v 1.16 94/02/07 14:49:25 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -124,7 +124,7 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
        psobj *fontencoding = NULL;
        fsRange char_range;
        psobj *fontmatrix;
-       long x0, width = 0;
+       long x0, total_width = 0, total_raw_width = 0;
        double x1, y1, t1 = .001, t2 = 0.0, t3 = 0.0, t4 = .001;
        double sxmult;
 
@@ -298,7 +298,8 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
 	       }
                glyphs[i].metrics.attributes =
 		   NEARESTPEL((long)(hypot(x1, y1) * sxmult));
-	       width += glyphs[i].metrics.attributes;
+	       total_width += glyphs[i].metrics.attributes;
+	       total_raw_width += abs((int)(INT16)glyphs[i].metrics.attributes);
 	       count++;
                glyphs[i].metrics.rightSideBearing = w + area->xmin;
                glyphs[i].metrics.descent          = area->ymax - NEARESTPEL(area->origin.y);
@@ -354,9 +355,19 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
        pFont->fontPrivate = (unsigned char *) type1;
 
        if (count)
-	   width = (width * 10 + (width > 0 ? count : -count) / 2) / count;
+       {
+	   total_raw_width = (total_raw_width * 10 + count / 2) / count;
+	   if (total_width < 0)
+	   {
+	       /* Predominant direction is R->L */
+	       total_raw_width = -total_raw_width;
+	   }
+	   vals->width = (int)((double)total_raw_width *
+			       vals->pixel_matrix[0] / 1000.0 +
+			       (vals->pixel_matrix[0] > 0 ? .5 : -.5));
+       }
 
-       T1FillFontInfo(pFont, vals, fileName, entry->name.name, width);
+       T1FillFontInfo(pFont, vals, fileName, entry->name.name, total_raw_width);
  
        *ppFont = pFont;
        return Successful;

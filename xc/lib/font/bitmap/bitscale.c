@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.20 94/02/06 16:02:04 gildea Exp $
+ * $XConsortium: bitscale.c,v 1.21 94/02/07 14:49:21 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -34,9 +34,9 @@ void bitmapUnloadScalable();
 
 enum scaleType {
     atom, truncate_atom, pixel_size, point_size, resolution_x,
-    resolution_y, average_width, scaledX, scaledY, scaledSignedAbsX,
-    scaledAbsY, unscaled, fontname, raw_ascent, raw_descent,
-    raw_pixelsize, raw_pointsize, raw_average_width, uncomputed
+    resolution_y, average_width, scaledX, scaledY, unscaled, fontname,
+    raw_ascent, raw_descent, raw_pixelsize, raw_pointsize,
+    raw_average_width, uncomputed
 };
 
 typedef struct _fontProp {
@@ -91,23 +91,23 @@ static fontProp fontPropTable[] = {
     "NORM_SPACE", 0, scaledX,
     "MAX_SPACE", 0, scaledX,
     "END_SPACE", 0, scaledX,
-    "AVG_CAPITAL_WIDTH", 0, scaledSignedAbsX,
-    "AVG_LOWERCASE_WIDTH", 0, scaledSignedAbsX,
+    "AVG_CAPITAL_WIDTH", 0, scaledX,
+    "AVG_LOWERCASE_WIDTH", 0, scaledX,
     "QUAD_WIDTH", 0, scaledX,
-    "FIGURE_WIDTH", 0, scaledSignedAbsX,
+    "FIGURE_WIDTH", 0, scaledX,
     "SUPERSCRIPT_X", 0, scaledX,
     "SUPERSCRIPT_Y", 0, scaledY,
     "SUBSCRIPT_X", 0, scaledX,
     "SUBSCRIPT_Y", 0, scaledY,
-    "SUPERSCRIPT_SIZE", 0, scaledAbsY,
-    "SUBSCRIPT_SIZE", 0, scaledAbsY,
-    "SMALL_CAP_SIZE", 0, scaledAbsY,
+    "SUPERSCRIPT_SIZE", 0, scaledY,
+    "SUBSCRIPT_SIZE", 0, scaledY,
+    "SMALL_CAP_SIZE", 0, scaledY,
     "UNDERLINE_POSITION", 0, scaledY,
-    "UNDERLINE_THICKNESS", 0, scaledAbsY,
+    "UNDERLINE_THICKNESS", 0, scaledY,
     "STRIKEOUT_ASCENT", 0, scaledY,
     "STRIKEOUT_DESCENT", 0, scaledY,
-    "CAP_HEIGHT", 0, scaledAbsY,
-    "X_HEIGHT", 0, scaledAbsY,
+    "CAP_HEIGHT", 0, scaledY,
+    "X_HEIGHT", 0, scaledY,
     "ITALIC_ANGLE", 0, unscaled,
     "RELATIVE_SETWIDTH", 0, unscaled,
     "RELATIVE_WEIGHT", 0, unscaled,
@@ -184,12 +184,13 @@ get_matrix_vertical_component(matrix)
 }
 
 
-static void
-ComputeScaleFactors(from, to, dx, dy, sdx, sdy)
+static Bool
+ComputeScaleFactors(from, to, dx, dy, sdx, sdy, rescale_x)
     FontScalablePtr from,
                 to;
     double     *dx, *sdx,
-               *dy, *sdy;
+               *dy, *sdy,
+	       *rescale_x;
 {
     double srcpixelset, destpixelset, srcpixel, destpixel;
 
@@ -206,6 +207,40 @@ ComputeScaleFactors(from, to, dx, dy, sdx, sdy)
     else
 	*sdx = *dx = 0;
 
+    *rescale_x = 1.0;
+
+    /* If client specified a width, it overrides setsize; in this
+       context, we interpret width as applying to the font before any
+       rotation, even though that's not what is ultimately returned in
+       the width field. */
+    if (from->width > 0 && to->width > 0 && fabs(*dx) > EPS)
+    {
+	double rescale = (double)to->width / (double)from->width;
+
+	/* If the client specified a transformation matrix, the rescaling
+	   for width does *not* override the setsize.  Instead, just check
+	   for consistency between the setsize from the matrix and the
+	   setsize that would result from rescaling according to the width.
+	   This assumes (perhaps naively) that the width is correctly
+	   reported in the name.  As an interesting side effect, this test
+	   may result in choosing a different source bitmap (one that
+	   scales consistently between the setsize *and* the width) than it
+	   would choose if a width were not specified.  Sort of a hidden
+	   multiple-master functionality. */
+	if ((to->values_supplied & PIXELSIZE_MASK) == PIXELSIZE_ARRAY ||
+	    (to->values_supplied & POINTSIZE_MASK) == POINTSIZE_ARRAY)
+	{
+	    /* Reject if resulting width difference is >= 1 pixel */
+	    if (fabs(rescale * from->width - *dx * from->width) >= 10)
+		return FALSE;
+	}
+	else
+	{
+	    *rescale_x = rescale/(*dx);
+	    *dx = rescale;
+	}
+    }
+
     if (srcpixel >= EPS)
     {
 	*dy = destpixel / srcpixel;
@@ -213,13 +248,29 @@ ComputeScaleFactors(from, to, dx, dy, sdx, sdy)
     }
     else
 	*sdy = *dy = 0;
+
+    return TRUE;
 }
 
 /* favor enlargement over reduction because of aliasing resulting
    from reduction */
 #define SCORE(m,s) \
+if (m >= 1.0) { \
+    if (m == 1.0) \
+        score += (16 * s); \
+    else if (m == 2.0) \
+        score += (4 * s); \
+    else \
+        score += (3 * s) / m; \
+} else { \
+        score += (2 * s) * m; \
+}
+
+/* don't need to favor enlargement when looking for bitmap that can
+   be used unscalable */
+#define SCORE2(m,s) \
 if (m >= 1.0) \
-    score += (16 * s) / m; \
+    score += (8 * s) / m; \
 else \
     score += (8 * s) * m;
 
@@ -235,21 +286,23 @@ FindBestToScale(fpe, entry, vals, best, dxp, dyp, sdxp, sdyp, fpep)
 {
     FontScalableRec temp;
     int		    source, i;
-    int		    best_score,
+    int		    best_score, best_unscaled_score,
 		    score;
     double	    dx, sdx, dx_amount,
 		    dy, sdy, dy_amount,
 		    best_dx, best_sdx, best_dx_amount,
 		    best_dy, best_sdy, best_dy_amount,
-		    minfrac;
+		    best_unscaled_sdx, best_unscaled_sdy,
+		    rescale_x, best_rescale_x,
+		    best_unscaled_rescale_x;
     FontEntryPtr    zero;
     FontNameRec	    zeroName;
     char	    zeroChars[MAXFONTNAMELEN];
     FontDirectoryPtr	dir;
     FontScaledPtr   scaled;
     FontScalableExtraPtr   extra;
-    FontScaledPtr   best_scaled;
-    FontPathElementPtr	best_fpe;
+    FontScaledPtr   best_scaled, best_unscaled;
+    FontPathElementPtr	best_fpe, best_unscaled_fpe;
     FontEntryPtr    bitmap = NULL;
     FontEntryPtr    result;
     int		    aliascount = 20;
@@ -259,6 +312,8 @@ FindBestToScale(fpe, entry, vals, best, dxp, dyp, sdxp, sdyp, fpep)
     /* find the best match */
     best_scaled = 0;
     best_score = 0;
+    best_unscaled = 0;
+    best_unscaled_score = -1;
     memcpy (zeroChars, entry->name.name, entry->name.length);
     zeroChars[entry->name.length] = '\0';
     zeroName.name = zeroChars;
@@ -317,7 +372,9 @@ FindBestToScale(fpe, entry, vals, best, dxp, dyp, sdxp, sdyp, fpep)
 	    scaled = &extra->scaled[i];
 	    if (!scaled->bitmap)
 		continue;
-	    ComputeScaleFactors(&scaled->vals, vals, &dx, &dy, &sdx, &sdy);
+	    if (!ComputeScaleFactors(&scaled->vals, vals, &dx, &dy, &sdx, &sdy,
+				     &rescale_x))
+		continue;
 	    score = 0;
 	    dx_amount = dx;
 	    dy_amount = dy;
@@ -338,10 +395,50 @@ FindBestToScale(fpe, entry, vals, best, dxp, dyp, sdxp, sdyp, fpep)
 	    	best_sdy = sdy;
 	    	best_dx_amount = dx_amount;
 	    	best_dy_amount = dy_amount;
+		best_rescale_x = rescale_x;
+	    }
+	    /* Is this font a candidate for use without ugly rescaling? */
+	    if (fabs(dx) > EPS && fabs(dy) > EPS &&
+		fabs(vals->pixel_matrix[0] * rescale_x -
+		     scaled->vals.pixel_matrix[0]) < 1 &&
+		fabs(vals->pixel_matrix[1] * rescale_x -
+		     scaled->vals.pixel_matrix[1]) < EPS &&
+		fabs(vals->pixel_matrix[2] -
+		     scaled->vals.pixel_matrix[2]) < EPS &&
+		fabs(vals->pixel_matrix[3] -
+		     scaled->vals.pixel_matrix[3]) < 1)
+	    {
+		/* Yes.  The pixel sizes are close on the diagonal and
+		   extremely close off the diagonal. */
+		score = 0;
+		SCORE2(vals->pixel_matrix[3] /
+		       scaled->vals.pixel_matrix[3], 10);
+		SCORE2(vals->pixel_matrix[0] * rescale_x /
+		       scaled->vals.pixel_matrix[0], 1);
+		if (score > best_unscaled_score)
+		{
+		    best_unscaled_fpe = FontFileBitmapSources.fpe[source];
+	    	    best_unscaled = scaled;
+	    	    best_unscaled_sdx = sdx / dx;
+	    	    best_unscaled_sdy = sdy / dy;
+		    best_unscaled_score = score;
+		    best_unscaled_rescale_x = rescale_x;
+		}
 	    }
 	}
     }
-    if (best_scaled)
+    if (best_unscaled)
+    {
+	*best = best_unscaled->vals;
+	*fpep = best_unscaled_fpe;
+	*dxp = 1.0;
+	*dyp = 1.0;
+	*sdxp = best_unscaled_sdx;
+	*sdyp = best_unscaled_sdy;
+	rescale_x = best_unscaled_rescale_x;
+	result = best_unscaled->bitmap;
+    }
+    else if (best_scaled)
     {
 	*best = best_scaled->vals;
 	*fpep = best_fpe;
@@ -349,6 +446,7 @@ FindBestToScale(fpe, entry, vals, best, dxp, dyp, sdxp, sdyp, fpep)
 	*dyp = best_dy;
 	*sdxp = best_sdx;
 	*sdyp = best_sdy;
+	rescale_x = best_rescale_x;
 	result = best_scaled->bitmap;
     }
     else
@@ -358,18 +456,42 @@ FindBestToScale(fpe, entry, vals, best, dxp, dyp, sdxp, sdyp, fpep)
     {
 	*fpep = bitmap_fpe;
 	FontParseXLFDName (bitmap->name.name, best, FONT_XLFD_REPLACE_NONE);
-	ComputeScaleFactors(best, best, dxp, dyp, sdxp, sdyp);
-	result = bitmap;
+	if (ComputeScaleFactors(best, best, dxp, dyp, sdxp, sdyp, &rescale_x))
+	    result = bitmap;
+	else
+	    result = NULL;
+    }
+
+    if (rescale_x != 1.0)
+    {
+	/* We have rescaled horizontally due to an XLFD width field.  Change
+	   the matrix appropriately */
+	vals->pixel_matrix[0] *= rescale_x;
+	vals->pixel_matrix[1] *= rescale_x;
+#ifdef NOTDEF
+	/* This would force the pointsize and pixelsize fields in the
+	   FONT property to display as matrices to more accurately
+	   report the font being supplied.  It might also break existing
+	   applications that expect a single number in that field. */
+	vals->values_supplied =
+	    vals->values_supplied & ~(PIXELSIZE_MASK | POINTSIZE_MASK) |
+	    PIXELSIZE_ARRAY;
+#else /* NOTDEF */
+	vals->values_supplied = vals->values_supplied & ~POINTSIZE_MASK;
+#endif /* NOTDEF */
+	/* Recompute and reround the FontScalablePtr values after
+	   rescaling for the new width. */
+	FontFileCompleteXLFD(vals, vals);
     }
 
     return result;
 }
 
-static int
+static long
 doround(x)
 double x;
 {
-    return (x >= 0) ? (int)(x + .5) : (int)(x - .5);
+    return (x >= 0) ? (long)(x + .5) : (long)(x - .5);
 }
 
 static int
@@ -395,26 +517,12 @@ computeProps(pf, wasStringProp, npf, isStringProp, nprops, xfactor, yfactor,
 	    continue;
 
 	switch (t->type) {
-	case scaledSignedAbsX:
-
-	    /* Is the sign of the AVG_CAPITAL_WIDTH, AVG_LOWERCASE_WIDTH,
-	       and FIGURE_WIDTH supposed to be affected by the
-	       transformation?  Assumption here is no.  If yes,
-	       scaledSignedAbsX case should be equivalent to scaledX case.  */
-
-	    npf->value = doround(fabs(xfactor) * (double)pf->value);
-	    rawfactor = sXfactor;
-	    break;
 	case scaledX:
 	    npf->value = doround(xfactor * (double)pf->value);
 	    rawfactor = sXfactor;
 	    break;
 	case scaledY:
 	    npf->value = doround(yfactor * (double)pf->value);
-	    rawfactor = sYfactor;
-	    break;
-	case scaledAbsY:
-	    npf->value = doround(fabs(yfactor * (double)pf->value));
 	    rawfactor = sYfactor;
 	    break;
 	case unscaled:
@@ -508,10 +616,10 @@ ComputeScaledProperties(sourceFontInfo, name, vals, dx, dy, sdx, sdy,
 	    *isStringProp = 1;
 	    break;
 	case pixel_size:
-	    fp->value = doround(fabs(vals->pixel_matrix[3]));
+	    fp->value = doround(vals->pixel_matrix[3]);
 	    break;
 	case point_size:
-	    fp->value = doround(fabs(vals->point_matrix[3] * 10.0));
+	    fp->value = doround(vals->point_matrix[3] * 10.0);
 	    break;
 	case resolution_x:
 	    fp->value = vals->x;
@@ -862,6 +970,9 @@ ScaleFont(opf, widthMult, heightMult, sWidthMult, sHeightMult, vals,
 	    pci->metrics.rightSideBearing = (int)floor(newrsb + .5);
 	    pci->metrics.descent = (int)ceil(newdesc);
 	    pci->metrics.ascent = (int)floor(newasc + .5);
+	    /* Accumulate total width of characters before transformation,
+	       to ascertain predominant direction of font. */
+	    totalwidth += opci->metrics.characterWidth;
 	    pci->metrics.characterWidth =
 		doround((double)opci->metrics.characterWidth * xmult);
 	    pci->metrics.attributes =
@@ -909,8 +1020,7 @@ ScaleFont(opf, widthMult, heightMult, sWidthMult, sHeightMult, vals,
 	    ScaleBitmap (pf, opci, pci, inv_xform,
 			 widthMult, heightMult);
 	    totalchars++;
-	    totalwidth += pci->metrics.characterWidth;
-	    *sWidth += (INT16)pci->metrics.attributes;
+	    *sWidth += abs((int)(INT16)pci->metrics.attributes);
 	    glyphBytes += BYTES_FOR_GLYPH(pci, glyph);
 #define MINMAX(field) \
 	    if (pfi->minbounds.field > pci->metrics.field) \
@@ -939,10 +1049,14 @@ ScaleFont(opf, widthMult, heightMult, sWidthMult, sHeightMult, vals,
     pfi->ink_maxbounds = pfi->maxbounds;
     if (totalchars)
     {
-	int tc2 = totalchars / 2;
-	vals->width = (totalwidth * 10 + (totalwidth > 0 ? tc2 : -tc2)) /
-		      totalchars;
-	*sWidth = (*sWidth * 10 + (*sWidth > 0 ? tc2 : -tc2)) / totalchars;
+	*sWidth = (*sWidth * 10 + totalchars / 2) / totalchars;
+	if (totalwidth < 0)
+	{
+	    /* Dominant direction is R->L */
+	    *sWidth = -*sWidth;
+	}
+
+	vals->width = doround((double)*sWidth * vals->pixel_matrix[0] / 1000.0);
     }
     else
     {

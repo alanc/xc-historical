@@ -1,4 +1,4 @@
-/* $XConsortium: spinfo.c,v 1.11 93/09/22 16:59:16 gildea Exp $ */
+/* $XConsortium: spinfo.c,v 1.12 94/02/04 17:07:23 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -180,14 +180,14 @@ sp_compute_bounds(spf, pinfo, flags, sWidth)
                 id,
                 index,
 		maxOverlap,
-		overlap;
+		overlap,
+		total_width;
     xCharInfo   minchar,
                 maxchar,
                 tmpchar;
     bbox_t      bbox;
     fix31       width;
-    double      pix_width,
-                total_width = 0.0;
+    double      pix_width;
     SpeedoMasterFontPtr spmf = spf->master;
     int	firstChar;
     int num_chars = 0;
@@ -262,8 +262,8 @@ sp_compute_bounds(spf, pinfo, flags, sWidth)
 	if (maxOverlap < overlap)
 	    maxOverlap = overlap;
 
-	total_width += pix_width;
-	*sWidth += (INT16)tmpchar.attributes;
+	total_width += ((int)(INT16)tmpchar.attributes);
+	*sWidth += abs((int)(INT16)tmpchar.attributes);
 
 	if (flags & SaveMetrics) {
 	    id = spmf->enc[i * 2] - firstChar;
@@ -275,11 +275,16 @@ sp_compute_bounds(spf, pinfo, flags, sWidth)
 
     if (num_chars > 0)
     {
-	double n2 = (double)num_chars / 2.0;
-	spf->vals.width = (total_width * 10.0 + (total_width > 0 ? n2 : -n2)) /
-			  num_chars;
-	*sWidth = (int)((double)*sWidth * 10.0 + (*sWidth > 0 ? n2 : -n2)) /
-			  num_chars;
+	*sWidth = (int)(((double)*sWidth * 10.0 + (double)num_chars / 2.0) /
+			  num_chars);
+	if (total_width < 0)
+	{
+	    /* Predominant direction is R->L */
+	    *sWidth = -*sWidth;
+	}
+	spf->vals.width = (int)((double)*sWidth * spf->vals.pixel_matrix[0] /
+				1000.0 +
+				(spf->vals.pixel_matrix[0] > 0 ? .5 : -.5));
     }
     else
     {
@@ -307,6 +312,8 @@ sp_compute_props(spf, fontname, pinfo, sWidth)
     char       *ptr1,
                *ptr2;
     char       *ptr3;
+    char	tmpname[1024];
+    FontScalableRec tmpvals;
 
     nprops = pinfo->nprops = NPROPS;
     pinfo->isStringProp = (char *) xalloc(sizeof(char) * nprops);
@@ -347,10 +354,12 @@ sp_compute_props(spf, fontname, pinfo, sWidth)
 	    pp->value = MakeAtom(ptr1, ptr3 - ptr1, TRUE);
 	    break;
 	case pixel_size:
-	    pp->value = (int)(fabs(spf->vals.pixel_matrix[3]) + .5);
+	    pp->value = (int)(spf->vals.pixel_matrix[3] +
+			      (spf->vals.pixel_matrix[3] > 0 ? .5 : -.5));
 	    break;
 	case point_size:
-	    pp->value = (int)(fabs(spf->vals.point_matrix[3]) * 10.0 + .5);
+	    pp->value = (int)(spf->vals.point_matrix[3] * 10.0 +
+			      (spf->vals.point_matrix[3] > 0 ? .5 : -.5));
 	    break;
 	case resolution_x:
 	    pp->value = spf->vals.x;
@@ -369,7 +378,10 @@ sp_compute_props(spf, fontname, pinfo, sWidth)
 	switch (i) {
 	case FONTPROP:
 	    *is_str = TRUE;
-	    pp->value = MakeAtom(fontname, strlen(fontname), TRUE);
+	    strcpy(tmpname, fontname);
+	    FontParseXLFDName(tmpname, &tmpvals, FONT_XLFD_REPLACE_ZERO);
+	    FontParseXLFDName(tmpname, &spf->vals, FONT_XLFD_REPLACE_VALUE);
+	    pp->value = MakeAtom(tmpname, strlen(tmpname), TRUE);
 	    break;
 	case COPYRIGHTPROP:
 	    *is_str = TRUE;

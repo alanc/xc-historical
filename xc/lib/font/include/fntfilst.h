@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fntfilst.h,v 1.5 93/09/17 18:27:44 gildea Exp $
+ * $XConsortium: fntfilst.h,v 1.6 94/02/03 10:07:10 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -113,8 +113,7 @@ typedef struct _FontDirectory {
    FontRendererRec to indicate support of XLFD enhancements */
 
 #define CAP_MATRIX		0x1
-#define CAP_EMBOLDENING		0x2
-#define CAP_CHARSUBSETTING	0x4
+#define CAP_CHARSUBSETTING	0x2
 
 typedef struct _FontRenderer {
     char    *fileSuffix;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontscale.c,v 1.10 93/09/17 18:26:42 gildea Exp $
+ * $XConsortium: fontscale.c,v 1.11 94/02/04 17:07:10 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -366,8 +366,6 @@ MatchScalable (a, b)
 	    (a->values_supplied & POINTSIZE_MASK) ==
 	    (b->values_supplied & POINTSIZE_MASK) &&
 	    EQUAL(a->point_matrix, b->point_matrix)) &&
-	  a->horiz_weight == b->horiz_weight &&
-	  a->vert_weight == b->vert_weight &&
 	  (a->nranges == 0 || a->nranges == b->nranges)))
       return FALSE;
 

@@ -1,4 +1,4 @@
-/* $XConsortium: t1info.c,v 1.13 94/02/04 17:07:16 gildea Exp $ */
+/* $XConsortium: t1info.c,v 1.14 94/02/08 11:57:53 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -181,7 +181,6 @@ ComputeBounds(pInfo, pChars, Vals)
 {
     int i;
     xCharInfo minchar, maxchar;
-    long width = 0;
     int numchars = 0;
     int totchars;
     int overlap;
@@ -204,7 +203,6 @@ ComputeBounds(pInfo, pChars, Vals)
         if (pmetrics->attributes ||
 	    pmetrics->ascent != -pmetrics->descent ||
 	    pmetrics->leftSideBearing != pmetrics->rightSideBearing) {
-            width += pmetrics->characterWidth;
             numchars++;
             adjust_min_max(&minchar, &maxchar, pmetrics);
             overlap = pmetrics->rightSideBearing - pmetrics->characterWidth;
@@ -213,16 +211,6 @@ ComputeBounds(pInfo, pChars, Vals)
         else pInfo->allExist = 0;
     }
  
-    if (numchars == 0)
-	Vals->width = 0;
-    else
-	Vals->width = (width * 10 + (width > 0 ? numchars : -numchars) / 2)
-		      / numchars;
-    /* (We think the above average width value should be put into
-        the Vals structure.  This may be wrong, and the proper
-        behavior might be to regard the values in Vals as sacred,
-        and for us to squirrel the computed number in a static, and
-        then use that static in ComputeStdProps.) */
     pInfo->maxbounds = maxchar;
     pInfo->minbounds = minchar;
     pInfo->ink_maxbounds = maxchar;

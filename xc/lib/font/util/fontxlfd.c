@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontxlfd.c,v 1.13 94/02/02 16:22:11 gildea Exp $
+ * $XConsortium: fontxlfd.c,v 1.14 94/02/04 17:07:19 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -291,47 +291,6 @@ int which;
     return ptr;
 }
 
-static char *
-skip_to_enhancement(ptr)
-char *ptr;
-{
-    while (*ptr && *ptr != '-' && *ptr != '+' && *ptr != '~')
-	ptr++;
-    if (!*ptr) ptr = (char *)0;
-    return ptr;
-}
-
-static char *
-parse_weight(ptr, vals)
-char *ptr;
-FontScalablePtr vals;
-{
-    char *ptr2;
-    Bool negative;
-    long result;
-
-    if (!(ptr = skip_to_enhancement(ptr)) || *ptr == '-') return ptr;
-
-    negative = (*ptr++ == '~');
-    result = strtol(ptr, &ptr2, 10);
-    if (ptr2 == ptr ||
-	*ptr2 != '-' && *ptr2 != '+' && *ptr2 != '~')
-	return (char *)0;
-    vals->horiz_weight = vals->vert_weight = (negative ? -result : result);
-    vals->values_supplied |= EMBOLDENING_SPECIFIED;
-    ptr = ptr2;
-
-    if (!(ptr = skip_to_enhancement(ptr)) || *ptr == '-') return ptr;
-
-    negative = (*ptr++ == '~');
-    result = strtol(ptr, &ptr2, 10);
-    if (ptr2 == ptr || *ptr2 != '-')
-	return (char *)0;
-    vals->vert_weight = (negative ? -result : result);
-
-    return ptr2;
-}
-
 
 static void append_ranges(fname, nranges, ranges)
 char *fname;
@@ -385,7 +344,7 @@ FontParseXLFDName(fname, vals, subst)
     if (!(*(ptr = fname) == '-' || *ptr++ == '*' && *ptr == '-') ||  /* fndry */
 	    !(ptr = strchr(ptr + 1, '-')) ||	/* family_name */
 	    !(ptr1 = ptr = strchr(ptr + 1, '-')) ||	/* weight_name */
-	    !(ptr = parse_weight(ptr + 1, &tmpvals)) ||	/* slant */
+	    !(ptr = strchr(ptr + 1, '-')) ||	/* slant */
 	    !(ptr = strchr(ptr + 1, '-')) ||	/* setwidth_name */
 	    !(ptr = strchr(ptr + 1, '-')) ||	/* add_style_name */
 	    !(ptr = strchr(ptr + 1, '-')) ||	/* pixel_size */
@@ -437,14 +396,8 @@ FontParseXLFDName(fname, vals, subst)
 	ptr3 = tmpBuf + (ptr3 - ptr2);
 	ptr2 = tmpBuf;
 	ptr = ptr1 + 1;
-	ptr1 = skip_to_enhancement(ptr);	/* weight_name enhancement */
-	if (*ptr1 != '-')
-	{
-	    ptr = strchr(ptr1, '-');
-	    memmove(ptr1, ptr, strlen(ptr) + 1);
-	}
-	ptr = ptr1 + 1;
 
+	ptr = strchr(ptr, '-') + 1;		/* skip weight */
 	ptr = strchr(ptr, '-') + 1;		/* skip slant */
 	ptr = strchr(ptr, '-') + 1;		/* skip setwidth_name */
 	ptr = strchr(ptr, '-') + 1;		/* skip add_style_name */
@@ -504,21 +457,11 @@ FontParseXLFDName(fname, vals, subst)
 	    tmpvals.width = -vals->width;
 
 
-	p = ptr1 + 1;				/* weight enhancement */
+	p = ptr1 + 1;				/* weight field */
 	l = strchr(p, '-') - p;
 	sprintf(tmpBuf, "%*.*s", l, l, p);
-	if (vals->values_supplied & EMBOLDENING_SPECIFIED)
-	    sprintf(tmpBuf + strlen(tmpBuf), "%c%d",
-		    (vals->horiz_weight >= 0 ? '+' : '~'),
-		    (vals->horiz_weight >= 0 ? vals->horiz_weight :
-					      -vals->horiz_weight));
-	if (vals->horiz_weight != vals->vert_weight)
-	    sprintf(tmpBuf + strlen(tmpBuf), "%c%d",
-		    (vals->vert_weight >= 0 ? '+' : '~'),
-		    (vals->vert_weight >= 0 ? vals->vert_weight :
-					     -vals->vert_weight));
 
-	p += l + 1;				/* slant enhancement */
+	p += l + 1;				/* slant field */
 	l = strchr(p, '-') - p;
 	sprintf(tmpBuf + strlen(tmpBuf), "-%*.*s", l, l, p);
 
@@ -526,7 +469,7 @@ FontParseXLFDName(fname, vals, subst)
 	l = strchr(p, '-') - p;
 	sprintf(tmpBuf + strlen(tmpBuf), "-%*.*s", l, l, p);
 
-	p += l + 1;				/* add_style_name enhancement */
+	p += l + 1;				/* add_style_name field */
 	l = strchr(p, '-') - p;
 	sprintf(tmpBuf + strlen(tmpBuf), "-%*.*s", l, l, p);
 
