@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.144 90/03/20 15:44:52 jim Exp $
+ * $XConsortium: events.c,v 1.145 90/03/22 11:32:38 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.144 90/03/20 15:44:52 jim Exp $";
+"$XConsortium: events.c,v 1.145 90/03/22 11:32:38 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2115,7 +2115,7 @@ HandleConfigureRequest()
      * be wrong
      */
     Event.xany.window = cre->window;	/* mash parent field */
-    if (XFindContext (dpy, cre->window, TwmContext, (caddr_t) &Tmp_win) ==
+    if (XFindContext (dpy, cre->window, TwmContext, (caddr_t *) &Tmp_win) ==
 	XCNOENT)
       Tmp_win = NULL;
 
