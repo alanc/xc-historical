@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.22 94/04/07 12:34:53 mor Exp $ */
+/* $XConsortium: accept.c,v 1.23 94/04/17 20:15:30 mor Exp mor $ */
 /******************************************************************************
 
 
@@ -57,6 +57,13 @@ IceAcceptStatus	*statusRet;
 	    *statusRet = IceAcceptFailure;
 	return (NULL);
     }
+
+
+    /*
+     * Set close-on-exec so that programs that fork() don't get confused.
+     */
+
+    _IceTransSetOption (newconn, TRANS_CLOSEONEXEC, 1);
 
 
     /*
