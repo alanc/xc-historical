@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.32 88/01/24 15:24:59 rws Exp $ */
+/* $Header: dispatch.c,v 1.34 88/01/24 16:45:33 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1095,7 +1095,7 @@ ProcQueryFont(client)
 	reply = (xQueryFontReply *)ALLOCATE_LOCAL(rlength);
 	if(!reply)
 	{
-	    return(client->noClientException = BadAlloc);
+	    return(BadAlloc);
 	}
 
 	reply->type = X_Reply;
@@ -1175,7 +1175,7 @@ ProcListFonts(client)
 
     bufptr = bufferStart = (char *)ALLOCATE_LOCAL(reply.length << 2);
     if(!bufptr)
-        return(client->noClientException = BadAlloc);
+        return(BadAlloc);
 
             /* since WriteToClient long word aligns things, 
 	       copy to temp buffer and write all at once */
@@ -1698,28 +1698,37 @@ ProcPutImage(client)
 {
     register GC *pGC;
     register DrawablePtr pDraw;
+    long length;
     REQUEST(xPutImageReq);
 
     REQUEST_AT_LEAST_SIZE(xPutImageReq);
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
     if (stuff->format == XYBitmap)
     {
-        if ((stuff->depth != 1) || (stuff->leftPad > screenInfo.bitmapScanlineUnit))
+        if ((stuff->depth != 1) ||
+	    (stuff->leftPad >= screenInfo.bitmapScanlineUnit))
             return BadMatch;
+        length = PixmapBytePad(stuff->width + stuff->leftPad, 1);
     }
     else if (stuff->format == XYPixmap)
     {
         if ((pDraw->depth != stuff->depth) || 
-	    (stuff->leftPad > screenInfo.bitmapScanlineUnit))
+	    (stuff->leftPad >= screenInfo.bitmapScanlineUnit))
             return BadMatch;
+        length = PixmapBytePad(stuff->width + stuff->leftPad, 1);
+	length *= stuff->depth;
     }
     else if (stuff->format == ZPixmap)
     {
         if ((pDraw->depth != stuff->depth) || (stuff->leftPad != 0))
             return BadMatch;
+        length = PixmapBytePad(stuff->width, stuff->depth);
     }
     else
         return BadValue;
+    length *= stuff->height;
+    if ((((length + 3) >> 2) + (sizeof(xPutImageReq) >> 2)) != stuff->length)
+	return BadLength;
     (*pGC->PutImage) (pDraw, pGC, stuff->depth, stuff->dstX, stuff->dstY,
 		  stuff->width, stuff->height, 
 		  stuff->leftPad, stuff->format, 
@@ -2125,7 +2134,7 @@ ProcListInstalledColormaps(client)
 		     pWin->drawable.pScreen->maxInstalledCmaps *
 		     sizeof(Colormap));
     if(!preply)
-        return(client->noClientException = BadAlloc);
+        return(BadAlloc);
 
     preply->type = X_Reply;
     preply->sequenceNumber = client->sequence;
@@ -2249,7 +2258,7 @@ ProcAllocColorCells           (client)
 	length = ((long)npixels + (long)nmasks) * sizeof(Pixel);
 	ppixels = (Pixel *)ALLOCATE_LOCAL(length);
 	if(!ppixels)
-            return(client->noClientException = BadAlloc);
+            return(BadAlloc);
 	pmasks = ppixels + npixels;
 
 	if(retval = AllocColorCells(client->index, pcmp, npixels, nmasks, 
@@ -2302,7 +2311,7 @@ ProcAllocColorPlanes(client)
 	length = (long)npixels * sizeof(Pixel);
 	ppixels = (Pixel *)ALLOCATE_LOCAL(length);
 	if(!ppixels)
-            return(client->noClientException = BadAlloc);
+            return(BadAlloc);
 	if(retval = AllocColorPlanes(client->index, pcmp, npixels,
 	    (int)stuff->red, (int)stuff->green, (int)stuff->blue,
 	    (int)stuff->contiguous, ppixels,
@@ -2446,7 +2455,7 @@ ProcQueryColors(client)
 
 	count = ((stuff->length << 2) - sizeof(xQueryColorsReq)) >> 2;
 	if(!(prgbs = (xrgb *)ALLOCATE_LOCAL(count * sizeof(xrgb))))
-            return(client->noClientException = BadAlloc);
+            return(BadAlloc);
 	if(retval = QueryColors(pcmp, count, (unsigned long *)&stuff[1], prgbs))
 	{
    	    DEALLOCATE_LOCAL(prgbs);
@@ -2895,7 +2904,7 @@ ProcGetFontPath(client)
 
     bufptr = bufferStart = (char *)ALLOCATE_LOCAL(reply.length << 2);
     if(!bufptr)
-        return(client->noClientException = BadAlloc);
+        return(BadAlloc);
             /* since WriteToClient long word aligns things, 
 	       copy to temp buffer and write all at once */
     for (i=0; i<pFP->npaths; i++)
