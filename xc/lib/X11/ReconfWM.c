@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: ReconfWM.c,v 1.1 89/03/28 18:11:43 jim Exp $ */
+/* $XConsortium: ReconfWM.c,v 1.2 89/11/19 13:56:15 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986   */
 
 #define NEED_EVENTS
@@ -46,7 +46,7 @@ Status XReconfigureWMWindow (dpy, w, screen, mask, changes)
      */
     dpy->reconfigure_wm_window.old_handler = _XErrorFunction;
     _XErrorFunction = restack_error_handler;
-    dpy->reconfigure_wm_window.sequence_number = dpy->request;
+    dpy->reconfigure_wm_window.sequence_number = NextRequest(dpy);
     dpy->reconfigure_wm_window.succeeded = True;
 
 
