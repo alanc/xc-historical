@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Viewport.h,v 1.14 90/02/13 14:04:12 jim Exp $
+ * $XConsortium: Viewport.h,v 1.15 90/02/28 14:27:23 jim Exp $
  * Public definitions for Viewport widget
  */
 
@@ -71,16 +71,16 @@ typedef struct _ViewportRec  *ViewportWidget;
 extern void XawViewportSetLocation (
 #if NeedFunctionPrototypes
     Widget /* gw */,
-    float /* xoff */,
-    float /* yoff */
+    double /* xoff */,
+    double /* yoff */
 #endif
 );
 
 extern void XawViewportSetCoordinates (
 #if NeedFunctionPrototypes
     Widget /* gw */,
-    Position /* x */,
-    Position /* y */
+    int	   /* x */,
+    int    /* y */
 #endif
 );
 
