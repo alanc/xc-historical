@@ -9,7 +9,20 @@
  * FSlib internal decls
  */
 
-#include	<sys/types.h>
+#ifdef USG
+#ifndef __TYPES__
+#include <sys/types.h>			/* forgot to protect it... */
+#define __TYPES__
+#endif /* __TYPES__ */
+#else
+#if !defined(_POSIX_SOURCE) || !defined(MOTOROLA)
+#include <sys/types.h>
+#else
+#undef _POSIX_SOURCE
+#include <sys/types.h>
+#define _POSIX_SOURCE
+#endif
+#endif /* USG */
 
 #include	"FSlib.h"
 #include	"FSproto.h"
