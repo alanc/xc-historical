@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.20 89/02/22 13:05:42 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.21 89/02/23 14:21:23 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -273,6 +273,9 @@
 #endif
 #ifndef CcCmd
 #define CcCmd                  cc
+#endif
+#ifndef AsCmd
+#define AsCmd                  as
 #endif
 #ifndef CompressCmd
 #define CompressCmd            compress
