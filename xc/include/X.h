@@ -1,5 +1,5 @@
 /*
- *	$Header: X.h,v 1.62 87/08/01 10:23:03 ham Exp $
+ *	$Header: X.h,v 1.62 87/08/26 21:31:43 toddb Locked $
  */
 
 /* Definitions for the X window system likely to be used by applications */
@@ -172,6 +172,19 @@ are reserved in the protocol for errors and replies. */
 #define Mod3Mask		(1<<5)
 #define Mod4Mask		(1<<6)
 #define Mod5Mask		(1<<7)
+
+/* modifier names.  Used to build a SetModifierMapping request or
+   to read a GetModifierMapping request.  These correspond to the
+   masks defined above. */
+#define ShiftMapIndex		0
+#define LockMapIndex		1
+#define ControlMapIndex		2
+#define Mod1MapIndex		3
+#define Mod2MapIndex		4
+#define Mod3MapIndex		5
+#define Mod4MapIndex		6
+#define Mod5MapIndex		7
+
 
 /* button masks.  Used in same manner as Key masks above. Not to be confused
    with button names below. */
