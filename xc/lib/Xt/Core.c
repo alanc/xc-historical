@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Core.c,v 1.33 89/12/12 18:09:14 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Core.c,v 1.34 89/12/12 19:30:44 swick Exp $";
 /* $oHeader: Core.c,v 1.2 88/08/18 15:37:59 asente Exp $ */
 #endif /* lint */
 
@@ -93,7 +93,7 @@ static RectObjClassRec unNamedObjClassRec = {
     /* class_inited       */	FALSE,
     /* initialize	  */	NULL,
     /* initialize_hook    */	NULL,		
-    /* realize		  */	XtInheritRealize,
+    /* realize		  */	(XtProc)XtInheritRealize,
     /* actions		  */	NULL,
     /* num_actions	  */	0,
     /* resources	  */	NULL,
