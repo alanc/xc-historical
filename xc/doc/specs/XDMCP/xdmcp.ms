@@ -1,17 +1,16 @@
 
-		X Display Manager Control Protocol
+		X Display Manager Control Protocol (XDMCP)
 
 	The X display manager (xdm) is designed to manage a collection of
-local or remote displays.  The remote displays communicate with xdm
-using the protocol described herein.  This protocol does not represent
-any commitment on the part of MIT, nor is it expected to ever be
-standardized in this form.  If you have comments and suggestions,
-please send them to keith@expo.lcs.mit.edu.  The server semantics
-for the magic authorized connection are also subject to change, if
-you see any holes in them, please let me know.
+local or remote displays.  We propose that remote displays communicate with
+xdm using the protocol described herein.  This is not yet a formal proposal,
+we want to encourage feedback and discussion before a formal proposal is
+made.
 
-	Xdmcp is designed to accept multiple copies of any message,
-in any order, and should work using UDP.
+	Xdmcp is designed to work using an unreliable datagram transport,
+in which messages can be lost and reordered.  In particular, xdmcp should
+work with the Internet UDP.  Any message sent must be acknowledged in order
+to guarantee receipt.
 
 	The message format is fixed, although some messages may
 use portions of the format for different things:
@@ -27,333 +26,426 @@ use portions of the format for different things:
 	2	l		length of AUTH_DATA
 	l	STRING8		AUTH_DATA
 
+The integer values are always sent most significant byte first.
 
 CMD is an ISO Latin-1 string (case ignored) from the set:
 
-	query			poll for availible managers
-	willing			response to poll
-	request			service request
-	acknowledge		service acknowledgement
-	negative		service refusal
-	manage			service directive
-	unmanage		request for discontinuation of service
-	unmanged		positive acknowledgement of unmanage
-	protocol error		negative acknowledgement of any request
+	VALUE			MEANING
+	-----			-------
+	Query			poll for availible managers
+	Willing			positive response to poll
+	Unwilling		negative response to poll
+	Request			service request
+	Acknowledge		service acknowledgement
+	Negative		service refusal
+	Manage			service directive
+	Unmanage		request for discontinuation of service
+	Unmanged		positive acknowledgement of Unmanage
+	Error			negative acknowledgement of any message
 
-Here is how it works:
+
+The Manage command is followed by an optional list of display-type
+parameters seperated from "Manage" and each other by spaces:
+
+	transient		request for single session (default)
+	permanent		request for multiple sessions
+
+	secure			Unmanage must have correct auth data
+	insecure		Unmanage always suceeds
+
+
+Here are some scenarios illustrating how the protocol works:
 
 	X terminal			Display Manager
 
 	X terminal turns on, decides
 	to find out who on the network
-	is availible to manage, and
-	broadcasts a packet:
+	is available to manage it, and
+	broadcasts a message:
 
-		query
-			Packet is lost in Network
+		Query
+
+			Message is lost in the
+			network by some managers.
 
 	Collects information on all
 	willing display managers,
 	presents the list to the user
 	who selects one.  Periodically
-	sending
+	resends
 
-		query
+		Query
 
-					Recognises query broadcast and
+					Recognizes Query broadcast and
 					responds with
 
-						willing
+						Willing
 
-	Updating the list of availible
+	Updates the list of available
 	Managers dynamically until the
 	user chooses one.  Now sends a
-	packet to the desired server:
+	message to the desired server:
 
-		request
+		Request
 
-					Recognises the request packet
-					and changes state.  Any manage
-					packets sent at this point will
-					kill any existing session.
+					Recognizes the Request message.
 					Creates a new session ID and
-					acknowledges the request with
+					saves it as state, and
+					acknowledges the Request with
 
-						acknowledge
+						Acknowledge
 
-			Packet is lost in the network
+			Message is delayed in the network.
 
 	X terminal times out waiting
-	for acknowledge packet.
+	for Acknowledge message.
 	Sends another
 
-		request
+		Request
 
-					Recognises the request packet as
+					Recognizes the Request message as
 					originating from a client from which
-					a request packet has already been
-					received.  As the acknowledge packet
-					may not have been received because
-					of network error, sends a duplicate
+					a Request message has already been
+					received, and for which a session ID
+					exists as saved state.  As the
+					Acknowledge message may not have been
+					received because of network error,
+					sends another
 
-						acknowledge
+						Acknowledge
+
+					using the same session ID.
 					
 
-	Receives the acknowledge
-	packet and responds with
+	Receives the Acknowledge
+	message and responds with
 
-		manage
+		Manage
 
-			Packet is lost in the network
+			Message is delayed in the network.
 
 	Terminal times out and sends
 
-		manage
+		Manage
 
-					Receives manage request, and notices
-					that it is from a client which has
-					recently sent a request packet.
-					Initiates a session by starting up
-					the greeting process:
+					Receives the Manage, and notices
+					that it is from the client that
+					sent the Request message and that
+					the session ID matches the one
+					in saved state.  Terminates any
+					existing session it thinks it has
+					in progress for this display, and
+					then initiates a new session with
 
 						XOpenDisplay
 
-			This will only fail in cases
-			of catastrophic network
-			failure, as XOpenDisplay uses
-			a reliable stream protocol.
+					This will only fail in rare cases,
+					such as catastrophic network
+					failure, since XOpenDisplay uses
+					a reliable stream protocol.
 
-			First Manage packet is now
-			delivered
+			A delayed Manage message is now
+			delivered.
 					
-					Receives manage request, and notices
-					that it cooresponds to the
-					XOpenDisplay which is now in
-					progress.  This packet is ignored.
+					Receives Manage message, and notices
+					that the session ID corresponds to the
+					session which is now in
+					progress.  This message is discarded
+					with no response.
 
 	Receives OpenDisplay request
 	and services regular X
 	protocol.
 
-			First Request packet is now
-			delivered
+			A delayed Request message is now
+			delivered.
 					
-					Generates new Session ID and
-					responds with another
+					Generates a new session ID and
+					saves it as state, and responds
+					with a new
 
 						Acknowledge
 
+					However, the existing session is
+					not affected.
+
 	Receives Acknowledge, notices
 	that a session is already
-	in progress.  Ignores it.
+	in progress.  Discards the
+	message.
 
 
 	Terminal is turned off and back
 	on.  This time, the user requests
-	a specific host instead of the
-	menu.  Sends another
+	a specific host instead asking for
+	a menu.  Sends that host a
 
 		Request
 
-					Generates new Session ID
-					and responds with another
+					Generates a new session ID
+					(unless one already exists in
+					saved state), saves it as state,
+					and responds with an
 
 						Acknowledge
 
-	Receives acknowledge and
-	responds with the new Session
-	ID with
+	Receives Acknowledge and
+	responds using the new
+	session ID with
 
 		Manage
 
-					Receives the manage request,
-					notices that the Session ID
-					matches the distributed
-					session ID in the Acknowledge
-					packet.  Terminates session
-					in progress and starts
-					session with
+					Receives the Manage message,
+					notices that the session ID
+					matches the session ID in saved
+					state.  Terminates any session
+					in progress for this display, and
+					starts a new session with
 
 						XOpenDisplay
 
-	Receives OpenDisplay request.
-	
+	Receives OpenDisplay request
+	and services regular X
+	protocol.
 
-					Session runs to termination,
+
+					Session runs to termination.
 					Manager then finishes session with
 
 						XCloseDisplay
 
-	Receives CloseDisplay request
-	on "magic" connection.  Terminates
-	all existing clients and
-	goes back to Query loop.
+	Receives CloseDisplay request,
+	Notices that it is for the
+	first connection ever established
+	in this session, and terminates
+	all other existing clients and
+	goes back to Query loop.  Thus,
+	the first connection has been given
+	special semantics.
 
-So, the sematics of each request are:
+In more detail, the sematics of each message is as follows.
+In all cases, the DISPLAY value sent by the Terminal must be
+a "canonical" string that the display manager can use in
+XOpenDisplay.  For example, the hostname should be a fully
+qualified domain name.  In all cases, the DISPLAY value sent
+by a manager must match the DISPLAY value sent by the terminal.
 
 Query:	Terminal -> Manager
 
-	Broadcast to the network requesting each display manager
-	which receives the packet to simply respond with a Willing
-	packet directed at the originating address.
+	Requests the display manager to respond with a Willing
+	message if it is willing to manage the display.  The
+	Query might be broadcast on a local net, or might be
+	directed specifically at a set of managers.  A
+	broadcast might be used so that the terminal doesn't
+	have to know where it should connect; this information
+	can be stored in xdm resources instead.  A Query message
+	is not required; a terminal can send a Request message
+	directly to a desired manager.  The session ID and
+	authorization fields sent in this message can be chosen
+	arbitrarily by the terminal.
 
 	Possible troubles:
 
-		Not all managers receive Query.  
+		Not all managers receive the Query.
 
-		Indication:  none
+		Indication:  none if Query was broadcast,
+			     else failure to receive Willing.
 
 		Solution:  repeatedly send Query while waiting
-		for user to choose session.
+		for user to choose a host.
 
 Willing: Manager -> Terminal
 
-	Sent in response to the Query request.  Simply indicates
-	the network address of an availible Display Manager.  No
-	state change implied in the Display Manager
+	Sent in response to the Query message.  This message indicates
+	the willingness to manage the terminal.  No state change is
+	required in the Display Manager.  The session ID and
+	authorization fields in this message must match those in the
+	Query.
 
 	Possible troubles:
 
-		Message not received.
+		Willing not received by the terminal.
 
-		Indication:  none
+		Indication:  none if Query was broadcast,
+			     else failure to receive Willing.
 		
-		Solution:  Not My Problem.  If the Terminal
-		is repeatedly sending Query packets, the
-		Manager will eventually receive and return
-		a packet succesfully.
+		Solution:  The terminal should continue to
+		send Query messages until a response is received.
+
+Unwilling: Manager -> Terminal
+
+	Sent in response to the Query message.  This message indicates
+	the unwillingness to manage the terminal.  No state change is
+	required in the Display Manager.  The session ID and
+	authorization fields in this message must match those in the
+	Query.  This message should not be sent in response to a
+	broadcast Query, only in response to a Query sent specifically
+	to the manager.
+
+	Possible troubles:
+
+		Unwilling not received by the terminal.
+
+		Indication:  failure to receive Unwilling.
+		
+		Solution:  The terminal should continue to
+		send Query messages until a response is received.
 
 Request: Terminal -> Manager
 
-	Sent indicating desire for management.  
+	Sent indicating desire for management.  The session ID
+	and authorization fields in this message can be chosen as needed
+	by the terminal.
   	
 	Possible troubles:
 
-		Message not received.
+		Request not received by manager.
 
-		Indication:  Acknowledge receipt timesout
+		Indication:  Terminal timeout waiting for response.
 
-		Solution:  resend request
+		Solution:  Terminal resends Request message.
 
-		Message received out of order.
+		Message received out of order by manager.
 
 		Indication: none
 
-		Solution:  Each time a Request is sent, the Manager
-		sends the Session ID associated with the next session.
-		When a session is started, the Session ID sent will not
-		match the current session, and the Manage request will
-		be denied.
+		Solution:  Each time a Request is sent, the manager
+		sends the session ID associated with the next session
+		in the Acknowledge.  If that next session is not yet
+		started, the manager will simply resend with the same
+		session ID.  If the session is in progress, the manager
+		will reply with a new session ID; in this case, the
+		Acknowledge will be discarded by the terminal.
 
 Acknowledge: Manager -> Terminal
 
-	Sent acknowledging management request.  If the terminal does not
-	receive this message, it should resend the Request packet.  Suitable
-	timeouts are network dependent, and should be settable by the
-	user.  A Session ID will be included in this message and must
-	be sent back in an associated Manage request.  The session
-	ID is associated with the "next" session.  Any session in
-	progress will not match the session key sent back, if
-	a session is not in progress the key that will be used
-	for that session is sent.
+	Sent to acknowledge a Request.  A session ID chosen by the
+	manager will be included in this message and must be sent
+	back by the terminal in an associated Manage message.  The
+	session ID is associated with the "next" session.  The
+	session ID should be unique over a reasonably long time
+	period.  The manager must remember this session ID, and
+	respond to any subsequent Request with the same session ID.
+	If no session ID is currently remembered, the manager should
+	create a new one.
+
+	The authorization fields in this message will vary according to
+	the authorization protocol being used.  In the simplest case,
+	the manager should simply send fields defining the initial
+	authorization to be used on all client connections.  In this
+	case, the authorization fields sent in the Request message are
+	ignored.  However, if the fields are actually being use to
+	authenticate the manager, then the Acknowledge fields may contain
+	some encrypted information based on the fields in the Request message.
+	For example, the Request message might contain a clear text
+	user name (supplied by the user at the terminal) plus a "magic
+	cookie" encrypted with the user's private key.  The manager
+	would respond with this same cookie plus some additional
+	data (known by the terminal) plus the initial authorization
+	data to be used on client connections, all encrypted under the
+	same key.
 
 	Possible troubles:
 
-		Message not received.
+		Acknowledge not received by terminal.
 
-		Indication: Terminal timeout waiting for Acknowledge
+		Indication: Terminal timeout waiting for response to Request.
 
-		Solution:  Terminal assumes that Request message was
-		not received and handles it appropriately.
+		Solution:  Terminal resends Request message.
 
-		Message received out of order.
+		Message received out of order by terminal.
 
-		Indication:  Terminal receives message not just after
-		sending Request.
+		Indication:  Terminal receives Acknowledge after
+		Manage has been sent.
 		
-		Solution:  Terminal ignores Acknowledge messages after
-		it has sent the Manage message.
-
-Manage: Terminal -> Manager
-
-	Directs the Display Manager to initiate a session on the display.
-	Includes enough information to authenticate connections and
-	open the display with XOpenDisplay.  The Session ID which was
-	sent in the Acknowledge packet is returned here.
-
-	Possible troubles:
-
-		Message not received.
-
-		Indication:  Terminal timeout waiting for XOpenDisplay
-		or Negative.
-
-		Solution:  Resend message
-
-		Message received out of order.
-
-		Indication:  XOpenDisplay in progress
-
-		Solution:  message ignored
-
-		Indication: Session ID doesn't match next session ID
-
-		Solution:  Negative message returned.
+		Solution:  Terminal discards Acknowledge messages after
+		it has sent a Manage message.
 
 Negative: Manager -> Terminal
 
-	Sent when the session ID sent in the Manage packet does not
-	match the current session ID.
-
+	Sent when the manager refuses to manage the terminal.  The
+	session ID should match the session ID sent in the Request.
+	The authorization fields should be sent just as for the
+	Acknowledge message.
 
 	Possible troubles:
 
-		Message not received.
+		Negative not received by terminal.
 
-		Indication:  Terminal timeout waiting for
-		XOpenDisplay or Negative
+		Indication:  Terminal timeout waiting for response to Request.
 
-		Solution:  Terminal resends Manage request.
+		Solution:  Terminal resends Request message.
 
-		Message received out of order
+Manage: Terminal -> Manager
 
-		Indication:  Terminal receives Negative message
-		while not waiting for XOpenDisplay/Negative
+	Directs the Display Manager to initiate a session on the terminal.
+	The session ID sent must match the session ID that was in the
+	Acknowledge message.
 
-		Solution:  Terminal ignores message
+	The authorization fields in this message will vary according to
+	the authorization protocol being used.  In the simplest case,
+	the fields in this message are arbitrary and will be ignored.
+	If the fields are actually being use to authenticate the terminal,
+	then the fields may contain some encrypted information based on
+	the fields in the Acknowledge message.
 
-		Indication:  Session ID in Negative message doesn't
-		match session ID in Manage.
+	Possible troubles:
 
-		Solution:  Terminal ignores message
+		Manage not received by manager.
+
+		Indication:  Terminal timeout waiting for XOpenDisplay.
+
+		Solution:  Terminal resends Manage message.
+
+		Manage received out of order by manager.
+
+		Indication:  session already in progress.
+
+		Solution:  Manage message is discarded.
+
+		Indication: Session ID doesn't match next session ID
+
+		Solution:  Error message is sent to terminal.
 
 XOpenDisplay: Manager -> Terminal
 
-	Initiated to start a new session.  This display connection
-	should be considered "magic".  When this connection is
-	closed, the current session is over.  Any appropriate
-	actions can be taken by the terminal.  The most obvious results
-	could be:  Close all X connections, Query to find list
-	of availible Managers and start over from the top.
-
+	Initiated to start a new session.  The connection should
+	be initiated using whatever authorization was agreed to
+	in the Acknowledge message.  This display connection
+	should be considered "magic".  When this first connection
+	is established, the terminal should execute an implicit
+	GrabServer on behalf of the manager.  This will allow the
+	manager (in case there is no real connection authorization
+	protocol being used) a secure environment for initial user
+	login.  When this connection is closed, the current session
+	is over; the terminal should close all X connections and restart.
 
 	Possible troubles:
 
 		XOpenDisplay fails.
 
+		Indication: XOpenDisplay returns NULL.
+
 		Solution:  Discontinue session and wait for another
-		request.
+		Request message.
+
+Unmanage: Terminal -> Manager
+
+	TBD
+
+Unmanaged: Manager -> Terminal
+
+	TBD
 
 This protocol is designed to satisfy the following constraints:
 
-	UDP is unreliable.  Any packet sent must be acknowledged
-	else the receipt is not guaranteed.  This is satisfied
-	in the Manage case by receipt of the XOpenDisplay command.
-  	Sequence problems are solved by insisting that the
-	session ID sent in the Acknowledge command are returned
-	with the Manage command.  While waiting for a
-	user to choose the desired host, making the Terminal
-	repeatedly send out Query packets will cause any
+	Any message sent must be acknowledged in order to guarantee
+	receipt.  This is satisfied in the Manage case by receipt
+	of the XOpenDisplay command.  Sequence problems are solved
+	by insisting that the session ID sent in the Acknowledge
+	message is returned with the Manage message.  While waiting
+	for a user to choose the desired host, making the Terminal
+	repeatedly send out Query messages will cause any
 	machines which suddenly start/stop responding to be
 	reflected in the menu.  In this way, the user can
 	wait for a machine to come online before choosing a
@@ -361,47 +453,22 @@ This protocol is designed to satisfy the following constraints:
 
 	Terminals may be turned off at random.  Any existing session
 	running on a terminal which has been turned off must be
-	identifyable.  This is made possible by the sequence
-	Request, Manage.  If this sequence is sent, any existing
-	session is terminated immediately and a new session started.
+	identifiable.  This is made possible by the sequence
+	Request/Acknowledge/Manage.  If this sequence is sent, any
+	existing session is terminated immediately and a new session
+	started.  There is the problem (at least with TCP) that
+	connections may not be closed when the terminal is turned
+	off.  The manager could ameliorate this for local connections
+	by periodically XSync'ing on its own connection, and terminating
+	the session if its own connection ever closes.
 
-	Terminals cannot retain permanent state.  An ideal solution
-	to sequence errors would be to use packet identifiers
-	which increase monotonically to allow both sides to
-	ignore packets which arrive out-of-sequence.  If terminals
-	cannot retain permanent state this cannot work.  The
-	session ID is generated by the Display Manager which is
-	expected to ignore illegal sessions by retaining the
-	appropriate state.
-
-	A Manager must be able to identify terminals which have been
-	turned off.  This is satisified by the terminal starting
-	another Request/Acknowledge/Manage/XOpenDisplay sequence.
-
-The manage command is followed by an optional list of display-type
-parameters seperated from "manage" and each other by spaces:
-
-	transient		request for single session (default)
-	permanent		request for multiple sessions
-
-	secure			unmanage must have correct auth data
-	insecure		unmanage always suceeds
-
-DISPLAY is a list of uninterpreted octects which can be passed to the
-XOpenDisplay function to connect to the requesting display.
-
-AUTH_NAME and AUTH_DATA are used by xdm to authenticate unmange requests and
-are passed in the server connection setup dialog for the display to
-authenticate the display manager.
-
-The X server must recognise the display manager connection by checking
-AUTH_NAME and AUTH_DATA; this connection must be handled specially:  when
-the connection is made, an implicit grab-server is executed.  When the
-connection is broken, the server must reset itself, disconnecting all
-clients.  At this time, it can also request another session.
-
-Any requesting display must have no other connected clients when xdm
-requests its connection.  Either the other connections must be closed down
-when this connection is made, or the display should disable connections
-before sending the "manage" command and only accept authorized connections.
-
+	Terminals should not be required to retain permanent state for
+	purposes of the control protocol.  Once solution to sequencing
+	errors would be to use monotonically-increasing message identifiers
+	to allow both sides to ignore messages which arrive out-of-sequence.
+	For this to work, terminals would at a minimum have to increment
+	a stable "crash count" each time they are powered on, and use that
+	number as part of a larger sequence number.  But if terminals
+	cannot retain permanent state this cannot work.  Instead, the
+	manager assumes the responsibility for permanent state, when
+	generating session IDs.
