@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.40 89/07/16 21:44:48 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.41 89/07/17 09:58:29 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -515,8 +515,10 @@ install:: class.ad							@@\
 depend:: $(DEPEND)							@@\
 									@@\
 $(DEPEND):								@@\
-	@echo "making $@ over in $(DEPENDSRC) first"; \			@@\
-	cd $(DEPENDSRC); $(MAKE)
+	@echo "checking $@ over in $(DEPENDSRC) first..."; \		@@\
+	cd $(DEPENDSRC); $(MAKE); \					@@\
+	echo "okay, continuing in $(CURRENT_DIR)"
+
 #endif /* UseInstalled */
 #endif /* DependDependency */
 
@@ -568,9 +570,10 @@ target:: $(IMAKE)							@@\
 									@@\
 $(IMAKE)::								@@\
 	@(cd $(IMAKESRC); if [ -f Makefile ]; then \			@@\
-	echo "making $@ in $(IMAKESRC) first"; $(MAKE) all; else \	@@\
-	echo "bootstrapping $@ from Makefile.ini in $(IMAKESRC) first"; \	@@\
-	$(MAKE) -f Makefile.ini BOOTSTRAPCFLAGS=$(BOOTSTRAPCFLAGS); fi)
+	echo "checking $@ in $(IMAKESRC) first..."; $(MAKE) all; else \	@@\
+	echo "bootstrapping $@ from Makefile.ini in $(IMAKESRC) first..."; \	@@\
+	$(MAKE) -f Makefile.ini BOOTSTRAPCFLAGS=$(BOOTSTRAPCFLAGS); fi; \	@@\
+	echo "okay, continuing in $(CURRENT_DIR)")
 #endif /* UseInstalled */
 #endif /* ImakeDependency */
 
