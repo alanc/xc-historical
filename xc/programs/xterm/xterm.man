@@ -283,7 +283,9 @@ is not supported on all systems.
 .TP 8
 .B \-S\fIccn\fP
 This option specifies the last two letters of the name of a pseudoterminal
-to use in slave mode.  This allows \fIxterm\fP to be used as an input and
+to use in slave mode, plus the number of the inherited file descriptor.
+The option is parsed "%c%c%d".
+This allows \fIxterm\fP to be used as an input and
 output channel for an existing program and is sometimes used in specialized
 applications.
 .PP
