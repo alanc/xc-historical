@@ -49,7 +49,7 @@ OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
 
    INCLUDES = -I. -I../mfb -I../mi -I../../include -I$(INCLUDESRC) \
    	      -I$(FONTSRC)/include
-   LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln \
+   LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln \
 	     ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln
 
 NormalLibraryObjectRule()

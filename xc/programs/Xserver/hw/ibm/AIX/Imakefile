@@ -29,7 +29,7 @@ DEFINES = -DIBM_SPECIAL_MALLOC
 DEFINES =
 #endif
 
-INCLUDES = -I. -I../ -I../../../include -I$(INCLUDESRC) -I../common -I../../../../extensions/include -I../../../os/4.2bsd
+INCLUDES = -I. -I../ -I../../../include -I$(INCLUDESRC) -I../common -I../../../../extensions/include -I../../../os
 
 #if DebugServer && ProfileServer
 DebuggedAndProfiledLibraryObjectRule()

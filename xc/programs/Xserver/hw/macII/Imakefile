@@ -23,7 +23,7 @@ OBJS = \
 	macIIKMap.o
 
    INCLUDES = -I.  -I../../include -I../mi -I../mfb -I../../dix -I$(INCLUDESRC)
-   LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln \
+   LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln \
 	      ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln ../cfb/llib-lcfb.ln
 
 NormalLibraryObjectRule()
