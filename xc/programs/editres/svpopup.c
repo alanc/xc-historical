@@ -1,5 +1,5 @@
 /*
- * $XConsortium: svpopup.c,v 1.12 91/07/09 09:39:39 rws Exp $
+ * $XConsortium: svpopup.c,v 1.13 91/07/09 09:46:48 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -277,7 +277,7 @@ ScreenData * scr_data;
 static void
 DoSetValues(w, junk, garbage)
 Widget w;
-caddr_t junk, garbage;
+XtPointer junk, garbage;
 {
     ProtocolStream * stream = &(global_client.stream);
     char *res_name, *res_value;
@@ -319,7 +319,7 @@ caddr_t junk, garbage;
 static void
 CancelSetValues(w, junk, garbage)
 Widget w;
-caddr_t junk, garbage;
+XtPointer junk, garbage;
 {
     XtPopdown(XtParent(XtParent(w))); 
 }

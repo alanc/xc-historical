@@ -1,5 +1,5 @@
 /*
- * $XConsortium: wtree.c,v 1.12 91/01/09 17:46:19 gildea Exp $
+ * $XConsortium: wtree.c,v 1.13 91/07/09 12:08:53 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -151,7 +151,7 @@ WNode * top;
 void
 TreeToggle(w, node_ptr, state_ptr)
 Widget w;
-caddr_t node_ptr, state_ptr;
+XtPointer node_ptr, state_ptr;
 {
     Boolean state = (Boolean) state_ptr;
     WNode * node = (WNode *) node_ptr;

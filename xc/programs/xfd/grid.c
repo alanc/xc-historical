@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.24 91/07/18 14:13:52 rws Exp $
+ * $XConsortium: fontgrid.c,v 1.25 91/07/18 14:59:57 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -189,8 +189,10 @@ static void ClassInitialize ()
 }
 
 
-static void Initialize (request, new)
+static void Initialize (request, new, args, num_args)
     Widget request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     FontGridWidget reqfg = (FontGridWidget) request;
     FontGridWidget newfg = (FontGridWidget) new;

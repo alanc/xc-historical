@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.40 91/05/10 16:57:39 gildea Exp $
+ *	$XConsortium: scrollbar.c,v 1.41 91/05/22 15:20:07 gildea Exp $
  */
 
 /*
@@ -383,11 +383,12 @@ ScrollBarOff(screen)
 }
 
 /*ARGSUSED*/
-static void ScrollTextTo(scrollbarWidget, closure, topPercent)
+static void ScrollTextTo(scrollbarWidget, client_data, call_data)
 	Widget scrollbarWidget;
-	caddr_t closure;
-	float *topPercent;
+	XtPointer client_data;
+	XtPointer call_data;
 {
+	float *topPercent = (float *) call_data;
 	register TScreen *screen = &term->screen;
 	int thumbTop;	/* relative to first saved line */
 	int newTopLine;
@@ -404,11 +405,13 @@ static void ScrollTextTo(scrollbarWidget, closure, topPercent)
 }
 
 /*ARGSUSED*/
-static void ScrollTextUpDownBy(scrollbarWidget, closure, pixels)
+static void ScrollTextUpDownBy(scrollbarWidget, client_data, call_data)
 	Widget scrollbarWidget;
-	Opaque closure;
-	int pixels;
+	XtPointer client_data;
+	XtPointer call_data;
 {
+	int pixels = (int) call_data;
+
 	register TScreen *screen = &term->screen;
 	register int rowOnScreen, newTopLine;
 

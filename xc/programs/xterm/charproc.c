@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.172 91/07/20 19:12:27 gildea Exp $
+ * $XConsortium: charproc.c,v 1.173 91/07/22 11:32:49 gildea Exp $
  */
 
 /*
@@ -2149,10 +2149,15 @@ static void VTClassInit ()
 }
 
 
-static void VTInitialize (request, new)
-   XtermWidget request, new;
+static void VTInitialize (wrequest, wnew, args, num_args)
+   Widget wrequest, wnew;
+   ArgList args;
+   Cardinal *num_args;
 {
+   XtermWidget request = (XtermWidget) wrequest;
+   XtermWidget new     = (XtermWidget) wnew;
    int i;
+
    /* Zero out the entire "screen" component of "new" widget,
       then do field-by-field assigment of "screen" fields
       that are named in the resource list. */
@@ -2402,7 +2407,7 @@ static void VTRealize (w, valuemask, values)
 	screen->bot_marg = screen->max_row = Height(screen) /
 				screen->fullVwin.f_height - 1;
 
-	screen->sc.row = screen->sc.col = screen->sc.flags = NULL;
+	screen->sc.row = screen->sc.col = screen->sc.flags = 0;
 
 	/* Mark screen buffer as unallocated.  We wait until the run loop so
 	   that the child process does not fork and exec with all the dynamic
@@ -2411,7 +2416,7 @@ static void VTRealize (w, valuemask, values)
 	if (!tekWidget)			/* if not called after fork */
 	  screen->buf = screen->allbuf = NULL;
 
-	screen->do_wrap = NULL;
+	screen->do_wrap = 0;
 	screen->scrolls = screen->incopy = 0;
 	set_vt_box (screen);
 
@@ -2641,7 +2646,7 @@ VTReset(full)
 	term->flags &= ~ORIGIN;
 	if(full) {
 		TabReset (term->tabs);
-		term->keyboard.flags = NULL;
+		term->keyboard.flags = 0;
 		update_appcursor();
 		update_appkeypad();
 		screen->gsets[0] = 'B';

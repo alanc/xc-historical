@@ -1,4 +1,4 @@
-/* $XConsortium: brf_phead.c,v 5.2 91/02/18 18:42:59 rws Exp $ */
+/* $XConsortium: brf_phead.c,v 5.3 91/04/04 13:32:58 gildea Exp $ */
 /***********************************************************
 Copyright(c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -350,7 +350,7 @@ char *BRF_getDate()
 		fflush(stderr);
 	
 	}
-	calendar = localtime(&tp->tv_sec);
+	calendar = localtime((time_t *) &tp->tv_sec);
  	asctime_pt = asctime( calendar );  
 	/* remove the line return in this string */
 	if ( (line_ret = index( asctime_pt, '\n')) != NULL)

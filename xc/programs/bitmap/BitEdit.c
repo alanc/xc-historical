@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.21 91/07/18 15:40:58 dave Exp $
+ * $XConsortium: BitEdit.c,v 1.22 91/07/22 19:57:49 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -386,9 +386,11 @@ void FixEntry(w, id)
 }
 
 /* ARGSUSED */
-void FixMenu(w, event)
+void FixMenu(w, event, params, num_params)
     Widget w;
     XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     int i;
 
@@ -933,8 +935,11 @@ void DoBasename()
   }
 }
 
-void DoQuit(w) /* ARGSUSED */
+void DoQuit(w, event, params, num_params) /* ARGSUSED */
     Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
   if (BWQueryChanged(bitmap_widget)) {
     BWGetFilename(bitmap_widget, &filename);

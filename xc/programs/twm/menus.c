@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.185 91/07/16 13:22:23 dave Exp $
+ * $XConsortium: menus.c,v 1.186 91/07/17 13:58:00 dave Exp $
  *
  * twm menu code
  *
@@ -54,7 +54,7 @@
 
 extern XEvent Event;
 
-int RootFunction = NULL;
+int RootFunction = 0;
 MenuRoot *ActiveMenu = NULL;		/* the active menu */
 MenuItem *ActiveItem = NULL;		/* the active menu item */
 int MoveFunction;			/* either F_MOVE or F_FORCEMOVE */
@@ -113,12 +113,12 @@ InitMenus()
 	for (j = 0; j < NUM_CONTEXTS; j++)
 	    for (k = 0; k < MOD_SIZE; k++)
 	    {
-		Scr->Mouse[i][j][k].func = NULL;
+		Scr->Mouse[i][j][k].func = 0;
 		Scr->Mouse[i][j][k].item = NULL;
 	    }
 
-    Scr->DefaultFunction.func = NULL;
-    Scr->WindowFunction.func = NULL;
+    Scr->DefaultFunction.func = 0;
+    Scr->WindowFunction.func = 0;
 
     if (FirstScreen)
     {
@@ -1341,7 +1341,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     Bool fromtitlebar = False;
     extern int ConstrainedMoveTime;
 
-    RootFunction = NULL;
+    RootFunction = 0;
     if (Cancel)
 	return TRUE;			/* XXX should this be FALSE? */
 
@@ -1465,7 +1465,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 
     case F_POPUP:
 	tmp_win = (TwmWindow *)action;
-	if (Scr->WindowFunction.func != NULL)
+	if (Scr->WindowFunction.func != 0)
 	{
 	   ExecuteFunction(Scr->WindowFunction.func,
 			   Scr->WindowFunction.item->action,
@@ -2427,7 +2427,7 @@ TwmWindow *tmp_win;
     {
 	if (tmp_win->icon_on)
 	    Zoom(tmp_win->icon_w, tmp_win->frame);
-	else if (tmp_win->group != NULL)
+	else if (tmp_win->group != (Window) 0)
 	{
 	    for (t = Scr->TwmRoot.next; t != NULL; t = t->next)
 	    {
@@ -2507,7 +2507,7 @@ int def_x, def_y;
     iconify = ((!tmp_win->iconify_by_unmapping) || tmp_win->transient);
     if (iconify)
     {
-	if (tmp_win->icon_w == NULL)
+	if (tmp_win->icon_w == (Window) 0)
 	    CreateIconWindow(tmp_win, def_x, def_y);
 	else
 	    IconUp(tmp_win);

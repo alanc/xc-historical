@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.106 91/06/24 20:44:38 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.107 91/06/25 19:49:48 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -1150,8 +1150,10 @@ static unsigned char *dashes[TEKNUMLINES] = {
  * The following is called the create the tekWidget
  */
 
-static void TekInitialize(request, new)
+static void TekInitialize(request, new, args, num_args)
     Widget request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     /* look for focus related events on the shell, because we need
      * to care about the shell's border being part of our focus.

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Clock.c,v 1.24 91/05/22 17:07:44 converse Exp $
+ * $XConsortium: Clock.c,v 1.24 91/05/22 17:20:31 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -130,8 +130,10 @@ static void ClassInitialize()
 WidgetClass clockWidgetClass = (WidgetClass) &clockClassRec;
 
 /* ARGSUSED */
-static void Initialize (greq, gnew)
+static void Initialize (greq, gnew, args, num_args)
     Widget greq, gnew;
+    ArgList args;
+    Cardinal *num_args;
 {
     ClockWidget w = (ClockWidget)gnew;
     XtGCMask	valuemask;
@@ -173,9 +175,10 @@ static void Initialize (greq, gnew)
     w->clock.polys_valid = 0;
 }
 
-static void Resize (w)
-    ClockWidget	w;
+static void Resize (widget)
+    Widget	widget;
 {
+    ClockWidget	w = (ClockWidget) widget;
     XGCValues	xgcv;
     Widget	parent;
     XWindowChanges	xwc;

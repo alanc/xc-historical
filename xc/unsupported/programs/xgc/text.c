@@ -148,7 +148,7 @@ WriteText(w,event,params,num_params)
      Widget w;
      XEvent *event;
      String *params;		/* the type is in here */
-     int *num_params;
+     Cardinal *num_params;
 {
   char mbuf[80];
   int type;			/* which string # to send */
@@ -178,7 +178,7 @@ change_text(w,newtext)
   String oldtext;		/* the old text */
 
   static Arg textargs[] = {
-    {XtNstring, NULL}
+    {XtNstring, (XtArgVal) 0}
   };
 
   /* Initialize the XawTextBlock. */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.37 91/07/24 15:13:26 converse Exp $
+ * $XConsortium: Bitmap.c,v 1.38 91/07/24 15:46:52 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -292,8 +292,11 @@ WidgetClass bitmapWidgetClass = (WidgetClass) &bitmapClassRec;
     
 /* ARGSUSED */
 
-void BWDebug(w)
+void BWDebug(w, event, params, num_params)
     Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     DEBUG ^= True;
 }
@@ -417,23 +420,27 @@ void DestroyBitmapImage(image)
     }
 }
 
-XImage *BWGetImage(w)
+XImage *BWGetImage(w, event, params, num_params)
     Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     BitmapWidget BW = (BitmapWidget) w;
 
     return BW->bitmap.image;
 }
 
-void BWChangeNotify(w, client_data, call_data)
-     Widget       w;
-     caddr_t      client_data;
-     caddr_t      call_data;
+void BWChangeNotify(w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     BitmapWidget BW = (BitmapWidget) w;
 
     if (BW->bitmap.notify)
-	(*BW->bitmap.notify)(w, client_data, call_data);
+	(*BW->bitmap.notify)(w, event, params, num_params);
 }
 
 void BWNotify(w, proc)		/* ARGSUSED */
@@ -445,8 +452,11 @@ void BWNotify(w, proc)		/* ARGSUSED */
     BW->bitmap.notify = proc;
 }
 
-void BWSetChanged(w)
+void BWSetChanged(w, event, params, num_params)
     Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     BitmapWidget BW = (BitmapWidget) w;
 	
@@ -725,11 +735,13 @@ static void SetSizeFromSizeResource(bw)
 void TransferImageData();
 
 /* ARGSUSED */
-static void Initialize(request, new, argv, argc)
-    BitmapWidget request, new;
+static void Initialize(wrequest, wnew, argv, argc)
+    Widget wrequest, wnew;
     ArgList argv;
-    Cardinal argc;
+    Cardinal *argc;
 {
+    BitmapWidget new = (BitmapWidget) wnew;
+
     XGCValues  values;
     XtGCMask   mask;
     char *image_data, *buffer_data;
@@ -1454,9 +1466,11 @@ static void Destroy(w)
 }
 
 
-static void Resize(BW)
-     BitmapWidget BW;
+static void Resize(w)
+    Widget w;
 {
+    BitmapWidget BW = (BitmapWidget) w;
+
     Dimension squareW, squareH;
 
     squareW = max(1, ((int)BW->core.width - 2 * (int)BW->bitmap.margin) / 
@@ -1485,11 +1499,13 @@ static void Resize(BW)
 }
 
 /* ARGSUSED */
-static void Redisplay(BW, event, region)
-     BitmapWidget BW;
+static void Redisplay(w, event, region)
+     Widget       w;
      XEvent      *event;
      Region       region;
 {
+     BitmapWidget BW = (BitmapWidget) w;
+
   if(event->type == Expose
      &&
      BW->core.visible)
@@ -1710,7 +1726,7 @@ void BWDashed(w, _switch)
 static Boolean SetValues(old, request, new, args, num_args) /* ARGSUSED */
      Widget old, request, new;
      ArgList args;
-     Cardinal num_args;
+     Cardinal *num_args;
 {
   BitmapWidget oldbw = (BitmapWidget) old;
   BitmapWidget newbw = (BitmapWidget) new;
@@ -1857,9 +1873,11 @@ void BWProportional(w, _switch)
 }
 
 
-void BWTPaste(w, event)
+void BWTPaste(w, event, params, num_params)
     Widget  w;
     XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     BitmapWidget BW = (BitmapWidget) w;
 
@@ -1876,9 +1894,11 @@ void BWTPaste(w, event)
 	       event);
 }
 
-void BWTMark(w, event)
+void BWTMark(w, event, params, num_params)
     Widget  w;
     XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     BitmapWidget BW = (BitmapWidget) w;
 
@@ -1890,17 +1910,22 @@ void BWTMark(w, event)
 
 }
 
-void BWTMarkAll(w, event)
+void BWTMarkAll(w, event, params, num_params)
     Widget w;
     XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     BWMarkAll(w);
 
     BWGrabSelection(w, event->xkey.time);
 }
 
-void BWTUnmark(w)
+void BWTUnmark(w, event, params, num_params)
     Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     BWUnmark(w);
 }

@@ -1,7 +1,7 @@
 /*
  * bmtoa - bitmap to ascii filter
  *
- * $XConsortium: bmtoa.c,v 1.1 91/02/18 10:50:28 dave Exp $
+ * $XConsortium: bmtoa.c,v 1.2 91/02/18 15:05:44 dave Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,6 +25,7 @@
 #include <X11/Xmu/Drawing.h>
 
 extern char *malloc();
+extern char *mktemp();
 
 char *ProgramName;
 

@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: shm.c,v 1.10 91/06/30 14:29:30 rws Exp $ */
+/* $XConsortium: shm.c,v 1.11 91/07/12 09:54:58 rws Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -49,11 +49,18 @@ typedef struct _ShmDesc {
     unsigned long size;
 } ShmDescRec, *ShmDescPtr;
 
-#if NeedFunctionPrototypes && !defined(ultrix)
+#if NeedFunctionPrototypes
+
+#if defined(SVR4)
 void *shmat(int, void*, int);
+#else
+char *shmat(int, char*, int);
+#endif
+
 #else
 char *shmat();
 #endif
+
 static void miShmPutImage(), fbShmPutImage();
 static PixmapPtr fbShmCreatePixmap();
 ExtensionEntry *AddExtension();

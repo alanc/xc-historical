@@ -1,4 +1,4 @@
-/* $XConsortium: Eyes.c,v 1.25 91/07/18 16:49:02 rws Exp $ */
+/* $XConsortium: Eyes.c,v 1.26 91/08/23 12:26:40 gildea Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -140,8 +140,10 @@ static void ClassInitialize()
 WidgetClass eyesWidgetClass = (WidgetClass) &eyesClassRec;
 
 /* ARGSUSED */
-static void Initialize (greq, gnew)
+static void Initialize (greq, gnew, args, num_args)
     Widget greq, gnew;
+    ArgList args;
+    Cardinal *num_args;
 {
     EyesWidget w = (EyesWidget)gnew;
     XtGCMask	valuemask;
@@ -403,8 +405,10 @@ repaint_window (w)
 }
     
 /* ARGSUSED */
-static Boolean SetValues (current, request, new)
+static Boolean SetValues (current, request, new, args, num_args)
     Widget current, request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     return( FALSE );
 }

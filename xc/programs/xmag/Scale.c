@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Scale.c,v 1.14 91/08/20 15:57:39 gildea Exp $
+ * $XConsortium: Scale.c,v 1.15 91/08/26 11:00:15 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -235,8 +235,10 @@ void GetRectangleBuffer(sw, buffer_size)
 
 
 /* ARGSUSED */
-static void Initialize(request, new)
+static void Initialize(request, new, args, num_args)
     Widget request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     ScaleWidget new_sw = (ScaleWidget) new;
     
@@ -923,8 +925,11 @@ static Boolean SetValues(current, request, new, args, num_args)
 
 
 
-void SWUnscale(w)
+void SWUnscale(w, event, params, num_params)
     Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     ScaleWidget sw = (ScaleWidget) w;
 
@@ -935,8 +940,11 @@ void SWUnscale(w)
 
 
 
-void SWAutoscale(w)
+void SWAutoscale(w, event, params, num_params)
     Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     ScaleWidget sw = (ScaleWidget) w;
 
@@ -947,8 +955,11 @@ void SWAutoscale(w)
 
 
 
-void SWInitialSize(w)
+void SWInitialSize(w, event, params, num_params)
     Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     ScaleWidget sw = (ScaleWidget) w;
     
@@ -982,9 +993,11 @@ void SWSetImage(w, image)
 
 extern void SWRequestSelection();
 
-void RequestSelection(w, event)
+void RequestSelection(w, event, params, num_params)
     Widget w;
     XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     SWRequestSelection(w, event->xbutton.time);
 }
@@ -993,9 +1006,11 @@ void RequestSelection(w, event)
 
 extern void SWGrabSelection();
 
-void GrabSelection(w, event)
+void GrabSelection(w, event, params, num_params)
     Widget w;
     XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     SWGrabSelection(w, event->xbutton.time);
 }

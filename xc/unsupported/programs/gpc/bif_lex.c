@@ -1,4 +1,4 @@
-/* $XConsortium: bif_lex.c,v 5.2 91/04/02 08:17:16 rws Exp $ */
+/* $XConsortium: bif_lex.c,v 5.3 91/06/17 19:52:19 rws Exp $ */
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -191,8 +191,8 @@ typedef struct
 	int     ch1, ch1_group, yacc_pack_not_done,
 		new_yacc_pack,  last_char_unused,
 		return_code,    init_flag, line_no;
-		VoidFuncPtr last_manager;
-		char    *filenm;
+	VoidFuncPtr last_manager;
+	char    *filenm;
 	YYSTYPE *yylval;
 } Yylex_info;
 
@@ -389,9 +389,9 @@ bOT,bOT,bOT,bOT,  bOT,bOT,bOT,bOT,  bOT,bOT,bOT,bOT,  bOT,bOT,bOT,bOT  };
 
 	static Yylex_info yylex_info =
 	{
-		NULL,  NULL,  NULL,
-		NULL,  NULL,
-		NULL,  NULL,  NULL,
+		0,  0,  0,
+		0,  0,
+		0,  0,  0,
 		NULL,
 		"no_file",
 		&yylval

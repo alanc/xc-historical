@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.181 91/07/09 09:45:42 dave Exp $
+ * $XConsortium: events.c,v 1.182 91/07/17 13:59:14 dave Exp $
  *
  * twm event handling
  *
@@ -130,8 +130,8 @@ InitEvents()
     int i;
 
 
-    ResizeWindow = NULL;
-    DragWindow = NULL;
+    ResizeWindow = (Window) 0;
+    DragWindow = (Window) 0;
     enter_flag = FALSE;
     enter_win = raise_win = NULL;
 
@@ -949,7 +949,7 @@ RedoIconName()
 	    SortIconManager(Tmp_win->list->iconmgr);
     }
 
-    if (Tmp_win->icon_w == NULL)
+    if (Tmp_win->icon_w == (Window) 0)
 	return;
 
     if (Tmp_win->icon_not_ours)
@@ -1487,7 +1487,7 @@ HandleUnmapNotify()
 void
 HandleMotionNotify()
 {
-    if (ResizeWindow != NULL)
+    if (ResizeWindow != (Window) 0)
     {
 	XQueryPointer( dpy, Event.xany.window,
 	    &(Event.xmotion.root), &JunkChild,
@@ -1602,16 +1602,16 @@ HandleButtonRelease()
 			 ? Tmp_win : NULL);
 	}
 
-	DragWindow = NULL;
+	DragWindow = (Window) 0;
 	ConstMove = FALSE;
     }
 
-    if (ResizeWindow != NULL)
+    if (ResizeWindow != (Window) 0)
     {
 	EndResize();
     }
 
-    if (ActiveMenu != NULL && RootFunction == NULL)
+    if (ActiveMenu != NULL && RootFunction == 0)
     {
 	if (ActiveItem != NULL)
 	{
@@ -1640,7 +1640,7 @@ HandleButtonRelease()
 	    /* if we are not executing a defered command, then take down the
 	     * menu
 	     */
-	    if (RootFunction == NULL)
+	    if (RootFunction == 0)
 	    {
 		PopDownMenu();
 	    }
@@ -1659,12 +1659,12 @@ HandleButtonRelease()
 	case Button5: mask &= ~Button5Mask; break;
     }
 
-    if (RootFunction != NULL ||
+    if (RootFunction != 0 ||
 	ResizeWindow != None ||
 	DragWindow != None)
 	ButtonPressed = -1;
 
-    if (RootFunction == NULL &&
+    if (RootFunction == 0 &&
 	(Event.xbutton.state & mask) == 0 &&
 	DragWindow == None &&
 	ResizeWindow == None)
@@ -1807,7 +1807,7 @@ HandleButtonPress()
 	Context = C_ROOT;
     if (Tmp_win)
     {
-	if (Tmp_win->list && RootFunction != NULL &&
+	if (Tmp_win->list && RootFunction != 0 &&
 	    (Event.xany.window == Tmp_win->list->w ||
 		Event.xany.window == Tmp_win->list->icon))
 	{
@@ -1867,7 +1867,7 @@ HandleButtonPress()
     /* this section of code checks to see if we were in the middle of
      * a command executed from a menu
      */
-    if (RootFunction != NULL)
+    if (RootFunction != 0)
     {
 	if (Event.xany.window == Scr->Root)
 	{
@@ -1884,7 +1884,7 @@ HandleButtonPress()
 		(XFindContext(dpy, Event.xany.window, TwmContext,
 			      (caddr_t *)&Tmp_win) == XCNOENT))
 	    {
-		RootFunction = NULL;
+		RootFunction = 0;
 		XBell(dpy, 0);
 		return;
 	    }
@@ -1904,7 +1904,7 @@ HandleButtonPress()
 	  ExecuteFunction(RootFunction, Action, Event.xany.window,
 			  Tmp_win, &Event, Context, FALSE);
 
-	RootFunction = NULL;
+	RootFunction = 0;
 	return;
     }
 
@@ -1919,20 +1919,20 @@ HandleButtonPress()
     if (Context == C_NO_CONTEXT)
 	return;
 
-    RootFunction = NULL;
+    RootFunction = 0;
     if (Scr->Mouse[Event.xbutton.button][Context][modifier].func == F_MENU)
     {
 	do_menu (Scr->Mouse[Event.xbutton.button][Context][modifier].menu,
 		 (Window) None);
     }
-    else if (Scr->Mouse[Event.xbutton.button][Context][modifier].func != NULL)
+    else if (Scr->Mouse[Event.xbutton.button][Context][modifier].func != 0)
     {
 	Action = Scr->Mouse[Event.xbutton.button][Context][modifier].item ?
 	    Scr->Mouse[Event.xbutton.button][Context][modifier].item->action : NULL;
 	ExecuteFunction(Scr->Mouse[Event.xbutton.button][Context][modifier].func,
 	    Action, Event.xany.window, Tmp_win, &Event, Context, FALSE);
     }
-    else if (Scr->DefaultFunction.func != NULL)
+    else if (Scr->DefaultFunction.func != 0)
     {
 	if (Scr->DefaultFunction.func == F_MENU)
 	{
@@ -2140,7 +2140,7 @@ HandleEnterNotify()
     if (XFindContext (dpy, ewp->window, MenuContext, (caddr_t *)&mr) != XCSUCCESS) return;
 
     mr->entered = TRUE;
-    if (ActiveMenu && mr == ActiveMenu->prev && RootFunction == NULL) {
+    if (ActiveMenu && mr == ActiveMenu->prev && RootFunction == 0) {
 	if (Scr->Shadow) XUnmapWindow (dpy, ActiveMenu->shadow);
 	XUnmapWindow (dpy, ActiveMenu->w);
 	ActiveMenu->mapped = UNMAPPED;

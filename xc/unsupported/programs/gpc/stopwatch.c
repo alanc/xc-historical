@@ -1,4 +1,4 @@
-/* $XConsortium: stopwatch.c,v 5.1 91/02/16 10:07:51 rws Exp $ */
+/* $XConsortium: stopwatch.c,v 5.2 91/04/04 13:33:02 gildea Exp $ */
 /***********************************************************
 Copyright(c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -300,7 +300,7 @@ double bif_time()
 	*/
 
 
-	clock = localtime(&tp->tv_sec);
+	clock = localtime((time_t *) &tp->tv_sec);
 	offset = (clock->tm_year - 70) * 365 * 24 * 60 * 60; 
 
 	whole = (float)(tp->tv_sec - offset);

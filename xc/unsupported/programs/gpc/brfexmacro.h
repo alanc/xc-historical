@@ -1,4 +1,4 @@
-/* $XConsortium: brfexmacro.h,v 5.1 91/02/16 10:07:21 rws Exp $ */
+/* $XConsortium: brfexmacro.h,v 5.2 91/04/04 13:32:56 gildea Exp $ */
 
 /*--------------------------------------------------------------------*\
 |
@@ -38,15 +38,15 @@
 
 #define INIT_LIST(item)\
 {\
-        brf_exception[item].brf_ex_type = NULL;\
+        brf_exception[item].brf_ex_type = 0;\
         brf_exception[item].brf_ex_flag = BRF_OK;\
-        brf_exception[item].brf_ex_optional[VCOLORT] = NULL;\
-        brf_exception[item].brf_ex_optional[VCOLORI] = NULL;\
-        brf_exception[item].brf_ex_optional[VNORM] = NULL;\
-        brf_exception[item].brf_ex_optional[FCOLORT] = NULL;\
-        brf_exception[item].brf_ex_optional[FCOLORI] = NULL;\
-        brf_exception[item].brf_ex_optional[FNORM] = NULL;\
-        brf_exception[item].brf_ex_optional[EDATA] = NULL;\
+        brf_exception[item].brf_ex_optional[VCOLORT] = 0;\
+        brf_exception[item].brf_ex_optional[VCOLORI] = 0;\
+        brf_exception[item].brf_ex_optional[VNORM] = 0;\
+        brf_exception[item].brf_ex_optional[FCOLORT] = 0;\
+        brf_exception[item].brf_ex_optional[FCOLORI] = 0;\
+        brf_exception[item].brf_ex_optional[FNORM] = 0;\
+        brf_exception[item].brf_ex_optional[EDATA] = 0;\
         brf_exception[item].brf_ex_range[RANGESTART] = NO_RANGE_DATA;\
         brf_exception[item].brf_ex_range[RANGESTOP] = NO_RANGE_DATA;\
         brf_exception[item].brf_ex_rrange[RANGESTART] = NO_RANGE_DATA;\

@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.14 91/02/18 17:41:46 converse Exp $ */
+/* $XConsortium: main.c,v 1.15 91/02/18 18:04:16 converse Exp $ */
 
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
  *
@@ -549,7 +549,7 @@ char *argv[];
 	ACCursor = XCreatePixmapCursor(dpy,ACPixmap,ACMask,
 				       &FGcolor,&BGcolor,
 				       ac_x_hot, ac_y_hot);
-	if (ACCursor == NULL)
+	if (ACCursor == (Cursor) 0)
 	    error("Unable to store ArrowCrossCursor.");
     
 	XDefineCursor(dpy,PuzzleRoot,ACCursor);

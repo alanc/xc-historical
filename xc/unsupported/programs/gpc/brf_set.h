@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: brf_set.h,v 5.1 91/02/16 10:07:18 rws Exp $ */
 
 /*
  */
@@ -36,7 +36,7 @@
 \*--------------------------------------------------------------------*/
 BRF_Any_With_Data total_with_data =
 {
-	NULL,
+	0,
 	NULL,
 	NULL,
 	do_brfgeneric,

@@ -1,4 +1,4 @@
-/* $XConsortium: commands.c,v 1.31 91/05/11 15:43:07 gildea Exp $ */
+/* $XConsortium: commands.c,v 1.32 91/07/09 15:50:59 rws Exp $ */
 
 /*
  *			  COPYRIGHT 1987
@@ -73,7 +73,7 @@ Boolean state;
 static void
 ResetDC(w, junk, garbage)
 Widget w;
-caddr_t junk, garbage;
+XtPointer junk, garbage;
 {
   double_click = FALSE;
 

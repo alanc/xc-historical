@@ -1,4 +1,4 @@
-/* $XConsortium: tsource.c,v 2.22 91/03/28 16:23:12 gildea Exp $ */
+/* $XConsortium: tsource.c,v 2.23 91/07/05 18:56:14 converse Exp $ */
 
 /*
  *			  COPYRIGHT 1987
@@ -312,8 +312,10 @@ XawTextBlock		*block;
 /* Public definitions. */
 
 /* ARGSUSED*/
-static void Initialize(request, new)
+static void Initialize(request, new, args, num_args)
 Widget request, new;
+ArgList args;
+Cardinal *num_args;
 {
     Toc toc;
     TocSourceWidget source = (TocSourceWidget) new;

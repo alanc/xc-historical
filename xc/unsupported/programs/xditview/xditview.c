@@ -1,4 +1,4 @@
-/* $XConsortium: xditview.c,v 1.29 91/07/26 21:18:01 keith Exp $ */
+/* $XConsortium: xditview.c,v 1.30 91/07/30 14:10:37 keith Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -586,8 +586,8 @@ void (*func)();
 char	*def;
 {
     static Arg dialogArgs[] = {
-	{XtNlabel, NULL},
-	{XtNvalue, NULL},
+	{XtNlabel, (XtArgVal) 0},
+	{XtNvalue, (XtArgVal) 0},
     };
     Arg valueArgs[1];
     Arg centerArgs[2];

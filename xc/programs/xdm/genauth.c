@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: cryptokey.c,v 1.7 91/01/09 17:31:43 keith Exp $
+ * $XConsortium: genauth.c,v 1.8 91/07/24 00:07:03 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -62,7 +62,7 @@ long	sum[2];
     if (fd < 0)
 	return 0;
     reads = FILE_LIMIT;
-    while ((cnt = read (fd, buf, sizeof (buf))) > 0 && --reads > 0) {
+    while ((cnt = read (fd, (char *) buf, sizeof (buf))) > 0 && --reads > 0) {
 	loops = cnt / (2 * sizeof (long));
 	for (i = 0; i < loops; i+= 2) {
 	    sum[0] += buf[i];

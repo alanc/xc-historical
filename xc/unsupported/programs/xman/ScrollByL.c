@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.26 91/07/26 15:28:05 dave Exp $
- * $Header: ScrollByL.c,v 1.26 91/07/26 15:28:05 dave Exp $
+ * $XConsortium: ScrollByL.c,v 1.27 91/07/26 18:30:47 dave Exp $
+ * $Header: ScrollByL.c,v 1.27 91/07/26 18:30:47 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -556,8 +556,8 @@ Widget w;
 static void
 VerticalJump(w, junk, percent_ptr)
 Widget w;
-caddr_t junk;
-caddr_t percent_ptr;
+XtPointer junk;
+XtPointer percent_ptr;
 {
   float percent = *((float *) percent_ptr);
   int new_line;			/* The new location for the line pointer. */
@@ -579,11 +579,12 @@ caddr_t percent_ptr;
 
 /* ARGSUSED */
 static void
-VerticalScroll(w,junk,pos)
+VerticalScroll(w, client_data, call_data)
 Widget w;
-caddr_t junk;
-int pos;
+XtPointer client_data;
+XtPointer call_data;
 {
+  int pos = (int) call_data;
   int new_line;			/* The new location for the line pointer. */
   ScrollByLineWidget sblw = (ScrollByLineWidget) XtParent(w);
 
@@ -596,8 +597,10 @@ int h_width;			/* main font width */
 
 /* ARGSUSED */
 static void 
-Initialize(req, new)
+Initialize(req, new, args, num_args)
 Widget req, new;
+ArgList args;
+Cardinal *num_args;
 {
   ScrollByLineWidget sblw = (ScrollByLineWidget) new;
   unsigned long figWidth;

@@ -1,4 +1,4 @@
-/* $XConsortium: Dvi.c,v 1.16 91/07/26 00:40:07 keith Exp $ */
+/* $XConsortium: Dvi.c,v 1.18 91/07/26 15:21:52 keith Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -183,8 +183,10 @@ static void ClassInitialize ()
  ****************************************************************/
 
 /* ARGSUSED */
-static void Initialize(request, new)
+static void Initialize(request, new, args, num_args)
 	Widget request, new;
+	ArgList args;
+	Cardinal *num_args;
 {
     DviWidget	dw = (DviWidget) new;
 
@@ -289,11 +291,16 @@ RequestDesiredSize (dw)
  */
 /* ARGSUSED */
 static Boolean
-SetValues (current, request, new)
-	DviWidget current, request, new;
+SetValues (wcurrent, wrequest, wnew, args, num_args)
+	Widget wcurrent, wrequest, wnew;
+	ArgList args;
+	Cardinal *num_args;
 {
-    Boolean		redisplay = FALSE;
-    char		*new_map;
+    DviWidget	current = (DviWidget) wcurrent;
+    DviWidget	request = (DviWidget) wrequest;
+    DviWidget	new     = (DviWidget) wnew;
+    Boolean	redisplay = FALSE;
+    char	*new_map;
     int		cur, req;
 
     req = request->dvi.requested_page;
@@ -348,11 +355,12 @@ SetValues (current, request, new)
  */
 
 static Boolean
-SetValuesHook (dw, args, num_argsp)
-	DviWidget	dw;
+SetValuesHook (widget, args, num_argsp)
+	Widget		widget;
 	ArgList		args;
 	Cardinal	*num_argsp;
 {
+	DviWidget	dw = (DviWidget) widget;
 	Cardinal	i;
 
 	for (i = 0; i < *num_argsp; i++) {

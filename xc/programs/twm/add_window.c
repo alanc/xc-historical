@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.152 91/05/31 17:39:06 dave Exp $
+ * $XConsortium: add_window.c,v 1.153 91/07/10 13:17:26 dave Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -795,7 +795,7 @@ IconMgr *iconp;
     /* wait until the window is iconified and the icon window is mapped
      * before creating the icon window 
      */
-    tmp_win->icon_w = NULL;
+    tmp_win->icon_w = (Window) 0;
 
     if (!tmp_win->iconmgr)
     {
@@ -930,7 +930,7 @@ TwmWindow *tmp_win;
     {
 	for (j = 0; j < MOD_SIZE; j++)
 	{
-	    if (Scr->Mouse[i][C_WINDOW][j].func != NULL)
+	    if (Scr->Mouse[i][C_WINDOW][j].func != 0)
 	    {
 	        /* twm used to do this grab on the application main window,
                  * tmp_win->w . This was not ICCCM complient and was changed.

@@ -41,7 +41,7 @@ GetLine(dw, Buffer, Length)
 	if (c == '\n')
 		DviUngetC(dw, c);
 	if (p)	
-		*p = NULL;
+		*p = '\0';
 	return (Buffer);
 } 
 
@@ -65,7 +65,7 @@ GetWord(dw, Buffer, Length)
 	if (c != EOF)
 		DviUngetC(dw, c);
 	if (p)
-		*p = NULL;
+		*p = '\0';
 	return (Buffer);
 } 
 

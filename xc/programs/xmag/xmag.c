@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xmag.c,v 1.22 91/09/12 17:24:04 rws Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -188,8 +188,11 @@ Error(dpy, err)
  *          
  */
 static void			/* ARGSUSED */
-CloseAP(w, event)
-    Widget w; XEvent *event;
+CloseAP(w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
   Arg wargs[2]; int n; hlPtr data;
   if (!--numXmags) exit(0);
@@ -210,8 +213,11 @@ CloseAP(w, event)
  *                     
  */
 static void			/* ARGSUSED */
-SetCmapPropsAP(w, event)
-     Widget w; XEvent event;
+SetCmapPropsAP(w, event, params, num_params)
+     Widget w;
+     XEvent *event;
+     String *params;
+     Cardinal *num_params;
 {
   Arg wargs[2]; int n; hlPtr data;
   n = 0;			/* get user data */
@@ -231,8 +237,11 @@ SetCmapPropsAP(w, event)
  *                     
  */
 static void			/* ARGSUSED */
-UnsetCmapPropsAP(w, event)
-     Widget w; XEvent event;
+UnsetCmapPropsAP(w, event, params, num_params)
+     Widget w;
+     XEvent *event;
+     String *params;
+     Cardinal *num_params;
 {
   Arg wargs[2]; int n; hlPtr data;
   n = 0;			/* get user data */
@@ -252,8 +261,11 @@ UnsetCmapPropsAP(w, event)
  *                                              FIND A BETTER WAY....
  */
 static void			/* ARGSUSED */
-NewAP(w, event)
-     Widget w; XEvent event;
+NewAP(w, event, params, num_params)
+     Widget w;
+     XEvent *event;
+     String *params;
+     Cardinal *num_params;
 {
   StartRootPtrGrab(True, NULL);
 }
@@ -264,8 +276,11 @@ NewAP(w, event)
  * ReplaceAP() -- Replace this particular xmag dialog.
  */
 static void                     /* ARGSUSED */
-ReplaceAP(w, event)
-     Widget w; XEvent *event;
+ReplaceAP(w, event, params, num_params)
+     Widget w;
+     XEvent *event;
+     String *params;
+     Cardinal *num_params;
 {
   Arg wargs[2]; int n; hlPtr data;
   n = 0;			/* get user data */
@@ -280,9 +295,11 @@ ReplaceAP(w, event)
  * PopupPixelAP() -- Show pixel information.
  */
 static void 
-PopupPixelAP(w, event)
+PopupPixelAP(w, event, params, num_params)
     Widget w;
     XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     Position scale_x, scale_y;
     Dimension scale_height;
@@ -330,9 +347,11 @@ PopupPixelAP(w, event)
  * UpdatePixelAP() -- Update pixel information.
  */
 static void 
-UpdatePixelAP(w, event)
+UpdatePixelAP(w, event, params, num_params)
     Widget w;
     XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
     Position x, y;
     Pixel pixel;
@@ -367,8 +386,11 @@ UpdatePixelAP(w, event)
  * PopdownPixelAP() -- Remove pixel info.
  */
 static void 
-PopdownPixelAP(w)
+PopdownPixelAP(w, event, params, num_params)
     Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
   int n;
   Arg wargs[3];
@@ -383,8 +405,11 @@ PopdownPixelAP(w)
 
 
 static void			/* ARGSUSED */
-SelectRegionAP(w)
+SelectRegionAP(w, event, params, num_params)
     Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {    
 /***** NOT SURE WHAT TO DO WITH THIS 
     if (app_resources.unmap)

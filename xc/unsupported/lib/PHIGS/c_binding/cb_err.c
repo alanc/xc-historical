@@ -1,4 +1,4 @@
-/* $XConsortium: cb_err.c,v 5.1 91/02/16 09:47:42 rws Exp $ */
+/* $XConsortium: cb_err.c,v 5.2 91/03/29 16:31:50 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -176,7 +176,7 @@ phg_cb_format_err_msg( binding, errnum, funcnum, buf )
 	/* null out newline in function name string */
 	msgnl = strrchr (funcname, '\n');
 	if (msgnl)
-	    *msgnl = NULL;
+	    *msgnl = '\0';
     }
 
     /* 
@@ -184,13 +184,13 @@ phg_cb_format_err_msg( binding, errnum, funcnum, buf )
      */
     if (err_lookup_string (errmsgfile, errnum, msgbuf, MSG_BUF_SIZE)) {
 	msgtext = strchr (msgbuf, ':'); /* find delimiter */
-	*msgtext = NULL; 		/* end msgname string */
+	*msgtext = '\0'; 		/* end msgname string */
 	++msgtext;			/* advance to message text */
 
 	/* null out newline in message string */
 	msgnl = strrchr (msgtext, '\n');
 	if (msgnl)
-	    *msgnl = NULL;
+	    *msgnl = '\0';
 
 	/*
          * at last, format the message.
