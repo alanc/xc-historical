@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.45 89/04/10 15:38:02 jim Exp $";
+static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.46 89/04/11 14:30:11 jim Exp $";
 #endif
 
 /*%
@@ -405,6 +405,7 @@ int Image_Size(image)
     return(image->bytes_per_line * image->height);
 }
 
+#define lowbit(x) ((x) & (~(x) + 1))
 
 /*
  * Get the XColors of all pixels in image - returns # of colors
@@ -418,16 +419,39 @@ int Get_XColors(win_info, colors)
     if (!win_info->colormap)
 	return(0);
 
-    if (win_info->visual->class == TrueColor ||
-	win_info->visual->class == DirectColor)
-	return(0);    /* XXX punt for now */
+    if (win_info->visual->class == TrueColor)
+	return(0);    /* colormap is not needed */
 
     ncolors = win_info->visual->map_entries;
     if (!(*colors = (XColor *) malloc (sizeof(XColor) * ncolors)))
       Fatal_Error("Out of memory!");
 
-    for (i=0; i<ncolors; i++)
-      (*colors)[i].pixel = i;
+    if (win_info->visual->class == DirectColor) {
+	Pixel red, green, blue, red1, green1, blue1;
+
+	red = green = blue = 0;
+	red1 = lowbit(win_info->visual->red_mask);
+	green1 = lowbit(win_info->visual->green_mask);
+	blue1 = lowbit(win_info->visual->blue_mask);
+	for (i=0; i<ncolors; i++) {
+	  (*colors)[i].pixel = red|green|blue;
+	  (*colors)[i].pad = 0;
+	  red += red1;
+	  if (red > win_info->visual->red_mask)
+	    red = 0;
+	  green += green1;
+	  if (green > win_info->visual->green_mask)
+	    green = 0;
+	  blue += blue1;
+	  if (blue > win_info->visual->blue_mask)
+	    blue = 0;
+	}
+    } else {
+	for (i=0; i<ncolors; i++) {
+	  (*colors)[i].pixel = i;
+	  (*colors)[i].pad = 0;
+	}
+    }
 
     XQueryColors(dpy, win_info->colormap, *colors, ncolors);
     
