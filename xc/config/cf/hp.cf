@@ -16,7 +16,7 @@
 #define HasVFork               YES
 
 /* This defines the server you want */
-#define XHPServer              Xhp
+#define XhpServer              Xhp
 
 #define SignalReturnProcType int
 
@@ -25,7 +25,7 @@
 #define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 
 
-/**/# platform:  $XConsortium: hp.cf,v 1.9 89/03/20 13:47:54 jim Exp $
+/**/# platform:  $XConsortium: hp.cf,v 1.10 89/04/06 10:51:55 jim Exp $
 /**/# operating system:  OSName
 
 /*
