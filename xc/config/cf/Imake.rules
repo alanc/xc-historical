@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.60 89/10/03 11:35:40 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.61 89/10/09 16:53:11 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -104,7 +104,7 @@
  *              EXTRA_LOAD_FLAGS
  *
  * where programlibs is LOCAL_LIBRARIES for ComplexProgramTarget
- * and EXTRA comes with syslibs from the LDFLAGS
+ * and EXTRA comes with syslibs from the LDLIBS
  */
 
 
@@ -155,7 +155,7 @@ includes::								@@\
 #define	NormalProgramTarget(program,objects,deplibs,locallibs,syslibs)	@@\
 program: objects deplibs						@@\
 	RemoveTargetProgram($@)						@@\
-	$(CC) -o $@ objects locallibs $(LDFLAGS) syslibs $(EXTRA_LOAD_FLAGS) @@\
+	$(CC) -o $@ objects $(LDOPTIONS) locallibs $(LDLIBS) syslibs $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 clean::									@@\
 	$(RM) program
@@ -200,7 +200,7 @@ AllTarget(program)							@@\
 									@@\
 program: $(OBJS) $(DEPLIBS)						@@\
 	RemoveTargetProgram($@)						@@\
-	$(CC) -o $@ $(OBJS) $(LOCAL_LIBRARIES) $(LDFLAGS) $(EXTRA_LOAD_FLAGS) @@\
+	$(CC) -o $@ $(OBJS) $(LDOPTIONS) $(LOCAL_LIBRARIES) $(LDLIBS) $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 SaberProgramTarget(program,$(SRCS),$(OBJS),$(LOCAL_LIBRARIES),)		@@\
 									@@\
@@ -230,7 +230,7 @@ AllTarget($(PROGRAMS))							@@\
 									@@\
 program: $(OBJS1) $(DEPLIBS1)						@@\
 	RemoveTargetProgram($@)						@@\
-	$(CC) -o $@ $(OBJS1) locallib $(LDFLAGS) syslib $(EXTRA_LOAD_FLAGS) @@\
+	$(CC) -o $@ $(LDOPTIONS) $(OBJS1) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))					@@\
@@ -255,7 +255,7 @@ clean::									@@\
 #define	ComplexProgramTarget_2(program,locallib,syslib)			@@\
 program: $(OBJS2) $(DEPLIBS2)						@@\
 	RemoveTargetProgram($@)						@@\
-	$(CC) -o $@ $(OBJS2) locallib $(LDFLAGS) syslib $(EXTRA_LOAD_FLAGS) @@\
+	$(CC) -o $@ $(LDOPTIONS) $(OBJS2) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 SaberProgramTarget(program,$(SRCS2),$(OBJS2),locallib,syslib)		@@\
 									@@\
@@ -274,7 +274,7 @@ InstallManPage(program,$(MANDIR))
 #define	ComplexProgramTarget_3(program,locallib,syslib)			@@\
 program: $(OBJS3) $(DEPLIBS3)						@@\
 	RemoveTargetProgram($@)						@@\
-	$(CC) -o $@ $(OBJS3) locallib $(LDFLAGS) syslib $(EXTRA_LOAD_FLAGS) @@\
+	$(CC) -o $@ $(LDOPTIONS) $(OBJS3) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 SaberProgramTarget(program,$(SRCS3),$(OBJS3),locallib,syslib)		@@\
 									@@\
