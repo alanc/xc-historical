@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.6 89/10/10 16:45:20 keith Exp $";
+static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.7 89/11/01 17:29:08 kit Exp $";
 #endif 
 
 /*
@@ -439,7 +439,8 @@ int lines;
 static void
 SetTabs(w, tab_count, tabs)
 Widget w;
-int tab_count, *tabs;
+int tab_count;
+short *tabs;
 {
   TextSinkObject sink = (TextSinkObject) w;
   int i;
@@ -470,7 +471,7 @@ int tab_count, *tabs;
 
   for ( i = 0 ; i < tab_count ; i++ ) {
     sink->text_sink.tabs[i] = tabs[i] * figure_width;
-    sink->text_sink.char_tabs[i] = (short) tabs[i];
+    sink->text_sink.char_tabs[i] = tabs[i];
   }
     
   sink->text_sink.tab_count = tab_count;
@@ -701,9 +702,17 @@ XawTextSinkSetTabs(w, tab_count, tabs)
 Widget w;
 int tab_count, *tabs;
 {
-  TextSinkObjectClass class = (TextSinkObjectClass) w->core.widget_class;
+  if (tab_count > 0) {
+    TextSinkObjectClass class = (TextSinkObjectClass) w->core.widget_class;
+    short *char_tabs = (short*)XtMalloc( (unsigned)tab_count*sizeof(short) );
+    register short *tab;
+    register int i;
 
-  (*class->text_sink_class.SetTabs)(w, tab_count, tabs);
+    for (i = tab_count, tab = char_tabs; i; i--) *tab++ = (short)*tabs++;
+
+    (*class->text_sink_class.SetTabs)(w, tab_count, char_tabs);
+    XtFree((XtPointer)char_tabs);
+  }
 }
 						  
 /*	Function Name: XawTextSinkGetCursorBounds
