@@ -1,4 +1,4 @@
-/**/# site:  $XConsortium: site.def,v 1.17 89/10/19 11:44:29 jim Exp $
+/**/# site:  $XConsortium: site.def,v 1.18 89/11/01 09:24:56 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -89,7 +89,7 @@
 #define InstallOldHeaderFiles NO	/* set to YES for compat with R3 Xaw */
 #endif
 #ifndef BuildXawBC
-#define BuildXawBC InstallOldHeaderFiles
+#define BuildXawBC YES			/* headers can be installed later */
 #endif
 #ifndef CompatibilityFlags
 #if InstallOldHeaderFiles
