@@ -1,4 +1,4 @@
-/* $XConsortium: imDefLkup.c,v 1.11 94/07/06 14:46:54 kaleb Exp kaleb $ */
+/* $XConsortium: imDefLkup.c,v 1.12 94/09/01 18:41:58 kaleb Exp kaleb $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -632,6 +632,7 @@ _XimRegCommitInfo(ic, string, string_len, keysym, keysym_len)
     info->keysym_len	= keysym_len;
     info->next = ic->private.proto.commit_info;
     ic->private.proto.commit_info = info;
+    return True;
 }
 
 Private void
