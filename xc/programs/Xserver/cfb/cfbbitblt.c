@@ -750,39 +750,84 @@ DDXPointPtr pptSrc;
     }
     else
     {
-          if (alu == GXclear)
-	    DOBITBLT(fnCLEAR)
-          else if (alu ==GXand)
-	    DOBITBLT(fnAND)
-          else if (alu == GXandReverse)
-	    DOBITBLT(fnANDREVERSE)
-          else if (alu == GXcopy)
-	    DOBITBLT(fnCOPY)
-          else if (alu == GXandInverted)
-	    DOBITBLT(fnANDINVERTED)
-/*
-          else if (alu == GXnoop)
-*/
-          else if (alu == GXxor)
-	    DOBITBLT(fnXOR)
-          else if (alu == GXor)
-	    DOBITBLT(fnOR)
-          else if (alu == GXnor)
-	    DOBITBLT(fnNOR)
-          else if (alu == GXequiv)
-	    DOBITBLT(fnEQUIV)
-          else if (alu == GXinvert)
-	    DOBITBLT(fnINVERT)
-          else if (alu == GXorReverse)
-	    DOBITBLT(fnORREVERSE)
-          else if (alu == GXcopyInverted)
-	    DOBITBLT(fnCOPYINVERTED)
-          else if (alu == GXorInverted)
-	    DOBITBLT(fnORINVERTED)
-          else if (alu == GXnand)
-	    DOBITBLT(fnNAND)
-          else if (alu == GXset)
-	    DOBITBLT(fnSET)
+#if defined(hpux) || defined(macII)
+      if (alu == GXxor) {
+	  DOBITBLT(fnXOR);
+      } else switch (alu) {
+	case  GXclear:
+	  DOBITBLT(fnCLEAR);
+	  break;
+	case GXand:
+	  DOBITBLT(fnAND);
+	  break;
+	case  GXandReverse:
+	  DOBITBLT(fnANDREVERSE);
+	  break;
+	case  GXandInverted:
+	  DOBITBLT(fnANDINVERTED);
+	  break;
+	case  GXor:
+	  DOBITBLT(fnOR);
+	  break;
+	case  GXnor:
+	  DOBITBLT(fnNOR);
+	  break;
+	case  GXequiv:
+	  DOBITBLT(fnEQUIV);
+	  break;
+	case  GXinvert:
+	  DOBITBLT(fnINVERT);
+	  break;
+	case  GXorReverse:
+	  DOBITBLT(fnORREVERSE);
+	  break;
+	case  GXcopyInverted:
+	  DOBITBLT(fnCOPYINVERTED);
+	  break;
+	case  GXorInverted:
+	  DOBITBLT(fnORINVERTED);
+	  break;
+	case  GXnand:
+	  DOBITBLT(fnNAND);
+	  break;
+	case  GXset:
+	  DOBITBLT(fnSET);
+	  break;
+	case  GXnoop:
+	default:
+	  break;
+      } /* end switch */
+#else
+    if (alu == GXclear) {
+	DOBITBLT(fnCLEAR);
+    } else if (alu == GXand) {
+	DOBITBLT(fnAND);
+    } else if (alu == GXandReverse) {
+	DOBITBLT(fnANDREVERSE);
+    } else if (alu == GXandInverted) {
+	DOBITBLT(fnANDINVERTED);
+    } else if (alu == GXxor) {
+	DOBITBLT(fnXOR);
+    } else if (alu == GXor) {
+	DOBITBLT(fnOR);
+    } else if (alu == GXnor) {
+	DOBITBLT(fnNOR);
+    } else if (alu == GXequiv) {
+	DOBITBLT(fnEQUIV);
+    } else if (alu == GXinvert) {
+	DOBITBLT(fnINVERT);
+    } else if (alu == GXorReverse) {
+	DOBITBLT(fnORREVERSE);
+    } else if (alu == GXcopyInverted) {
+	DOBITBLT(fnCOPYINVERTED);
+    } else if (alu == GXorInverted) {
+	DOBITBLT(fnORINVERTED);
+    } else if (alu == GXnand) {
+	DOBITBLT(fnNAND);
+    } else if (alu == GXset) {
+	DOBITBLT(fnSET);
+    }
+#endif /* hpux */
     }
 
     if (pboxNewX)
