@@ -1,4 +1,4 @@
-/* $XConsortium: command.c,v 2.46 94/02/04 14:45:30 kaleb Exp $ */
+/* $XConsortium: command.c,v 2.47 94/05/14 19:10:18 rws Exp gildea $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -85,11 +85,9 @@ static void CheckReadFromPipe();
 static void SystemError(text)
     char* text;
 {
-    extern int sys_nerr;
-    extern char* sys_errlist[];
     char msg[BUFSIZ];
     sprintf( msg, "%s; errno = %d %s", text, errno, 
-	     (errno < sys_nerr) ? sys_errlist[errno] : NULL );
+	     strerror(errno));
     XtWarning( msg );
 }
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: util.c,v 2.43 94/03/28 14:53:49 gildea Exp $
+ * $XConsortium: util.c,v 2.44 94/03/30 19:55:04 gildea Exp gildea $
  *
  *
  *			  COPYRIGHT 1987
@@ -40,9 +40,7 @@
 static char *SysErrorMsg (n)
     int n;
 {
-    extern char *sys_errlist[];
-    extern int sys_nerr;
-    char *s = ((n >= 0 && n < sys_nerr) ? sys_errlist[n] : "unknown error");
+    char *s = strerror(n);
 
     return (s ? s : "no such error");
 }
