@@ -117,7 +117,10 @@ install::
 			set -x; \
 			cd $$i ; \
 			for f in * ; do \
-			$(INSTALL) -c $(INSTALLFLAGS) $$f $(INCDIR)/$$i; \
+			  if [ ! -d $$f ]; then \
+			    $(RM) $(INCDIR)/$$i/$$f; \
+			    $(INSTALL) -c $(INSTALLFLAGS) $$f $(INCDIR)/$$i; \
+			  fi; \
 			done; \
 		); \
 	done
