@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.42 89/06/09 13:47:16 jim Exp $
+ * $XConsortium: gram.y,v 1.43 89/06/09 14:13:20 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.42 89/06/09 13:47:16 jim Exp $";
+"$XConsortium: gram.y,v 1.43 89/06/09 14:13:20 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -730,8 +730,7 @@ number		: NUMBER		{ $$ = $1; }
 %%
 yyerror(s) char *s;
 {
-    fprintf (stderr, "twm: line %d:  syntax error:  %s\n", yylineno,
-	     s ? s : "");
+    fprintf (stderr, "twm: line %d:  %s\n", yylineno, s ? s : "");
     ParseError = 1;
 }
 RemoveDQuote(str)
