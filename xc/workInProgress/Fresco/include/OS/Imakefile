@@ -1,0 +1,17 @@
+XCOMM
+XCOMM OS-dependent include files
+XCOMM
+
+HEADERS = *.h
+DEST = $(INCDIR)/Fresco/OS
+SUBDIRS = Interfaces
+
+XCOMM No stub generation for threads
+IXFLAGS = -s BaseObject -m TypeObj
+
+MakeHeaderFlags(thread,-i '<X11/Fresco/Ox/object.h>')
+
+DependHeaders()
+
+InstallMultipleFlags($(HEADERS),$(DEST),$(INSTINCFLAGS))
+MakeInSubdirs($(SUBDIRS))

@@ -1,0 +1,8 @@
+XCOMM
+XCOMM OS-dependent include files
+XCOMM
+
+HEADERS = *.idl
+DEST = $(INCDIR)/Fresco/OS/Interfaces
+
+InstallMultipleFlags($(HEADERS),$(DEST),$(INSTINCFLAGS))

@@ -1,0 +1,26 @@
+XCOMM
+XCOMM Fresco include files
+XCOMM
+
+HEADERS = *.h
+DEST = $(INCDIR)/Fresco
+SUBDIRS = Impls Interfaces OS Ox
+
+#define Hdr(name,flags) MakeHeaderFlags(name,flags)
+
+Hdr(display, -i '<X11/Fresco/drawing.h>')
+Hdr(drawing, -i '<X11/Fresco/types.h>')
+Hdr(figures, -i '<X11/Fresco/drawing.h>' -i '<X11/Fresco/glyph.h>')
+Hdr(glyph, -i '<X11/Fresco/display.h>' -i '<X11/Fresco/drawing.h>')
+Hdr(layouts, -i '<X11/Fresco/glyph.h>')
+Hdr(types,-i '<X11/Fresco/Ox/object.h>')
+Hdr(viewer, -i '<X11/Fresco/glyph.h>')
+Hdr(widgets, -i '<X11/Fresco/viewer.h>')
+
+DependHeaders()
+
+InstallMultipleFlags($(HEADERS),$(DEST),$(INSTINCFLAGS))
+MakeInSubdirs($(SUBDIRS))
+
+gendefs:
+	./_gendefs

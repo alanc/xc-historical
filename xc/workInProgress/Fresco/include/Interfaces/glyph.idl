@@ -1,0 +1,466 @@
+/*
+ * Copyright (c) 1992-1993 Silicon Graphics, Inc.
+ * Copyright (c) 1993 Fujitsu, Ltd.
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and 
+ * its documentation for any purpose is hereby granted without fee, provided
+ * that (i) the above copyright notices and this permission notice appear in
+ * all copies of the software and related documentation, and (ii) the name of
+ * Silicon Graphics and Fujitsu may not be used in any advertising or
+ * publicity relating to the software without the specific, prior written
+ * permission of Silicon Graphics and Fujitsu.
+ *
+ * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+ * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
+ *
+ * IN NO EVENT SHALL SILICON GRAPHICS OR FUJITSU BE LIABLE FOR
+ * ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
+ * OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF 
+ * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
+ * OF THIS SOFTWARE.
+ */
+
+#ifndef Fresco_glyph_idl
+#define Fresco_glyph_idl
+
+#include <X11/Fresco/Interfaces/display.idl>
+#include <X11/Fresco/Interfaces/drawing.idl>
+
+//- DamageObj
+interface DamageObj : FrescoObject {
+    //. A damage object represents the smallest unit of screen update.
+    //. Typically, there will be one damage object for each main viewer.
+    //. Before a draw traversal begins, the damage object is normally
+    //. used to set the painter's clipping region and then reset
+    //. to be empty.
+
+    //- incur
+    void incur();
+	//. Request an update on the entire region defined by the damage.
+
+    //- extend
+    void extend(in Region r);
+	//. Extend the current update area to include the given region.
+
+    //- current
+    Region current();
+	//. Return the current region that has been requested for update.
+};
+
+interface GlyphOffset;
+interface GlyphTraversal;
+interface GlyphVisitor;
+
+//- Glyph
+interface Glyph : FrescoObject {
+    //. The Glyph interface defines the common operations for all objects
+    //. that have a geometry and may be drawn.  The name "glyph"
+    //. is borrowed from typography to connote simple, lightweight objects 
+    //. with an instance-specific appearance.  Glyphs also have a size
+    //. and origin for the purposes of layout.  The Glyph interface provides
+    //. operations for geometry management, drawing, picking, and
+    //. a directed-acyclic structure (not strictly hierarchical).
+
+
+    //- Requirement
+    struct Requirement {
+	boolean defined;
+	Coord natural, maximum, minimum;
+	Alignment align;
+    };
+	//. If the defined flag is true, a requirement specifies
+	//. a natural size, maximum size, minimum size, and
+	//. alignment.  A composite may "stretch" a requirement
+	//. from its natural size to its maximum size or "shrink"
+	//. the requirement from the natural to minimum size.
+	//. It is possible to have negative sizes, such as for
+	//. "backwards" space.  The alignment is a fraction that
+	//. indicates the origin of the area.  An alignment of zero
+	//. means the origin is at the lower coordinate value;
+	//. an alignment of one means it is at the upper coordinate value.
+	//. Alignments can be negative or larger than one to indicate
+	//. the origin is outside the natural position.
+
+    //- Requisition
+    struct Requisition {
+	Requirement x, y, z;
+	boolean preserve_aspect;
+    };
+	//. A requisition contains a requirement for each axis and
+	//. a flag indicating whether the natural aspect ratios
+	//. should be preserved if the glyph is stretched or shrunk.
+
+    //- AllocationInfo
+    struct AllocationInfo {
+	Region allocation;
+	TransformObj transform;
+	DamageObj damage;
+    };
+	//. The AllocationInfo structure contains specific
+	//. cumulative geometry information.  This information
+	//. is used to determine what regions to damage
+	//. in order to redraw a glyph.
+
+    //- AllocationInfoList
+    typedef sequence<AllocationInfo> AllocationInfoList;
+	//. AllocationInfoList is a list of AllocationInfo
+	//. structures to handle the possibility that a glyph
+	//. appears several places at once on the screen.
+
+    //- clone_glyph
+    Glyph clone_glyph();
+	//. Return a logical copy of this glyph.
+
+    //- style
+    attribute StyleObj style;
+	//. A glyph may use the style attribute to customize
+	//. the font, colors, and other characteristics
+	//. of the glyph's appearance.  Usage of the style attribute
+	//. is optional--a glyph may choose to ignore setting
+	//. of the style and may return nil when the style
+	//. is retrieved.
+
+    //- transform
+    TransformObj transform();
+	//. Return a transformation matrix associated with the glyph.
+	//. If a glyph implementation does not provide a transform,
+	//. this operation will return nil.
+
+    //- request, extension, shape
+    void request(out Glyph::Requisition r);
+    void extension(in Glyph::AllocationInfo a, in Region r);
+    void shape(in Region r);
+	//. These three operations query information about
+	//. the size of a glyph.  The request operation asks for
+	//. a glyph's desired geometry.  Request should be fast
+	//. to allow a composite glyph to compute rather than
+	//. store its components' requisitions.  If a requisition
+	//. might be expensive to compute, then a glyph should
+	//. store the requisition.  A composite glyph therefore
+	//. generally should store its requisition rather
+	//. than traverse its components.  A composite can assume
+	//. that GlyphOffset::notify will be called if the requisition
+	//. of one of its children changes.
+	//.
+	//. The extension operation computes the region bounds
+	//. of where a glyph would naturally draw.  An extension
+	//. is normally the same as a requisition's natural size,
+	//. only differing in cases where the drawing goes outside
+	//. the object's allocation, such as a checkmark or slanted text.
+	//.
+	//. The shape operation asks the glyph to generate the
+	//. precise shape of where it would naturally draw.
+	//. Calling shape may be more costly than calling extension
+	//. (which just computes bounds) and therefore is only
+	//. called by composites that wish to perform layout
+	//. using the actual area where the object will draw.
+
+    //- traverse
+    void traverse(in GlyphTraversal t);
+	//. Start traversing a glyph and its components.  The traversal
+	//. object defines the operation on each glyph.  Normally,
+	//. a composite will call traverse recursively on each
+	//. of its components.
+	//.
+	//. N.B.: Because traversal state must be held by the caller
+	//. past a call to traverse, an extra reference to the
+	//. traversal parameter object is \emphasis{not} passed
+	//. to the traverse operation.  Therefore, contrary to
+	//. normal conventions, an implementation of the traverse operation
+	//. should \emphasis{not} unref the parameter.
+
+    //- draw
+    void draw(in GlyphTraversal t);
+	//. Display this glyph using the painter and allocation
+	//. specified by the given traversal.  No clipping or translation
+	//. is automatic for this operation--the allocation specifies
+	//. the position and size of this glyph for the purposes
+	//. of layout.  However, a composite glyph may set clipping
+	//. or transformations on the traversal's painter before
+	//. the composite draws its children.
+	//.
+	//. There is no guarantee that a call to draw will affect
+	//. the screen immediately because of the possibility
+	//. (indeed, likelihood) that the window is double-buffered.
+	//. Furthermore, drawing order is important for glyphs when
+	//. they overlap in the same plane.  A glyph's draw operation
+	//. therefore should not be called directly, but implicitly
+	//. will be called as part of the screen update process.
+
+    //- pick
+    void pick(in GlyphTraversal t);
+	//. Find the glyphs that intersect a point or rectangle
+	//. specified in window-relative coordinates.  Conceptually,
+	//. picking is like drawing and determining what glyphs
+	//. intersect the point or region.  When pick returns,
+	//. the traversal contains a list of the glyph trails
+	//. that were hit.
+
+    //- body
+    attribute Glyph body;
+	//. The body attribute defines a glyph as the recipient
+	//. of operations.  Glyphs that have a body defined
+	//. are typically "filters" that decorate, align, or
+	//. otherwise adjust the appearance of the body.
+
+    //- append, prepend
+    GlyphOffset append(in Glyph g);
+    GlyphOffset prepend(in Glyph g);
+	//. Add the given glyph to this composite, returning the newly-created
+	//. offset.  If the receiver is not actually a composite,
+	//. the operation will be ignored.  If the receiver has a body glyph,
+	//. it should pass the operation on to the body.  In this way,
+	//. "wrapper" glyphs can alter appearance without affecting
+	//. structural operations.
+
+    //- add_parent, remove_parent
+    Tag add_parent(in GlyphOffset parent_offset);
+    void remove_parent(in Tag add_tag);
+	//. Add or remove a parent for this glyph.  Because
+	//. a glyph could possibly be added more than once as a child
+	//. of the same parent, an offset represents
+	//. the parent edge.  The add_parent operation returns
+	//. a tag that the offset retains to remove itself
+	//. from the child's parent list when the edge is removed.
+	//. The child should not hold a reference to its parent
+	//. (otherwise it would create a cycle), so the parent_offset
+	//. is not passed with a reference and should not be unref'd
+	//. by the add_parent operation.
+
+    //- visit_children, visit_children_reversed, visit_parents
+    void visit_children(in GlyphVisitor v);
+    void visit_children_reversed(in GlyphVisitor v);
+    void visit_parents(in GlyphVisitor v);
+	//. Visit each of a glyph's children or parents.  The
+	//. visit_children_reversed operation begins with
+	//. the last child and iterates through the list backwards
+	//. to the first child.  Parents are not ordered, so
+	//. no similar capability is necessary.
+
+    //- allocations
+    void allocations(out Glyph::AllocationInfoList a);
+	//. Compute cumulative information for each allocation
+	//. of the glyph.  This operation normally need not
+	//. be called directly; instead application objects
+	//. usually call need_redraw or need_resize.
+
+    //- need_redraw, need_redraw_region
+    void need_redraw();
+    void need_redraw_region(in Region r);
+	//. These operations request that a glyph cause its appearance
+	//. on the screen to be refreshed.  If the glyph appears
+	//. in multiple places in a window or in several windows,
+	//. the glyph should be redrawn in all the places.
+	//. A glyph may choose not to implement these operations
+	//. under the assumption that update is either not possible
+	//. or will be handled by higher-level glyphs.
+	//.
+	//. The need_redraw operation asks that the entire glyph
+	//. be redrawn; need_redraw_region specifies a portion
+	//. of the glyph relative to the glyph's coordinate space.
+	//. Note these operations do not actually cause an immediate
+	//. screen update; they merely notify the system that
+	//. a draw traversal is desired in the near future.
+
+    //- need_resize
+    void need_resize();
+	//. This operation is similar to need_redraw, but
+	//. includes the additional possibility that the glyph's
+	//. natural size has changed.  This operation implies
+	//. two redraw requests (which will be handled with
+	//. a single draw traversal), one for the glyph's original area
+	//. and one for the glyph's new area.
+};
+
+//- GlyphVisitor
+interface GlyphVisitor : FrescoObject {
+    //. A glyph visitor is essentially a callback for iterating
+    //. over a list of glyph children or parents.
+
+    //- visit
+    boolean visit(in Glyph glyph, in GlyphOffset offset);
+	//. Visit the given glyph.  During a child iteration,
+	//. the glyph is the offset's child.  During a parent
+	//. iteration, the glyph is the offset's parent.
+	//. The visit operation should return whether or not
+	//. the iteration should continue (returning true
+	//. means continue, false means stop).
+};
+
+//- GlyphOffset
+interface GlyphOffset : FrescoObject {
+    //. A glyph offset is a reference to a glyph within an aggregate.
+    //. Because a glyph might appear twice within the same composite,
+    //. a glyph itself is insufficient to identify its position within
+    //. its parent.
+
+    //- parent, child
+    Glyph parent();
+    Glyph child();
+	//. Return the composite parent and child glyph to which
+	//. the offset refers.
+
+    //- allocations
+    void allocations(out Glyph::AllocationInfoList a);
+	//. Compute cumulative information for each allocation
+	//. of the glyph.  This operation normally need not
+	//. be called directly; it is normally called
+	//. by an implementation Glyph::allocations.
+
+    //- insert
+    GlyphOffset insert(in Glyph g);
+	//. Insert the given glyph into the composite before the glyph
+	//. referred to by the offset.  Return the newly-created offset.
+
+    //- replace
+    void replace(in Glyph g);
+	//. Put the given glyph in place of the glyph at this offset.
+	//. The replace operation is equivalent to an atomic transaction
+	//. that removes the old glyph and inserts the new one.
+
+    //- remove
+    void remove();
+	//. Take the glyph at this offset out of the composite.  The
+	//. offset will now refer to the following glyph.  If the offset
+	//. refers to the end of the composite, then this operation
+	//. will have no effect.
+
+    //- notify
+    void notify();
+	//. Notify the composite that the desired size of the glyph
+	//. at this offset has changed.
+};
+
+interface Viewer;
+
+//- GlyphTraversal
+interface GlyphTraversal : FrescoObject {
+    //. The GlyphTraversal interface defines the mechanism for
+    //. visiting a collection of glyphs.  A traversal is passed
+    //. to a glyph's traverse operation and maintains common
+    //. information as well as the stack of information associated
+    //. with each level of the traversal.
+
+    //- Operation
+    enum Operation { draw, pick_top, pick_any, pick_all, other };
+	//. An operation distinguishes what kind of traversal
+	//. is being performed.  The common traversals are
+	//. draw and three kinds of picking, which should
+	//. result in calls to a draw or pick glyph operation
+	//. on each leaf during a traversal.  The "other" operation
+	//. will call the traversal's visit operation on each leaf.
+	//. The kind of pick specifies the desired result:
+	//. pick_top indicates that the caller only wishes to find
+	//. the top-most object that is hit, pick_any returns
+	//. when any object is hit (possibly avoiding further traversal),
+	//. and pick_all finds all hit objects.
+
+    //- op, swap_op
+    Operation op();
+    Operation swap_op(in Operation op);
+	//. Both op and swap_op return the current traversal operation.
+	//. The swap_op method additionally changes the operation
+	//. to the given operation.
+
+    //- begin_trail, end_trail
+    void begin_trail(in Viewer v);
+    void end_trail();
+	//. Record the beginning and end of a trail associated with
+	//. the given viewer.
+
+    //- traverse_child
+    void traverse_child(in GlyphOffset o, in Region allocation);
+	//. Continue traversing down to the given child glyph
+	//. defined by the given offset.  If the given region is nil
+	//. then the parent's allocation will be used for the child.
+
+    //- visit
+    void visit();
+	//. Call the traversal-specific operation on the current glyph.
+	//. This operation should be called on a leaf glyph
+	//. (or a composite that wants to do more than traverse
+	//. its children) when the traversal operation is other.
+
+    //- trail
+    GlyphTraversal trail();
+	//. Copy the current traversal state information.
+	//. The current trail, transformation, and allocation
+	//. is copied, but graphics state is not.  Thus, the new trail
+	//. may be suitable for certain update or picking operations,
+	//. but is not usable for use in drawing.
+
+    //- viewer
+    Viewer current_viewer();
+	//. Return the viewer at the head of the current trail.
+
+    //- glyph
+    Glyph current_glyph();
+	//. Return the current glyph being traversed.
+
+    //- offset
+    GlyphOffset offset();
+	//. Return the current offset being traversed.
+
+    //- forward, backward
+    void forward();
+    void backward();
+	//. These operations move the current glyph along the current trail.
+	//. The forward operation moves the current glyph away
+	//. from the viewer; the backward operation moves
+	//. toward the viewer.
+
+    //- painter
+    attribute PainterObj painter;
+	//. This attribute defines the drawing state for glyphs
+	//. during the traversal.
+
+    //- display, screen
+    DisplayObj display();
+    ScreenObj screen();
+	//. These operations return the display or screen
+	//. where the traversal is rooted.
+
+    //- allocation, bounds, origin, span
+    Region allocation();
+    boolean bounds(out Vertex lower, out Vertex upper, out Vertex origin);
+    boolean origin(out Vertex origin);
+    boolean span(in Axis a, out Region::BoundingSpan s);
+	//. These operations return the current allocation or
+	//. information about the allocation.  The bounds, origin, and
+	//. span operations are short-hand for retrieving the
+	//. allocation region and retrieving information from it.
+	//. The bounds, origin, and span operations return false
+	//. if the allocation is not defined (which could happen
+	//. during a non-allocating traversal).
+
+    //- damage
+    DamageObj damage();
+	//. Return the damage object that glyphs in the traversal
+	//. may use to cause a screen update.
+
+    //- hit
+    void hit();
+	//. Add the current trail to the list of picked trails
+	//. during a pick traversal.
+
+    //- hit_info
+    attribute long hit_info;
+	//. Associated with a hit object may be an additional integer
+	//. containing arbitrary information.  For example, a character
+	//. object would use this information to indicate whether
+	//. pick occurred on the left or right of the character.
+
+    //- picked
+    GlyphTraversal picked();
+	//. Return the traversal associated with the most-recently
+	//. hit object.
+
+    //- clear
+    void clear();
+	//. Remove the picked reference to hit objects, potentially
+	//. releasing the associated traversals.
+};
+
+#endif

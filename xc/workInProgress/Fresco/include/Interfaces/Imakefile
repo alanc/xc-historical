@@ -1,0 +1,8 @@
+XCOMM
+XCOMM Interface files
+XCOMM
+
+HEADERS = *.idl
+DEST = $(INCDIR)/Fresco/Interfaces
+
+InstallMultipleFlags($(HEADERS),$(DEST),$(INSTINCFLAGS))

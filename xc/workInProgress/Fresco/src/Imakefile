@@ -1,0 +1,79 @@
+XCOMM
+XCOMM Fresco library
+XCOMM
+
+#ifdef InObjectCodeDir
+
+LIB = Fresco
+VERSION = 0.5
+
+#if !defined(UseDebug)
+APP_CCFLAGS = $(OPTIMIZE_CCFLAGS)
+#endif
+APP_CCINCLUDES = -I$(SRC)
+
+LIBPATHS   = -DFRESCO_LIBALL='"$(ABSLIBALLDIR)"' -DX_LIBDIR='"$(XLIBDIR)/X11"'
+
+MakeLibrary($(LIB),$(VERSION))
+
+/*
+ * Avoid possibility on some systems (notably OSF/1) of a
+ * cyclic make dependency.
+ */
+LDLIBFRESCO =
+
+I = $(INCSRC)/Fresco/Interfaces
+I_OS = $(INCSRC)/Fresco/OS/Interfaces
+I_OX = $(INCSRC)/Fresco/Ox/Interfaces
+
+STUBS_IDL_FILES = \
+    $(I)/display.idl \
+    $(I)/drawing.idl \
+    $(I)/figures.idl \
+    $(I)/glyph.idl \
+    $(I)/layouts.idl \
+    $(I)/types.idl \
+    $(I)/viewer.idl \
+    $(I)/widgets.idl
+
+EditImpl(figures,$(I)/glyph.idl $(I)/figures.idl)
+EditImpl(fresco,$(I)/types.idl)
+EditImpl(glyphs,$(I)/glyph.idl)
+EditImpl(layouts,$(I)/glyph.idl $(I)/layouts.idl)
+EditImpl(objects,$(I_OX)/object.idl)
+EditImpl(stubs-1,$(STUBS_IDL_FILES))
+EditImpl(stubs-2,$(STUBS_IDL_FILES))
+EditImpl(threads,$(I_OS)/thread.idl)
+EditImpl(types,$(I)/types.idl)
+EditImpl(viewers,$(I)/viewer.idl)
+EditImpl(widgets,$(I)/widgets.idl)
+EditImpl(Xdisplay,$(I)/display.idl $(I)/viewer.idl)
+EditImpl(Xdrawing,$(I)/drawing.idl)
+EditImpl(Xraster,$(I)/drawing.idl)
+EditImpl(Xwindow,$(I)/display.idl $(I)/glyph.idl)
+
+MakeObjectFromSrc(figures)
+MakeObjectFromSrc(fresco)
+MakeObjectFromSrc(glyphs)
+MakeObjectFromSrc(inits)
+MakeObjectFromSrc(layouts)
+MakeObjectFromSrc(objects)
+MakeObjectFromSrc(os)
+MakeObjectFromSrc(ox-ids)
+MakeObjectFromSrc(stubs-1)
+MakeObjectFromSrc(stubs-2)
+MakeObjectFromSrc(threads)
+MakeObjectFromSrc(transport)
+MakeObjectFromSrc(types)
+MakeObjectFromSrc(viewers)
+MakeObjectFromSrc(widgets)
+MakeObjectFromSrcFlags(Xdisplay,$(LIBPATHS))
+MakeObjectFromSrc(Xdrawing)
+MakeObjectFromSrc(Xraster)
+MakeObjectFromSrc(Xwindow)
+
+#else
+
+MakeInObjectCodeDir()
+
+#endif

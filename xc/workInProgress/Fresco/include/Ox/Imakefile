@@ -1,0 +1,21 @@
+XCOMM
+XCOMM ObjectExchange-dependent include files
+XCOMM
+
+HEADERS = *.h
+DEST = $(INCDIR)/Fresco/Ox
+SUBDIRS = Interfaces
+
+IXFLAGS = -s BaseObject -m TypeObj
+IXINCLUDES = -i '<X11/Fresco/Ox/base.h>'
+
+MakeHeader(object)
+
+EditImplHeader(request,Interfaces/object.idl)
+EditImplHeader(schema,Interfaces/object.idl)
+EditImplHeader(typeobjs,Interfaces/object.idl)
+
+DependHeaders()
+
+InstallMultipleFlags($(HEADERS),$(DEST),$(INSTINCFLAGS))
+MakeInSubdirs($(SUBDIRS))
