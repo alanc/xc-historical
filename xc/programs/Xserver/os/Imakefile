@@ -1,8 +1,9 @@
-SRCS = connection.c WaitFor.c utils.c io.c fileio.c filenames.c access.c \
-	 osinit.c oscolor.c
-OBJS = connection.o WaitFor.o utils.o io.o fileio.o filenames.o access.o \
-	 osinit.o oscolor.o
-STD_DEFINES = ServerDefines
+SRCS = connection.c WaitFor.c utils.c io.c access.c \
+	 osinit.c oscolor.c osfonts.c fonttype.c
+OBJS = connection.o WaitFor.o utils.o io.o osfonts.o access.o \
+	 osinit.o oscolor.o osfonts.c fonttype.o
+STD_DEFINES = ServerDefines -DFONT_SNF
+CDEBUGFLAGS = ServerCDebugFlags
 #if SpecialMalloc
 OS_DEFINES= -DSPECIAL_MALLOC
 #else
@@ -10,7 +11,6 @@ OS_DEFINES=
 #endif
 
 DEFINES= ConnectionFlags $(OS_DEFINES)
-CDEBUGFLAGS = ServerCDebugFlags
 INCLUDES = -I.  -I../../include -I$(INCLUDESRC)
 LINTLIBS = ../../dix/llib-ldix.ln
 
@@ -23,10 +23,8 @@ NormalLintTarget($(SRCS))
 access.o: $(IRULESRC)/$(MACROFILE)
 connection.o: $(IRULESRC)/$(MACROFILE)
 
-# these depend on COMPRESSED_FONTS
-fileio.o: $(IRULESRC)/$(MACROFILE)
-filenames.o: $(IRULESRC)/$(MACROFILE)
-fileutils.o: $(IRULESRC)/$(MACROFILE)
+# this depends upon which fonts formats are supported
+#fonttype.o: $(IRULESRC)/$(MACROFILE)
 
 SpecialObjectRule(osinit.o, $(IRULESRC)/$(MACROFILE), -DADMPATH=\"$(ADMDIR)/X\%smsgs\")
 
