@@ -1,4 +1,4 @@
-/* $XConsortium: XawI18n.c,v 1.1 94/01/31 09:56:07 kaleb Exp $ */
+/* $XConsortium: XawI18n.c,v 1.2 94/02/05 18:10:32 kaleb Exp $ */
 
 /* Copyright 1991 NCR Corporation - Dayton, Ohio, USA */
 /*
@@ -33,10 +33,10 @@
 #include "XawI18n.h"
 
 #if NeedFunctionPrototypes
-wchar_t atowc(
+wchar_t _Xawatowc(
     unsigned char c)
 #else
-wchar_t atowc(c)
+wchar_t _Xawatowc(c)
     unsigned char c;
 #endif
 {
@@ -56,7 +56,7 @@ int _iswspace(wchar_t w)
 {
     int ret = 0;
 
-    wchar_t s = atowc(' ');
+    wchar_t s = _Xawatowc(' ');
 
     if (s == w)
 	ret = 1;

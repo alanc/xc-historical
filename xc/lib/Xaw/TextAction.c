@@ -1,4 +1,4 @@
-/* $XConsortium: TextAction.c,v 1.44 92/03/18 12:03:30 rws Exp $ */
+/* $XConsortium: TextAction.c,v 1.47 94/01/31 10:55:06 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -216,7 +216,7 @@ and if it is we can only assume the sending client is using the same locale as
 we are, and convert it.  I also warn the user that the other client is evil. */
 
   StartAction( ctx, (XEvent*) NULL );
-  if (TextFormat(ctx) == FMTWIDE) {
+  if (_XawTextFormat(ctx) == _XawFMTWIDE) {
       XTextProperty textprop;
       Display *d = XtDisplay((Widget)ctx);
       wchar_t **wlist;
@@ -260,7 +260,7 @@ we are, and convert it.  I also warn the user that the other client is evil. */
 
       *length = wcslen(wlist[0]);
       XtFree((XtPointer)wlist);
-      text.format = FMTWIDE;
+      text.format = _XawFMTWIDE;
   } else
       text.format = FMT8BIT;
   text.ptr = (char*)value;
@@ -711,7 +711,7 @@ ConvertSelection(w, selection, target, type, value, length, format)
       *target == XA_TEXT(d) ||
       *target == XA_COMPOUND_TEXT(d)) {
 	if (*target == XA_TEXT(d)) {
-	    if (TextFormat(ctx) == FMTWIDE)
+	    if (_XawTextFormat(ctx) == _XawFMTWIDE)
 		*type = XA_COMPOUND_TEXT(d);
 	    else
 		*type = XA_STRING;
@@ -727,7 +727,7 @@ ConvertSelection(w, selection, target, type, value, length, format)
 	 */
 	if (!salt) {
 	    *value = (char *)_XawTextGetSTRING(ctx, s->left, s->right);
-	    if (TextFormat(ctx) == FMTWIDE) {
+	    if (_XawTextFormat(ctx) == _XawFMTWIDE) {
 		XTextProperty textprop;
 		if (XwcTextListToTextProperty(d, (wchar_t**)value, 1,
 					      XCompoundTextStyle, &textprop)
@@ -746,7 +746,7 @@ ConvertSelection(w, selection, target, type, value, length, format)
 	    strcpy (*value, salt->contents);
 	    *length = salt->length;
 	}
-	if (TextFormat(ctx) == FMTWIDE && *type == XA_STRING) {
+	if (_XawTextFormat(ctx) == _XawFMTWIDE && *type == XA_STRING) {
 	    XTextProperty textprop;
 	    wchar_t** wlist;
 	    int count;
@@ -903,7 +903,7 @@ Boolean	kill;
     salt->s.left = from;
     salt->s.right = to;
     salt->contents = (char *)_XawTextGetSTRING(ctx, from, to);
-    if (TextFormat(ctx) == FMTWIDE) {
+    if (_XawTextFormat(ctx) == _XawFMTWIDE) {
 	XTextProperty textprop;
 	if (XwcTextListToTextProperty(XtDisplay((Widget)ctx),
 			(wchar_t**)(&(salt->contents)), 1, XCompoundTextStyle,
@@ -931,7 +931,7 @@ Boolean	kill;
   text.length = 0;
   text.firstPos = 0;
 
-  text.format = TextFormat(ctx);
+  text.format = _XawTextFormat(ctx);
   text.ptr = "";	/* These two lines needed to make legal TextBlock */
 
   if (_XawTextReplace(ctx, from, to, &text)) {
@@ -1129,21 +1129,21 @@ TextWidget ctx;
   int count, error = XawEditDone;
   XawTextBlock text;
 
-  text.format = TextFormat(ctx);
+  text.format = _XawTextFormat(ctx);
   text.length = ctx->text.mult;
   text.firstPos = 0;
 
-  if ( text.format == FMTWIDE ) {
+  if ( text.format == _XawFMTWIDE ) {
       wchar_t* wptr;
       text.ptr =  XtMalloc(sizeof(wchar_t) * ctx->text.mult);
       wptr = (wchar_t *)text.ptr;
       for (count = 0; count < ctx->text.mult; count++ )
-          wptr[count] = atowc('\n');
+          wptr[count] = _Xawatowc(XawLF);
   }
   else {
       text.ptr = XtMalloc(sizeof(char) * ctx->text.mult);
       for (count = 0; count < ctx->text.mult; count++ )
-          text.ptr[count] = '\n';
+          text.ptr[count] = XawLF;
   }
 
   if (_XawTextReplace(ctx, ctx->text.insertPos, ctx->text.insertPos, &text)) {
@@ -1217,19 +1217,19 @@ Cardinal *n;
 
   line_to_ip = _XawTextGetText(ctx, pos1, ctx->text.insertPos);
 
-  text.format = TextFormat(ctx);
+  text.format = _XawTextFormat(ctx);
   text.firstPos = 0;
 
-  if ( text.format == FMTWIDE ) {
+  if ( text.format == _XawFMTWIDE ) {
      wchar_t* ptr;
      text.ptr = XtMalloc( ( 1 + wcslen((wchar_t*)line_to_ip) ) * sizeof(wchar_t) );
 
      ptr = (wchar_t*)text.ptr;
-     ptr[0] = atowc( '\n' );
+     ptr[0] = _Xawatowc( XawLF );
      wcscpy( (wchar_t*) ++ptr, (wchar_t*) line_to_ip );
 
      length = wcslen((wchar_t*)text.ptr);
-     while ( length && ( iswspace(*ptr) || ( *ptr == atowc('\t') ) ) )
+     while ( length && ( iswspace(*ptr) || ( *ptr == _Xawatowc(XawTAB) ) ) )
          ptr++, length--;
      *ptr = (wchar_t)NULL;
      text.length = wcslen((wchar_t*)text.ptr);
@@ -1239,11 +1239,11 @@ Cardinal *n;
      text.ptr = XtMalloc( ( 1 + strlen( line_to_ip ) ) * sizeof( char ) );
      printf( "%p ", text.ptr );
      ptr = text.ptr;
-     ptr[0] = '\n';
+     ptr[0] = XawLF;
      strcpy( ++ptr, line_to_ip );
 
      length = strlen(text.ptr);
-     while ( length && ( isspace(*ptr) || ( *ptr == '\t' ) ) )
+     while ( length && ( isspace(*ptr) || ( *ptr == XawTAB ) ) )
          ptr++, length--;
      *ptr = '\0';
      text.length = strlen(text.ptr);
@@ -1528,10 +1528,10 @@ TextWidget ctx;
     return;
   
   text.format = FMT8BIT;
-  if (TextFormat(ctx) == FMTWIDE) {
-    text.format = FMTWIDE;
+  if (_XawTextFormat(ctx) == _XawFMTWIDE) {
+    text.format = _XawFMTWIDE;
     text.ptr =  (char *)XtMalloc(sizeof(wchar_t) * 2);
-    ((wchar_t*)text.ptr)[0] = atowc('\n');
+    ((wchar_t*)text.ptr)[0] = _Xawatowc(XawLF);
     ((wchar_t*)text.ptr)[1] = 0;
   } else
     text.ptr = "\n";
@@ -1556,8 +1556,8 @@ Cardinal* n;
   KeySym keysym;
   XawTextBlock text;
 
-  if (XtIsSubclass (w, (WidgetClass) multiSrcObjectClass))
-    text.length = _XawImWcLookupString (w->core.parent, &event->xkey,
+  if (XtIsSubclass (ctx->text.source, (WidgetClass) multiSrcObjectClass))
+    text.length = _XawImWcLookupString (w, &event->xkey,
 		(wchar_t*) strbuf, BUFSIZ, &keysym, (Status*) &compose_status);
   else
     text.length = XLookupString ((XKeyEvent*)event, strbuf, BUFSIZ, &keysym, &compose_status);
@@ -1565,8 +1565,8 @@ Cardinal* n;
   if (text.length == 0)
       return;
 
-  text.format = TextFormat( ctx );
-  if ( text.format == FMTWIDE ) {
+  text.format = _XawTextFormat( ctx );
+  if ( text.format == _XawFMTWIDE ) {
       text.ptr = ptr = XtMalloc(sizeof(wchar_t) * text.length * ctx->text.mult );
       for (count = 0; count < ctx->text.mult; count++ ) {
           memcpy((char*) ptr, (char *)strbuf, sizeof(wchar_t) * text.length );
@@ -1709,7 +1709,7 @@ Cardinal* num_params;
   int	   i;
 
   text.firstPos = 0;
-  text.format = TextFormat( ctx );
+  text.format = _XawTextFormat( ctx );
 
   StartAction(ctx, event);
   for ( i = *num_params; i; i--, params++ ) { /* DO FOR EACH PARAMETER */
@@ -1718,7 +1718,7 @@ Cardinal* num_params;
 
       if ( text.length == 0 ) continue;
 
-      if ( TextFormat( ctx ) == FMTWIDE ) { /* convert to WC */
+      if ( _XawTextFormat( ctx ) == _XawFMTWIDE ) { /* convert to WC */
 
           int temp_len;
           text.ptr = (char*) _XawTextMBToWC( XtDisplay(w), text.ptr,
@@ -1871,12 +1871,12 @@ XawTextPosition from, to;
   /* Initialize our TextBlock with two spaces. */
 
   text.firstPos = 0;
-  text.format = TextFormat(ctx);
+  text.format = _XawTextFormat(ctx);
   if ( text.format == FMT8BIT )
       text.ptr= "  ";
   else {
-      wc_two_spaces[0] = atowc(' ');
-      wc_two_spaces[1] = atowc(' ');
+      wc_two_spaces[0] = _Xawatowc(XawSP);
+      wc_two_spaces[1] = _Xawatowc(XawSP);
       wc_two_spaces[2] = 0;
       text.ptr = (char*) wc_two_spaces;
   }
@@ -1913,8 +1913,8 @@ XawTextPosition from, to;
 
       text.length = 1;
       buf = _XawTextGetText(ctx, periodPos, next_word);
-      if (text.format == FMTWIDE) {
-        if ( (periodPos < endPos) && (((wchar_t*)buf)[0] == atowc('.')))
+      if (text.format == _XawFMTWIDE) {
+        if ( (periodPos < endPos) && (((wchar_t*)buf)[0] == _Xawatowc('.')))
           text.length++;
       } else
         if ( (periodPos < endPos) && (buf[0] == '.') )
@@ -1925,7 +1925,7 @@ XawTextPosition from, to;
        */
 
       for (i = 1 ; i < len; i++) 
-        if (text.format ==  FMTWIDE) {
+        if (text.format ==  _XawFMTWIDE) {
           if ( !iswspace(((wchar_t*)buf)[i]) || ((periodPos + i) >= to) ) {
              break;
           }
@@ -1964,12 +1964,12 @@ XawTextPosition from, to;
 
   text.firstPos = 0;
   text.length = 1;
-  text.format = TextFormat( ctx );
+  text.format = _XawTextFormat( ctx );
 
   if ( text.format == FMT8BIT )
       text.ptr = "\n";
   else {
-      wide_CR[0] = atowc('\n');
+      wide_CR[0] = _Xawatowc(XawLF);
       wide_CR[1] = 0;
       text.ptr = (char*) wide_CR;
   }
@@ -1994,7 +1994,7 @@ XawTextPosition from, to;
       len = (int) (space - eol);
       buf = _XawTextGetText(ctx, eol, space);
       for ( i = 0 ; i < len ; i++)
-      if (text.format == FMTWIDE) {
+      if (text.format == _XawFMTWIDE) {
           if (!iswspace(((wchar_t*)buf)[i]))
               break;
       } else
@@ -2110,11 +2110,11 @@ Cardinal* num_params;
   ctx->text.insertPos = end;
 
   text.firstPos = 0;
-  text.format = TextFormat(ctx);
+  text.format = _XawTextFormat(ctx);
 
   /* Retrieve text and swap the characters. */
     
-  if ( text.format == FMTWIDE) {
+  if ( text.format == _XawFMTWIDE) {
       wchar_t wc;
       wchar_t* wbuf;
 

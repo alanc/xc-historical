@@ -1,4 +1,4 @@
-/* $XConsortium: TextSrc.c,v 1.11 91/02/20 17:58:08 converse Exp $ */
+/* $XConsortium: TextSrc.c,v 1.13 94/01/31 10:50:31 kaleb Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -565,10 +565,10 @@ Atom selection;
  */
 XrmQuark
 #if NeedFunctionPrototypes
-TextFormat(TextWidget tw)
+_XawTextFormat(TextWidget tw)
 #else
-TextFormat(tw)
-TextWidget tw;
+_XawTextFormat(tw)
+    TextWidget tw;
 #endif
 {
   return (((TextSrcObject)(tw->text.source))->textSrc.text_format);

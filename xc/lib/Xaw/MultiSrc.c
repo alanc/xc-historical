@@ -1,4 +1,4 @@
-/* $XConsortium: MultiSrc.c,v 1.1 94/01/31 09:52:28 kaleb Exp $ */
+/* $XConsortium: MultiSrc.c,v 1.2 94/02/06 14:39:43 rws Exp $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -216,7 +216,7 @@ Initialize(request, new, args, num_args)
   LoadPieces(src, file, NULL);
 
   if (file != NULL) fclose(file);
-  src->text_src.text_format = FMTWIDE;
+  src->text_src.text_format = _XawFMTWIDE;
 
 }
 
@@ -240,7 +240,7 @@ ReadText(w, pos, text, length)
   XawTextPosition count, start;
   MultiPiece * piece = FindPiece(src, pos, &start);
     
-  text->format = FMTWIDE;
+  text->format = _XawFMTWIDE;
   text->firstPos = pos;
   text->ptr = (char *)(piece->text + (pos - start));
   count = piece->used - (pos - start);
@@ -271,14 +271,15 @@ ReplaceText( w, startPos, endPos, u_text_p)
   Boolean local_artificial_block = False;
   XawTextBlock text;
 
-  /* STEP 1: The user handed me a text block called `u_text' that may be in either
-  FMTWIDE or FMT8BIT (ie MB.)  Later code needs the block `text' to hold FMTWIDE.
-  So, this copies `u_text' to `text', and if `u_text' was MB, I knock it up to WIDE. */
+  /* STEP 1: The user handed me a text block called `u_text' that may be 
+   * in either FMTWIDE or FMT8BIT (ie MB.)  Later code needs the block 
+   * `text' to hold FMTWIDE.  So, this copies `u_text' to `text', and if 
+   * `u_text' was MB, I knock it up to WIDE. */
 
-  if ( u_text_p->length == 0 )	/* if so, the block contents never refered to. */
+  if ( u_text_p->length == 0 )	/* if so, the block contents never ref'd. */
       text.length = 0;
 
-  else if ( u_text_p->format == FMTWIDE) {
+  else if ( u_text_p->format == _XawFMTWIDE) {
       local_artificial_block = False;		/* ie, don't have to free it ourselves*/
       text.firstPos = u_text_p->firstPos;
       text.length =   u_text_p->length;
@@ -505,17 +506,17 @@ Scan( w, position, type, dir, count, include )
 	    non_space = TRUE;
 	}
 	else if (type == XawstEOL) {
-          if (c == atowc('\n')) break;
+          if (c == _Xawatowc(XawLF)) break;
 	}
 	else { /* XawstParagraph */
 	  if (first_eol) {
-            if (c == atowc('\n')) {
+            if (c == _Xawatowc(XawLF)) {
 	      first_eol_position = position;
 	      first_eol = FALSE;
 	    }
 	  }
 	  else
-            if ( c == atowc('\n'))
+            if ( c == _Xawatowc(XawLF))
               break;
             else if ( !iswspace(c) )
 	      first_eol = TRUE;
@@ -607,7 +608,7 @@ Search(w, position, dir, text )
   /*if the block was FMT8BIT, length will convert to REAL wchar count below */
   wtarget_len = text->length;
 
-  if ( text->format == FMTWIDE )
+  if ( text->format == _XawFMTWIDE )
       wtarget = &( ((wchar_t*)text->ptr) [text->firstPos] );
   else
   {

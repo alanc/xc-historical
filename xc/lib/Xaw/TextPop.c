@@ -1,4 +1,4 @@
-/* $XConsortium: TextPop.c,v 1.26 94/01/31 10:55:48 kaleb Exp $ */
+/* $XConsortium: TextPop.c,v 1.27 94/02/06 11:07:17 rws Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -295,7 +295,7 @@ char *str;
       XtErrorMsg("readError", "insertFileNamed", "XawError",
                  "fread returned error.", NULL, NULL);
 
- /* DELETE if (text.format == FMTWIDE) {
+ /* DELETE if (text.format == _XawFMTWIDE) {
      wchar_t* _XawTextMBToWC();
      wchar_t* wstr;
      wstr = _XawTextMBToWC(XtDisplay(tw), text.ptr, &(text.length));
@@ -540,7 +540,7 @@ Cardinal * num_params;
   if (*num_params == 2 )
       ptr = params[1];
   else
-      if (TextFormat(ctx) == FMTWIDE) {
+      if (_XawTextFormat(ctx) == _XawFMTWIDE) {
           /*This just does the equivalent of ptr = ""L, a waste because params[1] isnt W aligned.*/
           ptr = (char *)XtMalloc(sizeof(wchar_t));
           *((wchar_t*)ptr) = (wchar_t)NULL;
@@ -820,7 +820,7 @@ struct SearchAndReplace * search;
   TextWidget ctx = (TextWidget)tw;
 
   text.ptr = GetStringRaw(search->search_text);
-  if ((text.format = TextFormat(ctx)) == FMTWIDE)
+  if ((text.format = _XawTextFormat(ctx)) == _XawFMTWIDE)
       text.length = wcslen((wchar_t*)text.ptr);
   else
       text.length = strlen(text.ptr);
@@ -953,7 +953,7 @@ Boolean once_only, show_current;
   TextWidget ctx = (TextWidget)tw;
 
   find.ptr = GetStringRaw( search->search_text);
-  if ((find.format = TextFormat(ctx)) == FMTWIDE)
+  if ((find.format = _XawTextFormat(ctx)) == _XawFMTWIDE)
       find.length = wcslen((wchar_t*)find.ptr);
   else
       find.length = strlen(find.ptr);
@@ -961,7 +961,7 @@ Boolean once_only, show_current;
 
   replace.ptr = GetStringRaw(search->rep_text);
   replace.firstPos = 0;
-  if ((replace.format = TextFormat(ctx)) == FMTWIDE)
+  if ((replace.format = _XawTextFormat(ctx)) == _XawFMTWIDE)
       replace.length = wcslen((wchar_t*)replace.ptr);
   else
       replace.length = strlen(replace.ptr);

@@ -1,4 +1,4 @@
-/* $XConsortium: Text.h,v 1.41 91/07/22 19:05:20 converse Exp $ */
+/* $XConsortium: Text.h,v 1.42 94/01/31 10:55:05 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -135,7 +135,7 @@ typedef struct {
 #define XawPositionError	2
 
 extern unsigned long FMT8BIT;
-extern unsigned long FMTWIDE;
+extern unsigned long _XawFMTWIDE;
 
 /* Class record constants */
 
@@ -146,7 +146,7 @@ typedef struct _TextRec      *TextWidget;
 
 _XFUNCPROTOBEGIN
 
-extern XrmQuark TextFormat(
+extern XrmQuark _XawTextFormat(
 #if NeedFunctionPrototypes
     TextWidget		/* tw */
 #endif

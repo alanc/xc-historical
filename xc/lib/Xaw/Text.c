@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.188 94/01/31 10:55:01 kaleb Exp $ */
+/* $XConsortium: Text.c,v 1.189 94/02/05 18:10:29 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -51,7 +51,7 @@ SOFTWARE.
 #define MAX_LEN_CT 6		/* for sequence: ESC $ ( A \xx \xx */
 #endif
 
-unsigned long FMTWIDE = 0L;
+unsigned long _XawFMTWIDE = 0L;
 unsigned long FMT8BIT = 0L;
 
 #define SinkClearToBG          XawTextSinkClearToBackground
@@ -277,8 +277,8 @@ ClassInitialize()
 
   if (!FMT8BIT)
     FMT8BIT = XrmPermStringToQuark("FMT8BIT");
-  if (!FMTWIDE)
-    FMTWIDE = XrmPermStringToQuark("FMTWIDE");
+  if (!_XawFMTWIDE)
+    _XawFMTWIDE = XrmPermStringToQuark("FMTWIDE");
 
   XawInitializeWidgetSet();
 
@@ -690,9 +690,9 @@ XawTextPosition left, right;
   XawTextBlock text;
   int bytes;
 
-  if (TextFormat(ctx) == FMT8BIT)
+  if (_XawTextFormat(ctx) == FMT8BIT)
       bytes = sizeof(unsigned char);
-  else if (TextFormat(ctx) == FMTWIDE) 
+  else if (_XawTextFormat(ctx) == _XawFMTWIDE) 
       bytes = sizeof(wchar_t);
   else /* if there is another fomat, add here */
       bytes = 1;
@@ -729,14 +729,13 @@ XawTextPosition left, right;
   wchar_t *ws, wc;
 
   /* allow ESC in accordance with ICCCM */
-#define ESC	'\033'
-  if (TextFormat(ctx) == FMTWIDE) {
+  if (_XawTextFormat(ctx) == _XawFMTWIDE) {
      ws = (wchar_t *)_XawTextGetText(ctx, left, right);
      n = wcslen(ws);
      for (j = 0, i = 0; j < n; j++) {
          wc = ws[j];
          if (iswprint(wc) || 
-            (wc == atowc('\t')) || (wc == atowc('\n')) || (wc == atowc(ESC)))
+            (wc == _Xawatowc(XawTAB)) || (wc == _Xawatowc(XawLF)) || (wc == _Xawatowc(XawESC)))
             ws[i++] = wc;
      }
      ws[i] = (wchar_t)NULL;
@@ -749,7 +748,7 @@ XawTextPosition left, right;
      for (j = 0; j < n; j++) {
 	c = s[j];
 	if (((c >= 0x20) && c <= 0x7f) ||
-	   (c >= 0xa0) || (c == '\t') || (c == '\n') || (c == ESC)) {
+	   (c >= 0xa0) || (c == XawTAB) || (c == XawLF) || (c == XawESC)) {
 	   s[i] = c;
 	   i++;
 	}
@@ -1514,7 +1513,7 @@ int *format;
       *target == XA_TEXT(d) ||
       *target == XA_COMPOUND_TEXT(d)) {
 	if (*target == XA_TEXT(d)) {
-	    if (TextFormat(ctx) == FMTWIDE)
+	    if (_XawTextFormat(ctx) == _XawFMTWIDE)
 		*type = XA_COMPOUND_TEXT(d);
 	    else
 		*type = XA_STRING;
@@ -1530,7 +1529,7 @@ int *format;
 	 */
 	if (!salt) {
 	    *value = _XawTextGetSTRING(ctx, s->left, s->right);
-	    if (TextFormat(ctx) == FMTWIDE) {
+	    if (_XawTextFormat(ctx) == _XawFMTWIDE) {
 		XTextProperty textprop;
 		if (XwcTextListToTextProperty(d, (wchar_t **)value, 1,
 					      XCompoundTextStyle, &textprop)
@@ -1549,7 +1548,7 @@ int *format;
 	    strcpy (*value, salt->contents);
 	    *length = salt->length;
 	}
-	if (TextFormat(ctx) == FMTWIDE && *type == XA_STRING) {
+	if (_XawTextFormat(ctx) == _XawFMTWIDE && *type == XA_STRING) {
 	    XTextProperty textprop;
 	    wchar_t **wlist;
 	    int count;
@@ -1762,7 +1761,7 @@ int	num_atoms;
     salt->s.right = ctx->text.s.right;
     salt->s.type = ctx->text.s.type;
     salt->contents = _XawTextGetSTRING(ctx, ctx->text.s.left, ctx->text.s.right);
-    if (TextFormat(ctx) == FMTWIDE) {
+    if (_XawTextFormat(ctx) == _XawFMTWIDE) {
 	XTextProperty textprop;
 	if (XwcTextListToTextProperty(XtDisplay((Widget)ctx),
 			(wchar_t**)(&(salt->contents)), 1, XCompoundTextStyle,
@@ -1847,7 +1846,7 @@ Cardinal count;
           unsigned char *ptr = (unsigned char *)
 			_XawTextGetText(ctx, ctx->text.s.left, ctx->text.s.right);
 
-          if (TextFormat(ctx) == FMTWIDE) {
+          if (_XawTextFormat(ctx) == _XawFMTWIDE) {
               XTextProperty textprop;
               if (XwcTextListToTextProperty(XtDisplay(w), (wchar_t**)&ptr, 1,
 			                  XCompoundTextStyle, &textprop) < Success) {
@@ -1875,7 +1874,7 @@ Cardinal count;
 
 	tptr= ptr= (unsigned char *) _XawTextGetSTRING(ctx, ctx->text.s.left, 
 						       ctx->text.s.right);
-	if (TextFormat(ctx) == FMTWIDE) {
+	if (_XawTextFormat(ctx) == _XawFMTWIDE) {
 	   /*
 	    * Only XA_STRING(Latin 1) is allowed in CUT_BUFFER,
 	    * so we get it from wchar string, then free the wchar string.

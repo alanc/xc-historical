@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.50 94/01/31 10:55:09 kaleb Exp $
+* $XConsortium: TextP.h,v 1.51 94/02/05 18:10:22 kaleb Exp $
 */
 
 
@@ -54,6 +54,7 @@ extern Cardinal _XawTextActionsTableCount;
 #define XawBS	0x08
 #define XawSP	0x20
 #define XawDEL	0x7f
+#define XawESC  0x1b
 #define XawBSLASH '\\'
 
 /* constants that subclasses may want to know */

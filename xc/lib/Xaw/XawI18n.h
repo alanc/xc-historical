@@ -1,4 +1,4 @@
-/* $XConsortium: XawI18n.h,v 1.2 94/02/06 13:47:46 kaleb Exp $ */
+/* $XConsortium: XawI18n.h,v 1.3 94/02/06 20:52:44 rws Exp $ */
 
 /************************************************************
 Copyright 1993 by The Massachusetts Institute of Technology
@@ -57,20 +57,13 @@ extern int _iswspace(wchar_t);
 
 /* now deal with the exceptions */
 
-#if defined(sony) && !defined(SVR4)
+#if defined(sony) && !defined(SVR4) /* old Sony */
 #include <jctype.h>
 #define iswspace(c) jisspace(c)
-#define iswprint(c) jisalpha(c) || jisnumeric(c) || jiskigou(c) || jisspace(c)
+#define Iswprint(c) jisalpha(c) || jisnumeric(c) || jiskigou(c) || jisspace(c)
 #endif
 
-#if defined(__osf__) && !defined(__WCHAR_T_LEN)
-/* OSF/1 1.x on DECstation 3100 */
-#include <jctype.h>
-#define iswspace(c) isjspace(c)
-#define iswprint(c) isjalphanum(c) || isjpunct(c) || isjspace(c)
-#endif
-
-#if defined(ultrix) || (defined(sun) && !defined(SVR4)) || defined(macII) || defined(bsdi) || defined(CRAY)
+#if defined(ultrix) || (defined(sun) && !defined(SVR4)) || defined(macII) || defined(bsdi) || defined(CRAY) || (defined(__osf__) && !defined(__WCHAR_T_LEN))
 #define wcslen(c) _Xwcslen(c)
 #define wcscpy(d,s) _Xwcscpy(d,s)
 #define wcsncpy(d,s,l) _Xwcsncpy(d,s,l)
@@ -79,7 +72,7 @@ extern int _iswspace(wchar_t);
 #endif
 #endif
 
-extern wchar_t atowc (
+extern wchar_t _Xawatowc (
 #if NeedFunctionPrototypes
     unsigned char	c
 #endif
@@ -88,8 +81,8 @@ extern wchar_t atowc (
 
 /* 
  * At this point the only place these are undefined is on, e.g. 
- * SunOS 4.x and Ultrix, whose locale support only includes LC_CTYPE 
- * anyway.
+ * SunOS 4.x, Ultrix, and old MIPS OSF/1, whose locale support only 
+ * includes C locale anyway.
  */
 
 #include <ctype.h>
