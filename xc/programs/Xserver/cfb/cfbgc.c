@@ -1,4 +1,4 @@
-/* $Header: cfbgc.c,v 1.1 87/07/13 17:57:36 toddb Locked $ */
+/* $Header: cfbgc.c,v 1.2 87/07/13 17:58:07 toddb Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -608,7 +608,7 @@ cfbChangeClip(pGC, type, pvalue, nrects)
 {
     switch (pGC->depth) {
     case 1:
-	mfbChangeClip(pGC);
+	mfbChangeClip(pGC, type, pvalue, nrects);
 	return;
     case PSZ:
 	break;
