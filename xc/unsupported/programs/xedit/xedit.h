@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$XConsortium: xedit.h,v 1.16 89/05/11 18:49:46 kit Exp $";
+ *	rcs_id[] = "$XConsortium: xedit.h,v 1.17 89/07/09 16:05:46 kit Exp $";
  */
  
 /*
@@ -53,20 +53,14 @@ extern void Feep();
 
 /*	externals in util.c 	*/
 
+extern void   XeditPrintf();
 extern Widget MakeCommandButton();
 extern Widget MakeStringBox();
 extern String GetString();
 
 /*	externs in commands.c 	*/
 
-extern void DoJump();
 extern void DoQuit();
-extern void DoReplaceOne();
-extern void DoReplaceAll();
-extern void DoSearchRight();
-extern void DoSearchLeft();
-extern void DoUndo();
-extern void DoUndoMore();
 extern void DoSave();
 extern void DoLoad();
-extern void DoEdit();
+

@@ -1,6 +1,6 @@
-#ifndef lint
-static char rcs_id[] = "$XConsortium: xedit.c,v 1.18 89/05/11 18:49:41 kit Exp $";
-#endif
+#if (!defined(lint) && !defined(SABER))
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.94 89/07/16 16:20:33 kit Exp $";
+#endif /* lint && SABER */
  
 /*
  *			  COPYRIGHT 1987
@@ -30,7 +30,6 @@ static char rcs_id[] = "$XConsortium: xedit.c,v 1.18 89/05/11 18:49:41 kit Exp $
 #include "xedit.h"
 
 Widget textwindow, messwidget, labelwindow, filenamewindow;
-Widget searchstringwindow, replacestringwindow;
 
 Display *CurDpy;
 
@@ -52,23 +51,23 @@ main(argc, argv)
 int argc;
 char **argv;
 {
-  Widget toplevel;
+  Widget top;
   String filename = NULL;
   static void makeButtonsAndBoxes();
 
-  toplevel = XtInitialize( "xedit", "Xedit", NULL, 0, &argc, argv);
+  top = XtInitialize( "xedit", "Xedit", NULL, 0, &argc, argv);
   
-  XtGetApplicationResources(toplevel, &app_resources, resources,
+  XtGetApplicationResources(top, &app_resources, resources,
 			    XtNumber(resources), NULL, 0);
 
-  CurDpy = XtDisplay(toplevel);
+  CurDpy = XtDisplay(top);
 
   if (argc > 1) 
     filename = argv[1];
-  makeButtonsAndBoxes(toplevel, filename);
-  XtRealizeWidget(toplevel);
-  XDefineCursor(XtDisplay(toplevel),XtWindow(toplevel),
-		XCreateFontCursor( XtDisplay(toplevel), XC_left_ptr));
+  makeButtonsAndBoxes(top, filename);
+  XtRealizeWidget(top);
+  XDefineCursor(XtDisplay(top),XtWindow(top),
+		XCreateFontCursor( XtDisplay(top), XC_left_ptr));
   XtMainLoop();
 }
 
@@ -77,48 +76,39 @@ makeButtonsAndBoxes(parent, filename)
 Widget parent;
 char * filename;
 {
-  Widget outer, Row1, Row2;
+  Widget outer, b_row;
 
   Arg arglist[10];
   Cardinal num_args;
 
-  outer = XtCreateManagedWidget( "vpaned", panedWidgetClass, parent,
-				NULL, 0 );
-  
-  Row1 = XtCreateManagedWidget("row1", panedWidgetClass, outer, NULL,0);
+  outer = XtCreateManagedWidget( "paned", panedWidgetClass, parent,
+				NULL, ZERO);
+ 
+  b_row= XtCreateManagedWidget("buttons", panedWidgetClass, outer, NULL, ZERO);
   {
-    MakeCommandButton(Row1, "quit", DoQuit);
-    MakeCommandButton(Row1, "save", DoSave);
-    MakeCommandButton(Row1, "load", DoLoad);
-    filenamewindow = MakeStringBox(Row1, "filename", filename); 
-    MakeCommandButton(Row1, "jump", DoJump);
+    MakeCommandButton(b_row, "quit", DoQuit);
+    MakeCommandButton(b_row, "save", DoSave);
+    MakeCommandButton(b_row, "load", DoLoad);
+    filenamewindow = MakeStringBox(b_row, "filename", filename); 
   }
-  Row2 = XtCreateManagedWidget("row2", panedWidgetClass, outer, NULL,0);
-  {
-    MakeCommandButton(Row2, "searchLeft", DoSearchLeft);
-    MakeCommandButton(Row2,"searchRight",DoSearchRight); 
-    searchstringwindow = MakeStringBox(Row2, "searchString", NULL); 
-    MakeCommandButton(Row2, "replace", DoReplaceOne);
-    MakeCommandButton(Row2, "all", DoReplaceAll);
-    replacestringwindow = MakeStringBox(Row2, "replaceString", NULL); 
-  }
-  
+  XtCreateManagedWidget("bc_label", labelWidgetClass, outer, NULL, ZERO);
+
   num_args = 0;
-  XtSetArg(arglist[num_args], XtNtextOptions, (scrollVertical | wordBreak) );
+  XtSetArg(arglist[num_args], XtNtextOptions, (scrollVertical | autoFill) );
   num_args++;
   XtSetArg(arglist[num_args], XtNeditType, XawtextEdit); num_args++;
   messwidget = XtCreateManagedWidget("messageWindow", asciiTextWidgetClass,
 				      outer, arglist, num_args);
 
   num_args = 0;
-  if (filename != NULL) {
+  if (filename != NULL) 
     XtSetArg(arglist[num_args], XtNlabel, filename); num_args++;
-  }
+
   labelwindow = XtCreateManagedWidget("labelWindow",labelWidgetClass, 
 				      outer, arglist, num_args);
 
   num_args = 0;
-  XtSetArg(arglist[num_args], XtNtextOptions, (scrollVertical | wordBreak) );
+  XtSetArg(arglist[num_args], XtNtextOptions, (scrollVertical | autoFill) );
   num_args++;
   XtSetArg(arglist[num_args], XtNstring, filename); num_args++;
   XtSetArg(arglist[num_args], XtNtype, XawAsciiFile); num_args++;

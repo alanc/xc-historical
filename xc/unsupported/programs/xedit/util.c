@@ -1,6 +1,6 @@
-#ifndef lint
-static char rcs_id[] = "$XConsortium: util.c,v 1.10 89/05/11 18:49:33 kit Exp $";
-#endif
+#if (!defined(lint) && !defined(SABER))
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.94 89/07/16 16:20:33 kit Exp $";
+#endif /* lint && SABER */
 
 /*
  *			  COPYRIGHT 1987
@@ -32,6 +32,7 @@ static char rcs_id[] = "$XConsortium: util.c,v 1.10 89/05/11 18:49:33 kit Exp $"
 
 extern Widget messwidget;
 
+void
 XeditPrintf(str)
 char * str;
 {

@@ -1,6 +1,6 @@
-#ifndef lint
-static char rcs_id[] = "$XConsortium: commands.c,v 1.20 89/05/11 18:49:22 kit Exp $";
-#endif
+#if (!defined(lint) && !defined(SABER))
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.94 89/07/16 16:20:33 kit Exp $";
+#endif /* lint && SABER */
 
 /*
  *			  COPYRIGHT 1987
@@ -31,7 +31,6 @@ static char rcs_id[] = "$XConsortium: commands.c,v 1.20 89/05/11 18:49:22 kit Ex
 #include "xedit.h"
 
 extern Widget textwindow, labelwindow, filenamewindow;
-extern Widget searchstringwindow, replacestringwindow;
 
 static Boolean double_click = FALSE;
 
@@ -82,117 +81,12 @@ void
 DoQuit()
 {
   if( double_click || !XawAsciiSourceChanged(textwindow) ) {
-    exit(0);
+    exit(0); 
   } 
   XeditPrintf("Unsaved changes. Save them, or press Quit again.\n");
   Feep();
   double_click = TRUE;
   AddDoubleClickCallback(textwindow, TRUE);
-}
-
-static Boolean
-Replace(report_error)
-Boolean report_error;
-{
-  static XawTextPosition Search();
-  char * string = GetString(searchstringwindow);
-  XawTextPosition pos;
-  XawTextBlock text;
-  int ret_val;
-
-  if ( (pos = Search(string, XawsdRight, report_error)) == XawTextSearchError)
-    return(FALSE);
-
-  text.ptr = GetString(replacestringwindow);
-  text.length = strlen(text.ptr);
-  text.format = FMT8BIT;
-  text.firstPos = 0;
-
-  ret_val = XawTextReplace(textwindow, pos, pos + strlen(string), &text);
-  if (ret_val != XawEditDone) {
-    XeditPrintf("Replace: Error returned from XtTextReplace.\n");
-    Feep();
-    return(FALSE);
-  }
-  
-  XawTextSetInsertionPoint(textwindow, pos + text.length);
-  XawTextSetSelection(textwindow, pos, pos + text.length);
-  return(TRUE);
-}
-
-void
-DoReplaceOne()
-{
-  if (!Replace(TRUE)) {
-    XeditPrintf("Replace: nothing replaced.\n");
-  }
-}
-
-void
-DoReplaceAll()
-{
-  int count;
-
-  for ( count = 0; Replace(count == 0) ; count++ );
-
-  if (count == 0) 
-    XeditPrintf("ReplaceAll: nothing replaced\n");
-  else {
-    char buf[BUFSIZ];
-    sprintf(buf, "%d Replacement%s made\n", count, ((count>1) ? "s" : "") );
-    XeditPrintf(buf);
-  }
-}
-
-static XawTextPosition
-Search(string, direction, report_error)	
-char * string;
-XawTextScanDirection direction;
-Boolean report_error;
-{
-  XawTextBlock text;
-  XawTextPosition pos;
-
-  text.ptr = string;
-  text.length = strlen(string);
-  text.format = FMT8BIT;
-  text.firstPos = 0;
-
-  pos = XawTextSearch(textwindow, direction, &text);
-  
-  if ((pos == XawTextSearchError) && (report_error)) {
-    char buf[BUFSIZ];
-    sprintf(buf, "Search: couldn't find ` %s '.\n", text.ptr); 
-    XeditPrintf(buf);
-    Feep();
-  }
-  return(pos);
-}
-
-void
-DoSearchRight()
-{
-  char * string = GetString(searchstringwindow);
-  XawTextPosition pos = Search(string, XawsdRight, TRUE);
-  int len;
-
-  if ( pos == XawTextSearchError) return;
-
-  len = strlen(string);
-  XawTextSetInsertionPoint(textwindow, pos + len);
-  XawTextSetSelection(textwindow, pos, pos + len);
-}
-
-void
-DoSearchLeft()
-{
-  char * string = GetString(searchstringwindow);
-  XawTextPosition pos = Search(string, XawsdLeft, TRUE);
-
-  if ( pos == XawTextSearchError) return;
-
-  XawTextSetInsertionPoint(textwindow, pos);
-  XawTextSetSelection(textwindow, pos, pos + strlen(string));
 }
 
 char *
@@ -270,13 +164,4 @@ DoLoad()
     XeditPrintf(buf);
     Feep();
   }
-}
-
-void
-DoJump()
-{
-  XeditPrintf("NIY - CDP 7/9/89.\n");
-/*
-  XeditPrintf("Please 'Select' a line number and try again.\n");
-*/
 }
