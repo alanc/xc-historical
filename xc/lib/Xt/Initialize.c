@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.173 91/01/09 20:11:32 gildea Exp $ */
+/* $XConsortium: Initialize.c,v 1.174 91/02/03 18:31:58 rws Exp $ */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 
 /***********************************************************
@@ -265,7 +265,7 @@ static Bool StoreDBEntry(db, bindings, quarks, type, value, data)
     XrmValuePtr		value;
     caddr_t		data;
 {
-    XrmQPutResource((XrmDatabase *)data, bindings, quarks, type, value);
+    XrmQPutResource((XrmDatabase *)data, bindings, quarks, *type, value);
     return False;
 }
 
