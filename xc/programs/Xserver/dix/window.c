@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.194 88/01/30 10:55:16 rws Exp $ */
+/* $Header: window.c,v 1.195 88/02/02 18:35:28 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -475,6 +475,19 @@ ClippedRegionFromBox(pWin, Rgn, x, y, w, h)
     (* pScreen->Intersect)(Rgn, Rgn, pWin->winSize);
 }
 
+WindowPtr
+RealChildHead(pWin)
+    register WindowPtr pWin;
+{
+    if (!pWin->parent &&
+	(screenIsSaved == SCREEN_SAVER_ON) &&
+	(savedScreenInfo[pWin->drawable.pScreen->myNum].blanked ==
+	 SCREEN_IS_TILED))
+	return (pWin->firstChild);
+    else
+	return ((WindowPtr)NULL);
+}
+
 /*****
  * CreateWindow
  *    Makes a window in response to client request 
@@ -495,7 +508,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     VisualID visual;
     int *error;
 {
-    WindowPtr pWin;
+    WindowPtr pWin, pHead;
     ScreenPtr pScreen;
     xEvent event;
     int idepth, ivisual;
@@ -629,19 +642,16 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 	(* pScreen->RegionCopy)(pWin->borderSize, pWin->winSize);
 
     pWin->parent = pParent;    
-    if ((screenIsSaved == SCREEN_SAVER_ON)
-	&& (pParent == &WindowTable[pScreen->myNum])
-	&& (pParent->firstChild)
-	&& (savedScreenInfo[pScreen->myNum].blanked == SCREEN_IS_TILED))
+    pHead = RealChildHead(pParent);
+    if (pHead)
     {
-	WindowPtr pFirst = pParent->firstChild;
-	pWin->nextSib = pFirst->nextSib;
-        if (pFirst->nextSib)
-    	    pFirst->nextSib->prevSib = pWin;
+	pWin->nextSib = pHead->nextSib;
+        if (pHead->nextSib)
+    	    pHead->nextSib->prevSib = pWin;
 	else
 	    pParent->lastChild = pWin;
-        pFirst->nextSib = pWin;
-	pWin->prevSib = pFirst;
+        pHead->nextSib = pWin;
+	pWin->prevSib = pHead;
     }
     else
     {
@@ -793,9 +803,10 @@ DestroySubwindows(pWin, client)
     WindowPtr pWin;
     ClientPtr client;
 {
-    WindowPtr pChild, pSib;
+    register WindowPtr pChild, pSib, pHead;
 
-    for (pChild = pWin->lastChild; pChild; pChild = pSib)
+    pHead = RealChildHead(pWin);
+    for (pChild = pWin->lastChild; pChild != pHead; pChild = pSib)
     {
 	pSib = pChild->prevSib;
 	/* a little lazy evaluation, don't send exposes until all deleted */
@@ -1733,15 +1744,15 @@ WindowExtents(pWin, pBox)
         ( ((b1)->y1 >= (b2)->y2)) ) )
 
 static Bool
-AnyWindowOverlapsMe(pWin, box)
-    WindowPtr pWin;
+AnyWindowOverlapsMe(pWin, pHead, box)
+    WindowPtr pWin, pHead;
     register BoxPtr box;
 {
     WindowPtr pSib;
     BoxRec sboxrec;
     register BoxPtr sbox;
 
-    for (pSib = pWin->prevSib; pSib; pSib = pSib->prevSib)
+    for (pSib = pWin->prevSib; pSib != pHead; pSib = pSib->prevSib)
     {
 	if (pSib->mapped)
 	{
@@ -1811,10 +1822,13 @@ WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
 {
     BoxRec box;
     register ScreenPtr pScreen;
+    WindowPtr pHead, pFirst;
 
     if ((pWin == pWin->parent->firstChild) && 
 	(pWin == pWin->parent->lastChild))
         return((WindowPtr ) NULL);
+    pHead = RealChildHead(pWin->parent);
+    pFirst = pHead ? pHead->nextSib : pWin->parent->firstChild;
     pScreen = pWin->drawable.pScreen;
     box.x1 = x;
     box.y1 = y;
@@ -1825,10 +1839,10 @@ WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
       case Above:
         if (pSib)
            return(pSib);
-        else if (pWin == pWin->parent->firstChild)
+        else if (pWin == pFirst)
             return(pWin->nextSib);
         else
-            return(pWin->parent->firstChild);
+            return(pFirst);
       case Below:
         if (pSib)
 	    if (pSib->nextSib != pWin)
@@ -1842,12 +1856,12 @@ WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
 	{
             if ((IsSiblingAboveMe(pWin, pSib) == Above) &&
                 ((* pScreen->RectIn)(pSib->borderSize, &box) != rgnOUT))
-                return(pWin->parent->firstChild);
+                return(pFirst);
             else
                 return(pWin->nextSib);
 	}
-        else if (AnyWindowOverlapsMe(pWin, &box))
-            return(pWin->parent->firstChild);
+        else if (AnyWindowOverlapsMe(pWin, pHead, &box))
+            return(pFirst);
         else
             return(pWin->nextSib);
       case BottomIf:
@@ -1869,20 +1883,20 @@ WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
 	    if ((* pScreen->RectIn)(pSib->borderSize, &box) != rgnOUT)
             {
                 if (IsSiblingAboveMe(pWin, pSib) == Above)
-                    return(pWin->parent->firstChild);
+                    return(pFirst);
                 else 
                     return((WindowPtr)NULL);
             }
             else
                 return(pWin->nextSib);
 	}
-        else if (AnyWindowOverlapsMe(pWin, &box))
+        else if (AnyWindowOverlapsMe(pWin, pHead, &box))
 	{
 	    /* If I'm occluded, I can't possibly be the first child
              * if (pWin == pWin->parent->firstChild)
              *    return pWin->nextSib;
 	     */
-            return(pWin->parent->firstChild);
+            return(pFirst);
 	}
         else if (IOverlapAnyWindow(pWin, &box))
             return((WindowPtr)NULL);
@@ -2177,25 +2191,32 @@ CirculateWindow(pParent, direction, client)
     int direction;
     ClientPtr client;
 {
-    register WindowPtr pWin;
+    register WindowPtr pWin, pHead, pFirst;
     xEvent event;
     BoxRec box;
 
+    pHead = RealChildHead(pParent);
+    pFirst = pHead ? pHead->nextSib : pParent->firstChild;
     if (direction == RaiseLowest)
+    {
 	for (pWin = pParent->lastChild;
-	     pWin &&
+	     (pWin != pHead) &&
 	     !(pWin->mapped &&
-	       AnyWindowOverlapsMe(pWin, WindowExtents(pWin, &box)));
+	       AnyWindowOverlapsMe(pWin, pHead, WindowExtents(pWin, &box)));
 	     pWin = pWin->prevSib) ;
+	if (pWin == pHead)
+	    return Success;
+    }
     else
-	for (pWin = pParent->firstChild;
+    {
+	for (pWin = pFirst;
 	     pWin &&
 	     !(pWin->mapped &&
 	       IOverlapAnyWindow(pWin, WindowExtents(pWin, &box)));
 	     pWin = pWin->nextSib) ;
-
-    if (!pWin)
-	return Success;
+	if (!pWin)
+	    return Success;
+    }
 
     event.u.circulate.window = pWin->wid;
     event.u.circulate.parent = pParent->wid;
@@ -2213,7 +2234,7 @@ CirculateWindow(pParent, direction, client)
     	    return(Success);            
     }
 
-    ReflectStackChange(pWin, (direction == RaiseLowest) ? pParent->firstChild
+    ReflectStackChange(pWin, (direction == RaiseLowest) ? pFirst
 						        : (WindowPtr)NULL);
 
     event.u.u.type = CirculateNotify;
@@ -2283,13 +2304,27 @@ ReparentWindow(pWin, pParent, x, y, client)
 
     /* insert at begining of pParent */
     pWin->parent = pParent;
-    pWin->nextSib = pParent->firstChild;
-    pWin->prevSib = (WindowPtr)NULL;
-    if (pParent->firstChild) 
-	pParent->firstChild->prevSib = pWin;
+    pPrev = RealChildHead(pParent);
+    if (pPrev)
+    {
+	pWin->nextSib = pPrev->nextSib;
+        if (pPrev->nextSib)
+    	    pPrev->nextSib->prevSib = pWin;
+	else
+	    pParent->lastChild = pWin;
+        pPrev->nextSib = pWin;
+	pWin->prevSib = pPrev;
+    }
     else
-        pParent->lastChild = pWin;
-    pParent->firstChild = pWin;
+    {
+        pWin->nextSib = pParent->firstChild;
+	pWin->prevSib = (WindowPtr)NULL;
+        if (pParent->firstChild) 
+	    pParent->firstChild->prevSib = pWin;
+        else
+            pParent->lastChild = pWin;
+	pParent->firstChild = pWin;
+    }
 
     pWin->clientWinSize.x = x;
     pWin->clientWinSize.y = y;
@@ -2600,7 +2635,7 @@ UnmapSubwindows(pWin, sendExposures)
     WindowPtr pWin;
     Bool sendExposures;
 {
-    register WindowPtr pChild;
+    register WindowPtr pChild, pHead;
     xEvent event;
     Bool (*UnrealizeWindow)();
     Bool wasMapped = (Bool)pWin->realized;
@@ -2614,7 +2649,8 @@ UnmapSubwindows(pWin, sendExposures)
     }
 
     UnrealizeWindow = pWin->drawable.pScreen->UnrealizeWindow;    
-    for (pChild = pWin->lastChild; pChild; pChild = pChild->prevSib)
+    pHead = RealChildHead(pWin);
+    for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
     {
 	if (pChild->mapped) 
         {
@@ -2636,7 +2672,7 @@ UnmapSubwindows(pWin, sendExposures)
     }
     if (wasMapped)
     {
-	(* pWin->drawable.pScreen->ValidateTree)(pWin, (WindowPtr) NULL, 
+	(* pWin->drawable.pScreen->ValidateTree)(pWin, pHead,
 						 TRUE, anyMarked);
 	if (sendExposures)
 	    HandleExposures(pWin);

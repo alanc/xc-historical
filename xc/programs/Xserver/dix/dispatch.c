@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.37 88/02/02 11:47:51 rws Exp $ */
+/* $Header: dispatch.c,v 1.38 88/02/02 19:59:05 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -51,6 +51,7 @@ extern void SaveScreens();
 extern void ReleaseActiveGrabs();
 extern void QueryFont();
 extern void NotImplemented();
+extern WindowPtr RealChildHead();
 
 Selection *CurrentSelections = (Selection *)NULL;
 int NumCurrentSelections = 0;
@@ -677,7 +678,7 @@ ProcQueryTree(client)
 
     xQueryTreeReply reply;
     int numChildren = 0;
-    register WindowPtr pChild, pWin;
+    register WindowPtr pChild, pWin, pHead;
     Window  *childIDs = (Window *)NULL;
     REQUEST(xResourceReq);
 
@@ -693,14 +694,15 @@ ProcQueryTree(client)
     else
         reply.parent = (Window)None;
 
-    for (pChild = pWin->lastChild; pChild; pChild = pChild->prevSib)
+    pHead = RealChildHead(pWin);
+    for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
 	numChildren++;
     if (numChildren)
     {
 	int curChild = 0;
 
 	childIDs = (Window *) xalloc(numChildren * sizeof(Window));
-	for (pChild = pWin->lastChild; pChild; pChild = pChild->prevSib)
+	for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
 	    childIDs[curChild++] = pChild->wid;
     }
     
