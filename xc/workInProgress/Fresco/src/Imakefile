@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.10 94/06/03 22:46:06 matt Exp matt $
+XCOMM $XConsortium: Imakefile,v 1.11 94/08/17 21:56:42 matt Exp matt $
 #define DoNormalLib NormalLibFresco
 #define DoSharedLib SharedLibFresco
 #define DoDebugLib DebugLibFresco
@@ -11,7 +11,7 @@ XCOMM $XConsortium: Imakefile,v 1.10 94/06/03 22:46:06 matt Exp matt $
 REQUIREDLIBS = SharedFrescoReqs
 #endif
 
-#ifdef HasPoll
+#if HasPoll
 POLL_DEFINES = -DUSE_POLL
 #endif
 
