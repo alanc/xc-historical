@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.17 91/03/01 16:05:29 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.26 91/07/16 20:24:51 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -301,7 +301,7 @@ doOpenFont(client, c)
 	UseFPE(pfont->fpe);
     }
     pfont->refcnt++;
-    if (patternCache)
+    if (patternCache && pfont->info.cachable)
 	CacheFontPattern(patternCache, c->origFontName, c->origFontNameLen,
 			 pfont);
 bail:
@@ -397,7 +397,7 @@ CloseFont(pfont, fid)
     if (pfont == NullFont)
 	return (Success);
     if (--pfont->refcnt == 0) {
-	if (patternCache)
+	if (patternCache && pfont->info.cachable)
 	    RemoveCachedFontPattern (patternCache, pfont);
 	/*
 	 * since the last reference is gone, ask each screen to free any
@@ -1161,6 +1161,20 @@ FreeFPE (fpe, force)
     }
 }
 
+DeleteClientFontStuff(client)
+    ClientPtr	client;
+{
+    int			i;
+    FontPathElementPtr	fpe;
+
+    for (i = 0; i < num_fpes; i++)
+    {
+	fpe = font_path_elements[i];
+	if (fpe_functions[fpe->type].client_died)
+	    (*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
+    }
+}
+
 InitFonts ()
 {
     patternCache = MakeFontPatternCache();
@@ -1218,7 +1232,7 @@ GetClientResolutions (num)
 int
 RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
 	   open_func, close_func, list_func, start_lfwi_func, next_lfwi_func,
-		     wakeup_func, render_names)
+		     wakeup_func, render_names, client_died)
     Bool        (*name_func) ();
     int         (*init_func) ();
     int         (*free_func) ();
@@ -1230,6 +1244,7 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     int         (*next_lfwi_func) ();
     int         (*wakeup_func) ();
     FontNamesPtr render_names;
+    int		(*client_died) ();
 {
     FPEFunctions *new;
 
@@ -1252,6 +1267,7 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     fpe_functions[num_fpe_types].init_fpe = init_func;
     fpe_functions[num_fpe_types].free_fpe = free_func;
     fpe_functions[num_fpe_types].reset_fpe = reset_func;
+    fpe_functions[num_fpe_types].client_died = client_died;
 
     fpe_functions[num_fpe_types].renderer_names = render_names;
     return num_fpe_types++;
