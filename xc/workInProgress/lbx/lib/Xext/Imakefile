@@ -1,13 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 1.50 94/04/07 15:05:27 rws Exp $
-#define DoNormalLib NormalLibXext
-#define DoSharedLib SharedLibXext
-#define DoDebugLib DebugLibXext
-#define DoProfileLib ProfileLibXext
-#define LibName lbxXext
-#define SoRev SOXEXTREV
-#define LibHeaders NO
-
+XCOMM $XConsortium: Imakefile,v 1.1 94/04/13 18:05:48 rws Exp mor $
 #include <Threads.tmpl>
+
+#define DoNormalLib YES
+#define LibName lbxXext
 
 #ifdef SharedXextReqs
 REQUIREDLIBS = SharedXextReqs
