@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.9 91/02/19 19:38:44 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.10 91/02/20 16:06:06 rws Exp $
  */
 
 /*
@@ -58,7 +58,7 @@ extern Bool     _XlcInitializeLocale();
 extern XLocale *_XlcGetLocaleTemplate();
 extern XLocale *_XlcGetCurrentLocale();
 
-XLocale        *_xlocale_ = NULL;
+XLocale        *_Xlocale_;
 
 char           *
 _Xsetlocale(lc_category, lc_name)
@@ -133,7 +133,7 @@ _Xsetlocale(lc_category, lc_name)
         strcpy(current->lc_im, template->lc_im);
         current->lc_im_name = template->lc_im_name;
     }
-    _xlocale_ = current;       /* for OS locale */
+    _Xlocale_ = current;       /* for OS locale */
     return current->lc_name;
 }
 
