@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: $
+ * $XConsortium: Login.c,v 1.5 88/09/23 14:20:08 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -52,13 +52,13 @@ static XtResource resources[] = {
     {XtNfailColor, XtCForeground, XtRPixel, sizeof (Pixel),
 	offset(failpixel), XtRString,	"Black"},
     {XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-    	offset (font), XtRString,	"vr-20"},
+    	offset (font), XtRString,	"*-times-bold-r-normal--18-*"},
     {XtNpromptFont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-    	offset (promptFont), XtRString, "vr-20"},
+    	offset (promptFont), XtRString, "*-times-bold-r-normal--18-*"},
     {XtNgreetFont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-    	offset (greetFont), XtRString,	"vri-30"},
+    	offset (greetFont), XtRString,	"*-times-bold-i-normal--24-*"},
     {XtNfailFont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-	offset (failFont), XtRString,	"fgi-20"},
+	offset (failFont), XtRString,	"*-times-bold-i-normal--18-*"},
     {XtNgreeting, XtCGreeting, XtRString, sizeof (char *),
     	offset(greeting), XtRString, "Welcome to the X Window System"},
     {XtNnamePrompt, XtCNamePrompt, XtRString, sizeof (char *),
