@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miglblt.c,v 5.3 90/02/02 18:04:21 keith Exp $ */
+/* $XConsortium: miglblt.c,v 5.4 91/01/27 13:01:30 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -91,7 +91,8 @@ miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     pfont = pGC->font;
     width = FONTMAXBOUNDS(pfont,rightSideBearing) - 
 	    FONTMINBOUNDS(pfont,leftSideBearing);
-    height = FONTASCENT(pfont) + FONTDESCENT(pfont);
+    height = FONTMAXBOUNDS(pfont,ascent) +
+	     FONTMAXBOUNDS(pfont,descent);
 
     pPixmap = (*pDrawable->pScreen->CreatePixmap)(pDrawable->pScreen,
 						  width, height, 1);
