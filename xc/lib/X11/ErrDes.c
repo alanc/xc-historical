@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.44 91/04/08 09:37:57 rws Exp $
+ * $XConsortium: XErrDes.c,v 11.45 91/05/04 14:02:29 rws Exp $
  */
 
 /***********************************************************
@@ -73,8 +73,9 @@ XGetErrorText(dpy, code, buffer, nbytes)
     char *buffer;
     int nbytes;
 {
-    char buf[32];
+    char buf[150];
     register _XExtension *ext;
+    _XExtension *bext = (_XExtension *)NULL;
 
     if (nbytes == 0) return;
     if (code <= BadImplementation && code > 0) {
@@ -82,13 +83,23 @@ XGetErrorText(dpy, code, buffer, nbytes)
 	XGetErrorDatabaseText(dpy, "XProtoError", buf, _XErrorList[code],
 			      buffer, nbytes);
     } else
-	sprintf(buffer, "%d", code);
+	buffer[0] = '\0';
     ext = dpy->ext_procs;
     while (ext) {		/* call out to any extensions interested */
  	if (ext->error_string != NULL) 
  	    (*ext->error_string)(dpy, code, &ext->codes, buffer, nbytes);
+	if (ext->codes.first_error &&
+	    ext->codes.first_error < code &&
+	    (!bext || ext->codes.first_error > bext->codes.first_error))
+	    bext = ext;
  	ext = ext->next;
     }    
+    if (!buffer[0] && bext) {
+	sprintf(buf, "%s.%d", bext->name, code - bext->codes.first_error);
+	XGetErrorDatabaseText(dpy, "XProtoError", buf, "", buffer, nbytes);
+    }
+    if (!buffer[0])
+	sprintf(buffer, "%d", code);
     return;
 }
 
