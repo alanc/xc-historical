@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: dispatch.c,v 1.7 94/01/11 20:45:48 rob Exp $ */
+/* $XConsortium: dispatch.c,v 1.8 94/01/19 17:17:49 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -124,7 +124,7 @@ static void KillAllClients(
 #endif
 );
 
-static void DeleteClientFromAnySelections(
+void DeleteClientFromAnySelections(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
 #endif
