@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.70 89/11/27 15:01:00 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.71 89/12/05 10:46:11 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -321,9 +321,9 @@
 #ifndef DestDir
 #define DestDir /* as nothing */
 #endif
-#ifndef UsrLibDir
-#define UsrLibDir $(DESTDIR)/usr/lib
-#endif
+#ifndef UsrLibDir			/* if changed under SunOS with shared */
+#define UsrLibDir $(DESTDIR)/usr/lib	/* libs, then need to run ldconfig */
+#endif					/* as root */
 #ifndef IncRoot
 #define IncRoot $(DESTDIR)/usr/include
 #endif
