@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.141 92/08/11 09:49:21 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.142 92/08/14 14:29:37 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -36,9 +36,14 @@ XCOMM $XConsortium: Imakefile,v 1.141 92/08/11 09:49:21 rws Exp $
 #if BuildXTrapExt
        XTRAPEXT = $(EXTENSIONSRC)/server/xtrap/libxtrapext.a
 #endif
-      OTHEREXTS = $(XINPUTEXT) $(XTRAPEXT)
+#if BuildXvExt
+       XVSRC = $(EXTENSIONSRC)/xv/server
+       XVEXT = $(EXTENSIONSRC)/xv/server/libxv.a
+#endif
+      OTHEREXTS = $(XINPUTEXT) $(XTRAPEXT) $(XVEXT)
+      OTHERDEPDIRS = $(XVSRC)
 
-        DEPDIRS = $(FONTSRC)/lib/font $(EXTENSIONSRC)/server
+        DEPDIRS = $(FONTSRC)/lib/font $(EXTENSIONSRC)/server $(OTHERDEPDIRS)
      NONPEXEXTS = $(OTHEREXTS) $(EXTENSIONSRC)/server/libext.a
      EXTENSIONS = $(NONPEXEXTS) $(PEXLIBS)
          XAULIB = $(XAUTHSRC)/libXau.a
@@ -194,10 +199,14 @@ ServerTarget(Xqvss,$(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
 XCOMM
 XCOMM Digital MIPS based WS server (ultrix 4.2 and beyond)
 XCOMM
-SUBDIRS0 = CFBSubdirs ddx/dec/ws
+#if BuildXvExt
+XVSUBDIRS = ddx/dec/tx $(XVSRC)/ddx/decrop
+XVLIBS = ddx/dec/tx/libtx.a $(XVSRC)/ddx/decrop/libdecrop.a
+#endif
+SUBDIRS0 = CFBSubdirs ddx/dec/ws $(XVSUBDIRS)
 DECDIRS = $(SUBDIRS0) $(DEPDIRS)
 DECOBJS = ddx/dec/ws/init.o
-DECLIBS = ddx/dec/ws/libdec.a CFBLibs
+DECLIBS = ddx/dec/ws/libdec.a $(XVLIBS) CFBLibs
 
 ServerTarget(Xdec,$(DECDIRS),$(DECOBJS),$(DECLIBS),$(SYSLIBS))
 #endif /* XdecServer */
@@ -241,12 +250,16 @@ XCOMM
 #if UseSunWindowsInServer
 SUNWINDOWSLIBS = -lsunwindow -lpixrect
 #endif
+#if BuildXvExt
+XVSUBDIRS = $(XVSRC)/ddx/sunrop
+XVLIBS = $(XVSRC)/ddx/sunrop/libsunrop.a
+#endif
 SUBDIRS0 = MFBSubdirs
-SUBDIRS1 = ddx/cfb ddx/cfb16 ddx/cfb32
+SUBDIRS1 = ddx/cfb ddx/cfb16 ddx/cfb32 $(XVSUBDIRS)
 SUBDIRS2 = ddx/sun
 SUNDIRS = $(SUBDIRS0) $(SUBDIRS1) $(SUBDIRS2) $(DEPDIRS)
 SUNOBJS = ddx/sun/sunInit.o
-SUNLIBS = ddx/sun/libsun.a CFBLibs
+SUNLIBS = ddx/sun/libsun.a CFBLibs $(XVLIBS)
 SUNSYSLIBS = $(SYSLIBS) $(SUNWINDOWSLIBS)
 
 ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
