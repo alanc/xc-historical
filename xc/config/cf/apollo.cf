@@ -2,9 +2,9 @@
  * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
  */
 
-#define OSName            Domain/IX 9.7
-#define OSMajorVersion    9
-#define OSMinorVersion    7
+#define OSName            Domain/IX 10.1
+#define OSMajorVersion    10
+#define OSMinorVersion    1
 
 #define XapolloServer     Xapollo
 #define CppCmd            /usr/lib/cpp
@@ -14,7 +14,7 @@
 #define SignalReturnProcType int
 
 
-/**/# platform:  $XConsortium: apollo.cf,v 1.4 89/03/20 13:47:52 jim Exp $
+/**/# platform:  $XConsortium: apollo.cf,v 1.5 89/04/20 19:28:04 rws Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
