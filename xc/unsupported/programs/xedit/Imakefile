@@ -1,6 +1,3 @@
-#ifdef RtArchitecture
-             CC = pcc
-#endif
 LOCAL_LIBRARIES = $(XAWLIB) $(XTOOLLIB) $(XLIB)
   SYS_LIBRARIES = -lm
            SRCS = xedit.c EDiskSrc.c ap.c commands.c ps.c util.c
