@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.15 94/08/30 17:21:19 mor Exp mor $ */
+/* $XConsortium: globals.c,v 1.16 94/11/14 15:30:27 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -31,6 +31,7 @@ List		*RestartAnywayList;
 List		*RestartImmedList;
 
 List		*WaitForSaveDoneList;
+List		*FailedSaveList;
 List		*WaitForInteractList;
 List		*WaitForPhase2List;
 
@@ -46,6 +47,7 @@ Bool		verbose = False;
 
 char		*sm_id = NULL;
 
+char		*networkIds = NULL;
 char		*session_name = NULL;
 
 IceAuthDataEntry *authDataEntries = NULL;
@@ -62,6 +64,7 @@ int		current_client_selected;
 
 int		sessionNameCount = 0;
 String		*sessionNames = NULL;
+Bool		*sessionLocked = NULL;
 
 int		num_clients_in_last_session = -1;
 
@@ -80,85 +83,5 @@ Bool		checkpoint_after_name = False;
 Bool		remote_allowed;
 
 XtAppContext	appContext;
-
 Widget		topLevel;
 
-Widget		    chooseSessionPopup;
-
-Widget		    	chooseSessionForm;
-
-Widget			    chooseSessionLabel;
-
-Widget			    chooseSessionListWidget;
-
-Widget			    chooseSessionMessageLabel;
-
-Widget			    chooseSessionLoadButton;
-
-Widget			    chooseSessionDeleteButton;
-
-Widget			    chooseSessionFailSafeButton;
-
-Widget			    chooseSessionCancelButton;
-
-Widget		    mainWindow;
-
-Widget		        clientInfoButton;
-Widget			nameSessionButton;
-Widget			checkPointButton;
-Widget			shutdownButton;
-Widget				shutdownMenu;
-Widget					shutdownSave;
-Widget					shutdownDontSave;
-
-Widget		    clientInfoPopup;
-
-Widget		    	clientInfoForm;
-
-Widget			    viewPropButton;
-Widget			    cloneButton;
-Widget			    killClientButton;
-Widget			    clientInfoDoneButton;
-Widget			    restartHintButton;
-Widget			    	restartHintMenu;
-Widget			    		restartIfRunning;
-Widget			    		restartAnyway;
-Widget			    		restartImmediately;
-Widget			    		restartNever;
-Widget			    clientListWidget;
-Widget			    manualRestartLabel;
-Widget			    manualRestartCommands;
-
-Widget		    clientPropPopup;
-
-Widget		    	clientPropForm;
-
-Widget			    clientPropDoneButton;
-Widget			    clientPropTextWidget;
-
-Widget		    savePopup;
-
-Widget			saveForm;
-
-Widget			    saveMessageLabel;
-
-Widget			    saveTypeLabel;
-Widget			    saveTypeGlobal;
-Widget			    saveTypeLocal;
-Widget			    saveTypeBoth;
-
-Widget			    interactStyleLabel;
-Widget			    interactStyleNone;
-Widget			    interactStyleErrors;
-Widget			    interactStyleAny;
-
-Widget			    saveOkButton;
-Widget			    saveCancelButton;
-
-Widget		    nameSessionPopup;
-
-Widget			nameSessionDialog;
-
-Widget			    nameSessionCheckpointButton;
-Widget			    nameSessionOkButton;
-Widget			    nameSessionCancelButton;
