@@ -50,7 +50,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 5.5 89/11/02 13:48:53 keith Exp $ */
+/* $XConsortium: cfbfillsp.c,v 5.6 89/11/06 08:42:27 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -122,15 +122,15 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int nlwidth;		/* width in longwords of bitmap */
     register int *addrl;	/* pointer to current longword in bitmap */
     register int width;		/* current span width */
+    register int nlmiddle;
+    register int fill;
     register int x;
     register int startmask;
     register int endmask;
-    register int nlmiddle;
     int rop;			/* rasterop */
     int planemask;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
-    int fill;
 
     if (!(planemask = pGC->planemask))
 	return;
@@ -318,8 +318,8 @@ int fSorted;
     int		 nlwidth;	/* width in longwords of bitmap */
     register int *pdst;		/* pointer to current word in bitmap */
     register int *psrc;		/* pointer to current word in tile */
-    register int startmask;
     register int nlMiddle;
+    register int startmask;
     PixmapPtr	pTile;		/* pointer to tile we want to fill with */
     int		w, width, x, tmpSrc, srcStartOver, nstart, nend;
     int		xSrc, ySrc;
@@ -507,7 +507,8 @@ int fSorted;
     int		 nlwidth;	/* width in longwords of bitmap */
     register int *pdst;		/* pointer to current word in bitmap */
     PixmapPtr	pStipple;	/* pointer to stipple we want to fill with */
-    int		w, width,  x, xrem, xSrc, ySrc;
+    register int w;
+    int		width,  x, xrem, xSrc, ySrc;
     unsigned int tmpSrc, tmpDst1, tmpDst2;
     int 	stwidth, stippleWidth, *psrcS, rop, stiprop;
     int		stippleHeight;
@@ -612,8 +613,8 @@ int fSorted;
 	    while(width > 0)
 	    {
 	        int xtemp, tmpx;
-		unsigned int *ptemp;
-		int *pdsttmp;
+		register unsigned int *ptemp;
+		register int *pdsttmp;
 		/*
 		 *  Do a stripe through the stipple & destination w pixels
 		 *  wide.  w is not more than:

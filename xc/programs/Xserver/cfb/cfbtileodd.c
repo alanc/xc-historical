@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbtileodd.c,v 1.2 89/09/14 17:04:58 rws Exp $ */
+/* $XConsortium: cfbtileodd.c,v 1.3 89/09/19 15:36:37 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -83,7 +83,7 @@ cfbFillBoxTileOdd (pDrawable, nBox, pBox, tile, xrot, yrot)
 
     int widthDst;		/* width in longwords of the dest pixmap */
     int w;		/* width of current box */
-    register int h;	/* height of current box */
+    int h;		/* height of current box */
     unsigned long startmask;
     unsigned long endmask;	/* masks for reggedy bits at either end of line */
     int nlwMiddle;	/* number of longwords between sides of boxes */
@@ -99,9 +99,9 @@ cfbFillBoxTileOdd (pDrawable, nBox, pBox, tile, xrot, yrot)
     unsigned long *pDstLine;	/* poitner to start of dest box */
     unsigned long *pSrcBase;	/* pointer to start of source */
     unsigned long *pSrcLine;	/* pointer to start of source line */
-    unsigned long *pDst;
-    unsigned long *pSrc;
-    unsigned long bits, tmp;
+    register unsigned long *pDst;
+    register unsigned long *pSrc;
+    register unsigned long bits, tmp;
     int xoffStart, xoff;
     int leftShiftStart, rightShiftStart, nlwSrcStart;
     unsigned long tileEndMask;

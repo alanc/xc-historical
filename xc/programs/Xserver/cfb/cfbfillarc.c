@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbfillarc.c,v 5.6 89/11/21 10:56:01 rws Exp $ */
+/* $XConsortium: cfbfillarc.c,v 5.7 89/11/21 18:02:38 keith Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -45,13 +45,13 @@ cfbFillEllipseSolidCopy(pDraw, pGC, arc)
     int iscircle;
     STUPID int x, y, e, ex;
     STUPID int yk, xk, ym, xm, dx, dy, xorg, yorg;
-    int slw;
     miFillArcRec info;
     int *addrlt, *addrlb;
     register int *addrl;
     register int n;
     int nlwidth;
     register int fill, xpos;
+    register int slw;
     int startmask, endmask, nlmiddle;
 
     if (pDraw->type == DRAWABLE_WINDOW)

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbtile.c,v 5.0 89/06/09 15:07:07 keith Exp $ */
+/* $XConsortium: mfbtile.c,v 5.1 89/09/13 18:58:34 rws Exp $ */
 #include "X.h"
 
 #include "windowstr.h"
@@ -65,15 +65,14 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
     int nlwidth;	/* width in longwords of the drawable */
     int w;		/* width of current box */
     register int h;	/* height of current box */
+    register int nlw;	/* loop version of nlwMiddle */
+    register unsigned int *p;	/* pointer to bits we're writing */
     int startmask;
     int endmask;	/* masks for reggedy bits at either end of line */
     int nlwMiddle;	/* number of longwords between sides of boxes */
-    register int nlwExtra;	
-		        /* to get from right of box to left of next span */
+    int nlwExtra;	/* to get from right of box to left of next span */
     
-    register int nlw;	/* loop version of nlwMiddle */
-    register unsigned int *p;	/* pointer to bits we're writing */
-    int iy;		/* index of current scanline in tile */
+    register int iy;	/* index of current scanline in tile */
 
 
     unsigned int *pbits;	/* pointer to start of drawable */

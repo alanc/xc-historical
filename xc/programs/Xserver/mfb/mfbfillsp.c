@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillsp.c,v 5.4 89/09/14 16:26:25 rws Exp $ */
+/* $XConsortium: mfbfillsp.c,v 5.5 89/11/02 13:44:51 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -70,9 +70,9 @@ void mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int *addrlBase;		/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
     register int *addrl;	/* pointer to current longword in bitmap */
+    register int nlmiddle;
     register int startmask;
     register int endmask;
-    register int nlmiddle;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
 
@@ -153,9 +153,9 @@ void mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int *addrlBase;		/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
     register int *addrl;	/* pointer to current longword in bitmap */
+    register int nlmiddle;
     register int startmask;
     register int endmask;
-    register int nlmiddle;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
 
@@ -236,9 +236,9 @@ void mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int *addrlBase;		/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
     register int *addrl;	/* pointer to current longword in bitmap */
+    register int nlmiddle;
     register int startmask;
     register int endmask;
-    register int nlmiddle;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
 
@@ -319,12 +319,12 @@ int fSorted;
     int *addrlBase;		/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
     register int *addrl;	/* pointer to current longword in bitmap */
+    register int src;
+    register int nlmiddle;
     register int startmask;
     register int endmask;
-    register int nlmiddle;
     PixmapPtr pStipple;
     int *psrc;
-    int src;
     int tileHeight;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
@@ -408,12 +408,12 @@ int fSorted;
     int *addrlBase;		/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
     register int *addrl;	/* pointer to current longword in bitmap */
+    register int src;
+    register int nlmiddle;
     register int startmask;
     register int endmask;
-    register int nlmiddle;
     PixmapPtr pStipple;
     int *psrc;
-    int src;
     int tileHeight;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
@@ -497,12 +497,12 @@ int fSorted;
     int *addrlBase;		/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
     register int *addrl;	/* pointer to current longword in bitmap */
+    register int src;
+    register int nlmiddle;
     register int startmask;
     register int endmask;
-    register int nlmiddle;
     PixmapPtr pStipple;
     int *psrc;
-    int src;
     int tileHeight;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
@@ -624,12 +624,12 @@ int fSorted;
     int *addrlBase;		/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
     register int *addrl;	/* pointer to current longword in bitmap */
+    register int src;
+    register int nlmiddle;
     register int startmask;
     register int endmask;
-    register int nlmiddle;
     PixmapPtr pTile;
     int *psrc;
-    register int src;
     int tileHeight;
     int rop;
     int *pwidthFree;		/* copies of the pointers to free */
@@ -748,11 +748,12 @@ int fSorted;
     int		 nlwidth;	/* width in longwords of bitmap */
     register unsigned int *pdst;/* pointer to current word in bitmap */
     register unsigned int *psrc;/* pointer to current word in tile */
-    register unsigned int startmask;
     register int nlMiddle;
+    register int rop, nstart;
+    unsigned int startmask;
     PixmapPtr	pTile;		/* pointer to tile we want to fill with */
-    int		w, width, x, xSrc, ySrc, srcStartOver, nstart, nend;
-    int 	tlwidth, rem, tileWidth, tileHeight, endinc, rop;
+    int		w, width, x, xSrc, ySrc, srcStartOver, nend;
+    int 	tlwidth, rem, tileWidth, tileHeight, endinc;
     unsigned int      endmask, *psrcT;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
@@ -916,11 +917,12 @@ int fSorted;
     int		 nlwidth;	/* width in longwords of bitmap */
     register int *pdst;		/* pointer to current word in bitmap */
     register int *psrc;		/* pointer to current word in tile */
-    register int startmask;
     register int nlMiddle;
+    register int rop, nstart;
+    int startmask;
     PixmapPtr	pTile;		/* pointer to tile we want to fill with */
-    int		w, width,  x, xSrc, ySrc, srcStartOver, nstart, nend;
-    int 	endmask, tlwidth, rem, tileWidth, *psrcT, endinc, rop;
+    int		w, width,  x, xSrc, ySrc, srcStartOver, nend;
+    int 	endmask, tlwidth, rem, tileWidth, *psrcT, endinc;
     int		tileHeight;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;

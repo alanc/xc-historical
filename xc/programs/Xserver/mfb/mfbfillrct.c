@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillrct.c,v 5.3 89/07/28 11:57:31 rws Exp $ */
+/* $XConsortium: mfbfillrct.c,v 5.4 89/09/13 18:57:55 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"
@@ -53,12 +53,12 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 {
     int xorg, yorg;
     register int n;		/* spare counter */
-    xRectangle *prect;		/* temporary */
+    register xRectangle *prect; /* temporary */
     RegionPtr prgnClip;
     register BoxPtr pbox;	/* used to clip with */
     register BoxPtr pboxClipped;
     BoxPtr pboxClippedBase;
-    BoxPtr pextent;
+    register BoxPtr pextent;
     mfbPrivGC	*priv;
     int alu;
     void (* pfn) ();

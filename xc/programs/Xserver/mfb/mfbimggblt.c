@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimggblt.c,v 5.2 89/07/17 10:23:32 rws Exp $ */
+/* $XConsortium: mfbimggblt.c,v 5.3 89/09/13 18:58:11 rws Exp $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -111,12 +111,12 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 			/* pointer to current row of glyph */
 
 			/* used for putting down glyph */    
+    register unsigned int tmpSrc;
+			/* for getting bits from glyph */
     register int startmask;
     register int endmask;
 
-    int nFirst;		/* bits of glyph in current longword */
-    register unsigned int tmpSrc;
-			/* for getting bits from glyph */
+    register int nFirst;/* bits of glyph in current longword */
     void (* oldFillArea)();
 			/* we might temporarily usurp this
 			   field in devPriv */

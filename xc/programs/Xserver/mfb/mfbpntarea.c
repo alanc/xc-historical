@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpntarea.c,v 5.0 89/06/09 15:06:55 keith Exp $ */
+/* $XConsortium: mfbpntarea.c,v 5.1 89/09/13 18:58:22 rws Exp $ */
 #include "X.h"
 
 #include "windowstr.h"
@@ -68,13 +68,13 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
     int nlwidth;	/* width in longwords of the drawable */
     int w;		/* width of current box */
     register int h;	/* height of current box */
+    register unsigned int *p;	/* pointer to bits we're writing */
+    register int nlw;	/* loop version of nlwMiddle */
     register int startmask;
-    int endmask;	/* masks for reggedy bits at either end of line */
-    int nlwMiddle;	/* number of longwords between sides of boxes */
+    register int endmask;/* masks for reggedy bits at either end of line */
     register int nlwExtra;	
 		        /* to get from right of box to left of next span */
-    register int nlw;	/* loop version of nlwMiddle */
-    register unsigned int *p;	/* pointer to bits we're writing */
+    int nlwMiddle;	/* number of longwords between sides of boxes */
     unsigned int *pbits;	/* pointer to start of drawable */
 
     if (pDraw->type == DRAWABLE_WINDOW)
@@ -188,16 +188,15 @@ MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
 
     int nlwidth;	/* width in longwords of the drawable */
     int w;		/* width of current box */
+    register int nlw;	/* loop version of nlwMiddle */
+    register unsigned int *p;	/* pointer to bits we're writing */
     register int h;	/* height of current box */
     int startmask;
     int endmask;	/* masks for reggedy bits at either end of line */
     int nlwMiddle;	/* number of longwords between sides of boxes */
-    register int nlwExtra;	
-		        /* to get from right of box to left of next span */
+    int nlwExtra;	/* to get from right of box to left of next span */
     
-    register int nlw;	/* loop version of nlwMiddle */
-    register unsigned int *p;	/* pointer to bits we're writing */
-    int iy;		/* index of current scanline in tile */
+    register int iy;	/* index of current scanline in tile */
 
 
     unsigned int *pbits;	/* pointer to start of drawable */

@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbfillarc.c,v 5.4 89/11/05 12:58:08 rws Exp $ */
+/* $XConsortium: mfbfillarc.c,v 5.5 89/11/05 15:15:12 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -33,12 +33,12 @@ static void
 mfbFillEllipseSolid(pDraw, arc, rop)
     DrawablePtr pDraw;
     xArc *arc;
-    int rop;
+    register int rop;
 {
     int iscircle;
     int x, y, e, ex;
     int yk, xk, ym, xm, dx, dy, xorg, yorg;
-    int slw;
+    register int slw;
     miFillArcRec info;
     int *addrlt, *addrlb;
     register int *addrl;
@@ -234,8 +234,10 @@ mfbFillArcSliceSolidCopy(pDraw, pGC, arc, rop)
     DrawablePtr pDraw;
     GCPtr pGC;
     xArc *arc;
-    int rop;
+    register int rop;
 {
+    register int *addrl;
+    register int n;
     int yk, xk, ym, xm, dx, dy, xorg, yorg, slw;
     register int x, y, e, ex;
     miFillArcRec info;
@@ -243,10 +245,8 @@ mfbFillArcSliceSolidCopy(pDraw, pGC, arc, rop)
     int xl, xr, xc;
     int iscircle;
     int *addrlt, *addrlb;
-    register int *addrl;
-    register int n;
     int nlwidth;
-    register int width;
+    int width;
     int startmask, endmask, nlmiddle;
 
     if (pDraw->type == DRAWABLE_WINDOW)
@@ -301,7 +301,7 @@ mfbFillArcSliceSolidCopy(pDraw, pGC, arc, rop)
 
 void
 mfbPolyFillArcSolid(pDraw, pGC, narcs, parcs)
-    DrawablePtr	pDraw;
+    register DrawablePtr pDraw;
     GCPtr	pGC;
     int		narcs;
     xArc	*parcs;

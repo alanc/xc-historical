@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbplygblt.c,v 5.0 89/06/09 15:06:52 keith Exp $ */
+/* $XConsortium: mfbplygblt.c,v 5.1 89/07/09 15:57:44 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -111,11 +111,11 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 			/* pointer to current row of glyph */
 
 			/* used for putting down glyph */
-    register int startmask;
-    register int endmask;
-    int nFirst;		/* bits of glyph in current longword */
     register unsigned int tmpSrc;
 			/* for getting bits from glyph */
+    register int startmask;
+    register int endmask;
+    register int nFirst;/* bits of glyph in current longword */
 
     if (!(pGC->planemask & 1))
 	return;

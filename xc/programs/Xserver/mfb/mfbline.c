@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbline.c,v 5.7 89/09/15 08:13:07 keith Exp $ */
+/* $XConsortium: mfbline.c,v 5.8 89/11/08 17:12:07 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -104,7 +104,7 @@ mfbSegmentSS (pDrawable, pGC, nseg, pSeg)
     DrawablePtr	pDrawable;
     GCPtr	pGC;
     int		nseg;
-    xSegment	*pSeg;
+    register xSegment	*pSeg;
 #else
 mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     DrawablePtr pDrawable;
@@ -119,7 +119,7 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     BoxPtr pboxInit;
     register BoxPtr pbox;
 #ifndef POLYSEGMENT
-    DDXPointPtr ppt;		/* pointer to list of translated points */
+    register DDXPointPtr ppt;	/* pointer to list of translated points */
 #endif
 
     unsigned int oc1;		/* outcode of point 1 */
@@ -138,7 +138,8 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     int axis;			/* major axis */
 
 				/* a bunch of temporaries */
-    int x1, x2, y1, y2;
+    register int y1, y2;
+    register int x1, x2;
     RegionPtr cclip;
     int		    alu;
 
@@ -496,13 +497,13 @@ void
 #ifdef POLYSEGMENT
 mfbSegmentSD (pDrawable, pGC, nseg, pSeg)
     DrawablePtr	pDrawable;
-    GCPtr	pGC;
+    register GCPtr	pGC;
     int		nseg;
-    xSegment	*pSeg;
+    register xSegment	*pSeg;
 #else
 mfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     DrawablePtr pDrawable;
-    GCPtr pGC;
+    register GCPtr pGC;
     int mode;		/* Origin or Previous */
     int npt;		/* number of points */
     DDXPointPtr pptInit;
@@ -513,11 +514,11 @@ mfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     BoxPtr pboxInit;
     register BoxPtr pbox;
 #ifndef POLYSEGMENT
-    DDXPointPtr ppt;		/* pointer to list of translated points */
+    register DDXPointPtr ppt;	/* pointer to list of translated points */
 #endif
 
-    unsigned int oc1;		/* outcode of point 1 */
-    unsigned int oc2;		/* outcode of point 2 */
+    register unsigned int oc1;	/* outcode of point 1 */
+    register unsigned int oc2;	/* outcode of point 2 */
 
     int *addrl;		/* address of destination pixmap */
     int nlwidth;		/* width in longwords of destination pixmap */
@@ -821,16 +822,16 @@ mfbClipLine(pbox, box,
 BoxPtr pbox;			/* box to clip to */
 BoxRec box;			/* box to do calculations with */
 DDXPointPtr ppt1Orig, ppt1, ppt2;
-register int adx, ady;
-register int signdx, signdy;
-int axis;
+int adx, ady;
+int signdx, signdy;
+register int axis;
 int *pclip1, *pclip2;
 {
     DDXPointRec pt1Orig, pt1, pt2;
-    int swapped = 0;
+    register int swapped = 0;
     int clipDone = 0;
     register unsigned long utmp;
-    int oc1, oc2;
+    register int oc1, oc2;
     int clip1, clip2;
 
     pt1Orig = *ppt1Orig;
