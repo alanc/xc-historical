@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: property.c,v 1.55 87/09/03 03:04:04 rws Locked $ */
+/* $Header: property.c,v 1.56 87/12/30 08:47:04 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -32,7 +32,8 @@ SOFTWARE.
 #include "dixstruct.h"
 
 extern void (*ReplySwapVector[]) ();
-extern void CopySwap16Write(), CopySwap32Write(), Swap32Write(), WriteToClient();
+extern void CopySwap16Write(), CopySwap32Write(), Swap32Write();
+extern int WriteToClient();
 
 /*****************************************************************
  * Property Stuff
@@ -45,6 +46,7 @@ extern void CopySwap16Write(), CopySwap32Write(), Swap32Write(), WriteToClient()
  *
  *****************************************************************/
 
+#ifdef notdef
 static void
 PrintPropertys(pWin)
     WindowPtr pWin;
@@ -63,7 +65,7 @@ PrintPropertys(pWin)
         pProp = pProp->next;
     }
 }
-
+#endif
 
 int
 ProcRotateProperties(client)
@@ -115,7 +117,7 @@ found:
     /* If the rotation is a complete 360 degrees, then moving the properties
 	around and generating PropertyNotify events should be skipped. */
 
-    if ( (stuff->nAtoms > 0) && (abs(delta) % stuff->nAtoms) != 0 ) 
+    if ( (stuff->nAtoms != 0) && (abs(delta) % stuff->nAtoms) != 0 ) 
     {
 	while (delta < 0)                  /* faster if abs value is small */
             delta += stuff->nAtoms;
@@ -129,7 +131,7 @@ found:
     	    event.u.property.state = PropertyNewValue;
 	    event.u.property.atom = props[i]->propertyName;	
 	    event.u.property.time = currentTime.milliseconds;
-	    DeliverEvents(pWin, &event, 1);
+	    DeliverEvents(pWin, &event, 1, (WindowPtr)NULL);
 	
             props[i]->propertyName = atoms[(i + delta) % stuff->nAtoms];
 	}
@@ -144,7 +146,7 @@ ProcChangeProperty(client)
 {	      
     WindowPtr pWin;
     char format, mode;
-    int len;
+    unsigned long len;
     PropertyPtr pProp;
     xEvent event;
     int sizeInBytes;
@@ -177,12 +179,12 @@ ProcChangeProperty(client)
     }
     if (!pProp)   /* just add to list */
     {
-        pProp = (PropertyPtr)Xalloc(sizeof(PropertyRec));
+        pProp = (PropertyPtr)xalloc(sizeof(PropertyRec));
         pProp->propertyName = stuff->property;
         pProp->type = stuff->type;
         pProp->format = format;
-        pProp->data = (pointer)Xalloc(sizeInBytes  * len);
-        bcopy(&stuff[1], pProp->data, len * sizeInBytes);
+        pProp->data = (pointer)xalloc(sizeInBytes  * len);
+        bcopy((char *)&stuff[1], (char *)pProp->data, len * sizeInBytes);
 	pProp->size = len;
         pProp->next = pWin->userProps;
         pWin->userProps = pProp;
@@ -202,30 +204,30 @@ ProcChangeProperty(client)
 				/* XXX should check length too */
         if (mode == PropModeReplace) 
         {
-            pProp->data = (pointer)Xrealloc((char *) pProp->data,
-					    sizeInBytes * len);
-	    bcopy(&stuff[1], pProp->data, len * sizeInBytes);    
+            pProp->data = (pointer)xrealloc(pProp->data, sizeInBytes * len);
+	    bcopy((char *)&stuff[1], (char *)pProp->data, len * sizeInBytes);    
 	    pProp->size = len;
     	    pProp->type = stuff->type;
 	    pProp->format = stuff->format;
 	}
         else if (mode == PropModeAppend)
         {
-            pProp->data = (pointer)Xrealloc((char *) pProp->data,
+            pProp->data = (pointer)xrealloc(pProp->data,
 					    sizeInBytes * (len + pProp->size));
-	    bcopy(&stuff[1], &pProp->data[pProp->size * sizeInBytes], 
+	    bcopy((char *)&stuff[1],
+		  (char *)&pProp->data[pProp->size * sizeInBytes], 
 		  len * sizeInBytes);
             pProp->size += len;
 	}
         else if (mode == PropModePrepend)
         {
             pointer tstr = pProp->data;
-            pProp->data = (pointer)Xalloc(sizeInBytes * (len + pProp->size));
-	    bcopy(tstr, &pProp->data[len * sizeInBytes], 
+            pProp->data = (pointer)xalloc(sizeInBytes * (len + pProp->size));
+	    bcopy((char *)tstr, (char *)&pProp->data[len * sizeInBytes], 
 		  pProp->size * sizeInBytes);
-            bcopy(&stuff[1], pProp->data, len * sizeInBytes);
+            bcopy((char *)&stuff[1], (char *)pProp->data, len * sizeInBytes);
             pProp->size += len;
-	    Xfree(tstr);
+	    xfree(tstr);
 	}
     }
     event.u.u.type = PropertyNotify;
@@ -233,14 +235,14 @@ ProcChangeProperty(client)
     event.u.property.state = PropertyNewValue;
     event.u.property.atom = pProp->propertyName;
     event.u.property.time = currentTime.milliseconds;
-    DeliverEvents(pWin, &event, 1);
+    DeliverEvents(pWin, &event, 1, (WindowPtr)NULL);
 
     return(client->noClientException);
 }
 
 DeleteProperty(pWin, propName)
     WindowPtr pWin;
-    ATOM propName;
+    Atom propName;
 {
     PropertyPtr pProp, prevProp;
     xEvent event;
@@ -265,15 +267,15 @@ DeleteProperty(pWin, propName)
         {
             prevProp->next = pProp->next;
         }
-	Xfree(pProp->data);
-        Xfree(pProp);
+	xfree(pProp->data);
+        xfree(pProp);
 
 	event.u.u.type = PropertyNotify;
 	event.u.property.window = pWin->wid;
 	event.u.property.state = PropertyDelete;
         event.u.property.atom = pProp->propertyName;
 	event.u.property.time = currentTime.milliseconds;
-	DeliverEvents(pWin, &event, 1);
+	DeliverEvents(pWin, &event, 1, (WindowPtr)NULL);
 
         return(Success);
     }
@@ -295,10 +297,10 @@ DeleteAllWindowProperties(pWin)
 	event.u.property.state = PropertyDelete;
 	event.u.property.atom = pProp->propertyName;
 	event.u.property.time = currentTime.milliseconds;
-	DeliverEvents(pWin, &event, 1);
+	DeliverEvents(pWin, &event, 1, (WindowPtr)NULL);
 	pNextProp = pProp->next;
-        Xfree(pProp->data);
-        Xfree(pProp);
+        xfree(pProp->data);
+        xfree(pProp);
 	pProp = pNextProp;
     }
 }
@@ -318,7 +320,7 @@ ProcGetProperty(client)
     ClientPtr client;
 {
     PropertyPtr pProp, prevProp;
-    int n, len, ind;
+    unsigned long n, len, ind;
     WindowPtr pWin;
     xGetPropertyReply reply;
     REQUEST(xGetPropertyReq);
@@ -369,7 +371,7 @@ ProcGetProperty(client)
                /* If longOffset is invalid such that it causes "len" to
                         be negative, it's a value error. */
 
-		if ((n - ind) < 0)
+		if (n < ind)
 		    return BadValue;
 
 		len = min(n - ind, 4 * stuff->longLength);
@@ -385,7 +387,7 @@ ProcGetProperty(client)
 		    switch (reply.format) {
 		    case 32: client->pSwapReplyFunc = CopySwap32Write; break;
 		    case 16: client->pSwapReplyFunc = CopySwap16Write; break;
-		    default: client->pSwapReplyFunc = WriteToClient; break;
+		    default: client->pSwapReplyFunc = (void (*) ())WriteToClient; break;
 		    }
 		    WriteSwappedDataToClient(client, len, pProp->data + ind);
 		}
@@ -398,14 +400,14 @@ ProcGetProperty(client)
                         pWin->userProps = pProp->next;
 	            else
                         prevProp->next = pProp->next;
-		    Xfree(pProp->data);
-                    Xfree(pProp);
+		    xfree(pProp->data);
+                    xfree(pProp);
 		    event.u.u.type = PropertyNotify;
 		    event.u.property.window = pWin->wid;
 		    event.u.property.state = PropertyDelete;
 		    event.u.property.atom = pProp->propertyName;
 		    event.u.property.time = currentTime.milliseconds;
-		    DeliverEvents(pWin, &event, 1);
+		    DeliverEvents(pWin, &event, 1, (WindowPtr)NULL);
 		}
 	    }
             else 
