@@ -243,6 +243,7 @@ OBJS2 =\
 	XlibInt.o \
 	Xrm.o \
 	evtomask.o \
+	globals.o \
 	GetGCVals.o \
 	GetNrmHint.o \
 	GetRGBCMap.o \
@@ -264,8 +265,7 @@ OBJS2 =\
 	WMGeom.o \
 	Withdraw.o \
 	$(AIDOBJS) \
-	$(AUTHOBJS) \
-	globals.o
+	$(AUTHOBJS)
 
 OBJS =\
 	$(OBJS1) $(OBJS2)
