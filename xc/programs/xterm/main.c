@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.2 89/05/25 14:14:03 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.112 89/05/25 15:12:04 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -489,7 +489,7 @@ static void Help ()
 /* this silliness causes the linker to include the VendorShell
  * module from Xaw, rather than the one from Xt.
  */
-static Junk()
+JunkProcedureForLinkers()		/* can't be static or will be opted */
 {
 #include <X11/Vendor.h>
 WidgetClass junk = vendorShellWidgetClass;

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.2 89/05/25 14:44:34 jim Exp $
+ *	$XConsortium: button.c,v 1.39 89/05/25 15:11:32 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.2 89/05/25 14:44:34 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.39 89/05/25 15:11:32 jim Exp $";
 #endif	/* lint */
 
 #include "ptyx.h"		/* Xlib headers included here. */
@@ -164,36 +164,6 @@ XEvent* event;
 #undef KeyModifiers
 }
 
-
-/*ARGSUSED*/
-static void do_select_extend (w, event, params, num_params, use_cursor_loc)
-Widget w;
-XEvent *event;			/* must be XMotionEvent */
-String *params;			/* unused */
-Cardinal *num_params;		/* unused */
-Bool use_cursor_loc;
-{
-	register TScreen *screen = &((XtermWidget)w)->screen;
-	int row, col;
-
-	screen->selection_time = event->xmotion.time;
-	switch (eventMode) {
-		case LEFTEXTENSION :
-		case RIGHTEXTENSION :
-			if (use_cursor_loc) {
-			    row = screen->cursor_row;
-			    col = screen->cursor_col;
-			} else {
-			    PointToRowCol (event->xmotion.y, event->xmotion.x, 
-					   &row, &col);
-			}
-			ExtendExtend (row, col);
-			break;
-		case NORMAL :
-			/* will get here if send_mouse_pos != 0 */
-		        break;
-	}
-}
 
 
 void HandleSelectExtend(w, event, params, num_params)

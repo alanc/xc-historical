@@ -137,8 +137,6 @@ static Widget create_menu (xtw, toplevel, name, entries, nentries)
 {
     Widget m;
     TScreen *screen = &xtw->screen;
-    static XFontStruct *fs;
-    static Arg arg = { XtNfont, (XtArgVal) &fs };
 
     if (screen->menu_item_bitmap == None) {
 	screen->menu_item_bitmap =
