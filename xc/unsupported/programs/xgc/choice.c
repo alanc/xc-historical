@@ -321,5 +321,10 @@ void print_text_to_buffer(w,closure,call_data)
      caddr_t closure;		/* contains the string */
      caddr_t call_data;
 {
-  interpret((char *) closure,FALSE);		/* Gee, that was easy */
+#ifdef notdef
+  char unput_buffer[100];
+  wool_input_redirect(0, (char *) closure, NULL, unput_buffer);
+  yyparse();
+#endif
+  interpret((char *) closure);		/* Gee, that was easy */
 }
