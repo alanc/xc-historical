@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sunGX.c,v 1.1 91/06/27 17:16:30 keith Exp $
+ * $XConsortium: sunGX.c,v 1.1 91/06/28 16:17:20 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -382,30 +382,8 @@ sunGXFillRectAll (pDrawable, pGC, nBox, pBox)
     register sunGXPrivGCPtr gxPriv = sunGXGetGCPrivate (pGC);
     register cfbPrivGCPtr   devPriv = cfbGetGCPrivate (pGC);
     register int	r;
-    int			alu,fg,pm;
-    int			rop;
 
-    switch (devPriv->rop) {
-    case GXcopy:
-    case GXxor:
-    case GXor:
-    case GXnoop:
-	alu = devPriv->rop;
-	fg = devPriv->xor;
-	pm = 0xff;
-	break;
-    case GXand:
-	alu = devPriv->rop;
-	fg = devPriv->and;
-	pm = 0xff;
-	break;
-    default:
-	alu = pGC->alu;
-	fg = pGC->fgPixel;
-	pm = pGC->planemask;
-	break;
-    }
-    GXDrawInit(gx,fg,gx_solid_rop_table[alu],pm);
+    GXDrawInit(gx,pGC->fgPixel,gx_solid_rop_table[pGC->alu],pGC->planemask);
     if (gxPriv->stipple)
 	GXStippleInit(gx,gxPriv->stipple);
     while (nBox--) {
@@ -619,8 +597,8 @@ sunGXFillSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     GXWait(gx,r);
 }
 
-#define isClipped(c,ul,lr)  ((((c) - (ul)) | ((lr) - (c))) & ClipMask)
-
+#ifdef NOTDEF
+/* cfb is faster for dots */
 void
 sunGXPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     DrawablePtr pDrawable;
@@ -630,56 +608,64 @@ sunGXPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     xPoint *pptInit;
 {
     register sunGXPtr	gx = sunGXGetScreenPrivate (pDrawable->pScreen);
-    register long   pt;
-    register long   c1, c2;
-    register long   ClipMask = 0x80008000;
-    register long   *ppt;
     RegionPtr	    cclip;
     int		    nbox;
     register int    i;
     register BoxPtr pbox;
     cfbPrivGCPtr    devPriv;
-    xPoint	    *pptPrev;
+    xPoint	    *ppt;
+    int		    x, y;
     int		    r;
     int		    off;
 
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
     if (devPriv->rop == GXnoop)
 	return;
+    mode -= CoordModePrevious;
     cclip = devPriv->pCompositeClip;
     GXDrawInit(gx,pGC->fgPixel,gx_solid_rop_table[pGC->alu],pGC->planemask);
-    if ((mode == CoordModePrevious) && (npt > 1))
-    {
-	for (pptPrev = pptInit + 1, i = npt - 1; --i >= 0; pptPrev++)
-	{
-	    pptPrev->x += (pptPrev-1)->x;
-	    pptPrev->y += (pptPrev-1)->y;
-	}
-    }
-    off = *((int *) &pDrawable->x);
-    off -= (off & 0x8000) << 1;
     gx->offx = pDrawable->x;
     gx->offy = pDrawable->y;
     for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip);
 	 --nbox >= 0;
 	 pbox++)
     {
-	c1 = *((long *) &pbox->x1) - off;
-	c2 = *((long *) &pbox->x2) - off - 0x00010001;
-	for (ppt = (long *) pptInit, i = npt; --i >= 0;)
+	gx->clipminx = pbox->x1;
+	gx->clipminy = pbox->y1;
+	gx->clipmaxx = pbox->x2 - 1;
+	gx->clipmaxy = pbox->y2 - 1;
+	if (!mode)
 	{
-	    pt = *ppt++;
-	    if (!isClipped(pt,c1,c2)) {
-		gx->apointy = intToY(pt);
-		gx->apointx = intToX(pt);
-		GXDrawDone(gx,r);
+	    x = 0;
+	    y = 0;
+	    for (ppt = pptInit, i = npt; --i >= 0;)
+	    {
+	    	gx->apointy = y += ppt->y;
+	    	gx->apointx = x += ppt->x;
+	    	++ppt;
+	    	GXDrawDone(gx,r);
+	    }
+	}
+	else
+	{
+	    for (ppt = pptInit, i = npt; --i >= 0;)
+	    {
+	    	gx->apointy = ppt->y;
+	    	gx->apointx = ppt->x;
+	    	++ppt;
+	    	GXDrawDone(gx,r);
 	    }
 	}
     }
     GXWait(gx,r);
     gx->offx = 0;
     gx->offy = 0;
+    gx->clipminx = 0;
+    gx->clipminy = 0;
+    gx->clipmaxx = pDrawable->pScreen->width-1;
+    gx->clipmaxy = pDrawable->pScreen->height-1;
 }
+#endif
 
 #include "mifillarc.h"
 
@@ -781,6 +767,19 @@ sunGXFillArcSlice (pDraw, pGC, gx, arc)
     }
 }
 
+#ifdef NOTDEF
+#define BIG_ENDIAN
+#include    "circleset.h"
+#define UNSET_CIRCLE	if (old_width) \
+			{ \
+			    gx->alu = gx_solid_rop_table[pGC->alu]; \
+			    old_width = -old_width; \
+			}
+
+#else
+#define UNSET_CIRCLE
+#endif
+
 void
 sunGXPolyFillArc (pDraw, pGC, narcs, parcs)
     DrawablePtr	pDraw;
@@ -795,11 +794,13 @@ sunGXPolyFillArc (pDraw, pGC, narcs, parcs)
     register sunGXPtr	gx = sunGXGetScreenPrivate (pDraw->pScreen);
     sunGXPrivGCPtr	gxPriv = sunGXGetGCPrivate (pGC);
     register int	r;
+    int			old_width;
 
     GXDrawInit(gx,pGC->fgPixel,gx_solid_rop_table[pGC->alu],pGC->planemask);
     if (gxPriv->stipple)
 	GXStippleInit(gx,gxPriv->stipple);
     cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+    old_width = 0;
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
 	if (miFillArcEmpty(arc))
@@ -814,14 +815,57 @@ sunGXPolyFillArc (pDraw, pGC, narcs, parcs)
 	    {
 		if ((arc->angle2 >= FULLCIRCLE) ||
 		    (arc->angle2 <= -FULLCIRCLE))
-		    sunGXFillEllipse (pDraw, gx, arc);
+		{
+#ifdef NOTDEF
+/* who really needs fast filled circles? */
+		    if (arc->width == arc->height && arc->width <= 16 &&
+			!gxPriv->stipple)
+		    {
+			int offx, offy;
+			if (arc->width != old_width)
+			{
+			    int	    i;
+			    Uint    *sp, *dp;
+
+			    if (old_width != -arc->width)
+			    {
+			    	sp = (Uint *) filled_arcs[arc->width-1];
+			    	dp = gx->pattern;
+			    	i = 8;
+			    	while (i--)
+				    dp[i] = sp[i];
+			    }
+			    gx->alu = gx_stipple_rop_table[pGC->alu];
+			    old_width = arc->width;
+			}
+			offx = 16 - box.x1 & 0xf;
+			offy = 16 - box.y1 & 0xf;
+			gx->patalign = (offx << 16) | offy;
+			gx->arecty = box.y1;
+			gx->arectx = box.x1;
+			gx->arecty = box.y2 - 1;
+			gx->arectx = box.x2 - 1;
+			GXDrawDone (gx, r);
+		    }
+		    else
+#endif
+		    {
+			UNSET_CIRCLE
+			sunGXFillEllipse (pDraw, gx, arc);
+		    }
+		}
 		else
+		{
+		    UNSET_CIRCLE
 		    sunGXFillArcSlice (pDraw, pGC, gx, arc);
+		}
 		continue;
 	    }
 	}
+	UNSET_CIRCLE
 	miPolyFillArc(pDraw, pGC, 1, arc);
     }
+    GXWait (gx, r);
 }
 
 void
@@ -861,7 +905,7 @@ sunGXFillPoly1Rect (pDrawable, pGC, shape, mode, count, ptsIn)
     GXDrawInit(gx,pGC->fgPixel,gx_solid_rop_table[pGC->alu],pGC->planemask);
     if (gxPriv->stipple)
 	GXStippleInit(gx,gxPriv->stipple);
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
+    devPriv = cfbGetGCPrivate (pGC);
     origin = *((int *) &pDrawable->x);
     origin -= (origin & 0x8000) << 1;
     extents = &devPriv->pCompositeClip->extents;
@@ -999,6 +1043,234 @@ sunGXFillPoly1Rect (pDrawable, pGC, shape, mode, count, ptsIn)
     gx->offy = 0;
 }
 
+/* XXX Note that the GX does not allow CapNotLast, so the code
+ * fakes it.  This is expensive to do legitimately as the GX is
+ * technically asynchronous and should be synced with GXWait before
+ * fetching and storing the final line point.  This code works, though,
+ * but it might not work forever.  If only the hardware was designed
+ * for X.
+ */
+
+/* hard code the screen width; otherwise we'd have to check or mul */
+
+#define WIDTH_MUL(y)	(((y) << 10) + ((y) << 7))
+
+void
+sunGXPolySeg1Rect (pDrawable, pGC, nseg, pSeg)
+    DrawablePtr	    pDrawable;
+    GCPtr	    pGC;
+    int		    nseg;
+    xSegment	    *pSeg;
+{
+    sunGXPtr	    gx = sunGXGetScreenPrivate (pDrawable->pScreen);
+    sunGXPrivGCPtr  gxPriv = sunGXGetGCPrivate (pGC);
+    BoxPtr	    extents;
+    cfbPrivGCPtr    devPriv;
+    int		    x, y;
+    int		    r;
+    unsigned char   *baseAddr, *topAddr, *saveAddr = 0, save;
+
+    GXDrawInit(gx,pGC->fgPixel,gx_solid_rop_table[pGC->alu],pGC->planemask);
+    if (gxPriv->stipple)
+	GXStippleInit(gx,gxPriv->stipple);
+    x = pDrawable->x;
+    y = pDrawable->y;
+    gx->offx = pDrawable->x;
+    gx->offy = pDrawable->y;
+    
+    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
+    extents = &devPriv->pCompositeClip->extents;
+    gx->clipminx = extents->x1;
+    gx->clipminy = extents->y1;
+    gx->clipmaxx = extents->x2 - 1;
+    gx->clipmaxy = extents->y2 - 1;
+    if (pGC->capStyle == CapNotLast)
+    {
+	cfbGetWindowByteWidthAndPointer((WindowPtr)pDrawable,x,baseAddr);
+	baseAddr = baseAddr + WIDTH_MUL(y) + x;
+	topAddr = baseAddr + WIDTH_MUL(pDrawable->height) + pDrawable->width;
+    	while (nseg--)
+    	{
+	    gx->aliney = pSeg->y1;
+	    gx->alinex = pSeg->x1;
+	    y = pSeg->y2;
+	    x = pSeg->x2;
+	    if ((saveAddr = baseAddr + WIDTH_MUL(y) + x) < baseAddr ||
+		saveAddr >= topAddr)
+		saveAddr = 0;
+	    else
+		save = *saveAddr;
+	    gx->aliney = y;
+	    gx->alinex = x;
+	    pSeg++;
+	    GXDrawDone (gx, r);
+	    if (saveAddr)
+		*saveAddr = save;
+    	}
+    }
+    else
+    {
+    	while (nseg--)
+    	{
+	    gx->aliney = pSeg->y1;
+	    gx->alinex = pSeg->x1;
+	    gx->aliney = pSeg->y2;
+	    gx->alinex = pSeg->x2;
+	    pSeg++;
+	    GXDrawDone (gx, r);
+    	}
+    }
+    GXWait (gx, r);
+    gx->offx = 0;
+    gx->offy = 0;
+    gx->clipminx = 0;
+    gx->clipminy = 0;
+    gx->clipmaxx = pDrawable->pScreen->width;
+    gx->clipmaxy = pDrawable->pScreen->height;
+}
+
+void
+sunGXPolylines1Rect (pDrawable, pGC, mode, npt, ppt)
+    DrawablePtr	    pDrawable;
+    GCPtr	    pGC;
+    int		    mode;
+    int		    npt;
+    DDXPointPtr	    ppt;
+{
+    sunGXPtr	    gx = sunGXGetScreenPrivate (pDrawable->pScreen);
+    sunGXPrivGCPtr  gxPriv = sunGXGetGCPrivate (pGC);
+    BoxPtr	    extents;
+    cfbPrivGCPtr    devPriv;
+    unsigned char   *baseAddr, *topAddr, *saveAddr = 0, save;
+    int		    x, y;
+    int		    r;
+    Bool	    careful;
+    Bool	    capNotLast;
+
+    GXDrawInit(gx,pGC->fgPixel,gx_solid_rop_table[pGC->alu],pGC->planemask);
+    if (gxPriv->stipple)
+	GXStippleInit(gx,gxPriv->stipple);
+    x = pDrawable->x;
+    y = pDrawable->y;
+    gx->offx = x;
+    gx->offy = y;
+    careful = (pGC->alu & 0xc == 0x8 || pGC->alu & 0x3 == 0x2);
+    capNotLast = pGC->capStyle == CapNotLast;
+    mode -= CoordModePrevious;
+
+    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
+    extents = &devPriv->pCompositeClip->extents;
+    gx->clipminx = extents->x1;
+    gx->clipminy = extents->y1;
+    gx->clipmaxx = extents->x2 - 1;
+    gx->clipmaxy = extents->y2 - 1;
+    --npt;
+    if (mode && !careful && !capNotLast)
+    {
+	y = ppt->y;
+	x = ppt->x;
+	ppt++;
+    	while (npt--)
+    	{
+	    gx->aliney = y;
+	    gx->alinex = x;
+	    gx->aliney = ppt->y;
+	    gx->alinex = ppt->x;
+	    ++ppt;
+	    GXDrawDone(gx,r);
+	}
+    }
+    else
+    {
+	cfbGetWindowByteWidthAndPointer((WindowPtr)pDrawable,x,baseAddr);
+	baseAddr = baseAddr + WIDTH_MUL(y) + x;
+	topAddr = baseAddr + WIDTH_MUL(pDrawable->height) + pDrawable->width;
+	y = ppt->y;
+	x = ppt->x;
+	ppt++;
+    	while (npt--)
+    	{
+	    gx->aliney = y;
+	    gx->alinex = x;
+	    if (!mode)
+	    {
+	    	y += ppt->y;
+	    	x += ppt->x;
+	    }
+	    else
+	    {
+	    	y = ppt->y;
+	    	x = ppt->x;
+	    }
+	    if (careful || !npt && capNotLast)
+	    {
+	    	if ((saveAddr = baseAddr + WIDTH_MUL(y) + x) >= baseAddr &&
+		    saveAddr < topAddr)
+		    saveAddr = 0;
+	    	else
+		    save = *saveAddr;
+	    }
+	    gx->aliney = y;
+	    gx->alinex = x;
+	    ppt++;
+	    GXDrawDone (gx, r);
+	    if (saveAddr)
+	    {
+	    	*saveAddr = save;
+	    	saveAddr = 0;
+	    }
+    	}
+    }
+    GXWait (gx, r);
+    gx->offx = 0;
+    gx->offy = 0;
+    gx->clipminx = 0;
+    gx->clipminy = 0;
+    gx->clipmaxx = pDrawable->pScreen->width;
+    gx->clipmaxy = pDrawable->pScreen->height;
+}
+
+void
+sunGXPolyFillRect1Rect (pDrawable, pGC, nrect, prect)
+    DrawablePtr	pDrawable;
+    GCPtr	pGC;
+    int		nrect;
+    xRectangle	*prect;
+{
+    sunGXPtr	    gx = sunGXGetScreenPrivate (pDrawable->pScreen);
+    sunGXPrivGCPtr  gxPriv = sunGXGetGCPrivate (pGC);
+    cfbPrivGCPtr    devPriv = cfbGetGCPrivate (pGC);
+    BoxPtr	    extents = &devPriv->pCompositeClip->extents;
+    int		    r;
+    int		    x, y;
+
+    GXDrawInit(gx,pGC->fgPixel,gx_solid_rop_table[pGC->alu],pGC->planemask);
+    if (gxPriv->stipple)
+	GXStippleInit(gx,gxPriv->stipple);
+    gx->offx = pDrawable->x;
+    gx->offy = pDrawable->y;
+    gx->clipminx = extents->x1;
+    gx->clipminy = extents->y1;
+    gx->clipmaxx = extents->x2 - 1;
+    gx->clipmaxy = extents->y2 - 1;
+    while (nrect--)
+    {
+	gx->arecty = y = prect->y;
+	gx->arectx = x = prect->x;
+	gx->arecty = y + (int) prect->height - 1;
+	gx->arectx = x + (int) prect->width - 1;
+	prect++;
+	GXDrawDone (gx, r);
+    }
+    GXWait (gx, r);
+    gx->offx = 0;
+    gx->offy = 0;
+    gx->clipminx = 0;
+    gx->clipminy = 0;
+    gx->clipmaxx = pDrawable->pScreen->width-1;
+    gx->clipmaxy = pDrawable->pScreen->height-1;
+}
+
 void
 sunGXFillBoxSolid (pDrawable, nBox, pBox, pixel)
     DrawablePtr	    pDrawable;
@@ -1030,7 +1302,11 @@ sunGXFillBoxStipple (pDrawable, nBox, pBox, stipple)
 {
     register sunGXPtr	gx = sunGXGetScreenPrivate (pDrawable->pScreen);
     register int	r;
+    int			patx, paty;
 
+    patx = 16 - (pDrawable->x & 0xf);
+    paty = 16 - (pDrawable->y & 0xf);
+    stipple->patalign = (patx <<  16) | paty;
     GXDrawInit(gx,0,gx_solid_rop_table[GXcopy],~0);
     GXStippleInit(gx, stipple);
     while (nBox--) {
@@ -1179,8 +1455,13 @@ sunGXCheckFill (pGC, pDrawable)
 	stipple->back = pGC->bgPixel;
 	break;
     }
-    xrot = pGC->patOrg.x + pDrawable->x;
-    yrot = pGC->patOrg.y + pDrawable->y;
+    xrot = (pGC->patOrg.x + pDrawable->x) & 0xf;
+    yrot = (pGC->patOrg.y + pDrawable->y) & 0xf;
+/*
+    stipple->patalign = ((16 - (xrot & 0xf)) << 16) | (16 - (yrot & 0xf));
+*/
+    xrot = 16 - xrot;
+    yrot = 16 - yrot;
     stipple->patalign = (xrot << 16) | yrot;
     stipple->alu = alu;
     gxPriv->stipple = stipple;
@@ -1213,13 +1494,13 @@ GCOps	sunGXTEOps1Rect = {
     cfbPutImage,
     sunGXCopyArea,
     cfbCopyPlane,
-    sunGXPolyPoint,
-    cfb8LineSS1Rect,
-    cfb8SegmentSS1Rect,
+    cfbPolyPoint,
+    sunGXPolylines1Rect,
+    sunGXPolySeg1Rect,
     miPolyRectangle,
     cfbZeroPolyArcSS8Copy,
     sunGXFillPoly1Rect,
-    sunGXPolyFillRect,
+    sunGXPolyFillRect1Rect,
     sunGXPolyFillArc,
     miPolyText8,
     miPolyText16,
@@ -1237,7 +1518,7 @@ GCOps	sunGXTEOps = {
     cfbPutImage,
     sunGXCopyArea,
     cfbCopyPlane,
-    sunGXPolyPoint,
+    cfbPolyPoint,
     cfbLineSS,
     cfbSegmentSS,
     miPolyRectangle,
@@ -1261,13 +1542,13 @@ GCOps	sunGXNonTEOps1Rect = {
     cfbPutImage,
     sunGXCopyArea,
     cfbCopyPlane,
-    sunGXPolyPoint,
-    cfb8LineSS1Rect,
-    cfb8SegmentSS1Rect,
+    cfbPolyPoint,
+    sunGXPolylines1Rect,
+    sunGXPolySeg1Rect,
     miPolyRectangle,
     cfbZeroPolyArcSS8Copy,
     sunGXFillPoly1Rect,
-    sunGXPolyFillRect,
+    sunGXPolyFillRect1Rect,
     sunGXPolyFillArc,
     miPolyText8,
     miPolyText16,
@@ -1285,7 +1566,7 @@ GCOps	sunGXNonTEOps = {
     cfbPutImage,
     sunGXCopyArea,
     cfbCopyPlane,
-    sunGXPolyPoint,
+    cfbPolyPoint,
     cfbLineSS,
     cfbSegmentSS,
     miPolyRectangle,
@@ -1470,7 +1751,10 @@ sunGXValidateGC (pGC, changes, pDrawable)
 	}
 	oneRect = REGION_NUM_RECTS(devPriv->pCompositeClip) == 1;
 	if (oneRect != devPriv->oneRect)
+	{
 	    new_line = TRUE;
+	    new_fillarea = TRUE;
+	}
 	devPriv->oneRect = oneRect;
     }
 
@@ -1502,8 +1786,9 @@ sunGXValidateGC (pGC, changes, pDrawable)
 	case GCLineWidth:
 	    new_line = TRUE;
 	    break;
-	case GCJoinStyle:
 	case GCCapStyle:
+	    break;
+	case GCJoinStyle:
 	    break;
 	case GCFillStyle:
 	    new_text = TRUE;
@@ -1633,10 +1918,8 @@ sunGXValidateGC (pGC, changes, pDrawable)
 	    new_rrop = FALSE;
 	else
 	{
-#if PPW ==  4
 	    new_line = TRUE;
 	    new_text = TRUE;
-#endif
 	    new_fillspans = TRUE;
 	    new_fillarea = TRUE;
 	}
@@ -1670,12 +1953,10 @@ sunGXValidateGC (pGC, changes, pDrawable)
     if (new_line)
     {
 	pGC->ops->FillPolygon = miFillPolygon;
-
 	if (devPriv->oneRect && canGX)
 	    pGC->ops->FillPolygon = sunGXFillPoly1Rect;
 	if (pGC->lineWidth == 0)
 	{
-#if PPW == 4
 	    if ((pGC->lineStyle == LineSolid) && (pGC->fillStyle == FillSolid))
 	    {
 		switch (devPriv->rop)
@@ -1692,7 +1973,6 @@ sunGXValidateGC (pGC, changes, pDrawable)
 		}
 	    }
 	    else
-#endif
 		pGC->ops->PolyArc = miZeroPolyArc;
 	}
 	else
@@ -1703,22 +1983,24 @@ sunGXValidateGC (pGC, changes, pDrawable)
 	case LineSolid:
 	    if(pGC->lineWidth == 0)
 	    {
-		if (pGC->fillStyle == FillSolid)
+		if (devPriv->oneRect && canGX)
 		{
-#if PPW == 4
+		    pGC->ops->PolySegment = sunGXPolySeg1Rect;
+		    pGC->ops->Polylines = sunGXPolylines1Rect;
+		}
+		else if (pGC->fillStyle == FillSolid)
+		{
 		    if (devPriv->oneRect)
 		    {
 			pGC->ops->Polylines = cfb8LineSS1Rect;
 			pGC->ops->PolySegment = cfb8SegmentSS1Rect;
-		    } else
-#endif
+		    }
+		    else
 		    {
 		    	pGC->ops->Polylines = cfbLineSS;
 		    	pGC->ops->PolySegment = cfbSegmentSS;
 		    }
 		}
- 		else
-		    pGC->ops->Polylines = miZeroLine;
 	    }
 	    else
 		pGC->ops->Polylines = miWideLine;
@@ -1821,6 +2103,8 @@ sunGXValidateGC (pGC, changes, pDrawable)
 	{
 	    pGC->ops->PolyFillArc = sunGXPolyFillArc;
 	    pGC->ops->PolyFillRect = sunGXPolyFillRect;
+	    if (oneRect)
+		pGC->ops->PolyFillRect = sunGXPolyFillRect1Rect;
 	}
 	pGC->ops->PushPixels = mfbPushPixels;
 	if (pGC->fillStyle == FillSolid && devPriv->rop == GXcopy)
@@ -1911,8 +2195,6 @@ sunGXChangeWindowAttributes (pWin, mask)
  	    else if (stipple && sunGXCheckTile (pWin->background.pixmap, stipple))
 	    {
 		stipple->alu = gx_opaque_stipple_rop_table[GXcopy];
-		stipple->patalign = (pWin->drawable.x << 16) |
-				    (pWin->drawable.y);
 		pPrivWin->fastBackground = FALSE;
 		sunGXSetWindowPrivate(pWin, stipple);
 		if (stipple == tmpStipple)
