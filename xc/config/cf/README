@@ -1,4 +1,4 @@
-$XConsortium: README,v 1.38 94/07/18 16:25:55 gildea Exp gildea $
+$XConsortium: README,v 1.39 94/10/04 18:49:06 gildea Exp gildea $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -143,9 +143,7 @@ Project.tmpl provides defaults for the following variables:
 	BuildFresco		build Fresco
 	BuildIncRoot		relative path to location of headers in build
 	BuildIncTop		path from build includes directory to top
-	BuildPex		build all PEX-related code
-	BuildPexClients		boolean for building PEX clients/demos
-	BuildPexExt		build PEX extension
+	BuildPexExt		build PEX server extension and fonts
 	BuildServer		build X server
 	BuildXIE		build X Image Extension
 	BuildDIS		build Document Imaging Subset of XIE
