@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.4 93/09/22 11:28:38 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.5 93/09/22 17:58:26 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -207,6 +207,13 @@ struct _SmcConn {
      */
 
     _SmcPropReplyWait	*prop_reply_waits;
+
+
+    /*
+     * Did we receive a SaveYourself with Shutdown = True?
+     */
+
+    Bool		shutdown_in_progress;
 };
 
 
@@ -375,9 +382,10 @@ struct _SmsConn {
      * Some state.
      */
 
-    Bool		save_yourself_in_progress;
-    Bool		waiting_to_interact;
-    Bool		interact_in_progress;
+    char		save_yourself_in_progress;
+    char		can_interact;
+    char		can_cancel_shutdown;
+    char		interact_in_progress;
 };
 
 
