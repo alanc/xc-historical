@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XChkTypWEv.c,v 11.3 88/02/03 20:44:38 rws Exp $ */
+/* $Header: XChkTypWEv.c,v 11.4 88/08/30 15:47:27 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1987	*/
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -23,7 +23,7 @@ Bool XCheckTypedWindowEvent (dpy, w, type, event)
 
         LockDisplay(dpy);
 	prev = NULL;
-	for (n = 2; --n >= 0;) {
+	for (n = 3; --n >= 0;) {
 	    for (qelt = prev ? prev->next : dpy->head;
 		 qelt;
 		 prev = qelt, qelt = qelt->next) {
@@ -44,9 +44,15 @@ Bool XCheckTypedWindowEvent (dpy, w, type, event)
 		    return True;
 		}
 	    }
-	    if (n) _XEventsQueued(dpy, QueuedAfterReading);
+	    switch (n) {
+	      case 2:
+		_XEventsQueued(dpy, QueuedAfterReading);
+		break;
+	      case 1:
+		_XFlush(dpy);
+		break;
+	    }
 	}
-	_XFlush(dpy);
 	UnlockDisplay(dpy);
 	return False;
 }
