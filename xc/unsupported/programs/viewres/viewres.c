@@ -38,8 +38,9 @@ extern int nwidgets;
 
 
 static XrmOptionDescRec Options[] = {
-  { "-top", "*topObject", XrmoptionSepArg, (caddr_t) NULL },
-  { "-variable", "*showVariable", XrmoptionNoArg, (caddr_t) "on" },
+    { "-top", "*topObject", XrmoptionSepArg, (caddr_t) NULL },
+    { "-variable", "*showVariable", XrmoptionNoArg, (caddr_t) "on" },
+    { "-vertical", "*Tree.Orientation", XrmoptionNoArg, (caddr_t) "vertical" },
 };
 
 static struct _appresources {
@@ -74,6 +75,8 @@ usage ()
 	    "    -top name        object to be top of tree\n");
     fprintf(stderr,
 	    "    -variable        show variable name instead of class name\n");
+    fprintf(stderr,
+	    "    -vertical        list the tree vertically\n");
     fprintf(stderr, "\n");
     exit (1);
 }
