@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.96 91/02/05 19:36:21 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.97 91/02/05 22:14:43 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1089,10 +1089,7 @@ static void EvaluateSizeHints(w)
 static void _popup_set_prop(w)
 	ShellWidget w;
 {
-	Widget p;
 	WMShellWidget wmshell = (WMShellWidget) w;
-	TopLevelShellWidget tlshell = (TopLevelShellWidget) w;
-	ApplicationShellWidget appshell = (ApplicationShellWidget) w;
 	XTextProperty icon_name;
 	XTextProperty window_name;
 	char **argv;
@@ -1112,6 +1109,7 @@ static void _popup_set_prop(w)
 	window_name.nitems = strlen((char *)window_name.value) + 1;
 
 	if (XtIsTopLevelShell((Widget)w)) {
+	    TopLevelShellWidget tlshell = (TopLevelShellWidget) w;
 	    icon_name.value = (unsigned char*)tlshell->topLevel.icon_name;
 	    icon_name.encoding = tlshell->topLevel.icon_name_encoding;
 	    icon_name.format = 8;
@@ -1133,19 +1131,18 @@ static void _popup_set_prop(w)
 				 );
 	}
 
-	if (XtIsApplicationShell((Widget)w)) {
-	    classhint.res_name = w->core.name;
-	    classhint.res_class =
-		((ApplicationShellWidget)w)->application.class;
-	} 
+	argv = NULL;
+	argc = 0;
 
-	if (XtIsApplicationShell((Widget)w)
-	    && (argc = appshell->application.argc) != -1)
-	    argv = (char**)appshell->application.argv;
-	else {
-	    argv = NULL;
-	    argc = 0;
-	}
+	if (XtIsApplicationShell((Widget)w)) {
+	    ApplicationShellWidget appshell = (ApplicationShellWidget) w;
+	    classhint.res_name = w->core.name;
+	    classhint.res_class = appshell->application.class;
+	    if (appshell->application.argc != -1) {
+		argc = appshell->application.argc;
+		argv = (char**)appshell->application.argv;
+	    }
+	} 
 
 	XSetWMProperties(XtDisplay((Widget)w), XtWindow((Widget)w),
 			 &window_name,
@@ -1362,7 +1359,7 @@ static void GetGeometry(W, child)
 	}
 	else hints.flags = 0;
 
-	sprintf( def_geom, "%dx%d+%d+%d", width, height, x, y );
+	(void) sprintf( def_geom, "%dx%d+%d+%d", width, height, x, y );
 	flag = XWMGeometry( XtDisplay(W),
 			    XScreenNumberOfScreen(XtScreen(W)),
 			    w->shell.geometry, def_geom,
