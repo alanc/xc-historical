@@ -199,47 +199,51 @@ In addition, \fIxman\fP has application-specific resources which allow
 unique \fIxman\fP customizations.
 .PP
 .TP 18
-\fBmanualFontNormal\fP
+\fBmanualFontNormal\fP (Class \fBFont\fP)
 The font to use for normal text in the manual pages.
 .TP 18
-\fBmanualFontBold\fP
+\fBmanualFontBold\fP (Class \fBFont\fP)
 The font to use for bold text in the manual pages.
 .TP 18
-\fBmanualFontItalic\fP
+\fBmanualFontItalic\fP (Class \fBFont\fP)
 The font to use for italic text in the manual pages.
 .TP 18
-\fBdirectoryFontNormal\fP
+\fBdirectoryFontNormal\fP (Class \fBFont\fP)
 The font to use for the directory text.
 .TP 18
-\fBbothShown\fP
+\fBbothShown\fP (Class \fBBoolean\fP)
 Either 'true' or 'false', specifies whether or not you want both the
 directory and the manual page shown at start up.
 .TP 18
-\fBdirectoryHeight\fP
+\fBdirectoryHeight\fP (Class \fBDirectoryHeight\fP)
 The height in pixels of the directory, when the directory and the manual page
 are shown simultaneously.
 .TP 18
-\fBtopCursor\fP
+\fBtopCursor\fP (Class \fBCursor\fP)
 The cursor to use in the top box.
 .TP 18
-\fBhelpCursor\fP
+\fBhelpCursor\fP (Class \fBCursor\fP)
 The cursor to use in the help window.
 .TP 18
-\fBmanpageCursor\fP
+\fBmanpageCursor\fP (Class \fBCursor\fP)
 The cursor to use in the manual page window.
 .TP 18
-\fBsearchEntryCursor\fP
+\fBsearchEntryCursor\fP (Class \fBCursor\fP)
 The cursor to use in the search entry text widget.
+.TP 18
+\fBpointerColor\fP (Class \fBForeground\fP)
+This is the color of all the cursors (pointers) specified above.  The
+name was chosen to be compatible with xterm.
 .TP 18 
-\fBhelpFile\fP
+\fBhelpFile\fP  (Class \fBFile\fP)
 Use this rather than the system default helpfile.
 .TP 18
-\fBtopBox\fP
+\fBtopBox\fP (Class \fBBoolean\fP)
 Either 'true' or 'false', determines whether the top box (containing
 the help, quit and manual page buttons) or a manual page is put on the screen
 at start-up.  The default is true.
 .TP 18
-\fBverticalList\fP
+\fBverticalList\fP (Class \fBBoolean\fP)
 Either 'true' or 'false', determines whether the directory listing is 
 vertically or horizontally organized.  The default is horizontal (false).
 .PP
