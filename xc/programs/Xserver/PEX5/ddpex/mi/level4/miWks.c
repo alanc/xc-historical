@@ -1,4 +1,4 @@
-/* $XConsortium: miWks.c,v 5.9 92/10/15 16:13:50 hersh Exp $ */
+/* $XConsortium: miWks.c,v 5.10 92/11/19 15:13:44 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1259,6 +1259,14 @@ RedrawClipRegion(pWKS, numRects, pRects)
 
 	/* now redraw picture without updating any state */
 	miTraverse(pWKS);	/* ignore errors */
+
+
+ 	/*
+ 	 * The clip list must be emptied so that subsequent workstation
+ 	 * updates redraw the entire display surface.
+ 	 */
+
+ 	pwks->pRend->clipList->numObj = 0;
 
 	return (Success);
 }				/* RedrawClipRegion */
