@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.152 90/03/20 11:17:06 jim Exp $
+ * $XConsortium: menus.c,v 1.153 90/03/20 14:44:46 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.152 90/03/20 11:17:06 jim Exp $";
+"$XConsortium: menus.c,v 1.153 90/03/20 14:44:46 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1043,9 +1043,8 @@ PopDownMenu()
 	}
 	XUnmapWindow(dpy, tmp->w);
 	tmp->mapped = UNMAPPED;
+	UninstallRootColormap();
     }
-
-    UninstallRootColormap();
 
     XFlush(dpy);
     ActiveMenu = NULL;
