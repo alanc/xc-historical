@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.127 90/12/13 15:54:45 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.128 91/01/05 16:45:01 rws Exp $
  */
 
 #include "copyright.h"
@@ -1376,11 +1376,10 @@ int _XIOError (dpy)
     Display *dpy;
 {
     dpy->flags |= XlibDisplayIOError;
-    if (_XIOErrorFunction != NULL) {
-	return ((*_XIOErrorFunction)(dpy));
-    } else {
-	return _XDefaultIOError(dpy);
-    }
+    if (_XIOErrorFunction != NULL)
+	(*_XIOErrorFunction)(dpy);
+    else
+	_XDefaultIOError(dpy);
     exit (1);
 }
 
