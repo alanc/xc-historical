@@ -45,7 +45,7 @@ instead of the default `Z' format.
 .PP
 .TP 8
 .B "-add \fIvalue\fP"
-This option specifies an unsigned value to be added to every pixel.
+This option specifies an signed value to be added to every pixel.
 .SH ENVIRONMENT
 .PP
 .TP 8

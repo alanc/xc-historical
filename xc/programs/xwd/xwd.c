@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.38 88/09/06 17:12:32 jim Exp $";
+static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.39 88/09/20 22:47:29 jim Exp $";
 #endif
 
 /*%
@@ -61,23 +61,25 @@ int format = ZPixmap;
 Bool nobdrs = False;
 Bool standard_out = True;
 Bool debug = False;
-unsigned long add_pixel_value = 0;
+long add_pixel_value = 0;
 
 extern int (*_XErrorFunction)();
 extern int _XDefaultError();
 
-static unsigned long parse_unsigned_long (s)
+static unsigned long parse_long (s)
     char *s;
 {
     char *fmt = "%lu";
-    unsigned long retval = 0L;
+    long retval = 0L;
+    int thesign = 1;
 
     if (s && s[0]) {
+	if (s[0] == '-') s++, thesign = -1;
 	if (s[0] == '0') s++, fmt = "%lo";
 	if (s[0] == 'x' || s[0] == 'X') s++, fmt = "%lx";
 	(void) sscanf (s, fmt, &retval);
     }
-    return retval;
+    return (thesign * retval);
 }
 
 main(argc, argv)
@@ -119,7 +121,7 @@ main(argc, argv)
 	}
 	if (!strcmp(argv[i], "-add")) {
 	    if (++i >= argc) usage();
-	    add_pixel_value = parse_unsigned_long (argv[i]);
+	    add_pixel_value = parse_long (argv[i]);
 	    continue;
 	}
 	usage();
