@@ -11,6 +11,7 @@ SRCS1 =	\
 	sunCG2M.c \
 	sunCG3C.c \
 	sunCG4C.c \
+	sunCG6C.c \
 	sunKeyMap.c
 
 SRCS =	$(SRCS1) kbd_mode.c constype.c 
@@ -29,6 +30,7 @@ OBJS = \
 	sunCG2M.o \
 	sunCG3C.o \
 	sunCG4C.o \
+	sunCG6C.o \
 	sunKeyMap.o
 
 STD_DEFINES = ServerDefines
