@@ -835,10 +835,8 @@
 				 .hl-curproc.)))
 	       ;; Then we need to grab the lock.
 	       ,(if timeout
-		    `(if (eq (mp::process-lock .hl-lock. .hl-curproc. ,whostate
-					       ,timeout)
-			     #+allegro-v3.0 'mp::with-timeout-internal
-			     #+(and allegro (not allegro-v3.0)) nil)
+		    `(if (not (mp::process-lock .hl-lock. .hl-curproc.
+						,whostate ,timeout))
 			 (return-from .hl-doit. nil))
 		  `(mp::process-lock .hl-lock. .hl-curproc.
 				     ,@(when whostate `(,whostate))))
@@ -922,9 +920,13 @@
 #+excl
 (defun process-wakeup (process)
   (let ((curproc mp::*current-process*))
-    (if (and curproc process (> (mp::process-priority process)
-				(mp::process-priority curproc)))
-	(mp::process-allow-schedule process))))
+    (when (and curproc process)
+      (unless (mp::process-p curproc)
+	(error "~s is not a process" curproc))
+      (unless (mp::process-p process)
+	(error "~s is not a process" process))
+      (if (> (mp::process-priority process) (mp::process-priority curproc))
+	  (mp::process-allow-schedule process)))))
 
 #+CLX-Genera-New-Scheduler
 (defun process-wakeup (process)
@@ -1477,13 +1479,7 @@
 		       ;; Timeout is infinity.
 		       (mp::process-wait *read-whostate* #'fd-char-avail-p fd)
 		     ;; Otherwise timeout in a number of seconds.
-		     #+allegro-v3.0
-		     (if (eq (mp::process-wait-with-timeout
-			      *read-whostate* timeout
-			      #'fd-char-avail-p fd)
-			     'mp::with-timeout-internal)
-			 (return-from buffer-input-wait-default :timeout))
-		     #+(and allegro (not allegro-v3.0))
+		     #+allegro
 		     (if (not (mp::process-wait-with-timeout
 			       *read-whostate* timeout
 			       #'fd-char-avail-p fd))
