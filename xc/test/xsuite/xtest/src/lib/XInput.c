@@ -11,12 +11,13 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: XInput.c,v 1.3 94/04/12 21:42:50 rws Exp $
+ * $XConsortium: XInput.c,v 1.4 94/04/17 21:00:30 rws Exp dpw $
  */
 #include <stdio.h>
 #include "extensions/XIproto.h"
 #include "extensions/XInput.h"
 #include "XItest.h"
+#include "tet_api.h"
 
 static XEventClass propclasses[32];
 static XDevice *baddev, *testdev;
