@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.76 93/09/13 20:30:13 rws Exp $
+ * $XConsortium: main.c,v 1.77 93/09/13 21:01:25 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -629,7 +629,7 @@ warning(char *msg, ...)
 #else
 /*VARARGS0*/
 warning(msg,x1,x2,x3,x4,x5,x6,x7,x8,x9)
-    char *x0;
+    char *msg;
 #endif
 {
 #if NeedVarargsPrototypes
