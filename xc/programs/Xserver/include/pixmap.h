@@ -1,4 +1,4 @@
-/* $XConsortium: pixmap.h,v 5.1 89/06/09 17:54:32 keith Exp $ */
+/* $XConsortium: pixmap.h,v 5.2 89/06/09 18:22:03 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -29,6 +29,7 @@ SOFTWARE.
 #define DRAWABLE_WINDOW 0
 #define DRAWABLE_PIXMAP 1
 #define UNDRAWABLE_WINDOW 2
+#define DRAWABLE_BUFFER 3
 
 /* flags to PaintWindow() */
 #define PW_BACKGROUND 0
@@ -49,5 +50,11 @@ typedef union _PixUnion {
 
 #define EqualPixUnion(as, a, bs, b)				\
     ((as) == (bs) && (SamePixUnion (a, b, as)))
+
+#define OnScreenDrawable(type) \
+	((type == DRAWABLE_WINDOW) || (type == DRAWABLE_BUFFER))
+
+#define WindowDrawable(type) \
+	((type == DRAWABLE_WINDOW) || (type == UNDRAWABLE_WINDOW))
 
 #endif /* PIXMAP_H */
