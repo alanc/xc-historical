@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.117 89/10/12 13:20:50 rws Exp $ */
+/* $XConsortium: connection.c,v 1.118 89/11/08 17:20:43 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -107,7 +107,7 @@ char *display;			/* The display number */
 int lastfdesc;			/* maximum file descriptor */
 
 long WellKnownConnections;	/* Listener mask */
-long EnabledDevices;		/* mask for input devices that are on */
+long EnabledDevices[mskcnt];	/* mask for input devices that are on */
 long AllSockets[mskcnt];	/* select on this */
 long AllClients[mskcnt];	/* available clients */
 long LastSelectMask[mskcnt];	/* mask returned from last select call */
@@ -796,7 +796,7 @@ CloseDownConnection(client)
 AddEnabledDevice(fd)
     int fd;
 {
-    EnabledDevices |= (1<<fd);
+    BITSET(EnabledDevices, fd);
     BITSET(AllSockets, fd);
 }
 
@@ -804,7 +804,7 @@ AddEnabledDevice(fd)
 RemoveEnabledDevice(fd)
     int fd;
 {
-    EnabledDevices &= ~(1<<fd);
+    BITCLEAR(EnabledDevices, fd);
     BITCLEAR(AllSockets, fd);
 }
 

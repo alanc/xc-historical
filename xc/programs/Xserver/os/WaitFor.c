@@ -46,7 +46,7 @@ extern long AllSockets[];
 extern long AllClients[];
 extern long LastSelectMask[];
 extern long WellKnownConnections;
-extern long EnabledDevices;
+extern long EnabledDevices[];
 extern long ClientsWithInput[];
 extern long ClientsWriteBlocked[];
 extern long OutputPending[];
@@ -118,10 +118,7 @@ WaitForSomething(pClientsReady)
     long curclient;
     int selecterr;
     int nready;
-
-#ifdef	hpux
-	long	ready_inputs;  /* to tell HIL drivers about input */
-#endif /* hpux */
+    long devicesReadable[mskcnt];
 
     CLEARBITS(clientsReadable);
 
@@ -232,20 +229,20 @@ WaitForSomething(pClientsReady)
 		    AnyClientsWriteBlocked = FALSE;
 	    }
 
+	    MASKANDSETBITS(devicesReadable, LastSelectMask, EnabledDevices);
 #ifdef	hpux
-	    /* this should go in hp's ProcessInputEvents routine */
-	    ready_inputs = (LastSelectMask[0] & EnabledDevices);
-
-	    if (ready_inputs > 0)  store_inputs (ready_inputs);
+#ifdef notdef
+	    if (ANYSET(devicesReadable)) store_inputs (devicesReadable);
+#endif
+	    if (devicesReadable[0]) store_inputs (devicesReadable[0]);
 		    /* call the HIL driver to gather inputs. 	*/
 #endif /* hpux */
 
 	    MASKANDSETBITS(clientsReadable, LastSelectMask, AllClients); 
 	    if (LastSelectMask[0] & WellKnownConnections) 
 		EstablishNewConnections();
-	    if ((LastSelectMask[0] & EnabledDevices) 
-		|| (ANYSET (clientsReadable)))
-			break;
+	    if (ANYSET (devicesReadable) || ANYSET (clientsReadable))
+		break;
 	}
     }
 

@@ -32,7 +32,7 @@
 extern int argcGlobal;
 extern char **argvGlobal;
 extern char *display;
-extern long EnabledDevices;
+extern long EnabledDevices[];
 extern long AllClients[];
 
 static int		    xdmcpSocket, sessionSocket;
@@ -455,6 +455,8 @@ XdmcpWakeupHandler(data, i, LastSelectMask)
     int	    i;
     long    *LastSelectMask;
 {
+    long    devicesReadable[mskcnt];
+
     if (state == XDM_OFF)
 	return;
     if (i > 0)
@@ -464,7 +466,8 @@ XdmcpWakeupHandler(data, i, LastSelectMask)
 	    receive_packet();
 	    BITCLEAR(LastSelectMask, xdmcpSocket);
 	} 
-	if (LastSelectMask[0] & EnabledDevices)
+	MASKANDSETBITS(devicesReadable, LastSelectMask, EnabledDevices);
+	if (ANYSET(devicesReadable))
 	{
 	    if (state == XDM_AWAIT_USER_INPUT)
 		restart();
