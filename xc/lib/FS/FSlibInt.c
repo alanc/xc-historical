@@ -1284,6 +1284,9 @@ _FSGetHostname(buf, maxlen)
 }
 
 #if (MSKCNT > 4)
+#ifdef _FSANYSET
+#undef _FSANYSET
+#endif
 /*
  * This is a macro if MSKCNT <= 4
  */
