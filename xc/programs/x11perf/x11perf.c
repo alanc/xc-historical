@@ -7,6 +7,9 @@
 #endif
 #include "x11perf.h"
 
+static Bool drawToGPX = False;
+static Pixmap tileToQuery = None;
+
 #ifdef VMS
 
 typedef struct _vms_time {
@@ -169,6 +172,7 @@ void usage()
 "    -display host:dpy		the X server to contact",
 "    -sync			do the tests in synchronous mode",
 "    -repeat <n>\t		do tests <n> times (default = 5)",
+"    -draw			draw after each test -- pmax only",
 "    -all			do all tests",
 NULL};
 
@@ -193,13 +197,17 @@ DoTest(d, test, label)
     char *label;
 {
     int     r;
+    int     ret_width, ret_height;
 
     XSync (d, 0);
     InitTimes ();
     (*test->proc) (d, &test->parms);
     XSync (d, 0);
-  GetTime (&r);
+    GetTime (&r);
     ReportTimes (r, test->parms.reps * test->parms.objects, label);
+    if (drawToGPX)
+        XQueryBestSize(d, TileShape, tileToQuery,
+		       32, 32, &ret_width, &ret_height);
     if (test->passCleanup != NULL)
 	(*test->passCleanup) (d, &test->parms);
 }
@@ -274,6 +282,9 @@ main(argc, argv)
 	    if (strcmp (argv[i], "-sync") == 0) {
 		synchronous = True;
 	    }
+	    else if (strcmp (argv[i], "-draw") == 0) {
+		drawToGPX = True;
+	    }
 	    else
 		if (strcmp (argv[i], "-repeat") == 0) {
 		    if (argc <= i)
@@ -308,6 +319,9 @@ main(argc, argv)
     PrintTime ();
 
     root = RootWindow (display, 0);
+    if (drawToGPX) {
+        tileToQuery = XCreatePixmap(display, root, 32, 32, 1);
+    }
     if (synchronous)
 	XSynchronize (display, True);
     ForEachTest (i) {
