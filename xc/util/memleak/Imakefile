@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.3 92/04/08 14:34:52 keith Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 92/04/08 17:19:48 keith Exp $
 #define DoNormalLib YES
 #define DoSharedLib NO
 #define DoDebugLib NO
@@ -55,6 +55,8 @@ InstallLibrary(memleak_p,$(USRLIBDIR))
 DebuggedLibraryTarget(memleak,$(OBJS))
 InstallLibrary(memleak_d,$(USRLIBDIR))
 #endif
+
+InstallNamedProg(find-routines.sh,find-routines,$(BINDIR))
 
 LintLibraryTarget(memleak,$(SRCS))
 InstallLintLibrary(memleak,$(LINTLIBDIR))
