@@ -16,7 +16,6 @@ IMPORTS = \
 	$(XLIBSRC)/Xresource.h \
 	$(XLIBSRC)/XrmConvert.h \
 	$(XLIBSRC)/Xutil.h \
-	$(CLIENTSRC)/bitmaps \
 	$(FONTSRC)/cursorfont.h \
 	$(TOOLKITSRC)/Atoms.h \
 	$(TOOLKITSRC)/Boolean.h \
