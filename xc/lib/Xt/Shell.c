@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.62 89/09/19 12:25:46 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.63 89/09/21 13:21:32 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -72,6 +72,10 @@ static void ShellAncestorSensitive();
 #define Offset(x)	(XtOffset(ShellWidget, x))
 static XtResource shellResources[]=
 {
+	{XtNx, XtCPosition, XtRPosition, sizeof(Position),
+	    Offset(core.x), XtRImmediate, (XtPointer)BIGSIZE},
+	{XtNy, XtCPosition, XtRPosition, sizeof(Position),
+	    Offset(core.y), XtRImmediate, (XtPointer)BIGSIZE},
 	{ XtNdepth, XtCDepth, XtRInt, sizeof(int),
 	    Offset(core.depth), XtRCallProc, (XtPointer) ShellDepth},
 	{ XtNcolormap, XtCColormap, XtRPointer, sizeof(Colormap),
@@ -382,54 +386,57 @@ static XtResource transientResources[]=
 	    Offset(shell.save_under), XtRImmediate, (XtPointer)True},
 };
 
+static void TransientRealize();
+static Boolean TransientSetValues();
+
 externaldef(transientshellclassrec) TransientShellClassRec transientShellClassRec = {
   {
-    /* superclass         */    (WidgetClass) &vendorShellClassRec,
-    /* class_name         */    "TransientShell",
-    /* size               */    sizeof(TransientShellRec),
+    /* superclass	  */	(WidgetClass) &vendorShellClassRec,
+    /* class_name	  */	"TransientShell",
+    /* size		  */	sizeof(TransientShellRec),
     /* Class Initializer  */	NULL,
     /* class_part_initialize*/	NULL,
-    /* Class init'ed ?    */	FALSE,
-    /* initialize         */    NULL,
-    /* initialize_notify    */	NULL,		
-    /* realize            */    XtInheritRealize,
-    /* actions            */    NULL,
-    /* num_actions        */    0,
-    /* resources          */    transientResources,
-    /* resource_count     */	XtNumber(transientResources),
-    /* xrm_class          */    NULLQUARK,
-    /* compress_motion    */    FALSE,
-    /* compress_exposure  */    TRUE,
+    /* Class init'ed ?	  */	FALSE,
+    /* initialize	  */	NULL,
+    /* initialize_notify  */	NULL,		
+    /* realize		  */	TransientRealize,
+    /* actions		  */	NULL,
+    /* num_actions	  */	0,
+    /* resources	  */	transientResources,
+    /* resource_count	  */	XtNumber(transientResources),
+    /* xrm_class	  */	NULLQUARK,
+    /* compress_motion	  */	FALSE,
+    /* compress_exposure  */	TRUE,
     /* compress_enterleave*/	FALSE,
-    /* visible_interest   */    FALSE,
-    /* destroy            */    NULL,
-    /* resize             */    XtInheritResize,
-    /* expose             */    NULL,
-    /* set_values         */    NULL,
-    /* set_values_hook      */	NULL,			
-    /* set_values_almost    */	XtInheritSetValuesAlmost,  
-    /* get_values_hook      */	NULL,			
-    /* accept_focus       */    NULL,
+    /* visible_interest	  */	FALSE,
+    /* destroy		  */	NULL,
+    /* resize		  */	XtInheritResize,
+    /* expose		  */	NULL,
+    /* set_values	  */	TransientSetValues,
+    /* set_values_hook	  */	NULL,			
+    /* set_values_almost  */	XtInheritSetValuesAlmost,  
+    /* get_values_hook	  */	NULL,			
+    /* accept_focus	  */	NULL,
     /* intrinsics version */	XtVersion,
-    /* callback offsets   */    NULL,
-    /* tm_table		    */  XtInheritTranslations,
-    /* query_geometry	    */  NULL,
-    /* display_accelerator  */  NULL,
-    /* extension	    */  NULL
+    /* callback offsets	  */	NULL,
+    /* tm_table		  */	XtInheritTranslations,
+    /* query_geometry	  */	NULL,
+    /* display_accelerator*/	NULL,
+    /* extension	  */	NULL
   },{
-    /* geometry_manager   */    XtInheritGeometryManager,
-    /* change_managed     */    XtInheritChangeManaged,
+    /* geometry_manager	  */	XtInheritGeometryManager,
+    /* change_managed	  */	XtInheritChangeManaged,
     /* insert_child	  */	XtInheritInsertChild,
     /* delete_child	  */	XtInheritDeleteChild,
-    /* extension	    */  NULL
+    /* extension	  */	NULL
   },{
-    /* extension	    */  NULL
+    /* extension	  */	NULL
   },{
-    /* extension	    */  NULL
+    /* extension	  */	NULL
   },{
-    /* extension	    */  NULL
+    /* extension	  */	NULL
   },{
-    /* extension	    */  NULL
+    /* extension	  */	NULL
   }
 };
 
@@ -698,7 +705,6 @@ static void ClassPartInitialize(widget_class)
 
 static void EventHandler();
 static void _popup_set_prop();
-static void _do_setsave_under();
 
 static void ShellDepth(widget,closure,value)
     Widget widget;
@@ -738,6 +744,14 @@ static void Initialize(req, new)
 	w->shell.popped_up = FALSE;
 	w->shell.client_specified =
 	    _XtShellNotReparented | _XtShellPositionValid;
+
+	if (w->core.x == BIGSIZE) {
+	    w->core.x = 0;
+	    if (w->core.y == BIGSIZE) w->core.y = 0;
+	} else {
+	    if (w->core.y == BIGSIZE) w->core.y = 0;
+	    else w->shell.client_specified |= _XtShellPPositionOK;
+	}
 
 	XtAddEventHandler(new, (EventMask) StructureNotifyMask,
 		TRUE, EventHandler, (XtPointer) NULL);
@@ -825,26 +839,6 @@ static void Resize(w)
     }
 }
 
-static void SetWindowGroups(widget, window)
-	Widget widget;
-	Window window;
-{
-	int i;
-	Arg a;
-	Widget pop;
-
-	XtSetArg(a, XtNwindowGroup, window);
-
-	for (i = 0; i < widget->core.num_popups; i++) {
-	    pop = widget->core.popup_list[i];
-	    if (pop->core.num_popups > 0) SetWindowGroups(pop, window);
-	    if (XtIsSubclass(pop, wmShellWidgetClass) &&
-		    ((WMShellWidget) pop)->wm.wm_hints.window_group
-		    == XtUnspecifiedWindow) {
-		XtSetValues(pop, &a, (Cardinal)1);
-	    }
-	}
-}
 
 static void Realize(wid, vmask, attr)
 	Widget wid;
@@ -911,12 +905,49 @@ static void Realize(wid, vmask, attr)
 		(unsigned int) InputOutput, w->shell.visual,
 		mask, attr);
 
-	if (wid->core.num_popups > 0 && w->core.parent == NULL) {
-	    SetWindowGroups(wid, wid->core.window);
-	}
-
 	_popup_set_prop(w);
 }
+
+
+static void _SetTransientForHint(w, delete)
+     TransientShellWidget w;
+     Boolean delete;
+{
+    Window window_group;
+
+    if (w->wm.transient) {
+	if (w->transient.transient_for != NULL
+	    && XtIsRealized(w->transient.transient_for))
+	    window_group = XtWindow(w->transient.transient_for);
+	else if ((window_group = w->wm.wm_hints.window_group)
+		 == XtUnspecifiedWindowGroup) {
+	    if (delete)
+		XDeleteProperty( XtDisplay((Widget)w),
+				 XtWindow((Widget)w),
+				 XA_WM_TRANSIENT_FOR
+				);
+	    return;
+	}
+
+	XSetTransientForHint( XtDisplay((Widget)w),
+			      XtWindow((Widget)w),
+			      window_group
+			     );
+    }
+}
+
+
+static void TransientRealize(w, vmask, attr)
+     Widget w;
+     Mask *vmask;
+     XSetWindowAttributes *attr;
+{
+    (*transientShellWidgetClass->core_class.superclass->
+     core_class.realize) (w, vmask, attr);
+
+    _SetTransientForHint((TransientShellWidget)w, False);
+}
+
 
 static void EvaluateWMHints(w)
     WMShellWidget w;
@@ -943,12 +974,14 @@ static void EvaluateWMHints(w)
 	if (hintp->icon_mask != NULL)   hintp->flags |= IconMaskHint;
 	if (hintp->icon_window != NULL) hintp->flags |= IconWindowHint;
 
-	if(hintp->window_group == XtUnspecifiedWindow) {
+	if (hintp->window_group == XtUnspecifiedWindow) {
 	    if(w->core.parent) {
 		Widget p;
 		for (p = w->core.parent; p->core.parent; p = p->core.parent);
-		hintp->window_group = XtWindow(p);
-		hintp->flags |=  WindowGroupHint;
+		if (XtIsRealized(p)) {
+		    hintp->window_group = XtWindow(p);
+		    hintp->flags |=  WindowGroupHint;
+		}
 	    }
 	} else if (hintp->window_group != XtUnspecifiedWindowGroup)
 	    hintp->flags |=  WindowGroupHint;
@@ -964,8 +997,16 @@ static void EvaluateSizeHints(w)
 	sizep->y = w->core.y;
 	sizep->width = w->core.width;
 	sizep->height = w->core.height;
-	if (!(sizep->flags & USSize)) sizep->flags |= PSize;
-	if (!(sizep->flags & USPosition)) sizep->flags |= PPosition;
+
+	if (sizep->flags & USSize) {
+	    if (sizep->flags & PSize) sizep->flags &= ~PSize;
+	} else
+	    sizep->flags |= PSize;
+
+	if (sizep->flags & USPosition) {
+	    if (sizep->flags & PPosition) sizep->flags &= ~PPosition;
+	} else if (w->shell.client_specified & _XtShellPPositionOK)
+	    sizep->flags |= PPosition;
 
 	if (sizep->min_aspect.x != XtUnspecifiedShellInt
 	    || sizep->min_aspect.y != XtUnspecifiedShellInt
@@ -1042,6 +1083,7 @@ static void _popup_set_prop(w)
 	ComputeWMSizeHints(wmshell, size_hints);
 
 	if (wmshell->wm.transient
+	    && !XtIsTransientShell((Widget)w)
 	    && (window_group = wmshell->wm.wm_hints.window_group)
 	       != XtUnspecifiedWindowGroup) {
 
@@ -1607,56 +1649,40 @@ static XtGeometryResult RootGeometryManager(w, request, reply)
     return XtGeometryNo;
 }
 
-
-static void _do_setsave_under(w, flag)
-ShellWidget w;
-Boolean flag;
-{
-	Mask mask;
-	XSetWindowAttributes attr;
-
-	if (XtIsRealized((Widget)w)) {
-	    mask = CWSaveUnder;
-	    attr.save_under = flag;
-	    XChangeWindowAttributes(XtDisplay(w), XtWindow(w), mask, &attr);
-	}
-}
-
-static void _do_setoverride_redirect(w, flag)
-ShellWidget w;
-Boolean flag;
-{
-	Mask mask;
-	XSetWindowAttributes attr;
-
-	if(XtIsRealized((Widget)w)) {
-		mask = CWOverrideRedirect;
-		attr.override_redirect = flag;
-		XChangeWindowAttributes(XtDisplay(w), XtWindow(w), mask, &attr);
-		_popup_set_prop(w);
-	}
-}
-
 /* ARGSUSED */
-static Boolean SetValues(old, ref, new)
+static Boolean SetValues(old, ref, new, args, num_args)
 	Widget old, ref, new;
+	ArgList args;		/* unused */
+	Cardinal *num_args;	/* unused */
 {
 	ShellWidget nw = (ShellWidget) new;
 	ShellWidget ow = (ShellWidget) old;
+	Mask mask = 0;
+	XSetWindowAttributes attr;
 
 	if (ow->shell.save_under != nw->shell.save_under) {
-	    _do_setsave_under(nw, nw->shell.save_under) ;
+	    mask = CWSaveUnder;
+	    attr.save_under = nw->shell.save_under;
 	}
 
 	if (ow->shell.override_redirect != nw->shell.override_redirect) {
-	    _do_setoverride_redirect(nw, nw->shell.override_redirect) ;
+	    mask |= CWOverrideRedirect;
+	    attr.override_redirect = nw->shell.override_redirect;
+	}
+
+	if (mask && XtIsRealized(new)) {
+	    XChangeWindowAttributes(XtDisplay(new),XtWindow(new), mask, &attr);
+	    if ((mask & CWOverrideRedirect) && !nw->shell.override_redirect)
+		_popup_set_prop(nw);
 	}
 	return FALSE;
 }
 
 /* ARGSUSED */
-static Boolean WMSetValues(old, ref, new)
+static Boolean WMSetValues(old, ref, new, args, num_args)
 	Widget old, ref, new;
+	ArgList args;		/* unused */
+	Cardinal *num_args;	/* unused */
 {
 	WMShellWidget nwmshell = (WMShellWidget) new;
 	WMShellWidget owmshell = (WMShellWidget) old;
@@ -1718,9 +1744,32 @@ static Boolean WMSetValues(old, ref, new)
 	return FALSE;
 }
 
+/*ARGSUSED*/
+static Boolean TransientSetValues(oldW, refW, newW, args, num_args)
+     Widget oldW, refW, newW;
+     ArgList args;		/* unused */
+     Cardinal *num_args;	/* unused */
+{
+    TransientShellWidget old = (TransientShellWidget)oldW;
+    TransientShellWidget new = (TransientShellWidget)newW;
+    
+    if (XtIsRealized(newW)
+	&& ((new->transient.transient_for != old->transient.transient_for)
+	    || (new->transient.transient_for == NULL
+		&& (new->wm.wm_hints.window_group
+		    != old->wm.wm_hints.window_group)))) {
+
+	_SetTransientForHint(new, True);
+    }
+    return False;
+}
+
+
 /* ARGSUSED */
-static Boolean TopLevelSetValues(old, ref, new)
+static Boolean TopLevelSetValues(old, ref, new, args, num_args)
 	Widget old, ref, new;
+	ArgList args;		/* unused */
+	Cardinal *num_args;	/* unused */
 {
 	TopLevelShellWidget otlshell = (TopLevelShellWidget) old;
 	TopLevelShellWidget ntlshell = (TopLevelShellWidget) new;
@@ -1744,7 +1793,7 @@ static Boolean TopLevelSetValues(old, ref, new)
 	    icon_name.encoding = ntlshell->topLevel.icon_name_encoding;
 	    icon_name.format = 8;
 	    icon_name.nitems = strlen(icon_name.value) + 1;
-	    XSetWMName(XtDisplay(new), XtWindow(new), &icon_name);
+	    XSetWMIconName(XtDisplay(new), XtWindow(new), &icon_name);
 	}
 	return FALSE;
 }
