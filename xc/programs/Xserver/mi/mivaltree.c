@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * mivaltree.c --
  *	Functions for recalculating window clip lists. Main function
@@ -36,11 +37,6 @@
   *		Bob Scheifler -- avoid miComputeClips for unmapped windows,
   *				 valdata changes
   */
-
-#ifndef lint
-static char rcsid[] =
-"$Header: mivaltree.c,v 5.26 90/11/05 16:36:39 keith Exp $ SPRITE (Berkeley)";
-#endif
 
 #include    "X.h"
 #include    "scrnintstr.h"
