@@ -1,0 +1,30 @@
+INCLUDES = -I. -I../include
+
+SRCS =	FSlibInt.c FSOpenServ.c  FSClServ.c FSConnServ.c FSServName.c	\
+	FSSynchro.c FSErrDis.c FSSync.c FSFlush.c 	\
+	FSListExt.c FSQuExt.c			\
+	FSMisc.c				\
+	FSFtNames.c FSFontInfo.c 		\
+	FSOpenFont.c FSCloseFt.c		\
+	FSNextEv.c				\
+	FSQXInfo.c                              \
+	FSQXExt.c                               \
+	FSQGlyphs.c				\
+	FSErrHndlr.c
+
+OBJS =	FSlibInt.o FSOpenServ.o  FSClServ.o FSConnServ.o FSServName.o	\
+	FSSynchro.o FSErrDis.o FSSync.o FSFlush.o 	\
+	FSListExt.o FSQuExt.o			\
+	FSMisc.o				\
+	FSFtNames.o FSFontInfo.o 		\
+	FSOpenFont.o FSCloseFt.o		\
+	FSNextEv.o				\
+	FSQXInfo.o                              \
+	FSQXExt.o                               \
+	FSQGlyphs.o				\
+	FSErrHndlr.o
+
+NormalLibraryTarget(FS, $(OBJS))
+
+DependTarget()
+

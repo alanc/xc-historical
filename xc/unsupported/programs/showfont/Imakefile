@@ -1,0 +1,7 @@
+LOCAL_LIBRARIES = ../../lib/libFS.a
+SRCS = showfont.c
+OBJS = showfont.o
+INCLUDES = -I../../include
+
+ComplexProgramTarget(showfont)
+

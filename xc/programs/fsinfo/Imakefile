@@ -1,0 +1,7 @@
+LOCAL_LIBRARIES = ../../lib/libFS.a
+SRCS = fsinfo.c
+OBJS = fsinfo.o
+INCLUDES = -I../../include
+
+ComplexProgramTarget(fsinfo)
+

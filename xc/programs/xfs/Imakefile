@@ -1,0 +1,41 @@
+/*	@(#)Imakefile	4.1	91/05/02	*/
+
+#include <Server.tmpl>
+
+#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)' 'CC=$(CC)' 'CCOPTIONS=$(CCOPTIONS)'
+
+CC = ServerCcCmd
+CCOPTIONS = ServerCCOptions
+STD_DEFINES = ServerDefines
+CDEBUGFLAGS = ServerCDebugFlags
+
+OSDIR = os
+OSLIB = $(OSDIR)/libos.a
+DIFSDIR = difs
+DIFSLIB = $(DIFSDIR)/libdifs.a
+FONTDIR = $(FONTSRC)/lib
+FONTLIB = $(FONTDIR)/libfont.a
+SYSLIBS =
+
+FSDIRS = $(OSDIR) $(DIFSDIR) $(PCFDIRS)
+FSLIBS = $(DIFSLIB) $(FONTLIB) $(DIFSLIB) $(OSLIB) $(SYSLIBS)
+
+SUBDIRS = $(FSDIRS)
+
+ServerTarget(fs, $(FSDIRS), , $(FSLIBS), $(SYSLIBS))
+
+all::	fs
+
+#define	IHaveSubdirs
+
+DependSubdirs($(FSDIRS))
+MakeSubdirs($(FSDIRS))
+
+$(FSDIRS):	FRC
+	@cd $@; echo "making $@" ;	\
+	$(MAKE) $(MFLAGS) PassCDebugFlags all
+
+clean::
+	$(RM) fs
+
+FRC:
