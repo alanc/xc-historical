@@ -2,7 +2,7 @@
 
 .de Rs \" Resource Conversion message
 A converter is registered for this resource that will convert
-the following strings; \fB\\$1\fP.
+the following strings: \fB\\$1\fP.
 ..
 .de Sk \" This is an AsciiSink Resource
 .if 'AsciiText'\\$1' This is an AsciiSink resource. 
@@ -356,6 +356,11 @@ The amount of space, in pixels, between the edge of the window
 and the corresponding edge of the text within the window.  If there is
 a scrollbar active on this edge, then this is the space between the text and
 the scrollbar.
+..
+.de Tc \" DisplayCaret
+.ie 'Bold'\\$1' .IP \fBdisplayCaret\fP 1.5i
+.el .IP displayCaret	 1.5i
+Whether or not to display the text insert point.
 ..
 .de Td \" DisplayPosition
 .ie 'Bold'\\$1' .IP \fBdisplayPosition\fP 1.5i
