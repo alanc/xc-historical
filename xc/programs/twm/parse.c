@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.29 89/12/01 12:16:02 jim Exp $
+ * $XConsortium: parse.c,v 1.30 89/12/02 16:14:20 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.29 89/12/01 12:16:02 jim Exp $";
+"$XConsortium: parse.c,v 1.30 89/12/02 16:14:20 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -110,43 +110,59 @@ static int doparse (ifunc, srctypename, srcname)
 }
 
 
-int ParseTwmrc(filename)
+int ParseTwmrc (filename)
     char *filename;
 {
-    char *cp = filename;
-    char init_file[257];
-    int status;
+    int i;
+    char *home = NULL;
+    int homelen = 0;
+    char *cp;
+    char tmpfilename[257];
 
-    if (!cp) {
-	char *home = getenv ("HOME");
-	if (home) {
-	    int len = strlen (home);
+    for (twmrc = NULL, i = 0; !twmrc && i < 4; i++) {
+	switch (i) {
+	  case 0:			/* -f filename */
+	    cp = filename;
+	    break;
 
-	    cp = init_file;
-	    sprintf (init_file, "%s/.twmrc.%d", home, Scr->screen);
-	    
-	    if (access (init_file, R_OK) != 0) {
-		init_file[len + 7] = '\0';
-		if (access (init_file, R_OK) != 0) {
-		    cp = NULL;
-		}
+	  case 1:			/* ~/.twmrc.screennum */
+	    home = getenv ("HOME");
+	    if (home) {
+		homelen = strlen (home);
+		cp = tmpfilename;
+		sprintf (tmpfilename, "%s/.twmrc.%d", home, Scr->screen);
+	    } else {
+		continue;
+	    }
+	    break;
+
+	  case 2:			/* ~/.twmrc */
+	    if (home) {
+		tmpfilename[homelen + 7] = '\0';
+	    }
+	    break;
+
+	  case 3:			/* system.twmrc */
+	    cp = SYSTEM_INIT_FILE;
+	    break;
+	}
+
+	if (cp) {
+	    twmrc = fopen (cp, "r");
+	    if (i == 0) {
+		fprintf (stderr, "%s:  unable to open twmrc \"%s\"\n",
+			 ProgramName, cp);
 	    }
 	}
-	if (!cp) cp = SYSTEM_INIT_FILE;
     }
 
-    if (!(twmrc = fopen (cp, "r"))) {
-	if (filename) {
-	    fprintf (stderr, 
-		     "%s:  unable to open twmrc file \"%s\"; using defaults\n",
-		     ProgramName, filename);
-	}
-	return ParseStringList (defTwmrc);	/* use default bindings */
+    if (twmrc) {
+	int status = doparse (twmFileInput, "file", cp);
+	fclose (twmrc);
+	return status;
+    } else {
+	return ParseStringList (defTwmrc);
     }
-
-    status = doparse (twmFileInput, "file", cp);
-    fclose (twmrc);
-    return status;
 }
 
 int ParseStringList (sl)
