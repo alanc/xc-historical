@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexSc.c,v 5.1 91/02/16 09:56:46 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -414,7 +414,7 @@ pexGetSearchContextReq  *strmPtr;
     };
 
     if (strmPtr->itemMask & PEXSCDistance) {
-	CHK_PEX_BUF(size, sizeof(FLOAT), reply, pexGetSearchContextReply, ptr);
+	CHK_PEX_BUF(size, sizeof(PEXFLOAT), reply, pexGetSearchContextReply, ptr);
 	PACK_FLOAT (psc->distance, ptr);
     };
 

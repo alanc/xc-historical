@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexPc.c,v 5.1 91/02/16 09:56:48 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -977,7 +977,7 @@ pexGetPipelineContextReq 	*strmPtr;
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCMarkerScale) {
-	CHK_PEX_BUF(size, sizeof(FLOAT), reply, pexGetPipelineContextReply,
+	CHK_PEX_BUF(size, sizeof(PEXFLOAT), reply, pexGetPipelineContextReply,
 		    replyPtr);
 	PACK_FLOAT ( pca->markerScale, replyPtr);
     }
@@ -1010,13 +1010,13 @@ pexGetPipelineContextReq 	*strmPtr;
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCCharExpansion) {
-	CHK_PEX_BUF(size, sizeof(FLOAT), reply, pexGetPipelineContextReply,
+	CHK_PEX_BUF(size, sizeof(PEXFLOAT), reply, pexGetPipelineContextReply,
 		    replyPtr);
 	PACK_FLOAT ( pca->charExpansion, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCCharSpacing) {
-	CHK_PEX_BUF(size, sizeof(FLOAT), reply, pexGetPipelineContextReply,
+	CHK_PEX_BUF(size, sizeof(PEXFLOAT), reply, pexGetPipelineContextReply,
 		    replyPtr);
 	PACK_FLOAT ( pca->charSpacing, replyPtr);
     }
@@ -1028,13 +1028,13 @@ pexGetPipelineContextReq 	*strmPtr;
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCCharHeight) {
-	CHK_PEX_BUF(size, sizeof(FLOAT), reply, pexGetPipelineContextReply,
+	CHK_PEX_BUF(size, sizeof(PEXFLOAT), reply, pexGetPipelineContextReply,
 		    replyPtr);
 	PACK_FLOAT ( pca->charHeight, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCCharUpVector) {
-	CHK_PEX_BUF(size, 2 * sizeof(FLOAT), reply, pexGetPipelineContextReply,
+	CHK_PEX_BUF(size, 2 * sizeof(PEXFLOAT), reply, pexGetPipelineContextReply,
 		    replyPtr);
 	PACK_FLOAT ( pca->charUp.x, replyPtr);
 	PACK_FLOAT ( pca->charUp.y, replyPtr);
@@ -1055,13 +1055,13 @@ pexGetPipelineContextReq 	*strmPtr;
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCAtextHeight) {
-	CHK_PEX_BUF(size, sizeof(FLOAT), reply, pexGetPipelineContextReply,
+	CHK_PEX_BUF(size, sizeof(PEXFLOAT), reply, pexGetPipelineContextReply,
 		    replyPtr);
 	PACK_FLOAT ( pca->atextHeight, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCAtextUpVector) {
-	CHK_PEX_BUF(size, 2 * sizeof(FLOAT), reply, pexGetPipelineContextReply,
+	CHK_PEX_BUF(size, 2 * sizeof(PEXFLOAT), reply, pexGetPipelineContextReply,
 		    replyPtr);
 	PACK_FLOAT ( pca->atextUp.x, replyPtr);
 	PACK_FLOAT ( pca->atextUp.y, replyPtr);
@@ -1103,7 +1103,7 @@ pexGetPipelineContextReq 	*strmPtr;
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCLineWidth) {
-	CHK_PEX_BUF(size, sizeof(FLOAT), reply, pexGetPipelineContextReply,
+	CHK_PEX_BUF(size, sizeof(PEXFLOAT), reply, pexGetPipelineContextReply,
 		    replyPtr);
 	PACK_FLOAT ( pca->lineWidth, replyPtr);
     }
@@ -1115,7 +1115,7 @@ pexGetPipelineContextReq 	*strmPtr;
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCCurveApproximation) {
-	CHK_PEX_BUF(size, sizeof(FLOAT) + sizeof(CARD32), reply,
+	CHK_PEX_BUF(size, sizeof(PEXFLOAT) + sizeof(CARD32), reply,
 		    pexGetPipelineContextReply, replyPtr);
 	PACK_CARD16 ( pca->curveApprox.approxMethod, replyPtr);
 	SKIP_PADDING (replyPtr, 2);
@@ -1157,7 +1157,7 @@ pexGetPipelineContextReq 	*strmPtr;
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCSurfaceReflAttr) {
-	CHK_PEX_BUF(size, 5 * sizeof(FLOAT) + sizeof(CARD32)
+	CHK_PEX_BUF(size, 5 * sizeof(PEXFLOAT) + sizeof(CARD32)
 				+ SIZE_COLOURSPEC(pca->reflAttr.specularColour),
 		    reply, pexGetPipelineContextReply, replyPtr);
 	PACK_FLOAT ( pca->reflAttr.ambient, replyPtr);
@@ -1203,7 +1203,7 @@ pexGetPipelineContextReq 	*strmPtr;
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCBfSurfaceReflAttr) {
-	CHK_PEX_BUF(size, 5 * sizeof(FLOAT) + sizeof(CARD32)
+	CHK_PEX_BUF(size, 5 * sizeof(PEXFLOAT) + sizeof(CARD32)
 				+ SIZE_COLOURSPEC(pca->bfReflAttr.specularColour),
 		    reply, pexGetPipelineContextReply, replyPtr);
 	PACK_FLOAT ( pca->bfReflAttr.ambient, replyPtr);
@@ -1229,7 +1229,7 @@ pexGetPipelineContextReq 	*strmPtr;
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCSurfaceApproximation) {
-	CHK_PEX_BUF(size, sizeof(CARD32) + 2 * sizeof(FLOAT), reply,
+	CHK_PEX_BUF(size, sizeof(CARD32) + 2 * sizeof(PEXFLOAT), reply,
 		    pexGetPipelineContextReply, replyPtr);
 	PACK_CARD16 ( pca->surfApprox.approxMethod, replyPtr);
 	SKIP_PADDING (replyPtr, 2);
@@ -1245,14 +1245,14 @@ pexGetPipelineContextReq 	*strmPtr;
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCPatternSize) {
-	CHK_PEX_BUF(size, 2 * sizeof(FLOAT), reply, pexGetPipelineContextReply,
+	CHK_PEX_BUF(size, 2 * sizeof(PEXFLOAT), reply, pexGetPipelineContextReply,
 		    replyPtr);
 	PACK_FLOAT ( pca->patternSize.x, replyPtr);
 	PACK_FLOAT ( pca->patternSize.y, replyPtr);
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCPatternRefPt) {
-	CHK_PEX_BUF(size, 3 * sizeof(FLOAT), reply, pexGetPipelineContextReply,
+	CHK_PEX_BUF(size, 3 * sizeof(PEXFLOAT), reply, pexGetPipelineContextReply,
 		    replyPtr);
 	PACK_FLOAT ( pca->patternRefPt.x, replyPtr);
 	PACK_FLOAT ( pca->patternRefPt.y, replyPtr);
@@ -1260,7 +1260,7 @@ pexGetPipelineContextReq 	*strmPtr;
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCPatternRefVec1) {
-	CHK_PEX_BUF(size, 3 * sizeof(FLOAT), reply, pexGetPipelineContextReply,
+	CHK_PEX_BUF(size, 3 * sizeof(PEXFLOAT), reply, pexGetPipelineContextReply,
 		    replyPtr);
 	PACK_FLOAT ( pca->patternRefV1.x, replyPtr);
 	PACK_FLOAT ( pca->patternRefV1.y, replyPtr);
@@ -1268,7 +1268,7 @@ pexGetPipelineContextReq 	*strmPtr;
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCPatternRefVec2) {
-	CHK_PEX_BUF(size, 3 * sizeof(FLOAT), reply, pexGetPipelineContextReply,
+	CHK_PEX_BUF(size, 3 * sizeof(PEXFLOAT), reply, pexGetPipelineContextReply,
 		    replyPtr);
 	PACK_FLOAT ( pca->patternRefV2.x, replyPtr);
 	PACK_FLOAT ( pca->patternRefV2.y, replyPtr);
@@ -1297,7 +1297,7 @@ pexGetPipelineContextReq 	*strmPtr;
     }
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCSurfaceEdgeWidth) {
-	CHK_PEX_BUF(size, sizeof(FLOAT), reply, pexGetPipelineContextReply,
+	CHK_PEX_BUF(size, sizeof(PEXFLOAT), reply, pexGetPipelineContextReply,
 		    replyPtr);
 	PACK_FLOAT ( pca->edgeWidth, replyPtr);
     }
@@ -1317,7 +1317,7 @@ pexGetPipelineContextReq 	*strmPtr;
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCLocalTransform) {
 	int i, j;
-	CHK_PEX_BUF(size, 16 * sizeof(FLOAT), reply, pexGetPipelineContextReply,
+	CHK_PEX_BUF(size, 16 * sizeof(PEXFLOAT), reply, pexGetPipelineContextReply,
 		    replyPtr);
 	for (i=0; i<4; i++)
 	    for (j=0; j<4; j++)
@@ -1326,7 +1326,7 @@ pexGetPipelineContextReq 	*strmPtr;
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPCGlobalTransform) {
 	int i, j;
-	CHK_PEX_BUF(size, 16 * sizeof(FLOAT), reply, pexGetPipelineContextReply,
+	CHK_PEX_BUF(size, 16 * sizeof(PEXFLOAT), reply, pexGetPipelineContextReply,
 		    replyPtr);
 	for (i=0; i<4; i++)
 	    for (j=0; j<4; j++)

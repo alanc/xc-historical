@@ -1,4 +1,4 @@
-/* $XConsortium: dipexExt.c,v 5.1 91/02/16 09:56:38 rws Exp $ */
+/* $XConsortium: dipexExt.c,v 5.2 91/02/18 21:09:05 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -48,10 +48,10 @@ unsigned long add_pad_of[] = {0, 3, 2, 1};
 
 unsigned int ColourSpecSizes[] = {
     sizeof(CARD32),			    /* PEXIndexedColour */
-    3 * sizeof(FLOAT),			    /* PEXRgbFloatColour */
-    3 * sizeof(FLOAT),			    /* PEXCieFloatColour */
-    3 * sizeof(FLOAT),			    /* PEXHsvFloatColour */
-    3 * sizeof(FLOAT),			    /* PEXHlsFloatColour */
+    3 * sizeof(PEXFLOAT),			    /* PEXRgbFloatColour */
+    3 * sizeof(PEXFLOAT),			    /* PEXCieFloatColour */
+    3 * sizeof(PEXFLOAT),			    /* PEXHsvFloatColour */
+    3 * sizeof(PEXFLOAT),			    /* PEXHlsFloatColour */
     sizeof(CARD32),			    /* PEXRgb8Colour */
     2 * sizeof(CARD32),			    /* PEXRgb16Colour */
 };
