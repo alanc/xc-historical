@@ -53,6 +53,7 @@ SRCS = \
 	terminal \
 	tie_fighter \
 	vlines2 \
+	vlines3 \
 	weird_size \
 	wide_weave \
 	wingdogs \
