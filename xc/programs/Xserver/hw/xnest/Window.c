@@ -1,4 +1,4 @@
-/* $XConsortium: Window.c,v 1.3 94/01/07 09:52:50 dpw Exp $ */
+/* $XConsortium: Window.c,v 1.4 94/02/06 17:53:04 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -148,10 +148,12 @@ Bool xnestDestroyWindow(pWin)
   if (pWin->nextSib)
     xnestWindowPriv(pWin->nextSib)->sibling_above = 
       xnestWindowPriv(pWin)->sibling_above;
+#ifdef SHAPE
   REGION_DESTROY(pWin->drawable.pScreen, 
 				xnestWindowPriv(pWin)->bounding_shape);
   REGION_DESTROY(pWin->drawable.pScreen, 
 				xnestWindowPriv(pWin)->clip_shape);
+#endif
   XDestroyWindow(xnestDisplay, xnestWindow(pWin));
   xnestWindowPriv(pWin)->window = None;
 
