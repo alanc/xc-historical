@@ -478,7 +478,7 @@ Display_Bits_Info(window)
   printf("         ==> Backing-planes to be preserved: 0x%x\n",
 	 win_attributes.backing_planes);
   printf("         ==> Backing pixel: %d\n", win_attributes.backing_pixel);
-  printf("         ==> Save-under?: %s\n",
+  printf("         ==> Save-unders: %s\n",
 	 Lookup(win_attributes.save_under, _bool));
 }
 
