@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.139 88/08/09 17:41:13 rws Exp $ */
+/* $XConsortium: main.c,v 1.140 88/09/06 15:41:15 jim Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -153,9 +153,9 @@ main(argc, argv)
 
 	/* Perform any operating system dependent initializations you'd like */
 	OsInit();		
+	CreateWellKnownSockets();
 	if(!looping)
 	{
-	    CreateWellKnownSockets();
 	    InitProcVectors();
 	    serverClient = (ClientPtr)xalloc(sizeof(ClientRec));
             serverClient->sequence = 0;
@@ -238,6 +238,7 @@ main(argc, argv)
         xfree(clients);
 	xfree(ConnectionInfo);
 
+	DestroyWellKnownConnections ();
 	looping = 1;
     }
 }

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.81 88/08/31 10:09:37 rws Exp $ */
+/* $XConsortium: connection.c,v 1.82 88/09/06 15:50:53 jim Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -295,6 +295,21 @@ CreateWellKnownSockets()
 	inputBuffers[i].lenLastReq = 0;
 	inputBuffers[i].size = 0;
     }
+}
+
+void
+DestroyWellKnownConnections ()
+{
+    register int i;
+    register long l;
+
+    for (i = 0, l = 1L; i < 32; i++, l <<= 1) {
+	if (WellKnownConnections & l) {
+	    (void) close (i);
+	}
+    }
+    WellKnownConnections = 0;
+    return;
 }
 
 /* We want to read the connection information.  If the client doesn't
