@@ -37,6 +37,7 @@ SOFTWARE.
 #include "Vendor.h"
 #include "VendorP.h"
 #include <X11/Xatom.h>
+#include <X11/Xlocale.h>
 #include <pwd.h>
 #include <stdio.h>
 
@@ -55,10 +56,12 @@ SOFTWARE.
 void _XtShellDepth();
 void _XtShellColormap();
 void _XtShellAncestorSensitive();
+void _XtTitleEncoding();
 #else
 static void _XtShellDepth();
 static void _XtShellColormap();
 static void _XtShellAncestorSensitive();
+static void _XtTitleEncoding();
 #endif
 
 /***************************************************************************
@@ -75,12 +78,14 @@ static XtResource shellResources[]=
 	{XtNy, XtCPosition, XtRPosition, sizeof(Position),
 	    Offset(core.y), XtRImmediate, (XtPointer)BIGSIZE},
 	{ XtNdepth, XtCDepth, XtRInt, sizeof(int),
-	    Offset(core.depth), XtRCallProc, (XtPointer) _XtShellDepth},
+	    Offset(core.depth), XtRCallProc,
+	    (XtPointer)(char *) _XtShellDepth},
 	{ XtNcolormap, XtCColormap, XtRColormap, sizeof(Colormap),
-	    Offset(core.colormap), XtRCallProc, (XtPointer) _XtShellColormap},
+	    Offset(core.colormap), XtRCallProc,
+	    (XtPointer)(char *) _XtShellColormap},
 	{ XtNancestorSensitive, XtCSensitive, XtRBoolean, sizeof(Boolean),
 	    Offset(core.ancestor_sensitive), XtRCallProc,
-	    (XtPointer) _XtShellAncestorSensitive},
+	    (XtPointer)(char *) _XtShellAncestorSensitive},
 	{ XtNallowShellResize, XtCAllowShellResize, XtRBoolean,
 	    sizeof(Boolean), Offset(shell.allow_shell_resize),
 	    XtRImmediate, (XtPointer)False},
@@ -250,7 +255,8 @@ static XtResource wmResources[]=
 	{ XtNtitle, XtCTitle, XtRString, sizeof(String),
 	    Offset(wm.title), XtRString, NULL},
 	{ XtNtitleEncoding, XtCTitleEncoding, XtRAtom, sizeof(Atom),
-	    Offset(wm.title_encoding), XtRImmediate, (XtPointer)XA_STRING},
+	    Offset(wm.title_encoding),
+	    XtRCallProc, (XtPointer)(char *) _XtTitleEncoding},
 	{ XtNwmTimeout, XtCWmTimeout, XtRInt, sizeof(int),
 	    Offset(wm.wm_timeout), XtRImmediate,(XtPointer)DEFAULT_WM_TIMEOUT},
 	{ XtNwaitForWm, XtCWaitForWm, XtRBoolean, sizeof(Boolean),
@@ -463,8 +469,8 @@ static XtResource topLevelResources[]=
 	{ XtNiconName, XtCIconName, XtRString, sizeof(String),
 	    Offset(topLevel.icon_name), XtRString, (XtPointer) NULL},
 	{ XtNiconNameEncoding, XtCIconNameEncoding, XtRAtom, sizeof(Atom),
-	    Offset(topLevel.icon_name_encoding), XtRImmediate,
-	    (XtPointer)XA_STRING},
+	    Offset(topLevel.icon_name_encoding),
+	    XtRCallProc, (XtPointer)(char *) _XtTitleEncoding},
 	{ XtNiconic, XtCIconic, XtRBoolean, sizeof(Boolean),
 	    Offset(topLevel.iconic), XtRImmediate, (XtPointer)False}
 };
@@ -747,7 +753,6 @@ void _XtShellDepth(widget,closure,value)
    else _XtCopyFromParent (widget,closure,value);
 }
 
-
 /*ARGSUSED*/
 static void XtCopyDefaultColormap(widget, offset, value)
     Widget      widget;
@@ -779,9 +784,24 @@ void _XtShellAncestorSensitive(widget,closure,value)
     XrmValue *value;
 {
    static Boolean true = True;
-   if (widget->core.parent == NULL) value->addr = (XtPointer)(&true);
+   if (widget->core.parent == NULL) value->addr = (XPointer)(&true);
    else _XtCopyFromParent (widget,closure,value);
 }
+
+#ifndef CRAY
+static
+#endif
+void _XtTitleEncoding(widget, offset, value)
+    Widget widget;
+    int offset;
+    XrmValue *value;
+{
+    static Atom atom;
+    if (XtWidgetToApplicationContext(widget)->langProcRec.proc) atom = None;
+    else atom = XA_STRING;
+    value->addr = (XPointer) &atom;
+}
+
 
 /* ARGSUSED */
 static void Initialize(req, new, args, num_args)
@@ -1122,22 +1142,40 @@ static void _popup_set_prop(w)
 	XSizeHints *size_hints;
 	Window window_group;
 	XClassHint classhint;
+	Boolean copied_iname, copied_wname;
 
 	if (!XtIsWMShell((Widget)w) || w->shell.override_redirect) return;
 
 	if ((size_hints = XAllocSizeHints()) == NULL)
 	    _XtAllocError("XAllocSizeHints");
 
-	window_name.value = (unsigned char*)wmshell->wm.title;
-	window_name.encoding = wmshell->wm.title_encoding;
-	window_name.format = 8;
-	window_name.nitems = strlen((char *)window_name.value);
+	copied_iname = copied_wname = False;
+        if (wmshell->wm.title_encoding == None &&
+	    XmbTextListToTextProperty(XtDisplay((Widget)w),
+				      (char**)&wmshell->wm.title,
+				      1, XStdICCTextStyle,
+				      &window_name) >= Success) {
+	    copied_wname = True;
+	} else {
+	    window_name.value = (unsigned char*)wmshell->wm.title;
+	    window_name.encoding = wmshell->wm.title_encoding;
+	    window_name.format = 8;
+	    window_name.nitems = strlen((char *)window_name.value);
+	}
 
 	if (XtIsTopLevelShell((Widget)w)) {
-	    icon_name.value = (unsigned char*)tlshell->topLevel.icon_name;
-	    icon_name.encoding = tlshell->topLevel.icon_name_encoding;
-	    icon_name.format = 8;
-	    icon_name.nitems = strlen((char *)icon_name.value);
+            if (tlshell->topLevel.icon_name_encoding == None &&
+		XmbTextListToTextProperty(XtDisplay((Widget)w),
+					  (char**)&tlshell->topLevel.icon_name,
+					  1, XStdICCTextStyle,
+					  &icon_name) >= Success) {
+		copied_iname = True;
+	    } else {
+		icon_name.value = (unsigned char*)tlshell->topLevel.icon_name;
+		icon_name.encoding = tlshell->topLevel.icon_name_encoding;
+		icon_name.format = 8;
+		icon_name.nitems = strlen((char *)icon_name.value);
+	    }
 	}
 
 	EvaluateWMHints(wmshell);
@@ -1179,6 +1217,20 @@ static void _popup_set_prop(w)
 			 &wmshell->wm.wm_hints,
 			 &classhint);
 	XFree((char*)size_hints);
+	if (copied_wname)
+	    XFree((XPointer)window_name.value);
+	if (copied_iname)
+	    XFree((XPointer)icon_name.value);
+
+	if (XtWidgetToApplicationContext((Widget)w)->langProcRec.proc) {
+	    char *locale = locale = setlocale(LC_CTYPE, (char *)NULL);
+	    if (locale)
+		XChangeProperty(XtDisplay((Widget)w), XtWindow((Widget)w),
+				XInternAtom(XtDisplay((Widget)w),
+					    "WM_LOCALE_NAME", False),
+				XA_STRING, 8, PropModeReplace,
+				(unsigned char *)locale, strlen(locale));
+	}
 }
 
 /* ARGSUSED */
@@ -1865,11 +1917,24 @@ static Boolean WMSetValues(old, ref, new, args, num_args)
 		nwmshell->wm.title_encoding != owmshell->wm.title_encoding)) {
 
 	    XTextProperty title;
-	    title.value = (unsigned char*)nwmshell->wm.title;
-	    title.encoding = nwmshell->wm.title_encoding;
-	    title.format = 8;
-	    title.nitems = strlen(nwmshell->wm.title);
+	    Boolean copied = False;
+
+            if (nwmshell->wm.title &&
+		nwmshell->wm.title_encoding == None &&
+		XmbTextListToTextProperty(XtDisplay(new),
+					  (char**)&nwmshell->wm.title,
+					  1, XStdICCTextStyle,
+					  &title) >= Success) {
+		copied = True;
+	    } else {
+		title.value = (unsigned char*)nwmshell->wm.title;
+		title.encoding = nwmshell->wm.title_encoding;
+		title.format = 8;
+		title.nitems = strlen(nwmshell->wm.title);
+	    }
 	    XSetWMName(XtDisplay(new), XtWindow(new), &title);
+	    if (copied)
+		XFree((XPointer)title.value);
 	}
 
 	EvaluateWMHints(nwmshell);
@@ -1956,11 +2021,23 @@ static Boolean TopLevelSetValues(oldW, refW, newW, args, num_args)
 	      != new->topLevel.icon_name_encoding))) {
 
 	    XTextProperty icon_name;
-	    icon_name.value = (unsigned char *)new->topLevel.icon_name;
-	    icon_name.encoding = new->topLevel.icon_name_encoding;
-	    icon_name.format = 8;
-	    icon_name.nitems = strlen((char *)icon_name.value);
+	    Boolean copied = False;
+
+            if (new->topLevel.icon_name_encoding == None &&
+		XmbTextListToTextProperty(XtDisplay(newW),
+					  (char**) &new->topLevel.icon_name,
+					  1, XStdICCTextStyle,
+					  &icon_name) >= Success) {
+		copied = True;
+	    } else {
+		icon_name.value = (unsigned char *)new->topLevel.icon_name;
+		icon_name.encoding = new->topLevel.icon_name_encoding;
+		icon_name.format = 8;
+		icon_name.nitems = strlen((char *)icon_name.value);
+	    }
 	    XSetWMIconName(XtDisplay(newW), XtWindow(newW), &icon_name);
+	    if (copied)
+		XFree((XPointer)icon_name.value);
 	}
     }
     return False;
