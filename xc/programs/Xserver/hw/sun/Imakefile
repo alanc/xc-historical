@@ -1,36 +1,51 @@
-XCOMM $XConsortium: Imakefile,v 5.16 92/12/03 10:40:08 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.13 91/07/29 18:26:59 rws Exp $
 #include <Server.tmpl>
 
-#ifdef SparcArchitecture
-#if HasMITGXSource
+#if defined(SparcArchitecture)
+# if HasMITGXSource
 GXSRC=sunGX.c
-#else
+# else
 GXSRC=
-#endif
+#  if SystemV4
+GXOBJDIST=solGX.o.dist
+#  else
+GXOBJDIST=sunGX.o.dist
+#  endif
+# endif
 GXOBJ=sunGX.o
 #else
 GXOBJ=
 GXSRC=
 #endif
 
-SRCS1 =	sunInit.c sunBW2.c sunCursor.c sunIo.c sunKbd.c sunMouse.c sunUtils.c \
-	sunCG.c sunCG2C.c sunCG2M.c sunCG3C.c sunCG4C.c sunCG6C.c \
-	$(GXSRC) sunKeyMap.c
+SRCS1 =	sunInit.c \
+	sunCfb.c \
+	sunCursor.c \
+	sunFbs.c \
+	sunIo.c \
+	sunKbd.c \
+	sunMfb.c \
+	sunMouse.c\
+	$(GXSRC) \
+	sunKeyMap.c
 
-OBJS1 = sunBW2.o sunCursor.o sunIo.o sunKbd.o sunMouse.o sunUtils.o \
-	sunCG.o sunCG2C.o sunCG2M.o sunCG3C.o sunCG4C.o sunCG6C.o \
-	$(GXOBJ) sunKeyMap.o
+SRCS =	$(SRCS1) kbd_mode.c constype.c
 
-#if Xsun24Server
-SRCS2 = sunCG8C.c
-OBJS2 = sunCG8C.o
+#ifdef i386Architecture
+OFILES = sunInit.o
+#else
+OFILES = sunInit.o sunInitMono.o sunInitExtMono.o
 #endif
 
-SRCS =	$(SRCS1) $(SRCS2) kbd_mode.c constype.c 
-
-OFILES = sunInit.o sunInitMono.o sunInitExtMono.o
-
-OBJS = $(OBJS1) $(OBJS2)
+OBJS = 	sunCfb.o \
+	sunCursor.o \
+	sunFbs.o \
+	sunIo.o \
+	sunKbd.o \
+	sunMfb.o \
+	sunMouse.o \
+	$(GXOBJ) \
+	sunKeyMap.o
 
    INCLUDES = -I. -I../mfb -I../mi -I../cfb -I../../include\
    		-I$(INCLUDESRC) -I$(FONTSRC)/include
@@ -39,38 +54,35 @@ OBJS = $(OBJS1) $(OBJS2)
 
 NormalLibraryObjectRule()
 
-all:: $(OFILES) kbd_mode constype
+all:: $(OFILES) kbd_mode constype kbdtype
 
 lintlib:
 
 NormalLibraryTarget(sun,$(OBJS))
-NormalLintTarget($(SRCS1) $(SRCS2))
+NormalLintTarget($(SRCS1))
 
 #if !HasMITGXSource
-#if SystemV4
-LinkFile(sunGX.o,solGX.o.dist)
-#else
-LinkFile(sunGX.o,sunGX.o.dist)
-#endif
+LinkFile(sunGX.o,$(GXOBJDIST))
 #endif
 
-#if Xsun24Server
-SpecialCObjectRule(sunInit,$(ICONFIGFILES),-DDEPTH24)
-#endif
+#ifndef i386Architecture
 sunInitExtMono.o: $(ICONFIGFILES)
-ObjectFromSpecialSource(sunInitExtMono,../mi/miinitext,-DNOPEXEXT)
+ObjectFromSpecialSource(sunInitExtMono,../mi/miinitext,-UPEXEXT)
 ObjectFromSpecialSource(sunInitMono,sunInit,-DMONO_ONLY)
+#endif
 
-SingleProgramTarget(kbd_mode,kbd_mode.o,NullParameter,NullParameter)
-SingleProgramTarget(constype,constype.o,NullParameter,NullParameter)
+SingleProgramTarget(kbd_mode, kbd_mode.o,,)
+SingleProgramTarget(constype, constype.o,,)
 InstallProgram(kbd_mode,$(BINDIR))
 InstallProgram(constype,$(BINDIR))
 InstallManPage(kbd_mode,$(MANDIR))
 InstallManPage(constype,$(MANDIR))
 InstallManPage(Xsun,$(MANDIR))
+#ifndef i386Architecture
 InstallManPageAliases(Xsun,$(MANDIR),XsunMono)
+#endif
 
 saber_src:
-	#load $(CFLAGS) $(SRCS1) $(SRCS2)
+	#load $(CFLAGS) $(SRCS1)
 
 DependTarget()
