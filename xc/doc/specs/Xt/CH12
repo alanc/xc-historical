@@ -28,6 +28,11 @@ and are referred to generically as ``objects''.  By convention, the term
 .PN Core
 and the term ``non-widget'' refers to objects that are not a subclass of
 .PN Core .
+In the preceding portion of this specification, the interface
+descriptions indicate explicitly whether the generic "widget" argument
+is restricted to particular subclasses of Object.  Sections 12.2.5,
+12.3.5 and 12.5 summarize the permissable classes of the arguments to and
+return values from each of the \*(xI routines.
 
 .NH 2
 Data Structures
@@ -39,7 +44,7 @@ In order not to conflict with previous widget code, the data
 structures used by non-widget objects do not follow all the same
 conventions as those for widgets.  In particular, the class records
 are not composed of parts but instead are complete data structures
-with ``holes'' in them for the widget fields that they do not use.  This
+with filler in them for the widget fields that they do not use.  This
 allows the static class initializers for existing widgets to remain
 unchanged.
 
@@ -310,6 +315,7 @@ if argument is not of a subclass of
 .IP    
 .PN XtDestroyWidget
 .IP
+.PN XtParent ,
 .PN XtDisplayOfObject ,
 .PN XtScreenOfObject ,
 .PN XtWindowOfObject
@@ -320,15 +326,12 @@ if argument is not of a subclass of
 .PN XtGetGC ,
 .PN XtReleaseGC
 .IP
-.PN XtNameToWidget ,
 .PN XtName
 .IP
 .PN XtSetValues ,
 .PN XtGetValues ,
 .PN XtVaSetValues ,
-.PN XtVaGetValues ,
-.PN XtGetSubvalues ,
-.PN XtVaGetSubvalues
+.PN XtVaGetValues
 .IP
 .PN XtGetSubresources ,
 .PN XtGetApplicationResources ,
@@ -369,7 +372,8 @@ Use of Objects
 The
 .PN Object
 class exists to enable programmers to use the \*(xI'
-classing and resource handling mechanisms for things besides widgets.
+classing and resource handling mechanisms for things smaller
+and simpler than widgets.
 Objects obsolete many common uses of subresources as described in
 sections 9.4, 9.7.2.4 and 9.7.2.5.
 .LP
@@ -419,7 +423,9 @@ RectObjClassPart Structure
 .LP
 As with the
 .PN ObjectClassPart
-structure, all fields have the same
+structure, all fields in the
+.PN RectObjClassPart
+structure have the same
 purpose and function as the corresponding fields in
 .PN CoreClassPart ;
 fields whose names are rect\fI\s+1n\s-1\fP for some integer
@@ -640,7 +646,9 @@ Use of RectObjs
 can be subclassed to provide widget-like objects (sometimes
 called ``gadgets'') that do not use windows and which do not have
 features often unused in simple widgets.  This can save memory
-resources both in the server and in applications.  In the following
+resources both in the server and in applications
+but requires additional support code in the parent.
+In the following
 discussion, ``RectObj'' refers only to objects which are a subclass of
 .PN RectObj
 and are not a subclass of
@@ -719,7 +727,9 @@ In a call to
 .PN XtMakeGeometryRequest
 (or
 .PN XtMakeResizeRequest )
-on a RectObj, if the manager returns
+on a RectObj with
+.PN XtQueryOnly
+not set, if the manager returns
 .PN XtGeometryYes
 two rectangles will be cleared corresponding to both the old and
 the new child geometries.
@@ -773,7 +783,8 @@ or a subclass:
 .IP
 .PN XtCreatePopupShell ,
 .PN XtVaCreatePopupShell ,
-.PN XtAppCreateShell
+.PN XtAppCreateShell ,
+.PN XtVaAppCreateShell
 .sp
 .LP
 The Widget arguments to the following procedures must be of class
@@ -811,10 +822,13 @@ or any subclass:
 .PN XtScreen ,
 .PN XtWindow
 .IP
+.PN XtNameToWidget
+.IP
 .PN XtGetSelectionValue ,
 .PN XtGetSelectionValues ,
 .PN XtOwnSelection ,
 .PN XtDisownSelection ,
+.PN XtOwnSelectionIncremental ,
 .PN XtGetSelectionValueIncremental ,
 .PN XtGetSelectionValuesIncremental ,
 .br
@@ -882,7 +896,9 @@ The return value of the following procedures will be of a subclass of
 .sp
 .IP
 .PN XtAppCreateShell ,
+.PN XtVaAppCreateShell ,
 .PN XtAppInitialize ,
+.PN XtVaAppInitialize ,
 .PN XtCreatePopupShell ,
 .PN XtVaCreatePopupShell
 .bp

@@ -58,8 +58,9 @@ T}
 T{
 .PN ApplicationShell
 T}	T{
-Used by the window manager to define a separate application instance,
-which is the main top-level window of the application.
+Used for the single main top-level window which
+the window manager identifies as an application instance and
+which interacts with the session manager.
 T}
 .IN "ApplicationShell" "" "@DEF@"
 .TE
@@ -90,7 +91,7 @@ lw(1.5i) lw(4.5i).
 T{
 .PN Shell
 T}	T{
-Provides the base class for shell widgets and the
+Is the base class for shell widgets and provides the
 fields needed for all types of shells.
 .PN Shell
 is a direct subclass of
@@ -126,7 +127,8 @@ T}	T{
 Used for shell windows that
 desire the
 .PN \s-1WM_TRANSIENT_FOR\s+1
-property.
+property and is a subclass of
+.PN VendorShell .
 T}
 .sp 6p
 T{
@@ -139,7 +141,7 @@ T}
 T{
 .PN ApplicationShell
 T}	T{
-Used for an application's top-level window and is a subclass of
+Used for an application's main top-level window and is a subclass of
 .PN TopLevelShell .
 T}
 .TE
@@ -156,7 +158,7 @@ Only
 .PN TopLevelShell ,
 and
 .PN ApplicationShell
-are for public use.
+are intended for public use.
 .NH 3
 ShellClassPart Definitions
 .XS
@@ -167,7 +169,7 @@ Only the
 .PN Shell
 class has additional class fields, described in a
 .PN ShellClassExtensionRec .
-None of the other shell widget classes have any additional fields:
+None of the other shell widget classes have any additional class fields:
 .LP
 .KS
 .Ds 0
@@ -179,8 +181,7 @@ typedef struct { XtPointer extension; } ShellClassPart, OverrideShellClassPart,
 .De
 .KE
 .LP
-Shell widget classes have the (empty) shell fields immediately following the
-composite fields:
+The full shell widget class record definitions are:
 .IN "ShellClassExtension" "" "@DEF@"
 .IN "ShellClassExtensionRec" "" "@DEF@"
 .LP
@@ -279,7 +280,8 @@ typedef struct _ApplicationShellClassRec {
 .De
 .KE
 .LP
-The predefined class records and pointers for shells are:
+The single occurrence of the class records and pointers for creating
+instances of shells are:
 .LP
 .KS
 .Ds 0
@@ -359,6 +361,10 @@ T}
 .sp 6p
 _
 .TE
+.LP
+Shell.h uses incomplete structure definitions to ensure that the
+compiler catches attempts to access private data in any of the shell
+instance or class data structures.
 .LP
 The symbolic constant for the
 .PN ShellClassExtension
@@ -503,8 +509,7 @@ typedef struct {
 } ApplicationShellPart;
 .De
 .KE
-The full definitions of the various shell widgets have shell fields
-following composite fields:
+The full shell widget instance record definitions are:
 .LP
 .IN "ShellWidget" "" "@DEF@"
 .KS
@@ -622,13 +627,9 @@ XtNvisual	XtCVisual	XtRVisual
 _
 .TE
 .LP
-The class resource list for
 .PN OverrideShell
-is empty; no additional
-resources beyond those declared by
-.PN Shell
-are defined for
-.PN OverrideShell .
+declares no additional resources beyond those defined by
+.PN Shell .
 .LP
 The resource names, classes and representation types specified in
 the
@@ -806,8 +807,14 @@ is set.  If the geometry specifies a width and/or height then
 .PN USSize
 is set.  Any fields in the geometry specification
 override the corresponding values in the
-Core x, y, width, and height
-fields.  The geometry string is not copied by any of the \*(xI
+Core x, y, width, and height fields.
+If geometry is NULL or contains only a partial specification then the
+Core x, y, width and height fields are used and
+.PN PPosition
+and
+.PN PSize
+are set as appropriate.
+The geometry string is not copied by any of the \*(xI
 shell classes; a client specifying the string in an ArgList
 or varargs list must ensure
 that the value remains valid until the shell widget is realized.
@@ -816,7 +823,7 @@ see \fI\*(xL\fP.
 .LP
 The create_popup_child_proc is called by the
 .PN XtPopup
-procedure and is usually NULL.
+procedure and may remain NULL.
 The grab_kind, spring_loaded,
 and popped_up fields maintain state information as described under
 .PN XtPopup ,
@@ -833,10 +840,11 @@ any geometry requests made by the shell will always return
 without interacting with the window manager.
 Setting save_under instructs the server to attempt
 to save the contents of windows obscured by the shell when it is mapped
-and to restore its contents automatically later.
+and to restore those contents automatically when the shell is unmapped.
 It is useful for pop-up menus.
 Setting override_redirect determines
-whether or not the shell window is visible to the window manager.
+whether or not the window manager can intercede when the shell window
+is mapped.
 The popup and popdown callbacks are called during
 .PN XtPopup
 and
@@ -861,7 +869,7 @@ _
 title	T{
 Icon name, if specified, otherwise the application's name
 T}
-wm_timeout	Five seconds
+wm_timeout	Five seconds, in units of milliseconds
 wait_for_wm	T{
 .PN True
 T}
@@ -904,7 +912,8 @@ The title and
 title_encoding fields are stored in the
 .PN \s-1WM_NAME\s+1
 property on the shell's window by the shell realize procedures.
-The wm_timeout resource limits the amount of time a shell is to wait for
+The wm_timeout resource specifies, in milliseconds,
+the amount of time a shell is to wait for
 confirmation of a geometry request to the window manager.
 If none comes back within that time,
 the shell assumes the window manager is not functioning properly
@@ -949,11 +958,12 @@ the value of the field is modified as follows:
 .De
 .IN "XWMGeometry"
 .LP
-If the shell widget is not the root of a widget hierarchy, then the
+If the shell widget has a non-NULL parent, then the
 realize and set_values procedures replace the value
 .PN XtUnspecifiedWindow
 .IN "XtUnspecifiedWindow" "" "@DEF@"
-in the window_group field with the window id of the root widget if the
+in the window_group field with the window id of the root widget
+of the widget tree if the
 root widget is realized. The symbolic constant
 .PN XtUnspecifiedWindowGroup
 .IN "XtUnspecifiedWindowGroup" "" "@DEF@"
@@ -967,7 +977,6 @@ and window_group is not
 the WMShell realize and set_values procedures then store the
 .PN \s-1WM_TRANSIENT_FOR\s+1
 property with the value of window_group.
-For further information, see \fI\*(xL\fP and the \fI\*(xC\fP.
 .LP
 .PN Transient
 shells have the following additional resources:

@@ -41,7 +41,8 @@ Determining Specification Revision Level
 .LP
 Widget and application developers who wish to maintain a common source
 pool which will build properly with implementations of the \*(xI
-at different revision levels of these specifications may use the
+at different revision levels of these specifications but which take
+advantage of newer features added in later revisions may use the
 symbolic macro
 .PN XtSpecificationRelease .
 .LP
@@ -101,7 +102,7 @@ allow event handlers to abort further dispatching of the current event
 .PN XtInitProc
 and
 .PN XtSetValuesFunc
-make the initialize_hook and set_values_hook functions
+make the initialize_hook and set_values_hook methods
 obsolete but the hooks have been retained for those widgets which used
 them in Release 3.
 
@@ -251,6 +252,6 @@ written under Release 3 will not encounter unexpected errors if an
 application attempts to create a non-widget child.  In Release 4 there
 is no requirement that all Composite widgets implement the extra
 functionality required to manage windowless children, so the
-accept_objects field also allows a Composite widget to declare that it
+accept_objects field allows a Composite widget to declare that it
 is never prepared to do so.
 .bp

@@ -28,8 +28,8 @@ To resolve physical layout conflicts between sibling widgets and between
 a widget and its parent, the \*(xI provide the geometry management mechanism.
 Almost all 
 .PN Composite 
-widgets have a geometry manager (geometry_manager field
-in the widget class record) that is responsible for the size, position, and
+widgets have a geometry manager specified in the geometry_manager field
+in the widget class record that is responsible for the size, position, and
 stacking order of the widget's children.
 The only exception are fixed boxes,
 which create their children themselves and can ensure that
@@ -40,7 +40,7 @@ Initiating Geometry Changes
 .XS
 \*(SN Initiating Geometry Changes
 .XE
-Parents, children, and clients all initiate geometry changes differently.
+Parents, children, and clients each initiate geometry changes differently.
 Because a parent has absolute control of its children's geometry,
 it changes the geometry directly by calling
 .PN XtMoveWidget ,
@@ -83,10 +83,10 @@ It can simultaneously move and resize a child with a single call to
 .PN XtConfigureWidget .
 .LP
 Often, geometry managers find that they can satisfy a request only if
-they can reconfigure a widget that they are not in control of (in particular,
-when the 
+they can reconfigure a widget that they are not in control of; in particular,
+the 
 .PN Composite 
-widget wants to change its own size).
+widget may want to change its own size.
 In this case,
 the geometry manager makes a request to its parent's geometry manager.
 Geometry requests can cascade this way to arbitrary depth.
@@ -130,9 +130,8 @@ XtGeometryResult XtMakeGeometryRequest(\fIw\fP, \fIrequest\fP, \
 .br
       XtWidgetGeometry *\fIreply_return\fP;
 .FN
-.ds Wi that is making the request
 .IP \fIw\fP 1i
-Specifies the widget \*(Wi.
+Specifies the widget that is making the request.  \*(rI
 .IP \fIrequest\fP 1i
 Specifies the desired widget geometry (size, position, border width,
 and stacking order).
@@ -188,10 +187,10 @@ does no configuring and returns
 .PN XtMakeGeometryRequest
 never returns
 .PN XtGeometryDone .
-.LP
+.IP \(bu 5
 Otherwise,
 .PN XtMakeGeometryRequest
-returns the resulting value from the parent's geometry manager.
+just returns the resulting value from the parent's geometry manager.
 .LP
 Children of primitive widgets are always unmanaged; thus,
 .PN XtMakeGeometryRequest
@@ -402,7 +401,7 @@ XtGeometryResult XtMakeResizeRequest(\fIw\fP, \fIwidth\fP, \fIheight\fP, \
       Dimension *\fIwidth_return\fP, *\fIheight_return\fP
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Specifies the widget that is making the request.  \*(rI
 .IP \fIwidth\fP 1i
 .br
 .ns
@@ -427,9 +426,9 @@ If the return value is
 .PN XtGeometryAlmost ,
 width_return and height_return contain a compromise width and height.
 If these are acceptable,
-the widget should immediately make an
+the widget should immediately call
 .PN XtMakeResizeRequest
-and request that the compromise width and height be applied.
+again and request that the compromise width and height be applied.
 If the widget is not interested in
 .PN XtGeometryAlmost
 replies, 
@@ -496,8 +495,8 @@ The geometry_manager procedure pointer in a composite widget class is of type
 .PN XtGeometryHandler :
 .IN "XtGeometryHandler" "" "@DEF@"
 .FD 0
-typedef XtGeometryResult (*XtGeometryHandler)(Widget, XtWidgetGeometry *, \
-XtWidgetGeometry *);
+typedef XtGeometryResult (*XtGeometryHandler)(Widget, XtWidgetGeometry*, \
+XtWidgetGeometry*);
 .br
       Widget \fIw\fP;
 .br
@@ -505,13 +504,21 @@ XtWidgetGeometry *);
 .br
       XtWidgetGeometry *\fIgeometry_return\fP;
 .FN
+.IP \fIw\fP 1i
+Passes the widget that is making the request.
+.IP \fIrequest\fP 1i
+Passes the new geometry the child desires.
+.IP \fIgeometry_return\fP 1i
+Passes a geometry structure in which the geometry manager may store a
+compromise.
 .LP
 A class can inherit its superclass's geometry manager during class
 initialization.
 .LP
-A bit set to zero in the request's mask field means that the child widget
+A bit set to zero in the request's request_mode
+field means that the child widget
 does not care about the value of the corresponding field.
-Then, the geometry manager can change it as it wishes.
+Then, the geometry manager can change this field as it wishes.
 A bit set to 1 means that the child wants that geometry element changed
 to the value in the corresponding field.
 .LP
@@ -523,7 +530,7 @@ it updates the widget's x, y, width, height, and border_width values
 appropriately.
 Then, it returns
 .PN XtGeometryYes ,
-and the value of the geometry_return argument is undefined.
+and the values pointed to by the geometry_return argument are undefined.
 The widget's window is moved and resized automatically by
 .PN XtMakeGeometryRequest .
 .LP
@@ -548,7 +555,8 @@ or
 .PN XtConfigureWidget
 on the child making
 the request as the layout process of the child may be in an
-intermediate state.  A self-contained widget set may choose this
+intermediate state in which it is not prepared to handle a call to its
+resize procedure.  A self-contained widget set may choose this
 alternate geometry management scheme, however, provided that it
 clearly warns widget developers of the compatibility consequences.
 .NE
@@ -565,7 +573,7 @@ resizing calculations are needed explicitly.
 .LP
 If the geometry manager chooses to disallow the request,
 the widget cannot change its geometry.
-The value of the geometry_return parameter is undefined,
+The values pointed to by geometry_return are undefined,
 and the geometry manager returns
 .PN XtGeometryNo .
 .LP
@@ -577,17 +585,19 @@ size but not position) or a lesser request
 (for example, it cannot make the child as big as the
 request but it can make the child bigger than its current size).
 In such cases,
-the geometry manager fills in geometry_return with the actual changes
-it is willing to make, including an appropriate mask, and returns
+the geometry manager fills in the structure pointed to by
+geometry_return with the actual changes
+it is willing to make, including an appropriate request_mode mask, and returns
 .PN XtGeometryAlmost .
 If a bit in geometry_return->request_mode is zero,
-the geometry manager does not change the corresponding value
+the geometry manager agrees not to change the corresponding value
 if the geometry_return is used immediately
 in a new request.
 If a bit is one,
 the geometry manager does change that element to the corresponding
 value in geometry_return.
-More bits may be set in geometry_return than in the original request if
+More bits may be set in geometry_return->request_mode
+than in the original request if
 the geometry manager intends to change other fields should the
 child accept the compromise.
 .LP
@@ -601,7 +611,7 @@ rather, it must make another call to
 .PN XtMakeGeometryRequest .
 .LP
 If the next geometry request from this child uses the
-geometry_return box filled in by an
+geometry_return box filled in by the geometry manager with an
 .PN XtGeometryAlmost
 return and if there have been no intervening geometry requests on
 either its parent or any of its other children,
@@ -651,13 +661,12 @@ void XtMoveWidget(\fIw\fP, \fIx\fP, \fIy\fP)
       Position \fIy\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
-.ds Nu new widget
+Specifies the widget.  \*(rI
 .IP \fIx\fP 1i
 .br
 .ns
 .IP \fIy\fP 1i
-Specify the \*(Nu x and y coordinates.
+Specify the new widget x and y coordinates.
 .LP
 The
 .PN XtMoveWidget
@@ -665,8 +674,8 @@ function returns immediately if the specified geometry fields
 are the same as the old values.
 Otherwise,
 .PN XtMoveWidget
-writes the new x and y values into the widget 
-and, if the widget is realized, issues an Xlib
+writes the new x and y values into the object
+and, if the object is a widget and is realized, issues an Xlib
 .PN XMoveWindow
 call on the widget's window.
 .sp
@@ -686,7 +695,7 @@ void XtResizeWidget(\fIw\fP, \fIwidth\fP, \fIheight\fP, \fIborder_width\fP)
       Dimension \fIborder_width\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Specifies the widget.  \*(rI
 .IP \fIwidth\fP 1i
 .br
 .ns
@@ -703,13 +712,13 @@ are the same as the old values.
 Otherwise,
 .PN XtResizeWidget
 writes the new width, height, and border_width values into
-the widget and, if the widget is realized, issues an
+the object and, if the object is a widget and is realized, issues an
 .PN XConfigureWindow
 call on the widget's window.
 .LP
 If the new width or height are different from the old values,
 .PN XtResizeWidget
-calls the widget's resize procedure to notify it of the size change.
+calls the object's resize procedure to notify it of the size change.
 .sp
 .LP
 To move and resize the sibling widget of the child making the geometry request,
@@ -733,7 +742,7 @@ void XtConfigureWidget(\fIw\fP, \fIx\fP, \fIy\fP, \fIwidth\fP, \fIheight\fP, \
       Dimension \fIborder_width\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Specifies the widget.  \*(rI
 .ds Nu new widget
 .IP \fIx\fP 1i
 .br
@@ -756,13 +765,13 @@ are the same as the old values.
 Otherwise,
 .PN XtConfigureWidget
 writes the new x, y, width, height, and border_width values 
-into the widget and, if the widget is realized, makes an Xlib
+into the object and, if the object is a widget and is realized, makes an Xlib
 .PN XConfigureWindow
 call on the widget's window.
 .LP
 If either the new width or height is different from its old value,
 .PN XtConfigureWidget
-calls the widget's resize procedure to notify it of the size change;
+calls the object's resize procedure to notify it of the size change;
 otherwise, it simply returns.
 .sp
 .LP
@@ -776,7 +785,7 @@ void XtResizeWindow(\fIw\fP)
       Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Specifies the widget.  \*(cI
 .LP
 The
 .PN XtResizeWindow
@@ -818,9 +827,9 @@ XtGeometryResult XtQueryGeometry(\fIw\fP, \fIintended\fP, \
      XtWidgetGeometry *\fIintended\fP, *\fIpreferred_return\fP\^;
 .FN
 .IP \fIw\fP 1.1i
-Specifies the widget.
+Specifies the widget.  \*(rI
 .IP \fIintended\fP 1.1i
-Specifies any changes the parent plans to make to the child's geometry or
+Specifies the new geometry the parent plans to give to the child or
 NULL.
 .IP \fIpreferred_return\fP 1.1i
 Returns the child widget's preferred geometry.
@@ -866,29 +875,36 @@ The query_geometry procedure pointer is of type
 .PN XtGeometryHandler .
 .IN "query_geometry procedure" "" "@DEF@"
 .FD 0
-typedef XtGeometryResult (*XtGeometryHandler)(Widget, XtWidgetGeometry *, \
-XtWidgetGeometry *);
+typedef XtGeometryResult (*XtGeometryHandler)(Widget, XtWidgetGeometry*, \
+XtWidgetGeometry*);
 .br
       Widget \fIw\fP;
 .br
       XtWidgetGeometry *\fIrequest\fP;
 .br
-      XtWidgetGeometry *\fIgeometry_return\fP;
+      XtWidgetGeometry *\fIpreferred_return\fP;
 .FN
+.IP \fIw\fP 1i
+Passes the child widget whose preferred geometry is required.
+.IP \fIrequest\fP 1i
+Passes the geometry changes which the parent plans to make.
+.IP \fIpreferred_return\fP 1i
+Passes a structure in which the child returns its preferred geometry.
+.LP
 .IN "query_geometry procedure"
 The query_geometry procedure is expected to examine the bits set in
 request->request_mode, evaluate the preferred geometry of the widget,
-and store the result in geometry_return
-(setting the bits in geometry_return->request_mode corresponding
+and store the result in preferred_return
+(setting the bits in preferred_return->request_mode corresponding
 to those geometry fields that it cares about).
 If the proposed geometry change is acceptable without modification,
 the query_geometry procedure should return
 .PN XtGeometryYes .
-If at least one field in geometry_return
-with a bit set in geometry_return->request_mode
+If at least one field in preferred_return
+with a bit set in preferred_return->request_mode
 is different
 from the corresponding field in request
-or if a bit was set in geometry_return->request_mode
+or if a bit was set in preferred_return->request_mode
 that was not set in the request,
 the query_geometry procedure should return
 .PN XtGeometryAlmost .
@@ -910,8 +926,8 @@ were actually outstanding.
 After calling the query_geometry procedure
 or if the query_geometry field is NULL,
 .PN XtQueryGeometry
-examines all the unset bits in geometry_return->request_mode
-and sets the corresponding fields in geometry_return
+examines all the unset bits in preferred_return->request_mode
+and sets the corresponding fields in preferred_return
 to the current values from the widget instance.
 If
 .PN CWStackMode
@@ -936,14 +952,15 @@ the parent might need to consider.
 A return value of
 .PN XtGeometryNo
 means that both the parent and the child expressed interest in a field and
-that the child suggests that the field's current value is its preferred value.
+that the child suggests that the field's current value in the widget instance
+is its preferred value.
 In addition, whether or not the caller ignores the return value or the
 reply mask, it is guaranteed that the reply structure contains complete
 geometry information for the child.
 .LP
 Parents are expected to call
 .PN XtQueryGeometry
-in their layout routine and wherever other information is significant
+in their layout routine and wherever else the information is significant
 after change_managed has been called.
 The changed_managed procedure may assume that the child's current geometry
 is its preferred geometry.

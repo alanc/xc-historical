@@ -14,12 +14,12 @@
 .XS
 Chapter 2 \- Widget Instantiation
 .XE
-A collection of widget instances constitutes a widget tree.
+A hierarchy of widget instances constitutes a widget tree.
 The shell widget returned by
 .PN XtAppCreateShell
 is the root of the widget tree instance.
 The widgets with one or more children are the intermediate nodes of that tree,
-and the widgets with no children of any kind are the leaves of a widget tree.
+and the widgets with no children of any kind are the leaves of the widget tree.
 With the exception of pop-up children (see Chapter 5),
 this widget tree instance defines the associated X Window tree.
 .LP
@@ -67,15 +67,15 @@ and determine the inheritance of resources from a widget's ancestors.
 traverses the tree up one level and calls the geometry manager 
 that is responsible for a widget child's geometry.
 .LP
-To facilitate up-traversal of the widget tree,
+To facilitate upward traversal of the widget tree,
 each widget has a pointer to its parent widget.
 The
 .PN Shell 
 widget that
 .PN XtAppCreateShell 
-returns, however, has a parent pointer of NULL.
+returns has a parent pointer of NULL.
 .LP
-To facilitate down-traversal of the widget tree,
+To facilitate downward traversal of the widget tree,
 each composite widget has a pointer to an array of children widgets,
 which includes all normal children created,
 not just the subset of children that are managed by the composite widget's
@@ -106,7 +106,7 @@ or
 which initializes the per display state
 .IP \(bu 5
 .PN XtAppCreateShell ,
-which creates the initial widget
+which creates the root of a widget tree
 .LP
 or by calling the convenience procedure
 .PN XtAppInitialize
@@ -118,14 +118,18 @@ Each instance needs to be able to read
 input and dispatch events independently of any other instance.
 Further, an application may need multiple display connections 
 or need to have widgets on multiple screens.
+From the application's point-of-view, multiple display connections
+usually are treated together as a single unit.
 .IN "application context" "" "@DEF@"
 To accommodate both requirements, 
 the \*(xI define application contexts,
 each of which provides the information needed to distinguish one application
 instance from another.
-The major component of an application context is a list of X
+The major component of an application context is a list of one or more X
 .PN Display
 pointers for that application.
+The \*(xI handle all display connections within a single application
+context simultaneously, handling input in a round-robin fashion.
 The application context type
 .PN XtAppContext
 .IN "XtAppContext" "" "@DEF@"
@@ -177,7 +181,7 @@ If called from with an event dispatch (for example, a callback procedure),
 does not destroy the application context until the dispatch is complete.
 .sp
 .LP
-To get the application context for a given widget, use
+To get the application context in which a given widget was created, use
 .PN XtWidgetToApplicationContext .
 .IN "XtWidgetToApplicationContext" "" "@DEF@"
 .FD 0
@@ -185,9 +189,8 @@ XtAppContext XtWidgetToApplicationContext(\fIw\fP)
 .br
       Widget \fIw\fP;
 .FN
-.ds Wi for which you want the application context 
 .IP \fIw\fP 1i
-Specifies the widget \*(Wi.
+Specifies the widget for which you want the application context.  \*(oI
 .LP
 The
 .PN XtWidgetToApplicationContext
@@ -222,8 +225,8 @@ void XtDisplayInitialize(\fIapp_context\fP, \fIdisplay\fP, \
 .IP \fIapp_context\fP 1i
 Specifies the application context.
 .IP \fIdisplay\fP 1i
-Specifies the display\*(Di.
-Note that a display can be in at most one application context.
+Specifies a previously opened display connection.  Note that a single
+display connection can be in at most one application context.
 .IP \fIapplication_name\fP 1i
 Specifies the name of the application instance.
 .ds Ac , which is usually the generic name for all instances of this application
@@ -234,13 +237,13 @@ Specifies how to parse the command line for any application-specific resources.
 The options argument is passed as a parameter to
 .PN XrmParseCommand .
 For further information,
-see \fI\*(xL\fP.
+see \fI\*(xL\fP and Section 2.3.
 .IP \fInum_options\fP 1i
 Specifies the number of entries in the options list.
 .IP \fIargc\fP 1i
 Specifies a pointer to the number of command line parameters.
 .IP \fIargv\fP 1i
-Specifies the command line parameters.
+Specifies the list of command line parameters.
 .LP
 The
 .PN XtDisplayInitialize
@@ -261,22 +264,13 @@ most applications simply print out the modified argv along with a message
 listing the allowable options.
 On POSIX-based systems,
 the application name is usually the final component of argv[0].
-If the synchronize resource is
-.PN True
-for the specified application,
+If the synchronous resource is
+.PN True ,
 .PN XtDisplayInitialize
 calls the Xlib
 .PN XSynchronize
-function to put Xlib into synchronous mode for this display connection.
-If the reverseVideo resource is
-.IN "Resources" "reverseVideo"
-.PN True ,
-the \*(xI exchange
-.PN XtDefaultForeground
-and
-.PN XtDefaultBackground
-for widgets created on this display.
-(See Section 9.6.1).
+function to put Xlib into synchronous mode for this display connection
+and any others currently open in the application context.
 .sp
 .LP
 To open a display, initialize it, and add it to an application context, use 
@@ -308,7 +302,6 @@ Display *XtOpenDisplay(\fIapp_context\fP, \fIdisplay_string\fP, \
 Specifies the application context.
 .IP \fIdisplay_string\fP 1i
 Specifies the display string, or NULL.
-Note that a display can be in at most one application context.
 .IP \fIapplication_name\fP 1i
 Specifies the name of the application instance, or NULL.
 .ds Ac , which is usually the generic name for all instances of this application
@@ -318,26 +311,27 @@ Specifies the class name of this application\*(Ac.
 Specifies how to parse the command line for any application-specific resources.
 The options argument is passed as a parameter to
 .PN XrmParseCommand .
-For further information,
-see \fI\*(xL\fP.
 .IP \fInum_options\fP 1i
 Specifies the number of entries in the options list.
 .IP \fIargc\fP 1i
 Specifies a pointer to the number of command line parameters.
 .IP \fIargv\fP 1i
-Specifies the command line parameters.
+Specifies the list of command line parameters.
 .LP
 The
 .PN XtOpenDisplay
 function calls
 .PN XOpenDisplay 
-the specified display name.
+with the specified display name.
 If display_string is NULL,
 .PN XtOpenDisplay
-uses the current value of the \-display option specified in argv 
-and if no display is specified in argv,
-uses the user's default display (on POSIX-based systems, 
-this is the value of the DISPLAY environment variable).
+uses the current value of the \-display option specified in argv.
+If no display is specified in argv,
+the user's default display is retrieved from the environment.
+On POSIX-based systems, 
+this is the value of the
+.PN \s-1DISPLAY\s+1
+environment variable.
 .LP
 If this succeeds, it then calls
 .PN XtDisplayInitialize
@@ -359,9 +353,6 @@ final component of argv[0], if specified.  If argv[0] does not exist or
 is the empty string, the application name is ``main''.
 .PN XtOpenDisplay
 returns the newly opened display or NULL if it failed.
-.LP
-.PN XtOpenDisplay
-is provided as a convenience to the application programmer.
 .sp
 .LP
 To close a display and remove it from an application context, use
@@ -398,7 +389,8 @@ The
 function first determines the language
 string to be used for the specified display and then
 loads the application's resource database for this 
-display/host/application combination from the following sources in order
+language/display/host/application combination from the following
+sources in order
 (i.e., the first named source has lowest precedence):
 .IP \(bu 5
 Application-specific class resource file on the local host
@@ -444,7 +436,7 @@ environment variable.  If no language string is
 found, the empty string is used.
 .LP
 The application-specific class resource file name 
-is constructed from the class name of the application. 
+is constructed from the language string and class name of the application. 
 It points to a site-specific resource file that usually is installed 
 by the site manager when the application is installed.
 The file is found by calling
@@ -460,6 +452,7 @@ fallback resource specifications with
 .PN XtAppSetFallbackResources .
 .LP
 The application-specific user resource file name is constructed from the
+language string and
 class name of the application and points to a user-specific resource
 file.
 This file is owned by the application and typically stores user customizations.
@@ -470,7 +463,7 @@ NULL, NULL, path, NULL, 0, NULL) where path is defined in an operating-system
 specific way.  On POSIX-based systems path is defined to be the value
 of the environment variable
 .PN \s-1XUSERFILESEARCHPATH\s+1
-if this is defined.  Otherwise, if
+if this is defined.  If
 .PN \s-1XUSERFILESEARCHPATH\s+1
 is not defined but the environment variable
 .PN \s-1XAPPLRESDIR\s+1
@@ -478,7 +471,8 @@ is defined, path is
 .IP
 $XAPPLRESDIR/%L/%N:$XAPPLRESDIR/%l/%N:$XAPPLRESDIR/%N:$HOME/%N
 .LP
-where $XAPPLRESDIR is replaced by the value of that variable and $HOME
+where $XAPPLRESDIR is replaced by the value of that environment
+variable and $HOME
 is replaced by the user's home directory.  If
 .PN \s-1XAPPLRESDIR\s+1
 is not defined, path is
@@ -495,24 +489,28 @@ into the resource database.
 The server resource file is constructed entirely by the user 
 and contains both display-independent and display-specific user preferences.
 .LP
-If one exists, 
-a user's environment resource file is then loaded and merged
+If one exists,
+the user's environment resource file is then loaded and merged
 into the resource database.
 This file name is user and host specific.
 On POSIX-based systems, 
-the user's environment resource file name is constructed from
-the value of the user's \s-1XENVIRONMENT\s+1 variable for the full path 
-of the file.
+the user's environment resource file name is specified by
+the value of the
+.PN \s-1XENVIRONMENT\s+1
+environment variable.
 If this environment variable does not exist,
 .PN XtDisplayInitialize
-searches the user's home directory for the
-.PN \&.Xdefaults-\fIhost\fP
-file, 
-where \fIhost\fP is the name of the machine on which the application is running.
+searches the user's home directory for a file named
+.PN \&.Xdefaults-\fIhost\fP ,
+where \fIhost\fP is the hostname
+of the machine on which the application is running.
 If the resulting resource file exists, it is merged into the resource database.
 The environment resource file is expected to contain process-specific resource
 specifications that are to supplement those user-preference specifications 
 in the server resource file.
+.LP
+Finally, the temporary database constructed by parsing the command
+line is merged into the resource database.
 .sp
 .LP
 To obtain the resource database for a particular display, use
@@ -529,8 +527,8 @@ Specifies the display\*(Di.
 The
 .PN XtDatabase
 function returns the fully merged resource database that was built by
-.PN XtDisplayInitialize
-associated with the display that was passed in.
+.PN XtDisplayInitialize ,
+associated with the specified display.
 If this display has not been initialized by
 .PN XtDisplayInitialize ,
 the results are not defined.
@@ -559,7 +557,9 @@ the database, or NULL.
 .LP
 Each entry in specification_list points to a string in the format of
 .PN XrmPutLineResource .
-In the future, if
+Following a call to
+.PN XtAppSetFallbackResources ,
+if
 .PN XtDisplayInitialize
 is not able
 to find or read an application-specific class resource file according to the
@@ -590,13 +590,11 @@ The
 function first parses the command line for the following options:
 .IP \-display 1i
 Specifies the display name for
-.PN XOpenDisplay ,
-which overrides the display name passed to
-.PN XtDisplayInitialize .
+.PN XOpenDisplay .
 .IP \-name 1i
 Sets the resource name prefix, 
 which overrides the application name passed to
-.PN XtDisplayInitialize .
+.PN XtOpenDisplay .
 .LP
 .PN XtDisplayInitialize
 has a table of standard command line options that are passed to
@@ -625,7 +623,7 @@ typedef enum {
 typedef struct {
 	char *option;	/* Option name in argv */
 	char *specifier;	/* Resource name (without application name) */
-	XrmOptionKind argKind;	/* Which style of option it is */
+	XrmOptionKind argKind;	/* Location of the resource value */
 	caddr_t value;	/* Value to provide if XrmoptionNoArg */
 } XrmOptionDescRec, *XrmOptionDescList;
 
@@ -672,7 +670,8 @@ Note that any unique abbreviation for an option name in the standard table
 or in the application table is accepted.
 .NE
 .LP
-If reverseVideo is set,
+If reverseVideo is
+.PN True ,
 the values of
 .PN XtDefaultForeground
 and
@@ -723,7 +722,7 @@ in the standard table overrides the standard table entry.
 If an option name is a prefix of another option name,
 both names are kept in the merged table.
 The \*(xI reserve all option names
-beginning with the characters ``xt'' for future standard uses.
+beginning with the characters ``-xt'' for future standard uses.
 .NH 2
 Creating Widgets
 .XS
@@ -738,7 +737,7 @@ and are optionally added to the managed subset of their parent.
 All composite widgets are notified of their managed children
 in a bottom-up traversal of the widget tree.
 .IP 3. 5
-The widgets create X windows that then get mapped.
+The widgets create X windows that then are mapped.
 .LP
 .EQ
 delim $$
@@ -796,7 +795,7 @@ Creating and Merging Argument Lists
 \fB\*(SN Creating and Merging Argument Lists\fP
 .XE
 .LP
-Many \*(xI functions need to be passed pairs of resource names and
+Many \*(xI functions may be passed pairs of resource names and
 values.
 These are passed as an
 .PN ArgList ,
@@ -806,16 +805,15 @@ which contains:
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
-typedef \fIsomething\fP XtArgVal;
-
 typedef struct {
 	String \fIname\fP;
 	XtArgVal \fIvalue\fP;
 } Arg, *ArgList;
 .De
 .LP
-Where \fIsomething\fP is a type large enough to contain caddr_t, char *,
-long, int *, or a pointer to a function.
+Where
+.PN XtArgVal
+is as defined in Section 1.5.
 .LP
 If the size of the resource is less than or equal to the size of an
 .PN XtArgVal ,
@@ -842,8 +840,8 @@ Specifies the name-value pair to set.
 Specifies the name of the resource.
 .IP \fIvalue\fP 1i
 Specifies the value of the resource if it will fit in an
-.PN XtArgVal 
-or the address.
+.PN XtArgVal ,
+else the address.
 .LP
 The
 .PN XtSetArg
@@ -876,11 +874,12 @@ static Args args[] = {
 XtSetValues(Widget, args, XtNumber(args));
 .De
 .LP
-Note that you should not use auto-increment or auto-decrement
+Note that you should not use expressions with side-effects such as
+auto-increment or auto-decrement
 within the first argument to
 .PN XtSetArg .
 .PN XtSetArg
-can be implemented as a macro that dereferences the first argument twice.
+can be implemented as a macro that evaluates the first argument twice.
 .sp
 .LP
 To merge two
@@ -904,12 +903,12 @@ ArgList XtMergeArgLists(\fIargs1\fP, \fInum_args1\fP, \fIargs2\fP, \
 Specifies the first
 .PN ArgList .
 .IP \fInum_args1\fP 1i
-Specifies the number of arguments in the first argument list.
+Specifies the number of entries in the first argument list.
 .IP \fIargs2\fP 1i
 Specifies the second 
 .PN ArgList .
 .IP \fInum_args2\fP 1i
-Specifies the number of arguments in the second argument list.
+Specifies the number of entries in the second argument list.
 .LP
 The
 .PN XtMergeArgLists
@@ -917,6 +916,8 @@ function allocates enough storage to hold the combined
 .PN ArgList
 structures and copies them into it.
 Note that it does not check for duplicate entries.
+The length of the returned list is the sum of the lengths of the
+specified lists.
 When it is no longer needed,
 free the returned storage by using
 .PN XtFree .
@@ -1059,22 +1060,23 @@ Widget XtCreateWidget(\fIname\fP, \fIobject_class\fP, \fIparent\fP, \
       Cardinal \fInum_args\fP;
 .FN
 .IP \fIname\fP 1i
-Specifies the resource name for the created widget,
+Specifies the resource instance name for the created widget,
 which is used for retrieving resources
 and, for that reason, should not be the same as any other widget
 that is a child of same parent.
 .IP \fIobject_class\fP 1i
-Specifies the widget class pointer for the created object.
+Specifies the widget class pointer for the created object.  \*(oC
 .IP \fIparent\fP 1i
-Specifies the parent widget.
+Specifies the parent widget.  \*(oI
 .IP \fIargs\fP 1i
 Specifies the argument list to override any other resource specifications.
 .IP \fInum_args\fP 1i
-Specifies the number of arguments in the argument list.
+Specifies the number of entries in the argument list.
 .LP
 The
 .PN XtCreateWidget
-function performs much of the boilerplate operations of widget creation:
+function performs much of the boilerplate operations of widget
+creation.  In the following order, it:
 .IP \(bu 5
 Checks to see if the class_initialize procedure has been called for this class
 and for all superclasses and, if not, calls those necessary in a
@@ -1099,7 +1101,7 @@ Allocates memory for the widget instance.
 .IP \(bu 5
 If the parent is a subclass of
 .PN constraintWidgetClass ,
-it allocates memory for the parent's constraints
+allocates memory for the parent's constraints
 and stores the address of this memory into the constraints field.
 .IP \(bu 5
 Initializes the core nonresource data fields
@@ -1110,13 +1112,13 @@ by using the resource lists specified for this class and all superclasses.
 .IP \(bu 5
 If the parent is a subclass of
 .PN constraintWidgetClass ,
-it initializes the resource fields of the constraints record
+initializes the resource fields of the constraints record
 by using the constraint resource list specified for the parent's class
 and all superclasses up to
 .PN constraintWidgetClass .
 .IP \(bu 5
 Calls the initialize procedures for the widget by starting at the 
-.PN Core
+.PN Object
 initialize procedure on down to the widget's initialize procedure.
 .IP \(bu 5
 If the parent is a subclass of
@@ -1132,14 +1134,6 @@ it calls the constraint initialize procedures,
 starting at
 .PN constraintWidgetClass
 on down to the parent's constraint initialize procedure.
-.LP
-Note that you can determine the number of arguments in an argument list 
-by using the
-.PN  XtNumber
-macro.
-For further information, see Section 11.1.
-(See also
-.PN XtCreateManagedWidget .)
 .sp
 .LP
 To create an instance of a widget using varargs lists, use
@@ -1157,9 +1151,9 @@ Widget XtVaCreateWidget(\fIname\fP, \fIobject_class\fP, \fIparent\fP, ...)
 .IP \fIname\fP 1i
 Specifies the resource name for the created widget.
 .IP \fIwidget_class\fP 1i
-Specifies the widget class pointer for the created object.
+Specifies the widget class pointer for the created object.  \*(oC
 .IP \fIparent\fP 1i
-Specifies the parent widget.
+Specifies the parent widget.  \*(oI
 .IP ... 1i
 Specifies the variable-length argument list to override any other
 resource specifications.
@@ -1177,14 +1171,12 @@ Creating an Application Shell Instance
 \fB\*(SN Creating an Application Shell Instance\fP
 .XE
 .LP
-An application can have multiple top-level widgets,
-which can potentially be on many different screens.
+An application can have multiple top-level widgets, each of which
+specifies a unique widget tree
+which can potentially be on different screens or displays.
 An application uses 
 .PN XtAppCreateShell
-if it needs to have several independent windows.
-The
-.PN XtAppCreateShell
-function creates a top-level widget that is the root of a widget tree.
+to create independent widget trees.
 .LP
 .IN "XtAppCreateShell" "" "@DEF@"
 .FD 0
@@ -1205,23 +1197,23 @@ Widget XtAppCreateShell(\fIapplication_name\fP, \
 .br
       Cardinal \fInum_args\fP;
 .FN
-.IP \fIapplication_name\fP 1i
+.IP \fIapplication_name\fP 1.25i
 Specifies the name of the application instance.
 If application_name is NULL,
 the application name passed to
 .PN XtDisplayInitialize
 is used.
-.IP \fIapplication_class\fP 1i
+.IP \fIapplication_class\fP 1.25i
 Specifies the class name of this application.
-.IP \fIwidget_class\fP 1i
+.IP \fIwidget_class\fP 1.25i
 Specifies the widget class for the top-level widget (normally
 .PN applicationShellWidgetClass )
-.IP \fIdisplay\fP 1i
+.IP \fIdisplay\fP 1.25i
 Specifies the display.
-.IP \fIargs\fP 1i
+.IP \fIargs\fP 1.25i
 Specifies the argument list to override any other resource specifications.
-.IP \fInum_args\fP 1i
-Specifies the number of arguments in the argument list.
+.IP \fInum_args\fP 1.25i
+Specifies the number of entries in the argument list.
 .LP
 The
 .PN XtAppCreateShell
@@ -1375,7 +1367,7 @@ file cannot be opened or read, or NULL.
 Specifies resource values to override any
 other resource specifications for the created shell widget.
 .IP \fInum_args\fP 1.5i
-Specifies the count of args.
+Specifies the number of entries in args.
 .LP
 The
 .PN XtAppInitialize
@@ -1471,32 +1463,31 @@ The initialize procedure pointer in a widget class is of type
 .IN "XtInitProc" "" "@DEF@"
 .IN "initialize procedure" "" "@DEF@"
 .FD 0
-typedef void (*XtInitProc)(Widget, Widget, ArgList, Cardinal*);
-.br
-      Widget \fIrequest\fP; 
-.br
-      Widget \fInew\fP;
-.br
-      ArgList \fIargs\fP;
-.br
-      Cardinal *\fInum_args\fP;
+typedef void (*XtInitProc)(Widget \fIrequest\fP, Widget \fInew\fP, ArgList \fIargs\fP, Cardinal* \fInum_args\fP);
 .FN
 .IP \fIrequest\fP 1i
-Specifies the widget with resource values as requested by the
+Specifies a copy of the widget with resource values as requested by the
 argument list, the resource database, and the widget defaults.
 .IP \fInew\fP 1i
-Specifies a widget with the new values, both resource and nonresource,
+Specifies the widget with the new values, both resource and nonresource,
 that are actually allowed.
 .IP \fIargs\fP 1i
 Specifies the argument list passed by the client, for
 computing derived resource values.
+If the client created the widget using a varargs form, any resources
+specified via
+.PN XtVaTypedArg
+are converted to the widget representation and the list is transformed
+into the
+.PN ArgList
+format.
 .IP \fInum_args\fP 1i
-Specifies the number of arguments in the argument list.
+Specifies the number of entries in the argument list.
 .LP
 An initialization procedure performs the following:
 .IP \(bu 5
 Allocates space for and copies any resources that are referenced by address
-which the widget creator is allowed to free or modify
+which the client is allowed to free or modify
 after the widget has been created.
 For example,
 if a widget has a field that is a 
@@ -1513,10 +1504,10 @@ It is not necessary to allocate space for or copy callback lists.
 Computes values for unspecified resource fields.
 For example, if width and height are zero,
 the widget should compute an appropriate width and height 
-based on other resources.
+based on its other resources.
 .NT
 A widget may only directly assign
-its own width and height within the initialize, set_values and
+its own width and height within the initialize, initialize_hook, set_values and
 set_values_hook procedures; see Chapter 6, Geometry Management.
 .NE
 .IP \(bu 5
@@ -1558,9 +1549,10 @@ All widgets must place themselves into whatever size is explicitly given,
 but they should compute a reasonable size if no size is requested.
 .LP
 The request and new arguments provide the necessary information for
-how a subclass knows the difference between a specified size
-and a size computed by a superclass.
-The request widget is the widget as originally requested.
+a subclass to determine the difference between an explicitly specified field
+and a field computed by a superclass.
+The request widget is a copy of the widget as initialized by the
+arglist and resource database.
 The new widget starts with the values in the request,
 but it has been updated by all superclass initialization procedures called
 so far.
@@ -1576,9 +1568,10 @@ If not, it must make do with the size originally specified.
 .LP
 The new widget will become the actual widget instance record.
 Therefore,
-the initialization procedure should do all its work on the new widget
-(the request widget should never be modified),
-and if it needs to call any routines that operate on a widget,
+the initialization procedure should do all its work on the new widget;
+the request widget should never be modified.
+If the initialize procedure
+needs to call any routines that operate on a widget,
 it should specify new as the widget instance.
 .NH 3
 Constraint Widget Instance Initialization: the constraint_initialize Procedure
@@ -1592,15 +1585,19 @@ Constraint Widget Instance Initialization: the constraint_initialize Procedure
 .IN "Superclass Chaining"
 .IN "Inheritance"
 .LP
-The constraint_initialize procedure pointer is of type
+The constraint.initialize procedure pointer is of type
 .PN XtInitProc .
 The values passed to the parent constraint initialization procedure
 are the same as those passed to the child's class widget initialization
 procedure.
 .LP
+The constraints field of the request widget points to a copy of the
+constraints record as initialized by the arglist and resource database.
+.LP
 The constraint initialization procedure should compute any constraint fields
 derived from constraint resources.
-It can make further changes to the widget to make the widget
+It can make further changes to the new widget to make the widget
+and any other constraint fields
 conform to the specified constraints, for example, 
 changing the widget's size or position.
 .LP
@@ -1626,32 +1623,30 @@ The initialize_hook procedure pointer is of type
 .IN "initialize_hook procedure" "" "@DEF@"
 .IN "XtArgsProc" "" "@DEF@"
 .FD 0
-typedef void (*XtArgsProc)(Widget, ArgList, Cardinal *);
-.br
-     Widget \fIw\fP;
-.br
-     ArgList \fIargs\fP;
-.br
-     Cardinal *\fInum_args\fP;
+typedef void (*XtArgsProc)(Widget \fIw\fP, ArgList \fIargs\fP, Cardinal* \fInum_args\fP);
 .FN
 .IP \fIw\fP 1i
 Specifies the widget.
 .IP \fIargs\fP 1i
-Specifies the argument list to override the resource defaults.
+Specifies the argument list passed by the client.
+If the client created the widget using a varargs form, any resources
+specified via
+.PN XtVaTypedArg
+are converted to the widget representation and the list is transformed
+into the
+.PN ArgList
+format.
 .IP \fInum_args\fP 1i
-Specifies the number of arguments in the argument list.
+Specifies the number of entries in the argument list.
 .LP
 If this procedure is not NULL,
 it is called immediately after the corresponding initialize
 procedure or in its place if the initialize procedure is NULL.
 .LP
 The initialize_hook procedure allows a widget instance to initialize
-nonwidget data using information from the specified argument list.
-For example,
-the Text widget has subparts that are not widgets,
-yet these subparts have resources that can be specified by means of the
-resource file or an argument list.
-See also Section 9.4.
+nonresource data using information from the specified argument list
+as if it were a resource.
+
 .NH 2
 Realizing Widgets
 .XS
@@ -1667,7 +1662,7 @@ void XtRealizeWidget(\fIw\fP)
       Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Specifies the widget.  \*(cI
 .LP
 If the widget is already realized,
 .PN XtRealizeWidget
@@ -1702,10 +1697,9 @@ those children themselves.
 .IP \- 5
 Maps all of the managed children windows that have mapped_when_managed 
 .PN True .
-(If a widget is managed but mapped_when_managed is 
+If a widget is managed but mapped_when_managed is 
 .PN False , 
 the widget is allocated visual space but is not displayed.
-Some people seem to like this to indicate certain states.)
 .RE
 .LP
 If the widget is a top-level shell widget (that is, it has no parent), and
@@ -1715,17 +1709,22 @@ mapped_when_managed is
 maps the widget window.
 .LP
 .PN XtCreateWidget ,
+.PN XtVaCreateWidget ,
 .PN XtRealizeWidget ,
 .PN XtManageChildren ,
 .PN XtUnmanageChildren ,
+.PN XtUnrealizeWidget ,
+.PN XtSetMappedWhenManaged ,
 and
 .PN XtDestroyWidget
 maintain the following invariants:
 .IP \(bu 5
-If a widget is realized, then all its managed children are realized.
+If a composite widget is realized, then all its managed children are realized.
 .IP \(bu 5
-If a widget is realized, then all its managed children that are also
-mapped_when_managed are mapped.
+If a composite widget is realized, then all its managed children that have
+mapped_when_managed
+.PN True
+are mapped.
 .LP
 All \*(xI functions and all widget routines should accept
 either realized or unrealized widgets.
@@ -1748,7 +1747,7 @@ Boolean XtIsRealized(\fIw\fP)
       Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Specifies the widget.  \*(oI
 .LP
 The
 .PN XtIsRealized
@@ -1756,6 +1755,8 @@ function returns
 .PN True 
 if the widget has been realized,
 that is, if the widget has a nonzero X window ID.
+If the specified object is not a widget, the state of the nearest
+widget ancestor is returned.
 .LP
 Some widget procedures (for example, set_values) might wish to
 operate differently
@@ -1789,7 +1790,7 @@ call.
 .LP
 The realize procedure must create the widget's window.
 .LP
-The generic
+Before calling the class realize procedure, the generic
 .PN XtRealizeWidget
 function fills in a mask and a corresponding
 .PN XSetWindowAttributes
@@ -1818,8 +1819,8 @@ The bit_gravity is set to
 .PN NorthWestGravity
 if the expose field is NULL.
 .LP
-All other fields in attributes (and the corresponding bits in
-value_mask) can be set by the realize procedure.
+These or any other fields in attributes and the corresponding bits in
+value_mask can be set by the realize procedure.
 .LP
 Note that because realize is not a chained operation,
 the widget class realize procedure must update the
@@ -1847,18 +1848,19 @@ can do the same (see Section 1.6.9).
 .LP
 The most common noninherited realize procedures set bit_gravity in the mask
 and attributes to the appropriate value and then create the window.
-For example, depending on its justification, Label sets bit_gravity to
+For example, depending on its justification, Label might set bit_gravity to
 .PN WestGravity ,
 .PN CenterGravity ,
 or
 .PN EastGravity .
-Consequently, shrinking it just moves the bits appropriately,
+Consequently, shrinking it would just move the bits appropriately,
 and no
 .PN Expose
 event is needed for repainting.
 .LP
-If a composite widget's children should be realized in a particular
-order (typically to control the stacking order),
+If a composite widget's children should be realized in an order other
+than that specified
+(to control the stacking order, for example),
 it should call
 .PN XtRealizeWidget
 on its children itself in the appropriate order from within its own
@@ -1878,7 +1880,7 @@ Window Creation Convenience Routine
 Rather than call the Xlib
 .PN XCreateWindow
 .IN "realize procedure"
-function explicitly, a realize procedure should call the \*(xI analog
+function explicitly, a realize procedure should normally call the \*(xI analog
 .PN XtCreateWindow ,
 which simplifies the creation of windows for widgets.
 .IN "XtCreateWindow" "" "@DEF@"
@@ -1896,9 +1898,8 @@ void XtCreateWindow(\fIw\fP, \fIwindow_class\fP, \fIvisual\fP, \
 .br
       XSetWindowAttributes *\fIattributes\fP;
 .FN
-.ds Wi that is used to set the x,y coordinates and so on
 .IP \fIw\fP 1i
-Specifies the widget \*(Wi.
+Specifies the widget which defines the additional window attributed.  \*(cI
 .IP \fIwindow_class\fP 1i
 Specifies the Xlib window class (for example,
 .PN InputOutput ,
@@ -1943,8 +1944,7 @@ width
 height
 .IP \(bu 5
 border_width
-.IP \(bu 5
-depth
+
 .NH 2
 Obtaining Window Information from a Widget
 .XS
@@ -1968,7 +1968,7 @@ Display *XtDisplay(\fIw\fP)
       Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Specifies the widget.  \*(cI
 .LP
 .PN XtDisplay
 returns the display pointer for the specified widget.
@@ -1981,10 +1981,11 @@ Widget XtParent(\fIw\fP)
      Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Specifies the widget.  \*(oI
 .LP
 .PN XtParent
-returns the parent widget for the specified widget.
+returns the parent object for the specified widget. The returned object
+will be of class Object or a subclass.
 .sp
 .LP
 .IN "XtScreen" "" "@DEF@"
@@ -1994,7 +1995,7 @@ Screen *XtScreen(\fIw\fP)
       Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Specifies the widget.  \*(cI
 .LP
 .PN XtScreen
 returns the screen pointer for the specified widget.
@@ -2007,7 +2008,7 @@ Window XtWindow(\fIw\fP)
       Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Specifies the widget.  \*(cI
 .LP
 .PN XtWindow
 returns the window of the specified widget.
@@ -2029,7 +2030,7 @@ Display *XtDisplayOfObject(\fIobject\fP)
       Widget \fIobject\fP;
 .FN
 .IP \fIobject\fP 1i
-Specifies the object; it may be of class Object or any subclass thereof.
+Specifies the object.  \*(oI
 .LP
 .PN XtDisplayOfObject
 is identical in function to
@@ -2047,7 +2048,7 @@ Screen *XtScreenOfObject(\fIobject\fP)
       Widget \fIobject\fP;
 .FN
 .IP \fIobject\fP 1i
-Specifies the object; it may be of class Object or any subclass thereof.
+Specifies the object.  \*(oI
 .LP
 .PN XtScreenOfObject
 is identical in function to
@@ -2065,7 +2066,7 @@ Window XtWindowOfObject(\fIobject\fP)
       Widget \fIobject\fP;
 .FN
 .IP \fIobject\fP 1i
-Specifies the object; it may be of class Object or any subclass thereof.
+Specifies the object.  \*(oI
 .LP
 .PN XtWindowOfObject
 is identical in function to
@@ -2082,15 +2083,14 @@ String XtName(\fIobject\fP)
       Widget \fIobject\fP;
 .FN
 .IP \fIobject\fP 1i
-Specifies the object whose name is desired; it may be of class Object
-or any subclass thereof.
+Specifies the object whose name is desired.  \*(oI
 .LP
 .PN XtName
 returns a pointer to the instance name of the specified object.
 The storage is owned by the \*(xI and must not be modified.  The
 name is not qualified by the names of any of the object's ancestors.
 .LP
-Several window attributes are locally cached in the widget.
+Several window attributes are locally cached in the widget instance.
 Thus, they can be set by the resource manager and
 .PN XtSetValues 
 as well as used by routines that derive structures from these values
@@ -2104,7 +2104,7 @@ geometry managers.
 These fields are maintained synchronously inside the \*(tk.
 When an
 .PN XConfigureWindow
-is issued on the widget's window (on request of its parent),
+is issued by the \*(xI on the widget's window (on request of its parent),
 these values are updated immediately rather than sometime later
 when the server generates a
 .PN ConfigureNotify
@@ -2134,7 +2134,7 @@ void XtUnrealizeWidget(\fIw\fP)
       Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Specifies the widget.  \*(cI
 .LP
 If the widget is currently unrealized,
 .PN XtUnrealizeWidget
@@ -2179,7 +2179,7 @@ Minimize the number of things a widget has to deallocate when destroyed
 .IP \(bu 5
 Minimize the number of
 .PN XDestroyWindow
-calls
+calls when destroying a widget tree
 .sp
 .LP
 To destroy a widget instance, use
@@ -2191,7 +2191,7 @@ void XtDestroyWidget(\fIw\fP)
       Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Specifies the widget.  \*(oI
 .LP
 The
 .PN XtDestroyWidget
@@ -2213,18 +2213,18 @@ it returns immediately.
 Recursively descends the widget tree and
 sets the being_destroyed field to 
 .PN True 
-for the widget and all children.
+for the widget and all normal and pop-up children
 .IP \(bu 5
 Adds the widget to a list of widgets (the destroy list) that should be
 destroyed when it is safe to do so.
 .LP
 Entries on the destroy list satisfy the invariant that
-if w2 occurs after w1 on the destroy list then w2 is not a descendent of w1.
-(A descendant refers to both normal and pop-up children.)
+if w2 occurs after w1 on the destroy list then w2 is not a descendent,
+either normal or pop-up, of w1.
 .LP
 Phase two occurs when all procedures that should execute as a result of
-the current event have been called (including all procedures registered with
-the event and translation managers),
+the current event have been called, including all procedures registered with
+the event and translation managers,
 that is, when the current invocation of
 .PN XtDispatchEvent
 is about to return or immediately if not in
@@ -2232,13 +2232,14 @@ is about to return or immediately if not in
 .LP
 In phase two,
 .PN XtDestroyWidget
-performs the following on each entry in the destroy list:
+performs the following on each entry in the destroy list in the order
+specified:
 .IP \(bu 5
 Calls the destroy callback procedures registered on the widget 
-(and all descendants) in post-order (it calls children callbacks 
-before parent callbacks).
+and all normal and pop-up descendants in post-order (it calls children
+callbacks before parent callbacks).
 .IP \(bu 5
-If the widget's parent is a subclass of 
+If the widget is not a pop-up child and the widget's parent is a subclass of 
 .PN compositeWidgetClass 
 and if the parent is not being destroyed, 
 it calls 
@@ -2246,14 +2247,14 @@ it calls
 on the widget and then calls the widget's parent's delete_child procedure
 (see Section 3.3).
 .IP \(bu 5
-If the widget's parent is a subclass of
+If the widget is not a pop-up child and the widget's parent is a subclass of
 .PN constraintWidgetClass ,
 it calls the constraint destroy procedure for the parent,
 then the parent's superclass,
 until finally it calls the constraint destroy procedure for
 .PN constraintWidgetClass .
 .IP \(bu 5
-Calls the destroy methods for the widget (and all descendants)
+Calls the destroy methods for the widget and all normal and pop-up descendants
 in post-order.
 For each such widget,
 it calls the destroy procedure declared in the widget class,
@@ -2263,10 +2264,12 @@ class record.
 .IP \(bu 5
 Calls
 .PN XDestroyWindow
-if the widget is realized (that is, has an X window).
-The server recursively destroys all descendant windows.
+if the specified widget is realized (that is, has an X window).
+The server recursively destroys all normal descendant windows.
 .IP \(bu 5
-Recursively descends the tree and deallocates all pop-up widgets, constraint
+Recursively descends the tree and destroys the windows for all
+realized pop-up descendants,
+deallocates all pop-up descendants, constraint
 records, callback lists and, if the widget is a subclass of 
 .PN compositeWidgetClass , 
 children.
@@ -2276,7 +2279,7 @@ Adding and Removing Destroy Callbacks
 \fB\*(SN Adding and Removing Destroy Callbacks\fP
 .XE
 .LP
-When a application needs to perform additional processing during the
+When an application needs to perform additional processing during the
 destruction of a widget,
 it should register a destroy callback procedure for the widget.
 The destroy callback procedures use the mechanism described in Chapter 8.
@@ -2288,25 +2291,20 @@ For example, the following adds an application-supplied destroy callback
 procedure \fIClientDestroy\fP with client data to a widget by calling
 .PN XtAddCallback .
 .IN "XtAddCallback"
-.FD 0
+.Ds
 XtAddCallback(\fIw\fP, XtNdestroyCallback, \fIClientDestroy\fP, \fIclient_data\fP)
-.FN
+.De
 .LP
 Similarly, the following removes the application-supplied destroy callback
 procedure \fIClientDestroy\fP by calling
 .PN XtRemoveCallback .
 .IN "XtRemoveCallback"
-.FD 0
-XtRemoveCallback(\fIw\fP, XtNdestroyCallback, \fIClientDestroy\fP, \fIclient_data\fP)
-.FN
-.LP
-The \fIClientDestroy\fP argument is of type
-.PN XtCallbackProc :
-.LP
 .Ds
-typedef void (*XtCallbackProc)(Widget, XtPointer, XtPointer);
+XtRemoveCallback(\fIw\fP, XtNdestroyCallback, \fIClientDestroy\fP, \fIclient_data\fP)
 .De
 .LP
+The \fIClientDestroy\fP argument is of type
+.PN XtCallbackProc ;
 For further information,
 see Section 8.1.
 .NH 3
@@ -2317,13 +2315,18 @@ Dynamic Data Deallocation: the destroy Procedure
 .LP
 .IN "destroy procedure" "" "@DEF@"
 The destroy procedure pointer in the
+.PN ObjectClassPart ,
+.PN RectObjClassPart
+and
 .PN CoreClassPart
-structure is of type
+structures are of type
 .PN XtWidgetProc :
 .IN "XtWidgetProc" "" "@DEF@"
 .FD 0
-typedef void (*XtWidgetProc)(Widget);
+typedef void (*XtWidgetProc)(Widget \fIw\fP);
 .FN
+.IP \fIw\fP i1
+Specifies the widget being destroyed.
 .LP
 The destroy procedures are called in subclass-to-superclass order.
 Therefore, a widget's destroy procedure only should deallocate storage
@@ -2332,10 +2335,10 @@ allocated by any of its superclasses.
 The destroy procedure should only deallocate resources that have been
 explicitly created by the subclass.
 Any resource that was obtained from the resource database 
-or was passed in in an argument list was not created by the widget
+or was passed in an argument list was not created by the widget
 and, therefore, should not be destroyed by it.
 If a widget does not need to deallocate any storage,
-the destroy procedure entry in its widget class record can be NULL.
+the destroy procedure entry in its class record can be NULL.
 .LP
 Deallocating storage includes but is not limited to:
 .IP \(bu 5
@@ -2351,7 +2354,7 @@ Calling
 on pixmaps created with direct X calls
 .IP \(bu 5
 Calling
-.PN XtDestroyGC
+.PN XtReleaseGC
 on GCs allocated with
 .PN XtGetGC 
 .IP \(bu 5
@@ -2361,8 +2364,7 @@ on GCs allocated with direct X calls
 .IP \(bu 5
 Calling
 .PN XtRemoveEventHandler
-on event handlers added with
-.PN XtAddEventHandler 
+on event handlers added to other widgets
 .IP \(bu 5
 Calling
 .PN XtRemoveTimeOut
@@ -2387,7 +2389,7 @@ structure is called for a widget whose parent is a subclass of
 This constraint destroy procedure pointer is of type
 .PN XtWidgetProc .
 The constraint destroy procedures are called in subclass-to-superclass order,
-starting at the widget's parent and ending at
+starting at the class of the widget's parent and ending at
 .PN constraintWidgetClass .
 Therefore, a parent's constraint destroy procedure only should deallocate
 storage that is specific to the constraint subclass

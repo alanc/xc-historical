@@ -47,11 +47,11 @@ Only a subset of the total number of children is actually managed by
 the geometry manager and, hence, possibly visible.
 For example, a multibuffer composite editor widget might allocate one child
 widget for each file buffer,
-but it only might display a small number of the existing buffers.
-Windows that are in this displayable subset are called managed windows
+but it might only display a small number of the existing buffers.
+Widgets that are in this displayable subset are called managed widgets
 and enter into geometry manager calculations.
-The other children are called unmanaged windows
-and, by definition, are not mapped.
+The other children are called unmanaged widgets
+and, by definition, are not mapped by the \*(xI.
 .LP
 Children are added to and removed from the managed set by using
 .PN XtManageChild ,
@@ -130,8 +130,10 @@ The insert_child procedure pointer in a composite widget is of type
 .PN XtWidgetProc :
 .IN "insert_child procedure" "" "@DEF@"
 .FD 0
-typedef void (*XtWidgetProc)(Widget);
+typedef void (*XtWidgetProc)(Widget \fIw\fP);
 .FN
+.IP \fIw\fP 1i
+Passes the newly created child.
 .LP
 Most composite widgets inherit their superclass's operation.
 Composite's insert_child routine calls the insert_position procedure
@@ -152,38 +154,41 @@ If the
 record is not specified or the
 accepts_objects field is
 .PN False ,
-the composite widget can assume that all its children are widgets
+the composite widget can assume that all its children are of a subclass of Core
 without an explicit subclass test in the insert_child procedure.
 .LP
 If there is not enough room to insert a new child in the children array
 (that is, num_children = num_slots),
 the insert_child procedure must first reallocate the array and update num_slots.
 The insert_child procedure then places the child wherever it wants
-and increments the num_children field.
+in the array and increments the num_children field.
 .NH 2
 Insertion Order of Children: the insert_position Procedure
 .XS
 \*(SN Insertion Order of Children: the insert_position Procedure
 .XE
 .LP
-Instances of composite widgets need to specify about the order in which
+Instances of composite widgets sometimes need to specify more about the order in which
 their children are kept.
 For example,
 an application may want a set of command buttons in some logical order
 grouped by function,
 and it may want buttons that represent file names to be kept
-in alphabetical order.
+in alphabetical order without constraining the order in which the
+buttons are created.
 .LP
+An application controls the presentation order of a set of children by
+supplying an
+.PN XtNinsertPosition
+resource.
 The insert_position procedure pointer in a composite widget instance is of type
 .PN XtOrderProc :
 .IN "XtOrderProc" "" "@DEF@"
 .FD 0
-typedef Cardinal (*XtOrderProc)(Widget);
-.br
-      Widget \fIw\fP;
+typedef Cardinal (*XtOrderProc)(Widget \fIw\fP);
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Passes the newly created widget.
 .LP
 Composite widgets that allow clients to order their children (usually
 homogeneous boxes) can call their widget instance's insert_position
@@ -215,8 +220,10 @@ procedure.
 The delete_child procedure pointer is of type
 .PN XtWidgetProc :
 .FD 0
-typedef void (*XtWidgetProc)(Widget);
+typedef void (*XtWidgetProc)(Widget \fIw\fP);
 .FN
+.IP \fIw\fP
+Passes the child being deleted.
 .LP
 Most widgets inherit the delete_child procedure from their superclass.
 Composite widgets that create companion widgets define their own
@@ -230,10 +237,12 @@ Adding and Removing Children from the Managed Set
 The \*(xI provide a set of generic routines to permit the addition of
 widgets to or the removal of widgets from a composite widget's managed set.
 .IN "change_managed procedure"
-These generic routines eventually call the widget's change_managed
+These generic routines eventually call the composite widget's change_managed
 procedure.
 The change_managed procedure pointer is of type
 .PN XtWidgetProc .
+The widget argument specifies the composite widget whose managed child
+set has been modified.
 .NH 3
 Managing Children
 .XS
@@ -241,10 +250,7 @@ Managing Children
 .XE
 .LP
 To add a list of widgets to the geometry-managed (and, hence, displayable)
-subset of its composite parent widget,
-the application must first create the widgets 
-.Pn ( XtCreateWidget )
-and then call
+subset of its composite parent widget, use
 .PN XtManageChildren .
 .IN "XtManageChildren" "" "@DEF@"
 .FD 0
@@ -257,7 +263,8 @@ void XtManageChildren(\fIchildren\fP, \fInum_children\fP)
       Cardinal \fInum_children\fP;
 .FN
 .IP \fIchildren\fP 1i
-Specifies a list of child widgets.
+Specifies a list of child widgets.  Each child must be of class
+RectObj or any subclass thereof.
 .IP \fInum_children\fP 1i
 Specifies the number of children.
 .LP
@@ -306,23 +313,18 @@ The parent can reposition and resize any of its children.
 It moves each child as needed by calling 
 .PN XtMoveWidget ,
 which first updates the x and y fields and then calls
-.PN XMoveWindow
-if the widget is realized.
+.PN XMoveWindow .
 .LP
 If the composite widget wishes to change the size or border width of any of
 its children, it calls 
 .PN XtResizeWidget ,
 which first updates the
 .PN Core 
-fields and then calls the Xlib
-.PN XConfigureWindow
-function if the widget is realized.
+fields and then calls
+.PN XConfigureWindow .
 .sp
 .LP
-To add a single child to a parent widget's list of managed children,
-first create the child widget 
-.Pn ( XtCreateWidget )
-and then use
+To add a single child to a parent widget's list of managed children, use
 .PN XtManageChild .
 .IN "XtManageChild" "" "@DEF@"
 .FD 0
@@ -331,7 +333,7 @@ void XtManageChild(\fIchild\fP)
       Widget \fIchild\fP;
 .FN
 .IP \fIchild\fP 1i
-Specifies the child.
+Specifies the child.  \*(rI
 .LP
 The
 .PN XtManageChild
@@ -342,7 +344,9 @@ of length one and calls
 .sp
 .LP
 To create and manage a child widget in a single procedure, use
-.PN XtCreateManagedWidget .
+.PN XtCreateManagedWidget
+or
+.PN XtVaCreateManagedWidget .
 .IN "XtCreateManagedWidget" "" "@DEF@"
 .FD 0
 Widget XtCreateManagedWidget(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, \
@@ -359,15 +363,16 @@ Widget XtCreateManagedWidget(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, \
       Cardinal \fInum_args\fP;
 .FN
 .IP \fIname\fP 1i
-Specifies the text name for the created widget.
+Specifies the resource instance name for the created widget.
 .IP \fIwidget_class\fP 1i
-Specifies the widget class pointer for the created widget.
+Specifies the widget class pointer for the created widget.  \*(rC
 .IP \fIparent\fP 1i
-Specifies the parent widget.
+Specifies the parent widget.  Must be of class Composite or any
+subclass thereof.
 .IP \fIargs\fP 1i
 Specifies the argument list to override any other resource specifications.
 .IP \fInum_args\fP 1i
-Specifies the number of arguments in the argument list.
+Specifies the number of entries in the argument list.
 .LP
 The
 .PN XtCreateManagedWidget
@@ -377,9 +382,6 @@ and
 .PN XtManageChild .
 .sp
 .LP
-To create and manage a child widget in a single procedure using
-varargs lists, use
-.PN XtVaCreateManagedWidget .
 .IN "XtVaCreateManagedWidget" "" "@DEF@"
 .FD 0
 Widget XtVaCreateManagedWidget(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, ...)
@@ -391,11 +393,12 @@ Widget XtVaCreateManagedWidget(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, ...
       Widget \fIparent\fP;
 .FN
 .IP \fIname\fP 1i
-Specifies the text name for the created widget.
+Specifies the resource instance name for the created widget.
 .IP \fIwidget_class\fP 1i
-Specifies the widget class pointer for the created widget.
+Specifies the widget class pointer for the created widget.  \*(rC
 .IP \fIparent\fP 1i
-Specifies the parent widget.
+Specifies the parent widget.  Must be of class Composite or any
+subclass thereof.
 .IP ... 1i
 Specifies the variable-length argument list to override any other
 resource specifications.
@@ -423,7 +426,8 @@ void XtUnmanageChildren(\fIchildren\fP, \fInum_children\fP)
       Cardinal \fInum_children\fP;
 .FN
 .IP \fIchildren\fP 1i
-Specifies a list of child widgets.
+Specifies a list of child widgets.  Each child must be of class
+RectObj or any subclass thereof.
 .IP \fInum_children\fP 1i
 Specifies the number of children.
 .LP
@@ -469,7 +473,7 @@ void XtUnmanageChild(\fIchild\fP)
       Widget \fIchild\fP;
 .FN
 .IP \fIchild\fP 1i
-Specifies the child.
+Specifies the child.  \*(rI
 .LP
 The
 .PN XtUnmanageChild
@@ -477,11 +481,11 @@ function constructs a widget list
 of length one and calls
 .PN XtUnmanageChildren .
 .LP
-These generic functions are low-level routines that are used by generic
+These functions are low-level routines that are used by generic
 composite widget building routines.
 In addition, composite widgets can provide widget-specific,
-high-level convenience procedures to let applications create
-and manage children more easily.
+high-level convenience procedures.
+
 .NH 3
 Determining if a Widget Is Managed
 .XS
@@ -497,16 +501,17 @@ Boolean XtIsManaged(\fIw\fP)
        Widget \fIw\fP\^;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Specifies the widget.  \*(oI
 .LP
 The
 .PN XtIsManaged
 macro (for widget programmers) or function (for application programmers)
 returns
 .PN True
-if the specified child widget is managed or
+if the specified widget is of class RectObj or any subclass thereof
+and is managed or
 .PN False
-if it is not.
+otherwise.
 .NH 2
 Controlling When Widgets Get Mapped
 .XS
@@ -532,7 +537,7 @@ void XtSetMappedWhenManaged(\fIw\fP, \fImap_when_managed\fP)
       Boolean \fImap_when_managed\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Specifies the widget.  \*(cI
 .IP \fImap_when_managed\fP 1i
 Specifies a Boolean value that indicates the new value of the map_when_managed 
 field.
@@ -550,7 +555,8 @@ it unmaps the window.
 is a convenience function that is equivalent to (but slightly faster than)
 calling
 .PN XtSetValues
-and setting the new value for the mappedWhenManaged resource.
+and setting the new value for the mappedWhenManaged resource
+then mapping the widget as appropriate.
 As an alternative to using
 .PN XtSetMappedWhenManaged
 to control mapping,
@@ -572,7 +578,7 @@ XtMapWidget(\fIw\fP)
      Widget \fIw\fP\^;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Specifies the widget.  \*(cI
 .LP
 .sp
 To unmap a widget explicitly, use
@@ -584,7 +590,7 @@ XtUnmapWidget(\fIw\fP)
      Widget \fIw\fP\^;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Specifies the widget.  \*(cI
 .NH 2
 Constrained Composite Widgets
 .XS
@@ -634,7 +640,7 @@ For example, a widget that needs to maintain a maximum
 width and height for each child might define its constraint record as
 follows:
 .LP
-.Ds 0
+.Ds
 .TA .5i 3i
 .ta .5i 3i
 typedef struct {
@@ -649,7 +655,7 @@ typedef struct {
 A subclass of this widget that also needs to maintain a minimum size would
 define its constraint record as follows:
 .LP
-.Ds 0
+.Ds
 .TA .5i 3i
 .ta .5i 3i
 typedef struct {
@@ -667,15 +673,13 @@ insofar as possible by the \*(xI.
 The constraint class record part has several entries that facilitate this.
 All entries in
 .PN ConstraintClassPart
-are information and procedures that are defined and implemented by the parent,
+are fields and procedures that are defined and implemented by the parent,
 but they are called whenever actions are performed on the parent's children.
 .LP
 The
 .PN XtCreateWidget
-function uses the constraint_size field to allocate a constraint record
-when a child is created.
-The constraint_size field gives the number of bytes occupied
-by a constraint record.
+function uses the constraint_size field of the parent
+to allocate a constraint record when a child is created.
 .PN XtCreateWidget
 also uses the constraint resources to fill in resource fields in the
 constraint record associated with a child.
@@ -687,10 +691,10 @@ The
 .PN XtGetValues
 and
 .PN XtSetValues
-functions use the constraint resources to get the values or
-set the values of constraints associated with a child.
+functions on a child use the constraint resources to get the values or
+set the values of constraints associated with that child.
 .PN XtSetValues
-then calls the constraint set_values procedures so that a parent can
+then calls the constraint set_values procedures so that the parent can
 recompute derived constraint fields and move or resize the child
 as appropriate.
 If the

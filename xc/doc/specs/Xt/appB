@@ -19,6 +19,8 @@ Syntax is specified in EBNF notation with the following conventions:
 l l.
 [ a ]	Means either nothing or ``a''
 { a }	Means zero or more occurrences of ``a''
+( a | b )	Means either ``a'' or ``b''
+\\\\n	Is the newline character
 .TE
 .LP
 All terminals are enclosed in double quotation masks (`` '').
@@ -48,12 +50,8 @@ namechar	= { "a"-"z" | "A"-"Z" | "0"-"9" | "_" | "-" }
 params	= string {"," string}.
 string	= quoted_string | unquoted_string
 quoted_string	= """ {<Latin 1 character>} """
-unquoted_string	= {<Latin 1 character except space, tab, ",", newline, ")">}
+unquoted_string	= {<Latin 1 character except space, tab, ",", "\\\\n", ")">}
 .TE
-.LP
-It is often convenient to include newlines in a translation table to make it
-more readable.
-In C, indicate a newline with a ``\\n'':
 .LP
 .Ds
 .TA .5i 1.5i
@@ -64,7 +62,7 @@ In C, indicate a newline with a ``\\n'':
 .SH
 Modifier Names
 .LP
-The modifier field is used to specify normal X keyboard and button
+The modifier field is used to specify standard X keyboard and button
 modifier mask bits.
 Modifiers are legal on event types 
 .PN KeyPress ,
@@ -100,8 +98,7 @@ If a colon (:) is specified at the beginning of the modifier list,
 it directs the \*(xI to apply any standard modifiers in the
 event to map the event keycode into a keysym.
 The default standard modifiers are Shift and Lock, 
-with the interpretation as defined in 
-\fIX Window System Protocol, X Version 11\fP.
+with the interpretation as defined in \fI\*(xP\fP.
 The resulting keysym must exactly match the specified
 keysym, and the nonstandard modifiers in the event must match the
 modifier_list.
@@ -135,7 +132,7 @@ Only these Modifiers:	! mod1 mod2 <event> detail
 These modifiers and any others:	mod1 mod2 <event> detail
 .LP
 The use of ``None'' for a modifier_list is identical to the use
-of and exclamation point with no modifers.
+of an exclamation point with no modifers.
 .De
 .TS H
 lw(1i) lw(1i) lw(3i).
@@ -172,8 +169,8 @@ _
 .TE
 .LP
 .IN "key modifier"
-A key modifier is any modifier bit whose corresponding keycode contains the
-corresponding left or right keysym.
+A key modifier is any modifier bit one of whose corresponding keycodes
+contains the corresponding left or right keysym.
 For example, 
 ``m'' or ``Meta'' means any modifier bit mapping to a keycode 
 whose keysym list contains XK_Meta_L or XK_Meta_R.
@@ -188,7 +185,7 @@ modifier key modifiers is extensible.  The "@" <keysym> syntax means any
 modifier bit whose corresponding keycode contains the specified keysym.
 .LP
 A modifier_list/keysym combination in a translation matches a
-modifiers/keycode combination in an event in the following:
+modifiers/keycode combination in an event in the following ways:
 .IP 1. 5
 If a colon (:) is used, the \*(xI call the display's 
 .PN XtKeyProc 

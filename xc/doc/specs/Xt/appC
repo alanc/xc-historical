@@ -11,7 +11,7 @@
 Appendix C \- Conversion Notes
 .XE
 .LP
-In the X Version 10 and alpha release X Version 11 \*(tk
+In prototype versions of the \*(tk
 each widget class
 implemented an Xt<\^\fIWidget\fP\^>Create (for example,
 .PN XtLabelCreate )
@@ -51,7 +51,7 @@ as:
 .De
 .sp
 .LP
-Pop-up shells no longer automatically perform an
+Pop-up shells in some of the prototypes automatically performed an
 .PN XtManageChild
 on their child within their insert_child procedure.
 .IN "insert_child procedure"
@@ -100,8 +100,6 @@ Specifies the class name of this application.
 Specifies how to parse the command line for any application-specific resources.
 The options argument is passed as a parameter to 
 .PN XrmParseCommand .
-For further information,
-see \fI\*(xL\fP.
 .IP \fInum_options\fP 1i
 Specifies the number of entries in options list.
 .IP \fIargc\fP 1i
@@ -124,35 +122,20 @@ returns the created shell.
 The semantics of calling
 .PN XtInitialize
 more than once are undefined.
-See
-.PN XtCreateApplicationContext ,
-.PN XtDisplayInitialize ,
-and
-.PN XtAppCreateShell
-for more information.
+This routine has been replaced by
+.PN XtAppInitialize .
 .sp
 .IN "XtMainLoop" "" "@DEF@"
 .FD 0
-void XtMainLoop()
+void XtMainLoop(void)
 .FN
 .PN XtMainLoop
 first reads the next incoming file, timer, or X event by calling
 .PN XtNextEvent .
 Then, it dispatches this to the appropriate registered procedure by calling
 .PN XtDispatchEvent .
-This can be used as the main loop of \*(tk applications, 
-and, as such, it does not return.
-Applications are expected to exit in response to some user action.
 This routine has been replaced by
 .PN XtAppMainLoop .
-.LP
-There is nothing special about
-.PN XtMainLoop .
-It is simply an infinite loop that calls
-.br
-.PN XtNextEvent
-then
-.PN XtDispatchEvent .
 .sp
 .IN "XtNextEvent" "" "@DEF@"
 .FD 0
@@ -344,7 +327,7 @@ or a subclass thereof.
 .IP \fIargs\fP 1i
 Specifies the argument list to override the resource defaults.
 .IP \fInum_args\fP 1i
-Specifies the number of arguments in args.
+Specifies the number of entries in args.
 .LP
 .PN XtCreateApplicationShell
 calls
@@ -377,12 +360,8 @@ Specifies a list of additional
 .PN XrmValue
 arguments to the converter if additional context is needed
 to perform the conversion or NULL.
-For example, the string-to-font converter needs the widget's screen,
-or the string to pixel converter needs the widget's screen and color map.
 .IP \fInum_args\fP 1i
-Specifies the number of additional 
-.PN XrmValue 
-arguments or zero.
+Specifies the number of entries in args.
 .IP \fIfrom\fP 1i
 Specifies the value to convert.
 .IP \fIto\fP 1i
@@ -410,7 +389,11 @@ result to make maximum use of the type converter cache.
 Note that the address written to->addr cannot be that of a local variable of 
 the converter because this is not valid after the converter returns.
 It should be a pointer to a static variable.
-
+.LP
+The procedure type
+.PN XtConverter
+has been replaced by
+.PN XtTypeConverter .
 .sp
 .LP
 The
@@ -432,7 +415,9 @@ The
 .PN XtStringConversionWarning
 function issues a warning message with name ``conversionError'',
 type ``string'', class ``XtToolkitError, and the default message string
-``Cannot convert "\fIsrc\fP" to type \fIdst_type\fP''.
+``Cannot convert "\fIsrc\fP" to type \fIdst_type\fP''.  This routine
+has been superceded by
+.PN XtDisplayStringConversionWarning .
 
 .sp
 .LP
@@ -465,12 +450,16 @@ Specifies the type converter procedure.
 .IP \fIconvert_args\fP 1i
 Specifies how to compute the additional arguments to the converter or NULL.
 .IP \fInum_args\fP 1i
-Specifies the number of additional arguments to the converter or zero.
+Specifies the number of entries in convert_args.
 .sp
 .LP
 .PN XtAddConverter
-is equivalent in function to XtSetTypeConverter with cache_type equal to
-.PN XtCacheAll .
+is equivalent in function to
+.PN XtSetTypeConverter
+with cache_type equal to
+.PN XtCacheAll
+for old-format type converters.  It has been superceded by
+.PN XtSetTypeConverter.
 
 .sp
 .FD 0
@@ -500,11 +489,15 @@ Specifies the type converter procedure.
 .IP \fIconvert_args\fP 1i
 Specifies how to compute the additional arguments to the converter or NULL.
 .IP \fInum_args\fP 1i
-Specifies the number of additional arguments to the converter or zero.
+Specifies the number of entries in convert_args.
 .LP
 .PN XtAppAddConverter
-is equivalent in function to XtAppSetTypeConverter with cache_type equal to
-.PN XtCacheAll .
+is equivalent in function to
+.PN XtAppSetTypeConverter
+with cache_type equal to
+.PN XtCacheAll
+for old-format type converters.  It has been superceded by
+.PN XtAppSetTypeConverter .
 
 .sp
 .LP
@@ -529,9 +522,9 @@ void XtConvert(\fIw\fP, \fIfrom_type\fP, \fIfrom\fP, \fIto_type\fP, \
 .br
     XrmValuePtr \fIto_return\fP;
 .FN
-.ds Wi to use for additional arguments (if any are needed)
 .IP \fIw\fP 1i
-Specifies the widget \*(Wi.
+Specifies the widget to use for additional arguments, if any are
+needed.  \(*oI
 .IP \fIfrom_type\fP 1i
 Specifies the source type.
 .IP \fIfrom\fP 1i
@@ -563,7 +556,7 @@ the conversion (often NULL)
 .IP \fIargs\fP 1i
 Specifies the argument list \*(Al.
 .IP \fInum_args\fP 1i
-Specifies the number of additional arguments (often zero).
+Specifies the number of entries in args.
 .IP \fIfrom\fP 1i
 Specifies the value to be converted.
 .IP \fIto_return\fP 1i
@@ -589,6 +582,14 @@ To determine if the conversion was successful,
 the client should check to_return.address for non-NULL.
 The data returned by XtConvert must be copied immediately by the caller,
 as it may point to static data in the type converter.
+.LP
+.PN XtConvert
+has been replaced by
+.PN XtConvertAndStore
+and
+.PN XtDirectConvert
+has been superceded by
+.PN XtCallConverter .
 
 .sp
 .LP
@@ -603,9 +604,10 @@ void XtDestroyGC(\fIw\fP, \fIgc\fP)
       GC \fIgc\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget.
+Specifies any object on the display for which the shared gc was
+created.  \*(oI
 .IP \fIgc\fP 1i
-Specifies the GC to be deallocated.
+Specifies the shared GC to be deallocated.
 .LP
 References to sharable GCs are counted and a free request is generated to the
 server when the last user of a given GC destroys it.
@@ -618,7 +620,8 @@ and you are encouraged to use
 instead.
 .sp
 .LP
-To declare an action table and register it with the translation manager, use
+To declare an action table in the default application context
+and register it with the translation manager, use
 .PN XtAddActions .
 .IN "XtAddActions" "" "@DEF@"
 .FD 0
@@ -638,13 +641,17 @@ the most recently registered action is used.
 If duplicate actions exist in an action table,
 the first is used.
 The \*(xI register an action table for
-.PN MenuPopup
+.PN XtMenuPopup
 and
-.PN MenuPopdown
+.PN XtMenuPopdown
 as part of \*(tk initialization.
+This routine has been replaced by
+.PN XtAppAddActions .
+.PN XtInitialize
+must be called before using this routine.
 .sp
 .LP
-To set the \*(xI selection timeout, use
+To set the \*(xI selection timeout in the default application context, use
 .PN XtSetSelectionTimeout .
 .IN "XtSetSelectionTimeout" "" "@DEF@"
 .FD 0
@@ -654,9 +661,14 @@ void XtSetSelectionTimeout(\fItimeout\fP)
 .FN
 .IP \fItimeout\fP 1i
 Specifies the selection timeout in milliseconds.
+This routine has been replaced by
+.PN XtAppSetSelectionTimeout .
+.PN XtInitialize
+must be called before using this routine.
 .sp
 .LP
-To get the current selection timeout value, use
+To get the current selection timeout value in the default application
+context, use
 .PN XtGetSelectionTimeout .
 .IN "XtGetSelectionTimeout" "" "@DEF@"
 .FD 0
@@ -668,9 +680,13 @@ applications must respond to one another.
 If one of them does not respond within this interval,
 the \*(xI aborts the selection request.
 The default value of the selection timeout is five seconds.
+This routine has been replaced by
+.PN XtAppGetSelectionTimeout .
+.PN XtInitialize
+must be called before using this routine.
 .sp
 .LP
-To obtain the error database (for example, to merge with
+To obtain the global error database (for example, to merge with
 an application or widget specific database), use
 .PN XtGetErrorDatabase .
 .IN "XtGetErrorDatabase" "" "@DEF@"
@@ -684,9 +700,8 @@ function returns tha address of the error database.
 The \*(xI do a lazy binding of the error database and do not merge in the
 database file until the first call to
 .PN XtGetErrorDatbaseText .
-.LP
-For a complete listing of all errors and warnings 
-that can be generated by the \*(xI, see Appendix D.
+This routine has been replaced by
+.PN XtAppGetErrorDatabase .
 .sp
 .LP
 An error message handler can obtain the error database text for an
@@ -725,8 +740,11 @@ Specifies the size of the buffer in bytes.
 The
 .PN XtGetErrorDatabaseText
 returns the appropriate message from the error database
+associated with the default application context
 or returns the specified default message if one is not found in the
 error database.
+This routine has been superceded by
+.PN XtAppGetErrorDatabaseText .
 .sp
 .LP
 To register a procedure to be called on fatal error conditions, use
@@ -747,6 +765,8 @@ string from the error resource database and calls
 Fatal error message handlers should not return.
 If one does,
 subsequent \*(tk behavior is undefined.
+This routine has been superceded by
+.PN XtAppSetErrorMsgHandler .
 .sp
 .LP
 To call the high-level error handler, use
@@ -780,10 +800,10 @@ Specifies the default message to use\*(Dm.
 .IP \fIparams\fP 1i
 Specifies a pointer to a list of values to be stored in the message.
 .IP \fInum_params\fP 1i
-Specifies the number of values in the parameter list.
+Specifies the number of entries in params.
 .LP
-The \*(xI internal errors all have class
-.PN XtToolkitError .
+This routine has been superceded by
+.PN XtErrorMsg .
 .sp
 .LP
 To register a procedure to be called on nonfatal error conditions, use
@@ -801,6 +821,8 @@ Specifies the new \*(Mh.
 The default warning handler provided by the \*(xI constructs a string
 from the error resource database and calls
 .PN XtWarning .
+This routine has been superceded by
+.PN XtAppSetWarningMsgHandler .
 .sp
 .LP
 To call the installed high-level warning handler, use
@@ -834,10 +856,10 @@ Specifies the default message to use\*(Dm.
 .IP \fIparams\fP 1i
 Specifies a pointer to a list of values to be stored in the message.
 .IP \fInum_params\fP 1i
-Specifies the number of values in the parameter list.
+Specifies the number of entries in params.
 .LP
-The \*(xI internal warninings all have class
-.PN XtToolkitError .
+This routine has been superceded by
+.PN XtAppWarningMsg .
 .sp
 .LP
 To register a procedure to be called on fatal error conditions, use
@@ -859,6 +881,8 @@ it prints the message to standard error and terminates the application.
 Fatal error message handlers should not return.
 If one does,
 subsequent \*(tk behavior is undefined.
+This routine has been superceded by
+.PN XtAppSetErrorHandler .
 .sp
 .LP
 To call the installed fatal error procedure, use
@@ -874,10 +898,12 @@ void XtError(\fImessage\fP)
 Specifies the message that is to be \*(Me.
 .LP
 Most programs should use
-.PN XtErrorMsg ,
+.PN XtAppErrorMsg ,
 not
 .PN XtError ,
-to provide for customization and internationalization of error messages.
+to provide for customization and internationalization of error
+messages.  This routine has been superceded by
+.PN XtAppError .
 .sp
 .LP
 To register a procedure to be called on nonfatal error conditions, use
@@ -896,6 +922,8 @@ The default warning handler provided by the \*(xI is
 .PN _XtWarning .
 On POSIX-based systems,
 it prints the message to standard error and returns to the caller.
+This routine has been superceded by
+.PN XtAppSetWarningHandler .
 .sp
 .LP
 To call the installed nonfatal error procedure, use
@@ -910,7 +938,9 @@ void XtWarning(\fImessage\fP)
 Specifies the nonfatal error message that is to be reported.
 .LP
 Most programs should use
-.PN XtWarningMsg ,
+.PN XtAppWarningMsg ,
 not
 .PN XtWarning ,
 to provide for customization and internationalization of warning messages.
+This routine has been superceded by
+.PN XtAppWarning .
