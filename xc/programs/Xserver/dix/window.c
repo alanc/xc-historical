@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.25 89/07/17 20:22:01 rws Exp $ */
+/* $XConsortium: window.c,v 5.26 89/07/18 18:16:35 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -965,6 +965,9 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     }
     /* We SHOULD check for an error value here XXX */
     (*pScreen->PositionWindow)(pWin, pWin->drawable.x, pWin->drawable.y);
+
+    if (!(vmask & CWEventMask))
+	RecalculateDeliverableEvents(pWin);
 
     if (vmask)
         *error = ChangeWindowAttributes(pWin, vmask, vlist, wClient (pWin));
