@@ -1,4 +1,4 @@
-/* $XConsortium: PEXlibint.h,v 1.1 92/05/08 15:12:41 mor Exp $ */
+/* $XConsortium: PEXlibint.h,v 1.2 92/05/20 21:22:00 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -100,7 +100,7 @@ typedef struct PEXDisplayInfo
     Display             *display;    /* pointer to X display structure */
     XExtCodes		*extCodes;   /* extension codes */
     PEXExtensionInfo	*extInfo;    /* extension info */
-    char                extOpcode;   /* opcode for pex extension */
+    unsigned char       extOpcode;   /* opcode for pex extension */
     unsigned short      fpFormat;    /* floating point format */
     char		fpConvert;   /* flag for floating point conversion */
     PEXEnumTypeDesc	*fpSupport;  /* float formats supported by server */
