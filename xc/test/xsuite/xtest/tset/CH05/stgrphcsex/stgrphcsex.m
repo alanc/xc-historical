@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: stgrphcsex.m,v 1.6 92/06/11 16:18:50 rws Exp $
  */
 >>TITLE XSetGraphicsExposures CH05
 void
@@ -29,35 +29,31 @@ component of the specified GC to the value of the
 argument.
 >>STRATEGY
 Create window.
-Create child window partially obscuring parent.
 Create GC with graphics_exposures = True.
 Flush event queue with XSync.
-Copy from parent window using XCopyArea.
+Copy from out of bounds of window using XCopyArea.
 Verify that a GraphicsExpose event was generated, 
 Set graphics_exposures = False with XSetGraphicsExposures.
 Flush event queue with XSync.
-Copy from parent window using XCopyArea.
+Copy from in bounds of window using XCopyArea.
 Verify that no event was generated.
 >>CODE
 XEvent event;
 XVisualInfo *vp;
-Window	pwin, cwin;
+Window	win;
 XGCValues	values;
 struct area ar;
 
 	resetvinf(VI_WIN);
 	nextvinf(&vp);
-	pwin = makewin(display, vp);
-	ar.x = ar.y = 10;
-	ar.width = ar.height = 10;
-	cwin = crechild(display, pwin, &ar);
+	win = makewin(display, vp);
 	values.foreground = W_FG;
 	values.background = W_BG;
 	values.graphics_exposures = True;
-	gc = XCreateGC(display, pwin, GCForeground | GCBackground| GCGraphicsExposures, &values);
+	gc = XCreateGC(display, win, GCForeground | GCBackground| GCGraphicsExposures, &values);
 
 	XSync(display, True);
-	XCopyArea(display, pwin, pwin, gc, 5, 5, 10, 10, 0, 0);
+	XCopyArea(display, win, win, gc, -5, -5, 5, 5, 0, 0);
 	XSync(display, False);
 
 	if( getevent(display, &event) == 0 ) {
@@ -76,7 +72,7 @@ struct area ar;
 	XCALL;	
 
 	XSync(display, True);
-	XCopyArea(display, pwin, pwin, gc, 5, 5, 10, 10, 0, 0);
+	XCopyArea(display, win, win, gc, 5, 5, 10, 10, 0, 0);
 	XSync(display, False);
 
 	if(getevent(display, &event) != 0) {
