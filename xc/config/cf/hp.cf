@@ -32,7 +32,7 @@
 #define NeedBerklibInXlib      YES		/* snag Berklib for Xlib */
 
 
-/**/# platform:  $XConsortium: hp.cf,v 1.16 89/08/16 15:48:41 jim Exp $
+/**/# platform:  $XConsortium: hp.cf,v 1.17 89/10/08 11:12:17 keith Exp $
 /**/# operating system:  OSName
 
 /*
@@ -67,7 +67,7 @@
 #endif
 
 #undef ExtensionDefines
-#define ExtensionDefines -DSHAPE -DBUFFER -DMITSHM -DXOS -DMERGE -DSERVER_XDMCP
+#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITSHM -DXOS -DMERGE -DSERVER_XDMCP
 
 /*
  * Xhp-specific parameters

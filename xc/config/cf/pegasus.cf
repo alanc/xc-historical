@@ -29,7 +29,7 @@
 #define XtekServer Xtek
 
 
-/**/# platform:  $XConsortium: pegasus.cf,v 1.6 89/07/23 15:40:59 rws Exp $
+/**/# platform:  $XConsortium: pegasus.cf,v 1.7 89/10/08 11:12:38 keith Exp $
 /**/# operating system:  OSName
 
 /*
@@ -37,7 +37,7 @@
  */
 
 #undef ExtensionDefines
-#define ExtensionDefines -DSHAPE -DBUFFER -DSERVER_XDMCP
+#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DSERVER_XDMCP
 
 #define ServerCDebugFlags -O -g
 #define CcCmd gcc -DNOSTDHDRS -fstrength-reduce -fpcc-struct-return
