@@ -1642,37 +1642,45 @@ and so on).
 KEYSYMs with the most-significant bit (of the 29 bits) set are reserved 
 as vendor-specific.
 .LP
-A list of KEYSYMs is associated with each KEYCODE,
-and the length of the list can vary with each KEYCODE.
-The list is intended to convey the set of symbols on the corresponding key.
-By convention, if the list contains a single KEYSYM
-and that KEYSYM is alphabetic and case distinction is relevant for it, 
-then it should be treated as equivalent to a two-element list of the lowercase 
-and uppercase KEYSYMs.
-For example, if the list contains the single KEYSYM for uppercase \fIA\fP, 
-then the client should treat it as if it were instead a pair with
-lowercase \fIa\fP as the first KEYSYM and uppercase \fIA\fP 
-as the second KEYSYM.
+A list of KEYSYMs is associated with each KEYCODE.  The list is intended to
+convey the set of symbols on the corresponding key.  If the list (ignoring
+trailing NoSymbol entries) is a single KEYSYM ``\fIK\fP'', then the list is
+treated as if it were the list ``\fIK\fP NoSymbol \fIK\fP NoSymbol''.
+If the list (ignoring trailing NoSymbol entries) is a pair of KEYSYMs
+``\fIK1 K2\fP'', then the list is treated as if it were the list
+``\fIK1 K2 K1 K2\fP''.  If the list (ignoring trailing NoSymbol entries)
+is a triple of KEYSYMs ``\fIK1 K2 K3\fP'', then the list is treated as if it
+were the list ``\fIK1 K2 K3\fP NoSymbol''.  When an explicit ``void'' element
+is desired in the list, the value VoidSymbol can be used.
 .LP
-For any KEYCODE, 
-the first KEYSYM in the list normally should be chosen as 
-the interpretation of a 
-.PN KeyPress 
-when no modifier keys are down.
-The second KEYSYM in the list normally should be chosen when the Shift modifier
-is on or when the Lock modifier is on and Lock is interpreted as ShiftLock.
-When the Lock modifier is on and is interpreted as CapsLock,
-it is suggested that the Shift modifier first be applied to choose a KEYSYM.
-However, if that KEYSYM is lowercase alphabetic,
-the corresponding uppercase KEYSYM should be used instead.
-Other interpretations of CapsLock are possible.
-For example, it may be viewed as equivalent to ShiftLock,
-applying only when the first KEYSYM is lowercase alphabetic 
-and the second KEYSYM is the corresponding uppercase alphabetic.
-No interpretation of KEYSYMs beyond the first two in a list is
-suggested here.
-No spatial geometry of the symbols on the key is defined by their order in the 
-KEYSYM list, although a geometry might be defined on a vendor-specific basis.
+The first four elements of the list are split into two groups of KEYSYMs.
+Group 1 contains the first and second KEYSYMs, Group 2 contains third and
+fourth KEYSYMs.  Within each group, if the second element of the group is
+NoSymbol, then the group should be treated as if the second element were the
+same as the first element, except when the first element is an alphabetic
+KEYSYM ``\fIK\fP'' for which both lowercase and uppercase forms are defined.
+In that case, the group should be treated as if the first element were the
+lowercase form of ``\fIK\fP'' and the second element were the uppercase form
+of ``\fIK\fP''.
+.LP
+The standard rules for obtaining a KEYSYM from a
+.PN KeyPress
+event make use of only the Group 1 and Group 2 KEYSYMs; no interpretation of
+other KEYSYMs in the list is given here.  Which group to use is determined by
+modifier state.  Switching between groups is controlled by the KEYSYM named
+MODE SWITCH, by attaching that KEYSYM to some KEYCODE and attaching that
+KEYCODE to any one of the modifiers Mod1 through Mod5.  This modifier is
+called the ``group modifier''.  For any KEYCODE, Group 1 is used when the
+group modifier is off, and Group 2 is used when the group modifier is on.
+.LP
+Within a group, which KEYSYM to use is also determined by modifier state.  The
+first KEYSYM is used when the Shift and Lock modifiers are off.  The second
+KEYSYM is used when the Shift modifier is on, or when the Lock modifier is on
+and the second KEYSYM is uppercase alphabetic, or when the Lock modifier is on
+and is interpreted as ShiftLock.  When the Lock modifier is on and is
+interpreted as CapsLock, the state of the Shift modifier is applied first to
+select a KEYSYM, but if that KEYSYM is lowercase alphabetic, then the
+corresponding uppercase KEYSYM is used instead.
 .LP
 The mapping between KEYCODEs and KEYSYMs is not used directly by the server;
 it is merely stored for reading and writing by clients.
