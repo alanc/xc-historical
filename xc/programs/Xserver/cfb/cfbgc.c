@@ -370,19 +370,23 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	}			/* end of composute clip for pixmap */
     }
 
+/*
     if (pWin) {
 
-	/*
+	*
 	 * rotate tile patterns so that pattern can be combined in word by
 	 * word, but the pattern seems to begin aligned with the window 
-	 */
+	 *
 	xrot = pWin->absCorner.x;
 	yrot = pWin->absCorner.y;
     }
     else {
+*/
 	yrot = 0;
 	xrot = 0;
+/*
     }
+*/
 
 
     new_line = FALSE;
@@ -485,26 +489,27 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 
     /* deal with the changes we've collected */
 
-    if (new_line) {
-	if (pGC->lineWidth == 0) {
-#ifdef	notdef
-	    if (pGC->fillStyle == FillSolid)
-		pGC->Polylines = miNotMiter;	/* XXX - doesn't work for
-						 * zero. ???miNotMiter??? */
-	    else
-#endif
+    if (new_line)
+    {
+	if (pGC->lineStyle == LineSolid)
+	{
+	    if(pGC->lineWidth == 0)
 		pGC->Polylines = miZeroLine;
+	    else
+		pGC->Polylines = miWideLine;
 	}
-	else {
-	    switch (pGC->joinStyle) {
-	    case JoinMiter:
-		pGC->LineHelper = miMiter;
-		break;
-	    case JoinRound:
-	    case JoinBevel:
-		pGC->LineHelper = miNotMiter;
-		break;
-	    }
+	else
+	    pGC->Polylines = miWideDash;
+
+	switch(pGC->joinStyle)
+	{
+	  case JoinMiter:
+	    pGC->LineHelper = miMiter;
+	    break;
+	  case JoinRound:
+	  case JoinBevel:
+	    pGC->LineHelper = miNotMiter;
+	    break;
 	}
     }
 
