@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.28 87/08/30 14:12:31 ham Exp $ */
+/* $Header: dispatch.c,v 1.9 87/09/01 17:00:08 toddb Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1715,7 +1715,7 @@ ProcGetImage(client)
     register DrawablePtr pDraw;
     int			nlines, linesPerBuf, widthBytesLine;
     register int	height, linesDone;
-    int i;
+    int plane;
     char		*pBuf;
     xGetImageReply	xgi;
 
@@ -1729,21 +1729,35 @@ ProcGetImage(client)
 	return (BadDrawable);
     if(pDraw->type == DRAWABLE_WINDOW)
     {
-	if(((WindowPtr) pDraw)->absCorner.x + stuff->x < 0 ||
-	   ((WindowPtr) pDraw)->absCorner.x + stuff->x + stuff->width >
-	       pDraw->pScreen->width ||
-	   ((WindowPtr) pDraw)->absCorner.y + stuff->y < 0 ||
-	   ((WindowPtr) pDraw)->absCorner.y + stuff->y + height >
-	       pDraw->pScreen->height)
+      if( /* check for being on screen */
+         ((WindowPtr) pDraw)->absCorner.x + stuff->x < 0 ||
+         ((WindowPtr) pDraw)->absCorner.x + stuff->x + stuff->width >
+             pDraw->pScreen->width ||
+         ((WindowPtr) pDraw)->absCorner.y + stuff->y < 0 ||
+         ((WindowPtr) pDraw)->absCorner.y + stuff->y + height >
+             pDraw->pScreen->height ||
+          /* check for being inside of border */
+         stuff->x < -((WindowPtr)pDraw)->borderWidth ||
+         stuff->x + stuff->width >
+              ((WindowPtr)pDraw)->borderWidth +
+              ((WindowPtr)pDraw)->clientWinSize.width +
+              ((WindowPtr)pDraw)->clientWinSize.x ||
+         stuff->y < -((WindowPtr)pDraw)->borderWidth ||
+         stuff->y + stuff->height >
+              ((WindowPtr)pDraw)->borderWidth +
+              ((WindowPtr)pDraw)->clientWinSize.height +
+              ((WindowPtr)pDraw)->clientWinSize.y
+        )
 	    return(BadMatch);
 	xgi.visual = ((WindowPtr) pDraw)->visual;
     }
     else
     {
-	if((((PixmapPtr) pDraw)->width < stuff->x) ||
-	   (stuff->x < 0) ||
-	   (((PixmapPtr) pDraw)->height < stuff->y) ||
-	   (stuff->y < 0))
+      if((stuff->x < 0) ||
+         (stuff->x+stuff->width > ((PixmapPtr) pDraw)->width) ||
+         (stuff->y < 0) ||
+         (stuff->y+stuff->height > ((PixmapPtr) pDraw)->height)
+        )
 	    return(BadMatch);
 	xgi.visual = None;
     }
@@ -1759,7 +1773,8 @@ ProcGetImage(client)
     else 
     {
 	widthBytesLine = PixmapBytePad(stuff->width, 1);
-	xgi.length = (widthBytesLine >> 2) * stuff->height * pDraw->depth;
+	xgi.length = (widthBytesLine >> 2) * stuff->height *
+		     Ones(stuff->planeMask); /* only planes asked for */
     }
     linesPerBuf = IMAGE_BUFSIZE / widthBytesLine;
     if(!(pBuf = (char *) ALLOCATE_LOCAL(IMAGE_BUFSIZE)))
@@ -1789,31 +1804,27 @@ ProcGetImage(client)
     }
     else
     {
-	for (i = 0; i <pDraw->depth; i++)
+        for (plane = 1 << (pDraw->depth - 1); plane; plane >>= 1)
 	{
-            linesDone = 0;
-            while (height - linesDone > 0)
-            {
-	        nlines = min(linesPerBuf, height - linesDone);
-		if (stuff->planeMask & (1<<i))
-		{
+	    if (stuff->planeMask & plane)
+	    {
+	        linesDone = 0;
+	        while (height - linesDone > 0)
+	        {
+		    nlines = min(linesPerBuf, height - linesDone);
 	            (*pDraw->pScreen->GetImage) (pDraw,
 	                                         stuff->x,
 				                 stuff->y + linesDone,
 				                 stuff->width, 
 				                 nlines,
 				                 stuff->format,
-				                 stuff->planeMask,
+				                 plane,
 				                 pBuf);
+		    /* Note: NOT a call to WriteSwappedDataToClient,
+		       as we do NOT byte swap */
+		    WriteToClient(client, nlines * widthBytesLine, pBuf);
+		    linesDone += nlines;
 		}
-		else
-		{
-		    bzero(pBuf, nlines * widthBytesLine);
-		}
-	        /* Note that this is NOT a call to WriteSwappedDataToClient,
-                   as we do NOT byte swap */
-	        WriteToClient(client, nlines * widthBytesLine, pBuf);
-	        linesDone += nlines;
             }
 	}
     }
