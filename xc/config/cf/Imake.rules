@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.116 91/07/25 11:54:25 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.117 91/07/27 13:42:04 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -26,7 +26,8 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.116 91/07/25 11:54:25 rws Exp $
  *     	InstallLibraryAlias			(libname,alias,dest)
  *     	InstallLintLibrary			(libname,dest)
  *     	InstallManPageLong			(file,destdir,dest)
- *     	InstallManPage				(file,dest)
+ *     	InstallManPage				(file,destdir)
+ *     	InstallManPageAliases			(file,destdir,aliases)
  *	InstallNamedNonExec			(srcname,dstname,dest)
  *	InstallNonExecFile			(file,dest)
  *     	InstallNonExec				(file,dest)
@@ -394,7 +395,7 @@ install.ln:: Concat(llib-l,libname.ln)					@@\
 #define	InstallManPageLong(file,destdir,dest)				@@\
 install.man:: file.man							@@\
 	MakeDir($(DESTDIR)destdir)					@@\
-	$(INSTALL) -c $(INSTMANFLAGS) file.man $(DESTDIR)destdir/dest.ManSuffix
+	$(INSTALL) -c $(INSTMANFLAGS) file.man $(DESTDIR)destdir/dest.$(MANSUFFIX)
 #endif /* InstallManPageLong */
 
 
@@ -402,9 +403,25 @@ install.man:: file.man							@@\
  * InstallManPage - generate rules to install the indicated manual page.
  */
 #ifndef InstallManPage
-#define	InstallManPage(file,dest)					@@\
-InstallManPageLong(file,dest,file)
+#define	InstallManPage(file,destdir)					@@\
+InstallManPageLong(file,destdir,file)
 #endif /* InstallManPage */
+
+
+/*
+ * InstallManPageAliases - generate rules to install manual page aliases.
+ */
+#ifndef InstallManPageAliases
+#define	InstallManPageAliases(file,destdir,aliases)			@@\
+install.man::								@@\
+	@(TMP=/tmp/tmp.$$$$; \						@@\
+	$(RM) $${TMP}; \						@@\
+	echo .so `basename destdir`/file.$(MANSUFFIX) > $${TMP}; \	@@\
+	for i in aliases; do (set -x; \					@@\
+	$(INSTALL) -c $(INSTMANFLAGS) $${TMP} $(DESTDIR)destdir/$$i.$(MANSUFFIX)); \ @@\
+	done; \								@@\
+	$(RM) $${TMP})
+#endif /* InstallManPageAliases */
 
 
 /*
@@ -550,7 +567,7 @@ InstallMultipleDestFlags(install,list,dest,flags)
  */
 #ifndef InstallMultipleMan
 #define InstallMultipleMan(list,dest)					@@\
-InstallMultipleDest(install.man,list,dest)
+InstallMultipleDestFlags(install.man,list,dest,$(INSTMANFLAGS))
 #endif /* InstallMultipleMan */
 
 
