@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.91 90/06/04 15:06:41 kit Exp $ */
+/* $XConsortium: TMparse.c,v 1.92 90/07/03 10:45:35 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1951,7 +1951,7 @@ _XtAddTMConverters(table)
  	     CvtStringToAccelerators, (XtConvertArgList) NULL,
 	     (Cardinal)0, True, CACHED, _XtFreeTranslations);
      _XtTableAddConverter(table,
-	     XrmStringToRepresentation( _XtRTranslationTablePair ),
+	     XrmStringToRepresentation( _XtRStateTablePair ),
 	     XrmStringToRepresentation(XtRTranslationTable), 
  	     _XtCvtMergeTranslations, (XtConvertArgList) NULL,
 	     (Cardinal)0, True, CACHED, _XtFreeTranslations);
