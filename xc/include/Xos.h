@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.36 91/03/28 14:36:30 rws Exp $
+ * $XConsortium: Xos.h,v 1.37 91/03/28 16:17:14 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -54,21 +54,17 @@
 
 #ifndef X_NOT_STDC_ENV
 #include <string.h>
-#ifndef _XOS_STR_FUNCS
 #define index strchr
 #define rindex strrchr
 #else
-#define index(s,c) strchr(s,c)
-#define rindex(s,c) strrchr(s,c)
-#endif
+#ifdef SYSV
+#include <string.h>
+#define index strchr
+#define rindex strrchr
 #else
 #include <strings.h>
-#ifndef _XOS_STR_FUNCS
 #define strchr index
 #define strrchr rindex
-#else
-#define strchr(s,c) index(s,c)
-#define strrchr(s,c) rindex(s,c)
 #endif
 #endif
 
@@ -124,7 +120,7 @@ struct timezone {
 
 #else /* not SYSV */
 
-/* (stupid SVR4) need to omit _POSIX_SOURCE in order to get what we want */
+/* need to omit _POSIX_SOURCE in order to get what we want in SVR4 */
 #ifdef SVR4
 #ifdef _POSIX_SOURCE
 #undef _POSIX_SOURCE
@@ -142,10 +138,8 @@ struct timezone {
 #endif /* SYSV */
 
 /* use POSIX name for signal */
-#if defined(SYSV) && !defined(SIGCHLD)
-#if !defined(macII) && !defined(ibm) && !defined(hpux) && !defined(sgi)
+#if defined(X_NOT_POSIX) && defined(SYSV) && !defined(SIGCHLD)
 #define SIGCHLD SIGCLD
-#endif
 #endif
 
 #endif /* _XOS_H_ */
