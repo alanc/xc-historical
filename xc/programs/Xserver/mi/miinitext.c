@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miinitext.c,v 1.12 89/10/09 15:59:02 rws Exp $ */
+/* $XConsortium: miinitext.c,v 1.13 89/12/02 14:28:32 rws Exp $ */
 
 #ifdef BEZIER
 extern void BezierExtensionInit();
@@ -69,7 +69,7 @@ InitExtensions(argc, argv)
 #ifdef MITSHM
     ShmExtensionInit();
 #endif
-#ifdef PEX
+#ifdef PEXEXT
     PexExtensionInit();
 #endif
 #ifdef MULTIBUFFER
