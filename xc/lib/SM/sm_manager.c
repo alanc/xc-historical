@@ -1,4 +1,4 @@
-/* $XConsortium: sm_manager.c,v 1.13 93/12/15 17:32:21 mor Exp $ */
+/* $XConsortium: sm_manager.c,v 1.14 93/12/30 11:07:55 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -320,7 +320,11 @@ SmsConn smsConn;
     return (NULL);
 #endif
 
+#if defined(SVR4) || defined(WIN32) || defined(VMS)
+    gettimeofday (&time);
+#else
     gettimeofday (&time, NULL);
+#endif
 
     sprintf (temp, "1%s%.13ld%.10d%.4d", address, time.tv_sec,
         getpid (), sequence);
