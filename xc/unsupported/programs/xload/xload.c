@@ -45,7 +45,7 @@ void main(argc, argv)
 {
     char host[256];
     Display *dpy;
-    Widget toplevel;
+    Widget toplevel, w;
     Arg arg;
     
     (void) gethostname(host,255);
@@ -60,7 +60,8 @@ void main(argc, argv)
 
     arg.name = XtNlabel;
     arg.value = host;
-    (void) XtWidgetCreate(argv[0], loadWidgetClass, toplevel, &arg, 1);
-    XtRealize(toplevel);
+    w = XtCreateWidget (argv[0], loadWidgetClass, toplevel, &arg, 1);
+    XtCompositeAddChild(w);  /****** shouldn't have to do this! ******/
+    XtRealizeWidget (toplevel, 0, NULL);
     XtMainLoop();
 }
