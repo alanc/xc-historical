@@ -2,8 +2,12 @@
 
 #ident "$NCDId: @(#)compress_lzw.c,v 1.5 1994/01/21 19:13:25 dct Exp $"
 
+#include <X11/Xos.h>
 #include <errno.h>
-#include "lzw.h"
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+#include "lbxlzw.h"
 #ifdef NCD
 #define DEBUG
 #include <ncd/assert.h>
@@ -11,11 +15,11 @@
 #else
 #define assert(x)
 #include <stdio.h>
-#endif NCD
+#endif /* NCD */
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <sys/param.h>
-#include "bufferstr.h"
+#include "lbxbufstr.h"
 
 void LzwFree();
 
@@ -220,14 +224,14 @@ compress(priv)
 #ifdef DEBUG
     if (verbose)
 	printf("compress==== c=%d\n",in_count);
-#endif DEBUG
+#endif /* DEBUG */
 
     ent = (in_count == 0) ? getchar_compress() : save_oldcode;
 
 #ifdef DEBUG
     if (verbose)
 	printf(" ent=%d\n",ent);
-#endif DEBUG
+#endif /* DEBUG */
 
     hsize_reg = hsize;
     Hshift = hshift;
@@ -236,7 +240,7 @@ compress(priv)
     while ( (c = getchar_compress()) != EOF ) {
 #ifdef DEBUG
 	printf("<%d:%d> ",ent, c);
-#endif DEBUG
+#endif /* DEBUG */
 	fcode = (long) (((long) c << Maxbits) + ent);
  	i = (((long)c << Hshift) ^ ent);	/* xor hashing */
 
@@ -279,7 +283,7 @@ nomatch:
 #ifdef DEBUG
     if (verbose)
 	printf("====compress\n");
-#endif DEBUG
+#endif /* DEBUG */
 
     return;
 }
@@ -459,7 +463,7 @@ output(priv, code )
 	if ((verbose) && (code == CLEAR)) {
 	    printf("output:CLEAR, n_bits=%d, offset=%d\n", n_bits, offset);
 	}
-#endif DEBUG
+#endif /* DEBUG */
 	/*
 	 * Get to the first byte.
 	 */
@@ -561,7 +565,7 @@ getcode(priv)
     register char_type *bp = buf;
 #ifdef DEBUG
     static int col = 0;
-#endif DEBUG
+#endif /* DEBUG */
 
     if ( clear_flg > 0 || offset >= size || free_ent > maxcode ) {
 	/*
@@ -624,7 +628,7 @@ getcode(priv)
     if (verbose)
 	printf("nextcode:%5d%c",
 	    code, (col+=6) >= 74 ? (col = 0, '\n') : ' ' );
-#endif DEBUG
+#endif /* DEBUG */
     return code;
 }
 
@@ -649,7 +653,7 @@ decompress(priv, newpacket)
     if (verbose)
 	printf("decompress==== in_count:%d, len=%d\n",
 	    in_count, inputbufend-inputbuf);
-#endif DEBUG
+#endif /* DEBUG */
     if (in_count == 0) {
 	restarting = FALSE;
 	finchar = oldcode = getcode(priv);
@@ -659,7 +663,7 @@ decompress(priv, newpacket)
 #ifdef DEBUG
 	if (verbose)
 	    printf ("%02x ", (char)finchar);
-#endif DEBUG
+#endif /* DEBUG */
 	if (PUTCHAR( (char)finchar ) == EOF)	/* 1st must be 8 bits = char */
 		goto output_full;
     } else {
@@ -669,7 +673,7 @@ decompress(priv, newpacket)
 #ifdef DEBUG
     if (verbose)
 	printf(" finchar=%d, oldcode=%d\n", finchar,oldcode);
-#endif DEBUG
+#endif /* DEBUG */
     stackp = de_stack;
 
     while ( (code = getcode(priv)) != EOF ) {
@@ -678,7 +682,7 @@ decompress(priv, newpacket)
 #ifdef DEBUG
 	    if (verbose)
 		printf("compress: received CLEAR n_bits=%d\n", n_bits );
-#endif DEBUG
+#endif /* DEBUG */
 	    for ( code = 255; code >= 0; code-- )
 		tab_prefixof(code) = 0;
 	    clear_flg = 1;
@@ -705,9 +709,9 @@ decompress(priv, newpacket)
 		printf ("incode=0x%x, n_bits=%d\n", incode, n_bits);
 #ifdef BYTESTREAM_DAEMON
 		printf
-#else BYTESTREAM_DAEMON
+#else /* BYTESTREAM_DAEMON */
 		panic
-#endif BYTESTREAM_DAEMON
+#endif /* BYTESTREAM_DAEMON */
 		    ("compress1: stackp overflow");
 	    }
 	    *stackp++ = tab_suffixof(code);
@@ -717,9 +721,9 @@ decompress(priv, newpacket)
 	    printf ("incode=0x%x, n_bits=%d\n", incode, n_bits);
 #ifdef BYTESTREAM_DAEMON
 		printf
-#else BYTESTREAM_DAEMON
+#else /* BYTESTREAM_DAEMON */
 		panic
-#endif BYTESTREAM_DAEMON
+#endif /* BYTESTREAM_DAEMON */
 		    ("compress2: stackp overflow");
 	}
 	*stackp++ = finchar = tab_suffixof(code);
@@ -732,7 +736,7 @@ decompress(priv, newpacket)
 #ifdef DEBUG
 		printf("code:%d, prefix:%d, suffix:%d\n",
 		    code, oldcode, finchar);
-#endif DEBUG
+#endif /* DEBUG */
 		tab_prefixof(code) = (unsigned short)oldcode;
 		tab_suffixof(code) = finchar;
 		free_ent = code+1;
@@ -761,7 +765,7 @@ output_full:
 #ifdef DEBUG
     if (verbose)
 	printf("====decompress\n");
-#endif DEBUG
+#endif /* DEBUG */
 }
 
 /*
