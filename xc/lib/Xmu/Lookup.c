@@ -1,4 +1,4 @@
-/* "$XConsortium: Lookup.c,v 1.11 90/06/15 18:58:07 rws Exp $"; */
+/* "$XConsortium: Lookup.c,v 1.12 90/12/11 13:19:10 rws Exp $"; */
 
 /* 
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -103,17 +103,17 @@ static unsigned char Const greek[128] =
     0xf0, 0xf1, 0xf3, 0xf2, 0xf4, 0xf5, 0xf6, 0xf7, /* 15 */
     0xf8, 0xf9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-#define sLatin1		0
-#define sLatin2		1
-#define sLatin3		2
-#define sLatin4		3
-#define sKana		4
-#define sX0201		0x01000004
-#define sArabic		5
-#define sCyrillic	6
-#define sGreek		7
-#define sAPL		11
-#define sHebrew		12
+#define sLatin1		(unsigned long)0
+#define sLatin2		(unsigned long)1
+#define sLatin3		(unsigned long)2
+#define sLatin4		(unsigned long)3
+#define sKana		(unsigned long)4
+#define sX0201		(unsigned long)0x01000004
+#define sArabic		(unsigned long)5
+#define sCyrillic	(unsigned long)6
+#define sGreek		(unsigned long)7
+#define sAPL		(unsigned long)11
+#define sHebrew		(unsigned long)12
 
 int XmuLookupString (event, buffer, nbytes, keysym, status, keysymSet)
     register XKeyEvent *event;
