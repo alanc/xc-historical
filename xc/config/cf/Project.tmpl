@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.29 89/07/18 16:35:04 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.30 89/07/18 16:56:00 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -252,7 +252,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.29 89/07/18 16:35:04 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.30 89/07/18 16:56:00 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -347,7 +347,7 @@ Berklib.c: sysV/Berklib.c					@@\
         DEPXAWLIB = dirtouse($(USRLIBDIR),$(AWIDGETSRC))/libXaw.a
 
 #if HasSunOSSharedLibraries && SharedXlib
-             XLIB = -lX11
+             XLIB = dirtouse(-lX11,-L$(XLIBSRC) -lX11)
 #else
              XLIB = $(DEPXLIB)
 #endif
