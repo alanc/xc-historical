@@ -1,4 +1,4 @@
-/* $XConsortium: spglyph.c,v 1.8 91/07/16 20:19:40 keith Exp $ */
+/* $XConsortium: spglyph.c,v 1.9 91/07/26 20:59:58 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -121,9 +121,9 @@ sp_set_bitmap_bits(y, xbit1, xbit2)
                 xbit2;
 {
     int         nmiddle;
-    CARD32      startmask,
+    CARD8	startmask,
                 endmask;
-    CARD32     *dst;
+    CARD8	*dst;
 
     if (xbit1 > cfv->bit_width) {
 
@@ -156,30 +156,21 @@ sp_set_bitmap_bits(y, xbit1, xbit2)
 	cfv->trunc = 1;
 	return;
     }
-/*
- * XXX
- *
- * needs testing
- */
-
     if (xbit1 < 0)		/* XXX this is more than a little bit rude... */
 	xbit1 = 0;
 
-    nmiddle = ((int) cfv->bp) & 3;
-    if (nmiddle) {
-	xbit1 += nmiddle << 3;
-	xbit2 += nmiddle << 3;
-    }
-    dst = ((CARD32 *) (((char *) cfv->bp) - nmiddle)) + (xbit1 >> 5);
-    nmiddle = (xbit2 >> 5) - (xbit1 >> 5);
-    xbit1 &= 31;
-    xbit2 &= 31;
+    nmiddle = (xbit1 >> 3);
+    dst = (CARD8 *) (cfv->bp + nmiddle);
+    xbit2 -= (xbit1 & ~7);
+    nmiddle = (xbit2 >> 3);
+    xbit1 &= 7;
+    xbit2 &= 7;
     if (bit == MSBFirst) {
-	startmask = ((CARD32) ~0) >> xbit1;
-	endmask = ~(((CARD32) ~0) >> xbit2);
+	startmask = ((CARD8) ~0) >> xbit1;
+	endmask = ~(((CARD8) ~0) >> xbit2);
     } else {
-	startmask = ((CARD32) ~0) << xbit1;
-	endmask = ~(((CARD32) ~0) << xbit2);
+	startmask = ((CARD8) ~0) << xbit1;
+	endmask = ~(((CARD8) ~0) << xbit2);
     }
     if (nmiddle == 0)
 	*dst |= endmask & startmask;
