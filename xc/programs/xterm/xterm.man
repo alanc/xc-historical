@@ -42,6 +42,19 @@ This option causes the DECCOLM escape sequence to be recognized, and the
 .I xterm
 window will resize appropriately.
 .TP 8
+.B \-ah
+This option indicates that 
+.I xterm
+should always highlight the text cursor and borders.  By default,
+.I xterm
+will display a hollow text cursor whenever the focus is lost or the 
+pointer leaves the window.
+.TP 8
+.B \+ah
+This option indicates that
+.I xterm
+should do text cursor highlighting.
+.TP 8
 .BI \-b " number"
 This option specifies the size of the inner border (the distance between
 the outer edge of the characters and the window border) in pixels.  The
@@ -307,6 +320,11 @@ this application.
 .PP
 The following resources are specified as part of the ``vt100'' widget (class
 ``VT100''):
+.TP 8
+.B "alwaysHighlight (\fPclass\fB AlwaysHighlight)"
+Specifies whether or not \fIxterm\fP should always display a highlighted 
+text cursor.  By default, a hollow text cursor is displayed whenever the
+pointer moves out of the window or the window loses the input focus.
 .TP 8
 .B "font (\fPclass\fB Font)"
 Specifies the name of the normal font.  The default is ``vtsingle.''
