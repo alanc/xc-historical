@@ -207,19 +207,20 @@
 	 (internal-accessor (xintern 'gcontext-internal- name))
 	 (internal-setfer (xintern 'set- gcontext-name)))
     `(within-definition (,name def-gc-accessor)
-       (compiler-let ((*buffer* '(gcontext-display gcontext)))
 
-	 (defun ,gcontext-name (gcontext)
-	   (declare (type gcontext gcontext))
-	   (declare-values (or null ,type))
+       (defun ,gcontext-name (gcontext)
+	 (declare (type gcontext gcontext))
+	 (declare-values (or null ,type))
+	 (compiler-let ((*buffer* '(gcontext-display gcontext)))
 	   (let ((value (,internal-accessor (gcontext-local-state gcontext))))
 	     (declare (type (or null card32) value))
 	     (when value ;; Don't do anything when value isn't known
-	       (decode-type ,type value))))
+	       (decode-type ,type value)))))
        
-	 (defun ,internal-setfer (gcontext value)
-	   (declare (type gcontext gcontext)
-		    (type ,type value))
+       (defun ,internal-setfer (gcontext value)
+	 (declare (type gcontext gcontext)
+		  (type ,type value))
+	 (compiler-let ((*buffer* '(gcontext-display gcontext)))
 	   (modify-gcontext (gcontext local-state)
 	     (setf (,internal-accessor local-state) (encode-type ,type value))
 	     ,@(when (eq type 'pixmap)
@@ -229,9 +230,9 @@
 		 ;; the pixmap.
 		 `((let ((server-state (gcontext-server-state gcontext)))
 		     (setf (,internal-accessor server-state) nil))))
-	     value))
+	     value)))
        
-	 (defsetf ,gcontext-name ,internal-setfer)))))
+       (defsetf ,gcontext-name ,internal-setfer))))
 
 (defmacro incf-internal-timestamp (state)
   (let ((ts (gensym)))
