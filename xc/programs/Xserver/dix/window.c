@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.68 91/06/10 09:59:22 rws Exp $ */
+/* $XConsortium: window.c,v 5.69 91/07/02 18:35:48 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -4072,6 +4072,7 @@ TileScreenSaver(i, kind)
     {
 	xfree(srcbits);
 	xfree(mskbits);
+	cursor = 0;
     }
     else
     {
@@ -4085,8 +4086,14 @@ TileScreenSaver(i, kind)
 	    {
 	    	attributes[attri] = cursorID;
 	    	mask |= CWCursor;
-		cursor->refcnt++;
 	    }
+	    else
+		cursor = 0;
+	}
+	else
+	{
+	    xfree (srcbits);
+	    xfree (mskbits);
 	}
     }
 
@@ -4098,6 +4105,9 @@ TileScreenSaver(i, kind)
 	      (unsigned short)screenInfo.screens[i]->height + RANDOM_WIDTH,
 	      0, InputOutput, mask, attributes, 0, serverClient,
 	      wVisual (WindowTable[i]), &result);
+
+    if (cursor)
+	FreeResource (cursorID, RT_NONE);
 
     if (!pWin)
 	return FALSE;
