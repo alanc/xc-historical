@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.106 88/02/07 17:25:45 swick Locked $";
+static char rcsid[] = "$Header: Initialize.c,v 1.107 88/02/08 08:44:34 swick Exp $";
 #endif lint
 
 /*
@@ -342,7 +342,7 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	char *ptr, *rindex();
 	ApplicationShellWidget w;
 	Widget root;
-#ifndef TRASHCOLONDISPLAY
+#ifdef OLDCOLONDISPLAY
 	int squish = -1;
 #endif
 	Boolean dosync = FALSE;
@@ -386,7 +386,7 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 
 	for(i = 1; i < *argc; i++) {
 	  int len = strlen(argv[i]);
-#ifndef TRASHCOLONDISPLAY
+#ifdef OLDCOLONDISPLAY
 	  if (!found_display && index(argv[i], ':') != NULL) {
 		  (void) strncpy(displayName, argv[i], sizeof(displayName));
 		  squish = i;
@@ -411,7 +411,7 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 		  continue;
 	  }
 	}
-#ifndef TRASHCOLONDISPLAY
+#ifdef OLDCOLONDISPLAY
 	if(!found_display && squish != -1) {
 		(*argc)--;
 		for(i = squish; i < *argc; i++) {
