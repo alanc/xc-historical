@@ -1380,47 +1380,52 @@ This action send the indicated graphics input code.
 The default bindings in the VT102 window are:
 .sp
 .in +4
-.Ds
-.TA .5i 1i 2i
-.ta .5i 1i 2i
+.nf
+.\".DS
+.\".TA .5i 1i 2i
+.\".ta .5i 1i 2i
   Shift <KeyPress> Prior:	scroll-back(1,halfpage) \\n\\
   Shift <KeyPress> Next:	scroll-forw(1,halfpage) \\n\\
-  Shift <KeyPress> Select:	select-cursor-start() select-cursor-end(PRIMARY, CUT_BUFFER0) \\n\\
+  Shift <KeyPress> Select:	select-cursor-start() \\
+				select-cursor-end(PRIMARY, CUT_BUFFER0) \\n\\
   Shift <KeyPress> Insert:	insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
        ~Meta<KeyPress>: 	insert-seven-bit()	\\n\\
         Meta<KeyPress>: 	insert-eight-bit()	\\n\\
- Ctrl ~Meta<Btn1Down>:          popup-menu(mainMenu) \\n\\
+ Ctrl ~Meta<Btn1Down>:		popup-menu(mainMenu) \\n\\
       ~Meta <Btn1Down>:		select-start()	\\n\\
       ~Meta <Btn1Motion>:	select-extend() \\n\\
- Ctrl ~Meta <Btn2Down>:         popup-menu(vtMenu) \\n\\
+ Ctrl ~Meta <Btn2Down>:		popup-menu(vtMenu) \\n\\
 ~Ctrl ~Meta <Btn2Down>:		ignore()	\\n\\
 ~Ctrl ~Meta <Btn2Up>:		insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
- Ctrl ~Meta <Btn3Down>:         popup-menu(fontMenu) \\n\\
+ Ctrl ~Meta <Btn3Down>:		popup-menu(fontMenu) \\n\\
 ~Ctrl ~Meta <Btn3Down>:		start-extend()	\\n\\
       ~Meta <Btn3Motion>:	select-extend()	\\n\\
 ~Ctrl ~Meta <BtnUp>:		select-end(PRIMARY, CUT_BUFFER0) \\n\\
 	    <BtnDown>:		bell(0)
-.De
+.\".DE
+.fi
 .sp
 .in -4
 .PP
 The default bindings in the Tektronix window are:
 .sp
 .in +4
-.Ds
-.TA .5i 1i 2i
-.ta .5i 1i 2i
+.nf
+.\".DS
+.\".TA .5i 1i 2i
+.\".ta .5i 1i 2i
        ~Meta<KeyPress>: 	insert-seven-bit()	\\n\\
         Meta<KeyPress>: 	insert-eight-bit()\\n\\
- Ctrl ~Meta<Btn1Down>:          popup-menu(mainMenu) \\n\\
- Ctrl ~Meta <Btn2Down>:         popup-menu(tekMenu) \\n\\
- Shift ~Meta<Btn1Down>:         gin-press(L) \\n\\
-       ~Meta<Btn1Down>:         gin-press(l) \\n\\
- Shift ~Meta<Btn2Down>:         gin-press(M) \\n\\
-       ~Meta<Btn2Down>:         gin-press(m) \\n\\
- Shift ~Meta<Btn3Down>:         gin-press(R) \\n\\
-       ~Meta<Btn3Down>:         gin-press(r)
-.De
+ Ctrl ~Meta<Btn1Down>:		popup-menu(mainMenu) \\n\\
+ Ctrl ~Meta <Btn2Down>:		popup-menu(tekMenu) \\n\\
+ Shift ~Meta<Btn1Down>:		gin-press(L) \\n\\
+       ~Meta<Btn1Down>:		gin-press(l) \\n\\
+ Shift ~Meta<Btn2Down>:		gin-press(M) \\n\\
+       ~Meta<Btn2Down>:		gin-press(m) \\n\\
+ Shift ~Meta<Btn3Down>:		gin-press(R) \\n\\
+       ~Meta<Btn3Down>:		gin-press(r)
+.\".DE
+.fi
 .sp
 .in -4
 .PP
@@ -1428,17 +1433,19 @@ Below is a sample how of the \fBkeymap()\fP action is used to add special
 keys for entering commonly-typed works:
 .sp
 .in +4
-.Ds
-.TA .5i
-.ta .5i
+.nf
+.\".DS
+.\".TA .5i
+.\".ta .5i
 *VT100.Translations: #override <Key>F13: keymap(dbx)
 *VT100.dbxKeymap.translations: \\
-	<Key>F14: keymap(None) \\n\\
-	<Key>F17: string("next") string(0x0d) \\n\\
-	<Key>F18: string("step") string(0x0d) \\n\\
-	<Key>F19: string("continue") string(0x0d) \\n\\
-	<Key>F20: string("print ") insert-selection(PRIMARY, CUT_BUFFER0)
-.De
+	<Key>F14:	keymap(None) \\n\\
+	<Key>F17:	string("next") string(0x0d) \\n\\
+	<Key>F18:	string("step") string(0x0d) \\n\\
+	<Key>F19:	string("continue") string(0x0d) \\n\\
+	<Key>F20:	string("print ") insert-selection(PRIMARY, CUT_BUFFER0)
+.\".DE
+.fi
 .sp
 .in -4
 .SH "OTHER FEATURES"
