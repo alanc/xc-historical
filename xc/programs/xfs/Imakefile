@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.8 91/07/17 16:06:09 gildea Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
@@ -17,7 +17,7 @@ DIFSLIB = $(DIFSDIR)/libdifs.a
 FONTDIR = $(FONTSRC)/lib/font
 FONTLIB = $(FONTDIR)/libfont.a
 SYSLIBS =
-#ifdef HPArchitecture
+#if defined(HPArchitecture) || defined(i386SVR3Architecture)
 BSDEMUL = $(LIBSRC)/Berk/Berklib.o
 #endif
 
