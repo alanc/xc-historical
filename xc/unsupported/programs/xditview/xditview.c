@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xditview.c,v 1.6 89/04/13 13:34:02 keith Exp $";
+static char rcsid[] = "$XConsortium: xditview.c,v 1.7 89/05/11 14:07:09 keith Exp $";
 #endif  lint
 
 #include <X11/Xatom.h>
@@ -13,14 +13,16 @@ static char rcsid[] = "$XConsortium: xditview.c,v 1.6 89/04/13 13:34:02 keith Ex
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
-#include <X11/Paned.h>
-#include <X11/Viewport.h>
-#include <X11/Box.h>
-#include <X11/Command.h>
-#include <X11/Dialog.h>
-#include <X11/Label.h>
+#include <X11/Xaw/Paned.h>
+#include <X11/Xaw/Viewport.h>
+#include <X11/Xaw/Box.h>
+#include <X11/Xaw/Command.h>
+#include <X11/Xaw/Dialog.h>
+#include <X11/Xaw/Label.h>
+#include <X11/Xaw/SimpleMenu.h>
+
 #include "libXdvi/Dvi.h"
-#include "libXdvi/Menu.h"
+
 #include "xdit.bm"
 #include "xdit_mask.bm"
 #include "stdio.h"
@@ -42,6 +44,7 @@ static FILE	*current_file;
 /*
  * Report the syntax for calling xditview.
  */
+
 static
 Syntax(call)
 	char *call;
@@ -56,16 +59,34 @@ Syntax(call)
 static void	NewFile ();
 static Widget	toplevel, paned, viewport, dvi;
 static Widget	page;
+static Widget	simpleMenu;
 
-static char menuString[] = "\
-Next Page\n\
-Previous Page\n\
-Select Page\n\
-Open File\n\
-Quit\
-";
+static void	NextPage(), PreviousPage(), SelectPage(), OpenFile(), Quit();
 
-static Widget	menu;
+static struct menuEntry {
+    char    *name;
+    void    (*function)();
+} menuEntries[] = {
+    "nextPage",	    NextPage,
+    "previousPage", PreviousPage,
+    "selectPage",   SelectPage,
+    "openFile",	    OpenFile,
+    "quit",	    Quit,
+};
+
+static void	NextPageAction(), PreviousPageAction(), SelectPageAction();
+static void	OpenFileAction(), QuitAction();
+static void	AcceptAction(), CancelAction();
+
+XtActionsRec xditview_actions[] = {
+    "NextPage",	    NextPageAction,
+    "PreviousPage", PreviousPageAction,
+    "SelectPage",   SelectPageAction,
+    "OpenFile",	    OpenFileAction,
+    "Quit",	    QuitAction,
+    "Accept",	    AcceptAction,
+    "Cancel",	    CancelAction,
+};
 
 #define MenuNextPage		0
 #define MenuPreviousPage	1
@@ -82,55 +103,55 @@ void main(argc, argv)
     Arg		    arg;
     Pixmap	    icon_pixmap = None;
     char	    *file_name = 0;
-    static void	    commandCall(), menuCall();
-    static Arg	    viewportArgs[] = {
-			{XtNallowVert, True},
-			{XtNallowHoriz, True},
-			{XtNskipAdjust, False},
-			{XtNwidth, 600},    /* this one isn't right */
-			{XtNheight, 800},   /* neither is this */
-			{XtNshowGrip, False},
-    };
-    static Arg	    panedArgs[] = {
-			{XtNallowResize, True},
-    };
+    static void	    commandCall();
+    int		    i;
     static Arg	    labelArgs[] = {
 			{XtNlabel, (int) pageLabel},
-			{XtNskipAdjust, True},
-    };
-    static XtCallbackRec menuCallback[] = {
-			{ menuCall, (caddr_t) 0 },
-			{ NULL, NULL }
     };
     Arg		    topLevelArgs[2];
     int		    height;
 
-    toplevel = XtInitialize("main", "XDvi",
+    toplevel = XtInitialize("main", "Xditview",
 			    options, XtNumber (options),
  			    &argc, argv);
     if (argc > 2)
 	Syntax(argv[0]);
+
+    XtAppAddActions(XtWidgetToApplicationContext(toplevel),
+		    xditview_actions, XtNumber (xditview_actions));
+
     XtSetArg (topLevelArgs[0], XtNiconPixmap,
 	      XCreateBitmapFromData (XtDisplay (toplevel),
 				     XtScreen(toplevel)->root,
-				     xditview_bits, xditview_width, xditview_height));
+				     xdit_bits, xdit_width, xdit_height));
 				    
     XtSetArg (topLevelArgs[1], XtNiconMask,
 	      XCreateBitmapFromData (XtDisplay (toplevel),
 				     XtScreen(toplevel)->root,
-				     xditview_mask_bits, xditview_mask_width, xditview_mask_height));
+				     xdit_mask_bits, xdit_mask_width, xdit_mask_height));
     XtSetValues (toplevel, topLevelArgs, 2);
     if (argc > 1)
 	file_name = argv[1];
 
-    menu = XawMenuCreate ("menu", menuWidgetClass, toplevel, menuString,
-			    "<Btn1Down>", menuCallback);
+    /*
+     * create the menu and insert the entries
+     */
+    simpleMenu = XtCreatePopupShell ("menu", simpleMenuWidgetClass, toplevel,
+				    NULL, 0);
+    for (i = 0; i < XtNumber (menuEntries); i++) {
+	XawSimpleMenuAddEntry(simpleMenu, menuEntries[i].name,
+			      NULL, (Cardinal) 0);
+	XawSimpleMenuAddEntryCallback(simpleMenu, menuEntries[i].name,
+				      menuEntries[i].function,
+				      menuEntries[i].name);
+    }
+
     paned = XtCreateManagedWidget("paned", panedWidgetClass, toplevel,
-				    panedArgs, XtNumber (panedArgs));
+				    NULL, (Cardinal) 0);
     viewport = XtCreateManagedWidget("viewport", viewportWidgetClass, paned,
-				     viewportArgs, XtNumber (viewportArgs));
+				     NULL, (Cardinal) 0);
     dvi = XtCreateManagedWidget ("dvi", dviWidgetClass, viewport, NULL, 0);
-    page = XtCreateManagedWidget ("Page", labelWidgetClass, paned,
+    page = XtCreateManagedWidget ("label", labelWidgetClass, paned,
 					labelArgs, XtNumber (labelArgs));
     if (file_name)
 	NewFile (file_name);
@@ -160,7 +181,7 @@ SetPageNumber (number)
 }
 
 static void
-SelectPage (number_string)
+SelectPageNumber (number_string)
 char	*number_string;
 {
 	SetPageNumber (atoi(number_string));
@@ -206,62 +227,121 @@ char	*name;
 	n = name;
     XtSetArg (arg[1], XtNiconName, n);
     XtSetValues (toplevel, arg, 2);
-    SelectPage ("1");
+    SelectPageNumber ("1");
     strcpy (current_file_name, name);
     current_file = new_file;
 }
 
 static fileBuf[1024];
 
+ResetMenuEntry (mw, name)
+    Widget  mw;
+    char    *name;
+{
+    Arg	arg[1];
+
+    XtSetArg (arg[0], XtNpopupOnEntry, name);
+    XtSetValues (mw, arg, 1);
+}
+
 static void
-menuCall (mw, closure, data)
+NextPage (mw, name, data)
+    Widget  mw;
+    caddr_t name, data;
+{
+    NextPageAction();
+    ResetMenuEntry (mw, (char *) name);
+}
+
+static void
+NextPageAction ()
+{
+    Arg	args[1];
+    int	number;
+
+    XtSetArg (args[0], XtNpageNumber, &number);
+    XtGetValues (dvi, args, 1);
+    SetPageNumber (number+1);
+}
+
+static void
+PreviousPage (mw, name, data)
+    Widget  mw;
+    caddr_t name, data;
+{
+    PreviousPageAction ();
+    ResetMenuEntry (mw, (char *) name);
+}
+
+static void
+PreviousPageAction ()
+{
+    Arg	args[1];
+    int	number;
+
+    XtSetArg (args[0], XtNpageNumber, &number);
+    XtGetValues (dvi, args, 1);
+    SetPageNumber (number-1);
+}
+
+static void
+SelectPage (mw, name, data)
+    Widget  mw;
+    caddr_t name, data;
+{
+    SelectPageAction ();
+    ResetMenuEntry (mw, (char *) name);
+}
+
+static void
+SelectPageAction ()
+{
+    MakePrompt (toplevel, "Page number", SelectPageNumber, "");
+}
+
+static void
+OpenFile (mw, name, data)
+    Widget  mw;
+    caddr_t name, data;
+{
+    OpenFileAction ();
+    ResetMenuEntry (mw, (char *) name);
+}
+
+static void
+OpenFileAction ()
+{
+    if (current_file_name[0])
+	strcpy (fileBuf, current_file_name);
+    else
+	fileBuf[0] = '\0';
+    MakePrompt (toplevel, "File to open:", NewFile, fileBuf);
+}
+
+static void
+Quit (mw, closure, data)
     Widget  mw;
     caddr_t closure, data;
 {
-    int	    menuItem = (int) data;
-    Arg	    args[1];
-    int	    number;
-    int	    resetSelection = 0;
-
-    switch (menuItem) {
-    case MenuNextPage:
-	XtSetArg (args[0], XtNpageNumber, &number);
-	XtGetValues (dvi, args, 1);
-	SetPageNumber (number+1);
-	resetSelection = 1;
-	break;
-    case MenuPreviousPage:
-	XtSetArg (args[0], XtNpageNumber, &number);
-	XtGetValues (dvi, args, 1);
-	SetPageNumber (number-1);
-	resetSelection = 1;
-	break;
-    case MenuSelectPage:
-	MakePrompt (toplevel, "Page number", SelectPage, "");
-	break;
-    case MenuOpenFile:
-	if (current_file_name[0])
-	    strcpy (fileBuf, current_file_name);
-	else
-	    fileBuf[0] = '\0';
-	MakePrompt (toplevel, "File to open:", NewFile, fileBuf);
-	resetSelection = 1;
-	break;
-    case MenuQuit:
-	exit (0);
-    }
-    XtSetArg (args[0], XtNselection, (int) menuItem);
-    XtSetValues (mw, args, 1);
+    QuitAction ();
 }
-    
+
+static void
+QuitAction ()
+{
+    exit (0);
+}
+
 Widget	promptShell, promptDialog;
 void	(*promptfunction)();
 
 /* ARGSUSED */
-void DestroyPromptWidget(widget, client_data, call_data)
-    Widget widget;		/* unused */
-    caddr_t client_data;	/* scrn */
-    caddr_t call_data;		/* unused */
+static
+void CancelAction (widget, event, params, num_params)
+    Widget	widget;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
     if (promptShell) {
 	XtSetKeyboardFocus(toplevel, (Widget) None);
@@ -272,14 +352,15 @@ void DestroyPromptWidget(widget, client_data, call_data)
 
 
 /* ARGSUSED */
-void TellPrompt(widget, client_data, call_data)
-    Widget widget;
-    caddr_t client_data;	/* scrn */
-    caddr_t call_data;
-
+static
+void AcceptAction (widget, event, params, num_params)
+    Widget	widget;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
 {
-    (*promptfunction)(XtDialogGetValueString(promptDialog));
-    DestroyPromptWidget(widget, client_data, call_data);
+    (*promptfunction)(XawDialogGetValueString(promptDialog));
+    CancelAction (widget, event, params, num_params);
 }
 
 MakePrompt(centerw, prompt, func, def)
@@ -294,9 +375,6 @@ char	*def;
 	{XtNvalue, NULL},
     };
     Arg valueArgs[1];
-    static Arg shellArgs[] = {
-	{XtNallowShellResize, TRUE},
-    };
     Arg centerArgs[2];
     XWindowAttributes	xwa;
     int	source_x, source_y;
@@ -305,22 +383,32 @@ char	*def;
     Dimension prompt_width, prompt_height;
     Widget  valueWidget;
     
-    DestroyPromptWidget((Widget)NULL, (caddr_t)0, NULL);
+    CancelAction ((Widget)NULL, (XEvent *) 0, (String *) 0, (Cardinal *) 0);
     promptShell = XtCreatePopupShell ("promptShell", transientShellWidgetClass,
-		    toplevel, shellArgs, XtNumber (shellArgs));
+				      toplevel, NULL, (Cardinal) 0);
     dialogArgs[0].value = (XtArgVal)prompt;
     dialogArgs[1].value = (XtArgVal)def;
     promptDialog = XtCreateManagedWidget( "promptDialog", dialogWidgetClass,
 		    promptShell, dialogArgs, XtNumber (dialogArgs));
-    XtDialogAddButton(promptDialog, "Accept", TellPrompt, (caddr_t)0);
-    XtDialogAddButton(promptDialog, "Cancel", DestroyPromptWidget, (caddr_t)0);
-    XtSetKeyboardFocus(toplevel, promptShell);
-    XtSetKeyboardFocus(promptShell, promptDialog);
+    XawDialogAddButton(promptDialog, "accept", NULL, (caddr_t) 0);
+    XawDialogAddButton(promptDialog, "cancel", NULL, (caddr_t) 0);
     valueWidget = XtNameToWidget (promptDialog, "value");
-    XtSetArg (valueArgs[0], XtNresizable, TRUE);
-    XtSetValues (valueWidget, valueArgs, 1);
-    XtSetKeyboardFocus(promptDialog, valueWidget);
-    XtRealizeWidget(promptShell);
+    if (valueWidget) {
+    	XtSetArg (valueArgs[0], XtNresizable, TRUE);
+    	XtSetValues (valueWidget, valueArgs, 1);
+	/*
+	 * as resizable isn't set until just above, the
+	 * default value will be displayed incorrectly.
+	 * rectify the situation by resetting the values
+	 */
+        XtSetValues (promptDialog, dialogArgs, XtNumber (dialogArgs));
+    }
+    XtSetKeyboardFocus (promptDialog, valueWidget);
+    XtSetKeyboardFocus (toplevel, valueWidget);
+    XtRealizeWidget (promptShell);
+    /*
+     * place the widget in the center of the "parent"
+     */
     XtSetArg (centerArgs[0], XtNwidth, &center_width);
     XtSetArg (centerArgs[1], XtNheight, &center_height);
     XtGetValues (centerw, centerArgs, 2);
@@ -329,11 +417,7 @@ char	*def;
     XtGetValues (promptShell, centerArgs, 2);
     source_x = (center_width - prompt_width) / 2;
     source_y = (center_height - prompt_height) / 3;
-    XTranslateCoordinates (XtDisplay (centerw),
-			    XtWindow (centerw),
-			    RootWindowOfScreen (XtScreen (centerw)),
-			    source_x, source_y,
-			    &dest_x, &dest_y, &child_return);
+    XtTranslateCoords (centerw, source_x, source_y, &dest_x, &dest_y);
     XtSetArg (centerArgs[0], XtNx, dest_x);
     XtSetArg (centerArgs[1], XtNy, dest_y);
     XtSetValues (promptShell, centerArgs, 2);
