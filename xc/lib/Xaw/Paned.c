@@ -1,7 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Paned.c,v 1.16 90/05/08 15:16:07 converse Exp $";
-#endif /* lint */
-
+/* $XConsortium: Paned.c,v 1.17 90/06/14 14:45:39 kit Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -271,7 +268,7 @@ Dimension * on_size_ret, * off_size_ret;
     request.request_mode = CWWidth | CWHeight;
 
     ForAllPanes(pw, childP) {
-        int size = (int) Max(PaneInfo(*childP)->size, PaneInfo(*childP)->min);
+        int size = Max(PaneInfo(*childP)->size, (int)PaneInfo(*childP)->min);
 	AssignMin(size, (int) PaneInfo(*childP)->max);
         newsize += size + pw->paned.internal_bw;
     }
@@ -466,8 +463,8 @@ Pane pane;
 Boolean shrink;
 {
   return ( pane->paned_adjusted_me &&
-	   ( (shrink && (pane->wp_size <= pane->size)) ||
-	     (!shrink && (pane->wp_size >= pane->size))) );
+	   ( (shrink && ((int)pane->wp_size <= pane->size)) ||
+	     (!shrink && ((int)pane->wp_size >= pane->size))) );
 }
    
 /*	Function Name: LoopAndRefigureChildren.
@@ -1020,7 +1017,7 @@ PanedWidget pw;
 static void
 HandleGrip(grip, junk, callData)
 Widget grip;
-caddr_t	junk, callData;
+XtPointer junk, callData;
 {
     GripCallData call_data = (GripCallData)callData;
     PanedWidget pw = (PanedWidget) XtParent(grip);
