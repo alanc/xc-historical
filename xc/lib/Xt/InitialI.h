@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.23 89/09/28 17:09:12 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.24 89/09/29 12:06:42 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -100,8 +100,9 @@ typedef struct _XtAppStruct {
     Display **list;
     TimerEventRec *timerQueue;
     WorkProcRec *workQueue;
-    InputEvent *selectRqueue[NOFILE], *selectWqueue[NOFILE],
-	    *selectEqueue[NOFILE];
+    InputEvent **selectRqueue;
+    InputEvent **selectWqueue;
+    InputEvent **selectEqueue;
     InputEvent *outstandingQueue;
     XrmDatabase errorDB;
     XtErrorMsgHandler errorMsgHandler, warningMsgHandler;
