@@ -1,4 +1,4 @@
-/* $XConsortium: xf86_OSlib.h,v 1.1 94/10/05 13:40:57 kaleb Exp $ */
+/* $XConsortium: xf86_OSlib.h,v 1.2 94/10/12 20:43:43 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.5 1994/09/07 15:53:28 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
@@ -185,15 +185,12 @@ extern int errno;
 #ifdef __BSD__
 # undef __BSD__
 #endif
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined (__bsdi__)
-# define __BSD__
-#endif
 
 #if defined(__386BSD__) && (defined(__FreeBSD__) || defined(__NetBSD__))
 # undef __386BSD__
 #endif
 
-#ifdef __BSD__
+#ifdef CSRG_BASED
 # include <sys/ioctl.h>
 # include <signal.h>
 
@@ -282,7 +279,7 @@ extern int errno;
 #   define NULL 0
 # endif
 
-#endif /* __386BSD__ */
+#endif /* CSRG_BASED */
 
 /**************************************************************************/
 /* Mach and OSF/1                                                         */
