@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.49 89/10/24 18:43:26 converse Exp $
+/**/# $XConsortium: Project.tmpl,v 1.50 89/11/01 09:24:54 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -11,10 +11,11 @@
  *                                                                           *
  ****************************************************************************/
 
+#define ProjectX		4	/* do *not* change this line */
+
 /*
  * X-specific things
  */
-
 #ifndef BuildServer
 #define BuildServer		YES	/* go ahead and build server */
 #endif
@@ -325,7 +326,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.49 89/10/24 18:43:26 converse Exp $
+/**/# $XConsortium: Project.tmpl,v 1.50 89/11/01 09:24:54 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
