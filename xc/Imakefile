@@ -2,13 +2,13 @@
 # Preserve this order
 #
         SUBDIRS = \
-		$(INCLUDEDIR) \
-		$(SERVERDIR) \
-		$(XLIBDIR) \
-		$(TOOLKITDIR) \
-		$(XMENUDIR) \
-		$(FONTDIR) \
-		$(CLIENTDIR)
+		$(INCLUDESRC) \
+		$(SERVERSRC) \
+		$(XLIBSRC) \
+		$(TOOLKITSRC) \
+		$(XMENUSRC) \
+		$(FONTSRC) \
+		$(CLIENTSRC)
 
 all:
 	for i in $(SUBDIRS) ;\
@@ -42,7 +42,7 @@ real_makefiles_target:
 	do \
 		(set -x; cd $$i; $(IMAKE_CMD) -DTOPDIR=..); \
 	done; \
-	for i in $(LIBRARYDIR) $(CLIENTDIR) $(SERVERDIR) ;\
+	for i in $(LIBRARYSRC) $(CLIENTSRC) $(SERVERSRC) ;\
 	do \
 		(set -x; cd $$i; $(MAKE) Makefiles); \
 	done
