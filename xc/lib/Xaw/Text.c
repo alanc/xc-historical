@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.58 88/09/21 16:11:05 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.59 88/09/22 07:32:03 swick Exp $";
 #endif
 
 
@@ -585,7 +585,7 @@ _XtTextScroll(ctx, n)
  * The routine will scroll the displayed text by pixels.  If the arg is
  * positive, move up; otherwise, move down.
 */
-/*ARGSUSED*/ /* keep lint happy */
+/*ARGSUSED*/
 static void ScrollUpDownProc (w, closure, callData)
     Widget w;
     caddr_t closure;		/* TextWidget */
@@ -613,7 +613,7 @@ static void ScrollUpDownProc (w, closure, callData)
  * fraction of the first position and last position and then normalizes to
  * the start of the line containing the position.
 */
-/*ARGSUSED*/ /* keep lint happy */
+/*ARGSUSED*/
 static void ThumbProc (w, closure, callData)
     Widget w;
     caddr_t closure;		/* TextWidget */
@@ -1038,7 +1038,8 @@ static ClearWindow (w)
 
 /*
  * Internal redisplay entire window.
-*/
+ * Legal to call only if widget is realized.
+ */
 DisplayTextWindow (w)
   Widget w;
 {
@@ -1226,11 +1227,15 @@ int _XtTextPrepareToUpdate(ctx)
  * processes all the outstanding update requests and merges update
  * ranges where possible.
 */
-static FlushUpdate(ctx)
+static void FlushUpdate(ctx)
   TextWidget ctx;
 {
     int     i, w;
     XtTextPosition updateFrom, updateTo;
+    if (!XtIsRealized((Widget)ctx)) {
+	ctx->text.numranges = 0;
+	return;
+    }
     while (ctx->text.numranges > 0) {
 	updateFrom = ctx->text.updateFrom[0];
 	w = 0;
@@ -1267,6 +1272,7 @@ _XtTextShowPosition(ctx)
   TextWidget ctx;
 {
     XtTextPosition top, first, second;
+    if (!XtIsRealized((Widget)ctx)) return;
     if (ctx->text.insertPos < ctx->text.lt.top ||
 	ctx->text.insertPos >= ctx->text.lt.info[ctx->text.lt.lines].position) {
 	if (ctx->text.lt.lines > 0 && (ctx->text.insertPos < ctx->text.lt.top 
@@ -1373,7 +1379,7 @@ Widget current, request, new;
     TextWidget newtw = (TextWidget) new;
     Boolean    redisplay = FALSE;
 
-    _XtTextPrepareToUpdate(oldtw);
+    _XtTextPrepareToUpdate(newtw);
     
     if ((oldtw->text.options & scrollVertical)
 		!= (newtw->text.options & scrollVertical)) {
@@ -1402,11 +1408,12 @@ Widget current, request, new;
 			!= (newtw->text.options & wordBreak)))
     {
 	ForceBuildLineTable(newtw);
+	SetScrollBar(newtw);
 	redisplay = TRUE;
     }
 
     if (oldtw->text.insertPos != newtw->text.insertPos)
-	oldtw->text.showposition = TRUE;
+	newtw->text.showposition = TRUE;
 
     if (XtIsRealized(newtw)
 	&& ((oldtw->text.options & wordBreak)
@@ -1421,16 +1428,11 @@ Widget current, request, new;
 	redisplay = TRUE;
     }
 
-    /* ||| This may be the best way to do this, as some optimizations
-     *     can occur here that may be harder if we let XtSetValues
-     *     call our expose proc.
-     */
-    if (redisplay) 
-	DisplayTextWindow(new);
 
-    _XtTextExecuteUpdate(newtw);
+    if (!redisplay)
+	_XtTextExecuteUpdate(newtw);
 
-    return (FALSE);
+    return redisplay;
 }
 
 
@@ -1439,6 +1441,8 @@ void XtTextDisplay (w)
     Widget w;
 {
     TextWidget ctx = (TextWidget) w;
+
+    if (!XtIsRealized(w)) return;
 
 	_XtTextPrepareToUpdate(ctx);
 	DisplayTextWindow(w);
@@ -1472,7 +1476,8 @@ void XtTextSetLastPos (w, lastPos)
 	(*ctx->text.source->SetLastPos)(ctx->text.source, lastPos);
 	ctx->text.lastPos = GETLASTPOS;
 	ForceBuildLineTable(ctx);
-	DisplayTextWindow(w);
+        if (XtIsRealized(w))
+	    DisplayTextWindow(w);
 	_XtTextExecuteUpdate(ctx);
 }
 
@@ -1501,7 +1506,7 @@ void XtTextSetSource(w, source, startPos)
 	ctx->text.lastPos = GETLASTPOS;
 
 	ForceBuildLineTable(ctx);
-        if (XtIsRealized(ctx)) {
+        if (XtIsRealized(w)) {
 	    _XtTextPrepareToUpdate(ctx);
 	    DisplayTextWindow(w);
 	    _XtTextExecuteUpdate(ctx);
@@ -1666,7 +1671,8 @@ void XtTextEnableRedisplay(w)
 	ctx->text.s.right > lastPos)  ctx->text.s.left = ctx->text.s.right = 0;
 
     ForceBuildLineTable(ctx);
-    DisplayTextWindow(w);
+    if (XtIsRealized(w))
+	DisplayTextWindow(w);
     _XtTextExecuteUpdate(ctx);
 }
 
