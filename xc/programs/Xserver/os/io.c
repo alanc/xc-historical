@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.65 89/09/14 16:19:50 rws Exp $ */
+/* $XConsortium: io.c,v 1.66 90/06/06 13:54:00 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -43,6 +43,12 @@ SOFTWARE.
 #include "opaque.h"
 #include "dixstruct.h"
 #include "misc.h"
+
+#ifdef O_NONBLOCK
+#define E_BLOCKED EAGAIN
+#else
+#define E_BLOCKED EWOULDBLOCK
+#endif
 
 extern void MarkClientException();
 extern long ClientsWithInput[];
@@ -181,7 +187,7 @@ ReadRequestFromClient(client)
 		      oci->size - oci->bufcnt); 
 	if (result <= 0)
 	{
-	    if ((result < 0) && (errno == EWOULDBLOCK))
+	    if ((result < 0) && (errno == E_BLOCKED))
 	    {
 		YieldControlNoInput();
 		return 0;
@@ -434,13 +440,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 	    notWritten -= len;
 	    todo = notWritten;
 	}
-#ifdef apollo /* stupid sr10.1 UDS bug - supposedly fixed in sr10.2 */
-	else if ((errno == EWOULDBLOCK) && (todo > 4096))
-	{
-	    todo = 4096;
-	}
-#endif
-	else if ((errno == EWOULDBLOCK)
+	else if ((errno == E_BLOCKED)
 #ifdef SUNSYSV /* check for another brain-damaged OS bug */
 		 || (errno == 0)
 #endif
