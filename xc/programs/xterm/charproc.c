@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.56 88/10/06 08:11:10 swick Exp $
+ * $XConsortium: charproc.c,v 1.57 88/10/07 08:17:26 swick Exp $
  */
 
 
@@ -43,6 +43,10 @@
 #include <ctype.h>
 #include <errno.h>
 #include <setjmp.h>
+#ifdef macII
+#undef FIOCLEX					/* redefined from sgtty.h */
+#undef FIONCLEX					/* redefined from sgtty.h */
+#endif
 #include <sys/ioctl.h>
 #include "ptyx.h"
 #include "VTparse.h"
@@ -128,7 +132,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.56 88/10/06 08:11:10 swick Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.57 88/10/07 08:17:26 swick Exp $";
 #endif	/* lint */
 
 static long arg;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.91 88/09/23 09:56:36 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.92 88/09/26 12:03:19 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -77,6 +77,10 @@ SOFTWARE.
 #define USE_SYSV_SIGNALS
 #define	USE_SYSV_PGRP
 #else	/* else not SYSV */		/* BSD and macII */
+#ifdef macII
+#undef FIOCLEX
+#undef FIONCLEX
+#endif
 #include <sgtty.h>
 #include <sys/wait.h>
 #include <sys/resource.h>

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.40 88/09/05 19:17:14 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.41 88/09/06 17:07:34 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -58,6 +58,8 @@
 #include "error.h"
 
 #ifdef macII
+#undef FIOCLEX					/* redefined from sgtty.h */
+#undef FIONCLEX					/* redefined from sgtty.h */
 #include <sys/ioctl.h>				/* to get FIONREAD */
 #endif /* macII */
 
@@ -119,7 +121,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.40 88/09/05 19:17:14 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.41 88/09/06 17:07:34 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
