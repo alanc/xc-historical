@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.105 91/07/27 14:13:23 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.106 93/08/17 11:14:17 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -122,10 +122,10 @@ DependSubdirs($(SUBDIRS))
 
 XCOMM do not name your log file make.log when you run this ...
 World World.Win32::
-	@echo
+	@echo :
 	@echo Building Release 5 of the X Window System
-	@echo
-	@echo
+	@echo :
+	@echo :
 	cd $(IMAKESRC)
 	$(MAKE) $(MFLAGS) -f Makefile.ini clean.Win32
 	$(MAKE) $(MFLAGS) -f Makefile.ini imake.exe
@@ -137,16 +137,16 @@ World World.Win32::
 	$(MAKE) $(MFLAGS) includes
 	$(MAKE) $(MFLAGS) depend
 	$(MAKE) $(MFLAGS) $(WORLDOPTS)
-	@echo
-	@echo
+	@echo :
+	@echo :
 	@echo Full build of Release 5 of the X Window System complete.
-	@echo
+	@echo :
 
 Everything::
-	@echo
+	@echo :
 	@echo Rebuilding Release 5 of the X Window System
-	@echo
-	@echo
+	@echo :
+	@echo :
 	cd $(IMAKESRC)
 	$(MAKE) $(MFLAGS) -f Makefile.ini imake.exe
 	cd ..
@@ -156,9 +156,9 @@ Everything::
 	$(MAKE) $(MFLAGS) includes
 	$(MAKE) $(MFLAGS) depend
 	$(MAKE) $(MFLAGS) $(WORLDOPTS)
-	@echo
-	@echo
+	@echo :
+	@echo :
 	@echo Rebuild of Release 5 of the X Window System complete.
-	@echo
+	@echo :
 
 #endif
