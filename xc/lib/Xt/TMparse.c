@@ -36,6 +36,8 @@
 #define LF 0x0a
 #define BSLASH '\\'
 
+#define AtomToAction(atom)	((XtAction)XrmAtomToQuark(atom))
+
 typedef void (*ActionProc)();
 
 typedef struct {
@@ -138,7 +140,7 @@ static CompiledActionTable CompileActionTable(actions)
 	n+1, sizeof(CompiledAction));
 
     for (i=0; i<n; i++) {
-	compiledActionTable[i].name = XtAtomToAction(actions[i].string);
+	compiledActionTable[i].name = AtomToAction(actions[i].string);
 	compiledActionTable[i].value = actions[i].value;
     }
     compiledActionTable[n].name = NULL;
@@ -541,7 +543,7 @@ static void ParseTranslationTableProduction(w, compiledActionTable, str)
 		    && c != '(');
 		*--ptr2 = 0;
 		actions->proc = (ActionProc) InterpretAction(
-		    compiledActionTable, XtAtomToAction (str2));
+		    compiledActionTable, AtomToAction (str2));
 		actions->token = (char *) XtMalloc(strlen(str2)+1);
 		(void) strcpy(actions->token, str2);
 		if (actions->proc == NULL) {
