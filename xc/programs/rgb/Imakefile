@@ -1,12 +1,21 @@
+      DEPLIBS = 
      INCLUDES = -I$(TOP) -I$(SERVERSRC)/include
  INSTALLFLAGS = $(INSTLIBFLAGS)
-         OBJS = rgb.o
-         SRCS = rgb.c
+        SRCS1 = rgb.c
+        OBJS1 = rgb.o
+        SRCS2 = showrgb.c
+        OBJS2 = showrgb.o
+         SRCS = $(SRCS1) $(SRCS2)
+         OBJS = $(OBJS1) $(OBJS2)
+     PROGRAMS = rgb showrgb
+    DATAFILES = rgb.pag rgb.dir
 
-all:: rgb rgb.pag rgb.dir
+all:: $(PROGRAMS) $(DATAFILES)
 
-SingleProgramTarget(rgb,$(OBJS),,-ldbm)
-InstallMultiple(rgb.pag rgb.dir rgb.txt,$(LIBDIR))
+SingleProgramTarget(rgb,$(OBJS1),/**/,-ldbm)
+SingleProgramTarget(showrgb,$(OBJS2),/**/,-ldbm)
+InstallMultiple($(DATAFILES) rgb.txt,$(LIBDIR))
+InstallProgramWithFlags(showrgb,$(BINDIR),)
 
 rgb.pag rgb.dir: rgb rgb.txt
 	./rgb rgb < rgb.txt
