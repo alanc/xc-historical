@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.72 90/08/21 14:17:21 converse Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.73 90/08/22 13:47:48 converse Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1368,7 +1368,7 @@ fonts.dir:  $(OBJS)							@@\
 	$(MKFONTDIR) .							@@\
 									@@\
 clean::									@@\
-	$(RM) *.snf fonts.dir
+	$(RM) *.snf *.snf.Z fonts.dir
 #endif /* MakeFonts */
 
 
@@ -1395,27 +1395,32 @@ install::  fonts.alias							@@\
 
 
 /*
- * FontTarget - generate rules to convert a .bdf file into a .snf file.
- */
-#ifndef FontTarget
-#define FontTarget(basename)						@@\
-basename.snf:  basename.bdf						@@\
-	$(FONTC) $(FONTCFLAGS) $? >$@
-#endif /* FontTarget */
-
-
-/*
  * CompressedFontTarget - generate rules to convert a .bdf file into a 
  * compressed .snf file.
  */
 #ifndef CompressedFontTarget
 #define CompressedFontTarget(basename)					@@\
 basename.snf.Z:  basename.bdf						@@\
-	$(FONTC) $(FONTCFLAGS) $? >basename.snf				@@\
-	$(COMPRESS) basename.snf					@@\
-	rm -f basename.snf
+	$(FONTC) $(FONTCFLAGS) $? | $(COMPRESS) > $@
 #endif /* CompressedFontTarget */
 
+
+#define FontSrc(basename) basename.bdf
+
+#ifdef CompressAllFonts
+#define FontTarget(basename) CompressedFontTarget(basename)
+#define FontObj(basename) basename.snf.Z
+#else
+/*
+ * FontTarget - generate rules to convert a .bdf file into a .snf file.
+ */
+#ifndef FontTarget
+#define FontTarget(basename)						@@\
+basename.snf:  basename.bdf						@@\
+	$(FONTC) $(FONTCFLAGS) $? >$@
+#define FontObj(basename) basename.snf
+#endif /* FontTarget */
+#endif /* CompressAllFonts */
 
 /*
  * AllTarget - generate rules to build necessary things during make all.
