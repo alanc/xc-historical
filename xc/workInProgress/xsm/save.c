@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.8 94/08/17 17:52:04 mor Exp mor $ */
+/* $XConsortium: save.c,v 1.9 94/08/17 20:04:43 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -277,7 +277,14 @@ XtPointer 	callData;
     if (!shutdownInProgress)
     {
 	XtPopdown (savePopup);
-	SetAllSensitive (1);
+
+	if (naming_session)
+	{
+	    XtSetSensitive (savePopup, 1);
+	    XtPopup (nameSessionPopup, XtGrabNone);
+	}
+	else
+	    SetAllSensitive (1);
     }
 }
 
@@ -292,7 +299,14 @@ XtPointer 	callData;
 
 {
     XtPopdown (savePopup);
-    SetAllSensitive (1);
+
+    if (naming_session)
+    {
+	XtSetSensitive (savePopup, 1);
+	XtPopup (nameSessionPopup, XtGrabNone);
+    }
+    else
+	SetAllSensitive (1);
 }
 
 
@@ -346,10 +360,18 @@ create_save_popup ()
     saveForm = XtCreateManagedWidget (
 	"saveForm", formWidgetClass, savePopup, NULL, 0);
 
+    saveMessageLabel = XtVaCreateManagedWidget (
+	"saveMessageLabel", labelWidgetClass, saveForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, NULL,
+        XtNborderWidth, 0,
+	XtNresizable, True,
+	NULL);
+
     saveTypeLabel = XtVaCreateManagedWidget (
 	"saveTypeLabel", labelWidgetClass, saveForm,
         XtNfromHoriz, NULL,
-        XtNfromVert, NULL,
+        XtNfromVert, saveMessageLabel,
         XtNborderWidth, 0,
 	NULL);
 
@@ -360,7 +382,7 @@ create_save_popup ()
         NULL,					/* radioGroup */
         (XtPointer) &saveTypeData[0],		/* radioData */
         saveTypeLabel,				/* fromHoriz */
-        NULL					/* fromVert */
+        saveMessageLabel			/* fromVert */
     );
 
     saveTypeGlobal = AddToggle (
@@ -370,7 +392,7 @@ create_save_popup ()
         saveTypeLocal,				/* radioGroup */
         (XtPointer) &saveTypeData[1],		/* radioData */
         saveTypeLocal,				/* fromHoriz */
-        NULL					/* fromVert */
+        saveMessageLabel			/* fromVert */
     );
 
     saveTypeBoth = AddToggle (
@@ -380,7 +402,7 @@ create_save_popup ()
         saveTypeLocal,				/* radioGroup */
         (XtPointer) &saveTypeData[2],		/* radioData */
         saveTypeGlobal,				/* fromHoriz */
-        NULL					/* fromVert */
+        saveMessageLabel			/* fromVert */
     );
 
 
@@ -427,16 +449,17 @@ create_save_popup ()
 	XtNresizable, True,
         XtNfromHoriz, NULL,
         XtNfromVert, interactStyleLabel,
-        XtNvertDistance, 30,
+        XtNvertDistance, 20,
         NULL);
     
     XtAddCallback (saveOkButton, XtNcallback, SaveOkXtProc, 0);
 
     saveCancelButton = XtVaCreateManagedWidget (
 	"saveCancelButton", commandWidgetClass, saveForm,
+	XtNresizable, True,
         XtNfromHoriz, saveOkButton,
         XtNfromVert, interactStyleLabel,
-        XtNvertDistance, 30,
+        XtNvertDistance, 20,
         NULL);
 
     XtAddCallback (saveCancelButton, XtNcallback, SaveCancelXtProc, 0);
@@ -451,6 +474,7 @@ PopupSaveDialog ()
 
 {
     Position x, y, rootx, rooty;
+    char msgLabel[64];
 
     XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
     XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
@@ -469,9 +493,20 @@ PopupSaveDialog ()
 	XtNtitle, wantShutdown ? "Shutdown" : "Checkpoint",
 	NULL);
 
+    sprintf (msgLabel, "%s for session \"%s\"\n\n",
+	wantShutdown ? "Shutdown" : "Checkpoint",
+	session_name);
+
+    XtVaSetValues (saveMessageLabel,
+	XtNlabel, msgLabel,
+	NULL);
+
     XtVaSetValues (saveOkButton,
 	XtNlabel, wantShutdown ? "Shutdown" : "Checkpoint",
 	NULL);
+
+    if (naming_session)
+	XtPopdown (nameSessionPopup);
 
     XtPopup (savePopup, XtGrabNone);
 }
