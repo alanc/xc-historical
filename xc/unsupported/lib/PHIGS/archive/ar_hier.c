@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ar_hier.c,v 5.1 91/02/16 09:47:31 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -113,7 +113,7 @@ register Pint		depth;
     if (!depth || curpath->num_elem_refs < depth)
 	depth = curpath->num_elem_refs;
     if ((allpaths->num_elem_refs+depth)*sizeof(Pelem_ref) > cph->scratch.size) {
-	cph->scratch.buf = realloc(cph->scratch.buf, cph->scratch.size + 1024);
+	cph->scratch.buf = realloc(cph->scratch.buf,cph->scratch.size + 1024);
 	if (cph->scratch.buf) {
 	    cph->scratch.size += 1024;
 	    allpaths->elem_refs = (Pelem_ref *)cph->scratch.buf;
@@ -235,18 +235,19 @@ Pint			depth;
     Pelem_ref_list		 parents;
     int				 ers_size, elnum, i;
     caddr_t			 buffer;
-    int				 buffer_size;
+    unsigned int		 buffer_size;
     pexElementInfo		*ptr;
     
     ers_size = 10;
     parents.num_elem_refs = 0;
-    if (!(parents.elem_refs = (Pelem_ref *)malloc(ers_size * sizeof(Pelem_ref))))
-	return(FALSE);
+    if (!(parents.elem_refs = (Pelem_ref *)
+			malloc((unsigned)(ers_size * sizeof(Pelem_ref)))))
+				return(FALSE);
 
     buffer_size = 256;
     if (!(buffer = (caddr_t)malloc(buffer_size))) {
-	free((char *)parents.elem_refs);
-	return(FALSE);
+			free((char *)parents.elem_refs);
+			return(FALSE);
     }
 
     if (!curpath->num_elem_refs) {
@@ -288,8 +289,8 @@ Pint			depth;
 		    ((pexExecuteStructure *)(ptr))->id == structid) {
 		if (parents.num_elem_refs > ers_size) {
 		    ers_size += 10;
-		    parents.elem_refs = (Pelem_ref *)realloc(parents.elem_refs, ers_size * 
-						       sizeof(Pelem_ref));
+		    parents.elem_refs = (Pelem_ref *)realloc((malloc_t)parents.elem_refs, 
+							(size_t)(ers_size * sizeof(Pelem_ref)));
 		    if (!parents.elem_refs) {
 			free((char *)buffer);
 			return(FALSE);
