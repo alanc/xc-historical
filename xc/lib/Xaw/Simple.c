@@ -1,4 +1,4 @@
-/* $XConsortium: Simple.c,v 1.30 91/03/26 12:25:48 converse Exp $ */
+/* $XConsortium: Simple.c,v 1.31 91/05/28 10:50:57 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -184,20 +184,21 @@ Widget w;
     if (simple->simple.cursor_name == NULL)
 	return;
 
-    from.addr = (caddr_t) simple->simple.cursor_name;
+    from.addr = (XPointer) simple->simple.cursor_name;
     from.size = strlen((char *) from.addr) + 1;
 
     to.size = sizeof(Cursor);
-    to.addr = (caddr_t) &cursor;
+    to.addr = (XPointer) &cursor;
 
     if (XtConvertAndStore(w, XtRString, &from, XtRColorCursor, &to)) {
 	if ( cursor !=  None) 
 	    simple->simple.cursor = cursor;
     } 
     else {
-	XtErrorMsg("convertFailed","ConvertCursor","XawError",
-		   "Simple: ConvertCursor failed.",
-		   (String *)NULL, (Cardinal *)NULL);
+	XtAppWarningMsg(XtWidgetToApplicationContext(w),
+			"convertFailed","ConvertCursor","XawError",
+			"Simple: ConvertCursor failed.",
+			(String *)NULL, (Cardinal *)NULL);
     }
 }
 
