@@ -1,4 +1,4 @@
-/* $XConsortium: spfont.c,v 1.13 91/09/16 11:42:28 keith Exp $ */
+/* $XConsortium: spfont.c,v 1.14 92/03/25 18:45:48 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -22,9 +22,6 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author: Dave Lemke, Network Computing Devices Inc
- *
- * $NCDId: @(#)spfont.c,v 4.9 1991/07/02 17:01:30 lemke Exp $
- *
  */
 
 /*
@@ -652,11 +649,15 @@ open_sp_font(fontname, filename, entry, format, fmask, flags, spfont)
     spf->entry = entry;
     spmf->refcount++;
     sp_reset_master(spmf);
+    /* now we've done enough that if we bail out we must call close_sp_font */
 
     /* tear apart name to get sizes */
     strcpy(tmpname, fontname);
     if (!FontParseXLFDName(tmpname, &vals, FONT_XLFD_REPLACE_NONE))
+    {
+	close_sp_font(spf);
 	return BadFontName;
+    }
 
     fixup_vals(&vals);
     if (vals.point > 0)
@@ -684,16 +685,32 @@ open_sp_font(fontname, filename, entry, format, fmask, flags, spfont)
     specs.flags = MODE_SCREEN;
     specs.out_info = NULL;
 
+    /* When Speedo tries to generate a very small font bitmap, it
+       often crashes or goes into an infinite loop.
+       Don't know why this is so, but until we can fix it properly,
+       return BadFontName for anything smaller than 4 pixels.
+       */
+#define TINY_FACTOR (4 << 16)
+    /* XXX may have to do more tweaking for ROTATED_TEXT */
+    if (specs.xxmult < TINY_FACTOR  ||  specs.yymult < TINY_FACTOR)
+    {
+	close_sp_font(spf);
+	return BadFontName;
+    }
+
     /* clobber global state to avoid wrecking future obliqued fonts */
     bzero ((char *) &sp_globals, sizeof(sp_globals));
 
     if (!sp_set_specs(&specs))
+    {
+	close_sp_font(spf);
 	return BadFontName;
+    }
 
     spf->specs = specs;
-    *spfont = spf;
     spf->master = spmf;
 
+    *spfont = spf;
     return Successful;
 }
 
@@ -713,6 +730,9 @@ load_sp_font(fontname, filename, entry, format, fmask, pfont, flags)
     int         ret;
 
     ret = open_sp_font(fontname, filename, entry, format, fmask, flags, &spf);
+
+    if (ret != Successful)
+	return ret;
 
     spmf = spf->master;
     sp_reset_master(spmf);
