@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: NextEvent.c,v 1.26 87/11/18 08:39:15 swick Locked $";
+static char rcsid[] = "$Header: NextEvent.c,v 1.27 87/12/02 16:58:57 swick Locked $";
 #endif lint
 
 /*
@@ -473,13 +473,13 @@ XEvent *event;
 		}
 	    }
 	    if (FD_ISSET (i, &wmaskfd)) {
-		Select_rqueue[i]->Se_oq = outstanding_queue;
-		outstanding_queue = Select_rqueue[i];
+		Select_wqueue[i]->Se_oq = outstanding_queue;
+		outstanding_queue = Select_wqueue[i];
 		nfound--;
 	    }
 	    if (FD_ISSET (i, &emaskfd)) {
-		Select_rqueue[i]->Se_oq = outstanding_queue;
-		outstanding_queue = Select_rqueue[i];
+		Select_equeue[i]->Se_oq = outstanding_queue;
+		outstanding_queue = Select_equeue[i];
 		nfound--;
 	    }
 	}
@@ -616,13 +616,13 @@ XEvent *event;
 	      }
 	}
 	if(FD_ISSET(i,&wmask)) {
-	    Select_rqueue[i] -> Se_oq = outstanding_queue;
-	    outstanding_queue = Select_rqueue[i];
+	    Select_wqueue[i] -> Se_oq = outstanding_queue;
+	    outstanding_queue = Select_wqueue[i];
 	    nfound--;
 	}
 	if(FD_ISSET(i,&emask)) {
-	    Select_rqueue[i] -> Se_oq = outstanding_queue;
-	    outstanding_queue = Select_rqueue[i];
+	    Select_equeue[i] -> Se_oq = outstanding_queue;
+	    outstanding_queue = Select_equeue[i];
 	    nfound--;
 	}
 
