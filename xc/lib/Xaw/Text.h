@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.26 89/07/20 14:01:01 kit Exp $
+* $XConsortium: Text.h,v 1.27 89/07/21 01:39:41 kit Exp $
 */
 
 
@@ -67,7 +67,20 @@ SOFTWARE.
 
 */
 
-#define XtNtextOptions "textOptions"
+#define XtEtextScrollNever "never"
+#define XtEtextScrollWhenNeeded "whenneeded"
+#define XtEtextScrollAlways "always"
+
+#define XtEtextWrapNever "never"
+#define XtEtextWrapLine "line"
+#define XtEtextWrapWord "word"
+
+#define XtEtextResizeNever "never"
+#define XtEtextResizeWidth "width"
+#define XtEtextResizeHeight "height"
+#define XtEtextResizeBoth "both"
+
+#define XtNautoFill "autoFill"
 #define XtNdialogHOffset "dialogHOffset"
 #define XtNdialogVOffset "dialogVOffset"
 #define XtNdisplayCaret "displayCaret"
@@ -76,11 +89,22 @@ SOFTWARE.
 #define XtNecho "echo"
 #define XtNinsertPosition "insertPosition"
 #define XtNleftMargin "leftMargin"
+#define XtNresize "resize"
+#define XtNscrollVertical "scrollVertical"
+#define XtNscrollHorizontal "scrollHorizontal"
 #define XtNselectTypes "selectTypes"
 #define XtNselection "selection"
+#define XtNwrap "wrap"
 
+/* preserved for Back Compatability only. */
+#define XtNtextOptions "textOptions"
+
+#define XtCAutoFill "AutoFill"
 #define XtCOutput "Output"
+#define XtCResize "Resize"
+#define XtCScroll "Scroll"
 #define XtCSelectTypes "SelectTypes"
+#define XtCWrap "Wrap"
 
 /* Return Error code for XawTextSearch */
 
@@ -106,6 +130,15 @@ typedef long XawTextPosition;
 typedef struct _XawTextSource XawTextSourceRec, *XawTextSource;
 typedef struct _XawTextSink XawTextSinkRec, *XawTextSink;
 
+typedef enum { XawtextScrollNever,
+	       XawtextScrollWhenNeeded, XawtextScrollAlways} XawTextScrollMode;
+
+typedef enum { XawtextWrapNever, 
+	       XawtextWrapLine, XawtextWrapWord} XawTextWrapMode;
+
+typedef enum { XawtextResizeNever, XawtextResizeWidth,
+	       XawtextResizeHeight, XawtextResizeBoth} XawTextResizeMode;
+
 typedef enum {XawsdLeft, XawsdRight} XawTextScanDirection;
 typedef enum {XawtextRead, XawtextAppend, XawtextEdit} XawTextEditType;
 typedef enum {XawselectNull, XawselectPosition, XawselectChar, XawselectWord,
@@ -118,8 +151,6 @@ typedef enum {XawselectNull, XawselectPosition, XawselectChar, XawselectWord,
 #define resizeWidth		0x10
 #define resizeHeight		0x20
 #define editable		0x40
-#define lineWrap                0x80
-#define autoFill               0x100
 
 typedef struct {
     int  firstPos;

@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.2 89/07/18 19:12:06 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.3 89/07/21 19:57:36 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -905,12 +905,13 @@ TextWidget ctx;
   XawTextPosition ret_pos;
   XawTextBlock text;
 
-  if ( ! ((ctx->text.options & autoFill) && (ctx->text.mult == 1)) )
+  if ( !((ctx->text.auto_fill) && (ctx->text.mult == 1)) )
     return;
 
   for ( line_num = 0; line_num < ctx->text.lt.lines ; line_num++)
     if ( ctx->text.lt.info[line_num].position >= ctx->text.insertPos )
       break;
+  line_num--;			/* backup a line. */
 
   x = ctx->text.lt.info[line_num].x;
   (*FindPosition) ( (Widget) ctx, ctx->text.lt.info[line_num].position, x, 

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.35 89/07/18 15:38:54 kit Exp $
+* $XConsortium: TextP.h,v 1.36 89/07/21 19:57:32 kit Exp $
 */
 
 
@@ -119,6 +119,7 @@ extern TextClassRec textClassRec;
 /* New fields for the Text widget record */
 typedef struct _TextPart {
     /* resources */
+
     XawTextSource	source;
     XawTextSink		sink;
     XawTextPosition	insertPos;
@@ -129,7 +130,13 @@ typedef struct _TextPart {
     int			dialog_horiz_offset; /* position for popup dialog */
     int			dialog_vert_offset;  /* position for popup dialog */
     Boolean		display_caret;	     /* insertion pt visible iff T */
+    Boolean             auto_fill;           /* Auto fill mode? */
+    XawTextScrollMode   scroll_vert, scroll_horiz; /*what type of scrollbars.*/
+    XawTextWrapMode     wrap;            /* The type of wrapping. */
+    XawTextResizeMode   resize;	             /* what to resize */
+
     /* private state */
+
     XawTextLineTable	lt;
     XawTextScanDirection extendDir;
     XawTextSelection	origSel;    /* the selection being modified */
@@ -153,6 +160,16 @@ typedef struct _TextPart {
     XawTextPosition  old_insert;      /* Last insertPos for batched updates */
     short           mult;	      /* Multiplier. */
 } TextPart;
+
+/*************************************************************
+ *
+ * Resource types private to Text widget.
+ *
+ *************************************************************/
+
+#define XtRScrollMode "ScrollMode"
+#define XtRWrapMode "WrapMode"
+#define XtRResizeMode "ResizeMode"
 
 /****************************************************************
  *
