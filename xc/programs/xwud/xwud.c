@@ -1,8 +1,8 @@
 /* 
- * $Locker$ 
+ * $Locker: dkk $ 
  */ 
-static char	*rcsid = "$Header$";
-#include <X/mit-copyright.h>
+static char	*rcsid = "$Header: xwud.c,v 1.1 87/05/29 08:55:58 dkk Locked $";
+#include <X11/copyright.h>
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
 
@@ -32,16 +32,16 @@ static char	*rcsid = "$Header$";
  */
 
 #ifndef lint
-static char *rcsid_xwud_c = "$Header: xwud.c,v 10.10 86/11/25 08:44:25 jg Rel $";
+static char *rcsid_xwud_c = "$Header: xwud.c,v 1.1 87/05/29 08:55:58 dkk Locked $";
 #endif
 
-#include <X/Xlib.h>
+#include <X11/Xlib.h>
 #include <stdio.h>
 #include <strings.h>
 #include <sys/types.h>
 extern char *calloc();
 
-#include <X/XWDFile.h>
+#include <X11/XWDFile.h>   /*  Note:  XWDFile.h (in xwd now) must be moved %%*/
 
 typedef enum _bool {FALSE, TRUE} Bool;
 
@@ -68,6 +68,7 @@ main(argc, argv)
     int planes;
     int forepixel;
     int backpixel;
+    int screen;
     unsigned buffer_size, total_buffer_size;
     int win_name_size;
     char *str_index;
@@ -77,10 +78,11 @@ main(argc, argv)
     Bool standard_in = TRUE;
     Bool newcolors = FALSE, debug = FALSE, inverse = FALSE;
 
-    Color *pixcolors, *newpixcolors;
+    XColor *pixcolors, *newpixcolors;
     Display *dpy;
     Window image_win;
     Pixmap image_pixmap;
+    Colormap colormap;
     XEvent event;
     register XExposeEvent *xevent = (XExposeEvent *)&event;
 
@@ -150,15 +152,16 @@ main(argc, argv)
 	  fprintf(stderr,"\n      (monochrome works anyway)\n");
 	else Error("exiting.");
     }
-
-    if(DisplayPlanes() < header.display_planes)
+    screen = DefaultScreen(dpy);
+    colormap = DefaultColormap(dpy, screen);
+    if(DisplayPlanes(dpy, screen) < header.display_planes)
       Error("Windump has more planes than display.");
 
     /*
      * Check to see if we are in the right pixmap format for the
      * display type.
      */
-    if ((DisplayPlanes() == 1) && (header.pixmap_format != XYFormat)) {
+    if ((DisplayPlanes(dpy,screen) == 1) && (header.pixmap_format != XYPixmap)) {
 	Error(
 	 "Windump is in ZFormat which is not valid on a monochrome display.");
     }
@@ -180,7 +183,7 @@ main(argc, argv)
     /*
      * Determine the pixmap size.
      */
-    if (header.pixmap_format == XYFormat) {
+    if (header.pixmap_format == XYPixmap) {
 	buffer_size =
 	  XYPixmapSize(
 	    header.pixmap_width,
@@ -190,7 +193,7 @@ main(argc, argv)
 	  XYPixmapSize(
 	    header.pixmap_width,
 	    header.pixmap_height,
-	    DisplayPlanes() );
+	    DisplayPlanes(dpy, screen) );
     }
     else if (header.display_planes < 9) {
 	total_buffer_size = buffer_size = BZPixmapSize(
@@ -214,15 +217,15 @@ main(argc, argv)
      * existing colors at those pixel values.
      */
     if(header.window_ncolors) {
-	pixcolors = (Color *)calloc(header.window_ncolors,sizeof(Color));
-	if(fread(pixcolors,sizeof(Color),header.window_ncolors, in_file)
+	pixcolors = (XColor *)calloc(header.window_ncolors,sizeof(XColor));
+	if(fread(pixcolors,sizeof(XColor),header.window_ncolors, in_file)
 	   != header.window_ncolors)
 	  Error("Unable to read color map from dump file.");
 	if(debug)
 	  fprintf(stderr,"Read %d colors\n", header.window_ncolors);
-	newpixcolors = (Color *)calloc(header.window_ncolors,sizeof(Color));
-	bcopy(pixcolors, newpixcolors, sizeof(Color)*header.window_ncolors);
-	if(XQueryColors(newpixcolors,header.window_ncolors) == 0)
+	newpixcolors = (XColor *)calloc(header.window_ncolors,sizeof(XColor));
+	bcopy(pixcolors, newpixcolors, sizeof(XColor)*header.window_ncolors);
+	if(XQueryColors(dpy, colormap, newpixcolors, header.window_ncolors) == 0)
 	  Error("Can't query the color map?");
 	for(i=0; i<header.window_ncolors; i++)
 	  if(!ColorEqual(&pixcolors[i], &newpixcolors[i])) {
@@ -275,7 +278,7 @@ main(argc, argv)
 	XStoreColors(header.window_ncolors, newpixcolors);
 
 	/* now, make a lookup table to convert old pixels into the new ones*/
-	if(header.pixmap_format == ZFormat) {
+	if(header.pixmap_format == ZPixmap) {
 	    if(header.display_planes < 9) {
 		histbuffer = (int *)calloc(256, sizeof(int));
 		bzero(histbuffer, 256*sizeof(int));
@@ -299,7 +302,7 @@ main(argc, argv)
 	    free(histbuffer);
 	}
 	free(cpixels);
-	bcopy(newpixcolors, pixcolors, sizeof(Color)*header.window_ncolors);
+	bcopy(newpixcolors, pixcolors, sizeof(XColor)*header.window_ncolors);
 	free(newpixcolors);
     }
 
@@ -307,8 +310,8 @@ main(argc, argv)
     /*
      * Create the image window.
      */
-    image_win = XCreateWindow(
-	RootWindow,
+    image_win = XCreateWindow(dpy,
+	RootWindow(dpy, screen),
 	header.window_x, header.window_y,
 	header.pixmap_width, header.pixmap_height,
 	0, (Pixmap) 0,
@@ -320,17 +323,17 @@ main(argc, argv)
      * Select mouse ButtonPressed on the window, this is how we determine
      * when to stop displaying the window.
      */
-    XSelectInput(image_win, (ButtonPressed | ExposeWindow | ExposeRegion));
+    XSelectInput(dpy,image_win, (ButtonPressMask | ExposureMask));
      
     /*
      * Store the window name string.
      */
-    XStoreName(image_win, win_name);
+    XStoreName(dpy, image_win, win_name);
     
     /*
      * Map the image window.
      */
-    XMapWindow(image_win);
+    XMapWindow(dpy, image_win);
 
     /*
      * Set up a while loop to maintain the image.
@@ -340,13 +343,13 @@ main(argc, argv)
 	/*
 	 * Wait on mouse input event to terminate.
 	 */
-	XNextEvent(&event);
-	if (event.type == ButtonPressed) break;
+	XNextEvent(dpy, &event);
+	if (event.type == ButtonPressMask) break;
 
 	switch((int)event.type) {
-	  case ExposeWindow:  /* Copy the data into the window.*/
-	  case ExposeRegion:  /* simpler to copy from x=0 for full width */
-	    if(header.pixmap_format == XYFormat) {
+/*	  case ExposureMask:  /* Copy the data into the window.%%(dupl)*/
+	  case ExposureMask:  /* simpler to copy from x=0 for full width */
+	    if(header.pixmap_format == XYPixmap) {
 		onebufsize =  /* size of each bitmap */
 		  XYPixmapSize(header.pixmap_width,
 			       header.pixmap_height, 1);
@@ -354,12 +357,12 @@ main(argc, argv)
 		if(header.display_planes > 1) {
 		    forepixel = -1;
 		    backpixel = 0;
-		    planes = 1<<(DisplayPlanes()); /* MSB << 1 */
+		    planes = 1<<(DisplayPlanes(dpy, screen)); /* MSB << 1 */
 		}
 		else {
-		    forepixel = WhitePixel;
-		    backpixel = BlackPixel;
-		    planes = AllPlanes;
+		    forepixel = WhitePixel(dpy, screen);
+		    backpixel = BlackPixel(dpy, screen);
+		    planes = AllPlanes();
 		}
 		for(j=0; j<header.display_planes; j++) {	
 		    if(header.display_planes > 1)
@@ -385,7 +388,7 @@ main(argc, argv)
 				       0, GXcopy, planes);
 		}
 	    } 
-	    else if(DisplayPlanes() < 9) {
+	    else if(DisplayPlanes(dpy, screen) < 9) {
 		nbytes = BZPixmapSize(header.pixmap_width,1);
 		for(i=0; i<xevent->height; i+=100)
 		  XPixmapBitsPutZ(image_win, 
@@ -393,7 +396,7 @@ main(argc, argv)
 				  header.pixmap_width,
 				  MIN(100, xevent->height - i),
 				  buffer+((i+xevent->y)*nbytes),
-				  0, GXcopy, AllPlanes);
+				  0, GXcopy, AllPlanes());
 	    }
 	    else {  /* Display Planes > 8 */
 		nbytes = WZPixmapSize(header.pixmap_width, 1);
@@ -403,7 +406,7 @@ main(argc, argv)
 				  header.pixmap_width,
 				  MIN(50, xevent->height - i),
 				  buffer+((i+xevent->y)*nbytes),
-				  0, GXcopy, AllPlanes);
+				  0, GXcopy, AllPlanes());
 	    }
 	}
     }
@@ -411,7 +414,7 @@ main(argc, argv)
     /*
      * Destroy the image window.
      */
-    XDestroyWindow(image_win);
+    XDestroyWindow(dpy, image_win);
     
     /*
      * Free the pixmap buffer.
@@ -429,7 +432,7 @@ main(argc, argv)
  * test two color map entries for equality
  */
 ColorEqual(color1, color2)
-     register Color *color1, *color2;
+     register XColor *color1, *color2;
 {
     return(color1->pixel == color2->pixel &&
 	   color1->red   == color2->red &&
