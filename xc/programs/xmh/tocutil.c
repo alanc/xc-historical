@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocutil.c,v 2.16 88/05/13 11:12:06 swick Locked $";
+static char rcs_id[] = "$Header: tocutil.c,v 2.17 88/08/22 13:13:27 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -300,7 +300,8 @@ Toc toc;
 	msgid = msg->msgid;
 	while (mlist && mlist->msglist[w] && mlist->msglist[w]->msgid < msgid)
 	    w++;
-	newval = (!mlist || mlist->msglist[w]->msgid == msgid);
+	newval = (!mlist
+		  || (mlist->msglist[w] && mlist->msglist[w]->msgid == msgid));
 	if (newval != msg->visible) {
 	    changed = TRUE;
 	    msg->visible = newval;
