@@ -1,5 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$xHeader: Resources.c,v 1.5 88/08/26 14:49:54 asente Exp $";
+static char rcsid[] =
+    "$XConsortium: Resources.c,v 1.5 88/08/26 14:49:54 asente Exp $";
 /* $oHeader: Resources.c,v 1.5 88/08/26 14:49:54 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -98,17 +99,15 @@ void XtCopyDefaultDepth(widget, offset, value)
 
 static void CopyFromArg(src, dst, size)
     XtArgVal src;
-    caddr_t dst;
+    char* dst;
     register unsigned int size;
 {
-    if (size == sizeof(long))
-	*(long *)dst = (long)src;
-    else if (size == sizeof(short)) 
-	*(short *)dst = (short)src;
-    else if (size == sizeof(char))
-	*(char *)dst = (char)src;
-    else if (size == sizeof(XtArgVal))
-	*(XtArgVal *)dst = src;
+    if	    (size == sizeof(long))	*(long *)dst = (long)src;
+    else if (size == sizeof(short))	*(short *)dst = (short)src;
+    else if (size == sizeof(char))	*(char *)dst = (char)src;
+    else if (size == sizeof(char*))	*(char **)dst = (char*)src;
+    else if (size == sizeof(caddr_t))	*(caddr_t *)dst = (caddr_t)src;
+    else if (size == sizeof(XtArgVal))	*(XtArgVal *)dst = src;
     else if (size > sizeof(XtArgVal))
 	bcopy((char *)  src, (char *) dst, (int) size);
     else
@@ -116,7 +115,7 @@ static void CopyFromArg(src, dst, size)
 } /* CopyFromArg */
 
 static void CopyToArg(src, dst, size)
-    caddr_t src;
+    char* src;
     XtArgVal *dst;
     register unsigned int size;
 {
@@ -124,32 +123,30 @@ static void CopyToArg(src, dst, size)
 	/* old GetValues semantics (storing directly into arglists) are bad,
 	 * but preserve for compatibility as long as arglist contains NULL.
 	 */
-	switch (size) {
-	    case sizeof(long):	   *dst = (XtArgVal)*(long*)src;	break;
-	    case sizeof(short):	   *dst = (XtArgVal)*(short*)src;	break;
-	    case sizeof(char):	   *dst = (XtArgVal)*(char*)src;	break;
-	    default:
-	      if (size == sizeof(XtArgVal)) *dst = *(XtArgVal*)src;
-	      else bcopy((char*)src, (char*)dst, (int)size);
-	}
+        if	(size == sizeof(long))	   *dst = (XtArgVal)*(long*)src;
+	else if (size == sizeof(short))    *dst = (XtArgVal)*(short*)src;
+	else if (size == sizeof(char))	   *dst = (XtArgVal)*(char*)src;
+	else if (size == sizeof(char*))    *dst = (XtArgVal)*(char**)src;
+	else if (size == sizeof(caddr_t))  *dst = (XtArgVal)*(caddr_t*)src;
+	else if (size == sizeof(XtArgVal)) *dst = *(XtArgVal*)src;
+	else bcopy((char*)src, (char*)dst, (int)size);
     }
     else {
 	/* proper GetValues semantics: argval is pointer to destination */
-	switch (size) {
-	    case sizeof(long):	   *(long*)*dst  = *(long*)src;		break;
-	    case sizeof(short):	   *(short*)*dst = *(short*)src;	break;
-	    case sizeof(char):	   *(char*)*dst  = *(char*)src;		break;
-	    default:
-	      if (size == sizeof(XtArgVal)) *(XtArgVal*)*dst = *(XtArgVal*)src;
-	      else bcopy((char*)src, (char*)*dst, (int)size);
-	}
+	if	(size == sizeof(long))	   *((long*)*dst) = *(long*)src;
+	else if (size == sizeof(short))    *((short*)*dst) = *(short*)src;
+	else if (size == sizeof(char))	   *((char*)*dst) = *(char*)src;
+	else if (size == sizeof(char*))    *((char**)*dst) = *(char**)src;
+	else if (size == sizeof(caddr_t))  *((caddr_t*)*dst) = *(caddr_t*)src;
+	else if (size == sizeof(XtArgVal)) *((XtArgVal*)*dst)= *(XtArgVal*)src;
+	else bcopy((char*)src, (char*)*dst, (int)size);
     }
 } /* CopyToArg */
 
 #else
 static void CopyFromArg(src, dst, size)
     XtArgVal src;
-    caddr_t dst;
+    char* dst;
     register unsigned int size;
 {
     if (size > sizeof(XtArgVal))
@@ -159,25 +156,23 @@ static void CopyFromArg(src, dst, size)
 	    long	longval;
 	    short	shortval;
 	    char	charval;
+	    char*	charptr;
+	    caddr_t	ptr;
 	} u;
-	char* p;
-	if (size == sizeof(long)) {
-	    u.longval = (long)src;
-	    p = (char*)&u.longval;
-	} else if (size == sizeof(short)) {
-	    u.shortval = (short)src;
-	    p = (char*)&u.shortval;
-	} else if (size == sizeof(char)) {
-	    u.charval = (char)src;
-	    p = (char*)&u.charval;
-	} else 
-	    p = (char*)&src;
+	char *p = (char*)&u;
+	if	(size == sizeof(long))	    u.longval = (long)src;
+	else if (size == sizeof(short))	    u.shortval = (short)src;
+	else if (size == sizeof(char))	    u.charval = (char)src;
+	else if (size == sizeof(char*))	    u.charptr = (char*)src;
+	else if (size == sizeof(caddr_t))   u.ptr = (caddr_t)src;
+	else				    p = (char*)&src;
+
 	bcopy(p, (char *) dst, (int) size);
     }
 } /* CopyFromArg */
 
 static void CopyToArg(src, dst, size)
-    caddr_t src;
+    char* src;
     XtArgVal *dst;
     register unsigned int size;
 {
@@ -185,7 +180,24 @@ static void CopyToArg(src, dst, size)
 	/* old GetValues semantics (storing directly into arglists) are bad,
 	 * but preserve for compatibility as long as arglist contains NULL.
 	 */
-	bcopy( (char*)src, (char*)dst, (int)size );
+	union {
+	    long	longval;
+	    short	shortval;
+	    char	charval;
+	    char*	charptr;
+	    caddr_t	ptr;
+	} u;
+	if (size <= sizeof(XtArgVal)) {
+	    bcopy( (char*)src, (char*)&u, (int)size );
+	    if	    (size == sizeof(long)) 	*dst = (XtArgVal)u.longval;
+	    else if (size == sizeof(short))	*dst = (XtArgVal)u.shortval;
+	    else if (size == sizeof(char))	*dst = (XtArgVal)u.charval;
+	    else if (size == sizeof(char*))	*dst = (XtArgVal)u.charptr;
+	    else if (size == sizeof(caddr_t))	*dst = (XtArgVal)u.ptr;
+	    else bcopy( (char*)src, (char*)dst, (int)size );
+	}
+	else
+	    bcopy( (char*)src, (char*)dst, (int)size );
     }
     else {
 	/* proper GetValues semantics: argval is pointer to destination */
@@ -471,7 +483,7 @@ static void GetResources(widget, base, names, classes,
 		if (argName == rx->xrm_name) {
 		    CopyFromArg(
 			arg->value,
-			(caddr_t) base - rx->xrm_offset - 1,
+			(char*) base - rx->xrm_offset - 1,
 			rx->xrm_size);
 		    found[j] = TRUE;
 		    break;
@@ -548,7 +560,7 @@ static void GetResources(widget, base, names, classes,
 		}
 		if (pv->addr != NULL) {
 		    if (xrm_type == QString) {
-		       *((caddr_t *)(base - rx->xrm_offset - 1)) = pv->addr;
+		       *((char* *)(base - rx->xrm_offset - 1)) = pv->addr;
 		    } else {
 			XtBCopy(pv->addr, base - rx->xrm_offset - 1,
 			    rx->xrm_size);
@@ -735,7 +747,7 @@ static void GetValues(base, res, num_resources, args, num_args)
 	for (xrmres = res, i = 0; i < num_resources; i++, xrmres++) {
 	    if (argName == (*xrmres)->xrm_name) {
 		CopyToArg(
-		    (caddr_t) base - (*xrmres)->xrm_offset - 1,
+		    (char*) base - (*xrmres)->xrm_offset - 1,
 		    &arg->value,
 		    (*xrmres)->xrm_size);
 		break;
@@ -823,7 +835,7 @@ static void SetValues(base, res, num_resources, args, num_args)
 	for (xrmres = res, i = 0; i < num_resources; i++, xrmres++) {
 	    if (argName == (*xrmres)->xrm_name) {
 		CopyFromArg(arg->value,
-		    (caddr_t) base - (*xrmres)->xrm_offset - 1,
+		    (char*) base - (*xrmres)->xrm_offset - 1,
 		    (*xrmres)->xrm_size);
 		break;
 	    }
