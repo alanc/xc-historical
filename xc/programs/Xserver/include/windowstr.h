@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: windowstr.h,v 1.1 87/09/10 00:20:09 toddb Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -77,7 +77,7 @@ typedef struct _Window {
 					  send translated regions to client */
 	
 	RegionPtr borderExposed;
-	RectangleRec clientWinSize;       /* x,y, w,h of unobscured window 
+	xRectangle clientWinSize;       /* x,y, w,h of unobscured window 
 					  relative to parent */
 	DDXPointRec  absCorner;
 	DDXPointRec  oldAbsCorner;      /* used in ValidateTree */
