@@ -770,7 +770,7 @@
 			 #-Genera
 			 (progn
   			   (defun char->card8 (char)
-			     (declare (type string-char char))
+			     (declare (type base-char char))
 			     #.(declare-buffun)
 			     (the card8 (aref (the (simple-array card8 (*))
 						   *char-to-card8-translation-table*)
@@ -778,7 +778,7 @@
 			   (defun card8->char (card8)
 			     (declare (type card8 card8))
 			     #.(declare-buffun)
-			     (the string-char
+			     (the base-char
 				  (aref (the simple-string *card8-to-char-translation-table*)
 					card8)))
 			   )
@@ -809,13 +809,13 @@
 		     (t
 		      `(progn
 			 (defun char->card8 (char)
-			   (declare (type string-char char))
+			   (declare (type base-char char))
 			   #.(declare-buffun)
 			   (the card8 (char-code char)))
 			 (defun card8->char (card8)
 			   (declare (type card8 card8))
 			   #.(declare-buffun)
-			   (the string-char (code-char card8)))
+			   (the base-char (code-char card8)))
 			 ))))))
   (char-translators))
 
@@ -969,12 +969,17 @@
 	   (mp::process-unlock .hl-lock. .hl-curproc.)))))
 
 #+Minima
-(defmacro holding-lock ((locator display &optional whostate &key timeout)
-			&body body)
-  (declare (ignore display whostate))
-  `(minima:with-lock (,locator)
-     ,@body))
+(defmacro holding-lock ((locator display &optional whostate &key timeout) &body body)
+  `(holding-lock-1 #'(lambda () ,@body) ,locator ,display
+		   ,@(and whostate `(:whostate ,whostate))
+		   ,@(and timeout `(:timeout ,timeout))))
 
+#+Minima
+(defun holding-lock-1 (continuation lock display &key (whostate "Lock") timeout)
+  (declare (dynamic-extent continuation))
+  (declare (ignore display whostate timeout))
+  (minima:with-lock (lock)
+    (funcall continuation)))
 
 ;;; WITHOUT-ABORTS
 
@@ -1100,7 +1105,7 @@
 
 #+Minima
 (defun current-process ()
-  minima:*current-process*)
+  (minima:current-process))
 
 ;;; WITHOUT-INTERRUPTS -- provide for atomic operations.
 
@@ -1300,7 +1305,9 @@
 #+Minima
 (defun open-x-stream (host display protocol)
   (declare (ignore protocol));; unused
-  (minima:open-tcp-stream nil (cdr (host-address host)) (+ *x-tcp-port* display)))
+  (minima:open-tcp-stream (minima:gensym-tcp-port)
+			  (apply #'minima:make-ip-address (cdr (host-address host)))
+			  (+ *x-tcp-port* display) :element-type '(unsigned-byte 8)))
 
 ;;; BUFFER-READ-DEFAULT - read data from the X stream
 
@@ -2401,7 +2408,7 @@
 ;;;
 ;;; [the following isn't implemented (should it be?)]
 ;;; If object is a list, it is an alist with entries:
-;;; (string-char [modifiers] [mask-modifiers])
+;;; (base-char [modifiers] [mask-modifiers])
 ;;; When MODIFIERS are specified, this character translation
 ;;; will only take effect when the specified modifiers are pressed.
 ;;; MASK-MODIFIERS can be used to specify a set of modifiers to ignore.
