@@ -1,4 +1,4 @@
-/* $XConsortium: bboxint.h,v 2.4 88/09/06 17:23:09 jim Exp $ */
+/* $XConsortium: bboxint.h,v 2.5 89/04/10 11:50:53 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -32,13 +32,9 @@
 typedef struct _ButtonRec {
     Widget	widget;		/* Widget containing this button. */
     ButtonBox	buttonbox;	/* Button box containing this button. */
-    char	*name;	/* Name of the button. */
-    short	enabled;	/* Whether this button is enabled
-				   right now or not. */
+    char	*name;		/* Name of the button. */
     void	(*func)();	/* Function to be called when this 
 				   button is pressed. */
-    short	needsadding;	/* TRUE if we still need to actually go add
-				   this button to the buttonbox. */
 } ButtonRec;
 
 typedef struct _XmhButtonBoxRec {
@@ -48,10 +44,7 @@ typedef struct _XmhButtonBoxRec {
     int		numbuttons;	/* How many buttons in this box. */
     Button	*button;	/* Array of pointers to buttons. */
     int		maxheight;	/* Current maximum height. */
-    int		needsadding;	/* There are buttons that need to be added. */
-    int		updatemode;	/* TRUE if refreshing; FALSE if refreshing is
-				   currently inhibited. */
     Bool	radio;		/* True if radio buttonbox */
 } ButtonBoxRec;
 
-#endif _bboxint_h
+#endif /* _bboxint_h */
