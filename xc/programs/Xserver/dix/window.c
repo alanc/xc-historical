@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.6 89/07/06 13:26:10 rws Exp $ */
+/* $XConsortium: window.c,v 5.7 89/07/09 15:40:18 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2815,10 +2815,13 @@ SetShape(pWin)
     SetWinSize (pWin);
     SetBorderSize (pWin);
 
-    newBorder = (*pScreen->RegionCreate) (NullBox, 1);
-    (*pScreen->RegionCopy) (newBorder, &pWin->borderSize);
-    (*pScreen->Subtract) (newBorder, newBorder, &pWin->winSize);
-    (*pScreen->Subtract) (newBorder, newBorder, oldBorder);
+    if (WasViewable)
+    {
+	newBorder = (*pScreen->RegionCreate) (NullBox, 1);
+	(*pScreen->RegionCopy) (newBorder, &pWin->borderSize);
+	(*pScreen->Subtract) (newBorder, newBorder, &pWin->winSize);
+	(*pScreen->Subtract) (newBorder, newBorder, oldBorder);
+    }
     (*pScreen->RegionDestroy) (oldBorder);
 
     ResizeChildrenWinSize(pWin, 0, 0, 0, 0);
@@ -2843,9 +2846,9 @@ SetShape(pWin)
 	    (*pScreen->Intersect)(newBorder, newBorder, &pWin->borderClip);
 	    (*pScreen->Union)(&pWin->valdata->borderExposed,
 			      &pWin->valdata->borderExposed, newBorder);
-	    (*pScreen->RegionDestroy) (newBorder);
 	    HandleExposures(pParent);
 	}
+	(*pScreen->RegionDestroy) (newBorder);
 #ifdef DO_SAVE_UNDERS
 	if (DO_SAVE_UNDERS(pWin))
 	    DoChangeSaveUnder(pParent, pWin);
