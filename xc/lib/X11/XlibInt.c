@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.88 88/09/30 10:09:52 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.89 88/09/30 10:13:57 jim Exp $
  */
 
 #include "copyright.h"
@@ -1221,13 +1221,13 @@ int _XPrintDefaultError (dpy, event, fp)
     char *mtype = "XlibMessage";
     XGetErrorText(dpy, event->error_code, buffer, BUFSIZ);
     XGetErrorDatabaseText(dpy, mtype, "XError", "X Error", mesg, BUFSIZ);
-    (void) fprintf(fp, "%s: %s\n  ", mesg, buffer);
+    (void) fprintf(fp, "%s:  %s\n  ", mesg, buffer);
     XGetErrorDatabaseText(dpy, mtype, "MajorCode", "Request Major code %d", 
 	mesg, BUFSIZ);
     (void) fprintf(fp, mesg, event->request_code);
     sprintf(number, "%d", event->request_code);
     XGetErrorDatabaseText(dpy, "XRequest", number, "", 	buffer, BUFSIZ);
-    (void) fprintf(fp, " %s", buffer);
+    (void) fprintf(fp, " (%s)", buffer);
     fputs("\n  ", fp);
     XGetErrorDatabaseText(dpy, mtype, "MinorCode", "Request Minor code", 
 	mesg, BUFSIZ);
