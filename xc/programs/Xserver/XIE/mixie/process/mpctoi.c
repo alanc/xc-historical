@@ -1,4 +1,4 @@
-/* $XConsortium: mpctoi.c,v 1.1 93/10/26 09:47:41 rws Exp $ */
+/* $XConsortium: mpctoi.c,v 1.2 93/10/26 13:37:28 rws Exp $ */
 /**** module mpctoi.c ****/
 /******************************************************************************
 				NOTICE
@@ -619,7 +619,7 @@ static int allocDirect(flo,ped,pet,ddx)
   xieFloConvertToIndex *raw = (xieFloConvertToIndex *)ped->elemRaw;
   pCtoIDefPtr	    dix = (pCtoIDefPtr) ped->elemPvt;
   formatPtr	    fmt = &ped->inFloLst[SRCtag].format[0];
-  short 	    value[xieValMaxBands];
+  unsigned short     value[xieValMaxBands];
   int   	  b, next[xieValMaxBands];
   Bool        final, done[xieValMaxBands];
   Pixel       *pix, *used[xieValMaxBands];
