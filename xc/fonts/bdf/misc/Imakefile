@@ -20,7 +20,7 @@ OBJS = 5x8.snf 6x9.snf 6x10.snf 6x12.snf 6x13.snf 6x13B.snf \
 	clR6x13.snf clR6x6.snf clR6x8.snf clR7x10.snf clR7x12.snf clR7x14.snf \
 	clR7x8.snf clR8x10.snf clR8x12.snf clR8x13.snf clR8x14.snf \
 	clR8x16.snf clR8x8.snf clR9x15.snf 14kanji.snf 7x14.snf 7x14rk.snf \
-	12x24.bdf 12x24rk.bdf 8x16.bdf 8x16rk.bdf
+	12x24.snf 12x24rk.snf 8x16.snf 8x16rk.snf
 
 FONTINSTDIR = $(FONTDIR)/misc
 
