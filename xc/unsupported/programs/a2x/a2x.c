@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.77 92/07/03 12:18:57 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.78 92/07/03 12:35:03 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -2035,7 +2035,10 @@ do_macro(buf)
     case 'e':
 	if (isdigit(buf[1]) && !buf[2]) {
 	    n = buf[1] - '0';
-	    process(macros[n].macro, macros[n].len, 0);
+	    if (macros[n].len)
+		process(macros[n].macro, macros[n].len, 0);
+	    else
+		XBell(dpy, 0);
 	}
 	break;
     case 'r':
@@ -2101,6 +2104,8 @@ do_location(buf)
 	    if (locations[n].window)
 		XWarpPointer(dpy, None, locations[n].window, 0, 0, 0, 0,
 			     locations[n].x, locations[n].y);
+	    else
+		XBell(dpy, 0);
 	}
 	break;
     }
