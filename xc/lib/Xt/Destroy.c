@@ -1,5 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$Header: Destroy.c,v 1.8 88/02/26 12:37:27 swick Exp $";
+static char rcsid[] = "$xHeader: Destroy.c,v 1.2 88/08/18 15:38:29 asente Exp $";
+/* $oHeader: Destroy.c,v 1.2 88/08/18 15:38:29 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -32,20 +33,27 @@ static void Recursive(widget, proc)
     Widget       widget;
     XtWidgetProc proc;
 {
-    register int i;
-    CompositeWidget cw;
+    register int    i;
+    CompositePart   *cwp;
 
     /* Recurse down normal children */
     if (XtIsComposite(widget)) {
-	cw = (CompositeWidget) widget;
-	for (i = 0; i < cw->composite.num_children; i++) {
-	    Recursive(cw->composite.children[i], proc);
+	cwp = &(((CompositeWidget) widget)->composite);
+	for (i = 0; i < cwp->num_children; i++) {
+	    Recursive(cwp->children[i], proc);
 	}
-    } 
+    } else if (XtIsCompositeObject(widget)) {
+	cwp = &(((CompositeObject) widget)->composite);
+	for (i = 0; i < cwp->num_children; i++) {
+	    Recursive(cwp->children[i], proc);
+	}
+    }
 
     /* Recurse down popup children */
-    for (i = 0; i < widget->core.num_popups; i++) {
-	Recursive(widget->core.popup_list[i], proc);
+    if (XtIsWindowObject(widget)) {
+	for (i = 0; i < widget->core.num_popups; i++) {
+	    Recursive(widget->core.popup_list[i], proc);
+	}
     }
 
     /* Finally, apply procedure to this widget */
@@ -62,7 +70,7 @@ static void Phase2Callbacks(widget)
     Widget    widget;
 {
     _XtCallCallbacks(
-	(CallbackList*)&(widget->core.destroy_callbacks), (caddr_t) NULL);
+	&(CallbackList)(widget->core.destroy_callbacks), (Opaque) NULL);
 } /* Phase2Callbacks */
 
 static void Phase2Destroy(widget)
@@ -98,35 +106,59 @@ static void XtPhase2Destroy (widget, closure, call_data)
     caddr_t	    call_data;
 {
     Display	    *display;
-    Window	    window;
+    Window	    window ;
     XtWidgetProc    delete_child;
+    Widget          parent;
 
-    if (widget->core.parent != NULL &&
-	XtIsComposite(widget->core.parent)) {
-	XtUnmanageChild(widget);
-	delete_child =
-	    (((CompositeWidgetClass) widget->core.parent->core.widget_class)
-		->composite_class.delete_child);
+    parent = widget->core.parent;
+    window = 0;
+
+    if (parent != NULL 
+	    && (XtIsComposite(parent) || XtIsCompositeObject(parent))) {
+        if (XtIsRectObject(widget)) {
+       	    XtUnmanageChild(widget);
+        }
+        if (XtIsComposite(parent)) {
+           delete_child = ((CompositeWidgetClass) parent->core.widget_class)->
+            composite_class.delete_child;
+        } else { /* XtIsCompositeObject */
+	    delete_child = ((CompositeObjectClass) parent->core.widget_class)->
+		composite_class.delete_child;
+        };
 	if (delete_child == NULL) {
-	    XtWarning("NULL delete_child procedure");
+	    XtWarningMsg("invalidProcedure","deleteChild","XtToolkitError",
+		"null delete_child procedure in XtDestroy",
+		(String *)NULL, (Cardinal *)NULL);
 	} else {
 	    (*delete_child) (widget);
 	}
     }
-    display = XtDisplay(widget); /* widget is freed in Phase2Destroy */
-    window = widget->core.window;
+    if (XtIsWindowObject(widget)) {
+	display = XtDisplay(widget); /* widget is freed in Phase2Destroy */
+        window = widget->core.window;
+    }
     Recursive(widget, Phase2Callbacks);
     Recursive(widget, Phase2Destroy);
-    if (window != NULL) XDestroyWindow(display,window);
+    if (window != NULL) XDestroyWindow(display, window);
 } /* XtPhase2Destroy */
 
 
 void XtDestroyWidget (widget)
     Widget    widget;
 {
+    CallbackList tempDestroyList = NULL;
+
     if (widget->core.being_destroyed) return;
+
+    if (_XtSafeToDestroy) _XtDestroyList = &tempDestroyList;
+
     Recursive(widget, Phase1Destroy);
-    _XtAddCallback(widget, &DestroyList, XtPhase2Destroy, (caddr_t) NULL);
+    _XtAddCallback(widget, _XtDestroyList, XtPhase2Destroy, (Opaque) NULL);
+
+    if (_XtDestroyList == &tempDestroyList) {
+        _XtCallCallbacks(_XtDestroyList, (Opaque) NULL);
+	_XtRemoveAllCallbacks(_XtDestroyList);
+	_XtDestroyList = NULL;
+    }
+	
 } /* XtDestroyWidget */
-
-
