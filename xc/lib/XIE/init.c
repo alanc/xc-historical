@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: init.c,v 1.1 93/07/19 11:39:25 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -107,29 +107,10 @@ XieExtensionInfo	**extinfo_ret;
     (*extinfo_ret)->first_error      = extCodes->first_error;
 
 
-    {
-    int i;
-    CARD32 *tmp;
-
-   /*
-    *  There must be a better way, but for now,  I alloc a tmp array
-    *  to hold the CARD32 data, then the permanent array to hold the
-    *  unsigned longs (client side version).  I copy over and then
-    *  free the tmp array.  Ugly?  Hey! I'm just a server dude!
-    *
-    */
-    tmp = (CARD32 *) Xmalloc(rep.length*sizeof(CARD32));
-
     (*extinfo_ret)->cnst_levels = (unsigned long *)
-	Xmalloc(rep.length*sizeof(unsigned long));
+	Xmalloc (rep.length * sizeof (unsigned long));
 
-    _XRead(display, (char *) tmp,rep.length * sizeof(CARD32));
-
-    for (i=0; i < (*extinfo_ret)->n_cnst_levels; ++i)
-       (*extinfo_ret)->cnst_levels[i] = tmp[i];
-
-    Xfree( (char *) tmp);
-    }
+    _XRead32 (display, (*extinfo_ret)->cnst_levels, rep.length << 2);
 
 
     /*
