@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.15 94/12/27 19:20:31 mor Exp mor $ */
+/* $XConsortium: session.c,v 1.16 94/12/27 20:52:01 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -61,6 +61,7 @@ XtInputId iceInputId;
 char *twm_clientId;
 TWMWinConfigEntry *winConfigHead = NULL;
 Bool gotFirstSave = 0;
+Bool sent_save_done = 0;
 
 #define SAVEFILE_VERSION 2
 
@@ -730,12 +731,21 @@ char *prefix;
 
 {
 #ifndef X_NOT_POSIX
-    return ((char *) XtNewString ((char *) tempnam (path, prefix)));
+    return ((char *) tempnam (path, prefix));
 #else
     char tempFile[PATH_MAX];
+    char *tmp;
 
     sprintf (tempFile, "%s/%sXXXXXX", path, prefix);
-    return ((char *) XtNewString ((char *) mktemp (tempFile)));
+    tmp = (char *) mktemp (tempFile);
+    if (tmp)
+    {
+	char *ptr = (char *) malloc (strlen (tmp) + 1);
+	strcpy (ptr, tmp);
+	return (ptr);
+    }
+    else
+	return (NULL);
 #endif
 }
 
@@ -752,58 +762,16 @@ SmPointer clientData;
     ScreenInfo *theScreen;
     TwmWindow *theWindow;
     char *clientId, *windowRole;
-    FILE *configFile;
-    char *path, *filename;
-    Bool success = True;
+    FILE *configFile = NULL;
+    char *path;
+    char *filename = NULL;
+    Bool success = False;
     SmProp prop1, prop2, prop3, *props[3];
     SmPropValue prop1val, prop2val, prop3val;
     char discardCommand[80];
     int numVals, i;
     char yes = 1;
     static int first_time = 1;
-
-    path = getenv ("SM_SAVE_DIR");
-    if (!path)
-    {
-	path = getenv ("HOME");
-	if (!path)
-	    path = ".";
-    }
-
-    filename = unique_filename (path, ".twm");
-    configFile = fopen (filename, "wb");
-
-    if (!write_ushort (configFile, SAVEFILE_VERSION))
-	success = False;
-
-    for (scrnum = 0; scrnum < NumScreens && success; scrnum++)
-    {
-	if (ScreenList[scrnum] != NULL)
-	{
-	    theScreen = ScreenList[scrnum];
-	    theWindow = theScreen->TwmRoot.next;
-
-	    while (theWindow && success)
-	    {
-		clientId = GetClientID (theWindow->w);
-		windowRole = GetWindowRole (theWindow->w);
-
-		if (!WriteWinConfigEntry (configFile, theWindow,
-		    clientId, windowRole))
-		    success = False;
-
-		if (clientId)
-		    XFree (clientId);
-
-		if (windowRole)
-		    XFree (windowRole);
-
-		theWindow = theWindow->next;
-	    }
-	}
-    }
-    
-    fclose (configFile);
 
     if (first_time)
     {
@@ -841,6 +809,52 @@ SmPointer clientData;
 	first_time = 0;
     }
 
+    path = getenv ("SM_SAVE_DIR");
+    if (!path)
+    {
+	path = getenv ("HOME");
+	if (!path)
+	    path = ".";
+    }
+
+    if ((filename = unique_filename (path, ".twm")) == NULL)
+	goto bad;
+
+    if (!(configFile = fopen (filename, "wb")))
+	goto bad;
+
+    if (!write_ushort (configFile, SAVEFILE_VERSION))
+	goto bad;
+
+    success = True;
+
+    for (scrnum = 0; scrnum < NumScreens && success; scrnum++)
+    {
+	if (ScreenList[scrnum] != NULL)
+	{
+	    theScreen = ScreenList[scrnum];
+	    theWindow = theScreen->TwmRoot.next;
+
+	    while (theWindow && success)
+	    {
+		clientId = GetClientID (theWindow->w);
+		windowRole = GetWindowRole (theWindow->w);
+
+		if (!WriteWinConfigEntry (configFile, theWindow,
+		    clientId, windowRole))
+		    success = False;
+
+		if (clientId)
+		    XFree (clientId);
+
+		if (windowRole)
+		    XFree (windowRole);
+
+		theWindow = theWindow->next;
+	    }
+	}
+    }
+    
     prop1.name = SmRestartCommand;
     prop1.type = SmLISTofARRAY8;
 
@@ -849,8 +863,8 @@ SmPointer clientData;
 
     if (!prop1.vals)
     {
-	SmcSaveYourselfDone (smcConn, False);
-	return;
+	success = False;
+	goto bad;
     }
 
     numVals = 0;
@@ -897,7 +911,15 @@ SmPointer clientData;
     SmcSetProperties (smcConn, 2, props);
     free ((char *) prop1.vals);
 
+ bad:
     SmcSaveYourselfDone (smcConn, success);
+    sent_save_done = 1;
+
+    if (configFile)
+	fclose (configFile);
+
+    if (filename)
+	free (filename);
 }
 
 
@@ -914,7 +936,12 @@ Bool fast;
 
 {
     if (!SmcRequestSaveYourselfPhase2 (smcConn, SaveYourselfPhase2CB, NULL))
+    {
 	SmcSaveYourselfDone (smcConn, False);
+	sent_save_done = 1;
+    }
+    else
+	sent_save_done = 0;
 }
 
 
@@ -952,7 +979,11 @@ SmcConn smcConn;
 SmPointer clientData;
 
 {
-    SmcSaveYourselfDone (smcConn, False);
+    if (!sent_save_done)
+    {
+	SmcSaveYourselfDone (smcConn, False);
+	sent_save_done = 1;
+    }
 }
 
 
