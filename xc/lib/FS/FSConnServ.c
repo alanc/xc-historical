@@ -139,7 +139,8 @@ _FSConnectServer(server_name, expanded_name)
 	 * Attempt to open the DECnet connection, return -1 if fails.
 	 */
 	if ((fd = dnet_conn(serverbuf,
-			    objname, SOCK_STREAM, 0, 0, 0, 0)) < 0) {
+			    objname, SOCK_STREAM, 0, 0, 0, 0)) < 0 ||
+	    fd >= OPEN_MAX) {
 	    if (tmp_svr_num)
 		FSfree(tmp_svr_num);
 	    return (-1);	/* errno set by dnet_conn. */
@@ -182,7 +183,8 @@ _FSConnectServer(server_name, expanded_name)
 	    /*
 	     * Open the network connection.
 	     */
-	    if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0) {
+	    if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0 ||
+		fd >= OPEN_MAX) {
 		if (tmp_svr_num)
 		    FSfree(tmp_svr_num);
 		return (-1);	/* errno set by system call. */
@@ -263,7 +265,8 @@ _FSConnectServer(server_name, expanded_name)
 	     * Open the network connection.
 	     */
 
-	    if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0) {
+	    if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0 ||
+		fd >= OPEN_MAX) {
 		if (tmp_svr_num)
 		    FSfree(tmp_svr_num);
 		return (-1);	/* errno set by system call. */
