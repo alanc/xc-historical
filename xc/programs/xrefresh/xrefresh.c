@@ -23,8 +23,8 @@ SOFTWARE.
 ******************************************************************/
 
 /*
- * $Source: /u1/X11/clients/xrefresh/RCS/xrefresh.c,v $
- * $Header: xrefresh.c,v 1.6 88/02/02 09:15:49 jim Locked $
+ * $Source: /usr/expo/X/src/clients/xrefresh/RCS/xrefresh.c,v $
+ * $Header: xrefresh.c,v 1.7 88/02/09 11:54:49 jim Exp $
  *
  * Kitchen sink version, useful for clearing small areas and flashing the 
  * screen.
@@ -36,6 +36,7 @@ SOFTWARE.
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <sys/types.h>
+#include <ctype.h>
 
 char *malloc();
 
@@ -77,6 +78,35 @@ static char *copystring (s)
     (void) strcpy (retval, s);
     return (retval);
 }
+
+/*
+ * The following parses options that should be yes or no; it returns -1, 0, 1
+ * for error, no, yes.
+ */
+
+static int parse_boolean_option (option)
+    register char *option;
+{
+    static struct _booltable {
+        char *name;
+        int value;
+    } booltable[] = {
+        { "off", 0 }, { "n", 0 }, { "no", 0 }, { "false", 0 },
+        { "on", 1 }, { "y", 1 }, { "yes", 1 }, { "true", 1 },
+        { NULL, -1 }};
+    register struct _booltable *t;
+    register char *cp;
+
+    for (cp = option; *cp; cp++) {
+        if (isascii (*cp) && isupper (*cp)) *cp = tolower (*cp);
+    }
+
+    for (t = booltable; t->name; t++) {
+        if (strcmp (option, t->name) == 0) return (t->value);
+    }
+    return (-1);
+}
+
 
 /*
  * The following is a hack until XrmParseCommand is ready.  It determines
@@ -197,11 +227,9 @@ char	*argv[];
 
 	    for (pp = pair_table; pp->resource_name != NULL; pp++) {
 		def = XGetDefault (dpy, ProgramName, pp->resource_name);
-		if (def != NULL && (def[0] == 'y' || def[0] == 'Y' ||
-				    strcmp (def, "on") == 0 ||
-				    strcmp (def, "On") == 0 ||
-				    strcmp (def, "ON") == 0))
+		if (def && parse_boolean_option (def) == 1) {
 		    action = pp->action;
+		}
 	    }
 	}
     }
