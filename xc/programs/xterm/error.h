@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: error.h,v 1.4 89/03/06 11:03:12 jim Exp $
+ *	$XConsortium: error.h,v 1.5 89/03/22 18:21:48 jim Exp $
  */
 
 
@@ -73,7 +73,7 @@
 #define	ERROR_TBACK	65	/* TekBackground: can't make background */
 /* button.c */
 #define	ERROR_BMALLOC2	71	/* SaltTextAway: malloc() failed */
-#define ERROR_BADMENU   72      /* ModeMenu: don't know what menu to use */
+
 /* misc.c */
 #define	ERROR_LOGEXEC	80	/* StartLog: exec() failed */
 #define	ERROR_XERROR	83	/* xerror: XError event */
