@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.94 88/10/12 11:22:27 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.95 88/10/18 14:21:02 swick Exp $";
 #endif	/* lint */
 
 /*
@@ -1230,6 +1230,9 @@ spawn ()
 		}
 	}
 
+	/* avoid double MapWindow requests, for wm's that care... */
+	XtSetMappedWhenManaged( screen->TekEmu ? XtParent(tekWidget) :
+			        XtParent(term), False );
         /* Realize the Tek or VT widget, depending on which mode we're in.
            If VT mode, this calls VTRealize (the widget's Realize proc) */
         XtRealizeWidget (screen->TekEmu ? XtParent(tekWidget) :
