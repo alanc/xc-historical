@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: osinit.c,v 1.15 88/07/20 13:53:26 xguest Exp $ */
+/* $Header: osinit.c,v 1.16 88/08/13 17:54:27 rws Exp $ */
 #include "os.h"
 #include "opaque.h"
 #undef NULL
@@ -61,7 +61,7 @@ OsInit()
 	    sprintf (fname, ADMPATH, display);
 	    if (!freopen (fname, "a+", stderr))
 		freopen ("/dev/null", "w", stderr);
-#ifdef macII
+#if defined(macII) || defined(hpux)
 	    {
 	    static char buf[BUFSIZ];
 	    setvbuf (stderr, buf, _IOLBF, BUFSIZ);

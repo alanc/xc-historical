@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: access.c,v 1.21 88/07/19 18:07:32 toddb Exp $ */
+/* $Header: access.c,v 1.8 88/08/16 08:05:04 jim Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -31,7 +31,13 @@ SOFTWARE.
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
+
+#ifdef hpux
+#include <sys/utsname.h>
+#else
 #include <net/if.h>
+#endif /* hpux */
+
 #include <netdb.h>
 #ifdef TCPCONN
 #include <netinet/in.h>
@@ -78,6 +84,61 @@ static FamilyMap familyMap[] = {
 
 #define FAMILIES ((sizeof familyMap)/(sizeof familyMap[0]))
 
+#ifdef hpux
+/* Define this host for access control.  Find all the hosts the OS knows about 
+ * for this fd and add them to the selfhosts list.
+ * HPUX version - hpux does not have SIOCGIFCONF ioctl;
+ */
+DefineSelf (fd)
+    int fd;
+{
+    register int n;
+    int	len;
+    caddr_t	addr;
+    int		family;
+    register HOST	*host;
+
+    struct utsname name;
+    register struct hostent  *hp;
+
+    union {
+	struct  sockaddr   sa;
+	struct  sockaddr_in  in;
+    } saddr;
+	
+    struct	sockaddr_in	*inetaddr;
+
+    /* Why not use gethostname()?  Well, at least on my system, I've had to
+     * make an ugly kernel patch to get a name longer than 8 characters, and
+     * uname() lets me access to the whole string (it smashes release, you
+     * see), whereas gethostname() kindly truncates it for me.
+     */
+    uname(&name);
+    hp = gethostbyname (name.nodename);
+    if (hp != NULL) {
+	saddr.sa.sa_family = hp->h_addrtype;
+	inetaddr = (struct sockaddr_in *) (&(saddr.sa));
+	bcopy ( hp->h_addr, &(inetaddr->sin_addr), hp->h_length);
+	family = ConvertAddr ( &(saddr.sa), &len, &addr);
+	if ( family > 0) {
+	    for (host = selfhosts;
+		 host && ( family != host->family ||
+			  bcmp ( addr, host->addr, len));
+		 host = host->next) ;
+	    if (!host) {
+		/* add this host to the host list.	*/
+		host = (HOST *) xalloc (sizeof (HOST));
+		host->family = family;
+		host->len = len;
+		bcopy ( addr, host->addr, len);
+		host->next = selfhosts;
+		selfhosts = host;
+	    }
+	}
+    }
+}
+
+#else
 /* Define this host for access control.  Find all the hosts the OS knows about 
  * for this fd and add them to the selfhosts list.
  */
@@ -126,6 +187,7 @@ DefineSelf (fd)
         selfhosts = host;
     }
 }
+#endif hpux
 
 /* Reset access control list to initial hosts */
 ResetHosts (display)
@@ -183,7 +245,7 @@ ResetHosts (display)
     	    if (dnaddrp = dnet_addr(hostname))
 	    {
     		    /* allow nodes to be specified by address */
-    		    NewHost (AF_DECnet, (pointer) dnaddrp);
+    		    NewHost ((short) AF_DECnet, (pointer) dnaddrp);
     	    }
 	    else
 	    {
@@ -286,7 +348,7 @@ AddHost (client, family, length, pAddr)
     for (host = validhosts; host; host = host->next)
     {
         if (unixFamily == host->family && !bcmp (pAddr, host->addr, len))
-    	    return(Success);
+    	    return (Success);
     }
     host = (HOST *) xalloc (sizeof (HOST));
     host->family = unixFamily;
@@ -294,7 +356,7 @@ AddHost (client, family, length, pAddr)
     bcopy(pAddr, host->addr, len);
     host->next = validhosts;
     validhosts = host;
-    return(Success);
+    return (Success);
 }
 
 /* Add a host to the access control list. This is the internal interface 
@@ -357,7 +419,7 @@ RemoveHost (client, family, length, pAddr)
         *prev = host->next;
         xfree (host);
     }
-    return(Success);
+    return (Success);
 }
 
 /* Get all hosts in the access control list */
@@ -450,7 +512,7 @@ CheckFamily (connection, family)
 	}
     }
     /* Bad Access */
-    return (-BadAccess);
+    return (-1);
 }
 
 /* Check if a host is not in the access control list. 
@@ -487,26 +549,27 @@ ConvertAddr (saddr, len, addr)
     switch (saddr->sa_family)
     {
       case AF_UNSPEC:
+#ifndef hpux
       case AF_UNIX:
+#endif
         return (0);
       case AF_INET:
 #ifdef TCPCONN
         *len = sizeof (struct in_addr);
         *addr = (pointer) &(((struct sockaddr_in *) saddr)->sin_addr);
         return (AF_INET);
-#else TCPCONN
-        break;
-#endif TCPCONN
+#else
+	break;
+#endif
 
 #ifdef DNETCONN
       case AF_DECnet:
         *len = sizeof (struct dn_naddr);
         *addr = (pointer) &(((struct sockaddr_dn *) saddr)->sdn_add);
         return (AF_DECnet);
-#else DNETCONN
-        break;
-#endif DNETCONN
-
+#else
+	break;
+#endif
       default:
         break;
     }

@@ -21,20 +21,13 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.51 88/07/27 15:45:39 matt Exp $ */
+/* $Header: utils.c,v 1.17 88/08/16 13:33:58 jim Exp $ */
 #include <stdio.h>
-#include <sys/time.h>
+#include <X11/Xos.h>
 #include "misc.h"
 #include "X.h"
 #include "input.h"
 #include "opaque.h"
-#ifdef macII
-#include <string.h>
-#define index strchr
-#define rindex strrchr
-#else /* else not macII */
-#include <strings.h>
-#endif /* macII */
 extern char *display;
 
 extern long defaultScreenSaverTime;	/* for parsing command line */
@@ -48,11 +41,26 @@ extern int logoScreenSaver;
 extern long ScreenSaverTime;		/* for forcing reset */
 
 Bool clientsDoomed = FALSE;
+#ifdef hpux
+Bool hpGivingUp = FALSE;	/* tell close screens that we really mean it */
+#endif
 extern void KillServerResources();
 
 extern char *sbrk();
 
 pointer minfree = NULL;
+
+int ErrorfOn = 1;
+
+#ifdef hpux
+int Rtprio = 0;
+int CatseyeBrainDamage = 0;
+int TopcatBrainDamage = 0;
+#endif
+
+#ifdef MULTI_X_HACK
+int XMulti = 0;
+#endif 
 
 #ifdef COMPRESSED_FONTS
 int CompressedFonts = 1;
@@ -75,7 +83,14 @@ AutoResetServer ()
 
 GiveUp()
 {
+#ifdef hpux
+    hpGivingUp = TRUE;
+#endif
     KillServerResources();
+#ifdef MULTI_X_HACK
+    if (XMulti)
+	ipc_exit();
+#endif
     exit(0);
 }
 
@@ -86,7 +101,8 @@ ErrorF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     char *f;
     char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
 {
-    fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+    if (ErrorfOn)
+	fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
 }
 
 static void
@@ -136,7 +152,7 @@ GetTimeInMillis()
     return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
 }
 
-void UseMsg()
+static void UseMsg()
 {
     ErrorF("use: X [:<display>] [option] [<tty>]\n");
     ErrorF("-a #                   mouse acceleration (pixels)\n");
@@ -184,6 +200,8 @@ char	*argv[];
 
     if (!minfree)
 	minfree = (pointer)sbrk(0);
+    defaultKeyboardControl.autoRepeat = TRUE;
+
     for ( i = 1; i < argc; i++ )
     {
 	/* initialize display */
@@ -222,6 +240,14 @@ char	*argv[];
 	        rgbPath = argv[i];
 	    else
 		UseMsg();
+	}
+	else if ( strcmp( argv[i], "-debug") == 0)
+	{
+	    ErrorfOn++;
+	}
+	else if ( strcmp( argv[i], "+debug") == 0)
+	{
+	    ErrorfOn = 0;
 	}
 	else if ( strcmp( argv[i], "-f") == 0)
 	{
@@ -266,6 +292,12 @@ char	*argv[];
 	    logoScreenSaver = 0;
 	}
 #endif
+#ifdef MULTI_X_HACK
+	else if ( strcmp( argv[i], "-multi") == 0)
+	{
+	    XMulti++;
+	}
+#endif
 	else if ( strcmp( argv[i], "-p") == 0)
 	{
 	    if(++i < argc)
@@ -277,6 +309,15 @@ char	*argv[];
 	    defaultKeyboardControl.autoRepeat = TRUE;
 	else if ( strcmp( argv[i], "-r") == 0)
 	    defaultKeyboardControl.autoRepeat = FALSE;
+#ifdef hpux
+	else if ( strcmp( argv[i], "-rtprio") == 0)
+        {
+	    if (++i < argc)
+		Rtprio = atoi(argv[i]);
+	    else
+		UseMsg();
+	}
+#endif
 	else if ( strcmp( argv[i], "-s") == 0)
 	{
 	    if(++i < argc)
@@ -291,6 +332,12 @@ char	*argv[];
 	    else
 		UseMsg();
 	}
+#ifdef hpux
+	else if ( strcmp( argv[i], "-tcbd") == 0)
+        {
+	    TopcatBrainDamage++;
+	}
+#endif
 	else if ( strcmp( argv[i], "-to") == 0)
 	{
 	    if(++i < argc)
@@ -312,6 +359,10 @@ char	*argv[];
 	     * to do when we see a -x.  Either the extension is linked in or
 	     * it isn't */
 	}
+	else {
+	    UseMsg();
+	    exit(1);
+        }
     }
 }
 
@@ -320,7 +371,11 @@ char	*argv[];
  * malloc wrap-around, to take care of the "no memory" case, since
  * it would be difficult in many places to "back out" on failure.
  */
-#ifdef DEBUG
+/* DEBUG replaced by MEMBUG so that turning it on effects only this file */
+#define MEMBUG 1
+#undef  MEMBUG					/* XXX what the heck? */
+
+#ifdef MEMBUG
 #define FIRSTMAGIC 0x11aaaa11
 #define SECONDMAGIC 0x22aaaa22
 #define FREEDMAGIC  0x33aaaa33
@@ -347,8 +402,8 @@ Xalloc (amount)
 	
     if(amount == 0)
 	return( (unsigned long *)NULL);
-#ifdef DEBUG
-        /* aligned extra on long word boundary */
+#ifdef MEMBUG
+    /* aligned extra on long word boundary */
     amount = (amount + 3) & ~3;  
     if (ptr =  (pointer) malloc(amount + 12))
     {
@@ -357,11 +412,12 @@ Xalloc (amount)
         *((unsigned long *)(ptr + 8 + amount)) = SECONDMAGIC;
 	return (unsigned long *) (ptr + 8);
     }
-    /* NOTREACHED */
 #else
+    /* aligned extra on long word boundary */
+    amount = (amount + 3) & ~3;  
     if (ptr = (pointer) malloc(amount))
 	return ((unsigned long *)ptr);
-#endif /* DEBUG */
+#endif /* MEMBUG */
     FatalError("Out of memory in Xalloc\n");
     /* NOTREACHED */
 }
@@ -390,24 +446,24 @@ unsigned long amount;
 	    /* Force a core dump */
 	    AbortServer();
 	}
-#endif macII
-#ifdef DEBUG
+#endif
+#ifdef MEMBUG
 	if (!CheckNode(ptr - 8))
 	    AbortServer();
 	ptr = (pointer) realloc ((ptr - 8), amount + 12);
 #else
         ptr = (pointer) realloc (ptr, amount);
-#endif /* DEBUG */
+#endif /* MEMBUG */
     }
     else
     {
-#ifdef DEBUG
+#ifdef MEMBUG
 	ptr =  (pointer) malloc (amount + 12);
 #else
 	ptr =  (pointer) malloc (amount);
 #endif 
     }
-#ifdef DEBUG
+#ifdef MEMBUG
     if (ptr)
     {
         *(unsigned long *)ptr = FIRSTMAGIC;
@@ -418,7 +474,7 @@ unsigned long amount;
 #else
     if (ptr || !amount)
         return((unsigned long *)ptr);
-#endif /* DEBUG */
+#endif /* MEMBUG */
     FatalError ("Out of memory in Xrealloc\n");
     /*NOTREACHED*/
 }
@@ -434,7 +490,7 @@ Xfree(ptr)
 {
     if (ptr == (pointer) NULL)
 	return;
-#ifdef DEBUG
+#ifdef MEMBUG
     if (ptr < minfree)
 	ErrorF("Xfree: trying to free static storage\n");
     else if (CheckNode(ptr - 8))
@@ -445,10 +501,10 @@ Xfree(ptr)
 #else
     if (ptr >= minfree)
         free(ptr); 
-#endif /* DEBUG */
+#endif /* MEMBUG */
 }
 
-#ifdef DEBUG
+#ifdef MEMBUG
 static Bool
 CheckNode(ptr)
     pointer ptr;
@@ -466,5 +522,5 @@ CheckNode(ptr)
 	FatalError("Heap bug!\n");
     return TRUE;
 }
-#endif /* DEBUG */
+#endif /* MEMBUG */
 #endif /* SPECIAL_MALLOC */

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: osdep.h,v 1.12 88/07/25 10:41:32 toddb Exp $ */
+/* $Header: osdep.h,v 1.13 88/08/10 20:10:12 rws Exp $ */
 
 #ifndef NULL
 #define NULL 0
@@ -29,7 +29,7 @@ SOFTWARE.
 
 #define BUFSIZE 4096
 #define BUFWATERMARK 8192
-#define MAXBUFSIZE ((1<<16)<<2)
+#define MAXBUFSIZE (1 << 18)
 #if (NOFILE <= 128) /* 128 is value of MAXCLIENTS in dix layer */
 #define MAXSOCKS (NOFILE - 1)
 #else

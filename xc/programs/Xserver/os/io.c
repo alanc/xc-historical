@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: io.c,v 1.44 88/07/29 15:51:02 toddb Exp $ */
+/* $Header: io.c,v 1.45 88/08/10 20:11:29 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -30,12 +30,12 @@ SOFTWARE.
  *****************************************************************/
 
 #include <stdio.h>
+#include <X11/Xos.h>
 #include "Xmd.h"
 #include <errno.h>
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/uio.h>
-#include <sys/time.h>
 #include "X.h"
 #include "Xproto.h"
 #include "os.h"
@@ -342,6 +342,10 @@ FlushClient(who, oc, extraBuf, extraCount)
     notWritten = total;
     while ((n = writev (connection, iov, iovCnt)) != notWritten)
     {
+#ifdef hpux
+	if (n == -1 && errno == EMSGSIZE)
+	    n = swWritev (connection, iov, 2);
+#endif
         if (n > 0) 
         {
 	    notWritten -= n;

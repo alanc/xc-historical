@@ -22,8 +22,6 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: WaitFor.c,v 1.29 88/07/20 17:17:59 toddb Exp $ */
-
 /*****************************************************************
  * OS Depedent input routines:
  *
@@ -31,11 +29,13 @@ SOFTWARE.
  *
  *****************************************************************/
 
+#include <X11/Xos.h>			/* for strings, fcntl, time */
+
 #include <errno.h>
 #include <stdio.h>
 #include "X.h"
 #include "misc.h"
-#include <sys/time.h>
+
 #include <sys/param.h>
 #include <signal.h>
 #include "osdep.h"
@@ -66,6 +66,18 @@ extern int errno;
 
 int isItTimeToYield = 1;
 
+#ifdef MULTI_X_HACK
+extern int XMulti;
+extern int sigwindow_handler();
+#endif MULTI_X_HACK
+
+#ifdef XTESTEXT1
+/*
+ * defined in xtestext1dd.c
+ */
+extern int playback_on;
+#endif /* XTESTEXT1 */
+
 /*****************
  * WaitForSomething:
  *     Make the server suspend until there is
@@ -86,7 +98,7 @@ int isItTimeToYield = 1;
  *     file descriptor.)  
  *****************/
 
-static int timeTilFrob = 0;	/* while screen saving */
+static int timeTilFrob = 0;		/* while screen saving */
 
 #if (mskcnt>4)
 /*
@@ -118,6 +130,10 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
     long curclient;
     int selecterr;
 
+#ifdef	hpux
+	long	ready_inputs;  /* to tell HIL drivers about input */
+#endif	hpux
+
     *nready = 0;
     *nnew = 0;
     CLEARBITS(clientsReadable);
@@ -132,13 +148,14 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
                 timeout = ScreenSaverTime - TimeSinceLastInputEvent();
 	        if (timeout <= 0) /* may be forced by AutoResetServer() */
 	        {
-		    int	timeSinceSave;
+		    int timeSinceSave;
 
 		    if (clientsDoomed)
 		    {
 		        *nnew = *nready = 0;
 			break;
 		    }
+
 		    timeSinceSave = -timeout;
 	            if (timeSinceSave >= timeTilFrob)
                     {
@@ -163,10 +180,23 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
 	    }
             else
                 wt = NULL;
+#ifdef MULTI_X_HACK
+	    if (XMulti) {
+		ipc_block_handler();
+		signal(SIGWINDOW,sigwindow_handler);
+	    }
+#endif MULTI_X_HACK
 	    COPYBITS(AllSockets, LastSelectMask);
 	    BlockHandler(&wt, LastSelectMask);
 	    if (NewOutputPending)
 	    	FlushAllOutput();
+#ifdef XTESTEXT1
+	    /* XXX how does this interact with new write block handling? */
+	    if (playback_on) {
+		wt = &waittime;
+		XTestComputeWaitTime (&waittime);
+	    }
+#endif /* XTESTEXT1 */
 	    if (AnyClientsWriteBlocked)
 	    {
 		COPYBITS(ClientsWriteBlocked, clientsWritable);
@@ -178,6 +208,11 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
 			    (int *) NULL, (int *) NULL, wt);
 	    selecterr = errno;
 	    WakeupHandler(i, LastSelectMask);
+#ifdef XTESTEXT1
+	    if (playback_on) {
+		i = XTestProcessInputAction (i, &waittime);
+	    }
+#endif /* XTESTEXT1 */
 	    if (i <= 0) /* An error or timeout occurred */
             {
 		CLEARBITS(clientsWritable);
@@ -194,16 +229,23 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
     	    }
 	    else
 	    {
-		if (AnyClientsWriteBlocked && ANYSET (clientsWritable))
-		{
-		    NewOutputPending = TRUE;
-		    ORBITS(OutputPending, clientsWritable, OutputPending);
-		    UNSETBITS(ClientsWriteBlocked, clientsWritable);
-		    if (! ANYSET(ClientsWriteBlocked))
-			AnyClientsWriteBlocked = FALSE;
-		}
+ 		if (AnyClientsWriteBlocked && ANYSET (clientsWritable))
+ 		{
+ 		    NewOutputPending = TRUE;
+ 		    ORBITS(OutputPending, clientsWritable, OutputPending);
+ 		    UNSETBITS(ClientsWriteBlocked, clientsWritable);
+ 		    if (! ANYSET(ClientsWriteBlocked))
+ 			AnyClientsWriteBlocked = FALSE;
+ 		}
+ 
+#ifdef	hpux
+		ready_inputs = (LastSelectMask[0] & EnabledDevices);
 
-		MASKANDSETBITS(clientsReadable, LastSelectMask, AllClients); 
+		if (ready_inputs > 0)  store_inputs (ready_inputs);
+			/* call the HIL driver to gather inputs. 	*/
+#endif	hpux
+
+ 		MASKANDSETBITS(clientsReadable, LastSelectMask, AllClients); 
 		if (LastSelectMask[0] & WellKnownConnections) 
 		    EstablishNewConnections(pNewClients, nnew);
 		if (*nnew || (LastSelectMask[0] & EnabledDevices) 

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.76 88/07/22 20:17:39 jim Exp $ */
+/* $Header: connection.c,v 1.10 88/08/16 08:41:10 jim Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -45,35 +45,37 @@ SOFTWARE.
 #include "Xproto.h"
 #include <sys/param.h>
 #include <errno.h>
-#include <sys/types.h>
-#ifdef macII
-#include <sys/file.h>
-#endif
+#include <X11/Xos.h>			/* for strings, file, time */
 #include <sys/socket.h>
-#include <sys/time.h>
+
+#ifdef hpux
+#include <sys/utsname.h>
+#endif
+
 #include <signal.h>
 #include <fcntl.h>
 #include <setjmp.h>
+
+#ifdef hpux
+#include <sys/ioctl.h>
+#endif
+
 #ifdef TCPCONN
 #include <netinet/in.h>
+#ifndef hpux
 #include <netinet/tcp.h>
 #endif
+#endif
+
 #ifdef UNIXCONN
 #include <sys/un.h>
 #endif
+
 #include <stdio.h>
 #include <sys/uio.h>
-#ifdef macII
-#include <string.h>
-#define index strchr
-#define rindex strrchr
-#else /* else not macII */
-#include <strings.h>
-#endif /* macII */
 #include "osstruct.h"
 #include "osdep.h"
 #include "opaque.h"
-
 #include "dixstruct.h"
 
 #ifdef DNETCONN
@@ -84,7 +86,11 @@ typedef long CCID;      /* mask of indices into client socket table */
 
 #ifndef X_UNIX_PATH
 #define X_UNIX_DIR	"/tmp/.X11-unix"
+#ifdef hpux
+#define X_UNIX_PATH	"/tmp/.X11-unix/"
+#else
 #define X_UNIX_PATH	"/tmp/.X11-unix/X"
+#endif
 #endif
 
 char *display;			/* The display number */
@@ -134,6 +140,7 @@ extern int GiveUp();
 void
 CreateWellKnownSockets()
 {
+    char	fname[32];
     int		request, i;
     int		whichbyte;	    /* used to figure out whether this is
    					 LSB or MSB */
@@ -164,7 +171,12 @@ CreateWellKnownSockets()
 
     for (i=0; i<MAXSOCKS; i++) ConnectionTranslation[i] = (ClientPtr)NULL;
     
-    lastfdesc = getdtablesize() - 1;
+#ifdef	hpux
+	lastfdesc = _NFILE - 1;
+#else
+	lastfdesc = getdtablesize() - 1;
+#endif	/* hpux */
+
     if (lastfdesc > MAXSOCKS)
     {
 	lastfdesc = MAXSOCKS;
@@ -199,10 +211,24 @@ CreateWellKnownSockets()
 	retry = 20;
 	while (i = bind(request, (struct sockaddr *) &insock, sizeof (insock))) 
 	{
+#ifdef hpux
+	    /* Necesary to restart the server without a reboot */
+	    if (errno == EADDRINUSE)
+		set_socket_option (request, SO_REUSEADDR);
+	    if (--retry == 0)
+		Error ("Binding TCP socket");
+	    sleep (1);
+#else
 	    if (--retry == 0)
 		Error ("Binding MSB TCP socket");
 	    sleep (10);
+#endif /* hpux */
 	}
+#ifdef hpux
+	/* return the socket option to the original */
+	if (errno)
+	    unset_socket_option (request, SO_REUSEADDR);
+#endif /* hpux */
 #ifdef SO_LINGER
 	if(setsockopt (request, SOL_SOCKET, SO_LINGER, linger, sizeof(linger)))
 	    Notice ("Setting TCP SO_LINGER\n");
@@ -222,6 +248,19 @@ CreateWellKnownSockets()
     mkdir (X_UNIX_DIR, 0777);
 #endif
     strcpy (unsock.sun_path, X_UNIX_PATH);
+#ifdef hpux
+    /*********
+      Got to get a unique name to create the UNIX domain socket
+      under since there can be more than one system on the same file
+      system
+    *********/
+    {
+      struct utsname systemName;
+
+      uname(&systemName);
+      strcat(unsock.sun_path, systemName.nodename);
+    }
+#endif /* hpux */
     strcat (unsock.sun_path, display);
     unlink (unsock.sun_path);
     if ((request = socket (AF_UNIX, SOCK_STREAM, 0)) < 0) 
@@ -526,7 +565,18 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 #endif /* TCP_NODELAY */
 		    if (ClientAuthorized(newconn, &swapped, &reason))
 		    {
+#ifdef	hpux
+			/*
+			 * HPUX does not have  FNDELAY
+			 */
+		        {
+			    int	arg;
+			    arg = 1;
+			    ioctl(newconn, FIOSNBIO, &arg);
+		        }
+#else
 		        fcntl (newconn, F_SETFL, FNDELAY);
+#endif /* hpux */
 			inputBuffers[newconn].used = 1; 
                         if (! inputBuffers[newconn].size) 
 			{

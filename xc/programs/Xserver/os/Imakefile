@@ -1,18 +1,40 @@
-SRCS = connection.c WaitFor.c utils.c io.c access.c \
-	 osinit.c oscolor.c osfonts.c fonttype.c
-OBJS = connection.o WaitFor.o utils.o io.o osfonts.o access.o \
-	 osinit.o oscolor.o osfonts.c fonttype.o
-STD_DEFINES = ServerDefines -DFONT_SNF
-CDEBUGFLAGS = ServerCDebugFlags
-#if SpecialMalloc
-OS_DEFINES= -DSPECIAL_MALLOC
-#else
-OS_DEFINES=
+#ifdef HPArchitecture
+#define OtherSources hpsocket.c hpalloca.c 
+#define OtherObjects hpsocket.o hpalloca.o dbm.o 
 #endif
 
-DEFINES= ConnectionFlags $(OS_DEFINES)
-INCLUDES = -I.  -I../../include -I$(INCLUDESRC)
-LINTLIBS = ../../dix/llib-ldix.ln
+#ifndef OtherSources
+#define OtherSources
+#endif
+
+#ifndef OtherObjects
+#define OtherObjects
+#endif
+
+BOOTSTRAPCFLAGS = 
+
+           SRCS = connection.c WaitFor.c utils.c io.c access.c \
+		  osinit.c oscolor.c osfonts.c fonttype.c \
+		  OtherSources
+           OBJS = connection.o WaitFor.o utils.o io.o osfonts.o access.o \
+		  osinit.o oscolor.o osfonts.c fonttype.o \
+		  OtherObjects
+    STD_DEFINES = ServerDefines -DFONT_SNF
+    CDEBUGFLAGS = ServerCDebugFlags
+#if SpecialMalloc
+     OS_DEFINES = -DSPECIAL_MALLOC
+#else
+     OS_DEFINES =
+#endif /* SpecialMalloc */
+        DEFINES = ConnectionFlags $(OS_DEFINES)
+       INCLUDES = -I.  -I../../include -I$(INCLUDESRC)
+    EXT_DEFINES = ExtensionDefines
+       LINTLIBS = ../../dix/llib-ldix.ln
+
+#ifdef HPArchitecture
+         DBMLIB = /usr/lib/libdbm.a
+    XLIBSYSVDIR = $(TOP)/lib/X/sysV
+#endif /* HPArchitecture */
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(os,$(OBJS))
@@ -23,9 +45,29 @@ NormalLintTarget($(SRCS))
 access.o: $(IRULESRC)/$(MACROFILE)
 connection.o: $(IRULESRC)/$(MACROFILE)
 
-# this depends upon which fonts formats are supported
-#fonttype.o: $(IRULESRC)/$(MACROFILE)
+# these depend on COMPRESSED_FONTS
+fileio.o:  $(IRULESRC)/$(MACROFILE)
+filenames.o:  $(IRULESRC)/$(MACROFILE)
+utils.o:  $(IRULESRC)/$(MACROFILE)
+
+#ifdef HPArchitecture
+/**/#
+/**/# The following kludge is necessary because dbm already has a global 
+/**/# routine named "bcopy" that is implemented in a silly way.  So, we have to 
+/**/# extract the objects from the library, force the bcopy routine to be 
+/**/# local to the one file, put the result into a temporary file, rename the 
+/**/# temporary file to its proper name, and link it together with everything
+/**/# else to form the object file that we link into the server.
+/**/#
+dbm.o:  $(DBMLIB)
+	rm -f dbm.o
+	if [ ! -d dbm ]; then $(RM) -r dbm; mkdir dbm; fi
+	(cd dbm; rm -f *.o; ar -x $(DBMLIB); \
+	ld -r -o a.out.o -h _bcopy ndbm.o; \
+	mv a.out.o ndbm.o; ld -r -o ../dbm.o *.o)
+#endif /* HPArchitecture */
 
 SpecialObjectRule(osinit.o, $(IRULESRC)/$(MACROFILE), -DADMPATH=\"$(ADMDIR)/X\%smsgs\")
+SpecialObjectRule(WaitFor.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
 
 DependTarget()
