@@ -23,6 +23,8 @@
  * Author:  Dale Tonogai, Network Computing Devices
  */
 
+/* $XConsortium: lbxfuncs.c,v 1.2 94/02/10 20:08:59 dpw Exp $ */
+
 #include <X11/Xos.h>
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
@@ -32,7 +34,13 @@ extern int errno;
 #include <sys/uio.h>
 #include "lbxbufstr.h"
 
+#ifndef NULL
 #define NULL		0
+#endif
+
+#ifndef MIN
+#define MIN(_a, _b) ( ((_a) < (_b)) ? (_a) : (_b))
+#endif
 
 int
 InitLzwBuffer(b, size)

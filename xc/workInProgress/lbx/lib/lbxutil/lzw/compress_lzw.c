@@ -1,6 +1,28 @@
+/*
+ * Copyright 1988, 1989, 1990, 1994 Network Computing Devices, Inc.
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name Network Computing Devices, Inc. not be
+ * used in advertising or publicity pertaining to distribution of this 
+ * software without specific, written prior permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED `AS-IS'.  NETWORK COMPUTING DEVICES, INC.,
+ * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING WITHOUT
+ * LIMITATION ALL IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE, OR NONINFRINGEMENT.  IN NO EVENT SHALL NETWORK
+ * COMPUTING DEVICES, INC., BE LIABLE FOR ANY DAMAGES WHATSOEVER, INCLUDING
+ * SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS OF USE, DATA,
+ * OR PROFITS, EVEN IF ADVISED OF THE POSSIBILITY THEREOF, AND REGARDLESS OF
+ * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * 
+ */
 /* Copyright 1988, 1989, 1990 Network Computing Devices, Inc.  All rights reserved. */
 
-#ident "$NCDId: @(#)compress_lzw.c,v 1.5 1994/01/21 19:13:25 dct Exp $"
+/* $XConsortium: lbxfuncs.c,v 1.2 94/02/10 20:08:59 dpw Exp $ */
 
 #include <X11/Xos.h>
 #include <errno.h>
@@ -31,6 +53,10 @@ void LzwFree();
 #ifdef hpux
 #define bzero(buf,len) memset(buf,'\0',len)
 #endif /* hpux */
+
+#ifndef MIN
+#define MIN(_a, _b) ( ((_a) < (_b)) ? (_a) : (_b))
+#endif
 
 /* Defines for third byte of header */
 #define BIT_MASK	0x1f
@@ -158,7 +184,7 @@ struct LzwInfo {
 #define tab_suffixof(i)	((char_type *)(htab))[i]
 #define de_stack	((char_type *)&tab_suffixof(1<<BITS))
 
-#define FWRITE(buf,len) \
+#define fWRITE(buf,len) \
 { \
     int l = len; \
     char_type * b = buf; \
@@ -188,7 +214,7 @@ static void cl_hash();
 
 /* Macros for compression I/O */
 #define getchar_compress() GETCHAR()
-#define putchar_compress(c) {char_type C=(c);FWRITE(&C,1);}
+#define putchar_compress(c) {char_type C=(c);fWRITE(&C,1);}
 /*
  * compress stdin to stdout
  *
@@ -508,7 +534,7 @@ output(priv, code )
 	     * discover the size increase until after it has read it.
 	     */
 	    if ( offset > 0 ) {
-		FWRITE( buf, n_bits);
+		fWRITE( buf, n_bits);
 		bytes_out += n_bits;
 	    }
 	    offset = 0;
@@ -536,7 +562,7 @@ output(priv, code )
 	 * At EOF, write the rest of the buffer.
 	 */
 	if ( offset > 0 )
-	    FWRITE( buf, (offset + 7) / 8);
+	    fWRITE( buf, (offset + 7) / 8);
 	bytes_out += (offset + 7) / 8;
 	offset = 0;
 #ifdef DEBUG
