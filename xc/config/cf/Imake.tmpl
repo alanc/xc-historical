@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.190 93/09/10 12:10:07 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.191 93/09/11 09:52:28 rws Exp $
 XCOMM
 
 /*
@@ -395,13 +395,8 @@ _NULLCMD_ = @ echo -n
 #ifndef CompressCmd
 #define CompressCmd compress
 #endif
-#ifndef HasCppCmd
-#define HasCppCmd YES
-#endif
 #ifndef CppCmd
-#if HasCppCmd
 #define CppCmd /lib/cpp
-#endif
 #endif
 #ifndef PreProcessCmd
 #define PreProcessCmd CcCmd -E
@@ -681,9 +676,7 @@ _NULLCMD_ = @ echo -n
           FCFLAGS = FortranFlags $(FDEBUGFLAGS)
 #endif
          COMPRESS = CompressCmd
-#ifdef CppCmd
               CPP = CppCmd $(STD_CPP_DEFINES)		/* simple filters */
-#endif
     PREPROCESSCMD = PreProcessCmd $(STD_CPP_DEFINES)	/* prefered; mdep */
           INSTALL = InstallCmd
      INSTALLFLAGS = InstallFlags
