@@ -1,6 +1,6 @@
-/* $Header: inp.h,v 2.0 86/09/17 15:37:25 lwall Exp $
+/* oldHeader: inp.h,v 2.0 86/09/17 15:37:25 lwall Exp $
+ * $XConsortium$
  *
- * $Log:	inp.h,v $
  * Revision 2.0  86/09/17  15:37:25  lwall
  * Baseline for netwide release.
  * 

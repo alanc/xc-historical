@@ -1,6 +1,6 @@
-/* $Header: util.h,v 2.0 86/09/17 15:40:06 lwall Exp $
+/* oldHeader: util.h,v 2.0 86/09/17 15:40:06 lwall Exp $
+ * $XConsortium$
  *
- * $Log:	util.h,v $
  * Revision 2.0  86/09/17  15:40:06  lwall
  * Baseline for netwide release.
  * 

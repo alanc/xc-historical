@@ -8,7 +8,8 @@
 # and edit it to reflect your system.  Some packages may include samples
 # of config.h for certain machines, so you might look for one of those.)
 #
-# $Header: Head.U,v 1.0 87/05/22 12:28:10 lwall Exp $
+# oldHeader: Head.U,v 1.0 87/05/22 12:28:10 lwall Exp $
+# $XConsortium$
 #
 # Yes, you may rip this off to use in other distribution packages.
 # (Note: this Configure script was generated automatically.  Rather than

@@ -1,6 +1,6 @@
-/* $Header: version.c,v 2.0 86/09/17 15:40:11 lwall Exp $
+/* oldHeader: version.c,v 2.0 86/09/17 15:40:11 lwall Exp $
+ * $XConsortium$
  *
- * $Log:	version.c,v $
  * Revision 2.0  86/09/17  15:40:11  lwall
  * Baseline for netwide release.
  * 

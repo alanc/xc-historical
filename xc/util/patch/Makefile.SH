@@ -3,9 +3,9 @@ case $CONFIG in
 esac
 echo "Extracting Makefile (with variable substitutions)"
 cat >Makefile <<!GROK!THIS!
-# $Header: Makefile.SH,v 2.0.1.2 88/06/22 20:43:40 lwall Locked $
+# oldHeader: Makefile.SH,v 2.0.1.2 88/06/22 20:43:40 lwall Locked $
+# $XConsortium$
 #
-# $Log:	Makefile.SH,v $
 # Revision 2.0.1.2  88/06/22  20:43:40  lwall
 # patch12: config.h now depends on config.h.SH
 # 
