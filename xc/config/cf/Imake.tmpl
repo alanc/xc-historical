@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.65 89/11/13 11:48:30 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.66 89/11/14 08:35:26 keith Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -511,6 +511,9 @@
 #ifndef ExtraLoadFlags
 #define ExtraLoadFlags /**/
 #endif
+#ifndef LdCombineFlags
+#define LdCombineFlags -X -r
+#endif
 #ifndef CompatibilityFlags
 #define CompatibilityFlags /**/
 #endif
@@ -605,6 +608,7 @@
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES)
            LDLIBS = $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
         LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS) 
+   LDCOMBINEFLAGS = LdCombineFlags
 
         MACROFILE = MacroFile
            RM_CMD = $(RM) FilesToClean
