@@ -10,9 +10,13 @@ Box Widget
 .ta 2.0i
 .sp
 Application Header file	<X11/Xaw/Box.h>
+.IN "Box.h" ""
 Class Header file	<X11/Xaw/BoxP.h>
+.IN "BoxP.h" ""
 Class		boxWidgetClass
+.IN "boxWidgetClass" ""
 Class Name	Box
+.IN "Box widget" "class name"
 Superclass	Composite
 .sp
 .De
@@ -106,11 +110,12 @@ children and the edge of the box.
 Specifies whether the preferred shape of the box (i.e. the result
 returned by the query_geometry class method) is tall and narrow
 \fBXawOrientVertical\fP or short and wide \fPXawOrientHorizontal\fP.
-When the Box is 
-a child of a parent which enforces width constraints, it is usually
-better to specify \fBXawOrientVertical\fP (the default).  When the parent
-enforces height constraints, it is usually better to specify
-\fBXawOrientHorizontal\fP. 
+.IN "XawOrientVertical" ""
+.IN "XawOrientHorizontal" ""
+When the Box is a child of a parent which enforces width constraints, it
+is usually better to specify \fBXawOrientVertical\fP (the default).
+When the parent enforces height constraints, it is usually better to
+specify \fBXawOrientHorizontal\fP.
 .Rs "horizontal \fPand\fB vertical"
 .Sc
 .Se
@@ -118,17 +123,20 @@ enforces height constraints, it is usually better to specify
 .Xy
 .NH 3
 Layout Semantics
+.IN "Box widget" "Layout semantics"
 .LP
 Each time a child is managed or unmanaged, the Box widget will attempt
 to reposition the remaining children to compact the box.  Children are
 positioned in order left to right, top to bottom.  The packing
 algorithm used depends on the \fBorientation\fP of the Box.
 .IP \fBXtOrientVertical\fP 1.5i
+.IN "XtOrientVertical" "" @DEF@
 When the next child does not fit on the current row, a new row is
 started.  If a child is wider than the width of the box, the box will
 request a larger width from its parent and will begin the layout
 process from the beginning if a new width is granted.
-.IP \fBXtOrientVertical\fP 1.5i
+.IP \fBXtOrientHorizontal\fP 1.5i
+.IN "XtOrientHorizontal" "" @DEF@
 When the next child does not fit in the current column, a new column is
 started.  If a child is taller than the height of the box, the box will
 request a larger height from its parent and will begin the layout

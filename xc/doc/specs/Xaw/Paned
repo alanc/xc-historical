@@ -2,7 +2,7 @@
 Paned Widget
 .LP
 .XS
-\*(SN Paned Widget
+	Paned Widget
 .XE
 .IN "Paned widget" "" "@DEF@"
 .Ds 0
@@ -10,9 +10,13 @@ Paned Widget
 .ta 2.0i
 .sp
 Application Header file	<X11/Xaw/Paned.h>
+.IN "Paned.h" ""
 Class Header file	<X11/Xaw/PanedP.h>
+.IN "PanedP.h" ""
 Class		panedWidgetClass
+.IN "panedWidgetClass" ""
 Class Name	Paned
+.IN "Paned widget" "class name"
 Superclass	Constraint
 .sp
 .De
@@ -23,27 +27,30 @@ using the \fIgrips\fP that appear near the right or bottom edge of the
 border between two panes.
 .LP
 The Paned widget may accept any widget class as a pane \fBexcept\fP
-Grip.  Grip widgets have a special meaning for the Paned widget, and adding
-a Grip as its own pane will confuse the Paned widget. 
+Grip.  Grip widgets have a special meaning for the Paned widget, and
+adding a Grip as its own pane will confuse the Paned widget.
 .NH 3
 Using the Paned widget.
+.IN "Paned widget" "using"
 .LP
 The grips allow the panes to be resized by the user.  The semantics of
-how these panes resize is somewhat complicated, and warrents futher
+how these panes resize is somewhat complicated, and warrants further
 explanation here.  When the mouse pointer is positioned on a grip and
-pressed, an arrow is displayed that indicates the pane that is to be
-to be resized.  While keeping the mouse button down, 
-the user can move the grip up and down (or left and right).
-This, in turn, changes the size of the pane.  The size of the
-Paned widget will not change, instead it chooses another pane (or
-panes) to resize. For more details on which pane it chooses to resize
-see \fBLayout Semantics\fP. 
+pressed, an arrow is displayed that indicates the pane that is to be to
+be resized.  While keeping the mouse button down, the user can move the
+grip up and down (or left and right).  This, in turn, changes the size
+of the pane.  The size of the Paned widget will not change.   Instead,
+it chooses another pane (or panes) to resize. For more details on which
+pane it chooses to resize, see \fBLayout Semantics\fP.
 .LP
-One mouse binding allows border between two panes to be moved, without
-affecting any of the other panes.  when this occurs the mouse pointer
+One pointer binding allows the border between two panes to be moved,
+without affecting any of the other panes.  When this occurs the pointer
 will change to an arrow that points along the pane border.
 .LP
-The default bindings for the Paned widget's grips are.
+The default bindings for the Paned widget's grips are:
+.NH 3
+Resources
+.IN "Paned widget" "resources"
 .ps 9
 .nr PS 9
 .vs 11
@@ -53,7 +60,7 @@ lw(1i) lw(2i) lw(2i).
 _
 .sp 3p
 .TB
-Mouse button	Pane to Resize - Vertical	Pane to Resize - Horizonal
+Mouse button	Pane to Resize - Vertical	Pane to Resize - Horizontal
 .sp 3p
 _
 .TH
@@ -99,11 +106,11 @@ borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
 children	ReadOnly	WidgetList	R	NULL
 colormap	Colormap	Pointer		Parent's Colormap
-cursor	Curor	Cursor		None
+cursor	Cursor	Cursor		None
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 gripCursor	Cursor	Cursor	A	Depends on orientation
-gripIndent	GripIndent	Postion		10
+gripIndent	GripIndent	Position		10
 gripTranslations	Translations	TranslationTable		see below
 height	Height	Dimension	A	Depends on orientation
 horizontalBetweenCursor	Cursor	Cursor		sb_up_arrow
@@ -144,18 +151,18 @@ _
 .Ch
 .Cm
 .IP \fBcursor\fP 1.5i
-The cursor the use when the mouse pointer is over the Paned widget,
-but not in any of its children (children may also inherit this cursor).
-It should be noted that the internal borders are actually part of
-the Paned widget, not the children.
+The cursor to use when the mouse pointer is over the Paned widget, but
+not in any of its children (children may also inherit this cursor).  It
+should be noted that the internal borders are actually part of the Paned
+widget, not the children.
 .De
 .Dc
 .IP \fBgripCursor\fP 1.5i
-The cursor to use when the grips are no active.  The default value is
-\fBverticalGripCursor\fP or \fBhorizontalGripCursor\fP depeneding on
+The cursor to use when the grips are not active.  The default value is
+\fBverticalGripCursor\fP or \fBhorizontalGripCursor\fP depending on
 the orientation of the Paned widget. 
 .IP \fBgripIndent\fP 1.5i
-The amount if space left between the right (or bottom) edge of the
+The amount of space left between the right (or bottom) edge of the
 Paned widget and all the grips.
 .IP \fBgripTranslation\fP 1.5i
 Translation table that will be applied to all grips.
@@ -167,7 +174,7 @@ Translation table that will be applied to all grips.
 The cursor to be used for the grip when changing the boundary between
 two panes.  These resources allow the cursors to be different
 depending on the orientation of the Paned widget.
-.IP \fBhorzontalGripCursor\fP 1.5i
+.IP \fBhorizontalGripCursor\fP 1.5i
 .br
 .ns
 .IP \fBverticalGripCursor\fP 1.5i
@@ -178,41 +185,42 @@ orientation of the Paned widget.
 A pixel value which indexs the widget's colormap to derive the internal
 border color of the widget's window.  The class name of this resource
 allows \fIPaned*BorderColor: blue\fP to set the internal border color
-for the Paned widget.  An optomization is invoked if
+for the Paned widget.  An optimization is invoked if
 \fBinternalBorderColor\fP and \fBbackground\fP are the same, and the
-internal borders are not drawn.  \fBinternalBoderWidth\fP is still
-left between the panes, however.
+internal borders are not drawn.  \fBinternalBorderWidth\fP is still left
+between the panes, however.
 .IP \fBinternalBorderWidth\fP 1.5i
 The width of the internal borders.  This is the amount of space left
-between the panes.  The class name of this resource
-allows \fIPaned*BorderWidth: 3\fP to set the internal border width
-for the Paned widget. 
+between the panes.  The class name of this resource allows
+\fIPaned*BorderWidth: 3\fP to set the internal border width for the
+Paned widget.
 .Ip
 .IP \fBleftCursor\fP 1.5i
 .br
 .ns
 .IP \fBrightCursor\fP 1.5i
-The cursor used to indicate which is the \fIimportant\fP pane to
-resize when the Paned widget is oriented horizontally.
+The cursor used to indicate which is the \fIimportant\fP pane to resize
+when the Paned widget is oriented horizontally.
 .IP \fBlowerCursor\fP 1.5i
 .br
 .ns
 .IP \fBupperCursor\fP 1.5i
-The cursor used to indicate which is the \fIimportant\fP pane to
-resize when the Paned widget is oriented vertically.
+The cursor used to indicate which is the \fIimportant\fP pane to resize
+when the Paned widget is oriented vertically.
 .Mm
 .Nc
-This is not the same
-as the number of panes, since this also contains a grip for some of the
-panes, use \fBXawPanedGetNumSub\fP to retreive the number of panes.
+This is not the same as the number of panes, since this also contains a
+grip for some of the panes, use \fBXawPanedGetNumSub\fP to retrieve the
+number of panes.
 .IP \fBorientation\fP 1.5i
 The orientation to stack the panes.  This value can be either
-\fBXtOrientVertical\fP or \fBXtOrientHorizontal\fP.  
+\fBXtOrientVertical\fP or \fBXtOrientHorizontal\fP.
 .Rs "horizontal \fPand\fB vertical"
 .IP \fBrefigureMode\fP 1.5i
 This resource allows pane layout to be suspended.  If this value is
-\fBFalse\fP then no layout actions will be taken.  This may improve
-effiency when adding or removing more than one pane from the Paned widget.
+\fBFalse\fP, then no layout actions will be taken.  This may improve
+efficiency when adding or removing more than one pane from the Paned
+widget.
 .Sc
 .Se
 .Tr
@@ -271,7 +279,7 @@ when the application programmer or the user has a better idea of the
 preferred size of a pane.  Setting this resource causes the value
 passed to be interpreted as the preferred size, in pixels, of this pane.
 .IP \fBresizeToPreferred\fP 1.5i
-Determins whether or not to resize each pane to its perferred size
+Determines whether or not to resize each pane to its preferred size
 when the Paned widget is resized.  See \fBLayout Semantics\fP for details.
 .IP \fBshowGrip\fP 1.5i
 If \fBTrue\fP then a grip will be shown for this pane.  The grip
@@ -284,12 +292,12 @@ forced to be resized.  See \fBLayout Semantics\fP for details.
 .NH 3
 Layout Semantics
 .LP
-In order to make effective use of the Paned widget it is helpful to
-know the rules it uses to determine which child
-will be resized in any give situation.  There are three rules used to
-determine which child is resized.  While these rules are always the
-same the panes that are searched can change depending upon what caused
-the relayout.
+.IN "Paned widget" "Layout semantics"
+In order to make effective use of the Paned widget it is helpful to know
+the rules it uses to determine which child will be resized in any given
+situation.  There are three rules used to determine which child is
+resized.  While these rules are always the same, the panes that are
+searched can change depending upon what caused the relayout.
 .LP
 .sp
 \fBLayout Rules\fP
@@ -297,50 +305,49 @@ the relayout.
 Do not let a pane grow larger than its \fBmax\fP or smaller than its
 \fBmin\fP.
 .IP \fB2\fP .5i
-Do no adjust panes with \fBskipAdjust\fP set.
+Do not adjust panes with \fBskipAdjust\fP set.
 .IP \fB3\fP .5i
 Do not adjust panes away from their preferred size, although moving one
-closer to its preferred size is fine. 
+closer to its preferred size is fine.
 .LP
 When searching the children the Paned widget looks for panes that
 satisfy all the rules, and if unsuccessful then it eliminates rule 3
 and then 2.  Rule 1 is always enforced. 
 .LP
-If the relayout is due to a resize or change is management then the
-panes are searched from bottom to top.
-If the relayout is due to grip movement then they are searched from the 
-grip selected in the direction opposite the pane selected.  
+If the relayout is due to a resize or change in management then the
+panes are searched from bottom to top.  If the relayout is due to grip
+movement then they are searched from the grip selected in the direction
+opposite the pane selected.
 .NH 4
 Resizing Panes from a Grip Action
 .LP
-The pane above the grip is resized by invoking the GripAcion with 
-\fBUpLeftPane\fP specified.  The panes below the grip are each checked against all rules, then rules
-2 and 1 and finally against rule 1 only.  No pane above the chosen pane 
-will ever be resized.
+The pane above the grip is resized by invoking the GripAction with 
+\fBUpLeftPane\fP specified.  The panes below the grip are each checked
+against all rules, then rules 2 and 1 and finally against rule 1 only.
+No pane above the chosen pane will ever be resized.
 .LP
-The pane below the grip is resized by invoking the GripAcion with 
+The pane below the grip is resized by invoking the GripAction with 
 \fBLowRightPane\fP specified.  The panes above the grip are each
 checked in this case.  No pane below the chosen pane will ever be resized.
 .LP
-Invoking GripAcion with \fBThisBorderOnly\fP specified just moves
-border between the panes, no other panes are ever resized. 
+Invoking GripAction with \fBThisBorderOnly\fP specified just moves the
+border between the panes.  No other panes are ever resized.
 .NH 4
 Resizing Panes after the Paned widget is resized.
 .LP
 When the Pane widget is resized it must determine a new size for each
-pane.  There are two methods of doing this.  The Paned widget can
-either give each pane its preferred size and then resize the
-panes to fit.  Or it can use the current sizes and then resize the
-panes to fit.  The \fBresizeToPreferred\fP resource allows the
-application to tell the Paned widget
-whether to query the child about its preferred size (subject to the
-the \fBpreferredPaneSize\fP) or to use the current size when refiguring
-the pane locations after the pane has been resized.
+pane.  There are two methods of doing this.  The Paned widget can either
+give each pane its preferred size and then resize the panes to fit, or
+it can use the current sizes and then resize the panes to fit.  The
+\fBresizeToPreferred\fP resource allows the application to tell the
+Paned widget whether to query the child about its preferred size
+(subject to the the \fBpreferredPaneSize\fP) or to use the current size
+when refiguring the pane locations after the pane has been resized.
 .LP
 There is one special case.  All panes assume they should resize to
 their preferred size until the Paned widget becomes visible to the user. 
 .NH 4
-Managing Children and Geometry Managment
+Managing Children and Geometry Management
 .LP
 The Paned widget always resizes its children to their preferred sizes when
 a new child is managed, or a geometry management request is honored.
@@ -350,12 +357,12 @@ children, from bottom to top (right to left), for a pane to resize.
 .NH 4
 Special Considerations
 .LP
-When a user resizes a pane with the grips the Paned widget assumes that this
-new size is the preferred size of the pane.
+When a user resizes a pane with the grips, the Paned widget assumes that
+this new size is the preferred size of the pane.
 .NH 3
 Grip Translations
 .LP
-The Paned widget has no action routines of its own, all actions are
+The Paned widget has no action routines of its own, as all actions are
 handled through the grips.  The grips are each assigned a default
 Translation table.
 .LP
@@ -364,6 +371,7 @@ Translation table.
 .TA .5i 2.25i
 .ta .5i 2.25i
 	<Btn1Down>:	GripAction(Start, UpLeftPane)
+.IN "GripAction" ""
 	<Btn2Down>:	GripAction(Start, ThisBorderOnly)
 	<Btn3Down>:	GripAction(Start, LowRightPane) 
 	<Btn1Motion>:	GripAction(Move, UpLeftPane) 
@@ -374,18 +382,18 @@ Translation table.
 .sp
 .LP
 The Paned widget interprets the \fBGripAction\fP as taking two arguments.
-The first agument may be any of the following:
+.IN "GripAction" ""
+The first argument may be any of the following:
 .IP \fBStart\fP 1i
 Sets up the Paned widget for resizing and changes the cursor of the
-grip.  The second argument determins
-which pane will be resized, and can take on any of the three values
-shown above.
+grip.  The second argument determines which pane will be resized, and
+can take on any of the three values shown above.
 .IP \fBMove\fP 1i
 The internal borders are drawn over the current pane locations to
 animate where the borders would actually be placed if you were to move
 this border as shown.  The second argument must match the second argument
 that was passed to the \fBStart\fP action, that began this process.  If
-these arguements are not passed the the behavior is undefined.
+these arguments are not passed, the behavior is undefined.
 .IP \fBCommit\fP 1i
 This argument causes the Paned widget to commit the changes selected
 by the previously started action.  The cursor is changed back to the
@@ -490,7 +498,7 @@ relayout until after all changes have been made.
 .LP
 .sp
 .IN "Paned widget" "getting the number of children"
-To retreive the number of panes in a paned widget use
+To retrieve the number of panes in a paned widget use
 \fBXawPanedGetNumSub\fP:
 .IN "XawPanedGetNumSub" "" "@DEF@"
 .FD 0

@@ -2,7 +2,7 @@
 Form Widget
 .LP
 .XS
-\*(SN Form Widget
+	Form Widget
 .XE
 .IN "Form widget" "" "@DEF@"
 .Ds 0
@@ -10,9 +10,13 @@ Form Widget
 .ta 2.0i
 .sp
 Application Header file	<X11/Xaw/Form.h>
+.IN "Form.h" ""
 Class Header file	<X11/Xaw/FormP.h>
+.IN "FormP.h" ""
 Class		formWidgetClass
+.IN "formWidgetClass" ""
 Class Name	Form
+.IN "Form widget" "class name"
 Superclass	Constraint
 .sp
 .De
@@ -32,7 +36,8 @@ margin of \fBdefaultDistance\fP
 at the right and bottom edges.  If a width and height is assigned
 to the Form that is too small for the layout, the children will
 be clipped by the right and bottom edges of the Form.
-.LP
+.NH 3
+Resources
 .IN "Form widget" "resources"
 .ps 9
 .nr PS 9
@@ -127,8 +132,10 @@ fromHoriz	Widget	Widget		NULL (left edge of Form)
 fromVert	Widget	Widget 		NULL (top edge of Form)
 horizDistance	Thickness	int		\fBdefaultDistance\fP resource
 left	Edge	XawEdgeType		XawRubber
+.IN "XawEdgeType" ""
 resizable	Boolean	Boolean		FALSE
 right	Edge	XawEdgeType		XawRubber
+.IN "XawRubber" ""
 top	Edge	XawEdgeType		XawRubber
 vertDistance	Thickness	int		\fBdefaultDistance\fP resource
 .sp 3p
@@ -163,10 +170,15 @@ _
 .R
 .sp 3p
 XawChainBottom	ChainBottom	Edge remains a fixed distance from bottom of Form
+.IN "XawChainBottom" ""
 XawChainLeft	ChainLeft	Edge remains a fixed distance from left of Form
+.IN "XawChainLeft" ""
 XawChainRight	ChainRight	Edge remains a fixed distance from right of Form
+.IN "XawChainRight" ""
 XawChainTop	ChainTop	Edge remains a fixed distance from top of Form
+.IN "XawChainTop" ""
 XawRubber	Rubber	Edges will move a proportional distance
+.IN "XawRubber" ""
 .sp 3p
 _
 .TE
@@ -177,11 +189,11 @@ _
 .NH 4
 Example
 .LP
-If you wish to force the Form to never resize one or more of its children
-then set \fBleft\fP and \fBright\fP to \fBXawChainLeft\fP and
-\fBtop\fP and \fBbottom\fP to \fBXawChainTop\fP.  This will cause
-the child to remain a fixed distance from the top and left
-edges of the Form, and to never resize.
+If you wish to force the Form to never resize one or more of its
+children then set \fBleft\fP and \fBright\fP to \fBXawChainLeft\fP and
+\fBtop\fP and \fBbottom\fP to \fBXawChainTop\fP.  This will cause the
+child to remain a fixed distance from the top and left edges of the
+Form, and never to resize.
 .NH 3
 Convenience Routines
 .LP

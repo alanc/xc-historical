@@ -295,35 +295,39 @@ used when initially laying out the buttons.  The other is used when
 the \\$1 is resized. 
 .LP
 The first layout method uses the \fBfromVert\fP and \fPfromHoriz\fP
+.IN "fromVert" "
+.IN "fromHoriz" "" 
 resources to place the children of the \\$1.  A single pass is made
 through the \\$1 widget's children in the order that they were created.
 Each child is then placed in the \\$1 widget below or to the right of
 the widget specified by the \fBfromVert\fP and \fBfromHoriz\fP resources.
 The distance the new child is placed from its left or upper neighbor is
 determined by the \fBhorizDistance\fP and \fBvertDistance\fP resources.
+.IN "horizDistance" ""
+.IN "vertDistance" ""
 This implies some things about how the order of creation affects the 
 possible placement of the children.  
 .LP
-The second layout method is used when the \\$1 is resized.  It does
-not matter what causes this resize, and it is possible for a resize to
-happen before the widget becomes visible (due to constraints imposed
-by the parent of the \\$1).  This layout method uses the
-\fBbottom\fP, \fBtop\fP, \fBleft\fP, and \fBright\fP resources.  These 
-resources are used to determine what will happen to each edge of the 
-child when the \\$1 is resized.  If a value of 
-\fBXawChain\fP\fI<something>\fP is specified, the 
-the edge of the child will remain a fixed distance from the
-\fIchain\fP edge of the \\$1.  For example if \fBXawChainLeft\fP is
-specified for the \fBright\fP resource of a child then the right
-edge of that child will remain a fixed distance from the left edge of
-the \\$1 widget.  If a value of \fBXawRubber\fP is specified, that
-edge will grow by the same percentage that the \\$1 grew.  For
-instance if the \\$1 grows by 50% the left edge of the child (if
-specified as \fBXawRubber\fP will be 50% farther from the left edge of
-the \\$1).  One must be very careful when specifying these
-resources, for when they are specified incorrectly children may
-overlap or completely occlude other children when the \\$1 widget is
-resized.
+The second layout method is used when the \\$1 is resized.  It does not
+matter what causes this resize, and it is possible for a resize to
+happen before the widget becomes visible (due to constraints imposed by
+the parent of the \\$1).  This layout method uses the \fBbottom\fP,
+\fBtop\fP, \fBleft\fP, and \fBright\fP resources.  These resources are
+used to determine what will happen to each edge of the child when the
+\\$1 is resized.  If a value of \fBXawChain\fP\fI<something>\fP is
+.IN "XawChain" ""
+specified, the the edge of the child will remain a fixed distance from
+the \fIchain\fP edge of the \\$1.  For example if \fBXawChainLeft\fP is
+specified for the \fBright\fP resource of a child then the right edge of
+that child will remain a fixed distance from the left edge of the \\$1
+widget.  If a value of \fBXawRubber\fP is specified, that edge will grow
+.IN "XawRubber" ""
+by the same percentage that the \\$1 grew.  For instance if the \\$1
+grows by 50% the left edge of the child (if specified as \fBXawRubber\fP
+will be 50% farther from the left edge of the \\$1).  One must be very
+careful when specifying these resources, for when they are specified
+incorrectly children may overlap or completely occlude other children
+when the \\$1 widget is resized.
 ..
 
 \" Text Resouces
