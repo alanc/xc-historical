@@ -9,8 +9,12 @@ The \fIxlogo\fP program displays the X Window System logo.  This program is
 nothing more than a wrapper around the \fIundocumented\fP Athena Logo widget.
 .SH OPTIONS
 .I Xlogo
-accepts all of the standard X Toolkit command line options, see \fIX(1)\fP
-for details.
+accepts all of the standard X Toolkit command line options, as well as the
+following:
+.TP 8
+.B \-shape
+This option indicates that the logo window should be shaped rather than
+rectangular.
 .SH RESOURCES
 This program uses the \fILogo\fP widget in the Athena widget set.  It
 understands all of the core resource names and classes as well as:
