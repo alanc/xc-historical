@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.25 93/09/10 12:15:12 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.26 93/09/12 09:57:50 rws Exp $
 
 #define OSName			Microsoft Windows NT 3.1
 XCOMM operating system:  OSName
@@ -50,6 +50,8 @@ XCOMM operating system:  OSName
 #define DependCmd $(DEPENDSRC:/=\)\makedepend
 #endif
 #define FilesToClean *.bak *.obj *.lib make.log
+
+#define XFileSearchPathBase Concat4($(LIBDIR)/;L/;T/;N;C,;S:$(LIBDIR)/;l/;T/;N;C,;S:$(LIBDIR)/;T/;N;C,;S:$(LIBDIR)/;L/;T/;N;S:$(LIBDIR)/;l/;T/;N;S:$(LIBDIR)/;T/;N;S)
 
 #define BuildPexClients		NO
 #define BuildFonts		NO
