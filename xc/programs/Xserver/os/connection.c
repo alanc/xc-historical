@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.172 94/02/01 18:48:53 dpw Exp $ */
+/* $XConsortium: connection.c,v 1.173 94/02/02 21:40:57 mor Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -167,7 +167,7 @@ void
 CreateWellKnownSockets()
 {
     int		request, i;
-    int		maxTrans;
+    int		partial;
     char 	port[20];
 
     CLEARBITS(AllSockets);
@@ -197,11 +197,11 @@ CreateWellKnownSockets()
 
     sprintf (port, "%d", atoi (display));
 
-    if ((_X11TransMakeAllCOTSServerListeners (port, &maxTrans,
+    if ((_X11TransMakeAllCOTSServerListeners (port, &partial,
 	&ListenTransCount, &ListenTransConns) >= 0) &&
 	(ListenTransCount >= 1))
     {
-	if (!PartialNetwork && (maxTrans != ListenTransCount))
+	if (!PartialNetwork && partial)
 	{
 	    FatalError ("Failed to establish all listening sockets");
 	}
@@ -605,7 +605,8 @@ CloseDownFileDescriptor(oc)
 {
     int connection = oc->fd;
 
-    _X11TransClose(oc->trans_conn);
+    if (oc->trans_conn)
+	_X11TransClose(oc->trans_conn);
     FreeOsBuffers(oc);
     BITCLEAR(AllSockets, connection);
     BITCLEAR(AllClients, connection);
