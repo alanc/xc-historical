@@ -25,7 +25,7 @@
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
 
-static char *rcs = "$XConsortium: version.c,v 6.3 89/10/10 20:23:44 jim Exp $";
+static char *rcs = "$XConsortium: version.c,v 6.4 89/10/27 14:01:40 jim Exp $";
 
-char *Version = "MIT X Consortium, R4beta";
+char *Version = "MIT X Consortium, R4";
 
