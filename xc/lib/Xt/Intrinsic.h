@@ -1,5 +1,5 @@
 /*
-* $Header: Intrinsic.h,v 1.71 88/02/05 20:46:45 swick Locked $
+* $Header: Intrinsic.h,v 1.72 88/02/06 10:17:55 swick Locked $
 */
 
 /*
@@ -43,6 +43,7 @@
 #endif
 
 #define XtNumber(arr)		((Cardinal) (sizeof(arr) / sizeof(arr[0])))
+#define XtOffset(type,field)    ((unsigned int)&(((type)NULL)->field))
 
 typedef char *String;
 typedef struct _WidgetRec *Widget;
@@ -529,6 +530,12 @@ extern void XtAddActions(); /* action, num_actions */
  *
  ************************************************************/
 
+extern void XtError();  /* message */
+    /* String message */
+
+extern void XtWarning();  /* message */
+    /* String message */
+
 extern void XtSetErrorHandler(); /* errorProc */
   /* (*errorProc)(String); */
 
@@ -583,17 +590,18 @@ extern void XtCallbackPopdown();
     /* caddr_t      closure;	    */
     /* caddr_t      call_data;      */
 
-/*************************************************************
+/****************************************************************
  *
- * Error Handling
- *
- ************************************************************/
+ * Graphic Context Management
+ *****************************************************************/
 
-extern void XtError();  /* message */
-    /* String message */
+extern GC XtGetGC(); /* widget, valueMask, values */
+    /* Widget    widget */
+    /* XtGCMask valueMask; */
+    /* XGCValues *values; */
 
-extern void XtWarning();  /* message */
-    /* String message */
+extern void XtDestroyGC (); /* gc */
+    /* GC gc; */
 
 /*************************************************************
  *
