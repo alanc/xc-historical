@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.7 94/07/21 17:51:53 mor Exp $ */
+/* $XConsortium: session.c,v 1.8 94/07/26 12:39:34 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -471,10 +471,14 @@ Bool *iconified;
     TWMWinConfigEntry *ptr;
     int found = 0;
 
+    ptr = winConfigHead;
+
+    if (!ptr)
+	return 0;
+
     clientId = GetClientID (theWindow->w);
     windowRole = GetWindowRole (theWindow->w);
 
-    ptr = winConfigHead;
     while (ptr && !found)
     {
 	int client_id_match = (!clientId && !ptr->client_id) ||
