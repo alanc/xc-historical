@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.7 93/08/14 13:08:46 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.8 93/08/14 16:23:11 rws Exp $
 
 #define OSName			Microsoft Windows NT 3.1beta
 XCOMM operating system:  OSName
@@ -29,6 +29,6 @@ XCOMM operating system:  OSName
 #ifndef UseInstalled
 #define ImakeCmd $(IMAKESRC:/=\)\imake
 #endif
-#define FilesToClean *.bak *.obj *.lib make.log
+#define FilesToClean *.bak *.obj *~ *.lib make.log
 
 #include <Win32.rules>
