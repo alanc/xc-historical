@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.34 91/06/29 16:59:22 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.35 91/07/02 08:58:46 rws Exp $ */
 #include "os.h"
 #undef NULL
 #include <stdio.h>
@@ -40,10 +40,9 @@ SOFTWARE.
 #include <sys/param.h>
 #ifdef MAXPATHLEN
 #define PATH_MAX MAXPATHLEN
-#endif
-#endif
-#ifndef PATH_MAX
+#else
 #define PATH_MAX 1024
+#endif
 #endif
 
 #ifndef SYSV
