@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.21 94/12/16 17:29:07 mor Exp mor $ */
+/* $XConsortium: choose.c,v 1.22 94/12/30 15:50:31 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -231,8 +231,20 @@ int count;
 String *names;
 
 {
+    int i;
+
     XawListChange (chooseSessionListWidget, names, count, 0, True);
-    SessionSelected (0, True);
+
+    /*
+     * Highlight the first unlocked session, if any.
+     */
+
+    for (i = 0; i < sessionNameCount; i++)
+	if (!sessionsLocked[i])
+	    break;
+
+    if (i < sessionNameCount)
+	SessionSelected (i, True);
 }
 
 
