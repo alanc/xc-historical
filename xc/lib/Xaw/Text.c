@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.68 88/10/04 16:09:12 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.69 88/10/07 08:28:59 swick Exp $";
 #endif
 
 
@@ -2050,6 +2050,7 @@ static void UnKill(ctx, event)
    EndAction(ctx);
 }
 
+
 static void Stuff(ctx, event)
   TextWidget ctx;
    XEvent *event;
@@ -2057,6 +2058,116 @@ static void Stuff(ctx, event)
    StartAction(ctx, event);
     StuffFromBuffer(ctx, 0);
    EndAction(ctx);
+}
+
+
+struct _SelectionList {
+    String *params;
+    Cardinal count;
+    Time time;
+};
+
+static void _GetSelection(w, time, params, num_params)
+Widget w;
+Time time;
+String *params;			/* selections in precedence order */
+Cardinal num_params;
+{
+    void _SelectionReceived();
+    Atom selection;
+    int buffer;
+
+    XmuInternStrings(XtDisplay(w), params, (Cardinal)1, &selection);
+    switch (selection) {
+      case XA_CUT_BUFFER0: buffer = 0; break;
+      case XA_CUT_BUFFER1: buffer = 1; break;
+      case XA_CUT_BUFFER2: buffer = 2; break;
+      case XA_CUT_BUFFER3: buffer = 3; break;
+      case XA_CUT_BUFFER4: buffer = 4; break;
+      case XA_CUT_BUFFER5: buffer = 5; break;
+      case XA_CUT_BUFFER6: buffer = 6; break;
+      case XA_CUT_BUFFER7: buffer = 7; break;
+      default:	       buffer = -1;
+    }
+    if (buffer >= 0) {
+	unsigned long nbytes;
+	int fmt8 = 8;
+	Atom type = XA_STRING;
+	char *line = XFetchBuffer(XtDisplay(w), &nbytes, buffer);
+	_SelectionReceived(w, NULL, &selection, &type, (caddr_t)line,
+			  &nbytes, &fmt8);
+    } else {
+	struct _SelectionList* list;
+	if (--num_params) {
+	    list = XtNew(struct _SelectionList);
+	    list->params = params + 1;
+	    list->count = num_params;
+	    list->time = time;
+	} else list = NULL;
+	XtGetSelectionValue(w, selection, XA_STRING, _SelectionReceived,
+			    (caddr_t)list, time);
+    }
+}
+
+
+/* ARGSUSED */
+static void _SelectionReceived(w, client_data, selection, type,
+			       value, length, format)
+Widget w;
+caddr_t client_data;
+Atom *selection, *type;
+caddr_t value;
+unsigned long *length;
+int *format;
+{
+    TextWidget ctx = (TextWidget)w;
+    XtTextBlock text;
+				  
+    if (*type == 0 /*XT_CONVERT_FAIL*/ || *length == 0) {
+	struct _SelectionList* list = (struct _SelectionList*)client_data;
+	if (list != NULL) {
+	    _GetSelection(w, list->time, list->params, list->count);
+	    XtFree(client_data);
+	}
+	return;
+    }
+
+    StartAction(ctx, NULL);
+
+    text.ptr = (char*)value;
+    text.firstPos = 0;
+    text.length = *length;
+    text.format = FMT8BIT;
+    if (ReplaceText(ctx, ctx->text.insertPos, ctx->text.insertPos, &text)) {
+	XBell(XtDisplay(ctx), 50);
+	return;
+    }
+    ctx->text.insertPos = (*ctx->text.source->Scan)(ctx->text.source, 
+    	ctx->text.insertPos, XtstPositions, XtsdRight, text.length, TRUE);
+    XtTextUnsetSelection((Widget)ctx);
+
+    EndAction(ctx);
+
+    XtFree(client_data);
+    XtFree(*value);
+}
+
+
+static void InsertSelection(w, event, params, num_params)
+   Widget w;
+   XEvent *event;
+   String *params;		/* precedence list of selections to try */
+   Cardinal *num_params;
+{
+   static String default_params[] = {"PRIMARY", "CUT_BUFFER0"};
+   int count;
+   StartAction((TextWidget)w, event);
+    if ((count = *num_params) == 0) {
+	params = default_params;
+	count = XtNumber(default_params);
+    }
+    _GetSelection(w, ((TextWidget)w)->text.time, params, count);
+   EndAction((TextWidget)w);
 }
 
 
@@ -2912,13 +3023,13 @@ XtActionsRec textActionsTable [] = {
   {"extend-start", 		ExtendStart},
   {"extend-adjust", 		ExtendAdjust},
   {"extend-end", 		ExtendEnd},
+  {"insert-selection",		InsertSelection},
 /* Miscellaneous */
   {"redraw-display", 		RedrawDisplay},
   {"insert-file", 		InsertFile},
   {"insert-char", 		InsertChar},
   {"focus-in", 	 	        TextFocusIn},
   {"focus-out", 		TextFocusOut},
-  {NULL,NULL}
 };
 
 Cardinal textActionsTableCount = XtNumber(textActionsTable); /* for subclasses */
