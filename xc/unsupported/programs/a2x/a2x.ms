@@ -1,4 +1,4 @@
-$XConsortium: a2x.doc,v 1.15 92/08/21 09:02:40 rws Exp $
+$XConsortium: a2x.doc,v 1.16 92/08/21 11:21:30 rws Exp $
 
 				Using a2x
 
@@ -943,6 +943,15 @@ display.  The <geometry-spec> should be a complete geometry specification,
 with x, y, width and height all specified; the width and height are numbers
 of characters.  To contain full DragonDictate dialogue boxes, you will need
 a width of at least 56 and a height of at least 19.
+
+The DOS window will not display a text cursor unless it is explicitly given
+the input focus (just moving the pointer into the window is not good
+enough).  This makes it a bit difficult to tell when DragonDictate has
+recognized "[begin spell mode]", or to see where you are when editing
+keystrokes of voice macros.  To work around this a2x will, by default, send
+a synthetic FocusIn event to the DOS window (if you have specified one with
+the -w option), causing the DOS window to think it has the input focus.  If
+you do not want this behavior, specify -f on the command line.
 
 You will need a key on your X keyboard to act as the DragonDictate HOTKEY.
 By default, DragonDictate uses the keypad '+' key, which is the X keysym
