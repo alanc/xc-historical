@@ -28,7 +28,7 @@
 #define XtekServer Xtek
 
 
-XCOMM platform:  $XConsortium: pegasus.cf,v 1.18 91/02/09 18:06:21 rws Exp $
+XCOMM platform:  $XConsortium: pegasus.cf,v 1.19 91/02/11 14:13:10 keith Exp $
 XCOMM operating system:  OSName
 
 /*
@@ -37,6 +37,7 @@ XCOMM operating system:  OSName
 
 #define ServerOSDefines   -DM4310 -DM4317
 #define FontFilters BDFTOSNFFILT SHELLPATH
+#define PrimaryScreenResolution 95
 
 .DIRECTORIES:		/* Turn off directory search for RCS */
 
