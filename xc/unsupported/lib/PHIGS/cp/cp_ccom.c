@@ -1,4 +1,4 @@
-/* $XConsortium: cp_ccom.c,v 5.5 91/03/28 17:10:21 rws Exp $ */
+/* $XConsortium: cp_ccom.c,v 5.6 91/03/29 09:33:05 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1231,7 +1231,6 @@ attach_shared_mem( cph, fd )
     struct timeval	waittime;
     extern int		errno;
     unsigned long	rmask[MSKCNT];
-    int			shmctl();
 
     CLEARBITS(rmask);
     BITSET(rmask, fd);
