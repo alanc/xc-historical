@@ -41,18 +41,25 @@ class TypeObj;
 
 typedef unsigned char Boolean;
 
-static const unsigned char false = 0;
-static const unsigned char true = 1;
+#if !defined(__GNUC__) && !defined(HAS_BOOL)
 
+#ifndef true
+#define true 1
+#endif
 #ifndef TRUE
 #define TRUE true
 #endif
 
+#ifndef false
+#define false 0
+#endif
 #ifndef FALSE
 #define FALSE false
 #endif
 
-#endif
+#endif	
+
+#endif	
 
 #ifndef ox_octet
 #define ox_octet
