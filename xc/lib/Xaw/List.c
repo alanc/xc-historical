@@ -1,4 +1,4 @@
-/* $XConsortium: List.c,v 1.34 91/09/27 18:35:07 converse Exp $ */
+/* $XConsortium: List.c,v 1.35 91/10/16 21:35:06 eswu Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -253,8 +253,9 @@ Dimension width, height;
     case XtGeometryNo:
         break;
     case XtGeometryAlmost:
-	Layout(w, (request.height != reply.height),
-	          (request.width != reply.width),
+	Layout(w, 
+	       (request.width != reply.width),
+	       (request.height != reply.height),
 	       &(reply.width), &(reply.height));
 	request = reply;
 	switch (XtMakeGeometryRequest(w, &request, &reply) ) {
@@ -265,11 +266,8 @@ Dimension width, height;
 	    request = reply;
 	    if (Layout(w, FALSE, FALSE,
 		       &(request.width), &(request.height))) {
-	      char buf[BUFSIZ];
-	      sprintf(buf, "List Widget: %s %s",
-		      "Size Changed when it shouldn't have",
-		      "when computing layout");
-	      XtAppWarning(XtWidgetToApplicationContext(w), buf);
+	      XtAppWarning(XtWidgetToApplicationContext(w), 
+    "List Widget: Size Changed when it shouldn't have when computing layout");
 	    }
 	    request.request_mode = CWWidth | CWHeight;
 	    XtMakeGeometryRequest(w, &request, &reply);
@@ -618,7 +616,7 @@ Widget w;
 
   if (Layout(w, FALSE, FALSE, &width, &height))
     XtAppWarning(XtWidgetToApplicationContext(w),
-	    "List Widget: Size changed when it shouldn't have when resising.");
+	    "List Widget: Size changed when it shouldn't have when resizing.");
 }
 
 /*	Function Name: Layout
@@ -648,21 +646,35 @@ Dimension *width, *height;
  */
 
     if (lw->list.force_cols) {
-        lw->list.ncols = lw->list.default_cols;
-	if (lw->list.ncols <= 0) lw->list.ncols = 1;
-	/* 12/3 = 4 and 10/3 = 4, but 9/3 = 3 */
-	lw->list.nrows = ( ( lw->list.nitems - 1) / lw->list.ncols) + 1 ;
-	if (xfree) {		/* If allowed resize width. */
-	    *width = lw->list.ncols * lw->list.col_width 
-	           + 2 * lw->list.internal_width;
+	Dimension tw, th;
+	int tncols, tnrows;
+
+	tncols = lw->list.ncols = lw->list.default_cols;
+	if (tncols <= 0) tncols = 1;
+	tnrows = ( ( lw->list.nitems - 1) / tncols) + 1;
+	if (xfree)	/* If allowed resize width. */
+	    tw = tncols * lw->list.col_width + 2 * lw->list.internal_width;
+	if (yfree) 	/* If allowed resize height. */
+	    th = tnrows * lw->list.row_height + 2 * lw->list.internal_height;
+	/* warn if too big, but not any more than necessary */
+	if ((xfree && tw > 32767 && *width != 32767) || 
+	    (yfree && th > 32767 && *height != 32767))
+	    XtAppWarning(XtWidgetToApplicationContext(w),
+	"List Widget: Requested size exceeds legal value -- adjusting.");
+	/* clamp large requests to legal values... */
+	if (xfree && tw > 32767) tw = 32767;
+	if (yfree && th > 32767) th = 32767;
+	if (xfree && tw != *width) {
+	    lw->list.ncols = tncols;
+	    *width = tw;
 	    change = TRUE;
 	}
-	if (yfree) {		/* If allowed resize height. */
-	    *height = (lw->list.nrows * lw->list.row_height)
-                    + 2 * lw->list.internal_height;
+	if (yfree && th != *height) {
+	    lw->list.nrows = tnrows;
+	    *height = th;
 	    change = TRUE;
 	}
-	return(change);
+	return change;
     }
 
 /*
@@ -711,7 +723,7 @@ Dimension *width, *height;
 	       + 2 * lw->list.internal_width;
 	change = TRUE;
     }      
-    return(change);
+    return change;
 }
 
 /*	Function Name: Notify
