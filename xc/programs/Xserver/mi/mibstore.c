@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.40 90/06/12 17:47:49 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.41 90/06/12 19:19:03 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -561,7 +561,7 @@ miBSGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 	case rgnPART:
 	    if (!pPixmap)
 	    {
-		miCreateBSPixmap (pWin);
+		miCreateBSPixmap (pWin, NullBox);
 		if (!(pPixmap = pWindowPriv->pBackingPixmap))
 		    break;
 	    }
@@ -586,7 +586,7 @@ miBSGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 	case rgnIN:
 	    if (!pPixmap)
 	    {
-		miCreateBSPixmap (pWin);
+		miCreateBSPixmap (pWin, NullBox);
 		if (!(pPixmap = pWindowPriv->pBackingPixmap))
 		    break;
 	    }
@@ -2227,7 +2227,7 @@ miBSClearBackingStore(pWin, x, y, w, h, generateExposures)
 			      background)))
 	{
 	    if (!pBackingStore->pBackingPixmap)
-		miCreateBSPixmap(pWin);
+		miCreateBSPixmap(pWin, NullBox);
 
 	    pGC = GetScratchGC(pWin->drawable.depth, pScreen);
 	    if (pGC && pBackingStore->pBackingPixmap)
@@ -2668,9 +2668,11 @@ miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
 
     if ((*pScreen->RegionNotEmpty)(pObscured))
     {
+	BoxRec	oldExtents;
 	x = pWin->drawable.x;
 	y = pWin->drawable.y;
 	(*pScreen->TranslateRegion) (pObscured, -x, -y);
+	oldExtents = *(*pScreen->RegionExtents) (&pBackingStore->SavedRegion);
 	(* pScreen->Union)(&pBackingStore->SavedRegion,
 			   &pBackingStore->SavedRegion,
 			   pObscured);
@@ -2684,7 +2686,7 @@ miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
 
 	    pScreenPriv = (miBSScreenPtr) pScreen->devPrivates[miBSScreenIndex].ptr;
 	    if (!pBackingStore->pBackingPixmap)
-		miCreateBSPixmap (pWin);
+		miCreateBSPixmap (pWin, &oldExtents);
 	    else
 		miResizeBackingStore(pWin);
 
@@ -2908,7 +2910,7 @@ miBSTranslateBackingStore(pWin, windx, windy, oldClip, oldx, oldy)
     /* bit gravity makes things virtually too hard, punt */
     if (((windx != 0) || (windy != 0)) &&
 	(pBackingStore->status != StatusContents))
-	miCreateBSPixmap(pWin);
+	miCreateBSPixmap(pWin, NullBox);
 
     dx = pWin->drawable.x - oldx;
     dy = pWin->drawable.y - oldy;
@@ -3189,7 +3191,7 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
 
     if (!lift_functions && !pWindowPriv->pBackingPixmap)
     {
-	miCreateBSPixmap (pWin);
+	miCreateBSPixmap (pWin, NullBox);
 	if (!pWindowPriv->pBackingPixmap)
 	    lift_functions = TRUE;
     }
@@ -3417,7 +3419,7 @@ miTileVirtualBS (pWin)
      * punt parent relative tiles and do it now
      */
     if (pBackingStore->backgroundState == ParentRelative)
-	miCreateBSPixmap (pWin);
+	miCreateBSPixmap (pWin, NullBox);
 }
 
 #ifdef DEBUG
@@ -3428,8 +3430,9 @@ static int failedIndex;
 #endif
 
 static void
-miCreateBSPixmap (pWin)
+miCreateBSPixmap (pWin, pExtents)
     WindowPtr	pWin;
+    BoxPtr	pExtents;
 {
     miBSWindowPtr	pBackingStore;
     ScreenPtr		pScreen;
@@ -3445,10 +3448,11 @@ miCreateBSPixmap (pWin)
     backSet = ((pBackingStore->status == StatusVirtual) ||
 	       (pBackingStore->status == StatusVDirty));
 
+    extents = (* pScreen->RegionExtents) (&pBackingStore->SavedRegion);
+
     if (!pBackingStore->pBackingPixmap)
     {
 	/* the policy here could be more sophisticated */
-	extents = (* pScreen->RegionExtents) (&pBackingStore->SavedRegion);
 	pBackingStore->x = extents->x1;
 	pBackingStore->y = extents->y1;
 	pBackingStore->pBackingPixmap =
@@ -3492,15 +3496,17 @@ miCreateBSPixmap (pWin)
 	    pWin->background.pixmap->refcnt++;
     }
 
-    if ((* pScreen->RegionNotEmpty) (&pBackingStore->SavedRegion))
+    if (!pExtents)
+	pExtents = extents;
+
+    if (pExtents->y1 != pExtents->y2)
     {
 	RegionPtr exposed;
 
-	extents = (* pScreen->RegionExtents) (&pBackingStore->SavedRegion);
 	exposed = miBSClearBackingStore(pWin,
-			      extents->x1, extents->y1,
-			      extents->x2 - extents->x1,
-			      extents->y2 - extents->y1,
+			      pExtents->x1, pExtents->y1,
+			      pExtents->x2 - pExtents->x1,
+			      pExtents->y2 - pExtents->y1,
 			      !backSet);
 	if (exposed)
 	{
