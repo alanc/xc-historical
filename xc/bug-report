@@ -8,7 +8,7 @@ VERSION:
 CLIENT MACHINE and OPERATING SYSTEM:
     [e.g. Sun 3/280 running SunOS 4.0.1, Microvax II running Ultrix 3.1, ...]
 
-DISPLAY:
+DISPLAY TYPE:
     [e.g. Digital QVSS, Sun CG4, HP Topcat, IBM APA16, Apollo 4 plane, ...]
 
 WINDOW MANAGER:
