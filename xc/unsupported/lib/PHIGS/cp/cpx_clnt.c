@@ -1,4 +1,4 @@
-/* $XConsortium: cpx_clnt.c,v 5.4 91/05/07 16:29:16 hersh Exp $ */
+/* $XConsortium: cpx_clnt.c,v 5.5 91/06/26 17:03:35 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1062,7 +1062,7 @@ phg_cpxc_emerg_close( cph, cp_args )
 
     CPX_FOR_ALL_WS(cph,ws) {
 	cp_args2.data.ws_update.wsid = ws->id;
-	cp_args2.data.ws_update.flag = PUPD_PERFORM;
+	cp_args2.data.ws_update.flag = PFLAG_PERFORM;
 	CP_FUNC( cph, CP_FUNC_OP_WS_UPDATE, &cp_args2, NULL );
 
 	cp_args2.data.idata = ws->id;

@@ -1,4 +1,4 @@
-/* $XConsortium: cpa_css.c,v 5.1 91/02/16 09:48:27 rws Exp $ */
+/* $XConsortium: cpa_css.c,v 5.2 91/07/01 16:20:40 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -388,7 +388,7 @@ phg_cpa_delete_struct_net( cph, cp_args, css_srvr )
     if ( stp = phg_cpa_struct_exists( cph, css_srvr, CPX_BY_SID, args->id,
 	    CPA_STRUCT_OP_CHECK ) ) {
 	if ( !PEXGetStructuresInNetwork( css_srvr->display, stp->xid,
-		args->flag == PFLAG_DELETE ? PEXAll : PEXOrphans,
+		args->flag == PFLAG_DEL ? PEXAll : PEXOrphans,
 		&pexids, &count ) ) {
 	    ERR_BUF( cph->erh, ERR900 );
 
@@ -571,7 +571,7 @@ phg_cpa_inq_struct_status( cph, cp_args, ret, css_srvr )
 	if ( PEXGetStructureInfo( css_srvr->display, stp->xid, (CARD16*)NULL,
 		(CARD32*)NULL, &numels, (CARD32*)NULL, (CARD16*)NULL) )
 	    ret->data.idata = numels > 0 ?
-		(Pint) PSTRUCT_STATUS_NON_EMPTY : (Pint) PSTRUCT_STATUS_EMPTY;
+		(Pint) PSTRUCT_STATUS_NOT_EMPTY : (Pint) PSTRUCT_STATUS_EMPTY;
 	else
 	    ret->err = cph->erh->errno;
     }

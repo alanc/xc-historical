@@ -1,4 +1,4 @@
-/* $XConsortium: cpx_ar.c,v 5.3 91/04/04 15:06:38 gildea Exp $ */
+/* $XConsortium: cpx_ar.c,v 5.4 91/05/05 15:45:34 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -291,7 +291,7 @@ Phg_args *cp_args;
 	    break;
 	    
 	case PHG_ARGS_AR_NETWORKS :
-	    if (compile_network_sids(cph, arh, &(args->data), PNET_ARCHIVE,
+	    if (compile_network_sids(cph, arh, &(args->data), PNET_AR,
 					   &(args->data)))
 		return;
 	    ar_structs.num_ints = args->data.num_ints;
@@ -730,7 +730,7 @@ Phg_ret *ret;
     ret->data.int_list.ints = (Pint *)cph->scratch.buf;
     ret->data.int_list.num_ints = 0;
     
-    if (args->op == PHG_ARGS_CONF_NET && args->src == PNET_ARCHIVE) {
+    if (args->op == PHG_ARGS_CONF_NET && args->src == PNET_AR) {
     
 	if (get_ar_structure_network_ids(cph, arh,
 					 args->struct_id, &ar_net_ids)) {
@@ -926,7 +926,7 @@ Pint_list		*out;		/* list of sids in network */
 
     for (i = 0; i < nl; i++) {
     
-	if (where == PNET_ARCHIVE) {
+	if (where == PNET_AR) {
 	    if (!phg_ar_get_entry_from_archive(arh, in->ints[i])) {
 		ERR_BUF(cph->erh, ERR201);
 		lsts[i].num_ints = 0;

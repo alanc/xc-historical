@@ -1,4 +1,4 @@
-/* $XConsortium: cp_ccom.c,v 5.13 91/05/30 09:01:54 jap Exp $ */
+/* $XConsortium: cp_ccom.c,v 5.14 91/06/28 17:48:25 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -224,11 +224,11 @@ inp_init_send( cph, args, sv)
 	    Pchoice_data	*rec = &args->data.inp_init_dev.data.cho.rec;
 	    switch ( args->data.inp_init_dev.pet ) {
 		case 2:
-		    if ( rec->pet_r2.num_prompts > 0 ) {
+		    if ( rec->pets.pet_r2.num_prompts > 0 ) {
 			vcount = 1;
-			sv->size = rec->pet_r2.num_prompts
+			sv->size = rec->pets.pet_r2.num_prompts
 			    * sizeof(Ppr_switch);
-			sv->data = (char*)rec->pet_r2.prompts;
+			sv->data = (char*)rec->pets.pet_r2.prompts;
 		    }
 		    break;
 		case 3:
@@ -236,14 +236,14 @@ inp_init_send( cph, args, sv)
 		      vcount = 1;
 		      sv->size =
 			  args->data.inp_init_dev.data.cho.string_list_size;
-		      sv->data = (char*)rec->pet_r3.strings;
+		      sv->data = (char*)rec->pets.pet_r3.strings;
 		  }
 		  break;
 		case 5:
-		    if ( rec->pet_r5.num_pick_ids > 0 ) {
+		    if ( rec->pets.pet_r5.num_pick_ids > 0 ) {
 			vcount = 1;
-			sv->size = rec->pet_r5.num_pick_ids*sizeof(Pint);
-			sv->data = (char*)rec->pet_r5.pick_ids;
+			sv->size = rec->pets.pet_r5.num_pick_ids*sizeof(Pint);
+			sv->data = (char*)rec->pets.pet_r5.pick_ids;
 		    }
 		    break;
 	    }
@@ -628,11 +628,11 @@ setup_inp_state_recv( class, ret, rv )
 	    Pchoice_data		*rec = &chst->state.record;
 	    switch ( chst->state.pet ) {
 		case 2:
-		    if ( rec->pet_r2.num_prompts > 0 ) {
+		    if ( rec->pets.pet_r2.num_prompts > 0 ) {
 			vcount = 1;
-			rv->size = rec->pet_r2.num_prompts
+			rv->size = rec->pets.pet_r2.num_prompts
 			    * sizeof(Ppr_switch);
-			rv->dpp = (char**)&rec->pet_r2.prompts;
+			rv->dpp = (char**)&rec->pets.pet_r2.prompts;
 		    }
 		    break;
 		case 3:
@@ -643,10 +643,10 @@ setup_inp_state_recv( class, ret, rv )
 		    }
 		    break;
 		case 5:
-		    if ( rec->pet_r5.num_pick_ids > 0 ) {
+		    if ( rec->pets.pet_r5.num_pick_ids > 0 ) {
 			vcount = 1;
-			rv->size = rec->pet_r5.num_pick_ids*sizeof(Pint);
-			rv->dpp = (char**)&rec->pet_r5.pick_ids;
+			rv->size = rec->pets.pet_r5.num_pick_ids*sizeof(Pint);
+			rv->dpp = (char**)&rec->pets.pet_r5.pick_ids;
 		    }
 		    break;
 	    }

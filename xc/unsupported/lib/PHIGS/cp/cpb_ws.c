@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cpb_ws.c,v 5.1 91/02/16 09:48:49 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -104,7 +104,7 @@ phg_cpb_close_ws( cph, cp_args, ws )
     Ws_post_str		*str_list;
     Wsb_output_ws	*owsb = &ws->out_ws.model.b;
 
-    (*ws->update)( ws, PUPD_PERFORM );
+    (*ws->update)( ws, PFLAG_PERFORM );
 
     str_list = owsb->posted.lowest.higher;
     while ( str_list->higher ) {

@@ -1,4 +1,4 @@
-/* $XConsortium: cpa_ws.c,v 5.2 91/04/04 21:05:44 hersh Exp $ */
+/* $XConsortium: cpa_ws.c,v 5.3 91/07/01 16:21:01 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -52,7 +52,7 @@ phg_cpa_ws_update( cph, cp_args, ws )
     Phg_args_ws_update	*args = &cp_args->data.ws_update;
 
     (void)PEXExecuteDeferredActions( ws->display, ws->rid );
-    if ( args->flag == PUPD_PERFORM )
+    if ( args->flag == PFLAG_PERFORM )
 	(void)PEXUpdateWorkstation( ws->display, ws->rid );
     XFlush( ws->display );
 }
