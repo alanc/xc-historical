@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbfillrct.c,v 5.7 89/11/02 13:48:53 keith Exp $ */
+/* $XConsortium: cfbfillrct.c,v 5.8 89/11/19 15:10:53 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -206,22 +206,20 @@ void
 cfbFillBoxTile32 (pDrawable, nBox, pBox, tile)
     DrawablePtr	    pDrawable;
     int		    nBox;	/* number of boxes to fill */
-    register BoxPtr pBox;	/* pointer to list of boxes to fill */
+    BoxPtr 	    pBox;	/* pointer to list of boxes to fill */
     PixmapPtr	    tile;	/* rotated, expanded tile */
 {
-    int srcpix;	
+    register int srcpix;	
     int *psrc;		/* pointer to bits in tile, if needed */
     int tileHeight;	/* height of the tile */
 
     int nlwDst;		/* width in longwords of the dest pixmap */
     int w;		/* width of current box */
     register int h;	/* height of current box */
-    unsigned long startmask;
-    unsigned long endmask;	/* masks for reggedy bits at either end of line */
+    register unsigned long startmask;
+    register unsigned long endmask; /* masks for reggedy bits at either end of line */
     int nlwMiddle;	/* number of longwords between sides of boxes */
-    register int nlwExtra;	
-		        /* to get from right of box to left of next span */
-    
+    int nlwExtra;	/* to get from right of box to left of next span */
     register int nlw;	/* loop version of nlwMiddle */
     register unsigned long *p;	/* pointer to bits we're writing */
     int y;		/* current scan line */
