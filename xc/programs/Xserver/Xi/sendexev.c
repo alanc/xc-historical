@@ -1,4 +1,4 @@
-/* $XConsortium: xsendexev.c,v 1.4 89/10/10 16:11:01 gms Exp $ */
+/* $XConsortium: xsendexev.c,v 1.5 89/12/02 15:21:30 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -43,6 +43,7 @@ SOFTWARE.
 extern	int 		IReqCode;
 extern	int 		BadDevice;
 extern	void		(* ReplySwapVector[256]) ();
+extern	void		(* EventSwapVector[128]) ();
 DeviceIntPtr		LookupDeviceIntRec();
 
 /***********************************************************************
@@ -58,11 +59,24 @@ SProcXSendExtensionEvent(client)
     register char n;
     register long *p;
     register int i;
+    xEvent eventT;
+    xEvent *eventP;
+    void (*proc)();
 
     REQUEST(xSendExtensionEventReq);
     swaps(&stuff->length, n);
     swapl(&stuff->destination, n);
     swaps(&stuff->count, n);
+    eventP = (xEvent *) &stuff[1];
+    for (i=0; i<stuff->num_events; i++,eventP++)
+        {
+	proc = EventSwapVector[eventP->u.u.type & 0177];
+ 	if (!proc)   /* no swapping proc; invalid event type? */
+	    return (BadValue);
+	(*proc)(eventP, &eventT);
+	*eventP = eventT;
+	}
+
     p = (long *) (((xEvent *) &stuff[1]) + stuff->num_events);
     for (i=0; i<stuff->count; i++)
         {
