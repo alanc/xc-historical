@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: swaprep.c,v 1.27 87/09/05 17:57:32 rws Locked $ */
+/* $Header: swaprep.c,v 1.28 88/01/02 14:38:48 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -30,9 +30,10 @@ SOFTWARE.
 #include "Xproto.h"
 #include "misc.h"
 #include "dixstruct.h"
+#include "fontstruct.h"
 #include "scrnintstr.h"
 
-void SwapVisual(), SwapConnSetup(), SwapWinRoot(), SwapFont();
+void SwapVisual(), SwapConnSetup(), SwapWinRoot();
 
 /* copy long from src to dst byteswapping on the way */
 #define cpswapl(src, dst) \
@@ -375,6 +376,71 @@ SQueryKeymapReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     (void)WriteToClient(pClient, size, (char *) pRep);
+}
+
+static void
+SwapCharInfo(pInfo)
+    xCharInfo	*pInfo;
+{
+    register char n;
+
+    swaps(&pInfo->leftSideBearing, n);
+    swaps(&pInfo->rightSideBearing, n);
+    swaps(&pInfo->characterWidth, n);
+    swaps(&pInfo->ascent, n);
+    swaps(&pInfo->descent, n);
+    swaps(&pInfo->attributes, n);
+}
+
+static void
+SwapFontInfo(pr)
+    xQueryFontReply *pr;
+{
+    register char		n;
+
+    swaps(&pr->minCharOrByte2, n);
+    swaps(&pr->maxCharOrByte2, n);
+    swaps(&pr->defaultChar, n);
+    swaps(&pr->nFontProps, n);
+    swaps(&pr->fontAscent, n);
+    swaps(&pr->fontDescent, n);
+    SwapCharInfo( &pr->minBounds);
+    SwapCharInfo( &pr->maxBounds);
+    swapl(&pr->nCharInfos, n);
+}
+
+static void
+SwapFont( pr, hasGlyphs)
+    xQueryFontReply *	pr;
+    Bool hasGlyphs;
+{
+    unsigned	i;
+    xCharInfo *	pxci;
+    unsigned	nchars, nprops;
+    char	*pby;
+    register char n;
+
+    swaps(&pr->sequenceNumber, n);
+    swapl(&pr->length, n);
+    nchars = pr->nCharInfos;
+    nprops = pr->nFontProps;
+    SwapFontInfo(pr);
+    pby = (char *) &pr[1];
+    /* Font properties are an atom and either an int32 or a CARD32, so
+     * they are always 2 4 byte values */
+    for(i = 0; i < nprops; i++)
+    {
+	swapl(pby, n);
+	pby += 4;
+	swapl(pby, n);
+	pby += 4;
+    }
+    if (hasGlyphs)
+    {
+	pxci = (xCharInfo *)pby;
+	for(i = 0; i< nchars; i++, pxci++)
+	    SwapCharInfo(pxci);
+    }
 }
 
 void
