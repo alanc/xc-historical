@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.38 91/07/22 21:29:13 converse Exp $
+ * $XConsortium: externs.h,v 2.39 93/09/20 17:52:05 hersh Exp swick $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -56,6 +56,7 @@ extern void	DoOpenFolder		(/* Widget, XtPointer, XtPointer */);
 extern void 	DoOpenFolderInNewWindow	(/* Widget, XtPointer, XtPointer */);
 extern void	DoCreateFolder		(/* Widget, XtPointer, XtPointer */);
 extern void 	DoDeleteFolder		(/* Widget, XtPointer, XtPointer */);
+extern void	DoSaveYourself		(/* Widget, XtPointer, XtPointer */);
 extern void	Push			(/* Stack, char* */);
 extern char *	Pop			(/* Stack */);
 
@@ -70,6 +71,7 @@ extern void	ToggleMenuItem		(/* Widget, Boolean */);
 	/* from msg.c */
 
 extern Widget   CreateFileSource	(/* Widget, String, Boolean */);
+extern char*	MsgName			(/* Msg */);
 
 	/* from popup.c */
 
@@ -91,6 +93,10 @@ extern void	ScreenSetAssocMsg	(/* Scrn, Msg */);
 extern void	DestroyScrn		(/* Scrn */);
 extern void	MapScrn			(/* Scrn */);
 extern Scrn	ScrnFromWidget		(/* Widget */);
+
+	/* from toc.c */
+
+extern Boolean	TocHasChanges		(/* Toc */);
 
 	/* from tocfuncs.c */
 
