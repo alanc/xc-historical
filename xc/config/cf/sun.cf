@@ -13,6 +13,7 @@
 #define HasShm		  YES
 #define HasSecureRPC	  YES
 #define XsunServer Xsun
+#define BuildPex	  YES
 
 #if OSMajorVersion >= 4
 #define HasSharedLibraries YES
@@ -73,15 +74,8 @@
 /* see below for ServerDefines */
 
 
-XCOMM platform:  $XConsortium: sun.cf,v 1.46 91/03/13 14:45:40 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.47 91/03/14 17:55:56 rws Exp $
 XCOMM operating system:  OSName
-
-#if HasGcc
-#define ServerCDebugFlags -O -g		/* XXX remove this in R5 */
-#endif
-#ifdef SparcArchitecture		/* XXX change this in R5 */
-#define BuildPex YES
-#endif
 
 #define UseSunWindowsInServer	NO	/* link in SunWindows support? */
 
@@ -102,4 +96,8 @@ XCOMM operating system:  OSName
 
 #if OSMajorVersion >= 4 && OSMinorVersion >= 0
 #define SetTtyGroup YES
+#endif
+
+#if HasGcc
+#define ServerCDebugFlags -O -g		/* XXX remove this in R5 */
 #endif
