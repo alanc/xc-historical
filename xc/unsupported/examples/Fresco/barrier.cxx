@@ -17,18 +17,6 @@
 #include <X11/Fresco/OS/thread.h>
 #include <stdio.h>
 
-#if defined(AIXV3)
-#include <sys/select.h>
-#endif
-
-#if defined(sony)
-extern "C" {
-    /* Sony has select in libsocket, but no prototype in /usr/include */
-    int select(int, fd_set*, fd_set*, fd_set*, struct timeval*);
-}
-#endif
-
-
 #ifdef sgi
 
 extern "C" int sginap(long);
@@ -46,6 +34,16 @@ static Boolean delay(float seconds) {
 #include <X11/Fresco/OS/types.h>
 #include <sys/time.h>
 
+#if defined(AIXV3) 
+#include <sys/select.h>
+#endif
+
+#if defined(sony)
+extern "C" {
+    /* Sony has select in libsocket, but no prototype in /usr/include */
+    int select(int, fd_set*, fd_set*, fd_set*, struct timeval*);
+}
+#endif
 
 static Boolean delay(float seconds) {
     struct timeval tv;
