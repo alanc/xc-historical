@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.48 91/03/15 13:53:37 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.49 91/03/23 14:08:28 rws Exp $
 XCOMM operating system:  OSName
 
 /*
@@ -13,7 +13,6 @@ XCOMM operating system:  OSName
 #define HasShm		  YES
 #define HasSecureRPC	  YES
 #define SetTtyGroup	  YES
-#define MkdirHasP	  YES
 #define HasPutenv	  YES
 #define HasBsearch	  YES
 #define BuildPex	  YES
