@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.7 91/02/16 15:57:19 dave Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.9 91/05/13 23:23:44 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -42,6 +42,12 @@
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
+#if __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
+
 /*
  *      EXTERNS
  *              External declarations required locally to this package
@@ -50,7 +56,6 @@
  */
 extern char XcmsRGB_prefix[];
 extern char XcmsRGBi_prefix[];
-extern LINEAR_RGB_SCCData Default_RGB_SCCData;
 
 
 /*
@@ -78,18 +83,14 @@ extern LINEAR_RGB_SCCData Default_RGB_SCCData;
  */
 
 /*
- *      EXTERNS
- */
-extern void LINEAR_RGB_FreeSCCData();
-
-/*
  *      FORWARD DECLARATIONS
  */
+static void LINEAR_RGB_FreeSCCData();
 Status XcmsRGBToRGBi();
 Status XcmsRGBiToCIEXYZ();
 Status XcmsCIEXYZToRGBi();
 Status XcmsRGBiToRGB();
-int LINEAR_RGB_InitSCCData();
+static int LINEAR_RGB_InitSCCData();
 XPointer LINEAR_RGB_CopySCCData();
 int XcmsLRGB_RGB_ParseString();
 int XcmsLRGB_RGBi_ParseString();
@@ -101,7 +102,7 @@ int XcmsLRGB_RGBi_ParseString();
  *		        static int	ExampleLocalVar;
  */
 
-static unsigned short HALF[17] = {
+static unsigned short Const HALF[17] = {
     0x0000,	/*  0 bitsPerRGB */
     0x3fff,	/*  1 bitsPerRGB */
     0x1fff,	/*  2 bitsPerRGB */
@@ -121,7 +122,7 @@ static unsigned short HALF[17] = {
     0x0000	/* 16 bitsPerRGB */
 };
 
-static unsigned short MASK[17] = {
+static unsigned short Const MASK[17] = {
     0x0000,	/*  0 bitsPerRGB */
     0x8000,	/*  1 bitsPerRGB */
     0xc000,	/*  2 bitsPerRGB */
@@ -235,6 +236,227 @@ XcmsSCCFuncSet	XcmsLinearRGBFunctionSet =
 	LINEAR_RGB_FreeSCCData	/* pFreeSCCData */
     };
 
+/*
+ *	DESCRIPTION
+ *		Contents of Default SCCData should be replaced if other
+ *		data should be used as default.
+ *
+ *
+ */
+
+/*
+ * NAME		Tektronix 19" (Sony) CRT
+ * PART_NUMBER		119-2451-00
+ * MODEL		Tek4300, Tek4800
+ */
+
+static IntensityRec Const Default_RGB_RedTuples[] = {
+    /* {unsigned short value, XcmsFloat intensity} */
+            0x0000,    0.000000,
+            0x0900,    0.000000,
+            0x0a00,    0.000936,
+            0x0f00,    0.001481,
+            0x1400,    0.002329,
+            0x1900,    0.003529,
+            0x1e00,    0.005127,
+            0x2300,    0.007169,
+            0x2800,    0.009699,
+            0x2d00,    0.012759,
+            0x3200,    0.016392,
+            0x3700,    0.020637,
+            0x3c00,    0.025533,
+            0x4100,    0.031119,
+            0x4600,    0.037431,
+            0x4b00,    0.044504,
+            0x5000,    0.052373,
+            0x5500,    0.061069,
+            0x5a00,    0.070624,
+            0x5f00,    0.081070,
+            0x6400,    0.092433,
+            0x6900,    0.104744,
+            0x6e00,    0.118026,
+            0x7300,    0.132307,
+            0x7800,    0.147610,
+            0x7d00,    0.163958,
+            0x8200,    0.181371,
+            0x8700,    0.199871,
+            0x8c00,    0.219475,
+            0x9100,    0.240202,
+            0x9600,    0.262069,
+            0x9b00,    0.285089,
+            0xa000,    0.309278,
+            0xa500,    0.334647,
+            0xaa00,    0.361208,
+            0xaf00,    0.388971,
+            0xb400,    0.417945,
+            0xb900,    0.448138,
+            0xbe00,    0.479555,
+            0xc300,    0.512202,
+            0xc800,    0.546082,
+            0xcd00,    0.581199,
+            0xd200,    0.617552,
+            0xd700,    0.655144,
+            0xdc00,    0.693971,
+            0xe100,    0.734031,
+            0xe600,    0.775322,
+            0xeb00,    0.817837,
+            0xf000,    0.861571,
+            0xf500,    0.906515,
+            0xfa00,    0.952662,
+            0xff00,    1.000000
+};
+
+static IntensityRec Const Default_RGB_GreenTuples[] = {
+    /* {unsigned short value, XcmsFloat intensity} */
+            0x0000,      0.000000,
+            0x1300,    0.000000,
+            0x1400,    0.000832,
+            0x1900,    0.001998,
+            0x1e00,    0.003612,
+            0x2300,    0.005736,
+            0x2800,    0.008428,
+            0x2d00,    0.011745,
+            0x3200,    0.015740,
+            0x3700,    0.020463,
+            0x3c00,    0.025960,
+            0x4100,    0.032275,
+            0x4600,    0.039449,
+            0x4b00,    0.047519,
+            0x5000,    0.056520,
+            0x5500,    0.066484,
+            0x5a00,    0.077439,
+            0x5f00,    0.089409,
+            0x6400,    0.102418,
+            0x6900,    0.116485,
+            0x6e00,    0.131625,
+            0x7300,    0.147853,
+            0x7800,    0.165176,
+            0x7d00,    0.183604,
+            0x8200,    0.203140,
+            0x8700,    0.223783,
+            0x8c00,    0.245533,
+            0x9100,    0.268384,
+            0x9600,    0.292327,
+            0x9b00,    0.317351,
+            0xa000,    0.343441,
+            0xa500,    0.370580,
+            0xaa00,    0.398747,
+            0xaf00,    0.427919,
+            0xb400,    0.458068,
+            0xb900,    0.489165,
+            0xbe00,    0.521176,
+            0xc300,    0.554067,
+            0xc800,    0.587797,
+            0xcd00,    0.622324,
+            0xd200,    0.657604,
+            0xd700,    0.693588,
+            0xdc00,    0.730225,
+            0xe100,    0.767459,
+            0xe600,    0.805235,
+            0xeb00,    0.843491,
+            0xf000,    0.882164,
+            0xf500,    0.921187,
+            0xfa00,    0.960490,
+            0xff00,    1.000000
+};
+
+static IntensityRec Const Default_RGB_BlueTuples[] = {
+    /* {unsigned short value, XcmsFloat intensity} */
+            0x0000,    0.000000,
+            0x0e00,    0.000000,
+            0x0f00,    0.001341,
+            0x1400,    0.002080,
+            0x1900,    0.003188,
+            0x1e00,    0.004729,
+            0x2300,    0.006766,
+            0x2800,    0.009357,
+            0x2d00,    0.012559,
+            0x3200,    0.016424,
+            0x3700,    0.021004,
+            0x3c00,    0.026344,
+            0x4100,    0.032489,
+            0x4600,    0.039481,
+            0x4b00,    0.047357,
+            0x5000,    0.056154,
+            0x5500,    0.065903,
+            0x5a00,    0.076634,
+            0x5f00,    0.088373,
+            0x6400,    0.101145,
+            0x6900,    0.114968,
+            0x6e00,    0.129862,
+            0x7300,    0.145841,
+            0x7800,    0.162915,
+            0x7d00,    0.181095,
+            0x8200,    0.200386,
+            0x8700,    0.220791,
+            0x8c00,    0.242309,
+            0x9100,    0.264937,
+            0x9600,    0.288670,
+            0x9b00,    0.313499,
+            0xa000,    0.339410,
+            0xa500,    0.366390,
+            0xaa00,    0.394421,
+            0xaf00,    0.423481,
+            0xb400,    0.453547,
+            0xb900,    0.484592,
+            0xbe00,    0.516587,
+            0xc300,    0.549498,
+            0xc800,    0.583291,
+            0xcd00,    0.617925,
+            0xd200,    0.653361,
+            0xd700,    0.689553,
+            0xdc00,    0.726454,
+            0xe100,    0.764013,
+            0xe600,    0.802178,
+            0xeb00,    0.840891,
+            0xf000,    0.880093,
+            0xf500,    0.919723,
+            0xfa00,    0.959715,
+            0xff00,    1.00000
+};
+
+static IntensityTbl Default_RGB_RedTbl = {
+    /* IntensityRec *pBase */
+	(IntensityRec *) Default_RGB_RedTuples,
+    /* unsigned int nEntries */
+	52
+};
+
+static IntensityTbl Default_RGB_GreenTbl = {
+    /* IntensityRec *pBase */
+	(IntensityRec *)Default_RGB_GreenTuples,
+    /* unsigned int nEntries */
+	50
+};
+
+static IntensityTbl Default_RGB_BlueTbl = {
+    /* IntensityRec *pBase */
+	(IntensityRec *)Default_RGB_BlueTuples,
+    /* unsigned int nEntries */
+	51
+};
+
+static LINEAR_RGB_SCCData Default_RGB_SCCData = {
+
+    /* XcmsFloat XYZtoRGBmatrix[3][3] */
+       3.48340481253539000, -1.52176374927285200, -0.55923133354049780,
+      -1.07152751306193600,  1.96593795204372400,  0.03673691339553462,
+       0.06351179790497788, -0.20020501000496480,  0.81070942031648220,
+
+    /* XcmsFloat RGBtoXYZmatrix[3][3] */
+       0.38106149108714790, 0.32025712365352110, 0.24834578525933100,
+       0.20729745115140850, 0.68054638776373240, 0.11215616108485920,
+       0.02133944350088028, 0.14297193020246480, 1.24172892629665500,
+
+    /* IntensityTbl *pRedTbl */
+	&Default_RGB_RedTbl,
+
+    /* IntensityTbl *pGreenTbl */
+	&Default_RGB_GreenTbl,
+
+    /* IntensityTbl *pBlueTbl */
+	&Default_RGB_BlueTbl
+};
 
 /************************************************************************
  *									*
@@ -982,7 +1204,7 @@ XcmsRGBToRGBi(ccc, pXcmsColors_in_out, nColors, pCompressed)
  *
  *	SYNOPSIS
  */
-Status
+static Status
 LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
     Display *dpy;
     int screenNumber;
@@ -1327,4 +1549,55 @@ _XcmsLRGB_InitScrnDefault(dpy, screenNumber, pPerScrnInfo)
     pPerScrnInfo->functionSet = (XPointer)&XcmsLinearRGBFunctionSet;
     pPerScrnInfo->state = XcmsInitDefault;
     return(1);
+}
+
+/*
+ *	NAME
+ *		LINEAR_RGB_FreeSCCData()
+ *
+ *	SYNOPSIS
+ */
+static void
+LINEAR_RGB_FreeSCCData(pScreenData)
+    LINEAR_RGB_SCCData *pScreenData;
+/*
+ *	DESCRIPTION
+ *
+ *	RETURNS
+ *		0 if failed.
+ *		1 if succeeded with no modifications.
+ *
+ */
+{
+    if (pScreenData) {
+	if (pScreenData->pRedTbl) {
+	    if (pScreenData->pGreenTbl) {
+		if (pScreenData->pRedTbl->pBase != 
+		    pScreenData->pGreenTbl->pBase) {
+		    if (pScreenData->pGreenTbl->pBase) {
+			free (pScreenData->pGreenTbl->pBase);
+		    }
+		}
+		if (pScreenData->pGreenTbl != pScreenData->pRedTbl) {
+		    free (pScreenData->pGreenTbl);
+		}
+	    }
+	    if (pScreenData->pBlueTbl) {
+		if (pScreenData->pRedTbl->pBase != 
+		    pScreenData->pBlueTbl->pBase) {
+		    if (pScreenData->pBlueTbl->pBase) {
+			free (pScreenData->pBlueTbl->pBase);
+		    }
+		}
+		if (pScreenData->pBlueTbl != pScreenData->pRedTbl) {
+		    free (pScreenData->pBlueTbl);
+		}
+	    }
+	    if (pScreenData->pRedTbl->pBase) {
+		free (pScreenData->pRedTbl->pBase);
+	    }
+	    free (pScreenData->pRedTbl);
+	}
+	free (pScreenData);
+    }
 }
