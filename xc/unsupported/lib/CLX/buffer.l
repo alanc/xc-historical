@@ -58,30 +58,6 @@
 ;;; This is here instead of in bufmac so that with-display can be
 ;;; compiled without macros and bufmac being loaded.
 
-#+(and excl clx-blocksigio)
-(defconstant sigiomask (ash 1 (1- 23)))
-  
-#+(and excl clx-blocksigio)
-(defmacro with-buffer ((buffer) &body body)
-  ;; This macro is for use in a multi-process environment.  It provides
-  ;; exclusive access to the local buffer object for request generation and
-  ;; reply processing.
-  (declare (special *within-with-buffer*))
-  (if (and (boundp '*within-with-buffer*) *within-with-buffer*)
-      `(progn ,buffer ,@body) ;; Speedup hack for lexically nested with-buffer's
-    `(compiler-let ((*within-with-buffer* t))
-      (let ()
-	(declare-bufmac)
-	(unwind-protect
-	     (progn
-	       (sigblock sigiomask)
-	       (holding-lock ((buffer-lock ,buffer) "Display-Lock") ,@body))
-	  (progn
- 	    ;; This next assures no race condition between the two calls.
- 	    ;; Block *all* signals, the reenable them with SIGIO unmasked.
-	    (sigsetmask (logandc2 (sigsetmask #xffffffff) sigiomask))))))))
-
-#-(and excl clx-blocksigio)
 (defmacro with-buffer ((buffer) &body body)
   ;; This macro is for use in a multi-process environment.  It provides
   ;; exclusive access to the local buffer object for request generation and
