@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$Header: xpr.c,v 1.15 87/07/16 22:45:35 swick Locked $";
+static char *rcsid_xpr_c = "$Header: xpr.c,v 1.16 87/08/17 12:48:22 dkk Locked $";
 #endif
 
 #include <sys/types.h>
@@ -108,7 +108,7 @@ char **argv;
 	ih = win.pixmap_height;
     } else {
 	/* calculate w and h cell count */
-	wpad = (16 - (win.pixmap_width & 15)) & 15;
+	wpad = (32 - (win.pixmap_width & 31)) & 31;
 	iw = win.pixmap_width;
 	ih = (win.pixmap_height + 5) / 6;
 	hpad = (ih * 6) - win.pixmap_height;
