@@ -4,8 +4,10 @@ XCOMM You must manually insert ShellStr.h contents into Shell.h
 /* DEFINES = -DARRAYPERSTR */ /* The default is a giant array */
 
 StringDefs.h: makestrs.c string.list
-	$(RM) $@ makestrs StringDefs.c ShellStr.h
+	$(RM) $@ StringDefs.c ShellStr.h makestrs
 	-$(CC) -o makestrs makestrs.c $(CFLAGS) $(LOCAL_LDFLAGS) $(LDLIBS) $(EXTRA_LOAD_FLAGS)
 	./makestrs < string.list > StringDefs.c
 	$(RM) makestrs
 
+clean::
+	$(RM) StringDefs.h StringDefs.c ShellStr.h makestrs
