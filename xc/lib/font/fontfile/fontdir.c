@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: fontdir.c,v 1.1 91/05/10 14:46:30 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -94,17 +94,17 @@ FontFileMakeDir(dirName, size)
 	needslash = 1;
     dir = (FontDirectoryPtr) xalloc(sizeof *dir + dirlen + needslash + 1);
     if (!dir)
-	return NULL;
+	return (FontDirectoryPtr)0;
     if (!FontFileInitTable (&dir->scalable, 0))
     {
 	xfree (dir);
-	return NULL;
+	return (FontDirectoryPtr)0;
     }
     if (!FontFileInitTable (&dir->nonScalable, size))
     {
 	FontFileFreeTable (&dir->scalable);
 	xfree (dir);
-	return NULL;
+	return (FontDirectoryPtr)0;
     }
     dir->directory = (char *) (dir + 1);
     strcpy(dir->directory, dirName);
@@ -139,7 +139,7 @@ FontFileAddEntry(table, prototype)
 	entry = (FontEntryPtr) xrealloc(table->entries,
 					   newsize * sizeof(FontEntryRec));
 	if (!entry)
-	    return NULL;
+	    return (FontEntryPtr)0;
 	table->size = newsize;
 	table->entries = entry;
     }
@@ -147,7 +147,7 @@ FontFileAddEntry(table, prototype)
     *entry = *prototype;
     entry->name.name = (char *) xalloc(prototype->name.length + 1);
     if (!entry->name.name)
-	return NULL;
+	return (FontEntryPtr)0;
     bcopy (prototype->name.name, entry->name.name, prototype->name.length);
     entry->name.name[entry->name.length] = '\0';
     table->used++;
@@ -341,7 +341,7 @@ FontFileFindNameInDir(table, pat)
 	if (res < 0)
 	    break;
     }
-    return NULL;
+    return (FontEntryPtr)0;
 }
 
 int
