@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: dispatch.c,v 5.57 93/12/06 22:23:45 rob Exp $ */
+/* $XConsortium: dispatch.c,v 1.1 93/12/15 16:06:08 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -128,7 +128,16 @@ static void DeleteClientFromAnySelections(
 #endif
 );
 
-static int nextFreeClientID; /* always MIN free client ID */
+/*
+ * XXX:SM For MTX this is referenced in connection.c.
+ *   - Choice: either do what I've done here or do what the original MTX
+ *     did and globally declare it in cit.c.
+ */
+#ifdef MTX
+int nextFreeClientID;        /* always MIN free client ID */
+#else
+static int nextFreeClientID;
+#endif
 
 static int	nClients;	/* number active clients */
 
