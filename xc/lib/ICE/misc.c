@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.6 93/09/22 11:21:56 mor Exp $ */
+/* $XConsortium: misc.c,v 1.7 93/09/23 11:52:43 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -127,11 +127,17 @@ IceConnectionString (iceConn)
 IceConn iceConn;
 
 {
-    char *string = (char *) malloc (strlen (iceConn->connection_string) + 1);
+    if (iceConn->connection_string)
+    {
+	char *string = (char *) malloc (
+	    strlen (iceConn->connection_string) + 1);
 
-    strcpy (string, iceConn->connection_string);
+	strcpy (string, iceConn->connection_string);
 
-    return (string);
+	return (string);
+    }
+    else
+	return (NULL);
 }
 
 
