@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: miexpose.c,v 1.30 88/07/06 11:19:53 rws Exp $ */
+/* $Header: miexpose.c,v 1.31 88/07/20 16:09:24 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -373,14 +373,46 @@ because the clip_mask is being set to None, we may call DoChangeGC with
 fPointer set true, thus we no longer need to install the background or
 border tile in the resource table.
 */
+
+static GCPtr	screenContext[MAXSCREENS];
+
+static
+tossGC (pGC)
+GCPtr pGC;
+{
+    int i;
+
+    if (screenContext[i = pGC->pScreen->myNum] == pGC)
+	screenContext[i] = (GCPtr)NULL;
+    FreeGC (pGC);
+}
+
+
 void
 miPaintWindow(pWin, prgn, what)
 WindowPtr pWin;
 RegionPtr prgn;
 int what;
 {
-    int gcval[6];
-    int gcmask;
+    int	status;
+
+    Bool usingScratchGC = FALSE;
+    WindowPtr pRoot;
+	
+#define FUNCTION	0
+#define FOREGROUND	1
+#define TILE		2
+#define FILLSTYLE	3
+#define ABSX		4
+#define ABSY		5
+#define CLIPMASK	6
+#define SUBWINDOW	7
+#define COUNT_BITS	8
+
+    XID gcval[7];
+    XID newValues [COUNT_BITS];
+
+    BITS32 gcmask, index, mask;
     RegionPtr prgnWin;
     DDXPointRec oldCorner;
     BoxRec box;
@@ -390,67 +422,164 @@ int what;
     register ScreenPtr pScreen = pWin->drawable.pScreen;
     register xRectangle *prect;
 
-    gcval[0] = GXcopy;
-    gcval[3] = pWin->absCorner.x;
-    gcval[4] = pWin->absCorner.y;
-    gcval[5] = None;
-    gcmask = GCFunction | GCFillStyle |
-	     GCTileStipXOrigin | GCTileStipYOrigin | GCClipMask;
+    gcmask = 0;
+
     if (what == PW_BACKGROUND)
     {
 	if (pWin->backgroundTile == (PixmapPtr)None)
 	    return;
 	else if (pWin->backgroundTile == (PixmapPtr)ParentRelative)
 	{
-	    (*pWin->parent->PaintWindowBorder)(pWin->parent, prgn, what);
+	    (*pWin->parent->PaintWindowBackground)(pWin->parent, prgn, what);
 	    return;
 	}
 	else if (pWin->backgroundTile == (PixmapPtr)USE_BACKGROUND_PIXEL)
 	{
-	    gcval[1] = pWin->backgroundPixel;
-	    gcval[2] = FillSolid;
-	    gcmask |= GCForeground;
+	    newValues[FOREGROUND] = pWin->backgroundPixel;
+	    newValues[FILLSTYLE] = FillSolid;
+	    gcmask |= GCForeground | GCFillStyle;
 	}
 	else
 	{
-	    gcval[1] = FillTiled;
-	    gcval[2] = (int)pWin->backgroundTile;
-	    gcmask |= GCTile;
+	    newValues[TILE] = (XID)pWin->backgroundTile;
+	    newValues[FILLSTYLE] = FillTiled;
+	    gcmask |= GCTile | GCFillStyle | GCTileStipXOrigin | GCTileStipYOrigin;
 	}
     }
     else
     {
 	if (pWin->borderTile == (PixmapPtr)USE_BORDER_PIXEL)
 	{
-	    gcval[1] = pWin->borderPixel;
-	    gcval[2] = FillSolid;
-	    gcmask |= GCForeground;
+	    newValues[FOREGROUND] = pWin->borderPixel;
+	    newValues[FILLSTYLE] = FillSolid;
+	    gcmask |= GCForeground | GCFillStyle;
 	}
 	else
 	{
-	    gcval[1] = FillTiled;
-	    gcval[2] = (int)pWin->borderTile;
-	    gcmask |= GCTile;
+	    newValues[TILE] = (XID)pWin->borderTile;
+	    newValues[FILLSTYLE] = FillTiled;
+	    gcmask |= GCTile | GCFillStyle | GCTileStipXOrigin | GCTileStipYOrigin;
 	}
     }
-    pGC = GetScratchGC(pWin->drawable.depth, pWin->drawable.pScreen);
-    DoChangeGC(pGC, gcmask, gcval, 1);
 
-    box.x1 = 0;
-    box.y1 = 0;
-    box.x2 = pScreen->width;
-    box.y2 = pScreen->height;
+    newValues[FUNCTION] = GXcopy;
+    gcmask |= GCFunction | GCClipMask;
+
+    i = pScreen->myNum;
+    pRoot = &WindowTable[i];
+
+    if (pWin->visual != pRoot->visual)
+    {
+	usingScratchGC = TRUE;
+	/*
+	 * mash the clip list so we can paint the border by
+	 * mangling the window in place, pretending it
+	 * spans the entire screen
+	 */
+	if (what == PW_BORDER)
+	{
+	    prgnWin = pWin->clipList;
+	    oldCorner = pWin->absCorner;
+	    pWin->absCorner.x = pWin->absCorner.y = 0;
+	    box.x1 = 0;
+	    box.y1 = 0;
+	    box.x2 = pScreen->width;
+	    box.y2 = pScreen->height;
+	    pWin->clipList = (*pScreen->RegionCreate)(&box, 1);
+	    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+	    newValues[ABSX] = pWin->absCorner.x;
+	    newValues[ABSY] = pWin->absCorner.y;
+	}
+	else
+	{
+	    newValues[ABSX] = 0;
+	    newValues[ABSY] = 0;
+	}
+	pGC = GetScratchGC(pWin->drawable.depth, pWin->drawable.pScreen);
+    } else {
+	/*
+	 * draw the background to the root window
+	 */
+	if (screenContext[i] == (GCPtr)NULL)
+	{
+	    screenContext[i] = CreateGC(pWin, (BITS32) 0, (XID *) 0, &status);
+	    AddResource (FakeClientID (0), RT_GC, (pointer) screenContext[i],
+	    		 tossGC, RC_CORE);
+	}
+	pGC = screenContext[i];
+	newValues[SUBWINDOW] = IncludeInferiors;
+	newValues[ABSX] = pWin->absCorner.x;
+	newValues[ABSY] = pWin->absCorner.y;
+	gcmask |= GCSubwindowMode;
+	pWin = pRoot;
+    }
     
-    prgnWin = pWin->clipList;
-    oldCorner = pWin->absCorner;
-    pWin->absCorner.x = pWin->absCorner.y = 0;
-    pWin->clipList = (*pScreen->RegionCreate)(&box, 1);
-    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-
     if (pWin->backingStore != NotUseful && pWin->backStorage)
 	(*pWin->backStorage->DrawGuarantee) (pWin, pGC, GuaranteeVisBack);
 
-    ValidateGC(pWin, pGC);
+    mask = gcmask;
+    gcmask = 0;
+    i = 0;
+    while (mask) {
+    	index = lowbit (mask);
+	mask &= ~index;
+	switch (index) {
+	case GCFunction:
+	    if ((XID) pGC->alu != newValues[FUNCTION]) {
+		gcmask |= index;
+		gcval[i++] = newValues[FUNCTION];
+	    }
+	    break;
+	case GCTileStipXOrigin:
+	    if ((XID) pGC->patOrg.x != newValues[ABSX]) {
+		gcmask |= index;
+		gcval[i++] = newValues[ABSX];
+	    }
+	    break;
+	case GCTileStipYOrigin:
+	    if ((XID) pGC->patOrg.y != newValues[ABSY]) {
+		gcmask |= index;
+		gcval[i++] = newValues[ABSY];
+	    }
+	    break;
+	case GCClipMask:
+	    if ((XID) pGC->clientClipType != CT_NONE) {
+		gcmask |= index;
+		gcval[i++] = CT_NONE;
+	    }
+	    break;
+	case GCSubwindowMode:
+	    if ((XID) pGC->subWindowMode != newValues[SUBWINDOW]) {
+		gcmask |= index;
+		gcval[i++] = newValues[SUBWINDOW];
+	    }
+	    break;
+	case GCTile:
+	    if ((XID) pGC->tile != newValues[TILE]) {
+		gcmask |= index;
+		gcval[i++] = newValues[TILE];
+	    }
+	    break;
+	case GCFillStyle:
+	    if ((XID) pGC->fillStyle != newValues[FILLSTYLE]) {
+		gcmask |= index;
+		gcval[i++] = newValues[FILLSTYLE];
+	    }
+	    break;
+	case GCForeground:
+	    if ((XID) pGC->fgPixel != newValues[FOREGROUND]) {
+		gcmask |= index;
+		gcval[i++] = newValues[FOREGROUND];
+	    }
+	    break;
+	}
+    }
+
+    if (gcmask)
+        DoChangeGC(pGC, gcmask, gcval, 1);
+
+    if (pWin->drawable.serialNumber != pGC->serialNumber)
+	ValidateGC(pWin, pGC);
 
     prect = (xRectangle *)ALLOCATE_LOCAL(prgn->numRects * sizeof(xRectangle));
     pbox = prgn->rects;
@@ -465,14 +594,18 @@ int what;
     (*pGC->PolyFillRect)(pWin, pGC, prgn->numRects, prect);
     DEALLOCATE_LOCAL(prect);
 
-    (*pScreen->RegionDestroy)(pWin->clipList);
-    pWin->clipList = prgnWin;
-    pWin->absCorner = oldCorner;
-    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-
     if (pWin->backingStore != NotUseful && pWin->backStorage)
 	(*pWin->backStorage->DrawGuarantee) (pWin, pGC, GuaranteeNothing);
 
-    FreeScratchGC(pGC);
+    if (usingScratchGC)
+    {
+	if (what == PW_BORDER)
+	{
+	    (*pScreen->RegionDestroy)(pWin->clipList);
+	    pWin->clipList = prgnWin;
+	    pWin->absCorner = oldCorner;
+	    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+	}
+	FreeScratchGC(pGC);
+    }
 }
-
