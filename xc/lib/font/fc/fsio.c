@@ -39,6 +39,19 @@
 #include	"FSlibos.h"
 #include	"fsio.h"
 
+/* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
+ * systems are broken and return EWOULDBLOCK when they should return EAGAIN
+ */
+#if defined(EAGAIN) && defined(EWOULDBLOCK)
+#define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK)
+#else
+#ifdef EAGAIN
+#define ETEST(err) (err == EAGAIN)
+#else
+#define ETEST(err) (err == EWOULDBLOCK)
+#endif
+#endif
+
 extern int  errno;
 #ifdef DEBUG
 extern char *sys_errlist[];
@@ -249,7 +262,7 @@ _fs_read(conn, data, size)
 	if (bytes_read > 0) {
 	    size -= bytes_read;
 	    data += bytes_read;
-	} else if (errno == EWOULDBLOCK) {
+	} else if (ETEST(errno)) {
 	    /* this shouldn't happen */
 	    if (_fs_wait_for_readable(conn) == -1)	/* check for error */
 		return -1;
@@ -289,7 +302,7 @@ _fs_write(conn, data, size)
 	if (bytes_written > 0) {
 	    size -= bytes_written;
 	    data += bytes_written;
-	} else if (errno == EWOULDBLOCK) {
+	} else if (ETEST(errno)) {
 	    /* XXX -- we assume this can't happen */
 
 #ifdef DEBUG
@@ -414,7 +427,16 @@ int
 _fs_any_bit_set(mask)
     unsigned long *mask;
 {
+#ifdef _FSANYSET
     return _FSANYSET(mask);
+#else
+    int i;
+
+    for (i=0; i<MSKCNT; i++)
+	if (mask[i])
+	    return (1);
+    return (0);
+#endif
 }
 
 int
