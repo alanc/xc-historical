@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.59 92/01/29 17:22:39 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.60 92/01/29 17:56:56 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -22,6 +22,7 @@ Name						Reference
 "ILA"						[62]
 "IPSYS"						[59]
 "IXI"						[20]
+"JCC"						[90]
 "LJK"						[56]
 "LTA"						[60]
 "MIT"						[8]
@@ -226,6 +227,7 @@ String						Reference
 "Evans & Sutherland"				[75]
 "FUJITSU LIMITED"				[87]
 "International Business Machines"		[33]
+"JAPAN COMPUTER CORP."				[90]
 "Matsushita Electric Industrial Co., Ltd."	[52]
 "MIT X Consortium"				[8]
 "Network Computing Devices Inc."		[66]
@@ -720,6 +722,7 @@ Name						Reference
 "CRAB"						[84]
 "FUJITSU"					[87]
 "HDS"						[70]
+"JCC"						[90]
 "TD"						[63]
 "MIT"						[8]
 "NCD"						[66]
@@ -1183,3 +1186,9 @@ REFERENCES
 	Cognition Corporation
 	755 Middlesex Turnpike
 	Billerica, MA 01821
+
+[90]	Takatoshi Ishii
+	Japan Computer Corp.
+	2-6-9, Higashi Kanda, Chiyoda-ku,
+	Tokyo 101 Japan
+
