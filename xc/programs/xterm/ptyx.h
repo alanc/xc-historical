@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.51 91/04/26 13:28:24 gildea Exp $
+ *	$XConsortium: ptyx.h,v 1.52 91/04/26 15:03:45 gildea Exp $
  */
 
 /*
@@ -312,7 +312,6 @@ typedef struct {
 		int	fullheight;	/* full height of window	*/
 		double	tekscale;	/* scale factor Tek -> vs100	*/
 	} fullTwin;
-	XPoint		**Tbox;		/* draw unselected cursor	*/
 	int		xorplane;	/* z plane for inverts		*/
 	GC		linepat[TEKNUMLINES]; /* line patterns		*/
 	Boolean		TekEmu;		/* true if Tektronix emulation	*/
@@ -416,7 +415,7 @@ typedef struct _XtermWidgetRec {
     unsigned	flags;		/* mode flags			*/
     unsigned	initflags;	/* initial mode flags		*/
     Tabs	tabs;		/* tabstops of the terminal	*/
-    Misc	misc;		/* miscelaneous parameters	*/
+    Misc	misc;		/* miscellaneous parameters	*/
 } XtermWidgetRec, *XtermWidget;
 
 typedef struct _TekWidgetRec {
