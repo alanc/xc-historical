@@ -1,4 +1,4 @@
-/* $Header: region.h,v 11.7 87/07/24 08:47:35 ham Exp $ */
+/* $Header: region.h,v 11.7 87/09/03 16:32:32 newman Locked $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -37,27 +37,28 @@ typedef struct {
 #define FALSE 0
 #define MAXSHORT 32767
 #define MINSHORT -MAXSHORT
+#ifndef MAX
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+#ifndef MIN
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
-
-/* Return values from RectIn() */
-
-#define rgnOUT 0
-#define rgnIN  1
-#define rgnPART 2
+#endif
 
 
 /* 
  *   clip region
  */
 
-typedef struct _REGION {
+typedef struct _XRegion {
     short size;
     short numRects;
     BOX *rects;
     BOX extents;
-} *Region, REGION;
+} REGION;
 
+/* Xutil.h contains the declaration: 
+ * typedef struct _XRegion *Region; 
+ */   
 
 /*  1 if two BOXs overlap.
  *  0 if two BOXs do not overlap.
