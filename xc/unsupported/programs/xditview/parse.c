@@ -1,4 +1,4 @@
-/* $XConsortium: parse.c,v 1.9 91/07/26 15:21:59 keith Exp $ */
+/* $XConsortium: parse.c,v 1.10 91/07/26 17:45:45 keith Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -113,7 +113,8 @@ ParseInput(dw)
 				{
 				    ligature = DviCharIsLigature (map, Buffer);
 				    if (ligature) {
-					PutCharacters (dw, ligature, strlen(ligature));
+					i = strlen ((char *) ligature);
+					PutCharacters (dw, ligature, i);
 					break;
    				    }
 				}
