@@ -11,7 +11,9 @@
 # include <X11/Xmu.h>
 # include "EyesP.h"
 # include <math.h>
+#ifdef SHAPE
 # include <X11/extensions/shape.h>
+#endif
 
 #define offset(field) XtOffset(EyesWidget,eyes.field)
 #define goffset(field) XtOffset(Widget,core.field)
@@ -31,17 +33,14 @@ static XtResource resources[] = {
 	offset (reverse_video), XtRString, "FALSE"},
     {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
     	offset (backing_store), XtRString, "default"},
+#ifdef SHAPE
     {XtNshapeWindow, XtCShapeWindow, XtRBoolean, sizeof (Boolean),
 	offset (shape_window), XtRString, "TRUE"},
+#endif
 };
 
 #undef offset
 #undef goffset
-
-static void Initialize(), Realize(), Destroy(), Redisplay();
-static Boolean SetValues();
-static int repaint_window();
-static int draw_it ();
 
 # define NUM_EYES	2
 # define EYE_X(n)	((n) * 2.0)
@@ -63,6 +62,12 @@ static int draw_it ();
 # define XPointEqual(a, b)  ((a).x == (b).x && (a).y == (b).y)
 
 static int delays[] = { 50, 100, 200, 400, 0 };
+
+static void Initialize(), Realize(), Destroy();
+static void Redisplay(), Resize ();
+static Boolean SetValues();
+static int repaint_window();
+static int draw_it ();
 
 static void ClassInitialize();
 
@@ -87,7 +92,7 @@ EyesClassRec eyesClassRec = {
     /* compress_enterleave	*/	TRUE,
     /* visible_interest		*/	FALSE,
     /* destroy			*/	Destroy,
-    /* resize			*/	NULL,
+    /* resize			*/	Resize,
     /* expose			*/	Redisplay,
     /* set_values		*/	SetValues,
     /* set_values_hook		*/	NULL,
@@ -162,23 +167,21 @@ static void Initialize (greq, gnew)
     w->eyes.pupil[0].x = w->eyes.pupil[1].x = -1000;
     w->eyes.pupil[0].y = w->eyes.pupil[1].y = -1000;
 
+#ifdef SHAPE
     if (w->eyes.shape_window && !XShapeQueryExtension (XtDisplay (w)))
 	w->eyes.shape_window = False;
     w->eyes.shape_mask = 0;
     w->eyes.shapeGC = 0;
-    w->eyes.shape_width = 0;
-    w->eyes.shape_height = 0;
+#endif
 }
 
-static void Shape (w)
-    EyesWidget	w;
+static void Resize (gw)
+    Widget	gw;
 {
+    EyesWidget	w = (EyesWidget) gw;
     XGCValues	xgcv;
-    Widget	child, parent;
-
-    if (w->core.width == w->eyes.shape_width &&
-        w->core.height == w->eyes.shape_height)
-	return;
+    Widget	parent;
+    int		x, y;
 
     XClearWindow (XtDisplay (w), XtWindow (w));
     SetTransform (&w->eyes.t,
@@ -186,6 +189,7 @@ static void Shape (w)
  		    w->core.height, 0,
 		    W_MIN_X, W_MAX_X,
 		    W_MIN_Y, W_MAX_Y);
+#ifdef SHAPE
     if (w->eyes.shape_window) {
     	w->eyes.shape_mask = XCreatePixmap (XtDisplay (w), XtWindow (w),
 	    	w->core.width, w->core.height, 1);
@@ -197,28 +201,24 @@ static void Shape (w)
     	XSetForeground (XtDisplay (w), w->eyes.shapeGC, 1);
     	eyeLiner (w, w->eyes.shape_mask, w->eyes.shapeGC, (GC) 0, 0);
     	eyeLiner (w, w->eyes.shape_mask, w->eyes.shapeGC, (GC) 0, 1);
-    	XShapeCombineMask (XtDisplay (w), XtWindow (w), ShapeBounding,
-		       	   w->eyes.shape_mask, ShapeSet, 0, 0);
+	x = y = 0;
+	for (parent = (Widget) w; XtParent (parent); parent = XtParent (parent)) {
+	    x += parent->core.x + parent->core.border_width;
+	    x += parent->core.y + parent->core.border_width;
+	}
+    	XShapeCombineMask (XtDisplay (parent), XtWindow (parent), ShapeBounding,
+		       	   w->eyes.shape_mask, ShapeSet, x, y);
     	XFreePixmap (XtDisplay (w), w->eyes.shape_mask);
-    	child = (Widget) w;
-    	while (parent = XtParent (child)) {
-	    XShapeCombineShape (XtDisplay (parent), XtWindow (parent), ShapeBounding,
-			    	XtWindow (child), ShapeBounding, ShapeSet,
-			    	child->core.x + child->core.border_width,
-			    	child->core.y + child->core.border_width);
-	    child = parent;
-    	}
     }
-    w->eyes.shape_width = w->core.width;
-    w->eyes.shape_height = w->core.height;
+#endif
 }
- 
+
 static void Realize (gw, valueMask, attrs)
      Widget gw;
      XtValueMask *valueMask;
      XSetWindowAttributes *attrs;
 {
-     EyesWidget	w = (EyesWidget)gw;
+    EyesWidget	w = (EyesWidget)gw;
 
     if (w->eyes.backing_store != Always + WhenMapped + NotUseful) {
      	attrs->backing_store = w->eyes.backing_store;
@@ -226,7 +226,7 @@ static void Realize (gw, valueMask, attrs)
     }
     XtCreateWindow( gw, (unsigned)InputOutput, (Visual *)CopyFromParent,
 		     *valueMask, attrs );
-    Shape (w);
+    Resize (gw);
     w->eyes.interval_id =
 	    XtAddTimeOut(delays[w->eyes.update], draw_it, (caddr_t)gw);
 }
@@ -255,7 +255,6 @@ static void Redisplay(gw, event, region)
     Display	*dpy;
 
     w = (EyesWidget) gw;
-    Shape (w);
     w->eyes.pupil[0].x = -1000;
     w->eyes.pupil[0].y = -1000;
     w->eyes.pupil[1].x = -1000;
