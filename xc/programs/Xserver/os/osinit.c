@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.17 88/08/16 20:17:49 jim Exp $ */
+/* $XConsortium: osinit.c,v 1.18 88/09/06 15:50:51 jim Exp $ */
 #include "os.h"
 #include "opaque.h"
 #undef NULL
@@ -48,6 +48,10 @@ OsInit()
 {
     static Bool been_here = FALSE;
     char fname[MAXPATHLEN];
+
+#ifdef macII
+    set42sig();
+#endif
 
     /* hack test to decide where to log errors */
 

@@ -191,6 +191,8 @@ macIIKbdProc (pKeyboard, what)
 
 	    if (devosmFd > 0) close(devosmFd);
 	    close(consoleFd);
+	    devosmFd = 0;
+	    consoleFd = 0;
 	    break;
 
 	case DEVICE_OFF:
