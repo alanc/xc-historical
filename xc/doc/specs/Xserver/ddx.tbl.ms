@@ -1,5 +1,5 @@
 
-.\" $XConsortium: ddx.tbl.ms,v 1.21 89/12/02 15:31:47 keith Exp $
+.\" $XConsortium: ddx.tbl.ms,v 1.22 89/12/04 17:00:18 keith Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -2740,8 +2740,6 @@ Several window and pixmap manipulation procedures are
 described in the Window section under Drawables.
 .IP \(bu 5
 The CreateGC() routine is described under Graphics Contexts.
-.IP \(bu 5
-SourceValidate is described in the Pixblit routine as well.
 .LP
 .nf
 
@@ -2759,6 +2757,20 @@ For TileShape and StippleShape, start with the suggested values in pWidth
 and pHeight and modify them in place to be optimal values that are
 greater than or equal to the suggested values.
 The sample server implementation is in server/ddx/mfb/mfbmisc.c.
+.nf
+
+	pScreen->SourceValidate(pDrawable, x, y, width, height)
+		DrawablePtr pDrawable;
+		int x, y, width, height;
+.fi
+SourceValidate should be called by CopyArea/CopyPlane primitives when
+the source drawable is not the same as the destination, and the
+SourceValidate function pointer in the screen is non-null.  If you know that
+you will never need SourceValidate, you can avoid this check.  Currently,
+SourceValidate is used by the mi software cursor code to remove the cursor
+from the screen when the source rectangle overlaps the cursor position.
+x,y,width,height describe the source rectangle (source relative, that is)
+for the copy operation.
 .nf
 
 	Bool pScreen->SaveScreen(pScreen, on)
