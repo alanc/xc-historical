@@ -1,4 +1,4 @@
-/* $XConsortium: imThaiFlt.c,v 1.2 93/09/18 11:01:04 rws Exp $ */
+/* $XConsortium: imThaiFlt.c,v 1.3 93/09/23 12:26:30 rws Exp $ */
 /***********************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -546,11 +546,8 @@ int THAI_apply_scm(
 /* The following functions are copied from XKeyBind.c */
 
 Private void ComputeMaskFromKeytrans();
-Private int Initialize();
 Private int IsCancelComposeKey();
 Private void SetLed();
-Private KeySym KeyCodetoKeySym();
-Private int InitModMap();
 Private CARD8 FindKeyCode();
 
 /* The following functions are specific to this module */ 
@@ -677,118 +674,6 @@ struct _XKeytrans {
 	int mlen;		/* length of modifier list */
 };
 
-Private KeySym
-KeyCodetoKeySym(dpy, keycode, col)
-    register Display *dpy;
-    KeyCode keycode;
-    int col;
-{
-    register int per = dpy->keysyms_per_keycode;
-    register KeySym *syms;
-    KeySym lsym, usym;
-
-    if ((col < 0) || ((col >= per) && (col > 3)) ||
-	((int)keycode < dpy->min_keycode) || ((int)keycode > dpy->max_keycode))
-      return NoSymbol;
-
-    syms = &dpy->keysyms[(keycode - dpy->min_keycode) * per];
-    if (col < 4) {
-	if (col > 1) {
-	    while ((per > 2) && (syms[per - 1] == NoSymbol))
-		per--;
-	    if (per < 3)
-		col -= 2;
-	}
-	if ((per <= (col|1)) || (syms[col|1] == NoSymbol)) {
-	    XConvertCase(dpy, syms[col&~1], &lsym, &usym);
-	    if (!(col & 1))
-		return lsym;
-	    else if (usym == lsym)
-		return NoSymbol;
-	    else
-		return usym;
-	}
-    }
-    return syms[col];
-}
-
-Private int
-InitModMap(dpy)
-    Display *dpy;
-{
-    register XModifierKeymap *map;
-    register int i, j, n;
-    KeySym sym;
-    register struct _XKeytrans *p;
-
-    if (! (dpy->modifiermap = map = XGetModifierMapping(dpy)))
-	return 0;
-    dpy->free_funcs->modifiermap = XFreeModifiermap;
-    if ((! dpy->keysyms) && (! Initialize(dpy)))
-	return 0;
-    LockDisplay(dpy);
-    /* If any Lock key contains Caps_Lock, then interpret as Caps_Lock,
-     * else if any contains Shift_Lock, then interpret as Shift_Lock,
-     * else ignore Lock altogether.
-     */
-    dpy->lock_meaning = NoSymbol;
-    /* Lock modifiers are in the second row of the matrix */
-    n = 2 * map->max_keypermod;
-    for (i = map->max_keypermod; i < n; i++) {
-	for (j = 0; j < dpy->keysyms_per_keycode; j++) {
-	    sym = KeyCodetoKeySym(dpy, map->modifiermap[i], j);
-	    if (sym == XK_Caps_Lock) {
-		dpy->lock_meaning = XK_Caps_Lock;
-		break;
-	    } else if (sym == XK_Shift_Lock) {
-		dpy->lock_meaning = XK_Shift_Lock;
-	    }
-	}
-    }
-    /* Now find any Mod<n> modifier acting as the Group modifier */
-    dpy->mode_switch = 0;
-    n *= 4;
-    for (i = 3*map->max_keypermod; i < n; i++) {
-	for (j = 0; j < dpy->keysyms_per_keycode; j++) {
-	    sym = KeyCodetoKeySym(dpy, map->modifiermap[i], j);
-	    if (sym == XK_Mode_switch)
-		dpy->mode_switch |= 1 << (i / map->max_keypermod);
-	}
-    }
-    for (p = dpy->key_bindings; p; p = p->next)
-	ComputeMaskFromKeytrans(dpy, p);
-    UnlockDisplay(dpy);
-    return 1;
-}
-
-
-Private int
-Initialize(dpy)
-    Display *dpy;
-{
-    int per, n;
-    KeySym *keysyms;
-
-    /* 
-     * lets go get the keysyms from the server.
-     */
-    if (!dpy->keysyms) {
-	n = dpy->max_keycode - dpy->min_keycode + 1;
-	keysyms = XGetKeyboardMapping (dpy, (KeyCode) dpy->min_keycode,
-				       n, &per);
-	/* keysyms may be NULL */
-	if (! keysyms) return 0;
-
-	LockDisplay(dpy);
-	dpy->keysyms = keysyms;
-	dpy->keysyms_per_keycode = per;
-	UnlockDisplay(dpy);
-    }
-    if (!dpy->modifiermap)
-        return InitModMap(dpy);
-    return 1;
-}
-
 /* Convert case for ASCII characters only */
 /*ARGSUSED*/
 Private void
@@ -845,7 +730,7 @@ XThaiTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return,
     register KeySym *syms;
     KeySym sym = 0, lsym = 0, usym = 0;
 
-    if ((! dpy->keysyms) && (! Initialize(dpy)))
+    if ((! dpy->keysyms) && (! _XKeyInitialize(dpy)))
 	return 0;
     *modifiers_return = (ShiftMask|LockMask) | dpy->mode_switch;
     if (((int)keycode < dpy->min_keycode) || ((int)keycode > dpy->max_keycode))
