@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.37 89/10/05 11:59:36 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.38 89/10/09 13:37:16 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -543,4 +543,15 @@ XtAppContext XtWidgetToApplicationContext(w)
 	Widget w;
 {
 	return _XtGetPerDisplay(XtDisplayOfObject(w))->appContext;
+}
+
+
+void XtGetApplicationNameAndClass(dpy, name_return, class_return)
+    Display *dpy;
+    String *name_return;
+    String *class_return;
+{
+    XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    *name_return = XrmQuarkToString(pd->name);
+    *class_return = XrmQuarkToString(pd->class);
 }
