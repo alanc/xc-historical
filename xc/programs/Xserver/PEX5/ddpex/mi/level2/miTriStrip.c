@@ -1,4 +1,4 @@
-/* $XConsortium: miTriStrip.c,v 5.3 91/07/01 08:43:39 rws Exp $ */
+/* $XConsortium: miTriStrip.c,v 5.4 91/07/15 21:15:44 hersh Exp $ */
 
 
 /***********************************************************
@@ -158,6 +158,9 @@ miTriangleStrip(pRend, pExecuteOC)
 				    &mc_list, &mc_facet, clip_mode))
             return (status);
 
+      /* if nothing left after model clip, return early */
+      if (mc_list->numLists <= 0) return(Success);
+
       } else {
 	mc_list = color_list;
 	mc_facet = color_facet;
@@ -254,6 +257,9 @@ miTriangleStrip(pRend, pExecuteOC)
               &clip_list, &clip_facet, clip_mode))
 	return (status);
 
+      /* if nothing left after view clip, return early */
+      if (mc_list->numLists <= 0) return(Success);
+
       /* Note - After View clipping, the triangle strip may have
        * decomposed into a number of separate triangle strips
        */
@@ -263,6 +269,8 @@ miTriangleStrip(pRend, pExecuteOC)
       if (status = miCullTriStrip(pddc, clip_list, clip_facet,
                                     &cull_list, &cull_facet))
           return (status);
+
+      /* if nothing left after culling, return early */
       if (cull_list->numLists <= 0) return(Success);
       } else {
 	cull_list = clip_list;

@@ -1,4 +1,4 @@
-/* $XConsortium: miPolyLine.c,v 5.1 91/02/16 09:55:17 rws Exp $ */
+/* $XConsortium: miPolyLine.c,v 5.2 91/05/01 14:36:03 hersh Exp $ */
 
 
 /***********************************************************
@@ -113,6 +113,9 @@ miPolyLines(pRend, pExecuteOC)
       if (status = miClipPolyLines(pddc, mc_clist, &mc_list, clip_mode)) 
                 return(status);
 
+      /* if nothing left, return early */
+      if (mc_list->numLists <= 0) return(Success);
+
 
     } else mc_list = color_list;
 
@@ -129,6 +132,9 @@ miPolyLines(pRend, pExecuteOC)
 
     if (status = miClipPolyLines(pddc, cc_list, &clip_list, clip_mode)) 
 		return(status);
+
+    /* if nothing left, return early */
+    if (clip_list->numLists <= 0) return(Success);
 
     /* DEPTH CUEING */
     if (pddc->Dynamic->pPCAttr->depthCueIndex) {

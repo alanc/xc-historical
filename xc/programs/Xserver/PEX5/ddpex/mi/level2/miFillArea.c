@@ -1,4 +1,4 @@
-/* $XConsortium: miFillArea.c,v 5.5 91/07/01 08:27:56 rws Exp $ */
+/* $XConsortium: miFillArea.c,v 5.6 91/07/18 18:20:07 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -148,6 +148,9 @@ miFillArea(pRend, pExecuteOC)
         if (status = miClipFillArea(pddc, mc_clist, color_facet,
                                 &mc_list, &mc_facet, clip_mode))
             return (status);
+
+	/* if nothing left after modeling clip, return early */
+	if (mc_list->numLists <= 0) return(Success);
  
       } else {
         mc_list = color_list;
@@ -235,11 +238,16 @@ miFillArea(pRend, pExecuteOC)
 			      &clip_list, &clip_facet, clip_mode))
 	    return (status);
 
+      /* if nothing left after view clip, return early */
+      if (clip_list->numLists <= 0) return(Success);
+
       /* Now cull according to current culling mode */
       if (pddc->Dynamic->pPCAttr->cullMode) {
         if (status = miCullFillArea(pddc, clip_list, clip_facet,
 				    &cull_list, &cull_facet))
 	    return (status);
+
+	/* if nothing left after culling, return early */
 	if (cull_list->numLists <= 0) return(Success);
 	clip_list = cull_list;
 	clip_facet = cull_facet;

@@ -1,4 +1,4 @@
-/* $XConsortium: miText.c,v 5.3 91/05/01 14:36:57 hersh Exp $ */
+/* $XConsortium: miText.c,v 5.4 91/05/12 16:11:12 rws Exp $ */
 
 
 /***********************************************************
@@ -916,6 +916,7 @@ miText3D(pRend, pExecuteOC)
 
 	  if (status = miClipPolyLines(pddc, mc_path, &mclip_path, MI_MCLIP))
 	      return (status);
+
       }
       else {
 	  mclip_path = text_el.paths->path;
@@ -964,6 +965,12 @@ miText3D(pRend, pExecuteOC)
       clip_mode = MI_VCLIP;
       if (status = miClipPolyLines(pddc, cc_path, &clip_path, clip_mode))
           return (status);
+
+      /* if nothing left, then update pointers and continue */
+      if (clip_path->numLists <= 0) {
+	  text_el.paths++;
+	  continue;
+      }
 
       /* Transform to DC coordinates */
 
@@ -1229,6 +1236,12 @@ miText2D(pRend, pExecuteOC)
       clip_mode = MI_VCLIP;
       if (status = miClipPolyLines(pddc, cc_path, &clip_path, clip_mode))
           return (status);
+
+      /* if nothing left, then update pointers and continue */
+      if (clip_path->numLists <= 0) {
+	  text_el.paths++;
+	  continue;
+      }
 
       /* Transform to DC coordinates */
 
@@ -1572,6 +1585,12 @@ miAnnoText3D(pRend, pExecuteOC)
       clip_mode = MI_VCLIP; 
       if (status = miClipPolyLines(pddc, cc_path, &clip_path, clip_mode))
           return (status);
+
+      /* if nothing left, then update pointers and continue */
+      if (clip_path->numLists <= 0) {
+	  text_el.paths++;
+	  continue;
+      }
 
       /* Transform to DC coordinates */
 
@@ -1980,6 +1999,12 @@ miAnnoText2D(pRend, pExecuteOC)
       clip_mode = MI_VCLIP; 
       if (status = miClipPolyLines(pddc, cc_path, &clip_path, clip_mode))
           return (status);
+
+      /* if nothing left, then update pointers and continue */
+      if (clip_path->numLists <= 0) {
+	  text_el.paths++;
+	  continue;
+      }
 
       /* Transform to DC coordinates */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: miMarkers.c,v 5.1 91/02/16 09:55:29 rws Exp $ */
+/* $XConsortium: miMarkers.c,v 5.2 91/05/01 14:40:12 hersh Exp $ */
 
 
 /***********************************************************
@@ -111,6 +111,10 @@ miPolyMarker(pRend, pExecuteOC)
     /* Note that miClipPointList discards clipped points */
     if (status = miClipPointList(pddc, cc_list, &clip_list, clip_mode)) 
 		return(status);
+
+    /* if nothing left, return early */
+    if (clip_list->numLists <= 0) return(Success);
+
 
     /* Transform to DC coordinates */
     if (status = miTransform(pddc, clip_list, &dc_list, 
