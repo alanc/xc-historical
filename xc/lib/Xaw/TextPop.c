@@ -1,4 +1,4 @@
-/* $XConsortium: TextPop.c,v 1.21 91/06/25 12:15:50 swick Exp $ */
+/* $XConsortium: TextPop.c,v 1.22 91/07/25 18:10:22 rws Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -628,7 +628,7 @@ char * ptr;
   XtSetArg(args[num_args], XtNfromVert, search->label2); num_args++;
   XtSetArg(args[num_args], XtNleft, XtChainLeft); num_args++;
   XtSetArg(args[num_args], XtNright, XtChainLeft); num_args++;
-  XtSetArg(args[num_args], XtNradioData, (caddr_t) XawsdLeft + R_OFFSET);
+  XtSetArg(args[num_args], XtNradioData, (XPointer) XawsdLeft + R_OFFSET);
   num_args++;
   search->left_toggle = XtCreateManagedWidget("backwards", toggleWidgetClass, 
 					      form, args, num_args);
@@ -640,7 +640,7 @@ char * ptr;
   XtSetArg(args[num_args], XtNleft, XtChainLeft); num_args++;
   XtSetArg(args[num_args], XtNright, XtChainLeft); num_args++;
   XtSetArg(args[num_args], XtNradioGroup, search->left_toggle); num_args++;
-  XtSetArg(args[num_args], XtNradioData, (caddr_t) XawsdRight + R_OFFSET);
+  XtSetArg(args[num_args], XtNradioData, (XPointer) XawsdRight + R_OFFSET);
   num_args++;
   search->right_toggle = XtCreateManagedWidget("forwards", toggleWidgetClass, 
 					       form, args, num_args);
@@ -787,7 +787,7 @@ struct SearchAndReplace * search;
   text.firstPos = 0;
   text.format = FMT8BIT;
   
-  dir = (XawTextScanDirection)(int) ((caddr_t)XawToggleGetCurrent(search->left_toggle) -
+  dir = (XawTextScanDirection)(int) ((XPointer)XawToggleGetCurrent(search->left_toggle) -
 				R_OFFSET);
   
   pos = XawTextSearch( tw, dir, &text);
@@ -917,7 +917,7 @@ Boolean once_only, show_current;
   replace.firstPos = 0;
   replace.format = FMT8BIT;
     
-  dir = (XawTextScanDirection)(int) ((caddr_t)XawToggleGetCurrent(search->left_toggle) -
+  dir = (XawTextScanDirection)(int) ((XPointer)XawToggleGetCurrent(search->left_toggle) -
 				R_OFFSET);
 
   while (TRUE) {

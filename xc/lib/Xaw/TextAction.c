@@ -1,4 +1,4 @@
-/* $XConsortium: TextAction.c,v 1.44 92/03/18 12:03:30 rws Exp $ */
+/* $XConsortium: TextAction.c,v 1.45 93/03/12 16:13:46 converse Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -210,7 +210,7 @@ Cardinal num_params;
 	Atom type = XA_STRING;
 	char *line = XFetchBuffer(XtDisplay(w), &nbytes, buffer);
 	if (length = nbytes)
-	    _SelectionReceived(w, NULL, &selection, &type, (caddr_t)line,
+	    _SelectionReceived(w, NULL, &selection, &type, (XPointer)line,
 			       &length, &fmt8);
 	else if (num_params > 1)
 	    GetSelection(w, time, params+1, num_params-1);

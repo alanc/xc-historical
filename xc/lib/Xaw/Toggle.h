@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Toggle.h,v 1.12 91/02/18 09:26:20 rws Exp $
+ * $XConsortium: Toggle.h,v 1.13 91/05/04 18:59:01 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -48,7 +48,7 @@
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
  radioGroup          RadioGroup         Widget          NULL              +
- radioData           RadioData          Pointer         (caddr_t) Widget  ++
+ radioData           RadioData          Pointer         (XPointer) Widget  ++
  state               State              Boolean         Off
 
  background	     Background		Pixel		XtDefaultBackground

@@ -1,4 +1,4 @@
-/* $XConsortium: TextSrc.c,v 1.10 91/02/17 16:27:35 converse Exp $ */
+/* $XConsortium: TextSrc.c,v 1.11 91/02/20 17:58:08 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -288,7 +288,7 @@ Atom selection;
 
 
 #define done(address, type) \
-        { toVal->size = sizeof(type); toVal->addr = (caddr_t) address; }
+        { toVal->size = sizeof(type); toVal->addr = (XPointer) address; }
 
 /* ARGSUSED */
 static void 

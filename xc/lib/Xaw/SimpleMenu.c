@@ -1,4 +1,4 @@
-/* $XConsortium: SimpleMenu.c,v 1.40 91/10/16 21:39:50 eswu Exp $ */
+/* $XConsortium: SimpleMenu.c,v 1.41 92/09/10 16:25:07 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -959,7 +959,7 @@ Dimension *width_ret, *height_ret;
 static void
 AddPositionAction(app_con, data)
 XtAppContext app_con;
-caddr_t data;
+XPointer data;
 {
     static XtActionsRec pos_action[] = {
         { "XawPositionSimpleMenu", PositionMenuAction },

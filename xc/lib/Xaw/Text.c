@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.183 92/08/31 10:58:37 rws Exp $ */
+/* $XConsortium: Text.c,v 1.184 92/11/16 15:00:13 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -92,7 +92,7 @@ static XawTextSelectType defaultSelectTypes[] = {
   XawselectAll,      XawselectNull,
 };
 
-static caddr_t defaultSelectTypesPtr = (caddr_t)defaultSelectTypes;
+static XPointer defaultSelectTypesPtr = (XPointer)defaultSelectTypes;
 extern char *_XawDefaultTextTranslations1, *_XawDefaultTextTranslations2,
   *_XawDefaultTextTranslations3;
 static Dimension defWidth = 100;
@@ -143,7 +143,7 @@ static XtResource resources[] = {
 #undef offset
 
 #define done(address, type) \
-        { toVal->size = sizeof(type); toVal->addr = (caddr_t) address; }
+        { toVal->size = sizeof(type); toVal->addr = (XPointer) address; }
 
 
 
@@ -1397,7 +1397,7 @@ int *format;
 	return True;
 
     XmuConvertStandardSelection(w, ctx->text.time, selection, 
-				target, type, (caddr_t*)&std_targets,
+				target, type, (XPointer*)&std_targets,
 				&std_length, format);
     
     *value = XtMalloc((unsigned) sizeof(Atom)*(std_length + 7));
@@ -1469,7 +1469,7 @@ int *format;
     else			/* *target == XA_LENGTH(d) */
       *temp = (long) (s->right - s->left);
     
-    *value = (caddr_t) temp;
+    *value = (XPointer) temp;
     *type = XA_INTEGER;
     *length = 1L;
     *format = 32;
@@ -1482,7 +1482,7 @@ int *format;
     temp = (long *) XtMalloc(2 * sizeof(long));
     temp[0] = (long) (s->left + 1);
     temp[1] = s->right;
-    *value = (caddr_t) temp;
+    *value = (XPointer) temp;
     *type = XA_SPAN(d);
     *length = 2L;
     *format = 32;
@@ -1502,7 +1502,7 @@ int *format;
   }
 
   if (XmuConvertStandardSelection(w, ctx->text.time, selection, target, type,
-				  (caddr_t *)value, length, format))
+				  (XPointer *)value, length, format))
     return True;
   
   /* else */

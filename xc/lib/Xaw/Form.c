@@ -1,4 +1,4 @@
-/* $XConsortium: Form.c,v 1.48 91/07/22 18:08:25 ackerman Exp $ */
+/* $XConsortium: Form.c,v 1.49 91/10/16 21:34:30 eswu Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -146,7 +146,7 @@ static XrmQuark	XtQChainLeft, XtQChainRight, XtQChainTop,
 
 #define	done(address, type) \
 	{ toVal->size = sizeof(type); \
-	  toVal->addr = (caddr_t) address; \
+	  toVal->addr = (XPointer) address; \
 	  return; \
 	}
 
