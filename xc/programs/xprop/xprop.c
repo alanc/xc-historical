@@ -929,9 +929,38 @@ thunk *Break_Down_Property(pointer, length, format, size)
 
 usage()
 {
-	outl("\n%s: usage: %s [<disp>] [<select option>] <option>* <mapping>* <spec>*",
-	     program_name, program_name);
-	outl("\n\tdisp ::= -display host:dpy\
+    char **cpp;
+    static char *help_message[] = {
+"where options include:",
+"    -grammar                       print out full grammar for command line",
+"    -display host:dpy              the X server to contact",
+"    -id id                         resource id of window to examine",
+"    -name name                     name of window to examine",
+"    -font name                     name of font to examine",
+"    -root                          examine the root window",
+"    -len n                         display at most n bytes of any property",
+"    -notype                        do not display the type field",
+"    -fs filename                   where to look for formats for properties",
+"    -f propname format [dformat]   formats to use for property of given name",
+"    -spy                           examine window properties forever",
+NULL};
+
+    fflush (stdout);
+    fprintf (stderr, "usage:  %s [-options ...] [[format [dformat]] atom]\n\n", 
+	     program_name);
+    for (cpp = help_message; *cpp; cpp++) {
+	fprintf (stderr, "%s\n", *cpp);
+    }
+    fprintf (stderr, "\n");
+    exit (1);
+}
+
+grammar ()
+{
+	printf ("Grammar for xprop:\n\n");
+	printf("\t%s [<disp>] [<select option>] <option>* <mapping>* <spec>*",
+	     program_name);
+	printf("\n\n\tdisp ::= -display host:dpy\
 \n\tselect option ::= -root | -id <id> | -font <font> | -name <name>\
 \n\toption ::= -len <n> | -notype | -spy | {-formats|-fs} <format file>\
 \n\tmapping ::= {-f|-format} <atom> <format> [<dformat>]\
@@ -944,7 +973,7 @@ usage()
 \n\tdisplay char ::= <normal char> | \\<non digit char> | \\<octal number>\
 \n\tnormal char ::= <any char except a digit, $, ?, \\, or )>\
 \n\n");
-	exit(1);
+	exit(0);
 }
 
 Parse_Format_Mapping(argc, argv)
@@ -1012,6 +1041,10 @@ char **argv;
   while (argv++, --argc>0 && **argv=='-') {
     if (!strcmp(argv[0], "-"))
       continue;
+    if (!strcmp(argv[0], "-grammar")) {
+      grammar ();
+      /* NOTREACHED */
+    }
     if (!strcmp(argv[0], "-notype")) {
       notype=1;
       continue;
