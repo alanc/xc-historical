@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.38 88/02/02 19:59:05 rws Exp $ */
+/* $Header: dispatch.c,v 1.39 88/02/03 10:07:02 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -845,7 +845,8 @@ ProcSetSelectionOwner(client)
             if (CompareTimeStamps(time, CurrentSelections[i].lastTimeChanged)
 		== EARLIER)
 		return Success;
-            if (CurrentSelections[i].pWin != (WindowPtr)None)
+	    if ((CurrentSelections[i].pWin != (WindowPtr)None) &&
+		(CurrentSelections[i].client != client))
 	    {
 		event.u.u.type = SelectionClear;
 		event.u.selectionClear.time = time.milliseconds;
