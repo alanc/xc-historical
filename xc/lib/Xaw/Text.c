@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.166 91/01/02 11:41:39 gildea Exp $ */
+/* $XConsortium: Text.c,v 1.167 91/02/17 16:23:15 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1195,7 +1195,7 @@ XtPointer closure, callData; /* closure = TextWidget, callData = percent. */
   move = old_left - new_left;
 
   if (abs(move) < (int)ctx->core.width) {
-    HScroll(w, (XtPointer) ctx, move);
+    HScroll(w, (XtPointer) ctx, (XtPointer) move);
     return;
   }
   _XawTextPrepareToUpdate(ctx);
@@ -1771,12 +1771,9 @@ XawTextBlock *text;
     return(0);			/* Things are fine. */
   }
 
-  delta = text->length - (pos2 - pos1);
+  ctx->text.single_char = (text->length <= 1 && pos2 - pos1 <= 1);
 
-  if ( abs(delta) <= 1 )
-      ctx->text.single_char = TRUE;
-  else
-      ctx->text.single_char = FALSE;
+  delta = text->length - (pos2 - pos1);
 
   if (delta < ctx->text.lastPos) {
     for (pos2 += delta, i = 0; i < ctx->text.numranges; i++) {
