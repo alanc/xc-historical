@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.112 92/04/20 14:41:39 keith Exp $ */
+/* $XConsortium: utils.c,v 1.113 92/04/20 14:45:54 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -70,7 +70,7 @@ Bool CoreDump;
 
 void ddxUseMsg();
 
-#ifndef SVR4
+#if !defined(SVR4) && !defined(hpux)
 extern char *sbrk();
 #endif
 
