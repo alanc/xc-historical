@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: midraw.c,v 1.1 93/07/19 10:16:24 rws Exp $ */
 /**** module midraw.c ****/
 /******************************************************************************
 				NOTICE
@@ -223,7 +223,8 @@ static int ActivateIDrawP(flo,ped,pet)
     return FALSE;
 
   /* ??? Is this the correct thing when depth > 1 ??? */
-  pixtype = (pDraw->type == DRAWABLE_PIXMAP) ? XYPixmap : XYBitmap;
+  /* pixtype = (pDraw->type == DRAWABLE_PIXMAP) ? XYPixmap : XYBitmap; */
+  pixtype = XYPixmap;
 
   (*pDraw->pScreen->GetImage)(
 			pDraw,			  /* drawable	 */
