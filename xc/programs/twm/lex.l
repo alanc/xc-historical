@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.62 89/12/10 17:46:33 jim Exp $
+ * $XConsortium: lex.l,v 1.63 91/10/31 09:05:56 rws Exp $
  *
  * .twmrc lex file
  *
@@ -42,6 +42,18 @@
 extern char *ProgramName;
 
 extern int ParseError;
+#ifdef bsdi
+extern int yylineno;
+
+#undef YY_INPUT
+#define YY_INPUT(buf,result,max_size) \
+	if ( (fgets( buf, max_size, yyin )) == NULL ) { \
+	    if (feof(yyin)) result = 0; \
+	    else YY_FATAL_ERROR( "fgets() in flex scanner failed" ); \
+	} else { \
+	    result = strlen(buf); \
+	    if (buf[result-1] == '\n') yylineno++; }
+#endif
 
 %}
 
@@ -87,7 +99,9 @@ number				[0-9]+
 				  ParseError = 1;
 				}
 %%
+#ifndef bsdi
 yywrap() { return(1);}
+#endif
 
 #undef unput
 #undef input
