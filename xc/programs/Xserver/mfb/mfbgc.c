@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbgc.c,v 1.114 87/09/02 03:14:24 toddb Locked $ */
+/* $Header: mfbgc.c,v 1.115 87/09/03 09:04:25 rws Locked $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -771,7 +771,7 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	    if (pGC->tile && pGC->tile->width == 32 && 
 	        devPriv->pRotatedTile)
 	        mfbYRotatePixmap(devPriv->pRotatedTile, yrot); 
-	    if (pGC->tile && pGC->tile->width == 32 && 
+	    if (pGC->stipple && pGC->stipple->width == 32 &&
 	        devPriv->pRotatedStipple)
 	        mfbYRotatePixmap(devPriv->pRotatedStipple, yrot); 
         }
