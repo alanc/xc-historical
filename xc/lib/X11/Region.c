@@ -1,4 +1,4 @@
-/* $Header: XRegion.c,v 11.13 87/09/02 18:50:30 jg Exp $ */
+/* $Header: XRegion.c,v 11.13 87/09/03 17:20:59 rws Locked $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -160,8 +160,7 @@ XSetRegion( dpy, gc, r )
 	xr->width = r->rects[i].x2 - r->rects[i].x1;
 	xr->height = r->rects[i].y2 - r->rects[i].y1;
       }
-    _XSetClipRectangles(dpy, gc,r->extents.x1,r->extents.y1, xr,
-    	r->numRects,Unsorted);
+    _XSetClipRectangles(dpy, gc, 0, 0, xr, r->numRects, Unsorted);
     UnlockDisplay(dpy);
     SyncHandle();
 }
