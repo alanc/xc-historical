@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetHints.c,v 11.14 87/09/01 14:48:06 toddb Locked $ */
+/* $Header: XGetHints.c,v 11.15 87/09/01 14:48:51 swick Locked $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -215,7 +215,7 @@ XGetTransientForHint(dpy, w, propWindow)
     if ( (actual_type == XA_WINDOW) && (actual_format == 32) ) {
 	*propWindow = *data;
 	Xfree( (char *) data);
-	return (Success);
+	return (1);
 	}
     *propWindow = None;
     Xfree( (char *) data);
