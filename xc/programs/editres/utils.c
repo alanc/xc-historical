@@ -1,5 +1,5 @@
 /*
- * $XConsortium: utils.c,v 1.5 92/02/28 18:01:59 dave Exp $
+ * $XConsortium: utils.c,v 1.18 92/03/20 18:12:36 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *

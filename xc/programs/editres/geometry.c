@@ -1,5 +1,5 @@
 /*
- * $XConsortium: geometry.c,v 1.3 92/02/25 18:07:28 dave Exp $
+ * $XConsortium: geometry.c,v 1.14 92/03/20 18:12:52 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *

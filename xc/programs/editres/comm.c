@@ -1,4 +1,4 @@
-/* $XConsortium: comm.c,v 1.9 92/03/02 17:50:30 dave Exp $ */
+/* $XConsortium: comm.c,v 1.21 92/03/20 18:12:24 dave Exp $ */
 /*
  * Copyright 1990 Massachusetts Institute of Technology
  * 
@@ -228,7 +228,7 @@ SetCommand(w, command, msg)
     
     global_error_code = NO_ERROR;	/* Reset Error code. */
     sprintf(error_buf, "The communication window with%s%s.",
-	    " application is no longer avaliable\n",
+	    " application is no longer available\n",
 	    "Please select a new widget tree");
     
     global_client.window = None;

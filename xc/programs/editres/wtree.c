@@ -1,5 +1,5 @@
 /*
- * $XConsortium: wtree.c,v 1.3 92/02/25 18:07:37 dave Exp $
+ * $XConsortium: wtree.c,v 1.15 92/03/20 18:12:43 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
