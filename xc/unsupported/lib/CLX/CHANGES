@@ -148,3 +148,8 @@ o In Lucid lisp, the functions aref-card8, aref-int8, aset-card8, aset-int8,
 
 o The default value of the BYTE-LSB-FIRST-P argument to CREATE-IMAGE has been
   changed from always T to T on LSBFirst machines and NIL on MSBFirst machines.
+
+o The order of the color values returned by ALLOC-COLOR when a color name is supplied
+  as an argument is fixed so that the screen color correctly is returned as the second 
+  value and the exact color is correctly returned as the third value.  The order was 
+  backwards.

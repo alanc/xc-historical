@@ -928,12 +928,12 @@
 		(string string))
 	    (values
 	      (card32-get 8)
-	      (make-color :red (rgb-val-get 12)
-			  :green (rgb-val-get 14)
-			  :blue (rgb-val-get 16)) 
 	      (make-color :red (rgb-val-get 18)
 			  :green (rgb-val-get 20)
-			  :blue (rgb-val-get 22)))))))))
+			  :blue (rgb-val-get 22))
+	      (make-color :red (rgb-val-get 12)
+			  :green (rgb-val-get 14)
+			  :blue (rgb-val-get 16)))))))))
 
 (defun alloc-color-cells (colormap colors &key (planes 0) contiguous-p (result-type 'list))
   (declare (type colormap colormap)

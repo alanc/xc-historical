@@ -83,7 +83,7 @@
 (pushnew :clx *features*)
 (pushnew :xlib *features*)
 
-(defparameter *version* "MIT R4.4")
+(defparameter *version* "MIT R4.4X")
 (pushnew :clx-mit-r4 *features*)
 
 (defparameter *protocol-major-version* 11.)
