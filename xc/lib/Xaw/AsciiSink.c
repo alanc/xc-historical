@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.19 88/09/19 12:03:12 swick Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.20 88/09/19 12:11:08 swick Exp $";
 #endif lint
 
 
@@ -130,7 +130,8 @@ static int AsciiDisplayText (w, x, y, pos1, pos2, highlight)
 		XClearArea(XtDisplay(w), XtWindow(w), x,
 			       y - font->ascent, width,
 			       (Dimension) (data->font->ascent +
-					    data->font->descent));
+					    data->font->descent),
+			   False);
 		x += width;
 		j = -1;
 	    }
