@@ -17,8 +17,7 @@
 #include <strings.h>
 
 /* Include routines to handle parsing defaults */
-#include "jdisplay.h"
-#include "ostuff.h"
+#include "dsimple.h"
 
 #define TRUE 1
 #define FALSE 0
