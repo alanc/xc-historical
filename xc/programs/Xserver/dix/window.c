@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.8 89/07/10 15:30:42 rws Exp $ */
+/* $XConsortium: window.c,v 5.9 89/07/10 17:52:03 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3051,37 +3051,6 @@ MarkWindow(pWin)
 }
 
 static Bool
-MarkSubtree(pWin)
-    WindowPtr pWin;
-{
-    register WindowPtr pChild;
-
-    /* Blindly mark pWin and all of it's inferiors.  This is a slight
-     * overkill if there are mapped windows that outside pWin's border,
-     * but it's better than wasting time on RectIn checks.
-     */
-    pChild = pWin;
-    while (1)
-    {
-	if (pChild->mapped)
-	{
-	    MarkWindow(pChild);
-	    if (pChild->firstChild)
-	    {
-		pChild = pChild->firstChild;
-		continue;
-	    }
-	}
-	while (!pChild->nextSib && (pChild != pWin))
-	    pChild = pChild->parent;
-	if (pChild == pWin)
-	    break;
-	pChild = pChild->nextSib;
-    }
-    MarkWindow(pWin->parent);
-}
-
-static Bool
 MarkOverlappedWindows(pWin, pFirst)
     WindowPtr pWin;
     WindowPtr pFirst;
@@ -3093,7 +3062,28 @@ MarkOverlappedWindows(pWin, pFirst)
 
     if (pWin == pFirst)
     {
-	MarkSubtree(pWin);
+	/* Blindly mark pWin and all of it's inferiors.  This is a slight
+	 * overkill if there are mapped windows that outside pWin's border,
+	 * but it's better than wasting time on RectIn checks.
+	 */
+	pChild = pWin;
+	while (1)
+	{
+	    if (pChild->mapped)
+	    {
+		MarkWindow(pChild);
+		if (pChild->firstChild)
+		{
+		    pChild = pChild->firstChild;
+		    continue;
+		}
+	    }
+	    while (!pChild->nextSib && (pChild != pWin))
+		pChild = pChild->parent;
+	    if (pChild == pWin)
+		break;
+	    pChild = pChild->nextSib;
+	}
 	anyMarked = TRUE;
 	pFirst = pFirst->nextSib;
     }
