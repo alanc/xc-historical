@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.53 91/02/05 16:57:56 gildea Exp $ */
+/* $XConsortium: Convert.c,v 1.54 91/02/07 17:58:27 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -643,24 +643,6 @@ static ConverterPtr GetConverterEntry( app, converter )
 }
 
 
-Boolean
-XtCallConverter(dpy, converter, args, num_args, from, to, cache_ref_return)
-    Display*	    dpy;
-    XtTypeConverter converter;
-    XrmValuePtr     args;
-    Cardinal	    num_args;
-    register XrmValuePtr from;
-    XrmValuePtr     to;
-    XtCacheRef	    *cache_ref_return;
-{
-    ConverterPtr cP;
-    Boolean _XtCallConverter();
-
-    cP = GetConverterEntry( XtDisplayToApplicationContext(dpy), converter );
-    return _XtCallConverter(dpy, converter, args, num_args, from, to, 
-			    cache_ref_return, cP);
-}
-
 static Boolean
 _XtCallConverter(dpy, converter,
 		 args, num_args, from, to, cache_ref_return, cP)
@@ -773,6 +755,23 @@ _XtCallConverter(dpy, converter,
 
 	return retval;
     }
+}
+
+Boolean
+XtCallConverter(dpy, converter, args, num_args, from, to, cache_ref_return)
+    Display*	    dpy;
+    XtTypeConverter converter;
+    XrmValuePtr     args;
+    Cardinal	    num_args;
+    register XrmValuePtr from;
+    XrmValuePtr     to;
+    XtCacheRef	    *cache_ref_return;
+{
+    ConverterPtr cP;
+
+    cP = GetConverterEntry( XtDisplayToApplicationContext(dpy), converter );
+    return _XtCallConverter(dpy, converter, args, num_args, from, to, 
+			    cache_ref_return, cP);
 }
 
 Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
