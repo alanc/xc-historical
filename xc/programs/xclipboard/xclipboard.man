@@ -23,20 +23,37 @@ xclipboard - X clipboard client
 .SH DESCRIPTION
 The \fIxclipboard\fP program is used to collect and display text selections 
 that are sent to the CLIPBOARD by other clients.  It is typically used to
-gather together and hold a block of text that has been selected from
-a variety of different places.
+save CLIPBOARD selections for later use.  It stores each CLIPBOARD selection
+as a separate string, each of which can be selected.  Each time CLIPBOARD
+is asserted by another application, \fIxclipboard\fP transfers the contents
+of that selection to a new buffer and displays it in the text window.
+Buffers are never automatically deleted, so you'll want to use the delete
+button to get rid of useless items.
 .PP
-Since \fIxclipboard\fP uses a Text Widget to display the contents of the 
-clipboard, text sent to the CLIPBOARD may be re-selected
-for use in other applications.
+Since \fIxclipboard\fP uses a Text Widget to display the contents of the
+clipboard, text sent to the CLIPBOARD may be re-selected for use in other
+applications.  \fIxclipbaord\fP also responds to requests for the CLIPBOARD
+selection from other clients by sending the entire contents of the currently
+displayed buffer.
 .PP
 An \fIxclipboard\fP window has the following buttons across the top:
 .TP 8
 .I quit
 When this button is pressed, \fIxclipboard\fP exits.
 .TP 8
-.I erase
-When this button is pressed, the contents of the text window are erased.
+.I delete
+When this button is pressed, the current buffer is deleted and the
+next one displayed.
+.TP 8
+.I new
+Creates a new buffer with no contents.  Useful in constructing a new
+CLIPBOARD selection by hand.
+.TP 8
+.I next
+Displays the next buffer in the list.
+.TP 8
+.I previous
+Displays the previous buffer.
 .SH OPTIONS
 The \fIxclipboard\fP program accepts all of the standard X Toolkit command 
 line options as well as the following:
@@ -59,25 +76,28 @@ Intrinsics\fP for the each widget's list of settable resources.
 xclipboard - XClipboard
 	form - Form
 		quit  - Command
-		erase - Command
+		delete - Command
+		new - Command
+		next - Command
+		prev - Command
 		text  - Text
 .fi
 .sp
-.SH SENDING TO CLIPBOARD
-Text is copied to the clipboard whenever a client asserts ownership of
-the \fBCLIPBOARD\fP selection.  Examples of event bindings that a user
-may wish to include in his/her resource configuration file to use
-the clipboard are:
+.SH SENDING/RETRIEVING CLIPBOARD CONTENTS
+Text is copied to the clipboard whenever a client asserts ownership of the
+\fBCLIPBOARD\fP selection.  Text is copied from the clipboard whenever a
+client requests the contents of the \fBCLIPBOARD\fP selection.  Examples of
+event bindings that a user may wish to include in a resource configuration
+file to use the clipboard are:
 .sp
 .Ds 5
 .TA .5i
 .ta .5i 3.0i
 *VT100.Translations: #override \\
-	Button1 <Btn2Down>:	select-end(CLIPBOARD) \\n\\
-	Button1 <Btn2Up>:	ignore()
+	<Btn3Up>:	select-end(CLIPBOARD) \\n\\
+	<Btn2Up>:	insert-selection(PRIMARY,CLIPBOARD) \\n\\
+	<Btn2Down>:	ignore ()
 
-*Text.Translations: #override \\
-	Button1 <Btn2Down>:	extend-end(CLIPBOARD)
 .De
 .sp
 .SH "SEE ALSO"
@@ -101,3 +121,6 @@ See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Ralph R. Swick, DEC/MIT Project Athena
 .br
+Chris D. Peterson, MIT X Consortium
+.br
+Keith Packard, MIT X Consortium
