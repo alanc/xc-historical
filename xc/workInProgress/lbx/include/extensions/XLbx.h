@@ -1,4 +1,4 @@
-/* $XConsortium: XLbx.h,v 1.8 94/12/01 19:57:30 mor Exp mor $ */
+/* $XConsortium: XLbx.h,v 1.1 95/03/02 18:23:55 mor Exp $ */
 /*
  * $NCDId: @(#)XLbx.h,v 1.21 1994/11/18 20:29:53 lemke Exp $
  *
@@ -73,7 +73,9 @@
 #define X_LbxGetImage			34
 
 #define LbxEvent			0
-#define LbxNumberEvents			(LbxEvent + 1)
+#define LbxQuickMotionDeltaEvent	1
+#define LbxMotionDeltaEvent		2
+#define LbxNumberEvents			(LbxMotionDeltaEvent + 1)
 
 /* This is always the master client */
 #define LbxMasterClientIndex		0
