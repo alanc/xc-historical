@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.166 93/07/12 19:50:52 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.167 93/07/13 11:16:48 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -301,43 +301,6 @@ XCOMM -------------------------------------------------------------------------
 XCOMM platform-specific configuration parameters - edit MacroFile to change
 #include MacroIncludeFile
 
-/* It is a kludge to put these two macros here,
- * but Project.tmpl needs them and it is not clear there is a better place.
- */
-
-/*
- * Concat - concatenates two strings.
- */
-#ifndef Concat
-#if (__STDC__ && !defined(UnixCpp)) || defined(AnsiCpp)
-#define Concat(a,b)a##b
-#else
-#define Concat(a,b)a/**/b
-#endif
-#endif
-
-/*
- * Concat3 - concatenates three strings.
- */
-#ifndef Concat3
-#if (__STDC__ && !defined(UnixCpp)) || defined(AnsiCpp)
-#define Concat3(a,b,c)a##b##c
-#else
-#define Concat3(a,b,c)a/**/b/**/c
-#endif
-#endif
-
-/*
- * Concat4 - concatenates four strings.
- */
-#ifndef Concat4
-#if (__STDC__ && !defined(UnixCpp)) || defined(AnsiCpp)
-#define Concat4(a,b,c,d)a##b##c##d
-#else
-#define Concat4(a,b,c,d)a/**/b/**/c/**/d
-#endif
-#endif
-
 XCOMM -------------------------------------------------------------------------
 XCOMM site-specific configuration parameters that go after
 XCOMM the platform-specific parameters - edit site.def to change
@@ -509,13 +472,13 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define ProfiledCDebugFlags -pg
 #endif
 #ifndef NoOpCDebugFlags
-#define NoOpCDebugFlags /* as nothing */
+#define NoOpCDebugFlags /**/
 #endif
 #ifndef DefaultCDebugFlags
 #define DefaultCDebugFlags OptimizedCDebugFlags
 #endif
 #ifndef DefaultCCOptions
-#define DefaultCCOptions /* as nothing: this is for floating point, etc. */
+#define DefaultCCOptions /* floating point, etc. */
 #endif
 #ifndef NoRConst
 #define NoRConst NO /* YES if const for structs of funcs is bad */
@@ -541,8 +504,8 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef InstDatFlags
 #define InstDatFlags -m 0444
 #endif
-#ifndef InstKmemFlags
-#define InstKmemFlags InstUidFlags    /* put -g kmem -m 2755 in site.def... */
+#ifndef InstKmemFlags     /* put -g kmem -m 2755 in site.def... */
+#define InstKmemFlags InstUidFlags
 #endif
 #ifndef ArCmdBase
 #define ArCmdBase ar
@@ -595,8 +558,8 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef FortranFlags
 #define FortranFlags /**/
 #endif
-#ifndef FortranDebugFlags
-#define FortranDebugFlags /**/		/* for -O or -g */
+#ifndef FortranDebugFlags	/* for -O or -g */
+#define FortranDebugFlags /**/
 #endif
 #endif
 #ifndef AsCmd
@@ -654,11 +617,11 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef HasSymLinks
 #define HasSymLinks YES
 #endif
-#ifndef LnCmd
+#ifndef LnCmd /* can use cp instead of ln if necessary */
 #if HasSymLinks
 #define LnCmd ln -s
 #else
-#define LnCmd ln /* or even cp */
+#define LnCmd ln
 #endif
 #endif
 #ifndef MakeCmd
@@ -683,8 +646,8 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef RmCmd
 #define RmCmd rm -f
 #endif
-#ifndef StandardIncludes
-#define StandardIncludes /**/			/* for platform-specifics */
+#ifndef StandardIncludes	/* for platform-specifics */
+#define StandardIncludes /**/
 #endif
 #ifndef StandardDefines
 #if SystemV
@@ -738,7 +701,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define TagsCmd ctags
 #endif
 #ifndef LoaderLibPrefix
-#define LoaderLibPrefix /**/			/* cray does -l libX11.a */
+#define LoaderLibPrefix /**/
 #endif
 #ifndef DependFlags
 #define DependFlags /**/
@@ -840,6 +803,12 @@ XCOMM the platform-specific parameters - edit site.def to change
 #if HasSharedLibraries
     SHAREDCODEDEF = SharedCodeDef
          SHLIBDEF = SharedLibraryDef
+#ifdef SharedLibraryLoadFlags
+SHLIBLDFLAGS = SharedLibraryLoadFlags
+#endif
+#ifdef PositionIndependentCFlags
+PICFLAGS = PositionIndependentCFlags
+#endif
 #endif
 #if !HasVoidSignalReturn
    SIGNAL_DEFINES = -DSIGNALRETURNSINT
@@ -956,10 +925,16 @@ XCOMM the platform-specific parameters - edit site.def to change
 			$(IRULESRC)/$(MACROFILE) SiteIConfigFiles \
 			$(EXTRA_ICONFIGFILES)
 
+#include <Imake.rules>
+#ifndef LocalRulesFile
+/* need this to make ANSI-style preprocessors happy */
+#define LocalRulesFile <noop.rules>
+#endif
+#include LocalRulesFile
+
 /*
  * get project-specific configuration and rules
  */
-
 #include <Project.tmpl>
 #ifndef LocalTmplFile
 /* need this to make ANSI-style preprocessors happy */
@@ -967,12 +942,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #include LocalTmplFile
 
-#include <Imake.rules>
-#ifndef LocalRulesFile
-/* need this to make ANSI-style preprocessors happy */
-#define LocalRulesFile <noop.rules>
+#ifdef FixupLibReferences
+FixupLibReferences()
 #endif
-#include LocalRulesFile
 
 XCOMM -------------------------------------------------------------------------
 XCOMM start of Imakefile
