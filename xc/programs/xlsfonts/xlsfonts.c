@@ -110,11 +110,6 @@ get_list(pattern)
 			font_list[font_cnt].info = NULL;
 		font_cnt++;
 	}
-
-	if (long_list)
-		XFreeFontInfo(fonts, info, available);
-	else
-		XFreeFontNames(fonts);
 }
 
 compare(f1, f2)
