@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.25 91/02/17 15:59:20 dave Exp $
+ * $XConsortium: xfd.c,v 1.26 91/02/20 18:47:57 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -121,6 +121,10 @@ usage()
 
 static Widget selectLabel, metricsLabel, rangeLabel, startLabel, fontGrid;
 
+static Boolean fontConversionFailed = False;
+static void (*oldWarningHandler)();
+static void CatchFontConversionWarning();
+
 main (argc, argv) 
     int argc;
     char **argv;
@@ -143,8 +147,6 @@ main (argc, argv)
     XtAppAddActions (xtcontext, xfd_actions, XtNumber (xfd_actions));
     XtOverrideTranslations
         (toplevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: Quit()"));
-
-    XmuSetStringToFontStructConverter (FALSE);
 
     XtGetApplicationResources (toplevel, (caddr_t) &xfd_resources, Resources,
 			       XtNumber (Resources), NULL, ZERO);
@@ -190,14 +192,20 @@ main (argc, argv)
     XtSetArg (av[i], XtNleft, XtChainLeft); i++;
     XtSetArg (av[i], XtNright, XtChainRight); i++;
     XtSetArg (av[i], XtNcallback, cb); i++;
+
+    oldWarningHandler = XtAppSetWarningMsgHandler(xtcontext, 
+						  CatchFontConversionWarning);
+
     fontGrid = XtCreateManagedWidget ("grid", fontgridWidgetClass, form,
 				      av, i);
+
+    XtAppSetWarningMsgHandler(xtcontext, oldWarningHandler);
 
     /* set the label at the top to tell us which font this is */
     i = 0;
     XtSetArg (av[i], XtNfont, &fs); i++;
     XtGetValues (fontGrid, av, i);
-    if (!fs) {
+    if (!fs || fontConversionFailed) {
 	fprintf (stderr, "%s:  no font to display\n", ProgramName);
 	exit (1);
     }
@@ -374,3 +382,16 @@ static char *get_font_name (dpy, fs)
     return NULL;
 }
 
+
+static void CatchFontConversionWarning(name, type, class, defaultp, params, np)
+    String name, type, class, defaultp, *params;
+    Cardinal *np;
+{
+    if (np && *np > 1 &
+	strcmp(name, "conversionError") == 0 &&
+	strcmp(type, "string") == 0 &&
+	strcmp(class, "XtToolkitError") == 0 &&
+	strcmp(params[1], "FontStruct") == 0) fontConversionFailed = True;
+
+    (*oldWarningHandler)(name, type, class, defaultp, params, np);
+}
