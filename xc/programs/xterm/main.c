@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.138 89/12/09 18:36:15 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.139 89/12/10 20:44:23 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -153,6 +153,15 @@ int	Ptyfd;
 #endif
 #endif
 
+#ifdef SIGNALRETURNSINT
+#define SIGNAL_T int
+#define SIGNAL_RETURN return 0
+#else
+#define SIGNAL_T void
+#define SIGNAL_RETURN return
+#endif
+
+SIGNAL_T Exit();
 extern char *malloc();
 extern char *calloc();
 extern char *realloc();
@@ -167,7 +176,7 @@ extern void HandlePopupMenu();
 
 int switchfb[] = {0, 2, 1, 3};
 
-static int reapchild ();
+static SIGNAL_T reapchild ();
 
 static Bool added_utmp_entry = False;
 
@@ -808,7 +817,7 @@ char **argv;
 
 		old_bufend = (unsigned char *) _bufend(stderr);
 		fileno(stderr) = i;
-		(unsigned char *) _bufend(stderr) = old_bufend;
+		_bufend(stderr) = old_bufend;
 #else	/* USE_SYSV_TERMIO */
 		fileno(stderr) = i;
 #endif	/* USE_SYSV_TERMIO */
@@ -999,9 +1008,12 @@ static char *vtterm[] = {
 	0
 };
 
-hungtty()
+/* ARGSUSED */
+SIGNAL_T hungtty(i)
+	int i;
 {
 	longjmp(env, 1);
+	SIGNAL_RETURN;
 }
 
 #ifdef USE_HANDSHAKE
@@ -1013,7 +1025,7 @@ typedef enum {		/* c == child, p == parent                        */
 	PTY_NOMORE,	/* p->c; no more pty's, terminate                 */
 	UTMP_ADDED,	/* c->p: utmp entry has been added                */
 	UTMP_TTYSLOT,	/* c->p: here is my ttyslot                       */
-	PTY_EXEC,	/* p->c: window has been mapped the first time    */
+	PTY_EXEC	/* p->c: window has been mapped the first time    */
 } status_t;
 
 typedef struct {
@@ -1144,7 +1156,6 @@ spawn ()
 	struct lastlog lastlog;
 #endif	/* LASTLOG */
 #endif	/* UTMP */
-	extern int Exit();
 
 	screen->uid = getuid();
 	screen->gid = getgid();
@@ -2089,8 +2100,8 @@ spawn ()
 	return;
 }							/* end spawn */
 
-Exit(n)
-int n;
+SIGNAL_T Exit(n)
+	int n;
 {
 	register TScreen *screen = &term->screen;
         int pty = term->screen.respond;  /* file descriptor of pty */
@@ -2166,6 +2177,7 @@ int n;
 		chmod (ptydev, 0666);
 	}
 	exit(n);
+	SIGNAL_RETURN;
 }
 
 /* ARGSUSED */
@@ -2212,7 +2224,7 @@ register char *oldtc, *newtc;
 #endif /* USE_SYSV_ENVVARS */
 }
 
-static reapchild ()
+static SIGNAL_T reapchild ()
 {
 #if defined(USE_SYSV_SIGNALS) && !defined(SIGTSTP)
 	int status, pid;
@@ -2220,7 +2232,7 @@ static reapchild ()
 	pid = wait(&status);
 	if (pid == -1) {
 		(void) signal(SIGCHLD, reapchild);
-		return;
+		SIGNAL_RETURN;
 	}
 #else	/* defined(USE_SYSV_SIGNALS) && !defined(SIGTSTP) */
 	union wait status;
@@ -2234,7 +2246,7 @@ static reapchild ()
 #ifdef USE_SYSV_SIGNALS
 		(void) signal(SIGCHLD, reapchild);
 #endif /* USE_SYSV_SIGNALS */
-		return;
+		SIGNAL_RETURN;
 	}
 #endif	/* defined(USE_SYSV_SIGNALS) && !defined(SIGTSTP) */
 
@@ -2246,7 +2258,7 @@ static reapchild ()
 #ifdef USE_SYSV_SIGNALS
 		(void) signal(SIGCHLD, reapchild);
 #endif	/* USE_SYSV_SIGNALS */
-		return;
+		SIGNAL_RETURN;
 	}
 	
 	/*
@@ -2261,6 +2273,7 @@ static reapchild ()
 	    killpg (pid, SIGHUP);
 	}
 	Exit (0);
+	SIGNAL_RETURN;
 }
 
 /* VARARGS1 */
