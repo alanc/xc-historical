@@ -1,15 +1,50 @@
 
 ! The App-defaults file for Editres.
 
+! The top few items are strictly to make it look `nice', users may
+! modify these as they see fit.
+
 Editres.Geometry:			500x600
 
 *ShapeStyle:				Oval
 *Tree*ShapeStyle:			Rectangle
-*allowVert:       			True
-*allowHoriz:      			True
-*Scrollbar*BorderWidth:			0
 
-*userMessage*allowResize:		True
+! Here are some suggested resources if you are using a color workstation.
+! They look pretty good on my display, your mileage may vary.
+
+
+! Editres*flashColor:			Yellow
+
+! Editres*Background:			SteelBlue4
+! Editres*Foreground:			Azure
+! Editres*BorderColor:			LightCyan1
+
+! Editres*Tree.Background: 		AntiqueWhite4
+! Editres*Tree.Foreground: 		White
+
+! Editres*Tree.Toggle.Background: 	RoyalBlue4
+! Editres*Tree.Toggle.Foreground: 	Gold
+! Editres*Tree.Toggle.BorderWidth: 	0
+
+! Editres*MenuButton.Background: 	RoyalBlue4
+! Editres*MenuButton.Foreground: 	Gold
+! Editres*MenuButton.BorderWidth: 	0
+
+! Editres*SimpleMenu.Background: 	RoyalBlue4
+! Editres*SmeBSB.Foreground: 		Gold
+
+! Editres*Panner*Foreground:		DimGrey
+! Editres*Panner*Background:		SeaGreen
+! Editres*Panner*BorderColor:		SeaGreen
+! Editres*Panner*ShadowColor:		Black
+! Editres*Panner*BackgroundStipple:	None
+
+
+! The rest of this file are either button names, or important for
+! functionality, modifying these values may cause strange program
+! behavior.
+
+*flash.BorderWidth:			0
 
 ! Menu Button Names
 
@@ -25,6 +60,7 @@ Editres.Geometry:			500x600
 *SimpleMenu*dumpTreeToFile.Label:	Dump Widget Tree to a File
 *SimpleMenu*flashActiveWidgets.Label:	Show Active Widgets
 *SimpleMenu*getResourceList.Label:	Show Resource Box
+*SimpleMenu*author.Label:		Show Author 
 *SimpleMenu*quit.Label:			Quit
 
 
@@ -40,6 +76,8 @@ Editres.Geometry:			500x600
 *SimpleMenu*showWidgetIDs.Label:	Show Widget IDs
 *SimpleMenu*showWidgetWindows.Label:	Show Widget Windows
 
+*MenuButton.leftBitmap:			menu10
+
 ! For the Top Area
 
 *hPane.orientation:			horizontal
@@ -47,7 +85,9 @@ Editres.Geometry:			500x600
 *hPane.Panner.width:			100
 *hPane.Panner.height:			100
 *hPane.Panner.preferredPaneSize:	100
-*Paned*showGrip:			False
+*paned*Panner.showGrip:			False
+*paned.box.showGrip:			False
+*paned.hPane.showGrip:			True
 
 ! For the Filename popup dialog.
 
@@ -56,32 +96,16 @@ Editres.Geometry:			500x600
 *fileDialog*Text.Translations:		#override \n\
 	<Key>Return:		PopdownFileDialog(okay)
 
-! For the SetValuesPopup widget
+! The Author popup message
 
-*setValuesPopup*resizable:		True
-*setValuesPopup*left:			ChainLeft
-*setValuesPopup*right:			ChainLeft
+*authorPopup*okay.label:              Okay
+*authorPopup*label.label:              \n\
+                Editres Version 0.1              \n\
+\n\
+           Written by Chris D. Peterson \n\
+\n\
+                    kit@ics.com \n 
 
-*setValuesPopup*label*Label:		Use <Tab> to Change Fields.
-*setValuesPopup*Label*BorderWidth:	0
-
-*setValuesPopup*resourceLabel.Label:	Resource Name:
-*setValuesPopup*valueLabel.Label:	Value:
-
-*setValuesPopup*Text*EditType:		Edit
-*setValuesPopup*Text*resize:		Width
-
-*setValuesPopup*resourceText.Translations: #override \
-  <Key>Return:     	   no-op(RingBell) \n\
-   Ctrl<Key>q,<Key>Tab:    insert-char()    \n\
-   <Btn1Down>:             select-start() SVActiveEntry(Resource) \n\
-   <Key>Tab:               SVActiveEntry(Value)
-
-*setValuesPopup*valueText.Translations: #override \
-   <Key>Return:     	   no-op(RingBell) \n\
-   Ctrl<Key>q,<Key>Tab:    insert-char()     \n\
-   <Btn1Down>:             select-start() SVActiveEntry(Value)\n\
-   <Key>Tab:               SVActiveEntry(Resource)
 
 ! Resources for the Resource Box.
 
@@ -100,7 +124,7 @@ Editres.Geometry:			500x600
 *resourceBox*any.Label:					Allow Any Widget
 
 *resourceBox*namesLabel.Label:				Normal Resources
-*resourceBox*namesLabel.font:			\
+*resourceBox*namesLabel.font:				\
 -*-new century schoolbook-bold-r-*-*-17-*-*-*-*-*-*-*
 *resourceBox*constraintLabel.Label:			Constraint Resources
 *resourceBox*constraintLabel.font:			\
@@ -158,3 +182,4 @@ Editres.Geometry:			500x600
 	:<Key>C:		Relabel(class) \n\
 	:<Key>I:		Relabel(id) \n\
 	:<Key>W:		Relabel(window) 
+
