@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.131 91/07/23 23:16:49 keith Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.132 91/07/25 16:54:50 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -233,7 +233,10 @@ XCOMM $XConsortium: Project.tmpl,v 1.131 91/07/23 23:16:49 keith Exp $
 #define PexDdpexDefines /**/
 #endif
 #ifndef PexPhigsDefines
-#if HasShm
+#ifndef PexShmIPC
+#define PexShmIPC HasShm
+#endif
+#if PexShmIPC
 #define PexPhigsDefines /**/
 #else
 #define PexPhigsDefines -DPEX_API_SOCKET_IPC
