@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.21 93/12/07 11:04:00 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.22 93/12/07 16:40:17 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -505,6 +505,7 @@ extern IceConn IceOpenConnection (
 #if NeedFunctionPrototypes
     char *		/* networkIdsList */,
     Bool		/* mustAuthenticate */,
+    int			/* majorOpcodeCheck */,
     int			/* errorLength */,
     char *		/* errorStringRet */
 #endif
