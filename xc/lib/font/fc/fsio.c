@@ -33,6 +33,7 @@
 #include	"FSproto.h"
 #include	<stdio.h>
 #include	<sys/socket.h>
+#include	<sys/param.h>
 #include	<netinet/tcp.h>
 #include	<errno.h>
 #include	"FSlibos.h"
