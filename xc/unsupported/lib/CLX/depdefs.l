@@ -609,7 +609,19 @@
 #-(or ansi-common-lisp Genera)
 (defun print-unreadable-object-function (object stream type identity function)
   (princ "#<" stream)
-  (when type (prin1 (type-of object) stream))
+  (when type
+    (let ((type (type-of object))
+	  (pcl-package (find-package 'pcl)))
+      ;; Handle pcl type-of lossage
+      (when (and pcl-package
+		 (symbolp type)
+		 (eq (symbol-package type) pcl-package)
+		 (string-equal (symbol-name type) "STD-INSTANCE"))
+	(setq type
+	      (funcall (intern (symbol-name 'class-name) pcl-package)
+		       (funcall (intern (symbol-name 'class-of) pcl-package)
+				object))))
+      (prin1 type stream)))
   (when (and type function) (princ " " stream))
   (when function (funcall function))
   (when (and (or type function) identity) (princ " " stream))
