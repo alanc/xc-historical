@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mipushpxl.c,v 1.14 87/09/11 07:20:28 rws Locked $ */
+/* $Header: mipushpxl.c,v 1.15 87/11/09 13:06:51 rws Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "scrnintstr.h"
@@ -153,7 +153,7 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 	/* If scanline ended with last bit set, end the box */
 	if(fInBox)
 	{
-	    width[ipt] = ((pw - pwLineStart) << 5) + ib + xOrg - pt[ipt].x;
+	    width[ipt] = dx + xOrg - pt[ipt].x;
 	    if (++ipt >= NPT)
 	    {
 		(*pGC->FillSpans)(pDrawable, pGC, NPT, pt, width, TRUE);
