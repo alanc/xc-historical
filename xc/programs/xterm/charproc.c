@@ -1,5 +1,5 @@
 /*
- * $Header: charproc.c,v 1.28 88/04/06 16:07:43 jim Exp $
+ * $Header: charproc.c,v 1.29 88/04/06 17:08:40 jim Exp $
  */
 
 
@@ -118,7 +118,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.28 88/04/06 16:07:43 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.29 88/04/06 17:08:40 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1863,6 +1863,9 @@ static void VTInitialize (request, new)
 
    /* create it, but don't realize it */
    ScrollBarOn (new, TRUE, FALSE);
+
+   new->screen.scrollbar = new->misc.scrollbar ?
+	new->screen.scrollWidget->core.width : 0;
 
    return;
 }
