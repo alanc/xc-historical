@@ -28,6 +28,16 @@ MakeLintSubdirs($(LNINSTALLDIRS),external.ln,lintlib)
 
 
 /**/#
+/**/# Watch out!!!  Make sure you do make includes after removing X11....
+/**/#
+clean::
+	$(RM) -r X11
+
+includes::
+	$(RM) -r X11
+
+
+/**/#
 /**/# before depending, be sure to have run make includes
 /**/#
 /* depend::  includes */
@@ -71,7 +81,7 @@ World::
 	@echo ""
 	@echo "##############################################################"
 	@echo "# Did you remember to check the configuration parameters in  #"
-	@echo "# the directory util/imake.includes and set BOOTSTRAPCFLAGS? #"
+	@echo "# the directory ./config and set BOOTSTRAPCFLAGS if needed?  #"
 	@echo "##############################################################"
 	@echo ""
 	@date
@@ -106,12 +116,6 @@ CHANGES.ALL::
 	echo "==========================================================="; \
 	done) >$@
 
-
-/**/#
-/**/# Watch out!!!  Make sure you do make includes after removing X11....
-/**/#
-clean::
-	$(RM) -r X11
 
 
 /*
