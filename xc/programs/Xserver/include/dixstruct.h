@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.24 93/12/01 20:32:44 rob Exp $ */
+/* $XConsortium: dixstruct.h,v 1.25 94/01/11 23:05:33 rob Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -50,6 +50,9 @@ typedef struct _TimeStamp {
 
 typedef struct _Client {
     int         index;
+#ifdef XTHREADS
+    unsigned long serialNumber;  /* for validateGC */
+#endif
     Mask        clientAsMask;
     pointer     requestBuffer;
     pointer     osPrivate;	/* for OS layer, including scheduler */

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: gc.h,v 1.54 93/09/20 16:46:46 dpw Exp $ */
+/* $XConsortium: gc.h,v 1.55 93/09/24 12:17:37 rws Exp $ */
 
 #ifndef GC_H
 #define GC_H 
@@ -54,8 +54,35 @@ SOFTWARE.
 #define DRAWABLE_SERIAL_BITS        (~(GC_CHANGE_SERIAL_BIT))
 
 #define MAX_SERIAL_NUM     (1L<<28)
+
+#ifdef XTHREADS
+/***********************************************************************
+ *
+ *      The following macros are used to manipulate the client's
+ *      serial number. The upper 8 bits are the client index and the
+ *      lower 24 bits is the serial number. Together, they make the
+ *      serial number unique in the server.
+ *
+ ***********************************************************************/
+
+#define SN_CLIENTID_OFFSET 24            /* bit position of client id */
+#define SN_CLIENTID_MASK 0xff000000
+#define SN_SERIAL_NUMBER_MASK 0x00ffffff  /* low order 24 bits */
+#define SN_SET_CLIENT_ID(cid) ((unsigned long)cid << SN_CLIENTID_OFFSET)
+
+#define INITIALIZE_CLIENT_SERIAL_NUMBER(client) \
+		(client)->serialNumber = SN_SET_CLIENT_ID((client)->index);
+
+#define NEXT_CLIENT_SERIAL_NUMBER(serialNum, client) \
+		(serialNum) = ((client)->serialNumber & SN_CLIENTID_MASK) | \
+			    (++((client)->serialNumber) & SN_SERIAL_NUMBER_MASK)
+#define NEXT_SERIAL_NUMBER      GetNextSerialNumber()
+
+#else
+
 #define NEXT_SERIAL_NUMBER ((++globalSerialNumber) > MAX_SERIAL_NUM ? \
 	    (globalSerialNumber  = 1): globalSerialNumber)
+#endif /*  XTHREADS */
 
 typedef struct _GCInterest *GCInterestPtr;
 typedef struct _GC    *GCPtr;
