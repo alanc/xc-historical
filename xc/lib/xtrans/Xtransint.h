@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransint.h,v 1.17 94/03/31 11:11:03 mor Exp $ */
+/* $XConsortium: Xtransint.h,v 1.18 94/03/31 16:04:43 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -337,7 +337,7 @@ typedef struct _Xtransport_table {
  * systems, so they may be emulated.
  */
 
-#if defined(CRAY) || (defined(SYSV) && defined(SYSV386)) || defined(WIN32)
+#if defined(CRAY) || (defined(SYSV) && defined(SYSV386)) || defined(WIN32) || defined(__sxg__)
 
 #define READV(ciptr, iov, iovcnt)	TRANS(ReadV)(ciptr, iov, iovcnt)
 
