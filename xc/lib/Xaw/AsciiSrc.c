@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.29 90/01/31 17:08:15 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.30 90/02/22 19:29:01 kit Exp $";
 #endif 
 
 /*
@@ -443,7 +443,7 @@ Boolean	              include;
   case XawstParagraph: 
   case XawstWhiteSpace: 
     for ( ; count > 0 ; count-- ) {
-      Boolean non_space = FALSE, first_eol = TRUE;
+      Boolean first_eol = TRUE;
       while (TRUE) {
 	register unsigned char c = *ptr;
 
@@ -451,13 +451,9 @@ Boolean	              include;
 	position += inc;
 	
 	if (type == XawstWhiteSpace) {
-	  if (isspace(c)) {
-	    if (non_space) 
+	  if (isspace(c))
 	      break;
-	  }
-	  else
-	    non_space = TRUE;
-	}
+        }
 	else if (type == XawstEOL) {
 	  if (c == '\n') break;
 	}

@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.24 90/02/01 16:02:26 keith Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.25 90/03/16 16:23:25 converse Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -281,9 +281,20 @@ XawTextScanDirection dir;
 XawTextScanType type;
 Boolean include;
 {
+  XawTextPosition old_pos = ctx->text.insertPos;
   StartAction(ctx, event);
   ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
 				type, dir, ctx->text.mult, include);
+
+/*
+ * If no movement actually happened, then bump the count and try again. 
+ * This causes the character position at the very beginning and end of 
+ * a boundry to act correctly. 
+ */
+
+  if (ctx->text.insertPos == old_pos)
+      ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
+				    type, dir, ctx->text.mult + 1, include);
   EndAction(ctx);
 }
 
@@ -524,7 +535,17 @@ Boolean	   include, kill;
   StartAction(ctx, event);
   to = SrcScan(ctx->text.source, ctx->text.insertPos,
 	       type, dir, ctx->text.mult, include);
-  
+
+/*
+ * If no movement actually happened, then bump the count and try again. 
+ * This causes the character position at the very beginning and end of 
+ * a boundry to act correctly. 
+ */
+
+  if (to == ctx->text.insertPos)
+      to = SrcScan(ctx->text.source, ctx->text.insertPos,
+		   type, dir, ctx->text.mult + 1, include);
+
   if (dir == XawsdLeft) {
     from = to;
     to = ctx->text.insertPos;
