@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.164 91/04/08 16:28:17 converse Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.165 91/04/11 12:02:10 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -498,19 +498,19 @@ Widget XtNameToWidget(root, name)
     names = (XrmName *) ALLOCATE_LOCAL((unsigned) (len+1) * sizeof(XrmName));
     bindings = (XrmBinding *)
 	ALLOCATE_LOCAL((unsigned) (len+1) * sizeof(XrmBinding));
-    if (names == NULL || bindings == NULL) _XtAllocError("alloca");
+    if (names == NULL || bindings == NULL) _XtAllocError(NULL);
 
     XrmStringToBindingQuarkList(name, bindings, names);
     if (names[0] == NULLQUARK) {
-	DEALLOCATE_LOCAL((char *) names);
 	DEALLOCATE_LOCAL((char *) bindings);
+	DEALLOCATE_LOCAL((char *) names);
 	return NULL;
     }
 
     result = NameListToWidget(root, names, bindings, 0, &depth, &found);
 
-    DEALLOCATE_LOCAL((char *) names);
     DEALLOCATE_LOCAL((char *) bindings);
+    DEALLOCATE_LOCAL((char *) names);
     return result;
 } /* XtNameToWidget */
 
