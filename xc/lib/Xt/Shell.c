@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.117 91/07/24 17:31:23 swick Exp $ */
+/* $XConsortium: Shell.c,v 1.118 91/07/25 12:36:52 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -85,14 +85,12 @@ static XtResource shellResources[]=
 	{XtNy, XtCPosition, XtRPosition, sizeof(Position),
 	    Offset(core.y), XtRImmediate, (XtPointer)BIGSIZE},
 	{ XtNdepth, XtCDepth, XtRInt, sizeof(int),
-	    Offset(core.depth), XtRCallProc,
-	    (XtPointer)(char *) _XtShellDepth},
+	    Offset(core.depth), XtRCallProc, (XtPointer) _XtShellDepth},
 	{ XtNcolormap, XtCColormap, XtRColormap, sizeof(Colormap),
-	    Offset(core.colormap), XtRCallProc,
-	    (XtPointer)(char *) _XtShellColormap},
+	    Offset(core.colormap), XtRCallProc, (XtPointer) _XtShellColormap},
 	{ XtNancestorSensitive, XtCSensitive, XtRBoolean, sizeof(Boolean),
 	    Offset(core.ancestor_sensitive), XtRCallProc,
-	    (XtPointer)(char *) _XtShellAncestorSensitive},
+	    (XtPointer) _XtShellAncestorSensitive},
 	{ XtNallowShellResize, XtCAllowShellResize, XtRBoolean,
 	    sizeof(Boolean), Offset(shell.allow_shell_resize),
 	    XtRImmediate, (XtPointer)False},
@@ -263,7 +261,7 @@ static XtResource wmResources[]=
 	    Offset(wm.title), XtRString, NULL},
 	{ XtNtitleEncoding, XtCTitleEncoding, XtRAtom, sizeof(Atom),
 	    Offset(wm.title_encoding),
-	    XtRCallProc, (XtPointer)(char *) _XtTitleEncoding},
+	    XtRCallProc, (XtPointer) _XtTitleEncoding},
 	{ XtNwmTimeout, XtCWmTimeout, XtRInt, sizeof(int),
 	    Offset(wm.wm_timeout), XtRImmediate,(XtPointer)DEFAULT_WM_TIMEOUT},
 	{ XtNwaitForWm, XtCWaitForWm, XtRBoolean, sizeof(Boolean),
@@ -477,7 +475,7 @@ static XtResource topLevelResources[]=
 	    Offset(topLevel.icon_name), XtRString, (XtPointer) NULL},
 	{ XtNiconNameEncoding, XtCIconNameEncoding, XtRAtom, sizeof(Atom),
 	    Offset(topLevel.icon_name_encoding),
-	    XtRCallProc, (XtPointer)(char *) _XtTitleEncoding},
+	    XtRCallProc, (XtPointer) _XtTitleEncoding},
 	{ XtNiconic, XtCIconic, XtRBoolean, sizeof(Boolean),
 	    Offset(topLevel.iconic), XtRImmediate, (XtPointer)False}
 };
