@@ -79,7 +79,7 @@ int     reps;
 	XieLTriplet levels;
 	int encodeTech;
 	char *encodeTechParms = ( char * ) NULL;
-	int idx;
+	int i, idx;
 	XieProcessDomain domain;
 	int needconstrain;
 	float bias;
@@ -94,7 +94,9 @@ int     reps;
 	XieConstant rgbbias;
 	XieRGBToYCbCrParam *RGBToYCbCrParm = (XieRGBToYCbCrParam *) NULL;
 	XieYCbCrToRGBParam *YCbCrToRGBParm = (XieYCbCrToRGBParam *) NULL;
+	XieEncodeJPEGBaselineParam *JPEGB; 
 	int doYCbCr = True;
+	unsigned char scale;
 
 	needconstrain = 0;
 	decodeTechParms = ( char * ) NULL;
@@ -236,26 +238,35 @@ int     reps;
 		idx++;
 
 		if ( type == xieValTripleBand &&
-		     encodeTech == xieValEncodeJPEGBaseline &&
-		     doYCbCr == True )
+		     encodeTech == xieValEncodeJPEGBaseline )
 		{
+			if ( doYCbCr == True ) 
+			{
 
-			rgblevels[0] = 256; rgbbias[0]=0;
-			rgblevels[1] = 256; rgbbias[1]=127;
-			rgblevels[2] = 256; rgbbias[2]=127;
+				rgblevels[0] = 256; rgbbias[0]=0;
+				rgblevels[1] = 256; rgbbias[1]=127;
+				rgblevels[2] = 256; rgbbias[2]=127;
 
-			RGBToYCbCrParm = XieTecRGBToYCbCr(
-				rgblevels,
-				 0.299, 0.587, 0.114, 
-				rgbbias
-			);
-			/* XXX check for error return */
-			XieFloConvertFromRGB( &flograph1[idx],
-				idx,
-				xieValYCbCr,
-				(char *) RGBToYCbCrParm
-			);
-			idx++;
+				RGBToYCbCrParm = XieTecRGBToYCbCr(
+					rgblevels,
+					 0.299, 0.587, 0.114, 
+					rgbbias
+				);
+				/* XXX check for error return */
+				XieFloConvertFromRGB( &flograph1[idx],
+					idx,
+					xieValYCbCr,
+					(char *) RGBToYCbCrParm
+				);
+				idx++;
+			}
+			scale = ( ( EncodeParms * )p->ts )->scale; 
+			JPEGB = ( XieEncodeJPEGBaselineParam * ) encodeTechParms;
+			for ( i = 0; i < JPEGB->q_size; i++ )
+			{
+				JPEGB->q_table[ i ] =
+					(JPEGB->q_table[ i ] * scale + 50)/100;	
+			}
 		} 
 
 		if ( exportClient == True )
