@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.150 88/08/09 10:19:06 rws Exp $ */
+/* $Header: events.c,v 1.151 88/08/14 08:43:32 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -87,7 +87,7 @@ static KeySymsRec curKeySyms;
 static GrabRec keybdGrab;	/* used for active grabs */
 static GrabRec ptrGrab;
 
-#define MAX_QUEUED_EVENTS 100
+#define MAX_QUEUED_EVENTS 5000
 static struct {
     unsigned int	num;
     QdEventRec		pending, free;	/* only forw, back used */
@@ -326,9 +326,9 @@ PostNewCursor()
     register    GrabPtr grab = inputInfo.pointer->grab;
     if (grab)
     {
-	if (grab->u.ptr.cursor)
+	if (grab->cursor)
 	{
-	    ChangeToCursor(grab->u.ptr.cursor);
+	    ChangeToCursor(grab->cursor);
 	    return;
 	}
 	if (IsParent(grab->window, sprite.win))
@@ -488,12 +488,14 @@ ActivatePointerGrab(mouse, grab, time, autoGrab)
     WindowPtr oldWin = (mouse->grab) ? mouse->grab->window
 				     : sprite.win;
 
-    if (grab->u.ptr.confineTo)
-	ConfineCursorToWindow(grab->u.ptr.confineTo, 0, 0, FALSE);
+    if (grab->confineTo)
+	ConfineCursorToWindow(grab->confineTo, 0, 0, FALSE);
     DoEnterLeaveEvents(oldWin, grab->window, NotifyGrab);
     motionHintWindow = NullWindow;
     mouse->grabTime = time;
     ptrGrab = *grab;
+    if (grab->cursor)
+	grab->cursor->refcnt++;
     mouse->grab = &ptrGrab;
     mouse->u.ptr.autoReleaseGrab = autoGrab;
     PostNewCursor();
@@ -516,9 +518,11 @@ DeactivatePointerGrab(mouse)
     if (keybd->sync.other == grab)
 	keybd->sync.other = NullGrab;
     DoEnterLeaveEvents(grab->window, sprite.win, NotifyUngrab);
-    if (grab->u.ptr.confineTo)
+    if (grab->confineTo)
 	ConfineCursorToWindow(ROOT, 0, 0, FALSE);
     PostNewCursor();
+    if (grab->cursor)
+	FreeCursor(grab->cursor, 0);
     ComputeFreezes(keybd, mouse);
 }
 
@@ -829,8 +833,8 @@ DeliverEventsToWindow(pWin, pEvents, count, filter, grab)
 	tempGrab.eventMask =  deliveryMask;
 	tempGrab.keyboardMode = GrabModeAsync;
 	tempGrab.pointerMode = GrabModeAsync;
-	tempGrab.u.ptr.confineTo = NullWindow;
-	tempGrab.u.ptr.cursor = NullCursor;
+	tempGrab.confineTo = NullWindow;
+	tempGrab.cursor = NullCursor;
 	ActivatePointerGrab(inputInfo.pointer, &tempGrab, currentTime, TRUE);
     }
     else if ((pEvents->u.u.type == MotionNotify) && deliveries)
@@ -1178,7 +1182,7 @@ ProcWarpPointer(client)
 
     if (newScreen == currentScreen)
 	(*newScreen->SetCursorPosition)(newScreen, x, y, TRUE);
-    else if (!grab || !grab->u.ptr.confineTo)
+    else if (!grab || !grab->confineTo)
 	NewCurrentScreen(newScreen, x, y);
 
     return Success;
@@ -1210,9 +1214,11 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, isKeyboard)
 
     temporaryGrab.window = pWin;
     temporaryGrab.device = device;
-    temporaryGrab.u.keybd.keyDetail.exact = xE->u.u.detail;
+    temporaryGrab.detail.exact = xE->u.u.detail;
+    temporaryGrab.detail.pMask = NULL;
     temporaryGrab.modifiersDetail.exact = xE->u.keyButtonPointer.state
 					    & AllModifiersMask;
+    temporaryGrab.modifiersDetail.pMask = NULL;
 
     for (grab = PASSIVEGRABS(pWin); grab; grab = grab->next)
     {
@@ -1609,7 +1615,7 @@ PassiveClientGone(pWin, id)
 	if ((grab = *next)->resource == id)
 	{
 	    *next = grab->next;
-	    xfree(grab);
+	    DeleteGrab(grab);
 	    return(Success);
 	}
     }
@@ -2140,7 +2146,6 @@ ProcGrabPointer(client)
     else if ((!pWin->realized) ||
 	     (confineTo &&
 		!(confineTo->realized &&
-		  /* XXX violates spec, but spec isn't adequate */
 		  (* confineTo->drawable.pScreen->RegionNotEmpty)
 			(confineTo->borderSize))))
 	rep.status = GrabNotViewable;
@@ -2157,13 +2162,13 @@ ProcGrabPointer(client)
     {
 	GrabRec tempGrab;
 
-	if (grab && grab->u.ptr.confineTo && !confineTo)
+	if (grab && grab->confineTo && !confineTo)
 	    ConfineCursorToWindow(ROOT, 0, 0, FALSE);
-	tempGrab.u.ptr.cursor = cursor;
+	tempGrab.cursor = cursor;
 	tempGrab.client = client;
 	tempGrab.ownerEvents = stuff->ownerEvents;
 	tempGrab.eventMask = stuff->eventMask;
-	tempGrab.u.ptr.confineTo = confineTo;
+	tempGrab.confineTo = confineTo;
 	tempGrab.window = pWin;
 	tempGrab.keyboardMode = stuff->keyboardMode;
 	tempGrab.pointerMode = stuff->pointerMode;
@@ -2205,7 +2210,11 @@ ProcChangeActivePointerGrab(client)
     if ((CompareTimeStamps(time, currentTime) == LATER) ||
 	     (CompareTimeStamps(time, device->grabTime) == EARLIER))
 	return Success;
-    grab->u.ptr.cursor = newCursor;
+    if (grab->cursor)
+	FreeCursor(grab->cursor, 0);
+    grab->cursor = newCursor;
+    if (newCursor)
+	newCursor->refcnt++;
     PostNewCursor();
     grab->eventMask = stuff->eventMask;
     return Success;
@@ -3568,8 +3577,8 @@ ProcUngrabKey(client)
     temporaryGrab.window = pWin;
     temporaryGrab.modifiersDetail.exact = stuff->modifiers;
     temporaryGrab.modifiersDetail.pMask = NULL;
-    temporaryGrab.u.keybd.keyDetail.exact = stuff->key;
-    temporaryGrab.u.keybd.keyDetail.pMask = NULL;
+    temporaryGrab.detail.exact = stuff->key;
+    temporaryGrab.detail.pMask = NULL;
 
     DeletePassiveGrabFromList(&temporaryGrab);
 
@@ -3599,7 +3608,7 @@ ProcGrabKey(client)
     temporaryGrab = CreateGrab(client, inputInfo.keyboard, pWin, 
 	(Mask)(KeyPressMask | KeyReleaseMask), (Bool)stuff->ownerEvents,
 	(Bool)stuff->keyboardMode, (Bool)stuff->pointerMode,
-	stuff->modifiers, stuff->key);
+	stuff->modifiers, stuff->key, NullWindow, NullCursor);
 
     for (grab = PASSIVEGRABS(pWin); grab; grab = grab->next)
     {
@@ -3671,10 +3680,8 @@ ProcGrabButton(client)
     temporaryGrab = CreateGrab(client, inputInfo.pointer, pWin, 
 	(Mask)(stuff->eventMask | ButtonPressMask | ButtonReleaseMask),
 	(Bool)stuff->ownerEvents, (Bool) stuff->keyboardMode,
-	(Bool)stuff->pointerMode, stuff->modifiers, stuff->button);
-
-    temporaryGrab->u.ptr.confineTo = confineTo;
-    temporaryGrab->u.ptr.cursor = cursor;
+	(Bool)stuff->pointerMode, stuff->modifiers, stuff->button,
+	confineTo, cursor);
 
     for (grab = PASSIVEGRABS(pWin); grab; grab = grab->next)
     {
@@ -3713,8 +3720,8 @@ ProcUngrabButton(client)
     temporaryGrab.window = pWin;
     temporaryGrab.modifiersDetail.exact = stuff->modifiers;
     temporaryGrab.modifiersDetail.pMask = NULL;
-    temporaryGrab.u.ptr.buttonDetail.exact = stuff->button;
-    temporaryGrab.u.ptr.buttonDetail.pMask = NULL;
+    temporaryGrab.detail.exact = stuff->button;
+    temporaryGrab.detail.pMask = NULL;
 
     DeletePassiveGrabFromList(&temporaryGrab);
 
@@ -3738,7 +3745,7 @@ DeleteWindowFromAnyEvents(pWin, freeResources)
 
     if ((mouse->grab) &&
 	((mouse->grab->window == pWin) ||
-	 (mouse->grab->u.ptr.confineTo == pWin)))
+	 (mouse->grab->confineTo == pWin)))
 	DeactivatePointerGrab(mouse);
 
     /* Deactivating a keyboard grab should cause focus events. */
@@ -3807,9 +3814,8 @@ CheckCursorConfinement(pWin)
     GrabPtr grab = inputInfo.pointer->grab;
     WindowPtr confineTo;
 
-    if (grab && (confineTo = grab->u.ptr.confineTo))
+    if (grab && (confineTo = grab->confineTo))
     {
-	/* XXX violates spec, but spec isn't adequate */
 	if (!(* confineTo->drawable.pScreen->RegionNotEmpty)
 			(confineTo->borderSize))
 	    DeactivatePointerGrab(inputInfo.pointer);

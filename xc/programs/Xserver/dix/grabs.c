@@ -1,4 +1,4 @@
-/* $Header: grabs.c,v 1.3 88/01/02 13:21:38 rws Exp $ */
+/* $Header: grabs.c,v 1.4 88/01/02 18:01:44 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -28,6 +28,7 @@ SOFTWARE.
 #include "Xproto.h"
 #include "windowstr.h"
 #include "inputstr.h"
+#include "cursorstr.h"
 
 #define BITMASK(i) (((Mask)1) << ((i) & 31))
 #define MASKIDX(i) ((i) >> 5)
@@ -97,14 +98,16 @@ GrabPtr pGrab;
 
 GrabPtr
 CreateGrab(client, device, window, eventMask, ownerEvents, keyboardMode,
-	pointerMode, modifiers, key)
+	   pointerMode, modifiers, keybut, confineTo, cursor)
 ClientPtr client;
 DeviceIntPtr device;
 WindowPtr window;
 Mask eventMask;
 Bool ownerEvents, keyboardMode, pointerMode;
 unsigned short modifiers;
-KeyCode key;
+KeyCode keybut;	/* key or button */
+WindowPtr confineTo;
+CursorPtr cursor;
 {
     GrabPtr grab;
 
@@ -118,8 +121,12 @@ KeyCode key;
     grab->pointerMode = pointerMode;
     grab->modifiersDetail.exact = modifiers;
     grab->modifiersDetail.pMask = NULL;
-    grab->u.keybd.keyDetail.exact = key;
-    grab->u.keybd.keyDetail.pMask = NULL;
+    grab->detail.exact = keybut;
+    grab->detail.pMask = NULL;
+    grab->confineTo = confineTo;
+    grab->cursor = cursor;
+    if (cursor)
+	cursor->refcnt++;
     return grab;
 
 }
@@ -133,8 +140,11 @@ GrabPtr pGrab;
     if (pGrab->modifiersDetail.pMask != NULL)
 	xfree(pGrab->modifiersDetail.pMask);
 
-    if (pGrab->u.keybd.keyDetail.pMask != NULL)
-	xfree(pGrab->u.keybd.keyDetail.pMask);
+    if (pGrab->detail.pMask != NULL)
+	xfree(pGrab->detail.pMask);
+
+    if (pGrab->cursor)
+	FreeCursor(pGrab->cursor, 0);
 
     xfree(pGrab);
 
@@ -199,8 +209,8 @@ GrabPtr pFirstGrab, pSecondGrab;
 	(unsigned short)AnyModifier))
 	return FALSE;
 
-    if (DetailSupersedesSecond(pFirstGrab->u.keybd.keyDetail,
-	pSecondGrab->u.keybd.keyDetail, (unsigned short)AnyKey))
+    if (DetailSupersedesSecond(pFirstGrab->detail,
+	pSecondGrab->detail, (unsigned short)AnyKey))
 	return TRUE;
  
     return FALSE;
@@ -219,15 +229,15 @@ GrabPtr pFirstGrab, pSecondGrab;
     if (GrabSupersedesSecond(pSecondGrab, pFirstGrab))
 	return TRUE;
  
-    if (DetailSupersedesSecond(pSecondGrab->u.keybd.keyDetail, 
-	pFirstGrab->u.keybd.keyDetail, (unsigned short)AnyKey) 
+    if (DetailSupersedesSecond(pSecondGrab->detail, 
+	pFirstGrab->detail, (unsigned short)AnyKey) 
 	&& 
 	DetailSupersedesSecond(pFirstGrab->modifiersDetail, 
 	pSecondGrab->modifiersDetail, (unsigned short)AnyModifier))
 	return TRUE;
 
-    if (DetailSupersedesSecond(pFirstGrab->u.keybd.keyDetail, 
-	pSecondGrab->u.keybd.keyDetail, (unsigned short)AnyKey) 
+    if (DetailSupersedesSecond(pFirstGrab->detail, 
+	pSecondGrab->detail, (unsigned short)AnyKey) 
 	&& 
 	DetailSupersedesSecond(pSecondGrab->modifiersDetail, 
 	pFirstGrab->modifiersDetail, (unsigned short)AnyModifier))
@@ -262,35 +272,36 @@ GrabPtr pMinuendGrab;
 	    	continue;
             }
 
-            if ((grab->u.keybd.keyDetail.exact == AnyKey)
+            if ((grab->detail.exact == AnyKey)
 		&& (grab->modifiersDetail.exact != AnyModifier))
 	    {
-	        DeleteDetailFromMask(&(grab->u.keybd.keyDetail.pMask),
-			pMinuendGrab->u.keybd.keyDetail.exact);
+	        DeleteDetailFromMask(&(grab->detail.pMask),
+			pMinuendGrab->detail.exact);
 	    }
 	    else
 	    {
 		if ((grab->modifiersDetail.exact == AnyModifier) 
-		    && (grab->u.keybd.keyDetail.exact != AnyKey))
+		    && (grab->detail.exact != AnyKey))
 		{
 		    DeleteDetailFromMask(&(grab->modifiersDetail.pMask),
 			pMinuendGrab->modifiersDetail.exact); 
 		}
 		else
 		{
-		    if ((pMinuendGrab->u.keybd.keyDetail.exact != AnyKey)
+		    if ((pMinuendGrab->detail.exact != AnyKey)
 			&& (pMinuendGrab->modifiersDetail.exact != AnyModifier))
 		    {
 		    	GrabPtr pNewGrab;
 		
-			DeleteDetailFromMask(&(grab->u.keybd.keyDetail.pMask),
-			    pMinuendGrab->u.keybd.keyDetail.exact); 	
+			DeleteDetailFromMask(&(grab->detail.pMask),
+			    pMinuendGrab->detail.exact); 	
 			
 			pNewGrab = CreateGrab(grab->client, grab->device, 
 			    grab->window,
 			    grab->eventMask, grab->ownerEvents,
 			    grab->keyboardMode, grab->pointerMode, AnyModifier,
-			    pMinuendGrab->u.keybd.keyDetail.exact);
+			    pMinuendGrab->detail.exact,
+			    grab->confineTo, grab->cursor);
 
 			pNewGrab->modifiersDetail.pMask = 
 				CopyDetailMask(grab->modifiersDetail.pMask);
@@ -302,8 +313,7 @@ GrabPtr pMinuendGrab;
 		    }   
 		    else
 		    {
-			if (pMinuendGrab->u.keybd.keyDetail.exact ==
-			    AnyKey)
+			if (pMinuendGrab->detail.exact == AnyKey)
 			{
 			    DeleteDetailFromMask(&(grab->modifiersDetail.pMask),
 				pMinuendGrab->modifiersDetail.exact);   	
@@ -311,8 +321,8 @@ GrabPtr pMinuendGrab;
 			else
 			{
 			    DeleteDetailFromMask(
-				&(grab->u.keybd.keyDetail.pMask),
-			    	pMinuendGrab->u.keybd.keyDetail.exact); 	
+				&(grab->detail.pMask),
+			    	pMinuendGrab->detail.exact); 	
 			 }
 		    }
 	   	}
