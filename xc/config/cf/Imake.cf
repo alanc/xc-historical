@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imake.cf,v 1.5 94/01/01 14:49:34 rws Exp $
+XCOMM $XConsortium: Imake.cf,v 1.6 94/01/18 19:21:20 rws Exp $
 /*
  * To add support for another platform:
  * 
@@ -276,6 +276,24 @@ XCOMM $XConsortium: Imake.cf,v 1.5 94/01/01 14:49:34 rws Exp $
 #undef NCR
 #define SVR4Architecture
 #endif /* NCR */
+
+#ifdef __uxp__
+#define MacroIncludeFile <fujitsu.cf>
+#define MacroFile fujitsu.cf
+#undef __uxp__
+#ifdef sparc
+#undef sparc
+#define SparcArchitecture
+#endif
+#endif /* __uxp__ */
+
+#ifdef __sxg__
+#define MacroIncludeFile <fujitsu.cf>
+#define MacroFile fujitsu.cf
+#undef __sxg__
+#define mc68000Architecture
+#endif /* __sxg__ */
+
 
 #ifndef MacroIncludeFile
 XCOMM WARNING:  Imake.cf not configured; guessing at definitions!!!
