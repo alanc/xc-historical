@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.17 91/02/11 17:21:38 rws Exp $
+ * $XConsortium: get_load.c,v 1.18 91/03/26 16:43:34 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,9 +28,9 @@
  * GetLoadPoint() is a callback for the StripChart widget.
  */
 
-#include <stdio.h>
-#include <X11/Xos.h>
 #include <X11/Intrinsic.h>
+#include <X11/Xos.h>
+#include <stdio.h>
 
 #ifdef att
 #define LOADSTUB
@@ -94,7 +94,9 @@ struct lavnum {
 #endif
 #endif
 
+#ifdef X_NOT_POSIX
 extern long lseek();
+#endif
 extern void exit();
 
 static xload_error();
