@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.c,v 1.25 94/06/02 10:59:43 mor Exp mor $ */
+/* $XConsortium: Xtrans.c,v 1.26 94/10/18 15:57:42 mor Exp mor $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -376,7 +376,7 @@ char	*address;
 #if defined(WIN32) && (defined(TCPCONN) || defined(DNETCONN))
     if (TRANS(WSAStartup)())
     {
-	PRMSG (1,"TRANS(Open): WSAStartup failed", 0, 0, 0);
+	PRMSG (1,"TRANS(Open): WSAStartup failed\n", 0, 0, 0);
 	return NULL;
     }
 #endif
