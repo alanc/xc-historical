@@ -1,4 +1,4 @@
-/* $XConsortium: xselectev.c,v 1.6 89/10/10 16:10:52 gms Exp $ */
+/* $XConsortium: xselectev.c,v 1.7 89/12/02 15:21:28 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -113,10 +113,9 @@ ProcXSelectExtensionEvent (client)
 	return Success;
 
     for (i=0; i<EMASKSIZE; i++)
-	if (tmp[i].select == TRUE)
+	if (tmp[i].dev != NULL)
 	    {
-	    dev = LookupDeviceIntRec (i);
-	    if ((ret = SelectForWindow(dev, pWin, client, tmp[i].mask, 
+	    if ((ret = SelectForWindow(tmp[i].dev, pWin, client, tmp[i].mask, 
 		ExtExclusiveMasks[i], ExtValidMasks[i])) != Success)
 		{
 		SendErrorToClient(client, IReqCode, X_SelectExtensionEvent, 0, 
