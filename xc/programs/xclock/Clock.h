@@ -1,5 +1,5 @@
 /*
-* $Header: Clock.h,v 1.13 88/08/12 12:24:43 swick Exp $
+* $Header: Clock.h,v 1.13 88/08/30 09:54:02 swick Exp $
 */
 
 
@@ -42,6 +42,7 @@ SOFTWARE.
  ----		     -----		-------		-------------
  analog		     Boolean		Boolean		False
  background	     Background		pixel		White
+ backingStore	     BackingStore	BackingStore	default
  border		     BorderColor	pixel		Black
  borderWidth	     BorderWidth	int		1
  chime		     Boolean		Boolean		False
@@ -71,11 +72,14 @@ SOFTWARE.
 #define XtNhighlight			"highlight"
 		/* color of hand outline */
 #define XtNanalog		"analog"
+#define XtNbackingStore		"backingStore"
+#		/* when server should use backing store */
 		/* Boolean: digital if FALSE */
 #define XtNchime		"chime"
 		/* Boolean:  */
 #define XtNpadding		"padding"
 		/* Int: amount of space around outside of clock */
+#define XtCBackingStore		"BackingStore"
 
 #define XtCReverseVideo		"ReverseVideo"
 
