@@ -1,5 +1,5 @@
 /*
-* $Header: Command.h,v 1.7 88/01/22 11:12:36 swick Locked $
+* $Header: Command.h,v 1.8 88/01/28 07:56:44 swick Locked $
 */
 
 /*
@@ -73,7 +73,7 @@ typedef enum {
 #endif _XtJustify_e
 
 #define XtNcallback		"callback"
-#define XtNhighlightThickness   "hightlightThickness"
+#define XtNhighlightThickness   "highlightThickness"
 #define XtNtranslations		"translations"
 
 extern WidgetClass     commandWidgetClass;
