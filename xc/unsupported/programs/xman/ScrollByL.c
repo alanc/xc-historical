@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.10 89/12/07 15:49:52 kit Exp $
- * $Header: ScrollByL.c,v 1.10 89/12/07 15:49:52 kit Exp $
+ * $XConsortium: ScrollByL.c,v 1.11 89/12/15 21:06:28 kit Exp $
+ * $Header: ScrollByL.c,v 1.11 89/12/15 21:06:28 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -140,8 +140,9 @@ ScrollByLineClassRec scrollByLineClassRec = {
     /* query_geometry	  */	XtInheritQueryGeometry,
     /* display_accelerator*/	XtInheritDisplayAccelerator,
     /* extension	  */	NULL,
-  },{
-    /* mumble		  */	0	/* Make C compiler happy   */
+  },
+  { /* simple fields */
+    /* change_sensitive		*/	XtInheritChangeSensitive
   }
 };
 
