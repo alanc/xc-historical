@@ -234,7 +234,7 @@ static void CompositeDeleteChild(w)
     cw = (CompositeWidget) w->core.parent;
 
     for (position = 0; position < cw->composite.num_children; position++) {
-        if (cw->composite.children[position] = w) {
+        if (cw->composite.children[position] == w) {
 	    break;
 	}
     }
