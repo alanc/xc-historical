@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.28 88/10/11 12:48:06 jim Exp $";
+static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.29 89/05/11 18:34:06 kit Exp $";
 #endif
  
 #include <signal.h>
@@ -41,7 +41,7 @@ extern unsigned long inet_makeaddr();
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
-#include <X11/Xmu/Xmu.h>
+#include <X11/Xmu/Error.h>
  
 static int local_xerror();
 
