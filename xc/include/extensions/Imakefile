@@ -1,4 +1,4 @@
-# $XConsortium: Imakefile,v 1.18 89/12/02 14:21:27 rws Exp $
+# $XConsortium: Imakefile,v 1.19 91/02/15 14:56:02 rws Exp $
 
 #if BuildPexClients || BuildPexExt
 #define IHaveSubdirs
@@ -10,13 +10,13 @@ HEADERS = Xext.h multibuf.h shape.h XShm.h MITMisc.h XI.h XInput.h XIproto.h \
 	xtestext1.h
 INSTALLFLAGS = -m 0444
 
-all:
+all::
 
 BuildIncludes($(HEADERS),extensions,..)
 MakeDirectories(install,$(INCDIR)/extensions)
 InstallMultiple($(HEADERS),$(INCDIR)/extensions)
 
-depend:
+depend::
 
 #ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
