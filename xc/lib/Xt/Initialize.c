@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.189 91/05/29 15:19:06 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.190 91/05/31 18:04:00 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -351,7 +351,7 @@ XrmDatabase XtScreenDatabase(screen)
     Display *dpy;
     int scrno;
     Bool doing_def;
-    XrmDatabase db, olddb, server_db;
+    XrmDatabase db, olddb;
     XtPerDisplay pd;
     Status do_fallback;
     char *scr_resources;
@@ -372,11 +372,8 @@ XrmDatabase XtScreenDatabase(screen)
     if (ScreenCount(dpy) == 1) {
 	db = pd->cmd_db;
 	pd->cmd_db = NULL;
-	server_db = pd->server_db;
-	pd->server_db = NULL;
     } else {
 	db = CopyDB(pd->cmd_db);
-	server_db = CopyDB(pd->server_db);
     }
     {   /* Environment defaults */
 	char	filenamebuf[PATH_MAX];
@@ -397,8 +394,12 @@ XrmDatabase XtScreenDatabase(screen)
 	XFree(scr_resources);
     }
     /* Server or host defaults */
-    if (server_db)
-	(void) XrmCombineDatabase(server_db, &db, False);
+    if (!pd->server_db)
+	CombineUserDefaults(dpy, &db);
+    else {
+	(void) XrmCombineDatabase(pd->server_db, &db, False);
+	pd->server_db = NULL;
+    }
 
     if (!db)
 	db = XrmGetStringDatabase("");
@@ -611,6 +612,8 @@ static void GetLanguage(dpy, pd)
 	class_list[0] = pd->class;
 	class_list[1] = XrmPermStringToQuark("XnlLanguage");
 	name_list[2] = class_list[2] = NULLQUARK;
+	if (!pd->server_db)
+	    CombineUserDefaults(dpy, &pd->server_db);
 	if (pd->server_db &&
 	    XrmQGetResource(pd->server_db,name_list,class_list, &type, &value)
 	    && type == _XtQString)
@@ -647,9 +650,6 @@ void _XtDisplayInitialize(dpy, pd, name, urlist, num_urs, argc, argv)
 	XrmClass class_list[2];
 	XrmHashTable* search_list;
 	int search_list_size = SEARCH_LIST_SIZE;
-
-	if (!pd->server_db)
-	    CombineUserDefaults(dpy, &pd->server_db);
 
 	GetLanguage(dpy, pd);
 
