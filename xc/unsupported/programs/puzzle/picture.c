@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
  *
  * Permission to use, copy, modify, and distribute this software and its
