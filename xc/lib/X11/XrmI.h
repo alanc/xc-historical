@@ -1,3 +1,19 @@
+/* $XConsortium: XrmI.h,v 1.5 89/12/22 16:11:28 rws Exp $ */
+/*
+
+Copyright 1990 by the Massachusetts Institute of Technology
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  M.I.T. makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
+
+*/
 
 #define NUM_CHARS 256
 
@@ -16,23 +32,6 @@
 #define BACKSLASH 	('\\')
 #define STRING_TERMINATOR ('\0')
 #define ZERO		('0')
-
-static unsigned short _xrmtypes[NUM_CHARS] = {
-    _EOF,0,0,0,0,0,0,0,0,SPACE,					/*   0. */
-    EOL,0,0,0,0,0,0,0,0,0,					/*  10. */
-    0,0,0,0,0,0,0,0,0,0,					/*  20. */
-    0,0,SPACE,COMMENT,0,0,0,0,0,0,				/*  30. */
-    0,0,LOOSE,0,0,0,TIGHT,0,ODIGIT,ODIGIT,
-    ODIGIT,ODIGIT,ODIGIT,ODIGIT,ODIGIT,  			/*  50. */
-    ODIGIT,0,0,SEP,0,						/*  55. */
-    0,0,0,0,0,0,0,0,0,0,					/*  60. */
-    0,0,0,0,0,0,0,0,0,0,					/*  70. */
-    0,0,0,0,0,0,0,0,0,0,					/*  80. */
-    0,0,BSLASH,0,0,0,0,0,0,0,				        /*  90. */
-    0,0,0,0,0,0,0,0,0,0,					/*  100. */
-    N,0,0,0,0,0,0,0,0,0,					/*  110. */
-    /* The rest will be automatically initialized to zero. */
-};
 
 #define get_next_char(ch, str)		(_xrmtypes[(ch) = *((str)++)])
 
