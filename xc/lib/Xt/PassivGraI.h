@@ -1,5 +1,5 @@
 /*
-* $XConsortium: PassivGraI.h,v 1.8 90/12/30 16:28:16 rws Exp $
+* $XConsortium: PassivGraI.h,v 1.9 90/12/31 13:05:26 rws Exp $
 */
 
 /********************************************************
@@ -70,14 +70,12 @@ typedef struct _XtDeviceRec{
     XtServerGrabType	grabType;
 }XtDeviceRec, *XtDevice;
 
-typedef enum {
-    XtMyAncestor,
-    XtMyDescendant,
-    XtMyCousin,
-    XtMySelf,
-    XtUnrelated
-}XtGeneology;
-
+#define XtMyAncestor	0
+#define XtMyDescendant	1
+#define XtMyCousin	2
+#define XtMySelf	3
+#define XtUnrelated	4
+typedef char XtGeneology; /* do not use an enum makes PerWidgetInput larger */
 
 typedef struct {
     Widget		focusKid;
