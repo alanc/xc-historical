@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.24 94/08/25 17:41:37 mor Exp mor $ */
+/* $XConsortium: smproxy.c,v 1.25 94/08/25 20:19:49 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -37,6 +37,7 @@ Atom wmProtocolsAtom;
 Atom wmSaveYourselfAtom;
 Atom wmStateAtom;
 Atom smClientIdAtom;
+Atom wmClientLeaderAtom;
 
 Bool debug = 0;
 
@@ -112,6 +113,58 @@ Window window;
 
 
 
+WinInfo *
+GetClientLeader (winptr)
+
+WinInfo *winptr;
+
+{
+    Atom actual_type;
+    int actual_format;
+    unsigned long nitems, bytesafter;
+    unsigned long *datap = NULL;
+    WinInfo *leader_winptr = NULL;
+    Bool failure = 0;
+
+    if (XGetWindowProperty (disp, winptr->window, wmClientLeaderAtom,
+	0L, 1L, False, AnyPropertyType,	&actual_type, &actual_format,
+	&nitems, &bytesafter, (unsigned char **) &datap) == Success)
+    {
+	if (actual_type == XA_WINDOW && actual_format == 32 &&
+	    nitems == 1 && bytesafter == 0)
+	{
+	    Window leader_win = *((Window *) datap);
+
+	    if (!LookupWindow (leader_win, &leader_winptr, NULL))
+		failure = 1;
+	}
+
+	if (datap)
+	    XFree (datap);
+    }
+
+    if (failure)
+    {
+	/* The client leader was defined, but we couldn't find the window */
+
+	return (NULL);
+    }
+    else if (leader_winptr)
+    {
+	/* We found the real client leader */
+
+	return (leader_winptr);
+    }
+    else
+    {
+	/* There is no client leader defined, return this window */
+
+	return (winptr);
+    }
+}
+
+
+
 char *
 CheckFullyQuantifiedName (name, newstring)
 
@@ -161,9 +214,10 @@ int *newstring;
 
 
 
-void FinishSaveYourself (winInfo)
+void FinishSaveYourself (winInfo, has_WM_SAVEYOURSELF)
 
 WinInfo *winInfo;
+Bool has_WM_SAVEYOURSELF;
 
 {
     SmProp prop1, prop2, prop3, *props[3];
@@ -244,7 +298,13 @@ WinInfo *winInfo;
     
     free ((char *) prop1.vals);
     
-    SmcSaveYourselfDone (winInfo->smc_conn, True);
+    /*
+     * If the client doesn't support WM_SAVE_YOURSELF, we should
+     * return failure for the save, since we really don't know if
+     * the application needed to save state.
+     */
+
+    SmcSaveYourselfDone (winInfo->smc_conn, has_WM_SAVEYOURSELF);
 }
 
 
@@ -264,7 +324,7 @@ Bool fast;
 
     if (!winInfo->has_save_yourself)
     {
-	FinishSaveYourself (winInfo);
+	FinishSaveYourself (winInfo, False);
     }
     else
     {
@@ -545,8 +605,7 @@ Window window;
 
     newptr->window = window;
     newptr->smc_conn = NULL;
-    newptr->waiting_for_required_props = 1;
-    newptr->got_wm_state = 0;
+    newptr->tested_for_sm_client_id = 0;
     newptr->client_id = NULL;
     newptr->wm_command = NULL;
     newptr->wm_command_count = 0;
@@ -604,6 +663,103 @@ WinInfo *winptr;
 
 
 void
+Got_WM_STATE (winptr)
+
+WinInfo *winptr;
+
+{
+    WinInfo *leader_winptr;
+
+    /*
+     * If we already got WM_STATE and tested for SM_CLIENT_ID, we
+     * shouldn't do it again.
+     */
+
+    if (winptr->tested_for_sm_client_id)
+    {
+	return;
+    }
+
+
+    /*
+     * Set a null error handler, in case this window goes away
+     * behind our back.
+     */
+
+    caught_error = 0;
+    XSetErrorHandler (MyErrorHandler);
+
+
+    /*
+     * Get the client leader window.
+     */
+
+    leader_winptr = GetClientLeader (winptr);
+
+    if (caught_error)
+    {
+	caught_error = 0;
+	RemoveWindow (winptr);
+	XSetErrorHandler (NULL);
+	return;
+    }
+
+
+    /*
+     * If we already checked for SM_CLIENT_ID on the client leader
+     * window, don't do it again.
+     */
+
+    if (!leader_winptr || leader_winptr->tested_for_sm_client_id)
+    {
+	caught_error = 0;
+	XSetErrorHandler (NULL);
+	return;
+    }
+
+    leader_winptr->tested_for_sm_client_id = 1;
+
+    if (!HasXSMPsupport (leader_winptr->window))
+    {
+	XFetchName (disp, leader_winptr->window, &leader_winptr->wm_name);
+
+	XGetCommand (disp, leader_winptr->window,
+	    &leader_winptr->wm_command,
+	    &leader_winptr->wm_command_count);
+
+	XGetClassHint (disp, leader_winptr->window, &leader_winptr->class);
+
+	XGetWMClientMachine (disp, leader_winptr->window,
+	    &leader_winptr->wm_client_machine);
+
+	if (leader_winptr->wm_name != NULL &&
+	    leader_winptr->wm_command != NULL &&
+	    leader_winptr->wm_command_count > 0 &&
+	    leader_winptr->class.res_name != NULL &&
+	    leader_winptr->class.res_class != NULL &&
+	    leader_winptr->wm_client_machine.value != NULL &&
+	    leader_winptr->wm_client_machine.nitems != 0)
+	{
+	    leader_winptr->has_save_yourself =
+		HasSaveYourself (leader_winptr->window);
+
+	    ConnectClientToSM (leader_winptr);
+	}
+    }
+
+    XSync (disp, 0);
+    XSetErrorHandler (NULL);
+
+    if (caught_error)
+    {
+	caught_error = 0;
+	RemoveWindow (leader_winptr);
+    }
+}
+
+
+
+void
 HandleCreate (event)
 
 XCreateWindowEvent *event;
@@ -614,6 +770,7 @@ XCreateWindowEvent *event;
     unsigned long nitems, bytesafter;
     unsigned long *datap = NULL;
     WinInfo *winptr;
+    Bool got_wm_state = 0;
 
     /*
      * Add the new window
@@ -635,7 +792,8 @@ XCreateWindowEvent *event;
 
     /*
      * Select for Property Notify on the window so we can determine
-     * when the client has set all required properties.
+     * when WM_STATE is defined.  To avoid a race condition, we must
+     * do this _before_ we check for WM_STATE right now.
      *
      * Select for Substructure Notify so we can determine when the
      * window is destroyed.
@@ -646,18 +804,8 @@ XCreateWindowEvent *event;
 
 
     /*
-     * There might be a race condition because a property might
-     * have already changed right after the CreateNotify.  To get
-     * around this, we must check for all properties now.
+     * WM_STATE may already be there.  Check now.
      */
-
-    XFetchName (disp, event->window, &winptr->wm_name);
-
-    XGetCommand (disp, event->window,
-	&winptr->wm_command,
-	&winptr->wm_command_count);
-
-    XGetClassHint (disp, event->window, &winptr->class);
 
     if (XGetWindowProperty (disp, event->window, wmStateAtom,
 	0L, 2L, False, AnyPropertyType,
@@ -665,31 +813,10 @@ XCreateWindowEvent *event;
 	(unsigned char **) &datap) == Success && datap)
     {
 	if (nitems > 0)
-	    winptr->got_wm_state = 1;
+	    got_wm_state = 1;
 
 	if (datap)
 	    XFree ((char *) datap);
-    }
-
-    XGetWMClientMachine (disp, event->window, &winptr->wm_client_machine);
-
-    if (winptr->got_wm_state &&
-	winptr->wm_name != NULL &&
-	winptr->wm_command != NULL &&
-	winptr->wm_command_count > 0 &&
-	winptr->class.res_name != NULL &&
-	winptr->class.res_class != NULL &&
-	winptr->wm_client_machine.value != NULL &&
-	winptr->wm_client_machine.nitems != 0)
-    {
-	winptr->waiting_for_required_props = 0;
-
-	if (!HasXSMPsupport (event->window))
-	{
-	    winptr->has_save_yourself =	HasSaveYourself (event->window);
-
-	    ConnectClientToSM (winptr);
-	}
     }
 
     XSync (disp, 0);
@@ -699,6 +826,10 @@ XCreateWindowEvent *event;
     {
 	caught_error = 0;
 	RemoveWindow (winptr);
+    }
+    else if (got_wm_state)
+    {
+	Got_WM_STATE (winptr);
     }
 }
 
@@ -742,105 +873,30 @@ XPropertyEvent *event;
     Window window = event->window;
     WinInfo *winptr;
 
-    if (event->atom != XA_WM_NAME && event->atom != XA_WM_COMMAND &&
-	event->atom != XA_WM_CLASS && event->atom != XA_WM_CLIENT_MACHINE &&
-	event->atom != wmStateAtom)
-    {
-	/*
-	 * We are only interested in WM_NAME, WM_COMMAND,
-	 * WM_CLASS, WM_CLIENT_MACHINE, and WM_STATE.
-	 */
-
+    if (!LookupWindow (window, &winptr, NULL))
 	return;
-    }
 
-    if (LookupWindow (window, &winptr, NULL))
+    if (event->atom == wmStateAtom)
     {
-	if (event->atom == XA_WM_NAME)
+	Got_WM_STATE (winptr);
+    }
+    else if (event->atom == XA_WM_COMMAND && winptr->waiting_for_update)
+    {
+	/* Finish off the Save Yourself */
+
+	if (winptr->wm_command)
 	{
-	    if (winptr->wm_name)
-	    {
-		XFree (winptr->wm_name);
-		winptr->wm_name = NULL;
-	    }
-
-	    XFetchName (disp, window, &winptr->wm_name);
-	}
-	else if (event->atom == XA_WM_COMMAND)
-	{
-	    if (winptr->wm_command)
-	    {
-		XFreeStringList (winptr->wm_command);
-		winptr->wm_command = NULL;
-		winptr->wm_command_count = 0;
-	    }
-
-	    XGetCommand (disp, window,
-		&winptr->wm_command,
-		&winptr->wm_command_count);
-
-	    if (winptr->waiting_for_update)
-	    {
-		/* Finish off the Save Yourself */
-
-		winptr->waiting_for_update = 0;
-		FinishSaveYourself (winptr);
-	    }
-	}
-	else if (event->atom == XA_WM_CLASS)
-	{
-	    if (winptr->class.res_name)
-	    {
-		XFree (winptr->class.res_name);
-		winptr->class.res_name = NULL;
-	    }
-
-	    if (winptr->class.res_class)
-	    {
-		XFree (winptr->class.res_class);
-		winptr->class.res_class = NULL;
-	    }
-
-	    XGetClassHint (disp, window, &winptr->class);
-	}
-	else if (event->atom == XA_WM_CLIENT_MACHINE)
-	{
-	    if (winptr->wm_client_machine.value)
-	    {
-		XFree (winptr->wm_client_machine.value);
-		winptr->wm_client_machine.value = NULL;
-		winptr->wm_client_machine.nitems = 0;
-	    }
-
-	    XGetWMClientMachine (disp, event->window,
-		&winptr->wm_client_machine);
-	}
-	else if (event->atom == wmStateAtom)
-	{
-	    winptr->got_wm_state = 1;
+	    XFreeStringList (winptr->wm_command);
+	    winptr->wm_command = NULL;
+	    winptr->wm_command_count = 0;
 	}
 
-	if (winptr->waiting_for_required_props)
-	{
-	    if (winptr->got_wm_state &&
-		winptr->wm_name != NULL &&
-		winptr->wm_command != NULL &&
-		winptr->wm_command_count > 0 &&
-		winptr->class.res_name != NULL &&
-		winptr->class.res_class != NULL &&
-		winptr->wm_client_machine.value != NULL &&
-		winptr->wm_client_machine.nitems != 0)
-	    {
-		winptr->waiting_for_required_props = 0;
-		
-		if (!HasXSMPsupport (window))
-		{
-		    winptr->has_save_yourself = HasSaveYourself (window);
+	XGetCommand (disp, window,
+	    &winptr->wm_command,
+	    &winptr->wm_command_count);
 
-		    ConnectClientToSM (winptr);
-		}
-	    }
-	}
+	winptr->waiting_for_update = 0;
+	FinishSaveYourself (winptr, True);
     }
 }
 
@@ -1196,6 +1252,7 @@ char **argv;
     wmSaveYourselfAtom = XInternAtom (disp, "WM_SAVE_YOURSELF", False);
     wmStateAtom = XInternAtom (disp, "WM_STATE", False);
     smClientIdAtom = XInternAtom (disp, "SM_CLIENT_ID", False);
+    wmClientLeaderAtom = XInternAtom (disp, "WM_CLIENT_LEADER", False);
 
     XSelectInput (disp, root, SubstructureNotifyMask | PropertyChangeMask);
 
