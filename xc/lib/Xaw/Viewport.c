@@ -289,8 +289,10 @@ static void ChangeManaged(widget)
 	w->viewport.child = child;
     }
 
+#ifdef notdef
     (*((CompositeWidgetClass)w->core.widget_class->core_class.superclass)
      ->composite_class.change_managed)( widget );
+#endif
 }
 
 
@@ -325,8 +327,6 @@ static void MoveChild(w, x, y)
 {
     register Widget child = w->viewport.child;
     register Widget clip = w->viewport.clip;
-
-    if (!child) return;
 
     /* make sure we never move past right/bottom borders */
     if (-x + clip->core.width > child->core.width)
@@ -401,16 +401,16 @@ static void Resize(widget)
 		CreateScrollbar(w, False);
 	    }
 	    clip_width = w->core.width -
-		(needsvert ? w->viewport.vert_bar->core.width : 0);
+		(needsvert ? w->viewport.vert_bar->core.width
+			     + w->viewport.vert_bar->core.border_width : 0);
 	    clip_height = w->core.height -
-		(needshoriz ? w->viewport.horiz_bar->core.height : 0);
+		(needshoriz ? w->viewport.horiz_bar->core.height
+			      + w->viewport.horiz_bar->core.border_width : 0);
 	    AssignMax( clip_width, 1 );
 	    AssignMax( clip_height, 1 );
 	} while (lw != clip_width || lh != clip_height);
     }
 
-    if (child) XtResizeWidget( child, (Dimension)child_width,
-			       (Dimension)child_height, 0 );
     XtMoveWidget( clip,
 		  needsvert ? (w->viewport.useright ? 0 :
 			       w->viewport.vert_bar->core.width +
@@ -460,7 +460,11 @@ static void Resize(widget)
 	}
     }
 
-    MoveChild(w, child->core.x, child->core.y);
+    if (child) {
+	XtResizeWidget( child, (Dimension)child_width,
+		        (Dimension)child_height, 0 );
+	MoveChild(w, child->core.x, child->core.y);
+    }
 }
 
 
@@ -570,15 +574,15 @@ static XtGeometryResult GeometryManager(child, request, reply)
 	if (child->core.height > w->core.height) needs_vert = True;
 	if (needs_horiz && !w->viewport.horiz_bar) {
 	    CreateScrollbar( w, True );
-	    myrequest.height = Max(w->viewport.horiz_bar->core.height << 1,
-				   w->core.height);
-	    myrequest.request_mode |= CWHeight;
+	    if ((myrequest.height = w->viewport.horiz_bar->core.height << 1)
+		> w->core.height)
+		myrequest.request_mode |= CWHeight;
 	}
 	if (needs_vert && !w->viewport.vert_bar) {
 	    CreateScrollbar( w, False );
-	    myrequest.width = Max(w->viewport.vert_bar->core.width << 1,
-				  w->core.width);
-	    myrequest.request_mode |= CWWidth;
+	    if ((myrequest.width = w->viewport.vert_bar->core.width << 1)
+		> w->core.width)
+		myrequest.request_mode |= CWWidth;
 	}
 	if (myrequest.request_mode) {
 	    XtGeometryResult ans =
