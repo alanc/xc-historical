@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.27 90/02/08 13:18:36 jim Exp $
+ * $XConsortium: Tree.c,v 1.28 90/02/08 13:28:50 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -359,7 +359,7 @@ static void ConstraintInitialize (request, new)
 static Boolean SetValues (current, request, new)
     TreeWidget current, request, new;
 {
-    int redraw = FALSE;
+    Boolean redraw = FALSE;
 
     /*
      * If the foreground color has changed, redo the GC's
@@ -378,6 +378,14 @@ static Boolean SetValues (current, request, new)
      * tree layout. layout_tree() does a redraw, so we don't
      * need SetValues to do another one.
      */
+    if (new->tree.orientation != current->tree.orientation) {
+	if (new->tree.vpad == current->tree.vpad &&
+	    new->tree.hpad == current->tree.hpad) {
+	    new->tree.vpad = current->tree.hpad;
+	    new->tree.hpad = current->tree.vpad;
+	}
+    }
+
     if (new->tree.vpad != current->tree.vpad ||
 	new->tree.hpad != current->tree.hpad ||
 	new->tree.orientation != current->tree.orientation) {
