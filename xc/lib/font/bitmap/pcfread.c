@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfread.c,v 1.2 91/05/10 15:58:34 keith Exp $
+ * $XConsortium: pcfread.c,v 1.3 91/05/26 16:47:43 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -30,6 +30,7 @@
 /* Read PCF font files */
 
 void        pcfUnloadFont();
+static int  position;
 
 static int
 pcfGetLSB32(file)
@@ -41,6 +42,7 @@ pcfGetLSB32(file)
     c |= FontFileGetc(file) << 8;
     c |= FontFileGetc(file) << 16;
     c |= FontFileGetc(file) << 24;
+    position += 4;
     return c;
 }
 
@@ -62,6 +64,7 @@ pcfGetINT32(file, format)
 	c |= FontFileGetc(file) << 16;
 	c |= FontFileGetc(file) << 24;
     }
+    position += 4;
     return c;
 }
 
@@ -79,17 +82,11 @@ pcfGetINT16(file, format)
 	c = FontFileGetc(file);
 	c |= FontFileGetc(file) << 8;
     }
+    position += 2;
     return c;
 }
 
-/*ARGSUSED*/
-static int
-pcfGetINT8(file, format)
-    FontFilePtr file;
-    CARD32      format;
-{
-    return FontFileGetc(file);
-}
+#define pcfGetINT8(file, format) (position++, FontFileGetc(file))
 
 static      PCFTablePtr
 pcfReadTOC(file, countp)
@@ -101,6 +98,7 @@ pcfReadTOC(file, countp)
     int         count;
     int         i;
 
+    position = 0;
     version = pcfGetLSB32(file);
     if (version != PCF_FILE_VERSION)
 	return (PCFTablePtr) NULL;
@@ -170,8 +168,11 @@ pcfSeekToType(file, tables, ntables, type, formatp, sizep)
 
     for (i = 0; i < ntables; i++)
 	if (tables[i].type == type) {
-	    if (!FontFileSeek(file, tables[i].offset))
+	    if (position > tables[i].offset)
+		abort ();
+	    if (!FontFileSkip(file, tables[i].offset - position))
 		return FALSE;
+	    position = tables[i].offset;
 	    *sizep = tables[i].size;
 	    *formatp = tables[i].format;
 	    return TRUE;
@@ -179,50 +180,29 @@ pcfSeekToType(file, tables, ntables, type, formatp, sizep)
     return FALSE;
 }
 
-/*
- * pcfGetAccel
- *
- * Fill in the accelerator information from the font file; used
- * to read both ENCODING_ACCELERATORS and old style ACCELERATORS
- */
-
-static
-pcfGetAccel(file, format, pFontInfo)
-    FontFilePtr file;
-    CARD32      format;
-    FontInfoPtr pFontInfo;
+static Bool
+pcfHasType (tables, ntables, type)
+    PCFTablePtr tables;
+    int         ntables;
+    CARD32      type;
 {
-    pFontInfo->noOverlap = pcfGetINT8(file, format);
-    pFontInfo->constantMetrics = pcfGetINT8(file, format);
-    pFontInfo->terminalFont = pcfGetINT8(file, format);
-    pFontInfo->constantWidth = pcfGetINT8(file, format);
-    pFontInfo->inkInside = pcfGetINT8(file, format);
-    pFontInfo->inkMetrics = pcfGetINT8(file, format);
-    pFontInfo->drawDirection = pcfGetINT8(file, format);
-     /* natural alignment */ pcfGetINT8(file, format);
-    pFontInfo->fontAscent = pcfGetINT32(file, format);
-    pFontInfo->fontDescent = pcfGetINT32(file, format);
-    pFontInfo->maxOverlap = pcfGetINT32(file, format);
-    pcfGetMetric(file, format, &pFontInfo->minbounds);
-    pcfGetMetric(file, format, &pFontInfo->maxbounds);
-    if (PCF_FORMAT_MATCH(format, PCF_ACCEL_W_INKBOUNDS)) {
-	pcfGetMetric(file, format, &pFontInfo->ink_minbounds);
-	pcfGetMetric(file, format, &pFontInfo->ink_maxbounds);
-    } else {
-	pFontInfo->ink_minbounds = pFontInfo->minbounds;
-	pFontInfo->ink_maxbounds = pFontInfo->maxbounds;
-    }
+    int         i;
+
+    for (i = 0; i < ntables; i++)
+	if (tables[i].type == type)
+	    return TRUE;
+    return FALSE;
 }
 
 /*
- * pcfGetInfo
+ * pcfGetProperties 
  *
- * Fill in the FontInfo record from the specified font file.  Used
- * by both ReadFont and ReadFontInfo routines.
+ * Reads the font properties from the font file, filling in the FontInfo rec
+ * supplied.  Used by by both ReadFont and ReadFontInfo routines.
  */
 
 static Bool
-pcfGetInfo(pFontInfo, file, tables, ntables)
+pcfGetProperties(pFontInfo, file, tables, ntables)
     FontInfoPtr pFontInfo;
     FontFilePtr file;
     PCFTablePtr tables;
@@ -262,13 +242,18 @@ pcfGetInfo(pFontInfo, file, tables, ntables)
      * only isStringProp are odd length
      */
     if (nprops & 3)
-	FontFileSkip(file, 4 - (nprops & 3));
+    {
+	i = 4 - (nprops & 3);
+	FontFileSkip(file, i);
+	position += i;
+    }
     string_size = pcfGetINT32(file, format);
     strings = (char *) xalloc(string_size);
     if (!strings) {
 	goto Bail;
     }
     FontFileRead(file, strings, string_size);
+    position += string_size;
     for (i = 0; i < nprops; i++) {
 	props[i].name = MakeAtom(strings + props[i].name,
 				 strlen(strings + props[i].name), TRUE);
@@ -278,27 +263,6 @@ pcfGetInfo(pFontInfo, file, tables, ntables)
 	}
     }
     xfree(strings);
-
-    /* accelerators */
-
-    if (pcfSeekToType(file, tables, ntables, PCF_BDF_ACCELERATORS, &format, &size)) {
-	format = pcfGetLSB32(file);
-	if (!PCF_FORMAT_MATCH(format, PCF_DEFAULT_FORMAT) &&
-		!PCF_FORMAT_MATCH(format, PCF_ACCEL_W_INKBOUNDS)) {
-	    goto Bail;
-	}
-	pcfGetAccel(file, format, pFontInfo);
-    } else {
-	if (!pcfSeekToType(file, tables, ntables, PCF_ACCELERATORS, &format, &size))
-	    goto Bail;
-	format = pcfGetLSB32(file);
-	if (!PCF_FORMAT_MATCH(format, PCF_DEFAULT_FORMAT) &&
-		!PCF_FORMAT_MATCH(format, PCF_ACCEL_W_INKBOUNDS)) {
-	    goto Bail;
-	}
-	pcfGetAccel(file, format, pFontInfo);
-	/* XXX clean up bogus accelerators */
-    }
     pFontInfo->isStringProp = isStringProp;
     pFontInfo->props = props;
     pFontInfo->nprops = nprops;
@@ -306,6 +270,58 @@ pcfGetInfo(pFontInfo, file, tables, ntables)
 Bail:
     xfree(isStringProp);
     xfree(props);
+    return FALSE;
+}
+
+
+/*
+ * pcfReadAccel
+ *
+ * Fill in the accelerator information from the font file; used
+ * to read both BDF_ACCELERATORS and old style ACCELERATORS
+ */
+
+static Bool
+pcfGetAccel(pFontInfo, file, tables, ntables, type)
+    FontInfoPtr pFontInfo;
+    FontFilePtr file;
+    PCFTablePtr	tables;
+    int		ntables;
+    CARD32	type;
+{
+    CARD32      format;
+    int		size;
+
+    if (!pcfSeekToType(file, tables, ntables, type, &format, &size))
+	goto Bail;
+    format = pcfGetLSB32(file);
+    if (!PCF_FORMAT_MATCH(format, PCF_DEFAULT_FORMAT) &&
+	!PCF_FORMAT_MATCH(format, PCF_ACCEL_W_INKBOUNDS)) 
+    {
+	goto Bail;
+    }
+    pFontInfo->noOverlap = pcfGetINT8(file, format);
+    pFontInfo->constantMetrics = pcfGetINT8(file, format);
+    pFontInfo->terminalFont = pcfGetINT8(file, format);
+    pFontInfo->constantWidth = pcfGetINT8(file, format);
+    pFontInfo->inkInside = pcfGetINT8(file, format);
+    pFontInfo->inkMetrics = pcfGetINT8(file, format);
+    pFontInfo->drawDirection = pcfGetINT8(file, format);
+     /* natural alignment */ pcfGetINT8(file, format);
+    pFontInfo->fontAscent = pcfGetINT32(file, format);
+    pFontInfo->fontDescent = pcfGetINT32(file, format);
+    pFontInfo->maxOverlap = pcfGetINT32(file, format);
+    pcfGetMetric(file, format, &pFontInfo->minbounds);
+    pcfGetMetric(file, format, &pFontInfo->maxbounds);
+    if (PCF_FORMAT_MATCH(format, PCF_ACCEL_W_INKBOUNDS)) {
+	pcfGetMetric(file, format, &pFontInfo->ink_minbounds);
+	pcfGetMetric(file, format, &pFontInfo->ink_maxbounds);
+    } else {
+	pFontInfo->ink_minbounds = pFontInfo->minbounds;
+	pFontInfo->ink_maxbounds = pFontInfo->maxbounds;
+    }
+    return TRUE;
+Bail:
     return FALSE;
 }
 
@@ -336,13 +352,22 @@ pcfReadFont(pFont, file, bit, byte, glyph, scan)
     int         encodingOffset;
     CARD32      bitmapSizes[GLYPHPADOPTIONS];
     CARD32     *offsets;
+    Bool	hasBDFAccelerators;
 
     if (!(tables = pcfReadTOC(file, &ntables)))
 	goto Bail;
-    /* info */
 
-    if (!pcfGetInfo(&pFont->info, file, tables, ntables))
+    /* properties */
+
+    if (!pcfGetProperties(&pFont->info, file, tables, ntables))
 	goto Bail;
+
+    /* Use the old accelerators if no BDF accelerators are in the file */
+
+    hasBDFAccelerators = pcfHasType (tables, ntables, PCF_BDF_ACCELERATORS);
+    if (!hasBDFAccelerators)
+	if (!pcfGetAccel (&pFont->info, file, tables, ntables, PCF_ACCELERATORS))
+	    goto Bail;
 
     /* metrics */
 
@@ -394,6 +419,7 @@ pcfReadFont(pFont, file, bit, byte, glyph, scan)
     if (!bitmaps)
 	goto Bail;
     FontFileRead(file, bitmaps, sizebitmaps);
+    position += sizebitmaps;
 
     if (PCF_BIT_ORDER(format) != bit)
 	BitOrderInvert(bitmaps, sizebitmaps);
@@ -435,9 +461,48 @@ pcfReadFont(pFont, file, bit, byte, glyph, scan)
 	bitmaps = padbitmaps;
     }
     for (i = 0; i < nbitmaps; i++)
-	metrics[i].bits = bitmaps + offsets[i];
+    {
+	xCharInfo  *metric;
+	metric = &metrics[i].metrics;
+	if (metric->ascent == -metric->descent)
+	{
+	    static char	empty[4];
+	    metric->descent = 1 - metric->ascent;
+	    metric->leftSideBearing = metric->rightSideBearing = 0;
+	    metrics[i].bits = empty;
+	}
+	else
+	{
+	    metrics[i].bits = bitmaps + offsets[i];
+	}
+    }
 
     xfree(offsets);
+
+    /* ink metrics ? */
+
+    ink_metrics = NULL;
+    if (pcfSeekToType(file, tables, ntables, PCF_INK_METRICS, &format, &size)) {
+	format = pcfGetLSB32(file);
+	if (!PCF_FORMAT_MATCH(format, PCF_DEFAULT_FORMAT) &&
+		!PCF_FORMAT_MATCH(format, PCF_COMPRESSED_METRICS)) {
+	    goto Bail;
+	}
+	if (PCF_FORMAT_MATCH(format, PCF_DEFAULT_FORMAT))
+	    nink_metrics = pcfGetINT32(file, format);
+	else
+	    nink_metrics = pcfGetINT16(file, format);
+	if (nink_metrics != nmetrics)
+	    goto Bail;
+	ink_metrics = (xCharInfo *) xalloc(nink_metrics * sizeof(xCharInfo));
+	if (!ink_metrics)
+	    goto Bail;
+	for (i = 0; i < nink_metrics; i++)
+	    if (PCF_FORMAT_MATCH(format, PCF_DEFAULT_FORMAT))
+		pcfGetMetric(file, format, ink_metrics + i);
+	    else
+		pcfGetCompressedMetric(file, format, ink_metrics + i);
+    }
 
     /* encoding */
 
@@ -470,30 +535,12 @@ pcfReadFont(pFont, file, bit, byte, glyph, scan)
 	    encoding[i] = metrics + encodingOffset;
     }
 
-    /* ink metrics ? */
+    /* BDF style accelerators (i.e. bounds based on encoded glyphs) */
 
-    ink_metrics = NULL;
-    if (pcfSeekToType(file, tables, ntables, PCF_INK_METRICS, &format, &size)) {
-	format = pcfGetLSB32(file);
-	if (!PCF_FORMAT_MATCH(format, PCF_DEFAULT_FORMAT) &&
-		!PCF_FORMAT_MATCH(format, PCF_COMPRESSED_METRICS)) {
+    if (hasBDFAccelerators)
+	if (!pcfGetAccel (&pFont->info, file, tables, ntables, PCF_BDF_ACCELERATORS))
 	    goto Bail;
-	}
-	if (PCF_FORMAT_MATCH(format, PCF_DEFAULT_FORMAT))
-	    nink_metrics = pcfGetINT32(file, format);
-	else
-	    nink_metrics = pcfGetINT16(file, format);
-	if (nink_metrics != nmetrics)
-	    goto Bail;
-	ink_metrics = (xCharInfo *) xalloc(nink_metrics * sizeof(xCharInfo));
-	if (!ink_metrics)
-	    goto Bail;
-	for (i = 0; i < nink_metrics; i++)
-	    if (PCF_FORMAT_MATCH(format, PCF_DEFAULT_FORMAT))
-		pcfGetMetric(file, format, ink_metrics + i);
-	    else
-		pcfGetCompressedMetric(file, format, ink_metrics + i);
-    }
+
     bitmapFont = (BitmapFontPtr) xalloc(sizeof *bitmapFont);
     if (!bitmapFont)
 	goto Bail;
@@ -516,6 +563,8 @@ pcfReadFont(pFont, file, bit, byte, glyph, scan)
 	if (pFont->info.firstRow <= r && r <= pFont->info.lastRow &&
 		pFont->info.firstCol <= c && c <= pFont->info.lastCol) {
 	    cols = pFont->info.lastCol - pFont->info.firstCol + 1;
+	    r = r - pFont->info.firstRow;
+	    c = c - pFont->info.firstCol;
 	    bitmapFont->pDefault = encoding[r * cols + c];
 	}
     }
@@ -554,13 +603,22 @@ pcfReadFontInfo(pFontInfo, file)
     CARD32      format;
     CARD32      size;
     int         nencoding;
+    Bool	hasBDFAccelerators;
 
     if (!(tables = pcfReadTOC(file, &ntables)))
 	goto Bail;
-    /* info */
 
-    if (!pcfGetInfo(pFontInfo, file, tables, ntables))
+    /* properties */
+
+    if (!pcfGetProperties(pFontInfo, file, tables, ntables))
 	goto Bail;
+
+    /* Use the old accelerators if no BDF accelerators are in the file */
+
+    hasBDFAccelerators = pcfHasType (tables, ntables, PCF_BDF_ACCELERATORS);
+    if (!hasBDFAccelerators)
+	if (!pcfGetAccel (pFontInfo, file, tables, ntables, PCF_ACCELERATORS))
+	    goto Bail;
 
     /* encoding */
 
@@ -584,6 +642,13 @@ pcfReadFontInfo(pFontInfo, file)
 	if (pcfGetINT16(file, format) == 0xFFFF)
 	    pFontInfo->allExist = FALSE;
     }
+
+    /* BDF style accelerators (i.e. bounds based on encoded glyphs) */
+
+    if (hasBDFAccelerators)
+	if (!pcfGetAccel (pFontInfo, file, tables, ntables, PCF_BDF_ACCELERATORS))
+	    goto Bail;
+
     xfree(tables);
     return Successful;
 Bail:
