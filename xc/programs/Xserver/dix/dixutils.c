@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.34 89/09/21 19:22:36 keith Exp $ */
+/* $XConsortium: dixutils.c,v 1.35 89/09/30 10:46:46 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -232,19 +232,23 @@ typedef struct _BlockHandler {
     void    (*BlockHandler)();
     void    (*WakeupHandler)();
     pointer blockData;
+    Bool    deleted;
 } BlockHandlerRec, *BlockHandlerPtr;
 
 static BlockHandlerPtr	handlers;
 static int		numHandlers;
 static int		sizeHandlers;
+static Bool		inHandler;
+static Bool		handlerDeleted;
 
 /* called from the OS layer */
 BlockHandler(pTimeout, pReadmask)
 pointer	pTimeout;	/* DIX doesn't want to know how OS represents time */
 pointer pReadmask;	/* nor how it represents the set of descriptors */
 {
-    register int i;
+    register int i, j;
     
+    ++inHandler;
     for (i = 0; i < screenInfo.numScreens; i++)
 	(* screenInfo.screens[i]->BlockHandler)(i, 
 				screenInfo.screens[i]->blockData,
@@ -252,6 +256,19 @@ pointer pReadmask;	/* nor how it represents the set of descriptors */
     for (i = 0; i < numHandlers; i++)
 	(*handlers[i].BlockHandler) (handlers[i].blockData,
 				     pTimeout, pReadmask);
+    if (handlerDeleted)
+    {
+	for (i = 0; i < numHandlers;)
+	    if (handlers[i].deleted)
+	    {
+	    	for (j = i; j < numHandlers - 1; j++)
+		    handlers[j] = handlers[j+1];
+	    	numHandlers--;
+	    }
+	    else
+		i++;
+    }
+    --inHandler;
 }
 
 
@@ -259,7 +276,9 @@ WakeupHandler(result, pReadmask)
 unsigned long	result;	/* 32 bits of undefined result from the wait */
 pointer pReadmask;	/* the resulting descriptor mask */
 {
-    register int i;
+    register int i, j;
+
+    ++inHandler;
     for (i = numHandlers - 1; i >= 0; i--)
 	(*handlers[i].WakeupHandler) (handlers[i].blockData,
 				      result, pReadmask);
@@ -267,7 +286,24 @@ pointer pReadmask;	/* the resulting descriptor mask */
 	(* screenInfo.screens[i]->WakeupHandler)(i, 
 				screenInfo.screens[i]->wakeupData,
 				result, pReadmask);
+    if (handlerDeleted)
+    {
+	for (i = 0; i < numHandlers;)
+	    if (handlers[i].deleted)
+	    {
+	    	for (j = i; j < numHandlers - 1; j++)
+		    handlers[j] = handlers[j+1];
+	    	numHandlers--;
+	    }
+	    else
+		i++;
+    }
+    --inHandler;
 }
+
+/* Reentrant with BlockHandler and WakeupHandler, except wakeup won't
+ * get called until next time
+ */
 
 Bool
 RegisterBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
@@ -306,9 +342,17 @@ RemoveBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
 	    handlers[i].WakeupHandler == wakeupHandler &&
 	    handlers[i].blockData == blockData)
 	{
-	    for (; i < numHandlers - 1; i++)
-		handlers[i] = handlers[i+1];
-	    numHandlers--;
+	    if (inHandler)
+	    {
+		handlerDeleted = TRUE;
+		handlers[i].deleted = TRUE;
+	    }
+	    else
+	    {
+	    	for (; i < numHandlers - 1; i++)
+		    handlers[i] = handlers[i+1];
+	    	numHandlers--;
+	    }
 	    break;
 	}
 }
@@ -319,4 +363,173 @@ InitBlockAndWakeupHandlers ()
     handlers = (BlockHandlerPtr) 0;
     numHandlers = 0;
     sizeHandlers = 0;
+}
+
+/*
+ * A general work queue.  Perform some task before the server
+ * sleeps for input.
+ */
+
+typedef struct _WorkQueue {
+    struct _WorkQueue	*next;
+    Bool		(*function)();
+    ClientPtr		client;
+    pointer		closure;
+} WorkQueueRec, *WorkQueuePtr;
+
+static WorkQueuePtr	workQueue, *workQueueLast = &workQueue;
+static Bool		WorkBlockHandlerRegistered;
+
+/* ARGSUSED */
+static void
+WorkWakeupHandler (blockData, pTimeout, pReadmask)
+    pointer blockData;
+    pointer pTimeout;
+    pointer pReadmask;
+{
+    return;
+}
+
+/* ARGSUSED */
+static void
+WorkBlockHandler (blockData, pTimeout, pReadmask)
+    pointer blockData;
+    pointer pTimeout;
+    pointer pReadmask;
+{
+    WorkQueuePtr    q, n, p;
+
+    p = NULL;
+    /*
+     * Scan the work queue once, calling each function.  Those
+     * which return TRUE are removed from the queue, otherwise
+     * they will be called again.  This must be reentrant with
+     * QueueWorkProc, hence the crufty usage of variables.
+     */
+    for (q = workQueue; q; q = n)
+    {
+	if ((*q->function) (q->client, q->closure))
+	{
+	    /* remove q from the list */
+	    n = q->next;    /* don't fetch until after func called */
+	    if (p)
+		p->next = n;
+	    else
+		workQueue = n;
+	    xfree (q);
+	}
+	else
+	{
+	    n = q->next;    /* don't fetch until after func called */
+	    p = q;
+	}
+    }
+    if (p)
+	workQueueLast = &p->next;
+    else
+    {
+	workQueueLast = &workQueue;
+	RemoveBlockAndWakeupHandlers (WorkBlockHandler,
+				      WorkWakeupHandler, NULL);
+	WorkBlockHandlerRegistered = FALSE;
+    }
+}
+
+Bool
+QueueWorkProc (function, client, closure)
+    Bool	(*function)();
+    ClientPtr	client;
+    pointer	closure;
+{
+    WorkQueuePtr    q;
+
+    q = (WorkQueuePtr) xalloc (sizeof *q);
+    if (!q)
+	return FALSE;
+    if (!WorkBlockHandlerRegistered)
+    {
+	if (!RegisterBlockAndWakeupHandlers (WorkBlockHandler,
+					    WorkWakeupHandler, NULL))
+	{
+	    xfree (q);
+	    return FALSE;
+	}
+	WorkBlockHandlerRegistered = TRUE;
+    }
+    q->function = function;
+    q->client = client;
+    q->closure = closure;
+    q->next = NULL;
+    *workQueueLast = q;
+    workQueueLast = &q->next;
+}
+
+/*
+ * Manage a queue of sleeping clients, awakening them
+ * when requested, by using the OS functions IgnoreClient
+ * and AttendClient.  Note that this *ignores* the troubles
+ * with request data interleaving itself with events, but
+ * we'll leave that until a later time.
+ */
+
+typedef struct _SleepQueue {
+    struct _SleepQueue	*next;
+    ClientPtr		client;
+    Bool		(*function)();
+    pointer		closure;
+} SleepQueueRec, *SleepQueuePtr;
+
+static SleepQueuePtr	sleepQueue;
+
+Bool
+ClientSleep (client, function, closure)
+    ClientPtr	client;
+    Bool	(*function)();
+    pointer	closure;
+{
+    SleepQueuePtr   q;
+
+    q = (SleepQueuePtr) xalloc (sizeof *q);
+    if (!q)
+	return FALSE;
+
+    IgnoreClient (client);
+    q->next = sleepQueue;
+    q->client = client;
+    q->function = function;
+    q->closure = closure;
+    sleepQueue = q;
+    return TRUE;
+}
+
+Bool
+ClientSignal (client)
+    ClientPtr	client;
+{
+    SleepQueuePtr   q;
+
+    for (q = sleepQueue; q; q = q->next)
+	if (q->client == client)
+	{
+	    return QueueWorkProc (q->function, q->client, q->closure);
+	}
+}
+
+ClientWakeup (client)
+    ClientPtr	client;
+{
+    SleepQueuePtr   q, *prev;
+
+    prev = &sleepQueue;
+    while (q = *prev)
+    {
+	if (q->client == client)
+	{
+	    *prev = q->next;
+	    xfree (q);
+	    AttendClient (client);
+	    break;
+	}
+	prev = &q->next;
+    }
 }
