@@ -18,7 +18,8 @@
 #define RemoveTargetProgramByMoving YES
 
 /* This defines the server you want */
-#define XhpServer              Xhp
+/* #define XhpServer              Xhp */
+#define BuildServer NO
 
 #define SignalReturnProcType int
 
@@ -27,7 +28,7 @@
 #define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 
 
-/**/# platform:  $XConsortium: hp.cf,v 1.11 89/04/26 14:37:58 jim Exp $
+/**/# platform:  $XConsortium: hp.cf,v 1.12 89/05/17 13:55:42 jim Exp $
 /**/# operating system:  OSName
 
 /*

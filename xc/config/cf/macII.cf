@@ -10,12 +10,14 @@
 #define BootstrapCFlags   -DmacII
 #define StandardDefines    -DmacII -DSYSV
 #define StandardCppDefines -DmacII -DSYSV
-#define XmacIIServer      XmacII
 #define CcCmd             cc -B /usr/lib/big/
 #define LnCmd             ln -s
 #define ExecableScripts   NO
 #define NeedBerklibInXlib YES
 #define HasSockets        YES
+
+/* #define XmacIIServer      XmacII */
+#define BuildServer NO
 
 #ifdef POSIX
 #define SignalReturnProcType void
@@ -26,7 +28,7 @@
 #define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 
 
-/**/# platform:  $XConsortium: macII.cf,v 1.8 89/03/20 13:47:44 jim Exp $
+/**/# platform:  $XConsortium: macII.cf,v 1.9 89/03/22 18:29:02 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************

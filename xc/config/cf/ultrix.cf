@@ -12,7 +12,7 @@
 
 #ifdef VaxArchitecture
 #define XqvssServer Xqvss
-#define XqdssServer Xqdss
+/* #define XqdssServer Xqdss */
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
 #define HasSaberC YES
 #endif
@@ -23,5 +23,5 @@
 #define ServerDefines StandardDefines -Olimit 2000 ExtensionDefines -DPURDUE
 #endif
 
-/**/# platform:  $XConsortium: ultrix.cf,v 1.7 89/05/10 14:57:54 jim Exp $
+/**/# platform:  $XConsortium: ultrix.cf,v 1.8 89/05/10 23:51:35 keith Exp $
 /**/# operating system:  OSName

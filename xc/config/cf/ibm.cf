@@ -15,7 +15,8 @@
  * This defines the name of server you want.
  * affected: .../X11/server/Makefile
  */
-#define XibmServer Xibm
+/* #define XibmServer Xibm */
+#define BuildServer NO
 
 /*****************************************************************************
  *                        Platform-specfic parameters                        *

@@ -6,7 +6,7 @@
 #define OSMajorVersion    10
 #define OSMinorVersion    1
 
-#define XapolloServer     Xapollo
+/* #define XapolloServer     Xapollo */
 #define CppCmd            /usr/lib/cpp
 
             PAS = /com/pas
@@ -14,7 +14,7 @@
 #define SignalReturnProcType int
 
 
-/**/# platform:  $XConsortium: apollo.cf,v 1.6 89/04/20 19:30:02 rws Exp $
+/**/# platform:  $XConsortium: apollo.cf,v 1.7 89/05/21 15:33:34 rws Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
