@@ -28,7 +28,7 @@
  *
  ************************************************************************/
 
-/* $XConsortium: mtxlock.h,v 1.7 93/12/03 01:48:27 rob Exp $ */
+/* $XConsortium: mtxlock.h,v 1.8 93/12/08 19:41:26 rob Exp $ */
 
 #ifndef MTXLOCK_H
 #define MTXLOCK_H
@@ -45,10 +45,11 @@
 #include "POQ.h"
 
 #ifndef MTX
-/* XXX need MTX_REP_LOCK_DEVICES() */
+#define MTX_REP_LOCK_DEVICES() /* nothing */
 #define MTX_LOCK_DEVICES() /* nothing */
 #define MTX_UNLOCK_DEVICES() /* nothing */
 #else /* MTX */
+#define MTX_REP_LOCK_DEVICES() LockDevices()
 #define MTX_LOCK_DEVICES() LockDevices()
 #define MTX_UNLOCK_DEVICES() UnlockDevices()
 #endif /* MTX */
@@ -247,9 +248,24 @@
  *
  * Lock and verify a window. 
  *
+ * STX to MTX merge versions of Lock and verify a window. 
+ *
  ***********************************************************************/
-
-#define LOCK_AND_VERIFY_WINDOW(pWin, winID, client, regionType, conflictMask)\
+#ifdef MTX
+#define MTX_REP_LOCK_AND_VERIFY_WINDOW(pWin, winID, client, regionType, conflictMask)\
+{									\
+    int _error;								\
+									\
+    if (_error = LockAndVerifyWindow(&(pWin), (winID), (client)))	\
+    {									\
+	MTXReturnPooledMessage;						\
+	return (_error);						\
+    }									\
+    POQ_SET_WINDOW_CONFLICT((client), (pWin), (regionType));		\
+									\
+    POQLock((client), (conflictMask));					\
+}
+#define MTX_LOCK_AND_VERIFY_WINDOW(pWin, winID, client, regionType, conflictMask)\
 {									\
     int _error;								\
 									\
@@ -261,15 +277,8 @@
 									\
     POQLock((client), (conflictMask));					\
 }
-/***********************************************************************
- *
- * STX to MTX merge versions of Lock and verify a window. 
- *
- ***********************************************************************/
-#ifdef MTX
-/* XXX MTX_REP_LOCK_AND_VERIFY_WINDOW LOCK_AND_VERIFY_WINDOW */
-#define MTX_LOCK_AND_VERIFY_WINDOW LOCK_AND_VERIFY_WINDOW
 #else
+#define MTX_REP_LOCK_AND_VERIFY_WINDOW MTX_LOCK_AND_VERIFY_WINDOW
 #define MTX_LOCK_AND_VERIFY_WINDOW(pWin, winID, client, regionType, conflictMask)\
 {									\
     if (!(pWin = (WindowPtr)LookupWindow(winID, client)))		\
@@ -326,9 +335,11 @@
  *
  * Lock and verify one or two windows.
  *
+ * STX to MTX merge versions for Lock and verify one or two windows.
+ *
  ***********************************************************************/
-
-#define LOCK_AND_VERIFY_ALL_WINDOWS(pWin1, pWin2, winID1, winID2, client, regionType, conflictMask)\
+#ifdef MTX
+#define MTX_REP_LOCK_AND_VERIFY_ALL_WINDOWS(pWin1, pWin2, winID1, winID2, client, regionType, conflictMask)\
 {									\
     int _error;								\
 									\
@@ -367,21 +378,64 @@
     }									\
     POQLock((client), (conflictMask));					\
 }
-/***********************************************************************
- *
- * STX to MTX merge versions for Lock and verify one or two windows.
- *
- ***********************************************************************/
-#ifdef MTX
-/* XXX need MTX_REP_LOCK_AND_VERIFY_ALL_WINDOWS */
-#define MTX_LOCK_AND_VERIFY_ALL_WINDOWS LOCK_AND_VERIFY_ALL_WINDOWS
-#else
 #define MTX_LOCK_AND_VERIFY_ALL_WINDOWS(pWin1, pWin2, winID1, winID2, client, regionType, conflictMask)\
 {									\
-    MTX_LOCK_AND_VERIFY_WINDOW(pWin1, winID1, client, regionType, 	\
-			       conflictMask);				\
-    if (!(pWin2 = (WindowPtr)LookupWindow(winID2, client)))		\
-	return BadWindow;						\
+    int _error;								\
+									\
+    if ((winID1) && (winID2))						\
+    {									\
+        if (_error = LockAndVerifyTwoWindows(&(pWin1), &(pWin2), 	\
+					(winID1), (winID2), (client)))	\
+        {								\
+	    return (_error);						\
+        }								\
+        POQ_SET_ALL_CONFLICT((client));					\
+    }									\
+    else if ((winID1))							\
+    {									\
+        if (_error = LockAndVerifyWindow(&(pWin1), (winID1), (client)))	\
+        {								\
+	    return (_error);						\
+        }								\
+	(pWin2) = NullWindow;						\
+        POQ_SET_WINDOW_CONFLICT((client), (pWin1), (regionType));	\
+    }									\
+    else if ((winID2))							\
+    {									\
+        if (_error = LockAndVerifyWindow(&(pWin2), (winID2), (client)))	\
+        {								\
+	    return (_error);						\
+        }								\
+	(pWin1) = NullWindow;						\
+        POQ_SET_WINDOW_CONFLICT((client), (pWin2), (regionType));	\
+    }									\
+    else								\
+    {									\
+	(pWin1) = NullWindow;						\
+	(pWin2) = NullWindow;						\
+        POQ_SET_NULL_CONFLICT((client));				\
+    }									\
+    POQLock((client), (conflictMask));					\
+}
+#else
+#define MTX_REP_LOCK_AND_VERIFY_ALL_WINDOWS MTX_LOCK_AND_VERIFY_ALL_WINDOWS
+#define MTX_LOCK_AND_VERIFY_ALL_WINDOWS(pWin1, pWin2, winID1, winID2, client, regionType, conflictMask)\
+{									\
+    if ((winID1))							\
+    {									\
+	if (!(pWin1 = (WindowPtr)LookupWindow(winID1, client)))		\
+	    return BadWindow;						\
+    }									\
+    else								\
+	(pWin1) = NullWindow;						\
+									\
+    if ((winID2))							\
+    {									\
+	if (!(pWin2 = (WindowPtr)LookupWindow(winID2, client)))		\
+	    return BadWindow;						\
+    }									\
+    else								\
+	(pWin1) = NullWindow;						\
 }
 #endif
     
@@ -429,9 +483,25 @@
  * Lock and verify a drawable.  Return a BadMatch error if the drawable 
  * is a UNDRAWABLE_WINDOW.  
  *
+ * STX to MTX merge versions of Lock and verify a drawable.  Return a 
+ * BadMatch error if the drawable is a UNDRAWABLE_WINDOW.  
+ *
  ***********************************************************************/
-
-#define LOCK_AND_VERIFY_DRAWABLE(pDraw, drawID, client, conflictMask)	\
+#ifdef MTX
+#define MTX_REP_LOCK_AND_VERIFY_DRAWABLE(pDraw, drawID, client, conflictMask) \
+{									\
+    int _error;								\
+									\
+    if (_error = LockAndVerifyDrawable(&(pDraw), (drawID), (client), TRUE))\
+    {									\
+	MTXReturnPooledMessage;						\
+	return (_error);						\
+    }									\
+    POQ_SET_DRAWABLE_CONFLICT((client), (pDraw));			\
+									\
+    POQLock((client), (conflictMask));					\
+}
+#define MTX_LOCK_AND_VERIFY_DRAWABLE(pDraw, drawID, client, conflictMask)	\
 {									\
     int _error;								\
 									\
@@ -443,16 +513,8 @@
 									\
     POQLock((client), (conflictMask));					\
 }
-/***********************************************************************
- *
- * STX to MTX merge versions of Lock and verify a drawable.  Return a 
- * BadMatch error if the drawable is a UNDRAWABLE_WINDOW.  
- *
- ***********************************************************************/
-#ifdef MTX
-/* XXX need MTX_REP_LOCK_AND_VERIFY_DRAWABLE */
-#define MTX_LOCK_AND_VERIFY_DRAWABLE LOCK_AND_VERIFY_DRAWABLE
 #else
+#define MTX_REP_LOCK_AND_VERIFY_DRAWABLE MTX_LOCK_AND_VERIFY_DRAWABLE
 #define MTX_LOCK_AND_VERIFY_DRAWABLE(pDraw, stuffDrawable, client, conflictMask)\
     VERIFY_DRAWABLE(pDraw, stuffDrawable, client)
 #endif
@@ -460,11 +522,26 @@
 
 /***********************************************************************
  *
- * Lock and verify a drawable. 
+ * Lock and verify a (geomtrable) drawable. 
+ *
+ * STX to MTX merge version of Lock and verify a ?geometrable. 
  *
  ***********************************************************************/
-
-#define LOCK_AND_VERIFY_GEOMETRABLE(pDraw, drawID, client, conflictMask)\
+#ifdef MTX
+#define MTX_REP_LOCK_AND_VERIFY_GEOMETRABLE(pDraw, drawID, client, conflictMask)\
+{									\
+    int _error;								\
+									\
+    if (_error = LockAndVerifyDrawable(&(pDraw), (drawID), (client), FALSE))\
+    {									\
+	MTXReturnPooledMessage;						\
+	return (_error);						\
+    }									\
+    POQ_SET_DRAWABLE_CONFLICT((client), (pDraw));			\
+									\
+    POQLock((client), (conflictMask));					\
+}
+#define MTX_LOCK_AND_VERIFY_GEOMETRABLE(pDraw, drawID, client, conflictMask)\
 {									\
     int _error;								\
 									\
@@ -476,15 +553,8 @@
 									\
     POQLock((client), (conflictMask));					\
 }
-/***********************************************************************
- *
- * STX to MTX merge version of Lock and verify a ?geometrable. 
- *
- ***********************************************************************/
-#ifdef MTX
-/* XXX need MTX_REP_LOCK_AND_VERIFY_GEOMETRABLE */
-#define MTX_LOCK_AND_VERIFY_GEOMETRABLE LOCK_AND_VERIFY_GEOMETRABLE
 #else
+#define MTX_REP_LOCK_AND_VERIFY_GEOMETRABLE MTX_LOCK_AND_VERIFY_GEOMETRABLE
 #define MTX_LOCK_AND_VERIFY_GEOMETRABLE(pDraw, drawID, client, conflictMask)\
     VERIFY_GEOMETRABLE(pDraw, drawID, client);
 #endif
@@ -686,9 +756,24 @@
  *
  * Lock and verify a colormap.
  *
+ * STX to MTX merge version of Lock and verify a colormap.
+ *
  ***********************************************************************/
-
-#define LOCK_AND_VERIFY_COLORMAP(pMap, mapID, client, conflictMask)	\
+#ifdef MTX
+#define MTX_REP_LOCK_AND_VERIFY_COLORMAP(pMap, mapID, client, conflictMask) \
+{									\
+    int _error;								\
+									\
+    if (_error = LockAndVerifyColormap(&(pMap), (mapID), (client)))	\
+    {									\
+	MTXReturnPooledMessage;						\
+	return (_error);						\
+    }									\
+    POQ_SET_NULL_CONFLICT((client));					\
+									\
+    POQLock((client), (conflictMask));					\
+}
+#define MTX_LOCK_AND_VERIFY_COLORMAP(pMap, mapID, client, conflictMask)	\
 {									\
     int _error;								\
 									\
@@ -700,15 +785,8 @@
 									\
     POQLock((client), (conflictMask));					\
 }
-/***********************************************************************
- *
- * STX to MTX merge version of Lock and verify a colormap.
- *
- ***********************************************************************/
-#ifdef MTX
-/* XXX need MTX_REP_LOCK_AND_VERIFY_COLORMAP */
-#define MTX_LOCK_AND_VERIFY_COLORMAP LOCK_AND_VERIFY_COLORMAP
 #else
+#define MTX_REP_LOCK_AND_VERIFY_COLORMAP MTX_LOCK_AND_VERIFY_COLORMAP
 #define MTX_LOCK_AND_VERIFY_COLORMAP(pMap, mapID, client, conflictMask)	\
 {									\
     pMap = (ColormapPtr )LookupIDByType(mapID, RT_COLORMAP);		\
@@ -770,7 +848,27 @@
  *
  ***********************************************************************/
 
-#define LOCK_AND_VERIFY_GC_FONT(pFont, fontID, client, conflictMask)	\
+/***********************************************************************
+ *
+ * STX to MTX merge versions of Lock and verify a font.  If the font is 
+ * not in the RDB, try to lookup the GC containing the font.
+ *
+ ***********************************************************************/
+#ifdef MTX
+#define MTX_REP_LOCK_AND_VERIFY_GC_FONT(pFont, pGC, fontID, client, conflictMask)\
+{									\
+    int _error;								\
+									\
+    if (_error = LockAndVerifyFont(&(pFont), (fontID), (client), TRUE))	\
+    {									\
+	MTXReturnPooledMessage;						\
+	return (_error);						\
+    }									\
+    POQ_SET_NULL_CONFLICT((client));					\
+									\
+    POQLock((client), (conflictMask));					\
+}
+#define MTX_LOCK_AND_VERIFY_GC_FONT(pFont, pGC, fontID, client, conflictMask)\
 {									\
     int _error;								\
 									\
@@ -782,17 +880,8 @@
 									\
     POQLock((client), (conflictMask));					\
 }
-/***********************************************************************
- *
- * STX to MTX merge versions of Lock and verify a font.  If the font is 
- * not in the RDB, try to lookup the GC containing the font.
- *
- ***********************************************************************/
-#ifdef MTX
-/* XXX need MTX_REP_LOCK_AND_VERIFY_GC_FONT */
-#define MTX_LOCK_AND_VERIFY_GC_FONT(pFont, pGC, fontID, client, conflictMask)\
-    LOCK_AND_VERIFY_GC_FONT(pFont, fontID, client, conflictMask)
 #else
+#define MTX_REP_LOCK_AND_VERIFY_GC_FONT MTX_LOCK_AND_VERIFY_GC_FONT
 #define MTX_LOCK_AND_VERIFY_GC_FONT(pFont, pGC, fontID, client, conflictMask)\
 {									\
     pFont = (FontPtr)LookupIDByType(fontID, RT_FONT);			\
@@ -838,9 +927,24 @@
  *
  * Lock and verify a cursor.
  *
+ * STX to MTX merge versions of Lock and verify a cursor.
+ *
  ***********************************************************************/
-
-#define LOCK_AND_VERIFY_CURSOR(pCursor, cursorID, client, conflictMask)	\
+#ifdef MTX
+#define MTX_DEV_LOCK_AND_VERIFY_CURSOR(pCursor, cursorID, client, conflictMask) \
+{									\
+    int _error;								\
+									\
+    if (_error = LockAndVerifyCursor(&(pCursor), (cursorID), (client)))	\
+    {									\
+	MTX_UNLOCK_DEVICES();						\
+	return (_error);						\
+    }									\
+    POQ_SET_NULL_CONFLICT((client));					\
+									\
+    POQLock((client), (conflictMask));					\
+}
+#define MTX_LOCK_AND_VERIFY_CURSOR(pCursor, cursorID, client, conflictMask) \
 {									\
     int _error;								\
 									\
@@ -852,15 +956,8 @@
 									\
     POQLock((client), (conflictMask));					\
 }
-/***********************************************************************
- *
- * STX to MTX merge versions of Lock and verify a cursor.
- *
- ***********************************************************************/
-#ifdef MTX
-/* XXX need MTX_DEV_LOCK_AND_VERIFY_CURSOR to handle DEVICE lock */
-#define MTX_LOCK_AND_VERIFY_CURSOR LOCK_AND_VERIFY_CURSOR
 #else
+#define MTX_DEV_LOCK_AND_VERIFY_CURSOR MTX_LOCK_AND_VERIFY_CURSOR
 #define MTX_LOCK_AND_VERIFY_CURSOR(pCursor, cursorID, client, conflictMask)\
 {									\
     pCursor = (CursorPtr)LookupIDByType(cursorID, RT_CURSOR);		\
@@ -889,23 +986,20 @@
  *
  * Lock the pending operation queue.
  *
- ***********************************************************************/
-
-#define LOCK_PENDING_OPERATION_QUEUE(client, conflictMask)		\
-{									\
-    POQ_SET_ALL_CONFLICT((client));					\
-    POQLock((client), (conflictMask));					\
-}
-/***********************************************************************
- *
  * STX to MTX versions of Lock the pending operation queue.
  *
  ***********************************************************************/
 
 #ifdef MTX
-/* XXX need MTX_REP_LOCK_PENDING_OPERATION_QUEUE */
-#define MTX_LOCK_PENDING_OPERATION_QUEUE LOCK_PENDING_OPERATION_QUEUE
+/* no return - _REP version same as without */
+#define MTX_REP_LOCK_PENDING_OPERATION_QUEUE MTX_LOCK_PENDING_OPERATION_QUEUE
+#define MTX_LOCK_PENDING_OPERATION_QUEUE(client, conflictMask)		\
+{									\
+    POQ_SET_ALL_CONFLICT((client));					\
+    POQLock((client), (conflictMask));					\
+}
 #else
+#define MTX_REP_LOCK_PENDING_OPERATION_QUEUE MTX_LOCK_PENDING_OPERATION_QUEUE
 #define MTX_LOCK_PENDING_OPERATION_QUEUE(client, conflictMask) /* nothing */
 #endif
 
