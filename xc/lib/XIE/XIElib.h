@@ -1,4 +1,4 @@
-/* $XConsortium: XIElib.h,v 1.1 93/10/26 09:41:51 rws Exp $ */
+/* $XConsortium: XIElib.h,v 1.3 93/10/28 15:17:36 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -771,14 +771,13 @@ typedef struct {
 typedef struct {
     int			type;
     Display		*display;
-    XID			resourceid;
+    unsigned long	flo_id;
     unsigned long	serial;
     unsigned char	error_code;
     unsigned char	request_code;
     unsigned char	minor_code;
     unsigned int	flo_error_code;
     unsigned long	name_space;
-    unsigned long	flo_id;
     XiePhototag		phototag;
     unsigned int	elem_type;
 } XieFloAccessError, XieFloAllocError, XieFloElementError, XieFloIDError,
@@ -787,14 +786,13 @@ typedef struct {
 typedef struct {
     int			type;
     Display		*display;
-    XID			resourceid;
+    unsigned long	flo_id;
     unsigned long	serial;
     unsigned char	error_code;
     unsigned char	request_code;
     unsigned char	minor_code;
     unsigned int	flo_error_code;
     unsigned long	name_space;
-    unsigned long	flo_id;
     XiePhototag		phototag;
     unsigned int	elem_type;
     XID			resource_id;
@@ -803,14 +801,13 @@ typedef struct {
 typedef struct {
     int			type;
     Display		*display;
-    XID			resourceid;
+    unsigned long	flo_id;
     unsigned long	serial;
     unsigned char	error_code;
     unsigned char	request_code;
     unsigned char	minor_code;
     unsigned int	flo_error_code;
     unsigned long	name_space;
-    unsigned long	flo_id;
     XiePhototag		phototag;
     unsigned int	elem_type;
     XiePhototag		domain_src;
@@ -819,14 +816,13 @@ typedef struct {
 typedef struct {
     int			type;
     Display		*display;
-    XID			resourceid;
+    unsigned long	flo_id;
     unsigned long	serial;
     unsigned char	error_code;
     unsigned char	request_code;
     unsigned char	minor_code;
     unsigned int	flo_error_code;
     unsigned long	name_space;
-    unsigned long	flo_id;
     XiePhototag		phototag;
     unsigned int	elem_type;
     unsigned int	operator;
@@ -835,14 +831,13 @@ typedef struct {
 typedef struct {
     int			type;
     Display		*display;
-    XID			resourceid;
+    unsigned long	flo_id;
     unsigned long	serial;
     unsigned char	error_code;
     unsigned char	request_code;
     unsigned char	minor_code;
     unsigned int	flo_error_code;
     unsigned long	name_space;
-    unsigned long	flo_id;
     XiePhototag		phototag;
     unsigned int	elem_type;
     unsigned int	technique_number;
@@ -852,14 +847,13 @@ typedef struct {
 typedef struct {
     int			type;
     Display		*display;
-    XID			resourceid;
+    unsigned long	flo_id;
     unsigned long	serial;
     unsigned char	error_code;
     unsigned char	request_code;
     unsigned char	minor_code;
     unsigned int	flo_error_code;
     unsigned long	name_space;
-    unsigned long	flo_id;
     XiePhototag		phototag;
     unsigned int	elem_type;
     unsigned long	bad_value;
