@@ -313,25 +313,29 @@ ServerTarget(Xplx,$(EXTDIR) $(FONTUTILDIR) $(PLXDIRS),$(PLXOBJS),$(PLXLIBS),$(PL
 #define need_dix
 #define need_ddx_snf
 #define need_ddx_mi
-#define need_ddx_hp
+/* #define need_ddx_hp */
 #define need_os_42bsd
 #define need_os_bsdemul
 HPDIRS = dix ddx/snf ddx/mi ddx/hp os/4.2bsd os/bsdemul
 
 /* set up .o load */
+/* note the string __hp9000s300 is present in 6.5 lib/cpp but is
+   not defined there. The follow sequence works perfectly for
+   7.0 6.5 and 3.1 machines 
+*/
 #ifdef hp9000s300
-# if OSMajorVersion >= 7
+#ifdef __hp9000s300 /* 7.0 and later */
 HPOBJS = ddx/hp/hp.300.70.o $(FONTUTIL)
-# else
+#else /* 6.5 */
 HPOBJS = ddx/hp/hp.300.65.o $(FONTUTIL)
-# endif
-#else
-# if OSMajorVersion >= 7
+#endif /* __hp9000s300 */
+#else /* 9000s800 */
+#ifdef __hp9000s800  /* 7.0 and later */
 HPOBJS = ddx/hp/hp.800.70.o $(FONTUTIL)
-# else
+#else /* 3.1 */
 HPOBJS = ddx/hp/hp.800.31.o $(FONTUTIL)
-# endif
-#endif
+#endif /* __hp9000s800 */
+#endif /* hp9000s300 */
 
 HPLIBS = $(DIX) $(BSD) $(MI) $(EXTENSIONS) $(BSDEMUL)
 #if ServerMallocLib
