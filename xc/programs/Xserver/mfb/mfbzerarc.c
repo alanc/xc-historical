@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbzerarc.c,v 5.7 89/09/18 16:51:57 rws Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.8 89/09/19 14:30:25 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -97,7 +97,7 @@ mfbZeroArcSS(pDraw, pGC, arc)
     info.xorgo += pDraw->x;
     x = info.x;
     y = info.y;
-    yoffset = 0;
+    yoffset = y ? nlwidth : 0;
     k1 = info.k1;
     k3 = info.k3;
     a = info.a;
@@ -191,18 +191,26 @@ mfbZeroArcSS(pDraw, pGC, arc)
     }
     else if (do360)
     {
-	while (y < info.h)
+	while (y < info.h || x < info.w)
 	{
 	    if (a < 0)
 	    {
-		dx1 = 0;
-		dy1 = 1;
-		dyoffset = nlwidth;
-		k1 = info.alpha << 1;
-		k3 = -k3;
-		b = b + a - info.alpha;
-		d = b - (a >> 1) - d + (k3 >> 3);
-		a = (info.alpha - info.beta) - a;
+		if (y == info.h)
+		{
+		    d = -1;
+		    a = b = k1 = 0;
+		}
+		else
+		{
+		    dx1 = 0;
+		    dy1 = 1;
+		    dyoffset = nlwidth;
+		    k1 = info.alpha << 1;
+		    k3 = -k3;
+		    b = b + a - info.alpha;
+		    d = b - (a >> 1) - d + (k3 >> 3);
+		    a = (info.alpha - info.beta) - a;
+		}
 	    }
 	    Pixelate(yorgl + yoffset, info.xorg + x);
 	    Pixelate(yorgl + yoffset, info.xorgo - x);
@@ -229,18 +237,26 @@ mfbZeroArcSS(pDraw, pGC, arc)
     }
     else
     {
-	while (y < info.h)
+	while (y < info.h || x < info.w)
 	{
 	    if (a < 0)
 	    {
-		dx1 = 0;
-		dy1 = 1;
-		dyoffset = nlwidth;
-		k1 = info.alpha << 1;
-		k3 = -k3;
-		b = b + a - info.alpha;
-		d = b - (a >> 1) - d + (k3 >> 3);
-		a = (info.alpha - info.beta) - a;
+		if (y == info.h)
+		{
+		    d = -1;
+		    a = b = k1 = 0;
+		}
+		else
+		{
+		    dx1 = 0;
+		    dy1 = 1;
+		    dyoffset = nlwidth;
+		    k1 = info.alpha << 1;
+		    k3 = -k3;
+		    b = b + a - info.alpha;
+		    d = b - (a >> 1) - d + (k3 >> 3);
+		    a = (info.alpha - info.beta) - a;
+		}
 	    }
 	    if ((x == info.start.x) || (y == info.start.y))
 	    {
@@ -275,25 +291,14 @@ mfbZeroArcSS(pDraw, pGC, arc)
 	    }
 	}
     }
-    for (; x <= info.w; x++)
+    if ((x == info.start.x) || (y == info.start.y))
+	mask = info.start.mask;
+    DoPix(1, yorgl + yoffset, info.xorg + x);
+    DoPix(4, yorgol - yoffset, info.xorgo - x);
+    if (!arc->height || (arc->height & 1))
     {
-	if ((x == info.start.x) || (y == info.start.y))
-	{
-	    mask = info.start.mask;
-	    info.start = info.altstart;
-	}
-	DoPix(1, yorgl + yoffset, info.xorg + x);
-	DoPix(4, yorgol - yoffset, info.xorgo - x);
-	if (!arc->height || (arc->height & 1))
-	{
-	    DoPix(2, yorgl + yoffset, info.xorgo - x);
-	    DoPix(8, yorgol - yoffset, info.xorg + x);
-	}
-	if (x == info.end.x)
-	{
-	    mask = info.end.mask;
-	    info.end = info.altend;
-	}
+	DoPix(2, yorgl + yoffset, info.xorgo - x);
+	DoPix(8, yorgol - yoffset, info.xorg + x);
     }
 }
 

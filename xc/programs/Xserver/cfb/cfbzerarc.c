@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbzerarc.c,v 5.11 89/09/18 16:51:29 rws Exp $ */
+/* $XConsortium: cfbzerarc.c,v 5.12 89/09/19 14:29:54 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -71,7 +71,7 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
     info.xorgo += pDraw->x;
     x = info.x;
     y = info.y;
-    yoffset = 0;
+    yoffset = y ? nlwidth : 0;
     k1 = info.k1;
     k3 = info.k3;
     a = info.a;
@@ -81,14 +81,14 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
     dy1 = info.dy1;
     dyoffset = 0;
     mask = info.initialMask;
-    if (x && !(arc->width & 1))
+    if (!(arc->width & 1))
     {
 	if (mask & 2)
 	    *(yorgb + info.xorgo) = pixel;
 	if (mask & 8)
 	    *(yorgob + info.xorgo) = pixel;
     }
-    if (!info.end.x)
+    if (!info.end.x || !info.end.y)
     {
 	mask = info.end.mask;
 	info.end = info.altend;
@@ -137,18 +137,26 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
     }
     else if (do360)
     {
-	while (y < info.h)
+	while (y < info.h || x < info.w)
 	{
 	    if (a < 0)
 	    {
-		dx1 = 0;
-		dy1 = 1;
-		dyoffset = nlwidth;
-		k1 = info.alpha << 1;
-		k3 = -k3;
-		b = b + a - info.alpha;
-		d = b - (a >> 1) - d + (k3 >> 3);
-		a = (info.alpha - info.beta) - a;
+		if (y == info.h)
+		{
+		    d = -1;
+		    a = b = k1 = 0;
+		}
+		else
+		{
+		    dx1 = 0;
+		    dy1 = 1;
+		    dyoffset = nlwidth;
+		    k1 = info.alpha << 1;
+		    k3 = -k3;
+		    b = b + a - info.alpha;
+		    d = b - (a >> 1) - d + (k3 >> 3);
+		    a = (info.alpha - info.beta) - a;
+		}
 	    }
 	    *(yorgb + yoffset + info.xorg + x) = pixel;
 	    *(yorgb + yoffset + info.xorgo - x) = pixel;
@@ -175,18 +183,26 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
     }
     else
     {
-	while (y < info.h)
+	while (y < info.h || x < info.w)
 	{
 	    if (a < 0)
 	    {
-		dx1 = 0;
-		dy1 = 1;
-		dyoffset = nlwidth;
-		k1 = info.alpha << 1;
-		k3 = -k3;
-		b = b + a - info.alpha;
-		d = b - (a >> 1) - d + (k3 >> 3);
-		a = (info.alpha - info.beta) - a;
+		if (y == info.h)
+		{
+		    d = -1;
+		    a = b = k1 = 0;
+		}
+		else
+		{
+		    dx1 = 0;
+		    dy1 = 1;
+		    dyoffset = nlwidth;
+		    k1 = info.alpha << 1;
+		    k3 = -k3;
+		    b = b + a - info.alpha;
+		    d = b - (a >> 1) - d + (k3 >> 3);
+		    a = (info.alpha - info.beta) - a;
+		}
 	    }
 	    if ((x == info.start.x) || (y == info.start.y))
 	    {
@@ -225,29 +241,18 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
 	    }
 	}
     }
-    for (; x <= info.w; x++)
+    if ((x == info.start.x) || (y == info.start.y))
+	mask = info.start.mask;
+    if (mask & 1)
+	*(yorgb + yoffset + info.xorg + x) = pixel;
+    if (mask & 4)
+	*(yorgob - yoffset + info.xorgo - x) = pixel;
+    if (arc->height & 1)
     {
-	if ((x == info.start.x) || (y == info.start.y))
-	{
-	    mask = info.start.mask;
-	    info.start = info.altstart;
-	}
-	if (mask & 1)
-	    *(yorgb + yoffset + info.xorg + x) = pixel;
-	if (mask & 4)
-	    *(yorgob - yoffset + info.xorgo - x) = pixel;
-	if (!arc->height || (arc->height & 1))
-	{
-	    if (mask & 2)
-		*(yorgb + yoffset + info.xorgo - x) = pixel;
-	    if (mask & 8)
-		*(yorgob - yoffset + info.xorg + x) = pixel;
-	}
-	if (x == info.end.x)
-	{
-	    mask = info.end.mask;
-	    info.end = info.altend;
-	}
+	if (mask & 2)
+	    *(yorgb + yoffset + info.xorgo - x) = pixel;
+	if (mask & 8)
+	    *(yorgob - yoffset + info.xorg + x) = pixel;
     }
 }
 
