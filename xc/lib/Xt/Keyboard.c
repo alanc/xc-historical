@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.1 89/12/13 20:02:29 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.2 89/12/14 07:48:33 swick Exp $";
 #endif
 
 /********************************************************
@@ -108,44 +108,39 @@ static Widget _FindFocusWidget(widget, trace, traceDepth, activeCheck)
     register Widget w;
     int i;
     int src;
-    Widget dst = widget;
+    Widget dst;
     XtPerWidgetInput	pwi;
     Boolean	isAncestor;
-    
-    dst = widget;
     
     /* For each ancestor, starting at the top, see if it's forwarded */
 
 
     /* first check the trace list till done or we go to branch */
     isAncestor = TRUE;
-    for (src = traceDepth-1;
-	 ((src >= 0) && isAncestor);
+    for (src = traceDepth-1, dst = widget;
+	 ((src > 0) && isAncestor);
 	 )
       {
 	  if (pwi = _XtGetPerWidgetInput(trace[src], FALSE))
 	    {
-		if (activeCheck && !pwi->haveFocus && src == 0)
-		  return widget;
-		else if (pwi->focusKid)
+		if (pwi->focusKid)
 		  {
 		      dst = pwi->focusKid;
-		      for (i = src-1; i > 0 && trace[i] != dst; i--) {}
+		      for (i = src-1; i >= 0 && trace[i] != dst; i--) {}
 		      
-		      if (i <= 0) 
+		      if (i < 0) 
 			isAncestor = FALSE;
 		      else
 			src = i;
 		  }
+		else dst = trace[--src];
 	    }
-	  else
-	    src--;
+	  else dst = trace[--src];
       }	
-    if ((src < 0) && (widget != dst))
-      {
-	  while ((pwi = _XtGetPerWidgetInput(dst, FALSE)) && pwi->focusKid)
-	    dst = pwi->focusKid;
-      }
+
+    if (!activeCheck)
+      while (XtIsWidget(dst) && (pwi = _XtGetPerWidgetInput(dst, FALSE)) && pwi->focusKid)
+	dst = pwi->focusKid;
     return dst;
 }
 
