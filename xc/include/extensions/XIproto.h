@@ -1,4 +1,4 @@
-/* $XConsortium: XIproto.h,v 1.3 89/12/06 20:44:04 rws Exp $ */
+/* $XConsortium: XIproto.h,v 1.4 89/12/12 16:36:16 jim Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -789,10 +789,10 @@ typedef struct {
     CARD8  	length; 	/* feedback length  		*/
     KeyCode 	key; 
     CARD8	auto_repeat_mode;
-    CARD8	click;
-    CARD8	percent;
-    CARD16	pitch;
-    CARD16	duration;
+    INT8	click;
+    INT8	percent;
+    INT16	pitch;
+    INT16	duration;
     CARD16	pad;
     CARD32	led_mask;
     CARD32	led_values;
@@ -801,16 +801,16 @@ typedef struct {
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
     CARD8  	length; 	/* feedback length  		*/
-    CARD16	num;
-    CARD16	denom;
-    CARD16	thresh;
+    INT16	num;
+    INT16	denom;
+    INT16	thresh;
 } xPtrFeedbackCtl;
 
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
     CARD8  	length; 	/* feedback length  		*/
     BYTE	pad1, pad2;
-    CARD32	int_to_display;
+    INT32	int_to_display;
 } xIntegerFeedbackCtl;
 
 typedef struct {
@@ -822,10 +822,10 @@ typedef struct {
 typedef struct {
     CARD8  	class;  	/* feedback class id		*/
     CARD8  	length; 	/* feedback length  		*/
-    CARD8	percent;
+    INT8	percent;
     BYTE	pad1;
-    CARD16	pitch;
-    CARD16	duration;
+    INT16	pitch;
+    INT16	duration;
 } xBellFeedbackCtl;
 
 typedef struct {
