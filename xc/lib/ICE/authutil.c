@@ -1,4 +1,4 @@
-/* $XConsortium: authutil.c,v 1.1 93/11/18 14:24:59 mor Exp $ */
+/* $XConsortium: authutil.c,v 1.2 93/11/25 13:21:29 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -110,7 +110,7 @@ long	dead;
     int		creat_fd = -1;
 
     if (strlen (file_name) > 1022)
-	return (ICE_AUTH_LOCK_ERROR);
+	return (IceAuthLockError);
 
     strcpy (creat_name, file_name);
     strcat (creat_name, "-c");
@@ -142,7 +142,7 @@ long	dead;
 	    if (creat_fd == -1)
 	    {
 		if (errno != EACCES)
-		    return (ICE_AUTH_LOCK_ERROR);
+		    return (IceAuthLockError);
 	    }
 	    else
 		close (creat_fd);
@@ -151,7 +151,7 @@ long	dead;
 	if (creat_fd != -1)
 	{
 	    if (link (creat_name, link_name) != -1)
-		return (ICE_AUTH_LOCK_SUCCESS);
+		return (IceAuthLockSuccess);
 
 	    if (errno == ENOENT)
 	    {
@@ -160,16 +160,16 @@ long	dead;
 	    }
 
 	    if (errno != EEXIST)
-		return (ICE_AUTH_LOCK_ERROR);
+		return (IceAuthLockError);
 	}
 
 	sleep ((unsigned) timeout);
 	--retries;
     }
 
-    return (ICE_AUTH_LOCK_TIMEOUT);
+    return (IceAuthLockTimeout);
 #else
-    return (ICE_AUTH_LOCK_SUCCESS);
+    return (IceAuthLockSuccess);
 #endif
 }
 
