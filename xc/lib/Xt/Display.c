@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.81 91/07/12 13:45:00 rws Exp $ */
+/* $XConsortium: Display.c,v 1.82 92/04/03 13:22:49 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -486,7 +486,8 @@ static void CloseDisplay(dpy)
 	    if (xtpd->mapping_callbacks != NULL)
 		_XtRemoveAllCallbacks(&xtpd->mapping_callbacks);
 	    XtDeleteFromAppContext(dpy, xtpd->appContext);
-            XFree((char *) xtpd->keysyms);
+	    if (xtpd->keysyms)
+		XFree((char *) xtpd->keysyms);
             XtFree((char *) xtpd->modKeysyms);
             XtFree((char *) xtpd->modsToKeysyms);
             xtpd->keysyms_per_keycode = 0;
