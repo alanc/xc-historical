@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scroll.c,v 1.46 89/03/30 16:54:31 jim Exp $";
+    "$XConsortium: Scroll.c,v 1.47 89/05/11 01:06:13 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -292,7 +292,6 @@ static void Initialize( request, new )
 {
     ScrollbarWidget w = (ScrollbarWidget) new;
     XGCValues gcValues;
-    extern Pixmap XtSimpleStippledPixmap();
 
     if (w->scrollbar.reverse_video) {
 	Pixel fg = w->scrollbar.foreground;
@@ -303,9 +302,10 @@ static void Initialize( request, new )
     }
 
     if (w->scrollbar.thumb == NULL) {
-        w->scrollbar.thumb = XtSimpleStippledPixmap (XtScreen(w),
-						     w->scrollbar.foreground,
-						     w->core.background_pixel);
+        w->scrollbar.thumb = XmuCreateStippledPixmap (XtScreen(w),
+						      w->scrollbar.foreground,
+						      w->core.background_pixel,
+						      w->core.depth);
     }
 
     gcValues.foreground = w->scrollbar.foreground;

@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.14 89/05/10 12:17:41 kit Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.15 89/05/11 01:05:38 kit Exp $";
 #endif
 
 /***********************************************************
@@ -179,7 +179,11 @@ Widget w;
 				 &values);
 
     values.foreground = lw->list.foreground;
-    values.tile       = XtGrayPixmap(XtScreen(w));
+    values.tile       = XmuCreateStippledPixmap(XtScreen(w), 
+						lw->list.foreground,
+						lw->core.background_pixel,
+						lw->core.depth);
+
     values.fill_style = FillTiled;
 
     lw->list.graygc = XtGetGC(w, (unsigned) GCForeground | GCFont |
