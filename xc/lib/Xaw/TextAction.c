@@ -1,4 +1,4 @@
-/* $XConsortium: TextAction.c,v 1.39 91/05/03 19:51:50 converse Exp $ */
+/* $XConsortium: TextAction.c,v 1.40 91/05/14 15:20:51 gildea Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -155,7 +155,7 @@ int *format;
   EndAction(ctx);
   _XawTextSetScrollBars(ctx);
   XtFree(client_data);
-  XtFree(value);
+  XFree(value);		/* the selection value should be freed with XFree */
 }
 
 static void 
