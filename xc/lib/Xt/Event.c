@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.130 91/04/08 14:41:35 converse Exp $ */
+/* $XConsortium: Event.c,v 1.131 91/07/02 18:39:21 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1059,6 +1059,10 @@ Boolean XtDispatchEvent (event)
     XtAppContext app = XtDisplayToApplicationContext(event->xany.display);
     int dispatch_level = ++app->dispatch_level;
     int starting_count = app->destroy_count;
+    void _XtRefreshMapping();
+
+    if (event->xany.type == MappingNotify)
+	_XtRefreshMapping(event, True);
 
     /*
      * To make recursive XtDispatchEvent work, we need to do phase 2 destroys
