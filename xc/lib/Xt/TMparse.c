@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.124 92/02/24 17:44:56 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.125 92/02/27 16:57:07 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1014,8 +1014,6 @@ static String ParseAtom(str, closure, event,error)
     EventPtr event;
     Boolean* error;
 {
-    char atomName[1000], *start;
-
     ScanWhitespace(str);
 
     if (*str == ',' || *str == ':') {
@@ -1023,6 +1021,7 @@ static String ParseAtom(str, closure, event,error)
 	event->event.eventCode = 0L;
         event->event.eventCodeMask = 0L;
     } else {
+	char *start, atomName[1000];
 	start = str;
 	while (
 		*str != ','
@@ -1039,7 +1038,6 @@ static String ParseAtom(str, closure, event,error)
 	bcopy(start, atomName, str-start);
 	atomName[str-start] = '\0';
 	event->event.eventCode = XrmStringToQuark(atomName);
-	event->event.eventCodeMask = ~0L;
 	event->event.matchEvent = _XtMatchAtom;
     }
     return str;
