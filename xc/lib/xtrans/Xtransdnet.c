@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransdnet.c,v 1.11 94/03/29 14:28:44 mor Exp $ */
+/* $XConsortium: Xtransdnet.c,v 1.12 94/03/31 10:53:01 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -29,19 +29,19 @@
 #include <sys/ioctl.h>
 
 #if defined(X11_t)
-#define DNETOBJ X$X
+#define DNETOBJ "X$X"
 #endif
 #if defined(XIM_t)
-#define DNETOBJ IMSERVER$
+#define DNETOBJ "IMSERVER$"
 #endif
 #if defined(FS_t) || defined(FONT_t)
-#define DNETOBJ X$FONT
+#define DNETOBJ "X$FONT"
 #endif
 #if defined(ICE_t)
 #define DNETOBJ ""
 #endif
 #if defined(TEST_t)
-#define DNETOBJ X$TEST
+#define DNETOBJ "X$TEST"
 #endif
 
 
@@ -134,6 +134,8 @@ XtransConnInfo ciptr;
 }
 
 
+#ifdef TRANS_CLIENT
+
 static XtransConnInfo
 TRANS(DNETOpenCOTSClient) (thistrans, protocol, host, port)
 
@@ -161,6 +163,10 @@ char		*port;
     return ciptr;
 }
 
+#endif /* TRANS_CLIENT */
+
+
+#ifdef TRANS_SERVER
 
 static XtransConnInfo
 TRANS(DNETOpenCOTSServer) (thistrans, protocol, host, port)
@@ -193,6 +199,10 @@ char		*port;
     return (ciptr);
 }
 
+#endif /* TRANS_SERVER */
+
+
+#ifdef TRANS_CLIENT
 
 static XtransConnInfo
 TRANS(DNETOpenCLTSClient) (thistrans, protocol, host, port)
@@ -221,6 +231,10 @@ char		*port;
     return ciptr;
 }
 
+#endif /* TRANS_CLIENT */
+
+
+#ifdef TRANS_SERVER
 
 static XtransConnInfo
 TRANS(DNETOpenCLTSServer) (thistrans, protocol, host, port)
@@ -236,6 +250,8 @@ char		*port;
     PRMSG (2,"TRANS(DNETOpenCLTSServer) (%s,%s,%s)\n", protocol, host, port);
     return NULL;
 }
+
+#endif /* TRANS_SERVER */
 
 
 #ifdef TRANS_REOPEN
@@ -306,6 +322,8 @@ int		arg;
     return -1;
 }
 
+
+#ifdef TRANS_SERVER
 
 static int
 TRANS(DNETCreateListener) (ciptr, port)
@@ -417,6 +435,10 @@ int		*status;
     return newciptr;
 }
 
+#endif /* TRANS_SERVER */
+
+
+#ifdef TRANS_CLIENT
 
 #define OBJBUFSIZE 64
 
@@ -488,6 +510,8 @@ char		*port;
 
     return 0;
 }
+
+#endif /* TRANS_CLIENT */
 
 
 static int
@@ -587,19 +611,31 @@ Xtransport	TRANS(DNETFuncs) = {
     /* DNET Interface */
     "decnet",
     0,
+#ifdef TRANS_CLIENT
     TRANS(DNETOpenCOTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
     TRANS(DNETOpenCOTSServer),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
     TRANS(DNETOpenCLTSClient),
+#endif /* TRANS_CLIENT */
+#ifdef TRANS_SERVER
     TRANS(DNETOpenCLTSServer),
+#endif /* TRANS_SERVER */
 #ifdef TRANS_REOPEN
     TRANS(DNETReopenCOTSServer),
     TRANS(DNETReopenCLTSServer),
 #endif /* TRANS_REOPEN */
     TRANS(DNETSetOption),
+#ifdef TRANS_SERVER
     TRANS(DNETCreateListener),
     NULL,		       			/* ResetListener */
     TRANS(DNETAccept),
+#endif /* TRANS_SERVER */
+#ifdef TRANS_CLIENT
     TRANS(DNETConnect),
+#endif /* TRANS_CLIENT */
     TRANS(DNETBytesReadable),
     TRANS(DNETRead),
     TRANS(DNETWrite),
