@@ -6,13 +6,6 @@
 #ifdef HPArchitecture
 #define OtherSources hpsocket.c hpalloca.c 
 #define OtherObjects hpsocket.o hpalloca.o dbm.o 
-/* #define NEED_ALLOCA_FROM_LIBPW */
-#endif
-
-#ifdef MacIIArchitecture
-#define OtherSources
-#define OtherObjects alloca.o
-/* #define NEED_ALLOCA_FROM_LIBPW */
 #endif
 
 /*
