@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.49 92/05/11 10:21:12 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.50 92/05/22 11:52:28 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -58,7 +58,7 @@ XCOMM site:  $XConsortium: site.def,v 1.49 92/05/11 10:21:12 rws Exp $
 #define StaticScreens	-DSTATIC_RE1 -DSTATIC_RE2
 #endif
 
-#if defined(SunArchitecture) && defined(mc68000)
+#if defined(SunArchitecture) && defined(mc68000) && !defined(HasGcc2)
 #undef  LibraryCCOptions
 #define SharedLibraryCCOptions -f68881 -pipe
 #endif
