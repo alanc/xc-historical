@@ -97,9 +97,9 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtTranslateCoordinates 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
+.TH XtTranslateCoords 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtTranslateCoordinates \- translate widget coordinates
+XtTranslateCoords \- translate widget coordinates
 .SH SYNTAX
 void XtTranslateCoords(\fIw\fP, \fIx\fP, \fIy\fP, \fIrootx_return\fP, \
 \fIrooty_return\fP)

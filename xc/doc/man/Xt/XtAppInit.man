@@ -113,7 +113,7 @@ Widget XtAppInitialize(\fIapp_context_return\fP, \fIapplication_class\fP, \
 .br
       Cardinal \fInum_options\fP;
 .br
-      Cardinal* \fIargc_in_out\fP;
+      int* \fIargc_in_out\fP;
 .br
       String* \fIargv_in_out\fP;
 .br
@@ -135,7 +135,7 @@ Widget XtVaAppInitialize(\fIapp_context_return\fP, \fIapplication_class\fP, \
 .br
       Cardinal \fInum_options\fP;
 .br
-      Cardinal* \fIargc_in_out\fP;
+      int* \fIargc_in_out\fP;
 .br
       String* \fIargv_in_out\fP;
 .br
