@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: wstx_atr.c,v 5.1 91/02/16 09:50:40 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1019,7 +1019,7 @@ set_phigs_desc_tbl_attr( wst, args )
     caddr_t			status = (caddr_t)wst;
     Pws_cat			category;
 
-    switch ( (Phigs_ws_type_attr)args[0]) {
+    switch ( (int)args[0]) {
 	case PHG_WS_CATEGORY:
 	    category = (Pws_cat)args[1];
 	    /* Don't allow nonsensical changes. */
@@ -1060,7 +1060,7 @@ set_xwin_attr( wst, args )
     XWindowAttributes		wattr;
     Pint			err;
 
-    switch ( (Phigs_ws_type_attr)args[0] ) {
+    switch ( (int)args[0] ) {
 	case PHG_X_DISPLAY_WINDOW:
 	    display = (Display *)args[1];
 	    if (!phg_utx_pex_supported( display, (Phg_pex_ext_info*)NULL )) {
@@ -1151,7 +1151,7 @@ set_xtool_attrs( wst, avlist )
     register Wst_xtool_dt	*xtt = &wst->desc_tbl.xwin_dt.tool;
 
     for ( args = (char**)avlist; *args && status; args = phg_attr_next(args) ) {
-        switch ( (Phigs_ws_type_attr)args[0] ) {
+        switch ( (int)args[0] ) {
             case PHG_TOOL_X:
 		xtt->x = (int)args[1];
                 break;
