@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.50 89/07/17 19:23:43 rws Exp $ */
+/* $XConsortium: miregion.c,v 1.51 89/09/20 15:00:06 rws Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -1175,7 +1175,7 @@ miRegionAppend(dstrgn, rgn)
     register RegionPtr dstrgn;
     register RegionPtr rgn;
 {
-    int numRects, dnumRects;
+    int numRects, dnumRects, size;
     BoxPtr new, old;
     Bool prepend;
 
@@ -1190,9 +1190,12 @@ miRegionAppend(dstrgn, rgn)
     if (!numRects)
 	return TRUE;
     prepend = FALSE;
-    RECTALLOC(dstrgn, numRects);
+    size = numRects;
+    dnumRects = REGION_NUM_RECTS(dstrgn);
+    if (!dnumRects && (size < 200))
+	size = 200; /* XXX pick numbers out of a hat */
+    RECTALLOC(dstrgn, size);
     old = REGION_RECTS(rgn);
-    dnumRects = dstrgn->data->numRects;
     if (!dnumRects)
 	dstrgn->extents = rgn->extents;
     else if (dstrgn->extents.x2 > dstrgn->extents.x1)
