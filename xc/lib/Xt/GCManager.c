@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: GCManager.c,v 1.36 89/09/14 15:19:31 swick Exp $";
+static char Xrcsid[] = "$XConsortium: GCManager.c,v 1.37 90/06/22 17:12:37 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -163,7 +163,8 @@ GC XtGetGC(widget, valueMask, values)
 	ScreenDrawables sd;
 	for (sd = pd->drawable_tab; sd->screen != screen; sd++);
 	if (sd != pd->drawable_tab) {
-	    ScreenDrawablesRec dr = *pd->drawable_tab;
+	    ScreenDrawablesRec dr;
+	    dr = *pd->drawable_tab;
 	    *pd->drawable_tab = *sd;
 	    *sd = dr;
 	    sd = pd->drawable_tab;
