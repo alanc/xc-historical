@@ -1,4 +1,4 @@
-/* $XConsortium: mfbscrclse.c,v 1.5 89/07/09 15:56:09 rws Exp $ */
+/* $XConsortium: mfbscrclse.c,v 1.6 89/07/16 17:25:11 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -30,20 +30,7 @@ Bool
 mfbCloseScreen(index, pScreen)
     register ScreenPtr pScreen;
 {
-
-    if (pScreen->allowedDepths)
-    {
-	if (pScreen->allowedDepths->vids)
-		xfree(pScreen->allowedDepths->vids);
- 
-	xfree(pScreen->allowedDepths);
-    }
-
-    xfree(pScreen->visuals);
-
-    if(pScreen->devPrivate)
-	xfree(pScreen->devPrivate);
-
+    xfree(pScreen->devPrivate);
     return TRUE;
 }
 
