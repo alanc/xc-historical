@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.112 91/05/06 19:15:56 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.113 91/05/09 12:27:24 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -276,10 +276,10 @@ XCOMM $XConsortium: Project.tmpl,v 1.112 91/05/06 19:15:56 rws Exp $
 #define ManSourcePath $(MANPATH)/man
 #endif
 #ifndef ManDir
-#define ManDir Concat($(MANSOURCEPATH),ManSuffix)
+#define ManDir $(MANSOURCEPATH)$(MANSUFFIX)
 #endif
 #ifndef LibmanDir
-#define LibmanDir Concat($(MANSOURCEPATH),LibManSuffix)
+#define LibmanDir $(MANSOURCEPATH)$(LIBMANSUFFIX)
 #endif
 #ifndef NlsDir
 #define NlsDir $(LIBDIR)/nls
@@ -419,7 +419,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.112 91/05/06 19:15:56 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.112 91/05/06 19:15:56 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.113 91/05/09 12:27:24 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -444,6 +444,8 @@ XCOMM $XConsortium: Project.tmpl,v 1.112 91/05/06 19:15:56 rws Exp $
            TWMDIR = TwmDir		/* twm config files */
           MANPATH = ManPath		/* top of manual page tree */
     MANSOURCEPATH = ManSourcePath	/* prefix for man page sources */
+        MANSUFFIX = ManSuffix		/* suffix for man pages */
+     LIBMANSUFFIX = LibManSuffix	/* suffix for library man pages */
            MANDIR = ManDir		/* man pages for commands */
         LIBMANDIR = LibmanDir		/* man pages for library routines */
            NLSDIR = NlsDir		/* nls files */
