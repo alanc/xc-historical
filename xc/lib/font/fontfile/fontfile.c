@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.2 91/05/11 09:11:32 keith Exp $
+ * $XConsortium: fontfile.c,v 1.3 91/05/29 18:29:24 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -117,6 +117,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
     if (tmpName.ndashes == 14 &&
 	FontParseXLFDName (lowerName, &vals, FONT_XLFD_REPLACE_ZERO))
     {
+	tmpName.length = strlen (lowerName);
 	entry = FontFileFindNameInDir (&dir->scalable, &tmpName);
     	if (entry && entry->type == FONT_ENTRY_SCALABLE &&
 	    FontFileCompleteXLFD (&vals, &entry->u.scalable.extra->defaults))
@@ -178,14 +179,13 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 			    (*pFont)->fpePrivate = (pointer) 0;
 		}
 	    }
+	    return ret;
 	}
-	else
-	{
-	    ret = BadFontName;
-	}
+	CopyISOLatin1Lowered (lowerName, name, namelen);
+	tmpName.length = namelen;
     }
     /* Match non XLFD pattern */
-    else if (entry = FontFileFindNameInDir (&dir->nonScalable, &tmpName))
+    if (entry = FontFileFindNameInDir (&dir->nonScalable, &tmpName))
     {
 	switch (entry->type) {
 	case FONT_ENTRY_BITMAP:
