@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.29 91/05/22 19:12:02 converse Exp $
+ * $XConsortium: xfd.c,v 1.30 91/05/30 17:39:20 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -295,7 +295,7 @@ static void do_quit (w, event, params, num_params)
 static void change_page (page)
     int page;
 {
-    long oldstart, newstart;
+    Dimension oldstart, newstart;
     int ncols, nrows;
     char buf[256];
     Arg arg;
@@ -304,8 +304,8 @@ static void change_page (page)
     GetFontGridCellDimensions (fontGrid, &oldstart, &ncols, &nrows);
 
     if (page) {
-	long start = (oldstart + 
-		      ((long) ncols) * ((long) nrows) * ((long) page));
+	Dimension start = (oldstart + 
+			   ((long) ncols) * ((long) nrows) * ((long) page));
 
 	arg.value = (XtArgVal) start;
 	XtSetValues (fontGrid, &arg, ONE);

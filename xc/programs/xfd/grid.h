@@ -39,7 +39,7 @@ typedef struct _FontGridCharRec {
 extern void GetFontGridCellDimensions(
 #if NeedFunctionPrototypes
    Widget,
-   long *,
+   Dimension *,
    int *,
    int *
 #endif
