@@ -20,6 +20,9 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <stdio.h>
+#ifdef MTX
+#include <errno.h>
+#endif
 #include "X.h"
 #include "Xmd.h"
 #include "misc.h"
@@ -27,6 +30,10 @@
 #include "input.h"
 #include "dixstruct.h"
 #include "opaque.h"
+
+#ifdef MTX
+#include "mtxlock.h"
+#endif
 
 #ifdef XDMCP
 #undef REQUEST
@@ -36,6 +43,11 @@ extern char *display;
 extern FdSet EnabledDevices;
 extern FdSet AllClients;
 extern char *defaultDisplayClass;
+
+#ifdef MTX
+extern X_MUTEX_TYPE ConnectionMutex;
+extern int errno;
+#endif
 
 static int		    xdmcpSocket, sessionSocket;
 static xdmcp_states	    state;
@@ -574,9 +586,21 @@ XdmcpCloseDisplay(sock)
 	    return;
     state = XDM_INIT_STATE;
     if (OneSession)
+    {
+#ifdef MTX
+	SignalServerTerminate();
+#else
 	dispatchException |= DE_TERMINATE;
+#endif
+    }
     else
+    {
+#ifdef MTX
+	SignalServerReset();
+#else
 	dispatchException |= DE_RESET;
+#endif
+    }
     isItTimeToYield = TRUE;
 }
 
@@ -601,6 +625,10 @@ XdmcpBlockHandler(data, wt, pReadmask)
     if (state == XDM_OFF)
 	return;
     BITSET(LastSelectMask, xdmcpSocket);
+#ifdef MTX
+    if (! serverException)
+	ORBITS(LastSelectMask, LastSelectMask, EnabledDevices);
+#endif
     if (timeOutTime == 0)
 	return;
     millisToGo = GetTimeInMillis();
@@ -657,6 +685,9 @@ XdmcpWakeupHandler(data, i, pReadmask)
 		restart();
 	    else if (state == XDM_RUN_SESSION)
 		keepaliveDormancy = defaultKeepaliveDormancy;
+#ifdef MTX
+	    UNSETBITS(LastSelectMask, EnabledDevices);
+#endif
 	}
 	if (ANYSET(AllClients) && state == XDM_RUN_SESSION)
 	    timeOutTime = GetTimeInMillis() +  keepaliveDormancy * 1000;
@@ -739,7 +770,13 @@ receive_packet()
 	XdmcpFatal("Manager unwilling", &UnwillingMessage);
 	break;
     case ACCEPT:
+#ifdef MTX
+	X_MUTEX_LOCK(&ConnectionMutex);
+#endif
 	recv_accept_msg(header.length);
+#ifdef MTX
+	X_MUTEX_UNLOCK(&ConnectionMutex);
+#endif
 	break;
     case DECLINE:
 	recv_decline_msg(header.length);
@@ -797,10 +834,17 @@ XdmcpDeadSession (reason)
     ErrorF ("XDM: %s, declaring session dead\n", reason);
     state = XDM_INIT_STATE;
     isItTimeToYield = TRUE;
+#ifdef MTX
+    serverException |= DE_RESET;
+#else
     dispatchException |= DE_RESET;
+#endif
     timeOutTime = 0;
     timeOutRtx = 0;
     send_packet();
+#ifdef MTX
+    SignalServerReset();
+#endif
 }
 
 /*
