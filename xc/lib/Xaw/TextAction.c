@@ -1,4 +1,4 @@
-/* $XConsortium: TextAction.c,v 1.35 90/12/27 10:03:19 rws Exp $ */
+/* $XConsortium: TextAction.c,v 1.36 91/01/02 11:43:55 gildea Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -769,16 +769,22 @@ String *p;
 Cardinal *n;
 {
   XawTextBlock text;
-  XawTextPosition pos1, pos2;
-
+  XawTextPosition pos1;
+  register char *ptr;
+  register int length;
   TextWidget ctx = (TextWidget) w;
 
   StartAction(ctx, event);
   pos1 = SrcScan(ctx->text.source, ctx->text.insertPos, 
 		 XawstEOL, XawsdLeft, 1, FALSE);
-  pos2 = SrcScan(ctx->text.source, pos1, XawstEOL, XawsdLeft, 1, TRUE);
-  pos2 = SrcScan(ctx->text.source, pos2, XawstWhiteSpace, XawsdRight, 1, TRUE);
-  text.ptr = _XawTextGetText(ctx, pos1, pos2);
+
+  /* Hacked because Ascii Source Object Scan method is permanently broken. */
+  text.ptr = _XawTextGetText(ctx, pos1, ctx->text.insertPos);
+  length = strlen(text.ptr);
+  for (ptr=text.ptr; length && isspace(*ptr); ptr++, length--)
+      ;
+  *ptr = '\0';
+
   text.length = strlen(text.ptr);
   if (LocalInsertNewLine(ctx, event)) return;
   text.firstPos = 0;
