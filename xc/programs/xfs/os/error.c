@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: error.c,v 1.1 91/07/27 00:19:14 keith Exp $ */
 /*
  * error message handling
  */
@@ -82,7 +82,6 @@ InitErrors()
 void
 CloseErrors()
 {
-
 #ifdef USE_SYSLOG
     if (UseSyslog) {
 	closelog();
@@ -90,9 +89,6 @@ CloseErrors()
 	return;
     }
 #endif
-
-    fflush(stderr);
-    fclose(stderr);
 }
 
 void
