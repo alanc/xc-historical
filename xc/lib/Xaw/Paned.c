@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Paned.c,v 1.5 89/03/30 16:54:19 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Paned.c,v 1.6 89/05/11 01:06:02 kit Exp $";
 #endif /* lint */
 
 
@@ -46,7 +46,7 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 
 #include <X11/Xmu/Misc.h>
-#include <X11/Xmu/Xmu.h>
+#include <X11/Xmu/Converters.h>
 
 #include <X11/Xaw/Grip.h>
 #include <X11/Xaw/PanedP.h>

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.28 89/07/10 16:40:27 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.29 89/07/16 14:46:14 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -35,7 +35,7 @@
 
 #include <X11/Xaw/MailboxP.h>		/* for implementation mailbox stuff */
 
-#include <X11/Xmu/Xmu.h>		/* for StringToPixmap */
+#include <X11/Xmu/Converters.h>		/* for StringToPixmap */
 
 #ifdef SHAPE
 #include <X11/extensions/shape.h>
