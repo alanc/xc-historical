@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillsp.c,v 1.33 88/09/06 14:53:59 jim Exp $ */
+/* $XConsortium: mfbfillsp.c,v 1.34 89/03/16 14:46:42 jim Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -84,8 +84,8 @@ void mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(pptFree);
-	DEALLOCATE_LOCAL(pwidthFree);
+	if (pptFree) DEALLOCATE_LOCAL(pptFree);
+	if (pwidthFree) DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
     pwidth = pwidthFree;
@@ -172,8 +172,8 @@ void mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(pptFree);
-	DEALLOCATE_LOCAL(pwidthFree);
+	if (pptFree) DEALLOCATE_LOCAL(pptFree);
+	if (pwidthFree) DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
     pwidth = pwidthFree;
@@ -260,8 +260,8 @@ void mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(pptFree);
-	DEALLOCATE_LOCAL(pwidthFree);
+	if (pptFree) DEALLOCATE_LOCAL(pptFree);
+	if (pwidthFree) DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
     pwidth = pwidthFree;
@@ -352,8 +352,8 @@ int fSorted;
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(pptFree);
-	DEALLOCATE_LOCAL(pwidthFree);
+	if (pptFree) DEALLOCATE_LOCAL(pptFree);
+	if (pwidthFree) DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
     pwidth = pwidthFree;
@@ -446,8 +446,8 @@ int fSorted;
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(pptFree);
-	DEALLOCATE_LOCAL(pwidthFree);
+	if (pptFree) DEALLOCATE_LOCAL(pptFree);
+	if (pwidthFree) DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
     pwidth = pwidthFree;
@@ -540,8 +540,8 @@ int fSorted;
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(pptFree);
-	DEALLOCATE_LOCAL(pwidthFree);
+	if (pptFree) DEALLOCATE_LOCAL(pptFree);
+	if (pwidthFree) DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
     pwidth = pwidthFree;
@@ -673,8 +673,8 @@ int fSorted;
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(pptFree);
-	DEALLOCATE_LOCAL(pwidthFree);
+	if (pptFree) DEALLOCATE_LOCAL(pptFree);
+	if (pwidthFree) DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
     pwidth = pwidthFree;
@@ -803,8 +803,8 @@ int fSorted;
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(pptFree);
-	DEALLOCATE_LOCAL(pwidthFree);
+	if (pptFree) DEALLOCATE_LOCAL(pptFree);
+	if (pwidthFree) DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
     pwidth = pwidthFree;
@@ -995,8 +995,8 @@ int fSorted;
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
     {
-	DEALLOCATE_LOCAL(pptFree);
-	DEALLOCATE_LOCAL(pwidthFree);
+	if (pptFree) DEALLOCATE_LOCAL(pptFree);
+	if (pwidthFree) DEALLOCATE_LOCAL(pwidthFree);
 	return;
     }
     pwidth = pwidthFree;
