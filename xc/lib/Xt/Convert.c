@@ -1,7 +1,8 @@
 #ifndef lint
-static char rcsid[] = "$Header: Convert.c,v 1.8 88/02/14 14:55:14 rws Exp $";
+static char rcsid[] = "$xHeader$";
+/* $oHeader: Convert.c,v 1.2 88/08/18 15:36:30 asente Exp $ */
 #endif lint
-
+/*LINTLIBRARY*/
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -28,10 +29,7 @@ SOFTWARE.
 ******************************************************************/
 
 #include	"IntrinsicI.h"
-
-#include        <X11/Convert.h>
-#include	<X11/Quarks.h>
-#include	"Resource.h"
+#include	"Quarks.h"
 
 /* ||| */
 #include	<stdio.h>
@@ -77,8 +75,8 @@ typedef CachePtr CacheHashTable[CACHEHASHSIZE];
 
 static CacheHashTable	cacheHashTable;
 
-void _XtAddConverter(fromType, toType, converter, convert_args, num_args)
-    XrmRepresentation   fromType, toType;
+void _XtAddConverter(from_type, to_type, converter, convert_args, num_args)
+    XrmRepresentation   from_type, to_type;
     XtConverter		converter;
     XtConvertArgList    convert_args;
     Cardinal		num_args;
@@ -86,26 +84,27 @@ void _XtAddConverter(fromType, toType, converter, convert_args, num_args)
     register ConverterPtr	*pHashEntry;
     register ConverterPtr	p;
 
-    pHashEntry = &converterTable[ProcHash(fromType, toType) & CONVERTHASHMASK];
-    /* ||| Check for existing entry */
+    pHashEntry= &converterTable[ProcHash(from_type, to_type) & CONVERTHASHMASK];
+    /* ||| Check for existing entry, overwrite if exists */
     p		    = (ConverterPtr) Xpermalloc(sizeof(ConverterRec));
     p->next	    = *pHashEntry;
     *pHashEntry     = p;
-    p->from	    = fromType;
-    p->to	    = toType;
+    p->from	    = from_type;
+    p->to	    = to_type;
     p->converter    = converter;
     p->convert_args = convert_args;
     p->num_args     = num_args;
 }
 
-void XtAddConverter(fromType, toType, converter, convert_args, num_args)
-    register XrmString	fromType, toType;
+void XtAddConverter(from_type, to_type, converter, convert_args, num_args)
+    register String	from_type, to_type;
     XtConverter		converter;
     XtConvertArgList    convert_args;
     Cardinal		num_args;
 {
     _XtAddConverter(
-	XrmStringToRepresentation(fromType), XrmStringToRepresentation(toType),
+	XrmStringToRepresentation(from_type),
+        XrmStringToRepresentation(to_type),
 	converter, convert_args, num_args);
 }
 
@@ -154,8 +153,6 @@ void CacheStats()
     register CachePtr p;
     register Cardinal entries;
 
-#define MIN(x,y)    ((x) < (y) ? (x) : (y))
-
     for (i = 0; i < CACHEHASHSIZE; i++) {
 	p = cacheHashTable[i];
 	if (p != NULL) {
@@ -165,8 +162,8 @@ void CacheStats()
 	    (void) fprintf(stdout, "Index: %4d  Entries: %d\n", i, entries);
 	    for (p = cacheHashTable[i]; p != NULL; p = p->next) {
 		(void) fprintf(stdout, "    Size: %3d  '", p->from.size);
-		(void) fwrite(p->from.addr, 1, (int) MIN(p->from.size, 48),
-			stdout);
+		(void) fwrite(
+		    p->from.addr, 1, MIN( (int)p->from.size, 48), stdout);
 		(void) fprintf(stdout, "'\n");
 	    }
 	    (void) fprintf(stdout, "\n");
@@ -207,7 +204,8 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 {
     register Cardinal   i;
     Cardinal		offset;
-    char		message[1000];
+    String              params[1];
+    Cardinal		num_params = 0;
 
     for (i = 0; i < num_args; i++) {
 	args[i].size = convert_args[i].size;
@@ -235,10 +233,11 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 	case XtResourceQuark:
 	    if (! ResourceQuarkToOffset(widget->core.widget_class,
 		    (XrmQuark) convert_args[i].address_id, &offset)) {
-		(void) sprintf(message,
+		params[0]=
+                  XrmQuarkToString((XrmQuark) convert_args[i].address_id);
+               XtWarningMsg("invalidResourceName","computeArgs","XtToolkitError",
 		    "Cannot find resource name %s as argument to conversion",
-		    XrmQuarkToString((XrmQuark) convert_args[i].address_id));
-		XtWarning(message);
+                     params,&num_params);
 		offset = 0;
 	    }
 	    args[i].addr = (caddr_t) ((int) widget + offset);
@@ -290,22 +289,23 @@ void XtDirectConvert(converter, args, num_args, from, to)
     CacheEnter(converter, args, num_args, from, to, hash);
 }
 
-void _XtConvert(widget, fromType, from, toType, to)
+void _XtConvert(widget, from_type, from, to_type, to)
              Widget		widget;
-    register XrmRepresentation	fromType;
+    register XrmRepresentation	from_type;
 	     XrmValuePtr	from;
-    register XrmRepresentation	toType;
+    register XrmRepresentation	to_type;
     register XrmValuePtr	to;
 {
     register ConverterPtr	p;
     Cardinal		num_args;
     XrmValue		stack_args[20], *args;
-    char		msg[200];
+    String              params[2];
+    Cardinal		num_params = 0;
 
     /* Look for type converter */
-    p = converterTable[ProcHash(fromType, toType) & CONVERTHASHMASK];
+    p = converterTable[ProcHash(from_type, to_type) & CONVERTHASHMASK];
     for (; p != NULL; p = p->next) {
-	if (fromType == p->from && toType == p->to) {
+	if (from_type == p->from && to_type == p->to) {
 	    /* Compute actual arguments from widget and arg descriptor */
 	    num_args = p->num_args;
 	    if (num_args > XtNumber(stack_args)) {
@@ -321,28 +321,28 @@ void _XtConvert(widget, fromType, from, toType, to)
 	}
     }
 
-    (void) sprintf(msg,
-	"No type converter registered for '%s' to '%s' conversion.",
-	XrmRepresentationToString(fromType),
-	XrmRepresentationToString(toType));
-    XtWarning(msg);
+	params[0] = XrmRepresentationToString(from_type);
+	params[1] = XrmRepresentationToString(to_type);
+    XtWarningMsg("typeConversionError","noConverter","XtToolkitError",
+	     "No type converter registered for '%s' to '%s' conversion.",
+             params,&num_params);
     to->addr = NULL;
     to->size = 0;
 }
 
 void XtConvert(widget, from_type_str, from, to_type_str, to)
     Widget	widget;
-    XrmString	from_type_str;
+    String	from_type_str;
     XrmValuePtr	from;
-    XrmString	to_type_str;
+    String	to_type_str;
     XrmValuePtr	to;
 {
-    XrmQuark    fromType, toType;
+    XrmQuark    from_type, to_type;
 
-    fromType = XrmStringToRepresentation(from_type_str);
-    toType = XrmStringToRepresentation(to_type_str);
-    if (fromType != toType)
-	_XtConvert(widget, fromType, from, toType, to);
+    from_type = XrmStringToRepresentation(from_type_str);
+    to_type = XrmStringToRepresentation(to_type_str);
+    if (from_type != to_type)
+	_XtConvert(widget, from_type, from, to_type, to);
     else
 	(*to) = *from;
 }
