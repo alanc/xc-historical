@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.92 90/07/03 10:45:35 swick Exp $ */
+/* $XConsortium: TMparse.c,v 1.93 90/07/03 17:26:20 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -63,6 +63,7 @@ typedef String (*ParseProc)(); /* str, closure, event ,error */
     /* Boolean* error */
 
 typedef void (*ModifierProc)(); 
+typedef int Value;
 
 typedef struct _ModifierRec {
     char*      name;
@@ -78,6 +79,13 @@ typedef struct _EventKey {
     ParseProc	parseDetail;
     Opaque	closure;
 }EventKey, *EventKeys;
+
+typedef struct {
+    char	*name;
+    XrmQuark	signature;
+    Value	value;
+} NameValueRec, *NameValueTable;
+
 static void ParseModImmed();
 static void ParseModSym();
 static String PanicModeRecovery();
@@ -140,6 +148,7 @@ static NameValueRec notifyModes[] = {
     {NULL, NULL, NULL},
 };
 
+#if 0
 static NameValueRec notifyDetail[] = {
     {"Ancestor",	    0,	NotifyAncestor},
     {"Virtual",		    0,	NotifyVirtual},
@@ -170,6 +179,7 @@ static NameValueRec propertyChanged[] = {
     {"Delete",      0,	PropertyDelete},
     {NULL, NULL, NULL},
 };
+#endif /*0*/
 
 static NameValueRec mappingNotify[] = {
     {"Modifier",	0,	MappingModifier},
@@ -912,9 +922,11 @@ static String ParseKeySym(str, closure, event,error)
 	}
 	return PanicModeRecovery(str);
     }
-    if (event->event.standard) event->event.matchEvent = 
-        _XtMatchUsingStandardMods;
-    else event->event.matchEvent = _XtMatchUsingDontCareMods;
+    if (event->event.standard)
+	event->event.matchEvent = _XtMatchUsingStandardMods;
+    else
+	event->event.matchEvent = _XtMatchUsingDontCareMods;
+
     return str;
 }
 
@@ -1928,10 +1940,12 @@ void _XtTranslateInitialize()
     CompileNameValueTable( buttonNames );
     CompileNameValueTable( notifyModes );
     CompileNameValueTable( motionDetails );
+#if 0
     CompileNameValueTable( notifyDetail );
     CompileNameValueTable( visibilityNotify );
     CompileNameValueTable( circulation );
     CompileNameValueTable( propertyChanged );
+#endif
     CompileNameValueTable( mappingNotify );
 }
 
