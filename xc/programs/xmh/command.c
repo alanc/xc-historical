@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: command.c,v 2.10 88/01/29 16:53:12 swick Exp $";
+static char rcs_id[] = "$Header: command.c,v 2.11 88/02/22 10:33:59 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -84,28 +84,28 @@ DoCommand(argv, inputfile, outputfile)
     DEBUG1("Executing %s ...", argv[0])
 
     if (inputfile) {
-        old_stdin = dup(stdin);
+        old_stdin = dup(fileno(stdin));
 	fin = FOpenAndCheck(inputfile, "r");
 	(void) dup2(fileno(fin), fileno(stdin));
-	close(fin);
+	myfclose(fin);
     }
 
     if (outputfile) {
-        old_stdout = dup(stdout);
+        old_stdout = dup(fileno(stdout));
 	fout = FOpenAndCheck(outputfile, "w");
 	(void) dup2(fileno(fout), fileno(stdout));
-	close(fout);
+	myfclose(fout);
     }
 
     if (!debug) {		/* Throw away error messages. */
-        old_stderr = dup(stderr);
+        old_stderr = dup(fileno(stderr));
 	ferr = FOpenAndCheck("/dev/null", "w");
 	(void) dup2(fileno(ferr), fileno(stderr));
 	if (!outputfile) {
-	    old_stdout = dup(stdout);
+	    old_stdout = dup(fileno(stdout));
 	    (void) dup2(fileno(ferr), fileno(stdout));
 	}
-	close(ferr);
+	myfclose(ferr);
     }
 
     childdone = FALSE;
