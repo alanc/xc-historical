@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.5 89/02/14 16:33:28 kit Exp $
- * $Header: buttons.c,v 1.5 89/02/14 16:33:28 kit Exp $
+ * $XConsortium: buttons.c,v 1.6 89/02/15 18:43:21 kit Exp $
+ * $Header: buttons.c,v 1.6 89/02/15 18:43:21 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -400,7 +400,7 @@ Widget w;
  * and MakeMenu for details.
  */
 
-#define TOPPOPUPBUTTONS 9
+#define TOPPOPUPBUTTONS 10
 
 void
 MakeTopPopUpWidget(man_globals,widget,section,search, is_manpage)
@@ -424,6 +424,7 @@ Boolean is_manpage;
     "Show Both Screens",
     "Remove This Manpage",
     "Open New Manpage",
+    "Show Version",
     "Quit",
   };
 
