@@ -1,4 +1,4 @@
-/* $XConsortium: VarCreate.c,v 1.19 91/05/03 15:32:23 rws Exp $ */
+/* $XConsortium: VarCreate.c,v 1.20 91/05/04 17:47:24 rws Exp $ */
 
 /*
 
@@ -300,38 +300,14 @@ Widget _XtVaAppInitialize(app_context_return, application_class, options,
     va_list var;
     XtAppContext app_con;
     Display * dpy;
-    String *saved_argv;
     register int i, saved_argc = *argc_in_out;
     Widget root;
     String attr;
     int count = 0;
     XtTypedArgList typed_args;
 
-    XtToolkitInitialize();
-    
-/*
- * Save away argv and argc so we can set the properties later 
- */
-    
-    saved_argv = (String *)
-	ALLOCATE_LOCAL( (Cardinal)((*argc_in_out + 1) * sizeof(String)) );
-    if (saved_argv == NULL) _XtAllocError(NULL);
-
-    for (i = 0 ; i < saved_argc ; i++) saved_argv[i] = argv_in_out[i];
-    saved_argv[i] = NULL;	/* NULL terminate that sucker. */
-
-
-    app_con = XtCreateApplicationContext();
-
-    if (fallback_resources != NULL) /* save a procedure call */
-	XtAppSetFallbackResources(app_con, fallback_resources);
-
-    dpy = XtOpenDisplay(app_con, (String) NULL, NULL, application_class,
-			options, num_options, argc_in_out, argv_in_out);
-
-    if (dpy == NULL)
-	XtErrorMsg("invalidDisplay","xtInitialize",XtCXtToolkitError,
-                   "Can't Open display", (String *) NULL, (Cardinal *)NULL);
+    dpy = _XtAppInit(&app_con, (String)application_class, options, num_options,
+		     argc_in_out, &argv_in_out, fallback_resources);
 
     var = var_args;
     for(attr = va_arg(var,String); attr != NULL; attr = va_arg(var,String)) {
@@ -356,7 +332,7 @@ Widget _XtVaAppInitialize(app_context_return, application_class, options,
 			    applicationShellWidgetClass, dpy,
 			    XtNscreen, (XtArgVal)DefaultScreenOfDisplay(dpy),
 			    XtNargc, (XtArgVal)saved_argc,
-			    XtNargv, (XtArgVal)saved_argv,
+			    XtNargv, (XtArgVal)argv_in_out,
 			    XtVaNestedList, (XtVarArgsList)typed_args,
 			    NULL );
    
@@ -364,7 +340,7 @@ Widget _XtVaAppInitialize(app_context_return, application_class, options,
 	*app_context_return = app_con;
 
     XtFree((XtPointer)typed_args);
-    DEALLOCATE_LOCAL((XtPointer)saved_argv);
+    XtFree((XtPointer)argv_in_out);
     return(root);
 }
 
