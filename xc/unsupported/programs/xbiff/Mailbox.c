@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.19 89/04/11 19:21:26 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.20 89/04/11 19:30:45 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -88,13 +88,13 @@ static XtResource resources[] = {
     { XtNonceOnly, XtCBoolean, XtRBoolean, sizeof(Boolean),
 	offset (once_only), XtRImmediate, (caddr_t)False },
     { XtNfullPixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
-	offset (full_bitmap), XtRString, "flagup" },
+	offset (full.bitmap), XtRString, "flagup" },
     { XtNfullPixmapMask, XtCPixmapMask, XtRPixmap, sizeof(Pixmap),
-	offset (full_bitmap_mask), XtRPixmap, (caddr_t) &nopix },
+	offset (full.mask), XtRPixmap, (caddr_t) &nopix },
     { XtNemptyPixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
-	offset (empty_bitmap), XtRString, "flagdown" },
+	offset (empty.bitmap), XtRString, "flagdown" },
     { XtNemptyPixmap, XtCPixmapMask, XtRPixmap, sizeof(Pixmap),
-	offset (empty_bitmap_mask), XtRPixmap, (caddr_t) &nopix },
+	offset (empty.mask), XtRPixmap, (caddr_t) &nopix },
     { XtNflip, XtCFlip, XtRBoolean, sizeof(Boolean),
 	offset (flip), XtRString, "true" },
 };
@@ -330,25 +330,25 @@ static void Realize (gw, valuemaskp, attr)
     /*
      * build up the pixmaps that we'll put into the image
      */
-    if (w->mailbox.full_bitmap == None) {
-	w->mailbox.full_bitmap = 
+    if (w->mailbox.full.bitmap == None) {
+	w->mailbox.full.bitmap = 
 	  XCreateBitmapFromData (dpy, w->core.window, mailfull_bits,
 				 mailfull_width, mailfull_height);
     }
-    if (w->mailbox.empty_bitmap == None) {
-	w->mailbox.empty_bitmap =
+    if (w->mailbox.empty.bitmap == None) {
+	w->mailbox.empty.bitmap =
 	  XCreateBitmapFromData (dpy, w->core.window, mailempty_bits,
 				 mailempty_width, mailempty_height);
     }
 
-    w->mailbox.empty_pixmap = make_pixmap (dpy, w, w->mailbox.empty_bitmap,
+    w->mailbox.empty.pixmap = make_pixmap (dpy, w, w->mailbox.empty.bitmap,
 					   depth, False,
-					   &w->mailbox.ewidth,
-					   &w->mailbox.eheight);
-    w->mailbox.full_pixmap = make_pixmap (dpy, w, w->mailbox.full_bitmap,
+					   &w->mailbox.empty.width,
+					   &w->mailbox.empty.height);
+    w->mailbox.full.pixmap = make_pixmap (dpy, w, w->mailbox.full.bitmap,
 					  depth, w->mailbox.flip,
-					  &w->mailbox.fwidth,
-					  &w->mailbox.fheight);
+					  &w->mailbox.full.width,
+					  &w->mailbox.full.height);
 			 
     /* save bitmaps and masks for SHAPE extension */
 
@@ -519,30 +519,23 @@ static void redraw_mailbox (w)
     register Window win = XtWindow (w);
     register int x, y;
     GC gc = w->mailbox.gc;
-    Pixmap picture;
-    Pixel back;
-    int width, height;
+    Pixel back = w->core.background_pixel;
+    struct _mbimage *im;
 
     /* center the picture in the window */
 
     if (w->mailbox.flag_up) {		/* paint the "up" position */
-	width = w->mailbox.fwidth;
-	height = w->mailbox.fheight;
-	back = (w->mailbox.flip ? w->mailbox.foreground_pixel :
-		w->core.background_pixel);
-	picture = w->mailbox.full_pixmap;
+	im = &w->mailbox.full;
+	if (w->mailbox.flip) back = w->mailbox.foreground_pixel;
     } else {				/* paint the "down" position */
-	width = w->mailbox.ewidth;
-	height = w->mailbox.eheight;
-	back = w->core.background_pixel;
-	picture = w->mailbox.empty_pixmap;
+	im = &w->mailbox.empty;
     }
-    x = (((int)w->core.width) - width) / 2;
-    y = (((int)w->core.height) - height) / 2;
+    x = (((int)w->core.width) - im->width) / 2;
+    y = (((int)w->core.height) - im->height) / 2;
 
     XSetWindowBackground (dpy, win, back);
     XClearWindow (dpy, win);
-    XCopyArea (dpy, picture, win, gc, 0, 0, width, height, x, y);
+    XCopyArea (dpy, im->pixmap, win, gc, 0, 0, im->width, im->height, x, y);
     return;
 }
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: MailboxP.h,v 1.12 89/03/30 16:05:45 jim Exp $
+ * $XConsortium: MailboxP.h,v 1.13 89/04/11 19:21:31 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -43,11 +43,11 @@ typedef struct {			/* new fields for mailbox widget */
     long last_size;			/* size in bytes of mailboxname */
     XtIntervalId interval_id;		/* time between checks */
     Boolean flag_up;			/* is the flag up? */
-    Pixmap full_pixmap;			/* for when there is mail */
-    Pixmap empty_pixmap;		/* for when there isn't mail */
-    Pixmap full_bitmap, empty_bitmap;
-    Pixmap full_bitmap_mask, empty_bitmap_mask;
-    int fwidth, fheight, ewidth, eheight;
+    struct _mbimage {
+	Pixmap bitmap, mask;		/* depth 1, describing shape */
+	Pixmap pixmap;			/* full depth pixmap */
+	int width, height;		/* geometry of pixmaps */
+    } full, empty;
 } MailboxPart;
 
 typedef struct _MailboxRec {		/* full instance record */
