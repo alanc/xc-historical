@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.2 94/01/10 16:54:11 rob Exp $ */
+/* $XConsortium: resource.c,v 1.3 94/01/10 16:55:55 rob Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -83,6 +83,7 @@ OF THIS SOFTWARE.
 #include "cursorstr.h"
 #include "fontstruct.h"
 #include "xthreads.h"
+#include "mtxlock.h"
 #endif /* MTX */
 
 extern void HandleSaveSet();
