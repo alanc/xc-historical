@@ -248,16 +248,11 @@ int  *mode;
 /*     2) load the font                                               */
 /*     3) use the font to call getInfo for that value.                */
 /***================================================================***/
-typedef union {
-        int *intP;
-      float *floatP;
-      char **valueP;
-  } infoValueType;    /* this needs to be in a header file */
 
 void QueryFontLib(env,infoName,infoValue,rcodeP)
 char *env;
 char *infoName;
-infoValueType infoValue;    /* parameter returned here    */
+pointer infoValue;    /* parameter returned here    */
 int  *rcodeP;
 {
   int rc,N,i;
@@ -298,29 +293,29 @@ int  *rcodeP;
            /* 6 elments, return them as floats      */
            for (i=0;i<6;i++) {
              if (valueP->type == OBJ_INTEGER )
-               infoValue.floatP[i] = valueP->data.integer;
+               ((float *)infoValue)[i] = valueP->data.integer;
              else
-               infoValue.floatP[i] = valueP->data.real;
+               ((float *)infoValue)[i] = valueP->data.real;
             valueP++;
            }
          }
          if (strcmp(infoName,"FontBBox") == 0) {
            /* 4 elments for Bounding Box.  all integers   */
            for (i=0;i<4;i++) {
-             infoValue.intP[i] = valueP->data.integer;
+             ((int *)infoValue)[i] = valueP->data.integer;
              valueP++;
            }
          break;
        case OBJ_INTEGER:
        case OBJ_BOOLEAN:
-         *infoValue.intP = dictP[N].value.data.integer;
+         *((int *)infoValue) = dictP[N].value.data.integer;
          break;
        case OBJ_REAL:
-         *infoValue.floatP = dictP[N].value.data.real;
+         *((float *)infoValue) = dictP[N].value.data.real;
          break;
        case OBJ_NAME:
        case OBJ_STRING:
-         *infoValue.valueP =  dictP[N].value.data.valueP;
+         *((char **)infoValue) =  dictP[N].value.data.valueP;
          break;
        default:
          *rcodeP = 1;
