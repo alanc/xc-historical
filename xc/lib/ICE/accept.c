@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.8 93/09/12 14:18:20 mor Exp $ */
+/* $XConsortium: accept.c,v 1.9 93/09/14 15:33:35 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -23,6 +23,14 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #include <sys/socket.h>
 
+#ifdef UNIXCONN
+#include <sys/un.h>
+# ifndef ICE_UNIX_DIR
+#   define ICE_UNIX_DIR "/tmp/.ICE-unix"
+# endif
+static int _IceUnixDomainConnection = -1;
+#endif
+
 #ifdef TCPCONN
 # include <sys/param.h>
 # include <netinet/in.h>
@@ -39,14 +47,6 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #ifdef DNETCONN
 #include <netdnet/dn.h>
-#endif
-
-#ifdef UNIXCONN
-#include <sys/un.h>
-# ifndef ICE_UNIX_DIR
-#   define ICE_UNIX_DIR "/tmp/.ICE-unix/"
-# endif
-static int _IceUnixDomainConnection = -1;
 #endif
 
 #else
@@ -66,14 +66,14 @@ static int _IceUnixDomainConnection = -1;
 
 #define MAX_LISTEN_CONNECTIONS 3  	/* TCP, DECnet, and Unix Domain */
 
+#ifdef UNIXCONN
+static int open_unix_socket ();
+#endif
 #ifdef TCPCONN
 static int open_tcp_socket ();
 #endif
 #ifdef DNETCONN
 static int open_dnet_socket ();
-#endif
-#ifdef UNIXCONN
-static int open_unix_socket ();
 #endif
 
 
@@ -92,6 +92,10 @@ char *errorStringRet;
     int  networkIdsLen = 0;
     int  fd;
 
+#ifdef UNIXCONN
+    char *unix_networkId = NULL;
+    int  unix_networkId_len = 0;
+#endif
 #ifdef TCPCONN
     char *tcp_networkId = NULL;
     int  tcp_networkId_len = 0;
@@ -99,10 +103,6 @@ char *errorStringRet;
 #ifdef DNETCONN
     char *dnet_networkId = NULL;
     int  dnet_networkId_len = 0;
-#endif
-#ifdef UNIXCONN
-    char *unix_networkId = NULL;
-    int  unix_networkId_len = 0;
 #endif
 
     *countRet = 0;
@@ -424,7 +424,7 @@ char **networkIdRet;
 	return (-1);
     }
 
-    sprintf (portnumbuf, "%d", insock.sin_port);
+    sprintf (portnumbuf, "%d", ntohs (insock.sin_port));
     *networkIdRet = (char *) malloc (
 	6 + strlen (hostnamebuf) + strlen (portnumbuf));
     sprintf (*networkIdRet, "tcp/%s:%s", hostnamebuf, portnumbuf);
@@ -520,7 +520,7 @@ char **networkIdRet;
 #endif
 
     strcpy (unsock.sun_path, ICE_UNIX_DIR);
-    sprintf (pidbuf, "%d", getpid ());
+    sprintf (pidbuf, "\/%d", getpid ());
     strcat (unsock.sun_path, pidbuf);
 
 #ifdef BSD44SOCKETS
