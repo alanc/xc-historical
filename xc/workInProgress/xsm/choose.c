@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.16 94/12/06 14:38:21 mor Exp mor $ */
+/* $XConsortium: choose.c,v 1.17 94/12/12 20:05:56 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -437,7 +437,10 @@ XtPointer 	callData;
 		{
 		    XtFree ((char *) sessionNames[i]);
 		    for (j = i; j < sessionNameCount - 1; j++)
+		    {
 			sessionNames[j] = sessionNames[j + 1];
+			sessionLocked[j] = sessionLocked[j + 1];
+		    }
 		    sessionNameCount--;
 		    break;
 		}
