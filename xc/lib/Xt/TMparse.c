@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.113 91/05/05 19:57:53 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.114 91/05/06 13:34:02 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -425,18 +425,19 @@ static String PanicModeRecovery(str)
 static Syntax(str,str1)
     String str,str1;
 {
-    char message[1000];
     Cardinal numChars;
     Cardinal num_params = 1;
     String params[1];
+    char message[1000];
+
     (void)strcpy(message,str);
     numChars = strlen(message);
     (void) strcpy(&message[numChars], str1);
     numChars += strlen(str1);
     message[numChars] = '\0';
     params[0] = message;
-  XtWarningMsg(XtNtranslationParseError,"parseError",XtCXtToolkitError,
-            "translation table syntax error: %s",params,&num_params);
+    XtWarningMsg(XtNtranslationParseError,"parseError",XtCXtToolkitError,
+		 "translation table syntax error: %s",params,&num_params);
 }
 
 
@@ -565,8 +566,8 @@ static Boolean _XtLookupModifier(name,lateBindings,notFlag,valueP,check)
    static int previous = 0;
    
    if (signature == modifiers[previous].signature) {
-       if (check == TRUE)  *valueP = modifiers[previous].value;
-       if ((modifiers[previous].modifierParseProc != NULL) && (check == FALSE))
+       if (check)  *valueP = modifiers[previous].value;
+       else if (modifiers[previous].modifierParseProc)
 	   (*modifiers[previous].modifierParseProc)
 	      (name, modifiers[previous].value, lateBindings, notFlag, valueP);
        return TRUE;
@@ -582,8 +583,8 @@ static Boolean _XtLookupModifier(name,lateBindings,notFlag,valueP,check)
 	   left = i + 1;
        else {
 	   previous = i;
-	   if (check == TRUE)  *valueP = modifiers[i].value;
-	   if ((modifiers[i].modifierParseProc != NULL) && (check == FALSE))
+	   if (check)  *valueP = modifiers[i].value;
+	   else if (modifiers[i].modifierParseProc)
 	       (*modifiers[i].modifierParseProc)
 		   (name, modifiers[i].value, lateBindings, notFlag, valueP);
 	   return TRUE;
@@ -639,9 +640,9 @@ static String ParseModifiers(str, event,error)
     Boolean* error;
 {
     register String start;
-    char modStr[100];
     Boolean notFlag, exclusive, keysymAsMod;
     Value maskBit;
+    char modStr[100];
  
     ScanWhitespace(str);
     start = str;
@@ -649,20 +650,21 @@ static String ParseModifiers(str, event,error)
     exclusive = FALSE;
     if (start != str) {
           if (_XtLookupModifier(modStr,(LateBindingsPtr *) NULL,
-		  FALSE,&maskBit,TRUE))
-	    if (maskBit== None) {
-                event->event.modifierMask = ~0;
-		event->event.modifiers = 0;
-                ScanWhitespace(str);
-	        return str;
-            }
-            if (maskBit == AnyModifier) {/*backward compatability*/
-                event->event.modifierMask = 0;
-                event->event.modifiers = 0;
-                ScanWhitespace(str);
-                return str;
-            }
-         str = start; /*if plain modifier, reset to beginning */
+		  FALSE,&maskBit,TRUE)) {
+	      if (maskBit== None) {
+		  event->event.modifierMask = ~0;
+		  event->event.modifiers = 0;
+		  ScanWhitespace(str);
+		  return str;
+	      }
+	      if (maskBit == AnyModifier) {/*backward compatability*/
+		  event->event.modifierMask = 0;
+		  event->event.modifiers = 0;
+		  ScanWhitespace(str);
+		  return str;
+	      }
+	  }
+	  str = start; /*if plain modifier, reset to beginning */
     }
     else while (*str == '!' || *str == ':') {
         if (*str == '!') {
@@ -907,7 +909,8 @@ static String ParseKeySym(str, closure, event,error)
     EventPtr event;
     Boolean* error;
 {
-    char keySymName[100], *start;
+    char *start;
+    char keySymName[100];
 
     ScanWhitespace(str);
 
@@ -1751,9 +1754,9 @@ static void ShowProduction(currentProduction)
   String currentProduction;
 {
     Cardinal num_params = 1;
-    char production[500], *eol;
     String params[1];
     int len = 499;
+    char *eol, production[500];
 
     eol = strchr(currentProduction, '\n');
     if (eol) len = MIN(499, eol - currentProduction);
