@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.27 90/03/07 17:09:04 jim Exp $
+ * $XConsortium: Panner.c,v 1.28 90/03/07 17:34:10 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -29,10 +29,9 @@
 #include <X11/Xaw/XawInit.h>		/* for XawInitializeWidgetSet */
 #include <X11/Xaw/SimpleP.h>		/* parent */
 #include <X11/Xaw/PannerP.h>		/* us */
+#include <X11/Xmu/Misc.h>		/* for Min */
 #include <ctype.h>			/* for isascii() etc. */
 #include <math.h>			/* for atof() */
-
-#define MINIMUM(a,b) (((a) < (b)) ? (a) : (b))
 
 static char defaultTranslations[] = 
   "<Btn1Down>:    start() \n\
@@ -293,10 +292,16 @@ static void scale_knob (pw, location, size)  /* set knob size and/or loc */
 	pw->panner.knob_y = (Position) PANNER_VSCALE (pw, pw->panner.slider_y);
     }
     if (size) {
-	Dimension width = MINIMUM (pw->panner.slider_width,
-				   pw->panner.canvas_width);
-	Dimension height = MINIMUM (pw->panner.slider_height,
-				    pw->panner.canvas_height);
+	Dimension width, height;
+
+	if (pw->panner.slider_width < 1) {
+	    pw->panner.slider_width = pw->panner.canvas_width;
+	}
+	if (pw->panner.slider_height < 1) {
+	    pw->panner.slider_height = pw->panner.canvas_height;
+	}
+	width = Min (pw->panner.slider_width, pw->panner.canvas_width);
+	height = Min (pw->panner.slider_height, pw->panner.canvas_height);
 
 	pw->panner.knob_width = (Dimension) PANNER_HSCALE (pw, width);
 	pw->panner.knob_height = (Dimension) PANNER_VSCALE (pw, height);
@@ -308,13 +313,20 @@ static void scale_knob (pw, location, size)  /* set knob size and/or loc */
 static void rescale (pw)
     PannerWidget pw;
 {
-    int pad = pw->panner.internal_border * 2;
+    int hpad = pw->panner.internal_border * 2;
+    int vpad = hpad;
 
-    if (pw->panner.canvas_width < 1) pw->panner.canvas_width = 1;
-    if (pw->panner.canvas_height < 1) pw->panner.canvas_height = 1;
-    pw->panner.haspect = (((double) (pw->core.width - pad)) /
+    if (pw->panner.canvas_width < 1)
+      pw->panner.canvas_width = pw->core.width;
+    if (pw->panner.canvas_height < 1)
+      pw->panner.canvas_height = pw->core.height;
+
+    if (pw->core.width < hpad) hpad = 0;
+    if (pw->core.height < vpad) vpad = 0;
+
+    pw->panner.haspect = (((double) (pw->core.width - hpad)) /
 			  ((double) pw->panner.canvas_width));
-    pw->panner.vaspect = (((double) (pw->core.height - pad)) /
+    pw->panner.vaspect = (((double) (pw->core.height - vpad)) /
 			  ((double) pw->panner.canvas_height));
     scale_knob (pw, TRUE, TRUE);
 }
