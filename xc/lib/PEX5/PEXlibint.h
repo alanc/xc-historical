@@ -1,4 +1,4 @@
-/* $XConsortium: PEXlibint.h,v 1.2 92/05/20 21:22:00 mor Exp $ */
+/* $XConsortium: PEXlibint.h,v 1.3 92/05/26 16:22:55 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -29,6 +29,7 @@ SOFTWARE.
 #define PEXLIBINT_H
 
 #include <X11/Xlibint.h>
+#include <X11/Xfuncs.h>
 #include "PEXproto.h"
 
 
@@ -200,7 +201,7 @@ extern PEXDisplayInfo *PEXDisplayInfoHeader;
 #define PEXReallocBuf(ptr, size)   Xrealloc(ptr, size)
 
 #define COPY_LARGE_AREA(_from, _to, _size) \
-    memcpy (_to, _from, _size)
+    bcopy (_from, _to, _size)
 
 #define COPY_SMALL_AREA(_from, _to, _size) \
 { \
