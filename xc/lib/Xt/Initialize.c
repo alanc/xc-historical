@@ -210,7 +210,7 @@ Display *dpy;
  */
 static XrmResourceDataBase *
 XGetUsersDataBase(dpy, name)
-Display dpy;
+Display *dpy;
 char *name;
 {
 	XrmResourceDataBase userResources;
