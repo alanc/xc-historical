@@ -69,6 +69,7 @@ extern void cfbDestroyClip();
 extern void cfbCopyClip();
 extern void cfbChangeClip();
 extern void cfbCopyGCDest();
+extern void cfbCopyArea();
 
 extern void cfbSetSpans();
 extern unsigned int *cfbGetSpans();

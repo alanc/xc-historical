@@ -68,7 +68,7 @@ cfbCreateGC(pGC)
     pGC->FillSpans = cfbSolidFS;
     pGC->SetSpans = cfbSetSpans;
     pGC->PutImage = miPutImage;
-    pGC->CopyArea = miCopyArea;
+    pGC->CopyArea = cfbCopyArea;
     pGC->CopyPlane = miCopyPlane;
     pGC->PolyPoint = miPolyPoint;
 
