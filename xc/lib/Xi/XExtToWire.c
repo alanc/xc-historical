@@ -1,4 +1,4 @@
-/*      $Header: XExtToWire.c,v 1.8 91/01/24 16:02:46 rws Exp $ */
+/*      $Header: XExtToWire.c,v 1.9 91/02/09 17:50:32 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -55,7 +55,7 @@ XInputEventToWire(dpy, re, event, count)
 	    register XDeviceKeyEvent *ev = (XDeviceKeyEvent*) re;
 	    register deviceKeyButtonPointer *kev;
 	    register deviceValuator *vev;
-	    INT32 *ip B32;
+	    INT32 *ip /* B32 */;
 
 	    *count = 2;
 	    kev = (deviceKeyButtonPointer *) Xmalloc (*count * sizeof (xEvent));
@@ -99,7 +99,7 @@ XInputEventToWire(dpy, re, event, count)
 		(XProximityNotifyEvent *) re;
 	    register deviceKeyButtonPointer *pev;
 	    register deviceValuator *vev;
-	    INT32 *ip B32;
+	    INT32 *ip /* B32 */;
 
 	    *count = 2;
 	    pev = (deviceKeyButtonPointer *) Xmalloc (*count * sizeof (xEvent));
@@ -142,7 +142,7 @@ XInputEventToWire(dpy, re, event, count)
 		(XDeviceButtonEvent *) re;
 	    register deviceKeyButtonPointer *bev;
 	    register deviceValuator *vev;
-	    INT32 *ip B32;
+	    INT32 *ip /* B32 */;
 
 	    *count = 2;
 	    bev = (deviceKeyButtonPointer *) Xmalloc (*count * sizeof (xEvent));
@@ -185,7 +185,7 @@ XInputEventToWire(dpy, re, event, count)
 		(XDeviceMotionEvent *)re;
 	    register deviceKeyButtonPointer *mev;
 	    register deviceValuator *vev;
-	    INT32 *ip B32;
+	    INT32 *ip /* B32 */;
 
 	    *count = 2;
 	    mev = (deviceKeyButtonPointer *) Xmalloc (*count * sizeof (xEvent));
@@ -354,7 +354,7 @@ XInputEventToWire(dpy, re, event, count)
 		else if (any->class == ValuatorClass)
 		    {
 		    int	j;
-		    INT32 *ip B32;
+		    INT32 *ip /* B32 */;
 		    XValuatorStatus *val = (XValuatorStatus *) any;
 		    register deviceValuator *vev;
 

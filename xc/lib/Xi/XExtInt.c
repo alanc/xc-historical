@@ -1,4 +1,4 @@
-/* $Header: XExtInt.c,v 1.17 91/02/22 15:24:36 rws Exp $ */
+/* $Header: XExtInt.c,v 1.18 91/05/08 10:29:37 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -349,7 +349,7 @@ XInputWireToEvent (dpy, re, event)
 	    {
 	    deviceValuator *xev = (deviceValuator *) event;
 	    int save_type = save->type - info->codes->first_event;
-	    INT32	*ip B32 = &xev->valuator0;
+	    INT32 *ip /* B32 */ = &xev->valuator0;
 
 	    if (save_type == XI_DeviceKeyPress ||
 	        save_type == XI_DeviceKeyRelease)
@@ -443,7 +443,7 @@ XInputWireToEvent (dpy, re, event)
 	    XButtonStatus *bev;
 	    XValuatorStatus *vev;
 	    char *data;
-	    INT32 *ip B32 = &sev->valuator0;
+	    INT32 *ip /* B32 */ = &sev->valuator0;
 
 	    stev->window 		= dpy->current;
 	    stev->deviceid 		= sev->deviceid & DEVICE_BITS;
