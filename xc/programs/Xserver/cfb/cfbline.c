@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.8 89/09/19 15:34:53 keith Exp $ */
+/* $XConsortium: cfbline.c,v 1.9 89/10/03 20:02:59 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -650,7 +650,16 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 #ifdef POLYSEGMENT
 		if (pGC->capStyle != CapNotLast)
 		    unclippedlen++;
-#endif
+		dashIndexTmp = dashIndex;
+		dashOffsetTmp = dashOffset;
+		cfbBresD (alu, fg, bg, planemask,
+		      &dashIndexTmp, pDash, numInDashList,
+		      &dashOffsetTmp, isDoubleDash,
+		      addrl, nlwidth,
+		      signdx, signdy, axis, x1, y1,
+		      e, e1, e2, unclippedlen);
+		break;
+#else
 		cfbBresD (alu, fg, bg, planemask,
 		      &dashIndex, pDash, numInDashList,
 		      &dashOffset, isDoubleDash,
@@ -658,6 +667,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 		      signdx, signdy, axis, x1, y1,
 		      e, e1, e2, unclippedlen);
 		goto dontStep;
+#endif
 	    }
 	    else if (oc1 & oc2)
 	    {
@@ -751,8 +761,8 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 	 */
 	miStepDash (unclippedlen, &dashIndex, pDash,
 		    numInDashList, &dashOffset);
-#endif
 dontStep:	;
+#endif
     } /* while (nline--) */
 
 #ifndef POLYSEGMENT
