@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.36 91/10/30 14:51:40 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.37 91/11/20 14:51:49 keith Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2818,8 +2818,10 @@ int
 ProcGetScreenSaver(client)
     register ClientPtr client;
 {
+    REQUEST(xReq);
     xGetScreenSaverReply rep;
 
+    REQUEST_SIZE_MATCH(xReq);
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
