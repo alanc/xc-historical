@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbres.c,v 1.8 89/11/19 16:18:16 rws Exp $ */
+/* $XConsortium: cfbbres.c,v 1.9 90/01/31 12:31:15 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -141,9 +141,6 @@ int len;		/* length of line */
     leftbit = cfbmask[0];
     rightbit = cfbmask[PPW-1];
     bit = cfbmask[x1 & PIM];
-
-    if (!bit)
-	return;			/* in case planemask == 0 */
 
     if (axis == X_AXIS)
     {

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbresd.c,v 1.8 91/03/11 14:58:04 keith Exp $ */
+/* $XConsortium: cfbbresd.c,v 1.9 91/04/10 11:41:58 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -71,26 +71,9 @@ int len;		/* length of line */
 	thisDash = len;
 	dashRemaining -= len;
     }
-#if (PPW == 4)
-    /* point to first point */
-    nlwidth <<= 2;
-    addrb = (unsigned char *)(addrl) + (y1 * nlwidth) + x1;
-    signdy *= nlwidth;
-    if (axis == Y_AXIS)
-    {
-	int t;
-
-	t = signdx;
-	signdx = signdy;
-	signdy = t;
-    }
     e = e-e1;			/* to make looping easier */
 
 #define BresStep(minor,major) {if ((e += e1) >= 0) { e += e3; minor; } major;}
-#define Loop(store) while (thisDash--) {\
-			store; \
- 			BresStep(addrb+=signdy,addrb+=signdx) \
-		    }
 
 #define NextDash {\
     dashIndex++; \
@@ -103,6 +86,25 @@ int len;		/* length of line */
 	thisDash = len; \
     } \
 }
+
+#if (PPW == 4)
+
+#define Loop(store) while (thisDash--) {\
+			store; \
+ 			BresStep(addrb+=signdy,addrb+=signdx) \
+		    }
+    /* point to first point */
+    nlwidth <<= 2;
+    addrb = (unsigned char *)(addrl) + (y1 * nlwidth) + x1;
+    signdy *= nlwidth;
+    if (axis == Y_AXIS)
+    {
+	int t;
+
+	t = signdx;
+	signdx = signdy;
+	signdy = t;
+    }
 
     if (isCopy)
     {
@@ -144,110 +146,83 @@ int len;		/* length of line */
     }
 #else
     {
-    	register unsigned long   tmp;
-	unsigned long leftbit, rightbit, bit;
+    	register unsigned long	tmp;
+	unsigned long		startbit, bit;
 
     	/* point to longword containing first point */
     	addrl = (addrl + (y1 * nlwidth) + (x1 >> PWSH));
-    	yinc = signdy * nlwidth;
-    	e = e-e1;			/* to make looping easier */
+    	signdy = signdy * nlwidth;
 
-    	leftbit = cfbmask[0] & planemask;
-    	rightbit = cfbmask[PPW-1] & planemask;
-    	bit = cfbmask[x1 & PIM] & planemask;
+	if (signdx > 0)
+	    startbit = cfbmask[0];
+	else
+	    startbit = cfbmask[PPW-1];
+    	bit = cfbmask[x1 & PIM];
 
-    	if (!bit)
-	    return;			/* in case planemask == 0 */
-    
+#define X_Loop(store)	while(thisDash--) {\
+			    store; \
+		    	    BresStep(addrl += signdy, \
+		    	     	     if (signdx > 0) \
+		    	     	     	 bit = SCRRIGHT(bit,1); \
+		    	     	     else \
+		    	     	     	 bit = SCRLEFT(bit,1); \
+		    	     	     if (!bit) \
+		    	     	     { \
+		    	     	     	 bit = startbit; \
+		    	     	     	 addrl += signdx; \
+		    	     	     }) \
+			}
+#define Y_Loop(store)	while(thisDash--) {\
+			    store; \
+		    	    BresStep(if (signdx > 0) \
+		    	     	     	 bit = SCRRIGHT(bit,1); \
+		    	     	     else \
+		    	     	     	 bit = SCRLEFT(bit,1); \
+		    	     	     if (!bit) \
+		    	     	     { \
+		    	     	     	 bit = startbit; \
+		    	     	     	 addrl += signdx; \
+		    	     	     }, \
+				     addrl += signdy) \
+			}
+
     	if (axis == X_AXIS)
     	{
-    	    if (signdx > 0)
-    	    {
-	    	while (len--)
-	    	{ 
-		    if (!dontdraw)
-			DoMaskRRop (*addrl, and, xor, bit);
-	    	    bit = SCRRIGHT(bit,1);
-	    	    e += e1;
-	    	    if (e >= 0)
-	    	    {
-		    	addrl += yinc;
-		    	e += e3;
-	    	    }
-	    	    if (!bit)
-	    	    {
-		    	bit = leftbit;
-		    	addrl++;
-	    	    }
-		    StepDash
+	    for (;;)
+	    {
+	    	len -= thisDash;
+	    	if (dashIndex & 1) {
+		    if (isDoubleDash) {
+		    	X_Loop(*addrl = DoMaskRRop(*addrl, andBg, xorBg, bit));
+		    } else {
+		    	X_Loop(;)
+		    }
+	    	} else {
+		    X_Loop(*addrl = DoMaskRRop(*addrl, andFg, xorFg, bit));
 	    	}
-    	    }
-    	    else
-    	    {
-	    	while (len--)
-	    	{ 
-		    if (!dontdraw)
-			DoMaskRRop (*addrl, and, xor, bit);
-	    	    e += e1;
-	    	    bit = SCRLEFT(bit,1);
-	    	    if (e >= 0)
-	    	    {
-		    	addrl += yinc;
-		    	e += e3;
-	    	    }
-	    	    if (!bit)
-	    	    {
-		    	bit = rightbit;
-		    	addrl--;
-	    	    }
-		    StepDash
-	    	}
-    	    }
+	    	if (!len)
+		    break;
+	    	NextDash
+	    }
     	} /* if X_AXIS */
     	else
     	{
-    	    if (signdx > 0)
-    	    {
-	    	while(len--)
-	    	{
-		    if (!dontdraw)
-			DoMaskRRop (*addrl, and, xor, bit);
-	    	    e += e1;
-	    	    if (e >= 0)
-	    	    {
-		    	bit = SCRRIGHT(bit,1);
-		    	if (!bit)
- 		    	{
-			    bit = leftbit;
-			    addrl++;
-		    	}
-		    	e += e3;
-	    	    }
-	    	    addrl += yinc;
-		    StepDash
+	    for (;;)
+	    {
+	    	len -= thisDash;
+	    	if (dashIndex & 1) {
+		    if (isDoubleDash) {
+		    	Y_Loop(*addrl = DoMaskRRop(*addrl, andBg, xorBg, bit));
+		    } else {
+		    	Y_Loop(;)
+		    }
+	    	} else {
+		    Y_Loop(*addrl = DoMaskRRop(*addrl, andFg, xorFg, bit));
 	    	}
-    	    }
-    	    else
-    	    {
-	    	while(len--)
-	    	{
-		    if (!dontdraw)
-			DoMaskRRop (*addrl, and, xor, bit);
-	    	    e += e1;
-	    	    if (e >= 0)
-	    	    {
-		    	bit = SCRLEFT(bit,1);
-		    	if (!bit)
- 		    	{
-			    bit = rightbit;
-			    addrl--;
-		    	}
-		    	e += e3;
-	    	    }
-	    	    addrl += yinc;
-		    StepDash
-	    	}
-    	    }
+	    	if (!len)
+		    break;
+	    	NextDash
+	    }
     	} /* else Y_AXIS */
     }
 #endif
