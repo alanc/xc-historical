@@ -313,13 +313,11 @@ cleanup1:
     pPriv->screenBits =
 	(PixmapPtr) (*pScreen->CreatePixmap) (pScreen, bufWidth,
 					      2 * pCursor->height,
-					      pScreen->rootDepth,
-					      ZPixmap);
+					      pScreen->rootDepth);
     pPriv->temp =
 	(PixmapPtr) (*pScreen->CreatePixmap) (pScreen, bufWidth,
 					      2 * pCursor->height,
-					      pScreen->rootDepth,
-					      ZPixmap);
+					      pScreen->rootDepth);
 
     /*
      * The source and invSource bitmaps are a bit trickier. The idea is to
@@ -332,8 +330,7 @@ cleanup1:
      */
     pPriv->source =
 	(PixmapPtr) (*pScreen->CreatePixmap) (pScreen, pCursor->width,
-					      pCursor->height, 1,
-					      XYBitmap);
+					      pCursor->height, 1);
 
     ValidateGC(pPriv->source, pGC);
     stencil = sunStencil(pCursor->source, pCursor->mask,
@@ -351,8 +348,7 @@ cleanup1:
 
     pPriv->invSource =
 	(PixmapPtr) (*pScreen->CreatePixmap) (pScreen, pCursor->width,
-					      pCursor->height, 1,
-					      XYBitmap);
+					      pCursor->height, 1);
     ValidateGC(pPriv->invSource, pGC);
     stencil = sunStencil(pCursor->source, pCursor->mask,
 			 pCursor->width, pCursor->height,
