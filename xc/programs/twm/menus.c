@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.112 89/11/05 18:08:23 jim Exp $
+ * $XConsortium: menus.c,v 1.113 89/11/06 14:19:22 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.112 89/11/05 18:08:23 jim Exp $";
+"$XConsortium: menus.c,v 1.113 89/11/06 14:19:22 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -986,7 +986,7 @@ void PopUpMenu (menu, x, y, center)
 
     if (center) {
 	x -= (menu->width / 2);
-	/* y ??? */
+	y -= (Scr->EntryHeight / 2);	/* sticky menus would be nice here */
     }
 
     /*
