@@ -1,5 +1,5 @@
 /*
-* $XConsortium: CommandP.h,v 1.21 88/09/27 11:19:53 swick Exp $
+* $XConsortium: CommandP.h,v 1.22 89/01/12 18:46:26 kit Exp $
 */
 
 
@@ -89,11 +89,11 @@ typedef struct {
     XtCallbackList callbacks;
 
     /* private state */
-    Pixmap      gray_pixmap;
-    GC          normal_GC;
-    GC          inverse_GC;
-    Boolean     set;
-    Boolean     highlighted;
+    Pixmap      	gray_pixmap;
+    GC          	normal_GC;
+    GC          	inverse_GC;
+    Boolean     	set;
+    XtCommandHighlight	highlighted;
 } CommandPart;
 
 
