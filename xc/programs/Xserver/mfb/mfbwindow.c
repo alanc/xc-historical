@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: mfbwindow.c,v 1.1 87/09/02 00:29:00 toddb Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -83,6 +83,7 @@ WindowPtr pWin;
 Bool mfbMapWindow(pWindow)
 WindowPtr pWindow;
 {
+    return (TRUE);
 }
 
 /* (x, y) is the upper left corner of the window on the screen 
@@ -137,6 +138,7 @@ mfbUnmapWindow(pWindow, x, y)
 WindowPtr pWindow;
 int x, y;
 {
+    return (TRUE);
 }
 
 /* UNCLEAN!
