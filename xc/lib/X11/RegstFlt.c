@@ -1,6 +1,5 @@
 /*
- * $Header: XRegstFlt.c,v 1.7 91/04/02 20:19:24 rws Exp $
- * $Id: XRegstFlt.c,v 1.3 91/02/01 08:09:30 proj Exp Locker: proj $
+ * $XConsortium: XRegstFlt.c,v 1.9 91/05/28 09:45:52 rws Exp $
  */
 
  /*
@@ -54,7 +53,11 @@ XRegisterFilter(display, window, event_mask, nonmaskable, filter, client_data)
     Window window;
     unsigned long event_mask;
     Bool nonmaskable;
-    Bool (*filter)();
+    Bool (*filter)(
+#if NeedNestedPrototypes
+		   Display*, Window, XEvent*, XPointer
+#endif
+		   );
     XPointer client_data;
 {
     XFilterEventRec		*rec;
@@ -78,7 +81,11 @@ void
 XUnregisterFilter(display, window, filter, client_data)
     Display *display;
     Window window;
-    Bool (*filter)();
+    Bool (*filter)(
+#if NeedNestedPrototypes
+		   Display*, Window, XEvent*, XPointer
+#endif
+		   );
     XPointer client_data;
 {
     register XFilterEventList	*prev, fl;
