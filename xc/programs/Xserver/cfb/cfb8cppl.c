@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8cppl.c,v 1.8 92/12/23 18:06:23 rws Exp $
+ * $XConsortium: cfb8cppl.c,v 1.9 92/12/24 10:37:24 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -80,7 +80,7 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
     PixelType		    *pdstBase;
     int			    widthSrc, widthDst;
     unsigned char	    *psrcLine;
-    unsigned long	    *pdstLine;
+    PixelType		    *pdstLine;
     register unsigned char  *psrc;
     register int	    i;
     register int	    curBit;
