@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.130 91/01/05 17:40:08 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.131 91/01/06 11:48:52 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -24,8 +24,9 @@ without express or implied warranty.
 #define NEED_REPLIES
 
 #include <stdio.h>
-#include "Xlibint.h"
-#include "Xos.h"
+#include <X11/Xlibint.h>
+#include "Xlibnet.h"
+#include <X11/Xos.h>
 
 static void _EatData32();
 
@@ -1601,6 +1602,23 @@ void _XFreeQ ()
 }
 
 
+#ifdef _POSIX_SOURCE				/* stupid makedepend [need if] */
+#define NEED_UTSNAME
+#endif
+#ifdef hpux
+#define NEED_UTSNAME
+#endif
+#ifdef USG
+#define NEED_UTSNAME
+#endif
+#ifdef SVR4
+#define NEED_UTSNAME
+#endif
+
+#ifdef NEED_UTSNAME
+#include <sys/utsname.h>
+#endif
+
 /*
  * _XGetHostname - similar to gethostname but allows special processing.
  */
@@ -1610,18 +1628,7 @@ int _XGetHostname (buf, maxlen)
 {
     int len;
 
-#ifdef hpux				/* stupid makedepend [need if] */
-#define NEED_UTSNAME
-#endif
-#ifdef USG
-#define NEED_UTSNAME
-#endif
-
 #ifdef NEED_UTSNAME
-#include <sys/utsname.h>
-    /*
-     * same host name crock as in server and xinit.
-     */
     struct utsname name;
 
     uname (&name);
@@ -1634,7 +1641,7 @@ int _XGetHostname (buf, maxlen)
     (void) gethostname (buf, maxlen);
     buf [maxlen - 1] = '\0';
     len = strlen(buf);
-#endif /* hpux */
+#endif /* NEED_UTSNAME */
     return len;
 }
 
@@ -1844,13 +1851,8 @@ int _XWriteV (fd, v, n)
     return size;
 }
 
+#ifdef SYSV
 
-/*
-#include <sys/time.h>  can't use the regular .h since timezone is an extern
-                       which needs to be defined for shared library
-		       [there is no <sys/time.h> in 3.2]
-#include "time.h"      now including Xos.h which has this
-*/
 #include <sys/poll.h>
 
 #define POLLERROR		(POLLHUP | POLLNVAL | POLLERR)
@@ -1930,4 +1932,5 @@ struct timeval *timeout;
 	return rc;
 }
 
+#endif /* SYSV */
 #endif /* STREAMSCONN */
