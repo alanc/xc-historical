@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.52 89/11/21 16:41:40 jim Exp $
+ * $XConsortium: screen.h,v 1.53 89/11/27 10:37:31 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -192,6 +192,7 @@ typedef struct ScreenInfo
     short NoRaiseMove;		/* don't raise window following move */
     short NoRaiseResize;	/* don't raise window following resize */
     short NoRaiseDeicon;	/* don't raise window on deiconify */
+    short NoRaiseWarp;		/* don't raise window on warp */
     short DontMoveOff;		/* don't allow windows to be moved off */
     short DoZoom;		/* zoom in and out of icons */
     short TitleFocus;		/* focus on window in title bar ? */

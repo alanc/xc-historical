@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.115 89/11/24 16:32:35 jim Exp $
+ * $XConsortium: events.c,v 1.116 89/11/27 14:20:05 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.115 89/11/24 16:32:35 jim Exp $";
+"$XConsortium: events.c,v 1.116 89/11/27 14:20:05 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -93,6 +93,7 @@ void AutoRaiseWindow (tmp)
 {
     XRaiseWindow (dpy, tmp->frame);
     XSync (dpy, 0);
+    enter_win = NULL;
     enter_flag = TRUE;
     raise_win = tmp;
 }

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.122 89/11/22 16:03:26 jim Exp $
+ * $XConsortium: menus.c,v 1.123 89/11/24 18:36:24 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.122 89/11/22 16:03:26 jim Exp $";
+"$XConsortium: menus.c,v 1.123 89/11/24 18:36:24 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2569,7 +2569,7 @@ void WarpAlongRing (ev, forward)
     XButtonEvent *ev;
     Bool forward;
 {
-    TwmWindow *r, *head;
+    TwmWindow *r = NULL, *head;
 
     if (Scr->RingLeader)
       head = Scr->RingLeader;
@@ -2578,28 +2578,26 @@ void WarpAlongRing (ev, forward)
 
     if (forward) {
 	for (r = head->ring.next; r != head; r = r->ring.next) {
-	    if (r->mapped) break;
+	    if (!r || r->mapped) break;
 	}
     } else {
 	for (r = head->ring.prev; r != head; r = r->ring.prev) {
-	    if (r->mapped) break;
+	    if (!r || r->mapped) break;
 	}
     }
 
-    if (r != head) {
-	TwmWindow *p = Scr->RingLeader;
-	TwmWindow *tmp_win;
+    if (r && r != head) {
+	TwmWindow *p = Scr->RingLeader, *t;
 
 	Scr->RingLeader = r;
 	WarpToWindow (r);
-	if (r->auto_raise) AutoRaiseWindow (r);
 
 	if (p && p->mapped &&
-	    XFindContext (dpy, ev->window, TwmContext, &tmp_win) != XCNOENT &&
-	    p == tmp_win) {
+	    XFindContext (dpy, ev->window, TwmContext, &t) == XCSUCCESS &&
+	    p == t) {
 	    p->ring.cursor_valid = True;
-	    p->ring.curs_x = ev->x_root - tmp_win->frame_x;
-	    p->ring.curs_y = ev->y_root - tmp_win->frame_y;
+	    p->ring.curs_x = ev->x_root - t->frame_x;
+	    p->ring.curs_y = ev->y_root - t->frame_y;
 	}
     }
 }
@@ -2608,6 +2606,7 @@ void WarpAlongRing (ev, forward)
 void WarpToWindow (t)
     TwmWindow *t;
 {
+    if (t->auto_raise || !Scr->NoRaiseWarp) AutoRaiseWindow (t);
     if (t->ring.cursor_valid)
       XWarpPointer (dpy, None, t->frame, 0, 0, 0, 0,
 		    t->ring.curs_x, t->ring.curs_y);
