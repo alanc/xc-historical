@@ -1,5 +1,5 @@
 /*
- * $XConsortium: screen.c,v 2.60 91/07/17 21:34:07 converse Exp $
+ * $XConsortium: screen.c,v 2.61 91/07/19 18:54:04 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -236,8 +236,6 @@ Scrn scrn;
 	    TocCanIncorporate(folderList[i]))
 	    BBoxMailFlag(buttonbox, name, TocHasMail(folderList[i]));
     }
-    if (app_resources.new_mail_check && numScrns == 1)
-	TocCheckForNewMail(True);
 
     /* the optional miscellaneous command buttons */
 
