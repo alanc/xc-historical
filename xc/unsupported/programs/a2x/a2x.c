@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.81 92/08/02 16:40:16 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.82 92/08/05 17:53:09 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -84,6 +84,7 @@ Syntax of magic values in the input stream:
 			set/await trigger
 	M		set MapNotify trigger
 	U		set UnmapNotify trigger
+	S<selection>	set trigger for selection named <selection>
 	W		wait for trigger
 	n<name>		require window with given name (WM_NAME)
 			this must be the last option
@@ -178,6 +179,7 @@ typedef struct {
     unsigned long serial;
     struct timeval time;
     MatchRec match;
+    Atom selection;
     int count;
     Window *windows;
 } TriggerRec;
@@ -240,6 +242,7 @@ UndoRec *curbsmatch = NULL;
 Bool in_control_seq = False;
 Bool skip_next_control_char = False;
 TriggerRec trigger;
+Window my_window = None;
 JumpRec jump;
 MacroRec macros[10];
 LocationRec locations[10];
@@ -1454,13 +1457,18 @@ do_jump(buf)
 void
 unset_trigger()
 {
-    trigger.type = 0;
+    switch (trigger.type) {
+    case MapNotify:
+    case UnmapNotify:
+	XSelectInput(dpy, trigger.root, 0L);
+	break;
+    }
     if (trigger.windows) {
 	XFree((char *)trigger.windows);
 	trigger.windows = NULL;
 	trigger.count = 0;
     }
-    XSelectInput(dpy, trigger.root, 0L);
+    trigger.type = 0;
 }
 
 void
@@ -1472,6 +1480,7 @@ set_unmap_trigger()
     int i;
     int j;
 
+    XSelectInput(dpy, trigger.root, SubstructureNotifyMask);
     XQueryTree(dpy, trigger.root, &w, &child, &children, &nchild);
     if (!nchild) {
 	unset_trigger();
@@ -1487,11 +1496,31 @@ set_unmap_trigger()
 }
 
 void
+set_trigger()
+{
+    switch (trigger.type) {
+    case SelectionClear:
+	trigger.selection = XInternAtom(dpy, trigger.match.name, False);
+	if (!my_window)
+	    my_window = XCreateSimpleWindow(dpy, trigger.root, 0, 0, 1, 1,
+					    0, 0, 0);
+	XSetSelectionOwner(dpy, trigger.selection, my_window, CurrentTime);
+	break;
+    case UnmapNotify:
+	set_unmap_trigger();
+	break;
+    case MapNotify:
+	XSelectInput(dpy, trigger.root, SubstructureNotifyMask);
+	break;
+    }
+}
+
+void
 process_events()
 {
     int i;
     int j;
-    XEvent ev;
+    XEvent ev, sev;
 
     for (i = XEventsQueued(dpy, QueuedAfterReading); --i >= 0; ) {
 	XNextEvent(dpy, &ev);
@@ -1518,6 +1547,21 @@ process_events()
 		    }
 		}
 	    }
+	    break;
+	case SelectionClear:
+	    if (trigger.type == SelectionClear &&
+		ev.xselectionclear.serial >= trigger.serial &&
+		ev.xselectionclear.selection == trigger.selection)
+		unset_trigger();
+	    break;
+	case SelectionRequest:
+	    sev.type = SelectionNotify;
+	    sev.xselection.requestor = ev.xselectionrequest.requestor;
+	    sev.xselection.selection = ev.xselectionrequest.selection;
+	    sev.xselection.target = ev.xselectionrequest.target;
+	    sev.xselection.property = None;
+	    sev.xselection.time = ev.xselectionrequest.time;
+	    XSendEvent(dpy, sev.xselection.requestor, False, None, &sev);
 	    break;
 	}
     }
@@ -1550,6 +1594,11 @@ do_trigger(buf)
 	    break;
 	case 'W':
 	    wait = True;
+	    break;
+	case 'S':
+	    type = SelectionClear;
+	    match = MatchName;
+	    buf = parse_name(buf + 1, &trigger.match);
 	    break;
 	case 'N':
 	case 'P':
@@ -1587,9 +1636,7 @@ do_trigger(buf)
 	XQueryPointer(dpy, DefaultRootWindow(dpy), &trigger.root, &child,
 		      &x, &y, &x, &y, (unsigned int *)&x);
 	trigger.serial = NextRequest(dpy);
-	XSelectInput(dpy, trigger.root, SubstructureNotifyMask);
-	if (type == UnmapNotify)
-	    set_unmap_trigger();
+	set_trigger();
     }
     if (!wait || !trigger.type)
 	return;
@@ -1991,6 +2038,7 @@ init_display(dname)
     dpy = ndpy;
     reset_mapping();
     MIT_OBJ_CLASS = XInternAtom(dpy, "_MIT_OBJ_CLASS", False);
+    my_window = None;
     Xmask = 1 << ConnectionNumber(dpy);
     maxfd = ConnectionNumber(dpy) + 1;
     return True;
