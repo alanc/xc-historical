@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.154 90/06/15 10:47:44 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.155 90/06/15 13:02:37 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -78,6 +78,7 @@ extern char* sys_errlist[];
 static void VScroll(), VJump(), HScroll(), HJump(), ClearWindow(); 
 static void DisplayTextWindow(), ModifySelection(), PushCopyQueue();
 static void UpdateTextInLine(), UpdateTextInRectangle(), PopCopyQueue();
+static void FlushUpdate();
 static Boolean LineAndXYForPosition(), TranslateExposeRegion();
 static XawTextPosition FindGoodPosition(), _BuildLineTable();
 
@@ -937,18 +938,30 @@ TextWidget ctx;
 
   if ( (ctx->text.lastPos > 0) && (ctx->text.lt.lines > 0)) {
     first = ctx->text.lt.top;
-    first /= (float) ctx->text.lastPos; 
+    first /= (float) ctx->text.lastPos;
     last = ctx->text.lt.info[ctx->text.lt.lines].position;
-    if ( ctx->text.lt.info[ctx->text.lt.lines].position <= ctx->text.lastPos)
+    if ( ctx->text.lt.info[ctx->text.lt.lines].position < ctx->text.lastPos )
       last /= (float) ctx->text.lastPos;
     else 
       last = 1.0;
 
-    if (ctx->text.scroll_vert == XawtextScrollWhenNeeded)
-      if ( (last - first) < 1.0 )
+    if (ctx->text.scroll_vert == XawtextScrollWhenNeeded) {
+      int line;
+      XawTextPosition last_pos;
+      Position y = ctx->core.height - ctx->text.margin.bottom;	
+
+      if (ctx->text.hbar != NULL)
+	y -= (ctx->text.hbar->core.height +
+	      2 * ctx->text.hbar->core.border_width);
+
+      last_pos = PositionForXY(ctx, (Position) ctx->core.width, y);
+      line = LineForPosition(ctx, last_pos);
+
+      if ( (y < ctx->text.lt.info[line + 1].y) || ((last - first) < 1.0) )
 	CreateVScrollBar(ctx);
-      else /* last - first >= 1.0 */
+      else 
 	DestroyVScrollBar(ctx);
+    }
   
     if (ctx->text.vbar != NULL) 
       XawScrollbarSetThumb(ctx->text.vbar, first, last - first);
@@ -978,7 +991,8 @@ TextWidget ctx;
 {
   float first, last, widest;
   Boolean temp = (ctx->text.hbar == NULL);
-
+  Boolean vtemp = (ctx->text.vbar == NULL);
+  
   CheckVBarScrolling(ctx);
 
   if (ctx->text.scroll_horiz == XawtextScrollNever) return;
@@ -994,20 +1008,26 @@ TextWidget ctx;
       CreateHScrollBar(ctx);
     else
       DestroyHScrollBar(ctx);
+
+  if ( (ctx->text.hbar == NULL) != temp ) {
+    _XawTextBuildLineTable (ctx, ctx->text.lt.top, TRUE);
+    CheckVBarScrolling(ctx);	/* Recheck need for vbar, now that we added
+				   or removed the hbar.*/
+  }
   
   if (ctx->text.hbar != NULL) {
     first = ctx->text.r_margin.left - ctx->text.margin.left;
     first /= last;
     XawScrollbarSetThumb(ctx->text.hbar, first, widest); 
   }
-  else if (ctx->text.margin.left != ctx->text.r_margin.left) {
+
+  if (((ctx->text.hbar == NULL) && (ctx->text.margin.left !=
+				   ctx->text.r_margin.left)) ||
+      (ctx->text.vbar == NULL) != vtemp)
+  {
     ctx->text.margin.left = ctx->text.r_margin.left;
     _XawTextNeedsUpdating(ctx, zeroPosition, ctx->text.lastPos);      
-  }
-
-  if ( (ctx->text.hbar == NULL) != temp ) {
-    _XawTextBuildLineTable (ctx, ctx->text.lt.top, TRUE);
-    CheckVBarScrolling(ctx);
+    FlushUpdate(ctx);
   }
 }
 
