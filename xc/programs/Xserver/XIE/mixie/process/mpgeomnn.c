@@ -1,4 +1,4 @@
-/* $XConsortium: mpgeomnn.c,v 1.1 93/10/26 09:47:48 rws Exp $ */
+/* $XConsortium: mpgeomnn.c,v 1.2 93/10/31 09:48:18 dpw Exp $ */
 /**** module mpgeomnn.c ****/
 /******************************************************************************
 				NOTICE
@@ -443,7 +443,7 @@ static int ActivateGeomNN(flo,ped)
   bandPtr	oband = &(pet->emitter[0]);
   bandPtr	iband = &(pet->receptor[SRCtag].band[0]);
   int		band, nbands = pet->receptor[SRCtag].inFlo->bands;
-  register void *outp;
+  register pointer outp;
 #if XIE_FULL
   BOOL		bilinear = (ped->techVec->number == xieValGeomBilinearInterp);
 #endif
@@ -470,7 +470,7 @@ static int ActivateGeomNN(flo,ped)
 	     pvtband->hi_src_available = iband->maxGlobal-1;
 	  }
 	   
-	  outp = GetCurrentDst(void,flo,pet,oband);
+	  outp = GetCurrentDst(pointer,flo,pet,oband);
 	  while (outp) {
 		int lo_in,hi_in;
 
@@ -495,7 +495,7 @@ static int ActivateGeomNN(flo,ped)
 		pvtband->first_ilow  = (int) pvtband->first_mlow ;
 		pvtband->first_ihigh = (int) pvtband->first_mhigh;
 		pvtband->yOut++;
-		outp = GetNextDst(void,flo,pet,oband,TRUE);
+		outp = GetNextDst(pointer,flo,pet,oband,TRUE);
 	  }
 	  if (oband->final)
 		DisableSrc(flo,pet,iband,FLUSH);
@@ -515,7 +515,7 @@ static int ActivateGeomNN(flo,ped)
 	  int threshold;
 
 	  /* access current output line */
-	  if (!(outp = GetDst(void,flo,pet,oband,pvtband->yOut,FLUSH))) {
+	  if (!(outp = GetDst(pointer,flo,pet,oband,pvtband->yOut,FLUSH))) {
 		if (oband->final)
        		    DisableSrc(flo, pet, iband, FLUSH);
 		else if (iband->current != 0)
@@ -579,7 +579,7 @@ static int ActivateGeomNN(flo,ped)
 	     if (pvtband->first_ilow > last_src_line) {
 	          /* rest of output image is off the input image */
 		  /* we will exit after filling output strip */
-	         while(outp=GetDst(void,flo,pet,oband,pvtband->yOut,FLUSH)) {
+	         while(outp=GetDst(pointer,flo,pet,oband,pvtband->yOut,FLUSH)) {
 		     (*pvtband->fillfunc)(outp,width,pvtband);
 		     pvtband->yOut++;
 		 }
@@ -662,7 +662,7 @@ static int DestroyGeomNN(flo,ped)
 **********************************************************************/
 
 static void FL_b (OUTP,width,pvtband)
-	void *OUTP;
+	pointer OUTP;
 	int width;
 	mpGeometryBandPtr pvtband;
 {
@@ -674,7 +674,7 @@ static void FL_b (OUTP,width,pvtband)
 
 #define DO_FL(funcname, iotype, CONST)					\
 static void funcname (OUTP,width,pvtband)				\
-void		*OUTP;							\
+pointer	OUTP;								\
 register int	width;							\
 mpGeometryBandPtr pvtband;						\
 {									\
@@ -696,7 +696,7 @@ DO_FL	(FL_Q, QuadPixel, int_constant)
 /* (x,y) separable routines (eg, scale, mirror_x, mirror_y)  */
 
 static void SL_b (OUTP,srcimg,width,sline,pedpvt,pvtband)
-	void *OUTP, **srcimg;
+	pointer OUTP, *srcimg;
 	register int width;
 	int sline;
 	pGeomDefPtr pedpvt; 
@@ -748,8 +748,8 @@ static void SL_b (OUTP,srcimg,width,sline,pedpvt,pvtband)
 
 #define DO_SL(funcname, iotype, CONST)					\
 static void funcname (OUTP,srcimg,width,sline,pedpvt,pvtband)		\
-register void *OUTP;							\
-register void **srcimg;							\
+register pointer OUTP;							\
+register pointer *srcimg;						\
 register int width,sline;						\
 pGeomDefPtr pedpvt; 							\
 mpGeometryBandPtr pvtband;						\
@@ -779,8 +779,8 @@ DO_SL	(SL_Q, QuadPixel, int_constant)
 /* note - could use BiGL_b since this is a silly anyway */
 
 static void BiSL_b (OUTP,srcimg,width,sline,pedpvt,pvtband)
-void	 	  *OUTP;
-void	 	  **srcimg;
+pointer		  OUTP;
+pointer		  *srcimg;
 register int	  width;
 int     	  sline;
 pGeomDefPtr	  pedpvt; 
@@ -826,8 +826,8 @@ register int 	srcwidth  = pvtband->in_width - 1;
 
 #define BI_SL(funcname, iotype, CONST)					\
 static void funcname (OUTP,srcimg,width,sline,pedpvt,pvtband)		\
-void		*OUTP;							\
-void		**srcimg;						\
+pointer		OUTP;							\
+pointer		*srcimg;						\
 register int	width;							\
 int		sline;							\
 pGeomDefPtr	pedpvt; 						\
@@ -878,8 +878,8 @@ BI_SL	(BiSL_Q, QuadPixel, int_constant)
 */
 
 static void GL_b (OUTP,srcimg,width,sline,pedpvt,pvtband)
-void *OUTP;
-void **srcimg;
+pointer OUTP;
+pointer *srcimg;
 register int width;
 int sline;
 pGeomDefPtr pedpvt; 
@@ -927,8 +927,8 @@ register int 	maxline  = pvtband->hi_src_available;
 
 #define DO_GL(funcname, iotype, CONST)					\
 static void funcname (OUTP,srcimg,width,sline,pedpvt,pvtband)		\
-void *OUTP;								\
-void **srcimg;								\
+pointer OUTP;								\
+pointer *srcimg;								\
 register int width;							\
 int sline;								\
 pGeomDefPtr pedpvt; 							\
@@ -981,8 +981,8 @@ DO_GL	(GL_Q, QuadPixel, int_constant)
 #if XIE_FULL
 
 static void BiGL_b (OUTP,srcimg,width,sline,pedpvt,pvtband)
-void *OUTP;
-void **srcimg;
+pointer OUTP;
+pointer *srcimg;
 register int width;
 int sline;
 pGeomDefPtr pedpvt; 
@@ -1035,8 +1035,8 @@ register int 	maxline  = pvtband->hi_src_available;
 
 #define BI_GL(funcname, iotype, CONST)					\
 static void funcname (OUTP,srcimg,width,sline,pedpvt,pvtband)		\
-void *OUTP;								\
-void **srcimg;								\
+pointer OUTP;								\
+pointer *srcimg;							\
 register int width;							\
 int sline;								\
 pGeomDefPtr pedpvt; 							\
