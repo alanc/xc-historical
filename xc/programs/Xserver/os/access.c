@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.42 89/11/08 17:18:37 keith Exp $ */
+/* $XConsortium: access.c,v 1.43 89/11/12 13:12:43 rws Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -315,6 +315,39 @@ DefineSelf (fd)
     }
 }
 #endif /* hpux && !HAS_IFREQ */
+
+#ifdef XDMCP
+void
+AugmentSelf(fd)
+    int fd;
+{
+    int len;
+    struct sockaddr from;
+    int family;
+    pointer addr;
+    register HOST *host;
+
+    len = sizeof(from);
+    if (getpeername(fd, &from, &len))
+	return;
+    family = ConvertAddr(&from, &len, &addr);
+    if (family <= 0)
+	return;
+    for (host = selfhosts; host; host = host->next)
+    {
+	if (addrEqual(family, addr, len, host))
+	    return;
+    }
+    host = (HOST *)xalloc(sizeof(HOST));
+    if (!host)
+	return;
+    host->family = family;
+    host->len = len;
+    acopy(addr, host->addr, len);
+    host->next = selfhosts;
+    selfhosts = host;
+}
+#endif
 
 AddLocalHosts ()
 {
