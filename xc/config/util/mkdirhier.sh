@@ -16,6 +16,7 @@ for f in $*; do
 	if [ ! -d $dir ]; then
 	    echo mkdir $dir; 
 	    mkdir $dir;
+	    chmod a+rx $dir; 
 	fi;
 	path=$dir;
     done;
