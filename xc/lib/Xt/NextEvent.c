@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.75 89/12/02 12:29:29 jim Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.76 89/12/09 22:57:25 rws Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif /* lint */
 
@@ -34,7 +34,7 @@ SOFTWARE.
 
 extern int errno;
 
-#ifdef USG
+#if defined(USG) && !defined(CRAY)
 static int gettimeofday (tvp, tzp)
     struct timeval *tvp;
     struct timezone *tzp;
