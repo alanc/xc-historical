@@ -23,7 +23,8 @@ SRCS = \
 	StrToBmap.c \
 	StrToCurs.c \
 	StrToJust.c \
-	StrToOrnt.c
+	StrToOrnt.c \
+	StrToWidg.c
 
 OBJS = \
 	Atoms.o \
@@ -36,7 +37,8 @@ OBJS = \
 	StrToBmap.o \
 	StrToCurs.o \
 	StrToJust.o \
-	StrToOrnt.o
+	StrToOrnt.o \
+	StrToWidg.o
 
 #if DebugLibXmu && ProfileLibXmu
 DebuggedAndProfiledLibraryObjectRule()
