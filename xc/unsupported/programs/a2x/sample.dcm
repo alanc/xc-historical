@@ -106,7 +106,7 @@ add-word /t "[search fore]" "{c-s}" left right
 add-word /t "[select address]" "{c-t}{c-y}Mnsearch{c-t}{c-s}{c-t}{c-y}W{c-t}@{c-t}{c-y}Unsearch{c-t}{Enter}{c-t}{c-y}W{c-t}{c-t}{c-m}@" invisible
 add-word /t "[send mail]" "{c-t}{c-y}Mpdrafts:{c-t}{c-t}F20{c-t}{c-t}{c-y}W{c-t}{c-t}{c-j}Cpdrafts:{c-t}" left right
 add-word /t "[send off]" "{c-t}Execute{c-t}{c-t}{c-j}Cpxmh:{c-t}" invisible
-add-word /t "[set location]" "{c-t}{c-l}s0{c-t}" invisible
+add-word /t "[set location]" "{c-t}{c-l}S0{c-t}" invisible
 add-word /t "[set mark]" "{c-@}" invisible
 add-word /t "[skip close]" "{c-t}{c-j}C{c-t}" invisible
 add-word /t "[skip down]" "{c-t}{c-j}D{c-t}" invisible
