@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.43 93/09/25 17:32:40 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.44 93/09/25 18:14:44 rws Exp $ */
 #include "X.h"
 #include "os.h"
 #include "osdep.h"
@@ -153,6 +153,7 @@ OsInit()
 #endif
 	been_here = TRUE;
     }
+    TimerInit();
 #ifdef DDXOSINIT
     OsVendorInit();
 #endif
