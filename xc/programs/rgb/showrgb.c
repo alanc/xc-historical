@@ -1,5 +1,5 @@
 /*
- * $XConsortium: showrgb.c,v 1.4 89/10/26 17:47:27 jim Exp $
+ * $XConsortium: showrgb.c,v 1.5 89/12/13 08:39:31 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -100,7 +100,5 @@ dumprgb (filename)
 	}
     }
 
-#ifndef ibm
     dbm_close (rgb_dbm);
-#endif
 }
