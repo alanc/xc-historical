@@ -218,10 +218,11 @@ cursor font.  It also has font name aliases for the commonly used fonts
 This directory contains fonts contributed by Adobe Systems and
 Digital Equipment Corporation for 75 dots per inch displays.  A variety of
 sizes and faces for the following font families are provided:
-Times, Helvetica, Courier, Symbol, New Century Schoolbook, and Terminal.
+Times, Helvetica, Courier, Symbol, and New Century Schoolbook.
 .TP 8
 .I /usr/lib/X11/fonts/100dpi
-This directory contains versions of the fonts in the \fI75dpi\fP directory
+This directory contains versions of some of 
+the fonts in the \fI75dpi\fP directory
 for 100 dots per inch displays.
 .PP
 Font databases are created by running the \fImkfontdir\fP program in the
