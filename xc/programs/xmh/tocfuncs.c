@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocfuncs.c,v 2.31 89/12/16 03:33:53 converse Exp $
+ * $XConsortium: tocfuncs.c,v 2.32 91/07/06 15:51:15 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -451,8 +451,7 @@ void XmhShellCommand(w, event, params, num_params)
     if (! UserWantsAction(w, scrn) || ! scrn->toc)
 	return;
     if (! *num_params) {
-	PopupNotice("XmhShellCommand: no command given.",
-		    (XtCallbackProc)NULL, (XtPointer)NULL);
+	PopupError(scrn->parent, "XmhShellCommand: no command given.");
 	return;
     }
     used = 0;
@@ -460,8 +459,7 @@ void XmhShellCommand(w, event, params, num_params)
     for (i = *num_params; --i >= 0; p++) {
 	len = strlen(*p);
 	if ((used + len + 1) >= MAX_SYSTEM_LEN) {
-	    PopupNotice("XmhShellCommand: command too long.",
-			(XtCallbackProc)NULL, (XtPointer)NULL);
+	    PopupError(scrn->parent, "XmhShellCommand: command too long.");
 	    return;
 	}
 	strncpy(&str[used], *p, len);
@@ -486,14 +484,21 @@ void XmhShellCommand(w, event, params, num_params)
 		i++;
 	    }
 	    if (used != prefix) {
+		char **argv;
 		str[used] = '\0';
 		DEBUG( str );
-		(void) system(str); /* ||| user doesn't see messages, status */
+		argv = MakeArgv(3);
+		argv[0] = "/bin/sh";
+		argv[1] = "-c";	/* commands are read from the next argument */
+		argv[2] = str;
+		(void) DoCommand(argv, (char*)NULL, (char*)NULL);
+		/* a "notice" popup should appear with stderr output */
+		XtFree((char*)argv);
 	    }
 	}
     } else
-	PopupNotice("XmhShellCommand: no messages selected.",
-		    (XtCallbackProc)NULL, (XtPointer)NULL);
+	PopupError(scrn->parent, "XmhShellCommand: no messages selected.");
+
     FreeMsgList(mlist);
 }
 
