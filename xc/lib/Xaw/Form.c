@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Form.c,v 1.19 88/09/06 16:41:20 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Form.c,v 1.20 88/10/03 10:35:14 swick Exp $";
 #endif lint
 
 
@@ -338,7 +338,7 @@ static XtGeometryResult GeometryManager(w, request, reply)
     FormConstraints form = (FormConstraints)w->core.constraints;
     XtWidgetGeometry allowed;
 
-    if ((request->request_mode & ~(CWWidth | CWHeight)) ||
+    if ((request->request_mode & ~(XtCWQueryOnly | CWWidth | CWHeight)) ||
 	!form->form.allow_resize)
 	return XtGeometryNo;
 
@@ -355,9 +355,11 @@ static XtGeometryResult GeometryManager(w, request, reply)
     if (allowed.width == w->core.width && allowed.height == w->core.height)
 	return XtGeometryNo;
 
-    w->core.width = allowed.width;
-    w->core.height = allowed.height;
-    RefigureLocations( w->core.parent );
+    if (!(request->request_mode & XtCWQueryOnly)) {
+	w->core.width = allowed.width;
+	w->core.height = allowed.height;
+	RefigureLocations( w->core.parent );
+    }
     return XtGeometryYes;
 }
 
