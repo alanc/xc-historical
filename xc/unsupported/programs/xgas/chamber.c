@@ -5,6 +5,8 @@
  */
 
 #include "xgas.h"
+static void initWall();
+static void getLabDimensions();
 
 /*
  * Create Graphics Contexts

@@ -6,6 +6,10 @@
  */
 
 #include "xgas.h"
+static void inertia();
+static void collide();
+static double hit();
+static double hitHole();
 
 /* DYNAMICS */
 void dynamics( mol, data )
