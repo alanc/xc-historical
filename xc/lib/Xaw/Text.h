@@ -1,5 +1,5 @@
 /*
-* $Header: Text.h,v 1.9 88/01/25 13:44:06 swick Exp $
+* $Header: Text.h,v 1.2 88/08/12 15:53:26 swick Exp $
 */
 
 
@@ -81,6 +81,8 @@ SOFTWARE.
 #define XtNstring		"string"
 #define XtNlength		"length"
 #define XtNfont			"font"
+
+#define XtCSelectTypes		"SelectTypes"
 
 /* Class record constants */
 
