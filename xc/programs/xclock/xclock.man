@@ -11,8 +11,9 @@ program displays the time in analog or digital form.  The time is continuously
 updated at a frequency which may be specified by the user.  This program is
 nothing more than a wrapper around the Athena Clock widget.
 .SH OPTIONS
-This program accepts all standard X toolkit options along with its own
-specific options shown below.
+.I Xclock
+accepts all of the standard X Toolkit command line options along with the 
+additional options listed below:
 .PP
 .TP 8
 .B \-help
