@@ -1,7 +1,6 @@
 /* Copyright 1989 Massachusetts Institute of Technology */
 
 #include <stdio.h>
-#include <signal.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
@@ -136,6 +135,14 @@ static Bool domenu (w, event, params, param_count)
 	    update_allowsends();
 	    update_visualbell();
 	    update_logging();
+#ifndef SIGTSTP
+	    set_sensitivity (screen->mainMenu, vtMenuEntries[vtMenu_suspend,
+			     FALSE);
+#endif
+#ifndef SIGCONT
+	    set_sensitivity (screen->mainMenu, vtMenuEntries[vtMenu_continue,
+			     FALSE);
+#endif
 	}
 	break;
 
@@ -362,9 +369,9 @@ static void do_suspend (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-#if !defined(SYSV) || defined(JOBCONTROL)
+#ifdef SIGTSTP
     handle_send_signal (gw, SIGTSTP);
-#endif	/* !defined(SYSV) || defined(JOBCONTROL) */
+#endif
 }
 
 
@@ -372,9 +379,9 @@ static void do_continue (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-#if !defined(SYSV) || defined(JOBCONTROL)
+#ifdef SIGCONT
     handle_send_signal (gw, SIGCONT);
-#endif	/* !defined(SYSV) || defined(JOBCONTROL) */
+#endif
 }
 
 

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.13 89/05/26 11:39:03 jim Exp $
+ *	$XConsortium: screen.c,v 1.14 89/12/03 12:05:33 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,13 +30,12 @@
 /* screen.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: screen.c,v 1.13 89/05/26 11:39:03 jim Exp $";
+static char rcs_id[] = "$XConsortium: screen.c,v 1.14 89/12/03 12:05:33 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
-#include <signal.h>
 #include "ptyx.h"
 #include "error.h"
 

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.36 89/10/30 14:50:38 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.37 89/11/14 18:58:48 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -32,6 +32,7 @@
 
 #include <X11/IntrinsicP.h>
 #include <X11/Xmu/Misc.h>	/* For Max() and Min(). */
+#include <signal.h>		/* for SIGTSTP */
 
 /* Extra Xlib definitions */
 #define AllButtonsUp(detail, ignore)  (\
@@ -53,11 +54,11 @@
 
 #ifdef SYSV
 
-#ifdef JOBCONTROL
+#ifdef SIGTSTP
 #define	getpgrp		getpgrp2
-#else	/* !JOBCONTROL */
+#else	/* !SIGTSTP */
 #define	getpgrp(x)	(x)
-#endif	/* !JOBCONTROL */
+#endif	/* !SIGTSTP */
 
 #define	killpg(x,sig)	kill(-x,sig)
 

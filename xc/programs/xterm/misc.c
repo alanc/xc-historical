@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.58 89/11/17 16:56:57 jim Exp $
+ *	$XConsortium: misc.c,v 1.59 89/12/03 12:00:12 jim Exp $
  */
 
 
@@ -32,7 +32,6 @@
 
 #include <stdio.h>
 #include <setjmp.h>
-#include <signal.h>
 #include <ctype.h>
 #include <pwd.h>
 
@@ -58,7 +57,7 @@ static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.58 89/11/17 16:56:57 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.59 89/12/03 12:00:12 jim Exp $";
 #endif	/* lint */
 
 xevents()

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.46 89/12/07 20:10:32 kit Exp $
+ *	$XConsortium: button.c,v 1.47 89/12/08 16:04:05 rws Exp $
  */
 
 
@@ -35,13 +35,12 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.46 89/12/07 20:10:32 kit Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.47 89/12/08 16:04:05 rws Exp $";
 #endif	/* lint */
 
 #include "ptyx.h"		/* Xlib headers included here. */
 #include <X11/Xatom.h>
 #include <stdio.h>
-#include <signal.h>
 #include <setjmp.h>
 #include <ctype.h>
 

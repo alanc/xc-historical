@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.134 89/12/06 18:24:58 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.135 89/12/09 15:26:44 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -92,9 +92,6 @@ SOFTWARE.
 #ifdef hpux
 #include <sys/ptyio.h>			/* hpux */
 #endif
-#ifdef JOBCONTROL
-#include <sys/bsdtty.h>			/* JOBCONTROL */
-#endif
 #endif /* SYSV */
 
 #ifndef SYSV				/* BSD systems */
@@ -107,7 +104,6 @@ SOFTWARE.
 
 #include <stdio.h>
 #include <errno.h>
-#include <signal.h>
 #include <setjmp.h>
 
 #ifdef hpux
@@ -150,6 +146,11 @@ int	Ptyfd;
 #include "menu.h"
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#ifdef hpux
+#ifdef SIGTSTP
+#include <sys/bsdtty.h>
+#endif
+#endif
 
 extern char *malloc();
 extern char *calloc();
@@ -1148,10 +1149,10 @@ spawn ()
 	screen->uid = getuid();
 	screen->gid = getgid();
 
-#if defined(macII) || !defined(SYSV) || defined(JOBCONTROL)
+#ifdef SIGTTOU
 	/* so that TIOCSWINSZ || TIOCSIZE doesn't block */
 	signal(SIGTTOU,SIG_IGN);
-#endif	/* defined(macII) || !defined(SYSV) || defined(JOBCONTROL) */
+#endif
 
 	if (am_slave) {
 		screen->respond = am_slave;
@@ -2048,7 +2049,7 @@ spawn ()
  * don't ignore the signals.  This is annoying.
  */
 
-#if defined(USE_SYSV_SIGNALS) && !defined(JOBCONTROL)
+#if defined(USE_SYSV_SIGNALS) && !defined(SIGTSTP)
 	signal (SIGINT, SIG_IGN);
 
 #ifndef att
@@ -2078,7 +2079,7 @@ spawn ()
 	signal (SIGQUIT, Exit);
 	signal (SIGTERM, Exit);
 #endif	/* SYSV */
-#endif /* USE_SYSV_SIGNALS and not JOBCONTROL */
+#endif /* USE_SYSV_SIGNALS and not SIGTSTP */
 
 	return;
 }							/* end spawn */
@@ -2203,7 +2204,7 @@ register char *oldtc, *newtc;
 
 static reapchild ()
 {
-#if defined(USE_SYSV_SIGNALS) && !defined(JOBCONTROL)
+#if defined(USE_SYSV_SIGNALS) && !defined(SIGTSTP)
 	int status, pid;
 
 	pid = wait(&status);
@@ -2211,7 +2212,7 @@ static reapchild ()
 		(void) signal(SIGCHLD, reapchild);
 		return;
 	}
-#else	/* defined(USE_SYSV_SIGNALS) && !defined(JOBCONTROL) */
+#else	/* defined(USE_SYSV_SIGNALS) && !defined(SIGTSTP) */
 	union wait status;
 	register int pid;
 	
@@ -2225,7 +2226,7 @@ static reapchild ()
 #endif /* USE_SYSV_SIGNALS */
 		return;
 	}
-#endif	/* defined(USE_SYSV_SIGNALS) && !defined(JOBCONTROL) */
+#endif	/* defined(USE_SYSV_SIGNALS) && !defined(SIGTSTP) */
 
 #ifdef PUCC_PTYD
 		closepty(ttydev, ptydev, (resource.utmpInhibit ?  OPTY_NOP : OPTY_LOGIN), Ptyfd);

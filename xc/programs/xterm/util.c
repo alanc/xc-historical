@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.15 89/05/26 11:48:16 jim Exp $
+ *	$XConsortium: util.c,v 1.16 89/10/03 12:41:43 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,12 +30,11 @@
 /* util.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: util.c,v 1.15 89/05/26 11:48:16 jim Exp $";
+static char rcs_id[] = "$XConsortium: util.c,v 1.16 89/10/03 12:41:43 jim Exp $";
 #endif	/* lint */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
-#include <signal.h>
 #include <setjmp.h>
 typedef int *jmp_ptr;
 
