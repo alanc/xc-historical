@@ -104,8 +104,8 @@ static XtActionsRec actionsList[] =
 CommandClassRec commandClassRec = {
   {
     (WidgetClass) &labelClassRec,    /* superclass	*/    
-    "Label",                               /* class_name	*/
-    sizeof(LabelClassRec),                 /* size		*/
+    "Command",                               /* class_name	*/
+    sizeof(CommandRec),                 /* size		*/
     ClassInitialize,                       /* class initialize  */
     FALSE,                                 /* class_inited      */
     Initialize,                            /* initialize	*/
