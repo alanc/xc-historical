@@ -1,4 +1,4 @@
-! $XConsortium: XErrorDB,v 1.18 93/08/08 18:30:17 dpw Exp $
+! $XConsortium: XErrorDB,v 1.19 93/09/13 18:47:12 rws Exp $
 ! these are used in XGetErrorMessage.
 XlibMessage.XError: X Error of failed request
 XlibMessage.MajorCode: Major opcode of failed request:  %d
@@ -420,6 +420,32 @@ XProtoError.SYNC.0: XSyncBadCounter
 XlibMessage.SYNC.0: Counter in failed request 0x%lx
 XProtoError.SYNC.1: XSyncBadAlarm
 XlibMessage.SYNC.1: Alarm in failed request 0x%lx
+! XKB extension
+XRequest.XKEYBOARD.0: XkbUseExtension
+XRequest.XKEYBOARD.1: XkbSelectEvents
+XRequest.XKEYBOARD.2: XkbSendEvent
+XRequest.XKEYBOARD.3: XkbBell
+XRequest.XKEYBOARD.4: XkbGetState
+XRequest.XKEYBOARD.5: XkbLatchLockState
+XRequest.XKEYBOARD.6: XkbGetControls
+XRequest.XKEYBOARD.7: XkbSetControls
+XRequest.XKEYBOARD.8: XkbGetMap
+XRequest.XKEYBOARD.9: XkbSetMap
+XRequest.XKEYBOARD.10: XkbGetCompatMap
+XRequest.XKEYBOARD.11: XkbSetCompatMap
+XRequest.XKEYBOARD.12: XkbGetIndicatorState
+XRequest.XKEYBOARD.13: XkbGetIndicatorMap
+XRequest.XKEYBOARD.14: XkbSetIndicatorMap
+XRequest.XKEYBOARD.15: XkbGetNames
+XRequest.XKEYBOARD.16: XkbSetNames
+XRequest.XKEYBOARD.17: XkbListAlternateSyms
+XRequest.XKEYBOARD.18: XkbGetAlternateSyms
+XRequest.XKEYBOARD.19: XkbSetAlternateSyms
+XRequest.XKEYBOARD.20: XkbGetGeometry
+XRequest.XKEYBOARD.21: XkbSetGeometry
+XRequest.XKEYBOARD.101: XkbSetDebuggingFlags
+XProtoError.XKEYBOARD.0: XkbBadKeyboard
+XlibMessage.XKEYBOARD.0: Device id in failed request 0x%lx
 ! GLX extension for OpenGL, an OpenGL Architectural Review Board standard
 ! GLX Commands
 XRequest.GLX.7: X_GLXQueryVersion
