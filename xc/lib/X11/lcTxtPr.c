@@ -1,4 +1,4 @@
-/* $XConsortium: lcTxtPr.c,v 1.3 94/01/20 18:07:37 rws Exp converse $ */
+/* $XConsortium: lcTxtPr.c,v 1.4 95/06/02 23:03:24 converse Exp kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -170,7 +170,7 @@ retry:
 	}
 
 	unconv_num += ret;
-	*to = '\0';
+	*to++ = '\0';
 	to_left--;
 
 	if (i >= count)
