@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbgc.c,v 1.115 87/09/03 09:04:25 rws Locked $ */
+/* $Header: mfbgc.c,v 1.116 87/12/29 18:19:12 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -156,10 +156,6 @@ mfbDestroyGC(pGC, pQ)
     Xfree(pQ);
 }
 
-#define WINMOVED(pWin, pGC) \
-((pWin->absCorner.x != pGC->lastWinOrg.x) || \
- (pWin->absCorner.y != pGC->lastWinOrg.y))
-
 /* Clipping conventions
 	if the drawable is a window
 	    CT_REGION ==> pCompositeClip really is the composite
@@ -188,14 +184,26 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 				*/
     int new_rotate, new_rrop,  new_line, new_text, new_fill;
     DDXPointRec	oldOrg;		/* origin of thing GC was last used with */
+    Bool win_moved;		/* window has moved since last time */
+
+    oldOrg = pGC->lastWinOrg;
 
     if (pDrawable->type == DRAWABLE_WINDOW)
+    {
 	pWin = (WindowPtr)pDrawable;
+	pGC->lastWinOrg.x = pWin->absCorner.x;
+	pGC->lastWinOrg.y = pWin->absCorner.y;
+    }
     else
+    {
 	pWin = (WindowPtr)NULL;
+	pGC->lastWinOrg.x = 0;
+	pGC->lastWinOrg.y = 0;
+    }
+    win_moved = (oldOrg.x != pGC->lastWinOrg.x) ||
+		(oldOrg.y != pGC->lastWinOrg.y);
 
     devPriv = ((mfbPrivGCPtr) (pGC->devPriv));
-    oldOrg = pGC->lastWinOrg;
     /*
 	if the client clip is different or moved OR
 	the subwindowMode has changed OR
@@ -216,7 +224,7 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
         */
 	if ((pGC->clientClipType == CT_REGION) &&
 	    ((changes & (GCClipXOrigin|GCClipYOrigin|GCClipMask)) ||
-	     (pWin && WINMOVED(pWin, pGC))
+	     win_moved
 	    )
 	   )
 	{
@@ -224,22 +232,10 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	    (* pGC->pScreen->RegionCopy)( devPriv->pAbsClientRegion, 
 			                  pGC->clientClip);
 
-	    if (pWin)
-	    {
-		pGC->lastWinOrg.x = pWin->absCorner.x;
-		pGC->lastWinOrg.y = pWin->absCorner.y;
-		(* pGC->pScreen->TranslateRegion)(
-	                       devPriv->pAbsClientRegion, 
-			       pGC->lastWinOrg.x + pGC->clipOrg.x,
-			       pGC->lastWinOrg.y + pGC->clipOrg.y);
-	    }
-	    else
-	    {
-		pGC->lastWinOrg.x = 0;
-		pGC->lastWinOrg.y = 0;
-		(* pGC->pScreen->TranslateRegion)(
-	            devPriv->pAbsClientRegion, pGC->clipOrg.x, pGC->clipOrg.y);
-	    }
+	    (* pGC->pScreen->TranslateRegion)(
+			   devPriv->pAbsClientRegion, 
+			   pGC->lastWinOrg.x + pGC->clipOrg.x,
+			   pGC->lastWinOrg.y + pGC->clipOrg.y);
 	}
 
 	if (pWin)
@@ -361,8 +357,7 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
        origin (oldOrg) differs from the new window/pixmap origin
        (pGC->lastWinOrg)
     */
-    if ((oldOrg.x != pGC->lastWinOrg.x) ||
-	(oldOrg.y != pGC->lastWinOrg.y))
+    if (win_moved)
     {
 	new_rotate = TRUE;
     }
