@@ -1,4 +1,5 @@
-/* $XConsortium: xcmsdb.c,v 1.8 92/10/01 12:09:19 dave Exp $ */
+/* $XConsortium: xcmsdb.c,v 1.9 93/09/22 22:41:29 rws Exp $ */
+/* $Header: /u2/build/imported/x11r5/mit/clients/xcmsdb/RCS/xcmsdb.c,v 1.4 1993/09/03 06:59:13 alt Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -40,7 +41,6 @@
 #include <X11/Xos.h>
 #include <ctype.h>
 
-#include "Xcmsint.h"
 #include "SCCDFile.h"
 
 static unsigned long _XcmsGetElement();
@@ -63,9 +63,9 @@ void Syntax ()
 	     "    -query                       query Screen Color Characterization Data\n");
     fprintf (stderr, 
 	     "    -remove                      remove Screen Color Characterization Data\n");
+#ifdef GRAY
     fprintf (stderr, 
 	     "    -color                       use color as default\n");
-#ifdef GRAY
     fprintf (stderr, 
 	     "    -gray                        use gray-scale as default\n");
 #endif /* GRAY */
@@ -138,10 +138,10 @@ main (argc, argv)
 	    } else if (optionmatch ("-remove", arg, 1)) {
 		remove = 1;
 		continue;
+#ifdef GRAY
 	    } else if (optionmatch ("-color", arg, 1)) {
 		color = 1;
 		continue;
-#ifdef GRAY
 	    } else if (optionmatch ("-gray", arg, 1)) {
 		color = 0;
 		continue;
@@ -367,7 +367,7 @@ QuerySCCDataRGB(dpy, root)
 		XDCCC_MATRIX_ATOM_NAME);
     } else {
 	pChar = property_return;
-	printf ("Querying property %s\n", XDCCC_MATRIX_ATOM_NAME);
+	printf ("\nQuerying property %s\n\n", XDCCC_MATRIX_ATOM_NAME);
 	printf ("\tXYZtoRGB matrix :\n");
 	for (i = 0; i < 3; i++) {
 	    printf ("\t");
@@ -412,7 +412,7 @@ QuerySCCDataRGB(dpy, root)
     if (CorrectAtom == None || !format) {
 	printf ("Could not find property %s\n", XDCCC_CORRECT_ATOM_NAME);
     } else {
-	printf ("Querying property %s\n", XDCCC_CORRECT_ATOM_NAME);
+	printf ("\nQuerying property %s\n", XDCCC_CORRECT_ATOM_NAME);
 	pChar = property_return;
 
 	while (nitems) {
@@ -468,7 +468,6 @@ QuerySCCDataRGB(dpy, root)
 		break;
 	      default:
 		goto IntensityTblError;
-		break;
 	    }
 
 	    /*
@@ -480,7 +479,7 @@ QuerySCCDataRGB(dpy, root)
 		visualID |= _XcmsGetElement(format, &pChar, &nitems);
 	    }
 
-	    printf ("\tVisualID: %ld\n", visualID);
+	    printf ("\n\tVisualID: 0x%lx\n", visualID);
 	    cType = _XcmsGetElement(format, &pChar, &nitems);
 	    printf ("\ttype: %d\n", cType);
 	    nTables = _XcmsGetElement(format, &pChar, &nitems);
@@ -512,8 +511,8 @@ QuerySCCDataRGB(dpy, root)
 	      default:
 		goto IntensityTblError;
 	    }
-	    XFree (property_return);
 	}    
+	XFree (property_return);
     }    
     return;
 
@@ -567,7 +566,7 @@ QuerySCCDataGray(dpy, root)
 	printf ("Could not find property %s\n", XDCCC_SCREENWHITEPT_ATOM_NAME);
     } else {
 	pChar = property_return;
-	printf ("Querying property %s\n", XDCCC_SCREENWHITEPT_ATOM_NAME);
+	printf ("\nQuerying property %s\n", XDCCC_SCREENWHITEPT_ATOM_NAME);
 	printf ("\tWhite Point XYZ :\n");
 	printf ("\t");
 	for (j = 0; j < 3; j++) {
@@ -596,7 +595,7 @@ QuerySCCDataGray(dpy, root)
     if (CorrectAtom == None || !format) {
 	printf ("Could not find property %s\n", XDCCC_GRAY_CORRECT_ATOM_NAME);
     } else {
-	printf ("Querying property %s\n", XDCCC_GRAY_CORRECT_ATOM_NAME);
+	printf ("\nQuerying property %s\n\n", XDCCC_GRAY_CORRECT_ATOM_NAME);
 	pChar = property_return;
 
 	while (nitems) {
@@ -664,7 +663,7 @@ QuerySCCDataGray(dpy, root)
 		visualID |= _XcmsGetElement(format, &pChar, &nitems);
 	    }
 
-	    printf ("\tVisualID: %ld\n", visualID);
+	    printf ("\n\tVisualID: 0x%lx\n", visualID);
 	    cType = _XcmsGetElement(format, &pChar, &nitems);
 	    printf ("\ttype: %d\n", cType);
 	    printf ("\tGray Conversion Table:\n");

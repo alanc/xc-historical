@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: SCCDFile.h,v 1.4 94/02/06 20:15:35 rws Exp $ */
 /*
  * (c) Copyright 1990 Tektronix Inc.
  * 	All Rights Reserved
@@ -31,16 +31,20 @@
 #ifndef SCCDFILE_H
 #define SCCDFILE_H
 
+#include <X11/Xutil.h>
 #include <X11/Xcms.h>
 
 /*
  *	DEFINES
  */
 
+#define XDCCC_NUMBER			0x8000000L	/* 2**27 per ICCCM */
+#define XDCCC_MATRIX_ATOM_NAME		"XDCCC_LINEAR_RGB_MATRICES"
+#define XDCCC_CORRECT_ATOM_NAME		"XDCCC_LINEAR_RGB_CORRECTION"
 #define	READABLE_SD_SUFFIX		".txt"
-#define TXT_FORMAT_VERSION		"0.3"
+#define TXT_FORMAT_VERSION		"1.1"
 
-#define	DATA_DELIMS			" "	/* space */
+#define	DATA_DELIMS			" \t\n"	/* space, tab, newline */
 
 #define SC_BEGIN_KEYWORD		"SCREENDATA_BEGIN"
 #define SC_END_KEYWORD			"SCREENDATA_END"
@@ -101,4 +105,38 @@
 #ifdef GRAY
 #define VIDEO_GRAY	1
 #endif
+
+    /*
+     * Intensity Record (i.e., value / intensity tuple)
+     */
+typedef struct _IntensityRec {
+    unsigned short value;
+    XcmsFloat intensity;
+} IntensityRec;
+
+    /*
+     * Intensity Table
+     */
+typedef struct _IntensityTbl {
+    IntensityRec *pBase;
+    unsigned int nEntries;
+} IntensityTbl;
+
+typedef struct _XDCCC_Matrix {
+    XcmsFloat XYZtoRGBmatrix[3][3];
+    XcmsFloat RGBtoXYZmatrix[3][3];
+} XDCCC_Matrix;
+
+typedef struct _XDCCC_Correction {
+    XVisualInfo		visual_info;
+    long		visual_info_mask;
+    int			tableType;
+    int			nTables;
+    IntensityTbl*	pRedTbl;
+    IntensityTbl*	pGreenTbl;
+    IntensityTbl*	pBlueTbl;
+    struct _XDCCC_Correction*	next;
+} XDCCC_Correction;
+
+
 #endif /* SCCDFILE_H */
