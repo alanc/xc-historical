@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.39 89/10/04 15:42:19 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.40 89/12/15 20:20:46 swick Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
 #endif /* lint */
 
@@ -321,7 +321,8 @@ void XtResizeWidget(w, width, height, borderWidth)
 		if ((height + (borderWidth << 1)) > big_height)
 		    big_height = height + (borderWidth << 1);
 		XClearArea( XtDisplay(pw), XtWindow(pw),
-			    w->core.x, w->core.y, big_width, big_height );
+			    w->core.x, w->core.y, big_width, big_height,
+			    TRUE );
 	    }
 	}
 	if ((mask & (CWWidth | CWHeight)) &&
