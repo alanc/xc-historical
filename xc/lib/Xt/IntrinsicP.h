@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicP.h,v 1.53 91/02/05 13:46:02 rws Exp $ */
+/* $XConsortium: IntrinsicP.h,v 1.54 91/05/09 13:51:02 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -229,30 +229,28 @@ typedef struct _XtTMRec {
 #define XtCheckSubclass(w, widget_class, message)	/* nothing */
 #endif
 
-#ifdef __cplusplus			/* do not leave open across includes */
-extern "C" {				/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 extern Widget _XtWindowedAncestor( /* internal; implementation-dependent */
 #if NeedFunctionPrototypes
     Widget 		/* object */
-#endif /* NeedFunctionPrototypes */
+#endif
 );
 
 extern void _XtInherit(
 #if NeedFunctionPrototypes
     void
-#endif /* NeedFunctionPrototypes */
+#endif
 );
 
 extern void XtCreateWindow(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    unsigned int 	/* windowClass */,
+    unsigned int 	/* window_class */,
     Visual*		/* visual */,
-    Mask 		/* valueMask */,
+    XtValueMask		/* value_mask */,
     XSetWindowAttributes* /* attributes */
-#endif /* NeedFunctionPrototypes */
+#endif
 );
 
 extern void XtResizeWidget(
@@ -260,8 +258,8 @@ extern void XtResizeWidget(
     Widget 		/* widget */,
     _XtDimension	/* width */,
     _XtDimension	/* height */,
-    _XtDimension	/* borderWidth */
-#endif /* NeedFunctionPrototypes */
+    _XtDimension	/* border_width */
+#endif
 );
 
 extern void XtMoveWidget(
@@ -269,7 +267,7 @@ extern void XtMoveWidget(
     Widget 		/* widget */,
     _XtPosition		/* x */,
     _XtPosition		/* y */
-#endif /* NeedFunctionPrototypes */
+#endif
 );
 
 extern void XtConfigureWidget(
@@ -279,13 +277,17 @@ extern void XtConfigureWidget(
     _XtPosition		/* y */,
     _XtDimension	/* width */,
     _XtDimension	/* height */,
-    _XtDimension	/* borderWidth */
-#endif /* NeedFunctionPrototypes */
+    _XtDimension	/* border_width */
+#endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
+extern void XtResizeWindow(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */
 #endif
+);
+
+_XFUNCPROTOEND
 
 #endif /* _XtIntrinsicP_h */
 /* DON'T ADD STUFF AFTER THIS #endif */
