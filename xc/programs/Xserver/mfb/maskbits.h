@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.24 91/04/10 11:43:43 keith Exp $ */
+/* $XConsortium: maskbits.h,v 1.25 91/07/05 10:56:24 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -66,16 +66,14 @@ source longword into multiple destinations.
 
 SCRLEFT(dst, x)
 	takes dst[x, 32] and moves them to dst[0, 32-x]
-	the contents of the rest of dst are 0 ONLY IF
-	dst is UNSIGNED.
+	the contents of the rest of dst are 0.
 	this is a right shift on LSBFirst (forward-thinking)
 	machines like the VAX, and left shift on MSBFirst
 	(backwards) machines like the 680x0 and pc/rt.
 
 SCRRIGHT(dst, x)
 	takes dst[0,x] and moves them to dst[32-x, 32]
-	the contents of the rest of dst are 0 ONLY IF
-	dst is UNSIGNED.
+	the contents of the rest of dst are 0.
 	this is a left shift on LSBFirst, right shift
 	on MSBFirst.
 
@@ -225,8 +223,8 @@ getshiftedleftbits(psrc, offset, w, dst)
 #define SCRLEFT(lw, n)	SHL((unsigned int)(lw),(n))
 #define SCRRIGHT(lw, n)	SHR((unsigned int)(lw),(n))
 #else					/* vax, intel */
-#define SCRLEFT(lw, n)	SHR((lw),(n))
-#define SCRRIGHT(lw, n)	SHL((lw),(n))
+#define SCRLEFT(lw, n)	SHR((unsigned int)(lw),(n))
+#define SCRRIGHT(lw, n)	SHL((unsigned int)(lw),(n))
 #endif
 
 #define DoRRop(alu, src, dst) \
@@ -333,13 +331,13 @@ getshiftedleftbits(psrc, offset, w, dst)
 	register int tmpmask; \
 	maskpartialbits((x), (w), tmpmask); \
 	*(pdst) = (*(pdst) & ~tmpmask) | \
-		(SCRRIGHT((unsigned) src, x) & tmpmask); \
+		(SCRRIGHT(src, x) & tmpmask); \
     } \
     else \
     { \
-	*(pdst) = (*(pdst) & endtab[x]) | (SCRRIGHT((unsigned) (src), x)); \
+	*(pdst) = (*(pdst) & endtab[x]) | (SCRRIGHT((src), x)); \
 	(pdst)[1] = ((pdst)[1] & starttab[n]) | \
-		(SCRLEFT((unsigned) src, 32-(x)) & endtab[n]); \
+		(SCRLEFT(src, 32-(x)) & endtab[n]); \
     } \
 }
 
@@ -361,9 +359,9 @@ getshiftedleftbits(psrc, offset, w, dst)
 #ifndef getbits
 #define getbits(psrc, x, w, dst) \
 { \
-    dst = SCRLEFT((unsigned) *(psrc), (x)); \
+    dst = SCRLEFT(*(psrc), (x)); \
     if ( ((x) + (w)) > 32) \
-	dst |= (SCRRIGHT((unsigned) *((psrc)+1), 32-(x))); \
+	dst |= (SCRRIGHT(*((psrc)+1), 32-(x))); \
 }
 #endif
 
