@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.136 93/07/14 10:53:21 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.137 93/08/07 10:30:21 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -22,6 +22,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.136 93/07/14 10:53:21 rws Exp $
  * PurifyLinkTarget		(step,program,linklist)
  * PurifyProgramTarget		(program,deplist,linklist)
  * RemoveTargetProgram		(program)
+ * RemoveMultipleFiles		(files)
  * MakeDir			(dir)
  * BuildIncludes		(srclist,dstsubdir,dstupdir)
  * LinkRule			(program,options,objects,libraries)
@@ -34,6 +35,8 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.136 93/07/14 10:53:21 rws Exp $
  * ComplexProgramTarget_2	(program,locallib,syslib)
  * ComplexProgramTarget_3	(program,locallib,syslib)
  * ServerTarget			(server,subdirs,objects,libs,syslibs)
+ * MoveToBakFile		(file)
+ * RMoveToBakFile		(file)
  * RanLibrary			(args)
  * InstallLibrary		(libname,dest)
  * MergeIntoInstalledLibrary	(tolib,fromlib)
@@ -264,12 +267,16 @@ clean::									@@\
 #else
 #define RemoveTargetProgram(program) $(RM) program
 #endif
-#endif
+#endif /* RemoveTargetProgram */
+
+#ifndef RemoveMultipleFiles
+#define RemoveMultipleFiles(files) $(RM) files
+#endif /* RemoveMultipleFiles */
 
 #ifndef MakeDir
 #define MakeDir(dir) DirFailPrefix@if [ -d dir ]; then set +x; \	@@\
 		else (set -x; $(MKDIRHIER) dir); fi
-#endif
+#endif /* MakeDir */
 
 #ifndef BuildIncludes
 #define BuildIncludes(srclist,dstsubdir,dstupdir)			@@\
@@ -335,6 +342,18 @@ ComplexProgramTarget(program)
 #endif /* SimpleProgramTarget */
 
 
+#ifndef ProgramTargetHelper
+#define	ProgramTargetHelper(program,srcs,objs,deplib,locallib,syslib)	@@\
+program: $(objs) $(deplib)						@@\
+	RemoveTargetProgram($@)						@@\
+	LinkRule($@,$(LDOPTIONS),$(objs),locallib $(LDLIBS) syslib)	@@\
+									@@\
+SaberProgramTarget(program,$(srcs),$(objs),locallib,syslib)		@@\
+PurifyProgramTarget(program,$(objs) $(deplib),$(LDOPTIONS) $(objs) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS)) @@\
+									@@\
+InstallProgram(program,$(BINDIR))					@@\
+InstallManPage(program,$(MANDIR))
+#endif /* ProgramTargetHelper */
 
 /*
  * ComplexProgramTarget - generate rules for compiling and linking the 
@@ -348,15 +367,8 @@ ComplexProgramTarget(program)
 									@@\
 AllTarget(program)							@@\
 									@@\
-program: $(OBJS) $(DEPLIBS)						@@\
-	RemoveTargetProgram($@)						@@\
-	LinkRule($@,$(LDOPTIONS),$(OBJS),$(LOCAL_LIBRARIES) $(LDLIBS))	@@\
+ProgramTargetHelper(program,SRCS,OBJS,DEPLIBS,$(LOCAL_LIBRARIES),NullParameter) @@\
 									@@\
-SaberProgramTarget(program,$(SRCS),$(OBJS),$(LOCAL_LIBRARIES),NullParameter) @@\
-PurifyProgramTarget(program,$(OBJS) $(DEPLIBS),$(OBJS) $(LDOPTIONS) $(LOCAL_LIBRARIES) $(LDLIBS) $(EXTRA_LOAD_FLAGS)) @@\
-									@@\
-InstallProgram(program,$(BINDIR))					@@\
-InstallManPage(program,$(MANDIR))					@@\
 DependTarget()								@@\
 LintTarget()								@@\
 									@@\
@@ -379,21 +391,13 @@ clean::									@@\
 									@@\
 AllTarget($(PROGRAMS))							@@\
 									@@\
-program: $(OBJS1) $(DEPLIBS1)						@@\
-	RemoveTargetProgram($@)						@@\
-	LinkRule($@,$(LDOPTIONS),$(OBJS1),locallib $(LDLIBS) syslib)	@@\
-									@@\
-InstallProgram(program,$(BINDIR))					@@\
-InstallManPage(program,$(MANDIR))					@@\
-									@@\
-SaberProgramTarget(program,$(SRCS1),$(OBJS1),locallib,syslib)		@@\
-PurifyProgramTarget(program,$(OBJS1) $(DEPLIBS1),$(LDOPTIONS) $(OBJS1) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS)) @@\
+ProgramTargetHelper(program,SRCS1,OBJS1,DEPLIBS1,locallib,syslib)	@@\
 									@@\
 DependTarget()								@@\
 LintTarget()								@@\
 									@@\
 clean::									@@\
-	$(RM) $(PROGRAMS)
+	RemoveMultipleFiles($(PROGRAMS))
 #endif /* ComplexProgramTarget_1 */
 
 
@@ -405,15 +409,7 @@ clean::									@@\
  */
 #ifndef ComplexProgramTarget_2
 #define	ComplexProgramTarget_2(program,locallib,syslib)			@@\
-program: $(OBJS2) $(DEPLIBS2)						@@\
-	RemoveTargetProgram($@)						@@\
-	LinkRule($@,$(LDOPTIONS),$(OBJS2),locallib $(LDLIBS) syslib)	@@\
-									@@\
-SaberProgramTarget(program,$(SRCS2),$(OBJS2),locallib,syslib)		@@\
-PurifyProgramTarget(program,$(OBJS2) $(DEPLIBS2),$(LDOPTIONS) $(OBJS2) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS)) @@\
-									@@\
-InstallProgram(program,$(BINDIR))					@@\
-InstallManPage(program,$(MANDIR))
+ProgramTargetHelper(program,SRCS2,OBJS2,DEPLIBS2,locallib,syslib)
 #endif /* ComplexProgramTarget_2 */
 
 
@@ -425,16 +421,19 @@ InstallManPage(program,$(MANDIR))
  */
 #ifndef ComplexProgramTarget_3
 #define	ComplexProgramTarget_3(program,locallib,syslib)			@@\
-program: $(OBJS3) $(DEPLIBS3)						@@\
-	RemoveTargetProgram($@)						@@\
-	LinkRule($@,$(LDOPTIONS),$(OBJS3),locallib $(LDLIBS) syslib)	@@\
-									@@\
-SaberProgramTarget(program,$(SRCS3),$(OBJS3),locallib,syslib)		@@\
-PurifyProgramTarget(program,$(OBJS3) $(DEPLIBS3),$(LDOPTIONS) $(OBJS3) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS)) @@\
-									@@\
-InstallProgram(program,$(BINDIR))					@@\
-InstallManPage(program,$(MANDIR))
+ProgramTargetHelper(program,SRCS3,OBJS3,DEPLIBS3,locallib,syslib)
 #endif /* ComplexProgramTarget_3 */
+
+#ifndef MoveToBakFile(file)
+#define MoveToBakFile(file) -@if [ -f file ]; then set -x; \		@@\
+	$(MV) file file.bak; else exit 0; fi
+#endif /* MoveToBakFile */
+
+#ifndef RMoveToBakFile(file)
+#define RMoveToBakFile(file) -@if [ -f file ]; then set -x; \		@@\
+	$(RM) file.bak; $(MV) file file.bak; \				@@\
+	else exit 0; fi
+#endif /* RMoveToBakFile */
 
 /*
  * ServerTarget - generate rules to compile, link, and relink an X server.
@@ -442,13 +441,11 @@ InstallManPage(program,$(MANDIR))
 #ifndef ServerTarget
 #define	ServerTarget(server,subdirs,objects,libs,syslibs)		@@\
 server: subdirs objects libs						@@\
-	-@if [ -f server ]; then set -x; \				@@\
-		$(MV) server server.bak; else exit 0; fi		@@\
+	MoveToBakFile(server)						@@\
 	LinkRule(server,$(CDEBUGFLAGS) $(CCOPTIONS),objects,libs $(EXTRA_LIBRARIES) syslibs) @@\
 									@@\
 Concat(load,server):							@@\
-	-@if [ -f server ]; then set -x; \				@@\
-		$(MV) server server.bak; else exit 0; fi		@@\
+	MoveToBakFile(server)						@@\
 	LinkRule(server,$(CDEBUGFLAGS) $(CCOPTIONS),objects,libs $(EXTRA_LIBRARIES) syslibs) @@\
 									@@\
 PurifyProgramTarget(server,subdirs objects libs,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)) @@\
@@ -796,9 +793,7 @@ $(IMAKE):								@@\
 ImakeDependency(Makefile)						@@\
 									@@\
 Makefile:: 								@@\
-	-@if [ -f Makefile ]; then set -x; \				@@\
-		$(RM) Makefile.bak; $(MV) Makefile Makefile.bak; \	@@\
-	else exit 0; fi							@@\
+	RMoveToBakFile(Makefile)					@@\
 	$(IMAKE_CMD) -DTOPDIR=$(TOP) -DCURDIR=$(CURRENT_DIR) imakeflags
 
 #endif /* BuildMakefileTarget */
