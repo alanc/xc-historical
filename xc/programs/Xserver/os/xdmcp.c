@@ -761,7 +761,7 @@ get_xdmcp_sock()
     else if (setsockopt(xdmcpSocket, SOL_SOCKET, SO_BROADCAST, &soopts,
 	sizeof(soopts)) < 0)
 	    XdmcpWarning("UDP set broadcast socket-option failed");
-#endif SO_BROADCAST
+#endif /* SO_BROADCAST */
 }
 
 static
