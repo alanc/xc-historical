@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.76 89/07/13 18:03:35 jim Exp $
+ * $XConsortium: add_window.c,v 1.77 89/07/14 11:06:19 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.76 89/07/13 18:03:35 jim Exp $";
+"$XConsortium: add_window.c,v 1.77 89/07/14 11:06:19 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -703,7 +703,6 @@ IconMgr *iconp;
 	}
     }
 
-    SetHints(tmp_win);
     XUngrabServer(dpy);
 
     /* if we were in the middle of a menu activated function, regrab

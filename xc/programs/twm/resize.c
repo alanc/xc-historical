@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.34 89/07/06 12:17:13 jim Exp $
+ * $XConsortium: resize.c,v 1.35 89/07/13 11:28:52 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.34 89/07/06 12:17:13 jim Exp $";
+"$XConsortium: resize.c,v 1.35 89/07/13 11:28:52 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -459,7 +459,6 @@ EndResize()
         XRaiseWindow(dpy, tmp_win->frame);
 
     ResizeWindow = NULL;
-    SetHints(tmp_win);
 }
 
 /***********************************************************************
@@ -752,62 +751,6 @@ int x, y, w, h;
     }
 }
 
-/***********************************************************************
- *
- *  Procedure:
- *      SetHints - set window hints so that if twm is killed the windows
- *              will start up in the same places they were at when twm was
- *              killed.
- *
- *  Inputs:
- *      tmp_win - the TwmWindow pointer
- *
- ***********************************************************************
- */
-
-void
-SetHints(tmp_win)
-TwmWindow *tmp_win;
-{
-#ifdef not_allowed_by_icccm	/* could set a different property... */
-    XWMHints wmhints;
-    XSizeHints hints;
-    int x, y, w, h;
-
-    if(tmp_win->wmhints)
-	wmhints = *(tmp_win->wmhints);
-    else
-	wmhints.flags = 0;
-
-    if (tmp_win->icon)
-        wmhints.initial_state = IconicState;
-    else
-        wmhints.initial_state = NormalState;
-
-    wmhints.flags |= StateHint;
-    if (tmp_win->icon_w)
-    {
-	XGetGeometry(dpy, tmp_win->icon_w, &JunkRoot, &x, &y, &w, &h,
-	    &JunkBW, &JunkDepth);
-	wmhints.icon_x = x;
-	wmhints.icon_y = y;
-	wmhints.flags |= IconPositionHint;
-    }
-
-    XSetWMHints(dpy, tmp_win->w, &wmhints);
-
-    XGetGeometry(dpy, tmp_win->frame, &JunkRoot, &x, &y, &w, &h,
-        &JunkBW, &JunkDepth);
-    hints = tmp_win->hints;
-    hints.x = x;
-    hints.y = y + tmp_win->title_height;
-    hints.width = w;
-    hints.height = h - tmp_win->title_height;
-
-    hints.flags |= (USPosition | USSize);
-    XSetNormalHints(dpy, tmp_win->w, &hints);
-#endif /* not_allowed_by_icccm */
-}
 
 /**********************************************************************
  *  Rutgers mod #1   - rocky.
@@ -933,7 +876,6 @@ int flag;
     dragHeight += tmp_win->title_height;
 
     SetupWindow(tmp_win, dragx , dragy , dragWidth, dragHeight);
-    SetHints(tmp_win);
     XUngrabPointer(dpy, CurrentTime);
     XUngrabServer(dpy);
 }

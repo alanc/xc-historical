@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.80 89/07/07 13:13:06 jim Exp $
+ * $XConsortium: menus.c,v 1.81 89/07/13 11:51:21 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.80 89/07/07 13:13:06 jim Exp $";
+"$XConsortium: menus.c,v 1.81 89/07/13 11:51:21 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1452,7 +1452,6 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    Iconify (tmp_win, eventp->xbutton.x_root - 5,
 		     eventp->xbutton.y_root - 5);
 	}
-	SetHints(tmp_win);
 	break;
 
     case F_RAISELOWER:

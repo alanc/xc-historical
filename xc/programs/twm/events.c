@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.75 89/07/13 11:51:16 jim Exp $
+ * $XConsortium: events.c,v 1.76 89/07/14 11:06:24 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.75 89/07/13 11:51:16 jim Exp $";
+"$XConsortium: events.c,v 1.76 89/07/14 11:06:24 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -927,7 +927,6 @@ HandleMapRequest()
 	DeIconify(Tmp_win);
     }
     XRaiseWindow(dpy, Scr->VersionWindow);
-    SetHints(Tmp_win);
 }
 
 /***********************************************************************
@@ -1136,7 +1135,6 @@ HandleButtonRelease()
 	client_event.xclient.message_type = twmRaisingWindowAtom;
 	client_event.xclient.format = 32;
 	XSendEvent(dpy, Tmp_win->frame, False, 0, &client_event);
-	SetHints(Tmp_win);
     }
 
     if (ResizeWindow != NULL)

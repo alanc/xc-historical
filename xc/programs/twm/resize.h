@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: resize.h,v 1.2 89/04/12 18:56:04 jim Exp $
+ * $XConsortium: resize.h,v 1.3 89/04/13 15:48:40 jim Exp $
  *
  * resize function externs
  *
@@ -43,7 +43,6 @@ extern void DisplaySize();
 extern void EndResize();
 extern void AddEndResize();
 extern void SetupWindow();
-extern void SetHints();
 
 #endif /* _RESIZE_ */
 
