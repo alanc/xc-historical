@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: FSNextEv.c,v 1.2 91/05/13 15:11:45 gildea Exp $ */
 
 /* @(#)FSNextEv.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -25,7 +25,7 @@
 
 #include	"FSlibint.h"
 
-extern _FSQEvent *_qfree;
+extern _FSQEvent *_FSqfree;
 
 FSNextEvent(svr, event)
     FSServer     *svr;
@@ -40,7 +40,7 @@ FSNextEvent(svr, event)
 
     if ((svr->head = qelt->next) == NULL)
 	svr->tail = NULL;
-    qelt->next = _qfree;
-    _qfree = qelt;
+    qelt->next = _FSqfree;
+    _FSqfree = qelt;
     svr->qlen--;
 }

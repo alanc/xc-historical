@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: FSSync.c,v 1.2 91/05/13 15:11:55 gildea Exp $ */
 
 /* @(#)FSSync.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -25,7 +25,7 @@
 
 #include	"FSlibint.h"
 
-extern _FSQEvent *_qfree;
+extern _FSQEvent *_FSqfree;
 
 /* synchronize withe errors and events */
 
@@ -43,8 +43,8 @@ FSSync(svr, discard)
     }
 
     if (discard && svr->head) {
-	((_FSQEvent *) svr->tail)->next = _qfree;
-	_qfree = (_FSQEvent *) svr->head;
+	((_FSQEvent *) svr->tail)->next = _FSqfree;
+	_FSqfree = (_FSQEvent *) svr->head;
 	svr->head = svr->tail = NULL;
 	svr->qlen = 0;
     }

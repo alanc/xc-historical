@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibInt.c,v 1.7 91/07/19 17:03:27 rws Exp $ */
+/* $XConsortium: FSlibInt.c,v 1.8 91/07/20 14:27:38 rws Exp $ */
 
 /* @(#)FSlibInt.c	3.3	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -141,7 +141,7 @@ int iovcnt;
  * the object they have created.
  */
 
-_FSQEvent  *_qfree = NULL;	/* NULL _FSQEvent. */
+_FSQEvent  *_FSqfree = NULL;	/* NULL _FSQEvent. */
 
 static int  padlength[4] = {0, 3, 2, 1};
 
@@ -843,9 +843,9 @@ _FSEnq(svr, event)
     register _FSQEvent *qelt;
 
 /*NOSTRICT*/
-    if (qelt = _qfree) {
-	/* If _qfree is non-NULL do this, else malloc a new one. */
-	_qfree = qelt->next;
+    if (qelt = _FSqfree) {
+	/* If _FSqfree is non-NULL do this, else malloc a new one. */
+	_FSqfree = qelt->next;
     } else if ((qelt =
 	     (_FSQEvent *) FSmalloc((unsigned) sizeof(_FSQEvent))) == NULL) {
 	/* Malloc call failed! */
@@ -864,8 +864,8 @@ _FSEnq(svr, event)
 	svr->qlen++;
     } else {
 	/* ignored, or stashed away for many-to-one compression */
-	qelt->next = _qfree;
-	_qfree = qelt;
+	qelt->next = _FSqfree;
+	_FSqfree = qelt;
     }
 }
 
@@ -1275,7 +1275,7 @@ Data32(svr, data, len)
 void
 _FSFreeQ()
 {
-    register _FSQEvent *qelt = _qfree;
+    register _FSQEvent *qelt = _FSqfree;
 
     while (qelt) {
 	register _FSQEvent *qnext = qelt->next;
@@ -1283,7 +1283,7 @@ _FSFreeQ()
 	FSfree(qelt);
 	qelt = qnext;
     }
-    _qfree = NULL;
+    _FSqfree = NULL;
     return;
 }
 
