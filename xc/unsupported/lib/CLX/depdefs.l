@@ -216,17 +216,18 @@
 
 (defun make-index-op (operator args)
   `(the array-index
-	,(case (length args)
-	   (0 `(,operator))
-	   (1 `(,operator
-		,(make-index-typed (first args))))
-	   (2 `(,operator
-		,(make-index-typed (first args))
-		,(make-index-typed (second args))))
-	   (otherwise
-	     `(,operator
-	       ,(make-index-op operator (subseq args 0 (1- (length args))))
-	       ,(make-index-typed (first (last args))))))))
+	(values 
+	  ,(case (length args)
+	     (0 `(,operator))
+	     (1 `(,operator
+		  ,(make-index-typed (first args))))
+	     (2 `(,operator
+		  ,(make-index-typed (first args))
+		  ,(make-index-typed (second args))))
+	     (otherwise
+	       `(,operator
+		 ,(make-index-op operator (subseq args 0 (1- (length args))))
+		 ,(make-index-typed (first (last args)))))))))
 
 (defmacro index+ (&rest numbers) (make-index-op '+ numbers))
 (defmacro index-logand (&rest numbers) (make-index-op 'logand numbers))
