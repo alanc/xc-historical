@@ -292,6 +292,13 @@ extern Widget XtWidgetCreate ();
     /* ArgList     args; */
     /* Cardinal    argCount; */
 
+extern Widget TopLevelCreate (); /*hack for now*/
+  /* WidgetClass widgetClass; */
+    /* Screen      *screen;*/
+    /* ArgList     args; */
+    /* Cardinal    argCount; */
+
+
 
 extern void XtWidgetRealize ();
     /* Widget widget */
@@ -630,6 +637,9 @@ typedef struct _XtActionsRec{
     char    *string;
     caddr_t value;
 } XtActionsRec, *XtActionsPtr;
+
+extern void XtDefineTranslation ();
+    /* Widget widget */
 
 /*************************************************************
  *
