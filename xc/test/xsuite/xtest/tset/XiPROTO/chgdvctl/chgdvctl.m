@@ -13,9 +13,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: chgdvctl.m,v 1.3 94/01/29 15:31:08 rws Exp $
  */
->>TITLE ChangeDeviceControl XPROTO.EXT
+>>TITLE ChangeDeviceControl XIPROTO
 >>SET startup protostartup
 >>SET cleanup protocleanup
 >>EXTERN

@@ -13,9 +13,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: gtkeymppn.m,v 1.6 94/01/29 15:31:34 rws Exp $
  */
->>TITLE GetDeviceKeyMapping XPROTO.EXT
+>>TITLE GetDeviceKeyMapping XIPROTO
 >>SET startup protostartup
 >>SET cleanup protocleanup
 >>EXTERN

@@ -13,9 +13,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: misc.m,v 1.3 94/01/29 15:32:00 rws Exp $
  */
->>TITLE SelectExtensionEvent XPROTO.EXT
+>>TITLE SelectExtensionEvent XIPROTO
 >>SET startup protostartup
 >>SET cleanup protocleanup
 >>EXTERN

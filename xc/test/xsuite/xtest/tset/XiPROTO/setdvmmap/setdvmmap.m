@@ -13,9 +13,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: setdvmmap.m,v 1.7 94/01/29 15:26:50 rws Exp $
  */
->>TITLE SetDeviceModifierMapping XPROTO.EXT
+>>TITLE SetDeviceModifierMapping XIPROTO
 >>SET startup protostartup
 >>SET cleanup protocleanup
 >>EXTERN

@@ -13,9 +13,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: sndextevnt.m,v 1.4 94/01/29 15:29:32 rws Exp $
  */
->>TITLE SendExtensionEvent XPROTO.EXT
+>>TITLE SendExtensionEvent XIPROTO
 >>SET startup protostartup
 >>SET cleanup protocleanup
 >>EXTERN

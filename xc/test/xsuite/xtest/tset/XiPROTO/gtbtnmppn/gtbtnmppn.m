@@ -13,9 +13,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: gtbtnmppn.m,v 1.3 94/01/29 15:24:36 rws Exp $
  */
->>TITLE GetDeviceButtonMapping XPROTO.EXT
+>>TITLE GetDeviceButtonMapping XIPROTO
 >>SET startup protostartup
 >>SET cleanup protocleanup
 >>EXTERN

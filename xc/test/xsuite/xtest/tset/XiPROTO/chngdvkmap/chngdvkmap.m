@@ -13,9 +13,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: chngdvkmap.m,v 1.6 94/01/29 15:27:29 rws Exp $
  */
->>TITLE ChangeDeviceKeyMapping XPROTO.EXT
+>>TITLE ChangeDeviceKeyMapping XIPROTO
 >>SET startup protostartup
 >>SET cleanup protocleanup
 >>EXTERN

@@ -13,9 +13,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: setdvbmap.m,v 1.7 94/01/29 15:27:16 rws Exp $
  */
->>TITLE SetDeviceButtonMapping XPROTO.EXT
+>>TITLE SetDeviceButtonMapping XIPROTO
 >>SET startup protostartup
 >>SET cleanup protocleanup
 >>EXTERN

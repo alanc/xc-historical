@@ -14,9 +14,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: alldvevnts.m,v 1.3 94/01/29 15:30:55 rws Exp $
  */
->>TITLE AllowDeviceEvents XPROTO.EXT
+>>TITLE AllowDeviceEvents XIPROTO
 >>SET startup protostartup
 >>SET cleanup protocleanup
 >>EXTERN

@@ -13,9 +13,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: setdvfcs.m,v 1.3 94/01/29 15:27:42 rws Exp $
  */
->>TITLE SetDeviceFocus XPROTO.EXT
+>>TITLE SetDeviceFocus XIPROTO
 >>SET startup protostartup
 >>SET cleanup protocleanup
 >>EXTERN

@@ -13,9 +13,9 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: chgkbd.m,v 1.3 94/01/29 15:25:17 rws Exp $
  */
->>TITLE ChangeKeyboardDevice XPROTO.EXT
+>>TITLE ChangeKeyboardDevice XIPROTO
 >>SET startup protostartup
 >>SET cleanup protocleanup
 >>EXTERN
