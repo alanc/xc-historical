@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.147 90/04/10 15:57:53 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.148 90/04/13 14:56:00 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -262,7 +262,7 @@ static void UnrealizeWidget(widget)
     register CompositeWidget	cw;
     register Cardinal		i;
     register WidgetList		children;
-    extern void _XtTranslateEvent();
+    extern void _XtRemoveTranslations();
 
     if (!XtIsWidget(widget) || !XtIsRealized(widget)) return;
 
@@ -298,9 +298,7 @@ static void UnrealizeWidget(widget)
     /* Removing the event handler here saves having to keep track if
      * the translation table is changed while the widget is unrealized.
      */
-    XtRemoveEventHandler(widget, XtAllEvents, TRUE, _XtTranslateEvent,
-			 (XtPointer)&widget->core.tm);
-
+    _XtRemoveTranslations(widget);
 } /* UnrealizeWidget */
 
 
