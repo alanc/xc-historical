@@ -260,7 +260,7 @@ _default_mapping _default_mappings[] = {
 ?m6(\t\tprogram specified resize increment: $9 by $10\n)\
 ?m7(\t\tprogram specified minimum aspect ratio: $11/$12\n\
 \t\tprogram specified maximum aspect ratio: $13/$14\n)\
-?m8(\t\tbase size: $15 by $16\n)\
+?m8(\t\tprogram specified base size: $15 by $16\n)\
 ?m9(\t\twindow gravity: \
 ?$17=0(Forget)\
 ?$17=1(NorthWest)\
