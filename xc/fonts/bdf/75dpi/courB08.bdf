@@ -23,7 +23,7 @@ DEVICE_FONT_NAME "Courier-Bold"
 COMMENT END LogicalFontDescription
 CHARSET_COLLECTIONS "ASCII ISOLATIN1 ADOBESTANDARD"
 FULL_NAME "Courier Bold"
-COPYRIGHT "Copyright (c) 1985,1987 Adobe Systems, Inc."
+COPYRIGHT "Copyright (c) 1985,1987 Adobe Systems, Inc., Portions Copyright 1988 Digital Equipment Corp."
 COMMENT ***** end of inserted font properties
 FONT_ASCENT 8
 FONT_DESCENT 2
