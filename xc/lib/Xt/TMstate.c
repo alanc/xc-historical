@@ -41,6 +41,16 @@ SOFTWARE.
 
 #define StringToAction(string)	((XtAction) StringToQuark(string))
 
+#define STR_THRESHOLD 30
+#define STR_INCAMOUNT 100
+#define CHECK_STR_OVERFLOW \
+    if (str - *buf > *len - STR_THRESHOLD) {		\
+	String old = *buf;				\
+	*buf = XtRealloc(old, *len += STR_INCAMOUNT);	\
+	str = str - old + *buf;				\
+    }
+
+
 static void FreeActions(action)
   register ActionPtr action;
 {
@@ -60,34 +70,63 @@ static void FreeActions(action)
     }
 }
 
-static String PrintModifiers(str, mask, mod)
+static String PrintModifiers(buf, len, str, mask, mod)
+    String *buf;
+    int *len;
     String str;
     unsigned long mask, mod;
 {
-    if (mask & ShiftMask)
-	(void) sprintf(str, "%sShift", ((mod & ShiftMask) ? "" : "~"));
-    if (mask & ControlMask)
-	(void) sprintf(str, "%sCtrl", ((mod & ControlMask) ? "" : "~"));
-    if (mask & LockMask)
-	(void) sprintf(str, "%sLock", ((mod & LockMask) ? "" : "~"));
-    if (mask & Mod1Mask)
-	(void) sprintf(str, "%sMeta", ((mod & Mod1Mask) ? "" : "~"));
-    if (mask & Mod2Mask)
-	(void) sprintf(str, "%sMod2", ((mod & Mod2Mask) ? "" : "~"));
-    if (mask & Mod3Mask)
-	(void) sprintf(str, "%sMod3", ((mod & Mod3Mask) ? "" : "~"));
-    if (mask & Mod4Mask)
-	(void) sprintf(str, "%sMod4", ((mod & Mod4Mask) ? "" : "~"));
-    if (mask & Mod5Mask)
-	(void) sprintf(str, "%sMod5", ((mod & Mod5Mask) ? "" : "~"));
-    str += strlen(str);
+    Boolean notfirst = False;
+    CHECK_STR_OVERFLOW;
+
+#if defined(__STDC__) && !defined(UNIXCPP)
+#define MASKNAME(modname) modname##Mask
+#else
+#define MASKNAME(modname) modname/**/Mask
+#endif
+
+#define PRINTMOD(modname) \
+    if (mask & MASKNAME(modname)) {	 \
+	if (! (mod & MASKNAME(modname))) \
+	    *str++ = '~';		 \
+	else if (notfirst)		 \
+	    *str++ = ' ';		 \
+	*str = '\0';			 \
+	strcat(str, "modname");		 \
+	str += strlen(str);		 \
+	notfirst = True;		 \
+    }
+
+#define CtrlMask ControlMask
+
+    PRINTMOD(Shift);
+    PRINTMOD(Ctrl);
+    PRINTMOD(Lock);
+    PRINTMOD(Mod1);
+    PRINTMOD(Mod2);
+    PRINTMOD(Mod3);
+    PRINTMOD(Mod4);
+    PRINTMOD(Mod5);
+    PRINTMOD(Button1);
+    PRINTMOD(Button2);
+    PRINTMOD(Button3);
+    PRINTMOD(Button4);
+    PRINTMOD(Button5);
+
+#undef MASKNAME
+#undef PRINTMOD
+#undef CtrlMask
+
     return str;
 }
 
-static String PrintEventType(str, event)
+static String PrintEventType(buf, len, str, event)
+    String *buf;
+    int *len;
     register String str;
     unsigned long event;
 {
+    CHECK_STR_OVERFLOW;
     switch (event) {
 #define PRINTEVENT(event) case event: (void) sprintf(str, "<event>"); break;
 	PRINTEVENT(KeyPress)
@@ -131,10 +170,13 @@ static String PrintEventType(str, event)
     return str;
 }
 
-static String PrintCode(str, mask, code)
+static String PrintCode(buf, len, str, mask, code)
+    String *buf;
+    int *len;
     register String str;
     unsigned long mask, code;
 {
+    CHECK_STR_OVERFLOW;
     if (mask != 0) {
 	if (mask != (unsigned long)~0L)
 	    (void) sprintf(str, "0x%lx:0x%lx", mask, code);
@@ -144,22 +186,51 @@ static String PrintCode(str, mask, code)
     return str;
 }
 
-static String PrintEvent(str, event)
+static String PrintLateModifiers(buf, len, str, lateModifiers)
+    String *buf;
+    int *len;
     register String str;
-    register Event *event;
+    LateBindingsPtr lateModifiers;
 {
-    str = PrintModifiers(str, event->modifierMask, event->modifiers);
-    str = PrintEventType(str, event->eventType);
-    str = PrintCode(str, event->eventCodeMask, event->eventCode);
+    for (; lateModifiers->keysym != NULL; lateModifiers++) {
+	CHECK_STR_OVERFLOW;
+	if (lateModifiers->knot) {
+	    *str++ = '~';
+	    *str = '\0';
+	}
+	strcat(str, XKeysymToString(lateModifiers->keysym));
+	str += strlen(str);
+	if (lateModifiers->pair) {
+	    *(str -= 2) = '\0';	/* strip "_L" */
+	    lateModifiers++;	/* skip _R keysym */
+	}
+    }
     return str;
 }
 
-static String PrintParams(str, params, num_params)
+static String PrintEvent(buf, len, str, event)
+    String *buf;
+    int *len;
+    register String str;
+    register Event *event;
+{
+    str = PrintModifiers(buf, len, str, event->modifierMask, event->modifiers);
+    if (event->lateModifiers != NULL)
+	str = PrintLateModifiers(buf, len, str, event->lateModifiers);
+    str = PrintEventType(buf, len, str, event->eventType);
+    str = PrintCode(buf, len, str, event->eventCodeMask, event->eventCode);
+    return str;
+}
+
+static String PrintParams(buf, len, str, params, num_params)
+    String *buf;
+    int *len;
     register String str, *params;
     Cardinal num_params;
 {
     register Cardinal i;
     for (i = 0; i<num_params; i++) {
+	CHECK_STR_OVERFLOW;
 	if (i != 0) (void) sprintf(str, ", ");
 	str += strlen(str);
 	(void) sprintf(str, "\"%s\"", params[i]);
@@ -168,16 +239,19 @@ static String PrintParams(str, params, num_params)
     return str;
 }
 
-static String PrintActions(str, actions, quarkTable)
+static String PrintActions(buf, len, str, actions, quarkTable)
+    String *buf;
+    int *len;
     register String str;
     register ActionPtr actions;
     XrmQuark* quarkTable;
 {
-    while (actions != NULL && actions->token != NULL) {
+    while (actions != NULL /* && actions->token != NULL */) {
+	CHECK_STR_OVERFLOW;
         (void) sprintf(
             str, " %s(", XrmQuarkToString(quarkTable[actions->index]));
 	str += strlen(str);
-	str = PrintParams(str, actions->params, (Cardinal)actions->num_params);
+	str = PrintParams(buf, len, str, actions->params, (Cardinal)actions->num_params);
 	str += strlen(str);
 	(void) sprintf(str, ")");
 	str += strlen(str);
@@ -1492,7 +1566,6 @@ static void RemoveAccelerators(widget,closure,data)
 void XtInstallAccelerators(destination,source)
     Widget destination,source;
 {
-    char str[100];
     XtBoundAccActions accBindings;
     if ((!XtIsWindowObject(source)) ||
         source->core.accelerators == NULL) return;
@@ -1531,10 +1604,22 @@ void XtInstallAccelerators(destination,source)
     XtAddCallback(source, XtNdestroyCallback,
         RemoveAccelerators,(caddr_t)destination->core.tm.translations);
     if (XtClass(source)->core_class.display_accelerator != NULL){
+	 char *buf = XtMalloc(100);
+	 int len = 100;
+	 String str = buf;
+	 int i;
          str[0] = '\0';
-         (void) PrintEvent(&str[0],
-                &source->core.accelerators->eventObjTbl[0].event);
-         (*(XtClass(source)->core_class.display_accelerator))(source,str);
+	 for (i = 0; i < source->core.accelerators->numEvents;) {
+	     str = PrintEvent(&str, &len, str,
+			    &source->core.accelerators->eventObjTbl[i].event);
+	     if (++i == source->core.accelerators->numEvents) break;
+	     else {
+		 *str++ = '\n';
+		 *str = '\0';
+	     }
+	 }
+         (*(XtClass(source)->core_class.display_accelerator))(source,buf);
+	 XtFree(buf);
     }
 }         
 void XtInstallAllAccelerators(destination,source)
@@ -1587,8 +1672,10 @@ void XtAugmentTranslations(widget, new)
 
 }
 
-static void PrintState(start, str, state, quarkTable, eot)
-    register String start, str;
+static void PrintState(buf, len, str, state, quarkTable, eot)
+    String *buf;
+    int *len;
+    register String str;
     StatePtr state;
     XrmQuark* quarkTable;
     EventObjPtr eot;
@@ -1597,25 +1684,25 @@ static void PrintState(start, str, state, quarkTable, eot)
     /* print the current state */
     if (state == NULL) return;
 
-    str = PrintEvent(str, &eot[state->index].event);
-    str += strlen(str);
+    CHECK_STR_OVERFLOW;
+    str = PrintEvent(buf, len, str, &eot[state->index].event);
     if (state->actions != NULL) {
-	String temp = str;
+	int offset = str - *buf;
 	(void) sprintf(str, "%s: ", (state->cycle ? "(+)" : ""));
 	while (*str) str++;
-	(void) PrintActions(str, state->actions, quarkTable);
-	(void) printf("%s\n", start);
-	str = temp; *str = '\0';
+	(void) PrintActions(buf, len, str, state->actions, quarkTable);
+	(void) printf("%s\n", *buf);
+	str = *buf + offset; *str = '\0';
     }
 
     /* print succeeding states */
     if (!state->cycle)
-	PrintState(start, str, state->nextLevel, quarkTable, eot);
+	PrintState(buf, len, str, state->nextLevel, quarkTable, eot);
 
     str = old; *str = '\0';
 
     /* print sibling states */
-    PrintState(start, str, state->next, quarkTable, eot);
+    PrintState(buf, len, str, state->next, quarkTable, eot);
     *str = '\0';
 
 }
@@ -1628,17 +1715,20 @@ static void TranslateTablePrint(translations)
     XtTranslations translations;
 {
     register Cardinal i;
-    char buf[1000];
+    int len = 1000;
+    char *buf = XtMalloc(1000);
 
     for (i = 0; i < translations->numEvents; i++) {
 	buf[0] = '\0';
 	PrintState(
-	   &buf[0],
-	   &buf[0],
+	   &buf,
+	   &len,
+	   buf,
 	   translations->eventObjTbl[i].state,
            translations->quarkTable,
 	   translations->eventObjTbl);
     }
+    XtFree(buf);
 }
 
 /***********************************************************************
