@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.h,v 1.1 89/10/25 15:16:20 keith Exp $
+ * $XConsortium: miwideline.h,v 1.2 89/10/29 11:30:31 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -16,6 +16,16 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
+#include "mispans.h"
+
+/* 
+ * interface data to span-merging polygon filler
+ */
+
+typedef struct _SpanData {
+    SpanGroup	fgGroup, bgGroup;
+} SpanDataRec, *SpanDataPtr;
+
 /*
  * Polygon edge description for integer wide-line routines
  */
@@ -30,7 +40,7 @@ typedef struct _PolyEdge {
     int	    dx;
 } PolyEdgeRec, *PolyEdgePtr;
 
-#define SQSECANT 108.856472512142 /* 1/sin^2(11/2) - for 11o miter cutoff */
+#define SQSECANT 108.856472512142 /* 1/sin^2(11/2) - miter limit constant */
 
 /*
  * types for general polygon routines
