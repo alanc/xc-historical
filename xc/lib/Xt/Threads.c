@@ -40,10 +40,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <assert.h>
 
 typedef struct _LockRec {
-    xthread_t holder;
     xmutex_t mutex;
     int level;
+#ifndef _XMUTEX_NESTS
+    xthread_t holder;
     xcondition_t cond;
+#endif
 } LockRec;
 
 typedef struct _ThreadStack {
@@ -62,19 +64,23 @@ InitProcessLock()
     if(!process_lock) {
     	process_lock = XtNew(LockRec);
     	process_lock->mutex = xmutex_malloc();
-    	process_lock->cond = xcondition_malloc();
-
     	xmutex_init(process_lock->mutex);
-    	xcondition_init(process_lock->cond);
-
     	process_lock->level = 0;
+#ifndef _XMUTEX_NESTS
+    	process_lock->cond = xcondition_malloc();
+    	xcondition_init(process_lock->cond);
     	xthread_clear_id(process_lock->holder);
+#endif
     }
 }
 
 static void 
 ProcessLock()
 {
+#ifdef _XMUTEX_NESTS
+    xmutex_lock(process_lock->mutex);
+    process_lock->level++;
+#else
     xthread_t this_thread = xthread_self();
     
     xmutex_lock(process_lock->mutex);
@@ -97,11 +103,16 @@ ProcessLock()
     process_lock->holder = this_thread;
     assert(xthread_equal(process_lock->holder, this_thread));
     xmutex_unlock(process_lock->mutex);
+#endif
 }
 
 static void 
 ProcessUnlock()
 {
+#ifdef _XMUTEX_NESTS
+    process_lock->level--;
+    xmutex_unlock(process_lock->mutex);
+#else
     xmutex_lock(process_lock->mutex);
     assert(xthread_equal(process_lock->holder, ThrSelf()));
     if (process_lock->level != 0) {
@@ -114,6 +125,7 @@ ProcessUnlock()
     xcondition_signal(process_lock->cond);
     
     xmutex_unlock(process_lock->mutex);
+#endif
 }
 
 
@@ -127,6 +139,10 @@ AppLock(app)
 #endif
 {
     LockPtr app_lock = app->lock_info;
+#ifdef _XMUTEX_NESTS
+    xmutex_lock(app_lock->mutex);
+    app_lock->level++;
+#else
     xthread_t this_thread = xthread_self();
     
     xmutex_lock(app_lock->mutex);
@@ -151,6 +167,7 @@ AppLock(app)
     assert(xthread_equal(app_lock->holder, this_thread));
     
     xmutex_unlock(app_lock->mutex);
+#endif
 }
 
 static void
@@ -164,6 +181,10 @@ AppUnlock(app)
 {
     LockPtr app_lock = app->lock_info;
 
+#ifdef _XMUTEX_NESTS
+    app_lock->level--;
+    xmutex_unlock(app_lock->mutex);
+#else
     xmutex_lock(app_lock->mutex);
     assert(xthread_equal(app_lock->holder, xthread_self()));
     if (app_lock->level != 0) {
@@ -176,6 +197,7 @@ AppUnlock(app)
     xcondition_signal(app_lock->cond);
 
     xmutex_unlock(app_lock->mutex);
+#endif
 }
 
 static int
@@ -188,8 +210,14 @@ YieldAppLock(app)
 #endif
 {
     LockPtr app_lock = app->lock_info;
-    int i =0;
-    int level = -1;
+    int level;
+#ifdef _XMUTEX_NESTS
+    level = app_lock->level;
+    while (app_lock->level) {
+	app_lock->level--;
+	xmutex_unlock(app_lock->mutex);
+    }
+#else
     xthread_t this_thread = xthread_self();
     
     xmutex_lock(app_lock->mutex);
@@ -203,6 +231,7 @@ YieldAppLock(app)
 
     xcondition_signal(app_lock->cond);
     xmutex_unlock(app_lock->mutex);
+#endif
     return level;
 }
 
@@ -218,8 +247,14 @@ RestoreAppLock(app, level)
     int level;
 #endif
 {
-    xthread_t this_thread = xthread_self();
     LockPtr app_lock = app->lock_info;
+#ifdef _XMUTEX_NESTS
+    while (--level >= 0) {
+	xmutex_lock(app_lock->mutex);
+	app_lock->level++;
+    }
+#else
+    xthread_t this_thread = xthread_self();
 
     xmutex_lock(app_lock->mutex);
     while(xthread_have_id(app_lock->holder))
@@ -230,6 +265,7 @@ RestoreAppLock(app, level)
     assert(xthread_equal(app_lock->holder, this_thread)); 
 
     xmutex_unlock(app_lock->mutex);
+#endif
 }
 
 static void
@@ -246,10 +282,10 @@ FreeAppLock(app)
     if(app_lock) {
 	xmutex_clear(app_lock->mutex);
 	xmutex_free(app_lock->mutex);
-
+#ifndef _XMUTEX_NESTS
 	xcondition_clear(app_lock->cond);
 	xcondition_free(app_lock->cond);
-
+#endif
 	XtFree((char *)app_lock);
 	app->lock_info = NULL;
 	if(app->stack->p != (xthread_t *)NULL)
@@ -341,12 +377,13 @@ InitAppLock(app)
 
     app->lock_info = XtNew(LockRec);
     app->lock_info->mutex = xmutex_malloc();
-    app->lock_info->cond = xcondition_malloc();
     xmutex_init(app->lock_info->mutex);
-    xcondition_init(app->lock_info->cond);
     app->lock_info->level = 0;
+#ifndef _XMUTEX_NESTS
+    app->lock_info->cond = xcondition_malloc();
+    xcondition_init(app->lock_info->cond);
     xthread_clear_id(app->lock_info->holder);
-   
+#endif   
     app->stack = XtNew(ThreadStack);
     app->stack->size = STACK_INCR;
     app->stack->sp = -1;
