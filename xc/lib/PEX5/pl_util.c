@@ -1,4 +1,4 @@
-/* $XConsortium: pl_util.c,v 1.3 92/08/03 13:23:17 mor Exp $ */
+/* $XConsortium: pl_util.c,v 1.4 92/08/26 13:06:23 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -1512,6 +1512,7 @@ OUTPUT PEXCoord		*points_return;
     register PEXCoord	*point_in = points;
     register PEXCoord	*point_out = points_return;
     register int	i;
+    PEXCoord		temp;
     int			status = 0;
 
 
@@ -1520,17 +1521,21 @@ OUTPUT PEXCoord		*points_return;
     {
 	for (i = 0; i < count; i++, point_in++, point_out++)
 	{
-	    point_out->x = mat[0][0] * point_in->x +
-		   	   mat[0][1] * point_in->y +
-			   mat[0][2] * point_in->z + mat[0][3];
+	    temp.x = mat[0][0] * point_in->x +
+		     mat[0][1] * point_in->y +
+		     mat[0][2] * point_in->z + mat[0][3];
 
-	    point_out->y = mat[1][0] * point_in->x +
-			   mat[1][1] * point_in->y +
-			   mat[1][2] * point_in->z + mat[1][3];
+	    temp.y = mat[1][0] * point_in->x +
+		     mat[1][1] * point_in->y +
+		     mat[1][2] * point_in->z + mat[1][3];
 
-	    point_out->z = mat[2][0] * point_in->x +
-			   mat[2][1] * point_in->y +
-			   mat[2][2] * point_in->z + mat[2][3];
+	    temp.z = mat[2][0] * point_in->x +
+		     mat[2][1] * point_in->y +
+		     mat[2][2] * point_in->z + mat[2][3];
+
+	    point_out->x = temp.x;
+	    point_out->y = temp.y;
+	    point_out->z = temp.z;
 	}
     }
     else
@@ -1552,17 +1557,21 @@ OUTPUT PEXCoord		*points_return;
 	    }
 	    else
 	    {
-		point_out->x = (mat[0][0] * point_in->x +
-				mat[0][1] * point_in->y +
-                            	mat[0][2] * point_in->z + mat[0][3]) / w;
+		temp.x = (mat[0][0] * point_in->x +
+			  mat[0][1] * point_in->y +
+                          mat[0][2] * point_in->z + mat[0][3]) / w;
 
-		point_out->y = (mat[1][0] * point_in->x +
-				mat[1][1] * point_in->y +
-				mat[1][2] * point_in->z + mat[1][3]) / w;
+		temp.y = (mat[1][0] * point_in->x +
+			  mat[1][1] * point_in->y +
+			  mat[1][2] * point_in->z + mat[1][3]) / w;
 
-		point_out->z = (mat[2][0] * point_in->x +
-				mat[2][1] * point_in->y +
-				mat[2][2] * point_in->z + mat[2][3]) / w;
+		temp.z = (mat[2][0] * point_in->x +
+			  mat[2][1] * point_in->y +
+			  mat[2][2] * point_in->z + mat[2][3]) / w;
+
+		point_out->x = temp.x;
+		point_out->y = temp.y;
+		point_out->z = temp.z;
 	    }
 	}
     }
@@ -1583,6 +1592,7 @@ OUTPUT PEXCoord2D	*points_return;
     register PEXCoord2D *point_in = points;
     register PEXCoord2D	*point_out = points_return;
     register int	i;
+    PEXCoord2D		temp;
     int			status = 0;
 
 
@@ -1591,11 +1601,14 @@ OUTPUT PEXCoord2D	*points_return;
     {
 	for (i = 0; i < count; i++, point_in++, point_out++)
 	{
-	    point_out->x = mat[0][0] * point_in->x +
-			   mat[0][1] * point_in->y + mat[0][2];
+	    temp.x = mat[0][0] * point_in->x +
+		     mat[0][1] * point_in->y + mat[0][2];
 
-	    point_out->y = mat[1][0] * point_in->x +
-		           mat[1][1] * point_in->y + mat[1][2];
+	    temp.y = mat[1][0] * point_in->x +
+		     mat[1][1] * point_in->y + mat[1][2];
+
+	    point_out->x = temp.x;
+	    point_out->y = temp.y;
 	}
     }
     else
@@ -1615,11 +1628,14 @@ OUTPUT PEXCoord2D	*points_return;
 	    }
 	    else
 	    {
-		point_out->x = (mat[0][0] * point_in->x +
-				mat[0][1] * point_in->y + mat[0][2]) / w;
+		temp.x = (mat[0][0] * point_in->x +
+			  mat[0][1] * point_in->y + mat[0][2]) / w;
 
-		point_out->y = (mat[1][0] * point_in->x +
-				mat[1][1] * point_in->y + mat[1][2]) / w;
+		temp.y = (mat[1][0] * point_in->x +
+			  mat[1][1] * point_in->y + mat[1][2]) / w;
+
+		point_out->x = temp.x;
+		point_out->y = temp.y;
 	    }
 	}
     }
@@ -1640,21 +1656,27 @@ OUTPUT PEXCoord4D	*points_return;
     register PEXCoord4D	*point_in = points;
     register PEXCoord4D	*point_out = points_return;
     register int	i;
+    PEXCoord4D		temp;
 
 
     for (i = 0; i < count; i++, point_in++, point_out++)
     {
-        point_out->x = mat[0][0] * point_in->x + mat[0][1] * point_in->y +
-                       mat[0][2] * point_in->z + mat[0][3] * point_in->w;
+        temp.x = mat[0][0] * point_in->x + mat[0][1] * point_in->y +
+                 mat[0][2] * point_in->z + mat[0][3] * point_in->w;
 
-        point_out->y = mat[1][0] * point_in->x + mat[1][1] * point_in->y +
-                       mat[1][2] * point_in->z + mat[1][3] * point_in->w;
+        temp.y = mat[1][0] * point_in->x + mat[1][1] * point_in->y +
+                 mat[1][2] * point_in->z + mat[1][3] * point_in->w;
 
-        point_out->z = mat[2][0] * point_in->x + mat[2][1] * point_in->y +
-                       mat[2][2] * point_in->z + mat[2][3] * point_in->w;
+        temp.z = mat[2][0] * point_in->x + mat[2][1] * point_in->y +
+                 mat[2][2] * point_in->z + mat[2][3] * point_in->w;
 
-        point_out->w = mat[3][0] * point_in->x + mat[3][1] * point_in->y +
-                       mat[3][2] * point_in->z + mat[3][3] * point_in->w;
+        temp.w = mat[3][0] * point_in->x + mat[3][1] * point_in->y +
+                 mat[3][2] * point_in->z + mat[3][3] * point_in->w;
+
+	point_out->x = temp.x;
+	point_out->y = temp.y;
+	point_out->z = temp.z;
+	point_out->w = temp.w;
     }
 }
 
@@ -1671,18 +1693,23 @@ OUTPUT PEXCoord		*points_return;
     register PEXCoord	*point_in = points;
     register PEXCoord	*point_out = points_return;
     register int	i;
+    PEXCoord		temp;
 
 
     for (i = 0; i < count; i++, point_in++, point_out++)
     {
-        point_out->x = mat[0][0] * point_in->x + mat[0][1] * point_in->y +
-                       mat[0][2] * point_in->z;
+        temp.x = mat[0][0] * point_in->x + mat[0][1] * point_in->y +
+                 mat[0][2] * point_in->z;
 
-        point_out->y = mat[1][0] * point_in->x + mat[1][1] * point_in->y +
-                       mat[1][2] * point_in->z;
+        temp.y = mat[1][0] * point_in->x + mat[1][1] * point_in->y +
+                 mat[1][2] * point_in->z;
 
-        point_out->z = mat[2][0] * point_in->x + mat[2][1] * point_in->y +
-                       mat[2][2] * point_in->z;
+        temp.z = mat[2][0] * point_in->x + mat[2][1] * point_in->y +
+                 mat[2][2] * point_in->z;
+
+	point_out->x = temp.x;
+	point_out->y = temp.y;
+	point_out->z = temp.z;
     }
 }
 
@@ -1699,18 +1726,23 @@ OUTPUT PEXVector	*vectors_return;
     register PEXVector	*vec_in = vectors;
     register PEXVector	*vec_out = vectors_return;
     register int	i;
+    PEXVector		temp;
 
 
     for (i = 0; i < count; i++, vec_in++, vec_out++)
     {
-        vec_out->x = mat[0][0] * vec_in->x + mat[0][1] * vec_in->y +
-                     mat[0][2] * vec_in->z;
+        temp.x = mat[0][0] * vec_in->x + mat[0][1] * vec_in->y +
+                 mat[0][2] * vec_in->z;
 
-        vec_out->y = mat[1][0] * vec_in->x + mat[1][1] * vec_in->y +
-                     mat[1][2] * vec_in->z;
+        temp.y = mat[1][0] * vec_in->x + mat[1][1] * vec_in->y +
+                 mat[1][2] * vec_in->z;
 
-        vec_out->z = mat[2][0] * vec_in->x + mat[2][1] * vec_in->y +
-                     mat[2][2] * vec_in->z;
+        temp.z = mat[2][0] * vec_in->x + mat[2][1] * vec_in->y +
+                 mat[2][2] * vec_in->z;
+
+        vec_out->x = temp.x;
+        vec_out->y = temp.y;
+        vec_out->z = temp.z;
     }
 }
 
@@ -1727,12 +1759,17 @@ OUTPUT PEXVector2D	*vectors_return;
     register PEXVector2D	*vec_in = vectors;
     register PEXVector2D	*vec_out = vectors_return;
     register int		i;
+    PEXVector2D			temp;
 
 
     for (i = 0; i < count; i++, vec_in++, vec_out++)
     {
-        vec_out->x = mat[0][0] * vec_in->x + mat[0][1] * vec_in->y;
-        vec_out->y = mat[1][0] * vec_in->x + mat[1][1] * vec_in->y;
+        temp.x = mat[0][0] * vec_in->x + mat[0][1] * vec_in->y;
+        temp.y = mat[1][0] * vec_in->x + mat[1][1] * vec_in->y;
+
+        vec_out->x = temp.x;
+        vec_out->y = temp.y;
+
     }
 }
 
