@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.53 90/04/18 07:55:27 keith Exp $ */
+/* $XConsortium: window.c,v 5.54 90/06/26 10:22:59 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3067,7 +3067,7 @@ SetShape(pWin)
     register ScreenPtr pScreen = pWin->drawable.pScreen;
     Bool	anyMarked;
     WindowPtr	pParent = pWin->parent;
-    RegionPtr	pOldClip, bsExposed = NullRegion;
+    RegionPtr	pOldClip, bsExposed;
 #ifdef DO_SAVE_UNDERS
     Bool	dosave = FALSE;
 #endif
