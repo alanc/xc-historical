@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.30 88/10/25 13:40:36 keith Exp $ */
+/* $XConsortium: os.h,v 1.31 89/03/14 14:02:20 rws Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -69,6 +69,11 @@ pragma on(alloca);
 #endif /* defined(__HIGHC__) */
 
 
+#ifdef __GNUC__
+#define alloca __builtin_alloca
+#define ALLOCATE_LOCAL(size) alloca((int)(size))
+#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
+#else /* ! __GNUC__ */
 #if defined(vax) || defined(sun)
 /*
  * Some System V boxes extract alloca.o from /lib/libPW.a; if you
@@ -79,7 +84,7 @@ char *alloca();
 #define ALLOCATE_LOCAL(size) alloca((int)(size))
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 #endif /* vax or sun */
-
+#endif /* __GNUC__ */
 
 #ifndef ALLOCATE_LOCAL
 char *malloc();
