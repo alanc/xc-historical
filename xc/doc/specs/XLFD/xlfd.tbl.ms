@@ -1,5 +1,14 @@
 .\" Use tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.15 93/12/28 15:15:00 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.17 93/12/28 17:20:00 gildea Exp $
+.de sC			\" start change
+.mc \s+5\(br\s0		\" make tall enough to span paragraph skip
+..
+.de eC			\" end change
+.mc
+..
+.nr sP 4		\" section on Polymorphic font support
+.nr sM 5		\" section on Matrix Transformations
+.nr sS 6		\" section on Scalable fonts
 .EH ''''
 .OH ''''
 .EF ''''
@@ -11,11 +20,11 @@
 .ce 4
 \s+2\fBX Logical Font Description Conventions\fP\s-2
 
-\fBVersion 1.4\fP
+\fBVersion 1.5 (draft 1)\fP
 
-\fBMIT X Consortium Standard\fP
+\fBX Consortium Standard\fP
 
-\fBX Version 11, Release 5\fP
+\fBX Version 11, Release 6\fP
 .sp 6
 .ce 2
 \s+1Jim Flowers\s-1
@@ -40,6 +49,10 @@ Bitstream Amerigo is a registered trademark of Bitstream Inc.
 .LP             
 Stone is a registered trademark of Adobe Systems Inc.
 .LP
+Copyright \(co 1994
+X Consortium
+Cambridge, Mass., USA.
+.LP
 Copyright \(co 1988 
 Massachusetts Institute of Technology, 
 Cambridge, MA USA.
@@ -57,8 +70,8 @@ This documentation is provided as is without express or implied warranty.
 .ps 11
 .nr PS 11
 .bp 1
-.EH '\fBX Logical Font Description Conventions\fP''\fBX11, Release 5'
-.OH '\fBX Logical Font Description Conventions\fP''\fBX11, Release 5'
+.EH '\fBX Logical Font Description Conventions\fP''\fBX11, Release 6'
+.OH '\fBX Logical Font Description Conventions\fP''\fBX11, Release 6'
 .EF ''\fB\\\\n(PN\fP''
 .OF ''\fB\\\\n(PN\fP''
 .NH 1 
@@ -107,6 +120,12 @@ In addition,
 this information is required by certain clients 
 to position subscripts automatically and determine small capital heights, 
 recommended leading, word-space values, and so on.
+.LP
+.sC
+Change bars note sections that have changed or been added since
+XLFD version 1.4, which was part of X11 Release 5.
+.br
+.eC
 .NH 1
 Requirements and Goals
 .XS
@@ -120,7 +139,10 @@ Provides unique, descriptive font names that support simple pattern matching
 .IP \(bu 5
 Supports multiple font vendors, arbitrary character sets, and encodings
 .IP \(bu 5
-Supports naming and instancing of scalable fonts
+.sC
+Supports naming and instancing of scalable and polymorphic fonts
+.br
+.eC
 .IP \(bu 5
 Is independent of X server and operating or file system implementations
 .IP \(bu 5
@@ -592,15 +614,22 @@ PIXEL_SIZE Field
 \*(SN PIXEL_SIZE Field
 .XE
 .LP 
-PIXEL_SIZE is an unsigned integer-string typographic metric in 
-device pixels that gives the body size of the font at a particular 
+.sC
+PIXEL_SIZE
+gives the body size of the font at a particular 
 POINT_SIZE and RESOLUTION_Y.
+PIXEL_SIZE is either an unsigned integer-string or a string beginning
+with \*Q[\*U.  A string beginning with \*Q[\*U represents a matrix;
+see section \n(sM.
 PIXEL_SIZE usually incorporates additional vertical spacing 
+.eC
 that is considered part of the font design.
 (Note, however, that this value is not necessarily equivalent to the height 
 of the font bounding box.)
-PIXEL_SIZE is in the range zero to a very large number.
-Zero is used to indicate a scalable font; see section 4.
+.sC
+A numeric PIXEL_SIZE is in the range zero to a very large number.
+.eC
+Zero is used to indicate a scalable font; see section \n(sS.
 .LP
 PIXEL_SIZE usually is used by X client applications that need to 
 query fonts according to device-dependent size, 
@@ -612,17 +641,21 @@ POINT_SIZE Field
 \*(SN POINT_SIZE Field
 .XE
 .LP 
-POINT_SIZE is an unsigned integer-string typographic metric in 
-device-independent units that gives the body size 
+.sC
+POINT_SIZE gives the body size 
 for which the font was designed.
+POINT_SIZE is either an unsigned integer-string or a string beginning
+with \*Q[\*U.  A string beginning with \*Q[\*U represents a matrix;
+see section \n(sM.
 This field usually incorporates additional vertical spacing 
 that is considered part of the font design.
+.eC
 (Note, however, that POINT_SIZE is not necessarily equivalent to the height 
 of the font bounding box.) 
 POINT_SIZE is expressed in decipoints (where points are as defined 
 in the X protocol or 72.27 points equal 1 inch) in the range zero to a 
 very large number.
-Zero is used to indicate a scalable font; see section 4.
+Zero is used to indicate a scalable font; see section \n(sS.
 .LP
 POINT_SIZE and RESOLUTION_Y are used by X clients to query fonts 
 according to device-independent size to maintain constant text 
@@ -719,7 +752,7 @@ that gives the unweighted arithmetic mean width of all glyphs in the font
 For monospaced and character cell fonts, 
 this is the width of all glyphs in the font.
 AVERAGE_WIDTH is in the range zero to a very large number.
-Zero is used to indicate a scalable font; see section 4.
+Zero is used to indicate a scalable font; see section \n(sS.
 .NH 4
 CHARSET_REGISTRY and CHARSET_ENCODING Fields
 .XS
@@ -1925,6 +1958,112 @@ DEFAULT_CHAR	CARD32
 .sp 6p
 _
 .TE
+.\" section \n(sM
+.br
+.sC
+.nH 1 "Matrix Transformations"
+.LP
+An XLFD name presented to the server can have the POINT_SIZE or PIXEL_SIZE
+field begin with the character \*Q[\*U.  If the first character of the field
+is \*Q[\*U, the character must be followed with ASCII representations of
+four floating point numbers and a trailing \*Q]\*U, with white space
+separating the numbers and optional white space separating the numbers
+from the \*Q[\*U and \*Q]\*U characters.  Numbers use standard floating point
+syntax but use the character \*Q~\*U to represent a minus sign in the mantissa
+or exponent.
+.LP
+The string \*Q[a b c d]\*U represents a graphical transformation of the glyphs
+in the font by the matrix
+.TS
+c c c c c.
+[	a	b	0	]
+[	c	d	0	]
+[	0	0	1	]
+.TE
+.LP
+All transformations occur around the origin of the glyph.  The
+relationship between the current scalar values and the matrix
+transformation values is that the scalar value \*QN\*U in the POINT_SIZE field
+produces the same glyphs as the matrix \*Q[N/10 0 0 N/10]\*U in that field,
+and the scalar value \*QN\*U in the PIXEL_SIZE field produces the same glyphs
+as the matrix \*Q[N*RESOLUTION_X/RESOLUTION_Y 0 0 N]\*U in that field.
+.LP
+If matrices are specified for both the POINT_SIZE and PIXEL_SIZE, they
+must bear the following relationship to each other within an
+implementation-specific tolerance:
+.br
+	PIXEL_SIZE_MATRIX = [Sx 0 0 Sy] * POINT_SIZE_MATRIX
+.br
+where
+.br
+	Sx = RESOLUTION_X / 72.27
+.br
+	Sy = RESOLUTION_Y / 72.27
+.LP
+If either the POINT_SIZE or PIXEL_SIZE field is unspecified (either \*Q0\*U or
+wildcarded) the preceding formulas can be used to compute one from the
+other.
+
+.nH 2 "Metrics and Font Properties"
+.LP
+In this section, the phrase \*Qcorresponding 1000 pixel metrics\*U means the
+metrics that would be obtained if the rasterizer took the base untransformed
+design used to generate the transformed font and scaled it linearly to a
+height of 1000 pixels, with no rotation component.  Note that there may be no
+way for the application to actually request this font since the rasterizer
+may use different outlines or rasterization techniques at that size than the
+ones used to generate the transformed font.
+.LP
+Notes on properties and metrics:
+.LP
+The per-char ink metrics (lbearing, rbearing, ascent, and descent)
+represent the ink extent of the transformed glyph around its origin.
+.LP
+The per-char width is the x component of the transformed character width.
+.LP
+The font ascent and descent are the y component of the transformed font
+ascent or descent.
+.LP
+The FONT property returns a name reflecting the matrix being
+used\*-that is, the name returned can be used to open another
+instance of the same font.  The returned name is not necessarily an
+exact copy of the requested name.  If, for example, the user
+requests
+.br
+.ft C
+.SM
+   \-misc\-fixed\-medium\-r\-normal\-\-0\-[2e1 0 0.0 +10.0]\-72\-72\-c\-0\-iso8859\-1
+.NL
+.ft P
+.br
+the resulting FONT property might be
+.br
+.ft C
+.SM
+   \-misc\-fixed\-medium\-r\-normal\-\-[19.9 0 0 10]\-[20 0 0 10]\-72\-72\-c\-0\-iso8859\-1
+.NL
+.ft P
+.br
+The FONT property will always include matrices in both the PIXEL_SIZE
+and the POINT_SIZE fields.
+.LP
+To allow accurate client positioning of transformed characters, the
+attributes field of the XCharInfo contains the width of the character in
+1000 pixel metrics.  This attributes field should be interpreted as a signed
+integer.
+.LP
+There will always be 2 new font properties defined, RAW_ASCENT and
+RAW_DESCENT, that hold the ascent and descent in 1000 pixel metrics.
+.LP
+All font properties that represent horizontal widths or displacements
+have as their value the x component of the transformed width or
+displacement.  All font properties that represent vertical heights or
+displacements have as their value the y component of the transformed
+height or displacement.  Each such property will be accompanied by a new
+property, named as the original except prefixed with \*QRAW_\*U, that gives
+the value of the width, height, or displacement in 1000 pixel metrics.
+.br
+.eC
 .NH 1
 Scalable Fonts
 .XS
