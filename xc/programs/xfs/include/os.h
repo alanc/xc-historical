@@ -1,4 +1,4 @@
-/* $XConsortium: os.h,v 1.8 94/04/17 19:55:59 dpw Exp kaleb $ */
+/* $XConsortium: os.h,v 1.9 94/09/16 19:00:32 kaleb Exp kaleb $ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -98,7 +98,11 @@ pragma on(alloca);
 #endif /* __HIGHC__ */
 
 #ifdef __GNUC__
+#ifndef alloca
 #define alloca __builtin_alloca
+#endif /* !alloca */
+#define ALLOCATE_LOCAL(size) alloca((int)(size))
+#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 #else
 
 /*
