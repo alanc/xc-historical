@@ -34,11 +34,12 @@ Bool InitCircles(xp, p)
     int     x, y;       /* base of square to draw the circle in		    */
     int     xorg, yorg; /* Used to get from column to column or row to row  */
     int     size;
+    int     half;
 
     size = p->special;
+    half = (size + 19) / 20;
     arcs = (XArc *)malloc((p->objects) * sizeof(XArc));
-    xorg = 0; yorg = 0;
-    x    = 0; y    = 0;
+    x = xorg = half; y = yorg = half;
     rows = 0;
 
     for (i = 0; i != p->objects; i++) {    
@@ -51,15 +52,15 @@ Bool InitCircles(xp, p)
 
 	y += size + 1;
 	rows++;
-	if (y >= HEIGHT - size || rows == MAXROWS) {
+	if (y >= HEIGHT - size  - half || rows == MAXROWS) {
 	    /* Go to next column */
 	    rows = 0;
 	    yorg++;
-	    if (yorg >= size || yorg >= HEIGHT - size) {
-		yorg = 0;
+	    if (yorg >= size + half || yorg >= HEIGHT - size - half) {
+		yorg = half;
 		xorg++;
-		if (xorg >= size || xorg >= WIDTH - size) {
-		    xorg = 0;
+		if (xorg >= size + half || xorg >= WIDTH - size - half) {
+		    xorg = half;
 		}
 	    }
 	    y = yorg;
@@ -172,6 +173,7 @@ Bool InitEllipses(xp, p)
     Parms   p;
 {
     int     size;
+    int     half;
     int     rows;       /* Number of rows filled in current column	    */
     int     i;
     int     x, y;	    /* base of square to draw ellipse in	    */
@@ -179,12 +181,13 @@ Bool InitEllipses(xp, p)
     int     dir;
 
     size = p->special;
+    half = (size + 19) / 20;
     arcs = (XArc *)malloc((p->objects) * sizeof(XArc));
     vsize = 1;
     vsizeinc = (size - 1) / (p->objects - 1);
     if (vsizeinc == 0) vsizeinc = 1;
 
-    x = 0; y = 0;
+    x = half; y = half;
     dir = 0;
     rows = 0;
 
@@ -205,13 +208,13 @@ Bool InitEllipses(xp, p)
 
 	y += size + 1;
 	rows++;
-	if (y >= HEIGHT - size || rows == MAXROWS) {
+	if (y >= HEIGHT - size - half || rows == MAXROWS) {
 	    /* Go to next column */
 	    rows = 0;
-	    y = 0;
+	    y = half;
 	    x += size + 1;
-	    if (x >= WIDTH - size) {
-		x = 0;
+	    if (x >= WIDTH - size - half) {
+		x = half;
 	    }
 	}
 	

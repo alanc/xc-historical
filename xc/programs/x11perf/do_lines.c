@@ -30,6 +30,7 @@ Bool InitLines(xp, p)
     Parms   p;
 {
     int size;
+    int half;		/* Half of width if wide line		        */
     int i;
     int     rows;       /* Number of rows filled in current column      */
     int x, y;		/* Next point					*/
@@ -41,6 +42,7 @@ Bool InitLines(xp, p)
     int majorphase;     /* count 0..3 for which type of x1inc, y1inc    */
 
     size = p->special;
+    half = (size + 19) / 20;
 
     points = (XPoint *)malloc((p->objects+1) * sizeof(XPoint));
 
@@ -54,7 +56,7 @@ Bool InitLines(xp, p)
 	(4) moves left or right at each bounce to make things less boring
     */
 
-    x     = 0;     y     = 0;
+    x     = half;  y     = half;
     xdir  = 1;     ydir  = 1;
     bigxdir = 1;
     x1    = size;  y1    = 0;
@@ -74,16 +76,16 @@ Bool InitLines(xp, p)
 	/* If off either top or bottom, backtrack to previous position and go
 	   the other way instead.  Also move in bigxdir if not already. */
 	rows++;
-	if (y < 0 || y >= HEIGHT || rows > MAXROWS) {
+	if (y < half || y >= (HEIGHT-half) || rows > MAXROWS) {
 	    rows = 0;
 	    if (bigxdir > 0) {
-		if (x + size < WIDTH) {
+		if (x + size < WIDTH - half) {
 		    xdir = 1;
 		} else {
 		    bigxdir = -1;
 		}
 	    } else {
-		if (x - size > 0) {
+		if (x - size > half) {
 		    xdir = -1;
 		} else {
 		    bigxdir = 1;

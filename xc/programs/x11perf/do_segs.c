@@ -30,6 +30,7 @@ Bool InitSegs(xp, p)
     Parms   p;
 {
     int size;
+    int     half;
     int i;
     int     rows;       /* Number of rows filled in current column      */
     int x, y;		/* base of square to draw in			*/
@@ -39,6 +40,7 @@ Bool InitSegs(xp, p)
     int majorphase;     /* count 0..3 for which type of x1inc, y1inc    */
 
     size = p->special;
+    half = (size + 19) / 20;
 
     segments = (XSegment *)malloc((p->objects) * sizeof(XSegment));
 
@@ -52,9 +54,9 @@ Bool InitSegs(xp, p)
 
     */
 
-    x     = 0;  y     = 0;
-    x1    = 0;  y1    = 0;
-    x1inc = 1;  y1inc = 0;
+    x     = half;  y     = half;
+    x1    = 0;     y1    = 0;
+    x1inc = 1;     y1inc = 0;
     minorphase = size;
     majorphase = 0;
 
@@ -69,13 +71,13 @@ Bool InitSegs(xp, p)
 	/* Change square to draw segment in */
 	rows++;
 	y += size + 1;
-	if (y >= HEIGHT - size || rows == MAXROWS) {
+	if (y >= HEIGHT - size - half || rows == MAXROWS) {
 	    /* Go to next column */
 	    rows = 0;
-	    y = 0;
+	    y = half;
 	    x += size + 1;
-	    if (x >= WIDTH - size) {
-		x = 0;
+	    if (x >= WIDTH - size - half) {
+		x = half;
 	    }
 	}
 
