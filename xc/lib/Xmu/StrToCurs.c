@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: StrToCurs.c,v 1.1 88/09/09 14:56:28 swick Exp $";
+static char rcsid[] = "$XConsortium: StrToCurs.c,v 1.2 88/09/12 11:34:18 swick Exp $";
 #endif lint
 
 
@@ -81,7 +81,7 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
     Screen *screen;
     register int i;
     static char* bitmap_file_path = NULL;
-    char filename[MAXPATHLEN];
+    char filename[MAXPATHLEN], maskname[MAXPATHLEN];
     Pixmap source, mask;
     static XColor bgColor = {0, ~0, ~0, ~0};
     static XColor fgColor = {0, 0, 0, 0};
@@ -274,16 +274,23 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
 	XtStringConversionWarning( name, "Cursor" );
 	return;
     }
-    (void) strcat( filename, "Mask" );
+    (void) strcpy( maskname, filename );
+    (void) strcat( maskname, "Mask" );
     if (XReadBitmapFile( DisplayOfScreen(screen), RootWindowOfScreen(screen),
-			 filename, &width, &height, &mask, &width, &height )
+			 maskname, &width, &height, &mask, &width, &height )
 	!= BitmapSuccess) {
-	mask = None;
+	(void) strcpy( maskname, filename );
+	(void) strcat( maskname, "msk" );
+	if (XReadBitmapFile(DisplayOfScreen(screen),RootWindowOfScreen(screen),
+			    maskname, &width, &height, &mask, &width, &height )
+	    != BitmapSuccess) {
+	    mask = None;
+	}
     }
     cursor = XCreatePixmapCursor( DisplayOfScreen(screen), source, mask,
 				  &fgColor, &bgColor, xhot, yhot );
     XFreePixmap( DisplayOfScreen(screen), source );
-    XFreePixmap( DisplayOfScreen(screen), mask );
+    if (mask != None) XFreePixmap( DisplayOfScreen(screen), mask );
 
     done(&cursor, Cursor);
 }
