@@ -1,14 +1,10 @@
-XCOMM platform:  $XConsortium: att.cf,v 1.10 91/03/12 14:52:21 rws Exp $
-
-
-/*
- * SET VERSION NUMBERS BEFORE MAKING MAKEFILES; also, you'll need to install
- * util/scripts/bsdinstall.sh before doing a "make install"
- */
+XCOMM platform:  $XConsortium: att.cf,v 1.11 91/03/23 16:53:12 rws Exp $
 
 #define OSName			AT&T Unix System V Release 4.2
+XCOMM operating system:  OSName
 #define OSMajorVersion		4
 #define OSMinorVersion		2
+
 #define SystemV4		YES
 #define BootstrapCFlags		-Datt
 #define NeedWidePrototypes	NO	/* experimental */

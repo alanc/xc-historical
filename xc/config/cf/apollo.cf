@@ -1,8 +1,7 @@
-/*
- * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
- */
+XCOMM platform:  $XConsortium: apollo.cf,v 1.25 91/01/08 12:21:29 rws Exp $
 
 #define OSName            Domain/OS SR10.3
+XCOMM operating system:  OSName
 #define OSMajorVersion    10
 #define OSMinorVersion    3
 
@@ -15,13 +14,6 @@
 
 #define HasVoidSignalReturn NO
 
-
-XCOMM platform:  $XConsortium: apollo.cf,v 1.24 91/01/08 10:11:56 rws Exp $
-XCOMM operating system:  OSName
-
-/*****************************************************************************
- *			  Platform-specific parameters                       *
- *****************************************************************************/
 
 #define UnixCpp /**/
 #define DefaultCCOptions -DNOSTDHDRS -DUNIXCPP

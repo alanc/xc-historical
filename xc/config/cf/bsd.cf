@@ -1,10 +1,12 @@
-/*
- * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
- */
+XCOMM platform:  $XConsortium: bsd.cf,v 1.10 91/03/26 08:59:06 rws Exp $
 
 #define OSName            4.3bsd
+XCOMM operating system:  OSName
 #define OSMajorVersion    4
 #define OSMinorVersion    3
+
+#define HasVoidSignalReturn NO
+#define HasBsearch NO
 
 /* #define HasGcc YES */	/* very useful for the server */
 
@@ -15,15 +17,6 @@
 #define HasSaberC YES
 #endif
 
-#define HasVoidSignalReturn NO
-
-XCOMM platform:  $XConsortium: bsd.cf,v 1.9 90/11/30 11:13:48 rws Exp $
-XCOMM operating system:  OSName
-
-/*****************************************************************************
- *			  Platform-specfic parameters                        *
- *****************************************************************************/
-
 #ifdef VaxArchitecture
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
 #endif
@@ -31,5 +24,3 @@ XCOMM operating system:  OSName
 #if OSMajorVersion >= 4 && OSMinorVersion >= 3
 #define SetTtyGroup YES
 #endif
-
-#define HasBsearch NO

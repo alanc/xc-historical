@@ -1,12 +1,10 @@
-/*
- * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
- *
- * If you change either of the following numbers, you will need to do a 
- * full build (make World) at the top of the sources....
- */
+XCOMM platform:  $XConsortium: pegasus.cf,v 1.22 91/03/26 13:02:43 rws Exp $
+
 #define OSName             UTek 4.0
+XCOMM operating system:  OSName
 #define OSMajorVersion     4
 #define OSMinorVersion     0
+
 #define HasSaberC	   YES		/* a useful program to buy... */
 #define HasBsearch	   YES
 #define HasNdbm		   YES
@@ -19,8 +17,8 @@
 #define BootstrapCFlags    -DM4310 -DUTEK
 #define StandardDefines    -DM4310 -DUTEK -Dpegasus 
 #define StandardCppDefines -DM4310 -DUTEK -Dpegasus
-/* GCC is good on this box */
-#define HasGcc         YES
+
+#define HasGcc         YES		/* XXX comment out in R5 */
 
 #if HasGcc
 /* put back all of the -Ds which -ansi removes */
@@ -28,14 +26,6 @@
 #endif
 
 #define XtekServer Xtek
-
-
-XCOMM platform:  $XConsortium: pegasus.cf,v 1.21 91/02/28 19:03:48 rws Exp $
-XCOMM operating system:  OSName
-
-/*
- * platform-specific definitions 
- */
 
 #define ServerOSDefines   -DM4310 -DM4317
 #define FontFilters BDFTOSNFFILT SHELLPATH

@@ -1,4 +1,7 @@
+XCOMM platform:  $XConsortium: sgi.cf,v 1.22 91/03/26 13:02:43 rws Exp $
+
 #define OSName			IRIX
+XCOMM operating system:  OSName
 #define OSMajorVersion		4
 #define OSMinorVersion		0
 
@@ -24,11 +27,8 @@
 
 #define CCPreprocessorFlags /* As Nothing For the Standard "cpp" */
 
-#if BuildPex
+/* -Wf,-XNh2000 is enough if you do not compile PEX client side */
 #define SymbolTables -Wf,-XNp15000,-XNd15000,-XNh2000
-#else
-#define SymbolTables -Wf,-XNh2000
-#endif
 
 /* NOTE: the SGI cc driver invoking the ANSI cpp does NOT define __STDC__ */
 /* #define CCPreprocessorFlags -acpp -D__STDC__ -D__EXTENSIONS__ SymbolTables */

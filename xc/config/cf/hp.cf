@@ -1,13 +1,11 @@
-/*
- * SET VERSION NUMBERS BEFORE MAKING MAKEFILES; also, you'll need to install
- * util/scripts/bsdinstall.sh before doing a "make install"
- */
-
-#define SystemV                YES
+XCOMM platform:  $XConsortium: hp.cf,v 1.32 91/03/26 08:43:53 rws Exp $
 
 #define OSName                 HP-UX 7.0
+XCOMM operating system:  OSName
 #define OSMajorVersion         7
 #define OSMinorVersion         0
+
+#define SystemV                YES
 #ifdef hp9000s800
 #define StandardDefines        -DSYSV
 #define LintOpts               -ax -DSYSV
@@ -28,14 +26,6 @@
 #define XhpServer              Xnon /* Xhp */	/* XXX fix in R5 */
 #define BuildServer            YES
 #define NeedBerklib            BuildServer
-
-XCOMM platform:  $XConsortium: hp.cf,v 1.31 91/03/25 10:55:19 rws Exp $
-XCOMM operating system:  OSName
-
-/*
- ****************************************************************************
- */
-
 
 /* define this as you like for server compilation */
 /* 

@@ -1,9 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.20 91/03/26 14:29:00 rws Exp $
-XCOMM operating system:  OSName
-
-/*
- * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
- */
+XCOMM platform:  $XConsortium: sony.cf,v 1.21 91/03/26 18:50:16 rws Exp $
 
 #ifdef bsd43
 #define OSName                  NEWS-OS 3.3
@@ -22,11 +17,10 @@ XCOMM operating system:  OSName
 #define BootstrapCFlags		-Dsony
 #define CcCmd                   /usr/bin/cc
 #define HasSockets		YES
-#if BuildPex
+/* -Wf,-XNp6000,-XNd6000 is enough if you do not compile PEX client side */
 #define DefaultCCOptions        -Wf,-XNp15000,-XNd15000
-#else
-#define DefaultCCOptions        -Wf,-XNp6000,-XNd6000
 #endif
-#endif
+XCOMM operating system:  OSName
+
 #define BuildServer             YES /* XXX change to NO in R5 */
 #define XnonServer Xnon /* XXX remove in R5 */

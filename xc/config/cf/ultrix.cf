@@ -1,10 +1,10 @@
-/*
- * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
- */
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.32 91/03/26 13:14:42 rws Exp $
 
 #define OSName            Ultrix-32 4.1
+XCOMM operating system:  OSName
 #define OSMajorVersion    4
 #define OSMinorVersion    1
+
 #define HasPutenv YES
 #define HasBsearch YES
 #define HasSaberC YES
@@ -17,8 +17,7 @@
 /* #define XqdssServer Xqdss */
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
 #define ServerOSDefines -DNOSTDHDRS -DX11R4
-/* gcc is *VERY USEFUL*, especially for the server; GET it */
-#define HasGcc NO
+/* #define HasGcc YES */
 #if !HasGcc
 #define BuildPex NO /* compiler runs out of table space */
 #endif
@@ -28,15 +27,11 @@
 /* #define XmfbpmaxServer Xmfbpmax - why bother, no one needs it... */
 #define XcfbpmaxServer Xcfbpmax
 #define NeedFunctionPrototypes YES
-#if BuildPex
+/* default settings are enough if you do not compile PEX client side */
 #define DefaultCCOptions -Wf,-XNp15000,-XNd15000
-#endif
 #endif
 
 #if HasGcc
 #define CcCmd gcc -ansi -Dvax -Dultrix -DNOSTDHDRS -fpcc-struct-return
 #define ServerCCOptions /* */
 #endif
-
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.31 91/03/26 13:04:24 rws Exp $
-XCOMM operating system:  OSName

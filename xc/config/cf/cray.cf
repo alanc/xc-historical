@@ -1,16 +1,11 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.25 91/02/23 14:54:56 rws Exp $
-
-
-/*
- * SET VERSION NUMBERS BEFORE MAKING MAKEFILES; 
- */
-
-#define SystemV			YES
+XCOMM platform:  $XConsortium: cray.cf,v 1.26 91/03/26 13:04:52 rws Exp $
 
 #define OSName			UNICOS 5.1
+XCOMM operating system:  OSName
 #define OSMajorVersion		5
 #define OSMinorVersion		1
 
+#define SystemV			YES
 #define RemoveTargetProgramByMoving YES
 #define InstallCmd		sh $(SCRIPTSRC)/install.sh
 #define ArCmd			bld cr

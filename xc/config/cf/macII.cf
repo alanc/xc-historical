@@ -1,13 +1,10 @@
-XCOMM platform:  $XConsortium: macII.cf,v 1.26 91/03/26 20:13:31 rws Exp $
-XCOMM operating system:  OSName
-
-/*
- * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
- */
+XCOMM platform:  $XConsortium: macII.cf,v 1.27 91/03/27 08:47:19 rws Exp $
 
 #define OSName            A/UX 2.0.1
 #define OSMajorVersion    2
 #define OSMinorVersion    0
+XCOMM operating system:  OSName
+
 /* #define HasGcc         YES */
 #if HasGcc
 #define BootstrapCFlags   -DmacII
@@ -26,7 +23,7 @@ XCOMM operating system:  OSName
 
 #if !HasGcc
 /* -A 3 is good enough if you do not compile PEX client side */
-#define CcCmd cc -A 4
+#define DefaultCCOptions -A 4
 #endif
 
 /*

@@ -1,8 +1,4 @@
-/*
- * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
- */
-
-
+XCOMM platform:  $XConsortium: luna.cf,v 1.5 91/02/19 13:54:52 rws Exp $
 #ifdef Mc68000Architecture
 #define OSName            UNIOS-B 4.3BSD UNIX: 1.50
 #define OSMajorVersion    1
@@ -12,6 +8,8 @@
 #define OSMajorVersion    1
 #define OSMinorVersion    10
 #endif
+XCOMM operating system:  OSName
+
 #define BootstrapCFlags		-Dluna
 #define StandardDefines		-Dluna
 #define StandardCppDefines	-Dluna
@@ -26,8 +24,7 @@
 #define BuildServer YES
 #define XlunaServer Xluna
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
-/* gcc is *VERY USEFUL*, especially for the server; GET it */
-#define HasGcc NO
+/* #define HasGcc YES */
 #endif
 
 #ifdef Mc88000Architecture
@@ -35,6 +32,3 @@
 #define XlunaServer Xluna
 #endif
 
-
-XCOMM platform:  $XConsortium: luna.cf,v 1.4 91/01/08 10:12:18 rws Exp $
-XCOMM operating system:  OSName

@@ -1,13 +1,10 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.50 91/03/23 16:33:43 rws Exp $
-XCOMM operating system:  OSName
-
-/*
- * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
- */
+XCOMM platform:  $XConsortium: sun.cf,v 1.51 91/03/26 13:04:09 rws Exp $
 
 #define OSName            SunOS 4.1.1
+XCOMM operating system:  OSName
 #define OSMajorVersion    4
 #define OSMinorVersion    1
+
 #define HasSaberC	  YES		/* for machines that have it */
 #define HasNdbm		  YES
 #define HasShm		  YES
@@ -29,11 +26,7 @@ XCOMM operating system:  OSName
 #include <sunLib.rules>
 
 /* #define HasGcc YES */	/* VERY USEFUL for server on Sun3 */
-#ifdef mc68000
-#define HasGcc YES
-#else
-#define HasGcc NO
-#endif
+#define HasGcc mc68000		/* XXX remove in R5 */
 
 #if HasSharedLibraries && HasGcc
 #define LibraryCcCmd cc		/* until gcc can generate -pic code */
