@@ -87,8 +87,6 @@ char		*TileFontName     = "vtbold";
 XFontStruct	*TitleFontInfo,
 		*TileFontInfo;
 
-int		PuzzleOnTop = 1;
-
 extern int	OutputLogging;
 extern int	*position;
 extern int	space_x, space_y;
@@ -811,12 +809,7 @@ XButtonEvent *event;
 ProcessVisibility(event)
 XVisibilityEvent *event;
 {
-    if (event->state == VisibilityUnobscured)
-	PuzzleOnTop = 1;
-    else {
-	PuzzleOnTop = 0;
-	AbortSolving();
-    }
+    if (event->state != VisibilityUnobscured) AbortSolving();
 }
 
 ProcessExpose(event)
@@ -909,12 +902,7 @@ XEvent *event;
 {
     switch(event->type) {
       case ButtonPress:
-	if (!PuzzleOnTop) {
-	    XRaiseWindow(dpy,PuzzleRoot);
-	    XPutBackEvent(dpy,event);
-	}
-	else	  
-	    ProcessButton(event);
+	ProcessButton(event);
 	break;
       case Expose:
 	ProcessExpose(event);
