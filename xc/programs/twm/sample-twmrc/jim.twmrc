@@ -9,23 +9,18 @@ NoHighlight
 AutoRelativeResize
 RestartPreviousState
 ClientBorderWidth
+BorderWidth	2
 NoGrabServer
 NoRaiseOnMove
 NoRaiseOnResize
 DecorateTransients
 #OpaqueMove
-BorderWidth	2
 TitleFont	"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 MenuFont	"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 IconFont	"-adobe-helvetica-bold-r-normal--*-80-*-*-*-*-*-*"
 ResizeFont	"fixed"
 NoSaveUnders
 
-# interlaced screens look really awful with striped lines
-Pixmaps
-{
-    TitleHighlight "gray1"
-}
 
 ###############################################################################
 #                                                                             #
@@ -162,12 +157,12 @@ Icons
 menu "twmops"
 {
 "Twm Operations"	f.title
-"Show Iconmgr"		f.showiconmgr
-"Hide Iconmgr"		f.hideiconmgr
-""			f.nop
 "Restart"		f.restart
 ""			f.nop
 "Exit"			f.quit
+""			f.nop
+"Show Iconmgr"		f.showiconmgr
+"Hide Iconmgr"		f.hideiconmgr
 }
 
 menu "windowops"
