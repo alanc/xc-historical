@@ -744,7 +744,7 @@ GetMaxIntensity(data)
   ncolors = Get_XColors(&data->win_info, &colors); 
   mptr = tptr = colors; tptr++;
   for (i=1; i<ncolors; i++) {
-    if (Intensity(mptr) < Intensity(tptr)) 
+    if ((int)Intensity(mptr) < (int)Intensity(tptr)) 
       mptr = tptr;
     tptr++;
   }
@@ -768,7 +768,7 @@ GetMinIntensity(data)
   ncolors = Get_XColors(&data->win_info, &colors); 
   mptr = tptr = colors; tptr++;
   for (i=1; i<ncolors; i++)  {
-    if (Intensity(mptr) > Intensity(tptr))
+    if ((int)Intensity(mptr) > (int)Intensity(tptr))
       mptr = tptr; 
     tptr++;
   }
@@ -777,7 +777,7 @@ GetMinIntensity(data)
 
 
 
-static Widget form, close, replace, new;
+static Widget form, cclose, replace, new;
 
 /*
  * PopupNewScale() -- Create and popup a new scale composite.
@@ -793,11 +793,11 @@ PopupNewScale(data)
 			 NULL);
   form = XtCreateManagedWidget("form", formWidgetClass, data->scaleShell,
                                (Arg *) NULL, 0);
-  close = XtCreateManagedWidget("close", commandWidgetClass, form,
+  cclose = XtCreateManagedWidget("close", commandWidgetClass, form,
                                (Arg *) NULL, 0);
-  XtAddCallback(close, XtNcallback, CloseCB, (XtPointer)data->scaleShell);
+  XtAddCallback(cclose, XtNcallback, CloseCB, (XtPointer)data->scaleShell);
   replace = XtVaCreateManagedWidget("replace", commandWidgetClass, form,
-				    XtNfromHoriz, (XtArgVal)close,
+				    XtNfromHoriz, (XtArgVal)cclose,
 				    NULL);
   XtAddCallback(replace, XtNcallback, ReplaceCB, (XtPointer)data);
   new = XtVaCreateManagedWidget("new", commandWidgetClass, form,
@@ -811,7 +811,7 @@ PopupNewScale(data)
 			    XtNvisual, (XtArgVal)data->win_info.visual,
 			    XtNcolormap, (XtArgVal)data->win_info.colormap,
 			    XtNdepth, (XtArgVal)data->win_info.depth,
-			    XtNfromVert, (XtArgVal)close,
+			    XtNfromVert, (XtArgVal)cclose,
 			    XtNscaleX, (XtArgVal)options.mag,
 			    XtNscaleY, (XtArgVal)options.mag,
 			    NULL);
@@ -852,10 +852,10 @@ PopupNewScale(data)
 
 
 /*
- * RedoOldScale() -- If visual or depth has changed, save resource settings
- *                   DESTROY the scale widget, and make a new one with the 
- *                   new depth/visual.  Also do this for the pixel display
- *                   widgets.
+ * RedoOldScale() -- If visual or depth has changed, unrealize the scale
+ *                   widget, change its colormap/depth/visual.  Then
+ *                   re-realize it.  Also do this for the pixel display
+ *                   widget.
  */
 static void
 RedoOldScale(data)
@@ -872,50 +872,20 @@ RedoOldScale(data)
     return;
   }
   /* get width and height, save and reuse them */
+  XtUnmanageChild(data->scaleInstance);
+  XtUnrealizeWidget(data->scaleInstance);
   n=0;
-  XtSetArg(wargs[n], XtNwidth, &scaleWidth); n++;
-  XtSetArg(wargs[n], XtNheight, &scaleHeight); n++;
-  XtGetValues(data->scaleInstance, wargs, n);
-
-  XtDestroyWidget(data->scaleInstance);
-  XtDestroyWidget(data->pixShell); /* takes care of pixLabel too! */
-  
-  /* notes:  A certain person has said that my userData resource is a bad idea
-   *         Resources with a very few exceptions should be settable from
-   *         resource files and this one, a pointer to an application defined
-   *         structure clearly is not.  Perhaps this shoud be private 
-   *         widget data or some global structure.
-   */
-  data->scaleInstance = 
-    XtVaCreateManagedWidget("scale", scaleWidgetClass, 
-			    form,
-			    XtNvisual, (XtArgVal)data->win_info.visual,
-			    XtNcolormap, (XtArgVal)data->win_info.colormap,
-			    XtNdepth, (XtArgVal)data->win_info.depth,
-			    XtNfromVert, (XtArgVal)close,
-			    XtNscaleX, (XtArgVal)options.mag,
-			    XtNscaleY, (XtArgVal)options.mag,
-			    XtNuserData, (XtArgVal)data,
-			    XtNwidth, (XtArgVal)scaleWidth,
-			    XtNheight, (XtArgVal)scaleHeight,
-			    NULL);
-  data->pixShell = 
-    XtVaCreatePopupShell("pixShell", overrideShellWidgetClass, 
-			 toplevel,
-			 XtNvisual, (XtArgVal)data->win_info.visual,
-			 XtNcolormap, (XtArgVal)data->win_info.colormap,
-			 XtNdepth, (XtArgVal)data->win_info.depth,
-			 XtNborderWidth, (XtPointer)0,
-			 NULL);
-  data->pixLabel = 
-    XtVaCreateManagedWidget("pixLabel", labelWidgetClass, 
-			    data->pixShell, 
-			    XtNforeground, (XtPointer)GetMaxIntensity(data),
-			    XtNbackground, (XtPointer)GetMinIntensity(data),
-			    XtNborderWidth, (XtPointer)0,
-			    NULL);
-  XtRealizeWidget(data->scaleInstance);
+  XtSetArg(wargs[n], XtNcolormap, data->win_info.colormap); n++;
+  XtSetArg(wargs[n], XtNdepth, data->win_info.depth); n++;
+  XtSetArg(wargs[n], XtNvisual, data->win_info.visual); n++;
+  XtSetValues(data->scaleInstance, wargs, n);
+  n=0;
+  XtSetArg(wargs[n], XtNforeground, GetMaxIntensity(data)); n++;
+  XtSetArg(wargs[n], XtNbackground, GetMinIntensity(data)); n++;
+  XtSetValues(data->pixLabel, wargs, n);
   SWSetImage(data->scaleInstance, data->image); 
+  XtRealizeWidget(data->scaleInstance);
+  XtManageChild(data->scaleInstance);
 }
 
 
