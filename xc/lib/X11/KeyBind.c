@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XKeyBind.c,v 11.52 89/10/06 09:04:36 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.54 89/11/08 17:07:04 converse Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -316,16 +316,18 @@ XTranslateKeySym(dpy, symbol, modifiers, buffer, nbytes)
     }
     /* try to convert to Latin-1, handling control */
     hiBytes = symbol >> 8;
-    if (!nbytes ||
-	((hiBytes != 0) && (hiBytes != 0xFF)) ||
-	IsModifierKey(symbol) ||
-	IsCursorKey(symbol) ||
-	IsPFKey(symbol) ||
-	IsFunctionKey(symbol) ||
-	IsMiscFunctionKey(symbol) ||
-	(symbol == XK_Scroll_Lock) ||
-	(symbol == XK_Multi_key) ||
-	(symbol == XK_Kanji))
+    if (!(nbytes &&
+	  ((hiBytes == 0) ||
+	   ((hiBytes == 0xFF) &&
+	    (((symbol >= XK_BackSpace) && (symbol <= XK_Clear)) ||
+	     (symbol == XK_Return) ||
+	     (symbol == XK_Escape) ||
+	     (symbol == XK_KP_Space) ||
+	     (symbol == XK_KP_Tab) ||
+	     (symbol == XK_KP_Enter) ||
+	     ((symbol >= XK_KP_Multiply) && (symbol <= XK_KP_9)) ||
+	     (symbol == XK_KP_Equal) ||
+	     (symbol == XK_Delete))))))
 	return 0;
 
     /* if X keysym, convert to ascii by grabbing low 7 bits */
