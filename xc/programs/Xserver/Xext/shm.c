@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: shm.c,v 1.0 89/08/18 17:54:44 rws Exp $ */
+/* $XConsortium: shm.c,v 1.1 89/08/20 12:15:33 rws Exp $ */
 
 #ifdef MITSHM
 
@@ -33,6 +33,7 @@ without any express or implied warranty.
 #include "dixstruct.h"
 #include "resource.h"
 #include "scrnintstr.h"
+#include "windowstr.h"
 #include "pixmapstr.h"
 #include "gcstruct.h"
 #include "extnsionst.h"
@@ -49,16 +50,18 @@ typedef struct _ShmDesc {
 } ShmDescRec, *ShmDescPtr;
 
 char *shmat();
-typedef PixmapPtr (*ShmCreatePixType)();
-
-Bool ShmSharedPixmaps = xFalse;
-ShmCreatePixType ShmCreatePixProcs[MAXSCREENS];
+static void miShmPutImage(), fbShmPutImage();
+static PixmapPtr fbShmCreatePixmap();
 
 static unsigned char ShmReqCode;
 static int ShmCompletionCode;
 static int BadShmSegCode;
 static RESTYPE ShmSegType, ShmPixType;
 static ShmDescPtr Shmsegs;
+static Bool sharedPixmaps;
+static ShmFuncsPtr shmFuncs[MAXSCREENS];
+static ShmFuncs miFuncs = {NULL, miShmPutImage};
+static ShmFuncs fbFuncs = {fbShmCreatePixmap, fbShmPutImage};
 
 #define VALIDATE_SHMSEG(shmseg,shmdesc,client) \
 { \
@@ -94,7 +97,16 @@ ShmExtensionInit()
     static int ProcShmDispatch(), SProcShmDispatch();
     static int ShmDetachSegment();
     static void ShmResetProc(), SShmCompletionEvent();
+    int i;
 
+    sharedPixmaps = xTrue;
+    for (i = 0; i < screenInfo.numScreens; i++)
+    {
+	if (!shmFuncs[i])
+	    shmFuncs[i] = &miFuncs;
+	if (!shmFuncs[i]->CreatePixmap)
+	    sharedPixmaps = xFalse;
+    }
     ShmSegType = CreateNewResourceType(ShmDetachSegment);
     ShmPixType = CreateNewResourceType(ShmDetachSegment);
     if (ShmSegType && ShmPixType &&
@@ -114,15 +126,25 @@ static void
 ShmResetProc (extEntry)
 ExtensionEntry	*extEntry;
 {
+    int i;
+
+    for (i = 0; i < MAXSCREENS; i++)
+	shmFuncs[i] = (ShmFuncsPtr)NULL;
 }
 
 void
-ShmRegisterCreatePixmapProc(pScreen, func)
+ShmRegisterFuncs(pScreen, funcs)
     ScreenPtr pScreen;
-    ShmCreatePixType func;
+    ShmFuncsPtr funcs;
 {
-    ShmCreatePixProcs[pScreen->myNum] = func;
-    ShmSharedPixmaps = xTrue;
+    shmFuncs[pScreen->myNum] = funcs;
+}
+
+void
+ShmRegisterFbFuncs(pScreen)
+    ScreenPtr pScreen;
+{
+    shmFuncs[pScreen->myNum] = &fbFuncs;
 }
 
 static int
@@ -137,7 +159,7 @@ ProcShmQueryVersion(client)
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.sharedPixmaps = ShmSharedPixmaps;
+    rep.sharedPixmaps = sharedPixmaps;
     rep.majorVersion = SHM_MAJOR_VERSION;
     rep.minorVersion = SHM_MINOR_VERSION;
     rep.uid = geteuid();
@@ -234,6 +256,74 @@ ProcShmDetach(client)
     return(client->noClientException);
 }
 
+static void
+miShmPutImage(dst, pGC, depth, format, w, h, sx, sy, sw, sh, dx, dy, data)
+    DrawablePtr dst;
+    GCPtr	pGC;
+    int		depth, w, h, sx, sy, sw, sh, dx, dy;
+    unsigned int format;
+    char 	*data;
+{
+    PixmapPtr pmap;
+    GCPtr putGC;
+
+    putGC = GetScratchGC(depth, dst->pScreen);
+    if (!putGC)
+	return;
+    pmap = (*dst->pScreen->CreatePixmap)(dst->pScreen, sw, sh, depth);
+    if (!pmap)
+    {
+	FreeScratchGC(putGC);
+	return;
+    }
+    ValidateGC((DrawablePtr)pmap, putGC);
+    (*putGC->ops->PutImage)(pmap, putGC, depth, -sx, -sy, w, h, 0,
+			    (format == XYPixmap) ? XYPixmap : ZPixmap, data);
+    FreeScratchGC(putGC);
+    if (format == XYBitmap)
+	(void)(*pGC->ops->CopyPlane)(pmap, dst, pGC, 0, 0, sw, sh, dx, dy, 1L);
+    else
+	(void)(*pGC->ops->CopyArea)(pmap, dst, pGC, 0, 0, sw, sh, dx, dy);
+    (*pmap->drawable.pScreen->DestroyPixmap)(pmap);
+}
+
+static void
+fbShmPutImage(dst, pGC, depth, format, w, h, sx, sy, sw, sh, dx, dy, data)
+    DrawablePtr dst;
+    GCPtr	pGC;
+    int		depth, w, h, sx, sy, sw, sh, dx, dy;
+    unsigned int format;
+    char 	*data;
+{
+    if ((format == ZPixmap) || (depth == 1))
+    {
+	PixmapRec FakePixmap;
+    	FakePixmap.drawable.type = DRAWABLE_PIXMAP;
+    	FakePixmap.drawable.class = 0;
+    	FakePixmap.drawable.pScreen = dst->pScreen;
+    	FakePixmap.drawable.depth = depth;
+    	FakePixmap.drawable.bitsPerPixel = depth;
+    	FakePixmap.drawable.id = 0;
+    	FakePixmap.drawable.serialNumber = NEXT_SERIAL_NUMBER;
+    	FakePixmap.drawable.x = 0;
+    	FakePixmap.drawable.y = 0;
+    	FakePixmap.drawable.width = w;
+    	FakePixmap.drawable.height = h;
+    	FakePixmap.devKind = PixmapBytePad(w, depth);
+    	FakePixmap.refcnt = 1;
+    	FakePixmap.devPrivate.ptr = (pointer)data;
+	if (format == XYBitmap)
+	    (void)(*pGC->ops->CopyPlane)(&FakePixmap, dst, pGC,
+					 sx, sy, sw, sh, dx, dy, 1L);
+	else
+	    (void)(*pGC->ops->CopyArea)(&FakePixmap, dst, pGC,
+					sx, sy, sw, sh, dx, dy);
+    }
+    else
+	miShmPutImage(dst, pGC, depth, format, w, h, sx, sy, sw, sh, dx, dy,
+		      data);
+}
+
 static int
 ProcShmPutImage(client)
     register ClientPtr client;
@@ -306,47 +396,20 @@ ProcShmPutImage(client)
 	   ((stuff->srcY == 0) &&
 	    (stuff->srcHeight == stuff->totalHeight))))) &&
 	((stuff->srcX + stuff->srcWidth) == stuff->totalWidth))
-    {
 	(*pGC->ops->PutImage) (pDraw, pGC, stuff->depth,
 			       stuff->dstX, stuff->dstY,
 			       stuff->totalWidth, stuff->srcHeight, 
 			       stuff->srcX, stuff->format, 
 			       shmdesc->addr + stuff->offset +
 			       (stuff->srcY * length));
-    }
-    else if ((stuff->format == ZPixmap) || (stuff->depth == 1))
-    {
-	/* XXX massive assumptions for now */
-	PixmapRec FakePixmap;
-    	FakePixmap.drawable.type = DRAWABLE_PIXMAP;
-    	FakePixmap.drawable.class = 0;
-    	FakePixmap.drawable.pScreen = pDraw->pScreen;
-    	FakePixmap.drawable.depth = stuff->depth;
-    	FakePixmap.drawable.bitsPerPixel = stuff->depth;
-    	FakePixmap.drawable.id = 0;
-    	FakePixmap.drawable.serialNumber = NEXT_SERIAL_NUMBER;
-    	FakePixmap.drawable.x = 0;
-    	FakePixmap.drawable.y = 0;
-    	FakePixmap.drawable.width = stuff->totalWidth;
-    	FakePixmap.drawable.height = stuff->totalHeight;
-    	FakePixmap.devKind = PixmapBytePad(stuff->totalWidth, stuff->depth);
-    	FakePixmap.refcnt = 1;
-    	FakePixmap.devPrivate.ptr = (pointer)(shmdesc->addr + stuff->offset);
-	if (stuff->format == XYBitmap)
-	    (void)(*pGC->ops->CopyPlane)(&FakePixmap, pDraw, pGC,
-					 stuff->srcX, stuff->srcY,
-					 stuff->srcWidth, stuff->srcHeight, 
-					 stuff->dstX, stuff->dstY, 1L);
-	else
-	    (void)(*pGC->ops->CopyArea)(&FakePixmap, pDraw, pGC,
-					stuff->srcX, stuff->srcY,
-					stuff->srcWidth, stuff->srcHeight, 
-					stuff->dstX, stuff->dstY);
-    }
     else
-    {
-	/* XXX */
-    }
+	(*shmFuncs[pDraw->pScreen->myNum]->PutImage)(
+			       pDraw, pGC, stuff->depth, stuff->format,
+			       stuff->totalWidth, stuff->totalHeight,
+			       stuff->srcX, stuff->srcY,
+			       stuff->srcWidth, stuff->srcHeight,
+			       stuff->dstX, stuff->dstY,
+			       shmdesc->addr + stuff->offset);
     if (stuff->sendEvent)
     {
 	xShmCompletionEvent ev;
@@ -367,9 +430,140 @@ static int
 ProcShmGetImage(client)
     register ClientPtr client;
 {
+    register DrawablePtr pDraw;
+    long		lenPer, length;
+    Mask		plane;
+    xShmGetImageReply	xgi;
+    ShmDescPtr		shmdesc;
+    int			n;
     REQUEST(xShmGetImageReq);
 
     REQUEST_SIZE_MATCH(xShmGetImageReq);
+    if ((stuff->format != XYPixmap) && (stuff->format != ZPixmap))
+    {
+	client->errorValue = stuff->format;
+        return(BadValue);
+    }
+    if (!(pDraw = LOOKUP_DRAWABLE(stuff->drawable, client)))
+    {
+	client->errorValue = stuff->drawable;
+	return (BadDrawable);
+    }
+    VALIDATE_SHMPTR(stuff->shmseg, stuff->offset, stuff->size,
+		    TRUE, shmdesc, client);
+    if (pDraw->type == DRAWABLE_WINDOW)
+    {
+      if( /* check for being viewable */
+	 !((WindowPtr) pDraw)->realized ||
+	  /* check for being on screen */
+         pDraw->x + stuff->x < 0 ||
+ 	 pDraw->x + stuff->x + (int)stuff->width > pDraw->pScreen->width ||
+         pDraw->y + stuff->y < 0 ||
+         pDraw->y + stuff->y + (int)stuff->height > pDraw->pScreen->height ||
+          /* check for being inside of border */
+         stuff->x < - wBorderWidth((WindowPtr)pDraw) ||
+         stuff->x + (int)stuff->width >
+		wBorderWidth((WindowPtr)pDraw) + (int)pDraw->width ||
+         stuff->y < -wBorderWidth((WindowPtr)pDraw) ||
+         stuff->y + (int)stuff->height >
+		wBorderWidth((WindowPtr)pDraw) + (int)pDraw->height
+        )
+	    return(BadMatch);
+	xgi.visual = wVisual(((WindowPtr)pDraw));
+    }
+    else
+    {
+	if (stuff->x < 0 ||
+	    stuff->x+(int)stuff->width > pDraw->width ||
+	    stuff->y < 0 ||
+	    stuff->y+(int)stuff->height > pDraw->height
+	    )
+	    return(BadMatch);
+	xgi.visual = None;
+    }
+    xgi.type = X_Reply;
+    xgi.length = 0;
+    xgi.sequenceNumber = client->sequence;
+    xgi.depth = pDraw->depth;
+    if(stuff->format == ZPixmap)
+    {
+	length = PixmapBytePad(stuff->width, pDraw->depth) * stuff->height;
+    }
+    else 
+    {
+	lenPer = PixmapBytePad(stuff->width, 1) * stuff->height;
+	plane = ((Mask)1) << (pDraw->depth - 1);
+	/* only planes asked for */
+	length = lenPer * Ones(stuff->planeMask & (plane | (plane - 1)));
+    }
+    if (length > stuff->size)
+	return BadValue;
+    xgi.size = length;
+    if (length == 0)
+    {
+	/* nothing to do */
+    }
+    else if (stuff->format == ZPixmap)
+    {
+	(*pDraw->pScreen->GetImage)(pDraw, stuff->x, stuff->y,
+				    stuff->width, stuff->height,
+				    stuff->format, stuff->planeMask,
+				    shmdesc->addr + stuff->offset);
+    }
+    else
+    {
+	length = stuff->offset;
+        for (; plane; plane >>= 1)
+	{
+	    if (stuff->planeMask & plane)
+	    {
+		(*pDraw->pScreen->GetImage)(pDraw,
+					    stuff->x, stuff->y,
+					    stuff->width, stuff->height,
+					    stuff->format, plane,
+					    shmdesc->addr + length);
+		length += lenPer;
+	    }
+	}
+    }
+    if (client->swapped) {
+    	swaps(&xgi.sequenceNumber, n);
+    	swapl(&xgi.length, n);
+	swapl(&xgi.visual, n);
+	swapl(&xgi.size, n);
+    }
+    WriteToClient(client, sizeof(xShmGetImageReply), (char *)&xgi);
+    return(client->noClientException);
+}
+
+static PixmapPtr
+fbShmCreatePixmap (pScreen, width, height, depth, addr)
+    ScreenPtr	pScreen;
+    int		width;
+    int		height;
+    int		depth;
+    char	*addr;
+{
+    register PixmapPtr pPixmap;
+
+    pPixmap = (PixmapPtr)xalloc(sizeof(PixmapRec));
+    if (!pPixmap)
+	return NullPixmap;
+    pPixmap->drawable.type = DRAWABLE_PIXMAP;
+    pPixmap->drawable.class = 0;
+    pPixmap->drawable.pScreen = pScreen;
+    pPixmap->drawable.depth = depth;
+    pPixmap->drawable.bitsPerPixel = depth;
+    pPixmap->drawable.id = 0;
+    pPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+    pPixmap->drawable.x = 0;
+    pPixmap->drawable.y = 0;
+    pPixmap->drawable.width = width;
+    pPixmap->drawable.height = height;
+    pPixmap->devKind = PixmapBytePad(width, depth);
+    pPixmap->refcnt = 1;
+    pPixmap->devPrivate.ptr = (pointer)addr;
+    return pPixmap;
 }
 
 static int
@@ -385,7 +579,7 @@ ProcShmCreatePixmap(client)
 
     REQUEST_SIZE_MATCH(xShmCreatePixmapReq);
     client->errorValue = stuff->pid;
-    if (!ShmSharedPixmaps)
+    if (!sharedPixmaps)
 	return BadImplementation;
     LEGAL_NEW_RESOURCE(stuff->pid, client);
     if (!(pDraw = LOOKUP_DRAWABLE(stuff->drawable, client)))
@@ -393,7 +587,8 @@ ProcShmCreatePixmap(client)
         if (!(pDraw = (DrawablePtr)LookupWindow(stuff->drawable, client))) 
             return (BadDrawable);
     }
-
+    VALIDATE_SHMPTR(stuff->shmseg, stuff->offset, stuff->size,
+		    TRUE, shmdesc, client);
     if (!stuff->width || !stuff->height)
     {
 	client->errorValue = 0;
@@ -409,10 +604,10 @@ ProcShmCreatePixmap(client)
         return BadValue;
     }
 CreatePmap:
-    VALIDATE_SHMPTR(stuff->shmseg, stuff->offset,
-		    PixmapBytePad(stuff->width, stuff->depth) * stuff->height,
-		    TRUE, shmdesc, client);
-    pMap = (*ShmCreatePixProcs[pDraw->pScreen->myNum])(
+    if (stuff->size !=
+	(PixmapBytePad(stuff->width, stuff->depth) * stuff->height))
+	return BadValue;
+    pMap = (*shmFuncs[pDraw->pScreen->myNum]->CreatePixmap)(
 			    pDraw->pScreen, stuff->width,
 			    stuff->height, stuff->depth,
 			    shmdesc->addr + stuff->offset);
