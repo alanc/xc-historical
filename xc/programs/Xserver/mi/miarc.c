@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.38 92/04/21 15:40:59 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.39 92/05/11 14:57:10 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -1786,7 +1786,7 @@ miComputeArcs (parcs, narcs, pGC)
 		j = i + 1;
 		if (j == narcs)
 			j = 0;
-		if (data[i].selfJoin || 
+		if (data[i].selfJoin || i == j ||
 		     (UNEQUAL (data[i].x1, data[j].x0) ||
 		      UNEQUAL (data[i].y1, data[j].y0)))
  		{
@@ -1943,7 +1943,7 @@ miComputeArcs (parcs, narcs, pGC)
 				dashRemaining = dashRemainingStart;
 			}
 		}
-		arcsJoin = narcs > 1 && 
+		arcsJoin = narcs > 1 && i != j &&
 	 		    ISEQUAL (data[i].x1, data[j].x0) &&
 			    ISEQUAL (data[i].y1, data[j].y0) &&
 			    !data[i].selfJoin && !data[j].selfJoin;
