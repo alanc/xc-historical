@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.34 90/08/21 14:37:40 keith Exp $
+ * $XConsortium: session.c,v 1.35 90/08/23 13:15:43 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -61,7 +61,7 @@ SessionPingFailed (d)
     	AbortClient (clientPid);
     	source (&verify, d->reset);
     }
-    SessionExit (d, RESERVER_DISPLAY);
+    SessionExit (d, RESERVER_DISPLAY, TRUE);
 }
 
 extern void	exit ();
@@ -120,7 +120,7 @@ struct display	*d;
 	if (code != 0)
 	{
 	    CloseGreet (d);
-	    SessionExit (d, code);
+	    SessionExit (d, code, FALSE);
 	}
 	/*
 	 * Verify user
@@ -140,7 +140,7 @@ struct display	*d;
     {
 	Debug ("Startup program %s exited with non-zero status\n",
 		d->startup);
-	SessionExit (d, OBEYSESS_DISPLAY);
+	SessionExit (d, OBEYSESS_DISPLAY, FALSE);
     }
     clientPid = 0;
     if (!setjmp (abortSession)) {
@@ -193,7 +193,7 @@ struct display	*d;
      */
     Debug ("Source reset program %s\n", d->reset);
     source (&verify, d->reset);
-    SessionExit (d, OBEYSESS_DISPLAY);
+    SessionExit (d, OBEYSESS_DISPLAY, TRUE);
 }
 
 LoadXloginResources (d)
@@ -242,7 +242,7 @@ Display		*dpy;
     if (setjmp (syncJump)) {
 	LogError ("WARNING: display %s could not be secured\n",
 		   d->name);
-	SessionExit (d, RESERVER_DISPLAY);
+	SessionExit (d, RESERVER_DISPLAY, FALSE);
     }
     alarm ((unsigned) d->grabTimeout);
     Debug ("Before XGrabServer %s\n", d->name);
@@ -254,7 +254,7 @@ Display		*dpy;
 	signal (SIGALRM, SIG_DFL);
 	LogError ("WARNING: keyboard on display %s could not be secured\n",
 		  d->name);
-	SessionExit (d, RESERVER_DISPLAY);
+	SessionExit (d, RESERVER_DISPLAY, FALSE);
     }
     Debug ("XGrabKeyboard succeeded %s\n", d->name);
     alarm (0);
@@ -278,7 +278,7 @@ Display		*dpy;
     XSync (dpy, 0);
 }
 
-SessionExit (d, status)
+SessionExit (d, status, removeAuth)
     struct display  *d;
 {
     /* make sure the server gets reset after the session is over */
@@ -286,6 +286,16 @@ SessionExit (d, status)
 	kill (d->serverPid, d->resetSignal);
     else
 	ResetServer (d);
+    if (removeAuth)
+    {
+#ifdef NGROUPS
+	setgid (verify.groups[0]);
+#else
+	setgid (verify.gid);
+#endif
+	setuid (verify.uid);
+	RemoveUserAuthorization (d, &verify);
+    }
     exit (status);
 }
 

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.33 90/08/21 14:37:50 keith Exp $
+ * $XConsortium: resource.c,v 1.34 90/08/23 13:15:50 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -83,7 +83,11 @@ char	**exportList;
 #define CPP_PROGRAM "/lib/cpp"
 #endif
 #ifndef DEF_AUTH_NAME
+#ifdef HASDES
+#define DEF_AUTH_NAME	"XDM-AUTHORIZATION-1 MIT-MAGIC-COOKIE-1"
+#else
 #define DEF_AUTH_NAME	"MIT-MAGIC-COOKIE-1"
+#endif
 #endif
 #ifndef DEF_AUTH_DIR
 #define DEF_AUTH_DIR "/usr/lib/X11/xdm"
@@ -176,7 +180,7 @@ struct displayResource serverResources[] = {
 				"false",
 "authorize",	"Authorize",	DM_BOOL,	boffset(authorize),
 				"true",
-"authName",	"AuthName",	DM_STRING,	boffset(authName),
+"authName",	"AuthName",	DM_ARGV,	boffset(authNames),
 				DEF_AUTH_NAME,
 "authFile",	"AuthFile",	DM_STRING,	boffset(clientAuthFile),
 				"",

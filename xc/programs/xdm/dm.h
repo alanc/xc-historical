@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.32 90/08/21 14:37:44 keith Exp $
+ * $XConsortium: dm.h,v 1.33 90/08/23 13:15:45 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -150,13 +150,15 @@ struct display {
 
 	/* authorization resources */
 	int		authorize;	/* enable authorization */
-	char		*authName;	/* authorization protocol name */
-	unsigned short	authNameLen;	/* authorization protocol name len */
+	char		**authNames;	/* authorization protocol names */
+	unsigned short	*authNameLens;	/* authorization protocol name lens */
 	char		*clientAuthFile;/* client specified auth file */
 	char		*userAuthDir;	/* backup directory for tickets */
 
 	/* information potentially derived from resources */
-	Xauth		*authorization;	/* authorization data */
+	int		authNameNum;	/* number of protocol names */
+	Xauth		**authorizations;/* authorization data */
+	int		authNum;	/* number of authorizations */
 	char		*authFile;	/* file to store authorization in */
 };
 

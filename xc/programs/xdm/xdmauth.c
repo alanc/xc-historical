@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: mitauth.c,v 1.3 89/12/06 19:40:18 keith Exp $
+ * $XConsortium: xdmauth.c,v 1.1 89/12/13 15:23:06 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -31,7 +31,34 @@
 
 static char	auth_name[256];
 static int	auth_name_len;
-#define AUTH_DATA_LEN	8
+#define AUTH_DATA_LEN	16
+
+XdmPrintDataHex (s, a, l)
+    char	    *s;
+    BYTE	    *a;
+    int		    l;
+{
+    int	i;
+
+    Debug ("%s", s);
+    for (i = 0; i < l; i++)
+	Debug (" %2x", a[i]);
+    Debug ("\n");
+}
+
+XdmPrintKey (s, k)
+    char	    *s;
+    XdmAuthKeyRec   *k;
+{
+    XdmPrintDataHex (s, k->data, 8);
+}
+
+XdmPrintArray8Hex (s, a)
+    char	*s;
+    ARRAY8Ptr	a;
+{
+    XdmPrintDataHex (s, a->data, a->length);
+}
 
 XdmInitAuth (name_len, name)
     unsigned short  name_len;
@@ -43,6 +70,13 @@ XdmInitAuth (name_len, name)
     auth_name_len = name_len;
     bcopy (name, auth_name, name_len);
 }
+
+/*
+ * Generate the encryption key and session ID when not using XDMCP.
+ * The first 8 bytes are the salt, to perturb the encryption.  The
+ * second 8 bytes are the per-session encryption key, used to
+ * encrypt and decrypt the data sent during connection setup.
+ */
 
 Xauth *
 XdmGetAuth (namelen, name)
@@ -76,7 +110,13 @@ XdmGetAuth (namelen, name)
     bcopy (name, new->name, namelen);
     new->name_length = namelen;
     GenerateCryptoKey (new->data, AUTH_DATA_LEN);
+    /*
+     * The encryption key is only 56 bits long, not 64.  XDM-AUTHORIZATION-1
+     * requires that the first byte of the key be zero.
+     */
+    new->data[8] = '\0';
     new->data_length = AUTH_DATA_LEN;
+    XdmPrintDataHex ("Local server auth", new->data, new->data_length);
     return new;
 }
 
@@ -115,10 +155,47 @@ XdmGetXdmcpAuth (pdpy,authorizationNameLen, authorizationName)
     bcopy (xdmcpauth->name, fileauth->name, xdmcpauth->name_length);
     bcopy (pdpy->authenticationData.data, fileauth->data, 8);
     bcopy (xdmcpauth->data, fileauth->data + 8, 8);
+    XdmPrintDataHex ("Accept packet auth", xdmcpauth->data, xdmcpauth->data_length);
+    XdmPrintDataHex ("Auth file auth", fileauth->data, fileauth->data_length);
     XdmcpEncrypt (xdmcpauth->data, &pdpy->key, xdmcpauth->data, 8);
     pdpy->fileAuthorization = fileauth;
     pdpy->xdmcpAuthorization = xdmcpauth;
 }
+
+#define atox(c)	('0' <= c && c <= '9' ? c - '0' : \
+		 'a' <= c && c <= 'f' ? c - 'a' + 10 : \
+		 'A' <= c && c <= 'F' ? c - 'A' + 10 : -1)
+
+static
+HexToBinary (key)
+    char    *key;
+{
+    char    *out, *in;
+    int	    top, bottom;
+
+    in = key + 2;
+    out= key;
+    while (in[0] && in[1])
+    {
+	top = atox(in[0]);
+	if (top == -1)
+	    return 0;
+	bottom = atox(in[1]);
+	if (bottom == -1)
+	    return 0;
+	*out++ = (top << 4) | bottom;
+	in += 2;
+    }
+    if (in[0])
+	return 0;
+    *out++ = '\0';
+    return 1;
+}
+
+/*
+ * Search the Keys file for the entry matching this display.  This
+ * routine accepts either plain ascii strings for keys, or hex-encoded numbers
+ */
 
 XdmGetKey (pdpy, displayID)
     struct protoDisplay	*pdpy;
@@ -128,6 +205,7 @@ XdmGetKey (pdpy, displayID)
     char    line[1024], id[1024], key[1024];
     int	    keylen;
 
+    Debug ("Lookup key for %*.*s\n", displayID->length, displayID->length, displayID->data);
     keys = fopen (keyFile, "r");
     if (!keys)
 	return FALSE;
@@ -135,13 +213,18 @@ XdmGetKey (pdpy, displayID)
     {
 	if (line[0] == '#' || sscanf (line, "%s %s", id, key) != 2)
 	    continue;
+	Debug ("Key entry \"%s\" \"%s\"\n", id, key);
 	if (strlen (id) == displayID->length &&
 	    !strncmp (id, displayID->data, displayID->length))
 	{
+	    if (!strncmp (key, "0x", 2) || !strncmp (key, "0X", 2))
+		if (!HexToBinary (key))
+		    break;
 	    keylen = strlen (key);
-	    while (keylen < 8)
+	    while (keylen < 7)
 		key[keylen++] = '\0';
-	    bcopy (key, pdpy->key.data, 8);
+	    pdpy->key.data[0] = '\0';
+	    bcopy (key, pdpy->key.data + 1, 7);
 	    fclose (keys);
 	    return TRUE;
 	}
@@ -163,6 +246,7 @@ XdmCheckAuthentication (pdpy, displayID, authenticationName, authenticationData)
 	return FALSE;
     XdmcpDecrypt (authenticationData->data, &pdpy->key,
 		  authenticationData->data, 8);
+    XdmPrintArray8Hex ("Request packet auth", authenticationData);
     if (!XdmcpCopyARRAY8(authenticationData, &pdpy->authenticationData))
 	return FALSE;
     incoming = (XdmAuthKeyPtr) authenticationData->data;

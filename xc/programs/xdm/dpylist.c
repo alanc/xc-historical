@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dpylist.c,v 1.17 89/12/06 19:38:23 keith Exp $
+ * $XConsortium: dpylist.c,v 1.18 90/03/29 11:37:36 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -117,6 +117,7 @@ struct display	*old;
 {
     struct display	*d, *p;
     char		**x;
+    int			i;
 
     p = 0;
     for (d = displays; d; d = d->next) {
@@ -140,14 +141,21 @@ struct display	*old;
 	    IfFree (d->systemPath);
 	    IfFree (d->systemShell);
 	    IfFree (d->failsafeClient);
-	    if (d->authorization)
-		XauDisposeAuth (d->authorization);
+	    if (d->authorizations)
+	    {
+		for (i = 0; i < d->authNum; i++)
+		    XauDisposeAuth (d->authorizations[i]);
+		free ((char *) d->authorizations);
+	    }
 	    IfFree (d->clientAuthFile);
 	    if (d->authFile)
 		(void) unlink (d->authFile);
 	    IfFree (d->authFile);
 	    IfFree (d->userAuthDir);
-	    IfFree (d->authName);
+	    for (x = d->authNames; x && *x; x++)
+		IfFree (*x);
+	    IfFree (d->authNames);
+	    IfFree (d->authNameLens);
 	    IfFree (d->peer);
 	    IfFree (d->from);
 	    free ((char *) d);
@@ -209,12 +217,13 @@ char		*class;
     d->systemShell = NULL;
     d->failsafeClient = NULL;
     d->authorize = FALSE;
-    d->authorization = NULL;
+    d->authorizations = NULL;
+    d->authNum = 0;
     d->clientAuthFile = NULL;
     d->authFile = NULL;
     d->userAuthDir = NULL;
-    d->authName = NULL;
-    d->authNameLen = 0;
+    d->authNames = NULL;
+    d->authNameLens = NULL;
     d->openDelay = 0;
     d->openRepeat = 0;
     d->openTimeout = 0;

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.17 90/03/05 11:48:42 keith Exp $
+ * $XConsortium: socket.c,v 1.18 90/08/21 14:37:45 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -830,6 +830,12 @@ manage (from, fromlen, length)
 	    }
 	    bcopy (from, from_save, fromlen);
 	    d = NewDisplay (name, class);
+	    if (!d)
+	    {
+		free ((char *) from_save);
+		send_failed (from, fromlen, name, sessionID, "out of memory");
+		goto abort;
+	    }
 	    d->displayType.location = Foreign;
 	    d->displayType.lifetime = Transient;
 	    d->displayType.origin = FromXDMCP;
@@ -837,8 +843,20 @@ manage (from, fromlen, length)
 	    d->from = from_save;
 	    d->fromlen = fromlen;
 	    d->displayNumber = pdpy->displayNumber;
-	    d->authorization = pdpy->fileAuthorization;
-	    pdpy->fileAuthorization = 0;
+	    if (pdpy->fileAuthorization)
+	    {
+		d->authorizations = (Xauth **) malloc (sizeof (Xauth *));
+		if (!d->authorizations)
+		{
+		    free ((char *) from_save);
+		    free ((char *) d);
+		    send_failed (from, fromlen, name, sessionID, "out of memory");
+		    goto abort;
+		}
+		d->authorizations[0] = pdpy->fileAuthorization;
+		d->authNum = 1;
+		pdpy->fileAuthorization = 0;
+	    }
 	    DisposeProtoDisplay (pdpy);
 	    Debug ("Starting display %s,%s\n", d->name, d->class);
 	    StartDisplay (d);

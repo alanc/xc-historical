@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: cryptokey.c,v 1.2 90/02/07 18:47:29 keith Exp $
+ * $XConsortium: cryptokey.c,v 1.3 90/05/03 18:47:35 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *

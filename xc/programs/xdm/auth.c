@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.19 90/03/05 11:49:18 keith Exp $
+ * $XConsortium: auth.c,v 1.20 90/03/05 18:57:55 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -112,6 +112,7 @@ char		*name;
 {
     struct AuthProtocol	*a;
     Xauth   *auth = 0;
+    int	    i;
 
     Debug ("GenerateAuthorization %*.*s\n",
 	    name_length, name_length, name);
@@ -125,11 +126,20 @@ char		*name;
 	}
 	auth = (*a->GetAuth) (name_length, name);
 	if (auth)
-	    Debug ("Got 0x%x (%d %*.*s)\n", auth,
+	{
+	    Debug ("Got 0x%x (%d %*.*s) ", auth,
 		auth->name_length, auth->name_length,
  		auth->name_length, auth->name);
+	    for (i = 0; i < auth->data_length; i++)
+		Debug (" %02x", auth->data[i]);
+	    Debug ("\n");
+	}
 	else
 	    Debug ("Got (null)\n");
+    }
+    else
+    {
+	Debug ("Unknown authorization %*.*s\n", name_length, name_length, name);
     }
     return auth;
 }
@@ -229,13 +239,15 @@ MakeServerAuthFile (d)
     return TRUE;
 }
 
-SaveServerAuthorization (d, auth)
+SaveServerAuthorizations (d, auths, count)
     struct display  *d;
-    Xauth	    *auth;
+    Xauth	    **auths;
+    int		    count;
 {
     FILE	*auth_file;
     int		mask;
     int		ret;
+    int		i;
 
     mask = umask (0077);
     if (!d->authFile && !MakeServerAuthFile (d))
@@ -252,17 +264,20 @@ SaveServerAuthorization (d, auth)
     }
     else
     {
-    	Debug ("File: %s auth: %x\n", d->authFile, auth);
-    	if (!XauWriteAuth (auth_file, auth) || fflush (auth_file) == EOF)
-    	{
-	    LogError ("Cannot write server authorization file %s\n",
-		       d->authFile);
-	    ret = FALSE;
-	    free (d->authFile);
-	    d->authFile = NULL;
+    	Debug ("File: %s auth: %x\n", d->authFile, auths);
+	ret = TRUE;
+	for (i = 0; i < count; i++)
+	{
+	    if (!XauWriteAuth (auth_file, auths[i]) ||
+		fflush (auth_file) == EOF)
+	    {
+		LogError ("Cannot write server authorization file %s\n",
+			  d->authFile);
+		ret = FALSE;
+		free (d->authFile);
+		d->authFile = NULL;
+	    }
     	}
-	else
-	    ret = TRUE;
 	fclose (auth_file);
     }
     return ret;
@@ -271,33 +286,67 @@ SaveServerAuthorization (d, auth)
 SetLocalAuthorization (d)
     struct display	*d;
 {
-    Xauth	*auth;
+    Xauth	*auth, **auths;
+    int		i, j;
+    char	**authName;
 
-    if (d->authorization)
+    if (d->authorizations)
     {
-	XauDisposeAuth (d->authorization);
-	d->authorization = (Xauth *) NULL;
+	for (i = 0; i < d->authNum; i++)
+	    XauDisposeAuth (d->authorizations[i]);
+	free ((char *) d->authorizations);
+	d->authorizations = (Xauth **) NULL;
+	d->authNum = 0;
     }
-    if (d->authName && !d->authNameLen)
-    	d->authNameLen = strlen (d->authName);
-    auth = GenerateAuthorization (d->authNameLen, d->authName);
-    if (!auth)
+    if (!d->authNames)
 	return;
-    if (SaveServerAuthorization (d, auth))
-	d->authorization = auth;
+    if (!d->authNameNum)
+    {
+	for (i = 0; d->authNames[i]; i++)
+	    ;
+	d->authNameNum = i;
+    }
+    if (*d->authNames && !d->authNameLens)
+    {
+	d->authNameLens = (unsigned short *) malloc
+				(d->authNameNum * sizeof (unsigned short));
+	if (!d->authNameLens)
+	    return;
+	for (i = 0; i < d->authNameNum; i++)
+	    d->authNameLens[i] = strlen (d->authNames[i]);
+    }
+    auths = (Xauth **) malloc (d->authNameNum * sizeof (Xauth *));
+    if (!auths)
+	return;
+    j = 0;
+    for (i = 0; i < d->authNameNum; i++)
+    {
+	auth = GenerateAuthorization (d->authNameLens[i], d->authNames[i]);
+	if (auth)
+	    auths[j++] = auth;
+    }
+    if (SaveServerAuthorizations (d, auths, j))
+    {
+	d->authorizations = auths;
+	d->authNum = j;
+    }
     else
-	XauDisposeAuth (auth);
+    {
+	for (i = 0; i < j; i++)
+	    XauDisposeAuth (auths[i]);
+	free ((char *) auths);
+    }
 }
 
 SetAuthorization (d)
     struct display  *d;
 {
-    Xauth   *auth;
+    Xauth   **auth;
 
-    auth = d->authorization;
-    if (auth)
-	XSetAuthorization (auth->name, (int) auth->name_length,
-			   auth->data, (int) auth->data_length);
+    auth = d->authorizations;
+    if (auth && *auth)
+	XSetAuthorization ((*auth)->name, (int) (*auth)->name_length,
+			   (*auth)->data, (int) (*auth)->data_length);
 }
 
 static
@@ -322,6 +371,7 @@ FILE	**oldp, **newp;
 	return 1;
 }
 
+static
 binaryEqual (a, b, len)
 char	*a, *b;
 unsigned short	len;
@@ -332,6 +382,7 @@ unsigned short	len;
 	return 1;
 }
 
+static
 dumpBytes (len, data)
 unsigned short	len;
 char	*data;
@@ -344,6 +395,7 @@ char	*data;
 	Debug ("\n");
 }
 
+static
 dumpAuth (auth)
 Xauth	*auth;
 {
@@ -369,11 +421,13 @@ struct addrList {
 
 static struct addrList	*addrs;
 
+static
 initAddrs ()
 {
 	addrs = 0;
 }
 
+static
 doneAddrs ()
 {
 	struct addrList	*a, *n;
@@ -387,6 +441,7 @@ doneAddrs ()
 	}
 }
 
+static
 saveAddr (family, address_length, address, number_length, number)
 unsigned short	family;
 unsigned short	address_length, number_length;
@@ -428,6 +483,7 @@ char	*address, *number;
 	addrs = new;
 }
 
+static
 checkAddr (family, address_length, address, number_length, number)
 unsigned short	family;
 unsigned short	address_length, number_length;
@@ -448,15 +504,20 @@ char	*address, *number;
 	return 0;
 }
 
+static int  doWrite;
+
+static
 writeAuth (file, auth)
 FILE	*file;
 Xauth	*auth;
 {
 	saveAddr (auth->family, auth->address_length, auth->address,
 				auth->number_length,  auth->number);
-	XauWriteAuth (file, auth);
+	if (doWrite)
+	    XauWriteAuth (file, auth);
 }
 
+static
 writeAddr (family, addr_length, addr, file, auth)
 int	family;
 int	addr_length;
@@ -472,6 +533,7 @@ Xauth	*auth;
 	writeAuth (file, auth);
 }
 
+static
 DefineLocal (file, auth)
 FILE	*file;
 Xauth	*auth;
@@ -499,6 +561,7 @@ Xauth	*auth;
 
 /* code stolen from server/os/4.2bsd/access.c */
 
+static
 ConvertAddr (saddr, len, addr)
     register struct sockaddr	*saddr;
     int				*len;
@@ -537,6 +600,7 @@ ConvertAddr (saddr, len, addr)
  * for this fd and add them to the selfhosts list.
  * HPUX version - hpux does not have SIOCGIFCONF ioctl;
  */
+static
 DefineSelf (fd, file, auth)
     int fd;
 {
@@ -579,6 +643,7 @@ DefineSelf (fd, file, auth)
 /* Define this host for access control.  Find all the hosts the OS knows about 
  * for this fd and add them to the selfhosts list.
  */
+static
 DefineSelf (fd, file, auth)
     int fd;
     FILE	*file;
@@ -635,6 +700,7 @@ DefineSelf (fd, file, auth)
 }
 #endif /* hpux */
 
+static
 setAuthNumber (auth, name)
     Xauth   *auth;
     char    *name;
@@ -663,6 +729,7 @@ setAuthNumber (auth, name)
     }
 }
 
+static
 writeLocalAuth (file, auth, name)
 FILE	*file;
 Xauth	*auth;
@@ -744,13 +811,15 @@ struct verify_info	*verify;
     char	*home;
     char	*envname = 0;
     int	lockStatus;
-    Xauth	*entry, *auth;
+    Xauth	*entry, **auths;
     int	setenv;
     char	**setEnv (), *getEnv ();
     struct stat	statb;
+    int		i;
+    int		magicCookie;
 
     Debug ("SetUserAuthorization\n");
-    if (auth = d->authorization) {
+    if (auths = d->authorizations) {
 	home = getEnv (verify->userEnviron, "HOME");
 	lockStatus = LOCK_ERROR;
 	if (home) {
@@ -795,10 +864,36 @@ struct verify_info	*verify;
 	    return;
 	}
 	initAddrs ();
-	if (d->displayType.location == Local)
-	    writeLocalAuth (new, auth, d->name);
-	else
-	    writeRemoteAuth (new, auth, d->peer, d->peerlen, d->name);
+	doWrite = 1;
+	/*
+	 * Write MIT-MAGIC-COOKIE-1 authorization first, so that
+	 * R4 clients which only knew that, and used the first
+	 * matching entry will continue to function
+	 */
+	magicCookie = -1;
+	for (i = 0; i < d->authNum; i++)
+	{
+	    if (auths[i]->name_length == 18 &&
+		!strncmp (auths[i]->name, "MIT-MAGIC-COOKIE-1"))
+	    {
+		magicCookie = i;
+	    	if (d->displayType.location == Local)
+	    	    writeLocalAuth (new, auths[i], d->name);
+	    	else
+	    	    writeRemoteAuth (new, auths[i], d->peer, d->peerlen, d->name);
+		break;
+	    }
+	}
+	for (i = 0; i < d->authNum; i++)
+	{
+	    if (i != magicCookie)
+	    {
+	    	if (d->displayType.location == Local)
+	    	    writeLocalAuth (new, auths[i], d->name);
+	    	else
+	    	    writeRemoteAuth (new, auths[i], d->peer, d->peerlen, d->name);
+	    }
+	}
 	if (old) {
 	    if (fstat (fileno (old), &statb) != -1)
 		chmod (new_name, (int) (statb.st_mode & 0777));
@@ -845,4 +940,74 @@ struct verify_info	*verify;
 	}
     }
     Debug ("done SetUserAuthorization\n");
+}
+
+RemoveUserAuthorization (d, verify)
+    struct display	*d;
+    struct verify_info	*verify;
+{
+    char    *home;
+    Xauth   **auths, *entry;
+    char    name[1024], new_name[1024];
+    int	    lockStatus;
+    FILE    *old, *new;
+    struct stat	statb;
+    int	    i;
+
+    if (!(auths = d->authorizations))
+	return;
+    home = getEnv (verify->userEnviron, "HOME");
+    if (!home)
+	return;
+    Debug ("RemoveUserAuthorization\n");
+    strcpy (name, home);
+    if (home[strlen(home) - 1] != '/')
+	strcat (name, "/");
+    strcat (name, ".Xauthority");
+    Debug ("XauLockAuth %s\n", name);
+    lockStatus = XauLockAuth (name, 1, 2, 10);
+    Debug ("Lock is %d\n", lockStatus);
+    if (lockStatus != LOCK_SUCCESS)
+	return;
+    if (openFiles (name, new_name, &old, &new))
+    {
+	initAddrs ();
+	doWrite = 0;
+	for (i = 0; i < d->authNum; i++)
+	{
+	    if (d->displayType.location == Local)
+	    	writeLocalAuth (new, auths[i], d->name);
+	    else
+	    	writeRemoteAuth (new, auths[i], d->peer, d->peerlen, d->name);
+	}
+	doWrite = 1;
+	if (old) {
+	    if (fstat (fileno (old), &statb) != -1)
+		chmod (new_name, (int) (statb.st_mode & 0777));
+	    while (entry = XauReadAuth (old)) {
+		if (!checkAddr (entry->family,
+			       entry->address_length, entry->address,
+			       entry->number_length, entry->number))
+		{
+		    Debug ("Saving an entry\n");
+		    dumpAuth (entry);
+		    writeAuth (new, entry);
+		}
+		XauDisposeAuth (entry);
+	    }
+	    fclose (old);
+	}
+	doneAddrs ();
+	fclose (new);
+	if (unlink (name) == -1)
+	    Debug ("unlink %s failed\n", name);
+	if (link (new_name, name) == -1) {
+	    Debug ("link failed %s %s\n", new_name, name);
+	    LogError ("Can't move authorization into place\n");
+	} else {
+	    Debug ("new is in place, go for it!\n");
+	    unlink (new_name);
+	}
+    }
+    XauUnlockAuth (name);
 }

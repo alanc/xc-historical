@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.40 90/03/29 14:23:32 keith Exp $
+ * $XConsortium: dm.c,v 1.41 90/08/21 14:37:33 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -459,7 +459,7 @@ struct display	*d;
     	if (d->authorize)
     	{
 	    Debug ("SetLocalAuthorization %s, auth %s\n",
-		    d->name, d->authName);
+		    d->name, d->authNames[0]);
 	    SetLocalAuthorization (d);
 	    /*
 	     * reset the server after writing the authorization information
@@ -480,8 +480,8 @@ struct display	*d;
     else
     {
 	/* this will only happen when using XDMCP */
-	if (d->authorization)
-	    SaveServerAuthorization (d, d->authorization);
+	if (d->authorizations)
+	    SaveServerAuthorizations (d, d->authorizations, d->authNum);
     }
     switch (pid = fork ())
     {
