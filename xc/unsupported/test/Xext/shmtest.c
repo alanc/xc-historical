@@ -15,16 +15,7 @@ implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: shmtest.c,v 1.3 89/10/10 08:47:37 rws Exp $ */
-
-#ifndef MITSHM
-main()
-{
-    printf("shared memory extension not compiled\n");
-    exit(0);
-}
-
-#else
+/* $XConsortium: shmtest.c,v 1.4 89/12/16 22:01:01 rws Exp $ */
 
 #include <stdio.h>
 #ifdef dirty
@@ -199,4 +190,3 @@ main(argc, argv)
 	}
     }
 }
-#endif
