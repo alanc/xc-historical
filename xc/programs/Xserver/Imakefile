@@ -23,6 +23,7 @@
             APC = ddx/apollo/apc/libapc.a
             SUN = ddx/sun/libsun.a
           MACII = ddx/macII/libmacII.a
+            TEK = ddx/tek/libtek.a
             PLX = ddx/plx/libplx.a
          XAULIB = $(TOP)/lib/Xau/libXau.a
        XDMCPLIB = $(TOP)/lib/Xdmcp/libXdmcp.a
@@ -117,10 +118,10 @@
 #define	XndxServer /* as nothing */
 #endif
 
-#ifdef	XpegServer
-#define dopegServer
+#ifdef	XtekServer
+#define dotekServer
 #else
-#define	XpegServer /* as nothing */
+#define	XtekServer /* as nothing */
 #endif
 
 #ifdef	XmacIIServer
@@ -136,8 +137,8 @@
  *                                                                           *
 /*****************************************************************************
  */
-ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XhpServer XndxServer XpegServer XmacIIServer XplxServer XmfbpmaxServer XcfbpmaxServer
-ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp Xpeg XmacII Xplx Xcfbpmax Xmfbpmax Xndx
+ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XhpServer XndxServer XmacIIServer XplxServer XmfbpmaxServer XcfbpmaxServer XtekServer
+ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp XmacII Xplx Xcfbpmax Xmfbpmax Xndx Xtek
 
 all: $(ALL)
 
@@ -420,22 +421,24 @@ ServerTarget(Xndx,$(EXTDIR) $(FONTUTILDIR) $(NDXDIRS),$(NDXOBJS),$(NDXLIBS),$(SY
 
 
 
-#ifdef dopegServer
+#ifdef dotekServer
 /**/#
-/**/# pegasus server
+/**/# tek server
 /**/#
 #define need_dix
 #define need_ddx_snf
 #define need_ddx_mi
+#define need_ddx_cfb
 #define need_ddx_mfb
+#define need_ddx_tek
 #define need_os_42bsd
-PEGASUSDIRS = dix ddx/snf ddx/mi ddx/mfb os/4.2bsd
-PEGASUSOBJS = ddx/tek/XTek.o $(FONTUTIL)
-PEGASUSLIBS = $(DIX) $(BSD) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
-XpegDIRS = $(PEGASUSDIRS)
+TEKDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/cfb ddx/tek os/4.2bsd
+TEKOBJS = ddx/tek/pegInit.o $(FONTUTIL)
+TEKLIBS = $(DIX) $(BSD) $(SNF) $(TEK) $(MFB) $(CFB) $(MI) $(EXTENSIONS)
+XtekDIRS = $(TEKDIRS)
 
-ServerTarget(Xpeg,$(EXTDIR) $(FONTUTILDIR) $(PEGASUSDIRS),$(PEGASUSOBJS),$(PEGASUSLIBS),$(SYSLIBS))
-#endif /* dopegServer */
+ServerTarget(Xtek,$(EXTDIR) $(FONTUTILDIR) $(TEKDIRS),$(TEKOBJS),$(TEKLIBS),$(SYSLIBS))
+#endif /* dotekServer */
 
 
 
@@ -522,6 +525,12 @@ ServerTarget(XmacII,$(EXTDIR) $(FONTUTILDIR) $(MACIIDIRS),$(MACIIOBJS),$(MACIILI
 #define dir_ddx_apollo_apc /**/
 #endif
 
+#ifdef need_ddx_tek
+#define dir_ddx_tek ddx/tek
+#else
+#define dir_ddx_tek /**/
+#endif
+
 #ifdef need_ddx_dec_lk201
 #define dir_ddx_dec_lk201 ddx/dec/lk201
 #else
@@ -578,7 +587,7 @@ OURDDX = dir_ddx_snf dir_ddx_mfb dir_ddx_cfb dir_ddx_mi
 OUROS = dir_os_42bsd dir_os_bsdemul
 DECDDX = dir_ddx_dec_lk201 dir_ddx_dec_qdss dir_ddx_dec_qvss dir_ddx_dec_mfbpmax dir_ddx_dec_cfbpmax
 HPDDX = dir_ddx_hp
-OTHERDDX = dir_ddx_apollo dir_ddx_apollo_apc dir_ddx_ibm dir_ddx_macII dir_ddx_ndx dir_ddx_plx dir_ddx_sun
+OTHERDDX = dir_ddx_apollo dir_ddx_apollo_apc dir_ddx_ibm dir_ddx_macII dir_ddx_ndx dir_ddx_plx dir_ddx_sun dir_ddx_tek
 
 SUBDIRS = $(OURDIX) $(OURDDX) $(OUROS) $(DECDDX) $(HPDDX) $(OTHERDDX)
 
