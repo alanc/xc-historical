@@ -1233,8 +1233,8 @@ sunCreateWindow (pWin)
 {
     WinPrivPtr	pPriv;
 
-    (* sunFbs[((DrawablePtr)pWin)->pScreen->myNum].CreateWindow) (pWin);
-
+    if (!(* sunFbs[((DrawablePtr)pWin)->pScreen->myNum].CreateWindow)(pWin))
+	return FALSE;
     pPriv = (WinPrivPtr) xalloc (sizeof (WinPrivRec));
     if (!pPriv)
 	return FALSE;
@@ -1269,9 +1269,10 @@ sunChangeWindowAttributes (pWin, mask)
     Mask	mask;
 {
     WinPrivPtr	pPriv;
+    Bool	ok;
 
-    (* sunFbs[((DrawablePtr)pWin)->pScreen->myNum].ChangeWindowAttributes)
-	(pWin, mask);
+    ok = (* sunFbs[((DrawablePtr)pWin)->pScreen->myNum].ChangeWindowAttributes)
+								(pWin, mask);
     
     pPriv = (WinPrivPtr) LookupID (pWin->wid, RT_WINDOW, wPrivClass);
 
@@ -1306,5 +1307,5 @@ sunChangeWindowAttributes (pWin, mask)
 	    pWin->backStorage->DrawGuarantee = sunDrawGuarantee;
     }
     
-    return (TRUE);
+    return (ok);
 }
