@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.74 93/09/13 13:50:25 rws Exp $ */
+/* $XConsortium: Xutil.h,v 11.75 93/09/29 20:28:43 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -108,6 +108,7 @@ typedef struct {
 #define WindowGroupHint		(1L << 6)
 #define AllHints (InputHint|StateHint|IconPixmapHint|IconWindowHint| \
 IconPositionHint|IconMaskHint|WindowGroupHint)
+#define XVisibleHint		(1L << 8)
 
 /* definitions for initial window state */
 #define WithdrawnState 0	/* for windows that are not mapped */
