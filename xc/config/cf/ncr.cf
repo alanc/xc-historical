@@ -42,7 +42,7 @@ XCOMM #define ExtensionOSDefines	-DXTESTEXT1
  * socket interface instead of the streams interface.
  */
 #define ExtraLoadFlags -lc -L/usr/ucblib -lucb -lm -lgen -lcmd
-#define ExtraLibraries		-lsocket -lnsl
+#define ExtraLibraries		-lsocket -lnsl -lw
 
 
 /* Setup proper ownership of installed files */
