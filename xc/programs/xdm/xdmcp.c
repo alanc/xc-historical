@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.26 91/05/06 23:53:43 gildea Exp $
+ * $XConsortium: xdmcp.c,v 1.1 91/07/15 15:59:03 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -47,7 +47,7 @@ extern int		Willing ();
 extern ARRAY8Ptr	Accept ();
 extern int		SelectConnectionTypeIndex ();
 
-int	socketFd = -1;
+int	xdmcpFd = -1;
 int	chooserFd = -1;
 
 FD_TYPE	WellKnownSocketsMask;
@@ -57,10 +57,10 @@ int	WellKnownSocketsMax;
 
 DestroyWellKnownSockets ()
 {
-    if (socketFd != -1)
+    if (xdmcpFd != -1)
     {
-	close (socketFd);
-	socketFd = -1;
+	close (xdmcpFd);
+	xdmcpFd = -1;
     }
     if (chooserFd != -1)
     {
@@ -71,7 +71,7 @@ DestroyWellKnownSockets ()
 
 AnyWellKnownSockets ()
 {
-    return socketFd != -1 || chooserFd != -1;
+    return xdmcpFd != -1 || chooserFd != -1;
 }
 
 WaitForSomething ()
@@ -88,7 +88,7 @@ WaitForSomething ()
 		nready, Rescan, ChildReady);
 	if (nready > 0)
 	{
-	    if (socketFd >= 0 && FD_ISSET (socketFd, &reads))
+	    if (xdmcpFd >= 0 && FD_ISSET (xdmcpFd, &reads))
 		ProcessRequestSocket ();
 	    if (chooserFd >= 0 && FD_ISSET (chooserFd, &reads))
 		ProcessChooserSocket (chooserFd);
@@ -129,12 +129,19 @@ ProcessRequestSocket ()
 
     Debug ("ProcessRequestSocket\n");
     bzero ((char *) &addr, sizeof (addr));
-    if (!XdmcpFill (socketFd, &buffer, &addr, &addrlen))
+    if (!XdmcpFill (xdmcpFd, &buffer, &addr, &addrlen)) {
+	Debug ("XdmcpFill failed\n");
 	return;
-    if (!XdmcpReadHeader (&buffer, &header))
+    }
+    if (!XdmcpReadHeader (&buffer, &header)) {
+	Debug ("XdmcpReadHeader failed\n");
 	return;
-    if (header.version != XDM_PROTOCOL_VERSION)
+    }
+    if (header.version != XDM_PROTOCOL_VERSION) {
+	Debug ("XDMCP header version read was %d, expected %d\n",
+	       header.version, XDM_PROTOCOL_VERSION);
 	return;
+    }
     Debug ("header: %d %d %d\n", header.version, header.opcode, header.length);
     switch (header.opcode)
     {
@@ -234,71 +241,11 @@ sendForward (connectionType, address, closure)
     default:
 	return;
     }
-    XdmcpFlush (socketFd, &buffer, addr, addrlen);
+    XdmcpFlush (xdmcpFd, &buffer, addr, addrlen);
 }
 
 extern char *NetaddrAddress();
 extern char *NetaddrPort();
-
-#ifdef notdef
-
-static
-ClientAddress (from, addr, port, type)
-    struct sockaddr *from;
-    ARRAY8Ptr	    addr, port;
-    CARD16	    *type;
-{
-    addr->length = 0;
-    addr->data = 0;
-    port->length = 0;
-    port->data = 0;
-    switch (from->sa_family) {
-#ifdef AF_UNIX
-    case AF_UNIX:
-	{
-	    struct sockaddr_un	*un_addr;
-	    int			length;
-	    int			i;
-    
-	    un_addr = (struct sockaddr_un *) from;
-	    length = strlen (un_addr->sun_path);
-	    if (XdmcpAllocARRAY8 (addr, length))
-	    {
-		for (i = 0; i < length; i++)
-		    addr->data[i] = un_addr->sun_path[i];
-	    }
-	    *type = FamilyLocal;
-	    break;
-	}
-#endif
-#ifdef AF_INET
-    case AF_INET:
-	{
-	    struct sockaddr_in	*in_addr;
-    
-	    in_addr = (struct sockaddr_in *) from;
-	    if (XdmcpAllocARRAY8 (addr, 4) &&
-		XdmcpAllocARRAY8 (port, 2))
-	    {
-		bcopy (&in_addr->sin_addr, addr->data, 4);
-		bcopy (&in_addr->sin_port, port->data, 2);
-	    }
-	    *type = FamilyInternet;
-	}
-	break;
-#endif
-#ifdef AF_CHAOS
-    case AF_CHAOS:
-	break;
-#endif
-#ifdef AF_DECnet
-    case AF_DECnet:
-	*type = FamilyDECnet;
-	break;
-#endif
-    }
-}
-#endif
 
 static void
 ClientAddress (from, addr, port, type)
@@ -320,9 +267,6 @@ ClientAddress (from, addr, port, type)
     addr->length = length;
 
     *type = family;
-    Debug ("ClientAddress: type=%d, port=%d (len %d), addr=%lx (len %d)\n",
-	   *type, *(short *)(port->data), port->length,
-	   *(long *)(addr->data), addr->length);
 }
 
 indirect_respond (from, fromlen, length)
@@ -536,7 +480,7 @@ send_willing (from, fromlen, authenticationName, status)
     XdmcpWriteARRAY8 (&buffer, authenticationName);
     XdmcpWriteARRAY8 (&buffer, &Hostname);
     XdmcpWriteARRAY8 (&buffer, status);
-    XdmcpFlush (socketFd, &buffer, from, fromlen);
+    XdmcpFlush (xdmcpFd, &buffer, from, fromlen);
 }
 
 send_unwilling (from, fromlen, authenticationName, status)
@@ -559,7 +503,7 @@ send_unwilling (from, fromlen, authenticationName, status)
     XdmcpWriteHeader (&buffer, &header);
     XdmcpWriteARRAY8 (&buffer, &Hostname);
     XdmcpWriteARRAY8 (&buffer, status);
-    XdmcpFlush (socketFd, &buffer, from, fromlen);
+    XdmcpFlush (xdmcpFd, &buffer, from, fromlen);
 }
 
 static unsigned long	globalSessionID;
@@ -741,7 +685,7 @@ send_accept (to, tolen, sessionID,
     XdmcpWriteARRAY8 (&buffer, authenticationData);
     XdmcpWriteARRAY8 (&buffer, authorizationName);
     XdmcpWriteARRAY8 (&buffer, authorizationData);
-    XdmcpFlush (socketFd, &buffer, to, tolen);
+    XdmcpFlush (xdmcpFd, &buffer, to, tolen);
 }
    
 send_decline (to, tolen, authenticationName, authenticationData, status)
@@ -763,7 +707,7 @@ send_decline (to, tolen, authenticationName, authenticationData, status)
     XdmcpWriteARRAY8 (&buffer, status);
     XdmcpWriteARRAY8 (&buffer, authenticationName);
     XdmcpWriteARRAY8 (&buffer, authenticationData);
-    XdmcpFlush (socketFd, &buffer, to, tolen);
+    XdmcpFlush (xdmcpFd, &buffer, to, tolen);
 }
 
 manage (from, fromlen, length)
@@ -779,7 +723,7 @@ manage (from, fromlen, length)
     struct display	*d;
     char		*name;
     char		*class;
-    struct sockaddr	*from_save;
+    XdmcpNetaddr	from_save;
     ARRAY8		clientAddress, clientPort;
     CARD16		connectionType;
 
@@ -855,7 +799,7 @@ manage (from, fromlen, length)
 	    }
 	    else
 		class = (char *) 0;
-	    from_save = (struct sockaddr *) malloc (fromlen);
+	    from_save = (XdmcpNetaddr) malloc (fromlen);
 	    if (!from_save)
 	    {
 		send_failed (from, fromlen, name, sessionID, "out of memory");
@@ -944,7 +888,7 @@ send_failed (from, fromlen, name, sessionID, reason)
     XdmcpWriteHeader (&buffer, &header);
     XdmcpWriteCARD32 (&buffer, sessionID);
     XdmcpWriteARRAY8 (&buffer, &status);
-    XdmcpFlush (socketFd, &buffer, from, fromlen);
+    XdmcpFlush (xdmcpFd, &buffer, from, fromlen);
 }
 
 send_refuse (from, fromlen, sessionID)
@@ -960,7 +904,7 @@ send_refuse (from, fromlen, sessionID)
     header.length = 4;
     XdmcpWriteHeader (&buffer, &header);
     XdmcpWriteCARD32 (&buffer, sessionID);
-    XdmcpFlush (socketFd, &buffer, from, fromlen);
+    XdmcpFlush (xdmcpFd, &buffer, from, fromlen);
 }
 
 send_alive (from, fromlen, length)
@@ -1000,7 +944,7 @@ send_alive (from, fromlen, length)
 	    XdmcpWriteHeader (&buffer, &header);
 	    XdmcpWriteCARD8 (&buffer, sendRunning);
 	    XdmcpWriteCARD32 (&buffer, sendSessionID);
-	    XdmcpFlush (socketFd, &buffer, from, fromlen);
+	    XdmcpFlush (xdmcpFd, &buffer, from, fromlen);
 	}
     }
 }
