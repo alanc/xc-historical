@@ -1,4 +1,4 @@
-.\" $XConsortium: CH02,v 1.13 93/07/27 15:48:50 converse Exp $
+.\" $XConsortium: CH02,v 1.14 94/01/07 19:36:17 converse Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -1925,7 +1925,7 @@ is found, the \*(xI will allocate memory for the widget.
 .LP
 An 
 .PN XtAllocateProc
-peforms the following:
+performs the following:
 .IP \(bu 5
 Allocates memory for the widget instance and returns it in \fInew_return\fP.
 The memory must be at least \fIwc->core_class.widget_size\fP bytes in length,
@@ -2975,7 +2975,7 @@ record exists in the Object part of the widget class record with type
 and the \fIdeallocate\fP field is not NULL, the
 .PN XtDeallocateProc
 will be called.
-The responsibilites of the deallocate method are to deallocate the
+The responsibilities of the deallocate method are to deallocate the
 memory specified by \fImore_bytes\fP if it is not NULL,
 to deallocate the constraints record as specified by the
 widget's \fIcore.constraints\fP field if it is
