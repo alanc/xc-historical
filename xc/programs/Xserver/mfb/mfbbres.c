@@ -22,11 +22,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbres.c,v 1.17 92/12/24 09:26:14 rws Exp $ */
+/* $XConsortium: mfbbres.c,v 1.19 94/03/06 23:15:09 dpw Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "mfb.h"
 #include "maskbits.h"
+#include "miline.h"
 
 /* Solid bresenham line */
 /* NOTES

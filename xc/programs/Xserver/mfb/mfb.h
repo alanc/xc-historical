@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.25 94/01/12 18:04:25 dpw Exp $ */
+/* $XConsortium: mfb.h,v 5.27 94/03/06 23:15:09 dpw Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -529,22 +529,6 @@ extern void mfbLineSD(
 #endif
 );
 
-extern int mfbClipLine(
-#if NeedFunctionPrototypes
-    BoxPtr /*pbox*/,
-    BoxRec /*box*/,
-    DDXPointPtr /*ppt1Orig*/,
-    DDXPointPtr /*ppt1*/,
-    DDXPointPtr /*ppt2*/,
-    int /*adx*/,
-    int /*ady*/,
-    int /*signdx*/,
-    int /*signdy*/,
-    int /*axis*/,
-    int * /*pclip1*/,
-    int * /*pclip2*/
-#endif
-);
 /* mfbmisc.c */
 
 extern void mfbQueryBestSize(
@@ -1096,16 +1080,6 @@ typedef struct _pos{
 #define RROP_WHITE	GXset
 #define RROP_NOP	GXnoop
 #define RROP_INVERT	GXinvert
-
-/* out of clip region codes */
-#define OUT_LEFT 0x08
-#define OUT_RIGHT 0x04
-#define OUT_ABOVE 0x02
-#define OUT_BELOW 0x01
-
-/* major axis for bresenham's line */
-#define X_AXIS	0
-#define Y_AXIS	1
 
 /* macros for mfbbitblt.c, mfbfillsp.c
    these let the code do one switch on the rop per call, rather

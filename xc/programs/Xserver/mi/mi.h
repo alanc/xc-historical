@@ -1,4 +1,4 @@
-/* $XConsortium: mi.h,v 1.12 93/12/13 17:32:30 dpw Exp $ */
+/* $XConsortium: mi.h,v 1.14 94/03/06 23:13:32 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -703,7 +703,7 @@ extern void miZeroLine(
 #endif
 );
 
-extern int miZeroDashLine(
+extern void miZeroDashLine(
 #if NeedFunctionPrototypes
     DrawablePtr /*dst*/,
     GCPtr /*pgc*/,

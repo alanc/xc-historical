@@ -21,11 +21,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbresd.c,v 1.5 92/12/24 09:26:16 rws Exp $ */
+/* $XConsortium: mfbbresd.c,v 1.7 94/03/06 23:15:09 dpw Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "mfb.h"
 #include "maskbits.h"
+#include "miline.h"
 
 /* Dashed bresenham line */
 
