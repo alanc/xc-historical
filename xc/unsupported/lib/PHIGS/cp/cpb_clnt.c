@@ -1,4 +1,4 @@
-/* $XConsortium: cpb_clnt.c,v 5.1 91/02/16 09:48:44 rws Exp $ */
+/* $XConsortium: cpb_clnt.c,v 5.2 91/04/04 21:05:54 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -34,8 +34,6 @@ SOFTWARE.
 #include "PEXproto.h"
 #include "phigspex.h"
 
-
-static void dummy() {};
 
 static void
 cpbc_load_two_process_funcs( cph, css_srvr )

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cpb_pm.c,v 5.1 91/02/16 09:48:46 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -34,8 +34,6 @@ SOFTWARE.
 #include "PEXproto.h"
 #include "phigspex.h"
 
-
-static void dummy() {};
 
 static void
 cpb_pm_load_funcs( cph, css_srvr )
