@@ -1,5 +1,5 @@
-/* $XConsortium: ObjectP.h,v 1.10 89/10/04 12:22:44 swick Exp $ */
-/* $oHeader: ObjectP.h,v 1.2 88/08/18 15:55:35 asente Exp $ */
+/* $XConsortium: ObjectP.h,v 1.11 92/04/03 13:16:55 converse Exp $ */
+
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -87,18 +87,28 @@ typedef struct _ObjectClassPart {
     XtArgsProc      get_values_hook;    /* notify that get_values called    */
     XtProc          obj11;              /* NULL                             */
     XtVersionType   version;            /* version of intrinsics used       */
-    XtPointer       callback_private;   /* list of callback offsets       */
+    XtPointer       callback_private;   /* list of callback offsets         */
     String          obj12;              /* NULL                             */
     XtProc          obj13;              /* NULL                             */
     XtProc          obj14;              /* NULL                             */
     XtPointer       extension;          /* pointer to extension record      */
 }ObjectClassPart;
 
+typedef struct {
+    XtPointer next_extension;	/* required for all extension records */
+    XrmQuark record_type;	/* NULLQUARK; on ObjectClassPart */
+    long version;		/* must be XtObjectExtensionVersion */
+    Cardinal record_size;	/* sizeof(ObjectClassExtensionRec) */
+    XtAllocateProc allocate;
+    XtDeallocateProc deallocate;
+} ObjectClassExtensionRec, *ObjectClassExtension;
+
 typedef struct _ObjectClassRec {
     ObjectClassPart object_class;
 } ObjectClassRec;
 
-
 externalref ObjectClassRec objectClassRec;
+
+#define XtObjectExtensionVersion 1L
 
 #endif /*_Xt_ObjectP_h_*/
