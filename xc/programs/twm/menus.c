@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.157 90/04/13 13:27:17 jim Exp $
+ * $XConsortium: menus.c,v 1.158 90/04/13 14:01:01 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.157 90/04/13 13:27:17 jim Exp $";
+"$XConsortium: menus.c,v 1.158 90/04/13 14:01:01 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -905,8 +905,8 @@ MenuRoot *mr;
 
 	    XAllocColor(dpy, cmap, &f3);
 	    XAllocColor(dpy, cmap, &b3);
-	    cur->fore = f3.pixel;
-	    cur->back = b3.pixel;
+	    cur->hi_back = cur->fore = f3.pixel;
+	    cur->hi_fore = cur->back = b3.pixel;
 	    cur->user_colors = True;
 
 	    f3 = save_fore;
