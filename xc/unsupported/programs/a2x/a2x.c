@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.86 92/08/14 16:46:47 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.87 92/08/15 14:22:26 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -133,9 +133,14 @@ released automatically at next button or non-modifier key.
 #include <X11/keysym.h>
 #include <X11/Xmu/WinUtil.h>
 #include <ctype.h>
+#ifndef MSDOS
 #include <termios.h>
+#endif
 #define _POSIX_SOURCE
 #include <signal.h>
+#ifdef MSDOS
+#include <sys/time.h>
+#endif
 
 #define control_char '\024' /* control T */
 #define control_end '\224'
@@ -206,9 +211,9 @@ typedef struct _location {
 char *progname;
 Display *dpy;
 Atom MIT_OBJ_CLASS;
+int Xfd;
 int maxfd;
-int Xmask;
-int fdmask[10];
+fd_set fdmask;
 unsigned char button_map[256];
 Bool button_state[256];
 unsigned short modifiers[256];
@@ -220,7 +225,9 @@ KeyCode shift, control, mod1, mod2, mod3, mod4, mod5, meta;
 Bool bs_is_del = True;
 KeySym last_sym = 0;
 KeyCode last_keycode_for_sym = 0;
+#ifndef MSDOS
 struct termios oldterm;
+#endif
 Bool istty = False;
 struct timeval timeout;
 struct timeval *moving_timeout = NULL;
@@ -246,6 +253,7 @@ Window my_window = None;
 JumpRec jump;
 MacroRec macros[10];
 LocationRec locations[10];
+Bool noecho = True;
 char *hotwinname = "a2x";
 Window hotwin = None;
 char *hotkeyname = NULL;
@@ -352,8 +360,10 @@ usage()
 void
 reset()
 {
+#ifndef MSDOS
     if (istty)
 	tcsetattr(0, TCSANOW, &oldterm);
+#endif
 }
 
 void
@@ -1690,8 +1700,9 @@ do_trigger(buf)
 	    process_events();
 	    continue;
 	}
-	fdmask[0] = Xmask;
-	type = select(maxfd, fdmask, NULL, NULL, &trigger.time);
+	FD_CLR(0, &fdmask);
+	FD_SET(Xfd, &fdmask);
+	type = select(maxfd, &fdmask, NULL, NULL, &trigger.time);
 	if (type < 0)
 	    quit(1);
 	if (!type)
@@ -2081,8 +2092,8 @@ init_display(dname)
     reset_mapping();
     MIT_OBJ_CLASS = XInternAtom(dpy, "_MIT_OBJ_CLASS", False);
     my_window = None;
-    Xmask = 1 << ConnectionNumber(dpy);
-    maxfd = ConnectionNumber(dpy) + 1;
+    Xfd = ConnectionNumber(dpy);
+    maxfd = Xfd + 1;
     return True;
 }
 
@@ -2244,7 +2255,13 @@ process(buf, n, len)
 		    return;
 		if (n == len)
 		    break;
+#ifndef MSDOS
 		n = read(0, buf+j, len-j);
+#else
+		buf[j] = i16getch();
+		if (!noecho) echo(buf[j]);
+		n = 1;
+#endif
 		if (n < 0)
 		    quit(0);
 		n += j;
@@ -2346,14 +2363,18 @@ main(argc, argv)
     char **argv;
 {
     int n, i;
+#ifndef MSDOS
     struct termios term;
-    Bool noecho = True;
+#endif
     char *dname = NULL;
     char buf[1024];
     char fbuf[1024];
+#ifdef MSDOS
+    static struct timeval notime = {0, 0};
+#endif
 
     progname = argv[0];
-    bzero((char *)fdmask, sizeof(fdmask));
+    FD_ZERO(&fdmask);
     for (argc--, argv++; argc > 0; argc--, argv++) {
 	if (argv[0][0] != '-')
 	    usage();
@@ -2398,7 +2419,10 @@ main(argc, argv)
 	    usage();
 	}
     }
+#ifdef SIGPIPE
     signal(SIGPIPE, SIG_IGN);
+#endif
+#ifndef MSDOS
     if (tcgetattr(0, &term) >= 0) {
 	istty = True;
 	oldterm = term;
@@ -2420,6 +2444,13 @@ main(argc, argv)
 	oldioerror = XSetIOErrorHandler(ioerror);
 	olderror = XSetErrorHandler(error);
     }
+#else
+    if(isatty(0)) {
+	istty = True;
+	oldioerror = XSetIOErrorHandler(ioerror);
+	olderror = XSetErrorHandler(error);
+    }
+#endif
     if (!dname && !*(XDisplayName(dname)))
 	dname = ":0";
     if (!init_display(dname))
@@ -2438,8 +2469,23 @@ main(argc, argv)
 	    process_events();
 	    continue;
 	}
-	fdmask[0] = 1 | Xmask;
-	i = select(maxfd, fdmask, NULL, NULL, moving_timeout);
+	FD_SET(0, &fdmask);
+	FD_SET(Xfd, &fdmask);
+#ifndef MSDOS
+	i = select(maxfd, &fdmask, NULL, NULL, moving_timeout);
+#else
+	while (1) {
+	    if (i16kbhit()) {
+		i = 1;
+		FD_SET(0, &fdmask);
+		FD_CLR(Xfd, &fdmask);
+		break;
+	    } else if (i = select(maxfd, &fdmask, NULL, NULL, &notime))
+		break;
+	    else
+		api_pause();
+	}
+#endif
 	if (i < 0)
 	    quit(1);
 	if (!i) {
@@ -2453,14 +2499,31 @@ main(argc, argv)
 	    }
 	    continue;
 	}
-	if (fdmask[0] & Xmask)
+	if (FD_ISSET(Xfd, &fdmask))
 	    process_events();
-	if (!(fdmask[0] & 1))
+	if (!FD_ISSET(0, &fdmask))
 	    continue;
+#ifndef MSDOS
 	n = read(0, buf, sizeof(buf));
+#else
+	buf[0] = i16getch();
+	if (!noecho) echo(buf[0]);
+	n = 1;
+#endif
 	if (n <= 0)
 	    quit(0);
 	process(buf, n, sizeof(buf));
 	reflect_modifiers(0);
     }
 }
+
+#ifdef MSDOS
+echo(c)
+    int c;
+{
+    if (iscntrl(c))
+	printf("^%c", c + 'A' - 1);
+    else
+	putchar(c);
+}
+#endif
