@@ -1,4 +1,4 @@
-/* $Header: Xresource.h,v 1.3 87/11/19 14:28:46 swick Locked $ */
+/* $Header: Xresource.h,v 1.4 87/11/23 11:56:09 swick Locked $ */
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -147,7 +147,7 @@ extern void XrmConvert(); /* screen, fromType, from, toType, to*/
     /* XrmAtom       fromType		*/
     /* XrmValue     from;		*/
     /* XrmAtom       toType;		*/
-    /* XrmValue     *to;      /* RETURN */
+    /* XrmValue     *to;         RETURN */
 
 /****************************************************************
  *
@@ -188,7 +188,7 @@ extern void XrmGetSearchResource();
     /* XrmName       name;		    */
     /* XrmClass      class;		    */
     /* XrmAtom       type;		    */
-    /* XrmValue     *pVal;        * RETURN */
+    /* XrmValue     *pVal;           RETURN */
 
 /****************************************************************
  *
@@ -200,18 +200,18 @@ typedef struct		_XrmResourceDataBase *XrmResourceDataBase;
 typedef caddr_t		unspecified;
 
 extern XrmResourceDataBase XrmGetDataBase(); /* filename*/
-    /* char *filename; /*  file name */
+    /* char *filename;   file name */
 
 extern XrmResourceDataBase XrmLoadDataBase(); /* data */
-    /* char *data; 		/*  null terminated string. */
+    /* char *data; 		  null terminated string. */
 
 extern void XrmPutDataBase(); /* db, magicCookie */
     /* XrmResourceDataBase db;				*/
-    /* unspecified magicCookie;     /*  *FILE, actually */
+    /* unspecified magicCookie;         *FILE, actually */
 
 extern void XrmMergeDataBases(); /* new, into */
     /* XrmResourceDataBase new;		    */
-    /* XrmResourceDataBase *into;    /* RETURN */
+    /* XrmResourceDataBase *into;    RETURN */
 
 
 
