@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: Imakefile,v 1.0 93/11/22 11:38:36 rws Exp $
 #
 #       NOTICE TO USER: The source code in this file is copyrighted under
 #       U.S. and international laws.  SunSoft, Inc., a Sun Microsystems,
@@ -29,7 +29,7 @@
 
 ##  PEXlib test suite SusPEX Makefile.
 
-CDEBUGFLAGS = -g
+#CDEBUGFLAGS = -g
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
