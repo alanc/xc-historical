@@ -1,4 +1,4 @@
-/* $XConsortium: PEXlibint.h,v 1.12 93/09/23 12:41:41 mor Exp $ */
+/* $XConsortium: PEXlibint.h,v 1.13 93/09/23 14:39:21 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -25,8 +25,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 ******************************************************************************/
 
-#ifndef PEXLIBINT_H
-#define PEXLIBINT_H
+#ifndef _PEXLIBINT_H_
+#define _PEXLIBINT_H_
 
 #include <X11/Xlibint.h>
 #include <X11/Xfuncs.h>
@@ -1025,6 +1025,6 @@ extern void _PEXGenOCBadLengthError(
 #undef max
 #endif
 
-#endif /* PEXLIBINT_H */
+#endif /* _PEXLIBINT_H_ */
 
 

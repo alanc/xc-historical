@@ -1,4 +1,4 @@
-/* $XConsortium: PEXprotost.h,v 1.4 92/11/02 16:36:35 mor Exp $ */
+/* $XConsortium: PEXprotost.h,v 1.5 93/02/23 14:55:10 mor Exp $ */
 
 /******************************************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc.
@@ -25,8 +25,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 ******************************************************************************/
 
-#ifndef PEXPROTOSTR_H
-#define PEXPROTOSTR_H
+#ifndef _PEXPROTOST_H_
+#define _PEXPROTOST_H_
 
 /* Matches revision 5.1C */
 
@@ -652,4 +652,4 @@ typedef struct {
     /* SINGLE ColorSpecifier()  */
 } pexEscapeSetEchoColorData;
 
-#endif /* PEXPROTOSTR_H */
+#endif /* _PEXPROTOST_H_ */

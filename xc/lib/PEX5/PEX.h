@@ -1,7 +1,7 @@
-#ifndef PEX_H
-#define PEX_H
+#ifndef _PEX_H_
+#define _PEX_H_
 
-/* $XConsortium: PEX.h,v 1.6 92/08/26 13:04:56 mor Exp $ */
+/* $XConsortium: PEX.h,v 1.7 92/08/26 15:16:05 mor Exp $ */
 
 /******************************************************************************/
 /*  Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Mass.      */
@@ -1219,4 +1219,4 @@
 #define PEXRCEndPickAll                 103
 #define PEXRCPickAll                    104
 
-#endif /* PEX_H */
+#endif /* _PEX_H_ */

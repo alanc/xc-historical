@@ -1,4 +1,4 @@
-/* $XConsortium: PEXproto.h,v 1.6 93/02/23 14:54:49 mor Exp $ */
+/* $XConsortium: PEXproto.h,v 1.7 94/02/20 20:14:31 rws Exp $ */
 
 /******************************************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc.
@@ -44,8 +44,8 @@ SOFTWARE.
  * 3. All packets are hand-padded to a multiple of 4 bytes, for the same reason.
  */
 
-#ifndef PEXPROTO_H
-#define PEXPROTO_H
+#ifndef _PEXPROTO_H_
+#define _PEXPROTO_H_
 
 /* In the following typedefs, comments appear that say "LISTof Foo( numItems )",
  * "CLIST of Foo()", and "SINGLE Foo()".   These are used when the protocol 
@@ -2215,5 +2215,5 @@ typedef struct {
 #undef XID
 #undef Drawable
 
-#endif /* PEXPROTO_H */
+#endif /* _PEXPROTO_H_ */
 
