@@ -1,4 +1,4 @@
-/* $XConsortium: globals.h,v 1.2 93/09/08 20:21:13 mor Exp $ */
+/* $XConsortium: globals.h,v 1.3 93/09/22 11:25:34 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -17,10 +17,10 @@ purpose.  It is provided "as is" without express or implied warranty.
 extern void _SmcDefaultErrorHandler ();
 extern void _SmsDefaultErrorHandler ();
 
-extern IceOCLauthStatus _SmOCLauth1proc ();
-extern IceACLauthStatus _SmACLauth1proc ();
-extern IceOCLauthStatus _SmOCLauth2proc ();
-extern IceACLauthStatus _SmACLauth2proc ();
+extern IcePOauthStatus _SmcAuth1proc ();
+extern IcePAauthStatus _SmsAuth1proc ();
+extern IcePOauthStatus _SmcAuth2proc ();
+extern IcePAauthStatus _SmsAuth2proc ();
 
 extern Bool _SmcProcessMessage ();
 extern void _SmsProcessMessage ();
@@ -33,23 +33,23 @@ SmsConn _SmsConnectionObjs[256];
 int     _SmsConnectionCount = 0;
 int 	_SmsOpcode = 0;
 
-int		 _SmVersionCount = 1;
+int		_SmVersionCount = 1;
 
-IceOCLversionRec _SmcVersions[] = {
+IcePOversionRec	_SmcVersions[] = {
 	  	    {SmProtoMajor, SmProtoMinor, _SmcProcessMessage}};
 
-IceACLversionRec _SmsVersions[] = {
+IcePAversionRec _SmsVersions[] = {
 	  	    {SmProtoMajor, SmProtoMinor, _SmsProcessMessage}};
 
-int	      _SmAuthCount = 2;
+int		_SmAuthCount = 2;
 
-IceOCLauthRec _SmcAuthRecs[] = {
-		    {"SM-AUTH-TEST-1", _SmOCLauth1proc},
-		    {"SM-AUTH-TEST-2", _SmOCLauth2proc}};
+IcePOauthRec 	_SmcAuthRecs[] = {
+		    {"SM-AUTH-TEST-1", _SmcAuth1proc},
+		    {"SM-AUTH-TEST-2", _SmcAuth2proc}};
 
-IceACLauthRec _SmsAuthRecs[] = {
-		    {"SM-AUTH-TEST-1", _SmACLauth1proc},
-		    {"SM-AUTH-TEST-2", _SmACLauth2proc}};
+IcePAauthRec 	_SmsAuthRecs[] = {
+		    {"SM-AUTH-TEST-1", _SmsAuth1proc},
+		    {"SM-AUTH-TEST-2", _SmsAuth2proc}};
 
 SmsNewClientProc _SmsNewClientProc;
 SmPointer	 _SmsNewClientData;
