@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pr.c,v 1.10 91/03/19 14:20:18 rws Exp $
+ * $XConsortium: pr.c,v 1.11 91/04/05 17:34:24 rws Exp $
  */
 #include "def.h"
 
@@ -37,12 +37,14 @@ add_include(file, file_red, include, dot, failOK)
 		show_where_not = FALSE;
 	}
 
-	included_by(file, newfile);
-	if (!newfile->i_searched) {
-		newfile->i_searched = TRUE;
-		content = getfile(newfile->i_file);
-		find_includes(content, newfile, file_red, 0);
-		freefile(content);
+	if (newfile) {
+		included_by(file, newfile);
+		if (!newfile->i_searched) {
+			newfile->i_searched = TRUE;
+			content = getfile(newfile->i_file);
+			find_includes(content, newfile, file_red, 0);
+			freefile(content);
+		}
 	}
 }
 
