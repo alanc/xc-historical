@@ -1,7 +1,10 @@
 /*
- * $Header: def.h,v 1.1 87/04/08 16:40:37 toddb Locked $
+ * $Header: def.h,v 1.2 87/08/20 12:13:09 xswick Locked $
  *
  * $Log:	def.h,v $
+ * Revision 1.2  87/08/20  12:13:09  toddb
+ * add define for u_char for the sake of USG.
+ * 
  * Revision 1.1  87/04/08  16:40:37  rich
  * Initial revision
  * 
@@ -33,6 +36,8 @@
 #define SYMTABINC	10	/* must be > 1 for define() to work right */
 #define	TRUE		1
 #define	FALSE		0
+
+/* the following must match the directives table in main.c */
 #define	IF		0
 #define	IFDEF		1
 #define	IFNDEF		2
@@ -42,8 +47,9 @@
 #define	UNDEF		6
 #define	INCLUDE		7
 #define	LINE		8
-#define	IFFALSE		9	/* pseudo value --- never matched */
-#define	INCLUDEDOT	10	/* pseudo value --- never matched */
+#define	PRAGMA		9
+#define	IFFALSE		10	/* pseudo value --- never matched */
+#define	INCLUDEDOT	11	/* pseudo value --- never matched */
 
 #ifdef DEBUG
 extern int	debug;
