@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.147 93/04/27 16:36:38 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.148 93/07/12 12:52:06 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -9,7 +9,7 @@ XCOMM $XConsortium: Imakefile,v 1.147 93/04/27 16:36:38 rws Exp $
 #define MFBSubdirs StdSubdirs ddx/mfb
 #define CFBSubdirs MFBSubdirs ddx/cfb ddx/cfb16 ddx/cfb32
 #define CFB8Subdirs MFBSubdirs ddx/cfb
-#define StdLibs $(DIX) $(OS) $(MI) $(EXTENSIONS)
+#define StdLibs $(DIX) $(OS) $(FONT) $(MI) $(EXTENSIONS)
 #define MFBBareLibs $(DIX) $(OS) $(FONT) $(MFB) $(MI)
 #define MFBLibs MFBBareLibs $(EXTENSIONS)
 #define CFBBareLibs $(DIX) $(OS) $(FONT) $(CFB) $(MFB) $(MI)
@@ -84,6 +84,7 @@ XCOMM
 
 #if XqdssServer
 ALL1 = Xqdss
+#define realServer
 #endif
 
 #if XqvssServer
@@ -91,15 +92,18 @@ ALL1 = Xqdss
 ALL2 = Xqvss
 #else
 ALL1 = Xqvss
+#define realServer
 #endif
 #endif
 
 #if XdecServer
 ALL1 = Xdec
+#define realServer
 #endif
 
 #if XmfbpmaxServer
 ALL1 = Xmfbpmax
+#define realServer
 #endif
 
 #if XcfbpmaxServer
@@ -107,7 +111,13 @@ ALL1 = Xmfbpmax
 ALL2 = Xcfbpmax
 #else
 ALL1 = Xcfbpmax
+#define realServer
 #endif
+#endif
+
+#if XsunServer || Xsun24Server
+ALL1 = Xsun
+#define realServer
 #endif
 
 #if XsunMonoServer
@@ -115,56 +125,61 @@ ALL1 = Xcfbpmax
 ALL2 = XsunMono
 #else
 ALL1 = XsunMono
+#define realServer
 #endif
-#endif
-
-#if XsunServer || Xsun24Server
-ALL1 = Xsun
 #endif
 
 #if XibmServer
 ALL1 = Xibm
+#define realServer
 #endif
 
 #if XtekServer
 ALL1 = Xtek
+#define realServer
 #endif
 
 #if XmacIIServer
 ALL1 = XmacII
+#define realServer
 #endif
 
 #if XlunaServer
 ALL1 = Xluna
+#define realServer
 #endif
 
 #if XmipsServer
 ALL1 = Xmips
+#define realServer
 #endif
 
 #if X386Server
 ALL1 = X386
+#define realServer
 #endif
 
 #if XnonServer
-ALL2 = Xnon
+ALL1 = Xnon
 #endif
 
 #if XirisServer
 ALL1 = Xiris
+#define realServer
 #endif
 
 #if XhpServer
 ALL1 = Xhp
+#define realServer
 #endif
 
 #if XnestServer
-ALL1 = Xnest
+ALL3 = Xnest
 #endif
 
 /* end ALL definitions */
 
-ALL = $(ALL1) $(ALL2)
+ALL = $(ALL1) $(ALL2) $(ALL3)
 
 all: $(ALL)
 
@@ -440,13 +455,17 @@ ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 #endif	/* XhpServer */
 
 #if XnestServer
-SUBDIRS0 = StdSubdirs ddx/xnest
-XNESTDIRS = $(SUBDIRS0)
+#ifndef realServer
+SUBDIRS0 = StdSubdirs
+#endif
+SUBDIRS4 = ddx/xnest
+XNESTDIRS = StdSubdirs $(SUBDIRS4) $(DEPDIRS)
 XNESTOBJS = 
 XNEST = ddx/xnest/libxnest.a
-XNESTLIBS = $(DIX) $(OS) $(FONT) $(XNEST) $(MI) $(NONPEXEXTS) $(XLIB)
+XNESTLIBS = $(DIX) $(OS) $(FONT) $(XNEST) $(MI) $(EXTENSIONS)
+XNESTSYSLIBS = $(XLIB) $(SYSLIBS)
 
-ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS),$(XNESTLIBS),$(SYSLIBS))
+ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS),$(XNESTLIBS),$(XNESTSYSLIBS))
 #endif /* XnestServer */
 
 #if XnonServer
@@ -460,7 +479,7 @@ Xnon: $(SUBDIRS0) $(DEPDIRS)
 #endif /* XnonServer */
 
 
-SUBDIRS = $(SUBDIRS0) $(SUBDIRS1) $(SUBDIRS2) $(SUBDIRS3)
+SUBDIRS = $(SUBDIRS0) $(SUBDIRS1) $(SUBDIRS2) $(SUBDIRS3) $(SUBDIRS4)
 
 InstallMultipleFlags($(ALL),$(BINDIR),$(INSTPGMFLAGS))
 
