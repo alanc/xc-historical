@@ -1,4 +1,4 @@
-/* $XConsortium: KeyBind.c,v 11.69 93/09/07 21:31:11 rws Exp $ */
+/* $XConsortium: KeyBind.c,v 11.70 93/09/13 15:53:45 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -30,7 +30,6 @@ without express or implied warranty.
 		 Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask)
 
 static ComputeMaskFromKeytrans();
-static int Initialize();
 static void XConvertCase();
 
 struct _XKeytrans {
@@ -95,7 +94,7 @@ XKeycodeToKeysym(dpy, kc, col)
     int col;
 #endif
 {
-    if ((! dpy->keysyms) && (! Initialize(dpy)))
+    if ((! dpy->keysyms) && (! _XKeyInitialize(dpy)))
 	return NoSymbol;
     return KeyCodetoKeySym(dpy, kc, col);
 }
@@ -107,7 +106,7 @@ XKeysymToKeycode(dpy, ks)
 {
     register int i, j;
 
-    if ((! dpy->keysyms) && (! Initialize(dpy)))
+    if ((! dpy->keysyms) && (! _XKeyInitialize(dpy)))
 	return (KeyCode) 0;
     for (j = 0; j < dpy->keysyms_per_keycode; j++) {
 	for (i = dpy->min_keycode; i <= dpy->max_keycode; i++) {
@@ -123,7 +122,7 @@ XLookupKeysym(event, col)
     register XKeyEvent *event;
     int col;
 {
-    if ((! event->display->keysyms) && (! Initialize(event->display)))
+    if ((! event->display->keysyms) && (! _XKeyInitialize(event->display)))
 	return NoSymbol;
     return KeyCodetoKeySym(event->display, event->keycode, col);
 }
@@ -220,8 +219,8 @@ XRefreshKeyboardMapping(event)
     }
 }
 
-static int
-Initialize(dpy)
+int
+_XKeyInitialize(dpy)
     Display *dpy;
 {
     int per, n;
@@ -350,7 +349,7 @@ XTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return)
     register KeySym *syms;
     KeySym sym, lsym, usym;
 
-    if ((! dpy->keysyms) && (! Initialize(dpy)))
+    if ((! dpy->keysyms) && (! _XKeyInitialize(dpy)))
 	return 0;
     *modifiers_return = ((ShiftMask|LockMask)
 			 | dpy->mode_switch | dpy->num_lock);
@@ -518,7 +517,7 @@ XRebindKeysym (dpy, keysym, mlist, nm, str, nbytes)
     register struct _XKeytrans *tmp, *p;
     int nb;
 
-    if ((! dpy->keysyms) && (! Initialize(dpy)))
+    if ((! dpy->keysyms) && (! _XKeyInitialize(dpy)))
 	return;
     LockDisplay(dpy);
     tmp = dpy->key_bindings;
