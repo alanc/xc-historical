@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.0 91/04/16 15:03:32 rws Exp $ */
+/* $XConsortium: xtest.c,v 1.1 92/01/25 16:34:21 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -84,18 +84,17 @@ ProcXTestCompareCursor(client)
     pWin = (WindowPtr)LookupWindow(stuff->window, client);
     if (!pWin)
         return(BadWindow);
-    if (stuff->cursor == XTestCurrentCursor)
+    if (stuff->cursor == None)
+	pCursor = NullCursor;
+    else if (stuff->cursor == XTestCurrentCursor)
 	pCursor = GetSpriteCursor();
-    else if (stuff->cursor)
+    else {
 	pCursor = (CursorPtr)LookupIDByType(stuff->cursor, RT_CURSOR);
-    else if (pWin->parent)
-	pCursor = wCursor(pWin->parent);
-    else
-	pCursor = rootCursor;
-    if (!pCursor) 
-    {
-	client->errorValue = stuff->cursor;
-	return (BadCursor);
+	if (!pCursor) 
+	{
+	    client->errorValue = stuff->cursor;
+	    return (BadCursor);
+	}
     }
     rep.type = X_Reply;
     rep.length = 0;
