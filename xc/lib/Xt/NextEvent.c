@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.131 93/10/06 17:31:42 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.132 93/10/13 14:26:34 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1072,9 +1072,15 @@ void XtNextEvent(event)
 	XtAppNextEvent(_XtDefaultAppContext(), event);
 }
 
+#if NeedFunctionPrototypes
+void _XtRefreshMapping(
+    XEvent* event,
+    _XtBoolean dispatch)
+#else
 void _XtRefreshMapping(event, dispatch)
     XEvent *event;
     Boolean dispatch;
+#endif
 {
     XtPerDisplay pd;
 

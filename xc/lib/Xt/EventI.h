@@ -1,4 +1,4 @@
-/* $XConsortium: EventI.h,v 1.21 93/09/09 10:14:40 kaleb Exp $ */
+/* $XConsortium: EventI.h,v 1.22 93/10/13 19:08:19 kaleb Exp $ */
 /* $oHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 
 /***********************************************************
@@ -91,7 +91,7 @@ extern void _XtRemoveAllInputs(
 extern void _XtRefreshMapping(
 #if NeedFunctionPrototypes
     XEvent*	/* event */,
-    Boolean	/* dispatch */
+    _XtBoolean	/* dispatch */
 #endif
 );
 
