@@ -143,7 +143,7 @@ PieSlice			{ yylval.num = ArcPieSlice;
 [Ff]ont				{ return (FONT); }
 [Pp]ercent			{ return (PERCENT); }
 
-{number}			{ (void) sscanf (yytext, "%d", &yylval.num);
+{number}			{ (void) sscanf ((char *)yytext, "%d", &yylval.num);
 				  return (NUMBER); }
 {string}			{ yylval.ptr = (char *) yytext;
 				  return (STRING); }
