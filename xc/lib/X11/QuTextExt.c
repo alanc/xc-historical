@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XQuTextExt.c,v 11.8 87/05/24 21:38:22 jg Exp $ */
+/* $Header: XQuTextExt.c,v 11.8 87/09/11 08:06:13 rws Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986, 1987	*/
 
 #define NEED_REPLIES
@@ -59,3 +59,17 @@ XQueryTextExtents (dpy, fid, string, nchars, dir, font_ascent, font_descent,
     return (1);
 }
 
+_swapshort (bp, n)
+    register char *bp;
+    register long n;
+{
+    register char c;
+    register char *ep = bp + n;
+
+    while (bp < ep) {
+	c = *bp;
+	*bp = *(bp + 1);
+	bp++;
+	*bp++ = c;
+    }
+}
