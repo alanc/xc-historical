@@ -110,4 +110,4 @@ install::
 	done
 
 depend:
-	@echo "depend: skipping include"
+	@echo "depend: skipping X11"
