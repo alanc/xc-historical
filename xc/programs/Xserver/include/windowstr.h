@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 5.1 89/06/09 17:52:46 keith Exp $ */
+/* $XConsortium: windowstr.h,v 5.2 89/06/09 18:21:55 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -170,7 +170,7 @@ extern WindowPtr    FindWindowWithOptional();
 
 #define wVisual(w)		wTrackParent(w, visual)
 #define wCursor(w)		((w)->cursorIsNone ? None : wTrackParent(w, cursor))
-#define wColormap(w)		wTrackParent(w, colormap)
+#define wColormap(w)		((w)->drawable.class == InputOnly ? None : wTrackParent(w, colormap))
 #define wDontPropagateMask(w)	wUseDefault(w, dontPropagateMask, 0)
 #define wOtherEventMasks(w)	wUseDefault(w, otherEventMasks, 0)
 #define wOtherClients(w)	wUseDefault(w, otherClients, NULL)
