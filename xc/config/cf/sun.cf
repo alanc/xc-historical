@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.109 94/02/21 10:19:16 kaleb Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.110 94/03/28 15:24:37 gildea Exp $
 
 #ifdef SVR4
 #define OSName            SunOS 5.3
@@ -14,11 +14,36 @@ XCOMM operating system:  OSName
 #define OSTeenyVersion    3
 #endif
 
-#ifndef SparcWorksCCompilerMajorVersion
-#define SparcWorksCCompilerMajorVersion 2
+/*
+ * If you say you have the unbundled Sun C compiler, we assume you have
+ * version 2.0.x of the compiler unless you say otherwise.  If you have
+ * version 3.0.x of the C compiler, define CCompilerMajorVersion as 3
+ * in site.def
+ */
+
+#ifdef HasSunC
+#ifndef CCompilerMajorVersion
+#define CCompilerMajorVersion 2
 #endif
-#ifndef SparcWorksCCompilerMajorVersion
-#define SparcWorksCplusplusCompilerMajorVersion 3
+#ifndef CcCmd
+#define CcCmd /opt/SUNWspro/bin/cc
+#endif
+#endif
+
+/*
+ * If you say you have the Sun C++ compiler, we assume you have version 
+ * 3.0.x of the compiler (the cfront-based version) unless you say otherwise.
+ * If you have version 4.0.x of the C++ compiler (the one with exceptions)
+ * define CplusplusCompilerMajorVersion as 4 in site.def
+ */
+
+#ifdef HasSunCplusplus
+#ifndef CplusplusCompilerMajorVersion
+#define CplusplusCompilerMajorVersion 3
+#endif
+#ifndef CplusplusCmd
+#define CplusplusCmd /opt/SUNWspro/bin/CC
+#endif
 #endif
 
 #if OSMajorVersion < 4 || (OSMajorVersion == 4 && OSMinorVersion < 1)
@@ -42,19 +67,19 @@ XCOMM operating system:  OSName
 #define StandardDefines	  -Dsun -DSVR4
 #if OSMinorVersion > 1
 #define ThreadedX	  YES
-#if HasGcc || HasCenterLineC || SparcWorksCCompilerMajorVersion < 3
+#if defined(HasSunC) && CCompilerMajorVersion > 2
+#define ThreadsCompileFlags -mt
+#else
 #define SystemMTDefines -D_REENTRANT
 #define ThreadsLibraries -lthread
-#else
-#define ThreadsCompileFlags -mt
 #endif
-#if HasGcc2ForCplusplus || HasCenterLineCplusplus || SparcWorksCplusplusCompilerMajorVersion < 4
+#if defined(HasSunCplusplus) && CplusplusCompilerMajorVersion > 3
+#define ThreadsCplusplusCompileFlags -mt
+#else
 #define CplusplusSystemMTDefines -D_REENTRANT
 #define ThreadsCplusplusLibraries -lthread
-#else
-#define ThreadsCplusplusCompileFlags -mt
 #endif
-#endif
+#endif 		/* OSMinorVersion > 1 */
 #if OSMinorVersion == 2 || OSMinorVersion == 3
 /* over-ride for broken thread stubs in libc -- fixed in 2.4 ??? */
 #define ExtraLibraries    -lsocket -lnsl -L$(TOP)/util/misc -lthr_stubs
