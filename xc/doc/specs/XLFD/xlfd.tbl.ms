@@ -1,7 +1,7 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.21 93/12/29 19:35:57 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.22 93/12/30 18:12:45 gildea Exp $
 .de sC			\" start change
-.mc \s+5\(br\s0		\" make tall enough to span paragraph skip
+.mc \s+5\(br\s0\"	\" make tall enough to span paragraph skip
 ..
 .de eC			\" end change
 .mc
@@ -51,7 +51,7 @@ Bitstream Amerigo is a registered trademark of Bitstream Inc.
 Stone is a registered trademark of Adobe Systems Inc.
 .LP
 Copyright \(co 1994
-X Consortium
+X Consortium,
 Cambridge, Mass., USA.
 .LP
 Copyright \(co 1988 
@@ -59,7 +59,7 @@ Massachusetts Institute of Technology,
 Cambridge, MA USA.
 .LP
 Copyright \(co 1988, 1989 
-Digital Equipment Corporation, Maynard MA. All rights reserved.
+Digital Equipment Corporation, Maynard MA.  All rights reserved.
 .LP 
 Permission to use, copy, modify, and distribute this documentation 
 for any purpose and without fee is hereby granted, provided 
@@ -110,7 +110,7 @@ In addition to completely specifying a given font by means of its
 .PN FontName ,
 the XLFD also provides for a standard set of key 
 .PN FontProperties
-that describe the font in more detail. 
+that describe the font in more detail.
 .LP
 The XLFD provides an adequate set of typographic font properties, 
 such as \s-1CAP_HEIGHT\s+1, \s-1X_HEIGHT\s+1,
@@ -178,14 +178,14 @@ Support Multiple Font Vendors and Character Sets
 .LP
 The font name and properties should distinguish between fonts 
 that were supplied by different font vendors 
-but that possibly share the same name. 
+but that possibly share the same name.
 We anticipate a highly competitive font market where users will be able to 
 buy fonts from many sources according to their particular requirements.
 .LP
 A number of font vendors deliver each font with all glyphs designed for that
 font, where charset mappings are defined by encoding vectors.
 Some server implementations may force these mappings to proprietary 
-or standard charsets statically in the font data. 
+or standard charsets statically in the font data.
 Others may desire to perform the mapping dynamically in the server.
 Provisions must be made in the font name 
 that allows a font request to specify or identify specific charset mappings 
@@ -301,7 +301,7 @@ Each
 is logically composed of two strings: a 
 .PN FontNameRegistry
 prefix that is followed by a 
-.PN FontNameSuffix . 
+.PN FontNameSuffix .
 The 
 .PN FontNameRegistry
 is an
@@ -479,7 +479,7 @@ Each digital version of the original design, in general, will be somewhat
 different in metrics and shape from the idealized original font data, 
 because each font foundry, for better or for worse, has its own standards 
 and practices for tweaking a typeface for a particular generation 
-of output technologies or has its own perception of market needs. 
+of output technologies or has its own perception of market needs.
 .LP
 It is up to the type supplier to register with the X Consortium a 
 suitable name for this 
@@ -498,9 +498,9 @@ FAMILY_NAME Field
 .XE
 .LP
 FAMILY_NAME is a string that identifies the range or \*Qfamily\*U of 
-typeface designs that are all variations of one basic typographic style. 
+typeface designs that are all variations of one basic typographic style.
 This must be spelled out in full,
-with words separated by spaces, as required. 
+with words separated by spaces, as required.
 This name must be human-understandable and suitable for presentation to a 
 font user to identify the typeface family.
 .LP
@@ -647,7 +647,7 @@ polymorphic font; see section \n(sP.
 .eC
 .LP
 ADD_STYLE_NAME is not a typeface classification field 
-and is only used for uniqueness. 
+and is only used for uniqueness.
 Its use, as such, is not limited to typographic style distinctions.
 .LP
 The following are examples of ADD_STYLE_NAME:
@@ -783,7 +783,7 @@ There is no kerning (that is, on a per character basis with positive metrics:
 with negative metrics: width <= left-bearing <= right-bearing <= zero).
 Also, the vertical extents of the font do not exceed the vertical spacing 
 (that is, on a per character basis: 
-ascent <= font-ascent and descent <= font-descent). 
+ascent <= font-ascent and descent <= font-descent).
 The cell height = font-descent + font-ascent, and the width = AVERAGE_WIDTH.
 T}
 .sC
@@ -831,7 +831,7 @@ Although the X protocol does not explicitly have any knowledge about
 character set encodings, 
 it is expected that server implementors will prefer to embed knowledge 
 of certain proprietary or standard charsets into their font library 
-for reasons of performance and convenience. 
+for reasons of performance and convenience.
 The CHARSET_REGISTRY and CHARSET_ENCODING fields or properties allow 
 an X client font request to specify a specific charset mapping 
 in server environments where multiple charsets are supported.
@@ -1100,7 +1100,7 @@ FOUNDRY
 .LP
 FOUNDRY is as defined in the
 .PN FontName 
-except that the property type is ATOM. 
+except that the property type is ATOM.
 .LP
 FOUNDRY cannot be calculated or defaulted if not supplied as a font property.
 .NH 3
@@ -1111,7 +1111,7 @@ FAMILY_NAME
 .LP
 FAMILY_NAME is as defined in the 
 .PN FontName
-except that the property type is ATOM. 
+except that the property type is ATOM.
 .LP
 FAMILY_NAME cannot be calculated or defaulted if not supplied as a font 
 property.
@@ -1123,7 +1123,7 @@ WEIGHT_NAME
 .LP
 WEIGHT_NAME is as defined in the 
 .PN FontName
-except that the property type is ATOM. 
+except that the property type is ATOM.
 .LP
 WEIGHT_NAME can be defaulted if not supplied as a font property, as follows:
 .LP
@@ -1139,7 +1139,7 @@ SLANT
 .LP
 SLANT is as defined in the 
 .PN FontName
-except that the property type is ATOM. 
+except that the property type is ATOM.
 .LP
 SLANT can be defaulted if not supplied as a font property, as follows:
 .LP
@@ -1208,7 +1208,7 @@ where a slash \*Q/\*U denotes real division,
 the asterisk \*Q*\*U denotes real multiplication,
 and \*QROUND\*U denotes a function that rounds its real argument
 \fIa\fP up or down
-to the next integer. 
+to the next integer.
 This rounding is done according to X = FLOOR (\fIa\fP + 0.5),
 where FLOOR is a function that rounds its real argument down to the
 nearest integer.
@@ -1453,8 +1453,8 @@ multiplied by \-1 if the dominant
 writing direction for the font is right-to-left.
 For Latin fonts, 
 .eC
-lowercase are the glyphs a through z. 
-This property is usually used for font matching or substitution. 
+lowercase are the glyphs a through z.
+This property is usually used for font matching or substitution.
 .LP
 Where appropriate, 
 AVG_LOWERCASE_WIDTH can be approximated if not provided as a font property, 
@@ -1668,7 +1668,7 @@ UNDERLINE_POSITION
 .sC
 UNDERLINE_POSITION is an integer value (of type INT32)
 that gives the recommended vertical offset in pixels
-from the baseline to the top of the underline. 
+from the baseline to the top of the underline.
 .eC
 If the current position point is at [X,Y], 
 the top of the baseline is given by [X, Y + UNDERLINE_POSITION].
@@ -2781,7 +2781,7 @@ FONT_ASCENT, FONT_DESCENT, and DEFAULT_CHAR are provided in the BDF
 specification as properties that are moved to the 
 .PN XFontStruct 
 by the BDF font compiler in generating the X server-specific 
-binary font encoding. 
+binary font encoding.
 If present, 
 these properties shall comply with the following semantic definitions.
 .NH 3
@@ -2792,7 +2792,7 @@ FONT_ASCENT
 .LP
 FONT_ASCENT is an integer value (of type INT32)
 that gives the recommended typographic ascent above the baseline 
-for determining interline spacing. 
+for determining interline spacing.
 Specific glyphs of the font may extend beyond this.
 If the current position point for line \fIn\fP is at [X,Y], 
 then the origin of the next line \fIm = n+1\fP
@@ -2816,7 +2816,7 @@ FONT_DESCENT
 .LP
 FONT_DESCENT is an integer value (of type INT32)
 that gives the recommended typographic descent below the baseline
-for determining interline spacing. 
+for determining interline spacing.
 Specific glyphs of the font may extend beyond this.
 If the current position point for line \fIn\fP is at [X,Y],
 then the origin of the next line \fIm = n+1\fP
