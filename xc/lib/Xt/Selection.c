@@ -287,30 +287,79 @@ Time time;
 
 static XContext selectWindowContext = 0;
 
-static void AddHandler(dpy, window, widget, mask, proc, closure)
+/* %%% Xlib.h should make this public! */
+typedef int (*xErrorHandler)(
+#if NeedFunctionPrototypes
+			   Display*, XErrorEvent*
+#endif
+			   );
+
+static xErrorHandler oldErrorHandler = NULL;
+static Window errorWindow;
+
+static int LocalErrorHandler (dpy, error)
 Display *dpy;
-Window window;
-Widget widget;
+XErrorEvent *error;
+{
+    /* If BadWindow error on selection requestor, nothing to do but let
+     * the transfer timeout.  Otherwise, invoke saved error handler. */
+
+    if (error->error_code == BadWindow && error->resourceid == errorWindow)
+	return 0;
+
+    if (oldErrorHandler == NULL) return 0;  /* should never happen */
+
+    return (*oldErrorHandler)(dpy, error);
+}
+
+static void StartProtectedSection(window)
+    Window window;
+{
+    /* protect ourselves against request window being destroyed
+     * before completion of transfer */
+
+    oldErrorHandler = XSetErrorHandler(LocalErrorHandler);
+    errorWindow = window;
+}
+
+static void EndProtectedSection(dpy)
+    Display *dpy;
+{
+    /* flush any generated errors on requestor and
+     * restore original error handler */
+
+    XSync(dpy, False);
+
+    XSetErrorHandler(oldErrorHandler);
+    oldErrorHandler = NULL;
+}
+
+static void AddHandler(req, mask, proc, closure)
+Request req;
 EventMask mask;
 XtEventHandler proc;
 XtPointer closure;
 {
+    Display *dpy = req->ctx->dpy;
+    Window window = req->requestor;
+    Widget widget = req->widget;
+
     if (XtWindow(widget) == window)
 	XtAddEventHandler(widget, mask, TRUE, proc, closure);
     else {
 	Widget w = XtWindowToWidget(dpy, window);
-	RequestWindowRec* requestWindow;
+	RequestWindowRec *requestWindowRec;
 	if (w != NULL && w != widget) widget = w;
 	if (selectWindowContext == 0)
 	    selectWindowContext = XUniqueContext();
 	if (XFindContext(dpy, window, selectWindowContext,
-			 (caddr_t *)&requestWindow)) {
-	    requestWindow = XtNew(RequestWindowRec);
-	    requestWindow->active_transfer_count = 0;
+			 (caddr_t *)&requestWindowRec)) {
+	    requestWindowRec = XtNew(RequestWindowRec);
+	    requestWindowRec->active_transfer_count = 0;
 	    (void)XSaveContext(dpy, window, selectWindowContext,
-			       (caddr_t)requestWindow);
+			       (caddr_t)requestWindowRec);
 	}
-	if (requestWindow->active_transfer_count++ == 0) {
+	if (requestWindowRec->active_transfer_count++ == 0) {
 	    _XtRegisterWindow(window, widget);
 	    XSelectInput(dpy, window, mask);
 	}
@@ -318,53 +367,31 @@ XtPointer closure;
     }
 }
 
-static int nextRequest;
-static int (*oldErrorProc)(
-#if NeedFunctionPrototypes
-			   Display*, XErrorEvent*
-#endif
-			   ) = NULL;
-
-static int LocalErrorHandler (dpy, error)
-Display *dpy;
-XErrorEvent *error;
-{
-    /* If BadWindow, nothing to do. Otherwise, invoke saved error handler */
-    if (error->error_code == BadWindow && error->serial == nextRequest)
-	return 0;
-
-    if (oldErrorProc == NULL) return 0;  /* should never happen */
-
-    return (*oldErrorProc)(dpy, error);
-}
-
-static void RemoveHandler(dpy, window, widget, mask, proc, closure)
-Display *dpy;
-Window window;
-Widget widget;
+static void RemoveHandler(req, mask, proc, closure)
+Request req;
 EventMask mask;
 XtEventHandler proc;
 XtPointer closure;
 {
+    Display *dpy = req->ctx->dpy;
+    Window window = req->requestor;
+    Widget widget = req->widget;
+
     if ((XtWindowToWidget(dpy, window) == widget) && 
         (XtWindow(widget) != window)) {
 	/* we had to hang this window onto our widget; take it off */
-	RequestWindowRec* requestWindow;
+	RequestWindowRec* requestWindowRec;
 	XtRemoveRawEventHandler(widget, mask, TRUE, proc, closure);
 	(void)XFindContext(dpy, window, selectWindowContext,
-			   (caddr_t *)&requestWindow);
-	if (--requestWindow->active_transfer_count == 0) {
+			   (caddr_t *)&requestWindowRec);
+	if (--requestWindowRec->active_transfer_count == 0) {
 	    _XtUnregisterWindow(window, widget);
-	    /* protect ourselves against requestor having destroyed
-	       his window by this time. */
-	    oldErrorProc = XSetErrorHandler(LocalErrorHandler);
-	    nextRequest = NextRequest(dpy);
+	    StartProtectedSection(window);
 	    XSelectInput(dpy, window, 0L);
-	    XSync(dpy, False);
-	    XSetErrorHandler(oldErrorProc);
-	    oldErrorProc = NULL;
+	    EndProtectedSection(dpy);
+
 	    (void)XDeleteContext(dpy, window, selectWindowContext);
-	    XtFree((char*)requestWindow);
+	    XtFree((char*)requestWindowRec);
 	}
     } else {
         XtRemoveEventHandler(widget, mask, TRUE,  proc, closure); 
@@ -399,8 +426,8 @@ XtIntervalId   *id;
 	}
     }
 
-    RemoveHandler(ctx->dpy, req->requestor, req->widget,
-	  	(EventMask) PropertyChangeMask, HandlePropertyGone, closure); 
+    RemoveHandler(req, (EventMask)PropertyChangeMask,
+		  HandlePropertyGone, closure); 
     XtFree((char*)req);
     if (--ctx->ref_count == 0 && ctx->free_when_done)
 	XtFree((char*)ctx);
@@ -414,10 +441,12 @@ static void SendIncrement(incr)
     int incrSize = MAX_SELECTION_INCR(dpy);
     if (incrSize >  incr->bytelength - incr->offset)
         incrSize = incr->bytelength - incr->offset;
+    StartProtectedSection(incr->requestor);
     XChangeProperty(dpy, incr->requestor, incr->property, 
     	    incr->type, incr->format, PropModeReplace, 
 	    (unsigned char *)incr->value + incr->offset,
 	    NUMELEM(incrSize, incr->format));
+    EndProtectedSection(dpy);
     incr->offset += incrSize;
 }
 
@@ -425,14 +454,17 @@ static AllSent(req)
 Request req;
 {
     Select ctx = req->ctx;
+    StartProtectedSection(req->requestor);
     XChangeProperty(ctx->dpy, req->requestor, 
 		    req->property, req->type,  req->format, 
 		    PropModeReplace, (unsigned char *) NULL, 0);
+    EndProtectedSection(ctx->dpy);
     req->allSent = TRUE;
 
     if (ctx->notify == NULL) XtFree((char*)req->value);
 }
 
+/*ARGSUSED*/
 static void HandlePropertyGone(widget, closure, ev)
 Widget widget;
 XtPointer closure;
@@ -458,8 +490,8 @@ XEvent *ev;
 			       (XtRequestId*)&req, ctx->owner_closure);
 	    }
 	    else (*ctx->notify)(ctx->widget, &ctx->selection, &req->target);
-	RemoveHandler(event->display, event->window, widget,
-	  	(EventMask) PropertyChangeMask, HandlePropertyGone, closure); 
+	RemoveHandler(req, (EventMask)PropertyChangeMask,
+		      HandlePropertyGone, closure); 
 	XtFree((char*)req);
 	if (--ctx->ref_count == 0 && ctx->free_when_done)
 	    XtFree((char*)ctx);
@@ -525,9 +557,8 @@ int format;
 			 app->selectionTimeout, OwnerTimedOut, (XtPointer)req);
 	}
 #endif 
-	AddHandler(req->ctx->dpy, window, widget, 
-			(EventMask) PropertyChangeMask, 
-	       		HandlePropertyGone, (XtPointer)req);
+	AddHandler(req, (EventMask)PropertyChangeMask, 
+		   HandlePropertyGone, (XtPointer)req);
 /* now send client INCR property */
 	size = BYTELENGTH(length,format);
 	value = ((char*)&size) + sizeof(long) - 4;
@@ -580,6 +611,7 @@ Boolean *incremental;
 		 ctx->ref_count--;
 		 return(FALSE);
 	     }
+	     StartProtectedSection(event->requestor);
 	     PrepareIncremental(req, widget, event->requestor, property,
 				target, targetType, value, length, format);
 	     *incremental = True;
@@ -595,6 +627,7 @@ Boolean *incremental;
 	}
 	ctx->req = NULL;
     }
+    StartProtectedSection(event->requestor);
     if (BYTELENGTH(length,format) <= MAX_SELECTION_INCR(ctx->dpy)) {
 	if (! timestamp_target) {
 	    if (ctx->notify != NULL) {
@@ -610,8 +643,7 @@ Boolean *incremental;
 			 app->selectionTimeout, OwnerTimedOut, (XtPointer)req);
 		  }
 #endif 
-	          AddHandler(ctx->dpy, event->requestor,
-			     widget, (EventMask) PropertyChangeMask, 
+	          AddHandler(req, (EventMask)PropertyChangeMask, 
 			     HandlePropertyGone, (XtPointer)req);
 	      }
 	      else ctx->ref_count--;
@@ -681,21 +713,24 @@ Boolean *cont;
 	      unsigned long bytesafter, length;
 	      unsigned char *value;
 	      ev.property = event->xselectionrequest.property;
+	      StartProtectedSection(ev.requestor);
 	      (void) XGetWindowProperty(ev.display, ev.requestor,
 			event->xselectionrequest.property, 0L, 1000000,
 			False,(Atom)AnyPropertyType, &target, &format, &length,
 			&bytesafter, &value);
 	      count = BYTELENGTH(length, format) / sizeof(IndirectPair);
 	      for (p = (IndirectPair *)value; count; p++, count--) {
+		  EndProtectedSection(ctx->dpy);
 		  if (!GetConversion(ctx, (XSelectionRequestEvent*)event,
 				     p->target, p->property, widget,
 				     &incremental)) {
 
 			p->property = None;
 			writeback = TRUE;
+			StartProtectedSection(ev.requestor);
 		  }
 	      }
-	      if (writeback) 
+	      if (writeback)
 		XChangeProperty(ev.display, ev.requestor, 
 			event->xselectionrequest.property, target,
 			format, PropModeReplace, value, (int)length);
@@ -706,12 +741,17 @@ Boolean *cont;
 				 event->xselectionrequest.property,
 				 widget, &incremental))
 		   ev.property = event->xselectionrequest.property;
-	       else
+	       else {
 		   ev.property = None;
+		   StartProtectedSection(ev.requestor);
+	       }
 	   }
       }
       (void) XSendEvent(ctx->dpy, ev.requestor, False, (unsigned long)NULL,
 		   (XEvent *) &ev);
+
+      EndProtectedSection(ctx->dpy);
+
       break;
     }
 }
