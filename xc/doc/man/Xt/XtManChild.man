@@ -302,7 +302,7 @@ is defined, and
 performed:
 .RS
 .IP \- 5
-For each child on teh \fIunmanage_children\fP list; if the child is
+For each child on the \fIunmanage_children\fP list; if the child is
 already unmanaged or is being destroyed it is ignored, otherwise it
 is marked as being unmanaged and if it is realized it is made nonvisible
 by being unmapped.

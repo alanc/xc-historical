@@ -121,7 +121,7 @@ Specifies the widget class containing the extension list to be searched.
 Specifies the offset in bytes form the base of the widget class of the
 extension field to be searched.
 .IP \fItype\fP 1i
-Specifies the name of teh class extension to be located.
+Specifies the name of the class extension to be located.
 .IP \fIversion\fP 1i
 Specifies the minimum acceptable version of the class extension
 required for a match.

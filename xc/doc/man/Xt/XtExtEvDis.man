@@ -250,7 +250,7 @@ events to widgets.
 If \fImin_event_type\fP and \fImax_event_type\fP match the parameters to
 a previous call to
 .ZN XtRegisterExtensionSelector
-for teh same display, the \fIproc\fP and \fIclient_data\fP replace the
+for the same display, the \fIproc\fP and \fIclient_data\fP replace the
 previously registered values. If the range specified by \fImin_event_type\fP
 and \fImax_event_type\fP overlaps the range of the parameters to a
 previous call for the same display in any other way, an error results.
