@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imLcIm.c,v 1.1 93/09/17 13:27:06 rws Exp $ */
 /******************************************************************
 
           Copyright 1992 by FUJITSU LIMITED
@@ -42,6 +42,7 @@ THIS SOFTWARE.
 #include "Xlcint.h"
 #include "XlcPublic.h"
 #include "Ximint.h"
+#include <ctype.h>
 
 Public  char *		_XimLocalGetIMValues( );
 Public  Status		_XimLocalCloseIM( );
@@ -85,15 +86,29 @@ _XimCheckIfLocalProcessing(im)
     Xim          im;
 {
     FILE        *fp;
-    char	*language;
+    char	*language, *codeset;
+    char         buf[BUFSIZE];
+    int          i, len;
 
     if(strcmp(im->core.im_name, "") == 0) {
 	_XlcGetLCValues(im->core.lcd, XlcNLanguage, &language, NULL);
 	fp = _XlcOpenLocaleFile(NULL, language, COMPOSE_FILE);
 	if( fp != NULL ) {
 	    fclose( fp );
-	    return(False);
+	    return(True);
 	}
+        /* XXX --- */
+	_XlcGetLCValues(im->core.lcd, XlcNCodeset, &codeset, NULL);
+        len = strlen(codeset);
+        for (i = 0; i < len; i++)
+	    buf[i] = (char)tolower((int)codeset[i]);
+        buf[i] = '\0';
+	fp = _XlcOpenLocaleFile(NULL, buf, COMPOSE_FILE);
+	if( fp != NULL ) {
+	    fclose( fp );
+	    return(True);
+	}
+        /* --- XXX */
 	if(im->core.rdb != NULL)
 	    return(_XimLocalProcessingResource(im));
 	return(False);
@@ -109,15 +124,24 @@ _XimCreateDefaultTree(im)
     Xim		im;
 {
     FILE *fp;
-    static char *buf[1024];
-    char *s, *rhs;
-    DefTree *elem;
-    char *language;
+    char *language, *codeset;
+    char         buf[BUFSIZE];
+    int          i, len;
 
     _XlcGetLCValues(im->core.lcd, XlcNLanguage, &language, NULL);
     fp = _XlcOpenLocaleFile(NULL, language, COMPOSE_FILE);
     im->private.local.top = (DefTree *)NULL;
-    if (fp == (FILE *)NULL) return;
+    if (fp == (FILE *)NULL) {
+        /* XXX --- */
+	_XlcGetLCValues(im->core.lcd, XlcNCodeset, &codeset, NULL);
+        len = strlen(codeset);
+        for (i = 0; i < len; i++)
+	    buf[i] = (char)tolower((int)codeset[i]);
+        buf[i] = '\0';
+	fp = _XlcOpenLocaleFile(NULL, buf, COMPOSE_FILE);
+        if (fp == (FILE *)NULL) return;
+        /* --- XXX */
+    }
     (void)XimParseStringFile(fp, &im->private.local.top);
     fclose(fp);
 }
@@ -156,6 +180,7 @@ Public void
 XimFreeDefaultTree(top)
     DefTree *top;
 {
+    if (!top) return;
     if (top->succession) XimFreeDefaultTree(top->succession);
     if (top->next) XimFreeDefaultTree(top->next);
     if (top->mb) Xfree(top->mb);
