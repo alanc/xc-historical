@@ -55,10 +55,10 @@ and
                         +-----------------+
                   +-----|      difs       |------+
                   |     +-----------------+      |
-                  |             |                |
-                +----+     +---------+  +------------+
-                | os |     |  util   |  | renderers  |
-                +----+     +---------+  +------------+
+                  |                              |
+                +----+                  +------------+
+                | os |                  | renderers  |
+                +----+                  +------------+
 .Le
 .fi
 \fBDefinitions\fR
@@ -73,7 +73,8 @@ The
 .I difs
 layer interprets the requests, and handles the renderer
 independent work.  This includes error checking of requests, and the
-top level font database.
+top level font database.  It also contains various utility functionality
+such as caching and byte swapping.
 .PP
 The 
 .I os
@@ -86,12 +87,6 @@ The renderer layer contains all font-specific code,
 and is responsible for rendering a font (which may mean
 just reading a bitmap from disk, or may include scaling of outline
 data), computing a fonts properties and header information.
-.PP
-The 
-.I util
-layer provides an interface for the renderers to use for
-caching font information, various utility functions for glyph padding,
-byte swapping and (for scalable fonts) property scaling.
 .NH
 Startup
 .PP
@@ -242,6 +237,7 @@ typedef struct _Client {
     int         clientGone;
     int         sequence;
     Bool        swapped;
+    long        last_request_time;
     void        (*pSwapReplyFunc) ();
     AuthContextPtr auth;
     char       *catalogues;
@@ -350,6 +346,7 @@ typedef struct {
 	int	(*start_list_fonts_with_info)();
 	int	(*list_next_font_with_info)();
 	int	(*wakeup_fpe)();
+	int	(*client_died);
 	FontNamesPtr	renderer_names;
 } FPEFunctions;
 .sp
@@ -359,16 +356,14 @@ int	init_fpe_type(Bool (name_func)(),
 		int (list_func)(), 
 		int (start_lfwi_func)(), int (next_lfwi_func)(),
 		int (wakeup_func)(), 
-		FontNamesPtr names)
+		int (client_died_func)()
+		)
 .Le
 .sp
 .LP
 This is called by the renderer when it is initialized at the beginning
 of time, and sets up
 an FPEFunctions entry for the renderer.
-.I names
-contains the list of font source prefixes that this renderer considers
-valid names for its form of font data.
 .LP
 The
 .B FPEFunctions
@@ -385,8 +380,7 @@ source name, it return True, otherwise False.  ie, if
 .I name 
 is a directory name, or is prefixed by the renderer's prefix, and the
 directory contains font data the renderer can interpret, it would return
-True.  Note:  this function exists for compatibility with the X server,
-and will not be used by the font server.
+True.
 .IP
 .Ls
 int	init_fpe(FontPathElementPtr fpe);
@@ -536,6 +530,13 @@ Optional function which can be used for blocking renderers.  Typical
 usage is for a font server renderer, where it is called when a reply is
 received, allowing the data to be read and the client to be signaled
 and unblocked.
+.IP
+.Ls
+int	client_died(pointer client, FontPathElementPtr fpe)
+.Le
+.LP
+This function is called when a client dies in the middle of a blocked
+request, allowing the renderer to clean up.
 
 .NH
 Font specific functions
@@ -652,14 +653,6 @@ maps font names to other font names.
 These concepts will also be needed by other forms of fonts
 which the sample X server does not currently use, but the font server
 will, like Bitstream outlines.
-.PP
-In the R5 X server and the font server, the
-.I fonts.alias
-file will not only provide alternate names for fonts, but will also
-be used for scaling purposes.  eg, for the bitmap scaler, a scalable
-name will point to a standard bitmap font name.  The renderer will
-realize this name means that the font can be scaled, and provide the
-proper magic.
 
 .NH
 Handling scalable fonts
@@ -884,6 +877,13 @@ void ClientWakeup(ClientPtr client)
 .Le
 .LP
 Puts the client back to its normal state processing requests.
+.Ls
+Bool ClientIsAsleep(ClientPtr client)
+.Le
+.LP
+Can be used to check if a client is asleep.  This is useful for handling
+client termination, so that any requests the client is waiting upon can be
+properply cleaned up.
 .LP
 \fBSample Usage\fR
 .PP
@@ -949,6 +949,19 @@ int ListAlternateServers(AlternateServerPtr *servers)
 .LP
 to return any alternate server information it may have.
 .LP
+When the client limit is reached, the font server may attempt to
+copy itself, by calling
+.IP
+.Ls
+int CloneMyself()
+.Le
+.LP
+This function will (if the configuartion options allow) start a new
+font server process.  This is done in such a way that no pending 
+connections should be lost, and that the original server will accept
+no new connections.  Once the original server has no more clients, it will
+exit.
+
 Catalogue manipulation
 .PP
 Catalogues are configuration dependent, and hence sent by OS-dependent
@@ -957,14 +970,23 @@ methods.  In order for the
 layer to get them, it uses
 .IP
 .Ls
-int	ListCatalogues(char **catalogues, int *len)
+int	ListCatalogues(char *pattern, int pattern_length,
+        	int maxnames, char **catalogues, int *len)
 .Le
 .LP
-which returns the list of all catalogues it supports.  This function 
+which returns the list of all catalogues it supports which match the pattern.
+This function 
 will be used by the catalogue manipulation requests, as well as by renderers
 when they give their 
 .B ListFonts
 results.
+.LP
+.Ls
+int ValidateCatalogues(int number, char *catalogues)
+.Le
+.LP
+Can be used to validate a list of catalogues, returning True if the
+list is acceptable.
 
 .NH
 Utility functions
@@ -1420,9 +1442,9 @@ Here is an incomplete list of the supported keywords:
 .ta .6i 1.5i
 .nf
 #		in the first column, a comment character
-.sp
-cache-size (cardinal) 
-		Size in bytes of the FS cache.
+.\".sp
+.\"cache-size (cardinal) 
+.\"		Size in bytes of the FS cache.
 .sp
 catalogue (list of string)
 		Ordered list of font path element names.
@@ -1450,13 +1472,16 @@ error-file (string)
 		Filename of the error file.  All warnings and errors
 		will be logged here.
 .sp
+port (cardinal)
+		The TCP port on which the server will listen for connections.
+.sp
 use-syslog (boolean)
 		Whether syslog(3) is to be used for errors.
-.sp
-trusted-clients (list of string)
-		Those clients the fontserver will talk to.  Others
-		will be refused for the initial connection.  An empty
-		list means the server will talk to any client.
+.\".sp
+.\"trusted-clients (list of string)
+.\"		Those clients the fontserver will talk to.  Others
+.\"		will be refused for the initial connection.  An empty
+.\"		list means the server will talk to any client.
 .fi
 .IP
 Each renderer may also want private configuration options.  The names
