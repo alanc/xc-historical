@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.220 94/03/29 12:12:37 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.221 94/03/29 13:27:54 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -2878,8 +2878,10 @@ int _XIOError (dpy)
 
 /*
  * This routine can be used to (cheaply) get some memory within a single
- * Xlib routine for scratch space.  It is reallocated from the same place
- * each time, unless the library needs a large scratch space.
+ * Xlib routine for scratch space.  A single buffer is reused each time
+ * if possible.  To be MT safe, you can only call this between a call to
+ * GetReq* and a call to Data* or _XSend*, or in a context when the thread
+ * is guaranteed to not unlock the display.
  */
 char *_XAllocScratch (dpy, nbytes)
 	register Display *dpy;
@@ -2892,6 +2894,33 @@ char *_XAllocScratch (dpy, nbytes)
 	    else dpy->scratch_length = 0;
 	}
 	return (dpy->scratch_buffer);
+}
+
+/*
+ * Scratch space allocator you can call any time, multiple times, and be
+ * MT safe, but you must hand the buffer back with _XFreeTemp.
+ */
+char *_XAllocTemp (dpy, nbytes)
+    register Display *dpy;
+    unsigned long nbytes;
+{
+    char *buf;
+
+    buf = _XAllocScratch(dpy, nbytes);
+    dpy->scratch_buffer = NULL;
+    dpy->scratch_length = 0;
+    return buf;
+}
+
+void _XFreeTemp (dpy, buf, nbytes)
+    register Display *dpy;
+    char *buf;
+    unsigned long nbytes;
+{
+    if (dpy->scratch_buffer)
+	Xfree(buf);
+    dpy->scratch_buffer = buf;
+    dpy->scratch_length = nbytes;
 }
 
 /*
