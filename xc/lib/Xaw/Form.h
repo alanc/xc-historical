@@ -1,4 +1,4 @@
-/* $XConsortium: Form.h,v 1.13 88/09/06 09:44:47 swick Exp $ */
+/* $XConsortium: Form.h,v 1.14 88/09/06 16:41:24 jim Exp $ */
 
 
 /***********************************************************
@@ -63,7 +63,7 @@ SOFTWARE.
  fromVert	     Widget		Widget		(top of form)
  horizDistance	     Thickness		int		defaultDistance
  left		     Edge		XtEdgeType	XtRubber
- resizeable	     Boolean		Boolean		False
+ resizable	     Boolean		Boolean		False
  right		     Edge		XtEdgeType	XtRubber
  top		     Edge		XtEdgeType	XtRubber
  vertDistance	     Thickness		int		defaultDistance
