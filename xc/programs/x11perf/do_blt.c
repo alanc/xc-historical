@@ -5,15 +5,6 @@
 static GC bggc, fggc;
 static Window w;
 static Pixmap pix;
-static XRectangle pixrect[] = {
-    0, 0, WIDTH, HEIGHT
-};
-
-static XRectangle ws[3] = {
-    {100, 100, 200, 200},
-    {150, 150, 200, 200},
-    {200, 200, 200, 200}
-  };
 static  XPoint points[NUMPOINTS];
 static  XSegment *segsa, *segsb;
 
@@ -116,8 +107,8 @@ Bool InitCopyArea2(d, p)
     CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
 
     /* Create depth-8 pixmap to write stuff into, and clear it out */
-    pix = XCreatePixmap(d, w, 800, HEIGHT, 8);
-    XFillRectangles(d, pix, bggc, pixrect, 1);
+    pix = XCreatePixmap(d, w, WIDTH, HEIGHT, DefaultDepth(d, DefaultScreen(d)));
+    XFillRectangle(d, pix, bggc, 0, 0, WIDTH, HEIGHT);
     XDrawLines(d, pix, fggc, points, NUMPOINTS, CoordModeOrigin);
     InitCopyLocations(d, p);
 
