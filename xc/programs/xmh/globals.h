@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.27 89/10/06 14:50:39 converse Exp $
+ *  $XConsortium: globals.h,v 2.28 89/10/27 16:41:59 swick Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -74,6 +74,7 @@ ext struct _resources {
     Pixel	busy_pointer_color;	/* busy cursor color */
     int		command_button_count;	/* number of buttons in command box */
     int		app_defaults_version;	/* for sanity check */
+    char 	*banner;		/* defaults to xmh version string */
 } app_resources;
 
 ext char	*draftFile;	/* Filename of draft. */

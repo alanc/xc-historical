@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.24 89/10/06 14:48:42 converse Exp $
+ * $XConsortium: externs.h,v 2.25 89/11/14 20:12:08 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -114,7 +114,6 @@ extern void	DoDeleteSeq		(/* Widget, XtPointer, XtPointer */);
 
 	/* from util.c */
 
-extern char *	Version			(/* void */);
 extern void	Punt			(/* char * */);
 extern int	myopen			(/* char *, int, int */);
 extern FILE *	myfopen			(/* char *, char * */);

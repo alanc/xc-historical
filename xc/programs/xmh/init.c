@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.37 89/10/06 20:09:26 swick Exp $
+ * $XConsortium: init.c,v 2.38 89/10/27 16:41:08 swick Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -123,6 +123,8 @@ static XtResource resources[] = {
 	 offset(command_button_count), XtRImmediate, (XtPointer)0},
     {"appDefaultsVersion", "AppDefaultsVersion", XtRInt, sizeof(int),
 	 offset(app_defaults_version), XtRImmediate, (XtPointer)0},
+    {"banner", "Banner", XtRString, sizeof(char *),
+	 offset(banner), XtRString, "xmh    MIT X Consortium    R4"},
 };
 
 #undef offset
@@ -228,6 +230,11 @@ char **argv;
 	{"XmhCreateFolder",		XmhCreateFolder},
 	{"XmhDeleteFolder",		XmhDeleteFolder},
 
+	/* actions to support moving a message with a single click */
+
+	{"XmhPushFolder",		XmhPushFolder},
+	{"XmhPopFolder",		XmhPopFolder},
+
 		/* actions upon the Table of Contents */
 
 	{"XmhIncorporateNewMail",	XmhIncorporateNewMail},
@@ -235,8 +242,6 @@ char **argv;
 	{"XmhPackFolder",		XmhPackFolder},
 	{"XmhSortFolder",		XmhSortFolder},
 	{"XmhForceRescan",		XmhForceRescan},
-	{"XmhPushFolder",		XmhPushFolder},
-	{"XmhPopFolder",		XmhPopFolder},
 
 		/* actions upon the currently selected message(s) */
 

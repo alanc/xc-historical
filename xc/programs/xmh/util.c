@@ -1,5 +1,5 @@
 /*
- * $XConsortium: util.c,v 2.34 89/09/27 19:16:51 converse Exp $
+ * $XConsortium: util.c,v 2.35 89/10/06 15:04:12 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -34,14 +34,6 @@
 #include <X11/cursorfont.h>
 
 #define abs(x)		((x) < 0 ? (-(x)) : (x))
-
-
-/* Function to return the current version number, as a string. */
-
-char *Version()
-{
-    return "xmh     MIT X Consortium   R4 Beta";
-}
 
 
 static char *SysErrorMsg (n)
@@ -405,7 +397,7 @@ char *name;
     static Arg arglist[] = {
 	{XtNlabel, NULL},
     };
-    arglist[0].value = (XtArgVal) Version();
+    arglist[0].value = (XtArgVal) app_resources.banner; /* xmh version */
     result = XtCreateManagedWidget( name, labelWidgetClass, scrn->widget,
 				    arglist, XtNumber(arglist) );
     height = GetHeight(result);
