@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.8 91/07/18 18:36:02 rws Exp $
+ * $XConsortium: chooser.c,v 1.9 91/07/18 19:01:35 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -577,16 +577,9 @@ InitXDMCP (argv)
     if ((socketFD = socket (AF_INET, SOCK_DGRAM, 0)) < 0)
 	return 0;
 #ifdef SO_BROADCAST
-    optlen = sizeof (soopts);
-    if (getsockopt (socketFD, SOL_SOCKET, SO_BROADCAST, &soopts, &optlen) < 0)
-    {
-	return 0;
-    }
-    soopts = -1;
+    soopts = 1;
     if (setsockopt (socketFD, SOL_SOCKET, SO_BROADCAST, &soopts, sizeof (soopts)) < 0)
-	return 0;
-    optlen = sizeof (soopts);
-    getsockopt (socketFD, SOL_SOCKET, SO_BROADCAST, &soopts, &optlen);
+	perror ("setsockopt");
 #endif
     
     XtAddInput (socketFD, (XtPointer) XtInputReadMask, ReceivePacket,
