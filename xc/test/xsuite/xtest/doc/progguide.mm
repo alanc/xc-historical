@@ -1,4 +1,4 @@
-.\" $XConsortium: progguide.mm,v 1.3 92/07/03 17:36:23 rws Exp $
+.\" $XConsortium: progguide.mm,v 1.4 94/04/17 21:00:09 rws Exp $
 .\" Copyright (c) 1992  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining a
@@ -456,8 +456,8 @@ under the conditions that the test imposes.
 By convention these assertions appear in the dot-m file 
 after all assertions with test-type Good.
 .P
-The assertion text for many of these assertions is included via the 
-.ER keyword, described below.
+The assertion text for many of these assertions is included via the .ER
+keyword, described below.
 .LI gc
 .P
 The assertion text states which gc components affect the function under test.
@@ -1729,7 +1729,7 @@ $(LINKOBJ): $(LOFILES)
 
 # Link the object file into the parent directory.
 #
-../$(LINKOBJ): $(LINKOBJ)
+\^../$(LINKOBJ): $(LINKOBJ)
 	$(RM) ../$(LINKOBJ)
 	$(LN) $(LINKOBJ) ..
 
@@ -1739,7 +1739,7 @@ $(LINKEXEC): ../Tests
 	$(RM) $(LINKEXEC)
 	$(LN) ../Tests $(LINKEXEC)
 
-../Tests: ../$(LINKOBJ)
+\^../Tests: ../$(LINKOBJ)
 
 linkexec:: $(LINKEXEC) $(AUXFILES) ;
 
