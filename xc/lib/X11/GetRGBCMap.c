@@ -1,5 +1,5 @@
 /* Copyright 1989 Massachusetts Institute of Technology */
-/* $XConsortium: GetRGBCMap.c,v 1.3 89/05/08 15:57:47 jim Exp $ */
+/* $XConsortium: GetRGBCMap.c,v 1.4 91/01/06 11:43:37 rws Exp $ */
 
 /*
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -13,10 +13,10 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include "Xlibint.h"
-#include "Xutil.h"
+#include <X11/Xlibint.h>
+#include <X11/Xutil.h>
 #include "Xatomtype.h"
-#include "Xatom.h"
+#include <X11/Xatom.h>
 
 Status XGetRGBColormaps (dpy, w, stdcmap, count, property)
     Display *dpy;

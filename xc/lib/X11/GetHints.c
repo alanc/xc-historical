@@ -1,4 +1,4 @@
-/* $XConsortium: XGetHints.c,v 11.29 91/01/05 16:55:52 rws Exp $ */
+/* $XConsortium: XGetHints.c,v 11.30 91/01/06 11:46:00 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -25,11 +25,11 @@ SOFTWARE.
 ******************************************************************/
 
 #include <stdio.h>
-#include "Xlibint.h"
-#include "Xos.h"
-#include "Xutil.h"
+#include <X11/Xlibint.h>
+#include <X11/Xos.h>
+#include <X11/Xutil.h>
 #include "Xatomtype.h"
-#include "Xatom.h"
+#include <X11/Xatom.h>
 
 Status XGetSizeHints (dpy, w, hints, property)
 	Display *dpy;

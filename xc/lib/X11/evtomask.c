@@ -1,4 +1,4 @@
-/* $XConsortium: evtomask.c,v 1.5 90/12/11 11:47:38 rws Exp $ */
+/* $XConsortium: evtomask.c,v 1.6 91/01/06 11:48:59 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 /*
@@ -13,7 +13,7 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include "X.h"
+#include <X11/X.h>
 
 #if __STDC__
 #define Const const

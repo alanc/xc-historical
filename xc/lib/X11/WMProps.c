@@ -1,4 +1,4 @@
-/* $XConsortium: SetWMProps.c,v 1.10 90/12/12 09:16:33 rws Exp $ */
+/* $XConsortium: SetWMProps.c,v 1.5 91/01/06 11:43:53 rws Exp $ */
 
 /***********************************************************
 Copyright 1988 by Wyse Technology, Inc., San Jose, Ca.,
@@ -26,9 +26,9 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "Xlibint.h"
-#include "Xatom.h"
-#include "Xutil.h"
+#include <X11/Xlibint.h>
+#include <X11/Xatom.h>
+#include <X11/Xutil.h>
 #include <X11/Xos.h>
 
 extern char *getenv();

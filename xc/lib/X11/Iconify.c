@@ -24,10 +24,10 @@ SOFTWARE.
 
 #include <stdio.h>
 #define NEED_EVENTS
-#include "Xlibint.h"
-#include "Xatom.h"
+#include <X11/Xlibint.h>
+#include <X11/Xatom.h>
 #include <X11/Xos.h>
-#include "Xutil.h"
+#include <X11/Xutil.h>
 
 /*
  * This function instructs the window manager to change this window from

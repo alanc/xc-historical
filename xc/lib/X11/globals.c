@@ -1,5 +1,5 @@
 /*
- * $XConsortium: globals.c,v 1.10 91/01/05 15:46:36 rws Exp $
+ * $XConsortium: globals.c,v 1.11 91/01/06 11:49:00 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@ without express or implied warranty.
  * This file should contain only those objects which must be predefined.
  */
 #define NEED_EVENTS
-#include "Xlibint.h"
+#include <X11/Xlibint.h>
 
 
 /*

@@ -1,5 +1,5 @@
 /* Copyright 1989 Massachusetts Institute of Technolgoy */
-/* $XConsortium: SetRGBCMap.c,v 1.2 89/04/06 14:53:33 jim Exp $ */
+/* $XConsortium: SetRGBCMap.c,v 1.3 91/01/06 11:43:50 rws Exp $ */
 
 /*
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -13,10 +13,10 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include "Xlibint.h"
-#include "Xutil.h"
+#include <X11/Xlibint.h>
+#include <X11/Xutil.h>
 #include "Xatomtype.h"
-#include "Xatom.h"
+#include <X11/Xatom.h>
 
 void XSetRGBColormaps (dpy, w, cmaps, count, property)
     Display *dpy;

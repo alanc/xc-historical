@@ -1,4 +1,4 @@
-/* $XConsortium: XStName.c,v 11.13 90/12/12 09:19:44 rws Exp $ */
+/* $XConsortium: XStName.c,v 11.14 91/01/06 11:48:22 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -13,8 +13,8 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include "Xlibint.h"
-#include "Xatom.h"
+#include <X11/Xlibint.h>
+#include <X11/Xatom.h>
 
 #if NeedFunctionPrototypes
 XStoreName (

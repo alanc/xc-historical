@@ -1,4 +1,4 @@
-/* $XConsortium: GetTxtProp.c,v 1.10 90/12/12 09:16:33 rws Exp $ */
+/* $XConsortium: GetTxtProp.c,v 1.4 91/01/06 11:43:38 rws Exp $ */
 /***********************************************************
 Copyright 1988 by Wyse Technology, Inc., San Jose, Ca.,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -24,9 +24,9 @@ SOFTWARE.
 ******************************************************************/
 
 #include <stdio.h>
-#include "Xlibint.h"
-#include "Xatom.h"
-#include "Xutil.h"
+#include <X11/Xlibint.h>
+#include <X11/Xatom.h>
+#include <X11/Xutil.h>
 #include <X11/Xos.h>
 
 Status XGetTextProperty (display, window, tp, property)

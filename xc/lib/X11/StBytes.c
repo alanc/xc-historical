@@ -1,4 +1,4 @@
-/* $XConsortium: XStBytes.c,v 11.18 90/12/12 09:19:38 rws Exp $ */
+/* $XConsortium: XStBytes.c,v 11.19 91/01/06 11:48:17 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -13,8 +13,8 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include "Xlibint.h"
-#include "Xatom.h"
+#include <X11/Xlibint.h>
+#include <X11/Xatom.h>
 
 /* insulate predefined atom numbers from cut routines */
 static Atom n_to_atom[8] = { 

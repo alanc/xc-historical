@@ -1,4 +1,4 @@
-/* $XConsortium: XSetHints.c,v 11.36 90/12/12 09:19:28 rws Exp $ */
+/* $XConsortium: XSetHints.c,v 11.37 91/01/06 11:48:02 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -24,10 +24,10 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "Xlibint.h"
-#include "Xutil.h"
+#include <X11/Xlibint.h>
+#include <X11/Xutil.h>
 #include "Xatomtype.h"
-#include "Xatom.h"
+#include <X11/Xatom.h>
 #include <X11/Xos.h>
 
 #define safestrlen(s) ((s) ? strlen(s) : 0)

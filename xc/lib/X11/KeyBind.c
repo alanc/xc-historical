@@ -1,4 +1,4 @@
-/* $XConsortium: XKeyBind.c,v 11.62 91/01/05 15:51:38 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.63 91/01/06 11:46:40 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -16,12 +16,12 @@ without express or implied warranty.
 /* Beware, here be monsters (still under construction... - JG */
 
 #define NEED_EVENTS
-#include "Xlib.h"
-#include "Xlibint.h"
-#include "Xutil.h"
+#include <X11/Xlib.h>
+#include <X11/Xlibint.h>
+#include <X11/Xutil.h>
 #define XK_MISCELLANY
 #define XK_LATIN1
-#include "keysymdef.h"
+#include <X11/keysymdef.h>
 #include <stdio.h>
 
 #define AllMods (ShiftMask|LockMask|ControlMask| \

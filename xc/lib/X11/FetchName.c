@@ -1,4 +1,4 @@
-/* $XConsortium: XFetchName.c,v 11.22 88/09/06 16:07:03 jim Exp $ */
+/* $XConsortium: XFetchName.c,v 11.23 91/01/06 11:45:27 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -14,8 +14,8 @@ without express or implied warranty.
 */
 
 #include <stdio.h>
-#include "Xlibint.h"
-#include "Xatom.h"
+#include <X11/Xlibint.h>
+#include <X11/Xatom.h>
 #include <X11/Xos.h>
 
 

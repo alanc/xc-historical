@@ -1,4 +1,4 @@
-/* $XConsortium: SetNrmHint.c,v 1.10 90/12/12 09:16:33 rws Exp $ */
+/* $XConsortium: SetNrmHint.c,v 1.2 91/01/06 11:43:48 rws Exp $ */
 
 /***********************************************************
 Copyright 1988 by Wyse Technology, Inc., San Jose, Ca,
@@ -26,10 +26,10 @@ PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
 
-#include "Xlibint.h"
-#include "Xutil.h"
+#include <X11/Xlibint.h>
+#include <X11/Xutil.h>
 #include "Xatomtype.h"
-#include "Xatom.h"
+#include <X11/Xatom.h>
 #include <X11/Xos.h>
 
 void XSetWMSizeHints (dpy, w, hints, prop)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Encrypt.c,v 1.3 90/11/19 17:37:25 keith Exp $
+ * $XConsortium: Encrypt.c,v 1.4 91/01/02 16:28:13 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,10 +23,10 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "Xos.h"
-#include    "X.h"
-#include    "Xmd.h"
-#include    "Xdmcp.h"
+#include <X11/Xos.h>
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xdmcp.h>
 
 #ifdef HASDES
 
@@ -39,7 +39,7 @@
  * Examine the XDMCP specification for the correct algorithm
  */
 
-#include    "des.h"
+#include "des.h"
 
 void
 XdmcpEncrypt (plain, key, crypto, bytes)

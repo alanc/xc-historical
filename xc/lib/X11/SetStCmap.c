@@ -1,4 +1,4 @@
-/* $XConsortium: XSetStCmap.c,v 1.5 89/05/08 15:57:45 jim Exp $ */
+/* $XConsortium: XSetStCmap.c,v 1.6 91/01/06 11:48:12 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -24,10 +24,10 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "Xlibint.h"
-#include "Xutil.h"
+#include <X11/Xlibint.h>
+#include <X11/Xutil.h>
 #include "Xatomtype.h"
-#include "Xatom.h"
+#include <X11/Xatom.h>
 
 /*
  * 				    WARNING

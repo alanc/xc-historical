@@ -1,4 +1,4 @@
-/* $XConsortium: XInitExt.c,v 11.26 90/12/12 12:17:32 rws Exp $ */
+/* $XConsortium: XInitExt.c,v 11.27 91/01/06 11:46:37 rws Exp $ */
 /* Copyright  Massachusetts Institute of Technology 1987 */
 
 /*
@@ -13,8 +13,8 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include "Xlibint.h"
-#include "Xos.h"
+#include <X11/Xlibint.h>
+#include <X11/Xos.h>
 #include <stdio.h>
 
 extern Bool _XUnknownWireEvent();

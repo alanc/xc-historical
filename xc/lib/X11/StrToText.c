@@ -1,4 +1,4 @@
-/* $XConsortium: StrToText.c,v 1.10 90/12/12 09:16:33 rws Exp $ */
+/* $XConsortium: StrToText.c,v 1.3 91/01/06 11:43:57 rws Exp $ */
 /* Copyright 1989 Massachusetts Institute of Technology */
 
 /*
@@ -13,9 +13,9 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include "Xlibint.h"
-#include "Xatom.h"
-#include "Xutil.h"
+#include <X11/Xlibint.h>
+#include <X11/Xatom.h>
+#include <X11/Xutil.h>
 
 /*
  * XStringListToTextProperty - fill in TextProperty structure with 
