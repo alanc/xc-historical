@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.31 94/03/19 19:53:45 gildea Exp $
+ * $XConsortium: locking.c,v 1.32 94/03/24 14:45:03 gildea Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -456,10 +456,11 @@ static void _XDisplayLockWait(dpy)
 {
     xthread_t self;
 
-    if (xthread_have_id(dpy->lock->locking_thread)) {
+    while (xthread_have_id(dpy->lock->locking_thread)) {
 	self = xthread_self();
-	if (!xthread_equal(dpy->lock->locking_thread, self))
-	    ConditionWait(dpy, dpy->lock->cv);
+	if (xthread_equal(dpy->lock->locking_thread, self))
+	    break;
+	ConditionWait(dpy, dpy->lock->cv);
     }
 }
 
