@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.21 89/10/05 21:00:41 jim Exp $ */
+/* $XConsortium: ico.c,v 1.22 89/10/05 21:03:13 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -429,10 +429,11 @@ char **argv;
 
 		    switch (xev.type) {
 		      case ConfigureNotify:
+			if (xev.xconfigure.width != winW ||
+			    xev.xconfigure.height != winH)
+			  icoX = icoY = 1;
 			winW = xev.xconfigure.width;
 			winH = xev.xconfigure.height;
-			icoX = 1;
-			icoY = 1;
 			break;
 		      case MapNotify:
 			blocking = False;
