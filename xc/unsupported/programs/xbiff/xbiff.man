@@ -113,6 +113,16 @@ The default is ``black'' since the core default for background is ``white.''
 .TP 8
 .B reverseVideo (\fPclass\fB ReverseVideo)
 Specifies that the foreground and background should be reversed.
+.TP 8
+.B flip (\fPclass\fB Flip)
+Specifies whether or not the image that is shown when mail has arrived 
+should be inverted.  The default is ``true.''
+.TP 8
+.B fullPixmap (\fPclass\fB Pixmap)
+Specifies a bitmap file to be shown when new mail has arrived.
+.TP 8
+.B emptyPixmap (\fPclass\fB Pixmap)
+Specifies a bitmap file to be shown when no new mail is present.
 .SH ACTIONS
 The \fIMailbox\fP widget provides the following actions for use in event
 translations:
