@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 1.3 89/03/23 20:18:36 keith Exp $ */
+/* $XConsortium: shape.c,v 1.4 89/03/28 14:18:22 keith Exp $ */
 #define NEED_REPLIES
 #include <stdio.h>
 #include "X.h"
@@ -217,6 +217,29 @@ CreateBorderShape (pWin)
     extents.x2 = pWin->clientWinSize.width + pWin->borderWidth;
     extents.y2 = pWin->clientWinSize.height + pWin->borderWidth;
     return (*pWin->drawable.pScreen->RegionCreate) (&extents, 1);
+}
+
+ProcShapeQueryVersion (client)
+    register ClientPtr	client;
+{
+    REQUEST(xShapeQueryVersionReq);
+    xShapeQueryVersionReply	rep;
+    register int		n;
+
+    REQUEST_SIZE_MATCH (xShapeQueryVersionReq);
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    rep.majorVersion = SHAPE_MAJOR_VERSION;
+    rep.minorVersion = SHAPE_MINOR_VERSION;
+    if (client->swapped) {
+    	swaps(&rep.sequenceNumber, n);
+    	swapl(&rep.length, n);
+	swaps(&rep.majorVersion, n);
+	swaps(&rep.minorVersion, n);
+    }
+    WriteToClient(client, sizeof (xShapeQueryReply), (char *)&rep);
+    return (client->noClientException);
 }
 
 /*****************
@@ -430,7 +453,7 @@ ProcShapeOffset (client)
 	return BadValue;
     }
     pScreen = pWin->drawable.pScreen;
-    (*pScreen->TranslateRegion) (srcRgn);
+    (*pScreen->TranslateRegion) (srcRgn, stuff->xOff, stuff->yOff);
     SetShape (pWin);
     SendShapeNotify (pWin, stuff->destKind);
     return Success;
@@ -550,49 +573,95 @@ ProcShapeSelectInput (client)
     pWin = LookupWindow (stuff->window, client);
     if (!pWin)
 	return BadWindow;
-    pNewShapeEvent = (ShapeEventPtr) xalloc (sizeof (ShapeEventRec));
-    if (!pNewShapeEvent)
-	return BadAlloc;
-    pNewShapeEvent->next = 0;
-    pNewShapeEvent->client = client;
-    pNewShapeEvent->window = pWin;
-    /* add a resource that will be deleted when
-     * the client goes away
-     */
-    clientResource = FakeClientID (client->index);
-    pNewShapeEvent->clientResource = clientResource;
-    if (!AddResource (clientResource, RT_FAKE, (pointer)pNewShapeEvent,
-		      (int (*)())ShapeFreeClient, ShapeResourceClass))
-    {
-	xfree (pNewShapeEvent);
-	return BadAlloc;
-    }
     pHead = (ShapeEventPtr *) LookupID 
-			    (pWin->wid, RT_WINDOW, ShapeResourceClass);
-    /*
-     * create a resource to contain a pointer to the list
-     * of clients selecting input.  This must be indirect as
-     * the list may be arbitrarily rearranged which cannot be
-     * done through the resource database.
-     */
-    if (!pHead)
-    {
-	pHead = (ShapeEventPtr *) xalloc (sizeof (ShapeEventPtr));
-	if (!pHead ||
-	    !AddResource (pWin->wid, RT_WINDOW, (pointer)pHead,
-			  (int(*)())ShapeFreeEvents, ShapeResourceClass))
-	{
-	    FreeResource (clientResource, ShapeResourceClass);
-	    xfree (pHead);
+		    	(pWin->wid, RT_WINDOW, ShapeResourceClass);
+    switch (stuff->enable) {
+    case xTrue:
+	if (pHead) {
+
+	    /* check for existing entry. */
+	    for (pShapeEvent = *pHead;
+		 pShapeEvent;
+ 		 pShapeEvent = pShapeEvent->next)
+	    {
+		if (pShapeEvent->client == client)
+		    return Success;
+	    }
+	}
+
+	/* build the entry */
+    	pNewShapeEvent = (ShapeEventPtr)
+			    xalloc (sizeof (ShapeEventRec));
+    	if (!pNewShapeEvent)
+	    return BadAlloc;
+    	pNewShapeEvent->next = 0;
+    	pNewShapeEvent->client = client;
+    	pNewShapeEvent->window = pWin;
+    	/*
+ 	 * add a resource that will be deleted when
+     	 * the client goes away
+     	 */
+   	clientResource = FakeClientID (client->index);
+    	pNewShapeEvent->clientResource = clientResource;
+    	if (!AddResource (clientResource,
+			  RT_FAKE, (pointer)pNewShapeEvent,
+		      	  ShapeFreeClient, ShapeResourceClass))
+    	{
 	    xfree (pNewShapeEvent);
 	    return BadAlloc;
+    	}
+    	/*
+     	 * create a resource to contain a pointer to the list
+     	 * of clients selecting input.  This must be indirect as
+     	 * the list may be arbitrarily rearranged which cannot be
+     	 * done through the resource database.
+     	 */
+    	if (!pHead)
+    	{
+	    pHead = (ShapeEventPtr *) xalloc (sizeof (ShapeEventPtr));
+	    if (!pHead ||
+	    	!AddResource (pWin->wid,
+			      RT_WINDOW, (pointer)pHead,
+			      ShapeFreeEvents, ShapeResourceClass))
+	    {
+	    	FreeResource (clientResource, ShapeResourceClass);
+	    	xfree (pHead);
+	    	xfree (pNewShapeEvent);
+	    	return BadAlloc;
+	    }
+	    *pHead = 0;
+    	}
+    	pNewShapeEvent->next = *pHead;
+    	*pHead = pNewShapeEvent;
+	break;
+    case xFalse:
+	/* delete the interest */
+	if (pHead) {
+	    pNewShapeEvent = 0;
+	    for (pShapeEvent = *pHead; pShapeEvent; pShapeEvent = pShapeEvent->next) {
+		if (pShapeEvent->client == client)
+		    break;
+		pNewShapeEvent = 0;
+	    }
+	    if (pShapeEvent) {
+		FreeResource (pShapeEvent->clientResource, ShapeResourceClass);
+		if (pNewShapeEvent)
+		    pNewShapeEvent->next = pShapeEvent->next;
+		else
+		    *pHead = pShapeEvent->next;
+		Xfree ((pointer) pShapeEvent);
+	    }
 	}
-	*pHead = 0;
+	break;
+    default:
+	return BadValue;
     }
-    pNewShapeEvent->next = *pHead;
-    *pHead = pNewShapeEvent;
     return Success;
 }
+
+/*
+ * deliver the event
+ */
 
 SendShapeNotify (pWin, which)
     WindowPtr	pWin;
@@ -604,6 +673,7 @@ SendShapeNotify (pWin, which)
     BoxRec		extents;
     RegionPtr		region;
     register int	n;
+    BYTE		shaped;
 
     pHead = (ShapeEventPtr *) LookupID
 		    (pWin->wid, RT_WINDOW, ShapeResourceClass);
@@ -611,23 +681,27 @@ SendShapeNotify (pWin, which)
 	return;
     if (which == ShapeWindow) {
 	region = pWin->windowShape;
-	if (region)
+	if (region) {
 	    extents = *(pWin->drawable.pScreen->RegionExtents) (region);
-	else {
+	    shaped = xTrue;
+	} else {
 	    extents.x1 = 0;
 	    extents.y1 = 0;
 	    extents.x2 = pWin->clientWinSize.width;
 	    extents.y2 = pWin->clientWinSize.height;
+	    shaped = xFalse;
 	}
     } else {
 	region = pWin->borderShape;
-	if (region)
+	if (region) {
 	    extents = *(pWin->drawable.pScreen->RegionExtents) (region);
-	else {
+	    shaped = xTrue;
+	} else {
 	    extents.x1 = -pWin->borderWidth;
 	    extents.y1 = -pWin->borderWidth;
 	    extents.x2 = pWin->clientWinSize.width + pWin->borderWidth;
 	    extents.y2 = pWin->clientWinSize.height + pWin->borderWidth;
+	    shaped = xFalse;
 	}
     }
     for (pShapeEvent = *pHead; pShapeEvent; pShapeEvent = pShapeEvent->next) {
@@ -641,6 +715,7 @@ SendShapeNotify (pWin, which)
 	se.width = extents.x2 - extents.x1;
 	se.height = extents.y2 - extents.y1;
 	se.time = currentTime.milliseconds;
+	se.shaped = shaped;
 	if (client->swapped) {
 	    swapl (&se.window, n);
 	    swapl (&se.sequenceNumber, n);
