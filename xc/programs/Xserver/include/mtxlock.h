@@ -28,9 +28,9 @@
  *
  ************************************************************************/
 
-/* $XConsortium: mtxlock.h,v 1.10 93/12/13 16:30:20 rob Exp $ */
+/* $XConsortium: mtxlock.h,v 1.11 94/01/11 20:54:52 rob Exp $ */
 
-#ifndef XTHREADSLOCK_H
+#ifndef MTXLOCK_H
 #define MTXLOCK_H
 
 #include "X.h"
@@ -1042,4 +1042,4 @@
 
 /***********************************************************************/
 
-#endif /* XTHREADSLOCK_H */
+#endif /* MTXLOCK_H */
