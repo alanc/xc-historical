@@ -1,7 +1,8 @@
+    CDEBUGFLAGS = -g
         DEFINES = ConnectionFlags
 LOCAL_LIBRARIES = $(XAUTHLIB)
-           SRCS = xauth.c process.c 
-           OBJS = xauth.o process.o 
+           SRCS = xauth.c gethost.c process.c parsedpy.c 
+           OBJS = xauth.o gethost.o process.o parsedpy.o 
 
 ComplexProgramTarget(xauth)
 
