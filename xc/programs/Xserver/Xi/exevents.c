@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.5 89/11/21 13:28:14 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.6 89/11/21 13:49:17 rws Exp $ */
 #ifdef XINPUT
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -64,6 +64,7 @@ extern Mask 		DeviceButton1Mask;
 extern Mask 		DeviceButtonMotionMask;
 extern Mask 		DeviceButtonGrabMask;
 extern Mask 		DeviceOwnerGrabButtonMask;
+extern Mask		PropagateMask[];
 extern WindowPtr 	GetSpriteWindow();
 extern InputInfo	inputInfo;
 
@@ -634,7 +635,6 @@ RecalculateDeviceDeliverableEvents(pWin)
     struct _OtherInputMasks *inputMasks;   /* default: NULL */
     register WindowPtr pChild;
     int i;
-    extern Mask PropagateMask[];
 
     pChild = pWin;
     while (1)
@@ -1116,4 +1116,33 @@ MaybeStopDeviceHint(dev, client)
 	  DevicePointerMotionHintMask)))
 	dev->valuator->motionHintWindow = NullWindow;
 }
+
+int
+DeviceEventSuppressForWindow(pWin, client, mask, maskndx)
+	WindowPtr pWin;
+	ClientPtr client;
+	Mask mask;
+	int maskndx;
+    {
+    if (mask & ~PropagateMask[maskndx])
+	{
+	client->errorValue = mask;
+	return BadValue;
+	}
+    if (mask == 0) 
+	{
+	if (wOtherInputMasks(pWin))
+	    {
+	    wOtherInputMasks(pWin)->dontPropagateMask[maskndx] = mask;
+	    CheckWindowOptionalNeed (pWin);
+	    }
+	} 
+    else 
+	{
+	if (!pWin->optional && !MakeWindowOptional (pWin))
+	    return BadAlloc;
+	wOtherInputMasks(pWin)->dontPropagateMask[maskndx] = mask;
+	}
+    RecalculateDeviceDeliverableEvents(pWin);
+    }
 #endif /* XINPUT */
