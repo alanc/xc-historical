@@ -7,33 +7,23 @@ OBJS = atom.o colormap.o cursor.o dispatch.o dixutils.o events.o \
 	initext.o main.o property.o resource.o swaprep.o swapreq.o \
 	tables.o window.o initatoms.o
 
-STD_DEFINES = ServerDefines
-CDEBUGFLAGS = ServerCDebugFlags
-   INCLUDES = -I. -I../include -I$(INCLUDESRC)
-EXT_DEFINES = ExtensionDefines
-   LINTLIBS = ../ddx/snf/llib-lsnf.ln ../os/4.2bsd/llib-los.ln
+ STD_DEFINES = ServerDefines
+ CDEBUGFLAGS = ServerCDebugFlags
+    INCLUDES = -I. -I../include -I$(INCLUDESRC)
+ EXT_DEFINES = ExtensionDefines
+SITE_DEFINES = -DCOMPILEDDEFAULTFONTPATH=\"$(FONTDIR)/\" -DRGB_DB=\"$(LIBDIR)/rgb\"
+    LINTLIBS = ../ddx/snf/llib-lsnf.ln ../os/4.2bsd/llib-los.ln
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(dix,$(OBJS))
 LintLibraryTarget(dix,$(SRCS))
 NormalLintTarget($(SRCS))
 
+SpecialObjectRule(initext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
+
+SpecialObjectRule(globals.o, $(IRULESRC)/Imake.tmpl, $(SITE_DEFINES))
+
 DependTarget()
-
-# `specially made just for initext.o.  If the macro file changes, then
-# we make a new initext.o because the extension list may have changed.
-
-initext.o: $(IRULESRC)/$(MACROFILE)
-	$(CC) -c $(CFLAGS) $(EXT_DEFINES) initext.c
-
-# `specially made just for globals.o.  If the template file changes, then
-# we make a new globals.o because the font/rgb directories may have changed.
-
-globals.o: $(IRULESRC)/Imake.tmpl
-	$(CC) -c $(CFLAGS) \
-	-DCOMPILEDDEFAULTFONTPATH=\"$(FONTDIR)/\" \
-	-DRGB_DB=\"$(LIBDIR)/rgb\" \
-	globals.c
 
 ../../include/Xatom.h initatoms.c:	BuiltInAtoms buildatoms
 	sh buildatoms
