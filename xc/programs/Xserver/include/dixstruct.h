@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.21 93/09/18 13:46:43 dpw Exp $ */
+/* $XConsortium: dixstruct.h,v 1.22 93/09/23 15:11:56 rws Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -82,6 +82,10 @@ typedef struct _Client {
     CARD32	req_len;		/* length of current request */
     Bool	big_requests;		/* supports large requests */
     int		priority;
+#ifdef XKB
+    unsigned short xkbClientFlags;
+    unsigned short mapNotifyMask;
+#endif
 
 #ifdef DEBUG
     unsigned char requestLog[MAX_REQUEST_LOG];
