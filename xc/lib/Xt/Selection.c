@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Selection.c,v 1.43 89/12/15 15:28:52 swick Exp $";
+    "$XConsortium: Selection.c,v 1.44 90/02/01 15:08:37 keith Exp $";
 #endif
 
 /***********************************************************
@@ -671,7 +671,9 @@ XtPointer closure;
 Boolean incremental;
 {
     Select ctx;
+    SelectRec oldctx;
     Window window;
+    Boolean old_context = FALSE;
 
     ctx = FindCtx(XtDisplay(widget), selection);
     if (ctx->widget != widget || ctx->time != time)
@@ -682,14 +684,17 @@ Boolean incremental;
 	    return FALSE;
     	if (ctx->widget != widget)
  	{
-	    if (ctx->widget)
-		(void) LoseSelection(ctx, ctx->widget, selection, ctx->time);
 	    XtAddEventHandler(widget, (EventMask)NULL, TRUE,
 			      HandleSelectionEvents, (XtPointer)ctx);
 	    XtAddCallback(widget, XtNdestroyCallback,
 			  WidgetDestroyed, (XtPointer)ctx);
+
+	    if (ctx->widget) {
+		oldctx = *ctx;
+		old_context = TRUE;
+	    }
 	}
-	ctx->widget = widget;
+	ctx->widget = widget;	/* Selection offically changes hands. */
 	ctx->time = time;
     }
     ctx->convert = convert;
@@ -698,6 +703,10 @@ Boolean incremental;
     ctx->owner_cancel = cancel;
     ctx->incremental = incremental;
     ctx->owner_closure = closure;
+
+    if (old_context)
+	(void) LoseSelection(&oldctx, oldctx.widget, selection, oldctx.time);
+
     return TRUE;
 }
 
