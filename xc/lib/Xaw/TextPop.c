@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.7 89/09/06 17:30:20 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.8 89/11/01 17:25:31 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -84,7 +84,7 @@ static char radio_trans_string[] =
 
 static char search_text_trans[] = 
   "~Shift<Key>Return:      DoSearchAction(Popdown) \n\
-   Shift<Key>Return:       SetField(Replace) \n\
+   Shift<Key>Return:       DoSearchAction() SetField(Replace) \n\
    Ctrl<Key>q,<Key>Tab:    insert-char()    \n\
    Ctrl<Key>c:             PopdownSearchAction() \n\
    <Btn1Down>:             select-start() SetField(Search) \n\
@@ -95,7 +95,7 @@ static char rep_text_trans[] =
    Shift<Key>Return:       SetField(Search) \n\
    Ctrl<Key>q,<Key>Tab:    insert-char()     \n\
    Ctrl<Key>c:             PopdownSearchAction() \n\
-   <Btn1Down>:             select-start() SetField(Replace) \n\
+   <Btn1Down>:             select-start() DoSearchAction() SetField(Replace)\n\
    <Key>Tab:               SetField(Search)";
 
 /************************************************************
@@ -934,9 +934,11 @@ Boolean once_only, show_current;
 
       if (search->selection_changed) {
 	SetSearchLabels(search, "Selection has been modified, aborting.",
-			   "", TRUE);
+			"", TRUE);
 	return(FALSE);
       }
+      if (pos == end_pos) 
+	  return(FALSE);
     }
 
     if (XawTextReplace(tw, pos, end_pos, &replace) != XawEditDone) {
@@ -1052,8 +1054,8 @@ static void
 _SetField(new, old)
 Widget new, old;
 {
-  Arg args[1];
-  Pixel new_color, old_color;
+  Arg args[2];
+  Pixel new_border, old_border, old_bg;
 
   if (!XtIsSensitive(new)) {
     XBell(XtDisplay(old), 0);	/* Don't set field to an inactive Widget. */
@@ -1062,14 +1064,18 @@ Widget new, old;
 
   XtSetKeyboardFocus(XtParent(new), new); 
 						
-  XtSetArg(args[0], XtNborderColor, &old_color);
-  XtGetValues(new, args, ONE);
+  XtSetArg(args[0], XtNborderColor, &old_border);
+  XtSetArg(args[1], XtNbackground, &old_bg);
+  XtGetValues(new, args, TWO);
 
-  XtSetArg(args[0], XtNborderColor, &new_color);
+  XtSetArg(args[0], XtNborderColor, &new_border);
   XtGetValues(old, args, ONE);
 
-  SetResource(old, XtNborderColor, (XtArgVal) old_color);
-  SetResource(new, XtNborderColor, (XtArgVal) new_color);
+  if (old_border != old_bg)	/* Colors are already correct, return. */
+      return;
+
+  SetResource(old, XtNborderColor, (XtArgVal) old_border);
+  SetResource(new, XtNborderColor, (XtArgVal) new_border);
 }
 
 /*	Function Name: SetResourceByName
