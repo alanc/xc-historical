@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.118 94/03/28 14:14:53 gildea Exp $
+ * $XConsortium: ConnDis.c,v 11.119 94/03/29 19:41:53 matt Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -151,7 +151,7 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
     }
 #ifdef LOCALCONN
     /* check if phostname == localnodename */
-    if (uname(&sys) >= 0 &&
+    if (phostname && uname(&sys) >= 0 &&
 	!strncmp(phostname, sys.nodename, strlen(sys.nodename)))
 	phostname = "unix";
 #endif
