@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.9 89/10/03 19:57:00 rws Exp $ */
+/* $XConsortium: main.c,v 5.10 90/03/19 18:55:09 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -558,6 +558,7 @@ AddScreen(pfnInit, argc, argv)
     pScreen->GCPrivateLen = 0;
     pScreen->GCPrivateSizes = (unsigned *)NULL;
     pScreen->totalGCSize = sizeof(GC);
+    pScreen->ClipNotify = (void (*)())NULL; /* for R4 ddx compatibility */
     
 #ifdef DEBUG
     for (jNI = &pScreen->QueryBestSize; 
