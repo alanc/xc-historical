@@ -590,7 +590,6 @@
 	((or (member :pointer-window :input-focus) window) window)
 	(card32 (encode-event-mask event-mask))
 	(card8 external-event-code)
-	(card16 0) ;; zero sequence number
 	(progn
 	  (apply (aref *event-send-vector* internal-event-code) display args)
 	  (incf (buffer-boffset display) 44))))))

@@ -617,7 +617,7 @@
 		   #+kcl '*kcl-internal-buffer-symbol-needed-because-of-the-compiler-bug*
 		   ))
     (multiple-value-setq (get-code get-index get-sizes)
-      (get-put-items 4 declares nil
+      (get-put-items 2 declares nil
 		     #'(lambda (type index item args)
 			 (flet ((event-get (type index item args)
 					   (unless (member type '(pad8 pad16))
@@ -629,7 +629,7 @@
 					 (event-get type index item args))
 				     item))))))
     (multiple-value-setq (put-code put-index put-sizes)
-      (get-put-items 4 declares t
+      (get-put-items 2 declares t
 		     #'(lambda (type index item args)
 			 (unless (member type '(pad8 pad16))
 			   (if (atom item)
@@ -656,7 +656,7 @@
 
        (defun ,get-function (display event handler)
 	 (compiler-let ((*buffer* 'display))
-	   (reading-event (event :sizes (8 ,@get-sizes))
+	   (reading-event (event :sizes (8 16 ,@get-sizes))
 	     (funcall handler
 		      :display display
 		      :event-key (aref *event-key-vector* (event-code event))
@@ -665,6 +665,8 @@
 		      ,@get-code))))
 
        (defun ,put-function (display &key ,@(nreverse keywords) &allow-other-keys)
+	 ,(when (member :sequence keywords)
+	    `(unless sequence (setq sequence (display-request-number display))))
 	 (writing-buffer-send (display :sizes ,put-sizes
 				       :index (index+ (buffer-boffset display) 12))
 	   ,@put-code))
@@ -679,7 +681,8 @@
 			      (function ,get-function))
 			(setf (aref *event-send-vector* event-code)
 			      (function ,put-function))))
-		 event-codes))))
+		 event-codes)
+       ',name)))
 
 (defun check-consistency (names &rest args)
   ;; Ensure all args are nil or have the same value.
@@ -697,6 +700,7 @@
   ;; for key-press and key-release, code is the keycode
   ;; for button-press and button-release, code is the button number
   (data code)
+  (card16 sequence)
   (card32 time)
   (window root (window event-window))
   ((or null window) child)
@@ -707,6 +711,7 @@
 
 (declare-event :motion-notify
   ((data boolean) hint-p)
+  (card16 sequence)
   (card32 time)
   (window root (window event-window))
   ((or null window) child)
@@ -716,6 +721,7 @@
 
 (declare-event (:enter-notify :leave-notify)
   ((data (member8 :ancestor :virtual :inferior :nonlinear :nonlinear-virtual)) kind)
+  (card16 sequence)
   (card32 time)
   (window root (window event-window))
   ((or null window) child)
@@ -729,18 +735,20 @@
   ((data (member8 :ancestor :virtual :inferior :nonlinear :nonlinear-virtual
 		  :pointer :pointer-root :none))
    kind)
+  (card16 sequence)
   (window (window event-window))
   ((member8 :normal :while-grabbed :grab :ungrab) mode))
 
 (declare-event :keymap-notify
-  (window (window event-window))
   ((bit-vector256 0) keymap))
 
 (declare-event :exposure
+  (card16 sequence)
   (window (window event-window))
   (card16 x y width height count))
 
 (declare-event :graphics-exposure
+  (card16 sequence)
   (drawable (drawable event-window))
   (card16 x y width height)
   (card16 minor)  ;; Minor opcode
@@ -748,40 +756,49 @@
   (card8 major))  ;; Major opcode
 
 (declare-event :no-exposure
+  (card16 sequence)
   (drawable (drawable event-window))
   (card16 minor)
   (card8  major))
 
 (declare-event :visibility-notify
+  (card16 sequence)
   (window (window event-window))
   ((member8 :unobscured :partially-obscured :fully-obscured) state))
 
 (declare-event :create-notify
+  (card16 sequence)
   (window (parent event-window) window)
   (int16 x y)
   (card16 width height border-width)
   (boolean override-redirect-p))
 
 (declare-event :destroy-notify
+  (card16 sequence)
   (window event-window window))
 
 (declare-event :unmap-notify
+  (card16 sequence)
   (window event-window window)
   (boolean configure-p))
 
 (declare-event :map-notify
+  (card16 sequence)
   (window event-window window)
   (boolean override-redirect-p))
 
 (declare-event :map-request
+  (card16 sequence)
   (window (parent event-window) window))
 
 (declare-event :reparent-notify
+  (card16 sequence)
   (window event-window window parent)
   (int16 x y)
   (boolean override-redirect-p))
 
 (declare-event :configure-notify
+  (card16 sequence)
   (window event-window window)
   ((or null window) above-sibling)
   (int16 x y)
@@ -790,41 +807,49 @@
 
 (declare-event :configure-request
   ((data (member :above :below :top-if :bottom-if :opposite)) stack-mode)
+  (card16 sequence)
   (window (parent event-window) window)
   ((or null window) above-sibling)
   (int16 x y)
   (card16 width height border-width value-mask))
 
 (declare-event :gravity-notify
+  (card16 sequence)
   (window event-window window)
   (int16 x y))
 
 (declare-event :resize-request
+  (card16 sequence)
   (window (window event-window))
   (card16 width height))
 
 (declare-event :circulate-notify
+  (card16 sequence)
   (window event-window window parent)
   ((member16 :top :bottom) place))
 
 (declare-event :circulate-request
+  (card16 sequence)
   (window (parent event-window) window)
   (pad16 1 2)
   ((member16 :top :bottom) place))
 
 (declare-event :property-notify
+  (card16 sequence)
   (window (window event-window))
   (keyword atom) ;; keyword
   (card32 time)
   ((member16 :new-value :deleted) state))
 
 (declare-event :selection-clear
+  (card16 sequence)
   (card32 time)
   (window (window event-window)) 
   (keyword selection) ;; keyword
   )
 
 (declare-event :selection-request
+  (card16 sequence)
   (card32 time)
   (window (window event-window) requestor)
   (keyword selection target)
@@ -832,6 +857,7 @@
   )
 
 (declare-event :selection-notify
+  (card16 sequence)
   (card32 time)
   (window (window event-window))
   (keyword selection target)
@@ -839,17 +865,20 @@
   )
 
 (declare-event :colormap-notify
+  (card16 sequence)
   (window (window event-window))
   ((or null colormap) colormap)
   (boolean new-p installed-p))
 
 (declare-event :client-message
   (data format)
+  (card16 sequence)
   (window (window event-window))
   (keyword type)
   ((client-message-sequence format) data))
 
 (declare-event :mapping-notify
+  (card16 sequence)
   ((member8 :modifier :keyboard :pointer) request)
   (card8 start) ;; first key-code
   (card8 count))
