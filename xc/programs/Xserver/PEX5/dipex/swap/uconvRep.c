@@ -1,4 +1,4 @@
-/* $XConsortium: uconvRep.c,v 5.7 92/01/02 15:21:44 hersh Exp $ */
+/* $XConsortium: uconvRep.c,v 5.8 92/03/04 14:19:08 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -811,6 +811,7 @@ pexEndPickOneReply	*reply;
 
     SWAP_CARD16 (reply->sequenceNumber);
     SWAP_CARD32 (reply->length);	
+    SWAP_CARD16 (reply->pickStatus);
 
     /* JSH commented out because until the Pick Functionality is
        actually written this will seg fault on a NULL pointer
@@ -836,6 +837,7 @@ pexPickOneReply		*reply;
 
     SWAP_CARD16 (reply->sequenceNumber);
     SWAP_CARD32 (reply->length);
+    SWAP_CARD16 (reply->pickStatus);
 
     /* JSH commented out because until the Pick Functionality is
        actually written this will seg fault on a NULL pointer
@@ -861,6 +863,8 @@ pexEndPickAllReply	*reply;
 
     SWAP_CARD16 (reply->sequenceNumber);
     SWAP_CARD32 (reply->length);
+    SWAP_CARD16 (reply->pickStatus);
+    SWAP_CARD16 (reply->morePicks);
 
     /* JSH commented out because until the Pick Functionality is
        actually written this will seg fault on a NULL pointer
@@ -891,6 +895,8 @@ pexPickAllReply	*reply;
 
     SWAP_CARD16 (reply->sequenceNumber);
     SWAP_CARD32 (reply->length);
+    SWAP_CARD16 (reply->pickStatus);
+    SWAP_CARD16 (reply->morePicks);
 
     /* JSH commented out because until the Pick Functionality is
        actually written this will seg fault on a NULL pointer

@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.6 91/10/01 02:34:23 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.7 92/03/04 14:16:18 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -149,22 +149,6 @@ pexCreateRendererReq    *strmPtr;
 
     prend->rendId = strmPtr->rdr;
 
-    /* allocate a handle to the pseudo Pick Measure used for Renderer Picking 
-       the Pick measure itself is done with CreatePseudoPickMeasure
-       in the BeginPick...  routines 
-    */
-    fakepm = FakeClientID(cntxtPtr->client->index);
-    prend->pickstr.pseudoPM = (diPMHandle) Xalloc ((unsigned long)sizeof(ddPMResource));
-    if (!prend->pickstr.pseudoPM)  PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
-    (prend->pickstr.pseudoPM)->id = fakepm;
-    err = CreatePseudoPickMeasure (prend);
-    if (err){
-	Xfree((pointer)(prend->pickstr.pseudoPM));
-	PEX_ERR_EXIT(err,0,cntxtPtr);	
-    }
-
-    ADDRESOURCE(fakepm, PEXPickType, prend->pickstr.pseudoPM);
-
     LU_DRAWABLE(strmPtr->drawable, prend->pDrawable);
     prend->drawableId = strmPtr->drawable;
     prend->drawExample.type = prend->pDrawable->type;
@@ -197,6 +181,22 @@ pexCreateRendererReq    *strmPtr;
     prend->ns[(unsigned)DD_INVIS_EXCL_NS] = 0;
     prend->ns[(unsigned)DD_PICK_INCL_NS] = 0;
     prend->ns[(unsigned)DD_PICK_EXCL_NS] = 0;
+
+    /* allocate a handle to the pseudo Pick Measure used for Renderer Picking 
+       the Pick measure itself is done with CreatePseudoPickMeasure
+       in the BeginPick...  routines 
+    */
+    fakepm = FakeClientID(cntxtPtr->client->index);
+    prend->pickstr.pseudoPM = (diPMHandle) Xalloc ((unsigned long)sizeof(ddPMResource));
+    if (!prend->pickstr.pseudoPM)  PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
+    (prend->pickstr.pseudoPM)->id = fakepm;
+    err = CreatePseudoPickMeasure (prend);
+    if (err){
+	Xfree((pointer)(prend->pickstr.pseudoPM));
+	PEX_ERR_EXIT(err,0,cntxtPtr);	
+    }
+
+    ADDRESOURCE(fakepm, PEXPickType, prend->pickstr.pseudoPM);
 
     if (strmPtr->itemMask & PEXRDPipelineContext) {
 	ddPCStr *ppc = 0;
@@ -334,7 +334,7 @@ pexCreateRendererReq    *strmPtr;
     }
 
 
-    prend->pickStartPath = puCreateList(DD_ELEMENT_REF);	
+    prend->pickStartPath = puCreateList(DD_PICK_PATH);	
     if (!(prend->pickStartPath)) {
         Xfree((pointer)prend);
         PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
@@ -931,6 +931,7 @@ pexAccumulateStateReq   *strmPtr;
     if (!pAccSt) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
 
     pAccSt->numElRefs = strmPtr->numElRefs;
+    pAccSt->Path = 0;
 
     per = (pexElementRef *)(strmPtr+1);
     for (i = 0 ; i < strmPtr->numElRefs; i++, per++) {
@@ -939,7 +940,6 @@ pexAccumulateStateReq   *strmPtr;
 	*psh = sh;
     }
 
-    if (pAccSt->Path) puDeleteList(pAccSt->Path);
     pAccSt->Path = puCreateList(DD_ELEMENT_REF);
     if (!(pAccSt->Path)) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
     puAddToList((ddPointer)(strmPtr+1),  pAccSt->numElRefs, pAccSt->Path);
@@ -948,6 +948,10 @@ pexAccumulateStateReq   *strmPtr;
 
     err = AccumulateState(prend, pAccSt );
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
+    /* clean up */
+    puDeleteList(pAccSt->Path);
+    Xfree((pointer)pAccSt);
 
     return( err );
 

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexRndrPick.c,v 1.1 92/03/04 14:16:23 hersh Exp $ */
 
 /************************************************************
 Copyright 1992 by The Massachusetts Institute of Technology
@@ -74,16 +74,15 @@ pexBeginPickOneReq      *strmPtr;
     prend->drawableId = strmPtr->drawable;
     prend->pickstr.sid = strmPtr->sid;
 
-    prend->pickstr.pick_op = strmPtr->pickOp;
+    prend->pickstr.pick_method = strmPtr->method;
+    prend->pickstr.state = DD_PICK_ONE;
 
     err = ChangePseudoPickMeasure (prend, pr);
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
 
     /* This is set up to use this instead of defining a BeginPickOne */
-    /* this wont work until ChangePseudoPickMeasure is full implemented 
     err = BeginPicking(prend, prend->pickstr.pseudoPM);
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
-    */
 
     return( err );
 } /* end-PEXBeginPickOne() */
@@ -98,6 +97,9 @@ pexEndPickOneReq        *strmPtr;
     extern ddBufferPtr pPEXBuffer;
 
     LU_RENDERER(strmPtr->rdr, prend);
+
+    if (prend->pickstr.state != DD_PICK_ONE)
+	PEX_ERR_EXIT(err,0,cntxtPtr);
 
     SETUP_INQ(pexEndPickOneReply);
 
@@ -130,15 +132,14 @@ pexPickOneReq           *strmPtr;
     LU_STRUCTURE(strmPtr->sid, prend->pickstr.strHandle);
     prend->pickstr.sid = strmPtr->sid;
 
-    prend->pickstr.pick_op = strmPtr->pickOp;
+    prend->pickstr.pick_method = strmPtr->method;
+    prend->pickstr.state = DD_PICK_ONE;
 
     err = ChangePseudoPickMeasure (prend, pr);
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
 
-    /* this wont work until ChangePseudoPickMeasure is full implemented 
     err = BeginPicking(prend, prend->pickstr.pseudoPM);
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
-    */
 
     /* now call PickOne which does set up and calls RenderElements */
     err = PickOne(prend);
@@ -172,6 +173,8 @@ pexBeginPickAllReq      *strmPtr;
     prend->drawableId = strmPtr->drawable;
     prend->pickstr.sid = strmPtr->sid;
 
+    prend->pickstr.pick_method = strmPtr->method;
+    prend->pickstr.state = DD_PICK_ALL;
     prend->pickstr.send_event = strmPtr->sendEvent;
     prend->pickstr.max_hits = strmPtr->pickMaxHits;
     prend->pickstr.client = cntxtPtr->client;
@@ -180,10 +183,8 @@ pexBeginPickAllReq      *strmPtr;
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
 
     /* This is set up to use this instead of defining a BeginPickOne */
-    /* this wont work until ChangePseudoPickMeasure is full implemented 
     err = BeginPicking(prend, prend->pickstr.pseudoPM);
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
-    */
 
 
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
@@ -200,6 +201,9 @@ pexEndPickAllReq        *strmPtr;
     ddRendererStr *prend = 0;
 
     LU_RENDERER(strmPtr->rdr, prend);
+
+    if (prend->pickstr.state != DD_PICK_ALL)
+	PEX_ERR_EXIT(err,0,cntxtPtr);
 
     SETUP_INQ(pexEndPickAllReply);
 
@@ -230,15 +234,15 @@ pexPickAllReq           *strmPtr;
     LU_DRAWABLE(strmPtr->drawable, prend->pDrawable);
     prend->drawableId = strmPtr->drawable;
 
+    prend->pickstr.pick_method = strmPtr->method;
+    prend->pickstr.state = DD_PICK_ALL;
     prend->pickstr.max_hits = strmPtr->pickMaxHits;
 
     err = ChangePseudoPickMeasure (prend, pr);
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
 
-    /* this wont work until ChangePseudoPickMeasure is full implemented 
     err = BeginPicking(prend, prend->pickstr.pseudoPM);
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
-    */
 
     /* now call PickAll which does set up and calls RenderElements */
     err = PickAll(prend);

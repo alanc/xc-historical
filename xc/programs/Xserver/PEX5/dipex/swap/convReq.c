@@ -1,4 +1,4 @@
-/* $XConsortium: convReq.c,v 5.10 91/12/30 18:23:40 hersh Exp $ */
+/* $XConsortium: convReq.c,v 5.11 92/03/04 14:18:50 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1195,9 +1195,10 @@ pexBeginPickOneReq	*strmPtr;
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
     SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->method);
     SWAP_RENDERER (strmPtr->rdr);
     SWAP_DRAWABLE (strmPtr->drawable);
-    SWAP_CARD32 (strmPtr->sid);
+    SWAP_INT32 (strmPtr->sid);
 
     SWAP_FUNC_PREFIX(SwapPickRecord) (swapPtr, 
 				    (pexPickRecord *)(strmPtr+1));
@@ -1225,6 +1226,7 @@ pexPickOneReq	*strmPtr;
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
     SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->method);
     SWAP_RENDERER (strmPtr->rdr);
     SWAP_DRAWABLE (strmPtr->drawable);
     SWAP_STRUCTURE (strmPtr->sid);
@@ -1243,9 +1245,10 @@ pexBeginPickAllReq	*strmPtr;
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
     SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->method);
     SWAP_RENDERER (strmPtr->rdr);
     SWAP_DRAWABLE (strmPtr->drawable);
-    SWAP_CARD32 (strmPtr->sid);
+    SWAP_INT32 (strmPtr->sid);
     SWAP_CARD32 (strmPtr->pickMaxHits);
 
     SWAP_FUNC_PREFIX(SwapPickRecord) (swapPtr, 
@@ -1274,6 +1277,7 @@ pexPickAllReq	*strmPtr;
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);
     SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
+    SWAP_ENUM_TYPE_INDEX (strmPtr->method);
     SWAP_RENDERER (strmPtr->rdr);
     SWAP_DRAWABLE (strmPtr->drawable);
     SWAP_CARD32 (strmPtr->pickMaxHits);
