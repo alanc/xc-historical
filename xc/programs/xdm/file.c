@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: file.c,v 1.10 89/10/09 14:57:29 keith Exp $
+ * $XConsortium: file.c,v 1.11 89/12/06 19:31:56 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -134,9 +134,11 @@ char		*source;
 DisplayType	*acceptableTypes;
 int		numAcceptable;
 {
-    char		**args, **a;
+    char		**args, **argv, **a;
+    char		*name, *class, *type;
     struct display	*d;
-    DisplayType	type;
+    int			usedDefault;
+    DisplayType		displayType;
 
     args = splitIntoWords (source);
     if (!args)
@@ -147,17 +149,36 @@ int		numAcceptable;
 	freeArgs (args);
 	return;
     }
+    name = args[0];
     if (!args[1])
     {
 	LogError ("Missing display type for %s\n", args[0]);
 	freeArgs (args);
 	return;
     }
-    d = FindDisplayByName (args[0]);
-    type = parseDisplayType (args[1]);
+    displayType = parseDisplayType (args[1], &usedDefault);
+    class = NULL;
+    type = args[1];
+    argv = args + 2;
+    /*
+     * extended syntax; if the second argument doesn't
+     * exactly match a legal display type and the third
+     * argument does, use the second argument as the
+     * display class string
+     */
+    if (usedDefault && args[2])
+    {
+	displayType = parseDisplayType (args[2], &usedDefault);
+	if (!usedDefault)
+	{
+	    class = args[1];
+	    type = args[2];
+	    argv = args + 3;
+	}
+    }
     while (numAcceptable)
     {
-	if (DisplayTypeMatch (*acceptableTypes, type))
+	if (DisplayTypeMatch (*acceptableTypes, displayType))
 	    break;
 	--numAcceptable;
 	++acceptableTypes;
@@ -165,25 +186,38 @@ int		numAcceptable;
     if (!numAcceptable)
     {
 	LogError ("Unacceptable display type %s for display %s\n",
-		  args[1], args[0]);
+		  type, name);
     }
+    d = FindDisplayByName (name);
     if (d)
     {
 	d->state = OldEntry;
-	Debug ("Found existing display:  %s %s", d->name, args[1]);
+	if (class && strcmp (d->class, class))
+	{
+	    char    *newclass;
+
+	    newclass = malloc ((unsigned) (strlen (class) + 1));
+	    if (newclass)
+	    {
+		free (d->class);
+		strcpy (newclass, class);
+		d->class = newclass;
+	    }
+	}
+	Debug ("Found existing display:  %s %s %s", d->name, d->class, type);
 	freeArgs (d->argv);
     }
     else
     {
-	d = NewDisplay (args[0], (char *) 0);
-	Debug ("Found new display:  %s %s", d->name, args[1]);
+	d = NewDisplay (name, class);
+	Debug ("Found new display:  %s %s %s", d->name, d->class, type);
     }
-    d->displayType = type;
-    d->argv = copyArgs (args+2);
+    d->displayType = displayType;
+    d->argv = copyArgs (argv);
     for (a = d->argv; a && *a; a++)
 	Debug (" %s", *a);
     Debug ("\n");
-    freeSomeArgs (args, 2);
+    freeSomeArgs (args, argv - args);
 }
 
 static struct displayMatch {
@@ -196,13 +230,18 @@ static struct displayMatch {
 };
 
 DisplayType
-parseDisplayType (string)
+parseDisplayType (string, usedDefault)
 	char	*string;
+	int	*usedDefault;
 {
 	struct displayMatch	*d;
 
 	for (d = displayTypes; d->name; d++)
 		if (!strcmp (d->name, string))
+		{
+			*usedDefault = 0;
 			return d->type;
+		}
+	*usedDefault = 1;
 	return d->type;
 }
