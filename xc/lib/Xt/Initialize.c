@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.175 91/02/04 08:22:35 rws Exp $ */
+/* $XConsortium: Initialize.c,v 1.176 91/02/05 16:58:27 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -562,6 +562,8 @@ void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 	if (!(search_list = (XrmHashTable*)
 		       ALLOCATE_LOCAL( SEARCH_LIST_SIZE*sizeof(XrmHashTable))))
 	    _XtAllocError(NULL);
+	name_list[0] = pd->name;
+	class_list[0] = pd->class;
 	name_list[1] = NULLQUARK;
 	class_list[1] = NULLQUARK;
 
