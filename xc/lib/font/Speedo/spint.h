@@ -1,4 +1,4 @@
-/* $XConsortium: spint.h,v 1.7 93/08/24 18:48:53 gildea Exp $ */
+/* $XConsortium: spint.h,v 1.8 93/09/17 18:27:47 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -30,6 +30,7 @@
 
 #include <stdio.h>
 #include "fntfilst.h"
+#include <X11/Xfuncproto.h>
 #include "speedo.h"
 
 #define	SaveMetrics	0x1
@@ -123,7 +124,11 @@ extern void sp_close_font();
 extern void sp_close_master_font();
 extern void sp_close_master_file();
 extern void sp_reset_master();
+#if NeedVarargsPrototypes
+extern void SpeedoErr(char *fmt, ...);
+#else
 extern void SpeedoErr();
+#endif
 
 extern void sp_make_standard_props();
 extern void sp_make_header();

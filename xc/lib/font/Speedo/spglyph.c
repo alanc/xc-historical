@@ -1,4 +1,4 @@
-/* $XConsortium: spglyph.c,v 1.14 93/08/24 18:48:50 gildea Exp $ */
+/* $XConsortium: spglyph.c,v 1.15 94/02/03 17:27:39 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -178,7 +178,7 @@ sp_set_bitmap_bits(y, xbit1, xbit2)
     else {
 	*dst++ |= startmask;
 	while (--nmiddle)
-	    *dst++ = ~0;
+	    *dst++ = (CARD8)~0;
 	*dst |= endmask;
     }
 }
@@ -367,7 +367,7 @@ fprintf(stderr, "build_all_sp_bitmaps:i = %d, Char ID = %d\n", i, cfv->char_id);
 	if (!sp_make_char(cfv->char_index)) {
 
 #ifdef DEBUG			/* can be very common with some encodings */
-	    SpeedoErr("Can't make char", cfv->char_index);
+	    SpeedoErr("Can't make char %d\n", cfv->char_index);
 #endif
 	}
     }

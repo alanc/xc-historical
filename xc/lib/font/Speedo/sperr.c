@@ -1,4 +1,4 @@
-/* $XConsortium: sperr.c,v 1.2 91/05/11 09:57:16 rws Exp $ */
+/* $XConsortium: sperr.c,v 1.3 91/07/15 18:15:26 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -25,14 +25,34 @@
 
 #include	"spint.h"
 
-/* VARARGS */
+#if NeedVarargsPrototypes
+#include <stdarg.h>
+
+void
+SpeedoErr(char *str, ...)
+{
+    va_list v;
+    int a1;
+
+    va_start(v, str);
+    ErrorF("Speedo: ");
+    a1 = va_arg(v, int);
+    ErrorF(str, a1);
+    va_end(v);
+}
+
+#else
+
+/* VARARGS1 */
 void
 SpeedoErr(str, a1)
     char       *str;
     char       *a1;
 {
-    ErrorF("Speedo: %s %d\n", str, a1);
+    ErrorF("Speedo: ");
+    ErrorF(str, a1);
 }
+#endif /* NeedVarargsPrototypes else */
 
 
 /*
