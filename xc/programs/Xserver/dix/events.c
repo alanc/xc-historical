@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.71 94/01/30 23:42:37 rws Exp $ */
+/* $XConsortium: events.c,v 5.72 94/02/01 19:23:58 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -44,9 +44,6 @@ SOFTWARE.
 
 extern WindowPtr *WindowTable;
 
-#ifdef XRECORD 
-extern int RecordedEvents[128];
-#endif 
 extern void (* EventSwapVector[128]) ();
 extern void (* ReplySwapVector[256]) ();
 
@@ -83,6 +80,8 @@ extern void (* ReplySwapVector[256]) ();
 #define WID(w) ((w) ? ((w)->drawable.id) : 0)
 
 #define rClient(obj) (clients[CLIENT_ID((obj)->resource)])
+
+CallbackListPtr EventCallback;
 
 #define DNPMCOUNT 8
 
@@ -1032,22 +1031,6 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 	"Event([%d, %d], mask=0x%x), client=%d",
 	pEvents->u.u.type, pEvents->u.u.detail, mask, client->index);
 #endif
-#ifdef XRECORD 
-    for (i = 0; i < count; i++)
-    {
-	if ( (RecordedEvents[pEvents[i].u.u.type & 0177]) && 
-		!(pEvents[i].u.u.type & EXTENSION_EVENT_BASE) )
-	{ 
-#ifdef DEBUG
-	    ErrorF(
-	    "TryClientEvents trapped event([%d, %d], mask=0x%x), client=%d\n",
-	    pEvents->u.u.type, pEvents->u.u.detail, mask, client->index);
-#endif
-
-	    XRecordEvent(client, &pEvents[i]);
-        }
-    }
-#endif 
     if ((client) && (client != serverClient) && (!client->clientGone) &&
 	((filter == CantBeFiltered) || (mask & filter)))
     {
@@ -3554,24 +3537,15 @@ WriteEventsToClient(pClient, count, events)
 {
     xEvent    eventTo, *eventFrom;
     int       i;
-#ifdef XRECORD 
-    for(i = 0; i < count; i++)
-    {
-      eventFrom = &events[i];
 
-      if ( (RecordedEvents[eventFrom->u.u.type & 0177]) && 
-	(eventFrom->u.u.type & EXTENSION_EVENT_BASE 
-		|| eventFrom->u.u.type == X_Error) )
-      { 
-#ifdef DEBUG
-	    ErrorF(
-	    "WriteEventsToClient trapped event [%d, %d], client=%d\n",
-	    eventFrom->u.u.type, eventFrom->u.u.detail, pClient->index);
-#endif 
-	    XRecordEvent(pClient, eventFrom);
-      }
+    if (EventCallback)
+    {
+	EventInfoRec eventinfo;
+	eventinfo.client = pClient;
+	eventinfo.events = events;
+	eventinfo.count = count;
+	CallCallbacks(&EventCallback, (pointer)&eventinfo);
     }
-#endif
     if(pClient->swapped)
     {
 	for(i = 0; i < count; i++)
