@@ -19,7 +19,7 @@ Xqdss	Digital color vaxstationII or II
 Xsun	Sun monochrome or color Sun 2, 3, or 4
 Xhp	HP Topcat 9000s300
 Xapollo	Apollo monochrome (Domain/IX 9.6)
-Xibm	IBM AED, APA, 8514a, megapel, and VGA on PC/RT
+Xibm	IBM APA and megapel PC/RT
 XmacII	Apple monochrome Macintosh II
 Xplx	Parallax color and video graphics controller
 .fi
@@ -35,7 +35,7 @@ terminal emulator windows).
 .PP
 Since \fIxdm\fP now handles automatic starting of the server in a portable
 way, the \fI-L\fP option to \fIxterm\fP is now considered obsolete.  Support
-for starting a login window from 4.3bsd-dervied \fI/etc/ttys\fP files
+for starting a login window from 4.3bsd-derived \fI/etc/ttys\fP files
 may not be included in future releases.
 .PP
 Installations that run more than one window system will still need to use the
