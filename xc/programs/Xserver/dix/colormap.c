@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.30 93/09/20 16:17:45 dpw Exp $ */
+/* $XConsortium: colormap.c,v 5.31 94/04/17 20:26:17 dpw Exp kaleb $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -941,6 +941,7 @@ FakeAllocColor (pmap, item)
     register xColorItem  *item;
 {
     Pixel	pixR, pixG, pixB;
+    Pixel	temp;
     int		entries;
     xrgb	rgb;
     int		class;
@@ -958,9 +959,11 @@ FakeAllocColor (pmap, item)
     case GrayScale:
     case PseudoColor:
 	item->pixel = 0;
-	if (FindColor(pmap, pmap->red, entries, &rgb, &item->pixel, PSEUDOMAP,
-		      -1, AllComp) == Success)
+	if (FindColor(pmap, pmap->red, entries, &rgb, &temp, PSEUDOMAP,
+		      -1, AllComp) == Success) {
+	    item->pixel = temp;
 	    break;
+	}
 	/* fall through ... */
     case StaticColor:
     case StaticGray:

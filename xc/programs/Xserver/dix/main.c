@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.29 94/02/23 15:48:26 dpw Exp $ */
+/* $XConsortium: main.c,v 5.30 94/04/17 20:26:40 dpw Exp kaleb $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -196,7 +196,7 @@ main(argc, argv)
     char	*argv[];
 {
     int		i, j, k;
-    long	alwaysCheckForInput[2];
+    HWEventQueueType	alwaysCheckForInput[2];
 
     /* Notice if we're restart.  Probably this is because we jumped through
      * uninitialized pointer */

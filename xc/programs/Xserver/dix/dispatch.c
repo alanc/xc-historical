@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.65 94/04/17 20:26:25 dpw Exp $ */
+/* $XConsortium: dispatch.c,v 5.66 94/10/19 21:59:25 dpw Exp kaleb $ */
 /************************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -98,7 +98,7 @@ static ClientPtr grabClient;
 static int grabState = GrabNone;
 static long grabWaiters[mskcnt];
 CallbackListPtr ServerGrabCallback = NULL;
-long	*checkForInput[2];
+HWEventQueuePtr checkForInput[2];
 extern int connBlockScreenStart;
 
 extern int (* InitialVector[3]) ();
@@ -147,7 +147,7 @@ XID clientErrorValue;   /* XXX this is a kludge */
 
 void
 SetInputCheck(c0, c1)
-    long *c0, *c1;
+    HWEventQueuePtr c0, c1;
 {
     checkForInput[0] = c0;
     checkForInput[1] = c1;
@@ -232,7 +232,7 @@ Dispatch()
     register int	result;
     register ClientPtr	client;
     register int	nready;
-    register long	**icheck = checkForInput;
+    register HWEventQueuePtr* icheck = checkForInput;
 
     nextFreeClientID = 1;
     InitSelections();
