@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.227 95/03/01 00:54:49 kaleb Exp kaleb $";
+static char *rid="$XConsortium: main.c,v 1.228 95/04/05 19:58:50 kaleb Exp gildea $";
 #endif /* lint */
 
 /*
@@ -1783,11 +1783,11 @@ spawn ()
 		 * Check results and ignore current control terminal if
 		 * necessary.  ENXIO is what is normally returned if there is
 		 * no controlling terminal, but some systems (e.g. SunOS 4.0)
-		 * seem to return EIO.
+		 * seem to return EIO.  Solaris 2.3 is said to return EINVAL.
 		 */
  		if (tty < 0) {
 			if (tty_got_hung || errno == ENXIO || errno == EIO ||
-			    errno == ENOTTY) {
+			    errno == EINVAL || errno == ENOTTY) {
 				no_dev_tty = TRUE;
 #ifdef TIOCSLTC
 				ltc = d_ltc;
