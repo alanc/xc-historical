@@ -4,7 +4,9 @@ xsetroot \- root window parameter setting utility for X
 .SH SYNOPSIS
 .B xsetroot
 [-help] [-def] [-display \fIdisplay\fP]
-[-cursor \fIcursorfile maskfile\fP] [-bitmap \fIfilename\fP]
+[-cursor \fIcursorfile maskfile\fP]
+[-cursor_name \fIcursorname\fP]
+[-bitmap \fIfilename\fP]
 [-mod \fIx y\fP] [-gray] [-grey] [-fg \fIcolor\fP] [-bg \fIcolor\fP] [-rv]
 [-solid \fIcolor\fP] [-name \fIstring\fP]
 .SH DESCRIPTION
