@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditResCom.c,v 1.7 90/03/16 14:28:17 kit Exp $
+ * $XConsortium: EditResCom.c,v 1.8 90/03/16 16:39:09 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -1120,7 +1120,8 @@ char * buf;
 int len;
 {
     register int local_len, t_len = 1;
-    register char * ptr, temp[51];
+    register char * ptr;
+    char temp[51];
 
     for (ptr = buf ; w != NULL; w = XtParent(w)) {
 	    
