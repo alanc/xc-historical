@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.104 91/07/27 14:09:37 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.105 91/07/27 14:13:23 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -19,7 +19,7 @@ MakeLintSubdirs($(LNINSTALLDIRS),install.ln,install.ln)
 
 MakeLintSubdirs($(LNINSTALLDIRS),external.ln,lintlib)
 
-
+#ifndef Win32Architecture
 XCOMM
 XCOMM Watch out!!!  Make sure you do make includes after removing X11....
 XCOMM
@@ -105,3 +105,60 @@ flushlinks::
 	make -k clean
 	find . -type l -exec rm {} \;
 	find . \( \! \( -type d -o -name Makefile \) \) -print
+
+#else
+clean::
+	rmdir -s X11
+
+includes::
+	rmdir -s X11
+
+XCOMM
+XCOMM before depending, be sure to have run make includes
+XCOMM
+/* depend::  includes */
+
+DependSubdirs($(SUBDIRS))
+
+XCOMM do not name your log file make.log when you run this ...
+World World.Win32::
+	@echo
+	@echo Building Release 5 of the X Window System
+	@echo
+	@echo
+	cd $(IMAKESRC)
+	$(MAKE) $(MFLAGS) -f Makefile.ini clean.Win32
+	$(MAKE) $(MFLAGS) -f Makefile.ini imake.exe
+	cd ..
+	RMoveToBakFile(Makefile)
+	$(MAKE) $(MFLAGS) -f Makefile.bak Makefile
+	$(MAKE) $(MFLAGS) Makefiles
+	$(MAKE) $(MFLAGS) clean
+	$(MAKE) $(MFLAGS) includes
+	$(MAKE) $(MFLAGS) depend
+	$(MAKE) $(MFLAGS) $(WORLDOPTS)
+	@echo
+	@echo
+	@echo Full build of Release 5 of the X Window System complete.
+	@echo
+
+Everything::
+	@echo
+	@echo Rebuilding Release 5 of the X Window System
+	@echo
+	@echo
+	cd $(IMAKESRC)
+	$(MAKE) $(MFLAGS) -f Makefile.ini imake.exe
+	cd ..
+	RMoveToBakFile(Makefile)
+	$(MAKE) $(MFLAGS) -f Makefile.bak Makefile
+	$(MAKE) $(MFLAGS) Makefiles
+	$(MAKE) $(MFLAGS) includes
+	$(MAKE) $(MFLAGS) depend
+	$(MAKE) $(MFLAGS) $(WORLDOPTS)
+	@echo
+	@echo
+	@echo Rebuild of Release 5 of the X Window System complete.
+	@echo
+
+#endif
