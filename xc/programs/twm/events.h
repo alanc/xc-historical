@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.h,v 1.6 89/07/18 17:15:48 jim Exp $
+ * $XConsortium: events.h,v 1.7 89/07/26 11:02:26 jim Exp $
  *
  * twm event handler include file
  *
@@ -66,6 +66,8 @@ extern void HandleUnknown();
 
 extern event_proc EventHandler[];
 extern Window DragWindow;
+extern int origDragX;
+extern int origDragY;
 extern int DragX;
 extern int DragY;
 extern int DragWidth;

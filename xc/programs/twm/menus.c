@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.99 89/08/15 12:10:08 jim Exp $
+ * $XConsortium: menus.c,v 1.100 89/08/15 13:39:51 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.99 89/08/15 12:10:08 jim Exp $";
+"$XConsortium: menus.c,v 1.100 89/08/15 13:39:51 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1253,9 +1253,9 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    w = tmp_win->frame;
 	}
 
-	DragWindow = NULL;
+	DragWindow = None;
 
-	XGetGeometry(dpy, w, &JunkRoot, &JunkX, &JunkY,
+	XGetGeometry(dpy, w, &JunkRoot, &origDragX, &origDragY,
 	    &DragWidth, &DragHeight, &JunkBW,
 	    &JunkDepth);
 
@@ -1328,7 +1328,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		&(eventp->xmotion.x_root), &(eventp->xmotion.y_root),
 		&JunkX, &JunkY, &JunkMask);
 
-	    if (DragWindow == NULL &&
+	    if (DragWindow == None &&
 		abs(eventp->xmotion.x_root - origX) < Scr->MoveDelta &&
 	        abs(eventp->xmotion.y_root - origY) < Scr->MoveDelta)
 		continue;
@@ -1394,7 +1394,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 			    moving_icon ? 0 : tmp_win->title_height);
 		}
 	    }
-	    else if (DragWindow != NULL)
+	    else if (DragWindow != None)
 	    {
 		int xl, yt, xr, yb, w, h;
 

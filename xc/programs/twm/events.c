@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.86 89/08/15 13:42:08 jim Exp $
+ * $XConsortium: events.c,v 1.87 89/08/15 14:20:06 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.86 89/08/15 13:42:08 jim Exp $";
+"$XConsortium: events.c,v 1.87 89/08/15 14:20:06 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -66,6 +66,8 @@ XEvent Event;			/* the current event */
 TwmWindow *Tmp_win;		/* the current twm window */
 
 Window DragWindow;		/* variables used in moving windows */
+int origDragX;
+int origDragY;
 int DragX;
 int DragY;
 int DragWidth;
@@ -1130,7 +1132,7 @@ HandleButtonRelease()
     fprintf(stderr, "ButtonRelease\n");
 #endif
 
-    if (DragWindow != NULL)
+    if (DragWindow != None)
     {
 	XEvent client_event;
 
@@ -1245,14 +1247,14 @@ HandleButtonRelease()
     }
 
     if (RootFunction != NULL ||
-	ResizeWindow != NULL ||
-	DragWindow != NULL)
+	ResizeWindow != None ||
+	DragWindow != None)
 	ButtonPressed = -1;
 
     if (RootFunction == NULL &&
 	(Event.xbutton.state & mask) == 0 &&
-	DragWindow == NULL &&
-	ResizeWindow == NULL)
+	DragWindow == None &&
+	ResizeWindow == None)
     {
 	XUngrabPointer(dpy, CurrentTime);
 	XUngrabServer(dpy);
@@ -1307,10 +1309,14 @@ HandleButtonPress()
 	 * down, we need to cancel the operation we were doing
 	 */
 	Cancel = TRUE;
-	MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
+	if (Scr->OpaqueMove && DragWindow != None) {
+	    XMoveWindow (dpy, DragWindow, origDragX, origDragY);
+	} else {
+	    MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
+	}
 	XUnmapWindow(dpy, Scr->SizeWindow);
-	ResizeWindow = NULL;
-	DragWindow = NULL;
+	ResizeWindow = None;
+	DragWindow = None;
 	cur = LeftButt;
 	if (Event.xbutton.button == Button2)
 	    cur = MiddleButt;
@@ -1327,8 +1333,8 @@ HandleButtonPress()
     else
 	ButtonPressed = Event.xbutton.button;
 
-    if (ResizeWindow != NULL ||
-	DragWindow != NULL  ||
+    if (ResizeWindow != None ||
+	DragWindow != None  ||
 	ActiveMenu != NULL)
 	return;
 
