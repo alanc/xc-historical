@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.9 94/07/27 16:04:38 mor Exp mor $ */
+/* $XConsortium: info.c,v 1.10 94/08/10 15:56:51 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -28,13 +28,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "xsm.h"
 #include "restart.h"
 
-static String 		*clientListNames = NULL;
-static ClientRec	**clientListRecs = NULL;
-static int		numClientListNames = 0;
-
 static int		longest = 400;
-
-static Bool		client_prop_visible = 0;
 
 static int restartHints[] = {
 	SmRestartIfRunning,
@@ -45,7 +39,7 @@ static int restartHints[] = {
 
 
 
-static void
+void
 ShowHint (client)
 
 ClientRec *client;
@@ -59,7 +53,7 @@ ClientRec *client;
 
 
 
-static void
+void
 DisplayProps (client, clientName)
 
 ClientRec *client;
@@ -172,8 +166,14 @@ XtPointer 	callData;
 
 {
     XawListReturnStruct *current = (XawListReturnStruct *) callData;
-    ClientRec *client = clientListRecs[current->list_index];
+    ClientRec *client;
+
+    if (!current || current->list_index < 0)
+	return;
+	
+    client = clientListRecs[current->list_index];
     ShowHint (client);
+    current_client_selected = current->list_index;
     if (client_prop_visible)
 	DisplayProps (client, current->string);
 }
@@ -193,6 +193,14 @@ XtPointer 	callData;
     XawListReturnStruct *current;
 
     current = XawListShowCurrent (clientListWidget);
+
+    if (!current || current->list_index < 0)
+    {
+	if (current)
+	    XtFree ((char *) current);
+	return;
+    }
+
     client = clientListRecs[current->list_index];
     DisplayProps (client, current->string);
     XtFree ((char *) current);
@@ -212,6 +220,13 @@ XtPointer 	callData;
     XawListReturnStruct *current;
 
     current = XawListShowCurrent (clientListWidget);
+
+    if (!current || current->list_index < 0)
+    {
+	if (current)
+	    XtFree ((char *) current);
+	return;
+    }
 
     client = clientListRecs[current->list_index];
 
@@ -233,6 +248,13 @@ XtPointer 	callData;
     XawListReturnStruct *current;
 
     current = XawListShowCurrent (clientListWidget);
+
+    if (!current || current->list_index < 0)
+    {
+	if (current)
+	    XtFree ((char *) current);
+	return;
+    }
 
     client = clientListRecs[current->list_index];
 
@@ -270,6 +292,13 @@ XtPointer 	callData;
     int i;
 
     current = XawListShowCurrent (clientListWidget);
+
+    if (!current || current->list_index < 0)
+    {
+	if (current)
+	    XtFree ((char *) current);
+	return;
+    }
 
     client = clientListRecs[current->list_index];
 
@@ -492,11 +521,6 @@ UpdateClientList ()
 
     XawListChange (clientListWidget,
 	clientListNames, numClientListNames, longest, True);
-    XawListHighlight (clientListWidget, 0);
-
-    ShowHint (clientListRecs[0]);
-    if (client_prop_visible)
-	DisplayProps (clientListRecs[0], clientListNames[0]);
 }
 
 
@@ -513,6 +537,12 @@ ClientInfoXtProc (w, client_data, callData)
     if (!client_info_visible)
     {
 	UpdateClientList ();
+
+	current_client_selected = 0;
+	XawListHighlight (clientListWidget, 0);
+	ShowHint (clientListRecs[0]);
+	if (client_prop_visible)
+	    DisplayProps (clientListRecs[0], clientListNames[0]);
 
 	XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
 	XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
