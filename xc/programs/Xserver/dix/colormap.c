@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 1.75 88/09/06 15:40:10 jim Exp $ */
+/* $XConsortium: colormap.c,v 1.76 89/03/10 17:24:56 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -112,7 +112,6 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
 	return (BadMatch);
 
     pmap = (ColormapPtr) xalloc(sizeof(ColormapRec));
-    AddResource(mid, RT_COLORMAP, (pointer)pmap, FreeColormap, RC_CORE);
     pmap->mid = mid;
     pmap->flags = 0; 	/* start out with all flags clear */
     if(mid == pScreen->defColormap)
@@ -196,6 +195,8 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
 	    (pmap->numPixelsBlue)[client] = size;
 	}
     }
+    if (!AddResource(mid, RT_COLORMAP, (pointer)pmap, FreeColormap, RC_CORE))
+	return (BadAlloc);
     /* If the device wants a chance to initialize the colormap in any way,
      * this is it.  In specific, if this is a Static colormap, this is the
      * time to fill in the colormap's values */
@@ -631,8 +632,9 @@ AllocColor (pmap, pred, pgreen, pblue, pPix, client)
 	pcr = (colorResource *) xalloc(sizeof(colorResource));
 	pcr->mid = pmap->mid;
 	pcr->client = client;
-	AddResource(FakeClientID(client), RT_CMAPENTRY, (pointer)pcr,
-		    FreeClientPixels, RC_CORE);
+	if (!AddResource(FakeClientID(client), RT_CMAPENTRY, (pointer)pcr,
+			 FreeClientPixels, RC_CORE))
+	    return (BadAlloc);
     }
     return (Success);
 }
@@ -1095,8 +1097,9 @@ AllocColorCells (client, pmap, colors, planes, contig, ppix, masks)
 	pcr = (colorResource *) xalloc(sizeof(colorResource));
 	pcr->mid = pmap->mid;
 	pcr->client = client;
-	AddResource(FakeClientID(client), RT_CMAPENTRY, (pointer)pcr,
-		    FreeClientPixels, RC_CORE);
+	if (!AddResource(FakeClientID(client), RT_CMAPENTRY, (pointer)pcr,
+			 FreeClientPixels, RC_CORE))
+	    ok = BadAlloc;
     }
 
     return (ok);
@@ -1114,7 +1117,7 @@ AllocColorPlanes (client, pmap, colors, r, g, b, contig, pixels,
     Pixel	*pixels;
     Pixel	*prmask, *pgmask, *pbmask;
 {
-    Bool	ok;
+    int		ok;
     Pixel	mask, *ppixFirst;
     register Pixel shift;
     register int i;
@@ -1183,8 +1186,9 @@ AllocColorPlanes (client, pmap, colors, r, g, b, contig, pixels,
 	pcr = (colorResource *) xalloc(sizeof(colorResource));
 	pcr->mid = pmap->mid;
 	pcr->client = client;
-	AddResource(FakeClientID(client), RT_CMAPENTRY, (pointer)pcr,
-		    FreeClientPixels, RC_CORE);
+	if (!AddResource(FakeClientID(client), RT_CMAPENTRY, (pointer)pcr,
+			 FreeClientPixels, RC_CORE))
+	    ok = BadAlloc;
     }
 
     return (ok);

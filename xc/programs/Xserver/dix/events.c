@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.168 89/02/06 17:43:34 keith Exp $ */
+/* $XConsortium: events.c,v 1.169 89/03/10 17:26:40 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -148,7 +148,7 @@ extern GrabPtr CreateGrab();		/* Defined in grabs.c */
 extern void  DeleteGrab();
 extern Bool GrabMatchesSecond();
 extern void DeletePassiveGrabFromList();
-extern void AddPassiveGrabToWindowList();
+extern Bool AddPassiveGrabToWindowList();
 
 static ScreenPtr currentScreen;
 
@@ -1748,8 +1748,9 @@ EventSelectForWindow(pWin, client, mask)
 	others->resource = FakeClientID(client->index);
 	others->next = OTHERCLIENTS(pWin);
 	pWin->otherClients = (pointer)others;
-	AddResource(others->resource, RT_FAKE, (pointer)pWin,
-		    OtherClientGone, RC_CORE);
+	if (!AddResource(others->resource, RT_FAKE, (pointer)pWin,
+			 OtherClientGone, RC_CORE))
+	    return BadAlloc;
     }
 maskSet: 
     if ((motionHintWindow == pWin) &&
@@ -3699,7 +3700,7 @@ ProcUngrabKey(client)
     temporaryGrab.detail.exact = stuff->key;
     temporaryGrab.detail.pMask = NULL;
 
-    DeletePassiveGrabFromList(&temporaryGrab);
+    DeletePassiveGrabFromList(&temporaryGrab, FALSE);
 
     return(Success);
 }
@@ -3741,9 +3742,10 @@ ProcGrabKey(client)
 	}
     }
 
-    DeletePassiveGrabFromList(temporaryGrab);
+    if (!AddPassiveGrabToWindowList(temporaryGrab))
+	return BadAlloc;
 
-    AddPassiveGrabToWindowList(temporaryGrab);
+    DeletePassiveGrabFromList(temporaryGrab, TRUE);
 
     return(Success);
 }
@@ -3814,9 +3816,10 @@ ProcGrabButton(client)
 	}
     }
 
-    DeletePassiveGrabFromList(temporaryGrab);
+    if (!AddPassiveGrabToWindowList(temporaryGrab))
+	return BadAlloc;
 
-    AddPassiveGrabToWindowList(temporaryGrab);
+    DeletePassiveGrabFromList(temporaryGrab, TRUE);
 
     return(Success);
 }
@@ -3842,7 +3845,7 @@ ProcUngrabButton(client)
     temporaryGrab.detail.exact = stuff->button;
     temporaryGrab.detail.pMask = NULL;
 
-    DeletePassiveGrabFromList(&temporaryGrab);
+    DeletePassiveGrabFromList(&temporaryGrab, FALSE);
 
     return(Success);
 }
