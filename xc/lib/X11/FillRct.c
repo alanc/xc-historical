@@ -1,13 +1,13 @@
 #include "copyright.h"
 
-/* $XConsortium: XFillRect.c,v 11.11 88/08/10 16:08:24 jim Exp $ */
+/* $XConsortium: XFillRect.c,v 11.12 88/09/06 16:07:12 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
 /* precompute the maximum size of batching request allowed */
 
-static int size = SIZEOF(xPolyFillRectangleReq) + EPERBATCH * SIZEOF(xRectangle);
+#define size (SIZEOF(xPolyFillRectangleReq) + FRCTSPERBATCH * SIZEOF(xRectangle))
 
 XFillRectangle(dpy, d, gc, x, y, width, height)
     register Display *dpy;

@@ -1,13 +1,13 @@
 #include "copyright.h"
 
-/* $XConsortium: XDrPoint.c,v 11.10 88/08/10 16:09:07 jim Exp $ */
+/* $XConsortium: XDrPoint.c,v 11.11 88/09/06 16:06:51 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
 /* precompute the maximum size of batching request allowed */
 
-static int size = SIZEOF(xPolyPointReq) + EPERBATCH * SIZEOF(xPoint);
+#define size (SIZEOF(xPolyPointReq) + PTSPERBATCH * SIZEOF(xPoint))
 
 XDrawPoint(dpy, d, gc, x, y)
     register Display *dpy;

@@ -1,13 +1,14 @@
 #include "copyright.h"
 
-/* $XConsortium: XDrLine.c,v 11.12 88/08/10 16:09:02 jim Exp $ */
+/* $XConsortium: XDrLine.c,v 11.13 88/09/06 16:06:41 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
 /* precompute the maximum size of batching request allowed */
 
-static int size = SIZEOF(xPolySegmentReq) + EPERBATCH * SIZEOF(xSegment);
+#define wsize (SIZEOF(xPolySegmentReq) + WLNSPERBATCH * SIZEOF(xSegment))
+#define zsize (SIZEOF(xPolySegmentReq) + ZLNSPERBATCH * SIZEOF(xSegment))
 
 XDrawLine (dpy, d, gc, x1, y1, x2, y2)
     register Display *dpy;
@@ -35,7 +36,8 @@ XDrawLine (dpy, d, gc, x1, y1, x2, y2)
        && (req->drawable == d)
        && (req->gc == gc->gid)
        && ((dpy->bufptr + SIZEOF(xSegment)) <= dpy->bufmax)
-       && (((char *)dpy->bufptr - (char *)req) < size) ) {
+       && (((char *)dpy->bufptr - (char *)req) < (gc->values.line_width ?
+						  wsize : zsize)) ) {
 	 req->length += SIZEOF(xSegment) >> 2;
 #ifndef MUSTCOPY
          segment = (xSegment *) dpy->bufptr;

@@ -1,13 +1,14 @@
 #include "copyright.h"
 
-/* $XConsortium: XDrRect.c,v 11.12 88/08/10 16:09:09 jim Exp $ */
+/* $XConsortium: XDrRect.c,v 11.13 88/09/06 16:06:54 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
 /* precompute the maximum size of batching request allowed */
 
-static int size = SIZEOF(xPolyRectangleReq) + EPERBATCH * SIZEOF(xRectangle);
+#define wsize (SIZEOF(xPolyRectangleReq) + WRCTSPERBATCH * SIZEOF(xRectangle))
+#define zsize (SIZEOF(xPolyRectangleReq) + ZRCTSPERBATCH * SIZEOF(xRectangle))
 
 XDrawRectangle(dpy, d, gc, x, y, width, height)
     register Display *dpy;
@@ -36,7 +37,8 @@ XDrawRectangle(dpy, d, gc, x, y, width, height)
        && (req->drawable == d)
        && (req->gc == gc->gid)
        && ((dpy->bufptr + SIZEOF(xRectangle)) <= dpy->bufmax)
-       && (((char *)dpy->bufptr - (char *)req) < size) ) {
+       && (((char *)dpy->bufptr - (char *)req) < (gc->values.line_width ?
+						  wsize : zsize)) ) {
 	 req->length += SIZEOF(xRectangle) >> 2;
 #ifndef MUSTCOPY
          rect = (xRectangle *) dpy->bufptr;

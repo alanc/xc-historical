@@ -1,13 +1,13 @@
 #include "copyright.h"
 
-/* $XConsortium: XFillArc.c,v 11.11 88/08/10 16:08:20 jim Exp $ */
+/* $XConsortium: XFillArc.c,v 11.12 88/09/06 16:07:06 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
 /* precompute the maximum size of batching request allowed */
 
-static int size = SIZEOF(xPolyFillArcReq) + EPERBATCH * SIZEOF(xArc);
+#define size (SIZEOF(xPolyFillArcReq) + FARCSPERBATCH * SIZEOF(xArc))
 
 XFillArc(dpy, d, gc, x, y, width, height, angle1, angle2)
     register Display *dpy;
