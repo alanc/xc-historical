@@ -1,5 +1,4 @@
-
-
+! $XConsortium$
 ! The App-defaults file for Bitmap.
 
 *TransientShell.allowShellResize:	True

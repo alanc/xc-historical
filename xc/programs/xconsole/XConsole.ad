@@ -1,3 +1,4 @@
+! $XConsortium$
 *allowShellResize:		true
 XConsole.translations:		#override\
 	<MapNotify>:		Deiconified()	\n\

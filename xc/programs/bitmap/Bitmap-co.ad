@@ -1,4 +1,5 @@
-! The App-defaults file for Bitmap.
+! $XConsortium$
+! The App-defaults file for Bitmap on a color screen.
 
 #include "Bitmap"
 
