@@ -1,23 +1,29 @@
-XCOMM $XConsortium: sunLib.tmpl,v 1.33 94/03/21 18:55:28 gildea Exp $
+XCOMM $XConsortium: sunLib.tmpl,v 1.34 94/03/25 18:20:23 gildea Exp $
 
 /*
  * SunOS shared library template
  */
 
-#ifndef SharedX11Rev
-#define SharedX11Rev 4.20
+#if SunPost411FCSLd
+#define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB) $(XLIB)
 #endif
+
+/* the libraries not shipped with Solaris don't need to have
+   compatible version numbers. */
 #ifndef SharedOldXRev
 #define SharedOldXRev 4.20
+#endif
+
+#if OSMajorVersion <= 4
+
+#ifndef SharedX11Rev
+#define SharedX11Rev 4.20
 #endif
 #ifndef SharedXtRev
 #define SharedXtRev 4.20
 #endif
 #ifndef SharedXmuRev
 #define SharedXmuRev 4.20
-#endif
-#if SunPost411FCSLd
-#define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB) $(XLIB)
 #endif
 #ifndef SharedXextRev
 #define SharedXextRev 4.20
@@ -32,6 +38,29 @@ XCOMM $XConsortium: sunLib.tmpl,v 1.33 94/03/21 18:55:28 gildea Exp $
 #define SharedPexRev 1.10
 #endif
 
-#if OSMajorVersion > 4
+#else				/* else it's Solaris */
+
+#ifndef SharedX11Rev
+#define SharedX11Rev 4
+#endif
+#ifndef SharedXtRev
+#define SharedXtRev 4
+#endif
+#ifndef SharedXmuRev
+#define SharedXmuRev 4
+#endif
+#ifndef SharedXextRev
+#define SharedXextRev 0
+#endif
+#ifndef SharedXiRev
+#define SharedXiRev 5
+#endif
+#ifndef SharedXtstRev
+#define SharedXtstRev 1
+#endif
+#ifndef SharedPexRev
+#define SharedPexRev 2
+#endif
+
 #include <sv4Lib.tmpl>
 #endif
