@@ -3,40 +3,56 @@
 xhost - X window system access control program
 .SH SYNOPSIS
 .B xhost
-[+-]host ...
+[[+-]hostname ...]
 .SH DESCRIPTION
-.I Xhost
-is used to add and delete hosts to the list of machines X will accept
-connections from.
-This is an elementary form of privacy control, since otherwise X would
-be willing to create windows for anyone on the internet.
-It is only sufficient for a workstation (single user) environment,
-though it does limit the worst abuses.
+The \fIxhost\fP program 
+is used to add and delete hosts to the list of machines that are allowed
+to make connections to the X server.  This provides a rudimentary form of
+privacy control and security.  It is only sufficient for a workstation 
+(single user) environment, though it does limit the worst abuses.  Environments
+which require more sophisticated measures should use the hooks in the
+protocol for passing authentication data to the server.
 .PP
-If you want to set up hosts that you always trust, you can
-specify them in your login file, or you can specify the hosts
-in the file \fI/etc/X*.hosts\fP,
-where * is the number of the display on the machine.
+The server in the standard release initially allows network connections 
+only from programs running on the same machine or from machines listed in
+the file \fI/etc/X*.hosts\fP (where * is the display number of the server).
+The \fIxhost\fP program is usually run either from a startup file
+or interactively to give access to other users.
 .PP
-Specifying a host name (with an optional leading plus sign)
-adds that host to the list; use a leading minus sign to delete
-a host.
-.PP
-DECnet nodes should be specified as names with trailing ``::''.
-.PP
-This program can only be executed on the machine the display is
-connected to.
-.PP
-It is possible to remove the current host from the access list. 
-Be warned that you can't undo this without logging out.
-.PP
-.I Xhost
-with a lone ``+'' will turn off access control (i.e. it gives everybody
-access) while a lone ``-'' will turn it back on.
-.PP
-.I Xhost
-with no arguments will print the current hosts allowed to access your
-display.
+In the standard distribution,
+hostnames that are followed by two colons (::) are used in checking DECnet
+connections; all other hostnames are used for TCP/IP connections.
+.SH OPTIONS
+\fIXhost\fP accepts the following command line options described below.  For
+security, the options that effect access control may only be run from the
+same machine as the server.
+.TP 8
+.BI "\[\+\]" "hostname"
+The given \fIhostname\fP (the plus sign is optional)
+is added to the list of machines that are allowed to
+connect to the X server.
+.TP 8
+.BI \- "hostname"
+The given \fIhostname\fP is removed from the list of machines that are allowed
+to connect to the server.  Existing connections are not broken, only new
+connection attempts are affected.
+Note that the current machine is allowed to be removed.  However, further
+connections (including attempts to add it back) will not be permitted.
+Resetting the server (thereby breaking all connections) 
+is the only way to allow local connections again.
+.TP 8
+.B \+
+Access is granted to everyone, even if they aren't on the list of allowed hosts
+(i.e. access control is turned off).
+.TP 8
+.B \-
+Access is restricted to only those machines on the list of allowed hosts
+(i.e. access control is turned on).
+.TP 8
+.I nothing
+If no command line arguments are given, the list of hosts that are allowed
+to connect is printed on the standard output along with a message indicating
+whether or not access control is currently enabled.
 .SH FILES
 /etc/X*.hosts
 .SH "SEE ALSO"
@@ -47,14 +63,14 @@ X(8C), xterm(1)
 to get the default host and display to use.
 .SH BUGS
 .PP
-You can't specify a display on the command line.  Furthermore, 
+You can't specify a display on the command line because
 .B \-display 
-is already a valid command line argument (indicating that you want
+is a valid command line argument (indicating that you want
 to remove the machine named 
 .I ``display''
 from the access list).
-.SH AUTHOR
-Copyright 1985 by Massachusetts Institute of Technology.
+.SH AUTHORS
+Copyright 1988 by Massachusetts Institute of Technology.
 .br
 Bob Scheifler, MIT Laboratory for Computer Science,
 .br
