@@ -1,4 +1,4 @@
-/* $XConsortium: register.c,v 1.1 93/08/17 18:59:02 mor Exp $ */
+/* $XConsortium: register.c,v 1.1 93/08/19 18:25:32 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -19,7 +19,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 int
 IceRegisterForProtocolSetup (protocolName, vendor, release,
-    versionCount, versionRecs, authCount, authRecs)
+    versionCount, versionRecs, authCount, authRecs, IOErrorCB)
 
 char			*protocolName;
 char			*vendor;
@@ -28,6 +28,7 @@ int			versionCount;
 IceOCLversionRec	*versionRecs;
 int			authCount;
 IceOCLauthRec		*authRecs;
+IceIOErrorCB		IOErrorCB;
 
 {
     _IceOCLprotocol 	*p;
@@ -109,6 +110,8 @@ IceOCLauthRec		*authRecs;
 	p->auth_recs = NULL;
     }
 
+    p->io_error_cb = IOErrorCB;
+
     return (opcodeRet);
 }
 
@@ -116,7 +119,8 @@ IceOCLauthRec		*authRecs;
 
 int
 IceRegisterForProtocolReply (protocolName, vendor, release,
-    versionCount, versionRecs, protocolSetupNotifyCB, authCount, authRecs)
+    versionCount, versionRecs, protocolSetupNotifyCB,
+    authCount, authRecs, IOErrorCB)
 
 char				*protocolName;
 char				*vendor;
@@ -126,6 +130,7 @@ IceACLversionRec		*versionRecs;
 IceProtocolSetupNotifyCB	protocolSetupNotifyCB;
 int				authCount;
 IceACLauthRec			*authRecs;
+IceIOErrorCB			IOErrorCB;
 
 {
     _IceACLprotocol 	*p;
@@ -209,6 +214,8 @@ IceACLauthRec			*authRecs;
     {
 	p->auth_recs = NULL;
     }
+
+    p->io_error_cb = IOErrorCB;
 
     return (opcodeRet);
 }
