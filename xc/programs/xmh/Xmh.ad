@@ -1,4 +1,4 @@
-/* AppDefaultsVersion should only be defined in the site-wide file */
+! AppDefaultsVersion should only be defined in the site-wide file
 Xmh.AppDefaultsVersion:		1
 
 Xmh.Geometry:			508x750
