@@ -129,7 +129,7 @@ Widget _XtCreate(
     widget->core.self = widget;
     widget->core.parent = parent;
     widget->core.widget_class = widgetClass;
-    widget->core.xrm_name = StringToName(name);
+    widget->core.xrm_name = StringToName((name != NULL) ? name : "");
     widget->core.being_destroyed =
 	(parent != NULL ? parent->core.being_destroyed : FALSE);
     widget->core.constraints = NULL;
