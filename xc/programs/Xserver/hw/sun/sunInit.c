@@ -60,7 +60,9 @@ extern Bool sunBW2Probe(), sunBW2Create();
 extern Bool sunCG2CProbe(), sunCG2CCreate();
 extern Bool sunCG3CProbe(), sunCG3CCreate();
 extern Bool sunCG4CProbe(), sunCG4CCreate();
+#ifdef FBTYPE_SUNFAST_COLOR /* doesn't exist in sunos3.x */
 extern Bool sunCG6CProbe(), sunCG6CCreate();
+#endif
 extern void ProcessInputEvents();
 
 extern void SetInputCheck();
@@ -105,7 +107,9 @@ sunFbDataRec sunFbData[] = {
     sunBW2Probe,  	"/dev/bwtwo0",	    sunBW2Create,
     sunCG2CProbe,  	"/dev/cgtwo0",	    sunCG2CCreate,
     sunCG3CProbe,  	"/dev/cgthree0",    sunCG3CCreate,
+#ifdef FBTYPE_SUNFAST_COLOR
     sunCG6CProbe,	"/dev/cgsix0",	    sunCG6CCreate,
+#endif
     sunCG4CProbe,  	"/dev/cgfour0",	    sunCG4CCreate,
     sunBW2Probe,  	"/dev/bwtwo0",	    sunBW2Create,
 };
