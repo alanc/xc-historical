@@ -160,6 +160,11 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     pScreen->RegionEmpty = miRegionEmpty;
     pScreen->RegionExtents = miRegionExtents;
 
+    pScreen->BlockHandler = NoopDDA;
+    pScreen->WakeupHandler = NoopDDA;
+    pScreen->blockData = (pointer)0;
+    pScreen->wakeupData = (pointer)0;
+
     pScreen->CreateColormap = cfbInitialize332Colormap;
     pScreen->DestroyColormap = NoopDDA;
 
