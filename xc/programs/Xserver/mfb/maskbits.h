@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.22 90/02/22 18:46:34 keith Exp $ */
+/* $XConsortium: maskbits.h,v 1.23 90/05/15 18:24:46 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -229,6 +229,29 @@ getshiftedleftbits(psrc, offset, w, dst)
 #define SCRRIGHT(lw, n)	SHL((lw),(n))
 #endif
 
+#define DoRRop(alu, src, dst) \
+(((alu) == RROP_BLACK) ? ((dst) & ~(src)) : \
+ ((alu) == RROP_WHITE) ? ((dst) | (src)) : \
+ ((alu) == RROP_INVERT) ? ((dst) ^ (src)) : \
+  (dst))
+
+/* A generalized form of a x4 Duff's Device */
+#define Duff(counter, block) { \
+  while (counter >= 4) {\
+     { block; } \
+     { block; } \
+     { block; } \
+     { block; } \
+     counter -= 4; \
+  } \
+     switch (counter & 3) { \
+     case 3:	{ block; } \
+     case 2:	{ block; } \
+     case 1:	{ block; } \
+     case 0: \
+     counter = 0; \
+   } \
+}
 #define maskbits(x, w, startmask, endmask, nlw) \
     startmask = starttab[(x)&0x1f]; \
     endmask = endtab[((x)+(w)) & 0x1f]; \

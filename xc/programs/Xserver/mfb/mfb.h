@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.13 89/11/13 09:46:37 rws Exp $ */
+/* $XConsortium: mfb.h,v 5.14 91/01/27 13:02:07 keith Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -181,6 +181,45 @@ typedef struct {
     PixmapPtr	pRotatedBorder;
     } mfbPrivWin;
 
+/* Common macros for extracting drawing information */
+
+#define mfbGetTypedWidth(pDrawable,type) (\
+    (((pDrawable)->type == DRAWABLE_WINDOW) ? \
+     (int) (((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devKind) : \
+     (int)(((PixmapPtr)pDrawable)->devKind)) / sizeof (type))
+
+#define mfbGetByteWidth(pDrawable) cbGetTypedWidth(pDrawable, char)
+
+#define mfbGetLongWidth(pDrawable) cbGetTypedWidth(pDrawable, long)
+    
+#define mfbGetTypedWidthAndPointer(pDrawable, width, pointer, wtype, ptype) {\
+    PixmapPtr   _pPix; \
+    if ((pDrawable)->type == DRAWABLE_WINDOW) \
+	_pPix = (PixmapPtr) (pDrawable)->pScreen->devPrivate; \
+    else \
+	_pPix = (PixmapPtr) (pDrawable); \
+    (pointer) = (ptype *) _pPix->devPrivate.ptr; \
+    (width) = ((int) _pPix->devKind) / sizeof (wtype); \
+}
+
+#define mfbGetByteWidthAndPointer(pDrawable, width, pointer) \
+    mfbGetTypedWidthAndPointer(pDrawable, width, pointer, char, char)
+
+#define mfbGetLongWidthAndPointer(pDrawable, width, pointer) \
+    mfbGetTypedWidthAndPointer(pDrawable, width, pointer, unsigned long, unsigned long)
+
+#define mfbGetWindowTypedWidthAndPointer(pWin, width, pointer, wtype, ptype) {\
+    PixmapPtr	_pPix = (PixmapPtr) (pWin)->drawable.pScreen->devPrivate; \
+    (pointer) = (ptype *) _pPix->devPrivate.ptr; \
+    (width) = ((int) _pPix->devKind) / sizeof (wtype); \
+}
+
+#define mfbGetWindowLongWidthAndPointer(pWin, width, pointer) \
+    mfbGetWindowTypedWidthAndPointer(pWin, width, pointer, unsigned long, unsigned long)
+
+#define mfbGetWindowByteWidthAndPointer(pWin, width, pointer) \
+    mfbGetWindowTypedWidthAndPointer(pWin, width, pointer, char, char)
+
 /* precomputed information about each glyph for GlyphBlt code.
    this saves recalculating the per glyph information for each
 box.
@@ -242,7 +281,7 @@ than a switch on the rop per item (span or rectangle.)
  *
  *  However, doing some profiling on a running system reveals
  *  GXcopy is the operation over 99.5% of the time and
- *  GXcopy is the next most frequent (about .4%), so we make special
+ *  GXxor is the next most frequent (about .4%), so we make special
  *  checks for those first.
  *
  *  Note that this requires a change to the "calling sequence"
@@ -300,29 +339,4 @@ than a switch on the rop per item (span or rectangle.)
 	    result = fnSET (src, dst); \
 	    break; \
 	} \
-}
-
-
-#define DoRRop(alu, src, dst) \
-(((alu) == RROP_BLACK) ? ((dst) & ~(src)) : \
- ((alu) == RROP_WHITE) ? ((dst) | (src)) : \
- ((alu) == RROP_INVERT) ? ((dst) ^ (src)) : \
-  (dst))
-
-/* A generalized form of a x4 Duff's Device */
-#define Duff(counter, block) { \
-  while (counter >= 4) {\
-     { block; } \
-     { block; } \
-     { block; } \
-     { block; } \
-     counter -= 4; \
-  } \
-     switch (counter & 3) { \
-     case 3:	{ block; } \
-     case 2:	{ block; } \
-     case 1:	{ block; } \
-     case 0: \
-     counter = 0; \
-   } \
 }
