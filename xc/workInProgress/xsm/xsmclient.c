@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.14 94/03/03 14:30:23 converse Exp $ */
+/* $XConsortium: xsmclient.c,v 1.15 94/03/30 20:35:44 converse Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -174,6 +174,15 @@ static void InteractResponse(rootShell, client_data, call_data)
     String label;
     Widget cancel;
 
+    /* If a shutdown was pending, and it has already been cancelled,
+       the interact callbacks are still called, but, they may not
+       interact with the user.  */
+
+    if (token->cancel_shutdown && token->interact_style == None) {
+	token->save_success = False;
+	XtSessionReturnToken(token);
+    }
+
     if (appResources.verbose)
 	printf("Client Id %s, received permission to interact\n", ad->smcid);
 
@@ -217,7 +226,7 @@ static void DieResponse(rootShell, client_data, call_data)
 }
 
 
-static void CancelResponse(rootShell, client_data, call_data)
+static void ResumeResponse(rootShell, client_data, call_data)
     Widget rootShell;
     XtPointer client_data, call_data;
 {
@@ -297,7 +306,7 @@ static void Quit(w, client_data, call_data)
     ApplicationData ad = (ApplicationData) client_data;
     char *reasonMsg[2];
 
-    /* XXX no way to hook these up yet */
+    /* If you're terminating with an error message, use SmcCloseConnection */
     reasonMsg[0] = "Quit Reason 1";
     reasonMsg[1] = "Quit Reason 2";
 
@@ -346,15 +355,15 @@ static void UserSaysCancel(button, client_data, call_data)
     XtCheckpointToken token = (XtCheckpointToken) ad->token;
 
     /* Pass back the information that the user wants the shutdown cancelled. */
-    token->cancel_shutdown = True;
+    token->request_cancel = True;
 
     /* If you haven't saved application state, pass that information back. */
     token->save_success = False;
 
     /* You have to return the token to Xt when you are through interacting. */
     XtSessionReturnToken(token);
-    ad->token = NULL;
 
+    ad->token = NULL;
     XtPopdown(XtParent(ad->dialog));
 
     if (appResources.verbose) {
@@ -464,7 +473,8 @@ main(argc, argv)
 				      sessionShellWidgetClass, NULL, 0);
 
     XtAddCallback(ad->rootShell, XtNsaveCallback, SaveResponse, ad);
-    XtAddCallback(ad->rootShell, XtNcancelCallback, CancelResponse, ad);
+    XtAddCallback(ad->rootShell, XtNcancelCallback, ResumeResponse, ad);
+    XtAddCallback(ad->rootShell, XtNsaveCompleteCallback, ResumeResponse, ad);
     XtAddCallback(ad->rootShell, XtNdieCallback, DieResponse, ad);
 	
     XtGetApplicationResources(ad->rootShell, (XtPointer)&appResources,
