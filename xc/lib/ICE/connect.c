@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.27 94/04/07 13:34:07 mor Exp $ */
+/* $XConsortium: connect.c,v 1.28 94/04/07 18:37:38 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -86,7 +86,8 @@ char 	   *errorStringRet;
      *
      * If 'context' is non-NULL, we will only use a previously opened ICE
      * connection if the specified 'context' is equal to the context
-     * associated with the ICE connection.
+     * associated with the ICE connection, or if the context associated
+     * with the ICE connection is NULL.
      * 
      * If 'majorOpcodeCheck' is non-zero, it will contain a protocol major
      * opcode that we should make sure is not already active on the ICE
@@ -110,7 +111,8 @@ char 	   *errorStringRet;
 		IceConn iceConn = _IceConnectionObjs[i];
 
 		if (iceConn->want_to_close || iceConn->free_asap ||
-		    (context && iceConn->context != context))
+		    (context && iceConn->context &&
+		     iceConn->context != context))
 		{
 		    /* force a new connection to be created */
 		    break;
@@ -140,6 +142,8 @@ char 	   *errorStringRet;
 		}
 
 		iceConn->open_ref_count++;
+		if (context && !iceConn->context)
+		    iceConn->context = context;
 		return (iceConn);
 	    }
 	}
@@ -417,17 +421,6 @@ char 	   *errorStringRet;
 
 
 
-void
-IceSetConnectionContext (iceConn, context)
-
-IceConn    iceConn;
-IcePointer context;
-
-{
-    iceConn->context = context;
-}
-
-
 IcePointer
 IceGetConnectionContext (iceConn)
 
