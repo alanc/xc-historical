@@ -1,5 +1,7 @@
 
 #
+# $XConsortium$
+#
 # Flags accepted.
 #  -v XT_VARIABLE_NAME=Value       Add a variable setting
 #  -d display                      Set the display
