@@ -1,6 +1,6 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.70 88/09/05 16:17:22 swick Exp $";
-static char rcsid[] = "$Header: TMparse.c,v 1.70 88/09/05 16:17:22 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.71 88/09/06 09:53:17 swick Exp $";
+static char rcsid[] = "$Header: TMparse.c,v 1.71 88/09/06 09:53:17 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif lint
 
@@ -84,14 +84,14 @@ static ModifierRec modifiers[] = {
     {"Mod3",	0,	ParseModImmed,Mod3Mask},
     {"Mod4",	0,	ParseModImmed,Mod4Mask},
     {"Mod5",	0,	ParseModImmed,Mod5Mask},
-    {"Meta",	0,	ParseModSym,  NULL},
-    {"m",       0,      ParseModSym,  NULL},
-    {"h",       0,      ParseModSym,  NULL},
-    {"su",      0,      ParseModSym,  NULL},
-    {"a",       0,      ParseModSym,  NULL},
-    {"Hyper",   0,      ParseModSym,  NULL},
-    {"Super",   0,      ParseModSym,  NULL},
-    {"Alt",     0,      ParseModSym,  NULL},
+    {"Meta",	0,	ParseModSym,  KeysymModMask},
+    {"m",       0,      ParseModSym,  KeysymModMask},
+    {"h",       0,      ParseModSym,  KeysymModMask},
+    {"su",      0,      ParseModSym,  KeysymModMask},
+    {"a",       0,      ParseModSym,  KeysymModMask},
+    {"Hyper",   0,      ParseModSym,  KeysymModMask},
+    {"Super",   0,      ParseModSym,  KeysymModMask},
+    {"Alt",     0,      ParseModSym,  KeysymModMask},
     {"Button1",	0,	ParseModImmed,Button1Mask},
     {"Button2",	0,	ParseModImmed,Button2Mask},
     {"Button3",	0,	ParseModImmed,Button3Mask},
@@ -741,8 +741,6 @@ static KeySym StringToKeySym(str)
 #ifndef NOTASCII
     /* special case single character ASCII, for speed */
     if (*(str+1) == '\0') {
-	/* XXX why are handling A-Z, but not upper case in general??? */
-	if ('A' <= *str && *str <= 'Z') return XK_a + (*str - 'A' + 'a');
 	if (' ' <= *str && *str <= '~') return XK_space + (*str - ' ');
     }
 #endif
