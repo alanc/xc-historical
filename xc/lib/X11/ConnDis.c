@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.22 87/12/16 09:28:38 rws Locked $ */
+/* $Header: XConnDis.c,v 11.23 87/12/19 16:37:25 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -13,7 +13,9 @@
 
 #ifdef UNIXCONN
 #include <sys/un.h>
+#ifndef X_UNIX_PATH
 #define X_UNIX_PATH "/tmp/.X11-unix/X"
+#endif /* X_UNIX_PATH */
 #endif /* UNIXCONN */
 void bcopy();
 /* 
