@@ -3,6 +3,8 @@ XlibMessage.XError: X Error of failed request
 XlibMessage.MajorCode: Major opcode of failed request:  %d
 XlibMessage.MinorCode: Minor opcode of failed request:  %d
 XlibMessage.ResourceID: Resource id in failed request:  0x%lx
+XlibMessage.Value: Value in failed request:  0x%lx
+XlibMessage.AtomID: Atom id in failed request:  0x%lx
 XlibMessage.ErrorSerial: Serial number of failed request:  %lu
 XlibMessage.CurrentSerial: Current serial number in output stream:  %lu
 # X request codes.
@@ -157,7 +159,7 @@ XRequest.Multi-Buffering.7: X_MbufGetBufferAttributes
 XRequest.Multi-Buffering.8: X_MbufGetBufferInfo
 XRequest.Multi-Buffering.9: X_MbufCreateStereoWindow
 XProtoError.Multi-Buffering.0: BadBuffer (invalid Buffer parameter)
-# SHAPE extension, not (yet) an X Consortium standard
+# SHAPE extension, an X Consortium standard
 XRequest.SHAPE.0: X_ShapeQueryVersion
 XRequest.SHAPE.1: X_ShapeRectangles
 XRequest.SHAPE.2: X_ShapeMask
