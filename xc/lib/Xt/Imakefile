@@ -2,9 +2,7 @@
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
     CDEBUGFLAGS = -g
-
         SUBDIRS = clients
-
        INCLUDES = -I. -I$(OLDXRMSRC) -I$(XLIBSRC) -I$(TOP) -I$(TOP)/X11
 #if BigEndianArchitecture == YES
         DEFINES = -DLIBDIR=\"$(LIBDIR)\" -DBIGENDIAN
@@ -14,7 +12,6 @@
    INSTALLFLAGS = -m 0644
 
 HEADERS = \
-	Xtlib.h \
 	Atoms.h \
 	ButtonBox.h \
 	Clock.h \
