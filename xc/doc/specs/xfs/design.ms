@@ -1,4 +1,4 @@
-.\"	@(#)design.ms	4.1	91/05/02
+.\"	%W%	%E%
 .\" roff -ms
 .de Ip
 .IP \(bu 3
@@ -92,7 +92,6 @@ The
 layer provides an interface for the renderers to use for
 caching font information, various utility functions for glyph padding,
 byte swapping and (for scalable fonts) property scaling.
-
 .NH
 Startup
 .PP
@@ -131,7 +130,6 @@ renderer can use the utility functions to keep track of this data.
 Changing values of bitmap formats could result in the font having
 multiple copies of data in different formats, which the renderer may
 use the utility functions to manage.
-
 .NH
 Per client processing
 .PP
@@ -235,18 +233,23 @@ The
 .B Client
 handles per-client information and interpreter status.
 .Ls
-typedef struct _client {
-	int	index;
-	pointer	osPrivate;
-	int	(**requestVector)();
-	pointer	requestBuffer;
-	int	sequenceNumber;
-	Bool	swapped;
-	void	(*pSwapReplyFunc)();
-	AuthContextPtr	auth;
-	char	*catalogs;
-	fsResolution	*resolutions;
-}	ClientRec, *ClientPtr;
+typedef struct _Client {
+    int         index;
+    pointer     osPrivate;
+    int         noClientException;
+    int         (**requestVector) ();
+    pointer     requestBuffer;
+    int         clientGone;
+    int         sequence;
+    Bool        swapped;
+    void        (*pSwapReplyFunc) ();
+    AuthContextPtr auth;
+    char       *catalogues;
+    int         num_catalogues;
+    Mask        eventmask;
+    fsResolution *resolutions;
+    int         num_resolutions;
+}           ClientRec, *ClientPtr;
 .Le
 .IP
 The
@@ -256,6 +259,9 @@ contains basic font information, including header information and properties.
 typedef struct _font	{
 	int	refcount;
 	fsHeader	header;
+	fsBitmapFormat	format;
+	int	(*get_glyphs)();
+	int	(*get_metrics)();
 	int	(*get_extents)();
 	int	(*get_bitmaps)();
 	int	(*unload_font)();
@@ -273,7 +279,7 @@ handling client specific font information.
 .Ls
 typedef struct _clientfont {
 	FontPtr	font;
-	FSID	fid;
+	int	clientindex;
 }	ClientFontRec, *ClientFontRec;
 .Le
 .IP
@@ -306,10 +312,12 @@ typedef unsigned long	Mask;
 .sp
 typedef unsigned char	*pointer;
 .sp
-typedef struct FontPathElement {
-    char	*name;
-    int	refcount;
-    pointer	private;
+typedef struct _FontPathElement {
+    int         name_length;
+    char       *name;
+    int         type;
+    int         refcount;
+    pointer     private;
 }           FontPathElementRec, *FontPathElementPtr;
 .Le
 .PP
@@ -334,20 +342,24 @@ typedef struct FontNames {
 typedef struct {
 	Bool	(*name_check)();
 	int	(*init_fpe)();
-	int	(*free_fpe)();
 	int	(*reset_fpe)();
+	int	(*free_fpe)();
 	int	(*open_font)();
 	int	(*close_font)();
 	int	(*list_fonts)();
 	int	(*start_list_fonts_with_info)();
 	int	(*list_next_font_with_info)();
 	int	(*wakeup_fpe)();
+	FontNamesPtr	renderer_names;
 } FPEFunctions;
 .sp
-int	init_fpe_type(Bool (name_func)(), int (init_func)(), int (free_func)(),
-		int (open_func)(), int (close_func)(), int (list_func)(),
+int	init_fpe_type(Bool (name_func)(), 
+		int (init_func)(), int (free_func)(), int (reset_func), 
+		int (open_func)(), int (close_func)(),
+		int (list_func)(), 
 		int (start_lfwi_func)(), int (next_lfwi_func)(),
-		int (wakeup_func)(), FontNamesPtr names)
+		int (wakeup_func)(), 
+		FontNamesPtr names)
 .Le
 .sp
 .LP
@@ -406,25 +418,28 @@ int	free_fpe(FontPathElementPtr fpe);
 Frees any renderer-specific data and closes any files or sockets.
 .IP
 .Ls
-int	open_font(pointer closure, FontPathElementPtr fpe, Mask flags, 
-		char *fontname, int namelength, fsFormat format_hint,
+int	open_font(pointer client, FontPathElementPtr fpe, Mask flags, 
+		char *fontname, int namelength, 
+		fsBitmapFormat format_hint, fsBitmapFormatMask format_mask,
 		XID fontid, FontPtr *ppfont, char **alias);
 .Le
 .LP
 Opens the font.  
-The 
+The bits marked by
+.I format_mask in the
 .I format_hint
-is used where applicable.  The
-resulting FontPtr is returned in 
+are used where applicable.  
+The resulting FontPtr is returned in 
 .I ppfont.
 The 
-.I closure 
+.I client 
 is optional state
-information for use with blocking renderers.  If the name resolves to
-an alias, it is returned in
+information for use with blocking renderers.  If the 
+.I fontname
+ resolves to an alias, it is returned in
 .I alias
 with a 
-.I BadFont
+.I FontNameAlias
 error.  This tells the
 calling code to start searching again, using 
 .I alias
@@ -457,7 +472,7 @@ int	close_font(FontPtr pfont);
 Frees up all the data associated with the font.
 .IP
 .Ls
-int	list_fonts(pointer closure, FontPathElementPtr fpe,
+int	list_fonts(pointer client, FontPathElementPtr fpe,
 		char *pattern, int pattern_length, int maxnames,
 		FontNamesPtr *paths);
 .Le
@@ -469,7 +484,7 @@ up to
 font names the fpe recognizes as matching the given pattern.
 .IP
 .Ls
-int	start_list_fonts_with_info(pointer closure,
+int	start_list_fonts_with_info(pointer client,
 		FontPathElementPtr fpe, char *pattern, int pattern_length,
 		int maxnames, pointer fpe_data);
 .Le
@@ -486,8 +501,8 @@ to be passed in later via
 eg, the list of font names for a disk-based renderer.
 .IP
 .Ls
-int	list_next_font_with_info(pointer closure, FontPathElementPtr fpe, 
-		char *pattern, int pattern_length, FontInfoPtr &pinfo,
+int	list_next_font_with_info(pointer client, FontPathElementPtr fpe, 
+		char **name, int *namelen, FontInfoPtr &pinfo,
 		int &num_fonts, pointer fpe_data);
 .Le
 .LP
@@ -551,9 +566,9 @@ typedef struct {
 		max_char;
 }           fsRange;
 
-int	get_extents(pointer closure,
-		FontPtr pfont, Mask flags, fsRange *ranges,
-		int num_ranges, int *num_extents, fsCharInfo **extents);
+int	get_extents(pointer client,
+		FontPtr pfont, Mask flags, int num_ranges, fsRange *ranges,
+		int *num_extents, fsCharInfo **extents);
 .Le
 .LP
 Possible flags:
@@ -569,11 +584,11 @@ the renderer allocates) is returned, as well as the number of extents.
 contains any blocking state information.
 .IP
 .Ls
-int	get_bitmaps(pointer closure,
+int	get_bitmaps(pointer client,
 		FontPtr pfont, fsBitmapFormat format, Mask flags,
-		fsRange *ranges, int num_ranges, 
-		int *num_glyphs, unsigned long **offsets,
-		pointer *glyph_data);
+		int num_ranges, fsRange *ranges,
+		unsigned long *size, unsigned long *num_glyphs,
+		unsigned long **offsets, pointer *glyph_data);
 .Le
 .LP
 Possible flags:
@@ -606,6 +621,19 @@ function
 will also be called, and should handle any 
 .B FPE
 data allocated for the font.
+.IP
+.Ls
+int	get_glyphs()
+int	get_metrics()
+.Le
+.LP
+These two functions are used by the X server for loading glyphs and 
+metrics.  They expect the results in a considerably different
+form.  The 
+.I get_bitmaps()
+and
+.I get_extents()
+routines both allow for better cache control by the renderer.
 
 .NH
 Font directories and aliases
@@ -899,8 +927,8 @@ client.
 When a client attempts to connect, the server will call
 .IP
 .Ls
-int	CheckClientAuthorization(ClientPtr client, char **authprotocols, 
-		int **accepted_protocol, char **authdata)
+int	CheckClientAuthorization(ClientPtr client, AuthPtr client_auth,
+		int *accept, int *index, int *size, char **authdata)
 .Le
 .LP
 to see if the server is set to allow the client to connect.  It may
@@ -910,7 +938,13 @@ can connect.
 When then connection is established, the server will use the
 .IP
 .Ls
-int ListAlternateServers(char **servers, int *subsets)
+typedef struct _alt_server {
+    char        subset;
+    char        namelen;
+    char       *name;
+}           AlternateServerRec, *AlternateServerPtr;
+.sp
+int ListAlternateServers(AlternateServerPtr *servers)
 .Le
 .LP
 to return any alternate server information it may have.
@@ -923,7 +957,7 @@ methods.  In order for the
 layer to get them, it uses
 .IP
 .Ls
-int	ListCatalogues(char **catalogues)
+int	ListCatalogues(char **catalogues, int *len)
 .Le
 .LP
 which returns the list of all catalogues it supports.  This function 
