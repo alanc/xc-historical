@@ -16,23 +16,24 @@
 #define BootstrapCFlags    -DM4310 -DUTEK
 #define StandardDefines    -DM4310 -DUTEK -Dpegasus 
 #define StandardCppDefines -DM4310 -DUTEK -Dpegasus
-#define SystemV           NO
 /* GCC is good on this box */
 #define HasGcc         YES
+
+#if HasGcc
+#define CcCmd gcc -DNOSTDHDRS -ansi -fstrength-reduce -fpcc-struct-return
+#endif
 
 #define XtekServer Xtek
 
 
-XCOMM platform:  $XConsortium: pegasus.cf,v 1.14 90/11/30 11:14:28 rws Exp $
+XCOMM platform:  $XConsortium: pegasus.cf,v 1.15 90/12/01 12:55:07 rws Exp $
 XCOMM operating system:  OSName
 
 /*
  * platform-specific definitions 
  */
 
-#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC
-
-#define ServerDefines   StandardDefines -DM4310 -DM4317 -DXDMCP ExtensionDefines
+#define ServerOSDefines   -DM4310 -DM4317
 #define FontDefines	-DFONT_SNF -DFONT_BDF
 
 .DIRECTORIES:		/* Turn off directory search for RCS */
