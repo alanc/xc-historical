@@ -1,0 +1,69 @@
+*Viewport.allowHoriz: true
+*Viewport.allowVert: true
+*allowShellResize: true
+*buttonbox*ShapeStyle: oval
+*Tree*ShapeStyle: rectangle
+*Tree*Toggle*BorderWidth: 0
+*Tree*Box.BorderWidth: 0
+*Tree*Box.HSpace: 0
+*Tree*Box.VSpace: 0
+
+*Tree*List*Font: -adobe-helvetica-medium-r-normal--*-80-*-*-*-*-iso*-*
+
+*SimpleMenu*BackingStore: NotUseful
+*Font: -adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso*-*
+*buttonbox.MenuButton.leftBitmap: menu12
+*SimpleMenu*menuLabel.vertSpace:   100
+*SimpleMenu*SmeLine*Height: 12
+
+*quit.Label: Quit
+
+*buttonbox.quit.Translations:  #override \
+		<Btn1Down>,<Btn1Up>: Quit() unset()
+*buttonbox.labeltype.Translations:  #override \
+		<Btn1Down>,<Btn1Up>: SetLabelType() unset()
+*buttonbox.orientation.Translations:  #override \
+		<Btn1Down>,<Btn1Up>: SetOrientation() unset()
+
+*Toggle.Translations: #augment \n\
+<Btn2Down>,<Btn2Up>: set() notify() Resources(toggle) \n\
+<Key>q: Quit() \n\
+<Key>space: Select(nothing) \n\
+<Key>p: Select(parents) \n\
+<Key>c: Select(children) \n\
+
+
+*Viewport.Translations: #override \n\
+<Btn1Down>,<Btn1Up>:	Select(nothing) \n\
+<Key>q: Quit() \n\
+Ctrl<Key>h: SetOrientation(horizontal) \n\
+Ctrl<Key>v: SetOrientation(vertical) \n\
+Ctrl<Key>r: Resources(on) \n\
+Ctrl<Key>n: Resources(off) \n\
+Shift<Key>c: SetLabelType(class) \n\
+Shift<Key>v: SetLabelType(variable) \n\
+<Key>space: Select(nothing) \n\
+<Key>i: Select(invert) \n\
+<Key>p: Select(parents) \n\
+<Key>c: Select(children) \n\
+<Key>a: Select(all) \n\
+<Key>r: Select(resources) \n\
+<Key>s: Select(shown) \n\
+
+*buttonbox.view.Label: View
+*buttonbox.view.viewMenu.namesVariable.Label: Show Variable Names
+*buttonbox.view.viewMenu.namesClass.Label: Show Class Names
+*buttonbox.view.viewMenu.layoutHorizontal.Label: Layout Horizontal
+*buttonbox.view.viewMenu.layoutVertical.Label: Layout Vertical
+*buttonbox.view.viewMenu.viewResources.Label: Show Resource Boxes
+*buttonbox.view.viewMenu.viewNoResources.Label: Hide Resource Boxes
+
+*buttonbox.select.Label: Select
+*buttonbox.select.selectMenu.unselect.Label: Unselect
+*buttonbox.select.selectMenu.selectInvert.Label: Invert Selection
+*buttonbox.select.selectMenu.selectParents.Label: Select Parents
+*buttonbox.select.selectMenu.selectChildren.Label: Select Children
+*buttonbox.select.selectMenu.selectAll.Label: Select All
+*buttonbox.select.selectMenu.selectHasResources.Label: Select Has Resources
+*buttonbox.select.selectMenu.selectShownResources.Label: Select Shown Resource Boxes
+
