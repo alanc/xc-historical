@@ -1,5 +1,5 @@
 /* Copyright 1989 Massachusetts Institute of Technology */
-/* $XConsortium: GetRGBCMap.c,v 1.5 89/03/21 13:43:35 jim Exp $ */
+/* $XConsortium: GetRGBCMap.c,v 1.1 89/03/28 18:11:31 jim Exp $ */
 
 #include "copyright.h"
 
@@ -61,7 +61,7 @@ Status XGetRGBColormaps (dpy, w, stdcmap, count, property)
 	 * make sure we have an integral number of colormaps 
 	 */
 	ncmaps = (nitems / NumPropStandardColormapElements);
-	if ((((unsigned long) nitems) * NumPropStandardColormapElements) !=
+	if ((((unsigned long) ncmaps) * NumPropStandardColormapElements) !=
 	    nitems) {
 	    if (data) Xfree ((char *) data);
 	    return False;
@@ -84,8 +84,8 @@ Status XGetRGBColormaps (dpy, w, stdcmap, count, property)
      * and fill it in, handling compatibility with pre-ICCCM short stdcmaps
      */
     {
-	register XStandardColormap *map = &cmaps[i];
-	register xPropStandardColormap *prop = &data[i];
+	register XStandardColormap *map;
+	register xPropStandardColormap *prop;
 
 	for (i = ncmaps, map = cmaps, prop = data; i > 0; i--, map++, prop++) {
 	    map->colormap   = prop->colormap;
