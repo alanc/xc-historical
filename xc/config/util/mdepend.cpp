@@ -1,6 +1,6 @@
 XCOMM!/bin/sh
 XCOMM
-XCOMM $XConsortium: mdepend.cpp,v 1.8 92/04/14 18:18:37 rws Exp $
+XCOMM $XConsortium: mdepend.cpp,v 1.9 92/04/14 18:21:13 rws Exp $
 XCOMM
 XCOMM	Do the equivalent of the 'makedepend' program, but do it right.
 XCOMM
@@ -67,7 +67,7 @@ do
 		echo $n " '$1'$c" >> $ARGS
 		;;
 
-	    -g|-o)
+	    -g|-O)	# ignore so we can just pass $(CFLAGS) in
 		;;
 
 	    *)
