@@ -124,7 +124,8 @@ cfbCreatePixmap (pScreen, width, height, depth)
     if (depth != 1 && depth != PSZ)
 	return NullPixmap;
 
-    pPixmap = (PixmapPtr)xalloc(sizeof(PixmapRec));
+    size = PixmapBytePad(width, depth);
+    pPixmap = (PixmapPtr)xalloc(sizeof(PixmapRec) + (height * size));
     if (!pPixmap)
 	return NullPixmap;
     pPixmap->drawable.type = DRAWABLE_PIXMAP;
@@ -138,15 +139,9 @@ cfbCreatePixmap (pScreen, width, height, depth)
     pPixmap->drawable.y = 0;
     pPixmap->drawable.width = width;
     pPixmap->drawable.height = height;
-    pPixmap->devKind = PixmapBytePad(width, depth);
+    pPixmap->devKind = size;
     pPixmap->refcnt = 1;
-    size = height * pPixmap->devKind;
-
-    if ( !(pPixmap->devPrivate.ptr = (pointer)xalloc(size)))
-    {
-	xfree(pPixmap);
-	return NullPixmap;
-    }
+    pPixmap->devPrivate.ptr = (pointer)(pPixmap + 1);
     return pPixmap;
 }
 
@@ -156,21 +151,19 @@ cfbDestroyPixmap(pPixmap)
 {
     if(--pPixmap->refcnt)
 	return TRUE;
-    xfree(pPixmap->devPrivate.ptr);
     xfree(pPixmap);
     return TRUE;
 }
-
 
 PixmapPtr
 cfbCopyPixmap(pSrc)
     register PixmapPtr	pSrc;
 {
     register PixmapPtr	pDst;
-    register int	*pDstPriv, *pSrcPriv, *pDstMax;
     int		size;
 
-    pDst = (PixmapPtr) xalloc(sizeof(PixmapRec));
+    size = pSrc->drawable.height * pSrc->devKind;
+    pDst = (PixmapPtr) xalloc(sizeof(PixmapRec) + size);
     if (!pDst)
 	return NullPixmap;
     pDst->drawable = pSrc->drawable;
@@ -178,24 +171,8 @@ cfbCopyPixmap(pSrc)
     pDst->drawable.serialNumber = NEXT_SERIAL_NUMBER;
     pDst->devKind = pSrc->devKind;
     pDst->refcnt = 1;
-
-    size = pDst->drawable.height * pDst->devKind;
-    pDstPriv = (int *) xalloc(size);
-    if (!pDstPriv)
-    {
-	xfree(pDst);
-	return NullPixmap;
-    }
-    bzero((char *) pDstPriv, size);
-    pDst->devPrivate.ptr = (pointer) pDstPriv;
-    pSrcPriv = (int *)pSrc->devPrivate.ptr;
-    pDstMax = pDstPriv + (size >> 2);
-    /* Copy words */
-    while(pDstPriv < pDstMax)
-    {
-        *pDstPriv++ = *pSrcPriv++;
-    }
-
+    pDst->devPrivate.ptr = (pointer)(pDst + 1);
+    bcopy((char *)pSrc->devPrivate.ptr, (char *)pDst->devPrivate.ptr, size);
     return pDst;
 }
 
@@ -306,9 +283,9 @@ cfbXRotatePixmap(pPix, rw)
     PixmapPtr	pPix;
     register int rw;
 {
-    register unsigned int	*pw, *pwFinal, *pwNew;
+    register unsigned int	*pw, *pwFinal, *pwTmp;
     register unsigned int	t;
-    int			size;
+    int			size, tsize;
 
     if (pPix == NullPixmap)
         return;
@@ -339,27 +316,29 @@ cfbXRotatePixmap(pPix, rw)
     }
     else
     {
-	pwNew = (unsigned int *) xalloc( pPix->drawable.height * pPix->devKind);
-	if (!pwNew)
+	tsize = PixmapBytePad(pPix->drawable.width - rw, PSZ);
+	pwTmp = (unsigned int *) ALLOCATE_LOCAL(pPix->drawable.height * tsize);
+	if (!pwTmp)
 	    return;
-
-	/* o.k., divide pw (the pixmap) in two vertically at (w - rw)
-	 * pick up the part on the left and make it the right of the new
-	 * pixmap.  then pick up the part on the right and make it the left
-	 * of the new pixmap.
-	 * now hook in the new part and throw away the old. All done.
-	 */
-	size = PixmapBytePad(pPix->drawable.width, PSZ) >> 2;
-        cfbQuickBlt((int *)pw, (int *)pwNew, 0, 0, rw, 0,
-		    pPix->drawable.width - rw, pPix->drawable.height, size, size);
-        cfbQuickBlt((int *)pw, (int *)pwNew, pPix->drawable.width - rw, 0, 0, 0,
-		    rw, pPix->drawable.height, size, size);
-	pPix->devPrivate.ptr = (pointer) pwNew;
-	xfree(pw);
-
+	/* divide pw (the pixmap) in two vertically at (w - rw) and swap */
+	tsize >>= 2;
+	size = pPix->devKind >> 2;
+	cfbQuickBlt((int *)pw, (int *)pwTmp,
+		    0, 0, 0, 0,
+		    (int)pPix->drawable.width - rw, (int)pPix->drawable.height,
+		    size, tsize);
+	cfbQuickBlt((int *)pw, (int *)pw,
+		    (int)pPix->drawable.width - rw, 0, 0, 0,
+		    rw, (int)pPix->drawable.height,
+		    size, size);
+	cfbQuickBlt((int *)pwTmp, (int *)pw,
+		    0, 0, rw, 0,
+		    (int)pPix->drawable.width - rw, (int)pPix->drawable.height,
+		    tsize, size);
+	DEALLOCATE_LOCAL(pwTmp);
     }
-
 }
+
 /* Rotates pixmap pPix by h lines.  Assumes that h is always less than
    pPix->drawable.height
    works on any width.
