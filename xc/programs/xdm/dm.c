@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.60 91/07/18 18:47:49 rws Exp $
+ * $XConsortium: dm.c,v 1.61 91/07/18 18:53:47 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -162,6 +162,7 @@ char	**argv;
     }
     Debug ("Nothing left to do, exiting\n");
     exit(0);
+    /*NOTREACHED*/
 }
 
 /* ARGSUSED */

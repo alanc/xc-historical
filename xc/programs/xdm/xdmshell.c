@@ -212,5 +212,6 @@ main (argc, argv)
 #endif
 
     exit (0);
+    /*NOTREACHED*/
 }
 
