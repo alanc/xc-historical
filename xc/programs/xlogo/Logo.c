@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Logo.c,v 1.15 90/04/17 18:02:41 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Logo.c,v 1.16 90/04/18 11:37:20 jim Exp $";
 #endif
 
 /*
@@ -117,6 +117,7 @@ static void check_shape (w)
     }
 }
 
+/* ARGSUSED */
 static void unset_shape (w)
     LogoWidget w;
 {
@@ -245,6 +246,9 @@ static void Realize (gw, valuemaskp, attr)
 #endif
       create_gcs (w);
     (*XtSuperclass(gw)->core_class.realize) (gw, valuemaskp, attr);
+/*
+    if (w->logo.shape_window) set_shape (w);
+ */
 }
 
 static void Resize (gw)
@@ -288,14 +292,14 @@ static Boolean SetValues (gcurrent, grequest, gnew)
 
     if ((new->logo.fgpixel != current->logo.fgpixel) ||
 	(new->core.background_pixel != current->core.background_pixel)) {
-	Destroy (gcurrent);
+	Destroy (gnew);
 	if (!new->logo.shape_window) create_gcs (new);
 	redisplay = TRUE;
     }
    
    if (new->logo.shape_window != current->logo.shape_window) {
        if (new->logo.shape_window) {
-	   Destroy (new);		/* no longer need GCs */
+	   Destroy (gnew);
 	   set_shape (new);
 	   redisplay = FALSE;
        } else {
