@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.46 90/12/03 09:56:58 swick Exp $
+ * $XConsortium: tocutil.c,v 2.48 91/02/22 16:30:56 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -27,11 +27,14 @@
 
 /* tocutil.c -- internal routines for toc stuff. */
 
-#include <X11/Xos.h>
 #include "xmh.h"
 #include "toc.h"
 #include "tocutil.h"
 #include "tocintrnl.h"
+
+#ifdef X_NOT_POSIX
+extern long lseek();
+#endif
 
 Toc TUMalloc()
 {
@@ -469,7 +472,6 @@ void TULoadTocFile(toc)
 void TUSaveTocFile(toc)
   Toc toc;
 {
-    extern long lseek();
     Msg msg;
     int fid;
     int i;
