@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.38 90/05/15 18:40:21 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.40 90/06/12 17:04:25 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -277,6 +277,8 @@ cfbDestroyGC(pGC)
     cfbPrivGC *pPriv;
 
     pPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
+    if (pPriv->pRotatedPixmap)
+	cfbDestroyPixmap(pPriv->pRotatedPixmap);
     if (pPriv->freeCompClip)
 	(*pGC->pScreen->RegionDestroy)(pPriv->pCompositeClip);
     cfbDestroyOps (pGC->ops);
