@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuRead.c,v 1.2 88/12/08 16:40:27 keith Exp $
+ * $XConsortium: AuRead.c,v 1.3 89/11/19 13:10:23 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -73,26 +73,26 @@ FILE	*auth_file;
     if (read_counted_string (&local.address_length, &local.address, auth_file) == 0)
 	return 0;
     if (read_counted_string (&local.number_length, &local.number, auth_file) == 0) {
-	local.address ? free (local.address) : 0;
+	if (local.address) free (local.address);
 	return 0;
     }
     if (read_counted_string (&local.name_length, &local.name, auth_file) == 0) {
-	local.address ? free (local.address) : 0;
-	local.number ? free (local.number) : 0;
+	if (local.address) free (local.address);
+	if (local.number) free (local.number);
 	return 0;
     }
     if (read_counted_string (&local.data_length, &local.data, auth_file) == 0) {
-	local.address ? free (local.address) : 0;
-	local.number ? free (local.number) : 0;
-	local.name ? free (local.name) : 0;
+	if (local.address) free (local.address);
+	if (local.number) free (local.number);
+	if (local.name) free (local.name);
 	return 0;
     }
     ret = (Xauth *) malloc (sizeof (Xauth));
     if (!ret) {
-	local.address ? free (local.address) : 0;
-	local.number ? free (local.number) : 0;
-	local.name ? free (local.name) : 0;
-	local.data ? free (local.data) : 0;
+	if (local.address) free (local.address);
+	if (local.number) free (local.number);
+	if (local.name) free (local.name);
+	if (local.data) free (local.data);
 	return 0;
     }
     *ret = local;
