@@ -186,6 +186,7 @@ static char*	vAddrs[NUMSLOTS];
  *-----------------------------------------------------------------------
  */
 
+void
 InitOutput(pScreenInfo, argc, argv)
     ScreenInfo 	  *pScreenInfo;
     int     	  argc;
@@ -305,6 +306,7 @@ usage:
  *-----------------------------------------------------------------------
  */
 /*ARGSUSED*/
+void
 InitInput(argc, argv)
     int     	  argc;
     char    	  **argv;
@@ -329,7 +331,7 @@ InitInput(argc, argv)
 
     setcompat (getcompat() | COMPAT_BSDSIGNALS);
     if (!mieqInit (k, p))
-	return FALSE;
+	FatalError ("could not initialize event queue");
     OsSignal(SIGIO, SigIOHandler);
     SetTimeSinceLastInputEvent ();
 }
