@@ -1,4 +1,4 @@
-/* $XConsortium: ar.h,v 5.4 91/04/04 12:14:51 hersh Exp $ */
+/* $XConsortium: ar.h,v 5.5 91/04/04 15:17:54 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1988-1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -121,6 +121,11 @@ typedef struct {
     CARD8	pad;
     /* List of char(length) */
 } Phg_ar_begin_archive;
+
+typedef struct {
+    CARD16	opcode;		/* Always EOA */
+    CARD8	pad[2];
+} Phg_ar_end_archive;
 
 typedef struct {
     CARD16	opcode;		/* Always BSE */
