@@ -360,10 +360,10 @@ static ActionProc InterpretAction(compiledActionTable, action)
     CompiledActionTable compiledActionTable;
     String action;
 {
-    ActionProc actionProc;
+    Value actionProc;
 
     if (LookupTableSym(compiledActionTable, action, &actionProc))
-	return actionProc;
+	return (ActionProc) actionProc;
 
     return NULL;
 }
@@ -631,9 +631,9 @@ static char * ParseQuotedStringEvent(str, eventP)
     char	c;
     char	s[2];
 
-    (void) LookupTableSym(modifiers, "Ctrl", &ctrlMask);
-    (void) LookupTableSym(modifiers, "Meta", &metaMask);
-    (void) LookupTableSym(modifiers, "Shift", &shiftMask);
+    (void) LookupTableSym(modifiers, "Ctrl", (Value *) &ctrlMask);
+    (void) LookupTableSym(modifiers, "Meta", (Value *) &metaMask);
+    (void) LookupTableSym(modifiers, "Shift", (Value *) &shiftMask);
 
     eventP->modifierMask = ctrlMask | metaMask | shiftMask;
 
