@@ -268,7 +268,6 @@ EXPORTS
  XLocaleOfIM
  XLockDisplay
  XLookupColor
- XLookupCompundText
  XLookupKeysym
  XLookupString
  XLowerWindow
