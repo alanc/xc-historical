@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: swapreq.c,v 1.22 87/08/01 14:46:28 toddb Exp $ */
+/* $Header: swapreq.c,v 1.23 87/08/03 17:35:17 newman Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -52,6 +52,22 @@ extern int (* ProcVector[256]) ();
     SwapLongs(stuff + 1, LengthRestL(stuff))
 
 
+/* The following is used for all requests that have
+   no fields to be swapped (except "length") */
+int
+SProcSimpleReq(client)
+	register ClientPtr client;
+{
+    register char n;
+
+    REQUEST(xReq);
+    swaps(&stuff->length, n);
+    return(*ProcVector[stuff->reqType])(client);
+}
+
+/* The following is used for all requests that have
+   only a single 32-bit field to be swapped, coming
+   right after the "length" field */
 int
 SProcResourceReq(client)
 	register ClientPtr client;
@@ -101,18 +117,6 @@ SProcChangeWindowAttributes(client)
 }
 
 int
-SProcChangeSaveSet(client)
-    register ClientPtr client;
-{
-    register char n;
-    REQUEST(xChangeSaveSetReq);
-		  
-    swaps(&stuff->length, n);
-    swapl(&stuff->window, n);
-    return((* ProcVector[X_ChangeSaveSet])(client));
-}
-
-int
 SProcReparentWindow(client)
     register ClientPtr client;
 {
@@ -137,18 +141,6 @@ SProcConfigureWindow(client)
     swaps(&stuff->mask, n);
     SwapRestL(stuff);
     return((* ProcVector[X_ConfigureWindow])(client));
-
-}
-
-int
-SProcCirculateWindow(client)
-    register ClientPtr client;
-{
-    register char n;
-    REQUEST(xCirculateWindowReq);
-    swaps(&stuff->length, n);
-    swapl(&stuff->window, n);
-    return((* ProcVector[X_CirculateWindow])(client));
 
 }
 
@@ -514,17 +506,6 @@ SProcUngrabKey(client)
 }
 
 int
-SProcAllowEvents(client)
-    register ClientPtr client;
-{
-    register char n;
-    REQUEST(xAllowEventsReq);
-    swaps(&stuff->length, n);
-    swapl(&stuff->time, n);
-    return((* ProcVector[X_AllowEvents])(client));
-}
-
-int
 SProcGetMotionEvents(client)
     register ClientPtr client;
 {
@@ -581,26 +562,6 @@ SProcSetInputFocus(client)
     return((* ProcVector[X_SetInputFocus])(client));
 }
 
-int
-SProcGetInputFocus(client)
-    register ClientPtr client;
-{
-    register char n;
-    REQUEST(xReq);
-    swaps(&stuff->length, n);
-    return((* ProcVector[X_GetInputFocus])(client));
-
-}
-
-int
-SProcQueryKeymap(client)
-    register ClientPtr client;
-{
-    register char n;
-    REQUEST(xReq);
-    swaps(&stuff->length, n);
-    return((* ProcVector[X_QueryKeymap])(client));
-}
 
 SProcOpenFont(client)
     register ClientPtr client;
@@ -611,17 +572,6 @@ SProcOpenFont(client)
     swapl(&stuff->fid, n);
     swaps(&stuff->nbytes, n);
     return((* ProcVector[X_OpenFont])(client));
-}
-
-int
-SProcQueryTextExtents(client)
-    register ClientPtr client;
-{
-    register char n;
-    REQUEST(xQueryTextExtentsReq);
-    swaps(&stuff->length, n);
-    swapl(&stuff->fid, n);
-    return((* ProcVector[X_QueryTextExtents])(client));
 }
 
 int
@@ -796,8 +746,9 @@ SProcCopyPlane(client)
     return((* ProcVector[X_CopyPlane])(client));
 }
 
+/* The following routine is used for all Poly drawing requests */
 int
-SProcPolyPoint(client)
+SProcPoly(client)
     register ClientPtr client;
 {
     register char n;
@@ -807,7 +758,7 @@ SProcPolyPoint(client)
     swapl(&stuff->drawable, n);
     swapl(&stuff->gc, n);
     SwapRestS(stuff);
-    return((* ProcVector[X_PolyPoint])(client));
+    return((* ProcVector[stuff->reqType])(client));
 }
 
 int
@@ -1198,17 +1149,6 @@ SProcQueryBestSize   (client)
 }
 
 int
-SProcListExtensions(client)
-    register ClientPtr client;
-{
-    register char n;
-    REQUEST(xReq);
-    swaps(&stuff->length, n);
-    return((* ProcVector[X_ListExtensions])(client));
-
-}
-
-int
 SProcQueryExtension   (client)
     register ClientPtr client;
 {
@@ -1239,35 +1179,6 @@ SProcChangeKeyboardMapping   (client)
     return((* ProcVector[X_ChangeKeyboardMapping])(client));
 }
 
-int
-SProcSetPointerMapping   (client)
-    register ClientPtr client;
-{
-    register char n;
-    REQUEST(xSetPointerMappingReq);
-    swaps(&stuff->length, n);
-    return((* ProcVector[X_SetPointerMapping])(client));
-}
-
-int
-SProcGetKeyboardMapping(client)
-    register ClientPtr client;
-{
-    register char n;
-    REQUEST(xReq);
-    swaps(&stuff->length, n);
-    return((* ProcVector[X_GetKeyboardMapping])(client));
-}
-
-int
-SProcGetPointerMapping(client)
-    register ClientPtr client;
-{
-    register char n;
-    REQUEST(xReq);
-    swaps(&stuff->length, n);
-    return((* ProcVector[X_GetPointerMapping])(client));
-}
 
 int
 SProcChangeKeyboardControl   (client)
@@ -1279,28 +1190,6 @@ SProcChangeKeyboardControl   (client)
     swapl(&stuff->mask, n);
     SwapRestL(stuff);
     return((* ProcVector[X_ChangeKeyboardControl])(client));
-}
-
-int
-SProcGetKeyboardControl(client)
-    register ClientPtr client;
-{
-    register char n;
-
-    REQUEST(xReq);
-    swaps(&stuff->length, n);
-    return((* ProcVector[X_GetKeyboardControl])(client));
-
-}
-
-int
-SProcBell   (client)
-    register ClientPtr client;
-{
-    register char n;
-    REQUEST(xBellReq);
-    swaps(&stuff->length, n);
-    return((* ProcVector[X_Bell])(client));
 }
 
 int
@@ -1316,29 +1205,6 @@ SProcChangePointerControl   (client)
     return((* ProcVector[X_ChangePointerControl])(client));
 }
 
-int
-SProcGetPointerControl(client)
-    register ClientPtr client;
-{
-    register char n;
-
-    REQUEST(xReq);
-    swaps(&stuff->length, n);
-    return((* ProcVector[X_GetPointerControl])(client));
-
-}
-
-int
-SProcListHosts(client)
-    register ClientPtr client;
-{
-    register char n;
-
-    REQUEST(xListHostsReq);
-    swaps(&stuff->length, n);
-    return((* ProcVector[X_ListHosts])(client));
-
-}
 
 int
 SProcSetScreenSaver            (client)
@@ -1350,16 +1216,6 @@ SProcSetScreenSaver            (client)
     swaps(&stuff->timeout, n);
     swaps(&stuff->interval, n);
     return((* ProcVector[X_SetScreenSaver])(client));
-}
-
-int
-SProcGetScreenSaver(client)
-    register ClientPtr client;
-{
-    register char n;
-    REQUEST(xReq);
-    swaps(&stuff->length, n);
-    return((* ProcVector[X_GetScreenSaver])(client));
 }
 
 int
@@ -1375,24 +1231,6 @@ SProcChangeHosts(client)
 
 }
 
-int
-SProcGetFontPath(client)
-    register ClientPtr client;
-{
-    register char n;
-    REQUEST (xReq);
-    swaps(&stuff->length, n);
-    return((* ProcVector[X_GetFontPath])(client));
-}
-int SProcForceScreenSaver(client)
-    register ClientPtr client;
-{    
-    register char n;
-    REQUEST (xReq);
-    swaps(&stuff->length, n);
-    return((* ProcVector[X_ForceScreenSaver])(client));
-}
-
 int SProcRotateProperties(client)
     register ClientPtr client;
 {
@@ -1404,26 +1242,6 @@ int SProcRotateProperties(client)
     swaps(&stuff->nPositions, n);
     SwapRestL(stuff);
     return ((* ProcVector[X_RotateProperties])(client));
-}
-
-int
-SProcSetModifierMapping   (client)
-    register ClientPtr client;
-{
-    register char n;
-    REQUEST(xSetModifierMappingReq);
-    swaps(&stuff->length, n);
-    return((* ProcVector[X_SetModifierMapping])(client));
-}
-
-int
-SProcGetModifierMapping(client)
-    register ClientPtr client;
-{
-    register char n;
-    REQUEST(xReq);
-    swaps(&stuff->length, n);
-    return((* ProcVector[X_GetModifierMapping])(client));
 }
 
 int SProcNoOperation(client)
@@ -1443,14 +1261,6 @@ SwapTimecoord(pCoord)
     swaps(&pCoord->y, n);
 }
 
-SwapFontProp(pProp)
-    xFontProp  *pProp;
-{
-    register char n;
-
-    swapl(&pProp->name, n);
-    swapl(&pProp->value, n);
-}
 
 SwapRGB(prgb)
     xrgb	*prgb;
