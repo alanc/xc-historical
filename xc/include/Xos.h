@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.11 89/01/18 14:05:09 jim Exp $
+ * $XConsortium: Xos.h,v 1.12 89/01/18 17:13:46 jim Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -28,14 +28,14 @@
  * Get major data types (esp. caddr_t)
  */
 
-#ifdef CRAY
+#if defined(CRAY) || defined(USG)
 #ifndef __TYPES__
 #define __TYPES__
 #include <sys/types.h>			/* forgot to protect it... */
 #endif /* __TYPES__ */
 #else
 #include <sys/types.h>
-#endif /* CRAY */
+#endif /* CRAY or USG */
 
 
 /*
@@ -49,20 +49,18 @@
  *	hpux
  * 	macII
  *	CRAY
+ *	USG
+ * 
+ * all of which happen to define SYSV as well.
  */
 
 #ifdef SYSV
-#define SYSV_STRINGS
-#endif /* SYSV */
-
-#ifdef SYSV_STRINGS
 #include <string.h>
 #define index strchr
 #define rindex strrchr
-#undef SYSV_STRINGS
 #else
 #include <strings.h>
-#endif /* SYSV_STRINGS */
+#endif /* SYSV */
 
 
 /*
@@ -86,12 +84,22 @@
 #else
 #include <time.h>				/* SYSV */
 #endif
+
+#ifdef USG
 #ifdef umips
 #include <bsd/sys/time.h>			/* SYSV && umips */
-#endif
+#else
+struct timeval {
+    long tv_sec;
+    long tv_usec;
+};
+#endif /* umips or not */
+#endif /* USG */
+
 #ifdef macII
 #include <sys/time.h>				/* SYSV && macII */
 #endif
+
 #else
 #include <sys/time.h>				/* bsd */
 #endif
@@ -116,7 +124,7 @@
 #endif
 
 #ifdef umips
-#ifdef SYSTYPE_SYSV
+#ifdef USG
 #include <bsd/sys/ioctl.h>
 #include <bsd/sys/file.h>
 #endif
