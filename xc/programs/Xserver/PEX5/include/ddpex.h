@@ -1,4 +1,4 @@
-/* $XConsortium: ddpex.h,v 5.7 92/03/04 14:09:11 hersh Exp $ */
+/* $XConsortium: ddpex.h,v 5.8 92/04/23 16:12:50 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -429,7 +429,7 @@ typedef	struct {
 	ddCoord3D	origin;
 	ddVector3D	direction;
 	ddUSHORT	numberIntersections;
-	ddCoord3D	*pPoints;
+	ddFLOAT 	*pPoints;
 } ddPSC_LevelCurves;
 
 typedef struct {
@@ -553,8 +553,9 @@ typedef struct {
 	ddBOOL            send_event;
 	ddULONG           max_hits;
 	ClientPtr         client;       /* need to send the event */
-        diStructHandle    strHandle;	/* the struct handle for PickOne */
-	ddULONG           sid;          /* the structure id for BeginPick? */
+        diStructHandle    strHandle;	/* struct handle for PickOne */
+        diStructHandle    fakeStr;	/* fake struct handle for BeginPick */
+	ddULONG           sid;          /* structure id for BeginPick */
 	diPMHandle	  pseudoPM;      /* fake PM for Renderer Pick */
 } ddRdrPickStr, *ddRdrPickPtr;       /* need to send the event */ 
 
