@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.115 91/05/03 19:39:00 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.116 91/05/04 22:19:32 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -706,7 +706,7 @@ XCOMM site-specific configuration parameters - edit site.def to change
  * LOCAL_LDFLAGS contains client-specific ld flags flags set in Imakefile
  */
       ALLINCLUDES = $(INCLUDES) $(EXTRA_INCLUDES) $(TOP_INCLUDES) $(STD_INCLUDES)
-       ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(PROTO_DEFINES) $(DEFINES)
+       ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(EXTRA_DEFINES) $(PROTO_DEFINES) $(DEFINES)
            CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(ALLDEFINES)
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES)
 #if AlternateUsrLibDir && !defined(UseInstalled)
