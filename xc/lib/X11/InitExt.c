@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XInitExt.c,v 11.19 89/03/22 11:05:14 rws Exp $ */
+/* $XConsortium: XInitExt.c,v 11.20 89/11/08 17:04:15 converse Exp $ */
 /* Copyright  Massachusetts Institute of Technology 1987 */
 
 #include "Xlibint.h"
@@ -113,10 +113,10 @@ int (*XESetCreateGC(dpy, extension, proc))()
 	register _XExtension *e;	/* for lookup of extension */
 	register int (*oldproc)();
 	if ((e = XLookupExtension (dpy, extension)) == NULL) return (NULL);
-
+	LockDisplay(dpy);
 	oldproc = e->create_GC;
 	e->create_GC = proc;
-
+	UnlockDisplay(dpy);
 	return (oldproc);
 }
 int (*XESetCopyGC(dpy, extension, proc))()
@@ -127,10 +127,10 @@ int (*XESetCopyGC(dpy, extension, proc))()
 	register _XExtension *e;	/* for lookup of extension */
 	register int (*oldproc)();
 	if ((e = XLookupExtension (dpy, extension)) == NULL) return (NULL);
-
+	LockDisplay(dpy);
 	oldproc = e->copy_GC;
 	e->copy_GC = proc;
-
+	UnlockDisplay(dpy);
 	return (oldproc);
 }
 int (*XESetFlushGC(dpy, extension, proc))()
@@ -141,10 +141,10 @@ int (*XESetFlushGC(dpy, extension, proc))()
 	register _XExtension *e;	/* for lookup of extension */
 	register int (*oldproc)();
 	if ((e = XLookupExtension (dpy, extension)) == NULL) return (NULL);
-
+	LockDisplay(dpy);
 	oldproc = e->flush_GC;
 	e->flush_GC = proc;
-
+	UnlockDisplay(dpy);
 	return (oldproc);
 }
 
@@ -156,10 +156,10 @@ int (*XESetFreeGC(dpy, extension, proc))()
 	register _XExtension *e;	/* for lookup of extension */
 	register int (*oldproc)();
 	if ((e = XLookupExtension (dpy, extension)) == NULL) return (NULL);
-
+	LockDisplay(dpy);
 	oldproc = e->free_GC;
 	e->free_GC = proc;
-
+	UnlockDisplay(dpy);
 	return (oldproc);
 }
 
@@ -171,10 +171,10 @@ int (*XESetCreateFont(dpy, extension, proc))()
 	register _XExtension *e;	/* for lookup of extension */
 	register int (*oldproc)();
 	if ((e = XLookupExtension (dpy, extension)) == NULL) return (NULL);
-
+	LockDisplay(dpy);
 	oldproc = e->create_Font;
 	e->create_Font = proc;
-
+	UnlockDisplay(dpy);
 	return (oldproc);
 }
 
@@ -186,10 +186,10 @@ int (*XESetFreeFont(dpy, extension, proc))()
 	register _XExtension *e;	/* for lookup of extension */
 	register int (*oldproc)();
 	if ((e = XLookupExtension (dpy, extension)) == NULL) return (NULL);
-
+	LockDisplay(dpy);
 	oldproc = e->free_Font;
 	e->free_Font = proc;
-
+	UnlockDisplay(dpy);
 	return (oldproc);
 }
 
@@ -201,10 +201,10 @@ int (*XESetCloseDisplay(dpy, extension, proc))()
 	register _XExtension *e;	/* for lookup of extension */
 	register int (*oldproc)();
 	if ((e = XLookupExtension (dpy, extension)) == NULL) return (NULL);
-
+	LockDisplay(dpy);
 	oldproc = e->close_display;
 	e->close_display = proc;
-
+	UnlockDisplay(dpy);
 	return (oldproc);
 }
 Bool (*XESetWireToEvent(dpy, event_number, proc))()
@@ -241,10 +241,10 @@ int (*XESetError(dpy, extension, proc))()
 	register _XExtension *e;	/* for lookup of extension */
 	register int (*oldproc)();
 	if ((e = XLookupExtension (dpy, extension)) == NULL) return (NULL);
-
+	LockDisplay(dpy);
 	oldproc = e->error;
 	e->error = proc;
-
+	UnlockDisplay(dpy);
 	return (oldproc);
 }
 int (*XESetErrorString(dpy, extension, proc))()
@@ -255,9 +255,9 @@ int (*XESetErrorString(dpy, extension, proc))()
 	register _XExtension *e;	/* for lookup of extension */
 	register int (*oldproc)();
 	if ((e = XLookupExtension (dpy, extension)) == NULL) return (NULL);
-
+	LockDisplay(dpy);
 	oldproc = e->error_string;
 	e->error_string = proc;
-
+	UnlockDisplay(dpy);
 	return (oldproc);
 }
