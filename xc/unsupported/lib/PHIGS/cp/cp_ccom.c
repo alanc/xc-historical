@@ -1,4 +1,4 @@
-/* $XConsortium: cp_ccom.c,v 5.15 91/07/12 20:34:18 hersh Exp $ */
+/* $XConsortium: cp_ccom.c,v 5.16 91/07/19 19:20:04 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1300,7 +1300,7 @@ dummy_attach( cph, fd )
 #include <sys/un.h>
 #endif
 
-#ifdef hpux
+#if defined(hpux) || defined(macII)
 #include <sys/un.h> 
 #define socketpair _socketpair
 static int socketpair(domain, s_type, protocol, sv)
@@ -1332,7 +1332,7 @@ static int socketpair(domain, s_type, protocol, sv)
     close(fd);
     return 0;
 }
-#endif /* hpux */
+#endif /* hpux or macII */
 
 #if defined(SYSV) && defined(SYSV386)
 
