@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.65 91/02/05 16:58:14 gildea Exp $ */
+/* $XConsortium: Display.c,v 1.66 91/03/07 19:16:02 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -25,6 +25,14 @@ SOFTWARE.
 ******************************************************************/
 
 #include "IntrinsicI.h"
+
+#ifdef X_NOT_POSIX
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else /* X_NOT_STDC_ENV */
+extern char* getenv();
+#endif /* X_NOT_STDC_ENV */
+#endif
 
 static String XtNnoPerDisplay = "noPerDisplay";
 
@@ -188,7 +196,6 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 	d = XOpenDisplay(displayName);
 
 	if (applName == NULL) {
-	    extern char* getenv();
 	    if ((applName = getenv("RESOURCE_NAME")) == NULL) {
 		if (*argc > 0 && argv[0] != NULL) {
 		    char *ptr = rindex(argv[0], '/');
