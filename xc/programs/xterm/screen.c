@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.31 93/07/02 17:26:02 rws Exp $
+ *	$XConsortium: screen.c,v 1.32 93/09/20 17:42:26 hersh Exp $
  */
 
 /*
@@ -166,9 +166,10 @@ char *str;
 register unsigned flags;
 register int length;		/* length of string */
 {
-	register Char *attrs;
+	register Char *attrs, *attrs0;
 	register int avail  = screen->max_col - screen->cur_col + 1;
 	register Char *col;
+	register int wrappedbit;
 
 	if (length > avail)
 	    length = avail;
@@ -176,12 +177,15 @@ register int length;		/* length of string */
 		return;
 
 	col = screen->buf[avail = 2 * screen->cur_row] + screen->cur_col;
-	attrs = screen->buf[avail + 1] + screen->cur_col;
+	attrs = attrs0 = screen->buf[avail + 1] + screen->cur_col;
+	wrappedbit = *attrs0&LINEWRAPPED;
 	flags &= ATTRIBUTES;
 	flags |= CHARDRAWN;
 	memmove( col, str, length);
 	while(length-- > 0)
 		*attrs++ = flags;
+	if (wrappedbit)
+	    *attrs0 |= LINEWRAPPED;
 }
 
 ScrnInsertLine (sb, last, where, n, size)
