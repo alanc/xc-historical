@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbplygblt.c,v 5.1 89/07/09 15:57:44 rws Exp $ */
+/* $XConsortium: mfbplygblt.c,v 5.2 89/11/24 18:03:09 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -236,6 +236,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	int glyphRow;		/* first row of glyph not wholly
 				   clipped out */
 	int glyphCol;		/* leftmost visible column of glyph */
+	int getWidth;		/* bits to get from glyph */
 
 	if(!(ppos = (TEXTPOS *)ALLOCATE_LOCAL(nglyph * sizeof(TEXTPOS))))
 	    return;
@@ -328,6 +329,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
 		glyphCol = (leftEdge - ppos[i].xpos) -
 			   (pci->metrics.leftSideBearing);
+		getWidth = w + glyphCol;
 		xoff = xchar + (leftEdge - ppos[i].xpos);
 		if (xoff > 31)
 		{
@@ -345,7 +347,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    maskpartialbits(xoff, w, startmask);
 		    while (h--)
 		    {
-			getshiftedleftbits(pglyph, glyphCol, w, tmpSrc);
+			getshiftedleftbits(pglyph, glyphCol, getWidth, tmpSrc);
 			*pdst OPEQ (SCRRIGHT(tmpSrc, xoff) & startmask);
 			pglyph += widthGlyph;
 			pdst += widthDst;
@@ -357,7 +359,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    nFirst = 32 - xoff;
 		    while (h--)
 		    {
-			getshiftedleftbits(pglyph, glyphCol, w, tmpSrc);
+			getshiftedleftbits(pglyph, glyphCol, getWidth, tmpSrc);
 			*pdst OPEQ (SCRRIGHT(tmpSrc, xoff) & startmask);
 			*(pdst+1) OPEQ (SCRLEFT(tmpSrc, nFirst) & endmask);
 			pglyph += widthGlyph;
