@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.29 91/09/03 18:21:49 dave Exp $ */
+/* $XConsortium: misc.c,v 1.30 94/04/17 20:43:57 dave Exp gildea $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -254,19 +254,19 @@ Uncompress(man_globals, filename)
 ManpageGlobals * man_globals;
 char * filename;
 {
-  char tmpfile[BUFSIZ], error_buf[BUFSIZ];
+  char tmp_file[BUFSIZ], error_buf[BUFSIZ];
   FILE * file;
 
-  if ( !UncompressNamed(man_globals, filename, tmpfile) )
+  if ( !UncompressNamed(man_globals, filename, tmp_file) )
     return(NULL);
 
-  else if ((file = fopen(tmpfile, "r")) == NULL) {  
+  else if ((file = fopen(tmp_file, "r")) == NULL) {  
     sprintf(error_buf, "Something went wrong in retrieving the %s",
 	    "uncompressed manual page try cleaning up /tmp.");
     PopupWarning(man_globals, error_buf);
   }
 
-  unlink(tmpfile);		/* remove name in tree, it will remain
+  unlink(tmp_file);		/* remove name in tree, it will remain
 				   until we close the fd, however. */
   return(file);
 }
@@ -357,11 +357,11 @@ char * entry;
 
   strcpy(tmp,MANTEMP);		          /* Get a temp file. */
   (void) mktemp(tmp);
-  strcpy(man_globals->tmpfile, tmp);
+  strcpy(man_globals->tempfile, tmp);
   ParseEntry(entry, path, NULL, NULL);
 
   sprintf(cmdbuf,"cd %s ; %s %s %s > %s %s", path, TBL,
-	  filename, FORMAT, man_globals->tmpfile, "2> /dev/null");
+	  filename, FORMAT, man_globals->tempfile, "2> /dev/null");
 
   if(system(cmdbuf) != 0) {	/* execute search. */
     sprintf(error_buf,
@@ -370,7 +370,7 @@ char * entry;
     file = NULL;
   }
   else {
-    if ((file = fopen(man_globals->tmpfile,"r")) == NULL) {  
+    if ((file = fopen(man_globals->tempfile,"r")) == NULL) {  
       sprintf(error_buf, "Something went wrong in retrieving the %s",
 	      "temp file, try cleaning up /tmp");
       PopupWarning(man_globals, error_buf);
@@ -381,7 +381,7 @@ char * entry;
   
       if ( (man_globals->save == NULL) ||
 	   (man_globals->manpagewidgets.manpage == NULL) ) 
-	unlink(man_globals->tmpfile);
+	unlink(man_globals->tempfile);
       else {
 	char * ptr, catdir[BUFSIZ];
 
@@ -395,7 +395,7 @@ char * entry;
 	  *ptr = '\0';
 
 	  if ( access(catdir, W_OK) != 0 )
-	    unlink(man_globals->tmpfile);
+	    unlink(man_globals->tempfile);
 	  else {
 	    x = (Position) Width(man_globals->manpagewidgets.manpage)/2;
 	    y = (Position) Height(man_globals->manpagewidgets.manpage)/2;
@@ -405,7 +405,7 @@ char * entry;
 	  }
 	}
 	else 
-	  unlink(man_globals->tmpfile);
+	  unlink(man_globals->tempfile);
       }
     }
   }

@@ -1,4 +1,4 @@
-/* $XConsortium: handler.c,v 1.20 91/06/05 14:50:29 dave Exp $ */
+/* $XConsortium: handler.c,v 1.21 94/04/17 20:43:52 dave Exp gildea $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -315,7 +315,7 @@ Cardinal * num_params;
  * If we are not active then take no action.
  */
 
-  if (man_globals->tmpfile == '\0') return;
+  if (man_globals->tempfile == '\0') return;
 
   switch (params[0][0]) {
   case 'S':
@@ -325,12 +325,12 @@ Cardinal * num_params;
     if (!man_globals->compress)
 #endif
 
-      sprintf(cmdbuf, "%s %s %s", COPY, man_globals->tmpfile, 
+      sprintf(cmdbuf, "%s %s %s", COPY, man_globals->tempfile, 
 	      man_globals->save_file);
 
 #ifndef NO_COMPRESS
     else
-      sprintf(cmdbuf, "%s < %s > %s", COMPRESS, man_globals->tmpfile, 
+      sprintf(cmdbuf, "%s < %s > %s", COMPRESS, man_globals->tempfile, 
 	      man_globals->save_file);
 #endif
 
@@ -363,7 +363,7 @@ Cardinal * num_params;
  * We will unlink it.     
  */
 
-  unlink(man_globals->tmpfile);
+  unlink(man_globals->tempfile);
   XtPopdown( XtParent(XtParent(w)) );
 }
 

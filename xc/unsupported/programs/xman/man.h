@@ -1,4 +1,4 @@
-/* $XConsortium: man.h,v 1.29 91/07/10 10:41:54 dave Exp $ */
+/* $XConsortium: man.h,v 1.30 94/04/17 20:43:57 dave Exp gildea $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -143,7 +143,7 @@ typedef struct _ManpageGlobals{
 
   char save_file[80];		/* the name of the file to save fomatted 
 				   page into. */
-  char tmpfile[80];		/* the name of the file to copy the formatted
+  char tempfile[80];		/* the name of the file to copy the formatted
 				   page from. */
   Boolean compress;		/* Compress file on save? */
   char ** section_name;		/* The name of each of the sections */
