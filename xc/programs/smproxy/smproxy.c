@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.22 94/08/10 19:48:26 mor Exp mor $ */
+/* $XConsortium: smproxy.c,v 1.23 94/08/10 20:47:56 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -604,10 +604,9 @@ WinInfo *winptr;
 
 
 void
-HandleCreate (event, errorCheck)
+HandleCreate (event)
 
 XCreateWindowEvent *event;
-Bool errorCheck;
 
 {
     Atom actual_type;
@@ -625,16 +624,13 @@ Bool errorCheck;
 
 
     /*
-     * Right after the window was created, it might have ben destroyed,
+     * Right after the window was created, it might have been destroyed,
      * so the following Xlib calls might fail.  Need to catch the error
      * by installing an error handler.
      */
 
-    if (errorCheck)
-    {
-	caught_error = 0;
-	XSetErrorHandler (MyErrorHandler);
-    }
+    caught_error = 0;
+    XSetErrorHandler (MyErrorHandler);
 
 
     /*
@@ -696,16 +692,13 @@ Bool errorCheck;
 	}
     }
 
-    if (errorCheck)
-    {
-	XSync (disp, 0);
-	XSetErrorHandler (NULL);
+    XSync (disp, 0);
+    XSetErrorHandler (NULL);
 
-	if (caught_error)
-	{
-	    caught_error = 0;
-	    RemoveWindow (winptr);
-	}
+    if (caught_error)
+    {
+	caught_error = 0;
+	RemoveWindow (winptr);
     }
 }
 
@@ -1127,15 +1120,10 @@ CheckForExistingWindows ()
 
     /*
      * We query the root tree for all windows created thus far.
-     * Since a window can be deleted after the query, we grab the
-     * server to make sure this doesn't happen.  The alternative
-     * is to catch bad window errors by installing an error handler.
-     * This would require many XSyncs, so I'm not sure if this is
-     * better than doing a grab.
+     * Note that at any moment after XQueryTree is called, a
+     * window may be deleted.  So we must take extra care to make
+     * sure a window really exists.
      */
-
-    XGrabServer (disp);
-    XSync (disp, 0);
 
     XQueryTree (disp, root, &dontCare1, &dontCare2, &children, &nchildren);
 
@@ -1143,19 +1131,21 @@ CheckForExistingWindows ()
     {
 	event.window = children[i];
 
-	HandleCreate (&event, 0 /* don't error check, we did a grab */);
+	HandleCreate (&event);
+
+	caught_error = 0;
+	XSetErrorHandler (MyErrorHandler);
 
 	client_window = XmuClientWindow (disp, children[i]);
 
-	if (client_window != children[i])
+	XSetErrorHandler (NULL);
+
+	if (!caught_error && client_window != children[i])
 	{
 	    event.window = client_window;
-	    HandleCreate (&event, 0);
+	    HandleCreate (&event);
 	}
     }
-    
-    XUngrabServer (disp);
-    XSync (disp, 0);
 }
 
 
@@ -1242,7 +1232,7 @@ char **argv;
 	switch (event.type)
 	{
 	case CreateNotify:
-	    HandleCreate (&event.xcreatewindow, 1 /* error check */);
+	    HandleCreate (&event.xcreatewindow);
 	    break;
 
 	case DestroyNotify:
