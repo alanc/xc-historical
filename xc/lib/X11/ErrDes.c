@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ErrDes.c,v 11.49 93/07/22 13:45:05 gildea Exp $
+ * $XConsortium: ErrDes.c,v 11.51 93/11/11 17:45:09 kaleb Exp $
  */
 
 /***********************************************************
@@ -138,13 +138,13 @@ XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
 	XrmInitialize();
 	temp_db = XrmGetFileDatabase(ERRORDB);
 
-	LockMutex(_Xglobal_lock);
+	_XLockMutex(_Xglobal_lock);
 	if (!db) {
 	    db = temp_db;
 	    do_destroy = 0;
 	} else
 	    do_destroy = 1;	/* we didn't need to get it after all */
-	UnlockMutex(_Xglobal_lock);
+	_XUnlockMutex(_Xglobal_lock);
 
 	if (do_destroy)
 	    XrmDestroyDatabase(temp_db);

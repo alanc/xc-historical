@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.105 93/10/12 09:12:51 rws Exp $
+ * $XConsortium: ConnDis.c,v 11.106 93/11/11 17:44:52 kaleb Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -1902,9 +1902,9 @@ GetAuthorization(fd, family, saddr, saddrlen, idisplay,
 #endif
 	    {
 		static unsigned long	unix_addr = 0xFFFFFFFF;
-		LockMutex(_Xglobal_lock);
+		_XLockMutex(_Xglobal_lock);
 		addr = unix_addr--;
-		UnlockMutex(_Xglobal_lock);
+		_XUnlockMutex(_Xglobal_lock);
 		port = getpid ();
 	    }
 	    xdmcp_data[j++] = (addr >> 24) & 0xFF;

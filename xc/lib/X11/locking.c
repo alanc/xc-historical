@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.18 93/11/19 09:21:14 kaleb Exp $
+ * $XConsortium: locking.c,v 1.19 93/12/02 13:22:45 kaleb Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -26,6 +26,9 @@
  */
 
 #include "Xlibint.h"
+#undef _XLockMutex
+#undef _XUnlockMutex
+#undef _XCreateMutex
 
 #ifdef XTHREADS
 

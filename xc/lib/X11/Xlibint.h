@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.126 93/11/15 11:18:12 kaleb Exp $ */
+/* $XConsortium: Xlibint.h,v 11.127 93/11/19 09:20:45 kaleb Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -236,23 +236,23 @@ extern LockInfoPtr _Xglobal_lock;
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 #define LockDisplay(d)	     if ((d)->lock_fns) (*(d)->lock_fns->lock_display)((d),__FILE__,__LINE__)
 #define UnlockDisplay(d)     if ((d)->lock_fns) (*(d)->lock_fns->unlock_display)((d),__FILE__,__LINE__)
-#define LockMutex(lock)		if (_XLockMutex_fn) (*_XLockMutex_fn)(lock,__FILE__,__LINE__)
-#define UnlockMutex(lock)	if (_XUnlockMutex_fn) (*_XUnlockMutex_fn)(lock,__FILE__,__LINE__)
+#define _XLockMutex(lock)		if (_XLockMutex_fn) (*_XLockMutex_fn)(lock,__FILE__,__LINE__)
+#define _XUnlockMutex(lock)	if (_XUnlockMutex_fn) (*_XUnlockMutex_fn)(lock,__FILE__,__LINE__)
 #else
 /* used everywhere, so must be fast if not using threads */
 #define LockDisplay(d)	     if ((d)->lock_fns) (*(d)->lock_fns->lock_display)(d)
 #define UnlockDisplay(d)     if ((d)->lock_fns) (*(d)->lock_fns->unlock_display)(d)
-#define LockMutex(lock)		if (_XLockMutex_fn) (*_XLockMutex_fn)(lock)
-#define UnlockMutex(lock)	if (_XUnlockMutex_fn) (*_XUnlockMutex_fn)(lock)
+#define _XLockMutex(lock)		if (_XLockMutex_fn) (*_XLockMutex_fn)(lock)
+#define _XUnlockMutex(lock)	if (_XUnlockMutex_fn) (*_XUnlockMutex_fn)(lock)
 #endif
-#define CreateMutex(lock)	if (_XCreateMutex_fn) (*_XCreateMutex_fn)(lock);
+#define _XCreateMutex(lock)	if (_XCreateMutex_fn) (*_XCreateMutex_fn)(lock);
 
 #else /* XTHREADS */
 #define LockDisplay(dis)
-#define LockMutex(lock)
-#define UnlockMutex(lock)
+#define _XLockMutex(lock)
+#define _XUnlockMutex(lock)
 #define UnlockDisplay(dis)
-#define CreateMutex(lock)
+#define _XCreateMutex(lock)
 #endif
 
 #define Xfree(ptr) free((ptr))

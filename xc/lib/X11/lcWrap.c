@@ -1,5 +1,5 @@
 /*
- * $XConsortium: lcWrap.c,v 11.12 93/09/18 10:28:08 rws Exp $
+ * $XConsortium: lcWrap.c,v 11.13 93/11/11 17:45:16 kaleb Exp $
  */
 
 /*
@@ -217,7 +217,7 @@ _XlcGetLC(name)
     int i;
     XlcLoaderList loader;
 
-    LockMutex(_Xglobal_lock);
+    _XLockMutex(_Xglobal_lock);
 
     /*
      * if first-time, build a list and load the one needed
@@ -264,7 +264,7 @@ bad:
     lcd = (XLCd) NULL;
 
 found:
-    UnlockMutex(_Xglobal_lock);
+    _XUnlockMutex(_Xglobal_lock);
     return lcd;
 }
 

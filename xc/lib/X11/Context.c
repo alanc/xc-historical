@@ -1,4 +1,4 @@
-/* $XConsortium: Context.c,v 1.16 92/07/31 17:43:27 rws Exp $ */
+/* $XConsortium: Context.c,v 1.17 93/11/15 11:18:38 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,
@@ -158,15 +158,15 @@ int XSaveContext(display, rid, context, data)
 	    return XCNOMEM;
 	}
 	db->numentries = 0;
-	CreateMutex(&db->linfo);
+	_XCreateMutex(&db->linfo);
 	LockDisplay(display);
 	*pdb = db;
 	display->free_funcs->context_db = _XFreeContextDB;
 	UnlockDisplay(display);
     }
-    LockMutex(&db->linfo);
+    _XLockMutex(&db->linfo);
     head = &Hash(db, rid, context);
-    UnlockMutex(&db->linfo);
+    _XUnlockMutex(&db->linfo);
     for (entry = *head; entry; entry = entry->next) {
 	if (entry->rid == rid && entry->context == context) {
 	    entry->data = (XPointer)data;
@@ -181,11 +181,11 @@ int XSaveContext(display, rid, context, data)
     entry->data = (XPointer)data;
     entry->next = *head;
     *head = entry;
-    LockMutex(&db->linfo);
+    _XLockMutex(&db->linfo);
     db->numentries++;
     if (db->numentries > (db->mask << 2))
 	ResizeTable(db);
-    UnlockMutex(&db->linfo);
+    _XUnlockMutex(&db->linfo);
     return 0;
 }
 
@@ -210,16 +210,16 @@ int XFindContext(display, rid, context, data)
     UnlockDisplay(display);
     if (!db)
 	return XCNOENT;
-    LockMutex(&db->linfo);
+    _XLockMutex(&db->linfo);
     for (entry = Hash(db, rid, context); entry; entry = entry->next)
     {
 	if (entry->rid == rid && entry->context == context) {
 	    *data = (XPointer)entry->data;
-	    UnlockMutex(&db->linfo);
+	    _XUnlockMutex(&db->linfo);
 	    return 0;
 	}
     }
-    UnlockMutex(&db->linfo);
+    _XUnlockMutex(&db->linfo);
     return XCNOENT;
 }
 
@@ -243,7 +243,7 @@ int XDeleteContext(display, rid, context)
     UnlockDisplay(display);
     if (!db)
 	return XCNOENT;
-    LockMutex(&db->linfo);
+    _XLockMutex(&db->linfo);
     for (prev = &Hash(db, rid, context);
 	 entry = *prev;
 	 prev = &entry->next) {
@@ -253,10 +253,10 @@ int XDeleteContext(display, rid, context)
 	    db->numentries--;
 	    if (db->numentries < db->mask && db->mask > INITHASHMASK)
 		ResizeTable(db);
-	    UnlockMutex(&db->linfo);
+	    _XUnlockMutex(&db->linfo);
 	    return 0;
 	}
     }
-    UnlockMutex(&db->linfo);
+    _XUnlockMutex(&db->linfo);
     return XCNOENT;
 }
