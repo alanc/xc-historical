@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.71 89/01/04 08:42:02 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.72 89/01/04 15:57:36 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -275,8 +275,7 @@ Dispatch()
 		    client->requestLogIndex = 0;
 		client->requestLog[client->requestLogIndex] = request->reqType;
 		client->requestLogIndex++;
-		if ((client->swapped ? lswaps(request->length) :
-				       request->length) > MAX_REQUEST_SIZE)
+		if (result > (MAX_REQUEST_SIZE << 2))
 		    ErrorStatus = BadLength;
 		else
 		    ErrorStatus = (* (client->swapped ? SwappedProcVector :
