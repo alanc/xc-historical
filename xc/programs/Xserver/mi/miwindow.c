@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miwindow.c,v 5.0 89/06/09 15:08:53 keith Exp $ */
+/* $XConsortium: miwindow.c,v 5.1 89/07/04 16:13:58 rws Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"
@@ -65,7 +65,7 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
 						 generateExposures);
     }
 
-    (* pWin->drawable.pScreen->Intersect)(pReg, pReg, pWin->clipList);
+    (* pWin->drawable.pScreen->Intersect)(pReg, pReg, &pWin->clipList);
     if (generateExposures)
 	(*pWin->drawable.pScreen->WindowExposures)(pWin, pReg);
     else if (pWin->backgroundState != None)
