@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: gc.h,v 1.52 93/07/12 09:44:51 dpw Exp $ */
+/* $XConsortium: gc.h,v 1.53 93/09/13 09:36:58 dpw Exp $ */
 
 #ifndef GC_H
 #define GC_H 
@@ -124,7 +124,7 @@ extern GCPtr CreateScratchGC(
 #endif
 );
 
-extern int FreeGCperDepth(
+extern void FreeGCperDepth(
 #if NeedFunctionPrototypes
     int /*screenNum*/
 #endif
@@ -142,7 +142,7 @@ extern Bool CreateDefaultStipple(
 #endif
 );
 
-extern int FreeDefaultStipple(
+extern void FreeDefaultStipple(
 #if NeedFunctionPrototypes
     int /*screenNum*/
 #endif
