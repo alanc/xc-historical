@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.1 91/02/16 09:56:54 rws Exp $ */
+/* $XConsortium: pexRndr.c,v 5.2 91/03/15 18:26:13 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -187,7 +187,7 @@ pexCreateRendererReq    *strmPtr;
 	LU_PIPELINECONTEXT((*((CARD32 *)ptr)), ppc);
 	prend->pPC = ppc;
 	SKIP_PADDING(ptr,sizeof(CARD32));
-	err = UpdatePCRefs (ppc, prend, (unsigned long)ADD);
+	err = UpdatePCRefs (ppc, prend, (ddAction)ADD);
 	if (err != Success) {
 	    Xfree((pointer)prend);
 	    PEX_ERR_EXIT(err,0,cntxtPtr); }
@@ -196,7 +196,7 @@ pexCreateRendererReq    *strmPtr;
     if (strmPtr->itemMask & PEXRDCurrentPath)  {
 	puDeleteList(prend->curPath);
 	if (prend->pPC)
-	    (void)UpdatePCRefs (prend->pPC, prend, (unsigned long)(REMOVE));
+	    (void)UpdatePCRefs (prend->pPC, prend, (ddAction)(REMOVE));
 	Xfree((pointer)prend);
 	PEX_ERR_EXIT(BadValue,0,cntxtPtr);
     }
@@ -283,7 +283,7 @@ pexCreateRendererReq    *strmPtr;
     if (!(prend->clipList)) {
 	    puDeleteList(prend->curPath);
 	    if (prend->pPC)
-		(void)UpdatePCRefs (prend->pPC, prend, (unsigned long)(REMOVE));
+		(void)UpdatePCRefs (prend->pPC, prend, (ddAction)(REMOVE));
 	    Xfree((pointer)prend);
 	    PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
     }
@@ -299,7 +299,7 @@ pexCreateRendererReq    *strmPtr;
 	puDeleteList(prend->clipList);
 	puDeleteList(prend->curPath);
 	if (prend->pPC)
-	    (void)UpdatePCRefs (prend->pPC, prend, (unsigned long)(REMOVE));
+	    (void)UpdatePCRefs (prend->pPC, prend, (ddAction)(REMOVE));
 	Xfree((pointer)prend);
 	PEX_ERR_EXIT(err,0,cntxtPtr);
     };
@@ -369,10 +369,10 @@ pexChangeRendererReq 	*strmPtr;
     if (strmPtr->itemMask & PEXRDPipelineContext) {
 	ddPCStr *ppc = 0, *old_ppc = 0;
 	old_ppc = prend->pPC;
-	if (old_ppc) (void)UpdatePCRefs (old_ppc, prend, (unsigned long)REMOVE);
+	if (old_ppc) (void)UpdatePCRefs (old_ppc, prend, (ddAction)REMOVE);
 	LU_PIPELINECONTEXT((*((CARD32 *)ptr)), ppc);
 	SKIP_PADDING(ptr,sizeof(CARD32));
-	err = UpdatePCRefs (ppc, prend, (unsigned long)ADD);
+	err = UpdatePCRefs (ppc, prend, (ddAction)ADD);
 	if (err != Success) {
 	    Xfree((pointer)prend);
 	    PEX_ERR_EXIT(err,0,cntxtPtr); }
