@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.11 91/07/16 23:05:03 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.12 93/09/26 15:40:50 gildea Exp $
 #if HasSecureRPC
 RPC_DEFINES = -DSECURE_RPC
 #else
@@ -6,10 +6,7 @@ RPC_DEFINES =
 #endif
 KRB5_DEFINES = Krb5Defines
 KRB5_INCLUDE = Krb5Includes
-#if !HasSockets
-XINCL = -I$(XLIBSRC)
-#endif
-       INCLUDES = $(XINCL) $(KRB5_INCLUDE)
+       INCLUDES = $(KRB5_INCLUDE)
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
            SRCS = xhost.c 

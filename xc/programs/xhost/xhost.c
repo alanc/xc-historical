@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.58 94/01/18 19:39:29 rws Exp $ */
+/* $XConsortium: xhost.c,v 11.59 94/01/28 18:14:17 gildea Exp $ */
  
 /*
 
@@ -18,13 +18,7 @@ without express or implied warranty.
 
 */
 
-/* sorry, streams support does not really work yet */
-#if defined(STREAMSCONN) && defined(SVR4)
-#undef STREAMSCONN
-#define TCPCONN
-#endif
-
-#ifdef TCPCONN
+#if defined(TCPCONN) || defined(STREAMSCONN)
 #define NEEDSOCKETS
 #endif
 #ifdef UNIXCONN
@@ -73,10 +67,6 @@ extern unsigned long inet_makeaddr();
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
 #endif
-#ifdef STREAMSCONN
-#include <Xstreams.h>
-extern char _XsTypeOfStream[];
-#endif /* STREAMSCONN */
 
 #ifdef SECURE_RPC
 #include <pwd.h>
@@ -102,10 +92,6 @@ extern char _XsTypeOfStream[];
  
 static int local_xerror();
 static char *get_hostname();
-#ifdef STREAMSCONN
-static char *get_streams_hostname();
-static Bool get_streams_address();
-#endif
 
 #ifdef SIGNALRETURNSINT
 #define signal_t int
@@ -211,12 +197,8 @@ main(argc, argv)
 		    }
 		    printf ("%s", hostname);
 		} else {
-#ifdef STREAMSCONN
-		    print_streams_hostnames (list, nhosts);
-#else
 		    printf ("<unknown address in family %d>",
 			    list[i].family);
-#endif
 		}
 		if (nameserver_timedout) {
 		    printf("\t(no nameserver response within %d seconds)\n",
@@ -315,7 +297,7 @@ int change_host (dpy, name, add)
 	lname[i] = tolower(name[i]);
     }
     if (!strncmp("inet:", lname, 5)) {
-#ifdef TCPCONN
+#if defined(TCPCONN) || defined(STREAMSCONN)
 	family = FamilyInternet;
 	name += 5;
 #else
@@ -465,18 +447,6 @@ int change_host (dpy, name, add)
 	    printf ("%s %s\n", netname, add ? add_msg : remove_msg);
         return 1;
     }
-#ifdef STREAMSCONN
-    if (get_streams_address (name, &ha)) {
-	if (add) {
-	    XAddHost (dpy, &ha);
-	    printf ("%s %s\n", name, add_msg);
-	} else {
-	    XRemoveHost (dpy, &ha);
-	    printf ("%s %s\n", name, remove_msg);
-	}
-	return 1;
-    }
-#endif
 #ifdef NEEDSOCKETS
     /*
      * First see if inet_addr() can grok the name; if so, then use it.
@@ -545,7 +515,7 @@ jmp_buf env;
 static char *get_hostname (ha)
     XHostAddress *ha;
 {
-#ifdef TCPCONN
+#if defined(TCPCONN) || defined(STREAMSCONN)
     struct hostent *hp = NULL;
     char *inet_ntoa();
 #endif
@@ -560,7 +530,7 @@ static char *get_hostname (ha)
     static char kname_out[255];
 #endif
 
-#ifdef TCPCONN
+#if defined(TCPCONN) || defined(STREAMSCONN)
     if (ha->family == FamilyInternet) {
 	/* gethostbyaddr can take a LONG time if the host does not exist.
 	   Assume that if it does not respond in NAMESERVER_TIMEOUT seconds
@@ -632,11 +602,7 @@ static char *get_hostname (ha)
     if (ha->family == FamilyLocalHost) {
 	return "";
     }
-#ifdef STREAMSCONN 
-    return get_streams_hostname (ha);
-#else
     return (NULL);
-#endif
 }
 
 static signal_t nameserver_lost()
@@ -673,155 +639,3 @@ static int local_xerror (dpy, rep)
     XmuPrintDefaultErrorMessage (dpy, rep, stderr);
     return 0;
 }
-
-
-#ifdef STREAMSCONN
-static Bool get_streams_address (name, hap) 
-    char *name;
-    XHostAddress *hap;
-{
-    static char buf[128];
-    char *ptr, *packet, *retptr, pktbuf[128];
-    int	 n;
-
-
-    if(_XsTypeOfStream[ConnectionNumber(dpy)]  == X_LOCAL_STREAM)
-    {
-	hap->family = FamilyUname;
-	hap->length = strlen(name) +1;
-	hap->address = name;
-	return True;
-    }
-
-    packet = pktbuf;
-    ptr = &packet[2*sizeof(int)];
-
-    n = strlen(name) + 1;
-    ((xHostEntry *) ptr)->length = n;
-    ptr += sizeof(xHostEntry);
-    memcpy(ptr, name, n);
-
-    retptr = packet;
-    *(int *) retptr = n+sizeof(xHostEntry);
-    *(int *) (retptr + sizeof(int)) = 1;
-
-    if(GetNetworkInfo (ConnectionNumber(dpy), NULL, ConvertNameToNetAddr, &packet, &retptr, NULL)<0)
-    {
-	return False;
-    }
-    hap->family = ((xHostEntry *) retptr)->family;
-    hap->length = ((xHostEntry *) retptr)->length;
-    hap->address = buf;
-  
-    if(hap->length > 127)
-   	hap->length = 127;
-
-    /* trim internet address to four */
-    if (hap->family == FamilyInternet)
-	hap->length = 4;
-
-    ptr = &retptr[sizeof(xHostEntry)];
-    memcpy(buf, ptr, hap->length);
-    buf[hap->length] = '\0';
-    return True;
-}
-
-
-print_streams_hostnames (list, nhosts)
-    XHostAddress *list;
-    int nhosts;
-{
-    int  m, n, i;
-    char *ptr, *retptr;
-    static char *packet = NULL;
-    static int buflen = 0;
- 
-    if(buflen == 0)
-		buflen = 512;
-
-    m = 2 * sizeof(int);
-    packet = (char *) malloc (buflen);
-    if(packet == NULL){
-	fprintf(stderr, "Cannot malloc %d chars \n", buflen);
-	return;
-	}
-    ptr = &packet[m];
-
-    for (i=0; i< nhosts; i++)
-    {
-	n = (((list[i].length + 3) >> 2) << 2) + sizeof(xHostEntry);
-	m += n;
-	if(m > buflen){
-		buflen = m + 128;
-		packet = (char *) realloc(packet, buflen);
-    		if(packet == NULL){
-			fprintf(stderr, "Cannot realloc %d chars \n", buflen);
-			return;
-			}
-		}
-	ptr = &packet[m - n];
-	((xHostEntry *) ptr)->length  = list[i].length;
-	((xHostEntry *) ptr)->family  = list[i].family;
-	ptr += sizeof(xHostEntry);
-	memmove( ptr, list[i].address, list[i].length);
-    }
-    *(int *) packet = m;
-    *(int *) (packet + sizeof(int)) = nhosts;
-    if(_XsTypeOfStream[ConnectionNumber(dpy)] != X_LOCAL_STREAM){
-    	n =
- GetNetworkInfo (ConnectionNumber(dpy), NULL,ConvertNetAddrToName, &packet, &retptr, &nhosts);
-	if( n <= 0){
-		fprintf(stderr, "No reply from the nameserver\n");
-		return;
-		}
-	}
-  	else retptr = &packet[2*sizeof(int)];
-     m = 0;
-     for(i=0; i<nhosts; i++){
-	ptr = &retptr[m];
-     	n = ((xHostEntry *) ptr)->length;
-	n = (((n + 3) >> 2) << 2) + sizeof(xHostEntry);
-	m += n;
-     	ptr += sizeof(xHostEntry);
- 	fprintf(stderr, "%s\n", ptr);	
- 	}		
-     free(retptr);
-}
-
-static char *get_streams_hostname (ha)
-    XHostAddress *ha;
-{
-    static char buf[128];
-    char	 *ptr, *packet, pktbuf[128], *retptr;
-    int	 n, len;
-
-    if(_XsTypeOfStream[ConnectionNumber(dpy)] == X_LOCAL_STREAM || ha->family == FamilyUname){
-	return(ha->address);
-    }
-
-    packet = pktbuf;
-    ptr = &packet[2*sizeof(int)];
-
-    ((xHostEntry *) ptr)->length = ha->length;
-    ((xHostEntry *) ptr)->family = ha->family;
-
-    ptr += sizeof(xHostEntry);
-    memcpy(ptr, ha->address, ha->length);
-
-    retptr = packet;
-    *(int *) retptr = ha->length+sizeof(xHostEntry);
-    *(int *) (retptr + sizeof(int)) = 1;
-
-    if(GetNetworkInfo (ConnectionNumber(dpy), NULL, ConvertNetAddrToName, &packet, &retptr, NULL)<0)
-    {
-	ha->address[ha->length] = '\0';
-	return(ha->address);
-    }
-    ptr = &retptr[sizeof(xHostEntry)];
-    len = ((xHostEntry *) retptr)->length;
-    memcpy(buf, ptr, len);
-    buf[len] = '\0';
-    return(buf);
-}
-
-#endif /* STREAMSCONN */
