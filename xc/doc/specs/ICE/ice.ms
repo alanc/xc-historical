@@ -1,28 +1,72 @@
-.\" Use tbl and -ms
+.\" Use tbl macros.t ice.ms | troff -ms
+.\"
+.\" TODO:
+.\" Think about connector/listener originator/answerer terminology.
+.EH ''''
+.OH ''''
+.EF ''''
+.OF ''''
+.\"
 .\" Disable hyphenation.  I hate it.
 .hy 0
 .de hy
 ..
-.\" A couple of macros to standardize state diagrams and make them
+.\" A couple of macros to standardize things and make them
 .\" easy to type.
-.de s	\" Begin state - .s <state name>
-\f6\\$1\fP:
+.de Ss	\" Begin state - .Ss <state name>
+.KS
+.LP
+\f7\\$1\fP\^:
 .br
 ..
-.de t	\" Transition - .t "condition" <new state>
+.de St	\" Transition - .St "condition" <new state>
 .RS
-\\$1 \(-> \f6\\$2\fP
+\\$1 \(-> \f7\\$2\fP
 .RE
 ..
-.\" Turn off page header & footer?
-.de PT
+.de Se	\" End state - .Se
+.LP
+.KE
 ..
-.de BT
+.de Ms	\" Start message header - .Ms messagename
+.sM
+.na
+.PN \\$1
+.RS
+..
+.de Mf	\" Field in message - .Mf name; types follow on separate line(s)
+.\".br
+.IP "\fI\\$1\fP\^: " "\w'\fI\\$1\fP\^: 'u"
+..
+.de Mc	\" Field Continuation - .Mc; description follows on separate line(s)
+.br
+.\" \h'1i'
+..
+.de Ma	\" Message addendum - .Ma title; contents follow
+.IP "\\$1: " "\w'\\$1: 'u"
+..
+.de Me	\" End of message header - .Me
+.RE
+.LP
+.ad
+.eM
+..
+.de Es	\" Start Encoding - .Es messagename
+.KS
+.LP
+.nf
+.PN \\$1
+.ta .2i .5i 2.0i
+..
+.de Ee	\" End Encoding - .Ee
+.fi
+.LP
+.KE
 ..
 .\" For some reason, my groff doesn't like I.  I've not tried to
 .\" figure out why yet.
 .ie t \{
-.fp 6 I
+.fp 6 CI
 .fp 7 C
 .fp 8 CB \}
 .el \{
@@ -36,27 +80,34 @@
 .TL
 \s+2\fBInter-Client Exchange (ICE) Protocol\fP\s-2
 .sp
-Preliminary Draft 0.9b
+Public Review Draft
 .sp
-X Consortium Standard
-.sp
-X Version 11, Release 6
+X Consortium Draft Standard
 .AU
 Robert Scheifler
 .AI
-X Consortium
+X Consortium, Inc.
 .AU
 Jordan Brown
 .AI
 Quarterdeck Office Systems
 .AB
 .LP
-There are numerous possible "inter-client" protocols, with many similarities
-and common needs - authentication, extension, version negotiation, byte
-order negotiation, etc.  The ICE protocol is intended to provide a framework
-for building such protocols, allowing them to make use of common negotiation
-mechanisms and to be multiplexed over a single transport connection.
+There are numerous possible protocols that can be used for communication
+among clients.  They have many similarities and common needs, including 
+authentication, version and extension negotiation, data typing, and
+connection management.  The
+.I
+Inter-Client Exchange
+.R
+(ICE) protocol is intended to provide a framework for building such
+protocols.  Using ICE reduces the complexity of designing new protocols and
+allows the sharing of many aspects of the implementation.
 .AE
+.LP
+.bp
+\&
+.sp 8
 .LP
 .DS C
 .if n Copyright (c) 1993 by the Massachusetts Institute of Technology
@@ -67,176 +118,262 @@ mechanisms and to be multiplexed over a single transport connection.
 Permission to use, copy, modify, and distribute this documentation for
 any purpose and without fee is hereby granted, provided that the above
 copyright notice and this permission notice appear in all copies.
-MIT makes no representations about the suitability for any purpose
+MIT and the X Consortium make no representations about the suitability
+for any purpose
 of the information in this document.  This documentation is provided
-"as is" without express or implied warranty.
-.de PT
-.ie o .tl 'ICE''Inter-Client Exchange Protocol '
-.el .tl 'Inter-Client Exchange Protocol ''ICE'
-..
+\*Qas is\*U without express or implied warranty.
+This document is only a draft standard of the X Consortium and is therefore
+subject to change.
 .bp 1
-.de BT
-.tl ''\fB % \fP''
-..
-.NH 1
-Purpose and Goals
+.EH '\fBInter-Client Exchange Protocol\fP''\fBPublic Review Draft\fP'
+.OH '\fBInter-Client Exchange Protocol\fP''\fBPublic Review Draft\fP'
+.EF ''\fB % \fP''
+.OF ''\fB % \fP''
+.nH 1 "Purpose and Goals"
 .LP
-In discussing a variety of protocols - existing, under development, and
-hypothetical - it was noted that there are many common elements between
-the protocols and that there were cases where the same two parties
-needed to talk multiple protocols.  For instance, most protocols have
-needs for authentication and for version and extension negotiation.
-An inset relationship is likely to require session management, data
-transfer, focus negotiation, and command notification.
+In discussing a variety of protocols \(em existing, under development, and
+hypothetical \(em it was noted that they have many elements in common.  Most
+protocols need mechanisms for authentication, for version and extension
+negotiation, and for setting up and taking down connections.  There are also
+cases where the same two parties need to talk to each other using multiple
+protocols.  For example, an embedding relationship between two parties is
+likely to require the simultaneous use of session management, data transfer,
+focus negotiation, and command notification protocols.  While these are
+logically separate protocols, it is desirable for them to share as many
+pieces of implementation as possible.
 .LP
-ICE provides a generic framework for building protocols, providing
-a common mechanism for authentication, version negotiation, multiplexing,
-etc, and a common library interface supplying buffering and similar
-services.
-.NH 1
-Overview of the protocol
+The
+.I
+Inter-Client Exchange
+.R
+(ICE) protocol provides a generic framework for building protocols on top of
+reliable, byte-stream transport connections.  It provides basic mechanisms
+for setting up and shutting down connections, for performing authentication,
+for negotiating versions and extensions, and for reporting errors.  The
+protocols running within an ICE connection are referred to here as
+.I subprotocols.
+ICE provides facilities for each subprotocol to do its own version
+negotiation, authentication, and error reporting.  In addition, if two
+parties are communicating using several different subprotocols, ICE will
+allow them to share the same transport layer connection.
+.nH 1 "Overview of the protocol"
 .LP
-ICE is designed to allow a variety of "subprotocols" to use common
-mechanisms and common protocol design for the negotiations, buffering,
-and so on that most protocols need.  It is designed to allow several
-subprotocols to coexist on the same underlying transport connection, to
-help reduce the number of transport connections needed in a system.
+Through some mechanism outside ICE, two parties make themselves known to
+each other and agree that they would like to communicate using an ICE
+subprotocol.  ICE assumes that this negotation includes some notion by which
+the parties will decide which is the \*Qoriginating\*U party and which is
+the \*Qanswering\*U party.  The negotiation will also need to provide the
+originating party with a name or address of the answering party.  Examples
+of mechanisms by which parties can make themselves known to each other are
+the X selection mechanism and environment variables.
 .LP
-Through some mechanism outside ICE, two parties agree that they
-desire to use ICE to communicate.  (This negotiation might take
-place over some other protocol, such as the X selection protocol, or
-might be a more static mechanism, such as an environment variable.)
-The parties agree, again using a mechanism outside ICE, on which
-party will be the "originating" party and which party will be the
-"answering" party.  (Note that this is independent of the intended
-direction of data flow.) The originating party first determines
-whether or not there is already an existing ICE connection between
-the parties.  If there is, it uses the existing connection and simply
-negotiates the new subprotocol.  If there is not, it makes a stream
-connection to the other party, and exchanges the initial ICE connection
-setup messages.
+The originating party first determines whether there is an existing ICE
+connection between the two parties.  If there is, it can re-use the existing
+connection and move directly to the setup of the subprotocol.  If no ICE
+connection exists, the originating party will open a transport connection to
+the answering party and will start ICE connection setup.
 .LP
-The initial ICE connection setup dialog consists of three major
-parts:  byte order exchange, authentication, and connection information
-exchange.  The first message in each direction is a \fBByteOrder\fP
+The ICE connection setup dialog consists of three major parts: byte order
+exchange, authentication, and connection information exchange.  The first
+message in each direction is a
+.PN ByteOrder
 message telling which byte order will be used by the sending party in
-messages that it sends.  After that, the originating party sends
-a \fBConnectionSetup\fP message giving information about itself
-(vendor name and release number) and giving a list of ICE version
-numbers it is capable of supporting and a list of authentication
-schemes it is willing to accept.  The answering party (optionally, if
-\fBmust-authenticate\fP is false) picks
-an authentication scheme and returns an \fBAuthenticationRequired\fP
-message specifying the authentication scheme to be used and giving
-whatever data is appropriate to the authentication scheme chosen.  The
-parties exchange \fBAuthenticationReply\fP and
-\fBAuthenticationNextPhase\fP messages until the authentication dialog
-is complete, at which point the answering party sends a
-\fBConnectionReply\fP message giving information about itself and
-choosing which version of the ICE protocol will be used.
+messages that it sends.  After that, the originating party sends a
+.PN ConnectionSetup
+message giving information about itself (vendor name and release number) and
+giving a list of ICE version numbers it is capable of supporting and a list
+of authentication schemes it is willing to accept.  Authentication is
+optional.  If no authentication is required, the answering party responds
+with a
+.PN ConnectionReply
+message giving information about itself, and the connection setup is complete.
 .LP
-Once an ICE connection is established, the originating party sends a
-\fBProtocolSetup\fP message to start a subprotocol negotiation.  (Note
-that the originating party for a given subprotocol may or may not have
-been the party that originally initiates the ICE connection.)  The
-\fBProtocolSetup\fP message gives the name of the subprotocol that the
-parties are to use, and the ICE major opcode that the originating party
-will use for messages that it sends using that subprotocol.  The
-\fBProtocolSetup\fP negotiation is quite similar to the
-\fBConnectionSetup\fP negotiation, with a similar authentication
-negotiation.  After the authentication dialog, the answering party
-sends a \fBProtocolReply\fP giving the ICE major opcode that it will
-use for messages that it sends using that subprotocol.
+If the connection setup is to be authenticated, the answering party will
+respond with an
+.PN AuthenticationRequired
+message instead of a
+.PN ConnectionReply
+message.  The parties then exchange
+.PN AuthenticationReply
+and
+.PN AuthenticationNextPhase
+messages until authentication is complete, at which time the answering party
+finally sends its
+.PN ConnectionReply
+message.
 .LP
-The parties then exchange messages as appropriate to the subprotocol.
-ICE supplies a small amount of "framework" for the subprotocol - in
-particular, it defines a field for a minor opcode and a standard format
-for error messages.
+Once an ICE connection is established (or an existing connection reused),
+the originating party starts subprotocol negotiation by sending a
+.PN ProtocolSetup
+message.  This message gives the name of the subprotocol that the parties
+have agreed to use, along with the ICE major opcode that the originating
+party has assigned to that subprotocol.  Authentication can also occur for
+the subprotocol, independently of authentication for the connection.
+Subprotocol authentication is optional.  If there is no subprotocol
+authentication, the answering party responds with a
+.PN ProtocolReply
+message, giving the ICE major opcode that it has assigned.
 .LP
-At some point the parties agree (in a manner specific to the
-subprotocol) that they are finished with the subprotocol.
-When no subprotocols are in use, either party sends a \fBWantToClose\fP
-message and, if both parties concur, the connection is closed.
-(Actually, due to the parallel and independent nature of the
-negotiation, it's quite likely that both parties will send \fBWantToClose\fP
-messages simultaneously.  This is taken to imply that they are both
-willing to close the connection.)
-.NH 1
-Data Types
+Subprotocols are authenticated independently of each other, because they may
+have differing security requirements.  If there is authentication for this
+particular subprotocol, it takes place before the answering party emits the
+.PN ProtocolReply
+message, and it uses the
+.PN AuthenticationRequired ,
+.PN AuthenticationReply ,
+and
+.PN AuthenticationNextPhase
+messages, just as for the connection authentication.  Only when subprotocol
+authentication is complete does the answering party send its
+.PN ProtocolReply
+message.
 .LP
-ICE packets contain several types of data.  Byte order is negotiated in
+When a subprotocol has been set up and authenticated, the two parties can
+communicate using messages defined by the subprotocol.  Each message has two
+opcodes: a major opcode and a minor opcode.  Each party will send messages
+using the major opcode it has assigned in its
+.PN ProtocolSetup
+or
+.PN ProtocolReply
+message.  These opcodes will, in general, not be the same.  For a particular
+subprotocol, each party will need to keep track of two major opcodes: the
+major opcode it uses when it sends messages, and the major opcode it expects
+to see in messages it receives.  The minor opcode values and semantics are
+defined by each individual subprotocol.
+.LP
+Each subprotocol will have one or more messages whose semantics are that the
+subprotocol is to be shut down.  Whether this is done unilaterally or is
+performed through negotiation is defined by each subprotocol.  Once a
+subprotocol is shut down, its major opcodes are removed from use; further
+messages on this subprotocol will cause errors to be emitted.
+.LP
+ICE has a facility to negotiate the closing of the connection when there are
+no longer any active subprotocols.  When either party decides that no
+subprotocols are active, it can send a
+.PN WantToClose
+message.  If the other party agrees to close the connection, it can simply
+do so.  If the other party wants to keep the connection open, it can
+indicate its desire by replying with a
+.PN NoClose
+message.
+.\" XXX - Note that it's likely that both parties will WantToClose at once.
+.LP
+It should be noted that the party that initiates the connection isn't
+necessarily the same as the one that initiates setting up a subprotocol.
+For example, suppose party A connects to party B.  Party A will issue the
+.PN ConnectionSetup
+message and party B will respond with a
+.PN ConnectionReply
+message.  (The authentication steps are omitted here for brevity.)
+Typically, party A will also issue the
+.PN ProtocolSetup
+message and expect a
+.PN ProtocolReply
+from party B.  Once the connection is established, however, either party may
+initiate the negotiation of a subprotocol.  Continuing this example, party B
+may decide that it needs to set up a subprotocol for communication with
+party A.  Party B would issue the
+.PN ProtocolSetup
+message and expect a
+.PN ProtocolReply
+from party A.
+.nH 1 "Data Types"
+.LP
+ICE messages contain several types of data.  Byte order is negotiated in
 the initial connection messages; in general data is sent in the sender's
 byte order and the receiver is required to swap it appropriately.
-In order to support 64-bit machines, ICE messages and many ICE data types
+In order to support 64-bit machines, ICE messages
 are padded to multiples of 8 bytes.  All messages are designed so that
-fields are "naturally" aligned on 16-, 32-, and 64-bit boundaries.
-.sp
-.RS
-.nf
-pad(E, b) = (b - (E mod b)) mod b
-(Pad value E to a multiple of b bytes)
-.fi
-.RE
-.NH 2
-Primitive Types
+fields are \*Qnaturally\*U aligned on 16-, 32-, and 64-bit boundaries.
+The following formula gives the number of bytes necessary 
+to pad \fIE\fP bytes to the next multiple of \fIb\fP\^:
+.DS
+pad(\fIE\fP, \fIb\fP\^) = (\fIb\fP \- (\fIE\fP mod \fIb\fP\^)) mod \fIb\fP
+.DE
+.nH 2 "Primitive Types"
 .LP
-.TS
-l c l
-l c l
-
-l c l.
-Type Name	Length	Description
-	(in bytes)
-
-CARD8	1	A single byte unsigned integer
-CARD16	2	Two byte unsigned integer
-CARD32	4	Four byte unsigned integer
+.TS H
+expand;
+lB lB
+l lw(3.5i).
+_
+.sp 6p
+Type Name	Description
+.sp 6p
+_
+.sp 6p
+.TH
+.R
+CARD8	8-bit unsigned integer
+CARD16	16-bit unsigned integer
+CARD32	32-bit unsigned integer
+BOOL	T{
+.PN False
+or
+.PN True
+T}
+LPCE	T{
+A character from the X Portable Character Set in Latin Portable Character
+Encoding
+T}
+.sp 6p
+_
 .TE
-.NH 2
-Complex Types
+.KS
+.nH 2 "Complex Types"
 .LP
-.TS
-l c l l
-l c l l
-
-l c l l.
-Type Name	Length	Type	Description
-	(in bytes)
-
-VERSION
-	2	CARD16	Major version number
-	2	CARD16	Minor version number
-
-XPCS
-	2	CARD16	length of string in bytes
-	n	LISTofCHAR	string
-	p		unused, p = pad(n+2, 4)
+.TS H
+expand;
+lB lB
+l lw(3.5i).
+_
+.sp 6p
+Type Name	Type
+.sp 6p
+_
+.sp 6p
+.TH
+.R
+VERSION	[Major, minor: CARD16]
+STRING	LISTofLPCE
+.sp 6p
+_
 .TE
-.NH 1
-Packet Format
+.KE
+LISTof<type> denotes a counted collection of <type>.  The exact encoding
+varies depending on the context; see the encoding section.
+.nH 1 "Message Format"
 .LP
-All ICE packets have the following information:
-.TS
-c c l
-c c l
+.\" XXX - Does this really belong in Encoding?
+All ICE messages have the following information:
+.TS H
+expand;
+cB cB lB
+cB cB lB
 
-c l l.
+c l lw(3.5i).
+_
+.sp 6p
 Length	Field	Description
 (in bytes)	Type	
-
+.sp 6p
+_
+.sp 6p
+.TH
 1	CARD8	protocol major opcode
 1	CARD8	protocol minor opcode
 2	<vary>	<use is specific to protocol>
 4	CARD32	length of remaining data in 8-byte units
-
-n	???	packet-specific data
+n	?	message-specific data
+.sp 6p
+_
 .TE
 .LP
 The fields are as follows:
 .LP
 Protocol major opcode
 .RS
-This specifies what subprotocol the message is intended for.  Subprotocol
+This specifies what subprotocol the message is intended for.  Major opcode
 0 is reserved for ICE control messages.  The major opcodes of other
 subprotocols are dynamically assigned and exchanged at protocol
 negotiation time.
@@ -254,15 +391,16 @@ This specifies the length of the information following the first 8 bytes.
 Each message-type has a different format, and will need to be separately
 length-checked against this value.  As every data item has either an
 explicit length, or an implicit length, this can be easily accomplished.
-Packets that have too little or too much data indicate a serious
-protocol failure.
+Messages that have too little or too much data indicate a serious
+protocol failure, and should result in a
+.PN BadLength
+error.
 .RE
-.NH 1
-Global Protocol Description
+.nH 1 "Overall Protocol Description"
 .LP
 Every message sent (in a given direction) has an implicit sequence number,
 starting with 1.  Sequence numbers are global to the connection; independent
-sequence numbers are NOT maintained for each protocol.
+sequence numbers are \fInot\fP maintained for each protocol.
 .LP
 Messages of a given major-opcode (i.e., of a given protocol) must be
 responded to (if a response is called for) in order by the receiving party.
@@ -271,20 +409,21 @@ Messages from different protocols can be responded to in arbitrary order.
 Minor opcode 0 in every protocol is for reporting errors.  At most one error
 is generated per request.  If more than one error condition is encountered
 in processing a request, the choice of which error is returned is
-implementation-dependent.  Protocol designers are urged to design their
-protocol to avoid this situation.
-.NH 2
-Error
-.RS
-.TS
-lf7 l.
-offending-minor-opcode	CARD8
-severity	{CanContinue, FatalToProtocol, FatalToConnection}
-sequence-number	CARD32
-class	CARD16
-value(s)	<dependent on major/minor opcode and class>
-.TE
-.LP
+implementation-dependent.
+.Ms Error
+.Mf offending-minor-opcode
+CARD8
+.Mf severity
+.Pn { CanContinue ,
+.PN FatalToProtocol ,
+.PN FatalToConnection }
+.Mf sequence-number
+CARD32
+.Mf class
+CARD16
+.Mf value(s)
+<dependent on major/minor opcode and class>
+.Me
 An error message sent in response to a message from any protocol.
 This error message exists in all protocol major-opcode spaces; it
 is minor-opcode zero in every protocol.  The minor opcode of the
@@ -292,154 +431,228 @@ message that caused the error is reported, as well as the sequence
 number of that message.  The class defines the generic class of
 error.  Classes are specified separately for each protocol (numeric
 values can mean different things in different protocols).  The error
-value(s), if any, and their types vary with the specific error class
+values, if any, and their types vary with the specific error class
 for the protocol.
-
-(Asynchronous errors - errors not associated with a previous
-message???  If so, offending-minor and sequence = 0.)
-.RE
-.NH 1
-ICE Control Subprotocol - Major Opcode 0
+.LP
+.\" XXX
+.\" (Asynchronous errors \(em errors not associated with a previous
+.\" message???  If so, offending-minor and sequence = 0.)
+.nH 1 "ICE Control Subprotocol \(em Major Opcode 0"
 .LP
 Each of the ICE control opcodes is described below.
-Most of the packets have additional information included beyond the
-description above.  The additional information is appended to the packet
+Most of the messages have additional information included beyond the
+description above.  The additional information is appended to the message
 header in the order described, and the length field is computed accordingly.
 .LP
-Note:  In the following message descriptions, "Expected Errors" indicates
-errors that might occur in the normal course of events.  Other errors
-(in particular BadMajor, BadMinor, BadState, BadLength, BadValue,
-ProtocolDuplicate, and MajorOpcodeDuplicate) might occur, but generally
-indicate serious failures (read as "bugs") on the part of the erring peer.
-.NH 2
-ByteOrder
-.RS
-.TS
-lf7 l.
-byte-order	{BigEndian, LittleEndian}
-.TE
-.LP
+In the following message descriptions, \*QExpected errors\*U indicates
+errors that may occur in the normal course of events.  Other errors
+(in particular
+.PN BadMajor ,
+.PN BadMinor ,
+.PN BadState ,
+.PN BadLength ,
+.PN BadValue ,
+.PN ProtocolDuplicate ,
+and
+.PN MajorOpcodeDuplicate )
+might occur, but generally indicate a serious implementation failure on
+the part of the erring peer.
+.Ms ByteOrder
+.Mf byte-order
+.Pn { MSBfirst ,
+.PN LSBfirst }
+.Me
 Both parties must send this message before sending any other,
 including errors.  This message specifies the byte order that
 will be used on subsequent messages sent by this party.
 .LP
 Note:  If the receiver detects an error in this message,
-it must be sure to send its own ByteOrder message before sending
-the Error.
-.RE
-.NH 2
-ConnectionSetup
-.RS
-.TS
-lf7 l.
-must-authenticate	BOOL
-versions	LISTofVERSION
-authentication-protocol-names	LISTofXPCS
-vendor	XPCS
-release	XPCS
-.TE
-Expected errors: \f7NoVersion\fP, \f7NoAuthentication\fP
+it must be sure to send its own
+.PN ByteOrder
+message before sending the
+.PN Error .
+.Ms ConnectionSetup
+.Mf versions
+LISTofVERSION
+.Mf must-authenticate
+BOOL
+.Mf authentication-protocol-names
+LISTofSTRING
+.Mf vendor
+STRING
+.Mf release
+STRING
 .LP
-The party that initiates the connection (that one that does the "connect()")
-must send this as the second message (after ByteOrder) on startup.
+.Ma "Responses"
+.PN ConnectionReply ,
+.PN AuthenticationRequired .
+(See note)
+.Ma "Expected errors"
+.PN NoVersion ,
+.PN NoAuthentication ,
+.PN AuthenticationRejected ,
+.PN AuthenticationFailed .
+.Me
+The party that initiates the connection (that one that does the \*Qconnect()\*U)
+must send this as the second message (after
+.PN ByteOrder )
+on startup.
 .LP
 Versions gives a list, in decreasing order of preference, of the
 protocol versions this party is capable of speaking.  This document
 specifies major version 1, minor version 0.
 .LP
-Authentication-protocol-names gives the names of authentication
-protocols the sending party is willing to perform.
+If must-authenticate is
+.PN True ,
+the initiating party demands authentication; the accepting party \fImust\fP
+pick an authentication scheme and use it.  In this case, the only valid
+response is
+.PN AuthenticationRequired .
 .LP
-If must-authenticate is true, the initiating party demands
-authentication; the accepting party *must* pick an authentication
-scheme and use it.  If must-authenticate is false, the accepting
-party is allowed to decline authentication completely.
+If must-authenticate is
+.PN False ,
+the accepting party may choose an authentication mechanism, use a
+host-address-based authentication scheme, or skip authentication.
+When must-authenticate is
+.PN False ,
+.PN ConnectionReply
+and
+.PN AuthenticationRequired
+are both valid responses.  If a host-address-based authentication scheme is
+used,
+.PN AuthenticationRejected
+and
+.PN AuthenticationFailed
+errors are possible.
+.LP
+Authentication-protocol-names  specifies a (possibly null, if
+must-authenticate is
+.PN False )
+list of authentication protocols the party is willing to perform.  If
+must-authenticate is
+.PN True ,
+presumably the party will offer only authentication mechanisms
+allowing mutual authentication.
 .LP
 Vendor gives the name of the vendor of this ICE implementation.
 .LP
 Release gives the release identifier of this ICE implementation.
 .LP
-.RE
-.NH 2
-AuthenticationRequired
-.RS
-.TS
-lf7 l.
-authentication-protocol-index	CARD8
-data	<specific to authentication protocol>
-.TE
-Expected errors: \f7AuthenticationRejected\fP, \f7AuthenticationFailed\fP
+.Ms AuthenticationRequired
+.Mf authentication-protocol-index
+CARD8
+.Mf data
+<specific to authentication protocol>
 .LP
-This message is sent in response to a ConnectionSetup or ProtocolSetup
+.Ma "Response"
+.PN AuthenticationReply .
+.Ma "Expected errors"
+.PN AuthenticationRejected ,
+.PN AuthenticationFailed .
+.Me
+This message is sent in response to a
+.PN ConnectionSetup
+or
+.PN ProtocolSetup
 message to specify that authentication is to be done and what authentication
 mechanism is to be used.
 .LP
-The authentication protocol is specified by an index into the list
-of names given in the ConnectionSetup or ProtocolSetup.  Any
-protocol-specific data that might be required is also sent.
-.RE
-.NH 2
-AuthenticationReply
-.RS
-.TS
-lf7 l.
-data	<specific to authentication protocol>
-.TE
-Expected errors:  \f7AuthenticationRejected\fP, \f7AuthenticationFailed\fP
+The authentication protocol is specified by a 0-based index into the list
+of names given in the
+.PN ConnectionSetup
+or
+.PN ProtocolSetup .
+Any protocol-specific data that might be required is also sent.
+.Ms AuthenticationReply
+.Mf data
+<specific to authentication protocol>
 .LP
+.Ma "Responses"
+.PN AuthenticationNextPhase ,
+.PN ConnectionReply ,
+.PN ProtocolReply .
+.Ma "Expected errors"
+.PN AuthenticationRejected ,
+.PN AuthenticationFailed .
+.Me
 This message is sent in response to an AuthenticationRequired message, to
 supply authentication data as defined by the authentication protocol
 being used.
 .LP
 Note that this message is sent by the party that initiated the current
-negotiation - the party that sent the ConnectionSetup or ProtocolSetup
+negotiation \(em the party that sent the
+.PN ConnectionSetup
+or
+.PN ProtocolSetup
 message.
-.RE
-.NH 2
-AuthenticationNextPhase
-.RS
-.TS
-lf7 l.
-data	<specific to authentication protocol>
-.TE
-Expected errors:  \f7AuthenticationRejected\fP, \f7AuthenticationFailed\fP
 .LP
-This message is sent in response to an AuthenticationReply message, to
-supply authentication data as defined by the authentication protocol
-being used.
-.RE
-.NH 2
-ConnectionReply
-.RS
-.TS
-lf7 l.
-version-index	CARD8
-vendor	XPCS
-release	XPCS
-.TE
-Version-index gives an index into the list of versions offered in
-the ConnectionSetup message; it specifies the version of the ICE
-protocol that both party should speak for the duration of the
-connection.
+.PN AuthenticationNextPhase
+indicates that more is to be done to complete the authentication.
+If the authentication is complete,
+.PN ConnectionReply
+is appropriate if the current authentication handshake is the result of a
+.PN ConnectionSetup ,
+and a
+.PN ProtocolReply
+is appropriate if it is the result of a
+.PN ProtocolSetup .
+.Ms AuthenticationNextPhase
+.Mf data
+<specific to authentication protocol>
+.LP
+.Ma "Response"
+.PN AuthenticationReply .
+.Ma "Expected errors"
+.PN AuthenticationRejected ,
+.PN AuthenticationFailed .
+.Me
+This message is sent in response to an
+.PN AuthenticationReply
+message, to supply authentication data as defined by the authentication
+protocol being used.
+.Ms ConnectionReply
+.Mf version-index
+CARD8
+.Mf vendor
+STRING
+.Mf release
+STRING
+.Me
+Version-index gives a 0-based index into the list of versions offered in
+the
+.PN ConnectionSetup
+message; it specifies the version of the ICE protocol that both parties
+should speak for the duration of the connection.
 .LP
 Vendor gives the name of the vendor of this ICE implementation.
 .LP
 Release gives the release identifier of this ICE implementation.
-.RE
-.NH 2
-ProtocolSetup
-.RS
-.TS
-lf7 l.
-protocol-name	XPCS
-major-opcode	CARD8
-versions	LISTofVERSION
-vendor	XPCS
-release	XPCS
-authentication-protocol-names	LISTofXPCS
-.TE
-Expected Errors:  \f7UnknownProtocol\fP, \f7NoVersion\fP, \f7NoAuthentication\fP
+.Ms ProtocolSetup
+.Mf protocol-name
+STRING
+.Mf major-opcode
+CARD8
+.Mf versions
+LISTofVERSION
+.Mf vendor
+STRING
+.Mf release
+STRING
+.Mf must-authenticate
+BOOL
+.Mf authentication-protocol-names
+LISTofSTRING
 .LP
+.Ma "Responses"
+.PN AuthenticationRequired ,
+.PN ProtocolReply .
+.Ma "Expected errors"
+.PN UnknownProtocol ,
+.PN NoVersion ,
+.PN NoAuthentication ,
+.PN AuthenticationRejected ,
+.PN AuthenticationFailed .
+.Me
 Used to negotiate a protocol and establish any authentication
 specific to it.
 .LP
@@ -458,222 +671,486 @@ protocol.
 Release identifies the release of this implementation of the
 specific protocol.
 .LP
-Authentication-protocol-names  specifies a (possibly null) list
-of authentication protocols the party is willing to perform.
-.RE
-.NH 2
-ProtocolReply
-.RS
-.TS
-lf7 l.
-major-opcode	CARD8
-version-index	CARD8
-vendor	XPCS
-release	XPCS
-.TE
+If must-authenticate is
+.PN True ,
+the initiating party demands authentication; the accepting party \fImust\fP
+pick an authentication scheme and use it.  In this case, the only valid
+response is
+.PN AuthenticationRequired .
+.LP
+If must-authenticate is
+.PN False ,
+the accepting party may choose an authentication mechanism, use a
+host-address-based authentication scheme, or skip authentication.
+When must-authenticate is
+.PN False ,
+.PN ProtocolReply
+and
+.PN AuthenticationRequired
+are both valid responses.  If a host-address-based authentication scheme is
+used,
+.PN AuthenticationRejected
+and
+.PN AuthenticationFailed
+errors are possible.
+.LP
+Authentication-protocol-names  specifies a (possibly null, if
+must-authenticate is
+.PN False )
+list of authentication protocols the party is willing to perform.  If
+must-authenticate is
+.PN True ,
+presumably the party will offer only authentication mechanisms
+allowing mutual authentication.
+.Ms ProtocolReply
+.Mf major-opcode
+CARD8
+.Mf version-index
+CARD8
+.Mf vendor
+STRING
+.Mf release
+STRING
+.Me
 Major-opcode gives the opcode that this party will use in
-messages that it sends.  Version-index gives an index into the list
-of versions offered in the ProtocolSetup message; it specifies
-the version of the protocol that both party should speak for
-the duration of the connection.  Vendor identifies the vendor of
-this implementation of the specific protocol.  Release identifies
-the release of this implementation of the specific protocol.
-.RE
-.NH 2
-Ping
-.RS
-.TS
-l.
-<no parameters>
-.TE
+messages that it sends.
+.LP
+Version-index gives a 0-based index into the list of versions offered in the
+.PN ProtocolSetup
+message; it specifies the version of the protocol that both
+parties should speak for the duration of the connection.
+.LP
+Vendor identifies the vendor of this implementation of the specific protocol.
+.LP
+Release identifies the release of this implementation of the specific
+protocol.
+.Ms Ping
+.Ma "Response"
+.PN PingReply .
+.Me
 A way to test if the other side is still paying attention.
-.RE
-.NH 2
-PingReply
-.RS
-.TS
-l.
-<no parameters>
-.TE
+.Ms PingReply
+.Me
 The way to say that you are still paying attention.
-.RE
-.NH 2
-WantToClose
-.RS
-.TS
-l.
-<no parameters>
-.TE
+.Ms WantToClose
+.Ma "Responses"
+.PN WantToClose ,
+.PN NoClose ,
+.PN ProtocolSetup .
+.Me
 The sending party has noticed that there are no active
 protocols left and the connection can be closed.  There are
 four possible scenarios arising from this request:
-.br
-(1) The other side noticed too, and has already sent a
-WantToClose.  On receiving a WantToClose while already attempting
-to shut down, each party should simply close the connection.
-.br
-(2) The other side hasn't noticed, but agrees.  It closes
+.IP (1) 5
+The other side noticed too, and has already sent a
+.PN WantToClose .
+On receiving a
+.PN WantToClose
+while already attempting to shut down, each party should simply close the
+connection.
+.IP (2)
+The other side hasn't noticed, but agrees.  It closes
 the connection.
-.br
-(3) The other side has a ProtocolSetup "in flight", in
-which case it is to ignore WantToClose and the party
-sending WantToClose is to abandon the shutdown attempt
-when it receives the ProtocolSetup.
-.br
-(4) The other side wants the connection kept open for some
+.IP (3)
+The other side has a
+.PN ProtocolSetup
+\*Qin flight,\*U in which case it is to ignore
+.PN WantToClose
+and the party sending
+.PN WantToClose
+is to abandon the shutdown attempt when it receives the
+.PN ProtocolSetup .
+.IP (4)
+The other side wants the connection kept open for some
 reason not specified by the protocol, in which case it
-sends NoClose.
+sends
+.PN NoClose .
 .LP
 See the state transition diagram for additional information.
-.RE
-.NH 2
-NoClose
-.RS
-.TS
-l.
-<no parameters>
-.TE
+.Ms NoClose
+.Me
 The sending party does not want the connection closed at
 this time.  The receiving party should not close the
-connection, and should not request WantToClose; the
-sending party will initiate the next "Shall we close?"
-dialog.
-.RE
-.NH 1
-State Diagrams
+connection, and should not request
+.PN WantToClose ;
+the sending party will initiate the next \*QShall we close?\*U dialog.
+.nH 2 "Generic Errors"
+.LP
+These errors should be used by all protocols, as applicable.
+For ICE (major opcode 0),
+.PN FatalToProtocol
+really means
+.PN FatalToConnection.
+.Ms BadMinor
+.Mf Offending-minor
+Any
+.Mf Severity
+.PN FatalToProtocol
+or
+.PN CanContinue
+(protocol's discretion)
+.Mf Values
+None
+.Me
+Received a message with an unknown minor opcode.
+.Ms BadState
+.Mf Offending-minor
+Any
+.Mf Severity
+.PN FatalToProtocol
+or
+.PN CanContinue
+(protocol's discretion)
+.Mf Values
+None
+.Me
+Received a message with a valid minor opcode which is not appropriate
+for the current state of the protocol.
+.Ms BadLength
+.Mf Offending-minor
+Any
+.Mf Severity
+.PN FatalToProtocol
+or
+.PN CanContinue
+(protocol's discretion)
+.Mf Values
+None
+.Me
+Received a message with a bad length.  The length of the message is
+longer or shorter than required to contain the data.
+.Ms BadValue
+.Mf Offending-minor
+Any
+.Mf Severity
+.PN CanContinue
+.Mf Values
+CARD32 Offset to offending value in offending message
+.Mc
+CARD32 Length of offending value
+.Mc
+<varies> Offending value
+.Me
+Received a message with a bad value specified.
+.nH 2 "ICE Errors"
+.LP
+These errors are all major opcode 0 errors.
+.Ms BadMajor
+.Mf Offending-minor
+<any>
+.Mf Severity
+.PN CanContinue
+.Mf Values
+CARD8 Opcode
+.Me
+The opcode given is not one that has been registered.
+.Ms NoAuthentication
+.Mf Offending-minor
+.PN ConnectionSetup ,
+.PN ProtocolSetup
+.Mf Severity
+.PN ConnectionSetup
+\(->
+.PN FatalToConnection
+.Mc
+.PN ProtocolSetup
+\(->
+.PN FatalToProtocol
+.Mf Values
+None
+.Me
+None of the authentication protocols offered are available.
+.Ms NoVersion
+.Mf Offending-minor
+.PN ConnectionSetup ,
+.PN ProtocolSetup
+.Mf Severity
+.PN ConnectionSetup
+\(->
+.PN FatalToConnection
+.Mc
+.PN ProtocolSetup
+\(->
+.PN FatalToProtocol
+.Mf Values
+None
+.Me
+None of the protocol versions offered are available.
+.Ms AuthenticationRejected
+.Mf Offending-minor
+.PN AuthenticationReply ,
+.PN AuthenticationRequired ,
+.PN AuthenticationNextPhase
+.Mf Severity
+.PN FatalToProtocol
+.Mf Values
+STRING Reason
+.Me
+Authentication rejected.  The peer has failed to properly
+authenticate itself.
+.Ms AuthenticationFailed
+.Mf Offending-minor
+.PN AuthenticationReply ,
+.PN AuthenticationRequired ,
+.PN AuthenticationNextPhase
+.Mf Severity
+.PN FatalToProtocol
+.Mf Values
+STRING Reason
+.Me
+Authentication failed.
+.PN AuthenticationFailed
+does not imply that the authentication was rejected, as
+.PN AuthenticationRejected
+does.  Instead it means that the sender was unable to complete
+the authentication for some other reason.  (For instance, it
+may have been unable to contact an authentication server.)
+.Ms ProtocolDuplicate
+.Mf Offending-minor
+.PN ProtocolSetup
+.Mf Severity
+.PN FatalToProtocol
+(but see note)
+.Mf Values
+STRING Protocol Name
+.Me
+The protocol name was already registered.  This is fatal to
+the \*Qnew\*U protocol being set up by
+.PN ProtocolSetup ,
+but it does not affect the existing registration.
+.Ms MajorOpcodeDuplicate
+.Mf Offending-minor
+.PN ProtocolSetup
+.Mf Severity
+.PN FatalToProtocol
+(but see note)
+.Mf Values
+CARD8 Opcode
+.Me
+The major opcode specified was already registered.  This is
+fatal to the \*Qnew\*U protocol being set up by
+.PN ProtocolSetup ,
+but it does not affect the existing registration.
+.Ms UnknownProtocol
+.Mf Offending-minor
+.PN ProtocolSetup
+.Mf Severity
+.PN FatalToProtocol
+.Mf Values
+STRING protocol name
+.Me
+The protocol specified is not supported.
+.nH 1 "State Diagrams"
 .LP
 Here are the state diagrams for the party that initiates the connection:
-.LP
-.s start
-.t "connect to other end, send ConnectionSetup" conn_wait
-
-.s conn_wait
-.t "receive ConnectionReply" stasis
-.t "receive AuthenticationRequired" conn_auth1
-.t "receive Error" quit
-.t "receive <other>, send Error" quit
-
-.s conn_auth1
-.t "if good auth data, send AuthenticationReply" conn_auth2
-.t "if bad auth data, send Error" quit
-
-.s conn_auth2
-.t "receive ConnectionReply" stasis
-.t "receive AuthenticationNextPhase" conn_auth1
-.t "receive Error" quit
-.t "receive <other>, send Error" quit
-
-.LP
+.Ss start
+.St "connect to other end, send ConnectionSetup" conn_wait
+.Se
+.Ss conn_wait
+.St "receive ConnectionReply" stasis
+.St "receive AuthenticationRequired" conn_auth1
+.St "receive Error" quit
+.St "receive <other>, send Error" quit
+.Se
+.Ss conn_auth1
+.St "if good auth data, send AuthenticationReply" conn_auth2
+.St "if bad auth data, send Error" quit
+.Se
+.Ss conn_auth2
+.St "receive ConnectionReply" stasis
+.St "receive AuthenticationNextPhase" conn_auth1
+.St "receive Error" quit
+.St "receive <other>, send Error" quit
+.Se
 Here are top-level state transitions for the party that accepts connections.
-
-.s listener
-.t "accept connection" init_wait
-
-.s init_wait
-.t "receive ConnectionSetup" auth_ask
-.t "receive <other>, send Error" quit
-
-.s auth_ask
-.t "send ConnectionReply" stasis
-.t "send AuthenticationRequired" auth_wait
-.t "send Error" quit
-
-.s auth_wait
-.t "receive AuthenticationReply" auth_check
-.t "receive <other>, send Error" quit
-
-.s auth_check
-.t "if no more auth needed, send ConnectionReply" stasis
-.t "if good auth data, send AuthenticationNextPhase" auth_wait
-.t "if bad auth data, send Error" quit
-
-.LP
+.Ss listener
+.St "accept connection" init_wait
+.Se
+.Ss init_wait
+.St "receive ConnectionSetup" auth_ask
+.St "receive <other>, send Error" quit
+.Se
+.Ss auth_ask
+.St "send ConnectionReply" stasis
+.St "send AuthenticationRequired" auth_wait
+.St "send Error" quit
+.Se
+.Ss auth_wait
+.St "receive AuthenticationReply" auth_check
+.St "receive <other>, send Error" quit
+.Se
+.Ss auth_check
+.St "if no more auth needed, send ConnectionReply" stasis
+.St "if good auth data, send AuthenticationNextPhase" auth_wait
+.St "if bad auth data, send Error" quit
+.Se
 Here are the top-level state transitions for all parties after the initial
 connection establishment subprotocol.
 .LP
 Note:  this is not quite the truth for branches out from stasis, in
 that multiple conversations can be interleaved on the connection.
-
-.s stasis
-.t "send ProtocolSetup" proto_wait
-.t "receive ProtocolSetup" proto_reply
-.t "send Ping" ping_wait
-.t "receive Ping, send PingReply" stasis
-.t "receive WantToClose" shutdown_attempt
-.t "receive <other>, send Error" stasis
-.t "All protocols shut down, send WantToClose" close_wait
-
-.s proto_wait
-.t "receive ProtocolReply" stasis
-.t "receive AuthenticationRequired" give_auth1
-.t "receive Error, give up on this protocol" stasis
-
-.s give_auth1
-.t "if good auth data, send AuthenticationReply" give_auth2
-.t "if bad auth data, send Error, give up on this protocol" stasis
-
-.s give_auth2
-.t "receive ProtocolReply" stasis
-.t "receive AuthenticationNextPhase" give_auth1
-.t "receive Error, give up on this protocol" stasis
-
-.s proto_reply
-.t "send ProtocolReply" stasis
-.t "send AuthenticationRequired" take_auth1
-.t "send Error, give up on this protocol" stasis
-
-.s take_auth1
-.t "receive AuthenticationReply" take_auth2
-.t "receive Error, give up on this protocol" stasis
-
-.s take_auth2
-.t "if good auth data" take_auth3
-.t "if bad auth data, send Error, give up on this protocol" stasis
-
-.s take_auth3
-.t "if no more auth needed, send ProtocolReply" stasis
-.t "if good auth data, send AuthenticationNextPhase" take_auth1
-.t "if bad auth data, send Error, give up on this protocol" stasis
-
-.s ping_wait
-.t "receive PingReply" stasis
-
-.s quit
-.t "" close connection
-
-
+.Ss stasis
+.St "send ProtocolSetup" proto_wait
+.St "receive ProtocolSetup" proto_reply
+.St "send Ping" ping_wait
+.St "receive Ping, send PingReply" stasis
+.St "receive WantToClose" shutdown_attempt
+.St "receive <other>, send Error" stasis
+.St "All protocols shut down, send WantToClose" close_wait
+.Se
+.Ss proto_wait
+.St "receive ProtocolReply" stasis
+.St "receive AuthenticationRequired" give_auth1
+.St "receive Error, give up on this protocol" stasis
+.Se
+.Ss give_auth1
+.St "if good auth data, send AuthenticationReply" give_auth2
+.St "if bad auth data, send Error, give up on this protocol" stasis
+.Se
+.Ss give_auth2
+.St "receive ProtocolReply" stasis
+.St "receive AuthenticationNextPhase" give_auth1
+.St "receive Error, give up on this protocol" stasis
+.Se
+.Ss proto_reply
+.St "send ProtocolReply" stasis
+.St "send AuthenticationRequired" take_auth1
+.St "send Error, give up on this protocol" stasis
+.Se
+.Ss take_auth1
+.St "receive AuthenticationReply" take_auth2
+.St "receive Error, give up on this protocol" stasis
+.Se
+.Ss take_auth2
+.St "if good auth data" take_auth3
+.St "if bad auth data, send Error, give up on this protocol" stasis
+.Se
+.Ss take_auth3
+.St "if no more auth needed, send ProtocolReply" stasis
+.St "if good auth data, send AuthenticationNextPhase" take_auth1
+.St "if bad auth data, send Error, give up on this protocol" stasis
+.Se
+.Ss ping_wait
+.St "receive PingReply" stasis
+.Se
+.Ss quit
+.St "" close connection
+.Se
 Here are the state transitions for shutting down the connection:
-
-.s shutdown_attempt
-.t "if protocols active," stasis
-.t "else if want to stay alive anyway, send NoClose" stasis
-.t "else" quit
-
-.s close_wait
-.t "receive ProtocolSetup" proto_reply
-.t "receive NoClose" stasis
-.t "receive WantToClose" quit
-.t "connection close" quit
-
-.NH 1
-Protocol Encoding
+.Ss shutdown_attempt
+.St "if protocols active," stasis
+.St "else if want to stay alive anyway, send NoClose" stasis
+.St "else" quit
+.Se
+.Ss close_wait
+.St "receive ProtocolSetup" proto_reply
+.St "receive NoClose" stasis
+.St "receive WantToClose" quit
+.St "connection close" quit
+.Se
+.nH 1 "Protocol Encoding"
 .LP
 In the encodings below, the first column is the number of bytes occupied.
 The second column is either the type (if the value is variable) or the
 actual value.  The third column is the description of the value (e.g.,
-the parameter name).  Receivers are not to examine unused and pad bytes.
+the parameter name).  Receivers must ignore bytes that are designated
+as unused or pad bytes.
 .LP
 This document describes major version 1, minor version 0 of the ICE protocol.
 .LP
 LISTof<type> indicates some number of repetitions of <type>, with no
 additional padding.  The number of repetitions must be specified elsewhere
 in the message.
+.KS
+.nH 2 "Primitive Types"
+.LP
+.TS H
+expand;
+lB lB lB
+l l lw(3.5i).
+_
+.sp 6p
+Type Name	Length (bytes)	Description
+.sp 6p
+_
+.sp 6p
+.TH
+.R
+CARD8	1	8-bit unsigned integer
+CARD16	2	16-bit unsigned integer
+CARD32	4	32-bit unsigned integer
+LPCE	1	T{
+A character from the X Portable Character Set in Latin Portable Character
+Encoding
+T}
+.sp 6p
+_
+.TE
+.KE
+.KS
+.nH 2 "Enumerations"
+.LP
+.TS H
+expand;
+lB lB lB
+l l lw(3.5i).
+_
+.sp 6p
+Type Name	Value	Description
+.sp 6p
+_
+.sp 6p
+.TH
+.R
+BOOL	0	T{
+.PN False
+T}
+	1	T{
+.PN True
+T}
+.sp 6p
+_
+.TE
+.KE
+.KS
+.nH 2 "Compound Types"
+.LP
+.TS H
+expand;
+lB lB lB lB
+l l l lw(3.5i).
+_
+.sp 6p
+Type Name	Length (bytes)	Type	Description
+.sp 6p
+_
+.sp 6p
+.TH
+.R
+VERSION
+	2	CARD16	Major version number
+	2	CARD16	Minor version number
+STRING
+	2	CARD16	length of string in bytes
+	n	LISTofLPCE	string
+	p		unused, p = pad(n+2, 4)
+.sp 6p
+_
+.TE
+.KE
+.ne 6
+.nH 2 "ICE Minor opcodes"
+.LP
 .RS
 .TS
-c c
-l l.
-Message Name	Encoding
+lB cB
+l n.
 _
+.sp 6p
+Message Name	Encoding
+.sp 6p
+_
+.sp 6p
 Error	0
 ByteOrder	1
 ConnectionSetup	2
@@ -687,456 +1164,176 @@ Ping	9
 PingReply	10
 WantToClose	11
 NoClose	12
+.sp 6p
+_
 .TE
 .RE
-.NH 2
-Error
-.RS
-.TS
-tab(|);
-l l l
-l l l
-
-l l l.
-Length|Type /|Description
-|Value
-1|CARD8|major-opcode
-1|0|Error
-2|CARD16|class
-4|(n+p)/8+1|length
-1|CARD8|offending-minor-opcode
-1||severity:
-|0|   CanContinue
-|1|   FatalToProtocol (???)
-|2|   FatalToConnection
-2||unused
-4|CARD32|sequence number of erroneous message
-n|<varies>|value(s)
-p||pad, p = pad(n,8)
-.TE
-.RE
-.NH 2
-ByteOrder
-.RS
-.TS
-tab(|);
-l l l
-l l l
-
-l l l.
-Length|Type /|Description
-|Value
-1|0|ICE
-1|1|ByteOrder
-1||byte-order:
-|0|   LittleEndian
-|1|   BigEndian
-1||unused
-4|0|length
-
-.TE
-.RE
-.NH 2
-ConnectionSetup
-.RS
-.TS
-tab(|);
-l l l
-l l l
-
-l l l.
-Length|Type /|Description
-|Value
-1|0|ICE
-1|2|ConnectionSetup
-1|CARD8|Number of versions offered
-1|CARD8|Number of authentication protocol names offered
-4|(i+j+k+m+p)/8+1|length
-1|BOOL|must-authenticate
-7||unused
-i|XPCS|vendor
-j|XPCS|release
-k|LISTofXPCS|authentication-protocol-names
-m|LISTofVERSION|version-list
-p||unused, p = pad(i+j+k+m,8)
-
-.TE
-.RE
-.NH 2
-AuthenticationRequired
-.RS
-.TS
-tab(|);
-l l l
-l l l
-
-l l l.
-Length|Type /|Description
-|Value
-1|0|ICE
-1|3|AuthenticationRequired
-1|CARD8|authentication-protocol-index
-1||unused
-4|(n+p)/8+1|length    
-2|n|length of authentication data
-6||unused
-n|<varies>|data
-p||unused, p = pad(n,8)
-
-.TE
-.RE
-.NH 2
-AuthenticationReply
-.RS
-.TS
-tab(|);
-l l l
-l l l
-
-l l l.
-Length|Type /|Description
-|Value
-1|0|ICE
-1|4|AuthenticationReply
-2||unused
-4|(n+p)/8+1|length
-2|n|length of authentication data
-6||unused
-n|<varies>|data
-p||unused, p = pad(n,8)
-
-.TE
-.RE
-.NH 2
-AuthenticationNextPhase
-.RS
-.TS
-tab(|);
-l l l
-l l l
-
-l l l.
-Length|Type /|Description
-|Value
-1|0|ICE
-1|5|AuthenticationNextPhase
-2||unused
-4|(n+p)/8+1|length
-2|n|length of authentication data
-6||unused
-n|<varies>|data
-p||unused, p = pad(n,8)
-.TE
-.RE
-.NH 2
-ConnectionReply
-.RS
-.TS
-tab(|);
-l l l
-l l l
-
-l l l.
-Length|Type /|Description
-|Value
-1|0|ICE
-1|6|ConnectionReply
-1|CARD8|version-index
-1||unused
-4|(i+j+p)/8|length
-i|XPCS|vendor
-j|XPCS|release
-p||unused, p = pad(i+j,8)
-
-.TE
-.RE
-.NH 2
-ProtocolSetup
-.RS
-.TS
-tab(|);
-l l l
-l l l
-
-l l l.
-Length|Type /|Description
-|Value
-1|0|ICE
-1|7|ProtocolSetup
-1|CARD8|major-opcode
-1||unused
-4|(i+j+k+m+n+p)/8+1|length
-1|CARD8|Number of versions offered
-1|CARD8|Number of authentication protocol names offered
-6||unused
-i|XPCS|protocol-name
-j|XPCS|vendor
-k|XPCS|release
-m|LISTofXPCS|authentication-protocol-names
-n|LISTofVERSION|version-list
-p||unused, p = pad(i+j+k+m+n,8)
-
-.TE
-.RE
-.NH 2
-ProtocolReply
-.RS
-.TS
-tab(|);
-l l l
-l l l
-
-l l l.
-Length|Type /|Description
-|Value
-1|0|ICE
-1|8|ProtocolReply
-1|CARD8|version-index
-1|CARD8|major-opcode
-4|(i+j+p)/8|length
-i|XPCS|vendor
-j|XPCS|release
-p||unused, p = pad(i+j, 8)
-
-.TE
-.RE
-.NH 2
-Ping
-.RS
-.TS
-tab(|);
-l l l
-l l l
-
-l l l.
-Length|Type /|Description
-|Value
-1|0|ICE
-1|9|Ping
-2|0|unused
-4|0|length
-
-.TE
-.RE
-.NH 2
-PingReply
-.RS
-.TS
-tab(|);
-l l l
-l l l
-
-l l l.
-Length|Type /|Description
-|Value
-1|0|ICE
-1|10|PingReply
-2|0|unused
-4|0|length
-
-.TE
-.RE
-.NH 2
-WantToClose
-.RS
-.TS
-tab(|);
-l l l
-l l l
-
-l l l.
-Length|Type /|Description
-|Value
-1|0|ICE
-1|11|WantToClose
-2|0|unused
-4|0|length
-
-.TE
-.RE
-.NH 2
-NoClose
-.RS
-.TS
-tab(|);
-l l l
-l l l
-
-l l l.
-Length|Type /|Description
-|Value
-1|0|ICE
-1|12|NoClose
-2|0|unused
-4|0|length
-.TE
-.RE
-.NH 1
-Errors
-.NH 2
-Generic Errors
+.\" XXX - This is hokey, but I don't think you can nest .KS/.KE.
+.ne 12
+.nH 2 "Message Encoding"
 .LP
-These errors should be used by all protocols, as applicable.
-For ICE (major opcode 0), FatalToProtocol really means FatalToConnection.
-.TS
-lf7 l l.
-Error-class		BadMinor
-Offending-minor		Any
-Severity		FatalToProtocol or CanContinue (protocol's discretion)
-Values		None
-.TE
-.RS
-Received a message with an unknown minor opcode.
-.RE
-.TS
-lf7 l l.
-Error-class		BadState
-Offending-minor		Any
-Severity		FatalToProtocol or CanContinue (protocol's discretion)
-Values		None
-.TE
-.RS
-Received a message with a valid minor opcode which is not appropriate
-for the current state of the protocol.
-.RE
-.TS
-lf7 l l.
-Error-class		BadLength
-Offending-minor		Any
-Severity		FatalToProtocol or CanContinue (protocol's discretion)
-Values		None
-.TE
-.RS
-Received a message with a bad length.  The length of the message is
-longer or shorter than required to contain the data.
-.RE
-.TS
-lf7 l l.
-Error-class		BadValue
-Offending-minor		Any
-Severity		CanContinue
-Values	CARD32	Offset to offending value in offending message
-	CARD32	Length of offending value (???)
-	<varies>	Offending value (???)
-.TE
-.RS
-Received a message with a bad value specified.
-.RE
-.NH 2
-ICE Errors
+.Es Error
+	1	CARD8	major-opcode
+	1	0	Error
+	2	CARD16	class
+	4	(n+p)/8+1	length
+	1	CARD8	offending-minor-opcode
+	1		severity:
+		0	   CanContinue
+		1	   FatalToProtocol
+		2	   FatalToConnection
+	2		unused
+	4	CARD32	sequence number of erroneous message
+	n	<varies>	value(s)
+	p		pad, p = pad(n,8)
+.Ee
+.Es ByteOrder
+	1	0	ICE
+	1	1	ByteOrder
+	1		byte-order:
+		0	   LSBfirst
+		1	   MSBfirst
+	1		unused
+	4	0	length
+.Ee
+.Es ConnectionSetup
+	1	0	ICE
+	1	2	ConnectionSetup
+	1	CARD8	Number of versions offered
+	1	CARD8	Number of authentication protocol names offered
+	4	(i+j+k+m+p)/8+1	length
+	1	BOOL	must-authenticate
+	7		unused
+	i	STRING	vendor
+	j	STRING	release
+	k	LISTofSTRING	authentication-protocol-names
+	m	LISTofVERSION	version-list
+	p		unused, p = pad(i+j+k+m,8)
+.Ee
+.Es AuthenticationRequired
+	1	0	ICE
+	1	3	AuthenticationRequired
+	1	CARD8	authentication-protocol-index
+	1		unused
+	4	(n+p)/8+1	length    
+	2	n	length of authentication data
+	6		unused
+	n	<varies>	data
+	p		unused, p = pad(n,8)
+.Ee
+.Es AuthenticationReply
+	1	0	ICE
+	1	4	AuthenticationReply
+	2		unused
+	4	(n+p)/8+1	length
+	2	n	length of authentication data
+	6		unused
+	n	<varies>	data
+	p		unused, p = pad(n,8)
+.Ee
+.Es AuthenticationNextPhase
+	1	0	ICE
+	1	5	AuthenticationNextPhase
+	2		unused
+	4	(n+p)/8+1	length
+	2	n	length of authentication data
+	6		unused
+	n	<varies>	data
+	p		unused, p = pad(n,8)
+.Ee
+.Es ConnectionReply
+	1	0	ICE
+	1	6	ConnectionReply
+	1	CARD8	version-index
+	1		unused
+	4	(i+j+p)/8	length
+	i	STRING	vendor
+	j	STRING	release
+	p		unused, p = pad(i+j,8)
+.Ee
+.Es ProtocolSetup
+	1	0	ICE
+	1	7	ProtocolSetup
+	1	CARD8	major-opcode
+	1	BOOL	must-authenticate
+	4	(i+j+k+m+n+p)/8+1	length
+	1	CARD8	Number of versions offered
+	1	CARD8	Number of authentication protocol names offered
+	6		unused
+	i	STRING	protocol-name
+	j	STRING	vendor
+	k	STRING	release
+	m	LISTofSTRING	authentication-protocol-names
+	n	LISTofVERSION	version-list
+	p		unused, p = pad(i+j+k+m+n,8)
+.Ee
+.Es ProtocolReply
+	1	0	ICE
+	1	8	ProtocolReply
+	1	CARD8	version-index
+	1	CARD8	major-opcode
+	4	(i+j+p)/8	length
+	i	STRING	vendor
+	j	STRING	release
+	p		unused, p = pad(i+j, 8)
+.Ee
+.Es Ping
+	1	0	ICE
+	1	9	Ping
+	2	0	unused
+	4	0	length
+.Ee
+.Es PingReply
+	1	0	ICE
+	1	10	PingReply
+	2	0	unused
+	4	0	length
+.Ee
+.Es WantToClose
+	1	0	ICE
+	1	11	WantToClose
+	2	0	unused
+	4	0	length
+.Ee
+.Es NoClose
+	1	0	ICE
+	1	12	NoClose
+	2	0	unused
+	4	0	length
+.Ee
+.nH 2 "Error Class Encoding"
 .LP
-These errors are all major opcode 0 errors.
-.TS
-lf7 l l.
-Error-class		NoAuthentication
-Offending-minor		ConnectionSetup, ProtocolSetup
-Severity		ConnectionSetup \(-> FatalToConnection
-		ProtocolSetup \(-> FatalToProtocol
-Values	None
-.TE
-.RS
-None of the authentication protocols offered are available.
-.RE
-.TS
-lf7 l l.
-Error-class		NoVersion
-Offending-minor		ConnectionSetup, ProtocolSetup
-Severity		ConnectionSetup \(-> FatalToConnection
-		ProtocolSetup \(-> FatalToProtocol
-Values	None
-.TE
-.RS
-None of the protocol versions offered are available.
-.RE
-.TS
-lf7 l l.
-Error-class		AuthenticationRejected
-Offending-minor		AuthenticationReply, AuthenticationRequired,
-		AuthenticationNextPhase
-Severity		FatalToProtocol
-Values	XPCS	Reason
-.TE
-.RS
-Authentication rejected.  The peer has failed to properly
-authenticate itself.
-.RE
-.TS
-lf7 l l.
-Error-class		AuthenticationFailed
-Offending-minor		AuthenticationReply, AuthenticationRequired,
-		AuthenticationNextPhase
-Severity		FatalToProtocol
-Values	XPCS	Reason
-.TE
-.RS
-Authentication failed.  AuthenticationFailed does not imply
-that the authentication was rejected, as AuthenticationRejected
-does.  Instead it means that the sender was unable to complete
-the authentication for some other reason.  (For instance, it
-may have been unable to contact an authentication server.)
-.RE
-.TS
-lf7 l l.
-Error-class		ProtocolDuplicate
-Offending-minor		ProtocolSetup
-Severity		FatalToProtocol (but see note)
-Values	XPCS	Protocol Name
-.TE
-.RS
-The protocol name was already registered.  This is fatal to
-the "new" ProtocolSetup, but does not affect the existing
-registration.
-.RE
-.TS
-lf7 l l.
-Error-class		MajorOpcodeDuplicate
-Offending-minor		ProtocolSetup
-Severity		FatalToProtocol (but see note)
-Values	CARD8	Opcode
-.TE
-.RS
-The major opcode specified was already registered.  This is
-fatal to the "new" ProtocolSetup, but does not affect the
-existing registration.
-.RE
-.TS
-lf7 l l.
-Error-class		UnknownProtocol
-Offending-minor		ProtocolSetup
-Severity		FatalToProtocol
-Values	XPCS	protocol name
-.TE
-.RS
-The protocol specified is not supported.
-.RE
-.TS
-lf7 l l.
-Error-class		BadMajor
-Offending-minor		<any>
-Severity		CanContinue (but see note)
-Values	CARD8	Opcode
-.TE
-.RS
-The opcode given is not one that has been registered.  There
-is a good argument for making this be FatalToConnection.
-.RE
-.NH 1
-Error Encoding
+Generic errors have classes in the range 0x8000\-0xFFFF, and
+subprotocol-specific errors are in the range 0x0000\-0x7FFF.
+.nH 3 "Generic Error Class Encoding"
 .LP
-Generic Errors have classes in the range 0x8000..0xFFFF.
 .TS
-l l.
+lB cB
+l n.
+_
+.sp 6p
+Class	Encoding
+.sp 6p
+_
+.sp 6p
 BadMinor	0x8000
 BadState	0x8001
 BadLength	0x8002
 BadValue	0x8003
+.sp 6p
+_
 .TE
+.nH 3 "ICE-specific Error Class Encoding"
 .LP
-Per-Protocol Errors have classes in the range 0x0000-0x7fff.
-.LP
-ICE Errors:
 .TS
-l l.
+lB cB
+l n.
+_
+.sp 6p
+Class	Encoding
+.sp 6p
+_
+.sp 6p
 BadMajor	0
 NoAuthentication	1
 NoVersion	2
@@ -1145,6 +1342,7 @@ AuthenticationFailed	4
 ProtocolDuplicate	5
 MajorOpcodeDuplicate	6
 UnknownProtocol	7
+.sp 6p
+_
 .TE
-.ce
-[end]
+.YZ 3

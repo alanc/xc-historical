@@ -4,34 +4,24 @@
 .OH ''''
 .EF ''''
 .OF ''''
-.\" macro: start marker
-.de sM
-.KS
-.sp 1
-\\h'-0.5i'\\L'-1v'\\v'2p'\\l'1v'\\v'1v-2p'
-.sp -1
-..
-.\" macro: end marker
-.de eM
-.sp -1
-\\h'-0.5i'\\L'-1'\\v'1v+2p'\\l'1v'\\v'-2p'
-.sp 1
-.KE
-..
-.fp 6 CI
+.ie t \{
+.fp 6 C
 .fp 7 C
-.fp 8 CB
+.fp 8 CB \}
+.el \{
+.fp 6 B
+.fp 7 R
+.fp 8 B
+\}
 .ps 10
 .nr PS 10
 \&
 .TL
 \s+2\fBX Session Management Protocol\fP\s-2
 .sp
-Version 0.21
+Public Review Draft
 .sp
-X Consortium Work In Progress
-.sp
-X Version 11, Release 6
+X Consortium Draft Standard
 .AU
 Mike Wexler
 .AI
@@ -46,6 +36,7 @@ Consortium's ICE protocol.
 .AE
 .LP
 .bp
+\&
 .sp 8
 .LP
 .DS C
@@ -57,30 +48,29 @@ Copyright \(co 1992, 1993 by the Massachusetts Institute of Technology
 .LP
 Permission to use, copy, modify, and distribute this documentation for any
 purpose and without fee is hereby granted, provided that the above copyright
-notice and this permission notice appear in all copies.  MIT makes no
+notice and this permission notice appear in all copies.  MIT and the
+X Consortium make no
 representations about the suitability for any purpose of the information in
-this document.  This documentation is provided ``as is'' without express or
+this document.  This documentation is provided \*Qas is\*U without express or
 implied warranty.
+This document is only a draft standard of the X Consortium and is therefore
+subject to change.
+.af PN i
+.EF ''\\\\n(PN''
+.OF ''\\\\n(PN''
 .bp 1
-.EH '\fBX Session Management Protocol\fP''\fBX11, Release 6 post-alpha\fP'
-.OH '\fBX Session Management Protocol\fP''\fBX11, Release 6 post-alpha\fP'
+.af PN 1
+.EH '\fBX Session Management Protocol\fP''\fBPublic Review Draft\fP'
+.OH '\fBX Session Management Protocol\fP''\fBPublic Review Draft\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
-.NH 1
-Acknowledgements
-.XS
-\*(SN Acknowledgements
-.XE
+.nH 1 "Acknowledgements"
 .LP
 First I would like to thank the entire ICCCM and Intrinsics working groups for
 the comments and suggestions. I would like to make special thanks to the 
 following people (in alphabetical order), Jordan Brown, Ellis Cohen, Donna 
 Converse, Vania Joloboff, Stuart Marks, Ralph Mor and Bob Scheifler.
-.NH 1
-Definitions and Goals
-.XS
-\*(SN Definitions and Goals
-.XE
+.nH 1 "Definitions and Goals"
 .LP
 The purpose of the X Session Management Protocol (XSMP) is to provide a
 uniform mechanism for users to save and restore their sessions.  A
@@ -106,11 +96,7 @@ than one X display or not be connected to any X displays at all.
 This protocol is layered on top of the X Consortium's ICE protocol, and relies on
 the ICE protocol to handle connection management and authentication.
 .LP
-.NH 1
-Overview of the Protocol
-.XS
-\*(SN Overview of the Protocol
-.XE
+.nH 1 "Overview of the Protocol"
 .LP
 Clients use XSMP to register themselves with the session manager (SM).  When
 a client starts up, it should connect to the SM.  The client should remain
@@ -127,9 +113,9 @@ for example, as part of a filename in which to store the state for a
 particular instantiation.  The client-ID should be saved as part of the
 command used to restart this client (the \fIRestartCommand\fP\^) so that the
 client will retain the same ID after it is restarted.  Certain small pieces
-of state may also be stored in the RestartCommand.  For example, an X11 client
-may place the `\-iconic' option in its RestartCommand to indicate that it
-should appear as an icon when it is restarted.
+of state might also be stored in the RestartCommand.   For example, an X11 client
+might place a `\-twoWindow' option in its RestartCommand to indicate that it
+should start up in two window mode when it is restarted.
 .LP
 The client finds the network address of the SM in a system-dependent way.
 On POSIX systems an environment variable called SESSION_MANAGER will contain
@@ -148,12 +134,13 @@ A DECnet address would look like this:
 .ID
 	\f7decnet/\fP\fInodename\fP\^\f7::sm$\fP\^\fIobjname\fP
 .DE
-If multiple network IDs are specified, they should be separated by a comma.
+If multiple network IDs are specified, they should be separated by commas.
 .NT Rationale
 There was much discussion over whether the XSMP protocol should use X as
 the transport protocol or whether it should use its own independent
 transport.  It was decided that it would use an independent protocol for
-several reasons.  First, the SM manager should be able to manage programs that
+several reasons.  First, the Session Manager should be able to 
+manage programs that
 don't maintain an X connection.  Second, the X protocol is not appropriate to
 use as a general-purpose transport protocol.  Third, a session might
 span multiple displays.
@@ -178,81 +165,72 @@ mail program could start a text editor for editing the text of a mail
 message.  A client that does this is a session manager itself;
 it should supply the clients it starts with the appropriate connection
 information (i.e. the SESSION_MANAGER environment variable) that specifies
-a connection to itself instead of to the ``real'' session manager.
+a connection to itself instead of to the \*Qreal\*U session manager.
 .LP
 Each client has associated with it a list of properties. 
 A property set by one client is not visible to any other client.
-These properties are used for the client to inform the SM of the clients
+These properties are used for the client to inform the SM of the client's
 current state.
 When a client initially connects to the SM, there are no properties set.
-.NH 1
-Data Types
-.XS
-\*(SN Data Types
-.XE
+.nH 1 "Data Types"
 .LP
 XSMP messages contain several types of data.  Both the SM and the client
 always send messages in their native byte order.  Thus, both sides may need
 to byte-swap the messages received.  The need to do byte-swapping is
 determined at run-time by the ICE protocol. 
-.NT Rationale
-As XSMP will not be used to
-transport large quantities of data, this restriction will not substantially
-hamper the efficiency of any implementation.
-.NE
 .LP
 If an invalid value is specified for a field of any of the enumerated types, a
 .PN BadValue
 error message must be sent by the receiver of the message to the sender of the
 message.
+.br
+.ne 6
 .TS H
-expand;
-lB lB lB
-l l lw(3.5i).
+l lw(4.5i).
 _
 .sp 6p
-Type Name	Length (bytes)	Description
+.B
+Type Name	Description
+.R
 .sp 6p
 _
 .sp 6p
 .TH
-.R
-BOOL	1	T{
+BOOL	T{
 .PN False
 or
 .PN True
 T}
-INTERACT_STYLE	1	T{
+INTERACT_STYLE	T{
 .PN None ,
 .PN Errors ,
 or
 .PN Any
 T}
-DIALOG_TYPE	1	T{
+DIALOG_TYPE	T{
 .PN Error
 or
 .PN Normal
 T}
-SAVE_TYPE	1	T{
+SAVE_TYPE	T{
 .PN Global ,
 .PN Local ,
 or
 .PN Both
 T}
-CARD8	1	a one-byte unsigned integer
-CARD16	2	a two-byte unsigned integer
-CARD32	4	a four-byte unsigned integer
-ARRAY8	4 + \fIn\fP	T{
+CARD8	a one-byte unsigned integer
+CARD16	a two-byte unsigned integer
+CARD32	a four-byte unsigned integer
+ARRAY8	T{
 A CARD32, \fIn\fP\^,
 specifying the number of CARD8 values, followed by \fIn\fP CARD8
-values.  After the CARD8 values will be enough
-pad bytes to reach the next 8-byte boundary.
+values.
 T}
-LISTofARRAY8	?	T{
+LISTofARRAY8	T{
 A CARD32 specifying the number of ARRAY8 values, followed by that many
 ARRAY8 values.
 T}
-PROPERTY	?	T{
+PROPERTY	T{
 An ARRAY8 specifying the name of the
 property, followed by an ARRAY8 specifying the
 type of the property, followed by a \%LISTofARRAY8 containing the value.
@@ -261,45 +239,97 @@ is specified by the type field.
 The type field is one of the types described in this
 table.
 T}
-LISTofPROPERTY	?	T{
-A CARD32 specifying the number of
-properties, followed by that many \%PROPERTYs.  Each property will begin
-on an eight byte boundary.
+LISTofPROPERTY	T{
+A counted collection of \%PROPERTYs.
 T}		
 .sp 6p
 _
 .TE
-.NH 1
-Protocol Setup and Message Format
-.XS
-\*(SN Protocol Setup and Message Format
-.XE
+.nH 1 "Protocol Setup and Message Format"
 .LP
 To start the XSMP protocol, the client sends the server an ICE
 .PN ProtocolSetup
-message.  The protocol-name field should be specified as ``XSMP'', the major
+message.  The protocol-name field should be specified as \*QXSMP\*U, the major
 version of the protocol should be one, and the minor version should be zero.
 These values may change if the protocol is revised.  The minor version
 number will be incremented if the change is compatible, otherwise the major
 version number will be incremented.
 .LP
-All XSMP messages are in the standard ICE packet format.  The packet's major
+All XSMP messages are in the standard ICE message format.  The message's major
 opcode is assigned to XSMP by ICE at run-time.  The different parties
 (client and SM) may be assigned different major opcodes for XSMP.  Once
-assigned, all XSMP packets issued by this party will use the same major
-opcode.  The packet's minor opcode specifies which protocol message this
-packet contains. 
-.NH 1
-Protocol
-.XS
-\*(SN Protocol
-.XE
+assigned, all XSMP messages issued by this party will use the same major
+opcode.  The message's minor opcode specifies which protocol message this
+message contains. 
+.nH 1 "Client Identification String"
+.LP
+A client ID is a string of XPCS characters encoded in ISO Latin 1 (ISO
+8859-1).  No null characters are allowed in this string.  The client ID
+string is used in the
+.PN Register\%Client
+and
+.PN Register\%ClientReply
+messages.
+.LP
+Client IDs consist of the pieces described below.  The ID is
+formed by concatenating the pieces in sequence, without
+separator characters.  All pieces are zero-padded on the left
+so as to fill the specified length.
+Decimal numbers are
+encoded using the characters `0' through `9', and
+hexadecimal numbers using the characters `0' through `9'
+and `A' through `F'.
+.LP
+Client IDs consist of the pieces described below.  The ID is formed by
+concatenating the pieces in sequence, without separator characters.
+.IP \(bu 4
+Version.  This is currently the character `1'.
+.IP \(bu 4
+Address type and address.  The address type will be one of
+.DS
+.ta 0.5i
+`1'	a 4-byte IP address encoded as 8 hexadecimal digits
+`2'	a 6-byte DECNET address encoded as 12 hexadecimal digits
+.DE
+.IP
+The address is the one of the network addresses of the machine where the
+session manager (not the client) is running.  For example, the IP address
+198.112.45.11 would be encoded as the string \*Q1C6702D0B\*U.
+.IP \(bu 4
+Time stamp.  A 13-digit decimal number specifying the number of
+milliseconds since 00:00:00 UTC, January 1, 1970.
+.IP \(bu 4
+Process-ID type and process-ID.  The process-ID type will be one of
+.DS
+.ta 0.5i
+`1'	a POSIX process-ID encoded as a 10-digit decimal number.
+.DE
+.IP
+The process-ID is the process-ID of the session manager, not of a client.
+.IP \(bu 4
+Sequence number.  This is a four-digit decimal number.  It is incremented
+every time the session manager creates an ID.  After reaching \*Q9999\*U it
+should wrap to \*Q0000\*U.
+.NT "Rationale"
+Once a client ID has been assigned to the client, the client keeps
+this ID indefinitely.  If the client is terminated and restarted, it
+will be reassigned the same ID.  It is desirable to be able to pass
+client IDs around from machine to machine, from user to user, and
+from session manager to session manager, while retaining the
+identity of the client.  This, combined with the indefinite
+persistence of client IDs, means that client IDs need to be globally
+unique.  The construction specified above will ensure that any
+client ID created by any user, session manager, and machine will be
+different from any other.
+.NE
+.nH 1 "Protocol"
 .LP
 The protocol consists of a sequence of messages as described below.  Each
 message type is specified by an ICE minor opcode.  A given message type is
 sent either from a client to the session manager or from the session manager
 to a client; the appropriate direction is listed with each message's
-description.  For each message type, the set valid responses and possible error
+description.  For each message type, the set of 
+valid responses and possible error
 messages are listed.  The ICE severity is given in parentheses following
 each error class.
 .LP
@@ -322,9 +352,8 @@ Possible Errors:
 The client must send this message to the SM to register the client's existence.
 If a client is being restarted from a previous
 session, the previous-ID field must contain the client ID from the
-previous session.  The client ID may not contain bytes that contain the value 0.
-For new clients, previous-ID should be null (i.e. it
-should be of zero length).
+previous session.  
+For new clients, previous-ID should be of zero length.
 .LP
 If previous-ID is not valid, the SM will send a
 .PN BadValue
@@ -341,9 +370,6 @@ with a null previous-ID field.
 .RS
 .LP
 \fIclient-ID\fP\^: ARRAY8
-.LP
-Valid Responses:
-.PN SetProperties
 .RE
 .eM
 .LP
@@ -352,66 +378,18 @@ If the client had specified an ID in the previous-ID field of the
 .PN RegisterClient
 message, client-ID will be identical to the previously specified ID.  If
 previous-ID was null, client-ID will be a unique ID freshly generated by the
-SM.
+SM.  The client ID format is specified in section 6.
 .LP
-The client ID should be globally unique. This means that any client
-ID generated on any system anywhere should be unique throughout all
-machines in the universe.
-.LP
-This globally unique ID consists of the following pieces: a version,
-an address type, an address, a time stamp, a process ID format,
-a process ID, and a sequence number. The version identifies which
-version of the SM ID scheme is being used. Currently only
-version 1 is defined and this field should contain the character 1.
-The address and address type
-together identify a specific machine that the ID was generated on.
-The address ID format is a one character field. The following types
-are defined:
-.nf
-.ta .2i .5i 2.0i
-	1	a 4 byte IP address encoded as 8 hexadecimal digits
-	2	a 6 byte DECNET address encoded as 12 hex digits
-.fi
-Note that the numbers above are actually the ISO-8859 characters '1' 
-and '2'. Also, the hexadecmail encodings user digits and uppercase
-letters only.
-.NT "Example"
-The IP address 198.112.45.11 would be represented as 1C6702D0B.
-.NE
-The address is one the host addresses of the machine where the SM is 
-running.
-The timestamp is a number consisting of 13 decimal
-digits specifying the number of milliseconds since Midnight UTC 
-Jan 1 1970. 
-The process ID type is a one character field with the following types
-defined:
-.nf
-.ta .2i .5i 2.0i
-	1	a Unix process ID encoded as a 10 left padded 
-                deciaml digits
-.fi
-The 1 above is actually the ISO 8859-1 character '1'.
-The Process ID is the Process ID of the SM.
-The sequence number is 4 decimal digits encoded in ISO8859-1.
-It is incremented
-every time the SM hands out an ID. When it reach 9999 it wraps to
-0000.
-.NT "Rationale"
-This is to facilitate the passing around of session or portions
-of session between users and machines.
-.NE
-.LP
-When a client receives a 
-.PN RegisterClientReply
-message, it should
-set its
-.PN RestartCommand
-property using the
-.PN SetProperties
+If the client didn't supply a client-ID field to the
+.PN Register\%Client
+message, the SM must send a
+.PN SaveYourself
+message with type = Local, shutdown = False, interact-style = None,
+and fast = False immediately after the
+.PN RegisterClientReply .
+The client should respond to this like any other
+.PN Save\%Yourself
 message.
-The client must also set any other properties that are needed to restart
-the client if it crashes,
-specifically, properties such as CurrentDirectory and Environment.
 .LP
 .sM
 .PN SaveYourself
@@ -428,22 +406,31 @@ specifically, properties such as CurrentDirectory and Environment.
 .LP
 Valid Responses:
 .PN SetProperties ,
+.PN DeleteProperties ,
+.PN GetProperties ,
 .PN SaveYourselfDone ,
 .PN InteractRequest
 .RE
 .eM
 .LP
-The SM sends this message to a client 
-either to checkpoint it or just before
-termination so that it can save its state.
-The client responds with zero or more 
+The SM sends this message to a client to ask it to save
+its state.  The client writes a state file, if necessary,
+and, if necessary, uses 
 .PN SetProperties
-messages to update
-the properties indicating how to restart the client.
-When all the 
-.PN SetProperties
-messages have been sent, the client should send a
+to inform the SM of
+how to restart it and how to discard the saved state.  During
+this process it can, if allowed by interact-style, request
+permission to interact with the user by sending an
+.PN InteractRequest .
+After the state has been saved, or
+if it cannot be successfully saved, and the properties
+are appropriately set, the client sends a 
 .PN SaveYourselfDone
+message.  If shutdown is true, the client must then
+freeze interaction with the user and wait until it
+receives either a 
+.PN Die or a 
+.PN ShutdownCancelled
 message.
 .LP
 If interact-style is
@@ -458,45 +445,57 @@ interact-style is
 then the client may interact with the user for
 any purpose.
 This is done by sending an
-.PN InteractRequest
+.PN Interact\%Request
 message.  The SM will send an
 .PN Interact
 message to
 each client that sent an
-.PN InteractRequest.  
+.PN Interact\%Request .  
 The client must postpone all
 interaction until it gets the
 .PN Interact
 message.  When the client is done
 interacting it should send the SM an
-.PN InteractDone
+.PN Interact\%Done
 message. The 
-.PN InteractRequest
+.PN Interact\%Request
 message can be sent any time after a
-.PN SaveYourself
+.PN Save\%Yourself
 and before a 
+.PN Save\%Yourself\%Done .
+.LP
+Unusual circumstances may dictate multiple interactions.
+The client may initiate as many
+.PN Interact\%Request
+\-
+.PN Interact
+\-
+.PN InteractDone
+sequences as it needs before it sends
 .PN SaveYourselfDone .
 .LP
 When a client receives
-.PN SaveYourself
+.PN Save\%Yourself
 and has not yet responded
-.PN SaveYourselfDone
+.PN Save\%Yourself\%Done
 to a previous
-.PN SaveYourself ,
+.PN Save\%Yourself ,
 it must send a
-.PN SaveYourselfDone
+.PN Save\%Yourself\%Done
 and may then begin responding as appropriate
 to the newly received 
-.PN SaveYourself .
+.PN Save\%Yourself .
 .LP
 The type field specifies the type of information that should be saved:
 .PN Global ,
 .PN Local ,
 or
 .PN Both .
-The Local type indicates that the application must update the
+The 
+.PN Local
+type indicates that the application must update the
 properties to reflect its current state, send a
-.PN SaveYourselfDone
+.PN Save\%Yourself\%Done
 and continue.  Specifically it should save enough information to restore
 the state as seen by the user of this client.  It should not affect the
 state as seen by other users.
@@ -517,11 +516,13 @@ with a type of
 .PN Local ,
 it could create a temporary file that included the
 current contents of the file, the location of the cursor, and
-other aspects of the current editing session.  It would then update
-its 
-.PN RestartCommand 
-property with enough information to find this 
-temporary file.
+other aspects of the current editing session. 
+It would then update its
+.PN Restart\%Command
+property with enough information to find the temporary file, 
+and its 
+.PN Discard\%Command 
+with enough information to remove it.
 .LP
 If a word processor was sent a 
 .PN SaveYourself
@@ -535,9 +536,22 @@ with a type of
 .PN Both ,
 it would first save the currently edited file.  It would then create a
 temporary file with information such as the current position of the cursor
-and what file is being edited.  Finally, it would update its 
-.PN RestartCommand
-property with enough information to find the temporary file.
+and what file is being edited.
+.PN Restart\%Command
+property with enough information to find the temporary file, 
+and its 
+.PN Discard\%Command 
+with enough information to remove it.
+.NE
+.NT "Advice to Implementors"
+If the client stores any state in a file or similar
+\*Qexternal\*U storage, it must create a distinct
+copy in response to each 
+.PN SaveYourself 
+message.
+It \fImust not\fP simply refer to a previous copy, because
+the SM may discard that previous saved state without
+knowing that it's needed for the new checkpoint.
 .NE
 .LP
 The shutdown field specifies whether the the system is being shut down.
@@ -546,28 +560,61 @@ The interaction
 is different depending on whether or not shutdown is set.
 If not shutting down,
 then the client can save and resume normal operation. 
+.NE
 If shutting down,
 the client must save and then must prevent interaction 
-until it receives either a "Die" or a "ShutdownCancelled",
+until it receives either a 
+.PN Die
+or a
+.PN Shutdown\%Cancelled ,
 because anything the user does after the save will be lost.
-.NE
+.LP
 The fast field specifies that the client should save its state as quickly as
 possible.  For example, if the SM knows that power is about to fail, it
 should set the fast field to
 .PN True .
-.NT "Advice to Implementors"
-Both the client and the SM should save the sequence number of the
+.LP
+.sM
+.PN SaveYourselfRequest
+[Client \(-> SM]
+.RS
+.LP
+\fItype\fP\^: SAVE_TYPE
+.br
+\fIshutdown\fP\^: BOOL
+.br
+\fIinteract-style\fP\^: INTERACT_STYLE
+.br
+\fIfast\fP\^: BOOL
+.br
+\fIglobal\fP\^: BOOL
+.LP
+Valid Responses:
 .PN SaveYourself
-message as an ID of this particular save event.
-It is used in the 
-.PN SetProperties,
-.PN SaveYourselfDone,
-.PN Interact,
-.PN InteractRequest,
-and
-.PN InteractDone
-messages to resolve race conditions.
+.RE
+.eM
+.LP
+An application sends this to the SM to request a checkpoint.
+When the SM receives this request it may generate a 
+.PN SaveYourself
+message in response and it may leave the fields intact.
+.NT Example
+A vendor of a UPS (Uninterruptible Power Supply) might include an
+SM client that would monitor the status of the UPS and generate
+a fast shutdown if the power is about to be lost.
 .NE
+.LP
+If global is set to 
+.PN True ,
+then the resulting 
+.PN SaveYourself 
+should be
+sent to all applications. If global is set to 
+.PN False ,
+then the resulting
+.PN SaveYourself 
+should be sent to the application that sent the 
+.PN Save\%Yourself\%Request .
 .LP
 .sM
 .PN InteractRequest
@@ -575,18 +622,19 @@ messages to resolve race conditions.
 .RS
 .LP
 \fIdialog-type\fP\^: DIALOG_TYPE
-.br
-\fIreference-sequence-number\fP\^: CARD32
 .LP
 Valid Responses:
 .PN Interact ,
 .PN ShutdownCancelled
 .LP
+Possible Errors:
+.PN BadState
+.Pn ( CanContinue )
 .RE
 .eM
 .LP
 During a checkpoint or session-save operation,
-only one client at a time is granted the privilege of interacting with
+only one client at a time might be granted the privilege of interacting with
 the user.  The
 .PN InteractRequest
 message causes the SM to emit an
@@ -602,29 +650,13 @@ client wants to start an error dialog or
 meaning the client 
 wishes to start a non-error dialog.
 .LP
-If the SM hasn't initiated a 
-.PN SaveYourself
-or the reason is not valid in
-the current 
-.PN SaveYourself ,
-then a
-.PN BadState
-error message will be 
-sent to the client.
 .LP
-The client must set the reference-sequence-number field to the 
-sequence number of the
-.PN SaveYourself
-message that caused this 
-.PN InteractRequest.
 .RE
 .LP
 .sM
 .PN Interact
 [Client \(<- SM]
 .RS
-.LP
-\fIreference-sequence-number\fP\^: CARD32
 .LP
 Valid Responses:
 .PN InteractDone
@@ -637,12 +669,6 @@ user.  When the client is done interacting with the user it must
 send an 
 .PN InteractDone
 message to the SM.
-The reference-sequence-number field must contain the sequence number of
-the 
-.PN SaveYourself
-message that caused this
-.PN Interact
-message.
 .LP
 .sM
 .PN InteractDone
@@ -651,7 +677,6 @@ message.
 .LP
 \fIcancel-shutdown\fP\^: BOOL
 .br
-\fIreference-sequence-number\fP\^: CARD32
 .LP
 Valid Responses:
 .PN ShutdownCancelled
@@ -659,11 +684,13 @@ Valid Responses:
 .RE
 .eM
 .LP
-This message is used by a client to notify the SM that it is done interacting
-and that the SM can move onto the next client.
+This message is used by a client to notify the SM that it is done interacting.
 .LP
-The cancel-shutdown field specifies that the user requests that the entire
-shutdown be cancelled.  Cancel-shutdown may only be
+Setting the cancel-shutdown field to 
+.PN True
+indicates that
+the user has requested that the entire shutdown be cancelled.
+Cancel-shutdown may only be
 .PN True
 if the corresponding
 .PN SaveYourself
@@ -675,17 +702,6 @@ or
 .PN Errors
 for the interact-style field.  Otherwise, cancel-shutdown must be
 .PN False .
-If cancel-shutdown is
-.PN True
-when the corresponding
-.PN SaveYourself
-message did not allow it, the SM will generate a
-.PN BadState
-error message.
-.LP
-The reference-sequence-number field contains the sequence number of the
-.PN SaveYourself
-message that caused this interaction.
 .LP
 .sM
 .PN SaveYourselfDone
@@ -693,8 +709,6 @@ message that caused this interaction.
 .RS
 .LP
 \fIsuccess\fP\^: BOOL
-.br
-\fIreference-sequence-number\fP\^: CARD32
 .LP
 Valid Responses: 
 .PN Die ,
@@ -707,21 +721,21 @@ This message is sent by a client to indicate that all of the properties
 representing its state have been updated.
 If the 
 .PN SaveYourself
-message had the shutdown flag set to 
+message had the shutdown flag set
+to 
 .PN True ,
-the client must wait for a
-.PN ShutdownCancelled
-or
-.PN Die
+after sending 
+.PN SaveYourselfDone 
+the client must
+wait for a 
+.PN ShutdownCancelled 
+or 
+.PN Die 
 message before changing its state.
 Before issuing a
 .PN SaveYourselfDone ,
 a client must have set each of required
 properties at least once since the client registered with the SM.
-The reference-sequence-number field should contain the sequence number
-of the
-.PN SaveYourself 
-message that is being completed.
 If the 
 .PN SaveYourself
 operation was successful, then the client
@@ -732,11 +746,11 @@ it to
 .PN False .
 .NT Example
 If a client tries to save its state and runs out of disk space,
-it might return 
+it should return 
 .PN False
 in the success
 field of the 
-.Pn SaveYourselfDone
+.PN SaveYourselfDone
 message.
 .NE
 .LP
@@ -792,14 +806,13 @@ of the save.
 Specifies that the client has decided to terminate.
 It should be immediately followed by closing the connection.
 .LP
-The reason field specifies why the client is resigning from the session. It is encoded as an array of compound text strings.
-If the resignation is
-expected by the user, there will typically be zero ARRAY8s here.  But
-if the client encountered an unexpected fatal error, the error message
-(which might otherwise be printed on stderr on a POSIX system) should
-be forwarded to the SM here, one ARRAY8 per line of the
-message.  It is the responsibility of the SM to display
-this reason to the user.
+The reason field specifies why the client is resigning from the session. It
+is encoded as an array of Compound Text strings.  If the resignation is
+expected by the user, there will typically be zero ARRAY8s here.  But if the
+client encountered an unexpected fatal error, the error message (which might
+otherwise be printed on stderr on a POSIX system) should be forwarded to the
+SM here, one ARRAY8 per line of the message.  It is the responsibility of
+the SM to display this reason to the user.
 .LP
 After sending this message, the client must not send any additional XSMP
 messages to the SM.
@@ -819,28 +832,18 @@ not provide immediate notification of connection closure.
 [Client \(-> SM]
 .RS
 .LP
-\fIreference-sequence-number\fP\^: CARD32
-.br
 \fIproperties\fP: LISTofPROPERTY
 .RE
 .eM
 .LP
-Sets the specified properties to the specified value.
+Sets the specified properties to the specified values.
 Existing properties not specified in the 
-.PN SetProperties
+.PN Set\%Properties
 message are unaffected.
-Some properties have pre-specified semantics. If a client sets a property that
+Some properties have predefined semantics. 
+If a client sets a property that
 is not defined by the XSMP, the property should be stored.  See
-the section on pre-specified properties.  If the
-.PN SetProperties
-is in response to 
-either a 
-.PN RegisterClientReply
-or a
-.PN SaveYourself
-message, the client should specify the sequence number
-of this message in the reference-sequence-number field.  Otherwise,
-the client must set the reference-sequence-number field to zero.
+section 11, \*QPredefined Properties.\*U
 .LP
 .sM
 .PN DeleteProperties
@@ -880,46 +883,29 @@ This message is sent in reply to a
 .PN GetProperties
 message and includes
 the values of all the properties.
-.NH 1
-Errors
-.XS
-\*(SN Errors
-.XE
+.nH 1 "Errors"
 .LP
 When the receiver of a message detects an error condition, the receiver should send
 an ICE error message to the receiver. 
 There are only two types of errors that are used by the XSMP:
 .PN BadValue 
 and
-.PN BadState.
+.PN BadState .
 These are both defined in the ICE protocol.
 .LP
 Any message received out-of-sequence
 will generate a
 .PN BadState
 error message.
-.NH 1
-State Diagrams
-.XS
-\*(SN State Diagrams
-.XE
+.nH 1 "State Diagrams"
 .LP
 These state diagrams are designed to cover all actions of both
 the client and the SM. 
-.NH 2
-Client State Diagram
-.XS
-\*(SN Client State Diagram
-.XE
+.nH 2 "Client State Diagram"
 .LP
 .nf
 .DS L 0
 \f6start:\fP
-	Initiate ICE protocol setup \(-> \f7wait-for-setup\fP
-.DE
-.sp
-.DS L 0
-\f6wait-for-setup:\fP
 	ICE protocol setup complete \(-> \f7register\fP
 .DE
 .sp
@@ -930,13 +916,9 @@ Client State Diagram
 .sp
 .DS L 0
 \f6collect-id:\fP
-	receive \fBRegisterClientReply\fP \(-> \f7set-restart-command\fP
+	receive \fBRegisterClientReply\fP \(-> \f7idle\fP
 .DE
 .sp
-.DS L 0
-\f6set-restart-command:\fP
-	send \fBSetProperties\fP \(-> \f7idle\fP
-.DE
 .sp
 .DS L 0
 \f6shutdown-cancelled:\fP
@@ -950,6 +932,7 @@ Client State Diagram
 	send \fBSetProperties\fP \(-> \f7idle\fP
 	send \fBDeleteProperties\fP \(-> \f7idle\fP
 	send \fBConnectionClosed\fP \(-> \f7connection-closed\fP
+	send \fBSaveYourselfRequest\fP \(-> \f7idle\fP
 .DE
 .sp
 .DS L 0
@@ -966,6 +949,8 @@ Client State Diagram
 \f6save-yourself:\fP
 	receive \fBShutdownCancelled\fP \(-> \f7shutdown-cancelled\fP
 	send \fBSetProperties\fP \(-> \f7save-yourself\fP
+	send \fBDeleteProperties\fP \(-> \f7save-yourself\fP
+	send \fBGetProperties\fP \(-> \f7save-yourself\fP
 	send \fBInteractRequest\fP \(-> \f7interact-request\fP
 	if shutdown mode:
 		send \fBSaveYourselfDone\fP \(-> \f7save-yourself-done\fP
@@ -990,11 +975,12 @@ Client State Diagram
 	receive \fBDie\fP \(-> \f7die\fP
 	receive \fBShutdownCancelled\fP \(-> \f7idle\fP
 .DE
-.NH 2
-Session Manager State Diagram
-.XS
-\*(SN Session Manager State Diagram
-.XE
+.sp
+.DS L 0
+\f6connection-closed:\fP
+	client stops participating in session
+.DE
+.nH 2 "Session Manager State Diagram"
 .LP
 .nf
 .DS L 0
@@ -1014,12 +1000,7 @@ Session Manager State Diagram
 .sp
 .DS L 0
 \f6acknowledge-register:\fP
-	send \fBRegisterClientReply\fP \(-> \f7wait-for-properties\fP
-.DE
-.sp
-.DS L 0
-\f6wait-for-properties:\fP
-	receive \fBSetProperties\fP \(-> \f7idle\fP
+	send \fBRegisterClientReply\fP \(-> \f7idle\fP
 .DE
 .sp
 .DS L 0
@@ -1028,6 +1009,12 @@ Session Manager State Diagram
 	receive \fBDeleteProperties\fP \(-> \f7idle\fP
 	receive \fBConnectionClosed\fP \(-> \f7start\fP
 	receive \fBGetProperties\fP \(-> \f7get-properties\fP
+	receive \fBSaveYourselfRequest\fP \(-> \f7save-yourself\fP
+	send \fBSaveYourself\fP \(-> \f7saving-yourself\fP
+.DE
+.sp
+.DS L 0
+\f6save-yourself:\fP
 	send \fBSaveYourself\fP \(-> \f7saving-yourself\fP
 .DE
 .sp
@@ -1042,6 +1029,10 @@ Session Manager State Diagram
 	send \fBInteract\fP \(-> \f7saving-yourself\fP
 	receive \fBInteractDone\fP \(-> \f7saving-yourself\fP
 	receive \fBSetProperties\fP \(-> \f7saving-yourself\fP
+	receive \fBDeleteProperties\fP \(-> \f7saving-yourself\fP
+ 	receive \fBDeleteProperties\fP \(-> \f7saving-yourself\fP
+ 	receive \fBGetProperties\fP \(-> \f7saving-yourself\fP
+	receive \fBGetProperties\fP \(-> \f7saving-yourself\fP
 	if shutting down:
 		receive \fBSaveYourselfDone\fP \(-> \f7save-yourself-done\fP
 	otherwise
@@ -1056,16 +1047,13 @@ Session Manager State Diagram
 	If some clients are not saved:
 	\(-> \f7saving-yourself\fP
 .DE
-.NH 1
-Protocol Encoding
-.XS
-\*(SN Protocol Encoding
-.XE
-.NH 2
-Types
-.XS
-\*(SN Types
-.XE
+.sp
+.DS L 0
+\f6die:\fP
+	SM stops accepting connections
+.DE
+.nH 1 "Protocol Encoding"
+.nH 2 "Types"
 .LP
 .nf
 .ta .2i .5i 2.0i
@@ -1116,23 +1104,21 @@ LISTofPROPERTY
 	\&.
 	\&.
 	q	PROPERTY	last property
-.NH 2
-Messages
-.XS
-\*(SN Messages
-.XE
+.nH 2 "Messages"
 .LP
 XSMP is a sub-protocol of ICE.  The major opcode is assigned at run-time
 by ICE and is represented here by `?'.
 .LP
 .nf
 .ta .2i .5i 2.0i 
+.ne 3
 .PN RegisterClient
 	1	?	XSMP
 	1	1	opcode
 	2		unused
 	4	a/8	length of remaining data in 8-byte units
 	a	ARRAY8	previous-ID
+.ne 4
 .sp
 .PN RegisterClientReply
 	1	?	XSMP
@@ -1140,6 +1126,7 @@ by ICE and is represented here by `?'.
 	2		unused
 	4	a/8	length of remaining data in 8-byte units
 	a	ARRAY8	client-ID
+.ne 4
 .sp
 .PN SaveYourself
 	1	?	XSMP
@@ -1151,135 +1138,149 @@ by ICE and is represented here by `?'.
 	1	INTERACT_STYLE	interact-style
 	1	BOOL	fast
 	4		unused
+.ne 4
+.sp
+.PN SaveYourselfRequest
+	1	?	XSMP
+	1	4	opcode
+	2		unused
+	4	1	length of remaining data in 8-byte units
+	1	SAVE_TYPE	type
+	1	BOOL	shutdown
+	1	INTERACT_STYLE	interact-style
+	1	BOOL	fast
+	1	BOOL	global
+	3		unused
+.ne 4
 .sp
 .PN InteractRequest
 	1	?	XSMP
-	1	4	opcode
+	1	5	opcode
 	1	DIALOG_TYPE	dialog type
 	1		unused
-	4	1	length of remaining data in 8-byte units
-	4	CARD32	reference-sequence-number
-	4	unused	pad
+	4	0	length of remaining data in 8-byte units
+.ne 4
 .sp
 .PN Interact
 	1	?	XSMP
-	1	5	opcode
+	1	6	opcode
 	2		unused
-	4	1	length of remaining data in 8-byte units
-	4	CARD32	reference-sequence-number
-	4	unused	pad
+	4	0	length of remaining data in 8-byte units
+.ne 4
 .sp
 .PN InteractDone
 	1	?	XSMP
-	1	6	opcode
+	1	7	opcode
 	1	BOOL	cancel-shutdown
 	1		unused
-	4	1	length of remaining data in 8-byte units
-	4	CARD32	reference-sequence-number
-	4	unused	pad
+	4	0	length of remaining data in 8-byte units
+.ne 4
 .sp
 .PN SaveYourselfDone
 	1	?	XSMP
-	1	7	opcode
+	1	8	opcode
 	1	BOOL	success
 	1		unused
-	4	1	length of remaining data in 8-byte units
-	4	CARD32	reference-sequence-number
-	4	unused	pad
+	4	0	length of remaining data in 8-byte units
+.ne 4
 .sp
 .PN Die
-	1	?	XSMP
-	1	8	opcode
-	2		unused
-	4	0	length of remaining data in 8-byte units
-.sp
-.PN ShutdownCancelled
 	1	?	XSMP
 	1	9	opcode
 	2		unused
 	4	0	length of remaining data in 8-byte units
+.ne 4
 .sp
-.PN ConnectionClosed
+.PN ShutdownCancelled
 	1	?	XSMP
 	1	10	opcode
 	2		unused
-	4	(a)/8	length of remaining data in 8-byte units
-	a	LISTofARRAY8	reason
+	4	0	length of remaining data in 8-byte units
+.ne 4
 .sp
-.PN SetProperties
+.PN ConnectionClosed
 	1	?	XSMP
 	1	11	opcode
 	2		unused
-	4	1+a/8	length of remaining data in 8-byte units
-	4	CARD32	reference-sequence-number
-	4		unused
-	a	LISTofPROPERTY	properties
+	4	a/8	length of remaining data in 8-byte units
+	a	LISTofARRAY8	reason
+.ne 4
 .sp
-.PN DeleteProperties
+.PN SetProperties
 	1	?	XSMP
 	1	12	opcode
 	2		unused
 	4	a/8	length of remaining data in 8-byte units
-	a	LISTofARRAY8	properties
+	a	LISTofPROPERTY	properties
+.ne 4
 .sp
-.PN GetProperties
+.PN DeleteProperties
 	1	?	XSMP
 	1	13	opcode
 	2		unused
-	4	0	length of remaining data in 8-byte units
+	4	a/8	length of remaining data in 8-byte units
+	a	LISTofARRAY8	properties
+.ne 4
 .sp
-.PN GetPropertiesReply
+.PN GetProperties
 	1	?	XSMP
 	1	14	opcode
 	2		unused
+	4	0	length of remaining data in 8-byte units
+.ne 4
+.sp
+.PN GetPropertiesReply
+	1	?	XSMP
+	1	15	opcode
+	2		unused
 	4	a/8	length of remaining data in 8-byte units
 	a	LISTofPROPERTY	properties
-.NH 1
-Predefined Properties
-.XS
-\*(SN Predefined Properties
-.XE
+.nH 1 "Predefined Properties"
 .LP
-All property values are stored in a LISTofARRAY8. If the type of the property is CARD8,
-the value is stored as a LISTofARRAY8 with one ARRAY8 that is one byte long. That single
-byte contains the CARD8. If the type of the property is ARRAY8, the value is stored
-in the first element of a single element LISTofARRAY8.
+All property values are stored in a LISTofARRAY8. If the type of the
+property is CARD8, the value is stored as a LISTofARRAY8 with one ARRAY8
+that is one byte long. That single byte contains the CARD8. If the type of
+the property is ARRAY8, the value is stored in the first element of a single
+element LISTofARRAY8.
+.br
+.ne 6
 .TS H
-l l c .
+l l l c .
 _
 .sp 6p
 .B
-Name	Type	Required?
+Name	Type	POSIX Type	Required?
+.R
 .sp 6p
 _
 .sp 6p
 .TH
-.R
-CloneCommand	OS-specific	Yes
-CurrentDirectory	OS-specific	No
-DiscardCommand	OS-specific	No
-Environment	OS-specific	No
-OperatingSystemName	ARRAY8	Yes
-ProcessID	OS-specific	No
-Program	OS-specific	Yes
-RestartCommand	OS-specific	Yes
-ResignCommand	OS-specific	No
-RestartStyleHint	CARD8	No
-ShutdownCommand	OS-specific	No
-UserID	ARRAY8	Yes
+CloneCommand	OS-specific	LISTOFARRAY8	Yes
+CurrentDirectory	OS-specific	ARRAY8	No
+DiscardCommand	OS-specific	LISTOFARRAY8	No*
+Environment	OS-specific	LISTOFARRAY8	No
+ProcessID	OS-specific	ARRAY8	No
+Program	OS-specific	ARRAY8	Yes
+RestartCommand	OS-specific	LISTOFARRAY8	Yes
+ResignCommand	OS-specific	LISTOFARRAY8	No
+RestartStyleHint	CARD8	CARD8	No
+ShutdownCommand	OS-specific	LISTOFARRAY8	No
+UserID	ARRAY8	ARRAY8	Yes
 .sp 6p
 _
 .TE
+.LP
+* Required if any state is stored in an external repository (e.g. state file).
 .IP CloneCommand 3
 This is like the 
 .PN RestartCommand 
 except it restarts a copy of the
 application.  The only difference is that the application doesn't
-supply its client id at register time.  On POSIX systems this should
-be an LISTofARRAY8.
+supply its client id at register time.  On POSIX systems the type
+should be a LISTofARRAY8.
 .IP CurrentDirectory 3
 On POSIX-based systems specifies the value of the current directory that
-needs to be set up prior to starting the Program and should of type
+needs to be set up prior to starting the Program and should be of type
 ARRAY8.
 .IP DiscardCommand 3
 The discard command contains a string that when delivered to the host that 
@@ -1287,25 +1288,19 @@ the client is running on (determined from the connection), will
 cause it to discard any information about the current state.  If this command
 is not specified, the SM will assume that all of the clients state is encoded
 in the 
-.PN RestartCommand.
+.PN Restart\%Command .
 On POSIX systems the type should be LISTofARRAY8.
 .IP Environment 3
-On POSIX based systems, this will contain an LISTofARRAY8 where
+On POSIX based systems, this will be of type LISTofARRAY8 where
 the ARRAY8s alternate between environment variable name and environment
 variable value.  
-.IP OperatingSystemName 3
-This property describes which operating system the client is on in order
-to aid the SM in restarting the client.
-.NT "Open Issue"
-We need a registry of OS names.
-The list should include at least POSIX.
-.NE
 .IP ProcessID 3
 This specifies an OS specific identifier for the process.  On POSIX
-systems this should contain the return value of getpid() turned into
-an ISO 8859-1 (decimal) string.
+systems this should of type ARRAY8 and contain the return value 
+of getpid() turned into an ISO 8859-1 (decimal) string.
 .IP Program 3
-The name of the program that is running.  On POSIX systems this should be 
+The name of the program that is running.  On POSIX systems this 
+should be the
 first parameter passed to execve and should be of type ARRAY8.
 .IP RestartCommand 3
 The restart command contains a string that when delivered to the
@@ -1326,12 +1321,12 @@ that undoes the effect of the client and removes
 any saved state.
 .NT Example
 A user runs xmodmap. xmodmap registers with the SM, sets 
-.PN RestartStyleHint
+.PN Restart\%Style\%Hint
 to 
-.PN RestartAnyway,
+.PN Restart\%Anyway ,
 and then terminates. In order to allow the SM (at the
 user's request) to undo this, xmodmap would register a
-.PN ResignCommand
+.PN Resign\%Command
 that undoes the effects of the xmodmap.
 .NE
 .IP RestartStyleHint 3
@@ -1342,17 +1337,19 @@ style of restarting the client prefers.  If this flag isn't specified,
 .PN RestartIfRunning
 is assumed.
 The possible values are as follows:
+.br
+.ne 6
 .TS H
 l n.
 _
 .sp 6p
 .B
 Name	Value
+.R
 .sp 6p
 _
 .sp 6p
 .TH
-.R
 RestartIfRunning	0
 RestartAnyway	1
 RestartImmediately	2
@@ -1399,33 +1396,34 @@ style is like
 but in addition, the
 client is meant to run continuously.  If the client exits, the
 SM should try to restart it in the current session.
+.NT "Advice to Implementors"
+It would be wise to sanity-check the frequency which which
+.PN RestartImmediately
+clients are restarted, to avoid a sick
+client being restarted continuously.
+.NE
 .RE
 .IP ShutdownCommand
 This command is executed at shutdown time to clean up after a client that
 is no longer running but retained its state by setting
 .PN RestartStyleHint
 to 
-.PN RestartAnyway.
-The client must not remove any saved state as the client is still part of
+.PN RestartAnyway .
+The command must not remove any saved state as the client is still part of
 the session.
 .NT Example
 A client is run at start up time that turns on a camera. This client then
 exits. At session shutdown, the user wants the camera turned off. This client
 would set the 
-.PN RestartStyleHint
+.PN Restart\%Style\%Hint
 to 
-.PN RestartAnyway
+.PN Restart\%Anyway
 and would register a 
-.PN ShutdownCommand
+.PN Shutdown\%Command
 that would turn off the camera.
 .NE
 .IP UserID 3
 Specifies the user's ID.  On POSIX-based systems this
 will contain the the user's name (the pw_name field of struct passwd).
-.bp
-.EH ''''
-.OH ''''
-.EF ''''
-.OF ''''
-.tm .pn \n%
-.TC
+.\" Finish up.
+.YZ 3
