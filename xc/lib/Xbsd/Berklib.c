@@ -1,4 +1,19 @@
-/* $XConsortium: Berklib.c,v 1.21 93/09/19 10:25:17 rws Exp $ */
+/* $XConsortium: Berklib.c,v 1.22 94/03/16 09:45:31 kaleb Exp $ */
+
+/*
+ * Copyright 1987 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ */
+
 
 /*
  * These are routines found in BSD but not on all other systems.  The core
