@@ -1,5 +1,5 @@
 /*
- * $XConsortium: LockDis.c,v 1.7 94/01/29 18:29:59 gildea Exp $
+ * $XConsortium: LockDis.c,v 1.8 94/02/09 23:22:53 rws Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -52,14 +52,15 @@ void XLockDisplay(dpy)
     if (dpy->lock && dpy->lock->reply_awaiters) {
 	struct _XCVList *cvl;
 
-	cvl = (*_XCreateCVL_fn)();
+	cvl = (*dpy->lock->create_cvl)(dpy);
 
 	/* stuff ourselves on the head of the queue */
 	cvl->next = dpy->lock->event_awaiters;
 	dpy->lock->event_awaiters = cvl;
 
-	ConditionWait(dpy, cvl->cv);
-	UnlockNextEventReader(dpy, cvl); /* pass the signal on */
+	while (dpy->lock->reply_awaiters)
+	    ConditionWait(dpy, cvl->cv);
+	UnlockNextEventReader(dpy); /* pass the signal on */
     }
     UnlockDisplay(dpy);
 #endif
