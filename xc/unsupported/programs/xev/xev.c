@@ -1,7 +1,7 @@
 /*
  * xev - event diagnostics
  *
- * $XHeader: xev.c,v 1.2 88/07/16 11:10:23 rws Exp $
+ * $XHeader: xev.c,v 1.3 88/07/18 08:13:50 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,6 +25,7 @@
 #include <X11/Xproto.h>
 #define XK_LATIN1
 #include <X11/keysymdef.h>
+#include <ctype.h>
 
 typedef unsigned long Pixel;
 
@@ -38,9 +39,41 @@ int screen;
 
 usage ()
 {
-    fprintf (stderr, 
-	     "usage:  %s [-display host:dpy] [-geometry geom]\n", ProgramName);
+    static char *msg[] = {
+"    -display displayname                X server to contact",
+"    -geometry geom                      size and location of window",
+"    -bw pixels                          border width in pixels",
+"    -bs {NotUseful,WhenMapped,Always}   backingstore attribute",
+"    -s                                  set save-unders attribute",
+"",
+NULL};
+    char **cpp;
+
+    fprintf (stderr, "usage:  %s [-options ...]\n", ProgramName);
+    fprintf (stderr, "where options include:\n");
+
+    for (cpp = msg; *cpp; cpp++) {
+	fprintf (stderr, "%s\n", *cpp);
+    }
+
     exit (1);
+}
+
+static int parse_backing_store (s)
+    char *s;
+{
+    int len = strlen (s);
+    char *cp;
+
+    for (cp = s; *cp; cp++) {
+	if (isascii (*cp) && isupper (*cp)) *cp = tolower (*cp);
+    }
+
+    if (strncmp (s, "notuseful", len) == 0) return (NotUseful);
+    if (strncmp (s, "whenmapped", len) == 0) return (WhenMapped);
+    if (strncmp (s, "always", len) == 0) return (Always);
+
+    usage ();
 }
 
 main (argc, argv)
@@ -51,8 +84,10 @@ main (argc, argv)
     char *geom = NULL;
     int i;
     XSizeHints hints;
+    int borderwidth = 2;
     Window w;
     XSetWindowAttributes attr;
+    unsigned long mask = 0L;
     int done;
 
     ProgramName = argv[0];
@@ -69,13 +104,30 @@ main (argc, argv)
 		if (++i >= argc) usage ();
 		geom = argv[i];
 		continue;
+	      case 'b':
+		switch (arg[2]) {
+		  case 'w':		/* -bw pixels */
+		    if (++i >= argc) usage ();
+		    borderwidth = atoi (argv[i]);
+		    continue;
+		  case 's':		/* -bs type */
+		    if (++i >= argc) usage ();
+		    attr.backing_store = parse_backing_store (argv[i]);
+		    mask |= CWBackingStore;
+		    continue;
+		  default:
+		    usage ();
+		}
+	      case 's':			/* -s */
+		attr.save_under = True;
+		mask |= CWSaveUnder;
+		continue;
 	      default:
 		usage ();
-		/* doesn't return */
-	    }
+	    }				/* end switch on - */
 	} else 
 	  usage ();
-    }
+    }					/* end for over argc */
 
     dpy = XOpenDisplay (displayname);
     if (!dpy) {
@@ -103,11 +155,12 @@ main (argc, argv)
 			   SubstructureNotifyMask | SubstructureRedirectMask |
 			   FocusChangeMask | PropertyChangeMask |
 			   ColormapChangeMask | OwnerGrabButtonMask;
+    mask |= (CWBackPixel | CWBorderPixel | CWEventMask);
 
     w = XCreateWindow (dpy, RootWindow (dpy, screen), hints.x, hints.y,
-		       hints.width, hints.height, 2, 0, InputOutput,
+		       hints.width, hints.height, borderwidth, 0, InputOutput,
 		       (Visual *)CopyFromParent,
-		       CWBackPixel|CWBorderPixel|CWEventMask, &attr);
+		       mask, &attr);
 
     XSetStandardProperties (dpy, w, "Event Tester", NULL, (Pixmap) 0,
 			    argv, argc, &hints);
