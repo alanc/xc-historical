@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.6 90/02/12 15:42:18 jim Exp $
+ * $XConsortium: Panner.h,v 1.7 90/02/13 10:06:31 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -44,6 +44,7 @@
  *  canvasHeight	CanvasHeight	Dimension	0
  *  defaultScale	DefaultScale	Dimension	10 (percent)
  *  foreground		Foreground	Pixel		XtDefaultForeground
+ *  internalBorderWidth	BorderWidth	Dimension	2
  *  lineWidth		LineWidth	Dimension	0
  *  rubberBand		RubberBand	Boolean		FALSE
  *  shadow		Shadow		Boolean		TRUE
@@ -64,6 +65,7 @@
 #define XtCCanvasWidth "CanvasWidth"
 #define XtNcanvasHeight "canvasHeight"
 #define XtCCanvasHeight "CanvasHeight"
+#define XtNinternalBorderWidth "internalBorderWidth"
 #define XtNlineWidth "lineWidth"
 #define XtCLineWidth "LineWidth"
 #define XtNrubberBand "rubberBand"

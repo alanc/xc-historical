@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.7 90/02/12 16:08:50 jim Exp $
+ * $XConsortium: Panner.c,v 1.8 90/02/13 10:06:29 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -66,6 +66,8 @@ static XtResource resources[] = {
 	poff(rubber_band), XtRImmediate, (XtPointer) FALSE },
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel), 
 	poff(foreground), XtRImmediate, (XtPointer) "XtDefaultForeground" },
+    { XtNinternalBorderWidth, XtCBorderWidth, XtRDimension, sizeof(Dimension),
+	poff(internal_border), XtRImmediate, (XtPointer) 2 },
     { XtNlineWidth, XtCLineWidth, XtRDimension, sizeof(Dimension),
 	poff(line_width), XtRImmediate, (XtPointer) 0 },
     { XtNcanvasWidth, XtCCanvasWidth, XtRDimension, sizeof(Dimension),
@@ -202,17 +204,23 @@ static void reset_xor_gc (pw)		/* used when resources change */
     }
 }
 
+
 static void check_knob (pw, knob)
     register PannerWidget pw;
     Boolean knob;
 {
-    Position maxx = (Position) (((long) pw->core.width) -
+    int pad = pw->panner.internal_border * 2;
+    Position maxx = (Position) (((long) pw->core.width - pad) -
 				((long) pw->panner.knob_width));
-    Position maxy = (Position) (((long) pw->core.height) -
+    Position maxy = (Position) (((long) pw->core.height - pad) -
 				((long) pw->panner.knob_height));
     Position *x = (knob ? &pw->panner.knob_x : &pw->panner.tmp.x);
     Position *y = (knob ? &pw->panner.knob_y : &pw->panner.tmp.y);
 
+    /*
+     * note that positions are already normalized (i.e. internal_border
+     * has been subtracted out)
+     */
     if (*x < 0) *x = 0;
     if (*x > maxx) *x = maxx;
 
@@ -234,16 +242,17 @@ static void move_shadow (pw)
 {
     XRectangle *r = pw->panner.shadow_rects;
     int lw = (pw->panner.line_width == 0 ? 1 : pw->panner.line_width) * 4;
+    int pad = pw->panner.internal_border;
 
     if (pw->panner.knob_height > lw && pw->panner.knob_width > lw) {
 #define SHADOW_WIDTH 2
-	r->x = (short) (pw->panner.knob_x + pw->panner.knob_width);
-	r->y = (short) (pw->panner.knob_y + lw);
+	r->x = (short) (pw->panner.knob_x + pad + pw->panner.knob_width);
+	r->y = (short) (pw->panner.knob_y + pad + lw);
 	r->width = SHADOW_WIDTH;
 	r->height = (unsigned short) (pw->panner.knob_height - lw);
 	r++;
-	r->x = (short) (pw->panner.knob_x + lw);
-	r->y = (short) (pw->panner.knob_y + pw->panner.knob_height);
+	r->x = (short) (pw->panner.knob_x + pad + lw);
+	r->y = (short) (pw->panner.knob_y + pad + pw->panner.knob_height);
 	r->width = (unsigned short) (pw->panner.knob_width - lw +
 				     SHADOW_WIDTH);
 	r->height = SHADOW_WIDTH;
@@ -259,10 +268,12 @@ static void scale_knob (pw, location, size)  /* set knob size and/or loc */
     Boolean location, size;
 {
     if (location) {
+	int pad = pw->panner.internal_border;
+
 	pw->panner.knob_x = (Position)
-	  PANNER_HSCALE (pw, pw->panner.slider_x);
+	  (PANNER_HSCALE (pw, pw->panner.slider_x) + pad);
 	pw->panner.knob_y = (Position)
-	  PANNER_VSCALE (pw, pw->panner.slider_y);
+	  (PANNER_VSCALE (pw, pw->panner.slider_y) + pad);
     }
     if (size) {
 	pw->panner.knob_width = (Dimension)
@@ -277,43 +288,48 @@ static void scale_knob (pw, location, size)  /* set knob size and/or loc */
 static void rescale (pw)
     PannerWidget pw;
 {
+    int pad = pw->panner.internal_border * 2;
+
     if (pw->panner.canvas_width < 1) pw->panner.canvas_width = 1;
     if (pw->panner.canvas_height < 1) pw->panner.canvas_height = 1;
-    pw->panner.haspect = (((float) pw->core.width) /
+    pw->panner.haspect = (((float) (pw->core.width - pad)) /
 			  ((float) pw->panner.canvas_width));
-    pw->panner.vaspect = (((float) pw->core.height) /
+    pw->panner.vaspect = (((float) (pw->core.height - pad)) /
 			  ((float) pw->panner.canvas_height));
     scale_knob (pw, TRUE, TRUE);
 }
 
 
 
-static Boolean get_event_xy (event, x, y)
+static Boolean get_event_xy (pw, event, x, y)
+    PannerWidget pw;
     XEvent *event;
     int *x, *y;
 {
+    int pad = pw->panner.internal_border;
+
     switch (event->type) {
       case ButtonPress:
       case ButtonRelease:
-	*x = event->xbutton.x;
-	*y = event->xbutton.y;
+	*x = event->xbutton.x - pad;
+	*y = event->xbutton.y - pad;
 	return TRUE;
 
       case KeyPress:
       case KeyRelease:
-	*x = event->xkey.x;
-	*y = event->xkey.y;
+	*x = event->xkey.x - pad;
+	*y = event->xkey.y - pad;
 	return TRUE;
 
       case EnterNotify:
       case LeaveNotify:
-	*x = event->xcrossing.x;
-	*y = event->xcrossing.y;
+	*x = event->xcrossing.x - pad;
+	*y = event->xcrossing.y - pad;
 	return TRUE;
 
       case MotionNotify:
-	*x = event->xmotion.x;
-	*y = event->xmotion.y;
+	*x = event->xmotion.x - pad;
+	*y = event->xmotion.y - pad;
 	return TRUE;
     }
 
@@ -324,7 +340,8 @@ static Boolean get_event_xy (event, x, y)
 { \
     XDrawRectangle (XtDisplay(pw), XtWindow(pw), \
 		    pw->panner.xor_gc, \
-		    pw->panner.tmp.x, pw->panner.tmp.y, \
+		    pw->panner.tmp.x + pw->panner.internal_border, \
+		    pw->panner.tmp.y + pw->panner.internal_border, \
 		    pw->panner.knob_width - 1, pw->panner.knob_height - 1); \
     pw->panner.tmp.showing = !pw->panner.tmp.showing; \
 }
@@ -394,23 +411,23 @@ static void Redisplay (gw, event, region)
     PannerWidget pw = (PannerWidget) gw;
     Display *dpy = XtDisplay(gw);
     Window w = XtWindow(gw);
+    int pad = pw->panner.internal_border;
+    int kx = pw->panner.knob_x + pad, ky = pw->panner.knob_y + pad;
 
     pw->panner.tmp.showing = FALSE;
     XClearArea (XtDisplay(pw), XtWindow(pw), 
-		pw->panner.last_x - pw->panner.line_width, 
-		pw->panner.last_y - pw->panner.line_width, 
+		pw->panner.last_x - pw->panner.line_width + pad, 
+		pw->panner.last_y - pw->panner.line_width + pad, 
 		pw->panner.knob_width + 2 + pw->panner.line_width * 2, 
 		pw->panner.knob_height + 2 + pw->panner.line_width * 2, 
 		False);
     pw->panner.last_x = pw->panner.knob_x;
     pw->panner.last_y = pw->panner.knob_y;
 
-    XFillRectangle (dpy, w, pw->panner.slider_gc,
-		    pw->panner.knob_x, pw->panner.knob_y,
+    XFillRectangle (dpy, w, pw->panner.slider_gc, kx, ky,
 		    pw->panner.knob_width - 1, pw->panner.knob_height - 1);
 
-    XDrawRectangle (dpy, w, pw->panner.shadow_gc,
-		    pw->panner.knob_x, pw->panner.knob_y,
+    XDrawRectangle (dpy, w, pw->panner.shadow_gc, kx, ky,
 		    pw->panner.knob_width - 1, pw->panner.knob_height - 1);
 
     if (pw->panner.shadow && pw->panner.shadow_valid) {
@@ -455,7 +472,8 @@ static Boolean SetValues (gcur, greq, gnew, args, num_args)
     }
 
     if (cur->panner.canvas_width != new->panner.canvas_width ||
-	cur->panner.canvas_height != new->panner.canvas_height) {
+	cur->panner.canvas_height != new->panner.canvas_height ||
+	cur->panner.internal_border != new->panner.internal_border) {
 	rescale (new);			/* does a scale_knob as well */
 	redisplay = TRUE;
     } else {
@@ -479,10 +497,11 @@ static XtGeometryResult QueryGeometry (gw, intended, pref)
     XtWidgetGeometry *intended, *pref;
 {
     PannerWidget pw = (PannerWidget) gw;
+    int pad = pw->panner.internal_border * 2;
 
     pref->request_mode = (CWWidth | CWHeight);
-    pref->width = PANNER_DSCALE (pw, pw->panner.canvas_width);
-    pref->height = PANNER_DSCALE (pw, pw->panner.canvas_height);
+    pref->width = PANNER_DSCALE (pw, pw->panner.canvas_width) + pad;
+    pref->height = PANNER_DSCALE (pw, pw->panner.canvas_height) + pad;
 
     if (((intended->request_mode & (CWWidth | CWHeight)) ==
 	 (CWWidth | CWHeight)) &&
@@ -511,7 +530,7 @@ static void ActionStart (gw, event, params, num_params)
     PannerWidget pw = (PannerWidget) gw;
     int x, y;
 
-    if (!get_event_xy (event, &x, &y)) {
+    if (!get_event_xy (pw, event, &x, &y)) {
 	XBell (XtDisplay(gw), 0);	/* should do error message */
 	return;
     }
@@ -535,7 +554,7 @@ static void ActionStop (gw, event, params, num_params)
     PannerWidget pw = (PannerWidget) gw;
     int x, y;
 
-    if (get_event_xy (event, &x, &y)) {
+    if (get_event_xy (pw, event, &x, &y)) {
 	pw->panner.tmp.x = ((Position) x) - pw->panner.tmp.dx;
 	pw->panner.tmp.y = ((Position) y) - pw->panner.tmp.dy;
 	if (!pw->panner.allow_off) check_knob (pw, FALSE);
@@ -577,7 +596,7 @@ static void ActionMove (gw, event, params, num_params)
 
     if (!pw->panner.tmp.doing) return;
 
-    if (!get_event_xy (event, &x, &y)) {
+    if (!get_event_xy (pw, event, &x, &y)) {
 	XBell (XtDisplay(gw), 0);	/* should do error message */
 	return;
     }
