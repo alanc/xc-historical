@@ -206,7 +206,7 @@ esac
 /**/#
 cat >> $makefile << END_OF_APPEND
 
-	$magic_string
+$magic_string
 
 END_OF_APPEND
 ed $silent $makefile << END_OF_ED_SCRIPT
