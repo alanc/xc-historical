@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.71 92/09/10 10:32:25 rws Exp $ */
+/* $XConsortium: io.c,v 1.72 93/07/10 16:46:26 dpw Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -501,7 +501,7 @@ FlushClient(who, oc, extraBuf, extraCount)
     register ConnectionOutputPtr oco = oc->output;
     int connection = oc->fd;
     struct iovec iov[3];
-    char padBuffer[3];
+    static char padBuffer[3];
     long written;
     long padsize;
     long notWritten;
