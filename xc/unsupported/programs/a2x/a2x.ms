@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.21 92/09/09 20:29:11 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.22 92/09/10 10:50:43 rws Exp $
 .de Ds
 .RS
 .nf
@@ -56,27 +56,38 @@ Getting Started
 depending on the applications, it is possible to use X hands-free through
 \fBa2x\fP.
 .LP
-\fBa2x\fP requires an X protocol extension to function.  Either the XTEST or
-XTRAP extension can be used.  (There is code for the old XTESTEXT1 extension
-in the source, but it has never been tested and probably will not work.)  The
-XTEST extension was developed by the X Consortium for use in the X Test Suite,
-and an R5 patch to support the XTEST extension is available via anonymous ftp
-to export.lcs.mit.edu, as the file /pub/XTEST/R5fix-xtest-1.  The XTRAP
-extension was developed by Digital Equipment Corp., and public versions are
-available for both R4 and R5.  \fBa2x\fP was originally written for the XTEST
-extension, but XTRAP is perfectly adequate.  (The main difference as far as
-\fBa2x\fP is concerned is that XTEST permits time delays inside the X server,
-while with XTRAP the delays are handled on the client side and hence can be
-somewhat less accurate, but time delays are rarely needed.)
+\fBa2x\fP requires an X protocol extension to function.  The XTEST, DEC-XTRAP,
+and XTestExtension1 extensions can be used.  The XTEST extension was developed
+by the X Consortium for use in the X Test Suite, and an R5 patch to support
+the XTEST extension is available via anonymous ftp to export.lcs.mit.edu, as
+the file /pub/XTEST/R5fix-xtest-1.  The DEC-XTRAP extension was developed by
+Digital Equipment Corp., and public versions are available for both R4 and R5.
+The XTestExtension1 extension was originally developed for an old test suite
+done by an informal group known as the X Testing Consortium; the client-side
+library and some device-independent code exists in both the R4 and R5 core
+distributions, but only the HP sample server in the MIT distribution supports
+the extension (other product servers might).
+.LP
+\fBa2x\fP was originally written for the XTEST extension, but both DEC-XTRAP
+and XTestExtension1 should also work.  The main difference as far as \fBa2x\fP
+is concerned is that XTEST permits time delays inside the X server, while with
+DEC-XTRAP and XTestExtension1 the delays are handled on the client side and
+hence can be somewhat less accurate, but time delays are rarely needed.  In
+addition, XTestExtension1 does not provide a way to synthesize relative
+pointer motion, so the WarpPointer protocol request is used instead.
 .LP
 The Imakefile for \fBa2x\fP comes configured for building with XTEST; to build
-with XTRAP change the line
+with DEC-XTRAP change the line
 .Ds
 #define BuildWithXTest
 .De
 to
 .Ds
 #define BuildWithXTrap
+.De
+instead.  To build with XTestExtension1 change the line to
+.Ds
+#define BuildWithXTestExt1
 .De
 instead.
 .LP
