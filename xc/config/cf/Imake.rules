@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.166 93/09/10 16:49:12 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.167 93/09/11 17:41:03 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -46,8 +46,8 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.166 93/09/10 16:49:12 rws Exp $
  * RanLibrary			(args)
  * LibraryTargetName		(libname)
  * LibraryTargetNameSuffix	(libname,suffix)
- * InstallTarget		(step,file,flags,dest)
  * InstallNamedTarget		(step,srcname,flags,dest,dstname)
+ * InstallTarget		(step,file,flags,dest)
  * InstallLibrary		(libname,dest)
  * MergeIntoInstalledLibrary	(tolib,fromlib)
  * InstallLibraryAlias		(libname,alias,dest)
@@ -540,19 +540,17 @@ clean::									@@\
 #define LibraryTargetNameSuffix(libname,suffix)Concat3(lib,libname,suffix.a)
 #endif
 
-#ifndef InstallTarget
-#define	InstallTarget(step,file,flags,dest)				@@\
-step:: file								@@\
-	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) $(INSTALLFLAGS) flags file $(DESTDIR)dest
-#endif /* InstallTarget */
-
 #ifndef InstallNamedTarget
 #define	InstallNamedTarget(step,srcname,flags,dest,dstname)		@@\
 step:: srcname								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) $(INSTALLFLAGS) flags srcname $(DESTDIR)dest/dstname
 #endif /* InstallNamedTarget */
+
+#ifndef InstallTarget
+#define	InstallTarget(step,file,flags,dest)				@@\
+InstallNamedTarget(step,file,flags,dest,file)
+#endif /* InstallTarget */
 
 /*
  * InstallLibrary - generate rules to install the indicated library.
