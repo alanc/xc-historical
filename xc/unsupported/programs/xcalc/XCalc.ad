@@ -1,13 +1,10 @@
-!
-!	application defaults file for xcalc 
-!
+
 XCalc.toplevel.icon_name:	Calculator
 XCalc*cursor:			hand2
-XCalc*iconPixmap:		/fs/converse/x/clients/xtcalc/xcalc.icon
-!XCalc*iconPixmap:		/usr/include/X11/bitmaps/xcalc.icon
+XCalc*iconPixmap:		calculator
 XCalc*bevel.background:	black
-XCalc*font:			*helvetica-medium-r-normal--10-*
-XCalc*bevel.screen.LCD.font:	*helvetica-bold-r-normal--12-*
+XCalc*font:			*-helvetica-medium-r-normal--*-100-*-*-*-*-*-*
+XCalc*bevel.screen.LCD.font:	*-helvetica-bold-r-normal--*-120-*-*-*-*-*-*
 
 XCalc*Command.horizDistance:			2
 XCalc*Command.vertDistance:			4
@@ -50,7 +47,7 @@ XCalc*bevel.screen.P.fromHoriz:		GRAD
 XCalc*bevel.screen.P.fromVert:		LCD
 XCalc*bevel.screen.P.horizDistance:		2
 
-!		TI specific resources
+
 
 XCalc.ti.geometry:				171x252
 XCalc.ti.bevel.screen.LCD.width:		100
@@ -85,6 +82,8 @@ XCalc.ti.bevel.screen.LCD.translations:	#replace\n\
 				<Key>KP_Subtract:subtract()\n\
 				<Key>KP_Decimal:decimal()\n\
 				<Key>KP_Divide:divide()\n\
+				<Key>Clear:clear()\n\
+				<Key>KP_Tab:equal()\n\
 				None<Key>.:decimal()\n\
 				None<Key>+:add()\n\
 				None<Key>-:subtract()\n\
@@ -108,9 +107,9 @@ XCalc.ti.bevel.screen.LCD.translations:	#replace\n\
 				None<Key>space:clear()\n\
 				None<Key>q:quit()\n\
 				None<Key>Delete:clear()\n\
+				None<Key>BackSpace:clear()\n\
 				<Btn1Down>:toggle()cut()\n
 
-!	TI calculator button labels and functionality
 
 XCalc.ti.button1.label:		1/x
 XCalc.ti.button1.translations:		#override<Btn1Up>:reciprocal()unset()
@@ -201,7 +200,6 @@ XCalc.ti.button39.translations:	#override<Btn1Up>:negate()unset()
 XCalc.ti.button40.label:		=
 XCalc.ti.button40.translations:	#override<Btn1Up>:equal()unset()
 
-!	TI calculator button layout
 
 XCalc.ti.button1.horizDistance:	4	
 XCalc.ti.button1.fromVert:		bevel
@@ -291,11 +289,11 @@ XCalc.ti.button39.fromVert:		button34
 XCalc.ti.button40.fromHoriz:		button39
 XCalc.ti.button40.fromVert:		button35
 
-!							HP resources
+
 XCalc.hp.geometry:			336x164
 XCalc.hp.bevel.screen.LCD.width:	180
 
-!	HP key and button bindings
+
 
 XCalc.hp.bevel.screen.LCD.translations:	#replace\n\
 				Ctrl<Key>c:quit()\n\
@@ -352,7 +350,7 @@ XCalc.hp.bevel.screen.LCD.translations:	#replace\n\
 				None<Key>Linefeed:enter()\n\
 				None<Key>x:XexchangeY()\n
 
-!	HP calculator button labels and functionality
+
 
 XCalc.hp.button1.label:		SQRT
 XCalc.hp.button1.translations:		#override<Btn1Up>:squareRoot()unset()
@@ -435,7 +433,6 @@ XCalc.hp.button38.translations:	#override<Btn1Up>:HPsum()unset()
 XCalc.hp.button39.label:		+
 XCalc.hp.button39.translations:	#override<Btn1Up>:add(HP)unset()
 
-!	HP calculator button layout
 
 XCalc.hp.button1.horizDistance:	4
 XCalc.hp.button1.fromVert:		bevel
