@@ -84,6 +84,7 @@
 (pushnew :xlib *features*)
 
 (defparameter *version* "MIT R5.0")
+(pushnew :clx-mit-r4 *features*)
 (pushnew :clx-mit-r5 *features*)
 
 (defparameter *protocol-major-version* 11.)
@@ -169,6 +170,10 @@
 	       (otherwise limit))))
     `(or (float ,(convert min t) ,(convert max t))
 	 (rational ,(convert min nil) ,(convert max nil)))))
+
+#-clx-ansi-common-lisp
+(deftype base-char ()
+  'string-char)
 
 ; Note that we are explicitly using a different rgb representation than what
 ; is actually transmitted in the protocol.
