@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.8 91/07/16 23:04:52 gildea Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 
@@ -16,7 +16,8 @@ CONN_DEFINES = ConnectionFlags
 NormalLibraryObjectRule()
 NormalLibraryTarget(os,$(OBJS))
 
-SpecialObjectRule(connection.o,$(ICONFIGFILES),$(CONN_DEFINES) $(SIGNAL_DEFINES))
-SpecialObjectRule(error.o,$(ICONFIGFILES),$(ERROR_DEFINES))
+SpecialCObjectRule(connection,$(ICONFIGFILES),$(CONN_DEFINES) $(SIGNAL_DEFINES))
+
+SpecialCObjectRule(error,$(ICONFIGFILES),$(ERROR_DEFINES))
 
 DependTarget()
