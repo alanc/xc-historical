@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.14 89/06/14 13:18:53 jim Exp $
+ * $XConsortium: Xos.h,v 1.15 89/06/19 11:10:52 jim Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -98,7 +98,7 @@ struct timeval {
 struct timezone {
     int tz_minuteswest;
     int tz_dsttime;
-}
+};
 #endif
 #endif /* umips or not */
 #endif /* USG */
