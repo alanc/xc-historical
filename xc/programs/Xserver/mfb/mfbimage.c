@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbimage.c,v 1.30 87/08/19 18:03:26 rws Locked $ */
+/* $Header: mfbimage.c,v 1.31 87/09/07 19:07:51 rws Locked $ */
 
 #include "X.h"
 
@@ -91,7 +91,7 @@ mfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
     pbits = pFakePixmap->devPrivate;
     pFakePixmap->devPrivate = (pointer)pImage;
     ((mfbPrivGC *)(pGC->devPriv))->fExpose = FALSE;
-    if (format == XYPixmap)
+    if (format != XYBitmap)
 	(*pGC->CopyArea)(pFakePixmap, dst, pGC, leftPad, 0, w, h, x, y);
     else
 	(*pGC->CopyPlane)(pFakePixmap, dst, pGC, leftPad, 0, w, h, x, y, 1);
