@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.46 94/03/08 17:45:05 gildea Exp $ */
+/* $XConsortium: dixfonts.c,v 1.47 94/03/14 17:48:23 gildea Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -213,6 +213,26 @@ FontWakeup(data, count, LastSelectMask)
     }
 }
 
+/* XXX -- these two funcs may want to be broken into macros */
+static void
+UseFPE(fpe)
+    FontPathElementPtr fpe;
+{
+    fpe->refcount++;
+}
+
+static void
+FreeFPE (fpe)
+    FontPathElementPtr	fpe;
+{
+    fpe->refcount--;
+    if (fpe->refcount == 0) {
+	(*fpe_functions[fpe->type].free_fpe) (fpe);
+	xfree(fpe->name);
+	xfree(fpe);
+    }
+}
+
 static Bool
 doOpenFont(client, c)
     ClientPtr   client;
@@ -318,7 +338,7 @@ bail:
     if (c->slept)
 	ClientWakeup(c->client);
     for (i = 0; i < c->num_fpes; i++) {
-	FreeFPE(c->fpe_list[i], FALSE);
+	FreeFPE(c->fpe_list[i]);
     }
     xfree(c->fpe_list);
     xfree(c->fontname);
@@ -443,7 +463,7 @@ CloseFont(value, fid)
 #endif
 	fpe = pfont->fpe;
 	(*fpe_functions[fpe->type].close_font) (fpe, pfont);
-	FreeFPE(fpe, FALSE);
+	FreeFPE(fpe);
     }
     return (Success);
 }
@@ -502,10 +522,10 @@ QueryFont(pFont, pReply, nProtoCCIStructs)
     ncols = pFont->info.lastCol - pFont->info.firstCol + 1;
     prCI = (xCharInfo *) (prFP);
     for (r = pFont->info.firstRow;
-	    ninfos < nProtoCCIStructs && r <= pFont->info.lastRow;
+	    ninfos < nProtoCCIStructs && r <= (int)pFont->info.lastRow;
 	    r++) {
 	i = 0;
-	for (c = pFont->info.firstCol; c <= pFont->info.lastCol; c++) {
+	for (c = pFont->info.firstCol; c <= (int)pFont->info.lastCol; c++) {
 	    chars[i++] = r;
 	    chars[i++] = c;
 	}
@@ -765,7 +785,7 @@ bail:
     if (c->slept)
 	ClientWakeup(client);
     for (i = 0; i < c->num_fpes; i++)
-	FreeFPE(c->fpe_list[i], FALSE);
+	FreeFPE(c->fpe_list[i]);
     xfree(c->fpe_list);
     if (c->savedName) xfree(c->savedName);
     FreeFontNames(names);
@@ -1026,7 +1046,7 @@ bail:
     if (c->slept)
 	ClientWakeup(client);
     for (i = 0; i < c->num_fpes; i++)
-	FreeFPE(c->fpe_list[i], FALSE);
+	FreeFPE(c->fpe_list[i]);
     xfree(c->reply);
     xfree(c->fpe_list);
     xfree(c->current.pattern);
@@ -1576,7 +1596,23 @@ FreeFontPath(list, n, force)
     int         i;
 
     for (i = 0; i < n; i++) {
-	FreeFPE(list[i], force);
+	if (force) {
+	    /* Sanity check that all refcounts will be 0 by the time
+	       we get to the end of the list. */
+	    int found = 1;	/* the first reference is us */
+	    int j;
+	    for (j = i+1; j < n; j++) {
+		if (list[j] == list[i])
+		    found++;
+	    }
+	    if (list[i]->refcount != found) {
+		ErrorF("FreeFontPath: FPE \"%.*s\" refcount is %d, should be %d; fixing.\n",
+		       list[i]->name_length, list[i]->name,
+		       list[i]->refcount, found);
+		list[i]->refcount = found; /* ensure it will get freed */
+	    }
+	}
+	FreeFPE(list[i]);
     }
     xfree((char *) list);
 }
@@ -1693,7 +1729,7 @@ SetFontPathElements(npaths, paths, bad)
 bail:
     *bad = i;
     while (--i >= 0)
-	FreeFPE(fplist[i], FALSE);
+	FreeFPE(fplist[i]);
     xfree(fplist);
     return err;
 }
@@ -1804,27 +1840,6 @@ LoadGlyphs(client, pfont, nchars, item_size, data)
 	    (client, pfont, 0, nchars, item_size, data);
     else
 	return Successful;
-}
-
-/* XXX -- these two funcs may want to be broken into macros */
-void
-UseFPE(fpe)
-    FontPathElementPtr fpe;
-{
-    fpe->refcount++;
-}
-
-void
-FreeFPE (fpe, force)
-    FontPathElementPtr	fpe;
-    Bool		force;
-{
-    fpe->refcount--;
-    if (force || fpe->refcount == 0) {
-	(*fpe_functions[fpe->type].free_fpe) (fpe);
-	xfree(fpe->name);
-	xfree(fpe);
-    }
 }
 
 void
