@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.39 94/06/04 16:30:10 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.40 94/06/05 16:15:22 rws Exp $
 /* only tested with Digital OSF/1 */
 
 #ifdef AlphaArchitecture
@@ -37,21 +37,39 @@ XCOMM operating system:  OSName
 #endif
 
 /*
- * For OSF/1 platforms, we must define both the location of the compiler
- * and the location of its standard C++ library.  The library location
- * is needed to resolve dependent library symbols when we build our own
- * C++ shared libraries like libFresco
+ * C++ compiler setup.  This file knows what options to use with the
+ * DEC C++ compiler, and may learn about other compilers in the future.
+ * 
+ * For DEC C++, define HasDECCplusplus to YES in site.def.  
+ * For other compilers, define HasCplusplus to YES in site.def, and 
+ *    check to see if you need to provide values for CplusplusOptions
+ *    and/or DefaultCplusplusOptions.
+ *
+ * In any case, you may also need to set CplusplusDependIncludes.
+ *
+ * NOTE:  For DEC C++ version 1.3, we want to set ForceNormalLib 
+ * 	  to YES because no one has managed to get the C++ compiler 
+ *	  to either build or link with shared libraries, and DEC has
+ *        not been able to tell us how to do it.
  */
 
+#if HasDECCplusplus
+#ifndef HasCplusplus 
+#define HasCplusplus YES
+#endif
 #ifndef CplusplusCmd
 #define CplusplusCmd /usr/bin/cxx
 #endif
 #ifndef CplusplusDependIncludes 
-#define CplusplusDependIncludes -D__DECCXX -I/usr/include
+#define CplusplusDependIncludes -D__DECCXX -I/usr/include/cxx
 #endif
 #ifndef CplusplusLibC
 #define CplusplusLibC -L/usr/lib/cmplrs/cxx -lcxx
 #endif
+#ifndef ForceNormalLib
+#define ForceNormalLib YES
+#endif
+#endif /* HasDECCplusplus */
 
 #include <osfLib.rules>
 #define NoRConst		YES
