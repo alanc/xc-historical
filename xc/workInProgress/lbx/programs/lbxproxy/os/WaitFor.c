@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.1 94/02/10 20:07:25 dpw Exp $ */
+/* $XConsortium: WaitFor.c,v 1.2 94/03/08 20:52:50 dpw Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -64,7 +64,6 @@ extern Bool AnyClientsWriteBlocked;
 
 extern WorkQueuePtr workQueue;
 
-extern void SaveScreens();
 extern void ProcessInputEvents();
 extern void BlockHandler();
 extern void WakeupHandler();
@@ -96,20 +95,11 @@ static OsTimerPtr timers;
  * WaitForSomething:
  *     Make the server suspend until there is
  *	1. data from clients or
- *	2. input events available or
- *	3. ddx notices something of interest (graphics
- *	   queue ready, etc.) or
- *	4. clients that have buffered replies/events are ready
+ *	2. clients that have buffered replies/events are ready
  *
- *     If the time between INPUT events is
- *     greater than ScreenSaverTime, the display is turned off (or
- *     saved, depending on the hardware).  So, WaitForSomething()
- *     has to handle this also (that's why the select() has a timeout.
  *     For more info on ClientsWithInput, see ReadRequestFromClient().
  *     pClientsReady is an array to store ready client->index values into.
  *****************/
-
-static INT32 timeTilFrob = 0;		/* while screen saving */
 
 int
 WaitForSomething(pClientsReady)
@@ -141,7 +131,7 @@ WaitForSomething(pClientsReady)
 	    COPYBITS(ClientsWithInput, clientsReadable);
 	    break;
 	}
-	if (ScreenSaverTime || timers)
+	if (timers)
 	    now = GetTimeInMillis();
 	wt = NULL;
 	if (timers)
@@ -154,43 +144,6 @@ WaitForSomething(pClientsReady)
 		waittime.tv_sec = timeout / MILLI_PER_SECOND;
 		waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
 		    (1000000 / MILLI_PER_SECOND);
-		wt = &waittime;
-	    }
-	}
-	if (ScreenSaverTime)
-	{
-	    timeout = (ScreenSaverTime -
-		       (now - lastDeviceEventTime.milliseconds));
-	    if (timeout <= 0) /* may be forced by AutoResetServer() */
-	    {
-		INT32 timeSinceSave;
-
-		timeSinceSave = -timeout;
-		if ((timeSinceSave >= timeTilFrob) && (timeTilFrob >= 0))
-		{
-		    ResetOsBuffers(); /* not ideal, but better than nothing */
-		    SaveScreens(SCREEN_SAVER_ON, ScreenSaverActive);
-		    if (ScreenSaverInterval)
-			/* round up to the next ScreenSaverInterval */
-			timeTilFrob = ScreenSaverInterval *
-				((timeSinceSave + ScreenSaverInterval) /
-					ScreenSaverInterval);
-		    else
-			timeTilFrob = -1;
-		}
-		timeout = timeTilFrob - timeSinceSave;
-	    }
-	    else
-	    {
-		if (timeout > ScreenSaverTime)
-		    timeout = ScreenSaverTime;
-		timeTilFrob = 0;
-	    }
-	    if (timeTilFrob >= 0 && (!wt || timeout < (timers->expires - now)))
-	    {
-		waittime.tv_sec = timeout / MILLI_PER_SECOND;
-		waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
-					(1000000 / MILLI_PER_SECOND);
 		wt = &waittime;
 	    }
 	}
@@ -281,42 +234,12 @@ WaitForSomething(pClientsReady)
     {
 	for (i=0; i<mskcnt; i++)
 	{
-	    int highest_priority;
-
 	    while (clientsReadable[i])
 	    {
-	        int client_priority, client_index;
+                int	client_index; 
 
 		curclient = ffs (clientsReadable[i]) - 1;
 		client_index = ConnectionTranslation[curclient + (i << 5)];
-#ifdef XSYNC
-		/*  We implement "strict" priorities.
-		 *  Only the highest priority client is returned to
-		 *  dix.  If multiple clients at the same priority are
-		 *  ready, they are all returned.  This means that an
-		 *  aggressive client could take over the server.
-		 *  This was not considered a big problem because
-		 *  aggressive clients can hose the server in so many 
-		 *  other ways :)
-		 */
-		client_priority = clients[client_index]->priority;
-		if (nready == 0 || client_priority > highest_priority)
-		{
-		    /*  Either we found the first client, or we found
-		     *  a client whose priority is greater than all others
-		     *  that have been found so far.  Either way, we want 
-		     *  to initialize the list of clients to contain just
-		     *  this client.
-		     */
-		    pClientsReady[0] = client_index;
-		    highest_priority = client_priority;
-		    nready = 1;
-		}
-		/*  the following if makes sure that multiple same-priority 
-		 *  clients get batched together
-		 */
-		else if (client_priority == highest_priority)
-#endif
 		{
 		    pClientsReady[nready++] = client_index;
 		}
@@ -416,7 +339,6 @@ TimerForce(timer)
     register OsTimerPtr timer;
 {
     register OsTimerPtr *prev;
-    register CARD32 newTime;
 
     for (prev = &timers; *prev; prev = &(*prev)->next)
     {

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.84 94/02/23 15:49:33 dpw Exp $ */
+/* $XConsortium: io.c,v 1.85 94/03/22 10:16:43 dpw Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -482,86 +482,16 @@ ReadRequestFromClient(client)
 
 #ifdef LBX
 Bool
-SwitchClientInput (from, to, preserve)
-    ClientPtr	from, to;
-    int		preserve;	/* bytes to preserve for from */
+SwitchClientInput (to, check)
+    ClientPtr to;
+    ClientPtr check;
 {
-    OsCommPtr ocFrom = (OsCommPtr) from->osPrivate;
     OsCommPtr ocTo = (OsCommPtr) to->osPrivate;
-    ConnectionInputPtr	ociFrom = ocFrom->input;
     ConnectionInputPtr	ociTo = ocTo->input;
-    int			remain;
-    int			gotnowFrom, gotnowTo;
-    int			needed;
     
-    if (ociTo && !ociTo->bufcnt)
-    {
-	xfree (ociTo->buffer);
-	xfree (ociTo);
-	ociTo = NULL;
-    }
-    if (ociFrom)
-    {
-	ociFrom->bufptr += ociFrom->lenLastReq;
-	ociFrom->lenLastReq = 0;
-    }
-    if (ociTo)
-    {
-	ociTo->bufptr += ociTo->lenLastReq;
-	ociTo->lenLastReq = 0;
-    }
     ConnectionTranslation[ocTo->fd] = to->index;
     YieldControl();
-    if (!preserve && !ociTo)
-    {
-	ocTo->input = ociFrom;
-	ocFrom->input = NULL;
-	if (AvailableInput == ocFrom)
-	    AvailableInput = ocTo;
-	return TRUE;
-    }
-    gotnowFrom = 0;
-    if (ociFrom)
-	gotnowFrom = ociFrom->bufcnt + ociFrom->buffer - ociFrom->bufptr;
-    remain = gotnowFrom - preserve;
-    if (!ociTo)
-    {
-	ociTo = AllocateInputBuffer ();
-	if (!ociTo)
-	    return FALSE;
-	ocTo->input = ociTo;
-    }
-    /* Append any data in the from buffer onto the end of the to buffer */
-    needed = ociTo->bufcnt + remain;
-    if (needed > ociTo->size)
-    {
-	gotnowTo = ociTo->bufcnt + ociTo->buffer - ociTo->bufptr;
-	/* move any existing data to the begining */
-	if (gotnowTo > 0 && ociTo->bufptr != ociTo->buffer)
-	    bcopy (ociTo->bufptr, ociTo->buffer, gotnowTo);
-	needed = gotnowTo + remain;
-	/* if we really do need more space, realloc */
-	if (needed > ociTo->size)
-	{
-	    char	*ibuf;
-	    ibuf = (char *) xrealloc (ociTo->buffer, needed);
-	    if (!ibuf)
-		return FALSE;
-	    ociTo->size = needed;
-	    ociTo->buffer = ibuf;
-	}
-	ociTo->bufptr = ociTo->buffer;
-	ociTo->bufcnt = gotnowTo;
-    }
-    if (remain)
-    {
-	bcopy (ociFrom->bufptr + preserve, ociTo->buffer + ociTo->bufcnt, remain);
-	ociTo->bufcnt += remain;
-	ociFrom->bufcnt -= remain;
-    }
-    CheckPendingClientInput (to);
-    if (AvailableInput == ocFrom)
-	AvailableInput = ocTo;
+    CheckPendingClientInput (check);
     return TRUE;
 }
 

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.1 94/02/10 20:08:51 dpw Exp $ */
+/* $XConsortium: io.c,v 1.2 94/02/20 10:56:12 dpw Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -65,9 +65,7 @@ extern FdSet ClientsWithInput;
 extern FdSet ClientsWriteBlocked;
 extern FdSet OutputPending;
 extern int ConnectionTranslation[];
-#ifdef LBX
 extern int ConnectionOutputTranslation[];
-#endif
 extern Bool NewOutputPending;
 extern Bool AnyClientsWriteBlocked;
 static Bool CriticalOutputPending;
@@ -86,14 +84,12 @@ static ConnectionOutputPtr AllocateOutputBuffer(
     void
 #endif
 );
-#ifdef LBX
 static ConnectionOutputPtr AllocateUncompBuffer();
-#endif
 
-#ifdef LBX
 ClientPtr   ReadingClient;
 ClientPtr   WritingClient;
 
+#ifdef LBX
 #define get_req_len(req,cli) (((cli)->swapped ? \
 			      lswaps((req)->length) : (req)->length) << 2)
 
@@ -102,7 +98,7 @@ ClientPtr   WritingClient;
 			      lswaps((req)->length) : (req)->length)
 #endif
 
-#ifdef LBX
+unsigned long
 StandardRequestLength(req,client,got,partp)
     xReq	*req;
     ClientPtr	client;
@@ -127,7 +123,6 @@ StandardRequestLength(req,client,got,partp)
     *partp = FALSE;
     return len;
 }
-#endif
 
 #ifdef BIGREQS
 typedef struct {
@@ -176,15 +171,9 @@ typedef struct {
 #define YieldControlDeath()			\
         { timesThisConnection = 0; }
 
-#ifdef LBX
 int
 StandardReadRequestFromClient(client)
     ClientPtr client;
-#else
-int
-ReadRequestFromClient(client)
-    ClientPtr client;
-#endif
 {
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     register ConnectionInputPtr oci = oc->input;
@@ -193,10 +182,8 @@ ReadRequestFromClient(client)
     int result;
     register xReq *request;
     Bool need_header;
-#ifdef LBX
     int	nextneeds;
     Bool part;
-#endif
 #ifdef BIGREQS
     Bool move_header;
 #endif
@@ -234,9 +221,7 @@ ReadRequestFromClient(client)
 	oc->input = oci;
     }
     oci->bufptr += oci->lenLastReq;
-#ifdef LBX
     oci->lenLastReq = 0;
-#endif
 
     need_header = FALSE;
 #ifdef BIGREQS
@@ -467,7 +452,6 @@ ReadRequestFromClient(client)
     return needed;
 }
 
-#ifdef LBX
 Bool
 SwitchClientInput (from, to, preserve)
     ClientPtr	from, to;
@@ -557,8 +541,6 @@ SwitchClientOutput (from, to)
 {
     OsCommPtr ocFrom = (OsCommPtr) from->osPrivate;
     OsCommPtr ocTo = (OsCommPtr) to->osPrivate;
-    ConnectionOutputPtr	ocoFrom = ocFrom->output;
-    ConnectionOutputPtr	ocoTo = ocTo->output;
     
     ConnectionOutputTranslation[ocTo->fd] = to->index;
     if (PendingClientOutput (to))
@@ -637,7 +619,6 @@ SkipInClientBuffer (client, nbytes, lenLastReq)
     oci->bufptr += nbytes;
     oci->lenLastReq = lenLastReq;
 }
-#endif	/* LBX */
 
 /*****************************************************************
  * InsertFakeRequest
@@ -656,9 +637,7 @@ InsertFakeRequest(client, data, count)
     int fd = oc->fd;
     register xReq *request;
     register int gotnow, moveup;
-#ifdef LBX
     Bool part;
-#endif
 
     if (AvailableInput)
     {
@@ -713,19 +692,13 @@ InsertFakeRequest(client, data, count)
     oci->bufptr -= count;
     request = (xReq *)oci->bufptr;
     gotnow += count;
-#ifndef LBX
-    if ((gotnow >= sizeof(xReq)) &&
-	(gotnow >= (get_req_len(request, client) << 2)))
-#else
     if (gotnow >= RequestLength (request, client, gotnow, &part) && !part)
-#endif
 	BITSET(ClientsWithInput, fd);
     else
 	YieldControlNoInput();
     return(TRUE);
 }
 
-#ifdef LBX
 /*****************************************************************
  * AppendFakeRequest
  *    Append a (possibly partial) request in as the last request.
@@ -741,8 +714,7 @@ AppendFakeRequest (client, data, count)
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     register ConnectionInputPtr oco = oc->input;
     int fd = oc->fd;
-    register xReq *request;
-    register int gotnow, moveup;
+    register int gotnow;
     Bool part;
 
 #ifdef NOTDEF
@@ -798,7 +770,6 @@ AppendFakeRequest (client, data, count)
 	YieldControlNoInput();
     return(TRUE);
 }
-#endif	/* LBX */
 
 /*****************************************************************
  * ResetRequestFromClient
@@ -879,11 +850,7 @@ static int padlength[4] = {0, 3, 2, 1};
  **********************/
 
 int
-#ifdef LBX
 StandardFlushClient(who, oc, extraBuf, extraCount)
-#else
-FlushClient(who, oc, extraBuf, extraCount)
-#endif
     ClientPtr who;
     OsCommPtr oc;
     char *extraBuf;
@@ -942,12 +909,8 @@ FlushClient(who, oc, extraBuf, extraCount)
 	InsertIOV (padBuffer, padsize)
 
 	errno = 0;
-#ifdef LBX
 	WritingClient = who;
 	if ((len = (*oc->Writev) (connection, iov, i)) >= 0)
-#else
-	if ((len = writev(connection, iov, i)) >= 0)
-#endif
 	{
 	    written += len;
 	    notWritten -= len;
@@ -1051,7 +1014,6 @@ FlushClient(who, oc, extraBuf, extraCount)
     return extraCount; /* return only the amount explicitly requested */
 }
 
-#ifdef LBX
 static int
 ExpandOutputBuffer(oco, len)
     ConnectionOutputPtr oco;
@@ -1130,7 +1092,6 @@ LbxFlushClient(who, oc, extraBuf, extraCount)
 
     return retval;
 }
-#endif
 
  /********************
  * FlushAllOutput()
@@ -1168,11 +1129,7 @@ FlushAllOutput()
 	{
 	    index = ffs(mask) - 1;
 	    mask &= ~lowbit(mask);
-#ifdef LBX
 	    if ((index = ConnectionOutputTranslation[(base << 5) + index]) == 0)
-#else
-	    if ((index = ConnectionTranslation[(base << 5) + index]) == 0)
-#endif
 		continue;
 	    client = clients[index];
 	    if (client->clientGone)
@@ -1215,11 +1172,7 @@ SetCriticalOutputPending()
  *****************/
 
 int
-#ifdef LBX
 StandardWriteToClient (who, count, buf)
-#else
-WriteToClient (who, count, buf)
-#endif
     ClientPtr who;
     char *buf;
     int count;
@@ -1264,7 +1217,6 @@ WriteToClient (who, count, buf)
     return(count);
 }
 
-#ifdef LBX
 int
 UncompressWriteToClient (who, count, buf)
     ClientPtr who;
@@ -1320,7 +1272,6 @@ UncompressWriteToClient (who, count, buf)
     BITSET(OutputPending, oc->fd);
     return(count);
 }
-#endif
 
 static ConnectionInputPtr
 AllocateInputBuffer()
@@ -1359,13 +1310,10 @@ AllocateOutputBuffer()
     }
     oco->size = BUFSIZE;
     oco->count = 0;
-#ifdef LBX
     oco->nocompress = FALSE;
-#endif
     return oco;
 }
 
-#ifdef LBX
 static ConnectionOutputPtr
 AllocateUncompBuffer(count)
     int count;
@@ -1387,8 +1335,6 @@ AllocateUncompBuffer(count)
     oco->nocompress = TRUE;
     return oco;
 }
-
-#endif
 
 void
 FreeOsBuffers(oc)
@@ -1429,7 +1375,6 @@ FreeOsBuffers(oc)
 	    oco->count = 0;
 	}
     }
-#ifdef LBX
     if (oco = oc->ofirst) {
 	ConnectionOutputPtr nextoco;
 	do {
@@ -1441,7 +1386,6 @@ FreeOsBuffers(oc)
 	    oco = nextoco;
 	} while (1);
     }
-#endif
 }
 
 void

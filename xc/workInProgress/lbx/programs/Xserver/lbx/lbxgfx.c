@@ -1,4 +1,4 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: lbxgfx.c,v 1.2 94/02/20 10:51:35 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxgfx.c,v 1.1 1994/02/09 19:07:16 lemke Exp $
+ * $NCDId: @(#)lbxgfx.c,v 1.4 1994/03/24 17:54:34 lemke Exp $
  *
  * Author:  Dave Lemke, Network Computing Devices
  */
@@ -54,7 +54,6 @@ LbxDecodePoly(client, xreqtype, decode_rtn)
 {
     REQUEST(xLbxPolyPointReq);
     char		*in;
-    char		*inend;
     xPolyPointReq	*xreq;
     int			len;
     int			retval;
@@ -83,7 +82,6 @@ LbxDecodeFillPoly(client)
 {
     REQUEST(xLbxFillPolyReq);
     char		*in;
-    char		*inend;
     xFillPolyReq	*xreq;
     int			len;
     int			retval;
@@ -93,7 +91,7 @@ LbxDecodeFillPoly(client)
 	    xalloc(sizeof(xFillPolyReq) + (len << 1))) == NULL)
 	return BadAlloc;
     in = (char *)stuff + sz_xLbxFillPolyReq;
-    len = LbxDecodePoints(in, in + len - stuff->padBytes, &xreq[1]);
+    len = LbxDecodePoints(in, in + len - stuff->padBytes, (short *) &xreq[1]);
     xreq->reqType = X_FillPoly;
     xreq->drawable = stuff->drawable;
     xreq->gc = stuff->gc;
@@ -191,7 +189,6 @@ LbxDecodeRectangle(in, inend, out)
     register short *out;
 {
     register short diff;
-    unsigned short len;
     short	   last_x = 0;
     short	   last_y = 0;
     char	   *start_out = (char *)out;

@@ -1,4 +1,4 @@
-/* $XConsortium: lbxprop.c,v 1.4 94/03/08 20:32:13 dpw Exp $ */
+/* $XConsortium: lbxprop.c,v 1.5 94/03/17 19:45:29 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxprop.c,v 1.10 1994/03/14 23:32:36 lemke Exp $
+ * $NCDId: @(#)lbxprop.c,v 1.11 1994/03/24 17:54:36 lemke Exp $
  *
  * Author:  Dave Lemke, Network Computing Devices
  */
@@ -330,7 +330,6 @@ LbxGetProperty(client)
                 ind;
     WindowPtr   pWin;
     xLbxGetPropertyReply reply;
-    TagData     td;
     XID         tid;
     Bool        send_data = FALSE;
 

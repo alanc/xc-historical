@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.3 94/03/08 20:52:56 dpw Exp $ */
+/* $XConsortium: connection.c,v 1.4 94/03/17 19:46:51 dpw Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -170,9 +170,7 @@ static FdSet SavedClientsWithInput;
 int GrabInProgress = 0;
 
 int ConnectionTranslation[MAXSOCKS];
-#ifdef LBX
 int ConnectionOutputTranslation[MAXSOCKS];
-#endif
 extern int auditTrailLevel;
 extern ClientPtr NextAvailableClient();
 extern XID CheckAuthorization();
@@ -193,12 +191,10 @@ void CloseDownFileDescriptor(
 void XdmcpOpenDisplay(), XdmcpInit(), XdmcpReset(), XdmcpCloseDisplay();
 #endif
 
-#ifdef LBX
 extern int  StandardReadRequestFromClient();
 extern int  StandardWriteToClient ();
 extern unsigned long  StandardRequestLength ();
 extern int  StandardFlushClient ();
-#endif
 
 #ifdef TCPCONN
 static int
@@ -1275,9 +1271,7 @@ CreateWellKnownSockets()
     CLEARBITS(ClientsWithInput);
 
     for (i=0; i<MAXSOCKS; i++) ConnectionTranslation[i] = 0;
-#ifdef LBX
     for (i=0; i<MAXSOCKS; i++) ConnectionOutputTranslation[i] = 0;
-#endif
 #ifndef X_NOT_POSIX
     lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
 #else
@@ -1420,52 +1414,6 @@ ResetWellKnownSockets ()
 #endif
 }
 
-static void
-AuthAudit (client, letin, saddr, len, proto_n, auth_proto)
-    int client;
-    Bool letin;
-    struct sockaddr *saddr;
-    int len;
-    unsigned short proto_n;
-    char *auth_proto;
-{
-    char addr[128];
-
-    if (!len)
-        strcpy(addr, "local host");
-    else
-	switch (saddr->sa_family)
-	{
-	case AF_UNSPEC:
-#ifdef UNIXCONN
-	case AF_UNIX:
-#endif
-	    strcpy(addr, "local host");
-	    break;
-#ifdef TCPCONN
-	case AF_INET:
-	    sprintf(addr, "IP %s port %d",
-		    inet_ntoa(((struct sockaddr_in *) saddr)->sin_addr),
-		    ((struct sockaddr_in *) saddr)->sin_port);
-	    break;
-#endif
-#ifdef DNETCONN
-	case AF_DECnet:
-	    sprintf(addr, "DN %s",
-		    dnet_ntoa(&((struct sockaddr_dn *) saddr)->sdn_add));
-	    break;
-#endif
-	default:
-	    strcpy(addr, "unknown address");
-	}
-    if (letin)
-	AuditF("client %d connected from %s\n", client, addr);
-    else
-	AuditF("client %d rejected from %s\n", client, addr);
-    if (proto_n)
-	AuditF("  Auth name: %.*s\n", proto_n, auth_proto);
-}
-
 /*****************************************************************
  * ClientAuthorized
  *
@@ -1485,6 +1433,7 @@ AuthAudit (client, letin, saddr, len, proto_n, auth_proto)
  *
  *****************************************************************/
 
+/* ARGSUSED */
 char * 
 ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     ClientPtr client;
@@ -1496,8 +1445,6 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     oc->conn_time = 0;
     return((char *)NULL);
 }
-
-#ifdef LBX
 
 ClientConnectionNumber (client)
     ClientPtr	client;
@@ -1594,12 +1541,11 @@ StartOutputCompression(client, CompressOn, CompressOff)
     oc->compressOff = CompressOff;
     oc->flushClient = LbxFlushClient;
 }
-#endif
 
 int Writev(fd, iov, iovcnt)
-int fd;
-struct iovec *iov;
-int iovcnt;
+    int fd;
+    struct iovec *iov;
+    int iovcnt;
 {
     return writev(fd, iov, iovcnt);
 }
@@ -1699,7 +1645,6 @@ EstablishNewConnections(clientUnused, closure)
 #endif
 #endif
 
-#ifdef LBX
 	client = AllocNewConnection (newconn, read, Writev, CloseDownFileDescriptor);
 	if (!client)
 	{
@@ -1707,39 +1652,6 @@ EstablishNewConnections(clientUnused, closure)
 	    close(newconn);
 	    continue;
 	}
-#else
-	oc = (OsCommPtr)xalloc(sizeof(OsCommRec));
-	if (!oc)
-	{
-	    ErrorConnMax(newconn);
-	    close(newconn);
-	    continue;
-	}
-	if (GrabInProgress)
-	{
-	    BITSET(SavedAllClients, newconn);
-	    BITSET(SavedAllSockets, newconn);
-	}
-	else
-	{
-	    BITSET(AllClients, newconn);
-	    BITSET(AllSockets, newconn);
-	}
-	oc->fd = newconn;
-	oc->input = (ConnectionInputPtr)NULL;
-	oc->output = (ConnectionOutputPtr)NULL;
-	oc->conn_time = connect_time;
-	if ((newconn < lastfdesc) &&
-	    (client = NextAvailableClient((pointer)oc)))
-	{
-	    ConnectionTranslation[newconn] = client->index;
-	}
-	else
-	{
-	    ErrorConnMax(newconn);
-	    CloseDownFileDescriptor(oc);
-	}
-#endif	/* LBX */
     }
     return TRUE;
 }
@@ -1801,28 +1713,16 @@ ErrorConnMax(fd)
  *     Remove this file descriptor and it's I/O buffers, etc.
  ************/
 
-#ifdef LBX
 void
 CloseDownFileDescriptor(client)
     ClientPtr	client;
-#else
-static void
-CloseDownFileDescriptor(oc)
-    register OsCommPtr oc;
-#endif
 {
-#ifdef LBX
     register OsCommPtr oc = (OsCommPtr) client->osPrivate;
-#endif
     int connection = oc->fd;
 
     close(connection);
-#ifdef LBX
     ConnectionTranslation[connection] = 0;
     ConnectionOutputTranslation[connection] = 0;
-#else
-    FreeOsBuffers(oc);
-#endif
     BITCLEAR(AllSockets, connection);
     BITCLEAR(AllClients, connection);
 #ifdef LOCALCONN
@@ -1840,9 +1740,6 @@ CloseDownFileDescriptor(oc)
     if (!ANYSET(ClientsWriteBlocked))
     	AnyClientsWriteBlocked = FALSE;
     BITCLEAR(OutputPending, connection);
-#ifndef LBX
-    xfree(oc);
-#endif
 }
 
 /*****************
@@ -1903,13 +1800,9 @@ CloseDownConnection(client)
 #ifdef XDMCP
     XdmcpCloseDisplay(oc->fd);
 #endif
-#ifndef LBX
-    CloseDownFileDescriptor(oc);
-#else
     (*oc->Close) (client);
     FreeOsBuffers(oc);
     xfree(oc);
-#endif
     client->osPrivate = (pointer)NULL;
     if (auditTrailLevel > 1)
 	AuditF("client %d disconnected\n", client->index);

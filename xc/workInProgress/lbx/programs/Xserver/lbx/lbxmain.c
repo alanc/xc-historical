@@ -1,6 +1,6 @@
-/* $XConsortium: lbxmain.c,v 1.9 94/03/13 13:07:35 dpw Exp $ */
+/* $XConsortium: lbxmain.c,v 1.10 94/03/17 19:45:20 dpw Exp $ */
 /*
- * $NCDId: @(#)lbxmain.c,v 1.38 1994/03/14 23:32:26 lemke Exp $
+ * $NCDId: @(#)lbxmain.c,v 1.45 1994/03/24 17:54:24 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
  *
  * Copyright 1992 Network Computing Devices
@@ -114,7 +114,6 @@ void
 LbxExtensionInit()
 {
     ExtensionEntry *extEntry;
-    int i;
 
     lbxBlockHandlerCount = 0;
     lbxCompressWorkProcCount = 0;
@@ -188,18 +187,17 @@ LbxCloseClient (client)
 void
 LbxComputeReplyLen(lbxClient, buf)
     LbxClientPtr    lbxClient;
+    char	*buf;
 {
     if (lbxClient->awaiting_setup)
     {
 	xConnSetupPrefix	*csp = (xConnSetupPrefix *) buf;
 	short			len = csp->length;
 	int			n;
-	if (lbxClient->client->swapped)
-	{
+	if (lbxClient->client->swapped) {
 	    swaps(&len, n);
 	}
 	lbxClient->reply_remaining = 8 + (len << 2);
-	lbxClient->awaiting_setup = FALSE;
 	DBG(DBG_LEN, (stderr, "%d setup bytes remaining\n", lbxClient->reply_remaining));
     }
     else
@@ -210,8 +208,7 @@ LbxComputeReplyLen(lbxClient, buf)
 	if (reply->generic.type == X_Reply) {
 	    int   len = reply->generic.length;
 	    int	  n;
-	    if (lbxClient->client->swapped)
-	    {
+	    if (lbxClient->client->swapped) {
 		swapl(&len, n);
 	    }
 	    lbxClient->reply_remaining += len << 2;
@@ -228,16 +225,9 @@ LbxRead (connection, buf, len)
 {
     LbxProxyPtr	proxy = LbxProxy(ReadingClient);
     
-    if (ReadingClient != proxy->curDix->client)
+    if (ReadingClient != proxy->lbxClients[0]->client)
     {
 	DBG (DBG_BLOCK, (stderr, "client %d not on wire\n", LbxClient(ReadingClient)->index));
-	errno = EWOULDBLOCK;
-	return -1;
-    }
-    if (proxy->curDix != proxy->curRecv && proxy->curDix->reading_pending)
-    {
-	DBG (DBG_BLOCK, (stderr, "end of pending input for client %d\n", 
-			 proxy->curDix->index));
 	errno = EWOULDBLOCK;
 	return -1;
     }
@@ -292,7 +282,7 @@ LbxComposeDelta(proxy, reply, len)
 	proxy->deltaEventRemaining = sz_xLbxDeltaReq + sz_xLbxDiffItem * diffs;
 	p->length = (proxy->deltaEventRemaining + 3) >> 2;
 	proxy->deltaEventRemaining = p->length << 2;
-	if (proxy->lbxClients[0]->client->swapped) {
+	if (proxy->lbxClients[LbxMasterClientIndex]->client->swapped) {
 	    int         n;
 
 	    swaps(&p->length, n);
@@ -334,18 +324,21 @@ LbxWritev (connection, iov, num)
         int	client;
 
         client = ((xLbxEvent *)(proxy->tempEventBuf))->client; 
-        if (proxy->curSend->client->swapped) {
+        if (proxy->lbxClients[0] &&
+	    proxy->lbxClients[0]->client->swapped) {
             swapl(&client, n);
         }
         if (proxy->switchEventRemaining)
-	    DBG (DBG_SWITCH, (stderr, "writing %d switch event bytes to client %d\n",
+	    DBG (DBG_SWITCH, (stderr, "needs switch: writing %d switch event bytes to client %d\n",
 		proxy->switchEventRemaining, client));
 	}
 #endif
 	ev->type = LbxEventCode;
 	ev->lbxType = LbxSwitchEvent;
 	ev->client = proxy->curSend->index;
-        if (proxy->curSend->client->swapped) {
+
+        if (proxy->lbxClients[0] &&
+	    proxy->lbxClients[0]->client->swapped) {
             swapl(&ev->client, n);
         }
 	proxy->curSend->needs_output_switch = FALSE;
@@ -361,7 +354,8 @@ LbxWritev (connection, iov, num)
         int	client;
 
         client = ((xLbxEvent *)(proxy->tempEventBuf))->client; 
-        if (proxy->curSend->client->swapped) {
+        if (proxy->lbxClients[0] &&
+	    proxy->lbxClients[0]->client->swapped) {
             swapl(&client, n);
         }
 	DBG (DBG_SWITCH, (stderr, "writing %d switch event bytes to client %d\n",
@@ -392,6 +386,21 @@ LbxWritev (connection, iov, num)
 	if (!this_time && total)
 	{
 	    LbxComputeReplyLen (proxy->curSend, iov->iov_base);
+            /* length fields are always in proxy format */
+	    if (proxy->lbxClients[0]->client->swapped != 
+            			proxy->curSend->client->swapped) {
+		xGenericReply *buf = (xGenericReply *) iov->iov_base;
+		xConnSetupPrefix *csp = (xConnSetupPrefix *) iov->iov_base;
+		int         n;
+
+		if (proxy->curSend->awaiting_setup) {
+		    swaps(&csp->length, n);
+		} else {
+		    swapl(&buf->length, n);
+		}
+	    }
+	    if (proxy->curSend->awaiting_setup)
+		lbxClient->awaiting_setup = FALSE;
 	    this_time = proxy->curSend->reply_remaining;
 	}
     }
@@ -448,6 +457,7 @@ LbxWritev (connection, iov, num)
     return total;
 }
 
+/* ARGSUSED */
 void
 LbxWakeupHandler (data, result, pReadmask)
     pointer	    data;
@@ -552,6 +562,7 @@ LbxFlushCompress ()
  * want the select() call in WaitForSomething() to return immediately,
  * so we cause ClientsWithInput to be set.
  */
+/* ARGSUSED */
 Bool
 LbxCheckCompressInput (dummy1, dummy2)
     pointer dummy1;
@@ -577,6 +588,7 @@ extern int  NewOutputPending;
 #define	OSTimePtr	pointer
 #endif
 
+/* ARGSUSED */
 void
 LbxBlockHandler (data, timeout, readmask)
     pointer data;
@@ -598,52 +610,14 @@ LbxBlockHandler (data, timeout, readmask)
 LbxIsClientBlocked (client)
     ClientPtr	client;
 {
-    extern int	GrabInProgress;
-    LbxProxyPtr	proxy = LbxProxy(client);
+    extern int		GrabInProgress;
+    LbxProxyPtr		proxy = LbxProxy(client);
+    LbxClientPtr	lbxClient = LbxClient(client);
     
-    if (GrabInProgress && client != proxy->curDix->client)
+    if (GrabInProgress && client->index != GrabInProgress &&
+        lbxClient != proxy->lbxClients[0])
 	return TRUE;
     return FALSE;
-}
-
-/*
- * Call this routine when a client is being terminated and it's
- * the curRecv client, but we're processing pending requests from
- * another client.  Anything in the client's input buffers needs
- * to be saved away.
- */
-static void
-LbxSaveInput (proxy, client)
-    LbxProxyPtr	proxy;
-    ClientPtr	client;
-{
-    if (BytesInClientBuffer (client)) {
-	/* Save input in proxy client's buffers */
-	SwitchClientInput (client, proxy->lbxClients[0]->client, 0);
-	/* Just to restore curDix - need a better way */
-	SwitchClientInput (client, proxy->curDix->client, 0);
-    }
-}
-
-/*
- * Called when finished processing pending requests.  Need to set
- * curRecv back to curDix
- */
-static void
-LbxRestoreRecv (proxy)
-    LbxProxyPtr		proxy;
-{
-    LbxClientPtr	newDix;
-
-    newDix = (proxy->curRecv == NULL) ? proxy->lbxClients[0] : proxy->curRecv;
-    if (!LbxIsClientBlocked (newDix->client)) {
-	SwitchClientInput (proxy->curDix->client, newDix->client, 0);
-	proxy->curDix = newDix;
-    }
-    else {
-	/* Must have grabbed server while processing backlog */
-	SwitchClientInput (newDix->client, proxy->curDix->client, 0);
-    }
 }
 
 void
@@ -663,35 +637,107 @@ LbxSwitchRecv (proxy, lbxClient)
     }
     client = lbxClient->client;
     DBG (DBG_SWITCH, (stderr, "switching input to client %d\n", lbxClient->index));
-    if (!LbxIsClientBlocked (client)
-	&& proxy->curDix != lbxClient)
-    {
-	SwitchClientInput (proxy->curDix->client, client, 0);
-	proxy->curDix = lbxClient;
-    }
+    SwitchClientInput (client, proxy->lbxClients[0]->client);
+    proxy->curDix = lbxClient;
 }
 
+/* ARGSUSED */
 Bool
 LbxWaitForUnblocked (client, closure)
     ClientPtr	client;
     pointer	closure;
 {
-    LbxClientPtr    lbxClient;
-    LbxProxyPtr	    proxy = LbxProxy(client);
+    LbxClientPtr    lbxClient = LbxClient(client);
+    LbxProxyPtr	    proxy;
 
+    if (!lbxClient)
+	return TRUE;
+    proxy = LbxProxy(client);
     if (!LbxIsClientBlocked (client) && !proxy->curDix->reading_pending)
     {
-	lbxClient = LbxClient(client);
 	lbxClient->input_blocked = FALSE;
 	DBG (DBG_BLOCK, (stderr, "client %d no longer blocked, switching\n", lbxClient->index));
-	/* save all current input in current input buffer */
-	SwitchClientInput (proxy->curDix->client, client, 
-			   BytesInClientBuffer (proxy->curDix->client));
+	SwitchClientInput (client, client);
 	proxy->curDix = lbxClient;
 	lbxClient->reading_pending = TRUE;
 	return TRUE;
     }
     return FALSE;
+}
+
+/* ARGSUSED */
+int
+LbxWaitForUngrab (client, closure)
+    ClientPtr	client;
+    pointer	closure;
+{
+    extern int   GrabInProgress;
+    LbxClientPtr lbxClient = LbxClient(client);
+    LbxProxyPtr  proxy;
+    xLbxEvent	 ungrabEvent;
+
+    if (!lbxClient)
+	return TRUE;
+    proxy = LbxProxy(client);
+    if (!GrabInProgress) {
+	ungrabEvent.type = LbxEventCode;
+	ungrabEvent.lbxType = LbxListenToAll;
+	WriteToClient (proxy->lbxClients[0]->client,
+		       sizeof(xLbxEvent), &ungrabEvent);
+	proxy->grabClient = 0;
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * Returns TRUE if the server has been grabbed by a client not
+ * belonging to the current proxy
+ */
+int
+LbxCheckServerGrabs (client)
+    ClientPtr	client;
+{
+    extern int		GrabInProgress;
+    int			retval = FALSE;
+    LbxProxyPtr		proxy = LbxProxy(client);
+    LbxClientPtr	grabbingLbxClient;
+    
+    if (GrabInProgress) {
+	int	  index;
+	if ((grabbingLbxClient = lbxClients[GrabInProgress]) == NULL ||
+	    grabbingLbxClient->proxy != proxy) {
+	    /* client other than a proxy client has grabbed the server */
+	    index = -1;
+	    retval = TRUE;
+	}
+	else {
+	    index = grabbingLbxClient->index;
+	}
+
+	/*
+	 * If the current grabbing client has changed, then we need
+	 * to send a message to update the proxy.
+	 */
+	if (proxy->grabClient != GrabInProgress) {
+	    xLbxEvent grabEvent;
+	    grabEvent.type = LbxEventCode;
+	    grabEvent.lbxType = LbxListenToOne;
+	    grabEvent.client = index;
+	    if (proxy->lbxClients[0]->client->swapped) {
+		int n;
+		swapl(&grabEvent.client, n);
+            }
+	    WriteToClient (proxy->lbxClients[0]->client, 
+			   sizeof(xLbxEvent), &grabEvent);
+	    if (!proxy->grabClient) {
+		QueueWorkProc (LbxWaitForUngrab, 
+			       proxy->lbxClients[0]->client, NULL);
+	    }
+	    proxy->grabClient = GrabInProgress;
+	}
+    }
+    return retval;
 }
 
 #define MAJOROP(client) ((xReq *)client->requestBuffer)->reqType
@@ -702,34 +748,54 @@ LbxReadRequestFromClient (client)
     ClientPtr	client;
 {
     int		    ret;
-    xReq	    *req;
     LbxClientPtr    lbxClient = LbxClient(client);
     LbxProxyPtr	    proxy = lbxClient->proxy;
+    ClientPtr	    masterClient = proxy->lbxClients[LbxMasterClientIndex]->client;
 
     DBG (DBG_READ_REQ, (stderr, "Reading request from client %d\n", lbxClient->index));
+
+    LbxCheckServerGrabs (client);
+
+    if (lbxClient->reading_pending) {
+	if (LbxIsClientBlocked (client)) {
+	    /* Someone grabbed server before we could process requests! */
+	    lbxClient->input_blocked = TRUE;
+	    QueueWorkProc (LbxWaitForUnblocked, client, NULL);
+	    lbxClient->reading_pending = FALSE;
+	    LbxSwitchRecv (proxy, proxy->curRecv);
+	    return 0;
+	}
+	else {
+	    ret = (*lbxClient->readRequest) (client);
+	    if (ret <= 0) {
+		lbxClient->reading_pending = FALSE;
+	        DBG (DBG_BLOCK, (stderr, "ending reading_pending for client %d\n", lbxClient->index));
+	        LbxSwitchRecv (proxy, proxy->curRecv);
+	    }
+	    else if (lbxClient->reqs_pending)
+		--lbxClient->reqs_pending;
+	    return ret;
+	}
+    }
 
     for (;;)
     {
 	Bool		cacheable;
 
-	ret = (*lbxClient->readRequest) (client);
+	ret = (*lbxClient->readRequest) (masterClient);
 	DBG (DBG_READ_REQ, (stderr, "Real readRequest returns %d\n", ret));
 	if (ret <= 0)
-	{
-	    if (lbxClient->reading_pending)
-	    {
-		lbxClient->reading_pending = FALSE;
-		DBG (DBG_BLOCK, (stderr, "ending reading_pending for client %d\n", lbxClient->index));
-		LbxRestoreRecv (proxy);
-	    }
 	    return ret;
-	}
+
+	client->requestBuffer = masterClient->requestBuffer;
+	client->req_len = masterClient->req_len;
 
 	cacheable = TRUE;
 	if (MAJOROP(client) == LbxReqCode) {
 	    if (MINOROP(client) == X_LbxSwitch)
 	    {
-		if (client->swapped)
+		/* Switch is sent by proxy */
+		if (masterClient->swapped)
 		    SProcLbxSwitch (client);
 		else
 		    ProcLbxSwitch (client);
@@ -744,29 +810,26 @@ LbxReadRequestFromClient (client)
 	    cacheable = FALSE; /* not caching any LBX requests for now */
 	}
 
-	cacheable = cacheable && DELTA_CACHEABLE(&proxy->indeltas, ret) &&
-		    !lbxClient->awaiting_setup;
-
-	if (lbxClient == proxy->curRecv || lbxClient->reading_pending) {
-	    if (lbxClient->reqs_pending)
-		--lbxClient->reqs_pending;
-	    else if (cacheable) {
-		DBG(DBG_DELTA, (stderr, "caching msg %d, len = %d, index = %d\n",
-		    (unsigned) ((unsigned char *)client->requestBuffer)[0], ret,
-				proxy->indeltas.nextDelta));
-		LBXAddDeltaIn(&proxy->indeltas, client->requestBuffer, ret);
-	    }
-	    return ret;
-	}
-	if (cacheable) {
+	if (cacheable && DELTA_CACHEABLE(&proxy->indeltas, ret)) {
 	    DBG(DBG_DELTA, (stderr, "caching msg %d, len = %d, index = %d\n",
 		    (unsigned) ((unsigned char *)client->requestBuffer)[0], ret,
-			    proxy->indeltas.nextDelta));
+				proxy->indeltas.nextDelta));
 	    LBXAddDeltaIn(&proxy->indeltas, client->requestBuffer, ret);
 	}
+	if (client->swapped != masterClient->swapped) {
+	    xReq       *req = (xReq *) client->requestBuffer;
+	    char        n;
+
+	    /* put length in client order */
+	    swaps(&req->length, n);
+	}
+
 	if (!proxy->curRecv)
 	{
 	    DBG (DBG_CLIENT, (stderr, "No client on wire\n"));
+	}
+	else if (!LbxIsClientBlocked (client) && !lbxClient->reqs_pending) {
+	    return ret;
 	}
 	else
 	{
@@ -831,6 +894,9 @@ LbxInitClient (proxy, client, index)
     proxy->numClients++;
     client->public.writeToClient = LbxWriteToClient;
     client->public.readRequest = LbxReadRequestFromClient;
+#ifdef notused
+    client->public.requestLength = LbxRequestLength;
+#endif
     return TRUE;
 }
 
@@ -844,36 +910,16 @@ LbxFreeClient (client)
     if (lbxClient == proxy->curSend)
 	proxy->curSend = 0;
 
-    /*
-     * YUCK!  Need to be really careful here.  Tried to cover all the
-     * possible cases.
-     */
     if (lbxClient != proxy->lbxClients[0]) {
 	if (lbxClient == proxy->curRecv) {
-	    proxy->curRecv = NULL;
-	    if (lbxClient == proxy->curDix) {
-		SwitchClientInput (client, proxy->lbxClients[0]->client, 0);
-		proxy->curDix = proxy->lbxClients[0];
-	    }
-	    else {
-		if (proxy->curDix->reading_pending)
-		    LbxSaveInput (proxy, lbxClient);
-	    }
+	    LbxSwitchRecv(proxy, NULL);
 	}
-	else {
-	    if (lbxClient == proxy->curDix) {
-		if (lbxClient->reading_pending) {
-		    SwitchClientInput (client, proxy->curRecv->client, 
-				       BytesInClientBuffer (client));
-		    proxy->curDix = proxy->curRecv;
-	        }
-		else {
-		    SwitchClientInput (client, proxy->lbxClients[0]->client, 0);
-		    proxy->curDix = proxy->lbxClients[0];
-		}
-	    }
+	else if (lbxClient == proxy->curDix) {
+	    LbxSwitchRecv(proxy, proxy->curRecv);
 	}
     }
+    else
+	proxy->curSend = 0;
 	
     --proxy->numClients;
     proxy->lbxClients[lbxClient->index] = 0;
@@ -930,6 +976,48 @@ LbxShutdownProxy (proxy)
 	RemoveBlockAndWakeupHandlers (LbxBlockHandler, LbxWakeupHandler, NULL);
 }
 
+#ifdef notused
+/* figures out request length in proxy byte order */
+unsigned long
+LbxRequestLength(req, client, got, partp)
+    xReq	*req;
+    ClientPtr	client;
+    int		got;
+    Bool    	*partp;
+{
+    unsigned long len;
+    LbxProxyPtr proxy;
+    ClientPtr   cp = client;
+    int         pid;
+
+#define MAXBUFSIZE (1 << 22)
+
+    if (!req)
+	req = (xReq *) client->requestBuffer;
+    if (got < sizeof(xReq)) {
+	*partp = TRUE;
+	return sizeof(xReq);
+    }
+    pid = LbxProxyID(client);
+    if (pid)
+	proxy = LbxPidToProxy(pid);
+    if (proxy)
+	cp = proxy->lbxClients[LbxMasterClientIndex]->client;
+    len = ((cp->swapped ? lswaps(req->length) : req->length) << 2);
+
+    if (len > MAXBUFSIZE) {
+	*partp = TRUE;
+	return -1;
+    }
+    *partp = FALSE;
+
+/*
+    client->req_len = len >> 2;
+*/
+    return len;
+}
+#endif
+
 int
 ProcLbxQueryVersion(client)
     register ClientPtr client;
@@ -969,7 +1057,6 @@ ProcLbxStartProxy(client)
     REQUEST(xLbxStartProxyReq);
     LbxProxyPtr	    proxy;
     LbxClientPtr    lbxClient;
-    int		    i;
     short	    deltaN;
     short	    deltaMaxLen;
     int		    comptype;
@@ -1110,7 +1197,6 @@ ProcLbxSwitch(client)
     register ClientPtr	client;
 {
     REQUEST(xLbxSwitchReq);
-    ClientPtr	newClient;
     LbxProxyPtr	proxy = LbxMaybeProxy(client);
 
     if (!proxy)
@@ -1163,12 +1249,6 @@ ProcLbxNewClient(client)
 	return BadAlloc;
     }
     newLbxClient = proxy->lbxClients[c];
-    
-    /*
-     * Creating a new client will end up smashing the input flag
-     * for this client
-     */
-    CheckPendingClientInput (client);
     
     AppendFakeRequest (newClient, setupbuf, len);
     xfree (setupbuf);

@@ -1,6 +1,6 @@
-/* $XConsortium: lbxtags.h,v 1.2 94/02/20 10:50:35 dpw Exp $ */
+/* $XConsortium: lbxswap.c,v 1.1 94/03/17 19:45:33 dpw Exp $ */
 /*
- * $NCDId: @(#)lbxswap.c,v 1.1 1994/03/14 23:32:42 lemke Exp $
+ * $NCDId: @(#)lbxswap.c,v 1.2 1994/03/21 20:59:28 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
  *
  * Copyright 1992 Network Computing Devices
@@ -530,6 +530,7 @@ LbxWriteSConnSetupPrefix(pClient, pcsp)
     cpswaps(pcsp->majorVersion, cspT.majorVersion);
     cpswaps(pcsp->minorVersion, cspT.minorVersion);
     cpswaps(pcsp->length, cspT.length);
+    cpswapl(pcsp->tag, cspT.tag);
 
     (void)WriteToClient(pClient, sizeof(cspT), (char *) &cspT);
 }

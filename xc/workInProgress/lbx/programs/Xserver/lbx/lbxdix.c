@@ -1,4 +1,4 @@
-/* $XConsortium: lbxdix.c,v 1.4 94/03/13 13:07:52 dpw Exp $ */
+/* $XConsortium: lbxdix.c,v 1.5 94/03/17 19:45:11 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxdix.c,v 1.20 1994/03/15 20:42:06 lemke Exp $
+ * $NCDId: @(#)lbxdix.c,v 1.23 1994/03/24 17:54:27 lemke Exp $
  *
  * Author:  Dave Lemke, Network Computing Devices
  */
@@ -58,6 +58,8 @@ extern int  (*ProcVector[256]) ();
 extern int  (*SwappedProcVector[256]) ();
 extern void (*ReplySwapVector[256]) ();
 
+extern void LbxWriteSConnSetupPrefix();
+
 /* XXX should be per-proxy */
 static int  motion_allowed_events = 0;
 
@@ -70,9 +72,13 @@ LbxDixInit()
     lbx_font_private = AllocateFontPrivateIndex();
 }
 
+/* ARGSUSED */
 void
 LbxAllowMotion(client, num)
+    ClientPtr	client;
+    int		num;
 {
+    /* XXX per-proxy */
     motion_allowed_events += num;
 }
 
@@ -80,7 +86,7 @@ Bool
 LbxIsLBXClient(client)
     ClientPtr   client;
 {
-    if (client->lbxIndex)
+    if (lbxClients[client->index])
 	return TRUE;
     else
 	return FALSE;
@@ -164,7 +170,6 @@ LbxSendConnSetup(client, reason)
     int         dlength;
     Bool        tag_known = FALSE,
                 send_data;
-    int         n;
     int         i;
     CARD32      dataBuf[1 + MAXSCREENS];
     xLbxConnSetupPrefix csp;
@@ -430,7 +435,6 @@ LbxQueryFont(client)
     xLbxQueryFontReply lbxrep;
     FontPtr     pFont;
     register GC *pGC;
-    Bool        queried_info = FALSE;
     Bool        send_data = FALSE;
     Bool        free_data = FALSE;
     int         rlength = 0;
@@ -477,7 +481,6 @@ LbxQueryFont(client)
 	    return (BadAlloc);
 	}
 	free_data = TRUE;
-	queried_info = TRUE;
 	send_data = TRUE;
 	QueryFont(pFont, reply, nprotoxcistructs);
     } else {			/* just get data from tag */
@@ -566,7 +569,6 @@ LbxQueryTag(client, tag)
     unsigned long size;
     pointer     data;
     pointer     sdata = NULL;
-    int         data_format;
 
     td = TagGetTag(tag);
 
@@ -592,7 +594,7 @@ LbxQueryTag(client, tag)
 	rep.length = (size + 3) >> 2;
 	rep.real_length = size;
     }
-    if (client->swapped) {
+    if (rep.valid && client->swapped) {
 	swaps(&rep.sequenceNumber, n);
 	sdata = (pointer) ALLOCATE_LOCAL(rep.real_length);
 	if (!sdata)
@@ -614,7 +616,7 @@ LbxQueryTag(client, tag)
 		SwapLongs((CARD32 *) sdata, rep.real_length / 4);
 		break;
 	    case LbxTagFormat16:
-		SwapShorts((CARD16 *) sdata, rep.real_length / 2);
+		SwapShorts((short *) sdata, rep.real_length / 2);
 		break;
 	    default:
 		break;
@@ -677,7 +679,6 @@ LbxSendInvalidateTagToProxies(tag, tagtype)
     int         tagtype;
 {
     LbxProxyPtr proxy;
-    int         i;
     ClientPtr   client;
     LbxClientPtr lbxcp;
     extern LbxProxyPtr proxyList;
@@ -839,7 +840,16 @@ LbxFindQTag(tag)
 }
 
 static void
+LbxFreeQTag(sqtp)
+    SendTagQPtr sqtp;
+{
+    xfree(sqtp->stalled_clients);
+    xfree(sqtp);
+}
+
+static void
 LbxRemoveQTag(tag)
+    XID	tag;
 {
     SendTagQPtr sqtp,
                 prev = NULL;
@@ -851,8 +861,7 @@ LbxRemoveQTag(tag)
 		prev->next = sqtp->next;
 	    else
 		queried_tags = sqtp->next;
-	    xfree(sqtp->stalled_clients);
-	    xfree(sqtp);
+	    LbxFreeQTag(sqtp);
 	    return;
 	}
 	prev = sqtp;
@@ -938,7 +947,7 @@ LbxTagData(client, tag, len, data)
 			SwapLongs((CARD32 *) data, len / 4);
 			break;
 		    case 16:
-			SwapShorts((CARD16 *) data, len / 2);
+			SwapShorts((short *) data, len / 2);
 			break;
 		    default:
 			break;
@@ -997,7 +1006,7 @@ LbxResetTags()
     stqp = queried_tags;
     while (stqp) {
 	next = stqp->next;
-	LbxRemoveQTag(stqp);
+	LbxFreeQTag(stqp);
 	stqp = next;
     }
 }
