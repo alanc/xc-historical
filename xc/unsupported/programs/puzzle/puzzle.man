@@ -1,22 +1,31 @@
-.TH PUZZLE 6 "Jan 22, 1988"
+.TH PUZZLE 6 "1 March 1988" "X Version 11"
 .UC 4
 .SH NAME
 puzzle \- X-window V11 15-puzzle game
 .SH SYNOPSIS
-.B puzzle
-[
-.B geometry
-] [
-.B display
-] [
-.B size
-] [
-.B -s<speed>
-] [
-.B -p<picture-file>
-] [
-.B -cm
-]
+.B puzzle 
+[-option ...]
+.SH OPTIONS
+.TP 8
+.B \-display \fIhost\fP:\fIdpy\fP
+This option specifies the host and display to contact.
+.TP 8
+.B \-geometry \fIgeom\fP
+This option specifies the size and position of the puzzle window.
+.TP 8
+.B \-size \fIWIDTH\fPx\fIHEIGHT\fP
+This option specifies the size of the puzzle in squares.
+.TP 8
+.B \-speed \fInum\fP
+This option specifies the speed in tiles per second of for moving tiles
+around.
+.TP 8
+.B \-picture \fIfilename\fP
+This option specifies an image file containing the picture to use on the
+tiles.  Try ``mandrill.cm.''
+.TP 8
+.B \-colormap
+This option indicates that the program should create its own colormap.
 .SH DESCRIPTION
 .I Puzzle
 with no arguments plays a 4x4 15-puzzle.  The control bar has two boxes in
@@ -26,32 +35,5 @@ control bar causes puzzle to exit.
 Clicking in the tiled region moves the empty spot to that
 location if the region you click in is in the same row or column as the
 empty slot. 
-
-.PP
-.TP 10
-.B geometry
-The desired size and location of the puzzle.
-.TP 10
-.B display
-Name of the display you want the puzzle to run on.
-.TP 10
-.B size
-The desired size of the puzzle, specified as <width>x<height>.
-The default and minimum size is 4x4.
-.TP
-.B \-s<speed>
-Set the puzzle speed, in units of tiles/sec. Default is 2 tile/sec.
-The speed parameter must be an integer.
-.TP
-.B \-p<picture-file>
-Create a pixmap from picture-file and use it as the puzzle. 
-The file format is described in picture.c.  To use the mandrill image
-provided, run on a pseudo-color display.
-.TP
-.B \-cm
-Directs puzzle to create its own colormap to display the pixmap data.
-.PP
-.SH AUTHORS
-.PD 0
-.TP
-Don Bennett,   HP Labs
+.SH AUTHOR
+Don Bennett, HP Labs
