@@ -1,5 +1,5 @@
 /*
-* $Header: Label.h,v 1.8 87/09/11 21:21:47 swick Locked $
+* $Header: Label.h,v 1.9 88/01/22 11:12:14 swick Locked $
 */
 
 /*
@@ -34,17 +34,21 @@
  *
  ***********************************************************************/
 
-/* Parameters:
+#include <X/Simple.h>
+
+/* Resources:
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
  background	     Background		pixel		White
  border		     BorderColor	pixel		Black
  borderWidth	     BorderWidth	int		1
+ cursor		     Cursor		Cursor		None
  destroyCallback     Callback		Pointer		NULL
  font		     Font		FontStruct	fixed
  foreground	     Foreground		pixel		Black
  height		     Height		int		text height
+ insensitiveBorder   Insensitive	Pixmap		Gray
  internalHeight	     Height		int		2
  internalWidth	     Width		int		4
  justify	     Justify		Justify		Center
