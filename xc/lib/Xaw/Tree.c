@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.32 90/03/15 12:16:34 jim Exp $
+ * $XConsortium: Tree.c,v 1.33 90/04/13 16:39:49 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -524,7 +524,6 @@ static void Redisplay (tw, event, region)
      */
     if (tw->core.visible) {
 	int i, j;
-	Bool horiz = IsHorizontal (tw);
 	Display *dpy = XtDisplay (tw);
 	Window w = XtWindow (tw);
 
@@ -538,34 +537,71 @@ static void Redisplay (tw, event, region)
 	    if (child != tw->tree.tree_root && tc->tree.n_children) {
 		int srcx = child->core.x + child->core.border_width;
 		int srcy = child->core.y + child->core.border_width;
-		if (horiz) {
+
+		switch (tw->tree.gravity) {
+		  case WestGravity:
 		    srcx += child->core.width + child->core.border_width;
+		    /* fall through */
+		  case EastGravity:
 		    srcy += child->core.height / 2;
-		} else {
-		    srcx += child->core.width / 2;
+		    break;
+
+		  case NorthGravity:
 		    srcy += child->core.height + child->core.border_width;
+		    /* fall through */
+		  case SouthGravity:
+		    srcx += child->core.width / 2;
+		    break;
 		}
 
 		for (j = 0; j < tc->tree.n_children; j++) {
 		    register Widget k = tc->tree.children[j];
 		    GC gc = (tc->tree.gc ? tc->tree.gc : tw->tree.gc);
 
-		    if (horiz) {
+		    switch (tw->tree.gravity) {
+		      case WestGravity:
 			/*
 			 * right center to left center
 			 */
 			XDrawLine (dpy, w, gc, srcx, srcy,
-				   k->core.x,
+				   (int) k->core.x,
 				   (k->core.y + ((int) k->core.border_width) +
 				    ((int) k->core.height) / 2));
-		    } else {
+			break;
+
+		      case NorthGravity:
 			/*
 			 * bottom center to top center
 			 */
 			XDrawLine (dpy, w, gc, srcx, srcy,
 				   (k->core.x + ((int) k->core.border_width) +
 				    ((int) k->core.width) / 2),
-				   k->core.y);
+				   (int) k->core.y);
+			break;
+
+		      case EastGravity:
+			/*
+			 * left center to right center
+			 */
+			XDrawLine (dpy, w, gc, srcx, srcy,
+				   (k->core.x +
+				    (((int) k->core.border_width) << 1) +
+				    (int) k->core.width),
+				   (k->core.y + ((int) k->core.border_width) +
+				    ((int) k->core.height) / 2));
+			break;
+
+		      case SouthGravity:
+			/*
+			 * top center to bottom center
+			 */
+			XDrawLine (dpy, w, gc, srcx, srcy,
+				   (k->core.x + ((int) k->core.border_width) +
+				    ((int) k->core.width) / 2),
+				   (k->core.y +
+				    (((int) k->core.border_width) << 1) +
+				    (int) k->core.height));
+			break;
 		    }
 		}
 	    }
@@ -689,6 +725,22 @@ static void set_positions (tw, w, level)
   
     if (w) {
 	TreeConstraints tc = TREE_CONSTRAINT(w);
+
+	/*
+	 * mirror if necessary
+	 */
+	switch (tw->tree.gravity) {
+	  case EastGravity:
+	    tc->tree.x = (((Position) tw->tree.maxwidth) -
+			  ((Position) w->core.width) - tc->tree.x);
+	    break;
+
+	  case SouthGravity:
+	    tc->tree.y = (((Position) tw->tree.maxheight) -
+			  ((Position) w->core.height) - tc->tree.y);
+	    break;
+	}
+
 
 	/*
 	 * Move the widget into position.
