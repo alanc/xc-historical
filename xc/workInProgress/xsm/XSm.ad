@@ -1,3 +1,4 @@
+! $XConsortium$
 *chooseSessionPopup*font:		12x24
 *chooseSessionLabel.label:		Session Menu
 *chooseSessionMessageLabel.label:	Press button again to confirm...
