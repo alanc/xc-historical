@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.181 94/02/23 15:49:30 dpw Exp $ */
+/* $XConsortium: connection.c,v 1.182 94/03/08 20:31:40 dpw Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -635,7 +635,6 @@ EstablishNewConnections(clientUnused, closure)
     while (readyconnections) 
     {
 	XtransConnInfo trans_conn, new_trans_conn;
-	int status;
 
 	curconn = ffs (readyconnections) - 1;
 	readyconnections &= ~(1 << curconn);
@@ -643,7 +642,7 @@ EstablishNewConnections(clientUnused, closure)
 	if ((trans_conn = lookup_trans_conn (curconn)) == NULL)
 	    continue;
 
-	if ((new_trans_conn = _XSERVTransAccept (trans_conn, &status)) == NULL)
+	if ((new_trans_conn = _XSERVTransAccept (trans_conn)) == NULL)
 	    continue;
 
 	newconn = _XSERVTransGetConnectionNumber (new_trans_conn);
