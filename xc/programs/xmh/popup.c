@@ -1,4 +1,4 @@
-/* $XConsortium: popup.c,v 2.5 88/04/01 14:56:40 swick Exp $ */
+/* $XConsortium: popup.c,v 2.6 88/09/06 17:23:31 jim Exp $ */
 /* popup.c -- Handle pop-up widgets. */
 
 #include "xmh.h"
@@ -74,8 +74,8 @@ char *str;
     XtSetArg( args[0], XtNlabel, str );
     confirmwidget = XtCreateWidget( "confirm", dialogWidgetClass,
 				    scrn->widget, args, XtNumber(args) );
-    XtDialogAddButton(confirmwidget, "yes", RedoLastButton, (caddr_t)NULL);
-    XtDialogAddButton(confirmwidget, "no", DestroyConfirmWidget,(caddr_t)NULL);
+    XawDialogAddButton(confirmwidget, "yes", RedoLastButton, (caddr_t)NULL);
+    XawDialogAddButton(confirmwidget, "no", DestroyConfirmWidget,(caddr_t)NULL);
     XtRealizeWidget( confirmwidget );
     CenterWidget(scrn->widget, confirmwidget);
     XtMapWidget( confirmwidget );
@@ -117,7 +117,7 @@ void TellPrompt(widget, client_data, call_data)
     caddr_t call_data;
 
 {
-    (*promptfunction)(XtDialogGetValueString(promptwidget));
+    (*promptfunction)(XawDialogGetValueString(promptwidget));
     DestroyPromptWidget(widget, client_data, call_data);
 }
 
@@ -135,8 +135,8 @@ void (*func)();
     DestroyPromptWidget((Widget)NULL, (caddr_t)scrn, NULL);
     promptwidget = XtCreateWidget( "prompt", dialogWidgetClass, scrn->widget,
 				   args, (Cardinal)2 );
-    XtDialogAddButton(promptwidget, "goAhead", TellPrompt, (caddr_t)scrn);
-    XtDialogAddButton(promptwidget, "cancel", DestroyPromptWidget, (caddr_t)scrn);
+    XawDialogAddButton(promptwidget, "goAhead", TellPrompt, (caddr_t)scrn);
+    XawDialogAddButton(promptwidget, "cancel", DestroyPromptWidget, (caddr_t)scrn);
     XtRealizeWidget(promptwidget);
     XtSetKeyboardFocus(promptwidget, XtNameToWidget(promptwidget,"value"));
     XtSetKeyboardFocus(scrn->parent, (Widget)None);

@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$XConsortium: xmh.h,v 2.15 89/04/10 11:49:29 converse Exp $";
+ * rcs_id[] = "$XConsortium: xmh.h,v 2.16 89/05/04 15:16:17 converse Exp $";
  */
 
 /*
@@ -37,17 +37,17 @@
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
-#include <X11/AsciiText.h>
-#include <X11/Box.h>
-#include <X11/Command.h>
-#include <X11/Dialog.h>
-#include <X11/Form.h>
-#include <X11/Label.h>
-#include <X11/Scroll.h>
+#include <X11/Xaw/AsciiText.h>
+#include <X11/Xaw/Box.h>
+#include <X11/Xaw/Command.h>
+#include <X11/Xaw/Dialog.h>
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/Label.h>
+#include <X11/Xaw/Scroll.h>
 #include <X11/Shell.h>
-#include <X11/Toggle.h>
-#include <X11/Viewport.h>
-#include <X11/VPaned.h>
+#include <X11/Xaw/Toggle.h>
+#include <X11/Xaw/Viewport.h>
+#include <X11/Xaw/VPaned.h>
 
 #define DELETEABORTED	-1
 #define MARKPOS		4

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.9 88/02/06 09:38:02 swick Exp $
+ * $XConsortium: externs.h,v 2.10 88/09/06 17:23:15 jim Exp $
  */
 
 /*
@@ -31,7 +31,7 @@ extern int errno;
 
 extern char *getenv();
 
-extern XtTextSource XtCreateEDiskSource();
+extern XawTextSource XawCreateEDiskSource();
 
 extern char *DoCommandToFile();
 extern char *DoCommandToString();
@@ -68,7 +68,7 @@ extern Scrn LastButtonScreen();
 
 extern char *Version();
 
-XtTextSource TSourceCreate();
+XawTextSource TSourceCreate();
 
 extern void IconInit();
 

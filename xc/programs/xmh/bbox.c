@@ -1,6 +1,6 @@
-#ifndef lint
-static char rcs_id[] = "$XConsortium: bbox.c,v 2.20 89/04/10 11:51:00 converse Exp $";
-#endif lint
+/*
+ * $XConsortium: bbox.c,v 2.21 89/05/04 15:28:38 converse Exp $
+ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -26,13 +26,13 @@ static char rcs_id[] = "$XConsortium: bbox.c,v 2.20 89/04/10 11:51:00 converse E
  * written prior permission.
  */
 
-/* bbox.c -- management of buttons and buttonbox's. */
+/* bbox.c -- management of buttons and buttonboxes. */
 
 /* This module implements a simple interface to buttonboxes, allowing a client
    to create new buttonboxes and manage their contents.  It is a layer hiding
    the toolkit interfaces. */
 
-#include <X11/Cardinals.h>
+#include <X11/Xaw/Cardinals.h>
 #include "xmh.h"
 #include "bboxint.h"
 
@@ -95,7 +95,7 @@ ButtonBox BBoxCreate(scrn, name)
 void BBoxSetRadio(button)
 Button button;
 {
-    XtToggleSetCurrent(button->widget, button->name);
+    XawToggleSetCurrent(button->widget, button->name);
 }
 
 
@@ -105,7 +105,7 @@ Button button;
 char *BBoxGetRadioName(buttonbox)
 ButtonBox buttonbox;
 {
-    return ((char *) XtToggleGetCurrent(buttonbox->button[0]->widget));
+    return ((char *) XawToggleGetCurrent(buttonbox->button[0]->widget));
 }
 
 
@@ -187,7 +187,7 @@ Button button;
 	    found = TRUE;
 	    if (buttonbox->radio)
 	    {
-		if (strcmp((char *) XtToggleGetCurrent(button->widget),
+		if (strcmp((char *) XawToggleGetCurrent(button->widget),
 			   button->name) == 0)
 		    reradio = TRUE;
 		XtDestroyWidget(button->widget);

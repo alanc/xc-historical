@@ -1,4 +1,4 @@
-/* $XConsortium: tocintrnl.h,v 2.6 88/09/06 17:23:45 jim Exp $ */
+/* $XConsortium: tocintrnl.h,v 2.7 89/05/04 15:14:51 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -30,7 +30,7 @@
 #define _tocinternal_h
 
 #include <X11/IntrinsicP.h>	/* %%% */
-#include <X11/TextP.h>		/* %%% */
+#include <X11/Xaw/TextP.h>	/* %%% */
 
 typedef enum {
     unknown, valid, invalid
@@ -40,7 +40,7 @@ typedef struct _MsgRec {
     Toc		toc;		/* Which toc this message is in. */
     Toc		desttoc;	/* Folder to copy or move to (NULL if none) */
     FateType	fate;		/* What will be done to this message */
-    XtTextPosition position;	/* Position in the scanfile for this msg. */
+    XawTextPosition position;	/* Position in the scanfile for this msg. */
     int		length;		/* #/chars for this msg's entry in scanfile. */
     char	*buf;		/* The scanline for this message. */
     int		msgid;		/* Message id for this message. */
@@ -50,10 +50,10 @@ typedef struct _MsgRec {
 				   it is no longer visible. */
     Scrn	*scrn;		/* Scrns showing this message (if any) */
     Cardinal	num_scrns;	/* How many scrns are currently showing msg. */
-    XtTextSource source;	/* Source (if any) containing this msg. */
+    XawTextSource source;	/* Source (if any) containing this msg. */
     short	reapable;	/* True iff we don't need to keep this
 				   composition around. */
-    XtTextPosition startPos;	/* Where to start the insertion point. */
+    XawTextPosition startPos;	/* Where to start the insertion point. */
 } MsgRec;
 
 typedef struct _TocRec {
@@ -68,11 +68,11 @@ typedef struct _TocRec {
    int		numsequences;	/* #/sequences defined for this folder. */
    Sequence	*seqlist;	/* Array of pointers to sequences. */
    Sequence 	viewedseq;	/* Seq currently shown (NULL == all msgs) */
-   XtTextSource source;		/* Source for the file containing info. */
+   XawTextSource source;	/* Source for the file containing info. */
    TextWidget	*widgets;	/* Array of widgets displaying this source. */
    int		numwidgets;	/* Number of entries in above. */
    Boolean	hasselection;	/* Whether we own the selection. */
-   XtTextPosition left, right;	/* Left and right extents of selection. */
+   XawTextPosition left, right;	/* Left and right extents of selection. */
    int		length;		/* #/chars in the scanfile. */
    int		origlength;	/* Original #/chars in the scanfile. */
    int		lastPos;	/* Last legal position */

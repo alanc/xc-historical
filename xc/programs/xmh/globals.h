@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$XConsortium: globals.h,v 2.14 88/09/06 17:23:17 jim Exp $";
+ *  $XConsortium: globals.h,v 2.15 89/05/04 18:19:16 converse Exp $
  */
 
 /*
@@ -87,7 +87,7 @@ ext int		numScrns;	/* Number of scrns in above array. */
 
 ext Button	LastButtonPressed;
 
-ext XtTextSource NullSource;
+ext XawTextSource NullSource;
 
 ext Dimension	rootwidth;	/* Dimensions of root window.  */
 ext Dimension	rootheight;
