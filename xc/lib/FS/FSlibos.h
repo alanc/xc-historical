@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibos.h,v 1.10 91/07/19 16:58:22 rws Exp $ */
+/* $XConsortium: FSlibos.h,v 1.11 91/07/23 18:59:49 rws Exp $ */
 
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -29,6 +29,8 @@
 
 #include <X11/Xfuncs.h>
 #include <X11/Xosdefs.h>
+
+#ifndef WIN32
 
 /* Sorry, we do not really support streams yet */
 #ifdef STREAMSCONN
@@ -114,6 +116,8 @@
 #endif
 
 #define MSKCNT ((OPEN_MAX + 31) / 32)
+
+typedef unsigned long FdSet[MSKCNT];
 
 #if (MSKCNT==1)
 #define BITMASK(i) (1 << (i))
@@ -222,6 +226,33 @@
  */
 #endif
 
+
+#else
+
+#define BOOL wBOOL
+#undef Status
+#define Status wStatus
+#include <winsock.h>
+#undef Status
+#define Status int
+#undef BOOL
+#include <X11/Xw32defs.h>
+
+#define BytesReadable(fd,ptr) ioctlsocket((SOCKET)fd, FIONREAD, (u_long *)ptr)
+
+struct iovec {
+    caddr_t iov_base;
+    int iov_len;
+};
+
+typedef fd_set FdSet;
+
+#define CLEARBITS(set) FD_ZERO(&set)
+#define BITSET(set,s) FD_SET(s,&set)
+#define _FSANYSET(set) set.fd_count
+
+#endif
+
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #include <string.h>
@@ -322,8 +353,13 @@ extern FSstream _FSsStream[];
 /*
  * bsd can read from sockets directly
  */
+#ifdef WIN32
+#define ReadFromServer(dpy,data,size) recv((SOCKET)(dpy), data, size, 0)
+#define WriteToServer(dpy,data,size) send((SOCKET)(dpy), data, size, 0)
+#else
 #define ReadFromServer(svr, data, size) read((svr), (data), (size))
 #define WriteToServer(svr, bufind, size) write((svr), (bufind), (size))
+#endif
 #endif				/* STREAMSCONN */
 
 
