@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.79 92/07/21 10:22:43 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.80 92/07/22 16:02:06 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -27,7 +27,7 @@ Syntax of magic values in the input stream:
 			zero for any value means don't change it
 ^T^B<button>^T		toggle button <button> state (press or release)
 ^T^B0^T			release all pressed buttons
-^T^C			set Control key for next character
+^T^C			set Control key for next device event
 ^T^D<dx> <dy>^T		move mouse by (<dx>, <dy>) pixels
 ^T^E			exit the program
 ^T^F<options>^T
@@ -70,12 +70,12 @@ Syntax of magic values in the input stream:
 ^T^L<options>^T
 	s<digit>	save current pointer position as location <digit>
 	w<digit>	warp pointer to location <digit>
-^T^M			set Meta key for next character
+^T^M			set Meta key for next device event
 ^T^P			print debugging info
 ^T^Q			quit moving (mouse or key)
 ^T^RD<display>^T	switch to a new display
 			:0 added if <display> contains no colon
-^T^S			set Shift key for next character
+^T^S			set Shift key for next device event
 ^T^T			^T
 ^T^U			re-read undo file
 ^T^W<screen> <x> <y>^T	warp to position (<x>,<y>) on screen <screen>
