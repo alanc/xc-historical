@@ -4,8 +4,8 @@
  */
 
 #ifdef HPArchitecture
-#define OtherSources hpsocket.c hpalloca.c 
-#define OtherObjects hpsocket.o hpalloca.o dbm.o 
+#define OtherSources hpsocket.c 
+#define OtherObjects hpsocket.o dbm.o alloca.o
 #endif
 
 
@@ -40,6 +40,7 @@ BOOTSTRAPCFLAGS =
 
 #ifdef HPArchitecture
          DBMLIB = /usr/lib/libdbm.a
+          PWLIB = /lib/libPW.a
     XLIBSYSVDIR = $(TOP)/lib/X/sysV
 #endif /* HPArchitecture */
 
@@ -67,6 +68,14 @@ dbm.o:  $(DBMLIB)
 	(cd dbm; rm -f *.o; ar -x $(DBMLIB); \
 	ld -r -o a.out.o -h _bcopy ndbm.o; \
 	mv a.out.o ndbm.o; ld -r -o ../dbm.o *.o)
+
+/**/#
+/**/# And this one is to get the version of alloca that lives in /lib/libPW.a
+/**/# without getting all of the rest of the stuff in there.
+/**/#
+alloca.o:  $(PWLIB)
+	rm -f alloca.o
+	ar x $(PWLIB) alloca.o
 #endif /* HPArchitecture */
 
 SpecialObjectRule(osinit.o, $(IRULESRC)/$(MACROFILE), -DADMPATH=\"$(ADMDIR)/X\%smsgs\")
