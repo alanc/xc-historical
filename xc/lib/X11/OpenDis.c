@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.124 92/01/09 18:50:17 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.125 92/01/30 10:07:13 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -609,6 +609,8 @@ _XFreeDisplayStructure(dpy)
 	_XFreeExtData (dpy->ext_data);
 	if (dpy->free_funcs)
 	    Xfree ((char *)dpy->free_funcs);
+ 	if (dpy->scratch_buffer)
+ 	    Xfree (dpy->scratch_buffer);
 
 	Xfree ((char *)dpy);
 }
