@@ -25,10 +25,12 @@ positions indexed by position in /etc/ttys.
 To manage Berkeley style utmp files, \fIsessreg\fP has two strategies.  In
 conjunction with xdm, the -x option counts the number of lines in /etc/ttys
 and then adds to that the number of the line in the Xservers file which
-specifies the display.  This sum is used as the "slot-number" in /etc/utmp
-that this entry will be written at.  In the more general case, the -s option
-specifies the slot-number directly.  If for some strange reason your system
-uses a file other that /etc/ttys to manage init, the -t option can direct
+specifies the display.  The display name must be specified as the
+"line-name" using the -l option.  This sum is used as the "slot-number" in
+/etc/utmp that this entry will be written at.  In the more general case, the
+-s option specifies the slot-number directly.  If for some strange reason
+your system uses a file other that /etc/ttys to manage init, the -t option
+can direct
 \fIsessreg\fP to look elsewhere for a count of terminal sessions.
 .PP
 Conversely, System V managers will not ever need to use these options (-x,
