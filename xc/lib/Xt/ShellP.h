@@ -1,6 +1,6 @@
 
 /*
-* $Header: ShellP.h,v 1.9 87/10/09 13:11:51 chow BL5 $
+* $Header: ShellP.h,v 1.9 87/10/09 13:11:51 swick Locked $
 */
 
 /*
@@ -81,9 +81,7 @@ typedef struct {
 	Boolean	    override_redirect;
 	XSizeHints  sizehints;
 	XWMHints    wmhints;
-#ifdef DECHINTS
-	DECWMHints  dechints
-#endif
+	caddr_t     wm_private;
 } ShellPart;
 
 /****************************************************************
