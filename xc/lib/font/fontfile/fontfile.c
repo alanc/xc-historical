@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.1 91/05/10 14:46:32 keith Exp $
+ * $XConsortium: fontfile.c,v 1.2 91/05/11 09:11:32 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -325,6 +325,10 @@ FontFileListFonts (client, fpe, pat, len, max, names)
 		    tmpVals.point = 0;
 		if (vals.width <= 0)
 		    tmpVals.width = 0;
+		if (vals.x == 0)
+		    tmpVals.x = 0;
+		if (vals.y == 0)
+		    tmpVals.y = 0;
 		FontParseXLFDName (zeroChars, &tmpVals, FONT_XLFD_REPLACE_VALUE);
 		(void) AddFontNamesName (names, zeroChars, strlen (zeroChars));
 	    }
