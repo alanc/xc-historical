@@ -126,10 +126,6 @@ int XReadBitmapFile(display, d, filename, width, height, bitmap, x_hot, y_hot)
 	*ptr=value;
       }
     
-    if (fscanf(stream, ";\n")) {
-      cleanup(data, stream);
-      return(BitmapFileInvalid);
-    }
   }
 
   if (!data) {
