@@ -1,4 +1,4 @@
-/* $XConsortium: xopendev.c,v 1.7 89/11/21 13:39:37 rws Exp $ */
+/* $XConsortium: xopendev.c,v 1.8 89/12/02 15:21:23 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -75,6 +75,7 @@ ProcXOpenDevice(client)
     register ClientPtr client;
     {
     xInputClassInfo evbase [numInputClasses];
+    Bool enableit = FALSE;
     int j=0;
     int status = Success;
     xOpenDeviceReply	rep;
@@ -97,15 +98,16 @@ ProcXOpenDevice(client)
 	    if (dev->id == stuff->deviceid)
 		break;
 	if (dev == NULL)
-	    status = BadDevice;
-	else
 	    {
-	    OpenInputDevice (dev, client, &status);
-	    if (dev->inited && dev->startup)
-		(void)EnableDevice(dev);
+	    SendErrorToClient(client, IReqCode, X_OpenDevice, 0, BadDevice);
+	    return Success;
 	    }
+	enableit = TRUE;
 	}
 
+    OpenInputDevice (dev, client, &status);
+    if (enableit && dev->inited && dev->startup)
+	(void)EnableDevice(dev);
     if (status != Success)
 	{
 	SendErrorToClient(client, IReqCode, X_OpenDevice, 0, status);
