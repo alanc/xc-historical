@@ -1,4 +1,4 @@
-/* $XConsortium: FSOpenFont.c,v 1.3 91/07/16 20:32:14 keith Exp $ */
+/* $XConsortium: FSOpenFont.c,v 1.4 92/11/18 21:31:17 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -22,7 +22,7 @@
  * THIS SOFTWARE.
  */
 
-#include	"FSlibint.h"
+#include "FSlibint.h"
 
 Font
 FSOpenBitmapFont(svr, hint, fmask, name, otherid)
@@ -48,8 +48,10 @@ FSOpenBitmapFont(svr, hint, fmask, name, otherid)
     req->format_mask = fmask;
     req->length += (nbytes + 3) >> 2;
     _FSSend(svr, buf, (long) nbytes);
-    (void) _FSReply(svr, (fsReply *) & reply,
-     (SIZEOF(fsOpenBitmapFontReply) - SIZEOF(fsGenericReply)) >> 2, fsFalse);
+    if (!_FSReply(svr, (fsReply *) & reply,
+		  (SIZEOF(fsOpenBitmapFontReply)-SIZEOF(fsGenericReply)) >> 2,
+		  fsFalse))
+	return 0;
     *otherid = reply.otherid;
     SyncHandle();
     return fid;
