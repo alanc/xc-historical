@@ -13,8 +13,8 @@
 #define LintOpts               -ax -DSYSV
 #define OptimizedCDebugFlags   +O1
 #else
-#define StandardDefines        -Wc,-Nd4000,-Ns3300,-Ne700,-Np200 -DSYSV
-#define LintOpts               -ax -Nd4000 -Ns3300 -Ne700 -Np200 -Na25000 -DSYSV
+#define StandardDefines        -Wc,-Nd4000,-Ns3600,-Ne700,-Np200 -DSYSV
+#define LintOpts               -ax -Nd4000 -Ns3600 -Ne700 -Np200 -Na25000 -DSYSV
 #endif
 #define LnCmd                  ln -s
 #define MvCmd                  mv -f
@@ -28,7 +28,7 @@
 #define BuildServer            YES
 #define NeedBerklib            BuildServer
 
-XCOMM platform:  $XConsortium: hp.cf,v 1.28 91/01/08 09:30:56 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.29 91/01/10 18:39:26 rws Exp $
 XCOMM operating system:  OSName
 
 /*
