@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.17 89/11/05 15:19:25 rws Exp $
+ * $XConsortium: miwideline.c,v 1.18 89/11/08 17:11:44 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -108,6 +108,7 @@ miFillPolyHelper (pDrawable, pGC, pixel, spanData, y, overall_height,
 	pwidth = spanRec.widths;
     }
 
+    xorg = 0;
     if (pGC->miTranslate)
     {
 	y += pDrawable->y;
