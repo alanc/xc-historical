@@ -21,10 +21,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mipolycon.c,v 1.15 87/06/22 12:21:03 todd Exp $ */
+/* $Header: mipolycon.c,v 1.15 87/09/11 07:18:54 toddb Exp $ */
 #include "gcstruct.h"
 #include "pixmap.h"
 #include "miscanfill.h"
+
+static int getPolyYBounds();
 
 /*
  *     convexpoly.c

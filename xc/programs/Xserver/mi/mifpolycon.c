@@ -21,12 +21,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mifpolycon.c,v 1.10 87/06/29 11:48:39 todd Exp $ */
+/* $Header: mifpolycon.c,v 1.10 87/09/11 07:20:50 toddb Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "windowstr.h"
 #include "pixmapstr.h"
 #include "mifpoly.h"
+
+static int GetFPolyYBounds();
 
 /*
  *	Written by Todd Newman; April. 1987.
