@@ -1,6 +1,4 @@
-#ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.51 91/07/20 10:41:04 rws Exp $";
-#endif /* lint */
+/* $XConsortium: xinit.c,v 11.52 91/11/29 15:20:35 rws Exp $ */
 
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
