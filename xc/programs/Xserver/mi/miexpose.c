@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 5.9 89/07/19 19:00:02 rws Exp $ */
+/* $XConsortium: miexpose.c,v 5.10 89/10/06 17:28:05 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -511,7 +511,7 @@ GContext id;
 
 void
 miPaintWindow(pWin, prgn, what)
-WindowPtr pWin;
+register WindowPtr pWin;
 RegionPtr prgn;
 int what;
 {
@@ -593,7 +593,8 @@ int what;
     i = pScreen->myNum;
     pRoot = WindowTable[i];
 
-    if (wVisual (pWin) != wVisual (pRoot))
+    if ((pWin->drawable.depth != pRoot->drawable.depth) ||
+	(pWin->drawable.bitsPerPixel != pRoot->drawable.bitsPerPixel))
     {
 	usingScratchGC = TRUE;
 	pGC = GetScratchGC(pWin->drawable.depth, pWin->drawable.pScreen);
@@ -724,8 +725,8 @@ int what;
     pbox = REGION_RECTS(prgn);
     for (i= numRects; --i >= 0; pbox++, prect++)
     {
-	prect->x = pbox->x1;
-	prect->y = pbox->y1;
+	prect->x = pbox->x1 - pWin->drawable.x;
+	prect->y = pbox->y1 - pWin->drawable.y;
 	prect->width = pbox->x2 - pbox->x1;
 	prect->height = pbox->y2 - pbox->y1;
     }
