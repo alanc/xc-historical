@@ -1,4 +1,4 @@
-/* $XConsortium: pl_struct.c,v 1.14 92/05/07 23:29:22 mor Exp $ */
+/* $XConsortium: pl_struct.c,v 1.1 92/05/08 15:13:59 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -694,7 +694,7 @@ INPUT PEXOCRequestType	reqType;
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
-        return (Failure);	/* return an error */
+        return (0);		/* return an error */
     }
 
 
@@ -709,7 +709,7 @@ INPUT PEXOCRequestType	reqType;
 	    UnlockDisplay (display);
 
 	if (PEXStartOCs (dstDisplay, resID, reqType, float_format,
-	    rep.numElements, rep.length) == Success)
+	    rep.numElements, rep.length))
 	{
 	    bytesLeft = rep.length << 2;
 	    getSize = PEXGetOCAddrMaxSize (dstDisplay);
@@ -726,7 +726,7 @@ INPUT PEXOCRequestType	reqType;
 		    if (display != dstDisplay)
 			UnlockDisplay (display);
 		    PEXSyncHandle (dstDisplay);
-		    return (Failure);
+		    return (0);
 		}
 
 		bytesLeft -= size;
@@ -748,7 +748,7 @@ INPUT PEXOCRequestType	reqType;
 
     PEXSyncHandle (dstDisplay);
 
-    return (Success);
+    return (1);
 }
 
 
@@ -915,7 +915,7 @@ OUTPUT unsigned long	*offsetReturn;
         UnlockDisplay (display);
         PEXSyncHandle (display);
 	*offsetReturn = 0;
-	return (Failure);               /* return an error */
+	return (0);               /* return an error */
     }
 
     *offsetReturn = rep.foundOffset;
