@@ -1,4 +1,4 @@
-/* $XConsortium: photomap.c,v 1.1 93/10/26 09:58:27 rws Exp $ */
+/* $XConsortium: photomap.c,v 1.2 93/10/31 09:41:20 dpw Exp $ */
 /**** module photomap.c ****/
 /****************************************************************************
 				NOTICE
@@ -229,9 +229,9 @@ int DeletePhotomap(map, id)
   /* free compression parameters and image data
    */
   if (map->tecParms)
-      map->tecParms = (void *)XieFree(map->tecParms);
+      map->tecParms = (pointer)XieFree(map->tecParms);
   if (map->pvtParms)
-      map->pvtParms = (void *)XieFree(map->pvtParms);
+      map->pvtParms = (pointer)XieFree(map->pvtParms);
   for(i = 0; i < map->bands; i++) 
     FreeStrips(&map->strips[i]);
   /* 
