@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.85 89/10/04 08:46:23 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.86 89/10/05 13:55:15 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif /*lint*/
 
@@ -39,10 +39,14 @@ SOFTWARE.
 #define XK_MISCELLANY
 #include <X11/keysymdef.h>
 
-#ifdef NOCACHE_TRANSLATIONS
-#define CACHED XtCacheNone
+#ifdef CACHE_TRANSLATIONS
+# ifdef REFCNT_TRANSLATIONS
+#  define CACHED XtCacheAll | XtCacheRefCount
+# else
+#  define CACHED XtCacheAll
+# endif
 #else
-#define CACHED XtCacheAll | XtCacheRefCount
+# define CACHED XtCacheNone
 #endif
 
 /* Private definitions. */
