@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.60 89/10/03 14:51:19 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.61 89/10/03 16:14:05 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -215,10 +215,12 @@ ArgList args;			/* unused */
 Cardinal *num_args;		/* unused */
 {
   CommandWidget cbw = (CommandWidget) new;
-  
 #ifdef SHAPE
+  int shape_event_base, shape_error_base;
+
   if (cbw->command.shape_style != XawShapeRectangle
-      && !XShapeQueryExtension(XtDisplay(new)))
+      && !XShapeQueryExtension(XtDisplay(new), &shape_event_base, 
+			       &shape_error_base))
       cbw->command.shape_style = XawShapeRectangle;
   if (cbw->command.highlight_thickness == DEFAULT_SHAPE_HIGHLIGHT) {
       if (cbw->command.shape_style != XawShapeRectangle)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.31 89/07/23 17:35:39 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.32 89/09/07 17:57:09 swick Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -188,6 +188,9 @@ static void Initialize (request, new)
     Widget request, new;
 {
     MailboxWidget w = (MailboxWidget) new;
+#ifdef SHAPE
+    int shape_event_base, shape_error_base;
+#endif
 
     if (!w->mailbox.filename) GetMailFile (w);
 
@@ -203,7 +206,9 @@ static void Initialize (request, new)
     }
 
 #ifdef SHAPE
-    if (w->mailbox.shapeit && !XShapeQueryExtension (XtDisplay (w)))
+    if (w->mailbox.shapeit && !XShapeQueryExtension (XtDisplay (w),
+						     &shape_event_base,
+						     &shape_error_base))
       w->mailbox.shapeit = False;
     w->mailbox.shape_cache.mask = None;
 #endif
