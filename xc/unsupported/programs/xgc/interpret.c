@@ -27,9 +27,8 @@ extern Widget GCform;
 ** out what it means, and passes the buck to the right procedure.
 ** This is a _very_ primitive parser...
 */
-void interpret(string,feedback)
+void interpret(string)
      String string;
-     Boolean feedback;
 {
   char word1[20], word2[20];
   int i;
@@ -44,11 +43,6 @@ void interpret(string,feedback)
     /* So word1 is the first word on the line and word2 is the second.
        Now the fun begins... */
     
-#define select_correct_button(x) \
-select_button(((CompositeWidget) \
-((CompositeWidget)GCform)->composite.children[x])->composite.children[i+1], \
-(caddr_t) NULL, (caddr_t) NULL);
-
     if (!strcmp(word1,TestStuff.choice.text))  {
       for (i=0;i<NUM_TESTS;++i) {
 	if (!strcmp(word2,(TestStuff.data)[i].text)) {
@@ -61,7 +55,6 @@ select_button(((CompositeWidget) \
       for (i=0;i<NUM_FUNCTIONS;++i) {
 	if (!strcmp(word2,(FunctionStuff.data)[i].text)) {
 	  GC_change_function((FunctionStuff.data)[i].code);
-	  if (feedback) select_correct_button(CFunction);
 	  break;
 	}
       }
@@ -70,7 +63,6 @@ select_button(((CompositeWidget) \
       for (i=0;i<NUM_LINESTYLES;++i) {
 	if (!strcmp(word2,(LinestyleStuff.data)[i].text)) {
 	  GC_change_linestyle((LinestyleStuff.data)[i].code);
-	  if (feedback) select_correct_button(CLinestyle);
 	  break;
 	}
       }
@@ -81,7 +73,6 @@ select_button(((CompositeWidget) \
       for (i=0;i<NUM_CAPSTYLES;++i) {
 	if (!strcmp(word2,(CapstyleStuff.data)[i].text)) {
 	  GC_change_capstyle((CapstyleStuff.data)[i].code);
-	  if (feedback) select_correct_button(CCapstyle);
 	  break;
 	}
       }
@@ -90,7 +81,6 @@ select_button(((CompositeWidget) \
       for (i=0;i<NUM_JOINSTYLES;++i) {
 	if (!strcmp(word2,(JoinstyleStuff.data)[i].text)) {
 	  GC_change_joinstyle((JoinstyleStuff.data)[i].code);
-	  if (feedback) select_correct_button(CJoinstyle);
 	  break;
 	}
       }
@@ -99,7 +89,6 @@ select_button(((CompositeWidget) \
       for (i=0;i<NUM_FILLSTYLES;++i) {
 	if (!strcmp(word2,(FillstyleStuff.data)[i].text)) {
 	  GC_change_fillstyle((FillstyleStuff.data)[i].code);
-	  if (feedback) select_correct_button(CFillstyle);
 	  break;
 	}
       }
@@ -108,7 +97,6 @@ select_button(((CompositeWidget) \
       for (i=0;i<NUM_FILLRULES;++i) {
 	if (!strcmp(word2,(FillruleStuff.data)[i].text)) {
 	  GC_change_fillrule((FillruleStuff.data)[i].code);
-	  if (feedback) select_correct_button(CFillrule);
 	  break;
 	}
       }
@@ -117,7 +105,6 @@ select_button(((CompositeWidget) \
       for (i=0;i<NUM_ARCMODES;++i) {
 	if (!strcmp(word2,(ArcmodeStuff.data)[i].text)) {
 	  GC_change_arcmode((ArcmodeStuff.data)[i].code);
-	  if (feedback) select_correct_button(CArcmode);
 	  break;
 	}
       }
@@ -137,29 +124,31 @@ select_button(((CompositeWidget) \
 }
 
 
-/* GC_change_blahzee(foo)
-** ----------------------
-** It should be totally obvious how these functions work...
-*/
+#define select_correct_button(x,n) \
+select_button(((CompositeWidget) \
+((CompositeWidget)GCform)->composite.children[x])->composite.children[n+1], \
+(caddr_t) NULL, (caddr_t) NULL);
 
-void GC_change_function(function)
+void GC_change_function(function,feedback)
      int function;
+     Boolean feedback;
 {
   XSetFunction(X.dpy,X.gc,function);
   X.gcv.function = function;
+  if (feedback) select_correct_button(CFunction,function);
 }
 
-void GC_change_colormap() {}
-
-void GC_change_foreground(foreground)
+void GC_change_foreground(foreground,feedback)
      unsigned long foreground;
+     Boolean feedback;
 {
   XSetForeground(X.dpy,X.gc,foreground);
   X.gcv.foreground = foreground;
 }
 
-void GC_change_background(background)
+void GC_change_background(background,feedback)
      unsigned long background;
+     Boolean feedback;
 {
   XSetBackground(X.dpy,X.gc,background);
   X.gcv.background = background;
@@ -167,65 +156,66 @@ void GC_change_background(background)
   XClearWindow(X.dpy,XtWindow(test));
 }
 
-void GC_change_foregroundcolor() {}
-
-void GC_change_backgroundcolor() {}
-
-void GC_change_linewidth(linewidth)
+void GC_change_linewidth(linewidth,feedback)
      int linewidth;
+     Boolean feedback;
 {
   X.gcv.line_width = linewidth;
   XChangeGC(X.dpy,X.gc,GCLineWidth,&X.gcv);
 }
 
-void GC_change_linestyle(linestyle)
+void GC_change_linestyle(linestyle,feedback)
      int linestyle;
+     Boolean feedback;
 {
   X.gcv.line_style = linestyle;
   XChangeGC(X.dpy,X.gc,GCLineStyle,&X.gcv);
+  if (feedback) select_correct_button(CLinestyle,linestyle);
 }
 
-void GC_change_capstyle(capstyle)
+void GC_change_capstyle(capstyle,feedback)
      int capstyle;
+     Boolean feedback;
 {
   X.gcv.cap_style = capstyle;
   XChangeGC(X.dpy,X.gc,GCCapStyle,&X.gcv);
+  if (feedback) select_correct_button(CCapstyle,capstyle);
 }
 
-void GC_change_joinstyle(joinstyle)
+void GC_change_joinstyle(joinstyle,feedback)
      int joinstyle;
+     Boolean feedback;
 {
   X.gcv.join_style = joinstyle;
   XChangeGC(X.dpy,X.gc,GCJoinStyle,&X.gcv);
+  if (feedback) select_correct_button(CJoinstyle,joinstyle);
 }
 
-void GC_change_fillstyle(fillstyle)
+void GC_change_fillstyle(fillstyle,feedback)
      int fillstyle;
+     Boolean feedback;
 {
   XSetFillStyle(X.dpy,X.gc,fillstyle);
   X.gcv.fill_style = fillstyle;
+  if (feedback) select_correct_button(CFillstyle,fillstyle);
 }
 
-void GC_change_fillrule(fillrule)
+void GC_change_fillrule(fillrule,feedback)
      int fillrule;
+     Boolean feedback;
 {
   XSetFillRule(X.dpy,X.gc,fillrule);
   X.gcv.fill_rule = fillrule;
+  if (feedback) select_correct_button(CFillrule,fillrule);
 }
 
-void GC_change_arcmode(arcmode)
+void GC_change_arcmode(arcmode,feedback)
      int arcmode;
+     Boolean feedback;
 {
   XSetArcMode(X.dpy,X.gc,arcmode);
   X.gcv.arc_mode = arcmode;
-}
-
-void GC_change_tsorigin(tsx,tsy)
-     int tsx,tsy;
-{
-  XSetTSOrigin(X.dpy,X.gc,tsx,tsy);
-  X.gcv.ts_x_origin = tsx;
-  X.gcv.ts_y_origin = tsy;
+  if (feedback) select_correct_button(CArcmode,arcmode);
 }
 
 /* GC_change_dashlist(dashlist)
