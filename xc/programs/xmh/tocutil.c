@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.54 91/07/13 17:53:11 gildea Exp $
+ * $XConsortium: tocutil.c,v 2.55 91/07/17 17:43:44 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -609,7 +609,7 @@ Msg TUAppendToc(toc, ptr)
     msg->toc = toc;
     msg->buf = XtNewString(ptr);
     (void)sprintf(str, "%4d", msgid);
-    for (i=0; i<4 ; i++) msg->buf[i] = str[i];
+    for (i=4; i-- > 0;) msg->buf[i] = str[i];
     msg->buf[MARKPOS] = ' ';
     msg->msgid = msgid;
     msg->position = toc->lastPos;
