@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.84 94/02/06 11:46:02 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.85 94/03/29 15:54:26 gildea Exp $
 #define DoNormalLib NormalLibXaw
 #define DoSharedLib SharedLibXaw
 #define DoDebugLib DebugLibXaw 
@@ -11,6 +11,8 @@ XCOMM $XConsortium: Imakefile,v 1.84 94/02/06 11:46:02 rws Exp $
 #ifdef SharedXawReqs
 REQUIREDLIBS = SharedXawReqs
 #endif
+
+DEFINES = XawI18nDefines
 
        LINTLIBS = $(LINTXLIB) $(LINTXTOOL)
 
