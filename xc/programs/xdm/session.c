@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.30 90/02/12 17:56:24 keith Exp $
+ * $XConsortium: session.c,v 1.31 90/03/05 11:50:21 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -29,6 +29,7 @@
 # include <setjmp.h>
 # include <sys/errno.h>
 # include <stdio.h>
+# include <ctype.h>
 
 extern int  errno;
 
@@ -279,8 +280,8 @@ SessionExit (d, status)
     struct display  *d;
 {
     /* make sure the server gets reset after the session is over */
-    if (d->serverPid >= 2 && !d->dontHUPServer)
-	kill (d->serverPid, SIGHUP);
+    if (d->serverPid >= 2 && d->resetSignal)
+	kill (d->serverPid, d->resetSignal);
     else
 	ResetServer (d);
     exit (status);
@@ -329,7 +330,6 @@ int			*pidp;
 		Debug ("executing session %s\n", verify->argv[0]);
 		execute (verify->argv, verify->userEnviron);
 		LogError ("Session execution failed %s\n", verify->argv[0]);
-		Debug ("exec failed\n");
 	} else {
 		LogError ("Session has no command/arguments\n");
 	}
@@ -400,25 +400,21 @@ source (verify, file)
 struct verify_info	*verify;
 char			*file;
 {
-    char	*args[4];
+    char	*args[2];
     int	pid;
     extern int	errno;
     waitType	result;
     char	*getEnv ();
 
-    Debug ("source %s\n", file);
-    if (file[0] && access (file, 1) == 0) {
+    if (file && file[0]) {
+	Debug ("source %s\n", file);
 	switch (pid = fork ()) {
 	case 0:
 	    CleanUpChild ();
-	    if (!(args[0] = getEnv (verify->systemEnviron, "SHELL")))
-		    args[0] = "/bin/sh";
-	    args[1] = "-c";
-	    args[2] = file;
-	    args[3] = 0;
-	    Debug ("interpreting %s with %s\n", args[2], args[0]);
-	    execve (args[0], args, verify->systemEnviron);
-	    LogError ("can't execute system shell %s\n", args[0]);
+	    args[0] = file;
+	    args[1] = NULL;
+	    execute (args, verify->systemEnviron);
+	    LogError ("can't execute %s\n", args[0]);
 	    exit (1);
 	case -1:
 	    Debug ("fork failed\n");
@@ -435,15 +431,17 @@ char			*file;
     return 0;
 }
 
-int
 execute (argv, environ)
 char	**argv;
 char	**environ;
 {
+    /* make stdout follow stderr to the log file */
+    dup2 (2,1);
     execve (argv[0], argv, environ);
-#ifdef SYSV
     /*
-     * shell scripts can't be run in SYSV directly
+     * In case this is a shell script which hasn't been
+     * made executable (or this is a SYSV box), do
+     * a reasonable thing
      */
     if (errno == ENOEXEC) {
 	char	program[1024], *e, *p, *optarg;
@@ -460,11 +458,11 @@ char	**environ;
 	 */
 	f = fopen (argv[0], "r");
 	if (!f)
-	    return -1;
+	    return;
 	if (fgets (program, sizeof (program) - 1, f) == NULL)
  	{
 	    fclose (f);
-	    return -1;
+	    return;
 	}
 	fclose (f);
 	e = program + strlen (program) - 1;
@@ -494,7 +492,7 @@ char	**environ;
 		;
 	newargv = (char **) malloc ((argc + (optarg ? 3 : 2)) * sizeof (char *));
 	if (!newargv)
-	    return -1;
+	    return;
 	av = newargv;
 	*av++ = p;
 	if (optarg)
@@ -503,5 +501,4 @@ char	**environ;
 	    ;
 	execve (newargv[0], newargv, environ);
     }
-#endif
 }
