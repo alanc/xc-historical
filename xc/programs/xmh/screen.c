@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 1.8 88/01/07 09:37:09 swick Exp $";
+static char rcs_id[] = "$Header: screen.c,v 1.9 88/01/07 16:53:55 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -28,9 +28,8 @@ static char rcs_id[] = "$Header: screen.c,v 1.8 88/01/07 09:37:09 swick Exp $";
 
 /* scrn.c -- management of scrns. */
 
-#include "xmh.h"
 #include <X/Xatom.h>
-
+#include "xmh.h"
 
 /* Fill in the buttons for the view commands. */
 
@@ -199,8 +198,7 @@ Scrn scrn;
     buttonbox = scrn->folderbuttons;
     BBoxStopUpdate(buttonbox);
     for (i=0 ; i<numFolders ; i++)
-	BBoxAddButton(buttonbox, TocGetFolderName(folderList[i]),
-		      NoOp, 999, TRUE, extra);
+      BBoxAddButton(buttonbox, TocName(folderList[i]), NoOp, 999, TRUE, extra);
     BBoxStartUpdate(buttonbox);
     BBoxLockSize(buttonbox);
 
