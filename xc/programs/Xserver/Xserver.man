@@ -77,7 +77,7 @@ to authenticate access.
 .TP 8
 .B bc
 disables certain kinds of error checking, for bug compatibility with
-previous releases (e.g., to work around bugs in R2 and R3 xterms).
+previous releases (e.g., to work around bugs in R2 and R3 xterms and toolkits).
 Deprecated.
 .TP 8
 .B \-bs
@@ -87,10 +87,33 @@ disables backing store support on all screens.
 turns off key-click.
 .TP 8
 .B c \fIvolume\fP
-sets key-click volume (allowable range: 0-8).
+sets key-click volume (allowable range: 0-100).
+.TP 8
+.B -cc \fIclass\fP
+sets the visual class for the root window of color screens.
+The class numbers are as specified in the X protocol.
+Not obeyed by all servers.
+.TP 8
+.B \-co \fIfilename\fP
+sets name of RGB color database.
 .TP 8
 .B \-f \fIvolume\fP
-sets feep (bell) volume (allowable range: 0-7).
+sets feep (bell) volume (allowable range: 0-100).
+.TP 8
+.B \-fc \fIcursorFont\fP
+sets default cursor font.
+.TP 8
+.B \-fn \fIfont\fP
+sets the default font.
+.TP 8
+.B \-fp \fIfontPath
+sets the search path for fonts.
+.TP 8
+.B \-help
+prints a usage message.
+.TP 8
+.B \-I
+causes all remaining command line arguments to be ignored.
 .TP 8
 .B \-ld \fIkilobytes\fP
 sets the data space limit of the server to the specified number of kilobytes.
@@ -134,30 +157,22 @@ pointer acceleration should take effect).
 .B \-to \fIseconds\fP
 sets default connection timeout in seconds.
 .TP 8
+.B tty\fIxx\fP
+ignored, for servers started the ancient way (from init).
+.TP 8
 .B v
 sets video-on screen-saver preference.
 .TP 8
 .B \-v
-sets video-off screen-saver preference
-.TP 8
-.B \-co \fIfilename\fP
-sets name of RGB color database
-.TP 8
-.B \-help
-prints a usage message
-.TP 8
-.B \-fp \fIfontPath
-sets the search path for fonts
-.TP 8
-.B \-fc \fIcursorFont\fP
-sets default cursor font
-.TP 8
-.B \-fn \fIfont\fP
-sets the default font
+sets video-off screen-saver preference.
 .TP 8
 .B \-wm
 forces the default backing-store of all windows to be WhenMapped;
 a cheap trick way of getting backing-store to apply to all windows.
+.TP 8
+.B \-x \fIextension\fP
+loads the specified extension at init.
+Not supported in most implementations.
 .PP
 Many servers also have device-specific command line options.  See the
 manual pages for the individual servers for more details.
