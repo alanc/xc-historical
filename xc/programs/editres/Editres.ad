@@ -154,6 +154,8 @@ Editres.Geometry:			500x600
 
 *setValuesPopup*resourceLabel.Label:	Resource Name:
 *setValuesPopup*valueLabel.Label:	Value:
+*setValuesPopup*setValues.Label:	Set Values
+*setValuesPopup*cancel.Label:		Cancel
 
 *setValuesPopup*Text*EditType:		Edit
 *setValuesPopup*Text*resize:		Width
