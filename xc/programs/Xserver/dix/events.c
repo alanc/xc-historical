@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.65 93/09/03 08:03:47 dpw Exp $ */
+/* $XConsortium: events.c,v 5.66 93/09/20 16:32:44 dpw Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -37,6 +37,10 @@ SOFTWARE.
 #include "cursorstr.h"
 
 #include "dixstruct.h"
+
+#ifdef XKB
+#include "XKBsrv.h"
+#endif
 
 extern WindowPtr *WindowTable;
 
@@ -1650,13 +1654,23 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, count)
 	    tempGrab.modifiersDetail.exact =
 		grab->modifierDevice->key->prev_state;
 	else
-	    tempGrab.modifiersDetail.exact = grab->modifierDevice->key->state;
+	    tempGrab.modifiersDetail.exact =
+#ifdef XKB
+		grab->modifierDevice->key->xkbInfo->grabState;
+#else
+		grab->modifierDevice->key->state;
+#endif
 	if (GrabMatchesSecond(&tempGrab, grab) &&
 	    (!grab->confineTo ||
 	     (grab->confineTo->realized &&
 	      (* grab->confineTo->drawable.pScreen->RegionNotEmpty)
 		(&grab->confineTo->borderSize))))
 	{
+#ifdef XKB
+	    xE->u.keyButtonPointer.state &= 0x1f00;
+	    xE->u.keyButtonPointer.state |=
+		grab->modifierDevice->key->xkbInfo->grabState & 0xe0ff;
+#endif
 	    (*device->ActivateGrab)(device, grab, currentTime, TRUE);
  
 	    FixUpEventFromWindow(xE, grab->window, None, TRUE);
@@ -1864,7 +1878,11 @@ DeliverGrabbedEvent(xE, thisDev, deactivateGrab, count)
 }
 
 void
+#ifdef XKB
+CoreProcessKeyboardEvent (xE, keybd, count)
+#else
 ProcessKeyboardEvent (xE, keybd, count)
+#endif
     register xEvent *xE;
     register DeviceIntPtr keybd;
     int count;
@@ -1954,7 +1972,11 @@ ProcessKeyboardEvent (xE, keybd, count)
 }
 
 void
+#ifdef XKB
+CoreProcessPointerEvent (xE, mouse, count)
+#else
 ProcessPointerEvent (xE, mouse, count)
+#endif
     register xEvent 		*xE;
     register DeviceIntPtr 	mouse;
     int				count;
@@ -1966,7 +1988,12 @@ ProcessPointerEvent (xE, mouse, count)
     if (!syncEvents.playingEvents)
 	NoticeTime(xE)
     xE->u.keyButtonPointer.state = (butc->state |
-				    inputInfo.keyboard->key->state);
+#ifdef XKB
+				    inputInfo.keyboard->key->xkbInfo->grabState
+#else
+				    inputInfo.keyboard->key->state
+#endif
+				    );
     if (xE->u.u.type != MotionNotify)
     {
 	register int  key;
@@ -2278,7 +2305,12 @@ EnterLeaveEvent(type, mode, detail, pWin, child)
 	event.u.enterLeave.child = child;
 	event.u.enterLeave.flags = event.u.keyButtonPointer.sameScreen ?
 					    ELFlagSameScreen : 0;
+#ifdef XKB
+	event.u.enterLeave.state = mouse->button->state & 0x1f00;
+	event.u.enterLeave.state |= (keybd->key->xkbInfo->grabState & 0xe0ff);
+#else
 	event.u.enterLeave.state = keybd->key->state | mouse->button->state;
+#endif
 	event.u.enterLeave.mode = mode;
 	focus = keybd->focus->win;
 	if ((focus != NoneWin) &&
@@ -3513,12 +3545,20 @@ WriteEventsToClient(pClient, count, events)
 	       this event was sent with "SendEvent." */
 	    (*EventSwapVector[eventFrom->u.u.type & 0177])
 		(eventFrom, &eventTo);
+#ifdef XKB
+	    (void)XKBFilterWriteEvents(pClient, 1, (char *)&eventTo);
+#else
 	    (void)WriteToClient(pClient, sizeof(xEvent), (char *)&eventTo);
+#endif
 	}
     }
 
     else
     {
+#ifdef XKB
+	(void)XKBFilterWriteEvents(pClient, count, events);
+#else
 	(void)WriteToClient(pClient, count * sizeof(xEvent), (char *) events);
+#endif
     }
 }
