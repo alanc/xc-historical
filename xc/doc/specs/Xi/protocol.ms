@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: protocol.ms,v 1.9 92/11/14 11:38:47 rws Exp $
 .\" Input Extension
 .EH ''''
 .OH ''''
@@ -1174,7 +1174,11 @@ fail with a BadDevice error.
 .LP
 The focus state of the new keyboard is the same as the focus state of the old 
 X keyboard.  If the new keyboard was not initialized with a \fBFocusRec\fP,
-one is added by the \fBChangeKeyboardDevice\fP request.
+one is added by the \fBChangeKeyboardDevice\fP request.  The X keyboard is 
+assumed to have a \fBKbdFeedbackClassRec\fP.  If the device was initialized
+without a \fBKbdFeedbackClassRec\fP, one will be added by this request.
+The \fBKbdFeedbackClassRec\fP will specify a null routine as the control 
+procedure and the bell procedure.
 .sp 1.5
 ChangeKeyboardDevice 
 .in .5i
@@ -1199,7 +1203,12 @@ be specified.  Data from other valuators on the device will be ignored.
 .LP
 The X pointer device does not contain a \fBFocusRec\fP.  If the new
 pointer was initialized with a \fBFocusRec\fP, it is freed by the 
-\fBChangePointerDevice\fP request.
+\fBChangePointerDevice\fP request.  The X pointer is assumed to have a
+\fBButtonClassRec\fP and a \fBPtrFeedbackClassRec\fP.  If the device
+was initialized without a \fBButtonClassRec\fP or a \fBPtrFeedbackClassRec\fP,
+one will be added by this request.  The \fBButtonClassRec\fP added will
+have no buttons, and the \fBPtrFeedbackClassRec\fP will specify a null
+routine as the control procedure.
 .LP
 If the specified device reports absolute positional information, and the 
 server implementation does not allow such a device to be used as the 
