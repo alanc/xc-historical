@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndrPick.c,v 1.6 92/11/17 17:28:28 hersh Exp $ */
+/* $XConsortium: pexRndrPick.c,v 1.7 92/12/03 19:58:47 hersh Exp $ */
 
 /************************************************************
 Copyright 1992 by The Massachusetts Institute of Technology
@@ -275,6 +275,10 @@ pexPickAllReq           *strmPtr;
 
     err = EndPickAll(prend, pPEXBuffer);
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
+    err = EndPicking(prend);
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
     {
 	SETUP_VAR_REPLY(pexPickAllReply);
 
