@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.107 89/11/01 20:50:13 jim Exp $
+ * $XConsortium: menus.c,v 1.108 89/11/03 14:59:15 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.107 89/11/01 20:50:13 jim Exp $";
+"$XConsortium: menus.c,v 1.108 89/11/03 14:59:15 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2341,7 +2341,7 @@ TwmWindow *t;
     unsigned udummy;
 
     n = 0;
-    strcpy(Info[n++], Version);
+    sprintf(Info[n++], "Twm version:  %s", Version);
     Info[n++][0] = '\0';
 
     if (t) {
@@ -2358,6 +2358,9 @@ TwmWindow *t;
 	sprintf(Info[n++], "Border width     = %d", bw);
 	sprintf(Info[n++], "Depth            = %d", depth);
     }
+
+    Info[n++][0] = '\0';
+    sprintf(Info[n++], "Click to dismiss....");
 
     /* figure out the width and height of the info window */
     height = n * (Scr->DefaultFont.height+2);
