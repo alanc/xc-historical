@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: uconvRep.c,v 5.1 91/02/16 09:57:19 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -82,14 +82,78 @@ pexGetEnumeratedTypeInfoReq	*strmPtr;
 pexGetEnumeratedTypeInfoReply	*reply;
 {
     pexSwap *swapPtr = cntxtPtr->swap;
-    int i;
-    pexEnumTypeDesc *pe;
+    int i, j, pad;
+    CARD16 *ptr, *optr;
 
     SWAP_CARD16 (reply->sequenceNumber);
     SWAP_CARD32 (reply->length);	/* NOT 0 */
 
-    for (i=0, pe=(pexEnumTypeDesc *)(reply+1); i < reply->numLists; i++, pe++)
-	SWAP_ENUM_TYPE_DESC ((*pe));
+    switch (strmPtr->itemMask) {
+
+	case PEXETIndex : {
+		/* PEXETIndex =1 per define in PEX.h */
+	    for (i=0, ptr = (CARD16 *)(reply+1); i < reply->numLists; i++) {
+		j = *((CARD32 *)ptr);
+		pad = j & 1;
+		SWAP_CARD32(*((CARD32 *)ptr));
+		ptr += 2;
+		while (--j >= 0) {
+		    SWAP_CARD16((*ptr));
+		    ptr++;
+		}
+		ptr += pad;
+	    }
+
+	  break;
+	}
+
+	case PEXETMnemonic : {
+		/* PEXETMnemonic =2 per define in PEX.h */
+	    for (i=0, ptr = (CARD16 *)(reply+1); i < reply->numLists; i++) {
+		j = *((CARD32 *)ptr);
+		SWAP_CARD32(*((CARD32 *)ptr));
+		ptr += 2;
+		optr = ptr;
+		while (--j >= 0) {
+		    pad = *ptr;
+		    SWAP_CARD16((*ptr));
+		    ptr += 1 + ((pad + 1) >> 1);;
+		}
+		ptr += (ptr - optr) & 1;
+	    }
+	  break;
+	}
+
+	case PEXETBoth : {
+		/* PEXETBOTH =3 per define in PEX.h */
+	    for (i=0, ptr = (CARD16 *)(reply+1); i < reply->numLists; i++) {
+		j = *((CARD32 *)ptr);
+		SWAP_CARD32(*((CARD32 *)ptr));
+		ptr += 2;
+		optr = ptr;
+		while (--j >= 0) {
+		    SWAP_CARD16((*ptr));
+		    ptr++;
+		    pad = *ptr;
+		    SWAP_CARD16((*ptr));
+		    ptr += 1 + ((pad + 1) >> 1);;
+		}
+		ptr += (ptr - optr) & 1;
+	    }
+	  break;
+        }
+
+	default: { /* counts */
+
+		/* swap the counts */
+	    for (i=0, ptr = (CARD16 *)(reply+1); i < reply->numLists; i++) {
+		SWAP_CARD32(*((CARD32 *)ptr));
+		ptr += 2;
+	    }
+	    break; 
+	}
+
+    }
 
     SWAP_CARD32 (reply->numLists);
 
@@ -439,7 +503,7 @@ pexGetWksInfoReply  *reply;
 	len = (int)(*ptr)*2;			    /* ? */
 	SWAP_CARD32 ((*((CARD32 *)ptr)));
 	ptr+=sizeof(CARD32);
-	for (i=0; i<len; i++, ptr += sizeof(CARD16)) {
+	for (i=0; i<len; i++, ptr += sizeof(CARD32)) {
 	    SWAP_TABLE_INDEX ((*((CARD16 *)ptr)));
 	}
     };
@@ -461,13 +525,11 @@ pexGetWksInfoReply  *reply;
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPWReqWksViewport) {
 	SwapViewport(swapPtr, (pexViewport *)ptr);
 	ptr += sizeof(pexViewport);
-	ptr += sizeof(CARD32);			    /* use drawable flag */
     };
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPWCurWksViewport) {
 	SwapViewport(swapPtr, (pexViewport *)ptr);
 	ptr += sizeof(pexViewport);
-	ptr += sizeof(CARD32);			    /* use drawable flag */
     };
 
     CHECK_BITMASK_ARRAY(strmPtr->itemMask, PEXPWHlhsrUpdate) {
