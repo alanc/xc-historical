@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: init.c,v 2.29 89/07/20 21:15:46 converse Exp $";
+    "$XConsortium: init.c,v 2.30 89/07/21 18:55:54 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -91,6 +91,8 @@ static XtResource resources[] = {
 	 offset(defNewMailCheck), XtRBoolean, (caddr_t)&defTrue},
     {"makecheckpoints", "MakeCheckPoints", XtRBoolean, sizeof(Boolean),
 	 offset(defMakeCheckpoints), XtRBoolean, (caddr_t)&defFalse},
+    {"checkFrequency", "CheckFrequency", XtRInt, sizeof(int),
+	 offset(check_frequency), XtRString, "1"},
     {"mailpath", "MailPath", XtRString, sizeof(char *),
 	 offset(mailDir), XtRString, NULL},
     {"mailwaitingflag", "MailWaitingFlag", XtRBoolean, sizeof(Boolean),
@@ -158,6 +160,8 @@ static _IOErrorHandler(dpy)
 
     Punt("Cannot continue from server error.");
 }
+
+/* command button actions */
 extern void
 CloseScrn(),ComposeMessage(),OpenFolder(),OpenFolderInNewWindow(),
 CreateFolder(),DeleteFolder(),Incorporate(),NextView(),PrevView(),
@@ -168,7 +172,9 @@ PrintMessages(),Pack(),Sort(),ForceRescan(),CloseView(),ViewReply(),
 ViewForward(),ViewUseAsComposition(),EditView(),SaveView(),PrintView(),
 CompReset(),SaveDraft(),SendDraft(),MsgInsertAssoc();
 
-extern void FolderMenu(), FolderButton(), Leave();
+/* menu button actions */
+extern void PopupFolderMenu(), SetCurrentFolder(), LeaveFolderButton(),
+OpenFolderFromMenu();
 
 
 /* All the start-up initialization goes here. */
@@ -235,11 +241,12 @@ char **argv;
 	{"SendDraft",			SendDraft},
 	{"MsgInsertAssoc",		MsgInsertAssoc},
 
-			/* little messes */
+			/* Menu Button action procedures */
 
-        {"folder-menu",			 FolderMenu},
-        {"folder-button",		 FolderButton},
-        {"leave",			 Leave},
+        {"PopupFolderMenu",		PopupFolderMenu},
+        {"SetCurrentFolder",		SetCurrentFolder},
+        {"LeaveFolderButton",		LeaveFolderButton},
+	{"OpenFolderFromMenu",		OpenFolderFromMenu}
     };
 
     static Arg shell_args[] = {
