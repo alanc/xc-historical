@@ -1,23 +1,11 @@
-       INCLUDES = -I$(TOP) -I$(TOP)/X11
+       INCLUDES = -I$(TOP) -I$(INCLUDESRC)
         DEFINES = -DUNIXCONN
    INSTALLFLAGS = -m 0644
            SRCS = *.c
-        HEADERS = Xlib.h Xutil.h X10.h
+        HEADERS = Xlib.h Xutil.h
 
-V10LIST=\
-	XDraw.o \
-	XCrAssoc.o \
-	XDelAssoc.o \
-	XDestAssoc.o \
-	XLookAssoc.o \
-	XMakeAssoc.o
-
-
-V11LIST=\
+OBJS =\
 	Context.o \
-	Conversion.o \
-	ParseCmd.o \
-	Quarks.o \
 	XAllCells.o \
 	XAllPlanes.o \
 	XAllowEv.o \
@@ -40,6 +28,8 @@ V11LIST=\
 	XChkIfEv.o \
 	XChkMaskEv.o \
 	XChkWinEv.o \
+	XChkTypEv.o \
+	XChkTypWEv.o \
 	XCirWin.o \
 	XCirWinDn.o \
 	XCirWinUp.o \
@@ -207,6 +197,7 @@ V11LIST=\
 	XStColors.o \
 	XStNColor.o \
 	XStName.o \
+	XStrKeysym.o \
 	XSync.o \
 	XSynchro.o \
 	XText.o \
@@ -230,30 +221,64 @@ V11LIST=\
 	XWindow.o \
 	XWrBitF.o \
 	XlibInt.o \
-	Xrm.o \
-	XrmConvert.o\
 	evtomask.o
 
+#if DebugLibX && ProfileLibX
+DebuggedAndProfiledLibraryObjectRule()
+#else
+# if DebugLibX
 DebuggedLibraryObjectRule()
-NormalLibraryTarget(X,$(V11LIST))
+# else
+#  if ProfileLibX
+ProfiledLibraryObjectRule()
+#  else
+NormalLibraryObjectRule()
+#  endif
+# endif
+#endif
+
+NormalLibraryTarget(X,$(OBJS))
 AliasedLibraryTarget(X,X11)
-NormalLibraryTarget(X10,$(V10LIST))
-
-DebuggedLibraryTarget(X10,$(V10LIST))
-DebuggedLibraryTarget(X,$(V11LIST))
-AliasedLibraryTarget(X_d,X11_d)
-
+LintLibraryTarget(X,*.c)
 InstallLibrary(X,$(USRLIBDIR))
-InstallLibrary(X10,$(USRLIBDIR))
+InstallLibraryAlias(X,X11,$(USRLIBDIR))
+InstallLintLibrary(X,$(USRLIBDIR))
 InstallMultiple($(HEADERS),$(INCDIR))
+InstallNonExec(XErrorDB,$(LIBDIR))
+
+
+#if ProfileLibX
+ProfiledLibraryTarget(X,$(OBJS))
+AliasedLibraryTarget(X_p,X11_p)
+InstallLibrary(X_p,$(USRLIBDIR))
+InstallLibraryAlias(X_p,X11_p,$(USRLIBDIR))
+#endif
+
+#if DebugLibX
+DebuggedLibraryTarget(X,$(OBJS))
+AliasedLibraryTarget(X_d,X11_d)
+#endif
+
+depend:: ks_names.h
 
 DependTarget()
+
+ks_names.h: $(INCLUDESRC)/keysymdef.h
+	@echo "generathing $@"; \
+	awk 'BEGIN { \
+		printf("/*\n * This is a machine generated file."); \
+		printf(" * Do not put under source control.\n */\n"); \
+	} \
+	/^#define/ { \
+		len = length($$2)-3; \
+		printf("{ \"%s\", %s },\n", substr($$2,4,len), $$3); \
+	}' < $? > $@
+
+clean::
+	rm -f ks_names.h
 
 # structure alignment errors can safely be ignored.
 # complaints about qevent can be ignored too.
 
-linterrs:
-	./lint -hubz ${INCLUDES} *.c > lerrs
-
-lintlib:
-	./lint -hubzn -CX ${INCLUDES} *.c
+lint:
+	$(LINT) -hubz ${INCLUDES} *.c > lint.log
