@@ -1,4 +1,4 @@
-/* $XConsortium: XPutImage.c,v 11.54 90/12/26 10:46:06 rws Exp $ */
+/* $XConsortium: XPutImage.c,v 11.55 91/01/06 11:47:25 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -13,8 +13,8 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include <stdio.h>
 #include "Xlibint.h"
+#include <stdio.h>
 
 #if __STDC__
 #define Const const

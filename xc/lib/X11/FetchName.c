@@ -1,4 +1,4 @@
-/* $XConsortium: XFetchName.c,v 11.23 91/01/06 11:45:27 rws Exp $ */
+/* $XConsortium: XFetchName.c,v 11.24 91/01/08 14:40:35 gildea Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -13,10 +13,10 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include <stdio.h>
 #include <X11/Xlibint.h>
 #include <X11/Xatom.h>
 #include <X11/Xos.h>
+#include <stdio.h>
 
 
 Status XFetchName (dpy, w, name)

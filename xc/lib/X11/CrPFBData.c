@@ -1,4 +1,4 @@
-/* $XConsortium: XCrPFBData.c,v 1.4 89/11/08 17:06:32 converse Exp $ */
+/* $XConsortium: XCrPFBData.c,v 1.5 91/01/06 11:44:57 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 /*
@@ -13,8 +13,8 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include <stdio.h>
 #include "Xlib.h"
+#include <stdio.h>
 
 /*
  * XCreatePixmapFromBitmapData: Routine to make a pixmap from user supplied bitmap data.

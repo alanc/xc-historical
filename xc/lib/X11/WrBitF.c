@@ -1,4 +1,4 @@
-/* $XConsortium: XWrBitF.c,v 11.15 88/09/06 16:11:25 jim Exp $ */
+/* $XConsortium: XWrBitF.c,v 1.8 91/01/06 11:48:51 rws Exp $ */
 /* Copyright, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -13,10 +13,9 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include <X11/Xos.h>
-#include "Xlib.h"
-#include "Xutil.h"
 #include "Xlibint.h"
+#include <X11/Xos.h>
+#include "Xutil.h"
 #include <stdio.h>
 
 #define ERR_RETURN 0

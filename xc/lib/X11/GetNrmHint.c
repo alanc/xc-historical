@@ -1,4 +1,4 @@
-/* $XConsortium: GetNrmHint.c,v 1.4 91/01/06 11:43:36 rws Exp $ */
+/* $XConsortium: GetNrmHint.c,v 1.5 91/01/08 14:38:59 gildea Exp $ */
 /***********************************************************
 Copyright 1988 by Wyse Technology, Inc., San Jose, Ca,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -25,11 +25,11 @@ PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
 
-#include <stdio.h>
 #include <X11/Xlibint.h>
 #include <X11/Xatom.h>
 #include "Xatomtype.h"
 #include <X11/Xutil.h>
+#include <stdio.h>
 
 Status XGetWMSizeHints (dpy, w, hints, supplied, property)
     Display *dpy;

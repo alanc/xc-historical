@@ -1,4 +1,4 @@
-/* $XConsortium: SetTxtProp.c,v 1.3 91/01/06 11:43:51 rws Exp $ */
+/* $XConsortium: SetTxtProp.c,v 1.4 91/01/08 14:40:07 gildea Exp $ */
 /***********************************************************
 Copyright 1988 by Wyse Technology, Inc., San Jose, Ca.,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -23,11 +23,11 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <stdio.h>
 #include <X11/Xlibint.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
+#include <stdio.h>
 
 void XSetTextProperty (dpy, w, tp, property)
     Display *dpy;

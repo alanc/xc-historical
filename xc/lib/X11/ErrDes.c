@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.41 90/12/11 11:08:11 rws Exp $
+ * $XConsortium: XErrDes.c,v 11.42 90/12/12 09:17:35 rws Exp $
  */
 
 /***********************************************************
@@ -26,10 +26,10 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <stdio.h>
-#include <X11/Xos.h>
 #include "Xlibint.h"
+#include <X11/Xos.h>
 #include "Xresource.h"
+#include <stdio.h>
 
 #ifndef ERRORDB
 #define ERRORDB "/usr/lib/X11/XErrorDB"

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.103 91/01/08 21:11:55 gildea Exp $
+ * $XConsortium: XOpenDis.c,v 11.105 91/01/29 19:30:09 keith Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -18,15 +18,6 @@ without express or implied warranty.
 
 /* Converted to V11 by jg */
 
-#ifdef STREAMSCONN
-# ifdef SVR4
-#  include <tiuser.h>
-# else
-#  undef HASDES
-# endif
-#endif
-
-#include <stdio.h>
 #include <X11/Xlibint.h>
 #include <X11/Xos.h>
 #ifdef HASDES
@@ -34,6 +25,16 @@ without express or implied warranty.
 #endif
 #include <X11/Xauth.h>
 #include <X11/Xatom.h>
+
+#ifdef STREAMSCONN
+#ifdef SVR4
+#include <tiuser.h>
+#else
+#undef HASDES
+#endif
+#endif
+
+#include <stdio.h>
 
 extern int _Xdebug;
 

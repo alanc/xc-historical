@@ -1,4 +1,4 @@
-/* $XConsortium: Depths.c,v 1.10 90/12/12 09:16:33 rws Exp $ */
+/* $XConsortium: Depths.c,v 1.5 91/01/06 11:43:33 rws Exp $ */
 /* Copyright 1989 Massachusetts Institute of Technology */
 
 /*
@@ -13,8 +13,8 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include <stdio.h>
 #include "Xlibint.h"
+#include <stdio.h>
 
 /*
  * XListDepths - return info from connection setup

@@ -1,4 +1,4 @@
-/* $XConsortium: Withdraw.c,v 1.3 91/01/06 11:44:01 rws Exp $ */
+/* $XConsortium: Withdraw.c,v 1.4 91/01/08 14:40:28 gildea Exp $ */
 
 /***********************************************************
 Copyright 1988 by Wyse Technology, Inc., San Jose, Ca.,
@@ -24,12 +24,12 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <stdio.h>
 #define NEED_EVENTS
 #include <X11/Xlibint.h>
 #include <X11/Xatom.h>
 #include <X11/Xos.h>
 #include <X11/Xutil.h>
+#include <stdio.h>
 
 /*
  * This function instructs the window manager to change this window from

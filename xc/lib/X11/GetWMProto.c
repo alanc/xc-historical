@@ -1,4 +1,4 @@
-/* $XConsortium: GetWMProto.c,v 1.3 90/12/09 16:32:37 rws Exp $ */
+/* $XConsortium: GetWMProto.c,v 1.4 91/01/06 11:43:41 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -24,9 +24,9 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <stdio.h>
 #include "Xlibint.h"
 #include <X11/Xatom.h>
+#include <stdio.h>
 
 Status XGetWMProtocols (dpy, w, protocols, countReturn)
     Display *dpy;

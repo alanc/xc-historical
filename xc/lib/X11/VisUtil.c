@@ -1,4 +1,4 @@
-/* $XConsortium: XVisUtil.c,v 11.11 89/11/08 17:08:17 converse Exp $ */
+/* $XConsortium: XVisUtil.c,v 11.12 91/01/06 11:48:45 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -13,9 +13,9 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include <stdio.h>
 #include "Xlibint.h"
 #include "Xutil.h"
+#include <stdio.h>
 /*
  *	This procedure returns a list of visual information structures
  *	that match the specified attributes given in the visual information 

@@ -1,4 +1,4 @@
-/* $XConsortium: XRdBitF.c,v 11.8 88/09/06 16:10:09 jim Exp $ */
+/* $XConsortium: XRdBitF.c,v 1.14 91/01/06 11:47:43 rws Exp $ */
 /* Copyright, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -28,10 +28,9 @@ without express or implied warranty.
  * without the other).
  */
 
-#include <X11/Xos.h>
-#include "Xlib.h"
-#include "Xutil.h"
 #include "Xlibint.h"
+#include <X11/Xos.h>
+#include "Xutil.h"
 #include <stdio.h>
 #include <ctype.h>
 

@@ -1,4 +1,4 @@
-/* $XConsortium: XKeyBind.c,v 11.63 91/01/06 11:46:40 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.64 91/01/08 14:41:18 gildea Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -16,7 +16,6 @@ without express or implied warranty.
 /* Beware, here be monsters (still under construction... - JG */
 
 #define NEED_EVENTS
-#include <X11/Xlib.h>
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
 #define XK_MISCELLANY

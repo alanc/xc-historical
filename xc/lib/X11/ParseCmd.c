@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ParseCmd.c,v 1.20 90/12/12 09:16:44 rws Exp $
+ * $XConsortium: ParseCmd.c,v 1.21 91/01/05 16:48:16 rws Exp $
  */
 
 /***********************************************************
@@ -35,7 +35,6 @@ SOFTWARE.
    other options appearing before the longer version in the table.
 */
 
-#include <X11/Xlib.h>
 #include "Xlibint.h"
 #include <X11/Xresource.h>
 #include <stdio.h>
