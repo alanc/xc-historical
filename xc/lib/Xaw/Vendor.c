@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.12 89/12/05 14:42:09 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.13 90/02/14 14:14:58 kit Exp $";
 /* $oHeader: Vendor.c,v 1.3 88/08/19 13:11:01 asente Exp $ */
 #endif /* lint */
 
@@ -168,7 +168,7 @@ static void ChangeManaged(wid)
 
 	(*SuperClass->composite_class.change_managed)(wid);
 	for (i = w->composite.num_children, childP = w->composite.children;
-	     i; i--) {
+	     i; i--, childP++) {
 	    if (XtIsManaged(*childP)) {
 		XtSetKeyboardFocus(wid, *childP);
 		break;
