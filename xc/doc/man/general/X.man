@@ -36,8 +36,7 @@ X11
 is a trademark of the Massachusetts Institute of Technology.
 .SH DESCRIPTION
 X window system servers run on computers with bitmap displays.
-The server
-distributes user input to, and accepts output requests from various
+The server distributes user input to and accepts output requests from various
 client programs through a variety of different interprocess
 communication channels.  Although the most common case is for the client
 programs to be
@@ -95,7 +94,7 @@ asking for your username and password.  Simply type them in as you would at
 a normal terminal, pressing the Return key after each.  If you make a mistake,
 \fIxdm\fP will display an error message and ask you to try again.  After you
 have successfully logged in, \fIxdm\fP will start up your X environment.  By
-default, if you have an file named \fI.xsession\fP in your home directory,
+default, if you have a file named \fI.xsession\fP in your home directory,
 \fIxdm\fP will treat it as a program (or shell script) to run to start up 
 your initial clients (such as terminal emulators, clocks, a window manager,
 user settings for things like the background, the speed of the pointer, etc.).
@@ -147,14 +146,14 @@ tend to only have one keyboard, and therefore, only one display.  Larger,
 multi-user
 systems, however, will frequently have several displays so that more than
 one person can be doing graphics work at once.  To avoid confusion, each
-display on a machine is assigned a \fIdisplay number\fP (starting with 0)
+display on a machine is assigned a \fIdisplay number\fP (beginning at 0)
 when the X server for that display is started.  The display number must always
 be given in a display name.
 .TP 8
 .I screennumber
 Some displays share a single keyboard and pointer among two or more monitors.
 Since each monitor has its own set of windows, each screen is assigned a
-\fIscreen number\fP (starting with 0) when the X server for that display is
+\fIscreen number\fP (beginning at 0) when the X server for that display is
 started.  If the screen number is not given, then screen 0 will be used.
 .PP
 On UNIX systems, the default display name is stored 
@@ -185,7 +184,7 @@ to your display.  For example,
 .PP
 X servers listen for connections on a variety of different 
 communications channels (network byte streams, shared memory, etc.).
-Since there can be more than one way of contactacting a given server,
+Since there can be more than one way of contacting a given server,
 The \fIhostname\fP part of the display name is used to determine the
 type of channel 
 (also called a transport layer) to be used.  The sample servers from MIT
@@ -194,10 +193,9 @@ support the following types of connections:
 .I TCP\/IP
 .br
 The hostname part of the display name should be the server machine's
-IP address name.  Full Internet names (e.g., expo.lcs.mit.edu),
-abbreviated names (e.g., expo), and IP addresses (e.g., 18.30.0.212)
-are all llowed.  For example:  \fImyworkstation:0\fP, \fIbigmachine:1\fP, and 
-\fIhydra:0.1\fP.
+IP address name.  Full Internet names, abbreviated names, and IP addresses
+are all allowed.  For example:  \fIexpo.lcs.mit.edu:0\fP, \fIexpo:0\fP,
+\fI18.30.0.212:0\fP, \fIbigmachine:1\fP, and \fIhydra:0.1\fP.
 .TP 8
 .I "UNIX domain sockets"
 .br
@@ -219,6 +217,7 @@ Although the layout of windows on a display is controlled
 by the window manager that the user is running (described below), 
 most X programs accept
 a command line argument of the form \fB-geometry \fIWIDTHxHEIGHT+XOFF+YOFF\fR
+(where \fIWIDTH\fP, \fIHEIGHT\fP, \fIXOFF\fP, and \fIYOFF\fP are numbers)
 for specifying a prefered size and location for this application's main
 window.
 .PP
@@ -231,13 +230,13 @@ indicated edge of the screen to the corresponding edge of the window.  The X
 offset may be specified in the following ways:
 .TP 8
 .I +XOFF
-The left edge of the window is to be \fIXOFF\fP pixels in from the
-left edge of the screen (i.e. the X coordinate of the window will be at
+The left edge of the window is to be placed \fIXOFF\fP pixels in from the
+left edge of the screen (i.e. the X coordinate of the window's origin will be 
 \fIXOFF\fP).  \fIXOFF\fP may be negative, in which case the window's left edge 
 will be off the screen.
 .TP 8
 .I -XOFF
-The right edge of the window is to be \fIXOFF\fP pixels in from the
+The right edge of the window is to be placed \fIXOFF\fP pixels in from the
 right edge of the screen.  \fIXOFF\fP may be negative, in which case the 
 window's right edge will be off the screen.
 .PP
@@ -245,7 +244,7 @@ The Y offset has similar meanings:
 .TP 8
 .I +YOFF
 The top edge of the window is to be \fIYOFF\fP pixels below the
-top edge of the screen (i.e. the Y coordinate of the window will be at
+top edge of the screen (i.e. the Y coordinate of the window's origin will be
 \fIYOFF\fP).  \fIYOFF\fP may be negative, in which case the window's top edge 
 will be off the screen.
 .TP 8
@@ -282,31 +281,22 @@ hand corner:
         xbiff -geometry 48x48-48+0 &
 .fi
 .PP
-A geometry specification should be thought of as a hint, indicating the 
-prefered size for the window.  Window managers (special programs which
-control the layout of the screen)
-are free to ignore any or
-all of the specification.  Some window managers, such as \fIuwm\fP will
-assume default values for any information that isn't given; others might
-require that the user provide the information interactively (by drawing
-out a region on the screen with the pointer, for example).
 .SH WINDOW MANAGERS
-The core X protocol provides mechanism, not policy.  This means that
-the exact way in which the user the moves or resizes a window is not
-built into the server or the base programming libraries.  
-Instead, X provides programming interfaces
-for constructing special applications called \fIwindow managers\fP which 
-implement the desired user interface (for example, 
-point-to-type vs. click-to-type,
-whether or not to display title bars, moving and resizing with special key
-combinations vs. dragging parts of the window frame).
+The layout of windows on the screen is controlled by special programs called
+\fIwindow managers\fP.  Although many window managers will honor geometry
+specifications as given, others may choose to ignore them (requiring the user
+to explicitly draw the window's region on the screen with the pointer, for 
+example).
 .PP
-The core distribution provides two window managers:
+Since window managers are regular (albeit complex) client programs,
+a variety of different user interfaces can be built.  The core distribution 
+provides two window managers:
 .TP 8
 .I uwm
-This window manager does not display title bars, uses many combinations of
-special keys and pointer buttons, and is generally used in a click-to-type
-fashion.  It tries to stay out of the way as much as possible, but can be
+This window manager allows overlapping windows, uses many combinations of
+special keys and pointer buttons, does not display title bars, and is generally
+used in a point-and-type manner.
+It tries to stay out of the way as much as possible, but can be
 somewhat difficult to master.
 .TP 8
 .I wm
@@ -326,10 +316,175 @@ This window manager provides title bars, resize boxes, and reposition boxes.
 It is known for its small size and simplicity.
 .TP 8
 .I rtl
-This window manager enforces a tiled layout of application windows.
+This is a \fItiling\fP window manager that rearranges and resizes windows
+on the screen to prevent them from ever overlapping.
 .PP
 People who find that none of these window managers are acceptable are 
 encouraged to write their own.
+.SH "FONT NAMES"
+Collections of characters for displaying text and symbols in X are known as
+\fIfonts\fP.  A font typically contains images that share a common appearance
+and look nice together (for example, a single size, boldness, slant, and
+character set).  Similarly, collections of fonts that all look nice together
+are called \fIfamilies\fP.  
+.PP
+Font families of the same resolution (usually measured in dots per inch) 
+are further grouped into \fIdirectories\fP
+(so named because they were initially stored in file system directories).
+Each directory contains a database which lists the name of the font and
+information on how to find the font.  The server uses these
+databases to translate \fIfont names\fP (which have nothing to do with
+file names) into font data.
+.PP
+The list of font directories in which the server looks when trying to find
+a font is controlled by the \fIfont path\fP.  Although most installations
+will choose to have the server start up with all of the commonly used font
+directories, the font path can be changed at any time with the \fIxset\fP
+program.  However, it is important to remember that the directory names are
+on the \fBserver\fP's machine, not on the application's.
+.PP
+The default font path for
+the sample server contains three directories:
+.TP 8
+.I /usr/lib/X11/fonts/misc
+This directory contains several miscellaneous fonts that are useful on all
+systems.  It contains a very small family of fixed-width fonts (\fB6x10\fP, 
+\fB6x12\fP, \fB6x13\fP, \fB8x13\fP, \fB8x13bold\fP, and \fB9x15\fP) and the
+cursor font.  It also has font name aliases for the commonly used fonts
+\fBfixed\fP and \fBvariable\fP.
+.TP 8
+.I /usr/lib/X11/fonts/75dpi
+This directory contains fonts contributed by Adobe Systems, Digital Equipment
+Corporation, and Bitstream for 75 dots per inch displays.  It contains
+the following font families:  Times, Helvetica, Courier, Symbol, New Century
+Schoolbook, Terminal, Dutch, Swiss, and Charter.
+.TP 8
+.I /usr/lib/X11/fonts/100dpi
+This directory contains 100 dots per inch versions of the fonts in the 
+\fI75dpi\fP directory.
+.PP
+Font databases are created by running the \fImkfontdir\fP program in the
+directory containing the compiled versions of the fonts (the \fI.snf\fP files).
+Whenever fonts are added to a directory, \fImkfontdir\fP should be rerun
+so that the server can find the new fonts.  To make the server reread the
+font database, reset the font path with the \fIxset\fP program.  For example,
+to add a font to a private directory, the following commands could be used:
+.sp
+.nf
+        %  cp newfont.snf ~/myfonts
+        %  mkfontdir ~/myfonts
+        %  xset fp rehash 
+.fi
+.PP
+The \fIxlsfonts\fP program can be used to list all of the fonts that are
+found in font databases in the current font path.  
+Font names tend to be fairly long as they contain all of the information
+needed to uniquely identify individual fonts.  However, the sample server
+supports wildcarding of font names, so the full specification
+.sp
+.ce 1
+\fI-adobe-courier-medium-r-normal--10-100-75-75-m-60-iso8859-1\fP
+.sp
+could be abbreviated as:
+.sp
+.ce 1
+\fI*-courier-medium-r-normal--10-*\fP
+.PP
+Because the shell also has special meanings for \fI*\fP and \fI?\fP,
+wildcarded font names should be quoted:
+.sp
+.nf
+        %  xlsfonts -fn '*-courier-medium-r-normal--10-*'
+.fi
+.PP
+If more than one font in a given directory in the font path matches a
+wildcarded font name, the choice of which particular font to return is left
+to the server.  However, if fonts from more than one directory match a name,
+the returned font will always be from the first such directory in the font
+path.  The example given above will match fonts in both the \fI75dpi\fP and
+\fI100dpi\fP directories; if the \fI75dpi\fP directory is ahead of the
+\fI100dpi\fP directory in the font path, the smaller version of the font will 
+be used.  
+.SH "COLOR NAMES"
+Most applications provide ways of tailoring (usually through resources or
+command line arguments) the colors of various elements
+in the text and graphics they display.  Although black and white displays
+don't provide much of a choice, color displays frequently allow anywhere
+between 16 and 16 million different colors.  
+.PP
+Colors are usually specified by their commonly-used names
+(for example, \fIred\fP, \fIwhite\fP, or \fImedium slate blue\fP).
+The server translates these names into appropriate screen colors using
+a color database that can usually be found in \fI/usr/lib/X11/rgb.txt\fP.
+Color names are case-insensative, meaning that \fIred\fP, \fIRed\fP, 
+and \fIRED\fP all refer to the same color.  
+.PP
+Many applications also accept color specifications of the following form:
+.sp
+.ce 4
+#rgb
+#rrggbb
+#rrrgggbbb
+#rrrrggggbbbb
+.sp
+where \fIr\fP, \fIg\fP, and \fIb\fP are hexidecimal numbers indicating how
+much \fIred\fP, \fIgreen\fP, and \fIblue\fP should be displayed (zero being
+none and ffff being on full).  Each field
+in the specification must have the same number of digits (e.g., #rrgb or
+#gbb are not allowed).  Fields that have fewer than four digits (e.g. #rgb)
+are padded out with zero's following each digit (e.g. #r000g000b000).  The
+eight primary colors can be represented as:
+.sp
+.ta 1.25in
+.in +8
+.nf
+black	#000000000000 (no color at all)
+red	#ffff00000000
+green	#0000ffff0000
+blue	#00000000ffff
+yellow	#ffffffff0000 (full red and green, no blue)
+magenta	#ffff0000ffff
+cyan	#0000ffffffff
+white	#ffffffffffff (full red, green, and blue)
+.fi
+.in -8
+.PP
+Unfortunately, RGB color specifications are highly unportable since different
+monitors produce different shades when given the same inputs.  Similarly,
+color names aren't portable because there is no standard naming scheme and 
+because the color database needs to be tuned for each monitor.
+.PP
+Application developers should take care to make their colors tailorable.
+.SH "KEYS"
+.PP
+The X keyboard model is broken into two layers:  server-specific codes
+(called \fIkeycodes\fP) which represent the physical keys, and 
+server-independent symbols (called \fIkeysyms\fP) which
+represent the letters or words that appear on the keys.  
+Two tables are kept in the server for converting keycodes to keysyms:
+.TP 8
+.I "modifier list"
+Some keys (such as Shift, Control, and Caps Lock) are known as \fImodifier\fP
+and are used to select different symbols that are attached to a single key
+(such as Shift-a generates a capital A, and Control-l generates a formfeed
+character ^L).  The server keeps a list of keycodes corresponding to the
+various modifier keys.  Whenever a key is pressed or released, the server 
+generates an \fIevent\fP that contains the keycode of the indicated key as 
+well as a mask that specifies which of the modifer keys are currently pressed.
+Most servers set up this list to initially contain
+the various shift, control, and shift lock keys on the keyboard.  
+.TP 8
+.I "keymap table"
+Applications translate event keycodes and modifier masks into keysyms
+using a \fIkeysym table\fP which contains one row for each keycode and one
+column for each of the modifiers.  This table is initialized by the server
+to correspond to normal typewriter conventions, but is only ever used by
+client programs.  
+.PP
+Although most programs deal with keysyms directly (such as those written with
+the X Toolkit), most programming libraries provide routines for converting
+keysyms into the appropriate type of string (such as ISO Latin-1).  However,
+programs that use such routines are usually less portable and not as flexible.
 .SH "OPTIONS"
 Most X programs attempt to use the same names for command line options and
 arguments.  All applications written with the X Toolkit automatically accept
@@ -358,10 +513,10 @@ Either option specifies the font to use for displaying text.
 .TP 8
 .B \-iconic
 .br
-This option indicates that application should start out in an iconic state.  
-Note that how
-this state is represented is controlled by the window manager that the user
-is running.
+This option indicates that the user would prefer that the application's
+windows initially not be visible as if the windows had be immediately 
+iconified by the user.  Window managers may choose not to honor the
+application's request.  
 .TP 8
 .B \-name
 .br
@@ -398,7 +553,7 @@ used by a window manager to provide some sort of header identifying the window.
 .TP 8
 .B \-xrm \fIresourcestring\fP
 This option specifies a resource name and value to override any defaults.  It 
-is also very useful for setting resources that don't have explicitly command 
+is also very useful for setting resources that don't have explicit command 
 line arguments.
 .SH "RESOURCES"
 To make the tailoring of applications to personal preferences easier, X 
@@ -526,164 +681,7 @@ defaults
 into any site-wide defaults.  All sites are encouraged to set up convenient
 ways of automatically loading resources. See the \fIXlib\fP 
 manual section \fIUsing the Resource Manager\fP for more information.
-.SH "FONT NAMES"
-Collections of characters for displaying text and symbols in X are known as
-\fIfonts\fP.  A font typically contains images that share a common appearance
-and look nice together (for example, a single size, boldness, slant, and
-character set).  Similarly, collections of fonts that all look nice together
-are called \fIfamilies\fP.  
-.PP
-Font families of the same resolution (usually measured in dots per inch) 
-are further grouped into \fIdirectories\fP
-(so named because they were initially stored in file system directories).
-Each directory contains a database which lists the name of the font and
-information on how to find the font.  The server uses these
-databases to translate \fIfont names\fP (which have nothing to do with
-file names) into font data.
-.PP
-The list of font directories in which the server looks when trying to find
-a font is controlled by the \fIfont path\fP.  Although most installations
-will choose to have the server start up with all of the commonly used font
-directories, the font path can be changed at any time with the \fIxset\fP
-program.  However, it is important to remember that the directory names are
-on the \fBserver\fP's machine, not on the application's.
-.PP
-The default font path for
-the sample server contains three directories:
-.TP 8
-.I /usr/lib/X11/fonts/misc
-This directory contains several miscellaneous fonts that are useful on all
-systems.  It contains a very small family of fixed-width fonts (\fB6x10\fP, 
-\fB6x12\fP, \fB6x13\fP, \fB8x13\fP, \fB8x13bold\fP, and \fB9x15\fP) and the
-cursor font.  It also has font name aliases for the commonly used fonts
-\fBfixed\fP and \fBvariable\fP.
-.TP 8
-.I /usr/lib/X11/fonts/75dpi
-This directory contains fonts contributed by Adobe Systems, Digital Equipment
-Corporation, and Bitstream for 75 dots per inch displays.  It contains
-the following font families:  Times, Helvetica, Courier, Symbol, New Century
-Schoolbook, Terminal, Dutch, Swiss, and Charter.
-.TP 8
-.I /usr/lib/X11/fonts/100dpi
-This directory contains versions of the fonts in the \fI75dpi\fP directory
-for 100 dots per inch displays.
-.PP
-Font databases are created by running the \fImkfontdir\fP program in the
-directory containing the compiled versions of the fonts (the \fI.snf\fP files).
-Whenever fonts are added to a directory, \fImkfontdir\fP should be rerun
-so that the server can find the new fonts.  To make the server reread the
-font database, reset the font path with the \fIxset\fP program.  For example,
-to add a font to a private directory, the following commands could be used:
-.sp
-.nf
-        %  cp newfont.snf ~/myfonts
-        %  mkfontdir ~/myfonts
-        %  xset fp rehash 
-.fi
-.PP
-The \fIxlsfonts\fP program can be used to list all of the fonts that are
-found in font databases in the current font path.  
-Font names tend to be fairly long as they contain all of the information
-needed to uniquely identify individual fonts.  However, the sample server
-supports wildcarding of font names, so the full specification
-.sp
-.ce 1
-\fI-adobe-courier-medium-r-normal--10-100-75-75-m-60-iso8859-1\fP
-.sp
-could be abbreviated as:
-.sp
-.ce 1
-\fI*-courier-medium-r-normal--10-*\fP
-.PP
-If more than one font in a given directory in the font path matches a
-wildcarded font name, the choice of which particular font to return is left
-to the server.  However, if fonts from more than one directory match a name,
-the returned font will always be from the first such directory in the font
-path.  The example given above will match fonts in both the \fI75dpi\fP and
-\fI100dpi\fP directories; if the \fI75dpi\fP directory is ahead of the
-\fI100dpi\fP directory in the font path, the smaller version of the font will 
-be used.  
-.SH "COLOR NAMES"
-Most applications provide ways of tailoring (usually through resources or
-command line arguments) the colors of various elements
-in the text and graphics they display.  Although black and white displays
-don't provide much of a choice, color displays frequently allow anywhere
-between 16 and 16 million different colors.  
-.PP
-Colors are usually specified by their commonly-used names
-(for example, \fIred\fP, \fIwhite\fP, or \fImedium slate blue\fP).
-The server translates these names into appropriate screen colors using
-a color database that can usually be found in \fI/usr/lib/X11/rgb.txt\fP.
-Color names are case-insensative, meaning that \fIred\fP, \fIRed\fP, 
-and \fIRED\fP all refer to the same color.  
-.PP
-Many applications also accept color specifications of the following form:
-.sp
-.ce 4
-#rgb
-#rrggbb
-#rrrgggbbb
-#rrrrggggbbbb
-.sp
-where \fIr\fP, \fIg\fP, and \fIb\fP are hexidecimal numbers indicating how
-much \fIred\fP, \fIgreen\fP, and \fIblue\fP should be displayed (zero being
-none and ffff being on full).  Each field
-in the specification must have the same number of digits (e.g., #rrgb or
-#gbb are not allowed).  Fields that have fewer than four digits (e.g. #rgb)
-are padded out with zero's following each digit (e.g. #r000g000b000).  The
-eight primary colors can be represented as:
-.sp
-.ta 1.25in
-.in +8
-.nf
-black	#000000000000 (no color at all)
-red	#ffff00000000
-green	#0000ffff0000
-blue	#00000000ffff
-yellow	#ffffffff0000 (full red and green, no blue)
-magenta	#ffff0000ffff
-cyan	#0000ffffffff
-white	#ffffffffffff (full red, green, and blue)
-.fi
-.in -8
-.PP
-Unfortunately, RGB color specifications are highly unportable since different
-monitors produce different shades when given the same inputs.  Similarly,
-color names aren't portable because there is no standard naming scheme and 
-because the color database needs to be tuned for each monitor.
-.PP
-Application developers should take care to make their colors tailorable.
-.SH "KEYS"
-.PP
-The X keyboard model is broken into two layers:  server-specific codes
-(called \fIkeycodes\fP) which represent the physical keys, and 
-server-independent symbols (called \fIkeysyms\fP) which
-represent the letters or words that appear on the keys.  
-Two tables are kept in the server for converting keycodes to keysyms:
-.TP 8
-.I "modifier list"
-Some keys (such as Shift, Control, and Caps Lock) are known as \fImodifier\fP
-and are used to select different symbols that are attached to a single key
-(such as Shift-a generates a capital A, and Control-l generates a formfeed
-character ^L).  The server keeps a list of keycodes corresponding to the
-various modifier keys.  Whenever a key is pressed or released, the server 
-generates an \fIevent\fP that contains the keycode of the indicated key as 
-well as a mask that specifies which of the modifer keys are currently pressed.
-Most servers set up this list to initially contain
-the various shift, control, and shift lock keys on the keyboard.  
-.TP 8
-.I "keymap table"
-Applications translate event keycodes and modifier masks into keysyms
-using a \fIkeysym table\fP which contains one row for each keycode and one
-column for each of the modifiers.  This table is initialized by the server
-to correspond to normal typewriter conventions, but is only ever used by
-client programs.  
-.PP
-Although most programs deal with keysyms directly (such as those written with
-the X Toolkit), most programming libraries provide routines for converting
-keysyms into the appropriate type of string (such as ISO Latin-1).  However,
-programs that use such routines are usually less portable and not as flexible.
-.SH "COMMONLY USED PROGRAMS"
+.SH "EXAMPLES"
 The following is a collection of sample command lines for some of the 
 more frequently used commands.  For more information on a particular command,
 please refer to that command's manual page.
@@ -793,8 +791,5 @@ Telephone and Telegraph Company or of the Regents of the
 University of California.
 .SH AUTHORS
 .PP
-A cast of thousands.
-.PP
-It is no longer feasible to list all people who have contributed
-something to X, but see doc/contributors in the standard sources.
-
+A cast of thousands.  See the file \fIdoc/contributors\fP in the standard
+sources for some of the names.
