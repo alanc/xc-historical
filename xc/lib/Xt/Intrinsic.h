@@ -275,6 +275,12 @@ typedef struct _ConstraintWidgetData {
     Constraint constraint;
 }ConstraintWidgetData, *ConstraintWidget;
 
+/* ||| Kludge definitions until class initialization procedure let you inherit
+   from your superclass */
+
+extern void CompositeInsertChild(); /* w : Widget */
+
+
 /*************************************************************************
  *
  * Generic Procedures

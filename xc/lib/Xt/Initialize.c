@@ -152,6 +152,7 @@ TopLevelWidgetClassData topLevelWidgetClassData = {
     /* accept_focus       */    NULL,
     /* geometry_manager   */    GeometryManager,
     /* change_managed     */    ChangeManaged,
+    /* insert_child	  */	CompositeInsertChild,
     /* move_focus_to_next */    NULL,
     /* move_focus_to_prev */    NULL
 };

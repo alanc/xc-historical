@@ -70,6 +70,30 @@ Widget TopLevelCreate(name,widgetClass,screen,args,argCount)
    return (widget);
 }
 
+void CompositeInsertChild(w)
+    Widget	w;
+{
+    Cardinal	    position;
+    Cardinal	    i;
+    CompositeWidget cw;
+
+    cw = (CompositeWidget) w->core.parent;
+
+    /* ||| Get position from "insert_position" procedure */
+    position = cw->composite.num_children;
+
+    /* ||| Some better allocation, don't realloc every time ! */
+    cw->composite.children = 
+        (WidgetList) XtRealloc((caddr_t) cw->composite.children,
+    	(cw->composite.num_children + 1) * sizeof(Widget));
+    /* Ripple children up one space from "position" */
+    for (i = cw->composite.num_children; i > position; i--) {
+        cw->composite.children[i] = cw->composite.children[i-1];
+    }
+    cw->composite.children[position] = w;
+    cw->composite.num_children++;
+}
+
 Widget XtWidgetCreate(name,widgetClass,parent,args,argCount)
     char *name;	
     WidgetClass   widgetClass;
