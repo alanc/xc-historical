@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.1 89/06/21 15:43:57 rws Exp $ */
+/* $XConsortium: events.c,v 5.2 89/07/03 13:22:26 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1754,25 +1754,34 @@ void
 RecalculateDeliverableEvents(pWin)
     WindowPtr pWin;
 {
-    OtherClients * others;
-    WindowPtr child;
+    register OtherClients *others;
+    register WindowPtr pChild;
 
-    for (others = wOtherClients(pWin); others; others = others->next)
+    pChild = pWin;
+    while (1)
     {
-	if (others->mask) {
-	    if (!pWin->optional)
-		MakeWindowOptional (pWin);
-	    pWin->optional->otherEventMasks |= others->mask;
+	for (others = wOtherClients(pChild); others; others = others->next)
+	{
+	    if (others->mask)
+		pChild->optional->otherEventMasks |= others->mask;
 	}
+	pChild->deliverableEvents = pChild->eventMask|
+				    wOtherEventMasks(pChild);
+	if (pChild->parent)
+	    pChild->deliverableEvents |=
+		(pChild->parent->deliverableEvents &
+		 ~wDontPropagateMask(pChild) & PropagateMask);
+	if (pChild->firstChild)
+	{
+	    pChild = pChild->firstChild;
+	    continue;
+	}
+	while (!pChild->nextSib && (pChild != pWin))
+	    pChild = pChild->parent;
+	if (pChild == pWin)
+	    break;
+	pChild = pChild->nextSib;
     }
-    if (pWin->parent)
-	pWin->deliverableEvents = (pWin->eventMask|wOtherEventMasks(pWin)) |
-	    (pWin->parent->deliverableEvents & ~wDontPropagateMask(pWin) &
-	     PropagateMask);
-    else
-	pWin->deliverableEvents = pWin->eventMask|wOtherEventMasks(pWin);
-    for (child = pWin->firstChild; child; child = child->nextSib)
-	RecalculateDeliverableEvents(child);
 }
 
 static int
@@ -1857,15 +1866,15 @@ EventSelectForWindow(pWin, client, mask)
 	    }
 	}
 	check = 0;
+	if (!pWin->optional && !MakeWindowOptional (pWin))
+	    return BadAlloc;
 	others = (OtherClients *) xalloc(sizeof(OtherClients));
 	if (!others)
 	    return BadAlloc;
 	others->client = client;
 	others->mask = mask;
 	others->resource = FakeClientID(client->index);
-	others->next = wOtherClients (pWin);
-	if (!pWin->optional)
-	    MakeWindowOptional (pWin);
+	others->next = pWin->optional->otherClients;
 	pWin->optional->otherClients = others;
 	if (!AddResource(others->resource, RT_FAKE, (pointer)pWin,
 			 OtherClientGone, RC_CORE))
@@ -1899,8 +1908,8 @@ EventSuppressForWindow(pWin, client, mask)
 	    CheckWindowOptionalNeed (pWin);
 	}
     } else {
-	if (!pWin->optional)
-	    MakeWindowOptional (pWin);
+	if (!pWin->optional && !MakeWindowOptional (pWin))
+	    return BadAlloc;
         pWin->optional->dontPropagateMask = mask;
     }
     RecalculateDeliverableEvents(pWin);
