@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pick.c,v 2.42 91/01/10 22:28:57 gildea Exp $
+ * $XConsortium: pick.c,v 2.43 91/07/05 15:16:42 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -136,7 +136,7 @@ static void AddLabel(row, text, usestd)
   int usestd;
 {
     static Arg arglist[] = {
-	{XtNlabel, NULL},
+	{XtNlabel, (XtArgVal)NULL},
 	{XtNborderWidth, (XtArgVal) 0},
 	{XtNjustify, (XtArgVal) XtJustifyRight},
 	{XtNwidth, (XtArgVal) NULL}
@@ -156,7 +156,7 @@ static void AddButton(row, text, func)
 {
     FormEntry entry;
     static Arg args[] = {
-	{XtNlabel, NULL},
+	{XtNlabel, (XtArgVal)NULL},
     };
 
     args[0].value = (XtArgVal)text;
