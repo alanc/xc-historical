@@ -22,28 +22,18 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: swaprep.c,v 1.21 87/08/01 13:48:38 newman Locked $ */
+/* $Header: swaprep.c,v 1.5 87/08/13 15:46:17 newman Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include "Xproto.h"
-#include "window.h"
-#include "font.h"
-#include "gc.h"
-#include "os.h"
-#include "resource.h"
-#include "selection.h"
-#include "colormap.h"
+#include "misc.h"
 #include "dixstruct.h"
-#include "extension.h"
-#include "input.h"
 #include "scrnintstr.h"
-#include "cursor.h"
 
-void SwapVisual(), SwapConnSetup(), SwapWinRoot();
-int (* EventSwapVector[256]) ();
-int (* ReplySwapVector[256]) ();
+void SwapVisual(), SwapConnSetup(), SwapWinRoot(), WriteToClient();
+
 /* copy long from src to dst byteswapping on the way */
 #define cpswapl(src, dst) \
                  ((char *)&(dst))[0] = ((char *) &(src))[3];\
@@ -67,11 +57,12 @@ Swap32Write(pClient, size, pbuf)
 
     size >>= 2;
     for(i = 0; i < size; i++)
-    {
+    /* brackets are mandatory here, because "swapl" macro expands
+       to several statements */
+    {   
 	swapl(&pbuf[i], n);
     }
-    WriteToClient(pClient, size << 2, pbuf);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size << 2, (char *) pbuf);
 }
 
 void
@@ -84,21 +75,12 @@ Swap16Write(pClient, size, pbuf)
 
     size >>= 1;
     for(i = 0; i < size; i++)
+    /* brackets are mandatory here, because "swaps" macro expands
+       to several statements */
     {
 	swaps(&pbuf[i], n);
     }
-    WriteToClient(pClient, size << 1, pbuf);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
-}
-
-void
-Write8(pClient, size, pbuf)
-    ClientPtr	pClient;
-    int		size;
-    char	*pbuf;
-{
-    WriteToClient(pClient, size, pbuf);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size << 1, (char *) pbuf);
 }
 
 /* Extra-small reply */
@@ -111,7 +93,7 @@ SGenericReply(pClient, size, pRep)
     int n;
 
     swaps(&pRep->sequenceNumber, n);
-    WriteToClient(pClient, size, pRep);
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 /* Extra-large reply */
@@ -133,8 +115,7 @@ SGetWindowAttributesReply(pClient, size, pRep)
     swapl(&pRep->allEventMasks, n);
     swapl(&pRep->yourEventMask, n);
     swaps(&pRep->doNotPropagateMask, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -152,8 +133,7 @@ SGetGeometryReply(pClient, size, pRep)
     swaps(&pRep->width, n);
     swaps(&pRep->height, n);
     swaps(&pRep->borderWidth, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -165,16 +145,12 @@ SQueryTreeReply(pClient, size, pRep)
     int n;
 
     swaps(&pRep->sequenceNumber, n);
-    /* Don't install a SwapReplyFunc unless
-     * ProcQueryTree will call it.
-     */
-    if (pRep->length)
-        pClient->pSwapReplyFunc = Swap32Write;
+    pClient->pSwapReplyFunc = Swap32Write;
     swapl(&pRep->length, n);
     swapl(&pRep->root, n);
     swapl(&pRep->parent, n);
     swaps(&pRep->nChildren, n);
-    WriteToClient(pClient, size, pRep);
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -187,8 +163,7 @@ SInternAtomReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->atom, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -202,8 +177,7 @@ SGetAtomNameReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swaps(&pRep->nameLength, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = Write8;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 
@@ -220,11 +194,11 @@ SGetPropertyReply(pClient, size, pRep)
     swapl(&pRep->propertyType, n);
     swapl(&pRep->bytesAfter, n);
     swapl(&pRep->nItems, n);
-    WriteToClient(pClient, size, pRep);
+    WriteToClient(pClient, size, (char *) pRep);
     switch(pRep->format)
     {
 	case 8:
-            pClient->pSwapReplyFunc = Write8;
+            pClient->pSwapReplyFunc = WriteToClient;
 	    break;
 	case 16:
             pClient->pSwapReplyFunc = Swap16Write;
@@ -246,7 +220,7 @@ SListPropertiesReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swaps(&pRep->nProperties, n);
-    WriteToClient(pClient, size, pRep);
+    WriteToClient(pClient, size, (char *) pRep);
     pClient->pSwapReplyFunc = Swap32Write;
 }
 
@@ -260,8 +234,7 @@ SGetSelectionOwnerReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->owner, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 
@@ -281,8 +254,7 @@ SQueryPointerReply(pClient, size, pRep)
     swaps(&pRep->winX, n);
     swaps(&pRep->winY, n);
     swaps(&pRep->mask, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -301,8 +273,7 @@ SwapTimeCoordWrite(pClient, size, pRep)
 	SwapTimecoord(pRepT);
 	pRepT++;
     }
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 
 }
 void
@@ -316,7 +287,7 @@ SGetMotionEventsReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swapl(&pRep->nEvents, n);
-    WriteToClient(pClient, size, pRep);
+    WriteToClient(pClient, size, (char *) pRep);
     pClient->pSwapReplyFunc = SwapTimeCoordWrite;
 }
 
@@ -332,8 +303,7 @@ STranslateCoordsReply(pClient, size, pRep)
     swapl(&pRep->child, n);
     swaps(&pRep->dstX, n);
     swaps(&pRep->dstY, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -346,8 +316,7 @@ SGetInputFocusReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->focus, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 /* extra long reply */
@@ -361,8 +330,7 @@ SQueryKeymapReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -372,8 +340,7 @@ SQueryFontReply(pClient, size, pRep)
     xQueryFontReply	*pRep;
 {
     SwapFont(pRep);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ()) NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -392,8 +359,7 @@ SQueryTextExtentsReply(pClient, size, pRep)
     swapl(&pRep->overallWidth, n);
     swapl(&pRep->overallLeft, n);
     swapl(&pRep->overallRight, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ()) NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -407,8 +373,7 @@ SListFontsReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swaps(&pRep->nFonts, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = Write8;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -423,8 +388,7 @@ SListFontsWithInfoReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swaps(&pRep->nFonts, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = Write8;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -438,8 +402,7 @@ SGetFontPathReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swaps(&pRep->nPaths, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = Write8;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -453,8 +416,7 @@ SGetImageReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swapl(&pRep->visual, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) pRep);
     /* Fortunately, image doesn't need swapping */
 }
 
@@ -469,7 +431,7 @@ SListInstalledColormapsReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swaps(&pRep->nColormaps, n);
-    WriteToClient(pClient, size, pRep);
+    WriteToClient(pClient, size, (char *) pRep);
     pClient->pSwapReplyFunc = Swap32Write;
 }
 
@@ -486,8 +448,7 @@ SAllocColorReply(pClient, size, pRep)
     swaps(&pRep->green, n);
     swaps(&pRep->blue, n);
     swapl(&pRep->pixel, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -506,8 +467,7 @@ SAllocNamedColorReply(pClient, size, pRep)
     swaps(&pRep->screenRed, n);
     swaps(&pRep->screenGreen, n);
     swaps(&pRep->screenBlue, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -522,7 +482,7 @@ SAllocColorCellsReply(pClient, size, pRep)
     swapl(&pRep->length, n);
     swaps(&pRep->nPixels, n);
     swaps(&pRep->nMasks, n);
-    WriteToClient(pClient, size, pRep);
+    WriteToClient(pClient, size, (char *) pRep);
     pClient->pSwapReplyFunc = Swap32Write;
 }
 
@@ -541,7 +501,7 @@ SAllocColorPlanesReply(pClient, size, pRep)
     swapl(&pRep->redMask, n);
     swapl(&pRep->greenMask, n);
     swapl(&pRep->blueMask, n);
-    WriteToClient(pClient, size, pRep);
+    WriteToClient(pClient, size, (char *) pRep);
     pClient->pSwapReplyFunc = Swap32Write;
 }
 
@@ -561,8 +521,7 @@ SQColorsExtend(pClient, size, prgb)
 	SwapRGB(prgbT);
 	prgbT++;
     }
-    WriteToClient(pClient, size, prgb);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) prgb);
 }
 
 void
@@ -576,7 +535,7 @@ SQueryColorsReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swaps(&pRep->nColors, n);
-    WriteToClient(pClient, size, pRep);
+    WriteToClient(pClient, size, (char *) pRep);
     pClient->pSwapReplyFunc = SQColorsExtend;
 }
 
@@ -595,8 +554,7 @@ SLookupColorReply(pClient, size, pRep)
     swaps(&pRep->screenRed, n);
     swaps(&pRep->screenGreen, n);
     swaps(&pRep->screenBlue, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -610,8 +568,7 @@ SQueryBestSizeReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swaps(&pRep->width, n);
     swaps(&pRep->height, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -624,8 +581,7 @@ SListExtensionsReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = Write8;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -638,7 +594,7 @@ SGetKeyboardMappingReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
-    WriteToClient(pClient, size, pRep);
+    WriteToClient(pClient, size, (char *) pRep);
     pClient->pSwapReplyFunc = Swap32Write;
 }
 
@@ -652,8 +608,7 @@ SGetPointerMappingReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = Write8;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -666,7 +621,7 @@ SGetModifierMappingReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
-    WriteToClient(pClient, size, pRep);
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -682,7 +637,7 @@ SGetKeyboardControlReply(pClient, size, pRep)
     swapl(&pRep->ledMask, n);
     swaps(&pRep->bellPitch, n);
     swaps(&pRep->bellDuration, n);
-    WriteToClient(pClient, size, pRep);
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -697,8 +652,7 @@ SGetPointerControlReply(pClient, size, pRep)
     swaps(&pRep->accelNumerator, n);
     swaps(&pRep->accelDenominator, n);
     swaps(&pRep->threshold, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
@@ -712,8 +666,7 @@ SGetScreenSaverReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swaps(&pRep->timeout, n);
     swaps(&pRep->interval, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 /* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
@@ -723,7 +676,6 @@ SLHostsExtend(pClient, size, pRep)
     int			size;
     xListHostsReply	*pRep;
 {
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
 }
 
 void
@@ -737,7 +689,7 @@ SListHostsReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     swaps(&pRep->nHosts, n);
-    WriteToClient(pClient, size, pRep);
+    WriteToClient(pClient, size, (char *) pRep);
     pClient->pSwapReplyFunc = SLHostsExtend;
 }
 
@@ -754,600 +706,427 @@ SErrorEvent(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->resourceID, n);
     swaps(&pRep->minorCode, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
+    WriteToClient(pClient, size, (char *) pRep);
 }
 
 void
-SKeyButtonPtrEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SKeyButtonPtrEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.keyButtonPointer.time,
-        pEventT->u.keyButtonPointer.time);
-    cpswapl(pEvent->u.keyButtonPointer.root,
-        pEventT->u.keyButtonPointer.root);
-    cpswapl(pEvent->u.keyButtonPointer.event,
-        pEventT->u.keyButtonPointer.event);
-    cpswapl(pEvent->u.keyButtonPointer.child,
-        pEventT->u.keyButtonPointer.child);
-    cpswaps(pEvent->u.keyButtonPointer.rootX,
-        pEventT->u.keyButtonPointer.rootX);
-    cpswaps(pEvent->u.keyButtonPointer.rootY,
-	pEventT->u.keyButtonPointer.rootY);
-    cpswaps(pEvent->u.keyButtonPointer.eventX,
-        pEventT->u.keyButtonPointer.eventX);
-    cpswaps(pEvent->u.keyButtonPointer.eventY,
-        pEventT->u.keyButtonPointer.eventY);
-    cpswaps(pEvent->u.keyButtonPointer.state,
-        pEventT->u.keyButtonPointer.state);
-    pEventT->u.keyButtonPointer.sameScreen = 
-	pEvent->u.keyButtonPointer.sameScreen;
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
-    
-}
-void
-SEnterLeaveEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
-{
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.enterLeave.time, pEventT->u.enterLeave.time);
-    cpswapl(pEvent->u.enterLeave.root, pEventT->u.enterLeave.root);
-    cpswapl(pEvent->u.enterLeave.event, pEventT->u.enterLeave.event);
-    cpswapl(pEvent->u.enterLeave.child, pEventT->u.enterLeave.child);
-    cpswaps(pEvent->u.enterLeave.rootX, pEventT->u.enterLeave.rootX);
-    cpswaps(pEvent->u.enterLeave.rootY, pEventT->u.enterLeave.rootY);
-    cpswaps(pEvent->u.enterLeave.eventX, pEventT->u.enterLeave.eventX);
-    cpswaps(pEvent->u.enterLeave.eventY, pEventT->u.enterLeave.eventY);
-    cpswaps(pEvent->u.enterLeave.state, pEventT->u.enterLeave.state);
-    pEventT->u.enterLeave.mode = pEvent->u.enterLeave.mode;
-    pEventT->u.enterLeave.flags = pEvent->u.enterLeave.flags;
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
-}
-void
-SFocusEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
-{
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.focus.window, pEventT->u.focus.window);
-    pEventT->u.focus.mode = pEvent->u.focus.mode;
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    to->u.u.detail = from->u.u.detail;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.keyButtonPointer.time,
+        to->u.keyButtonPointer.time);
+    cpswapl(from->u.keyButtonPointer.root,
+        to->u.keyButtonPointer.root);
+    cpswapl(from->u.keyButtonPointer.event,
+        to->u.keyButtonPointer.event);
+    cpswapl(from->u.keyButtonPointer.child,
+        to->u.keyButtonPointer.child);
+    cpswaps(from->u.keyButtonPointer.rootX,
+        to->u.keyButtonPointer.rootX);
+    cpswaps(from->u.keyButtonPointer.rootY,
+	to->u.keyButtonPointer.rootY);
+    cpswaps(from->u.keyButtonPointer.eventX,
+        to->u.keyButtonPointer.eventX);
+    cpswaps(from->u.keyButtonPointer.eventY,
+        to->u.keyButtonPointer.eventY);
+    cpswaps(from->u.keyButtonPointer.state,
+        to->u.keyButtonPointer.state);
+    to->u.keyButtonPointer.sameScreen = 
+	from->u.keyButtonPointer.sameScreen;
 }
 
 void
-SExposeEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SEnterLeaveEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.expose.window, pEventT->u.expose.window);
-    cpswaps(pEvent->u.expose.x, pEventT->u.expose.x);
-    cpswaps(pEvent->u.expose.y, pEventT->u.expose.y);
-    cpswaps(pEvent->u.expose.width, pEventT->u.expose.width);
-    cpswaps(pEvent->u.expose.height, pEventT->u.expose.height);
-    cpswaps(pEvent->u.expose.count, pEventT->u.expose.count);
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    to->u.u.detail = from->u.u.detail;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.enterLeave.time, to->u.enterLeave.time);
+    cpswapl(from->u.enterLeave.root, to->u.enterLeave.root);
+    cpswapl(from->u.enterLeave.event, to->u.enterLeave.event);
+    cpswapl(from->u.enterLeave.child, to->u.enterLeave.child);
+    cpswaps(from->u.enterLeave.rootX, to->u.enterLeave.rootX);
+    cpswaps(from->u.enterLeave.rootY, to->u.enterLeave.rootY);
+    cpswaps(from->u.enterLeave.eventX, to->u.enterLeave.eventX);
+    cpswaps(from->u.enterLeave.eventY, to->u.enterLeave.eventY);
+    cpswaps(from->u.enterLeave.state, to->u.enterLeave.state);
+    to->u.enterLeave.mode = from->u.enterLeave.mode;
+    to->u.enterLeave.flags = from->u.enterLeave.flags;
 }
 
 void
-SGraphicsExposureEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SFocusEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.graphicsExposure.drawable,
-        pEventT->u.graphicsExposure.drawable);
-    cpswaps(pEvent->u.graphicsExposure.x, 
-	pEventT->u.graphicsExposure.x);
-    cpswaps(pEvent->u.graphicsExposure.y, 
-	pEventT->u.graphicsExposure.y);
-    cpswaps(pEvent->u.graphicsExposure.width, 
-	pEventT->u.graphicsExposure.width);
-    cpswaps(pEvent->u.graphicsExposure.height, 
-	pEventT->u.graphicsExposure.height);
-    cpswaps(pEvent->u.graphicsExposure.minorEvent,
-        pEventT->u.graphicsExposure.minorEvent);
-    cpswaps(pEvent->u.graphicsExposure.count,
-	pEventT->u.graphicsExposure.count);
-    pEventT->u.graphicsExposure.majorEvent = 
-    	pEvent->u.graphicsExposure.majorEvent;
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    to->u.u.detail = from->u.u.detail;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.focus.window, to->u.focus.window);
+    to->u.focus.mode = from->u.focus.mode;
 }
 
 void
-SNoExposureEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SExposeEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.noExposure.drawable, pEventT->u.noExposure.drawable);
-    cpswaps(pEvent->u.noExposure.minorEvent, pEventT->u.noExposure.minorEvent);
-    pEventT->u.noExposure.majorEvent = pEvent->u.noExposure.majorEvent;
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.expose.window, to->u.expose.window);
+    cpswaps(from->u.expose.x, to->u.expose.x);
+    cpswaps(from->u.expose.y, to->u.expose.y);
+    cpswaps(from->u.expose.width, to->u.expose.width);
+    cpswaps(from->u.expose.height, to->u.expose.height);
+    cpswaps(from->u.expose.count, to->u.expose.count);
 }
 
 void
-SVisibilityEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SGraphicsExposureEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.visibility.window, pEventT->u.visibility.window);
-    pEventT->u.visibility.state = pEvent->u.visibility.state;
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.graphicsExposure.drawable,
+        to->u.graphicsExposure.drawable);
+    cpswaps(from->u.graphicsExposure.x, 
+	to->u.graphicsExposure.x);
+    cpswaps(from->u.graphicsExposure.y, 
+	to->u.graphicsExposure.y);
+    cpswaps(from->u.graphicsExposure.width, 
+	to->u.graphicsExposure.width);
+    cpswaps(from->u.graphicsExposure.height, 
+	to->u.graphicsExposure.height);
+    cpswaps(from->u.graphicsExposure.minorEvent,
+        to->u.graphicsExposure.minorEvent);
+    cpswaps(from->u.graphicsExposure.count,
+	to->u.graphicsExposure.count);
+    to->u.graphicsExposure.majorEvent = 
+    	from->u.graphicsExposure.majorEvent;
 }
 
 void
-SCreateNotifyEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SNoExposureEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.createNotify.window, pEventT->u.createNotify.window);
-    cpswapl(pEvent->u.createNotify.parent, pEventT->u.createNotify.parent);
-    cpswaps(pEvent->u.createNotify.x, pEventT->u.createNotify.x);
-    cpswaps(pEvent->u.createNotify.y, pEventT->u.createNotify.y);
-    cpswaps(pEvent->u.createNotify.width, pEventT->u.createNotify.width);
-    cpswaps(pEvent->u.createNotify.height, pEventT->u.createNotify.height);
-    cpswaps(pEvent->u.createNotify.borderWidth,
-        pEventT->u.createNotify.borderWidth);
-    pEventT->u.createNotify.override = pEvent->u.createNotify.override;
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.noExposure.drawable, to->u.noExposure.drawable);
+    cpswaps(from->u.noExposure.minorEvent, to->u.noExposure.minorEvent);
+    to->u.noExposure.majorEvent = from->u.noExposure.majorEvent;
 }
 
 void
-SDestroyNotifyEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SVisibilityEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.destroyNotify.event, pEventT->u.destroyNotify.event);
-    cpswapl(pEvent->u.destroyNotify.window, pEventT->u.destroyNotify.window);
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.visibility.window, to->u.visibility.window);
+    to->u.visibility.state = from->u.visibility.state;
 }
 
 void
-SUnmapNotifyEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SCreateNotifyEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.unmapNotify.event, pEventT->u.unmapNotify.event);
-    cpswapl(pEvent->u.unmapNotify.window, pEventT->u.unmapNotify.window);
-    pEventT->u.unmapNotify.fromConfigure = pEvent->u.unmapNotify.fromConfigure;
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.createNotify.window, to->u.createNotify.window);
+    cpswapl(from->u.createNotify.parent, to->u.createNotify.parent);
+    cpswaps(from->u.createNotify.x, to->u.createNotify.x);
+    cpswaps(from->u.createNotify.y, to->u.createNotify.y);
+    cpswaps(from->u.createNotify.width, to->u.createNotify.width);
+    cpswaps(from->u.createNotify.height, to->u.createNotify.height);
+    cpswaps(from->u.createNotify.borderWidth,
+        to->u.createNotify.borderWidth);
+    to->u.createNotify.override = from->u.createNotify.override;
 }
 
 void
-SMapNotifyEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SDestroyNotifyEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.mapNotify.event, pEventT->u.mapNotify.event);
-    cpswapl(pEvent->u.mapNotify.window, pEventT->u.mapNotify.window);
-    pEventT->u.mapNotify.override = pEvent->u.mapNotify.override;
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.destroyNotify.event, to->u.destroyNotify.event);
+    cpswapl(from->u.destroyNotify.window, to->u.destroyNotify.window);
 }
 
 void
-SMapRequestEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SUnmapNotifyEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.mapRequest.parent, pEventT->u.mapRequest.parent);
-    cpswapl(pEvent->u.mapRequest.window, pEventT->u.mapRequest.window);
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.unmapNotify.event, to->u.unmapNotify.event);
+    cpswapl(from->u.unmapNotify.window, to->u.unmapNotify.window);
+    to->u.unmapNotify.fromConfigure = from->u.unmapNotify.fromConfigure;
 }
 
 void
-SReparentEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SMapNotifyEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.reparent.event, pEventT->u.reparent.event);
-    cpswapl(pEvent->u.reparent.window, pEventT->u.reparent.window);
-    cpswapl(pEvent->u.reparent.parent, pEventT->u.reparent.parent);
-    cpswaps(pEvent->u.reparent.x, pEventT->u.reparent.x);
-    cpswaps(pEvent->u.reparent.y, pEventT->u.reparent.y);
-    pEventT->u.reparent.override = pEvent->u.reparent.override;
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.mapNotify.event, to->u.mapNotify.event);
+    cpswapl(from->u.mapNotify.window, to->u.mapNotify.window);
+    to->u.mapNotify.override = from->u.mapNotify.override;
 }
 
 void
-SConfigureNotifyEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SMapRequestEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.configureNotify.event,
-        pEventT->u.configureNotify.event);
-    cpswapl(pEvent->u.configureNotify.window,
-        pEventT->u.configureNotify.window);
-    cpswapl(pEvent->u.configureNotify.aboveSibling,
-        pEventT->u.configureNotify.aboveSibling);
-    cpswaps(pEvent->u.configureNotify.x, pEventT->u.configureNotify.x);
-    cpswaps(pEvent->u.configureNotify.y, pEventT->u.configureNotify.y);
-    cpswaps(pEvent->u.configureNotify.width, pEventT->u.configureNotify.width);
-    cpswaps(pEvent->u.configureNotify.height,
-        pEventT->u.configureNotify.height);
-    cpswaps(pEvent->u.configureNotify.borderWidth,
-        pEventT->u.configureNotify.borderWidth);
-    pEventT->u.configureNotify.override = pEvent->u.configureNotify.override;
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.mapRequest.parent, to->u.mapRequest.parent);
+    cpswapl(from->u.mapRequest.window, to->u.mapRequest.window);
 }
-void
-SConfigureRequestEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
-{
-    xEvent	*pEventT;
 
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.configureRequest.parent,
-        pEventT->u.configureRequest.parent);
-    cpswapl(pEvent->u.configureRequest.window,
-        pEventT->u.configureRequest.window);
-    cpswapl(pEvent->u.configureRequest.sibling,
-        pEventT->u.configureRequest.sibling);
-    cpswaps(pEvent->u.configureRequest.x, pEventT->u.configureRequest.x);
-    cpswaps(pEvent->u.configureRequest.y, pEventT->u.configureRequest.y);
-    cpswaps(pEvent->u.configureRequest.width,
-        pEventT->u.configureRequest.width);
-    cpswaps(pEvent->u.configureRequest.height,
-        pEventT->u.configureRequest.height);
-    cpswaps(pEvent->u.configureRequest.borderWidth,
-        pEventT->u.configureRequest.borderWidth);
-    cpswapl(pEvent->u.configureRequest.valueMask,
-        pEventT->u.configureRequest.valueMask);
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+void
+SReparentEvent(from, to)
+    xEvent	*from, *to;
+{
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.reparent.event, to->u.reparent.event);
+    cpswapl(from->u.reparent.window, to->u.reparent.window);
+    cpswapl(from->u.reparent.parent, to->u.reparent.parent);
+    cpswaps(from->u.reparent.x, to->u.reparent.x);
+    cpswaps(from->u.reparent.y, to->u.reparent.y);
+    to->u.reparent.override = from->u.reparent.override;
+}
+
+void
+SConfigureNotifyEvent(from, to)
+    xEvent	*from, *to;
+{
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.configureNotify.event,
+        to->u.configureNotify.event);
+    cpswapl(from->u.configureNotify.window,
+        to->u.configureNotify.window);
+    cpswapl(from->u.configureNotify.aboveSibling,
+        to->u.configureNotify.aboveSibling);
+    cpswaps(from->u.configureNotify.x, to->u.configureNotify.x);
+    cpswaps(from->u.configureNotify.y, to->u.configureNotify.y);
+    cpswaps(from->u.configureNotify.width, to->u.configureNotify.width);
+    cpswaps(from->u.configureNotify.height,
+        to->u.configureNotify.height);
+    cpswaps(from->u.configureNotify.borderWidth,
+        to->u.configureNotify.borderWidth);
+    to->u.configureNotify.override = from->u.configureNotify.override;
+}
+
+void
+SConfigureRequestEvent(from, to)
+    xEvent	*from, *to;
+{
+    to->u.u.type = from->u.u.type;
+    to->u.u.detail = from->u.u.detail;  /* actually stack-mode */
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.configureRequest.parent,
+        to->u.configureRequest.parent);
+    cpswapl(from->u.configureRequest.window,
+        to->u.configureRequest.window);
+    cpswapl(from->u.configureRequest.sibling,
+        to->u.configureRequest.sibling);
+    cpswaps(from->u.configureRequest.x, to->u.configureRequest.x);
+    cpswaps(from->u.configureRequest.y, to->u.configureRequest.y);
+    cpswaps(from->u.configureRequest.width,
+        to->u.configureRequest.width);
+    cpswaps(from->u.configureRequest.height,
+        to->u.configureRequest.height);
+    cpswaps(from->u.configureRequest.borderWidth,
+        to->u.configureRequest.borderWidth);
+    cpswaps(from->u.configureRequest.valueMask,
+        to->u.configureRequest.valueMask);
 }
 
 
 void
-SGravityEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SGravityEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.gravity.event, pEventT->u.gravity.event);
-    cpswapl(pEvent->u.gravity.window, pEventT->u.gravity.window);
-    cpswaps(pEvent->u.gravity.x, pEventT->u.gravity.x);
-    cpswaps(pEvent->u.gravity.y, pEventT->u.gravity.y);
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.gravity.event, to->u.gravity.event);
+    cpswapl(from->u.gravity.window, to->u.gravity.window);
+    cpswaps(from->u.gravity.x, to->u.gravity.x);
+    cpswaps(from->u.gravity.y, to->u.gravity.y);
 }
 
 void
-SResizeRequestEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SResizeRequestEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.resizeRequest.window, pEventT->u.resizeRequest.window);
-    cpswaps(pEvent->u.resizeRequest.width, pEventT->u.resizeRequest.width);
-    cpswaps(pEvent->u.resizeRequest.height, pEventT->u.resizeRequest.height);
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.resizeRequest.window, to->u.resizeRequest.window);
+    cpswaps(from->u.resizeRequest.width, to->u.resizeRequest.width);
+    cpswaps(from->u.resizeRequest.height, to->u.resizeRequest.height);
 }
 
 void
-SCirculateEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SCirculateEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.circulate.event, pEventT->u.circulate.event);
-    cpswapl(pEvent->u.circulate.window, pEventT->u.circulate.window);
-    cpswapl(pEvent->u.circulate.parent, pEventT->u.circulate.parent);
-    pEventT->u.circulate.place = pEvent->u.circulate.place;
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    to->u.u.detail = from->u.u.detail;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.circulate.event, to->u.circulate.event);
+    cpswapl(from->u.circulate.window, to->u.circulate.window);
+    cpswapl(from->u.circulate.parent, to->u.circulate.parent);
+    to->u.circulate.place = from->u.circulate.place;
 }
 
 void
-SPropertyEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SPropertyEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.property.window, pEventT->u.property.window);
-    cpswapl(pEvent->u.property.atom, pEventT->u.property.atom);
-    cpswapl(pEvent->u.property.time, pEventT->u.property.time);
-    pEventT->u.property.state = pEvent->u.property.state;
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.property.window, to->u.property.window);
+    cpswapl(from->u.property.atom, to->u.property.atom);
+    cpswapl(from->u.property.time, to->u.property.time);
+    to->u.property.state = from->u.property.state;
 }
 
 void
-SSelectionClearEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SSelectionClearEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.selectionClear.time, pEventT->u.selectionClear.time);
-    cpswapl(pEvent->u.selectionClear.window, pEventT->u.selectionClear.window);
-    cpswapl(pEvent->u.selectionClear.atom, pEventT->u.selectionClear.atom);
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.selectionClear.time, to->u.selectionClear.time);
+    cpswapl(from->u.selectionClear.window, to->u.selectionClear.window);
+    cpswapl(from->u.selectionClear.atom, to->u.selectionClear.atom);
 }
 
 void
-SSelectionRequestEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SSelectionRequestEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.selectionRequest.time, pEventT->u.selectionRequest.time);
-    cpswapl(pEvent->u.selectionRequest.owner,
-        pEventT->u.selectionRequest.owner);
-    cpswapl(pEvent->u.selectionRequest.requestor,
-	pEventT->u.selectionRequest.requestor);
-    cpswapl(pEvent->u.selectionRequest.selection,
-	pEventT->u.selectionRequest.selection);
-    cpswapl(pEvent->u.selectionRequest.target,
-        pEventT->u.selectionRequest.target);
-    cpswapl(pEvent->u.selectionRequest.property,
-	pEventT->u.selectionRequest.property);
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.selectionRequest.time, to->u.selectionRequest.time);
+    cpswapl(from->u.selectionRequest.owner,
+        to->u.selectionRequest.owner);
+    cpswapl(from->u.selectionRequest.requestor,
+	to->u.selectionRequest.requestor);
+    cpswapl(from->u.selectionRequest.selection,
+	to->u.selectionRequest.selection);
+    cpswapl(from->u.selectionRequest.target,
+        to->u.selectionRequest.target);
+    cpswapl(from->u.selectionRequest.property,
+	to->u.selectionRequest.property);
 }
 
 void
-SSelectionNotifyEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SSelectionNotifyEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.selectionNotify.time, pEventT->u.selectionNotify.time);
-    cpswapl(pEvent->u.selectionNotify.requestor,
-	pEventT->u.selectionNotify.requestor);
-    cpswapl(pEvent->u.selectionNotify.selection,
-	pEventT->u.selectionNotify.selection);
-    cpswapl(pEvent->u.selectionNotify.target,
-	pEventT->u.selectionNotify.target);
-    cpswapl(pEvent->u.selectionNotify.property,
-        pEventT->u.selectionNotify.property);
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.selectionNotify.time, to->u.selectionNotify.time);
+    cpswapl(from->u.selectionNotify.requestor,
+	to->u.selectionNotify.requestor);
+    cpswapl(from->u.selectionNotify.selection,
+	to->u.selectionNotify.selection);
+    cpswapl(from->u.selectionNotify.target,
+	to->u.selectionNotify.target);
+    cpswapl(from->u.selectionNotify.property,
+        to->u.selectionNotify.property);
 }
 
 void
-SColormapEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SColormapEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.colormap.window, pEventT->u.colormap.window);
-    cpswapl(pEvent->u.colormap.colormap, pEventT->u.colormap.colormap);
-    pEventT->u.colormap.new = pEvent->u.colormap.new;
-    pEventT->u.colormap.state = pEvent->u.colormap.state;
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.colormap.window, to->u.colormap.window);
+    cpswapl(from->u.colormap.colormap, to->u.colormap.colormap);
+    to->u.colormap.new = from->u.colormap.new;
+    to->u.colormap.state = from->u.colormap.state;
 }
 
 void
-SMappingEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SMappingEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    pEventT->u.mappingNotify.request = pEvent->u.mappingNotify.request;
-    pEventT->u.mappingNotify.firstKeyCode =
-	pEvent->u.mappingNotify.firstKeyCode;
-    pEventT->u.mappingNotify.count = pEvent->u.mappingNotify.count;
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
+    to->u.u.type = from->u.u.type;
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    to->u.mappingNotify.request = from->u.mappingNotify.request;
+    to->u.mappingNotify.firstKeyCode =
+	from->u.mappingNotify.firstKeyCode;
+    to->u.mappingNotify.count = from->u.mappingNotify.count;
 }
 
 void
-SClientMessageEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SClientMessageEvent(from, to)
+    xEvent	*from, *to;
 {
-    xEvent	*pEventT;
-
-    pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
-    pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;  /* actually format */
-    cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.clientMessage.window, pEventT->u.clientMessage.window);
-    cpswapl(pEvent->u.clientMessage.u.l.type, 
-	    pEventT->u.clientMessage.u.l.type);
-    switch (pEvent->u.u.detail) {
+    to->u.u.type = from->u.u.type;
+    to->u.u.detail = from->u.u.detail;  /* actually format */
+    cpswaps(from->u.u.sequenceNumber, to->u.u.sequenceNumber);
+    cpswapl(from->u.clientMessage.window, to->u.clientMessage.window);
+    cpswapl(from->u.clientMessage.u.l.type, 
+	    to->u.clientMessage.u.l.type);
+    switch (from->u.u.detail) {
        case 8:
-          bcopy(pEvent->u.clientMessage.u.b.bytes,
-		pEventT->u.clientMessage.u.b.bytes, 20);
+          bcopy(from->u.clientMessage.u.b.bytes,
+		to->u.clientMessage.u.b.bytes, 20);
 	  break;
        case 16:
-	  cpswaps(pEvent->u.clientMessage.u.s.shorts0,
-	     pEventT->u.clientMessage.u.s.shorts0);
-	  cpswaps(pEvent->u.clientMessage.u.s.shorts1,
-	     pEventT->u.clientMessage.u.s.shorts1);
-	  cpswaps(pEvent->u.clientMessage.u.s.shorts2,
-	     pEventT->u.clientMessage.u.s.shorts2);
-	  cpswaps(pEvent->u.clientMessage.u.s.shorts3,
-	     pEventT->u.clientMessage.u.s.shorts3);
-	  cpswaps(pEvent->u.clientMessage.u.s.shorts4,
-	     pEventT->u.clientMessage.u.s.shorts4);
-	  cpswaps(pEvent->u.clientMessage.u.s.shorts5,
-	     pEventT->u.clientMessage.u.s.shorts5);
-	  cpswaps(pEvent->u.clientMessage.u.s.shorts6,
-	     pEventT->u.clientMessage.u.s.shorts6);
-	  cpswaps(pEvent->u.clientMessage.u.s.shorts7,
-	     pEventT->u.clientMessage.u.s.shorts7);
-	  cpswaps(pEvent->u.clientMessage.u.s.shorts8,
-	     pEventT->u.clientMessage.u.s.shorts8);
-	  cpswaps(pEvent->u.clientMessage.u.s.shorts9,
-	     pEventT->u.clientMessage.u.s.shorts9);
+	  cpswaps(from->u.clientMessage.u.s.shorts0,
+	     to->u.clientMessage.u.s.shorts0);
+	  cpswaps(from->u.clientMessage.u.s.shorts1,
+	     to->u.clientMessage.u.s.shorts1);
+	  cpswaps(from->u.clientMessage.u.s.shorts2,
+	     to->u.clientMessage.u.s.shorts2);
+	  cpswaps(from->u.clientMessage.u.s.shorts3,
+	     to->u.clientMessage.u.s.shorts3);
+	  cpswaps(from->u.clientMessage.u.s.shorts4,
+	     to->u.clientMessage.u.s.shorts4);
+	  cpswaps(from->u.clientMessage.u.s.shorts5,
+	     to->u.clientMessage.u.s.shorts5);
+	  cpswaps(from->u.clientMessage.u.s.shorts6,
+	     to->u.clientMessage.u.s.shorts6);
+	  cpswaps(from->u.clientMessage.u.s.shorts7,
+	     to->u.clientMessage.u.s.shorts7);
+	  cpswaps(from->u.clientMessage.u.s.shorts8,
+	     to->u.clientMessage.u.s.shorts8);
+	  cpswaps(from->u.clientMessage.u.s.shorts9,
+	     to->u.clientMessage.u.s.shorts9);
 	  break;
        case 32:
-	  cpswaps(pEvent->u.clientMessage.u.l.longs0,
-	     pEventT->u.clientMessage.u.l.longs0);
-	  cpswaps(pEvent->u.clientMessage.u.l.longs1,
-	     pEventT->u.clientMessage.u.l.longs1);
-	  cpswaps(pEvent->u.clientMessage.u.l.longs2,
-	     pEventT->u.clientMessage.u.l.longs2);
-	  cpswaps(pEvent->u.clientMessage.u.l.longs3,
-	     pEventT->u.clientMessage.u.l.longs3);
-	  cpswaps(pEvent->u.clientMessage.u.l.longs4,
-	     pEventT->u.clientMessage.u.l.longs4);
+	  cpswaps(from->u.clientMessage.u.l.longs0,
+	     to->u.clientMessage.u.l.longs0);
+	  cpswaps(from->u.clientMessage.u.l.longs1,
+	     to->u.clientMessage.u.l.longs1);
+	  cpswaps(from->u.clientMessage.u.l.longs2,
+	     to->u.clientMessage.u.l.longs2);
+	  cpswaps(from->u.clientMessage.u.l.longs3,
+	     to->u.clientMessage.u.l.longs3);
+	  cpswaps(from->u.clientMessage.u.l.longs4,
+	     to->u.clientMessage.u.l.longs4);
 	  break;
        }
-    WriteToClient(pClient, size, pEventT);
-    DEALLOCATE_LOCAL(pEventT);
 }
 
 void
-SKeymapNotifyEvent(pClient, size, pEvent)
-    ClientPtr	pClient;
-    int		size;
-    xEvent	*pEvent;
+SKeymapNotifyEvent(from, to)
+    xEvent	*from, *to;
 {
-    WriteToClient(pClient, size, pEvent);
+    /* Keymap notify events are special; they have no
+       sequence number field, and contain entirely 8-bit data */
+    *to = *from;
 }
 
 void
@@ -1401,9 +1180,8 @@ WriteSConnectionInfo(pClient, size, pInfo)
 	    }
 	}
     }
-    WriteToClient(pClient, size, pInfoTBase);
+    WriteToClient(pClient, size, (char *) pInfoTBase);
     DEALLOCATE_LOCAL(pInfoTBase);
-    pClient->pSwapReplyFunc = (void (*) ()) NULL;
 }
 
 void
@@ -1462,9 +1240,8 @@ SwapVisual(pVis, pVisT)
 }
 
 void
-WriteSConnSetupPrefix(pClient, size, pcsp)
+WriteSConnSetupPrefix(pClient, pcsp)
     ClientPtr		pClient;
-    int 		size;
     xConnSetupPrefix	*pcsp;
 {
     xConnSetupPrefix	cspT;
@@ -1473,7 +1250,7 @@ WriteSConnSetupPrefix(pClient, size, pcsp)
     cpswaps(pcsp->majorVersion, cspT.majorVersion);
     cpswaps(pcsp->minorVersion, cspT.minorVersion);
     cpswaps(pcsp->length, cspT.length);
-    WriteToClient(pClient, sizeof(cspT), &cspT);
+    WriteToClient(pClient, sizeof(cspT), (char *) &cspT);
     pClient->pSwapReplyFunc = WriteSConnectionInfo;
 }
 
