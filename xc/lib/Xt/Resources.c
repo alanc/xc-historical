@@ -488,7 +488,8 @@ void XtSetValues(w, args, argCount)
     }
 
     /* Allocate and copy current widget into newWidget */
-    newWidget = (Widget) XtMalloc(w->core.widget_class->core_class.size);
+    widgetSize = w->core.widget_class->core_class.size;
+    newWidget = (Widget) XtMalloc(widgetSize);
     bcopy((char *) w, (char *) newWidget, (int) widgetSize);
 
     /* Set resource values starting at CorePart on down to this widget */
