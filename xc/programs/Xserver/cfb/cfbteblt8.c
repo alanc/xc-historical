@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 1.2 89/10/29 00:16:48 keith Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.4 89/10/29 12:23:11 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -50,21 +50,21 @@ purpose.  It is provided "as is" without express or implied warranty.
 		    case 2: \
 		    	while (hTmp--) { \
 			    GetBits \
-			    StoreBits0 Step StoreBits(1) \
+			    StoreBits0 FirstStep StoreBits(1) \
 			    Loop \
 		    	} \
 		    	break; \
 		    case 3: \
 		    	while (hTmp--) { \
 			    GetBits \
-			    StoreBits0 Step StoreBits(1) Step StoreBits(2) \
+			    StoreBits0 FirstStep StoreBits(1) Step StoreBits(2) \
 			    Loop \
 		    	} \
 		    	break; \
 		    case 4: \
 		    	while (hTmp--) { \
 			    GetBits \
-			    StoreBits0 Step StoreBits(1) Step \
+			    StoreBits0 FirstStep StoreBits(1) Step \
  			    StoreBits(2) Step StoreBits(3) \
 			    Loop \
 		    	} \
@@ -72,7 +72,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 		    case 5: \
 		    	while (hTmp--) { \
 			    GetBits \
-			    StoreBits0 Step StoreBits(1) Step \
+			    StoreBits0 FirstStep StoreBits(1) Step \
  			    StoreBits(2) Step StoreBits(3) Step \
 			    StoreBits(4) \
 			    Loop \
@@ -81,7 +81,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 		    case 6: \
 		    	while (hTmp--) { \
 			    GetBits \
-			    StoreBits0 Step StoreBits(1) Step \
+			    StoreBits0 FirstStep StoreBits(1) Step \
  			    StoreBits(2) Step StoreBits(3) Step \
 			    StoreBits(4) Step StoreBits(5) \
 			    Loop \
@@ -90,7 +90,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 		    case 7: \
 		    	while (hTmp--) { \
 			    GetBits \
-			    StoreBits0 Step StoreBits(1) Step \
+			    StoreBits0 FirstStep StoreBits(1) Step \
  			    StoreBits(2) Step StoreBits(3) Step \
 			    StoreBits(4) Step StoreBits(5) Step \
 			    StoreBits(6) \
@@ -100,7 +100,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 		    case 8: \
 		    	while (hTmp--) { \
 			    GetBits \
-			    StoreBits0 Step StoreBits(1) Step \
+			    StoreBits0 FirstStep StoreBits(1) Step \
  			    StoreBits(2) Step StoreBits(3) Step \
 			    StoreBits(4) Step StoreBits(5) Step \
 			    StoreBits(6) Step StoreBits(7) \
@@ -189,7 +189,7 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	char1 = (unsigned long *) (pglyphBase + (*ppci++)->byteOffset);
 	hTmp = h;
 	dstLine = pdstBase + (x >> 2);
-	if (nglyph > 3 && xoff1 + widthGlyph4 - widthGlyph < 32)
+	if (nglyph > 3 && xoff1 + widthGlyph4 < 36)
 	{
 	    nglyph -= 4;
 	    xoff2 = xoff1 + widthGlyph;
@@ -208,11 +208,18 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		    leftMask = cfbendtab[xoff1];
 		    rightMask = cfbstarttab[xoff1];
 
-#define StoreBits(o)	dst[o] = GetFourPixels(c);
 #define Step		NextFourBits(c);
 #define Loop		dst += widthDst;
-    
 #define StoreBits0	dst[0] = dst[0] & leftMask | GetFourPixels(c) & rightMask;
+
+#if (BITMAP_BIT_ORDER == MSBFirst)
+#define StoreBits(o)	dst[o] = GetFourPixels(c);
+#define FirstStep	Step
+#else
+#define StoreBits(o)	dst[o] = *((unsigned long *) (((char *) cfb8Pixels) + (c & 0x3c)));
+#define FirstStep	c = BitLeft (c, 2);
+#endif
+
 #define GetBits	    c = BitRight (*char1++, xoff1) | \
 			BitRight (*char2++, xoff2) | \
 			BitRight (*char3++, xoff3) | \
@@ -228,7 +235,8 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	    	{
 		    lshift = widthGlyph - xoff1;
 
-#define StoreBits0  StoreBits(0)
+#define StoreBits0  dst[0] = GetFourPixels(c);
+
 #define GetBits	    c = BitLeft  (*leftChar++, lshift) | \
 			BitRight (*char1++, xoff1) | \
 			BitRight (*char2++, xoff2) | \
@@ -255,63 +263,45 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	}
 	else
 	{
-	    oldRightChar = char1;
 	    nglyph--;
+	    oldRightChar = char1;
+	    dst = dstLine;
 	    if (xoff1)
 	    {
+		ew = ((widthGlyph - (4 - xoff1)) >> 2) + 1;
 	    	if (!leftChar)
 	    	{
 		    leftMask = cfbendtab[xoff1];
 		    rightMask = cfbstarttab[xoff1];
-		    ew = ((widthGlyph - (4 - xoff1)) >> 2);
-		    widthDiff = widthDst - ew;
-		    dst = dstLine - widthDiff;
-		    while (hTmp--) {
-		    	c = BitRight (*char1++, xoff1);
-		    	dst += widthDiff;
-		    	*dst = (*dst & leftMask) |
-			       (GetFourPixels (c) & rightMask);
-		    	ewTmp = ew;
-		    	while (ewTmp--) {
-			    dst++;
-			    NextFourBits(c);
-			    *dst = GetFourPixels (c);
-		    	}
-		    }
+#undef StoreBits0
+#define StoreBits0	dst[0] = dst[0] & leftMask | GetFourPixels(c) & rightMask;
+#define GetBits		c = BitRight (*char1++, xoff1);
+
+		    SwitchEm
+#undef GetBits
+#undef StoreBits0
+
 	    	}
 	    	else
 	    	{
-		    ew = ((widthGlyph - (4 - xoff1)) >> 2) + 1;
-		    widthDiff = widthDst - ew;
-		    dst = dstLine - widthDiff;
 		    lshift = widthGlyph - xoff1;
-		    while (hTmp--) {
-		    	c = BitLeft (*leftChar++ , lshift) |
-			    BitRight(*char1++, xoff1);
-		    	dst += widthDiff;
-		    	ewTmp = ew;
-		    	while (ewTmp--) {
-			    *dst = GetFourPixels(c);
-			    ++dst;
-			    NextFourBits(c);
-		    	}
-		    }
+#define GetBits	    c = BitLeft (*leftChar++, lshift) | \
+			BitRight (*char1++, xoff1);
+
+#define StoreBits0  dst[0] = GetFourPixels(c);
+
+		    SwitchEm
+#undef GetBits
 	    	}
 	    }
 	    else
 	    {
 	    	ew = widthGlyph >> 2;
-	    	widthDiff = widthDst - ew;
-	    	dst = dstLine - widthDiff;
-	    	while (hTmp--) {
-		    c = *char1++;
-		    dst += widthDiff;
-		    ewTmp = ew;
-		    while (ewTmp--) {
-		    	*dst++ = GetFourPixels(c);
-		    	NextFourBits(c);
-		    }
-	    	}
+#define GetBits	c = *char1++;
+
+		SwitchEm
+#undef GetBits
+
 	    }
 	    x += widthGlyph;
 	}
