@@ -1,11 +1,11 @@
-XCOMM $XConsortium: Imakefile,v 2.2 94/01/19 17:16:46 rob Exp $
+XCOMM $XConsortium: Imakefile,v 2.3 94/01/19 17:47:04 gildea Exp $
 /*
  * Merged X Server Master Makefile
  */
 
 #include <Server.tmpl>
 
-#define PreFbLibs $(DIX) $(OS) $(FONT)
+#define PreFbLibs $(DIX) $(OS) $(FSHACK) $(FONT)
 #define BarePostFbLibs $(MFB) $(MI)
 #define PostFbLibs BarePostFbLibs $(EXTENSIONS)
 
@@ -19,8 +19,9 @@ XCOMM $XConsortium: Imakefile,v 2.2 94/01/19 17:16:46 rob Exp $
 #if XServerThreaded
    THREADS_LIBS = ThreadsLibraries
 THREADS_LDFLAGS = ThreadsLoadFlags
+   FSHACK = fshack/fserve.o
    MTSERVERLIBS = pcthreads/libpcthreads.a
-   MTSERVERDIRS = pcthreads
+   MTSERVERDIRS = fshack pcthreads
 #endif
 
 #if BuildPexExt
