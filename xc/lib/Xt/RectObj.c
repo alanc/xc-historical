@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: RectObj.c,v 1.4 88/09/06 09:52:09 swick Exp $";
+static char Xrcsid[] = "$XConsortium: RectObj.c,v 1.5 88/09/06 16:28:30 jim Exp $";
 /* $oHeader: RectObj.c,v 1.2 88/08/18 15:51:21 asente Exp $ */
 #endif lint
 
@@ -138,7 +138,7 @@ static void RectClassPartInitialize(wc)
 }
 
 /* ARGSUSED */
-void RectObjInitialize(requested_widget, new_widget)
+static void RectObjInitialize(requested_widget, new_widget)
     Widget   requested_widget;
     register Widget new_widget;
 {
