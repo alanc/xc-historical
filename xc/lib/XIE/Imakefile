@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/07/19 11:38:57 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 93/09/04 16:32:05 rws Exp $
 
 #define DoNormalLib NormalLibXie
 #define DoSharedLib SharedLibXie
@@ -60,5 +60,11 @@ OBJS = abort.o \
        utils.o
 
 #include <Library.tmpl>
+
+#ifdef NativeFPFormat
+NATIVE_FP_FORMAT = NativeFPFormat
+FP_DEFINES = -DNATIVE_FP_FORMAT=$(NATIVE_FP_FORMAT)
+SpecialCLibObjectRule(ieee,$(ICONFIGFILES),$(FP_DEFINES))
+#endif
 
 DependTarget()
