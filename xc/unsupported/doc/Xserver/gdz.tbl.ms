@@ -24,11 +24,11 @@ Sun Microsystems
 Adam R. de Boor
 .AI
 University of California at Berkeley
-.AB
 .AU
 edits by Bob Scheifler
 .AI
 Massachusetts Institute of Technology
+.AB
 .LP
 For hackers in a hurry,  here's how to do a quick-and-dirty port of the
 X V11 sample server to memory-mapped monochrome & color frame buffers.
