@@ -28,7 +28,7 @@ typedef struct _FormRec {
     FormPart		form;
 } FormRec;
 
-typedef struct _FormConstraintsRec {
+typedef struct _FormConstraintsPart {
     XtEdgeType	top, bottom,	/* where to drag edge on resize		*/
 		left, right;
     int		dx;		/* desired horiz offset			*/
@@ -36,10 +36,11 @@ typedef struct _FormConstraintsRec {
     int		dy;		/* desired vertical offset		*/
     Widget	vert_base;	/* measure dy from here if non-null	*/
     Boolean	allow_resize;	/* TRUE if child may request resize	*/
-} FormConstraintsRec, *FormConstraints;
+} FormConstraintsPart;
 
-extern XtResource formConstraintResources[];
-extern Cardinal formConstraintResourceCount;
+typedef struct _FormConstraintsRec {
+    FormConstraintsPart	form;
+} FormConstraintsRec, *FormConstraints;
 
 #endif _FormP_h
 /* DON'T ADD STUFF AFTER THIS #endif */

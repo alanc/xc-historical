@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Form.c,v 1.2 87/12/22 08:51:49 swick Locked $";
+static char rcsid[] = "$Header: Form.c,v 1.3 87/12/23 07:44:01 swick Locked $";
 #endif lint
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -43,8 +43,8 @@ static XtResource resources[] = {
 
 static XtEdgeType defEdge = XtRubber;
 
-#define Offset(field) XtOffset(FormConstraints, field)
-XtResource formConstraintResources[] = {
+#define Offset(field) XtOffset(FormConstraints, form.field)
+static XtResource formConstraintResources[] = {
     {XtNtop, XtCEdge, XtRJustify, sizeof(XtEdgeType),
 	Offset(top), XtRJustify, (caddr_t)&defEdge},
     {XtNbottom, XtCEdge, XtRJustify, sizeof(XtEdgeType),
@@ -65,9 +65,6 @@ XtResource formConstraintResources[] = {
 	Offset(allow_resize), XrmRString, "FALSE"},
 };
 #undef Offset
-
-Cardinal formConstraintResourceCount = XtNumber(formConstraintResources);
-
 
 static void Initialize(), Resize();
 static void ConstraintInitialize();
@@ -163,14 +160,16 @@ static void RefigureLocations(w)
     for (childP = children; childP - children < num_children; childP++) {
 	FormConstraints form = (FormConstraints)(*childP)->core.constraints;
 	if (!XtIsManaged(*childP)) continue;
-	x = form->dx;
-	y = form->dy;
-	if (form->horiz_base)
-	    x += form->horiz_base->core.x + form->horiz_base->core.width
-	         + (form->horiz_base->core.border_width << 1);
-	if (form->vert_base)
-	    y += form->vert_base->core.y + form->vert_base->core.height
-	         + (form->vert_base->core.border_width << 1);
+	x = form->form.dx;
+	y = form->form.dy;
+	if (form->form.horiz_base)
+	    x += form->form.horiz_base->core.x
+	         + form->form.horiz_base->core.width
+	         + (form->form.horiz_base->core.border_width << 1);
+	if (form->form.vert_base)
+	    y += form->form.vert_base->core.y
+	         + form->form.vert_base->core.height
+	         + (form->form.vert_base->core.border_width << 1);
 	XtMoveWidget( *childP, x, y );
 	x += (*childP)->core.width  + ((*childP)->core.border_width << 1);
 	y += (*childP)->core.height + ((*childP)->core.border_width << 1);
@@ -225,21 +224,21 @@ static void Resize(w)
 	FormConstraints form = (FormConstraints)(*childP)->core.constraints;
 	if (!XtIsManaged(*childP)) continue;
 	x = TransformCoord( (*childP)->core.x, fw->form.old_width,
-			    fw->core.width, form->left );
+			    fw->core.width, form->form.left );
 	y = TransformCoord( (*childP)->core.y, fw->form.old_height,
-			    fw->core.height, form->top );
+			    fw->core.height, form->form.top );
 	width =
 	  TransformCoord((Position)((*childP)->core.x
 				    + (*childP)->core.width
 				    + (*childP)->core.border_width),
 			 fw->form.old_width, fw->core.width,
-			 form->right ) - x - (*childP)->core.border_width;
+			 form->form.right ) -x - (*childP)->core.border_width;
 	height =
 	  TransformCoord((Position)((*childP)->core.y
 				    + (*childP)->core.height
 				    + (*childP)->core.border_width),
 			 fw->form.old_height, fw->core.height,
-			 form->bottom ) - y - (*childP)->core.border_width;
+			 form->form.bottom ) -y - (*childP)->core.border_width;
 	if (width < 1) width = 1;
 	if (height < 1) height = 1;
 	XtMoveWidget( (*childP), x, y );
@@ -260,7 +259,8 @@ static XtGeometryResult GeometryManager(w, request, reply)
     FormConstraints form = (FormConstraints)w->core.constraints;
     XtWidgetGeometry allowed;
 
-    if (request->request_mode & ~(CWWidth || CWHeight) || !form->allow_resize)
+    if (request->request_mode & ~(CWWidth || CWHeight)
+	|| !form->form.allow_resize)
 	return XtGeometryNo;
 
     if (request->request_mode & CWWidth)
@@ -302,11 +302,11 @@ static void ConstraintInitialize(request, new, args, num_args)
     FormConstraints form = (FormConstraints)new->core.constraints;
     FormWidget fw = (FormWidget)new->core.parent;
 
-    if (form->dx == DEFAULTVALUE)
-        form->dx = fw->form.default_spacing;
+    if (form->form.dx == DEFAULTVALUE)
+        form->form.dx = fw->form.default_spacing;
 
-    if (form->dy == DEFAULTVALUE)
-        form->dy = fw->form.default_spacing;
+    if (form->form.dy == DEFAULTVALUE)
+        form->form.dy = fw->form.default_spacing;
 }
 
 
