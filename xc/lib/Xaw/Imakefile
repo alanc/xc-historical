@@ -9,6 +9,7 @@
        LINTLIBS = $(LINTXLIB) $(LINTXTOOL)
 
 HEADERS = \
+	AllWidgets.h \
 	AsciiSink.h \
 	AsciiSinkP.h \
 	AsciiSrc.h \
@@ -151,6 +152,8 @@ OBJS = \
 	Viewport.o \
 	XawInit.o 
 
+UNSHAREDOBJS = AllWidgets.o
+
 #if SharedLibXaw
 # if DebugLibXaw
 SharedAndDebuggedLibraryObjectRule()
@@ -175,10 +178,12 @@ NormalLibraryObjectRule()
 
 #if SharedLibXaw
 NormalSharedLibraryTarget(Xaw,$(SOXAWREV),$(OBJS))
+NormalSharedLibraryDataTarget(Xaw,$(SOXAWREV),$(UNSHAREDOBJS))
 InstallSharedLibrary(Xaw,$(SOXAWREV),$(USRLIBDIR))
+InstallSharedLibraryData(Xaw,$(SOXAWREV),$(USRLIBDIR))
 #endif
 
-NormalLibraryTarget(Xaw,$(OBJS))
+NormalLibraryTarget(Xaw,$(OBJS) $(UNSHAREDOBJS))
 LintLibraryTarget(Xaw,$(SRCS))
 InstallLibrary(Xaw,$(USRLIBDIR))
 InstallLintLibrary(Xaw,$(LINTLIBDIR))
