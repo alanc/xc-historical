@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.13 91/05/14 10:07:57 rws Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.14 91/05/14 11:09:16 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -278,7 +278,8 @@ _XcmsParseColorString(ccc, color_string, pColor)
  *
  *	SYNOPSIS
  */
-int FirstCmp(p1, p2)
+static int
+FirstCmp(p1, p2)
 #if __STDC__
     const void *p1, *p2;
 #else
