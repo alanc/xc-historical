@@ -33,11 +33,11 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$Header: xpr.c,v 1.25 87/10/21 16:32:59 swick Exp $";
+static char *rcsid_xpr_c = "$Header: xpr.c,v 1.26 87/10/22 17:52:59 rws Locked $";
 #endif
 
-#include <sys/types.h>
-#include <sys/file.h>
+#include <X11/Xos.h>
+#include <X11/Xlib.h>
 #include <sys/uio.h>
 #include <stdio.h>
 #include <pwd.h>
