@@ -220,18 +220,10 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->CreateColormap = cfbInitializeColormap;
     pScreen->DestroyColormap = NoopDDA;
 
-    /*  Set up the remaining fields in the visuals[] array & make a RT_VISUALID */
+    /*  Set up the remaining fields in the visuals[] array */
     for (i = 0; i < NUMVISUALS; i++) {
 	visuals[i].vid = FakeClientID(0);
 	visuals[i].screen = index;
-	if (!AddResource(visuals[i].vid, RT_VISUALID, (pointer)&visuals[i],
-			 (int(*)())NoopDDA, RC_CORE))
-	{
-	    while (--i >= 0)
-		FreeResource(visuals[i].vid, RC_NONE);
-	    xfree(pPixmap);
-	    return FALSE;
-	}
     }
 
     /*  Set up the remaining fields in the depths[] array */
@@ -243,8 +235,6 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	    {
 		while (--i >= 0)
 		    xfree(depths[i].vids);
-		for (i = 0; i < NUMVISUALS; i++)
-		    FreeResource(visuals[i].vid, RC_NONE);
 		xfree(pPixmap);
 		return FALSE;
 	    }
@@ -273,17 +263,5 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     if (cfbWindowPrivateIndex == -1)
 	cfbWindowPrivateIndex = AllocateWindowPrivateIndex ();
     miInitializeBackingStore (pScreen, &cfbBSFuncRec);
-    if (CreateColormap(pScreen->defColormap, pScreen, &visuals[i], &cmap,
-		       (visuals[i].class & DynamicClass) ? AllocNone :
-							   AllocAll,
-		       0)
-	== Success)
-	return TRUE;
-    for (i = 0; i < NUMDEPTHS; i++)
-	xfree(depths[i].vids);
-    for (i = 0; i < NUMVISUALS; i++)
-	FreeResource(visuals[i].vid, RC_NONE);
-    xfree(pPixmap);
-    return FALSE;
+    return TRUE;
 }
-
