@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <strings.h>
 #include <X11/Xtrans.h>
 
 /*

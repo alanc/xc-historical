@@ -1,11 +1,15 @@
 #include <stdio.h>
-#include <strings.h>
 #include <memory.h>
-#include "Xtrans.h"
 #include <sys/types.h>
+#ifndef WIN32
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <netinet/in.h>
+#else
+#include <winsock.h>
+#include <X11/Xw32defs.h>
+#endif
+#include "Xtrans.h"
 
 fd_set	readfds;
 
@@ -18,6 +22,7 @@ fprintf(stderr,"%s address: (%d)\n", title, addrlen);
 
 switch( addr->family )
 	{
+#ifdef UNIXCONN
 	case AF_UNIX:
 		{
 		struct sockaddr_un *saddr=(struct sockaddr_un *)addr;
@@ -25,6 +30,7 @@ switch( addr->family )
 					saddr->sun_path );
 		break;
 		}
+#endif
 	case AF_INET:
 		{
 		struct sockaddr_in *saddr=(struct sockaddr_in *)addr;

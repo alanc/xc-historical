@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <strings.h>
 #include <memory.h>
 #include <X11/Xtrans.h>
 #include <sys/types.h>
