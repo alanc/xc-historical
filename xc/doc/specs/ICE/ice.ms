@@ -82,11 +82,9 @@
 .TL
 \s+2\fBInter-Client Exchange (ICE) Protocol\fP\s-2
 .sp
-Public Review Draft Update 2
+Version 1.0
 .sp
-April 6, 1994
-.sp
-X Consortium Draft Standard
+X Consortium Standard
 .AU
 Robert Scheifler
 .AI
@@ -128,11 +126,9 @@ MIT and the X Consortium make no representations about the suitability
 for any purpose
 of the information in this document.  This documentation is provided
 \*Qas is\*U without express or implied warranty.
-This document is only a draft standard of the X Consortium and is therefore
-subject to change.
 .bp 1
-.EH '\fBInter-Client Exchange Protocol\fP''\fBPublic Review Draft\fP'
-.OH '\fBInter-Client Exchange Protocol\fP''\fBPublic Review Draft\fP'
+.EH '\fBInter-Client Exchange Protocol\fP''\fBVersion 1.0\fP'
+.OH '\fBInter-Client Exchange Protocol\fP''\fBVersion 1.0\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
 .nH 1 "Purpose and Goals"
