@@ -1,4 +1,4 @@
-/* $XConsortium: CIELuv.c,v 1.9 91/07/25 01:07:28 rws Exp $" */
+/* $XConsortium: CIELuv.c,v 1.10 92/03/03 14:15:02 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -55,7 +55,7 @@ extern char XcmsCIELuv_prefix[];
  */
 
 static int CIELuv_ParseString();
-Status XcmsCIELuv_ValidSpec();
+static Status XcmsCIELuv_ValidSpec();
 
 /*
  *	DEFINES
@@ -184,7 +184,7 @@ CIELuv_ParseString(spec, pColor)
  *
  *	SYNOPSIS
  */
-Status
+static Status
 XcmsCIELuv_ValidSpec(pColor)
     XcmsColor *pColor;
 /*
@@ -358,7 +358,7 @@ XcmsCIEuvYToCIELuv(ccc, pLuv_WhitePt, pColors_in_out, nColors)
      */
     for (i = 0; i < nColors; i++, pColor++) {
 
-	if (!XcmsCIEuvY_ValidSpec(pColor)) {
+	if (!_XcmsCIEuvY_ValidSpec(pColor)) {
 	    return(XcmsFailure);
 	}
 

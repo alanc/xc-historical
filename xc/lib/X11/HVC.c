@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVC.c,v 1.7 91/06/27 10:52:14 dave Exp $" */
+/* $XConsortium: TekHVC.c,v 1.8 91/07/25 01:07:57 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -100,7 +100,7 @@ extern char XcmsTekHVC_prefix[];
  */
 
 static int TekHVC_ParseString();
-Status XcmsTekHVC_ValidSpec();
+static Status XcmsTekHVC_ValidSpec();
 
 
 /*
@@ -264,7 +264,7 @@ ThetaOffset(pWhitePt, pThetaOffset)
  *
  *	SYNOPSIS
  */
-int
+static int
 XcmsTekHVC_ValidSpec(pColor)
     XcmsColor *pColor;
 /*
@@ -487,7 +487,7 @@ XcmsCIEuvYToTekHVC(ccc, pHVC_WhitePt, pColors_in_out, nColors)
      * Now convert each XcmsColor structure to CIEXYZ form
      */
     for (i = 0; i < nColors; i++, pColor++) {
-	if (!XcmsCIEuvY_ValidSpec(pColor)) {
+	if (!_XcmsCIEuvY_ValidSpec(pColor)) {
 	    return(XcmsFailure);
 	}
 

@@ -1,4 +1,4 @@
-/* $XConsortium: CIEXYZ.c,v 1.5 91/05/13 22:24:16 rws Exp $" */
+/* $XConsortium: CIEXYZ.c,v 1.6 91/07/25 01:07:49 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -62,7 +62,7 @@ extern char XcmsCIEXYZ_prefix[];
  *      FORWARD DECLARATIONS
  */
 static int CIEXYZ_ParseString();
-Status XcmsCIEXYZ_ValidSpec();
+Status _XcmsCIEXYZ_ValidSpec();
 
 
 /*
@@ -152,7 +152,7 @@ CIEXYZ_ParseString(spec, pColor)
     }
     pColor->format = XcmsCIEXYZFormat;
     pColor->pixel = 0;
-    return(XcmsCIEXYZ_ValidSpec(pColor));
+    return(_XcmsCIEXYZ_ValidSpec(pColor));
 }
 
 
@@ -169,7 +169,7 @@ CIEXYZ_ParseString(spec, pColor)
  *	SYNOPSIS
  */
 Status
-XcmsCIEXYZ_ValidSpec(pColor)
+_XcmsCIEXYZ_ValidSpec(pColor)
     XcmsColor *pColor;
 /*
  *	DESCRIPTION

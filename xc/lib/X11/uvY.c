@@ -1,4 +1,4 @@
-/* $XConsortium: CIEuvY.c,v 1.6 91/05/13 22:25:31 rws Exp $" */
+/* $XConsortium: CIEuvY.c,v 1.7 91/07/25 01:07:51 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -52,7 +52,7 @@ extern char	XcmsCIEuvY_prefix[];
  */
 
 static int CIEuvY_ParseString();
-Status XcmsCIEuvY_ValidSpec();
+Status _XcmsCIEuvY_ValidSpec();
 /*
  *	DEFINES
  *		Internal definitions that need NOT be exported to any package
@@ -164,7 +164,7 @@ CIEuvY_ParseString(spec, pColor)
     }
     pColor->format = XcmsCIEuvYFormat;
     pColor->pixel = 0;
-    return(XcmsCIEuvY_ValidSpec(pColor));
+    return(_XcmsCIEuvY_ValidSpec(pColor));
 }
 
 
@@ -181,7 +181,7 @@ CIEuvY_ParseString(spec, pColor)
  *	SYNOPSIS
  */
 Status
-XcmsCIEuvY_ValidSpec(pColor)
+_XcmsCIEuvY_ValidSpec(pColor)
     XcmsColor *pColor;
 /*
  *	DESCRIPTION
@@ -249,7 +249,7 @@ XcmsCIEuvYToCIEXYZ(ccc, puvY_WhitePt, pColors_in_out, nColors)
     for (i = 0; i < nColors; i++, pColor++) {
 
 	/* Make sure original format is CIEuvY */
-	if (!XcmsCIEuvY_ValidSpec(pColor)) {
+	if (!_XcmsCIEuvY_ValidSpec(pColor)) {
 	    return(XcmsFailure);
 	}
 
@@ -363,7 +363,7 @@ XcmsCIEXYZToCIEuvY(ccc, puvY_WhitePt, pColors_in_out, nColors)
     for (i = 0; i < nColors; i++, pColor++) {
 
 	/* Make sure original format is CIEXYZ */
-	if (!XcmsCIEXYZ_ValidSpec(pColor)) {
+	if (!_XcmsCIEXYZ_ValidSpec(pColor)) {
 	    return(XcmsFailure);
 	}
 

@@ -1,4 +1,4 @@
-/* $XConsortium: CIExyY.c,v 1.6 91/05/13 22:26:28 rws Exp $" */
+/* $XConsortium: CIExyY.c,v 1.7 91/07/25 01:07:54 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -61,7 +61,7 @@ extern char XcmsCIExyY_prefix[];
  */
 
 static int CIExyY_ParseString();
-Status XcmsCIExyY_ValidSpec();
+static Status XcmsCIExyY_ValidSpec();
 
 
 /*
@@ -180,7 +180,7 @@ CIExyY_ParseString(spec, pColor)
  *
  *	SYNOPSIS
  */
-Status
+static Status
 XcmsCIExyY_ValidSpec(pColor)
     XcmsColor *pColor;
 /*
@@ -360,7 +360,7 @@ XcmsCIEXYZToCIExyY(ccc, pxyY_WhitePt, pColors_in_out, nColors)
      */
     for (i = 0; i < nColors; i++, pColor++) {
 
-	if (!XcmsCIEXYZ_ValidSpec(pColor)) {
+	if (!_XcmsCIEXYZ_ValidSpec(pColor)) {
 	    return(XcmsFailure);
 	}
 	/* Now convert for XYZ to xyY */

@@ -1,4 +1,4 @@
-/* $XConsortium: CIELab.c,v 1.7 91/07/24 22:29:54 rws Exp $ */
+/* $XConsortium: CIELab.c,v 1.8 91/07/25 01:07:05 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -65,7 +65,7 @@ extern char	XcmsCIELab_prefix[];
  */
 
 static int CIELab_ParseString();
-Status XcmsCIELab_ValidSpec();
+static Status XcmsCIELab_ValidSpec();
 
 
 /*
@@ -184,7 +184,7 @@ CIELab_ParseString(spec, pColor)
  *
  *	SYNOPSIS
  */
-Status
+static Status
 XcmsCIELab_ValidSpec(pColor)
     XcmsColor *pColor;
 /*
@@ -375,7 +375,7 @@ XcmsCIEXYZToCIELab(ccc, pLab_WhitePt, pColors_in_out, nColors)
     for (i = 0; i < nColors; i++, pColor++) {
 
 	/* Make sure original format is CIELab */
-	if (!XcmsCIEXYZ_ValidSpec(pColor)) {
+	if (!_XcmsCIEXYZ_ValidSpec(pColor)) {
 	    return(XcmsFailure);
 	}
 
