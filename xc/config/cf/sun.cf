@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.115 94/03/30 10:39:24 matt Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.116 94/03/30 20:06:33 matt Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -177,7 +177,9 @@ XCOMM operating system:  OSName
 #define AllocateLocalDefines -DINCLUDE_ALLOCA_H
 
 #ifdef Sun3Architecture
+#ifndef DefaultCCOptions
 #define DefaultCCOptions -f68881 -pipe
+#endif
 #else
 #if OSMajorVersion < 5
 #if HasSunC
