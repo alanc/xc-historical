@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.110 93/09/13 11:40:57 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.111 93/09/13 18:40:34 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -44,7 +44,7 @@ struct _XDisplay
 	int fd;			/* Network socket. */
 	int conn_checker;         /* ugly thing used by _XEventsQueued */
 	int proto_major_version;/* maj. version of server's X protocol */
-	int proto_minor_version;/* minor version of servers X protocol */
+	int proto_minor_version;/* minor version of server's X protocol */
 	char *vendor;		/* vendor of the server hardware */
         XID resource_base;	/* resource ID base */
 	XID resource_mask;	/* resource ID mask bits */
@@ -122,6 +122,12 @@ struct _XDisplay
 	struct _XSQEvent *qfree; /* unallocated event queue elements */
 	unsigned long next_event_serial_num; /* inserted into next queue elt */
 	struct _XPreFlush *flushes; /* Flush hooks */
+	struct _XConnectionInfo *im_fd_info; /* _XRegisterInternalConnection */
+	int im_fd_length;	/* number of im_fd_info */
+	struct _XConnWatchInfo *conn_watchers; /* XAddConnectionWatch */
+	int watcher_count;	/* number of conn_watchers */
+	Bool in_process_conni;	/* in XProcessInternalConnection */
+	XPointer filedes;	/* struct pollfd cache for _XWaitForReadable */
 };
 
 /*
@@ -926,5 +932,48 @@ extern Status (*XESetWireToError(
     Display*, XErrorEvent*, xError*
 #endif
 );
+
+/* internal connections for IMs */
+
+typedef void (*_XInternalConnectionProc)(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* fd */,
+    XPointer			/* call_data */
+#endif
+);
+
+
+extern Status _XRegisterInternalConnection(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* fd */,
+    _XInternalConnectionProc	/* callback */,
+    XPointer			/* call_data */
+#endif
+);
+
+extern void _XUnregisterInternalConnection(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* fd */
+#endif
+);
+
+/* Display structure has pointers to these */
+
+struct _XConnectionInfo {	/* info from _XRegisterInternalConnection */
+    int fd;
+    _XInternalConnectionProc read_callback;
+    XPointer call_data;
+    XPointer *watch_data;	/* set/used by XConnectionWatchProc */
+    struct _XConnectionInfo *next;
+};
+
+struct _XConnWatchInfo {	/* info from XAddConnectionWatch */
+    XConnectionWatchProc fn;
+    XPointer client_data;
+    struct _XConnWatchInfo *next;
+};
 
 _XFUNCPROTOEND
