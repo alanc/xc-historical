@@ -1,4 +1,4 @@
-/* $XConsortium: TMgrab.c,v 1.1 91/01/10 14:13:26 converse Exp $ */
+/* $XConsortium: TMgrab.c,v 1.2 91/01/10 17:16:11 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -122,7 +122,7 @@ static Boolean DoGrab(state, data)
     TMModifierMatch	modMatch = TMGetModifierMatch(modIndex);
 
     for (action = state->actions; action; action = action->next)
-      if (count == action->index) break;
+      if (count == action->idx) break;
     if (!action) return False;
     
     switch (typeMatch->eventType) {

@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.104 91/01/10 20:28:31 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.105 91/02/20 22:02:27 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1732,7 +1732,7 @@ static String ParseActionSeq(parseTree, str, actionsP, error)
 	str = ParseAction(str, action, &quark, error);
 	if (*error) return PanicModeRecovery(str);
 
-	action->index = _XtGetQuarkIndex(parseTree, quark);
+	action->idx = _XtGetQuarkIndex(parseTree, quark);
 	str = ScanWhitespace(str);
 	*nextActionP = action;
 	nextActionP = &action->next;

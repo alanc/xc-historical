@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.136 91/02/18 18:41:28 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.137 91/03/11 12:10:16 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -552,11 +552,11 @@ static void HandleActions(w, event, stateTree, accelWidget, procs, actions)
 
     while (actions != NULL) {
 	/* perform any actions */
-	if (procs[actions->index] != NULL) {
+	if (procs[actions->idx] != NULL) {
 	    if (actionHookList) {
 		ActionHook hook;
 		String procName =
-		    XrmQuarkToString(stateTree->quarkTbl[actions->index] );
+		    XrmQuarkToString(stateTree->quarkTbl[actions->idx] );
 	    
 		for (hook = actionHookList; hook != NULL; hook = hook->next) {
 		    (*hook->proc)(bindWidget,
@@ -568,7 +568,7 @@ static void HandleActions(w, event, stateTree, accelWidget, procs, actions)
 				  );
 		}
 	    }
-	    (*(procs[actions->index]))
+	    (*(procs[actions->idx]))
 	      (bindWidget, event, 
 	       actions->params, &actions->num_params );
 	}
@@ -743,7 +743,7 @@ static void HandleSimpleState(w, tmRecPtr, curEventPtr)
 			if (branchHead->isSimple) {
 			    static ActionRec	dummyAction;
 			    
-			    dummyAction.index = TMBranchMore(branchHead);
+			    dummyAction.idx = TMBranchMore(branchHead);
 			    actions = &dummyAction;
 			}
 			else 
@@ -1069,7 +1069,7 @@ void _XtTraverseStateTree(tree, func, data)
 		  }
 		dummyState->typeIndex = currBH->typeIndex;
 		dummyState->modIndex = currBH->modIndex;
-		dummyAction->index = currBH->more;
+		dummyAction->idx = currBH->more;
 		if (func(dummyState, data))
 		  return;
 	    }
@@ -1401,7 +1401,7 @@ void _XtAddEventSeqToStateTree(eventSeq, stateTree)
     register StatePtr		*state;
     EventSeqPtr			initialEvent = eventSeq;
     TMBranchHead		branchHead;
-    TMShortCard			index, modIndex, typeIndex;
+    TMShortCard			idx, modIndex, typeIndex;
 
     if (eventSeq == NULL) return;
 
@@ -1414,8 +1414,8 @@ void _XtAddEventSeqToStateTree(eventSeq, stateTree)
 
     typeIndex = _XtGetTypeIndex(&eventSeq->event);
     modIndex = _XtGetModifierIndex(&eventSeq->event);
-    index = GetBranchHead(stateTree, typeIndex, modIndex, False);
-    branchHead = &stateTree->branchHeadTbl[index];
+    idx = GetBranchHead(stateTree, typeIndex, modIndex, False);
+    branchHead = &stateTree->branchHeadTbl[idx];
 
     /*
      * Need to check for pre-existing actions with same lhs |||
@@ -1432,7 +1432,7 @@ void _XtAddEventSeqToStateTree(eventSeq, stateTree)
 	  if (eventSeq->event.eventType == MappingNotify)
 	    stateTree->mappingNotifyInterest = True;
 	  branchHead->hasActions = True;
-	  branchHead->more = eventSeq->actions->index;
+	  branchHead->more = eventSeq->actions->idx;
 	  FreeActions(eventSeq->actions);
 	  return;
       }

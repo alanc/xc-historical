@@ -1,4 +1,4 @@
-/* $XConsortium: TMprint.c,v 1.3 91/01/10 20:52:19 converse Exp $ */
+/* $XConsortium: TMprint.c,v 1.4 91/02/05 16:59:10 gildea Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -295,7 +295,7 @@ static void PrintActions(sb, actions, quarkTbl, accelWidget)
 	    sb->current += nameLen;
 	    *sb->current++ = '`';
 	}
-	proc = XrmQuarkToString(quarkTbl[actions->index]);
+	proc = XrmQuarkToString(quarkTbl[actions->idx]);
 	ExpandToFit( sb, proc );
 	strcpy(sb->current, proc);
 	sb->current += strlen(proc);
@@ -570,7 +570,7 @@ static void PrintState(sb, tree, branchHead, includeRHS, accelWidget, dpy)
 	    
 	    CHECK_STR_OVERFLOW(sb);
 	    *sb->current++ = ':';
-	    actRec.index = TMBranchMore(branchHead);
+	    actRec.idx = TMBranchMore(branchHead);
 	    actRec.num_params = 0;
 	    actRec.params = NULL;
 	    actRec.next = NULL;

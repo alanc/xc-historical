@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.4 91/01/11 16:33:49 converse Exp $ */
+/* $XConsortium: TMkey.c,v 1.5 91/02/05 16:59:05 gildea Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -129,7 +129,7 @@ Boolean _XtComputeLateBindings(lateModifiers,eventSeq,computed,computedMask)
         for (i=0;i<8;i++) {
             temp = &(perDisplay->modsToKeysyms[i]);
             for (j=0;j<temp->count;j++){
-                if (perDisplay->modKeysyms[temp->index+j] ==
+                if (perDisplay->modKeysyms[temp->idx+j] ==
 		    lateModifiers[ref].keysym) {
                     *computedMask = *computedMask | temp->mask;
                     if (!lateModifiers[ref].knot)
@@ -286,7 +286,7 @@ void _XtBuildKeysymTables(dpy,pd)
     register XtPerDisplay pd;
 {
     ModToKeysymTable *table;
-    int maxCount,i,j,k,tempCount,index;
+    int maxCount,i,j,k,tempCount,idx;
     KeySym keysym,tempKeysym;
     XModifierKeymap* modKeymap;
     KeyCode keycode;
@@ -325,16 +325,16 @@ void _XtBuildKeysymTables(dpy,pd)
 	pd->isModifier[i] = 0;
     pd->mode_switch = 0;
     for (i=0;i<8;i++) {
-        table[i].index = tempCount;
+        table[i].idx = tempCount;
         table[i].count = 0;
         for (j=0;j<modKeymap->max_keypermod;j++) {
             keycode = modKeymap->modifiermap[i*modKeymap->max_keypermod+j];
             if (keycode != 0) {
 		pd->isModifier[keycode>>3] |= 1 << (keycode & 7);
                 for (k=0; k<pd->keysyms_per_keycode;k++) {
-                    index = ((keycode-pd->min_keycode)*
+                    idx = ((keycode-pd->min_keycode)*
                              pd->keysyms_per_keycode)+k;
-                    keysym = pd->keysyms[index];
+                    keysym = pd->keysyms[idx];
 		    if ((keysym == XK_Mode_switch) && (i > 2))
 			pd->mode_switch |= 1 << i;
                     if (keysym != 0 && keysym != tempKeysym ){
@@ -354,7 +354,7 @@ void _XtBuildKeysymTables(dpy,pd)
     }
     pd->lock_meaning = NoSymbol;
     for (i = 0; i < table[1].count; i++) {
-	keysym = pd->modKeysyms[table[1].index + i];
+	keysym = pd->modKeysyms[table[1].idx + i];
 	if (keysym == XK_Caps_Lock) {
 	    pd->lock_meaning = XK_Caps_Lock;
 	    break;
