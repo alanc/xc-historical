@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.15 94/03/30 20:35:44 converse Exp $ */
+/* $XConsortium: xsmclient.c,v 1.16 94/04/02 17:03:43 converse Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -181,6 +181,7 @@ static void InteractResponse(rootShell, client_data, call_data)
     if (token->cancel_shutdown && token->interact_style == None) {
 	token->save_success = False;
 	XtSessionReturnToken(token);
+	return;
     }
 
     if (appResources.verbose)
