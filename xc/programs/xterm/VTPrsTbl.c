@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: VTPrsTbl.c,v 1.5 91/01/06 12:46:58 rws Exp $
+ *	$XConsortium: VTPrsTbl.c,v 1.6 91/04/02 14:11:54 gildea Exp $
  */
 
 /*
@@ -38,7 +38,8 @@
  * it happy, we put each onto a seperate line....  Sigh...
  */
 
-Const int groundtable[] = {
+Const int groundtable[] =
+{
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -361,7 +362,8 @@ CASE_PRINT,
 CASE_PRINT,
 };
 
-Const int csitable[] = {
+Const int csitable[] =
+{
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -684,7 +686,8 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-Const int dectable[] = {
+Const int dectable[] =
+{
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -1007,7 +1010,8 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-Const int eigtable[] = {
+Const int eigtable[] =
+{
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -1331,7 +1335,8 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-Const int esctable[] = {
+Const int esctable[] =
+{
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -1654,7 +1659,8 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-Const int iestable[] = {
+Const int iestable[] =
+{
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE_STATE,
 CASE_IGNORE_STATE,
@@ -1977,7 +1983,8 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-Const int igntable[] = {
+Const int igntable[] =
+{
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -2300,7 +2307,8 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-Const int scrtable[] = {
+Const int scrtable[] =
+{
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
@@ -2623,7 +2631,8 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 };
 
-Const int scstable[] = {
+Const int scstable[] =
+{
 /*	NUL		SOH		STX		ETX	*/
 CASE_IGNORE,
 CASE_IGNORE,
