@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.59 89/10/16 16:47:30 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.60 89/10/17 11:59:34 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -387,6 +387,12 @@
 #endif
 #ifndef CcCmd
 #define CcCmd cc
+#endif
+#ifndef ServerCcCmd
+#define ServerCcCmd CcCmd
+#endif
+#ifndef LibraryCcCmd
+#define LibraryCcCmd CcCmd
 #endif
 #if HasFortran
 #ifndef FortranCmd			/* for xgks */
