@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.59 87/08/26 23:49:34 toddb Locked $ */
+/* $Header: connection.c,v 1.60 87/08/26 23:51:15 rws Locked $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -86,6 +86,8 @@ long ClientsWithInput[mskcnt];
 long MaxClients = MAXSOCKS ;
 long NConnBitArrays = mskcnt;
 long FirstClient;
+
+static Bool debug_conns = FALSE;
 
 static char whichByteIsFirst;
 
@@ -335,7 +337,7 @@ ReadBuffer(conn, buffer, charsWanted)
     setitimer(ITIMER_REAL, &itv, NULL);
     /* If we got here and we didn't time out, then return TRUE, because
      * we must have read what we wanted. If we timed out, return FALSE */
-    if(fTimeOut)
+    if(fTimeOut && debug_conns)
 	ErrorF("Timed out on connection %d\n", conn);
     return (!fTimeOut);
 }
@@ -392,7 +394,6 @@ ClientAuthorized(conn, pswapped, reason)
     }
     if (xccp.byteOrder != whichByteIsFirst)
     {        
-        ErrorF("Byte swapping this client; Good Luck!\n");
 	SwapConnClientPrefix(&xccp);
 	*pswapped = TRUE;
     }
@@ -404,7 +405,8 @@ ClientAuthorized(conn, pswapped, reason)
 #define STR "Not a beta release library"
         *reason = (char *)Xalloc(strlen(STR) + 1);
         strcpy(*reason, STR);
-	ErrorF("%s\n", STR);
+	if (debug_conns)
+	    ErrorF("%s\n", STR);
 #undef STR
         return 0;
     }
@@ -475,6 +477,7 @@ EstablishNewConnections(newclients, nnew)
     struct iovec iov[2];
     char p[3];
 
+#ifdef TCP_NODELAY
     union {
 	struct sockaddr sa;
 #ifdef UNIXCONN
@@ -488,6 +491,7 @@ EstablishNewConnections(newclients, nnew)
 #endif /* DNETCONN */
     } from;
     int	fromlen;
+#endif TCP_NODELAY
 
     *nnew = 0;
     if (readyconnections = (LastSelectMask[0] & WellKnownConnections)) 
@@ -501,6 +505,7 @@ EstablishNewConnections(newclients, nnew)
 	    {
 		if (newconn >= lastfdesc)
 		{
+		    if (debug_conns)
 ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 		    close (newconn);
 		} 
@@ -581,8 +586,8 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 			    iov[1].iov_len = padlength[c.lengthReason & 3];
 			    iov[1].iov_base = p;
 			    writev(newconn, iov, 2);
-    /* Of course, if the client is byte-swapped, the reason will be */
-   ErrorF("Didn't make connection:%s\n", reason);
+			    if (debug_conns)
+			        ErrorF("Didn't make connection:%s\n", reason);
 			}
 			close(newconn);
 			Xfree(reason);
@@ -640,7 +645,6 @@ CheckConnections()
     notime.tv_sec = 0;
     notime.tv_usec = 0;
 
-    ErrorF(  "Checking connections, one of the sockets is bad \n");
     COPYBITS(AllClients, mask);
     for (i=0; i<mskcnt; i++)
     {
@@ -654,10 +658,7 @@ CheckConnections()
             if (r < 0)
             {
 	        if (bad = ConnectionTranslation[curclient])
-                {
-		    ErrorF("  closing connection %d\n", curclient);
     		    CloseDownClient(bad);
-                }
                 else
                     CloseDownFileDescriptor(curclient);
             }
