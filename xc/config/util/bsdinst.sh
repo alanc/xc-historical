@@ -9,13 +9,27 @@ flags=""
 dst=""
 src=""
 dostrip=""
+owner=""
+mode=""
 
 while [ x$1 != x ]; do
     case $1 in 
 	-c) shift
 	    continue;;
 
-	-[mog]) flags="$flags $1 $2 "
+	-m) flags="$flags $1 $2 "
+	    mode="$2"
+	    shift
+	    shift
+	    continue;;
+
+	-o) flags="$flags -u $2 "
+	    owner="$2"
+	    shift
+	    shift
+	    continue;;
+
+	-g) flags="$flags $1 $2 "
 	    shift
 	    shift
 	    continue;;
@@ -35,15 +49,27 @@ while [ x$1 != x ]; do
     esac
 done
 
+case "$mode" in
+"")
+	;;
+*)
+	case "$owner" in
+	"")
+		flags="$flags -u root"
+		;;
+	esac
+	;;
+esac
+
 if [ x$src = x ] 
 then
-	echo "bsdinstall:  no input file specified"
+	echo "bsdinst:  no input file specified"
 	exit 1
 fi
 
 if [ x$dst = x ] 
 then
-	echo "bsdinstall:  no destination specified"
+	echo "bsdinst:  no destination specified"
 	exit 1
 fi
 
