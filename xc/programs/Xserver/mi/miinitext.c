@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miinitext.c,v 1.1 88/08/08 15:18:03 keith Exp $ */
+/* $XConsortium: miinitext.c,v 1.2 88/09/06 14:50:36 jim Exp $ */
 
 void
 InitExtensions()
@@ -32,6 +32,9 @@ InitExtensions()
 #ifdef BEZIER
     BezierExtensionInit();
 #endif BEZIER
+#ifdef XTESTEXT1
+    XTestExtension1Init();
+#endif XTESTEXT1
 #ifdef OTHEREXTENSION
     OtherExtensionInit();
 #endif OTHEREXTENSION
