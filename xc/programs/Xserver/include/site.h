@@ -33,7 +33,6 @@ SOFTWARE.
 #define COMPILEDDEFAULTFONT	"fixed"
 #define COMPILEDCURSORFONT	"cursor"
 #define RGB_DB			"/usr/lib/X11/rgb"
-#define RGB_DB_ALTERNATE	"/usr/lib/rgb"
 #define DEFAULT_TIMEOUT		60	/* seconds */
 
 #endif SITE_H
