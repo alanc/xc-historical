@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.26 94/02/04 21:43:08 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.27 94/02/10 16:47:50 rws Exp $
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles
@@ -11,6 +11,7 @@ RULEFILES = \
 Imake.rules \
 Win32.rules \
 ibmLib.rules \
+necLib.rules \
 noop.rules \
 oldlib.rules \
 osfLib.rules \
@@ -24,6 +25,7 @@ Library.tmpl \
 Project.tmpl \
 Server.tmpl \
 ibmLib.tmpl \
+necLib.tmpl \
 osfLib.tmpl \
 sunLib.tmpl \
 sv4Lib.tmpl
@@ -47,6 +49,7 @@ luna.cf \
 macII.cf \
 moto.cf \
 ncr.cf \
+nec.cf \
 osf1.cf \
 pegasus.cf \
 rtcchack.bac \
