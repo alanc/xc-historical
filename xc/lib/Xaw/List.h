@@ -7,10 +7,9 @@
  *	By:		Chris D. Peterson
  *                      MIT - Project Athena
  *
- *      $Source: /usr/expo/X/src/lib/Xaw/RCS/List.h,v $
- *      $Author: swick $
+ *      $Author: jim $
  *      $oHeader: List.h,v 1.4 88/08/30 16:36:53 kit Exp $
- *      $XConsortium: List.h,v 1.6 88/09/06 09:45:47 swick Exp $
+ *      $XConsortium: List.h,v 1.7 88/09/06 16:41:48 jim Exp $
  *	
  *
  */
