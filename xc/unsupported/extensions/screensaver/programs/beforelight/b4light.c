@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: b4light.c,v 1.1 93/09/18 14:17:42 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -337,7 +337,7 @@ void main(argc, argv)
     bit_1_gc = XCreateGC (display, blank_pix, 0, 0);
     XSetForeground (display, bit_1_gc, ~0);
     XFillRectangle (display, blank_pix, bit_0_gc, 0, 0, 1, 1);
-    info = XScreenSaverAllocateInfo (display);
+    info = XScreenSaverAllocInfo ();
     XScreenSaverQueryInfo (display, root, info);
     mask = 0;
     attr.colormap = cmap;
