@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.21 91/04/09 19:40:02 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.22 91/08/22 12:26:06 rws Exp $
 
 #if BuildXInputLib
 #define IHaveSubdirs
@@ -16,14 +16,16 @@ IMAKE_DEFINES = $(DEFINES)
 #endif
    MBUFSRCS = xmbufinfo.c
    MBUFOBJS = xmbufinfo.o
+  XTESTSRCS = xtesttest.c
+  XTESTOBJS = xtesttest.o
    INCLUDES = -I../include
-       SRCS = $(SHAPESRCS) $(SHMSRCS) $(MBUFSRCS)
-       OBJS = $(SHAPEOBJS) $(SHMOBJS) $(MBUFOBJS)
+       SRCS = $(SHAPESRCS) $(SHMSRCS) $(MBUFSRCS) $(XTESTSRCS)
+       OBJS = $(SHAPEOBJS) $(SHMOBJS) $(MBUFOBJS) $(XTESTOBJS)
 
 #if HasShm
-all:: shapetest shmtest xmbufinfo
+all:: shapetest shmtest xmbufinfo xtesttest
 #else
-all:: shapetest xmbufinfo
+all:: shapetest xmbufinfo xtesttest
 #endif
 
 NormalProgramTarget(xmbufinfo,$(MBUFOBJS),$(DEPXLIB),$(XLIB),NullParameter)
@@ -31,6 +33,7 @@ NormalProgramTarget(shapetest,$(SHAPEOBJS),$(DEPXLIB),$(XLIB),NullParameter)
 #if HasShm
 NormalProgramTarget(shmtest,$(SHMOBJS),$(DEPXLIB),$(XLIB),NullParameter)
 #endif
+NormalProgramTarget(xtesttest,$(XTESTOBJS),$(DEPXTESTLIB) $(DEPXLIB),$(XTESTLIB) $(XLIB),NullParameter)
 
 DependTarget()
 
