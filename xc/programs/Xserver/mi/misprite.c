@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.34 91/04/26 21:46:03 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.35 91/05/04 23:10:11 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -215,7 +215,6 @@ miSpriteInitialize (pScreen, spriteFuncs, screenFuncs)
 {
     miSpriteScreenPtr	pPriv;
     VisualPtr		pVisual;
-    int			i;
     
     if (miSpriteGeneration != serverGeneration)
     {
@@ -235,10 +234,10 @@ miSpriteInitialize (pScreen, spriteFuncs, screenFuncs)
 	xfree ((pointer) pPriv);
 	return FALSE;
     }
-    pVisual = pScreen->visuals;
-    for (i = 0; i < pScreen->numVisuals; i++)
-	if (pVisual->vid == pScreen->rootVisual)
-	    break;
+    for (pVisual = pScreen->visuals;
+	 pVisual->vid != pScreen->rootVisual;
+	 pVisual++)
+	;
     pPriv->pVisual = pVisual;
     pPriv->CloseScreen = pScreen->CloseScreen;
     pPriv->GetImage = pScreen->GetImage;
