@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.54 89/08/31 17:29:39 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.55 89/08/31 17:44:57 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -187,6 +187,7 @@ NormalProgramTarget(program,objects,,locallibs,syslibs)
 									@@\
 ComplexProgramTarget(program)
 #endif /* SimpleProgramTarget */
+
 
 
 /*
@@ -1046,6 +1047,19 @@ lint1:									@@\
 #define LintTarget()							@@\
 NormalLintTarget($(SRCS))
 #endif
+
+
+/*
+ * LinkSourceFile - snag source file from some other directory
+ */
+#ifndef LinkSourceFile
+#define LinkSourceFile(src,dir)						@@\
+src:  dir/src								@@\
+	$(RM) $@							@@\
+	$(LN) $? $@							@@\
+
+#endif
+
 
 
 #ifndef MakeSubincludesForBuild
