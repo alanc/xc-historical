@@ -138,13 +138,7 @@ believes the system clock.
 .PP
 When in digital mode, the string should be centered automatically.
 .PP
-When specifying a time offset, the grammar requires an hours field but if
-only minutes are given they will be quietly ignored.  A negative offset
-of less than 1 hour is treated as a positive offset.
-.PP
 Digital clock windows default to the analog clock size.
-.PP
-Border color has to be explicitly specified when reverse video is used.
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
