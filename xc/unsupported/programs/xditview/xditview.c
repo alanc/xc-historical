@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xditview.c,v 1.18 90/04/30 16:54:54 converse Exp $";
+static char rcsid[] = "$XConsortium: xditview.c,v 1.19 90/12/02 18:16:57 keith Exp $";
 #endif /* lint */
 
 #include <X11/Xatom.h>
@@ -163,34 +163,34 @@ void main(argc, argv)
 {
     char	    *file_name = 0;
     int		    i;
+    XtAppContext    xtcontext;
     static Arg	    labelArgs[] = {
 			{XtNlabel, (XtArgVal) pageLabel},
-    };
+		    };
     Arg		    topLevelArgs[2];
     Widget          entry;
 
-    toplevel = XtInitialize("main", "Xditview",
-			    options, XtNumber (options),
- 			    (Cardinal *) &argc, argv);
+    toplevel = XtAppInitialize(&xtcontext, "Xditview",
+			       options, XtNumber (options),
+			       &argc, argv, NULL, NULL, 0);
     if (argc > 2)
 	Syntax(argv[0]);
 
-    XtAppAddActions(XtWidgetToApplicationContext(toplevel),
-		    xditview_actions, XtNumber (xditview_actions));
-    XtAppAddActions(XtWidgetToApplicationContext(toplevel), 
-		    xditview_actions, XtNumber(xditview_actions));
+    XtAppAddActions(xtcontext, xditview_actions, XtNumber (xditview_actions));
+    XtAppAddActions(xtcontext, xditview_actions, XtNumber(xditview_actions));
     XtOverrideTranslations
 	(toplevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: Quit()"));
 
     XtSetArg (topLevelArgs[0], XtNiconPixmap,
 	      XCreateBitmapFromData (XtDisplay (toplevel),
 				     XtScreen(toplevel)->root,
-				     xdit_bits, xdit_width, xdit_height));
+				     (char *) xdit_bits,
+				     xdit_width, xdit_height));
 				    
     XtSetArg (topLevelArgs[1], XtNiconMask,
 	      XCreateBitmapFromData (XtDisplay (toplevel),
 				     XtScreen(toplevel)->root,
-				     xdit_mask_bits, 
+				     (char *) xdit_mask_bits, 
 				     xdit_mask_width, xdit_mask_height));
     XtSetValues (toplevel, topLevelArgs, 2);
     if (argc > 1)
@@ -231,7 +231,7 @@ void main(argc, argv)
 				   False);
     (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
                             &wm_delete_window, 1);
-    XtMainLoop();
+    XtAppMainLoop(xtcontext);
 }
 
 static void
@@ -487,8 +487,8 @@ char	*def;
     XtSetArg (centerArgs[0], XtNwidth, &prompt_width);
     XtSetArg (centerArgs[1], XtNheight, &prompt_height);
     XtGetValues (promptShell, centerArgs, 2);
-    source_x = (center_width - prompt_width) / 2;
-    source_y = (center_height - prompt_height) / 3;
+    source_x = (int)(center_width - prompt_width) / 2;
+    source_y = (int)(center_height - prompt_height) / 3;
     XtTranslateCoords (centerw, source_x, source_y, &dest_x, &dest_y);
     XtSetArg (centerArgs[0], XtNx, dest_x);
     XtSetArg (centerArgs[1], XtNy, dest_y);
