@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.29 91/07/19 23:21:13 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.30 91/07/22 23:29:04 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -583,7 +583,8 @@ doListFonts(client, c)
 	bcopy(names->names[i], bufptr, names->length[i]);
 	bufptr += names->length[i];
     }
-    WriteReplyToClient(client, sizeof(xListFontsReply), &reply);
+    client->pSwapReplyFunc = ReplySwapVector[X_ListFonts];
+    WriteSwappedDataToClient(client, sizeof(xListFontsReply), &reply);
     (void) WriteToClient(client, stringLens + nnames, bufferStart);
     DEALLOCATE_LOCAL(bufferStart);
 bail:
@@ -690,6 +691,7 @@ doListFontsWithInfo(client, c)
 	err = Successful;
 	goto bail;
     }
+    client->pSwapReplyFunc = ReplySwapVector[X_ListFontsWithInfo];
     while (c->current.current_fpe < c->num_fpes)
     {
 	fpe = c->fpe_list[c->current.current_fpe];
@@ -817,7 +819,7 @@ doListFontsWithInfo(client, c)
 		pFP->value = pFontInfo->props[i].value;
 		pFP++;
 	    }
-	    WriteReplyToClient(client, length, reply);
+	    WriteSwappedDataToClient(client, length, reply);
 	    (void) WriteToClient(client, namelen, name);
 	    if (pFontInfo == &fontInfo)
  	    {
@@ -835,7 +837,7 @@ doListFontsWithInfo(client, c)
     finalReply.sequenceNumber = client->sequence;
     finalReply.length = (sizeof(xListFontsWithInfoReply)
 		     - sizeof(xGenericReply)) >> 2;
-    WriteReplyToClient(client, length, &finalReply);
+    WriteSwappedDataToClient(client, length, &finalReply);
 bail:
     if (c->slept)
 	ClientWakeup(client);
