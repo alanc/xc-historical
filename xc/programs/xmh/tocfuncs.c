@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocfuncs.c,v 2.24 89/09/27 19:16:38 converse Exp $
+ * $XConsortium: tocfuncs.c,v 2.25 89/10/06 15:03:55 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -721,8 +721,62 @@ void XmhOpenSequence(w, event, params, num_params)
     String	*params;
     Cardinal	*num_params;
 {
-    Scrn scrn = ScrnFromWidget(w);
-    if (TocHasSequences(scrn->toc))
+    Scrn	scrn = ScrnFromWidget(w);
+    Toc		toc = scrn->toc;
+    Sequence	seq;
+
+    /* Takes an optional argument which is the name of a sequence 
+     * to be opened.
+     */
+
+    if (TocHasSequences(scrn->toc)) {
+	if (*num_params) {
+	    if (seq = TocGetSeqNamed(toc, params[0])) {
+		TocSetSelectedSequence(toc, params[0]);
+		TocChangeViewedSeq(toc, seq);
+	    }
+	}
+	else
+	    DoOpenSeq(w, (XtPointer) scrn, (XtPointer) NULL);
+    }
+}
+
+
+/*ARGSUSED*/
+void XmhOpenSequenceFromSequenceMenu(w, event, params, num_params)
+    Widget	w;		/* assumed to be the Sequence menu */
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
+{
+    Widget	entry_object;
+    Scrn	scrn;
+    Sequence	selected_sequence;
+
+    /* The user released the mouse button.  We must distinguish between
+     * a button release on a selectable menu entry, and a button release
+     * occuring elsewhere.  The button releases occuring elsewhere are 
+     * either outside of the menu, or on unselectable menu entries.
+     */
+
+    if ((entry_object = XawSimpleMenuGetActiveEntry(w)) == NULL)
+	return;
+
+    /* Some entry in the menu was selected.  The menu entry's callback
+     * procedure has already executed.  If a sequence name was selected,
+     * the callback procedure has caused that sequence to become the
+     * currently selected sequence.  If selected menu entry object's 
+     * name matches the currently selected sequence, we should open
+     * that sequence.  Otherwise, the user must have selected a sequence
+     * manipulation command, such as Pick.  The assumptions here are that
+     * the name of a menu entry object which represents a sequence is
+     * identical to the name of the sequence, and in the translations,
+     * that the notify() action was specified before this action.
+     */
+
+    scrn = ScrnFromWidget(w);
+    if ((selected_sequence = TocSelectedSequence(scrn->toc)) &&
+	(strcmp(XtName(entry_object), selected_sequence->name) == 0))
 	DoOpenSeq(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
@@ -858,5 +912,4 @@ void XmhDeleteSequence(w, event, params, num_params)
     if (TocHasSequences(scrn->toc))
 	TwiddleSequence(scrn, DELETE);
 }
-
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xmh.h,v 2.25 89/10/06 14:51:03 converse Exp $
+ * $XConsortium: xmh.h,v 2.26 89/10/11 11:52:28 jim Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -120,7 +120,7 @@ typedef struct _ScrnRec {
    XtTranslations read_translations;	/* overridden by accelerators */
    Msg		assocmsg;	/* Associated message for reply, etc. */
    Window	wait_window;	/* InputOnly window with busy cursor */
-   Stack	stack;		/* a stack of folder names */
+   Stack	folder_stack;	/* Stack of folder names */
 } ScrnRec, *Scrn;
 
 

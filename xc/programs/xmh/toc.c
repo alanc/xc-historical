@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.30 89/09/27 19:16:30 converse Exp $
+ * $XConsortium: toc.c,v 2.31 89/10/06 15:03:44 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -1094,4 +1094,45 @@ int msgid;
 	DEBUG( str )
     }
     return NULL;
+}
+
+/* Sequence names are put on a stack which is specific to the folder. */
+
+/*ARGSUSED*/
+void XmhPushSequence(w, event, params, count)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*count;
+{
+    Scrn	scrn = ScrnFromWidget(w);
+    Toc		toc;
+    int		i;
+
+    if (! (toc = scrn->toc)) return;
+
+    for (i=0; i < *count; i++) 
+	Push(&toc->sequence_stack, params[i]);
+    
+    if (*count == 0) {
+	if (toc->prevseqname)
+	    Push(&toc->sequence_stack, toc->prevseqname);
+	else
+	    Push(&toc->sequence_stack, "all");
+    }
+}
+
+
+/*ARGSUSED*/
+XmhPopSequence(w, event, params, count)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*count;
+{
+    Scrn	scrn = ScrnFromWidget(w);
+    char	*seqname;
+
+    if ((seqname = Pop(&scrn->toc->sequence_stack)) != NULL)
+	TocSetSelectedSequence(scrn->toc, seqname);
 }

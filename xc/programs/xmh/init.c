@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.38 89/10/27 16:41:08 swick Exp $
+ * $XConsortium: init.c,v 2.39 89/11/15 11:03:08 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -34,12 +34,9 @@
 
 #define MIN_APP_DEFAULTS_VERSION 1
 
-extern char* _XLowerCase();	/* %%% what is this doing here. */
+static Boolean static_variable;	 /* whose address is not a widget ID */
 
-/* Xmh-specific resources. */
-
-static Boolean static_variable;
-
+/* This is for the check mark in the Options menu */
 #define check_width 9
 #define check_height 8
 static char check_bits[] = {
@@ -48,6 +45,8 @@ static char check_bits[] = {
 };
 
 #define offset(field) XtOffset(struct _resources *, field)
+
+/* Xmh application resources. */
 
 static XtResource resources[] = {
     {"debug", "Debug", XtRBoolean, sizeof(Boolean),
@@ -218,24 +217,28 @@ char **argv;
     Scrn scrn;
     static XtActionsRec actions[] = {
 
-		/* general Xmh action procedures */
+	/* general Xmh action procedures */
 
 	{"XmhClose",			XmhClose},
 	{"XmhComposeMessage",		XmhComposeMessage},
 
-		/* actions upon folders */
+	/* actions upon folders */
 
 	{"XmhOpenFolder",		XmhOpenFolder},
 	{"XmhOpenFolderInNewWindow",	XmhOpenFolderInNewWindow},
 	{"XmhCreateFolder",		XmhCreateFolder},
 	{"XmhDeleteFolder",		XmhDeleteFolder},
 
-	/* actions to support moving a message with a single click */
+	/* actions to support easier folder manipulation */
 
 	{"XmhPushFolder",		XmhPushFolder},
 	{"XmhPopFolder",		XmhPopFolder},
+        {"XmhPopupFolderMenu",		XmhPopupFolderMenu},
+        {"XmhSetCurrentFolder",		XmhSetCurrentFolder},
+        {"XmhLeaveFolderButton",	XmhLeaveFolderButton},
+	{"XmhOpenFolderFromMenu",	XmhOpenFolderFromMenu},
 
-		/* actions upon the Table of Contents */
+	/* actions upon the Table of Contents */
 
 	{"XmhIncorporateNewMail",	XmhIncorporateNewMail},
 	{"XmhCommitChanges",		XmhCommitChanges},
@@ -243,7 +246,7 @@ char **argv;
 	{"XmhSortFolder",		XmhSortFolder},
 	{"XmhForceRescan",		XmhForceRescan},
 
-		/* actions upon the currently selected message(s) */
+	/* actions upon the currently selected message(s) */
 
 	{"XmhViewNextMessage",		XmhViewNextMessage},
 	{"XmhViewPreviousMessage",	XmhViewPreviousMessage},
@@ -257,7 +260,7 @@ char **argv;
 	{"XmhUseAsComposition",		XmhUseAsComposition},
 	{"XmhPrint",			XmhPrint},
 
-		/* actions upon sequences */
+	/* actions upon sequences */
 
 	{"XmhPickMessages",		XmhPickMessages},
 	{"XmhOpenSequence",		XmhOpenSequence},
@@ -265,7 +268,13 @@ char **argv;
 	{"XmhRemoveFromSequence",	XmhRemoveFromSequence},
 	{"XmhDeleteSequence",		XmhDeleteSequence},
 
-		/* actions upon the currently viewed message */
+	/* actions to support easier sequence manipulation */
+
+	{"XmhOpenSequenceFromSequenceMenu", XmhOpenSequenceFromSequenceMenu},
+	{"XmhPushSequence",		XmhPushSequence},
+	{"XmhPopSequence",		XmhPopSequence},
+
+	/* actions upon the currently viewed message */
 
 	{"XmhCloseView",		XmhCloseView},
 	{"XmhViewReply",		XmhViewReply},
@@ -275,7 +284,7 @@ char **argv;
 	{"XmhSaveView",			XmhSaveView},
 	{"XmhPrintView",		XmhPrintView},
 
-       		/* actions upon a composition, reply, or forward */
+       	/* actions upon a composition, reply, or forward */
 
 	/* Close button			XmhCloseView	  (see above) */
 	{"XmhResetCompose",		XmhResetCompose},
@@ -284,14 +293,7 @@ char **argv;
 	{"XmhSend",			XmhSend},
 	{"XmhInsert",			XmhInsert},
 
-		/* Menu Button action procedures for folders  */
-
-        {"XmhPopupFolderMenu",		XmhPopupFolderMenu},
-        {"XmhSetCurrentFolder",		XmhSetCurrentFolder},
-        {"XmhLeaveFolderButton",	XmhLeaveFolderButton},
-	{"XmhOpenFolderFromMenu",	XmhOpenFolderFromMenu},
-
-		/* popup dialog box button action procedures */
+	/* popup dialog box button action procedures */
 
 	{"XmhPromptOkayAction",		XmhPromptOkayAction}
     };

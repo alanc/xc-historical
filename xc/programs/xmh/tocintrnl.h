@@ -1,4 +1,4 @@
-/* $XConsortium: tocintrnl.h,v 2.11 89/09/01 17:36:47 kit Exp $ */
+/* $XConsortium: tocintrnl.h,v 2.12 89/10/06 14:50:54 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -89,6 +89,7 @@ typedef struct _TocRec {
    int		mailpending;	/* True if we're currently displaying
 				   mail-pending info for this folder. */
    long		lastreaddate;	/* Last time we read or wrote the cache. */
+   Stack	sequence_stack;	/* Stack of sequence names. */
 } TocRec;
 
 #endif /* _tocinternal_h */

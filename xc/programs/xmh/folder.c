@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.20 89/10/06 15:02:30 converse Exp $
+ * $XConsortium: folder.c,v 2.21 89/10/11 11:52:22 jim Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -129,6 +129,8 @@ void DoOpenFolder(widget, client_data, call_data)
     XtPointer	client_data;
     XtPointer	call_data;
 {
+    /* Invoked by the Folder menu entry "Open Folder"'s notify action. */
+
     Scrn	scrn = (Scrn) client_data;
     Toc		toc  = SelectedToc(scrn);
     TocSetScrn(toc, scrn);
@@ -142,8 +144,37 @@ void XmhOpenFolder(w, event, params, num_params)
     String	*params;	/* unused */
     Cardinal	*num_params;	/* unused */
 {
+    /* To be invoked by folder menu buttons that do not have menus, or
+     * by keyboard translations, or by any widget's translations except
+     * the folder menu itself.  An argument to this routine is taken as
+     * the name of a folder to select and open.
+     */
+
     Scrn 	scrn = ScrnFromWidget(w);
+
+    if (*num_params) SetCurrentFolderName(scrn, params[0]);
     DoOpenFolder(w, (XtPointer) scrn, (XtPointer) NULL);
+}
+
+
+/*ARGSUSED*/
+void XmhOpenFolderFromMenu(w, event, vector, count)
+    Widget	w;
+    XEvent	*event;
+    String	*vector;
+    Cardinal	*count;
+{
+    /* To be invoked by special translations on folder menus.  This 
+     * action will open a folder only if that folder was actually
+     * selected from the widget, which must be the menu containing
+     * the folder entry.  The menu entry callback procedure, which
+     * changes the selected folder, and is invoked by the ``notify'' 
+     * action, must have already executed; and the menu entry 
+     * ``unhightlight'' action must execute after this action.
+     */
+
+    if (XawSimpleMenuGetActiveEntry(w) != NULL)
+	XmhOpenFolder(w, event, vector, count);
 }
 
 
@@ -749,52 +780,25 @@ void XmhLeaveFolderButton(w, event, vector, count)
 }
 
 
-/*ARGSUSED*/
-void XmhOpenFolderFromMenu(w, event, vector, count)
-    Widget	w;
-    XEvent	*event;
-    String	*vector;
-    Cardinal	*count;
-{
-    Position	x, y;
-    Dimension	width, height;
-    Arg		args[2];
-
-    /* Open the folder upon a button event within the widget's window. */
-
-    if (event->type != ButtonRelease && event->type != ButtonPress)
-	return;
-    x = event->xbutton.x;
-    y = event->xbutton.y;
-    XtSetArg(args[0], XtNwidth, &width);
-    XtSetArg(args[1], XtNheight, &height);
-    XtGetValues(w, args, TWO);
-    if ((x < 0) || (x  >= width) || (y < 0) || (y >= height))
-	return;
-
-    XmhOpenFolder(w, event, vector, count);
-}
-
-
-static void	Push(scrn, data)
-    Scrn	scrn;
+void Push(stack_ptr, data)
+    Stack	*stack_ptr;
     char 	*data;
 {
     Stack	new = XtNew(StackRec);
     new->data = data;
-    new->next = scrn->stack;
-    scrn->stack = new;
+    new->next = *stack_ptr;
+    *stack_ptr = new;
 }
 
-static char * Pop(scrn)
-    Scrn	scrn;
+char * Pop(stack_ptr)
+    Stack	*stack_ptr;
 {
     Stack	top;
     char 	*data = NULL;
 
-    if ((top = scrn->stack) != NULL) {
+    if ((top = *stack_ptr) != NULL) {
 	data = top->data;
-	scrn->stack = top->next;
+	*stack_ptr = top->next;
 	XtFree((char *) top);
     }
     return data;
@@ -814,11 +818,11 @@ void XmhPushFolder(w, event, params, count)
     Scrn	scrn = ScrnFromWidget(w);
     int		i;
 
-    for (i=0; i < *count; i++) {
-	Push(scrn, params[i]);
-    }
+    for (i=0; i < *count; i++) 
+	Push(&scrn->folder_stack, params[i]);
+
     if (*count == 0 && scrn->curfolder)
-	Push(scrn, scrn->curfolder);
+	Push(&scrn->folder_stack, scrn->curfolder);
 }
 
 /* Pop the stack & take that folder to be the currently selected folder. */
@@ -833,7 +837,6 @@ void XmhPopFolder(w, event, params, count)
     Scrn	scrn = ScrnFromWidget(w);
     char	*folder;
 
-    if ((folder = Pop(scrn)) != NULL)
+    if ((folder = Pop(&scrn->folder_stack)) != NULL)
 	SetCurrentFolderName(scrn, folder);
 }
-

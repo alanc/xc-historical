@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: actions.h,v 1.1 89/09/27 19:10:26 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -51,6 +51,11 @@ extern void	XmhInsert();
 
 extern void	XmhPromptOkayAction();
 
+	/* from toc.c */
+
+extern void	XmhPushSequence();
+extern void	XmhPopSequence();
+
 	/* from tocfuncs.c */
 
 extern void	XmhIncorporateNewMail();
@@ -71,6 +76,7 @@ extern void	XmhUseAsComposition();
 extern void	XmhPrint();
 extern void	XmhPickMessages();
 extern void	XmhOpenSequence();
+extern void	XmhOpenSequenceFromSequenceMenu();
 extern void	XmhAddToSequence();
 extern void	XmhRemoveFromSequence();
 extern void	XmhDeleteSequence();
