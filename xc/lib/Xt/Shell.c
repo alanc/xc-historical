@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.150 94/02/10 10:14:15 rws Exp $ */
+/* $XConsortium: Shell.c,v 1.151 94/03/03 13:27:37 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -934,6 +934,18 @@ static void TopLevelInitialize(req, new, args, num_args)
 #define XtInteractPending 1
 #define XtInteractActive 2
 
+#define XtCloneCommandMask	(1L<<0)
+#define XtCurrentDirectoryMask	(1L<<1)
+#define XtDiscardCommandMask	(1L<<2)
+#define XtEnvironmentMask	(1L<<3)
+#define XtProcessIDMask		(1L<<4)
+#define XtProgramMask		(1L<<5)
+#define XtRestartCommandMask	(1L<<6)
+#define XtResignCommandMask	(1L<<7)
+#define XtRestartStyleHintMask	(1L<<8)
+#define XtShutdownCommandMask	(1L<<9)
+#define XtUserIDMask		(1L<<10)
+
 extern char *getenv();
 
 static void JoinSession();
@@ -990,7 +1002,7 @@ static void ApplicationInitialize(req, new, args, num_args)
 		: NULL;
 
     if (w->application.connection)
-	SetSessionProperties(w, True);
+	SetSessionProperties(w, True, 0L);
 }
 
 static void Resize(w)
@@ -2210,7 +2222,7 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
     ApplicationShellWidget cw = (ApplicationShellWidget) current;
     char *delete_props[XT_NUM_SM_PROPS];
     int num_props = 0;
-    Boolean set_props = False;
+    unsigned long set_mask = 0L;
 
     if (cw->application.argv != nw->application.argv) {
 	nw->application.argv = NewStringArray(nw->application.argv);
@@ -2249,7 +2261,7 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	if (nw->application.clone_command) {
 	    nw->application.clone_command =
 		NewStringArray(nw->application.clone_command);
-	    set_props = True;
+	    set_mask |= XtCloneCommandMask;
 	} else delete_props[num_props++] = SmCloneCommand;
 	FreeStringArray(cw->application.clone_command);
     }
@@ -2258,7 +2270,7 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	if (nw->application.current_dir) {
 	    nw->application.current_dir = 
 		XtNewString(nw->application.current_dir);
-	    set_props = True;
+	    set_mask |= XtCurrentDirectoryMask;
 	} else delete_props[num_props++] = SmCurrentDirectory;
 	XtFree((char *) cw->application.current_dir);
     }
@@ -2267,7 +2279,7 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	if (nw->application.discard_command) {
 	    nw->application.discard_command =
 		NewStringArray(nw->application.discard_command);
-	    set_props = True;
+	    set_mask |=  XtDiscardCommandMask;
 	} else delete_props[num_props++] = SmDiscardCommand;
 	FreeStringArray(cw->application.discard_command);
     }
@@ -2276,7 +2288,7 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	if (nw->application.environment) {
 	    nw->application.environment = 
 		NewStringArray(nw->application.environment);
-	    set_props = True;
+	    set_mask |= XtEnvironmentMask;
 	} else delete_props[num_props++] = SmEnvironment;
 	FreeStringArray(cw->application.environment);
     }
@@ -2285,7 +2297,7 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	if (nw->application.program_path) {
 	    nw->application.program_path = 
 		XtNewString(nw->application.program_path);
-	    set_props = True;
+	    set_mask |= XtProgramMask;
 	} else delete_props[num_props++] = SmProgram;
 	XtFree((char *) cw->application.program_path);
     }
@@ -2294,7 +2306,7 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	if (nw->application.resign_command) {
 	    nw->application.resign_command =
 		NewStringArray(nw->application.resign_command);
-	    set_props = True;
+	    set_mask |= XtResignCommandMask;
 	} else delete_props[num_props++] = SmResignCommand;
 	FreeStringArray(cw->application.resign_command);
     }
@@ -2303,19 +2315,19 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	if (nw->application.restart_command) {
 	    nw->application.restart_command =
 		NewStringArray(nw->application.restart_command);
-	    set_props = True;
+	    set_mask |= XtRestartCommandMask;
 	} else delete_props[num_props++] = SmRestartCommand;
 	FreeStringArray(cw->application.restart_command);
     }
 
     if (cw->application.restart_style != nw->application.restart_style)
-	set_props = True;
+	set_mask |= XtRestartStyleHintMask;
 
     if (cw->application.shutdown_command != nw->application.shutdown_command) {
 	if (nw->application.shutdown_command) {
 	    nw->application.shutdown_command =
 		NewStringArray(nw->application.shutdown_command);
-	    set_props = True;
+	    set_mask |= XtShutdownCommandMask;
 	} else delete_props[num_props++] = SmShutdownCommand;
 	FreeStringArray(cw->application.shutdown_command);
     }
@@ -2324,8 +2336,8 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	if (num_props) 
 	    SmcDeleteProperties(nw->application.connection, num_props,
 				delete_props);
-	if (set_props)
-	    SetSessionProperties(new, False);
+	if (set_mask)
+	    SetSessionProperties(new, False, set_mask);
     }
     return False;
 }
@@ -2609,38 +2621,57 @@ static PropertyRec propertyTable[] = {
   {SmCurrentDirectory, Offset(application.current_dir),      ArrayPack},
   {SmDiscardCommand,   Offset(application.discard_command),  ListPack},
   {SmEnvironment,      Offset(application.environment),	     ListPack},
+  {SmProcessID,	       0,				     ArrayPack},
   {SmProgram,          Offset(application.program_path),     ArrayPack},
   {SmRestartCommand,   Offset(application.restart_command),  ListPack},
   {SmResignCommand,    Offset(application.resign_command),   ListPack},
+  {SmRestartStyleHint, Offset(application.restart_style),    CardPack},
   {SmShutdownCommand,  Offset(application.shutdown_command), ListPack},
+  {SmUserID,	       0,				     ArrayPack}
 };
 #undef Offset
 
-static void SetSessionProperties(w, initialize)
+static void SetSessionProperties(w, initialize, set_mask)
     ApplicationShellWidget w;
     Boolean initialize;
+    unsigned long set_mask;
 {
     PropertyTable p = propertyTable;
     int n;
     int num_props = 0;
     XtPointer *addr;
     String user_name;
+    unsigned long mask;
     SmProp *props[XT_NUM_SM_PROPS];
 
-    if (w->application.connection == NULL) 
+    if (w->application.connection == NULL)
 	return;
 
-    for (n = XtNumber(propertyTable); n; n--, p++) {
-	addr = (XtPointer *) ((char *) w + p->offset);
-	if (* addr)
-	    props[num_props++] = (*(p->proc))(p->name, (XtPointer)addr);
-    }
-    props[num_props++] = CardPack(SmRestartStyleHint, 
-				  &w->application.restart_style);
     if (initialize) {
+	/* set all non-NULL session properties and the UserID */
+	for (n = XtNumber(propertyTable); n; n--, p++) {
+	    addr = (XtPointer *) ((char *) w + p->offset);
+	    if (p->proc == CardPack) {
+		if (*(unsigned char *)addr)
+		    props[num_props++] =(*(p->proc))(p->name, (XtPointer)addr);
+	    }
+	    else if (p->offset && (* addr))
+		props[num_props++] = (*(p->proc))(p->name, (XtPointer)addr);
+
+	}
 	user_name = _XtGetUserName();
 	if (user_name)
 	    props[num_props++] = ArrayPack(SmUserID, &user_name);
+    } else {
+	/* set only what we're told to set */
+	mask = 1L;
+	for (n = XtNumber(propertyTable); n; n--, p++) {
+	    if (mask & set_mask) {
+		addr = (XtPointer *) ((char *) w + p->offset);
+		props[num_props++] = (*(p->proc))(p->name, (XtPointer)addr);
+	    }
+	    mask = mask << 1;
+	}
     }
 
     SmcSetProperties(w->application.connection, num_props, props);
@@ -2697,8 +2728,9 @@ static void XtCallSaveCallbacks(connection, client_data, save_type, shutdown,
     }
 }
 
+/*ARGSUSED*/
 static void XtCallDieCallbacks(connection, client_data)
-    SmcConn	connection;
+    SmcConn	connection;	/* unused */
     SmPointer	client_data;
 {
     ApplicationShellWidget w =  (ApplicationShellWidget) client_data;
@@ -2708,8 +2740,9 @@ static void XtCallDieCallbacks(connection, client_data)
 		       (XtPointer) NULL);
 }
 
+/*ARGSUSED*/
 static void XtCallCancelCallbacks(connection, client_data)
-    SmcConn	connection;
+    SmcConn	connection;	/* unused */
     SmPointer	client_data;
 {
     ApplicationShellWidget w = (ApplicationShellWidget) client_data;
@@ -2749,7 +2782,7 @@ static void XtInteractPermission(connection, data)
     	XtRemoveCallback(w, XtNinteractCallback, callback, client_data);
 	(*callback)(w, client_data, (XtPointer) token);
     } else {
-	SmcInteractDone(appshell->application.connection, False);
+	SmcInteractDone(connection, False);
     }
 }
 
