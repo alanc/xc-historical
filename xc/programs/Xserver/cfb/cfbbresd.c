@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbresd.c,v 1.10 91/07/10 14:53:50 keith Exp $ */
+/* $XConsortium: cfbbresd.c,v 1.11 91/12/19 14:16:03 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -33,39 +33,39 @@ cfbBresD(rrops,
 	 pdashIndex, pDash, numInDashList, pdashOffset, isDoubleDash,
 	 addrl, nlwidth,
 	 signdx, signdy, axis, x1, y1, e, e1, e2, len)
-cfbRRopPtr  rrops;
-int *pdashIndex;	/* current dash */
-unsigned char *pDash;	/* dash list */
-int numInDashList;	/* total length of dash list */
-int *pdashOffset;	/* offset into current dash */
-int isDoubleDash;
-int *addrl;		/* pointer to base of bitmap */
-int nlwidth;		/* width in longwords of bitmap */
-int signdx, signdy;	/* signs of directions */
-int axis;		/* major axis (Y_AXIS or X_AXIS) */
-int x1, y1;		/* initial point */
-register int e;		/* error accumulator */
-register int e1;	/* bresenham increments */
-int e2;
-int len;		/* length of line */
+    cfbRRopPtr	    rrops;
+    int		    *pdashIndex;	/* current dash */
+    unsigned char   *pDash;		/* dash list */
+    int		    numInDashList;	/* total length of dash list */
+    int		    *pdashOffset;	/* offset into current dash */
+    int		    isDoubleDash;
+    unsigned long   *addrl;		/* pointer to base of bitmap */
+    int		    nlwidth;		/* width in longwords of bitmap */
+    int		    signdx, signdy;	/* signs of directions */
+    int		    axis;		/* major axis (Y_AXIS or X_AXIS) */
+    int		    x1, y1;		/* initial point */
+    register int    e;			/* error accumulator */
+    register int    e1;			/* bresenham increments */
+    int		    e2;
+    int		    len;		/* length of line */
 {
-    register unsigned char *addrb;
-    register int e3 = e2-e1;
-    int dashIndex;
-    int dashOffset;
-    int dashRemaining;
-    unsigned long   xorFg, andFg, xorBg, andBg;
-    Bool isCopy;
-    int thisDash;
+    register PixelType	*addrp;
+    register		int e3 = e2-e1;
+    int			dashIndex;
+    int			dashOffset;
+    int			dashRemaining;
+    unsigned long	xorFg, andFg, xorBg, andBg;
+    Bool		isCopy;
+    int			thisDash;
 
     dashOffset = *pdashOffset;
     dashIndex = *pdashIndex;
-    dashRemaining = pDash[dashIndex] - dashOffset;
     isCopy = (rrops[0].rop == GXcopy && rrops[1].rop == GXcopy);
     xorFg = rrops[0].xor;
     andFg = rrops[0].and;
     xorBg = rrops[1].xor;
     andBg = rrops[1].and;
+    dashRemaining = pDash[dashIndex] - dashOffset;
     if ((thisDash = dashRemaining) >= len)
     {
 	thisDash = len;
@@ -87,15 +87,15 @@ int len;		/* length of line */
     } \
 }
 
-#if (PPW == 4)
+#ifdef PIXEL_ADDR
 
 #define Loop(store) while (thisDash--) {\
 			store; \
- 			BresStep(addrb+=signdy,addrb+=signdx) \
+ 			BresStep(addrp+=signdy,addrp+=signdx) \
 		    }
     /* point to first point */
-    nlwidth <<= 2;
-    addrb = (unsigned char *)(addrl) + (y1 * nlwidth) + x1;
+    nlwidth <<= PWSH;
+    addrp = (PixelType *)(addrl) + (y1 * nlwidth) + x1;
     signdy *= nlwidth;
     if (axis == Y_AXIS)
     {
@@ -113,12 +113,12 @@ int len;		/* length of line */
 	    len -= thisDash;
 	    if (dashIndex & 1) {
 		if (isDoubleDash) {
-		    Loop(*addrb = xorBg)
+		    Loop(*addrp = xorBg)
 		} else {
 		    Loop(;)
 		}
 	    } else {
-		Loop(*addrb = xorFg)
+		Loop(*addrp = xorFg)
 	    }
 	    if (!len)
 		break;
@@ -132,12 +132,12 @@ int len;		/* length of line */
 	    len -= thisDash;
 	    if (dashIndex & 1) {
 		if (isDoubleDash) {
-		    Loop(*addrb = DoRRop(*addrb,andBg, xorBg))
+		    Loop(*addrp = DoRRop(*addrp,andBg, xorBg))
 		} else {
 		    Loop(;)
 		}
 	    } else {
-		Loop(*addrb = DoRRop(*addrb,andFg, xorFg))
+		Loop(*addrp = DoRRop(*addrp,andFg, xorFg))
 	    }
 	    if (!len)
 		break;
