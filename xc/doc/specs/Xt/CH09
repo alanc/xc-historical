@@ -1,4 +1,4 @@
-.\" $XConsortium: CH09,v 1.13 94/04/18 20:20:42 rws Exp $
+.\" $XConsortium: CH09,v 1.14 94/04/19 17:32:45 converse Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -250,17 +250,26 @@ T{
 .PN XtRColormap
 T}	Colormap
 T{
+.PN XtRCommandArgArray
+T}	String*
+T{
 .PN XtRCursor
 T}	Cursor
 T{
 .PN XtRDimension
 T}	Dimension
 T{
+.PN XtRDirectoryString
+T}	String
+T{
 .PN XtRDisplay
 T}	Display*
 T{
 .PN XtREnum
 T}	XtEnum
+T{
+.PN XtREnvironmentArray
+T}	String*
 T{
 .PN XtRFile
 T}	FILE*
@@ -286,6 +295,9 @@ char*, format as defined by
 .PN XParseGeometry
 T}
 T{
+.PN XtRGravity
+T}	int
+T{
 .PN XtRInitialState
 T}	int
 T{
@@ -310,11 +322,17 @@ T{
 .PN XtRPosition
 T}	Position
 T{
+.PN XtRRestartStyle
+T}	unsigned char
+T{
 .PN XtRScreen
 T}	Screen*
 T{
 .PN XtRShort
 T}	short
+T{
+.PN XtRSmcConn
+T}	XtPointer
 T{
 .PN XtRString
 T}	String
