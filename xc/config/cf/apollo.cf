@@ -14,13 +14,15 @@
 #define SignalReturnProcType int
 
 
-/**/# platform:  $XConsortium: apollo.cf,v 1.3 89/02/09 12:49:14 jim Exp $
+/**/# platform:  $XConsortium: apollo.cf,v 1.4 89/03/20 13:47:52 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
  *			  Platform-specfic parameters                        *
  *****************************************************************************/
 
+#define OptimizedCDebugFlags -O -A nansi
+#define DebuggableCDebugFlags -g -A nansi
 #define ServerDefines	ExtensionDefines -DSWITCHER
 #define FontDefines	-DFONT_SNF -DFONT_BDF
 
