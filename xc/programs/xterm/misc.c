@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.41 89/05/30 19:01:16 jim Exp $
+ *	$XConsortium: misc.c,v 1.42 89/07/13 14:23:01 jim Exp $
  */
 
 
@@ -40,7 +40,7 @@
 #include <X11/cursorfont.h>
 
 #include <X11/Shell.h>
-#include <X11/Xmu/Xmu.h>
+#include <X11/Xmu/Error.h>
 
 #include "data.h"
 #include "error.h"
@@ -55,7 +55,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.41 89/05/30 19:01:16 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.42 89/07/13 14:23:01 jim Exp $";
 #endif	/* lint */
 
 xevents()

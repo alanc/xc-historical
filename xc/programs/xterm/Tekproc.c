@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.57 89/05/26 18:09:53 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.58 89/06/12 12:09:08 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -40,6 +40,7 @@
 #include <X11/Xutil.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#include <X11/Xmu/CharSet.h>
 #include "ptyx.h"
 #include "Tekparse.h"
 #include <stdio.h>
@@ -110,7 +111,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.57 89/05/26 18:09:53 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.58 89/06/12 12:09:08 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
