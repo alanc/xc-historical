@@ -842,6 +842,8 @@ usage (fmt, arg)
     fprintf (stderr, "\t m [acc [thr]]    m default\n");
     fprintf (stderr, "    To set pixel colors:\n");
     fprintf (stderr, "\t p pixel_value color_name\n");
+    fprintf (stderr, "    To set pointer map entries:\n");
+    fprintf (stderr, "\t pm number number ...\n");
     fprintf (stderr, "    To turn auto-repeat off or on:\n");
     fprintf (stderr, "\t-r     r off        r    r on\n");
     fprintf (stderr, "    For screen-saver control:\n");
