@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.3 94/02/10 20:41:25 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 94/03/07 15:14:22 matt Exp $
 
 /*
  * You must be able to find the tcl headers and libraries to build dish.
@@ -7,8 +7,8 @@ XCOMM $XConsortium: Imakefile,v 1.3 94/02/10 20:41:25 matt Exp $
  * whatever your compiler needs to link in libtcl.
  */
 
-   TCL_INCLUDES =
-  TCL_LIBRARIES = -ltcl
+   TCL_INCLUDES = -I/usr/local/include
+  TCL_LIBRARIES = -L/usr/local/lib -ltcl
 
         DEPLIBS = FrescoClientDepLibs
 LOCAL_LIBRARIES = FrescoClientLibs $(TCL_LIBRARIES)
