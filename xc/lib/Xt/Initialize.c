@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.186 91/05/17 16:57:21 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.187 91/05/17 18:33:43 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -578,13 +578,13 @@ static Boolean _GetResource(dpy, list, name, class, type, value)
     return False;
 }
 
-XrmDatabase _XtParseNameAndDisplay(displayName, applName, urlist, num_urs,
-				   argc, argv)
-    String *displayName, *applName;
+XrmDatabase _XtParseNameAndDisplay(urlist, num_urs, argc, argv, applName,
+				   displayName)
     XrmOptionDescRec *urlist;
     Cardinal num_urs;
-    int *argc;
+    int argc;
     String *argv;
+    String *applName, *displayName;	/* return */
 {
     XrmDatabase db = 0;
     XrmOptionDescRec *options;
@@ -592,12 +592,16 @@ XrmDatabase _XtParseNameAndDisplay(displayName, applName, urlist, num_urs,
     XrmName name_list[3];
     XrmRepresentation type;
     XrmValue val;
+    String *targv;
+    int targc = argc;
 
+    targv = (String *) XtMalloc(sizeof(char *) * argc);
+    bcopy(argv, targv, sizeof(char *) * argc);
     _MergeOptionTables(opTable, XtNumber(opTable), urlist, num_urs,
 		       &options, &num_options);
     name_list[0] = XrmPermStringToQuark(".");
     name_list[2] = NULLQUARK;
-    XrmParseCommand(&db, options, num_options, ".", argc, argv);
+    XrmParseCommand(&db, options, num_options, ".", &targc, targv);
     if (! *applName) {
 	name_list[1] = XrmPermStringToQuark("name");
 	if (XrmQGetResource(db, name_list, name_list, &type, &val) &&
@@ -610,6 +614,7 @@ XrmDatabase _XtParseNameAndDisplay(displayName, applName, urlist, num_urs,
 	    type == _XtQString)
 	    *displayName = val.addr;
     }
+    XtFree((char *)targv);
     XtFree((char *)options);
     return db;
 }
