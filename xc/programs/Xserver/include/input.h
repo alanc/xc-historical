@@ -89,7 +89,8 @@ typedef struct {
 typedef struct {
     int         max_symbols, num_symbols_supported;
     int         num_symbols_displayed;
-    KeySym      *symbols;
+    KeySym      *symbols_supported;
+    KeySym      *symbols_displayed;
 } StringCtrl;
 
 typedef struct {
