@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: snfread.c,v 1.3 91/05/14 15:44:59 rws Exp $ */
+/* $XConsortium: snfread.c,v 1.4 91/05/26 16:49:36 rws Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -214,10 +214,12 @@ snfReadFont(pFont, file, bit, byte, glyph, scan)
      */
 
     bitmapFont = (BitmapFontPtr) fontspace;
+    bitmapFont->num_chars = num_chars;
     bitmapFont->metrics = (CharInfoPtr) (fontspace + metrics_off);
     bitmapFont->bitmaps = (char *) (fontspace + bitmaps_off);
     bitmapFont->encoding = (CharInfoPtr *) (fontspace + encoding_off);
     bitmapFont->pDefault = NULL;
+    bitmapFont->bitmapExtra = NULL;
     pFont->info.props = (FontPropPtr) (fontspace + props_off);
     pFont->info.isStringProp = (char *) (fontspace + isStringProp_off);
     if (fi.inkMetrics)
