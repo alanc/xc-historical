@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.92 92/03/13 17:02:08 gildea Exp $
+ *	$XConsortium: misc.c,v 1.93 92/12/22 16:29:01 gildea Exp $
  */
 
 /*
@@ -60,7 +60,9 @@ extern char *getenv();
 char *malloc();
 #endif /* macII */
 
-char *truedir();
+extern int child_wait();
+
+static void creat_as();
 
 static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
@@ -532,17 +534,17 @@ register TScreen *screen;
 		return;
 #endif
 	} else {
-		if(access(screen->logfile, F_OK) == 0) {
-			if(access(screen->logfile, W_OK) < 0)
-				return;
-		} else {
-		    char *dirname = truedir(screen->logfile);
-
-		    if (!dirname)
-			return;
-		    if (access(dirname, W_OK) < 0)
+		if(access(screen->logfile, F_OK) != 0) {
+		    if (errno == ENOENT)
+			creat_as(screen->uid, screen->gid,
+				 screen->logfile, 0644);
+		    else
 			return;
 		}
+
+		if(access(screen->logfile, F_OK) != 0
+		   || access(screen->logfile, W_OK) != 0)
+		    return;
 		if((screen->logfd = open(screen->logfile, O_WRONLY | O_APPEND |
 		 O_CREAT, 0644)) < 0)
 			return;
@@ -554,71 +556,65 @@ register TScreen *screen;
 	update_logging();
 }
 
-/* truedir - return the directory the file is (or would be) in,
-   following symbolic links.  Returns a pointer to static storage.
-   Returns NULL if gets an error.
-   By gildea, Dec 1992.
-   */
-char *truedir(pathname)
-    char *pathname;
-{
-#define TRUEDIRMAX 1024
-    static char dirname[TRUEDIRMAX];
-    char *filep = pathname;
-    char *cp;
-    int len;
-#ifndef NO_SYMLINKS
-    int i;
-    char linkval[TRUEDIRMAX];
-    int loopcount;
-    
-    for (loopcount=0; ; loopcount++)
-    {
-	if (loopcount > 20)	/* arbitrary limit, but >= POSIX_SYMLOOP */
-	    return NULL;
-	i = readlink(filep, linkval, TRUEDIRMAX-1);
-	if (i < 0 && (errno == EINVAL || errno == ENOENT))
-	    break;		/* EINVAL means not a symlink */
-	if (i < 0 || i >= TRUEDIRMAX-1)
-	    return NULL;
-	linkval[i] = '\0';
-
-	if (linkval[0] == '/') {
-	    strcpy(dirname, linkval);
-	} else {
-	    /* relative name read from link--take dir from link name */
-	    cp = strrchr(filep, '/');
-	    if (cp) {
-		cp++;
-		if (cp - filep + i >= TRUEDIRMAX)
-		    return NULL;
-		*cp = '\0';
-		strcpy(dirname, filep);
-	    } else
-		dirname[0] = '\0';
-	    strcat(dirname, linkval);
-	}
-	filep = dirname;
-    }
+#ifndef X_NOT_POSIX
+#define HAS_WAITPID
 #endif
-    
-    cp = strrchr(filep, '/');
-    if (cp) {
-	if (cp == filep)
-	    cp++;		/* root directory */
-	len = cp - filep;
-	if (len >= TRUEDIRMAX)
-	    return NULL;
-	if (filep != dirname) {
-	    strncpy(dirname, filep, len);
-	    cp = dirname + len;
-	}
-	*cp = '\0';
-    } else
-	strcpy(dirname, ".");
 
-    return dirname;
+/*
+ * create a file only if we could with the permissions of the real user id.
+ * We could emulate this with careful use of access() and following
+ * symbolic links, but that is messy and has race conditions.
+ * Forking is messy, too, but we can't count on setreuid() or saved set-uids
+ * being available.
+ */
+static void
+creat_as(uid, gid, pathname, mode)
+    int uid;
+    int gid;
+    char *pathname;
+    int mode;
+{
+    int fd;
+    int waited;
+    int pid;
+#ifndef HAS_WAITPID
+    int (*chldfunc)();
+
+    chldfunc = signal(SIGCHLD, SIG_DFL);
+#endif
+    pid = fork();
+    switch (pid)
+    {
+    case 0:			/* child */
+	setgid(gid);
+	setuid(uid);
+	fd = open(pathname, O_WRONLY|O_CREAT|O_APPEND, mode);
+	if (fd >= 0) {
+	    close(fd);
+	    _exit(0);
+	} else
+	    _exit(1);
+    case -1:			/* error */
+	return;
+    default:			/* parent */
+#ifdef HAS_WAITPID
+	waitpid(pid, NULL, 0);
+#else
+	waited = wait(NULL);
+	signal(SIGCHLD, chldfunc);
+	/*
+	  Since we had the signal handler uninstalled for a while,
+	  we might have missed the termination of our screen child.
+	  If we can check for this possibility without hanging, do so.
+	*/
+	do
+	    if (waited == term->screen.pid)
+		Cleanup(0);
+	while ( (waited=nonblocking_wait()) > 0);
+#endif
+    }
 }
+
 
 CloseLog(screen)
 register TScreen *screen;
