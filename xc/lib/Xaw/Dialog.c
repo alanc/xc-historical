@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.30 89/05/31 09:01:08 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.31 89/07/10 17:33:46 kit Exp $";
 #endif /* lint */
 
 
@@ -53,8 +53,6 @@ static XtResource resources[] = {
      XtOffset(DialogWidget, dialog.value), XtRString, NULL},
   {XtNicon, XtCIcon, XtRPixmap, sizeof(Pixmap),
      XtOffset(DialogWidget, dialog.icon), XtRImmediate, 0},
-  {XtNmaximumLength, XtCMax, XtRInt, sizeof(int),
-     XtOffset(DialogWidget, dialog.max_length), XtRImmediate, (caddr_t)256}
 };
 
 static void Initialize(), ConstraintInitialize(), CreateDialogValueWidget();
@@ -81,7 +79,7 @@ DialogClassRec dialogClassRec = {
     /* compress_exposure  */    TRUE,
     /* compress_enterleave*/    TRUE,
     /* visible_interest   */    FALSE,
-    /* destroy            */    Destroy,
+    /* destroy            */    NULL,
     /* resize             */    XtInheritResize,
     /* expose             */    XtInheritExpose,
     /* set_values         */    SetValues,
@@ -158,14 +156,6 @@ Widget request, new;
         CreateDialogValueWidget( (Widget) dw);
     else
         dw->dialog.valueW = NULL;
-}
-
-static void Destroy(w)
-Widget w;
-{
-    DialogWidget dw = (DialogWidget) w;
-
-    if (dw->dialog.value != NULL) XtFree(dw->dialog.value);
 }
 
 /* ARGSUSED */
@@ -254,11 +244,9 @@ Widget current, request, new;
     }
 
     if ( w->dialog.value != old->dialog.value ) {
-        if (w->dialog.value == NULL) { /* only get here if it
+        if (w->dialog.value == NULL)  /* only get here if it
 					  wasn't NULL before. */
 	    XtDestroyWidget(old->dialog.valueW);
-	    XtFree(old->dialog.value);
-	}
 	else if (old->dialog.value == NULL) { /* create a new value widget. */
 	    w->core.width = old->core.width;
 	    w->core.height = old->core.height;
@@ -268,7 +256,7 @@ Widget current, request, new;
  * any subclasses will currently have to deal with the fact that
  * we're about to change our real size.
  */
-	    w->form.resize_in_layout = False; */
+	    w->form.resize_in_layout = False; 
 	    CreateDialogValueWidget( (Widget) w);
 	    w->core.width = w->form.preferred_width;
 	    w->core.height = w->form.preferred_height;
@@ -278,22 +266,9 @@ Widget current, request, new;
 #endif /*notdef*/
 	}
 	else {			/* Widget ok, just change string. */
-	    XawTextBlock t_block;
-
-	    t_block.firstPos = 0;
-	    t_block.length = strlen(w->dialog.value);
-	    t_block.ptr = w->dialog.value;
-	    t_block.format = FMT8BIT;
-
-	    if (XawTextReplace(w->dialog.valueW, 
-			      0, strlen(old->dialog.value), &t_block) !=
-		XawEditDone) 
-	        XtWarning("Error while changing value in Dialog Widget.");
-
-	    /* the new value will have just been copied into our (private)
-	     * buffer copy, and we want to preserve our private pointer...
-	     */
-	    w->dialog.value = old->dialog.value;
+	    Arg args[1];
+	    XtSetArg(args[0], XtNstring, w->dialog.value);
+	    XtSetValues(w->dialog.valueW, args, ONE);
 	}
     }
     return False;
@@ -312,32 +287,22 @@ CreateDialogValueWidget(w)
 Widget w;
 {
     DialogWidget dw = (DialogWidget) w;    
-    String initial_value = dw->dialog.value;
-    Cardinal length = strlen(initial_value)+1;
     Arg arglist[10];
     Cardinal num_args = 0;
 
-    if (dw->dialog.max_length < length)
-	dw->dialog.max_length = length;
-    else
-	length = dw->dialog.max_length;
-    dw->dialog.value = XtMalloc( length );
-    strcpy( dw->dialog.value, initial_value );
 #ifdef notdef
     XtSetArg(arglist[num_args], XtNwidth,
 	     dw->dialog.labelW->core.width); num_args++; /* ||| hack */
 #endif /*notdef*/
-    XtSetArg(arglist[num_args], XtNstring, dw->dialog.value); num_args++;
-    XtSetArg(arglist[num_args], XtNlength, length); num_args++;
-    XtSetArg(arglist[num_args], XtNfromVert, dw->dialog.labelW); num_args++;
-    XtSetArg(arglist[num_args], XtNresizable, True); num_args++;
-    XtSetArg(arglist[num_args], XtNtextOptions, (resizeWidth | resizeHeight));
-    num_args++;
-    XtSetArg(arglist[num_args], XtNeditType, XawtextEdit); num_args++;
-    XtSetArg(arglist[num_args], XtNleft, XtChainLeft); num_args++;
-    XtSetArg(arglist[num_args], XtNright, XtChainRight); num_args++;
+    XtSetArg(arglist[num_args], XtNstring, dw->dialog.value);     num_args++;
+    XtSetArg(arglist[num_args], XtNresizable, True);              num_args++;
+    XtSetArg(arglist[num_args], XtNresize, XawtextResizeBoth);    num_args++;
+    XtSetArg(arglist[num_args], XtNeditType, XawtextEdit);        num_args++;
+    XtSetArg(arglist[num_args], XtNfromVert, dw->dialog.labelW);  num_args++;
+    XtSetArg(arglist[num_args], XtNleft, XtChainLeft);            num_args++;
+    XtSetArg(arglist[num_args], XtNright, XtChainRight);          num_args++;
     
-    dw->dialog.valueW = XtCreateWidget("value",asciiStringWidgetClass,
+    dw->dialog.valueW = XtCreateWidget("value",asciiTextWidgetClass,
 				       w, arglist, num_args);
 
     /* if the value widget is being added after buttons,
@@ -389,5 +354,10 @@ caddr_t param;
 char *XawDialogGetValueString(w)
 Widget w;
 {
-    return ((DialogWidget)w)->dialog.value;
+    Arg args[1];
+    char * value;
+
+    XtSetArg(args[0], XtNstring, &value);
+    XtGetValues( ((DialogWidget)w)->dialog.valueW, args, ONE);
+    return(value);
 }

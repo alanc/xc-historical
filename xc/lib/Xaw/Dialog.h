@@ -1,4 +1,4 @@
-/* $XConsortium: Dialog.h,v 1.16 89/05/31 09:03:59 swick Exp $ */
+/* $XConsortium: Dialog.h,v 1.17 89/07/21 01:51:25 kit Exp $ */
 
 
 /***********************************************************
@@ -48,7 +48,6 @@ SOFTWARE.
  icon		     Icon		Pixmap		0
  label		     Label		String		NULL
  mappedWhenManaged   MappedWhenManaged	Boolean		True
- maximumLength	     Max		int		256
  sensitive	     Sensitive		Boolean		True
  value		     Value		String		NULL
  width		     Width		Dimension	computed at create
@@ -57,12 +56,11 @@ SOFTWARE.
 
 */
 
-#define XtNgrabFocus "grabFocus"
-#define XtNicon "icon"
-#define XtNmaximumLength "maximumLength"
 #define XtCGrabFocus "GrabFocus"
 #define XtCIcon "Icon"
-#define XtCMax "Max"
+
+#define XtNgrabFocus "grabFocus"
+#define XtNicon "icon"
 
 typedef struct _DialogClassRec	*DialogWidgetClass;
 typedef struct _DialogRec	*DialogWidget;
