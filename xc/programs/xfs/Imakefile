@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.8 91/07/17 16:06:09 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.9 91/07/19 16:59:53 rws Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
@@ -14,8 +14,8 @@ OSDIR = os
 OSLIB = $(OSDIR)/libos.a
 DIFSDIR = difs
 DIFSLIB = $(DIFSDIR)/libdifs.a
-FONTDIR = $(FONTSRC)/lib/font
-FONTLIB = $(FONTDIR)/libfont.a
+FONTLIBDIR = $(FONTSRC)/lib/font
+FONTLIB = $(FONTLIBDIR)/libfont.a
 SYSLIBS =
 #if defined(HPArchitecture) || defined(i386SVR3Architecture)
 BSDEMUL = $(LIBSRC)/Berk/Berklib.o
@@ -26,11 +26,22 @@ FSLIBS = $(DIFSLIB) $(FONTLIB) $(DIFSLIB) $(OSLIB) $(BSDEMUL)
 
 SUBDIRS = $(FSDIRS)
 
-all:: fs
+FSLIBDIR = $(LIBDIR)/fs
+FSERRORS = $(FSLIBDIR)/fs-errors
+DEFAULTFONTPATH = DefaultFontPath
+SITE_CONFIG = -DDEFAULTFONTPATH=$(DEFAULTFONTPATH) -DFSERRORS=$(FSERRORS)
+
+all:: fs config
 
 ServerTarget(fs,$(FSDIRS),NullParameter,$(FSLIBS),$(SYSLIBS))
 
+CppScriptTarget(config,config.cpp,$(SITE_CONFIG),NullParameter)
+
 InstallProgram(fs,$(BINDIR))
+
+#if InstallFSConfig
+InstallNonExecFile(config,$(FSLIBDIR))
+#endif
 
 DependSubdirs($(FSDIRS))
 
