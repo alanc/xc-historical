@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.106 88/02/02 11:25:01 rws Exp $ */
+/* $Header: gc.c,v 1.107 88/06/06 11:01:16 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -326,9 +326,17 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		    else
 		        pPixmap = (PixmapPtr)LookupID(pid, RT_PIXMAP, RC_CORE);
 		    if (pPixmap)
-		    {
-		        clipType = CT_PIXMAP;
-			pPixmap->refcnt++;
+  		    {
+			if ((pPixmap->drawable.depth != 1) ||
+			    (pPixmap->drawable.pScreen != pGC->pScreen))
+			{
+			    error = BadMatch;
+			}
+			else
+			{
+			    clipType = CT_PIXMAP;
+			    pPixmap->refcnt++;
+			}
 		    }
 		    else
 		    {
