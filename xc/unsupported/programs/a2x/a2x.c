@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.50 92/04/12 13:09:25 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.51 92/04/12 13:39:55 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -30,7 +30,8 @@ Syntax of magic values in the input stream:
 ^T^C			set Control key for next character
 ^T^D<dx> <dy>^T		move mouse by (<dx>, <dy>) pixels
 ^T^E			exit the program
-^T^J<options>[ <mult>]^T jump to next closest top-level window
+^T^J<options>[ <mult>]^T
+			jump to next closest top-level window
 	Z		no-op letter to soak up uppercase from prev word 
 	C		closest top-level window
 	D		top-level window going down
@@ -51,7 +52,7 @@ Syntax of magic values in the input stream:
 	N[<name>.<class>] require window with given instance name and/or class
 			this must be the last option
 			either <name> or <class> can be empty
-	[ <mult>]	off-axis distance multiplier (float)
+	[ <mult>]	off-axis distance multiplier is <mult> (float)
 ^T^M			set Meta key for next character
 ^T^P			print debugging info
 ^T^Q			quit moving (mouse or key)
@@ -60,6 +61,20 @@ Syntax of magic values in the input stream:
 ^T^U			re-read undo file
 ^T^W<screen> <x> <y>^T	warp to position (<x>,<y>) on screen <screen>
 			(screen can be -1 for current)
+^T^Y<options>[ <delay>]^T
+			set/await trigger
+	M		set MapNotify trigger
+	U		set UnmapNotify trigger
+	W		wait for trigger
+	n<name>		require window with given name
+			this must be the last option
+	p<prefix>	require window with given name prefix
+			this must be the last option
+	N[<name>.<class>] require window with given instance name and/or class
+			this must be the last option
+			either <name> or <class> can be empty
+	[ <delay>]	wait no more than <delay> seconds
+			<delay> is floating-point
 ^T^Z<delay>^T		add <delay>-second delay to next event
 			<delay> is floating-point
 ^T<hexstring>^T		press and release key with numeric keysym <hexstring>
@@ -89,7 +104,47 @@ released automatically at next button or non-modifier key.
 #define control_char '\024' /* control T */
 #define control_end '\224'
 
+typedef enum {MatchNone, MatchName, MatchPrefix, MatchClass} MatchType;
+
+typedef struct {
+    MatchType match;
+    int nlen;
+    char name[100];
+    char class[100];
+} MatchRec;
+
+typedef struct {
+    char dir;
+    double xmult;
+    double ymult;
+    int rootx, rooty;
+    Mask input;
+    Window best;
+    int bestx, besty;
+    double best_dist;
+    Bool recurse;
+    MatchRec match;
+} Closest;
+
+typedef struct {
+    int x1;
+    int y1;
+    int x2;
+    int y2;
+} Box;
+
+typedef struct {
+    Window root;
+    int type;
+    struct timeval time;
+    MatchRec match;
+    Window windows[1024];
+} Trigger;
+
 Display *dpy;
+int maxfd;
+int Xmask;
+int fdmask[10];
 unsigned char button_map[256];
 Bool button_state[256];
 unsigned short modifiers[256];
@@ -127,30 +182,7 @@ Undo *undos[256];
 int curbscount = 0;
 Bool in_control_seq = False;
 Bool skip_next_control_char = False;
-
-typedef enum {JNoMatch, JNameMatch, JPrefixMatch, JClassMatch} MatchType;
-
-typedef struct {
-    char dir;
-    double xmult;
-    double ymult;
-    int rootx, rooty;
-    Mask input;
-    Window best;
-    int bestx, besty;
-    double best_dist;
-    Bool recurse;
-    MatchType match;
-    char name[100];
-    char class[100];
-} Closest;
-
-typedef struct {
-    int x1;
-    int y1;
-    int x2;
-    int y2;
-} Box;
+Trigger trigger;
 
 void process();
 
@@ -696,6 +728,44 @@ destroy_region(univ)
 }
 
 Bool
+matches(w, rec, getcw)
+    Window w;
+    MatchRec *rec;
+    Bool getcw;
+{
+    XClassHint hints;
+    Bool ok = True;
+
+    switch (rec->match) {
+    case MatchName:
+    case MatchPrefix:
+	if (getcw)
+	    w = XmuClientWindow(dpy, w);
+	if (!XFetchName(dpy, w, &hints.res_name))
+	    return False;
+	if (rec->match == MatchName)
+	    ok = !strcmp(rec->name, hints.res_name);
+	else
+	    ok = !strncmp(rec->name, hints.res_name, rec->nlen);
+	XFree(hints.res_name);
+	break;
+    case MatchClass:
+	if (getcw)
+	    w = XmuClientWindow(dpy, w);
+	if (!XGetClassHint(dpy, w, &hints))
+	    return False;
+	ok = ((!rec->name[0] || !strcmp(rec->name, hints.res_name)) &&
+	      (!rec->class[0] || !strcmp(rec->class, hints.res_class)));
+	XFree(hints.res_name);
+	XFree(hints.res_class);
+	break;
+    default:
+	break;
+    }
+    return ok;
+}
+
+Bool
 find_closest(rec, parent, pwa, puniv, level)
     Closest *rec;
     Window parent;
@@ -713,8 +783,6 @@ find_closest(rec, parent, pwa, puniv, level)
     Box box;
     int x, y;
     Region iuniv, univ;
-    Bool ok;
-    XClassHint hints;
 
     XQueryTree(dpy, parent, &wa.root, &wa.root, &children, &nchild);
     if (!nchild)
@@ -761,35 +829,8 @@ find_closest(rec, parent, pwa, puniv, level)
 	    continue;
 	if (rec->recurse && !box_left(univ, iuniv))
 	    continue;
-	switch (rec->match) {
-	case JNameMatch:
-	case JPrefixMatch:
-	    if (!level)
-		child = XmuClientWindow(dpy, child);
-	    if (!XFetchName(dpy, child, &hints.res_name))
-		continue;
-	    if (rec->match == JNameMatch)
-		ok = !strcmp(rec->name, hints.res_name);
-	    else
-		ok = !strncmp(rec->name, hints.res_name, strlen(rec->name));
-	    XFree(hints.res_name);
-	    if (!ok)
-		continue;
-	    break;
-	case JClassMatch:
-	    if (!level)
-		child = XmuClientWindow(dpy, child);
-	    if (!XGetClassHint(dpy, child, &hints))
-		continue;
-	    ok = ((!rec->name[0] || !strcmp(rec->name, hints.res_name)) &&
-		  (!rec->class[0] || !strcmp(rec->class, hints.res_class)));
-	    XFree(hints.res_name);
-	    XFree(hints.res_class);
-	    if (!ok)
-		continue;
-	default:
-	    break;
-	}
+	if (!matches(child, &rec->match, !level))
+	    continue;
 	compute_box(univ, &box);
 	switch (rec->dir) {
 	case 'U':
@@ -848,6 +889,54 @@ find_closest(rec, parent, pwa, puniv, level)
     return found;
 }
 
+char *
+parse_class(buf, rec)
+    char *buf;
+    MatchRec *rec;
+{
+    char *endptr;
+    char *cptr;
+
+    cptr = index(buf, '.');
+    endptr = index(buf, ' ');
+    if (endptr)
+	*endptr = '\0';
+    if (cptr) {
+	bcopy(buf, rec->name, cptr - buf);
+	rec->name[cptr - buf + 1] = '\0';
+	strcpy(rec->class, cptr + 1);
+    } else {
+	strcpy(rec->name, buf);
+	rec->class[0] = '\0';
+    }
+    if (endptr) {
+	*endptr = ' ';
+	buf = endptr - 1;
+    } else
+	buf += strlen(buf) - 1;
+    return buf;
+}
+
+char *
+parse_name(buf, rec)
+    char *buf;
+    MatchRec *rec;
+{
+    char *endptr;
+
+    endptr = index(buf, ' ');
+    if (endptr)
+	*endptr = '\0';
+    strcpy(rec->name, buf);
+    rec->nlen = strlen(rec->name);
+    if (endptr) {
+	*endptr = ' ';
+	buf = endptr - 1;
+    } else
+	buf += strlen(buf) - 1;
+    return buf;
+}
+
 void
 do_jump(buf)
     char *buf;
@@ -856,17 +945,16 @@ do_jump(buf)
     XWindowAttributes wa;
     int screen;
     double mult = 10.0;
-    char *endptr;
-    char *cptr;
     Closest rec;
     Region univ;
     XRectangle rect;
+    char *endptr;
 
     rec.dir = 0;
     rec.recurse = False;
     rec.input = 0;
     rec.best_dist = 4e9;
-    rec.match = JNoMatch;
+    rec.match.match = MatchNone;
     for (; *buf; buf++) {
 	switch (*buf) {
 	case 'C':
@@ -892,40 +980,16 @@ do_jump(buf)
 	    rec.input |= ButtonPressMask|ButtonReleaseMask;
 	    break;
 	case 'N':
-	    rec.match = JClassMatch;
-	    cptr = index(buf+1, '.');
-	    endptr = index(buf+1, ' ');
-	    if (endptr)
-		*endptr = '\0';
-	    if (cptr) {
-		bcopy(buf+1, rec.name, cptr - buf - 1);
-		rec.name[cptr - buf] = '\0';
-		strcpy(rec.class, cptr + 1);
-	    } else {
-		strcpy(rec.name, buf + 1);
-		rec.class[0] = '\0';
-	    }
-	    if (endptr) {
-		*endptr = ' ';
-		buf = endptr - 1;
-	    } else
-		buf += strlen(buf+1);
+	    rec.match.match = MatchClass;
+	    buf = parse_class(buf + 1, &rec.match);
 	    break;
 	case 'n':
 	case 'p':
 	    if (*buf == 'n')
-		rec.match = JNameMatch;
+		rec.match.match = MatchName;
 	    else
-		rec.match = JPrefixMatch;
-	    endptr = index(buf+1, ' ');
-	    if (endptr)
-		*endptr = '\0';
-	    strcpy(rec.name, buf + 1);
-	    if (endptr) {
-		*endptr = ' ';
-		buf = endptr - 1;
-	    } else
-		buf += strlen(buf+1);
+		rec.match.match = MatchPrefix;
+	    buf = parse_name(buf + 1, &rec.match);
 	    break;
 	case ' ':
 	    mult = strtod(buf+1, &endptr);
@@ -980,6 +1044,146 @@ do_jump(buf)
     if (find_closest(&rec, root, &wa, univ, 0))
 	generate_warp(screen, rec.bestx, rec.besty);
     XDestroyRegion(univ);
+}
+
+void
+unset_trigger()
+{
+    trigger.type = 0;
+    XSelectInput(dpy, trigger.root, 0L);
+}
+
+void
+set_unmap_trigger()
+{
+    Window w, child;
+    Window *children;
+    unsigned int nchild;
+    int i;
+    int j;
+
+    XQueryTree(dpy, trigger.root, &w, &child, &children, &nchild);
+    if (!nchild) {
+	unset_trigger();
+	return;
+    }
+    for (i = nchild, j = 0; --i >= 0; ) {
+	w = children[i];
+	if (matches(w, &trigger.match, True))
+	    trigger.windows[j++] = w;
+    }
+    trigger.windows[j] = None;
+    XFree((char *)children);
+}
+
+void
+process_events()
+{
+    int i;
+    int j;
+    XEvent ev;
+
+    for (i = XEventsQueued(dpy, QueuedAfterReading); --i >= 0; ) {
+	XNextEvent(dpy, &ev);
+	switch (ev.type) {
+	case MappingNotify:
+	    XRefreshKeyboardMapping(&ev.xmapping);
+	    reset_mapping();
+	    break;
+	case MapNotify:
+	    if (trigger.type == MapNotify &&
+		matches(((XMapEvent *)&ev)->window, &trigger.match, True))
+		unset_trigger();
+	    break;
+	case UnmapNotify:
+	    if (trigger.type == UnmapNotify)
+		for (j = 0; trigger.windows[j]; j++) {
+		    if (trigger.windows[j] == ((XUnmapEvent *)&ev)->window) {
+			unset_trigger();
+			break;
+		    }
+		}
+	    break;
+	}
+    }
+}
+
+void
+do_trigger(buf)
+    char *buf;
+{
+    char *endptr;
+    double delay;
+    MatchType match;
+    Bool wait;
+    int type;
+    Window child;
+    int x, y;
+
+    type = 0;
+    match = MatchNone;
+    wait = False;
+    trigger.time.tv_sec = 5;
+    trigger.time.tv_usec = 0;
+    for (; *buf; buf++) {
+	switch (*buf) {
+	case 'M':
+	    type = MapNotify;
+	    break;
+	case 'U':
+	    type = UnmapNotify;
+	    break;
+	case 'W':
+	    wait = True;
+	    break;
+	case 'N':
+	    match = MatchClass;
+	    buf = parse_class(buf + 1, &trigger.match);
+	    break;
+	case 'n':
+	case 'p':
+	    if (*buf == 'n')
+		match = MatchName;
+	    else
+		match = MatchPrefix;
+	    buf = parse_name(buf + 1, &trigger.match);
+	    break;
+	case ' ':
+	    delay = strtod(buf+1, &endptr);
+	    if (*endptr)
+		return;
+	    trigger.time.tv_sec = delay;
+	    trigger.time.tv_usec = (delay - trigger.time.tv_sec) * 1000000;
+	    buf = endptr - 1;
+	    break;
+	default:
+	    return;
+	}
+    }
+    if (type) {
+	if (trigger.type)
+	    unset_trigger();
+	trigger.type = type;
+	trigger.match.match = match;
+	XQueryPointer(dpy, DefaultRootWindow(dpy), &trigger.root, &child,
+		      &x, &y, &x, &y, (unsigned int *)&x);
+	XSelectInput(dpy, trigger.root, SubstructureNotifyMask);
+	if (type == UnmapNotify)
+	    set_unmap_trigger();
+    }
+    if (!wait || !trigger.type)
+	return;
+    while (trigger.type) {
+	XFlush(dpy);
+	fdmask[0] = Xmask;
+	type = select(maxfd, fdmask, NULL, NULL, &trigger.time);
+	if (type < 0)
+	    quit(1);
+	if (!type)
+	    unset_trigger();
+	else
+	    process_events();
+    }
 }
 
 void
@@ -1402,6 +1606,9 @@ process(buf, n, len)
 	    case '\027': /* control w */
 		do_warp(buf + i + 1);
 		break;
+	    case '\031': /* control y */
+		do_trigger(buf + i + 1);
+		break;
 	    case '\032': /* control z */
 		time_delay = atof(buf + i + 1) * 1000;
 		break;
@@ -1428,12 +1635,8 @@ main(argc, argv)
     char *dname = NULL;
     char buf[1024];
     char fbuf[1024];
-    XEvent ev;
-    int maxfd;
-    int Xmask;
-    int mask[10];
 
-    bzero((char *)mask, sizeof(mask));
+    bzero((char *)fdmask, sizeof(fdmask));
     for (argc--, argv++; argc > 0; argc--, argv++) {
 	if (argv[0][0] != '-')
 	    usage();
@@ -1504,8 +1707,8 @@ main(argc, argv)
     maxfd = ConnectionNumber(dpy) + 1;
     while (1) {
 	XFlush(dpy);
-	mask[0] = 1 | Xmask;
-	i = select(maxfd, mask, NULL, NULL, moving_timeout);
+	fdmask[0] = 1 | Xmask;
+	i = select(maxfd, fdmask, NULL, NULL, moving_timeout);
 	if (i < 0)
 	    quit(1);
 	if (!i) {
@@ -1519,16 +1722,9 @@ main(argc, argv)
 	    }
 	    continue;
 	}
-	if (mask[0] & Xmask) {
-	    for (i = XEventsQueued(dpy, QueuedAfterReading); --i >= 0; ) {
-		XNextEvent(dpy, &ev);
-		if (ev.type == MappingNotify) {
-		    XRefreshKeyboardMapping(&ev.xmapping);
-		    reset_mapping();
-		}
-	    }
-	}
-	if (!(mask[0] & 1))
+	if (fdmask[0] & Xmask)
+	    process_events();
+	if (!(fdmask[0] & 1))
 	    continue;
 	n = read(0, buf, sizeof(buf));
 	if (n <= 0)
