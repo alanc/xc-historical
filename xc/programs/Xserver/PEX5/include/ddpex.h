@@ -1,4 +1,4 @@
-/* $XConsortium: ddpex.h,v 5.2 91/02/16 09:57:41 rws Exp $ */
+/* $XConsortium: ddpex.h,v 5.3 91/05/02 13:34:25 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -45,6 +45,7 @@ SOFTWARE.
  * unused fields have been kept in the ddpex structures so that they match
  * the protocol structures exactly, allowing type casting and fast copies
  * between the structures.  
+ * ddFLOAT is for server internal floating point representations
  */
 
 typedef char    ddCHAR;
