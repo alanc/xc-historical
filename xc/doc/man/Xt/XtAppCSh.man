@@ -102,9 +102,8 @@
 XtAppCreateShell \- create top-level widget instance
 .SH SYNTAX
 Widget XtAppCreateShell(\fIapplication_name\fP, \
-\fIapplication_class\fP, \fIwidget_class\fP, \fIdisplay\fP,
-.br
-                        \fIargs\fP, \fInum_args\fP)
+\fIapplication_class\fP, \fIwidget_class\fP, \fIdisplay\fP, \
+\fIargs\fP, \fInum_args\fP)
 .br
       String \fIapplication_name\fP;
 .br
@@ -122,11 +121,11 @@ Widget XtAppCreateShell(\fIapplication_name\fP, \
 Specifies the class name of this application\*(Ac.
 .IP \fIapplication_name\fP 1i
 Specifies the name of the application instance.
-.IP \fIargs\fP 1i
-Specifies the argument list in which to set in the \s-1WM_COMMAND\s+1 property.
 .ds Di \ from which to get the resources
 .IP \fIdisplay\fP 1i
 Specifies the display\*(Di.
+.IP \fIargs\fP 1i
+Specifies the argument list\*(Di.
 .IP \fInum_args\fP 1i
 Specifies the number of arguments in the argument list.
 .ds Wc \ that the application top-level widget should be
