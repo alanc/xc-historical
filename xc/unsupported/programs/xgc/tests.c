@@ -134,7 +134,7 @@ void circle_line_test(num_vertices,radius)
 
   coord = (XPoint *) malloc (sizeof(XPoint)*(num_vertices+1));
 
-  length = 2 * radius * atan(delta/2.);
+  length = (int) (2 * radius * (float) atan(delta/2.));
 
   for (i=0;i<=num_vertices;++i) {
     theta = (double) i * delta;

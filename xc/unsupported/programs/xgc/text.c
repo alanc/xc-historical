@@ -18,9 +18,9 @@ extern XStuff X;
 
 /* the strings which are displayed on the screen, edited, and sent
    to interpret() */
-static char textstrings[NUMTEXTWIDGETS][40] = {"0","6x10","0","1"};
+static char textstrings[NUMTEXTWIDGETS][80] = {"0","6x10","0","1"};
 
-static char oldtextstrings[NUMTEXTWIDGETS][40] = {"0","6x10","0","1"};
+static char oldtextstrings[NUMTEXTWIDGETS][80] = {"0","6x10","0","1"};
 
 /* The labels displayed next to them */
 static char *labels[NUMTEXTWIDGETS] = {"Line Width","Font","Foreground",
@@ -45,11 +45,12 @@ void create_text_choice(w,type,length,width)
      int type;
      int length, width;
 {
-  char translationtable[40];	/* for adding the new action (calling
+  char translationtable[600];	/* for adding the new action (calling
 				   WriteText() when the pointer leaves) */
 
   static XtActionsRec actionTable[] = {	/* likewise */
-    {"WriteText",  WriteText}
+    {"WriteText",  WriteText},
+    {"Nothing",    NULL}
   };
 
   static Arg labelargs[] = {
@@ -74,7 +75,20 @@ void create_text_choice(w,type,length,width)
      don't feel like going through the whole thing.
      type is sent as an argument to WriteText() so it knows what string
      to do stuff with. */
-  sprintf(translationtable,"<Leave>:WriteText(%d)",type);
+  sprintf(translationtable,
+     "<Leave>:      WriteText(%d)\n\
+     Ctrl<Key>J:    Nothing()\n\
+     Ctrl<Key>M:    Nothing()\n\
+     <Key>Linefeed: Nothing()\n\
+     <Key>Return:   Nothing()\n\
+     Ctrl<Key>O:    Nothing()\n\
+     Meta<Key>I:    Nothing()\n\
+     Ctrl<Key>N:    Nothing()\n\
+     Ctrl<Key>P:    Nothing()\n\
+     Ctrl<Key>Z:    Nothing()\n\
+     Meta<Key>Z:    Nothing()\n\
+     Ctrl<Key>V:    Nothing()\n\
+     Meta<Key>V:    Nothing()",type);
 
   /* label uses type to find out what its title is */
   label = XtCreateManagedWidget(labels[type],labelWidgetClass,w,
@@ -102,7 +116,7 @@ void create_text_choice(w,type,length,width)
 
   /* like before, look in the Xt Manual for an explanation */
   XtAddActions(actionTable,XtNumber(actionTable));
-  XtAugmentTranslations(text,XtParseTranslationTable(translationtable));
+  XtOverrideTranslations(text,XtParseTranslationTable(translationtable));
 }
 
 /* WriteText(w,event,params,num_params)
@@ -129,4 +143,19 @@ void WriteText(w,event,params,num_params)
     strcat(mbuf,"\n");		/* the right new line */
     interpret(mbuf);
   }
+}
+
+/* change_text(w,type,newtext)
+** ------------------------
+** Changes the text in the text widget w of type type to newtext.
+*/
+
+void change_text(w,type,newtext)
+     Widget w;
+     int type;
+     String newtext;
+{
+  strcpy(textstrings[type],newtext);
+  strcpy(oldtextstrings[type],newtext);
+ /* XtTextDisplay(w); */
 }
