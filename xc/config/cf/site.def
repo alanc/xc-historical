@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.100 94/03/04 09:56:58 matt Exp $
+XCOMM site:  $XConsortium: site.def,v 1.101 94/03/04 11:01:35 gildea Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -143,6 +143,8 @@ clean::									@@\
 #undef BuildServer
 #define BuildServer YES
 #define XnestServer YES
+#define XVirtualFramebufferServer YES
+#define ServerExtraDefines -DSYSV386
 #endif
 
 #ifdef SVR4Architecture
