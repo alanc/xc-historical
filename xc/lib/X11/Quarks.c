@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.36 91/03/11 09:03:34 rws Exp $
+ * $XConsortium: Quarks.c,v 1.37 93/08/14 17:40:51 rws Exp $
  */
 
 /***********************************************************
@@ -112,6 +112,23 @@ typedef struct {char a; double b;} TestType1;
 typedef struct {char a; unsigned long b;} TestType2;
 #endif
 
+#ifdef XTHREADS
+static char *_Xpermalloc();
+
+char *Xpermalloc(length)
+    unsigned int length;
+{
+    char *p;
+
+    _XLockMutex(_Xglobal_lock);
+    p = _Xpermalloc(length);
+    _XUnlockMutex(_Xglobal_lock);
+    return p;
+}
+#define Xpermalloc _Xpermalloc
+
+static
+#endif /* XTHREADS */
 char *Xpermalloc(length)
     unsigned int length;
 {
@@ -222,6 +239,7 @@ XrmQuark _XrmInternalStringToQuark(name, len, sig, permstring)
 
     rehash = 0;
     idx = HASH(sig);
+    _XLockMutex(_Xglobal_lock);
     while (entry = quarkTable[idx]) {
 	if (entry & LARGEQUARK)
 	    q = entry & (LARGEQUARK-1);
@@ -247,13 +265,15 @@ nomatch:    if (!rehash)
 	    SETPERM(q);
 	}
 #endif
+	_XUnlockMutex(_Xglobal_lock);
 	return q;
     }
     if (nextUniq == nextQuark)
-	return NULLQUARK;
+	goto fail;
     if ((nextQuark + (nextQuark >> 2)) > quarkMask) {
 	if (!ExpandQuarkTable())
-	    return NULLQUARK;
+	    goto fail;
+	_XUnlockMutex(_Xglobal_lock);
 	return _XrmInternalStringToQuark(name, len, sig, permstring);
     }
     q = nextQuark;
@@ -262,19 +282,19 @@ nomatch:    if (!rehash)
 	    if (!(new = Xrealloc((char *)stringTable,
 				 sizeof(XrmString *) *
 				 ((q >> QUANTUMSHIFT) + CHUNKPER))))
-		return NULLQUARK;
+		goto fail;
 	    stringTable = (XrmString **)new;
 #ifdef PERMQ
 	    if (!(new = Xrealloc((char *)permTable,
 				 sizeof(Bits *) *
 				 ((q >> QUANTUMSHIFT) + CHUNKPER))))
-		return NULLQUARK;
+		goto fail;
 	    permTable = (Bits **)new;
 #endif
 	}
 	new = Xpermalloc(QUANTSIZE);
 	if (!new)
-	    return NULLQUARK;
+	    goto fail;
 	stringTable[q >> QUANTUMSHIFT] = (XrmString *)new;
 #ifdef PERMQ
 	permTable[q >> QUANTUMSHIFT] = (Bits *)(new + STRQUANTSIZE);
@@ -288,7 +308,7 @@ nomatch:    if (!rehash)
 	name = permalloc(len+1);
 #endif
 	if (!name)
-	    return NULLQUARK;
+	    goto fail;
 	for (i = len, s1 = (char *)name; --i >= 0; )
 	    *s1++ = *s2++;
 	*s1++ = '\0';
@@ -306,7 +326,11 @@ nomatch:    if (!rehash)
 	entry = q | LARGEQUARK;
     quarkTable[idx] = entry;
     nextQuark++;
+    _XUnlockMutex(_Xglobal_lock);
     return q;
+ fail:
+    _XUnlockMutex(_Xglobal_lock);
+    return NULLQUARK;
 }
 
 #if NeedFunctionPrototypes
@@ -351,21 +375,33 @@ XrmQuark XrmPermStringToQuark(name)
 
 XrmQuark XrmUniqueQuark()
 {
+    XrmQuark q;
+
+    _XLockMutex(_Xglobal_lock);
     if (nextUniq == nextQuark)
 	return NULLQUARK;
-    return nextUniq--;
+    q = nextUniq--;
+    _XUnlockMutex(_Xglobal_lock);
+    return q;
 }
 
 XrmString XrmQuarkToString(quark)
     register XrmQuark quark;
 {
+    XrmString s;
+
+    _XLockMutex(_Xglobal_lock);
     if (quark <= 0 || quark >= nextQuark)
-    	return NULLSTRING;
+    	s = NULLSTRING;
+    else {
 #ifdef PERMQ
-    /* We have to mark the quark as permanent, since the caller might hold
-     * onto the string pointer forver.
-     */
-    SETPERM(quark);
+	/* We have to mark the quark as permanent, since the caller might hold
+	 * onto the string pointer forver.
+	 */
+	SETPERM(quark);
 #endif
-    return NAME(quark);
+	s = NAME(quark);
+    }
+    _XUnlockMutex(_Xglobal_lock);
+    return s;
 }
