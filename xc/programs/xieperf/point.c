@@ -1,4 +1,4 @@
-/* $XConsortium: point.c,v 1.4 93/10/30 16:25:56 rws Exp $ */
+/* $XConsortium: point.c,v 1.5 93/11/05 17:07:54 rws Exp $ */
 
 /**** module point.c ****/
 /******************************************************************************
@@ -516,7 +516,7 @@ int InitTriplePoint(xp, p, reps)
 	if ( !reps )
 		FreeTriplePointStuff( xp, p );
 	else
-		InstallThisColormap( xp->d, xp->p, stdCmap.colormap );
+		InstallThisColormap( xp, stdCmap.colormap );
 	return( reps );
 }
 
@@ -537,7 +537,7 @@ void EndTriplePoint(xp, p)
     XParms  xp;
     Parms   p;
 {
-	InstallCustomColormap( xp->d, xp->p );
+	InstallCustomColormap( xp );
 	FreeTriplePointStuff( xp, p );
 }
 
