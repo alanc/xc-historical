@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.11 88/09/06 14:53:33 jim Exp $ */
+/* $XConsortium: maskbits.h,v 1.12 88/10/03 08:26:42 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -305,7 +305,7 @@ else \
 	if ( ((int)(psrc)) & 0x01 ) \
 		getbits( ((unsigned int *)(((char *)(psrc))-1)), 8, (w), (dst) ); \
 	else \
-		getbits(psrc, 0, w, dst)
+		getbits(psrc, 0, w, dst);
     }
 #endif /* GETLEFTBITS_ALIGNMENT == 2 */
 
