@@ -1,4 +1,4 @@
-/* $XConsortium: tocintrnl.h,v 2.9 89/06/30 15:19:29 kit Exp $ */
+/* $XConsortium: tocintrnl.h,v 2.10 89/07/20 21:15:43 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -30,7 +30,7 @@
 #define _tocinternal_h
 
 #include <X11/IntrinsicP.h>	/* %%% */
-#include <X11/Xaw/TextP.h>	/* %%% */
+#include "tsource.h"
 
 typedef enum {
     unknown, valid, invalid
@@ -50,8 +50,7 @@ typedef struct _MsgRec {
 				   it is no longer visible. */
     Scrn	*scrn;		/* Scrns showing this message (if any) */
     Cardinal	num_scrns;	/* How many scrns are currently showing msg. */
-    XawTextSource source;	/* Source (if any) containing this msg. */
-    Widget      widget;		/* Widget this message is in. */
+    Widget      source;		/* Source (if any) containing this msg. */
     short	reapable;	/* True iff we don't need to keep this
 				   composition around. */
     XawTextPosition startPos;	/* Where to start the insertion point. */
@@ -69,9 +68,7 @@ typedef struct _TocRec {
    int		numsequences;	/* #/sequences defined for this folder. */
    Sequence	*seqlist;	/* Array of pointers to sequences. */
    Sequence 	viewedseq;	/* Seq currently shown (NULL == all msgs) */
-   XawTextSource source;	/* Source for the file containing info. */
-   TextWidget	*widgets;	/* Array of widgets displaying this source. */
-   int		numwidgets;	/* Number of entries in above. */
+   Widget       source;		/* Source for the file containing info. */
    Boolean	hasselection;	/* Whether we own the selection. */
    XawTextPosition left, right;	/* Left and right extents of selection. */
    int		length;		/* #/chars in the scanfile. */

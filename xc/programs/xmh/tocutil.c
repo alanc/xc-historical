@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: tocutil.c,v 2.27 89/08/03 17:21:22 converse Exp $";
+    "$XConsortium: tocutil.c,v 2.28 89/08/31 19:18:03 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -183,7 +183,7 @@ void TURedisplayToc(scrn)
   Scrn scrn;
 {
     Toc toc;
-    XawTextSource source;
+    Widget source;
     if (scrn != NULL && scrn->tocwidget != NULL) {
 	toc = scrn->toc;
  	if (toc) {
@@ -378,9 +378,14 @@ void TULoadTocFile(toc)
     toc->msgs = (Msg *) XtRealloc((char *) toc->msgs,
 				  (unsigned) toc->nummsgs * sizeof(Msg));
     (void) myfclose(fid);
-    if (toc->source == NULL)
-	toc->source = TSourceCreate(toc);
-    toc->source->widget = (Widget) toc->widgets[0];
+    if ( (toc->source == NULL) && ( toc->num_scrns > 0 ) ) {
+        Arg args[1];
+
+	XtSetArg(args[0], XtNtoc, toc);
+	toc->source = XtCreateWidget("tocSource", tocSourceWidgetClass,
+				     toc->scrn[0]->tocwidget,
+				     args, (Cardinal) 1);
+    }
     for (i=0 ; i<numScrns ; i++) {
 	msg = scrnList[i]->msg;
 	if (msg && msg->toc == toc) {
@@ -549,7 +554,6 @@ Msg TUAppendToc(toc, ptr)
     msg->changed = TRUE;
     msg->fate = Fignore;
     msg->desttoc = NULL;
-    msg->widget = NULL;
     if (toc->viewedseq == toc->seqlist[0]) {
 	msg->visible = TRUE;
 	toc->lastPos += msg->length;
@@ -557,7 +561,8 @@ Msg TUAppendToc(toc, ptr)
     else
 	msg->visible = FALSE;
     toc->length += msg->length;
-    if (msg->visible) TSourceInvalid(toc, msg->position, msg->length);
+    if ( (msg->visible) && (toc->source != NULL) )
+      TSourceInvalid(toc, msg->position, msg->length);
     TUSaveTocFile(toc);
     return msg;
 }

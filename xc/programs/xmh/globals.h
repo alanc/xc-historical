@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.21 89/07/20 21:15:09 converse Exp $
+ *  $XConsortium: globals.h,v 2.22 89/08/14 15:43:48 converse Exp $
  */
 
 /*
@@ -79,7 +79,7 @@ ext Toc		DraftsFolder;	/* Toc containing drafts. */
 ext Scrn	*scrnList;	/* Array of scrns in use. */
 ext int		numScrns;	/* Number of scrns in above array. */
 ext Widget	NoMenuForButton;/* Flag menu widget value: no menu */
-ext XawTextSource NullSource;
+ext Widget      NullSource;
 ext Dimension	rootwidth;	/* Dimensions of root window.  */
 ext Dimension	rootheight;
 ext Pixmap	NoMailPixmap;	/* Icon pixmap if no new mail. */

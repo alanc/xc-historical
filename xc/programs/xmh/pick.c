@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: pick.c,v 2.31 89/07/21 18:56:25 converse Exp $";
+    "$XConsortium: pick.c,v 2.32 89/08/03 17:20:55 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -33,7 +33,7 @@ static char rcs_id[] =
 
 #define WTlabel		labelWidgetClass
 #define WTbutton	commandWidgetClass
-#define WTtextentry	asciiStringWidgetClass
+#define WTtextentry	asciiTextWidgetClass
 
 #define	RTfrom		0
 #define	RTto		1
@@ -188,7 +188,7 @@ static void AddTextEntry(row, str)
 	{XtNstring, (XtArgVal) NULL},
 	{XtNwidth, (XtArgVal) NULL},
 	{XtNlength, (XtArgVal) 300},
-	{XtNtextOptions, (XtArgVal)(resizeWidth | resizeHeight)},
+	{XtNresize, (XtArgVal) XawtextResizeBoth},
 	{XtNeditType, (XtArgVal)XawtextEdit},
     };
     char *ptr;
@@ -206,24 +206,14 @@ static void ChangeTextEntry(entry, str)
 FormEntry entry;
 char *str;
 {
-    static Arg arglist[] = {
-	{XtNtextSource, (XtArgVal) NULL}
-    };
-    Arg arglist2[3];
-    XawTextSource source;
-    if (strcmp(str, entry->ptr) == 0) return;
-    arglist[0].value = (XtArgVal)&source;
-    XtGetValues(entry->widget, arglist, XtNumber(arglist));
-    XawStringSourceDestroy(source);
-    (void) strcpy(entry->ptr, str);
-    XtSetArg( arglist2[0], XtNstring, entry->ptr );
-    XtSetArg( arglist2[1], XtNlength, 300 );
-    XtSetArg( arglist2[2], XtNeditType, XawtextEdit );
-    source = XawStringSourceCreate(entry->widget, arglist2, XtNumber(arglist2));
-    XawTextSetSource(entry->widget, source, (XawTextPosition) 0);
+    Arg arglist[1];
+
+    if (strcmp(str, entry->ptr) == 0) 
+        return;
+
+    XtSetArg(arglist[0], XtNstring, str);
+    XtSetValues(entry->widget, arglist, (Cardinal) 1);
 }
-
-
 
 /* ARGSUSED */
 static void ExecRowOr(w, closure, call_data)

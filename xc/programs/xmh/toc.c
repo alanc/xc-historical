@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] = 
-    "$XConsortium: toc.c,v 2.24 89/07/20 21:15:27 converse Exp $";
+    "$XConsortium: toc.c,v 2.25 89/08/31 19:11:02 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -571,8 +571,9 @@ Toc toc;
     return toc->viewedseq;
 }
 
-
 /* Return the list of messages currently selected. */
+
+#define SrcScan XawTextSourceScan
 
 MsgList TocCurMsgList(toc)
   Toc toc;
@@ -582,19 +583,14 @@ MsgList TocCurMsgList(toc)
     extern Msg MsgFromPosition();
     if (toc->num_scrns == NULL) return NULL;
     result = MakeNullMsgList();
-/*    if ((*toc->source->GetSelection)(toc->source, &pos1, &pos2)) { */
     XawTextGetSelectionPos( toc->scrn[0]->tocwidget, &pos1, &pos2); /* %%% */
     if (pos1 < pos2) {
-	pos1 = (*toc->source->Scan)(toc->source, pos1, XawstEOL, XawsdLeft,
-				    1, FALSE);
-	pos2 = (*toc->source->Scan)(toc->source, pos2, XawstPositions,
-				    XawsdLeft, 1, TRUE);
-	pos2 = (*toc->source->Scan)(toc->source, pos2, XawstEOL, XawsdRight,
-				    1, FALSE);
+	pos1 = SrcScan(toc->source, pos1, XawstEOL, XawsdLeft, 1, FALSE);
+	pos2 = SrcScan(toc->source, pos2, XawstPositions, XawsdLeft, 1, TRUE);
+	pos2 = SrcScan(toc->source, pos2, XawstEOL, XawsdRight, 1, FALSE);
 	while (pos1 < pos2) {
 	    AppendMsgList(result, MsgFromPosition(toc, pos1, XawsdRight));
-	    pos1 = (*toc->source->Scan)(toc->source, pos1, XawstEOL,
-					XawsdRight, 1, TRUE);
+	    pos1 = SrcScan(toc->source, pos1, XawstEOL, XawsdRight, 1, TRUE);
 	}
     }
     return result;
@@ -608,7 +604,6 @@ void TocUnsetSelection(toc)
 Toc toc;
 {
     if (toc->source)
-/*	(*toc->source->SetSelection)(toc->source, 1, 0); */
         XawTextUnsetSelection(toc->scrn[0]->tocwidget);
 }
 

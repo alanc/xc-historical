@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: tsource.c,v 2.15 89/07/07 18:25:57 converse Exp $";
+    "$XConsortium: tsource.c,v 2.16 89/08/31 19:11:28 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -32,10 +32,85 @@ static char rcs_id[] =
 #include "xmh.h"
 #include "tocintrnl.h"
 #include <X11/Xatom.h>
+#include "tsourceP.h"
 
-/* Private definitions. */
+/****************************************************************
+ *
+ * Full class record constant
+ *
+ ****************************************************************/
 
-#define BUFSIZE	512
+/* Private Data */
+
+#define offset(field) XtOffset(TocSourceWidget, toc_source.field)
+static XtResource resources[] = {
+    {XtNtoc, XtCToc, XtRPointer, sizeof(caddr_t), 
+       offset(toc), XtRPointer, NULL},
+};
+
+static void Initialize();
+static XawTextPosition Read(), Scan(), Search();
+static int Replace();
+
+#define SuperClass		(&textSrcClassRec)
+TocSourceClassRec tocSourceClassRec = {
+  {
+/* core_class fields */	
+    /* superclass	  	*/	(WidgetClass) SuperClass,
+    /* class_name	  	*/	"TocSrc",
+    /* widget_size	  	*/	sizeof(TocSourceRec),
+    /* class_initialize   	*/	NULL,
+    /* class_part_initialize	*/	NULL,
+    /* class_inited       	*/	FALSE,
+    /* initialize	  	*/	Initialize,
+    /* initialize_hook		*/	NULL,
+    /* realize		  	*/	NULL,
+    /* actions		  	*/	NULL,
+    /* num_actions	  	*/	0,
+    /* resources	  	*/	resources,
+    /* num_resources	  	*/	XtNumber(resources),
+    /* xrm_class	  	*/	NULLQUARK,
+    /* compress_motion	  	*/	FALSE,
+    /* compress_exposure  	*/	FALSE,
+    /* compress_enterleave	*/	FALSE,
+    /* visible_interest	  	*/	FALSE,
+    /* destroy		  	*/	NULL,
+    /* resize		  	*/	NULL,
+    /* expose		  	*/	NULL,
+    /* set_values	  	*/	NULL,
+    /* set_values_hook		*/	NULL,
+    /* set_values_almost	*/	NULL,
+    /* get_values_hook		*/	NULL,
+    /* accept_focus	 	*/	NULL,
+    /* version			*/	XtVersion,
+    /* callback_private   	*/	NULL,
+    /* tm_table		   	*/	NULL,
+    /* query_geometry		*/	NULL,
+    /* display_accelerator	*/	NULL,
+    /* extension		*/	NULL
+  },
+/* textSrc_class fields */
+  {
+    /* Read                     */      Read,
+    /* Replace                  */      Replace,
+    /* Scan                     */      Scan,
+    /* Search                   */      Search,
+    /* SetSelection             */      XtInheritSetSelection,
+    /* ConvertSelection         */      XtInheritConvertSelection
+  },
+/* toc_source_class fields */
+  {
+    /* keeping the compiler happy. */   NULL
+  }
+};
+
+WidgetClass tocSourceWidgetClass = (WidgetClass)&tocSourceClassRec;
+
+/************************************************************
+ *
+ * Class specific methods.
+ *
+ ************************************************************/
 
 Msg MsgFromPosition(toc, position, dir)
   Toc toc;
@@ -74,92 +149,15 @@ static XawTextPosition CoerceToLegalPosition(toc, position)
 		 ((position > toc->lastPos) ? toc->lastPos : position);
 }
 
-
-/*ARGSUSED*/
-static Boolean Convert(w, desiredtype, type, value, length)
+static XawTextPosition
+Read(w, position, block, length)
 Widget w;
-Atom desiredtype;
-Atom *type;
-caddr_t *value;
-int *length;
+XawTextPosition position;
+XawTextBlock *block;
+int length;
 {
-    TextWidget widget = (TextWidget) w;
-    XawTextSource source = widget->text.source;
-    Toc toc = (Toc) source->data;
-    XawTextBlock block;
-    XawTextPosition position, lastpos;
-    *type = (Atom) FMT8BIT;		/* Only thing we know! */
-    if (toc == NULL || !toc->hasselection) return FALSE;
-    *length = toc->right - toc->left;
-    *value = XtMalloc((unsigned) *length + 1);
-    position = toc->left;
-    while (position < toc->right) {
-	lastpos = position;
-	position = (*source->Read)(source, position, toc->right, &block);
-	bcopy(block.ptr, (*value) + lastpos - toc->left, position - lastpos);
-    }
-    return TRUE;
-}
-
-/*ARGSUSED*/
-static void LoseSelection(w, selection)
-Widget w;
-Atom selection;
-{
-    TextWidget widget = (TextWidget) w;
-    Toc toc = (Toc) widget->text.source->data;
-    if (toc && toc->hasselection)
-	(*toc->source->SetSelection)(toc->source, 1, 0);
-}
-
-
-/* Semi-public definitions */
-
-static void AddWidget(source, widget)
-XawTextSource source;
-TextWidget widget;
-{
-    Toc toc = (Toc) source->data;
-    toc->numwidgets++;
-    toc->widgets = (TextWidget *)
-	XtRealloc((char *) toc->widgets,
-		  (unsigned) (sizeof(TextWidget) * toc->numwidgets));
-    toc->widgets[toc->numwidgets - 1] = widget;
-#ifdef notdef
-    if (toc->hasselection && toc->numwidgets == 1)
-	XtSelectionGrab((Widget) toc->widgets[0], XA_PRIMARY,
-			Convert, LoseSelection);
-#endif /*notdef*/
-}
-
-static void RemoveWidget(source, widget)
-XawTextSource source;
-TextWidget widget;
-{
-    Toc toc = (Toc) source->data;
-    int i;
-    for (i=0 ; i<toc->numwidgets ; i++) {
-	if (toc->widgets[i] == widget) {
-	    toc->numwidgets--;
-	    toc->widgets[i] = toc->widgets[toc->numwidgets];
-	    if (i == 0 && toc->numwidgets > 0 && toc->hasselection)
-#ifdef notdef
-		XtSelectionGrab((Widget) toc->widgets[0], XA_PRIMARY,
-				Convert, LoseSelection);
-#endif /*notdef*/
-	    return;
-	}
-    }
-}
-
-
-static XawTextPosition Read(source, position, block, length)
-  XawTextSource source;
-  XawTextPosition position;
-  XawTextBlock *block;
-  int length;
-{
-    Toc toc = (Toc) source->data;
+    TocSourceWidget source = (TocSourceWidget) w;
+    Toc toc = source->toc_source.toc;
     Msg msg;
     int count;
 
@@ -180,25 +178,30 @@ static XawTextPosition Read(source, position, block, length)
     return position;
 }
 
-
 /* Right now, we can only replace a piece with another piece of the same size,
    and it can't cross between lines. */
 
-static int Replace(source, startPos, endPos, block)
-  XawTextSource source;
-  XawTextPosition startPos, endPos;
-  XawTextBlock *block;
+static int 
+Replace(w, startPos, endPos, block)
+Widget w;
+XawTextPosition startPos, endPos;
+XawTextBlock *block;
 {
-    Toc toc = (Toc) source->data;
+    TocSourceWidget source = (TocSourceWidget) w;
+    Toc toc = source->toc_source.toc;
     Msg msg;
     int i;
+
     if (block->length != endPos - startPos)
 	return XawEditError;
     msg = MsgFromPosition(toc, startPos, XawsdRight);
     for (i = 0; i < block->length; i++)
 	msg->buf[startPos - msg->position + i] = block->ptr[i];
-    for (i=0 ; i<toc->numwidgets ; i++)
+/*    for (i=0 ; i<toc->numwidgets ; i++)
 	XawTextInvalidate(toc->widgets[i], startPos, endPos);
+*
+* CDP 9/1/89 
+*/
     return XawEditDone;
 }
 
@@ -218,15 +221,17 @@ static int Replace(source, startPos, endPos, block)
 
 
 
-static XawTextPosition Scan(source, position, sType, dir, count, include)
-XawTextSource source;
+static XawTextPosition 
+Scan(w, position, sType, dir, count, include)
+Widget w;
 XawTextPosition position;
 XawTextScanType sType;
 XawTextScanDirection dir;
 int count;
 Boolean include;
 {
-    Toc toc = (Toc) source->data;
+    TocSourceWidget source = (TocSourceWidget) w;
+    Toc toc = source->toc_source.toc;
     XawTextPosition index;
     Msg msg;
     char    c;
@@ -246,7 +251,6 @@ Boolean include;
 	    index = CoerceToLegalPosition(toc, index + count * ddir);
 	    break;
 	case XawstWhiteSpace:
-/* |||	case XawstWordBreak: */
 	    for (i = 0; i < count; i++) {
 		whiteSpace = -1;
 		while (index >= 0 && index <= toc->lastPos) {
@@ -266,6 +270,7 @@ Boolean include;
 	    index = CoerceToLegalPosition(toc, index);
 	    break;
 	case XawstEOL:
+	case XawstParagraph:
 	    for (i = 0; i < count; i++) {
 		while (index >= 0 && index <= toc->lastPos) {
 		    Look(index, c);
@@ -290,94 +295,37 @@ Boolean include;
     return index;
 }
 
-static XawTextPosition Search(widget, direction, block)
-    Widget			widget;
-    XawTextScanDirection	direction;
-    XawTextBlock		block;
+static XawTextPosition 
+Search(w, direction, block)
+Widget			w;
+XawTextScanDirection	direction;
+XawTextBlock		block;
 {
+    TocSourceWidget source = (TocSourceWidget) w;
+    Toc toc = source->toc_source.toc;
+
     return XawTextSearchError;
 }
 
-
-static Boolean GetSelection(source, left, right)
-XawTextSource source;
-XawTextPosition *left, *right; 
-{
-    Toc toc = (Toc) source->data;
-    if (toc->hasselection && toc->left < toc->right) {
-	*left = toc->left;
-	*right = toc->right;
-	return TRUE;
-    }
-    toc->hasselection = FALSE;
-    return FALSE;
-}
-
-
-static void SetSelection(source, left, right)
-XawTextSource source;
-XawTextPosition left, right; 
-{
-#ifdef notdef
-    Toc toc = (Toc) source->data;
-    int i;
-    for (i=0 ; i<toc->numwidgets; i++) {
-	XawTextDisableRedisplay(toc->widgets[i], FALSE);
-	if (toc->hasselection)
-	    Xt_TextSetHighlight(toc->widgets[i], toc->left, toc->right,
-				Normal);
-	if (left < right)
-	    Xt_TextSetHighlight(toc->widgets[i], left, right,
-				Selected);
-	XawTextEnableRedisplay(toc->widgets[i]);
-    }
-    toc->hasselection = (left < right);
-    toc->left = left;
-    toc->right = right;
-    if (toc->numwidgets > 0) {
-	Widget widget = (Widget) toc->widgets[0];
-	if (toc->hasselection)
-	    XtSelectionGrab(widget, XA_PRIMARY, Convert, LoseSelection);
-	else
-	    XtSelectionUngrab(widget, XA_PRIMARY);
-    }
-#endif /*notdef*/
-}
-
-
 /* Public definitions. */
 
-XawTextSource TSourceCreate(toc)
-  Toc toc;
+static void
+Initialize(request, new)
+Widget request, new;
 {
-    XawTextSource source = XtNew(XawTextSourceRec);
+    Toc toc;
+    TocSourceWidget source = (TocSourceWidget) new;
 
-    source->Read = Read;
-    source->Replace = Replace;
-    source->Scan = Scan;
-    source->Search = NULL;
-    source->SetSelection = NULL;
-    source->ConvertSelection = NULL;
-    source->SetValuesHook = NULL;
-    source->GetValuesHook = NULL;
-    source->widget = NULL;		/* see TULoadTocFile */
-    source->edit_mode = XawtextRead;
-    source->data = (caddr_t) toc;
+    source->text_source.edit_mode = XawtextRead; /* force read only. */
 
-    toc->numwidgets = 0;
-    toc->widgets = XtNew(TextWidget);
+    toc = source->toc_source.toc;
+
     toc->hasselection = FALSE;
     toc->left = toc->right = 0;
-
-    return source;
 }
-
 
 void TSourceInvalid(toc, position, length)
 Toc toc;
 {
-    int i;
-    SetSelection(toc->source, 1, 0); /* %%% A bit of a hack. */
-    for (i=0 ; i<toc->numwidgets ; i++)
-	XawTextInvalidate(toc->widgets[i], position, position+length-1);
+  XawTextInvalidate(XtParent(toc->source), position, position+length-1);
 }

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.18 89/08/03 17:22:51 converse Exp $
+ * $XConsortium: externs.h,v 2.19 89/08/31 19:13:00 converse Exp $
  */
 
 /*
@@ -59,10 +59,9 @@ extern void	DestroyScrn();
 extern void	MapScrn();
 extern Scrn	ScrnFromWidget();
 
-	/* from tsource.c */
+	/* from msg.c */
 
-extern XawTextSource TSourceCreate();
-extern XawTextSource CreateFileSource();
+extern Widget   CreateFileSource();
 
 	/* from util.c */
 
