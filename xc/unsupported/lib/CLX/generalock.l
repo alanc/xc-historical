@@ -36,12 +36,23 @@
 			    (setf (car (timer-args timer)) %real-current-process)
 			    (with-scheduler-locked
 			      (reset-timer-relative timer timeout)
-			      (promotion-block
-				waiter-queue name
-				#'(lambda (timer lock lock-argument)
-				    (or (not (timer-pending-p timer))
-					(lock-lockable lock lock-argument)))
-				timer self lock-argument)
+			      (flet ((lock-lockable-or-timeout (timer lock lock-argument)
+				       (or (not (timer-pending-p timer))
+					   (lock-lockable lock lock-argument))))
+				(let ((priority (process-process-priority *current-process*)))
+				  (if (ldb-test %%scheduler-priority-preemption-field priority)
+				      (promotion-block waiter-queue name
+						       #'lock-lockable-or-timeout
+						       timer self lock-argument)
+				      ;; Change to preemptive priority so that when
+				      ;; unlock-internal wakes us up so we can have the lock,
+				      ;; we will really wake up right away
+				      (with-process-priority
+					  (dpb 1 %%scheduler-priority-preemption-field
+					       priority)
+					(promotion-block waiter-queue name
+						       #'lock-lockable-or-timeout
+						       timer self lock-argument)))))
 			      (lock-lockable self lock-argument)))))
 		    (t (throw 'timeout nil))))))
       (unless (store-conditional (locf latch) nil process)
