@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.6 89/07/16 17:24:15 rws Exp $ */
+/* $XConsortium: gc.c,v 5.7 89/07/16 20:58:55 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -45,7 +45,7 @@ extern void NotImplemented();
 
 static Bool CreateDefaultTile();
 
-/* written by drewry august 1986 */
+unsigned char DefaultDash[2] = {4, 4};
 
 void
 ValidateGC(pDraw, pGC)
@@ -357,14 +357,24 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		pval++;
 		break;
 	    case GCDashList:
-		if ((CARD8) (*pval) != 0)
+		if ((CARD8) (*pval) == 4)
+		{
+		    if (pGC->dash != DefaultDash)
+		    {
+			xfree(pGC->dash);
+			pGC->numInDashList = 2;
+			pGC->dash = DefaultDash;
+		    }
+		}
+		else if ((CARD8) (*pval) != 0)
  		{
 		    unsigned char *dash;
 
 		    dash = (unsigned char *)xalloc(2 * sizeof(unsigned char));
 		    if (dash)
 		    {
-			xfree(pGC->dash);
+			if (pGC->dash != DefaultDash)
+			    xfree(pGC->dash);
 			pGC->numInDashList = 2;
 			pGC->dash = dash;
 			dash[0] = (CARD8)(*pval);
@@ -447,13 +457,10 @@ CreateGC(pDrawable, mask, pval, pStatus)
 	*pStatus = BadAlloc;
 	return (GCPtr)NULL;
     }
-    pGC->dash = (unsigned char *)xalloc(2 * sizeof(unsigned char));
     pGC->devPrivates = (DevUnion *)xalloc(gcPrivateCount * sizeof (DevUnion));
-    if (!pGC->dash || !pGC->devPrivates)
+    if (!pGC->devPrivates)
     {
 	xfree(pGC);
-	xfree(pGC->dash);
-	xfree(pGC->devPrivates);
 	*pStatus = BadAlloc;
 	return (GCPtr)NULL;
     }
@@ -505,8 +512,7 @@ CreateGC(pDrawable, mask, pval, pStatus)
     pGC->clientClipType = CT_NONE;
     pGC->clientClip = (pointer)NULL;
     pGC->numInDashList = 2;
-    pGC->dash[0] = 4;
-    pGC->dash[1] = 4;
+    pGC->dash = DefaultDash;
     pGC->dashOffset = 0;
     pGC->lastWinOrg.x = 0;
     pGC->lastWinOrg.y = 0;
@@ -689,23 +695,34 @@ CopyGC(pgcSrc, pgcDst, mask)
 		pgcDst->dashOffset = pgcSrc->dashOffset;
 		break;
 	    case GCDashList:
+		if (pgcSrc->dash == DefaultDash)
 		{
-		unsigned char *dash;
-
-		dash = (unsigned char *)xalloc(pgcSrc->numInDashList *
-					       sizeof(unsigned char));
-		if (dash)
-		{
-		    xfree(pgcDst->dash);
-		    pgcDst->dash = dash;
-		    pgcDst->numInDashList = pgcSrc->numInDashList;
-		    for (i=0; i<pgcSrc->numInDashList; i++)
-			dash[i] = pgcSrc->dash[i];
+		    if (pgcDst->dash != DefaultDash)
+		    {
+			xfree(pgcDst->dash);
+			pgcDst->numInDashList = pgcSrc->numInDashList;
+			pgcDst->dash = pgcSrc->dash;
+		    }
 		}
 		else
-		    error = BadAlloc;
-		break;
+		{
+		    unsigned char *dash;
+
+		    dash = (unsigned char *)xalloc(pgcSrc->numInDashList *
+						   sizeof(unsigned char));
+		    if (dash)
+		    {
+			if (pgcDst->dash != DefaultDash)
+			    xfree(pgcDst->dash);
+			pgcDst->numInDashList = pgcSrc->numInDashList;
+			pgcDst->dash = dash;
+			for (i=0; i<pgcSrc->numInDashList; i++)
+			    dash[i] = pgcSrc->dash[i];
+		    }
+		    else
+			error = BadAlloc;
 		}
+		break;
 	    case GCArcMode:
 		pgcDst->arcMode = pgcSrc->arcMode;
 		break;
@@ -748,7 +765,8 @@ FreeGC(pGC, gid)
 
     (*pGC->funcs->DestroyGC) (pGC);
     xfree(pGC->devPrivates);
-    xfree(pGC->dash);
+    if (pGC->dash != DefaultDash)
+	xfree(pGC->dash);
     xfree(pGC);
     return(Success);
 }
@@ -794,13 +812,10 @@ CreateScratchGC(pScreen, depth)
     pGC = (GCPtr)xalloc(sizeof(GC));
     if (!pGC)
 	return (GCPtr)NULL;
-    pGC->dash = (unsigned char *)xalloc(2 * sizeof(unsigned char));
     pGC->devPrivates = (DevUnion *)xalloc(gcPrivateCount * sizeof (DevUnion));
-    if (!pGC->dash || !pGC->devPrivates)
+    if (!pGC->devPrivates)
     {
 	xfree(pGC);
-	xfree (pGC->dash);
-	xfree (pGC->devPrivates);
 	return (GCPtr)NULL;
     }
 
@@ -841,8 +856,7 @@ CreateScratchGC(pScreen, depth)
     pGC->clientClipType = CT_NONE;
     pGC->dashOffset = 0;
     pGC->numInDashList = 2;
-    pGC->dash[0] = 4;
-    pGC->dash[1] = 4;
+    pGC->dash = DefaultDash;
     pGC->lastWinOrg.x = 0;
     pGC->lastWinOrg.y = 0;
 
@@ -983,9 +997,10 @@ register unsigned char *pdash;
 	maskQ |= GCDashOffset;
     }
 
-    xfree(pGC->dash);
-    pGC->dash = p;
+    if (pGC->dash != DefaultDash)
+	xfree(pGC->dash);
     pGC->numInDashList = ndash;
+    pGC->dash = p;
     while(ndash--)
 	*p++ = *pdash++;
     pGC->stateChanges |= GCDashList;
