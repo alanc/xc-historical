@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.41 94/02/04 15:35:04 dpw Exp $ */
+/* $XConsortium: devices.c,v 5.42 94/02/23 15:47:59 dpw Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -517,8 +517,10 @@ InitKbdFeedbackClassDeviceStruct(dev, bellProc, controlProc)
 	feedc->ctrl.id = dev->kbdfeed->ctrl.id + 1;
     dev->kbdfeed = feedc;
 #ifdef XKB
-    XkbUpdateAutorepeat(dev);
-    if (feedc->ctrl.autoRepeat)
+    /* If XKB (AccessX) will handle the autorepeat in software we tell 
+     * the hardware to not autorepeat.
+     */
+    if (XkbUpdateAutorepeat(dev))
     {
         feedc->ctrl.autoRepeat = FALSE;
         (*controlProc)(dev, &feedc->ctrl);
@@ -1204,7 +1206,8 @@ ProcChangeKeyboardControl (client)
 	    }
 #ifdef XKB
 	    keybd->kbdfeed->ctrl.leds= ctrl.leds;
-	    XkbUpdateIndicators(keybd,((led==DO_ALL)?~0L:(1L<<(led-1))),NULL);
+	    XkbSetIndicators(keybd,((led==DO_ALL)?~0L:(1L<<(led-1))),ctrl.leds,
+									NULL);
 #endif
 	    break;
 	case KBKey:
@@ -1264,7 +1267,10 @@ ProcChangeKeyboardControl (client)
     }
     keybd->kbdfeed->ctrl = ctrl;
 #ifdef XKB
-    if (keybd->kbdfeed->ctrl.autoRepeat)
+    /* If XKB (AccessX) will handle the autorepeat in software we tell 
+     * the hardware to not autorepeat.
+     */
+    if (XkbUsesSoftRepeat(keybd))
     {
         keybd->kbdfeed->ctrl.autoRepeat = FALSE;
         (*keybd->kbdfeed->CtrlProc)(keybd, &keybd->kbdfeed->ctrl);
@@ -1322,7 +1328,8 @@ ProcBell(client)
     else
     	newpercent = base - newpercent + stuff->percent;
 #ifdef XKB
-    XkbHandleBell(keybd, newpercent, &keybd->kbdfeed->ctrl, 0, None);
+    XkbHandleBell(FALSE, keybd, newpercent, &keybd->kbdfeed->ctrl, 0, None,
+								NULL, client);
 #else
     (*keybd->kbdfeed->BellProc)(newpercent, keybd,
 				(pointer) &keybd->kbdfeed->ctrl, 0);
