@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.28 90/02/08 13:28:50 jim Exp $
+ * $XConsortium: Tree.c,v 1.29 90/02/08 14:25:31 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -168,12 +168,14 @@ static void initialize_dimensions (listp, sizep, n)
     register Dimension *l;
 
     if (!*listp) {
-	*listp = (Dimension *) XtCalloc (n, sizeof(Dimension));
+	*listp = (Dimension *) XtCalloc ((unsigned int) n,
+					 (unsigned int) sizeof(Dimension));
 	*sizep = ((*listp) ? n : 0);
 	return;
     }
     if (n > *sizep) {
-	*listp = (Dimension *) XtRealloc (*listp, n * sizeof(Dimension));
+	*listp = (Dimension *) XtRealloc((char *) *listp,
+					 (unsigned int) (n*sizeof(Dimension)));
 	*sizep = ((*listp) ? n : 0);
 	if (!*listp) return;
     }
@@ -194,7 +196,7 @@ static GC get_tree_gc (w)
 	values.line_width = w->tree.line_width;
     }
 
-    return XtGetGC (w, valuemask, &values);
+    return XtGetGC ((Widget) w, valuemask, &values);
 }
 
 static void insert_node (parent, node)
@@ -217,9 +219,10 @@ static void insert_node (parent, node)
   
     if (pc->tree.n_children == pc->tree.max_children) {
 	pc->tree.max_children += (pc->tree.max_children / 2) + 2;
-	pc->tree.children = (WidgetList) XtRealloc (pc->tree.children, 
-						    (pc->tree.max_children) *
-						    sizeof(Widget));
+	pc->tree.children = (WidgetList) XtRealloc ((char *)pc->tree.children, 
+						    (unsigned int)
+						    ((pc->tree.max_children) *
+						    sizeof(Widget)));
     } 
 
     /*
@@ -276,13 +279,14 @@ static void ClassInitialize ()
 {
     XawInitializeWidgetSet();
     XtAddConverter (XtRString, XtROrientation, XmuCvtStringToOrientation,
-		    NULL, (Cardinal) 0);
+		    (XtConvertArgList) NULL, (Cardinal) 0);
 }
 
 
-static void Initialize (request, new)
-    TreeWidget request, new;
+static void Initialize (grequest, gnew)
+    Widget grequest, gnew;
 {
+    TreeWidget request = (TreeWidget) grequest, new = (TreeWidget) gnew;
     Arg args[2];
 
     /*
@@ -316,7 +320,7 @@ static void Initialize (request, new)
     new->tree.tree_root = (Widget) NULL;
     XtSetArg(args[0], XtNwidth, 1);
     XtSetArg(args[1], XtNheight, 1);
-    new->tree.tree_root = XtCreateWidget ("root", widgetClass, new, args, 2);
+    new->tree.tree_root = XtCreateWidget ("root", widgetClass, gnew, args, 2);
 
     /*
      * Allocate the array used to hold the widest values per depth
@@ -356,9 +360,10 @@ static void ConstraintInitialize (request, new)
 
 
 /* ARGSUSED */
-static Boolean SetValues (current, request, new)
-    TreeWidget current, request, new;
+static Boolean SetValues (gcurrent, grequest, gnew)
+    Widget gcurrent, grequest, gnew;
 {
+    TreeWidget current = (TreeWidget) gcurrent, new = (TreeWidget) gnew;
     Boolean redraw = FALSE;
 
     /*
@@ -368,7 +373,7 @@ static Boolean SetValues (current, request, new)
     if (new->tree.foreground != current->tree.foreground ||
 	new->core.background_pixel != current->core.background_pixel ||
 	new->tree.line_width != current->tree.line_width) {
-	XtReleaseGC (new, new->tree.gc);
+	XtReleaseGC (gnew, new->tree.gc);
 	new->tree.gc = get_tree_gc (new);
 	redraw = TRUE;     
     }
@@ -421,7 +426,7 @@ static Boolean ConstraintSetValues (current, request, new, args, num_args)
 	 * If the Tree widget has been realized, 
 	 * compute new layout.
 	 */
-	if (XtIsRealized(tw))
+	if (XtIsRealized((Widget)tw))
 	  layout_tree (tw, FALSE);
     }
     return False;
@@ -451,7 +456,7 @@ static void ConstraintDestroy (w)
     for (i = 0; i< tc->tree.n_children; i++)
       insert_node (tc->tree.parent, tc->tree.children[i]);
 
-    layout_tree (w->core.parent, FALSE);
+    layout_tree ((TreeWidget) (w->core.parent), FALSE);
 }
 
 /* ARGSUSED */
@@ -485,10 +490,10 @@ static XtGeometryResult GeometryManager (w, request, reply)
     return (XtGeometryYes);
 }
 
-static void ChangeManaged(tw)
-    TreeWidget tw;
+static void ChangeManaged (gw)
+    Widget gw;
 {
-    layout_tree (tw, FALSE);
+    layout_tree ((TreeWidget) gw, FALSE);
 }
 
 
@@ -498,7 +503,7 @@ static void Destroy (gw)
     TreeWidget w = (TreeWidget) gw;
 
     XtReleaseGC (gw, w->tree.gc);
-    if (w->tree.largest) XtFree (w->tree.largest);
+    if (w->tree.largest) XtFree ((char *) w->tree.largest);
 }
 
 
@@ -545,15 +550,15 @@ static void Redisplay (tw, event, region)
 			 */
 			XDrawLine (dpy, w, gc, srcx, srcy,
 				   k->core.x,
-				   (k->core.y + k->core.border_width +
-				    k->core.height / 2));
+				   (k->core.y + ((int) k->core.border_width) +
+				    ((int) k->core.height) / 2));
 		    } else {
 			/*
 			 * bottom center to top center
 			 */
 			XDrawLine (dpy, w, gc, srcx, srcy,
-				   (k->core.x + k->core.border_width +
-				    k->core.width / 2),
+				   (k->core.x + ((int) k->core.border_width) +
+				    ((int) k->core.width) / 2),
 				   k->core.y);
 		    }
 		}
@@ -801,14 +806,16 @@ static void set_tree_size (tw, insetvalues, width, height)
 	tw->core.height = height;
     } else {
 	Dimension replyWidth = 0, replyHeight = 0;
-	XtGeometryResult result = XtMakeResizeRequest (tw, width, height,
+	XtGeometryResult result = XtMakeResizeRequest ((Widget) tw,
+						       width, height,
 						       &replyWidth,
 						       &replyHeight);
 	/*
 	 * Accept any compromise.
 	 */
 	if (result == XtGeometryAlmost)
-	  XtMakeResizeRequest (tw, replyWidth, replyHeight, NULL, NULL);
+	  XtMakeResizeRequest ((Widget) tw, replyWidth, replyHeight,
+			       (Dimension *) NULL, (Dimension *) NULL);
     }
     return;
 }
@@ -852,8 +859,8 @@ static void layout_tree (tw, insetvalues)
     /*
      * And redisplay.
      */
-    if (XtIsRealized (tw)) {
-	XClearArea (XtDisplay(tw), XtWindow(tw), 0, 0, 0, 0, True);
+    if (XtIsRealized ((Widget) tw)) {
+	XClearArea (XtDisplay(tw), XtWindow((Widget)tw), 0, 0, 0, 0, True);
     }
 }
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.20 90/02/28 13:35:38 jim Exp $
+ * $XConsortium: Panner.c,v 1.21 90/02/28 18:46:52 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -216,11 +216,11 @@ static void check_knob (pw, knob)
     register PannerWidget pw;
     Boolean knob;
 {
-    int pad = pw->panner.internal_border * 2;
-    Position maxx = (Position) (((long) pw->core.width - pad) -
-				((long) pw->panner.knob_width));
-    Position maxy = (Position) (((long) pw->core.height - pad) -
-				((long) pw->panner.knob_height));
+    Position pad = pw->panner.internal_border * 2;
+    Position maxx = (((Position) pw->core.width) - pad -
+		     ((Position) pw->panner.knob_width));
+    Position maxy = (((Position) pw->core.height) - pad -
+		     ((Position) pw->panner.knob_height));
     Position *x = (knob ? &pw->panner.knob_x : &pw->panner.tmp.x);
     Position *y = (knob ? &pw->panner.knob_y : &pw->panner.tmp.y);
 
@@ -351,9 +351,10 @@ static Boolean get_event_xy (pw, event, x, y)
 { \
     XDrawRectangle (XtDisplay(pw), XtWindow(pw), \
 		    pw->panner.xor_gc, \
-		    pw->panner.tmp.x + pw->panner.internal_border, \
-		    pw->panner.tmp.y + pw->panner.internal_border, \
-		    pw->panner.knob_width - 1, pw->panner.knob_height - 1); \
+		    (int) (pw->panner.tmp.x + pw->panner.internal_border), \
+		    (int) (pw->panner.tmp.y + pw->panner.internal_border), \
+		    (unsigned int) (pw->panner.knob_width - 1), \
+		    (unsigned int) (pw->panner.knob_height - 1)); \
     pw->panner.tmp.showing = !pw->panner.tmp.showing; \
 }
 
@@ -449,6 +450,7 @@ static void Resize (gw)
 }
 
 
+/* ARGSUSED */
 static void Redisplay (gw, event, region)
     Widget gw;
     XEvent *event;
@@ -462,11 +464,12 @@ static void Redisplay (gw, event, region)
 
     pw->panner.tmp.showing = FALSE;
     XClearArea (XtDisplay(pw), XtWindow(pw), 
-		pw->panner.last_x - pw->panner.line_width + pad, 
-		pw->panner.last_y - pw->panner.line_width + pad, 
-		pw->panner.knob_width + 2 + pw->panner.line_width * 2, 
-		pw->panner.knob_height + 2 + pw->panner.line_width * 2, 
-		False);
+		(int) pw->panner.last_x - pw->panner.line_width + pad, 
+		(int) pw->panner.last_y - pw->panner.line_width + pad, 
+		(unsigned int) (pw->panner.knob_width + 2 +
+				pw->panner.line_width * 2), 
+		(unsigned int) (pw->panner.knob_height + 2 +
+				pw->panner.line_width * 2), False);
     pw->panner.last_x = pw->panner.knob_x;
     pw->panner.last_y = pw->panner.knob_y;
 
@@ -474,7 +477,8 @@ static void Redisplay (gw, event, region)
 		    pw->panner.knob_width - 1, pw->panner.knob_height - 1);
 
     XDrawRectangle (dpy, w, pw->panner.shadow_gc, kx, ky,
-		    pw->panner.knob_width - 1, pw->panner.knob_height - 1);
+		    (unsigned int) (pw->panner.knob_width - 1), 
+		    (unsigned int) (pw->panner.knob_height - 1));
 
     if (pw->panner.shadow && pw->panner.shadow_valid) {
 	XFillRectangles (dpy, w, pw->panner.shadow_gc,
@@ -485,13 +489,10 @@ static void Redisplay (gw, event, region)
 
 
 /* ARGSUSED */
-static Boolean SetValues (gcur, greq, gnew, args, num_args)
+static Boolean SetValues (gcur, greq, gnew)
     Widget gcur, greq, gnew;
-    ArgList args;
-    Cardinal *num_args;
 {
     PannerWidget cur = (PannerWidget) gcur;
-    PannerWidget req = (PannerWidget) greq;
     PannerWidget new = (PannerWidget) gnew;
     Boolean redisplay = FALSE;
 
@@ -523,7 +524,7 @@ static Boolean SetValues (gcur, greq, gnew, args, num_args)
     if ((cur->panner.stipple_name != new->panner.stipple_name ||
 	 cur->panner.shadow_color != new->panner.shadow_color ||
 	 cur->core.background_pixel != new->core.background_pixel) &&
-	XtIsRealized(new)) {
+	XtIsRealized(gnew)) {
 	Pixmap pm = (new->panner.stipple_name ? BACKGROUND_STIPPLE (new)
 		     : XtUnspecifiedPixmap);
 
@@ -569,7 +570,6 @@ static XtGeometryResult QueryGeometry (gw, intended, pref)
     XtWidgetGeometry *intended, *pref;
 {
     PannerWidget pw = (PannerWidget) gw;
-    int pad = pw->panner.internal_border * 2;
 
     pref->request_mode = (CWWidth | CWHeight);
     get_default_size (pw, &pref->width, &pref->height);
@@ -592,6 +592,7 @@ static XtGeometryResult QueryGeometry (gw, intended, pref)
  *                                                                           *
  *****************************************************************************/
 
+/* ARGSUSED */
 static void ActionStart (gw, event, params, num_params)
     Widget gw;
     XEvent *event;
@@ -616,6 +617,7 @@ static void ActionStart (gw, event, params, num_params)
     if (pw->panner.rubber_band) DRAW_TMP (pw);
 }
 
+/* ARGSUSED */
 static void ActionStop (gw, event, params, num_params)
     Widget gw;
     XEvent *event;
@@ -634,6 +636,7 @@ static void ActionStop (gw, event, params, num_params)
     pw->panner.tmp.doing = FALSE;
 }
 
+/* ARGSUSED */
 static void ActionAbort (gw, event, params, num_params)
     Widget gw;
     XEvent *event;
@@ -655,7 +658,7 @@ static void ActionAbort (gw, event, params, num_params)
 }
 
 
-
+/* ARGSUSED */
 static void ActionMove (gw, event, params, num_params)
     Widget gw;
     XEvent *event;			/* must be a motion event */
@@ -684,6 +687,8 @@ static void ActionMove (gw, event, params, num_params)
     }
 }
 
+
+/* ARGSUSED */
 static void ActionNotify (gw, event, params, num_params)
     Widget gw;
     XEvent *event;			/* unused */
@@ -720,11 +725,12 @@ static void ActionNotify (gw, event, params, num_params)
     }
 }
 
+/* ARGSUSED */
 static void ActionSet (gw, event, params, num_params)
     Widget gw;
     XEvent *event;			/* unused */
-    String *params;			/* unused */
-    Cardinal *num_params;		/* unused */
+    String *params;
+    Cardinal *num_params;
 {
     PannerWidget pw = (PannerWidget) gw;
     Boolean rb;
