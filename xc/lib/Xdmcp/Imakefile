@@ -15,8 +15,8 @@ OS_NAME_DEFINES = OsNameDefines
 
 #if HasDESLibrary
 DESDEFS = -DHASDES
-DESSRCS = Encrypt.c Decrypt.c
-DESOBJS = Encrypt.o Decrypt.o
+DESSRCS = Encrypt.c Decrypt.c Crypt.c
+DESOBJS = Encrypt.o Decrypt.o Crypt.o
 #else
 DESDEFS =
 DESSRCS =
@@ -148,3 +148,4 @@ DependTarget()
 
 NormalLintTarget($(SRCS))
 
+NormalProgramTarget(verify,verify.o,libXdmcp.a,libXdmcp.a,/**/)
