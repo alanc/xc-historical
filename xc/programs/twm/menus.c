@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.153 90/03/20 14:44:46 jim Exp $
+ * $XConsortium: menus.c,v 1.154 90/03/20 15:23:50 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.153 90/03/20 14:44:46 jim Exp $";
+"$XConsortium: menus.c,v 1.154 90/03/20 15:23:50 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2010,6 +2010,40 @@ MenuRoot *root;
     return FALSE;
 }
 
+#ifdef NOSYSTEM
+#if defined(SYSV) && !defined(hpux)
+#define vfork() fork()
+#endif
+
+int run_command (s)
+    char *s;
+{
+    int status, pid, w;
+    SigProc istat, qstat;
+
+    if ((pid = vfork()) == 0) {
+	(void) signal (SIGINT, SIG_DFL);
+	(void) signal (SIGQUIT, SIG_DFL);
+	(void) signal (SIGHUP, SIG_DFL);
+#ifdef macII
+	setpgrp();
+#endif
+	execl ("/bin/sh", "sh", "-c", s, 0);
+	_exit (127);
+    }
+    istat = signal (SIGINT, SIG_IGN);
+    qstat = signal (SIGQUIT, SIG_IGN);
+    while ((w = wait(&status)) != pid && w != -1);
+    if (w == -1) status = -1;
+    signal(SIGINT, istat);
+    signal(SIGQUIT, qstat);
+    return status;
+}
+#else
+#define run_command(s) system(s)
+#endif
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -2055,7 +2089,7 @@ Execute(s)
 	restorevar = 1;
     }
 
-    (void) system (s);
+    (void) run_command (s);
 
     if (restorevar) {		/* why bother? */
 	(void) sprintf (buf, "DISPLAY=%s", oldDisplay);
