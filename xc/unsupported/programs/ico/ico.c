@@ -1,4 +1,4 @@
-/* $Header: ico.c,v 1.1 87/09/11 08:23:25 toddb Exp $ */
+/* $Header: ico.c,v 1.2 88/02/04 14:23:53 jim Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -83,6 +83,7 @@ extern GC XCreateGC();
 extern long time();
 extern long random();
 
+char *ProgramName;
 Display *dpy;
 Window win;
 int winWidth, winHeight;
@@ -100,6 +101,22 @@ int doedges = 1;
 
 Polyinfo *findpoly();
 
+static char *help_message[] = {
+"where options include:",
+"    -display host:dpy                X server to use",
+"    -geometry geom                   geometry of window to use",
+"    -r                               draw in the root window",
+"    -d number                        dashed line pattern for wire frames",
+"    -colors color ...                codes to use on sides",
+"    -dbl                             use double buffering",
+"    -noedges                         don't draw wire frame edges",
+"    -faces                           draw faces",
+"    -i                               invert",
+"    -sleep number                    seconds to sleep in between draws",
+"    -obj objname                     type of polyhedral object to draw",
+"    -objhelp                         list polyhedral objects available",
+NULL};
+
 /******************************************************************************
  * Description
  *	Main routine.  Process command-line arguments, then bounce a bounding
@@ -116,29 +133,30 @@ char **argv;
 	int fg, bg;
 	int invert = 0;
 	int dash = 0;
-
 	int winX, winY, winW, winH;
 	XSetWindowAttributes xswa;
 	XWindowAttributes xwa;
-
-
 	Polyinfo *poly;		/* the poly to draw */
 	int icoX, icoY;
 	int icoDeltaX, icoDeltaY;
 	int icoW, icoH;
-
 	XEvent xev;
 	XGCValues xgcv;
+
+	ProgramName = argv[0];
 
 	/* Process arguments: */
 
 	poly = findpoly("icosahedron");	/* default */
 
-	while (*++argv)
-		{
-		if (**argv == '=') 
+	while (*++argv) {
+		if (!strcmp (*argv, "-display")) {
+			display = *++argv;
+		} else if (!strncmp (*argv, "-g", 2)) {
+			geom = *++argv;
+		} else if (**argv == '=') 		/* obsolete */
 			geom = *argv;
-		else if (index(*argv, ':'))
+		else if (index(*argv, ':'))		/* obsolete */
 			display = *argv;
 		else if (!strcmp(*argv, "-r"))
 			useRoot = 1;
@@ -171,22 +189,17 @@ char **argv;
 			exit(1);
 		}
 		else {	/* unknown arg */
-printf("usage: ico [host:display.screen] [=geom] \
-[-r] [-d pattern] [-i] [-dbl] [-faces] [-noedges] \
-[-sleep n] [-obj object] [-objhelp] [-colors color-list]\n");
-printf("-r   use root window\n");
-printf("-d   use dashed lines (supply a bit pattern)\n");
-printf("-i   inverted\n");
-printf("-dbl use double buffering on the display\n");
-printf("-faces  draw faces\n");
-printf("-noedges  don't draw edges\n");
-printf("-obj object   specify what object to draw\n");
-printf("-objhelp      give help on what objects are available\n");
-printf("-sleep n  sleep for n seconds between each frame\n");
-printf("-colors color-list  list of colors to use on faces\n");
-exit(1);
-			}
+		    char **cpp;
+
+		  usage:
+		    fprintf (stderr, "usage:  %s [-options]\n\n", ProgramName);
+		    for (cpp = help_message; *cpp; cpp++) {
+			fprintf (stderr, "%s\n", *cpp);
+		    }
+		    fprintf (stderr, "\n");
+		    exit (1);
 		}
+	}
 
 	if (!dofaces && !doedges) icoFatal("nothing to draw");
 
