@@ -39,7 +39,7 @@ OF THIS SOFTWARE.
 
 */
 
-/* $XConsortium: cfbrctstp8.c,v 1.1 93/12/31 11:21:51 rob Exp $ */
+/* $XConsortium: cfbrctstp8.c,v 1.2 94/01/04 00:02:10 rob Exp $ */
 
 #if PSZ == 8
 
@@ -59,17 +59,17 @@ OF THIS SOFTWARE.
 #define MFB_CONSTS_ONLY
 #include "maskbits.h"
 
-#ifndef MTX
+#ifndef XTHREADS
 
 #define MTX_STIPPLE(_a) _a
 #define MTX_STIPPLE_CHANGE(_a) /* nothing */
 
-#else /* MTX */
+#else /* XTHREADS */
 
 #define MTX_STIPPLE(_a) pstipple->_a
 #define MTX_STIPPLE_CHANGE(_a) pstipple->change = (_a)
 
-#endif /* MTX */
+#endif /* XTHREADS */
 void
 cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
     DrawablePtr	    pDrawable;
@@ -99,24 +99,24 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
     cfbPrivGCPtr	    devPriv;
     PixmapPtr		    stipple;
     int	    wEnd;
-#ifdef MTX
+#ifdef XTHREADS
     StippleRec		    *pstipple;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     devPriv = cfbGetGCPrivate(pGC);
     stipple = devPriv->pRotatedPixmap;
 
-#ifdef MTX
+#ifdef XTHREADS
     stipple = devPriv->pRotatedPixmap;
     if(pstipple->change == TRUE)
     {
-#endif /* MTX */
+#endif /* XTHREADS */
 	cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel,
 			       pGC->planemask);
-#ifdef MTX
+#ifdef XTHREADS
 	pstipple->change = FALSE;
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     stippleHeight = stipple->drawable.height;
     src = (unsigned long *)stipple->devPrivate.ptr;
@@ -293,25 +293,25 @@ cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
     PixmapPtr	    stipple;
     int		    stippleHeight;
     register int    nlw;
-#ifdef MTX
+#ifdef XTHREADS
     StippleRec		    *pstipple;
-#endif /* MTX */
+#endif /* XTHREADS */
     
     devPriv = cfbGetGCPrivate(pGC);
     stipple = devPriv->pRotatedPixmap;
     src = (unsigned long *)stipple->devPrivate.ptr;
     stippleHeight = stipple->drawable.height;
 
-#ifdef MTX
+#ifdef XTHREADS
     stipple = devPriv->pRotatedPixmap;
     if(pstipple->change == TRUE)
     {
-#endif /* MTX */
+#endif /* XTHREADS */
 	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
-#ifdef MTX
+#ifdef XTHREADS
 	pstipple->change = FALSE;
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     cfbGetLongWidthAndPointer (pDrawable, nlwDst, pbits)
 
@@ -524,18 +524,18 @@ cfb8FillRectStippledUnnatural (pDrawable, pGC, nBox, pBox)
     unsigned long   *srcTemp, *srcStart;
     unsigned long   *psrcBase;
     unsigned long   startmask, endmask;
-#ifdef MTX
+#ifdef XTHREADS
     StippleRec		    *pstipple;
-#endif /* MTX */
+#endif /* XTHREADS */
 
-#ifdef MTX
+#ifdef XTHREADS
     UpdateStipple
-#else /* MTX */
+#else /* XTHREADS */
     if (pGC->fillStyle == FillStippled)
 	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
     else
 	cfb8CheckOpaqueStipple (pGC->alu, pGC->fgPixel, pGC->bgPixel, pGC->planemask);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     if (MTX_STIPPLE(cfb8StippleRRop) == GXnoop)
 	return;

@@ -68,10 +68,10 @@ static Bool	    miSpriteCloseScreen();
 static void	    miSpriteGetImage();
 static void	    miSpriteGetSpans();
 static Bool	    miSpriteCreateGC();
-#ifndef MTX
+#ifndef XTHREADS
 static void	    miSpriteSourceValidate();
 static void	    miSpriteBlockHandler();
-#endif /* MTX */
+#endif /* XTHREADS */
 static void	    miSpriteInstallColormap();
 static void	    miSpriteStoreColors();
 
@@ -84,14 +84,14 @@ static void	    miSpriteSaveDoomedAreas();
 static RegionPtr    miSpriteRestoreAreas();
 static void	    miSpriteComputeSaved();
 
-#ifndef MTX
+#ifndef XTHREADS
 #define SCREEN_PROLOGUE(pScreen, field)\
   ((pScreen)->field = \
    ((miSpriteScreenPtr) (pScreen)->devPrivates[miSpriteScreenIndex].ptr)->field)
 
 #define SCREEN_EPILOGUE(pScreen, field, wrapper)\
     ((pScreen)->field = wrapper)
-#endif /* MTX */
+#endif /* XTHREADS */
 
 /*
  * GC func wrappers
@@ -178,14 +178,14 @@ static GCOps miSpriteGCOps = {
 	(pGC)->devPrivates[miSpriteGCIndex].ptr;		    \
     GCFuncs *oldFuncs = (pGC)->funcs;				    \
 
-#ifndef MTX
+#ifndef XTHREADS
 #define GC_SETUP_AND_CHECK(pDrawable, pGC)			    \
     GC_SETUP(pDrawable, pGC);					    \
     if (GC_CHECK((WindowPtr)pDrawable))				    \
 	miSpriteRemoveCursor (pDrawable->pScreen);
-#endif /* MTX */
+#endif /* XTHREADS */
     
-#ifndef MTX
+#ifndef XTHREADS
 #define GC_CHECK(pWin)						    \
     (pScreenPriv->isUp &&					    \
         (pScreenPriv->pCacheWin == pWin ?			    \
@@ -200,7 +200,7 @@ static GCOps miSpriteGCOps = {
 				    (int) (pWin)->drawable.height &&\
 		RECT_IN_REGION((pWin)->drawable.pScreen, &(pWin)->borderClip, \
 			&pScreenPriv->saved) != rgnOUT))))
-#else /* MTX */
+#else /* XTHREADS */
 #define GC_CHECK(pWin)						    \
 	    ( (pWin)->drawable.type == DRAWABLE_WINDOW &&	    \
 		(pWin)->drawable.x < pScreenPriv->saved.x2 &&	    \
@@ -211,25 +211,25 @@ static GCOps miSpriteGCOps = {
 				    (int) (pWin)->drawable.height &&\
 		RECT_IN_REGION((pWin)->drawable.pScreen, &(pWin)->borderClip, \
 			&pScreenPriv->saved) != rgnOUT)
-#endif /* MTX */
+#endif /* XTHREADS */
 
 #define GC_OP_PROLOGUE(pGC) { \
     (pGC)->funcs = pGCPrivate->wrapFuncs; \
     (pGC)->ops = pGCPrivate->wrapOps; \
     }
 
-#ifndef MTX
+#ifndef XTHREADS
 #define GC_OP_EPILOGUE(pGC) { \
     (pGC)->funcs = oldFuncs; \
     (pGC)->ops = &miSpriteGCOps; \
     }
-#else /* MTX */
+#else /* XTHREADS */
 #define GC_OP_EPILOGUE(pGC) { \
     pGCPrivate->wrapOps = (pGC)->ops; \
     (pGC)->funcs = oldFuncs; \
     (pGC)->ops = &miSpriteGCOps; \
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
 /*
  * pointer-sprite method table
@@ -251,7 +251,7 @@ miPointerSpriteFuncRec miSpritePointerFuncs = {
 
 static void miSpriteRemoveCursor (),	miSpriteRestoreCursor();
 
-#ifdef MTX
+#ifdef XTHREADS
 /*
  * pointer lock/unlock functions
  * 
@@ -265,7 +265,7 @@ static void miSpriteRemoveCursor (),	miSpriteRestoreCursor();
  */
 extern Bool miPointerLock ();	/* mipointer.c */
 extern void miPointerUnlock();  /* mipointer.c */
-#endif /* MTX */
+#endif /* XTHREADS */
 
 /*
  * miSpriteInitialize -- called from device-dependent screen
@@ -281,9 +281,9 @@ miSpriteInitialize (pScreen, cursorFuncs, screenFuncs)
 {
     miSpriteScreenPtr	pPriv;
     VisualPtr		pVisual;
-#ifdef MTX
+#ifdef XTHREADS
     int		        i;
-#endif /* MTX */
+#endif /* XTHREADS */
     
     if (miSpriteGeneration != serverGeneration)
     {
@@ -311,13 +311,13 @@ miSpriteInitialize (pScreen, cursorFuncs, screenFuncs)
     pPriv->CloseScreen = pScreen->CloseScreen;
     pPriv->GetImage = pScreen->GetImage;
     pPriv->GetSpans = pScreen->GetSpans;
-#ifndef MTX
+#ifndef XTHREADS
     pPriv->SourceValidate = pScreen->SourceValidate;
-#endif /* MTX */
+#endif /* XTHREADS */
     pPriv->CreateGC = pScreen->CreateGC;
-#ifndef MTX
+#ifndef XTHREADS
     pPriv->BlockHandler = pScreen->BlockHandler;
-#endif /* MTX */
+#endif /* XTHREADS */
     pPriv->InstallColormap = pScreen->InstallColormap;
     pPriv->StoreColors = pScreen->StoreColors;
 
@@ -333,11 +333,11 @@ miSpriteInitialize (pScreen, cursorFuncs, screenFuncs)
     pPriv->x = 0;
     pPriv->y = 0;
     pPriv->isUp = FALSE;
-#ifndef MTX
+#ifndef XTHREADS
     pPriv->shouldBeUp = FALSE;
     pPriv->pCacheWin = NullWindow;
     pPriv->isInCacheWin = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     pPriv->checkPixels = TRUE;
     pPriv->pInstalledMap = NULL;
     pPriv->pColormap = NULL;
@@ -353,10 +353,10 @@ miSpriteInitialize (pScreen, cursorFuncs, screenFuncs)
     pScreen->GetImage = miSpriteGetImage;
     pScreen->GetSpans = miSpriteGetSpans;
     pScreen->CreateGC = miSpriteCreateGC;
-#ifndef MTX
+#ifndef XTHREADS
     pScreen->SourceValidate = miSpriteSourceValidate;
     pScreen->BlockHandler = miSpriteBlockHandler;
-#endif /* MTX */
+#endif /* XTHREADS */
     pScreen->InstallColormap = miSpriteInstallColormap;
     pScreen->StoreColors = miSpriteStoreColors;
 
@@ -392,10 +392,10 @@ miSpriteCloseScreen (i, pScreen)
     pScreen->GetImage = pScreenPriv->GetImage;
     pScreen->GetSpans = pScreenPriv->GetSpans;
     pScreen->CreateGC = pScreenPriv->CreateGC;
-#ifndef MTX
+#ifndef XTHREADS
     pScreen->SourceValidate = pScreenPriv->SourceValidate;
     pScreen->BlockHandler = pScreenPriv->BlockHandler;
-#endif /* MTX */
+#endif /* XTHREADS */
     pScreen->InstallColormap = pScreenPriv->InstallColormap;
     pScreen->StoreColors = pScreenPriv->StoreColors;
 
@@ -422,49 +422,49 @@ miSpriteGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
 {
     ScreenPtr	    pScreen = pDrawable->pScreen;
     miSpriteScreenPtr    pScreenPriv;
-#ifdef MTX
+#ifdef XTHREADS
     Bool	      drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_PROLOGUE (pScreen, GetImage);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
 
     if (pDrawable->type == DRAWABLE_WINDOW &&
-#ifndef MTX
+#ifndef XTHREADS
         pScreenPriv->isUp &&
-#endif /* MTX */
+#endif /* XTHREADS */
 	ORG_OVERLAP(&pScreenPriv->saved,pDrawable->x,pDrawable->y, sx, sy, w, h))
     {
-#ifdef MTX
+#ifdef XTHREADS
       if(miPointerLock())
       {
-#endif /* MTX */
+#endif /* XTHREADS */
 	miSpriteRemoveCursor (pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 	drawCursor = TRUE;
       }
-#endif /* MTX */
+#endif /* XTHREADS */
     }
 
-#ifndef MTX
+#ifndef XTHREADS
     (*pScreen->GetImage)
-#else /* MTX */
+#else /* XTHREADS */
     (*pScreenPriv->GetImage)
-#endif /* MTX */
+#endif /* XTHREADS */
 	(pDrawable, sx, sy, w, h, format, planemask, pdstLine);
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_EPILOGUE (pScreen, GetImage, miSpriteGetImage);
-#else /* MTX */
+#else /* XTHREADS */
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 static void
@@ -478,20 +478,20 @@ miSpriteGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 {
     ScreenPtr		    pScreen = pDrawable->pScreen;
     miSpriteScreenPtr	    pScreenPriv;
-#ifdef MTX
+#ifdef XTHREADS
     Bool		    drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_PROLOGUE (pScreen, GetSpans);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
 
     if ((pDrawable->type == DRAWABLE_WINDOW)
-#ifndef MTX
+#ifndef XTHREADS
 	&& pScreenPriv->isUp
-#endif /* MTX */
+#endif /* XTHREADS */
 	)
     {
 	register DDXPointPtr    pts;
@@ -510,39 +510,39 @@ miSpriteGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 	    if (SPN_OVERLAP(&pScreenPriv->saved,pts->y+yorg,
 			     pts->x+xorg,*widths))
 	    {
-#ifndef MTX
+#ifndef XTHREADS
 		miSpriteRemoveCursor (pScreen);
-#else /* MTX */
+#else /* XTHREADS */
 	    	if(miPointerLock())
 		{
 		    miSpriteRemoveCursor (pScreen);
 		    drawCursor = TRUE;
 		}
-#endif /* MTX */
+#endif /* XTHREADS */
 		break;
 	    }
 	}
     }
 
-#ifndef MTX
+#ifndef XTHREADS
     (*pScreen->GetSpans)
-#else /* MTX */
+#else /* XTHREADS */
     (*pScreenPriv->GetSpans)
-#endif /* MTX */
+#endif /* XTHREADS */
 	(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_EPILOGUE (pScreen, GetSpans, miSpriteGetSpans);
-#else /* MTX */
+#else /* XTHREADS */
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
-#ifndef MTX
+#ifndef XTHREADS
 static void
 miSpriteSourceValidate (pDrawable, x, y, width, height)
     DrawablePtr	pDrawable;
@@ -567,7 +567,7 @@ miSpriteSourceValidate (pDrawable, x, y, width, height)
 
     SCREEN_EPILOGUE (pScreen, SourceValidate, miSpriteSourceValidate);
 }
-#endif /* MTX */
+#endif /* XTHREADS */
 
 static Bool
 miSpriteCreateGC (pGC)
@@ -577,38 +577,38 @@ miSpriteCreateGC (pGC)
     Bool	    ret;
     miSpriteGCPtr   pPriv;
 
-#ifdef MTX
+#ifdef XTHREADS
     miSpriteScreenPtr  pScreenPriv;
-#else /* MTX */
+#else /* XTHREADS */
     SCREEN_PROLOGUE (pScreen, CreateGC);
-#endif /* MTX */
+#endif /* XTHREADS */
     
     pPriv = (miSpriteGCPtr)pGC->devPrivates[miSpriteGCIndex].ptr;
 
-#ifdef MTX
+#ifdef XTHREADS
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     ret =
-#ifndef MTX
+#ifndef XTHREADS
 	(*pScreen->CreateGC)
-#else /* MTX */
+#else /* XTHREADS */
 	(*pScreenPriv->CreateGC)
-#endif /* MTX */
+#endif /* XTHREADS */
 	    (pGC);
 
     pPriv->wrapOps = NULL;
     pPriv->wrapFuncs = pGC->funcs;
     pGC->funcs = &miSpriteGCFuncs;
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_EPILOGUE (pScreen, CreateGC, miSpriteCreateGC);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     return ret;
 }
 
-#ifndef MTX
+#ifndef XTHREADS
 static void
 miSpriteBlockHandler (i, blockData, pTimeout, pReadmask)
     int	i;
@@ -630,7 +630,7 @@ miSpriteBlockHandler (i, blockData, pTimeout, pReadmask)
     if (!pPriv->isUp && pPriv->shouldBeUp)
 	miSpriteRestoreCursor (pScreen);
 }
-#endif /* MTX */
+#endif /* XTHREADS */
 
 static void
 miSpriteInstallColormap (pMap)
@@ -638,41 +638,41 @@ miSpriteInstallColormap (pMap)
 {
     ScreenPtr		pScreen = pMap->pScreen;
     miSpriteScreenPtr	pPriv;
-#ifdef MTX
+#ifdef XTHREADS
     Bool		lock;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_PROLOGUE(pScreen, InstallColormap);
-#endif /* MTX */
+#endif /* XTHREADS */
     
-#ifndef MTX
+#ifndef XTHREADS
     (*pScreen->InstallColormap)
-#else /* MTX */
+#else /* XTHREADS */
     (*pPriv->InstallColormap)
-#endif /* MTX */
+#endif /* XTHREADS */
 	(pMap);
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_EPILOGUE(pScreen, InstallColormap, miSpriteInstallColormap);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pPriv->pInstalledMap = pMap;
     if (pPriv->pColormap != pMap)
     {
-#ifdef MTX
+#ifdef XTHREADS
 	lock = miPointerLock();
-#endif /* MTX */
+#endif /* XTHREADS */
     	pPriv->checkPixels = TRUE;
 	if (pPriv->isUp)
 	{
 	    miSpriteRemoveCursor (pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 	    if(lock)
 		miPointerUnlock();
-#endif /* MTX */
+#endif /* XTHREADS */
 	}
     }
 }
@@ -688,25 +688,25 @@ miSpriteStoreColors (pMap, ndef, pdef)
     int			i;
     int			updated;
     VisualPtr		pVisual;
-#ifdef MTX
+#ifdef XTHREADS
     Bool		lock;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_PROLOGUE(pScreen, StoreColors);
     
     (*pScreen->StoreColors)
-#else /* MTX */
+#else /* XTHREADS */
     (*pPriv->StoreColors)
     (pMap, ndef, pdef);
-#endif /* MTX */
+#endif /* XTHREADS */
 	(pMap, ndef, pdef);
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_EPILOGUE(pScreen, StoreColors, miSpriteStoreColors);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     if (pPriv->pColormap == pMap)
     {
@@ -757,18 +757,18 @@ miSpriteStoreColors (pMap, ndef, pdef)
 	}
     	if (updated)
     	{
-#ifdef MTX
+#ifdef XTHREADS
 	    lock = miPointerLock();
-#endif /* MTX */
+#endif /* XTHREADS */
 	    pPriv->checkPixels = TRUE;
 	    if (pPriv->isUp)
 	    {
 	    	miSpriteRemoveCursor (pScreen);
 	    }
-#ifdef MTX
+#ifdef XTHREADS
 	    if (lock)
 		miPointerUnlock();
-#endif /* MTX */
+#endif /* XTHREADS */
     	}
     }
 }
@@ -822,21 +822,21 @@ miSpriteSaveDoomedAreas (pWin, pObscured, dx, dy)
     ScreenPtr		pScreen;
     miSpriteScreenPtr   pScreenPriv;
     BoxRec		cursorBox;
-#ifdef MTX
+#ifdef XTHREADS
     Bool		drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pScreen = pWin->drawable.pScreen;
     
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_PROLOGUE (pScreen, SaveDoomedAreas);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
 
-#ifndef MTX
+#ifndef XTHREADS
     if (pScreenPriv->isUp)
-#endif /* MTX */
+#endif /* XTHREADS */
     {
 	cursorBox = pScreenPriv->saved;
 
@@ -849,35 +849,35 @@ miSpriteSaveDoomedAreas (pWin, pObscured, dx, dy)
 	}
 	if (RECT_IN_REGION(pScreen, pObscured, &cursorBox) != rgnOUT)
 	{
-#ifdef MTX
+#ifdef XTHREADS
 	    if (miPointerLock())
-#endif /* MTX */
+#endif /* XTHREADS */
 	    {
 		miSpriteRemoveCursor (pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 		drawCursor = TRUE;
-#endif /* MTX */
+#endif /* XTHREADS */
 	    }
 	}
     }
 
-#ifndef MTX
+#ifndef XTHREADS
     (*pScreen->SaveDoomedAreas)
 	(pWin, pObscured, dx, dy);
-#else /* MTX */
+#else /* XTHREADS */
     (*pScreenPriv->SaveDoomedAreas)
 	(pWin, pObscured, dx, dy);
-#endif /* MTX */
+#endif /* XTHREADS */
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_EPILOGUE (pScreen, SaveDoomedAreas, miSpriteSaveDoomedAreas);
-#else /* MTX */
+#else /* XTHREADS */
     if (drawCursor)
     {
 	miSpriteRestoreCursor (pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 static RegionPtr
@@ -888,50 +888,50 @@ miSpriteRestoreAreas (pWin, prgnExposed)
     ScreenPtr		pScreen;
     miSpriteScreenPtr   pScreenPriv;
     RegionPtr		result;
-#ifdef MTX
+#ifdef XTHREADS
     Bool		drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pScreen = pWin->drawable.pScreen;
     
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_PROLOGUE (pScreen, RestoreAreas);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
-#ifndef MTX
+#ifndef XTHREADS
     if (pScreenPriv->isUp)
-#endif /* MTX */
+#endif /* XTHREADS */
     {
 	if (RECT_IN_REGION(pScreen, prgnExposed, &pScreenPriv->saved) != rgnOUT)
-#ifdef MTX
+#ifdef XTHREADS
 	if(miPointerLock())
 	{
-#endif /* MTX */
+#endif /* XTHREADS */
 	    miSpriteRemoveCursor (pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 	    drawCursor = TRUE;
         }
-#endif /* MTX */
+#endif /* XTHREADS */
     }
 
     result =
-#ifndef MTX
+#ifndef XTHREADS
 	(*pScreen->RestoreAreas)
-#else /* MTX */
+#else /* XTHREADS */
 	(*pScreenPriv->RestoreAreas)
-#endif /* MTX */
+#endif /* XTHREADS */
 	    (pWin, prgnExposed);
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_EPILOGUE (pScreen, RestoreAreas, miSpriteRestoreAreas);
-#else /* MTX */
+#else /* XTHREADS */
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
     return result;
 }
 
@@ -947,54 +947,54 @@ miSpritePaintWindowBackground (pWin, pRegion, what)
 {
     ScreenPtr	    pScreen;
     miSpriteScreenPtr    pScreenPriv;
-#ifdef MTX
+#ifdef XTHREADS
     Bool		drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pScreen = pWin->drawable.pScreen;
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_PROLOGUE (pScreen, PaintWindowBackground);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
-#ifndef MTX
+#ifndef XTHREADS
     if (pScreenPriv->isUp)
-#endif /* MTX */
+#endif /* XTHREADS */
     {
 	/*
 	 * If the cursor is on the same screen as the window, check the
 	 * region to paint for the cursor and remove it as necessary
 	 */
 	if (RECT_IN_REGION(pScreen, pRegion, &pScreenPriv->saved) != rgnOUT)
-#ifdef MTX
+#ifdef XTHREADS
 	if(miPointerLock())
 	{
-#endif /* MTX */
+#endif /* XTHREADS */
 	    miSpriteRemoveCursor (pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 	    drawCursor = TRUE;
         }
-#endif /* MTX */
+#endif /* XTHREADS */
     }
 
-#ifndef MTX
+#ifndef XTHREADS
     (*pScreen->PaintWindowBackground)
 	(pWin, pRegion, what);
-#else /* MTX */
+#else /* XTHREADS */
     (*pScreenPriv->PaintWindowBackground)
 	(pWin, pRegion, what);
-#endif /* MTX */
+#endif /* XTHREADS */
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_EPILOGUE (pScreen, PaintWindowBackground, miSpritePaintWindowBackground);
-#else /* MTX */
+#else /* XTHREADS */
     if (drawCursor)
     {
 	miSpriteRestoreCursor (pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 static void
@@ -1005,54 +1005,54 @@ miSpritePaintWindowBorder (pWin, pRegion, what)
 {
     ScreenPtr	    pScreen;
     miSpriteScreenPtr    pScreenPriv;
-#ifdef MTX
+#ifdef XTHREADS
     Bool		drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pScreen = pWin->drawable.pScreen;
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_PROLOGUE (pScreen, PaintWindowBorder);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
-#ifndef MTX
+#ifndef XTHREADS
     if (pScreenPriv->isUp)
-#endif /* MTX */
+#endif /* XTHREADS */
     {
 	/*
 	 * If the cursor is on the same screen as the window, check the
 	 * region to paint for the cursor and remove it as necessary
 	 */
 	if (RECT_IN_REGION(pScreen, pRegion, &pScreenPriv->saved) != rgnOUT)
-#ifdef MTX
+#ifdef XTHREADS
 	if(miPointerLock())
 	{
-#endif /* MTX */
+#endif /* XTHREADS */
 	    miSpriteRemoveCursor (pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 	    drawCursor = TRUE;
         }
-#endif /* MTX */
+#endif /* XTHREADS */
     }
 
-#ifndef MTX
+#ifndef XTHREADS
     (*pScreen->PaintWindowBorder)
 	(pWin, pRegion, what);
-#else /* MTX */
+#else /* XTHREADS */
     (*pScreenPriv->PaintWindowBorder)
 	(pWin, pRegion, what);
-#endif /* MTX */
+#endif /* XTHREADS */
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_EPILOGUE (pScreen, PaintWindowBorder, miSpritePaintWindowBorder);
-#else /* MTX */
+#else /* XTHREADS */
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 static void
@@ -1065,20 +1065,20 @@ miSpriteCopyWindow (pWin, ptOldOrg, pRegion)
     miSpriteScreenPtr    pScreenPriv;
     BoxRec	    cursorBox;
     int		    dx, dy;
-#ifdef MTX
+#ifdef XTHREADS
     Bool	    drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pScreen = pWin->drawable.pScreen;
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_PROLOGUE (pScreen, CopyWindow);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
-#ifndef MTX
+#ifndef XTHREADS
     if (pScreenPriv->isUp)
-#endif /* MTX */
+#endif /* XTHREADS */
     {
 	/*
 	 * check both the source and the destination areas.  The given
@@ -1094,34 +1094,34 @@ miSpriteCopyWindow (pWin, ptOldOrg, pRegion)
 	cursorBox.y2 -= dy;
 	if (RECT_IN_REGION(pScreen, pRegion, &pScreenPriv->saved) != rgnOUT ||
 	    RECT_IN_REGION(pScreen, pRegion, &cursorBox) != rgnOUT)
-#ifdef MTX
+#ifdef XTHREADS
 	if(miPointerLock())
 	{
-#endif /* MTX */
+#endif /* XTHREADS */
 	    miSpriteRemoveCursor (pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 	    drawCursor = TRUE;
         }
-#endif /* MTX */
+#endif /* XTHREADS */
     }
 
-#ifndef MTX
+#ifndef XTHREADS
     (*pScreen->CopyWindow)
 	(pWin, ptOldOrg, pRegion);
-#else /* MTX */
+#else /* XTHREADS */
     (*pScreenPriv->CopyWindow)
 	(pWin, ptOldOrg, pRegion);
-#endif /* MTX */
+#endif /* XTHREADS */
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_EPILOGUE (pScreen, CopyWindow, miSpriteCopyWindow);
-#else /* MTX */
+#else /* XTHREADS */
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 static void
@@ -1134,15 +1134,15 @@ miSpriteClearToBackground (pWin, x, y, w, h, generateExposures)
     ScreenPtr		pScreen;
     miSpriteScreenPtr	pScreenPriv;
     int			realw, realh;
-#ifdef MTX
+#ifdef XTHREADS
     Bool		drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pScreen = pWin->drawable.pScreen;
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_PROLOGUE (pScreen, ClearToBackground);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
     if (GC_CHECK(pWin))
@@ -1154,35 +1154,35 @@ miSpriteClearToBackground (pWin, x, y, w, h, generateExposures)
 	if (ORG_OVERLAP(&pScreenPriv->saved, pWin->drawable.x, pWin->drawable.y,
 			x, y, realw, realh))
 	{
-#ifdef MTX
+#ifdef XTHREADS
 	    if(miPointerLock())
 	    {
-#endif /* MTX */
+#endif /* XTHREADS */
 		miSpriteRemoveCursor (pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 		drawCursor = TRUE;
             }
-#endif /* MTX */
+#endif /* XTHREADS */
 	}
     }
 
-#ifndef MTX
+#ifndef XTHREADS
     (*pScreen->ClearToBackground)
 	(pWin, x, y, w, h, generateExposures);
-#else /* MTX */
+#else /* XTHREADS */
     (*pScreenPriv->ClearToBackground)
 	(pWin, x, y, w, h, generateExposures);
-#endif /* MTX */
+#endif /* XTHREADS */
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_EPILOGUE (pScreen, ClearToBackground, miSpriteClearToBackground);
-#else /* MTX */
+#else /* XTHREADS */
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 /*
@@ -1195,23 +1195,23 @@ miSpriteValidateGC (pGC, changes, pDrawable)
     Mask	changes;
     DrawablePtr	pDrawable;
 {
-#ifdef MTX
+#ifdef XTHREADS
     GCOps          *oldOps  = pGC->ops;
-#endif /* MTX */
+#endif /* XTHREADS */
     GC_FUNC_PROLOGUE (pGC);
 
     (*pGC->funcs->ValidateGC) (pGC, changes, pDrawable);
     
     pGCPriv->wrapOps = NULL;
     if ((pDrawable->type == DRAWABLE_WINDOW)
-#ifndef MTX
+#ifndef XTHREADS
     && (((WindowPtr) pDrawable)->viewable)
-#endif /* MTX */
+#endif /* XTHREADS */
 	)
     {
-#ifdef MTX
+#ifdef XTHREADS
 	if (((WindowPtr) pDrawable)->viewable)
-#endif /* MTX */
+#endif /* XTHREADS */
 	{
 	    WindowPtr   pWin;
 	    RegionPtr   pRegion;
@@ -1224,10 +1224,10 @@ miSpriteValidateGC (pGC, changes, pDrawable)
 		pGCPriv->wrapOps = pGC->ops;
         }
     }
-#ifdef MTX
+#ifdef XTHREADS
     else if (pDrawable->type == DRAWABLE_PIXMAP)
 	pGCPriv->wrapOps = pGC->ops;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_FUNC_EPILOGUE (pGC);
 }
@@ -1264,9 +1264,9 @@ miSpriteDestroyGC (pGC)
 
     (*pGC->funcs->DestroyGC) (pGC);
     
-#ifndef MTX
+#ifndef XTHREADS
     GC_FUNC_EPILOGUE (pGC);
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 static void
@@ -1318,9 +1318,9 @@ miSpriteFillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int		*pwidthInit;		/* pointer to list of n widths */
     int 	fSorted;
 {
-#ifdef MTX
+#ifdef XTHREADS
     Bool	drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     GC_SETUP(pDrawable, pGC);
 
     if (GC_CHECK((WindowPtr) pDrawable))
@@ -1335,15 +1335,15 @@ miSpriteFillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
  	{
 	    if (SPN_OVERLAP(&pScreenPriv->saved,pts->y,pts->x,*widths))
 	    {
-#ifdef MTX
+#ifdef XTHREADS
 		if (miPointerLock())
 		{
-#endif /* MTX */
+#endif /* XTHREADS */
 		     miSpriteRemoveCursor (pDrawable->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 		     drawCursor = TRUE;
 		}
-#endif /* MTX */
+#endif /* XTHREADS */
 		break;
 	    }
 	}
@@ -1353,13 +1353,13 @@ miSpriteFillSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
     (*pGC->ops->FillSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
 
-#ifdef MTX
+#ifdef XTHREADS
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pDrawable->pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_OP_EPILOGUE (pGC);
 }
@@ -1374,9 +1374,9 @@ miSpriteSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     int			nspans;
     int			fSorted;
 {
-#ifdef MTX
+#ifdef XTHREADS
     Bool	drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     GC_SETUP(pDrawable, pGC);
 
     if (GC_CHECK((WindowPtr) pDrawable))
@@ -1391,14 +1391,14 @@ miSpriteSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
  	{
 	    if (SPN_OVERLAP(&pScreenPriv->saved,pts->y,pts->x,*widths))
 	    {
-#ifdef MTX
+#ifdef XTHREADS
 		if(miPointerLock())
-#endif /* MTX */
+#endif /* XTHREADS */
 		{
 		     miSpriteRemoveCursor (pDrawable->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 		     drawCursor = TRUE;
-#endif /* MTX */
+#endif /* XTHREADS */
 		}
 		break;
 	    }
@@ -1409,13 +1409,13 @@ miSpriteSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 
     (*pGC->ops->SetSpans) (pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
 
-#ifdef MTX
+#ifdef XTHREADS
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pDrawable->pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_OP_EPILOGUE (pGC);
 }
@@ -1432,9 +1432,9 @@ miSpritePutImage(pDrawable, pGC, depth, x, y, w, h, leftPad, format, pBits)
     int	    	  format;
     char    	  *pBits;
 {
-#ifdef MTX
+#ifdef XTHREADS
     Bool	drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     GC_SETUP(pDrawable, pGC);
 
     if (GC_CHECK((WindowPtr) pDrawable))
@@ -1442,15 +1442,15 @@ miSpritePutImage(pDrawable, pGC, depth, x, y, w, h, leftPad, format, pBits)
 	if (ORG_OVERLAP(&pScreenPriv->saved,pDrawable->x,pDrawable->y,
 			x,y,w,h))
  	{
-#ifdef MTX
+#ifdef XTHREADS
 	    if(miPointerLock())
 	    {
-#endif /* MTX */
+#endif /* XTHREADS */
 		miSpriteRemoveCursor (pDrawable->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 		drawCursor = TRUE;
 	    }
-#endif /* MTX */
+#endif /* XTHREADS */
 	}
     }
 
@@ -1458,13 +1458,13 @@ miSpritePutImage(pDrawable, pGC, depth, x, y, w, h, leftPad, format, pBits)
 
     (*pGC->ops->PutImage) (pDrawable, pGC, depth, x, y, w, h, leftPad, format, pBits);
 
-#ifdef MTX
+#ifdef XTHREADS
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pDrawable->pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_OP_EPILOGUE (pGC);
 }
@@ -1482,34 +1482,34 @@ miSpriteCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
     int	    	  dsty;
 {
     RegionPtr rgn;
-#ifdef MTX
+#ifdef XTHREADS
     Bool      drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_SETUP(pDst, pGC);
 
-#ifndef MTX
+#ifndef XTHREADS
     /* check destination/source overlap. */
     if (GC_CHECK((WindowPtr) pDst) &&
 	 (ORG_OVERLAP(&pScreenPriv->saved,pDst->x,pDst->y,dstx,dsty,w,h) ||
 	  ((pDst == pSrc) &&
 	   ORG_OVERLAP(&pScreenPriv->saved,pSrc->x,pSrc->y,srcx,srcy,w,h))))
-#else /* MTX */
+#else /* XTHREADS */
     if ((pDst->type == DRAWABLE_WINDOW && GC_CHECK((WindowPtr) pDst) &&
 	 ORG_OVERLAP(&pScreenPriv->saved,pDst->x,pDst->y,dstx,dsty,w,h)) ||
 	(pSrc->type == DRAWABLE_WINDOW &&
 	 ORG_OVERLAP(&pScreenPriv->saved,pSrc->x,pSrc->y,srcx,srcy,w,h)))
-#endif /* MTX */
+#endif /* XTHREADS */
     {
-#ifdef MTX
+#ifdef XTHREADS
 	if(miPointerLock())
 	{
-#endif /* MTX */
+#endif /* XTHREADS */
 	    miSpriteRemoveCursor (pDst->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 	    drawCursor = TRUE;
 	}
-#endif /* MTX */
+#endif /* XTHREADS */
     }
  
     GC_OP_PROLOGUE (pGC);
@@ -1517,13 +1517,13 @@ miSpriteCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
     rgn = (*pGC->ops->CopyArea) (pSrc, pDst, pGC, srcx, srcy, w, h,
 				 dstx, dsty);
 
-#ifdef MTX
+#ifdef XTHREADS
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pDst->pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_OP_EPILOGUE (pGC);
 
@@ -1544,36 +1544,36 @@ miSpriteCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
     unsigned long  plane;
 {
     RegionPtr rgn;
-#ifdef MTX
+#ifdef XTHREADS
     Bool	drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_SETUP(pDst, pGC);
 
     /*
      * check destination/source for overlap.
      */
-#ifndef MTX
+#ifndef XTHREADS
     if (GC_CHECK((WindowPtr) pDst) &&
 	(ORG_OVERLAP(&pScreenPriv->saved,pDst->x,pDst->y,dstx,dsty,w,h) ||
 	 ((pDst == pSrc) &&
 	  ORG_OVERLAP(&pScreenPriv->saved,pSrc->x,pSrc->y,srcx,srcy,w,h))))
-#else /* MTX */
+#else /* XTHREADS */
     if ((pDst->type == DRAWABLE_WINDOW && GC_CHECK((WindowPtr) pDst) &&
 	 ORG_OVERLAP(&pScreenPriv->saved,pDst->x,pDst->y,dstx,dsty,w,h)) ||
 	(pSrc->type == DRAWABLE_WINDOW &&
 	 ORG_OVERLAP(&pScreenPriv->saved,pSrc->x,pSrc->y,srcx,srcy,w,h)))
-#endif /* MTX */
+#endif /* XTHREADS */
     {
-#ifdef MTX
+#ifdef XTHREADS
 	if(miPointerLock())
 	{
-#endif /* MTX */
+#endif /* XTHREADS */
 	    miSpriteRemoveCursor (pDst->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 	    drawCursor = TRUE;
 	}
-#endif /* MTX */
+#endif /* XTHREADS */
     }
 
     GC_OP_PROLOGUE (pGC);
@@ -1581,13 +1581,13 @@ miSpriteCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
     rgn = (*pGC->ops->CopyPlane) (pSrc, pDst, pGC, srcx, srcy, w, h,
 				  dstx, dsty, plane);
 
-#ifdef MTX
+#ifdef XTHREADS
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pDst->pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_OP_EPILOGUE (pGC);
 
@@ -1602,9 +1602,9 @@ miSpritePolyPoint (pDrawable, pGC, mode, npt, pptInit)
     int		npt;
     xPoint 	*pptInit;
 {
-#ifdef MTX
+#ifdef XTHREADS
     Bool	drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     xPoint	t;
     int		n;
     BoxRec	cursor;
@@ -1630,15 +1630,15 @@ miSpritePolyPoint (pDrawable, pGC, mode, npt, pptInit)
 		if (cursor.x1 <= t.x && t.x <= cursor.x2 &&
 		    cursor.y1 <= t.y && t.y <= cursor.y2)
 		{
-#ifdef MTX
+#ifdef XTHREADS
 		    if(miPointerLock())
 		    {
-#endif /* MTX */
+#endif /* XTHREADS */
 			miSpriteRemoveCursor (pDrawable->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 			drawCursor = TRUE;
 		    }
-#endif /* MTX */
+#endif /* XTHREADS */
 		    break;
 		}
 	    }
@@ -1650,15 +1650,15 @@ miSpritePolyPoint (pDrawable, pGC, mode, npt, pptInit)
 		if (cursor.x1 <= pts->x && pts->x <= cursor.x2 &&
 		    cursor.y1 <= pts->y && pts->y <= cursor.y2)
 		{
-#ifdef MTX
+#ifdef XTHREADS
 		    if(miPointerLock())
 		    {
-#endif /* MTX */
+#endif /* XTHREADS */
 			miSpriteRemoveCursor (pDrawable->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 			drawCursor = TRUE;
 		    }
-#endif /* MTX */
+#endif /* XTHREADS */
 		    break;
 		}
 	    }
@@ -1669,14 +1669,14 @@ miSpritePolyPoint (pDrawable, pGC, mode, npt, pptInit)
 
     (*pGC->ops->PolyPoint) (pDrawable, pGC, mode, npt, pptInit);
 
-#ifdef MTX
+#ifdef XTHREADS
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pDrawable->pScreen);
 	miPointerUnlock();
     }
 
-#endif /* MTX */
+#endif /* XTHREADS */
     GC_OP_EPILOGUE (pGC);
 }
 
@@ -1688,9 +1688,9 @@ miSpritePolylines (pDrawable, pGC, mode, npt, pptInit)
     int	    	  npt;
     DDXPointPtr	  pptInit;
 {
-#ifdef MTX
+#ifdef XTHREADS
     Bool drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     BoxPtr  cursor;
     register DDXPointPtr pts;
     int	    n;
@@ -1712,15 +1712,15 @@ miSpritePolylines (pDrawable, pGC, mode, npt, pptInit)
 	    extra = lw >> 1;
 	    if (LINE_OVERLAP(cursor, x, y, x, y, extra))
 	    {
-#ifdef MTX
+#ifdef XTHREADS
 		if(miPointerLock())
 		{
-#endif /* MTX */
+#endif /* XTHREADS */
 		    miSpriteRemoveCursor (pDrawable->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 		    drawCursor = TRUE;
 		}
-#endif /* MTX */
+#endif /* XTHREADS */
 	    }
 	}
 	else
@@ -1755,15 +1755,15 @@ miSpritePolylines (pDrawable, pGC, mode, npt, pptInit)
 		LINE_SORT(x1, y1, x2, y2);
 		if (LINE_OVERLAP(cursor, x1, y1, x2, y2, extra))
 		{
-#ifdef MTX
+#ifdef XTHREADS
 		    if(miPointerLock())
 		    {
-#endif /* MTX */
+#endif /* XTHREADS */
 		        miSpriteRemoveCursor (pDrawable->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 			drawCursor = TRUE;
 		    }
-#endif /* MTX */
+#endif /* XTHREADS */
 		    break;
 		}
 	    }
@@ -1773,13 +1773,13 @@ miSpritePolylines (pDrawable, pGC, mode, npt, pptInit)
 
     (*pGC->ops->Polylines) (pDrawable, pGC, mode, npt, pptInit);
 
-#ifdef MTX
+#ifdef XTHREADS
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pDrawable->pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_OP_EPILOGUE (pGC);
 }
@@ -1791,9 +1791,9 @@ miSpritePolySegment(pDrawable, pGC, nseg, pSegs)
     int		nseg;
     xSegment	*pSegs;
 {
-#ifdef MTX
+#ifdef XTHREADS
     Bool	drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     int	    n;
     register xSegment *segs;
     BoxPtr  cursor;
@@ -1817,15 +1817,15 @@ miSpritePolySegment(pDrawable, pGC, nseg, pSegs)
 	    LINE_SORT(x1, y1, x2, y2);
 	    if (LINE_OVERLAP(cursor, x1, y1, x2, y2, extra))
 	    {
-#ifdef MTX
+#ifdef XTHREADS
 		if(miPointerLock())
 		{
-#endif /* MTX */
+#endif /* XTHREADS */
 		    miSpriteRemoveCursor (pDrawable->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 		    drawCursor = TRUE;
 		}
-#endif /* MTX */
+#endif /* XTHREADS */
 		break;
 	    }
 	}
@@ -1835,13 +1835,13 @@ miSpritePolySegment(pDrawable, pGC, nseg, pSegs)
 
     (*pGC->ops->PolySegment) (pDrawable, pGC, nseg, pSegs);
 
-#ifdef MTX
+#ifdef XTHREADS
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pDrawable->pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_OP_EPILOGUE (pGC);
 }
@@ -1853,9 +1853,9 @@ miSpritePolyRectangle(pDrawable, pGC, nrects, pRects)
     int		nrects;
     xRectangle	*pRects;
 {
-#ifdef MTX
+#ifdef XTHREADS
     Bool	drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     register xRectangle *rects;
     BoxPtr  cursor;
     int	    lw;
@@ -1879,15 +1879,15 @@ miSpritePolyRectangle(pDrawable, pGC, nrects, pRects)
 		LINE_OVERLAP(cursor, x1, y2, x2, y2, lw) ||
 		LINE_OVERLAP(cursor, x1, y1, x1, y2, lw))
 	    {
-#ifdef MTX
+#ifdef XTHREADS
 		if(miPointerLock())
 		{
-#endif /* MTX */
+#endif /* XTHREADS */
 		    miSpriteRemoveCursor (pDrawable->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 		    drawCursor = TRUE;
 		}
-#endif /* MTX */
+#endif /* XTHREADS */
 		break;
 	    }
 	}
@@ -1897,13 +1897,13 @@ miSpritePolyRectangle(pDrawable, pGC, nrects, pRects)
 
     (*pGC->ops->PolyRectangle) (pDrawable, pGC, nrects, pRects);
 
-#ifdef MTX
+#ifdef XTHREADS
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pDrawable->pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_OP_EPILOGUE (pGC);
 }
@@ -1915,9 +1915,9 @@ miSpritePolyArc(pDrawable, pGC, narcs, parcs)
     int		narcs;
     xArc	*parcs;
 {
-#ifdef MTX
+#ifdef XTHREADS
     Bool    drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     BoxPtr  cursor;
     int	    lw;
     int	    n;
@@ -1936,15 +1936,15 @@ miSpritePolyArc(pDrawable, pGC, narcs, parcs)
 			     (int) arcs->width + pGC->lineWidth,
  			     (int) arcs->height + pGC->lineWidth))
 	    {
-#ifdef MTX
+#ifdef XTHREADS
 		if(miPointerLock())
 		{
-#endif /* MTX */
+#endif /* XTHREADS */
 		    miSpriteRemoveCursor (pDrawable->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 		    drawCursor = TRUE;
 		}
-#endif /* MTX */
+#endif /* XTHREADS */
 		break;
 	    }
 	}
@@ -1954,13 +1954,13 @@ miSpritePolyArc(pDrawable, pGC, narcs, parcs)
 
     (*pGC->ops->PolyArc) (pDrawable, pGC, narcs, parcs);
 
-#ifdef MTX
+#ifdef XTHREADS
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pDrawable->pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_OP_EPILOGUE (pGC);
 }
@@ -1973,9 +1973,9 @@ miSpriteFillPolygon(pDrawable, pGC, shape, mode, count, pPts)
     int			count;
     DDXPointPtr		pPts;
 {
-#ifdef MTX
+#ifdef XTHREADS
     Bool drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     int x, y, minx, miny, maxx, maxy;
     register DDXPointPtr pts;
     int n;
@@ -2031,28 +2031,28 @@ miSpriteFillPolygon(pDrawable, pGC, shape, mode, count, pPts)
 	    }
 	}
 	if (BOX_OVERLAP(&pScreenPriv->saved,minx,miny,maxx,maxy))
-#ifdef MTX
+#ifdef XTHREADS
 	    if(miPointerLock())
 	    {
-#endif /* MTX */
+#endif /* XTHREADS */
 		miSpriteRemoveCursor (pDrawable->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 		drawCursor = TRUE;
 	    }
-#endif /* MTX */
+#endif /* XTHREADS */
     }
 
     GC_OP_PROLOGUE (pGC);
 
     (*pGC->ops->FillPolygon) (pDrawable, pGC, shape, mode, count, pPts);
 
-#ifdef MTX
+#ifdef XTHREADS
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pDrawable->pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_OP_EPILOGUE (pGC);
 }
@@ -2064,9 +2064,9 @@ miSpritePolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     int		nrectFill; 	/* number of rectangles to fill */
     xRectangle	*prectInit;  	/* Pointer to first rectangle to fill */
 {
-#ifdef MTX
+#ifdef XTHREADS
     Bool drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     GC_SETUP(pDrawable, pGC);
 
     if (GC_CHECK((WindowPtr) pDrawable))
@@ -2080,15 +2080,15 @@ miSpritePolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 
 	for (nRect = nrectFill, pRect = prectInit; nRect--; pRect++) {
 	    if (ORGRECT_OVERLAP(&pScreenPriv->saved,xorg,yorg,pRect)){
-#ifdef MTX
+#ifdef XTHREADS
 		if(miPointerLock())
 		{
-#endif /* MTX */
+#endif /* XTHREADS */
 		    miSpriteRemoveCursor (pDrawable->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 		    drawCursor = TRUE;
 		}
-#endif /* MTX */
+#endif /* XTHREADS */
 		break;
 	    }
 	}
@@ -2098,13 +2098,13 @@ miSpritePolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 
     (*pGC->ops->PolyFillRect) (pDrawable, pGC, nrectFill, prectInit);
 
-#ifdef MTX
+#ifdef XTHREADS
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pDrawable->pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_OP_EPILOGUE (pGC);
 }
@@ -2116,9 +2116,9 @@ miSpritePolyFillArc(pDrawable, pGC, narcs, parcs)
     int		narcs;
     xArc	*parcs;
 {
-#ifdef MTX
+#ifdef XTHREADS
     Bool drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_SETUP(pDrawable, pGC);
 
@@ -2136,15 +2136,15 @@ miSpritePolyFillArc(pDrawable, pGC, narcs, parcs)
 			    arcs->x, arcs->y,
  			    (int) arcs->width, (int) arcs->height))
 	    {
-#ifdef MTX
+#ifdef XTHREADS
 		if(miPointerLock())
 		{
-#endif /* MTX */
+#endif /* XTHREADS */
 		    miSpriteRemoveCursor (pDrawable->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 		    drawCursor = TRUE;
 		}
-#endif /* MTX */
+#endif /* XTHREADS */
 		break;
 	    }
 	}
@@ -2154,13 +2154,13 @@ miSpritePolyFillArc(pDrawable, pGC, narcs, parcs)
 
     (*pGC->ops->PolyFillArc) (pDrawable, pGC, narcs, parcs);
 
-#ifdef MTX
+#ifdef XTHREADS
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pDrawable->pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_OP_EPILOGUE (pGC);
 }
@@ -2264,9 +2264,9 @@ miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, textType, cursorBox)
     Bool	    textType;
     BoxPtr	    cursorBox;
 {
-#ifdef MTX
+#ifdef XTHREADS
     Bool	drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     CharInfoPtr *charinfo;
     register CharInfoPtr *info;
     unsigned long n, i;
@@ -2290,15 +2290,15 @@ miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, textType, cursorBox)
 
     if (n != 0) {
 	if (miSpriteTextOverlap(pDraw, pGC->font, x, y, n, charinfo, imageblt, w, cursorBox))
-#ifdef MTX
+#ifdef XTHREADS
 	    if(miPointerLock())
 	    {
-#endif /* MTX */
+#endif /* XTHREADS */
 		miSpriteRemoveCursor (pDraw->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 		drawCursor = TRUE;
 	    }
-#endif /* MTX */
+#endif /* XTHREADS */
 
 #ifdef AVOID_GLYPHBLT
 	/*
@@ -2332,13 +2332,13 @@ miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, textType, cursorBox)
 	(*drawFunc) (pDraw, pGC, x, y, n, charinfo, FONTGLYPHS(pGC->font));
 #endif /* AVOID_GLYPHBLT */
 
-#ifdef MTX
+#ifdef XTHREADS
 	if(drawCursor)
 	{
 	    miSpriteRestoreCursor (pDraw->pScreen);
 	    miPointerUnlock();
 	}
-#endif /* MTX */
+#endif /* XTHREADS */
     }
     DEALLOCATE_LOCAL(charinfo);
     return x + w;
@@ -2447,9 +2447,9 @@ miSpriteImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     CharInfoPtr *ppci;		/* array of character info */
     pointer 	pglyphBase;	/* start of array of glyphs */
 {
-#ifdef MTX
+#ifdef XTHREADS
     Bool	drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     GC_SETUP(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
@@ -2457,26 +2457,26 @@ miSpriteImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     if (GC_CHECK((WindowPtr) pDrawable) &&
 	miSpriteTextOverlap (pDrawable, pGC->font, x, y, nglyph, ppci, TRUE, 0, &pScreenPriv->saved))
     {
-#ifdef MTX
+#ifdef XTHREADS
 	if(miPointerLock())
 	{
-#endif /* MTX */
+#endif /* XTHREADS */
 	    miSpriteRemoveCursor (pDrawable->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 	    drawCursor = TRUE;
 	}
-#endif /* MTX */
+#endif /* XTHREADS */
     }
 
     (*pGC->ops->ImageGlyphBlt) (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
 
-#ifdef MTX
+#ifdef XTHREADS
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pDrawable->pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_OP_EPILOGUE (pGC);
 }
@@ -2490,9 +2490,9 @@ miSpritePolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     CharInfoPtr *ppci;		/* array of character info */
     pointer	pglyphBase;	/* start of array of glyphs */
 {
-#ifdef MTX
+#ifdef XTHREADS
     Bool	drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     GC_SETUP (pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
@@ -2500,26 +2500,26 @@ miSpritePolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     if (GC_CHECK((WindowPtr) pDrawable) &&
 	miSpriteTextOverlap (pDrawable, pGC->font, x, y, nglyph, ppci, FALSE, 0, &pScreenPriv->saved))
     {
-#ifdef MTX
+#ifdef XTHREADS
 	if(miPointerLock())
 	{
-#endif /* MTX */
+#endif /* XTHREADS */
 	    miSpriteRemoveCursor(pDrawable->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 	    drawCursor = TRUE;
 	}
-#endif /* MTX */
+#endif /* XTHREADS */
     }
 
     (*pGC->ops->PolyGlyphBlt) (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
 
-#ifdef MTX
+#ifdef XTHREADS
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pDrawable->pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_OP_EPILOGUE (pGC);
 }
@@ -2531,36 +2531,36 @@ miSpritePushPixels(pGC, pBitMap, pDrawable, w, h, x, y)
     DrawablePtr pDrawable;
     int		w, h, x, y;
 {
-#ifdef MTX
+#ifdef XTHREADS
     Bool drawCursor = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     GC_SETUP(pDrawable, pGC);
 
     if (GC_CHECK((WindowPtr) pDrawable) &&
 	ORG_OVERLAP(&pScreenPriv->saved,pDrawable->x,pDrawable->y,x,y,w,h))
     {
-#ifdef MTX
+#ifdef XTHREADS
 	if(miPointerLock())
 	{
-#endif /* MTX */
+#endif /* XTHREADS */
 	    miSpriteRemoveCursor (pDrawable->pScreen);
-#ifdef MTX
+#ifdef XTHREADS
 	    drawCursor = TRUE;
 	}
-#endif /* MTX */
+#endif /* XTHREADS */
     }
 
     GC_OP_PROLOGUE (pGC);
 
     (*pGC->ops->PushPixels) (pGC, pBitMap, pDrawable, w, h, x, y);
 
-#ifdef MTX
+#ifdef XTHREADS
     if(drawCursor)
     {
 	miSpriteRestoreCursor (pDrawable->pScreen);
 	miPointerUnlock();
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     GC_OP_EPILOGUE (pGC);
 }
@@ -2584,7 +2584,7 @@ miSpriteLineHelper()
 
 #define SPRITE_PAD  8
 
-#ifdef MTX
+#ifdef XTHREADS
 void
 miSpriteCalculateCursorRegion (pScreen, pRegion)
     ScreenPtr   pScreen;
@@ -2640,7 +2640,7 @@ miSpriteCalculateCursorRegion (pScreen, pRegion)
 
     pRegion->data = NULL;
 }
-#endif /* MTX */
+#endif /* XTHREADS */
 
 static Bool
 miSpriteRealizeCursor (pScreen, pCursor)
@@ -2648,9 +2648,9 @@ miSpriteRealizeCursor (pScreen, pCursor)
     CursorPtr	pCursor;
 {
     miSpriteScreenPtr	pScreenPriv;
-#ifdef MTX
+#ifdef XTHREADS
     int		        my = pScreen->myNum;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
     if (pCursor == pScreenPriv->pCursor)
@@ -2677,9 +2677,9 @@ miSpriteSetCursor (pScreen, pCursor, x, y)
     miSpriteScreenPtr	pScreenPriv;
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
-#ifndef MTX
+#ifndef XTHREADS
     pScreenPriv->shouldBeUp = TRUE;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     if (pScreenPriv->x == x &&
 	pScreenPriv->y == y &&
@@ -2690,9 +2690,9 @@ miSpriteSetCursor (pScreen, pCursor, x, y)
     }
     if (!pCursor)
     {
-#ifndef MTX
+#ifndef XTHREADS
     	pScreenPriv->shouldBeUp = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     	if (pScreenPriv->isUp)
 	    miSpriteRemoveCursor (pScreen);
 	pScreenPriv->pCursor = 0;
@@ -2700,9 +2700,9 @@ miSpriteSetCursor (pScreen, pCursor, x, y)
     }
     pScreenPriv->x = x;
     pScreenPriv->y = y;
-#ifndef MTX
+#ifndef XTHREADS
     pScreenPriv->pCacheWin = NullWindow;
-#endif /* MTX */
+#endif /* XTHREADS */
     if (pScreenPriv->checkPixels || pScreenPriv->pCursor != pCursor)
     {
 	pScreenPriv->pCursor = pCursor;
@@ -2718,7 +2718,7 @@ miSpriteSetCursor (pScreen, pCursor, x, y)
 	sx = pScreenPriv->x - (int)pCursor->bits->xhot;
 	sy = pScreenPriv->y - (int)pCursor->bits->yhot;
 
-#ifdef MTX
+#ifdef XTHREADS
 #ifdef USE_MOVECURSOR
 	if (sx + (int) pCursor->bits->width >= pScreenPriv->saved.x1 &&
 	    sx < pScreenPriv->saved.x2 &&
@@ -2766,7 +2766,7 @@ miSpriteSetCursor (pScreen, pCursor, x, y)
 	}
 	else
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 	{
 	    miSpriteRemoveCursor (pScreen);
 	}
@@ -2798,9 +2798,9 @@ miSpriteRemoveCursor (pScreen)
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
     pScreenPriv->isUp = FALSE;
-#ifndef MTX
+#ifndef XTHREADS
     pScreenPriv->pCacheWin = NullWindow;
-#endif /* MTX */
+#endif /* XTHREADS */
     if (!(*pScreenPriv->funcs->RestoreUnderCursor) (pScreen,
 			 pScreenPriv->saved.x1,
 			 pScreenPriv->saved.y1,

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.1 94/01/03 15:04:52 rob Exp $ */
+/* $XConsortium: io.c,v 1.2 94/01/10 18:04:34 rob Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -47,7 +47,7 @@ extern int errno;
 #include "dixstruct.h"
 #include "misc.h"
 
-#ifdef MTX
+#ifdef XTHREADS
 #include "mtxlock.h"
 #endif
 
@@ -138,7 +138,7 @@ typedef struct {
 #define YieldControlDeath()			\
         { timesThisConnection = 0; }
 
-#ifndef MTX
+#ifndef XTHREADS
 int
 ReadRequestFromClient(client)
     ClientPtr client;
@@ -353,7 +353,7 @@ ReadRequestFromClient(client)
     client->requestBuffer = (pointer)oci->bufptr;
     return needed;
 }
-#else /* MTX */
+#else /* XTHREADS */
 int
 ReadRequestFromClient(client, gotnow, needed)
     ClientPtr client;
@@ -454,7 +454,7 @@ ReadRequestFromClient(client, gotnow, needed)
 
     return (gotnow);
 }
-#endif /* MTX */
+#endif /* XTHREADS */
 
 
 /*****************************************************************
@@ -842,7 +842,7 @@ SetCriticalOutputPending()
  *    this routine as int.
  *****************/
 
-#ifndef MTX
+#ifndef XTHREADS
 int
 WriteToClient (who, count, buf)
     ClientPtr who;
@@ -888,7 +888,7 @@ WriteToClient (who, count, buf)
     
     return(count);
 }
-#endif /* not MTX */
+#endif /* not XTHREADS */
 
 static ConnectionInputPtr
 AllocateInputBuffer()
@@ -939,7 +939,7 @@ FreeOsBuffers(oc)
 
     if (AvailableInput == oc)
 	AvailableInput = (OsCommPtr)NULL;
-#ifndef MTX
+#ifndef XTHREADS
     if (oci = oc->input)
     {
 	if (FreeInputs)
@@ -976,7 +976,7 @@ FreeOsBuffers(oc)
 	xfree(oci->buffer);
 	xfree(oci);
     }
-#endif /* !MTX */
+#endif /* !XTHREADS */
 }
 
 void
@@ -999,7 +999,7 @@ ResetOsBuffers()
     }
 }
 
-#ifdef MTX
+#ifdef XTHREADS
 /*********************************************************************
  *
  * ReadInitialConnection
@@ -1080,4 +1080,4 @@ ReadInitialConnection(oc, swapped)
     } 
     return (TRUE);
 }
-#endif /* MTX */
+#endif /* XTHREADS */

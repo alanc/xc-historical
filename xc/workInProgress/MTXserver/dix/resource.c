@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.3 94/01/10 16:55:55 rob Exp $ */
+/* $XConsortium: resource.c,v 1.4 94/01/10 19:20:21 rob Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -76,7 +76,7 @@ OF THIS SOFTWARE.
 #include "opaque.h"
 #include "windowstr.h"
 
-#ifdef MTX
+#ifdef XTHREADS
 #include "pixmapstr.h"
 #include "gcstruct.h"
 #include "colormapst.h"
@@ -84,25 +84,25 @@ OF THIS SOFTWARE.
 #include "fontstruct.h"
 #include "xthreads.h"
 #include "mtxlock.h"
-#endif /* MTX */
+#endif /* XTHREADS */
 
 extern void HandleSaveSet();
 
-#ifndef MTX
+#ifndef XTHREADS
 extern void FlushClientCaches();
 static void RebuildTable();
 extern WindowPtr *WindowTable;
-#endif /* not MTX */
+#endif /* not XTHREADS */
 
-#ifdef MTX	/* since lock field referenced need additional wrapper */
+#ifdef XTHREADS	/* since lock field referenced need additional wrapper */
 #define MTX_CLIENT_MUTEX_LOCK(cid)			\
     MTX_MUTEX_LOCK(&clientTable[cid].lock.mutex)
 #define MTX_CLIENT_MUTEX_UNLOCK(cid)			\
     MTX_MUTEX_UNLOCK(&clientTable[cid].lock.mutex)
-#else /* MTX */
+#else /* XTHREADS */
 #define MTX_CLIENT_MUTEX_LOCK(cid)	/* nothing */
 #define MTX_CLIENT_MUTEX_UNLOCK(cid)	/* nothing */
-#endif /* MTX */
+#endif /* XTHREADS */
 
 #define SERVER_MINID 32
 
@@ -110,7 +110,7 @@ extern WindowPtr *WindowTable;
 #define INITHASHSIZE 6
 #define MAXHASHSIZE 11
 
-#ifdef MTX
+#ifdef XTHREADS
 #define RTA_INITIAL_SIZE   32
 #define RTA_INCREMENT_SIZE 16
 
@@ -294,7 +294,7 @@ typedef enum
     read_lock,
     write_lock,
 } ResourceLockType;
-#endif /* MTX */
+#endif /* XTHREADS */
 
 typedef struct _Resource {
     struct _Resource	*next;
@@ -303,9 +303,9 @@ typedef struct _Resource {
     pointer		value;
 } ResourceRec, *ResourcePtr;
 
-#ifndef MTX
+#ifndef XTHREADS
 #define NullResource ((ResourcePtr)NULL)
-#else /* MTX */
+#else /* XTHREADS */
 
 typedef struct _CacheElementRec {
     XID lastID;
@@ -341,7 +341,7 @@ typedef struct _ResourceTypeAttrRec
     ResourceLockPtr shared;
 } ResourceTypeAttrRec, *ResourceTypeAttrPtr;
 typedef long ResourceLockbits, *ResourceLockbitsPtr;
-#endif /* MTX */
+#endif /* XTHREADS */
 
 typedef struct _ClientResource {
     ResourcePtr *resources;
@@ -351,13 +351,13 @@ typedef struct _ClientResource {
     XID		fakeID;
     XID		endFakeID;
     XID		expectID;
-#ifdef MTX
+#ifdef XTHREADS
     ResourceLockRec lock;
     ClientCacheRec  cache;
-#endif /* MTX */
+#endif /* XTHREADS */
 } ClientResourceRec, *ClientResourcePtr ;
 
-#ifdef MTX
+#ifdef XTHREADS
 /* XXX -- put these in resource.h */
 extern void UnlockResourceByType();
 
@@ -365,7 +365,7 @@ static pointer LookupResourceByClass();
 static ResourcePtr LookupResourceRecByClass();
 static Bool UnlockResourceBits();
 static int ResourceBadValue();
-#endif /* MTX */
+#endif /* XTHREADS */
 
 static RESTYPE lastResourceType;
 static RESTYPE lastResourceClass;
@@ -373,7 +373,7 @@ static RESTYPE TypeMask;
 
 static DeleteType *DeleteFuncs = (DeleteType *)NULL;
 
-#ifndef MTX
+#ifndef XTHREADS
 RESTYPE
 CreateNewResourceType(deleteFunc)
     DeleteType deleteFunc;
@@ -406,15 +406,15 @@ CreateNewResourceClass()
 }
 
 ClientResourceRec clientTable[MAXCLIENTS];
-#else /* MTX */
+#else /* XTHREADS */
 static ResourceTypeAttrPtr ResourceTypeAttributes = NULL;
 static int numResourceTypeEntries = 0;
 static int sizeResourceTypeTable = 0;
 static int multiThreadMode = TRUE;
 static ClientResourceRec clientTable[MAXCLIENTS];
-#endif /* MTX */
+#endif /* XTHREADS */
 
-#ifndef MTX
+#ifndef XTHREADS
 /*****************
  * InitClientResources
  *    When a new client is created, call this to allocate space
@@ -476,7 +476,7 @@ InitClientResources(client)
     }
     return TRUE;
 }
-#else /* MTX */
+#else /* XTHREADS */
 /******************************** MTX **********************************/
 
 Bool
@@ -784,7 +784,7 @@ CreateNewResourceClass()
     UngrabRDBLocks();
     return (next);
 }
-#endif /* not MTX */
+#endif /* not XTHREADS */
 
 static int
 Hash(cid, id)
@@ -999,7 +999,7 @@ AddResource(id, rtype, value)
     return TRUE;
 }
 
-#ifdef MTX
+#ifdef XTHREADS
 /******************************** MTX **********************************/
 
 static void
@@ -1103,7 +1103,7 @@ CheckLockBits (cid, id, rtype, value)
 	}
     }
 }
-#endif /* MTX */
+#endif /* XTHREADS */
 
 void
 FreeResource(id, skipDeleteFuncType)
@@ -1132,15 +1132,15 @@ FreeResource(id, skipDeleteFuncType)
 		RESTYPE rtype = res->type;
 		*prev = res->next;
 		elements = --*p_elements;
-#ifndef MTX
+#ifndef XTHREADS
 		if (rtype & RC_CACHED)
 		    FlushClientCaches(res->id);
-#endif /* MTX */
+#endif /* XTHREADS */
 		if (rtype != skipDeleteFuncType)
 		{
-#ifdef MTX
+#ifdef XTHREADS
 		    CheckLockBits (cid, id, rtype, res->value);
-#endif /* MTX */
+#endif /* XTHREADS */
 		    MTX_CLIENT_MUTEX_UNLOCK(cid);
 		    (*DeleteFuncs[rtype & TypeMask])(res->value, res->id);
 		    MTX_CLIENT_MUTEX_LOCK(cid);
@@ -1153,18 +1153,18 @@ FreeResource(id, skipDeleteFuncType)
 	    else
 		prev = &res->next;
         }
-#ifndef MTX
+#ifndef XTHREADS
 	if(clients[cid] && (id == clients[cid]->lastDrawableID))
 	{
 	    clients[cid]->lastDrawable = (DrawablePtr)WindowTable[0];
 	    clients[cid]->lastDrawableID = WindowTable[0]->drawable.id;
 	}
-#endif /* MTX */
+#endif /* XTHREADS */
     }
-#ifndef MTX
+#ifndef XTHREADS
     if (!gotOne)
 	FatalError("Freeing resource id=%X which isn't there", id);
-#endif /* MTX */
+#endif /* XTHREADS */
     MTX_CLIENT_MUTEX_UNLOCK(cid);
 }
 
@@ -1194,16 +1194,16 @@ FreeResourceByType(id, rtype, skipFree)
 	    if (res->id == id && res->type == rtype)
 	    {
 		*prev = res->next;
-#ifndef MTX
+#ifndef XTHREADS
 		if (rtype & RC_CACHED)
 		    FlushClientCaches(res->id);
 		if (!skipFree)
 		    (*DeleteFuncs[rtype & TypeMask])(res->value, res->id);
-#else /* MTX */
+#else /* XTHREADS */
 		value = res->value;
-#endif /* MTX */
+#endif /* XTHREADS */
 		xfree(res);
-#ifdef MTX
+#ifdef XTHREADS
 		if (!skipFree)
 		{
 		    CheckLockBits (cid, id, rtype, value);
@@ -1211,19 +1211,19 @@ FreeResourceByType(id, rtype, skipFree)
 		    (*DeleteFuncs[rtype & TypeMask])(value, id);
 		    return;
 		}
-#endif /* MTX */
+#endif /* XTHREADS */
 		break;
 	    }
 	    else
 		prev = &res->next;
         }
-#ifndef MTX
+#ifndef XTHREADS
 	if(clients[cid] && (id == clients[cid]->lastDrawableID))
 	{
 	    clients[cid]->lastDrawable = (DrawablePtr)WindowTable[0];
 	    clients[cid]->lastDrawableID = WindowTable[0]->drawable.id;
 	}
-#endif /* MTX */
+#endif /* XTHREADS */
     }
     MTX_CLIENT_MUTEX_UNLOCK(cid);
 }
@@ -1253,13 +1253,13 @@ ChangeResourceValue (id, rtype, value)
 	for (; res; res = res->next)
 	    if ((res->id == id) && (res->type == rtype))
 	    {
-#ifndef MTX
+#ifndef XTHREADS
 		if (rtype & RC_CACHED)
 		    FlushClientCaches(res->id);
-#else /* MTX */
+#else /* XTHREADS */
 		/* make sure res->value is not currently in use */
 		CheckLockBits (cid, id, rtype, res->value);
-#endif /* MTX */
+#endif /* XTHREADS */
 		res->value = value;
 	        MTX_CLIENT_MUTEX_UNLOCK(cid);
 		return TRUE;
@@ -1295,13 +1295,13 @@ FreeClientNeverRetainResources(client)
 	    if (rtype & RC_NEVERRETAIN)
 	    {
 		*prev = this->next;
-#ifndef MTX
+#ifndef XTHREADS
 		if (rtype & RC_CACHED)
 		    FlushClientCaches(this->id);
-#else /* not MTX */
+#else /* not XTHREADS */
 		/* make sure res->value is not currently in use */
 		CheckLockBits (cid, this->id, rtype, this->value);
-#endif /* not MTX */
+#endif /* not XTHREADS */
 
 		MTX_CLIENT_MUTEX_UNLOCK(cid);
 		(*DeleteFuncs[rtype & TypeMask])(this->value, this->id);
@@ -1357,10 +1357,10 @@ FreeClientResources(client)
 	    *head = this->next;
 	    if (rtype & RC_CACHED)
 		FlushClientCaches(this->id);
-#ifdef MTX
+#ifdef XTHREADS
 	    /* make sure res->value is not currently in use */
 	    CheckLockBits (cid, this->id, rtype, this->value);
-#endif /* MTX */
+#endif /* XTHREADS */
 	    MTX_CLIENT_MUTEX_UNLOCK(cid);
 	    (*DeleteFuncs[rtype & TypeMask])(this->value, this->id);
 	    MTX_CLIENT_MUTEX_LOCK(cid);
@@ -1442,7 +1442,7 @@ LookupIDByClass(id, classes)
 }
 
 /***** MTX only from here to end of file */
-#ifdef MTX
+#ifdef XTHREADS
 pointer
 LookupDrawable(id, client)
     XID id;
@@ -2361,9 +2361,9 @@ ClientPtr client;
     if (!pWin2)
     {
         MTX_MUTEX_UNLOCK(&pLock->mutex);
-#ifdef MTX
+#ifdef XTHREADS
 	UnlockWindow(pWin1, win1ID);
-#endif /* MTX */
+#endif /* XTHREADS */
         return BadWindow;
     }
 
@@ -2728,4 +2728,4 @@ CursorPtr pCursor;
 XID cursorID;
 {
 }
-#endif /* MTX */
+#endif /* XTHREADS */

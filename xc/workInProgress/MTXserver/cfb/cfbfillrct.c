@@ -38,7 +38,7 @@ OF THIS SOFTWARE.
 
 */
 
-/* $XConsortium: cfbfillrct.c,v 1.2 94/01/04 00:02:07 rob Exp $ */
+/* $XConsortium: cfbfillrct.c,v 1.3 94/01/06 23:03:26 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -101,11 +101,11 @@ cfbFillRectTileOdd (pDrawable, pGC, nBox, pBox)
     (*fill) (pDrawable, nBox, pBox, pGC->tile.pixmap, xrot, yrot, pGC->alu, pGC->planemask);
 }
 
-#ifdef MTX
+#ifdef XTHREADS
 #define NUM_STACK_RECTS 128 /* used to be 1024 */
-#else /* MTX */
+#else /* XTHREADS */
 #define NUM_STACK_RECTS	1024
-#endif /* MTX */
+#endif /* XTHREADS */
 
 void
 cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)

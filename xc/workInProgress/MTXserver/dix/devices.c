@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: devices.c,v 1.1 93/12/15 16:06:04 rob Exp $ */
+/* $XConsortium: devices.c,v 1.2 94/01/10 16:53:37 rob Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -63,17 +63,17 @@ OF THIS SOFTWARE.
 
 extern InputInfo inputInfo;
 
-#ifndef MTX
+#ifndef XTHREADS
 extern int (* InitialVector[3]) ();
-#endif /* MTX */
+#endif /* XTHREADS */
 
 extern void (* ReplySwapVector[256]) ();
 
-#ifndef MTX
+#ifndef XTHREADS
 extern void CopySwap32Write();
-#else /* MTX */
+#else /* XTHREADS */
 extern void CopySwap32();
-#endif /* MTX */
+#endif /* XTHREADS */
 
 extern void SwapTimeCoordWrite();
 extern void ActivatePointerGrab(), DeactivatePointerGrab();
@@ -758,7 +758,7 @@ SendMappingNotify(request, firstKeyCode, count)
     /* 0 is the server client */
     for (i=1; i<currentMaxClients; i++)
         if (clients[i] && ! clients[i]->clientGone
-#ifndef MTX
+#ifndef XTHREADS
 	    && (clients[i]->requestVector != InitialVector)
 #endif
 #ifdef XKB
@@ -955,10 +955,10 @@ ProcGetModifierMapping(client)
     REPLY_DECL(xGetModifierMappingReply,rep);
     REQUEST(xReq);
     register KeyClassPtr keyc;
-#ifdef MTX
+#ifdef XTHREADS
     int keysPerModifier;
     char *modMap;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     REQUEST_SIZE_MATCH(xReq);
 
@@ -973,12 +973,12 @@ ProcGetModifierMapping(client)
     /* length counts 4 byte quantities - there are 8 modifiers 1 byte big */
     rep->length = keyc->maxKeysPerModifier << 1;
 
-#ifndef MTX
+#ifndef XTHREADS
     WriteReplyToClient(client, sizeof(xGetModifierMappingReply), rep);
     /* Use the (modified by DDX) map that SetModifierMapping passed in */
     (void)WriteToClient(client, (int)(keyc->maxKeysPerModifier << 3),
 			(char *)keyc->modifierKeyMap);
-#else /* MTX */
+#else /* XTHREADS */
     keysPerModifier = keyc->maxKeysPerModifier;
     modMap = (char *) xalloc(keysPerModifier << 3);
     if (!modMap)
@@ -994,7 +994,7 @@ ProcGetModifierMapping(client)
     msg->freeReplyData = TRUE;
     msg->lenReplyData = keysPerModifier << 3;
     SendReplyToClient(client, msg);
-#endif /* MTX */
+#endif /* XTHREADS */
     MTXUnlockDevicesAndPOQ(client);
     return client->noClientException;
 }
@@ -1127,11 +1127,11 @@ ProcGetKeyboardMapping(client)
 {
     REPLY_DECL(xGetKeyboardMappingReply,rep);
     KeySymsPtr curKeySyms;
-#ifdef MTX
+#ifdef XTHREADS
     int mapLen;
     int mapWidth;
     char *keyMap;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     REQUEST(xGetKeyboardMappingReq);
     REQUEST_SIZE_MATCH(xGetKeyboardMappingReq);
@@ -1162,7 +1162,7 @@ ProcGetKeyboardMapping(client)
     rep->keySymsPerKeyCode = curKeySyms->mapWidth;
     /* length is a count of 4 byte quantities and KeySyms are 4 bytes */
     rep->length = (curKeySyms->mapWidth * stuff->count);
-#ifndef MTX
+#ifndef XTHREADS
     WriteReplyToClient(client, sizeof(xGetKeyboardMappingReply), rep);
     client->pSwapReplyFunc = CopySwap32Write;
     WriteSwappedDataToClient(
@@ -1170,7 +1170,7 @@ ProcGetKeyboardMapping(client)
 	curKeySyms->mapWidth * stuff->count * sizeof(KeySym),
 	&curKeySyms->map[(stuff->firstKeyCode - curKeySyms->minKeyCode) *
 			 curKeySyms->mapWidth]);
-#else /* MTX */
+#else /* XTHREADS */
     mapLen = curKeySyms->mapWidth * stuff->count * sizeof(KeySym);
     keyMap = (char *) xalloc(mapLen);
     if (!keyMap)
@@ -1197,7 +1197,7 @@ ProcGetKeyboardMapping(client)
 	CopySwap32(mapLen, keyMap);
 
     SendReplyToClient(client, msg);
-#endif /* MTX */
+#endif /* XTHREADS */
     MTXUnlockDevicesAndPOQ(client);
     return client->noClientException;
 }
@@ -1208,10 +1208,10 @@ ProcGetPointerMapping(client)
 {
     REPLY_DECL(xGetPointerMappingReply,rep);
     ButtonClassPtr butc;
-#ifdef MTX
+#ifdef XTHREADS
     int mapLen;
     char *ptrMap;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     REQUEST(xReq);
     REQUEST_SIZE_MATCH(xReq);
@@ -1226,10 +1226,10 @@ ProcGetPointerMapping(client)
     rep->nElts = butc->numButtons;
     rep->length = (rep->nElts + (4-1)) >> 2;
 
-#ifndef MTX
+#ifndef XTHREADS
     WriteReplyToClient(client, sizeof(xGetPointerMappingReply), rep);
     (void)WriteToClient(client, (int)rep->nElts, (char *)&butc->map[1]);
-#else /* MTX */
+#else /* XTHREADS */
     mapLen = butc->numButtons;
     ptrMap = (char *) xalloc(mapLen);
     if (!ptrMap)
@@ -1244,7 +1244,7 @@ ProcGetPointerMapping(client)
     msg->freeReplyData = TRUE;
     msg->lenReplyData = mapLen;
     SendReplyToClient(client, msg);
-#endif /* MTX */
+#endif /* XTHREADS */
     MTXUnlockDevicesAndPOQ(client);
     return Success;    
 }
@@ -1674,9 +1674,9 @@ ProcGetMotionEvents(client)
     REPLY_DECL(xGetMotionEventsReply,rep);
     xTimecoord * coords = (xTimecoord *) NULL;
     int     i, count, xmin, xmax, ymin, ymax;
-#ifdef MTX
+#ifdef XTHREADS
     xTimecoord *replyCoords;
-#endif /* MTX */
+#endif /* XTHREADS */
     unsigned long nEvents;
     DeviceIntPtr mouse = inputInfo.pointer;
     TimeStamp start, stop;
@@ -1739,17 +1739,17 @@ ProcGetMotionEvents(client)
     rep->length = nEvents * (sizeof(xTimecoord) >> 2);
     rep->nEvents = nEvents;
 
-#ifndef MTX
+#ifndef XTHREADS
     WriteReplyToClient(client, sizeof(xGetMotionEventsReply), rep);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     if (nEvents > 0)
     {
-#ifndef MTX
+#ifndef XTHREADS
 	client->pSwapReplyFunc = SwapTimeCoordWrite;
 	WriteSwappedDataToClient(client, nEvents * sizeof(xTimecoord),
 				 (char *)coords);
-#else /* MTX */
+#else /* XTHREADS */
         replyCoords = (xTimecoord *) xalloc(nEvents * sizeof(xTimecoord));
         if (!replyCoords)
         {
@@ -1767,11 +1767,11 @@ ProcGetMotionEvents(client)
 	    SwapTimeCoordWrite(client, 
                                nEvents * sizeof(xTimecoord), 
                                replyCoords);
-#endif /* MTX */
+#endif /* XTHREADS */
     }
-#ifdef MTX
+#ifdef XTHREADS
     SendReplyToClient(client, msg);
-#endif /* MTX */
+#endif /* XTHREADS */
     MTX_UNLOCK_WINDOW(pWin, stuff->window, client);
     if (coords)
 	DEALLOCATE_LOCAL(coords);

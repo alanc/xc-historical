@@ -71,7 +71,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 1.4 94/01/04 00:42:21 rob Exp $ */
+/* $XConsortium: cfbfillsp.c,v 1.5 94/01/10 13:59:21 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -94,17 +94,17 @@ OF THIS SOFTWARE.
 #define MFB_CONSTS_ONLY
 #include "maskbits.h"
 
-#ifndef MTX
+#ifndef XTHREADS
 
 #define MTX_STIPPLE(_a) _a
 #define MTX_STIPPLE_CHANGE(_a) /* nothing */
 
-#else /* MTX */
+#else /* XTHREADS */
 
 #define MTX_STIPPLE(_a) pstipple->_a
 #define MTX_STIPPLE_CHANGE(_a) pstipple->change = (_a)
 
-#endif /* MTX */
+#endif /* XTHREADS */
 
 /* scanline filling for color frame buffer
    written by drewry, oct 1986 modified by smarks
@@ -196,9 +196,9 @@ int fSorted;
     n = miClipSpans( cfbGetCompositeClip(pGC),
 		     pptInit, pwidthInit, nInit, 
 		     ppt, pwidth, fSorted
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
 		     ,pDrawable->x, pDrawable->y
-#endif /* MTX */
+#endif /* XTHREADS */
 		     );
 
     xrot = pDrawable->x + pGC->patOrg.x;
@@ -242,18 +242,18 @@ int fSorted;
     unsigned long   *srcTemp, *srcStart;
     unsigned long   *psrcBase;
     unsigned long   startmask, endmask;
-#ifdef MTX
+#ifdef XTHREADS
     StippleRec      *pstipple;
-#endif /* MTX */
+#endif /* XTHREADS */
 
-#ifdef MTX
+#ifdef XTHREADS
     UpdateStipple
-#else /* MTX */
+#else /* XTHREADS */
     if (pGC->fillStyle == FillStippled)
 	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
     else
 	cfb8CheckOpaqueStipple (pGC->alu, pGC->fgPixel, pGC->bgPixel, pGC->planemask);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     if (MTX_STIPPLE(cfb8StippleRRop) == GXnoop)
 	return;
@@ -275,9 +275,9 @@ int fSorted;
     n = miClipSpans( cfbGetCompositeClip(pGC),
 		     pptInit, pwidthInit, nInit, 
 		     ppt, pwidth, fSorted
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
 		     ,pDrawable->x, pDrawable->y
-#endif /* MTX */
+#endif /* XTHREADS */
 		     );
 
     /*
@@ -461,9 +461,9 @@ int fSorted;
     n = miClipSpans( cfbGetCompositeClip(pGC),
 		     pptInit, pwidthInit, nInit, 
 		     ppt, pwidth, fSorted
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
 		     ,pDrawable->x, pDrawable->y
-#endif /* MTX */
+#endif /* XTHREADS */
 		     );
     rop = pGC->alu;
     if (pGC->fillStyle == FillStippled) {
@@ -624,21 +624,21 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int		    *pwidthFree;	/* copies of the pointers to free */
     DDXPointPtr	    pptFree;
     cfbPrivGCPtr    devPriv;
-#ifdef MTX
+#ifdef XTHREADS
     StippleRec      *pstipple;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     devPriv = cfbGetGCPrivate(pGC);
-#ifdef MTX
+#ifdef XTHREADS
     pstipple = devPriv->stipple;
     if(pstipple->change == TRUE)
     {
-#endif /* MTX */
+#endif /* XTHREADS */
 	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
-#ifdef MTX
+#ifdef XTHREADS
 	pstipple->change = FALSE;
     }
-#endif /* MTX */
+#endif /* XTHREADS */
     n = nInit * miFindMaxBand(devPriv->pCompositeClip);
     if ( n == 0 )
 	return;
@@ -655,9 +655,9 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     n = miClipSpans(devPriv->pCompositeClip,
 		     pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
 		     ,pDrawable->x, pDrawable->y
-#endif /* MTX */
+#endif /* XTHREADS */
 		     );
 
     stipple = devPriv->pRotatedPixmap;
@@ -852,23 +852,23 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int		    *pwidthFree;	/* copies of the pointers to free */
     DDXPointPtr	    pptFree;
     cfbPrivGCPtr    devPriv;
-#ifdef MTX
+#ifdef XTHREADS
     StippleRec      *pstipple;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     devPriv = cfbGetGCPrivate(pGC);
 
-#ifdef MTX
+#ifdef XTHREADS
     pstipple = devPriv->stipple;
     if(pstipple->change == TRUE)
     {
-#endif /* MTX */
+#endif /* XTHREADS */
 	cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel,
 	    pGC->planemask);
-#ifdef MTX
+#ifdef XTHREADS
 	pstipple->change = FALSE;
     }
-#endif /* MTX */
+#endif /* XTHREADS */
     n = nInit * miFindMaxBand(devPriv->pCompositeClip);
 
     n = nInit * miFindMaxBand(devPriv->pCompositeClip);
@@ -887,9 +887,9 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     n = miClipSpans(devPriv->pCompositeClip,
 		     pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
 		     ,pDrawable->x, pDrawable->y
-#endif /* MTX */
+#endif /* XTHREADS */
 		     );
 
     stipple = devPriv->pRotatedPixmap;

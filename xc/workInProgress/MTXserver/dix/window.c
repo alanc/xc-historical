@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.1 93/12/15 16:06:42 rob Exp $ */
+/* $XConsortium: window.c,v 1.2 94/01/06 23:03:02 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -367,9 +367,9 @@ CreateRootWindow(pScreen)
 
     pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 
-#ifdef MTX
+#ifdef XTHREADS
     pWin->drawable.lockBits = 0;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pWin->parent = NullWindow;
     SetWindowToDefaults(pWin);
@@ -640,9 +640,9 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 	pWin->drawable.type = (short) UNDRAWABLE_WINDOW;
     pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 
-#ifdef MTX
+#ifdef XTHREADS
     pWin->drawable.lockBits = 0;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pWin->drawable.id = wid;
     pWin->drawable.class = class;
@@ -2064,7 +2064,7 @@ ReflectStackChange(pWin, pSib, kind)
 	WindowsRestructured ();
 }
 
-#ifdef MTX
+#ifdef XTHREADS
 /*****
  * CalculateConfigureRegion
  *****/
@@ -2163,7 +2163,7 @@ CalculateConfigureRegion(client, pWin, pRegion)
     pRegion->extents.y2 = max((pDraw->y + pDraw->height),(ry + rh)) + bw;
     pRegion->data = (RegDataPtr) NULL;
 }
-#endif /* MTX */
+#endif /* XTHREADS */
 
 /*****
  * ConfigureWindow
@@ -2817,11 +2817,11 @@ UnrealizeTree(pWin, fromConfigure)
     register WindowPtr pChild;
     Bool (*Unrealize)();
     void (*MarkUnrealizedWindow)();
-#ifdef MTX
+#ifdef XTHREADS
     ClientPtr client;
 
     X_GET_CLIENT_REC(client);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     Unrealize = pWin->drawable.pScreen->UnrealizeWindow;
     MarkUnrealizedWindow = pWin->drawable.pScreen->MarkUnrealizedWindow;
@@ -2845,11 +2845,11 @@ UnrealizeTree(pWin, fromConfigure)
 		    (*pChild->drawable.pScreen->SaveDoomedAreas)(
 					    pChild, &pChild->clipList, 0, 0);
 		(* MarkUnrealizedWindow)(pChild, pWin, fromConfigure);
-#ifndef MTX
+#ifndef XTHREADS
 		pChild->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-#else /* MTX */
+#else /* XTHREADS */
 		NEXT_CLIENT_SERIAL_NUMBER(pChild->drawable.serialNumber,client);
-#endif /* MTX */
+#endif /* XTHREADS */
 	    }
 	    if (pChild->firstChild)
 	    {
@@ -3132,11 +3132,11 @@ SaveScreens(on, mode)
 
     if (on == SCREEN_SAVER_FORCER)
     {
-#ifndef MTX
+#ifndef XTHREADS
 	UpdateCurrentTimeIf();
-#else /* MTX */
+#else /* XTHREADS */
 	UpdateCurrentTime();
-#endif /* MTX */
+#endif /* XTHREADS */
 	lastDeviceEventTime = currentTime;
 	if (mode == ScreenSaverReset)
 	    what = SCREEN_SAVER_OFF;

@@ -67,10 +67,10 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "mtxlock.h"
 #include "message.h"
 
-#ifdef MTX
+#ifdef XTHREADS
 extern X_MUTEX_TYPE ServerMutex;
 extern X_COND_TYPE ServerCond;
-#endif /* MTX */
+#endif /* XTHREADS */
 
 extern long defaultScreenSaverTime;
 extern long defaultScreenSaverInterval;
@@ -87,20 +87,20 @@ extern WindowPtr *WindowTable;
 extern FontPtr defaultFont;
 extern int screenPrivateCount;
 
-#ifdef MTX
+#ifdef XTHREADS
 extern void CreateConnectionThread();
 extern void InitSelections();
 extern void InitClientGlobals();
 
-#ifdef USE_MONITOR_MTX
+#ifdef USE_MONITOR_XTHREADS
 extern void ConnectionThread();
 extern void DeviceInputThread();
 #endif
 
-#else /* MTX */
+#else /* XTHREADS */
 
 extern void SetInputCheck();
-#endif /* MTX */
+#endif /* XTHREADS */
 
 extern void InitProcVectors();
 extern void InitEvents();
@@ -123,9 +123,9 @@ int connBlockScreenStart;
 
 static int restart = 0;
 
-#ifdef MTX
+#ifdef XTHREADS
 char serverException = 0;
-#endif /* MTX */
+#endif /* XTHREADS */
 
 void
 NotImplemented()
@@ -189,9 +189,9 @@ main(argc, argv)
     char	*argv[];
 {
     int		i, j, k;
-#ifndef MTX
+#ifndef XTHREADS
     long	alwaysCheckForInput[2];
-#endif /* not MTX */
+#endif /* not XTHREADS */
 
     /* Notice if we're restart.  Probably this is because we jumped through
      * uninitialized pointer */
@@ -207,16 +207,16 @@ main(argc, argv)
     display = "0";
     ProcessCommandLine(argc, argv);
 
-#ifndef MTX
+#ifndef XTHREADS
     alwaysCheckForInput[0] = 0;
     alwaysCheckForInput[1] = 1;
-#else /* not MTX */
+#else /* not XTHREADS */
 /*
 ** if you want to enable the threads monitor, add this into site.cf
 **
 ** #define ServerCDebugFlags -DUSE_MONITOR_MTX OptimizedCDebugFlags
 */
-#ifdef USE_MONITOR_MTX
+#ifdef USE_MONITOR_XTHREADS
     X_SET_SYMNAME(main,"MST     ");
     X_SET_SYMNAME(ConnectionThread,"CCT     ");
     X_SET_SYMNAME(ClientInputThread, "CIT     ");
@@ -226,7 +226,7 @@ main(argc, argv)
     InitializeMTXLocks();
     InitializeMessageMonitor();
     InitializeSignalHandlers();
-#endif /* not MTX */
+#endif /* not XTHREADS */
 
     MTX_MUTEX_LOCK(&ServerMutex);
 
@@ -237,14 +237,14 @@ main(argc, argv)
 	ScreenSaverInterval = defaultScreenSaverInterval;
 	ScreenSaverBlanking = defaultScreenSaverBlanking;
 	ScreenSaverAllowExposures = defaultScreenSaverAllowExposures;
-#ifndef MTX
+#ifndef XTHREADS
 	InitBlockAndWakeupHandlers();
-#endif /* not MTX */
+#endif /* not XTHREADS */
 	/* Perform any operating system dependent initializations you'd like */
 	OsInit();		
-#ifdef MTX
+#ifdef XTHREADS
         POQInitializeMonitor();
-#endif /* MTX */
+#endif /* XTHREADS */
 
 	if(serverGeneration == 1)
 	{
@@ -260,28 +260,28 @@ main(argc, argv)
 		FatalError("couldn't create server client");
 	    InitClient(serverClient, 0, (pointer)NULL);
 	}
-#ifndef MTX
+#ifndef XTHREADS
 	else
 	    ResetWellKnownSockets ();
-#else /* MTX */
+#else /* XTHREADS */
 	POQInitClient(serverClient);
-#endif /* MTX */
+#endif /* XTHREADS */
 
         clients[0] = serverClient;
         currentMaxClients = 1;
 
 	if (!
-#ifndef MTX
+#ifndef XTHREADS
 	    InitClientResources
-#else /* MTX */
+#else /* XTHREADS */
 	    InitializeRDBMonitor
-#endif /* MTX */
+#endif /* XTHREADS */
 		(serverClient))      /* for root resources */
 	    FatalError("couldn't init server resources");
 
-#ifndef MTX
+#ifndef XTHREADS
 	SetInputCheck(&alwaysCheckForInput[0], &alwaysCheckForInput[1]);
-#endif /* not MTX */
+#endif /* not XTHREADS */
 
 	screenInfo.arraySize = MAXSCREENS;
 	screenInfo.numScreens = 0;
@@ -329,9 +329,9 @@ main(argc, argv)
 		FatalError("failed to create root window");
 	}
 
-#ifdef MTX
+#ifdef XTHREADS
 	InitDeviceInputThread();  /* Initialize globals used by the DIT */
-#endif /* MTX */
+#endif /* XTHREADS */
 
 	InitInput(argc, argv);
 	if (InitAndStartDevices() != Success)
@@ -349,18 +349,18 @@ main(argc, argv)
 	    InitRootWindow(WindowTable[i]);
         DefineInitialRootWindow(WindowTable[0]);
 
-#ifdef MTX
+#ifdef XTHREADS
 #ifdef DGUX
 	avVideoHasSettledDown(screenInfo.screens[0]);
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 
 	if (!CreateConnectionBlock())
 	    FatalError("could not create connection block info");
 
-#ifndef MTX
+#ifndef XTHREADS
 	Dispatch();
-#else /* MTX */
+#else /* XTHREADS */
 	InitClientGlobals();
 	InitSelections();
 	CreateDeviceInputThread();  /* Start the DIT */
@@ -382,7 +382,7 @@ main(argc, argv)
 	/* Now free up whatever must be freed */
 	DestroyDeviceInputThread(); /* This will wait for the DIT to exit */
 	KillAllClients();
-#endif /* MTX */
+#endif /* XTHREADS */
 
 	/* Now free up whatever must be freed */
 
@@ -405,11 +405,11 @@ main(argc, argv)
 
 	FreeFonts ();
 
-#ifndef MTX
+#ifndef XTHREADS
 	if (dispatchException & DE_TERMINATE)
-#else /* MTX */
+#else /* XTHREADS */
         if (serverException & DE_TERMINATE)
-#endif /* MTX */
+#endif /* XTHREADS */
 	{
 	    ddxGiveUp();
 	    break;
@@ -421,7 +421,7 @@ main(argc, argv)
     exit(0);
 }
 
-#ifdef MTX
+#ifdef XTHREADS
 void
 SignalServerReset()
 {
@@ -435,7 +435,7 @@ SignalServerTerminate()
     serverException |= DE_TERMINATE;
     X_COND_SIGNAL(&ServerCond);
 }
-#endif /* MTX */
+#endif /* XTHREADS */
 
 static int padlength[4] = {0, 3, 2, 1};
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8cppl.c,v 1.1 93/12/31 11:21:41 rob Exp $
+ * $XConsortium: cfb8cppl.c,v 1.2 94/01/04 00:02:05 rob Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -87,9 +87,9 @@ cfbCopyImagePlane (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 {
     cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
 		      (unsigned long) ~0L, planemask
-#ifdef MTX
+#ifdef XTHREADS
 			,(StippleRec *)0
-#endif /* MTX */
+#endif /* XTHREADS */
 		      );
 }
 
@@ -97,9 +97,9 @@ cfbCopyImagePlane (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 
 void
 cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, bitPlane
-#ifdef MTX
+#ifdef XTHREADS
     , pstipple
-#endif /* MTX */
+#endif /* XTHREADS */
     )
     DrawablePtr pSrcDrawable;
     DrawablePtr pDstDrawable;
@@ -108,9 +108,9 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
     DDXPointPtr pptSrc;
     unsigned long planemask;
     unsigned long   bitPlane;
-#ifdef MTX
+#ifdef XTHREADS
     StippleRec	*pstipple;
-#endif /* MTX */
+#endif /* XTHREADS */
 {
     int			    srcx, srcy, dstx, dsty, width, height;
     unsigned char	    *psrcBase;

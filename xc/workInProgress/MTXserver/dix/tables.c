@@ -43,11 +43,11 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: tables.c,v 1.25 93/11/08 13:57:57 rob Exp $ */
+/* $XConsortium: tables.c,v 1.1 93/12/15 16:06:39 rob Exp $ */
 
-#ifndef MTX
+#ifndef XTHREADS
 extern int    ProcInitialConnection(), ProcEstablishConnection();
-#endif /* not MTX */
+#endif /* not XTHREADS */
 
 extern int    ProcBadRequest(), ProcCreateWindow(),
     ProcChangeWindowAttributes(), ProcGetWindowAttributes(),
@@ -161,14 +161,14 @@ extern int
     k5_stage1(), k5_stage2(), k5_stage3(), k5_bad();
 #endif
 
-#ifndef MTX
+#ifndef XTHREADS
 int (* InitialVector[3]) () =
 {
     0,
     ProcInitialConnection,
     ProcEstablishConnection
 };
-#endif /* not MTX */
+#endif /* not XTHREADS */
 
 int (* ProcVector[256]) () =
 {

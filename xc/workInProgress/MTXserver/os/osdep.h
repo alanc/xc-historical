@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.36 93/09/26 15:41:18 gildea Exp $ */
+/* $XConsortium: osdep.h,v 1.3 94/01/03 15:03:58 rob Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
@@ -57,7 +57,7 @@ SOFTWARE.
 #endif
 #endif
 
-#ifdef MTX
+#ifdef XTHREADS
 #include "xthreads.h"
 #endif
 
@@ -216,12 +216,12 @@ typedef struct _osComm {
     k5_state	authstate;	/* state of setup auth conversation */
 #endif
     CARD32 conn_time;		/* timestamp if not established, else 0  */
-#ifdef MTX
+#ifdef XTHREADS
     X_THREAD_TYPE thread;
 #ifdef luna88k
     thread_t kern_thread;
 #endif /*luna88k*/
-#endif /*MTX*/
+#endif /*XTHREADS*/
 } OsCommRec, *OsCommPtr;
 
 extern int FlushClient(

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mieq.c,v 1.1 93/12/27 12:23:09 rob Exp $
+ * $XConsortium: mieq.c,v 1.2 93/12/27 19:38:27 rob Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -94,9 +94,9 @@ mieqInit (pKbd, pPtr)
     miEventQueue.lastMotion = FALSE;
     miEventQueue.pEnqueueScreen = screenInfo.screens[0];
     miEventQueue.pDequeueScreen = miEventQueue.pEnqueueScreen;
-#ifndef MTX
+#ifndef XTHREADS
     SetInputCheck (&miEventQueue.head, &miEventQueue.tail);
-#endif /* MTX */
+#endif /* XTHREADS */
     return TRUE;
 }
 
@@ -200,19 +200,19 @@ mieqProcessInputEvents ()
 	    {
 	    case KeyPress:
 	    case KeyRelease:
-#ifndef MTX
+#ifndef XTHREADS
 	    	(*miEventQueue.pKbd->processInputProc)
-#else /* MTX */
+#else /* XTHREADS */
                 LockDeviceAndProcessInputEvent
-#endif /* MTX */
+#endif /* XTHREADS */
 		    (&xe, miEventQueue.pKbd, 1);
 	    	break;
 	    default:
-#ifndef MTX
+#ifndef XTHREADS
 	    	(*miEventQueue.pPtr->processInputProc)
-#else /* MTX */
+#else /* XTHREADS */
                 LockDeviceAndProcessInputEvent
-#endif /* MTX */
+#endif /* XTHREADS */
 		    (&xe, miEventQueue.pPtr, 1);
 	    	break;
 	    }

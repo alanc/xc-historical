@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: extension.c,v 1.56 93/12/04 17:13:26 rob Exp $ */
+/* $XConsortium: extension.c,v 1.1 93/12/15 16:06:18 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -67,9 +67,9 @@ static ExtensionEntry **extensions = (ExtensionEntry **)NULL;
 extern int (* ProcVector[]) ();
 extern int (* SwappedProcVector[]) ();
 extern void (* ReplySwapVector[256]) ();
-#ifndef MTX
+#ifndef XTHREADS
 extern void WriteEventsToClient();
-#endif /* not MTX */
+#endif /* not XTHREADS */
 
 int lastEvent = EXTENSION_EVENT_BASE;
 static int lastError = FirstExtensionError;
@@ -334,23 +334,23 @@ ProcListExtensions(client)
 	    }
 	}
     }
-#ifndef MTX
+#ifndef XTHREADS
     WriteReplyToClient(client, sizeof(xListExtensionsReply), reply);
-#endif /* not MTX */
+#endif /* not XTHREADS */
     if (reply->length > 0)
     {
-#ifndef MTX
+#ifndef XTHREADS
         WriteToClient(client, total_length, buffer);
     	DEALLOCATE_LOCAL(buffer);
-#else /* MTX */
+#else /* XTHREADS */
 	msg->pReplyData = buffer;
 	msg->freeReplyData = TRUE;
 	msg->lenReplyData = total_length;
-#endif /* not MTX */
+#endif /* not XTHREADS */
     }
-#ifdef MTX
+#ifdef XTHREADS
     SendReplyToClient(client, msg);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     MTX_UNLOCK_PENDING_OPERATION_QUEUE(client);
     return(client->noClientException);

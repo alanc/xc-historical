@@ -42,7 +42,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 1.1 93/12/29 12:30:56 rob Exp $ */
+/* $XConsortium: mfbgc.c,v 1.2 93/12/29 15:13:12 rob Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -436,7 +436,7 @@ mfbCreateGC(pGC)
     pGC->funcs = &mfbFuncs;
 
     /* mfb wants to translate before scan convesion */
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
     pGC->miTranslate = 0;
 #else
     pGC->miTranslate = 1;

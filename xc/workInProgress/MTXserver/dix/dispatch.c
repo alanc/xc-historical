@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: dispatch.c,v 1.5 94/01/10 16:43:11 rob Exp $ */
+/* $XConsortium: dispatch.c,v 1.6 94/01/10 19:26:15 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -86,12 +86,12 @@ extern void NotImplemented();
 Selection *CurrentSelections;
 int NumCurrentSelections;
 
-#ifdef MTX
+#ifdef XTHREADS
 extern X_MUTEX_TYPE ConnectionMutex;
 #define MTX_STATIC static
-#else /* MTX */
+#else /* XTHREADS */
 #define MTX_STATIC /* */
-#endif /* MTX */
+#endif /* XTHREADS */
 
 extern long defaultScreenSaverTime;
 extern long defaultScreenSaverInterval;
@@ -133,7 +133,7 @@ static void DeleteClientFromAnySelections(
  *   - Choice: either do what I've done here or do what the original MTX
  *     did and globally declare it in cit.c.
  */
-#ifdef MTX
+#ifdef XTHREADS
 int nextFreeClientID;        /* always MIN free client ID */
 #else
 static int nextFreeClientID;
@@ -403,7 +403,7 @@ ProcChangeWindowAttributes(client)
     REQUEST(xChangeWindowAttributesReq);
     register int result;
     int len;
-#ifdef MTX
+#ifdef XTHREADS
     int mask, index;
 #endif
     unsigned long conflictMask = 0;
@@ -413,7 +413,7 @@ ProcChangeWindowAttributes(client)
     if (len != Ones(stuff->valueMask))
         return BadLength;
 
-#ifdef MTX
+#ifdef XTHREADS
     mask = stuff->valueMask;
     while (mask)
     {
@@ -461,7 +461,7 @@ ProcChangeWindowAttributes(client)
 		break;
 	}
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 
     MTX_LOCK_AND_VERIFY_WINDOW(pWin, stuff->window, client, POQ_BORDER_SIZE,
 			   conflictMask);
@@ -508,7 +508,7 @@ ProcDestroyWindow(client)
     MTX_LOCK_AND_VERIFY_WINDOW(pWin, stuff->id, client, POQ_BORDER_SIZE,
 			       CM_XDestroyWindow);
 
-#ifdef MTX 
+#ifdef XTHREADS 
    /* UnlockWindow(pWin, stuff->id);*/
 #endif
     if (pWin->parent)
@@ -689,9 +689,9 @@ ProcConfigureWindow(client)
     REQUEST(xConfigureWindowReq);
     register int result;
     int len;
-#ifdef MTX
+#ifdef XTHREADS
     RegionRec configureRegion; /* allocate space for configure region */
-#endif /* MTX */
+#endif /* XTHREADS */
 
     REQUEST_AT_LEAST_SIZE(xConfigureWindowReq);
 
@@ -704,7 +704,7 @@ ProcConfigureWindow(client)
  *                     POQ_SET_WINDOW_CONFLICT here we call 
  *                     POQ_SET_REGION_CONFLICT.
  */
-#ifdef MTX
+#ifdef XTHREADS
     if (result = LockAndVerifyWindow(&pWin, stuff->window, client))
 	return (result);
     POQ_SET_REGION_CONFLICT(client, pWin, &configureRegion);
@@ -857,7 +857,7 @@ ProcQueryTree(client)
  *          merge this code gracefully.  I'm not really sure that for cases
  *          like this it is worth the effort, time will tell however.
  */
-#ifdef MTX
+#ifdef XTHREADS
     if (numChildren)
     {
 	if (client->swapped)
@@ -950,7 +950,7 @@ ProcGetAtomName(client)
 	reply->sequenceNumber = client->sequence;
 	reply->nameLength = len;
 
-#ifdef MTX
+#ifdef XTHREADS
 	atomName = (char *) xalloc(len);
 	if (!atomName)
 	{
@@ -965,7 +965,7 @@ ProcGetAtomName(client)
 	msg->lenReplyData = len;
 #endif
 	WriteReplyToClient(client, sizeof(xGetAtomNameReply), reply);
-#ifndef MTX
+#ifndef XTHREADS
 	(void)WriteToClient(client, len, str);
 #endif
 	MTX_UNLOCK_PENDING_OPERATION_QUEUE(client);
@@ -1236,7 +1236,7 @@ ProcGrabServer(client)
 {
     REQUEST(xReq);
     REQUEST_SIZE_MATCH(xReq);
-#ifdef MTX
+#ifdef XTHREADS
     POQGrabServer(client);
 #else
     if (grabState != GrabNone && client != grabClient)
@@ -1279,7 +1279,7 @@ ProcUngrabServer(client)
 {
     REQUEST(xReq);
     REQUEST_SIZE_MATCH(xReq);
-#ifdef MTX
+#ifdef XTHREADS
     POQUngrabServer(client);
 #else
     UngrabServer();
@@ -1399,7 +1399,7 @@ ProcCloseFont(client)
 /*
  * No special macros here, LOCK_AND_VERIFY_FONT is only used here.
  */
-#ifdef MTX
+#ifdef XTHREADS
     LOCK_AND_VERIFY_FONT(pFont, stuff->id, client, CM_XCloseFont);
     UnlockFont(pFont, stuff->id);
     FreeResource(stuff->id, RT_NONE);
@@ -1426,9 +1426,9 @@ ProcQueryFont(client)
     register ClientPtr client;
 {
     xQueryFontReply *reply;	/* ZZZ - no static reply buffer */
-#ifdef MTX
+#ifdef XTHREADS
     PooledMessagePtr msg;
-#endif /* MTX */
+#endif /* XTHREADS */
     FontPtr pFont;
     GC *pGC;
     xCharInfo	*pmax;
@@ -1456,7 +1456,7 @@ ProcQueryFont(client)
     rlength = sizeof(xQueryFontReply) +
 		 FONTINFONPROPS(FONTCHARSET(pFont)) * sizeof(xFontProp)  +
 		 nprotoxcistructs * sizeof(xCharInfo);
-#ifdef MTX
+#ifdef XTHREADS
     reply = (xQueryFontReply *) GetPooledReplyMessage(rlength, &msg);
 #else
     reply = (xQueryFontReply *)ALLOCATE_LOCAL(rlength);
@@ -1474,7 +1474,7 @@ ProcQueryFont(client)
 
     WriteReplyToClient(client, rlength, reply);
     MTX_UNLOCK_FONT(pFont, stuff->id, client);
-#ifndef MTX
+#ifndef XTHREADS
     DEALLOCATE_LOCAL(reply);
 #endif
     return(client->noClientException);
@@ -2686,12 +2686,12 @@ ProcListInstalledColormaps(client)
     int nummaps;
     WindowPtr pWin;
     REQUEST(xResourceReq);
-#ifdef MTX
+#ifdef XTHREADS
     Colormap *colorMaps;
     char *replyMaps;
     int sizeMaps;
     int maxMaps;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     MTX_REP_CHECK_RETURN(preply,BadAlloc);
 
@@ -2700,7 +2700,7 @@ ProcListInstalledColormaps(client)
     MTX_REP_LOCK_AND_VERIFY_WINDOW(pWin, stuff->id, client, POQ_NULL_REGION,
 			       CM_XListInstalledColormaps);
 
-#ifndef MTX	/* ZZZ XXX: Sid wishes there were a better way */
+#ifndef XTHREADS	/* ZZZ XXX: Sid wishes there were a better way */
     preply = (xListInstalledColormapsReply *) 
 		ALLOCATE_LOCAL(sizeof(xListInstalledColormapsReply) +
 		     pWin->drawable.pScreen->maxInstalledCmaps *
@@ -2722,7 +2722,7 @@ ProcListInstalledColormaps(client)
     WriteSwappedDataToClient(client, nummaps * sizeof(Colormap), &preply[1]);
 
     DEALLOCATE_LOCAL(preply);
-#else /* MTX */
+#else /* XTHREADS */
     maxMaps = pWin->drawable.pScreen->maxInstalledCmaps;
     colorMaps = (Colormap *) ALLOCATE_LOCAL(maxMaps * sizeof(Colormap));
     if (!colorMaps)
@@ -2915,19 +2915,19 @@ ProcAllocColorCells           (client)
     accr->sequenceNumber = client->sequence;
     accr->nPixels = npixels;
     accr->nMasks = nmasks;
-#ifndef MTX
+#ifndef XTHREADS
     WriteReplyToClient(client, sizeof (xAllocColorCellsReply), accr);
     client->pSwapReplyFunc = Swap32Write;
     WriteSwappedDataToClient(client, length, ppixels);
     MTX_LOCAL_FREE(ppixels);
-#else /* MTX */
+#else /* XTHREADS */
     msg->pReplyData = (char *) ppixels;
     msg->freeReplyData = TRUE;
     msg->lenReplyData = length;
     if (client->swapped)
 	Swap32(length, ppixels);
     SendReplyToClient(client, msg);
-#endif /* MTX */
+#endif /* XTHREADS */
     MTX_UNLOCK_COLORMAP(pcmp, stuff->cmap, client);
     return (client->noClientException);        
 }
@@ -2995,12 +2995,12 @@ ProcAllocColorPlanes(client)
 
     acpr->length = length >> 2;
 
-#ifndef MTX
+#ifndef XTHREADS
     WriteReplyToClient(client, sizeof(xAllocColorPlanesReply), acpr);
     client->pSwapReplyFunc = Swap32Write;
     WriteSwappedDataToClient(client, length, ppixels);
     MTX_LOCAL_FREE(ppixels);
-#else /* MTX */
+#else /* XTHREADS */
     msg->pReplyData = (char *) ppixels;
     msg->freeReplyData = TRUE;
     msg->lenReplyData = length;
@@ -3008,7 +3008,7 @@ ProcAllocColorPlanes(client)
 	Swap32(length, ppixels);
 
     SendReplyToClient(client, msg);
-#endif /* MTX */
+#endif /* XTHREADS */
     MTX_UNLOCK_COLORMAP(pcmp, stuff->cmap, client);
     return (client->noClientException);        
 }
@@ -3144,24 +3144,24 @@ ProcQueryColors(client)
     qcr->length = (count * sizeof(xrgb)) >> 2;
     qcr->sequenceNumber = client->sequence;
     qcr->nColors = count;
-#ifdef MTX
+#ifdef XTHREADS
     msg->pReplyData = (char *) prgbs;
     msg->freeReplyData = TRUE;
     msg->lenReplyData = count * sizeof(xrgb);
     if (client->swapped)
 	SQColorsExtend(client, count * sizeof(xrgb), prgbs);
     SendReplyToClient(client, msg);
-#endif /* MTX */
+#endif /* XTHREADS */
     MTX_UNLOCK_COLORMAP(pcmp, stuff->cmap, client);
     WriteReplyToClient(client, sizeof(xQueryColorsReply), qcr);
-#ifndef MTX
+#ifndef XTHREADS
     if (count)
     {
 	client->pSwapReplyFunc = SQColorsExtend;
 	WriteSwappedDataToClient(client, count * sizeof(xrgb), prgbs);
     }
     if (prgbs) DEALLOCATE_LOCAL(prgbs);
-#endif /* MTX */
+#endif /* XTHREADS */
     return(client->noClientException);
 } 
 
@@ -3357,9 +3357,9 @@ ProcFreeCursor(client)
 
     MTX_LOCK_AND_VERIFY_CURSOR(pCursor, stuff->id, client, CM_XFreeCursor);
 
-#ifdef MTX	/* ZZZ MTX_? */
+#ifdef XTHREADS	/* ZZZ XTHREADS_? */
     UnlockCursor(pCursor, stuff->id);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     FreeResource(stuff->id, RT_NONE);
     MTX_UNLOCK_PENDING_OPERATION_QUEUE(client);
@@ -3474,7 +3474,7 @@ ProcSetScreenSaver            (client)
 	ScreenSaverInterval = defaultScreenSaverInterval;
 
     MTX_UNLOCK_PENDING_OPERATION_QUEUE(client);
-#ifdef MTX
+#ifdef XTHREADS
     DITSetScreenSaver();
 #endif
     return (client->noClientException);
@@ -3571,13 +3571,13 @@ extern int GetHosts();
     reply->nHosts = nHosts;
     reply->length = len >> 2;
 
-#ifndef MTX
+#ifndef XTHREADS
     WriteReplyToClient(client, sizeof(xListHostsReply), reply);
 #endif
 
     if (nHosts)
     {
-#ifdef MTX
+#ifdef XTHREADS
 	msg->pReplyData = (char *) pdata;
 	msg->freeReplyData = TRUE;
 	msg->lenReplyData = len;
@@ -3588,7 +3588,7 @@ extern int GetHosts();
 	WriteSwappedDataToClient(client, len, pdata);
 #endif
     }
-#ifdef MTX
+#ifdef XTHREADS
     WriteReplyToClient(client, sizeof(xListHostsReply), reply);
 #endif
 
@@ -3716,10 +3716,10 @@ ProcGetFontPath(client)
     REPLY_DECL(xGetFontPathReply,reply);
     int stringLens, numpaths;
     unsigned char *bufferStart;
-#ifdef MTX
+#ifdef XTHREADS
     char *replyData;
     int dataSize;
-#endif /* MTX */
+#endif /* XTHREADS */
     REQUEST (xReq);
 
     MTX_REP_CHECK_RETURN(reply,BadAlloc);
@@ -3734,7 +3734,7 @@ ProcGetFontPath(client)
     reply->sequenceNumber = client->sequence;
     reply->length = (stringLens + numpaths + 3) >> 2;
     reply->nPaths = numpaths;
-#ifdef MTX
+#ifdef XTHREADS
     dataSize = stringLens + numpaths;
     if (dataSize > 0)
     {
@@ -3752,7 +3752,7 @@ ProcGetFontPath(client)
     }
 #endif
     WriteReplyToClient(client, sizeof(xGetFontPathReply), reply);
-#ifndef MTX
+#ifndef XTHREADS
     if (stringLens || numpaths)
 	(void)WriteToClient(client, stringLens + numpaths, (char *)bufferStart);
 #endif
@@ -3851,7 +3851,7 @@ InitProcVectors()
  *  then killed again, the client is really destroyed.
  *********************/
 
-#ifndef MTX
+#ifndef XTHREADS
 Bool terminateAtReset = FALSE;
 
 void
@@ -3913,7 +3913,7 @@ CloseDownClient(client)
 	}
     }
 }
-#endif /* not MTX */
+#endif /* not XTHREADS */
 
 static void
 KillAllClients()
@@ -3931,7 +3931,7 @@ KillAllClients()
  *    and  destroy their resources.
  *********************/
 
-#ifndef MTX
+#ifndef XTHREADS
 void
 CloseDownRetainedResources()
 {
@@ -4029,7 +4029,7 @@ NextAvailableClient(ospriv)
 	nextFreeClientID++;
     return(client);
 }
-#endif /* no MTX */
+#endif /* no XTHREADS */
 
 int
 ProcInitialConnection(client)
@@ -4180,14 +4180,14 @@ SendErrorToClient(client, majorCode, minorCode, resId, errorCode)
  * like this is the only occurrence.
  */
     xError rep, *error = &rep;
-#ifdef MTX
+#ifdef XTHREADS
     PooledMessagePtr message;
     message = GetPooledMessage();
     error = GetErrorPointer(xError, message);
 #endif
 
     error->type = X_Error;
-#ifdef MTX
+#ifdef XTHREADS
     if (client->swapped)
     {
         register char n;
@@ -4203,7 +4203,7 @@ SendErrorToClient(client, majorCode, minorCode, resId, errorCode)
     error->minorCode = minorCode;
     error->resourceID = resId;
 
-#ifdef MTX
+#ifdef XTHREADS
     message->type = error_message;
     BufferMessageForClient(client, message);
 #else
@@ -4242,11 +4242,11 @@ DeleteClientFromAnySelections(client)
 	}
 }
 
-#ifndef MTX
+#ifndef XTHREADS
 void
 MarkClientException(client)
     ClientPtr client;
 {
     client->noClientException = -1;
 }
-#endif /* no MTX */
+#endif /* no XTHREADS */

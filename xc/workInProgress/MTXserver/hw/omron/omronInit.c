@@ -1,5 +1,5 @@
 /*
- * $XConsortium: omronInit.c,v 1.2 94/01/05 16:55:57 rob Exp $
+ * $XConsortium: omronInit.c,v 1.3 94/01/05 18:49:07 rob Exp $
  * Copyright 1992, 1993 Data General Corporation;
  * Copyright 1991, 1992, 1993 OMRON Corporation  
  *
@@ -196,14 +196,14 @@ InitInput(argc, argv)
 
     omronSetIoHandler(omronEnqueueEvents);
 
-#ifndef MTX
+#ifndef XTHREADS
 #ifndef UNUSE_SIGIO_SIGNAL
     (void) OsSignal(SIGIO, omronSigIOHandler);
 #else
     if(RegisterBlockAndWakeupHandlers(NoopDDA, omronWakeupProc, (pointer)0) != TRUE)
 	FatalError("Can't register WakeupHandler\n");
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 
@@ -429,10 +429,10 @@ AbortDDX()
 void
 ddxGiveUp()
 {
-#ifndef MTX
+#ifndef XTHREADS
     omronKbdGiveUp();
     omronMouseGiveUp();
-#endif /* MTX */
+#endif /* XTHREADS */
     if (omron_fb_info.func->GiveUpProc != NULL)
 	(*omron_fb_info.func->GiveUpProc)(&omron_fb_info);
 

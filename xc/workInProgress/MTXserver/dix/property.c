@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: property.c,v 5.14 93/12/04 17:13:27 rob Exp $ */
+/* $XConsortium: property.c,v 1.1 93/12/15 16:06:34 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -58,12 +58,12 @@ OF THIS SOFTWARE.
 
 extern void (*ReplySwapVector[]) ();
 
-#ifndef MTX
+#ifndef XTHREADS
 extern void CopySwap16Write(), CopySwap32Write(), Swap32Write();
 extern int WriteToClient();
-#else /* MTX */
+#else /* XTHREADS */
 extern void CopySwap16(), CopySwap32(), Swap32();
-#endif /* MTX */
+#endif /* XTHREADS */
 
 /*****************************************************************
  * Property Stuff
@@ -443,7 +443,7 @@ int
 ProcGetProperty(client)
     ClientPtr client;
 {
-#ifndef MTX
+#ifndef XTHREADS
     PropertyPtr pProp, prevProp;
     unsigned long n, len, ind;
     WindowPtr pWin;
@@ -577,7 +577,7 @@ ProcGetProperty(client)
     }
     else            
         return (BadWindow); 
-#else /* MTX */
+#else /* XTHREADS */
     PropertyPtr pProp, prevProp;
     unsigned long n, len, ind;
     WindowPtr pWin;
@@ -757,7 +757,7 @@ ProcGetProperty(client)
 	MTX_UNLOCK_WINDOW(pWin, stuff->window, client);
         return(BadAtom);
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 int
@@ -806,28 +806,28 @@ ProcListProperties(client)
 	*temppAtoms++ = pProp->propertyName;
 	pProp = pProp->next;
     }
-#ifndef MTX
+#ifndef XTHREADS
     WriteReplyToClient(client, sizeof(xGenericReply), xlpr);
-#endif /* MTX */
+#endif /* XTHREADS */
     if (numProps)
     {
-#ifndef MTX
+#ifndef XTHREADS
         client->pSwapReplyFunc = Swap32Write;
         WriteSwappedDataToClient(client, numProps * sizeof(Atom), pAtoms);
         DEALLOCATE_LOCAL(pAtoms);
-#else /* MTX */
+#else /* XTHREADS */
         if (client->swapped)
             Swap32(numProps * sizeof(Atom));
 
         msg->pReplyData = (char *) pAtoms;
         msg->freeReplyData = TRUE;
         msg->lenReplyData = numProps * sizeof(Atom);
-#endif /* MTX */
+#endif /* XTHREADS */
     }
 
-#ifdef MTX
+#ifdef XTHREADS
     WriteReplyToClient(client, sizeof(xGenericReply), xlpr);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     MTX_UNLOCK_WINDOW(pWin, stuff->id, client);
     return(client->noClientException);

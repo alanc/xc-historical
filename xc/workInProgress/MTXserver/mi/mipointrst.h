@@ -3,7 +3,7 @@
  *
  */
 
-/* $XConsortium: mipointrst.h,v 1.1 93/12/27 12:23:10 rob Exp $ */
+/* $XConsortium: mipointrst.h,v 1.2 93/12/27 19:38:29 rob Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -63,12 +63,12 @@ typedef struct {
     DevicePtr		    pPointer;   /* pointer device structure */
     miHistoryRec	    history[MOTION_SIZE];
     int			    history_start, history_end;
-#ifdef MTX
+#ifdef XTHREADS
     X_MUTEX_TYPE	    mutex;
 #ifdef	USE_SOFTWARE_CURSOR
     X_THREAD_TYPE	    last_thread_id;
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 } miPointerRec, *miPointerPtr;
 
 typedef struct {

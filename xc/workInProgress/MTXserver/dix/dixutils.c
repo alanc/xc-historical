@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: dixutils.c,v 1.50 93/12/04 17:13:24 rob Exp $ */
+/* $XConsortium: dixutils.c,v 1.1 93/12/15 16:06:11 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -131,7 +131,7 @@ CopyISOLatin1Lowered(dest, source, length)
     *dest = '\0';
 }
 
-#ifndef MTX
+#ifndef XTHREADS
 WindowPtr
 LookupWindow(rid, client)
     XID rid;
@@ -175,7 +175,7 @@ LookupDrawable(rid, client)
         return (pointer)pDraw;		
     return (pointer)NULL;
 }
-#endif /* not MTX */
+#endif /* not XTHREADS */
 
 
 ClientPtr
@@ -279,7 +279,7 @@ NoopDDA(
 {
 }
 
-#ifndef MTX
+#ifndef XTHREADS
 typedef struct _BlockHandler {
     BlockHandlerProcPtr BlockHandler;
     WakeupHandlerProcPtr WakeupHandler;
@@ -355,7 +355,7 @@ pointer pReadmask;	/* the resulting descriptor mask */
     }
     --inHandler;
 }
-#endif /* MTX */
+#endif /* XTHREADS */
 
 /* Reentrant with BlockHandler and WakeupHandler, except wakeup won't
  * get called until next time
@@ -368,7 +368,7 @@ RegisterBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
     pointer blockData;
 {
     /* ZZZ - for MTX this should be removed.  Return value? */
-#ifndef MTX
+#ifndef XTHREADS
     BlockHandlerPtr new;
 
     if (numHandlers >= sizeHandlers)
@@ -386,7 +386,7 @@ RegisterBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
     handlers[numHandlers].deleted = FALSE;
     numHandlers = numHandlers + 1;
     return TRUE;
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 void
@@ -396,7 +396,7 @@ RemoveBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
     pointer blockData;
 {
     /* ZZZ - for MTX this should be removed.  Return value? */
-#ifndef MTX
+#ifndef XTHREADS
     int	    i;
 
     for (i = 0; i < numHandlers; i++)
@@ -417,10 +417,10 @@ RemoveBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
 	    }
 	    break;
 	}
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
-#ifndef MTX
+#ifndef XTHREADS
 void
 InitBlockAndWakeupHandlers ()
 {
@@ -571,19 +571,19 @@ ClientWakeup (client)
 	prev = &q->next;
     }
 }
-#endif /* not MTX */
+#endif /* not XTHREADS */
 
 Bool
 ClientIsAsleep (client)
     ClientPtr	client;
 {
     /* ZZZ - for MTX this should be removed.  Return value? */
-#ifndef MTX
+#ifndef XTHREADS
     SleepQueuePtr   q;
 
     for (q = sleepQueue; q; q = q->next)
 	if (q->client == client)
 	    return TRUE;
     return FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
 }

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: omronKbd.c,v 1.1 94/01/04 19:19:05 rob Exp $
+ * $XConsortium: omronKbd.c,v 1.2 94/01/05 16:55:58 rob Exp $
  *
  * Copyright 1992, 1993 Data General Corporation;
  * Copyright 1991, 1992, 1993 OMRON Corporation  
@@ -55,9 +55,9 @@ extern unsigned char *omronAutoRepeats[];
 static Bool omronKbdInit();
 static void omronBell();
 static void omronKbdCtrl();
-#ifdef MTX
+#ifdef XTHREADS
 static void omronKbdClose();
-#endif /* MTX */
+#endif /* XTHREADS */
 #ifndef USE_KANA_SWITCH
 static void omronKbdModCheck();
 #endif
@@ -67,18 +67,18 @@ omronKbdProc(pKeyboard,what)
     DevicePtr     pKeyboard;
     int           what;
 {
-#ifndef MTX
+#ifndef XTHREADS
     static Bool initFlag = FALSE;
-#endif /* MTX */
+#endif /* XTHREADS */
     static omronKeyPrv prv[1];
 
     switch(what)
     {
 	case DEVICE_INIT:
 	    pKeyboard->devicePrivate = (pointer)prv;
-#ifndef MTX
+#ifndef XTHREADS
 	    if (initFlag == FALSE)
-#endif /* MTX */
+#endif /* XTHREADS */
 	    {
 #ifdef USE_KEYCOMPATI
 		prv->offset = 0;
@@ -87,9 +87,9 @@ omronKbdProc(pKeyboard,what)
 #endif
 		if (!omronKbdInit(prv))
 		    return (!Success);
-#ifndef MTX
+#ifndef XTHREADS
 		initFlag = TRUE;
-#endif /* MTX */
+#endif /* XTHREADS */
 	    }
 	    memmove(prv->semiEncode,prv->semiEncodeDef,CODTBSZ);
 #ifndef USE_KANA_SWITCH
@@ -118,7 +118,7 @@ omronKbdProc(pKeyboard,what)
 #endif
 	    break;
 	case DEVICE_ON:
-#ifndef MTX
+#ifndef XTHREADS
 #ifndef UNUSE_SIGIO_SIGNAL
 	    prv->flags |= FASYNC;
 	    if (fcntl(prv->fd, F_SETFL, prv->flags) < 0 )
@@ -127,26 +127,26 @@ omronKbdProc(pKeyboard,what)
 		return (!Success);
 	    }
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 	    AddEnabledDevice(prv->fd);
 	    pKeyboard->on = TRUE;
 		break;
 	case DEVICE_OFF:
 	case DEVICE_CLOSE:
-#ifndef MTX
+#ifndef XTHREADS
 #ifndef UNUSE_SIGIO_SIGNAL
 	    prv->flags &= ~FASYNC;
 	    if (fcntl(prv->fd, F_SETFL, prv->flags) < 0 )
 		Error("Can't disable the keyboard SIGIO.");
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 	    if (ioctl(prv->fd, KBFLSH, NULL) < 0)
 		Error("Keyboard ioctl KBFLSH fault.");
 	    RemoveEnabledDevice(prv->fd);
 	    pKeyboard->on = FALSE;
-#ifdef MTX
+#ifdef XTHREADS
 	    omronKbdClose(prv);
-#endif /* MTX */
+#endif /* XTHREADS */
 	    break;
     }
     return (Success);
@@ -167,7 +167,7 @@ omronKbdInit(prv)
 	register int i;
 #endif
 
-#if defined(UNUSE_SIGIO_SIGNAL) || defined(MTX)
+#if defined(UNUSE_SIGIO_SIGNAL) || defined(XTHREADS)
 	int arg = 1; 
 #endif
 
@@ -187,7 +187,7 @@ omronKbdInit(prv)
 	prv->type = 0;
 #endif
 
-#if defined(UNUSE_SIGIO_SIGNAL) || defined(MTX)
+#if defined(UNUSE_SIGIO_SIGNAL) || defined(XTHREADS)
 	ioctl (prv->fd, FIONBIO, &arg); /* set non-blocking io */
 #else
 	if ((prv->flags = fcntl(prv->fd, F_GETFL, NULL)) < 0) {
@@ -921,7 +921,7 @@ omronKbdModCheck(keysym, type, modstate)
 }
 #endif
 
-#ifdef MTX
+#ifdef XTHREADS
 void
 omronKbdClose(prv)
     omronKeyPrvPtr prv;
@@ -949,4 +949,4 @@ omronKbdClose(prv)
 
     close(prv->fd);
 }
-#endif /* MTX */
+#endif /* XTHREADS */

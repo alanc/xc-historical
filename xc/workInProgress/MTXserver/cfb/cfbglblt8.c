@@ -1,4 +1,4 @@
-/* $XConsortium: cfbglblt8.c,v 1.2 94/01/04 00:02:09 rob Exp $ */
+/* $XConsortium: cfbglblt8.c,v 1.3 94/01/06 23:03:29 rob Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 
@@ -153,11 +153,11 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int			widthGlyph;
     unsigned long	widthMask;
 #endif
-#ifdef MTX
+#ifdef XTHREADS
 #ifdef GLYPHROP
     StippleRec          *pstipple;
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 #ifndef STIPPLE
 #ifdef USE_STIPPLE_CODE
     void		(*stipple)();
@@ -218,7 +218,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     }
 
 #ifdef GLYPHROP
-#ifdef MTX
+#ifdef XTHREADS
     if(!(pstipple = (cfbGetGCPrivate(pGC))->stipple))
     {
 	pstipple = (StippleRec *)xalloc( sizeof( StippleRec ) );
@@ -226,11 +226,11 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	cfb8SetStipple (pGC->alu, pGC->fgPixel, pGC->planemask, pstipple);
     }
     else
-#endif /* MTX */
+#endif /* XTHREADS */
 	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
-#ifdef MTX
+#ifdef XTHREADS
     pstipple->change = FALSE; /* XXX */
-#endif /* MTX */
+#endif /* XTHREADS */
 #else
     pixel = cfbGetGCPrivate(pGC)->xor;
 #endif
@@ -318,9 +318,9 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int			yBand;
 #ifdef GLYPHROP
     unsigned long       bits;
-#ifdef MTX
+#ifdef XTHREADS
     StippleRec		*pstipple;
-#endif /* MTX */
+#endif /* XTHREADS */
 #endif
 #ifdef USE_LEFTBITS
     int			widthGlyph;
@@ -328,7 +328,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 #endif
 
 #ifdef GLYPHROP
-#ifdef MTX
+#ifdef XTHREADS
     if(!(pstipple = (cfbGetGCPrivate(pGC))->stipple))
     {
 	pstipple = (StippleRec *)xalloc( sizeof( StippleRec ) );
@@ -336,11 +336,11 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	cfb8SetStipple (pGC->alu, pGC->fgPixel, pGC->planemask, pstipple);
     }
     else
-#endif /* MTX */
+#endif /* XTHREADS */
 	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
-#ifdef MTX
+#ifdef XTHREADS
     pstipple->change = FALSE; /* XXX */
-#endif /* MTX */
+#endif /* XTHREADS */
 #else
     pixel = cfbGetGCPrivate(pGC)->xor;
 #endif

@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: events.c,v 1.1 93/12/15 16:06:12 rob Exp $ */
+/* $XConsortium: events.c,v 1.2 94/01/06 23:02:59 rob Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -72,9 +72,9 @@ extern WindowPtr *WindowTable;
 extern void (* EventSwapVector[128]) ();
 extern void (* ReplySwapVector[256]) ();
 
-#ifndef MTX
+#ifndef XTHREADS
 extern void SetCriticalOutputPending();
-#endif /* not MTX */
+#endif /* not XTHREADS */
 
 #define EXTENSION_EVENT_BASE  64
 
@@ -1059,14 +1059,14 @@ ReleaseActiveGrabs(client)
  *	Similarly, LockedClientEvents is a static
  */
 
-#ifdef MTX
+#ifdef XTHREADS
 static int
 LockedLockedTryClientEvents(client, pEvents, count, mask, filter, grab)
-#else /* MTX */
+#else /* XTHREADS */
 #define LockedTryClientEvents TryClientEvents
 int
 TryClientEvents(client, pEvents, count, mask, filter, grab)
-#endif /* MTX */
+#endif /* XTHREADS */
     ClientPtr client;
     GrabPtr grab;
     xEvent *pEvents;
@@ -1123,10 +1123,10 @@ TryClientEvents(client, pEvents, count, mask, filter, grab)
 		pEvents[i].u.u.sequenceNumber = client->sequence;
 	}
 
-#ifndef MTX
+#ifndef XTHREADS
 	if (BitIsOn(criticalEvents, type))
 	    SetCriticalOutputPending();
-#endif /* not MTX */
+#endif /* not XTHREADS */
 
 	WriteEventsToClient(client, count, pEvents);
 #ifdef DEBUG
@@ -1143,7 +1143,7 @@ TryClientEvents(client, pEvents, count, mask, filter, grab)
     }
 }
 
-#ifdef MTX
+#ifdef XTHREADS
 int
 LockedTryClientEvents(client, pEvents, count, mask, filter, grab)
     ClientPtr client;
@@ -1161,7 +1161,7 @@ LockedTryClientEvents(client, pEvents, count, mask, filter, grab)
 }
 
 #define LockedTryClientEvents LockedLockedTryClientEvents
-#endif /* MTX */
+#endif /* XTHREADS */
 
 
 
@@ -1560,11 +1560,11 @@ CheckMotion(xE)
     {
 	if (prevSpriteWin != NullWindow) {
 	    if (!xE)
-#ifndef MTX
+#ifndef XTHREADS
 		UpdateCurrentTimeIf();
-#else /* MTX */
+#else /* XTHREADS */
 		UpdateCurrentTime(); 
-#endif /* MTX */
+#endif /* XTHREADS */
 	    DoEnterLeaveEvents(prevSpriteWin, sprite.win, NotifyNormal);
 	}
 	PostNewCursor();
@@ -1964,7 +1964,7 @@ DeliverGrabbedEvent(xE, thisDev, deactivateGrab, count)
 	}
 }
 
-#ifdef MTX
+#ifdef XTHREADS
 void
 LockDeviceAndProcessInputEvent(xE, device, count)
     register xEvent *xE;
@@ -1975,7 +1975,7 @@ LockDeviceAndProcessInputEvent(xE, device, count)
     (*device->processInputProc)(xE, device, count);
     MTX_UNLOCK_DEVICES();
 }
-#endif /* MTX */
+#endif /* XTHREADS */
 
 void
 #ifdef XKB
@@ -2876,11 +2876,11 @@ ProcGrabPointer(client)
 	cursor = NullCursor;
     else
     {
-#ifndef MTX
+#ifndef XTHREADS
 	cursor = (CursorPtr)LookupIDByType(stuff->cursor, RT_CURSOR);
-#else /* MTX */
+#else /* XTHREADS */
         LockAndVerifyCursor(&cursor, stuff->cursor, client);
-#endif /* MTX */
+#endif /* XTHREADS */
 	if (!cursor)
 	{
 	    client->errorValue = stuff->cursor;
@@ -2941,9 +2941,9 @@ ProcGrabPointer(client)
     }
     MTX_UNLOCK_DEVICES();
     WriteReplyToClient(client, sizeof(xGrabPointerReply), rep);
-#ifdef MTX
+#ifdef XTHREADS
     UnlockCursor(cursor, stuff->cursor);
-#endif /* MTX */
+#endif /* XTHREADS */
     MTX_UNLOCK_ALL_WINDOWS(pWin, confineTo, stuff->grabWindow, 
 		       stuff->confineTo, client);
     return Success;
@@ -2975,12 +2975,12 @@ ProcChangeActivePointerGrab(client)
 	newCursor = NullCursor;
     else
     {
-#ifndef MTX
+#ifndef XTHREADS
 	newCursor = (CursorPtr)LookupIDByType(stuff->cursor, RT_CURSOR);
-#else /* MTX */
+#else /* XTHREADS */
         /* ZZZ: cannot use MTX_LOCK_AND_VERIFY_CURSOR due to device lock */
 	LockAndVerifyCursor(&newCursor, stuff->cursor, client);
-#endif /* MTX */
+#endif /* XTHREADS */
 	if (!newCursor)
 	{
 	    client->errorValue = stuff->cursor;
@@ -2990,9 +2990,9 @@ ProcChangeActivePointerGrab(client)
     }
     if ((!grab) || (!SameClient(grab, client)))
     {
-#ifdef MTX
+#ifdef XTHREADS
 	UnlockCursor(newCursor, stuff->cursor);
-#endif /* MTX */
+#endif /* XTHREADS */
 	MTXUnlockDevicesAndPOQ(client);
 	return (Success);
     }
@@ -3000,9 +3000,9 @@ ProcChangeActivePointerGrab(client)
     if ((CompareTimeStamps(time, currentTime) == LATER) ||
 	     (CompareTimeStamps(time, device->grabTime) == EARLIER))
     {
-#ifdef MTX
+#ifdef XTHREADS
 	UnlockCursor(newCursor, stuff->cursor);
-#endif /* MTX */
+#endif /* XTHREADS */
 	MTXUnlockDevicesAndPOQ(client);
 	return Success;
     }
@@ -3015,9 +3015,9 @@ ProcChangeActivePointerGrab(client)
 	FreeCursor(oldCursor, (Cursor)0);
 
     grab->eventMask = stuff->eventMask;
-#ifdef MTX
+#ifdef XTHREADS
     UnlockCursor(newCursor, stuff->cursor);
-#endif /* MTX */
+#endif /* XTHREADS */
     MTXUnlockDevicesAndPOQ(client);
     return Success;
 }
@@ -3546,11 +3546,11 @@ ProcGrabButton(client)
 	cursor = NullCursor;
     else
     {
-#ifndef MTX
+#ifndef XTHREADS
 	cursor = (CursorPtr)LookupIDByType(stuff->cursor, RT_CURSOR);
-#else /* MTX */
+#else /* XTHREADS */
         LockAndVerifyCursor(&cursor, stuff->cursor, client);
-#endif /* MTX */
+#endif /* XTHREADS */
 	if (!cursor)
 	{
 	    client->errorValue = stuff->cursor;
@@ -3575,9 +3575,9 @@ ProcGrabButton(client)
 	retValue = BadAlloc;
 
     MTX_UNLOCK_DEVICES();
-#ifdef MTX
+#ifdef XTHREADS
     UnlockCursor(cursor, stuff->cursor);
-#endif /* MTX */
+#endif /* XTHREADS */
     MTX_UNLOCK_ALL_WINDOWS(pWin, confineTo, stuff->grabWindow, 
 		       stuff->confineTo, client);
     return retValue;
@@ -3768,11 +3768,11 @@ ProcRecolorCursor(client)
     REQUEST(xRecolorCursorReq);
     REQUEST_SIZE_MATCH(xRecolorCursorReq);
     MTXLockDevicesAndPOQ(client, CM_XRecolorCursor);
-#ifdef MTX
+#ifdef XTHREADS
     LockAndVerifyCursor(&pCursor, stuff->cursor, client);
-#else /* MTX */
+#else /* XTHREADS */
     pCursor = (CursorPtr)LookupIDByType(stuff->cursor, RT_CURSOR);
-#endif /* MTX */
+#endif /* XTHREADS */
     if ( !pCursor) 
     {
 	client->errorValue = stuff->cursor;
@@ -3795,14 +3795,14 @@ ProcRecolorCursor(client)
 				(pCursor == sprite.current) &&
 				(pscr == sprite.hotPhys.pScreen));
     }
-#ifdef MTX
+#ifdef XTHREADS
     UnlockCursor(pCursor, stuff->cursor);
-#endif /* MTX */
+#endif /* XTHREADS */
     MTXUnlockDevicesAndPOQ(client);
     return (Success);
 }
 
-#ifndef MTX
+#ifndef XTHREADS
 void
 WriteEventsToClient(pClient, count, events)
     ClientPtr	pClient;
@@ -3837,4 +3837,4 @@ WriteEventsToClient(pClient, count, events)
 #endif
     }
 }
-#endif /* MTX */
+#endif /* XTHREADS */

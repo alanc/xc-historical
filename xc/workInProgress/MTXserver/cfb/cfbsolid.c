@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbsolid.c,v 1.1 93/12/31 11:21:51 rob Exp $
+ * $XConsortium: cfbsolid.c,v 1.2 94/01/04 00:02:11 rob Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -256,9 +256,9 @@ RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     n = miClipSpans(devPriv->pCompositeClip,
 		     pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
 		     ,pDrawable->x, pDrawable->y
-#endif /* MTX */
+#endif /* XTHREADS */
 		     );
 
     cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)

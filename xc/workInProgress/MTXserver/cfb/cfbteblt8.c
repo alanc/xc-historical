@@ -39,7 +39,7 @@ OF THIS SOFTWARE.
 
 */
 
-/* $XConsortium: cfbteblt8.c,v 1.2 94/01/04 00:02:12 rob Exp $ */
+/* $XConsortium: cfbteblt8.c,v 1.3 94/01/06 23:03:33 rob Exp $ */
 
 #if PSZ == 8
 
@@ -377,10 +377,10 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     register unsigned long  tmpSrc;
     register int	    glyphBytes;
 #endif
-#ifdef MTX
+#ifdef XTHREADS
     cfbPrivGCPtr        devPriv;
     StippleRec          *pstipple;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     widthGlyph = FONTMAXBOUNDS(pfont,characterWidth);
     h = FONTASCENT(pfont) + FONTDESCENT(pfont);
@@ -401,7 +401,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	return;
     }
 
-#ifdef MTX
+#ifdef XTHREADS
     devPriv = cfbGetGCPrivate( pGC );
     if((pstipple = devPriv->stipple) == NULL )
     {
@@ -410,7 +410,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
         devPriv->stipple = pstipple;
     }
     else
-#endif /* MTX */
+#endif /* XTHREADS */
     if (!cfb8CheckPixels (pGC->fgPixel, pGC->bgPixel))
 	cfb8SetPixels (pGC->fgPixel, pGC->bgPixel);
 

@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.4 94/01/08 17:31:35 rob Exp $ */
+/* $XConsortium: mibstore.c,v 1.5 94/01/08 18:39:37 rob Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -333,7 +333,7 @@ miInitializeBackingStore (pScreen, funcs)
  * Screen function wrappers
  */
 
-#ifndef MTX
+#ifndef XTHREADS
 #define SCREEN_PROLOGUE(pScreen, field)\
   ((pScreen)->field = \
    ((miBSScreenPtr) \
@@ -341,7 +341,7 @@ miInitializeBackingStore (pScreen, funcs)
 
 #define SCREEN_EPILOGUE(pScreen, field, wrapper)\
     ((pScreen)->field = wrapper)
-#endif /* MTX */
+#endif /* XTHREADS */
 
 /*
  * CloseScreen wrapper -- unwrap everything, free the private data
@@ -379,17 +379,17 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
     char	    *pdstLine;
 {
     ScreenPtr		    pScreen = pDrawable->pScreen;
-#ifdef MTX
+#ifdef XTHREADS
     miBSScreenPtr	    pScreenPriv;
-#endif /* MTX */
+#endif /* XTHREADS */
     BoxRec		    bounds;
     unsigned char	    depth;
     
-#ifdef MTX
+#ifdef XTHREADS
     pScreenPriv = (miBSScreenPtr) pScreen->devPrivates[miBSScreenIndex].ptr;
-#else /* MTX */
+#else /* XTHREADS */
     SCREEN_PROLOGUE (pScreen, GetImage);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     if (pDrawable->type != DRAWABLE_PIXMAP &&
 	((WindowPtr) pDrawable)->visibility != VisibilityUnobscured)
@@ -534,11 +534,11 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
 	{
 	    REGION_UNINIT(pScreen, &Border);
 	    REGION_UNINIT(pScreen, &Inside);
-#ifndef MTX
+#ifndef XTHREADS
 	    (*pScreen->GetImage)
-#else /* MTX */
+#else /* XTHREADS */
 	    (*pScreenPriv->GetImage)
-#endif /* MTX */
+#endif /* XTHREADS */
 		((DrawablePtr) pPixmap,
 		0, 0, w, h, format, planemask, pdstLine);
 	    (*pScreen->DestroyPixmap) (pPixmap);
@@ -552,17 +552,17 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
     else
     {
 punt:	;
-#ifndef MTX
+#ifndef XTHREADS
 	(*pScreen->GetImage)
-#else /* MTX */
+#else /* XTHREADS */
 	(*pScreenPriv->GetImage)
-#endif /* MTX */
+#endif /* XTHREADS */
 	    (pDrawable, sx, sy, w, h, format, planemask, pdstLine);
     }
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_EPILOGUE (pScreen, GetImage, miBSGetImage);
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 static void
@@ -575,19 +575,19 @@ miBSGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     char	*pdstStart;
 {
     ScreenPtr		    pScreen = pDrawable->pScreen;
-#ifdef MTX
+#ifdef XTHREADS
     miBSScreenPtr	    pScreenPriv;
-#endif /* MTX */
+#endif /* XTHREADS */
     BoxRec		    bounds;
     int			    i;
     WindowPtr		    pWin;
     int			    dx, dy;
     
-#ifdef MTX
+#ifdef XTHREADS
     pScreenPriv = (miBSScreenPtr) pScreen->devPrivates[miBSScreenIndex].ptr;
-#else /* MTX */
+#else /* XTHREADS */
     SCREEN_PROLOGUE (pScreen, GetSpans);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     if (pDrawable->type != DRAWABLE_PIXMAP && ((WindowPtr) pDrawable)->backStorage)
     {
@@ -656,36 +656,36 @@ miBSGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 		ppt[i].x += dx;
 		ppt[i].y += dy;
 	    }
-#ifndef MTX
+#ifndef XTHREADS
 	    (*pScreen->GetSpans)
-#else /* MTX */
+#else /* XTHREADS */
 	    (*pScreenPriv->GetSpans)
-#endif /* MTX */
+#endif /* XTHREADS */
 		((DrawablePtr) pPixmap, wMax, ppt, pwidth, nspans, pdstStart);
 	    break;
 	case rgnOUT:
-#ifndef MTX
+#ifndef XTHREADS
 	    (*pScreen->GetSpans)
-#else /* MTX */
+#else /* XTHREADS */
 	    (*pScreenPriv->GetSpans)
-#endif /* MTX */
+#endif /* XTHREADS */
 		(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
 	    break;
 	}
     }
     else
     {
-#ifndef MTX
+#ifndef XTHREADS
 	(*pScreen->GetSpans)
-#else /* MTX */
+#else /* XTHREADS */
 	(*pScreenPriv->GetSpans)
-#endif /* MTX */
+#endif /* XTHREADS */
 	    (pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
     }
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_EPILOGUE (pScreen, GetSpans, miBSGetSpans);
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 static Bool
@@ -694,25 +694,25 @@ miBSChangeWindowAttributes (pWin, mask)
     unsigned long   mask;
 {
     ScreenPtr	pScreen;
-#ifdef MTX
+#ifdef XTHREADS
     miBSScreenPtr pScreenPriv;
-#endif /* MTX */
+#endif /* XTHREADS */
     Bool	ret;
 
     pScreen = pWin->drawable.pScreen;
 
-#ifdef MTX
+#ifdef XTHREADS
     pScreenPriv = (miBSScreenPtr) pScreen->devPrivates[miBSScreenIndex].ptr;
-#else /* MTX */
+#else /* XTHREADS */
     SCREEN_PROLOGUE (pScreen, ChangeWindowAttributes);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     ret =
-#ifndef MTX
+#ifndef XTHREADS
 	(*pScreen->ChangeWindowAttributes)
-#else /* MTX */
+#else /* XTHREADS */
 	(*pScreenPriv->ChangeWindowAttributes)
-#endif /* MTX */
+#endif /* XTHREADS */
 	    (pWin, mask);
 
     if (ret && (mask & CWBackingStore))
@@ -723,9 +723,9 @@ miBSChangeWindowAttributes (pWin, mask)
 	    miBSFree (pWin);
     }
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_EPILOGUE (pScreen, ChangeWindowAttributes, miBSChangeWindowAttributes);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     return ret;
 }
@@ -740,32 +740,32 @@ miBSCreateGC (pGC)
     GCPtr   pGC;
 {
     ScreenPtr	pScreen = pGC->pScreen;
-#ifdef MTX
+#ifdef XTHREADS
     miBSScreenPtr pScreenPriv;
-#endif /* MTX */
+#endif /* XTHREADS */
     Bool	ret;
 
-#ifdef MTX
+#ifdef XTHREADS
     pScreenPriv = (miBSScreenPtr) pScreen->devPrivates[miBSScreenIndex].ptr;
-#else /* MTX */
+#else /* XTHREADS */
     SCREEN_PROLOGUE (pScreen, CreateGC);
-#endif /* MTX */
+#endif /* XTHREADS */
     
     if ( (ret =
-#ifndef MTX
+#ifndef XTHREADS
 	(*pScreen->CreateGC)
-#else /* MTX */
+#else /* XTHREADS */
 	(*pScreenPriv->CreateGC)
-#endif /* MTX */
+#endif /* XTHREADS */
 	    (pGC)) )
     {
     	pGC->devPrivates[miBSGCIndex].ptr = (pointer) pGC->funcs;
     	pGC->funcs = &miBSCheapGCFuncs;
     }
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_EPILOGUE (pScreen, CreateGC, miBSCreateGC);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     return ret;
 }
@@ -775,30 +775,30 @@ miBSDestroyWindow (pWin)
     WindowPtr	pWin;
 {
     ScreenPtr	pScreen = pWin->drawable.pScreen;
-#ifdef MTX
+#ifdef XTHREADS
     miBSScreenPtr pScreenPriv;
-#endif /* MTX */
+#endif /* XTHREADS */
     Bool	ret;
 
-#ifdef MTX
+#ifdef XTHREADS
     pScreenPriv = (miBSScreenPtr) pScreen->devPrivates[miBSScreenIndex].ptr;
-#else /* MTX */
+#else /* XTHREADS */
     SCREEN_PROLOGUE (pScreen, DestroyWindow);
-#endif /* MTX */
+#endif /* XTHREADS */
     
     ret =
-#ifndef MTX
+#ifndef XTHREADS
 	(*pScreen->DestroyWindow)
-#else /* MTX */
+#else /* XTHREADS */
 	(*pScreenPriv->DestroyWindow)
-#endif /* MTX */
+#endif /* XTHREADS */
 	    (pWin);
 
     miBSFree (pWin);
 
-#ifndef MTX
+#ifndef XTHREADS
     SCREEN_EPILOGUE (pScreen, DestroyWindow, miBSDestroyWindow);
-#endif /* MTX */
+#endif /* XTHREADS */
 
     return ret;
 }

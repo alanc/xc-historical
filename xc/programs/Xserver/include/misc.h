@@ -42,7 +42,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: misc.h,v 1.63 94/01/07 09:40:45 dpw Exp $ */
+/* $XConsortium: misc.h,v 1.64 94/01/10 18:25:03 rob Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -113,7 +113,7 @@ typedef struct _Client *ClientPtr; /* also in dix.h */
 #define USE_BACKGROUND_PIXEL 3
 #define USE_BORDER_PIXEL 3
 
-#ifdef MTX
+#ifdef XTHREADS
 #define NOSWAP 0
 #define SWAP   1
 #define UNKNOWN 2

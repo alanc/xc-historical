@@ -1,5 +1,5 @@
 /*
- * $XConsortium: omron.h,v 1.1 94/01/04 19:18:52 rob Exp $
+ * $XConsortium: omron.h,v 1.2 94/01/05 16:55:52 rob Exp $
  *
  * Copyright 1992, 1993 Data General Corporation;
  * Copyright 1991, 1992, 1993 OMRON Corporation  
@@ -71,9 +71,9 @@
 
 #include "mipointer.h"
 
-#ifdef MTX
+#ifdef XTHREADS
 #include "colormapst.h"
-#endif /* MTX */
+#endif /* XTHREADS */
 
 #include "mfb.h"
 

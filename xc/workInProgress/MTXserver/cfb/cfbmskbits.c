@@ -47,7 +47,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.c,v 1.1 93/12/31 11:21:43 rob Exp $ */
+/* $XConsortium: cfbmskbits.c,v 1.2 94/01/04 00:02:09 rob Exp $ */
 
 /*
  * ==========================================================================
@@ -603,11 +603,11 @@ PixelGroup cfbrmask[] =
 #endif /* PGSZ */
 #endif /* PSZ == 32 */
 
-#ifdef MTX
+#ifdef XTHREADS
 /* MTX comment: why does MTX want to rename the tables? --RTC */
 #define QuartetBitsTable cfbQuartetBitsTable
 #define QuartetPixelMaskTable cfbQuartetPixelMaskTable
-#endif /* MTX */
+#endif /* XTHREADS */
 
 /*
  * QuartetBitsTable contains PPW+1 masks whose binary values are masks in the

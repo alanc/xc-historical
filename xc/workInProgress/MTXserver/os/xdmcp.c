@@ -1,4 +1,4 @@
-/* $XConsortium: xdmcp.c,v 1.28 93/09/23 17:13:49 rws Exp $ */
+/* $XConsortium: xdmcp.c,v 1.2 94/01/10 10:59:14 rob Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -20,7 +20,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <stdio.h>
-#ifdef MTX
+#ifdef XTHREADS
 #include <errno.h>
 #endif
 #include "X.h"
@@ -31,7 +31,7 @@
 #include "dixstruct.h"
 #include "opaque.h"
 
-#ifdef MTX
+#ifdef XTHREADS
 #include "mtxlock.h"
 #endif
 
@@ -44,7 +44,7 @@ extern FdSet EnabledDevices;
 extern FdSet AllClients;
 extern char *defaultDisplayClass;
 
-#ifdef MTX
+#ifdef XTHREADS
 extern X_MUTEX_TYPE ConnectionMutex;
 extern int errno;
 #endif
@@ -587,7 +587,7 @@ XdmcpCloseDisplay(sock)
     state = XDM_INIT_STATE;
     if (OneSession)
     {
-#ifdef MTX
+#ifdef XTHREADS
 	SignalServerTerminate();
 #else
 	dispatchException |= DE_TERMINATE;
@@ -595,7 +595,7 @@ XdmcpCloseDisplay(sock)
     }
     else
     {
-#ifdef MTX
+#ifdef XTHREADS
 	SignalServerReset();
 #else
 	dispatchException |= DE_RESET;
@@ -625,7 +625,7 @@ XdmcpBlockHandler(data, wt, pReadmask)
     if (state == XDM_OFF)
 	return;
     BITSET(LastSelectMask, xdmcpSocket);
-#ifdef MTX
+#ifdef XTHREADS
     if (! serverException)
 	ORBITS(LastSelectMask, LastSelectMask, EnabledDevices);
 #endif
@@ -685,7 +685,7 @@ XdmcpWakeupHandler(data, i, pReadmask)
 		restart();
 	    else if (state == XDM_RUN_SESSION)
 		keepaliveDormancy = defaultKeepaliveDormancy;
-#ifdef MTX
+#ifdef XTHREADS
 	    UNSETBITS(LastSelectMask, EnabledDevices);
 #endif
 	}
@@ -770,11 +770,11 @@ receive_packet()
 	XdmcpFatal("Manager unwilling", &UnwillingMessage);
 	break;
     case ACCEPT:
-#ifdef MTX
+#ifdef XTHREADS
 	X_MUTEX_LOCK(&ConnectionMutex);
 #endif
 	recv_accept_msg(header.length);
-#ifdef MTX
+#ifdef XTHREADS
 	X_MUTEX_UNLOCK(&ConnectionMutex);
 #endif
 	break;
@@ -834,7 +834,7 @@ XdmcpDeadSession (reason)
     ErrorF ("XDM: %s, declaring session dead\n", reason);
     state = XDM_INIT_STATE;
     isItTimeToYield = TRUE;
-#ifdef MTX
+#ifdef XTHREADS
     serverException |= DE_RESET;
 #else
     dispatchException |= DE_RESET;
@@ -842,7 +842,7 @@ XdmcpDeadSession (reason)
     timeOutTime = 0;
     timeOutRtx = 0;
     send_packet();
-#ifdef MTX
+#ifdef XTHREADS
     SignalServerReset();
 #endif
 }

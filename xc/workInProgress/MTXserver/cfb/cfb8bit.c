@@ -30,7 +30,7 @@
  *
  */
 
-/* $XConsortium: cfb8bit.c,v 1.1 93/12/31 11:21:27 rob Exp $ */
+/* $XConsortium: cfb8bit.c,v 1.2 94/01/04 00:01:53 rob Exp $ */
 
 #if PSZ == 8
 
@@ -184,7 +184,7 @@ PixelGroup cfb8StippleMasks[NUM_MASKS] = {
 #endif
 };
 
-#ifndef MTX
+#ifndef XTHREADS
 
 int	cfb8StippleMode, cfb8StippleAlu, cfb8StippleRRop;
 PixelGroup cfb8StippleFg, cfb8StippleBg, cfb8StipplePm;
@@ -192,22 +192,22 @@ PixelGroup cfb8StippleAnd[NUM_MASKS], cfb8StippleXor[NUM_MASKS];
 #define MTX_STIPPLE(_a) _a
 #define MTX_STIPPLE_CHANGE(_a) /* nothing */
 
-#else /* MTX */
+#else /* XTHREADS */
 
 #define MTX_STIPPLE(_a) pstipple->_a
 #define MTX_STIPPLE_CHANGE(_a) pstipple->change = (_a)
 
-#endif /* MTX */
+#endif /* XTHREADS */
 
 int
 cfb8SetStipple (alu, fg, planemask
-#ifdef MTX
+#ifdef XTHREADS
     , pstipple
 #endif
 )
     int             alu;
     unsigned long   fg, planemask;
-#ifdef MTX
+#ifdef XTHREADS
     StippleRec      *pstipple;
 #endif
 {
@@ -237,13 +237,13 @@ cfb8SetStipple (alu, fg, planemask
 
 int
 cfb8SetOpaqueStipple (alu, fg, bg, planemask
-#ifdef MTX
+#ifdef XTHREADS
     , pstipple
 #endif
 )
     int			alu;
     unsigned long	fg, bg, planemask;
-#ifdef MTX
+#ifdef XTHREADS
     StippleRec		*pstipple;
 #endif
 {

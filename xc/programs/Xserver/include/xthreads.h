@@ -28,12 +28,12 @@
  *
  ************************************************************************/
 
-/* $XConsortium: xthreads.h,v 1.2 93/11/16 10:56:39 rob Exp $ */
+/* $XConsortium: xthreads.h,v 1.3 94/01/02 09:17:31 rob Exp $ */
 
 #ifndef XTHREADS_H
 #define XTHREADS_H
 
-#ifdef MTX
+#ifdef XTHREADS
 #include "pthread.h"
 
 /******************************
@@ -106,7 +106,7 @@
  *
  ***********************************************************************/
 
-#ifdef USE_MONITOR_MTX
+#ifdef USE_MONITOR_XTHREADS
 #define X_SET_SYMNAME(a, b) pthread_set_symname(a, b)
 #else
 #define X_SET_SYMNAME(a, b)
@@ -180,7 +180,7 @@ extern X_KEY_TYPE ClientKey;
  *
  ***********************************************************************/
 
-#ifdef USE_MONITOR_MTX
+#ifdef USE_MONITOR_XTHREADS
 #define X_SET_SYMNAME(a, b) pthread_set_symname(a, b)
 #else
 #define X_SET_SYMNAME(a, b)

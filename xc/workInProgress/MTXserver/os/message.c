@@ -78,7 +78,7 @@
  *          during ST operation.
  */
 
-#ifdef MTX /* XXX:SM This eliminates the entire contents of this file. */
+#ifdef XTHREADS /* XXX:SM This eliminates the entire contents of this file. */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -1709,5 +1709,5 @@ WriteToClient (who, count, buf)
     ErrorF("Unexpected WriteToClient");
 }
 
-#endif /* MTX */
+#endif /* XTHREADS */
 

@@ -28,9 +28,9 @@
  *
  ************************************************************************/
 
-/* $XConsortium: mtxlock.h,v 1.9 93/12/13 13:24:00 rob Exp $ */
+/* $XConsortium: mtxlock.h,v 1.10 93/12/13 16:30:20 rob Exp $ */
 
-#ifndef MTXLOCK_H
+#ifndef XTHREADSLOCK_H
 #define MTXLOCK_H
 
 #include "X.h"
@@ -44,23 +44,23 @@
 #include "resource.h"
 #include "POQ.h"
 
-#ifndef MTX
+#ifndef XTHREADS
 #define MTX_REP_LOCK_DEVICES() /* nothing */
 #define MTX_LOCK_DEVICES() /* nothing */
 #define MTX_UNLOCK_DEVICES() /* nothing */
-#else /* MTX */
+#else /* XTHREADS */
 #define MTX_REP_LOCK_DEVICES() LockDevices()
 #define MTX_LOCK_DEVICES() LockDevices()
 #define MTX_UNLOCK_DEVICES() UnlockDevices()
-#endif /* MTX */
+#endif /* XTHREADS */
 
-#ifndef MTX
+#ifndef XTHREADS
 #define MTX_MUTEX_LOCK(_arg) /* nothing */
 #define MTX_MUTEX_UNLOCK(_arg) /* nothing */
-#else /* MTX */
+#else /* XTHREADS */
 #define MTX_MUTEX_LOCK(_arg) X_MUTEX_LOCK(_arg)
 #define MTX_MUTEX_UNLOCK(_arg) X_MUTEX_UNLOCK(_arg)
-#endif /* MTX */
+#endif /* XTHREADS */
 
 /***********************************************************************
  *
@@ -91,7 +91,7 @@
  * STX to MTX merge versions of Lock and validate a drawable and GC.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_LOCK_AND_VALIDATE_DRAWABLE_AND_GC LOCK_AND_VALIDATE_DRAWABLE_AND_GC
 #else
 #define MTX_LOCK_AND_VALIDATE_DRAWABLE_AND_GC(pDraw, pGC, drawID, gcID, client)\
@@ -116,7 +116,7 @@
  * STX to MTX merge versions of Unlock a drawable and GC.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_UNLOCK_DRAWABLE_AND_GC UNLOCK_DRAWABLE_AND_GC
 #else
 #define MTX_UNLOCK_DRAWABLE_AND_GC /* nothing */
@@ -186,7 +186,7 @@
  * drawable needs to be locked.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_LOCK_AND_VALIDATE_TWO_DRAWABLES_AND_GC LOCK_AND_VALIDATE_TWO_DRAWABLES_AND_GC
 #else
 #define MTX_LOCK_AND_VALIDATE_TWO_DRAWABLES_AND_GC(pSrc, pDst, pGC, srcID, dstID, gcID, client)\
@@ -235,7 +235,7 @@
  * drawable ID's are the same, then only one drawable was locked.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_UNLOCK_TWO_DRAWABLES_AND_GC UNLOCK_TWO_DRAWABLES_AND_GC
 #else
 #define MTX_UNLOCK_TWO_DRAWABLES_AND_GC(pSrc, pDst, pGC, srcID, dstID, gcID, client) 	\
@@ -251,7 +251,7 @@
  * STX to MTX merge versions of Lock and verify a window. 
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_REP_LOCK_AND_VERIFY_WINDOW(pWin, winID, client, regionType, conflictMask)\
 {									\
     int _error;								\
@@ -303,7 +303,7 @@
  * STX to MTX merge versions of Unlock a window. 
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_UNLOCK_WINDOW UNLOCK_WINDOW
 #else
 #define MTX_UNLOCK_WINDOW(pWin, winID, client) /* nothing */
@@ -338,7 +338,7 @@
  * STX to MTX merge versions for Lock and verify one or two windows.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_REP_LOCK_AND_VERIFY_ALL_WINDOWS(pWin1, pWin2, winID1, winID2, client, regionType, conflictMask)\
 {									\
     int _error;								\
@@ -473,7 +473,7 @@
  * (pWin1 and/or pWin2).
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_UNLOCK_ALL_WINDOWS UNLOCK_ALL_WINDOWS
 #else
 #define MTX_UNLOCK_ALL_WINDOWS(pWin1, pWin2, winID1, winID2, client)	\
@@ -490,7 +490,7 @@
  * BadMatch error if the drawable is a UNDRAWABLE_WINDOW.  
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_REP_LOCK_AND_VERIFY_DRAWABLE(pDraw, drawID, client, conflictMask) \
 {									\
     int _error;								\
@@ -530,7 +530,7 @@
  * STX to MTX merge version of Lock and verify a ?geometrable. 
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_REP_LOCK_AND_VERIFY_GEOMETRABLE(pDraw, drawID, client, conflictMask)\
 {									\
     int _error;								\
@@ -586,7 +586,7 @@
  * STX to MTX merge Lock and verify a pixmap. 
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_LOCK_AND_VERIFY_PIXMAP LOCK_AND_VERIFY_PIXMAP
 #else
 #define MTX_LOCK_AND_VERIFY_PIXMAP(pMap, pixID, client, CM_XFreePixmap)	\
@@ -616,7 +616,7 @@
  * STX to MTX merge versions of UNLOCK_DRAWABLE macro.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_UNLOCK_DRAWABLE UNLOCK_DRAWABLE
 #else
 #define MTX_UNLOCK_DRAWABLE(pDraw, drawID, client) /* nothing */
@@ -626,7 +626,7 @@
  * STX to MTX merge: Cover-up up the call to the function UnlockDrawable
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTXUnlockDrawable(drawablePtr, id) UnlockDrawable(drawablePtr, id)
 #else
 #define MTXUnlockDrawable(drawablePtr, id) /* nothing */
@@ -658,7 +658,7 @@
  * STX to MTX merge versions of Lock and verify a GC.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_LOCK_AND_VERIFY_GC LOCK_AND_VERIFY_GC
 #else
 #define MTX_LOCK_AND_VERIFY_GC(pGC, stuffGC, client, conflictMask)	\
@@ -682,7 +682,7 @@
  * STX to MTX merge versions of Unlock a GC.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_UNLOCK_GC UNLOCK_GC
 #else
 #define MTX_UNLOCK_GC(pGC, gcID, client) /* nothing */
@@ -692,7 +692,7 @@
  * STX to MTX Cover-up when calls are made directly to the UnlockGC func.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTXUnlockGC(pGC, gcID)  UnlockGC (pGC, gcID)
 #else
 #define MTXUnlockGC(pGC, gcID) /* nothing */
@@ -723,7 +723,7 @@
  * STX to MTX merge versions of Lock and verify two GCs.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_LOCK_AND_VERIFY_TWO_GCS LOCK_AND_VERIFY_TWO_GCS
 #else
 #define MTX_LOCK_AND_VERIFY_TWO_GCS(pGC1, pGC2, gcID1, gcID2, client, conflictMask)		\
@@ -748,7 +748,7 @@
  * STX to MTX merge versions of Unlock two GCs.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_UNLOCK_TWO_GCS UNLOCK_TWO_GCS
 #else
 #define MTX_UNLOCK_TWO_GCS(pGC1, pGC2, gcID1, gcID2, client) /* nothing */
@@ -762,7 +762,7 @@
  * STX to MTX merge version of Lock and verify a colormap.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_REP_LOCK_AND_VERIFY_COLORMAP(pMap, mapID, client, conflictMask) \
 {									\
     int _error;								\
@@ -818,7 +818,7 @@
  * STX to MTX merge versions of Unlock a colormap.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_UNLOCK_COLORMAP UNLOCK_COLORMAP
 #else
 #define MTX_UNLOCK_COLORMAP(pMap, mapID, client) /* nothing */
@@ -857,7 +857,7 @@
  * not in the RDB, try to lookup the GC containing the font.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_REP_LOCK_AND_VERIFY_GC_FONT(pFont, pGC, fontID, client, conflictMask)\
 {									\
     int _error;								\
@@ -919,7 +919,7 @@
  * STX to MTX merge version of Unlock a font.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_UNLOCK_FONT UNLOCK_FONT
 #else
 #define MTX_UNLOCK_FONT(pFont, fontID, client) /* nothing */
@@ -933,7 +933,7 @@
  * STX to MTX merge versions of Lock and verify a cursor.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_DEV_LOCK_AND_VERIFY_CURSOR(pCursor, cursorID, client, conflictMask) \
 {									\
     int _error;								\
@@ -993,7 +993,7 @@
  *
  ***********************************************************************/
 
-#ifdef MTX
+#ifdef XTHREADS
 /* no return - _REP version same as without */
 #define MTX_REP_LOCK_PENDING_OPERATION_QUEUE MTX_LOCK_PENDING_OPERATION_QUEUE
 #define MTX_LOCK_PENDING_OPERATION_QUEUE(client, conflictMask)		\
@@ -1022,7 +1022,7 @@
  * STX to MTX versions of Unlock the pending operation queue.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTX_UNLOCK_PENDING_OPERATION_QUEUE UNLOCK_PENDING_OPERATION_QUEUE
 #else
 #define MTX_UNLOCK_PENDING_OPERATION_QUEUE(client) /* nothing */
@@ -1042,4 +1042,4 @@
 
 /***********************************************************************/
 
-#endif /* MTXLOCK_H */
+#endif /* XTHREADSLOCK_H */

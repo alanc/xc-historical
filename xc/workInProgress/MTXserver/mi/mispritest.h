@@ -4,7 +4,7 @@
  * mi sprite structures
  */
 
-/* $XConsortium: mispritest.h,v 1.1 93/12/27 13:21:20 rob Exp $ */
+/* $XConsortium: mispritest.h,v 1.2 93/12/27 19:38:32 rob Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -52,13 +52,13 @@ typedef struct {
     CloseScreenProcPtr			CloseScreen;
     GetImageProcPtr			GetImage;
     GetSpansProcPtr			GetSpans;
-#ifndef MTX
+#ifndef XTHREADS
     SourceValidateProcPtr		SourceValidate;
-#endif /* not MTX */
+#endif /* not XTHREADS */
     CreateGCProcPtr			CreateGC;
-#ifndef MTX
+#ifndef XTHREADS
     ScreenBlockHandlerProcPtr		BlockHandler;
-#endif /* not MTX */
+#endif /* not XTHREADS */
     InstallColormapProcPtr		InstallColormap;
     StoreColorsProcPtr			StoreColors;
     PaintWindowBackgroundProcPtr	PaintWindowBackground;
@@ -73,11 +73,11 @@ typedef struct {
     int		    y;
     BoxRec	    saved;
     Bool	    isUp;
-#ifndef MTX
+#ifndef XTHREADS
     Bool	    shouldBeUp;
     WindowPtr	    pCacheWin;
     Bool	    isInCacheWin;
-#endif /* not MTX */
+#endif /* not XTHREADS */
     Bool	    checkPixels;
     xColorItem	    colors[2];
     ColormapPtr	    pInstalledMap;

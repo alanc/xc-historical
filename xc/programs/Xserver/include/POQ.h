@@ -28,7 +28,7 @@
  *
  ************************************************************************/
 
-/* $XConsortium: POQ.h,v 1.2 93/11/16 10:56:22 rob Exp $ */
+/* $XConsortium: POQ.h,v 1.3 93/12/03 01:21:09 rob Exp $ */
 
 #ifndef POQ_H
 #define POQ_H
@@ -277,7 +277,7 @@ typedef struct _Extension {
  *             function call.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTXLockDevicesAndPOQ(client, mapping)				\
     LockDevicesAndPOQ(client, mapping)
 #define MTXUnlockDevicesAndPOQ(client)					\
@@ -296,7 +296,7 @@ extern void POQSelectRegionConflictType();
 extern void POQSetExtConflictFunc();
 extern void POQInitClient();
 extern void POQLock();
-#ifdef MTX
+#ifdef XTHREADS
 extern void POQUnlock();
 #endif
 extern void POQGrabServer();

@@ -37,7 +37,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 */
-/* $XConsortium: cfbpush8.c,v 1.2 94/01/04 00:02:10 rob Exp $ */
+/* $XConsortium: cfbpush8.c,v 1.3 94/01/06 23:03:31 rob Exp $ */
 
 #if PSZ == 8
 
@@ -75,14 +75,14 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     unsigned long   rightMask;
     BoxRec	    bbox;
     cfbPrivGCPtr    devPriv;
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
     int xorg, yorg;
 
     xorg = xOrg;
     yorg = yOrg;
     xOrg += pDrawable->x;
     yOrg += pDrawable->y;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     bbox.x1 = xOrg;
     bbox.y1 = yOrg;
@@ -93,11 +93,11 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     switch (RECT_IN_REGION(pGC->pScreen, devPriv->pCompositeClip, &bbox))
     {
       case rgnPART:
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
 	mfbPushPixels(pGC, pBitmap, pDrawable, dx, dy, xorg, yorg);
-#else /* MTX */
+#else /* XTHREADS */
 	mfbPushPixels(pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg);
-#endif /* MTX */
+#endif /* XTHREADS */
       case rgnOUT:
 	return;
     }

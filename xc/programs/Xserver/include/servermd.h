@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.65 93/09/18 15:45:25 rws Exp $ */
+/* $XConsortium: servermd.h,v 1.66 93/09/22 22:57:48 rws Exp $ */
 
 /*
  * Machine dependent values:

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: omronIo.c,v 1.1 94/01/04 19:19:03 rob Exp $
+ * $XConsortium: omronIo.c,v 1.2 94/01/05 16:55:57 rob Exp $
  *
  * Copyright 1992, 1993 Data General Corporation;
  * Copyright 1991, 1992, 1993 OMRON Corporation  
@@ -28,9 +28,9 @@
 #include "omron.h"
 #include "omronKbd.h"
 #include "omronMouse.h"
-#ifdef MTX
+#ifdef XTHREADS
 #include "opaque.h"
-#endif /* MTX */
+#endif /* XTHREADS */
 
 int lastEventTime = 0;
 
@@ -41,19 +41,19 @@ void
 omronSetIoHandler( ioHandler )
 void (* ioHandler)(); 
 {
-#ifdef MTX
+#ifdef XTHREADS
     extern void SetIoHandler();
-#endif /* MTX */
+#endif /* XTHREADS */
 
     omronIoHandler = ioHandler;
 
-#ifdef MTX
+#ifdef XTHREADS
     SetIoHandler(ioHandler);
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 
-#ifndef MTX
+#ifndef XTHREADS
 #ifdef UNUSE_SIGIO_SIGNAL
 void
 omronWakeupProc(blockData, result, pReadmask)
@@ -80,7 +80,7 @@ omronSigIOHandler(sig, code, scp)
     (* omronIoHandler)();
 }
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 
 #ifndef UNUSE_DRV_TIME
 static struct _omronEventPrvRec

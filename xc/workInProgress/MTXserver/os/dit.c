@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE.
  *
  ************************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 
 #include "X.h"
 #include "Xproto.h"
@@ -374,4 +374,4 @@ DeviceInputThread(DITindex)
     X_THREAD_EXIT(&result);
 }
 
-#endif /*MTX*/
+#endif /*XTHREADS*/

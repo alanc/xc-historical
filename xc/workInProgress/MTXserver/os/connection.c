@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.2 94/01/02 09:18:19 rob Exp $ */
+/* $XConsortium: connection.c,v 1.3 94/01/10 18:04:17 rob Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -75,7 +75,7 @@ extern int errno;
 #include <signal.h>
 #include <setjmp.h>
 
-#ifdef MTX
+#ifdef XTHREADS
 #include "cit.h"
 #include "mtxlock.h"
 #endif
@@ -120,7 +120,7 @@ static int unixDomainConnection = -1;
 #include <sys/uio.h>
 #include "misc.h"		/* for typedef of pointer */
 #include "osdep.h"
-#ifdef MTX
+#ifdef XTHREADS
 #include "scrnintstr.h"
 #endif
 #include "opaque.h"
@@ -177,7 +177,7 @@ extern int auditTrailLevel;
 extern ClientPtr NextAvailableClient();
 extern XID CheckAuthorization();
 
-#ifdef MTX
+#ifdef XTHREADS
 extern X_MUTEX_TYPE ConnectionMutex;
 extern int nextFreeClientID;
 extern int (* ProcVector[256]) ();
@@ -1681,7 +1681,7 @@ EstablishNewConnections(clientUnused, closure)
 	oc->input = (ConnectionInputPtr)NULL;
 	oc->output = (ConnectionOutputPtr)NULL;
 	oc->conn_time = connect_time;
-#ifdef MTX
+#ifdef XTHREADS
 	/* Create the client input thread */
 	if (!CreateClientInputThread(oc))
 	{
@@ -1712,12 +1712,12 @@ EstablishNewConnections(clientUnused, closure)
 }
 
 #define NOROOM "Maximum number of clients reached"
-#ifdef MTX
+#ifdef XTHREADS
 #define EXCEPTION "Server Exception"
 #endif
 
 
-#ifdef MTX
+#ifdef XTHREADS
 static void*
 ClientConnectionThread()
 {
@@ -2039,7 +2039,7 @@ CloseDownFileDescriptor(oc)
 {
     int connection = oc->fd;
 
-#ifdef MTX
+#ifdef XTHREADS
 #ifdef CTHREADS
     if (X_THREAD_SELF() != oc->thread)
     {
@@ -2078,7 +2078,7 @@ CloseDownFileDescriptor(oc)
  *        server had removed, some of it may be necessary.  I think that the
  *        call to FreeOsBuffers may be needed.
  */
-#else /* !MTX */
+#else /* !XTHREADS */
     close(connection);
     FreeOsBuffers(oc);
     BITCLEAR(AllSockets, connection);
@@ -2167,7 +2167,7 @@ CloseDownConnection(client)
 }
 
 
-#ifndef MTX
+#ifndef XTHREADS
 AddEnabledDevice(fd)
     int fd;
 {
@@ -2182,7 +2182,7 @@ RemoveEnabledDevice(fd)
     BITCLEAR(EnabledDevices, fd);
     BITCLEAR(AllSockets, fd);
 }
-#endif /* not MTX */
+#endif /* not XTHREADS */
 
 /*****************
  * OnlyListenToOneClient:

@@ -21,20 +21,20 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.2 94/01/10 11:06:54 rob Exp $ */
+/* $XConsortium: utils.c,v 1.3 94/01/10 11:19:18 rob Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
 #include "X.h"
 #include "input.h"
 
-#ifdef MTX
+#ifdef XTHREADS
 #include "dixstruct.h"
 #endif
 
 #include "opaque.h"
 
-#ifdef MTX
+#ifdef XTHREADS
 #include "mtxlock.h"
 #endif
 
@@ -91,9 +91,9 @@ Bool CoreDump;
 Bool noTestExtensions;
 int auditTrailLevel = 1;
 
-#ifdef MTX
+#ifdef XTHREADS
 static long timeTilFrob = 0;		/* while screen saving */
-#endif /* MTX */
+#endif /* XTHREADS */
 
 void ddxUseMsg();
 #if NeedVarargsPrototypes
@@ -158,7 +158,7 @@ SIGVAL
 AutoResetServer (sig)
     int sig;
 {
-#ifdef MTX
+#ifdef XTHREADS
     SignalServerReset();
 #else
     dispatchException |= DE_RESET;
@@ -170,7 +170,7 @@ AutoResetServer (sig)
 #if defined(SYSV) && defined(X_NOT_POSIX)
     OsSignal (SIGHUP, AutoResetServer);
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 /* Force connections to close and then exit on SIGTERM, SIGINT */
@@ -180,7 +180,7 @@ SIGVAL
 GiveUp(sig)
     int sig;
 {
-#ifdef MTX
+#ifdef XTHREADS
     SignalServerTerminate();
 #else
     dispatchException |= DE_TERMINATE;
@@ -189,7 +189,7 @@ GiveUp(sig)
     if (sig)
 	OsSignal(sig, SIG_IGN);
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 
@@ -202,9 +202,9 @@ AbortServer()
     fflush(stderr);
     if (CoreDump)
 	abort();
-#ifdef MTX
+#ifdef XTHREADS
     SignalServerTerminate();
-#endif /* MTX */
+#endif /* XTHREADS */
     exit (1);
 }
 
@@ -251,7 +251,7 @@ AdjustWaitForDelay (waitTime, newdelay)
     }
 }
 
-#ifdef MTX
+#ifdef XTHREADS
 void
 SetScreenSaver(client)
     ClientPtr client;
@@ -311,7 +311,7 @@ SetScreenSaver(client)
     }
     setitimer(ITIMER_REAL,wt,NULL);
 }
-#endif /* MTX */
+#endif /* XTHREADS */
 
 
 void UseMsg()
@@ -954,10 +954,10 @@ VErrorF(f, args)
     char *f;
     va_list args;
 {
-#ifdef MTX
+#ifdef XTHREADS
     extern X_MUTEX_TYPE PrintfMutex;
     MTX_MUTEX_LOCK (&PrintfMutex);
-#endif /* MTX */
+#endif /* XTHREADS */
 #ifdef AIXV3
     vfprintf(aixfd, f, args);
     fflush (aixfd);
@@ -966,7 +966,7 @@ VErrorF(f, args)
 #else
     vfprintf(stderr, f, args);
 #endif /* AIXV3 */
-#ifdef MTX
+#ifdef XTHREADS
     MTX_MUTEX_UNLOCK (&PrintfMutex);
 #endif
 }
@@ -989,10 +989,10 @@ ErrorF(
     VErrorF(f, args);
     va_end(args);
 #else
-#ifdef MTX
+#ifdef XTHREADS
     extern X_MUTEX_TYPE PrintfMutex;
     MTX_MUTEX_LOCK (&PrintfMutex);
-#endif /* MTX */
+#endif /* XTHREADS */
 #ifdef AIXV3
     fprintf(aixfd, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
     fflush (aixfd);
@@ -1002,7 +1002,7 @@ ErrorF(
     fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
 #endif /* AIXV3 */
 #endif
-#ifdef MTX
+#ifdef XTHREADS
     MTX_MUTEX_UNLOCK (&PrintfMutex);
 #endif
 }

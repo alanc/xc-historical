@@ -1,4 +1,4 @@
-/* $XConsortium: mivaltree.c,v 1.2 93/12/27 19:38:33 rob Exp $ */
+/* $XConsortium: mivaltree.c,v 1.3 94/01/06 23:03:48 rob Exp $ */
 /*
  * mivaltree.c --
  *	Functions for recalculating window clip lists. Main function
@@ -175,9 +175,9 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     Bool		overlap;
     RegionPtr		borderVisible;
     Bool		resized;
-#ifdef MTX
+#ifdef XTHREADS
     ClientPtr           client;
-#endif /* MTX */
+#endif /* XTHREADS */
     
     /*
      * Figure out the new visibility of this window.
@@ -255,9 +255,9 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 	    ((oldVis == VisibilityFullyObscured) ||
 	     (oldVis == VisibilityUnobscured)))
 	{
-#ifdef MTX
+#ifdef XTHREADS
             X_GET_CLIENT_REC(client);
-#endif /* MTX */
+#endif /* XTHREADS */
 	    pChild = pParent;
 	    while (1)
 	    {
@@ -269,12 +269,12 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 						      dx, dy);
 			REGION_TRANSLATE(pScreen, &pChild->clipList,
 						      dx, dy);
-#ifndef MTX
+#ifndef XTHREADS
 			pChild->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-#else /* MTX */
+#else /* XTHREADS */
 			NEXT_CLIENT_SERIAL_NUMBER(pChild->drawable.serialNumber,
                                                   client);
-#endif /* MTX */
+#endif /* XTHREADS */
 			if (pScreen->ClipNotify)
 			    (* pScreen->ClipNotify) (pChild, dx, dy);
 

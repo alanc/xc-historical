@@ -1,5 +1,5 @@
 /*
- * $XConsortium: omronMouse.c,v 1.1 94/01/04 19:19:06 rob Exp $
+ * $XConsortium: omronMouse.c,v 1.2 94/01/05 16:55:59 rob Exp $
  *
  * Copyright 1992, 1993 Data General Corporation;
  * Copyright 1991, 1992, 1993 OMRON Corporation  
@@ -46,20 +46,20 @@ omronMouseProc(pMouse,what)
 DevicePtr 	pMouse;
 int		what;
 {
-#ifndef MTX
+#ifndef XTHREADS
 	static	Bool initFlag = FALSE;
-#else /* MTX */
+#else /* XTHREADS */
 	static  char	DITNAME[] = "DIT";
-#endif /* MTX */
+#endif /* XTHREADS */
 	static	omronMousePrv	prv[1];
 	BYTE    map[5];
 
 	switch(what) {
 	case DEVICE_INIT:
 		pMouse->devicePrivate = (pointer)prv;
-#ifndef MTX
+#ifndef XTHREADS
 		if(initFlag == FALSE)
-#endif /* MTX */
+#endif /* XTHREADS */
 		{
 			if (!omronMouseInit(prv))
 				return (!Success);
@@ -67,9 +67,9 @@ int		what;
 			if (!omronResetTty(prv))
 				return (!Success);
 #endif
-#ifndef MTX
+#ifndef XTHREADS
 			initFlag = TRUE;
-#endif /* MTX */
+#endif /* XTHREADS */
 		}
 		prv->button_state = 7;
 		map[1] = Button1;
@@ -82,7 +82,7 @@ int		what;
 #endif
 		break;	
 	case DEVICE_ON:
-#ifndef MTX
+#ifndef XTHREADS
 #ifndef UNUSE_SIGIO_SIGNAL
 		prv->ctl_flags |= FASYNC;
 		if (fcntl(prv->fd, F_SETFL, prv->ctl_flags) < 0)
@@ -91,31 +91,31 @@ int		what;
 			return (!Success);
 		}
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 		AddEnabledDevice (prv->fd);
 		pMouse->on = TRUE;
 		break;
 	case DEVICE_OFF:
 	case DEVICE_CLOSE:
-#ifndef MTX
+#ifndef XTHREADS
 #ifndef UNUSE_SIGIO_SIGNAL
 		prv->ctl_flags &= ~FASYNC;
 		if (fcntl(prv->fd, F_SETFL, prv->ctl_flags) < 0) {
 			Error("Can't disable the mouse SIGIO.");
 		}
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 		if (ioctl(prv->fd, MSDFLUSH, NULL) < 0) {
 			Error("Mouse ioctl MSDFLUSH fault.");
 		}
 		RemoveEnabledDevice(prv->fd);
 		pMouse->on = FALSE;
-#ifdef MTX
+#ifdef XTHREADS
 		(void)close(prv->fd);
 #ifdef uniosu
                 (void)close(prv->ttyfd);
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 		break;
 	}
 	return (Success);
@@ -151,7 +151,7 @@ omronMousePrvPtr prv;
 	struct mssetlimt limit;
 #endif	/* uniosu */
 
-#if defined(MTX) || defined(UNUSE_SIGIO_SIGNAL)
+#if defined(XTHREADS) || defined(UNUSE_SIGIO_SIGNAL)
 	int arg = 1;
 #endif
 
@@ -160,7 +160,7 @@ omronMousePrvPtr prv;
 		return FALSE;
 	}
 
-#if defined(MTX) || defined(UNUSE_SIGIO_SIGNAL)
+#if defined(XTHREADS) || defined(UNUSE_SIGIO_SIGNAL)
 	ioctl(prv->fd, FIONBIO, &arg); /* set non-blocking io */
 #else
 	if ((prv->ctl_flags = fcntl(prv->fd, F_GETFL, NULL)) < 0) {
@@ -223,18 +223,18 @@ omronCursorOffScreen(pScreen, x, y)
 }
 
 static void
-#ifndef MTX
+#ifndef XTHREADS
 omronCrossScreen(pScreen,x,y)
-#else /* MTX */
+#else /* XTHREADS */
 omronCrossScreen(pScreen, flag)
-#endif /* MTX */
+#endif /* XTHREADS */
     ScreenPtr	pScreen;
-#ifndef MTX
+#ifndef XTHREADS
     int		x;
     int		y;
-#else /* MTX */
+#else /* XTHREADS */
     Bool		flag;
-#endif /* MTX */
+#endif /* XTHREADS */
 {
 }
 
@@ -276,16 +276,16 @@ omronWarpCursor (pScreen, x, y)
 	ScreenPtr   pScreen;
 	int         x, y;
 {
-#ifndef MTX
+#ifndef XTHREADS
 	int oldmask;
 
 	oldmask = sigblock (sigmask(SIGIO));
-#endif /* MTX */
+#endif /* XTHREADS */
     /* NOTE - MTX may not pend signal. */
     miPointerWarpCursor (pScreen, x, y);
-#ifndef MTX
+#ifndef XTHREADS
     sigsetmask (oldmask);
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 

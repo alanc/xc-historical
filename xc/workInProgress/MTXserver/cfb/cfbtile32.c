@@ -39,7 +39,7 @@ OF THIS SOFTWARE.
 
 */
 
-/* $XConsortium: cfbtile32.c,v 1.1 93/12/31 11:22:03 rob Exp $ */
+/* $XConsortium: cfbtile32.c,v 1.2 94/01/04 00:02:12 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -269,9 +269,9 @@ MROP_NAME(cfbTile32FS)(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     n = miClipSpans( cfbGetCompositeClip(pGC),
 		     pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
 		     ,pDrawable->x, pDrawable->y
-#endif /* MTX */
+#endif /* XTHREADS */
 		     );
 
     tile = cfbGetGCPrivate(pGC)->pRotatedPixmap;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.1 93/12/27 12:23:14 rob Exp $
+ * $XConsortium: miwideline.c,v 1.2 93/12/27 19:38:34 rob Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1542,7 +1542,7 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
     Bool	    somethingDrawn = FALSE;
     Bool	    selfJoin;
 
-#ifdef MTX
+#ifdef XTHREADS
 #ifdef DGUX
     void miWideDash();
 
@@ -1565,7 +1565,7 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
         return;
     }
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 
     spanData = miSetupSpanData (pGC, &spanDataRec, npt);
     pixel = pGC->fgPixel;

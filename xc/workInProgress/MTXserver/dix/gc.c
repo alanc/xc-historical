@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.1 93/12/15 16:06:30 rob Exp $ */
+/* $XConsortium: gc.c,v 1.2 94/01/10 16:53:52 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -60,10 +60,10 @@ OF THIS SOFTWARE.
 
 #include "mtxlock.h"
 
-#ifdef MTX
+#ifdef XTHREADS
 extern X_MUTEX_TYPE FontLockMutex;
 extern X_MUTEX_TYPE ScratchGCMutex;
-#endif /* MTX */
+#endif /* XTHREADS */
 
 extern XID clientErrorValue;
 
@@ -517,9 +517,9 @@ CreateGC(pDrawable, mask, pval, pStatus)
     pGC->alu = GXcopy; /* dst <- src */
     pGC->planemask = ~0;
     pGC->serialNumber = GC_CHANGE_SERIAL_BIT;
-#ifdef MTX
+#ifdef XTHREADS
     pGC->lockBits = 0;
-#endif /* MTX */
+#endif /* XTHREADS */
     pGC->funcs = 0;
 
     pGC->fgPixel = 0;

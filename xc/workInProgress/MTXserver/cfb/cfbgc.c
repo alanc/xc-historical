@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 1.3 94/01/04 00:42:27 rob Exp $ */
+/* $XConsortium: cfbgc.c,v 1.4 94/01/06 23:03:27 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -59,19 +59,19 @@ OF THIS SOFTWARE.
 
 #include "mistruct.h"
 #include "mibstore.h"
-#ifndef MTX
+#ifndef XTHREADS
 #include "migc.h"
-#endif /* MTX */
+#endif /* XTHREADS */
 
 #include "cfbmskbits.h"
 #include "cfb8bit.h"
 
-#ifndef MTX
+#ifndef XTHREADS
 void cfbValidateGC();
-#else /* MTX */
+#else /* XTHREADS */
 void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
 void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
-#endif /* MTX */
+#endif /* XTHREADS */
 
 #if PSZ == 8
 # define useTEGlyphBlt  cfbTEGlyphBlt8
@@ -105,21 +105,21 @@ void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
 
 GCFuncs cfbGCFuncs = {
     cfbValidateGC,
-#ifndef MTX
+#ifndef XTHREADS
     miChangeGC,
     miCopyGC,
     miDestroyGC,
     miChangeClip,
     miDestroyClip,
     miCopyClip,
-#else /* MTX */
+#else /* XTHREADS */
     cfbChangeGC,
     cfbCopyGC,
     cfbDestroyGC,
     cfbChangeClip,
     cfbDestroyClip,
     cfbCopyClip,
-#endif /* MTX */
+#endif /* XTHREADS */
 };
 
 GCOps	cfbTEOps1Rect = {
@@ -306,11 +306,11 @@ cfbCreateGC(pGC)
     pGC->funcs = &cfbGCFuncs;
 
     /* cfb wants to translate before scan conversion */
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
     pGC->miTranslate = 0; 
 #else
     pGC->miTranslate = 1;
-#endif /* MTX */
+#endif /* XTHREADS */
 
     pPriv = cfbGetGCPrivate(pGC);
     pPriv->rop = pGC->alu;
@@ -319,7 +319,7 @@ cfbCreateGC(pGC)
     pPriv->freeCompClip = FALSE;
     pPriv->pRotatedPixmap = (PixmapPtr) NULL;
 
-#ifdef MTX
+#ifdef XTHREADS
 #if PSZ == 8
     /*
      * Set the stipple pointer to NULL.  It will be set when the first drawing
@@ -327,12 +327,12 @@ cfbCreateGC(pGC)
      */
     pPriv->stipple = NULL;
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 
     return TRUE;
 }
 
-#ifdef MTX
+#ifdef XTHREADS
 /*ARGSUSED*/
 void
 cfbChangeGC(pGC, mask)
@@ -386,7 +386,7 @@ cfbDestroyOps (ops)
     if (ops->devPrivate.val)
 	xfree (ops);
 }
-#endif /* MTX */
+#endif /* XTHREADS */
 
 /* Clipping conventions
 	if the drawable is a window
@@ -404,9 +404,9 @@ cfbValidateGC(pGC, changes, pDrawable)
     Mask	    changes;
     DrawablePtr	    pDrawable;
 {
-#ifdef MTX
+#ifdef XTHREADS
     WindowPtr   pWin;
-#endif /* MTX */
+#endif /* XTHREADS */
     int         mask;		/* stateChanges */
     int         index;		/* used for stepping through bitfields */
     int		new_rrop;
@@ -422,12 +422,12 @@ cfbValidateGC(pGC, changes, pDrawable)
 
     pGC->lastWinOrg.x = pDrawable->x;
     pGC->lastWinOrg.y = pDrawable->y;
-#ifdef MTX
+#ifdef XTHREADS
     if (pDrawable->type == DRAWABLE_WINDOW)
 	pWin = (WindowPtr) pDrawable;
     else
 	pWin = (WindowPtr) NULL;
-#endif /* MTX */
+#endif /* XTHREADS */
     devPriv = cfbGetGCPrivate(pGC);
 
     new_rrop = FALSE;
@@ -445,7 +445,7 @@ cfbValidateGC(pGC, changes, pDrawable)
     if ((changes & (GCClipXOrigin|GCClipYOrigin|GCClipMask|GCSubwindowMode)) ||
 	(pDrawable->serialNumber != (pGC->serialNumber & DRAWABLE_SERIAL_BITS))
 	)
-#ifndef MTX
+#ifndef XTHREADS
     {
 	miComputeCompositeClip (pGC, pDrawable);
 #ifdef NO_ONE_RECT
@@ -457,7 +457,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	devPriv->oneRect = oneRect;
 #endif
     }
-#else /* MTX */
+#else /* XTHREADS */
     {
 	ScreenPtr pScreen = pGC->pScreen;
 
@@ -593,7 +593,7 @@ cfbValidateGC(pGC, changes, pDrawable)
         }
     }
 #endif /* PSZ == 8 */
-#endif /* MTX */
+#endif /* XTHREADS */
 
     mask = changes;
     while (mask) {
@@ -773,11 +773,11 @@ cfbValidateGC(pGC, changes, pDrawable)
 	if (newops = cfbMatchCommon (pGC, devPriv))
  	{
 	    if (pGC->ops->devPrivate.val)
-#ifdef MTX
+#ifdef XTHREADS
 		cfbDestroyOps (pGC->ops);
-#else /* MTX */
+#else /* XTHREADS */
 		miDestroyGCOps (pGC->ops);
-#endif /* MTX */
+#endif /* XTHREADS */
 	    pGC->ops = newops;
 	    new_rrop = new_line = new_fillspans = new_text = new_fillarea = 0;
 	}
@@ -786,11 +786,11 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    if (!pGC->ops->devPrivate.val)
 	    {
 		pGC->ops = 
-#ifdef MTX
+#ifdef XTHREADS
 		    cfbCreateOps (pGC->ops);
-#else /* MTX */
+#else /* XTHREADS */
 		    miCreateGCOps (pGC->ops);
-#endif /* MTX */
+#endif /* XTHREADS */
 		pGC->ops->devPrivate.val = 1;
 	    }
 	}
@@ -1023,7 +1023,7 @@ cfbValidateGC(pGC, changes, pDrawable)
     }
 }
 
-#ifdef MTX
+#ifdef XTHREADS
 void
 cfbDestroyClip(pGC)
     GCPtr	pGC;
@@ -1107,4 +1107,4 @@ cfbCopyGC (pGCSrc, changes, pGCDst)
 {
     return;
 }
-#endif /* MTX */
+#endif /* XTHREADS */

@@ -46,7 +46,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-#ifdef MTX /* XXX:SM - I don't think any of this should be used by STX. */
+#ifdef XTHREADS /* XXX:SM - I don't think any of this should be used by STX. */
 
 #include <signal.h>
 #include "mtxlock.h"
@@ -167,4 +167,4 @@ UnblockSigalrmSignal()
 }
 
 #endif /* CTHREADS */
-#endif /* MTX */
+#endif /* XTHREADS */

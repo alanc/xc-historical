@@ -28,7 +28,7 @@
  *
  ************************************************************************/
 
-/* $XConsortium$ */
+/* $XConsortium: message.h,v 1.5 93/12/16 10:38:57 rob Exp $ */
 
 #ifndef _message_h
 #define _message_h
@@ -97,7 +97,7 @@ typedef struct
  ***********************************************************************/
 #define ReturnPooledMessage(p) (ReturnPooledMessages(p))
 
-#ifdef MTX
+#ifdef XTHREADS
 #define MTXReturnPooledMessage ReturnPooledMessage(msg)
 #else
 #define MTXReturnPooledMessage /* nothing */
@@ -140,7 +140,7 @@ typedef struct
  * See mtxlock.h for the MTX_UNLOCK_* macros.
  *
  ***********************************************************************/
-#ifdef MTX
+#ifdef XTHREADS
 #define MTXGetReplyMessage(mapping, rep, repRec, MTX_UNLOCK_SOMETHING)	\
     if (!(rep = GetReplyMessage (mapping, msg )))			\
     {									\

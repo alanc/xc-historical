@@ -39,7 +39,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 */
-/* $XConsortium: cfbbitblt.c,v 1.3 94/01/04 00:33:16 rob Exp $ */
+/* $XConsortium: cfbbitblt.c,v 1.5 94/01/08 17:31:58 rob Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -56,17 +56,17 @@ OF THIS SOFTWARE.
 #define MFB_CONSTS_ONLY
 #include	"maskbits.h"
 
-#ifndef MTX
+#ifndef XTHREADS
 
 #define MTX_STIPPLE(_a) _a
 #define MTX_STIPPLE_CHANGE(_a) /* nothing */
 
-#else /* MTX */
+#else /* XTHREADS */
 
 #define MTX_STIPPLE(_a) pstipple->_a
 #define MTX_STIPPLE_CHANGE(_a) pstipple->change = (_a)
 
-#endif /* MTX */
+#endif /* XTHREADS */
 
 RegionPtr
 cfbBitBlt (pSrcDrawable, pDstDrawable,
@@ -97,11 +97,11 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
     BoxRec fastBox;
     int fastClip = 0;		/* for fast clipping with pixmap source */
     int fastExpose = 0;		/* for fast exposures with pixmap source */
-#ifdef MTX
+#ifdef XTHREADS
 #if PSZ == 8
     StippleRec	 *pstipple = (cfbGetGCPrivate(pGC))->stipple;
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 
     origSource.x = srcx;
     origSource.y = srcy;
@@ -302,11 +302,11 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
 	}
 
 	(*doBitBlt) (pSrcDrawable, pDstDrawable, pGC->alu, &rgnDst, pptSrc, pGC->planemask, bitPlane
-#ifdef MTX
+#ifdef XTHREADS
 #if PSZ == 8
 	    ,pstipple
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 	);
 	DEALLOCATE_LOCAL(pptSrc);
     }
@@ -392,9 +392,9 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 #if PSZ == 8
 void
 cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, bitPlane
-#ifdef MTX
+#ifdef XTHREADS
     ,pstipple
-#endif /* MTX */
+#endif /* XTHREADS */
 )
     DrawablePtr pSrcDrawable;	/* must be a bitmap */
     DrawablePtr pDstDrawable;	/* must be depth 8 drawable */
@@ -407,9 +407,9 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
     DDXPointPtr pptSrc;		/* drawable relative src coords to copy from;
 				 * must be one point for each box in prgnDst */
     unsigned long   bitPlane;	/* not used; assumed always to be 1 */
-#ifdef MTX
+#ifdef XTHREADS
     StippleRec *pstipple;
-#endif /* MTX */
+#endif /* XTHREADS */
 {
     int	srcx, srcy;	/* upper left corner of box being copied in source */
     int dstx, dsty;	/* upper left corner of box being copied in dest */
@@ -720,12 +720,12 @@ cfbCopyPlane(pSrcDrawable, pDstDrawable,
     RegionPtr	ret;
     extern RegionPtr    miHandleExposures();
     void		(*doBitBlt)();
-#ifdef MTX
+#ifdef XTHREADS
 #if PSZ == 8
     cfbPrivGCPtr devPriv;
     StippleRec	 *pstipple;
 #endif
-#endif /* MTX */
+#endif /* XTHREADS */
 
 #if PSZ == 8
 
@@ -734,7 +734,7 @@ cfbCopyPlane(pSrcDrawable, pDstDrawable,
     	if (bitPlane == 1)
 	{
        	    doBitBlt = cfbCopyPlane1to8;
-#ifdef MTX
+#ifdef XTHREADS
 	    devPriv = cfbGetGCPrivate(pGC);
 	    pstipple = devPriv->stipple;
             if(pstipple == NULL)
@@ -748,10 +748,10 @@ cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	    else 
 		cfb8CheckOpaqueStipple (pGC->alu, pGC->fgPixel, pGC->bgPixel,
 				    pGC->planemask ,pstipple);
-#else /* MTX */
+#else /* XTHREADS */
 	    cfb8CheckOpaqueStipple (pGC->alu, pGC->fgPixel, pGC->bgPixel,
 				    pGC->planemask);
-#endif /* MTX */
+#endif /* XTHREADS */
     	    ret = cfbBitBlt (pSrcDrawable, pDstDrawable,
 	    	    pGC, srcx, srcy, width, height, dstx, dsty, doBitBlt, bitPlane);
 	}
@@ -799,7 +799,7 @@ cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	(void) cfbBitBlt (pSrcDrawable, (DrawablePtr) pBitmap,
 			  pGC1, srcx, srcy, width, height, 0, 0, 
 			  cfbCopyPlane8to1, bitPlane);
-#ifdef MTX
+#ifdef XTHREADS
 	devPriv = cfbGetGCPrivate( pGC );
 	pstipple = devPriv->stipple;
 	if(pstipple == NULL)
@@ -814,11 +814,11 @@ cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	cfb8CheckOpaqueStipple (pGC->alu,
 				pGC->fgPixel, pGC->bgPixel,
 				pGC->planemask ,pstipple);
-#else /* MTX */
+#else /* XTHREADS */
 	cfb8CheckOpaqueStipple (pGC->alu,
 				pGC->fgPixel, pGC->bgPixel,
 				pGC->planemask);
-#endif /* MTX */
+#endif /* XTHREADS */
 	/* no exposures here, copy bits from inside a pixmap */
 	(void) cfbBitBlt ((DrawablePtr) pBitmap, pDstDrawable, pGC,
 			    0, 0, width, height, dstx, dsty, cfbCopyPlane1to8, 1);

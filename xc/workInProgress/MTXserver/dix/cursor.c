@@ -43,7 +43,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cursor.c,v 1.48 93/12/08 19:40:41 rob Exp $ */
+/* $XConsortium: cursor.c,v 1.1 93/12/15 16:05:44 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -65,9 +65,9 @@ typedef struct _GlyphShare {
 } GlyphShare, *GlyphSharePtr;
 
 static GlyphSharePtr sharedGlyphs = (GlyphSharePtr)NULL;
-#ifdef MTX
+#ifdef XTHREADS
 extern X_MUTEX_TYPE FontLockMutex;
-#endif /* MTX */
+#endif /* XTHREADS */
 
 static void
 FreeCursorBits(bits)

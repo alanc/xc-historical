@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.2 94/01/10 18:17:06 rob Exp $
+XCOMM $XConsortium: Imakefile,v 1.3 94/01/11 18:35:50 gildea Exp $
 #define DoThreadedServer XServerThreaded
 #include <Server.tmpl>
 

@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 1.2 93/12/27 19:38:27 rob Exp $ */
+/* $XConsortium: miexpose.c,v 1.4 94/01/08 17:31:45 rob Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -538,7 +538,7 @@ border tile in the resource table.
 
 static RESTYPE ResType = 0;
 static int numGCs = 0;
-#ifndef MTX
+#ifndef XTHREADS
 static GCPtr	screenContext[MAXSCREENS];
 
 /*ARGSUSED*/
@@ -554,7 +554,7 @@ XID id;
     if (!numGCs)
 	ResType = 0;
 }
-#endif /* MTX */
+#endif /* XTHREADS */
 
 
 void
@@ -688,7 +688,7 @@ int what;
 	/*
 	 * draw the background to the root window
 	 */
-#ifndef MTX
+#ifndef XTHREADS
 	if (screenContext[i] == (GCPtr)NULL)
 	{
 	    if (!ResType && !(ResType = CreateNewResourceType(tossGC)))
@@ -703,9 +703,9 @@ int what;
 	        return;
 	}
 	pGC = screenContext[i];
-#else /* MTX */
+#else /* XTHREADS */
 	pGC = CreateGC((DrawablePtr)pWin, (BITS32) 0, (XID *)NULL, &status);
-#endif /* MTX */
+#endif /* XTHREADS */
 	newValues[SUBWINDOW] = IncludeInferiors;
 	newValues[ABSX] = pBgWin->drawable.x;
 	newValues[ABSY] = pBgWin->drawable.y;
@@ -809,12 +809,12 @@ int what;
 	}
 	FreeScratchGC(pGC);
     }
-#ifdef MTX
+#ifdef XTHREADS
     else
     {
         FreeGC( pGC );
     }
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 

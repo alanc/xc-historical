@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 1.1 93/12/27 12:23:10 rob Exp $ */
+/* $XConsortium: mipointer.c,v 1.2 93/12/27 19:38:28 rob Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -79,9 +79,9 @@ static Bool miPointerCloseScreen();
 static void miPointerMove ();
 
 extern void NewCurrentScreen ();
-#ifndef MTX
+#ifndef XTHREADS
 extern void ProcessInputEvents ();
-#else /* MTX */
+#else /* XTHREADS */
 /*
  * for MTX server
  */
@@ -90,7 +90,7 @@ extern void miPointerUnlock ();
 
 static void miPointerAbsoluteCursorNoLock ();
 static void miPointerUpdateNoLock ();
-#endif /* MTX */
+#endif /* XTHREADS */
 
 Bool
 miPointerInitialize (pScreen, spriteFuncs, screenFuncs, waitForUpdate)
@@ -150,15 +150,15 @@ miPointerInitialize (pScreen, spriteFuncs, screenFuncs, waitForUpdate)
     miPointer.x = 0;
     miPointer.y = 0;
     miPointer.history_start = miPointer.history_end = 0;
-#ifdef MTX
+#ifdef XTHREADS
     X_MUTEX_INIT(&miPointer.mutex, X_MUTEX_ATTR_DEFAULT);
 #ifdef  USE_SOFTWARE_CURSOR
     miPointer.last_thread_id = (X_THREAD_TYPE)-1;
-#ifdef USE_MONITOR_MTX
+#ifdef USE_MONITOR_XTHREADS
     X_SET_SYMNAME(&(miPointer.mutex),"PTR_M");
-#endif /* USE_MONITOR_MTX */
+#endif /* USE_MONITOR_XTHREADS */
 #endif /* USE_SOFTWARE_CURSOS */
-#endif /* MTX */
+#endif /* XTHREADS */
     return TRUE;
 }
 
@@ -190,13 +190,13 @@ miPointerRealizeCursor (pScreen, pCursor)
     Bool ret;
     SetupScreen(pScreen);
 
-#ifdef MTX
+#ifdef XTHREADS
     (void)miPointerLock();
-#endif /* MTX */
+#endif /* XTHREADS */
     ret = (*pScreenPriv->spriteFuncs->RealizeCursor) (pScreen, pCursor);
-#ifdef MTX
+#ifdef XTHREADS
     (void)miPointerUnlock();
-#endif /* MTX */
+#endif /* XTHREADS */
     return ret;
 }
 
@@ -208,13 +208,13 @@ miPointerUnrealizeCursor (pScreen, pCursor)
     Bool ret;
     SetupScreen(pScreen);
 
-#ifdef MTX
+#ifdef XTHREADS
     (void)miPointerLock();
-#endif /* MTX */
+#endif /* XTHREADS */
     ret = (*pScreenPriv->spriteFuncs->UnrealizeCursor) (pScreen, pCursor);
-#ifdef MTX
+#ifdef XTHREADS
     (void)miPointerUnlock();
-#endif /* MTX */
+#endif /* XTHREADS */
     return ret;
 }
 
@@ -225,17 +225,17 @@ miPointerDisplayCursor (pScreen, pCursor)
 {
     SetupScreen(pScreen);
 
-#ifdef MTX
+#ifdef XTHREADS
     (void)miPointerLock();
-#endif /* MTX */
+#endif /* XTHREADS */
     miPointer.pCursor = pCursor;
     miPointer.pScreen = pScreen;
-#ifndef MTX
+#ifndef XTHREADS
     miPointerUpdate ();
-#else /* MTX */
+#else /* XTHREADS */
     miPointerUpdateNoLock ();
     (void)miPointerUnlock();
-#endif /* MTX */
+#endif /* XTHREADS */
     return TRUE;
 }
 
@@ -244,14 +244,14 @@ miPointerConstrainCursor (pScreen, pBox)
     ScreenPtr	pScreen;
     BoxPtr	pBox;
 {
-#ifdef MTX
+#ifdef XTHREADS
     (void)miPointerLock();
-#endif /* MTX */
+#endif /* XTHREADS */
     miPointer.limits = *pBox;
     miPointer.confined = PointerConfinedToScreen();
-#ifdef MTX
+#ifdef XTHREADS
     (void)miPointerUnlock();
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 /*ARGSUSED*/
@@ -284,16 +284,16 @@ miPointerSetCursorPosition(pScreen, x, y, generateEvent)
 {
     SetupScreen (pScreen);
 
-#ifdef MTX
+#ifdef XTHREADS
     (void)miPointerLock();
-#endif /* MTX */
+#endif /* XTHREADS */
     GenerateEvent = generateEvent;
     /* device dependent - must pend signal and call miPointerWarpCursor */
     (*pScreenPriv->screenFuncs->WarpCursor) (pScreen, x, y);
-#ifndef MTX
+#ifndef XTHREADS
     if (!generateEvent)
 	miPointerUpdate();
-#else /* MTX */
+#else /* XTHREADS */
     if (generateEvent)
       {
           xEvent  e;
@@ -310,7 +310,7 @@ miPointerSetCursorPosition(pScreen, x, y, generateEvent)
     miPointerUpdateNoLock();
 
     miPointerUnlock ();
-#endif /* MTX */
+#endif /* XTHREADS */
     return TRUE;
 }
 
@@ -329,9 +329,9 @@ miPointerWarpCursor (pScreen, x, y)
     if (GenerateEvent)
     {
 	miPointerMove (pScreen, x, y, GetTimeInMillis()
-#ifdef MTX
+#ifdef XTHREADS
 	    , FALSE
-#endif /* MTX */
+#endif /* XTHREADS */
 	    ); 
     }
     else
@@ -371,9 +371,9 @@ miPointerGetMotionEvents (pPtr, coords, start, stop, pScreen)
     int		    count = 0;
     miHistoryPtr    h;
 
-#ifdef MTX
+#ifdef XTHREADS
     (void)miPointerLock();
-#endif /* MTX */
+#endif /* XTHREADS */
     for (i = miPointer.history_start; i != miPointer.history_end;)
     {
 	h = &miPointer.history[i];
@@ -386,9 +386,9 @@ miPointerGetMotionEvents (pPtr, coords, start, stop, pScreen)
 	}
 	if (++i == MOTION_SIZE) i = 0;
     }
-#ifdef MTX
+#ifdef XTHREADS
     (void)miPointerUnlock();
-#endif /* MTX */
+#endif /* XTHREADS */
     return count;
 }
 
@@ -401,7 +401,7 @@ miPointerGetMotionEvents (pPtr, coords, start, stop, pScreen)
 
 void
 miPointerUpdate ()
-#ifdef MTX
+#ifdef XTHREADS
 {
     (void)miPointerLock ();
 
@@ -413,7 +413,7 @@ miPointerUpdate ()
 static
 void
 miPointerUpdateNoLock ()
-#endif /* MTX */
+#endif /* XTHREADS */
 {
     ScreenPtr		pScreen;
     miPointerScreenPtr	pScreenPriv;
@@ -483,15 +483,15 @@ miPointerDeltaCursor (dx, dy, time)
     int		    dx, dy;
     unsigned long   time;
 {
-#ifndef MTX
+#ifndef XTHREADS
     miPointerAbsoluteCursor (miPointer.x + dx, miPointer.y + dy, time);
-#else /* MTX */
+#else /* XTHREADS */
     (void)miPointerLock ();
 
     miPointerAbsoluteCursorNoLock (miPointer.x + dx, miPointer.y + dy, time);
 
     miPointerUnlock ();
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 /*
@@ -502,7 +502,7 @@ void
 miPointerAbsoluteCursor (x, y, time)
     int		    x, y;
     unsigned long   time;
-#ifdef MTX
+#ifdef XTHREADS
 {
     (void)miPointerLock ();
 
@@ -516,7 +516,7 @@ void
 miPointerAbsoluteCursorNoLock (x, y, time)
     int		    x, y;
     unsigned long   time;
-#endif /* MTX */
+#endif /* XTHREADS */
 {
     miPointerScreenPtr	pScreenPriv;
     ScreenPtr		pScreen;
@@ -558,9 +558,9 @@ miPointerAbsoluteCursorNoLock (x, y, time)
     if (miPointer.x == x && miPointer.y == y && miPointer.pScreen == pScreen)
 	return;
     miPointerMove (pScreen, x, y, time
-#ifdef MTX
+#ifdef XTHREADS
 	,TRUE
-#endif /* MTX */
+#endif /* XTHREADS */
 	);
 }
 
@@ -578,16 +578,16 @@ miPointerPosition (x, y)
 
 static void
 miPointerMove (pScreen, x, y, time
-#ifdef MTX
+#ifdef XTHREADS
     ,enqueue
-#endif /* MTX */
+#endif /* XTHREADS */
     )
     ScreenPtr	    pScreen;
     int		    x, y;
     unsigned long   time;
-#ifdef MTX
+#ifdef XTHREADS
     Bool	    enqueue;
-#endif /* MTX */
+#endif /* XTHREADS */
 {
     SetupScreen(pScreen);
     xEvent		xE;
@@ -604,18 +604,18 @@ miPointerMove (pScreen, x, y, time
     miPointer.y = y;
     miPointer.pScreen = pScreen;
 
-#ifdef MTX
+#ifdef XTHREADS
     if (enqueue)	
        {
-#endif /* MTX */
+#endif /* XTHREADS */
     xE.u.u.type = MotionNotify;
     xE.u.keyButtonPointer.rootX = x;
     xE.u.keyButtonPointer.rootY = y;
     xE.u.keyButtonPointer.time = time;
     (*pScreenPriv->screenFuncs->EnqueueEvent) (&xE);
-#ifdef MTX
+#ifdef XTHREADS
        }	
-#endif /* MTX */
+#endif /* XTHREADS */
 
     end = miPointer.history_end;
     start = miPointer.history_start;
@@ -648,17 +648,17 @@ miRegisterPointerDevice (pScreen, pDevice)
     ScreenPtr	pScreen;
     DevicePtr	pDevice;
 {
-#ifdef MTX
+#ifdef XTHREADS
     (void)miPointerLock();
-#endif /* MTX */
+#endif /* XTHREADS */
     miPointer.pPointer = pDevice;
-#ifdef MTX
+#ifdef XTHREADS
     (void)miPointerUnlock();
-#endif /* MTX */
+#endif /* XTHREADS */
 }
 
 
-#ifdef MTX
+#ifdef XTHREADS
 /*
  * pointer lock/unlock functions
  *
@@ -705,4 +705,4 @@ miPointerUnlock ()
 
     X_MUTEX_UNLOCK (&(miPointer.mutex));
 }
-#endif /* MTX */
+#endif /* XTHREADS */

@@ -43,7 +43,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillsp.c,v 1.1 93/12/29 12:30:56 rob Exp $ */
+/* $XConsortium: mfbfillsp.c,v 1.2 93/12/29 16:37:29 rob Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -60,15 +60,15 @@ OF THIS SOFTWARE.
 
 #include "mtxlock.h"
 
-#ifdef MTX
+#ifdef XTHREADS
 #ifndef TRANSLATE_COORDS
 #undef MAYBE_COME_UP_FOR_AIR
 #define MAYBE_COME_UP_FOR_AIR()
 #endif
 #define MTX_MAYBE_COME_UP_FOR_AIR() MAYBE_COME_UP_FOR_AIR()
-#else /* MTX */
+#else /* XTHREADS */
 #define MTX_MAYBE_COME_UP_FOR_AIR() /* nothing */
-#endif /* MTX */
+#endif /* XTHREADS */
 
 /* scanline filling for monochrome frame buffer
    written by drewry, oct 1986
@@ -138,7 +138,7 @@ mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     ppt = pptFree;
     n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit,
 		    ppt, pwidth, fSorted
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
 			, pDrawable->x, pDrawable->y
 #endif
 		    );
@@ -219,7 +219,7 @@ mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     ppt = pptFree;
     n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit,
 		    ppt, pwidth, fSorted
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
 			, pDrawable->x, pDrawable->y
 #endif
 		    );
@@ -300,7 +300,7 @@ mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     ppt = pptFree;
     n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit,
 		    ppt, pwidth, fSorted
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
 			, pDrawable->x, pDrawable->y
 #endif
 		    );
@@ -384,7 +384,7 @@ mfbWhiteStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     ppt = pptFree;
     n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit, 
 		    ppt, pwidth, fSorted
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
 			, pDrawable->x, pDrawable->y
 #endif
 		    );
@@ -470,7 +470,7 @@ mfbBlackStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     ppt = pptFree;
     n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit, 
 		    ppt, pwidth, fSorted
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
 			, pDrawable->x, pDrawable->y
 #endif
 );
@@ -556,7 +556,7 @@ mfbInvertStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     ppt = pptFree;
     n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit, 
 		    ppt, pwidth, fSorted
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
 			, pDrawable->x, pDrawable->y
 #endif
 );
@@ -684,7 +684,7 @@ mfbTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     ppt = pptFree;
     n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit, 
 		    ppt, pwidth, fSorted
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
 			, pDrawable->x, pDrawable->y
 #endif
 		    );
@@ -836,7 +836,7 @@ mfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     ppt = pptFree;
     n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit, 
 		    ppt, pwidth, fSorted
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
 			, pDrawable->x, pDrawable->y
 #endif
 		    );
@@ -1003,7 +1003,7 @@ mfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     ppt = pptFree;
     n = miClipSpans(devPriv->pCompositeClip, pptInit, pwidthInit, nInit, 
 		    ppt, pwidth, fSorted
-#if defined(MTX) && defined(TRANSLATE_COORDS)
+#if defined(XTHREADS) && defined(TRANSLATE_COORDS)
 			, pDrawable->x, pDrawable->y
 #endif
 		    );

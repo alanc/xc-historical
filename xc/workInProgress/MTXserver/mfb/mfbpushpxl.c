@@ -42,7 +42,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpushpxl.c,v 1.2 93/12/29 15:13:18 rob Exp $ */
+/* $XConsortium: mfbpushpxl.c,v 1.3 94/01/06 23:03:04 rob Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -113,7 +113,7 @@ mfbSolidPP(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     alu = (alu & 0x3) | 0x4;
     if (alu == GXnoop) return;
 
-#if defined(TRANSLATE_COORDS) && defined(MTX)
+#if defined(TRANSLATE_COORDS) && defined(XTHREADS)
     xOrg += pDrawable->x;
     yOrg += pDrawable->y;
 #endif

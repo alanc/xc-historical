@@ -1,5 +1,5 @@
 /*
- * $XConsortium: omronFb.h,v 1.1 94/01/04 19:19:01 rob Exp $
+ * $XConsortium: omronFb.h,v 1.2 94/01/05 16:55:55 rob Exp $
  *
  * Copyright 1992, 1993 Data General Corporation;
  * Copyright 1991, 1992, 1993 OMRON Corporation  

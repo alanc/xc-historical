@@ -25,7 +25,7 @@
  *
  */
 
-#ifdef  USE_MONITER_MTX
+#ifdef  USE_MONITER_XTHREADS
 #include <mach.h>
 #endif
 
