@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.53 87/11/08 17:34:58 rws Locked $ */
+/* $Header: mibitblt.c,v 1.54 87/12/08 17:23:21 rws Locked $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -311,7 +311,7 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 	    pt.y = i;
 	    width = w;
             pline = (*pDraw->pScreen->GetSpans)(pDraw, width, &pt, &width, 1);	
-	    bcopy(pline, pCharsOut, (w + 7)/8);
+	    bcopy(pline, pCharsOut, widthInBytes);
 	    pCharsOut += widthInBytes;
 	    Xfree(pline);
 	}
