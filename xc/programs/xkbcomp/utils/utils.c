@@ -1,6 +1,6 @@
 
   /*\
-   * $XConsortium: utils.c,v 1.1 94/04/02 17:12:03 erik Exp $
+   * $XConsortium: utils.c,v 1.2 94/04/04 15:31:43 rws Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION
@@ -326,15 +326,21 @@ int
 uStrCaseCmp(str1, str2)
     char *str1, *str2;
 {
-    char str[512];
+    char buf1[512],buf2[512];
     char c, *s;
 
-    for (s = str; c = *str1++; ) {
+    for (s = buf1; c = *str1++; ) {
 	if (isupper(c))
 	    c = tolower(c);
 	*s++ = c;
     }
     *s = '\0';
-    return (strcmp(str, str2));
+    for (s = buf2; c = *str2++; ) {
+	if (isupper(c))
+	    c = tolower(c);
+	*s++ = c;
+    }
+    *s = '\0';
+    return (strcmp(buf1, buf2));
 }
 #endif
