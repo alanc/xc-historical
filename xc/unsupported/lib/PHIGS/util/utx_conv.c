@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: utx_conv.c,v 5.1 91/02/16 09:50:16 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -2865,8 +2865,8 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 		for ( i = 0; i < RHEADER(Gdp)->numPoints; i++ ) {
 		    PEX_CONV_TO_Ppoint3((pexCoord3D *)pexptr,
 			&ed->gdp3.point_list.points[i]);
+		    pexptr += sizeof(pexCoord3D);
 		}
-		pexptr += RHEADER(Gdp)->numPoints * sizeof(pexCoord3D);
 		buf += RHEADER(Gdp)->numPoints * sizeof(Ppoint3);
 	    }
 	    switch ( ed->gdp3.id ) {
@@ -2889,8 +2889,8 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 		for ( i = 0; i < RHEADER(Gdp2D)->numPoints; i++ ) {
 		    PEX_CONV_TO_Ppoint((pexCoord2D *)pexptr,
 			&ed->gdp.point_list.points[i]);
+		    pexptr += sizeof(pexCoord2D);
 		}
-		pexptr += RHEADER(Gdp2D)->numPoints * sizeof(pexCoord2D);
 		buf += RHEADER(Gdp2D)->numPoints * sizeof(Ppoint);
 	    }
 	    switch ( ed->gdp.id ) {
@@ -3410,6 +3410,7 @@ phg_utx_build_pex_oc( erh, el_type, ed, scratch, pex_oc )
 		    pad = PADDING(ed->gdp.rec.unsupp.size);
 		    break;
 	    }
+	    break;
 
 	case PELEM_APPL_DATA:
 	    TYPE_AND_SIZE(ApplicationData)
