@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.12 93/09/26 15:16:09 mor Exp $ */
+/* $XConsortium: process.c,v 1.13 93/09/26 16:38:45 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -395,7 +395,7 @@ IceReplyWaitInfo *replyWait;
     iceErrorMsg *message;
     char 	*pData;
 
-    IceReadMessage (iceConn, SIZEOF (iceErrorMsg),
+    IceReadCompleteMessage (iceConn, SIZEOF (iceErrorMsg),
 	iceErrorMsg, message, pData);
 
     if (swap)
@@ -591,6 +591,8 @@ IceReplyWaitInfo *replyWait;
 	    message->severity, (IcePointer) pData);
     }
 
+    IceDisposeCompleteMessage (iceConn, pData);
+
     return (errorReturned);
 }
 
@@ -615,7 +617,7 @@ Bool			swap;
     char *release = NULL;
     int  accept_setup_now = 0;
 
-    IceReadMessage (iceConn, SIZEOF (iceConnectionSetupMsg),
+    IceReadCompleteMessage (iceConn, SIZEOF (iceConnectionSetupMsg),
 	iceConnectionSetupMsg, message, pData);
 
     EXTRACT_XPCS (pData, swap, vendor);
@@ -665,6 +667,7 @@ Bool			swap;
 	    free ((char *) hisAuthNames);
 	}
 
+	IceDisposeCompleteMessage (iceConn, pData);
 	return;
     }
 
@@ -762,6 +765,8 @@ Bool			swap;
 	
 	free ((char *) hisAuthNames);
     }
+
+    IceDisposeCompleteMessage (iceConn, pData);
 }
 
 
@@ -784,10 +789,9 @@ IceReplyWaitInfo	*replyWait;
     IceOCLauthStatus	status;
     IcePointer 		authState;
     int			realAuthIndex;
-    Bool		freeAuthData;
 
-    IceCheckAndReadMessage (iceConn, SIZEOF (iceAuthRequiredMsg),
-	iceAuthRequiredMsg, message, authData, freeAuthData);
+    IceReadCompleteMessage (iceConn, SIZEOF (iceAuthRequiredMsg),
+	iceAuthRequiredMsg, message, authData);
 
     if (iceConn->connect_to_you)
     {
@@ -804,9 +808,7 @@ IceReplyWaitInfo	*replyWait;
 	    _IceErrorAuthenticationFailed (iceConn,
 		ICE_AuthRequired, errorString);
 
-	    if (freeAuthData)
-		free (authData);
-
+	    IceDisposeCompleteMessage (iceConn, authData);
 	    return (1);
 	}
 	else
@@ -832,9 +834,7 @@ IceReplyWaitInfo	*replyWait;
 	    _IceErrorAuthenticationFailed (iceConn,
 		ICE_AuthRequired, errorString);
 
-	    if (freeAuthData)
-		free (authData);
-
+	    IceDisposeCompleteMessage (iceConn, authData);
 	    return (1);
 	}
 	else
@@ -858,9 +858,7 @@ IceReplyWaitInfo	*replyWait;
 
 	_IceErrorBadState (iceConn, 0, ICE_AuthRequired, IceCanContinue);
 
-	if (freeAuthData)
-	    free (authData);
-
+	IceDisposeCompleteMessage (iceConn, authData);
 	return (0);
     }
 
@@ -933,8 +931,7 @@ IceReplyWaitInfo	*replyWait;
     if (replyData && replyDataLen > 0)
 	free ((char *) replyData);
 
-    if (freeAuthData)
-	free (authData);
+    IceDisposeCompleteMessage (iceConn, authData);
 
     return (status != IceOCLauthHaveReply);
 }
@@ -954,10 +951,9 @@ Bool		swap;
     int 		authDataLen;
     IcePointer 		authData = NULL;
     char		*errorString = NULL;
-    Bool		freeReplyData;
 
-    IceCheckAndReadMessage (iceConn, SIZEOF (iceAuthReplyMsg),
-	iceAuthReplyMsg, message, replyData, freeReplyData);
+    IceReadCompleteMessage (iceConn, SIZEOF (iceAuthReplyMsg),
+	iceAuthReplyMsg, message, replyData);
 
     replyDataLen = message->length << 3;
 
@@ -1112,8 +1108,7 @@ Bool		swap;
     if (errorString)
 	free (errorString);
 
-    if (freeReplyData)
-	free (replyData);
+    IceDisposeCompleteMessage (iceConn, replyData);
 }
 
 
@@ -1135,10 +1130,9 @@ IceReplyWaitInfo	*replyWait;
     IceOCLauthProc 	authProc;
     IceOCLauthStatus	status;
     IcePointer 		*authState;
-    Bool		freeAuthData;
 
-    IceCheckAndReadMessage (iceConn, SIZEOF (iceAuthNextPhaseMsg),
-	iceAuthNextPhaseMsg, message, authData, freeAuthData);
+    IceReadCompleteMessage (iceConn, SIZEOF (iceAuthNextPhaseMsg),
+	iceAuthNextPhaseMsg, message, authData);
 
     if (iceConn->connect_to_you)
     {
@@ -1165,9 +1159,7 @@ IceReplyWaitInfo	*replyWait;
 
 	_IceErrorBadState (iceConn, 0, ICE_AuthNextPhase, IceCanContinue);
 
-	if (freeAuthData)
-	    free (authData);
-
+	IceDisposeCompleteMessage (iceConn, authData);
 	return (0);
     }
 
@@ -1227,8 +1219,7 @@ IceReplyWaitInfo	*replyWait;
     if (replyData && replyDataLen > 0)
 	free ((char *) replyData);
 
-    if (freeAuthData)
-	free (authData);
+    IceDisposeCompleteMessage (iceConn, authData);
 
     return (status != IceOCLauthHaveReply);
 }
@@ -1245,8 +1236,9 @@ IceReplyWaitInfo 	*replyWait;
 {
     iceConnectionReplyMsg 	*message;
     char 			*pData;
+    Bool			replyReady;
 
-    IceReadMessage (iceConn, SIZEOF (iceConnectionReplyMsg),
+    IceReadCompleteMessage (iceConn, SIZEOF (iceConnectionReplyMsg),
 	iceConnectionReplyMsg, message, pData);
 
     if (iceConn->connect_to_you)
@@ -1279,7 +1271,7 @@ IceReplyWaitInfo 	*replyWait;
 	EXTRACT_XPCS (pData, swap, reply->connection_reply.vendor);
 	EXTRACT_XPCS (pData, swap, reply->connection_reply.release);
 
-	return (1);
+	replyReady = True;
     }
     else
     {
@@ -1288,8 +1280,13 @@ IceReplyWaitInfo 	*replyWait;
 	 */
 
 	_IceErrorBadState (iceConn, 0, ICE_ConnectionReply, IceCanContinue);
-	return (0);
+
+	replyReady = False;
     }
+
+    IceDisposeCompleteMessage (iceConn, pData);
+
+    return (replyReady);
 }
 
 
@@ -1327,13 +1324,14 @@ Bool			swap;
 	iceConn->want_to_close = 0;
     }
 
-    IceReadMessage (iceConn, SIZEOF (iceProtocolSetupMsg),
+    IceReadCompleteMessage (iceConn, SIZEOF (iceProtocolSetupMsg),
 	iceProtocolSetupMsg, message, pData);
 
     if (iceConn->process_msg_info && iceConn->process_msg_info[
 	message->protocolOpcode - iceConn->his_min_opcode].in_use)
     {
 	_IceErrorMajorOpcodeDuplicate (iceConn, message->protocolOpcode);
+	IceDisposeCompleteMessage (iceConn, pData);
 	return;
     }
 
@@ -1349,6 +1347,7 @@ Bool			swap;
 	    {
 		_IceErrorProtocolDuplicate (iceConn, protocolName);
 		free (protocolName);
+		IceDisposeCompleteMessage (iceConn, pData);
 		return;
 	    }
 	}
@@ -1369,6 +1368,7 @@ Bool			swap;
     {
 	_IceErrorUnknownProtocol (iceConn, protocolName);
 	free (protocolName);
+	IceDisposeCompleteMessage (iceConn, pData);
 	return;
     }
 
@@ -1418,6 +1418,7 @@ Bool			swap;
 	    free ((char *) hisAuthNames);
 	}
 
+	IceDisposeCompleteMessage (iceConn, pData);
 	return;
     }
 
@@ -1555,6 +1556,8 @@ Bool			swap;
 
 	free ((char *) hisAuthNames);
     }
+
+    IceDisposeCompleteMessage (iceConn, pData);
 }
 
 
@@ -1569,8 +1572,9 @@ IceReplyWaitInfo 	*replyWait;
 {
     iceProtocolReplyMsg *message;
     char		*pData;
+    Bool		replyReady;
 
-    IceReadMessage (iceConn, SIZEOF (iceProtocolReplyMsg),
+    IceReadCompleteMessage (iceConn, SIZEOF (iceProtocolReplyMsg),
 	iceProtocolReplyMsg, message, pData);
 
     if (iceConn->protosetup_to_you)
@@ -1608,13 +1612,18 @@ IceReplyWaitInfo 	*replyWait;
 	EXTRACT_XPCS (pData, swap, reply->vendor);
 	EXTRACT_XPCS (pData, swap, reply->release);
 
-	return (1);
+	replyReady = True;
     }
     else
     {
 	_IceErrorBadState (iceConn, 0, ICE_ProtocolReply, IceCanContinue);
-	return (0);
+
+	replyReady = False;
     }
+
+    IceDisposeCompleteMessage (iceConn, pData);
+
+    return (replyReady);
 }
 
 
