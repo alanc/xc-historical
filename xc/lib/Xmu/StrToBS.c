@@ -1,5 +1,4 @@
-/* static char rcsid[] =
-	"$XConsortium: StrToBS.c,v 1.0 88/09/05 19:00:53 rws Exp $"; */
+/* $XConsortium: StrToBS.c,v 1.1 90/07/15 16:18:52 rws Exp $ */
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -16,8 +15,9 @@
  *
  */
 
-#include	<X11/Intrinsic.h>
-#include	"Xmu.h"
+#include <X11/Intrinsic.h>
+#include "Converters.h"
+#include "CharSet.h"
 
 #define	done(address, type) \
 	{ (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }

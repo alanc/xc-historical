@@ -1,5 +1,4 @@
-/* static char rcsid[] =
-	"$XConsortium: StrToJust.c,v 1.4 90/07/15 16:18:58 rws Exp $"; */
+/* $XConsortium: StrToJust.c,v 1.5 90/11/30 17:00:43 rws Exp $ */
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -16,8 +15,9 @@
  *
  */
 
-#include	<X11/Intrinsic.h>
-#include	"Xmu.h"
+#include <X11/Intrinsic.h>
+#include "Converters.h"
+#include "CharSet.h"
 
 /* ARGSUSED */
 void
