@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.2 93/08/26 17:07:34 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.3 93/09/03 16:29:45 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -60,6 +60,14 @@ typedef struct {
 } IceReplyWaitInfo;
 
 typedef struct _IceConn *IceConn;
+
+typedef void (*IceWatchProc) (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */,
+    IcePointer		/* clientData */,
+    Bool		/* open */
+#endif
+);
 
 typedef Bool (*IceOCLprocessMsgCB) (
 #if NeedFunctionPrototypes
@@ -137,7 +145,8 @@ typedef void (*IceProtocolSetupNotifyCB) (
 
 typedef void (*IcePingReplyCB) (
 #if NeedFunctionPrototypes
-    IceConn 		/* iceConn */
+    IceConn 		/* iceConn */,
+    IcePointer		/* clientData */
 #endif
 );
 
@@ -172,6 +181,7 @@ typedef struct _IceSavedReplyWait {
 
 typedef struct _IcePingWait {
     IcePingReplyCB		ping_reply_cb;
+    IcePointer			client_data;
     struct _IcePingWait 	*next;
 } _IcePingWait;
 
@@ -381,7 +391,23 @@ IceCloseConnection (
 );
 
 extern Status
-IceWatchConnections (
+IceAddConnectionWatch (
+#if NeedFunctionPrototypes
+    IceWatchProc		/* watchProc */,
+    IcePointer			/* clientData */
+#endif
+);
+
+extern void
+IceRemoveConnectionWatch (
+#if NeedFunctionPrototypes
+    IceWatchProc		/* watchProc */,
+    IcePointer			/* clientData */
+#endif
+);
+
+extern Status
+IceListenForConnections (
 #if NeedFunctionPrototypes
     int *		/* countRet */,
     int **		/* descripsRet */,
@@ -433,7 +459,8 @@ extern void
 IcePing (
 #if NeedFunctionPrototypes
    IceConn		/* iceConn */,
-   IcePingReplyCB	/* pingReplyCB */
+   IcePingReplyCB	/* pingReplyCB */,
+   IcePointer		/* clientData */
 #endif
 );
 
