@@ -1,4 +1,4 @@
-/* $XConsortium: pasteup.c,v 1.6 93/11/06 15:05:29 rws Exp $ */
+/* $XConsortium: pasteup.c,v 1.7 94/01/12 20:47:27 rws Exp $ */
 
 /**** module pasteup.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	pasteup.c -- pasteup flo element tests 
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

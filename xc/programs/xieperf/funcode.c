@@ -1,4 +1,4 @@
-/* $XConsortium: funcode.c,v 1.2 93/11/05 17:08:33 rws Exp $ */
+/* $XConsortium: funcode.c,v 1.3 94/01/12 20:46:33 rws Exp $ */
 
 /**** module funcode.c ****/
 /******************************************************************************
@@ -47,7 +47,7 @@ terms and conditions:
 		      things are lossless" tests. Both SingleBand and
 		      TripleBand.
 
-	Syd Logan -- AGE Logic, Inc. September, 1993 - MIT Beta release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: band.c,v 1.3 93/11/05 17:08:18 rws Exp $ */
+/* $XConsortium: band.c,v 1.4 94/01/12 20:45:03 rws Exp $ */
 /**** module band.c ****/
 /******************************************************************************
 				NOTICE
@@ -44,7 +44,7 @@ terms and conditions:
   
 	band.c -- BandCombine/BandExtract flo element tests 
 
-	Syd Logan -- AGE Logic, Inc. October, 1993 - MIT Beta release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: exportcl.c,v 1.10 93/11/06 15:03:11 rws Exp $ */
+/* $XConsortium: exportcl.c,v 1.11 94/01/12 20:46:27 rws Exp $ */
 
 /**** module exportcl.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	exportcl.c -- export client flo element tests 
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: geometry.c,v 1.8 93/11/06 15:03:28 rws Exp $ */
+/* $XConsortium: geometry.c,v 1.9 94/01/12 20:46:39 rws Exp $ */
 
 /**** module geometry.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	geometry.c -- geometry flo element tests 
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

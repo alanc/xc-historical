@@ -1,4 +1,4 @@
-/* $XConsortium: convolve.c,v 1.2 93/10/27 21:52:02 rws Exp $ */
+/* $XConsortium: convolve.c,v 1.3 94/01/12 20:45:46 rws Exp $ */
 
 /**** module convolve.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	convolve.c -- convolve flo element tests 
 
-	Syd Logan -- AGE Logic, Inc. August, 1993 - MIT Beta release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: uconstrain.c,v 1.4 93/11/06 15:08:02 rws Exp $ */
+/* $XConsortium: uconstrain.c,v 1.5 94/01/12 20:48:22 rws Exp $ */
 
 /**** module uconstrain.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	uconstrain.c -- unconstrain flo element test 
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 

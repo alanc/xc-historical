@@ -1,4 +1,4 @@
-/* $XConsortium: logical.c,v 1.5 93/11/06 15:04:31 rws Exp $ */
+/* $XConsortium: logical.c,v 1.6 94/01/12 20:47:02 rws Exp $ */
 
 /**** module logical.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	logical.c -- logical flo element tests 
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: importcl.c,v 1.7 93/11/06 15:04:14 rws Exp $ */
+/* $XConsortium: importcl.c,v 1.8 94/01/12 20:46:56 rws Exp $ */
 
 /**** module importcl.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	importcl.c -- import client flo element tests 
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

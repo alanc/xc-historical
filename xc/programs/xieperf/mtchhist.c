@@ -1,4 +1,4 @@
-/* $XConsortium: mtchhist.c,v 1.2 93/10/27 21:52:35 rws Exp $ */
+/* $XConsortium: mtchhist.c,v 1.3 94/01/12 20:47:20 rws Exp $ */
 
 /**** module mtchhist.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	mtchhist.c -- match histogram flo element tests 
 
-	Syd Logan -- AGE Logic, Inc. August, 1993 - MIT Beta release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 

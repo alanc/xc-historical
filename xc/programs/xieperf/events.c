@@ -1,4 +1,4 @@
-/* $XConsortium: events.c,v 1.6 94/01/12 20:46:21 rws Exp $ */
+/* $XConsortium: events.c,v 1.7 94/01/17 19:18:01 rws Exp $ */
 /**** module events.c ****/
 /******************************************************************************
 				NOTICE
@@ -44,7 +44,7 @@ terms and conditions:
   
 	events.c -- event tests and XIE event routines 
 
-	Syd Logan -- AGE Logic, Inc. September, 1993 - MIT Beta release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #ifdef WIN32

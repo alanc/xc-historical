@@ -1,4 +1,4 @@
-/* $XConsortium: rgb.c,v 1.3 93/11/05 17:08:30 rws Exp $ */
+/* $XConsortium: rgb.c,v 1.4 94/01/12 20:47:57 rws Exp $ */
 
 /**** module rgb.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	rgb.c -- ConvertToRGB/ConvertFromRGB flo element tests 
 
-	Syd Logan -- AGE Logic, Inc. September, 1993 - MIT Beta release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.2 93/10/27 21:52:30 rws Exp $ */
+/* $XConsortium: math.c,v 1.3 94/01/12 20:47:08 rws Exp $ */
 
 /**** module math.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	math.c -- math flo element tests 
 
-	Syd Logan -- AGE Logic, Inc. August, 1993 - MIT Beta release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: cvttoindex.c,v 1.6 93/11/06 15:02:20 rws Exp $ */
+/* $XConsortium: cvttoindex.c,v 1.7 94/01/12 20:45:57 rws Exp $ */
 
 /**** module cvttoindex.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	cvttoindex.c -- converttoindex flo element tests 
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

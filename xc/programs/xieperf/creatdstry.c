@@ -1,4 +1,4 @@
-/* $XConsortium: creatdstry.c,v 1.4 93/11/06 15:01:59 rws Exp $ */
+/* $XConsortium: creatdstry.c,v 1.5 94/01/12 20:45:51 rws Exp $ */
 
 /**** module creatdstry.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	creatdstry.c -- create/destroy resource tests
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

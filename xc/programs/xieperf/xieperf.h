@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.h,v 1.13 94/01/12 20:48:45 rws Exp $ */
+/* $XConsortium: xieperf.h,v 1.14 94/01/12 21:11:27 rws Exp $ */
 
 /**** module xieperf.h ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	xieperf.h -- xieperf header file
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 

@@ -1,4 +1,4 @@
-/* $XConsortium: query.c,v 1.6 93/11/06 15:06:19 rws Exp $ */
+/* $XConsortium: query.c,v 1.7 94/01/12 20:47:45 rws Exp $ */
 
 /**** module query.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	query.c -- query flo element test 
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 

@@ -1,4 +1,4 @@
-/* $XConsortium: blend.c,v 1.6 93/11/06 15:01:36 rws Exp $ */
+/* $XConsortium: blend.c,v 1.7 94/01/12 20:45:14 rws Exp $ */
 
 /**** module blend.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	blend.c -- blend flo element tests 
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

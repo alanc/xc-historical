@@ -1,4 +1,4 @@
-/* $XConsortium: arith.c,v 1.2 93/10/27 21:51:48 rws Exp $ */
+/* $XConsortium: arith.c,v 1.3 94/01/12 20:44:52 rws Exp $ */
 
 /**** module arith.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	arith.c -- arithmetic flo element tests 
 
-	Syd Logan -- AGE Logic, Inc. August, 1993 - MIT Beta release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

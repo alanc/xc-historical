@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.26 94/01/17 19:30:04 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.27 94/01/29 10:59:39 rws Exp $ */
 
 /**** module xieperf.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	xieperf.c -- xieperf main module ( looks a lot like x11perf.c ) 
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 

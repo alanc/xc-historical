@@ -1,4 +1,4 @@
-/* $XConsortium: point.c,v 1.4 93/10/30 16:25:56 rws Exp $ */
+/* $XConsortium: point.c,v 1.8 94/01/12 20:47:33 rws Exp $ */
 
 /**** module point.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	point.c -- point flo element tests 
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 

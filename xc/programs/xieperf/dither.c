@@ -1,4 +1,4 @@
-/* $XConsortium: dither.c,v 1.5 93/11/06 15:02:26 rws Exp $ */
+/* $XConsortium: dither.c,v 1.6 94/01/12 20:46:02 rws Exp $ */
 
 /**** module dither.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	dither.c -- dither flo element tests 
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

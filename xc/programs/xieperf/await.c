@@ -1,4 +1,4 @@
-/* $XConsortium: await.c,v 1.8 93/11/06 15:01:20 rws Exp $ */
+/* $XConsortium: await.c,v 1.9 94/01/12 20:44:58 rws Exp $ */
 
 /**** module await.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	await.c -- await flo element test 
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #ifdef WIN32

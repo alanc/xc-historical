@@ -1,4 +1,4 @@
-/* $XConsortium: purgecolst.c,v 1.2 93/11/06 15:06:03 rws Exp $ */
+/* $XConsortium: purgecolst.c,v 1.3 94/01/12 20:47:39 rws Exp $ */
 
 /**** module purgecolst.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	purgecolst.c -- purge color list test 
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: getnext.c,v 1.4 93/11/05 17:08:36 rws Exp $ */
+/* $XConsortium: getnext.c,v 1.5 94/01/12 20:46:45 rws Exp $ */
 
 /**** module getnext.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	getnext.c -- Get a line from stream, and parse for command to run 
 
-	Syd Logan -- AGE Logic, Inc. October, 1993 - MIT Beta release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include	<stdio.h>

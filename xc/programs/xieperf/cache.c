@@ -1,4 +1,4 @@
-/* $XConsortium: cache.c,v 1.2 93/10/26 14:34:00 rws Exp $ */
+/* $XConsortium: cache.c,v 1.3 94/01/12 20:45:25 rws Exp $ */
 
 /**** module cache.c ****/
 /******************************************************************************
@@ -46,7 +46,7 @@ terms and conditions:
 	cache.c -- Code to support caching of photomaps in the server by 
 		   xieperf. 
 
-	Syd Logan -- AGE Logic, Inc. October, 1993 - MIT Beta release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 

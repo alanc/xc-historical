@@ -1,4 +1,4 @@
-/* $XConsortium: modify.c,v 1.9 94/01/12 20:47:13 rws Exp $ */
+/* $XConsortium: modify.c,v 1.10 94/01/17 19:29:23 rws Exp $ */
 
 /**** module modify.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	modify.c -- modify flo element tests 
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

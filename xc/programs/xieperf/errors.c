@@ -1,4 +1,4 @@
-/* $XConsortium: errors.c,v 1.6 93/11/05 17:08:25 rws Exp $ */
+/* $XConsortium: errors.c,v 1.7 94/01/12 20:46:14 rws Exp $ */
 /**** module errors.c ****/
 /******************************************************************************
 				NOTICE
@@ -44,7 +44,7 @@ terms and conditions:
   
 	errors.c -- XIE error tests 
 
-	Syd Logan -- AGE Logic, Inc. September, 1993 - MIT Beta release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include <stdio.h>

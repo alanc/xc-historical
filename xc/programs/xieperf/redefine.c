@@ -1,4 +1,4 @@
-/* $XConsortium: redefine.c,v 1.5 93/11/06 15:06:33 rws Exp $ */
+/* $XConsortium: redefine.c,v 1.6 94/01/12 20:47:51 rws Exp $ */
 
 /**** module redefine.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	redefine.c -- redefine flo element test 
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

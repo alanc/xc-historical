@@ -1,4 +1,4 @@
-/* $XConsortium: compare.c,v 1.2 93/10/27 21:51:57 rws Exp $ */
+/* $XConsortium: compare.c,v 1.3 94/01/12 20:45:33 rws Exp $ */
 
 /**** module compare.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	compare.c -- compare flo element tests 
 
-	Syd Logan -- AGE Logic, Inc. August, 1993 - MIT Beta release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

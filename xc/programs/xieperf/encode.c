@@ -1,4 +1,4 @@
-/* $XConsortium: encode.c,v 1.4 93/11/05 17:58:36 rws Exp $ */
+/* $XConsortium: encode.c,v 1.5 94/01/12 20:46:08 rws Exp $ */
 /**** module encode.c ****/
 /******************************************************************************
 				NOTICE
@@ -44,7 +44,7 @@ terms and conditions:
   
 	encode.c -- EP/ECP encode technique tests 
 
-	Syd Logan -- AGE Logic, Inc. October, 1993 - MIT Beta release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: abort.c,v 1.5 93/11/06 15:01:05 rws Exp $ */
+/* $XConsortium: abort.c,v 1.6 94/01/12 20:44:47 rws Exp $ */
 
 /**** module abort.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	abort.c -- abort flo test 
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include "xieperf.h"

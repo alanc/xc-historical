@@ -1,4 +1,4 @@
-/* $XConsortium: tests.c,v 1.11 93/11/06 15:07:50 rws Exp $ */
+/* $XConsortium: tests.c,v 1.12 94/01/12 20:48:07 rws Exp $ */
 
 /**** module tests.c ****/
 /******************************************************************************
@@ -45,7 +45,7 @@ terms and conditions:
   
 	tests.c -- test configuration
 
-	Syd Logan -- AGE Logic, Inc. July, 1993 - MIT Alpha release 
+	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
 #include <stdio.h> 	/* for stderr */
