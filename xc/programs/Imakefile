@@ -2,7 +2,7 @@
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
 SUBDIRS = bitmap uwm xcalc \
-	xclock xfd xhost xinit xload xlsfonts xmh xmodmap \
+	xclock xfd xhost xinit xload xlogo xlsfonts xmh xmodmap \
 	xpr xprop xrdb xrefresh xset xsetroot \
 	xterm xwd xwininfo xwud x10tox11 
 
