@@ -564,7 +564,7 @@ Boolean Dish::add_array(
     TypeObjRef array, char* arg, RequestObjRef req, Tcl_Interp* interp
 ) {
     Boolean b = false;
-    long element_count;
+    Long element_count;
     TypeObj_var element_type;
     array->array_info(element_type._out(), element_count);
     if (arg != nil) {
@@ -668,7 +668,7 @@ Boolean Dish::add_sequence(
    TypeObjRef sequence, char* arg, RequestObjRef req, Tcl_Interp* interp
 ) {
     Boolean b = false;
-    long length;
+    Long length;
     TypeObj_var element_type;
     sequence->sequence_info(element_type._out(), length);
     if (arg != nil) {
@@ -840,7 +840,7 @@ void Dish::get_array(
 ) {
     Tcl_DString result;
     Tcl_DStringInit(&result);
-    long element_count;
+    Long element_count;
     TypeObj_var element_type;
     array->array_info(element_type._out(), element_count);
     for (int i = 0; i < element_count; i++) {
@@ -887,7 +887,7 @@ void Dish::get_sequence(
 ) {
     Tcl_DString result;
     Tcl_DStringInit(&result);
-    long size;
+    Long size;
     TypeObj_var element_type;
     sequence->sequence_info(element_type._out(), size);
     size = req->get_long();
