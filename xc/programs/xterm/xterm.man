@@ -1,4 +1,4 @@
-.\" $XConsortium: xterm.man,v 1.70 91/07/31 18:25:17 gildea Exp $
+.\" $XConsortium: xterm.man,v 1.71 91/08/01 02:48:53 gildea Exp $
 .TH XTERM 1 "Release 5" "X Version 11"
 .SH NAME
 xterm \- terminal emulator for X
@@ -135,6 +135,12 @@ This option specifies the size of the inner border (the distance between
 the outer edge of the characters and the window border) in pixels.  The
 default is 2.
 .TP 8
+.B "\-cb"
+Set the \fIvt100\fP resource \fBcutToBeginningOfLine\fP to FALSE.
+.TP 8
+.B "\+cb"
+Set the \fIvt100\fP resource \fBcutToBeginningOfLine\fP to TRUE.
+.TP 8
 .B "\-cc \fIcharacterclassrange\fP:\fIvalue\fP[,...]"
 This sets classes indicated by the given ranges for using in selecting by
 words.  See the section specifying character classes.
@@ -177,6 +183,12 @@ This font must be the same height and width as the normal font.
 If only one of the normal or bold fonts is specified, it will be used as the
 normal font and the bold font will be produced by overstriking this font.
 The default is to do overstriking of the normal font.
+.TP 8
+.B \-im
+Turn on the \fBuseInsertMode\fP resource.
+.TP 8
+.B +im
+Turn off the \fBuseInsertMode\fP resource.
 .TP 8
 .B \-j
 This option indicates that \fIxterm\fP should do jump scrolling.  Normally,
@@ -395,7 +407,7 @@ The default icon name is the application name.
 .B \-r
 This option indicates that reverse video should be simulated by swapping
 the foreground and background colors.  It is equivalent to
-\fB\-reversevideo\fP or \fB\-rv\fP.
+\fB\-rv\fP.
 .TP 8
 .BI \-w " number"
 This option specifies the width in pixels of the border surrounding the window.
@@ -461,6 +473,9 @@ classes as well as:
 Specifies the preferred size and position of the application when iconified.
 It is not necessarily obeyed by all window managers.
 .TP 8
+.B "iconName (\fPclass\fB IconName)"
+Specifies the icon name.  The default is the application name.
+.TP 8
 .B "termName (\fPclass\fB TermName)"
 Specifies the terminal type name to be set in the TERM environment variable.
 .TP 8
@@ -476,6 +491,11 @@ weras, and lnext.  Control characters may be specified as ^char (e.g. ^c or ^u)
 and ^? may be used to indicate Delete.  This is very useful for overriding
 the default terminal settings without having to do an \fIstty\fP every time
 an \fIxterm\fP is started.
+.TP 8
+.B "useInsertMode (\fPclass\fB UseInsertMode)
+Force use of insert mode by adding appropriate entries to the TERMCAP
+environment variable.  This is useful if the system termcap is broken.
+The default is ``false.''
 .TP 8
 .B "utmpInhibit (\fPclass\fB UtmpInhibit)"
 Specifies whether or not \fIxterm\fP should try to record the user's terminal
@@ -535,6 +555,18 @@ Specifies the name of the bold font to use instead of overstriking.
 Specifies whether or not the VT102 DECCOLM escape sequence should be honored.
 The default is ``false.''
 .TP 8
+.B "cutNewline (\fPclass\fB CutNewline)"
+If false, triple clicking to select a line does not include the Newline
+at the end of the line.
+If true, the Newline is selected.
+The default is ``true.''
+.TP 8
+.B "cutToBeginningOfLine (\fPclass\fB CutToBeginningOfLine)"
+If false, triple clicking to select a line selects only from the
+current word forward.
+If true, the entire line is selected.
+The default is ``true.''
+.TP 8
 .B "charClass (\fPclass\fB CharClass)"
 Specifies comma-separated lists of character class bindings of the form
 \[\fIlow\fP-\]\fIhigh\fP:\fIvalue\fP.  These are used in determining which
@@ -554,7 +586,7 @@ Specifies the color to use for the background of the window.  The default is
 .B "foreground (\fPclass\fB Foreground)"
 Specifies the color to use for displaying text in the window.  Setting the
 class name instead of the instance name is an easy way to have everything
-that would normally appear in the "text" color change color.  The default
+that would normally appear in the text color change color.  The default
 is ``black.''
 .TP 8
 .B "cursorColor (\fPclass\fB Foreground)"
@@ -1186,7 +1218,7 @@ to 127, corresponding to the ASCII code for the character or characters to be
 set.  The \fIvalue\fP is arbitrary, although the default table uses the
 character number of the first character occurring in the set.
 .PP
-The default table is:
+The default table is
 .sp
 .in +8
 .ft C			\" Courier
