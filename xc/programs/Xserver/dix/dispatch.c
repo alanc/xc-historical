@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.48 93/09/05 10:51:00 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.49 93/09/07 16:31:08 dpw Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -31,7 +31,6 @@ SOFTWARE.
 #include "fontstruct.h"
 #include "dixfontstr.h"
 #include "gcstruct.h"
-#include "osstruct.h"
 #include "selection.h"
 #include "colormapst.h"
 #include "cursorstr.h"
@@ -40,6 +39,7 @@ SOFTWARE.
 #include "input.h"
 #include "servermd.h"
 #include "extnsionst.h"
+#include "dixfont.h"
 
 #define mskcnt ((MAXCLIENTS + 31) / 32)
 #define BITMASK(i) (1 << ((i) & 31))
@@ -718,7 +718,7 @@ ProcGetAtomName(client)
     REQUEST(xResourceReq);
 
     REQUEST_SIZE_MATCH(xResourceReq);
-    if (str = NameForAtom(stuff->id)) 
+    if ( (str = NameForAtom(stuff->id)) )
     {
 	len = strlen(str);
 	reply.type = X_Reply;
@@ -2119,7 +2119,7 @@ ProcCopyColormapAndFree(client)
     REQUEST_SIZE_MATCH(xCopyColormapAndFreeReq);
     mid = stuff->mid;
     LEGAL_NEW_RESOURCE(mid, client);
-    if(pSrcMap = (ColormapPtr )LookupIDByType(stuff->srcCmap, RT_COLORMAP))
+    if( (pSrcMap = (ColormapPtr )LookupIDByType(stuff->srcCmap, RT_COLORMAP)) )
     {
 	result = CopyColormapAndFree(mid, pSrcMap, client->index);
 	if (client->noClientException != Success)
@@ -2232,8 +2232,8 @@ ProcAllocColor                (client)
 	acr.green = stuff->green;
 	acr.blue = stuff->blue;
 	acr.pixel = 0;
-	if(retval = AllocColor(pmap, &acr.red, &acr.green, &acr.blue,
-	                       &acr.pixel, client->index))
+	if( (retval = AllocColor(pmap, &acr.red, &acr.green, &acr.blue,
+	                       &acr.pixel, client->index)) )
 	{
             if (client->noClientException != Success)
                 return(client->noClientException);
@@ -2277,9 +2277,9 @@ ProcAllocNamedColor           (client)
 	    ancr.screenGreen = ancr.exactGreen;
 	    ancr.screenBlue = ancr.exactBlue;
 	    ancr.pixel = 0;
-	    if(retval = AllocColor(pcmp,
+	    if( (retval = AllocColor(pcmp,
 	                 &ancr.screenRed, &ancr.screenGreen, &ancr.screenBlue,
-			 &ancr.pixel, client->index))
+			 &ancr.pixel, client->index)) )
 	    {
                 if (client->noClientException != Success)
                     return(client->noClientException);
@@ -2334,8 +2334,8 @@ ProcAllocColorCells           (client)
             return(BadAlloc);
 	pmasks = ppixels + npixels;
 
-	if(retval = AllocColorCells(client->index, pcmp, npixels, nmasks, 
-				    (Bool)stuff->contiguous, ppixels, pmasks))
+	if( (retval = AllocColorCells(client->index, pcmp, npixels, nmasks, 
+				    (Bool)stuff->contiguous, ppixels, pmasks)) )
 	{
 	    DEALLOCATE_LOCAL(ppixels);
             if (client->noClientException != Success)
@@ -2395,10 +2395,10 @@ ProcAllocColorPlanes(client)
 	ppixels = (Pixel *)ALLOCATE_LOCAL(length);
 	if(!ppixels)
             return(BadAlloc);
-	if(retval = AllocColorPlanes(client->index, pcmp, npixels,
+	if( (retval = AllocColorPlanes(client->index, pcmp, npixels,
 	    (int)stuff->red, (int)stuff->green, (int)stuff->blue,
 	    (int)stuff->contiguous, ppixels,
-	    &acpr.redMask, &acpr.greenMask, &acpr.blueMask))
+	    &acpr.redMask, &acpr.greenMask, &acpr.blueMask)) )
 	{
             DEALLOCATE_LOCAL(ppixels);
             if (client->noClientException != Success)
@@ -2542,7 +2542,7 @@ ProcQueryColors(client)
 	prgbs = (xrgb *)ALLOCATE_LOCAL(count * sizeof(xrgb));
 	if(!prgbs && count)
             return(BadAlloc);
-	if(retval = QueryColors(pcmp, count, (unsigned long *)&stuff[1], prgbs))
+	if( (retval = QueryColors(pcmp, count, (unsigned long *)&stuff[1], prgbs)) )
 	{
    	    if (prgbs) DEALLOCATE_LOCAL(prgbs);
 	    if (client->noClientException != Success)
@@ -3174,6 +3174,7 @@ KillAllClients()
  *    and  destroy their resources.
  *********************/
 
+void
 CloseDownRetainedResources()
 {
     register int i;
@@ -3377,10 +3378,11 @@ ProcEstablishConnection(client)
     return (client->noClientException);
 }
 
+void
 SendErrorToClient(client, majorCode, minorCode, resId, errorCode)
     ClientPtr client;
-    unsigned majorCode;
-    unsigned short minorCode;
+    unsigned int majorCode;
+    unsigned int minorCode;
     XID resId;
     int errorCode;
 {
