@@ -287,7 +287,7 @@ InstallLibrary(X11,$(USRLIBDIR))
 LintLibraryTarget(X11,*.c)
 
 
-BuildIncludes($(HEADERS),$(BUILDINCDIR))
+BuildIncludes($(HEADERS),)
 InstallMultiple($(HEADERS),$(INCDIR))
 InstallNonExec(XErrorDB,$(LIBDIR))
 /*

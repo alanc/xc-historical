@@ -123,7 +123,7 @@ InstallLibrary(Xmu_p,$(USRLIBDIR))
 DebuggedLibraryTarget(Xmu,$(OBJS))
 #endif
 
-BuildIncludes($(HEADERS),$(BUILDINCDIR)/Xmu)
+BuildIncludes($(HEADERS),Xmu)
 InstallMultiple($(HEADERS),$(INCDIR)/Xmu)
 
 #if InstallOldHeaderFiles
