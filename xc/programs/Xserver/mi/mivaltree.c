@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.9 89/07/13 17:19:43 keith Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.10 89/07/13 18:16:40 keith Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    <stdio.h>
@@ -450,8 +450,7 @@ miValidateTree (pParent, pChild, kind)
 	    if (pWin->valdata) {
 		(* pScreen->RegionEmpty)(&pWin->clipList);
 		(* pScreen->RegionEmpty)(&pWin->borderClip);
-		(* pScreen->RegionInit) (&pWin->valdata->after.exposed, NullBox, 0);
-		(* pScreen->RegionInit) (&pWin->valdata->after.borderExposed, NullBox, 0);
+		pWin->valdata = (ValidatePtr)NULL;
 	    }
 	}
     }
