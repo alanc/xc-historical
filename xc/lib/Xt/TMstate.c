@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.86 89/10/02 08:36:47 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMstate.c,v 1.88 89/10/02 16:07:23 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif /* lint */
 /*LINTLIBRARY*/
@@ -31,8 +31,9 @@ SOFTWARE.
 /* TMstate.c -- maintains the state table of actions for the translation 
  *              manager.
  */
-#define XK_LATIN1
 #include <X11/Xlib.h>
+#define XK_MISCELLANY
+#define XK_LATIN1
 #include <X11/keysymdef.h>
 #include "StringDefs.h"
 #include <stdio.h>
@@ -74,10 +75,8 @@ static GrabActionRec *grabActionList = NULL;
 
 
 #define _InitializeKeysymTables(dpy, pd) \
-    if (pd->modsToKeysyms == NULL) {					\
-        _XtBuildKeysymTable(dpy, pd); /* pd->keysyms*/			\
-        pd->modsToKeysyms = _XtBuildModsToKeysymTable(dpy,pd);		\
-    }
+    if (pd->keysyms == NULL) \
+        _XtBuildKeysymTables(dpy, pd)
    
 
 static void FreeActions(action)
@@ -507,11 +506,8 @@ void XtConvertCase(dpy,keysym,lower_return,upper_return)
     KeySym keysym;
     KeySym* lower_return,*upper_return;
 {
-    XtPerDisplay perDisplay;
-    perDisplay = _XtGetPerDisplay(dpy);
-    if (perDisplay->defaultCaseConverter != NULL)
-        (*perDisplay->defaultCaseConverter)
-	    (dpy, keysym, lower_return, upper_return);
+    (*_XtGetPerDisplay(dpy)->defaultCaseConverter)
+	(dpy, keysym, lower_return, upper_return);
 }
 
 Boolean _XtMatchUsingStandardMods (event,eventSeq)
@@ -524,9 +520,11 @@ Boolean _XtMatchUsingStandardMods (event,eventSeq)
     Modifiers computedMask = 0;
     Boolean resolved = TRUE;
     Display *dpy = eventSeq->xev->xany.display;
+    XtPerDisplay pd = _XtGetPerDisplay(dpy);
 
     XtTranslateKeycode( dpy, (KeyCode)eventSeq->event.eventCode,
-		        (Modifiers)(eventSeq->event.modifiers & StandardMask),
+		        (Modifiers)(eventSeq->event.modifiers &
+				    ((ShiftMask|LockMask) | pd->mode_switch)),
 		        &modifiers_return, &keysym_return);
 
     if ((event->eventCode & event->eventCodeMask) ==
@@ -540,13 +538,14 @@ Boolean _XtMatchUsingStandardMods (event,eventSeq)
 
         if ((computed & computedMask) ==
 	    (eventSeq->event.modifiers & ~modifiers_return & computedMask)) {
-	    TMContext tm_context = _XtGetPerDisplay(dpy)->tm_context;
+	    TMContext tm_context = pd->tm_context;
 	    if (tm_context == NULL) tm_context = AllocTMContext(dpy);
 	    tm_context->event = eventSeq->xev;
 	    tm_context->serial = eventSeq->xev->xany.serial;
 	    tm_context->keysym = keysym_return;
 	    tm_context->modifiers = (Modifiers)
-		(eventSeq->event.modifiers & StandardMask);
+		(eventSeq->event.modifiers &
+		 ((ShiftMask|LockMask) | pd->mode_switch));
 	    return TRUE;
 	}
     }
@@ -600,55 +599,27 @@ static int MatchEvent(translations, eventSeq)
     return (-1);
 }
 
-static Boolean IsModifier(event)
-    TMEventPtr event;
-{
-    Display *dpy = event->xev->xany.display;
-    XtPerDisplay pd = _XtGetPerDisplay(dpy);
-    int i,j,index;
-    int k =0;
-    KeySym keysym;
-    ModToKeysymTable* temp;
-
-    if (pd != NULL) {
-	_InitializeKeysymTables(dpy, pd);
-        for (;k <pd->keysyms_per_keycode;k++) {
-            index = ((event->event.eventCode-dpy->min_keycode)*
-                             pd->keysyms_per_keycode)+k;
-            keysym = pd->keysyms[index];
-
-            for (i=0;i<8;i++) {
-                temp = &(pd->modsToKeysyms[i]);
-                for (j=0;j<temp->count;j++){
-                    if (pd->modKeysyms[temp->index+j] == keysym) return TRUE;
-                }
-            }
-        }
-    }
-    return FALSE;
-}
-
-
+#define IsOn(vec,idx) ((vec)[(idx)>>3] & (1 << ((idx) & 7)))
 
 /*
  * there are certain cases where you want to ignore the event and stay
  * in the same state.
  */
 static Boolean Ignore(event)
-    TMEventPtr event;
+    register TMEventPtr event;
 {
-    if (event->event.eventType == MotionNotify
-        ||( (event->event.eventType == KeyPress
-           || event->event.eventType == KeyRelease)
-           && IsModifier(event))
-/*
-        || event->event.eventType == ButtonPress
-	|| event->event.eventType == ButtonRelease
-*/
-       )
-	    return TRUE;
-    else
-	    return FALSE;
+    register Display *dpy;
+    register XtPerDisplay pd;
+
+    if (event->event.eventType == MotionNotify)
+	return TRUE;
+    if (!(event->event.eventType == KeyPress ||
+	  event->event.eventType == KeyRelease))
+	return FALSE;
+    dpy = event->xev->xany.display;
+    pd = _XtGetPerDisplay(dpy);
+    _InitializeKeysymTables(dpy, pd);
+    return IsOn(pd->isModifier, event->event.eventCode) ? TRUE : FALSE;
 }
 
 
@@ -2496,9 +2467,9 @@ void _XtPopupInitialize(app)
 			    );
 }
 
-ModToKeysymTable *_XtBuildModsToKeysymTable(dpy,pd)
+void _XtBuildKeysymTables(dpy,pd)
     Display *dpy;
-    XtPerDisplay pd;
+    register XtPerDisplay pd;
 {
     ModToKeysymTable *table;
     int maxCount,i,j,k,tempCount,index;
@@ -2506,12 +2477,23 @@ ModToKeysymTable *_XtBuildModsToKeysymTable(dpy,pd)
     XModifierKeymap* modKeymap;
     KeyCode keycode;
 #define KeysymTableSize 16
+
+    if (pd->keysyms)
+	XtFree( (XtPointer)pd->keysyms );
+    XDisplayKeycodes(dpy, &pd->min_keycode, &pd->max_keycode);
+    pd->keysyms = XGetKeyboardMapping(dpy, pd->min_keycode,
+				      pd->max_keycode-pd->min_keycode+1,
+				      &pd->keysyms_per_keycode);
+    if (pd->modKeysyms)
+	XtFree((XtPointer)pd->modKeysyms);
+    if (pd->modsToKeysyms)
+	XtFree((XtPointer)pd->modsToKeysyms);
     pd->modKeysyms = (KeySym*)XtMalloc((Cardinal)KeysymTableSize*sizeof(KeySym));
     maxCount = KeysymTableSize;
     tempCount = 0;
 
-
     table = (ModToKeysymTable*)XtMalloc((Cardinal)8*sizeof(ModToKeysymTable));
+    pd->modsToKeysyms = table;
 
     table[0].mask = ShiftMask;
     table[1].mask = LockMask;
@@ -2524,16 +2506,22 @@ ModToKeysymTable *_XtBuildModsToKeysymTable(dpy,pd)
     tempKeysym = 0;
 
     modKeymap = XGetModifierMapping(dpy);
+    for (i=0;i<32;i++)
+	pd->isModifier[i] = 0;
+    pd->mode_switch = 0;
     for (i=0;i<8;i++) {
         table[i].index = tempCount;
         table[i].count = 0;
         for (j=0;j<modKeymap->max_keypermod;j++) {
             keycode = modKeymap->modifiermap[i*modKeymap->max_keypermod+j];
             if (keycode != 0) {
+		pd->isModifier[keycode>>3] |= 1 << (keycode & 7);
                 for (k=0; k<pd->keysyms_per_keycode;k++) {
-                    index = ((keycode-dpy->min_keycode)*
+                    index = ((keycode-pd->min_keycode)*
                              pd->keysyms_per_keycode)+k;
                     keysym = pd->keysyms[index];
+		    if ((keysym == XK_Mode_switch) && (i > 2))
+			pd->mode_switch |= 1 << i;
                     if (keysym != 0 && keysym != tempKeysym ){
                         if (tempCount==maxCount) {
                             maxCount += KeysymTableSize;
@@ -2549,33 +2537,17 @@ ModToKeysymTable *_XtBuildModsToKeysymTable(dpy,pd)
             }
         }
     }
+    pd->lock_meaning = NoSymbol;
+    for (i = 0; i < table[1].count; i++) {
+	keysym = pd->modKeysyms[table[1].index + i];
+	if (keysym == XK_Caps_Lock) {
+	    pd->lock_meaning = XK_Caps_Lock;
+	    break;
+	} else if (keysym == XK_Shift_Lock) {
+	    pd->lock_meaning = XK_Shift_Lock;
+	}
+    }
     XFree(modKeymap);
-    return table;
-
-}
-
-
-void _XtBuildKeysymTable(dpy,pd)
-    Display* dpy;
-    XtPerDisplay pd;
-{
-    int count;
-    KeySym lower_return, upper_return,nbd,*bd;
-
-    count = dpy->max_keycode-dpy->min_keycode+1;
-    pd->keysyms = XGetKeyboardMapping(
-        dpy,dpy->min_keycode,count,&pd->keysyms_per_keycode);
-    if (pd->keysyms_per_keycode > 1)
-        nbd = (dpy->max_keycode - dpy->min_keycode + 1) 
-            * pd->keysyms_per_keycode;
-        for (bd = pd->keysyms; bd < (pd->keysyms + nbd);
-             bd += pd->keysyms_per_keycode) {
-            if ((*(bd+1)) == NoSymbol) {
-                XtConvertCase(dpy,*bd, &lower_return, &upper_return);
-                *bd = lower_return;
-                *(bd+1) = upper_return;                
-            }
-       }
 }
 
 void XtTranslateKeycode (dpy, keycode, modifiers,
@@ -2590,44 +2562,57 @@ void XtTranslateKeycode (dpy, keycode, modifiers,
 {
     XtPerDisplay perDisplay;
     perDisplay = _XtGetPerDisplay(dpy);
-    if (perDisplay != NULL && perDisplay->defaultKeycodeTranslator != NULL)
-        (*perDisplay->defaultKeycodeTranslator)(
+    (*perDisplay->defaultKeycodeTranslator)(
             dpy,keycode,modifiers,modifiers_return,keysym_return);
 }
-KeySym _XtKeyCodeToKeySym(dpy,pd,keycode,col)
-    Display* dpy;
-    XtPerDisplay pd;
-    KeyCode keycode;
-    int col;
-{
-/* copied from Xlib */
-    int ind;
-     _InitializeKeysymTables(dpy, pd);
-     if (col < 0 || col >= pd->keysyms_per_keycode) return (NoSymbol);
-     if (keycode < dpy->min_keycode || keycode > dpy->max_keycode)
-       return(NoSymbol);
 
-     ind = (keycode - dpy->min_keycode) * pd->keysyms_per_keycode + col;
-     return (pd->keysyms[ind]);
-}
-
+/* This code should match XTranslateKey (internal, sigh) in Xlib */
 void XtTranslateKey(dpy, keycode, modifiers,
                             modifiers_return, keysym_return)
-    Display *dpy;
+    register Display *dpy;
     KeyCode keycode;
     Modifiers modifiers;
     Modifiers *modifiers_return;
     KeySym *keysym_return;
-
 {
-    XtPerDisplay perDisplay;
-    perDisplay = _XtGetPerDisplay(dpy);
-    *modifiers_return = StandardMask;
-    if ((modifiers & StandardMask) == 0)
-        *keysym_return =_XtKeyCodeToKeySym(dpy,perDisplay,keycode,0);
-    else if (modifiers & (ShiftMask | LockMask))
-	*keysym_return =_XtKeyCodeToKeySym(dpy,perDisplay,keycode,1);
-    else
+    register XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    int per;
+    register KeySym *syms;
+    KeySym sym, lsym, usym;
+
+    *modifiers_return = (ShiftMask|LockMask) | pd->mode_switch;
+    if ((keycode < pd->min_keycode) || (keycode > pd->max_keycode))  {
+	*keysym_return = NoSymbol;
+	return;
+    }
+    per = pd->keysyms_per_keycode;
+    syms = &pd->keysyms[(keycode - pd->min_keycode) * per];
+    while ((per > 2) && (syms[per - 1] == NoSymbol))
+	per--;
+    if ((per > 2) && (modifiers & pd->mode_switch)) {
+	syms += 2;
+	per -= 2;
+    }
+    if (!(modifiers & ShiftMask) &&
+	(!(modifiers & LockMask) || (pd->lock_meaning == NoSymbol))) {
+	if ((per == 1) || (syms[1] == NoSymbol))
+	    (*pd->defaultCaseConverter)(dpy, syms[0], keysym_return, &usym);
+	else
+	    *keysym_return = syms[0];
+    } else if ((modifiers & ShiftMask) ||
+	       (pd->lock_meaning == XK_Shift_Lock)) {
+	if ((per == 1) || ((usym = syms[1]) == NoSymbol))
+	    (*pd->defaultCaseConverter)(dpy, syms[0], &lsym, &usym);
+	*keysym_return = usym;
+    } else {
+	if ((per == 1) || ((sym = syms[1]) == NoSymbol))
+	    sym = syms[0];
+	(*pd->defaultCaseConverter)(dpy, sym, &lsym, &usym);
+	if (((sym != usym) || (lsym == usym)) && (sym != syms[0]))
+	    (*pd->defaultCaseConverter)(dpy, syms[0], &lsym, &usym);
+	*keysym_return = usym;
+    }
+    if (*keysym_return == XK_VoidSymbol)
 	*keysym_return = NoSymbol;
 }
 
@@ -2639,8 +2624,9 @@ void XtSetKeyTranslator(dpy, translator)
 {
     XtPerDisplay perDisplay;
     perDisplay = _XtGetPerDisplay(dpy);
-    if (perDisplay != NULL) 
-      perDisplay->defaultKeycodeTranslator = translator;
+    perDisplay->defaultKeycodeTranslator = translator;
+    if (perDisplay->keysyms)
+	_XtBuildKeysymTables(dpy, perDisplay);
 }
 
 /* ARGSUSED */
@@ -2652,34 +2638,42 @@ void XtRegisterCaseConverter(dpy, proc, start, stop)
     KeySym stop;
 
 {
-    _XtGetPerDisplay(dpy) ->defaultCaseConverter = proc;
+    XtPerDisplay perDisplay;
+    perDisplay = _XtGetPerDisplay(dpy);
+    perDisplay->defaultCaseConverter = proc;
+    if (perDisplay->keysyms)
+	_XtBuildKeysymTables(dpy, perDisplay);
 }
+
+/* This code should match XConvertCase (internal, sigh) in Xlib */
 /* ARGSUSED */
-void _XtConvertCase(dpy, keysym, lower_return, upper_return)
-
+void _XtConvertCase(dpy, sym, lower, upper)
     Display *dpy;
-    KeySym keysym;
-    KeySym *lower_return;
-    KeySym *upper_return;
-
+    KeySym sym;
+    KeySym *lower;
+    KeySym *upper;
 {
-    if ((keysym >= XK_a && keysym <= XK_z) ||
-       (keysym >= XK_ssharp && keysym <= XK_odiaeresis) || 
-       (keysym >= XK_oslash && keysym <= XK_ydiaeresis)) {
-       *lower_return = keysym;
-       *upper_return = keysym-0x20;
-       return;
+    *lower = sym;
+    *upper = sym;
+    switch(sym >> 8) {
+    case 0:
+	if ((sym >= XK_A) && (sym <= XK_Z))
+	    *lower += (XK_a - XK_A);
+	else if ((sym >= XK_a) && (sym <= XK_z))
+	    *upper -= (XK_a - XK_A);
+	else if ((sym >= XK_Agrave) && (sym <= XK_Odiaeresis))
+	    *lower += (XK_agrave - XK_Agrave);
+	else if ((sym >= XK_agrave) && (sym <= XK_odiaeresis))
+	    *upper -= (XK_agrave - XK_Agrave);
+	else if ((sym >= XK_Ooblique) && (sym <= XK_Thorn))
+	    *lower += (XK_oslash - XK_Ooblique);
+	else if ((sym >= XK_oslash) && (sym <= XK_thorn))
+	    *upper -= (XK_oslash - XK_Ooblique);
+	break;
+    default:
+	/* XXX do all other sets */
+	break;
     }
-    if ((keysym >= XK_A && keysym <= XK_Z) ||
-         (keysym >= XK_Agrave && keysym <= XK_Odiaeresis) || 
-         (keysym >= XK_Ooblique && keysym <= XK_Thorn)) {
-        *upper_return = keysym;
-        *lower_return = keysym+0x20;
-        return;
-        }
-    *lower_return = keysym;
-    *upper_return = keysym;
-
 }
 
 
@@ -2727,7 +2721,7 @@ KeySym *XtGetKeysymTable(dpy, min_keycode_return, keysyms_per_keycode_return)
 {
     XtPerDisplay pd = _XtGetPerDisplay(dpy);
     _InitializeKeysymTables(dpy, pd);
-    *min_keycode_return = dpy->min_keycode; /* %%% */
+    *min_keycode_return = pd->min_keycode; /* %%% */
     *keysyms_per_keycode_return = pd->keysyms_per_keycode;
     return pd->keysyms;
 }
@@ -2738,49 +2732,56 @@ void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
     KeyCode **keycodes_return;
     Cardinal *keycount_return;
 {
-    XtPerDisplay pd = _XtGetPerDisplay(dpy);
-    int ncols, nrows, row;
-    KeySym *symP;
-    int maxcodes = KEYCODE_ARRAY_SIZE;
-    int ncodes = 0;
+    register XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    KeyCode keycode;
+    int per, match;
+    register KeySym *syms;
+    register int i, j;
+    KeySym lsym, usym;
+    unsigned maxcodes = 0;
+    unsigned ncodes = 0;
     KeyCode *keycodes, *codeP;
 
     _InitializeKeysymTables(dpy, pd);
-    if ((keycodes = (KeyCode*)
-	 ALLOCATE_LOCAL(KEYCODE_ARRAY_SIZE*sizeof(KeyCode))) == NULL)
-	_XtAllocError("alloca");
-    codeP = keycodes;
-    ncols = pd->keysyms_per_keycode;
-    nrows = dpy->max_keycode - dpy->min_keycode + 1;
-    for (symP = pd->keysyms, row = 0; row < nrows; row++) {
-	int col;
-	for (col = ncols; col; col--) {
-	    if (keysym == *symP++) {
-		if (ncodes == maxcodes) {
-		    KeyCode* old = keycodes;
-		    keycodes = (KeyCode*)
-			ALLOCATE_LOCAL((maxcodes*=2)*sizeof(KeyCode));
-		    if (keycodes == NULL) _XtAllocError("alloca");
-		    bcopy( old, keycodes, ncodes*sizeof(KeyCode) );
-		    DEALLOCATE_LOCAL(old);
-		    codeP = &keycodes[ncodes];
+    keycodes = NULL;
+    per = pd->keysyms_per_keycode;
+    for (syms = pd->keysyms, keycode = pd->min_keycode;
+	 keycode <= pd->max_keycode;
+	 syms += per, keycode++) {
+	match = 0;
+	for (j = 0; j < per; j++) {
+	    if (syms[j] == keysym) {
+		match = 1;
+		break;
+	    }		
+	}
+	if (!match)
+	    for (i = 1; i < 5; i += 2) {
+		if ((per == i) || ((per > i) && (syms[i] == NoSymbol))) {
+		    (*pd->defaultCaseConverter)(dpy, syms[i-1], &lsym, &usym);
+		    if ((lsym == keysym) || (usym == keysym)) {
+			match = 1;
+			break;
+		    }
 		}
-		*codeP++ = dpy->min_keycode + row;
-		ncodes++;
-		while (--col) symP++;
-		break;		/* this row (keycode) */
 	    }
-	} /* end-for col */
-    } /* end-for row */
-
-    if (ncodes > 0) {
-	*keycodes_return = (KeyCode*)
-	    XtMalloc( (unsigned)ncodes*sizeof(KeyCode) );
-	bcopy( keycodes, *keycodes_return, ncodes*sizeof(KeyCode) );
-    } else
-	*keycodes_return = NULL;
-
-    DEALLOCATE_LOCAL(keycodes);
+	if (match) {
+	    if (ncodes == maxcodes) {
+		KeyCode *old = keycodes;
+		maxcodes += KEYCODE_ARRAY_SIZE;
+		keycodes = (KeyCode*)XtMalloc(maxcodes*sizeof(KeyCode));
+		if (keycodes == NULL) _XtAllocError("alloca");
+		if (ncodes) {
+		    bcopy( old, keycodes, ncodes*sizeof(KeyCode) );
+		    XtFree((XtPointer)old);
+		}
+		codeP = &keycodes[ncodes];
+	    }
+	    *codeP++ = keycode;
+	    ncodes++;
+	}
+    }
+    *keycodes_return = keycodes;
     *keycount_return = ncodes;
 }
 
