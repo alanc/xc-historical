@@ -13,6 +13,7 @@ HEADERS = DECkeysym.h \
 	Xfuncs.h \
 	Xmd.h \
 	Xos.h \
+	Xosdefs.h \
 	Xproto.h \
 	Xprotostr.h \
 	ap_keysym.h \
