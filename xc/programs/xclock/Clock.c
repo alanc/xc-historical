@@ -32,12 +32,6 @@ static void clock_tic(), DrawHand(), DrawSecond(), SetSeg(), DrawClockFace();
 #define abs(a) ((a) < 0 ? -(a) : (a))
 
 
-/* Full instance record declaration */
-typedef struct {
-   Core core;
-   Clock clock;
-   } ClockData, *ClockWidget;
-
 /* Initialization of defaults */
 
 #define offset(field) Offset(ClockWidget,clock.field)
