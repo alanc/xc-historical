@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.22 91/02/23 17:30:12 keith Exp $
+ * $XConsortium: imakemdep.h,v 1.23 91/03/28 18:21:58 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -19,10 +19,6 @@
 #else
 #define imake_ccflags "-Wc,-Nd4000,-Ns3000 -DSYSV"
 #endif
-#endif
-
-#ifdef apollo
-#define imake_ccflags "-DNOSTDHDRS"
 #endif
 
 #if defined(macII) || defined(_AUX_SOURCE)
