@@ -1,4 +1,4 @@
-/* $XConsortium: pl_startup.c,v 1.4 92/07/16 10:58:43 mor Exp $ */
+/* $XConsortium: pl_startup.c,v 1.5 92/07/24 15:17:29 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -188,7 +188,7 @@ OUTPUT char	*error_string;
 
     /*
      * Tell Xlib how to convert a MaxHitReachedEvent from
-     * wire to host format.
+     * wire to client format.
      */
 
     XESetWireToEvent (display, pExtCodes->first_event + PEXMaxHitsReached,
