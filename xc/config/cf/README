@@ -245,7 +245,7 @@ Project.tmpl provides defaults for the following variables:
 	ProfileLibXmu		boolean for compiling/building libXmu_p
 	ProfileLibXt		boolean for compiling/building libXt_p
 	ProfileOldLibX		boolean for compiling/building liboldX_p
-	ProjectX		boolean indicating this is the X Window System
+	ProjectX		version indicating this is the X Window System
 	RemoveTargetProgramByMoving	boolean for rm -f that doesn't
 	SHELLPATH		-D for /bin/sh
 	ServerCDebugFlags	server debug/opt compiler flags
