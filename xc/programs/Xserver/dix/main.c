@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.134 88/03/15 15:20:49 rws Exp $ */
+/* $Header: main.c,v 1.135 88/04/30 11:59:42 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -187,8 +187,10 @@ main(argc, argv)
 	 */
 	j = indexForBitsPerPixel[ 1 ];
 	k = indexForScanlinePad[ BITMAP_SCANLINE_PAD ];
-	PixmapWidthPaddingInfo[1].scanlinePad = BITMAP_SCANLINE_PAD-1;
-	PixmapWidthPaddingInfo[1].bitmapPadLog2 = answer[j][k];
+	PixmapWidthPaddingInfo[1].padRoundUp = BITMAP_SCANLINE_PAD-1;
+	PixmapWidthPaddingInfo[1].padPixelsLog2 = answer[j][k];
+ 	j = indexForBitsPerPixel[8]; /* bits per byte */
+ 	PixmapWidthPaddingInfo[1].padBytesLog2 = answer[j][k];
 
 	InitAtoms();
 	InitOutput(&screenInfo, argc, argv);
@@ -299,7 +301,7 @@ CreateConnectionBlock()
     {
 	format.depth = screenInfo.formats[i].depth;
 	format.bitsPerPixel = screenInfo.formats[i].bitsPerPixel;
-	format.scanLinePad = screenInfo.formats[i].scanlinePad;;
+	format.scanlinePad = screenInfo.formats[i].scanlinePad;;
 	bcopy((char *)&format, pBuf, sizeof(xPixmapFormat));
 	pBuf += sizeof(xPixmapFormat);
 	sizesofar += sizeof(xPixmapFormat);
@@ -420,9 +422,11 @@ AddScreen(pfnInit, argc, argv)
   	scanlinepad = screenInfo.formats[format].scanlinePad;
  	j = indexForBitsPerPixel[ bitsPerPixel ];
   	k = indexForScanlinePad[ scanlinepad ];
- 	PixmapWidthPaddingInfo[ depth ].bitmapPadLog2 = answer[j][k];
- 	PixmapWidthPaddingInfo[ depth ].scanlinePad =
+ 	PixmapWidthPaddingInfo[ depth ].padPixelsLog2 = answer[j][k];
+ 	PixmapWidthPaddingInfo[ depth ].padRoundUp =
  	    (scanlinepad/bitsPerPixel) - 1;
+ 	j = indexForBitsPerPixel[ 8 ]; /* bits per byte */
+ 	PixmapWidthPaddingInfo[ depth ].padBytesLog2 = answer[j][k];
     }
   
     /* This is where screen specific stuff gets initialized.  Load the
