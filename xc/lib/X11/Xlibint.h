@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.93 92/01/09 18:45:49 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.94 92/01/19 15:00:59 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -501,6 +501,7 @@ extern unsigned long _XSetLastRequestRead();	/* update dpy->last_request_read */
 extern int _XGetHostname();		/* get name of this machine */
 extern Screen *_XScreenOfWindow ();	/* get Screen pointer for window */
 extern Bool _XAsyncErrorHandler ();	/* internal error handler */
+extern char *_XGetAsyncReply();		/* get async reply */
 
 extern int (*XESetCreateGC(
 #if NeedFunctionPrototypes
