@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.37 93/09/24 12:43:04 gildea Exp $ */
+/* $XConsortium: ico.c,v 1.38 93/09/26 18:10:02 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -44,7 +44,6 @@ SOFTWARE.
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/Xfuncs.h>
-#include <X11/Xos.h>
 #include <stdio.h>
 #ifdef MULTIBUFFER
 #include <X11/extensions/multibuf.h>
@@ -52,6 +51,7 @@ SOFTWARE.
 #ifdef MULTITHREAD
 #include <X11/Xthreads.h>
 #endif
+#include <X11/Xos.h>
 
 #define MIN_ICO_WIDTH 5
 #define MIN_ICO_HEIGHT 5
