@@ -21,6 +21,7 @@
 *clientPropDoneButton.label:	Done
 
 *saveTypeLabel.label:		Save Type     
+*saveTypeNone.label:		None
 *saveTypeGlobal.label:		Global
 *saveTypeLocal.label:		Local
 *saveTypeBoth.label:		Both
@@ -50,6 +51,14 @@ Give the session a name...
 *nameSessionOkButton.label:	OK
 *nameSessionCancelButton.label:	Cancel
 
+*chooseSessionListWidget.Translations: #override\n\
+	<Key>Up:	ChooseSessionUp()\n\
+	<Key>Down:	ChooseSessionDown()\n
+
+*chooseSessionLoadButton.Accelerators: #override\n\
+	<Btn1Down>(2+):	set() notify() unset()\n\
+	<Key>Return:	set() notify() unset()\n
+
 *checkPointButton.Translations: #override\n\
 	<Btn1Up>:	notify() reset()\n
 *shutdownButton.Translations: #override\n\
@@ -59,6 +68,3 @@ Give the session a name...
 
 *nameSessionOkButton.Accelerators: #override\n\
 	<Key>Return:	set() notify() unset()\n
-
-*chooseSessionLoadButton.Accelerators: #override\n\
-	<Btn1Down>(2+):	set() notify() unset()\n
