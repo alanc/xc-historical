@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.118 89/05/30 19:01:10 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.119 89/07/12 14:09:58 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1611,7 +1611,8 @@ spawn ()
 		(void) strncpy(utmp.ut_host, DisplayString(screen->display),
 			       sizeof(utmp.ut_host));
 #endif
-		(void) strcpy(utmp.ut_name, pw->pw_name);
+		(void) strncpy(utmp.ut_name, pw->pw_name, 
+			       sizeof(utmp.ut_name)));
 
 		utmp.ut_pid = getpid();
 		utmp.ut_time = time ((long *) 0);
