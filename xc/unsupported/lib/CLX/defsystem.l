@@ -258,7 +258,7 @@
 			:device    (pathname-device    source-path)
 			:directory (pathname-directory source-path)
 			:name      (pathname-name      source-path)
-			:type      NIL
+			:type      nil
 			:version   (pathname-version   source-path)))
 	 (binary-path (merge-pathnames binary-pathname-defaults
 				       path)))
@@ -396,7 +396,7 @@
 			:device    (pathname-device    source-path)
 			:directory (pathname-directory source-path)
 			:name      (pathname-name      source-path)
-			:type      NIL
+			:type      nil
 			:version   (pathname-version   source-path)))
 	 (binary-path (merge-pathnames binary-pathname-defaults
 				       path)))
