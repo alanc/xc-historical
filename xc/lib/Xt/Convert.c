@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.47 90/12/30 16:44:26 rws Exp $ */
+/* $XConsortium: Convert.c,v 1.48 90/12/31 15:54:47 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -702,7 +702,7 @@ _XtCallConverter(dpy, converter,
     /* No cache entry, call converter procedure and enter result in cache */
     {
 	Heap *heap;
-	XtPointer closure;
+	XtPointer closure = NULL;
 	int ref_flags =
 	    (cP->do_ref_count && cache_ref_return) ? IS_REFCOUNTED : 0;
 	Boolean retval =
