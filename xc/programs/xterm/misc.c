@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.13 88/02/21 16:37:07 jim Exp $
+ *	$Header: misc.c,v 1.14 88/02/26 07:34:05 swick Exp $
  */
 
 
@@ -53,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.13 88/02/21 16:37:07 jim Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.14 88/02/26 07:34:05 swick Exp $";
 #endif	/* lint */
 
 xevents()
@@ -116,9 +116,11 @@ caddr_t eventdata;
     register TScreen *screen = &term->screen;
 
 #ifdef ACTIVEWINDOWINPUTONLY
-    if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term)) 
+    if (w == XtParent(screen->TekEmu ? (Widget)tekWidget : (Widget)term)) 
 #endif
-      if (((event->detail) != NotifyInferior) && event->focus) 
+      if (((event->detail) != NotifyInferior) &&
+	  event->focus &&
+	  !(screen->select & FOCUS))
 	selectwindow(screen, INWINDOW);
 }
 
@@ -131,9 +133,11 @@ caddr_t eventdata;
     register TScreen *screen = &term->screen;
 
 #ifdef ACTIVEWINDOWINPUTONLY
-    if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term)) 
+    if (w == XtParent(screen->TekEmu ? (Widget)tekWidget : (Widget)term)) 
 #endif
-      if (((event->detail) != NotifyInferior) && event->focus) 
+      if (((event->detail) != NotifyInferior) &&
+	  event->focus &&
+	  !(screen->select & FOCUS))
 	unselectwindow(screen, INWINDOW);
 
 }
@@ -197,9 +201,9 @@ register int flag;
     register int i;
 
     if(screen->TekEmu) {
+	if(!Ttoggled) TCursorToggle(TOGGLE);
 	screen->select &= ~flag;
 	TekUnselect();
-	if(!Ttoggled) TCursorToggle(TOGGLE);
 #ifdef obsolete
 			if(screen->cellsused) {
 				i = (term->flags & REVERSE_VIDEO) == 0;
@@ -224,11 +228,14 @@ register int flag;
     }
 }
 
+/*ARGSUSED*/
 reselectwindow(screen)
 register TScreen *screen;
 {
+#ifdef obsolete
 	Window root, win;
 	int rootx, rooty, x, y;
+	int doselect = 0;
 	unsigned int mask;
 
 	if(XQueryPointer(
@@ -238,12 +245,21 @@ register TScreen *screen;
 	    &rootx, &rooty,
 	    &x, &y,
 	    &mask)) {
-		if(win && 
-                 ((win == term->core.parent->core.window) ||
-                 (tekWidget && (win == tekWidget->core.window))))
+		XtTranslateCoords(term, 0, 0, &x, &y);
+		if ((rootx >= x) && (rootx < x + term->core.width) &&
+		    (rooty >= y) && (rooty < y + term->core.height))
+		    doselect = 1;
+		else if (tekWidget) {
+		    XtTranslateCoords(tekWidget, 0, 0, &x, &y);
+		    if ((rootx >= x) && (rootx < x + tekWidget->core.width) &&
+			(rooty >= y) && (rooty < y + tekWidget->core.height))
+			doselect = 1;
+		}
+		if (doselect)
 			selectwindow(screen, INWINDOW);
 		else	unselectwindow(screen, INWINDOW);
 	}
+#endif /* obsolete */
 }
 
 Pixmap Make_tile(width, height, bits, foreground, background, depth)

@@ -1,5 +1,5 @@
 /*
- * $Header: charproc.c,v 1.20 88/02/25 18:15:40 swick Exp $
+ * $Header: charproc.c,v 1.21 88/02/26 07:32:53 swick Exp $
  */
 
 
@@ -110,7 +110,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.20 88/02/25 18:15:40 swick Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.21 88/02/26 07:32:53 swick Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1814,11 +1814,14 @@ static void VTInitialize (request, new)
 	 but the shell's Realize proc is called first, and must see
 	 a valid size. */
 
-   XtAddEventHandler(new, EnterWindowMask, FALSE,
+   /* look for focus related events on the shell, because we need
+    * to care about the shell's border being part of our focus.
+    */
+   XtAddEventHandler(XtParent(new), EnterWindowMask, FALSE,
 		HandleEnterWindow, (Opaque)NULL);
-   XtAddEventHandler(new, LeaveWindowMask, FALSE,
+   XtAddEventHandler(XtParent(new), LeaveWindowMask, FALSE,
 		HandleLeaveWindow, (Opaque)NULL);
-   XtAddEventHandler(new, FocusChangeMask, FALSE,
+   XtAddEventHandler(XtParent(new), FocusChangeMask, FALSE,
 		HandleFocusChange, (Opaque)NULL);
    XtAddEventHandler(new, ButtonPressMask, FALSE,
 		VTButtonPressed, (Opaque)NULL);
@@ -2061,7 +2064,7 @@ XSetWindowAttributes *values;
 	screen->curgr = 2;			/* G2 => GR.		*/
 	screen->curss = 0;			/* No single shift.	*/
 
-	XDefineCursor(screen->display, VWindow(screen), screen->curs );
+	XDefineCursor(screen->display, VShellWindow, screen->curs );
 
         screen->cur_col = screen->cur_row = 0;
 	screen->max_col = Width(screen)  / screen->fullVwin.f_width - 1;
@@ -2220,21 +2223,20 @@ HideCursor()
 
 VTSelect()
 {
-        register Widget shell = term->core.parent;
+	register TScreen *screen = &term->screen;
 
-	if (shell->core.window)
-	  XSetWindowBorder (XtDisplay(shell), shell->core.window,
+	if (VShellWindow)
+	  XSetWindowBorder (screen->display, VShellWindow,
 			    term->core.border_pixel);
 }
 
 VTUnselect()
 {
-	register Widget shell = term->core.parent;
 	register TScreen *screen = &term->screen;
 
-	if (!screen->select && shell->core.window)
-	  XSetWindowBorderPixmap (XtDisplay(shell), shell->core.window, 
-				  term->screen.graybordertile);
+	if (VShellWindow)
+	  XSetWindowBorderPixmap (screen->display, VShellWindow,
+				  screen->graybordertile);
 }
 
 VTReset(full)

@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.24 88/02/22 09:09:55 jim Exp $
+ * $Header: Tekproc.c,v 1.26 88/02/26 07:32:21 swick Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.24 88/02/22 09:09:55 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.26 88/02/26 07:32:21 swick Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -181,10 +181,10 @@ WidgetClassRec tekClassRec = {
     /* superclass	  */	(WidgetClass) &widgetClassRec,
     /* class_name	  */	"Tek4014",
     /* widget_size	  */	sizeof(TekWidgetRec),
-    /* class_initialize   */    TekInitialize,
+    /* class_initialize   */    NULL,
     /* class_part_initialize */ NULL,
     /* class_inited       */	FALSE,
-    /* initialize	  */	NULL,
+    /* initialize	  */	TekInitialize,
     /* initialize_hook    */    NULL,				
     /* realize		  */	TekRealize,
     /* actions		  */	NULL,
@@ -292,7 +292,7 @@ Tekparse()
 			    tekWidget->core.background_pixel))
 				XDefineCursor(
 				    screen->display,
-				    TWindow(screen),
+				    TShellWindow,
 				    GINcursor);
 			Tparsestate = Tbyptable;	/* Bypass mode */
 			break;
@@ -712,11 +712,11 @@ dorefresh()
 
 	if (wait_cursor == None)
             wait_cursor = make_wait(screen->mousecolor, term->core.background_pixel);
-        XDefineCursor(screen->display, TWindow(screen), wait_cursor);
+        XDefineCursor(screen->display, TShellWindow, wait_cursor);
 	XFlush(screen->display);
 	if(!setjmp(Tekjump))
 		Tekparse();
-	XDefineCursor(screen->display, TWindow(screen), 
+	XDefineCursor(screen->display, TShellWindow,
 	 (screen->TekGIN && GINcursor) ? GINcursor : screen->arrow);
 }
 
@@ -931,7 +931,7 @@ TekGINoff()
 {
 	register TScreen *screen = &term->screen;
 	
-	XDefineCursor(screen->display, TWindow(screen), screen->arrow);
+	XDefineCursor(screen->display, TShellWindow, screen->arrow);
 	if(GINcursor)
 		XFreeCursor(screen->display, GINcursor);
 	if(screen->TekGIN) {
@@ -1060,14 +1060,17 @@ static unsigned char *dashes[TEKNUMLINES] = {
 static void TekInitialize(request, new)
     Widget request, new;
 {
-    XtAddEventHandler(new, EnterWindowMask, FALSE,
+   /* look for focus related events on the shell, because we need
+    * to care about the shell's border being part of our focus.
+    */
+    XtAddEventHandler(XtParent(new), EnterWindowMask, FALSE,
 		      HandleEnterWindow, (caddr_t)NULL);
-    XtAddEventHandler(new, LeaveWindowMask, FALSE,
+    XtAddEventHandler(XtParent(new), LeaveWindowMask, FALSE,
 		      HandleLeaveWindow, (caddr_t)NULL);
+    XtAddEventHandler(XtParent(new), FocusChangeMask, FALSE,
+		      HandleFocusChange, (caddr_t)NULL);
     XtAddEventHandler(new, ButtonPressMask, FALSE,
 		      TekButtonPressed, (caddr_t)NULL);
-    XtAddEventHandler(new, FocusChangeMask, FALSE,
-		      HandleFocusChange, (caddr_t)NULL);
     XtAddEventHandler(new, KeyPressMask, FALSE,
 		      HandleKeyPressed, (caddr_t)NULL);
 }
@@ -1312,7 +1315,7 @@ static void TekRealize (gw, valuemaskp, values)
     screen->TekGIN = FALSE;			/* GIN off		*/
 
 
-    XDefineCursor(screen->display, TWindow(screen), screen->curs);
+    XDefineCursor(screen->display, TShellWindow, screen->curs);
     TekUnselect ();
 
     {	/* there's gotta be a better way... */
@@ -1467,7 +1470,7 @@ TekUnselect()
 {
 	register TScreen *screen = &term->screen;
 
-	if (!screen->select && tekWidget && TShellWindow)
+	if (tekWidget && TShellWindow)
 	  XSetWindowBorderPixmap (screen->display, TShellWindow,
 				  screen->graybordertile);
 }
