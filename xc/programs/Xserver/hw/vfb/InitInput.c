@@ -22,7 +22,7 @@
 
 #include "X11/X.h"
 #define NEED_EVENTS
-#include "Xproto.h"
+#include "X11/Xproto.h"
 #include "scrnintstr.h"
 #include "inputstr.h"
 #include "X11/Xos.h"
@@ -42,9 +42,11 @@ LegalModifier(key, pDev)
 void
 ProcessInputEvents()
 {
+    mieqProcessInputEvents();
+    miPointerUpdate();
 }
 
-/* The only reason for using the LK201 mappings was that they were
+/* The only reason for using the LK201 mappings here was that they were
  * easy to lift.
  */
 static Bool
@@ -248,19 +250,21 @@ GetLK201Mappings(pKeySyms, pModMap)
 }
 
 static int
-ffbKeybdProc(pDev, onoff)
-    DevicePtr pDev;
+ffbKeybdProc(pDevice, onoff)
+    DeviceIntPtr pDevice;
     int onoff;
 {
     KeySymsRec		keySyms;
     CARD8 		modMap[MAP_LENGTH];
     int i;
+    DevicePtr pDev = (DevicePtr)pDevice;
 
     switch (onoff)
     {
     case DEVICE_INIT: 
 	GetLK201Mappings(&keySyms, modMap);
-	InitKeyboardDeviceStruct(pDev, &keySyms, modMap, NoopDDA, NoopDDA);
+	InitKeyboardDeviceStruct(pDev, &keySyms, modMap,
+			(BellProcPtr)NoopDDA, (KbdCtrlProcPtr)NoopDDA);
 	    break;
     case DEVICE_ON: 
 	pDev->on = TRUE;
@@ -275,11 +279,12 @@ ffbKeybdProc(pDev, onoff)
 }
 
 static int
-ffbMouseProc(pDev, onoff)
-    DevicePtr pDev;
+ffbMouseProc(pDevice, onoff)
+    DeviceIntPtr pDevice;
     int onoff;
 {
     BYTE map[4];
+    DevicePtr pDev = (DevicePtr)pDevice;
 
     switch (onoff)
     {
@@ -288,7 +293,7 @@ ffbMouseProc(pDev, onoff)
 	    map[2] = 2;
 	    map[3] = 3;
 	    InitPointerDeviceStruct(pDev, map, 3, miPointerGetMotionEvents,
-		NoopDDA, miPointerGetMotionBufferSize());
+		(PtrCtrlProcPtr)NoopDDA, miPointerGetMotionBufferSize());
 	    break;
 
     case DEVICE_ON:
@@ -315,6 +320,33 @@ InitInput(argc, argv)
     k = AddInputDevice(ffbKeybdProc, TRUE);
     RegisterPointerDevice(p);
     RegisterKeyboardDevice(k);
+    miRegisterPointerDevice(screenInfo.screens[0], p);
+    (void)mieqInit (k, p);
 }
 
+#ifdef XTESTEXT1
+void
+XTestGenerateEvent(dev_type, keycode, keystate, mousex, mousey)
+	int	dev_type;
+	int	keycode;
+	int	keystate;
+	int	mousex;
+	int	mousey;
+{
+}
+
+void
+XTestGetPointerPos(fmousex, fmousey)
+	short *fmousex, *fmousey;
+{
+}
+
+void
+XTestJumpPointer(jx, jy, dev_type)
+	int	jx;
+	int	jy;
+	int	dev_type;
+{
+}
+#endif
 

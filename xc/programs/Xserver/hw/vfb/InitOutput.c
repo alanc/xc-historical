@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include "X11/X.h"
+#define NEED_EVENTS
 #include "X11/Xproto.h"
 #include "X11/Xos.h"
 #include "scrnintstr.h"
@@ -31,6 +32,8 @@
 #include "mibstore.h"
 #include "colormapst.h"
 #include "gcstruct.h"
+#include "input.h"
+#include "mipointer.h"
 
 #define FFB_DEFAULT_WIDTH  1280
 #define FFB_DEFAULT_HEIGHT 1024
@@ -150,7 +153,7 @@ ddxProcessArgument (argc, argv, i)
 	int depth, ret = 1;
 
 	if (++i >= argc) UseMsg();
-	while ((depth = atoi(argv[i++])) != 0)
+	while ((i < argc) && (depth = atoi(argv[i++])) != 0)
 	{
 	    if (depth < 0 || depth > 32)
 	    {
@@ -316,6 +319,27 @@ ffbAllocateFramebufferMemory(pffb)
     return pffb->pfbMemory;
 }
 
+static Bool
+ffbCursorOffScreen (ppScreen, x, y)
+    ScreenPtr   *ppScreen;
+    int         *x, *y;
+{
+    return FALSE;
+}
+
+static void
+ffbCrossScreen (pScreen, entering)
+    ScreenPtr   pScreen;
+    Bool        entering;
+{
+}
+
+miPointerScreenFuncRec ffbPointerCursorFuncs =
+{
+    ffbCursorOffScreen,
+    ffbCrossScreen,
+    miPointerWarpCursor
+};
 
 static Bool
 ffbScreenInit(index, pScreen, argc, argv)
@@ -365,16 +389,9 @@ ffbScreenInit(index, pScreen, argc, argv)
     pScreen->ListInstalledColormaps = ffbListInstalledColormaps;
 
     pScreen->SaveScreen = (SaveScreenProcPtr)ffbNoopReturnsTrue;
-    pScreen->RealizeCursor = (RealizeCursorProcPtr)ffbNoopReturnsTrue;
-    pScreen->UnrealizeCursor = (UnrealizeCursorProcPtr)ffbNoopReturnsTrue;
-    pScreen->DisplayCursor = (DisplayCursorProcPtr)ffbNoopReturnsTrue;
-    pScreen->SetCursorPosition = (SetCursorPositionProcPtr)ffbNoopReturnsTrue;
-    pScreen->CursorLimits = (CursorLimitsProcPtr)ffbNoopReturnsTrue;
-    pScreen->PointerNonInterestBox = (PointerNonInterestBoxProcPtr)
-							ffbNoopReturnsTrue;
-    pScreen->ConstrainCursor = (ConstrainCursorProcPtr)ffbNoopReturnsTrue;
-    pScreen->RecolorCursor = (RecolorCursorProcPtr)ffbNoopReturnsTrue;
     pScreen->StoreColors = (StoreColorsProcPtr)ffbNoopReturnsTrue;
+
+    miDCInitialize(pScreen, &ffbPointerCursorFuncs);
 
     return cfbCreateDefColormap(pScreen);
 } /* end ffbScreenInit */

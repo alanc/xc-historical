@@ -1,9 +1,9 @@
-XCOMM $XConsortium: Imakefile,v 1.3 93/09/04 17:37:04 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.1 93/12/02 17:29:05 dpw Exp $
 #include <Server.tmpl>
 
-SRCS = 	InitInput.c InitOutput.c
+SRCS = 	InitInput.c InitOutput.c stubs.c
 
-OBJS = 	InitInput.o InitOutput.o
+OBJS = 	InitInput.o InitOutput.o stubs.o
 
 INCLUDES = -I. -I$(BUILDINCDIR) -I$(FONTINCSRC) \
 	   -I../../cfb -I../../mfb -I../../mi -I../../include -I../../os  \
@@ -12,6 +12,9 @@ INCLUDES = -I. -I$(BUILDINCDIR) -I$(FONTINCSRC) \
 DEFINES = ServerOSDefines
 
 all:: $(OBJS)
+
+LinkSourceFile(stubs.c,../../Xi)
+SpecialCObjectRule(InitInput,$(ICONFIGFILES),$(EXT_DEFINES))
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(ffb,$(OBJS))
