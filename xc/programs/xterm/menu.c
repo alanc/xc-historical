@@ -2,7 +2,7 @@
 static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #endif
 /*
- *	$XConsortium: menu.c,v 1.10 88/10/05 11:16:29 jim Exp $
+ *	$XConsortium: menu.c,v 1.11 88/11/16 13:47:32 rws Exp $
  */
 
 #include <X11/copyright.h>
@@ -45,7 +45,7 @@ static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #include "data.h"
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: menu.c,v 1.10 88/10/05 11:16:29 jim Exp $";
+static char rcs_id[] = "$XConsortium: menu.c,v 1.11 88/11/16 13:47:32 rws Exp $";
 #endif	lint
 
 #define DEFMENUBORDER	2
@@ -363,6 +363,7 @@ caddr_t closure;
 XEvent *event;
 {
 	register XtermWidget xw = (XtermWidget) w;
+	static Draw_Menu();
 	/*
 	 * If we have a saved pixmap, display it.  Otherwise
 	 * redraw the menu and save it away.
@@ -506,6 +507,7 @@ register XButtonPressedEvent *event;
 	register XtermWidget xw = term;
 	XButtonReleasedEvent ev;
 	XSetWindowAttributes attr;
+	static Recalc_Menu(), Move_Menu(), Map_Menu();
 
 	menu = lmenu;
 	hilited_item = (MenuItem *)0;
@@ -717,7 +719,7 @@ register Menu *menu;
 	register int x = menu->menuItemPad;
 	register int dim;
 	register XtermWidget xw = term;
-
+	static Draw_Item();
 	/*
 	 * If we have a menu title, draw it first, centered and hilited.
 	 */
@@ -808,8 +810,10 @@ int top;
 	/*
 	 * Call Draw_Item if we need to draw or dim the item.
 	 */
-	if((x = func & dimItem) || (func & drawItem))
+	if((x = func & dimItem) || (func & drawItem)) {
+		static Draw_Item();
 		Draw_Item(menu, item, top, x);
+	}
 	/*
 	 * Update state flags.
 	 */

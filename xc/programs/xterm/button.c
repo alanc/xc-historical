@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.33 89/03/01 20:00:16 jim Exp $
+ *	$XConsortium: button.c,v 1.34 89/03/06 11:02:46 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.33 89/03/01 20:00:16 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.34 89/03/06 11:02:46 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -76,6 +76,8 @@ extern ModeMenu();
 extern char *xterm_name;
 extern Bogus();
 extern GINbutton();
+
+static PointToRowCol();
 
 /* button and shift keys for Tek mode */
 static int (*Tbfunc[SHIFTS][NBUTS])() = {
@@ -135,6 +137,7 @@ Widget w;
 XEvent* event;
 {
     register TScreen *screen = &((XtermWidget)w)->screen;
+    static TrackDown();
     
     if (screen->send_mouse_pos == 0) return False;
 
@@ -258,7 +261,7 @@ Time time;
 String *params;			/* selections in precedence order */
 Cardinal num_params;
 {
-    void SelectionReceived();
+    static void SelectionReceived();
     Atom selection;
     int buffer;
 
@@ -920,6 +923,7 @@ Cardinal num_params;
 	register TScreen *screen = &term->screen;
 	register int i, j = 0;
 	char *line, *lp;
+	static _OwnSelection();
 
 	--col;
 	/* first we need to know how long the string is before we can save it*/
