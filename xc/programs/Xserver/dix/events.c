@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.101 87/08/28 15:16:59 karlton Exp $ */
+/* $Header: events.c,v 1.103 87/09/02 03:38:32 toddb Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1128,11 +1128,6 @@ ProcWarpPointer(client)
     (*currentScreen->SetCursorPosition)( currentScreen,
 	    MotionEvent.u.keyButtonPointer.rootX,
 	    MotionEvent.u.keyButtonPointer.rootY);
-
-    MotionEvent.u.keyButtonPointer.time = currentTime.milliseconds;
-    MotionEvent.u.u.type = MotionNotify;
-
-    ProcessPointerEvent(&MotionEvent, inputInfo.pointer);
 
     return Success;
 }
@@ -2726,6 +2721,7 @@ ProcSetModifierMapping(client)
     REQUEST(xSetModifierMappingReq);
     KeyCode *inputMap;
     int inputMapLen;
+    int i;
     
     REQUEST_AT_LEAST_SIZE(xSetModifierMappingReq);
 
@@ -2737,19 +2733,18 @@ ProcSetModifierMapping(client)
     inputMap = (KeyCode *)&stuff[1];
 
     /*
-     *	Now enforce the restriction that "a given non-zero keycode value
-     *	cannot appear more than once in a set,  or in more than one set
-     *	(else a Value error),  and all of the non-zero keycodes must be
+     *	Now enforce the restriction that "all of the non-zero keycodes must be
      *	in the range specified by min-keycode and max-keycode in the
-     *	connection setup (else a Value error).
-     *
-     *	I think all but the last part of the restriction are onerous
-     *	and uneccessary.  But here goes anyway - we use the n-squared
-     *	algorithm......
+     *	connection setup (else a Value error)"
      */
-    if (BadDeviceMap (inputMap, inputMapLen, curKeySyms.minKeyCode, 
-		      curKeySyms.maxKeyCode))
-        return BadValue;    
+    i = inputMapLen;
+    while (i--) {
+	if (inputMap[i]
+	    && (inputMap[i] < curKeySyms.minKeyCode
+		|| inputMap[i] > curKeySyms.maxKeyCode)) {
+		return BadValue;
+		}
+    }
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
