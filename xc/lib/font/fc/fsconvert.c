@@ -1,4 +1,4 @@
-/* $XConsortium: fsconvert.c,v 1.7 91/07/16 20:17:05 keith Exp $ */
+/* $XConsortium: fsconvert.c,v 1.8 92/03/17 15:45:47 keith Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -22,11 +22,6 @@
  * OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
- *
- *	@(#)fsconvert.c	4.2	91/05/14
- *
- * $NCDId: @(#)fsconvert.c,v 1.3 1991/06/10 13:21:52 lemke Exp $
- *
  */
 /*
  * FS data conversion
@@ -59,7 +54,8 @@ fs_convert_char_info(src, ci)
 }
 
 int
-fs_convert_header(hdr, pfi)
+fs_convert_header(conn, hdr, pfi)
+    FSFpePtr    conn;
     fsFontHeader *hdr;
     FontInfoPtr pfi;
 {
@@ -69,12 +65,20 @@ fs_convert_header(hdr, pfi)
     pfi->drawDirection = (hdr->draw_direction == LeftToRightDrawDirection) ?
 	LeftToRight : RightToLeft;
     pfi->inkInside = (hdr->flags & FontInfoInkInside) != 0;
-    pfi->firstCol = hdr->char_range.min_char.low;
-    pfi->firstRow = hdr->char_range.min_char.high;
-    pfi->lastCol = hdr->char_range.max_char.low;
-    pfi->lastRow = hdr->char_range.max_char.high;
 
-    pfi->defaultCh = hdr->default_char.low + (hdr->default_char.high << 8);
+    if (conn->fsMajorVersion > 1) {
+	pfi->firstCol = hdr->char_range.min_char.low;
+	pfi->firstRow = hdr->char_range.min_char.high;
+	pfi->lastCol = hdr->char_range.max_char.low;
+	pfi->lastRow = hdr->char_range.max_char.high;
+	pfi->defaultCh = hdr->default_char.low + (hdr->default_char.high << 8);
+    } else {
+	pfi->firstCol = hdr->char_range.min_char.high;
+	pfi->firstRow = hdr->char_range.min_char.low;
+	pfi->lastCol = hdr->char_range.max_char.high;
+	pfi->lastRow = hdr->char_range.max_char.low;
+	pfi->defaultCh = hdr->default_char.high + (hdr->default_char.low << 8);
+    }
 
     pfi->fontDescent = hdr->font_descent;
     pfi->fontAscent = hdr->font_ascent;
@@ -151,7 +155,8 @@ fs_convert_props(pi, po, pd, pfi)
 }
 
 int
-fs_convert_lfwi_reply(pfi, fsrep, pi, po, pd)
+fs_convert_lfwi_reply(conn, pfi, fsrep, pi, po, pd)
+    FSFpePtr    conn;
     FontInfoPtr pfi;
     fsListFontsWithXInfoReply *fsrep;
     fsPropInfo *pi;
@@ -160,7 +165,7 @@ fs_convert_lfwi_reply(pfi, fsrep, pi, po, pd)
 {
     fsFontHeader *hdr = &fsrep->header;
 
-    fs_convert_header(hdr, pfi);
+    fs_convert_header(conn, hdr, pfi);
     if (fs_convert_props(pi, po, pd, pfi) == -1)
 	return AllocError;
 
@@ -337,7 +342,7 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
     return Successful;
 }
 
-CharInfoRec junkDefault;
+static CharInfoRec junkDefault;
 
 static int
 _fs_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
@@ -351,12 +356,18 @@ _fs_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     int         ret;
     FSFontPtr   fsfont;
     int         i;
-
+    CharInfoPtr encoding;
+    
     fsfont = (FSFontPtr) pFont->fontPrivate;
     if (!fsfont->pDefault)
 	fsfont->pDefault = &junkDefault;
+
+    /* sleeze - smash the encoding so we get ink metrics */
+    encoding = fsfont->encoding;
+    fsfont->encoding = fsfont->inkMetrics;
     ret = _fs_get_glyphs(pFont, count, chars, charEncoding,
 			 glyphCount, (CharInfoPtr *) glyphs);
+    fsfont->encoding = encoding;
 
     if (ret == Successful) {
 	if (fsfont->pDefault == &junkDefault) {
@@ -389,12 +400,7 @@ fs_init_font(pfont)
     FontPtr     pfont;
 {
     /* set font function pointers */
-    extern int  fs_load_bitmaps();
-    extern int  fs_load_extents();
-
     pfont->get_glyphs = _fs_get_glyphs;
     pfont->get_metrics = _fs_get_metrics;
-    pfont->get_bitmaps = fs_load_bitmaps;
-    pfont->get_extents = fs_load_extents;
     pfont->unload_font = fs_unload_font;
 }

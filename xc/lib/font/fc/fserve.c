@@ -1,6 +1,5 @@
-/* $XConsortium: fserve.c,v 1.19 92/04/13 14:38:52 gildea Exp $ */
+/* $XConsortium: fserve.c,v 1.20 92/04/26 16:26:57 rws Exp $ */
 /*
- *
  * Copyright 1990 Network Computing Devices
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -23,8 +22,6 @@
  * OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
- *
- * $NCDId: @(#)fserve.c,v 1.19 1991/07/10 14:20:31 lemke Exp $
  */
 /*
  * font server specific font access
@@ -603,7 +600,7 @@ fs_read_query_info(fpe, blockrec)
 	return StillWorking;
     }
     /* move the data over */
-    (void) fs_convert_header(&rep.header, &bfont->pfont->info);
+    (void) fs_convert_header(conn, &rep.header, &bfont->pfont->info);
     if (bfont->pfont->info.terminalFont)
     {
 	bfont->format =
@@ -659,8 +656,11 @@ fs_read_extent_info(fpe, blockrec)
     FSFpePtr    conn = (FSFpePtr) fpe->private;
     fsQueryXExtents8Reply rep;
     int         i;
+    int		numInfos;
+    Bool	haveInk = FALSE; /* need separate ink metrics? */
     CharInfoPtr ci,
                 pCI;
+    xCharInfo	teInfo;
     FSFontPtr   fsfont = (FSFontPtr) bfont->pfont->fontPrivate;
     fsCharInfo *fsci,
                *fscip;
@@ -673,7 +673,14 @@ fs_read_extent_info(fpe, blockrec)
 	return StillWorking;
     }
     /* move the data over */
-    ci = pCI = (CharInfoPtr) xalloc(sizeof(CharInfoRec) * rep.num_extents);
+    /* need  separate inkMetrics for fixed font server protocol version */
+    numInfos =  rep.num_extents;
+    if (bfont->pfont->info.terminalFont && conn->fsMajorVersion > 1)
+    {
+	numInfos *= 2;
+	haveInk = TRUE;
+    }
+    ci = pCI = (CharInfoPtr) xalloc(sizeof(CharInfoRec) * numInfos);
 /* XXX this could be done with an ALLOCATE_LOCAL */
     fsci = (fsCharInfo *) xalloc(sizeof(fsCharInfo) * rep.num_extents);
     if (!pCI || !fsci) {
@@ -685,6 +692,10 @@ fs_read_extent_info(fpe, blockrec)
 	return AllocError;
     }
     fsfont->encoding = pCI;
+    if (haveInk)
+	fsfont->inkMetrics = pCI + rep.num_extents;
+    else
+        fsfont->inkMetrics = pCI;
 /* XXX - hack - use real default char */
     fsfont->pDefault = &pCI[0];
 
@@ -693,11 +704,28 @@ fs_read_extent_info(fpe, blockrec)
 	fs_free_font(bfont);
 	return StillWorking;
     }
+    ci = fsfont->inkMetrics;
     for (i = 0, fscip = fsci; i < rep.num_extents; i++, ci++, fscip++) {
 	fs_convert_char_info(fscip, ci);
     }
 
     xfree(fsci);
+
+    /* build bitmap metrics, ImageRectMax style */
+    if (haveInk)
+    {
+	FontInfoRec *fi = &bfont->pfont->info;
+
+	ci = fsfont->encoding;
+	for (i = 0; i < rep.num_extents; i++, ci++)
+	{
+	    ci->metrics.leftSideBearing = FONT_MIN_LEFT(fi);
+	    ci->metrics.rightSideBearing = FONT_MAX_RIGHT(fi);
+	    ci->metrics.ascent = FONT_MAX_ASCENT(fi);
+	    ci->metrics.descent = FONT_MAX_DESCENT(fi);
+	    ci->metrics.characterWidth = FONT_MAX_WIDTH(fi);
+	}
+    }
     bfont->state = FS_GLYPHS_REPLY;
 
     if (bfont->flags & FontLoadBitmaps) {
@@ -1505,89 +1533,6 @@ fs_read_extents(fpe, blockrec)
     return Successful;
 }
 
-static int
-fs_send_load_extents(client, pfont, flags, nranges, range)
-    pointer     client;
-    FontPtr     pfont;
-    int         nranges;
-    fsRange    *range;
-{
-    FSBlockDataPtr blockrec;
-    FSBlockedExtentPtr blockedextent;
-    int         res;
-    fsQueryXExtents8Req req;
-    FSFontDataPtr fsd = (FSFontDataPtr) (pfont->fpePrivate);
-    FontPathElementPtr fpe = fsd->fpe;
-    FSFpePtr    conn = (FSFpePtr) fpe->private;
-
-    /* make a new block record, and add it to the end of the list */
-    blockrec = fs_new_block_rec(fpe, client, FS_LOAD_EXTENTS);
-    if (!blockrec)
-	return AllocError;
-    blockedextent = (FSBlockedExtentPtr) blockrec->data;
-    blockedextent->pfont = pfont;
-    blockedextent->expected_ranges = range;
-    blockedextent->nranges = nranges;
-    blockedextent->done = FALSE;
-
-    /*
-     * see if the desired extents already exist, and return Successful if they
-     * do, otherwise build up character range/character string
-     */
-    res = fs_check_extents(pfont, flags, nranges, range, blockrec);
-    if (res == AccessDone)
-	return Successful;
-
-    /* send the request */
-    req.reqType = FS_QueryXExtents8;
-    req.fid = ((FSFontDataPtr) pfont->fpePrivate)->fontid;
-    req.range = TRUE;
-    req.length = (sizeof(fsQueryXExtents8Req) + sizeof(fsRange) * nranges) >> 2;
-    req.num_ranges = nranges;
-    _fs_add_req_log(conn, FS_QueryXExtents8);
-    _fs_write(conn, (char *) &req, sizeof(fsQueryXExtents8Req));
-    if (nranges)
-	_fs_write(conn, (char *) range, sizeof(fsRange) * nranges);
-
-    return Suspended;
-}
-
-int
-fs_load_extents(client, pfont, flags, nranges, range,
-		nextents, extents)
-    pointer     client;
-    FontPtr     pfont;
-    int         nranges;
-    fsRange    *range;
-    unsigned long *nextents;
-    fsCharInfo **extents;
-{
-    FSBlockDataPtr blockrec;
-    FSBlockedExtentPtr blockedextent;
-    FSFpePtr    conn = (FSFpePtr) pfont->fpe->private;
-
-    /* see if the result is already there */
-    blockrec = (FSBlockDataPtr) conn->blocked_requests;
-    while (blockrec) {
-	if (blockrec->type == FS_LOAD_EXTENTS && blockrec->client == client) {
-	    blockedextent = (FSBlockedExtentPtr) blockrec->data;
-	    if (blockedextent->pfont == pfont && blockedextent->done) {
-
-		/* copy the data */
-		*nextents = blockedextent->nextents;
-		*extents = blockedextent->extents;
-
-		fs_remove_blockrec(conn, blockrec);
-		return Successful;
-	    }
-	}
-	blockrec = blockrec->next;
-    }
-
-    /* didn't find waiting record, so send a new one */
-    return fs_send_load_extents(client, pfont, flags, nranges, range);
-}
-
 
 /*
  * almost identical to the above, but meant for FS chaining
@@ -1648,95 +1593,6 @@ fs_read_bitmaps(fpe, blockrec)
 
     bbitmap->done = TRUE;
     return Successful;
-}
-
-static int
-fs_send_load_bitmaps(client, pfont, format, flags, nranges, range)
-    pointer     client;
-    FontPtr     pfont;
-    fsBitmapFormat format;
-    int         nranges;
-    fsRange    *range;
-{
-    FSBlockDataPtr blockrec;
-    FSBlockedBitmapPtr blockedbitmap;
-    int         res;
-    fsQueryXBitmaps16Req req;
-    FSFontDataPtr fsd = (FSFontDataPtr) (pfont->fpePrivate);
-    FontPathElementPtr fpe = fsd->fpe;
-    FSFpePtr    conn = (FSFpePtr) fpe->private;
-
-    /* make a new block record, and add it to the end of the list */
-    blockrec = fs_new_block_rec(fpe, client, FS_LOAD_BITMAPS);
-    if (!blockrec)
-	return AllocError;
-    blockedbitmap = (FSBlockedBitmapPtr) blockrec->data;
-    blockedbitmap->pfont = pfont;
-    blockedbitmap->expected_ranges = range;
-    blockedbitmap->nranges = nranges;
-    blockedbitmap->done = FALSE;
-
-    /*
-     * see if the desired glyphs already exist, and return Successful if they
-     * do, otherwise build up character range/character string
-     */
-    res = fs_check_bitmaps(pfont, format, flags, nranges, range, blockrec);
-    if (res == AccessDone)
-	return Successful;
-
-    /* send the request */
-    req.reqType = FS_QueryXBitmaps16;
-    req.fid = ((FSFontDataPtr) pfont->fpePrivate)->fontid;
-    req.format = format;
-    req.range = TRUE;
-    req.length = (sizeof(fsQueryXBitmaps16Req) + sizeof(fsRange) * nranges) >> 2;
-    req.num_ranges = nranges;
-    _fs_add_req_log(conn, FS_QueryXBitmaps16);
-    _fs_write(conn, (char *) &req, sizeof(fsQueryXBitmaps16Req));
-    _fs_write(conn, (char *) range, sizeof(fsRange) * nranges);
-
-    return Suspended;
-}
-
-int
-fs_load_bitmaps(client, pfont, format, flags, nranges, range,
-		size, nglyphs, offsets, gdata)
-    pointer     client;
-    FontPtr     pfont;
-    fsBitmapFormat format;
-    int         nranges;
-    fsRange    *range;
-    unsigned long *size;
-    unsigned long *nglyphs;
-    fsOffset  **offsets;
-    pointer    *gdata;
-{
-    FSBlockDataPtr blockrec;
-    FSBlockedBitmapPtr blockedbitmap;
-    FSFpePtr    conn = (FSFpePtr) pfont->fpe->private;
-
-    /* see if the result is already there */
-    blockrec = (FSBlockDataPtr) conn->blocked_requests;
-    while (blockrec) {
-	if (blockrec->type == FS_LOAD_BITMAPS && blockrec->client == client) {
-	    blockedbitmap = (FSBlockedBitmapPtr) blockrec->data;
-	    if (blockedbitmap->pfont == pfont && blockedbitmap->done) {
-
-		/* copy the data */
-		*size = blockedbitmap->size;
-		*nglyphs = blockedbitmap->nglyphs;
-		*offsets = blockedbitmap->offsets;
-		*gdata = blockedbitmap->gdata;
-
-		fs_remove_blockrec(conn, blockrec);
-		return Successful;
-	    }
-	}
-	blockrec = blockrec->next;
-    }
-
-    /* didn't find waiting record, so send a new one */
-    return fs_send_load_bitmaps(client, pfont, format, flags, nranges, range);
 }
 
 static int
@@ -1885,6 +1741,7 @@ fs_read_list_info(fpe, blockrec)
     fsPropOffset *po;
     char       *name;
     pointer     pd;
+    int		err;
 
     /* clean up anything from the last trip */
     if (binfo->name)
@@ -1906,6 +1763,10 @@ fs_read_list_info(fpe, blockrec)
 	binfo->errcode = AllocError;
 	return AllocError;
     }
+    if (conn->fsMajorVersion > 1)
+	if (rep.nameLength == 0)
+	    goto done;
+    /* old protocol sent a full-length reply even for the last one */
     if (_fs_read(conn, (char *) &rep + sizeof(fsReplyHeader),
 	  sizeof(fsListFontsWithXInfoReply) - sizeof(fsReplyHeader)) == -1) {
 	goto done;
@@ -1926,10 +1787,12 @@ fs_read_list_info(fpe, blockrec)
 	binfo->errcode = AllocError;
 	return AllocError;
     }
-    if (_fs_read_pad(conn, name, rep.nameLength) == -1 ||
-	    _fs_read_pad(conn, (char *) &pi, sizeof(fsPropInfo)) == -1) {
-	goto done;
-    }
+    if (conn->fsMajorVersion == 1)
+	if (_fs_read_pad(conn, name, rep.nameLength) == -1)
+	    goto done;
+    if (_fs_read_pad(conn, (char *) &pi, sizeof(fsPropInfo)) == -1)
+	    goto done;
+
     po = (fsPropOffset *) xalloc(sizeof(fsPropOffset) * pi.num_offsets);
     pd = (pointer) xalloc(pi.data_len);
     if (!po || !pd) {
@@ -1941,9 +1804,19 @@ fs_read_list_info(fpe, blockrec)
 	binfo->errcode = AllocError;
 	return AllocError;
     }
-    if (_fs_read_pad(conn, (char *) po,
-		     (pi.num_offsets * sizeof(fsPropOffset))) == -1 ||
-	    _fs_read_pad(conn, (char *) pd, pi.data_len) == -1) {
+    err = _fs_read_pad(conn, (char *) po,
+		       (pi.num_offsets * sizeof(fsPropOffset)));
+    if (err != -1)
+    {
+	if (conn->fsMajorVersion > 1)
+	    err = _fs_read(conn, (char *) pd, pi.data_len);
+	else
+	    err = _fs_read_pad(conn, (char *) pd, pi.data_len);
+    }
+    if (err != -1  &&  conn->fsMajorVersion != 1)
+	err = _fs_read_pad(conn, name, rep.nameLength);
+
+    if (err == -1) {
 	xfree(name);
 	xfree(po);
 	xfree(pd);
@@ -1951,7 +1824,8 @@ fs_read_list_info(fpe, blockrec)
 	binfo->pfi = NULL;
 	goto done;
     }
-    if (fs_convert_lfwi_reply(binfo->pfi, &rep, &pi, po, pd) != Successful)
+
+    if (fs_convert_lfwi_reply(conn, binfo->pfi, &rep, &pi, po, pd) != Successful)
     {
 	xfree(name);
 	xfree(po);
