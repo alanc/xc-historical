@@ -1,4 +1,4 @@
-/* $Header: XExtInt.c,v 1.11 90/05/18 11:09:02 rws Exp $ */
+/* $Header: XExtInt.c,v 1.12 90/05/18 16:43:52 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -310,8 +310,6 @@ XInputWireToEvent (dpy, re, event)
 		bev->axes_count = xev->num_valuators;
 		for (i=0; i<xev->num_valuators && i<6; i++)
 		    bev->axis_data[i] = *(ip + i);
-		for (i=0; i<xev->num_valuators; i++)
-		    bev->axis_data[xev->first_valuator+i] = xev->valuators[i];
 		}
 	    else if (save_type == XI_DeviceMotionNotify) 
 		{
@@ -322,8 +320,6 @@ XInputWireToEvent (dpy, re, event)
 		mev->axes_count = xev->num_valuators;
 		for (i=0; i<xev->num_valuators && i<6; i++)
 		    mev->axis_data[i] = *(ip + i);
-		for (i=0; i<xev->num_valuators; i++)
-		    mev->axis_data[xev->first_valuator+i] = xev->valuators[i];
 		}
 	    else if (save_type == XI_ProximityIn ||
 	        save_type == XI_ProximityOut)
