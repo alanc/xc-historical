@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.138 94/03/29 10:49:14 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.139 94/03/30 11:26:49 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -160,12 +160,13 @@ typedef struct _XSQEvent
 } _XQEvent;
 #endif
 
-#ifdef XTHREADS
-#define NEED_REPLIES		/* for xReply */
+#ifdef XTHREADS			/* for xReply */
+#define NEED_REPLIES
 #endif
 
 #if NeedFunctionPrototypes	/* prototypes require event type definitions */
 #define NEED_EVENTS
+#define NEED_REPLIES
 #endif
 #include <X11/Xproto.h>
 #include <errno.h>
