@@ -259,7 +259,21 @@ _default_mapping _default_mappings[] = {
 ?m5(\t\tprogram specified maximum size: $7 by $8\n)\
 ?m6(\t\tprogram specified resize increment: $9 by $10\n)\
 ?m7(\t\tprogram specified minimum aspect ratio: $11/$12\n\
-\t\tprogram specified maximum aspect ratio: $13/$14\n)" },
+\t\tprogram specified maximum aspect ratio: $13/$14\n)\
+?m8(\t\tbase size: $15 by $16\n)\
+?m9(\t\twindow gravity: \
+?$17=0(Forget)\
+?$17=1(NorthWest)\
+?$17=2(North)\
+?$17=3(NorthEast)\
+?$17=4(West)\
+?$17=5(Center)\
+?$17=6(East)\
+?$17=7(SouthWest)\
+?$17=8(South)\
+?$17=9(SouthEast)\
+?$17=10(Static)\
+\n)"},
 	{ XA_WM_ICON_SIZE, "32cccccc", ":\n\
 \t\tminimum icon size: $0 by $1\n\
 \t\tmaximum icon size: $2 by $3\n\
