@@ -1,4 +1,4 @@
-XCOMM $XConsortium: ibmLib.tmpl,v 1.2 91/03/23 17:02:35 rws Exp $
+XCOMM $XConsortium: ibmLib.tmpl,v 1.1 91/05/03 15:29:33 rws Exp $
 
 /*
  * AIX shared library template
@@ -11,26 +11,30 @@ PICFLAGS = PositionIndependentCFlags
  * are using shared libraries, we really do not need to depend on anything
  */
 #if SharedLibXext
-  DEPEXTENSIONLIB = /* _UseCat($(USRLIBDIR),$(EXTENSIONSRC)/lib,/libXext.sa.$(SOXEXTREV)) */
+  DEPEXTENSIONLIB = /* _UseCat($(USRLIBDIR),$(EXTENSIONSRC)/lib,/libXext.a) */
      EXTENSIONLIB = _Use(-lXext,-L$(EXTENSIONSRC)/lib -lXext)
 #endif
 #if SharedLibX
-          DEPXLIB = $(DEPEXTENSIONLIB) /* _UseCat($(USRLIBDIR),$(XLIBSRC),/libX11.sa.$(SOXLIBREV)) */
+          DEPXLIB = $(DEPEXTENSIONLIB) /* _UseCat($(USRLIBDIR),$(XLIBSRC),/libX11.a) */
              XLIB = $(EXTENSIONLIB) _Use(-lX11,-L$(XLIBSRC) -lX11)
 #endif
 #if SharedLibXmu
-        DEPXMULIB = /* _UseCat($(USRLIBDIR),$(XMUSRC),/libXmu.sa.$(SOXMUREV)) */
+        DEPXMULIB = /* _UseCat($(USRLIBDIR),$(XMUSRC),/libXmu.a) */
            XMULIB = _Use(-lXmu,-L$(XMUSRC) -lXmu)
 #endif
 #if SharedOldLibX
-       DEPOLDXLIB = /* _UseCat($(USRLIBDIR),$(OLDXLIBSRC),/liboldX.sa.$(SOOLDXREV)) */
+       DEPOLDXLIB = /* _UseCat($(USRLIBDIR),$(OLDXLIBSRC),/liboldX.a) */
           OLDXLIB = _Use(-loldX,-L$(OLDXLIBSRC) -loldX)
 #endif
 #if SharedLibXt
-      DEPXTOOLLIB = /* _UseCat($(USRLIBDIR),$(TOOLKITSRC),/libXt.sa.$(SOXTREV)) */
+      DEPXTOOLLIB = _UseCat($(USRLIBDIR),$(TOOLKITSRC),/libXt.a)
          XTOOLLIB = _Use(-lXt,-L$(TOOLKITSRC) -lXt)
 #endif
 #if SharedLibXaw
-        DEPXAWLIB = /* _UseCat($(USRLIBDIR),$(AWIDGETSRC),/libXaw.sa.$(SOXAWREV)) */
+        DEPXAWLIB = /* _UseCat($(USRLIBDIR),$(AWIDGETSRC),/libXaw.a) */
            XAWLIB = _Use(-lXaw,-L$(AWIDGETSRC) -lXaw)
+#endif
+#if SharedLibXinput
+        DEPXILIB = /* _UseCat($(USRLIBDIR),$(XILIBSRC),/libXi.a) */
+           XILIB = _Use(-lXi,-L$(XILIBSRC) -lXi)
 #endif
