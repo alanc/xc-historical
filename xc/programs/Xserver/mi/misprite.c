@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.23 89/10/08 15:23:21 rws Exp $ */
+/* $XConsortium: misprite.c,v 5.24 89/10/29 14:46:48 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -1114,23 +1114,36 @@ miSpritePolylines (pDrawable, pGC, mode, npt, pptInit)
     int	    n;
     int	    x, y, x1, y1, x2, y2;
     int	    lw;
+    int	    extra;
 
     GC_SETUP (pDrawable, pGC);
 
     if (npt && GC_CHECK((WindowPtr) pDrawable))
     {
 	cursor = &pScreenPriv->saved;
-	lw = pGC->lineWidth >> 1;
+	lw = pGC->lineWidth;
 	x = pptInit->x + pDrawable->x;
 	y = pptInit->y + pDrawable->y;
 
 	if (npt == 1)
 	{
-	    if (LINE_OVERLAP(cursor, x, y, x, y, lw))
+	    extra = lw >> 1;
+	    if (LINE_OVERLAP(cursor, x, y, x, y, extra))
 		miSpriteRemoveCursor (pDrawable->pScreen);
 	}
 	else
 	{
+	    extra = lw >> 1;
+	    /*
+	     * mitered joins can project quite a way from
+	     * the line end; the 11 degree miter limit limits
+	     * this extension to 10.43 * lw / 2, rounded up
+	     * and converted to int yields 6 * lw
+	     */
+	    if (pGC->joinStyle == JoinMiter)
+		extra = 6 * lw;
+	    else if (pGC->capStyle == CapProjecting)
+		extra = lw;
 	    for (pts = pptInit + 1, n = npt - 1; n--; pts++)
 	    {
 		x1 = x;
@@ -1148,7 +1161,7 @@ miSpritePolylines (pDrawable, pGC, mode, npt, pptInit)
 		x = x2;
 		y = y2;
 		LINE_SORT(x1, y1, x2, y2);
-		if (LINE_OVERLAP(cursor, x1, y1, x2, y2, lw))
+		if (LINE_OVERLAP(cursor, x1, y1, x2, y2, extra))
 		{
 		    miSpriteRemoveCursor (pDrawable->pScreen);
 		    break;
@@ -1174,14 +1187,16 @@ miSpritePolySegment(pDrawable, pGC, nseg, pSegs)
     register xSegment *segs;
     BoxPtr  cursor;
     int	    x1, y1, x2, y2;
-    int	    lw;
+    int	    extra;
 
     GC_SETUP(pDrawable, pGC);
 
     if (nseg && GC_CHECK((WindowPtr) pDrawable))
     {
 	cursor = &pScreenPriv->saved;
-	lw = pGC->lineWidth >> 1;
+	extra = pGC->lineWidth >> 1;
+	if (pGC->capStyle == CapProjecting)
+	    extra = pGC->lineWidth;
 	for (segs = pSegs, n = nseg; n--; segs++)
 	{
 	    x1 = segs->x1 + pDrawable->x;
@@ -1189,7 +1204,7 @@ miSpritePolySegment(pDrawable, pGC, nseg, pSegs)
 	    x2 = segs->x2 + pDrawable->x;
 	    y2 = segs->y2 + pDrawable->y;
 	    LINE_SORT(x1, y1, x2, y2);
-	    if (LINE_OVERLAP(cursor, x1, y1, x2, y2, lw))
+	    if (LINE_OVERLAP(cursor, x1, y1, x2, y2, extra))
 	    {
 		miSpriteRemoveCursor (pDrawable->pScreen);
 		break;
