@@ -25,6 +25,7 @@
 #define SystemV YES
 #define OSName AIX
 #define BootstrapCFlags -Daix
+#define HasNdbm NO
 #ifdef RtArchitecture
 #define OSDefines -DAIX -DAIXrt -DNO_FUNCTION_PROTOTYPES -DIBM_OS_HAS_HFT
 #else
@@ -50,6 +51,7 @@
 #else /* else AOS - warning: AOS is going away... */
 #define SystemV NO
 #define OSName AOS
+#define HasNdbm YES
 #define CcCmd hc
 #define ibmosdefs -DHCVERSION=HCRevision
 #define OSDefines -DBSDrt
@@ -67,7 +69,7 @@
  * Also, be sure to remove .../server/ddx/ibm/common/ibmscreen.o
  */
 #define ibmInclude8514  NO /* YES */
-#define ibmIncludeAED   NO /* YES */
+#define ibmIncludeAED   YES
 #define ibmIncludeAPA16 YES
 #define ibmIncludeAPA8c NO
 #define ibmIncludeEGA   NO /* YES */
@@ -207,6 +209,6 @@
 /* define this as you like for normal library compilation */
 #define LibraryDefines -DUNIXCPP ibmlibdefs StandardDefines
 
-/**/# platform:  $XConsortium: ibm.cf,v 1.13 89/11/13 11:48:32 jim Exp $
+/**/# platform:  $XConsortium: ibm.cf,v 1.14 89/11/14 20:18:17 jim Exp $
 /**/# operating system:  OSName
 
