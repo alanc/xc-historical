@@ -42,6 +42,7 @@
 ;; Implementation Contributors:
 ;;	Chris Lindblad, MIT
 ;;	Robert Scheifler, MIT
+;;      John Irwin, Franz
 
 ;;;
 ;;; Change history:
