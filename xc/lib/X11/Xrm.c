@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.60 91/04/24 08:41:59 rws Exp $
+ * $XConsortium: Xrm.c,v 1.61 91/04/24 10:11:16 rws Exp $
  */
 
 /***********************************************************
@@ -1267,8 +1267,10 @@ static void GetDatabase(db, str, filename)
 		bits = next_mbchar(c, len, str);
 	    }
 
-	    if (is_EOL(bits))
+	    if (is_EOL(bits)) {
+		str--;
 		break;
+	    }
 
 	    if (c == '\\') {
 		/*
