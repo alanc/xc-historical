@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.24 91/07/13 16:28:19 rws Exp $
+ * $XConsortium: get_load.c,v 1.25 91/07/15 11:19:26 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -182,6 +182,93 @@ void GetLoadPoint( w, closure, call_data ) 	/* Apollo version */
      lastNullCpu = info.cpu_total.low32;
 }
 #else /* not apollo */
+#if defined(SYSV) && defined(SYSV386)
+/*
+ * inspired by 'avgload' by John F. Haugh II
+ */
+#include <sys/param.h>
+#include <sys/buf.h>
+#include <sys/immu.h>
+#include <sys/region.h>
+#include <sys/var.h>
+#include <sys/proc.h>
+#define KERNEL_FILE "/unix"
+#define KMEM_FILE "/dev/kmem"
+#define VAR_NAME "v"
+#define PROC_NAME "proc"
+#define BUF_NAME "buf"
+#define DECAY 0.8
+struct nlist namelist[] = {
+  {VAR_NAME},
+  {PROC_NAME},
+  {BUF_NAME},
+  {0},
+};
+
+static int kmem;
+static struct var v;
+static struct proc *p;
+static caddr_t first_buf, last_buf;
+
+void InitLoadPoint()				/* SYSV386 version */
+{
+    int i;
+
+    nlist( KERNEL_FILE, namelist);
+
+    for (i=0; namelist[i].n_name; i++) 
+	if (namelist[i].n_value == 0)
+	    xload_error("cannot get name list from", KERNEL_FILE);
+
+    if ((kmem = open(KMEM_FILE, O_RDONLY)) < 0)
+	xload_error("cannot open", KMEM_FILE);
+
+    if (lseek(kmem, namelist[0].n_value, 0) == -1)
+	xload_error("cannot seek", VAR_NAME);
+
+    if (read(kmem, &v, sizeof(v)) != sizeof(v))
+	xload_error("cannot read", VAR_NAME);
+
+    if ((p=(struct proc *)malloc(v.v_proc*sizeof(*p))) == NULL)
+	xload_error("cannot allocat space for", PROC_NAME);
+	  
+    first_buf = (caddr_t) namelist[2].n_value;
+    last_buf  = first_buf + v.v_buf * sizeof(struct buf);
+}
+	
+/* ARGSUSED */
+void GetLoadPoint( w, closure, call_data )	/* SYSV386 version */
+Widget	w;		/* unused */
+caddr_t	closure;	/* unused */
+caddr_t	call_data;	/* pointer to (double) return value */
+{
+    double *loadavg = (double *)call_data;
+    static double avenrun = 0.0;
+    int i, nproc, size;
+	
+    (void) lseek(kmem, namelist[0].n_value, 0);
+    (void) read(kmem, &v, sizeof(v));
+
+    size = (struct proc *)v.ve_proc - (struct proc *)namelist[1].n_value;
+
+    (void) lseek(kmem, namelist[1].n_value, 0);
+    (void) read(kmem, p, size * sizeof(struct proc));
+
+    for (nproc = 0, i=0; i<size; i++) 
+	  if ((p[i].p_stat == SRUN) ||
+	      (p[i].p_stat == SIDL) ||
+	      (p[i].p_stat == SXBRK) ||
+	      (p[i].p_stat == SSLEEP && (p[i].p_pri < PZERO) &&
+	       (p[i].p_wchan >= first_buf) && (p[i].p_wchan < last_buf)))
+	    nproc++;
+
+    /* update the load average using a decay filter */
+    avenrun = DECAY * avenrun + nproc * (1.0 - DECAY);
+    *loadavg = avenrun;
+
+    return;
+}
+#else /* not (SYSV && SYSV386) */
 #ifdef KVM_ROUTINES
 /*
  *	Sun 386i Code - abstracted to see the wood for the trees
@@ -624,6 +711,7 @@ void GetLoadPoint( w, closure, call_data )
 }
 #endif /* LOADSTUB else */
 #endif /* KVM_ROUTINES else */
+#endif /* SYSV && SYSV386 else */
 
 static xload_error(str1, str2)
 char *str1, *str2;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xconsole.c,v 1.7 91/07/11 21:31:53 rws Exp $
+ * $XConsortium: xconsole.c,v 1.8 91/07/22 15:43:11 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -45,6 +45,11 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <ctype.h>
+
+/* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
+#if defined(SYSV) && defined(SYSV386) && defined(__STDC__) && defined(ISC)
+extern FILE *fdopen(int, char const *);
+#endif
 
 static long	TextLength ();
 
@@ -119,6 +124,10 @@ static char ttydev[64], ptydev[64];
 #endif
 #endif
 
+#if defined(SYSV) && defined(SYSV386)
+#define USE_OSM
+#endif
+
 static void inputReady ();
 
 static
@@ -148,6 +157,10 @@ OpenConsole ()
 		}
 #endif
 	    }
+#ifdef USE_OSM
+	    /* Don't have to be owner of /dev/console when using /dev/osm. */
+	    input = fdopen(osm_pipe(), "r");
+#endif
 	    if (input && app_resources.verbose)
 	    {
 		char	*hostname;
@@ -680,3 +693,33 @@ get_pty (pty, tty, ttydev, ptydev)
 	return(1);
 }
 #endif
+
+#ifdef USE_OSM
+/*
+ * On SYSV386 there is a special device, /dev/osm, where system messages
+ * are sent.  Problem is that we can't perform a select(2) on this device.
+ * So this routine creates a streams-pty where one end reads the device and
+ * sends the output to xconsole.
+ */
+osm_pipe()
+{
+  int tty, pid;
+  char ttydev[64];
+    
+  if ((tty = open("/dev/ptmx", O_RDWR)) < 0)  return -1;
+
+  grantpt(tty);
+  unlockpt(tty);
+  strcpy(ttydev, (char *)ptsname(tty));
+
+  if ((pid = fork()) == 0) {
+    int pty, osm, buf, nbytes;
+
+    pty = open(ttydev, O_RDWR);
+    osm = open("/dev/osm", O_RDWR);
+    while ((nbytes = read(osm, &buf, sizeof(buf))) >= 0)
+      write(pty, &buf, nbytes);
+  }
+  return tty;
+}
+#endif  /* USE_OSM */
