@@ -1,4 +1,4 @@
-/* $XConsortium: miRndrPick.c,v 1.7 92/11/18 19:02:57 hersh Exp $ */
+/* $XConsortium: miRndrPick.c,v 1.8 92/12/14 16:53:30 hersh Exp $ */
 
 /************************************************************
 Copyright 1992 by The Massachusetts Institute of Technology
@@ -235,6 +235,15 @@ ddUSHORT        *betterPick;
 	ppm->path = NULL; 
     }
 
+    if (ppm->incl_handle)
+	UpdateNSRefs(   ppm->incl_handle, (diResourceHandle) NULL,
+			PICK_RESOURCE, ADD);
+
+    if (ppm->excl_handle)
+	UpdateNSRefs(   ppm->excl_handle, (diResourceHandle) NULL,
+			PICK_RESOURCE, ADD);
+
+
   return(err);
 }
 
@@ -290,6 +299,9 @@ ddBufferPtr     pBuffer;    /* list of pick element ref */
     ddPickPath		*pp, *sIDpp;
     ddPointer		pplist;
     ddPickElementRef	ref;
+    miPickMeasureStr    *ppm;
+
+    ppm = (miPickMeasureStr *) (pRend->pickstr.pseudoPM)->deviceData;
 
     reply->numPicked = (pRend->pickstr.list)->numObj;
     reply->pickStatus = ((pRend->pickstr.list)->numObj) ?1:0;
@@ -350,6 +362,14 @@ ddBufferPtr     pBuffer;    /* list of pick element ref */
 
     pRend->pickstr.more_hits = PEXNoMoreHits;
     pBuffer->dataSize = numbytes;
+
+    if (ppm->incl_handle)
+	UpdateNSRefs(   ppm->incl_handle, (diResourceHandle) NULL,
+			PICK_RESOURCE, ADD);
+
+    if (ppm->excl_handle)
+	UpdateNSRefs(   ppm->excl_handle, (diResourceHandle) NULL,
+			PICK_RESOURCE, ADD);
 
 
   return(err);
