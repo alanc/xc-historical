@@ -1,4 +1,4 @@
-/* $XConsortium: registry,v 1.90 93/09/27 16:03:25 gildea Exp $ */
+/* $XConsortium: registry,v 1.91 93/09/27 16:10:37 rws Exp $ */
 
 				  X Registry
 
@@ -735,6 +735,7 @@ Name						Reference
 "X_HEIGHT"					[19]
 "WEIGHT"					[19]
 "WEIGHT_NAME"					[19]
+"_ADOBE_POSTSCRIPT_FONTNAME"			[69]
 
 16. RESOURCE TYPES
 
