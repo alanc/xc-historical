@@ -3,11 +3,12 @@
 xset - X window system user setup program
 .SH SYNOPSIS
 .B xset
-option [ option ] [ \fIfhost\fP:\fIdisplay\fP ]
+option [ option ] [ \fIhost\fP:\fIdisplay\fP ]
 .SH DESCRIPTION
 This program is used to set various user preference options of the display.
 the \fBb\fP option controls bell volume, pitch and duration,
 The \fBc\fP option controls key click,
+the \fBfp\fP option sets the font path,
 the \fBled\fP option controls the keyboard LEDs,
 the \fBm\fP option controls the mouse parameters,
 the \fBp\fP option controls pixel color values,
@@ -33,6 +34,10 @@ specifications.
 The keyclick option also takes an optional value from 0 to 100 to
 indicate volume, as a percentage of maximum.  The X server will set
 the volume to the nearest value that the hardware can support.
+.PP
+The font path option should be followed by a comma-separated list of
+(operating system dependent) directories.  To restore the default
+font path, use \fBfp default\fP.
 .PP
 The LED controls are for turning on or off one or all of the LEDs.
 A common LED which can be controlled is the ``Caps Lock'' LED.  ``xset
@@ -72,6 +77,7 @@ Copyright (c) 1985, 1986, 1987 by Massachusetts Institute of Technology.
 .br
 See \fIX(1)\fP for a full copyright notice.
 .br
-David Krikorian, MIT Project Athena
+Bob Scheifler, MIT Laboratory for Computer Science
+David Krikorian, MIT Project Athena (X11 version)
 .SH "SEE ALSO"
 X(8C)
