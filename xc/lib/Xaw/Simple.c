@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Simple.c,v 1.17 89/03/06 16:30:48 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Simple.c,v 1.18 89/03/30 16:54:36 jim Exp $";
 #endif /* lint */
 
 /* Copyright	Massachusetts Institute of Technology	1987 */
@@ -21,7 +21,7 @@ static XtResource resources[] = {
 #undef offset
 };
 
-static void ClassPartInitialize(), Realize();
+static void ClassInitialize(), ClassPartInitialize(), Realize();
 static Boolean SetValues(), ChangeSensitive();
 
 SimpleClassRec simpleClassRec = {
@@ -29,7 +29,7 @@ SimpleClassRec simpleClassRec = {
     /* superclass		*/	(WidgetClass) &widgetClassRec,
     /* class_name		*/	"Simple",
     /* widget_size		*/	sizeof(SimpleRec),
-    /* class_initialize		*/	NULL,
+    /* class_initialize		*/	ClassInitialize,
     /* class_part_initialize	*/	ClassPartInitialize,
     /* class_inited		*/	FALSE,
     /* initialize		*/	NULL,
@@ -66,16 +66,21 @@ SimpleClassRec simpleClassRec = {
 
 WidgetClass simpleWidgetClass = (WidgetClass)&simpleClassRec;
 
+static void ClassInitialize()
+{
+    /* this silliness causes the linker to include the VendorShell
+     * module from Xaw, rather than the one from Xt.  Better
+     * optimizers require bigger hacks to hide the fact that this
+     * is a no-op.
+     */
+    if (vendorShellWidgetClass == NULL)
+	simpleClassRec.simple_class.change_sensitive = ChangeSensitive;
+}
+
 static void ClassPartInitialize(class)
     WidgetClass class;
 {
     register SimpleWidgetClass c = (SimpleWidgetClass)class;
-#ifndef lint
-    /* this silliness causes the linker to include the VendorShell
-     * module from Xaw, rather than the one from Xt.
-     */
-    WidgetClass junk = vendorShellWidgetClass;
-#endif
 
     if (c->simple_class.change_sensitive == XtInheritChangeSensitive)
 	c->simple_class.change_sensitive = ChangeSensitive;
