@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.139 89/10/09 18:37:17 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.140 89/10/11 15:48:22 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -343,40 +343,141 @@ void XtCreateWindow(widget, window_class, visual, value_mask, attributes)
 
 /* ---------------- XtNameToWidget ----------------- */
 
-static Widget NameListToWidget(root, names)
-    register Widget root;
+static Widget NameListToWidget();
+
+typedef Widget (*NameMatchProc)();
+
+static Widget MatchExactChildren(names, bindings, children, num,
+	in_depth, out_depth, found_depth)
     XrmNameList     names;
+    XrmBindingList  bindings;
+    register WidgetList children;
+    register int num;
+    int in_depth, *out_depth, *found_depth;
 {
     register Cardinal   i;
-    register WidgetList children;
-    register XrmName    name;
+    register XrmName    name = *names;
+    Widget w, result = NULL;
+    int d, min = 10000;
 
-    name = *names;
-    if (name == NULLQUARK) return root;
+    for (i = 0; i < num; i++) {
+	if (name == children[i]->core.xrm_name) {
+	    w = NameListToWidget(children[i], &names[1], &bindings[1],
+		    in_depth+1, &d, found_depth);
+	    if (w != NULL && d < min) {result = w; min = d;}
+	}
+    }
+    *out_depth = min;
+    return result;
+}
+
+static Widget MatchWildChildren(names, bindings, children, num,
+	in_depth, out_depth, found_depth)
+    XrmNameList     names;
+    XrmBindingList  bindings;
+    register WidgetList children;
+    register int num;
+    int in_depth, *out_depth, *found_depth;
+{
+    register Cardinal   i;
+    Widget w, result;
+    int d, min = 10000;
+
+    for (i = 0; i < num; i++) {
+	w = NameListToWidget(children[i], names, bindings,
+		in_depth+1, &d, found_depth);
+	if (w != NULL && d < min) {result = w; min = d;}
+    }
+    *out_depth = min;
+    return result;
+}
+
+static Widget SearchChildren(root, names, bindings, matchproc,
+	in_depth, out_depth, found_depth)
+    Widget root;
+    XrmNameList     names;
+    XrmBindingList  bindings;
+    NameMatchProc matchproc;
+    int in_depth, *out_depth, *found_depth;
+{
+    Widget w1, w2;
+    int d1, d2;
+
     if (XtIsComposite(root)) {
-        children = ((CompositeWidget) root)->composite.children;
-        for (i = 0;
-                i < ((CompositeWidget) root)->composite.num_children; i++) {
-            if (name == children[i]->core.xrm_name)
-	        return NameListToWidget(children[i], &names[1]);
-        }
+	w1 = (*matchproc)(names, bindings,
+		((CompositeWidget) root)->composite.children,
+		((CompositeWidget) root)->composite.num_children,
+		in_depth, &d1, found_depth);
+    } else d1 = 10000;
+    w2 = (*matchproc)(names, bindings, root->core.popup_list,
+	    root->core.num_popups, in_depth, &d2, found_depth);
+    *out_depth = (d1 < d2 ? d1 : d2);
+    return (d1 < d2 ? w1 : w2);
+}
+
+static Widget NameListToWidget(root, names, bindings,
+	in_depth, out_depth, found_depth)
+    register Widget root;
+    XrmNameList     names;
+    XrmBindingList  bindings;
+    int in_depth, *out_depth, *found_depth;
+{
+    Widget w1, w2;
+    int d1, d2;
+
+    if (in_depth >= *found_depth) {
+	*out_depth = 10000;
+	return NULL;
     }
-    children = root->core.popup_list;
-    for (i = 0; i < root->core.num_popups; i++) {
-	if (name == children[i]->core.xrm_name)
-	    return NameListToWidget(children[i], &names[1]);
+
+    if (names[0] == NULLQUARK) {
+	*out_depth = *found_depth = in_depth;
+	return root;
     }
-    return NULL;
+
+    if (*bindings == XrmBindTightly) {
+	return SearchChildren(root, names, bindings, MatchExactChildren,
+		in_depth, out_depth, found_depth);
+
+    } else {	/* XrmBindLoosely */
+	w1 = SearchChildren(root, names, bindings, MatchExactChildren,
+		in_depth, &d1, found_depth);
+	w2 = SearchChildren(root, names, bindings, MatchWildChildren,
+		in_depth, &d2, found_depth);
+	*out_depth = (d1 < d2 ? d1 : d2);
+	return (d1 < d2 ? w1 : w2);
+    }
 } /* NameListToWidget */
 
 Widget XtNameToWidget(root, name)
     Widget root;
     String name;
 {
-    XrmName	names[100];
-    XrmStringToNameList(name, names);
-    if (names[0] == NULLQUARK) return NULL;
-    return NameListToWidget(root, names);
+    XrmName *names;
+    XrmBinding *bindings;
+    int len, depth, found = 10000;
+    Widget result;
+
+    len = strlen(name);
+    if (len == 0) return NULL;
+
+    names = (XrmName *) ALLOCATE_LOCAL((unsigned) (len+1) * sizeof(XrmName));
+    bindings = (XrmBinding *)
+	ALLOCATE_LOCAL((unsigned) (len+1) * sizeof(XrmBinding));
+    if (names == NULL || bindings == NULL) _XtAllocError("alloca");
+
+    XrmStringToBindingQuarkList(name, bindings, names);
+    if (names[0] == NULLQUARK) {
+	DEALLOCATE_LOCAL((char *) names);
+	DEALLOCATE_LOCAL((char *) bindings);
+	return NULL;
+    }
+
+    result = NameListToWidget(root, names, bindings, 0, &depth, &found);
+
+    DEALLOCATE_LOCAL((char *) names);
+    DEALLOCATE_LOCAL((char *) bindings);
+    return result;
 } /* XtNameToWidget */
 
 /* Define user versions of intrinsics macros */
