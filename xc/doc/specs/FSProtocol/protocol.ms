@@ -1,4 +1,4 @@
-.\" $XConsortium: protocol.ms,v 1.13 94/04/17 20:05:07 rws Exp $
+.\" $XConsortium: protocol.ms,v 1.14 94/04/17 23:59:31 rws Exp $
 .\" Use tbl, -ms, and macros.t
 .EH ''''
 .OH ''''
@@ -1354,8 +1354,10 @@ error is returned.
   =>
 .IP
 \fIstatus\fP\^:  	{ Success, Continue, Denied }
-	authorization-index:		CARD8
-	authorization-data:		LISTofBYTE
+.br
+\fIauthorization-index\fP\^:		CARD8
+.br
+\fIauthorization-data\fP\^:		LISTofBYTE
 .IP
 Errors:
 .PN IDChoice
@@ -1393,11 +1395,10 @@ the indicated response from the server.  This continues
 until STATUS is set to either Success or Denied.
 .RS
 .DS
-
-	->
+	\->
 	more-authorization-data:		STRING8
 	=>
-	status:					{ Success, Continue, Denied }
+	status:				{ Success, Continue, Denied }
 	more-authorization-data:		LISTofBYTE
 .DE
 .RE
@@ -3546,7 +3547,7 @@ sufficient.
 .IP "b."
 Per-machine - only those clients connecting from a known set of
 machines are permitted access.  The server could get the address 
-of the connection and look in a list of	allowed machines. 
+of the connection and look in a list of allowed machines. 
 .IP "c."
 Per-user - only a known set of users may access the fonts.  The
 server can use the authorization data (such as a Kerberos ticket
