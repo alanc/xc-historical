@@ -1,4 +1,4 @@
-/* $XConsortium: AllCmap.c,v 1.4 89/05/24 11:08:05 converse Exp $
+/* $XConsortium: AllCmap.c,v 1.5 89/07/16 18:10:41 jim Exp $
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -89,7 +89,7 @@ Status XmuAllStandardColormaps(dpy)
     int 	nvisuals, scr;
     Status	status;
     long	vinfo_mask;
-    XVisualInfo	template, *vinfo = NULL, *v1 = NULL, *v2 = NULL;
+    XVisualInfo	template, *vinfo, *v1, *v2;
     
     /* for each screen, determine all visuals of this server */
     for (scr=0; scr < ScreenCount(dpy); scr++)
