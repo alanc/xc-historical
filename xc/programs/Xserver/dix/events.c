@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.122 87/11/27 10:29:42 rws Locked $ */
+/* $Header: events.c,v 1.123 87/11/27 11:04:44 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -449,15 +449,14 @@ ActivatePointerGrab(mouse, grab, time, autoGrab)
     Bool autoGrab;
 {
     WindowPtr w;
+    WindowPtr oldWin = (mouse->grab) ? mouse->grab->window
+				     : sprite.win;
 
     motionHintWindow = NullWindow;
     mouse->grabTime = time;
     ptrGrab = *grab;
     mouse->grab = &ptrGrab;
     mouse->u.ptr.autoReleaseGrab = autoGrab;
-    CheckGrabForSyncs(
-	mouse->grab, mouse, grab->pointerMode,
-	inputInfo.keyboard, grab->keyboardMode);
     PostNewCursor();
     if (w = grab->u.ptr.confineTo)
     {
@@ -465,7 +464,10 @@ ActivatePointerGrab(mouse, grab, time, autoGrab)
 	    w->absCorner.x, w->absCorner.x + (int)w->clientWinSize.width,
 	    w->absCorner.y, w->absCorner.y + (int)w->clientWinSize.height);
     }
-    DoEnterLeaveEvents(sprite.win, grab->window, NotifyGrab);
+    DoEnterLeaveEvents(oldWin, grab->window, NotifyGrab);
+    CheckGrabForSyncs(
+	mouse->grab, mouse, grab->pointerMode,
+	inputInfo.keyboard, grab->keyboardMode);
 }
 
 static void
@@ -495,6 +497,10 @@ ActivateKeyboardGrab(keybd, grab, time, passive)
     TimeStamp time;
     Bool passive;
 {
+    WindowPtr oldWin = (keybd->grab) ? keybd->grab->window
+				     : keybd->u.keybd.focus.win;
+
+    DoFocusEvents(oldWin, grab->window, NotifyGrab);
     keybd->grabTime = time;
     keybdGrab = *grab;
     keybd->grab = &keybdGrab;
@@ -511,6 +517,7 @@ DeactivateKeyboardGrab(keybd)
     DeviceIntPtr mouse = inputInfo.pointer;
     GrabPtr grab = keybd->grab;
 
+    DoFocusEvents(grab->window, keybd->u.keybd.focus.win, NotifyUngrab);
     keybd->grab = NullGrab;
     keybd->sync.state = NOT_GRABBED;
     keybd->u.keybd.passiveGrab = FALSE;
@@ -603,13 +610,7 @@ AllowSome(client, time, thisDev, otherDev, newState)
 		if (thisDev == inputInfo.pointer)
 		    DeactivatePointerGrab(thisDev);
 		else
-   		{
-		    /* Deactivating a keyboard grab should cause focus 	
-			events. */
-		    DoFocusEvents(thisDev->grab->window,
-		    	thisDev->u.keybd.focus.win, NotifyUngrab);
  		    DeactivateKeyboardGrab(thisDev);
-		}
 		syncEvents.replayDev = (DeviceIntPtr)NULL;
 	    }
 	    break;
@@ -659,9 +660,6 @@ ProcAllowEvents(client)
     }
     return Success;
 }
-
-/* I don't see this function called from anywhere.  Should it's 
-	DeactivateKeyboardGrab cause focus events? PRH. */
 
 void
 ReleaseActiveGrabs(client)
@@ -771,16 +769,18 @@ DeliverEventsToWindow(pWin, pEvents, count, filter, grab)
 	}
     if ((pEvents->u.u.type == ButtonPress) && deliveries && (!grab))
     {
-	ptrGrab.device = inputInfo.pointer;
-	ptrGrab.client = client;
-	ptrGrab.window = pWin;
-	ptrGrab.ownerEvents = (deliveryMask & OwnerGrabButtonMask) ? TRUE : FALSE;
-	ptrGrab.eventMask =  deliveryMask;
-	ptrGrab.keyboardMode = GrabModeAsync;
-	ptrGrab.pointerMode = GrabModeAsync;
-	ptrGrab.u.ptr.confineTo = NullWindow;
-	ptrGrab.u.ptr.cursor = NullCursor;
-	ActivatePointerGrab(inputInfo.pointer, &ptrGrab, currentTime, TRUE);
+	GrabRec tempGrab;
+
+	tempGrab.device = inputInfo.pointer;
+	tempGrab.client = client;
+	tempGrab.window = pWin;
+	tempGrab.ownerEvents = (deliveryMask & OwnerGrabButtonMask) ? TRUE : FALSE;
+	tempGrab.eventMask =  deliveryMask;
+	tempGrab.keyboardMode = GrabModeAsync;
+	tempGrab.pointerMode = GrabModeAsync;
+	tempGrab.u.ptr.confineTo = NullWindow;
+	tempGrab.u.ptr.cursor = NullCursor;
+	ActivatePointerGrab(inputInfo.pointer, &tempGrab, currentTime, TRUE);
     }
     else if ((pEvents->u.u.type == MotionNotify) && deliveries)
 	motionHintWindow = pWin;
@@ -1831,6 +1831,8 @@ DoFocusEvents(fromWin, toWin, mode)
 				          PointerRoot/None */
     int     i;
 
+    if (fromWin == toWin)
+	return;
     out = (fromWin == NoneWin) ? NotifyDetailNone : NotifyPointerRoot;
     in = (toWin == NoneWin) ? NotifyDetailNone : NotifyPointerRoot;
  /* wrong values if neither, but then not referenced */
@@ -1976,8 +1978,7 @@ ProcSetInputFocus(client)
 
     mode = (kbd->grab) ? NotifyWhileGrabbed : NotifyNormal;
 
-    if (focus->win != focusWin)
-	DoFocusEvents(focus->win, focusWin, mode);
+    DoFocusEvents(focus->win, focusWin, mode);
     focus->time = time;
     focus->revert = stuff->revertTo;
     focus->win = focusWin;
@@ -2089,18 +2090,20 @@ ProcGrabPointer(client)
 	rep.status = GrabInvalidTime;
     else
     {
+	GrabRec tempGrab;
+
 	if (grab && grab->u.ptr.confineTo && !confineTo)
 	    NewCursorConfines(0, currentScreen->width, 0, currentScreen->height);
-	ptrGrab.u.ptr.cursor = cursor;
-	ptrGrab.client = client;
-	ptrGrab.ownerEvents = stuff->ownerEvents;
-	ptrGrab.eventMask = stuff->eventMask;
-	ptrGrab.u.ptr.confineTo = confineTo;
-	ptrGrab.window = pWin;
-	ptrGrab.keyboardMode = stuff->keyboardMode;
-	ptrGrab.pointerMode = stuff->pointerMode;
-	ptrGrab.device = inputInfo.pointer;
-	ActivatePointerGrab(inputInfo.pointer, &ptrGrab, time, FALSE);
+	tempGrab.u.ptr.cursor = cursor;
+	tempGrab.client = client;
+	tempGrab.ownerEvents = stuff->ownerEvents;
+	tempGrab.eventMask = stuff->eventMask;
+	tempGrab.u.ptr.confineTo = confineTo;
+	tempGrab.window = pWin;
+	tempGrab.keyboardMode = stuff->keyboardMode;
+	tempGrab.pointerMode = stuff->pointerMode;
+	tempGrab.device = inputInfo.pointer;
+	ActivatePointerGrab(inputInfo.pointer, &tempGrab, time, FALSE);
 	rep.status = GrabSuccess;
     }
     WriteReplyToClient(client, sizeof(xGrabPointerReply), &rep);
@@ -2167,7 +2170,7 @@ ProcGrabKeyboard(client)
     xGrabKeyboardReply rep;
     DeviceIntPtr device = inputInfo.keyboard;
     GrabPtr grab = device->grab;
-    WindowPtr pWin, oldWin;
+    WindowPtr pWin;
     TimeStamp time;
     REQUEST(xGrabKeyboardReq);
 
@@ -2202,24 +2205,18 @@ ProcGrabKeyboard(client)
 	rep.status = GrabFrozen;
     else
     {
-	/* If a keyboard grab is already in effect, store the old grab window.*/
+	GrabRec tempGrab;
 
-	oldWin = (grab) ? keybdGrab.window : device->u.keybd.focus.win;
-	keybdGrab.window = pWin;
-	keybdGrab.client = client;
-        keybdGrab.ownerEvents = stuff->ownerEvents;
-	keybdGrab.keyboardMode = stuff->keyboardMode;
-	keybdGrab.pointerMode = stuff->pointerMode;
-	keybdGrab.eventMask = KeyPressMask | KeyReleaseMask;
-	keybdGrab.device = inputInfo.keyboard;
+	tempGrab.window = pWin;
+	tempGrab.client = client;
+	tempGrab.ownerEvents = stuff->ownerEvents;
+	tempGrab.keyboardMode = stuff->keyboardMode;
+	tempGrab.pointerMode = stuff->pointerMode;
+	tempGrab.eventMask = KeyPressMask | KeyReleaseMask;
+	tempGrab.device = inputInfo.keyboard;
 	ActivateKeyboardGrab(
-	    device, &keybdGrab, ClientTimeToServerTime(stuff->time), FALSE);
+	    device, &tempGrab, ClientTimeToServerTime(stuff->time), FALSE);
 	
-	/* If the grab is a regrab on the same window as previous grab, don't
-		generate any change of focus events. */
-
-        if (oldWin != pWin)
-		DoFocusEvents(oldWin, pWin, NotifyGrab);
 	rep.status = GrabSuccess;
     }
     WriteReplyToClient(client, sizeof(xGrabKeyboardReply), &rep);
@@ -2240,10 +2237,7 @@ ProcUngrabKeyboard(client)
     if ((CompareTimeStamps(time, currentTime) != LATER) &&
 	(CompareTimeStamps(time, device->grabTime) != EARLIER) &&
 	(grab) && (grab->client == client))
-    {
-	DoFocusEvents(grab->window, device->u.keybd.focus.win, NotifyUngrab);
 	DeactivateKeyboardGrab(device);
-    }
     return Success;
 }
 
@@ -3634,10 +3628,7 @@ DeleteWindowFromAnyEvents(pWin, freeResources)
 
     if ((inputInfo.keyboard->grab) &&
 	(inputInfo.keyboard->grab->window == pWin))
-    {
-	DoFocusEvents(inputInfo.keyboard->grab->window, focus->win, NotifyUngrab);
 	DeactivateKeyboardGrab(inputInfo.keyboard);
-    }
 
     /* If the focus window is a root window (ie. has no parent) then don't 
 	delete the focus from it. */
