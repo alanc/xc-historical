@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.118 94/03/31 18:28:25 matt Exp $
+XCOMM site:  $XConsortium: site.def,v 1.119 94/04/01 10:27:30 matt Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -102,6 +102,7 @@ XCOMM site:  $XConsortium: site.def,v 1.118 94/03/31 18:28:25 matt Exp $
 #endif
 #ifndef CplusplusCmd
 #define CplusplusCmd /obj/CenterLine/bin/CC
+#define CplusplusDependIncludes -I/obj/CenterLine/clc++/pa-hpux8/incl
 #endif
 #ifndef CplusplusStandardDefines
 #define CplusplusStandardDefines -D__ANSI_CPP__
