@@ -4,7 +4,7 @@
  * machine independent cursor display routines
  */
 
-/* $XConsortium: midispcur.c,v 5.3 89/07/03 13:29:20 rws Exp $ */
+/* $XConsortium: midispcur.c,v 5.4 89/07/09 15:54:46 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -178,6 +178,7 @@ miDCRealizeCursor (pScreen, pCursor)
 	return FALSE;
     }
 
+    ValidateGC ((DrawablePtr)pPriv->sourceBits, pGC);
     (*pGC->ops->PutImage) (pPriv->sourceBits, pGC, 1,
 			   0, 0, pCursor->bits->width, pCursor->bits->height,
  			   0, XYPixmap, pCursor->bits->source);
