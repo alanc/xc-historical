@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.22 91/02/11 14:25:04 converse Exp $
+ * $XConsortium: misc.c,v 1.23 91/02/13 16:11:17 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -223,7 +223,8 @@ char * filename, * output;
  */
 
   strcpy(tmp, MANTEMP);		/* get a temp file. */
-  strcpy(output, mktemp(tmp));
+  (void) mktemp(tmp);
+  strcpy(output, tmp);
 
   sprintf(cmdbuf, UNCOMPRESS_FORMAT, filename, output);
   if(system(cmdbuf) == 0) 	/* execute search. */
@@ -275,7 +276,8 @@ char * entry;
   }
 
   strcpy(tmp,MANTEMP);		          /* Get a temp file. */
-  strcpy(man_globals->tmpfile,mktemp(tmp));
+  (void) mktemp(tmp);
+  strcpy(man_globals->tmpfile, tmp);
   ParseEntry(entry, path, NULL, NULL);
 
   sprintf(cmdbuf,"cd %s ; %s %s %s > %s %s", path, TBL,

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.12 91/01/09 17:31:42 rws Exp $
+ * $XConsortium: search.c,v 1.13 91/02/13 16:11:35 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -167,7 +167,8 @@ int type;
   }
 
   strcpy(tmp, MANTEMP);		/* get a temp file. */
-  mantmp = mktemp(tmp);
+  (void) mktemp(tmp);
+  mantmp = tmp;
 
   /* set the command */
 
