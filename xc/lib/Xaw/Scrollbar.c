@@ -1,4 +1,4 @@
-/* $XConsortium: Scrollbar.c,v 1.67 91/02/17 15:47:08 converse Exp $ */
+/* $XConsortium: Scrollbar.c,v 1.68 91/03/14 16:48:06 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -680,6 +680,8 @@ static void MoveThumb( gw, event, params, num_params )
     if (w->scrollbar.direction == 0) return; /* if no StartScroll */
 
     if (LookAhead(gw, event)) return;
+
+    if (!event->xmotion.same_screen) return;
 
     ExtractPosition( event, &x, &y );
     w->scrollbar.top = FractionLoc(w, x, y);
