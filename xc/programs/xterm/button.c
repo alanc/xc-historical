@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.9 88/09/06 17:07:48 jim Exp $
+ *	$XConsortium: button.c,v 1.10 88/10/05 12:04:10 swick Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.9 88/09/06 17:07:48 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.10 88/10/05 12:04:10 swick Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -76,128 +76,15 @@ extern char *malloc();
 #define STACK_SIZE 10
 
 char *SaveText();
-extern UnSaltText();
-extern StartCut();
-extern StartExtend();
 extern EditorButton();
 extern TrackDown();
 
 extern ModeMenu();
 extern char *xterm_name;
-extern Bogus(), Silence();
+extern Bogus();
 extern GINbutton();
 
-/* due to LK201 limitations, not all of the below are actually possible */
-static int (*textfunc[TEXTMODES][SHIFTS][DIRS][NBUTS])() = {
-/*	left		middle		right	*/
-	StartCut,	Silence,	StartExtend,	/* down |	  */
-	Silence,	UnSaltText,	Silence,	/* up	|no shift */
-
-	StartCut,	Silence,	StartExtend,	/* down |	  */
-	Silence,	UnSaltText,	Silence,	/* up	|shift	  */
-
-	Bogus,		Bogus,		Bogus,		/* down	|	  */
-	Silence,	Silence,	Silence,	/* up	|meta	  */
-
-	Bogus,		Bogus,		Bogus,		/* down	|	  */
-	Silence,	Silence,	Silence,	/* up	|meta shift */
-
-	ModeMenu,	ModeMenu,	ModeMenu,	/* down	|	  */
-	Silence,	Silence,	Silence,	/* up	|control  */
-
-	ModeMenu,	ModeMenu,	ModeMenu,	/* down	|	  */
-	Silence,	Silence,	Silence,	/* up	|ctl shift */
-
-	Bogus,		Bogus,		Bogus,		/* down	|	  */
-	Silence,	Silence,	Silence,	/* up	|ctl meta */
-
-	Bogus,		Bogus,		Bogus,		/* down	| control  */
-	Silence,	Silence,	Silence,	/* up	|meta shift*/
-
-/* MIT mouse bogus sequence 			*/
-/* 	button, shift keys, and direction 	*/
-/*	left		middle		right	*/
-	EditorButton,	EditorButton,	EditorButton,	/* down	|	  */
-	Silence,	Silence,	Silence,	/* up	|no shift */
-
-	StartCut,	Silence,	StartExtend,	/* down |	  */
-	Silence,	UnSaltText,	Silence,	/* up	|shift	  */
-
-	Bogus,		Bogus,		Bogus,		/* down	|	  */
-	Silence,	Silence,	Silence,	/* up	|meta	  */
-
-	Bogus,		Bogus,		Bogus,		/* down	|	  */
-	Silence,	Silence,	Silence,	/* up	|meta shift */
-
-	ModeMenu,	ModeMenu,	ModeMenu,	/* down	|	  */
-	Silence,	Silence,	Silence,	/* up	|control  */
-
-	ModeMenu,	ModeMenu,	ModeMenu,	/* down	|	  */
-	Silence,	Silence,	Silence,	/* up	|ctl shift */
-
-	Bogus,		Bogus,		Bogus,		/* down	|	  */
-	Silence,	Silence,	Silence,	/* up	|ctl meta */
-
-	Bogus,		Bogus,		Bogus,		/* down	| control  */
-	Silence,	Silence,	Silence,	/* up	|meta shift*/
-
-/* DEC mouse bogus sequence 			*/
-/* 	button, shift keys, and direction 	*/
-/*	left		middle		right	*/
-	EditorButton,	EditorButton,	EditorButton,	/* down	|	  */
-	EditorButton,	EditorButton,	EditorButton,	/* up	|no shift */
-
-	StartCut,	Silence,	StartExtend,	/* down |	  */
-	Silence,	UnSaltText,	Silence,	/* up	|shift	  */
-
-	Bogus,		Bogus,		Bogus,		/* down	|	  */
-	Silence,	Silence,	Silence,	/* up	|meta	  */
-
-	Bogus,		Bogus,		Bogus,		/* down	|	  */
-	Silence,	Silence,	Silence,	/* up	|meta shift */
-
-	EditorButton,	EditorButton,	EditorButton,	/* down	|	  */
-	EditorButton,	EditorButton,	EditorButton,	/* up	|control  */
-
-	ModeMenu,	ModeMenu,	ModeMenu,	/* down	|	  */
-	Silence,	Silence,	Silence,	/* up	|ctl shift */
-
-	Bogus,		Bogus,		Bogus,		/* down	|	  */
-	Silence,	Silence,	Silence,	/* up	|ctl meta */
-
-	Bogus,		Bogus,		Bogus,		/* down	| control  */
-	Silence,	Silence,	Silence,	/* up	|meta shift*/
-
-/* Hilite tracking DEC mouse bogus sequence 	*/
-/* 	button, shift keys, and direction 	*/
-/*	left		middle		right	*/
-	TrackDown,	EditorButton,	EditorButton,	/* down	|	    */
-	EditorButton,	EditorButton,	EditorButton,	/* up	|no shift   */
-
-	StartCut,	Silence,	StartExtend,	/* down |	    */
-	Silence,	UnSaltText,	Silence,	/* up	|shift	    */
-
-	Bogus,		Bogus,		Bogus,		/* down	|	    */
-	Silence,	Silence,	Silence,	/* up	|meta	    */
-
-	Bogus,		Bogus,		Bogus,		/* down	|	    */
-	Silence,	Silence,	Silence,	/* up	|meta shift */
-
-	EditorButton,	EditorButton,	EditorButton,	/* down	|	    */
-	EditorButton,	EditorButton,	EditorButton,	/* up	|control    */
-
-	ModeMenu,	ModeMenu,	ModeMenu,	/* down	|	    */
-	Silence,	Silence,	Silence,	/* up	|ctl shift  */
-
-	Bogus,		Bogus,		Bogus,		/* down	|	    */
-	Silence,	Silence,	Silence,	/* up	|ctl meta   */
-
-	Bogus,		Bogus,		Bogus,		/* down	| control   */
-	Silence,	Silence,	Silence		/* up	|meta shift */
-
-};
-
-	/* button and shift keys for Tek mode */
+/* button and shift keys for Tek mode */
 static int (*Tbfunc[SHIFTS][NBUTS])() = {
 /*	left		middle		right	*/
 	GINbutton,	GINbutton,	GINbutton,	/* down	|no shift   */
@@ -253,28 +140,54 @@ static SelectUnit selectUnit;
 static int replyToEmacs;
 
 
-/*ARGSUSED*/
-void VTButtonPressed(w, event, params, num_params)
+static Boolean SendMousePosition(w, event)
 Widget w;
-XEvent *event;			/* must be XButtonEvent */
-String *params;			/* unused */
-Cardinal *num_params;		/* unused */
+XEvent* event;			/* must be XButtonEvent* */
 {
-	register TScreen *screen = &term->screen;
-	/* so table above will be nice, we index from 0 */
-	int button = event->xbutton.button - 1; 
-	int shift = KeyState(event->xbutton.state);
+    register TScreen *screen = &((XtermWidget)w)->screen;
+    
+    if (screen->send_mouse_pos == 0) return False;
 
-	((XtermWidget)w)->screen.selection_time = event->xbutton.time;
-	if (eventMode != NORMAL)
-		return;
-	if (screen->incopy)
-		CopyWait (screen);
-	(*(textfunc[screen->send_mouse_pos][shift][0][button]))(event);
+    switch (screen->send_mouse_pos) {
+      case 1: /* X10 compatibility sequences */
+
+	if (event->type == ButtonPress && event->xbutton.state == 0) {
+	    EditorButton(event);
+	    return True;
+	}
+	return False;
+
+      case 2: /* DEC vt200 compatible */
+
+	if (  event->xbutton.state == 0 ||
+	      event->xbutton.state == ControlMask) {
+	    EditorButton(event);
+	    return True;
+	}
+	return False;
+
+      case 3: /* DEC vt200 hilite tracking */
+	if (  event->type == ButtonPress &&
+	      event->xbutton.state == 0 &&
+	      event->xbutton.state == Button1 ) {
+	    TrackDown(event);
+	    return True;
+	}
+	if (  event->xbutton.state == 0 ||
+	      event->xbutton.state == ControlMask) {
+	    EditorButton(event);
+	    return True;
+	}
+	/* fall through */
+
+      default:
+	return False;
+    }
 }
 
+
 /*ARGSUSED*/
-void VTMouseMoved(w, event, params, num_params)
+void HandleSelectExtend(w, event, params, num_params)
 Widget w;
 XEvent *event;			/* must be XMotionEvent */
 String *params;			/* unused */
@@ -296,22 +209,18 @@ Cardinal *num_params;		/* unused */
 
 
 /*ARGSUSED*/
-void VTButtonReleased(w, event, params, num_params)
+void HandleSelectEnd(w, event, params, num_params)
 Widget w;
 XEvent *event;			/* must be XButtonEvent */
 String *params;			/* selections */
 Cardinal *num_params;
 {
-	register TScreen *screen = &term->screen;
-	/* so table above will be nice, we index from 0 */
-	int button = event->xbutton.button - 1; 
-	int shift = KeyState(event->xbutton.state);
+	register TScreen *screen = &((XtermWidget)w)->screen;
 
+	if (SendMousePosition(w, event)) return;
 	((XtermWidget)w)->screen.selection_time = event->xbutton.time;
 	switch (eventMode) {
 		case NORMAL :
-			(*(textfunc[screen->send_mouse_pos][shift][1][button]))
-			 (event);
 			break;
 		case LEFTEXTENSION :
 		case RIGHTEXTENSION :
@@ -320,6 +229,7 @@ Cardinal *num_params;
 			break;
 	}
 }
+
 
 /*ARGSUSED*/
 void TekButtonPressed(w, eventdata, event)
@@ -338,15 +248,18 @@ register XButtonEvent *event;
 }
 
 
-/*ARGSUSED*/
-UnSaltText(event)
+/* ARGSUSED */
+HandleInsertSelection(w, event, params, num_params)
+Widget w;
 XEvent *event;
+String *params;
+Cardinal *num_params;
 {
-	int pty = term->screen.respond;	/* file descriptor of pty */
+	register TScreen *screen = &((XtermWidget)w)->screen;
+	int pty = screen->respond;	/* file descriptor of pty */
 	char *line;
 	int nbytes;
 	register char *lag, *cp, *end;
-	register TScreen *screen = &term->screen;
 
 	line = XFetchBytes(screen->display,&nbytes);
 	if (!nbytes) return;
@@ -380,16 +293,21 @@ SelectUnit defaultUnit;
 	}
 }
 
-StartCut(event)
-register XButtonEvent *event;
+/* ARGSUSED */
+HandleSelectStart(w, event, params, num_params)
+Widget w;
+XEvent *event;			/* must be XButtonEvent* */
+String *params;			/* unused */
+Cardinal *num_params;		/* unused */
 {
-	register TScreen *screen = &term->screen;
+	register TScreen *screen = &((XtermWidget)w)->screen;
 	int startrow, startcol;
 
+	if (SendMousePosition(w, event)) return;
 	firstValidRow = 0;
 	lastValidRow  = screen->max_row;
-	SetSelectUnit(event->time, SELECTCHAR);
-	PointToRowCol(event->y, event->x, &startrow, &startcol);
+	SetSelectUnit(event->xbutton.time, SELECTCHAR);
+	PointToRowCol(event->xbutton.y, event->xbutton.x, &startrow, &startcol);
 	replyToEmacs = FALSE;
 	StartSelect(startrow, startcol);
 }
@@ -503,15 +421,19 @@ Cardinal num_params;
 
 #define Abs(x)		((x) < 0 ? -(x) : (x))
 
-StartExtend(event)
-XButtonEvent *event;
+/* ARGSUSED */
+HandleStartExtend(w, event, params, num_params)
+Widget w;
+XEvent *event;			/* must be XButtonEvent* */
+String *params;			/* unused */
+Cardinal *num_params;		/* unused */
 {
-	TScreen *screen = &term->screen;
+	TScreen *screen = &((XtermWidget)w)->screen;
 	int row, col, coord;
 
 	firstValidRow = 0;
 	lastValidRow  = screen->max_row;
-	SetSelectUnit(event->time, selectUnit);
+	SetSelectUnit(event->xbutton.time, selectUnit);
 	replyToEmacs = FALSE;
 
 	if (numberOfClicks == 1) {
@@ -529,7 +451,7 @@ XButtonEvent *event;
 		endECol   = endRCol   = saveEndRCol;
 
 	}
-	PointToRowCol(event->y, event->x, &row, &col);
+	PointToRowCol(event->xbutton.y, event->xbutton.x, &row, &col);
 	coord = Coordinate(row, col);
 
 	if (Abs(coord - Coordinate(startSRow, startSCol))
@@ -1193,6 +1115,16 @@ static Menu *menus[NMENUS];
 static int type;
 extern TekLink *TekRefresh;
 
+/* ARGSUSED */
+void HandleModeMenu(w, event, params, num_params)
+Widget w;
+XEvent *event;
+String *params;			/* unused */
+Cardinal *num_params;		/* unused */
+{
+    ModeMenu(event);		/* %%% hack 'till TekWidget uses TM */
+}
+
 ModeMenu(event)
 register XButtonEvent *event;
 {
@@ -1483,10 +1415,4 @@ Bogus(event)
 XButtonEvent *event;
 {
 	Bell();
-}
-
-/*ARGSUSED*/
-Silence(event)
-XButtonEvent *event;
-{
 }

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.53 88/09/06 14:34:59 jim Exp $
+ * $XConsortium: charproc.c,v 1.54 88/10/05 12:04:27 swick Exp $
  */
 
 
@@ -128,7 +128,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.53 88/09/06 14:34:59 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.54 88/10/05 12:04:27 swick Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -161,10 +161,12 @@ extern void VTButtonPressed();
 extern void VTMouseMoved();
 extern void VTButtonReleased();
        void HandleKeymapChange();
-static void HandleInsertSelection();
-static void HandleSelectStart();
-static void HandleSelectExtend();
-static void HandleSelectEnd();
+extern void HandleModeMenu();
+extern void HandleInsertSelection();
+extern void HandleSelectStart();
+extern void HandleSelectExtend();
+extern void HandleSelectEnd();
+extern void HandleStartExtend();
 
 
 /*
@@ -182,25 +184,29 @@ static  int	defaultSaveLines   = SAVELINES;
 static  int	defaultNMarginBell = N_MARGINBELL;
 static  int	defaultMultiClickTime = MULTICLICKTIME;
 
-static char defaultTranslations[] = 
-    "<KeyPress>:	insert() \n\
-     <BtnDown>:		dispatch-btn-press() \n\
-     <Btn1Motion>:	select-extend() \n\
-     <BtnUp>:		dispatch-btn-release(PRIMARY, CUT_BUFFER0) ";
+static char defaultTranslations[] =
+"\
+	<KeyPress>:	insert()	\n\
+Ctrl	<Btn1Down>:	mode-menu()	\n\
+	<Btn1Down>:	select-start()	\n\
+	<Btn1Motion>:	select-extend() \n\
+Ctrl	<Btn2Down>:	mode-menu()	\n\
+	<Btn2Up>:	insert-selection(PRIMARY, CUT_BUFFER0) \n\
+	<Btn3Down>:	start-extend()	\n\
+	<Btn3Motion>:	select-extend()	\n\
+	<BtnUp>:	select-end(PRIMARY, CUT_BUFFER0) \
+";
 
 static XtActionsRec actionsList[] = { 
-    { "string",		HandleStringEvent },
-    { "insert",		HandleKeyPressed },
-    { "keymap", 	HandleKeymapChange },
-    { "selection",	HandleInsertSelection },
-    { "dispatch-btn-press",	VTButtonPressed },
-    { "select-extend",		VTMouseMoved },
-    { "dispatch-btn-release",	VTButtonReleased },
-#ifdef notdef
-    { "select-start",	HandleSelectStart },	/* NYI */
-    { "select-extend",	HandleSelectExtend },	/* NYI */
-    { "select-end",	HandleSelectEnd },	/* NYI */
-#endif /*notdef*/
+    { "insert",		  HandleKeyPressed },
+    { "insert-selection", HandleInsertSelection },
+    { "keymap", 	  HandleKeymapChange },
+    { "mode-menu",	  HandleModeMenu },
+    { "select-start",	  HandleSelectStart },
+    { "select-extend",	  HandleSelectExtend },
+    { "select-end",	  HandleSelectEnd },
+    { "start-extend",	  HandleStartExtend },
+    { "string",		  HandleStringEvent },
 };
 
 static XtResource resources[] = {
@@ -2839,49 +2845,4 @@ void HandleKeymapChange(w, event, params, param_count)
 		       resources, (Cardinal)1, NULL, (Cardinal)0 );
     if (keymap != NULL)
 	XtOverrideTranslations(w, keymap);
-}
-
-
-/* ARGSUSED */
-static void HandleInsertSelection(w, event, params, param_count)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *param_count;
-{
-    /* %%% Bogus implementation */
-    UnSaltText(event);
-}
-
-
-/* ARGSUSED */
-static void HandleSelectStart(w, event, params, param_count)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *param_count;
-{
-    /* NYI */
-}
-
-
-/* ARGSUSED */
-static void HandleSelectExtend(w, event, params, param_count)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *param_count;
-{
-    /* NYI */
-}
-
-
-/* ARGSUSED */
-static void HandleSelectEnd(w, event, params, param_count)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *param_count;
-{
-    /* NYI */
 }
