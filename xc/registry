@@ -1,4 +1,4 @@
-/* $XConsortium: registry,v 1.97 94/04/18 11:15:06 rws Exp $ */
+/* $XConsortium: registry,v 1.98 94/05/02 09:57:52 rws Exp $ */
 
 				  X Registry
 
@@ -61,6 +61,7 @@ Name						Reference
 "KPC"						[98]
 "LJK"						[56]
 "LTA"						[60]
+"MEGATEK"					[112]
 "MIT"						[8]
 "MOTIF"						[7]
 "NCD"						[66]
@@ -309,6 +310,7 @@ String						Reference
 "Jupiter Systems Inc."				[93]
 "Kubota Pacific Computer"			[98]
 "Matsushita Electric Industrial Co., Ltd."	[52]
+"Megatek Corporation"				[112]
 "MIT X Consortium"				[8]
 "Network Computing Devices Inc."		[66]
 "OMRON Corporation"				[45]
@@ -941,6 +943,7 @@ Value	Name					Reference
 16	International Business Machines		[33]
 17	Kubota Pacific Computer			[95]
 18	Hitachi, Ltd.				[100]
+19	Megatek Corporation			[112]
 
 
 REFERENCES
@@ -1483,3 +1486,8 @@ REFERENCES
 	X Consortium
 	1 Memorial Dr
 	Cambridge MA 02142-1301
+
+[112]	Allan Frankel
+	Megatek Corporation
+	16868 Via Del Campo Court
+	San Diego, CA  92127-1714
