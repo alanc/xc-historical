@@ -1,4 +1,4 @@
-/* $XConsortium: xgrabdev.c,v 1.7 89/11/06 18:23:56 rws Exp $ */
+/* $XConsortium: xgrabdev.c,v 1.8 89/12/02 15:21:11 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -154,14 +154,14 @@ CreateMaskFromList (client, list, count, mask, dev, req)
     for (i=0; i<EMASKSIZE; i++)
 	{
 	mask[i].mask = 0;
-	mask[i].select = FALSE;
+	mask[i].dev = NULL;
 	}
 
     for (i=0; i<count; i++, list++)
 	{
 	device = *list >> 8;
 	tdev = LookupDeviceIntRec (device);
-	if (dev != NULL && tdev != dev)
+	if (tdev==NULL || (dev != NULL && tdev != dev))
 	    {
 	    SendErrorToClient(client, IReqCode, req, 0, BadClass);
 	    return BadClass;
@@ -171,7 +171,7 @@ CreateMaskFromList (client, list, count, mask, dev, req)
 	    if (EventInfo[j].type == (*list & 0xff))
 		{
 		mask[device].mask |= EventInfo[j].mask;
-		mask[device].select = TRUE;
+		mask[device].dev = (Pointer) tdev;
 		break;
 		}
 	}
