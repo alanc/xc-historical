@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.40 92/04/05 17:23:41 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.41 92/04/05 17:48:36 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -120,6 +120,7 @@ typedef struct {
     double ymult;
     int rootx, rooty;
     Mask input;
+    Window best;
     int bestx, besty;
     double best_dist;
     Bool recurse;
@@ -671,6 +672,25 @@ find_closest(rec, parent, pwa, puniv, level)
 	univ = compute_univ(puniv, children[i], &wa, level);
 	if (!univ)
 	    continue;
+	compute_box(univ, &box);
+	switch (rec->dir) {
+	case 'U':
+	    if (box.y1 >= rec->rooty)
+		continue;
+	    break;
+	case 'D':
+	    if (box.y2 <= rec->rooty)
+		continue;
+	    break;
+	case 'R':
+	    if (box.x2 <= rec->rootx)
+		continue;
+	    break;
+	case 'L':
+	    if (box.x1 >= rec->rootx)
+		continue;
+	    break;
+	}
 	if (rec->recurse &&
 	    find_closest(rec, children[i], &wa, univ, level + 1))
 	    found = True;
@@ -726,8 +746,9 @@ find_closest(rec, parent, pwa, puniv, level)
 		rec->ymult * (y - rec->rooty) * (y - rec->rooty));
 	if (dist >= rec->best_dist)
 	    continue;
-	compute_point(univ, &wa, rec);
+	rec->best = children[i];
 	rec->best_dist = dist;
+	compute_point(univ, &wa, rec);
 	found = True;
     }
     if (children)
