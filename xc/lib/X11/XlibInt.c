@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.107 89/06/15 19:14:19 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.108 89/06/16 13:44:03 jim Exp $
  */
 
 #include "copyright.h"
@@ -1667,102 +1667,77 @@ extern char * malloc();
 extern char _XsTypeOfStream[];
 extern Xstream _XsStream[];
 
-#define MAX_WORKAREA 4096
-static char workarea[MAX_WORKAREA];
-
-/*
- * XXX - talk about stupid, this should just be a loop instead of mallocing
- * or copying
- */
-int
-readv (fd, v, n)
-int		fd;
-struct iovec	v[];
-int		n;
+int readv (fd, v, n)
+    int fd;
+    struct iovec *v;
+    int n;
 {
-	int i, rc, len, size = 0;
-	char * buf = workarea;
-	char * p;
+    int i;				/* iterator */
+    int size = 0;			/* return value */
 
-	if (n <= 0 || n > 16)
-	{
-		errno = EINVAL;
-		return (-1);
+    /* check inputs */
+    for (i = 0; i < n; i++) {
+	if (v[i].iov_len < 0 || v[i].iov_base == NULL) {
+	    errno = EINVAL;
+	    return -1;
 	}
-	for (i = 0; i < n; ++i)
-	{
-		if ((len = v[i].iov_len) < 0 || v[i].iov_base == NULL)
-		{
-			errno = EINVAL;
-			return (-1);
-		}
-		size += len;
-	}
-	if ((size > MAX_WORKAREA) && ((buf = malloc (size)) == NULL))
-	{
-		errno = EINVAL;
-		return (-1);
-	}
-	if((rc = (*_XsStream[_XsTypeOfStream[fd]].ReadFromStream)(fd, buf, size,
-							     BUFFERING))> 0)
-	{
-		for (i = 0, p = buf; i < n; ++i)
-		{
-			memcpy (v[i].iov_base, p, len = v[i].iov_len);
-			p += len;
-		}
-	}
-	if (size > MAX_WORKAREA)
-		free (buf);
+    }
 
-	return (rc);
+    for (i = 0; i < n; i++) {
+	int len;
+	char *p;
+	
+	for (p = v[i].iov_base, len = v[i].iov_len; len > 0; ) {
+	    int rc = ((*_XsStream[_XsTypeOfStream[fd]].ReadFromStream)
+		      (fd, p, len, BUFFERING));
+	    if (rc > 0) {
+		p += rc;
+		len -= rc;
+		size += rc;
+	    } else if (rc < 0) {
+		break;
+	    }
+	}
+    }
+
+    return size;
 }
 
-/*
- * XXX - talk about stupid, this should just be a loop instead of mallocing
- * or copying
- */
-int
-writev (fd, v, n)
-int fd;
-struct iovec	v[];
-int n;
+
+int writev (fd, v, n)
+    int fd;
+    struct iovec *v;
+    int n;
 {
-	int i, rc, len, size = 0;
-	char * buf = workarea;
-	char * p;
+    int i;				/* iterator */
+    int size = 0;			/* return value */
 
-	if (n <= 0 || n > 16)
-	{
-		errno = EINVAL;
-		return (-1);
+    /* check inputs */
+    for (i = 0; i < n; i++) {
+	if (v[i].iov_len < 0 || v[i].iov_base == NULL) {
+	    errno = EINVAL;
+	    return -1;
 	}
-	for (i = 0; i < n; ++i)
-	{
-		if ((len = v[i].iov_len) < 0 || v[i].iov_base == NULL)
-		{
-			errno = EINVAL;
-			return (-1);
-		}
-		size += len;
-	}
+    }
 
-	if ((size > MAX_WORKAREA) && ((buf = malloc (size)) == NULL))
-	{
-		errno = EINVAL;
-		return (-1);
+    for (i = 0; i < n; i++) {
+	int len;
+	char *p;
+	
+	for (p = v[i].iov_base, len = v[i].iov_len; len > 0; ) {
+	    int rc = ((*_XsStream[_XsTypeOfStream[fd]].WriteToStream)
+		      (fd, p, len));
+	    if (rc > 0) {
+		p += rc;
+		len -= rc;
+		size += rc;
+	    } else if (rc < 0) {
+		break;
+	    }
 	}
-	for (i = 0, p = buf; i < n; ++i)
-	{
-		memcpy (p, v[i].iov_base, len = v[i].iov_len);
-		p += len;
-	}
-	rc = (*_XsStream[_XsTypeOfStream[fd]].WriteToStream)(fd, buf, size);
+    }
 
-	if (size > MAX_WORKAREA)
-		free (buf);
-
-	return (rc);
+    return size;
 }
 
 
