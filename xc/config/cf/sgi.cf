@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.20 91/09/18 13:17:45 rws Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.21 91/11/09 16:44:50 keith Exp $
 
 #define OSName			IRIX
 XCOMM operating system:  OSName
@@ -38,15 +38,15 @@ XCOMM operating system:  OSName
 
 /* #include <sgiLib.rules> */
 
-#define CCPreprocessorFlags /* as nothing */
-/* #define CCPreprocessorFlags -acpp -D__EXTENSIONS__ SymbolTables -cckr */
-
 #define SymbolTables -Wf,-XNh2000
 #define PexSymbolTables -Wf,-XNp15000,-XNd15000,-XNh2000
+#define ServerSymbolTables -Wf,-XNp8000,-XNh2000
 
 /* this is for floating point, ANSI cpp */
-#define DefaultCCOptions -xansi -D__STDC__=1 -float CCPreprocessorFlags SymbolTables
-#define PexCCOptions -xansi -D__STDC__=1 -float CCPreprocessorFlags PexSymbolTables
+#define sgiCCOptions -xansi -D__STDC__=1 -float
+#define DefaultCCOptions sgiCCOptions SymbolTables
+#define PexCCOptions sgiCCOptions PexSymbolTables
+#define ServerCCOptions sgiCCOptions ServerSymbolTables
 
 /* At SGI, we don't need this */
 #define ConstructMFLAGS		NO	/* build MFLAGS from MAKEFLAGS */
