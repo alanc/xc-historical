@@ -1,4 +1,4 @@
-/* $XConsortium: miOCs.c,v 5.1 91/02/16 09:55:15 rws Exp $ */
+/* $XConsortium: miOCs.c,v 5.2 91/05/01 14:31:44 hersh Exp $ */
 
 
 /***********************************************************
@@ -1222,7 +1222,6 @@ miSetMCVolume(pRend, pOC)
 
     static  ddFLOAT	vect_xform[4][4];
 
-    double		sqrt();
   
     pc_MCV = pddc->Dynamic->pPCAttr->modelClipVolume;
     if (!(OC_MCV->operator == PEXModelClipIntersection)) pc_MCV->numObj = 0;     
