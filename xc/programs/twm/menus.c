@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.78 89/07/06 17:16:06 jim Exp $
+ * $XConsortium: menus.c,v 1.79 89/07/06 17:18:00 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.78 89/07/06 17:16:06 jim Exp $";
+"$XConsortium: menus.c,v 1.79 89/07/06 17:18:00 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1741,7 +1741,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	}
 	break;
 
-    case F_WARPTOICONMGRE:
+    case F_WARPTOICONMGR:
 	{
 	    TwmWindow *t;
 	    int len;
@@ -1764,17 +1764,6 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	}
 	break;
 	
-    case F_WARPTOICONMGR:
-	if (tmp_win && !tmp_win->iconmgr)
-	{
-	    if (tmp_win->list && tmp_win->list->iconmgr->twm_win->mapped)
-	    {
-		XRaiseWindow(dpy, tmp_win->list->iconmgr->twm_win->frame);
-		XWarpPointer(dpy, None, tmp_win->list->w, 0, 0, 0, 0, 5, 5);
-	    }
-	}
-	break;
-
     case F_FILE:
 	action = ExpandFilename(action);
 	fd = open(action, 0);

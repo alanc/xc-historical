@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.50 89/07/06 18:34:48 jim Exp $
+ * $XConsortium: gram.y,v 1.51 89/07/07 13:06:58 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.50 89/07/06 18:34:48 jim Exp $";
+"$XConsortium: gram.y,v 1.51 89/07/07 13:06:58 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -101,7 +101,7 @@ extern int yylineno;
 %token <num> F_FORWICONMGR F_BACKICONMGR F_NEXTICONMGR F_PREVICONMGR
 %token <num> START_ICONIFIED NO_MENU_SHADOWS LP RP NO_VERSION
 %token <num> INTERPOLATE_MENUS NO_TITLE_HILITE ICON_BORDERWIDTH TITLE_HILITE
-%token <num> F_WARPTOICONMGRE ALL OR CURSORS PIXMAPS CUR_BUTTON CUR_FRAME
+%token <num> ALL OR CURSORS PIXMAPS CUR_BUTTON CUR_FRAME
 %token <num> CUR_TITLE CUR_ICONMGR CUR_ICON NO_ICONMGRS F_SORTICONMGR
 %token <num> CUR_MOVE CUR_RESIZE CUR_WAIT CUR_SELECT CUR_KILL
 %token <num> ICON_REGION NORTH SOUTH EAST WEST RESTART_PREVIOUS_STATE
@@ -659,13 +659,12 @@ action		: F_NOP			{ $$ = F_NOP; }
 		| F_CUTFILE		{ $$ = F_CUTFILE; }
 		| F_SHOWLIST		{ $$ = F_SHOWLIST; }
 		| F_HIDELIST		{ $$ = F_HIDELIST; }
-		| F_WARPTOICONMGR 	{ $$ = F_WARPTOICONMGR; }
 		| F_MENU string		{ pull = GetRoot($2, 0, 0);
 					  pull->prev = root;
 					  $$ = F_MENU;
 					}
 		| F_WARPTO string	{ Action = $2; $$ = F_WARPTO; }
-		| F_WARPTOICONMGR string { Action = $2; $$ = F_WARPTOICONMGRE; }
+		| F_WARPTOICONMGR string { Action = $2; $$ = F_WARPTOICONMGR; }
 		| F_FILE string		{ Action = $2; $$ = F_FILE; }
 		| F_EXEC string		{ Action = $2; $$ = F_EXEC; }
 		| F_CUT string		{ Action = $2; $$ = F_CUT; }
