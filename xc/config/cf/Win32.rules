@@ -1,4 +1,9 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.13 93/08/17 21:42:12 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.14 93/08/18 14:43:21 rws Exp $
+
+.c.obj:
+	$(CC) -c $*.c @<<
+	$(CFLAGS)
+<<
 
 #define ProgramTargetName(target) target.exe
 
