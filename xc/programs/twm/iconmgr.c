@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.39 89/12/14 16:22:57 rws Exp $
+ * $XConsortium: iconmgr.c,v 1.40 90/03/13 15:29:28 jim Exp $
  *
  * Icon Manager routines
  *
@@ -353,12 +353,13 @@ void JumpIconManager(dir)
 		    }
 		}
 	    }
-	    while (!got_it)
+	    if (!got_it)
 	    {
+		int origscreen = ip->scr->screen;
 		/* we have to go looking for one on another screen or
 		* wrap around on this screen
 		*/
-		for (screen = (ip->scr->screen+1); ; screen++)
+		for (screen = origscreen + 1; ; screen++)
 		{
 		    if (screen >= NumScreens)
 			screen = 0;
@@ -376,8 +377,9 @@ void JumpIconManager(dir)
 		    }
 		    if (got_it)
 			break;
+		    if (screen == origscreen) break;
 		}
-	    }
+		    }
 	    break;
 	case F_PREVICONMGR:
 	    for (tmp_ip = ip->prev; tmp_ip != NULL; tmp_ip = tmp_ip->prev)
@@ -403,12 +405,13 @@ void JumpIconManager(dir)
 		    }
 		}
 	    }
-	    while (!got_it)
+	    if (!got_it)
 	    {
+		int origscreen = ip->scr->screen;
 		/* we have to go looking for one on another screen or
 		* wrap around on this screen
 		*/
-		for (screen = (ip->scr->screen-1); ; screen--)
+		for (screen = origscreen - 1; ; screen--)
 		{
 		    if (screen < 0)
 			screen = NumScreens-1;
@@ -426,9 +429,15 @@ void JumpIconManager(dir)
 		    }
 		    if (got_it)
 			break;
+		    if (origscreen == screen) break;
 		}
 	    }
 	    break;
+    }
+
+    if (!got_it) {
+	XBell (dpy, 0);
+	return;
     }
 
     /* raise the frame so it is visible */
