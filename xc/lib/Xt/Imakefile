@@ -15,6 +15,7 @@
 HEADERS = \
 	Atoms.h \
 	ButtonBox.h \
+	Cascade.h \
 	Clock.h \
 	Command.h \
 	Intrinsic.h \
@@ -22,11 +23,14 @@ HEADERS = \
 	Label.h \
 	Load.h \
 	Misc.h \
+	Popup.h \
 	Quarks.h \
 	Scroll.h \
+	Shell.h \
 	Text.h \
 	TopLevel.h \
-	TM.h
+	TM.h \
+	VPane.h
 
 SRCS = \
 	Alloc.c \
