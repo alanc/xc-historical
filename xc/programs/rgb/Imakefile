@@ -15,6 +15,9 @@
 #ifndef SGIArchitecture
        DBMLIB = -ldbm
 #endif
+#if defined(SparcArchitecture) && HasGcc
+           CC = cc
+#endif
 
 all:: $(PROGRAMS) $(DATADEP)
 
