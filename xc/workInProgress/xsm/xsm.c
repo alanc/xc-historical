@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.51 94/07/15 10:07:26 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.52 94/07/15 14:14:59 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -277,6 +277,8 @@ Bool use_default;
      * has an SM_CLIENT_ID, so that other managers (like the WM) can
      * identify it.
      */
+
+    set_session_save_file_name (name);
 
     if (!use_default)
 	database_read = ReadSave (name, &sm_id);

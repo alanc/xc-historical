@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.12 94/07/08 14:06:15 mor Exp $ */
+/* $XConsortium: saveutil.c,v 1.13 94/07/13 14:29:21 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -74,8 +74,6 @@ char **sm_id;
 
     PendingList = ListInit();
     if(!PendingList) nomem();
-
-    set_session_save_file_name (session_name);
 
     f = fopen(session_save_file, "r");
     if(!f) {
