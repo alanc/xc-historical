@@ -1,4 +1,4 @@
-/* $XConsortium: xcmsdb.c,v 1.7 91/07/22 17:23:15 rws Exp $ */
+/* $XConsortium: xcmsdb.c,v 1.8 92/10/01 12:09:19 dave Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -42,10 +42,6 @@
 
 #include "Xcmsint.h"
 #include "SCCDFile.h"
-
-#ifdef CRAY
-#define WORD64
-#endif
 
 static unsigned long _XcmsGetElement();
 static int _XcmsGetProperty();
@@ -244,7 +240,7 @@ PrintTableType0(format, pChar, pCount)
 	break;
       case 16:
 	while (nElements--) {
-	    hValue = (unsigned short)_XcmsGetElement (format, pChar, pCount);
+	    hValue = _XcmsGetElement (format, pChar, pCount);
 	    fValue = _XcmsGetElement (format, pChar, pCount)
 		    / (XcmsFloat)65535.0;
 	    printf ("\t\t0x%x\t%8.5lf\n", hValue, fValue);
@@ -252,7 +248,7 @@ PrintTableType0(format, pChar, pCount)
 	break;
       case 32:
 	while (nElements--) {
-	    hValue = (unsigned short)_XcmsGetElement (format, pChar, pCount);
+	    hValue = _XcmsGetElement (format, pChar, pCount);
 	    fValue = _XcmsGetElement (format, pChar, pCount)
 		    / (XcmsFloat)4294967295.0;
 	    printf ("\t\t0x%x\t%8.5lf\n", hValue, fValue);
@@ -485,9 +481,9 @@ QuerySCCDataRGB(dpy, root)
 	    }
 
 	    printf ("\tVisualID: %ld\n", visualID);
-	    cType = (int)_XcmsGetElement(format, &pChar, &nitems);
+	    cType = _XcmsGetElement(format, &pChar, &nitems);
 	    printf ("\ttype: %d\n", cType);
-	    nTables = (int)_XcmsGetElement(format, &pChar, &nitems);
+	    nTables = _XcmsGetElement(format, &pChar, &nitems);
 	    printf ("\tcount: %d\n", nTables);
 
 	    switch (cType) {
@@ -669,7 +665,7 @@ QuerySCCDataGray(dpy, root)
 	    }
 
 	    printf ("\tVisualID: %ld\n", visualID);
-	    cType = (int)_XcmsGetElement(format, &pChar, &nitems);
+	    cType = _XcmsGetElement(format, &pChar, &nitems);
 	    printf ("\ttype: %d\n", cType);
 	    printf ("\tGray Conversion Table:\n");
 	    switch (cType) {
@@ -796,25 +792,13 @@ _XcmsGetElement (format, pValue, pCount)
 
     switch (format) {
       case 32:
-#ifdef WORD64
-	value = ((unsigned long)(((unsigned char *)(*pValue))[0])) << 24 ||
-		((unsigned long)(((unsigned char *)(*pValue))[1])) << 16 ||
-		((unsigned long)(((unsigned char *)(*pValue))[2])) << 8 ||
-		((unsigned long)(((unsigned char *)(*pValue))[0]));
-#else
-	value = *((unsigned long *)(*pValue));
-#endif
-	*pValue += 4;
+	value = *((unsigned long *)(*pValue)) & 0xFFFFFFFF;
+	*pValue += sizeof(unsigned long);
 	*pCount -= 1;
 	break;
       case 16:
-#ifdef WORD64
-	value = ((unsigned long)(((unsigned char *)(*pValue))[0])) << 8 ||
-		((unsigned long)(((unsigned char *)(*pValue))[1]));
-#else
 	value = *((unsigned short *)(*pValue));
-#endif
-	*pValue += 2;
+	*pValue += sizeof(unsigned short);
 	*pCount -= 1;
 	break;
       case 8:
