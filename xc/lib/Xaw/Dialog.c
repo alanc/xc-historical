@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.20 89/02/09 18:58:30 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.21 89/02/10 13:31:45 kit Exp $";
 #endif lint
 
 
@@ -130,6 +130,8 @@ Widget request, new;
 	XtSetArg(arglist[num_args], XtNlabel, dw->dialog.label); num_args++;
     }
     XtSetArg(arglist[num_args], XtNborderWidth, 0); num_args++;
+    XtSetArg(arglist[num_args], XtNleft, XtChainLeft); num_args++;
+    XtSetArg(arglist[num_args], XtNright, XtChainRight); num_args++;
 
     dw->dialog.labelW = XtCreateManagedWidget( "label", labelWidgetClass,
 					      new, arglist, num_args);
@@ -261,6 +263,8 @@ Widget w;
     XtSetArg(arglist[num_args], XtNtextOptions, (resizeWidth | resizeHeight));
     num_args++;
     XtSetArg(arglist[num_args], XtNeditType, XttextEdit); num_args++;
+    XtSetArg(arglist[num_args], XtNleft, XtChainLeft); num_args++;
+    XtSetArg(arglist[num_args], XtNright, XtChainRight); num_args++;
     
     dw->dialog.valueW = XtCreateManagedWidget("value",asciiStringWidgetClass,
 					      w, arglist, num_args);
