@@ -1062,6 +1062,24 @@ FlushClient(who, oc, extraBuf, extraCount)
 }
 
 #ifdef LBX
+static int
+ExpandOutputBuffer(oco, len)
+    ConnectionOutputPtr oco;
+    int len;
+{
+    unsigned char *obuf;
+
+    obuf = (unsigned char *)xrealloc(oco->buf, len + BUFSIZE);
+    if (!obuf)
+    {
+	oco->count = 0;
+	return(-1);
+    }
+    oco->size = len + BUFSIZE;
+    oco->buf = obuf;
+    return 0;
+}
+
 int
 LbxFlushClient(who, oc, extraBuf, extraCount)
     ClientPtr who;
@@ -1383,23 +1401,6 @@ AllocateUncompBuffer(count)
     return oco;
 }
 
-static int
-ExpandOutputBuffer(oco, len)
-    ConnectionOutputPtr oco;
-    int len;
-{
-    unsigned char *obuf;
-
-    obuf = (unsigned char *)xrealloc(oco->buf, len + BUFSIZE);
-    if (!obuf)
-    {
-	oco->count = 0;
-	return(-1);
-    }
-    oco->size = len + BUFSIZE;
-    oco->buf = obuf;
-    return 0;
-}
 #endif
 
 void
