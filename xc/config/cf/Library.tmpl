@@ -6,7 +6,20 @@
  * DoNormalLib, DoSharedLib, DoDebugLib, DoProfileLib
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.7 91/03/27 09:50:42 rws Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.8 91/04/01 09:17:57 rws Exp $
+
+#ifndef LibraryCcCmd
+#define LibraryCcCmd CcCmd
+#endif
+#ifndef LibraryCCOptions
+#define LibraryCCOptions DefaultCCOptions
+#endif
+#ifndef LibraryDefines
+#define LibraryDefines StandardDefines
+#endif
+#ifndef LibraryCDebugFlags
+#define LibraryCDebugFlags OptimizedCDebugFlags
+#endif
 
          CC = LibraryCcCmd
   CCOPTIONS = LibraryCCOptions
