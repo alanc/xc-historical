@@ -1,4 +1,4 @@
-/* $XConsortium: dipex.h,v 5.3 91/03/15 18:27:41 hersh Exp $ */
+/* $XConsortium: dipex.h,v 5.4 92/03/04 14:09:24 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -67,7 +67,6 @@ extern Bool AddResource();
 
 #define ADDRESOURCE(id,what,stuff) \
     if (!(AddResource((id),(what),(pointer)(stuff)))) { \
-	Xfree((pointer)stuff); \
 	PEX_ERR_EXIT(BadAlloc,0,cntxtPtr); \
     }
 
@@ -164,10 +163,18 @@ typedef struct {
     Drawable	    did;
 } dipexPhigsWks;
 
+
+/*
+ * NOTE: The following structure has it's fields layed out in an
+ *       order dependent way.  It is created in the DI as a dipexFont,
+ *       and is sometime referenced in the DD as a ddFontResource.
+ */
+
 typedef struct {
-    long	    refcnt;
     ddFontResource  ddFont;
+    long	    refcnt;
 } dipexFont;
+
 
 /*
     Some data structures so that we can keep track of Drawables,
