@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: xmodmap.h,v 1.4 88/10/08 13:28:43 jim Exp $
+ * $XConsortium: xmodmap.h,v 1.5 88/10/08 14:18:12 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *

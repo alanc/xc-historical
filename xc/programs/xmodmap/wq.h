@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: wq.h,v 1.1 88/02/08 18:33:59 jim Exp $
+ * $XConsortium: wq.h,v 1.2 88/09/06 17:33:42 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,12 +25,14 @@
  * by doing a partial rebind.
  */
 
-enum opcode { doKeycode, doAddModifier, doRemoveModifier, doClearModifier };
+enum opcode { doKeycode, doAddModifier, doRemoveModifier, doClearModifier,
+	      doButtons };
 
 struct op_generic {
     enum opcode type;			/* oneof enum opcode */
     union op *next;			/* next element in list or NULL */
 };
+
 
 /*
  * keycode KEYCODE = KEYSYM
@@ -88,12 +90,32 @@ struct op_clearmodifier {
     int modifier;			/* index into modifier list */
 };
 
+/*
+ * buttons = NUMBER ...
+ *
+ * set pointer map to the positive numbers given on the right hand side
+ */
+
+#define MAXBUTTONCODES 256		/* there are eight bits of buttons */
+
+struct op_buttons {
+    enum opcode type;			/* doButtons */
+    union op *next;			/* next element in list or NULL */
+    int count;				/* number of new button codes */
+    unsigned char button_codes[MAXBUTTONCODES];
+};
+
+
+/*
+ * all together now
+ */
 union op {
     struct op_generic generic;
     struct op_keycode keycode;
     struct op_addmodifier addmodifier;
     struct op_removemodifier removemodifier;
     struct op_clearmodifier clearmodifier;
+    struct op_buttons buttons;
 };
 
 extern struct wq {

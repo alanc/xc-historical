@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.8 88/10/08 13:28:46 jim Exp $
+ * $XConsortium: handle.c,v 1.9 88/10/08 14:18:13 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -90,7 +90,7 @@ void initialize_map ()
 }
 
 static int do_keycode(), do_keysym(), finish_keycode(), get_keysym_list();
-static int do_add(), do_remove(), do_clear();
+static int do_add(), do_remove(), do_clear(), do_buttons();
 
 int skip_word(), skip_space(), skip_chars();
 
@@ -104,6 +104,7 @@ static struct dt {
     { "add", 3, do_add },
     { "remove", 6, do_remove },
     { "clear", 5, do_clear },
+    { "buttons", 7, do_buttons },
     { NULL, 0, NULL }};
 
 /*
@@ -179,7 +180,7 @@ int skip_space (s, len)
     if (len <= 0 || !s || *s == '\0') return (0);
 
     for (i = 0; i < len; i++) {
-	if (!isspace(s[i])) break;
+	if (!s[i] || !isspace(s[i])) break;
     }
     return (i);
 }
@@ -271,6 +272,30 @@ static KeySym parse_keysym (line, n)
     return (XStringToKeysym (copy_to_scratch (line, n)));
 }
 
+
+static int parse_number (line, n)
+    char *line;
+    int n;
+{
+    char c;
+    char *cp;
+    char *fmt = "%d";
+    int neg = 0;
+    int val;
+
+    if (!line) return 0;
+
+    c = line[n];
+
+    cp = line;
+    cp[n] = '\0';
+    if (cp[0] == '-') neg = 1, cp++;
+    if (cp[0] == '0') cp++, fmt = "%o";
+    if (cp[0] == 'x' || cp[0] == 'X') cp++, fmt = "%x";
+    if (sscanf (cp, fmt, &val) != 1) val = 0;
+    line[n] = c;
+    return val;
+}
 
 /*
  * do_keycode - parse off lines of the form
@@ -743,6 +768,77 @@ static int do_clear (line, len)
 }
 
 /*
+ * do_buttons = get list of numbers of the form
+ *
+ *                 buttons = NUMBER ...
+ *                         ^
+ */
+
+static int do_buttons (line, len)
+    char *line;
+    int len;
+{
+    int n;
+    int i;
+    int val;
+    struct op_buttons *opb;
+    unsigned char buttons[MAXBUTTONCODES];
+
+    if (len < 2 || !line || *line == '\0') {  /* =1 minimum */
+	badmsg ("buttons input line", NULL);
+	return (-1);
+    }
+
+
+    n = skip_space (line, len);
+    line += n, len -= n;
+
+    if (line[0] != '=') {
+	badmsg ("buttons pointer code list, missing equal sign", NULL);
+	return (-1);
+    }
+
+    line++, len--;
+
+    i = 0;
+    while (len > 0) {
+	n = skip_space (line, len);
+	line += n, len -= n;
+	if (line[0] == '\0') break;
+	n = skip_word (line, len);
+	if (n < 1) {
+	    badmsg ("skip of word in buttons line:  %s", line);
+	    return (-1);
+	}
+	val = parse_number (line, n);
+	if (val < 0 || val >= MAXBUTTONCODES) {
+	    badmsg ("value %d given for buttons list", val);
+	    return (-1);
+	}
+	buttons[i++] = (unsigned char) val;
+	line += n, len -= n;
+    }
+    
+    opb = AllocStruct (struct op_buttons);
+    if (!opb) {
+	badmsg ("attempt to allocate a %ld byte buttons opcode",
+		(long) sizeof (struct op_buttons));
+	return (-1);
+    }
+
+    opb->type = doButtons;
+    opb->count = i;
+    for (i = 0; i < opb->count; i++) {
+	opb->button_codes[i] = buttons[i];
+    }
+
+    add_to_work_queue (opb);
+
+    return (0);
+}
+
+
+/*
  * get_keysym_list - parses the rest of the line into a keysyms assumes
  * that the = sign has been parsed off but there may be leading whitespace
  *
@@ -948,6 +1044,7 @@ void print_opcode (op)
  */
 
 static int exec_keycode(), exec_add(), exec_remove(), exec_clear();
+static int exec_buttons();
 
 int execute_work_queue ()
 {
@@ -1000,6 +1097,9 @@ int execute_work_queue ()
 	  case doClearModifier:
 	    if (exec_clear (op) < 0) errors++;
 	    else update_map = True;
+	    break;
+	  case doButtons:
+	    if (exec_buttons (op) < 0) errors++;
 	    break;
 	  default:
 	    fprintf (stderr, "%s:  unknown opcode %d\n", 
@@ -1061,6 +1161,12 @@ static int exec_clear (opcm)
     return (ClearModifier (&map, opcm->modifier));
 }
 
+
+static int exec_buttons (opb)
+    struct op_buttons *opb;
+{
+    return (SetPointerMap (opb->button_codes, opb->count));
+}
 
 void print_modifier_map ()
 {

@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: xmodmap.c,v 1.12 88/10/08 13:28:40 jim Exp $
+ * $XConsortium: xmodmap.c,v 1.13 88/10/08 14:18:09 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -69,6 +69,7 @@ void usage ()
 }
 
 static char *grammar_message[] = {
+"    buttons = NUMBER ...           set pointer button codes",
 "    keycode NUMBER = KEYSYM ...    assign keysyms to the given keycode",
 "    keysym KEYSYM = KEYSYM ...     look up keysym and do a keycode line",
 "    clear MODIFIER                 remove all keys for this modifier",
@@ -84,10 +85,6 @@ static char *grammar_message[] = {
 "Keysyms on the left hand side of the = sign are looked up before any changes",
 "are made; keysyms on the right are looked up after all of those on the left",
 "have been resolved.  This makes it possible to swap modifier keys.",
-"",
-"Eventually, the program will be smart enough to generate \"add\" and",
-"\"remove\" command automatically whenever a keycode that is already bound",
-"to a modifier is changed.",
 NULL };
 
 
