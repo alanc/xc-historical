@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XIMWrap.c,v 11.4 93/09/17 13:24:47 rws Exp $
+ * $XConsortium: IMWrap.c,v 11.6 93/09/18 10:27:30 rws Exp $
  */
 
 /*
@@ -46,7 +46,7 @@ _XIMCompileResourceList(res, num_res)
 #define	xrmres	((XIMrmResourceList) res)
 
     for (count = 0; count < num_res; res++, count++) {
-	xrmres->xrm_name = XrmPermStringToQuark(res->resource_name);
+	xrmres->xrm_name = XrmStringToQuark(res->resource_name);
 	xrmres->xrm_offset = -res->resource_offset - 1;
     }
 #undef	xrmres
