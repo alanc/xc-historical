@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.22 88/08/31 10:17:16 jim Exp $";
+static char *rcsid_xinit_c = "$Header: xinit.c,v 11.23 88/09/03 18:54:54 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -71,8 +71,12 @@ char *server_names[] = {
 #ifndef XINITRC
 #define XINITRC ".xinitrc"
 #endif
-char *xinitrc = XINITRC;
 char xinitrcbuf[256];
+
+#ifndef XSERVERRC
+#define XSERVERRC ".xserverrc"
+#endif
+char xserverrcbuf[256];
 
 #define	TRUE		1
 #define	FALSE		0
@@ -122,7 +126,7 @@ register char **argv;
 	register char **cptr = client;
 	register char **ptr;
 	int pid, i;
-	int client_args_given = 0;
+	int client_args_given = 0, server_args_given = 0;
 
 	program = *argv++;
 	argc--;
@@ -189,8 +193,10 @@ register char **argv;
 		displayNum = *argv;
 	else
 		displayNum = *sptr++ = default_display;
-	while (--argc >= 0)
+	while (--argc >= 0) {
+		server_args_given++;
 		*sptr++ = *argv++;
+	}
 	*sptr = NULL;
 
 
@@ -209,7 +215,7 @@ register char **argv;
 		strcpy (xinitrcbuf, cp);
 		required = True;
 	    } else if ((cp = getenv ("HOME")) != NULL) {
-		(void) sprintf (xinitrcbuf, "%s/%s", cp, xinitrc);
+		(void) sprintf (xinitrcbuf, "%s/%s", cp, XINITRC);
 	    }
 	    if (xinitrcbuf[0]) {
 		if (access (xinitrcbuf, R_OK) == 0) {		/* read */
@@ -218,15 +224,50 @@ register char **argv;
 		    client[2] = NULL;
 		} else if (access (xinitrcbuf, F_OK) == 0) {	/* exists */
 		    fprintf (stderr,
-			     "%s:  warning, can't read init file \"%s\"\n",
+		     "%s:  warning, can't read client init file \"%s\"\n",
 			     program, xinitrcbuf);
 		} else if (required) {			/* doesn't exist */
 		    fprintf (stderr, 
-			     "%s:  warning, no such init file \"%s\"\n",
+		     "%s:  warning, no such client init file \"%s\"\n",
 			     program, xinitrcbuf);
 		}
 	    }
 	}
+
+	/*
+	 * if no server arguments given, check for a startup file and copy
+	 * that into the argument list
+	 */
+	if (server_args_given == 0) {
+	    char *cp;
+	    Bool required = False;
+	    char xserverrcbuf[256];
+
+	    xserverrcbuf[0] = '\0';
+	    if ((cp = getenv ("XSERVERRC")) != NULL) {
+		strcpy (xserverrcbuf, cp);
+		required = True;
+	    } else if ((cp = getenv ("HOME")) != NULL) {
+		(void) sprintf (xserverrcbuf, "%s/%s", cp, XSERVERRC);
+	    }
+	    if (xserverrcbuf[0]) {
+		if (access (xserverrcbuf, R_OK) == 0) {		/* read */
+		    server[0] = SHELL;
+		    server[1] = xserverrcbuf;
+		    server[2] = NULL;
+		} else if (access (xserverrcbuf, F_OK) == 0) {	/* exists */
+		    fprintf (stderr,
+		     "%s:  warning, can't read server init file \"%s\"\n",
+			     program, xserverrcbuf);
+		} else if (required) {			/* doesn't exist */
+		    fprintf (stderr, 
+			     "%s:  warning, no such server init file \"%s\"\n",
+			     program, xserverrcbuf);
+		}
+	    }
+	}
+
+
 
 	/*
 	 * put the display name into the environment
