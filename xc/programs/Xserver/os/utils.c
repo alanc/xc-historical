@@ -21,14 +21,20 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.46 88/07/12 21:43:30 xguest Locked $ */
+/* $Header: utils.c,v 1.47 88/07/20 13:53:59 xguest Exp $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
 #include "X.h"
 #include "input.h"
 #include "opaque.h"
+#ifdef macII
+#include <string.h>
+#define index strchr
+#define rindex strrchr
+#else /* else not macII */
 #include <strings.h>
+#endif /* macII */
 extern char *display;
 
 extern long defaultScreenSaverTime;	/* for parsing command line */

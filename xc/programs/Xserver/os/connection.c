@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.74 88/07/20 13:52:20 xguest Exp $ */
+/* $Header: connection.c,v 1.75 88/07/20 17:21:07 toddb Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -63,7 +63,13 @@ SOFTWARE.
 #endif
 #include <stdio.h>
 #include <sys/uio.h>
+#ifdef macII
+#include <string.h>
+#define index strchr
+#define rindex strrchr
+#else /* else not macII */
 #include <strings.h>
+#endif /* macII */
 #include "osstruct.h"
 #include "osdep.h"
 #include "opaque.h"
