@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.173 93/10/25 15:00:21 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.175 93/12/13 18:30:33 rob Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -525,6 +525,8 @@ ProgramTargetName(server): subdirs objects libs				@@\
 Concat(load,server):							@@\
 	MoveToBakFile(ProgramTargetName(server))			@@\
 	LinkRule(ProgramTargetName(server),$(LDOPTIONS),objects,libs $(LDLIBS) syslibs) @@\
+									@@\
+loadX:: Concat(load,server)						@@\
 									@@\
 PurifyProgramTarget(server,subdirs objects libs,objects libs $(LDLIBS) syslibs) @@\
 PurifyLinkTarget(Concat(load,server),server,objects libs $(LDLIBS) syslibs) @@\
