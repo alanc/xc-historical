@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: xload.c,v 1.6 87/12/08 11:23:37 swick Locked $";
+static char rcsid[] = "$Header: xload.c,v 1.7 88/02/05 15:20:37 swick Exp $";
 #endif  lint
 
 #include <X/Intrinsic.h>
@@ -32,7 +32,7 @@ void usage()
 "             [-geometry [{width}][x{height}][{+-}{xoff}[{+-}{yoff}]]] [-display [{host}]:[{vs}]]\n"
 );
     fprintf(stderr,
-"             [-fg {color}] [-bg {color}] [-hl {color}] [-bd {color}] [-bw {pixels}]\n");
+"             [-fg {color}] [-bg {color}] [-bd {color}] [-bw {pixels}]\n");
     exit(1);
 }
 
