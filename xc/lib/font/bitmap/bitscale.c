@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.5 91/06/17 11:38:38 rws Exp $
+ * $XConsortium: bitscale.c,v 1.6 91/06/21 15:17:33 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -260,7 +260,7 @@ computeProps(pf, wasStringProp, npf, isStringProp, nprops, xfactor, yfactor)
     int         count;
     fontProp   *t;
 
-    for (count = 0; nprops > 0; nprops--, pf++) {
+    for (count = 0; nprops > 0; nprops--, pf++, wasStringProp++) {
 	n = sizeof(fontPropTable) / sizeof(fontProp);
 	for (t = fontPropTable; n && (t->atom != pf->name); n--, t++);
 	if (!n)
@@ -282,7 +282,7 @@ computeProps(pf, wasStringProp, npf, isStringProp, nprops, xfactor, yfactor)
 	npf->name = pf->name;
 	npf++;
 	count++;
-	*isStringProp++ = *wasStringProp++;
+	*isStringProp++ = *wasStringProp;
     }
     return count;
 }
@@ -440,6 +440,8 @@ ScaleFont(opf, widthMult, heightMult, props, propCount, isStringProp)
     bitmapFont = (BitmapFontPtr) xalloc(sizeof(BitmapFontRec));
     if (!bitmapFont)
 	goto bail;
+    nchars = (opf->info.lastRow - opf->info.firstRow + 1) *
+	(opf->info.lastCol - opf->info.firstCol + 1);
     pf->fontPrivate = (pointer) bitmapFont;
     bitmapFont->version_num = obitmapFont->version_num;
     bitmapFont->num_chars = obitmapFont->num_chars;
@@ -450,7 +452,6 @@ ScaleFont(opf, widthMult, heightMult, props, propCount, isStringProp)
     bitmapFont->encoding = 0;
     bitmapFont->bitmapExtra = 0;
     bitmapFont->pDefault = 0;
-    nchars = obitmapFont->num_chars;
     bitmapFont->metrics = (CharInfoPtr) xalloc(nchars * sizeof(CharInfoRec));
     if (!bitmapFont->metrics)
 	goto bail;
@@ -461,6 +462,10 @@ ScaleFont(opf, widthMult, heightMult, props, propCount, isStringProp)
 	if (!bitmapFont->ink_metrics)
 	    goto bail;
     }
+    bitmapFont->encoding = (CharInfoPtr *) xalloc(nchars * sizeof(CharInfoPtr));
+    if (!bitmapFont->encoding)
+	goto bail;
+
     bytestoalloc = 0;
 
 #define MAXSHORT    32767
@@ -480,56 +485,50 @@ ScaleFont(opf, widthMult, heightMult, props, propCount, isStringProp)
     pfi->maxbounds.descent = MINSHORT;
     pfi->maxbounds.characterWidth = MINSHORT;
 
-    for (opci = obitmapFont->metrics,
-	    pci = bitmapFont->metrics;
-	    nchars;
-	    opci++, pci++, nchars--) {
-	newWidth = GLYPHWIDTHPIXELS(opci) * widthMult;
-	newHeight = GLYPHHEIGHTPIXELS(opci) * heightMult;
-	if (newHeight == 0)
-	    newHeight = 1;
-	if (newWidth == 0)
-	    newWidth = 1;
-
-	pci->metrics.leftSideBearing = (opci->metrics.leftSideBearing *
-					widthMult);
-	pci->metrics.rightSideBearing = newWidth +
-	    pci->metrics.leftSideBearing;
-	pci->metrics.ascent = opci->metrics.ascent * heightMult;
-	pci->metrics.descent = newHeight - pci->metrics.ascent;
-	pci->metrics.characterWidth = opci->metrics.characterWidth * widthMult;
-	pci->metrics.attributes = opci->metrics.attributes;
-
-	bytestoalloc += BYTES_FOR_GLYPH(pci, glyph);
-#define MINMAX(field) \
-	if (pfi->minbounds.field > pci->metrics.field) \
-	    pfi->minbounds.field = pci->metrics.field; \
-	if (pfi->maxbounds.field < pci->metrics.field) \
-	    pfi->maxbounds.field = pci->metrics.field
-
-	MINMAX(leftSideBearing);
-	MINMAX(rightSideBearing);
-	MINMAX(ascent);
-	MINMAX(descent);
-	MINMAX(characterWidth);
-#undef MINMAX
-    }
-    bitmapFont->bitmaps = (char *) xalloc(bytestoalloc);
-    bzero(bitmapFont->bitmaps, bytestoalloc);
-    if (!bitmapFont->bitmaps)
-	goto bail;
-    nchars = (opf->info.lastRow - opf->info.firstRow + 1) *
-	(opf->info.lastCol - opf->info.firstCol + 1);
-    bitmapFont->encoding = (CharInfoPtr *) xalloc(nchars * sizeof(CharInfoPtr));
-    if (!bitmapFont->encoding)
-	goto bail;
-
+    pci = bitmapFont->metrics;
     for (i = 0; i < nchars; i++)
-	if (obitmapFont->encoding[i])
-	    bitmapFont->encoding[i] = bitmapFont->metrics +
-		(obitmapFont->encoding[i] - obitmapFont->metrics);
+    {
+	if (opci = obitmapFont->encoding[i])
+	{
+	    bitmapFont->encoding[i] = pci;
+	    newWidth = GLYPHWIDTHPIXELS(opci) * widthMult;
+	    newHeight = GLYPHHEIGHTPIXELS(opci) * heightMult;
+	    if (newHeight == 0)
+	    	newHeight = 1;
+	    if (newWidth == 0)
+	    	newWidth = 1;
+    
+	    pci->metrics.leftSideBearing = (opci->metrics.leftSideBearing *
+					    widthMult);
+	    pci->metrics.rightSideBearing = newWidth +
+	    	pci->metrics.leftSideBearing;
+	    pci->metrics.ascent = opci->metrics.ascent * heightMult;
+	    pci->metrics.descent = newHeight - pci->metrics.ascent;
+	    pci->metrics.characterWidth = opci->metrics.characterWidth * widthMult;
+	    pci->metrics.attributes = opci->metrics.attributes;
+    
+	    bytestoalloc += BYTES_FOR_GLYPH(pci, glyph);
+#define MINMAX(field) \
+	    if (pfi->minbounds.field > pci->metrics.field) \
+	    	pfi->minbounds.field = pci->metrics.field; \
+	    if (pfi->maxbounds.field < pci->metrics.field) \
+	    	pfi->maxbounds.field = pci->metrics.field
+    
+	    MINMAX(leftSideBearing);
+	    MINMAX(rightSideBearing);
+	    MINMAX(ascent);
+	    MINMAX(descent);
+	    MINMAX(characterWidth);
+#undef MINMAX
+	    pci++;
+	}
 	else
 	    bitmapFont->encoding[i] = 0;
+    }
+    bitmapFont->bitmaps = (char *) xalloc(bytestoalloc);
+    if (!bitmapFont->bitmaps)
+	goto bail;
+    bzero(bitmapFont->bitmaps, bytestoalloc);
 
     /* Copy over the scaled XLFD properties */
 
@@ -550,9 +549,6 @@ ScaleFont(opf, widthMult, heightMult, props, propCount, isStringProp)
     if (!scratch)
 	goto bail;
 
-    glyphBytes = bitmapFont->bitmaps;
-    pci = bitmapFont->metrics;
-    nchars = obitmapFont->num_chars;
     pink = bitmapFont->ink_metrics;
     if (pink) {
 	pfi->ink_minbounds.leftSideBearing = MAXSHORT;
@@ -570,16 +566,39 @@ ScaleFont(opf, widthMult, heightMult, props, propCount, isStringProp)
 	pfi->ink_maxbounds = pfi->maxbounds;
     }
 
-    for (opci = obitmapFont->metrics; nchars; pci++, opci++, --nchars) {
-	pci->bits = glyphBytes;
-	glyphBytes += BYTES_FOR_GLYPH(pci, glyph);
-
-	/* Scale the glyph */
-	ScaleBitmap(pf, opci, pci, scratch, pink);
-	if (pink)
-	    pink++;
+    glyphBytes = bitmapFont->bitmaps;
+    pci = bitmapFont->metrics;
+    for (i = 0; i < nchars; i++)
+    {
+	if (opci = obitmapFont->encoding[i])
+	{
+	    pci = bitmapFont->encoding[i];
+	    if (pink = bitmapFont->ink_metrics)
+	    {
+		pink = pink + (pci - bitmapFont->metrics);
+	    }
+	    pci->bits = glyphBytes;
+	    ScaleBitmap (pf, opci, pci, scratch, pink);
+	    glyphBytes += BYTES_FOR_GLYPH(pci, glyph);
+	}
     }
     xfree(scratch);
+
+    if (pfi->defaultCh != (unsigned short) NO_SUCH_CHAR) {
+	int         r,
+	            c,
+	            cols;
+
+	r = pfi->defaultCh >> 8;
+	c = pfi->defaultCh & 0xFF;
+	if (pfi->firstRow <= r && r <= pfi->lastRow &&
+		pfi->firstCol <= c && c <= pfi->lastCol) {
+	    cols = pfi->lastCol - pfi->firstCol + 1;
+	    r = r - pfi->firstRow;
+	    c = c - pfi->firstCol;
+	    bitmapFont->pDefault = bitmapFont->encoding[r * cols + c];
+	}
+    }
 
     return pf;
 bail:
