@@ -49,6 +49,7 @@ SRCS = \
 	Display.c \
 	Error.c \
 	Event.c \
+	EventUtil.c \
 	Functions.c \
 	GCManager.c \
 	Geometry.c \
@@ -57,9 +58,12 @@ SRCS = \
 	GetValues.c \
 	Initialize.c \
 	Intrinsic.c \
+	Keyboard.c \
 	Manage.c \
 	NextEvent.c \
 	Object.c \
+	PassivGrab.c \
+	Pointer.c \
 	Popup.c \
 	PopupCB.c \
 	RectObj.c \
@@ -93,6 +97,7 @@ OBJS = \
 	Display.o \
 	Error.o \
 	Event.o \
+	EventUtil.o \
 	Functions.o \
 	GCManager.o \
 	Geometry.o \
@@ -101,9 +106,12 @@ OBJS = \
 	GetValues.o \
 	Initialize.o \
 	Intrinsic.o \
+	Keyboard.o \
 	Manage.o \
 	NextEvent.o \
 	Object.o \
+	PassivGrab.o \
+	Pointer.o \
 	Popup.o \
 	PopupCB.o \
 	RectObj.o \
