@@ -16,9 +16,10 @@
 #ifdef VaxArchitecture
 #define XqvssServer Xqvss
 #define XqdssServer Xqdss
+#define DriverIncludes -I/sys/vaxuba
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
 #define HasSaberC YES
-#define ServerDefines StandardDefines ExtensionDefines -DXDMCP -DNOSTDHDRS
+#define ServerDefines StandardDefines ExtensionDefines -DXDMCP -DNOSTDHDRS -DX11R4
 #endif
 
 #ifdef MipsArchitecture
@@ -34,5 +35,5 @@
 #define BuildExamples NO
 #endif
 
-/**/# platform:  $XConsortium: ultrix.cf,v 1.16 89/10/11 18:54:54 jim Exp $
+/**/# platform:  $XConsortium: ultrix.cf,v 1.17 89/10/17 10:48:49 jim Exp $
 /**/# operating system:  OSName
