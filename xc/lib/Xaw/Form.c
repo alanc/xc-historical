@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Form.c,v 1.32 89/10/06 13:48:12 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Form.c,v 1.33 89/10/09 16:20:08 jim Exp $";
 #endif /* lint */
 
 
@@ -395,9 +395,8 @@ static void Resize(w)
 	height = (Dimension)
 	       (form->form.virtual_height < 1) ? 1 : form->form.virtual_height;
 
-	XtMoveWidget( (*childP), x, y );
-	XtResizeWidget( (*childP), width, height,
-		        (*childP)->core.border_width );
+	XtConfigureWidget( *childP, x, y, (Dimension)width, (Dimension)height,
+			  (*childP)->core.border_width );
     }
 
     fw->form.old_width = fw->core.width;
