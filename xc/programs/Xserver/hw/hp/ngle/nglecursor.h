@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: nglecursor.h,v 1.1 93/08/08 12:57:15 rws Exp $ */
 
 /*************************************************************************
  * 
@@ -116,12 +116,14 @@ typedef struct _NgleSpriteRec
  ******************************************************************************
  */
 extern Bool	ngleInitSprite();
+extern Bool	hyperInitSprite();
 extern Bool	ngleUninitSprite();
 
 extern void	ngleDisableSprite();
 extern void	ngleChangeScreen();
 
 extern Bool	ngleDisplayCursor();
+extern Bool     hyperDisplayCursor();
 extern void	ngleRecolorCursor();
 
 extern Bool	ngleSetCursorPosition();

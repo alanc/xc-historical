@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: nglecolormap.h,v 1.1 93/08/08 12:56:48 rws Exp $ */
 
 /*************************************************************************
  * 
@@ -33,6 +33,25 @@ performance, or use of this material.
 #ifndef NGLECOLORMAP_H
 #define NGLECOLORMAP_H
 
+#define HYPER_CMAP_TYPE				0
+#define NGLE_CMAP_INDEXED0_TYPE			0
+#define NGLE_CMAP_OVERLAY_TYPE			3
+
+/* Typedef of LUT (Colormap) BLT Control Register */
+typedef union
+{   /* Note assumption that fields are packed left-to-right */
+    unsigned long   all;
+    struct
+    {
+        unsigned    enable              :  1;
+        unsigned    waitBlank           :  1;
+        unsigned    reserved1           :  4;
+        unsigned    lutOffset           : 10;   /* Within destination LUT */
+        unsigned    lutType             :  2;   /* Cursor, image, overlay */
+        unsigned    reserved2           :  4;
+        unsigned    length              : 10;
+    } fields;
+} NgleLutBltCtl;
 
 extern void ngleInstallColormap(
     ColormapPtr pColormap);

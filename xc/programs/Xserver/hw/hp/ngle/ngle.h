@@ -1,4 +1,4 @@
-/* $XConsortium: ngle.h,v 1.1 93/08/08 12:56:28 rws Exp $ */
+/* $XConsortium: ngle.h,v 1.2 94/05/28 15:45:30 dpw Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.
@@ -25,10 +25,19 @@ performance, or use of this material.
 #ifndef NGLE_H
 #define NGLE_H
 
+/* Rummor has it that NDEBUG is defined by default in X build environment.
+ * It is used to activate assert statements (see /usr/include/assert.h).
+ *	Compiling with the preprocessor option -DNDEBUG (see cpp(1)), or with
+ *	the preprocessor control statement #define NDEBUG ahead of the
+ *	#include <assert.h> statement, stops assertions from being compiled
+ *	into the program.
+ */
+
 #include <unistd.h>         /* keys off _[POSIX|HPUX|XOPEN]_SOURCE */
 #include <stdlib.h>         /* For prototype of getenv() */
 #include <stdio.h>
 #include <errno.h>
+#include <assert.h>         /* For assert() statements */
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
@@ -96,8 +105,12 @@ performance, or use of this material.
 #       define CRX24_OVERLAY_PLANES	0x920825AA
 #   endif
 
-#   ifndef S9000_ID_ARTIST		/* Artist (Gecko) Graphics */
+#   ifndef S9000_ID_ARTIST		/* Artist (Gecko/712 & 715) Graphics */
 #       define S9000_ID_ARTIST          0x2B4DED6D
+#   endif
+
+#   ifndef S9000_ID_HCRX		/* hyperdrive Graphics */
+#       define S9000_ID_HCRX		0x2BCB015A
 #   endif
 
 #define hpGivingUp  (dispatchException & DE_TERMINATE)
