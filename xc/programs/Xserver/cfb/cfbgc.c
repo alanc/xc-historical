@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.37 90/03/20 14:48:12 rws Exp $ */
+/* $XConsortium: cfbgc.c,v 5.38 90/05/15 18:40:21 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -63,39 +63,59 @@ static GCFuncs cfbFuncs = {
     cfbCopyClip,
 };
 
-static GCOps	cfbTEOps = {
-    cfbSolidSpansCopy,
-    cfbSetSpans,
-    cfbPutImage,
-    cfbCopyArea,
-    cfbCopyPlane,
-    cfbPolyPoint,
-    cfbLineSS,
-    cfbSegmentSS,
-    miPolyRectangle,
-#if PPW == 4
-    cfbZeroPolyArcSS8Copy,
-#else
-    miZeroPolyArc,
-#endif
-    miFillPolygon,
-    cfbPolyFillRect,
-    cfbPolyFillArcSolidCopy,
-    miPolyText8,
-    miPolyText16,
-    miImageText8,
-    miImageText16,
-#if PPW == 4
-    cfbTEGlyphBlt8,
-    cfbPolyGlyphBlt8,
-    cfbPushPixels8,
-#else
-    cfbTEGlyphBlt,
-    miPolyGlyphBlt,
-    mfbPushPixels,
-#endif
-    NULL,
+#define cfbTEOps(name,teglyphblt) \
+static GCOps	name = { \
+    cfbSolidSpansCopy, \
+    cfbSetSpans, \
+    cfbPutImage, \
+    cfbCopyArea, \
+    cfbCopyPlane, \
+    cfbPolyPoint, \
+    cfbLineSS, \
+    cfbSegmentSS, \
+    miPolyRectangle, \
+    cfbZeroPolyArcSS8Copy, \
+    miFillPolygon, \
+    cfbPolyFillRect, \
+    cfbPolyFillArcSolidCopy, \
+    miPolyText8, \
+    miPolyText16, \
+    miImageText8, \
+    miImageText16, \
+    teglyphblt, \
+    cfbPolyGlyphBlt8, \
+    cfbPushPixels8, \
+    NULL, \
 };
+
+extern void cfbTEGlyphBlt8x2(),
+	    cfbTEGlyphBlt8x3(),
+	    cfbTEGlyphBlt8x5();
+
+cfbTEOps(cfbTEOps2,cfbTEGlyphBlt8x2)
+cfbTEOps(cfbTEOps3,cfbTEGlyphBlt8x3)
+cfbTEOps(cfbTEOps4,cfbTEGlyphBlt8)
+cfbTEOps(cfbTEOps5,cfbTEGlyphBlt8x5)
+
+static GCOps	*cfbTEOpsList[] = {
+    &cfbTEOps4,
+    &cfbTEOps4,
+    &cfbTEOps2,
+    &cfbTEOps3,
+    &cfbTEOps4,
+    &cfbTEOps5,
+};
+
+static void	(*cfbTEGlyphBlt8List[])() = {
+    cfbTEGlyphBlt8,
+    cfbTEGlyphBlt8,
+    cfbTEGlyphBlt8x2,
+    cfbTEGlyphBlt8x3,
+    cfbTEGlyphBlt8,
+    cfbTEGlyphBlt8x5,
+};
+
+#define NumCFBTEOps (sizeof cfbTEOpsList / sizeof cfbTEOpsList[0])
 
 static GCOps	cfbNonTEOps = {
     cfbSolidSpansCopy,
@@ -130,6 +150,24 @@ static GCOps	cfbNonTEOps = {
     NULL,
 };
 
+static int
+numGlyphsPerLongword (f)
+    FontPtr f;
+{
+    int	    w;
+
+    w = f->pFI->maxbounds.metrics.characterWidth;
+    if (w <= 6)
+	return 5;
+    if (w <= 8)
+	return 4;
+    if (w <= 10)
+	return 3;
+    if (w <= 16)
+	return 2;
+    return 1;
+}
+
 static GCOps *
 matchCommon (pGC, devPriv)
     GCPtr	    pGC;
@@ -152,7 +190,7 @@ matchCommon (pGC, devPriv)
 	    && pGC->font->pFI->maxbounds.metrics.characterWidth >= 4
 #endif
 	)
-	    return &cfbTEOps;
+	    return cfbTEOpsList[numGlyphsPerLongword (pGC->font)];
 	else
 	    return &cfbNonTEOps;
     }
@@ -686,7 +724,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 		)
 	    {
 #if PPW == 4
-                pGC->ops->ImageGlyphBlt = cfbTEGlyphBlt8;
+                pGC->ops->ImageGlyphBlt = cfbTEGlyphBlt8List[numGlyphsPerLongword (pGC->font)];
 #else
                 pGC->ops->ImageGlyphBlt = cfbTEGlyphBlt;
 #endif
