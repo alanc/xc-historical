@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.176 93/06/18 17:02:53 kaleb Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.177 93/07/06 18:35:30 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2474,6 +2474,20 @@ extern void XtGetApplicationNameAndClass(
 #endif
 );
 
+extern void XtRegisterDrawable(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    Drawable		/* drawable */,
+    Widget		/* widget */
+#endif
+);
+
+extern void XtUnregisterDrawable(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    Drawable		/* drawable */
+#endif
+);
 
 /*
  *	Predefined Resource Converters
