@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.49 92/04/11 15:55:36 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.50 92/04/12 13:09:25 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -44,10 +44,14 @@ Syntax of magic values in the input stream:
 	u		top-level widget going up
 	k		require windows that select for key events
 	b		require windows that select for button events
-	N[name.class]	require window with given name and/or class
+	n<name>		require window with given name
 			this must be the last option
-			either name or class can be empty
-	[mult]		off-axis distance multiplier (float)
+	p<prefix>	require window with given name prefix
+			this must be the last option
+	N[<name>.<class>] require window with given instance name and/or class
+			this must be the last option
+			either <name> or <class> can be empty
+	[ <mult>]	off-axis distance multiplier (float)
 ^T^M			set Meta key for next character
 ^T^P			print debugging info
 ^T^Q			quit moving (mouse or key)
@@ -124,6 +128,8 @@ int curbscount = 0;
 Bool in_control_seq = False;
 Bool skip_next_control_char = False;
 
+typedef enum {JNoMatch, JNameMatch, JPrefixMatch, JClassMatch} MatchType;
+
 typedef struct {
     char dir;
     double xmult;
@@ -134,7 +140,7 @@ typedef struct {
     int bestx, besty;
     double best_dist;
     Bool recurse;
-    Bool check_nc;
+    MatchType match;
     char name[100];
     char class[100];
 } Closest;
@@ -755,7 +761,22 @@ find_closest(rec, parent, pwa, puniv, level)
 	    continue;
 	if (rec->recurse && !box_left(univ, iuniv))
 	    continue;
-	if (rec->check_nc) {
+	switch (rec->match) {
+	case JNameMatch:
+	case JPrefixMatch:
+	    if (!level)
+		child = XmuClientWindow(dpy, child);
+	    if (!XFetchName(dpy, child, &hints.res_name))
+		continue;
+	    if (rec->match == JNameMatch)
+		ok = !strcmp(rec->name, hints.res_name);
+	    else
+		ok = !strncmp(rec->name, hints.res_name, strlen(rec->name));
+	    XFree(hints.res_name);
+	    if (!ok)
+		continue;
+	    break;
+	case JClassMatch:
 	    if (!level)
 		child = XmuClientWindow(dpy, child);
 	    if (!XGetClassHint(dpy, child, &hints))
@@ -766,6 +787,8 @@ find_closest(rec, parent, pwa, puniv, level)
 	    XFree(hints.res_class);
 	    if (!ok)
 		continue;
+	default:
+	    break;
 	}
 	compute_box(univ, &box);
 	switch (rec->dir) {
@@ -843,7 +866,7 @@ do_jump(buf)
     rec.recurse = False;
     rec.input = 0;
     rec.best_dist = 4e9;
-    rec.check_nc = False;
+    rec.match = JNoMatch;
     for (; *buf; buf++) {
 	switch (*buf) {
 	case 'C':
@@ -869,6 +892,7 @@ do_jump(buf)
 	    rec.input |= ButtonPressMask|ButtonReleaseMask;
 	    break;
 	case 'N':
+	    rec.match = JClassMatch;
 	    cptr = index(buf+1, '.');
 	    endptr = index(buf+1, ' ');
 	    if (endptr)
@@ -886,7 +910,22 @@ do_jump(buf)
 		buf = endptr - 1;
 	    } else
 		buf += strlen(buf+1);
-	    rec.check_nc = True;
+	    break;
+	case 'n':
+	case 'p':
+	    if (*buf == 'n')
+		rec.match = JNameMatch;
+	    else
+		rec.match = JPrefixMatch;
+	    endptr = index(buf+1, ' ');
+	    if (endptr)
+		*endptr = '\0';
+	    strcpy(rec.name, buf + 1);
+	    if (endptr) {
+		*endptr = ' ';
+		buf = endptr - 1;
+	    } else
+		buf += strlen(buf+1);
 	    break;
 	case ' ':
 	    mult = strtod(buf+1, &endptr);
