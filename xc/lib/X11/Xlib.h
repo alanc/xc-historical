@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.201 91/04/15 21:59:52 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.202 91/05/01 08:43:13 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -616,7 +616,7 @@ typedef struct {
 	int detail;
 	/*
 	 * NotifyAncestor, NotifyVirtual, NotifyInferior, 
-	 * NotifyNonLinear,NotifyNonLinearVirtual
+	 * NotifyNonlinear,NotifyNonlinearVirtual
 	 */
 	Bool same_screen;	/* same screen flag */
 	Bool focus;		/* boolean focus */
@@ -635,7 +635,7 @@ typedef struct {
 	int detail;
 	/*
 	 * NotifyAncestor, NotifyVirtual, NotifyInferior, 
-	 * NotifyNonLinear,NotifyNonLinearVirtual, NotifyPointer,
+	 * NotifyNonlinear,NotifyNonlinearVirtual, NotifyPointer,
 	 * NotifyPointerRoot, NotifyDetailNone 
 	 */
 } XFocusChangeEvent;
