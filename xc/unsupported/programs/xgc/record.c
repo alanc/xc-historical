@@ -171,7 +171,7 @@ void print_out_gc_values()
   fprintf(recordfile,"background %d\n",X.gcv.background);
   fprintf(recordfile,"planemask %d\n",X.gcv.plane_mask);
   fprintf(recordfile,"dashlist %d\n",X.gcv.dashes);
-  /* FONT */
+  fprintf(recordfile,"font %s\n",X.fontname);
 }  
 
 /********************************************/
