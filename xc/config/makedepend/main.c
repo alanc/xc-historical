@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.43 91/01/04 19:59:45 gildea Exp $
+ * $XConsortium: main.c,v 1.44 91/02/13 11:32:55 rws Exp $
  */
 #ifdef SVR4
 #define _POSIX_SOURCE
@@ -104,6 +104,9 @@ main(argc, argv)
 		    continue;
 		}
 		if (**argv != '-') {
+			/* treat +thing as an option for C++ */
+			if (endmarker && **argv == '+')
+				continue;
 			*fp++ = argv[0];
 			continue;
 		}
