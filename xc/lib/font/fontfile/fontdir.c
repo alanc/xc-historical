@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontdir.c,v 1.19 94/02/08 18:32:32 gildea Exp $
+ * $XConsortium: fontdir.c,v 1.20 94/02/08 23:21:10 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -192,6 +192,19 @@ FontFileSortDir(dir)
     /* now that the table is fixed in size, swizzle the pointers */
     FontFileSwitchStringsToBitmapPointers (dir);
 }
+
+/*
+  Given a Font Table, SetupWildMatch() sets up various pointers and state
+  information so the table can be searched for name(s) that match a given
+  fontname pattern -- which may contain wildcards.  Under certain
+  circumstances, SetupWildMatch() will find the one table entry that
+  matches the pattern.  If those circumstances do not pertain,
+  SetupWildMatch() returns a range within the the table that should be
+  searched for matching name(s).  With the information established by
+  SetupWildMatch(), including state information in "private", the
+  PatternMatch() procedure is then used to test names in the range for a
+  match.
+*/
 
 #define isWild(c)   ((c) == XK_asterisk || (c) == XK_question)
 
