@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $Header: dixutils.c,v 1.22 87/09/11 07:18:47 sun Locked $ */
+/* $Header: dixutils.c,v 1.23 87/09/11 17:56:56 sun Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -83,7 +83,7 @@ ClientTimeToServerTime(c)
 
 WindowPtr
 LookupWindow(rid, client)
-    int rid;
+    XID rid;
     ClientPtr client;
 {
     WindowPtr pWin;
@@ -105,7 +105,7 @@ LookupWindow(rid, client)
 
 pointer
 LookupDrawable(rid, client)
-    int rid;
+    XID rid;
     ClientPtr client;
 {
     DrawablePtr pDraw;
@@ -132,8 +132,8 @@ LookupDrawable(rid, client)
 int
 AlterSaveSetForClient(client, pWin, mode)
     ClientPtr client;
-    pointer pWin;
-    char mode;
+    WindowPtr pWin;
+    unsigned mode;
 {
     int numnow;
     pointer *pTmp;
@@ -144,7 +144,7 @@ AlterSaveSetForClient(client, pWin, mode)
     if (numnow)
     {
 	pTmp = client->saveSet;
-	while ((j < numnow) && (pTmp[j] != pWin)) 
+	while ((j < numnow) && (pTmp[j] != (pointer)pWin))
 	    j++;
     }
     if (mode == SetModeInsert)
@@ -152,11 +152,11 @@ AlterSaveSetForClient(client, pWin, mode)
 	if (j < numnow)         /* duplicate */
 	   return(Success);
 	numnow++;
-	client->saveSet = (pointer * )Xrealloc(
+	client->saveSet = (pointer * )xrealloc(
 		  client->saveSet, 
 		  sizeof(int) * numnow);
        	client->numSaved = numnow;
-	client->saveSet[numnow - 1] = pWin;
+	client->saveSet[numnow - 1] = (pointer)pWin;
 	return(Success);
     }
     else if ((mode == SetModeDelete) && (j < numnow))
@@ -168,12 +168,12 @@ AlterSaveSetForClient(client, pWin, mode)
 	}
 	numnow--;
         if (numnow)
-    	    client->saveSet = (pointer * )Xrealloc(
+    	    client->saveSet = (pointer * )xrealloc(
 		      client->saveSet, 
 		      sizeof(int) * numnow);
         else
         {
-            Xfree(client->saveSet);
+            xfree(client->saveSet);
 	    client->saveSet = (pointer *)NULL;
 	}
 	client->numSaved = numnow;
@@ -184,7 +184,7 @@ AlterSaveSetForClient(client, pWin, mode)
 
 
 DeleteWindowFromAnySaveSet(pWin)
-    pointer pWin;
+    WindowPtr pWin;
 {
     register int i;
     register ClientPtr client;
