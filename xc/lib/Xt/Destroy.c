@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.39 90/12/29 12:14:38 rws Exp $ */
+/* $XConsortium: Destroy.c,v 1.40 91/02/12 13:37:40 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -219,8 +219,14 @@ void _XtDoPhase2Destroy(app, dispatch_level)
      */
 
     int i = 0;
-    DestroyRec* dr = app->destroy_list;
+    DestroyRec* dr;
     while (i < app->destroy_count) {
+
+	/* XtPhase2Destroy can result in calls to XtDestroyWidget,
+	 * and these could cause app->destroy_list to be reallocated.
+	 */
+
+	dr = app->destroy_list + i;
 	if (dr->dispatch_level >= dispatch_level)  {
 	    Widget w = dr->widget;
 	    if (--app->destroy_count)
@@ -231,7 +237,6 @@ void _XtDoPhase2Destroy(app, dispatch_level)
 	}
 	else {
 	    i++;
-	    dr++;
 	}
     }
 }
