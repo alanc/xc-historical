@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.26 92/07/07 17:06:06 rws Exp $
+.\" $XConsortium: Consortium.man,v 1.27 92/07/10 11:09:11 rws Exp $
 .TH XCONSORTIUM 1 "Release 5"  "X Version 11"
 .SH NAME
 MIT X Consortium \- MIT X Consortium information
@@ -84,6 +84,7 @@ Cambridge, MA 02139
 .nf
 Apple Computer, Inc.
 Bull S.A.
+Computervision Corp.
 Control Data Corporation
 Convex Computer Corporation
 Cray Research, Inc.
@@ -110,7 +111,6 @@ Nippon Telegraph and Telephone Corporation
 Oki Electric Industry Co., Ltd.
 Olivetti Systems & Networks
 OMRON Corporation
-Prime Computer, Inc.
 The Santa Cruz Operation, Inc.
 Sequent Computer Systems Inc.
 Siemens Nixdorf Informationssysteme AG
