@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.8 93/09/14 15:34:22 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.9 93/09/22 11:19:08 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -24,6 +24,16 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <X11/Xfuncs.h>
 #include <X11/Xmd.h>
 #include <X11/ICE/ICEproto.h>
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *malloc();
+#endif
+
+#ifndef NULL
+#define NULL 0
+#endif
 
 
 /*
@@ -365,29 +375,35 @@ typedef struct {
 
 #ifndef WORD64
 
-#define EXTRACT_CARD16(_pBuf, _val) \
+#define EXTRACT_CARD16(_pBuf, _swap, _val) \
 { \
     _val = *((CARD16 *) _pBuf); \
     _pBuf += 2; \
+    if (_swap) \
+        _val = lswaps (_val); \
 }
 
-#define EXTRACT_CARD32(_pBuf, _val) \
+#define EXTRACT_CARD32(_pBuf, _swap, _val) \
 { \
     _val = *((CARD32 *) _pBuf); \
     _pBuf += 4; \
+    if (_swap) \
+        _val = lswapl (_val); \
 }
 
 #else /* WORD64 */
 
-#define EXTRACT_CARD16(_pBuf, _val) \
+#define EXTRACT_CARD16(_pBuf, _swap, _val) \
 { \
     _val = *(_pBuf + 0) & 0xff; 	/* 0xff incase _pBuf is signed */ \
     _val <<= 8; \
     _val |= *(_pBuf + 1) & 0xff;\
     _pBuf += 2; \
+    if (_swap) \
+        _val = lswaps (_val); \
 }
 
-#define EXTRACT_CARD32(_pBuf, _val) \
+#define EXTRACT_CARD32(_pBuf, _swap, _val) \
 { \
     _val = *(_pBuf + 0) & 0xff; 	/* 0xff incase _pBuf is signed */ \
     _val <<= 8; \
@@ -397,14 +413,16 @@ typedef struct {
     _val <<= 8; \
     _val |= *(_pBuf + 3) & 0xff;\
     _pBuf += 4; \
+    if (_swap) \
+        _val = lswapl (_val); \
 }
 
 #endif /* WORD64 */
 
-#define EXTRACT_XPCS(_pBuf, _string) \
+#define EXTRACT_XPCS(_pBuf, _swap, _string) \
 { \
     CARD16 _len; \
-    EXTRACT_CARD16 (_pBuf, _len); \
+    EXTRACT_CARD16 (_pBuf, _swap, _len); \
     _string = (char *) malloc (_len + 1); \
     bcopy (_pBuf, _string, _len); \
     _pBuf += _len; \
@@ -413,14 +431,30 @@ typedef struct {
         _pBuf += PAD32 (2 + _len); \
 }
 
-#define EXTRACT_LISTOF_XPCS(_pBuf, _count, _strings) \
+#define EXTRACT_LISTOF_XPCS(_pBuf, _swap, _count, _strings) \
 { \
     int _i; \
     for (_i = 0; _i < _count; _i++) \
-        EXTRACT_XPCS (_pBuf, _strings[_i]); \
+        EXTRACT_XPCS (_pBuf, _swap, _strings[_i]); \
 }
 
 
+
+/*
+ * Byte swapping
+ */
+
+/* byte swap a long literal */
+#define lswapl(_val) ((((_val) & 0xff) << 24) |\
+		   (((_val) & 0xff00) << 8) |\
+		   (((_val) & 0xff0000) >> 8) |\
+		   (((_val) >> 24) & 0xff))
+
+/* byte swap a short literal */
+#define lswaps(_val) ((((_val) & 0xff) << 8) | (((_val) >> 8) & 0xff))
+
+
+
 /*
  * ICE replies (not processed via callbacks because we block)
  */
