@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.12 92/05/29 17:10:15 gildea Exp $
+ * $XConsortium: bitscale.c,v 1.13 93/08/24 18:49:02 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -29,6 +29,8 @@
 #include <math.h>
 
 extern Atom MakeAtom();
+
+void bitmapUnloadScalable();
 
 enum scaleType {
     atom, truncate_atom, pixel_size, point_size, resolution_x,
@@ -644,7 +646,6 @@ ScaleFont(opf, widthMult, heightMult, sWidthMult, sHeightMult, vals,
     extern int  bitmapGetExtents();
     extern int  bitmapGetGlyphs();
     extern int  bitmapGetMetrics();
-    extern void bitmapUnloadScalable();
 
     *sWidth = 0;
 
