@@ -1,5 +1,6 @@
 /*
-* $Header: ShellP.h,v 1.14 88/02/26 12:47:17 swick Exp $
+* $xHeader: ShellP.h,v 1.2 88/08/18 15:56:19 asente Exp $
+* $oHeader: ShellP.h,v 1.2 88/08/18 15:56:19 asente Exp $
 */
 
 /***********************************************************
@@ -38,8 +39,6 @@ SOFTWARE.
 #ifndef _XtShellPrivate_h
 #define _XtShellPrivate_h
 
-#include <X11/Xutil.h>
-
 /* *****
  * ***** VendorP.h is included later on; it needs fields defined in the first
  * ***** part of this header file
@@ -54,7 +53,9 @@ SOFTWARE.
 
 /* New fields for the Shell widget class record */
 
-typedef struct {int foo;} ShellClassPart;
+typedef struct {
+    caddr_t         extension;          /* pointer to extension record      */
+} ShellClassPart;
 
 typedef struct _ShellClassRec {
   	CoreClassPart      core_class;
@@ -62,7 +63,7 @@ typedef struct _ShellClassRec {
 	ShellClassPart  shell_class;
 } ShellClassRec;
 
-globalref ShellClassRec shellClassRec;
+externalref ShellClassRec shellClassRec;
 
 /* New fields for the shell widget */
 
@@ -73,6 +74,7 @@ typedef struct {
 	Boolean	    spring_loaded;
 	Boolean	    popped_up;
 	Boolean	    allow_shell_resize;
+	Boolean	    client_specified;
 	Boolean	    save_under;
 	Boolean	    override_redirect;
 
@@ -94,7 +96,9 @@ typedef  struct {
 
 /* New fields for the OverrideShell widget class record */
 
-typedef struct {int foo;} OverrideShellClassPart;
+typedef struct {
+    caddr_t         extension;          /* pointer to extension record      */
+} OverrideShellClassPart;
 
 typedef struct _OverrideShellClassRec {
   	CoreClassPart      core_class;
@@ -103,7 +107,7 @@ typedef struct _OverrideShellClassRec {
 	OverrideShellClassPart  override_shell_class;
 } OverrideShellClassRec;
 
-globalref OverrideShellClassRec overrideShellClassRec;
+externalref OverrideShellClassRec overrideShellClassRec;
 
 /* No new fields for the override shell widget */
 
@@ -124,7 +128,9 @@ typedef  struct {
 
 /* New fields for the WMShell widget class record */
 
-typedef struct {int foo;} WMShellClassPart;
+typedef struct {
+    caddr_t         extension;          /* pointer to extension record      */
+} WMShellClassPart;
 
 typedef struct _WMShellClassRec {
   	CoreClassPart      core_class;
@@ -133,7 +139,7 @@ typedef struct _WMShellClassRec {
 	WMShellClassPart wm_shell_class;
 } WMShellClassRec;
 
-globalref WMShellClassRec wmShellClassRec;
+externalref WMShellClassRec wmShellClassRec;
 
 /* New fields for the WM shell widget */
 
@@ -142,6 +148,7 @@ typedef struct {
 	int 	    wm_timeout;
 	Boolean	    wait_for_wm;
 	Boolean	    transient;
+	Atom	    wm_configure_denied,  wm_moved;
 	XSizeHints  size_hints;
 	XWMHints    wm_hints;
 } WMShellPart;
@@ -153,7 +160,7 @@ typedef  struct {
 	WMShellPart	wm;
 } WMShellRec, *WMShellWidget;
 
-#include <X11/VendorP.h>
+#include "VendorP.h"
 
 /***********************************************************************
  *
@@ -163,7 +170,9 @@ typedef  struct {
 
 /* New fields for the TransientShell widget class record */
 
-typedef struct {int foo;} TransientShellClassPart;
+typedef struct {
+    caddr_t         extension;          /* pointer to extension record      */
+} TransientShellClassPart;
 
 typedef struct _TransientShellClassRec {
   	CoreClassPart      core_class;
@@ -174,7 +183,7 @@ typedef struct _TransientShellClassRec {
 	TransientShellClassPart transient_shell_class;
 } TransientShellClassRec;
 
-globalref TransientShellClassRec transientShellClassRec;
+externalref TransientShellClassRec transientShellClassRec;
 
 /* New fields for the transient shell widget */
 
@@ -197,7 +206,9 @@ typedef  struct {
 
 /* New fields for the TopLevelShell widget class record */
 
-typedef struct {int foo;} TopLevelShellClassPart;
+typedef struct {
+    caddr_t         extension;          /* pointer to extension record      */
+} TopLevelShellClassPart;
 
 typedef struct _TopLevelShellClassRec {
   	CoreClassPart      core_class;
@@ -208,7 +219,7 @@ typedef struct _TopLevelShellClassRec {
 	TopLevelShellClassPart top_level_shell_class;
 } TopLevelShellClassRec;
 
-globalref TopLevelShellClassRec topLevelShellClassRec;
+externalref TopLevelShellClassRec topLevelShellClassRec;
 
 /* New fields for the top level shell widget */
 
@@ -234,7 +245,9 @@ typedef  struct {
 
 /* New fields for the ApplicationShell widget class record */
 
-typedef struct {int foo;} ApplicationShellClassPart;
+typedef struct {
+    caddr_t         extension;          /* pointer to extension record      */
+} ApplicationShellClassPart;
 
 typedef struct _ApplicationShellClassRec {
   	CoreClassPart      core_class;
@@ -246,13 +259,15 @@ typedef struct _ApplicationShellClassRec {
 	ApplicationShellClassPart application_shell_class;
 } ApplicationShellClassRec;
 
-globalref ApplicationShellClassRec applicationShellClassRec;
+externalref ApplicationShellClassRec applicationShellClassRec;
 
 /* New fields for the application shell widget */
 
 typedef struct {
-	int	    argc;
-	char      **argv;
+	char *class;
+	XrmClass xrm_class;
+	int argc;
+	char **argv;
 } ApplicationShellPart;
 
 typedef  struct {
@@ -264,10 +279,5 @@ typedef  struct {
 	TopLevelShellPart topLevel;
 	ApplicationShellPart application;
 } ApplicationShellRec, *ApplicationShellWidget;
-
-
-
-extern Atom WM_CONFIGURE_DENIED;
-extern Atom WM_MOVED;
 
 #endif  _XtShellPrivate_h
