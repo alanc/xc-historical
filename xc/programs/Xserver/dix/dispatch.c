@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.62 88/08/29 17:17:07 rws Exp $ */
+/* $Header: dispatch.c,v 1.63 88/08/30 17:10:27 keith Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1567,11 +1567,12 @@ ProcCopyArea(client)
     pRgn = (*pGC->CopyArea)(pSrc, pDst, pGC, stuff->srcX, stuff->srcY,
 				 stuff->width, stuff->height, 
 				 stuff->dstX, stuff->dstY);
-    if (pRgn)
+    if (pGC->graphicsExposures)
     {
 	(*pDst->pScreen->SendGraphicsExpose)
  		(client, pRgn, stuff->dstDrawable, X_CopyArea, 0);
-	(*pDst->pScreen->RegionDestroy) (pRgn);
+	if (pRgn)
+	    (*pDst->pScreen->RegionDestroy) (pRgn);
     }
 
     return(client->noClientException);
@@ -1616,11 +1617,12 @@ ProcCopyPlane(client)
     pRgn = (*pGC->CopyPlane)(psrcDraw, pdstDraw, pGC, stuff->srcX, stuff->srcY,
 				 stuff->width, stuff->height, 
 				 stuff->dstX, stuff->dstY, stuff->bitPlane);
-    if (pRgn)
+    if (pGC->graphicsExposures)
     {
 	(*pdstDraw->pScreen->SendGraphicsExpose)
  		(client, pRgn, stuff->dstDrawable, X_CopyPlane, 0);
-	(*pdstDraw->pScreen->RegionDestroy) (pRgn);
+	if (pRgn)
+	    (*pdstDraw->pScreen->RegionDestroy) (pRgn);
     }
     return(client->noClientException);
 }

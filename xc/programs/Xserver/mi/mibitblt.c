@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.62 88/08/10 13:03:03 rws Exp $ */
+/* $Header: mibitblt.c,v 1.63 88/08/30 17:07:10 keith Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -74,8 +74,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
     if (pDstDrawable->type == DRAWABLE_WINDOW &&
 	!((WindowPtr)pDstDrawable)->realized)
     {
-	miSendNoExpose(pGC);
-	return;
+	return NULL;
     }
 
     /* clip the source */

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: miexpose.c,v 1.32 88/07/29 12:06:48 keith Exp $ */
+/* $Header: miexpose.c,v 1.33 88/08/30 17:07:54 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -223,7 +223,7 @@ miSendGraphicsExpose (client, pRgn, drawable, major, minor)
     int	major;
     int	minor;
 {
-    if (REGION_NOT_EMPTY(pRgn))
+    if (pRgn && REGION_NOT_EMPTY(pRgn))
     {
         xEvent *pEvent;
 	register xEvent *pe;
@@ -263,6 +263,7 @@ miSendGraphicsExpose (client, pRgn, drawable, major, minor)
     }
 }
 
+#ifdef notdef
 void
 miSendNoExpose(pGC)
     GCPtr pGC;
@@ -277,7 +278,7 @@ miSendNoExpose(pGC)
 	        0, NoEventMask, NullGrab);
     }
 }
-
+#endif
 
 void 
 miWindowExposures(pWin)

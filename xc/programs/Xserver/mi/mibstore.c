@@ -1,4 +1,4 @@
-/* $Header: mibstore.c,v 1.9 88/08/19 14:22:52 keith Exp $ */
+/* $Header: mibstore.c,v 1.10 88/08/30 17:07:21 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -865,7 +865,7 @@ miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC)
  *-----------------------------------------------------------------------
  */
 static Bool
-miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc. ppRgn)
+miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc, ppRgn)
     WindowPtr	  pWin;	    	    /* Window being scrolled */
     GCPtr   	  pGC;	    	    /* GC we're called through */
     int	    	  srcx;	    	    /* X of source rectangle */
@@ -1265,7 +1265,7 @@ miBSCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
     }
     else
     {
-	winExposed (* pPriv->CopyArea) (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty);
+	winExposed = (* pPriv->CopyArea) (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty);
     }
     /*
      * compute the composite graphics exposure region

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbbitblt.c,v 1.50 88/07/28 14:20:21 rws Exp $ */
+/* $Header: mfbbitblt.c,v 1.51 88/08/30 17:06:41 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -140,11 +140,10 @@ int dstx, dsty;
     {
 	if (!((WindowPtr)pDstDrawable)->realized)
 	{
-	    miSendNoExpose(pGC);
 	    (*pGC->pScreen->RegionDestroy)(prgnDst);
 	    if (realSrcClip)
 		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
-	    return;
+	    return NULL;
 	}
 	dstx += ((WindowPtr)pDstDrawable)->absCorner.x;
 	dsty += ((WindowPtr)pDstDrawable)->absCorner.y;
@@ -167,7 +166,7 @@ int dstx, dsty;
 	    (*pGC->pScreen->RegionDestroy)(prgnDst);
 	    if (realSrcClip)
 		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
-	    return;
+	    return NULL;
 	}
 	pbox = prgnDst->rects;
 	ppt = pptSrc;
@@ -247,24 +246,24 @@ translated.
 #define longRop(alu,from,to,count)    \
 { \
     switch (count & 7) { \
-	  case 0:   *to++ = DoRop (alu, *from++, *to); \
-	  case 7:   *to++ = DoRop (alu, *from++, *to); \
-	  case 6:   *to++ = DoRop (alu, *from++, *to); \
-	  case 5:   *to++ = DoRop (alu, *from++, *to); \
-	  case 4:   *to++ = DoRop (alu, *from++, *to); \
-	  case 3:   *to++ = DoRop (alu, *from++, *to); \
-	  case 2:   *to++ = DoRop (alu, *from++, *to); \
-	  case 1:   *to++ = DoRop (alu, *from++, *to); \
+	  case 0:   *to = DoRop (alu, *from++, *to); to++; \
+	  case 7:   *to = DoRop (alu, *from++, *to); to++; \
+	  case 6:   *to = DoRop (alu, *from++, *to); to++; \
+	  case 5:   *to = DoRop (alu, *from++, *to); to++; \
+	  case 4:   *to = DoRop (alu, *from++, *to); to++; \
+	  case 3:   *to = DoRop (alu, *from++, *to); to++; \
+	  case 2:   *to = DoRop (alu, *from++, *to); to++; \
+	  case 1:   *to = DoRop (alu, *from++, *to); to++; \
     } \
     while ((count -= 8) > 0) { \
-	  *to++ = DoRop (alu, *from++, *to); \
-	  *to++ = DoRop (alu, *from++, *to); \
-	  *to++ = DoRop (alu, *from++, *to); \
-	  *to++ = DoRop (alu, *from++, *to); \
-	  *to++ = DoRop (alu, *from++, *to); \
-	  *to++ = DoRop (alu, *from++, *to); \
-	  *to++ = DoRop (alu, *from++, *to); \
-	  *to++ = DoRop (alu, *from++, *to); \
+	  *to = DoRop (alu, *from++, *to); to++; \
+	  *to = DoRop (alu, *from++, *to); to++; \
+	  *to = DoRop (alu, *from++, *to); to++; \
+	  *to = DoRop (alu, *from++, *to); to++; \
+	  *to = DoRop (alu, *from++, *to); to++; \
+	  *to = DoRop (alu, *from++, *to); to++; \
+	  *to = DoRop (alu, *from++, *to); to++; \
+	  *to = DoRop (alu, *from++, *to); to++; \
     } \
 }
 
@@ -793,7 +792,7 @@ unsigned int plane;
     RegionPtr	prgnExposed;
 
     if (plane != 1)
-	return;
+	return NULL;
 
     if ((pGC->fgPixel == 1) && (pGC->bgPixel == 0))
     {
