@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.18 89/04/07 15:57:10 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.19 89/04/11 14:49:31 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -442,7 +442,7 @@ $(DEPEND):								@@\
 DependDependency()							@@\
 									@@\
 depend::								@@\
-	$(DEPEND) -s "# DO NOT DELETE" -- $(CFLAGS) -- $(SRCS)
+	$(DEPEND) -s "# DO NOT DELETE" -- $(ALLDEFINES) -- $(SRCS)
 #endif /* DependTarget */
 
 

@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.27 89/03/21 09:50:23 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.28 89/04/11 14:59:47 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -428,8 +428,9 @@
 #endif
       CDEBUGFLAGS = DefaultCDebugFlags
         CCOPTIONS = DefaultCCOptions	/* to distinguish from param flags */
-           CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(INCLUDES) $(STD_DEFINES) $(DEFINES)
-        LINTFLAGS = $(LINTOPTS) $(INCLUDES) $(STD_DEFINES) $(DEFINES) -DLINT
+       ALLDEFINES = $(INCLUDES) $(STD_DEFINES) $(DEFINES)
+           CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(ALLDEFINES)
+        LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES)
           LDFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
 
         MACROFILE = MacroFile
