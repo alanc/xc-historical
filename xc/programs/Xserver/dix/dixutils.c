@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.44 93/08/24 18:49:50 gildea Exp $ */
+/* $XConsortium: dixutils.c,v 1.45 93/09/03 07:59:14 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -227,7 +227,7 @@ AlterSaveSetForClient(client, pWin, mode)
     return(Success);
 }
 
-
+void
 DeleteWindowFromAnySaveSet(pWin)
     WindowPtr pWin;
 {
@@ -257,8 +257,8 @@ NoopDDA(
 }
 
 typedef struct _BlockHandler {
-    void    (*BlockHandler)();
-    void    (*WakeupHandler)();
+    BlockHandlerProcPtr BlockHandler;
+    WakeupHandlerProcPtr WakeupHandler;
     pointer blockData;
     Bool    deleted;
 } BlockHandlerRec, *BlockHandlerPtr;
@@ -338,8 +338,8 @@ pointer pReadmask;	/* the resulting descriptor mask */
 
 Bool
 RegisterBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
-    void    (*blockHandler)();
-    void    (*wakeupHandler)();
+    BlockHandlerProcPtr blockHandler;
+    WakeupHandlerProcPtr wakeupHandler;
     pointer blockData;
 {
     BlockHandlerPtr new;
@@ -363,8 +363,8 @@ RegisterBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
 
 void
 RemoveBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
-    void    (*blockHandler)();
-    void    (*wakeupHandler)();
+    BlockHandlerProcPtr blockHandler;
+    WakeupHandlerProcPtr wakeupHandler;
     pointer blockData;
 {
     int	    i;
@@ -389,6 +389,7 @@ RemoveBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
 	}
 }
 
+void
 InitBlockAndWakeupHandlers ()
 {
     xfree (handlers);
@@ -404,7 +405,6 @@ InitBlockAndWakeupHandlers ()
 
 WorkQueuePtr		workQueue;
 static WorkQueuePtr	*workQueueLast = &workQueue;
-static Bool		WorkBlockHandlerRegistered;
 
 /* ARGSUSED */
 void
@@ -517,13 +517,14 @@ ClientSignal (client)
     return FALSE;
 }
 
+void
 ClientWakeup (client)
     ClientPtr	client;
 {
     SleepQueuePtr   q, *prev;
 
     prev = &sleepQueue;
-    while (q = *prev)
+    while ( (q = *prev) )
     {
 	if (q->client == client)
 	{
