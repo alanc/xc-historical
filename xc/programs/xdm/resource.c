@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.14 88/12/14 17:36:15 keith Exp $
+ * $XConsortium: resource.c,v 1.15 88/12/15 18:32:18 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -183,7 +183,7 @@ char	*default_value;
 	Debug ("resource %s value %s\n", name, string);
 	switch (valueType) {
 	case DM_STRING:
-		new_string = malloc (len+1);
+		new_string = malloc ((unsigned) (len+1));
 		if (!new_string) {
 			LogOutOfMem ("GetResource");
 			return;
@@ -226,28 +226,49 @@ XrmOptionDescRec optionTable [] = {
 {"-nodaemon",	".daemonMode",		XrmoptionNoArg,		"false"        },
 };
 
+static int	originalArgc;
+static char	**originalArgv;
+
 InitResources (argc, argv)
 int	argc;
 char	**argv;
 {
+	XrmInitialize ();
+	originalArgc = argc;
+	originalArgv = argv;
+	ReinitResources ();
+}
+
+ReinitResources ()
+{
+	int	argc;
 	char	**a;
+	char	**argv;
 	char	*config = 0;
 
-	XrmInitialize ();
-	for (a = argv+1; *a; a++) {
-		if (!strcmp (*a, "-config")) {
+	argv = (char **) malloc ((originalArgc + 1) * sizeof (char *));
+	if (!argv)
+		LogPanic ("no space for argument realloc\n");
+	for (a = originalArgv, argc = 0; *a; a++, argc++) {
+		if (argc != 0 && !strcmp (*a, "-config")) {
 			if (!a[1])
 				LogError ("missing config file argument\n");
 			else
 				config = a[1];
-			break;
 		}
+		argv[argc] = *a;
 	}
+	argv[argc] = 0;
 	if (!config) {
 		config = DEF_XDM_CONFIG;
 		if (access (config, 4) == -1)
 			config = 0;
 	}
+	/*
+ 	 * XXX As there is no way to release the old database,
+	 * it is dropped on the floor here.
+	 */
+	DmResourceDB = 0;
 	if (config) {
 		DmResourceDB = XrmGetFileDatabase ( config );
 		if (!DmResourceDB)
@@ -256,7 +277,13 @@ char	**argv;
 	XrmParseCommand (&DmResourceDB, optionTable,
  			 sizeof (optionTable) / sizeof (optionTable[0]),
 			 "DisplayManager", &argc, argv);
-			 
+	if (argc > 1) {
+		LogError ("extra arguments on command line:");
+		for (a = argv + 1; *a; a++)
+			LogError (" \"%s\"", *a);
+		LogError ("\n");
+	}
+	free (argv);
 }
 
 LoadDMResources ()
@@ -268,7 +295,7 @@ LoadDMResources ()
 		sprintf (name, "DisplayManager.%s", DmResources[i].name);
 		sprintf (class, "DisplayManager.%s", DmResources[i].class);
 		GetResource (name, class, DmResources[i].type,
-			      DmResources[i].dm_value,
+			      (char **) DmResources[i].dm_value,
 			      DmResources[i].default_value);
 	}
 }
@@ -300,7 +327,7 @@ struct display	*d;
 		sprintf (class, "DisplayManager.%s.%s",
 			nocolon, DisplayResources[i].class);
 		GetResource (name, class, DisplayResources[i].type,
-			      ((char *) d) + DisplayResources[i].offset,
+			      (char **) (((char *) d) + DisplayResources[i].offset),
 			      DisplayResources[i].default_value);
 	}
 }
