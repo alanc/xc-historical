@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.174 93/07/15 17:28:13 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.175 93/07/28 10:51:31 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -58,6 +58,11 @@ XCOMM
 #define MacroFile bsd.cf
 #undef vax
 #define VaxArchitecture
+#endif
+
+#if defined(BSD) && !defined(Mips)
+#define MacroIncludeFile <bsd.cf>
+#define MacroFile bsd.cf
 #endif
 
 #ifdef sun
