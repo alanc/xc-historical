@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.1 89/09/01 14:28:35 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.1 89/09/06 17:30:23 kit Exp $";
 #endif 
 
 /*
@@ -182,6 +182,7 @@ Widget request, new;
 
   sink->text_sink.tab_count = 0; /* Initialize the tab stops. */
   sink->text_sink.tabs = NULL;
+  sink->text_sink.char_tabs = NULL;
 }
 
 /*	Function Name: Destroy
@@ -220,7 +221,7 @@ Widget current, request, new;
 
   if (w->text_sink.font != old_w->text_sink.font) {
     (*class->text_sink_class.SetTabs)(w, w->text_sink.tab_count, 
-				      w->text_sink.tabs);
+				      w->text_sink.char_tabs);
     redisp = TRUE;
   }
     
@@ -661,7 +662,7 @@ Dimension height;
 {
   TextSinkWidgetClass class = (TextSinkWidgetClass) w->core.widget_class;
 
-  return((*class->text_sink_class.MaxHeight)(w, height));
+  return((*class->text_sink_class.MaxLines)(w, height));
 }
 
 /*	Function Name: XawTextSinkMaxHeight
