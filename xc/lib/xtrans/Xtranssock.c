@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranssock.c,v 1.15 94/02/06 16:03:26 mor Exp $ */
+/* $XConsortium: Xtranssock.c,v 1.16 94/02/06 18:21:19 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -1422,10 +1422,11 @@ XtransConnInfo ciptr;
 
     struct sockaddr_un	*sockname = (struct sockaddr_un *) ciptr->addr;
     char	path[200]; /* > sizeof sun_path +1 */
+    int ret;
 
     PRMSG (2,"TRANS(SocketUNIXClose) (%x,%d)\n", ciptr, ciptr->fd, 0);
 
-    close(ciptr->fd);
+    ret = close(ciptr->fd);
 
     if (ciptr->flags
        && sockname
@@ -1436,6 +1437,8 @@ XtransConnInfo ciptr;
 		ciptr->addrlen - sizeof (sockname->sun_family));
 	unlink (path);
     }
+
+    return ret;
 }
 
 #endif /* UNIXCONN */
