@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: os.h,v 1.20 88/01/01 15:20:49 rws Exp $ */
+/* $Header: os.h,v 1.21 88/01/01 15:58:52 rws Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -72,8 +72,8 @@ char *malloc();
 #endif
 
 #define xalloc(size) Xalloc((unsigned long)(size))
-#define xrealloc(ptr, size) Xrealloc((unsigned long *)(ptr), (unsigned long)(size))
-#define xfree(ptr) Xfree((unsigned long *)(ptr))
+#define xrealloc(ptr, size) Xrealloc((pointer)(ptr), (unsigned long)(size))
+#define xfree(ptr) Xfree((pointer)(ptr))
 
 char *ReadRequestFromClient();   /* should be xReq but then include Xproto.h */
 Bool CloseDownConnection();
