@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Xw32defs.h,v 1.1 93/08/09 14:57:49 rws Exp $ */
 
 #ifndef _XW32DEFS_H
 #define  _XW32DEFS_H
@@ -28,6 +28,7 @@ typedef char *caddr_t;
 #define getcwd	_getcwd
 #define getpid	 _getpid
 #define hypot		_hypot
+#define isascii __isascii
 #define isatty	   _isatty
 #define lseek	   _lseek
 #define mkdir	_mkdir
@@ -36,6 +37,7 @@ typedef char *caddr_t;
 #define putenv	    _putenv
 #define read	   _read
 #define rmdir	_rmdir
+#define sleep	_sleep
 #define stat	 _stat
 #define sys_errlist _sys_errlist
 #define sys_nerr    _sys_nerr
