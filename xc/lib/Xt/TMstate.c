@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.149 91/05/11 20:51:47 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.150 91/05/11 21:05:13 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1266,7 +1266,7 @@ void _XtDestroyTMData(widget)
 	if (cBindData->isComplex) {
 	    ATranslations	aXlations, nXlations;
 	    
-	    nXlations = (ATranslations) cBindData->getValuesAXlations;
+	    nXlations = (ATranslations) cBindData->accel_context;
 	    while (nXlations){
 		aXlations = nXlations;
 		nXlations = nXlations->next;
@@ -1796,8 +1796,8 @@ static TMBindData MakeBindData(bindings, numBindings, oldBindData)
 	 * then propagate them to the new one.
 	 */
 	if (oldBindData && oldBindData->simple.isComplex)
-	    cBindData->getValuesAXlations = 
-		((TMComplexBindData) oldBindData)->getValuesAXlations;
+	    cBindData->accel_context = 
+		((TMComplexBindData) oldBindData)->accel_context;
 	XtBCopy((char *)bindings,
 		(char *)&cBindData->bindTbl[0],
 		numBindings * sizeof(TMComplexBindProcsRec));
@@ -1973,7 +1973,7 @@ XtTranslations _XtGetTranslationValue(w)
      * header for the currently installed translations.  If we have,
      * just return that header.  Otherwise create a new header.
      */
-    for (aXlationsPtr = (ATranslations *) &cBindData->getValuesAXlations;
+    for (aXlationsPtr = (ATranslations *) &cBindData->accel_context;
 	 *aXlationsPtr && (*aXlationsPtr)->xlations != xlations;
 	 aXlationsPtr = &(*aXlationsPtr)->next)
 	;

@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.39 91/05/11 20:53:25 converse Exp $ */
+/* $XConsortium: TranslateI.h,v 1.40 91/05/11 21:06:40 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -192,7 +192,7 @@ typedef struct _TMSimpleBindDataRec {
 
 typedef struct _TMComplexBindDataRec {
     unsigned int		isComplex:1;	/* must be first */
-    struct _ATranslationData	*getValuesAXlations;	
+    struct _ATranslationData	*accel_context;	/* for GetValues */
     TMComplexBindProcsRec	bindTbl[1]; 	/* variable length */
 }TMComplexBindDataRec, *TMComplexBindData;
 
