@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.15 89/03/14 10:02:24 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.16 89/05/10 14:02:31 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -27,8 +27,8 @@
 #ifndef InstallAppDefFiles
 #define InstallAppDefFiles	YES	/* install application defaults */
 #endif
-#ifndef InstallOldXawLinks
-#define InstallOldXawLinks	YES	/* for R4 only */
+#ifndef InstallOldHeaderFiles
+#define InstallOldHeaderFiles	YES	/* for R4 only */
 #endif
 #ifndef DebugLibX
 #define DebugLibX		NO	/* debugged X library */
@@ -237,7 +237,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.15 89/03/14 10:02:24 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.16 89/05/10 14:02:31 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
