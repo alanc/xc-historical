@@ -1,4 +1,4 @@
-XCOMM $XConsortium: ibmLib.rules,v 1.6 91/03/24 17:55:58 rws Exp $
+XCOMM $XConsortium: ibmLib.rules,v 1.1 91/05/03 15:29:28 rws Exp $
 
 /*
  * AIX shared library rules
@@ -50,7 +50,7 @@ InstallLibrary(libname,dest)
 #define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
 AllTarget(Concat(lib,libname.a))					@@\
 									@@\
-Concat(lib,libname.a):  solist						@@\
+Concat(lib,libname.a):  solist $(UNSHAREDOBJS)				@@\
 	$(RM) $@~ sharedobj.o						@@\
 	(cd down; $(AR) up/$@~ solist)					@@\
 	dump -g $@~ | sed -n -e 's/^[ 	]*[0-9][0-9]*[	 ]*\([^	 .][^	 ]*\)$$/\1/p' > $@.syms	@@\
