@@ -83,6 +83,7 @@ HEADERS = \
 	XawInit.h 
 
 SRCS = \
+	AllWidgets.c \
 	AsciiSink.c \
 	AsciiSrc.c \
 	AsciiText.c \
