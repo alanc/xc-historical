@@ -1,4 +1,4 @@
-/* $XConsortium: xfontsel.c,v 1.20 91/01/10 12:23:25 converse Exp $
+/* $XConsortium: xfontsel.c,v 1.21 91/01/22 18:34:47 gildea Exp $
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
 Massachusetts Institute of Technology
@@ -191,17 +191,15 @@ void main(argc, argv)
 {
     Widget topLevel, pane;
 
-    topLevel = XtInitialize( NULL, "XFontSel", options, XtNumber(options),
-			     &argc, argv );
+    topLevel = XtAppInitialize(&appCtx, "XFontSel", options, XtNumber(options),
+			       &argc, argv, NULL, NULL, 0);
 
     if (argc != 1) Syntax(argv[0]);
 
-    XtAppAddActions(XtWidgetToApplicationContext(topLevel), 
-		    xfontsel_actions, XtNumber(xfontsel_actions));
+    XtAppAddActions(appCtx, xfontsel_actions, XtNumber(xfontsel_actions));
     XtOverrideTranslations
 	(topLevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: Quit()"));
 
-    appCtx = XtWidgetToApplicationContext(topLevel);
     XtGetApplicationResources( topLevel, (XtPointer)&AppRes,
 			       resources, XtNumber(resources), NZ );
     if (AppRes.app_defaults_version < MIN_APP_DEFAULTS_VERSION) {
