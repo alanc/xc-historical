@@ -18,10 +18,10 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfb8bit.h,v 1.2 89/07/31 19:06:51 keith Exp $ */
+/* $XConsortium: cfb8bit.h,v 1.3 89/08/18 16:50:56 keith Exp $ */
 
 #if (BITMAP_BIT_ORDER == MSBFirst)
-#define GetFourBits(x)		(((x) >> 28) & 0xf)
+#define GetFourBits(x)		(((unsigned long) (x)) >> 28)
 #define BitRight(x,xoff)	((x) >> (xoff))
 #define NextFourBits(x)		((x) <<= 4)
 #define BitLeft(x,y)		((x) << (y))
@@ -61,6 +61,10 @@ extern void			cfb8SetPixels ();
 }
 
 #ifdef mips
+#define AVOID_SCREEN_READ
+#endif
+
+#ifdef sparc
 #define AVOID_SCREEN_READ
 #endif
 
