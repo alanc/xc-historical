@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.61 93/07/12 09:34:06 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 1.62 93/09/06 15:21:56 rws Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -71,7 +71,7 @@ BOOTSTRAPCFLAGS =
     DBM_DEFINES = NdbmDefines
     ADM_DEFINES = -DADMPATH=\"$(ADMDIR)/X\%smsgs\"
     EXT_DEFINES = ExtensionDefines
-  EXTRA_DEFINES = ServerExtraDefines
+  EXTRA_DEFINES = ServerXdmcpDefines ServerExtraDefines
         DEFINES = ConnectionFlags $(OS_DEFINES) $(XDMAUTHDEFS) $(RPCDEFS) $(SIGNAL_DEFINES)
        INCLUDES = -I.  -I../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau
  DEPEND_DEFINES = $(DBM_DEFINES) $(EXTRA_DEFINES) $(EXT_DEFINES)
