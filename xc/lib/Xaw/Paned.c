@@ -1,4 +1,4 @@
-/* $XConsortium: Paned.c,v 1.21 91/02/20 20:02:51 converse Exp $ */
+/* $XConsortium: Paned.c,v 1.22 91/05/09 20:58:03 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1020,7 +1020,7 @@ HandleGrip(grip, junk, callData)
 Widget grip;
 XtPointer junk, callData;
 {
-    GripCallData call_data = (GripCallData)callData;
+    XawGripCallData call_data = (XawGripCallData)callData;
     PanedWidget pw = (PanedWidget) XtParent(grip);
     int loc;
     char action_type;
