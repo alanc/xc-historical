@@ -89,7 +89,7 @@ ProcXSetDeviceFocus(client)
 	}
 
     ret = SetInputFocus (client, dev, stuff->focus, stuff->revertTo, 
-	stuff->time);
+	stuff->time, TRUE);
     if (ret != Success)
 	SendErrorToClient(client, IReqCode, X_SetDeviceFocus, 0, ret);
 
