@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: locking.c,v 1.1 93/12/07 16:42:42 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -35,20 +35,20 @@ IceInitThreads ()
 
 
 void
-IceLockConn (iceConn)
+IceAppLockConn (iceConn)
 
 IceConn iceConn;
 
 {
-    LockIceConn (iceConn);
+    IceLockConn (iceConn);
 }
 
 
 void
-IceUnlockConn (iceConn)
+IceAppUnlockConn (iceConn)
 
 IceConn iceConn;
 
 {
-    UnlockIceConn (iceConn);
+    IceUnlockConn (iceConn);
 }
