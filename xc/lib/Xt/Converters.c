@@ -1,4 +1,4 @@
-/* "$XConsortium: Converters.c,v 1.60 90/12/12 14:50:48 rws Exp $"; */
+/* "$XConsortium: Converters.c,v 1.61 90/12/28 13:55:00 gildea Exp $"; */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -84,9 +84,9 @@ void XtDisplayStringConversionWarning(dpy, from, toType)
 	XrmRepresentation rep_type;
 	XrmValue value;
 	xrm_name[0] = XrmPermStringToQuark( "stringConversionWarnings" );
-	xrm_name[1] = NULL;
+	xrm_name[1] = 0;
 	xrm_class[0] = XrmPermStringToQuark( "StringConversionWarnings" );
-	xrm_class[1] = NULL;
+	xrm_class[1] = 0;
 	if (XrmQGetResource( rdb, xrm_name, xrm_class,
 			     &rep_type, &value ))
 	{
@@ -752,9 +752,9 @@ static Boolean CvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
 	XrmValue value;
 
 	xrm_name[0] = XrmPermStringToQuark ("xtDefaultFont");
-	xrm_name[1] = NULL;
+	xrm_name[1] = 0;
 	xrm_class[0] = XrmPermStringToQuark ("XtDefaultFont");
-	xrm_class[1] = NULL;
+	xrm_class[1] = 0;
 	if (XrmQGetResource(XtDatabase(dpy), xrm_name, xrm_class, 
 			    &rep_type, &value)) {
 	    if (rep_type == XtQString) {
@@ -864,9 +864,9 @@ CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
 	XrmValue value;
 
 	xrm_name[0] = XrmPermStringToQuark ("xtDefaultFont");
-	xrm_name[1] = NULL;
+	xrm_name[1] = 0;
 	xrm_class[0] = XrmPermStringToQuark ("XtDefaultFont");
-	xrm_class[1] = NULL;
+	xrm_class[1] = 0;
 	if (XrmQGetResource(XtDatabase(dpy), xrm_name, xrm_class, 
 			    &rep_type, &value)) {
 	    if (rep_type == XtQString) {

@@ -1,4 +1,4 @@
-/* $XConsortium: EventUtil.c,v 1.6 90/07/26 10:11:17 swick Exp $ */
+/* $XConsortium: EventUtil.c,v 1.7 90/12/12 14:51:25 rws Exp $ */
 
 /********************************************************
 
@@ -30,7 +30,7 @@ SOFTWARE.
 #include "PassivGraI.h"
 #include "StringDefs.h"
 
-static XContext 	perWidgetInputContext = NULL;
+static XContext 	perWidgetInputContext = 0;
 
 void _XtFreePerWidgetInput(w, pwi)
     Widget 		w;
@@ -61,7 +61,7 @@ XtPerWidgetInput _XtGetPerWidgetInput(widget, create)
     XtPerWidgetInput	pwi = NULL;
     Display		*dpy = widget->core.screen->display;
     
-    if (perWidgetInputContext == NULL)
+    if (! perWidgetInputContext)
       perWidgetInputContext = XUniqueContext();
     
     if (XFindContext(dpy, 

@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.1 91/01/09 19:21:34 converse Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.160 91/01/10 14:09:25 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -305,7 +305,7 @@ static void UnrealizeWidget(widget)
     /* remove grabs. Happens automatically when window is destroyed. */
 
     /* Destroy X Window, done at outer level with one request */
-    widget->core.window = NULL;
+    widget->core.window = None;
 
     /* Removing the event handler here saves having to keep track if
      * the translation table is changed while the widget is unrealized.
@@ -325,7 +325,7 @@ void XtUnrealizeWidget (widget)
 
     UnrealizeWidget(widget);
 
-    if (window != NULL) XDestroyWindow(XtDisplay(widget), window);
+    if (window != None) XDestroyWindow(XtDisplay(widget), window);
 } /* XtUnrealizeWidget */
 
 
@@ -582,7 +582,7 @@ Boolean XtIsManaged(object)
 Boolean XtIsRealized (object)
 	Widget   object;
 {
-    return XtWindowOfObject(object) != NULL;
+    return XtWindowOfObject(object) != None;
 } /* XtIsRealized */
 
 #undef XtIsSensitive

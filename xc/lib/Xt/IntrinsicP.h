@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicP.h,v 1.49 90/04/03 09:58:50 swick Exp $
+* $XConsortium: IntrinsicP.h,v 1.50 90/12/12 14:52:28 rws Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
@@ -190,7 +190,7 @@ typedef struct _XtTMRec {
 
 #define XtClass(widget)		((widget)->core.widget_class)
 #define XtSuperclass(widget)	(XtClass(widget)->core_class.superclass)
-#define XtIsRealized(object)	(XtWindowOfObject(object) != NULL)
+#define XtIsRealized(object)	(XtWindowOfObject(object) != None)
 #define XtParent(widget)	((widget)->core.parent)
 
 #undef XtIsRectObj

@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.1 91/01/09 19:21:02 converse Exp $ */
+/* $XConsortium: Core.c,v 1.45 91/01/10 14:10:36 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -40,7 +40,7 @@ SOFTWARE.
  *
  ******************************************************************/
 
-externaldef(xtinherittranslations) int _XtInheritTranslations = NULL;
+externaldef(xtinherittranslations) int _XtInheritTranslations = 0;
 extern String XtCXtToolkitError; /* from IntrinsicI.h */
 
 static XtResource resources[] = {

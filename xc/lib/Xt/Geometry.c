@@ -1,4 +1,4 @@
-/* $XConsortium: Geometry.c,v 1.50 90/12/12 14:51:28 rws Exp $ */
+/* $XConsortium: Geometry.c,v 1.51 90/12/28 14:21:32 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -162,7 +162,7 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
     if (request->request_mode & CWBorderWidth
 	&& widget->core.border_width != request->border_width)
 	changeMask |= CWBorderWidth;
-    if (changeMask == NULL) return XtGeometryYes;
+    if (! changeMask) return XtGeometryYes;
     changeMask |= (request->request_mode & XtCWQueryOnly);
 
     if ( !(changeMask & XtCWQueryOnly) && XtIsRealized(widget) ) {
