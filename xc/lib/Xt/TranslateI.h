@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.12 89/10/02 15:29:32 swick Exp $ */
+/* $XConsortium: TranslateI.h,v 1.13 89/10/04 08:45:26 swick Exp $ */
 /* $oHeader: TranslateI.h,v 1.2 88/08/18 15:56:37 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -75,17 +75,18 @@ typedef struct _EventObjRec {
     Event event;	/* X event description */
     StatePtr state;	/* pointer to linked lists of state info */
 } EventObjRec;
+
 typedef struct _ActionsRec *ActionPtr;
 typedef struct _ActionsRec {
-    int index;                 /* index into quarkTable to find proc */
+    int index;			/* index into quarkTable to find proc */
     String *params;		/* pointer to array of params */
-    unsigned long num_params;	/* number of params */
+    Cardinal num_params;	/* number of params */
     ActionPtr next;		/* next action to perform */
 } ActionRec;
 
 typedef struct _StateRec {
     int index;		/* index of event into EventObj table */
-    ActionPtr actions;	/* rhs   list of actions to perform */
+    ActionPtr actions;	/* rhs list of actions to perform */
     StatePtr nextLevel;	/* the next level points to the next event
 			   in one event sequence */
     StatePtr next;	/* points to other event state at same level */
