@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: x386.cf,v 1.4 91/07/21 21:38:05 rws Exp $
+XCOMM platform:  $XConsortium: x386.cf,v 1.5 91/07/23 11:10:08 rws Exp $
 
 /*****************************************************************************
  *			  Site-specfic parameters                            *
@@ -114,6 +114,10 @@ install.man:: list                                                      @@\
 		$(INSTALL) -c $(INSTMANFLAGS) /tmp/$$i dest/$$i; \	@@\
 		$(RM) /tmp/$$i); \					@@\
 	done
+
+/* If you have trouble with make bombing out in Xlib, try uncommenting this. */
+/* You will not get dependencies as a result, but better than nothing. */
+/* #define DependTarget3(srcs1,srcs2,srcs3) */
 
 #endif /* i386SVR3Architecture */
 
