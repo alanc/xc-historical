@@ -103,14 +103,16 @@ Specifies the amount of internal padding in pixels to be used.  The default is
 Specifies the font to be used for the digital clock.  Note that variable width
 fonts currently will not always display correctly.
 .SH WIDGETS
-The widgets used by xclock are listed below.  Widgets are listed by
-name and class.  
+In order to specify resources, it is useful to know the hierarchy of
+the widgets which compose \fIxclock\fR.  In the notation below,
+indentation indicates hierarchical structure.  The widget class name
+is given first, followed by the widget instance name.
 .sp
 .nf
 .TA .5i 
 .ta .5i 
-xclock - XClock
-	clock - Clock
+XClock  xclock
+	Clock  clock
 .fi
 .sp
 .SH ENVIRONMENT
@@ -123,7 +125,7 @@ to get the default host and display number.
 to get the name of a resource file that overrides the global resources
 stored in the RESOURCE_MANAGER property.
 .SH FILES
-/usr/lib/X11/app-defaults/XLoad - specifies required resources
+/usr/lib/X11/app-defaults/XClock - specifies required resources
 .SH "SEE ALSO"
 X(1), xrdb(1), time(3C), Athena Clock widget
 .SH BUGS

@@ -30,14 +30,16 @@ the default is \fIlwhite\fP, otherwise the default is \fIblack\fP.
 This option indicates that reverse video should be simulated, changing the
 default value for the foreground, background and border colors.
 .SH WIDGETS
-The widgets used by xlogo are listed below.  Widgets are listed by
-name and class.  
+In order to specify resources, it is useful to know the hierarchy of
+the widgets which compose \fIxlogo\fR.  In the notation below,
+indentation indicates hierarchical structure.  The widget class name
+is given first, followed by the widget instance name.
 .sp
 .nf
 .TA .5i 
 .ta .5i 
-xlogo - XLogo
-	xlogo - Logo
+XLogo  xlogo
+	Logo  xlogo
 .fi
 .sp
 .SH ENVIRONMENT

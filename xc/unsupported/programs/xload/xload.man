@@ -51,17 +51,17 @@ In addition to the resources available to each of the widgets used by
 .B showLabel (\fPclass\fB Boolean)
 If False then no label will be displayed.
 .SH WIDGETS
-The widgets used by xload are listed below.  Widgets are listed by
-name and class.  Consult the \fIAthena Widget Set\fP or the \fPX Toolkit
-Intrinsics\fP for the each widget's list of settable resources.  The label
-widget is optional.
+In order to specify resources, it is useful to know the hierarchy of
+the widgets which compose \fIxload\fR.  In the notation below,
+indentation indicates hierarchical structure.  The widget class name
+is given first, followed by the widget instance name.
 .sp
 .nf
 .ta .5i 1.0i 1.5i 2.0i
-xload - XLoad
-	paned - Paned
-		label - Label
-		load - StripChart
+XLoad  xload
+	Paned  paned
+		Label  label
+		StripChart  load
 .fi
 .sp
 .SH ENVIRONMENT
