@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontutil.c,v 1.1 91/05/10 16:51:52 keith Exp $
+ * $XConsortium: fontutil.c,v 1.2 91/05/11 09:16:45 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -111,6 +111,11 @@ QueryTextExtents(pFont, count, chars, info)
     unsigned long n;
     FontEncoding encoding;
     int         cm;
+    int		i;
+    unsigned long   t;
+    xCharInfo	*defaultChar = 0;
+    char	defc[2];
+    int		firstReal;
 
     charinfo = (xCharInfo **) xalloc(count * sizeof(xCharInfo *));
     if (!charinfo)
@@ -119,9 +124,35 @@ QueryTextExtents(pFont, count, chars, info)
     if (pFont->info.lastRow == 0)
 	encoding = Linear16Bit;
     (*pFont->get_metrics) (pFont, count, chars, encoding, &n, charinfo);
+
+    /* Do default character substitution as get_metrics doesn't */
+
+#define IsNonExistantChar(ci) ((ci)->ascent == 0 && \
+			       (ci)->descent == 0 && \
+			       (ci)->leftSideBearing == 0 && \
+			       (ci)->rightSideBearing == 0 && \
+			       (ci)->characterWidth == 0)
+
+    firstReal = n;
+    defc[0] = pFont->info.defaultCh >> 8;
+    defc[1] = pFont->info.defaultCh;
+    (*pFont->get_metrics) (pFont, 1, defc, encoding, &t, &defaultChar);
+    if (IsNonExistantChar (defaultChar))
+	defaultChar = 0;
+    for (i = 0; i < n; i++)
+    {
+	if (IsNonExistantChar (charinfo[i]))
+	{
+	    if (!defaultChar)
+		continue;
+	    charinfo[i] = defaultChar;
+	}
+	if (firstReal == n)
+	    firstReal = i;
+    }
     cm = pFont->info.constantMetrics;
     pFont->info.constantMetrics = FALSE;
-    QueryGlyphExtents(pFont, charinfo, n, info);
+    QueryGlyphExtents(pFont, charinfo + firstReal, n - firstReal, info);
     pFont->info.constantMetrics = cm;
     xfree(charinfo);
     return TRUE;
