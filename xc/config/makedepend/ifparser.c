@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ifparser.c,v 1.5 92/08/22 14:06:20 rws Exp $
+ * $XConsortium: ifparser.c,v 1.6 93/08/18 12:22:37 rws Exp $
  *
  * Copyright 1992 Network Computing Devices, Inc.
  * 
@@ -144,12 +144,12 @@ parse_value (g, cp, valp)
 	return cp;
 
       case '#':
-	DO (cp = parse_variable (g, cp + 1, valp));
+	DO (cp = parse_variable (g, cp + 1, &var));
 	SKIPSPACE (cp);
 	if (*cp != '(')
 	    return CALLFUNC(g, handle_error) (g, cp, "(");
 	do {
-	    DO (cp = parse_variable (g, cp + 1, valp));
+	    DO (cp = parse_variable (g, cp + 1, &var));
 	    SKIPSPACE (cp);
 	} while (*cp && *cp != ')');
 	if (*cp != ')')
