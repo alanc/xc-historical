@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.110 91/04/20 16:08:07 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.111 91/04/20 17:46:39 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1584,12 +1584,30 @@ static String ParseString(str, strP)
     register String start;
 
     if (*str == '"') {
+	register unsigned prev_len, len;
 	str++;
 	start = str;
-	while (*str != '"' && *str != '\0') str++;
-	*strP = XtMalloc((unsigned)(str-start+1));
-	bcopy(start, *strP, str-start);
-	(*strP)[str-start] = '\0';
+	*strP = NULL;
+	prev_len = 0;
+
+	while (*str != '"' && *str != '\0') {
+	    /* allow \\ to produce \ and allow \" to produce " */
+	    if (*str == '\\' && (*(str+1) == '\\' || *(str+1) == '"')) {
+		len = prev_len + (str-start+2);
+		*strP = XtRealloc(*strP, len);
+		bcopy(start, *strP + prev_len, str-start);
+		prev_len = len-1;
+		str++;
+		(*strP)[prev_len-1] = *str;
+		(*strP)[prev_len] = '\0';
+		start = str+1;
+	    } 
+	    str++;
+	}
+	len = prev_len + (str-start+1);
+	*strP = XtRealloc(*strP, len);
+	bcopy(start, *strP + prev_len, str-start);
+	(*strP)[len-1] = '\0';
 	if (*str == '"') str++; else
             XtWarningMsg(XtNtranslationParseError,"parseString",
                       XtCXtToolkitError,"Missing '\"'.",
