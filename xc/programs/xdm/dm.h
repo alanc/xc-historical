@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.21 89/11/14 13:35:18 keith Exp $
+ * $XConsortium: dm.h,v 1.22 89/11/17 18:43:06 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -206,3 +206,9 @@ extern struct protoDisplay	*FindProtoDisplay (),
 # define LEAVE_FOR_DISPLAY  1
 
 extern char	*malloc (), *realloc (), *strcpy ();
+
+#ifdef SIGNALRETURNSINT
+#define SIGVAL int
+#else
+#define SIGVAL void
+#endif
