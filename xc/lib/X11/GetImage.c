@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetImage.c,v 11.17 87/09/13 20:21:40 rws Locked $ */
+/* $Header: XGetImage.c,v 11.18 88/01/31 09:55:30 jim Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -11,14 +11,14 @@
 
 extern XImage *XCreateImage();
 
-static int Ones(mask)                /* HACKMEM 169 */
+static unsigned int Ones(mask)                /* HACKMEM 169 */
     unsigned long mask;
 {
     register int y;
 
     y = (mask >> 1) &033333333333;
     y = mask - y - ((y >>1) & 033333333333);
-    return (((y + (y >> 3)) & 030707070707) % 077);
+    return ((unsigned int) (((y + (y >> 3)) & 030707070707) % 077));
 }
 
 XImage *XGetImage (dpy, d, x, y, width, height, plane_mask, format)
@@ -26,7 +26,7 @@ XImage *XGetImage (dpy, d, x, y, width, height, plane_mask, format)
      Drawable d;
      int x, y;
      unsigned int width, height;
-     long plane_mask;
+     unsigned long plane_mask;
      int format;	/* either XYPixmap or ZPixmap */
 {
 	xGetImageReply rep;
@@ -63,7 +63,7 @@ XImage *XGetImage (dpy, d, x, y, width, height, plane_mask, format)
 	else /* format == ZPixmap */
            image = XCreateImage (dpy, _XVIDtoVisual(dpy, rep.visual),
 		 rep.depth, ZPixmap, 0, data, width, height,
-		  _XGetScanlinePad(dpy, rep.depth), 0);
+		  _XGetScanlinePad(dpy, (int) rep.depth), 0);
 
 	UnlockDisplay(dpy);
 	SyncHandle();
