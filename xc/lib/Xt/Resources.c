@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Resources.c,v 1.12 87/09/11 21:24:22 swick Locked $";
+static char rcsid[] = "$Header: Resources.c,v 1.13 87/09/12 15:00:52 newman Locked $";
 #endif lint
 
 /*
@@ -492,14 +492,25 @@ static void SetValues(widgetClass, w, args, num_args)
 	args, num_args);
 } /* SetValues */
 
+static void RecurseSetValues (current, request, new, last, class)
+    Widget current, request, new;
+    Boolean last;
+    WidgetClass class;
+{
+    if (class->core_class.superclass)
+       	RecurseSetValues (current, request, new, FALSE,
+           class->core_class.superclass);
+    if (class->core_class.set_values)
+       	(*class->core_class.set_values) (current, request, new, last, class);
+}
+
 void XtSetValues(w, args, num_args)
     Widget   w;
     ArgList  args;
     Cardinal num_args;
 {
-    Widget	newWidget;
+    Widget	requestWidget, newWidget;
     Cardinal	widgetSize;
-    XtSetValuesProc setValues;
 
     if (num_args == 0) return;
     if ((args == NULL) && (num_args != 0)) {
@@ -509,20 +520,19 @@ void XtSetValues(w, args, num_args)
 
     /* Allocate and copy current widget into newWidget */
     widgetSize = w->core.widget_class->core_class.widget_size;
+    requestWidget = (Widget) XtMalloc (widgetSize);
     newWidget = (Widget) XtMalloc(widgetSize);
-    bcopy((char *) w, (char *) newWidget, (int) widgetSize);
+    bcopy((char *) w, (char *) requestWidget, widgetSize);
 
     /* Set resource values starting at CorePart on down to this widget */
-    SetValues(w->core.widget_class, newWidget, args, num_args);
+    SetValues(w->core.widget_class, requestWidget, args, num_args);
+    bcopy ((char *) requestWidget, (char *) newWidget, widgetSize);
 
     /* Inform widget of changes and deallocate newWidget */
-    setValues = w->core.widget_class->core_class.set_values;
-    if (setValues == (XtSetValuesProc) NULL) {
-        XtError("set_values procedure cannot be NULL");
-    } else {
-    	(*setValues)(w, newWidget);
-    }
-    XtFree((char *)newWidget);
+    RecurseSetValues (w, requestWidget, newWidget, TRUE, w->core.widget_class);
+    bcopy ((char *) newWidget, (char *) w, widgetSize);
+    XtFree((char *) requestWidget);
+    XtFree((char *) newWidget);
 } /* XtSetValues */
  
 
