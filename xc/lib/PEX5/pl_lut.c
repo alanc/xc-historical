@@ -1,4 +1,4 @@
-/* $XConsortium: pl_lut.c,v 1.4 92/06/30 12:38:38 mor Exp $ */
+/* $XConsortium: pl_lut.c,v 1.5 92/07/16 11:04:03 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -203,21 +203,21 @@ INPUT PEXTableInfo	*info;
 }
 
 
-PEXPointer
-PEXGetPredefinedEntries (display, d, type, start, count)
+Status
+PEXGetPredefinedEntries (display, d, type, start, count, entriesReturn)
 
 INPUT Display		*display;
 INPUT Drawable		d;
 INPUT int		type;
 INPUT unsigned int	start;
 INPUT unsigned int	count;
+OUTPUT PEXPointer	*entriesReturn;
 
 {
     pexGetPredefinedEntriesReq		*req;
     pexGetPredefinedEntriesReply	rep;
     char				*pt;
     int					convertFP;
-    PEXPointer				entriesReturn;
 
 
     /*
@@ -241,7 +241,8 @@ INPUT unsigned int	count;
     {
 	UnlockDisplay (display);
 	PEXSyncHandle (display);
-	return (NULL);          /* return an error */
+	*entriesReturn = NULL;
+	return (0);          /* return an error */
     }
 
 
@@ -254,7 +255,7 @@ INPUT unsigned int	count;
 
     _XRead (display, (char *) pt, (long) (rep.length << 2));
 
-    entriesReturn = _PEXRepackLUTEntries (
+    *entriesReturn = _PEXRepackLUTEntries (
 	(char *) pt, (int) rep.numEntries, type);
 
 
@@ -265,21 +266,21 @@ INPUT unsigned int	count;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (entriesReturn);
+    return (1);
 }
 
 
-PEXTableIndex *
-PEXGetDefinedIndices (display, lut, numIndicesReturn)
+Status
+PEXGetDefinedIndices (display, lut, numIndicesReturn, indicesReturn)
 
 INPUT Display		*display;
 INPUT PEXLookupTable	lut;
 OUTPUT unsigned long	*numIndicesReturn;
+OUTPUT PEXTableIndex	**indicesReturn;
 
 {
     pexGetDefinedIndicesReq	*req;
     pexGetDefinedIndicesReply	rep;
-    char			*pt;
 
 
     /*
@@ -301,7 +302,8 @@ OUTPUT unsigned long	*numIndicesReturn;
 	UnlockDisplay (display);
 	PEXSyncHandle (display);
 	*numIndicesReturn = 0;
-	return (NULL);              /* return an error */
+	*indicesReturn = NULL;
+	return (0);              /* return an error */
     }
 
     *numIndicesReturn = rep.numIndices;
@@ -311,9 +313,10 @@ OUTPUT unsigned long	*numIndicesReturn;
      * Allocate a buffer for the replies to pass back to the user.
      */
 
-    pt = (char *) PEXAllocBuf ((unsigned) (rep.length << 2));
+    *indicesReturn = (PEXTableIndex *) PEXAllocBuf (
+	(unsigned) (rep.length << 2));
 
-    _XRead (display, (char *) pt, (long) (rep.length << 2));
+    _XRead (display, (char *) *indicesReturn, (long) (rep.length << 2));
 
 
     /*
@@ -323,7 +326,7 @@ OUTPUT unsigned long	*numIndicesReturn;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return ((PEXTableIndex *) pt);
+    return (1);
 }
 
 
@@ -396,8 +399,9 @@ OUTPUT int		*table_type_return;
 }
 
 
-PEXPointer
-PEXGetTableEntries (display, lut, start, count, valueType, table_type_return)
+Status
+PEXGetTableEntries (display, lut, start, count, valueType,
+    table_type_return, entriesReturn)
 
 INPUT Display		*display;
 INPUT PEXLookupTable	lut;
@@ -405,13 +409,13 @@ INPUT unsigned int	start;
 INPUT unsigned int	count;
 INPUT int		valueType;
 OUTPUT int		*table_type_return;
+OUTPUT PEXPointer	*entriesReturn;
 
 {
     pexGetTableEntriesReq	*req;
     pexGetTableEntriesReply	rep;
     char			*pt;
     int				convertFP;
-    PEXPointer			entriesReturn;
 
 
     /*
@@ -435,7 +439,8 @@ OUTPUT int		*table_type_return;
     {
 	UnlockDisplay (display);
 	PEXSyncHandle (display);
-	return (NULL);         /* return an error */
+	*entriesReturn = NULL;
+	return (0);         /* return an error */
     }
 
     *table_type_return = rep.tableType;
@@ -450,7 +455,7 @@ OUTPUT int		*table_type_return;
 
     _XRead (display, (char *) pt, (long) (rep.length << 2));
 
-    entriesReturn = _PEXRepackLUTEntries ((char *) pt, (int) rep.numEntries,
+    *entriesReturn = _PEXRepackLUTEntries ((char *) pt, (int) rep.numEntries,
 	(int) rep.tableType);
 
 
@@ -461,7 +466,7 @@ OUTPUT int		*table_type_return;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (entriesReturn);
+    return (1);
 }
 
 
