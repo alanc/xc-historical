@@ -1,4 +1,4 @@
-/* $XConsortium: imCallbk.c,v 1.3 94/02/08 10:09:51 rws Exp $ */
+/* $XConsortium: imCallbk.c,v 1.4 94/03/26 16:57:33 rws Exp $ */
 /***********************************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1994 by FUJITSU LIMITED
@@ -32,6 +32,7 @@ OF THIS SOFTWARE.
 #include "Xlibint.h"
 #include "Xlcint.h"
 #include "Ximint.h"
+#include "XlcPubI.h"
 
 #define sz_CARD8                 1
 #define sz_INT8                  1
@@ -599,7 +600,7 @@ _read_text_from_packet(im, buf, text)
 					&s); /* CT? HM */
 	    if (s != XLookupNone) {
 		if (text->string.multi_byte
-		    = (char*)Xmalloc(text->length * MB_CUR_MAX)) {
+		    = (char*)Xmalloc(text->length * XLC_PUBLIC(im->core.lcd,mb_cur_max))) {
 			int tmp;
 			tmp = _Ximctstombs(im,
 					   tmp_buf, tmp_len, 
