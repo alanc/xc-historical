@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: init_bench.c,v 5.1 91/02/16 10:07:38 rws Exp $ */
 /***********************************************************
 Copyright(c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -306,6 +306,7 @@ Wk_info *wkinfo;
 	Plimit3 gpc_dum,gpc_cur_vp;
 	char user_display[256];
 	int depth;
+	char *resources;
 
 	user_display[0] = '\0'; /* Set default display */
 
@@ -318,7 +319,10 @@ Wk_info *wkinfo;
 	CONNECT_TO_DISPLAY(user_display);
 
 	/* Now get the resources from the server */
-	dis_db = XrmGetStringDatabase(XResourceManagerString(dpy));
+	resources = XResourceManagerString(dpy);
+	if (!resources)
+	    resources = "";
+	dis_db = XrmGetStringDatabase(resources);
 	XrmMergeDatabases(gpc_res_db, &dis_db);
 
 	/* Fill out vendor specific entries in the report file */
