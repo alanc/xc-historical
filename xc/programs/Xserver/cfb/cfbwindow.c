@@ -194,9 +194,9 @@ of it in devPrivate.
 Bool
 cfbChangeWindowAttributes(pWin, mask)
     WindowPtr pWin;
-    int mask;
+    unsigned long mask;
 {
-    register int index;
+    register unsigned long index;
     register cfbPrivWin *pPrivWin;
 
     pPrivWin = (cfbPrivWin *)(pWin->devPrivate);

@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 1.12 89/03/18 12:28:58 rws Exp $ */
+/* $XConsortium: mfbwindow.c,v 1.13 89/03/18 16:25:56 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -221,9 +221,9 @@ of it in devPrivate.
 Bool
 mfbChangeWindowAttributes(pWin, mask)
     register WindowPtr pWin;
-    register int mask;
+    register unsigned long mask;
 {
-    register int index;
+    register unsigned long index;
     register mfbPrivWin *pPrivWin;
 
     pPrivWin = (mfbPrivWin *)(pWin->devPrivate);
