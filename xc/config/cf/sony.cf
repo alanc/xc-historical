@@ -1,6 +1,7 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.32 91/07/26 10:43:43 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.33 91/07/26 12:38:03 rws Exp $
 
-#ifdef bsd43
+#ifdef SonyBsdArchitecture
+
 #define OSName                  NEWS-OS 3.3
 #define OSMajorVersion          3
 #define OSMinorVersion          3
@@ -37,7 +38,9 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.32 91/07/26 10:43:43 rws Exp $
 #define StandardDefines		-DNOSTDHDRS
 #define HasBsearch		NO
 #endif
+
 #else
+
 #define OSName			NEWS-OS 5.0U
 #define OSMajorVersion		5
 #define OSMinorVersion		0
@@ -47,10 +50,9 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.32 91/07/26 10:43:43 rws Exp $
 #define HasSockets		YES
 #define DefaultCCOptions	-Wf,-XNp6000,-XNd6000
 #define PexCCOptions		-Wf,-XNp15000,-XNd15000
+
 #endif
 XCOMM operating system:  OSName
 
 #define BuildServer             NO
-#if OSMajorVersion == 4
 #define BuildXimp		YES
-#endif
