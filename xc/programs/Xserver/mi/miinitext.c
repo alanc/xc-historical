@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miinitext.c,v 1.31 94/02/04 17:11:13 rws Exp $ */
+/* $XConsortium: miinitext.c,v 1.32 94/04/17 20:27:38 rws Exp $ */
 
 #include "misc.h"
 
@@ -118,6 +118,9 @@ extern void XRecordExtensionInit();
 #ifdef LBX
 extern void     LbxExtensionInit();
 #endif
+#ifdef XDBE
+extern void     DbeExtensionInit();
+#endif
 
 /*ARGSUSED*/
 void
@@ -184,5 +187,8 @@ InitExtensions(argc, argv)
 #endif
 #ifdef LBX
     LbxExtensionInit();
+#endif
+#ifdef XDBE
+    DbeExtensionInit();
 #endif
 }
