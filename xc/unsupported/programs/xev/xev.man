@@ -1,0 +1,26 @@
+.TH XEV 1 "1 October 1988" "X Version 11"
+.SH NAME
+xev - event diagnostics
+.SH SYNOPSIS
+.B "xmag"
+[\-display \fIdisplayname\fP] [\-geometry \fIgeom\fP]
+.SH DESCRIPTION
+.PP
+The \fIxev\fP program creates a window and selects for all possible core X
+events.  It then maps the window and sits in a tight loop printing out the
+contents of every event it receives.  It is useful for seeing when events are
+received and what information they contain.
+.SH OPTIONS
+.TP 8
+.B \-display \fIdisplay\fP
+This option specifies the X server to contact.
+.TP 8
+.B \-geometry \fIgeom\fP
+This option specifies the size and/or location of the window.
+.SH "SEE ALSO"
+X(1), xwininfo(1), xdpyinfo(1), Xlib Programmers Manual, X Protocol
+Specification
+.SH COPYRIGHT
+Copyright 1988, Massachusetts Institute of Technology.
+.SH AUTHOR
+Jim Fulton, MIT X Consortium
