@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.57 90/09/24 09:16:00 rws Exp $ */
+/* $XConsortium: window.c,v 5.58 91/01/11 09:29:31 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3253,8 +3253,6 @@ ReparentWindow(pWin, pParent, x, y, client)
     register ScreenPtr pScreen;
 
     pScreen = pWin->drawable.pScreen;
-    if (pScreen != pParent->drawable.pScreen)
-        return(BadMatch);
     if (TraverseTree(pWin, CompareWIDs, (pointer)&pParent->drawable.id) == WT_STOPWALKING)
         return(BadMatch);		
     if (!MakeWindowOptional(pWin))
