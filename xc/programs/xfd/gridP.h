@@ -43,9 +43,11 @@ typedef struct _FontGridRec {
 				((fgw)->fontgrid.internal_pad * 2))
 
 
-#define CellWidth(fgw) ((int)((fgw)->core.width + (fgw)->fontgrid.grid_width) \
-			/ (fgw)->fontgrid.cell_cols)
-#define CellHeight(fgw) ((int)((fgw)->core.height + (fgw)->fontgrid.grid_width) \
-		         / (fgw)->fontgrid.cell_rows)
+#define CellWidth(fgw) (((int)(fgw)->core.width - (fgw)->fontgrid.grid_width) \
+			/ (fgw)->fontgrid.cell_cols \
+			- (fgw)->fontgrid.grid_width)
+#define CellHeight(fgw) (((int)(fgw)->core.height - (fgw)->fontgrid.grid_width)\
+			 / (fgw)->fontgrid.cell_rows \
+			 - (fgw)->fontgrid.grid_width)
 
 #endif /* !_FontGridP_h_ */
