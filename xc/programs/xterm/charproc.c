@@ -1165,7 +1165,7 @@ unsigned	flags;
 		if(screen->scroll_amt)
 			FlushScroll(screen);
 	cx = CursorX(screen, screen->cur_col);
-	cy = CursorY(screen, screen->cur_row)+screen->fnt_norm->max_bounds.ascent;
+	cy = CursorY(screen, screen->cur_row)+screen->fnt_norm->ascent;
  	XDrawImageString(screen->display, TextWindow(screen), currentGC,
 			cx, cy, str, len);
 
@@ -1967,8 +1967,8 @@ XSetWindowAttributes *values;
 	/* find the max width and higth of the font */
 
 	screen->fullVwin.f_width = screen->fnt_norm->max_bounds.width;
-	screen->fullVwin.f_height = screen->fnt_norm->max_bounds.ascent +
-				    screen->fnt_norm->max_bounds.descent;
+	screen->fullVwin.f_height = screen->fnt_norm->ascent +
+				    screen->fnt_norm->descent;
 
 	/* making cursor */
 	{
@@ -2248,7 +2248,7 @@ ShowCursor()
 
 	x = CursorX (screen, screen->cur_col);
 	y = CursorY(screen, screen->cur_row) + 
-	  screen->fnt_norm->max_bounds.ascent;
+	  screen->fnt_norm->ascent;
 	XDrawImageString(screen->display, TextWindow(screen), currentGC,
 		x, y, &c, 1);
 
@@ -2260,7 +2260,7 @@ ShowCursor()
 			x, y+1, x + FontWidth(screen), y+1);
 	if (!screen->select && !screen->always_highlight) {
 		screen->box->x = x;
-		screen->box->y = y - screen->fnt_norm->max_bounds.ascent;
+		screen->box->y = y - screen->fnt_norm->ascent;
 		XDrawLines (screen->display, TextWindow(screen), 
 			    screen->cursoroutlineGC ? screen->cursoroutlineGC 
 			    			    : currentGC,
@@ -2303,7 +2303,7 @@ HideCursor()
 	x = CursorX (screen, screen->cursor_col);
 	y = (((screen->cursor_row - screen->topline) * FontHeight(screen))) +
 	 screen->border;
-	y = y+screen->fnt_norm->max_bounds.ascent;
+	y = y+screen->fnt_norm->ascent;
 	XDrawImageString(screen->display, TextWindow(screen), currentGC,
 		x, y, &c, 1);
 	if((flags & BOLD) && screen->enbolden)

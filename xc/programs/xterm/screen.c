@@ -1,5 +1,5 @@
 /*
- *	$Header: screen.c,v 1.4 88/07/14 17:55:17 jim Exp $
+ *	$Header: screen.c,v 1.5 88/08/09 10:30:10 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* screen.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 1.4 88/07/14 17:55:17 jim Exp $";
+static char rcs_id[] = "$Header: screen.c,v 1.5 88/08/09 10:30:10 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -217,7 +217,7 @@ register TScreen *screen;
 int toprow, leftcol, nrows, ncols;
 {
 	int y = toprow * FontHeight(screen) + screen->border +
-		screen->fnt_norm->max_bounds.ascent;
+		screen->fnt_norm->ascent;
 	register int row;
 	register int topline = screen->topline;
 	int maxrow = toprow + nrows - 1;
