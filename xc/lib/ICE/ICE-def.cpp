@@ -40,7 +40,6 @@ EXPORTS
  IceRegisterForProtocolSetup
  IceRelease
  IceRemoveConnectionWatch
- IceSetConnectionContext
  IceSetErrorHandler
  IceSetHostBasedAuthProc
  IceSetIOErrorHandler
