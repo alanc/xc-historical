@@ -116,7 +116,6 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
        elsewhere.  (we put in no-op only for things that we KNOW
        are really no-op.
     */
-    pScreen->QueryBestSize = cfbQueryBestSize;
     pScreen->CreateWindow = cfbCreateWindow;
     pScreen->DestroyWindow = cfbDestroyWindow;
     pScreen->PositionWindow = cfbPositionWindow;
