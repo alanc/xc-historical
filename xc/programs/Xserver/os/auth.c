@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.1 88/12/08 16:39:46 keith Exp $
+ * $XConsortium: auth.c,v 1.2 89/01/16 13:58:13 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -142,7 +142,6 @@ unsigned short	*data_lenp;
 char	**datap;
 {
     int	i;
-    XID	ret;
 
     for (i = 0; i < NUM_AUTHORIZATION; i++) {
 	if ((*protocols[i].FromID) (id, data_lenp, datap)) {

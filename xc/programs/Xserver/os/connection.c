@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.96 89/03/14 16:44:50 rws Exp $ */
+/* $XConsortium: connection.c,v 1.97 89/03/23 18:37:35 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -338,7 +338,7 @@ char *
 ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     ClientPtr client;
     char *auth_proto, *auth_string;
-    int proto_n, string_n;
+    unsigned short proto_n, string_n;
 {
     register OsCommPtr priv;
     union {
@@ -356,7 +356,7 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     int	fromlen = sizeof (from);
     XID	 auth_id;
 
-    if (proto_n > 0)
+    if (proto_n)
         auth_id = CheckAuthorization (proto_n, auth_proto,
 				      string_n, auth_string);
     else
