@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Grip.c,v 1.21 88/10/19 09:39:54 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Grip.c,v 1.22 89/03/06 16:32:05 kit Exp $";
 #endif lint
 
 /***********************************************************
@@ -51,7 +51,7 @@ static XtResource resources[] = {
       XtOffset(GripWidget, grip.grip_action), XtRCallback, NULL},
 };
 
-void GripAction( /* Widget, XEvent*, String*, Cardinal */ );
+static void GripAction( /* Widget, XEvent*, String*, Cardinal */ );
 
 static XtActionsRec actionsList[] =
 {
