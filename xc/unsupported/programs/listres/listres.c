@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.10 89/07/11 18:52:21 jim Exp $
+ * $XConsortium: listres.c,v 1.11 89/07/12 09:32:57 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -35,7 +35,7 @@ extern int nwidgets;
 
 static XrmOptionDescRec Options[] = {
   { "-known", "*listKnown", XrmoptionNoArg, (caddr_t) "on" },
-  { "-top", "*topWidget", XrmoptionNoArg, (caddr_t) "on" },
+  { "-top", "*topObject", XrmoptionSepArg, (caddr_t) NULL },
   { "-format", "*resourceFormat", XrmoptionSepArg, (caddr_t) NULL },
   { "-nosuper", "*showSuper", XrmoptionNoArg, (caddr_t) "off" },
   { "-variable", "*showVariable", XrmoptionNoArg, (caddr_t) "on" },
