@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.14 89/05/14 14:08:13 keith Exp $
+ * $XConsortium: session.c,v 1.15 89/05/15 08:47:51 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -263,6 +263,7 @@ waitAbort ()
 }
 
 #ifdef SYSV
+# include	<ctype.h>
 #define killpg(pgrp, sig) kill(-(pgrp), sig)
 #endif /* SYSV */
 
@@ -378,16 +379,16 @@ char	**environ;
 			*e = '\0';
 		if (!strncmp (program, "#!", 2)) {
 			p = program + 2;
-			while (*p && iswhite (*p))
+			while (*p && isspace (*p))
 				++p;
 			optarg = p;
-			while (*optarg && !iswhite (*optarg))
+			while (*optarg && !isspace (*optarg))
 				++optarg;
 			if (*optarg) {
 				*optarg = '\0';
 				do
 					++optarg;
-				while (*optarg && iswhite (*optarg));
+				while (*optarg && isspace (*optarg));
 			} else
 				optarg = 0;
 		} else {
