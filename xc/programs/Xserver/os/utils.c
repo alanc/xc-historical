@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.30 87/08/26 23:57:36 toddb Locked $ */
+/* $Header: utils.c,v 1.31 87/08/26 23:57:57 toddb Exp $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
@@ -32,6 +32,12 @@ SOFTWARE.
 #include <strings.h>
 extern char *display;
 
+extern long defaultScreenSaverTime;	/* for parsing command line */
+extern long defaultScreenSaverInterval;
+extern int defaultScreenSaverBlanking;
+
+extern long ScreenSaverTime;		/* for forcing reset */
+
 Bool clientsDoomed = FALSE;
 extern void KillServerResources();
 
@@ -40,6 +46,8 @@ extern void KillServerResources();
 AutoResetServer ()
 {
     clientsDoomed = TRUE;
+    /* force an immediate timeout (and exit) in WaitForSomething */
+    ScreenSaverTime = TimeSinceLastInputEvent();
 #ifdef GPROF
     chdir ("/tmp");
     exit (0);
@@ -171,7 +179,7 @@ char	*argv[];
 	else if ( strcmp( argv[i], "-p") == 0)
 	{
 	    if(++i < argc)
-	        ScreenSaverInterval = atoi(argv[i]) * MILLI_PER_MIN;
+	        defaultScreenSaverInterval = atoi(argv[i]) * MILLI_PER_MIN;
 	    else
 		UseMsg();
 	}
@@ -182,7 +190,7 @@ char	*argv[];
 	else if ( strcmp( argv[i], "-s") == 0)
 	{
 	    if(++i < argc)
-	        ScreenSaverTime = atoi(argv[i]) * MILLI_PER_MIN;
+	        defaultScreenSaverTime = atoi(argv[i]) * MILLI_PER_MIN;
 	    else
 		UseMsg();
 	}
@@ -204,9 +212,9 @@ char	*argv[];
 		UseMsg();
 	}
 	else if ( strcmp( argv[i], "v") == 0)
-	    ScreenSaverBlanking = PreferBlanking;
+	    defaultScreenSaverBlanking = PreferBlanking;
 	else if ( strcmp( argv[i], "-v") == 0)
-	    ScreenSaverBlanking = DontPreferBlanking;
+	    defaultScreenSaverBlanking = DontPreferBlanking;
 	else if ( strcmp( argv[i], "-x") == 0)
 	{
 	    if(++i >= argc)
