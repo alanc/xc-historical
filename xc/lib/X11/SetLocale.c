@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.29 91/04/10 10:27:11 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.30 91/04/10 10:42:49 rws Exp $
  */
 
 /*
@@ -60,30 +60,42 @@ _Xsetlocale(category, name)
     char       *name;
 #endif
 {
-    static char locale_name[MAXLOCALE] = "C";
-    char oldname[MAXLOCALE];
-    XLCd lcd;
+    static char *xsl_name;
+    char *old_name;
+    XrmMethods methods;
+    XPointer state;
 
     if (category != LC_CTYPE && category != LC_ALL)
 	return NULL;
-    if (!name)
-	return locale_name;
+    if (!name) {
+	if (xsl_name)
+	    return xsl_name;
+	return "C";
+    }
     if (!*name)
 	name = getenv("LC_CTYPE");
     if (!name || !*name)
 	name = getenv("LANG");
     if (!name || !*name)
 	name = "C";
-    strcpy(oldname, locale_name);
-    strcpy(locale_name, name);
-    lcd = _XlcCurrentLC();
-    if (lcd)
-	strcpy(locale_name, lcd->core.name);
-    else
-	strcpy(locale_name, oldname);
-    if (!lcd)
+    old_name = xsl_name;
+    xsl_name = name;
+    methods = _XrmInitParseInfo(&state);
+    xsl_name = old_name;
+    if (!methods)
 	return NULL;
-    return locale_name;
+    name = (*methods->lcname)(state);
+    xsl_name = Xmalloc(strlen(name) + 1);
+    if (!xsl_name) {
+	xsl_name = old_name;
+	(*methods->destroy)(state);
+	return NULL;
+    }
+    strcpy(xsl_name, name);
+    if (old_name)
+	Xfree(old_name);
+    (*methods->destroy)(state);
+    return xsl_name;
 }
 
 #else /* X_LOCALE */
