@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Paned.h,v 1.7 89/07/21 01:44:50 kit Exp $
+* $XConsortium: Paned.h,v 1.8 89/10/04 19:35:43 kit Exp $
 */
 
 
@@ -43,6 +43,7 @@ SOFTWARE.
 #define _XawPaned_h
 
 #include <X11/Constraint.h>
+#include <X11/Xmu/Converters.h>
 
 /****************************************************************
  *

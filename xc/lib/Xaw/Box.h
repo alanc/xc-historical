@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Box.h,v 1.18 89/07/21 01:51:23 kit Exp $
+* $XConsortium: Box.h,v 1.19 89/11/06 10:51:21 swick Exp $
 */
 
 
@@ -29,6 +29,8 @@ SOFTWARE.
 
 #ifndef _XawBox_h
 #define _XawBox_h
+
+#include <X11/Xmu/Converters.h>
 
 /***********************************************************************
  *
