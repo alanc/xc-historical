@@ -1,4 +1,4 @@
-/* $XConsortium: record.c,v 1.6 94/01/30 23:43:56 rws Exp $ */
+/* $XConsortium: record.c,v 1.7 94/01/31 00:10:26 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -49,16 +49,10 @@ extern int XRecordRequest(
 #endif
 );
 
-extern int  XRecordEvent(
+extern void XRecordEvent(
 #if NeedFunctionPrototypes
 	ClientPtr client,
         xEvent *x_event
-#endif
-);
-extern int XRecordError(
-#if NeedFunctionPrototypes
-	ClientPtr client,
-        xError *x_error
 #endif
 );
 
@@ -80,7 +74,7 @@ static int      RecordReqCode;
 static int      RecordEventBase;
 static int      RecordErrorBase;
 
-static RESTYPE   RTConfig = 0;
+static RESTYPE   RTConfig;
 static RESTYPE   XRecordDelete;   /* Resource type for intercepted clients */
 static RESTYPE   XRecordGone;   /* Resource type for intercept vectors  */
 
@@ -117,11 +111,11 @@ static RESTYPE   XRecordGone;   /* Resource type for intercept vectors  */
 /*----------------------------*
  *  Global Data Declarations  *
  *----------------------------*/
-int    RecordedEvents[128L]  = {0L};
+int RecordedEvents[128L];
 
 static int_function *SavedRequestVectors[MAXCLIENTS];
 
-extern int	currentMaxClients;
+extern int currentMaxClients;
 extern int (* ProcVector[256]) ();
 extern int (* InitialVector[3]) ();
 extern void_function EventSwapVector[128L];
@@ -515,7 +509,7 @@ int XRecordRequest(client)
     return((*SavedRequestVectors[client->index][stuff->reqType])(client));
 }
 
-int XRecordEvent(client, x_event)
+void XRecordEvent(client, x_event)
     ClientPtr client;
     xEvent    *x_event;
 {
@@ -570,7 +564,6 @@ int XRecordEvent(client, x_event)
 	     }
          }
     }
-    return;
 }
 
 /*
@@ -855,7 +848,6 @@ static int ProcRecordDispatch(client)
 #endif
 	    return BadRequest;
     }
-    return (client->noClientException);
 }
 
 /*
