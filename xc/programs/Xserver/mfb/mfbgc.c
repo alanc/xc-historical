@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.16 89/11/05 15:12:46 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 5.17 89/11/13 09:46:57 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -622,6 +622,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 	{
 	    BoxRec pixbounds;
 
+	    /* XXX should we translate by drawable.x/y here ? */
 	    pixbounds.x1 = 0;
 	    pixbounds.y1 = 0;
 	    pixbounds.x2 = pDrawable->width;
@@ -637,9 +638,15 @@ mfbValidateGC(pGC, changes, pDrawable)
 	    }
 
 	    if (pGC->clientClipType == CT_REGION)
-		(*pScreen->Intersect)(devPriv->pCompositeClip, 
+	    {
+		(*pScreen->TranslateRegion)(devPriv->pCompositeClip,
+					    -pGC->clipOrg.x, -pGC->clipOrg.y);
+		(*pScreen->Intersect)(devPriv->pCompositeClip,
 				      devPriv->pCompositeClip,
 				      pGC->clientClip);
+		(*pScreen->TranslateRegion)(devPriv->pCompositeClip,
+					    pGC->clipOrg.x, pGC->clipOrg.y);
+	    }
 	} /* end of composite clip for pixmap */
     }
 

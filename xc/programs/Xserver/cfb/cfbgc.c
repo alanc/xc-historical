@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.30 89/11/05 15:14:29 rws Exp $ */
+/* $XConsortium: cfbgc.c,v 5.31 89/11/25 15:17:19 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -364,6 +364,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	else {
 	    BoxRec      pixbounds;
 
+	    /* XXX should we translate by drawable.x/y here ? */
 	    pixbounds.x1 = 0;
 	    pixbounds.y1 = 0;
 	    pixbounds.x2 = pDrawable->width;
@@ -378,9 +379,15 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    }
 
 	    if (pGC->clientClipType == CT_REGION)
+	    {
+		(*pScreen->TranslateRegion)(devPriv->pCompositeClip,
+					    -pGC->clipOrg.x, -pGC->clipOrg.y);
 		(*pScreen->Intersect)(devPriv->pCompositeClip,
 				      devPriv->pCompositeClip,
 				      pGC->clientClip);
+		(*pScreen->TranslateRegion)(devPriv->pCompositeClip,
+					    pGC->clipOrg.x, pGC->clipOrg.y);
+	    }
 	}			/* end of composute clip for pixmap */
     }
 
