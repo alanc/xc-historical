@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ibmInit.c,v 1.3 91/07/16 13:06:35 jap Exp $
+ * $XConsortium: ibmInit.c,v 1.4 91/09/09 13:23:00 rws Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -118,7 +118,7 @@ ibmProbeAndAdd(scr, dev_number, x, y)
 	    return FALSE ;
 	}
 	aixPutScreenAt(ibmNumScreens,x,y);
-	ibmScreens[ibmNumScreens] = (ibmPerScreenInfo *)Xalloc( sizeof(ibmPerScreenInfo) );
+	ibmScreens[ibmNumScreens] = (ibmPerScreenInfo *) xalloc( sizeof(ibmPerScreenInfo) );
 	*(ibmScreens[ibmNumScreens]) = *scr;
 	ibmScreens[ibmNumScreens]->ibm_DeviceID = tmpDeviceID;
 	ibmScreens[ibmNumScreens]->ibm_ScreenFD = tmpScreenFD;
@@ -339,7 +339,7 @@ extern  int ibmQuietFlag ;
 	ibmSetupPlumber(argv[++i]);
 	skip= 2;
     }
-#endif IBM_SPECIAL_MALLOC
+#endif /* IBM_SPECIAL_MALLOC */
     else if ( strcmp( argv[i], "-T") == 0)
 	ibmDontZap = TRUE;
     else if ( strcmp( argv[i], "-wp") == 0)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: ibmUtils.c,v 1.2 91/07/16 13:10:58 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -50,31 +50,6 @@ if ( !ibmQuietFlag )
 return ;
 }
 
-/***==================================================================***/
-
-	/* 
-	 * XXX!!! HACK HACK HACKITY HACK HACK!!!
-	 * 11/4/88 (ef) -- when the server exits, it first kills any active
-	 * clients, which will paint the root window background where they
-	 * used to be.  This has a nasty tendency to write on the currently
-	 * active hft.   Rather than doing something clever to notice
-	 * that we are inactive when repainting the background, we just
-	 * exit the server because we "know" that no more real cleanup
-	 * need be done.
-	 */
-
-static void
-ibmAbortInactiveScreens()
-{
-int	scrn;
-    TRACE(("ibmAbortInactiveScreens()\n"));
-    for (scrn = 0; scrn < ibmNumScreens; scrn++) {
-	if (ibmScreenState(scrn)!=SCREEN_ACTIVE) {
-	    exit(0);
-	}
-    }
-    return;
-}
 
 /***==================================================================***/
 
@@ -84,16 +59,11 @@ ddxGiveUp()
 
     TRACE(("ddxGiveUp()"));
 
-#ifdef AIXV3
-    rcmGiveUp();
-    OS_GiveUp();
-    ibmAbortInactiveScreens();
-#endif
-
 #ifdef AIXps2
     OS_CapsLockFeedback(0);	
-    OS_GiveUp();
 #endif
+
+    OS_GiveUp();
 
     return;
 }
@@ -121,15 +91,11 @@ AbortDDX()
 {
     TRACE(("AbortDDX()"));
 
-#ifdef AIXV3
-    OS_Abort();
-    ibmAbortInactiveScreens();
-#endif
 #ifdef AIXps2
     OS_CapsLockFeedback(0) ;
-    OS_Abort();
 #endif
 
+    OS_Abort();
     return;
 }
 
