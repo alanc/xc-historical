@@ -23,9 +23,9 @@ customization of \fIxman\fP.
 .I Xman
 allows customization of both the directories to be searched for manual pages,
 and the name that each directory will map to in the \fISections\fP
-menu.  Xman determines which direcories it will
-search by reading the \fIMANPATH\fP environment variable.  This enviroment
-is expected to be a colon seperated list of directories for xman to search.
+menu.  Xman determines which directories it will
+search by reading the \fIMANPATH\fP environment variable.  This environment
+is expected to be a colon-separated list of directories for xman to search.
 .sp
 .nf
 setenv MANPATH /mit/kit/man:/usr/man
@@ -36,7 +36,7 @@ By default,
 will search each of the following directories (in each of the directories 
 specified in the users MANPATH) for manual pages.  If manual pages exist
 in that directory then they are added to list of manual pages for 
-the corrosponding menu item.
+the corresponding menu item.
 A menu item is only displayed for those sections that actually contain
 manual pages.
 .ta 1.5i
@@ -70,7 +70,7 @@ displayed for the section called \fI(o) Old\fP.
 By using the \fImandesc\fP file a user or system manager is able to 
 more closely control which manual pages will appear in each of the sections
 represented by menu items in the \fISections\fP menu.  This 
-functionality is only avaliable on a section by section basis, and individual
+functionality is only available on a section by section basis, and individual
 manual pages may not be handled in this manner (Although generous use of 
 symbolic links - ln(1) - will allow almost any configuration you can imagine).
 .PP
@@ -133,7 +133,7 @@ searches.
 .SH "COMMAND LINE OPTIONS"
 .PP
 Xman supports all standard Toolkit command line arguments (see
-\fIX(1)\fP).  The following additional arguements are supported.
+\fIX(1)\fP).  The following additional arguments are supported.
 .sp
 .IP "\fB-helpfile\fP \fIfilename\fP"
 Specifies a helpfile to use other than the default.
@@ -287,7 +287,7 @@ This action may be used anywhere, and will popup the help widget.
 .TP 1.5i
 .B PopupSearch()
 This action may be used anywhere except in a help window.  It will cause
-the search popup to become active and visable on the screen, allowing
+the search popup to become active and visible on the screen, allowing
 the user search for a manual page.
 .TP 1.5i
 .B CreateNewManpage()
@@ -340,7 +340,7 @@ resource database after the system app-defaults file, and before
 the resources that are attached to the display.
 .PP
 .SH BUGS
-There probabally are some.
+There probably are some.
 .SH COPYRIGHT
 Copyright 1988 by Massachusetts Institute of Technology.
 .br
