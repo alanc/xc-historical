@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.24 91/03/25 11:52:37 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.25 91/04/15 10:34:24 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -628,6 +628,7 @@ Name						Reference
 19. DISPLAY MANUFACTURER ID
 
 "Acorn"						[49]
+"HDS"						[70]
 "TD"						[63]
 "MIT"						[8]
 "NCD"						[66]
@@ -972,4 +973,7 @@ REFERENCES
 	Adobe Systems Incorporated
 	PO Box 7900
 	Mountain View, CA 94039-7900
+
+[70]	Adrian Bereanu
+	Human Designed Systems
 Sumitomo Electric Workstation Corp.	[77]
