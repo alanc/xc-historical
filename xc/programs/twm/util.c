@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.41 90/09/20 18:08:07 converse Exp $
+ * $XConsortium: util.c,v 1.42 91/01/09 17:13:54 rws Exp $
  *
  * utility routines for twm
  *

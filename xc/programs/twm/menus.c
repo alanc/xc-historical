@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.171 91/01/10 09:53:47 rws Exp $
+ * $XConsortium: menus.c,v 1.172 91/01/10 14:26:12 dave Exp $
  *
  * twm menu code
  *
@@ -1128,9 +1128,9 @@ FindMenuRoot(name)
 
 
 
-static Bool belongs_to_twm_window (t, w, sub)
+static Bool belongs_to_twm_window (t, w)
     register TwmWindow *t;
-    register Window w, sub;
+    register Window w;
 {
     if (!t) return False;
 
