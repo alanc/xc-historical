@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.89 88/10/18 10:41:00 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.90 88/10/21 08:43:10 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif lint
 
@@ -39,6 +39,7 @@ static GrabList focusList;	/* %%% should this be in the AppContext? */
 static Boolean focusTraceGood;	/* %%% ditto */
 
 extern void bzero();
+static SendFocusNotify();
 
 CallbackList *_XtDestroyList;
 
