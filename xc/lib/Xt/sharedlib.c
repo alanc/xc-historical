@@ -1,5 +1,4 @@
-/*
- * $XConsortium: sharedlib.c,v 1.14 92/01/06 17:01:45 gildea Exp $
+/* $XConsortium: sharedlib.c,v 1.16 94/03/30 19:55:04 converse Exp $
  * 
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -50,7 +49,8 @@ void _XtInherit()
  * The following routine will be called by every toolkit
  * application, forcing this file to be statically linked.
  *
- * Note: Both XtInitialize and XtAppInitialize call XtToolkitInitialize.
+ * Note: XtInitialize, XtAppInitialize, and XtOpenApplication
+ *       call XtToolkitInitialize.
  */
 
 void XtToolkitInitialize()
@@ -154,6 +154,80 @@ Widget XtVaAppInitialize(app_context_return, application_class, options,
 			      fallback_resources, var);
 }
 
+#if NeedFunctionPrototypes
+Widget
+XtOpenApplication(
+XtAppContext * app_context_return,
+_Xconst char* application_class,
+XrmOptionDescRec *options,
+Cardinal num_options,
+int *argc_in_out,
+String *argv_in_out,
+String *fallback_resources,
+WidgetClass widget_class,
+ArgList args_in,
+Cardinal num_args_in
+)
+#else
+Widget
+XtOpenApplication(app_context_return, application_class, options, num_options,
+		  argc_in_out, argv_in_out, fallback_resources, 
+		  widget_class, args_in, num_args_in)
+XtAppContext * app_context_return;
+String application_class;
+XrmOptionDescRec *options;
+Cardinal num_options, num_args_in;
+int *argc_in_out;
+String *argv_in_out, * fallback_resources;
+WidgetClass widget_class;
+ArgList args_in;
+#endif
+{
+    extern Widget _XtOpenApplication();
+    VENDORINIT
+    return _XtOpenApplication (app_context_return, application_class, options,
+			       num_options, argc_in_out, argv_in_out, 
+			       fallback_resources, widget_class,
+			       args_in, num_args_in);
+}
+
+#if NeedVarargsPrototypes
+Widget
+XtVaOpenApplication(
+    XtAppContext *app_context_return,
+    _Xconst char* application_class,
+    XrmOptionDescList options,
+    Cardinal num_options,
+    int *argc_in_out,
+    String *argv_in_out,
+    String *fallback_resources,
+    WidgetClass widget_class,
+    ...)
+#else
+Widget XtVaOpenApplication(app_context_return, application_class, options,
+			   num_options, argc_in_out, argv_in_out,
+			   fallback_resources, widget_class, va_alist)
+    XtAppContext *app_context_return;
+    String application_class;
+    XrmOptionDescList options;
+    Cardinal num_options;
+    int *argc_in_out;
+    String *argv_in_out;
+    String *fallback_resources;
+    WidgetClass widget_class;
+    va_dcl
+#endif
+{
+    va_list	var;
+    extern Widget _XtVaOpenApplication();
+
+    VENDORINIT
+    Va_start(var, fallback_resources);
+    return _XtVaOpenApplication(app_context_return, application_class, options,
+				num_options, argc_in_out, argv_in_out,
+				fallback_resources, widget_class, var);
+}
+
 #else
 
 #ifndef lint
@@ -199,6 +273,9 @@ WidgetClass topLevelShellWidgetClass = (WidgetClass) &topLevelShellClassRec;
 
 extern ApplicationShellClassRec applicationShellClassRec;
 WidgetClass applicationShellWidgetClass = (WidgetClass) &applicationShellClassRec;
+
+extern SessionShellClassRec sessionShellClassRec;
+WidgetClass sessionShellWidgetClass = (WidgetClass) &sessionShellClassRec;
 
 extern HookObjClassRec hookObjClassRec;
 WidgetClass hookObjectClass = (WidgetClass) &hookObjClassRec;
