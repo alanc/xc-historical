@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.104 92/11/03 16:22:13 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.105 92/11/03 16:39:26 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -132,6 +132,9 @@ released automatically at next button or non-modifier key.
 #include <X11/Xos.h>
 #include <X11/keysym.h>
 #include <X11/Xmu/WinUtil.h>
+#if XlibSpecificationRelease >= 5
+#include <X11/Xfuncs.h>
+#endif
 #include <ctype.h>
 #ifndef MSDOS
 #include <termios.h>
@@ -2217,6 +2220,10 @@ init_display(dname)
     }
 #ifdef XTEST
     if (XTestQueryExtension(ndpy, &eventb, &errorb, &vmajor, &vminor)) {
+#ifdef X_XTestGrabControl
+	if (vmajor > 2 || (vmajor == 2 && vminor >= 2))
+	    XTestGrabControl(ndpy, True);
+#endif
 	if (clean_up)
 	    (*clean_up)();
 	generate_key = xtest_generate_key;
