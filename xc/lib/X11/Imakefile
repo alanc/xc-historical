@@ -293,11 +293,13 @@ DebuggedLibraryTarget(X11,$(OBJS))
 AliasedLibraryTarget(X11_d,X_d)
 #endif
 
-DependTarget()
-
 #if BandAidLibrary
 BandAidLibraryMake()
+depend::  BandAidLibrarySources
 #endif
+
+DependTarget()
+
 
 /**/# structure alignment errors can safely be ignored.
 /**/# complaints about qevent can be ignored too.
