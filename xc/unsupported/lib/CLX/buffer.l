@@ -221,6 +221,37 @@
 
 (proclaim '(inline buffer-new-request-number))
 
+(defun buffer-ensure-size (buffer size)
+  (declare (type buffer buffer)
+	   (type array-index size))
+  (when (index> size (buffer-size buffer))
+    (with-buffer (buffer)
+      (buffer-flush buffer)
+      (let* ((new-buffer-size (index-ash 1 (integer-length (index1- size))))
+	     (new-buffer (make-array new-buffer-size :element-type 'card8
+				     :initial-element 0)))
+	(setf (buffer-obuf8 buffer) new-buffer)
+	#+clx-overlapping-arrays
+	(setf (buffer-obuf16 buffer)
+	      (make-array (index-ash new-buffer-size -1)
+			  :element-type 'overlap16
+			  :displaced-to new-buffer)
+	      (buffer-obuf32 buffer)
+	      (make-array (index-ash new-buffer-size -2)
+			  :element-type 'overlap32
+			  :displaced-to new-buffer))))))
+
+(defun buffer-pad-request (buffer pad)
+  (declare (type buffer buffer)
+	   (type array-index pad))
+  (unless (index-zerop pad)
+    (when (index> (index+ (buffer-boffset buffer) pad)
+		  (buffer-size buffer))
+      (buffer-flush buffer))
+    (incf (buffer-boffset buffer) pad)
+    (unless (index-zerop (index-mod (buffer-boffset buffer) 4))
+      (buffer-flush buffer))))
+
 (defun buffer-new-request-number (buffer)
   (declare (type buffer buffer))
   (setf (buffer-request-number buffer)
