@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.34 91/07/05 15:15:26 converse Exp $
+ * $XConsortium: externs.h,v 2.35 91/07/05 18:13:54 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -58,10 +58,6 @@ extern void	DoCreateFolder		(/* Widget, XtPointer, XtPointer */);
 extern void 	DoDeleteFolder		(/* Widget, XtPointer, XtPointer */);
 extern void	Push			(/* Stack, char* */);
 extern char *	Pop			(/* Stack */);
-
-	/* from icon.c */
-
-extern void	IconInit		(/* void */);
 
 	/* from menu.c */
 
