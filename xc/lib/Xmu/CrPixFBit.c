@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: CrPixFBit.c,v 1.1 88/09/13 12:27:20 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -11,7 +11,7 @@
  *     XmuCreatePixmapFromBitmap	make a pixmap from a bitmap
  */
 
-#include "copyright.h"
+#include <X11/copyright.h>
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>

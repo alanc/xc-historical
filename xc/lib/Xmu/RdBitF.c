@@ -1,5 +1,5 @@
 /*
- * $XConsortium: RdBitF.c,v 1.4 88/09/13 12:06:36 jim Exp $
+ * $XConsortium: RdBitF.c,v 1.5 89/03/08 14:04:03 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -17,7 +17,7 @@
  * without the other).
  */
 
-#include "copyright.h"
+#include <X11/copyright.h>
 
 /*
  * Based on an optimized version provided by Jim Becker, Auguest 5, 1988.
