@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.131 88/02/14 16:30:39 rws Exp $ */
+/* $Header: main.c,v 1.132 88/02/20 08:42:10 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -58,12 +58,9 @@ extern void InitEvents();
 extern void InitExtensions();
 extern void DefineInitialRootWindow();
 extern void QueryMinMaxKeyCodes();
-extern char *sbrk();
 
 PaddingInfo PixmapWidthPaddingInfo[33];
 int connBlockScreenStart;
-
-unsigned long *minfree;
 
 static int restart = 0;
 
@@ -133,7 +130,6 @@ main(argc, argv)
 
     /* Notice if we're restart.  Probably this is because we jumped through
      * uninitialized pointer */
-    minfree = (unsigned long *)sbrk(0);               /* FOR DEBUG       XXX */
     if (restart)
 	FatalError("server restarted. Jumped through uninitialized pointer?\n");
     else
