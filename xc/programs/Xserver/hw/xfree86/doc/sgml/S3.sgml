@@ -122,14 +122,18 @@ chances are good it might work for you, too.
         <item> STB Pegasus VL 
 	</itemize>
                         
- 	8 bpp only  
+ 	8, 15/16 and 24(32) bpp
 
  	Supports RGB with sync-on-green if <tt/"sync_on_green"/
 	option is provided and board jumper is set for BNC outputs.
 
+	VLB linear addressing now occurs at 0x7FCxxxxx so that 64MB
+	or more main memory can be supported without losing linear
+	frame buffer access.
+
  	Option <tt/"stb_pegasus"/
 
- 	The <tt/"dac_8_bit"/ option is recommended.
+ 	The <tt/"dac_8_bit"/ option is always selected on this board.
 
 
 <tag>S3 928, Bt485 RAMDAC, SC11412 Clockchip</tag>
@@ -480,7 +484,7 @@ exit
 </code>
 
 <verb>
-$XConsortium: S3.sgml,v 1.4 95/01/26 15:37:04 kaleb Exp kaleb $
+$XConsortium: S3.sgml,v 1.5 95/01/26 15:47:06 kaleb Exp kaleb $
 $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.11 1995/01/26 02:19:15 dawes Exp $
 </verb>
 

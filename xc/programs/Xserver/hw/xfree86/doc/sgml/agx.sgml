@@ -60,7 +60,7 @@
         recent fixes to the mi/cfb code.<p>
 
 <item>  The video memory probe has been problematic, recent fixes 
-        haven't failed yet, but earlier versions showed promise too...<p>
+        haven't failed yet, but earlier versions showed promise too&hellip<p>
 
 <item>  As in all software, needs more testing.<p>.<p>
 
@@ -92,7 +92,7 @@
 <item>  Implement more HW probing, this will be difficult as it
         appears some (all?) vendors don't implement the VESA VXE
         POS registers, although the AGX chip does support it (and
-        some vendors claim VXE compliance...). There are a few 
+        some vendors claim VXE compliance&hellip). There are a few 
         rev/vendor registers in the AGX chip but they are not 
         documented. Note: SuperProbe also does not yet support 
         probing for AGX/XGA chips.<p>
@@ -514,8 +514,8 @@ Set or clear CPU access wait state, default is the POST setting.
 <p>
 
 <verb>
-$XConsortium: agx.sgml,v 1.2 95/01/16 13:17:51 kaleb Exp kaleb $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.5 1995/01/23 01:30:08 dawes Exp $
+$XConsortium: agx.sgml,v 1.3 95/01/23 15:34:56 kaleb Exp kaleb $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.6 1995/01/25 11:08:57 dawes Exp $
 </verb>
 
 </article>
