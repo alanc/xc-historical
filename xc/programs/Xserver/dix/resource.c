@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: resource.c,v 1.59 87/08/12 09:41:35 toddb Locked $ */
+/* $Header: resource.c,v 1.60 87/08/28 16:25:54 toddb Locked $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -244,7 +244,7 @@ int id, skipDeleteFuncClass;
 	    }
 	    else
 		head = &res->next;
-	    if(id == clients[cid]->lastDrawableID)
+	    if(clients[cid] && (id == clients[cid]->lastDrawableID))
 		clients[cid]->lastDrawableID = INVALID;
     }
     if (!gotOne)
@@ -258,6 +258,12 @@ FreeClientResources(client)
     register ResourcePtr *resources;
     register ResourcePtr this;
     int j;
+
+    /* This routine shouldn't be called with a null client, but just in
+	case ... */
+
+    if (!client)
+	return;
 
     HandleSaveSet(client);
 
