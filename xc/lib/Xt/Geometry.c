@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.35 89/09/11 17:43:00 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.36 89/09/14 10:13:23 swick Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
 #endif /* lint */
 
@@ -28,7 +28,7 @@ SOFTWARE.
 ******************************************************************/
 
 #include "IntrinsicI.h"
-#include "Shell.h"
+#include "ShellP.h"
 
 /* Public routines */
 
@@ -43,29 +43,62 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
     XtGeometryMask	changeMask;
     Boolean managed, parentRealized,widgetRealized;
 
-    if (parent == NULL) {
-	XtErrorMsg("invalidParent","xtMakeGeometryRequest","XtToolkitError",
-           "XtMakeGeometryRequest - NULL parent.  Use SetValues instead",
-            (String *)NULL, (Cardinal *)NULL); 
-    }
-    managed = XtIsManaged(widget);
+    if (XtIsShell(widget)) {
+	ShellClassExtension ext;
+	for (ext = (ShellClassExtension)((ShellWidgetClass)XtClass(widget))
+		   ->shell_class.extension;
+	     ext != NULL && ext->record_type != NULLQUARK;
+	     ext = (ShellClassExtension)ext->next_extension);
 
-    if (XtIsComposite(parent)) {
-	parentRealized = XtIsRealized(parent);
-	manager = ((CompositeWidgetClass) (parent->core.widget_class))
-    		->composite_class.geometry_manager;
-    } else if (managed) {
-	/* Should never happen - XtManageChildren should have checked */
-	XtErrorMsg("invalidParent","xtMakeGeometryRequest","XtToolkitError",
-             "XtMakeGeometryRequest - parent not composite",
-              (String *)NULL, (Cardinal *)NULL);
-    } else {
-	/* no need to waste time checking if parent is actually realized
-	 * at this point; since the child is unmanaged we need to perform
-	 * the configure iff the child is realized, so we dummy the
-	 * parentRealized checks below.
-	 */
+	if (ext != NULL) {
+	    if (  ext->version == XtShellExtensionVersion
+		  && ext->record_size == sizeof(ShellClassExtensionRec)) {
+		manager = ext->root_geometry_manager;
+	    } else {
+		String params[1];
+		Cardinal num_params = 1;
+		params[0] = XtClass(widget)->core_class.class_name;
+		XtAppErrorMsg(XtWidgetToApplicationContext(widget),
+		     "invalidExtension", "xtMakeGeometryRequest",
+		     "XtToolkitError",
+		     "widget class %s has invalid ShellClassExtension record",
+		     params, &num_params);
+	    }
+	} else {
+	    XtAppErrorMsg(XtWidgetToApplicationContext(widget),
+			  "internalError", "xtMakeGeometryRequest",
+			  "XtToolkitError",
+			  "internal error; ShellClassExtension is NULL");
+	}
+	managed = True;
 	parentRealized = TRUE;
+    } else if (parent == NULL) {
+	XtAppErrorMsg(XtWidgetToApplicationContext(widget),
+		      "invalidParent","xtMakeGeometryRequest","XtToolkitError",
+		      "non-shell has no parent in XtMakeGeometryRequest",
+		      (String *)NULL, (Cardinal *)NULL);
+    } else /* not shell */ {
+	managed = XtIsManaged(widget);
+
+	if (XtIsComposite(parent)) {
+	    parentRealized = XtIsRealized(parent);
+	    manager = ((CompositeWidgetClass) (parent->core.widget_class))
+		    ->composite_class.geometry_manager;
+	} else if (managed) {
+	    /* Should never happen - XtManageChildren should have checked */
+	    XtAppErrorMsg(XtWidgetToApplicationContext(widget),
+			  "invalidParent", "xtMakeGeometryRequest",
+			  "XtToolkitError",
+			  "XtMakeGeometryRequest - parent not composite",
+			  (String *)NULL, (Cardinal *)NULL);
+	} else {
+	    /* no need to waste time checking if parent is actually realized
+	     * at this point; since the child is unmanaged we need to perform
+	     * the configure iff the child is realized, so we dummy the
+	     * parentRealized checks below.
+	     */
+	    parentRealized = TRUE;
+	}
     }
 
     if (managed && manager == (XtGeometryHandler) NULL) {

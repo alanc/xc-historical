@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.58 89/09/12 16:49:33 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.59 89/09/14 10:10:53 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -100,55 +100,63 @@ static XtResource shellResources[]=
 	    XtRImmediate, (XtPointer)False}
 };
 
-static void Initialize();
+static void ClassPartInitialize(), Initialize();
 static void Realize();
 static void Resize();
 static Boolean SetValues();
 static void ChangeManaged(); /* XXX */
-static XtGeometryResult GeometryManager();
+static XtGeometryResult GeometryManager(), RootGeometryManager();
+
+static ShellClassExtensionRec shellClassExtRec = {
+    NULL,
+    NULLQUARK,
+    XtShellExtensionVersion,
+    sizeof(ShellClassExtensionRec),
+    RootGeometryManager
+};
 
 externaldef(shellclassrec) ShellClassRec shellClassRec = {
-  {
-    /* superclass         */    (WidgetClass) &compositeClassRec,
-    /* class_name         */    "Shell",
-    /* size               */    sizeof(ShellRec),
+  {   /* Core */
+    /* superclass	  */	(WidgetClass) &compositeClassRec,
+    /* class_name	  */	"Shell",
+    /* size		  */	sizeof(ShellRec),
     /* Class Initializer  */	NULL,
-    /* class_part_initialize*/	NULL,
-    /* Class init'ed ?    */	FALSE,
-    /* initialize         */    Initialize,
-    /* initialize_notify    */	NULL,		
-    /* realize            */    Realize,
-    /* actions            */    NULL,
-    /* num_actions        */    0,
-    /* resources          */    shellResources,
-    /* resource_count     */	XtNumber(shellResources),
-    /* xrm_class          */    NULLQUARK,
-    /* compress_motion    */    FALSE,
-    /* compress_exposure  */    TRUE,
+    /* class_part_initialize*/	ClassPartInitialize,
+    /* Class init'ed ?	  */	FALSE,
+    /* initialize	  */	Initialize,
+    /* initialize_notify  */	NULL,		
+    /* realize		  */	Realize,
+    /* actions		  */	NULL,
+    /* num_actions	  */	0,
+    /* resources	  */	shellResources,
+    /* resource_count	  */	XtNumber(shellResources),
+    /* xrm_class	  */	NULLQUARK,
+    /* compress_motion	  */	FALSE,
+    /* compress_exposure  */	TRUE,
     /* compress_enterleave*/	FALSE,
-    /* visible_interest   */    FALSE,
-    /* destroy            */    NULL,
-    /* resize             */    Resize,
-    /* expose             */    NULL,
-    /* set_values         */    SetValues,
-    /* set_values_hook      */	NULL,			
-    /* set_values_almost    */	XtInheritSetValuesAlmost,  
-    /* get_values_hook      */	NULL,			
-    /* accept_focus       */    NULL,
+    /* visible_interest	  */	FALSE,
+    /* destroy		  */	NULL,
+    /* resize		  */	Resize,
+    /* expose		  */	NULL,
+    /* set_values	  */	SetValues,
+    /* set_values_hook	  */	NULL,			
+    /* set_values_almost  */	XtInheritSetValuesAlmost,  
+    /* get_values_hook	  */	NULL,			
+    /* accept_focus	  */	NULL,
     /* intrinsics version */	XtVersion,
-    /* callback offsets   */    NULL,
-    /* tm_table		    */  NULL,
-    /* query_geometry	    */  NULL,
-    /* display_accelerator  */  NULL,
-    /* extension	    */  NULL
-  },{
-    /* geometry_manager   */    GeometryManager,
-    /* change_managed     */    ChangeManaged,
+    /* callback offsets	  */	NULL,
+    /* tm_table		  */	NULL,
+    /* query_geometry	  */	NULL,
+    /* display_accelerator*/	NULL,
+    /* extension	  */	NULL
+  },{ /* Composite */
+    /* geometry_manager	  */	GeometryManager,
+    /* change_managed	  */	ChangeManaged,
     /* insert_child	  */	XtInheritInsertChild,
     /* delete_child	  */	XtInheritDeleteChild,
-    /* extension	    */  NULL
-  },{
-    /* extension	    */  NULL
+    /* extension	  */	NULL
+  },{ /* Shell */
+    /* extension	  */	(XtPointer)&shellClassExtRec
   }
 };
 
@@ -540,7 +548,7 @@ externaldef(applicationshellclassrec) ApplicationShellClassRec applicationShellC
     /* expose             */    NULL,
     /* set_values         */    NULL,
     /* set_values_hook      */	NULL,			
-    /* set_values_almost    */	XtInheritSetValuesAlmost,  
+    /* set_values_almost    */	XtInheritSetValuesAlmost,
     /* get_values_hook      */	NULL,			
     /* accept_focus       */    NULL,
     /* intrinsics version */	XtVersion,
@@ -573,9 +581,58 @@ externaldef(applicationshellwidgetclass) WidgetClass applicationShellWidgetClass
  * Whew!
  ****************************************************************************/
 
+static ShellClassExtension _FindClassExtension(widget_class)
+    WidgetClass widget_class;
+{
+    ShellClassExtension ext;
+    for (ext = (ShellClassExtension)((ShellWidgetClass)widget_class)
+	       ->shell_class.extension;
+	 ext != NULL && ext->record_type != NULLQUARK;
+	 ext = (ShellClassExtension)ext->next_extension);
+
+    if (ext != NULL) {
+	if (  ext->version == XtShellExtensionVersion
+	      && ext->record_size == sizeof(ShellClassExtensionRec)) {
+	    /* continue */
+	} else {
+	    String params[1];
+	    Cardinal num_params = 1;
+	    params[0] = widget_class->core_class.class_name;
+	    XtErrorMsg( "invalidExtension", "shellClassPartInitialize",
+		        "XtToolkitError",
+		 "widget class %s has invalid ShellClassExtension record",
+		 params, &num_params);
+	}
+    }
+    return ext;
+}
+
+static void ClassPartInitialize(widget_class)
+    WidgetClass widget_class;
+{
+    ShellClassExtension ext = _FindClassExtension(widget_class);
+    if (ext != NULL) {
+	if (ext->root_geometry_manager == XtInheritRootGeometryManager) {
+	    ext->root_geometry_manager =
+		_FindClassExtension(widget_class->core_class.superclass)
+		    ->root_geometry_manager;
+	}
+    } else {
+	/* if not found, spec requires XtInheritRootGeometryManager */
+	XtPointer *extP
+	    = &((ShellWidgetClass)widget_class)->shell_class.extension;
+	ext = XtNew(ShellClassExtensionRec);
+	bcopy((char*)_FindClassExtension(widget_class->core_class.superclass),
+	      (char*)ext,
+	      sizeof(ShellClassExtensionRec));
+	ext->next_extension = *extP;
+	*extP = (XtPointer)ext;
+    }
+}
+
+
 static void EventHandler();
 static void _popup_set_prop();
-static Boolean _ask_wm_for_size();
 static void _do_setsave_under();
 
 static void ShellDepth(widget,closure,value)
@@ -1189,7 +1246,7 @@ static XtGeometryResult GeometryManager( wid, request, reply )
 	XtWidgetGeometry *reply;
 {
 	ShellWidget shell = (ShellWidget)(wid->core.parent);
-	XWindowChanges xwc;
+	XtWidgetGeometry my_request;
 
 	if(shell->shell.allow_shell_resize == FALSE && XtIsRealized(wid))
 		return(XtGeometryNo);
@@ -1208,18 +1265,23 @@ static XtGeometryResult GeometryManager( wid, request, reply )
 		   	request->border_width;
 		return(XtGeometryYes);
 	}
-	xwc.x = request->x;
-	xwc.y = request->y;
-	xwc.width = request->width;
-	xwc.height = request->height;
-	xwc.border_width = request->border_width;
-	if (request->request_mode & CWSibling)
-	    xwc.sibling = XtWindow(request->sibling);
-	xwc.stack_mode = request->stack_mode;
-	if (_ask_wm_for_size(shell, &xwc, request->request_mode)) {
 
-	    /* If approved, shell's fields have been updated */
-
+	/* %%% worry about XtCWQueryOnly */
+	my_request.request_mode = 0;
+	if (request->request_mode & CWWidth) {
+	    my_request.width = request->width;
+	    my_request.request_mode |= CWWidth;
+	}
+	if (request->request_mode & CWHeight) {
+	    my_request.height = request->height;
+	    my_request.request_mode |= CWHeight;
+	}
+	if (request->request_mode & CWBorderWidth) {
+	    my_request.border_width = request->border_width;
+	    my_request.request_mode |= CWBorderWidth;
+	}
+	if (XtMakeGeometryRequest((Widget)shell, &my_request, NULL)
+		== XtGeometryYes) {
 	    if (request->request_mode & CWWidth) {
 		wid->core.width = request->width;
 	    }
@@ -1327,125 +1389,129 @@ static _wait_for_response(w, values, event)
 	}
 }
 
-static Boolean _ask_wm_for_size(w, values, mask)
-ShellWidget	w;
-XWindowChanges *values;
-Cardinal mask;
+
+static XtGeometryResult RootGeometryManager(w, request, reply)
+    Widget w;
+    XtWidgetGeometry *request, *reply;
 {
-	WMShellWidget wmshell = (WMShellWidget) w;
-	XEvent event;
-	Boolean wm = XtIsSubclass((Widget) w, wmShellWidgetClass);
-	register XSizeHints *hintp;
-	int oldx, oldy;
+    XWindowChanges values;
+    unsigned int mask = request->request_mode;
+    WMShellWidget wmshell = (WMShellWidget)w;
+    XEvent event;
+    Boolean wm = XtIsWMShell(w);
+    register XSizeHints *hintp;
+    int oldx, oldy;
 
-	if (wm) {
-	    hintp = &wmshell->wm.size_hints;
-	    oldx = hintp->x = w->core.x;
-	    oldy = hintp->y = w->core.y;
-	    hintp->width = w->core.width;
-	    hintp->height = w->core.height;
-	}
+    if (wm) {
+	hintp = &wmshell->wm.size_hints;
+	oldx = hintp->x = w->core.x;
+	oldy = hintp->y = w->core.y;
+	hintp->width = w->core.width;
+	hintp->height = w->core.height;
+    }
 
-	if (mask & CWX) {
-		if (w->core.x == values->x) mask &= ~CWX;
-		else if (wm) {
-			hintp->flags &= ~USPosition;
-			hintp->flags |= PPosition;
-			w->core.x = hintp->x = values->x;
-		} else w->core.x = values->x;
-	}
-	if (mask & CWY) {
-		if (w->core.y == values->y) mask &= ~CWY;
-		else if (wm) {
-			hintp->flags &= ~USPosition;
-			hintp->flags |= PPosition;
-			w->core.y = hintp->y = values->y;
-		} else w->core.y = values->y;
-	}
-	if (mask & CWBorderWidth) {
-		if (w->core.border_width == values->border_width) {
-			mask &= ~CWBorderWidth;
-		} else w->core.border_width = values->border_width;
-	}
-	if (mask & CWWidth) {
-		if (w->core.width == values->width) mask &= ~CWWidth;
-		else if (wm) {
-			hintp->flags &= ~USSize;
-			hintp->flags |= PSize;
-			hintp->width = values->width;
-		} else w->core.width = values->width;
-	} else values->width = w->core.width; /* for _wait_for_response */
-	if (mask & CWHeight) {
-		if (w->core.height == values->height) mask &= ~CWHeight;
-		else if (wm) {
-			hintp->flags &= ~USSize;
-			hintp->flags |= PSize;
-			hintp->height = values->height;
-		} else w->core.height = values->height;
-	} else values->height = w->core.height; /* for _wait_for_response */
+    if (mask & CWX) {
+	    if (w->core.x == request->x) mask &= ~CWX;
+	    else if (wm) {
+		    hintp->flags &= ~USPosition;
+		    hintp->flags |= PPosition;
+		    w->core.x = hintp->x = values.x = request->x;
+	    } else w->core.x = values.x = request->x;
+    }
+    if (mask & CWY) {
+	    if (w->core.y == request->y) mask &= ~CWY;
+	    else if (wm) {
+		    hintp->flags &= ~USPosition;
+		    hintp->flags |= PPosition;
+		    w->core.y = hintp->y = values.y = request->y;
+	    } else w->core.y = values.y = request->y;
+    }
+    if (mask & CWBorderWidth) {
+	    if (w->core.border_width == request->border_width) {
+		    mask &= ~CWBorderWidth;
+	    } else w->core.border_width = values.border_width
+				= request->border_width;
+    }
+    if (mask & CWWidth) {
+	    if (w->core.width == request->width) mask &= ~CWWidth;
+	    else if (wm) {
+		    hintp->flags &= ~USSize;
+		    hintp->flags |= PSize;
+		    hintp->width = values.width = request->width;
+	    } else w->core.width = values.width = request->width;
+    } else values.width = w->core.width; /* for _wait_for_response */
+    if (mask & CWHeight) {
+	    if (w->core.height == request->height) mask &= ~CWHeight;
+	    else if (wm) {
+		    hintp->flags &= ~USSize;
+		    hintp->flags |= PSize;
+		    hintp->height = values.height = request->height;
+	    } else w->core.height = values.height = request->height;
+    } else values.height = w->core.height; /* for _wait_for_response */
+    values.stack_mode = request->stack_mode;
+    values.sibling = XtWindow(request->sibling);
 
-	if (mask == 0) return TRUE;
+    if (!wmshell->shell.override_redirect &&
+	    mask & (CWX | CWY | CWWidth | CWHeight | CWBorderWidth)) {
+	XSetWMNormalHints(XtDisplay(w), XtWindow(w), hintp);
+    }
 
-	if (!w->shell.override_redirect &&
-		mask & (CWX | CWY | CWWidth | CWHeight | CWBorderWidth)) {
-	    XSetWMNormalHints(XtDisplay(w), XtWindow(w), hintp);
-	}
+    XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &values);
 
-	XConfigureWindow(XtDisplay(w), XtWindow(w), mask, values);
+    if (wmshell->shell.override_redirect) return XtGeometryDone;
 
-	if (w->shell.override_redirect) return TRUE;
+    /* If no non-stacking bits are set, there's no way to tell whether
+       or not this worked, so assume it did */
 
-	/* If no non-stacking bits are set, there's no way to tell whether
-	   or not this worked, so assume it did */
+    if (!(mask & ~(CWStackMode | CWSibling))) return XtGeometryDone;
 
-	if (!(mask & ~(CWStackMode | CWSibling))) return TRUE;
+    if (wmshell->wm.wait_for_wm == FALSE) {
+	    /* the window manager is sick
+	     * so I will do the work and 
+	     * say no so if a new WM starts up,
+	     * or the current one recovers
+	     * my size requests will be visable
+	     */
+	    return XtGeometryNo;
+    }
 
-	if (wmshell->wm.wait_for_wm == FALSE) {
-		/* the window manager is sick
-		 * so I will do the work and 
-		 * say no so if a new WM starts up,
-		 * or the current one recovers
-		 * my size requests will be visable
-		 */
-		return FALSE;
-	}
-	
-	if (_wait_for_response(wmshell, values, &event)){
-		/* got an event */
-		if (event.type == ConfigureNotify) {
-			w->core.width = event.xconfigure.width;
-			w->core.height = event.xconfigure.height;
-			w->core.border_width = event.xconfigure.border_width;
-			if (event.xany.send_event /* ICCCM compliant synth */
-			    || w->shell.client_specified & _XtShellNotReparented)
-			{
-			    w->core.x = event.xconfigure.x;
-			    w->core.y = event.xconfigure.y;
-			    w->shell.client_specified |= _XtShellPositionValid;
-			}
-			else w->shell.client_specified &= ~_XtShellPositionValid;
-			return TRUE;
-		} else if (event.type == ClientMessage &&
-			   event.xclient.message_type == WM_CONFIGURE_DENIED(w)) {
-			w->core.x = oldx;
-			w->core.y = oldy;
-			return FALSE;
-		} else if (event.type == ClientMessage &&
-			    event.xclient.message_type == WM_MOVED(w)) {
-		    	w->core.x = event.xclient.data.s[0];
-			w->core.y = event.xclient.data.s[1];
-			w->shell.client_specified |= _XtShellPositionValid;
-			return TRUE;
-		} else XtAppErrorMsg(XtWidgetToApplicationContext((Widget)w),
-				"internalError","shell","XtToolkitError",
-                             "Shell's window manager interaction is broken",
+    if (_wait_for_response(wmshell, &values, &event)){
+	/* got an event */
+	if (event.type == ConfigureNotify) {
+	    w->core.width = event.xconfigure.width;
+	    w->core.height = event.xconfigure.height;
+	    w->core.border_width = event.xconfigure.border_width;
+	    if (event.xany.send_event /* ICCCM compliant synth */
+		|| wmshell->shell.client_specified & _XtShellNotReparented)
+	    {
+		w->core.x = event.xconfigure.x;
+		w->core.y = event.xconfigure.y;
+		wmshell->shell.client_specified |= _XtShellPositionValid;
+	    }
+	    else wmshell->shell.client_specified &= ~_XtShellPositionValid;
+	    return XtGeometryDone;
+	} else if (event.type == ClientMessage &&
+		   event.xclient.message_type == WM_CONFIGURE_DENIED(w)) {
+	    w->core.x = oldx;
+	    w->core.y = oldy;
+	    return XtGeometryNo;
+	} else if (event.type == ClientMessage &&
+		    event.xclient.message_type == WM_MOVED(w)) {
+	    w->core.x = event.xclient.data.s[0];
+	    w->core.y = event.xclient.data.s[1];
+	    wmshell->shell.client_specified |= _XtShellPositionValid;
+	    return XtGeometryDone;
+	} else XtAppErrorMsg(XtWidgetToApplicationContext((Widget)w),
+			     "internalError", "shell", "XtToolkitError",
+			     "Shell's window manager interaction is broken",
 			     (String *)NULL, (Cardinal *)NULL);
-	} else {
-		wmshell->wm.wait_for_wm = FALSE;
-		return FALSE;
-	}
-	return FALSE;
+    } else {
+	wmshell->wm.wait_for_wm = FALSE;
+	return XtGeometryNo;
+    }
+    return XtGeometryNo;
 }
+
 
 static void _do_setsave_under(w, flag)
 ShellWidget w;
@@ -1482,8 +1548,6 @@ static Boolean SetValues(old, ref, new)
 {
 	ShellWidget nw = (ShellWidget) new;
 	ShellWidget ow = (ShellWidget) old;
-	XWindowChanges values;
-	Cardinal mask;
 
 	if (ow->shell.save_under != nw->shell.save_under) {
 	    _do_setsave_under(nw, nw->shell.save_under) ;
@@ -1492,43 +1556,7 @@ static Boolean SetValues(old, ref, new)
 	if (ow->shell.override_redirect != nw->shell.override_redirect) {
 	    _do_setoverride_redirect(nw, nw->shell.override_redirect) ;
 	}
-
-#define COPY_GEOMETRY(w1,w2) {						\
-	w1->core.x = w2->core.x; w1->core.y = w2->core.y;		\
-	w1->core.width = w2->core.width; w1->core.height = w2->core.height; \
-	w1->core.border_width = w2->core.border_width;	}
-
-	if (!XtIsRealized((Widget)ow)) { 
-	    COPY_GEOMETRY(ow,nw)
-	} else {
-	    mask = 0;
-#define EQC(x) (ow->core.x == nw->core.x)
-	    if (!EQC(x)) {
-		mask |= CWX;
-		values.x = nw->core.x;
-	    }
-	    if (!EQC(y)) {
-		mask |= CWY;
-		values.y = nw->core.y;
-	    }
-	    if (!EQC(width)) {
-		mask |= CWWidth;
-		values.width = nw->core.width;
-	    }
-	    if (!EQC(height)) {
-		mask |= CWHeight;
-		values.height = nw->core.height;
-	    }
-	    if (!EQC(border_width)) {
-		mask |= CWBorderWidth;
-		values.border_width = nw->core.border_width;
-	    }
-	    if (mask) (void) _ask_wm_for_size(ow, &values, mask);
-	    COPY_GEOMETRY(nw,ow);
-#undef EQC
-	}
 	return FALSE;
-#undef COPY_GEOMETRY
 }
 
 /* ARGSUSED */

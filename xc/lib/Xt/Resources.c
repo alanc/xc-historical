@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.64 89/09/14 10:33:36 swick Exp $";
+    "$XConsortium: Resources.c,v 1.65 89/09/14 15:03:30 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -1040,8 +1040,7 @@ void XtSetValues(w, args, num_args)
     char	    oldwCache[500], reqwCache[500];
     char	    oldcCache[100], reqcCache[100];
     Cardinal	    widgetSize, constraintSize;
-    Dimension	    saveHeight, saveWidth;
-    Boolean	    redisplay, resize, isShell;
+    Boolean	    redisplay, resize;
     XtGeometryResult result;
     XtWidgetGeometry geoReq, geoReply;
     WidgetClass     wc = XtClass(w);
@@ -1053,8 +1052,6 @@ void XtSetValues(w, args, num_args)
                 "Argument count > 0 on NULL argument list in XtSetValues",
                  (String *)NULL, (Cardinal *)NULL);
     }
-
-    isShell = XtIsShell(w);
 
     /* Allocate and copy current widget into old widget */
 
@@ -1090,11 +1087,6 @@ void XtSetValues(w, args, num_args)
     /* If the widget is a shell widget, we have to cache old dimensions
        in order to tell whether to call the resize proc or not */
 
-    if  (isShell) {
-	saveWidth = oldw->core.width;
-	saveHeight = oldw->core.height;
-    }
-
     /* Inform widget of changes, then inform parent of changes */
     redisplay = CallSetValues (wc, oldw, reqw, w, args, num_args);
     if (w->core.constraints != NULL) {
@@ -1104,58 +1096,52 @@ void XtSetValues(w, args, num_args)
     if (XtIsRectObj(w)) {
 	/* Now perform geometry request if needed */
 	geoReq.request_mode = 0;
-	if (oldw->core.x      != w->core.x)	    geoReq.request_mode |= CWX;
-	if (oldw->core.y      != w->core.y)	    geoReq.request_mode |= CWY;
-	if (oldw->core.width  != w->core.width) geoReq.request_mode |= CWWidth;
-	if (oldw->core.height != w->core.height)geoReq.request_mode |= CWHeight;
-	if (oldw->core.border_width != w->core.border_width)
-	    geoReq.request_mode |= CWBorderWidth;
-    
-	resize = isShell &&
-		(w->core.width != saveWidth || w->core.height != saveHeight);
+	if (oldw->core.x	!= w->core.x) {
+	    geoReq.x		= w->core.x;
+	    w->core.x		= oldw->core.x;
+	    geoReq.request_mode |= CWX;
+	}
+	if (oldw->core.y	!= w->core.y) {
+	    geoReq.y		= w->core.y;
+	    w->core.y		= oldw->core.y;
+	    geoReq.request_mode |= CWY;
+	}
+	if (oldw->core.width	!= w->core.width) {
+	    geoReq.width	= w->core.width;
+	    w->core.width	= oldw->core.width;
+	    geoReq.request_mode |= CWWidth;
+	}
+	if (oldw->core.height	!= w->core.height) {
+	    geoReq.height	= w->core.height;
+	    w->core.height	= oldw->core.height;
+	    geoReq.request_mode |= CWHeight;
+	}
+	if (oldw->core.border_width != w->core.border_width) {
+	    geoReq.border_width	    = w->core.border_width;
+	    w->core.border_width    = oldw->core.border_width;
+	    geoReq.request_mode	    |= CWBorderWidth;
+	}
     
 	if (geoReq.request_mode != 0) {
-	    if (isShell) {
-		XtAppWarningMsg(XtWidgetToApplicationContext(w),
-			"invalidGeometry","xtMakeGeometryRequest",
-		  "XtToolkitError",
-		  "Shell subclass did not take care of geometry in XtSetValues",
-		  (String *)NULL, (Cardinal *)NULL);
-	    } else {
-		geoReq.x	    = w->core.x;
-		geoReq.y	    = w->core.y;
-		geoReq.width	    = w->core.width;
-		geoReq.height       = w->core.height;
-		geoReq.border_width = w->core.border_width;
-    
-		/* Copy the real current values back into w */
-	
-		w->core.x		= oldw->core.x;
-		w->core.y		= oldw->core.y;
-		w->core.width		= oldw->core.width;
-		w->core.height		= oldw->core.height;
-		w->core.border_width    = oldw->core.border_width;
-    
-		do {
-		    result = XtMakeGeometryRequest(w, &geoReq, &geoReply);
-		    if (result != XtGeometryAlmost) {
-			resize = (result == XtGeometryYes);
-			break;
-		    }
-		    /* An almost reply.  Call widget and let it munge
-		       request, reply */
-		    if (wc->core_class.set_values_almost == NULL) {
-			XtAppWarningMsg(XtWidgetToApplicationContext(w),
-				"invalidProcedure","set_values_almost",
-			      "XtToolkitError",
-			      "set_values_almost procedure shouldn't be NULL",
-			      (String *)NULL, (Cardinal *)NULL);
-			break;
-		    }
-		    (*(wc->core_class.set_values_almost))
-			(oldw, w, &geoReq, &geoReply);
-		} while (geoReq.request_mode != 0);
-	    }
+	    do {
+		result = XtMakeGeometryRequest(w, &geoReq, &geoReply);
+		if (result != XtGeometryAlmost) {
+		    resize = (result == XtGeometryYes);
+		    break;
+		}
+		/* An almost reply.  Call widget and let it munge
+		   request, reply */
+		if (wc->core_class.set_values_almost == NULL) {
+		    XtAppWarningMsg(XtWidgetToApplicationContext(w),
+			    "invalidProcedure","set_values_almost",
+			  "XtToolkitError",
+			  "set_values_almost procedure shouldn't be NULL",
+			  (String *)NULL, (Cardinal *)NULL);
+		    break;
+		}
+		(*(wc->core_class.set_values_almost))
+		    (oldw, w, &geoReq, &geoReply);
+	    } while (geoReq.request_mode != 0);
 	}
 	/* call resize proc if we changed size */
 	if (resize && wc->core_class.resize != (XtWidgetProc) NULL) {
