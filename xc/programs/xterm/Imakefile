@@ -17,12 +17,12 @@
  * appropriate .macros in the directory $(TOP)/util/imake.includes/.
  */
 
-#ifdef GettyProgramName
-          GETTY = -DGETTY_EXE=GettyProgramName
+#if defined(sun) && SunOSMajorVersion >= 4
+#define GettyProgram '-DGETTY_EXE="/usr/etc/getty"'
 #else
-          GETTY = 
+#define GettyProgram /* as nothing */
 #endif
-        DEFINES = -DMODEMENU -DUTMP -DBcopy=bcopy $(GETTY)
+        DEFINES = -DMODEMENU -DUTMP -DBcopy=bcopy GettyProgram
           SRCS1 = button.c charproc.c cursor.c data.c input.c \
 		  main.c menu.c misc.c screen.c scrollbar.c tabs.c \
 		  TekPrsTbl.c Tekproc.c util.c VTPrsTbl.c
