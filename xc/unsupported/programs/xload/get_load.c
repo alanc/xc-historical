@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.19 91/04/02 14:59:54 gildea Exp $
+ * $XConsortium: get_load.c,v 1.20 91/04/08 19:07:42 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -56,7 +56,7 @@
 #include <sys/fixpoint.h>
 #endif
 
-#ifdef	CRAY
+#if  defined(CRAY) || defined(AIXV3)
 #include <sys/param.h>
 #define word word_t
 #include <sys/sysinfo.h>
@@ -311,6 +311,10 @@ void GetLoadPoint( w, closure, call_data )
 #	 define KERNEL_LOAD_VARIABLE "avenrun"
 #    endif
 
+#    ifdef AIXV3
+#        define KERNEL_LOAD_VARIABLE "sysinfo"
+#    endif
+
 #endif /* KERNEL_LOAD_VARIABLE */
 
 /*
@@ -377,8 +381,12 @@ InitLoadPoint()
 #if (!defined(SVR4) || !defined(__STDC__)) && !defined(sgi)
     extern void nlist();
 #endif
-	
+
+#ifdef AIXV3
+    knlist( namelist, 1, sizeof(struct nlist));
+#else	
     nlist( KERNEL_FILE, namelist);
+#endif
     /*
      * Some systems appear to set only one of these to Zero if the entry could
      * not be found, I hope no_one returns Zero as a good value, or bad things
@@ -438,7 +446,40 @@ void GetLoadPoint( w, closure, call_data )
 		*loadavg = FIX_TO_DBL(temp);
 	}
 #  else /* not umips or ultrix risc */
+#    ifdef AIXV3
+        {
+          struct sysinfo sysinfo_now;
+          struct sysinfo sysinfo_last;
+          static firsttime = TRUE;
+          static double runavg = 0.0, swpavg = 0.0;
+
+          (void) lseek(kmem, loadavg_seek, 0);
+          (void) read(kmem, (char *)&sysinfo_last, sizeof(struct sysinfo));
+          if (firsttime)
+            {
+              *loadavg = 0.0;
+              firsttime = FALSE;
+            }
+          else
+            {
+              sleep(1);
+              (void) lseek(kmem, loadavg_seek, 0);
+              (void) read(kmem, (char *)&sysinfo_now, sizeof(struct sysinfo));
+              runavg *= 0.8; swpavg *= 0.8;
+              if (sysinfo_now.runocc != sysinfo_last.runocc)
+                runavg += 0.2*((sysinfo_now.runque - sysinfo_last.runque - 1)
+                          /(double)(sysinfo_now.runocc - sysinfo_last.runocc));
+              if (sysinfo_now.swpocc != sysinfo_last.swpocc)
+                swpavg += 0.2*((sysinfo_now.swpque - sysinfo_last.swpque)
+                          /(double)(sysinfo_now.swpocc - sysinfo_last.swpocc));
+              *loadavg = runavg + swpavg;
+              sysinfo_last = sysinfo_now;
+            }
+          /* otherwise we leave load alone. */
+        }
+#    else /* not AIXV3 */
 	(void) read(kmem, (char *)loadavg, sizeof(double));
+#    endif /* AIXV3 */
 #  endif /* umips else */
 # endif /* macII else */
 #endif /* sun else */
