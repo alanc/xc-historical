@@ -1,3 +1,4 @@
+// $XConsortium: basic.h,v 1.2 94/04/04 15:28:46 erik Exp $
 xkb_compatibility "basic" 
 
 // Minimal set of symbol interpretations to provide reasonable
