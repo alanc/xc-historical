@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: init.c,v 1.1 91/05/11 10:51:07 rws Exp $ */
+/* $XConsortium: init.c,v 1.2 91/05/31 16:06:50 keith Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: ws_io.c,v 1.2 91/05/31 16:06:52 keith Exp $ */
+/* $XConsortium: ws_io.c,v 1.3 91/07/02 19:10:33 keith Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>

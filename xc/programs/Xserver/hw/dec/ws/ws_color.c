@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: ws_color.c,v 1.1 91/05/11 10:51:14 rws Exp $ */
+/* $XConsortium: ws_color.c,v 1.2 91/05/15 18:06:58 rws Exp $ */
 
 /* 
  * ws_color.c - device specific color routines, stored in screen
@@ -33,6 +33,9 @@ SOFTWARE.
  */
 
 /* $Log:	ws_color.c,v $
+ * Revision 1.2  91/05/15  18:06:58  rws
+ * put cfbExpandDirectColors into StoreColors
+ * 
  * Revision 1.1  91/05/11  10:51:14  rws
  * Initial revision
  * 
@@ -83,7 +86,7 @@ SOFTWARE.
 
 
 
-static char rcs_ident[] = "$Header: ws_color.c,v 1.1 91/05/11 10:51:14 rws Exp $";
+static char rcs_ident[] = "$Header: ws_color.c,v 1.2 91/05/15 18:06:58 rws Exp $";
 
 #include <stdio.h>
 #include <sys/types.h>

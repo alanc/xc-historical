@@ -29,7 +29,7 @@ SOFTWARE.
  *
  */
 
-/* $Header: ext_device.c,v 1.4 90/09/14 14:18:56 jhsu Exp $ */
+/* $XConsortium: ext_device.c,v 1.1 91/05/11 10:51:05 rws Exp $ */
 
 #ifdef XINPUT
 

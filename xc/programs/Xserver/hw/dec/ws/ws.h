@@ -21,26 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: ws.h,v 1.5 90/07/25 17:35:19 gringort Exp $ */
-
-/* $Log:	ws.h,v $
- * Revision 1.5  90/07/25  17:35:19  gringort
- * added new field for monitor type arg
- * 
- * Revision 1.4  90/07/16  17:45:16  gringort
- * added edge attachment command arg support
- * 
- * Revision 1.3  90/06/21  18:56:20  gringort
- * added wsMotionEvents
- * 
- * Revision 1.2  90/06/07  13:31:33  gringort
- * changes to init
- * 
- * Revision 1.1  90/04/23  14:45:52  gringort
- * Initial revision
- * 
- *  
- */
+/* $XConsortium: ws.h,v 1.1 91/05/11 10:51:12 rws Exp $ */
 
 #define NOMAPYET        (ColormapPtr) 1
 
