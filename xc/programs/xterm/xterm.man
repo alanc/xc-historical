@@ -507,6 +507,14 @@ Specifies whether or not \fIxterm\fP should always display a highlighted
 text cursor.  By default, a hollow text cursor is displayed whenever the
 pointer moves out of the window or the window loses the input focus.
 .TP 8
+.B "appcursorDefault (\fPclass\fB AppcursorDefault)"
+If ``true,'' the cursor keys are initially in application mode.
+The default is ``false.''
+.TP 8
+.B "appkeypadDefault (\fPclass\fB AppkeypadDefault)"
+If ``true,'' the keypad keys are initially in application mode.
+The default is ``false.''
+.TP 8
 .B "bellSuppressTime (\fPclass\fB BellSuppressTime)"
 Number of milliseconds after a bell command is sent during which additional
 bells will be suppressed.  Default is 200.  If set non-zero,
