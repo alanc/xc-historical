@@ -1,4 +1,4 @@
-/* $XConsortium: registry,v 1.94 93/10/18 20:51:05 rws Exp $ */
+/* $XConsortium: registry,v 1.95 93/12/13 15:30:54 gildea Exp $ */
 
 				  X Registry
 
@@ -76,6 +76,7 @@ Name						Reference
 "stellar"					[28]
 "STI"						[73]
 "Sun"						[58]
+"Tech-Source"					[106]
 "TEK"						[43]
 "visual"					[5]
 "VIT"						[46]
@@ -317,6 +318,7 @@ String						Reference
 "Sony Corporation"				[37]
 "Stellar Computer Inc."				[28]
 "Sun Microsystems, Inc."			[101]
+"Tech-Source Inc."				[106]
 "VIT-Visual Information Technologies, Inc (VITec)"	[46]
 "Wolfram Research, Inc."			[102]
 "Wyse Technology Inc."				[68]
@@ -378,6 +380,7 @@ Name						Reference
 "stellar-shmLink"				[28]
 "stellar-xfdi"					[29]
 "stellar-xtest"					[28]
+"TsiOvlExtension"				[106]
 "TekCms"					[43]
 "TeKDisplayListExtension"			[43]
 "TeKHardCopySupport"				[43]
@@ -1426,3 +1429,8 @@ REFERENCES
 	X Consortium
 	1 Memorial Dr
 	Cambridge MA 02142-1301
+
+[106]	Selwyn Henriques
+	Tech-Source, Inc.
+	442 S North Lake Blvd.
+	Altamonte Springs FL 32701
