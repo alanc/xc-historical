@@ -1,4 +1,4 @@
-/* $XConsortium: miStruct.c,v 5.5 92/02/03 16:45:10 mor Exp $ */
+/* $XConsortium: miStruct.c,v 5.6 92/02/05 12:25:39 mor Exp $ */
 
 
 /***********************************************************
@@ -1732,7 +1732,7 @@ StoreElements(pStruct, numOCs, pOCs, ppErr)
     if (err != Success) {
 	*ppErr = (pexOutputCommandError *)Xalloc(sizeof(pexOutputCommandError));
 	(*ppErr)->type = 0;
-	(*ppErr)->errorCode = PEXOutputCommandError;
+	(*ppErr)->errorCode = PEX_ERROR_CODE(PEXOutputCommandError);
 	(*ppErr)->resourceId = pStruct->id;
 	(*ppErr)->opcode = poc->elementType;
 	(*ppErr)->numCommands = count;
