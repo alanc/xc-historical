@@ -1,4 +1,4 @@
-/* $XConsortium: mfbtegblt.c,v 5.11 94/01/07 09:43:37 dpw Exp $ */
+/* $XConsortium: mfbtegblt.c,v 5.12 94/01/12 18:05:32 dpw Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -76,6 +76,12 @@ two times:
 #define ShiftAmnt   16
 #endif
 
+/*
+ * Note: for BITMAP_BIT_ORDER != IMAGE_BYTE_ORDER, SCRRIGHT() evaluates its
+ * first argument more than once.  Thus the imbedded char++ have to be moved.
+ * (DHD)
+ */
+#if BITMAP_BIT_ORDER == IMAGE_BYTE_ORDER
 #if PPW == 32
 #define GetBits4    c = (*char1++ << ShiftAmnt) | \
 			SCRRIGHT (*char2++ << ShiftAmnt, xoff2) | \
@@ -91,9 +97,29 @@ two times:
 			SCRRIGHT (*char7++ << ShiftAmnt, xoff7) 	 | \
 			SCRRIGHT (*char8++ << ShiftAmnt, xoff8);
 #endif /* PPW */
+#else /* BITMAP_BIT_ORDER != IMAGE_BYTE_ORDER */
+#if PPW == 32
+#define GetBits4    c = (*char1++ << ShiftAmnt) | \
+			SCRRIGHT (*char2 << ShiftAmnt, xoff2) | \
+			SCRRIGHT (*char3 << ShiftAmnt, xoff3) | \
+			SCRRIGHT (*char4 << ShiftAmnt, xoff4); \
+			char2++; char3++; char4++;
+#else /* PPW == 64 */
+#define GetBits4    c = ((unsigned long)(*char1++ << ShiftAmnt) << 32 )  | \
+			(SCRRIGHT (*char2 << ShiftAmnt, xoff2) << 32 ) | \
+			(SCRRIGHT (*char3 << ShiftAmnt, xoff3) << 32 ) | \
+			(SCRRIGHT (*char4 << ShiftAmnt, xoff4) << 32 ) | \
+			(*char5++ << ShiftAmnt) 			 | \
+			SCRRIGHT (*char6 << ShiftAmnt, xoff6) 	 | \
+			SCRRIGHT (*char7 << ShiftAmnt, xoff7) 	 | \
+			SCRRIGHT (*char8 << ShiftAmnt, xoff8); \
+			char2++; char3++; char4++; char6++; char7++; char8++;
+#endif /* PPW */
+#endif /* BITMAP_BIT_ORDER == IMAGE_BYTE_ORDER */
 
 #else /* (BITMAP_BIT_ORDER != MSBFirst) || (GLYPHPADBYTES == 4) */
 
+#if BITMAP_BIT_ORDER == IMAGE_BYTE_ORDER
 #if PPW == 32
 #define GetBits4    c = *char1++ | \
 			SCRRIGHT (*char2++, xoff2) | \
@@ -109,6 +135,26 @@ two times:
                         SCRRIGHT (*char7++, xoff7)          | \
                         SCRRIGHT (*char8++, xoff8));
 #endif /* PPW */
+#else /* BITMAP_BIT_ORDER != IMAGE_BYTE_ORDER */
+#if PPW == 32
+#define GetBits4    c = *char1++ | \
+			SCRRIGHT (*char2, xoff2) | \
+			SCRRIGHT (*char3, xoff3) | \
+			SCRRIGHT (*char4, xoff4); \
+			char2++; char3++; char4++;
+#else /* PPW == 64 */
+#define GetBits4    c = (unsigned long)(((*char1++) << 64 ) | \
+                        (SCRRIGHT (*char2, xoff2) << 64 ) | \
+                        (SCRRIGHT (*char3, xoff3) << 64 ) | \
+                        (SCRRIGHT (*char4, xoff4) << 64 ) | \
+                        SCRRIGHT (*char5, xoff5)          | \
+                        SCRRIGHT (*char6, xoff6)          | \
+                        SCRRIGHT (*char7, xoff7)          | \
+                        SCRRIGHT (*char8, xoff8)); \
+			char2++; char3++; char4++; \
+			char5++; char6++; char7++; char8++;
+#endif /* PPW */
+#endif /* BITMAP_BIT_ORDER == IMAGE_BYTE_ORDER */
 
 #endif /* BITMAP_BIT_ORDER && GLYPHPADBYTES */
 
@@ -221,7 +267,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
       case rgnOUT:
 	return;
     }
-    pdstBase = mfbScanlineDelta(pdstBase, ypos, widthDst);
+    pdstBase = mfbScanlineDeltaNoBankSwitch(pdstBase, ypos, widthDst);
     widthGlyphs = widthGlyph * PGSZB;
 
 #ifdef USE_LEFTBITS
@@ -256,7 +302,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 #endif /* PPW */
 
 	    hTmp = h;
-	    dst = pdstBase + (xpos >> PWSH);
+	    dst = mfbScanlineOffset(pdstBase, (xpos >> PWSH)); /* switch now */
 
 #ifndef FASTCHARS
 	    if (xoff1 + widthGlyphs <= PPW)
@@ -274,7 +320,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 #else
 		    *(dst) = (*dst) & ~startmask | OP(SCRRIGHT(c, xoff1)) & startmask;
 #endif
-		    dst += widthDst;
+		    mfbScanlineInc(dst, widthDst);
 		}
 #ifndef FASTCHARS
 	    }
@@ -289,7 +335,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 			     OP(SCRRIGHT(c,xoff1)) & startmask;
 		    dst[1] = dst[1] & ~endmask |
 			     OP(SCRLEFT(c,nfirst)) & endmask;
-		    dst += widthDst;
+		    mfbScanlineInc(dst, widthDst);
 		}
 	    }
 #endif
@@ -302,7 +348,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	xoff1 = xpos & PIM;
 	char1 = (glyphPointer) FONTGLYPHBITS(pglyphBase,(*ppci++));
 	hTmp = h;
-	dst = pdstBase + (xpos >> PWSH);
+	dst = mfbScanlineOffset(pdstBase, (xpos >> PWSH));
 
 #ifndef FASTCHARS
 	if (xoff1 + widthGlyph <= PPW)
@@ -326,7 +372,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		GetBits1
 		(*dst) = (*dst) & ~startmask | OP(SCRRIGHT(c, xoff1)) & startmask;
 #endif
-		dst += widthDst;
+		mfbScanlineInc(dst, widthDst);
 	    }
 #ifndef FASTCHARS
 	}
@@ -341,7 +387,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 			 OP(SCRRIGHT(c,xoff1)) & startmask;
 		dst[1] = dst[1] & ~endmask |
 			 OP(SCRLEFT(c,nfirst)) & endmask;
-		dst += widthDst;
+		mfbScanlineInc(dst, widthDst);
 	    }
 	}
 #endif
