@@ -1,5 +1,5 @@
 /*
- * $XConsortium: screen.c,v 2.61 91/07/19 18:54:04 converse Exp $
+ * $XConsortium: screen.c,v 2.62 91/07/22 21:23:25 converse Exp swick $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -424,8 +424,7 @@ Scrn ScrnFromWidget(w)		/* heavily used, should be efficient */
 Widget w;
 {
     register int i;
-    while (w && (XtClass(w) != applicationShellWidgetClass) &&
-	   (XtClass(w) != topLevelShellWidgetClass))
+    while (w && ! XtIsTopLevelShell(w))
 	w = XtParent(w);
     if (w) {
 	for (i=0 ; i<numScrns ; i++) {
