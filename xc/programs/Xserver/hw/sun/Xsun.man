@@ -1,4 +1,4 @@
-.\" $XConsortium: Xsun.man,v 1.13 91/07/27 16:20:10 rws Exp $
+.\" $XConsortium: Xsun.man,v 1.14 91/07/29 18:25:59 rws Exp $
 .TH XSUN 1 "Release 5" "X Version 11"
 .SH NAME
 Xsun, XsunMono \- Sun server for X Version 11
@@ -45,7 +45,8 @@ right edges of the screen.
 .TP 8
 .B /dev/cgsix0
 This color display is available on SPARCstation 1 platforms with the 
-GX graphics accelerator (which is \fBnot\fP used by the server).
+GX graphics accelerator (which is used by the server to make some operations
+faster).
 .PP
 Finally, if no specific framebuffers are found,
 the generic framebuffer interface \fI/dev/fb\fP is used.
