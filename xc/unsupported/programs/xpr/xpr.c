@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$Header: xpr.c,v 1.24 87/10/12 11:05:39 swick Locked $";
+static char *rcsid_xpr_c = "$Header: xpr.c,v 1.25 87/10/21 16:32:59 swick Exp $";
 #endif
 
 #include <sys/types.h>
@@ -109,7 +109,7 @@ char **argv;
     }
 
     /* read in window header */
-    read(0, (char *)&win, sizeof win);
+    fullread(0, (char *)&win, sizeof win);
     if (*(char *) &swaptest)
 	_swaplong((char *) &win, (long)sizeof(win));
 
@@ -131,12 +131,12 @@ char **argv;
         fprintf(stderr,"xpr: image will be incorrect, byte swapping required but not performed.\n");
 
     w_name = (char *)malloc((unsigned)(win.header_size - sizeof win));
-    read(0, w_name, (int) (win.header_size - sizeof win));
+    fullread(0, w_name, (int) (win.header_size - sizeof win));
     
     if(win.ncolors) {
 	XColor *colors = (XColor *)malloc((unsigned) (win.ncolors * sizeof(XColor)));
 
-	read(0, (char *)colors, (int) (win.ncolors * sizeof(XColor)));
+	fullread(0, (char *)colors, (int) (win.ncolors * sizeof(XColor)));
 	if (*(char *) &swaptest) {
 	    for (i = 0; i < win.ncolors; i++) {
 		_swaplong((char *) &colors[i].pixel, (long)sizeof(long));
@@ -487,7 +487,6 @@ int invert;
 XWDFileHeader *win;
 {
     int iwb = win->bytes_per_line;
-    int rsize, cc;
     struct iovec linevec[6];
     unsigned char line[6][500];
     register unsigned char *c;
@@ -496,27 +495,17 @@ XWDFileHeader *win;
 
     c = (unsigned char *)sixmap;
 
-    for (i = 0; i <= 5; i++) {
-	linevec[i].iov_base = (caddr_t)line[i];
-	linevec[i].iov_len = iwb;
-    }
 
     while (--ih >= 0) {
-	if (ih > 0 || hpad == 0) {
-	    rsize = iwb * 6;
-	    while (rsize > 0) {
-		cc = readv(0, linevec, 6);
-		if (cc == 0) break;
-		rsize -= cc;
-	    }
-	} else {
+        for (i = 0; i <= 5; i++) {
+	    linevec[i].iov_base = (caddr_t)line[i];
+	    linevec[i].iov_len = iwb;
+        }
+	if (ih > 0 || hpad == 0) 
+	    fullreadv(0, linevec, 6, iwb*6);
+	else {
 	    i = 6 - hpad;
-	    rsize = iwb * i;
-	    while (rsize > 0) {
-		cc = readv(0, linevec, i);
-		if (cc == 0) break;
-		rsize -= cc;
-	    }
+	    fullreadv(0, linevec, i, iwb*i);
 	    for (; i < 6; i++)
 		for (j = 0; j < iwb; j++) line[i][j] = 0xFF;
 	}
@@ -1170,15 +1159,7 @@ enum orientation orientation;
 	bzero(obuf,owidth*oheight);
 
 	for (i=0;i<ih;i++) {
-	    n = read(0,(char *)buffer,iwb);
-	    if (n<0) {
-		perror("read");
-		exit(1);
-	    }
-	    if (n==0) {
-		fprintf(stderr,"xpr: premature end of file\n");
-		exit(1);
-	    }
+	    fullread(0,(char *)buffer,iwb);
 	    if (win->bitmap_bit_order == MSBFirst)
 		_swapbits(buffer, (long)iwb);
 	    if (flags & F_INVERT)
@@ -1196,15 +1177,7 @@ enum orientation orientation;
     }
     else {
 	for (i=0;i<ih;i++) {
-	    n = read(0,(char *)buffer,iwb);
-	    if (n<0) {
-		perror("read");
-		exit(1);
-	    }
-	    if (n==0) {
-		fprintf(stderr,"xpr: premature end of file\n");
-		exit(1);
-	    }
+	    fullread(0,(char *)buffer,iwb);
 	    if (win->bitmap_bit_order == MSBFirst)
 		_swapbits(buffer, (long)iwb);
 	    if (flags & F_INVERT)
@@ -1433,6 +1406,69 @@ register int owidth;
 	iword >>= 1;
     }
 }
+
+/* fullread() is the same as read(), except that it guarantees to 
+   read all the bytes requested. */
+
+fullread (file, data, nbytes)
+    int file;
+    char *data;
+    int nbytes;
+    {
+    int bytes_read;
+    while ((bytes_read = read(file, data, nbytes)) != nbytes) {
+	if (bytes_read < 0) {
+	    perror ("error while reading standard input");
+	    return;
+	    }
+	else if (bytes_read == 0) {
+	    fprintf (stderr, "xpr: premature end of file\n");
+	    return;
+	    }
+	nbytes -= bytes_read;
+	data += bytes_read;
+	}
+    }
+
+/* fullreadv() is the same as readv(),  except that it guarantees to 
+   read all the bytes requested. The "total_length" parameter must
+   be the same as the sum of the individual iovec lengths; it is
+   included here because the caller knows it and fullreadv() can
+   therefore avoid recomputing it. */
+/* Note that after fullreadv() returns, both the "iov_len" and
+   "iov_base" fields of each element of "iov" have been destroyed!   The caller
+   must reinitialize them before using the "iov" array again. */
+
+fullreadv (file, iov, nvec, total_length)
+    int file;
+    struct iovec *iov;
+    int nvec;
+    int total_length;
+    {
+    int bytes_read;
+    while ((bytes_read = readv(file, iov, nvec)) != total_length) {
+	int i;
+	if (bytes_read < 0) {
+	    perror ("error while reading standard input");
+	    return;
+	    }
+	else if (bytes_read == 0) {
+	    fprintf (stderr, "xpr: premature end of file\n");
+	    return;
+	    }
+	total_length -= bytes_read;
+	iov[0].iov_len -= bytes_read;
+	iov[0].iov_base += bytes_read;
+	for (i=0; i<nvec-1; i++) {
+	    if (iov[i].iov_len < 0) {
+		iov[i+1].iov_len += iov[i].iov_len;
+		iov[i+1].iov_base -= iov[i].iov_len;
+		iov[i].iov_len = 0;
+		}
+	    }
+	}
+    }
+	
 
 /* mapping tables to map a byte in to the hex representation of its
  * bit-reversal
