@@ -1,4 +1,4 @@
-/* $XConsortium: miRender.c,v 5.16 92/12/03 19:37:01 hersh Exp $ */
+/* $XConsortium: miRender.c,v 5.17 92/12/29 17:16:33 mor Exp $ */
 
 
 /***********************************************************
@@ -1129,6 +1129,9 @@ BeginRendering(pRend, pDrawable)
       xrect.width = pDraw->width;
       xrect.height = pDraw->height;
       (*pGC->ops->PolyFillRect) (pDraw, pGC, 1, &xrect);
+      gcmask = GCClipMask;
+      colorindex = 0;
+      ChangeGC(pGC, gcmask, &colorindex);
       FreeScratchGC(pGC);
     }
 
