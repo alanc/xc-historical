@@ -1,4 +1,4 @@
-/* $XConsortium: Label.c,v 1.85 91/02/17 15:13:25 converse Exp $ */
+/* $XConsortium: Label.c,v 1.86 91/03/15 15:59:32 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -59,6 +59,8 @@ static XtResource resources[] = {
 	offset(label.font),XtRString, XtDefaultFont},
     {XtNlabel,  XtCLabel, XtRString, sizeof(String),
 	offset(label.label), XtRString, NULL},
+    {XtNencoding, XtCEncoding, XtRUnsignedChar, sizeof(unsigned char),
+	offset(label.encoding), XtRImmediate, (XtPointer)0},
     {XtNjustify, XtCJustify, XtRJustify, sizeof(XtJustify),
 	offset(label.justify), XtRImmediate, (XtPointer)XtJustifyCenter},
     {XtNinternalWidth, XtCWidth, XtRDimension,  sizeof(Dimension),
@@ -170,8 +172,12 @@ static void SetTextWidthAndHeight(lw)
 	lw->label.label_len = MULTI_LINE_LABEL;
 	lw->label.label_width = 0;
 	for (label = lw->label.label; nl != NULL; nl = index(label, '\n')) {
-	    int width = XTextWidth(fs, label, (int)(nl - label));
+	    int width;
 
+	    if (lw->label.encoding)
+		width = XTextWidth16(fs, (XChar2b*)label, (int)(nl - label)/2);
+	    else
+		width = XTextWidth(fs, label, (int)(nl - label));
 	    if (width > (int)lw->label.label_width)
 		lw->label.label_width = width;
 	    label = nl + 1;
@@ -182,13 +188,22 @@ static void SetTextWidthAndHeight(lw)
 	if (*label) {
 	    int width = XTextWidth(fs, label, strlen(label));
 
+	    if (lw->label.encoding)
+		width = XTextWidth16(fs, (XChar2b*)label, strlen(label)/2);
+	    else
+		width = XTextWidth(fs, label, strlen(label));
 	    if (width > (int) lw->label.label_width)
 		lw->label.label_width = width;
 	}
     } else {
 	lw->label.label_len = strlen(lw->label.label);
-	lw->label.label_width =
-	    XTextWidth(fs, lw->label.label, (int) lw->label.label_len);
+	if (lw->label.encoding)
+	    lw->label.label_width =
+		XTextWidth16(fs, (XChar2b*)lw->label.label,
+			     (int) lw->label.label_len/2);
+	else
+	    lw->label.label_width =
+		XTextWidth(fs, lw->label.label, (int) lw->label.label_len);
     }
 }
 
@@ -342,26 +357,32 @@ static void Redisplay(w, event, region)
        if (len == MULTI_LINE_LABEL) {
 	   char *nl;
 	   while ((nl = index(label, '\n')) != NULL) {
-	       XDrawString(
-			   XtDisplay(w), XtWindow(w), gc, lw->label.label_x,
-			   y, label, (int)(nl - label));
+	       if (lw->label.encoding)
+		   XDrawString16(XtDisplay(w), XtWindow(w), gc,
+				 lw->label.label_x, y,
+				 (XChar2b*)label, (int)(nl - label)/2);
+	       else
+		   XDrawString(XtDisplay(w), XtWindow(w), gc,
+			       lw->label.label_x, y, label, (int)(nl - label));
 	       y += lw->label.font->max_bounds.ascent + lw->label.font->max_bounds.descent;
 	       label = nl + 1;
 	   }
 	   len = strlen(label);
        }
-       if (len)
-	   XDrawString(
-		       XtDisplay(w), XtWindow(w), gc, lw->label.label_x,
-		       y, label, len);
+       if (len) {
+	   if (lw->label.encoding)
+	       XDrawString16(XtDisplay(w), XtWindow(w), gc,
+			     lw->label.label_x, y, (XChar2b*)label, len/2);
+	   else
+	       XDrawString(XtDisplay(w), XtWindow(w), gc,
+			   lw->label.label_x, y, label, len);
+       }
    } else if (lw->label.label_len == 1) { /* depth */
-       XCopyPlane(
-		  XtDisplay(w), lw->label.pixmap, XtWindow(w), gc,
+       XCopyPlane(XtDisplay(w), lw->label.pixmap, XtWindow(w), gc,
 		  0, 0, lw->label.label_width, lw->label.label_height,
 		  lw->label.label_x, lw->label.label_y, 1L);
    } else {
-       XCopyArea(
-		 XtDisplay(w), lw->label.pixmap, XtWindow(w), gc,
+       XCopyArea(XtDisplay(w), lw->label.pixmap, XtWindow(w), gc,
 		 0, 0, lw->label.label_width, lw->label.label_height,
 		 lw->label.label_x, lw->label.label_y);
    }
@@ -455,6 +476,9 @@ static Boolean SetValues(current, request, new, args, num_args)
     if (curlw->label.left_bitmap != newlw->label.left_bitmap) {
 	was_resized = True;
     }
+
+    if (curlw->label.encoding != newlw->label.encoding)
+	was_resized = True;
 
     if (curlw->label.label != newlw->label.label) {
         if (curlw->label.label != curlw->core.name)
