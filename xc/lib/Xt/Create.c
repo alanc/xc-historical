@@ -1,7 +1,7 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Create.c,v 1.4 88/08/22 14:33:08 asente Exp $";
-/* $oHeader: Create.c,v 1.4 88/08/22 14:33:08 asente Exp $ */
+    "$XConsortium: Create.c,v 1.39 88/09/03 17:00:28 swick Exp $";
+/* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -202,7 +202,8 @@ Widget XtCreateWidget(name, widgetClass, parent, args, num_args)
                 "XtCreateWidget requires non-NULL parent",
                   (String *)NULL, (Cardinal *)NULL);
     } else if (widgetClass == NULL) {
-	XtErrorMsg("invalidClass","xtCreateWidget","XtToolkitError",
+	XtAppErrorMsg(XtWidgetToApplicationContext(parent),
+		"invalidClass","xtCreateWidget","XtToolkitError",
                 "XtCreateWidget requires non-NULL widget class",
                   (String *)NULL, (Cardinal *)NULL);
     }
@@ -225,7 +226,8 @@ Widget XtCreateWidget(name, widgetClass, parent, args, num_args)
 	return(widget);
     }
     if (insert_child == NULL) {
-	XtErrorMsg("nullProc","insertChild","XtToolkitError",
+	XtAppErrorMsg(XtWidgetToApplicationContext(parent),
+		"nullProc","insertChild","XtToolkitError",
                 "NULL insert_child procedure",
                   (String *)NULL, (Cardinal *)NULL);
     } else {
@@ -259,7 +261,8 @@ static void RemovePopupFromParent(widget,closure,call_data)
     register Widget parent;
     parent = widget->core.parent;
     if (parent == NULL || parent->core.num_popups == 0)
-        XtErrorMsg("invalidParameter","removePopupFromParent","XtToolkitError",
+        XtAppErrorMsg(XtWidgetToApplicationContext(widget),
+		"invalidParameter","removePopupFromParent","XtToolkitError",
                 "RemovePopupFromParent requires non-NULL popuplist",
                   (String *)NULL, (Cardinal *)NULL);
     if (parent->core.being_destroyed) return;
@@ -268,7 +271,8 @@ static void RemovePopupFromParent(widget,closure,call_data)
             found = TRUE; break;
         }
     if (found == FALSE) {
-        XtWarningMsg("invalidWidget","removePopupFromParent","XtToolkitError",
+        XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+		  "invalidWidget","removePopupFromParent","XtToolkitError",
                   "RemovePopupFromParent, widget not on parent list",
                    (String *)NULL, (Cardinal *)NULL);
         return;
@@ -294,7 +298,8 @@ Widget XtCreatePopupShell(name, widgetClass, parent, args, num_args)
                 "XtCreatePopupShell requires non-NULL parent",
                   (String *)NULL, (Cardinal *)NULL);
     } else if (widgetClass == NULL) {
-	XtErrorMsg("invalidClass","xtCreatePopupShell","XtToolkitError",
+	XtAppErrorMsg(XtWidgetToApplicationContext(parent),
+		"invalidClass","xtCreatePopupShell","XtToolkitError",
                 "XtCreatePopupShell requires non-NULL widget class",
                   (String *)NULL, (Cardinal *)NULL);
     }
@@ -321,7 +326,8 @@ Widget XtAppCreateShell(name, class, widgetClass, display, args, num_args)
 
 {
     if (widgetClass == NULL) {
-	XtErrorMsg("invalidClass","xtAppCreateShell","XtToolkitError",
+	XtAppErrorMsg(_XtDisplayToApplicationContext(display),
+	       "invalidClass","xtAppCreateShell","XtToolkitError",
                "XtAppCreateShell requires non-NULL widget class",
                  (String *)NULL, (Cardinal *)NULL);
     }
