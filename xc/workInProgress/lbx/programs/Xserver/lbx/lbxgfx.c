@@ -1,4 +1,4 @@
-/* $XConsortium: lbxgfx.c,v 1.8 94/11/09 21:21:23 mor Exp mor $ */
+/* $XConsortium: lbxgfx.c,v 1.9 94/11/10 18:53:19 mor Exp mor $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -386,7 +386,7 @@ int *imageBytes;
     else
 	linesPerBuf = height;
 
-    if(!(pBuf = *theImage = (char *) malloc(length + 4)))
+    if(!(pBuf = *theImage = (char *) xmalloc(length + 4)))
         return (BadAlloc);
 
     if (linesPerBuf == 0)
@@ -517,7 +517,7 @@ register ClientPtr  client;
 	UncompressedWriteToClient (client, lbxLen << 2, theImage);
     }
 
-    free (theImage);
+    xfree (theImage);
 
     if (reply)
 	xfree ((char *) reply);
