@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.49 91/03/11 15:26:44 converse Exp $ */
+/* $XConsortium: InitialI.h,v 1.50 91/04/02 10:40:12 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -90,10 +90,16 @@ typedef struct
 	int	count;
 } FdStruct;
 
+typedef struct _LangProcRec {
+    XtLangProc	proc;
+    XtPointer	closure;
+} LangProcRec;
+
 typedef struct _ProcessContextRec {
     XtAppContext	defaultAppContext;
     XtAppContext	appContextList;
     ConverterTable	globalConverterTable;
+    LangProcRec		globalLangProcRec;
 } ProcessContextRec, *ProcessContext;
 
 typedef struct {
@@ -136,6 +142,7 @@ typedef struct _XtAppStruct {
     int dispatch_level;
     DestroyRec* destroy_list;
     Widget in_phase2_destroy;
+    LangProcRec langProcRec;
 } XtAppStruct;
 
 #ifdef XTTRACEMEMORY
