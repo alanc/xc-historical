@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.154 90/03/20 15:23:50 jim Exp $
+ * $XConsortium: menus.c,v 1.156 90/03/23 13:30:49 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.154 90/03/20 15:23:50 jim Exp $";
+"$XConsortium: menus.c,v 1.156 90/03/23 13:30:49 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -464,14 +464,17 @@ UpdateMenu()
 
     while (TRUE)
     {
-	while (XCheckMaskEvent(dpy, ButtonPressMask | ButtonReleaseMask |
-	    EnterWindowMask | ExposureMask, &Event))
-	{
+	/* block until there is an event */
+	do {
+	    XMaskEvent(dpy,
+		ButtonPressMask | ButtonReleaseMask |
+		EnterWindowMask | ExposureMask |
+		VisibilityChangeMask | LeaveWindowMask |
+		ButtonMotionMask, &Event);
 	    if (!DispatchEvent ()) continue;
 	    if (Event.type == ButtonRelease || Cancel)
 		return;
-	}
-
+	} while (Event.type != MotionNotify);
 	/* if we haven't recieved the enter notify yet, wait */
 	if (ActiveMenu && !ActiveMenu->entered)
 	    continue;
@@ -970,7 +973,7 @@ Bool PopUpMenu (menu, x, y, center)
     menu->prev = ActiveMenu;
 
     XGrabPointer(dpy, Scr->Root, True,
-	ButtonPressMask | ButtonReleaseMask,
+	ButtonPressMask | ButtonReleaseMask | ButtonMotionMask,
 	GrabModeAsync, GrabModeAsync,
 	Scr->Root, Scr->MenuCursor, CurrentTime);
 
@@ -1288,6 +1291,16 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    }
 
 	    StartResize (eventp, tmp_win, fromtitlebar);
+
+	    do {
+	    	XMaskEvent(dpy,
+			 ButtonPressMask | ButtonReleaseMask |
+			 EnterWindowMask | LeaveWindowMask |
+			 ButtonMotionMask, &Event);
+
+		if (!DispatchEvent ()) continue;
+
+	    } while (!(Event.type == ButtonRelease || Cancel));
 	    return TRUE;
 	}
 	break;
@@ -1325,7 +1338,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    XGrabServer(dpy);
 	}
 	XGrabPointer(dpy, eventp->xbutton.root, True,
-	    ButtonPressMask | ButtonReleaseMask,
+	    ButtonPressMask | ButtonReleaseMask | ButtonMotionMask,
 	    GrabModeAsync, GrabModeAsync,
 	    Scr->Root, Scr->MoveCursor, CurrentTime);
 
@@ -1386,48 +1399,67 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	last_time = eventp->xbutton.time;
 
 	if (!Scr->OpaqueMove)
+	{
 	    InstallRootColormap();
+	    if (!Scr->MoveDelta)
+	    {
+		/*
+		 * Draw initial outline.  This was previously done the
+		 * first time though the outer loop by dropping out of
+		 * the XCheckMaskEvent inner loop down to one of the
+		 * MoveOutline's below.
+		 */
+		MoveOutline(rootw,
+		    origDragX - JunkBW, origDragY - JunkBW,
+		    DragWidth + 2 * JunkBW, DragHeight + 2 * JunkBW,
+		    tmp_win->frame_bw,
+		    moving_icon ? 0 : tmp_win->title_height);
+		/*
+		 * This next line causes HandleReleaseNotify to call
+		 * XRaiseWindow().  This is solely to preserve the
+		 * previous behaviour that raises a window being moved
+		 * on button release even if you never actually moved
+		 * any distance (unless you move less than MoveDelta or
+		 * NoRaiseMove is set or OpaqueMove is set).
+		 */
+		DragWindow = w;
+	    }
+	}
 
 	while (TRUE)
 	{
-	    int done;
+	    /* block until there is an interesting event */
+	    XMaskEvent(dpy, ButtonPressMask | ButtonReleaseMask |
+				    EnterWindowMask | LeaveWindowMask |
+				    ExposureMask | ButtonMotionMask |
+				    VisibilityChangeMask, &Event);
+	    /* throw away enter and leave events until release */
+	    if (Event.xany.type == EnterNotify ||
+		Event.xany.type == LeaveNotify) continue; 
 
-	    done = FALSE;
-	    while (XCheckMaskEvent(dpy, ButtonPressMask | ButtonReleaseMask |
-					EnterWindowMask | LeaveWindowMask |
-				        ExposureMask, &Event))
+	    if (!DispatchEvent ()) continue;
+
+	    if (Cancel)
 	    {
-		/* throw away enter and leave events until release */
-		if (Event.xany.type == EnterNotify ||
-		    Event.xany.type == LeaveNotify) continue; 
-
-		if (!DispatchEvent ()) continue;
-
-		if (Cancel)
-		{
-		    WindowMoved = FALSE;
-		    if (!Scr->OpaqueMove)
-			UninstallRootColormap();
+		WindowMoved = FALSE;
+		if (!Scr->OpaqueMove)
+		    UninstallRootColormap();
 		    return TRUE;	/* XXX should this be FALSE? */
-		}
-		if (Event.type == ButtonRelease)
-		{
-		    MoveOutline(rootw, 0, 0, 0, 0, 0, 0);
-		    done = TRUE;
-		    if (moving_icon &&
-			((CurrentDragX != origDragX ||
-			  CurrentDragY != origDragY)))
-		      tmp_win->icon_moved = TRUE;
-		    break;
-		}
+	    }
+	    if (Event.type == ButtonRelease)
+	    {
+		MoveOutline(rootw, 0, 0, 0, 0, 0, 0);
+		if (moving_icon &&
+		    ((CurrentDragX != origDragX ||
+		      CurrentDragY != origDragY)))
+		  tmp_win->icon_moved = TRUE;
+		break;
 	    }
 
-	    if (done)
-		break;
+	    /* something left to do only if the pointer moved */
+	    if (Event.type != MotionNotify)
+		continue;
 
-	    /* 
-	     * WARNING - mashing event
-	     */
 	    XQueryPointer(dpy, rootw, &(eventp->xmotion.root), &JunkChild,
 		&(eventp->xmotion.x_root), &(eventp->xmotion.y_root),
 		&JunkX, &JunkY, &JunkMask);

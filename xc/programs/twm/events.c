@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.149 90/04/12 14:29:35 jim Exp $
+ * $XConsortium: events.c,v 1.150 90/04/13 11:29:10 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.149 90/04/12 14:29:35 jim Exp $";
+"$XConsortium: events.c,v 1.150 90/04/13 11:29:10 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -289,34 +289,19 @@ HandleEvents()
 {
     while (TRUE)
     {
-	if (ResizeWindow && !XPending(dpy) )
-	{
-	    Event.xany.window = ResizeWindow;
-	    XQueryPointer( dpy, Event.xany.window,
-		&(Event.xmotion.root), &JunkChild,
-		&(Event.xmotion.x_root), &(Event.xmotion.y_root),
-		&(Event.xmotion.x), &(Event.xmotion.y),
-		&JunkMask);
-	    XFindContext(dpy, Event.xany.window, ScreenContext, (caddr_t *)&Scr);
-
-	    (*EventHandler[MotionNotify])();
-	}
-	else
-	{
-	    if (enter_flag && !QLength(dpy)) {
-		if (enter_win && enter_win != raise_win) {
-		    AutoRaiseWindow (enter_win);  /* sets enter_flag T */
-		} else {
-		    enter_flag = FALSE;
-		}
+	if (enter_flag && !QLength(dpy)) {
+	    if (enter_win && enter_win != raise_win) {
+		AutoRaiseWindow (enter_win);  /* sets enter_flag T */
+	    } else {
+		enter_flag = FALSE;
 	    }
-	    if (ColortableThrashing && !QLength(dpy) && Scr) {
-		InstallWindowColormaps(ColormapNotify, (TwmWindow *) NULL);
-	    }
-	    WindowMoved = FALSE;
-	    XNextEvent(dpy, &Event);
-	    (void) DispatchEvent ();
 	}
+	if (ColortableThrashing && !QLength(dpy) && Scr) {
+	    InstallWindowColormaps(ColormapNotify, (TwmWindow *) NULL);
+	}
+	WindowMoved = FALSE;
+	XNextEvent(dpy, &Event);
+	(void) DispatchEvent ();
     }
 }
 

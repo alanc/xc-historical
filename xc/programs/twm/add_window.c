@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.139 90/03/22 14:06:17 jim Exp $
+ * $XConsortium: add_window.c,v 1.140 90/03/23 11:42:33 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.139 90/03/22 14:06:17 jim Exp $";
+"$XConsortium: add_window.c,v 1.140 90/03/23 11:42:33 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -382,7 +382,7 @@ IconMgr *iconp;
 		 * this will cause a warp to the indicated root
 		 */
 		stat = XGrabPointer(dpy, Scr->Root, False,
-		    ButtonPressMask | ButtonReleaseMask,
+		    ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
 		    GrabModeAsync, GrabModeAsync,
 		    Scr->Root, UpperLeftCursor, CurrentTime);
 
@@ -408,20 +408,29 @@ IconMgr *iconp;
 	    AddingW = tmp_win->attr.width + bw2;
 	    AddingH = tmp_win->attr.height + tmp_win->title_height + bw2;
 
+		MoveOutline(Scr->Root, AddingX, AddingY, AddingW, AddingH,
+			    tmp_win->frame_bw, tmp_win->title_height);
+
 	    while (TRUE)
-	    {
+		{
+		XMaskEvent(dpy, ButtonPressMask | PointerMotionMask, &event);
+
+		if (event.type == ButtonPress) {
+		    AddingX = event.xbutton.x_root;
+		    AddingY = event.xbutton.y_root;
+		    break;
+		}
+
+		if (event.type != MotionNotify) {
+		    continue;
+	    }
+
 		XQueryPointer(dpy, Scr->Root, &JunkRoot, &JunkChild,
 		    &JunkX, &JunkY, &AddingX, &AddingY, &JunkMask);
 
 		MoveOutline(Scr->Root, AddingX, AddingY, AddingW, AddingH,
 			    tmp_win->frame_bw, tmp_win->title_height);
 
-		if (XCheckMaskEvent(dpy, ButtonPressMask, &event))
-		{
-		    AddingX = event.xbutton.x_root;
-		    AddingY = event.xbutton.y_root;
-		    break;
-		}
 	    }
 
 	    if (event.xbutton.button == Button2) {
@@ -460,6 +469,19 @@ IconMgr *iconp;
 		lasty = -10000;
 		while (TRUE)
 		{
+		    XMaskEvent(dpy,
+			       ButtonReleaseMask | ButtonMotionMask, &event);
+
+		    if (event.type == ButtonRelease)
+		    {
+			AddEndResize(tmp_win);
+			break;
+		    }
+
+		    if (event.type != MotionNotify) {
+			continue;
+		    }
+
 		    /*
 		     * XXX - if we are going to do a loop, we ought to consider
 		     * using multiple GXxor lines so that we don't need to 
@@ -476,11 +498,6 @@ IconMgr *iconp;
 			lasty = AddingY;
 		    }
 
-		    if (XCheckMaskEvent(dpy, ButtonReleaseMask, &event))
-		    {
-			AddEndResize(tmp_win);
-			break;
-		    }
 		}
 	    } 
 	    else if (event.xbutton.button == Button3)
