@@ -87,7 +87,7 @@ static void Realize(w, valueMask, attributes)
 	*valueMask &= ~CWBorderPixel;
     }
 
-    if ((attributes->cursor = ((SimpleWidget)w)->simple.cursor) != None) {
+    if ((attributes->cursor = ((SimpleWidget)w)->simple.cursor) != None)
 	*valueMask |= CWCursor;
 
     XtCreateWindow( w, (unsigned int)InputOutput, (Visual *)CopyFromParent,
