@@ -1,4 +1,5 @@
-/* $Header: LabelPrivate.h,v 1.2 87/08/28 15:19:38 haynes Exp $ */
+
+/* $Header: LabelPrivate.h,v 1.3 87/08/28 18:38:51 ackerman Exp $ */
 
 /*
  *	sccsid:	%W%	%G%
@@ -47,13 +48,15 @@
 
 /* New fields for the Label widget class record */
 
-typedef struct {int foo;} LabelClass;
+typedef struct {int foo;} LabelClassPart;
 
 /* Full class record declaration */
-typedef struct _LabelWidgetClassData {
-    CoreClass	core_class;
-    LabelClass	label_class;
-} *LabelWidgetClass;
+typedef struct _LabelClassRec {
+    CoreClassPart	core_class;
+    LabelClassPart	label_class;
+} LabelClassRec;
+
+extern LabelClassRec labelClassRec;
 
 /* New fields for the Label widget record */
 typedef struct {
@@ -64,13 +67,16 @@ typedef struct {
     Dimension	internalWidth;
     Dimension	internalHeight;
 
-    GC		gc;
+    GC		normalGC;
+    GC          grayGC;
+    Pixmap      grayPixmap;
     Position	labelX;
     Position	labelY;
     Dimension	labelWidth;
     Dimension	labelHeight;
     unsigned int labelLen;
-} Label;
+    Boolean     displaySensitive;
+} LabelPart;
 
 
 /****************************************************************
@@ -79,12 +85,15 @@ typedef struct {
  *
  ****************************************************************/
 
-typedef struct {
-    Core	core;
-    Label	label;
-} LabelData, *LabelWidget;
+typedef struct _LabelRec {
+    CorePart	core;
+    LabelPart	label;
+} LabelRec;
 
 /* $Log:	LabelPrivate.h,v $
+ * Revision 1.3  87/08/28  18:38:51  ackerman
+ * Moved full instance declaration of LabelData, LabelWidget into file
+ * 
  * Revision 1.2  87/08/28  15:19:38  haynes
  * changed how resizing works
  * 
