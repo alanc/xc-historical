@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.57 88/08/18 11:49:00 rws Exp $ */
+/* $Header: utils.c,v 1.59 88/08/21 09:49:07 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -41,29 +41,15 @@ extern int logoScreenSaver;
 extern long ScreenSaverTime;		/* for forcing reset */
 
 Bool clientsDoomed = FALSE;
-#ifdef hpux
-Bool hpGivingUp = FALSE;	/* tell close screens that we really mean it */
-#endif
+Bool GivingUp = FALSE;
 extern void KillServerResources();
+void ddxUseMsg(), ddxGiveUp();
 
 extern char *sbrk();
 
 pointer minfree = NULL;
 
 int ErrorfOn = 1;
-
-#ifdef hpux
-int Rtprio = 0;
-int TopcatBrainDamage = 0;
-#endif
-
-#ifdef MULTI_X_HACK
-int XMulti = 0;
-#endif 
-
-#ifdef COMPRESSED_FONTS
-int CompressedFonts = 1;
-#endif
 
 /* Force connections to close on SIGHUP from init */
 
@@ -82,14 +68,9 @@ AutoResetServer ()
 
 GiveUp()
 {
-#ifdef hpux
-    hpGivingUp = TRUE;
-#endif
+    GivingUp = TRUE;
     KillServerResources();
-#ifdef MULTI_X_HACK
-    if (XMulti)
-	ipc_exit();
-#endif
+    ddxGiveUp();
     exit(0);
 }
 
@@ -158,9 +139,6 @@ void UseMsg()
     ErrorF("-bp<:screen> color     BlackPixel for screen\n");
     ErrorF("-c                     turns off key-click\n");
     ErrorF("c #                    key-click volume (0-8)\n");
-#ifdef COMPRESSED_FONTS
-    ErrorF("nocf or -cf            disable use of compressed fonts\n");
-#endif
     ErrorF("-co string             color database file\n");
     ErrorF("-fc string             cursor font\n");
     ErrorF("-fn string             default text font name\n");
@@ -169,34 +147,25 @@ void UseMsg()
     ErrorF("-logo                  enable logo in screen saver\n");
     ErrorF("nologo                 disable logo in screen saver\n");
 #endif
-#ifdef MULTI_X_HACK
-    ErrorF("-multi                 run server in multi-X mode\n");
-#endif
     ErrorF("-p #                   screen-saver pattern duration (seconds)\n");
     ErrorF("-r                     turns off auto-repeat\n");
     ErrorF("r                      turns on auto-repeat \n");
-#ifdef hpux
-    ErrorF("-rtprio number         set real time priority\n");
-#endif
     ErrorF("-f #                   bell base (0-100)\n");
     ErrorF("-x string              loads named extension at init time \n");
     ErrorF("-help                  prints message with these options\n");
     ErrorF("-s #                   screen-saver timeout (seconds)\n");
     ErrorF("-t #                   mouse threshold (pixels)\n");
-#ifdef hpux
-    ErrorF("-tcbd                  run in topcat braindamage mode\n");
-#endif
     ErrorF("-to #                  connection time out\n");
     ErrorF("v                      video blanking for screen-saver\n");
     ErrorF("-v                     screen-saver without video blanking\n");
     ErrorF("-wp<:screen> color     WhitePixel for screen\n");
-    ErrorF("There may be other device-dependent options as well\n");
+    ddxUseMsg();
 }
 
 /*
  * This function parses the command line. Handles device-independent fields
- * only.  It is not allowed to modify argc or any of the strings pointed to
- * by argv.
+ * and allows ddx to handle additional fields.  It is not allowed to modify
+ * argc or any of the strings pointed to by argv.
  */
 void
 ProcessCommandLine ( argc, argv )
@@ -204,7 +173,7 @@ int	argc;
 char	*argv[];
 
 {
-    int i;
+    int i, skip;
 
     if (!minfree)
 	minfree = (pointer)sbrk(0);
@@ -212,9 +181,14 @@ char	*argv[];
 
     for ( i = 1; i < argc; i++ )
     {
-	/* initialize display */
-	if(argv[i][0] ==  ':')  
+	/* call ddx first, so it can peek/override if it wants */
+        if(skip = ddxProcessArgument(argc, argv, i))
 	{
+	    i += (skip - 1);
+	}
+	else if(argv[i][0] ==  ':')  
+	{
+	    /* initialize display */
 	    display = argv[i];
 	    display++;
 	}
@@ -236,12 +210,6 @@ char	*argv[];
 	{
 	    defaultKeyboardControl.click = 0;
 	}
-#ifdef COMPRESSED_FONTS
-	else if (strcmp( argv[i], "nocf") == 0 ||
-		 strcmp( argv[i], "-cf") == 0) {
-	    CompressedFonts--;
-	}
-#endif
 	else if ( strcmp( argv[i], "-co") == 0)
 	{
 	    if(++i < argc)
@@ -300,12 +268,6 @@ char	*argv[];
 	    logoScreenSaver = 0;
 	}
 #endif
-#ifdef MULTI_X_HACK
-	else if ( strcmp( argv[i], "-multi") == 0)
-	{
-	    XMulti++;
-	}
-#endif
 	else if ( strcmp( argv[i], "-p") == 0)
 	{
 	    if(++i < argc)
@@ -317,15 +279,6 @@ char	*argv[];
 	    defaultKeyboardControl.autoRepeat = TRUE;
 	else if ( strcmp( argv[i], "-r") == 0)
 	    defaultKeyboardControl.autoRepeat = FALSE;
-#ifdef hpux
-	else if ( strcmp( argv[i], "-rtprio") == 0)
-        {
-	    if (++i < argc)
-		Rtprio = atoi(argv[i]);
-	    else
-		UseMsg();
-	}
-#endif
 	else if ( strcmp( argv[i], "-s") == 0)
 	{
 	    if(++i < argc)
@@ -340,12 +293,6 @@ char	*argv[];
 	    else
 		UseMsg();
 	}
-#ifdef hpux
-	else if ( strcmp( argv[i], "-tcbd") == 0)
-        {
-	    TopcatBrainDamage++;
-	}
-#endif
 	else if ( strcmp( argv[i], "-to") == 0)
 	{
 	    if(++i < argc)
