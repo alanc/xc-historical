@@ -15,6 +15,7 @@
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/Xatom.h>
 #include <X11/extensions/shape.h>
 #include <X11/Xmu/WinUtil.h>
 
@@ -626,58 +627,77 @@ Display_Tree_Info(window)
  * Display a set of size hints
  */
 Display_Hints(hints)
-     XSizeHints hints;
+     XSizeHints *hints;
 {
 	long flags;
 
-	flags = hints.flags;
+	flags = hints->flags;
 	
 	if (flags & USPosition)
 	  printf("             ==> User supplied location: %s, %s\n",
-		 xscale(hints.x), yscale(hints.y));
+		 xscale(hints->x), yscale(hints->y));
 
 	if (flags & PPosition)
 	  printf("             ==> Program supplied location: %s, %s\n",
-		 xscale(hints.x), yscale(hints.y));
+		 xscale(hints->x), yscale(hints->y));
 
 	if (flags & USSize) {
 	  printf("             ==> User supplied size: %s by %s\n",
-		 xscale(hints.width), yscale(hints.height));
+		 xscale(hints->width), yscale(hints->height));
 	}
 
 	if (flags & PSize)
 	  printf("             ==> Program supplied size: %s by %s\n",
-		 xscale(hints.width), yscale(hints.height));
+		 xscale(hints->width), yscale(hints->height));
 
 	if (flags & PMinSize)
 	  printf("             ==> Program supplied minimum size: %s by %s\n",
-		 xscale(hints.min_width), yscale(hints.min_height));
+		 xscale(hints->min_width), yscale(hints->min_height));
 
 	if (flags & PMaxSize)
 	  printf("             ==> Program supplied maximum size: %s by %s\n",
-		 xscale(hints.max_width), yscale(hints.max_height));
+		 xscale(hints->max_width), yscale(hints->max_height));
+
+	if (flags & PBaseSize) {
+	  printf("             ==> Program supplied base size: %s by %s\n",
+		 xscale(hints->base_width), yscale(hints->base_height));
+	}
 
 	if (flags & PResizeInc) {
 	  printf("             ==> Program supplied x resize increment: %s\n",
-		 xscale(hints.width_inc));
+		 xscale(hints->width_inc));
 	  printf("             ==> Program supplied y resize increment: %s\n",
-		 yscale(hints.height_inc));
-	  if (flags & USSize && hints.width_inc != 0 && hints.height_inc != 0)
-	    printf("             ==> User supplied size in resize increments:  %s by %s\n",
-		   (xscale(hints.width / hints.width_inc)), 
-		   (yscale(hints.height / hints.height_inc)));
-	  if (flags & PSize && hints.width_inc != 0 && hints.height_inc != 0)
-	    printf("             ==> Program supplied size in resize increments:  %s by %s\n",
-		   (xscale(hints.width / hints.width_inc)), 
-		   (yscale(hints.height / hints.height_inc)));
+		 yscale(hints->height_inc));
+	  if (hints->width_inc != 0 && hints->height_inc != 0) {
+	      if (flags & USSize)
+		  printf("             ==> User supplied size in resize increments:  %s by %s\n",
+			 (xscale(hints->width / hints->width_inc)), 
+			 (yscale(hints->height / hints->height_inc)));
+	      if (flags & PSize)
+		  printf("             ==> Program supplied size in resize increments:  %s by %s\n",
+			 (xscale(hints->width / hints->width_inc)), 
+			 (yscale(hints->height / hints->height_inc)));
+	      if (flags & PMinSize)
+		  printf("             ==> Program supplied minimum size in resize increments: %s by %s\n",
+			 xscale(hints->min_width / hints->width_inc), yscale(hints->min_height / hints->height_inc));
+	      if (flags & PBaseSize)
+		  printf("             ==> Program supplied base size in resize increments:  %s by %s\n",
+			 (xscale(hints->base_width / hints->width_inc)), 
+			 (yscale(hints->base_height / hints->height_inc)));
+	  }
         }
 
 	if (flags & PAspect) {
 	  printf("             ==> Program supplied min aspect ratio: %s/%s\n",
-		 xscale(hints.min_aspect.x), yscale(hints.min_aspect.y));
+		 xscale(hints->min_aspect.x), yscale(hints->min_aspect.y));
 	  printf("             ==> Program supplied max aspect ratio: %s/%s\n",
-		 xscale(hints.max_aspect.x), yscale(hints.max_aspect.y));
+		 xscale(hints->max_aspect.x), yscale(hints->max_aspect.y));
         }
+
+	if (flags & PWinGravity) {
+	  printf("             ==> Program supplied window gravity: %s\n",
+		 Lookup(hints->win_gravity, _gravities));
+	}
 }
 
 
@@ -687,21 +707,25 @@ Display_Hints(hints)
 Display_Size_Hints(window)
      Window window;
 {
-	XSizeHints hints;
+	XSizeHints *hints = XAllocSizeHints();
+	long supplied;
 
-	if (!XGetNormalHints(dpy, window, &hints))
+	if (!XGetWMNormalHints(dpy, window, hints, &supplied))
 	  printf("\n         ==> No normal window size hints defined\n");
 	else {
 		printf("\n         ==> Normal window size hints:\n\n");
+		hints->flags &= supplied;
 		Display_Hints(hints);
 	}
 
-	if (!XGetZoomHints(dpy, window, &hints))
+	if (!XGetWMSizeHints(dpy, window, hints, &supplied, XA_WM_ZOOM_HINTS))
 	  printf("\n         ==> No zoom window size hints defined\n");
 	else {
 		printf("\n         ==> Zoom window size hints:\n\n");
+		hints->flags &= supplied;
 		Display_Hints(hints);
 	}
+	XFree(hints);
 }
 
 
