@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.110 91/02/11 18:03:28 keith Exp $
+ * $XConsortium: XOpenDis.c,v 11.111 91/02/11 18:58:31 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -36,6 +36,10 @@ without express or implied warranty.
 
 #ifdef SECURE_RPC
 #include <rpc/rpc.h>
+#ifdef ultrix
+#include <time.h>
+#include <rpc/auth_des.h>
+#endif
 #endif
 
 #include <stdio.h>
