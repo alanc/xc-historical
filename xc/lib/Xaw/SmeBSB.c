@@ -1,6 +1,4 @@
-#if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SmeBSB.c,v 1.11 90/02/06 14:54:07 jim Exp $";
-#endif 
+/* $XConsortium: SmeBSB.c,v 1.12 90/02/15 13:57:53 kit Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -266,7 +264,7 @@ Region region;
 	    break;
 	}
 
-	y_loc += (entry->rectangle.height - 
+	y_loc += ((int)entry->rectangle.height - 
 		  (font_ascent + font_descent)) / 2 + font_ascent;
 	
 	XDrawString(XtDisplayOfObject(w), XtWindowOfObject(w), gc,
@@ -432,8 +430,8 @@ Dimension * width, * height;
     *height = (entry->sme_bsb.font->max_bounds.ascent +
 	       entry->sme_bsb.font->max_bounds.descent);
 
-    *height = (*height * ( ONE_HUNDRED + 
-			  entry->sme_bsb.vert_space )) / ONE_HUNDRED;
+    *height = ((int)*height * ( ONE_HUNDRED + 
+			        entry->sme_bsb.vert_space )) / ONE_HUNDRED;
 }
 
 /*      Function Name: DrawBitmaps
@@ -459,11 +457,11 @@ GC gc;
  */
 
   if (entry->sme_bsb.left_bitmap != None) {
-    x_loc = (entry->sme_bsb.left_margin - 
-	     entry->sme_bsb.left_bitmap_width) / 2;
+    x_loc = (int)(entry->sme_bsb.left_margin -
+	          entry->sme_bsb.left_bitmap_width) / 2;
 
-    y_loc = entry->rectangle.y + (entry->rectangle.height -
-				  entry->sme_bsb.left_bitmap_height) / 2;
+    y_loc = entry->rectangle.y + (int)(entry->rectangle.height -
+				       entry->sme_bsb.left_bitmap_height) / 2;
 
     XCopyPlane(XtDisplayOfObject(w), entry->sme_bsb.left_bitmap,
 	       XtWindowOfObject(w), gc, 0, 0, 
@@ -477,11 +475,12 @@ GC gc;
 
 
   if (entry->sme_bsb.right_bitmap != None) {
-    x_loc = entry->rectangle.width - (entry->sme_bsb.right_margin +
-				      entry->sme_bsb.right_bitmap_width) / 2;
+    x_loc = entry->rectangle.width -
+	      (int)(entry->sme_bsb.right_margin +
+		    entry->sme_bsb.right_bitmap_width) / 2;
 
-    y_loc = entry->rectangle.y + (entry->rectangle.height -
-				  entry->sme_bsb.right_bitmap_height) / 2;
+    y_loc = entry->rectangle.y + (int)(entry->rectangle.height -
+				       entry->sme_bsb.right_bitmap_height) / 2;
 
     XCopyPlane(XtDisplayOfObject(w), entry->sme_bsb.right_bitmap,
 	       XtWindowOfObject(w), gc, 0, 0, 
