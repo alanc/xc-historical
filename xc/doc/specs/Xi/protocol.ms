@@ -35,8 +35,7 @@ any purpose and without fee is hereby granted, provided that the above
 copyright notice and this permission notice appear in all copies.
 MIT, Ardent, and Hewlett-Packard make no representations about the suitability 
 for any purpose of the information in this document.  It is provided "as is" 
-without express or implied warranty.  This document is only a draft standard
-of the MIT X Consortium and is therefore subject to change.
+without express or implied warranty.
 .ps
 .vs
 .bp 1
