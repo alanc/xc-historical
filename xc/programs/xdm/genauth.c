@@ -1,4 +1,4 @@
-/* $XConsortium: genauth.c,v 1.20 94/10/22 20:49:27 gildea Exp kaleb $ */
+/* $XConsortium: genauth.c,v 1.21 94/11/21 18:33:11 kaleb Exp kaleb $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -92,7 +92,7 @@ long	sum[2];
 	return 0;
     }
 #ifdef FRAGILE_DEV_MEM
-    if (strcmp(name, "/dev/mem") == 0) lseek (fd, 0x100000, SEEK_SET);
+    if (strcmp(name, "/dev/mem") == 0) lseek (fd, (off_t) 0x100000, SEEK_SET);
 #endif
     reads = FILE_LIMIT;
     sum[0] = 0;
