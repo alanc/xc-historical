@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.61 87/12/30 17:21:08 rws Exp $ */
+/* $Header: colormap.c,v 1.62 88/01/01 17:04:10 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -207,7 +207,7 @@ FreeColormap (pmap, mid)
     if(CLIENT_ID(mid) != SERVER_ID)
     {
         (*(pmap->pScreen->UninstallColormap)) (pmap);
-        WalkTree(pmap->pScreen, TellNoMap, (char *) &mid);
+        WalkTree(pmap->pScreen, TellNoMap, (pointer) &mid);
     }
 
     /* This is the device's chance to undo anything it needs to, especially
