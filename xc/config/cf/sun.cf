@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.120 94/04/01 18:49:03 erik Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.121 94/04/01 19:59:14 kaleb Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -96,7 +96,9 @@ XCOMM operating system:  OSName
 /* You ALSO need this if you have Sun ld patch 100170-06 or later to 4.1.1 */
 #define SunPost411FCSLd	  YES
 #endif
+#ifndef XawI18nDefines
 #define XawI18nDefines    -DUSE_XWCHAR_STRING
+#endif
 #endif
 
 #define ServerExtraDefines AllocateLocalDefines
@@ -104,7 +106,9 @@ XCOMM operating system:  OSName
 
 #if OSMajorVersion > 4
 #define BootstrapCFlags	  -DSVR4
+#ifndef XawI18nDefines
 #define XawI18nDefines    -DHAS_WCTYPE_H -DHAS_ISW_FUNCS
+#endif
 #ifdef i386Architecture
 #define StandardDefines	  -Dsun -Di386 -DSVR4
 #else
