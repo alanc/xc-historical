@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: bsd.cf,v 1.19 93/09/04 16:07:14 rws Exp $
+XCOMM platform:  $XConsortium: bsd.cf,v 1.20 93/09/12 21:34:10 rws Exp $
 
 #define OSName            4.3bsd
 XCOMM operating system:  OSName
@@ -12,15 +12,7 @@ XCOMM operating system:  OSName
 #define DirFailPrefix -
 #define AvoidNullMakeCommand	YES
 
-#ifdef VaxArchitecture
-#define XqdssServer YES
-#define XqvssServer YES
-#if HasGcc
-#define BuildPexExt XqdssServer
-#endif
-#else
 #define BuildServer NO
-#endif
 
 #ifdef VaxArchitecture
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
