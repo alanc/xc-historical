@@ -1,9 +1,9 @@
-/* $XConsortium: Atoms.c,v 1.7 89/12/08 12:04:05 rws Exp $
+/* $XConsortium: Atoms.c,v 1.8 90/04/30 16:57:05 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
  * This file contains routines to cache atoms, avoiding multiple
- * server round-trips.
+ * server round-trips.  Not so useful now that Xlib caches them.
  *
  * Public entry points:
  *
@@ -62,52 +62,6 @@ DeclareAtom(XA_TEXT,			"TEXT"			)
 DeclareAtom(XA_TIMESTAMP,		"TIMESTAMP"		)
 DeclareAtom(XA_USER,			"USER"			)
 
-typedef struct _CacheEntry {
-    struct _CacheEntry* next;
-    Display *dpy;
-    char *name;
-} CacheEntry;
-
-static CacheEntry** cache = NULL;
-static max_atom = 0;
-
-static CacheEntry* CacheLookup(d, atom)
-    Display *d;
-    Atom atom;
-{
-    CacheEntry* entry;
-    if (atom > max_atom) {
-	cache = (CacheEntry**)
-	    XtRealloc((char*)cache, ((int)atom+1)*sizeof(CacheEntry*));
-	for (; max_atom < atom; max_atom++) cache[(int)max_atom] = NULL;
-	cache[(int)max_atom] = NULL;
-    }
-    entry = cache[(int)atom];
-    while (entry != NULL) {
-	if (entry->dpy == d) break;
-	entry = entry->next;
-    }
-    return entry;
-}
-
-
-static CacheEntry* CacheEnter(d, atom, name)
-    Display *d;
-    Atom atom;
-    char *name;
-{
-    CacheEntry* entry = CacheLookup(d, atom);
-    if (entry == NULL) {
-	entry = XtNew(CacheEntry);
-	entry->next = cache[(int)atom];
-	entry->dpy = d;
-	entry->name = name;
-	cache[(int)atom] = entry;
-    }
-    return entry;
-}
-
-
 /******************************************************************
 
   Public procedures
@@ -146,7 +100,6 @@ Atom XmuInternAtom(d, atom_ptr)
     atom_ptr->head = display_rec;
     display_rec->dpy = d;
     display_rec->atom = XInternAtom(d, atom_ptr->name, False);
-    CacheEnter(d, display_rec->atom, atom_ptr->name);
     return display_rec->atom;
 }
 
@@ -155,44 +108,21 @@ char *XmuGetAtomName(d, atom)
     Display *d;
     Atom atom;
 {
-    CacheEntry* entry;
     if (atom == 0) return "(BadAtom)";
-    entry = CacheLookup(d, atom);
-    if (entry == NULL)
-	entry = CacheEnter(d, atom, XGetAtomName(d, atom));
-    return entry->name;
+    return XGetAtomName(d, atom);
 }
 
 /* convert (names, count) to a list of atoms. Caller allocates list */
 void XmuInternStrings(d, names, count, atoms)
     Display *d;
-    String *names;
-    Cardinal count;
-    Atom *atoms;		/* return */
+    register String *names;
+    register Cardinal count;
+    register Atom *atoms;		/* return */
 {
-    static AtomPtr* cache = NULL;
-    static Cardinal cache_size = 0, last = 0;
-    int i;
+    register int i;
 
-    if (count > cache_size) {
-	cache_size += count;
-	cache = (AtomPtr*)XtRealloc((char *)cache, cache_size*sizeof(AtomPtr));
-    }
     for (i = 0; i < count; i++) {
-	register int p;
-	for (p = 0; p < last; p++) {
-	    if (strcmp(names[i], XmuNameOfAtom(cache[p])) == 0) {
-		break;
-	    }
-	}
-	if (p == last) {
-	    if (last == cache_size) {
-		cache = (AtomPtr*)XtRealloc((char *)cache,
-					    (++cache_size)*sizeof(AtomPtr));
-	    }
-	    cache[last++] = XmuMakeAtom(names[i]);
-	}
-	atoms[i] = XmuInternAtom(d, cache[p]);
+	atoms[i] = XmuInternAtom(d, names[i]);
     }
     return;
 }
