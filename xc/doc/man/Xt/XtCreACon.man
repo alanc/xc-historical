@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtMake-Geometry-Request XtQuery-Geometry wid-get
+.hw XtCreate-Application-Context XtDestroy-Application-Context XtWidget-To-Application-Context XtToolkit-Initialize wid-get
 .na
 .de Ds
 .nf
@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtCreateApplicationContext 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
+.TH XtCreateApplicationContext 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtCreateApplicationContext, XtDestroyApplicationContext, XtWidgetToApplicationContext, XtToolkitInitialize \- create, destroy, and obtain an application context
 .SH SYNTAX

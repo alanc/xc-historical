@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtMake-Geometry-Request XtQuery-Geometry wid-get
+.hw XtOwn-Selection XtOwn-Selection-Incremental XtDisown-Selection wid-get
 .na
 .de Ds
 .nf
@@ -97,9 +97,9 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtOwnSelection 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
+.TH XtOwnSelection 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtOwnSelection, XtDisownSelection \- set selection owner
+XtOwnSelection, XtOwnSelectionIncremental, XtDisownSelection \- set selection owner
 .SH SYNTAX
 Boolean XtOwnSelection(\fIw\fP, \fIselection\fP, \fItime\fP, \
 \fIconvert_proc\fP, \fIlose_selection\fP, \fIdone_proc\fP)
@@ -115,6 +115,26 @@ Boolean XtOwnSelection(\fIw\fP, \fIselection\fP, \fItime\fP, \
       XtLoseSelectionProc \fIlose_selection\fP;
 .br
       XtSelectionDoneProc \fIdone_proc\fP;
+.LP
+Boolean XtOwnSelectionIncremental(\fIw\fP, \fIselection\fP, \fItime\fP, \
+\fIconvert_callback\fP, \fIlose_callback\fP, \fIdone_callback\fP, \
+\fIcancel_callback\fP, \fIclient_data\fP)
+.br
+      Widget \fIw\fP;
+.br
+      Atom \fIselection\fP;
+.br
+      Time \fItime\fP;
+.br
+      XtConvertSelectionIncrProc \fIconvert_callback\fP;
+.br
+      XtLoseSelectionIncrProc \fIlose_callback\fP;
+.br
+      XtSelectionDoneIncrProc \fIdone_callback\fP;
+.br
+      XtCancelConvertSelectionProc \fIcancel_callback\fP;
+.br
+      XtPointer \fIclient_data\fP;
 .LP
 void XtDisownSelection(\fIw\fP, \fIselection\fP, \fItime\fP)
 .br
@@ -164,6 +184,23 @@ because someone else asserted later ownership of the selection
 or because the widget voluntarily gave up ownership of the selection.
 Also note that the lose_selection procedure is not called 
 if the widget fails to obtain selection ownership in the first place.
+.LP
+The
+.ZN XtOwnSelectionInrcremental
+procedure informs the Intrinsics incremental selection mechanism that
+the specified widget wishes to own the selection. It returns
+.ZN True 
+if the specified widget successfully becomes the selection owner or
+.ZN False
+otherwise. For more information about \fIselection\fP, \fItarget\fP,
+and \fItime\fP, see Section 2.6 of the \fIInter-Client Communication
+Conventions Manual\fP.
+.LP
+A widget that becomes the selection owner using
+.ZN XtOwnSelectionIncremental
+may use
+.ZN XtDisownSelection
+to relinquish selection ownership.
 .LP
 The
 .ZN XtDisownSelection

@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtMake-Geometry-Request XtQuery-Geometry wid-get
+.hw XtCreate-Popup-Shell wid-get
 .na
 .de Ds
 .nf
@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtCreatePopupShell 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
+.TH XtCreatePopupShell 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtCreatePopupShell \- create a popup shell
 .SH SYNTAX

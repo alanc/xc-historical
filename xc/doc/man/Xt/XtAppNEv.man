@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtMake-Geometry-Request XtQuery-Geometry wid-get
+.hw XtApp-Next-Event XtApp-Pending XtApp-Peek-Event XtApp-Process-Event Xt-Dispatch-Event XtApp-Main-Loop wid-get
 .na
 .de Ds
 .nf
@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAppNextEvent 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
+.TH XtAppNextEvent 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtAppNextEvent, XtAppPending, XtAppPeekEvent, XtAppProcessEvent, XtDispatchEvent, XtAppMainLoop \- query and process events and input
 .SH SYNTAX
@@ -144,24 +144,25 @@ Specifies what types of events to process.
 The mask is the bitwise inclusive OR of any combination of
 .ZN XtIMXEvent ,
 .ZN XtIMTimer ,
+.ZN XtIMAlternateInput ,
 and
-.ZN XtIMAlternateInput .
+.ZN XtIMSignal .
 As a convenience, the \*(tk defines the symbolic name
 .ZN XtIMAll
 to be the bitwise inclusive OR of all event types.
 .SH DESCRIPTION
-If no input is on the X input queue,
+If the X event queue is empty,
 .ZN XtAppNextEvent
-flushes the X output buffer
-and waits for an event while looking at the other input sources
-and timeout values and calling any callback procedures triggered by them.
-This wait time can be used for background processing 
+flushes the X output buffers of each Display in the application context
+and waits for an event while looking at the other input sources, timeout
+timeout values, and signal handlers and calling any callback procedures 
+triggered by them.  This wait time can be used for background processing 
 (see Section 7.8).
 .LP
 If there is an event in the queue,
 .ZN XtAppPeekEvent
-fills in the event and returns a nonzero value.
-If no X input is on the queue,
+fills in the event and returns a nonzero value. If no X input is on the 
+queue,
 .ZN XtAppPeekEvent
 flushes the output buffer and blocks until input is available
 (possibly calling some timeout callbacks in the process).
@@ -174,14 +175,14 @@ returns zero.
 .LP
 The
 .ZN XtAppPending
-function returns a nonzero value if there are
-events pending from the X server, timer pending, or other input sources
-pending. The
-value returned is a bit mask that is the OR of
+function returns a nonzero value if there are events pending from the 
+X server, timer pending, or other input sources pending. The value 
+returned is a bit mask that is the OR of
 .ZN XtIMXEvent ,
 .ZN XtIMTimer ,
+.ZN XtIMAlternateInput ,
 and
-.ZN XtIMAlternateInput
+.ZN XtIMSignal
 (see
 .ZN XtAppProcessEvent ).
 If there are no events pending, 
@@ -190,8 +191,8 @@ flushes the output buffer and returns zero.
 .LP
 The
 .ZN XtAppProcessEvent
-function processes one timer, alternate input, or X event.
-If there is nothing of the appropriate type to process,
+function processes one timer, alternate input, signal source, or X 
+event.  If there is nothing of the appropriate type to process,
 .ZN XtAppProcessEvent
 blocks until there is.
 If there is more than one type of thing available to process,
@@ -199,13 +200,13 @@ it is undefined which will get processed.
 Usually, this procedure is not called by client applications (see
 .ZN XtAppMainLoop ).
 .ZN XtAppProcessEvent
-processes timer events by calling any appropriate timer callbacks, alternate
-input by calling any appropriate alternate input callbacks, and X events by
-calling
+processes timer events by calling any appropriate timer callbacks, 
+alternate input by calling any appropriate alternate input callbacks, 
+signal source by calling any appropriate signal callbacks, and X events 
+by calling
 .ZN XtDispatchEvent .
 .LP
-When an X event is received,
-it is passed to
+When an X event is received, it is passed to
 .ZN XtDispatchEvent ,
 which calls the appropriate event handlers
 and passes them the widget, the event, and client-specific data

@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtMake-Geometry-Request XtQuery-Geometry wid-get
+.hw XtCheck-Subclass XtIs-Object XtIs-RectObj XtIs-Widget XtIs-Composite XtIs-Constraint XtIs-Shell XtIs-Override-Shell XtIs-WM-Shell XtIs-Vendor-Shell XtIs-Transient-Shell XtIs-Top-Level-Shell XtIs-Application-Shell wid-get
 .na
 .de Ds
 .nf
@@ -97,9 +97,9 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtClass 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
+.TH XtClass 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtClass, XtSuperClass, XtIsSubclass, XtCheckSubclass, XtIsComposite, XtIsManaged \- obtain and verify a widget's class
+XtClass, XtSuperclass, XtIsSubclass, XtCheckSubclass, XtIsObject, XtIsRectObj, XtIsWidget, XtIsComposite, XtIsConstraint, XtIsShell, XtIsOverrideShell, XtIsWMShell, XtIsVendorShell, XtIsTransientShell, XtIsTopLevelShell, XtIsApplicationShell \- obtain and verify a widget's class
 .SH SYNTAX
 WidgetClass XtClass(\fIw\fP)
 .br
@@ -115,21 +115,62 @@ Boolean XtIsSubclass(\fIw\fP, \fIwidget_class\fP)
 .br
       WidgetClass \fIwidget_class\fP;
 .LP
-void XtCheckSubclass(\fIw\fP, \fIwidget_class\fP, \fImessage\fP)
+void XtCheckSubclass(\fIwidget\fP, \fIwidget_class\fP, \fImessage\fP)
 .br
-      Widget \fIw\fP;
+      Widget \fIwidget\fP;
 .br
       WidgetClass \fIwidget_class\fP;
 .br
       String \fImessage\fP;
 .LP
+Boolean XtIsObject(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.LP
+Boolean XtIsRectObj(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.LP
+Boolean XtIsWidget(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.LP
 Boolean XtIsComposite(\fIw\fP)
 .br
       Widget \fIw\fP;
 .LP
-Boolean XtIsManaged(\fIw\fP)
+Boolean XtIsConstraint(\fIw\fP)
 .br
-       Widget \fIw\fP\^;
+      Widget \fIw\fP;
+.LP
+Boolean XtIsShell(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.LP
+Boolean XtIsOverrideShell(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.LP
+Boolean XtIsWMShell(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.LP
+Boolean XtIsVendorShell(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.LP
+Boolean XtIsTransientShell(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.LP
+Boolean XtIsTopLevelShell(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.LP
+Boolean XtIsApplicationShell(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.LP
 .SH ARGUMENTS
 .IP \fIw\fP 1i
 Specifies the widget.
@@ -151,12 +192,11 @@ The
 .ZN XtIsSubclass
 function returns 
 .ZN True 
-if the class of the specified widget is equal to
-or is a subclass of the specified widget class.
-The specified widget can be any number of subclasses down the chain
-and need not be an immediate subclass of the specified widget class.
-Composite widgets that need to restrict the class of the items they
-contain can use
+if the class of the specified widget is equal to or is a subclass of 
+the specified class. The widget's class can be any number of subclasses
+down the chain and need not be an immediate subclass of the specified
+class. Composite widgets that need to restrict the class of the items
+they contain can use
 .ZN XtIsSubclass
 to find out if a widget belongs to the desired class of objects.
 .LP
@@ -180,22 +220,25 @@ is only executed when the widget has been compiled with the compiler symbol
 DEBUG defined; otherwise, it is defined as the empty string 
 and generates no code.
 .LP
-The
-.ZN XtIsComposite
-function is a convenience function that is equivalent to
-.ZN XtIsSubclass 
-with
-.ZN compositeWidgetClass 
-specified.
+To test if a given widget belongs to a subclass of an Intrinsics-defined
+class, the Intrinsics defines macros or functions equivalent to
+.ZN XtIsSubclass
+for each of the built-in classes. These procedures are
+.ZN XtIsObject ,
+.ZN XtIsRectObj ,
+.ZN XtIsWidget ,
+.ZN XtIsComposite ,
+.ZN XtIsConstraint ,
+.ZN XtIsShell ,
+.ZN XtIsOverrideShell ,
+.ZN XtIsWMShell ,
+.ZN XtIsVendorShell ,
+.ZN XtIsTransientShell ,
+.ZN XtIsTopLevelShell ,
+and
+.ZN XtIsApplicationShell .
 .LP
 The
-.ZN XtIsManaged
-macro (for widget programmers) or function (for application programmers)
-returns
-.ZN True
-if the specified child widget is managed or
-.ZN False
-if it is not.
 .SH "SEE ALSO"
 XtAppErrorMsg(3Xt),
 XtDisplay(3Xt)

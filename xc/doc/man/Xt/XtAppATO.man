@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtMake-Geometry-Request XtQuery-Geometry wid-get
+.hw XtApp-Add-Time-Out XtRemove-Time-Out wid-get
 .na
 .de Ds
 .nf
@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAppAddTimeOut 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
+.TH XtAppAddTimeOut 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtAppAddTimeOut, XtRemoveTimeOut \- register and remove timeouts
 .SH SYNTAX
@@ -142,7 +142,7 @@ The
 function removes the timeout.
 Note that timeouts are automatically removed once they trigger.
 .SH "SEE ALSO"
-XtAppAddInput(3Xt)
+XtAppAddInput(3Xt),XtAppAddSignal(3Xt)
 .br
 \fI\*(xT\fP
 .br

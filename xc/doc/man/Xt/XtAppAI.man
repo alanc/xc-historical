@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtMake-Geometry-Request XtQuery-Geometry wid-get
+.hw XtApp-Add-Input wid-get
 .na
 .de Ds
 .nf
@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAppAddInput 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
+.TH XtAppAddInput 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtAppAddInput, XtRemoveInput \- register and remove an input source
 .SH SYNTAX
@@ -162,7 +162,7 @@ The
 function causes the \*(xI read routine to stop watching for input
 from the input source.
 .SH "SEE ALSO"
-XtAppAddTimeOut(3Xt)
+XtAppAddTimeOut(3Xt),XtAppAddSignal(3Xt)
 .br
 \fI\*(xT\fP
 .br

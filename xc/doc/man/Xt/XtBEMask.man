@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtMake-Geometry-Request XtQuery-Geometry wid-get
+.hw XtBuild-Event-Mask wid-get
 .na
 .de Ds
 .nf
@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtBuildEventMask 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
+.TH XtBuildEventMask 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtBuildEventMask \- retrieve a widget's event mask
 .SH SYNTAX

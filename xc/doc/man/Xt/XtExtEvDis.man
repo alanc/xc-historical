@@ -99,7 +99,9 @@
 .ny0
 .TH XtInsertEventTypeHandler 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtInsertEventTypeHandler, XtRemoveEventTypeHandler, XtRegisterExtensionSelector, XtSetEventDispatcher, XtDispatchEventToWidget \- extension event handling
+XtInsertEventTypeHandler, XtRemoveEventTypeHandler, \
+XtRegisterExtensionSelector, XtSetEventDispatcher, XtDispatchEventToWidget \
+\- extension event handling
 .SH SYNTAX
 void XtInsertEventTypeHandler(\fIwidget\fP, \fIevent_type\fP, \
 \fIselect_data\fP, \fIproc\fP, \fIclient_data\fP, \fIposition\fP)
@@ -117,6 +119,7 @@ void XtInsertEventTypeHandler(\fIwidget\fP, \fIevent_type\fP, \
       XtListPosition \fIposition\fP;
 .LP
 void XtRemoveEventTypeHandler(\fIwidget\fP, \fIevent_type\fP, \
+\fIselect_data\fP, \fIproc\fP, \fIclient_data\fP)
 .br
       Widget \fIwdget\fP;
 .br
@@ -141,7 +144,7 @@ void XtRegisterExtensionSelector(\fIdisplay\fP, \fImin_event_type\fP, \
 .br
       XtPointer \fIclient_data\fP;
 .LP
-XtEventDispatchProc XtSetEventDispatcher(\fdisplay\fP, \fIevent_type\fP, \
+XtEventDispatchProc XtSetEventDispatcher(\fIdisplay\fP, \fIevent_type\fP, \
 \fIproc\fP)
 .br
       Widget \fIwidget\fP;
@@ -155,6 +158,7 @@ Boolean XtDispatchEventToWidget(\fIwidget\fP, \fIevent\fP)
       Widget \fIwidget\fP;
 .br
       XEvent* \fIevent\fP;
+.LP
 .SH ARGUMENTS
 .IP \fIwidget\fP 1i
 Specifies the widget for this event handler.
@@ -290,7 +294,9 @@ returns
 if any event handler was called and
 .ZN False
 otherwise.
+.LP
 .SH "SEE ALSO"
+XtGetKeyboardFocusWidget(3Xt)
 .br
 \fI\*(xT\fP
 .br

@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtMake-Geometry-Request XtQuery-Geometry wid-get
+.hw XtDirect-Convert wid-get
 .na
 .de Ds
 .nf
@@ -97,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtConvert 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
+.TH XtConvert 3Xt "Release 6" "X Version 11" "XT COMPATIBILITY FUNCTIONS"
 .SH NAME
 XtConvert, XtDirectConvert \- invoke resource converters
 .SH SYNTAX
@@ -152,6 +152,9 @@ The
 function looks up the type converter registered to convert from_type 
 to to_type, computes any additional arguments needed, and then calls
 .ZN XtDirectConvert .
+.ZN XtConvert 
+has been replaced by
+.ZN XtConvertAndStore .
 .LP
 The
 .ZN XtDirectConvert
@@ -165,9 +168,14 @@ Before calling the specified converter,
 sets the return value size to zero and the return value address to NULL.
 To determine if the conversion was successful,
 the client should check to_return.address for non-NULL.
+.ZN XtDirectConvert
+has been replaced by
+.ZN XtCallConverter .
 .SH "SEE ALSO"
 XtAppAddConverter(3Xt),
-XtStringConversionWarning(3Xt)
+XtStringConversionWarning(3Xt),
+XtConvertAndStore(3Xt),
+XtCallConverter(3Xt)
 .br
 \fI\*(xT\fP
 .br

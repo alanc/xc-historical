@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtMake-Geometry-Request XtQuery-Geometry wid-get
+.hw XtApp-Add-Converter XtAdd-Converter wid-get
 .na
 .de Ds
 .nf
@@ -97,14 +97,27 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAppAddConverter 3Xt "Release 3" "X Version 11" "XT FUNCTIONS"
+.TH XtAppAddConverter 3Xt "Release 6" "X Version 11" "XT COMPATIBILITY FUNCTIONS"
 .SH NAME
-XtAppAddConverter \- register resource converter
+XtAppAddConverter, XtAddConverter \- register resource converter
 .SH SYNTAX
 void XtAppAddConverter(\fIapp_context\fP, \fIfrom_type\fP, \fIto_type\fP, \
 \fIconverter\fP, \fIconvert_args\fP, \fInum_args\fP)
 .br
     XtAppContext \fIapp_context\fP;
+.br
+    String \fIfrom_type\fP;
+.br
+    String \fIto_type\fP;
+.br
+    XtConverter \fIconverter\fP;
+.br
+    XtConvertArgList \fIconvert_args\fP;
+.br
+    Cardinal \fInum_args\fP;
+.LP
+void XtAddConverter(\fIfrom_type\fP, \fIto_type\fP, \fIconverter\fP, \
+\fIconvert_args\fP, \fInum_args\fP)
 .br
     String \fIfrom_type\fP;
 .br
@@ -129,9 +142,21 @@ Specifies the number of additional arguments to the converter or zero.
 .IP \fIto_type\fP 1i
 Specifies the destination type.
 .SH DESCRIPTION
-The
 .ZN XtAppAddConverter
-registers a the specified resource converter.
+is equivalent in function to
+.ZN XtAppSetTypeConverter
+with \fIcache_type\fP equal to
+.ZN XtCacheAll
+for old-format type converters. It has been superseded by
+.ZN XtAppSetTypeConverter .
+.LP
+.ZN XtAddConverter
+is equivalent in function to
+.ZN XtSetTypeConverter
+with \fIcache_type\fP equal to
+.ZN XtCacheAll
+for old-format type converters. It has been superseded by
+.ZN XtSetTypeConverter .
 .SH "SEE ALSO"
 XtConvert(3Xt),
 XtStringConversionWarning(3Xt)
