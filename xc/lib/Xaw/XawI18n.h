@@ -1,4 +1,4 @@
-/* $XConsortium: XawI18n.h,v 1.3 94/02/06 20:52:44 rws Exp $ */
+/* $XConsortium: XawI18n.h,v 1.4 94/03/08 12:19:28 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by The Massachusetts Institute of Technology
@@ -31,7 +31,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * and their contents? There's got to be a better way!
  */
 
-/* it'd be nice if we could agree that IRIX 5.x is SVR4. */
 #if defined(SVR4) || defined(sgi)
 #ifndef NCR
 #include <wctype.h>
@@ -49,9 +48,15 @@ extern int _iswspace(wchar_t);
 #define wcscpy(d,s) _Xwcscpy(d,s)
 #define wcsncpy(d,s,l) _Xwcsncpy(d,s,l)
 #endif
+#ifdef sun
+#define HAS_ISW_FUNCS
+#endif
 #endif
 
 #if (defined(luna) && defined(MACH)) || defined(hpux) || (defined(__osf__) && defined(__WCHAR_T_LEN)) || defined(WIN32)
+#if (defined(luna) && defined(MACH)) || defined(hpux)
+#define HAS_ISW_FUNCS
+#endif
 #include <wchar.h>
 #endif
 
@@ -72,7 +77,11 @@ extern int _iswspace(wchar_t);
 #endif
 #endif
 
-extern wchar_t _Xawatowc (
+#ifdef AIXV3
+#include <ctype.h>
+#endif
+
+extern wchar_t _Xaw_atowc (
 #if NeedFunctionPrototypes
     unsigned char	c
 #endif
@@ -84,14 +93,12 @@ extern wchar_t _Xawatowc (
  * SunOS 4.x, Ultrix, and old MIPS OSF/1, whose locale support only 
  * includes C locale anyway.
  */
-
+#if !defined(HAS_ISW_FUNCS) && (!defined(iswprint) || !defined(iswspace))
 #include <ctype.h>
-
 #ifndef iswprint
 #define iswprint(c) (isascii(c) && isprint(c))
 #endif
-
 #ifndef iswspace
 #define iswspace(c) (isascii(c) && isspace(c))
 #endif
-
+#endif
