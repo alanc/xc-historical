@@ -1,7 +1,7 @@
 /* objcube.h - structure values for cube */
 
 {	"cube", "cube",	/* long and short names */
-	"tetrahedron",	/* long name of dual */
+	"octahedron",	/* long name of dual */
 	8, 12, 6,	/* number of vertices, edges, and faces */
 	{		/* vertices (x,y,z) */
 			/* all points must be within radius 1 of the origin */
