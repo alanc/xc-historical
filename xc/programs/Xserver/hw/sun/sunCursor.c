@@ -16,6 +16,7 @@
 #include    "mipointer.h"
 #include    "cursorstr.h"
 
+#ifdef FBIOGCURMAX  /* has hardware cursor kernel support */
 #define CURSOR_PAD  8
 
 #define GetCursorPrivate(s) (&(GetScreenPrivate(s)->hardwareCursor))
@@ -166,14 +167,13 @@ miPointerSpriteFuncRec sunPointerSpriteFuncs = {
     sunMoveCursor,
 };
 
-static ScreenPtr    pQueryBestSizeScreen;
-
 static void
-sunQueryBestSize (class, pwidth, pheight)
+sunQueryBestSize (class, pwidth, pheight, pScreen)
     int	class;
     short   *pwidth, *pheight;
+    ScreenPtr	pScreen;
 {
-    SetupCursor (pQueryBestSizeScreen);	/* sorry, no screen pointer here */
+    SetupCursor (pScreen);
 
     switch (class)
     {
@@ -184,17 +184,20 @@ sunQueryBestSize (class, pwidth, pheight)
 	    *pheight = pCurPriv->height;
 	break;
     default:
-	mfbQueryBestSize (class, pwidth, pheight);
+	mfbQueryBestSize (class, pwidth, pheight, pScreen);
 	break;
     }
 }
 
 extern miPointerScreenFuncRec	sunPointerScreenFuncs;
 
+#endif
+
 Bool
 sunCursorInitialize (pScreen)
     ScreenPtr	pScreen;
 {
+#ifdef FBIOGCURMAX
     SetupCursor (pScreen);
     int	    fd;
     struct fbcursor fbcursor;
@@ -208,11 +211,13 @@ sunCursorInitialize (pScreen)
     pCurPriv->width = maxsize.x;
     pCurPriv->height= maxsize.y;
     pScreen->QueryBestSize = sunQueryBestSize;
-    pQueryBestSizeScreen = pScreen;
     miPointerInitialize (pScreen,
 			 &sunPointerSpriteFuncs,
 			 &sunPointerScreenFuncs,
 			 FALSE);
+#else
+    return FALSE;
+#endif
 }
 
 /*
