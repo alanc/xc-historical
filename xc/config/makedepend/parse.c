@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.5 88/09/04 12:35:06 jim Exp $
+ * $XConsortium: parse.c,v 1.6 88/09/06 17:53:40 jim Exp $
  */
 #include "def.h"
 #include	<sys/signal.h>
@@ -201,12 +201,6 @@ deftype(line, filep, file_red, file, parse_it)
 		/*
 		 * Separate the name of the include file.
 		 */
-		{
-		    struct symtab *sym = defined(p, file_red);
-		    if (sym) {
-			p = sym->s_value;
-		    }
-		}
 		while (*p && *p != '"' && *p != '<')
 			p++;
 		if (! *p)
