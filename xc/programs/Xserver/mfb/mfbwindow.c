@@ -1,4 +1,4 @@
-/* $Header: mfbwindow.c,v 1.3 87/11/05 12:00:59 rws Exp $ */
+/* $Header: mfbwindow.c,v 1.4 88/01/16 15:24:50 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -151,9 +151,8 @@ int x, y;
 }
 
 Bool 
-mfbUnmapWindow(pWindow, x, y)
+mfbUnmapWindow(pWindow)
 WindowPtr pWindow;
-int x, y;
 {
     return (TRUE);
 }
