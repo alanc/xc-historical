@@ -1,9 +1,9 @@
-XCOMM $XConsortium: Imakefile,v 1.5 91/07/17 16:04:58 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 93/08/20 11:41:34 rws Exp $
 LOCAL_LIBRARIES = $(FSLIB)
 DEPLIBS = $(DEPFSLIB)
 SRCS = showfont.c
 OBJS = showfont.o
-INCLUDES = -I$(FONTSRC)/include
+INCLUDES = -I$(BUILDINCDIR)/fonts -I$(FONTINCSRC)
 
 ComplexProgramTarget(showfont)
 
