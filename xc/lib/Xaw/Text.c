@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.71 88/10/07 15:34:11 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.72 88/10/12 10:35:50 swick Exp $";
 #endif
 
 
@@ -1034,6 +1034,8 @@ int ReplaceText (ctx, pos1, pos2, text)
 	    endPos = lastPos;
 	if (endPos < pos2)	/* might scroll if word wrapped off bottom */
 	    endPos = pos2;
+	if (endPos > lastPos && delta > 0)
+	    endPos = lastPos;	/* optimize insert at end; don't clear below */
 	if (pos2 >= ctx->text.lt.top || delta >= lastPos)
 	    _XtTextNeedsUpdating(ctx, updateFrom, endPos);
     }
@@ -1059,11 +1061,14 @@ static void DisplayText(w, pos1, pos2)
     XtTextPosition startPos, endPos;
     int lastPos = ctx->text.lastPos;
     Boolean clear_eol;
+    Boolean clear_eos = True;
 
     if (pos1 < ctx->text.lt.top)
 	pos1 = ctx->text.lt.top;
     if (pos2 > ctx->text.lastPos)
 	pos2 = ctx->text.lastPos;
+    else if (pos2 == ctx->text.lastPos)
+	clear_eos = False;
     if (pos1 >= pos2) return;
     visible = LineAndXYForPosition(ctx, pos1, &line, &x, &y);
     if (!visible)
@@ -1101,7 +1106,7 @@ static void DisplayText(w, pos1, pos2)
 		ctx->text.lt.info[i].endX, y, (int)ctx->core.width, height);
 	x = ctx->text.leftmargin;
 	y = ctx->text.lt.info[i + 1].y;
-	if ((endPos == pos2) && (endPos != lastPos))
+	if ((endPos == pos2) && !clear_eos)
 	    break;
     }
 }
@@ -1845,7 +1850,8 @@ void XtTextSetInsertionPoint(w, position)
     TextWidget ctx = (TextWidget) w;
 
 	_XtTextPrepareToUpdate(ctx);
-	ctx->text.insertPos = position;
+	ctx->text.insertPos = (position > ctx->text.lastPos)
+			       ? ctx->text.lastPos : position;
 	ctx->text.showposition = TRUE;
 	_XtTextExecuteUpdate(ctx);
 }
