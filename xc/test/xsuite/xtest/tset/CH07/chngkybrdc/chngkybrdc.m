@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: chngkybrdc.m,v 1.8 92/06/11 17:11:42 rws Exp $
  */
 >>TITLE XChangeKeyboardControl CH07
 void
@@ -414,7 +414,7 @@ static int 	vals[] = {
 	if (newks.led_mask == onmask)
 		CHECK;
 	else {
-		report("Led mask was %d, expecting %d",
+		report("Led mask was %lx, expecting %lx",
 			newks.led_mask, onmask);
 		FAIL;
 	}
