@@ -4,8 +4,8 @@ Xfd*showGrip: false
 Xfd*grid.borderWidth: 0
 
 Xfd*quit.Label: Quit
-Xfd*prev.Label: Prev
-Xfd*next.Label: Next
+Xfd*prev.Label: Prev Page
+Xfd*next.Label: Next Page
 
 Xfd*select.Label: Select a character
 Xfd*metrics.Label: 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.14 89/08/07 18:18:02 jim Exp $
+ * $XConsortium: fontgrid.c,v 1.15 89/08/07 19:18:51 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -119,7 +119,7 @@ WidgetClass fontgridWidgetClass = (WidgetClass) &fontgridClassRec;
 
 
 /*
- * public routine
+ * public routines
  */
 
 void GetFontGridCellDimensions (fgw, startp, ncolsp, nrowsp)
@@ -131,6 +131,22 @@ void GetFontGridCellDimensions (fgw, startp, ncolsp, nrowsp)
     *ncolsp = fgw->fontgrid.cell_cols;
     *nrowsp = fgw->fontgrid.cell_rows;
 }
+
+
+void GetPrevNextStates (fgw, prevvalidp, nextvalidp)
+    FontGridWidget fgw;
+    Bool *prevvalidp, *nextvalidp;
+{
+    XFontStruct *fs = fgw->fontgrid.text_font;
+    long minn = (long) ((fs->min_byte1 << 0) | fs->min_char_or_byte2);
+    long maxn = (long) ((fs->max_byte1 << 8) | fs->max_char_or_byte2);
+
+    *prevvalidp = (fgw->fontgrid.start_char > minn);
+    *nextvalidp = ((fgw->fontgrid.start_char +
+		    (fgw->fontgrid.cell_cols * fgw->fontgrid.cell_rows))
+		   < maxn);
+}
+
 
 
 /*

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.13 89/06/13 11:48:38 jim Exp $
+ * $XConsortium: xfd.c,v 1.14 89/08/07 16:03:11 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -47,7 +47,7 @@ static XrmOptionDescRec xfd_options[] = {
 };
 
 static void do_quit(), do_next(), do_prev();
-static void change_page ();
+static void change_page (), set_button_state ();
 static char *get_font_name();
 
 static XtActionsRec xfd_actions[] = {
@@ -56,7 +56,7 @@ static XtActionsRec xfd_actions[] = {
   { "Next", do_next },
 };
 
-static char *button_list[] = { "quit", "prev", "next", NULL };
+Widget quitButton, prevButton, nextButton;
 
 
 #define DEF_SELECT_FORMAT "character 0x%02x%02x (%d,%d)"
@@ -138,10 +138,13 @@ main (argc, argv)
 
     /* button box */
     box = XtCreateManagedWidget ("box", boxWidgetClass, pane, NULL, ZERO);
-    for (cpp = button_list; *cpp; cpp++) {
-        (void) XtCreateManagedWidget (*cpp, commandWidgetClass, box,
-                                      NULL, ZERO);
-    }
+    quitButton = XtCreateManagedWidget ("quit", commandWidgetClass, box,
+					NULL, ZERO);
+    prevButton = XtCreateManagedWidget ("prev", commandWidgetClass, box,
+					NULL, ZERO);
+    nextButton = XtCreateManagedWidget ("next", commandWidgetClass, box,
+					NULL, ZERO);
+
 
     /* and labels in which to put information */
     selectLabel = XtCreateManagedWidget ("select", labelWidgetClass,
@@ -282,6 +285,24 @@ static void change_page (page)
 	sprintf (buf, xfd_resources.start_format, newstart, row, col);
 	XtSetValues (startLabel, &arg, ONE);
     }
+
+    set_button_state ();
+
+    return;
+}
+
+
+static void set_button_state ()
+{
+    Bool prevvalid, nextvalid;
+    Arg arg;
+
+    GetPrevNextStates (fontGrid, &prevvalid, &nextvalid);
+    arg.name = XtNsensitive;
+    arg.value = (XtArgVal) (prevvalid ? TRUE : FALSE);
+    XtSetValues (prevButton, &arg, ONE);
+    arg.value = (XtArgVal) (nextvalid ? TRUE : FALSE);
+    XtSetValues (nextButton, &arg, ONE);
 }
 
 
