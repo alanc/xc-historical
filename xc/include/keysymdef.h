@@ -1,4 +1,4 @@
-/* $XConsortium: keysymdef.h,v 1.19 94/04/16 16:10:55 rws Exp $ */
+/* $XConsortium: keysymdef.h,v 1.20 94/04/17 18:57:37 rws Exp rws $ */
 
 /***********************************************************
 Copyright (c) 1987, 1994  X Consortium
@@ -358,6 +358,44 @@ SOFTWARE.
 #define	XK_Pointer_Accelerate				0xFEFA
 #define	XK_Pointer_DfltBtnNext				0xFEFB
 #define	XK_Pointer_DfltBtnPrev				0xFEFC
+#endif
+
+/*
+ * 3270 Terminal Keys
+ * Byte 3 = 0xFD
+ */
+
+#ifdef XK_3270
+#define XK_3270_Duplicate      0xFD01
+#define XK_3270_FieldMark      0xFD02
+#define XK_3270_Right2         0xFD03
+#define XK_3270_Left2          0xFD04
+#define XK_3270_BackTab        0xFD05
+#define XK_3270_EraseEOF       0xFD06
+#define XK_3270_EraseInput     0xFD07
+#define XK_3270_Reset          0xFD08
+#define XK_3270_Quit           0xFD09
+#define XK_3270_PA1            0xFD0A
+#define XK_3270_PA2            0xFD0B
+#define XK_3270_PA3            0xFD0C
+#define XK_3270_Test           0xFD0D
+#define XK_3270_Attn           0xFD0E
+#define XK_3270_CursorBlink    0xFD0F
+#define XK_3270_AltCursor      0xFD10
+#define XK_3270_KeyClick       0xFD11
+#define XK_3270_Jump           0xFD12
+#define XK_3270_Ident          0xFD13
+#define XK_3270_Rule           0xFD14
+#define XK_3270_Copy           0xFD15
+#define XK_3270_Play           0xFD16
+#define XK_3270_Setup          0xFD17
+#define XK_3270_Record         0xFD18
+#define XK_3270_ChangeScreen   0xFD19
+#define XK_3270_DeleteWord     0xFD1A
+#define XK_3270_ExSelect       0xFD1B
+#define XK_3270_CursorSelect   0xFD1C
+#define XK_3270_PrintScreen    0xFD1D
+#define XK_3270_Enter          0xFD1E
 #endif
 
 /*
