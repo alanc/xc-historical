@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.59 89/01/18 17:04:01 swick Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.60 89/03/15 14:04:19 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif lint
 
@@ -194,7 +194,7 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 			    char Errno[10];
 			    String param = Errno;
 			    Cardinal param_count = 1;
-			    sprintf( Errno, "%d", errno);
+			    sprintf( Errno, "%.8d", errno);
 			    XtAppErrorMsg(app, "communicationError","select",
 			       "XtToolkitError","Select failed; error code %s",
 			       &param, &param_count);
