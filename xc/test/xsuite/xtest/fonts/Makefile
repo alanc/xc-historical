@@ -12,7 +12,7 @@
 #  make no representations about the suitability of this software for any
 #  purpose.  It is provided "as is" without express or implied warranty.
 # 
-# $XConsortium: Makefile,v 1.5 92/06/12 10:46:15 rws Exp $
+# $XConsortium: Makefile,v 1.6 92/06/30 21:06:29 rws Exp $
 #
 
 ##########################################################################
@@ -99,7 +99,7 @@ install_pcf:
 	do \
 		(set -x; cp $$f.pcf $(XTESTFONTDIR)); \
 	done
-	cp fonts.alias fonts.dir $(XTESTFONTDIR)
+	cp fonts.dir $(XTESTFONTDIR)
 
 install_snf:
 	@ echo "These commands are system dependent - See User Guide"
@@ -109,4 +109,4 @@ install_snf:
 	do \
 		(set -x; cp $$f.snf $(XTESTFONTDIR)); \
 	done
-	cp fonts.alias fonts.dir $(XTESTFONTDIR)
+	cp fonts.dir $(XTESTFONTDIR)
