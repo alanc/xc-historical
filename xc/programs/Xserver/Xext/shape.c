@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.12 90/06/07 10:05:06 rws Exp $ */
+/* $XConsortium: shape.c,v 5.13 90/06/07 13:21:40 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -322,9 +322,12 @@ ProcShapeMask (client)
         pPixmap = (PixmapPtr) LookupIDByType(stuff->src, RT_PIXMAP);
         if (!pPixmap)
 	    return BadPixmap;
-	if (pPixmap->drawable.pScreen != pScreen)
+	if (pPixmap->drawable.pScreen != pScreen ||
+	    pPixmap->drawable.depth != 1)
 	    return BadMatch;
 	srcRgn = (*pScreen->BitmapToRegion)(pPixmap);
+	if (!srcRgn)
+	    return BadAlloc;
     }
 
     if (!pWin->optional)
