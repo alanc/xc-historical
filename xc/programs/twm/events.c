@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.65 89/06/09 13:36:41 jim Exp $
+ * $XConsortium: events.c,v 1.66 89/06/12 10:47:30 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.65 89/06/09 13:36:41 jim Exp $";
+"$XConsortium: events.c,v 1.66 89/06/12 10:47:30 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -796,6 +796,12 @@ HandleDestroyNotify()
     fprintf(stderr, "DestroyNotify\n");
 #endif
     
+    /*
+     * Warning, this is also called by HandleUnmapNotify; if it ever needs to
+     * look at the event, HandleUnmapNotify will have to mash the UnmapNotify
+     * into a DestroyNotify.
+     */
+
     if (Tmp_win == NULL)
 	return;
 
@@ -987,7 +993,6 @@ HandleUnmapNotify()
     int dstx, dsty, dumint;
     unsigned int dumuint, bw;
     Window dumwin;
-    XDestroyWindowEvent dev;
     int gravx, gravy;
 
 #ifdef DEBUG_EVENTS
@@ -1022,24 +1027,17 @@ HandleUnmapNotify()
      * that we've received a DestroyNotify).
      */
 
-    SetMapStateProp(Tmp_win, WithdrawnState);
-    if (!XTranslateCoordinates (dpy, Event.xunmap.window, 
-				Tmp_win->attr.root, 0, 0,
-				&dstx, &dsty, &dumwin)) {
-	dstx = dsty = 0;
+    if (XTranslateCoordinates (dpy, Event.xunmap.window, Tmp_win->attr.root,
+			       0, 0, &dstx, &dsty, &dumwin)) {
+	SetMapStateProp(Tmp_win, WithdrawnState);
+	XUnmapWindow (dpy, Event.xunmap.window);
+	XReparentWindow (dpy, Event.xunmap.window, Tmp_win->attr.root,
+			 dstx, dsty);
+	RestoreWithdrawnLocation (Tmp_win);
+	XRemoveFromSaveSet (dpy, Event.xunmap.window);
+	/* do not need to mash the event */
+	HandleDestroyNotify();
     }
-    XUnmapWindow (dpy, Event.xunmap.window);
-    XReparentWindow (dpy, Event.xunmap.window, Tmp_win->attr.root, dstx, dsty);
-    RestoreWithdrawnLocation (Tmp_win);
-    XRemoveFromSaveSet (dpy, Event.xunmap.window);
-    dev.type = DestroyNotify;
-    dev.serial = Event.xunmap.serial;
-    dev.send_event = False;
-    dev.display = dpy;
-    dev.event = Event.xunmap.event;
-    dev.window = Event.xunmap.window;
-    Event.xdestroywindow = dev;
-    HandleDestroyNotify();
 }
 
 /***********************************************************************
