@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.129 87/12/29 19:18:02 rws Locked $ */
+/* $Header: events.c,v 1.130 87/12/30 19:56:17 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -141,6 +141,7 @@ extern int DeliverDeviceEvents();
 extern void DoFocusEvents();
 extern Mask EventMaskForClient();
 extern WindowPtr CheckMotion();
+extern void WriteEventsToClient();
 
 extern GrabPtr CreateGrab();		/* Defined in grabs.c */
 extern void  DeleteGrab();
@@ -163,7 +164,7 @@ static CARD16 maxKeysPerModifier;
  */
 static KeyCode *modifierKeyMap;
 
-static int lastEventMask;
+static Mask lastEventMask;
 
 #define CantBeFiltered NoEventMask
 static Mask filters[128] =
@@ -2993,7 +2994,7 @@ int
 ProcChangeKeyboardControl (client)
     ClientPtr client;
 {
-#define DO_ALL    0xffffffff
+#define DO_ALL    (-1)
     KeybdCtrl ctrl;
     DeviceIntPtr keybd = inputInfo.keyboard;
     long *vlist;
@@ -3065,14 +3066,14 @@ ProcChangeKeyboardControl (client)
 	    if (led == DO_ALL)
 		ctrl.leds = 0x0;
 	    else
-		ctrl.leds &= ~(1 << (led - 1)); /* assumes 32-bit longs XXX */
+		ctrl.leds &= ~(((Leds)(1)) << (led - 1));
 	}
 	else if (t == LedModeOn)
 	{
 	    if (led == DO_ALL)
-		ctrl.leds = DO_ALL;
+		ctrl.leds = ~0L;
 	    else
-		ctrl.leds |= (1 << (led - 1));
+		ctrl.leds |= (((Leds)(1)) << (led - 1));
 	}
 	else
 	    return BadValue;
@@ -3255,7 +3256,8 @@ ProcGetMotionEvents(client)
     WindowPtr pWin;
     xTimecoord * coords;
     xGetMotionEventsReply rep;
-    int     i, count, nEvents, xmin, xmax, ymin, ymax;
+    int     i, count, xmin, xmax, ymin, ymax;
+    unsigned long nEvents;
     DeviceIntPtr mouse = inputInfo.pointer;
     TimeStamp start, stop;
     REQUEST(xGetMotionEventsReq);
