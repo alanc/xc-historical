@@ -667,7 +667,7 @@ main(argc, argv)
 {
 				/* SUPPRESS 594 */
   toplevel = XtAppInitialize(&app, "Xmag", optionDesc, XtNumber(optionDesc),
-			     (Cardinal *)argc, argv, NULL,
+			     (Cardinal *)&argc, argv, NULL,
 			      NULL, 0);
 
   dpy = XtDisplay(toplevel);
