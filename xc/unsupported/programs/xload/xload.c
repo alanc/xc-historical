@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xload_c = "$Header: xload.c,v 1.30 87/07/14 17:22:13 jg Exp $";
+static char *rcsid_xload_c = "$Header: xload.c,v 1.3 87/08/31 03:02:36 newman Exp $";
 #endif  lint
 
 #include <stdio.h> 
@@ -49,19 +49,18 @@ void main(argc, argv)
     Arg arg;
     
     (void) gethostname(host,255);
-    dpy = XtInitialize(options, XtNumber(options), argv, &argc, NULL, "XLoad", &toplevel);
+    dpy = XtInitialize(options, XtNumber(options), &argc, argv, NULL, "XLoad", &toplevel);
       
     if (argc != 1) usage();
     
     arg.name = XtNiconPixmap;
     arg.value = (XtArgVal) XCreateBitmapFromData (dpy, XtScreen(toplevel)->root, 
         xload_bits, xload_width, xload_height);
-    XtWidgetSetValues (toplevel, &arg, 1);
+    XtSetValues (toplevel, &arg, 1);
 
     arg.name = XtNlabel;
     arg.value = host;
     w = XtCreateWidget (argv[0], loadWidgetClass, toplevel, &arg, 1);
-    XtCompositeAddChild(w);  /****** shouldn't have to do this! ******/
     XtRealizeWidget (toplevel, 0, NULL);
     XtMainLoop();
 }
