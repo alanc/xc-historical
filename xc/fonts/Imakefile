@@ -45,8 +45,11 @@ snf/Makefile: bdf Makefile
 	(cd bdf;$(LS) *.bdf) \
 	| sed -e 's/\(.*\).bdf$$/\1.snf$$(ZSUFFIX) \\/' -e '$$s/..$$//' >> $@; \
 	echo >> $@; \
-	(cd bdf; $(LS) *.bdf) \
-	| awk -F. '{printf "%s.snf$$(ZSUFFIX): ../bdf/%s.bdf $$(FC)\n\t$$(FC) ../bdf/%s.bdf $$(COMPRESS) >$$@\n", $$1, $$1, $$1}' >> $@
+	(cd bdf; for i in *.bdf; do \
+	    f=`basename $$i .bdf`; \
+	    echo $$f.snf'$$(ZSUFFIX)': ../bdf/$$f.bdf '$$(FC)' >> ../$@; \
+	    echo '	$$(FC)' ../bdf/$$f.bdf '$$(COMPRESS) > $$@' >> ../$@; \
+	done)
 
 snf:
 	-mkdir snf
