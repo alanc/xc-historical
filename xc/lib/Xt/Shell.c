@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.44 88/09/22 20:22:32 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.45 88/10/19 09:21:48 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif lint
 
@@ -1265,7 +1265,7 @@ static _wait_for_response(w, values, event)
 		}
 		return TRUE;
 	    } else {
-		if (_XtwaitForSomething(TRUE, TRUE, TRUE, &timeout,
+		if (_XtwaitForSomething(TRUE, TRUE, FALSE, TRUE, &timeout,
 			app) != -1) continue;
 		if (timeout == 0)
 		  return FALSE;
