@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.150 91/01/29 13:39:06 rws Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.151 91/02/03 13:46:28 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,45 +31,14 @@ SOFTWARE.
 #include	<X11/Xutil.h>
 #include	<X11/Xresource.h>
 #include	<X11/Xos.h>
+#include	<X11/Xfuncproto.h>
 
 #define XtSpecificationRelease 4
-
-#ifndef NeedFunctionPrototypes
-#if defined(FUNCPROTO) || __STDC__ || defined(__cplusplus) || defined(c_plusplus)
-#define NeedFunctionPrototypes 1
-#else
-#define NeedFunctionPrototypes 0
-#endif /* __STDC__ */
-#endif /* NeedFunctionPrototypes */
-
-#ifndef NeedVarargsPrototypes
-#if __STDC__ || defined(__cplusplus) || defined(c_plusplus)
-#define NeedVarargsPrototypes 1
-#else
-#define NeedVarargsPrototypes 0
-#endif /* __STDC__ */
-#endif /* NeedVarargsPrototypes */
 
 typedef char *String;
 
 #if NeedFunctionPrototypes
 #define String char*
-#endif
-
-#if defined(NeedFunctionPrototypes) && !defined(_Xconst)
-#if __STDC__ || defined(__cplusplus) || defined(c_plusplus)
-#define _Xconst const
-#else
-#define _Xconst
-#endif
-#endif /* NeedFunctionPrototypes */
-
-#ifndef NeedWidePrototypes
-#if defined(NARROWPROTO)
-#define NeedWidePrototypes 0
-#else
-#define NeedWidePrototypes 1		/* default to make interropt. easier */
-#endif
 #endif
 
 /* _Xt names are private to Xt implementation, do not use in client code */
@@ -550,9 +519,7 @@ typedef void (*XtCancelConvertSelectionProc)(
  *
  ****************************************************************/
 
-#ifdef __cplusplus			/* do not leave open across includes */
-extern "C" {				/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 extern Boolean XtConvertAndStore(
 #if NeedFunctionPrototypes
@@ -2548,9 +2515,7 @@ extern void XtGetApplicationNameAndClass(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #if NeedFunctionPrototypes
 #undef String

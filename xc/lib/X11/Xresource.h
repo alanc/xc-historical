@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.30 90/12/11 11:02:52 rws Exp $ */
+/* $XConsortium: Xresource.h,v 1.31 90/12/11 22:39:42 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -24,8 +24,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifndef _Xresource_h
-#define _Xresource_h
+#ifndef _XRESOURCE_H_
+#define _XRESOURCE_H_
 
 /****************************************************************
  ****************************************************************
@@ -54,32 +54,9 @@ SOFTWARE.
 #include <sys/types.h>
 #endif /* USG */
 
-#ifdef __cplusplus			/* do not leave open across includes */
-extern "C" {					/* for C++ V2.0 */
-#endif
+#include <X11/Xfuncproto.h>
 
-#ifndef NeedFunctionPrototypes
-#if defined(FUNCPROTO) || __STDC__ || defined(__cplusplus) || defined(c_plusplus)
-#define NeedFunctionPrototypes 1
-#else
-#define NeedFunctionPrototypes 0
-#endif /* __STDC__ */
-#endif /* NeedFunctionPrototypes */
-
-#if defined(NeedFunctionPrototypes) && !defined(_Xconst)
-#if __STDC__ || defined(__cplusplus) || defined(c_plusplus)
-#define _Xconst const
-#ifndef NeedNestedPrototypes
-#define NeedNestedPrototypes 1
-#endif
-#else
-#define _Xconst
-#endif
-#endif /* NeedFunctionPrototypes */
-
-#ifndef NULL
-#define NULL 0
-#endif
+_XFUNCPROTOBEGIN
 
 /****************************************************************
  *
@@ -416,9 +393,7 @@ extern void XrmParseCommand(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
-#endif /* _Xresource_h */
+#endif /* _XRESOURCE_H_ */
 /* DON'T ADD STUFF AFTER THIS #endif */
