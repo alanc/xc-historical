@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.71 88/06/06 11:33:10 rws Exp $ */
+/* $Header: colormap.c,v 1.72 88/07/06 10:54:08 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1502,7 +1502,7 @@ AllocCP (pmap, pentFirst, count, Free, planes, contig, pixels, pMask)
 	    {
 		GetNextBitsOrBreak(maxp, mask, base);
 	    }
-	    if (maxp <= mask)
+	    if ((maxp < mask) || (ent[pixel + mask].refcnt != 0))
 		continue;
 	    /* this one works */
 	    *ppix++ = pixel;
