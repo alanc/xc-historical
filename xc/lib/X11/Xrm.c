@@ -1,11 +1,11 @@
-
 /*
- * $XConsortium: Xrm.c,v 1.42 90/08/29 12:56:19 rws Exp $
+ * $XConsortium: Xrm.c,v 1.43 90/10/20 15:08:43 rws Exp $
  */
 
 /***********************************************************
-Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
-and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
+Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,
+Massachusetts, and the Massachusetts Institute of Technology, Cambridge,
+Massachusetts.
 
                         All Rights Reserved
 
@@ -50,10 +50,7 @@ search for each resource starting at the beginning of the list.
 
 (2) Many database levels don't contain any leaf resource nodes.  There is no
 point in looking for resources on a level that doesn't contain any.  This
-information is kept on a per-level basis...if even just a single hash bucket
-contains a value, that level is searched.  I considered having 4 arrays coming
-off each database level, split by tight/loose and intermediate/leaf, but this
-looked like it would burn a lot of memory for negligible performance gains.
+information is kept on a per-level basis.
 
 (3) Sometimes the widget instance tree is structured such that you get the same
 class name repeated on the fully qualified widget name.  This can result in the
@@ -66,6 +63,30 @@ Joel McCormack
 
 */
 
+/*
+
+The Xrm representation has been completely redesigned to substantially reduce
+memory and hopefully improve performance.
+
+The database is structured into two kinds of tables: LTables that contain
+only values, and NTables that contain only other tables.
+
+Some invariants:
+
+The next pointer of the top-level node table points to the top-level leaf
+table, if any.
+
+Within an LTable, for a given name, the tight value always precedes the
+loose value, and if both are present the loose value is always right after
+the tight value.
+
+Within an NTable, all of the entries for a given name are contiguous,
+in the order tight NTable, loose NTable, tight LTable, loose LTable.
+
+Bob Scheifler
+
+*/
+
 typedef unsigned long Signature;
 
 extern void bzero();
@@ -74,43 +95,114 @@ XrmQuark    XrmQString;
 
 typedef	Bool (*DBEnumProc)();
 
-#define HASHSIZE	64
-#define HASHMASK	63
-#define HashIndex(quark)	(quark & HASHMASK)
+typedef struct _VEntry {
+    struct _VEntry	*next;		/* next in chain */
+    XrmQuark		name;		/* name of this entry */
+    unsigned int	tight:1;	/* 1 if it is a tight binding */
+    unsigned int	string:1;	/* 1 if type is String */
+    unsigned int	size:30;	/* size of value */
+} VEntryRec, *VEntry;
 
-/*
-typedef struct _XrmHashBucketRec	*XrmHashBucket;
-*/
+
+typedef struct _DEntry {
+    VEntryRec		entry;		/* entry */
+    XrmRepresentation	type;		/* representation type */
+} DEntryRec, *DEntry;
+
+/* the value is right after the structure */
+#define StringValue(ve) (caddr_t)((ve) + 1)
+#define RepType(ve) ((DEntry)(ve))->type
+/* the value is right after the structure */
+#define DataValue(ve) (caddr_t)(((DEntry)(ve)) + 1)
+#define RawValue(ve) (char *)((ve)->string ? StringValue(ve) : DataValue(ve))
+
+typedef struct _NTable {
+    struct _NTable	*next;		/* next in chain */
+    XrmQuark		name;		/* name of this entry */
+    unsigned int	tight:1;	/* 1 if it is a tight binding */
+    unsigned int	leaf:1;		/* 1 if children are values */
+    unsigned int	hasloose:1;	/* 1 if has loose children */
+    unsigned int	pad:5;		/* unused */
+    unsigned int	mask:8;		/* hash size - 1 */
+    unsigned int	entries:16;	/* number of children */
+} NTableRec, *NTable;
+
+/* the buckets are right after the structure */
+#define NodeBuckets(ne) ((NTable *)((ne) + 1))
+#define NodeHash(ne,q) NodeBuckets(ne)[(q) & (ne)->mask]
+
+/* leaf tables have an extra level of indirection for the buckets,
+ * so that resizing can be done without invalidating a search list.
+ * This is completely ugly, and wastes some memory, but the Xlib
+ * spec doesn't really specify whether invalidation is OK, and the
+ * old implementation did not invalidate.
+ */
+typedef struct _LTable {
+    NTableRec		table;
+    VEntry		*buckets;
+} LTableRec, *LTable;
+
+#define LeafHash(le,q) (le)->buckets[(q) & (le)->table.mask]
+
+/* An XrmDatabase just holds a pointer to the first top-level table.
+ * The type name is no longer descriptive, but better to not change
+ * the Xresource.h header file.  This type also gets used in Xlib.h
+ * for XrmSearchList, which is a complete crock, but we'll just leave
+ * it and caste types as required.
+ */
 typedef struct _XrmHashBucketRec {
-    XrmHashBucket	next;       /* Next entry in this hash chain	    */
-    XrmQuark		quark;      /* Quark for string			    */
-    XrmRepresentation   type;       /* Representation of value (if any)     */
-    XrmValue		value;      /* Value of this node (if any)	    */
-    XrmHashTable	tables[2];  /* Hash table pointers for tight, loose */
-    char		hasValues[2]; /* Do any buckets in table have value */
+    NTable table;
 } XrmHashBucketRec;
 
-/*
-typedef XrmHashBucket	*XrmHashTable;
-*/
+/* closure used in get/put resource */
+typedef struct _VClosure {
+    XrmRepresentation	*type;		/* type of value */
+    XrmValuePtr		value;		/* value itself */
+} VClosureRec, *VClosure;
 
-/*
-typedef XrmHashTable XrmSearchList[];
-*/
+/* closure used in get search list */
+typedef struct _SClosure {
+    LTable		*list;		/* search list */
+    int			idx;		/* index of last filled element */
+    int			limit;		/* maximum index */
+} SClosureRec, *SClosure;
 
-/*
-   resourceQuarks keeps track of what quarks are associated with actual
-   resources in the database.  If a quark isn't used as a resource name,
-   we don't need to bother looking for it.
-*/
+/* placed in XrmSearchList to indicate next table is loose only */
+#define LOOSESEARCH ((LTable)1)
 
-static char    *resourceQuarks = NULL;
-static int     maxResourceQuark = -1;
+/* closure used in enumerate database */
+typedef struct _EClosure {
+    XrmDatabase db;			/* the database */
+    DBEnumProc proc;			/* the user proc */
+    caddr_t closure;			/* the user closure */
+    XrmBindingList bindings;		/* binding list */
+    XrmQuarkList quarks;		/* quark list */
+} EClosureRec, *EClosure;
 
-#define IsResourceQuark(q)  ((q) <= maxResourceQuark && resourceQuarks[q])
+/* predicate to determine when to resize a hash table */
+#define GrowthPred(n,m) ((n) > (((m) + 1) << 2))
 
-#define NUM_CHARS 256
-static unsigned short Const _xrmtypes[NUM_CHARS] = {
+#define GROW(prev) \
+    if (GrowthPred((*prev)->entries, (*prev)->mask)) \
+	GrowTable(prev)
+
+/* pick a reasonable value for maximum depth of resource database */
+#define MAXDBDEPTH 100
+
+/* resourceQuarks keeps track of what quarks have been associated with values
+ * in all LTables.  If a quark has never been used in an LTable, we don't need
+ * to bother looking for it.
+ */
+
+static unsigned char *resourceQuarks = (unsigned char *)NULL;
+static XrmQuark maxResourceQuark = -1;
+
+/* determines if a quark has been used for a value in any database */
+#define IsResourceQuark(q)  ((q) > 0 && (q) <= maxResourceQuark && \
+			     resourceQuarks[(q) >> 3] & (1 << ((q) & 7)))
+
+/* parsing types */
+static unsigned short Const _xrmtypes[256] = {
     _EOF,0,0,0,0,0,0,0,0,SPACE,					/*   0. */
     EOL,0,0,0,0,0,0,0,0,0,					/*  10. */
     0,0,0,0,0,0,0,0,0,0,					/*  20. */
@@ -123,39 +215,14 @@ static unsigned short Const _xrmtypes[NUM_CHARS] = {
     0,0,0,0,0,0,0,0,0,0,					/*  80. */
     0,0,BSLASH,0,0,0,0,0,0,0,				        /*  90. */
     0,0,0,0,0,0,0,0,0,0,					/*  100. */
-    N,0,0,0,0,0,0,0,0,0,					/*  110. */
+    N,0,0,0,0,0,0,0,0,0						/*  110. */
     /* The rest will be automatically initialized to zero. */
 };
 
-#define CHUNK_SIZE 5100
-
-#ifdef TESTLOCALMALLOC
-static char * global_ptr;
-static unsigned int space_left = 0;
-
-static char *
-LocalMalloc(size)
-unsigned int size;
+void XrmInitialize()
 {
-    register char * ptr;
-
-    if (size > space_left) {
-	if ((ptr = Xmalloc(CHUNK_SIZE)) == NULL) 
-	    return(NULL);
-
-	space_left = CHUNK_SIZE;
-    }
-    else
-	ptr = global_ptr;	
-
-    space_left -= size;
-    global_ptr = ptr + size;
-
-    return(ptr);
+    XrmQString = XrmPermStringToQuark("String");
 }
-#else
-#  define LocalMalloc Xmalloc
-#endif
 
 #if NeedFunctionPrototypes
 void XrmStringToQuarkList(
@@ -172,10 +239,10 @@ void XrmStringToQuarkList(name, quarks)
     register char       	ch, *tname;
     register int 		i = 0;
 
-    if ((tname = (char *)name) != NULL) {
+    if ((tname = (char *)name)) {
 	while (!xrm_is_EOF(bits = get_next_char(ch, tname))) {
 	    if (xrm_is_tight_or_loose (bits)) {
-		if (i != 0) {
+		if (i) {
 		    /* Found a complete name */
 		    *quarks++ = _XrmInternalStringToQuark(name,tname -name -1,
 							  sig, False);
@@ -213,11 +280,11 @@ void XrmStringToBindingQuarkList(name, bindings, quarks)
     register XrmBinding 	binding;
     register int 		i = 0;
 
-    if ((tname = (char *)name) != NULL) {
+    if ((tname = (char *)name)) {
 	binding = XrmBindTightly;
 	while (!xrm_is_EOF(bits = get_next_char(ch, tname))) {
 	    if (xrm_is_tight_or_loose (bits)) {
-		if (i != 0) {
+		if (i) {
 		    /* Found a complete name */
 		    *bindings++ = binding;
 		    *quarks++ = _XrmInternalStringToQuark(name, tname -name -1,
@@ -242,418 +309,7 @@ void XrmStringToBindingQuarkList(name, bindings, quarks)
 					      False);
     }
     *quarks = NULLQUARK;
-} /* XrmStringToBindingQuarkList */
-
-
-static void PutEntry(bucket, bindings, quarks, type, value)
-    register XrmHashBucket	bucket;
-	     XrmBindingList	bindings;
-    register XrmQuarkList	quarks;
-	     XrmRepresentation  type;
-    	     XrmValuePtr	value;
-{
-    register XrmHashBucket	*pBucket;
-    register int		binding;
-    register int		quark;
-    register XrmHashTable       table;
-	     XrmHashBucket      parent;
-
-    parent = NULL;
-    for (; (quark = *quarks) != NULLQUARK; quarks++, bindings++) {
-	binding = (int) *bindings;
-
-	/* Remember parent for marking later */
-	parent = bucket;
-
-	/* Allocate new hash table if needed */
-	table = bucket->tables[binding];
-	if (table == NULL) {
-	    if ((table = bucket->tables[binding] =
-		 (XrmHashTable) LocalMalloc(sizeof(XrmHashBucket) * HASHSIZE))
-		 == NULL)
-		return;
-	    bzero((char *) table, sizeof(XrmHashBucket) * HASHSIZE);
-	}
-
-	/* Find bucket containing quark if possible */
-	pBucket = &(table[HashIndex(quark)]);
-	bucket = *pBucket;
-	while ((bucket != NULL) && (bucket->quark != quark)) {
-	    bucket = bucket->next;
-	}
-
-	/* Create new bucket if needed */
-	if (bucket == NULL) {
-	    if ((bucket = (XrmHashBucket)LocalMalloc(sizeof(XrmHashBucketRec)))
-		 == NULL)
-		return;
-	    bzero((char *) bucket, sizeof(XrmHashBucketRec));
-	    bucket->next = *pBucket;
-	    *pBucket = bucket;
-	    bucket->quark = quark;
-	}
-    } /* for */
-
-    /* Mark parent database as having a child with a value, and 
-       update resourceQuarks */
-    if (parent != NULL) {
-	parent->hasValues[(int) binding] = True;
-	quark = quarks[-1];
-	if (quark > maxResourceQuark) {
-	    if (resourceQuarks) 
-		resourceQuarks = Xrealloc(resourceQuarks, quark+1);
-	    else resourceQuarks = Xmalloc(quark+1);
-	    if (!resourceQuarks)
-		return;
-	    if (quark-maxResourceQuark-1)
-		bzero(&resourceQuarks[maxResourceQuark+1],
-		      quark-maxResourceQuark-1);
-	    maxResourceQuark = quark;
-	}
-	resourceQuarks[quark] = True;
-    }
-    /* Set value passed in */
-    if (bucket->value.addr != NULL) {
-	Xfree((char *) bucket->value.addr);
-    }
-    bucket->type = type;
-    bucket->value.size = value->size;
-    if ((bucket->value.addr = (caddr_t) LocalMalloc(value->size)) == NULL)
-	return;
-    bcopy((char *) value->addr, (char *) bucket->value.addr, (int) value->size);
-} /* PutEntry */
-
-
-static Bool GetEntry(tight, loose, names, classes, type, value)
-	     XrmHashTable	tight;
-    register XrmHashTable	loose;
-    register XrmNameList	names;
-    register XrmClassList	classes;
-    	     XrmRepresentation  *type;  /* RETURN */
-    	     XrmValuePtr	value;  /* RETURN */
-{
-    register XrmHashBucket	bucket;
-    register XrmName		name;
-    register XrmClass		class;
-	     XrmHashTable       nTight, nLoose;
-
-    /* (tight != NULL || loose != NULL) && names[0] != NULLQUARK */
-
-#define GetEntryLookup(table, q) 					    \
-{									    \
-    bucket = table[HashIndex(q)];					    \
-    while (bucket != NULL) {						    \
-	if (bucket->quark == q) {					    \
-	    if (names[1] == NULLQUARK) {				    \
-		/* Must be leaf node with data, else doesn't match */       \
-		if (bucket->value.addr == NULL) {			    \
-		    return False;					    \
-		} else {						    \
-		    *type = bucket->type;				    \
-		    *value = bucket->value;				    \
-		    return True;					    \
-		}							    \
-	    } else {							    \
-		nTight = bucket->tables[(int) XrmBindTightly];		    \
-		nLoose = bucket->tables[(int) XrmBindLoosely];		    \
-		if ((nTight != NULL || nLoose != NULL)			    \
-		    && GetEntry(nTight, nLoose, names+1, classes+1,	    \
-			type, value)) {					    \
-		return True;						    \
-		}							    \
-	    break;							    \
-	    }								    \
-	}								    \
-	bucket = bucket->next;						    \
-    }									    \
-} /* GetEntryLookup */
-
-    /* Check very first name & class in both tight and loose tables */
-    name = *names;
-    if (tight != NULL) GetEntryLookup(tight, name);
-    if (loose != NULL) GetEntryLookup(loose, name);
-    class = *classes;
-    if (tight != NULL) GetEntryLookup(tight, class);
-    if (loose != NULL) GetEntryLookup(loose, class);
-
-    /* Now check any remaining names and class, but just in loose table */
-    if (loose != NULL) {
-	names++;
-	classes++;
-	for (;(name = *names) != NULLQUARK; names++, classes++) {
-	    GetEntryLookup(loose, name);
-	    class = *classes;
-	    GetEntryLookup(loose, class);
-	}
-    }
-
-    /* Didn't find any of the names or classes in either hash table */
-    return False;
-} /* GetEntry */
-
-static int numTables;
-static int lenTables;
-
-static void GetTables(tight, loose, names, classes, tables)
-             XrmHashTable   tight;
-    register XrmHashTable   loose;
-    register XrmNameList    names;
-    register XrmClassList   classes;
-	     XrmSearchList  tables;     /* RETURN */
-{
-    register XrmName	    name;
-    register XrmClass       class;
-    register XrmHashBucket  bucket;
-             XrmHashTable   nTight, nLoose;
-	
-#define GetTablesLookup(table, q)					    \
-{									    \
-    bucket = table[HashIndex(q)];					    \
-    while (bucket != NULL) {						    \
-	if (bucket->quark == q) {					    \
-	    nTight = bucket->tables[(int) XrmBindTightly];		    \
-	    nLoose = bucket->tables[(int) XrmBindLoosely];		    \
-	    if (nTight != NULL || nLoose != NULL) {			    \
-		if (names[1] != NULLQUARK) {				    \
-		    GetTables(nTight, nLoose, names+1, classes+1, tables);  \
-		} else if (nTight != NULL				    \
-			&& bucket->hasValues[(int) XrmBindTightly]	    \
-			/* Quicky test for recurring names/classes */       \
-			&& (numTables == 0 || tables[numTables-1] != nTight)) {\
-		    if (numTables == lenTables) return;			    \
-		    tables[numTables++] = nTight;			    \
-		}							    \
-		if (nLoose != NULL					    \
-			&& bucket->hasValues[(int) XrmBindLoosely]	    \
-			/* Quicky test for recurring names/classes */	    \
-			&& (numTables == 0 || tables[numTables-1] != nLoose)) {\
-		    if (numTables == lenTables) return;			    \
-		    tables[numTables++] = nLoose;			    \
-		}							    \
-	    }								    \
-	    break;							    \
-	}								    \
-	bucket = bucket->next;						    \
-    }									    \
-} /* GetTablesLookup */
-
-    /* Check first name and class in both tight and loose tables */
-    name = *names;
-    if (tight != NULL) GetTablesLookup(tight, name);
-    if (loose != NULL) GetTablesLookup(loose, name);
-    class = *classes;
-    if (tight != NULL) GetTablesLookup(tight, class);
-    if (loose != NULL) GetTablesLookup(loose, class);
-
-    /* Now check any remaining names and class, but just in loose table */
-    if (loose != NULL) {
-	names++;
-	classes++;
-	for (; (name = *names) != NULLQUARK; names++, classes++) {
-	    GetTablesLookup(loose, name);
-	    class = *classes;
-	    GetTablesLookup(loose, class);
-	}
-    }
-} /* GetTables */
-
-static XrmDatabase NewDatabase()
-{
-    register XrmHashBucket   bucket;
-
-    if ((bucket = (XrmHashBucket) Xmalloc(sizeof(XrmHashBucketRec))) == NULL)
-	return NULL;
-    bucket->next = NULL;
-    bucket->quark = NULLQUARK;
-    bucket->type = NULLQUARK;
-    bucket->value.addr = NULL;
-    bucket->value.size = 0;
-    bucket->tables[(int) XrmBindTightly] = NULL;
-    bucket->tables[(int) XrmBindLoosely] = NULL;
-    bucket->hasValues[(int) XrmBindTightly] = False;
-    bucket->hasValues[(int) XrmBindLoosely] = False;
-    return(bucket);
-} /* NewDatabase */
-
-static Bool Enum(db, bindings, quarks, count, proc, closure)
-    XrmHashBucket   db;
-    XrmBindingList  bindings;
-    XrmQuarkList    quarks;
-    unsigned	    count;
-    DBEnumProc      proc;
-    caddr_t	    closure;
-{
-    register int	    i;
-    register XrmHashBucket  bucket;
-    register XrmHashTable   table;
-
-#define EnumTable(binding)						    \
-{									    \
-    table = db->tables[(int) binding];					    \
-    if (table != NULL) {						    \
-	bindings[count] = binding;					    \
-	quarks[count+1] = NULLQUARK;					    \
-	for (i=0; i < HASHSIZE; i++) {					    \
-	    bucket = table[i];						    \
-	    while (bucket != NULL) {					    \
-		quarks[count] = bucket->quark;				    \
-		if (Enum(bucket, bindings, quarks, count+1, proc, closure)) \
-		   return True;						    \
-		bucket = bucket->next;					    \
-	    }								    \
-	}								    \
-    }									    \
-} /* EnumTable */
-
-    if (db == NULL) return False;
-    EnumTable(XrmBindTightly);
-    EnumTable(XrmBindLoosely);
-
-    quarks[count] = NULLQUARK;
-    if (db->value.addr != NULL) {
-	if ((*proc)(bindings, quarks, db->type, &(db->value), closure))
-	    return True;
-    }
-    return False;
 }
-
-static Bool EnumerateDatabase(db, proc, closure)
-    XrmHashBucket   db;
-    caddr_t     closure;
-    DBEnumProc      proc;
-{
-    XrmBinding  bindings[100];
-    XrmQuark	quarks[100];
-   
-    return Enum(db, bindings, quarks, (unsigned)0, proc, closure);
-}
-
-static void PrintBindingQuarkList(bindings, quarks, stream)
-    XrmBindingList      bindings;
-    XrmQuarkList	quarks;
-    FILE		*stream;
-{
-    Bool	firstNameSeen;
-
-    for (firstNameSeen = False; (*quarks) != NULLQUARK; bindings++, quarks++) {
-	if (*bindings == XrmBindLoosely) {
-	    (void) fprintf(stream, "*");
-	} else if (firstNameSeen) {
-	    (void) fprintf(stream, ".");
-	}
-	firstNameSeen = True;
-	(void) fputs(XrmQuarkToString(*quarks), stream);
-    }
-}
-
-static Bool DumpEntry(bindings, quarks, type, value, stream)
-    XrmBindingList      bindings;
-    XrmQuarkList	quarks;
-    XrmRepresentation   type;
-    XrmValuePtr		value;
-    FILE		*stream;
-{
-
-    register unsigned int	i;
-    register char		*s;
-    register char		c;
-
-    if (type != XrmQString)
-	(void) putc('!', stream);
-    PrintBindingQuarkList(bindings, quarks, stream);
-    s = value->addr;
-    i = value->size;
-    if (type == XrmQString) {
-	(void) fputs(":\t", stream);
-	if (i)
-	    i--;
-    }
-    else
-	fprintf(stream, "=%s:\t", XrmRepresentationToString(type));
-    while (i--) {
-	c = *s++;
-	if (c == '\n') {
-	    if (i)
-		(void) fputs("\\n\\\n", stream);
-	    else
-		(void) fputs("\\n", stream);
-	} else if (c == '\\')
-	    (void) fputs("\\\\", stream);
-	else if ((c < ' ' && c != '\t') ||
-		 ((unsigned char)c >= 0x7f && (unsigned char)c < 0xa0))
-	    (void) fprintf(stream, "\\%03o", (unsigned char)c);
-	else
-	    (void) putc(c, stream);
-    }
-    (void) putc('\n', stream);
-    return False;
-}
-
-static void Merge(new, old)
-    XrmHashBucket   new, old;
-{
-    register XrmHashTable   newTable, oldTable;
-    XrmHashBucket	    oldBucket;
-    register XrmHashBucket  newBucket, nextNewBucket, oldSearchBucket;
-    int			    binding;
-    register int	    i;
-
-    /* Merge data in new into old, and destroy new in the process */
-    /* new # NULL && old # NULL */
-    
-    /* Merge new value into old value */
-    if (new->value.addr != NULL) {
-	if (old->value.addr != NULL) {
-	    Xfree(old->value.addr);
-	}
-	old->type = new->type;
-	old->value = new->value;
-    } 
-
-    /* Merge new hash tables into old hash tables */
-    for (binding = (int) XrmBindTightly;
-         binding <= (int) XrmBindLoosely;
-	 binding++) {
-
-	/* Merge hasValues information */
-	if (new->hasValues[binding]) {
-	    old->hasValues[binding] = True;
-	}
-
-	oldTable = old->tables[binding];
-	newTable = new->tables[binding];
-	if (oldTable == NULL) {
-	    old->tables[(int) binding] = newTable;
-	} else if (newTable != NULL) {
-	    /* Copy each bucket over individually */
-	    for (i = 0; i < HASHSIZE; i++) {
-		oldBucket = oldTable[i];
-		newBucket = newTable[i];
-		/* Find each item in newBucket list in the oldBucket list */
-		while (newBucket != NULL) {
-		    nextNewBucket = newBucket->next;
-		    oldSearchBucket = oldBucket;
-		    while (   oldSearchBucket != NULL
-			   && oldSearchBucket->quark != newBucket->quark) {
-			oldSearchBucket = oldSearchBucket->next;
-		    }
-		    if (oldSearchBucket == NULL) {
-			/* Just stick newBucket at head of old bucket list */
-			newBucket->next = oldTable[i];
-			oldTable[i] = newBucket;
-		    } else {
-			/* Merge the two */
-			Merge(newBucket, oldSearchBucket);
-		    }
-		    newBucket = nextNewBucket;
-		} /* while newBucket != NULL */
-	    } /* for i */
-	    Xfree(newTable);
-	} /* if */
-    } /* for binding */
-    Xfree(new);
-} /* Merge */
-
 
 #ifdef DEBUG
 
@@ -663,7 +319,7 @@ static void PrintQuarkList(quarks, stream)
 {
     Bool	    firstNameSeen;
 
-    for (firstNameSeen = False; (*quarks) != NULLQUARK; quarks++) {
+    for (firstNameSeen = False; *quarks; quarks++) {
 	if (firstNameSeen) {
 	    (void) fprintf(stream, ".");
 	}
@@ -672,153 +328,483 @@ static void PrintQuarkList(quarks, stream)
     }
 } /* PrintQuarkList */
 
-
-static void DumpSearchList(names, classes, searchList)
-    XrmNameList	    names;
-    XrmClassList    classes;
-    XrmSearchList   searchList;
-{
-    register XrmHashTable table;
-    register int    i, j, k;
-    register XrmDatabase  bucket;
-	     char   *str;
-
-    fprintf(stdout,
-	"\n\n\n===============================\n Name list : ");
-    PrintQuarkList(names, stdout);
-    fprintf(stdout, "\n Class list: ");
-    PrintQuarkList(classes, stdout);
-    fprintf(stdout, "\n");
-
-    for (i=0 ; (table = searchList[i]) != NULL; i++) {
-	fprintf(stdout, "\n--------------%d---------------\n", i);
-	for (j=0; j < HASHSIZE; j++) {
-	    bucket = table[j];
-	    while (bucket != NULL) {
-		fprintf(stdout, "%s: ", XrmQuarkToString(bucket->quark));
-		if (bucket->value.addr == NULL) {
-		    fprintf(stdout, "<<<NOTHING>>>\n");
-		} else if (bucket->type == XrmQString) {
-		    str = bucket->value.addr;
-		    for (k = 0; str[k] != '\0' && str[k] != '\n'; k++) {};
-		    fprintf(stdout, "'");
-		    fwrite(str, 1, k, stdout);
-		    fprintf(stdout, "'");
-		    if (str[k] == '\n' && str[k] != '\0') {
-			fprintf(stdout, "...");
-		    }
-		    fprintf(stdout, "\n");
-		} else {
-		    fprintf(stdout, "<<<Binary data>>>\n");
-		}
-	    bucket = bucket->next;
-	    }
-	}
-    }
-} /* DumpSearchList */;
 #endif /* DEBUG */
 
-
-Bool XrmQGetSearchList(db, names, classes, searchList, listLength)
-    XrmHashBucket   db;
-    XrmNameList	    names;
-    XrmClassList    classes;
-    XrmSearchList   searchList;	/* RETURN */
-    int		    listLength;
+static XrmDatabase NewDatabase()
 {
-    XrmHashTable    nTight, nLoose;
+    register XrmDatabase db;
 
-    numTables = 0;
-    lenTables = listLength;
-    if (db != NULL) {
-	nTight = db->tables[(int) XrmBindTightly];
-	nLoose = db->tables[(int) XrmBindLoosely];
-	if (nTight != NULL || nLoose != NULL) {
-	    if (*names != NULLQUARK) {
-		GetTables(nTight, nLoose, names, classes, searchList);
-	    } else if (nTight != NULL && db->hasValues[(int) XrmBindTightly]) {
-		if (numTables == lenTables) return False;
-		searchList[numTables++] = nTight;
-	    }
-	    if (db->hasValues[(int) XrmBindLoosely]) {
-		if (numTables == lenTables) return False;
-		searchList[numTables++] = nLoose;
-	    }
+    db = (XrmDatabase) Xmalloc(sizeof(XrmHashBucketRec));
+    if (db)
+	db->table = (NTable)NULL;
+    return db;
+}
+
+/* move all values from ftable to ttable, and free ftable's buckets.
+ * ttable is quaranteed empty to start with.
+ */
+static void MoveValues(ftable, ttable)
+    LTable ftable;
+    register LTable ttable;
+{
+    register VEntry fentry, nfentry;
+    register VEntry *prev;
+    register VEntry *bucket;
+    register VEntry tentry;
+    register int i;
+
+    for (i = ftable->table.mask, bucket = ftable->buckets; i >= 0; i--) {
+	for (fentry = *bucket++; fentry; fentry = nfentry) {
+	    prev = &LeafHash(ttable, fentry->name);
+	    tentry = *prev;
+	    *prev = fentry;
+	    /* chain on all with same name, to preserve invariant order */
+	    while ((nfentry = fentry->next) && nfentry->name == fentry->name)
+		fentry = nfentry;
+	    fentry->next = tentry;
 	}
     }
-    if (numTables == lenTables) return False;
-    searchList[numTables] = NULL;
-    return True;
-/*    DumpSearchList(names, classes, searchList); */
-} /* XrmGetSearchList */
+    Xfree(ftable->buckets);
+}
 
-Bool XrmQGetSearchResource(searchList, name, class, pType, pVal)
-	     XrmSearchList	searchList;
-    register XrmName		name;
-    register XrmClass		class;
-    	     XrmRepresentation	*pType; /* RETURN */
-    	     XrmValue		*pVal;  /* RETURN */
+/* move all tables from ftable to ttable, and free ftable.
+ * ttable is quaranteed empty to start with.
+ */
+static void MoveTables(ftable, ttable)
+    NTable ftable;
+    register NTable ttable;
 {
-    register XrmHashBucket	bucket;
+    register NTable fentry, nfentry;
+    register NTable *prev;
+    register NTable *bucket;
+    register NTable tentry;
+    register int i;
 
-#define SearchTable(q, hash)						    \
-{									    \
-    bucket = (*searchList)[hash];					    \
-    while (bucket != NULL) {						    \
-	if (bucket->quark == q) {					    \
-	    if (bucket->value.addr != NULL) {				    \
-		/* Leaf node, it really matches */			    \
-		(*pType) = bucket->type;				    \
-		(*pVal) = bucket->value;				    \
-		return True;						    \
-	    }								    \
-	    break;							    \
-	}								    \
-	bucket = bucket->next;						    \
-    }									    \
-} /* SearchTable */
-
-    /* My numbers show an average of 0.3 searches per call.  Compare this to
-       the maximal bound of 2 searches per call.  Further, the searchList
-       tends to be short--often 1 or 2 tables, generally not more than 4.
-       So this routine optimizes for the common cases.  Code is minimized
-       if there is nothing to do, and only three registers are used to
-       avoid saving/restoring. */
-       
-    if (!IsResourceQuark(name) && !IsResourceQuark(class)) {
-	/* Most common case */
-	(*pType) = NULLQUARK;
-	(*pVal).addr = NULL;
-	(*pVal).size = 0;
-	return False;
-    } else if IsResourceQuark(name) {
-	int nameHash  = HashIndex(name);
-	if IsResourceQuark(class) {
-	    /* Must search for either one */
-	    int classHash = HashIndex(class);
-	    for (; (*searchList) != NULL; searchList++) {
-		SearchTable(name, nameHash);
-		SearchTable(class, classHash);
-	    }
-	} else {
-	    /* Just search for name */
-	    for (; (*searchList) != NULL; searchList++) {
-		SearchTable(name, nameHash);
-	    }
+    for (i = ftable->mask, bucket = NodeBuckets(ftable); i >= 0; i--) {
+	for (fentry = *bucket++; fentry; fentry = nfentry) {
+	    prev = &NodeHash(ttable, fentry->name);
+	    tentry = *prev;
+	    *prev = fentry;
+	    /* chain on all with same name, to preserve invariant order */
+	    while ((nfentry = fentry->next) && nfentry->name == fentry->name)
+		fentry = nfentry;
+	    fentry->next = tentry;
 	}
+    }
+    Xfree(ftable);
+}
+
+/* grow the table, based on current number of entries */
+static void GrowTable(prev)
+    NTable *prev;
+{
+    register NTable table;
+    register int i;
+
+    table = *prev;
+    i = table->mask;
+    if (i == 255) /* biggest it gets */
+	return;
+    while (i < 255 && GrowthPred(table->entries, i))
+	i = (i << 1) + 1;
+    i++; /* i is now the new size */
+    if (table->leaf) {
+	register LTable ltable;
+	LTableRec otable;
+
+	ltable = (LTable)table;
+	/* cons up a copy to make MoveValues look symmetric */
+	otable = *ltable;
+	ltable->buckets = (VEntry *)Xmalloc(i * sizeof(VEntry));
+	if (!ltable->buckets) {
+	    ltable->buckets = otable.buckets;
+	    return;
+	}
+	ltable->table.mask = i - 1;
+	bzero((char *)ltable->buckets, i * sizeof(VEntry));
+	MoveValues(&otable, ltable);
     } else {
-	/* Just search for class */
-	int classHash = HashIndex(class);
-	for (; (*searchList) != NULL; searchList++) {
-	    SearchTable(class, classHash);
+	register NTable ntable;
+
+	ntable = (NTable)Xmalloc(sizeof(NTableRec) + i * sizeof(NTable));
+	if (!ntable)
+	    return;
+	*ntable = *table;
+	ntable->mask = i - 1;
+	bzero((char *)NodeBuckets(ntable), i * sizeof(NTable));
+	*prev = ntable;
+	MoveTables(table, ntable);
+    }
+}
+
+/* merge values from ftable into *pprev, overriding any in *pprev.
+ * destroy ftable in the process
+ */
+static void MergeValues(ftable, pprev)
+    LTable ftable;
+    NTable *pprev;
+{
+    register VEntry fentry, tentry;
+    register VEntry *prev;
+    register LTable ttable;
+    VEntry *bucket;
+    int i;
+    register XrmQuark q;
+
+    ttable = (LTable)*pprev;
+    if (ftable->table.hasloose)
+	ttable->table.hasloose = 1;
+    for (i = ftable->table.mask, bucket = ftable->buckets;
+	 i >= 0;
+	 i--, bucket++) {
+	for (fentry = *bucket; fentry; ) {
+	    q = fentry->name;
+	    prev = &LeafHash(ttable, q);
+	    tentry = *prev;
+	    while (tentry && tentry->name != q)
+		tentry = *(prev = &tentry->next);
+	    /* note: test intentionally uses fentry->name instead of q */
+	    /* permits serendipitous inserts */
+	    while (tentry && tentry->name == fentry->name) {
+		/* if tentry is earlier, skip it */
+		if (!fentry->tight && tentry->tight) {
+		    tentry = *(prev = &tentry->next);
+		    continue;
+		}
+		/* do half of chaining fentry in */
+		*prev = fentry;
+		prev = &fentry->next;
+		if (fentry->tight != tentry->tight) {
+		    /* no match, get next fentry */
+		    fentry = *prev;
+		    /* chain old one rest of way in */
+		    *prev = tentry;
+		    ttable->table.entries++;
+		} else {
+		    /* get next fentry */
+		    fentry = *prev;
+		    /* chain old one rest of way in, splice out tentry */
+		    *prev = tentry->next;
+		    /* free the overridden entry */
+		    Xfree(tentry);
+		    /* get next tentry */
+		    tentry = *prev;
+		}
+		if (!fentry)
+		    break;
+	    }
+	    /* at this point, tentry cannot match any fentry named q */
+	    /* chain in all bindings together, preserve invariant order */
+	    while (fentry && fentry->name == q) {
+		*prev = fentry;
+		prev = &fentry->next;
+		fentry = *prev;
+		*prev = tentry;
+		ttable->table.entries++;
+	    }
 	}
     }
-    (*pType) = NULLQUARK;
-    (*pVal).addr = NULL;
-    (*pVal).size = 0;
-    return False;
-} /* XrmQGetSearchResource */
+    Xfree(ftable->buckets);
+    Xfree(ftable);
+    /* resize if necessary, now that we're all done */
+    GROW(pprev);
+}
 
+/* merge tables from ftable into *pprev, destroy ftable in the process */
+static void MergeTables(ftable, pprev)
+    NTable ftable;
+    NTable *pprev;
+{
+    register NTable fentry, tentry;
+    NTable nfentry;
+    register NTable *prev;
+    register NTable ttable;
+    NTable *bucket;
+    int i;
+    register XrmQuark q;
+
+    ttable = *pprev;
+    if (ftable->hasloose)
+	ttable->hasloose = 1;
+    for (i = ftable->mask, bucket = NodeBuckets(ftable);
+	 i >= 0;
+	 i--, bucket++) {
+	for (fentry = *bucket; fentry; ) {
+	    q = fentry->name;
+	    prev = &NodeHash(ttable, q);
+	    tentry = *prev;
+	    while (tentry && tentry->name != q)
+		tentry = *(prev = &tentry->next);
+	    /* note: test intentionally uses fentry->name instead of q */
+	    /* permits serendipitous inserts */
+	    while (tentry && tentry->name == fentry->name) {
+		/* if tentry is earlier, skip it */
+		if ((fentry->leaf && !tentry->leaf) ||
+		    (!fentry->tight && tentry->tight)) {
+		    tentry = *(prev = &tentry->next);
+		    continue;
+		}
+		nfentry = fentry->next;
+		if (fentry->leaf != tentry->leaf ||
+		    fentry->tight != tentry->tight) {
+		    /* no match, just chain in */
+		    *prev = fentry;
+		    *(prev = &fentry->next) = tentry;
+		    ttable->entries++;
+		} else {
+		    if (fentry->leaf)
+			MergeValues((LTable)fentry, prev);
+		    else
+			MergeTables(fentry, prev);
+		    /* bump to next tentry */
+		    tentry = *(prev = &(*prev)->next);
+		}
+		/* bump to next fentry */
+		fentry = nfentry;
+		if (!fentry)
+		    break;
+	    }
+	    /* at this point, tentry cannot match any fentry named q */
+	    /* chain in all bindings together, preserve invariant order */
+	    while (fentry && fentry->name == q) {
+		*prev = fentry;
+		prev = &fentry->next;
+		fentry = *prev;
+		*prev = tentry;
+		ttable->entries++;
+	    }
+	}
+    }
+    Xfree(ftable);
+    /* resize if necessary, now that we're all done */
+    GROW(pprev);
+}
+
+void XrmMergeDatabases(from, into)
+    XrmDatabase	from, *into;
+{
+    register NTable *prev;
+    register NTable ftable, ttable, nftable;
+
+    if (!*into) {
+	*into = from;
+    } else if (from) {
+	if (ftable = from->table) {
+	    prev = &(*into)->table;
+	    ttable = *prev;
+	    if (!ftable->leaf) {
+		nftable = ftable->next;
+		if (ttable && !ttable->leaf) {
+		    /* both have node tables, merge them */
+		    MergeTables(ftable, prev);
+		    /* bump to into's leaf table, if any */
+		    ttable = *(prev = &(*prev)->next);
+		} else {
+		    /* into has no node table, link from's in */
+		    *prev = ftable;
+		    *(prev = &ftable->next) = ttable;
+		}
+		/* bump to from's leaf table, if any */
+		ftable = nftable;
+	    } else {
+		/* bump to into's leaf table, if any */
+		if (ttable && !ttable->leaf)
+		    ttable = *(prev = &ttable->next);
+	    }
+	    if (ftable) {
+		/* if into has a leaf, merge, else insert */
+		if (ttable)
+		    MergeValues((LTable)ftable, prev);
+		else
+		    *prev = ftable;
+	    }
+	}
+	Xfree(from);
+    }
+}
+
+/* store a value in the database, overriding any existing entry */
+static void PutEntry(db, bindings, quarks, type, value)
+    XrmDatabase		db;
+    XrmBindingList	bindings;
+    XrmQuarkList	quarks;
+    XrmRepresentation	type;
+    XrmValuePtr		value;
+{
+    register NTable *pprev, *prev;
+    register NTable table;
+    register XrmQuark q;
+    register VEntry *vprev;
+    register VEntry entry;
+    NTable *nprev, *firstpprev;
+
+#define NEWTABLE(q) \
+    table = (NTable)Xmalloc(sizeof(LTableRec)); \
+    if (!table) \
+	return; \
+    table->name = q; \
+    table->hasloose = 0; \
+    table->mask = 0; \
+    table->entries = 0; \
+    if (quarks[1]) { \
+	table->leaf = 0; \
+	nprev = NodeBuckets(table); \
+    } else { \
+	table->leaf = 1; \
+	if (!(nprev = (NTable *)Xmalloc(sizeof(VEntry *)))) \
+	    return; \
+	((LTable)table)->buckets = (VEntry *)nprev; \
+    } \
+    *nprev = (NTable)NULL; \
+    table->next = *prev; \
+    *prev = table
+
+    if (!db || !*quarks)
+	return;
+    table = *(prev = &db->table);
+    /* if already at leaf, bump to the leaf table */
+    if (!quarks[1] && table && !table->leaf)
+	table = *(prev = &table->next);
+    pprev = prev;
+    if (!table || (quarks[1] && table->leaf)) {
+	/* no top-level node table, create one and chain it in */
+	NEWTABLE(NULLQUARK);
+	table->tight = 1; /* arbitrary */
+	prev = nprev;
+    } else {
+	/* search along until we need a value */
+	while (quarks[1]) {
+	    q = *quarks;
+	    table = *(prev = &NodeHash(table, q));
+	    while (table && table->name != q)
+		table = *(prev = &table->next);
+	    if (!table)
+		break; /* not found */
+	    if (quarks[2]) {
+		if (table->leaf)
+		    break; /* not found */
+	    } else {
+		if (!table->leaf) {
+		    /* bump to leaf table, if any */
+		    table = *(prev = &table->next);
+		    if (!table || table->name != q)
+			break; /* not found */
+		    if (!table->leaf) {
+			/* bump to leaf table, if any */
+			table = *(prev = &table->next);
+			if (!table || table->name != q)
+			    break; /* not found */
+		    }
+		}
+	    }
+	    if (*bindings == XrmBindTightly) {
+		if (!table->tight)
+		    break; /* not found */
+	    } else {
+		if (table->tight) {
+		    /* bump to loose table, if any */
+		    table = *(prev = &table->next);
+		    if (!table || table->name != q ||
+			!quarks[2] != table->leaf)
+			break; /* not found */
+		}
+	    }
+	    /* found that one, bump to next quark */
+	    pprev = prev;
+	    quarks++;
+	    bindings++;
+	}
+	if (!quarks[1]) {
+	    /* found all the way to a leaf */
+	    q = *quarks;
+	    entry = *(vprev = &LeafHash((LTable)table, q));
+	    while (entry && entry->name != q)
+		entry = *(vprev = &entry->next);
+	    /* if want loose and have tight, bump to next entry */
+	    if (entry && *bindings == XrmBindLoosely && entry->tight)
+		entry = *(vprev = &entry->next);
+	    if (entry && entry->name == q &&
+		(*bindings == XrmBindTightly) == entry->tight) {
+		/* match, need to override */
+		if ((type == XrmQString) == entry->string &&
+		    entry->size == value->size) {
+		    /* identical size and type, just overwrite */
+		    bcopy((char *)value->addr, RawValue(entry), value->size);
+		    return;
+		}
+		/* splice out and free old entry */
+		*vprev = entry->next;
+		Xfree(entry);
+		(*pprev)->entries--;
+	    }
+	    /* this is where to insert */
+	    prev = (NTable *)vprev;
+	}
+    }
+    /* keep the top table, because we may have to grow it */
+    firstpprev = pprev;
+    /* iterate until we get to the leaf */
+    while (quarks[1]) {
+	/* build a new table and chain it in */
+	NEWTABLE(*quarks++);
+	if (*bindings++ == XrmBindTightly) {
+	    table->tight = 1;
+	} else {
+	    table->tight = 0;
+	    (*pprev)->hasloose = 1;
+	}
+	(*pprev)->entries++;
+	pprev = prev;
+	prev = nprev;
+    }
+    /* now allocate the value entry */
+    entry = (VEntry)Xmalloc(((type == XrmQString) ?
+			     sizeof(VEntryRec) : sizeof(DEntryRec)) +
+			    value->size);
+    if (!entry)
+	return;
+    entry->name = q = *quarks;
+    if (*bindings == XrmBindTightly) {
+	entry->tight = 1;
+    } else {
+	entry->tight = 0;
+	(*pprev)->hasloose = 1;
+    }
+    /* chain it in, with a bit of type cast ugliness */
+    entry->next = *((VEntry *)prev);
+    *((VEntry *)prev) = entry;
+    entry->size = value->size;
+    if (type == XrmQString) {
+	entry->string = 1;
+    } else {
+	entry->string = 0;
+	RepType(entry) = type;
+    }
+    /* save a copy of the value */
+    bcopy((char *)value->addr, RawValue(entry), value->size);
+    (*pprev)->entries++;
+    /* this is a new leaf, need to remember it for search lists */
+    if (q > maxResourceQuark) {
+	unsigned oldsize = maxResourceQuark + 1;
+	unsigned size = (q | 0x7f) + 1; /* reallocate in reasonable chunks */
+	if (resourceQuarks) 
+	    resourceQuarks = (unsigned char *)Xrealloc((char *)resourceQuarks,
+						       size);
+	else
+	    resourceQuarks = (unsigned char *)Xmalloc(size);
+	if (resourceQuarks) {
+	    bzero((char *)&resourceQuarks[oldsize], size - oldsize);
+	    maxResourceQuark = size - 1;
+	} else {
+	    maxResourceQuark = -1;
+	}
+    }
+    if (q > 0 && resourceQuarks)
+	resourceQuarks[q >> 3] |= 1 << (q & 0x7);
+    GROW(firstpprev);
+
+#undef NEWTABLE
+}
 
 void XrmQPutResource(pdb, bindings, quarks, type, value)
     XrmDatabase		*pdb;
@@ -827,9 +813,9 @@ void XrmQPutResource(pdb, bindings, quarks, type, value)
     XrmRepresentation	type;
     XrmValuePtr		value;
 {
-    if (*pdb == NULL) *pdb = NewDatabase();
+    if (!*pdb) *pdb = NewDatabase();
     PutEntry(*pdb, bindings, quarks, type, value);
-} /* XrmQPutResource */
+}
 
 #if NeedFunctionPrototypes
 void XrmPutResource(
@@ -845,13 +831,13 @@ void XrmPutResource(pdb, specifier, type, value)
     XrmValuePtr	    value;
 #endif
 {
-    XrmBinding	    bindings[100];
-    XrmQuark	    quarks[100];
+    XrmBinding	    bindings[MAXDBDEPTH+1];
+    XrmQuark	    quarks[MAXDBDEPTH+1];
 
-    if (*pdb == NULL) *pdb = NewDatabase();
+    if (!*pdb) *pdb = NewDatabase();
     XrmStringToBindingQuarkList(specifier, bindings, quarks);
     PutEntry(*pdb, bindings, quarks, XrmStringToQuark(type), value);
-} /* XrmPutResource */
+}
 
 #if NeedFunctionPrototypes
 void XrmQPutStringResource(
@@ -869,11 +855,11 @@ void XrmQPutStringResource(pdb, bindings, quarks, str)
 {
     XrmValue	value;
 
-    if (*pdb == NULL) *pdb = NewDatabase();
+    if (!*pdb) *pdb = NewDatabase();
     value.addr = (caddr_t) str;
     value.size = strlen(str)+1;
     PutEntry(*pdb, bindings, quarks, XrmQString, &value);
-} /* XrmQPutStringResource */
+}
 
 /*	Function Name: GetDatabase
  *	Description: Parses a string and stores it as a database.
@@ -893,16 +879,15 @@ void XrmQPutStringResource(pdb, bindings, quarks, str)
 #define LIST_SIZE 101
 #define BUFFER_SIZE 100
 
-static int
-GetDatabase(db, str)
-XrmDatabase * db;
-register char * str;
+static int GetDatabase(db, str)
+    XrmDatabase db;
+    register char *str;
 {
-    register char * ptr;
+    register char *ptr;
     register unsigned short bits = 0;
     register char c;
     register Signature sig;
-    register char * ptr_max;
+    register char *ptr_max;
     register XrmQuarkList t_quarks;
     register XrmBindingList t_bindings;
 
@@ -912,8 +897,11 @@ register char * str;
     XrmBinding bindings[LIST_SIZE];
     XrmValue value;
 
-    if ((value_str = Xmalloc(sizeof(char) * alloc_chars)) == NULL)
-	return(0);
+    if (!db)
+	return 0;
+
+    if (!(value_str = Xmalloc(sizeof(char) * alloc_chars)))
+	return 0;
 
     while (!xrm_is_EOF(bits)) {
 
@@ -1184,7 +1172,7 @@ register char * str;
 		alloc_chars += BUFSIZ/10;		
 		temp_str = Xrealloc(value_str, sizeof(char) * alloc_chars);
 
-		if (value_str == NULL) {
+		if (!value_str) {
 		    return_value = 0;
 		    goto done;
 		}
@@ -1206,13 +1194,66 @@ register char * str;
 	value.size = ptr - value_str;
 	value.addr = (caddr_t) value_str;
 	
-	XrmQPutResource(db, bindings, quarks, XrmQString, &value);
+	PutEntry(db, bindings, quarks, XrmQString, &value);
     }
 
  done:
 
     Xfree(value_str);
-    return(return_value);
+    return return_value;
+}
+
+#if NeedFunctionPrototypes
+void XrmPutStringResource(
+    XrmDatabase *pdb,
+    const char	*specifier,
+    const char	*str)
+#else
+void XrmPutStringResource(pdb, specifier, str)
+    XrmDatabase *pdb;
+    char	*specifier;
+    char	*str;
+#endif
+{
+    XrmValue	value;
+    XrmBinding	bindings[MAXDBDEPTH+1];
+    XrmQuark	quarks[MAXDBDEPTH+1];
+
+    if (!*pdb) *pdb = NewDatabase();
+    XrmStringToBindingQuarkList(specifier, bindings, quarks);
+    value.addr = (caddr_t) str;
+    value.size = strlen(str)+1;
+    PutEntry(*pdb, bindings, quarks, XrmQString, &value);
+}
+
+
+#if NeedFunctionPrototypes
+void XrmPutLineResource(
+    XrmDatabase *pdb,
+    const char	*line)
+#else
+void XrmPutLineResource(pdb, line)
+    XrmDatabase *pdb;
+    char	*line;
+#endif
+{
+    if (!*pdb) *pdb = NewDatabase();
+    (void) GetDatabase(*pdb, line);
+} 
+
+#if NeedFunctionPrototypes
+XrmDatabase XrmGetStringDatabase(
+    const char	    *data)
+#else
+XrmDatabase XrmGetStringDatabase(data)
+    char	    *data;
+#endif
+{
+    XrmDatabase     db;
+
+    db = NewDatabase();
+    (void) GetDatabase(db, data);
+    return db;
 }
 
 /*	Function Name: ReadInFile
@@ -1229,77 +1270,25 @@ char * filename;
     char * filebuf;
 
     if ( (fd = OpenFile(filename)) == -1 ) 
-	return(NULL);
+	return (char *)NULL;
 
     GetSizeOfFile(filename, size);
 	
-    if ((filebuf = Xmalloc(size + 1)) == NULL) { /* leave room for '\0' */
+    if (!(filebuf = Xmalloc(size + 1))) { /* leave room for '\0' */
 	close(fd);
-	return(NULL);
+	return (char *)NULL;
     }
 
     if (ReadFile(fd, filebuf, size) != size) { /* If we didn't read the
 						  correct number of bytes. */
 	CloseFile(fd);
 	Xfree(filebuf);
-	return(NULL);
+	return (char *)NULL;
     }
     CloseFile(fd);
 
     filebuf[size] = '\0';	/* NULL terminate it. */
-    return(filebuf);
-}
-
-#if NeedFunctionPrototypes
-void XrmPutStringResource(
-    XrmDatabase *pdb,
-    const char	*specifier,
-    const char	*str)
-#else
-void XrmPutStringResource(pdb, specifier, str)
-    XrmDatabase *pdb;
-    char	*specifier;
-    char	*str;
-#endif
-{
-    XrmValue	value;
-    XrmBinding	bindings[100];
-    XrmQuark	quarks[100];
-
-    if (*pdb == NULL) *pdb = NewDatabase();
-    XrmStringToBindingQuarkList(specifier, bindings, quarks);
-    value.addr = (caddr_t) str;
-    value.size = strlen(str)+1;
-    PutEntry(*pdb, bindings, quarks, XrmQString, &value);
-} /* XrmPutStringResource */
-
-
-#if NeedFunctionPrototypes
-void XrmPutLineResource(
-    XrmDatabase *pdb,
-    const char	*line)
-#else
-void XrmPutLineResource(pdb, line)
-    XrmDatabase *pdb;
-    char	*line;
-#endif
-{
-   (void) GetDatabase(pdb, line);
-} 
-
-#if NeedFunctionPrototypes
-XrmDatabase XrmGetStringDatabase(
-    const char	    *data)
-#else
-XrmDatabase XrmGetStringDatabase(data)
-    char	    *data;
-#endif
-{
-    XrmDatabase     db;
-
-    db = NULL;
-    (void) GetDatabase(&db, data);
-    return db;
+    return filebuf;
 }
 
 #if NeedFunctionPrototypes
@@ -1310,16 +1299,207 @@ XrmDatabase XrmGetFileDatabase(fileName)
     char 	    *fileName;
 #endif
 {
-    XrmDatabase     db = NULL;
-    char * str, * ReadInFile();
+    XrmDatabase db;
+    char *str;
 
-    if ((str = ReadInFile(fileName)) == NULL)
-	return(NULL);
+    if (!(str = ReadInFile(fileName)))
+	return (XrmDatabase)NULL;
 
-    (void) GetDatabase(&db, str);
+    db = NewDatabase();
+    (void) GetDatabase(db, str);
     Xfree(str);
     return db;
 }
+
+/* call the user proc for every value in the table, arbitrary order.
+ * stop if user proc returns True.  level is current depth in database.
+ */
+static Bool EnumValues(table, level, closure)
+    LTable		table;
+    register int	level;
+    register EClosure	closure;
+{
+    register VEntry *bucket;
+    register int i;
+    register VEntry entry;
+    XrmValue value;
+    XrmRepresentation type;
+
+    if (level >= MAXDBDEPTH)
+	return False;
+    closure->quarks[level + 1] = NULLQUARK;
+    for (i = table->table.mask, bucket = table->buckets;
+	 i >= 0;
+	 i--, bucket++) {
+	for (entry = *bucket; entry; entry = entry->next) {
+	    closure->bindings[level] = (entry->tight ?
+					XrmBindTightly : XrmBindLoosely);
+	    closure->quarks[level] = entry->name;
+	    value.size = entry->size;
+	    if (entry->string) {
+		type = XrmQString;
+		value.addr = StringValue(entry);
+	    } else {
+		type = RepType(entry);
+		value.addr = DataValue(entry);
+	    }
+	    if ((*closure->proc)(&closure->db, closure->bindings,
+				 closure->quarks, &type, &value,
+				 closure->closure))
+		return True;
+	}
+    }
+    return False;
+}
+
+/* recurse on every table in the table, arbitrary order.
+ * stop if user proc returns True.  level is current depth in database.
+ */
+static Bool EnumTables(table, level, closure)
+    NTable		table;
+    register int	level;
+    register EClosure	closure;
+{
+    register NTable *bucket;
+    register int i;
+    register NTable entry;
+
+    if (level >= MAXDBDEPTH)
+	return False;
+    for (i = table->mask, bucket = NodeBuckets(table);
+	 i >= 0;
+	 i--, bucket++) {
+	for (entry = *bucket; entry; entry = entry->next) {
+	    closure->bindings[level] = (entry->tight ?
+					XrmBindTightly : XrmBindLoosely);
+	    closure->quarks[level] = entry->name;
+	    if (entry->leaf) {
+		if (EnumValues((LTable)entry, level + 1, closure))
+		    return True;
+	    } else {
+		if (EnumTables(entry, level + 1, closure))
+		    return True;
+	    }
+	}
+    }
+    return False;
+}
+
+/* call the proc for every value in the database, arbitrary order.
+ * stop if the proc returns True.
+ */
+static Bool EnumerateDatabase(db, proc, closure)
+    XrmDatabase db;
+    caddr_t     closure;
+    DBEnumProc	proc;
+{
+    XrmBinding  bindings[MAXDBDEPTH+1];
+    XrmQuark	quarks[MAXDBDEPTH+1];
+    register NTable table;
+    EClosureRec	eclosure;
+   
+    eclosure.db = db;
+    eclosure.proc = proc;
+    eclosure.closure = closure;
+    eclosure.bindings = bindings;
+    eclosure.quarks = quarks;
+    table = db->table;
+    if (table && !table->leaf) {
+	if (EnumTables(table, 0, &eclosure))
+	    return True;
+	table = table->next;
+    }
+    if (table)
+	return EnumValues((LTable)table, 0, &eclosure);
+    return False;
+}
+
+static void PrintBindingQuarkList(bindings, quarks, stream)
+    XrmBindingList      bindings;
+    XrmQuarkList	quarks;
+    FILE		*stream;
+{
+    Bool	firstNameSeen;
+
+    for (firstNameSeen = False; *quarks; bindings++, quarks++) {
+	if (*bindings == XrmBindLoosely) {
+	    (void) fprintf(stream, "*");
+	} else if (firstNameSeen) {
+	    (void) fprintf(stream, ".");
+	}
+	firstNameSeen = True;
+	(void) fputs(XrmQuarkToString(*quarks), stream);
+    }
+}
+
+/* output out the entry in correct file syntax */
+/*ARGSUSED*/
+static Bool DumpEntry(db, bindings, quarks, type, value, stream)
+    XrmDatabase		*db;
+    XrmBindingList      bindings;
+    XrmQuarkList	quarks;
+    XrmRepresentation   *type;
+    XrmValuePtr		value;
+    FILE		*stream;
+{
+
+    register unsigned int	i;
+    register char		*s;
+    register char		c;
+
+    if (*type != XrmQString)
+	(void) putc('!', stream);
+    PrintBindingQuarkList(bindings, quarks, stream);
+    s = value->addr;
+    i = value->size;
+    if (*type == XrmQString) {
+	(void) fputs(":\t", stream);
+	if (i)
+	    i--;
+    }
+    else
+	fprintf(stream, "=%s:\t", XrmRepresentationToString(*type));
+    while (i--) {
+	c = *s++;
+	if (c == '\n') {
+	    if (i)
+		(void) fputs("\\n\\\n", stream);
+	    else
+		(void) fputs("\\n", stream);
+	} else if (c == '\\')
+	    (void) fputs("\\\\", stream);
+	else if ((c < ' ' && c != '\t') ||
+		 ((unsigned char)c >= 0x7f && (unsigned char)c < 0xa0))
+	    (void) fprintf(stream, "\\%03o", (unsigned char)c);
+	else
+	    (void) putc(c, stream);
+    }
+    (void) putc('\n', stream);
+    return False;
+}
+
+#ifdef DEBUG
+
+void PrintTable(table, file)
+    NTable table;
+    FILE *file;
+{
+    XrmBinding  bindings[MAXDBDEPTH+1];
+    XrmQuark	quarks[MAXDBDEPTH+1];
+    EClosureRec closure;
+
+    closure.db = (XrmDatabase)NULL;
+    closure.proc = DumpEntry;
+    closure.closure = (caddr_t)file;
+    closure.bindings = bindings;
+    closure.quarks = quarks;
+    if (table->leaf)
+	EnumValues((LTable)table, 0, &closure);
+    else
+	EnumTables(table, 0, &closure);
+}
+
+#endif /* DEBUG */
 
 #if NeedFunctionPrototypes
 void XrmPutFileDatabase(
@@ -1333,64 +1513,450 @@ void XrmPutFileDatabase(db, fileName)
 {
     FILE	*file;
     
-    if ((file = fopen(fileName, "w")) == NULL) return;
+    if (!db) return;
+    if (!(file = fopen(fileName, "w"))) return;
     (void)EnumerateDatabase(db, DumpEntry, (caddr_t) file);
     fclose(file);
 }
 
+/* macros used in get/search functions */
 
-void XrmMergeDatabases(new, into)
-    XrmDatabase	new, *into;
-{
-    if (*into == NULL) {
-	*into = new;
-    } else if (new != NULL) {
-	Merge(new, *into);
+/* find an entry named *list, with leafness given by leaf */
+#define NFIND(list) \
+    q = *list; \
+    entry = NodeHash(table, q); \
+    while (entry && entry->name != q) \
+	entry = entry->next; \
+    if (leaf && entry && !entry->leaf) { \
+	entry = entry->next; \
+	if (entry && !entry->leaf) \
+	    entry = entry->next; \
+	if (entry && entry->name != q) \
+	    entry = (NTable)NULL; \
     }
+
+/* find entries named *list, leafness leaf, tight or loose, and call get */
+#define GTIGHTLOOSE(list,looseleaf) \
+    NFIND(list); \
+    if (entry) { \
+	if (leaf == entry->leaf) { \
+	    if ((*get)(entry, names+1, classes+1, closure)) \
+		return True; \
+	    if (entry->tight) { \
+		entry = entry->next; \
+		if (entry && entry->name == q && leaf == entry->leaf) { \
+		    if ((*get)(entry, names+1, classes+1, closure)) \
+			return True; \
+		} \
+	    } \
+	} else if (entry->leaf && entry->hasloose) { \
+	    if (looseleaf((LTable)entry, names+1, classes+1, closure)) \
+		return True; \
+	} \
+    }
+
+/* find entries named *list, leafness leaf, loose only, and call get */
+#define GLOOSE(list,looseleaf) \
+    NFIND(list); \
+    if (entry && entry->tight) { \
+	entry = entry->next; \
+	if (entry && entry->name != q) \
+	    entry = (NTable)NULL; \
+    } \
+    if (entry) { \
+	if (leaf == entry->leaf) { \
+	    if ((*get)(entry, names+1, classes+1, closure)) \
+		return True; \
+	} else if (entry->leaf && entry->hasloose) { \
+	    if (looseleaf((LTable)entry, names+1, classes+1, closure)) \
+		return True; \
+	} \
+    }
+
+/* add tight/loose entry to the search list, return True if list is full */
+/*ARGSUSED*/
+static Bool AppendLEntry(table, names, classes, closure)
+    LTable		table;
+    XrmNameList		names;
+    XrmClassList 	classes;
+    register SClosure	closure;
+{
+    /* check for duplicate */
+    if (closure->idx >= 0 && closure->list[closure->idx] == table)
+	return False;
+    if (closure->idx == closure->limit)
+	return True;
+    /* append it */
+    closure->idx++;
+    closure->list[closure->idx] = table;
+    return False;
+}
+
+/* add loose entry to the search list, return True if list is full */
+/*ARGSUSED*/
+static Bool AppendLooseLEntry(table, names, classes, closure)
+    LTable		table;
+    XrmNameList		names;
+    XrmClassList 	classes;
+    register SClosure	closure;
+{
+    /* check for duplicate */
+    if (closure->idx >= 0 && closure->list[closure->idx] == table)
+	return False;
+    if (closure->idx >= closure->limit - 1)
+	return True;
+    /* append it */
+    closure->idx++;
+    closure->list[closure->idx] = LOOSESEARCH;
+    closure->idx++;
+    closure->list[closure->idx] = table;
+    return False;
+}
+
+/* search for a leaf table */
+static Bool SearchNEntry(table, names, classes, closure)
+    NTable		table;
+    XrmNameList		names;
+    XrmClassList 	classes;
+    SClosure		closure;
+{
+    register NTable	entry;
+    register XrmQuark	q;
+    register unsigned int leaf;
+    Bool		(*get)();
+
+    if (names[1]) {
+	get = SearchNEntry; /* recurse */
+	leaf = 0;
+    } else {
+	get = AppendLEntry; /* bottom of recursion */
+	leaf = 1;
+    }
+    GTIGHTLOOSE(names, AppendLooseLEntry);   /* do name, tight and loose */
+    GTIGHTLOOSE(classes, AppendLooseLEntry); /* do class, tight and loose */
+    if (table->hasloose) {
+	while (1) {
+	    names++;
+	    classes++;
+	    if (!*names)
+		break;
+	    if (!names[1]) {
+		get = AppendLEntry; /* bottom of recursion */
+		leaf = 1;
+	    }
+	    GLOOSE(names, AppendLooseLEntry);   /* loose names */
+	    GLOOSE(classes, AppendLooseLEntry); /* loose classes */
+	}
+    }
+    /* now look for matching leaf node */
+    entry = table->next;
+    if (entry && !entry->leaf)
+	entry = entry->next;
+    if (entry && entry->tight != table->tight)
+	entry = entry->next;
+    if (!entry || entry->name != table->name || !entry->hasloose)
+	return False;
+    /* found it */
+    return AppendLooseLEntry((LTable)entry, names, classes, closure);
+}
+
+Bool XrmQGetSearchList(db, names, classes, searchList, listLength)
+    XrmDatabase     db;
+    XrmNameList	    names;
+    XrmClassList    classes;
+    XrmSearchList   searchList;	/* RETURN */
+    int		    listLength;
+{
+    register NTable	table;
+    SClosureRec		closure;
+
+    if (listLength <= 0)
+	return False;
+    closure.list = (LTable *)searchList;
+    closure.idx = -1;
+    closure.limit = listLength - 2;
+    if (db) {
+	table = db->table;
+	if (*names) {
+	    if (table && !table->leaf &&
+		SearchNEntry(table, names, classes, &closure))
+		return False;
+	} else {
+	    if (table && !table->leaf)
+		table = table->next;
+	    if (table && AppendLEntry((LTable)table, names, classes, &closure))
+		return False;
+	}
+    }
+    closure.list[closure.idx + 1] = (LTable)NULL;
+    return True;
+}
+
+Bool XrmQGetSearchResource(searchList, name, class, pType, pValue)
+    register XrmSearchList	searchList;
+    register XrmName		name;
+    register XrmClass		class;
+    	     XrmRepresentation	*pType;  /* RETURN */
+    	     XrmValue		*pValue; /* RETURN */
+{
+    register LTable table;
+    register VEntry entry;
+    int flags;
+
+/* find tight or loose entry */
+#define VTIGHTLOOSE(q) \
+    entry = LeafHash(table, q); \
+    while (entry && entry->name != q) \
+	entry = entry->next; \
+    if (entry) \
+	break
+
+/* find loose entry */
+#define VLOOSE(q) \
+    entry = LeafHash(table, q); \
+    while (entry && entry->name != q) \
+	entry = entry->next; \
+    if (entry) { \
+	if (!entry->tight) \
+	    break; \
+	entry = entry->next; \
+	if (entry && entry->name == q) \
+	    break; \
+    }
+
+    /* figure out which combination of name and class we need to search for */
+    flags = 0;
+    if (IsResourceQuark(name))
+	flags = 2;
+    if (IsResourceQuark(class))
+	flags |= 1;
+    if (!flags) {
+	/* neither name nor class has ever been used to name a resource */
+	table = (LTable)NULL;
+    } else if (flags == 3) {
+	/* both name and class */
+	while (table = *((LTable *)searchList)++) {
+	    if (table != LOOSESEARCH) {
+		VTIGHTLOOSE(name);  /* do name, tight and loose */
+		VTIGHTLOOSE(class); /* do class, tight and loose */
+	    } else {
+		table = *((LTable *)searchList)++;
+		VLOOSE(name);  /* do name, loose only */
+		VLOOSE(class); /* do class, loose only */
+	    }
+	}
+    } else {
+	/* just one of name or class */
+	if (flags == 1)
+	    name = class;
+	while (table = *((LTable *)searchList)++) {
+	    if (table != LOOSESEARCH) {
+		VTIGHTLOOSE(name); /* tight and loose */
+	    } else {
+		table = *((LTable *)searchList)++;
+		VLOOSE(name); /* loose only */
+	    }
+	}
+    }
+    if (table) {
+	/* found a match */
+	if (entry->string) {
+	    *pType = XrmQString;
+	    pValue->addr = StringValue(entry);
+	} else {
+	    *pType = RepType(entry);
+	    pValue->addr = DataValue(entry);
+	}
+	pValue->size = entry->size;
+	return True;
+    }
+    *pType = NULLQUARK;
+    pValue->addr = (caddr_t)NULL;
+    pValue->size = 0;
+    return False;
+
+#undef VTIGHTLOOSE
+#undef VLOOSE
+}
+
+/* look for a tight/loose value */
+static Bool GetVEntry(table, names, classes, closure)
+    LTable		table;
+    XrmNameList		names;
+    XrmClassList 	classes;
+    VClosure		closure;
+{
+    register VEntry entry;
+    register XrmQuark q;
+
+    /* try name first */
+    q = *names;
+    entry = LeafHash(table, q);
+    while (entry && entry->name != q)
+	entry = entry->next;
+    if (!entry) {
+	/* not found, try class */
+	q = *classes;
+	entry = LeafHash(table, q);
+	while (entry && entry->name != q)
+	    entry = entry->next;
+	if (!entry)
+	    return False;
+    }
+    if (entry->string) {
+	*closure->type = XrmQString;
+	closure->value->addr = StringValue(entry);
+    } else {
+	*closure->type = RepType(entry);
+	closure->value->addr = DataValue(entry);
+    }
+    closure->value->size = entry->size;
+    return True;
+}
+
+/* look for a loose value */
+static Bool GetLooseVEntry(table, names, classes, closure)
+    LTable		table;
+    XrmNameList		names;
+    XrmClassList 	classes;
+    VClosure		closure;
+{
+    register VEntry	entry;
+    register XrmQuark	q;
+
+#define VLOOSE(list) \
+    q = *list; \
+    entry = LeafHash(table, q); \
+    while (entry && entry->name != q) \
+	entry = entry->next; \
+    if (entry && entry->tight) { \
+	entry = entry->next; \
+	if (entry && entry->name != q) \
+	    entry = (VEntry)NULL; \
+    }
+
+    /* bump to last component */
+    while (names[1]) {
+	names++;
+	classes++;
+    }
+    VLOOSE(names);  /* do name, loose only */
+    if (!entry) {
+	VLOOSE(classes); /* do class, loose only */
+	if (!entry)
+	    return False;
+    }
+    if (entry->string) {
+	*closure->type = XrmQString;
+	closure->value->addr = StringValue(entry);
+    } else {
+	*closure->type = RepType(entry);
+	closure->value->addr = DataValue(entry);
+    }
+    closure->value->size = entry->size;
+    return True;
+
+#undef VLOOSE
+}
+
+/* recursive search for a value */
+static Bool GetNEntry(table, names, classes, closure)
+    NTable		table;
+    XrmNameList		names;
+    XrmClassList 	classes;
+    VClosure		closure;
+{
+    register NTable	entry;
+    register XrmQuark	q;
+    register unsigned int leaf;
+    Bool		(*get)();
+    NTable		otable;
+
+    if (names[2]) {
+	get = GetNEntry; /* recurse */
+	leaf = 0;
+    } else {
+	get = GetVEntry; /* bottom of recursion */
+	leaf = 1;
+    }
+    GTIGHTLOOSE(names, GetLooseVEntry);   /* do name, tight and loose */
+    GTIGHTLOOSE(classes, GetLooseVEntry); /* do class, tight and loose */
+    if (table->hasloose) {
+	while (1) {
+	    names++;
+	    classes++;
+	    if (!names[1])
+		break;
+	    if (!names[2]) {
+		get = GetVEntry; /* bottom of recursion */
+		leaf = 1;
+	    }
+	    GLOOSE(names, GetLooseVEntry);   /* do name, loose only */
+	    GLOOSE(classes, GetLooseVEntry); /* do class, loose only */
+	}
+    }
+    /* look for a matching leaf table */
+    otable = table;
+    table = table->next;
+    if (table && !table->leaf)
+	table = table->next;
+    if (table && table->tight != otable->tight)
+	table = table->next;
+    if (!table || table->name != otable->name || !table->hasloose)
+	return False;
+    /* found */
+    return GetLooseVEntry((LTable)table, names, classes, closure);
 }
 
 Bool XrmQGetResource(db, names, classes, pType, pValue)
-    XrmHashBucket       db;
+    XrmDatabase         db;
     XrmNameList		names;
     XrmClassList 	classes;
     XrmRepresentation	*pType;  /* RETURN */
     XrmValuePtr		pValue;  /* RETURN */
 {
-    XrmHashTable	tight, loose;
+    register NTable table;
+    VClosureRec closure;
 
-    if (db != NULL) {
-	tight = db->tables[(int) XrmBindTightly];
-	loose = db->tables[(int) XrmBindLoosely];
-	if ((tight != NULL || loose != NULL) && (*names != NULL)
-		&& GetEntry(tight, loose, names, classes, pType, pValue)) {
-	    /* Found it */
-	    return True;
+    if (db && *names) {
+	closure.type = pType;
+	closure.value = pValue;
+	table = db->table;
+	if (names[1]) {
+	    if (table && !table->leaf &&
+		GetNEntry(table, names, classes, &closure))
+		return True;
+	} else {
+	    if (table && !table->leaf)
+		table = table->next;
+	    if (table && GetVEntry((LTable)table, names, classes, &closure))
+		return True;
 	}
     }
-    (*pType) = NULLQUARK;
-    (*pValue).addr = NULL;
-    (*pValue).size = 0;
+    *pType = NULLQUARK;
+    pValue->addr = (caddr_t)NULL;
+    pValue->size = 0;
     return False;
 }
 
 #if NeedFunctionPrototypes
 Bool XrmGetResource(db, name_str, class_str, pType_str, pValue)
-    XrmHashBucket       db;
+    XrmDatabase         db;
     const char		*name_str;
     const char		*class_str;
     XrmString		*pType_str;  /* RETURN */
     XrmValuePtr		pValue;      /* RETURN */
 #else
 Bool XrmGetResource(db, name_str, class_str, pType_str, pValue)
-    XrmHashBucket       db;
+    XrmDatabase         db;
     XrmString		name_str;
     XrmString		class_str;
     XrmString		*pType_str;  /* RETURN */
     XrmValuePtr		pValue;      /* RETURN */
 #endif
 {
-    XrmName		names[100];
-    XrmClass		classes[100];
+    XrmName		names[MAXDBDEPTH+1];
+    XrmClass		classes[MAXDBDEPTH+1];
     XrmRepresentation   fromType;
     Bool		result;
 
@@ -1399,41 +1965,64 @@ Bool XrmGetResource(db, name_str, class_str, pType_str, pValue)
     result = XrmQGetResource(db, names, classes, &fromType, pValue);
     (*pType_str) = XrmQuarkToString(fromType);
     return result;
-} /* XrmGetResource */
-
-void XrmInitialize()
-{
-    XrmQString = XrmStringToQuark("String");
 }
 
-void XrmDestroyDatabase(rdb)
-    XrmDatabase   rdb;
+/* destroy all values, plus table itself */
+static void DestroyLTable(table)
+    LTable table;
 {
-    register XrmHashTable   table;
-    int			    binding;
-    register int	    i;
+    register int i;
+    register VEntry *buckets;
+    register VEntry entry, next;
 
-    if (rdb == NULL) return;
-  
-    if (rdb->value.addr != NULL) {
-	Xfree(rdb->value.addr);
-    }
-
-    XrmDestroyDatabase(rdb->next);
-    for (binding = (int) XrmBindTightly;
-         binding <= (int) XrmBindLoosely;
-	 binding++) {
-	table = rdb->tables[binding];
-	if (table != NULL) {
-	    /* Free each bucket */
-	    for (i = 0; i < HASHSIZE; i++) {
-		XrmDestroyDatabase( table[i] );
-	    }
-	    Xfree(table);
+    buckets = table->buckets;
+    for (i = table->table.mask; i >= 0; i--, buckets++) {
+	for (next = *buckets; entry = next; ) {
+	    next = entry->next;
+	    Xfree(entry);
 	}
     }
-    Xfree(rdb);
-} /* XrmDestroyDatabase */
+    Xfree(table->buckets);
+    Xfree(table);
+}
+
+/* destroy all contained tables, plus table itself */
+static void DestroyNTable(table)
+    NTable table;
+{
+    register int i;
+    register NTable *buckets;
+    register NTable entry, next;
+
+    buckets = NodeBuckets(table);
+    for (i = table->mask; i >= 0; i--, buckets++) {
+	for (next = *buckets; entry = next; ) {
+	    next = entry->next;
+	    if (entry->leaf)
+		DestroyLTable((LTable)entry);
+	    else
+		DestroyNTable(entry);
+	}
+    }
+    Xfree(table);
+}
+
+void XrmDestroyDatabase(db)
+    XrmDatabase   db;
+{
+    register NTable table, next;
+
+    if (db) {
+	for (next = db->table; table = next; ) {
+	    next = table->next;
+	    if (table->leaf)
+		DestroyLTable((LTable)table);
+	    else
+		DestroyNTable(table);
+	}
+	Xfree(db);
+    }
+}
 
 typedef struct _GRNData {
     char *name;
@@ -1442,21 +2031,22 @@ typedef struct _GRNData {
 } GRNData;
 
 /*ARGSUSED*/
-static Bool SameValue(bindings, quarks, type, value, data)
+static Bool SameValue(db, bindings, quarks, type, value, data)
+    XrmDatabase		*db;
     XrmBindingList      bindings;
     XrmQuarkList	quarks;
-    XrmRepresentation   type;
+    XrmRepresentation   *type;
     XrmValuePtr		value;
     GRNData		*data;
 {
-    if ((type == data->type) && (value->size == data->value->size) &&
+    if ((*type == data->type) && (value->size == data->value->size) &&
 	!strncmp((char *)value->addr, (char *)data->value->addr, value->size))
     {
 	data->name = XrmQuarkToString(*quarks); /* XXX */
 	return True;
     }
     return False;
-} /* SameValue */
+}
 
 /* Gross internal hack */
 char *_XrmGetResourceName(rdb, type_str, pValue)
@@ -1471,4 +2061,4 @@ char *_XrmGetResourceName(rdb, type_str, pValue)
 
     (void)EnumerateDatabase(rdb, SameValue, (caddr_t)&data);
     return data.name;
-} /* _XrmGetResourceName */
+}
