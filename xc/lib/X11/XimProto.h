@@ -1,4 +1,4 @@
-/* $XConsortium: XimProto.h,v 1.1 93/09/17 13:27:33 rws Exp $ */
+/* $XConsortium: XimProto.h,v 1.2 94/01/20 18:02:24 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993 by FUJITSU LIMITED
@@ -47,7 +47,7 @@ PERFORMANCE OF THIS SOFTWARE.
 /*
  * Xim implementation revision
  */
-#define PROTOCOLMAJORVERSION		0
+#define PROTOCOLMAJORVERSION		1
 #define PROTOCOLMINORVERSION		0
 
 /*
