@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.174 91/04/01 09:28:40 gildea Exp $ */
+/* $XConsortium: main.c,v 1.175 91/04/03 17:47:46 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -215,6 +215,10 @@ extern void exit();
 #ifdef X_NOT_POSIX
 extern char *ttyname();
 #endif
+#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
+char *malloc(), *realloc(), *calloc();
+char *ttyname(); /* and we don't get this from unistd.h */
+#endif /* macII */
 
 #ifdef SYSV
 extern char *ptsname();

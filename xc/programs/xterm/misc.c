@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.75 91/04/01 12:03:10 gildea Exp $
+ *	$XConsortium: misc.c,v 1.76 91/04/02 14:16:56 gildea Exp $
  */
 
 /*
@@ -55,6 +55,9 @@ extern jmp_buf VTend;
 extern char *malloc();
 extern char *getenv();
 #endif
+#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
+char *malloc();
+#endif /* macII */
 
 static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
