@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.h,v 1.4 89/12/16 03:34:00 converse Exp $
+ * $XConsortium: actions.h,v 1.5 90/01/22 17:36:35 swick Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -53,6 +53,7 @@ extern void	XmhCancelPick();
 	/* from popup.c */
 
 extern void	XmhPromptOkayAction();
+extern void	XmhWMDeletePopup();
 
 	/* from toc.c */
 
