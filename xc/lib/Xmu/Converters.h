@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Converters.h,v 1.5 90/03/28 17:10:25 swick Exp $
+ * $XConsortium: Converters.h,v 1.6 90/04/12 16:55:39 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -130,6 +130,9 @@ typedef enum {
 #define XtEleft "left"
 #define XtEcenter "center"
 #define XtEright "right"
+#define XtEtop "top"
+#define XtEbottom "bottom"
+
 extern void XmuCvtStringToJustify(
 #if NeedFunctionPrototypes
     XrmValue*		/* args */,
