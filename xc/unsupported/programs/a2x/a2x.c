@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.14 92/03/19 14:10:27 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.15 92/03/21 14:27:05 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -48,6 +48,7 @@ released automatically at next button or non-modifier key.
 #include <X11/extensions/XTest.h>
 #include <X11/Xos.h>
 #include <X11/keysym.h>
+#include <ctype.h>
 #include <termios.h>
 #define _POSIX_SOURCE
 #include <signal.h>
@@ -72,30 +73,41 @@ int moving_x = 0;
 int moving_y = 0;
 int (*olderror)();
 int (*oldioerror)();
+char history[4096];
+int history_end = 0;
+typedef struct {
+    int bscount;
+    char *seq;
+    int seq_len;
+    char *undo;
+    int undo_len;
+} undo;
+undo *undos = NULL;
+int curbscount = 0;
 
 void
-    usage()
+usage()
 {
     printf("a2x: [-d display] [-e] [-b]\n");
     exit(1);
 }
 
 void
-    reset()
+reset()
 {
     if (istty)
 	tcsetattr(0, TCSANOW, &oldterm);
 }
 
 void
-    quit(val)
+quit(val)
 {
     reset();
     exit(val);
 }
 
 void
-    catch(sig)
+catch(sig)
 int	sig;
 {
     fprintf(stderr, "a2x: interrupt received, exiting\n");
@@ -103,24 +115,24 @@ int	sig;
 }
 
 int
-    error(Dpy, err)
-Display *Dpy;
-XErrorEvent *err;
+error(Dpy, err)
+    Display *Dpy;
+    XErrorEvent *err;
 {
     reset();
     return (*olderror)(Dpy, err);
 }
 
 int
-    ioerror(Dpy)
-Display *Dpy;
+ioerror(Dpy)
+    Display *Dpy;
 {
     reset();
     return (*oldioerror)(Dpy);
 }
 
 void
-    reset_mapping()
+reset_mapping()
 {
     int minkey, maxkey;
     register int i, j;
@@ -314,7 +326,7 @@ do_key(key, mods)
 }
 
 void
-dochar(c)
+do_char(c)
     unsigned char c;
 {
     do_key(keycodes[c], modifiers[c]);
@@ -422,6 +434,82 @@ quiesce()
     curmods &= ~(ControlMask|ShiftMask);
 }
 
+void
+trim_history()
+{
+    if (history_end < (sizeof(history)/2))
+	history_end = 0;
+    else {
+	bcopy(history + (sizeof(history)/2), history, history_end);
+	history_end -= sizeof(history)/2;
+    }
+}
+
+void
+save_unit(buf, i, j)
+    char *buf;
+    int i, j;
+{
+    j = j - i + 1;
+    if (history_end + j > sizeof(history))
+	trim_history();
+    bcopy(buf + i, history + history_end, j);
+    history_end += j;
+}
+
+void
+undo_backspaces()
+{
+    char c;
+
+    for (; history_end; history_end--) {
+	c = history[history_end];
+	if (!iscntrl(c) || isspace(c)) {
+	    if (!curbscount)
+		return;
+	    curbscount--;
+	    do_char('\b');
+	}
+    }
+    for (; curbscount; curbscount--)
+	do_char('\b');
+}
+
+int
+do_backspace(c, up)
+    char c;
+    undo **up;
+{
+    undo *u;
+    int partial = 0;
+
+    if (c != '\b') {
+	undo_backspaces();
+	return 0;
+    }
+    curbscount++;
+    if (undos) {
+	for (u = undos; u->bscount; u++) {
+	    if (history_end >= u->seq_len &&
+		!bcmp(history+history_end-u->seq_len, u->seq, u->seq_len)) {
+		if (curbscount < u->bscount)
+		    partial = 1;
+		else {
+		    /* do it */
+		    history_end -= u->seq_len;
+		    curbscount -= u->bscount;
+		    *up = u;
+		    return 1;
+		}
+	    }
+	}
+    }
+    *up = NULL;
+    if (!partial)
+	undo_backspaces();
+    return 1;
+}
+
 main(argc, argv)
     int argc;
     char **argv;
@@ -437,6 +525,7 @@ main(argc, argv)
     char *endptr;
     int mask[10];
     struct timeval timeout;
+    undo *u;
 
     timeout.tv_sec = 0;
     timeout.tv_usec = 1000 * 100;
@@ -525,8 +614,22 @@ main(argc, argv)
 	if (n <= 0)
 	    quit(0);
 	for (i = 0; i < n; i++) {
+	    if (((buf[i] == '\b') || curbscount) &&
+		do_backspace(buf[i], &u)) {
+		if (!u)
+		    continue;
+		if (i < u->undo_len) {
+		    bcopy(buf+i, buf+u->undo_len, n - i);
+		    i = u->undo_len;
+		}
+		i -= u->undo_len;
+		bcopy(u->undo, buf+i, u->undo_len);
+	    }
 	    if (buf[i] != keysym_char) {
-		dochar(((unsigned char *)buf)[i]);
+		if (history_end == sizeof(history))
+		    trim_history();
+		history[history_end++] = buf[i];
+		do_char(((unsigned char *)buf)[i]);
 		continue;
 	    }
 	    i++;
@@ -564,11 +667,12 @@ main(argc, argv)
 		    default:
 			continue;
 		    }
+		    save_unit(buf, i - 1, j);
 		    break;
 		}
 		buf[j] = '\0';
 		if (j == i)
-		    dochar(keysym_char);
+		    do_char(keysym_char);
 		else if (buf[i] == '\002') /* control b */
 		    do_button(atoi(buf+i+1));
 		else if (buf[i] == '\027') { /* control w */
@@ -589,6 +693,8 @@ main(argc, argv)
 		    do_keysym(sym);
 		else if (sym = XStringToKeysym(buf+i))
 		    do_keysym(sym);
+		buf[j] = keysym_char;
+		save_unit(buf, i - 1, j);
 		i = j;
 		break;
 	    }
