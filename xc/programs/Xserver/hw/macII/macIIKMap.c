@@ -126,43 +126,43 @@ static KeySym macIIMap[] = {
 	NoSymbol,	NoSymbol,		/* 0x5d */
 	NoSymbol,	NoSymbol,		/* 0x5e */
 	NoSymbol,	NoSymbol,		/* 0x5f */
-	NoSymbol,	NoSymbol,		/* 0x60 */
-	NoSymbol,	NoSymbol,		/* 0x61 */
-	NoSymbol,	NoSymbol,		/* 0x62 */
-	NoSymbol,	NoSymbol,		/* 0x63 */
-	NoSymbol,	NoSymbol,		/* 0x64 */
-	NoSymbol,	NoSymbol,		/* 0x65 */
+	XK_F5,		NoSymbol,		/* 0x60 */
+	XK_F6,		NoSymbol,		/* 0x61 */
+	XK_F7,		NoSymbol,		/* 0x62 */
+	XK_F3,		NoSymbol,		/* 0x63 */
+	XK_F8,		NoSymbol,		/* 0x64 */
+	XK_F9,		NoSymbol,		/* 0x65 */
 	NoSymbol,	NoSymbol,		/* 0x66 */
-	NoSymbol,	NoSymbol,		/* 0x67 */
+	XK_F11,		NoSymbol,		/* 0x67 */
 	NoSymbol,	NoSymbol,		/* 0x68 */
-	NoSymbol,	NoSymbol,		/* 0x69 */
+	XK_F13,		XK_Print,		/* 0x69 */
 	NoSymbol,	NoSymbol,		/* 0x6a */
-	NoSymbol,	NoSymbol,		/* 0x6b */
+	XK_F14,		XK_Pause,		/* 0x6b */
 	NoSymbol,	NoSymbol,		/* 0x6c */
-	NoSymbol,	NoSymbol,		/* 0x6d */
+	XK_F10,		NoSymbol,		/* 0x6d */
 	NoSymbol,	NoSymbol,		/* 0x6e */
-	NoSymbol,	NoSymbol,		/* 0x6f */
+	XK_F12,		NoSymbol,		/* 0x6f */
 	NoSymbol,	NoSymbol,		/* 0x70 */
-	NoSymbol,	NoSymbol,		/* 0x71 */
-	NoSymbol,	NoSymbol,		/* 0x72 */
-	NoSymbol,	NoSymbol,		/* 0x73 */
-	NoSymbol,	NoSymbol,		/* 0x74 */
-	NoSymbol,	NoSymbol,		/* 0x75 */
-	NoSymbol,	NoSymbol,		/* 0x76 */
-	NoSymbol,	NoSymbol,		/* 0x77 */
+	XK_F15,		XK_Pause,		/* 0x71 */
+	XK_Help,	XK_Insert,		/* 0x72 */
+	XK_Home,	NoSymbol,		/* 0x73 */
+	XK_Prior,	NoSymbol,		/* 0x74 */
+	XK_Delete,	NoSymbol,		/* 0x75 */
+	XK_F4,		NoSymbol,		/* 0x76 */
+	XK_End,		NoSymbol,		/* 0x77 */
 	NoSymbol,	NoSymbol,		/* 0x78 */
-	NoSymbol,	NoSymbol,		/* 0x79 */
-	NoSymbol,	NoSymbol,		/* 0x7a */
-	NoSymbol,	NoSymbol,		/* 0x7b */
-	NoSymbol,	NoSymbol,		/* 0x7c */
-	NoSymbol,	NoSymbol,		/* 0x7d */
-	NoSymbol,	NoSymbol,		/* 0x7e */
+	XK_Next,	NoSymbol,		/* 0x79 */
+	XK_F1,		NoSymbol,		/* 0x7a */
+	XK_F2,		NoSymbol,		/* 0x7b */
+	XK_Left,	NoSymbol,		/* 0x7c */
+	XK_Down,	NoSymbol,		/* 0x7d */
+	XK_Up,		NoSymbol,		/* 0x7e */
 	NoSymbol,	NoSymbol,		/* 0x7f */
 };
 
 KeySymsRec macIIKeySyms[] = {
     /*	map	   minKeyCode	maxKC	width */
-    macIIMap,		0,	0x5c,	2,
+    macIIMap,		0,	0x7e,	2,
 };
 
 #define	cT	(ControlMask)
