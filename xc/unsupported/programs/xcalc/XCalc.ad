@@ -45,7 +45,7 @@
 *Command.ShapeStyle:		Oval
 
 *ti.Geometry:			171x252
-*ti.bevel.screen.LCD.width:	100
+*ti.bevel.screen.LCD.width:	108
 *ti.bevel.screen.LCD.ShapeStyle:rectangle
 
 *ti.bevel.screen.LCD.Translations:	#replace\n\
