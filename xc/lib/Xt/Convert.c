@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.61 91/06/14 16:21:45 converse Exp $ */
+/* $XConsortium: Convert.c,v 1.62 91/06/17 11:46:17 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -598,8 +598,10 @@ void XtDirectConvert(converter, args, num_args, from, to)
 		while (i) {
 		    i--; /* do not move to while test, broken compilers */
 		    if (pargs[i].size != args[i].size ||
-			XtBCmp(pargs[i].addr, args[i].addr, args[i].size))
+			XtBCmp(pargs[i].addr, args[i].addr, args[i].size)) {
+			i++;
 			break;
+		    }
 		}
 	    }
 	    if (!i) {
@@ -686,8 +688,10 @@ _XtCallConverter(dpy, converter,
 		    while (i) {
 			i--; /* do not move to while test, broken compilers */
 			if (pargs[i].size != args[i].size ||
-			    XtBCmp(pargs[i].addr, args[i].addr, args[i].size))
+			    XtBCmp(pargs[i].addr, args[i].addr, args[i].size)){
+			    i++;
 			    break;
+			}
 		    }
 		}
 		if (!i) {
