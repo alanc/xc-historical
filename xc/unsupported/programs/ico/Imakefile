@@ -1,14 +1,5 @@
 LOCAL_LIBRARIES = $(XLIB)
   SYS_LIBRARIES = -lm
 
-newdefault: all
-
-shar:;	shar $(SRCS) *.h Makefile Imakefile ico.man TODO > ico.shar
-
-depend::	allobjsh
-
-allobjsh:
-	ls -1 obj*.h | sed -e 's/.*/#include "&"/' > allobjs.h
-
 SimpleProgramTarget(ico)
 
