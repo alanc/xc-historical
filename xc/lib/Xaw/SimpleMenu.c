@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.27 89/10/09 16:20:54 jim Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.28 89/10/11 11:55:18 jim Exp $";
 #endif 
 
 /***********************************************************
@@ -78,15 +78,18 @@ static XtResource resources[] = {
  * Misc. Resources
  */
 
+  { XtNallowShellResize, XtCAllowShellResize, XtRBoolean, sizeof(Boolean),
+      XtOffset(SimpleMenuWidget, shell.allow_shell_resize),
+      XtRImmediate, (XtPointer) TRUE },
   {XtNcursor, XtCCursor, XtRCursor, sizeof(Cursor),
-     offset(cursor), XtRImmediate, (caddr_t) None},
+      offset(cursor), XtRImmediate, (caddr_t) None},
   {XtNmenuOnScreen,  XtCMenuOnScreen, XtRBoolean, sizeof(Boolean),
-     offset(menu_on_screen), XtRImmediate, (caddr_t) TRUE},
+      offset(menu_on_screen), XtRImmediate, (caddr_t) TRUE},
   {XtNpopupOnEntry,  XtCPopupOnEntry, XtRString, sizeof(String),
-     offset(popup_entry), XtRString, NULL},
+      offset(popup_entry), XtRString, NULL},
   {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
-     offset(backing_store), 
-     XtRImmediate, (caddr_t) (Always + WhenMapped + NotUseful)},
+      offset(backing_store), 
+      XtRImmediate, (caddr_t) (Always + WhenMapped + NotUseful)},
 };  
 #undef offset
 
@@ -95,8 +98,6 @@ static char defaultTranslations[] =
      <LeaveWindow>:     unhighlight()           \n\
      <BtnMotion>:       highlight()             \n\
      <BtnUp>:           MenuPopdown() notify() unhighlight()"; 
-
-#define superclass (&overrideShellClassRec)
 
 /*
  * Semi Public function definitions. 
@@ -137,6 +138,8 @@ CompositeClassExtensionRec extension_rec = {
     /* record_size */     sizeof(CompositeClassExtensionRec),
     /* accepts_objects */ TRUE,
 };
+
+#define superclass (&overrideShellClassRec)
     
 SimpleMenuClassRec simpleMenuClassRec = {
   {
@@ -343,8 +346,6 @@ XSetWindowAttributes * attrs;
 {
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
 
-    Layout(w, NULL, NULL);
-
     attrs->cursor = smw->simple_menu.cursor;
     *mask |= CWCursor;
     if ((smw->simple_menu.backing_store == Always) ||
@@ -355,29 +356,8 @@ XSetWindowAttributes * attrs;
     }
     else
 	*mask &= ~CWBackingStore;
-    
-    if(smw->shell.save_under) {
-	*mask |= CWSaveUnder;
-	attrs->save_under = TRUE;
-    }
 
-    if(smw->shell.override_redirect) {
-	*mask |= CWOverrideRedirect;
-	attrs->override_redirect = TRUE;
-    }
-
-    if (smw->core.width == 0 || smw->core.height == 0) {
-	Cardinal count = 1;
-	XtErrorMsg("invalidDimension", "simpleMenuRealize", "XtToolkitError",
-		   "SimpleMenu widget %s has zero width and/or height",
-		   &(smw->core.name), &count);
-    }
-
-    smw->core.window = XCreateWindow(XtDisplay( (Widget) smw),
-		 smw->core.screen->root, (int)smw->core.x, (int)smw->core.y,
-		 (unsigned int)smw->core.width, (unsigned int)smw->core.height,
-	         (unsigned int)smw->core.border_width, (int) smw->core.depth,
-		 (unsigned int) InputOutput, smw->shell.visual, *mask, attrs);
+    (*superclass->core_class.realize) (w, mask, attrs);
 }
 
 /*      Function Name: Resize
@@ -498,9 +478,9 @@ Cardinal *num_args;
 	if ( streq(arglist[i].name, XtNheight) )
 	    height = (Dimension) arglist[i].value;
     }
-    MakeSetValuesRequest(w, width, height);
-    if ((width != w->core.width) || (height != w->core.height)) 
-	return(TRUE);
+
+    if ((width != w->core.width) || (height != w->core.height))
+	MakeSetValuesRequest(w, width, height);
     return(FALSE);
 }
 
@@ -551,14 +531,13 @@ XtWidgetGeometry * request, * reply;
 
     if ( (reply->width == request->width) &&
 	 (reply->height == request->height) ) {
-	
-	entry->rectangle.width = reply->width;
-	entry->rectangle.height = reply->height;	
 
-	if ( !(mode & XtCWQueryOnly) ) { /* Actually perform the layout. */
-	    Layout(( Widget) smw, &(reply->width), NULL);
-	    if (XtIsRealized( (Widget) smw))
-		Redisplay((Widget) smw, (XEvent *) NULL, (Region) NULL);
+	if ( mode & XtCWQueryOnly ) { /* Actually perform the layout. */
+	    entry->rectangle.width = old_width;
+	    entry->rectangle.height = old_height;	
+	}
+	else {
+	    Layout(( Widget) smw, NULL, NULL);
 	}
 	answer = XtGeometryDone;
     }
@@ -896,6 +875,8 @@ Dimension *width_ret, *height_ret;
     Dimension width, height;
     Boolean do_layout = ((height_ret == NULL) || (width_ret == NULL));
 
+    height = width = 0;
+
     if ( XtIsSubclass(w, simpleMenuWidgetClass) ) {
 	smw = (SimpleMenuWidget) w;
 	current_entry = NULL;
@@ -926,13 +907,18 @@ Dimension *width_ret, *height_ret;
 	else {
 	    if ((smw->simple_menu.row_height != 0) && 
 		(current_entry != smw->simple_menu.label) )
-		*height_ret = smw->simple_menu.row_height;
+		height = smw->simple_menu.row_height;
 	}
     
     if (smw->simple_menu.menu_width)
 	width = smw->core.width;
-    else
-	width = GetMenuWidth((Widget) smw, (Widget) current_entry);
+    else {
+	Boolean realized = XtIsRealized( (Widget) smw );
+
+	if ( (!realized) || (do_layout) ||
+	    ((!smw->shell.allow_shell_resize) && realized) )
+	    width = GetMenuWidth((Widget) smw, (Widget) current_entry);
+    }
 
     if (do_layout) {
 	ForAllChildren(smw, entry)
@@ -940,10 +926,14 @@ Dimension *width_ret, *height_ret;
 		(*entry)->rectangle.width = width;
 
 	if (smw->shell.allow_shell_resize || !XtIsRealized((Widget) smw) ) 
-	    MakeSetValuesRequest(w, width, height);
+	    MakeSetValuesRequest((Widget) smw, width, height);
     }
-    else 
-	*width_ret = width;
+    else {
+	if (width != 0)
+	    *width_ret = width;
+	if (height != 0)
+	    *height_ret = height;
+    }
 }
     
 /*	Function Name: AddPositionAction
@@ -1127,10 +1117,14 @@ Dimension width, height;
     Cardinal num_args = (Cardinal) 0;
     
     if ( !smw->simple_menu.recursive_set_values ) {
-	smw->simple_menu.recursive_set_values = TRUE;
-	XtSetArg(arglist[num_args], XtNwidth, width);   num_args++;
-	XtSetArg(arglist[num_args], XtNheight, height); num_args++;
-	XtSetValues(w, arglist, num_args);
+	if ( (smw->core.width != width) || (smw->core.height != height) ) {
+	    smw->simple_menu.recursive_set_values = TRUE;
+	    XtSetArg(arglist[num_args], XtNwidth, width);   num_args++;
+	    XtSetArg(arglist[num_args], XtNheight, height); num_args++;
+	    XtSetValues(w, arglist, num_args);
+	}
+	else if (XtIsRealized( (Widget) smw))
+	    Redisplay((Widget) smw, (XEvent *) NULL, (Region) NULL);
     }
     smw->simple_menu.recursive_set_values = FALSE;
 }
