@@ -131,7 +131,6 @@ Imake.tmpl provides defaults for the following variables:
 	HasSaberC		boolean for system has Saber C
 	HasSharedLibraries	boolean for system has shared libraries
 	HasSockets		boolean for system has BSD sockets
-	HasSunOSSharedLibraries	boolean for system has SunOS shared libs
 	HasVFork		boolean for system has vfork()
 	HasVoidSignalReturn	boolean for POSIX signal() procs
 	IncRoot			parent of X11 include directory
@@ -173,6 +172,7 @@ Imake.tmpl provides defaults for the following variables:
 	ServerCcCmd		command to run C compiler in server
 	SharedCodeDef		-D's to turn on sharable code in libraries
 	SharedLibraryDef	-D's to turn on use of shared libraries
+	ShLibIncludeFile	template file for shared libraries
 	StandardCppDefines	-D's for running cpp
 	StandardDefines		-D's for running C compiler
 	StandardIncludes	-I's for running C compiler
@@ -189,7 +189,6 @@ Project.tmpl provides defaults for the following variables:
 
 	AdmDir			directory containing system log files
 	AllocateLocalDefines	-D's to turn on alloca()
-	AwmDir			directory containing awm config files
 	BDFTOSNFFILT		command to run bdftosnf
 	BandAidLibraryNeeded	boolean for systems that need extra Xlib stuff
 	BandAidLibraryObjects	Xlib object files to merge in
@@ -222,7 +221,6 @@ Project.tmpl provides defaults for the following variables:
 	FontDefines		-D's to turn on font options
 	FontDir			directory in which to install fonts
 	FontFilters		-D's to specify font conversion filters
-	GwmDir			directory in which to install gwm config stuff
 	HasInputExtension	boolean for systems that want XInput extension
 	IncRoot			parent directory of installed header files
 	InstallAppDefFiles	boolean for installing new app defaults files
@@ -284,10 +282,7 @@ Project.tmpl provides defaults for the following variables:
 The site.def file is used to set configuration parameters that apply to all all
 servers in a given site.  It should use #ifndef so that servers may still
 override it.  The second use for site.def is to define installation directories
-and flags.  The following additional build parameters are defined:
-
-	HasXcuWidgets		include Xcu make variables in Makefiles
-	HasXwWidgets		include Xw make variables in Makefiles
+and flags.
 
 
 
