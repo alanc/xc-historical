@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.27 90/03/23 11:12:39 rws Exp $
+ * $XConsortium: listres.c,v 1.28 90/04/30 16:56:29 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -122,26 +122,6 @@ static void tree_known_widgets ()
     }
 }
 
-static void list_known_widgets ()
-{
-    int i;
-    XmuWidgetNode *wn;
-    int width = 0;
-    char format[20];
-    static int print_classname ();
-
-    for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
-	int l = strlen (wn->label);
-	if (l > width) width = l;
-    }
-    sprintf (format, "%%-%ds  ", width);
-    for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
-	printf (format, wn->label);
-	print_classname (wn, (XmuWidgetNode *) NULL, 0, False);
-	putchar ('\n');
-    }
-}
-
 
 /*
  * print_classname - print out the superclass-to-subclass hierchy of names
@@ -167,6 +147,24 @@ static int print_classname (node, topnode, level, showvar)
     return retval;
 }
 
+static void list_known_widgets ()
+{
+    int i;
+    XmuWidgetNode *wn;
+    int width = 0;
+    char format[20];
+
+    for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
+	int l = strlen (wn->label);
+	if (l > width) width = l;
+    }
+    sprintf (format, "%%-%ds  ", width);
+    for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
+	printf (format, wn->label);
+	print_classname (wn, (XmuWidgetNode *) NULL, 0, False);
+	putchar ('\n');
+    }
+}
 
 /* ARGSUSED */
 static void print_resources (node, format, topnode, showsuper, showvar)
