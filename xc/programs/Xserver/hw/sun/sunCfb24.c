@@ -1,6 +1,49 @@
 
+/* $XConsortium: sunCfb24.c 1.0 94/02/17 00:00:00 kaleb Exp $ */
+
+/*
+
+Copyright (c) 1994  X Consortium
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE X
+CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of the X Consortium shall not be
+used in advertising or otherwise to promote the sale, use or other dealings in
+this Software without prior written authorization from the X Consortium.
+
+*/
+
+/*
+ * The CG8 is similar to the CG4 in that it has a mono plane, an enable 
+ * plane, and a color plane. While the CG4 only has an 8-bit color
+ * plane the CG8 has a 24-bit color plane. 
+ *
+ * If you have a CG4 you know that you can switch between the mono and
+ * the color screens merely by dragging the pointer off the edge of the
+ * screen, causing the other screen to be switched in. However this is
+ * the cause of some consternation on the part of those people who have
+ * both a CG4 and another frame buffer.
+ *
+ * Because of this problem, and some other considerations, I have chosen
+ * to ignore the mono plane of the CG8 in this code.
+ */
+
 #define PSZ 32
-#include <stdio.h>
 #include "sun.h"
 #include "cfb32/cfb.h"
 
@@ -70,17 +113,17 @@ static void CG24ScreenInit (pScreen)
     for (i = 0; i < CG8_COLOR_OFFSET; i++)
 	sunFbs[pScreen->myNum].fb[i] = 0;
 
-#if 0
-    pScreen->whitePixel = 0xffffffff;
-    pScreen->blackPixel = 0;
-#endif
-
 #ifndef STATIC_COLOR
     pScreen->InstallColormap = sunInstallColormap;
     pScreen->UninstallColormap = sunUninstallColormap;
     pScreen->ListInstalledColormaps = sunListInstalledColormaps;
     pScreen->StoreColors = CG24StoreColors;
     pPrivate->UpdateColormap = CG24UpdateColormap;
+    if (sunFlipPixels) {
+	Pixel pixel = pScreen->whitePixel;
+	pScreen->whitePixel = pScreen->blackPixel;
+	pScreen->blackPixel = pixel;
+    }
 #endif
 }
 
