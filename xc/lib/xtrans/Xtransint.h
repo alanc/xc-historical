@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransint.h,v 1.19 94/04/02 15:25:28 rws Exp $ */
+/* $XConsortium: Xtransint.h,v 1.20 94/04/17 20:23:03 rws Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -365,7 +365,7 @@ typedef struct _Xtransport_table {
  * systems, so they may be emulated.
  */
 
-#if defined(CRAY) || (defined(SYSV) && defined(SYSV386)) || defined(WIN32) || defined(__sxg__)
+#if defined(CRAY) || (defined(SYSV) && defined(SYSV386)) || defined(WIN32) || defined(__sxg__) || defined(SCO)
 
 #define READV(ciptr, iov, iovcnt)	TRANS(ReadV)(ciptr, iov, iovcnt)
 
@@ -376,6 +376,15 @@ static	int TRANS(ReadV)(
     int			/* iovcnt */
 #endif
 );
+
+#else
+
+#define READV(ciptr, iov, iovcnt)	readv(ciptr->fd, iov, iovcnt)
+
+#endif /* CRAY || (SYSV && SYSV386) || WIN32 || __sxg__ || SCO */
+
+
+#if defined(CRAY) || defined(WIN32) || defined(__sxg__) || defined(SCO)
 
 #define WRITEV(ciptr, iov, iovcnt)	TRANS(WriteV)(ciptr, iov, iovcnt)
 
@@ -389,10 +398,9 @@ static int TRANS(WriteV)(
 
 #else
 
-#define READV(ciptr, iov, iovcnt)	readv(ciptr->fd, iov, iovcnt)
 #define WRITEV(ciptr, iov, iovcnt)	writev(ciptr->fd, iov, iovcnt)
 
-#endif /* CRAY || (SYSV && SYSV386) || WIN32 */
+#endif /* CRAY || WIN32 || __sxg__ || SCO */
 
 
 static int is_numeric (
