@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.64 87/10/29 07:47:14 rws Locked $ */
+/* $Header: connection.c,v 1.65 87/11/05 17:37:35 rws Locked $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -72,7 +72,10 @@ SOFTWARE.
 
 typedef long CCID;      /* mask of indices into client socket table */
 
-#define X_UNIX_PATH	"/tmp/.X11-unix" 
+#ifndef X_UNIX_PATH
+#define X_UNIX_DIR	"/tmp/.X11-unix"
+#define X_UNIX_PATH	"/tmp/.X11-unix/X"
+#endif
 
 char *display;			/* The display number */
 int lastfdesc;                  /* maximum file descriptor */
@@ -131,7 +134,9 @@ CreateWellKnownSockets()
 
 #ifdef UNIXCONN
     struct sockaddr_un unsock;
+#ifdef X_UNIX_DIR
     int         oldUmask;
+#endif
 #endif /* UNIXCONN */
 
 #ifdef DNETCONN
@@ -199,11 +204,12 @@ CreateWellKnownSockets()
 
 #ifdef UNIXCONN
     unsock.sun_family = AF_UNIX;
+#ifdef X_UNIX_DIR
     oldUmask = umask (0);
-    mkdir (X_UNIX_PATH, 0777);
+    mkdir (X_UNIX_DIR, 0777);
     (void)umask(oldUmask);
+#endif
     strcpy (unsock.sun_path, X_UNIX_PATH);
-    strcat (unsock.sun_path, "/X");
     strcat (unsock.sun_path, display);
     unlink (unsock.sun_path);
     if ((request = socket (AF_UNIX, SOCK_STREAM, 0)) < 0) 
