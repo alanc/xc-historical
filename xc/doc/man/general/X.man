@@ -7,18 +7,19 @@ X is a network transparent window system developed at MIT which runs on a wide
 range of computing and graphics machines.  The core distribution from MIT
 has both client and server support for the following operating systems:
 .sp
-.ce 6
-4.3bsd
-A/UX 1.0
-DOMAIN/IX 9.7
+.ce 7
+4.3+tahoe
+Ultrix 3.0 FT2 (also compiles under Ultrix 2.0)
+SunOS 3.4
 HP-UX 6.01
-SunOS 3.2
-Ultrix-32 Version 1.2
+Apollo Domain/IX 9.7 (and 9.6 according to its developers)
+IBM AOS 4.3 (according to its developers)
+A/UX 1.0
 .sp
 Commercial implementations are also available for a much wider range
 of platforms.
 .PP
-The X Consortium requests that the following names be used in
+The X Consortium requests that the following names be used when
 refering to this software:
 .sp
 .ce 5
@@ -69,7 +70,7 @@ utilities for listing information about fonts, windows, and displays
 (\fIxlsfonts\fP, \fIxlswins\fP, \fIxwininfo\fP, \fIxdpyinfo\fP, 
 and \fIxprop\fP),
 a protocol translator for running X10 programs (\fIx10tox11\fP),
-a diagnostic for seeing what when events are generated (\fIxev\fP),
+a diagnostic for seeing what events are generated and when (\fIxev\fP),
 screen image manipulation utilities (\fIxwd\fP, \fIxwud\fP, \fIxpr\fP, 
 and \fIxmag\fP),
 and various demos (\fIxeyes\fP, \fIico\fP, \fImuncher\fP, \fIpuzzle\fP, etc.).
@@ -317,10 +318,12 @@ encouraged to write their own.
 Collections of characters for displaying text and symbols in X are known as
 \fIfonts\fP.  A font typically contains images that share a common appearance
 and look nice together (for example, a single size, boldness, slant, and
-character set).  Similarly, collections of fonts that all look nice together
-are called \fIfamilies\fP.  
+character set).  Similarly, collections of fonts that are based on a common
+type face (the variations are usually called roman, bold, italic, bold italic, 
+oblique, and bold oblique) are called \fIfamilies\fP.  
 .PP
-Font families of the same resolution (usually measured in dots per inch) 
+Sets of 
+font families of the same resolution (usually measured in dots per inch) 
 are further grouped into \fIdirectories\fP
 (so named because they were initially stored in file system directories).
 Each directory contains a database which lists the name of the font and
@@ -346,17 +349,18 @@ cursor font.  It also has font name aliases for the commonly used fonts
 \fBfixed\fP and \fBvariable\fP.
 .TP 8
 .I /usr/lib/X11/fonts/75dpi
-This directory contains fonts contributed by Adobe Systems and
-Digital Equipment Corporation for 75 dots per inch displays.  A variety of
-sizes and faces for the following font families are provided:
-Times, Helvetica, Courier, Symbol, and New Century Schoolbook.
+This directory contains fonts contributed by Adobe Systems, Inc. and
+Digital Equipment Corporation and by Bitstream, Inc.
+for 75 dots per inch displays.  An integrated selection of sizes, styles, 
+and weights are provided for each family.
 .TP 8
 .I /usr/lib/X11/fonts/100dpi
 This directory contains 100 dots per inch versions of some of the fonts in the 
 \fI75dpi\fP directory.  
 .PP
 Font databases are created by running the \fImkfontdir\fP program in the
-directory containing the compiled versions of the fonts (the \fI.snf\fP files).
+directory containing the source or compiled versions of the fonts (in both
+compressed and uncompressed formats).
 Whenever fonts are added to a directory, \fImkfontdir\fP should be rerun
 so that the server can find the new fonts.  To make the server reread the
 font database, reset the font path with the \fIxset\fP program.  For example,
@@ -380,13 +384,13 @@ supports wildcarding of font names, so the full specification
 could be abbreviated as:
 .sp
 .ce 1
-\fI*-courier-medium-r-normal--10-*\fP
+\fI*-courier-medium-r-normal--*-100-*\fP
 .PP
 Because the shell also has special meanings for \fI*\fP and \fI?\fP,
 wildcarded font names should be quoted:
 .sp
 .nf
-        %  xlsfonts -fn '*-courier-medium-r-normal--10-*'
+        %  xlsfonts -fn '*-courier-medium-r-normal--*-100-*'
 .fi
 .PP
 If more than one font in a given directory in the font path matches a
