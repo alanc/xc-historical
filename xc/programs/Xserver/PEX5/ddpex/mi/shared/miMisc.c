@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miMisc.c,v 5.1 91/02/16 09:56:20 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -181,7 +181,7 @@ InquireImpDepConstants(pDrawable, numNames, pNames, pBuffer)
 	 * the values (e.g. you want to call into a library to get the
 	 * values)
 	 */
-	if (i < SI_NUM_INT_IMPS)
+	if ((int) *pname < SI_NUM_INT_IMPS)
 	    *pbuf.C32 = intImpDeps[drawType][(int) *pname];
 	else
 	    *pbuf.F32 = floatImpDeps[drawType][(int)FLOAT_INDEX(*pname)];
