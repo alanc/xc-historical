@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.27 93/12/28 11:43:46 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.28 94/01/31 10:54:05 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -20,9 +20,6 @@ Author: Ralph Mor, X Consortium
 #ifndef ICELIBINT_H
 #define ICELIBINT_H
 
-#ifdef WIN32
-#define _WILLWINSOCK_
-#endif
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
 #include <X11/Xmd.h>
