@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.81 90/12/26 11:32:59 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.82 91/01/30 13:31:06 keith Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -60,6 +60,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.81 90/12/26 11:32:59 rws Exp $
  *     	NormalLibraryTarget                      (libname,objlist)
  *      NormalSharedLibraryTarget                (libname,rev,solist,salist)
  *     	NormalLibraryTarget2                     (libname,objlist1,objlist2)
+ *     	NormalLibraryTarget3              (libname,objlist1,objlist2,objlist3)
  *     	ProfiledLibraryTarget                    (libname,objlist)
  *     	DebuggedLibraryTarget                    (libname,objlist)
  *     	AliasedLibraryTarget                     (libname,alias)
@@ -952,9 +953,6 @@ clean::									@@\
 #endif /* NormalSharedLibraryTarget */
 
 
-
-
-
 /*
  * NormalLibraryTarget2 - generate rules to create a library in two steps.
  * This is used to create libraries with large numbers of files.
@@ -969,6 +967,23 @@ Concat(lib,libname.a): objlist1 objlist2				@@\
 	$(AR) $@ objlist2						@@\
 	RanLibrary($@)
 #endif /* NormalLibraryTarget2 */
+
+
+/*
+ * NormalLibraryTarget3 - generate rules to create a library in three steps.
+ * This is used to create libraries with very large numbers of files.
+ */
+#ifndef NormalLibraryTarget3
+#define	NormalLibraryTarget3(libname,objlist1,objlist2,objlist3)	@@\
+AllTarget(Concat(lib,libname.a))					@@\
+									@@\
+Concat(lib,libname.a): objlist1 objlist2 objlist3			@@\
+	$(RM) $@							@@\
+	$(AR) $@ objlist1						@@\
+	$(AR) $@ objlist2						@@\
+	$(AR) $@ objlist3						@@\
+	RanLibrary($@)
+#endif /* NormalLibraryTarget3 */
 
 
 /*
