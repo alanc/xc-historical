@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.141 91/04/12 15:34:52 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.142 91/04/12 18:58:18 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -213,10 +213,9 @@ TMShortCard _XtGetTypeIndex(event)
 	      typeMatch = &(segment[j]);
 	      if (event->eventType == typeMatch->eventType && 
 		  event->eventCode == typeMatch->eventCode && 
-		  event->eventCodeMask == typeMatch->eventCodeMask)
-		{
+		  event->eventCodeMask == typeMatch->eventCodeMask &&
+		  event->matchEvent == typeMatch->matchEvent)
 		    return typeIndex;
-		}
 	  }
     }
     
