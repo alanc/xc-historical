@@ -1,4 +1,4 @@
-/* $XConsortium: TextPop.c,v 1.18 91/05/16 14:57:11 swick Exp $ */
+/* $XConsortium: TextPop.c,v 1.19 91/06/16 18:22:22 converse Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -55,7 +55,7 @@ SOFTWARE.
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Toggle.h>
-
+#include <X11/Xmu/CharSet.h>
 #include <stdio.h>
 #include <X11/Xos.h>		/* for O_RDONLY */
 
@@ -69,7 +69,6 @@ extern char* sys_errlist[];
 #define DISMISS_NAME  ("cancel")
 #define DISMISS_NAME_LEN 6
 #define FORM_NAME     ("form")
-#define FORM_NAME_LEN 4
 #define LABEL_NAME    ("label")
 #define TEXT_NAME     ("text")
 
@@ -1271,7 +1270,19 @@ Widget w;
     return (w);
 }
 
-/*ARGSUSED*/
+static Boolean InParams(str, p, n)
+    String str;
+    String *p;
+    Cardinal n;
+{
+    int i;
+    for (i=0; i < n; p++, i++)
+	if (! XmuCompareISOLatin1(*p, str)) return True;
+    return False;
+}
+
+static char *WM_DELETE_WINDOW = "WM_DELETE_WINDOW";
+
 static void WMProtocols(w, event, params, num_params)
     Widget w;		/* popup shell */
     XEvent *event;
@@ -1279,34 +1290,66 @@ static void WMProtocols(w, event, params, num_params)
     Cardinal *num_params;
 {
     Atom wm_delete_window;
-    Widget cancel;
-    char descendant[FORM_NAME_LEN + DISMISS_NAME_LEN + 3];
+    Atom wm_protocols;
 
-    wm_delete_window = XInternAtom(XtDisplay(w), "WM_DELETE_WINDOW", True);
-    if (event->type == ClientMessage &&
-	event->xclient.data.l[0] != wm_delete_window) {
-	XBell(XtDisplay(w), 0);	/* unsupported WM Protocol */
-	return;
+    wm_delete_window = XInternAtom(XtDisplay(w), WM_DELETE_WINDOW, True);
+    wm_protocols = XInternAtom(XtDisplay(w), "WM_PROTOCOLS", True);
+
+    /* Respond to a recognized WM protocol request iff 
+     * event type is ClientMessage and no parameters are passed, or
+     * event type is ClientMessage and event data is matched to parameters, or
+     * event type isn't ClientMessage and parameters make a request.
+     */
+#define DO_DELETE_WINDOW InParams(WM_DELETE_WINDOW, params, *num_params)
+
+    if ((event->type == ClientMessage &&
+	 event->xclient.message_type == wm_protocols &&
+	 event->xclient.data.l[0] == wm_delete_window &&
+	 (*num_params == 0 || DO_DELETE_WINDOW))
+	|| 
+	(event->type != ClientMessage && DO_DELETE_WINDOW)) {
+
+#undef DO_DELETE_WINDOW
+
+	Widget cancel;
+	char descendant[DISMISS_NAME_LEN + 2];
+	sprintf(descendant, "*%s", DISMISS_NAME);
+	cancel = XtNameToWidget(w, descendant);
+	if (cancel) XtCallCallbacks(cancel, XtNcallback, (XtPointer)NULL);
     }
-    sprintf(descendant, "*%s.%s", FORM_NAME, DISMISS_NAME);
-    cancel = XtNameToWidget(w, descendant);
-    if (cancel) XtCallCallbacks(cancel, XtNcallback, (XtPointer)NULL);
 }
 
 static void SetWMProtocolTranslations(w)
     Widget	w;	/* realized popup shell */
 {
+    int i;
+    XtAppContext app_context;
     Atom wm_delete_window;
-    XtActionsRec actions[1];
-    static XtTranslations compiled_table = NULL;
+    static XtTranslations compiled_table;	/* initially 0 */
+    static XtAppContext *app_context_list;	/* initially 0 */
+    static Cardinal list_size;			/* initially 0 */
 
-    wm_delete_window = XInternAtom(XtDisplay(w), "WM_DELETE_WINDOW", False);
-    if (XSetWMProtocols(XtDisplay(w), XtWindow(w), &wm_delete_window, 1)) {
-	actions[0].string = "XawTextWMProtocols";
+    app_context = XtWidgetToApplicationContext(w);
+
+    /* parse translation table once */
+    if (! compiled_table) compiled_table = XtParseTranslationTable
+	("<Message>WM_PROTOCOLS: XawWMProtocols()\n");
+
+    /* add actions once per application context */
+    for (i=0; i < list_size && app_context_list[i] != app_context; i++) ;
+    if (i == list_size) {
+	XtActionsRec actions[1];
+	actions[0].string = "XawWMProtocols";
 	actions[0].proc = WMProtocols;
-	XtAppAddActions(XtWidgetToApplicationContext(w), actions, 1);
-	if (! compiled_table) compiled_table = XtParseTranslationTable
-	    ("<Message>WM_PROTOCOLS: XawTextWMProtocols()\n");
-	XtOverrideTranslations(w, compiled_table);
+	list_size++;
+	app_context_list = (XtAppContext *) XtRealloc
+	    ((char *)app_context_list, list_size * sizeof(XtAppContext));
+	XtAppAddActions(app_context, actions, 1);
+	app_context_list[i] = app_context;
     }
+
+    /* establish communication between the window manager and each shell */
+    XtAugmentTranslations(w, compiled_table);
+    wm_delete_window = XInternAtom(XtDisplay(w), WM_DELETE_WINDOW, False);
+    (void) XSetWMProtocols(XtDisplay(w), XtWindow(w), &wm_delete_window, 1);
 }
