@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.11 88/12/11 18:05:09 jim Exp $
+ * $XConsortium: process.c,v 1.12 88/12/11 19:13:03 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -585,23 +585,31 @@ static int dispatch_command (inputfilename, lineno, argc, argv, tab, statusp)
 static AuthList *xauth_head = NULL;	/* list of auth entries */
 static Bool xauth_modified = False;
 static char *xauth_filename = NULL;
+static Bool dieing = False;
 
-static die (sig)
+static die ()
+{
+    dieing = True;
+    exit (auth_finalize ());
+    /* NOTREACHED */
+}
+
+static catchsig (sig)
     int sig;
 {
 #ifdef SYSV
     if (sig > 0) signal (sig, die);	/* re-establish signal handler */
 #endif
-    xauth_modified = False;		/* bash it to prevent writing */
-    exit (auth_finalize ());
+    if (verbose && xauth_modified) printf ("\r\n");
+    die ();
     /* NOTREACHED */
 }
 
 static void register_signals ()
 {
-    signal (SIGINT, die);
-    signal (SIGTERM, die);
-    signal (SIGHUP, die);
+    signal (SIGINT, catchsig);
+    signal (SIGTERM, catchsig);
+    signal (SIGHUP, catchsig);
     return;
 }
 
@@ -733,7 +741,12 @@ int auth_finalize ()
 {
     char tmpnam[1024];			/* large filename size */
 
-    if (xauth_modified) {
+    if (dieing) {
+	if (xauth_modified && verbose) {
+	    printf ("Aborting changes authority file %s\n",
+		    xauth_filename);
+	}
+    } else if (xauth_modified) {
 	if (verbose) {
 	    printf ("%s authority file %s\n", 
 		    ignore_locks ? "Ignoring locks and writing" :
@@ -1047,6 +1060,7 @@ static int remove_entry (inputfilename, lineno, auth, data)
 	    free (list);				    /* free the link */
 	    list = next;			  /* go look at the next one */
 	    removed++;
+	    xauth_modified = True;
 	} else {
 	    notremoved++;
 	    prev = list;
@@ -1340,12 +1354,13 @@ static int do_add (inputfilename, lineno, argc, argv)
      * merge it in; note that merge will deal with allocation
      */
     n = merge_entries (&xauth_head, list);
-    if (n == 0) {
+    if (n <= 0) {
 	prefix (inputfilename, lineno);
 	fprintf (stderr, "unable to merge in added record\n");
 	return 1;
     }
 
+    xauth_modified = True;
     return 0;
 }
 
