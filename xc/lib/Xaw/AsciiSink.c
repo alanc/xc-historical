@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.46 89/10/09 16:19:51 jim Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.47 89/11/01 17:32:50 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -72,29 +72,29 @@ AsciiSinkClassRec asciiSinkClassRec = {
     /* class_inited       	*/	FALSE,
     /* initialize	  	*/	Initialize,
     /* initialize_hook		*/	NULL,
-    /* realize		  	*/	NULL,
-    /* actions		  	*/	NULL,
-    /* num_actions	  	*/	0,
+    /* obj1		  	*/	NULL,
+    /* obj2		  	*/	NULL,
+    /* obj3		  	*/	0,
     /* resources	  	*/	resources,
     /* num_resources	  	*/	XtNumber(resources),
     /* xrm_class	  	*/	NULLQUARK,
-    /* compress_motion	  	*/	FALSE,
-    /* compress_exposure  	*/	FALSE,
-    /* compress_enterleave	*/	FALSE,
-    /* visible_interest	  	*/	FALSE,
+    /* obj4		  	*/	FALSE,
+    /* obj5		  	*/	FALSE,
+    /* obj6			*/	FALSE,
+    /* obj7		  	*/	FALSE,
     /* destroy		  	*/	Destroy,
-    /* resize		  	*/	NULL,
-    /* expose		  	*/	NULL,
+    /* obj8		  	*/	NULL,
+    /* obj9		  	*/	NULL,
     /* set_values	  	*/	SetValues,
     /* set_values_hook		*/	NULL,
-    /* set_values_almost	*/	NULL,
+    /* obj10			*/	NULL,
     /* get_values_hook		*/	NULL,
-    /* accept_focus	 	*/	NULL,
+    /* obj11		 	*/	NULL,
     /* version			*/	XtVersion,
     /* callback_private   	*/	NULL,
-    /* tm_table		   	*/	NULL,
-    /* query_geometry		*/	NULL,
-    /* display_accelerator	*/	NULL,
+    /* obj12		   	*/	NULL,
+    /* obj13			*/	NULL,
+    /* obj14			*/	NULL,
     /* extension		*/	NULL
   },
 /* text_sink_class fields */
@@ -459,6 +459,35 @@ XawTextPosition *leftPos, *rightPos;
     *rightPos = *leftPos;
 }
 
+static void
+GetGC(sink)
+AsciiSinkObject sink;
+{
+    XtGCMask valuemask = (GCFont | 
+			  GCGraphicsExposures | GCForeground | GCBackground );
+    XGCValues values;
+
+    values.font = sink->text_sink.font->fid;
+    values.graphics_exposures = (Bool) FALSE;
+    
+    values.foreground = sink->text_sink.foreground;
+    values.background = sink->text_sink.background;
+    sink->ascii_sink.normgc = XtGetGC((Widget)sink, valuemask, &values);
+    
+    values.foreground = sink->text_sink.background;
+    values.background = sink->text_sink.foreground;
+    sink->ascii_sink.invgc = XtGetGC((Widget)sink, valuemask, &values);
+    
+    values.function = GXxor;
+    values.background = (unsigned long) 0L;	/* (pix ^ 0) = pix */
+    values.foreground = (sink->text_sink.background ^ 
+			 sink->text_sink.foreground);
+    valuemask = GCFunction | GCForeground | GCBackground;
+    
+    sink->ascii_sink.xorgc = XtGetGC((Widget)sink, valuemask, &values);
+}
+
+
 /***** Public routines *****/
 
 /*	Function Name: Initialize
@@ -475,28 +504,8 @@ Initialize(request, new)
 Widget request, new;
 {
     AsciiSinkObject sink = (AsciiSinkObject) new;
-    XtGCMask valuemask = (GCFont | 
-			  GCGraphicsExposures | GCForeground | GCBackground );
-    XGCValues values;
 
-    values.font = sink->text_sink.font->fid;
-    values.graphics_exposures = (Bool) FALSE;
-    
-    values.foreground = sink->text_sink.foreground;
-    values.background = sink->text_sink.background;
-    sink->ascii_sink.normgc = XtGetGC(new, valuemask, &values);
-    
-    values.foreground = sink->text_sink.background;
-    values.background = sink->text_sink.foreground;
-    sink->ascii_sink.invgc = XtGetGC(new, valuemask, &values);
-    
-    values.function = GXxor;
-    values.background = (unsigned long) 0L;	/* (pix ^ 0) = pix */
-    values.foreground = (sink->text_sink.background ^ 
-			 sink->text_sink.foreground);
-    valuemask |= GCFunction;
-    
-    sink->ascii_sink.xorgc = XtGetGC(new, valuemask, &values);
+    GetGC(sink);
     
     sink->ascii_sink.insertCursorOn= CreateInsertCursor(XtScreenOfObject(new));
     sink->ascii_sink.laststate = XawisOff;
@@ -537,10 +546,17 @@ Widget current, request, new;
     AsciiSinkObject w = (AsciiSinkObject) new;
     AsciiSinkObject old_w = (AsciiSinkObject) current;
 
-    if ( (w->ascii_sink.echo != old_w->ascii_sink.echo) ||
-	(w->ascii_sink.display_nonprinting != 
+    if (w->text_sink.font != old_w->text_sink.font) {
+	XtReleaseGC(w, w->ascii_sink.normgc);
+	XtReleaseGC(w, w->ascii_sink.invgc);
+	GetGC(w);
+	((TextWidget)XtParent(new))->text.redisplay_needed = True;
+    } else {
+	if ( (w->ascii_sink.echo != old_w->ascii_sink.echo) ||
+	     (w->ascii_sink.display_nonprinting != 
                                      old_w->ascii_sink.display_nonprinting) )
-        return(TRUE);
+	    ((TextWidget)XtParent(new))->text.redisplay_needed = True;
+    }
     
-    return(FALSE);
+    return False;
 }

@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.7 89/11/01 17:29:08 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.8 89/11/21 12:09:01 swick Exp $";
 #endif 
 
 /*
@@ -76,29 +76,29 @@ TextSinkClassRec textSinkClassRec = {
     /* class_inited       	*/	FALSE,
     /* initialize	  	*/	Initialize,
     /* initialize_hook		*/	NULL,
-    /* realize		  	*/	NULL,
-    /* actions		  	*/	NULL,
-    /* num_actions	  	*/	0,
+    /* obj1		  	*/	NULL,
+    /* obj2		  	*/	NULL,
+    /* obj3	  		*/	0,
     /* resources	  	*/	resources,
     /* num_resources	  	*/	XtNumber(resources),
     /* xrm_class	  	*/	NULLQUARK,
-    /* compress_motion	  	*/	FALSE,
-    /* compress_exposure  	*/	FALSE,
-    /* compress_enterleave	*/	FALSE,
-    /* visible_interest	  	*/	FALSE,
+    /* obj4		  	*/	FALSE,
+    /* obj5	  		*/	FALSE,
+    /* obj6			*/	FALSE,
+    /* obj7	  	  	*/	FALSE,
     /* destroy		  	*/	Destroy,
-    /* resize		  	*/	NULL,
-    /* expose		  	*/	NULL,
+    /* obj8		  	*/	NULL,
+    /* obj9		  	*/	NULL,
     /* set_values	  	*/	SetValues,
     /* set_values_hook		*/	NULL,
-    /* set_values_almost	*/	NULL,
+    /* obj10			*/	NULL,
     /* get_values_hook		*/	NULL,
-    /* accept_focus	 	*/	NULL,
+    /* obj11		 	*/	NULL,
     /* version			*/	XtVersion,
     /* callback_private   	*/	NULL,
-    /* tm_table		   	*/	NULL,
-    /* query_geometry		*/	NULL,
-    /* display_accelerator	*/	NULL,
+    /* obj12		   	*/	NULL,
+    /* obj13			*/	NULL,
+    /* obj14			*/	NULL,
     /* extension		*/	NULL
   },
 /* textSink_class fields */
@@ -220,18 +220,17 @@ Widget current, request, new;
   TextSinkObject w = (TextSinkObject) new;
   TextSinkObject old_w = (TextSinkObject) current;
   TextSinkObjectClass class = (TextSinkObjectClass) w->object.widget_class;
-  Boolean redisp = FALSE;
 
   if (w->text_sink.font != old_w->text_sink.font) {
-    (*class->text_sink_class.SetTabs)(w, w->text_sink.tab_count, 
+    (*class->text_sink_class.SetTabs)(new, w->text_sink.tab_count, 
 				      w->text_sink.char_tabs);
-    redisp = TRUE;
+    ((TextWidget)XtParent(new))->text.redisplay_needed = True;
+  } else {
+      if (w->text_sink.foreground != old_w->text_sink.foreground)
+	  ((TextWidget)XtParent(new))->text.redisplay_needed = True;
   }
-    
-  if (w->text_sink.foreground != old_w->text_sink.foreground)
-    redisp = TRUE;
 
-  return(redisp);
+  return FALSE;
 }
 
 /************************************************************
