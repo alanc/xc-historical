@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.67 91/01/09 18:45:44 gildea Exp $
+ * $XConsortium: viewres.c,v 1.68 91/01/10 14:15:03 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -102,20 +102,24 @@ static XrmOptionDescRec Options[] = {
     { "-vertical", "*Tree.Gravity", XrmoptionNoArg, (caddr_t) "north" }
 };
 
-static struct _appresources {
+
+typedef struct {
     char *top_object;
     Boolean show_variable;
-} Appresources;
+} OptionsRec;
+
+static OptionsRec options;
+
+#define Offset(field) XtOffsetOf(OptionsRec, field)
 
 static XtResource Resources[] = {
-#define offset(field) XtOffset(struct _appresources *, field)
     { "topObject", "TopObject", XtRString, sizeof(char *),
-	offset(top_object), XtRString, (caddr_t) "object" },
+	Offset(top_object), XtRString, (caddr_t) "object" },
     { "showVariable", "ShowVariable", XtRBoolean, sizeof(Boolean),
-	offset(show_variable), XtRImmediate, (caddr_t) FALSE },
-#undef offset
+	Offset(show_variable), XtRImmediate, (caddr_t) FALSE },
 };
 
+#undef Offset;
 
 static char *fallback_resources[] = {
     "*allowShellResize: true",
@@ -769,7 +773,7 @@ static void build_tree (node, tree, super)
     box = XtCreateManagedWidget (node->label, boxWidgetClass, tree, args, n);
 
     n = 0;
-    XtSetArg (args[n], XtNlabel, (Appresources.show_variable ?
+    XtSetArg (args[n], XtNlabel, (options.show_variable ?
 				  node->label : XmuWnClassname(node))); n++;
     XtSetArg (args[n], XtNcallback, callback_rec); n++;
 
@@ -795,7 +799,7 @@ static void set_node_labels (node, depth)
     ViewresData *d = VData(node);
 
     if (!node) return;
-    XtSetArg (args[0], XtNlabel, (Appresources.show_variable ?
+    XtSetArg (args[0], XtNlabel, (options.show_variable ?
 				  node->label : XmuWnClassname(node)));
     XtSetValues (d->instance, args, ONE);
 
@@ -821,7 +825,7 @@ static void set_labeltype_menu (isvar, doall)
     Boolean isvar;
     Boolean doall;
 {
-    Appresources.show_variable = isvar;
+    options.show_variable = isvar;
     oneof_sensitive (isvar, view_widgets[VIEW_CLASSES],
 		     view_widgets[VIEW_VARIABLES]);
 
@@ -886,11 +890,11 @@ main (argc, argv)
     initialize_widgetnode_list (&selected_list.elements,
 				&selected_list.max_elements, 10);
 
-    XtGetApplicationResources (toplevel, (caddr_t) &Appresources,
+    XtGetApplicationResources (toplevel, (caddr_t) &options,
 			       Resources, XtNumber(Resources), NULL, ZERO);
     XmuWnInitializeNodes (widget_list, nwidgets);
 
-    topnode = XmuWnNameToNode (widget_list, nwidgets, Appresources.top_object);
+    topnode = XmuWnNameToNode (widget_list, nwidgets, options.top_object);
 
     /*
      * create dummy widgets to initialize resources
@@ -1003,7 +1007,7 @@ main (argc, argv)
     treeWidget = XtCreateManagedWidget ("tree", treeWidgetClass,
 					porthole, (ArgList) NULL, ZERO);
 
-    set_labeltype_menu (Appresources.show_variable, FALSE);
+    set_labeltype_menu (options.show_variable, FALSE);
     XtSetArg (args[0], XtNgravity, &grav);
     XtGetValues (treeWidget, args, ONE);
     set_orientation_menu (grav, FALSE);
@@ -1066,7 +1070,7 @@ static void ActionSetLableType (w, event, params, num_params)
     Cardinal *num_params;
 {
     char *cmd;
-    Boolean oldvar = Appresources.show_variable, newvar;
+    Boolean oldvar = options.show_variable, newvar;
 
     switch (*num_params) {
       case 0:
