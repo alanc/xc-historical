@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.23 89/12/10 22:13:37 jim Exp $ */
+/* $XConsortium: Xresource.h,v 1.24 89/12/11 18:17:00 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -45,14 +45,14 @@ SOFTWARE.
  *
  ****************************************************************/
 
-#if defined(CRAY) || defined(USG)
+#if defined(USG)
 #ifndef __TYPES__
 #define __TYPES__
 #include <sys/types.h>			/* forgot to protect it... */
 #endif /* __TYPES__ */
 #else
 #include <sys/types.h>
-#endif /* CRAY or USG */
+#endif /* USG */
 
 #ifdef __cplusplus			/* do not leave open across includes */
 extern "C" {					/* for C++ V2.0 */

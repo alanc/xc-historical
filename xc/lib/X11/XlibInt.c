@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.117 89/12/06 17:14:22 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.118 89/12/06 18:16:50 rws Exp $
  */
 
 #include "copyright.h"
@@ -18,8 +18,8 @@
 
 static void _EatData32();
 
-#if defined(CRAY) || defined(att)
-int readv(), writev();
+#if USG
+int _XReadV(), _XWriteV();
 #endif 
 
 #if defined(STREAMSCONN) && (!defined(EWOULDBLOCK)) && defined(EAGAIN)
@@ -1618,7 +1618,7 @@ ANYSET(src)
  */
 #include <sys/socket.h>
 
-int readv (fd, iov, iovcnt)
+int _XReadV (fd, iov, iovcnt)
 int fd;
 struct iovec *iov;
 int iovcnt;
@@ -1635,7 +1635,7 @@ int iovcnt;
 	return (recvmsg (fd, &hdr, 0));
 }
 
-int writev (fd, iov, iovcnt)
+int _XWriteV (fd, iov, iovcnt)
 int fd;
 struct iovec *iov;
 int iovcnt;
@@ -1655,7 +1655,7 @@ int iovcnt;
 #endif /* CRAY */
 
 
-#ifdef USG
+#ifdef STREAMSCONN
 /*
  * Copyright 1988, 1989 AT&T, Inc.
  *
@@ -1697,7 +1697,7 @@ extern char * malloc();
 extern char _XsTypeOfStream[];
 extern Xstream _XsStream[];
 
-int readv (fd, v, n)
+int _XReadV (fd, v, n)
     int fd;
     struct iovec *v;
     int n;
@@ -1734,7 +1734,7 @@ int readv (fd, v, n)
 }
 
 
-int writev (fd, v, n)
+int _XWriteV (fd, v, n)
     int fd;
     struct iovec *v;
     int n;
@@ -1856,4 +1856,4 @@ struct timeval *timeout;
 	return rc;
 }
 
-#endif /* USG */
+#endif /* STREAMSCONN */

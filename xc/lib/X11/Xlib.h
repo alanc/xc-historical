@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.175 89/12/11 10:47:41 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.176 89/12/11 10:54:19 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -25,14 +25,14 @@
 #ifndef _XLIB_H_
 #define _XLIB_H_
 
-#if defined(CRAY) || defined(USG)
+#if defined(USG)
 #ifndef __TYPES__
 #define __TYPES__
 #include <sys/types.h>			/* forgot to protect it... */
 #endif /* __TYPES__ */
 #else
 #include <sys/types.h>
-#endif /* CRAY or USG */
+#endif /* USG */
 
 #include <X11/X.h>
 
