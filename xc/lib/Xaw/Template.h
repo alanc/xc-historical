@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: Simple.h,v 1.5 88/09/06 16:42:22 jim Exp $ */
+/* $XConsortium: Template.h,v 1.1 88/10/23 14:32:46 swick Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987, 1988 */
 
 #ifndef _Template_h
@@ -29,12 +29,18 @@
 
 */
 
-#define XtNtemplate		"template"
+/* define any special resource names here that are not in <X11/StringDefs.h> */
 
-#define XtCTemplate		"Template"
+#define XtNtemplateResource		"templateResource"
 
-typedef struct _TemplateClassRec	*TemplateWidgetClass;
-typedef struct _TemplateRec		*TemplateWidget;
+#define XtCTemplateResource		"TemplateResource"
+
+/* declare specific TemplateWidget class and instance datatypes */
+
+typedef struct _TemplateClassRec*	TemplateWidgetClass;
+typedef struct _TemplateRec*		TemplateWidget;
+
+/* declare the class constant */
 
 extern WidgetClass templateWidgetClass;
 
