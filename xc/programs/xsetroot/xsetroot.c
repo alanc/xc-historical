@@ -20,7 +20,7 @@
 
 usage()
 {
-	outl("%s: usage: %s [-fg <color>] [-bg <color>] [-rv] [-help] [-def] [-name <string>] [-cursor <cursor file> <mask file>] [-solid <color>] [-gray] [-grey] [-bitmap <filename>] [-mod <x> <y>] [<host>:<display>]\n\nNOTE: *** Use only one of -solid, -gray, -grey, -bitmap, and -mod ***\n\n", program_name, program_name);
+	outl("usage: %s [-fg <color>] [-bg <color>] [-rv] [-help] [-def] [-name <string>] [-cursor <cursor file> <mask file>] [-solid <color>] [-gray] [-grey] [-bitmap <filename>] [-mod <x> <y>] [display]\nwhere display can be specified as:\n    -display host:dpy    or -d host:dpy\n    host:dpy             obselete format, use -display\nNOTE: *** Use only one of -solid, -gray, -grey, -bitmap, and -mod ***\n\n", program_name);
 	exit(1);
 }
 
