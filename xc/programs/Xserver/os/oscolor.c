@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: oscolor.c,v 1.8 87/06/11 16:46:07 todd Exp $ */
+/* $Header: oscolor.c,v 1.8 87/09/11 07:50:53 rws Locked $ */
 #include <dbm.h>
 #include "rgb.h"
 
@@ -32,6 +32,8 @@ SOFTWARE.
  * one database open at a time.
  */
 extern int havergb;
+
+/*ARGSUSED*/
 int
 OsLookupColor(screen, name, len, pred, pgreen, pblue)
     int		screen;
@@ -41,7 +43,7 @@ OsLookupColor(screen, name, len, pred, pgreen, pblue)
 
 {
     datum	dbent;
-    RGB		*prgb;
+    RGB		rgb;
 
     if(!havergb)
 	return(0);
@@ -52,10 +54,10 @@ OsLookupColor(screen, name, len, pred, pgreen, pblue)
 
     if(dbent.dptr)
     {
-	prgb = (RGB *) dbent.dptr;
-	*pred = prgb->red;
-	*pgreen = prgb->green;
-	*pblue = prgb->blue;
+	bcopy(dbent.dptr, (char *) &rgb, sizeof (RGB));
+	*pred = rgb.red;
+	*pgreen = rgb.green;
+	*pblue = rgb.blue;
 	return (1);
     }
     return(0);
