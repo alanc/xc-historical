@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.77 91/05/31 17:58:37 converse Exp $ */
+/* $XConsortium: Display.c,v 1.78 91/07/05 14:42:32 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -145,6 +145,8 @@ static XtPerDisplay InitPerDisplay(dpy, app, name, classname)
     return pd;
 }
 
+/* kludge, for private communication to _XtAppInit */
+static char display_name_tried[100];
 
 #if NeedFunctionPrototypes
 Display *XtOpenDisplay(
@@ -192,9 +194,60 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 	    pd = InitPerDisplay(d, app, applName, className);
 	    pd->language = language;
 	    _XtDisplayInitialize(d, pd, applName, urlist, num_urs, argc, argv);
+	} else {
+	    displayName = XDisplayName(displayName);
+	    strncpy(display_name_tried, displayName,
+		    sizeof(display_name_tried));
+	    display_name_tried[sizeof(display_name_tried)-1] = '\0';
 	}
 	if (db) XrmDestroyDatabase(db);
 	return d;
+}
+
+Display *
+_XtAppInit(app_context_return, application_class, options, num_options,
+	   argc_in_out, argv_in_out, fallback_resources)
+XtAppContext * app_context_return;
+String application_class;
+XrmOptionDescRec *options;
+Cardinal num_options;
+int *argc_in_out;
+String **argv_in_out, * fallback_resources;
+{
+    String *saved_argv;
+    int i;
+    Display *dpy;
+
+    XtToolkitInitialize();
+    
+/*
+ * Save away argv and argc so we can set the properties later 
+ */
+    
+    saved_argv = (String *)
+	XtMalloc( (Cardinal)((*argc_in_out + 1) * sizeof(String)) );
+
+    for (i = 0 ; i < *argc_in_out ; i++) saved_argv[i] = (*argv_in_out)[i];
+    saved_argv[i] = NULL;	/* NULL terminate that sucker. */
+
+
+    *app_context_return = XtCreateApplicationContext();
+
+    if (fallback_resources) /* save a procedure call */
+	XtAppSetFallbackResources(*app_context_return, fallback_resources);
+
+    dpy = XtOpenDisplay(*app_context_return, (String) NULL, NULL,
+			application_class,
+			options, num_options, argc_in_out, *argv_in_out);
+
+    if (!dpy) {
+	String param = display_name_tried;
+	i = 1;
+	XtErrorMsg("invalidDisplay","xtInitialize",XtCXtToolkitError,
+                   "Can't open display: %s", &param, &i);
+    }
+    *argv_in_out = saved_argv;
+    return dpy;
 }
 
 #if NeedFunctionPrototypes
