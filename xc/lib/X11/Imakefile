@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.138 92/12/29 14:40:41 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.139 93/07/09 15:23:57 gildea Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -54,11 +54,11 @@ XBSDLIB = /**/
 #if NoRConst
  RCONST_DEFINES = -DNORCONST
 #endif
-#if ThreadedX
-    MTX_DEFINES = -DXTHREADS
-#endif
+    MTX_DEFINES = XlibMTDefines
+    MTT_DEFINES = ThreadTypeDefines
+
         DEFINES = $(MALLOC_DEFINES) $(MTX_DEFINES)
- DEPEND_DEFINES = -I$(EXTENSIONSRC)/include
+ DEPEND_DEFINES = -I$(EXTENSIONSRC)/include $(MTT_DEFINES)
    INSTALLFLAGS = $(INSTINCFLAGS)
        AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o 
        AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c 
@@ -1031,12 +1031,12 @@ SpecialCLibObjectRule(XConnDis,$(ICONFIGFILES),$(XDMAUTHDEFS) $(RPCDEFS) $(CONN_
 SpecialCLibObjectRule(XOpenDis,$(ICONFIGFILES),$(BC_DEFINES) $(DEPEND_DEFINES))
 SpecialCLibObjectRule(Wrap,$(ICONFIGFILES),$(XDMAUTHDEFS))
 SpecialCLibObjectRule(Xstreams,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialCLibObjectRule(XlibInt,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialCLibObjectRule(XlibInt,$(ICONFIGFILES),$(CONN_DEFINES) $(MTT_DEFINES))
 SpecialCLibObjectRule(XcmsColNm,$(ICONFIGFILES),$(CMS_DEFINES))
 SpecialCLibObjectRule(globals,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(Context,$(ICONFIGFILES),$(BC_DEFINES))
 SpecialCLibObjectRule(Xrm,$(_NOOP_),$(RCONST_DEFINES))
-
+SpecialCLibObjectRule(locking,$(ICONFIGFILES),$(MTT_DEFINES))
 LCRules()
 
 #if DoSharedLib
