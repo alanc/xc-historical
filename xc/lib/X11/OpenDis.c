@@ -1,6 +1,6 @@
 #include "copyright.h"
 #ifndef lint
-static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.63 88/08/24 21:05:10 jim Exp $";
+static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.64 88/08/24 21:18:26 jim Exp $";
 #endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 
@@ -390,8 +390,6 @@ Display *XOpenDisplay (display)
  */
 	dpy->next = _XHeadOfDisplayList;
 	_XHeadOfDisplayList = dpy;
-	UnlockDisplay(dpy);
-	UnlockMutex(&lock);
 
 /*
  * get pseudoroot support
@@ -400,10 +398,19 @@ Display *XOpenDisplay (display)
 	    extern Status _XGetPseudoRoot();
 
 	    if (!_XGetPseudoRoot (dpy, prop_name)) {	/* bad property name */
-		XCloseDisplay (dpy);
+		_XDisconectDisplay (dpy);
+		_XFreeDisplayStructure (dpy);
+		errno = EINVAL;
+		UnlockMutex(&lock);
 		return (NULL);
 	    }
 	}
+
+/*
+ * and done mucking with the display
+ */
+	UnlockDisplay(dpy);
+	UnlockMutex(&lock);
 
 /*
  * get the resource manager database off the root window.
