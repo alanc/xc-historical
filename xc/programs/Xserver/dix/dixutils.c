@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.33 89/07/16 17:24:49 rws Exp $ */
+/* $XConsortium: dixutils.c,v 1.34 89/09/21 19:22:36 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -236,6 +236,7 @@ typedef struct _BlockHandler {
 
 static BlockHandlerPtr	handlers;
 static int		numHandlers;
+static int		sizeHandlers;
 
 /* called from the OS layer */
 BlockHandler(pTimeout, pReadmask)
@@ -276,11 +277,15 @@ RegisterBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
 {
     BlockHandlerPtr new;
 
-    new = (BlockHandlerPtr) xrealloc (handlers, (numHandlers + 1) *
-				      sizeof (BlockHandlerRec));
-    if (!new)
-	return FALSE;
-    handlers = new;
+    if (numHandlers >= sizeHandlers)
+    {
+    	new = (BlockHandlerPtr) xrealloc (handlers, (numHandlers + 1) *
+				      	  sizeof (BlockHandlerRec));
+    	if (!new)
+	    return FALSE;
+    	handlers = new;
+	sizeHandlers = numHandlers + 1;
+    }
     handlers[numHandlers].BlockHandler = blockHandler;
     handlers[numHandlers].WakeupHandler = wakeupHandler;
     handlers[numHandlers].blockData = blockData;
@@ -288,9 +293,30 @@ RegisterBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
     return TRUE;
 }
 
+void
+RemoveBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
+    void    (*blockHandler)();
+    void    (*wakeupHandler)();
+    pointer blockData;
+{
+    int	    i;
+
+    for (i = 0; i < numHandlers; i++)
+	if (handlers[i].BlockHandler == blockHandler &&
+	    handlers[i].WakeupHandler == wakeupHandler &&
+	    handlers[i].blockData == blockData)
+	{
+	    for (; i < numHandlers - 1; i++)
+		handlers[i] = handlers[i+1];
+	    numHandlers--;
+	    break;
+	}
+}
+
 InitBlockAndWakeupHandlers ()
 {
     xfree (handlers);
     handlers = (BlockHandlerPtr) 0;
     numHandlers = 0;
+    sizeHandlers = 0;
 }
