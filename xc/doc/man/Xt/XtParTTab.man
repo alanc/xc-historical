@@ -157,7 +157,7 @@ the new translation is merged in and override the widget's translation.
 .LP
 To replace a widget's translations completely, use
 .ZN XtSetValues
-on the XtNtranslations resource and specifiy a compiled translation table
+on the XtNtranslations resource and specify a compiled translation table
 as the value.
 .LP
 The

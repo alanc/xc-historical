@@ -118,7 +118,7 @@ void XtDisplayInitialize(\fIapp_context\fP, \fIdisplay\fP, \
 .br
       Cardinal \fInum_options\fP;
 .br
-      Cardinal *\fIargc\fP;
+      int *\fIargc\fP;
 .br
       String *\fIargv\fP;
 .LP

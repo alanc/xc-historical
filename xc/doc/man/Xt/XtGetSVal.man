@@ -180,7 +180,7 @@ The effect is as if each target were specified in a separate call to
 The callback is called once with the corresponding client data for each target.
 .ZN XtGetSelectionValues
 does guarantee that all the conversions will use the same selection value
-becaues the ownership of the selection cannot change in the middle of the list,
+because the ownership of the selection cannot change in the middle of the list,
 as would be when calling
 .ZN XtGetSelectionValue
 repeatedly.
