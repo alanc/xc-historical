@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.164 91/01/30 18:01:30 gildea Exp $ */
+/* $XConsortium: main.c,v 1.165 91/02/05 17:14:43 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -39,8 +39,15 @@ SOFTWARE.
 
 /* main.c */
 
+#include "ptyx.h"
+#include "data.h"
+#include "error.h"
+#include "main.h"
+#include "menu.h"
+#include <X11/StringDefs.h>
+#include <X11/Shell.h>
+
 #include <X11/Xos.h>
-#include <X11/Xlib.h>
 #include <X11/cursorfont.h>
 #include <pwd.h>
 #include <ctype.h>
@@ -164,13 +171,6 @@ int	Ptyfd;
 #endif
 #endif
 
-#include "ptyx.h"
-#include "data.h"
-#include "error.h"
-#include "main.h"
-#include "menu.h"
-#include <X11/StringDefs.h>
-#include <X11/Shell.h>
 #include <signal.h>
 #ifdef SIGTSTP
 #include <sys/wait.h>
@@ -531,7 +531,11 @@ static struct _options {
 { "#geom",                 "icon window geometry" },
 { "-T string",             "title name for window" },
 { "-n string",             "icon name for window" },
-{ "-C",                    "intercept console messages, if supported" },
+#ifdef TIOCCONS
+{ "-C",                    "intercept console messages" },
+#else
+{ "-C",                    "intercept console messages (not supported)" },
+#endif
 { "-Sxxd",                 "slave mode on \"ttyxx\", file descriptor \"d\"" },
 { NULL, NULL }};
 
