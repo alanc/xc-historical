@@ -5,6 +5,8 @@
     CDEBUGFLAGS = ServerCDebugFlags
      EXTENSIONS = $(EXTENSIONSRC)/server/libext.a
          EXTDIR = $(EXTENSIONSRC)/server
+    FONTUTILDIR = $(FONTSRC)/mkfontdir
+       FONTUTIL = $(FONTUTILDIR)/fontdir.o
      ALLDDXDIRS = ddx/snf ddx/mi ddx/cfb ddx/mfb \
                   ddx/dec/lk201 ddx/dec/qvss ddx/dec/qdss ddx/dec/qdss/libtl \
                   ddx/dec/sm ddx/sun \
@@ -18,7 +20,7 @@
         SUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
            UNIX = os/4.2bsd/libos.a
            SYSV = os/sysV/libos.a
-           HPUX = os/hpux/libos.a
+           HPUX = os/bsd/libos.a
             MFB = ddx/mfb/libmfb.a
             CFB = ddx/cfb/libcfb.a
              MI = ddx/mi/libmi.a
@@ -93,8 +95,9 @@ all: $(ALL)
 # qvss server
 #
 QVSSDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/dec/lk201 ddx/dec/qvss os/4.2bsd
-QVSSOBJS = ddx/dec/qvss/init.o ddx/dec/qvss/qvss_io.o ddx/dec/lk201/lk201.o
-QVSSLIBS = $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+QVSSOBJS = ddx/dec/qvss/init.o ddx/dec/qvss/qvss_io.o ddx/dec/lk201/lk201.o\
+	$(FONTUTIL)
+QVSSLIBS = $(DIX) $(UNIX) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 XqvssDIRS = $(QVSSDIRS)
 
 ServerTarget(Xqvss,$(EXTDIR) $(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
@@ -103,8 +106,9 @@ ServerTarget(Xqvss,$(EXTDIR) $(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
 # sm server
 #
 SMDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/dec/lk201 ddx/dec/sm os/4.2bsd
-SMOBJS = ddx/dec/sm/init.o ddx/dec/sm/sm_io.o ddx/dec/lk201/lk201.o ddx/dec/sm/queue.o
-SMLIBS = $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+SMOBJS = ddx/dec/sm/init.o ddx/dec/sm/sm_io.o ddx/dec/lk201/lk201.o\
+	ddx/dec/sm/queue.o $(FONTUTIL)
+SMLIBS = $(DIX) $(UNIX) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 XsmDIRS = $(SMDIRS)
 
 ServerTarget(Xsm,$(EXTDIR) $(SMDIRS),$(SMOBJS),$(SMLIBS),$(SYSLIBS))
@@ -114,10 +118,11 @@ ServerTarget(Xsm,$(EXTDIR) $(SMDIRS),$(SMOBJS),$(SMLIBS),$(SYSLIBS))
 #
 QDSSDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/dec/lk201 ddx/dec/qdss \
            ddx/dec/qdss/libtl os/4.2bsd
-QDSSOBJS = ddx/dec/qdss/init.o ddx/dec/qdss/qdss_io.o ddx/dec/lk201/lk201.o
+QDSSOBJS = ddx/dec/qdss/init.o ddx/dec/qdss/qdss_io.o ddx/dec/lk201/lk201.o\
+	$(FONTUTIL)
 QDSSLIBS = ddx/dec/qdss/libqdss.a ddx/dec/qdss/libtl/libtl.a \
            ddx/dec/qdss/libqdss.a \
-           $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+           $(DIX) $(UNIX) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 XqdssDIRS = $(QDSSDIRS)
 
 ServerTarget(Xqdss,$(EXTDIR) $(QDSSDIRS),$(QDSSOBJS),$(QDSSLIBS),$(SYSLIBS))
@@ -130,8 +135,8 @@ ServerTarget(Xqdss,$(EXTDIR) $(QDSSDIRS),$(QDSSOBJS),$(QDSSLIBS),$(SYSLIBS))
 SUNWINDOWSLIBS = -lsunwindow -lpixrect
 #endif
 SUNDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/cfb ddx/sun os/4.2bsd
-SUNOBJS = ddx/sun/sunInit.o
-SUNLIBS = $(SUN) $(CFB) $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+SUNOBJS = ddx/sun/sunInit.o $(FONTUTIL)
+SUNLIBS = $(SUN) $(CFB) $(DIX) $(UNIX) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 SUNSYSLIBS = $(SYSLIBS) $(SUNWINDOWSLIBS)
 XsunDIRS = $(SUNDIRS)
 
@@ -141,8 +146,8 @@ ServerTarget(Xsun,$(EXTDIR) $(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 # plx server
 #
 PLXDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/plx ddx/dec/lk201 os/4.2bsd
-PLXOBJS = ddx/plx/plxInit.o ddx/plx/plxEvents.o
-PLXLIBS = $(PLX) ddx/dec/lk201/lk201.o $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+PLXOBJS = ddx/plx/plxInit.o ddx/plx/plxEvents.o $(FONTUTIL)
+PLXLIBS = $(PLX) ddx/dec/lk201/lk201.o $(DIX) $(UNIX) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 PLXSYSLIBS = $(SYSLIBS) -lplx
 XplxDIRS = $(PLXDIRS)
 
@@ -152,8 +157,8 @@ ServerTarget(Xplx,$(EXTDIR) $(PLXDIRS),$(PLXOBJS),$(PLXLIBS),$(PLXSYSLIBS))
 # HP server
 #
 HPDIRS = dix ddx/snf ddx/mi ddx/hp/hp ddx/hp/mfb ddx/hp/cfb ddx/hp/gbx \
-         ddx/hp/mob ddx/hp/topcat ddx/hp/catseye ddx/hp/ren os/hpux
-HPOBJS = ddx/hp/hp/init.o
+         ddx/hp/mob ddx/hp/topcat ddx/hp/catseye ddx/hp/ren os/bsd
+HPOBJS = ddx/hp/hp/init.o $(FONTUTIL)
 HPLIBS = $(DIX) $(EXTENSIONS) $(HP) \
           ddx/hp/topcat/libtopcat.a \
           ddx/hp/hp/libcrtstub.a \
@@ -165,7 +170,7 @@ HPLIBS = $(DIX) $(EXTENSIONS) $(HP) \
           ddx/hp/ren/libren.a \
           ddx/hp/cfb/libcfb.a \
           ddx/hp/mfb/libmfb.a \
-          $(SNF) $(HPUX) $(MI)
+          $(HPUX) $(SNF) $(MI)
 #if ServerMallocLib
 HPMALLOCLIB = -lmalloc
 #endif
@@ -184,9 +189,9 @@ IBMALLOCLIB =
 #endif
 
 IBMDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/ibm os/4.2bsd
-IBMOBJS = ddx/ibm/rt/rt.o
+IBMOBJS = ddx/ibm/rt/rt.o $(FONTUTIL)
 IBMLIBS = ddx/ibm/libibm.a $(IBMALLOCLIB) \
-		$(DIX)  $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+		$(DIX)  $(UNIX) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 IBMSYSLIBS = $(SYSLIBS)
 XibmDIRS = $(IBMDIRS)
 
@@ -197,7 +202,7 @@ ServerTarget(Xibm,$(EXTDIR) $(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(IBMSYSLIBS))
 #
 APOLLODIRS = dix ddx/snf ddx/mi ddx/mfb ddx/apollo os/4.2bsd
 APOLLOOBJS = ddx/apollo/ap_init.o /sys/traits/io_traits
-APOLLOLIBS = $(APOLLO) $(APC) $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+APOLLOLIBS = $(APOLLO) $(APC) $(DIX) $(UNIX) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 XapolloDIRS = $(APOLLODIRS)
 
 ServerTarget(Xapollo,$(EXTDIR) $(APOLLODIRS),$(APOLLOOBJS),$(APOLLOLIBS),$(SYSLIBS))
@@ -206,8 +211,8 @@ ServerTarget(Xapollo,$(EXTDIR) $(APOLLODIRS),$(APOLLOOBJS),$(APOLLOLIBS),$(SYSLI
 # ndx server
 #
 NDXDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/cfb ddx/ndx os/4.2bsd
-NDXOBJS = ddx/ndx/init.o ddx/ndx/ndx_io.o
-NDXLIBS = $(DIX) $(SNF) $(UNIX) $(MFB) $(CFB) $(MI) $(EXTENSIONS)
+NDXOBJS = ddx/ndx/init.o ddx/ndx/ndx_io.o $(FONTUTIL)
+NDXLIBS = $(DIX) $(UNIX) $(SNF) $(MFB) $(CFB) $(MI) $(EXTENSIONS)
 XndxDIRS = $(NDXDIRS)
 
 ServerTarget(Xndx,$(EXTDIR) $(NDXDIRS),$(NDXOBJS),$(NDXLIBS),$(SYSLIBS))
@@ -216,8 +221,8 @@ ServerTarget(Xndx,$(EXTDIR) $(NDXDIRS),$(NDXOBJS),$(NDXLIBS),$(SYSLIBS))
 # pegasus server
 #
 PEGASUSDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/tek os/4.2bsd
-PEGASUSOBJS = ddx/tek/tek4310.obj
-PEGASUSLIBS = $(MFB) $(MI) $(DIX) $(SNF) $(UNIX) $(EXTENSIONS)
+PEGASUSOBJS = ddx/tek/tek4310.obj $(FONTUTIL)
+PEGASUSLIBS = $(MFB) $(MI) $(DIX) $(UNIX) $(SNF) $(EXTENSIONS)
 XpegDIRS = $(PEGASUSDIRS)
 
 ServerTarget(Xpeg,$(EXTDIR) $(PEGASUSDIRS),$(PEGASUSOBJS),$(PEGASUSLIBS),$(SYSLIBS))
@@ -227,7 +232,7 @@ ServerTarget(Xpeg,$(EXTDIR) $(PEGASUSDIRS),$(PEGASUSOBJS),$(PEGASUSLIBS),$(SYSLI
 #
 MACIIDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/cfb ddx/macII os/4.2bsd os/sysV
 MACIIOBJS = ddx/macII/macIIInit.o
-MACIILIBS = $(MACII) $(CFB) $(DIX) $(SNF) $(UNIX) $(SYSV) $(MFB) $(MI) $(EXTENSIONS)
+MACIILIBS = $(MACII) $(CFB) $(DIX) $(UNIX) $(SNF) $(SYSV) $(MFB) $(MI) $(EXTENSIONS)
 MACIISYSLIBS = $(SYSLIBS)
 XmacIIDIRS = $(MACIIDIRS)
  
@@ -268,7 +273,7 @@ DoServerSubdirList(install)
 DoServerSubdirList(lintlib)
 DoServerSubdirList(lint)
 
-$(EXTDIR) $(SUBDIRS): FRC
+$(EXTDIR) $(FONTUTILDIR) $(SUBDIRS): FRC
 	@cd $@ ; echo "making $@"; \
 	$(MAKE) $(MFLAGS) PassCDebugFlags all
 
