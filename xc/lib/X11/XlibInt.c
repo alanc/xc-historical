@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.181 93/09/15 17:55:35 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.182 93/09/15 18:08:17 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -424,7 +424,7 @@ _XWaitForReadable(dpy)
 	    break;
 	if (!dpy->in_process_conni)
 	    for (ilist=dpy->im_fd_info; ilist; ilist=ilist->next) {
-		if (FD_ISSET(ilist->fd, (struct fd_set*)(r_mask))) {
+		if (GETBIT(r_mask, ilist->fd)) {
 		    _XProcessInternalConnection(dpy, ilist);
 		}
 	    }
