@@ -1,4 +1,4 @@
-/* $XConsortium: pexSc.c,v 5.3 91/10/01 02:33:43 hersh Exp $ */
+/* $XConsortium: pexSc.c,v 5.4 92/05/12 18:37:30 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -56,16 +56,16 @@ SOFTWARE.
 
 #define SC_NS_LIMIT  20				/* arbitrary value */
 
-#define CHK_PEX_BUF(SIZE,INCR,REPLY,TYPE,PTR) \
-    SIZE+=INCR; \
-    if (pPEXBuffer->dataSize < SIZE) { \
+#define CHK_PEX_BUF(SIZE,INCR,REPLY,TYPE,PTR) {\
+    (SIZE)+=(INCR); \
+      if (pPEXBuffer->bufSize < (SIZE)) { \
 	ErrorCode err = Success; \
-	int offset = (int)PTR - (int)(pPEXBuffer->pHead); \
-	err = puBuffRealloc(pPEXBuffer,(ddULONG)SIZE); \
+	int offset = (int)(((unsigned char *)(PTR)) - ((unsigned char *)(pPEXBuffer->pHead))); \
+	err = puBuffRealloc(pPEXBuffer,(ddULONG)(SIZE)); \
 	if (err) PEX_ERR_EXIT(err,0,cntxtPtr); \
-	REPLY = (TYPE *)(pPEXBuffer->pHead); \
-	PTR = (unsigned char *)(pPEXBuffer->pHead + offset); }
-    
+	(REPLY) = (TYPE *)(pPEXBuffer->pHead); \
+	(PTR) = (unsigned char *)(pPEXBuffer->pHead + offset); } \
+}
 
 static ErrorCode
 AddToNSPair( incl, excl, pair )
