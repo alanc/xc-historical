@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XLockDis.c,v 1.4 93/07/10 19:10:59 rws Exp $
+ * $XConsortium: XLockDis.c,v 1.5 93/07/11 13:39:05 rws Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -35,9 +35,11 @@ void XLockDisplay(dpy)
     register Display* dpy;
 #endif
 {
+#ifdef XTHREADS
     LockDisplay(dpy);
     if (dpy->lock)
 	(*dpy->lock_fns->user_lock_display)(dpy);
+#endif
 }
 
 #if NeedFunctionPrototypes
@@ -48,7 +50,9 @@ void XUnlockDisplay(dpy)
     register Display* dpy;
 #endif
 {
+#ifdef XTHREADS
     if (dpy->lock)
 	(*dpy->lock_fns->user_unlock_display)(dpy);
     UnlockDisplay(dpy);
+#endif
 }
