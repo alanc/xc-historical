@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.15 89/10/08 16:36:13 jim Exp $
+ * $XConsortium: XMultibuf.c,v 1.16 89/10/08 17:01:15 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -63,7 +63,7 @@ static /* const */ XExtensionHooks multibuf_extension_hooks = {
     error_string,			/* error_string */
 };
 
-static char *multibuf_error_list[] = {
+static /* const */ char *multibuf_error_list[] = {
     "BadBuffer",			/* MultibufferBadBuffer */
 };
 
