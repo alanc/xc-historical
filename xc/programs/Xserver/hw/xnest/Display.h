@@ -1,4 +1,4 @@
-/* $XConsortium: xnestDisplay.h,v 1.1 93/06/23 16:23:47 dmatic Exp $ */
+/* $XConsortium: Display.h,v 1.1 93/07/12 15:28:07 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -38,7 +38,7 @@ extern Pixmap xnestIconBitmap;
 extern Pixmap xnestScreenSaverPixmap;
 extern XlibGC xnestBitmapGC;
 extern Window xnestConfineWindow;
-extern Mask xnestEventMask;
+extern unsigned long xnestEventMask;
 
 void xnestOpenDisplay();
 void xnestCloseDisplay();
