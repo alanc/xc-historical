@@ -42,6 +42,7 @@ usage()
     fprintf(stderr, "  -def   or   -default\n");
     fprintf(stderr, "  -name <string>\n");
     fprintf(stderr, "  -cursor <cursor file> <mask file>\n");
+    fprintf(stderr, "  -cursor_name <cursor-font name>\n");
     fprintf(stderr, "  -solid <color>\n");
     fprintf(stderr, "  -gray   or   -grey\n");
     fprintf(stderr, "  -bitmap <filename>\n");
@@ -53,6 +54,7 @@ usage()
 Pixmap MakeModulaBitmap(), ReadBitmapFile();
 XColor NameToXColor();
 unsigned long NameToPixel();
+Cursor	CreateCursorFromName();
 
 main(argc, argv) 
     int argc;
@@ -65,6 +67,7 @@ main(argc, argv)
     char *name = NULL;
     char *cursor_file = NULL;
     char *cursor_mask = NULL;
+    char *cursor_name = NULL;
     char *solid_color = NULL;
     Cursor cursor;
     int gray = 0;
@@ -101,6 +104,12 @@ main(argc, argv)
 	    cursor_file = argv[i];
 	    if (++i>=argc) usage();
 	    cursor_mask = argv[i];
+	    nonexcl++;
+	    continue;
+	}
+	if (!strcmp("-cursor_name", argv[i])) {
+	    if (++i>=argc) usage();
+	    cursor_name = argv[i];
 	    nonexcl++;
 	    continue;
 	}
@@ -175,6 +184,14 @@ main(argc, argv)
 	XFreeCursor(dpy, cursor);
     }
   
+    if (cursor_name) {
+	cursor = CreateCursorFromName (cursor_name);
+	if (cursor)
+	{
+	    XDefineCursor (dpy, root, cursor);
+	    XFreeCursor (dpy, cursor);
+	}
+    }
     /* Handle -gray and -grey options */
     if (gray) {
 	bitmap = XCreateBitmapFromData(dpy, root, gray_bits,
@@ -341,6 +358,29 @@ CreateCursorFromFiles(cursor_file, mask_file)
     return(cursor);
 }
 
+Cursor
+CreateCursorFromName (name)
+    char    *name;
+{
+    XColor fg, bg, temp;
+    int	    i;
+    Font    fid;
+    char    *font_name;
+
+    fg = NameToXColor(fore_color, BlackPixel(dpy, screen));
+    bg = NameToXColor(back_color, WhitePixel(dpy, screen));
+    if (reverse) {
+	temp = fg; fg = bg; bg = temp;
+    }
+    i = XmuCursorNameToIndex (name);
+    if (i == -1)
+	return (Cursor) 0;
+    fid = XLoadFont (dpy, "cursor");
+    if (!fid)
+	return (Cursor) 0;
+    return XCreateGlyphCursor (dpy, fid, fid,
+			       i, i+1, &fg, &bg);
+}
 
 /*
  * MakeModulaBitmap: Returns a modula bitmap based on an x & y mod.
