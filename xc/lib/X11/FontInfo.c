@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XFontInfo.c,v 11.14 88/09/06 16:07:22 jim Exp $ */
+/* $XConsortium: XFontInfo.c,v 11.15 89/06/21 14:08:55 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -9,8 +9,8 @@ char **XListFontsWithInfo(dpy, pattern, maxNames, actualCount, info)
 register Display *dpy;
 char *pattern;  /* null-terminated */
 int maxNames;
-int *actualCount;
-XFontStruct **info;
+int *actualCount;	/* RETURN */
+XFontStruct **info;	/* RETURN */
 {       
     register long nbytes;
     register int i;
@@ -20,6 +20,7 @@ XFontStruct **info;
     char **flist = NULL;
     xListFontsWithInfoReply reply;
     register xListFontsReq *req;
+    int j;
 
     LockDisplay(dpy);
     GetReq(ListFontsWithInfo, req);
@@ -31,20 +32,56 @@ XFontStruct **info;
 
     for (i = 0; ; i++) {
 	if (!_XReply (dpy, (xReply *) &reply,
-	   ((SIZEOF(xListFontsWithInfoReply) - SIZEOF(xGenericReply)) >> 2), xFalse))
-		return (NULL);
+		      ((SIZEOF(xListFontsWithInfoReply) - 
+			SIZEOF(xGenericReply)) >> 2), xFalse)) {
+	    for (j=(i-1); (j >= 0); j--) {
+		Xfree(flist[i]);
+		if (finfo[i].properties) Xfree((char *) finfo[i].properties);
+	    }
+	    if (flist) Xfree((char *) flist);
+	    if (finfo) Xfree((char *) finfo);
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return ((char **) NULL);
+	}
 	if (reply.nameLength == 0)
 	    break;
 	if ((i + reply.nReplies) >= size) {
 	    size = i + reply.nReplies + 1;
+
 	    if (finfo) {
-		finfo = (XFontStruct *) Xrealloc ((char *) finfo,
-						  sizeof (XFontStruct) * size);
-		flist = (char **) Xrealloc ((char *) flist,
-					    sizeof (char *) * size);
-	    } else {
-		finfo = (XFontStruct *) Xmalloc (sizeof (XFontStruct) * size);
-		flist = (char **) Xmalloc (sizeof (char *) * size);
+		XFontStruct * tmp_finfo = (XFontStruct *) 
+		    Xrealloc ((char *) finfo,
+			      (unsigned) (sizeof(XFontStruct) * size));
+		char ** tmp_flist = (char **)
+		    Xrealloc ((char *) flist,
+			      (unsigned) (sizeof(char *) * size));
+
+		if ((! tmp_finfo) || (! tmp_flist)) {
+		    /* free all the memory that we allocated */
+		    for (j=(i-1); (j >= 0); j--) {
+			Xfree(flist[i]);
+			if (finfo[i].properties)
+			    Xfree((char *) finfo[i].properties);
+		    }
+		    if (tmp_flist) Xfree((char *) tmp_flist);
+		    else Xfree((char *) flist);
+		    if (tmp_finfo) Xfree((char *) tmp_finfo);
+		    else Xfree((char *) finfo);
+		    goto clearwire;
+		}
+		finfo = tmp_finfo;
+		flist = tmp_flist;
+	    }
+	    else {
+		if (! (finfo = (XFontStruct *)
+		       Xmalloc((unsigned) (sizeof(XFontStruct) * size))))
+		    goto clearwire;
+		if (! (flist = (char **)
+		       Xmalloc((unsigned) (sizeof(char *) * size)))) {
+		    Xfree((char *) finfo);
+		    goto clearwire;
+		}
 	    }
 	}
 	fs = &finfo[i];
@@ -91,12 +128,21 @@ XFontStruct **info;
 	fs->n_properties = reply.nFontProps;
 	if (fs->n_properties > 0) {
 	    nbytes = reply.nFontProps * sizeof(XFontProp);
-	    fs->properties = (XFontProp *) Xmalloc (nbytes);
+	    if (! (fs->properties = (XFontProp *) Xmalloc((unsigned) nbytes)))
+		goto badmem;
 	    nbytes = reply.nFontProps * SIZEOF(xFontProp);
 	    _XRead32 (dpy, (char *)fs->properties, nbytes);
+
 	} else
 	    fs->properties = NULL;
+
 	flist[i] = (char *) Xmalloc ((unsigned int) (reply.nameLength + 1));
+	if (! flist[i]) {
+	    if (finfo[i].properties) Xfree((char *) finfo[i].properties);
+	    nbytes = reply.nameLength + 3 & ~3;
+	    _XEatData(dpy, (unsigned long) nbytes);
+	    goto badmem;
+	}
 	flist[i][reply.nameLength] = '\0';
 	_XReadPad (dpy, flist[i], (long) reply.nameLength);
     }
@@ -105,7 +151,35 @@ XFontStruct **info;
     UnlockDisplay(dpy);
     SyncHandle();
     return (flist);
+
+
+  badmem:
+    /* Free all memory allocated by this function. */
+    for (j=(i-1); (j >= 0); j--) {
+	Xfree(flist[i]);
+	if (finfo[i].properties) Xfree((char *) finfo[i].properties);
+    }
+    if (flist) Xfree((char *) flist);
+    if (finfo) Xfree((char *) finfo);
+
+  clearwire:
+    /* Clear the wire. */
+    do {
+	if (reply.nFontProps)
+	    _XEatData(dpy, (unsigned long)
+		      (reply.nFontProps * SIZEOF(xFontProp)));
+	nbytes = (reply.nameLength + 3) & ~3;
+	_XEatData(dpy, (unsigned long) nbytes);
+    }
+    while (_XReply(dpy,(xReply *) &reply, ((SIZEOF(xListFontsWithInfoReply) -
+					    SIZEOF(xGenericReply)) >> 2),
+		   xFalse) && (reply.nameLength != 0));
+
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return (char **) NULL;
 }
+
 
 XFreeFontInfo (names, info, actualCount)
 char **names;
