@@ -24,13 +24,14 @@
 (import '(
 	  lcl:define-condition
 	  lcl:make-condition
+	  lcl:type-error
 	  sys:underlying-simple-vector))
 
 (export '(
 	  char->card8
 	  card8->char
 	  default-error-handler
-	  define-condition))
+	  #-ansi-common-lisp define-condition))
 
 #+explorer
 (zwei:define-indentation event-case (1 1))
@@ -80,9 +81,9 @@
 
 )
 
-(proclaim '(inline card8->int8 int8->card8
-		   card16->int16 int16->card16
-		   card32->int32 int32->card32))
+(declaim (inline card8->int8 int8->card8
+		 card16->int16 int16->card16
+		 card32->int32 int32->card32))
 
 #-Genera
 (progn
@@ -160,7 +161,7 @@
 
 )
 
-(proclaim '(inline aref-card8 aset-card8 aref-int8 aset-int8))
+(declaim (inline aref-card8 aset-card8 aref-int8 aset-int8))
 
 #-(or Genera lcl3.0)
 (progn
@@ -247,8 +248,8 @@
 )
 
 #+clx-overlapping-arrays
-(proclaim '(inline aref-card16 aref-int16 aref-card32 aref-int32 aref-card29
-		   aset-card16 aset-int16 aset-card32 aset-int32 aset-card29))
+(declaim (inline aref-card16 aref-int16 aref-card32 aref-int32 aref-card29
+		 aset-card16 aset-int16 aset-card32 aset-int32 aset-card29))
 
 #+(and clx-overlapping-arrays Genera)
 (progn
@@ -661,7 +662,7 @@
 ;;; This stuff transforms chars to ascii codes in card8's and back.
 ;;; You might have to hack it a little to get it to work for your machine.
 
-(proclaim '(inline char->card8 card8->char))
+(declaim (inline char->card8 card8->char))
 
 (macrolet ((char-translators ()
 	     (let ((alist
@@ -991,7 +992,7 @@
 
 ;;; PROCESS-WAKEUP: Check some other process' wait function.
 
-(proclaim '(inline process-wakeup))
+(declaim (inline process-wakeup))
 
 #-(or excl Genera)
 (defun process-wakeup (process)
@@ -1016,7 +1017,7 @@
 ;;; CURRENT-PROCESS: Return the current process object for input locking and
 ;;; for calling PROCESS-WAKEUP.
 
-(proclaim '(inline current-process))
+(declaim (inline current-process))
 
 ;;; Default return NIL, which is acceptable even if there is a scheduler.
 
@@ -1647,7 +1648,7 @@
   ;; therefore DISAPPEARS when WITH-STACK-LIST is exited.
   `(let ((,var (list* ,@elements))) ,@body))
 
-(proclaim '(inline buffer-replace))
+(declaim (inline buffer-replace))
 
 #+lispm
 (defun buffer-replace (buf1 buf2 start1 end1 &optional (start2 0))
@@ -1845,8 +1846,14 @@
 ;; If you want lots of checking, but are concerned about code size,
 ;; this can be made into a macro that ignores some parameters.
 
+#-(or ansi-common-lisp excl lcl3.0)
 (defun x-type-error (object type &optional error-string)
   (x-error 'type-error :object object :type type :type-string error-string))
+
+#+(or ansi-common-lisp excl lcl3.0) 
+(defun x-type-error (object type &optional error-string)
+  (declare (ignore error-string))
+  (x-error 'type-error :datum object :expected-type type))
 
 
 ;;-----------------------------------------------------------------------------
@@ -1854,10 +1861,6 @@
 ;;    Hack up KMP error signaling using zetalisp until the real thing comes 
 ;;    along
 ;;-----------------------------------------------------------------------------
-
-#+(or allegro lcl3.0)
-(eval-when (eval compile load)
-  (pushnew :clx-cl-error *features*))
 
 (defun default-error-handler (display error-key &rest key-vals
 			      &key asynchronous &allow-other-keys)
@@ -1869,41 +1872,41 @@
       (apply #'x-cerror "Ignore" error-key :display display :error-key error-key key-vals)
       (apply #'x-error error-key :display display :error-key error-key key-vals)))
 
-#+(and lispm (not Genera) (not clx-cl-error))
+#+(and lispm (not Genera) (not ansi-common-lisp))
 (defun x-error (condition &rest keyargs)
   (apply #'sys:signal condition keyargs))
 
-#+(and lispm (not Genera) (not clx-cl-error))
+#+(and lispm (not Genera) (not ansi-common-lisp))
 (defun x-cerror (proceed-format-string condition &rest keyargs)
   (sys:signal (apply #'zl:make-condition condition keyargs)
 	      :proceed-types proceed-format-string))
 
-#+(and Genera (not clx-cl-error))
+#+(and Genera (not ansi-common-lisp))
 (defun x-error (condition &rest keyargs)
   (declare (dbg:error-reporter))
   (apply #'sys:signal condition keyargs))
 
-#+(and Genera (not clx-cl-error))
+#+(and Genera (not ansi-common-lisp))
 (defun x-cerror (proceed-format-string condition &rest keyargs)
   (declare (dbg:error-reporter))
   (apply #'sys:signal condition :continue-format-string proceed-format-string keyargs))
 
-#+clx-cl-error
+#+(or ansi-common-lisp excl lcl3.0)
 (defun x-error (condition &rest keyargs)
   (declare (dynamic-extent keyargs))
   (apply #'error condition keyargs))
 
-#+clx-cl-error
+#+(or ansi-common-lisp excl lcl3.0)
 (defun x-cerror (proceed-format-string condition &rest keyargs)
   (declare (dynamic-extent keyargs))
   (apply #'cerror proceed-format-string condition keyargs))
 
-#-(or lispm clx-cl-error)
+#-(or lispm ansi-common-lisp excl lcl3.0)
 (defun x-error (condition &rest keyargs)
   (error "X-Error: ~a"
 	 (princ-to-string (apply #'make-condition condition keyargs))))
 
-#-(or lispm clx-cl-error)
+#-(or lispm ansi-common-lisp excl lcl3.0)
 (defun x-cerror (proceed-format-string condition &rest keyargs)
   (cerror proceed-format-string "X-Error: ~a"
 	 (princ-to-string (apply #'make-condition condition keyargs))))
@@ -1913,7 +1916,7 @@
 ;; Where option is one of: (:documentation doc-string) (:conc-name symbol-or-string)
 ;; or (:report exp)
 
-#+(and lispm (not clx-cl-error))
+#+(and lispm (not ansi-common-lisp))
 (defmacro define-condition (name parents &body options)
   (let ((slots (pop options))
 	(documentation nil)
@@ -1947,41 +1950,41 @@
 	  `(setf (documentation name 'type) ,documentation))
        ',name)))
 
-#+(and lispm (not Genera) (not clx-cl-error))
+#+(and lispm (not Genera) (not ansi-common-lisp))
 (zl:defflavor x-error () (global:error))
 
-#+(and Genera (not clx-cl-error))
+#+(and Genera (not ansi-common-lisp))
 (scl:defflavor x-error
 	((dbg:proceed-types '(:continue))	;
 	 continue-format-string)
 	(sys:error)
   (:initable-instance-variables continue-format-string))
 
-#+(and Genera (not clx-cl-error))
+#+(and Genera (not ansi-common-lisp))
 (scl:defmethod (scl:make-instance x-error) (&rest ignore)
   (when (not (sys:variable-boundp continue-format-string))
     (setf dbg:proceed-types (remove :continue dbg:proceed-types))))
 
-#+(and Genera (not clx-cl-error))
+#+(and Genera (not ansi-common-lisp))
 (scl:defmethod (dbg:proceed x-error :continue) ()
   :continue)
 
-#+(and Genera (not clx-cl-error))
+#+(and Genera (not ansi-common-lisp))
 (sys:defmethod (dbg:document-proceed-type x-error :continue) (stream)
   (format stream continue-format-string))
 
-#+clx-cl-error
+#+(or ansi-common-lisp excl lcl3.0)
 (define-condition x-error (error))
 
-#-(or lispm clx-cl-error)
+#-(or lispm ansi-common-lisp excl lcl3.0)
 (defstruct x-error
   report-function)
 
-#-(or lispm clx-cl-error)
+#-(or lispm ansi-common-lisp excl lcl3.0)
 (defun reporter-for-condition (name)
   (xintern "." name '-reporter.))
 
-#-(or lispm clx-cl-error)
+#-(or lispm ansi-common-lisp excl lcl3.0)
 (defmacro define-condition (name parents &body options)
   ;; Define a structure that when printed displays an error message
   (let ((slots (pop options))
@@ -2012,7 +2015,7 @@
 	     ,condition))
        ',name)))
 
-#-(or lispm clx-cl-error)
+#-(or lispm ansi-common-lisp excl lcl3.0)
 (defun condition-print (condition stream depth)
   (declare (type x-error condition)
 	   (type stream stream)
@@ -2022,7 +2025,7 @@
     (funcall (x-error-report-function condition) condition stream))
   condition)
   
-#-(or lispm clx-cl-error)
+#-(or lispm ansi-common-lisp excl lcl3.0)
 (defun make-condition (type &rest slot-initializations)
   (declare (dynamic-extent slot-initializations))
   (let ((make-function (intern (concatenate 'string (string 'make-) (string type))
