@@ -1,4 +1,4 @@
-/* "$XConsortium: XKBCvt.c,v 1.3 93/09/28 19:30:09 rws Exp $"; */
+/* "$XConsortium: XKBCvt.c,v 1.4 93/09/28 19:48:40 rws Exp $"; */
 
 /*
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -40,6 +40,11 @@ extern char *getenv();
 #define Const const
 #else
 #define Const /**/
+#endif
+#if __STDC__ && !defined(NORCONST)
+#define RConst /**/
+#else
+#define RConst Const
 #endif
 
 /* bit (1<<i) means character is in codeset i */
@@ -306,51 +311,51 @@ __XkbDefaultToUpper(sym)
 /***====================================================================***/
 
 
-static XkbConverters	cvt_ascii = {
+static XkbConverters RConst cvt_ascii = {
 	_XkbKSToKnownSet,(XPointer)&WantLatin1,_XkbKnownSetToKS,NULL,__XkbDefaultToUpper
 };
 
-static XkbConverters	cvt_latin1 = {
+static XkbConverters RConst cvt_latin1 = {
 	_XkbKSToKnownSet,(XPointer)&WantLatin1,_XkbKnownSetToKS,NULL,NULL
 };
 
-static XkbConverters	cvt_latin2 = {
+static XkbConverters RConst cvt_latin2 = {
 	_XkbKSToKnownSet,(XPointer)&WantLatin2,_XkbKnownSetToKS,NULL,NULL
 };
 
-static XkbConverters	cvt_latin3 = {
+static XkbConverters RConst cvt_latin3 = {
 	_XkbKSToKnownSet,(XPointer)&WantLatin3,_XkbKnownSetToKS,NULL,NULL
 };
 
-static XkbConverters	cvt_latin4 = {
+static XkbConverters RConst cvt_latin4 = {
 	_XkbKSToKnownSet,(XPointer)&WantLatin4,_XkbKnownSetToKS,NULL,NULL
 };
 
-static XkbConverters	cvt_kana = {
+static XkbConverters RConst cvt_kana = {
 	_XkbKSToKnownSet,(XPointer)&WantKana,_XkbKnownSetToKS,NULL,NULL
 };
 
-static XkbConverters	cvt_X0201 = {
+static XkbConverters RConst cvt_X0201 = {
 	_XkbKSToKnownSet,(XPointer)&WantX0201,_XkbKnownSetToKS,NULL,NULL
 };
 
-static XkbConverters	cvt_Arabic = {
+static XkbConverters RConst cvt_Arabic = {
 	_XkbKSToKnownSet,(XPointer)&WantArabic,_XkbKnownSetToKS,NULL,NULL
 };
 
-static XkbConverters	cvt_Cyrillic = {
+static XkbConverters RConst cvt_Cyrillic = {
 	_XkbKSToKnownSet,(XPointer)&WantCyrillic,_XkbKnownSetToKS,NULL,NULL
 };
 
-static XkbConverters	cvt_Greek = {
+static XkbConverters RConst cvt_Greek = {
 	_XkbKSToKnownSet,(XPointer)&WantGreek,_XkbKnownSetToKS,NULL,NULL
 };
 
-static XkbConverters	cvt_APL = {
+static XkbConverters RConst cvt_APL = {
 	_XkbKSToKnownSet,(XPointer)&WantAPL,_XkbKnownSetToKS,NULL,NULL
 };
 
-static XkbConverters	cvt_Hebrew = {
+static XkbConverters RConst cvt_Hebrew = {
 	_XkbKSToKnownSet,(XPointer)&WantHebrew,_XkbKnownSetToKS,NULL,NULL
 };
 
