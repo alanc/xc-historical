@@ -1,0 +1,5 @@
+Xtrans.PS:
+	$(TBL) Xtrans.mm  | $(TROFF) -mm > Xtrans.PS
+
+clean::
+	$(RM) Xtrans.PS
