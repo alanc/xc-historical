@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.121 89/11/22 15:36:46 jim Exp $
+ * $XConsortium: menus.c,v 1.122 89/11/22 16:03:26 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.121 89/11/22 15:36:46 jim Exp $";
+"$XConsortium: menus.c,v 1.122 89/11/22 16:03:26 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1785,21 +1785,34 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	{
 	    TwmWindow *t;
 	    int len;
+	    Window raisewin = None, iconwin = None;
 
 	    len = strlen(action);
-
-	    for (t = Scr->TwmRoot.next; t != NULL; t = t->next)
-	    {
-		/* match only the first portion of ICON the name */
-		if (!strncmp(action, t->icon_name, len))
-		{
-		    if (t->list && t->list->iconmgr->twm_win->mapped)
-		    {
-			XRaiseWindow(dpy, t->list->iconmgr->twm_win->frame);
-			XWarpPointer(dpy, None, t->list->icon, 0,0,0,0, 5, 5);
-			break;
+	    if (len == 0) {
+		if (tmp_win && tmp_win->list) {
+		    raisewin = tmp_win->list->iconmgr->twm_win->frame;
+		    iconwin = tmp_win->list->icon;
+		} else if (Scr->iconmgr.active) {
+		    raisewin = Scr->iconmgr.twm_win->frame;
+		    iconwin = Scr->iconmgr.active->w;
+		}
+	    } else {
+		for (t = Scr->TwmRoot.next; t != NULL; t = t->next) {
+		    if (strncmp (action, t->icon_name, len) == 0) {
+			if (t->list && t->list->iconmgr->twm_win->mapped) {
+			    raisewin = t->list->iconmgr->twm_win->frame;
+			    iconwin = t->list->icon;
+			    break;
+			}
 		    }
 		}
+	    }
+
+	    if (raisewin) {
+		XRaiseWindow (dpy, raisewin);
+		XWarpPointer (dpy, None, iconwin, 0,0,0,0, 5, 5);
+	    } else {
+		XBell (dpy, 0);
 	    }
 	}
 	break;
