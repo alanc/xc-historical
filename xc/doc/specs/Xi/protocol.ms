@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .\" Input Extension
 .EH ''''
 .OH ''''
@@ -1096,7 +1097,7 @@ T}	T{
 T}
 .TE
 .sp
-Errors: Device, Match, Window
+Errors: Device, Match
 .br
 .in -.5i
 .sp 1.5
@@ -1183,6 +1184,11 @@ device: DEVICE
 Errors: Device, Match
 .br
 .in -.5i
+=>
+.br
+.in +.5i
+status: Success, AlreadyGrabbed, Frozen
+.br
 .sp 1.5
 .LP
 To change the X pointer device, use the \fBChangePointerDevice\fP request.
@@ -1217,6 +1223,11 @@ yaxis: CARD8
 Errors: Device, Match
 .br
 .in -.5i
+=>
+.br
+.in +.5i
+status: Success, AlreadyGrabbed, Frozen
+.br
 .sp 1.5
 .NH 2
 Event Synchronization And Core Grabs
@@ -2074,7 +2085,7 @@ No standard interpretation of LEDs is defined.
 This function will fail with a \fBBadMatch\fP error if the device specified 
 in the request does not support feedbacks.
 .LP
-Errors:  Device, Match, Feedback
+Errors:  Device, Match
 .LP
 To change the settings of a feedback on an extension device, use
 \fBChangeFeedbackControl\fP.
