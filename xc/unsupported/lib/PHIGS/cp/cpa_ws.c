@@ -1,4 +1,4 @@
-/* $XConsortium: cpa_ws.c,v 5.4 91/07/12 20:29:14 hersh Exp $ */
+/* $XConsortium: cpa_ws.c,v 5.5 91/07/15 15:37:46 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -120,9 +120,9 @@ phg_cpa_inq_disp_update_state( cph, cp_args, ret, ws )
     else {
 	st->def_mode = ws->out_ws.def_mode;
 	st->mod_mode = ws->out_ws.mod_mode;
-	st->state = PEX_CONV_TO_Pvisualrep( *(CARD8 *)buf );
+	st->state = PEX_CONV_TO_Pvisualrep( *(CARD32 *)buf );
 	buf += 4;
-	st->display_surf = PEX_CONV_TO_Pdisp_surf_empty( *(CARD8 *)buf );
+	st->display_surf = PEX_CONV_TO_Pdisp_surf_empty( *(CARD32 *)buf );
     }
 }
 
@@ -391,11 +391,11 @@ phg_cpa_inq_hlhsr_mode( cph, cp_args, ret, ws )
     if ( !PEXGetWksInfo( ws->display, ws->rid, mask, &buf ))
 	ret->err = ERR900;	/* TODO: Use phg_pex_errno. */
     else {
-	hlhsr_mode->state = PEX_CONV_TO_Pupdatest( *(CARD8*)buf );
+	hlhsr_mode->state = PEX_CONV_TO_Pupdatest( *(CARD32*)buf );
 	buf += 4;
-	hlhsr_mode->req_mode = PEX_CONV_PEX_HLHSR_MODE( *(CARD16 *)buf );
+	hlhsr_mode->req_mode = PEX_CONV_PEX_HLHSR_MODE( *(CARD32 *)buf );
 	buf += 4;
-	hlhsr_mode->cur_mode = PEX_CONV_PEX_HLHSR_MODE( *(CARD16 *)buf );
+	hlhsr_mode->cur_mode = PEX_CONV_PEX_HLHSR_MODE( *(CARD32 *)buf );
     }
 }
 
@@ -595,7 +595,7 @@ phg_cpa_inq_indices( cph, cp_args, ret, ws )
 {
     caddr_t		buf;
     CARD32		count;
-    pexTableIndex	*indices;
+    CARD32       	*indices;
 
     register	int	i;
     register	Pint	*list;
@@ -614,17 +614,16 @@ phg_cpa_inq_indices( cph, cp_args, ret, ws )
 	    ret->err = ERR900;	/* TODO: use phg_pex_errno. */
 	else {
 	    count = *(CARD32 *)buf;
-	    indices = (pexTableIndex *)(buf + 4);
+	    indices = (CARD32 *)(buf + 4);
 	    if ( count > 0 &&
 		    !PHG_SCRATCH_SPACE( &ws->scratch, count * sizeof(Pint)) )
 		ret->err = ERR900;
 	    else {
 		ret->data.int_list.num_ints = count;
 		ret->data.int_list.ints = list = (Pint *)ws->scratch.buf;
-		/* View entries come back as CARD16-s interspersed with
-		 * two bytes of padding.
+		/* View entries come back as CARD32s
 		 */
-		for ( i = 0; i < count; i++, list++, indices += 2 )
+		for ( i = 0; i < count; i++, list++, indices++ )
 		    *list = *indices;
 	    }
 	}

@@ -1,4 +1,4 @@
-/* $XConsortium: cpa_css.c,v 5.3 91/07/12 20:29:43 hersh Exp $ */
+/* $XConsortium: cpa_css.c,v 5.4 91/07/17 19:00:54 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -903,7 +903,7 @@ phg_cpa_change_struct_idrefs( cph, cp_args, css_srvr )
 {
     Ws			*ws;
     pexBitmask		mask[PEXMSGetWksInfo];
-    pexEnumTypeIndex	old_modes[MAX_NO_OPEN_WS];
+    CARD32              old_modes[MAX_NO_OPEN_WS];
     int			cur;
 
     /* First need to set workstation update states to avoid an intermediate
@@ -940,7 +940,7 @@ phg_cpa_change_struct_idrefs( cph, cp_args, css_srvr )
 	if ( ws->css_srvr == css_srvr ) {
 	    if ( old_modes[cur] == PEXVisualizeEach )
 		(void)PEXSetDisplayUpdateMode( ws->display, ws->rid,
-		    old_modes[cur] );
+		    (pexEnumTypeIndex) old_modes[cur] );
 	    cur++;
 	}
     }
@@ -1079,13 +1079,13 @@ phg_cpa_inc_spa_search( cph, cp_args, ret, css_srvr )
     PEX_CONV_FROM_Ppoint3(&args->ref_pt, pex_pt)
     pex_dist = (PEXFLOAT *)(pex_pt + 1);
     *pex_dist = args->distance;
-    card16_p = (CARD16 *)(pex_dist + 1);
-    *card16_p = args->ceiling;
-    card8_p = (CARD8 *)(card16_p + 2);
-    *card8_p = PEX_CONV_FROM_Pclip(args->mclip_flag);
+    card32_p = (CARD32 *)(pex_dist + 1);
+    *card32_p = (CARD32)args->ceiling;
+    card32_p++;
+    *card32_p = (CARD32)PEX_CONV_FROM_Pclip(args->mclip_flag);
 
     /* Convert the start path. */
-    card32_p = (CARD32 *)(card8_p + 4); /* info + padding */
+    card32_p++;
     if ( args->start_path.num_elem_refs <= 0 )
 	*card32_p = 0;
     else {
