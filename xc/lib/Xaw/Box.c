@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Box.c,v 1.20 88/01/18 12:14:46 swick Locked $";
+static char rcsid[] = "$Header: Box.c,v 1.21 88/01/22 20:20:47 swick Locked $";
 #endif lint
 
 /*
@@ -27,17 +27,11 @@ static char rcsid[] = "$Header: Box.c,v 1.20 88/01/18 12:14:46 swick Locked $";
 /* 
  * Box.c - Box composite widget
  * 
- * Author:	Joel McCormack
- * 		Digital Equipment Corporation
- * 		Western Research Laboratory
- * Date:	Mon Aug 31 1987
- *
  */
 
 #include	<X11/Intrinsic.h>
 #include	<X11/Atoms.h>
 #include	<X11/Misc.h>
-#include	<X11/Box.h>
 #include	"BoxP.h"
 
 /****************************************************************
@@ -67,10 +61,11 @@ static XtGeometryResult GeometryManager();
 static void ChangeManaged();
 static void ClassInitialize();
 
+#define superclass	(&compositeClassRec)
 BoxClassRec boxClassRec = {
   {
 /* core_class fields      */
-    /* superclass         */    (WidgetClass) &compositeClassRec,
+    /* superclass         */    (WidgetClass) superclass,
     /* class_name         */    "Box",
     /* widget_size        */    sizeof(BoxRec),
     /* class_initialize   */    ClassInitialize,
@@ -116,17 +111,11 @@ WidgetClass boxWidgetClass = (WidgetClass)&boxClassRec;
 
 static void ClassInitialize()
 {
-    CompositeWidgetClass superclass;
-    BoxWidgetClass myclass;
+#define Inherit(method) \
+    boxClassRec.method = superclass->method;
 
-    myclass = (BoxWidgetClass) boxWidgetClass;
-    superclass = (CompositeWidgetClass) myclass->core_class.superclass;
-
-    /* Inherit insert_child and delete_child from Composite */
-    myclass->composite_class.insert_child =
-        superclass->composite_class.insert_child;
-    myclass->composite_class.delete_child =
-        superclass->composite_class.delete_child;
+    Inherit(composite_class.insert_child);
+    Inherit(composite_class.delete_child);
 }
 
 /*
