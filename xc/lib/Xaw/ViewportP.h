@@ -1,11 +1,12 @@
 /*
- * $Header: $
+ * $Header: ViewportP.h,v 1.1 88/01/12 14:50:17 swick Locked $
  * Private declarations for ViewportWidgetClass
  */
 
 #ifndef _ViewportP_h
 #define _ViewportP_h
 
+#include <X/Viewport.h>
 #include "FormP.h"
 
 typedef struct {int empty;} ViewportClassPart;
@@ -41,7 +42,12 @@ typedef struct _ViewportRec {
     ViewportPart	viewport;
 } ViewportRec;
 
-typedef struct {int empty;} ViewportConstraintsPart;
+typedef struct {
+    /* resources */
+
+    /* private state */
+    Boolean		reparented; /* True if child has been re-parented */
+} ViewportConstraintsPart;
 
 typedef struct _ViewportConstraintsRec {
     FormConstraintsPart		form;
