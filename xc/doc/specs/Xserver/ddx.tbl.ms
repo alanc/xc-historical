@@ -1,4 +1,4 @@
-.\" $Header: ddx.doc.tbl.ms,v 1.8 88/02/24 19:29:16 rws Exp $
+.\" $Header: ddx.doc.tbl.ms,v 1.9 88/02/24 21:25:22 rws Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -2676,12 +2676,11 @@ the bits in the pixmap plus other device specific information.
 A bitmap is a pixmap that is one bit deep.
 .nf
 
-	PixmapPtr pScreen->CreatePixmap(pScreen, width, height, depth, format)
+	PixmapPtr pScreen->CreatePixmap(pScreen, width, height, depth)
 		ScreenPtr pScreen;
 		int width, height, depth;
-		int format;
 .fi
-This ScreenRec procedure must create a pixmap of the size and format
+This ScreenRec procedure must create a pixmap of the size
 requested.
 It must allocate a PixmapRec and fill in all of the fields.
 The reference count field must be set to 1.
