@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.22 89/11/16 21:03:54 converse Exp $
+ * $XConsortium: folder.c,v 2.23 89/11/20 21:05:02 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -261,8 +261,8 @@ static void CreateFolder(widget, client_data, call_data)
 	    (void) sprintf(str, "Folder \"%s\" already exists.  Try again.",
 			   name);
 	else if (name[0]=='/')
-	    (void) sprintf(str, "Try \"%s\" without the leading slash.",
-			   name);
+	    (void) sprintf(str, "Please specify folders relative to \"%s\".",
+			   app_resources.mail_path);
 	else 
 	    (void) sprintf(str, "Cannot create folder \"%s\".  Try again.",
 			   name);
@@ -484,7 +484,7 @@ void DoDeleteFolder(w, client_data, call_data)
      * TestAndSet returns true if there is a delete pending on this folder.
      */
     if (TocTestAndSetDeletePending(toc))	{
-	Feep();
+	ErrorPopup("There is a delete pending on this folder.");
 	return;
     }
 
