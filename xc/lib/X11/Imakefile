@@ -8,11 +8,13 @@
         AIDOBJS = BandAidLibraryObjects
 #endif
            SRCS = *.c $(AIDSRCS)
-        HEADERS = Xlib.h Xutil.h
+        HEADERS = Xlib.h Xresource.h Xutil.h
        LINTLIBS =
 
 OBJS =\
 	Context.o \
+	ParseCmd.o \
+	Quarks.o \
 	XAllCells.o \
 	XAllPlanes.o \
 	XAllowEv.o \
@@ -229,6 +231,7 @@ OBJS =\
 	XWindow.o \
 	XWrBitF.o \
 	XlibInt.o \
+	Xrm.o \
 	evtomask.o \
 	$(AIDOBJS)
 
