@@ -217,7 +217,6 @@ cfbCreateDefColormap(pScreen)
 		       0)
 	!= Success)
 	return FALSE;
-    pScreen->whitePixel = pScreen->blackPixel = (Pixel)0;
     if ((AllocColor(cmap, &ones, &ones, &ones, &(pScreen->whitePixel), 0) !=
        	   Success) ||
     	(AllocColor(cmap, &zero, &zero, &zero, &(pScreen->blackPixel), 0) !=
