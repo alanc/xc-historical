@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.64 92/03/02 10:47:12 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.65 92/03/03 17:36:36 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -23,6 +23,7 @@ Name						Reference
 "IPSYS"						[59]
 "IXI"						[20]
 "JCC"						[90]
+"JUP"						[93]
 "LJK"						[56]
 "LTA"						[60]
 "MIT"						[8]
@@ -238,6 +239,7 @@ String						Reference
 "FUJITSU LIMITED"				[87]
 "International Business Machines"		[33]
 "JAPAN COMPUTER CORP."				[90]
+"Jupiter Systems Inc."				[93]
 "Matsushita Electric Industrial Co., Ltd."	[52]
 "MIT X Consortium"				[8]
 "Network Computing Devices Inc."		[66]
@@ -278,6 +280,7 @@ Name						Reference
 "FUJITSU-Control-Modifiers"			[87]
 "FUJITSU-VX-VideoControl"			[87]
 "FUJITSU-VX-DeviceControl"			[87]
+"JUPMISC"					[93]
 "MIT-SHM"					[8]
 "MIT-SUNDRY-NONSTANDARD"			[8]
 "Multi-Buffering"				[8], [10]
@@ -739,6 +742,7 @@ Name						Reference
 "FUJITSU"					[87]
 "HDS"						[70]
 "JCC"						[90]
+"Jupiter"					[93]
 "TD"						[63]
 "MIT"						[8]
 "NCD"						[66]
@@ -1219,3 +1223,9 @@ REFERENCES
 	Sun Microsystems, Inc.
 	2550 Garcia Avenue
 	Mountain View, CA  94043-1100
+
+[93]	Bob Schulman
+	Jupiter Systems
+	Suite 200
+	1351 Harbor Bay Parkway
+	Alameda, CA 94501
