@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.102 92/10/02 18:00:40 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.103 92/10/03 15:07:45 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -265,6 +265,10 @@ KeyCode hotkey = 0;
 #ifdef XTRAP
 XETC *tc;
 #endif
+Bool do_mouse_fixup = False;
+#ifdef XTESTEXT1
+Bool fixup_mouse = False;
+#endif
 void (*generate_key)();
 void (*generate_button)();
 void (*generate_motion)();
@@ -312,11 +316,25 @@ xtrap_generate_key(key, press)
 #endif
 
 #ifdef XTESTEXT1
+void xtestext1_correct_mouse()
+{
+    Window root, w;
+    int rx, ry, wx, wy;
+    unsigned int m;
+
+    XQueryPointer(dpy, DefaultRootWindow(dpy), &root, &w,
+		  &rx, &ry, &wx, &wy, &m);
+    XTestMovePointer(dpy, 2, 0, &rx, &ry, 1);
+    fixup_mouse = False;
+}
+
 void
 xtestext1_generate_key(key, press)
     int key;
     Bool press;
 {
+    if (fixup_mouse)
+	xtestext1_correct_mouse();
     XTestPressKey(dpy, 1, time_delay, key, press ? XTestPRESS : XTestRELEASE);
     time_delay = 0;
 }
@@ -352,6 +370,8 @@ xtestext1_generate_button(button, press)
     int button;
     Bool press;
 {
+    if (fixup_mouse)
+	xtestext1_correct_mouse();
     XTestPressButton(dpy, 2, time_delay, button,
 		     press ? XTestPRESS : XTestRELEASE);
     time_delay = 0;
@@ -416,6 +436,7 @@ void
 xtestext1_flush_generate()
 {
     XTestFlush(dpy);
+    fixup_mouse = do_mouse_fixup;
 }
 #endif
 
@@ -2561,6 +2582,9 @@ main(argc, argv)
 	    if (!argc)
 		usage();
 	    hotkeyname = *argv;
+	    break;
+	case 'p':
+	    do_mouse_fixup = True;
 	    break;
 	case 'u':
 	    argc--; argv++;
