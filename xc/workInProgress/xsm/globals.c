@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.16 94/11/14 15:30:27 mor Exp mor $ */
+/* $XConsortium: globals.c,v 1.17 94/11/30 17:54:05 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -55,6 +55,7 @@ int		numTransports = 0;
 
 Bool		client_info_visible = False;
 Bool		client_prop_visible = False;
+Bool		client_log_visible = False;
 
 String 		*clientListNames = NULL;
 ClientRec	**clientListRecs = NULL;
@@ -75,10 +76,7 @@ char		*display_env = NULL, *non_local_display_env = NULL;
 char		*session_env = NULL, *non_local_session_env = NULL;
 char		*audio_env = NULL;
 
-Bool		naming_session = False;
 Bool		need_to_name_session = False;
-Bool		shutdown_after_name = False;
-Bool		checkpoint_after_name = False;
 
 Bool		remote_allowed;
 
