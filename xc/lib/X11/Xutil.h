@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.64 91/02/19 08:49:32 rws Exp $ */
+/* $XConsortium: Xutil.h,v 11.65 91/04/11 19:47:47 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,7 +27,7 @@ SOFTWARE.
 #ifndef _XUTIL_H_
 #define _XUTIL_H_
 
-#include <X11/Xfuncproto.h>
+/* You must include <X11/Xlib.h> before including this file */
 
 /* 
  * Bitmask returned by XParseGeometry().  Each bit tells if the corresponding
