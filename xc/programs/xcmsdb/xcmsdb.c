@@ -1,4 +1,4 @@
-/* $XConsortium: xcmsdb.c,v 1.3 91/02/17 14:49:12 dave Exp $ */
+/* $XConsortium: xcmsdb.c,v 1.2 91/05/14 15:00:13 dave Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -43,6 +43,8 @@
 #include "Xcmsint.h"
 #include "SCCDFile.h"
 
+extern unsigned long _XcmsGetElement();
+
 char *ProgramName;
 
 void Syntax ()
@@ -53,7 +55,9 @@ void Syntax ()
     fprintf (stderr, 
 	     "where options include:\n");
     fprintf (stderr, 
-	     "    -display host:dpy[.scrn]            display to use\n");
+	     "    -display host:dpy[.scrn]     display to use\n");
+    fprintf (stderr, 
+	     "    -format [ 32 | 16 | 8 ]      property format\n");
     fprintf (stderr, 
 	     "    -query                       query Screen Color Characterization Data\n");
     fprintf (stderr, 
@@ -103,6 +107,7 @@ main (argc, argv)
     int remove = 0;
     int load = 0;
     int color = -1;
+    int targetFormat = 32;
 
     ProgramName = argv[0];
 
@@ -119,6 +124,12 @@ main (argc, argv)
 	    } else if (optionmatch ("-display", arg, 1)) {
 		if (++i >= argc) Syntax ();
 		displayname = argv[i];
+		continue;
+	    } else if (optionmatch ("-format", arg, 1)) {
+		if (++i >= argc) Syntax ();
+		targetFormat = atoi(argv[i]);
+		if (targetFormat != 32 && targetFormat != 16 &&
+			targetFormat != 8) Syntax();
 		continue;
 	    } else if (optionmatch ("-query", arg, 1)) {
 		query = 1;
@@ -157,7 +168,7 @@ main (argc, argv)
     }
 
     if (!query && !remove) {
-	LoadSCCData(dpy, DefaultScreen(dpy), filename);
+	LoadSCCData(dpy, DefaultScreen(dpy), filename, targetFormat);
     }
 
     if (query) {
@@ -175,6 +186,7 @@ main (argc, argv)
 
     XCloseDisplay(dpy);
     exit (0);
+    /*NOTREACHED*/
 }
 
 
@@ -186,6 +198,125 @@ ParseAtom (dpy, name, only_flag)
 {
     return(XInternAtom(dpy, name, only_flag));
 }
+
+
+/*
+ *	NAME
+ *		PrintTableType0
+ *
+ *	SYNOPSIS
+ */
+static void
+PrintTableType0(format, pChar, pCount)
+    int	  format;
+    char **pChar;
+    unsigned long *pCount;
+/*
+ *	DESCRIPTION
+ *
+ *	RETURNS
+ *		XcmsFailure if failed.
+ *		XcmsSuccess if succeeded.
+ *
+ */
+{
+    unsigned int nElements;
+    unsigned short hValue;
+    XcmsFloat fValue;
+
+    nElements = _XcmsGetElement(format, pChar, pCount) + 1;
+    printf ("\t    length:%d\n", nElements);
+
+    switch (format) {
+      case 8:
+	while (nElements--) {
+	    /* 0xFFFF/0xFF = 0x101 */
+	    hValue = _XcmsGetElement (format, pChar, pCount) * 0x101;
+	    fValue = _XcmsGetElement (format, pChar, pCount)
+		    / (XcmsFloat)255.0;
+	    printf ("\t\t0x%x\t%8.5lf\n", hValue, fValue);
+	}
+	break;
+      case 16:
+	while (nElements--) {
+	    hValue = (unsigned short)_XcmsGetElement (format, pChar, pCount);
+	    fValue = _XcmsGetElement (format, pChar, pCount)
+		    / (XcmsFloat)65535.0;
+	    printf ("\t\t0x%x\t%8.5lf\n", hValue, fValue);
+	}
+	break;
+      case 32:
+	while (nElements--) {
+	    hValue = (unsigned short)_XcmsGetElement (format, pChar, pCount);
+	    fValue = _XcmsGetElement (format, pChar, pCount)
+		    / (XcmsFloat)4294967295.0;
+	    printf ("\t\t0x%x\t%8.5lf\n", hValue, fValue);
+	}
+	break;
+      default:
+	return;
+    }
+}
+
+
+/*
+ *	NAME
+ *		PrintTableType1
+ *
+ *	SYNOPSIS
+ */
+static void
+PrintTableType1(format, pChar, pCount)
+    int	  format;
+    char **pChar;
+    unsigned long *pCount;
+/*
+ *	DESCRIPTION
+ *
+ *	RETURNS
+ *		XcmsFailure if failed.
+ *		XcmsSuccess if succeeded.
+ *
+ */
+{
+    int count;
+    unsigned int max_index;
+    unsigned short hValue;
+    XcmsFloat fValue;
+
+    max_index = _XcmsGetElement(format, pChar, pCount);
+    printf ("\t    length:%d\n", max_index + 1);
+
+    switch (format) {
+      case 8:
+	for (count = 0; count < max_index+1; count++) {
+	    hValue = (count * 65535) / max_index;
+	    fValue = _XcmsGetElement (format, pChar, pCount)
+		    / (XcmsFloat)255.0;
+	    printf ("\t\t0x%x\t%8.5lf\n", hValue, fValue);
+	}
+	break;
+      case 16:
+	for (count = 0; count < max_index+1; count++) {
+	    hValue = (count * 65535) / max_index;
+	    fValue = _XcmsGetElement (format, pChar, pCount)
+		    / (XcmsFloat)65535.0;
+	    printf ("\t\t0x%x\t%8.5lf\n", hValue, fValue);
+	}
+	break;
+      case 32:
+	for (count = 0; count < max_index+1; count++) {
+	    hValue = (count * 65535) / max_index;
+	    fValue = _XcmsGetElement (format, pChar, pCount)
+		    / (XcmsFloat)4294967295.0;
+	    printf ("\t\t0x%x\t%8.5lf\n", hValue, fValue);
+	}
+	break;
+      default:
+	return;
+    }
+}
+
 
 /*
  *      NAME
@@ -204,38 +335,45 @@ QuerySCCDataRGB(dpy, root)
  *		None
  */
 {
-    char *ret_prop, *pChar;
-    int  i, j, hValue;
-    int  ret_format, ret_len, ret_nbytes, cType, nTables, nElements;
+    char *property_return, *pChar;
+    int  i, j;
+    int  count, format, cType, nTables;
+    unsigned long nitems, nbytes_return;
     Atom MatricesAtom, CorrectAtom;
-    XcmsFloat fValue;
+    VisualID visualID;
 
+    /*
+     * Get Matrices
+     */
     MatricesAtom = ParseAtom (dpy, XDCCC_MATRIX_ATOM_NAME, True);
     if (MatricesAtom != None) {
-	if (_XcmsGetProperty (dpy, root, MatricesAtom, &ret_format, &ret_len,
-			  &ret_nbytes, &ret_prop) == XcmsFailure) {
-	    ret_format = 0;
-	} else if (ret_len != 18) {
+	if (_XcmsGetProperty (dpy, root, MatricesAtom, &format, &nitems,
+			  &nbytes_return, &property_return) == XcmsFailure) {
+	    format = 0;
+	} else if (nitems != 18) {
 	    printf ("Property %s had invalid length of %d\n",
-		    XDCCC_MATRIX_ATOM_NAME, ret_len);
-	    if (ret_prop) {
-		XFree (ret_prop);
+		    XDCCC_MATRIX_ATOM_NAME, nitems);
+	    if (property_return) {
+		XFree (property_return);
 	    }
 	    return;
 	}
     } 
-    if (MatricesAtom == None || !ret_format) {
+    if (MatricesAtom == None || !format) {
 	printf ("Could not find property %s\n", XDCCC_MATRIX_ATOM_NAME);
+    } else if (format != 32) {
+	printf ("Data in property %s not in 32 bit format\n",
+		XDCCC_MATRIX_ATOM_NAME);
     } else {
-	pChar = ret_prop;
+	pChar = property_return;
 	printf ("Querying property %s\n", XDCCC_MATRIX_ATOM_NAME);
 	printf ("\tXYZtoRGB matrix :\n");
 	for (i = 0; i < 3; i++) {
 	    printf ("\t");
 	    for (j = 0; j < 3; j++) {
 		printf ("\t%8.5lf", 
-			(XcmsFloat) _XcmsGetElement(ret_format, &pChar) / 
-			(XcmsFloat) XDCCC_NUMBER);
+			(long)_XcmsGetElement(format, &pChar, &nitems)
+			/ (XcmsFloat) XDCCC_NUMBER);
 	    }
 	    printf ("\n");
 	}
@@ -244,93 +382,146 @@ QuerySCCDataRGB(dpy, root)
 	    printf ("\t");
 	    for (j = 0; j < 3; j++) {
 		printf ("\t%8.5lf", 
-			(XcmsFloat) _XcmsGetElement(ret_format, &pChar) / 
-			(XcmsFloat) XDCCC_NUMBER);
+			(long) _XcmsGetElement(format, &pChar, &nitems)
+			/ (XcmsFloat) XDCCC_NUMBER);
 	    }
 	    printf ("\n");
 	}
-	XFree (ret_prop);
+	XFree (property_return);
     }
 
+
+    /*
+     * Get Intensity Tables
+     */
     CorrectAtom = XInternAtom (dpy, XDCCC_CORRECT_ATOM_NAME, True);
     if (CorrectAtom != None) {
-	if (_XcmsGetProperty (dpy, root, CorrectAtom, &ret_format, &ret_len,
-			  &ret_nbytes, &ret_prop) == XcmsFailure) {
-	    ret_format = 0;
-	} else if (ret_len <= 0) {
+	if (_XcmsGetProperty (dpy, root, CorrectAtom, &format, &nitems,
+			  &nbytes_return, &property_return) == XcmsFailure) {
+	    format = 0;
+	} else if (nitems <= 0) {
             printf ("Property %s had invalid length of %d\n",
-		    XDCCC_CORRECT_ATOM_NAME, ret_len);
-	    if (ret_prop) {
-		XFree (ret_prop);
+		    XDCCC_CORRECT_ATOM_NAME, nitems);
+	    if (property_return) {
+		XFree (property_return);
 	    }
 	    return;
 	}
     }
-    if (CorrectAtom == None || !ret_format) {
+    if (CorrectAtom == None || !format) {
 	printf ("Could not find property %s\n", XDCCC_CORRECT_ATOM_NAME);
     } else {
 	printf ("Querying property %s\n", XDCCC_CORRECT_ATOM_NAME);
-	pChar = ret_prop;
-	cType = (int)_XcmsGetElement(ret_format, &pChar);
-	nTables = (int)_XcmsGetElement(ret_format, &pChar);
+	pChar = property_return;
 
-	if (cType == 0) {
-	    /* Red Table should always exist */
-	    printf ("\tRed Conversion Table:\n");
-	    nElements = (int)_XcmsGetElement(ret_format, &pChar);
-	    for (i = 0; i < nElements; i++) {
-		hValue = (int) _XcmsGetElement(ret_format, &pChar);
-		fValue = (XcmsFloat) _XcmsGetElement(ret_format, &pChar) /
-			 (XcmsFloat) XDCCC_NUMBER;
-		printf ("\t\t0x%x\t%8.5lf\n", hValue, fValue);
-	    }
-	    if (nTables > 1) {
-		printf ("\tGreen Conversion Table:\n");
-		nElements = (int)_XcmsGetElement(ret_format, &pChar);
-		for (i = 0; i < nElements; i++) {
-		    hValue = (int) _XcmsGetElement(ret_format, &pChar);
-		    fValue = (XcmsFloat)_XcmsGetElement(ret_format, &pChar)/
-			     (XcmsFloat) XDCCC_NUMBER;
-		    printf ("\t\t0x%4x\t%8.5lf\n", hValue, fValue);
+	while (nitems) {
+	    switch (format) {
+	      case 8:
+		/*
+		 * Must have at lease:
+		 *		VisualID0
+		 *		VisualID1
+		 *		VisualID2
+		 *		VisualID3
+		 *		type
+		 *		count
+		 *		length
+		 *		intensity1
+		 *		intensity2
+		 */
+		if (nitems < 9) {
+		    goto IntensityTblError;
 		}
-		printf ("\tBlue Conversion Table:\n");
-		nElements = (int)_XcmsGetElement(ret_format, &pChar);
-		for (i = 0; i < nElements; i++) {
-		    hValue = (int) _XcmsGetElement(ret_format, &pChar);
-		    fValue = (XcmsFloat)_XcmsGetElement(ret_format, &pChar)/
-			     (XcmsFloat) XDCCC_NUMBER;
-		    printf ("\t\t0x%x\t%8.5lf\n", hValue, fValue);
+		count = 3;
+		break;
+	      case 16:
+		/*
+		 * Must have at lease:
+		 *		VisualID0
+		 *		VisualID3
+		 *		type
+		 *		count
+		 *		length
+		 *		intensity1
+		 *		intensity2
+		 */
+		if (nitems < 7) {
+		    goto IntensityTblError;
 		}
-	    }
-	} else {
-	    /* Red Table should always exist */
-	    printf ("\tRed Conversion Table:\n");
-	    nElements = (int)_XcmsGetElement(ret_format, &pChar);
-	    for (i = 0; i < nElements; i++) {
-		fValue = (XcmsFloat) _XcmsGetElement(ret_format, &pChar) /
-			     (XcmsFloat) XDCCC_NUMBER;
-		printf ("\t\t%d\t%8.5lf\n", i, fValue);
-	    }
-	    if (nTables > 1) {
-		printf ("\tGreen Conversion Table:\n");
-		nElements = (int)_XcmsGetElement(ret_format, &pChar);
-		for (i = 0; i < nElements; i++) {
-		    fValue = (XcmsFloat)_XcmsGetElement(ret_format, &pChar)/
-			     (XcmsFloat) XDCCC_NUMBER;
-		    printf ("\t\t%d\t%8.5lf\n", i, fValue);
+		count = 1;
+		break;
+	      case 32:
+		/*
+		 * Must have at lease:
+		 *		VisualID0
+		 *		type
+		 *		count
+		 *		length
+		 *		intensity1
+		 *		intensity2
+		 */
+		if (nitems < 6) {
+		    goto IntensityTblError;
 		}
-		printf ("\tBlue Conversion Table:\n");
-		nElements = (int)_XcmsGetElement(ret_format, &pChar);
-		for (i = 0; i < nElements; i++) {
-		    fValue = (XcmsFloat)_XcmsGetElement(ret_format, &pChar)/
-			     (XcmsFloat) XDCCC_NUMBER;
-		    printf ("\t\t%d\t%8.5lf\n", i, fValue);
-		}
+		count = 0;
+		break;
+	      default:
+		goto IntensityTblError;
+		break;
 	    }
-	}
-	XFree (ret_prop);
+
+	    /*
+	     * Get VisualID
+	     */
+	    visualID = _XcmsGetElement(format, &pChar, &nitems);
+	    while (count--) {
+		visualID = visualID << 8;
+		visualID |= _XcmsGetElement(format, &pChar, &nitems);
+	    }
+
+	    printf ("\tVisualID: %ld\n", visualID);
+	    cType = (int)_XcmsGetElement(format, &pChar, &nitems);
+	    printf ("\ttype: %d\n", cType);
+	    nTables = (int)_XcmsGetElement(format, &pChar, &nitems);
+	    printf ("\tcount: %d\n", nTables);
+
+	    switch (cType) {
+	      case 0:
+		/* Red Table should always exist */
+		printf ("\tRed Conversion Table:\n");
+		PrintTableType0(format, &pChar, &nitems);
+		if (nTables > 1) {
+		    printf ("\tGreen Conversion Table:\n");
+		    PrintTableType0(format, &pChar, &nitems);
+		    printf ("\tBlue Conversion Table:\n");
+		    PrintTableType0(format, &pChar, &nitems);
+		}
+		break;
+	      case 1:
+		/* Red Table should always exist */
+		printf ("\tRed Conversion Table:\n");
+		PrintTableType1(format, &pChar, &nitems);
+		if (nTables > 1) {
+		    printf ("\tGreen Conversion Table:\n");
+		    PrintTableType1(format, &pChar, &nitems);
+		    printf ("\tBlue Conversion Table:\n");
+		    PrintTableType1(format, &pChar, &nitems);
+		}
+	        break;
+	      default:
+		goto IntensityTblError;
+	    }
+	    XFree (property_return);
+	}    
     }    
+    return;
+
+IntensityTblError:
+    XFree (property_return);
+    printf("Fatal error in %s property\n", XDCCC_CORRECT_ATOM_NAME);
 }
+
+
 #ifdef GRAY
 
 /*
@@ -350,84 +541,149 @@ QuerySCCDataGray(dpy, root)
  *		None
  */
 {
-    char *ret_prop, *pChar;
-    int  i, j, hValue;
-    int  ret_format, ret_len, ret_nbytes, cType, nElements;
+    char *property_return, *pChar;
+    int  j;
+    int  count, format, cType;
+    unsigned long  nitems, nbytes_return;
     Atom MatricesAtom, CorrectAtom;
-    XcmsFloat fValue;
+    VisualID visualID;
 
     MatricesAtom = ParseAtom (dpy, XDCCC_SCREENWHITEPT_ATOM_NAME, True);
     if (MatricesAtom != None) {
-	if (_XcmsGetProperty (dpy, root, MatricesAtom, &ret_format, &ret_len,
-			  &ret_nbytes, &ret_prop)  == XcmsFailure) {
-	    ret_format = 0;
-	} else if (ret_len != 3) {
+	if (_XcmsGetProperty (dpy, root, MatricesAtom, &format, &nitems,
+			  &nbytes_return, &property_return)  == XcmsFailure) {
+	    format = 0;
+	} else if (nitems != 3) {
 	    printf ("Property %s had invalid length of %d\n",
-		    XDCCC_SCREENWHITEPT_ATOM_NAME, ret_len);
-	    if (ret_prop) {
-		XFree (ret_prop);
+		    XDCCC_SCREENWHITEPT_ATOM_NAME, nitems);
+	    if (property_return) {
+		XFree (property_return);
 	    }
 	    return;
 	}
     } 
-    if (MatricesAtom == None || !ret_format) {
+    if (MatricesAtom == None || !format) {
 	printf ("Could not find property %s\n", XDCCC_SCREENWHITEPT_ATOM_NAME);
     } else {
-	pChar = ret_prop;
+	pChar = property_return;
 	printf ("Querying property %s\n", XDCCC_SCREENWHITEPT_ATOM_NAME);
 	printf ("\tWhite Point XYZ :\n");
 	printf ("\t");
 	for (j = 0; j < 3; j++) {
 	    printf ("\t%8.5lf", 
-			(XcmsFloat) _XcmsGetElement(ret_format, &pChar) / 
+			(long) _XcmsGetElement(format, &pChar, &nitems) / 
 			(XcmsFloat) XDCCC_NUMBER);
 	}
 	printf ("\n");
-	XFree (ret_prop);
+	XFree (property_return);
     }
 
     CorrectAtom = XInternAtom (dpy, XDCCC_GRAY_CORRECT_ATOM_NAME, True);
     if (CorrectAtom != None) {
-	if (_XcmsGetProperty (dpy, root, CorrectAtom, &ret_format, &ret_len,
-			  &ret_nbytes, &ret_prop) == XcmsFailure) {
-	    ret_format = 0;
-	} else if (ret_len <= 0) {
+	if (_XcmsGetProperty (dpy, root, CorrectAtom, &format, &nitems,
+			  &nbytes_return, &property_return) == XcmsFailure) {
+	    format = 0;
+	} else if (nitems <= 0) {
             printf ("Property %s had invalid length of %d\n",
-		    XDCCC_GRAY_CORRECT_ATOM_NAME, ret_len);
-	    if (ret_prop) {
-		XFree (ret_prop);
+		    XDCCC_GRAY_CORRECT_ATOM_NAME, nitems);
+	    if (property_return) {
+		XFree (property_return);
 	    }
 	    return;
 	}
     }
-    if (CorrectAtom == None || !ret_format) {
+    if (CorrectAtom == None || !format) {
 	printf ("Could not find property %s\n", XDCCC_GRAY_CORRECT_ATOM_NAME);
     } else {
 	printf ("Querying property %s\n", XDCCC_GRAY_CORRECT_ATOM_NAME);
-	pChar = ret_prop;
-	cType = (int)_XcmsGetElement(ret_format, &pChar);
-	nElements = (int)_XcmsGetElement(ret_format, &pChar);
+	pChar = property_return;
 
-	if (cType == 0) {
-	    /* One Table should always exist */
-	    printf ("\tGray Conversion Table:\n");
-	    for (i = 0; i < nElements; i++) {
-		hValue = (int) _XcmsGetElement(ret_format, &pChar);
-		fValue = (XcmsFloat) _XcmsGetElement(ret_format, &pChar) /
-			 (XcmsFloat) XDCCC_NUMBER;
-		printf ("\t\t0x%x\t%8.5lf\n", hValue, fValue);
+	while (nitems) {
+	    switch (format) {
+	      case 8:
+		/*
+		 * Must have at lease:
+		 *		VisualID0
+		 *		VisualID1
+		 *		VisualID2
+		 *		VisualID3
+		 *		type
+		 *		count
+		 *		length
+		 *		intensity1
+		 *		intensity2
+		 */
+		if (nitems < 9) {
+		    goto IntensityTblError;
+		}
+		count = 3;
+		break;
+	      case 16:
+		/*
+		 * Must have at lease:
+		 *		VisualID0
+		 *		VisualID3
+		 *		type
+		 *		count
+		 *		length
+		 *		intensity1
+		 *		intensity2
+		 */
+		if (nitems < 7) {
+		    goto IntensityTblError;
+		}
+		count = 1;
+		break;
+	      case 32:
+		/*
+		 * Must have at lease:
+		 *		VisualID0
+		 *		type
+		 *		count
+		 *		length
+		 *		intensity1
+		 *		intensity2
+		 */
+		if (nitems < 6) {
+		    goto IntensityTblError;
+		}
+		count = 0;
+		break;
+	      default:
+		goto IntensityTblError;
+		break;
 	    }
-	} else {
-	    /* One Table should always exist */
-	    printf ("\tGray Conversion Table:\n");
-	    for (i = 0; i < nElements; i++) {
-		fValue = (XcmsFloat) _XcmsGetElement(ret_format, &pChar) /
-			     (XcmsFloat) XDCCC_NUMBER;
-		printf ("\t\t%d\t%8.5lf\n", i, fValue);
+
+	    /*
+	     * Get VisualID
+	     */
+	    visualID = _XcmsGetElement(format, &pChar, &nitems);
+	    while (count--) {
+		visualID = visualID << 8;
+		visualID |= _XcmsGetElement(format, &pChar, &nitems);
 	    }
-	}
-	XFree (ret_prop);
+
+	    printf ("\tVisualID: %ld\n", visualID);
+	    cType = (int)_XcmsGetElement(format, &pChar, &nitems);
+	    printf ("\ttype: %d\n", cType);
+	    printf ("\tGray Conversion Table:\n");
+	    switch (cType) {
+	      case 0:
+		PrintTableType0(format, &pChar, &nitems);
+		break;
+	      case 1:
+		PrintTableType1(format, &pChar, &nitems);
+		break;
+	      default:
+		goto IntensityTblError;
+	    }
+	}    
+	XFree (property_return);
     }    
+    return;
+IntensityTblError:
+    XFree (property_return);
+    printf("Fatal error in %s property\n", XDCCC_CORRECT_ATOM_NAME);
 }
 #endif /* GRAY */
 

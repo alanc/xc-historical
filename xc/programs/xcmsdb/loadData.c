@@ -1,4 +1,4 @@
-/* $XConsortium: loadData.c,v 1.6 91/05/14 15:07:06 rws Exp $ */
+/* $XConsortium: loadData.c,v 1.7 91/05/14 15:49:10 rws Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -281,6 +281,7 @@ SCScrnClassStringOf(id)
 }
 
 /* close the stream and return any memory allocated. */
+/*ARGSUSED*/
 static void 
 closeS(stream, pScreenData) 
     FILE *stream;
@@ -714,341 +715,398 @@ ProcessIProfile(stream, pScreenData, tableType, nTables, filename)
     return (0);
 }
 
+static void
+PutTableType0Card8(pTbl, pCard8)
+    IntensityTbl *pTbl;
+    unsigned char **pCard8;
+{
+    unsigned int count;
+    IntensityRec *pIRec;
+
+    pIRec = pTbl->pBase;
+    count = pTbl->nEntries;
+    **pCard8 = count - 1;
+    *pCard8 += 1;
+    for (; count; count--, pIRec++) {
+	**pCard8 = pIRec->value >> 8;
+	*pCard8 += 1;
+	**pCard8 = pIRec->intensity * 255.0;
+	*pCard8 += 1;
+    }
+}
+
+static void
+PutTableType1Card8(pTbl, pCard8)
+    IntensityTbl *pTbl;
+    unsigned char **pCard8;
+{
+    unsigned int count;
+    IntensityRec *pIRec;
+
+    pIRec = pTbl->pBase;
+    count = pTbl->nEntries;
+    **pCard8 = count - 1;
+    *pCard8 += 1;
+    for (; count; count--, pIRec++) {
+	**pCard8 = pIRec->intensity * 255.0;
+	*pCard8 += 1;
+    }
+}
+
+static void
+PutTableType0Card16(pTbl, pCard16)
+    IntensityTbl *pTbl;
+    unsigned short **pCard16;
+{
+    unsigned int count;
+    IntensityRec *pIRec;
+
+    pIRec = pTbl->pBase;
+    count = pTbl->nEntries;
+    **pCard16 = count - 1;
+    *pCard16 += 1;
+    for (; count; count--, pIRec++) {
+	**pCard16 = pIRec->value;
+	*pCard16 += 1;
+	**pCard16 = pIRec->intensity * 65535.0;
+	*pCard16 += 1;
+    }
+}
+
+static void
+PutTableType1Card16(pTbl, pCard16)
+    IntensityTbl *pTbl;
+    unsigned short **pCard16;
+{
+    unsigned int count;
+    IntensityRec *pIRec;
+
+    pIRec = pTbl->pBase;
+    count = pTbl->nEntries;
+    **pCard16 = count - 1;
+    *pCard16 += 1;
+    for (; count; count--, pIRec++) {
+	**pCard16 = pIRec->intensity * 65535.0;
+	*pCard16 += 1;
+    }
+}
+
+static void
+PutTableType0Card32(pTbl, pCard32)
+    IntensityTbl *pTbl;
+    unsigned long **pCard32;
+{
+    unsigned int count;
+    IntensityRec *pIRec;
+
+    pIRec = pTbl->pBase;
+    count = pTbl->nEntries;
+    **pCard32 = count - 1;
+    *pCard32 += 1;
+    for (; count; count--, pIRec++) {
+	**pCard32 = pIRec->value;
+	*pCard32 += 1;
+	**pCard32 = pIRec->intensity * 4294967295.0;
+	*pCard32 += 1;
+    }
+}
+
+static void
+PutTableType1Card32(pTbl, pCard32)
+    IntensityTbl *pTbl;
+    unsigned long **pCard32;
+{
+    unsigned int count;
+    IntensityRec *pIRec;
+
+    pIRec = pTbl->pBase;
+    count = pTbl->nEntries;
+    **pCard32 = count - 1;
+    *pCard32 += 1;
+    for (; count; count--, pIRec++) {
+	**pCard32 = pIRec->intensity * 4294967295.0;
+	*pCard32 += 1;
+    }
+}
+
 static int
-LoadDataRGB(pDpy, root, tableType, nTables, pScreenData)
+LoadDataRGB(pDpy, root, tableType, nTables, pScreenData, targetFormat)
     Display *pDpy;
     Window root;
     int tableType, nTables;
     LINEAR_RGB_SCCData *pScreenData;
+    int targetFormat;
 {
     unsigned char *ret_prop;
     int  count;
-    int  nLevels;
-    int  IntArray[18], *pInt;
-    int  *pArray = (int *)NULL;
-    int  ret_format;
-    unsigned long ret_len, ret_after;
+    unsigned char  *pCard8;
+    unsigned char  *pCard8Array = (unsigned char *)NULL;
+    unsigned short  *pCard16;
+    unsigned short  *pCard16Array = (unsigned short *)NULL;
+    unsigned long  *pCard32;
+    unsigned long  *pCard32Array = (unsigned long *)NULL;
+    unsigned long  Card32Array[18];
+    int  format;
+    unsigned long nitems, ret_after;
     Atom MatricesAtom, CorrectAtom, ret_atom;
-    IntensityRec *pIRec = NULL;
     XcmsFloat *pValue;
     int	total;
-
-#ifdef PDEBUG
-    printf ("XYZtoRGB Matrix values:\n");
-    printf ("       %f %f %f\n       %f %f %f\n       %f %f %f\n", 
-			    pScreenData->XYZtoRGBmatrix[0][0],
-			    pScreenData->XYZtoRGBmatrix[0][1],
-			    pScreenData->XYZtoRGBmatrix[0][2],
-			    pScreenData->XYZtoRGBmatrix[1][0],
-			    pScreenData->XYZtoRGBmatrix[1][1],
-			    pScreenData->XYZtoRGBmatrix[1][2],
-			    pScreenData->XYZtoRGBmatrix[2][0],
-			    pScreenData->XYZtoRGBmatrix[2][1],
-			    pScreenData->XYZtoRGBmatrix[2][2]);
-    printf ("RGBtoXYZ Matrix values:\n");
-    printf ("       %f %f %f\n       %f %f %f\n       %f %f %f\n", 
-			    pScreenData->RGBtoXYZmatrix[0][0],
-			    pScreenData->RGBtoXYZmatrix[0][1],
-			    pScreenData->RGBtoXYZmatrix[0][2],
-			    pScreenData->RGBtoXYZmatrix[1][0],
-			    pScreenData->RGBtoXYZmatrix[1][1],
-			    pScreenData->RGBtoXYZmatrix[1][2],
-			    pScreenData->RGBtoXYZmatrix[2][0],
-			    pScreenData->RGBtoXYZmatrix[2][1],
-			    pScreenData->RGBtoXYZmatrix[2][2]);
-    if (tableType != CORR_TYPE_NONE) {
-	printf ("Intensity-RGB value conversion type and number of tables:\n");
-	printf ("       type = %d, number of tables = %d\n", 
-		tableType, nTables));
-    } else {
-	printf ("Intensity-RGB Conversion Not Specified");
-	return (1);
-    }
-/* do not use this debuggin unless you want to see the world go by */
-#ifdef ALLDEBUG
-
-    if (!tableType && nTables != 3) {
-	nLevels = pScreenData->pRedTbl->nEntries;
-	pIRec = pScreenData->pRedTbl->pBase;
-	printf ("Intensity Table  RGB  %d\n", nLevels);
-	for (count = 0; count < nLevels; count++, pIRec++) {
-	    printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
-	}
-    } else if (tableType && nTables != 3) {
-	nLevels = pScreenData->pRedTbl->nEntries;
-	pIRec = pScreenData->pRedTbl->pBase;
-	printf ("Intensity Table  RGB  %d\n", nLevels);
-	for (count = 0; count < nLevels; count++, pIRec++) {
-	    printf ("\t%f\n", pIRec->intensity);
-	}
-    } else if (!tableType) {
-	nLevels = pScreenData->pRedTbl->nEntries;
-	pIRec = pScreenData->pRedTbl->pBase;
-	printf ("Intensity Table  RED    %d\n", nLevels);
-	for (count = 0; count < nLevels; count++, pIRec++) {
-	    printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
-	}
-	nLevels = pScreenData->pGreenTbl->nEntries;
-	pIRec = pScreenData->pGreenTbl->pBase;
-	printf ("Intensity Table  GREEN  %d\n", nLevels);
-	for (count = 0; count < nLevels; count++, pIRec++) {
-	    printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
-	}
-	nLevels = pScreenData->pBlueTbl->nEntries;
-	pIRec = pScreenData->pBlueTbl->pBase;
-	printf ("Intensity Table  BLUE   %d\n", nLevels);
-	for (count = 0; count < nLevels; count++, pIRec++) {
-	    printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
-	}
-    } else {
-	nLevels = pScreenData->pRedTbl->nEntries;
-	pIRec = pScreenData->pRedTbl->pBase;
-	printf ("Intensity Table  RED    %d\n", nLevels);
-	for (count = 0; count < nLevels; count++, pIRec++) {
-	    printf ("\t%f\n", pIRec->intensity);
-	}
-	nLevels = pScreenData->pGreenTbl->nEntries;
-	pIRec = pScreenData->pGreenTbl->pBase;
-	printf ("Intensity Table  GREEN  %d\n", nLevels);
-	for (count = 0; count < nLevels; count++, pIRec++) {
-	    printf ("\t%f\n", pIRec->intensity);
-	}
-	nLevels = pScreenData->pBlueTbl->nEntries;
-	pIRec = pScreenData->pBlueTbl->pBase;
-	printf ("Intensity Table  BLUE   %d\n", nLevels);
-	for (count = 0; count < nLevels; count++, pIRec++) {
-	    printf ("\t%f\n", pIRec->intensity);
-	}
-    }
-#endif /* ALLDEBUG */
-#endif /* PDEBUG */
 
     /*
      * Store the XDCCC_LINEAR_RGB_MATRICES
      */
-    pInt = IntArray;
+    pCard32 = Card32Array;
     pValue = (XcmsFloat *)pScreenData->XYZtoRGBmatrix;
     for (count = 0; count < 9; count++) {
-	*pInt++ = (int) (*pValue++ * (XcmsFloat) XDCCC_NUMBER);
+	*pCard32++ = (unsigned long) (*pValue++ * (XcmsFloat) XDCCC_NUMBER);
     }
     pValue = (XcmsFloat *)pScreenData->RGBtoXYZmatrix;
     for (count = 0; count < 9; count++) {
-	*pInt++ = (int) (*pValue++ * (XcmsFloat) XDCCC_NUMBER);
+	*pCard32++ = (unsigned long) (*pValue++ * (XcmsFloat) XDCCC_NUMBER);
     }
     MatricesAtom = XInternAtom (pDpy, XDCCC_MATRIX_ATOM_NAME, False);
     XChangeProperty (pDpy, root, MatricesAtom, XA_INTEGER, 32, 
-		     PropModeReplace, (unsigned char *)IntArray, 18);
-#ifdef DEBUG
-    XSync (pDpy, 0);
-#endif /* DEBUG */
+		     PropModeReplace, (unsigned char *)Card32Array, 18);
 
     /*
      * Now store the XDCCC_LINEAR_RGB_CORRECTION
      */
     CorrectAtom = XInternAtom (pDpy, XDCCC_CORRECT_ATOM_NAME, False);
 
-    switch (tableType) {
-      case CORR_TYPE_NONE :
+    if (tableType != CORR_TYPE_NONE && tableType != 0 && tableType != 1) {
+	fprintf(stderr,"Invalid intensity table type %d.\n", tableType);
+	return(0);
+    }
+
+    if (nTables != 1 && nTables != 3) {
+	fprintf(stderr,"%d invalid number of tables.\n", nTables);
+	return(0);
+    }
+
+    if (tableType == CORR_TYPE_NONE) {
 	XGetWindowProperty (pDpy, root, CorrectAtom, 
 			    0, 5, False, XA_INTEGER, 
-			    &ret_atom, &ret_format, &ret_len, &ret_after,
+			    &ret_atom, &format, &nitems, &ret_after,
 			    &ret_prop);
-	if (ret_format != 0) {
+	if (format != 0) {
 	    XDeleteProperty (pDpy, root, CorrectAtom);
 	    XFree ((char *)ret_prop);
 	}
-	break;
-      case CORR_TYPE_0 :
-	if (nTables == 1) {
-	    if ((nLevels = pScreenData->pRedTbl->nEntries) < 0) {
-		fprintf(stderr,"Illegal number of entries in table\n");
-		return (0);
-	    }
-	    total = 3 + (nLevels * 2);
-	    pArray = (int *) calloc (3 + (nLevels * 2), sizeof (int));
-	    if ((pInt = pArray) == NULL) {
-		fprintf(stderr,"Unable allocate array of ints\n");
-		return (0);
-	    }
-	    *pInt++ = CORR_TYPE_0;		/* type = 0 */
-	    *pInt++ = 1;		/* number of tables = 1 */
-	    pIRec = pScreenData->pRedTbl->pBase;
-	    *pInt++ = count = nLevels;	/* number of pairs in this table */
-	    for (; count; count--, pIRec++) {
-		*pInt++ =(int) (pIRec->value);
-		*pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
-	    }
-	    XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 32, 
-			     PropModeReplace, (unsigned char *)pArray, total);
-	} else {
-	    total = 2 +	/* type and number of tables */
-		    (1 + pScreenData->pRedTbl->nEntries * 2) +
-		    (1 + pScreenData->pGreenTbl->nEntries * 2) +
-		    (1 + pScreenData->pBlueTbl->nEntries * 2);
-	    pArray = (int *) calloc(total, sizeof(int));
-	    if ((pInt = pArray) == NULL) {
-		fprintf(stderr,"Unable allocate array of ints");
-		return (0);
-	    }
-
-	    *pInt++ = CORR_TYPE_0;		/* type = 0 */
-	    *pInt++ = 3;		/* number of tables = 3 */
-
-	    pIRec = pScreenData->pRedTbl->pBase;
-	    *pInt++ = count = pScreenData->pRedTbl->nEntries;
-	    for (; count; count--, pIRec++) {
-		*pInt++ = (int) (pIRec->value);
-		*pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
-	    }
-
-	    pIRec = pScreenData->pGreenTbl->pBase;
-	    *pInt++ = count = pScreenData->pGreenTbl->nEntries;
-	    for (; count; count--, pIRec++) {
-		*pInt++ = (int) (pIRec->value);
-		*pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
-	    }
-
-	    pIRec = pScreenData->pBlueTbl->pBase;
-	    *pInt++ = count = pScreenData->pBlueTbl->nEntries;
-	    for (; count; count--, pIRec++) {
-		*pInt++ = (int) (pIRec->value);
-		*pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
-	    }
-	    XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 32, 
-			    PropModeReplace, (unsigned char *)pArray, total);
-	}
-	break;
-      case CORR_TYPE_1 :
-	if (nTables == 1) {
-	    if ((nLevels = pScreenData->pRedTbl->nEntries) < 0) {
-		fprintf(stderr,"Illegal number of entries in table\n");
-		return (0);
-	    }
-	    total = 3 + nLevels;
-	    pArray = (int *) calloc (total, sizeof (int));
-	    if ((pInt = pArray) == NULL) {
-		fprintf(stderr,"Unable allocate array of ints\n");
-		return (0);
-	    }
-	    *pInt++ = CORR_TYPE_1;	/* type = 1 */
-	    *pInt++ = 1;		/* number of tables = 1 */
-	    pIRec = pScreenData->pRedTbl->pBase;
-	    *pInt++ = count = nLevels;	/* number of pairs in this table */
-	    for (; count; count--, pIRec++) {
-		*pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
-	    }
-	    XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 32, 
-			     PropModeReplace, (unsigned char *)pArray, total);
-	} else {
-	    total = 2 +	/* slots for type and number of tables */
-		    (1 + pScreenData->pRedTbl->nEntries) +
-		    (1 + pScreenData->pGreenTbl->nEntries) +
-		    (1 + pScreenData->pBlueTbl->nEntries);
-	    pArray = (int *) calloc(total, sizeof(int));
-	    if ((pInt = pArray) == NULL) {
-		fprintf(stderr,"Unable allocate array of ints");
-		return (0);
-	    }
-	    *pInt++ = CORR_TYPE_1;	/* type = 1 */
-	    *pInt++ = 3;		/* number of tables = 3 */
-
-	    pIRec = pScreenData->pRedTbl->pBase;
-	    *pInt++ = count = pScreenData->pRedTbl->nEntries;
-	    for (; count; count--, pIRec++) {
-		*pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
-	    }
-
-	    pIRec = pScreenData->pGreenTbl->pBase;
-	    *pInt++ = count = pScreenData->pGreenTbl->nEntries;
-	    for (; count; count--, pIRec++) {
-		*pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
-	    }
-
-	    pIRec = pScreenData->pBlueTbl->pBase;
-	    *pInt++ = count = pScreenData->pBlueTbl->nEntries;
-	    for (; count; count--, pIRec++) {
-		*pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
-	    }
-
-	    XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 32, 
-		    PropModeReplace, (unsigned char *)pArray, total);
-	}
-	break;
-      default :
-	return (0);
+	return (1);
     }
 
-#ifdef DEBUG
-    XSync (pDpy, 0);
-#endif /* DEBUG */
+    if (nTables == 1) {
+	if (pScreenData->pRedTbl->nEntries < 2) {
+	    fprintf(stderr,"Illegal number of entries in table\n");
+	    return (0);
+	}
+	switch (targetFormat) {
+	  case 8:
+	    total = 7 + (pScreenData->pRedTbl->nEntries *
+		    (tableType == 0 ? 2 : 1));
+	    if ((pCard8 = pCard8Array = (unsigned char *) calloc (total,
+		    sizeof (unsigned char))) == NULL) {
+		fprintf(stderr,"Unable allocate array of ints\n");
+		return (0);
+	    }
+	    *pCard8++ = 0;		/* VisualID = 0 */
+	    *pCard8++ = 0;		/* VisualID = 0 */
+	    *pCard8++ = 0;		/* VisualID = 0 */
+	    *pCard8++ = 0;		/* VisualID = 0 */
+	    *pCard8++ = tableType;	/* type */
+	    *pCard8++ = 1;		/* number of tables = 1 */
+	    if (tableType == 0) {
+		PutTableType0Card8(pScreenData->pRedTbl, &pCard8);
+	    } else {
+		PutTableType1Card8(pScreenData->pRedTbl, &pCard8);
+	    }
+	    XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 8, 
+		    PropModeReplace, (unsigned char *)pCard8Array, total);
+	    free(pCard8Array);
+	    break;
+	  case 16:
+	    total = 5 + (pScreenData->pRedTbl->nEntries * 
+		    (tableType == 0 ? 2 : 1));
+	    if ((pCard16 = pCard16Array = (unsigned short *) calloc (total,
+		    sizeof (unsigned short))) == NULL) {
+		fprintf(stderr,"Unable allocate array of ints\n");
+		return (0);
+	    }
+	    *pCard16++ = 0;		/* VisualID = 0 */
+	    *pCard16++ = 0;		/* VisualID = 0 */
+	    *pCard16++ = tableType;	/* type */
+	    *pCard16++ = 1;		/* number of tables = 1 */
+	    if (tableType == 0) {
+		PutTableType0Card16(pScreenData->pRedTbl, &pCard16);
+	    } else {
+		PutTableType1Card16(pScreenData->pRedTbl, &pCard16);
+	    }
+	    XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 16, 
+		    PropModeReplace, (unsigned char *)pCard16Array, total);
+	    free(pCard16Array);
+	    break;
+	  case 32:
+	    total = 4 + (pScreenData->pRedTbl->nEntries * 
+		    (tableType == 0 ? 2 : 1));
+	    if ((pCard32 = pCard32Array =
+		    (unsigned long *) calloc (total,
+		    sizeof (unsigned long))) == NULL) {
+		fprintf(stderr,"Unable allocate array of ints\n");
+		return (0);
+	    }
+	    *pCard32++ = 0;		/* VisualID = 0 */
+	    *pCard32++ = tableType;	/* type */
+	    *pCard32++ = 1;		/* number of tables = 1 */
+	    if (tableType == 0) {
+		PutTableType0Card32(pScreenData->pRedTbl, &pCard32);
+	    } else {
+		PutTableType1Card32(pScreenData->pRedTbl, &pCard32);
+	    }
+	    XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 32, 
+		    PropModeReplace, (unsigned char *)pCard32Array, total);
+	    free(pCard32Array);
+	    break;
+	  default:
+	    fprintf(stderr,"Invalid property format\n");
+	    return (0);
+	}
+      } else { /* nTables == 3 */
+	if ((pScreenData->pRedTbl->nEntries < 2) ||
+		(pScreenData->pGreenTbl->nEntries < 2) ||
+		(pScreenData->pBlueTbl->nEntries < 2)) {
+	    fprintf(stderr,"Illegal number of entries in table\n");
+	    return (0);
+	}
+	switch (targetFormat) {
+	  case 8:
+	    total = 9 +	/* visualID, type, count, and 3 lengths */
+		(pScreenData->pRedTbl->nEntries * (tableType == 0 ? 2 : 1)) +
+		(pScreenData->pGreenTbl->nEntries * (tableType == 0 ? 2 : 1)) +
+		(pScreenData->pBlueTbl->nEntries * (tableType == 0 ? 2 : 1));
+	    if ((pCard8 = pCard8Array =
+		    (unsigned char *) calloc (total,
+		    sizeof (unsigned char))) == NULL) {
+		fprintf(stderr,"Unable allocate array of ints\n");
+		return (0);
+	    }
+	    *pCard8++ = 0;		/* VisualID = 0 */
+	    *pCard8++ = 0;		/* VisualID = 0 */
+	    *pCard8++ = 0;		/* VisualID = 0 */
+	    *pCard8++ = 0;		/* VisualID = 0 */
+	    *pCard8++ = tableType;	/* type */
+	    *pCard8++ = 3;		/* number of tables = 3 */
+	    if (tableType == 0) {
+		PutTableType0Card8(pScreenData->pRedTbl, &pCard8);
+		PutTableType0Card8(pScreenData->pGreenTbl, &pCard8);
+		PutTableType0Card8(pScreenData->pBlueTbl, &pCard8);
+	    } else {
+		PutTableType1Card8(pScreenData->pRedTbl, &pCard8);
+		PutTableType1Card8(pScreenData->pGreenTbl, &pCard8);
+		PutTableType1Card8(pScreenData->pBlueTbl, &pCard8);
+	    }
+	    XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 8, 
+		    PropModeReplace, (unsigned char *)pCard8Array, total);
+	    free(pCard8Array);
+	    break;
+	  case 16:
+	    total = 7 +	/* visualID, type, count, and 3 lengths */
+		(pScreenData->pRedTbl->nEntries * (tableType == 0 ? 2 : 1)) +
+		(pScreenData->pGreenTbl->nEntries * (tableType == 0 ? 2 : 1)) +
+		(pScreenData->pBlueTbl->nEntries * (tableType == 0 ? 2 : 1));
+	    if ((pCard16 = pCard16Array =
+		    (unsigned short *) calloc (total,
+		    sizeof (unsigned short))) == NULL) {
+		fprintf(stderr,"Unable allocate array of ints\n");
+		return (0);
+	    }
+	    *pCard16++ = 0;		/* VisualID = 0 */
+	    *pCard16++ = 0;		/* VisualID = 0 */
+	    *pCard16++ = tableType;	/* type = 0 */
+	    *pCard16++ = 3;		/* number of tables = 3 */
+	    if (tableType == 0) {
+		PutTableType0Card16(pScreenData->pRedTbl, &pCard16);
+		PutTableType0Card16(pScreenData->pGreenTbl, &pCard16);
+		PutTableType0Card16(pScreenData->pBlueTbl, &pCard16);
+	    } else {
+		PutTableType1Card16(pScreenData->pRedTbl, &pCard16);
+		PutTableType1Card16(pScreenData->pGreenTbl, &pCard16);
+		PutTableType1Card16(pScreenData->pBlueTbl, &pCard16);
+	    }
+	    XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 16, 
+		    PropModeReplace, (unsigned char *)pCard16Array, total);
+	    free(pCard16Array);
+	    break;
+	  case 32:
+	    total = 6 +	/* visualID, type, count, and 3 lengths */
+		(pScreenData->pRedTbl->nEntries * (tableType == 0 ? 2 : 1)) +
+		(pScreenData->pGreenTbl->nEntries * (tableType == 0 ? 2 : 1)) +
+		(pScreenData->pBlueTbl->nEntries * (tableType == 0 ? 2 : 1));
+	    if ((pCard32 = pCard32Array =
+		    (unsigned long *) calloc (total,
+		    sizeof (unsigned long))) == NULL) {
+		fprintf(stderr,"Unable allocate array of ints\n");
+		return (0);
+	    }
+	    *pCard32++ = 0;		/* VisualID = 0 */
+	    *pCard32++ = tableType;	/* type */
+	    *pCard32++ = 3;		/* number of tables = 3 */
+	    if (tableType == 0) {
+		PutTableType0Card32(pScreenData->pRedTbl, &pCard32);
+		PutTableType0Card32(pScreenData->pGreenTbl, &pCard32);
+		PutTableType0Card32(pScreenData->pBlueTbl, &pCard32);
+	    } else {
+		PutTableType1Card32(pScreenData->pRedTbl, &pCard32);
+		PutTableType1Card32(pScreenData->pGreenTbl, &pCard32);
+		PutTableType1Card32(pScreenData->pBlueTbl, &pCard32);
+	    }
+	    XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 32, 
+		    PropModeReplace, (unsigned char *)pCard32Array, total);
+	    free(pCard32Array);
+	    break;
+	  default:
+	    fprintf(stderr,"Invalid property format\n");
+	    return (0);
+	}
+    }
 
-    if (pArray) 
-	free (pArray);
     return (1);
+
 }
 
 #ifdef GRAY
 
 static int
-LoadDataGray(pDpy, root, tableType, pScreenData)
+LoadDataGray(pDpy, root, tableType, pScreenData, targetFormat)
     Display *pDpy;
     Window root;
     LINEAR_RGB_SCCData *pScreenData;
+    int targetFormat;
 {
     unsigned char *ret_prop;
     int  count;
     int  nLevels;
-    int  IntArray[18], *pInt, *pArray;
+    unsigned char  *pCard8;
+    unsigned char  *pCard8Array = (unsigned char *)NULL;
+    unsigned short  *pCard16;
+    unsigned short  *pCard16Array = (unsigned short *)NULL;
+    unsigned long  *pCard32;
+    unsigned long  *pCard32Array = (unsigned long *)NULL;
+    unsigned long  Card32Array[18];
     int  ret_format;
     unsigned long ret_len, ret_after;
     Atom MatricesAtom, CorrectAtom, ret_atom;
-    IntensityRec *pIRec = NULL;
     XcmsFloat *pValue;
-
-#ifdef DEBUG
-    printf ("WhitePt XYZ values:\n");
-    printf ("       %f %f %f\n", 
-			    pScreenData->XYZtoRGBmatrix[0][0],
-			    pScreenData->XYZtoRGBmatrix[0][1],
-			    pScreenData->XYZtoRGBmatrix[0][2]);
-    if (tableType != CORR_TYPE_NONE) {
-	printf ("Intensity-RGB value conversion type:\n");
-	printf ("       type = %d\n", tableType);
-    } else {
-	printf ("Intensity-Gray Conversion Not Specified\n");
-	return (1);
-    }
-    /* do not use this debuggin unless you want to see the world go by */
-
-    if (!tableType) {
-	nLevels = pScreenData->pRedTbl->nEntries;
-	pIRec = pScreenData->pRedTbl->pBase;
-	printf ("Intensity Table  GRAY  %d\n", nLevels);
-	for (count = 0; count < nLevels; count++, pIRec++) {
-	    printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
-	}
-    } else {
-	nLevels = pScreenData->pRedTbl->nEntries;
-	pIRec = pScreenData->pRedTbl->pBase;
-	printf ("Intensity Table  GRAY  %d\n", nLevels);
-	for (count = 0; count < nLevels; count++, pIRec++) {
-	    printf ("\t%f\n", pIRec->intensity);
-	}
-    }
-#endif /* DEBUG */
+    int total;
 
     /* Now store the XDCCC_SCREENWHITEPT */
-    pInt = IntArray;
+    pCard32 = Card32Array;
     pValue = (XcmsFloat *)pScreenData->XYZtoRGBmatrix;
     for (count = 0; count < 3; count++) {
-	*pInt++ = (int) (*pValue++ * (XcmsFloat) XDCCC_NUMBER);
+	*pCard32++ = (unsigned long) (*pValue++ * (XcmsFloat) XDCCC_NUMBER);
     }
     MatricesAtom = XInternAtom (pDpy,XDCCC_SCREENWHITEPT_ATOM_NAME,False);
     XChangeProperty (pDpy, root, MatricesAtom, XA_INTEGER, 32, 
-		     PropModeReplace, (unsigned char *)IntArray, 3);
-#ifdef DEBUG
-    XSync (pDpy, 0);
-#endif /* DEBUG */
+		     PropModeReplace, (unsigned char *)Card32Array, 3);
 
     /* Now store the XDCCC_GRAY_CORRECTION */
     CorrectAtom = XInternAtom (pDpy, XDCCC_GRAY_CORRECT_ATOM_NAME, False);
@@ -1064,49 +1122,80 @@ LoadDataGray(pDpy, root, tableType, pScreenData)
 	}
 	return (1);
     }
-    if (!tableType) {
-	nLevels = pScreenData->pRedTbl->nEntries;
-	if (nLevels < 0) {
-	    fprintf(stderr,"Illegal number of entries in table\n");
-	    return (0);
-	}
-	pIRec = pScreenData->pRedTbl->pBase;
-	pArray = (int *) calloc (3 + (nLevels * 2), sizeof (int));
-	if ((pInt = pArray) == NULL) {
-	    fprintf(stderr,"Unable allocate array of ints\n");
-	    return (0);
-	}
-	*pInt++ = 0;			/* type = 0 */
-	*pInt++ = nLevels;		/* number of pairs in this table */
-	for (count = 0; count < nLevels; count++, pIRec++) {
-	    *pInt++ =(int) (pIRec->value);
-	    *pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
-	}
-	XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 32, 
-			 PropModeReplace, (unsigned char *)pArray,
-			 3 + (nLevels * 2));
-    } else {
-	nLevels = pScreenData->pRedTbl->nEntries;
-	pIRec = pScreenData->pRedTbl->pBase;
-	pArray = (int *) calloc (3 + nLevels, sizeof (int));
-	if ((pInt = pArray) == NULL) {
-	    fprintf(stderr,"Unable allocate array of ints\n");
-	    return (0);
-	}
-	*pInt++ = 1;			/* type = 1 */
-	*pInt++ = nLevels;		/* number of pairs in this table */
-	for (count = 0; count < nLevels; count++, pIRec++) {
-	    *pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
-	}
-	XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 32, 
-			 PropModeReplace, (unsigned char *)pArray,
-			 3 + nLevels);
+    nLevels = pScreenData->pRedTbl->nEntries;
+    if (nLevels < 2) {
+	fprintf(stderr,"Illegal number of entries in table\n");
+	return (0);
     }
-#ifdef DEBUG
-    XSync (pDpy, 0);
-#endif /* DEBUG */
-    if (pArray) 
-	free (pArray);
+    switch (targetFormat) {
+      case 8:
+	total = 6 /* visualID, type, length */
+		+ (nLevels * (tableType == 0 ? 2 : 1));
+	if ((pCard8 = pCard8Array = (unsigned char *)
+		calloc (total, sizeof (unsigned char))) == NULL) {
+	    fprintf(stderr,"Unable allocate array of Card8\n");
+	    return (0);
+	}
+	*pCard8++ = 0;		/* VisualID = 0 */
+	*pCard8++ = 0;		/* VisualID = 0 */
+	*pCard8++ = 0;		/* VisualID = 0 */
+	*pCard8++ = 0;		/* VisualID = 0 */
+	*pCard8++ = tableType;	/* type */
+	if (tableType == 0) {
+	    PutTableType0Card8(pScreenData->pRedTbl, &pCard8);
+	} else { /* tableType == 1 */
+	    PutTableType1Card8(pScreenData->pRedTbl, &pCard8);
+	}
+	XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 8, 
+			 PropModeReplace, (unsigned char *)pCard8Array,
+			 total);
+	free (pCard8Array);
+	break;
+      case 16:
+	total = 4 /* visualID, type, length */
+		+ (nLevels * (tableType == 0 ? 2 : 1));
+	if ((pCard16 = pCard16Array = (unsigned short *)
+		calloc (total, sizeof (unsigned short))) == NULL) {
+	    fprintf(stderr,"Unable allocate array of Card16\n");
+	    return (0);
+	}
+	*pCard16++ = 0;		/* VisualID = 0 */
+	*pCard16++ = 0;		/* VisualID = 0 */
+	*pCard16++ = tableType;	/* type */
+	if (tableType == 0) {
+	    PutTableType0Card16(pScreenData->pRedTbl, &pCard16);
+	} else { /* tableType == 1 */
+	    PutTableType1Card16(pScreenData->pRedTbl, &pCard16);
+	}
+	XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 16, 
+			 PropModeReplace, (unsigned char *)pCard16Array,
+			 total);
+	free (pCard16Array);
+	break;
+      case 32:
+	total = 3 /* visualID, type, length */
+		+ (nLevels * (tableType == 0 ? 2 : 1));
+	if ((pCard32 = pCard32Array = (unsigned long *)
+		calloc (total, sizeof (unsigned long))) == NULL) {
+	    fprintf(stderr,"Unable allocate array of Card32\n");
+	    return (0);
+	}
+	*pCard32++ = 0;		/* VisualID = 0 */
+	*pCard32++ = tableType;	/* type */
+	if (tableType == 0) {
+	    PutTableType0Card32(pScreenData->pRedTbl, &pCard32);
+	} else { /* tableType == 1 */
+	    PutTableType1Card32(pScreenData->pRedTbl, &pCard32);
+	}
+	XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 32, 
+			 PropModeReplace, (unsigned char *)pCard32Array,
+			 total);
+	free (pCard32Array);
+	break;
+      default:
+	fprintf(stderr,"Invalid property format\n");
+	return (0);
+    }
     return (1);
 }
 #endif /* GRAY */
@@ -1125,10 +1214,11 @@ LoadDataGray(pDpy, root, tableType, pScreenData)
  *	SYNOPSIS
  */
 int
-LoadSCCData(pDpy, screenNumber, filename)
+LoadSCCData(pDpy, screenNumber, filename, targetFormat)
     Display *pDpy;
     int screenNumber;
     char *filename;
+    int targetFormat;
 
 /*
  *	DESCRIPTION
@@ -1346,14 +1436,15 @@ LoadSCCData(pDpy, screenNumber, filename)
 		}
 		if (VisualFlag == VIDEO_RGB) {
 		    if (!LoadDataRGB(pDpy, root,
-				     tableType, nTables, pScreenData)) {
+				     tableType, nTables, pScreenData,
+				     targetFormat)) {
 			closeS (stream, pScreenData);
 			return (0);
 		    }
 #ifdef GRAY
 		} else if (VisualFlag == VIDEO_GRAY) {
 		    if (!LoadDataGray(pDpy, root,
-				      tableType, pScreenData)) {
+				      tableType, pScreenData, targetFormat)) {
 			closeS (stream, pScreenData);
 			return (0);
 		    }
