@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.64 88/08/09 10:42:11 swick Locked $";
+static char rcs_id[] = "$Header: main.c,v 1.65 88/08/12 11:39:00 swick Exp $";
 #endif	/* lint */
 
 /*
@@ -187,9 +187,9 @@ static struct _resource {
     char *xterm_name;
     char *icon_geometry;
     char *title;
+    char *icon_name;
     Boolean utmpInhibit;
     Boolean sunFunctionKeys;	/* %%% should be widget resource? */
-    Boolean bash_title_icon_strings; /* default for -e; override with -E */
 } resource;
 
 #ifndef GETTY_EXE
@@ -209,12 +209,12 @@ static XtResource application_resources[] = {
 	offset(icon_geometry), XtRString, (caddr_t) NULL},
     {XtNtitle, XtCTitle, XtRString, sizeof(char *),
 	offset(title), XtRString, (caddr_t) NULL},
+    {XtNiconName, XtCIconName, XtRString, sizeof(char *),
+	offset(icon_name), XtRString, (caddr_t) NULL},
     {"utmpInhibit", "UtmpInhibit", XtRBoolean, sizeof (Boolean),
 	offset(utmpInhibit), XtRString, "false"},
     {"sunFunctionKeys", "SunFunctionKeys", XtRBoolean, sizeof (Boolean),
 	offset(sunFunctionKeys), XtRString, "false"},
-    {"forceTitleStrings", "ForceTitleStrings", XtRBoolean, sizeof (Boolean),
-       offset(bash_title_icon_strings), XtRString, "true"},
 };
 #undef offset
 
@@ -325,10 +325,11 @@ static char *options[] = {
 "-/+t                        turn on/off Tek emulation window",
 "-/+ut                       turn on/off utmp inhibit",
 "-/+vb                       turn on/off visual bell",
-"-e command args             command to execute, sets title and icon",
-"-E command args             commadn to execute, doesn't set title or icon",
+"-e command args             command to execute",
 "%geom                       Tek window geometry",
 "#geom                       icon window geometry",
+"-T string                   title name for window",
+"-n string                   icon name for window",
 "-C                          console mode",
 "-L                          getty mode started from init",
 "-Sxxd                       slave mode on \"ttyxx\", file descriptor \"d\"",
@@ -643,8 +644,6 @@ char **argv;
 		debug = TRUE;
 		continue;
 #endif	/* DEBUG */
-	     case 'E':
-		resource.bash_title_icon_strings = FALSE;
 	     case 'e':
 		if (argc <= 1) Syntax (*argv);
 		command_to_exec = ++argv;
@@ -679,8 +678,8 @@ char **argv;
 
 	term->initflags = term->flags;
 
-	if ((get_ty || command_to_exec) && !resource.title
-	    && resource.bash_title_icon_strings) {
+	if ((get_ty || command_to_exec) && 
+	    !resource.title && !resource.icon_name) {
 	    char window_title[1024];
 	    static Arg args[] = {
 		{XtNtitle, NULL},
