@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocfuncs.c,v 2.35 91/07/12 17:22:26 converse Exp $
+ * $XConsortium: tocfuncs.c,v 2.36 91/07/14 18:53:33 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -688,7 +688,6 @@ void XmhIncorporateNewMail(w, event, params, num_params)
 }
 
 
-/*ARGSUSED*/
 void DoIncorporateNewMail(w, client_data, call_data)
     Widget	w;		/* unused */
     XtPointer	client_data;	/* screen */
@@ -697,9 +696,13 @@ void DoIncorporateNewMail(w, client_data, call_data)
     Scrn scrn = (Scrn) client_data;
     Toc toc = scrn->toc;
     int i;
+    int newmail;
 
     if (! toc) return;
-    TocIncorporate(toc);
+    newmail = TocIncorporate(toc);
+
+    if (app_resources.show_on_inc && newmail)
+	DoNextView(w, client_data, call_data);
 
     if (app_resources.new_mail_check)
 	/* update the folder button */
