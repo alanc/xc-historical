@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.59 88/08/14 11:29:07 rws Exp $ */
+/* $Header: dispatch.c,v 1.60 88/08/14 17:31:49 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1112,8 +1112,8 @@ ProcQueryFont(client)
     }
 
     {
-	CharInfoPtr	pmax = &pFont->pFI->maxbounds;
-	CharInfoPtr	pmin = &pFont->pFI->minbounds;
+	CharInfoPtr	pmax = pFont->pInkMax;
+	CharInfoPtr	pmin = pFont->pInkMin;
 	int		nprotoxcistructs;
 	int		rlength;
 
@@ -1251,6 +1251,8 @@ ProcListFontsWithInfo(client)
     fpaths = ExpandFontNamePattern( stuff->nbytes,
 				    (char *) &stuff[1], stuff->maxNames);
     font.pFI = &finfo;
+    font.pInkMin = &finfo.minbounds;
+    font.pInkMax = &finfo.maxbounds;
     for (n = fpaths->npaths, path = fpaths->paths, length = fpaths->length;
 	 --n >= 0;
 	 path++, length++)
