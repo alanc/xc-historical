@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mifpolycon.c,v 5.1 89/07/03 15:01:23 rws Exp $ */
+/* $XConsortium: mifpolycon.c,v 5.2 89/07/28 12:06:07 rws Exp $ */
 #include <math.h>
 #include "X.h"
 #include "gcstruct.h"
@@ -184,18 +184,22 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans, xFtrans, yFtrans)
 	}
         while (j > 0) 
         {
+	    int cxl, cxr;
+
             ptsOut->y = (y) + yTrans;
 
+	    cxl = ICEIL(xl);
+	    cxr = ICEIL(xr);
             /* reverse the edges if necessary */
             if (xl < xr) 
             {
-                *(width++) = ICEIL(xr) - ICEIL(xl);
-                (ptsOut++)->x = ICEIL(xl) + xTrans;
+                *(width++) = cxr - cxl;
+                (ptsOut++)->x = cxl + xTrans;
             }
             else 
             {
-                *(width++) = ICEIL(xl) - ICEIL(xr);
-                (ptsOut++)->x = ICEIL(xr) + xTrans;
+                *(width++) = cxl - cxr;
+                (ptsOut++)->x = cxr + xTrans;
             }
             y++;
 
