@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.111 93/02/19 17:55:50 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.112 93/02/25 18:35:43 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -79,8 +79,14 @@ Syntax of magic values in the input stream:
 ^T^T			^T
 ^T^U			re-read undo file
 ^T^V<string>^T		echo <string> to stdout
-^T^W<screen> <x> <y>^T	warp to position (<x>,<y>) on screen <screen>
-			(screen can be -1 for current)
+^T^W<dest> <x> <y>^T	warp to position (<x>,<y>) on destination <dest>
+	if <x> is negative, it is replaced with width_of(<dest>) + <x>
+	if <y> is negative, it is replaced with height_of(<dest>) + <x>
+	values for <dest>:
+	S or -1		current screen
+	W or -2		top-level window containing pointer
+	w or -3		innermost window containing pointer
+	<screen>	screen number <screen>
 ^T^Y<options>[ <delay>]^T
 			set/await trigger
 	M		set MapNotify trigger
@@ -905,14 +911,80 @@ do_warp(buf)
     char *buf;
 {
     int screen;
-    int x;
-    char *endptr;
+    int x, y;
+    char *endptr = NULL, *endptr2;
+    Window root, w, cw;
+    int rx, ry, wx, wy;
+    unsigned int width, height, bwidth, depth, m;
+    Bool negx, negy;
 
-    screen = strtol(buf, &endptr, 10);
+    switch (*buf) {
+    case 'S':
+	screen = -1;
+	break;
+    case 'W':
+	screen = -2;
+	break;
+    case 'w':
+	screen = -3;
+	break;
+    default:
+	screen = strtol(buf, &endptr, 10);
+    }
+    if (!endptr) {
+	if (buf[1] != ' ')
+	    return;
+	endptr = buf + 1;
+    }
     if (*endptr) {
-	x = strtol(endptr + 1, &endptr, 10);
-	if (*endptr)
-	    (*generate_warp)(screen, x, atoi(endptr + 1));
+	x = strtol(endptr + 1, &endptr2, 10);
+	if (*endptr2) {
+	    y = atoi(endptr2 + 1);
+	    negx = x < 0 || (x == 0 && endptr[1] == '-');
+	    negy = y < 0 || (y == 0 && endptr2[1] == '-');
+	    if (screen < 0 && (screen < -1 || negx || negy)) {
+		if (screen < 0)
+		    root = DefaultRootWindow(dpy);
+		else
+		    root = RootWindow(dpy, screen);
+		XQueryPointer(dpy, root, &root, &w, &rx, &ry, &wx, &wy, &m);
+		switch (screen) {
+		case -2:
+		    if (w)
+			w = XmuClientWindow(dpy, w);
+		    else
+			w = root;
+		    break;
+		case -3:
+		    cw = w;
+		    while (cw) {
+			w = cw;
+			XQueryPointer(dpy, w, &root, &cw,
+				      &rx, &ry, &wx, &wy, &m);
+		    }
+		}
+		if (screen < -1 && w != root) {
+		    if (negx || negy) {
+			XGetGeometry(dpy, w, &root, &wx, &wy, &width, &height,
+				     &bwidth, &depth);
+			if (negx)
+			    x += (int)width;
+			if (negy)
+			    y += (int)height;
+		    }
+		    XTranslateCoordinates(dpy, w, root, x, y, &x, &y, &w);
+		    negx = False;
+		    negy = False;
+		}
+		for (screen = 0; RootWindow(dpy, screen) != root; screen++)
+		    ;
+	    }
+	    if (negx)
+		x += DisplayWidth(dpy, screen);
+	    if (negy)
+		y += DisplayHeight(dpy, screen);
+	    (*generate_warp)(screen, x, y);
+	}
     }
 }
 
