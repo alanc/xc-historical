@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.17 92/08/22 11:43:19 rws Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.18 92/08/22 14:50:54 rws Exp $
 /*
  *	Please set the values for OSMajorVerion and OSMinorVersion
  *	before making makefiles.	 
@@ -16,9 +16,10 @@ XCOMM platform:  $XConsortium: luna.cf,v 1.17 92/08/22 11:43:19 rws Exp $
 #define DirFailPrefix -
 # endif
 #else  /* Mc88000Architecture */
-#define OSName            Mach 2.5 Vers 1.13
-#define OSMajorVersion    1
-#define OSMinorVersion    13
+#define OSName            Mach 2.5 Vers 2.00.1
+#define OSMajorVersion    2
+#define OSMinorVersion    0
+#define OSTeenyVersion    1
 #endif
 XCOMM operating system:  OSName
 
