@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.59 92/09/11 18:38:33 rws Exp $
+ * $XConsortium: xrdb.c,v 11.60 92/09/11 19:30:49 rws Exp $
  */
 
 /*
@@ -385,18 +385,24 @@ DoDisplayDefines(display, defs, host)
 #define MAXHOSTNAME 255
     char client[MAXHOSTNAME], server[MAXHOSTNAME], *colon;
     char **extnames;
-    int nexts;
+    int n;
     
     XmuGetHostname(client, MAXHOSTNAME);
     strcpy(server, XDisplayName(host));
     colon = index(server, ':');
-    if (colon)
-	*colon = '\0';
-    if (server[0] == '\0')	/* must be connected to :0 */
+    n = 0;
+    if (colon) {
+	*colon++ = '\0';
+	if (*colon == ':')
+	    colon++;
+	sscanf(colon, "%d", &n);
+    }
+    if (!*server || !strcmp(server, "unix") || !strcmp(server, "localhost"))
 	strcpy(server, client);
     AddDef(defs, "HOST", server); /* R3 compatibility */
     AddDef(defs, "SERVERHOST", server);
     AddDefTok(defs, "SRVR_", server);
+    AddNum(defs, "DISPLAY_NUM", n);
     AddDef(defs, "CLIENTHOST", client);
     AddDefTok(defs, "CLNT_", client);
     AddNum(defs, "VERSION", ProtocolVersion(display));
@@ -405,9 +411,9 @@ DoDisplayDefines(display, defs, host)
     AddDefTok(defs, "VNDR_", ServerVendor(display));
     AddNum(defs, "RELEASE", VendorRelease(display));
     AddNum(defs, "NUM_SCREENS", ScreenCount(display));
-    extnames = XListExtensions(display, &nexts);
-    while (--nexts >= 0)
-	AddDefTok(defs, "EXT_", extnames[nexts]);
+    extnames = XListExtensions(display, &n);
+    while (--n >= 0)
+	AddDefTok(defs, "EXT_", extnames[n]);
 }
 
 char *ClassNames[] = {

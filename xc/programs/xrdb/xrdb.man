@@ -43,6 +43,9 @@ For example, "my-dpy.lcs.mit.edu" becomes SRVR_my_dpy_lcs_mit_edu.
 the same as
 .BR SERVERHOST .
 .TP 8
+.B DISPLAY_NUM=\fInum\fP
+the number of the display on the server host.
+.TP 8
 .B CLIENTHOST=\fIhostname\fP
 the name of the host on which
 .I xrdb
