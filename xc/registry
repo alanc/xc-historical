@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.58 92/01/25 16:38:10 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.59 92/01/29 17:22:39 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -767,6 +767,7 @@ Value	Name					Reference
 13	ShoGraphics, Inc.			[85]
 14	Tektronix, Inc.				[86]
 15	FUJITSU LIMITED				[87]
+16	International Business Machines		[33]
 
 
 REFERENCES
