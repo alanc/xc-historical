@@ -42,7 +42,7 @@ install::
 	-mkdir $(INCDIR)
 	-mkdir $(FONTDIR)
 	-mkdir $(MANDIR)
-	ln -s $(INCDIR) $(FUTUREINCDIR)
+	-ln -s $(INCDIR) $(FUTUREINCDIR)
 
 #
 # before making the makefiles, be sure that imake exists.
