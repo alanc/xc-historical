@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.24 93/12/07 11:04:13 mor Exp $ */
+/* $XConsortium: process.c,v 1.25 93/12/28 11:42:59 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -1799,7 +1799,7 @@ IceReplyWaitInfo 	*replyWait;
 
 
 
-void
+static void
 ProcessPingReply (iceConn)
 
 IceConn iceConn;
@@ -1823,7 +1823,7 @@ IceConn iceConn;
 
 
 
-void
+static void
 ProcessWantToClose (iceConn)
 
 IceConn iceConn;
@@ -1872,7 +1872,7 @@ IceConn iceConn;
 
 
 
-void
+static void
 ProcessNoClose (iceConn)
 
 IceConn iceConn;
