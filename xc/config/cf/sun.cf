@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.96 93/09/05 17:15:38 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.97 93/09/06 11:57:30 rws Exp $
 
 #ifdef SVR4
 #define OSName            SunOS 5.2

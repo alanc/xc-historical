@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.24 93/09/04 16:07:41 rws Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.25 93/09/18 13:35:41 rws Exp $
 /*
  *	Please set the values for OSMajorVerion and OSMinorVersion
  *	before making makefiles.	 
@@ -36,14 +36,14 @@ XCOMM operating system:  OSName
 #ifdef Mc68000Architecture
 #ifdef	luna2
 #if ((OSMajorVersion <= 1) && (OSMinorVersion < 40))
-#define ServerOSDefines -DUNUSE_DRV_TIME -DUNUSE_SIGIO_SIGNAL 
+#define ServerExtraDefines -DUNUSE_DRV_TIME -DUNUSE_SIGIO_SIGNAL 
 #endif
 #else	/* luna1 */
 #if ((OSMajorVersion <= 1) && (OSMinorVersion <= 60))
 #define StandardDefines         -Dluna -Duniosb
 #endif
 #if ((OSMajorVersion < 2) || ((OSMajorVersion == 2) && (OSMinorVersion < 1)))
-#define ServerOSDefines -DUNUSE_DRV_TIME -DUNUSE_SIGIO_SIGNAL 
+#define ServerExtraDefines -DUNUSE_DRV_TIME -DUNUSE_SIGIO_SIGNAL 
 #endif
 #endif	/* luna2 */
 #if HasGcc
@@ -58,7 +58,7 @@ XCOMM operating system:  OSName
 
 #ifdef Mc88000Architecture
 #if ((OSMajorVersion <= 1) && (OSMinorVersion <= 12))
-#define ServerOSDefines -DUNUSE_DRV_TIME -DUNUSE_SIGIO_SIGNAL 
+#define ServerExtraDefines -DUNUSE_DRV_TIME -DUNUSE_SIGIO_SIGNAL 
 #endif
 #define HasNdbm			YES
 #if HasGcc

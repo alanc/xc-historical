@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: pegasus.cf,v 1.33 93/09/04 16:06:05 rws Exp $
+XCOMM platform:  $XConsortium: pegasus.cf,v 1.34 93/09/18 18:22:37 rws Exp $
 
 #define OSName             UTek 4.0
 XCOMM operating system:  OSName
@@ -18,8 +18,8 @@ XCOMM operating system:  OSName
 
 #define XtekServer YES
 
-#define ServerOSDefines   -DM4310 -DM4317
-#define ServerExtraDefines -DDDXTIME
+#define ServerExtraDefines   -DM4310 -DM4317
+#define ServerOSDefines -DDDXTIME
 #define FontFilters BDFTOSNFFILT SHELLPATH
 #define PrimaryScreenResolution 95
 

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.62 93/09/06 11:57:55 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.63 93/09/06 15:20:45 rws Exp $
 
 #define OSName                 HP-UX 9.1
 XCOMM operating system:  OSName
@@ -14,7 +14,7 @@ XCOMM operating system:  OSName
 #define DefaultCCOptions       -Aa +ESlit
 #define SharedLibraryCCOptions -Aa
 #define StandardDefines        -Dhpux -DSYSV -D_HPUX_SOURCE
-#define ServerOSDefines -DXOS -DBSTORE -DSOFTWARE_CURSOR -DNO_ALLOCA -DSCREEN_PIXMAPS -DMERGE_SAVE_UNDERS -DR5 -DHAS_IFREQ -DFORCE_SEPARATE_PRIVATE
+#define ServerExtraDefines -DXOS -DBSTORE -DSOFTWARE_CURSOR -DNO_ALLOCA -DSCREEN_PIXMAPS -DMERGE_SAVE_UNDERS -DR5 -DHAS_IFREQ -DFORCE_SEPARATE_PRIVATE
 /* #include <hpLib.rules> */
 #else
 #define StandardDefines        -Dhpux -DSYSV

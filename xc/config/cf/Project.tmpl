@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.194 93/09/18 15:54:33 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.195 93/09/18 19:20:01 kaleb Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -183,14 +183,14 @@ XCOMM $XConsortium: Project.tmpl,v 1.194 93/09/18 15:54:33 rws Exp $
 #ifndef ServerXdmcpDefines
 #define ServerXdmcpDefines -DXDMCP
 #endif
-#ifndef ServerExtraDefines
-#define ServerExtraDefines /**/
-#endif
 #ifndef ServerOSDefines
-#define ServerOSDefines /* -DPIXPRIV */
+#define ServerOSDefines /**/
+#endif
+#ifndef ServerExtraDefines
+#define ServerExtraDefines /* -DPIXPRIV */
 #endif
 #ifndef ServerDefines
-#define ServerDefines StandardDefines PervasiveExtensionDefines ServerOSDefines
+#define ServerDefines StandardDefines PervasiveExtensionDefines ServerExtraDefines
 #endif
 #ifndef PexDipexDefines
 #define PexDipexDefines /**/

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.19 93/09/17 17:29:21 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.20 93/09/18 18:25:24 rws Exp $
 /* only tested with Digital OSF/1 V1.0 */
 
 #define OSName			OSF/1 1.0
@@ -47,7 +47,7 @@ XCOMM operating system:  OSName
 #ifdef MipsArchitecture
 #define DefaultCCOptions	-Xc
 #define XdecServer YES
-#define ServerExtraDefines -DDDXTIME
+#define ServerOSDefines -DDDXTIME
 #define PexCCOptions -Xc -Wf,-XNp15000,-XNd15000
 #define NormalLibObjCompile(options) $(RM) $@ $*.os \			@@\
 	&& $(CC) -c options $(CFLAGS) $*.c \				@@\

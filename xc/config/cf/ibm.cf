@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.35 93/09/04 21:39:39 rws Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.36 93/09/06 15:21:17 rws Exp $
 
 #ifdef RsArchitecture
 #define OSName		AIX 3.2.0
@@ -228,7 +228,7 @@ XCOMM operating system:  OSName
  * define this as you like for server compilation 
  * affected: all makefiles in .../X11/server
  */
-#define ServerOSDefines  cppdefs -DNOSTDHDRS OSDefines
+#define ServerExtraDefines  cppdefs -DNOSTDHDRS OSDefines
 
 
 #define FontOSDefines StandardDefines
