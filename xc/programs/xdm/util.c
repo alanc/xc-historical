@@ -171,7 +171,9 @@ CleanUpChild ()
 	setpgrp (0, getpid ());
 	sigsetmask (0);
 #endif
+#ifdef SIGCHLD
 	(void) signal (SIGCHLD, SIG_DFL);
+#endif
 	(void) signal (SIGTERM, SIG_DFL);
 	(void) signal (SIGPIPE, SIG_DFL);
 	(void) signal (SIGALRM, SIG_DFL);
