@@ -25,7 +25,7 @@ static char *sccsid = "@(#)Initialize.c	1.0	8/2787";
  * SOFTWARE.
  */
 
-/* fix the tilebar name vs internal name junk */
+/* Make sure all wm properties can make it out of the resource manager */
 
 #include <stdio.h>
 #include <pwd.h>
@@ -126,6 +126,7 @@ static void InsertChild();
 static void ChangeManaged(); /* XXX */
 static XtGeometryReturnCode GeometryManager();
 static void EventHandler();
+static void ClassInitialize();
 
 typedef struct _TopLevelClassRec {
   	CoreClassPart      core_class;
@@ -137,7 +138,7 @@ TopLevelClassRec topLevelClassRec = {
     /* superclass         */    (WidgetClass) &compositeClassRec,
     /* class_name         */    "TopLevel",
     /* size               */    sizeof(TopLevelRec),
-    /* Class Initializer  */	NULL,
+    /* Class Initializer  */	ClassInitialize,
     /* Class init'ed ?    */	FALSE,
     /* initialize         */    Initialize,
     /* realize            */    Realize,
@@ -196,6 +197,23 @@ Display *dpy;
 {
 	XtHasInput = XInternAtom(dpy, "XtHasInput", False);
 	XtTimerExpired = XInternAtom(dpy, "XtTimerExpired", False);
+}
+
+
+static void ClassInitialize()
+{
+    CompositeWidgetClass superclass;
+    TopLevelWidgetClass myclass;
+
+    myclass = (TopLevelWidgetClass) topLevelWidgetClass;
+    superclass = (CompositeWidgetClass) myclass->core_class.superclass;
+
+    /* Inherit  delete_child from Composite */
+    /* I have a insert_child that calls my parents superclasses insert_child */
+    /* I can't inherit this one because of the implied add that Joel wants */
+
+    myclass->composite_class.delete_child =
+        superclass->composite_class.delete_child;
 }
 
 /*
