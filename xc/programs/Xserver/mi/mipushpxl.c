@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mipushpxl.c,v 1.14 87/08/12 14:24:49 todd Exp $ */
+/* $Header: mipushpxl.c,v 1.14 87/09/11 07:20:28 rws Locked $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "scrnintstr.h"
@@ -160,7 +160,7 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 		ipt = 0;
 	    }
 	}
-	Xfree(pw);
+	Xfree(pwLineStart);
     }
     /* Flush any remaining spans */
     if (ipt)
