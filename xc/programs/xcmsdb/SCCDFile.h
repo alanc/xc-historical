@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * (c) Copyright 1990 Tektronix Inc.
  * 	All Rights Reserved
@@ -26,8 +27,6 @@
  *		Include file for TekCMS Color Extension when using the
  *		X Device Color Characterization Convention (XDCCC).
  *
- *	REVISION
- *		$Header: SCCDFile.h,v 1.2 91/04/30 22:19:14 alt Exp $
  */
 #ifndef SCCDFILE_H
 #define SCCDFILE_H

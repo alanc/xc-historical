@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 

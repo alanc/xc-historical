@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /***********************************************************
 Copyright 1991,1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 the Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -22,24 +23,6 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/*
- * @DEC_COPYRIGHT@
- */
-/*
- * HISTORY
- * Changes to C64Low32 and C64High32
- * $Log:	sync.h,v $
- * Revision 1.2  93/09/03  13:24:36  dpw
- * overhaul from Pete's version
- * 
- * Revision 1.1.1.3  1993/05/06  13:13:03  Pete_Snider
- * 	remove the typedef of CARD64, typedef in Xmd.h
- *
- * Revision 1.1.1.2  1993/05/05  17:29:01  Pete_Snider
- * 	initial rcs submit
- * 
- * $EndLog$
- */
 
 #ifndef _SYNC_H_
 #define _SYNC_H_

@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 #ifndef _FontGrid_h_
 #define _FontGrid_h_
 

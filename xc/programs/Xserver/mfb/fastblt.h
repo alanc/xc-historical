@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * Fast bitblt macros for certain hardware.  If your machine has an addressing
  * mode of small constant + register, you'll probably want this magic specific

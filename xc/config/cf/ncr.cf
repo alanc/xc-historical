@@ -1,3 +1,4 @@
+XCOMM platform:  $XConsortium: osf1.cf,v 1.26 94/02/06 18:27:53 rws Exp $
 #define OSName			NCR Unix System V Release 4/MP-RAS
 XCOMM operating system:  OSName
 #define OSMajorVersion		4

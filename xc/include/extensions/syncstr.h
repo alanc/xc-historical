@@ -1,14 +1,4 @@
-/*
- * @DEC_COPYRIGHT@
- */
-/*
- * HISTORY
- * $Log: syncstr.h,v $
- * Revision 1.1.1.2  1993/05/05  17:31:47  Pete_Snider
- * 	initial rcs submit
- *
- * $EndLog$
- */
+/* $XConsortium$ */
 
 /***********************************************************
 Copyright 1991,1993 by Digital Equipment Corporation, Maynard, Massachusetts,

@@ -1,4 +1,4 @@
-/* $Consortium: XGetDCtl.c,v 1.2 90/11/13 13:16:52 gms Exp $ */
+/* $XConsortium$ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 

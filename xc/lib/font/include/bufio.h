@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 #ifdef TEST
 
 #define xalloc(s)   malloc(s)

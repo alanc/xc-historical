@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /* 
  * decompress - cat a compressed file
  */

@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * header file for compatibility with something useful
  */

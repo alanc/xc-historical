@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 #ifndef _XawScale_h
 #define _XawScale_h
 

@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 #ifndef CLOSESTR_H
 #define CLOSESTR_H
 
