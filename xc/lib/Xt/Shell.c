@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.141 93/10/06 17:36:15 kaleb Exp $ */
+/* $XConsortium: Shell.c,v 1.142 93/10/15 15:04:04 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -560,7 +560,9 @@ static XtResource applicationResources[]=
 	{ XtNargc, XtCArgc, XtRInt, sizeof(int),
 	    Offset(application.argc), XtRImmediate, (XtPointer)0}, 
 	{ XtNargv, XtCArgv, XtRStringArray, sizeof(String*),
-	    Offset(application.argv), XtRPointer, (XtPointer) NULL}
+	    Offset(application.argv), XtRPointer, (XtPointer) NULL},
+	{ XtNsession, XtCSession, XtRWidget, sizeof(Widget),
+	    Offset(application.session), XtRWidget, NULL}
 };
 
 static void ApplicationInitialize();
