@@ -1,30 +1,32 @@
-XCOMM $XConsortium: Imakefile,v 1.7 92/08/28 19:15:02 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 92/09/09 20:41:42 rws Exp $
 
+/* define one or more of the following */
 #define BuildWithXTest
+/* #define BuildWithXTrap */
+/* #define BuildWithXTestExt1 */
 
 #ifdef BuildWithXTest
-DEFINES = -DXTEST
+XTESTDEFS = -DXTEST
 #ifdef NormalLibXTest /* test if pre-R6 config files */
-GENLIB = $(XTESTLIB)
-GENDEPLIB = $(DEPXTESTLIB)
+XTESTGENLIB = $(XTESTLIB)
+XTESTGENDEPLIB = $(DEPXTESTLIB)
 #else
-GENLIB = -lXtst
+XTESTGENLIB = -lXtst
 #endif
 #endif
 #ifdef BuildWithXTrap
-DEFINES = -DXTRAP
-GENLIB = -lXTrap $(XTOOLLIB)
-GENDEPLIB = $(DEPXTOOLLIB)
+XTRAPDEFS = -DXTRAP
+XTRAPGENLIB = -lXTrap $(XTOOLLIB)
+XTRAPGENDEPLIB = $(DEPXTOOLLIB)
 INCLUDES = -I$(INCDIR)
 #endif
 #ifdef BuildWithXTestExt1
-DEFINES = -DXTESTEXT1
-GENLIB =
-GENDEPLIB =
+XTESTEXT1DEFS = -DXTESTEXT1
 #endif
 
-        DEPLIBS = $(DEPXMULIB) $(DEPGENLIB) $(DEPXLIB)
-LOCAL_LIBRARIES = $(XMULIB) $(GENLIB) $(XLIB)
+        DEFINES = $(XTESTDEFS) $(XTRAPDEFS) $(XTESTEXT1DEFS)
+        DEPLIBS = $(DEPXMULIB) $(XTESTDEPGENLIB) $(XTRAPDEPGENLIB) $(DEPXLIB)
+LOCAL_LIBRARIES = $(XMULIB) $(XTESTGENLIB) $(XTRAPGENLIB) $(XLIB)
   SYS_LIBRARIES = -lm
 
 SimpleProgramTarget(a2x)

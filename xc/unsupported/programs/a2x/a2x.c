@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.93 92/09/28 17:55:48 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.94 92/09/29 09:24:02 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -263,6 +263,12 @@ KeyCode hotkey = 0;
 #ifdef XTRAP
 XETC *tc;
 #endif
+void (*generate_key)();
+void (*generate_button)();
+void (*generate_motion)();
+void (*generate_warp)();
+void (*flush_generate)();
+void (*clean_up)();
 
 void process();
 KeyCode parse_keysym();
@@ -280,75 +286,146 @@ delay_time() /* we have to approximate the delay */
 }
 #endif
 
+#ifdef XTEST
 void
-generate_key(key, press)
+xtest_generate_key(key, press)
     int key;
     Bool press;
 {
-#ifdef XTEST
     XTestFakeKeyEvent(dpy, key, press, time_delay);
-#endif
-#ifdef XTRAP
-    delay_time();
-    XESimulateXEventRequest(tc, press ? KeyPress : KeyRelease, key, 0, 0, 0);
-#endif
-#ifdef XTESTEXT1
-    XTestPressKey(dpy, 1, time_delay, key, press ? XTestPRESS : XTestRELEASE);
-#endif
     time_delay = 0;
 }
+#endif
 
+#ifdef XTRAP
 void
-generate_button(button, press)
+xtrap_generate_key(key, press)
+    int key;
+    Bool press;
+{
+    delay_time();
+    XESimulateXEventRequest(tc, press ? KeyPress : KeyRelease, key, 0, 0, 0);
+    time_delay = 0;
+}
+#endif
+
+#ifdef XTESTEXT1
+void
+xtestext1_generate_key(key, press)
+    int key;
+    Bool press;
+{
+    XTestPressKey(dpy, 1, time_delay, key, press ? XTestPRESS : XTestRELEASE);
+    time_delay = 0;
+}
+#endif
+
+#ifdef XTEST
+void
+xtest_generate_button(button, press)
     int button;
     Bool press;
 {
-#ifdef XTEST
     XTestFakeButtonEvent(dpy, button, press, time_delay);
+    time_delay = 0;
+}
 #endif
+
 #ifdef XTRAP
+void
+xtrap_generate_button(button, press)
+    int button;
+    Bool press;
+{
     delay_time();
     XESimulateXEventRequest(tc, press ? ButtonPress : ButtonRelease,
 			    button, 0, 0, 0);
+    time_delay = 0;
+}
 #endif
+
 #ifdef XTESTEXT1
+void
+xtestext1_generate_button(button, press)
+    int button;
+    Bool press;
+{
     XTestPressButton(dpy, 2, time_delay, button,
 		     press ? XTestPRESS : XTestRELEASE);
-#endif
     time_delay = 0;
 }
+#endif
 
+#ifdef XTEST
 void
-generate_motion(dx, dy)
+xtest_generate_motion(dx, dy)
     int dx, dy;
 {
-#ifdef XTEST
     XTestFakeRelativeMotionEvent(dpy, dx, dy, time_delay);
+    time_delay = 0;
+}
 #endif
+
 #if defined(XTRAP) || defined(XTESTEXT1)
+void
+warp_generate_motion(dx, dy)
+    int dx, dy;
+{
     delay_time();
     XWarpPointer(dpy, None, None, 0, 0, 0, 0, dx, dy);
-#endif
     time_delay = 0;
 }
+#endif
 
+#ifdef XTEST
 void
-generate_warp(screen, x, y)
+xtest_generate_warp(screen, x, y)
     int screen, x, y;
 {
-#ifdef XTEST
     XTestFakeMotionEvent(dpy, screen, x, y, time_delay);
-#endif
-#ifdef XTRAP
-    delay_time();
-    XESimulateXEventRequest(tc, MotionNotify, 0, x, y, 0);
-#endif
-#ifdef XTESTEXT1
-    delay_time();
-    XWarpPointer(dpy, None, DefaultRootWindow(dpy), 0, 0, 0, 0, x, y);
-#endif
     time_delay = 0;
 }
+#endif
+
+#ifdef XTRAP
+void
+xtrap_generate_warp(screen, x, y)
+    int screen, x, y;
+{
+    delay_time();
+    XESimulateXEventRequest(tc, MotionNotify, 0, x, y, 0);
+    time_delay = 0;
+}
+#endif
+
+#ifdef XTESTEXT1
+void
+xtestext1_generate_warp(screen, x, y)
+    int screen, x, y;
+{
+    delay_time();
+    XWarpPointer(dpy, None, DefaultRootWindow(dpy), 0, 0, 0, 0, x, y);
+    time_delay = 0;
+}
+#endif
+
+#ifdef XTESTEXT1
+void
+xtestext1_flush_generate()
+{
+    XTestFlush(dpy);
+}
+#endif
+
+#ifdef XTRAP
+void
+xtrap_clean_up()
+{
+    if (tc)
+	XEFreeTC(tc);      
+    tc = NULL;
+}
+#endif
 
 void
 usage()
@@ -574,35 +651,35 @@ reflect_modifiers(mods)
 
     if (upmods) {
 	if (upmods & ShiftMask)
-	    generate_key(shift, False);
+	    (*generate_key)(shift, False);
 	if (upmods & ControlMask)
-	    generate_key(control, False);
+	    (*generate_key)(control, False);
 	if (upmods & Mod1Mask)
-	    generate_key(mod1, False);
+	    (*generate_key)(mod1, False);
 	if (upmods & Mod2Mask)
-	    generate_key(mod2, False);
+	    (*generate_key)(mod2, False);
 	if (upmods & Mod3Mask)
-	    generate_key(mod3, False);
+	    (*generate_key)(mod3, False);
 	if (upmods & Mod4Mask)
-	    generate_key(mod4, False);
+	    (*generate_key)(mod4, False);
 	if (upmods & Mod5Mask)
-	    generate_key(mod5, False);
+	    (*generate_key)(mod5, False);
     }
     if (downmods) {
 	if (downmods & ShiftMask)
-	    generate_key(shift, True);
+	    (*generate_key)(shift, True);
 	if (downmods & ControlMask)
-	    generate_key(control, True);
+	    (*generate_key)(control, True);
 	if (downmods & Mod1Mask)
-	    generate_key(mod1, True);
+	    (*generate_key)(mod1, True);
 	if (downmods & Mod2Mask)
-	    generate_key(mod2, True);
+	    (*generate_key)(mod2, True);
 	if (downmods & Mod3Mask)
-	    generate_key(mod3, True);
+	    (*generate_key)(mod3, True);
 	if (downmods & Mod4Mask)
-	    generate_key(mod4, True);
+	    (*generate_key)(mod4, True);
 	if (downmods & Mod5Mask)
-	    generate_key(mod5, True);
+	    (*generate_key)(mod5, True);
     }
     curmods = mods;
 }
@@ -620,8 +697,8 @@ do_key(key, mods)
 	return;
     }
     reflect_modifiers(tempmods | mods);
-    generate_key(key, True);
-    generate_key(key, False);
+    (*generate_key)(key, True);
+    (*generate_key)(key, False);
     moving_timeout = NULL;
     last_keycode = key;
     last_mods = tempmods | mods;
@@ -686,7 +763,7 @@ do_button(button)
     if (button) {
 	reflect_modifiers(tempmods);
 	button_state[button] = !button_state[button];
-	generate_button(button, button_state[button]);
+	(*generate_button)(button, button_state[button]);
 	tempmods = 0;
     }
 }
@@ -737,7 +814,7 @@ do_motion(buf)
     if (*endptr) {
 	dy = atoi(endptr + 1);
 	if (!moving_timeout)
-	    generate_motion(dx, dy);
+	    (*generate_motion)(dx, dy);
 	else if (last_keycode)
 	    moving_timeout = NULL;
 	moving_x = dx;
@@ -758,7 +835,7 @@ do_warp(buf)
     if (*endptr) {
 	x = strtol(endptr + 1, &endptr, 10);
 	if (*endptr)
-	    generate_warp(screen, x, atoi(endptr + 1));
+	    (*generate_warp)(screen, x, atoi(endptr + 1));
     }
 }
 
@@ -1498,7 +1575,7 @@ do_jump(buf)
     rect.height = wa.height;
     XUnionRectWithRegion(&rect, univ, univ);
     if (find_closest(root, &wa, univ, 0))
-	generate_warp(screen, jump.bestx, jump.besty);
+	(*generate_warp)(screen, jump.bestx, jump.besty);
     else
 	XBell(dpy, 0);
     if (jump.overlap)
@@ -1705,9 +1782,8 @@ do_trigger(buf)
     if (!wait || !trigger.type)
 	return;
     while (trigger.type) {
-#ifdef XTESTEXT1
-	XTestFlush(dpy);
-#endif
+	if (flush_generate)
+	    (*flush_generate)();
 	if (XPending(dpy)) {
 	    process_events();
 	    continue;
@@ -2052,14 +2128,17 @@ init_display(dname)
     char *dname;
 {
     Display *ndpy;
+#if defined(XTEST) || defined(XTESTEXT1)
+    int eventb, errorb;
+#endif
 #ifdef XTEST
-    int eventb, errorb, vmajor, vminor;
+    int vmajor, vminor;
 #endif
 #ifdef XTRAP
     XETC *ntc;
 #endif
 #ifdef XTESTEXT1
-    int majop, eventb, errorb;
+    int majop;
 #endif
 
     ndpy = XOpenDisplay(dname);
@@ -2069,35 +2148,53 @@ init_display(dname)
 	return False;
     }
 #ifdef XTEST
-    if (!XTestQueryExtension(ndpy, &eventb, &errorb, &vmajor, &vminor)) {
-	fprintf(stderr,
-		"%s: display '%s' does not support XTEST extension\n",
-		progname, DisplayString(ndpy));
-	return False;
-    }	
+    if (XTestQueryExtension(ndpy, &eventb, &errorb, &vmajor, &vminor)) {
+	if (clean_up)
+	    (*clean_up)();
+	generate_key = xtest_generate_key;
+	generate_button = xtest_generate_button;
+	generate_motion = xtest_generate_motion;
+	generate_warp = xtest_generate_warp;
+	flush_generate = NULL;
+	clean_up = NULL;
+    } else
 #endif
-#ifdef XTRAP
-    if (!(ntc = XECreateTC(ndpy, 0L, NULL)))
     {
-	fprintf(stderr,
-		"%s: display '%s' does not support DEC-XTRAP extension\n",
-		progname, DisplayString(ndpy));
-	return False;
-    }
-    if (tc)
-	XEFreeTC(tc);      
-    (void)XEStartTrapRequest(ntc);
-    tc = ntc;
+#ifdef XTRAP
+    if ((ntc = XECreateTC(ndpy, 0L, NULL))) {
+	if (clean_up)
+	    (*clean_up)();
+	(void)XEStartTrapRequest(ntc);
+	tc = ntc;
+	generate_key = xtrap_generate_key;
+	generate_button = xtrap_generate_button;
+	generate_motion = warp_generate_motion;
+	generate_warp = xtrap_generate_warp;
+	flush_generate = NULL;
+	clean_up = xtrap_clean_up;
+    } else
 #endif
+    {
 #ifdef XTESTEXT1
-    if (!XQueryExtension(ndpy, XTestEXTENSION_NAME,
-			 &majop, &eventb, &errorb)) {
-	fprintf(stderr,
-		"%s: display '%s' does not support %s extension\n",
-		progname, DisplayString(ndpy), XTestEXTENSION_NAME);
-	return False;
-    }
+    if (XQueryExtension(ndpy, XTestEXTENSION_NAME, &majop, &eventb, &errorb)) {
+	if (clean_up)
+	    (*clean_up)();
+	generate_key = xtestext1_generate_key;
+	generate_button = xtestext1_generate_button;
+	generate_motion = warp_generate_motion;
+	generate_warp = xtestext1_generate_warp;
+	flush_generate = xtestext1_flush_generate;
+	clean_up = NULL;
+    } else
 #endif
+    {
+    fprintf(stderr,
+	    "%s: display '%s' does not support necessary protocol extension\n",
+	    progname, DisplayString(ndpy));
+    return False;
+    }
+    }
+    }
     if (dpy)
 	XCloseDisplay(dpy);
     dpy = ndpy;
@@ -2476,9 +2573,8 @@ main(argc, argv)
     }
     get_undofile();
     while (1) {
-#ifdef XTESTEXT1
-	XTestFlush(dpy);
-#endif
+	if (flush_generate)
+	    (*flush_generate)();
 	if (XPending(dpy)) {
 	    process_events();
 	    continue;
@@ -2507,7 +2603,7 @@ main(argc, argv)
 		if (last_keycode)
 		    do_key(last_keycode, last_mods);
 		else
-		    generate_motion(moving_x, moving_y);
+		    (*generate_motion)(moving_x, moving_y);
 		moving_timeout = &timeout;
 		XFlush(dpy);
 	    }
