@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.44 92/12/22 16:54:38 converse Exp $ */
+/* $XConsortium: TranslateI.h,v 1.45 92/12/22 17:17:33 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -112,7 +112,7 @@ typedef struct _TMBranchHeadRec {
     unsigned int	isSimple:1;
     unsigned int	hasActions:1;
     unsigned int	hasCycles:1;
-    int			more:13;
+    unsigned int	more:13;
     TMShortCard		typeIndex;
     TMShortCard		modIndex;
 }TMBranchHeadRec, *TMBranchHead;
