@@ -1,4 +1,4 @@
-/* $XConsortium: pexUtils.c,v 5.4 91/04/18 17:53:14 hersh Exp $ */
+/* $XConsortium: pexUtils.c,v 5.5 91/05/06 18:15:36 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -112,7 +112,8 @@ static unsigned	long obj_struct_sizes[] = {
 	sizeof(diStructHandle),
 	sizeof(ddDeviceRect),
 	sizeof(ddULONG),
-	sizeof(ddUSHORT)
+	sizeof(ddUSHORT),
+	sizeof(ddPointer)
 };
 
 /* sizes of chunks that arrays in the lists are allocated and grow in 
@@ -146,6 +147,7 @@ static unsigned	long obj_struct_sizes[] = {
  *	device rect: for the clip list.  I think this is used for window 
  *		clipping (?), so it may get large.
  *	index: is used for list state in the pc. 10 lights is a lot
+ *	list of list: used for doing list of pick path for PickAll 
  *  You can adjust these any way you'd like.  Maybe you want them all to be
  *	built in small chunks so not so much (possibly unused) memory is
  *	laying around and are willing to take the performance hit whenever
@@ -162,7 +164,8 @@ static unsigned long obj_array_sizes[] = {
 	20,	/* structure handle */
 	30,	/* device rect */
 	10,	/* name */
-	10	/* index */
+	10,	/* index */
+	50	/* list of list */
 };
 
 #define PU_CHECK_LIST( plist )	if (!plist)	 return( PU_BAD_LIST )
@@ -220,6 +223,9 @@ static unsigned long obj_array_sizes[] = {
 	( *(p1) == *(p2) ) 
 
 #define PU_INDEX_COMPARE( p1, p2 ) \
+	( *(p1) == *(p2) ) 
+
+#define PU_LIST_COMPARE( p1, p2 ) \
 	( *(p1) == *(p2) ) 
 
 /*
@@ -377,6 +383,15 @@ puInList( pitem, plist )
 		}
 		break;
 	
+		case	DD_LIST_OF_LIST:
+		{
+			listofObj	**pi = (listofObj **)pitem;
+			listofObj	**pl = (listofObj **)plist->pList;
+
+			PU_COMPARE_LOOP( PU_LIST_COMPARE( pi, pl ) );
+		}
+		break;
+
 		default:
 			return( PU_FALSE );
 	}
@@ -517,6 +532,16 @@ puRemoveFromList( pitem, plist )
 		}
 		break;
 	
+		case	DD_LIST_OF_LIST:
+		{
+			listofObj	**pi = (listofObj **)pitem;
+			listofObj	**pl = (listofObj **)plist->pList;
+
+			PU_REMOVE_LOOP( PU_LIST_COMPARE( pi, pl ) );
+
+		}
+		break;
+	
 		default:
 			return( PU_BAD_LIST );
 	}
@@ -557,6 +582,7 @@ puCopyList( psrc, pdest )
 	
 	return( Success );
 }	/* puCopyList */
+
 
 /* merges two lists into one list without duplicates */
 short
