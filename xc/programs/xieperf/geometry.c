@@ -1,4 +1,4 @@
-/* $XConsortium: geometry.c,v 1.3 93/10/26 10:06:11 rws Exp $ */
+/* $XConsortium: geometry.c,v 1.4 93/10/27 21:52:18 rws Exp $ */
 
 /**** module geometry.c ****/
 /******************************************************************************
@@ -58,7 +58,6 @@ terms and conditions:
 static XiePhotomap XIEPhotomap;
 static XieLut	XIELut;
 
-static XieLTriplet levels;
 static int constrainflag = 0;
 static int drawableplaneflag = 0;
 
@@ -139,7 +138,7 @@ int InitGeometry(xp, p, reps)
 		if ( IsFaxImage( image->decode ) )
 			GetXIEFAXPhotomap( xp, p, 1, False );
 		else
-			XIEPhotomap = GetXIEPhotomap( xp, p, 1, False );
+			XIEPhotomap = GetXIEPhotomap( xp, p, 1 );
 		if ( XIEPhotomap == ( XiePhotomap ) NULL )
 		{
 			reps = 0;
@@ -163,7 +162,7 @@ int InitGeometry(xp, p, reps)
 
 		geo_tech = ( ( GeometryParms * ) p->ts )->geoTech;
 
-		if ( !SetCoefficients( xp, p, p->ts, coeffs ) )
+		if ( !SetCoefficients( xp, p, (GeometryParms*)p->ts, coeffs ) )
 			reps = 0;
 	}
 	if ( reps )
@@ -371,7 +370,7 @@ int InitGeometryFAX(xp, p, reps)
 
 		geo_tech = ( ( GeometryParms * ) p->ts )->geoTech;
 
-		if ( !SetCoefficients( xp, p, p->ts, coeffs ) )
+		if ( !SetCoefficients( xp, p, (GeometryParms*)p->ts, coeffs ) )
 			reps = 0;
 	}
 	
