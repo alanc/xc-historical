@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: att.cf,v 1.6 90/11/30 11:13:45 rws Exp $
+XCOMM platform:  $XConsortium: att.cf,v 1.7 90/12/26 11:39:08 rws Exp $
 
 
 /*
@@ -14,4 +14,3 @@ XCOMM platform:  $XConsortium: att.cf,v 1.6 90/11/30 11:13:45 rws Exp $
 #define NeedWidePrototypes	NO	/* experimental */
 #define DefaultCCOptions	-Xc
 #define BuildServer		NO
-#define ConnectionFlags -DSTREAMSCONN
