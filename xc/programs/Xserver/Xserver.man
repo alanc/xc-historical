@@ -1,4 +1,4 @@
-.\" $XConsortium: Xserver.man,v 1.48 93/09/18 13:48:29 dpw Exp $
+.\" $XConsortium: Xserver.man,v 1.49 94/01/14 17:33:22 gildea Exp $
 .TH XSERVER 1 "Release 5"  "X Version 11"
 .SH NAME
 Xserver \- X Window System server
@@ -89,6 +89,12 @@ Not obeyed by all servers.
 .TP 8
 .B \-co \fIfilename\fP
 sets name of RGB color database.
+.TP 8
+.B \-config \fIfilename\fP
+reads more options from the given file.  Options in the file may be separated
+by newlines if desired.  If a '#' character appears on a line, all characters
+between it and the next newline are ignored, providing a simple commenting
+facility.  The \-config option itself may appear in the file.
 .TP 8
 .B \-core
 causes the server to generate a core dump on fatal errors.
