@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.60 88/02/05 16:13:01 jim Locked $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.61 88/02/06 15:44:53 jim Exp $";
 #endif
 
 /*
@@ -94,8 +94,6 @@ _XEventsQueued (dpy, mode)
 	char buf[BUFSIZE];
 	register xReply *rep;
 	
-	if (dpy->qlen || (mode == QueuedAlready))
-	    return(dpy->qlen);
 	if (mode == QueuedAfterFlush)
 	    _XFlush(dpy);
 	if (BytesReadable(dpy->fd, (char *) &pend) < 0)
