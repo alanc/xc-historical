@@ -4,7 +4,7 @@
 /* xwud - marginally useful raster image undumper */
 
 #ifndef lint
-static char *rcsid = "$XConsortium: xwud.c,v 1.23 88/12/27 15:31:48 rws Exp $";
+static char *rcsid = "$XConsortium: xwud.c,v 1.24 88/12/27 16:48:33 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -207,9 +207,9 @@ main(argc, argv)
      /* close the input file */
     (void) fclose(in_file);
 
+    if (plane >= in_image.depth)
+	Error("plane number exceeds image depth");
     if ((in_image.format == XYPixmap) && (plane >= 0)) {
-	if (plane >= in_image.depth)
-	    Error("plane number exceeds image depth");
 	buffer += in_image.bytes_per_line * in_image.height *
 		  (in_image.depth - (plane + 1));
 	in_image.depth = 1;
@@ -229,7 +229,10 @@ main(argc, argv)
 			    &vinfo, &count);
     vinfo = vinfos[0];
     /* find a workable visual */
-    if (defvis) {
+    if ((in_image.depth == 1) ||
+	((in_image.format == ZPixmap) && (plane >= 0))) {
+	/* default is OK */
+    } else if (defvis) {
 	if (vinfo.depth != in_image.depth) {
 	    vinfo.depth = in_image.depth;
 	    vinfos = XGetVisualInfo(dpy, VisualScreenMask|VisualDepthMask,
@@ -281,7 +284,14 @@ main(argc, argv)
     }
 
     /* create the output image */
-    if (defvis || newmap) {
+    if ((in_image.format == ZPixmap) && (plane >= 0)) {
+	out_image = XCreateImage(dpy, vinfo.visual, 1,
+				 XYBitmap, 0, NULL,
+				 in_image.width, in_image.height,
+				 XBitmapPad(dpy), 0);
+	out_image->data = malloc(Image_Size(out_image));
+	Extract_Plane(&in_image, out_image, plane);
+    } else if (defvis || newmap) {
 	out_image = &in_image;
     } else {
 	out_image = XCreateImage(dpy, vinfo.visual, vinfo.depth,
@@ -383,12 +393,24 @@ main(argc, argv)
     }
 }
 
+Extract_Plane(in_image, out_image, plane)
+    register XImage *in_image, *out_image;
+    int plane;
+{
+    register int x, y;
+
+    for (y = 0; y < in_image->height; y++)
+	for (x = 0; x < in_image->width; x++)
+	    XPutPixel(out_image, x, y,
+		      (XGetPixel(in_image, x, y) >> plane) & 1);
+}
+
 Do_Pseudo(dpy, colormap, ncolors, colors, in_image, out_image)
     Display *dpy;
     Colormap *colormap;
     int ncolors;
     XColor *colors;
-    XImage *in_image, *out_image;
+    register XImage *in_image, *out_image;
 {
     register int i, x, y;
     register XColor *color;
