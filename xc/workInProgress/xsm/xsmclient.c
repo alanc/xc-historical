@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.10 94/02/08 11:50:14 mor Exp $ */
+/* $XConsortium: xsmclient.c,v 1.11 94/02/08 14:56:03 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -23,22 +23,20 @@ purpose.  It is provided "as is" without express or implied warranty.
  * sets some test property values, then responds to any session
  * manager events (SaveYourself, Die, Interact, etc...).
  *
- * Two push buttons are set up.  One to retrieve the properties
+ * Two push buttons are set up: one to retrieve the properties
  * that have been set by the client, the other to quit.
- * Plus a toggle to save the state of.
  */
 
-
-#include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
+#include <X11/StringDefs.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Toggle.h>
-#include <X11/Xaw/Cardinals.h>
 #include <X11/SM/SMlib.h>
 #include <stdio.h>
+
 #ifndef X_NOT_POSIX
 #include <unistd.h>
 #endif
@@ -52,414 +50,203 @@ purpose.  It is provided "as is" without express or implied warranty.
 #endif
 #endif
 
-extern Status XtInitializeICE ();
+typedef struct {
+    XtCheckpointToken	token;
+    Widget		appShell;
+    Widget		dialog;
+    String		smcid;
+} ApplicationDataRec, *ApplicationData;
 
-SmcConn 	smcConn;
-char 		*clientId;
-int		interactRequestType;
-Bool		shutdownInProgress = False;
-Bool		saveYourselfDone = False;
-
-XtAppContext	appContext;
-
-Widget		topLevel;
-
-Widget		mainWindow;
-
-Widget		    getPropButton;
-Widget		    quitButton;
-
-Widget		    testLabel;
-Widget		    testYes;
-Widget		    testNo;
-
-Widget		    cwdLabel;
-Widget		    cwdDataLabel;
-
-Bool		testData[] = {1, 0};
-
-Widget		dialogPopup;
-
-Widget		    dialog;
-Widget		    dialogOkButton;
-Widget		    dialogCancelButton;
+ApplicationDataRec	globals;
 
 static XrmOptionDescRec options[] = {
-    { "-smid", "*smid", XrmoptionSepArg, (XPointer) NULL },
     { "-verbose", "*verbose", XrmoptionSepArg, (XPointer) False},
 };
 
-/*	resources specific to the application */
+/* resources specific to the application */
 static struct resources {
-    String	smid;
     Boolean	verbose;
 } appResources;
 
 #define offset(field) XtOffsetOf(struct resources, field)
 static XtResource Resources[] = {
-{"smid",		"Smid",		XtRString,	sizeof(String),
-     offset(smid),	XtRString,	(XtPointer) NULL},
 {"verbose",		"Verbose",	XtRBoolean,	sizeof(Boolean),
      offset(verbose),	XtRImmediate,	False},
 };
 #undef offset
 
-int		saveargc;
-char		**saveargv;
 
-SaveState()
+static Boolean SaveState(ad)
+    ApplicationData ad;
 {
-    XtPointer		ptr;
-    SmProp *		props[6];
-    SmProp		CurrentDirectory;
-    SmPropValue		CurrentDirectory_val;
-    SmProp		Toggle;
-    SmPropValue		Toggle_val;
-    SmProp		Program;
-    SmPropValue		Program_val;
-    SmProp		RestartCommand;
-    SmProp		Environment;
-    int			i, j;
-    Bool		toggle;
-    int			nprops;
-    char		**pp;
-    extern char		**environ;
+    String	str;
+    Arg		args[10];
+    Cardinal	n;
 
-    nprops = 0;
-
-    Program.name = "Program";
-    Program.type = "ARRAY8";
-    Program.num_vals = 1;
-    Program.vals = &Program_val;
-
-    Program_val.length = strlen (saveargv[0]);
-    Program_val.value = (SmPointer) saveargv[0];
-
-    props[nprops++] = &Program;
-
+    n = 0;
 #ifndef X_NOT_POSIX
-    CurrentDirectory.name = "CurrentDirectory";
-    CurrentDirectory.type = "ARRAY8";
-    CurrentDirectory.num_vals = 1;
-    CurrentDirectory.vals = &CurrentDirectory_val;
-
-    CurrentDirectory_val.value = getcwd((char *)NULL, PATH_MAX+2);
-    CurrentDirectory_val.length = strlen (CurrentDirectory_val.value);
-
-    props[nprops++] = &CurrentDirectory;
+    str = getcwd((char *)NULL, PATH_MAX+2);
+    XtSetArg(args[n], XtNcurrentDirectory, str);	n++;
+    XtSetValues(ad->appShell, args, n);
+    if (appResources.verbose)
+	printf("%s:  Set %d properties\n", ad->smcid, n);
 #endif
 
-    RestartCommand.name = "RestartCommand";
-    RestartCommand.type = "ARRAY8";
-    RestartCommand.vals =
-	(SmPropValue *)malloc((saveargc+2) * (sizeof *RestartCommand.vals));
-
-    j = 0;
-    for(i=0; i < saveargc; i++) {
-	if(!strcmp(saveargv[i], "-smid")) {
-	    i++;	/* Skip argument */
-	} else {
-	    RestartCommand.vals[j].length = strlen (saveargv[i]);
-	    RestartCommand.vals[j].value = (SmPointer) saveargv[i];
-	    j++;
-	}
-    }
-
-    RestartCommand.vals[j].value = "-smid";
-    RestartCommand.vals[j].length = strlen(RestartCommand.vals[j].value);
-    j++;
-
-    RestartCommand.vals[j].value = (SmPointer)clientId;
-    RestartCommand.vals[j].length = strlen(RestartCommand.vals[j].value);
-    j++;
-    RestartCommand.num_vals = j;
-
-    props[nprops++] = &RestartCommand;
-
-    ptr = XawToggleGetCurrent (testYes /* just 1 of the group */);
-    toggle = *((Bool *) ptr);
-
-    Toggle.name = "Toggle";
-    Toggle.type = "CARD8";
-    Toggle.num_vals = 1;
-    Toggle.vals = &Toggle_val;
-
-    Toggle_val.length = 1;
-    Toggle_val.value = (SmPointer) ("NY" + toggle);
-
-    props[nprops++] = &Toggle;
-	
-    Environment.num_vals = 0;
-    for(pp = environ; *pp; pp++) Environment.num_vals++;
-    Environment.name = "Environment";
-    Environment.type = "ARRAY8";
-    Environment.vals =
-	(SmPropValue *)malloc(Environment.num_vals
-			      * (sizeof *Environment.vals));
-    for(i = 0; i < Environment.num_vals; i++) {
-	Environment.vals[i].value = environ[i];
-	Environment.vals[i].length = strlen(environ[i]);
-    }
-    if (appResources.verbose)
-	printf("%s:  %d Environment entries\n",
-	       clientId, Environment.num_vals);
-
-    props[nprops++] = &Environment;
-
-    SmcSetProperties (smcConn, nprops, props);
-    if (appResources.verbose)
-	printf("%s:  Set %d properties\n", clientId, nprops);
-
-    free((char *)RestartCommand.vals);
-    free((char *)Environment.vals);
-    free(CurrentDirectory_val.value);
+    /* Return a status indicating success or failure in saving state. */
+    return True;
 }
 
-
+
 /*
  * Session management callbacks
  */
+static void InteractResponse();
 
-void
-SaveYourselfProc (smcConn, client_data, saveType, shutdown, interactStyle, fast)
 
-SmcConn   smcConn;
-SmPointer client_data;
-int  	  saveType;
-Bool	  shutdown;
-int	  interactStyle;
-Bool	  fast;
-
+static void SaveResponse(appShell, client_data, call_data)
+    Widget appShell;
+    XtPointer client_data, call_data;
 {
-    char *_saveType;
-    char *_shutdown;
-    char *_interactStyle;
-    char *_fast;
-
-    void InteractProc ();
-
-    if (saveType == SmSaveGlobal)
-	_saveType = "Global";
-    else if (saveType == SmSaveLocal)
-	_saveType = "Local";
-    else if (saveType == SmSaveBoth)
-	_saveType = "Both";
-    else
-	_saveType = "??? - ERROR IN SMlib, should have checked for bad value";
-
-    if (shutdown)
-	_shutdown = "True";
-    else
-	_shutdown = "False";
-
-    if (interactStyle == SmInteractStyleNone)
-	_interactStyle = "None";
-    else if (interactStyle == SmInteractStyleErrors)
-	_interactStyle = "Errors";
-    else if (interactStyle == SmInteractStyleAny)
-	_interactStyle = "Any";
-    else
-	_interactStyle =
-	"??? - ERROR IN SMlib, should have checked for bad value";
-
-    if (fast)
-	_fast = "True";
-    else
-	_fast = "False";
+    ApplicationData ad = (ApplicationData) client_data;
+    XtCheckpointToken token = (XtCheckpointToken) call_data;
 
     if (appResources.verbose) {
-	printf ("Client Id = %s, received SAVE YOURSELF [", clientId);
-	printf ("Save Type = %s, Shutdown = %s, ", _saveType, _shutdown);
-	printf ("Interact Style = %s, Fast = %s]\n", _interactStyle, _fast);
-    }
+	char *saveType;
+	char *shutdown;
+	char *interactStyle;
+	char *fast;
 
-    shutdownInProgress = shutdown;
-    if (interactStyle == SmInteractStyleAny)
-    {
-	SmcInteractRequest (smcConn, SmDialogNormal, InteractProc, NULL);
-
-	if (appResources.verbose) {
-	    printf(
-            "Client Id = %s, sent INTERACT REQUEST [Dialog Type = Normal]\n",
-		   clientId);
+	switch (token->save_type) {
+	  case SmSaveGlobal: saveType = "Global";		break;
+	  case SmSaveLocal:  saveType = "Local";		break;
+	  case SmSaveBoth:   saveType = "Both";			break;
+	  default:	     saveType = "BadValueError";	break;
 	}
-	interactRequestType = SmDialogNormal;
-	saveYourselfDone = False;
-    }
-    else if (interactStyle == SmInteractStyleErrors)
-    {
-	SmcInteractRequest (smcConn, SmDialogError, InteractProc, NULL);
-
-	if (appResources.verbose) {
-	    printf(
-	    "Client Id = %s, sent INTERACT REQUEST [Dialog Type = Errors]\n",
-		   clientId);
+	switch (token->interact_style) {
+	  case SmInteractStyleNone:   interactStyle = "None";		break;
+	  case SmInteractStyleErrors: interactStyle = "Errors";		break;
+	  case SmInteractStyleAny:    interactStyle = "Any";		break;
+	  default:		      interactStyle = "BadValueError";	break;
 	}
-	interactRequestType = SmDialogError;
-	saveYourselfDone = False;
-    }
-    else
-    {
-	SaveState();
-	SmcSaveYourselfDone (smcConn, True);
-	saveYourselfDone = True;
+	shutdown = token->shutdown ? "True" : "False";
+	fast = token->fast ? "True" : "False";
 
-	if (appResources.verbose) {
-	    printf(
-            "Client Id = %s, sent SAVE YOURSELF DONE [Success = True]\n",
-		   clientId);
-	}
+	printf ("Client Id %s, received SAVE YOURSELF [", ad->smcid);
+	printf ("Save Type = %s, Shutdown = %s, ", saveType, shutdown);
+	printf ("Interact Style = %s, Fast = %s]\n", interactStyle, fast);
     }
 
-    if(shutdownInProgress) XtSetSensitive (mainWindow, 0);
+    if (token->shutdown || token->interact_style != SmInteractStyleNone)
+	XtSetSensitive(ad->appShell, False);
 
-    if (appResources.verbose)
-	printf ("\n");
+    if (token->interact_style == SmInteractStyleNone) {
+	token->save_success = SaveState(ad);
+	if (appResources.verbose)
+	    printf("Client Id %s, saved state.", ad->smcid);
+    } else {
+	/* When interaction is allowed, this client always asks for it. */
+	if (token->interact_style == SmInteractStyleAny)
+	    token->interact_dialog_type = SmDialogNormal;
+	else
+	    token->interact_dialog_type = SmDialogError;
+
+	/* Registering a callback on this list triggers an InteractRequest.
+	 * The callback will be removed from the list immediately before
+         * it is executed.  If there are multiple callbacks on the list,
+         * they'll be executed serially, as the interact token is returned.
+	 */
+	XtAddCallback(appShell, XtNinteractCallback, InteractResponse,
+		      client_data);
+
+	if (appResources.verbose)
+	    printf("Client Id %s, expect INTERACT REQUEST\n", ad->smcid);
+    }
 }
 
 
-
-void
-InteractProc (smcConn, client_data)
-
-SmcConn	  smcConn;
-SmPointer client_data;
-
+static void InteractResponse(appShell, client_data, call_data)
+    Widget appShell;
+    XtPointer client_data, call_data;
 {
-    Position	x, y, rootx, rooty;
-    char        *label;
-   
+    ApplicationData ad = (ApplicationData) client_data;
+    XtCheckpointToken token = (XtCheckpointToken) call_data;
+    Position x, y;
+    String label;
+    Widget cancel;
+
     if (appResources.verbose)
-	printf ("Client Id = %s, received INTERACT\n", clientId);
+	printf("Client Id %s, received permission to interact\n", ad->smcid);
 
-    if (shutdownInProgress && interactRequestType == SmDialogNormal)
-	XtSetSensitive (dialogCancelButton, 1);
-    else
-	XtSetSensitive (dialogCancelButton, 0);
+    /* Stash this, you'll need to return it at the end of interaction. */
+    ad->token = token;
 
-    if (interactRequestType == SmDialogNormal)
-    {
-	if (shutdownInProgress)
+    /* If a session shutdown isn't imminent, it can't be cancelled. */
+    cancel = XtNameToWidget(ad->dialog, "dialogCancelButton");
+    XtSetSensitive(cancel, token->shutdown);
+
+    /* The token always contains the parameters of the SaveYourself request. */
+    if (token->interact_style == SmInteractStyleAny) {
+	if (token->shutdown)
 	    label = "Shutdown in progress, Normal interact with user";
 	else
 	    label = "Normal interact with user";
-    }
-    else
-    {
-	if (shutdownInProgress)
+    } else {
+	if (token->shutdown)
 	    label = "Shutdown in progress, Error interact with user";
 	else
 	    label = "Error interact with user";
     }
+    XtVaSetValues(ad->dialog, XtNlabel, label, NULL);
 
-    /* If a shutdown is in progress, we turned this off on the first */
-    /* notification.  If not, we only need to turn it off during the */
-    /* interaction. */
-    if(!shutdownInProgress) XtSetSensitive (mainWindow, 0);
-
-    XtVaSetValues (dialog, XtNlabel, label, NULL);
-
-    XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
-    XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
-    XtMoveWidget (dialogPopup, rootx, rooty);
-
-    XtPopup (dialogPopup, XtGrabNone);
+    XtVaGetValues(ad->appShell, XtNx, &x, XtNy, &y, NULL);
+    XtVaSetValues(XtParent(ad->dialog), XtNx, x, XtNy, y, NULL);
+    XtPopup(XtParent(ad->dialog), XtGrabNone);
 }
 
 
-
-void
-DieProc (smcConn, client_data)
-SmPointer client_data;
-
-SmcConn smcConn;
-
+static void DieResponse(appShell, client_data, call_data)
+    Widget appShell;
+    XtPointer client_data, call_data;
 {
-    if (appResources.verbose) {
-	printf ("Client Id = %s, received DIE\n", clientId);
-	printf ("\n");
-    }
+    ApplicationData ad = (ApplicationData) client_data;
 
-    SmcCloseConnection (smcConn, 0, NULL);
-
-    free (clientId);
-
-    exit (0);
+    if (appResources.verbose)
+	printf ("Client Id %s, received DIE\n", ad->smcid);
+    XtDestroyApplicationContext(XtWidgetToApplicationContext(appShell));
+    exit(0);
 }
 
 
-
-void
-ShutdownCancelledProc (smcConn, client_data)
-
-SmcConn   smcConn;
-SmPointer client_data;
-
+static void CancelResponse(appShell, client_data, call_data)
+    Widget appShell;
+    XtPointer client_data, call_data;
 {
-    if (appResources.verbose) {
-	printf ("Client Id = %s, received SHUTDOWN CANCELLED\n", clientId);
-	printf ("\n");
-    }
+    ApplicationData ad = (ApplicationData) client_data;
+    
+    if (appResources.verbose)
+	printf ("Client Id %s, received SHUTDOWN CANCELLED\n", ad->smcid);
 
-    shutdownInProgress = False;
-    XtSetSensitive (mainWindow, 1);
+    /* When a shutdown is cancelled, we might be
+     *  o  waiting for our interact request to be granted
+     *	o  currently in the process of interacting with the user
+     *	o  previously finished saving state and expecting a Die request
+     */
 
-    if (!saveYourselfDone)
-    {
-	SaveState();
-	SmcSaveYourselfDone (smcConn, True);
-
-	if (appResources.verbose) {
-	    printf(
-            "Client Id = %s, sent SAVE YOURSELF DONE [Success = True]\n",
-		   clientId);
-	}
-	saveYourselfDone = True;
-    }
+    XtSetSensitive(ad->appShell, True);
 }
 
 
-
-void
-InitialPropReplyProc (smcConn, client_data, numProps, props)
-
-SmcConn   smcConn;
-SmPointer client_data;
-int       numProps;
-SmProp    **props;
-
+void PropReplyProc(smcConn, client_data, numProps, props)
+    SmcConn   smcConn;
+    SmPointer client_data;
+    int       numProps;
+    SmProp    **props;
 {
-    int i;
-    Bool toggle;
-
-    for (i = 0; i < numProps; i++)
-    {
-	if(!strcmp(props[i]->name, "Toggle")) {
-	    toggle = *(char *)props[i]->vals[0].value == 'Y';
-	    if(toggle) XawToggleSetCurrent (testYes, (XtPointer) &testData[0]);
-	    else XawToggleSetCurrent (testNo, (XtPointer) &testData[1]);
-	}
-	SmFreeProperty (props[i]);
-    }
-
-    free ((char *) props);
-}
-
-
-
-void
-PropReplyProc (smcConn, client_data, numProps, props)
-
-SmcConn   smcConn;
-SmPointer client_data;
-int       numProps;
-SmProp    **props;
-
-{
+    ApplicationData ad = (ApplicationData) client_data;
     int i, j;
 
-    printf ("Client Id = %s, there are %d properties set:\n",
-	    clientId, numProps);
+    printf ("Client Id %s, there are %d properties set:\n",
+	    ad->smcid, numProps);
     printf ("\n");
 
     for (i = 0; i < numProps; i++) {
@@ -477,193 +264,153 @@ SmProp    **props;
     }
 
     free ((char *) props);
-    if (appResources.verbose)
-	printf ("\n");
+    printf ("\n");
 }
 
 
-
-/*
- * Xt callbacks
- */
-
-void
-GetPropXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
+static void GetSessionProperties(w, client_data, call_data)
+    Widget	w;
+    XtPointer 	client_data, call_data;
 {
-    SmcGetProperties (smcConn, PropReplyProc, NULL);
+    ApplicationData ad = (ApplicationData) client_data;
+    Arg args[1];
+    SmcConn connection;
+
+    XtSetArg(args[0], XtNconnection, &connection);
+    XtGetValues(ad->appShell, args, (Cardinal) 1);
+    if (connection)
+	SmcGetProperties(connection, PropReplyProc, ad);
+    else
+	printf("Not connected to the session manager.\n");
 }
 
 
-
-void
-QuitXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
+static void Quit(w, client_data, call_data)
+    Widget	w;
+    XtPointer 	client_data, call_data;
 {
+    ApplicationData ad = (ApplicationData) client_data;
     char *reasonMsg[2];
 
+    /* XXX no way to hook these up yet */
     reasonMsg[0] = "Quit Reason 1";
     reasonMsg[1] = "Quit Reason 2";
 
-    SmcCloseConnection (smcConn, 2, reasonMsg);
-
-    if (appResources.verbose)
-	printf ("Quit\n");
-			       
-    exit (0);
+    XtCallCallbacks(ad->appShell, XtNdieCallback, NULL);
 }
 
 
-
-void
-DialogOkXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
+static void UserSaysOkay(button, client_data, call_data)
+    Widget	button;
+    XtPointer 	client_data, call_data;
 {
-    XtPopdown (dialogPopup);
+    ApplicationData ad = (ApplicationData) client_data;
+    XtCheckpointToken token = ad->token;
 
-    SmcInteractDone (smcConn, False);
+    /* Do whatever you need to do after you've finished talking to the user. */
+    token->save_success = SaveState(ad);
+
+    /* When a session shutdown is not imminent, allow user events again. */
+    if (! token->shutdown)
+	XtSetSensitive(ad->appShell, True);
+
+    XtPopdown(XtParent(ad->dialog));
+
+    /* You have to return the token to Xt when you are through interacting. */
+    XtSessionReturnToken(token);
+    ad->token = NULL;
+
     if (appResources.verbose) {
-	printf(
-        "Client Id = %s, sent INTERACT DONE [Cancel Shutdown = False]\n",
-	       clientId);
+	printf("Client Id %s, expect INTERACT DONE [Cancel Shutdown = False]\n",
+	       ad->smcid);
+	printf("\n");
     }
 
-    SaveState();
-
-    SmcSaveYourselfDone (smcConn, True);
-    if (appResources.verbose) {
-	printf ("Client Id = %s, sent SAVE YOURSELF DONE [Success = True]\n",
-		clientId);
-	printf ("\n");
-    }
-
-    saveYourselfDone = True;
-
-    /* If a shutdown is in progress, we need to stay "frozen" until the */
-    /* shutdown is ultimately resolved.  If not, we can unfreeze */
-    /* immediately. */
-    if(!shutdownInProgress) XtSetSensitive (mainWindow, 1);
 }
 
 
-
-void
-DialogCancelXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
+static void UserSaysCancel(button, client_data, call_data)
+    Widget	button;
+    XtPointer 	client_data, call_data;
 {
-    XtPopdown (dialogPopup);
+    ApplicationData ad = (ApplicationData) client_data;
+    XtCheckpointToken token = (XtCheckpointToken) ad->token;
 
-    SmcInteractDone (smcConn, True);
+    /* Pass back the information that the user wants the shutdown cancelled. */
+    token->cancel_shutdown = True;
+
+    /* If you haven't saved application state, pass that information back. */
+    token->save_success = False;
+
+    /* You have to return the token to Xt when you are through interacting. */
+    XtSessionReturnToken(token);
+    ad->token = NULL;
+
+    XtPopdown(XtParent(ad->dialog));
+
     if (appResources.verbose) {
 	printf (
-        "Client Id = %s, sent INTERACT DONE [Cancel Shutdown = True]\n",
-		clientId);
-    }
-
-    SmcSaveYourselfDone (smcConn, True);
-    if (appResources.verbose) {
-	printf ("Client Id = %s, sent SAVE YOURSELF DONE [Success = True]\n",
-		clientId);
+        "Client Id %s, expect INTERACT DONE [Cancel Shutdown = True]\n",
+		ad->smcid);
+	printf ("Client Id %s, expect SAVE YOURSELF DONE [Success = False]\n",
+		ad->smcid);
 	printf ("\n");
     }
-
-    saveYourselfDone = True;
-    XtSetSensitive (mainWindow, 1);
 }
 
 
-
-/*
- * Add toggle button
- */
-
-Widget
-AddToggle (widgetName, parent, label, state, radioGroup, radioData,
-    fromHoriz, fromVert)
-
-char 		*widgetName;
-Widget 		parent;
-char 		*label;
-int 		state;
-Widget 		radioGroup;
-XtPointer 	radioData;
-Widget 		fromHoriz;
-Widget 		fromVert;
-
+static void CreateInteractDialog(ad)
+    ApplicationData ad;
 {
-    Widget 		toggle;
-    XtTranslations	translations;
+    Widget okay, cancel;
+    Widget dialogPopup;
 
-    toggle = XtVaCreateManagedWidget (
-	widgetName, toggleWidgetClass, parent,
-	XtNlabel, label,
-        XtNstate, state,
-        XtNradioGroup, radioGroup,
-        XtNradioData, radioData,
-        XtNfromHoriz, fromHoriz,
-        XtNfromVert, fromVert,
+    dialogPopup = XtVaCreatePopupShell (
+	"dialogPopup", transientShellWidgetClass, ad->appShell,
+        XtNtitle, "Dialog",
+	XtNallowShellResize, True,
+	XtNancestorSensitive, True,
         NULL);
 
-    translations = XtParseTranslationTable ("<Btn1Down>,<Btn1Up>:set()\n");
-    XtOverrideTranslations (toggle, translations);
+    ad->dialog = XtVaCreateManagedWidget (
+	"dialog", dialogWidgetClass, dialogPopup,
+	NULL);
 
-    return (toggle);
+    XtVaSetValues (XtNameToWidget (ad->dialog, "label"),
+	XtNresizable, True,
+	NULL);
+
+    okay = XtVaCreateManagedWidget (
+	"dialogOkButton", commandWidgetClass, ad->dialog,
+	XtNlabel, "OK",
+	NULL);
+
+    XtAddCallback(okay, XtNcallback, UserSaysOkay, ad);
+
+    cancel = XtVaCreateManagedWidget (
+	"dialogCancelButton", commandWidgetClass, ad->dialog,
+	XtNlabel, "Cancel Shutdown", NULL);
+
+    XtAddCallback(cancel, XtNcallback, UserSaysCancel, ad);
 }
 
-
-/*
- * Main program
- */
 
-main (argc, argv)
-
-int  argc;
-char **argv;
-
+static void CreateMainInterface(ad)
+    ApplicationData ad;
 {
-    SmcCallbacks 	callbacks;
-    char 		errorString[256];
-    char		*connectString;
-
-    saveargv = (char **)malloc((argc+1) * (sizeof *saveargv));
-    memcpy((char *)saveargv, (char *)argv, (argc+1) * (sizeof *saveargv));
-    saveargc = argc;
-
-    topLevel = XtVaAppInitialize (&appContext, "SAMPLE-SM-CLIENT",
-	options, XtNumber(options), &argc, argv, NULL,
-        XtNjoinSession, 0,	/* Don't let Xt control our SM connection */
-	NULL);
-	
-    XtGetApplicationResources(topLevel, (XtPointer)&appResources, Resources,
-			      XtNumber(Resources), (ArgList) NULL, ZERO);
-
-    XtInitializeICE (appContext);
+    Widget mainWindow;
+    Widget quitButton, getPropButton;
+    Widget cwdLabel, cwdDataLabel;
 
     mainWindow = XtCreateManagedWidget (
-	"mainWindow", formWidgetClass, topLevel, NULL, 0);
+	"mainWindow", formWidgetClass, ad->appShell, NULL, 0);
 
     getPropButton = XtVaCreateManagedWidget (
 	"getPropButton", commandWidgetClass, mainWindow,
 	XtNlabel, "Get Properties",
 	NULL);
 
-    XtAddCallback (getPropButton, XtNcallback, GetPropXtProc, 0);
+    XtAddCallback(getPropButton, XtNcallback, GetSessionProperties, ad);
 
     quitButton = XtVaCreateManagedWidget (
 	"quitButton", commandWidgetClass, mainWindow,
@@ -671,41 +418,12 @@ char **argv;
         XtNfromVert, getPropButton,
 	NULL);
 
-    XtAddCallback (quitButton, XtNcallback, QuitXtProc, 0);
-
-    testLabel = XtVaCreateManagedWidget (
-	"testLabel", labelWidgetClass, mainWindow,
-	XtNlabel, "Test:",
-        XtNfromVert, quitButton,
-        XtNborderWidth, 0,
-	NULL);
-
-    testYes = AddToggle (
-	"testYes", 				/* widgetName */
-	mainWindow,				/* parent */
-        "Yes",					/* label */
-	0,					/* state */
-        NULL,					/* radioGroup */
-        (XtPointer) &testData[0],		/* radioData */
-        testLabel,				/* fromHoriz */
-        quitButton				/* fromVert */
-    );
-
-    testNo = AddToggle (
-	"testNo", 				/* widgetName */
-	mainWindow,				/* parent */
-        "No",					/* label */
-	1,					/* state */
-        testYes,				/* radioGroup */
-        (XtPointer) &testData[1],		/* radioData */
-        testYes,				/* fromHoriz */
-        quitButton				/* fromVert */
-    );
+    XtAddCallback(quitButton, XtNcallback, Quit, ad);
 
     cwdLabel = XtVaCreateManagedWidget (
 	"cwdLabel", labelWidgetClass, mainWindow,
 	XtNlabel, "Dir:",
-        XtNfromVert, testLabel,
+        XtNfromVert, quitButton,
         XtNborderWidth, 0,
 	NULL);
 
@@ -718,59 +436,42 @@ char **argv;
 	"unknown-cwd"
 #endif
         XtNfromHoriz, cwdLabel,
-        XtNfromVert, testLabel,
+        XtNfromVert, quitButton,
         XtNborderWidth, 0,
 	NULL);
-
-    dialogPopup = XtVaCreatePopupShell (
-	"dialogPopup", transientShellWidgetClass, topLevel,
-        XtNtitle, "Dialog",
-	XtNallowShellResize, True,
-        NULL);
-    
-    dialog = XtVaCreateManagedWidget (
-	"dialog", dialogWidgetClass, dialogPopup,
-        NULL);
-
-    XtVaSetValues (XtNameToWidget (dialog, "label"),
-	XtNresizable, True,
-	NULL);
-
-    dialogOkButton = XtVaCreateManagedWidget (
-	"dialogOkButton", commandWidgetClass, dialog,
-	XtNlabel, "OK",
-	NULL);
-    
-    XtAddCallback (dialogOkButton, XtNcallback, DialogOkXtProc, 0);
-
-    dialogCancelButton = XtVaCreateManagedWidget (
-	"dialogCancelButton", commandWidgetClass, dialog,
-	XtNlabel, "Cancel Shutdown", NULL);
-
-    XtAddCallback (dialogCancelButton, XtNcallback, DialogCancelXtProc, 0);
-
-    XtRealizeWidget (topLevel);
+}
 
 
-    callbacks.save_yourself.callback = SaveYourselfProc;
-    callbacks.die.callback = DieProc;
-    callbacks.shutdown_cancelled.callback = ShutdownCancelledProc;
+main(argc, argv)
+    int  argc;
+    char **argv;
+{
+    XtAppContext appContext;
+    ApplicationData ad = &globals;
 
-    if ((smcConn = SmcOpenConnection (NULL, &callbacks,
-	appResources.smid, &clientId, 256, errorString)) == NULL)
-    {
-	printf ("%s\n", errorString);
-	return (0);
-    }
+    ad->appShell = XtAppInitialize(&appContext, "Xsmclient",
+				   options, XtNumber(options), &argc, argv,
+				   NULL, NULL, 0);
+
+    XtAddCallback(ad->appShell, XtNsaveCallback, SaveResponse, ad);
+    XtAddCallback(ad->appShell, XtNcancelCallback, CancelResponse, ad);
+    XtAddCallback(ad->appShell, XtNdieCallback, DieResponse, ad);
+	
+    XtGetApplicationResources(ad->appShell, (XtPointer)&appResources,
+			      Resources, XtNumber(Resources), NULL, 0);
+
+    CreateMainInterface(ad);
+
+    XtRealizeWidget(ad->appShell);
+
+    CreateInteractDialog(ad);
 
     if (appResources.verbose) {
-	connectString = IceConnectionString (SmcGetIceConnection (smcConn));
-	printf ("Connected to: %s\n", connectString);
-	free (connectString);
-	printf ("Client ID : %s\n", clientId);
-	printf ("\n");
+	Arg args[1];
+	XtSetArg(args[0], XtNsessionID, &ad->smcid);
+	XtGetValues(ad->appShell, args, (Cardinal) 1);
+	ad->smcid = XtNewString(ad->smcid);
     }
 
-    SmcGetProperties (smcConn, InitialPropReplyProc, NULL);
-    XtAppMainLoop (appContext);
+    XtAppMainLoop(appContext);
 }
