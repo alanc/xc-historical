@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.22 93/08/13 19:52:58 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.23 93/08/14 09:50:41 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -264,7 +264,15 @@ extern Xstream _XsStream[];
 
 #else /* not WIN32 */
 
+#define _X86_ _M_IX86
+#define BOOL wBOOL
+#undef Status
+#define Status wStatus
+#include <windows.h>
 #include <winsock.h>
+#undef Status
+#define Status int
+#undef BOOL
 #include <X11/Xw32defs.h>
 
 #define BytesReadable(fd,ptr) ioctlsocket((SOCKET)fd, FIONREAD, (u_long *)ptr)
