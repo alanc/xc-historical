@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Simple.c,v 1.22 89/12/07 20:19:38 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Simple.c,v 1.23 89/12/08 12:37:01 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -26,6 +26,7 @@ SOFTWARE.
 
 ******************************************************************/
 
+#include <stdio.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/XawInit.h>
@@ -92,8 +93,19 @@ static void ClassPartInitialize(class)
 {
     register SimpleWidgetClass c = (SimpleWidgetClass)class;
 
+    if (c->simple_class.change_sensitive == NULL) {
+	char buf[BUFSIZ];
+
+	sprintf("%s Widget: The Simple Widget class method 'change_sensitive'",
+		c->core_class.class_name,
+		"is undefined.\nA function must be defined or inherited.");
+	XtError(buf);
+    }
+
     if (c->simple_class.change_sensitive == XtInheritChangeSensitive)
 	c->simple_class.change_sensitive = ChangeSensitive;
+
+
 }
 
 static void Realize(w, valueMask, attributes)
