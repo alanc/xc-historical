@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.3 89/03/24 09:15:59 rws Exp $
+ * $XConsortium: auth.c,v 1.4 89/09/08 14:32:47 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -98,7 +98,7 @@ RegisterAuthorizations ()
 
     for (i = 0; i < NUM_AUTHORIZATION; i++)
 	XdmcpRegisterAuthorization (protocols[i].name,
-				    protocols[i].name_length);
+				    (int)protocols[i].name_length);
 }
 #endif
 

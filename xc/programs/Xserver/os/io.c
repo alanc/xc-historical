@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.63 89/08/03 20:27:49 rws Exp $ */
+/* $XConsortium: io.c,v 1.64 89/08/04 08:31:19 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -729,6 +729,7 @@ FreeOsBuffers(oc)
     }
 }
 
+void
 ResetOsBuffers()
 {
     register ConnectionInputPtr oci;

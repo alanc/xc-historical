@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.110 89/08/31 13:41:00 keith Exp $ */
+/* $XConsortium: connection.c,v 1.111 89/09/08 14:32:29 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -127,6 +127,10 @@ extern int GiveUp();
 extern XID CheckAuthorization();
 static void CloseDownFileDescriptor(), ErrorConnMax();
 extern void FreeOsBuffers(), ResetOsBuffers();
+
+#ifdef SERVER_XDMCP
+void XdmcpOpenDisplay(), XdmcpInit(), XdmcpReset(), XdmcpCloseDisplay();
+#endif
 
 #ifdef TCPCONN
 static int

@@ -39,7 +39,7 @@ extern long AllClients[];
 
 static int		    xdmcpSocket, sessionSocket;
 static xdmcp_states	    state;
-static struct sockaddr_in   man_sockaddr, req_sockaddr;
+static struct sockaddr_in   req_sockaddr;
 static int		    req_socklen;
 static CARD32		    SessionID;
 static long		    timeOutTime;
@@ -149,7 +149,6 @@ XdmcpRegisterAuthentication (name, namelen, data, datalen, Validator)
 {
     int	    i;
     ARRAY8  AuthenticationName, AuthenticationData;
-    ARRAY8  *newNames, *newDatas;
     static Bool	(**newValidators)();
 
     if (!XdmcpAllocARRAY8 (&AuthenticationName, namelen))
@@ -174,10 +173,6 @@ XdmcpRegisterAuthentication (name, namelen, data, datalen, Validator)
 	XdmcpDisposeARRAY8 (&AuthenticationData);
 	return;
     }
-    for (i = 0; i < AuthenticationNames.length; i++)
-	newNames[i] = AuthenticationNames.data[i];
-    for (i = 0; i < AuthenticationDatas.length; i++)
-	newDatas[i] = AuthenticationDatas.data[i];
     for (i = 0; i < AuthenticationNames.length; i++)
 	newValidators[i] = AuthenticationValidators[i];
     newValidators[AuthenticationNames.length] = Validator;
@@ -218,7 +213,7 @@ XdmcpSetAuthentication (name)
 
 static ARRAY16		ConnectionTypes;
 static ARRAYofARRAY8	ConnectionAddresses;
-static int		xdmcpGeneration;
+static long		xdmcpGeneration;
 
 XdmcpRegisterConnection (type, address, addrlen)
     int	    type;
@@ -226,10 +221,7 @@ XdmcpRegisterConnection (type, address, addrlen)
     int	    addrlen;
 {
     int	    i;
-    CARD16  *newTypes;
-    ARRAY8  *newAddresses;
     CARD8   *newAddress;
-    int	    newlength;
 
     if (xdmcpGeneration != serverGeneration)
     {
@@ -276,7 +268,6 @@ XdmcpRegisterAuthorization (name, namelen)
     int	    namelen;
 {
     ARRAY8  authName;
-    ARRAY8  *newAuthNames;
     int	    i;
 
     authName.data = (CARD8 *) xalloc (namelen * sizeof (CARD8));
@@ -478,7 +469,7 @@ XdmcpWakeupHandler(i, LastSelectMask)
  */
 
 XdmcpSelectHost(host_sockaddr, host_len, AuthenticationName)
-    struct sockaddr	*host_sockaddr;
+    struct sockaddr_in	*host_sockaddr;
     int			host_len;
     ARRAY8Ptr		AuthenticationName;
 {
@@ -495,6 +486,7 @@ XdmcpSelectHost(host_sockaddr, host_len, AuthenticationName)
  * selects the first host to respond with willing message.
  */
 
+/*ARGSUSED*/
 XdmcpAddHost(from, fromlen, AuthenticationName, hostname, status)
     struct sockaddr_in  *from;
     ARRAY8Ptr		AuthenticationName, hostname, status;
@@ -513,7 +505,7 @@ static
 receive_packet()
 {
     struct sockaddr_in from;
-    int msglen, fromlen = sizeof(struct sockaddr_in);
+    int fromlen = sizeof(struct sockaddr_in);
     XdmcpHeader	header;
 
     /* read message off socket */
@@ -537,19 +529,19 @@ receive_packet()
 	XdmcpFatal("Manager unwilling", &UnwillingMessage);
 	break;
     case ACCEPT:
-	recv_accept_msg(&from, fromlen, header.length);
+	recv_accept_msg(header.length);
 	break;
     case DECLINE:
-	recv_decline_msg(&from, fromlen, header.length);
+	recv_decline_msg(header.length);
 	break;
     case REFUSE:
-	recv_refuse_msg(&from, fromlen, header.length);
+	recv_refuse_msg(header.length);
 	break;
     case FAILED:
-	recv_failed_msg(&from, fromlen, header.length);
+	recv_failed_msg(header.length);
 	break;
     case ALIVE:
-	recv_alive_msg(&from, fromlen, header.length);
+	recv_alive_msg(header.length);
 	break;
     }
 }
@@ -587,6 +579,7 @@ send_packet()
  */
 
 XdmcpDeadSession (reason)
+    char *reason;
 {
     printf ("XDM: %s, declaring session dead\n", reason);
     state = XDM_INIT_STATE;
@@ -666,7 +659,6 @@ XdmcpCheckAuthentication (Name, Data)
 static
 get_xdmcp_sock()
 {
-    struct sockaddr_in local_sockaddr;
     int soopts = 1;
 
     if ((xdmcpSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
@@ -726,7 +718,7 @@ static
 recv_willing_msg(from, fromlen, length)
     struct sockaddr_in	*from;
     int			fromlen;
-    int			length;
+    unsigned		length;
 {
     ARRAY8	authenticationName;
     ARRAY8	hostname;
@@ -797,10 +789,8 @@ send_request_msg()
 }
 
 static
-recv_accept_msg(from, fromlen, length)
-    struct sockaddr_in	*from;
-    int			fromlen;
-    int			length;
+recv_accept_msg(length)
+    unsigned		length;
 {
     CARD32  AcceptSessionID;
     ARRAY8  AcceptAuthenticationName, AcceptAuthenticationData;
@@ -828,9 +818,9 @@ recv_accept_msg(from, fromlen, length)
 	    /* if the authorization specified in the packet fails
 	     * to be acceptable, enable the local addresses
 	     */
-	    if (!AddAuthorization (AcceptAuthorizationName.length,
+	    if (!AddAuthorization ((unsigned short)AcceptAuthorizationName.length,
 				   AcceptAuthorizationName.data,
-				   AcceptAuthorizationData.length,
+				   (unsigned short)AcceptAuthorizationData.length,
 				   AcceptAuthorizationData.data))
 	    {
 		AddLocalHosts ();
@@ -847,10 +837,8 @@ recv_accept_msg(from, fromlen, length)
 }
 
 static
-recv_decline_msg(from, fromlen, length)
-    struct sockaddr_in  *from;
-    int			fromlen;
-    int			length;
+recv_decline_msg(length)
+    unsigned		length;
 {
     ARRAY8  Status, DeclineAuthenticationName, DeclineAuthenticationData;
 
@@ -894,10 +882,8 @@ send_manage_msg()
 }
 
 static
-recv_refuse_msg(from, fromlen, length)
-    struct sockaddr_in  *from;
-    int			fromlen;
-    int			length;
+recv_refuse_msg(length)
+    unsigned		length;
 {
     CARD32  RefusedSessionID;
 
@@ -916,10 +902,8 @@ recv_refuse_msg(from, fromlen, length)
 }
 
 static
-recv_failed_msg(from, fromlen, length)
-    struct sockaddr_in  *from;
-    int			fromlen;
-    int			length;
+recv_failed_msg(length)
+    unsigned		length;
 {
     CARD32  FailedSessionID;
     ARRAY8  Status;
@@ -957,10 +941,8 @@ send_keepalive_msg()
 }
 
 static
-recv_alive_msg (from, fromlen, length)
-    struct sockaddr_in  *from;
-    int			fromlen;
-    int			length;
+recv_alive_msg (length)
+    unsigned		length;
 {
     CARD8   SessionRunning;
     CARD32  AliveSessionID;
@@ -992,6 +974,8 @@ XdmcpFatal (type, status)
     char	*type;
     ARRAY8Ptr	status;
 {
+    extern void AbortDDX();
+
     printf("XDMCP fatal error: %s %*.*s\n", type,
 	   status->length, status->length, status->data);
     AbortDDX ();

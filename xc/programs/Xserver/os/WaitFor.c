@@ -76,6 +76,10 @@ extern int sigwindow_handler();
 extern int playback_on;
 #endif /* XTESTEXT1 */
 
+#ifdef SERVER_XDMCP
+extern void XdmcpBlockHandler(), XdmcpWakeupHandler();
+#endif
+
 /*****************
  * WaitForSomething:
  *     Make the server suspend until there is
@@ -184,7 +188,7 @@ WaitForSomething(pClientsReady)
 #endif /* MULTI_X_HACK */
 	    COPYBITS(AllSockets, LastSelectMask);
 #ifdef SERVER_XDMCP
-	    XdmcpBlockHandler((pointer)&wt, (pointer)LastSelectMask);
+	    XdmcpBlockHandler(&wt, LastSelectMask);
 #endif /* SERVER_XDMCP */
 	    BlockHandler((pointer)&wt, (pointer)LastSelectMask);
 	    if (NewOutputPending)
@@ -210,7 +214,7 @@ WaitForSomething(pClientsReady)
 			    (int *) NULL, (int *) NULL, wt);
 	    selecterr = errno;
 #ifdef SERVER_XDMCP
-	    XdmcpWakeupHandler((unsigned long)i, (pointer)LastSelectMask);
+	    XdmcpWakeupHandler(i, LastSelectMask);
 #endif /* SERVER_XDMCP */
 	    WakeupHandler((unsigned long)i, (pointer)LastSelectMask);
 #ifdef XTESTEXT1

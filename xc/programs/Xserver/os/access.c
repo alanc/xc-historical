@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.37 89/08/31 13:41:05 keith Exp $ */
+/* $XConsortium: access.c,v 1.38 89/09/08 14:32:43 keith Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -241,7 +241,7 @@ DefineSelf (fd)
 	{
 	    struct sockaddr broad_addr;
 
-	    XdmcpRegisterConnection (FamilyInternet, addr, len);
+	    XdmcpRegisterConnection (FamilyInternet, (char *)addr, len);
 #ifdef SIOCGIFBRDADDR
 	    {
 	    	struct ifreq    broad_req;
@@ -273,7 +273,7 @@ AddLocalHosts ()
 ResetHosts (display)
     char *display;
 {
-    register HOST	*host, *self;
+    register HOST	*host;
     char 		hostname[120];
     char		fname[32];
     FILE		*fd;
