@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Events.c,v 1.10 95/01/06 20:57:32 kaleb Exp kaleb $ */
+/* $XConsortium: xf86Events.c,v 1.11 95/01/16 13:16:59 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.8 1995/01/11 03:50:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -37,6 +37,7 @@
 #include "xf86_Config.h"
 #include "atKeynames.h"
 
+#include "Xpoll.h"
 #include "osdep.h"
 
 #define XE_POINTER  1
@@ -99,7 +100,7 @@ static Bool VTSysreqToggle = FALSE;
 #endif /* !USE_VT_SYSREQ */
 static Bool VTSwitchEnabled = TRUE;   /* Allows run-time disabling for *BSD */
 
-extern long EnabledDevices[];
+extern fd_set EnabledDevices;
 
 #if defined(CODRV_SUPPORT)
 extern unsigned char xf86CodrvMap[];
@@ -926,10 +927,12 @@ xf86Wakeup(blockData, err, pReadmask)
      pointer pReadmask;
 {
 #ifdef	__OSF__
-  long kbdDevices[mskcnt];
-  long mseDevices[mskcnt];
+  fd_set kbdDevices;
+  fd_set mseDevices;
 #endif	/* __OSF__ */
-  long devicesWithInput[mskcnt];
+  fd_set devicesWithInput;
+
+  fd_set* fdp = (fd_set*) pReadmask;
 
   if ((int)err >= 0) {
 #ifdef	__OSF__
@@ -937,24 +940,24 @@ xf86Wakeup(blockData, err, pReadmask)
      * Until the two devices are made nonblock on read, we have to do this.
      */
 
-    MASKANDSETBITS(devicesWithInput, pReadmask, EnabledDevices);
+    XFD_ANDSET(&devicesWithInput, fdp, &EnabledDevices);
 
-    CLEARBITS(kbdDevices);
-    BITSET(kbdDevices, xf86Info.consoleFd);
-    MASKANDSETBITS(kbdDevices, kbdDevices, devicesWithInput);
+    FD_ZERO(&kbdDevices);
+    FD_SET(xf86Info.consoleFd, &kbdDevices);
+    XFD_ANDSET(&kbdDevices, &kbdDevices, &devicesWithInput);
 
-    CLEARBITS(mseDevices);
-    BITSET(mseDevices, xf86Info.mseFd);
-    MASKANDSETBITS(mseDevices, mseDevices, devicesWithInput);
+    FD_ZERO(&mseDevices);
+    FD_SET(xf86Info.mseFd, &mseDevices);
+    XFD_ANDSET(&mseDevices, &mseDevices, &devicesWithInput);
 
-    if (ANYSET(kbdDevices) || xf86Info.kbdRate)
-        (xf86Info.kbdEvents)(ANYSET(kbdDevices));
-    if (ANYSET(mseDevices))
+    if (XFD_ANYSET(&kbdDevices) || xf86Info.kbdRate)
+        (xf86Info.kbdEvents)(XFD_ANYSET(&kbdDevices));
+    if (XFD_ANYSET(&mseDevices))
         (xf86Info.mseEvents)(1);
 
 #else
-    MASKANDSETBITS(devicesWithInput, ((FdMask *)pReadmask), EnabledDevices);
-    if (ANYSET(devicesWithInput))
+    XFD_ANSET(devicesWithInput, fdp, &EnabledDevices);
+    if (XFD_ANYSET(&devicesWithInput))
       {
 	(xf86Info.kbdEvents)();
 	(xf86Info.mseEvents)();
