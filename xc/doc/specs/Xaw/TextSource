@@ -4,7 +4,6 @@ TextSrc Object
 .XS
 	TextSrc Object
 .XE
-.IN "TextSrc object" "" "@DEF@"
 .IN "TextSrc" "" "@DEF@"
 .LP
 .Ds 0
@@ -17,7 +16,7 @@ Class Header file	<X11/Xaw/TextSrcP.h>
 Class		textSrcObjectClass
 .IN "textSrcObjectClass" ""
 Class Name	TextSrc
-.IN "TextScr object" "class name"
+.IN "TextSrc" "class name"
 Superclass	Object
 .sp 1
 .LP
@@ -30,7 +29,7 @@ Since all text sources will have some resources in common the
 TextSrc defines a few new resources.  
 .De
 .LP
-.IN "TextSrc object" "resources"
+.IN "TextSrc" "resources"
 .ps 9
 .nr PS 9
 .vs 11
@@ -59,7 +58,7 @@ _
 .Oe Bold
 .NH 3
 Subclassing the TextSrc
-.IN "TextSrc object" "Subclassing" "@DEF@"
+.IN "TextSrc" "Subclassing" "@DEF@"
 .LP
 The only purpose of the TextSrc Object is to be subclassed.  It contains
 the minimum set of class methods that all text sources must have.  All

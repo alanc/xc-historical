@@ -1,11 +1,11 @@
 .NH 2
 Text Widget Actions.
 .LP
-.IN "Text widet" "actions"
+.IN "Text widget" "actions"
 .XS
 	Actions Supported by all Text Widgets
 .XE
-.IN "Text Widgets" "Actions" "@DEF@"
+.IN "Text widget" "Actions" "@DEF@"
 
 All editing functions are performed by translation manager actions that may
 be specified through the \fBtranslations\fP resource in the Text widget.
@@ -299,7 +299,7 @@ to override translations.  This action takes one optional argument.  If
 this argument is \fIRingBell\fP then a beep is sent to the display.
 .NH 3
 Text Selections for Application Programmers
-.IN "text widgets" "Text Selections for Application Programmers"
+.IN "Text widget" "Text Selections for Application Programmers"
 .LP
 The default behavior of the text selection array is described in the
 section called \fBText Selections for Users\fP.  To modify the selections
@@ -391,7 +391,7 @@ Default Translation Bindings
 .XS
 	Default Translation Bindings
 .XE
-.IN "text widgets" "Default Translations"
+.IN "Text widget" "Default Translations"
 The following translations are defaults built into every Text widget.
 They can be overridden, or replaced by specifying a new value for the
 Text widget's \fBtranslations\fP resource.

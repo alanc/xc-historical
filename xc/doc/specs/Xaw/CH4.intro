@@ -37,16 +37,16 @@ The Athena widget set provides three classes of Sme objects that may be
 used to build menus.
 .sp
 .IP \fBSme\fP 1i
-.IN "Sme" "
+.IN "Sme object" "
 The base class of all menu entries.  It may be used as a menu entry
 itself to provide blank space in a menu.
 .IP \fBSmeBSB\fP 1i
-.IN "SmeBSB" ""
+.IN "SmeBSB object" ""
 This menu entry provides a selectable entry containing a text string.
 Support is also provided that allows a bitmap to be placed in the
 left and right margins.
 .IP \fBSmeLine\fP 1i
-.IN "SmeLine" ""
+.IN "SmeLine object" ""
 This menu entry provides an unselectable entry containing a separator line.
 .sp
 .LP

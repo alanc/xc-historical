@@ -125,8 +125,7 @@ _
 .Xy
 .NH 3
 Command Actions
-.IN "Command actions" ""
-.IN "Command widget" "Command actions"
+.IN "Command widget" "actions"
 .LP
 The Command widget supports the following actions:
 .IP \(bu 5

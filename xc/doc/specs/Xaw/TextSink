@@ -4,7 +4,7 @@ TextSink Object
 .XS
 	TextSink Object
 .XE
-.IN "TextSink object" "" "@DEF@"
+.IN "TextSink" "" "@DEF@"
 .LP
 .Ds 0
 .TA 2.0i
@@ -16,7 +16,7 @@ Class Header file	<X11/Xaw/TextSinkP.h>
 Class		textSinkObjectClass
 .IN "textSinkObjectClass" ""
 Class Name	TextSink
-.IN "TextSink object" "class name"
+.IN "TextSink" "class name"
 Superclass	Object
 .sp 1
 .LP
@@ -64,7 +64,7 @@ One foreground color is provided in TextSink.
 .Sg Bold
 .NH 3
 Subclassing the TextSink
-.IN "TextSink object" "Subclassing" "@DEF@"
+.IN "TextSink" "Subclassing" "@DEF@"
 .LP
 The only purpose of the TextSink Object is to be subclassed.  It
 contains the minimum set of class methods that all text sinks must have.

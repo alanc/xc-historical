@@ -38,7 +38,7 @@ always be referred to as the \fIpointer\fP.
 .LP
 The text widget supports three edit modes, controlling the types of
 modifications a user is allowed to make:
-.IN "Text widgets" "edit modes"
+.IN "Text widget" "edit modes"
 .IP \(bu 5
 Append-only 
 .IP \(bu 5
@@ -57,7 +57,7 @@ append-only mode.
 .LP
 .NH 2
 Text Widget for Users
-.IN "Text Widgets" "User Guide"
+.IN "Text widget" "User Guide"
 .XS
 	Text Widget for Users
 .XE
@@ -124,8 +124,8 @@ programmer can modify them by changing the Text widget's
 .bs 1
 .NH 3
 Search and Replace
-.IN "text widgets" "Search"
-.IN "text widgets" "Query Replace"
+.IN "Text widget" "Search"
+.IN "Text widget" "Query Replace"
 .LP
 The Text widget provides a search popup that can be used to search for a
 string within the current Text widget.  The popup can be activated by
@@ -208,7 +208,7 @@ The widget hierarchy for the search popup is:
 .NH 3
 File Insertion
 .LP
-.IN "text widgets" "File Insertion"
+.IN "Text widget" "File Insertion"
 To insert a file into a text widget, type the key sequence \fIMeta-i\fP,
 which will activate the file insert popup.  This popup will appear under
 the pointer, and any text typed while the focus is in this popup will be
@@ -236,7 +236,7 @@ The widget hierarchy for the file insert popup is:
 .NH 3
 Text Selections for Users
 .LP
-.IN "text widgets" "Text Selections for users"
+.IN "Text widget" "Text Selections for users"
 The text widgets have a very powerful text selection mechanism that allows
 the user to copy pieces of the text into the \fBPRIMARY\fP selection,
 and paste 

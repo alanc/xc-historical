@@ -156,7 +156,7 @@ Specifies whether the Toggle widget is set (\fBTrue\fP) or unset
 .Xy
 .NH 3
 Toggle Actions
-.IN "Toggle actions" ""
+.IN "Toggle widget" "actions"
 .LP
 The Toggle widget supports the following actions:
 .IP \(bu 5

@@ -374,12 +374,17 @@ scroll the text display to a certain character position.
 .de Tz \"Text Resize
 .ie 'Bold'\\$1' .IP \fBresize\fP 1.5i 
 .el .IP resize 1.5i
-Controls whether or not the Text widget attempts to resize itself when it is
-no longer able to display the full text buffer in the associated window.
-Any attempt by the Text widget to resize itself is always subject to
-the consraints imposed by its parent.  The values \fBXawtextResizeNever\fP,
-\fBXawtextResizeWidth\fP, \fBXawtextResizeHeight\fP, and
-\fBXawtextResizeBoth\fP are all acceptable for this resource.  
+Controls whether or not the Text widget attempts to resize itself when
+it is no longer able to display the full text buffer in the associated
+window.  Any attempt by the Text widget to resize itself is always
+subject to the constraints imposed by its parent.  The values
+\fBXawtextResizeNever\fP, \fBXawtextResizeWidth\fP,
+.IN "XawtextResizeNever" ""
+.IN "XawtextResizeWidth" ""
+\fBXawtextResizeHeight\fP, and \fBXawtextResizeBoth\fP are all
+.IN "XawtextResizeHeight" ""
+.IN "XawtextResizeBoth" ""
+acceptable for this resource.
 .Rs "never, height, width, \fPand\fB both"
 ..
 .de Ts \"Text Scroll
@@ -392,12 +397,15 @@ the consraints imposed by its parent.  The values \fBXawtextResizeNever\fP,
 These resources control the placement of scrollbars on the left and
 bottom edge of the text widget.  These resources accept the
 values \fBXawtextScrollAlways\fP, \fBXawtextScrollWhenNeeded\fP, and
-\fBXawtextScrollNever\fP.  
+.IN "XawtextScrollAlways" ""
+.IN "XawtextScrollWhenNeeded" ""
+\fBXawtextScrollNever\fP.
+.IN "XawtextScrollNever" ""
 .Rs "always, never, \fPand\fB whenNeeded"
-If \fBXawtextScrollWhenNeeded\fP is specified, the appropriate
-scrollbar will only appear when there is text in the buffer that is
-not able to fit within the bounds of the current window.  The
-scrollbar will disappear when the text once again fits within the window.
+If \fBXawtextScrollWhenNeeded\fP is specified, the appropriate scrollbar
+will only appear when there is text in the buffer that is not able to
+fit within the bounds of the current window.  The scrollbar will
+disappear when the text once again fits within the window.
 ..
 .de St \"Select Types
 .ie 'Bold'\\$1' .IP \fBselectTypes\fP 1.5i
@@ -429,7 +437,10 @@ When the text in any one line is wider than the window there are several
 possible actions.  This resource allows the user to decide what will
 happen.  The accepted values for this resource are
 \fBXawtextWrapNever\fP, \fBXawtextWrapLine\fP, and
+.IN "XawtextWrapNever" ""
+.IN "XawtextWrapLine" ""
 \fBXawtextWrapWord\fP.  With \fBXawtextWrapLine\fP all text
+.IN "XawtextWrapWord" ""
 that is beyond the right edge of the window will be displayed on the
 next line.  With \fBXawtextWrapWord\fP the
 same action occurs but the text is broken at a word boundary if 
@@ -516,6 +527,7 @@ internal memory, but may be used in place by setting the
 When this resource is queried - using \fBXtGetValues\fP - and
 \fBuseStringInPlace\fP is \fBFalse\fP, the string is only valid until
 the next time the \fBstring\fP is queried (see Section 5.6.1.1).
+.NE
 .So \\$1
 ..
 .de Op \" Source Piece Size
@@ -544,7 +556,10 @@ in the \fBstring\fP resource.
 .el .IP editType 1.5i
 This is the type of editing that will be allowed in this text widget.
 Legal values are \fBXawtextRead\fP, \fBXawtextEdit\fP, and
-\fBXawtextAppend\fP.  
+.IN "XawtextRead" ""
+.IN "XawtextEdit" ""
+\fBXawtextAppend\fP.
+.IN "XawtextAppend" ""
 .Rs "read, edit, \fPand\fB append"
 .So \\$1
 ..
