@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.24 91/01/10 10:40:47 rws Exp $
+ * $XConsortium: Login.c,v 1.25 91/01/31 22:02:41 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -33,26 +33,26 @@
 
 # include "LoginP.h"
 
-#define offset(field) XtOffset(LoginWidget,login.field)
-#define goffset(field) XtOffset(Widget,core.field)
+#define offset(field) XtOffsetOf(LoginRec, login.field)
+#define goffset(field) XtOffsetOf(WidgetRec, core.field)
 
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-	goffset(width), XtRString,	"0"},
+	goffset(width), XtRImmediate,	(XtPointer) 0},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-	goffset(height), XtRString,	"0"},
+	goffset(height), XtRImmediate,	(XtPointer) 0},
     {XtNx, XtCX, XtRPosition, sizeof (Position),
-	goffset(x), XtRString,		"-1"},
+	goffset(x), XtRImmediate,	(XtPointer) -1},
     {XtNy, XtCY, XtRPosition, sizeof (Position),
-	goffset(y), XtRString,		"-1"},
+	goffset(y), XtRImmediate,	(XtPointer) -1},
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(textpixel), XtRString,	"Black"},
+        offset(textpixel), XtRString,	XtDefaultForeground},
     {XtNpromptColor, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(promptpixel), XtRString,	"Black"},
+        offset(promptpixel), XtRString,	XtDefaultForeground},
     {XtNgreetColor, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(greetpixel), XtRString,	"Black"},
+        offset(greetpixel), XtRString	XtDefaultForeground},
     {XtNfailColor, XtCForeground, XtRPixel, sizeof (Pixel),
-	offset(failpixel), XtRString,	"Black"},
+	offset(failpixel), XtRString,	XtDefaultForeground},
     {XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
     	offset (font), XtRString,	"*-new century schoolbook-medium-r-normal-*-180-*"},
     {XtNpromptFont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
@@ -72,15 +72,15 @@ static XtResource resources[] = {
     {XtNfail, XtCFail, XtRString, sizeof (char *),
 	offset(fail), XtRString, "Login failed, please try again."},
     {XtNfailTimeout, XtCFailTimeout, XtRInt, sizeof (int),
-	offset(failTimeout), XtRString, "10"},
-    {XtNnotifyDone, XtCCallback, XtRFunction, sizeof (caddr_t),
-	offset(notify_done), XtRFunction, (caddr_t) 0},
+	offset(failTimeout), XtRImmediate, (XtPointer) 10},
+    {XtNnotifyDone, XtCCallback, XtRFunction, sizeof (XtPointer),
+	offset(notify_done), XtRFunction, (XtPointer) 0},
     {XtNsessionArgument, XtCSessionArgument, XtRString,	sizeof (char *),
-	offset(sessionArg), XtRString, (char *) 0 },
+	offset(sessionArg), XtRString, (XtPointer) 0 },
     {XtNsecureSession, XtCSecureSession, XtRBoolean, sizeof (Boolean),
-	offset(secure_session), XtRString, "false" },
+	offset(secure_session), XtRImmediate, False },
     {XtNallowAccess, XtCAllowAccess, XtRBoolean, sizeof (Boolean),
-	offset(allow_access), XtRString, "false" }
+	offset(allow_access), XtRImmediate, False }
 };
 
 #undef offset
