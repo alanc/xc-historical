@@ -540,8 +540,8 @@ SHAPE_OP
 	1	CARD8		opcode
 	1	1		shape opcode
 	2	4+2n		request length
-	1	SHAPE_OP	operation
-	1	SHAPE_KIND	destination kind
+	1	SHAPE_OP		operation
+	1	SHAPE_KIND		destination kind
 	1			ordering
 		0	UnSorted
 		1	YSorted
@@ -562,8 +562,8 @@ SHAPE_OP
 	1	CARD8		opcode
 	1	2		shape opcode
 	2	5		request length
-	1	SHAPE_OP	operation
-	1	SHAPE_KIND	destination kind
+	1	SHAPE_OP		operation
+	1	SHAPE_KIND		destination kind
 	2			unused
 	4	WINDOW		destination window
 	2	INT16		x offset
@@ -580,9 +580,9 @@ SHAPE_OP
 	1	CARD8		opcode
 	1	3		shape opcode
 	2	5		request length
-	1	SHAPE_OP	operation
-	1	SHAPE_KIND	destination kind
-	1	SHAPE_KIND	source kind
+	1	SHAPE_OP		operation
+	1	SHAPE_KIND		destination kind
+	1	SHAPE_KIND		source kind
 	1			unused
 	4	WINDOW		destination window
 	2	INT16		x offset
@@ -598,7 +598,7 @@ SHAPE_OP
 	1	CARD8		opcode
 	1	4		shape opcode
 	2	4		request length
-	1	SHAPE_KIND	destination kind
+	1	SHAPE_KIND		destination kind
 	3			unused
 	4	WINDOW		destination window
 	2	INT16		x offset
@@ -670,6 +670,7 @@ SHAPE_OP
 	1	BOOL		enabled
 	2	CARD16		sequence number
 	4	0		reply length
+	24			unused
 .De
 .LP
 .Ds 0
@@ -681,7 +682,7 @@ SHAPE_OP
 	1	7		shape opcode
 	2	3		request length
 	4	WINDOW		window
-	1	SHAPE_KIND	Bounding or Clip
+	1	SHAPE_KIND		source kind
 	3			unused
 .De
 .Ds 0
@@ -692,7 +693,7 @@ SHAPE_OP
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
-	4	8n		reply length
+	4	2n		reply length
 	4	CARD32		nrects
 	20			unused
 	8n	LISTofRECTANGLE		rectangles
@@ -707,14 +708,14 @@ SHAPE_OP
 .R
 .PN ShapeNotify
 	1	CARD8		type (0 + extension event base)
-	1	SHAPE_KIND	Bounding or Clip
+	1	SHAPE_KIND		shape kind
 	2	CARD16		sequence number
 	4	WINDOW		affected window
 	2	INT16		x value of extents
 	2	INT16		y value of extents
 	2	CARD16		width of extents
 	2	CARD16		height of extents
-	4	TIMESTAMP	server time
+	4	TIMESTAMP		server time
 	1	BOOL		shaped
 	11			unused
 .De
