@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.46 91/07/21 10:22:44 rws Exp $ */
+/* $XConsortium: events.c,v 5.47 91/08/21 15:38:34 keith Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -3050,11 +3050,19 @@ ProcUngrabKey(client)
     REQUEST(xUngrabKeyReq);
     WindowPtr pWin;
     GrabRec tempGrab;
+    DeviceIntPtr keybd = inputInfo.keyboard;
 
     REQUEST_SIZE_MATCH(xUngrabKeyReq);
     pWin = LookupWindow(stuff->grabWindow, client);
     if (!pWin)
 	return BadWindow;
+    if (((stuff->key > keybd->key->curKeySyms.maxKeyCode) ||
+	 (stuff->key < keybd->key->curKeySyms.minKeyCode))
+	&& (stuff->key != AnyKey))
+    {
+	client->errorValue = stuff->key;
+        return BadValue;
+    }
     if ((stuff->modifiers != AnyModifier) &&
 	(stuff->modifiers & ~AllModifiersMask))
     {
@@ -3063,7 +3071,7 @@ ProcUngrabKey(client)
     }
 
     tempGrab.resource = client->clientAsMask;
-    tempGrab.device = inputInfo.keyboard;
+    tempGrab.device = keybd;
     tempGrab.window = pWin;
     tempGrab.modifiersDetail.exact = stuff->modifiers;
     tempGrab.modifiersDetail.pMask = NULL;
@@ -3087,6 +3095,11 @@ ProcGrabKey(client)
     DeviceIntPtr keybd = inputInfo.keyboard;
 
     REQUEST_SIZE_MATCH(xGrabKeyReq);
+    if ((stuff->ownerEvents != xTrue) && (stuff->ownerEvents != xFalse))
+    {
+	client->errorValue = stuff->ownerEvents;
+	return(BadValue);
+    }
     if ((stuff->pointerMode != GrabModeSync) &&
 	(stuff->pointerMode != GrabModeAsync))
     {
