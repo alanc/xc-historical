@@ -1,4 +1,4 @@
-/* $XConsortium: menu.c,v 1.59 91/05/31 19:47:08 gildea Exp $ */
+/* $XConsortium: menu.c,v 1.60 91/06/25 19:49:28 gildea Exp $ */
 /*
 Copyright 1989 Massachusetts Institute of Technology
 
@@ -325,7 +325,7 @@ static void do_securekbd (gw, closure, data)
 	ReverseVideo (term);
 	screen->grabbedKbd = FALSE;
     } else {
-	if (XGrabKeyboard (screen->display, term->core.parent->core.window,
+	if (XGrabKeyboard (screen->display, term->core.window,
 			   True, GrabModeAsync, GrabModeAsync, time)
 	    != GrabSuccess) {
 	    XBell (screen->display, 100);
