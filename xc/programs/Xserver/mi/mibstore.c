@@ -1,4 +1,4 @@
-/* $Header: mibstore.c,v 1.6 88/08/13 16:48:27 keith Exp $ */
+/* $Header: mibstore.c,v 1.7 88/08/13 17:09:11 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -688,10 +688,11 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, pixel, tile, use_pixel)
 	}
     }
     if (gcmask)
-    {
 	DoChangeGC (pGC, gcmask, gcval, 1);
+
+    if (pDrawable->serialNumber != pGC->serialNumber)
 	ValidateGC (pDrawable, pGC);
-    }
+
     pRect = (xRectangle *)ALLOCATE_LOCAL(pRgn->numRects * sizeof(xRectangle));
     pBox = pRgn->rects;
     for (i = 0; i < pRgn->numRects; i++, pBox++, pRect++)
@@ -1258,7 +1259,7 @@ miBSCopyArea (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty)
 		bdstx += dx;
 		bw -= dx;
 	    }
-	    dy = bdsty - pExtents->y1;
+	    dy = pExtents->y1 - bdsty;
 	    if (dy > 0)
 	    {
 		bsrcy += dy;
@@ -3425,6 +3426,9 @@ miExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
 
     pBackingStore = (MIBackingStorePtr)pSrc->devBackingStore;
     
+    if (pBackingStore->status == StatusNoPixmap)
+    	return;
+
     tempRgn = (* pGC->pScreen->RegionCreate) (NULL, 1);
     (* pGC->pScreen->Intersect) (tempRgn, prgnExposed,
 				 pBackingStore->pSavedRegion);
@@ -3439,11 +3443,23 @@ miExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
     dx = dstx - srcx;
     dy = dsty - srcy;
     
-    for (i = tempRgn->numRects, pBox = tempRgn->rects; i > 0; i--, pBox++) {
-	(* copyProc) (pBackingStore->pBackingPixmap,
-		      pDst, pGC, pBox->x1, pBox->y1,
-		      pBox->x2 - pBox->x1, pBox->y2 - pBox->y1,
-	    	      pBox->x1 + dx, pBox->y1 + dy, plane);
+    switch (pBackingStore->status) {
+    case StatusVirtual:
+    case StatusVDirty:
+	pGC = GetScratchGC (pDst->depth, pDst->pScreen);
+	miBSFillVirtualBits (pDst, pGC, tempRgn, pBox->x1, pBox->y1,
+		pBackingStore->backgroundPixel, pBackingStore->backgroundTile,
+		(PixmapPtr) USE_BACKGROUND_PIXEL);
+	FreeScratchGC (pGC);
+	break;
+    case StatusContents:
+	for (i = tempRgn->numRects, pBox = tempRgn->rects; i > 0; i--, pBox++) {
+	    (* copyProc) (pBackingStore->pBackingPixmap,
+			  pDst, pGC, pBox->x1, pBox->y1,
+			  pBox->x2 - pBox->x1, pBox->y2 - pBox->y1,
+			  pBox->x1 + dx, pBox->y1 + dy, plane);
+	}
+	break;
     }
 }
     
