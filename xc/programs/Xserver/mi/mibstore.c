@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.12 88/09/03 20:39:35 keith Exp $ */
+/* $XConsortium: mibstore.c,v 1.13 88/09/06 14:50:19 jim Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -952,67 +952,68 @@ miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc, ppRgn)
     
     boxes = (struct BoxDraw *)ALLOCATE_LOCAL(nrects * sizeof(struct BoxDraw));
     sequence = (int *) ALLOCATE_LOCAL(nrects * sizeof(int));
+    *ppRgn = NULL;
 
     if ((boxes == (struct BoxDraw *)NULL) || (sequence == (int *)NULL))
     {
+	(*pGC->pScreen->RegionDestroy) (pRgnExp);
+	(*pGC->pScreen->RegionDestroy) (pRgnObs);
 	return(TRUE);
     }
-    else
+
+    /*
+     * Order the boxes in the two regions so we know from which drawable
+     * to copy which box, storing the result in the boxes array
+     */
+    for (i = 0, j = 0, k = 0;
+	 (i < pRgnExp->numRects) && (j < pRgnObs->numRects);
+	 k++)
     {
-	/*
-	 * Order the boxes in the two regions so we know from which drawable
-	 * to copy which box, storing the result in the boxes array
-	 */
-	for (i = 0, j = 0, k = 0;
-	     (i < pRgnExp->numRects) && (j < pRgnObs->numRects);
-	     k++)
+	if (pRgnExp->rects[i].y1 < pRgnObs->rects[j].y1)
 	{
-	    if (pRgnExp->rects[i].y1 < pRgnObs->rects[j].y1)
-	    {
-		boxes[k].pBox = &pRgnExp->rects[i];
-		boxes[k].source = win;
-		i++;
-	    }
-	    else if ((pRgnObs->rects[j].y1 < pRgnExp->rects[i].y1) ||
-		     (pRgnObs->rects[j].x1 < pRgnExp->rects[i].x1))
-	    {
-		boxes[k].pBox = &pRgnObs->rects[j];
-		boxes[k].source = pix;
-		j++;
-	    }
-	    else
-	    {
-		boxes[k].pBox = &pRgnExp->rects[i];
-		boxes[k].source = win;
-		i++;
-	    }
+	    boxes[k].pBox = &pRgnExp->rects[i];
+	    boxes[k].source = win;
+	    i++;
 	}
-
-	/*
-	 * Catch any leftover boxes from either region (note that only
-	 * one can have leftover boxes...)
-	 */
-	if (i != pRgnExp->numRects)
+	else if ((pRgnObs->rects[j].y1 < pRgnExp->rects[i].y1) ||
+		 (pRgnObs->rects[j].x1 < pRgnExp->rects[i].x1))
 	{
-	    do
-	    {
-		boxes[k].pBox = &pRgnExp->rects[i];
-		boxes[k].source = win;
-		i++;
-		k++;
-	    } while (i < pRgnExp->numRects);
-
+	    boxes[k].pBox = &pRgnObs->rects[j];
+	    boxes[k].source = pix;
+	    j++;
 	}
 	else
 	{
-	    do
-	    {
-		boxes[k].pBox = &pRgnObs->rects[j];
-		boxes[k].source = pix;
-		j++;
-		k++;
-	    } while (j < pRgnObs->numRects);
+	    boxes[k].pBox = &pRgnExp->rects[i];
+	    boxes[k].source = win;
+	    i++;
 	}
+    }
+
+    /*
+     * Catch any leftover boxes from either region (note that only
+     * one can have leftover boxes...)
+     */
+    if (i != pRgnExp->numRects)
+    {
+	do
+	{
+	    boxes[k].pBox = &pRgnExp->rects[i];
+	    boxes[k].source = win;
+	    i++;
+	    k++;
+	} while (i < pRgnExp->numRects);
+
+    }
+    else
+    {
+	do
+	{
+	    boxes[k].pBox = &pRgnObs->rects[j];
+	    boxes[k].source = pix;
+	    j++;
+	    k++;
+	} while (j < pRgnObs->numRects);
     }
     
     if (dsty <= srcy)
@@ -1160,7 +1161,6 @@ miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc, ppRgn)
     DEALLOCATE_LOCAL(sequence);
 
     pGC->graphicsExposures = graphicsExposures;
-    *ppRgn = NULL;
     if (graphicsExposures)
     {
 	/*
@@ -1175,16 +1175,16 @@ miBSDoCopy(pWin, pGC, srcx, srcy, w, h, dstx, dsty, plane, copyProc, ppRgn)
 	box.y1 = srcy;
 	box.y2 = srcy + h;
 	if ((* pGC->pScreen->RectIn) (pRgnExp, &box) == rgnIN)
-	{
 	    (*pGC->pScreen->RegionEmpty) (pRgnExp);
-	    *ppRgn = pRgnExp;
-	}
 	else
-	{
 	    (* pGC->pScreen->Inverse) (pRgnExp, pRgnExp, &box);
-	    *ppRgn = pRgnExp;
-	}
+	*ppRgn = pRgnExp;
     }
+    else
+    {
+	(*pGC->pScreen->RegionDestroy) (pRgnExp);
+    }
+    (*pGC->pScreen->RegionDestroy) (pRgnObs);
     return (TRUE);
 }
 
