@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: nec.cf,v 1.109 94/02/21 10:19:16 kaleb Exp $
+XCOMM platform:  $XConsortium: nec.cf,v 1.1 94/03/26 18:15:10 rws Exp $
 
 #ifdef nec_ews_svr2
 # define NecCISCArchitecture
@@ -40,7 +40,7 @@ XCOMM platform:  $XConsortium: nec.cf,v 1.109 94/02/21 10:19:16 kaleb Exp $
 #define OSMajorVersion    	5
 #define OSMinorVersion    	1
 # else
-#define OSName            	EWS-UX/V(Rel4.2)
+#define OSName            	EWS-UX/V\(Rel4.2\)
 #define OSMajorVersion    	9
 #define OSMinorVersion    	1
 # endif
@@ -81,6 +81,9 @@ XCOMM platform:  $XConsortium: nec.cf,v 1.109 94/02/21 10:19:16 kaleb Exp $
 #define HasSaberC	NO		/* for machines that have it */
 #define HasGcc		NO
 #define HasBsearch	YES
+
+#define DefaultCCOptions	-Wf,-XNp9000,-XNd6000
+#define ExtraLibraries		-lsocket -lnsl -lw
 
 #define BuildServer			NO
 /* #define InstallCmd $(INS) */
