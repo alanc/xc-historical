@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.148 89/10/08 14:32:13 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.149 89/10/09 14:31:12 jim Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -429,7 +429,10 @@ static Boolean _GetResource(dpy, list, name, class, type, value)
 
     if (XrmQGetSearchResource(list, Qname, Qclass, &db_type, &db_value)) {
 	if (db_type == Qtype) {
-	    bcopy( db_value.addr, value->addr, value->size );
+	    if (Qtype == XtQString)
+		*(String*)value->addr = db_value.addr;
+	    else
+		bcopy( db_value.addr, value->addr, value->size );
 	    return True;
 	} else {
 	    WidgetRec widget; /* hack, hack */
