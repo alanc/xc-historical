@@ -1,4 +1,4 @@
-/* $XConsortium: SMproto.h,v 1.6 94/03/18 10:26:52 mor Exp $ */
+/* $XConsortium: SMproto.h,v 1.7 94/03/30 19:54:03 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -148,8 +148,7 @@ typedef struct {
 typedef struct {
     CARD8	majorOpcode;
     CARD8	minorOpcode;
-    CARD8       success;
-    CARD8	unused;
+    CARD8	unused[2];
     CARD32	length B32;
 } smSaveYourselfPhase2RequestMsg;
 
