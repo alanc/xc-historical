@@ -1,4 +1,4 @@
-/* $XConsortium: xkbUtils.c,v 1.3 93/09/28 19:47:43 rws Exp $ */
+/* $XConsortium: xkbUtils.c,v 1.4 93/09/28 21:12:09 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -933,7 +933,7 @@ CARD8		 mods,repeat[32];
 		    }
 		    pXDev->key->xkbInfo->iAccel.usesLocked|= mask;
 		    pXDev->key->xkbInfo->iAccel.usedComponents|=XkbIMUseLocked;
-		    XKBUpdateIndicators(pXDev,mask,NULL);
+		    XkbUpdateIndicators(pXDev,mask,NULL);
 		}
 	    }
 	}
