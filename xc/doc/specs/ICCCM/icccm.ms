@@ -689,7 +689,7 @@ event, which is defined as follows:
 .\" End marker code here
 .LP
 The timestamp argument is the time at which the ownership changed hands,
-and the owner argument is the window the new owner specified in its
+and the owner argument is the window the previous owner specified in its
 .PN SetSelectionOwner 
 request.
 .LP
