@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XDisName.c,v 11.6 91/02/01 16:34:00 gildea Exp $
+ * $XConsortium: xsetroot.c,v 1.21 91/04/24 08:22:41 gildea Exp $
  *
  * Copyright 1987, Massachusetts Institute of Technology
  *
@@ -36,7 +36,6 @@
 #include <stdio.h>
 #include "X11/bitmaps/gray"
 
-char *index();
 
 #define Dynamic 1
 
