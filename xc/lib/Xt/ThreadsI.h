@@ -1,4 +1,4 @@
-/* $XConsortium: ThreadsI.h,v 1.3 93/09/03 09:57:20 kaleb Exp $ */
+/* $XConsortium: ThreadsI.h,v 1.5 93/09/15 15:09:29 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -91,6 +91,8 @@ extern void (*_XtInitAppLock)(
 #define POP_THREAD(app) if(app && app->pop_thread)(*app->pop_thread)(app) 
 #define IS_TOP_THREAD(app) (app && app->is_top_thread ? (*app->is_top_thread)(app): TRUE) 
 
+#define WAIT_THREAD(app) if(app && app->wait_thread)(*app->wait_thread)(app)
+
 #define WIDGET_TO_APPCON(w) \
     XtAppContext app = (_XtProcessLock ? XtWidgetToApplicationContext(w): 0)
 
@@ -105,12 +107,8 @@ extern void (*_XtInitAppLock)(
 #define UNLOCK_APP(app) /**/
 
 #define INIT_APP_LOCK(app) /**/
-#define YIELD_APP_LOCK(app) /**/
-#define RESTORE_APP_LOCK(app,r) /**/
 #define FREE_APP_LOCK(app) /**/
 
-#define PUSH_THREAD(app) /**/
-#define POP_THREAD(app) /**/
 #define IS_TOP_THREAD(app) /**/
 
 #define WIDGET_TO_APPCON(w) /**/
