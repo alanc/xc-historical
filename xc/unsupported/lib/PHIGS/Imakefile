@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.6 91/02/18 11:39:18 rws Exp $
+# $XConsortium: Imakefile,v 5.7 91/02/18 22:00:18 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -40,11 +40,6 @@ CDEBUGFLAGS = PexPhigsCDebugFlags
      AR = ar
      SUBDIRS = include archive c_binding css cp error input pex util ws ws_type
 
-    ALL_SRCS = archive/ar*.c c_binding/cb*.c \
-		cp/cp*.c cp/psl.c css/css*.c \
-		error/er*.c input/sin*.c pex/pex*.c  util/ut*.c \
-		ws/ws*.c ws_type/wstx*.c
-
      ALL_OBJ = archive/ar*.o c_binding/cb*.o \
 		cp/cp*.o cp/psl.o css/css*.o \
 		error/er*.o input/sin*.o pex/pex*.o  util/ut*.o \
@@ -58,7 +53,6 @@ CDEBUGFLAGS = PexPhigsCDebugFlags
 
   PEXLIBNAME = libphigs.a
       MFLAGS = "LIBCODE=../$(PEXLIBNAME)"
-      PEXLIB = ../../lib/${PEXLIBNAME}
 
     SWAPLIB  = ../../server/PEX/dipex/swap/libdiswapex.a
    SWAPOBJS  = OCTables.o Convert.o floatconv.o OCattr.o OCcolour.o   \
@@ -82,14 +76,14 @@ $(LIB_SHARED_DIR):
 $(CHILD) : FRC
 	-(cd cp; $(MAKE) $@)
 	if [ -f cp/$@ ]; then \
-	    mv -f cp/$@ lib/$(CHILD);  \
+	    $(MV) -f cp/$@ lib/$(CHILD);  \
 	fi;
 
 ERR_TEXT_FILES = PHIGSerr.txt PHIGSfnc.txt
 errortext: FRC $(LIB_SHARED_DIR)
-	(cd $(LIB_SHARED_DIR); rm -f $(ERR_TEXT_FILES))
+	(cd $(LIB_SHARED_DIR); $(RM) $(ERR_TEXT_FILES))
 	(cd include; $(MAKE) $(ERR_TEXT_FILES) )
-	(cd include; cp $(ERR_TEXT_FILES) ../$(LIB_SHARED_DIR))
+	(cd include; $(CP) $(ERR_TEXT_FILES) ../$(LIB_SHARED_DIR))
 
 
 swapcode: FRC
@@ -97,7 +91,7 @@ swapcode: FRC
 	$(AR) xl $(SWAPLIB) $(SWAPOBJS)
 	@echo "Archiving swap objects into" $(PEXLIBNAME)
 	$(AR) rul $(PEXLIBNAME) $(SWAPOBJS)
-	-rm -f $(SWAPOBJS)
+	-$(RM) $(SWAPOBJS)
 	
 lintlib lint-library: FRC
 	(cd c_binding; $(MAKE) lint-library)
@@ -129,7 +123,7 @@ FRC:
 NamedMakeSubdirs(subdirs, $(SUBDIRS))
 NormalLibraryObjectRule()
 
-InstallLibrary(pexapi,$(USRLIBDIR))
+InstallLibrary(phigs,$(USRLIBDIR))
 
 #ifdef HPArchitecture
 SpecialObjectRule(hppex.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
