@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$Header: xhost.c,v 11.17 88/07/05 16:32:45 jim Exp $";
+static char *rcsid_xhost_c = "$Header: xhost.c,v 11.18 88/07/05 16:35:46 jim Exp $";
 #endif
  
 #include <signal.h>
@@ -66,6 +66,8 @@ static FamilyMap familyMap[] = {
 
 int nameserver_timedout;
  
+char *ProgramName;
+
 static int XFamily(af)
     int af;
 {
@@ -95,6 +97,8 @@ main(argc, argv)
 	char *cp;
 #endif
  
+	ProgramName = argv[0];
+
 	if ((dpy = XOpenDisplay(NULL)) == NULL) {
 	    fprintf(stderr, "%s:  unable to open display \"%s\"\n",
 		    argv[0], XDisplayName (NULL));
@@ -300,7 +304,13 @@ local_xerror (dpy, rep)
     Display *dpy;
     XErrorEvent *rep;
 {
-    if ((rep->error_code == BadValue) && (rep->request_code == X_ListHosts)) {
+    if ((rep->error_code == BadAccess) && (rep->request_code == X_ChangeHosts)) {
+	fprintf (stderr, 
+		 "%s:  not allowed to change host list or access control.\n",
+		 ProgramName);
+	return;
+    } else if ((rep->error_code == BadValue) && 
+	       (rep->request_code == X_ListHosts)) {
 	return;
     } else {
 	_XDefaultError(dpy, rep);
