@@ -1,3 +1,7 @@
+.\" $XConsortium$
+.\" 
+.\" Use tbl, -ms, and macros.t
+.\" 
 .\" macro: start marker
 .de sM
 .ne 4
@@ -44,8 +48,8 @@ draft standard of the X Consortium and is therefore subject to change.
 .bp 1
 .EH '\fBInter-Client Exchange Library\fP'''
 .OH '''\fBInter-Client Exchange Library\fP'
-.EF ''- % -''
-.OF ''- % -''
+.EF ''\- \\\\n(PN \-''
+.OF ''\- \\\\n(PN \-''
 .NH 1
 Acknowledgements
 .XS
@@ -64,7 +68,7 @@ Overview of ICE
 .XE
 .LP
 There are numerous possible "inter-client" protocols, with many similarities
-and common needs - authentication, extension, version negotiation, byte
+and common needs - authentication, version negotiation, byte
 order negotiation, etc.  The ICE protocol is intended to provide a framework
 for building such protocols, allowing them to make use of common negotiation
 mechanisms and to be multiplexed over a single transport connection.
@@ -276,7 +280,9 @@ function should be called for the client that responds to a
 .FD 0
 int IceRegisterForProtocolReply\^(\^\fIprotocol_name\fP, \fIvendor\fP\^, \fIrelease\fP\^, \fIversion_count\fP\^, \fIversion_recs\fP\^,
 .br
-                    \fIauth_count\fP\^, \fIauth_names\fP\^, \fIauth_procs\fP\^, \fIhost_based_auth_proc\fP\^, \fIprotocol_setup_notify_proc\fP\^, \fIio_error_proc\fP\^)
+                    \fIauth_count\fP\^, \fIauth_names\fP\^, \fIauth_procs\fP\^, \fIhost_based_auth_proc\fP\^,
+.br
+                    \fIprotocol_setup_proc\fP\^, \fIprotocol_activate_proc\fP\^, \fIio_error_proc\fP\^)
 .br
      char *\fIprotocol_name\fP\^;
 .br
@@ -296,7 +302,9 @@ int IceRegisterForProtocolReply\^(\^\fIprotocol_name\fP, \fIvendor\fP\^, \fIrele
 .br
      IceHostBasedAuthProc \fIhost_based_auth_proc\fP\^;
 .br
-     IceProtocolSetupNotifyProc \fIprotocol_setup_notify_proc\fP\^;
+     IceProtocolSetupProc \fIprotocol_setup_proc\fP\^;
+.br
+     IceProtocolActivateProc \fIprotocol_activate_proc\fP\^;
 .br
      IceIOErrorProc \fIio_error_proc\fP\^;
 .FN
@@ -318,9 +326,11 @@ The list of authentication methods supported.
 The list of authentication callbacks, one for each authentication method.
 .IP \fIhost_based_auth_proc\fP 1i
 Host based authentication callback.
-.IP \fIprotocol_setup_notify_proc\fP 1i
-A callback to be invoked when a \fIProtocol Setup\fP\^ has
-successfully completed.
+.IP \fIprotocol_setup_proc\fP 1i
+A callback to be invoked when authentication has succeeded for a
+\fIProtocol Setup\fP\^, \fIbefore\fP\^ the \fIProtocol Reply\fP\^ is sent.
+.IP \fIprotocol_activate_proc\fP 1i
+A callback to be invoked \fIafter\fP\^ the \fIProtocol Reply\fP\^ is sent.
 .IP \fIio_error_proc\fP 1i
 IO Error handler.
 .LP
@@ -397,16 +407,34 @@ The host name of the client that sent the \fIProtocol Setup\fP\^.
 .sp 0.5
 Since \fIProtocol Setups\fP\^ and authentication happen "behind the scenes"
 via callbacks, the protocol library needs some way of being notified when the
-\fIProtocol Setup\fP\^ has completed.  The
-.PN IceProtocolSetupNotifyProc
-callback serves this purpose.  It is invoked after authentication has
-successfully completed and the ICE library has sent a
-\fIProtocol Reply\fP\^.
+\fIProtocol Setup\fP\^ has completed.  This occurs in two phases.  In the
+first phase, the
+.PN IceProtocolSetupProc
+is invoked after authentication has
+successfully completed, \fIbefore\fP the ICE library sends a
+\fIProtocol Reply\fP\^.  Any resources required for this protocol should be
+allocated at this time.  If the
+.PN IceProtocolSetupProc
+returns a successful status, the ICE library will
+send the \fIProtocol Reply\fP\^ and then invoke the
+.PN IceProtocolActivateProc .
+Otherwise, an error will be sent to the
+other client in response to the \fIProtocol Setup\fP\^.
+.LP
+The
+.PN IceProtocolActivateProc
+is an optional callback, and should be registered only if the protocol
+library intends to generate a message immediately following the
+\fIProtocol Reply\fP\^.  Pass
+.PN NULL
+for \fIprotocol_activate_proc\fP\^ if not interested in this callback.
 .LP
 .sM
-typedef void (*IceProtocolSetupNotifyProc) ();
+typedef Status (*IceProtocolSetupProc) ();
 .FD 0
-void ProtocolSetupNotifyProc\^(\^\fIice_conn\fP, \fImajor_version\fP\^, \fIminor_version\fP\^, \fIvendor\fP\^, \fIrelease\fP\^, \fIclient_data_ret\fP\^)
+Status ProtocolSetupProc\^(\^\fIice_conn\fP, \fImajor_version\fP\^, \fIminor_version\fP\^, \fIvendor\fP\^, \fIrelease\fP\^,
+.br
+                    \fIclient_data_ret\fP\^, \fIfailure_reason_ret\fP\^)
 .br
      IceConn \fIice_conn\fP\^;
 .br
@@ -419,6 +447,8 @@ void ProtocolSetupNotifyProc\^(\^\fIice_conn\fP, \fImajor_version\fP\^, \fIminor
      char *\fIrelease\fP\^;
 .br
      IcePointer *\fIclient_data_ret\fP\^;
+.br
+     char **\fIfailure_reason_ret\fP\^;
 .FN
 .IP \fIice_conn\fP 1i
 The ICE connection object.
@@ -432,6 +462,8 @@ The vendor of the library that sent the \fIProtocol Setup\fP\^.
 The release of the library that sent the \fIProtocol Setup\fP\^.
 .IP \fIclient_data_ret\fP 1i
 Client data to be set by callback.
+.IP \fIfailure_reason_ret\fP 1i
+Failure reason returned.
 .LP
 .eM
 The pointer stored in the \fIclient_data_ret\fP argument will be passed
@@ -442,6 +474,35 @@ ICE connection.
 .LP
 The \fIvendor\fP\^ and \fIrelease\fP\^ strings should be freed with free()
 when they are no longer needed.
+.LP
+If a failure occurs, the
+.PN IceProtocolSetupProc
+should return a zero status, as well as allocate and return a failure
+reason string in \fIfailure_reason_ret\fP\^.  The ICE library will be
+responsible for freeing this memory.
+.LP
+The
+.PN IceProtocolActivateProc
+discussed above is defined as follows:
+.LP
+.sM
+typedef void (*IceProtocolActivateProc)();
+.LP
+.FD 0
+void ProtocolActivateProc\^(\^\fIice_conn\fP, \fIclient_data\fP\^)
+.br
+    IceConn \fIice_conn\fP\^;
+.br
+    IcePointer \fIclient_data\fP\^;
+.FN
+.IP \fIice_conn\fP 1i
+The ICE connection object.
+.IP \fIclient_data\fP 1i
+The client data set in the
+.PN IceProtocolSetupProc
+callback.
+.LP
+.eM
 .LP
 .sp 0.5
 The
@@ -550,7 +611,7 @@ the client data was set in the call to
 In the case of
 .PN IcePaProcessMsgProc ,
 the client data was set in the
-.PN IceProtocolSetupNotifyProc
+.PN IceProtocolSetupProc
 callback.
 .LP
 The
@@ -1734,7 +1795,7 @@ function.
 .LP
 .sM
 .FD 0
-void IcePing\^(\^\fIice_conn\fP, \fIping_reply_proc\fP\^, \fIclient_data\fP\^)
+Status IcePing\^(\^\fIice_conn\fP, \fIping_reply_proc\fP\^, \fIclient_data\fP\^)
 .br
     IceConn \fIice_conn\fP\^;
 .br
@@ -1752,6 +1813,10 @@ This pointer will be passed to the
 callback.
 .LP
 .eM
+The return value of
+.PN IcePing
+is zero for failure, and a positive value for success.
+.LP
 When
 .PN IceProcessMessages
 processes the Ping reply, it will invoke the
@@ -2525,8 +2590,6 @@ a connection dying because a machine crashed)
 and one to handle ICE-specific protocol errors.
 These error handlers can be changed to user-supplied routines if you
 prefer your own error handling and can be changed as often as you like.
-The action of the default handlers is to print an explanatory
-message to stderr and call exit() with a non-zero value.
 .LP
 .sp 0.5
 To set the ICE error handler, use
@@ -2548,7 +2611,10 @@ to restore the default handler.
 returns the previous error handler.
 .LP
 The ICE error handler is invoked when an unexpected ICE protocol
-error (major opcode 0) is encountered.  Note that errors in other protocol
+error (major opcode 0) is encountered.  The action of the default
+handler is to print an explanatory message to stderr and if the
+severity is fatal, call exit() with a non-zero value.
+Note that errors in other protocol
 domains should be handled by their respective libraries (these libraries
 should have their own error handlers).
 .LP
