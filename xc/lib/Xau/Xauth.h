@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: Xauth.h,v 1.4 89/12/12 17:15:08 rws Exp $
+ * $XConsortium: Xauth.h,v 1.5 90/09/13 18:23:54 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -17,6 +17,9 @@
  *
  * Author:  Keith Packard, MIT X Consortium
  */
+
+#ifndef _Xauth_h
+#define _Xauth_h
 
 #ifndef NeedFunctionPrototypes
 #if defined(FUNCPROTO) || defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus)
@@ -167,3 +170,5 @@ Xauth*		/* auth */
 # define LOCK_SUCCESS	0	/* lock succeeded */
 # define LOCK_ERROR	1	/* lock unexpectely failed, check errno */
 # define LOCK_TIMEOUT	2	/* lock failed, timeouts expired */
+
+#endif /* _Xauth_h */
