@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.40 94/06/27 14:20:19 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.41 94/06/30 12:06:46 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -28,32 +28,31 @@ in this Software without prior written authorization from the X Consortium.
 /*
  * X Session Manager.
  *
- * Written by Ralph Mor, X Consortium.
- *        and Jordan Brown, Quarterdeck Office Systems
- *
- * This program needs a fair amount of work to make it robust.
- * As it stands now, it serves as a useful test for session management.
+ * Authors:
+ *	Ralph Mor, X Consortium
+ *      Jordan Brown, Quarterdeck Office Systems
  */
 
 #include "xsm.h"
 #include <X11/Xatom.h>
 #include <signal.h>
 
+#define CURRENT_SESSION_NAME "Current"
+
 AppResources app_resources;
 
 #define Offset(field) XtOffsetOf(struct _AppResources, field)
 static XtResource resources [] = {
-    {"verbose",  "Verbose",  XtRBoolean, sizeof(Boolean), 
-	 Offset(verbose), XtRImmediate, (XtPointer) False},
-    {"debug",  "Debug",  XtRBoolean, sizeof(Boolean), 
-	 Offset(debug), XtRImmediate, (XtPointer) False}
+    {"verbose", "Verbose",  XtRBoolean, sizeof (Boolean), 
+	 Offset (verbose), XtRImmediate, (XtPointer) False},
+    {"name", "Name", XtRString, sizeof (XtRString), 
+	 Offset (name), XtRString, (XtPointer) CURRENT_SESSION_NAME}
 };
 #undef Offset
 
 static XrmOptionDescRec options[] = {
-    {"-verbose",	"*verbose",	XrmoptionNoArg,		"TRUE"},
-    {"-quiet",		"*verbose",	XrmoptionNoArg,		"FALSE"},
-    {"-debug",		"*debug",	XrmoptionNoArg,		"TRUE"},
+    {"-verbose",    "*verbose",	    XrmoptionNoArg,     (XPointer) "TRUE"},
+    {"-name",	    "*name",	    XrmoptionSepArg,    (XPointer) NULL},
 };
 
 List		*PendingList;
@@ -67,6 +66,8 @@ Bool		shutdownCancelled = False;
 jmp_buf		JumpHere;
 
 char		*sm_id;
+
+char		*session_name;
 
 IceAuthDataEntry *authDataEntries = NULL;
 int		numTransports = 0;
@@ -93,6 +94,7 @@ Widget		    mainWindow;
 Widget		        clientInfoButton;
 Widget			checkPointButton;
 Widget			shutdownButton;
+Widget			nameSessionButton;
 
 Widget		    clientInfoPopup;
 
@@ -226,6 +228,8 @@ UpdateClientList ()
 		sprintf (progName, "%s : %s", client->clientHostname, temp);
 	    }
 
+	if (!progName)
+	    progName = "";
 	clientNames[i] = progName;
     }
 
@@ -741,10 +745,24 @@ ClientInfoXtProc (w, client_data, callData)
     XtPointer 	callData;
 
 {
+    static Bool did_first_popup = 0;
+
     if (!client_info_visible)
     {
 	UpdateClientList ();
+
+	if (!did_first_popup)
+	{
+	    Position x, y, rootx, rooty;
+
+	    XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
+	    XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
+	    XtMoveWidget (clientInfoPopup, rootx + 100, rooty + 50);
+	    did_first_popup = 1;
+	}
+
 	XtPopup (clientInfoPopup, XtGrabNone);
+
 	client_info_visible = 1;
     }
 }
@@ -762,6 +780,7 @@ XtPointer 	callData;
     ClientRec *client = ClientList;
     XawListReturnStruct *current;
     int client_index, i, j;
+    static Bool did_first_popup = 0;
 
     current = XawListShowCurrent (clientListWidget);
     client_index = current->list_index;
@@ -830,6 +849,16 @@ XtPointer 	callData;
 	    XtNtitle, buffer,
 	    NULL);
 
+	if (!did_first_popup)
+	{
+	    Position x, y, rootx, rooty;
+
+	    XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
+	    XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
+	    XtMoveWidget (clientPropPopup, rootx + 50, rooty + 150);
+	    did_first_popup = 1;
+	}
+
 	XtPopup (clientPropPopup, XtGrabNone);
     }
 
@@ -895,14 +924,25 @@ void
 PopupSaveDialog ()
 
 {
-    Position	x, y, rootx, rooty;
+    static Bool did_first_popup = 0;
 
-    XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
-    XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
+    if (!did_first_popup)
+    {
+	Position x, y, rootx, rooty;
+
+	XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
+	XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
+
+	if (ClientList == NULL)
+	    XtMoveWidget (shutdownPopup, rootx + 25, rooty + 100);
+	else
+	    XtMoveWidget (savePopup, rootx + 25, rooty + 100);
+
+	did_first_popup = 1;
+    }
 
     if (ClientList == NULL)
     {
-	XtMoveWidget (shutdownPopup, rootx, rooty);
 	XtPopup (shutdownPopup, XtGrabNone);
     }
     else
@@ -912,8 +952,6 @@ PopupSaveDialog ()
 	XawToggleSetCurrent (interactStyleAny,
 	    (XtPointer) &interactStyleData[2]);
 
-	XtMoveWidget (savePopup, rootx, rooty);
-
 	XtVaSetValues (savePopup,
 	    XtNtitle, shutdownDialogUp ? "Shutdown" : "Checkpoint",
 	    NULL);
@@ -922,6 +960,8 @@ PopupSaveDialog ()
     }
 
     XtSetSensitive (mainWindow, 0);
+    XtSetSensitive (clientInfoPopup, 0);
+    XtSetSensitive (clientPropPopup, 0);
 }
 
 
@@ -1104,6 +1144,8 @@ XtPointer 	callData;
 	XtPopdown (savePopup);
 	XtSetSensitive (savePopup, 1);
 	XtSetSensitive (mainWindow, 1);
+	XtSetSensitive (clientInfoPopup, 1);
+	XtSetSensitive (clientPropPopup, 1);
     }
 }
 
@@ -1119,6 +1161,8 @@ XtPointer 	callData;
 {
     XtPopdown (savePopup);
     XtSetSensitive (mainWindow, 1);
+    XtSetSensitive (clientInfoPopup, 1);
+    XtSetSensitive (clientPropPopup, 1);
 }
 
 
@@ -1147,6 +1191,20 @@ XtPointer 	callData;
 {
     XtPopdown (shutdownPopup);
     XtSetSensitive (mainWindow, 1);
+    XtSetSensitive (clientInfoPopup, 1);
+    XtSetSensitive (clientPropPopup, 1);
+}
+
+
+
+void
+NameSessionXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
 }
 
 
@@ -1282,6 +1340,8 @@ IceConn 	ice_conn;
     XtSetSensitive (shutdownPopup, 1);
     XtSetSensitive (savePopup, 1);
     XtSetSensitive (mainWindow, 1);
+    XtSetSensitive (clientInfoPopup, 1);
+    XtSetSensitive (clientPropPopup, 1);
 
     longjmp (JumpHere, 1);
 }    
@@ -1349,7 +1409,7 @@ ClientRec *client;
 static void Syntax(call)
     char *call;
 {
-    (void) fprintf(stderr, "usage: %s [-verbose] [-quiet]\n", call);
+    (void) fprintf(stderr, "usage: %s [-verbose]\n", call);
     exit(2);
 }
 
@@ -1363,7 +1423,8 @@ main(argc, argv)
     char 	*networkIds;
     int  	database_read, i;
     char	*p;
-    char *	progName;
+    char	*progName;
+    char	title[256];
     char 	errormsg[256];
     static	char environment_name[] = "SESSION_MANAGER";
 
@@ -1380,6 +1441,13 @@ main(argc, argv)
     XtGetApplicationResources(topLevel, (XtPointer) &app_resources,
 			      resources, XtNumber(resources), NULL, 0);
     
+    sprintf (title, "xsm: %s", app_resources.name);
+
+    XtVaSetValues (topLevel,
+	XtNtitle, title,		/* session name */
+	NULL);
+
+
     /*
      * Set my own IO error handler.
      */
@@ -1423,27 +1491,40 @@ main(argc, argv)
     InitWatchProcs (appContext);
 
     mainWindow = XtVaCreateManagedWidget (
-	"mainWindow", boxWidgetClass, topLevel,
-	XtNorientation, XtorientVertical,
+	"mainWindow", formWidgetClass, topLevel,
 	NULL);
 
     clientInfoButton = XtVaCreateManagedWidget (
 	"clientInfoButton", commandWidgetClass, mainWindow,
+        XtNfromHoriz, NULL,
+        XtNfromVert, NULL,
 	NULL);
 
     XtAddCallback (clientInfoButton, XtNcallback, ClientInfoXtProc, 0);
 
     checkPointButton = XtVaCreateManagedWidget (
 	"checkPointButton", commandWidgetClass, mainWindow,
+        XtNfromHoriz, NULL,
+        XtNfromVert, clientInfoButton,
 	NULL);
 
     XtAddCallback (checkPointButton, XtNcallback, CheckPointXtProc, 0);
 
     shutdownButton = XtVaCreateManagedWidget (
 	"shutdownButton", commandWidgetClass, mainWindow,
+        XtNfromHoriz, checkPointButton,
+        XtNfromVert, clientInfoButton,
 	NULL);
 
     XtAddCallback (shutdownButton, XtNcallback, ShutdownXtProc, 0);
+
+    nameSessionButton = XtVaCreateManagedWidget (
+	"nameSessionButton", commandWidgetClass, mainWindow,
+        XtNfromHoriz, NULL,
+        XtNfromVert, shutdownButton,
+	NULL);
+
+    XtAddCallback (nameSessionButton, XtNcallback, NameSessionXtProc, 0);
 
 
     /*
@@ -1686,7 +1767,7 @@ main(argc, argv)
     sprintf(p, "%s=%s", environment_name, networkIds);
     putenv(p);
 
-    if (app_resources.verbose || app_resources.debug)
+    if (app_resources.verbose)
 	printf ("setenv %s %s\n", environment_name, networkIds);
 
 
