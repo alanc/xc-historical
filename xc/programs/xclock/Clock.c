@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.c,v 1.70 93/12/26 14:12:04 rws Exp $ */
+/* $XConsortium: Clock.c,v 1.71 94/01/10 15:43:30 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -38,6 +38,11 @@ SOFTWARE.
 
 #ifdef X_NOT_STDC_ENV
 extern struct tm *localtime();
+#define Time_t long
+extern Time_t time ();
+#else
+#include <time.h>
+#define Time_t time_t
 #endif
 
 static void clock_tic(), DrawHand(), DrawSecond(), SetSeg(), DrawClockFace();
@@ -178,11 +183,8 @@ static void Initialize (request, new, args, num_args)
     if(!w->clock.analog) {
        char *str;
        struct tm tm;
-#if (defined(sun) && !defined(SVR4)) || defined(sony) || defined(luna)
-       long time_value;
-#else
-       time_t time_value;
-#endif
+       Time_t time_value;
+
        (void) time(&time_value);
        tm = *localtime(&time_value);
        str = asctime(&tm);
@@ -306,7 +308,7 @@ static void clock_tic(client_data, id)
 {
         ClockWidget w = (ClockWidget)client_data;    
 	struct tm tm; 
-	long	time_value;
+	Time_t	time_value;
 	char	*time_ptr;
         register Display *dpy = XtDisplay(w);
         register Window win = XtWindow(w);
