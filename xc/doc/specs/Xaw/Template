@@ -341,7 +341,7 @@ static void InputAction(w, event, params, num_params)
 	String *params;		/* unused */
 	Cardinal *num_params;	/* unused */
 {
-	XtCallCallbacks(w, XtNcallback, (caddr_t)event);
+	XtCallCallbacks(w, XtNcallback, (XtPointer)event);
 }
 
 static XtActionsRec actions[] =
@@ -372,7 +372,7 @@ static void Redisplay(w, event, region)
 	XEvent *event;	/* unused */
 	Region region;
 {
-	XtCallCallbacks(w, XtNexposeCallback, (caddr_t)region);
+	XtCallCallbacks(w, XtNexposeCallback, (XtPointer)region);
 }
 
 WindowClassRec windowClassRec = {
