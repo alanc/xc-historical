@@ -1,5 +1,5 @@
-.\" $Header: Xsun.man,v 1.1 87/09/14 14:50:44 toddb Exp $
-.TH XSUN 8 "225 Feb 1988" "X Version 11"
+.\" $Header: Xsun.man,v 1.3 88/02/25 20:52:40 rws Exp $
+.TH XSUN 1 "1 March 1988" "X Version 11"
 .SH NAME
 Xsun \- Sun server for X Version 11
 .SH SYNOPSIS
@@ -106,7 +106,7 @@ arguments are supplied,  they are used.
 The server does not auto-configure in this case.
 .PP
 Other options are described under
-.IR X (8).
+.I Xserver(1).
 .SH ENVIRONMENT
 .TP
 \fBXDEVICE\fP
@@ -123,9 +123,9 @@ file of the
 desktop.
 .SH "SEE ALSO"
 .PP
-.IR X (8),
-.IR xinit (1),
-.IR "Godzilla's Guide to Porting the X.11 Sample Server".
+.I Xserver(1),
+.I xinit (1),
+.I "Godzilla's Guide to Porting the X V11 Sample Server."
 .SH BUGS
 .TP
 1

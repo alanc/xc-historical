@@ -1,5 +1,4 @@
 .TH ICO 1 "1 March 1988" "X Version 11"
-.UC 4
 .SH NAME
 ico \- animate an icosahedron or other polyhedron
 .SH SYNOPSIS
@@ -41,10 +40,10 @@ Draw filled faces instead of wire frames.
 Don't draw the wire frames.
 Typically used only when -faces is used.
 .TP
-.B -sleep n
+.B -sleep \fIn\fP
 Sleep n seconds between each move of the object.
 .TP
-.B -obj object
+.B -obj \fIobject\fP
 Specify what object to draw.
 If no object is specified, an icosahedron is drawn.
 .TP
@@ -52,7 +51,7 @@ If no object is specified, an icosahedron is drawn.
 Print out a list of the available objects, along with information
 about each object.
 .TP
-.B -colors colorlist
+.B -colors \fIcolor color ...\fP
 Specify what colors should be used to draw the filled faces of the object.
 If less colors than faces are given, the colors are reused.
 .SH ADDING POLYHEDRA
@@ -70,10 +69,6 @@ This will recreate the file allobjs.h, which lists all of the objXXX.h
 files.
 Doing a 'make' after this will rebuild ico with the new object information.
 .SH BUGS
-.LP
-If -dbl or -colors is specified on a monochrome screen, or if the number
-of bit planes needed is more than what is available, the server hangs
-(this is on a Sun 3/60, patches up to 80 applied).
 .LP
 A separate color cell is allocated for each name in the -colors list,
 even when the same name may be specified twice.
