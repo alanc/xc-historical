@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.76 89/12/22 11:35:42 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.77 89/12/22 11:37:41 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -110,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.76 89/12/22 11:35:42 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.77 89/12/22 11:37:41 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -1289,14 +1289,15 @@ static void TekRealize (gw, valuemaskp, values)
     if (tw->tek.initial_font) {
 	char *s = tw->tek.initial_font;
 
-	XmuCopyISOLatin1Lowered (s, s);
-	if (strcmp (s, "large") == 0)
+	if (XmuCompareISOLatin1 (s, "large") == 0)
 	  screen->cur.fontsize = TEK_FONT_LARGE;
-	else if (strcmp (s, "2") == 0 || strcmp (s, "two") == 0)
+	else if (XmuCompareISOLatin1 (s, "2") == 0 || 
+		 XmuCompareISOLatin1 (s, "two") == 0)
 	  screen->cur.fontsize = TEK_FONT_2;
-	else if (strcmp (s, "3") == 0 || strcmp (s, "three") == 0)
+	else if (XmuCompareISOLatin1 (s, "3") == 0 || 
+		 XmuCompareISOLatin1 (s, "three") == 0)
 	  screen->cur.fontsize = TEK_FONT_3;
-	else if (strcmp (s, "small") == 0)
+	else if (XmuCompareISOLatin1 (s, "small") == 0)
 	  screen->cur.fontsize = TEK_FONT_SMALL;
     }
 
