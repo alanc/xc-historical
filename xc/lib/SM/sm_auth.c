@@ -1,4 +1,4 @@
-/* $XConsortium: sm_auth.c,v 1.4 93/11/08 16:35:17 mor Exp $ */
+/* $XConsortium: sm_auth.c,v 1.5 93/11/22 19:10:17 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -94,11 +94,11 @@ char    	**errorStringRet;
 
 
 IcePaAuthStatus
-_SmsAuth1proc (authStatePtr, connectionString, swap, replyDataLen, replyData,
+_SmsAuth1proc (authStatePtr, listenObj, swap, replyDataLen, replyData,
     authDataLenRet, authDataRet, errorStringRet)
 
 IcePointer	*authStatePtr;
-char		*connectionString;
+IceListenObj	listenObj;
 Bool		swap;
 int     	replyDataLen;
 IcePointer	replyData;
@@ -215,11 +215,11 @@ char    	**errorStringRet;
 
 
 IcePaAuthStatus
-_SmsAuth2proc (authStatePtr, connectionString, swap, replyDataLen, replyData,
+_SmsAuth2proc (authStatePtr, listenObj, swap, replyDataLen, replyData,
     authDataLenRet, authDataRet, errorStringRet)
 
 IcePointer 	*authStatePtr;
-char		*connectionString;
+IceListenObj	listenObj;
 Bool		swap;
 int     	replyDataLen;
 IcePointer	replyData;
