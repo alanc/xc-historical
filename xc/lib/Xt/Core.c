@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Core.c,v 1.26 89/09/12 16:49:18 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Core.c,v 1.28 89/09/14 15:56:05 swick Exp $";
 /* $oHeader: Core.c,v 1.2 88/08/18 15:37:59 asente Exp $ */
 #endif /* lint */
 
@@ -286,17 +286,31 @@ static Boolean CoreSetValues(old, reference, new)
 	window_mask = 0;
 	/* Check window attributes */
 	if (old->core.background_pixel != new->core.background_pixel) {
+	   attributes.background_pixel  = new->core.background_pixel;
 	   window_mask |= CWBackPixel;
 	   redisplay = TRUE;
 	}	
 	if (old->core.background_pixmap != new->core.background_pixmap) {
-	   window_mask |= CWBackPixmap;
+	   if (new->core.background_pixmap == XtUnspecifiedPixmap)
+	       window_mask |= CWBackPixel;
+	   else {
+	       attributes.background_pixmap = new->core.background_pixmap;
+	       window_mask |= CWBackPixmap;
+	   }
 	   redisplay = TRUE;
 	}	
-	if (old->core.border_pixel != new->core.border_pixel)
+	if (old->core.border_pixel != new->core.border_pixel) {
+	   attributes.border_pixel  = new->core.border_pixel;
 	   window_mask |= CWBorderPixel;
-	if (old->core.border_pixmap != new->core.border_pixmap)
-	   window_mask |= CWBorderPixmap;
+       }
+	if (old->core.border_pixmap != new->core.border_pixmap) {
+	   if (new->core.border_pixmap == XtUnspecifiedPixmap)
+	       window_mask |= CWBorderPixel;
+	   else {
+	       attributes.border_pixmap = new->core.border_pixmap;
+	       window_mask |= CWBorderPixmap;
+	   }
+       }
 	if (old->core.depth != new->core.depth) {
 	   XtAppWarningMsg(XtWidgetToApplicationContext(old),
 		    "invalidDepth","setValues","XtToolkitError",
@@ -305,10 +319,6 @@ static Boolean CoreSetValues(old, reference, new)
 	}
 	if (window_mask != 0) {
 	    /* Actually change X window attributes */
-	    attributes.background_pixmap = new->core.background_pixmap;
-	    attributes.background_pixel  = new->core.background_pixel;
-	    attributes.border_pixmap     = new->core.border_pixmap;
-	    attributes.border_pixel      = new->core.border_pixel;
 	    XChangeWindowAttributes(
 		XtDisplay(new), XtWindow(new), window_mask, &attributes);
 	}
