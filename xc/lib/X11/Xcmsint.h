@@ -1,4 +1,4 @@
-/* $XConsortium: Xcmsint.h,v 1.6 91/02/17 15:39:52 dave Exp $ */
+/* $XConsortium: Xcmsint.h,v 1.7 91/02/17 15:41:29 rws Exp $ */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -175,17 +175,12 @@ typedef struct {
 
 #define XCMS_CUBEROOT(x)	XcmsCubeRoot(x)
 
-#ifdef __GNUC__
-const double XcmsCubeRoot(double a);
-const double XcmsSquareRoot(double a);
-#else
-#ifdef __STDC__
+#if __STDC__
 double XcmsCubeRoot(double a);
 double XcmsSquareRoot(double a);
 #else
 double XcmsCubeRoot();
 double XcmsSquareRoot();
-#endif
 #endif
 
 /*
