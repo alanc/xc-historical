@@ -1,4 +1,4 @@
-/* $XConsortium: X10.h,v 11.9 87/09/11 07:56:29 toddb Exp $ */
+/* $XConsortium: X10.h,v 11.10 88/09/06 16:09:21 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -75,4 +75,4 @@ typedef struct {
 XAssocTable *XCreateAssocTable();
 char *XLookUpAssoc();
 
-#endif _X10_H_
+#endif /* _X10_H_ */
