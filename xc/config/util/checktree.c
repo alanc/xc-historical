@@ -1,4 +1,4 @@
-/* $XConsortium: checktree.c,v 1.2 93/09/04 18:35:26 rws Exp $ */
+/* $XConsortium: checktree.c,v 1.3 93/09/17 11:08:46 rws Exp $ */
 
 /*
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -59,12 +59,15 @@ int dorcs = 1;
 int do83 = 1;
 int doro = 1;
 int dodot = 1;
+int dotwiddle = 1;
 
 int dontcare(fn)
     char *fn;
 {
     char *cp;
 
+    if (fn[strlen(fn) - 1] == '~')
+	return 1;
     cp = strrchr(fn, '.');
     return cp && (!strcmp(cp + 1, "Z") || !strcmp(cp + 1, "PS"));
 }
@@ -83,7 +86,8 @@ checkfile(fullname, fn, fs)
     }
     for (len = 0, cp = fn; *cp; len++, cp++) {
 	if (!strchr(CHARSALLOWED, *cp)) {
-	    printf ("bad character: %s\n", fullname);
+	    if (dotwiddle || *cp != '~' || cp[1])
+		printf ("bad character: %s\n", fullname);
 	    break;
 	}
     }
@@ -300,6 +304,10 @@ main(argc, argv)
 	    argv++;
 	} else if (!strcmp(*argv, "-dot")) {
 	    dodot = 0;
+	    argc--;
+	    argv++;
+	} else if (!strcmp(*argv, "-twiddle")) {
+	    dotwiddle = 0;
 	    argc--;
 	    argv++;
 	} else
