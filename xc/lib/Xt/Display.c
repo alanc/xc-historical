@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.66 91/03/07 19:16:02 rws Exp $ */
+/* $XConsortium: Display.c,v 1.67 91/04/01 20:49:27 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -26,12 +26,10 @@ SOFTWARE.
 
 #include "IntrinsicI.h"
 
-#ifdef X_NOT_POSIX
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else /* X_NOT_STDC_ENV */
+#else
 extern char* getenv();
-#endif /* X_NOT_STDC_ENV */
 #endif
 
 static String XtNnoPerDisplay = "noPerDisplay";
