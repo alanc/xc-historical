@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.85 89/08/15 11:41:41 jim Exp $
+ * $XConsortium: events.c,v 1.86 89/08/15 13:42:08 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.85 89/08/15 11:41:41 jim Exp $";
+"$XConsortium: events.c,v 1.86 89/08/15 13:42:08 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -312,14 +312,6 @@ HandleColormapNotify()
 	if (cevent->new == True)
 	    Tmp_win->attr.colormap = cevent->colormap;
 
-
-#ifdef stupid
-	/* this corrects a dix server (at least on HP) bug which sends
-	 * the previous colormap.  I don't know if this has been fixed in R3
-	 */
-	XGetWindowAttributes(dpy, Tmp_win->w, &attr);
-	Tmp_win->attr.colormap = attr.colormap;
-#endif
 
 	/*
 	 * Either somebody changed it, or somebody did an explicit install.
