@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ifparser.c,v 1.4 92/08/22 13:54:06 rws Exp $
+ * $XConsortium: ifparser.c,v 1.5 92/08/22 14:06:20 rws Exp $
  *
  * Copyright 1992 Network Computing Devices, Inc.
  * 
@@ -99,9 +99,13 @@ parse_number (g, cp, valp)
     if (!isdigit(*cp))
 	return CALLFUNC(g, handle_error) (g, cp, "number");
 
+#ifdef WIN32
+    *valp = strtol(cp, &cp, 0);
+#else
     *valp = atoi (cp);
     /* EMPTY */
     for (cp++; isdigit(*cp); cp++) ;
+#endif
     return cp;
 }
 
