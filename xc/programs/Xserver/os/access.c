@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.46 91/02/11 21:17:37 rws Exp $ */
+/* $XConsortium: access.c,v 1.47 91/02/12 17:42:48 keith Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -566,6 +566,7 @@ RemoveHost (client, family, length, pAddr)
     switch (family) {
 #ifdef SECURE_RPC
     case FamilySecureRPC:
+	len = length;
 	break;
 #endif
     case FamilyInternet:
