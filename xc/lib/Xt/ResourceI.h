@@ -1,4 +1,4 @@
-/* $XConsortium: ResourceI.h,v 1.4 88/09/06 09:42:11 swick Exp $ */
+/* $XConsortium: ResourceI.h,v 1.5 88/09/06 16:28:40 jim Exp $ */
 /* $oHeader: ResourceI.h,v 1.2 88/08/18 15:56:00 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -34,14 +34,34 @@ SOFTWARE.
 #define StringToName(string) XrmStringToName(string)
 #define StringToClass(string) XrmStringToClass(string)
 
-extern void XtGetResources();
-    /* Widget       widget;             */
-    /* ArgList      args;               */
-    /* int          num_args;           */
+typedef struct _XtTypedArg* XtTypedArgList;
 
-extern void _XtResourceDependencies(); /* wc */
-    /* WidgetClass wc; */
+extern void XtGetResources(
+#if NeedFunctionPrototypes
+    Widget       /* widget */,
+    ArgList      /* args */,
+    int          /* num_args */
+#endif
+);
 
-extern void _XtConstraintResDependencies(); /* wc */
-    /* WidgetClass wc; */
+extern void _XtResourceDependencies(
+#if NeedFunctionPrototypes
+    WidgetClass  /* wc */
+#endif
+);
 
+extern void _XtConstraintResDependencies(
+#if NeedFunctionPrototypes
+    ConstraintWidgetClass  /* wc */
+#endif
+);
+
+extern XtCacheRef* _XtGetResources(
+#if NeedFunctionPrototypes
+    Widget	    /* w */,
+    ArgList	    /* args */,
+    Cardinal	    /* num_args */,
+    XtTypedArgList  /* typed_args */,
+    Cardinal*	    /* num_typed_args */
+#endif
+);
