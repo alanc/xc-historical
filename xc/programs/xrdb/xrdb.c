@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: xrdb.c,v 11.12 88/01/27 18:23:52 jim Locked $";
+static char rcs_id[] = "$Header: xrdb.c,v 11.13 88/02/01 16:34:21 jim Locked $";
 #endif
 
 /*
@@ -165,7 +165,8 @@ void GetEntries(entries, buff)
     register int length;
 
     str = buff->buff;
-    for (str = buff->buff; str < buff->buff + buff->used ;str = line + 1) {
+    if (!str) return;
+    for (; str < buff->buff + buff->used; str = line + 1) {
 	line = FindFirst(str, '\n');
 	if (line == NULL)
 	    break; 
@@ -614,7 +615,7 @@ main (argc, argv)
 	output = fopen(mktemp(template), "w");
 	if (output == NULL)
 	    fatal("%s: can't open temporary file '%s'\n", ProgramName, template);
-	buffer.used = strlen(dpy->xdefaults);
+	buffer.used = (dpy->xdefaults ? strlen(dpy->xdefaults) : 0);
 	buffer.buff = dpy->xdefaults;		/* drop it on the floor */
 	buffer.room = buffer.used;
 	GetEntries(&newDB, &buffer);
