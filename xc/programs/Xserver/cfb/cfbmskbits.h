@@ -26,7 +26,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.h,v 4.20 91/12/19 14:17:03 keith Exp $ */
+/* $XConsortium: cfbmskbits.h,v 4.21 91/12/19 14:41:39 keith Exp $ */
+/* Optimizations for PSZ == 32 added by Kyle Marvin (marvin@vitec.com) */
 
 extern unsigned int cfbstarttab[];
 extern unsigned int cfbendtab[];
@@ -297,6 +298,8 @@ getleftbits(psrc, w, dst)
 #define DoMaskRRop(dst, and, xor, mask) \
     (((dst) & ((and) | ~(mask))) ^ (xor & mask))
 
+#if PSZ != 32
+
 #define maskbits(x, w, startmask, endmask, nlw) \
     startmask = cfbstarttab[(x)&PIM]; \
     endmask = cfbendtab[((x)+(w)) & PIM]; \
@@ -411,6 +414,52 @@ else \
     *((pdst)+1) = (*((pdst)+1) & (cfbstarttab[n] | ~pm)) | \
 	(t2 & (cfbendtab[n] & pm)); \
 }
+
+#else /* PSZ == 32 */
+
+/*
+ * These macros can be optimized for 32-bit pixels since there is no
+ * need to worry about left/right edge masking.  These macros were
+ * derived from the above using the following reductions:
+ *
+ *	- x & PIW = 0 	[since PIW = 0]
+ *	- all masking tables are only indexed by 0  [ due to above ]
+ *	- cfbstartab[0] and cfbendtab[0] = 0 	[ no left/right edge masks]
+ *    - cfbstartpartial[0] and cfbendpartial[0] = ~0 [no partial pixel mask]
+ *
+ * Macro reduction based upon constants cannot be performed automatically
+ *       by the compiler since it does not know the contents of the masking
+ *       arrays in cfbmskbits.c.
+ */
+#define maskbits(x, w, startmask, endmask, nlw) \
+    startmask = endmask = 0; \
+    nlw = (w);
+
+#define maskpartialbits(x, w, mask) \
+    mask = 0xFFFFFFFF;
+
+#define mask32bits(x, w, startmask, endmask) \
+    startmask = endmask = 0;
+
+/*
+ * For 32-bit operations, getbits(), putbits(), and putbitsrop() 
+ * will only be invoked with x = 0 and w = PPW (1).  The getbits() 
+ * macro is only called within left/right edge logic, which doesn't
+ * happen for 32-bit pixels.
+ */
+#define getbits(psrc, x, w, dst) (dst) = *(psrc)
+
+#define putbits(src, x, w, pdst, planemask) \
+    *(pdst) = (*(pdst) & ~planemask) | (src & planemask);
+
+#define putbitsrop(src, x, w, pdst, planemask, rop) \
+{ \
+    unsigned long t1; \
+    DoRop(t1, rop, (src), *(pdst)); \
+    *(pdst) = (*(pdst) & ~planemask) | (t1 & planemask); \
+}
+
+#endif /* PSZ != 32 */
 
 /*
  * Use these macros only when you're using the MergeRop stuff
