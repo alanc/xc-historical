@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.41 89/11/25 21:06:02 converse Exp $
+ * $XConsortium: init.c,v 2.42 89/11/30 20:07:08 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -151,7 +151,8 @@ char *geo;
 Dimension defwidth, defheight;
 {
     int gbits;
-    int x, y, width, height;
+    int x, y;
+    unsigned int width, height;
     if (geo == NULL) geo = app_resources.geometry;
     x = y = 0;
     gbits = XParseGeometry(geo, &x, &y, &width, &height);
