@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.61 94/08/10 19:45:43 mor Exp mor $ */
+/* $XConsortium: xsm.c,v 1.62 94/08/11 18:58:27 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -36,6 +36,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "xsm.h"
 #include "globals.c"
 #include "xtwatch.h"
+#include "prop.h"
 #include "choose.h"
 #include "mainwin.h"
 #include "info.h"
@@ -48,7 +49,6 @@ in this Software without prior written authorization from the X Consortium.
 #include <signal.h>
 
 Atom wmStateAtom;
-List *dead_clients;
 
 
 /*
@@ -166,7 +166,7 @@ char **argv;
 
     /* the sizeof includes the \0, so we don't need to count the '=' */
     networkIds = IceComposeNetworkIdList (numTransports, listenObjs);
-    p = (char *) malloc((sizeof environment_name) + strlen(networkIds) + 1);
+    p = (char *) XtMalloc((sizeof environment_name) + strlen(networkIds) + 1);
     if(!p) nomem();
     sprintf(p, "%s=%s", environment_name, networkIds);
     putenv(p);
@@ -183,14 +183,20 @@ char **argv;
     create_name_session_popup ();
 
     /*
-     * We have to keep track of clients that go away.  They may come
-     * back trying to use the same client ID.  So we keep a list of
-     * dead clients.
+     * Initalize all lists
      */
 
-    dead_clients = ListInit ();
-    if (!dead_clients)
-	nomem ();
+    RunningList = ListInit();
+    if(!RunningList) nomem();
+
+    PendingList = ListInit();
+    if(!PendingList) nomem();
+
+    RestartAnywayList = ListInit();
+    if(!RestartAnywayList) nomem();
+
+    RestartImmedList = ListInit();
+    if(!RestartImmedList) nomem();
 
 
     /*
@@ -271,7 +277,7 @@ GetEnvironment ()
 
     display_env = NULL;
     if(p = (char *) getenv(envDISPLAY)) {
-	display_env = (char *) malloc(strlen(envDISPLAY)+1+strlen(p)+1);
+	display_env = (char *) XtMalloc(strlen(envDISPLAY)+1+strlen(p)+1);
 	if(!display_env) nomem();
 	sprintf(display_env, "%s=%s", envDISPLAY, p);
 
@@ -289,7 +295,8 @@ GetEnvironment ()
 	{
 	    /* we have a host name */
 
-	    non_local_display_env = (char *) malloc (strlen (display_env) + 1);
+	    non_local_display_env = (char *) XtMalloc (
+		strlen (display_env) + 1);
 	    if (!non_local_display_env) nomem();
 
 	    strcpy (non_local_display_env, display_env);
@@ -299,7 +306,8 @@ GetEnvironment ()
 	    char hostnamebuf[256];
 
 	    gethostname (hostnamebuf, sizeof hostnamebuf);
-	    non_local_display_env = (char *) malloc (strlen (envDISPLAY) + 1 +
+	    non_local_display_env = (char *) XtMalloc (
+		strlen (envDISPLAY) + 1 +
 		strlen (hostnamebuf) + strlen (temp) + 1);
 	    if (!non_local_display_env) nomem();
 	    sprintf(non_local_display_env, "%s=%s%s",
@@ -309,7 +317,7 @@ GetEnvironment ()
 
     session_env = NULL;
     if(p = (char *) getenv(envSESSION_MANAGER)) {
-	session_env = (char *) malloc(
+	session_env = (char *) XtMalloc(
 	    strlen(envSESSION_MANAGER)+1+strlen(p)+1);
 	if(!session_env) nomem();
 	sprintf(session_env, "%s=%s", envSESSION_MANAGER, p);
@@ -319,7 +327,7 @@ GetEnvironment ()
 	 * session environment does not have the SM's local connection port.
 	 */
 
-	non_local_session_env = (char *) malloc (strlen (session_env) + 1);
+	non_local_session_env = (char *) XtMalloc (strlen (session_env) + 1);
 	if (!non_local_session_env) nomem();
 	strcpy (non_local_session_env, session_env);
 
@@ -348,7 +356,7 @@ GetEnvironment ()
 
     audio_env = NULL;
     if(p = (char *) getenv(envAUDIOSERVER)) {
-	audio_env = (char *) malloc(strlen(envAUDIOSERVER)+1+strlen(p)+1);
+	audio_env = (char *) XtMalloc(strlen(envAUDIOSERVER)+1+strlen(p)+1);
 	if(!audio_env) nomem();
 	sprintf(audio_env, "%s=%s", envAUDIOSERVER, p);
     }
@@ -477,262 +485,46 @@ EndSession ()
     FreeAuthenticationData (numTransports, authDataEntries);
 
     if (display_env)
-	free (display_env);
+	XtFree (display_env);
     if (session_env)
-	free (session_env);
+	XtFree (session_env);
     if (non_local_display_env)
-	free (non_local_display_env);
+	XtFree (non_local_display_env);
     if (non_local_session_env)
-	free (non_local_session_env);
+	XtFree (non_local_session_env);
     if (audio_env)
-	free (audio_env);
+	XtFree (audio_env);
 
     exit (0);
 }
 
 
 
-SetInitialProperties(client, pendclient)
-ClientRec	*client;
-PendingClient	*pendclient;
-{
-    int			idx;
-    SmProp		*prop;
-    SmPropValue		*val;
-    List		*pl;
-    List		*vl;
-    PendingProp		*pprop;
-    PendingValue	*pval;
-
-    if (verbose)
-	printf("Setting initial properties for %s\n", client->clientId);
-
-    idx = 0;
-    for(pl = ListFirst(pendclient->props); pl; pl = ListNext(pl)) {
-	pprop = (PendingProp *)pl->thing;
-	prop = (SmProp *)malloc(sizeof *prop);
-	client->props[idx] = prop;
-	prop->name = pprop->name;
-	prop->type = pprop->type;
-	prop->num_vals = ListCount(pprop->values);
-	prop->vals =
-	    (SmPropValue *)malloc(prop->num_vals * sizeof(SmPropValue));
-	val = prop->vals;
-	for(vl = ListFirst(pprop->values); vl; vl = ListNext(vl)) {
-	    pval = (PendingValue *)vl->thing;
-	    val->value = pval->value;
-	    val->length = pval->length;
-	    val++;
-	}
-
-	if (strcmp (prop->name, SmDiscardCommand) == 0)
-	{
-	    if (client->discardCommand)
-		XtFree (client->discardCommand);
-	    client->discardCommand = (char *) XtNewString(prop->vals[0].value);
-	}
-	else if (strcmp (prop->name, SmRestartStyleHint) == 0)
-	{
-	    int hint = (int) *((char *) (prop->vals[0].value));
-
-	    if (hint == SmRestartIfRunning || hint == SmRestartAnyway ||
-		hint == SmRestartImmediately || hint == SmRestartNever)
-	    {
-		client->restartHint = hint;
-	    }
-	}
-
-	ListFreeAll(pprop->values);
-	free(pprop);
-	idx++;
-    }
-    client->numProps = idx;
-
-    ListFreeAll(pendclient->props);
-    XtFree(pendclient->clientId);
-    free(pendclient);
-}
-
-
-
 void
-SetProperty(client, theProp, mallocFlag)
-ClientRec	*client;
-SmProp		*theProp;
-Bool		mallocFlag;
-
-{
-    SmProp *prop;
-    int	idx, i, j;
-
-    for (j = 0; j < client->numProps; j++)
-	if (strcmp (theProp->name, client->props[j]->name) == 0)
-	{
-	    SmFreeProperty (client->props[j]);
-	    break;
-	}
-
-    if (j < client->numProps)
-	idx = j;
-    else
-    {
-	idx = client->numProps;
-	client->numProps++;
-
-	if (client->numProps > MAX_PROPS)
-	    return;
-    }
-
-    if (!mallocFlag)
-    {
-	prop = theProp;
-    }
-    else
-    {
-	prop = (SmProp *) malloc (sizeof (SmProp));
-
-	prop->name = (char *) malloc (strlen (theProp->name) + 1);
-	strcpy (prop->name, theProp->name);
-
-	prop->type = (char *) malloc (strlen (theProp->type) + 1);
-	strcpy (prop->type, theProp->type);
-
-	prop->num_vals = theProp->num_vals;
-
-	prop->vals = (SmPropValue *) malloc (
-	    theProp->num_vals * sizeof (SmPropValue));
-
-	for (i = 0; i < theProp->num_vals; i++)
-	{
-	    prop->vals[i].length = theProp->vals[i].length;
-	    prop->vals[i].value = (SmPointer) malloc (
-		theProp->vals[i].length + 1);
-	    memcpy (prop->vals[i].value, theProp->vals[i].value,
-		theProp->vals[i].length);
-	    ((char *) prop->vals[i].value)[theProp->vals[i].length] = '\0';
-	}
-    }
-
-    client->props[idx] = prop;
-
-    if (strcmp (prop->name, SmDiscardCommand) == 0)
-    {
-	if (saveInProgress)
-	{
-	    /*
-	     * We are in the middle of a save yourself.  We save the
-	     * discard command we get now, and make it the current discard
-	     * command when the save is over.
-	     */
-
-	    if (client->saveDiscardCommand)
-		XtFree (client->saveDiscardCommand);
-	    client->saveDiscardCommand =
-		(char *) XtNewString (prop->vals[0].value);
-	}
-	else
-	{
-	    if (client->discardCommand)
-		XtFree (client->discardCommand);
-	    client->discardCommand =
-		(char *) XtNewString (prop->vals[0].value);
-	}
-    }
-    else if (strcmp (prop->name, SmRestartStyleHint) == 0)
-    {
-	int hint = (int) *((char *) (prop->vals[0].value));
-
-	if (hint == SmRestartIfRunning || hint == SmRestartAnyway ||
-	    hint == SmRestartImmediately || hint == SmRestartNever)
-	{
-	    client->restartHint = hint;
-	}
-    }
-}
-
-
-
-void
-DeleteProperty(client, propname)
-ClientRec	*client;
-char		*propname;
-{
-    int	j;
-
-    for (j = 0; j < client->numProps; j++)
-	if (strcmp (propname, client->props[j]->name) == 0)
-	{
-	    SmFreeProperty (client->props[j]);
-
-	    if (j < client->numProps - 1)
-		client->props[j] = client->props[client->numProps - 1];
-
-	    client->numProps--;
-
-	    if (strcmp (propname, SmDiscardCommand) == 0)
-	    {
-		if (client->discardCommand)
-		{
-		    XtFree (client->discardCommand);
-		    client->discardCommand = NULL;
-		}
-
-		if (client->saveDiscardCommand)
-		{
-		    XtFree (client->saveDiscardCommand);
-		    client->saveDiscardCommand = NULL;
-		}
-	    }
-
-	    break;
-	}
-}
-
-
-
-PrintProperty (prop)
-
-SmProp	*prop;
-
-{
-    int j;
-
-    printf ("   Name:	%s\n", prop->name);
-    printf ("   Type:	%s\n", prop->type);
-    printf ("   Num values:	%d\n", prop->num_vals);
-    if (strcmp(prop->type, SmCARD8) == 0) {
-	char *card8 = prop->vals->value;
-	int value = *card8;
-	printf ("   Value 1:\t%d\n", value);
-    } else {
-	for (j = 0; j < prop->num_vals; j++) {
-	    printf ("   Value %d:	%s\n", j + 1,
-		    (char *) prop->vals[j].value);
-	}
-    }
-    printf ("\n");
-}
-
-
-
-void
-FreeClientInfo (client)
+FreeClient (client, freeProps)
 
 ClientRec *client;
+Bool	  freeProps;
 
 {
-    if (client)
+    if (freeProps)
     {
-	int i;
+	List *pl;
 
-	XtFree (client->clientId);
-	XtFree (client->clientHostname);
+	for (pl = ListFirst (client->props); pl; pl = ListNext (pl))
+	    FreeProp ((Prop *) pl->thing);
 
-	for (i = 0; i < client->numProps; i++)
-	    SmFreeProperty (client->props[i]);
-
-	free ((char *) client);
+	ListFreeAll (client->props);
     }
+
+    free (client->clientId);		/* malloc'd by SMlib */
+    free (client->clientHostname);
+
+    if (client->discardCommand)
+	XtFree (client->discardCommand);
+    if (client->saveDiscardCommand)
+	XtFree (client->saveDiscardCommand);
+    XtFree ((char *) client);
 }
 
 
@@ -773,14 +565,33 @@ char 		*previousId;
 	int found_match = 0;
 	send_save = 1;
 
-	if (PendingList)
+	for (cl = ListFirst (PendingList); cl; cl = ListNext (cl))
 	{
-	    for (cl = ListFirst (PendingList); cl; cl = ListNext (cl))
+	    PendingClient *pendClient = (PendingClient *) cl->thing;
+
+	    if (!strcmp (pendClient->clientId, previousId))
 	    {
-		if (!strcmp (((PendingClient *) cl->thing)->clientId,
-		    previousId))
+		SetInitialProperties (client, pendClient->props);
+		XtFree (pendClient->clientId);
+		XtFree (pendClient->clientHostname);
+		XtFree ((char *) pendClient);
+		ListFreeOne (cl);
+		found_match = 1;
+		send_save = 0;
+		break;
+	    }
+	}
+
+	if (!found_match)
+	{
+	    for (cl = ListFirst (RestartAnywayList); cl; cl = ListNext (cl))
+	    {
+		ClientRec *rClient = (ClientRec *) cl->thing;
+
+		if (!strcmp (rClient->clientId, previousId))
 		{
-		    SetInitialProperties (client, (PendingClient *) cl->thing);
+		    SetInitialProperties (client, rClient->props);
+		    FreeClient (rClient, False /* don't free props */);
 		    ListFreeOne (cl);
 		    found_match = 1;
 		    send_save = 0;
@@ -791,13 +602,17 @@ char 		*previousId;
 
 	if (!found_match)
 	{
-	    for (cl = ListFirst (dead_clients); cl; cl = ListNext (cl))
+	    for (cl = ListFirst (RestartImmedList); cl; cl = ListNext (cl))
 	    {
-		if (strcmp ((char *) cl->thing, previousId) == 0)
+		ClientRec *rClient = (ClientRec *) cl->thing;
+
+		if (!strcmp (rClient->clientId, previousId))
 		{
-		    found_match = 1;
-		    XtFree (cl->thing);
+		    SetInitialProperties (client, rClient->props);
+		    FreeClient (rClient, False /* don't free props */);
 		    ListFreeOne (cl);
+		    found_match = 1;
+		    send_save = 0;
 		    break;
 		}
 	    }
@@ -879,6 +694,7 @@ InteractDoneProc (smsConn, managerData, cancelShutdown)
 
 {
     ClientRec	*client = (ClientRec *) managerData;
+    List	*pl;
 
     if (verbose) {
 	printf (
@@ -890,9 +706,11 @@ InteractDoneProc (smsConn, managerData, cancelShutdown)
 
     if (cancelShutdown && !shutdownCancelled) {
 	shutdownCancelled = True;
-	for (client = ClientList; client; client = client->next) {
-	    if (!client->running)
-		continue;
+
+	for (pl = ListFirst (RunningList); pl; pl = ListNext (pl))
+	{
+	    client = (ClientRec *) pl->thing;
+
 	    SmsShutdownCancelled (client->smsConn);
 	    if (verbose) 
 		printf ("Client Id = %s, sent SHUTDOWN CANCELLED\n",
@@ -982,10 +800,8 @@ CloseDownClient (client)
 ClientRec *client;
 
 {
-    ClientRec 	*next = client->next;
-    ClientRec	*ptr;
-    List	*cl;
-    int		index_deleted, i;
+    int  index_deleted, i;
+    List *cl;
 
     if (verbose) {
 	printf ("ICE Connection closed, IceConn fd = %d\n",
@@ -999,14 +815,6 @@ ClientRec *client;
 
     client->ice_conn = NULL;
     client->smsConn = NULL;
-    client->running = False;
-
-    ListAddLast (dead_clients, XtNewString (client->clientId));
-
-    if (client->restartHint == SmRestartImmediately && !shutdownInProgress)
-    {
-	Clone (client, True /* use saved state */);
-    }
 
     if (!shutdownInProgress && client_info_visible)
     {
@@ -1018,25 +826,28 @@ ClientRec *client;
 	}
     }
 
-    if (client->restartHint != SmRestartAnyway || shutdownInProgress)
+    for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
     {
-	if (client == ClientList)
+	if (((ClientRec *) cl->thing) == client)
 	{
-	    FreeClientInfo (client);
-	    ClientList = next;
+	    ListFreeOne (cl);
+	    break;
 	}
-	else
-	{
-	    ptr = ClientList;
-	    while (ptr && ptr->next != client)
-		ptr = ptr->next;
+    }
 
-	    if (ptr->next == client)
-	    {
-		FreeClientInfo (client);
-		ptr->next = next;
-	    }
-	}
+    if (client->restartHint == SmRestartImmediately && !shutdownInProgress)
+    {
+	Clone (client, True /* use saved state */);
+
+	ListAddLast (RestartImmedList, client);
+    }
+    else if (client->restartHint == SmRestartAnyway)
+    {
+	ListAddLast (RestartAnywayList, client);
+    }
+    else
+    {
+	FreeClient (client, True /* free props */);
     }
 
     numClients--;
@@ -1106,109 +917,6 @@ CloseConnectionProc (smsConn, managerData, count, reasonMsgs)
 
 
 
-void
-SetPropertiesProc (smsConn, managerData, numProps, props)
-
-SmsConn 	smsConn;
-SmPointer 	managerData;
-int		numProps;
-SmProp 		**props;
-
-{
-    ClientRec	*client = (ClientRec *) managerData;
-    int		updateList, i;
-
-    if (verbose) {
-	printf ("Client Id = %s, received SET PROPERTIES ", client->clientId);
-	printf ("[Num props = %d]\n", numProps);
-    }
-
-    updateList = client->numProps == 0 && numProps > 0 && client_info_visible;
-
-    for (i = 0; i < numProps; i++) {
-	if(verbose)
-	    PrintProperty (props[i]);
-	SetProperty (client, props[i], False /* Don't malloc - use this */);
-    }
-    free ((char *) props);
-
-    if (updateList)
-    {
-	/*
-	 * We have enough info from the client to display it in our list.
-	 */
-
-	UpdateClientList ();
-	XawListHighlight (clientListWidget, current_client_selected);
-    }
-    else if (client_prop_visible && clientListRecs &&
-	clientListRecs[current_client_selected] == client)
-    {
-	DisplayProps (client);
-    }
-}
-
-
-
-void
-DeletePropertiesProc (smsConn, managerData, numProps, propNames)
-
-SmsConn 	smsConn;
-SmPointer 	managerData;
-int		numProps;
-char **		propNames;
-
-{
-    ClientRec	*client = (ClientRec *) managerData;
-    int		i;
-
-    if (verbose) {
-	printf ("Client Id = %s, received DELETE PROPERTIES ",
-	    client->clientId);
-	printf ("[Num props = %d]\n", numProps);
-    }
-
-    for (i = 0; i < numProps; i++) {
-	if(verbose)
-	    printf ("   Name:	%s\n", propNames[i]);
-	DeleteProperty(client, propNames[i]);
-	free (propNames[i]);
-    }
-    free ((char *) propNames);
-}
-
-
-
-void
-GetPropertiesProc (smsConn, managerData)
-
-SmsConn 	smsConn;
-SmPointer 	managerData;
-
-{
-    ClientRec	*client = (ClientRec *) managerData;
-    int		i;
-
-    if (verbose) {
-	printf ("Client Id = %s, received GET PROPERTIES\n", client->clientId);
-	printf ("\n");
-
-	for (i = 0; i < client->numProps; i++) {
-	    PrintProperty (client->props[i]);
-	}
-	printf ("\n");
-    }
-
-    SmsReturnProperties (smsConn, client->numProps, client->props);
-
-    if (verbose) {
-	printf ("Client Id = %s, sent PROPERTIES REPLY [Num props = %d]\n",
-		client->clientId, client->numProps);
-    }
-}
-
-
-
 Status
 NewClientProc (smsConn, managerData, maskRet, callbacksRet, failureReasonRet)
 
@@ -1219,8 +927,7 @@ SmsCallbacks	*callbacksRet;
 char 		**failureReasonRet;
 
 {
-    ClientRec *newClient = (ClientRec *) malloc (sizeof (ClientRec));
-    ClientRec *ptr, *prev;
+    ClientRec *newClient = (ClientRec *) XtMalloc (sizeof (ClientRec));
 
     *maskRet = 0;
 
@@ -1228,7 +935,7 @@ char 		**failureReasonRet;
     {
 	char *str = "Memory allocation failed";
 
-	if ((*failureReasonRet = (char *) malloc (strlen (str) + 1)) != NULL)
+	if ((*failureReasonRet = (char *) XtMalloc (strlen (str) + 1)) != NULL)
 	    strcpy (*failureReasonRet, str);
 
 	return (0);
@@ -1242,27 +949,12 @@ char 		**failureReasonRet;
     newClient->userIssuedCheckpoint = False;
     newClient->interactPending = False;
     newClient->wantsPhase2 = False;
-    newClient->numProps = 0;
+    newClient->props = ListInit ();
     newClient->discardCommand = NULL;
     newClient->saveDiscardCommand = NULL;
-    newClient->running = True;
     newClient->restartHint = SmRestartIfRunning;
-    newClient->next = NULL;
 
-    ptr = ClientList;
-    prev = NULL;
-	
-    while (ptr)
-    {
-	prev = ptr;
-	ptr = ptr->next;
-    }
-
-    if (prev)
-	prev->next = newClient;
-    else
-	ClientList = newClient;
-
+    ListAddLast (RunningList, newClient);
     numClients++;
 
     if (verbose) {
@@ -1400,7 +1092,7 @@ IoErrorHandler (ice_conn)
 IceConn 	ice_conn;
 
 {
-    if (ClientList == NULL)
+    if (ListCount (RunningList) == 0)
     {
 	/*
 	 * The client must have disconnected before the ICE connection
@@ -1412,11 +1104,20 @@ IceConn 	ice_conn;
     }
     else
     {
-	ClientRec *client = ClientList;
-	
-	while (client && client->ice_conn != ice_conn)
-	    client = client->next;
+	ClientRec *client;
+	List *cl;
 
+	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
+	{
+	    ClientRec *temp = (ClientRec *) cl->thing;
+
+	    if (temp->ice_conn == ice_conn)
+	    {
+		client = temp;
+		break;
+	    }
+	}
+	 
 	if (!client)
 	{
 	    fprintf (stderr,
