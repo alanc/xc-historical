@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: TPage_Credits,v 1.13 91/07/30 15:48:33 gildea Exp $
 .ds CH
 .ds CF
 .ps 11
@@ -45,7 +45,6 @@ It is provided ``as is'' without express or implied warranty.
 Acknowledgments
 .XE
 \&
-.sp 1
 .ce 3
 \s+1\fBAcknowledgments\fP\s-1
 .sp 2
@@ -109,15 +108,16 @@ Chris D. Peterson
 MIT X Consortium
 December, 1989
 .De
-.sp
 .LP
-The R5 edition of this manual has been edited by the research staff of 
+.sp
+The R5 edition of this document has been edited by the research staff of 
 the MIT X Consortium, with significant contributions by Jim Fulton (NCD).
 .sp
 .Ds 0
 Donna Converse
 July, 1991
 .De
+.bp
 .ds LH \fBAthena Widget Set\fP
 .ds CH
 .ds RH \fBX11, Release 5\fP
