@@ -1,7 +1,27 @@
-/* $XConsortium: Atoms.c,v 1.10 90/12/10 08:19:07 rws Exp $
+/* $XConsortium: Atoms.c,v 1.11 90/12/11 13:18:51 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
+/*
  * This file contains routines to cache atoms, avoiding multiple
  * server round-trips.  Not so useful now that Xlib caches them.
  *
@@ -13,8 +33,6 @@
  *	XmuGetAtomName		returns name of an Atom
  *	XmuNameOfAtom		returns name from an AtomPtr
  */
-
-#include <X11/copyright.h>
 
 #include "Xmu.h"
 
@@ -69,11 +87,15 @@ DeclareAtom(XA_USER,			"USER"			)
  ******************************************************************/
 
 
+#if NeedFunctionPrototypes
+AtomPtr XmuMakeAtom(_Xconst char *name)
+#else
 AtomPtr XmuMakeAtom(name)
     char* name;
+#endif
 {
     AtomPtr ptr = XtNew(struct _AtomRec);
-    ptr->name = name;
+    ptr->name = (char *) name;
     ptr->head = NULL;
     return ptr;
 }
@@ -113,11 +135,16 @@ char *XmuGetAtomName(d, atom)
 }
 
 /* convert (names, count) to a list of atoms. Caller allocates list */
+#if NeedFunctionPrototypes
+void XmuInternStrings(Display *d, register _Xconst char * _Xconst *names, 
+		      register Cardinal  count, register Atom * atoms)
+#else
 void XmuInternStrings(d, names, count, atoms)
     Display *d;
     register String *names;
     register Cardinal count;
     register Atom *atoms;		/* return */
+#endif
 {
     register int i;
 
