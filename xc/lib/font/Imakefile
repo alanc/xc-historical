@@ -2,8 +2,8 @@
 
 #define	IHaveSubdirs
 
-SUBDIRS = bitmap fontfile fc speedo util
-OBJS = bitmap/?*.o fontfile/?*.o fc/?*.o speedo/?*.o util/?*.o
+SUBDIRS = bitmap fontfile fc Speedo util
+OBJS = bitmap/?*.o fontfile/?*.o fc/?*.o Speedo/?*.o util/?*.o
 
 MakeSubdirs($(SUBDIRS))
 
