@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.64 88/09/29 18:52:17 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.65 88/10/03 11:37:33 swick Exp $";
 #endif
 
 
@@ -279,6 +279,8 @@ static void InsertCursor (w, state)
     y += dy;
     if (visible)
 	(*ctx->text.sink->InsertCursor)(w, x, y, state);
+    ctx->text.ev_x = x;
+    ctx->text.ev_y = y;
 }
 
 
@@ -773,7 +775,14 @@ static void LoseSelection(w, selection)
   Widget w;
   Atom *selection;
 {
-    XtTextUnsetSelection(w);
+    TextWidget ctx = (TextWidget)w;
+    Boolean update_in_progress = (ctx->text.old_insert >= 0);
+
+    _XtTextPrepareToUpdate(ctx);
+    _XtTextSetNewSelection(ctx, ctx->text.insertPos, ctx->text.insertPos);
+    if (!update_in_progress) {
+	_XtTextExecuteUpdate(ctx);
+    }
 }
 
 
@@ -810,8 +819,6 @@ static int _XtTextSetNewSelection(ctx, left, right)
     if (right > left)
 	XtOwnSelection((Widget)ctx, XA_PRIMARY, ctx->text.time,
 		       ConvertSelection, LoseSelection, NULL);
-    else
-	XtDisownSelection((Widget)ctx, XA_PRIMARY, ctx->text.time);
 }
 
 
@@ -1724,11 +1731,8 @@ XtTextPosition XtTextGetInsertionPoint(w)
 void XtTextUnsetSelection(w)
     Widget	    w;
 {
-    TextWidget ctx = (TextWidget) w;
-
-	_XtTextPrepareToUpdate(ctx);
-	_XtTextSetNewSelection(ctx, zeroPosition, zeroPosition);
-	_XtTextExecuteUpdate(ctx);
+    XtDisownSelection(w, XA_PRIMARY);
+    LoseSelection(w, XA_PRIMARY); /* in case it wasn't just called */
 }
 
 
@@ -1757,6 +1761,8 @@ void XtTextSetSelection (w, left, right)
     TextWidget ctx = (TextWidget) w;
 
 	_XtTextPrepareToUpdate(ctx);
+        if (left == right)
+	    XtDisownSelection(w, XA_PRIMARY);
         _XtTextSetNewSelection(ctx, left, right);
 	_XtTextExecuteUpdate(ctx);
 }
@@ -1894,7 +1900,7 @@ static DeleteOrKill(ctx, from, to, kill)
 	XBell(XtDisplay(ctx), 50);
 	return;
     }
-    _XtTextSetNewSelection(ctx, from, from);
+    XtTextUnsetSelection((Widget)ctx);
     ctx->text.insertPos = from;
     ctx->text.showposition = TRUE;
 }
@@ -1914,7 +1920,7 @@ StuffFromBuffer(ctx, buffer)
     }
     ctx->text.insertPos = (*ctx->text.source->Scan)(ctx->text.source, 
     	ctx->text.insertPos, XtstPositions, XtsdRight, text.length, TRUE);
-    _XtTextSetNewSelection(ctx, ctx->text.insertPos, ctx->text.insertPos);
+    XtTextUnsetSelection((Widget)ctx);
     XtFree(text.ptr);
 }
 
@@ -2334,7 +2340,7 @@ static int InsertNewLineAndBackupInternal(ctx)
 	XBell( XtDisplay(ctx), 50);
 	return(EditError);
     }
-    _XtTextSetNewSelection(ctx, (XtTextPosition) 0, (XtTextPosition) 0);
+    XtTextUnsetSelection((Widget)ctx);
     ctx->text.showposition = TRUE;
     return(EditDone);
 }
@@ -2614,7 +2620,7 @@ static void InsertChar(ctx, event)
     ctx->text.insertPos =
 	(*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
 			    XtstPositions, XtsdRight, text.length, TRUE);
-	 _XtTextSetNewSelection(ctx, ctx->text.insertPos, ctx->text.insertPos);
+   XtTextUnsetSelection((Widget)ctx);
 
    EndAction(ctx);
 }
