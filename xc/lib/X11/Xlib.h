@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.141 88/06/19 16:34:17 rws Exp $ */
+/* $Header: Xlib.h,v 11.142 88/06/20 11:17:19 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -445,7 +445,7 @@ typedef struct _XDisplay {
 	int default_screen;	/* default screen for operations */
 	int nscreens;		/* number of screens on this server*/
 	Screen *screens;	/* pointer to list of screens */
-	int motion_buffer;	/* size of motion buffer */
+	unsigned long motion_buffer;	/* size of motion buffer */
 	Window current;		/* for use internally for Keymap notify */
 	int min_keycode;	/* minimum defined keycode */
 	int max_keycode;	/* maximum defined keycode */
@@ -791,7 +791,7 @@ typedef struct {
 	unsigned long serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
-	Window owner;		/* must be next after type */
+	Window owner;
 	Window requestor;
 	Atom selection;
 	Atom target;
@@ -804,7 +804,7 @@ typedef struct {
 	unsigned long serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
-	Window requestor;	/* must be next after type */
+	Window requestor;
 	Atom selection;
 	Atom target;
 	Atom property;		/* ATOM or None */
@@ -983,6 +983,13 @@ typedef struct {
 XFontStruct *XLoadQueryFont(), *XQueryFont();
 
 XTimeCoord *XGetMotionEvents();
+
+typedef union { Display *display;
+		GC gc;
+		Visual *visual;
+		Screen *screen;
+		ScreenFormat *pixmap_format;
+		XFontStruct *font } XEDataObject;
 #endif
 /* 
  * X function declarations.
@@ -1016,6 +1023,10 @@ XImage *XCreateImage(), *XGetImage(), *XGetSubImage();
 XHostAddress *XListHosts();
 KeySym XKeycodeToKeysym(), XLookupKeysym(), *XGetKeyboardMapping();
 KeySym XStringToKeysym();
+long XMaxRequestSize();
+char *XResourceManagerString();
+unsigned long XDisplayMotionBufferSize();
+VisualID XVisualIDFromVisual();
 
 /* routines for dealing with extensions */
 XExtCodes *XInitExtension();
@@ -1025,6 +1036,9 @@ int (*XESetCreateGC())(), (*XESetCopyGC())(), (*XESetFlushGC())(),
     (*XESetError())(), (*XESetErrorString())();
 Bool (*XESetWireToEvent())();
 Status (*XESetEventToWire())();
+XExtCodes *XAddExtension();
+XExtData *XFindOnExtensionList();
+XExtData **XEHeadOfExtensionList();
 
 /* these are routines for which there are also macros */
 Window XRootWindow(), XDefaultRootWindow(), XRootWindowOfScreen();
