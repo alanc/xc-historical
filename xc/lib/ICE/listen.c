@@ -1,4 +1,4 @@
-/* $XConsortium: listen.c,v 1.4 93/12/06 19:09:24 mor Exp $ */
+/* $XConsortium: listen.c,v 1.5 93/12/07 11:04:10 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -105,7 +105,7 @@ char		*errorStringRet;
     {
 	listenObjs[*countRet].fd = fd;
 	listenObjs[*countRet].network_id = networkId;
-	listenObjs[*countRet].unix_domain = True;
+	listenObjs[*countRet].local_conn = True;
 
 	(*countRet)++;
     }
@@ -115,7 +115,7 @@ char		*errorStringRet;
     {
 	listenObjs[*countRet].fd = fd;
 	listenObjs[*countRet].network_id = networkId;
-	listenObjs[*countRet].unix_domain = False;
+	listenObjs[*countRet].local_conn = False;
 
 	(*countRet)++;
     }
@@ -125,7 +125,7 @@ char		*errorStringRet;
     {
 	listenObjs[*countRet].fd = fd;
 	listenObjs[*countRet].network_id = networkId;
-	listenObjs[*countRet].unix_domain = False;
+	listenObjs[*countRet].local_conn = False;
 
 	(*countRet)++;
     }
