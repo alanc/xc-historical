@@ -11,15 +11,32 @@ cannot start X directly from \fI/etc/init\fP or in environments
 that use multiple window systems.  When this first client exits, 
 \fIxinit\fP will kill the X server and then terminate.
 .PP
-Unless otherwise specified on the command line, \fIxinit\fP assumes that
-there are programs called ``X'' and ``xterm'' in the current search path.
-It starts the server on display 0 and then runs an \fIxterm\fP using the
-following command line:
+If no client arguments are specified on the command line, \fIxinit\fP will
+look for a file called \fI\.xinitrc\fP in the user's home directory.  If the
+file exists and is executable, \fIxinit\fP use that program as the default
+client.  If the file is not executable, but is readable, \fIxinit\fP will
+run it as a Bourne shell script.  If no such file is found, \fIxinit\fP
+will default to the following command:
 .sp
-	xterm -geometry +1+1 -n login -display unix:0
+	xterm -geometry +1+1 -n login -display :0
 .sp
 (systems that don't support Unix domain sockets will be started with 
 hostname:0 instead).
+.PP
+It is important that \fI\.xinitrc\fP files run programs that don't exit
+right away in the background so that they don't prevent other programs
+from starting up.  However, the last long-lived program started (usually
+a window manager or terminal emulator) should be
+left in the foreground so that \fI\.xinitrc\fP itself doesn't exit (which
+indicates that the user is done and that \fIxinit\fP should exit).
+.PP
+Unless otherwise given on the command line,
+\fIxinit\fP assumes that there is a program named \fIX\fP in the current
+search path.  However, servers are usually named \fIXdisplaytype\fP where 
+\fIdisplaytype\fP is the type of graphics display which is driven by this
+server.  The site administrator should, therefore, make a link to the 
+appropriate type of server on the machine, or create a shell script that
+runs \fIxinit\fP with the appropriate server.
 .PP
 An alternate client and/or server may be specified on the
 command line.  The desired client program and its arguments should be given
@@ -37,15 +54,76 @@ If an explicit server name is not given and the first argument following the
 double dash (--) is a digit, \fIxinit\fP will use that number as the display 
 number instead of zero.  All remaining arguments are appended to the server 
 command line.
-.SH EXAMPLES
-xinit -geometry =80x65+10+10 -fn 8x13 -j -fg white -bg navy
-.sp
-xinit -e widgets -- Xsun -l -c
-.sp
-xinit rsh fasthost cpupig -display workstation:1 -- 1 -a 2 -t 5
 .PP
+.SH EXAMPLES
+Below are several examples of how command line arguments in \fIxinit\fP are
+used.
+.TP 8
+.B "xinit"
+This will start up a server named \fIX\fP and run the user's \fI\.xinitrc\fP,
+if it exists, or else start an \fIxterm\fP.
+.TP 8
+.B "xinit -- /usr/bin/X11/Xqdss :0"
+This is how one would start a specific type of server in the default 
+distribution.
+.TP 8
+.B "xinit -geometry =80x65+10+10 -fn 8x13 -j -fg white -bg navy"
+This will start up a server named \fIX\fP, and will append the given
+arguments to the default \fIxterm\fP command.  It will ignore \fI\.xinitrc\fP.
+.TP 8
+.B "xinit -e widgets -- ./Xsun -l -c"
+This will use the command \fI\.\/Xsun -l -c\fP to start the server and will
+append the arguments \fI-e widgets\fP to the default \fIxterm\fP command.
+.TP 8
+.B "xinit /usr/ucb/rsh fasthost cpupig -display myws:1 -- 1 -a 2 -t 5"
+This will start a server named \fIX\fP on display 1 with the arguments
+\fI-a 2 -t 5\fP.  It will then start a remote shell on the machine
+\fBfasthost\fP in which it will run the command \fIcpupig\fP, telling it
+to display back on the local workstation.
+.PP
+Below is a sample \fI\.xinitrc\fP that starts a clock, several terminals, and
+leaves the window manager running as the ``last'' application.  Assuming that
+the window manager has been configured properly, the user
+then choose the ``Exit'' menu item to shut down X.
+.sp
+.in +8
+.nf
+#!/bin/sh
+DISPLAY=:0 ; export DISPLAY
+xrdb -load $HOME/.Xres
+xsetroot -solid gray &
+xclock -g 50x50-0+0 -bw 0 &
+xload -g 50x50-50+0 -bw 0 &
+xterm -g 80x24+0+0 &
+xterm -g 80x24+0-0 &
+uwm
+.fi
+.in -8
+.sp
+Sites that want to create a common startup environment could simply create
+a default \fI\.xinitrc\fP that referenced a site-wide startup file:
+.sp
+.in +8
+.nf
+#!/bin/sh
+sh /usr/local/lib/site.xinitrc
+.fi
+.in -8
+.sp
+Another approach is to write a script that starts \fIxinit\fP with a specific
+shell script.  Such scripts are usually named \fIx11\fP, \fIxstart\fP, or
+\fIstartx\fP and are a convenient way to provide a simple interface for
+novice users:
+.sp
+.in +8
+.nf
+#!/bin/sh
+xinit /usr/local/bin/startx -- /usr/bin/X11/Xhp :0
+.fi
+.in -8
+.sp
 .SH "SEE ALSO"
-X(1), Xserver(1), xterm(1)
+X(1), Xserver(1), xterm(1), xrdb(1)
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
