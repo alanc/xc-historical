@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mainwin.c,v 1.1 94/07/07 16:47:39 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -47,14 +47,28 @@ create_main_window ()
 	"clientInfoButton", commandWidgetClass, mainWindow,
         XtNfromHoriz, NULL,
         XtNfromVert, NULL,
+	XtNresizable, True,
+	XtNjustify, XtJustifyLeft,
 	NULL);
 
     XtAddCallback (clientInfoButton, XtNcallback, ClientInfoXtProc, 0);
+
+    nameSessionButton = XtVaCreateManagedWidget (
+	"nameSessionButton", commandWidgetClass, mainWindow,
+        XtNfromHoriz, clientInfoButton,
+        XtNfromVert, NULL,
+	XtNresizable, True,
+	XtNjustify, XtJustifyLeft,
+	NULL);
+
+    XtAddCallback (nameSessionButton, XtNcallback, NameSessionXtProc, 0);
 
     checkPointButton = XtVaCreateManagedWidget (
 	"checkPointButton", commandWidgetClass, mainWindow,
         XtNfromHoriz, NULL,
         XtNfromVert, clientInfoButton,
+	XtNresizable, True,
+	XtNjustify, XtJustifyLeft,
 	NULL);
 
     XtAddCallback (checkPointButton, XtNcallback, CheckPointXtProc, 0);
@@ -63,15 +77,9 @@ create_main_window ()
 	"shutdownButton", commandWidgetClass, mainWindow,
         XtNfromHoriz, checkPointButton,
         XtNfromVert, clientInfoButton,
+	XtNresizable, True,
+	XtNjustify, XtJustifyLeft,
 	NULL);
 
     XtAddCallback (shutdownButton, XtNcallback, ShutdownXtProc, 0);
-
-    nameSessionButton = XtVaCreateManagedWidget (
-	"nameSessionButton", commandWidgetClass, mainWindow,
-        XtNfromHoriz, NULL,
-        XtNfromVert, shutdownButton,
-	NULL);
-
-    XtAddCallback (nameSessionButton, XtNcallback, NameSessionXtProc, 0);
 }
