@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.112 94/03/30 09:58:37 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.113 94/03/30 09:59:52 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -173,6 +173,12 @@ clean::									@@\
 
 #if defined(OSF1Architecture) && defined(MipsArchitecture)
 #define BuildPexExt NO
+#endif
+
+#ifdef AlphaArchitecture
+#define XVirtualFramebufferServer YES
+#define ServerExtraDefines -D_XSERVER64
+#define ServerOSDefines -DDDXTIME
 #endif
 
 #ifndef SiteIConfigFiles

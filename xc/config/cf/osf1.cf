@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.30 94/03/27 16:26:58 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.31 94/03/27 16:28:11 rws Exp $
 /* only tested with Digital OSF/1 */
 
 #ifdef AlphaArchitecture
@@ -40,10 +40,7 @@ XCOMM operating system:  OSName
 #define NoRConst YES
 
 #ifdef AlphaArchitecture
-#define XVirtualFramebufferServer YES
 #define HasWChar32 YES
-#define ServerExtraDefines -D_XSERVER64
-#define ServerOSDefines -DDDXTIME
 #define DefaultCCOptions -std1
 /* XKB library code is not 64-bit ready yet */
 #define BuildXKBlib NO
