@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: lnxLib.tmpl,v 1.1 94/03/29 15:34:47 gildea Exp $
 
 /*
  * Linux shared library template
@@ -38,7 +38,7 @@ PICFLAGS = PositionIndependentCFlags
         DEPXAWLIB = /* _UseCat($(USRLIBDIR),$(AWIDGETSRC),/libXaw.sa.$(SOXAWREV)) */
            XAWLIB = _Use(-lXaw,-L$(AWIDGETSRC) -lXaw)
 #endif
-#if SharedLibXinput
+#if SharedLibXi
         DEPXILIB = /* _UseCat($(USRLIBDIR),$(XILIBSRC),/libXi.sa.$(SOXINPUTREV)) */
            XILIB = _Use(-lXi,-L$(XILIBSRC) -lXi)
 #endif
