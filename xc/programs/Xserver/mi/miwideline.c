@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.48 92/04/20 17:37:19 rws Exp $
+ * $XConsortium: miwideline.c,v 1.49 92/05/15 17:02:12 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1105,6 +1105,7 @@ miLineProjectingCap (pDrawable, pGC, pixel, spanData, face, isLeft, xorg, yorg, 
     lw = pGC->lineWidth;
     dx = face->dx;
     dy = face->dy;
+    k = face->k;
     if (dy == 0)
     {
 	lefts[0].height = lw;
