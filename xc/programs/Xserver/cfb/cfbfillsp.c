@@ -53,6 +53,7 @@ SOFTWARE.
 ******************************************************************/
 #include "X.h"
 #include "Xmd.h"
+#include "servermd.h"
 #include "gcstruct.h"
 #include "window.h"
 #include "pixmapstr.h"

@@ -24,6 +24,7 @@ SOFTWARE.
 
 #include "X.h"
 #include "Xmd.h"
+#include "servermd.h"
 
 #include "misc.h"
 #include "regionstr.h"

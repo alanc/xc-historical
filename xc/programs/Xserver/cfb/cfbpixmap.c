@@ -28,6 +28,7 @@ SOFTWARE.
 */
 
 #include "Xmd.h"
+#include "servermd.h"
 #include "pixmapstr.h"
 #include "cfbmskbits.h"
 
