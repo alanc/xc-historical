@@ -1028,10 +1028,10 @@ The default bindings are:
 	~Meta	<Btn1Motion>:	select-extend() \\n\\
  Ctrl	~Meta	<Btn2Down>:	mode-menu() \\n\\
 ~Ctrl	~Meta	<Btn2Down>:	ignore() \\n\\
-	~Meta	<Btn2Up>:	insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
+~Ctrl	~Meta	<Btn2Up>:	insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
 ~Ctrl	~Meta	<Btn3Down>:	start-extend() \\n\\
 	~Meta	<Btn3Motion>:	select-extend() \\n\\
-	~Meta	<BtnUp>:	select-end(PRIMARY, CUT_BUFFER0) \\n\\
+~Ctrl	~Meta	<BtnUp>:	select-end(PRIMARY, CUT_BUFFER0) \\n\\
 		<BtnDown>:	bell(0)
 .De
 .sp
