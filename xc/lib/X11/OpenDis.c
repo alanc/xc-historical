@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.88 89/07/18 11:06:11 jim Exp $
+ * $XConsortium: XOpenDis.c,v 11.89 89/11/08 17:07:26 converse Exp $
  */
 
 #include "copyright.h"
@@ -13,7 +13,6 @@
 #include <X11/Xauth.h>
 #include "Xatom.h"
 
-extern void bzero();
 extern int _Xdebug;
 extern Display *_XHeadOfDisplayList;
 
@@ -158,13 +157,12 @@ Display *XOpenDisplay (display)
  * Attempt to allocate a display structure. Return NULL if allocation fails.
  */
 	if ((dpy = (Display *)Xcalloc(1, sizeof(Display))) == NULL) {
-		errno = ENOMEM;
 		UnlockMutex(&lock);
 		return(NULL);
 	}
 
 /*
- * Call the Connect routine to get the network socket. If 0 is returned, the
+ * Call the Connect routine to get the network socket. If -1 is returned, the
  * connection failed. The connect routine will set fullname to point to the
  * expanded name.
  */
@@ -174,7 +172,7 @@ Display *XOpenDisplay (display)
 					 &server_addrlen, &server_addr)) < 0) {
 		Xfree ((char *) dpy);
 		UnlockMutex(&lock);
-		return(NULL);		/* errno set by XConnectDisplay */
+		return(NULL);
 	}
 
 /*
@@ -187,7 +185,7 @@ Display *XOpenDisplay (display)
 	    conn_auth_data = xauth_data;
 	} else {
 	    char dpynumbuf[40];		/* big enough to hold 2^64 and more */
-	    sprintf (dpynumbuf, "%d", idisplay);
+	    (void) sprintf (dpynumbuf, "%d", idisplay);
 
 	    authptr = XauGetAuthByAddr ((unsigned short) conn_family,
 					(unsigned short) server_addrlen,
@@ -243,9 +241,8 @@ Display *XOpenDisplay (display)
 	}
 
 	setuplength = prefix.length << 2;
-	if ( (u.setup = (xConnSetup *)(setup =  Xmalloc ((unsigned)setuplength)))
-	    == NULL) {
-		errno = ENOMEM;
+	if ( (u.setup = (xConnSetup *)
+	      (setup =  Xmalloc ((unsigned) setuplength))) == NULL) {
 		Xfree ((char *)dpy);
 		UnlockMutex(&lock);
 		return(NULL);
@@ -498,7 +495,6 @@ Display *XOpenDisplay (display)
 	if (iscreen >= dpy->nscreens) {
 	    _XDisconnectDisplay (dpy->fd);
 	    _XFreeDisplayStructure (dpy);
-	    errno = EINVAL;
 	    UnlockMutex(&lock);
 	    return(NULL);
 	}
@@ -514,7 +510,7 @@ Display *XOpenDisplay (display)
 	    if ((sp->default_gc = XCreateGC (dpy, sp->root,
 					     GCForeground|GCBackground,
 					     &values)) == NULL) {
-		OutOfMemory(dpy, setup);
+		OutOfMemory(dpy, (char *) NULL);
 		UnlockMutex (&lock);
 		return (NULL);
 	    }
@@ -578,8 +574,7 @@ static OutOfMemory (dpy, setup)
     {
     _XDisconnectDisplay (dpy->fd);
     _XFreeDisplayStructure (dpy);
-    Xfree (setup);
-    errno = ENOMEM;
+    if (setup) Xfree (setup);
     }
 
 

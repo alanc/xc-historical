@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.62 89/11/11 16:40:39 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.63 89/11/11 16:51:30 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -542,12 +542,10 @@ static int MakeTCPConnection (phostname, idisplay, retries,
     if (hostinetaddr == INVALID_INETADDR) {
 	if ((hp = gethostbyname(phostname)) == NULL) {
 	    /* No such host! */
-	    errno = EINVAL;
 	    return -1;
 	}
 	if (hp->h_addrtype != AF_INET) {  /* is IP host? */
 	    /* Not an Internet host! */
-	    errno = EPROTOTYPE;
 	    return -1;
 	}
  
