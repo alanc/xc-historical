@@ -1,19 +1,20 @@
-/* $XConsortium: pl_oc_prim.c,v 1.4 92/06/12 10:47:00 mor Exp $ */
+/* $XConsortium: pl_oc_prim.c,v 1.5 92/06/12 15:22:22 mor Exp $ */
 
-/************************************************************************
-Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
-Massachusetts, and the Massachusetts Institute of Technology,
-Cambridge, Massachusetts.
+/******************************************************************************
+Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
+Copyright 1992 by the Massachusetts Institute of Technology
 
                         All Rights Reserved
 
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
-provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
-supporting documentation, and that the names of Digital or MIT not be
-used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  M.I.T. makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
 
 DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
 ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
@@ -22,8 +23,7 @@ ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
 WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
-
-*************************************************************************/
+******************************************************************************/
 
 #include "PEXlib.h"
 #include "PEXlibint.h"
@@ -109,6 +109,7 @@ INPUT char		*string;
     StoreDefaultMonoString (display, count, string);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -153,6 +154,7 @@ INPUT char		*string;
     StoreDefaultMonoString (display, count, string);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -200,6 +202,7 @@ INPUT char		*string;
     StoreDefaultMonoString (display, count, string);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -247,6 +250,7 @@ INPUT char		*string;
     StoreDefaultMonoString (display, count, string);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -303,6 +307,7 @@ INPUT PEXEncodedTextData	*encodedTextList;
     StoreMonoStrings (display, numEncodings, encodedTextList);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -355,6 +360,7 @@ INPUT PEXEncodedTextData	*encodedTextList;
     StoreMonoStrings (display, numEncodings, encodedTextList);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -409,6 +415,7 @@ INPUT PEXEncodedTextData 	*encodedTextList;
     StoreMonoStrings (display, numEncodings, encodedTextList);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -463,6 +470,7 @@ INPUT PEXEncodedTextData 	*encodedTextList;
     StoreMonoStrings (display, numEncodings, encodedTextList);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -569,6 +577,7 @@ INPUT PEXListOfVertex	*polylines;
     }
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -635,6 +644,7 @@ INPUT double		tmax;
     PEXCopyWordsToOC (display, lenofVertexList, (char *) points.point);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -682,6 +692,7 @@ INPUT PEXCoord 		*points;
     PEXCopyWordsToOC (display, lenofVertexList, (char *) points);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -729,6 +740,7 @@ INPUT PEXCoord2D	*points;
     PEXCopyWordsToOC (display, lenofVertexList, (char *) points);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -804,6 +816,7 @@ INPUT PEXArrayOfVertex	vertices;
 	(char *) vertices.no_data);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -871,6 +884,7 @@ INPUT PEXListOfCoord	*vertices;
     }
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -938,6 +952,7 @@ INPUT PEXListOfCoord2D	*vertices;
     }
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -1031,6 +1046,7 @@ INPUT PEXListOfVertex	*vertices;
     }
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -1167,6 +1183,7 @@ INPUT PEXConnectivityData	*connectivity;
     PEXGetOCAddr (display, PAD (cbytes));
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -1236,6 +1253,7 @@ INPUT PEXArrayOfVertex		vertices;
     PEXCopyWordsToOC (display, lenofVertexList, (char *) vertices.no_data);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -1309,6 +1327,7 @@ INPUT PEXArrayOfVertex		vertices;
     PEXCopyWordsToOC (display, lenofVertexList, (char *) vertices.no_data);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -1468,6 +1487,7 @@ INPUT PEXListOfTrimCurve 	*trimLoops;
     }
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -1519,6 +1539,7 @@ INPUT PEXTableIndex 	*icolors;
 	(char *) icolors);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -1568,6 +1589,7 @@ INPUT PEXTableIndex	*icolors;
 	(char *) icolors);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -1622,6 +1644,7 @@ INPUT PEXArrayOfColor 	colors;
     PEXCopyWordsToOC (display, lenofColorList, (char *) colors.indexed);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -1672,6 +1695,7 @@ INPUT char		*data;
     _PEXCopyPaddedBytesToOC (display, numBytes, (char *) data);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
 
 
@@ -1723,4 +1747,5 @@ INPUT char		*data;
     _PEXCopyPaddedBytesToOC (display, numBytes, (char *) data);
 
     PEXFinishOC (display);
+    PEXSyncHandle (display);
 }
