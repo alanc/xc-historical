@@ -27,19 +27,13 @@
  */
 /*SHARED*/
  
-#ifndef   pointer
- 
-#define   pointer          void *
- 
-#endif
- 
 /*END SHARED*/
 /*SHARED*/
  
-#define   Permanent(obj)    (pointer) t1_Permanent(obj)
-#define   Temporary(obj)    (pointer) t1_Temporary(obj)
+#define   Permanent(obj)    t1_Permanent(obj)
+#define   Temporary(obj)    t1_Temporary(obj)
 #define   Destroy(obj)      t1_Destroy(obj)
-#define   Dup(obj)          (pointer) t1_Dup(obj)
+#define   Dup(obj)          t1_Dup(obj)
 #define   InitImager()      t1_InitImager()
 #define   TermImager()      t1_TermImager()
 #define   Pragmatics(f,v)   t1_Pragmatics(f,v)
@@ -58,21 +52,21 @@ char *t1_ErrorMsg();          /* return last TYPE1IMAGER error message          
 /*SHARED*/
  
 #define   abort(line)       t1_abort(line)
-#define   Allocate(n,t,s)   (pointer) t1_Allocate(n,t,s)
+#define   Allocate(n,t,s)   t1_Allocate(n,t,s)
 #define   Free(obj)         t1_Free(obj)
 #define   NonObjectFree(a)  free(a)
 #define   Consume           t1_Consume
 #define   ArgErr(s,o,r)     t1_ArgErr(s,o,r)
 #define   TypeErr(n,o,e,r)  t1_TypeErr(n,o,e,r)
 #define   Copy(obj)         t1_Copy(obj)
-#define   Unique(obj)       (pointer) t1_Unique(obj)
+#define   Unique(obj)       t1_Unique(obj)
  
 void t1_abort();              /* crash; software logic error                  */
 struct xobject *t1_Allocate();    /* allocate memory                          */
 void t1_Free();               /* free memory                                  */
 struct xobject *t1_Unique();  /* make a unique temporary copy of an object    */
-void *t1_ArgErr();            /* handle argument errors                       */
-void *t1_TypeErr();           /* handle 'bad type' argument errors            */
+struct xobject *t1_ArgErr();  /* handle argument errors                       */
+struct xobject *t1_TypeErr(); /* handle 'bad type' argument errors            */
 void t1_Consume();            /* consume a variable number of arguments       */
 struct xobject *t1_Copy();    /* make a new copy, not reference bump PNM      */
  
@@ -169,20 +163,20 @@ struct xobject {
 /*END SHARED*/
 /*SHARED*/
  
-#define  TYPECHECK(name, obj, expect, whenBAD, consumables) { \
+#define  TYPECHECK(name, obj, expect, whenBAD, consumables, rettype) { \
     if (obj->type != expect) { \
          (Consume)consumables; \
-         return(TypeErr(name, obj, expect, whenBAD)); \
+         return((rettype)TypeErr(name, obj, expect, whenBAD)); \
     } \
 }
  
 /*END SHARED*/
 /*SHARED*/
  
-#define  ARGCHECK(test,msg,obj,whenBAD,consumables) { \
+#define  ARGCHECK(test,msg,obj,whenBAD,consumables,rettype) { \
     if (test) { \
         (Consume)consumables; \
-        return(ArgErr(msg, obj, whenBAD)); \
+        return((rettype)ArgErr(msg, obj, whenBAD)); \
     } \
 }
  
@@ -191,16 +185,16 @@ struct xobject {
  
 /* Changed use of Dup() below to Temporary(Copy()) because Dup() does not
    necessarily return a Unique Copy anymore! 3-26-91 */
-#define  TYPENULLCHECK(name, obj, expect, whenBAD, consumables) \
+#define  TYPENULLCHECK(name, obj, expect, whenBAD, consumables,rettype) \
     if (obj == NULL) { \
         (Consume)consumables; \
         if (whenBAD != NULL && ISPERMANENT(whenBAD->flag)) \
-              return(Temporary(Copy(whenBAD))); \
-        else  return(whenBAD); \
+              return((rettype)Temporary(Copy(whenBAD))); \
+        else  return((rettype)whenBAD); \
     } else { \
         if (obj->type != expect) { \
              (Consume)consumables; \
-             return(TypeErr(name, obj, expect, whenBAD)); \
+             return((rettype)TypeErr(name, obj, expect, whenBAD)); \
         } \
     }
 /*END SHARED*/

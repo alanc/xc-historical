@@ -59,6 +59,7 @@ int T1Read(), T1Getc(), T1Ungetc();
 STATIC int T1Decrypt(), T1Fill();
  
 /* -------------------------------------------------------------- */
+/*ARGSUSED*/
 F_FILE *T1Open(fn, mode)
   char *fn;    /* Pointer to filename */
   char *mode;  /* Pointer to open mode string */

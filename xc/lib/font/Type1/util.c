@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include "util.h"
  
-extern char *type1alloc();
+extern unsigned long *type1alloc();
  
 static char *vm_base = NULL;  /* Start of virtual memory area */
        char *vm_next = NULL;  /* Pointer to first free byte */

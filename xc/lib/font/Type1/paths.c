@@ -120,7 +120,7 @@ struct segment *CopyPath(p0)
        for (p = p0, anchor = NULL; p != NULL; p = p->link) {
  
                ARGCHECK((!ISPATHTYPE(p->type) || (p != p0 && p->last != NULL)),
-                       "CopyPath: invalid segment", p, NULL, (0));
+                       "CopyPath: invalid segment", p, NULL, (0), struct segment *);
  
                if (p->type == TEXTTYPE)
                        n = (struct segment *) CopyText(p);
@@ -210,7 +210,7 @@ struct segment *t1_Loc(S, x, y)
        IfTrace3((MustTraceCalls),"..Loc(S=%z, x=%f, y=%f)\n", S, &x, &y);
  
        r = (struct segment *)Allocate(sizeof(struct segment), &movetemplate, 0);
-       TYPECHECK("Loc", S, SPACETYPE, r, (0));
+       TYPECHECK("Loc", S, SPACETYPE, r, (0), struct segment *);
  
        r->last = r;
        r->context = S->context;
@@ -231,7 +231,7 @@ struct segment *ILoc(S, x, y)
        IfTrace3((MustTraceCalls),"..ILoc(S=%z, x=%d, y=%d)\n",
                                     S, (long) x, (long) y);
        r = (struct segment *)Allocate(sizeof(struct segment), &movetemplate, 0);
-       TYPECHECK("Loc", S, SPACETYPE, r, (0));
+       TYPECHECK("Loc", S, SPACETYPE, r, (0), struct segment *);
  
        r->last = r;
        r->context = S->context;
@@ -256,8 +256,8 @@ struct segment *SubLoc(p1, p2)
 {
        IfTrace2((MustTraceCalls),"SubLoc(%z, %z)\n", p1, p2);
  
-       ARGCHECK(!ISLOCATION(p1), "SubLoc: bad first arg", p1, NULL, (0));
-       ARGCHECK(!ISLOCATION(p2), "SubLoc: bad second arg", p2, NULL, (0));
+       ARGCHECK(!ISLOCATION(p1), "SubLoc: bad first arg", p1, NULL, (0), struct segment *);
+       ARGCHECK(!ISLOCATION(p2), "SubLoc: bad second arg", p2, NULL, (0), struct segment *);
        p1 = UniquePath(p1);
        p1->dest.x -= p2->dest.x;
        p1->dest.y -= p2->dest.y;
@@ -300,7 +300,7 @@ struct segment *Line(P)
 {
  
        IfTrace1((MustTraceCalls),"..Line(%z)\n", P);
-       ARGCHECK(!ISLOCATION(P), "Line: arg not a location", P, NULL, (0));
+       ARGCHECK(!ISLOCATION(P), "Line: arg not a location", P, NULL, (0), struct segment *);
  
        P = UniquePath(P);
        P->type = LINETYPE;
@@ -343,9 +343,9 @@ struct beziersegment *Bezier(B, C, D)
        register struct beziersegment *r;  /* output segment                  */
  
        IfTrace3((MustTraceCalls),"..Bezier(%z, %z, %z)\n", B, C, D);
-       ARGCHECK(!ISLOCATION(B), "Bezier: bad B", B, NULL, (2,C,D));
-       ARGCHECK(!ISLOCATION(C), "Bezier: bad C", C, NULL, (2,B,D));
-       ARGCHECK(!ISLOCATION(D), "Bezier: bad D", D, NULL, (2,B,C));
+       ARGCHECK(!ISLOCATION(B), "Bezier: bad B", B, NULL, (2,C,D), struct beziersegment *);
+       ARGCHECK(!ISLOCATION(C), "Bezier: bad C", C, NULL, (2,B,D), struct beziersegment *);
+       ARGCHECK(!ISLOCATION(D), "Bezier: bad D", D, NULL, (2,B,C), struct beziersegment *);
  
        r = (struct beziersegment *)Allocate(sizeof(struct beziersegment), &template, 0);
        r->last = (struct segment *) r;
@@ -402,7 +402,7 @@ struct hintsegment *Hint(S, ref, width, orientation, hinttype, adjusttype, direc
                (*S->convert)(&r->width, S, width, 0.0);
        }
        else
-               return(ArgErr("Hint: orient not 'h' or 'v'", NULL, NULL));
+               return((struct hintsegment *)ArgErr("Hint: orient not 'h' or 'v'", NULL, NULL));
        if (r->width.x < 0)  r->width.x = - r->width.x;
        if (r->width.y < 0)  r->width.y = - r->width.y;
        r->hinttype = hinttype;
@@ -458,7 +458,7 @@ We start with a whole bunch of very straightforward argument tests:
                if (!ISPATHTYPE(p2->type)) {
  
                        if (p1 == NULL)
-                               return(Unique(p2));
+                               return((struct segment *)Unique(p2));
  
                        switch (p1->type) {
  
@@ -473,7 +473,7 @@ We start with a whole bunch of very straightforward argument tests:
                        }
                }
  
-               ARGCHECK((p2->last == NULL), "Join: right arg not anchor", p2, NULL, (1,p1));
+               ARGCHECK((p2->last == NULL), "Join: right arg not anchor", p2, NULL, (1,p1), struct segment *);
                p2 = UniquePath(p2);
  
 /*
@@ -493,7 +493,7 @@ are when 'p2' begins with a move-type segment:
                }
        }
        else
-               return(Unique(p1));
+               return((struct segment *)Unique(p1));
  
        if (p1 != NULL) {
                if (!ISPATHTYPE(p1->type))
@@ -510,7 +510,7 @@ are when 'p2' begins with a move-type segment:
                                return((struct segment *)EndHandle(p1, p2));
                        }
  
-               ARGCHECK((p1->last == NULL), "Join: left arg not anchor", p1, NULL, (1,p2));
+               ARGCHECK((p1->last == NULL), "Join: left arg not anchor", p1, NULL, (1,p2), struct segment *);
                p1 = UniquePath(p1);
        }
        else
@@ -609,7 +609,7 @@ struct segment *t1_ClosePath(p0,lastonly)
        if (p0 != NULL && p0->type == TEXTTYPE)
                return(UniquePath(p0));
        if (p0->type == STROKEPATHTYPE)
-               return(Unique(p0));
+               return((struct segment *)Unique(p0));
        /*
        * NOTE: a null closed path is different from a null open path
        * and is denoted by a closed (0,0) move segment.  We make
@@ -617,7 +617,7 @@ struct segment *t1_ClosePath(p0,lastonly)
        */
        if (p0 == NULL || p0->type != MOVETYPE)
                p0 = JoinSegment(NULL, MOVETYPE, 0, 0, p0);
-       TYPECHECK("ClosePath", p0, MOVETYPE, NULL, (0));
+       TYPECHECK("ClosePath", p0, MOVETYPE, NULL, (0), struct segment *);
        if (p0->last->type != MOVETYPE)
                p0 = JoinSegment(p0, MOVETYPE, 0, 0, NULL);
  
@@ -710,7 +710,7 @@ struct segment *Reverse(p)
        if (p == NULL)
                return(NULL);
  
-       ARGCHECK(!ISPATHANCHOR(p), "Reverse: invalid path", p, NULL, (0));
+       ARGCHECK(!ISPATHANCHOR(p), "Reverse: invalid path", p, NULL, (0), struct segment *);
  
        if (p->type == TEXTTYPE)
                p = CoerceText(p);
@@ -874,7 +874,7 @@ struct segment *ReverseSubPaths(p)
        if (p == NULL)
                return(NULL);
  
-       ARGCHECK(!ISPATHANCHOR(p), "ReverseSubPaths: invalid path", p, NULL, (0));
+       ARGCHECK(!ISPATHANCHOR(p), "ReverseSubPaths: invalid path", p, NULL, (0), struct segment *);
  
        if (p->type == TEXTTYPE)
                p = CoerceText(p);
@@ -1227,14 +1227,14 @@ void QueryBounds(p0, S, xminP, yminP, xmaxP, ymaxP)
                                break;
  
                            default:
-                               ArgErr("QueryBounds:  bad object", path, NULL);
+                               ArgErr("QueryBounds:  bad object", p0, NULL);
                                return;
                        }
                        coerced = TRUE;
                }
                if (p0->type == TEXTTYPE) {
     /* replaced CopyPath() with Dup() 3-26-91 PNM */
-                       p0 = CoerceText(Dup(p0));  /* there are faster ways */
+                       p0 = (struct segment *)CoerceText(Dup(p0));  /* there are faster ways */
                        coerced = TRUE;
                }
                if (p0->type == MOVETYPE) {
@@ -1382,7 +1382,7 @@ struct segment *DropSegment(path)
        if (path != NULL && path->type == STROKEPATHTYPE)
                path = CoercePath(path);
        ARGCHECK((path == NULL || !ISPATHANCHOR(path)),
-                 "DropSegment: arg not a non-null path", path, path, (0));
+                 "DropSegment: arg not a non-null path", path, path, (0), struct segment *);
        if (path->type == TEXTTYPE)
                path = CoerceText(path);
        path = UniquePath(path);
@@ -1405,7 +1405,7 @@ struct segment *HeadSegment(path)
                return(NULL);
        if (path->type == STROKEPATHTYPE)
                path = CoercePath(path);
-       ARGCHECK(!ISPATHANCHOR(path), "HeadSegment: arg not a path", path, path, (0));
+       ARGCHECK(!ISPATHANCHOR(path), "HeadSegment: arg not a path", path, path, (0), struct segment *);
        if (path->type == TEXTTYPE)
                path = CoerceText(path);
        path = UniquePath(path);

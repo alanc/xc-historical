@@ -43,6 +43,7 @@ This module is responsible for handling the TYPE1IMAGER "XYspace" object.
 #include "fonts.h"
 #include "arith.h"
 #include "trig.h"
+
 static FindFfcn();
 static FindIfcn();
 /*
@@ -175,9 +176,18 @@ struct XYspace *IDENTITY = &identity;
  
 static struct doublematrix contexts[MAXCONTEXTS];
  
+#ifdef notdef
+
 static int nextcontext = 1;
  
 /*SHARED LINE(S) ORIGINATED HERE*/
+
+#if __STDC__
+#define   pointer          void *
+#else
+#define   pointer          char *
+#endif
+ 
 /*
 :h3.FindDeviceContext() - Find the Context Given a Device
  
@@ -265,8 +275,8 @@ struct XYspace *Context(device, units)
        IfTrace2((MustTraceCalls),"Context(%x, %f)\n", device, &units);
  
        ARGCHECK((device == NULL), "Context of NULLDEVICE not allowed",
-                    NULL, IDENTITY, (0));
-       ARGCHECK((units == 0.0), "Context: bad units", NULL, IDENTITY, (0));
+                    NULL, IDENTITY, (0), struct XYspace *);
+       ARGCHECK((units == 0.0), "Context: bad units", NULL, IDENTITY, (0), struct XYspace *);
  
        n = FindDeviceContext(device);
  
@@ -282,6 +292,7 @@ struct XYspace *Context(device, units)
        S->context = n;
        return(S);
 }
+#endif
  
 /*
 :h3.ConsiderContext() - Adjust a Matrix to Take Out Device Transform
@@ -400,6 +411,7 @@ fractpel FXYboth(cx, cy, x, y)
        return((fractpel) r);
 }
  
+/*ARGSUSED*/
 fractpel FXonly(cx, cy, x, y)
        register double cx,cy;  /* x and y coefficients                       */
        register double x,y;  /* user x,y                                     */
@@ -410,6 +422,7 @@ fractpel FXonly(cx, cy, x, y)
        return((fractpel) r);
 }
  
+/*ARGSUSED*/
 fractpel FYonly(cx, cy, x, y)
        register double cx,cy;  /* x and y coefficients                       */
        register double x,y;  /* user x,y                                     */
@@ -437,6 +450,7 @@ fractpel IXYboth(cx, cy, x, y)
        return(x * cx + y * cy);
 }
  
+/*ARGSUSED*/
 fractpel IXonly(cx, cy, x, y)
        register fractpel cx,cy;  /* x and y coefficients                     */
        register long x,y;    /* user x,y                                     */
@@ -444,6 +458,7 @@ fractpel IXonly(cx, cy, x, y)
        return(x * cx);
 }
  
+/*ARGSUSED*/
 fractpel IYonly(cx, cy, x, y)
        register fractpel cx,cy;  /* x and y coefficients                     */
        register long x,y;    /* user x,y                                     */
@@ -476,6 +491,7 @@ fractpel FPXYboth(cx, cy, x, y)
        return( FPmult(x, cx) + FPmult(y, cy) );
 }
  
+/*ARGSUSED*/
 fractpel FPXonly(cx, cy, x, y)
        register fractpel cx,cy;  /* x and y coefficients                     */
        register long x,y;    /* user x,y                                     */
@@ -483,6 +499,7 @@ fractpel FPXonly(cx, cy, x, y)
        return( FPmult(x, cx) );
 }
  
+/*ARGSUSED*/
 fractpel FPYonly(cx, cy, x, y)
        register fractpel cx,cy;  /* x and y coefficients                     */
        register long x,y;    /* user x,y                                     */
@@ -758,6 +775,7 @@ We special-case different settings of 'degrees' for performance
 and accuracy within the DegreeSin() and DegreeCos() routines themselves.
 */
  
+#ifdef notdef
 struct xobject *xiRotate(obj, degrees)
        struct xobject *obj;  /* object to be transformed                     */
        double degrees;       /* degrees of COUNTER-clockwise rotation        */
@@ -772,6 +790,7 @@ struct xobject *xiRotate(obj, degrees)
        ConsiderContext(obj, M);
        return(Xform(obj, M));
 }
+#endif
  
 /*
 :h3.PseudoSpace() - Build a Coordinate Space from a Matrix
@@ -965,6 +984,7 @@ void FormatFP(string, fpel)
 /*
 :h3.DumpSpace() - Display a Coordinate Space
 */
+/*ARGSUSED*/
 void DumpSpace(S)
        register struct XYspace *S;
 {

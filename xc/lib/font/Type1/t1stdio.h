@@ -27,9 +27,6 @@
  * SOFTWARE.
  */
 /* T1IO FILE structure and related stuff */
-#ifndef pointer
-#define pointer void *
-#endif
 #define FILE F_FILE
 typedef unsigned char F_char;
  

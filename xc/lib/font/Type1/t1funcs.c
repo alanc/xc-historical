@@ -528,10 +528,11 @@ char *SYMBOL[] = {
 };
  
  
-extern pointer Xalloc();
+extern unsigned long *Xalloc();
 static void fill();
 static void clearmemory();
  
+/*ARGSUSED*/
 int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
     FontPathElementPtr  fpe;
     FontPtr             *ppFont;
@@ -553,7 +554,7 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
                    scan,
                    image;
        int pad,wordsize;     /* scan & image in bits                         */
-       void *pool;           /* memory pool for ximager objects              */
+       unsigned long *pool;  /* memory pool for ximager objects              */
        int size;             /* for memory size calculations                 */
        struct XYspace *S;    /* coordinate space for character               */
        struct region *area;
@@ -599,7 +600,7 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
        addmemory(pool, size);
  
        scale = (double) vals->pixel;
-       S = Permanent(Scale(IDENTITY, scale, - scale));
+       S = (struct XYspace *)Permanent(Scale(IDENTITY, scale, - scale));
  
        glyphs = type1->glyphs;
  
@@ -696,7 +697,7 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
        pFont->maxPrivate = -1;
        pFont->devPrivates = 0;
  
-       pFont->fontPrivate = (pointer) type1;
+       pFont->fontPrivate = (unsigned char *) type1;
  
        T1FillFontInfo(pFont, vals, fileName, entry->name.name);
  
@@ -954,7 +955,7 @@ Type1RegisterFontFileFunctions()
 Synonym for xalloc() so type1 scanner doesn't have to know about X stuff:
 */
  
-pointer type1alloc(size)
+unsigned long *type1alloc(size)
        unsigned size;
 {
        return xalloc(size);

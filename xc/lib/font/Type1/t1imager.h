@@ -28,7 +28,11 @@
  */
 #ifndef  pointer
  
+#if __STDC__
 #define pointer void *
+#else
+#define pointer char *
+#endif
  
 #endif
  

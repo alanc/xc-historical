@@ -928,7 +928,7 @@ void Consume(n, obj1, obj2, obj3) /* non-ANSI avoids overly strict type checking
 :h3.TypeErr() - Handles "Invalid Object Type" Errors
 */
  
-void *TypeErr(name, obj, expect, ret) /* non-ANSI avoids overly strict type checking */
+struct xobject *TypeErr(name, obj, expect, ret) /* non-ANSI avoids overly strict type checking */
        char *name;           /* Name of routine (for error message)          */
        struct xobject *obj;  /* Object in error                              */
        int expect;           /* type expected                                */
@@ -1030,7 +1030,7 @@ is returned to the caller in case MustCrash is FALSE and ArgErr
 returns to its caller.
 */
  
-void *ArgErr(string, obj, ret) /* non-ANSI avoids overly strict type checking */
+struct xobject *ArgErr(string, obj, ret) /* non-ANSI avoids overly strict type checking */
        char *string;         /* description of error                         */
        struct xobject *obj;  /* object, if any, that was in error            */
        struct xobject *ret;  /* object returned to caller or NULL            */

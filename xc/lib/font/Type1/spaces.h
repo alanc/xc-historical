@@ -31,11 +31,11 @@
 #define   IDENTITY                   t1_Identity
  
 #define   Context(d,u)               t1_Context(d,u)
-#define   Transform(o,f1,f2,f3,f4)   (pointer) t1_Transform(o,f1,f2,f3,f4)
-#define   Rotate(o,d)                (pointer) t1_Rotate(o,d)
-#define   Scale(o,sx,sy)             (pointer) t1_Scale(o,sx,sy)
+#define   Transform(o,f1,f2,f3,f4)   t1_Transform(o,f1,f2,f3,f4)
+#define   Rotate(o,d)                t1_Rotate(o,d)
+#define   Scale(o,sx,sy)             t1_Scale(o,sx,sy)
 #define   QuerySpace(S,f1,f2,f3,f4)  t1_QuerySpace(S,f1,f2,f3,f4)
-#define   Warp(s1,o,s2)              (pointer) t1_Warp(s1,o,s2)
+#define   Warp(s1,o,s2)              t1_Warp(s1,o,s2)
  
 struct XYspace *t1_Context(); /* creates a coordinate space for a device      */
 struct xobject *t1_Transform();  /* transform an object                       */
@@ -50,7 +50,7 @@ void t1_QuerySpace();         /* returns coordinate space matrix              */
 #define   DeviceResolution   t1_DeviceResolution
 #define   InitSpaces()       t1_InitSpaces()
 #define   CopySpace(s)       t1_CopySpace(s)
-#define   Xform(o,M)         (pointer) t1_Xform(o,M)
+#define   Xform(o,M)         t1_Xform(o,M)
 #define   UnConvert(S,pt,xp,yp)    t1_UnConvert(S,pt,xp,yp)
 #define   MatrixMultiply(A,B,C)    t1_MMultiply(A,B,C)
 #define   MatrixInvert(A,B)        t1_MInvert(A,B)

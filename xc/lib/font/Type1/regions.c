@@ -267,7 +267,7 @@ struct region *CopyRegion(area)
         }
         if (area->thresholded != NULL)
     /* replaced DupPicture with Dup() 3-26-91 PNM */
-               r->thresholded = Dup(area->thresholded);
+               r->thresholded = (struct picture *)Dup(area->thresholded);
         return(r);
 }
 /*
@@ -388,7 +388,7 @@ user asked, >1: do it regardless).
                Cflag = Continuity > 1;
  
        ARGCHECK((fillrule != WINDINGRULE && fillrule != EVENODDRULE),
-                       "Interior: bad fill rule", NULL, R, (1,p));
+                       "Interior: bad fill rule", NULL, NULL, (1,p), struct region *);
  
        if (p->type == TEXTTYPE)
 /*             if (fillrule != EVENODDRULE)
@@ -402,8 +402,8 @@ user asked, >1: do it regardless).
  
        R = (struct region *)Allocate(sizeof(struct region), &EmptyRegion, 0);
  
-       ARGCHECK(!ISPATHANCHOR(p), "Interior:  bad path", p, R, (0));
-       ARGCHECK((p->type != MOVETYPE), "Interior:  path not closed", p, R, (0));
+       ARGCHECK(!ISPATHANCHOR(p), "Interior:  bad path", p, R, (0), struct region *);
+       ARGCHECK((p->type != MOVETYPE), "Interior:  path not closed", p, R, (0), struct region *);
  
  
 /* changed definition from !ISPERMANENT to references <= 1 3-26-91 PNM */
@@ -509,7 +509,6 @@ We now apply the full hint value to the ending point of the path segment.
  
                    case CONICTYPE:
                    {
-                       register struct conicsegment *cp = (struct conicsegment *) p;
  
 /*
 For a conic curve, we apply half the hint value to the conic midpoint.
@@ -548,7 +547,7 @@ We'll just double check for closure here.  We forgive an appended
 MOVETYPE at the end of the path, if it isn't closed:
 */
                        if (!ISCLOSED(p->flag) && p->link != NULL)
-                               return(ArgErr("Fill: sub-path not closed", p, NULL));
+                               return((struct region *)ArgErr("Fill: sub-path not closed", p, NULL));
                        break;
  
                    default:
@@ -1349,15 +1348,12 @@ static discard(left, right)
                                        /* should be discarded */
 {
        register struct edgelist *beg,*end,*p;
-       register int y;
  
        IfTrace2((RegionDebug > 0),"discard:  l=%x, r=%x\n", left, right);
  
        beg = left->link;
        if (beg == right)
                return;
- 
-       y = TOP(beg);
  
        for (p = beg; p != right; p = p->link) {
                if (p->link == NULL && right != NULL)
@@ -1506,6 +1502,7 @@ unexpectedly large edge.  ChangeDirection frees this array any time
 it gets a shorter 'dy'.
 */
  
+/*ARGSUSED*/
 void MoreWorkArea(R, x1, y1, x2, y2)
        struct region *R;     /* region we are generating                     */
        fractpel x1,y1;       /* starting point of line                       */
@@ -1731,6 +1728,7 @@ void DumpEdges(edges)
 :h3.edgecheck() - For Debug, Verify that an Edge Obeys the Rules
 */
  
+/*ARGSUSED*/
 static edgecheck(edge, oldmin, oldmax)
        struct edgelist *edge;
        int oldmin,oldmax;

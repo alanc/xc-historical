@@ -812,21 +812,14 @@ when the +CONTINUITY flag is on the Interior() fill rule.
 void ApplyContinuity(R)
 struct region *R;
 {
- int vertical = 0;
- int horizontal = 0;
  struct edgelist *left;
  struct edgelist *right;
  struct edgelist *edge,*e2;
- pel RegionXmin,RegionXmax,RegionYmin,RegionYmax;
  pel rightXabove,rightXbelow,leftXabove,leftXbelow;
  pel leftX,rightX;
  int i;
  long newcenter,abovecenter,belowcenter;
  
- RegionXmin = R->xmin;
- RegionXmax = R->xmax;
- RegionYmin = R->ymin;
- RegionYmax = R->ymax;
  FixSubPaths(R);
  if (RegionDebug >= 3)
         DumpSubPaths(R->anchor);
@@ -844,7 +837,6 @@ struct region *R;
    if(rightX <= leftX)
    {
 /* then, we have a break in a near vertical line */
-    ++vertical;
      leftXabove  = findXofY(left,i-1);
      rightXabove = findXofY(right,i-1);
      if( IsValidPel(leftXabove) && IsValidPel(rightXabove) )
@@ -884,13 +876,11 @@ struct region *R;
    if( !WeAreAtBottom(left,i) && (leftXbelow>=rightX))
    {
 /* then we have a break in a near horizontal line in the middle */
-    ++horizontal;
     writeXofY(right,i,leftXbelow);
    }
    if( !WeAreAtBottom(right,i) && (leftX >=rightXbelow))
    {
 /* then we have a break in a near horizontal line in the middle */
-    ++horizontal;
     writeXofY(left,i,rightXbelow);
    }
   }

@@ -517,10 +517,10 @@ int stemno;
         rthintvalue = stemshift + widthdiff; /* top    */
       }
  
-      stems[stemno].lbhint    = Permanent(Loc(CharSpace, 0.0,  lbhintvalue));
-      stems[stemno].lbrevhint = Permanent(Loc(CharSpace, 0.0, -lbhintvalue));
-      stems[stemno].rthint    = Permanent(Loc(CharSpace, 0.0,  rthintvalue));
-      stems[stemno].rtrevhint = Permanent(Loc(CharSpace, 0.0, -rthintvalue));
+      stems[stemno].lbhint    = (struct segment *)Permanent(Loc(CharSpace, 0.0,  lbhintvalue));
+      stems[stemno].lbrevhint = (struct segment *)Permanent(Loc(CharSpace, 0.0, -lbhintvalue));
+      stems[stemno].rthint    = (struct segment *)Permanent(Loc(CharSpace, 0.0,  rthintvalue));
+      stems[stemno].rtrevhint = (struct segment *)Permanent(Loc(CharSpace, 0.0, -rthintvalue));
  
       return;
  
@@ -540,15 +540,15 @@ int stemno;
   rthintvalue = stemshift + widthdiff / 2; /* right or top    */
  
   if (stems[stemno].vertical) {
-    stems[stemno].lbhint    = Permanent(Loc(CharSpace,  lbhintvalue, 0.0));
-    stems[stemno].lbrevhint = Permanent(Loc(CharSpace, -lbhintvalue, 0.0));
-    stems[stemno].rthint    = Permanent(Loc(CharSpace,  rthintvalue, 0.0));
-    stems[stemno].rtrevhint = Permanent(Loc(CharSpace, -rthintvalue, 0.0));
+    stems[stemno].lbhint    = (struct segment *)Permanent(Loc(CharSpace,  lbhintvalue, 0.0));
+    stems[stemno].lbrevhint = (struct segment *)Permanent(Loc(CharSpace, -lbhintvalue, 0.0));
+    stems[stemno].rthint    = (struct segment *)Permanent(Loc(CharSpace,  rthintvalue, 0.0));
+    stems[stemno].rtrevhint = (struct segment *)Permanent(Loc(CharSpace, -rthintvalue, 0.0));
   } else {
-    stems[stemno].lbhint    = Permanent(Loc(CharSpace, 0.0,  lbhintvalue));
-    stems[stemno].lbrevhint = Permanent(Loc(CharSpace, 0.0, -lbhintvalue));
-    stems[stemno].rthint    = Permanent(Loc(CharSpace, 0.0,  rthintvalue));
-    stems[stemno].rtrevhint = Permanent(Loc(CharSpace, 0.0, -rthintvalue));
+    stems[stemno].lbhint    = (struct segment *)Permanent(Loc(CharSpace, 0.0,  lbhintvalue));
+    stems[stemno].lbrevhint = (struct segment *)Permanent(Loc(CharSpace, 0.0, -lbhintvalue));
+    stems[stemno].rthint    = (struct segment *)Permanent(Loc(CharSpace, 0.0,  rthintvalue));
+    stems[stemno].rtrevhint = (struct segment *)Permanent(Loc(CharSpace, 0.0, -rthintvalue));
   }
 }
  

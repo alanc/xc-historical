@@ -104,6 +104,7 @@ static fontProp extraProps[] = {
  
 #define NPROPS  (NNAMEPROPS + NEXTRAPROPS)
  
+/*ARGSUSED*/
 static void
 FillHeader(pInfo, Vals)
     FontInfoPtr         pInfo;
@@ -327,6 +328,7 @@ ComputeStdProps(pInfo, Vals, Filename, Fontname)
     }
 }
  
+/*ARGSUSED*/
 int
 Type1GetInfoScalable(fpe, pInfo, entry, fontName, fileName, Vals)
     FontPathElementPtr  fpe;
