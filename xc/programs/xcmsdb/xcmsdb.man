@@ -54,7 +54,7 @@ XDCCC_LINEAR_RGB_MATRICES and XDCCC_LINEAR_RGB_CORRECTION properties.
 If the \fB\-color\fP option is not set then
 the query and remove options check for all the properties.
 .TP 8
-.B \-f 32 | 16 | 8
+.B \-format 32 | 16 | 8
 Specifies the property format (32, 16, or 8 bits per entry) for the
 XDCCC_LINEAR_RGB_CORRECTION property.
 Precision of encoded floating point values increases with the increase
