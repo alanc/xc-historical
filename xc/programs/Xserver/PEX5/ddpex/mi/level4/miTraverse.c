@@ -1,4 +1,4 @@
-/* $XConsortium: miTraverse.c,v 5.2 92/08/12 15:24:14 hersh Exp $ */
+/* $XConsortium: miTraverse.c,v 5.3 92/10/05 17:02:37 hersh Exp $ */
 
 
 
@@ -111,20 +111,26 @@ miTraverse(pWks )
     miWksPtr		    pwks = (miWksPtr) pWks->deviceData;
     ddpex4rtn		    err = Success;
     miTraverserState	    trav_state;
+    DrawablePtr             pRealDrawable;
+
 
     if (    (pwks->pRend->pDrawable == NULL)
 	 || (pwks->pRend->drawableId == PEXAlreadyFreed))
 		return (BadDrawable);
 
-    if (!pwks->postedStructs.numStructs) return (Success);
+    if (!pwks->postedStructs.numStructs || !pwks->pCurDrawable) return (Success);
 
     /* set exec_str_flag */
     trav_state.exec_str_flag = ES_YES;
     trav_state.p_curr_pick_el = (ddPickPath *) NULL;
     trav_state.p_curr_sc_el = (ddElementRef *) NULL;
 
+    /* save drawable to be restored later */
+    pRealDrawable = pwks->pRend->pDrawable;
+    pwks->pRend->pDrawable = pwks->pCurDrawable;
+
     /**  call into ddPEX level III Begin Rendering   **/
-    BeginRendering(pwks->pRend, pwks->pRend->pDrawable);
+    BeginRendering(pwks->pRend, pwks->pCurDrawable);
 
     /* traverse all posted structs */
     pos = pwks->postedStructs.postruct;
@@ -151,6 +157,8 @@ miTraverse(pWks )
     }
 
     EndRendering(pwks->pRend);
+
+    pwks->pRend->pDrawable = pRealDrawable;
 
     if (err != Success) {
 	/* do stuff here to return error */

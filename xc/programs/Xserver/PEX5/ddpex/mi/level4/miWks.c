@@ -1,4 +1,4 @@
-/* $XConsortium: miWks.c,v 5.7 92/03/04 14:10:57 hersh Exp $ */
+/* $XConsortium: miWks.c,v 5.8 92/10/14 15:05:58 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -34,6 +34,7 @@ SOFTWARE.
 #include "pexExtract.h"
 #include "Xprotostr.h"
 #include "gcstruct.h"
+#include "resource.h"
 
 /*  Level 4 Workstation Support */
 /* PHIGS Workstation Procedures */
@@ -107,6 +108,104 @@ ddBYTE          mi_dynamics[MI_MAXDRAWABLES][MAX_DYNAMIC] = {
 	(((pws)->dynamics[(int)(dynamic)] == PEXIMM) ||		\
 		((pws)->displayUpdate == PEXVisualizeEach))
 
+SetDoubleDrawable (pwks)
+miWksPtr	pwks;
+{
+     /* This routine sets the drawable pointer. It does this with or
+        without the MultiBuffer Extension
+     */
+ 
+     if (pwks->hasDoubleBuffer) 
+     {
+ 	/* If you have the Double Buffer do whats right for the update mode */
+ 	switch (pwks->displayUpdate) {
+ 	case PEXVisualizeEach:
+ 	case PEXVisualizeWhenever:
+ 	case PEXVisualizeNone:
+ 	    pwks->pCurDrawable = pwks->doubleDrawables[pwks->curDoubleBuffer];
+ 	    pwks->usingDoubleBuffer = MI_TRUE;
+ 	    break;
+ 	case PEXSimulateSome:
+ 	case PEXVisualizeEasy:
+ 	    pwks->pCurDrawable = pwks->pRend->pDrawable;
+ 	    pwks->usingDoubleBuffer = MI_FALSE;
+ 	    break;
+ 	}
+     }
+     else 
+     {
+        /* No Double Buffer so use the renderers drawable */
+ 	pwks->usingDoubleBuffer = MI_FALSE;
+ 	pwks->pCurDrawable = pwks->pRend->pDrawable;
+     }
+}
+ 
+ChangeDoubleBuffers (pwks)
+miWksPtr	pwks;
+{
+ 
+     /* This routine does the actual work to create or delete the
+        Double Buffers. It is a no-op if there is no MultiBuffer
+        Extension, except it still has to SetDoubleBuffers to
+        insure the right drawable gets used
+     */
+ 
+#ifdef MULTIBUFFER
+ 
+     if (pwks->curBufferMode == PEXDoubleBuffered && !pwks->hasDoubleBuffer)
+     {
+ 	/* create the Double Buffers */
+ 	int	i;
+ 	int	client;
+ 	int	result;
+ 	XID	ids[2];
+ 	extern DrawablePtr  GetBufferPointer ();
+ 
+ 	client = CLIENT_ID(pwks->pRend->pDrawable->id);
+ 	for (i = 0; i < 2; i++)
+ 	    ids[i] = FakeClientID (client);
+ 	result = CreateImageBuffers (pwks->pRend->pDrawable, 2, ids,
+ 			    MultibufferUpdateActionBackground,
+ 			    MultibufferUpdateHintFrequent);
+ 	if (result != Success)
+ 	{
+ 	    pwks->pCurDrawable = pwks->pRend->pDrawable;
+ 	    return;
+ 	}
+ 	for (i = 0; i < 2; i++)
+ 	    pwks->doubleDrawables[i] = GetBufferPointer (pwks->pRend->pDrawable, i);
+ 	pwks->curDoubleBuffer = 1;
+ 	pwks->hasDoubleBuffer = MI_TRUE;
+     }
+     else if (pwks->curBufferMode == PEXSingleBuffered && pwks->hasDoubleBuffer)
+     {
+ 	/* Destroy the Double Buffers */
+ 	DestroyImageBuffers (pwks->pRend->pDrawable);
+ 	pwks->hasDoubleBuffer = MI_FALSE;
+     }
+#endif
+ 
+     /* With or Without MultiBuffer Call this to set the Drawable Pointer */
+     SetDoubleDrawable (pwks);
+}
+ 
+SwapDoubleBuffers (pwks)
+miWksPtr	pwks;
+{
+     int	    i;
+ 
+     /* This one swaps the buffers, a no-op if no MultiBuffer Extension */
+ 
+#ifdef MULTIBUFFER
+     if (pwks->usingDoubleBuffer)
+     {
+ 	DisplayImageBuffers (&pwks->pCurDrawable->id, 1);
+ 	pwks->curDoubleBuffer ^= 1;
+ 	pwks->pCurDrawable = pwks->doubleDrawables[pwks->curDoubleBuffer];
+     }
+#endif
+}
+ 
 
 
 /*++
@@ -315,10 +414,12 @@ CreatePhigsWks(pInitInfo, pWKS)
 	pwks->deltaviewMask = 0;
 	pwks->wksUpdate = PEXNotPending;
 	pwks->wksMask = 0;
+
 	pwks->hlhsrUpdate = PEXNotPending;
 
 	pwks->bufferUpdate = PEXNotPending;
 	pwks->curBufferMode = pwks->reqBufferMode = pInitInfo->bufferMode;
+        pwks->hasDoubleBuffer = MI_FALSE;
 
 	pwks->reqNpcSubvolume = NPCInit;
 
@@ -417,6 +518,11 @@ CreatePhigsWks(pInitInfo, pWKS)
 		}
 	}
 
+
+        /* do stuff here to set up hlhsr mode */
+
+        /* do stuff here to set up buffer mode */
+        ChangeDoubleBuffers (pwks);
 
 	return (Success);
 }				/* CreatePhigsWks */
@@ -974,7 +1080,8 @@ RedrawStructures(pWKS)
 
     if (pDraw->class == InputOnly)	/* from dix dispatch.c */
 	return (BadMatch);
-    else {			/* pixmap: fill the rectangle ???? */
+    else if (!pwks->usingDoubleBuffer) {/* pixmap: fill the rectangle ???? */
+
 	GCPtr           pGC;
 	extern GCPtr    CreateScratchGC();
 	extern int	ChangeGC();
@@ -1077,8 +1184,11 @@ RedrawStructures(pWKS)
 	pwks->curBufferMode = pwks->reqBufferMode;
 	pwks->bufferUpdate = PEXNotPending;
 	/* do stuff here to effect change in buffer mode */
+        ChangeDoubleBuffers (pwks);
     }
     err = miTraverse(pWKS);
+
+    SwapDoubleBuffers (pwks);
 
     /* Set visual_state to Correct */
     pwks->visualState = PEXCorrect;
@@ -1292,6 +1402,7 @@ SetDisplayUpdateMode(pWKS, mode)
 	for (i = 0; i < SI_UPDATE_NUM; i++) {
 		if (mode == miDisplayUpdateModeET[type][i].index) {
 			pwks->displayUpdate = mode;
+                        SetDoubleDrawable (pwks);
 			if (mode == PEXVisualizeEach)
 
 				/*
@@ -1804,9 +1915,12 @@ SetBufferMode(pWKS, mode)
 	if ((mode == PEXSingleBuffered) || (mode == PEXDoubleBuffered)) {
 		pwks->reqBufferMode = mode;
 		if (WKSIMMEDIATE(pwks, BUFFER_MODIFY_DYNAMIC))
+                {
 			pwks->curBufferMode = mode;
 		/* bufferUpdate doesn't change */
 		/* do stuff here to effect change in buffer mode */
+                        ChangeDoubleBuffers (pwks);
+                }
 		else {
 			/* don't update display */
 			pwks->bufferUpdate = PEXPending;

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miWks.h,v 5.1 91/02/16 09:54:41 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -30,6 +30,11 @@ SOFTWARE.
 #include "miLUT.h"
 #include "miInfo.h"
 #include "miPick.h"
+
+#ifdef MULTIBUFFER
+#define _MULTIBUF_SERVER_
+#include <X11/extensions/multibuf.h>
+#endif
 
 #ifndef MIWKS_H
 #define MIWKS_H
@@ -162,6 +167,11 @@ typedef struct _miWks {
 	miPickDevice		devices[MIWKS_NUM_PICK_DEVICES];
 	/* pwksList is extra object used by deal with dynamics */
 	listofObj		*pwksList;
+	DrawablePtr		doubleDrawables[2];
+	int			curDoubleBuffer;
+	int			hasDoubleBuffer;
+	int			usingDoubleBuffer;
+	DrawablePtr		pCurDrawable;
 } miWksStr, *miWksPtr;
 
 #endif	/* MIWKS_H */
