@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: dispatch.c,v 1.1 87/08/14 09:11:56 swick Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1777,6 +1777,7 @@ ProcGetImage(client)
 	xgi.visual = None;
     }
     xgi.type = X_Reply;
+    xgi.sequenceNumber = client->sequence;
     xgi.depth = pDraw->depth;
     if(stuff->format == ZPixmap)
     {
