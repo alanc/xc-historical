@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.49 90/01/04 19:34:22 keith Exp $ */
+/* $XConsortium: servermd.h,v 1.50 90/03/05 11:42:43 keith Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -86,7 +86,9 @@ SOFTWARE.
  *  FAST_CONSTANT_OFFSET_MODE - (cfb and mfb)
  *	This define is used on machines which have no auto-increment
  *	addressing mode, but do have an effectively free constant-offset
- *	addressing mode.  Only MIPS uses this currently.
+ *	addressing mode.  Currently defined for MIPS and SPARC, even though
+ *	I remember the cg6 as performing better without it (cg3 definitely
+ *	performs better with it).
  *	
  *  LARGE_INSTRUCTION_CACHE -
  *	This define increases the number of times some loops are
@@ -130,6 +132,7 @@ SOFTWARE.
 #ifdef sparc
 # define AVOID_MEMORY_READ
 # define LARGE_INSTRUCTION_CACHE
+# define FAST_CONSTANT_OFFSET_MODE
 #endif
 
 #ifdef mc68020
