@@ -1,5 +1,4 @@
-/* $Header$ */
-/* $Header$ */
+/* $Header: XrmConvert.c,v 1.1 87/09/12 12:27:36 jg Locked $ */
 #ifndef lint
 static char *sccsid = "@(#)XrmConvert.c	1.6	2/25/87";
 #endif lint
@@ -200,11 +199,13 @@ void _XrmConvert(screen, fromType, from, toType, to)
 	    if ((*to).addr != NULL) {
 	        CacheEnter(screen, fromType, from, toType, to, hash);
 	    } else {
+#ifdef notdef
 	        (void)sprintf(msg, "Bad source value for '%s' to '%s' conversion.\n",
 		    XrmRepresentationToAtom(fromType),
 		    XrmRepresentationToAtom(toType));
 /* ||| Some sort of pluggable warning call */
 	    	(void) fprintf(stderr, "%s", msg);
+#endif
 	    }
 	} else {
 	    (void)sprintf(msg, "No type converter registered for '%s' to '%s'.\n",
