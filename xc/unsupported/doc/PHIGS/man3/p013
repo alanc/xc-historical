@@ -1,5 +1,5 @@
 .\"
-.\" $XConsortium$
+.\" $XConsortium: p013,v 5.1 91/02/16 09:36:57 rws Exp $
 .\"
 .\" 
 .\" Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -33,7 +33,7 @@ create a \s-23D\s+2 extended cell array element
 .ta 1.4i 3i
 .nf
 void
-pcell_array3_plus ( paral, dim, colour_type, colrs )
+pcell_array3_plus ( paral, dim, colour_model, colrs )
 Pparal	*paral;	\fIcell parallelogram: [0]=P; [1]=Q; [2]=R\fP
 Pint_size	*dim;	\fIdimension of cell: DX and DY\fP
 Pint	colour_model;	\fIcolour model\fP
@@ -69,8 +69,8 @@ typedef struct {
 } Pparal;
 .IP
 .fi
-.IP \fIcolour_type\fP
-The colour type for specified cell colours.
+.IP \fIcolour_model\fP
+The colour model for specified cell colours.
 .sp
 .nf
 .ta .5i +\w'PMODEL_CIELUV     'u 
