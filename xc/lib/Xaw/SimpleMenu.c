@@ -1,4 +1,4 @@
-/* $XConsortium: SimpleMenu.c,v 1.39 91/06/22 18:03:29 rws Exp $ */
+/* $XConsortium: SimpleMenu.c,v 1.40 91/10/16 21:39:50 eswu Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -1201,11 +1201,11 @@ Widget w;
 
     height = smw->simple_menu.top_margin + smw->simple_menu.bottom_margin;
     
-    if (smw->simple_menu.row_height == 0) 
+    if (smw->simple_menu.row_height == 0) {
 	ForAllChildren(smw, entry) 
 	    if (XtIsManaged ((Widget) *entry)) 
 		height += (*entry)->rectangle.height;
-    else 
+    } else 
 	height += smw->simple_menu.row_height * smw->composite.num_children;
 	
     return(height);
