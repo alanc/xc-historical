@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.88 88/10/18 10:09:47 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.89 88/10/18 10:41:00 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif lint
 
@@ -312,10 +312,10 @@ static void ExpandTable()
 
     i = oldTable->size * 2;
     table = (HashTable) XtCalloc(1,
-	    (unsigned) sizeof(HashTableRec)+i*sizeof(HashRec));
+	    (unsigned) sizeof(HashTableRec)+i*sizeof(HashPtr));
 
     table->size = i;
-    table->count = oldTable->count;
+    table->count = 0;
     for (i = 0; i<oldTable->size; i++) {
 	HashPtr hp;
 	hp = oldTable->entries[i];
