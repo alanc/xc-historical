@@ -1,4 +1,4 @@
-/* $XConsortium: utx_conv.c,v 5.6 91/07/19 14:21:16 hersh Exp $ */
+/* $XConsortium: utx_conv.c,v 5.7 91/08/26 12:35:38 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1498,7 +1498,7 @@ phg_utx_ws_xform_from_pex( buf, ws_xform )
     register	caddr_t			buf;
     register	Phg_ret_ws_tran3	*ws_xform;
 {
-    ws_xform->state = PEX_CONV_TO_Pupdatest(*(CARD8 *)buf);
+    ws_xform->state = PEX_CONV_TO_Pupdatest(*(CARD32 *)buf);
     buf += 4;
     ws_xform->req_window.x_min = ((pexNpcSubvolume *)buf)->minval.x;
     ws_xform->req_window.y_min = ((pexNpcSubvolume *)buf)->minval.y;
