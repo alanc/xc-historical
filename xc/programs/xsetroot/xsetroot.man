@@ -1,4 +1,4 @@
-.TH XSETROOT 1 "1 March 1988" "X Version 11"
+.TH XSETROOT 1 "22 October 1988" "X Version 11"
 .SH NAME
 xsetroot \- root window parameter setting utility for X
 .SH SYNOPSIS
@@ -19,12 +19,12 @@ until you find a personalized look that you like, then put the
 command that produces it into your X startup file.
 If no options are specified, or if
 .I -def
-is specified, the window is reset to its default state.  the
+is specified, the window is reset to its default state.  The
 .I -def
 option can be specified along with other options and only the non-specified
 characteristics will be reset to the default state.
 .PP
-Only one of the background color/tileing changing options 
+Only one of the background color/tiling changing options 
 (-solid, -gray, -grey, -bitmap, and -mod) may be specified at a time.
 .SH OPTIONS
 .PP
@@ -37,7 +37,7 @@ to the familiar gray mesh and the cursor to the hollow x shape.)
 .IP "\fB-cursor\fP \fIcursorfile\fP \fImaskfile\fP"
 This lets you change the pointer cursor to whatever
 you want when the pointer cursor is outside of any window.
-Cursor and mask files are bitmaps (little pictures), and can made with the
+Cursor and mask files are bitmaps (little pictures), and can be made with the
 .I bitmap(1)
 program.  You probably want the mask file to be all black until you
 get used to the way masks work.
@@ -56,9 +56,10 @@ Make the entire background gray.  (Easier on the eyes.)
 .IP \fB-grey\fP
 Make the entire background grey.
 .IP "\fB-fg\fP \fIcolor\fP"
-Use ``color'' as the foreground color when setting attributes.
+Use ``color'' as the foreground color.  Foreground and background colors
+are meaningful only in combination with -cursor, -bitmap, or -mod.
 .IP "\fB-bg\fP \fIcolor\fP"
-Use ``color'' as the background color when setting attributes.
+Use ``color'' as the background color.  
 .IP \fB-rv\fP
 This exchanges the foreground and background colors.  Normally the foreground
 color is black and the background color is white.
