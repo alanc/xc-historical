@@ -2,6 +2,7 @@
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
              FC = bdftosnf/bdftosnf
+        FCFLAGS = -t
       MKFONTDIR = mkfontdir/mkfontdir
         SUBDIRS = bdftosnf mkfontdir
         HEADERS = cursorfont.h
@@ -39,6 +40,7 @@ snf/Makefile: bdf Makefile
 	$(RM) $@; \
 	echo "# This makefile is created automagically by ../Makefile" > $@; \
 	echo 'FC=../$(FC)' >> $@; \
+	echo 'FCFLAGS=$(FCFLAGS)' >> $@; \
 	echo 'RM=$(RM)' >> $@; \
 	echo 'LN=$(LN)' >> $@; \
 	echo 'MKFONTDIR=../$(MKFONTDIR)' >> $@; \
@@ -58,7 +60,7 @@ snf/Makefile: bdf Makefile
 	(cd bdf; for i in *.bdf; do \
 	    f=`basename $$i .bdf`; \
 	    echo $$f.snf'$$(ZSUFFIX)': ../bdf/$$f.bdf '$$(FC)' >> ../$@; \
-	    echo '	$$(FC)' ../bdf/$$f.bdf '$$(COMPRESS) > $$@' >> ../$@; \
+	    echo '	$$(FC) $$(FCFLAGS)' ../bdf/$$f.bdf '$$(COMPRESS) > $$@' >> ../$@; \
 	done)
 
 snf:
