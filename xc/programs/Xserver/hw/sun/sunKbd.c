@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.22 93/08/13 14:34:16 kaleb Exp $ */
+/* $XConsortium: sunKbd.c,v 5.23 93/08/31 18:17:17 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -159,8 +159,9 @@ static void ConvertCase(sym, lower, upper)
 static void SwapKeys()
 {
     int i;
+    KeySym k;
 
-    for (i = 4; i < sunConKeySyms->maxKeyCode * sunConKeySyms->mapWidth; i++)
+    for (i = 2; i < sunConKeySyms->maxKeyCode * sunConKeySyms->mapWidth; i++)
 	if (sunConKeySyms->map[i] == XK_L1 ||
 	    sunConKeySyms->map[i] == XK_L2 ||
 	    sunConKeySyms->map[i] == XK_L3 ||
@@ -171,8 +172,10 @@ static void SwapKeys()
 	    sunConKeySyms->map[i] == XK_L8 ||
 	    sunConKeySyms->map[i] == XK_L9 ||
 	    sunConKeySyms->map[i] == XK_L10) {
-	    sunConKeySyms->map[i - 2] ^= sunConKeySyms->map[i];
-	    sunConKeySyms->map[i] ^= sunConKeySyms->map[i - 2];
+	    /* yes, I could have done a clever two line swap! */
+	    k = sunConKeySyms->map[i - 2];
+	    sunConKeySyms->map[i - 2] = sunConKeySyms->map[i];
+	    sunConKeySyms->map[i] = k;
 	}
 }
 
