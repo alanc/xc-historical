@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XChkWinEv.c,v 11.8 87/05/27 16:38:08 jg Exp $ */
+/* $Header: XChkWinEv.c,v 11.8 87/09/08 12:29:09 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1987	*/
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -14,7 +14,7 @@ extern long _event_to_mask[];
  * Events earlier in the queue are not discarded.
  */
 
-int XCheckWindowEvent (dpy, w, mask, event)
+Bool XCheckWindowEvent (dpy, w, mask, event)
         register Display *dpy;
 	Window w;		/* Selected window. */
 	int mask;		/* Selected event mask. */

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XChkIfEv.c,v 11.4 87/05/24 21:33:05 jg Exp $ */
+/* $Header: XChkIfEv.c,v 11.4 87/09/08 12:28:54 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1987	*/
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -13,7 +13,7 @@ extern _XQEvent *_qfree;
  * Events earlier in the queue are not discarded.
  */
 
-int XCheckIfEvent (dpy, event, predicate, arg)
+Bool XCheckIfEvent (dpy, event, predicate, arg)
         register Display *dpy;
 	Bool (*predicate)();		/* function to call */
 	register XEvent *event;		/* XEvent to be filled in. */

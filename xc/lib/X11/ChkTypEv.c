@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XChkTypEv.c,v 11.2 87/08/29 19:27:36 jg Exp $ */
+/* $Header: XChkTypEv.c,v 11.2 87/09/08 12:35:26 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1987	*/
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -13,7 +13,7 @@ extern _XQEvent *_qfree;
  * Events earlier in the queue are not discarded.
  */
 
-int XCheckTypedEvent (dpy, type, event)
+Bool XCheckTypedEvent (dpy, type, event)
         register Display *dpy;
 	int type;		/* Selected event type. */
 	register XEvent *event;	/* XEvent to be filled in. */
