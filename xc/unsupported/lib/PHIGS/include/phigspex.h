@@ -1,4 +1,4 @@
-/* $XConsortium: phigspex.h,v 5.2 91/02/18 11:15:15 rws Exp $ */
+/* $XConsortium: phigspex.h,v 5.3 91/07/01 16:21:38 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -100,6 +100,11 @@ SOFTWARE.
 #define PEX_CONV_TO_Pvec(pexdataPtr,phigsdataPtr) { \
 	(phigsdataPtr)->delta_x = (pexdataPtr)->x; \
 	(phigsdataPtr)->delta_y = (pexdataPtr)->y; \
+}
+
+#define PEX_CONV_TO_Pfloat_size(pexdataPtr,phigsdataPtr) { \
+	(phigsdataPtr)->size_x = (pexdataPtr)->x; \
+	(phigsdataPtr)->size_y = (pexdataPtr)->y; \
 }
 
 #define PEX_CONV_TO_Pmatrix3(pexdataPtr,phigsdataPtr) { \
@@ -234,8 +239,8 @@ SOFTWARE.
 	case PASPECT_LINETYPE: (_p) = PEXLineTypeAsf; break; \
 	case PASPECT_LINEWIDTH: (_p) = PEXLineWidthAsf; break; \
 	case PASPECT_LINE_COLR_IND: (_p) = PEXLineColourAsf; break; \
-	case PASPECT_MARKERTYPE: (_p) = PEXMarkerTypeAsf; break; \
-	case PASPECT_MARKERSIZE: (_p) = PEXMarkerScaleAsf; break; \
+	case PASPECT_MARKER_TYPE: (_p) = PEXMarkerTypeAsf; break; \
+	case PASPECT_MARKER_SIZE: (_p) = PEXMarkerScaleAsf; break; \
 	case PASPECT_MARKER_COLR_IND: (_p) = PEXMarkerColourAsf; break; \
 	case PASPECT_TEXT_FONT: (_p) = PEXTextFontIndexAsf; break; \
 	case PASPECT_TEXT_PREC: (_p) = PEXTextPrecAsf; break; \
@@ -270,8 +275,8 @@ SOFTWARE.
 	case PEXLineTypeAsf: (_p) = PASPECT_LINETYPE; break; \
 	case PEXLineWidthAsf: (_p) = PASPECT_LINEWIDTH; break; \
 	case PEXLineColourAsf: (_p) = PASPECT_LINE_COLR_IND; break; \
-	case PEXMarkerTypeAsf: (_p) = PASPECT_MARKERTYPE; break; \
-	case PEXMarkerScaleAsf: (_p) = PASPECT_MARKERSIZE; break; \
+	case PEXMarkerTypeAsf: (_p) = PASPECT_MARKER_TYPE; break; \
+	case PEXMarkerScaleAsf: (_p) = PASPECT_MARKER_SIZE; break; \
 	case PEXMarkerColourAsf: (_p) = PASPECT_MARKER_COLR_IND; break; \
 	case PEXTextFontIndexAsf: (_p) = PASPECT_TEXT_FONT; break; \
 	case PEXTextPrecAsf: (_p) = PASPECT_TEXT_PREC; break; \
@@ -509,7 +514,7 @@ SOFTWARE.
 			/* unknown colour type, no way to determine size */ 0)
 
 #define PEX_CONV_TO_Pupdatest(_m) \
-    ((_m) == PEXPending ? PUPD_PENDING : PUPD_NOT_PENDING )
+    ((_m) == PEXPending ? PUPD_PEND : PUPD_NOT_PEND )
 
 #define PEX_CONV_PHIGS_HLHSR_MODE( _m ) \
     ((_m) == PHIGS_HLHSR_MODE_NONE ? PEXHlhsrOff : \

@@ -1,4 +1,4 @@
-/* $XConsortium: cb_wst.c,v 5.5 91/04/14 11:26:50 rws Exp $ */
+/* $XConsortium: cb_wst.c,v 5.6 91/06/18 19:30:39 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1506,9 +1506,9 @@ Ppat_rep	**rep;		/* OUT predefined pattern rep	*/
 
 	*error_ind = 0;
 	size = (num_colrs = (dim->size_x * dim->size_y)) * sizeof(Pint);
-	if ( CB_STORE_SPACE( store, size, error_ind ) ) {
-	    *rep = &store->data.pat_rep;
-	    (*rep)->colr_array = (Pint *)store->buf;
+	if ( CB_STORE_SPACE( ((_Pstore *)store), size, error_ind ) ) {
+	    *rep = &((_Pstore *)store)->data.pat_rep;
+	    (*rep)->colr_array = (Pint *)((_Pstore *)store)->buf;
 	    (*rep)->dims = *dim;
 	    if ( num_colrs > 0 ) {
 		for ( i = 0; i < num_colrs; i++ )
@@ -1556,9 +1556,9 @@ Ppat_rep_plus	**rep;	/* OUT predefined pattern rep	*/
 
 	*error_ind = 0;
 	size = (dim->size_x * dim->size_y) * sizeof(Pcoval);
-	if ( CB_STORE_SPACE( store, size, error_ind ) ) {
-	    *rep = &store->data.ext_pat_rep;
-	    (*rep)->colr_array = (Pcoval *)store->buf;
+	if ( CB_STORE_SPACE( ((_Pstore *)store), size, error_ind ) ) {
+	    *rep = &((_Pstore *)store)->data.ext_pat_rep;
+	    (*rep)->colr_array = (Pcoval *)((_Pstore *)store)->buf;
 	    (*rep)->dims = *dim;
 	    (*rep)->type = dt->out_dt.pattern_types[index-1].type;
 	    if ( size > 0 )
@@ -2105,39 +2105,31 @@ Pnum_in	*numbers;	/* OUT number of input devices	*/
 }
 
 static void
-copy_pet_list( num, list, length, start, error_ind, length_list, pets )
+copy_pet_list( num, list, store, error_ind, pets )
     Pint	num;
     Pint	*list;
-    Pint	length;
-    Pint	start;
+    Pstore	store;
     Pint	*error_ind;
-    Pint	*length_list;
-    Pint_list	*pets;
+    Pint_list	**pets;	     /* Note: *pets must already be set upon entry */
 {
-    *length_list = num;
+    int         size = num * sizeof(Pint);
+    
+    (*pets)->num_ints = num;
     if ( num > 0 ) {
-	if ( start < 0 || start >= *length_list )
-	    *error_ind = ERR2201;
-	else if ( length > 0 ) {
-	    pets->num_ints = MIN(length, num - start);
-	    bcopy( (char*)&list[start], (char*)pets->ints,
-		pets->num_ints * sizeof(Pint) );
-	} else if ( length < 0 )
-		*error_ind = ERRN153;
+	if (CB_STORE_SPACE( ((_Pstore *)store), size, error_ind ))
+	    bcopy( (char*)list, (char*)((_Pstore *)store)->buf, size );
     }
+    (*pets)->ints = (Pint *)((_Pstore *)store)->buf;
 }
 
 void
-pinq_def_loc_data3(ws_type, device, len, st, store, error_ind, loc_pos, pets, tlen, echo_vol, loc_data)
-Pint		ws_type;		/* workstation type	             */
+pinq_def_loc_data3(ws_type, device, store, error_ind, loc_pos, pets, echo_vol, loc_data)
+Pint		ws_type;	/* workstation type	             */
 Pint		device;		/* logical input device number	     */
-Pint		len;
-Pint		st;
 Pstore		store;		/* handle to Store object            */
 Pint		*error_ind;	/* OUT error indicator	             */
 Ppoint3         *loc_pos;       /* OUT default initial position      */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;
+Pint_list       **pets;         /* OUT list of prompt and echo types */
 Plimit3         *echo_vol;      /* OUT default echo volume           */
 Ploc_data3      **loc_data;     /* OUT default data record           */
 {
@@ -2166,24 +2158,22 @@ Ploc_data3      **loc_data;     /* OUT default data record           */
 	defloc = &dt->in_dt.locators[device-1];
 	*loc_pos = defloc->position;
 	*echo_vol = defloc->e_volume;
-	*loc_data = &store->data.loc_data3;
+	*loc_data = &((_Pstore *)store)->data.loc_data3.drec;
 	**loc_data = defloc->record;
-	copy_pet_list( defloc->num_pets, defloc->pets, len, st, error_ind,
-	    tlen, pets );
+	*pets = &((_Pstore *)store)->data.loc_data3.pets;
+	copy_pet_list( defloc->num_pets, defloc->pets, store, error_ind,
+	    pets );
     }
 }
 
 void
-pinq_def_loc_data(ws_type, device, len, st, store, error_ind, loc_pos, pets, tlen, echo_area, loc_data)
+pinq_def_loc_data(ws_type, device, store, error_ind, loc_pos, pets, echo_area, loc_data)
 Pint	   ws_type;		/* workstation type	*/
 Pint	   device;		/* logical input device number	*/
-Pint		len;
-Pint		st;
 Pstore	   store;		/* handle to Store object       */
 Pint	   *error_ind;      	/* OUT error indicator	*/
 Ppoint     *loc_pos;            /* OUT default initial position  */
-Pint_list  *pets;               /* OUT list of prompt and echo types */
-Pint		*tlen;
+Pint_list  **pets;              /* OUT list of prompt and echo types */
 Plimit     *echo_area;           /* OUT default echo volume       */
 Ploc_data  **loc_data;          /* OUT default data record       */
 {
@@ -2213,24 +2203,22 @@ Ploc_data  **loc_data;          /* OUT default data record       */
 	loc_pos->x = defloc->position.x;
 	loc_pos->y = defloc->position.y;
 	CB_ECHO_VOLUME_TO_AREA( defloc->e_volume, *echo_area );
-	*loc_data = &store->data.loc_data;
+	*loc_data = &((_Pstore *)store)->data.loc_data.drec;
 	**loc_data = *(Ploc_data *)&defloc->record;
-	copy_pet_list( defloc->num_pets, defloc->pets, len, st, error_ind,
-	    tlen, pets );
+	*pets = &((_Pstore *)store)->data.loc_data3.pets;
+	copy_pet_list( defloc->num_pets, defloc->pets, store, error_ind,
+	    pets );
     }
 }
 
 void
-pinq_def_stroke_data3( ws_type, device, len, st, store, error_ind, max_buf_size, pets, tlen, echo_volume, stroke_data )
-Pint		ws_type;		/* workstation type	*/
+pinq_def_stroke_data3( ws_type, device, store, error_ind, max_buf_size, pets, echo_volume, stroke_data )
+Pint		ws_type;	/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;
-Pint		st;
-Pstore          store;         /* handle to Store object       */
+Pstore          store;          /* handle to Store object       */
 Pint            *error_ind;     /* OUT error indicator          */
 Pint            *max_buf_size;  /* OUT max. input buffer size   */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;
+Pint_list       **pets;         /* OUT list of prompt and echo types */
 Plimit3         *echo_volume;   /* OUT default echo volume      */
 Pstroke_data3   **stroke_data;  /* OUT default data record      */
 {
@@ -2259,25 +2247,23 @@ Pstroke_data3   **stroke_data;  /* OUT default data record      */
 	defstroke = &dt->in_dt.strokes[device-1];
 	*max_buf_size = defstroke->max_bufsize;
 	*echo_volume = defstroke->e_volume;
-	*stroke_data = &store->data.stroke_data3;
+	*stroke_data = &((_Pstore *)store)->data.stroke_data3.drec;
 	**stroke_data = defstroke->record;
-	copy_pet_list( defstroke->num_pets, defstroke->pets, len, st, error_ind,
-	    tlen, pets );
+	*pets = &((_Pstore *)store)->data.loc_data3.pets;
+	copy_pet_list( defstroke->num_pets, defstroke->pets, store, error_ind,
+	    pets );
     }
 }
 
 void
-pinq_def_stroke_data(ws_type, device, len, st, store, error_ind, max_buf_size, pets, tlen, echo_area, stroke_data)
-Pint		ws_type;		/* workstation type	*/
+pinq_def_stroke_data(ws_type, device, store, error_ind, max_buf_size, pets, echo_area, stroke_data)
+Pint		ws_type;	/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;
-Pint		st;
-Pstore          store;         /* handle to Store object       */
+Pstore          store;          /* handle to Store object       */
 Pint            *error_ind;     /* OUT error indicator          */
 Pint            *max_buf_size;  /* OUT max. input buffer size   */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;
-Plimit          *echo_area;      /* OUT default echo volume      */
+Pint_list       **pets;         /* OUT list of prompt and echo types */
+Plimit          *echo_area;     /* OUT default echo volume      */
 Pstroke_data    **stroke_data;  /* OUT default data record      */
 {
     /* Error 51 is not generated by this function. */
@@ -2305,29 +2291,27 @@ Pstroke_data    **stroke_data;  /* OUT default data record      */
 	defstroke = &dt->in_dt.strokes[device-1];
 	*max_buf_size = defstroke->max_bufsize;
 	CB_ECHO_VOLUME_TO_AREA( defstroke->e_volume, *echo_area );
-	*stroke_data = &store->data.stroke_data;
+	*stroke_data = &((_Pstore *)store)->data.stroke_data.drec;
 	(*stroke_data)->buffer_size = defstroke->record.buffer_size;
 	(*stroke_data)->init_pos = defstroke->record.init_pos;
 	(*stroke_data)->x_interval = defstroke->record.x_interval;
 	(*stroke_data)->y_interval = defstroke->record.y_interval;
 	(*stroke_data)->time_interval = defstroke->record.time_interval;
-	copy_pet_list( defstroke->num_pets, defstroke->pets, len, st, error_ind,
-	    tlen, pets );
+	*pets = &((_Pstore *)store)->data.loc_data3.pets;
+	copy_pet_list( defstroke->num_pets, defstroke->pets, store, error_ind,
+	    pets );
     }
 }
 
 void
-pinq_def_val_data3(ws_type, device, len, st, store, error_ind, def_value, pets, tlen, echo_vol, val_data)
-Pint		ws_type;		/* workstation type	*/
+pinq_def_val_data3(ws_type, device, store, error_ind, def_value, pets, echo_vol, val_data)
+Pint		ws_type;	/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;
-Pint		st;
-Pstore          store;         /* handle to Store object       */
+Pstore          store;          /* handle to Store object       */
 Pint            *error_ind;     /* OUT error indicator          */
 Pfloat          *def_value;     /* OUT default initial value    */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;
-Plimit3         *echo_vol;     /* OUT default echo volume      */
+Pint_list       **pets;         /* OUT list of prompt and echo types */
+Plimit3         *echo_vol;      /* OUT default echo volume      */
 Pval_data3      **val_data;     /* OUT default data record      */
 {
     /* Error 51 is not generated by this function. */
@@ -2355,24 +2339,22 @@ Pval_data3      **val_data;     /* OUT default data record      */
 	defval = &dt->in_dt.valuators[device-1];
 	*def_value = defval->value;
 	*echo_vol = defval->e_volume;
-	*val_data = &store->data.val_data3;
+	*val_data = &((_Pstore *)store)->data.val_data3.drec;
 	**val_data = defval->record;
-	copy_pet_list( defval->num_pets, defval->pets, len, st, error_ind,
-	    tlen, pets );
+	*pets = &((_Pstore *)store)->data.loc_data3.pets;
+	copy_pet_list( defval->num_pets, defval->pets, store, error_ind,
+	    pets );
     }
 }
 
 void
-pinq_def_val_data(ws_type, device, len, st, store, error_ind, def_value, pets, tlen, echo_area, val_data)
-Pint 	ws_type;		/* workstation type	*/
+pinq_def_val_data(ws_type, device, store, error_ind, def_value, pets, echo_area, val_data)
+Pint 		ws_type;	/* workstation type	*/
 Pint    	device;		/* logical input device number	*/
-Pint		len;
-Pint		st;
-Pstore          store;         /* handle to Store object       */
-Pint            *error_ind;       /* OUT error indicator          */
+Pstore          store;          /* handle to Store object       */
+Pint            *error_ind;     /* OUT error indicator          */
 Pfloat          *def_value;     /* OUT default initial value    */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;
+Pint_list       **pets;         /* OUT list of prompt and echo types */
 Plimit          *echo_area;     /* OUT default echo volume      */
 Pval_data       **val_data;     /* OUT default data record      */
 {
@@ -2401,24 +2383,22 @@ Pval_data       **val_data;     /* OUT default data record      */
 	defval = &dt->in_dt.valuators[device-1];
 	*def_value = defval->value;
 	CB_ECHO_VOLUME_TO_AREA( defval->e_volume, *echo_area );
-	*val_data = &store->data.val_data3;
+	*val_data = &((_Pstore *)store)->data.val_data3.drec;
 	**val_data = *(Pval_data *)&defval->record;
-	copy_pet_list( defval->num_pets, defval->pets, len, st, error_ind,
-	    tlen, pets );
+	*pets = &((_Pstore *)store)->data.loc_data3.pets;
+	copy_pet_list( defval->num_pets, defval->pets, store, error_ind,
+	    pets );
     }
 }
 
 void
-pinq_def_choice_data3(ws_type, device, len, st, store, error_ind, max_choices, pets, tlen, echo_vol, choice_data)
-Pint		ws_type;		/* workstation type	*/
+pinq_def_choice_data3(ws_type, device, store, error_ind, max_choices, pets, echo_vol, choice_data)
+Pint		ws_type;	/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;
-Pint		st;
-Pstore          store;         /* handle to Store object       */
-Pint            *error_ind;       /* OUT error indicator          */
+Pstore          store;          /* handle to Store object       */
+Pint            *error_ind;     /* OUT error indicator          */
 Pint            *max_choices;   /* OUT max. number of choices   */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;
+Pint_list       **pets;         /* OUT list of prompt and echo types */
 Plimit3         *echo_vol;      /* OUT default echo volume      */
 Pchoice_data3   **choice_data;  /* OUT default data record      */
 {
@@ -2447,25 +2427,23 @@ Pchoice_data3   **choice_data;  /* OUT default data record      */
 	defchoice = &dt->in_dt.choices[device-1];
 	*max_choices = defchoice->choices;
 	*echo_vol = defchoice->e_volume;
-	*choice_data = &store->data.choice_data3;
+	*choice_data = &((_Pstore *)store)->data.choice_data3.drec;
 	**choice_data = defchoice->record;
-	copy_pet_list( defchoice->num_pets, defchoice->pets, len, st, error_ind,
-	    tlen, pets );
+	*pets = &((_Pstore *)store)->data.loc_data3.pets;
+	copy_pet_list( defchoice->num_pets, defchoice->pets, store, error_ind,
+	    pets );
     }
 }
 
 void
-pinq_def_choice_data(ws_type, device, len, st, store, error_ind, max_choices, pets, tlen, echo_area, choice_data)
-Pint		ws_type;		/* workstation type	*/
+pinq_def_choice_data(ws_type, device, store, error_ind, max_choices, pets, echo_area, choice_data)
+Pint		ws_type;	/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;
-Pint		st;
-Pstore          store;         /* handle to Store object       */
-Pint            *error_ind;       /* OUT error indicator          */
+Pstore          store;          /* handle to Store object       */
+Pint            *error_ind;     /* OUT error indicator          */
 Pint            *max_choices;   /* OUT max. number of choices   */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;
-Plimit          *echo_area;      /* OUT default echo volume      */
+Pint_list       **pets;         /* OUT list of prompt and echo types */
+Plimit          *echo_area;     /* OUT default echo volume      */
 Pchoice_data    **choice_data;  /* OUT default data record      */
 {
     /* Error 51 is not generated by this function. */
@@ -2493,26 +2471,23 @@ Pchoice_data    **choice_data;  /* OUT default data record      */
 	defchoice = &dt->in_dt.choices[device-1];
 	*max_choices = defchoice->choices;
 	CB_ECHO_VOLUME_TO_AREA( defchoice->e_volume, *echo_area );
-	*choice_data = &store->data.choice_data;
+	*choice_data = &((_Pstore *)store)->data.choice_data.drec;
 	**choice_data = *(Pchoice_data *)&defchoice->record;
-	copy_pet_list( defchoice->num_pets, defchoice->pets, len, st, error_ind,
-	    tlen, pets );
+	*pets = &((_Pstore *)store)->data.loc_data3.pets;
+	copy_pet_list( defchoice->num_pets, defchoice->pets, store, error_ind,
+	    pets );
     }
 }
 
 void
-pinq_def_pick_data3(ws_type, device, len, st, store, error_ind, pets, tlen, echo_vol, pick_data, path_order)
-Pint		ws_type;		/* workstation type	*/
+pinq_def_pick_data3(ws_type, device, store, error_ind, pets, echo_vol, pick_data)
+Pint		ws_type;	/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;
-Pint		st;
-Pstore          store;         /* handle to Store object       */
-Pint            *error_ind;       /* OUT error indicator          */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;
+Pstore          store;          /* handle to Store object       */
+Pint            *error_ind;     /* OUT error indicator          */
+Pint_list       **pets;         /* OUT list of prompt and echo types */
 Plimit3         *echo_vol;      /* OUT default echo volume      */
 Ppick_data3     **pick_data;    /* OUT default data record      */
-Ppath_order	*path_order;
 {
     /* Error 51 is not generated by this function. */
 
@@ -2538,27 +2513,23 @@ Ppath_order	*path_order;
 	*error_ind = 0;
 	defpick = &dt->in_dt.picks[device-1];
 	*echo_vol = defpick->e_volume;
-	*path_order = defpick->order;
-	*pick_data = &store->data.pick_data.drec.pd3;
+	*pick_data = &((_Pstore *)store)->data.pick_data3.drec;
 	**pick_data = defpick->record;
-	copy_pet_list( defpick->num_pets, defpick->pets, len, st, error_ind,
-	    tlen, pets );
+	*pets = &((_Pstore *)store)->data.loc_data3.pets;
+	copy_pet_list( defpick->num_pets, defpick->pets, store, error_ind,
+	    pets );
     }
 }
 
 void
-pinq_def_pick_data(ws_type, device, len, st, store, error_ind, pets, tlen, echo_area, pick_data, path_order)
-Pint		ws_type;		/* workstation type	*/
+pinq_def_pick_data(ws_type, device, store, error_ind, pets, echo_area, pick_data)
+Pint		ws_type;	/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;
-Pint		st;
-Pstore          store;         /* handle to Store object       */
-Pint            *error_ind;       /* OUT error indicator          */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;
-Plimit          *echo_area;      /* OUT default echo volume      */
+Pstore          store;          /* handle to Store object       */
+Pint            *error_ind;     /* OUT error indicator          */
+Pint_list       **pets;         /* OUT list of prompt and echo types */
+Plimit          *echo_area;     /* OUT default echo volume      */
 Ppick_data      **pick_data;    /* OUT default data record      */
-Ppath_order	*path_order;
 {
     /* Error 51 is not generated by this function. */
 
@@ -2584,25 +2555,22 @@ Ppath_order	*path_order;
 	*error_ind = 0;
 	defpick = &dt->in_dt.picks[device-1];
 	CB_ECHO_VOLUME_TO_AREA( defpick->e_volume, *echo_area );
-	*path_order = defpick->order;
-	*pick_data = &store->data.pick_data.drec.pd;
+	*pick_data = &((_Pstore *)store)->data.pick_data.drec;
 	**pick_data = *(Ppick_data *)&defpick->record;
-	copy_pet_list( defpick->num_pets, defpick->pets, len, st, error_ind,
-	    tlen, pets );
+	*pets = &((_Pstore *)store)->data.loc_data3.pets;
+	copy_pet_list( defpick->num_pets, defpick->pets, store, error_ind,
+	    pets );
     }
 }
 
 void
-pinq_def_string_data3(ws_type, device, len, st, store, error_ind, max_buf_size, pets, tlen, echo_vol, string_data)
-Pint		ws_type;		/* workstation type	*/
+pinq_def_string_data3(ws_type, device, store, error_ind, max_buf_size, pets, echo_vol, string_data)
+Pint		ws_type;	/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;
-Pint		st;
-Pstore          store;         /* handle to Store object       */
-Pint            *error_ind;       /* OUT error indicator          */
+Pstore          store;          /* handle to Store object       */
+Pint            *error_ind;     /* OUT error indicator          */
 Pint            *max_buf_size;  /* OUT max. input buffer size   */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;
+Pint_list       **pets;         /* OUT list of prompt and echo types */
 Plimit3         *echo_vol;      /* OUT default echo volume      */
 Pstring_data3   **string_data;  /* OUT default data record      */
 {
@@ -2631,25 +2599,23 @@ Pstring_data3   **string_data;  /* OUT default data record      */
 	defstring = &dt->in_dt.strings[device-1];
 	*max_buf_size = defstring->max_bufsize;
 	*echo_vol = defstring->e_volume;
-	*string_data = &store->data.string_data3;
+	*string_data = &((_Pstore *)store)->data.string_data3.drec;
 	**string_data = defstring->record;
-	copy_pet_list( defstring->num_pets, defstring->pets, len, st, error_ind,
-	    tlen, pets );
+	*pets = &((_Pstore *)store)->data.loc_data3.pets;
+	copy_pet_list( defstring->num_pets, defstring->pets, store, error_ind,
+	    pets );
     }
 }
 
 void
-pinq_def_string_data(ws_type, device, len, st, store, error_ind, max_buf_size, pets, tlen, echo_area, string_data)
-Pint		ws_type;		/* workstation type	*/
+pinq_def_string_data(ws_type, device, store, error_ind, max_buf_size, pets, echo_area, string_data)
+Pint		ws_type;	/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;
-Pint		st;
-Pstore          store;         /* handle to Store object       */
-Pint            *error_ind;       /* OUT error indicator          */
+Pstore          store;          /* handle to Store object       */
+Pint            *error_ind;     /* OUT error indicator          */
 Pint            *max_buf_size;  /* OUT max. input buffer size   */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;
-Plimit          *echo_area;      /* OUT default echo volume      */
+Pint_list       **pets;         /* OUT list of prompt and echo types */
+Plimit          *echo_area;     /* OUT default echo volume      */
 Pstring_data    **string_data;  /* OUT default data record      */
 {
     /* Error 51 is not generated by this function. */
@@ -2677,10 +2643,11 @@ Pstring_data    **string_data;  /* OUT default data record      */
 	defstring = &dt->in_dt.strings[device-1];
 	*max_buf_size = defstring->max_bufsize;
 	CB_ECHO_VOLUME_TO_AREA( defstring->e_volume, *echo_area );
-	*string_data = &store->data.string_data;
+	*string_data = &((_Pstore *)store)->data.string_data.drec;
 	**string_data = *(Pstring_data *)&defstring->record;
-	copy_pet_list( defstring->num_pets, defstring->pets, len, st, error_ind,
-	    tlen, pets );
+	*pets = &((_Pstore *)store)->data.loc_data3.pets;
+	copy_pet_list( defstring->num_pets, defstring->pets, store, 
+	    error_ind, pets );
     } 
 } 
 
@@ -2693,7 +2660,7 @@ void
 pinq_curv_surf_facs( ws_type, cat_len, cat_st, sat_len, sat_st, tcat_len,
 	tcat_st, psc_len, psc_st, error_ind, facil, tot_cat_len, 
 	tot_sat_len, tot_tcat_len, tot_psc_len )
-    Pint		ws_type;		/* workstation type */
+    Pint		ws_type;	/* workstation type */
     Pint		cat_len;	/* length of curve approx types list */
     Pint		cat_st;		/* starting position */
     Pint		sat_len;	/* length of surface approx types list*/
@@ -2840,13 +2807,13 @@ Pdcue_bundle	*bundle;	/* OUT predefined depth cue rep	*/
 
 /* INQUIRE LIGHT SOURCE FACILITIES */
 void
-pinq_light_src_facs(ws_type, length, start, error_ind, total_length, facilities)
+pinq_light_src_facs(ws_type, length, start, error_ind, facilities, total_length)
 Pint		ws_type;		/* workstation type	*/
 Pint		length;		/* length of application list	*/
 Pint		start;		/* starting position	*/
 Pint		*error_ind;	/* OUT error indicator	*/
-Pint		*total_length;	/* OUT length of list in PHIGS	*/
 Plight_src_facs	*facilities;	/* OUT light source facilities	*/
+Pint		*total_length;	/* OUT length of list in PHIGS	*/
 {
     /* Error 51 is not generated by this function. */
 
@@ -2972,8 +2939,8 @@ pinq_text_extent( ws_type, font, exp, sp, ht, path, hor, ver, str,
     Pfloat	sp;		/* char spacing	*/
     Pfloat	ht;		/* char height	*/
     Ptext_path	path;		/* text path	*/
-    Phor_align	hor;		/* horizontal alignment	*/
-    Pvert_align	ver;		/* vertical alignment	*/
+    Phor_text_align	hor;	/* horizontal alignment	*/
+    Pvert_text_align	ver;	/* vertical alignment	*/
     char	*str;		/* text string	*/
     Pint	*error_ind;	/* OUT error indicator	*/
     Prect	*rect;		/* OUT extent rectangle	*/
@@ -3157,11 +3124,11 @@ pinq_pred_colr_map_rep( ws_type, index, store, error_ind, map_method, map_data)
 	    case PCOLR_MAP_PSEUDO:
 		size = rep->rec.meth_r2.weights.num_floats * sizeof(Pfloat)
 		    + rep->rec.meth_r2.colrs.num_colr_reps * sizeof(Pcolr_rep);
-		if ( CB_STORE_SPACE( store, size, error_ind ) ) {
-		    *map_data = &store->data.colr_map_rec;
+		if ( CB_STORE_SPACE( ((_Pstore *)store), size, error_ind ) ) {
+		    *map_data = &((_Pstore *)store)->data.colr_map_rec;
 		    (*map_data)->meth_r2 = rep->rec.meth_r2;
 		    (*map_data)->meth_r2.weights.floats =
-			(Pfloat *)store->buf;
+			(Pfloat *)((_Pstore *)store)->buf;
 		    (*map_data)->meth_r2.colrs.colr_reps = (Pcolr_rep *)
 			((*map_data)->meth_r2.weights.floats +
 			    (*map_data)->meth_r2.weights.num_floats);
@@ -3187,12 +3154,12 @@ pinq_pred_colr_map_rep( ws_type, index, store, error_ind, map_method, map_data)
 		    size = colrs->num_lists * sizeof(Pfloat_list);
 		    for ( i = 0; i < colrs->num_lists; i++ )
 			size += colrs->lists[i].num_floats * sizeof(Pfloat);
-		    if ( CB_STORE_SPACE( store, size, error_ind ) ) {
-			*map_data = &store->data.colr_map_rec;
+		    if ( CB_STORE_SPACE( ((_Pstore *)store), size, error_ind ) ) {
+			*map_data = &((_Pstore *)store)->data.colr_map_rec;
 			(*map_data)->meth_r3 =
 			    rep->rec.meth_r3;
 			(*map_data)->meth_r3.colr_lists.lists =
-			    (Pfloat_list *)store->buf;
+			    (Pfloat_list *)((_Pstore *)store)->buf;
 			buf = (Pfloat *)
 			    ((*map_data)->meth_r3.colr_lists.lists
 				+ colrs->num_lists);

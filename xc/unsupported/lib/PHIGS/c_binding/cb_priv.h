@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cb_priv.h,v 5.1 91/02/16 09:48:13 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -132,33 +132,93 @@ extern int		phg_cb_echo_limits_valid();
 /* No need to do the z, it stays the same in the ws. */
 
 typedef struct {
-    union {
-	Ppick_data	pd;
-	Ppick_data3	pd3;
-    }		drec;
-    Pfilter	filter;
+    Ploc_data   drec;
+    Pint_list   pets;
+} Pstore_loc_info;
+
+typedef struct {
+    Ploc_data3  drec;
+    Pint_list   pets;
+} Pstore_loc_info3;
+
+typedef struct {
+    Pstroke_data        drec;
+    Ppoint_list         init_stroke;
+    Pint_list           pets;
+} Pstore_stroke_info;
+
+typedef struct {
+    Pstroke_data3       drec;
+    Ppoint_list3        init_stroke;
+    Pint_list           pets;
+} Pstore_stroke_info3;
+
+typedef struct {
+    Pval_data   drec;
+    Pint_list   pets;
+} Pstore_val_info;
+
+typedef struct {
+    Pval_data3  drec;
+    Pint_list   pets;
+} Pstore_val_info3;
+
+typedef struct {
+    Pchoice_data        drec;
+    Pint_list           pets;
+} Pstore_choice_info;
+
+typedef struct {
+    Pchoice_data3       drec;
+    Pint_list           pets;
+} Pstore_choice_info3;
+
+typedef struct {
+    Ppick_data  drec;
+    Pfilter     filter;
+    Ppick_path  init_pick;
+    Pint_list   pets;
 } Pstore_pick_info;
+ 
+typedef struct {
+    Ppick_data3 drec;
+    Pfilter     filter;
+    Ppick_path  init_pick;
+    Pint_list   pets;
+} Pstore_pick_info3;
+     
+typedef struct {
+    Pstring_data        drec;
+    Pint_list           pets;
+} Pstore_string_info;
+     
+typedef struct {
+    Pstring_data3       drec;
+    Pint_list           pets;
+} Pstore_string_info3;
 
 typedef struct _Pstore {
     int			size;
     union {
 	    Ppat_rep			pat_rep;
 	    Ppat_rep_plus		ext_pat_rep;
-	    Ploc_data			loc_data;
-	    Ploc_data3			loc_data3;
-	    Pstroke_data		stroke_data;
-	    Pstroke_data3		stroke_data3;
-	    Pval_data			val_data;
-	    Pval_data3			val_data3;	
-	    Pchoice_data		choice_data;
-	    Pchoice_data3		choice_data3;
-	    Pstore_pick_info		pick_data;
-	    Pstring_data		string_data;
-	    Pstring_data3		string_data3;
+            Pstore_loc_info             loc_data;
+            Pstore_loc_info3            loc_data3;
+            Pstore_stroke_info          stroke_data;
+            Pstore_stroke_info3         stroke_data3;
+            Pstore_val_info             val_data;
+            Pstore_val_info3            val_data3;
+            Pstore_choice_info          choice_data;
+            Pstore_choice_info3         choice_data3;
+            Pstore_pick_info            pick_data;
+            Pstore_pick_info3           pick_data3;
+            Pstore_string_info          string_data;
+            Pstore_string_info3         string_data3;
 	    Par_file_list		ar_files;
 	    Pfilter			filter;
 	    Pelem_data			elem_data;
 	    Pelem_ref_list_list		struct_paths;
+	    Pescape_out_data            escape_out_data;
 	    Pcolr_map_data		colr_map_rec;
     }			data; /* all pointers are into "buf," below */
 #ifdef __STDC__

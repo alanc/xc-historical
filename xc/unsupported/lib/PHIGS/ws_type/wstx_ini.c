@@ -1,4 +1,4 @@
-/* $XConsortium: wstx_ini.c,v 5.1 91/02/16 09:50:42 rws Exp $ */
+/* $XConsortium: wstx_ini.c,v 5.2 91/03/29 14:03:07 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -85,7 +85,7 @@ init_output_ws_dt( out_ws_dt )
 	 */
 	lb[1].type = PLINE_DASH;
 	lb[2].type = PLINE_DOT;
-	lb[3].type = PLINE_DOT_DASH;
+	lb[3].type = PLINE_DASH_DOT;
 	lb[4].width = 2.0;
     }
     {
@@ -181,7 +181,7 @@ init_output_ws_dt( out_ws_dt )
 	 */
 	eb[1].type = PLINE_DASH;
 	eb[2].type = PLINE_DOT;
-	eb[3].type = PLINE_DOT_DASH;
+	eb[3].type = PLINE_DASH_DOT;
 	eb[4].width = 2.0;
     }
     {

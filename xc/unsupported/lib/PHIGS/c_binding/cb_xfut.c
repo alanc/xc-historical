@@ -1,4 +1,4 @@
-/* $XConsortium: cb_xfut.c,v 5.1 91/02/16 09:48:09 rws Exp $ */
+/* $XConsortium: cb_xfut.c,v 5.2 91/02/18 11:07:52 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -590,7 +590,7 @@ peval_view_map_matrix( map, error_ind, m)
     register Pmatrix	m;		/* OUT view mapping matrix	*/
 {
     register Plimit	*win = &map->win;
-    register Plimit	*vp = &map->vp;
+    register Plimit	*vp = &map->proj_vp;
 
     if ( !CB_ENTRY_CHECK( phg_cur_cph, 0, Pfn_INQUIRY)) {
 	*error_ind = ERR2;
@@ -651,7 +651,7 @@ peval_view_map_matrix3( map, error_ind, m)
 
     register Pfloat	*r;
     register Ppoint3	*prp = &map->proj_ref_point;
-    register Plimit3	*vp = &map->vp;
+    register Plimit3	*vp = &map->proj_vp;
     register Plimit	*win = &map->win;
 
     /* These are ordered roughly by the number of times used, the most

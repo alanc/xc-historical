@@ -1,4 +1,4 @@
-/* $XConsortium: ws_inp.c,v 5.1 91/02/16 09:50:26 rws Exp $ */
+/* $XConsortium: ws_inp.c,v 5.2 91/04/05 17:29:45 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -387,8 +387,8 @@ init_sin_choice( ws, iws, dev )
 	    nd->data.choice.choices.strings = pet1_strings;
 	    break;
 	case 3:
-	    nd->data.choice.count = dev->record.pet_r3.num_strings;
-	    nd->data.choice.choices.strings = dev->record.pet_r3.strings;
+	    nd->data.choice.count = dev->record.pets.pet_r3.num_strings;
+	    nd->data.choice.choices.strings = dev->record.pets.pet_r3.strings;
 	    break;
     }
     phg_sin_init_device( iws->sin_handle, SIN_CHOICE, dev->num, nd );
@@ -418,8 +418,8 @@ setup_choice_init( dev, args, two_d )
 	    register char       **strs, *new_strs;
 
 	    /* Get space for the new list of strings and copy them.*/
-	    cnt = dev->record.pet_r3.num_strings
-		= args->data.cho.rec.pet_r3.num_strings;
+	    cnt = dev->record.pets.pet_r3.num_strings
+		= args->data.cho.rec.pets.pet_r3.num_strings;
 	    if ( cnt > 0 ) {
 		/* Get pointer array space. */
 		if ( !(strs = (char**)Malloc( cnt * sizeof(char*))) ) {
@@ -432,12 +432,12 @@ setup_choice_init( dev, args, two_d )
 		} else {
 		    dev->strings_length = args->data.cho.string_list_size; 
 		    new_strs =
-			(char*)args->data.cho.rec.pet_r3.strings;
+			(char*)args->data.cho.rec.pets.pet_r3.strings;
 		    bcopy(new_strs, strs[0], args->data.cho.string_list_size);
 		    /* Resolve the pointers into the "strings" array. */
 		    for ( i = 1; i < cnt; i++ )
 			strs[i] = strs[i-1] + strlen(strs[i-1]) + 1;
-		    dev->record.pet_r3.strings = strs;
+		    dev->record.pets.pet_r3.strings = strs;
 		}
 	    }
 	}
@@ -453,9 +453,9 @@ free_choice( dev )
 {
     switch ( dev->pet ) {
 	case 3:
-	    if ( dev->record.pet_r3.num_strings > 0 ) {
-		free( (char *)dev->record.pet_r3.strings[0] );
-		free( (char *)dev->record.pet_r3.strings );
+	    if ( dev->record.pets.pet_r3.num_strings > 0 ) {
+		free( (char *)dev->record.pets.pet_r3.strings[0] );
+		free( (char *)dev->record.pets.pet_r3.strings );
 	    }
 	    break;
     }
@@ -1645,9 +1645,9 @@ phg_ws_inp_inq_dev_state( ws, class, num, ret )
 	    st->choice = dev->choice;
 	    switch ( st->pet ) {
 		case 3:
-		    if ( st->record.pet_r3.num_strings > 0 )
+		    if ( st->record.pets.pet_r3.num_strings > 0 )
 			ret->data.inp_state.choice.strings =
-			    st->record.pet_r3.strings[0];
+			    st->record.pets.pet_r3.strings[0];
 		    ret->data.inp_state.choice.length = dev->strings_length;
 		    break;
 	    }

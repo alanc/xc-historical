@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: phigserr.h,v 5.1 91/02/16 09:49:15 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -145,7 +145,7 @@ SOFTWARE.
                                      state (PHOP,*,*,*) */
 #define        PE_NOT_WSOP   3       /*Ignoring function, function requires
                                      state (PHOP,WSOP,*,*) */
-#define        PE_NOT_PHOPCL 4       /*Ignoring function, function requires
+#define        PE_NOT_CL 4       /*Ignoring function, function requires
                                      state (PHOP,WSCL,STCL,ARCL) */
 #define        PE_NOT_STOP   5       /*Ignoring function, function requires
                                      state (PHOP,*,STOP,*) */
@@ -235,7 +235,7 @@ SOFTWARE.
                                      workstation */
 #define        PE_PAT_INDX_LT_1   112      /*Ignoring function, the pattern index
                                      value is less than one */
-#define        PE_CLR_INDX_LT_0    113      /*Ignoring function, the colour index
+#define        PE_COLR_INDX_LT_0    113      /*Ignoring function, the colour index
                                      value is less than zero */
 #define        PE_VIEW_INDX_LT_0    114     /*Ignoring function, the view index
                                      value is less than zero */
@@ -324,11 +324,11 @@ SOFTWARE.
 				     of the projection viewport is zero */
 
 
-#define        PE_INVALID_VIEWPORTN    159      /*Ignoring function, the view plane nor-
+#define        PE_BAD_VPN    159      /*Ignoring function, the view plane nor-
                                      mal vector has length zero */
-#define        PE_BAD_VRP    160      /*Ignoring function, the view up vector
+#define        PE_BAD_VUP    160      /*Ignoring function, the view up vector
                                      has length zero */
-#define        PE_BAD_VUP   161      /*Ignoring function, the view up and
+#define        PE_BAD_VUP_VPN   161      /*Ignoring function, the view up and
                                      view plane normal vectors are parallel
                                      thus the viewing coordinate system
                                      cannot be established */
@@ -385,7 +385,7 @@ SOFTWARE.
                                      flowed */
 #define        PE_NO_QUEUE_OFLOW   257     /*Ignoring function, input queue has not
                                      overflowed */
-#define        PE_QUEUE_OFLOWWSCL 258   /*Warning, input queue has over-
+#define        PE_OFLOW_NO_GO 258   /*Warning, input queue has over-
                                      flowed, but associated workstation has
 				     been closed */
 #define        PE_BAD_CLASS  259     /*Ignoring function, the input device

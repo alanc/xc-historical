@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cb_stru.c,v 5.1 91/02/16 09:48:14 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -590,7 +590,7 @@ pinq_elem_type_size( struct_id, element, error_ind, type, size)
 static void
 inq_content( cp_args, store, ret )
     Phg_args		*cp_args;
-    Pstore		store;
+    _Pstore		*store;
     Phg_ret		*ret;
 {
     int			size;
@@ -628,8 +628,8 @@ pinq_cur_elem_content( store, error_ind, data)
 
     } else {
 	args->el_id = -1;	/* signal to use the current element */
-	inq_content( &cp_args, store, &ret );
-	*data = &store->data.elem_data;
+	inq_content( &cp_args, ((_Pstore *)store), &ret );
+	*data = &((_Pstore *)store)->data.elem_data;
 	*error_ind = ret.err;
     }
 }
@@ -655,8 +655,8 @@ pinq_elem_content( struct_id, element, store, error_ind, data)
     } else {
 	args->struct_id = struct_id;
 	args->el_id = element;
-	inq_content( &cp_args, store, &ret );
-	*data = &store->data.elem_data;
+	inq_content( &cp_args, ((_Pstore *)store), &ret );
+	*data = &((_Pstore *)store)->data.elem_data;
 	*error_ind = ret.err;
     }
 }
@@ -723,12 +723,12 @@ Pelem_ref_list_list	**paths;	/* OUT structure path list	*/
 	cp_args.data.q_hierarchy.order = order;
 	cp_args.data.q_hierarchy.depth = depth;
 	ret.err = 0;
-	*paths = &store->data.struct_paths;
+	*paths = &((_Pstore *)store)->data.struct_paths;
 	(*paths)->num_elem_ref_lists = 0;
 	CP_FUNC( phg_cur_cph, CP_FUNC_OP_INQ_HIERARCHY, &cp_args, &ret);
 	if ( !(*error_ind = ret.err) ) {
-	    phg_cb_copy_hierarchy( &ret.data.hierarchy, store, error_ind,
-		*paths );
+	    phg_cb_copy_hierarchy( &ret.data.hierarchy, ((_Pstore *)store),
+				   error_ind, *paths );
 	}
     }
 }
@@ -757,12 +757,12 @@ Pelem_ref_list_list	**paths;	/* OUT structure path list	*/
 	cp_args.data.q_hierarchy.order = order;
 	cp_args.data.q_hierarchy.depth = depth;
 	ret.err = 0;
-	*paths = &store->data.struct_paths;
+	*paths = &((_Pstore *)store)->data.struct_paths;
 	(*paths)->num_elem_ref_lists = 0;
 	CP_FUNC( phg_cur_cph, CP_FUNC_OP_INQ_HIERARCHY, &cp_args, &ret);
 	if ( !(*error_ind = ret.err) ) {
-	    phg_cb_copy_hierarchy( &ret.data.hierarchy, store, error_ind,
-		*paths );
+	    phg_cb_copy_hierarchy( &ret.data.hierarchy, ((_Pstore *)store),
+				   error_ind, *paths );
 	}
     }
 }

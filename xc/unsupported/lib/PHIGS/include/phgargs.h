@@ -1,4 +1,4 @@
-/* $XConsortium: phgargs.h,v 5.1 91/02/16 09:49:08 rws Exp $ */
+/* $XConsortium: phgargs.h,v 5.2 91/03/29 10:45:07 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -357,8 +357,8 @@ typedef struct {
     Pfloat			spacing;
     Pfloat			height;
     Ptext_path			path;
-    Phor_align			hor;
-    Pvert_align			ver;
+    Phor_text_align		hor;
+    Pvert_text_align		ver;
     char			*str;
     Pint			length;
 } Phg_args_q_text_extent;

@@ -1,4 +1,4 @@
-/* $XConsortium: wsb.c,v 5.1 91/02/16 09:50:31 rws Exp $ */
+/* $XConsortium: wsb.c,v 5.2 91/04/05 17:29:49 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -261,7 +261,7 @@ init_view_table( ws, wst )
     view = owsb->views;
     /* Load the predefined views. */
     for ( i = 0; i <= max_pd_view; i++, predef_view++, view++ ) {
-	view->pending = PUPD_NOT_PENDING;
+	view->pending = PUPD_NOT_PEND;
 	bcopy( (char *)predef_view->ori_matrix,(char *) view->vom,
 	    sizeof(Pmatrix3) );
 	bcopy( (char *)predef_view->map_matrix, (char *)view->vmm,
@@ -310,7 +310,7 @@ init_output_state( ws )
     owsb->req_ws_window.z_min = 0.0;
     owsb->req_ws_window.z_max = 1.0;
     owsb->ws_window = owsb->req_ws_window;
-    owsb->ws_window_pending = PUPD_NOT_PENDING;
+    owsb->ws_window_pending = PUPD_NOT_PEND;
 
     owsb->req_ws_viewport.x_min = 0.0;
     owsb->req_ws_viewport.x_max = ws->ws_rect.width;
@@ -319,7 +319,7 @@ init_output_state( ws )
     owsb->req_ws_viewport.z_min = 0.0;
     owsb->req_ws_viewport.z_max = 1.0;
     owsb->ws_viewport = owsb->req_ws_viewport;
-    owsb->ws_viewport_pending = PUPD_NOT_PENDING;
+    owsb->ws_viewport_pending = PUPD_NOT_PEND;
 
     phg_wsx_compute_ws_transform( &owsb->ws_window, &owsb->ws_viewport,
 	&owsb->ws_xform );
@@ -333,7 +333,7 @@ init_output_state( ws )
     /* Initialize other miscellaneous output state. */
     owsb->cur_hlhsr_mode = PHIGS_HLHSR_MODE_NONE;
     owsb->req_hlhsr_mode = PHIGS_HLHSR_MODE_NONE;
-    owsb->hlhsr_mode_pending = PUPD_NOT_PENDING;
+    owsb->hlhsr_mode_pending = PUPD_NOT_PEND;
 
     return 1;
 }
@@ -708,11 +708,11 @@ phg_wsb_make_requested_current( ws )
     register Wsb_output_ws	*owsb = &ws->out_ws.model.b;
 
     /* WS transform */
-    if ( owsb->ws_window_pending == PUPD_PENDING
-	    || owsb->ws_viewport_pending == PUPD_PENDING ) {
-	if ( owsb->ws_window_pending == PUPD_PENDING ) {
+    if ( owsb->ws_window_pending == PUPD_PEND
+	    || owsb->ws_viewport_pending == PUPD_PEND ) {
+	if ( owsb->ws_window_pending == PUPD_PEND ) {
 	    owsb->ws_window = owsb->req_ws_window;
-	    owsb->ws_window_pending = PUPD_NOT_PENDING;
+	    owsb->ws_window_pending = PUPD_NOT_PEND;
 	    win.minval.x = owsb->ws_window.x_min;
 	    win.minval.y = owsb->ws_window.y_min;
 	    win.minval.z = owsb->ws_window.z_min;
@@ -724,9 +724,9 @@ phg_wsb_make_requested_current( ws )
 		(CARD32)sizeof(pexNpcSubvolume), (char *)&win );
 	}
 
-	if ( owsb->ws_viewport_pending == PUPD_PENDING ) {
+	if ( owsb->ws_viewport_pending == PUPD_PEND ) {
 	    owsb->ws_viewport = owsb->req_ws_viewport;
-	    owsb->ws_viewport_pending = PUPD_NOT_PENDING;
+	    owsb->ws_viewport_pending = PUPD_NOT_PEND;
 	    vp.minval.x = owsb->ws_viewport.x_min;
 	    vp.minval.y = owsb->ws_viewport.y_min;
 	    vp.minval.z = owsb->ws_viewport.z_min;
@@ -749,7 +749,7 @@ phg_wsb_make_requested_current( ws )
 	while ( owsb->num_pending_views > 0 ) {
 	    view = &owsb->views[req_view->id];
 	    /*Set it locally. */
-	    view->pending = PUPD_NOT_PENDING;
+	    view->pending = PUPD_NOT_PEND;
 	    bcopy( (char *)req_view->view.ori_matrix, (char *)view->vom,
 		sizeof(Pmatrix3) );
 	    bcopy( (char *)req_view->view.map_matrix, (char *)view->vmm,
@@ -773,9 +773,9 @@ phg_wsb_make_requested_current( ws )
     }
 
     /* Other pending data */
-    if ( owsb->hlhsr_mode_pending == PUPD_PENDING) {
+    if ( owsb->hlhsr_mode_pending == PUPD_PEND) {
 	 owsb->cur_hlhsr_mode = owsb->req_hlhsr_mode;
-	 owsb->hlhsr_mode_pending = PUPD_NOT_PENDING;
+	 owsb->hlhsr_mode_pending = PUPD_NOT_PEND;
     }
 
     /* Make it all take effect. */
@@ -1368,7 +1368,7 @@ phg_wsb_update( ws, flag )
 {
     Wsb_output_ws	*owsb = &ws->out_ws.model.b;
 
-    if ( flag != PUPD_POSTPONE && owsb->vis_rep != PVISUAL_ST_CORRECT ) 
+    if ( flag != PFLAG_POSTPONE && owsb->vis_rep != PVISUAL_ST_CORRECT ) 
 	(*ws->redraw_all)( ws, PFLAG_COND );
     else
 	(*ws->make_requested_current)( ws );
@@ -1417,7 +1417,7 @@ phg_wsb_set_hlhsr_mode( ws, mode )
 	return; /* No need to update if the user asks for what he has! */
 
     owsb->req_hlhsr_mode = mode;
-    owsb->hlhsr_mode_pending = PUPD_PENDING;
+    owsb->hlhsr_mode_pending = PUPD_PEND;
 
     WSB_CHECK_FOR_INTERACTION_UNDERWAY(ws, &owsb->now_action)
     switch ( owsb->now_action ) {
@@ -1443,7 +1443,7 @@ phg_wsb_set_ws_window( ws, two_d, limits )
 {
     register	Wsb_output_ws	*owsb = &ws->out_ws.model.b;
 
-    owsb->ws_window_pending = PUPD_PENDING;
+    owsb->ws_window_pending = PUPD_PEND;
     if ( two_d ) {	/* leave the z values as they are */
 	owsb->req_ws_window.x_min = limits->x_min;
 	owsb->req_ws_window.x_max = limits->x_max;
@@ -1476,7 +1476,7 @@ phg_wsb_set_ws_vp( ws, two_d, limits )
 {
     register	Wsb_output_ws	*owsb = &ws->out_ws.model.b;
 
-    owsb->ws_viewport_pending = PUPD_PENDING;
+    owsb->ws_viewport_pending = PUPD_PEND;
     if ( two_d ) {	/* leave the z values as they are */
 	owsb->req_ws_viewport.x_min = limits->x_min;
 	owsb->req_ws_viewport.x_max = limits->x_max;
@@ -1591,7 +1591,7 @@ phg_wsb_set_rep( ws, type, rep )
 
 	case PHG_ARGS_VIEWREP:
 	    /* Add it to the list of pending views. */
-	    if ( owsb->views[rep->index].pending == PUPD_NOT_PENDING )
+	    if ( owsb->views[rep->index].pending == PUPD_NOT_PEND )
 		i = owsb->num_pending_views++;
 	    else {
 		/* Find the existing pending entry so it can be replaced. */
@@ -1601,7 +1601,7 @@ phg_wsb_set_rep( ws, type, rep )
 	    }
 	    owsb->pending_views[i].id = rep->index;
 	    owsb->pending_views[i].view = rep->bundl.viewrep;
-	    owsb->views[rep->index].pending = PUPD_PENDING;
+	    owsb->views[rep->index].pending = PUPD_PEND;
 	    break;
 
 	case PHG_ARGS_COREP: {
@@ -1767,7 +1767,7 @@ phg_wsb_inq_view_rep( ws, index, ret )
     }
 
     /* Load the "requested" view. */
-    if ( vr->update_state == PUPD_NOT_PENDING )	/* save some time */
+    if ( vr->update_state == PUPD_NOT_PEND )	/* save some time */
 	vr->req_rep = vr->cur_rep;
     else {
 	/* Find the requested entry in the pending view list. */
@@ -1792,9 +1792,9 @@ phg_wsb_inq_ws_xform( ws, ret )
 
     ret->err = 0;
     wsxf->state =
-	   owsb->ws_window_pending == PUPD_PENDING
-	|| owsb->ws_viewport_pending == PUPD_PENDING
-	    ? PUPD_PENDING : PUPD_NOT_PENDING;
+	   owsb->ws_window_pending == PUPD_PEND
+	|| owsb->ws_viewport_pending == PUPD_PEND
+	    ? PUPD_PEND : PUPD_NOT_PEND;
     wsxf->req_window = owsb->req_ws_window;
     wsxf->req_viewport = owsb->req_ws_viewport;
     wsxf->cur_window = owsb->ws_window;

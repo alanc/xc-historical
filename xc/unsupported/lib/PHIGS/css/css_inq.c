@@ -1,4 +1,4 @@
-/* $XConsortium: css_inq.c,v 5.2 91/04/14 12:52:08 rws Exp $ */
+/* $XConsortium: css_inq.c,v 5.3 91/05/05 15:33:23 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -138,7 +138,7 @@ Phg_ret		*ret;
 
     if ( structp = CSS_STRUCT_EXISTS(cssh, structid) )
 	ret->data.idata = (Pint) (structp->num_el ? 
-				   PSTRUCT_STATUS_NON_EMPTY : PSTRUCT_STATUS_EMPTY);
+				   PSTRUCT_STATUS_NOT_EMPTY : PSTRUCT_STATUS_EMPTY);
     else
 	ret->data.idata = (Pint) PSTRUCT_STATUS_NON_EXISTENT;
 }

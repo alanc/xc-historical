@@ -1,4 +1,4 @@
-/* $XConsortium: phigs.h,v 5.5 91/05/07 15:59:00 rws Exp $ */
+/* $XConsortium: phigs.h,v 5.6 91/06/26 17:03:49 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -59,7 +59,12 @@ SOFTWARE.
 #define TRUE	1
 #endif
 
+#if NeedFunctionPrototypes
+typedef void * Pconnid;
+#else
 typedef char * Pconnid;
+#endif
+
 
 typedef struct {
     Display	*display;
@@ -72,7 +77,11 @@ typedef long Plong;
 
 typedef float Pfloat;
 
-typedef struct _Pstore	*Pstore;
+#if NeedFunctionPrototypes
+typedef void *Pstore;
+#else
+typedef char *Pstore;
+#endif
 
 typedef Pfloat Pmatrix3[4][4];
 
@@ -105,7 +114,7 @@ typedef enum {
 typedef enum {
     PSTRUCT_STATUS_NON_EXISTENT,
     PSTRUCT_STATUS_EMPTY,
-    PSTRUCT_STATUS_NON_EMPTY
+    PSTRUCT_STATUS_NOT_EMPTY
 } Pstruct_status;
 
 typedef enum {
@@ -133,8 +142,8 @@ typedef enum {
 } Pctrl_flag;
 
 typedef enum {
-    PUPD_POSTPONE,
-    PUPD_PERFORM
+    PFLAG_POSTPONE,
+    PFLAG_PERFORM
 } Pregen_flag;
 
 typedef enum {
@@ -169,7 +178,7 @@ typedef enum {
 
 typedef enum {
     PNET_CSS,
-    PNET_ARCHIVE
+    PNET_AR
 } Pstruct_net_source;
 
 typedef enum {
@@ -201,7 +210,7 @@ typedef enum {
     PHOR_LEFT,
     PHOR_CTR,
     PHOR_RIGHT
-} Phor_align;
+} Phor_text_align;
 
 typedef enum {
     PVERT_NORM,
@@ -210,7 +219,7 @@ typedef enum {
     PVERT_HALF,
     PVERT_BASE,
     PVERT_BOTTOM
-} Pvert_align;
+} Pvert_text_align;
 
 typedef enum {
     PSTYLE_HOLLOW,
@@ -229,8 +238,8 @@ typedef enum {
     PASPECT_LINETYPE,
     PASPECT_LINEWIDTH,
     PASPECT_LINE_COLR_IND,
-    PASPECT_MARKERTYPE,
-    PASPECT_MARKERSIZE,
+    PASPECT_MARKER_TYPE,
+    PASPECT_MARKER_SIZE,
     PASPECT_MARKER_COLR_IND,
     PASPECT_TEXT_FONT,
     PASPECT_TEXT_PREC,
@@ -318,8 +327,8 @@ typedef enum {
 } Pecho_switch;
 
 typedef enum {
-    PIN_STATUS_OK,
     PIN_STATUS_NONE,
+    PIN_STATUS_OK,
     PIN_STATUS_NO_IN
 } Pin_status;
 
@@ -349,8 +358,8 @@ typedef enum {
 } Pinq_type;
 
 typedef enum {
-    PUPD_NOT_PENDING,
-    PUPD_PENDING
+    PUPD_NOT_PEND,
+    PUPD_PEND
 } Pupd_st;
 
 typedef enum {
@@ -373,6 +382,7 @@ typedef enum {
 } Pattrs;
 
 typedef enum {
+    PELEM_ALL,
     PELEM_NIL,
     PELEM_POLYLINE3,
     PELEM_POLYLINE,
@@ -443,7 +453,6 @@ typedef enum {
     PELEM_APPL_DATA,
     PELEM_GSE,
     PELEM_PICK_ID,
-    PELEM_ALL,
     PELEM_POLYLINE_SET3_DATA,
     PELEM_FILL_AREA_SET3_DATA,
     PELEM_TRI_STRIP3_DATA,
@@ -485,7 +494,7 @@ typedef enum {
 } Pedit_mode;
 
 typedef enum {
-    PFLAG_DELETE,
+    PFLAG_DEL,
     PFLAG_KEEP
 } Pref_flag;
 
@@ -511,7 +520,11 @@ typedef enum {
 
 typedef struct {
     size_t	size;	/* sizeof data */
+#if NeedFunctionPrototypes
+    void	*data;	/* pointer to data */
+#else
     char	*data;	/* pointer to data */
+#endif
 } Pdata;
 
 typedef struct {
@@ -758,6 +771,16 @@ typedef struct {		/* grid of 3D or 4D points, [u_dim][v_dim] */
     } points;
 } Ppoint_grid34;
 
+typedef struct {                        /* list of 2d point lists */
+    Pint        num_point_lists;        /* number of point lists  */
+    Ppoint_list *point_lists;           /* list of point lists    */
+} Ppoint_list_list;
+
+typedef struct {                        /* list of 3d point lists */
+    Pint         num_point_lists;       /* number of point lists  */
+    Ppoint_list3 *point_lists;          /* list of point lists    */
+} Ppoint_list_list3;
+
 typedef struct {
     Pint        	num_half_spaces;	/* number of half-spaces */
     Phalf_space3	*half_spaces;   	/* list of half-spaces */
@@ -785,8 +808,8 @@ typedef struct {
 } Ptrimcurve_list;
 
 typedef struct {
-    Phor_align	hor;	/* horizontal component */
-    Pvert_align	vert;	/* vertical component */
+    Phor_text_align	hor;	/* horizontal component */
+    Pvert_text_align	vert;	/* vertical component */
 } Ptext_align;
 
 typedef union {
@@ -1002,8 +1025,8 @@ typedef struct {
 } Pview_rep;
 
 typedef struct {
-    Plimit	win;	/* window limits */
-    Plimit3	vp;	/* viewport limits */
+    Plimit	win;		/* window limits */
+    Plimit3	proj_vp;	/* viewport limits */
     Pproj_type	proj_type;	/* projection type */
     Ppoint3	proj_ref_point;	/* projection reference point */
     Pfloat	view_plane;	/* view plane distance */
@@ -1012,8 +1035,8 @@ typedef struct {
 } Pview_map3;
 
 typedef struct {
-    Plimit	win;	/* window limits */
-    Plimit	vp;	/* viewport limits */
+    Plimit	win;		/* window limits */
+    Plimit	proj_vp;	/* viewport limits */
 } Pview_map;
 
 typedef struct {
@@ -1198,16 +1221,12 @@ typedef struct {
 
 typedef struct {
     Pint	max_bsp_order;	/* maximum B-spline order */
-    Pint	max_pp_order;	/* maximum parametric polynomial order */
     Pint	max_tc_order;	/* maximum trim curve order */
-    Pint_list	ppc_types;	/* list of parametric polynomial curve types */
-    Pint_list	pps_types;	/* list of parametric polynomial surf types*/
     Pint_list	cat_types;	/* list of curve approx types */
     Pint_list	sat_types;	/* list of surface approx types */
     Pint_list	tcat_types;	/* list of trim curve approx types */
     Pint_list	psc_types;	/* list of parametric surface
 				    characteristics */
-    Pint	num_pred_inds;	/* number of predefined bundles */
 } Pcurvsurf_facs;
 
 typedef enum {
@@ -1346,7 +1365,8 @@ typedef union {
 } Pitem_data;
 
 /* Plocator_data -- locator data record */
-typedef union {
+typedef struct {
+    union {
 	struct {
 	   Pint		unused;
 	} pet_r1;
@@ -1368,8 +1388,9 @@ typedef union {
 			Pint_attrs	int_attrs; /* interior attributes */
 			Pedge_attrs	edge_attrs; /* edge attributes */
 		} fill_set;
-	    } attr;
+	    } attrs;
 	} pet_r5;
+    } pets;
 } Ploc_data;
 
 typedef Ploc_data	Ploc_data3;
@@ -1394,7 +1415,8 @@ typedef struct {
 typedef Pval_data	Pval_data3;
 
 /* Pchoice_data -- choice data record */
-typedef union {
+typedef struct {
+    union {
 	struct {
 	   Pint		unused;
 	} pet_r1;
@@ -1415,15 +1437,18 @@ typedef union {
 	   Pint		num_pick_ids;	/* number of alternatives	*/
 	   Pint		*pick_ids;	/* array of pick identifiers	*/
 	} pet_r5;
+    } pets;
 } Pchoice_data;
 
 typedef Pchoice_data	Pchoice_data3;
 
 /* Ppick_data -- pick data record */
-typedef union {
+typedef struct {
+    union {
 	struct {
 	    Pint	unused;
 	} pet_r1;
+    } pets;
 } Ppick_data;
 
 typedef Ppick_data	Ppick_data3;
@@ -1581,6 +1606,8 @@ typedef union {
     Pfloat		float_data;		/* float valued data */
     Ppoint_list3	point_list3;		/* list of 3d points */
     Ppoint_list		point_list;		/* list of 2d points */
+    Ppoint_list_list3	point_list_list3;	/* list of 3d point lists */
+    Ppoint_list_list	point_list_list;	/* list of 2d point lists */
     struct {
         Ppoint3		pos;		/* text pt */
         Pvec3   	dir[2];		/* direction vectors */
@@ -1601,22 +1628,12 @@ typedef union {
         char		*char_string;	/* text string */
     } anno_text_rel;
     struct {
-        Pint		num_point_lists;/* number of sets */
-        Ppoint_list3	*point_lists;	/* list of sets */
-    } fill_area_set3;
-    struct {
-        Pint		num_point_lists;/* number of sets */
-        Ppoint_list	*point_lists;	/* list of sets */
-    } fill_area_set;
-    struct {
         Pparal		paral;  	/* parallelogram */
-        Pint_size	dim;		/* dimension */
-        Pint		*colr;   	/* colour array */
+        Ppat_rep	colr_array;   	/* colour array */
     } cell_array3;
     struct {
         Prect		rect;		/* rectangle */
-        Pint_size	dim;		/* dimension */
-        Pint		*colr;  	/* colour array */
+        Ppat_rep	colr_array;  	/* colour array */
     } cell_array;
     struct {
         Pint		id;		/* GDP3 id */
@@ -1634,8 +1651,8 @@ typedef union {
     Ptext_align		text_align;	/* text alignment */
     Pint_style		int_style;	/* interior style */
     Pedge_flag		edge_flag;	/* edge flag */
-    Ppoint		point;		/* pat ref pt */
-    Pvec                pat_size;       /* pattern size */
+    Ppoint		pat_ref_point;	/* pat ref pt */
+    Pfloat_size		pat_size;	/* pattern size */
     struct {
         Ppoint3		ref_point;	/* pattern ref. pt */
         Pvec3   	ref_vec[2];	/* vectors */
@@ -1646,12 +1663,12 @@ typedef union {
         Pasf		source;		/* asf */
     } asf;
     struct {
-        Pcompose_type	comp;		/* composition type */
-        Pmatrix3	tran;		/* matrix */
+        Pcompose_type	compose_type;	/* composition type */
+        Pmatrix3	matrix;		/* transformation matrix */
     } local_tran3;
     struct {
-        Pcompose_type	comp;		/* composition type */
-        Pmatrix		tran;		/* matrix */
+        Pcompose_type	compose_type;	/* composition type */
+        Pmatrix		matrix;		/* transformation matrix */
     } local_tran;
     Pmatrix3		global_tran3;	/* global transform3 */
     Pmatrix		global_tran;	/* global transform */
@@ -1743,12 +1760,10 @@ typedef union {
     } sofas3;
     struct {
         Pparal		paral;  	/* parallelogram */
-        Pint_size	dim;		/* dimension */
-	Pint		colr_model;	/* colour model */
-        Pcoval		*colr;   	/* colour array */
+        Ppat_rep_plus	colr_array;   	/* colour array */
     } cell_array_plus;
-    Pgcolr              colr;
-    Prefl_props          props;
+    Pgcolr		colr;
+    Prefl_props		props;
     struct {
         Pint_list         activation;
         Pint_list         deactivation;
@@ -1795,20 +1810,20 @@ typedef union {
 
 /* Line types */
 #define PLINE_SOLID		(1)
-#define PLINE_DASH                (2)
-#define PLINE_DOT			(3)
-#define PLINE_DOT_DASH		(4)
+#define PLINE_DASH		(2)
+#define PLINE_DOT		(3)
+#define PLINE_DASH_DOT		(4)
 
 /* Marker types */
 #define PMARKER_DOT		(1)
-#define PMARKER_PLUS                (2)
-#define PMARKER_ASTERISK                (3)
-#define PMARKER_CIRCLE			(4)
-#define PMARKER_CROSS			(5)
+#define PMARKER_PLUS		(2)
+#define PMARKER_ASTERISK	(3)
+#define PMARKER_CIRCLE		(4)
+#define PMARKER_CROSS		(5)
 
 /* Annotation styles */
-#define PANNO_STYLE_UNCONNECTED		(1)
-#define PANNO_STYLE_LEAD_LINE		(2)
+#define PANNO_STYLE_UNCONNECTED	(1)
+#define PANNO_STYLE_LEAD_LINE	(2)
 
 /* Prompt and echo types */
 #define PLOC_DEF		(1)
@@ -1900,8 +1915,8 @@ typedef union {
 extern char			*phg_x_server_name;
 
 /* Preferred argument to OPEN PHIGS */
-#define PDEF_MEM_SIZE	((size_t) (0))
-#define PDEF_ERR_FILE	((char *)NULL)
+#define PDEF_MEM_SIZE	((size_t) (-1))
+#define PDEF_ERR_FILE	((char *) (0))
 
 #define PHIGS_MAX_NAME_LEN	 (255)
 
