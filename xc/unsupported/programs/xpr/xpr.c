@@ -45,13 +45,12 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.41 89/10/08 11:04:43 rws Exp $";
+static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.42 89/10/08 12:28:39 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <sys/uio.h>
 #include <stdio.h>
 #include <pwd.h>
 #include "lncmd.h"
