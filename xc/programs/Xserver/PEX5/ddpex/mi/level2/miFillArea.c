@@ -1,4 +1,4 @@
-/* $XConsortium: miFillArea.c,v 5.3 91/03/15 18:23:35 hersh Exp $ */
+/* $XConsortium: miFillArea.c,v 5.4 91/05/01 14:33:09 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -39,6 +39,9 @@ SOFTWARE.
 
 #include <stdio.h>
 
+static ddpex3rtn	Complete_FillArea_Facetlist();
+static ddpex3rtn	Calculate_FillArea_Facet_Normal();
+static ddpex3rtn	Calculate_FillArea_Vertex_Color_and_Normal();
 
 /*++
  |
@@ -540,9 +543,6 @@ miLightFillArea(pRend, pddc, input_vert, input_fct, output_vert, output_fct)
 {
 /* calls */
     ddpex3rtn		miApply_Lighting();
-    static ddpex3rtn	Complete_FillArea_Facetlist();
-    static ddpex3rtn	Calculate_FillArea_Facet_Normal();
-    static ddpex3rtn	Calculate_FillArea_Vertex_Color_and_Normal();
 	   ddpex3rtn	miFilterPath();
 
 /* uses */
@@ -720,9 +720,6 @@ miCullFillArea(pddc, input_vert, input_fct, output_vert, output_fct)
     miListHeader	**output_vert;  /* output vertex data */
     listofddFacet	**output_fct;   /* output facet data */
 {
-/* calls */
-    static ddpex3rtn	Calculate_FillArea_Facet_Normal();
-
 /* uses */
     miListHeader		*out_vert;
     listofddPoint		*pddilist;
@@ -1235,8 +1232,6 @@ Calculate_FillArea_Vertex_Color_and_Normal(pddc, input_vert, input_fct,
     listofddFacet	*input_fct;	/* input facet data */
     miListHeader	**output_vert;  /* output vertex data */
 {
-    static ddpex3rtn		Calculate_FillArea_Facet_Normal();
-
     miListHeader		*out_vert;
     listofddFacet		*fct_list;
     ddRgbFloatNormal		*out_fct;

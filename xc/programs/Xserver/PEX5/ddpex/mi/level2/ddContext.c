@@ -1,4 +1,4 @@
-/* $XConsortium: ddContext.c,v 5.1 91/02/16 09:55:54 rws Exp $ */
+/* $XConsortium: ddContext.c,v 5.2 91/05/01 14:47:06 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -34,6 +34,8 @@ SOFTWARE.
 #include "regionstr.h"
 #include "miscstruct.h"
 
+static void     deleteDynamicDDContext();
+
 /* External variables used */
 
 extern void     miMatMult();
@@ -66,7 +68,6 @@ CreateDDContext(pRend)
 {
 
     extern GCPtr    CreateScratchGC();
-    static void     deleteDynamicDDContext();
     miDDContext    *pddc;
     ddPCAttr       *ppca;
     listofObj      *pMC, *pLS;
@@ -300,7 +301,6 @@ DeleteDDContext(pDDContext)
     miDDContext    *pDDContext;	/* ddPEX attribute structure */
 /* out */
 {
-    static void     deleteDynamicDDContext();
     miDynamicDDContext *pdddc, *pdddc2;
     int             i;
 
@@ -459,7 +459,6 @@ PushddContext(pRend)
     ddRendererPtr   pRend;	/* renderer handle */
 /* out */
 {
-    static void     deleteDynamicDDContext();
     miDDContext    *pDDContext = (miDDContext *) (pRend->pDDContext);
     miDynamicDDContext *oldDContext = pDDContext->Dynamic;
     miDynamicDDContext *newDContext;
@@ -546,7 +545,6 @@ PopddContext(pRend)
     ddRendererPtr   pRend;	/* renderer handle */
 /* out */
 {
-    static void     deleteDynamicDDContext();
     miDDContext    *pddc = (miDDContext *) pRend->pDDContext;
     miDynamicDDContext *oldDDDContext;
 
