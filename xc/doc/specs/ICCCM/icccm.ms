@@ -1210,7 +1210,7 @@ A top-level window of the owner
 T}
 DELETE	\fIany\fP	(see section 2.6.3.1)
 INSERT_SELECTION	\fIany\fP	(see section 2.6.3.2)
-INSERT_PROPERTY	\fI\fP	(see section 2.6.3.3)
+INSERT_PROPERTY	\fIany\fP	(see section 2.6.3.3)
 .sp 6p
 _
 .TE
