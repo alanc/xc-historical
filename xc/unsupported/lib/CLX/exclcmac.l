@@ -300,27 +300,6 @@
 	 ,byte))
 
 #|
-;;
-;; Sequence number comparisons
-;;
-(defcmacro sequence= (sequence-1 sequence-2)
-  `(= (the card16 ,sequence-1) (the card16 ,sequence-2)))
-
-(defcmacro sequence< (sequence-1 sequence-2)
-  `(if (> (the card16 (abs (- (the card16 ,sequence-1)
-			      (the card16 ,sequence-2))))
-	  32768)
-      (> (the card16 ,sequence-1) (the card16 ,sequence-2))
-    (< (the card16 ,sequence-1) (the card16 ,sequence-2))))
-
-(defcmacro sequence> (sequence-1 sequence-2)
-  `(if (> (the card16 (abs (- (the card16 ,sequence-1)
-			      (the card16 ,sequence-2))))
-	  32768)
-      (< (the card16 ,sequence-1) (the card16 ,sequence-2))
-    (> (the card16 ,sequence-1) (the card16 ,sequence-2))))
-
-
 #+(or allegro-v3.0 allegro-v3.1)
 (defcmacro graphic-char-p (char)
   `(let* ((cint (char-int ,char)))

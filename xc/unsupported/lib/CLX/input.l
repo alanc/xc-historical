@@ -278,24 +278,6 @@
 ;; Reply handlers
 ;;
 
-(proclaim '(inline sequence=))
-(defun sequence= (sequence-1 sequence-2)
-  (= (the card16 sequence-1) (the card16 sequence-2)))
-
-(proclaim '(inline sequence<))
-(defun sequence< (sequence-1 sequence-2)
-  (if (> (the card16 (abs (- (the card16 sequence-1) (the card16 sequence-2)))) 32768)
-      (> (the card16 sequence-1) (the card16 sequence-2))
-    (< (the card16 sequence-1) (the card16 sequence-2))))
-
-(proclaim '(inline sequence>))
-(defun sequence> (sequence-1 sequence-2)
-  (if (> (the card16 (abs (- (the card16 sequence-1) (the card16 sequence-2)))) 32768)
-      (< (the card16 sequence-1) (the card16 sequence-2))
-    (> (the card16 sequence-1) (the card16 sequence-2))))
-
-;;;
-
 (defvar *pending-command-free-list* nil)
 
 (defun start-pending-command (display)
