@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.18 93/08/20 11:43:24 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.21 93/09/04 17:44:39 rws Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
@@ -37,24 +37,24 @@ InstallManPage(xfs,$(MANDIR))
 InstallNonExecFile(config,$(FSLIBDIR))
 #endif
 
-#if HasSaberC
-saber_xfs:
+#if HasCodeCenter
+debug_xfs:
 	XCOMM cd difs
-	XCOMM make saber
+	XCOMM make debug_src
 	XCOMM cd ../os
-	XCOMM make saber
+	XCOMM make debug_src
 	XCOMM cd ../../../lib/font/bitmap
-	XCOMM make saber
+	XCOMM make debug_src
 	XCOMM cd ../fontfile
-	XCOMM make saber
+	XCOMM make debug_src
 	XCOMM cd ../fc
-	XCOMM make saber
+	XCOMM make debug_src
 	XCOMM cd ../Speedo
-	XCOMM make saber
+	XCOMM make debug_src
 	XCOMM cd ../Type1
-	XCOMM make saber
+	XCOMM make debug_src
 	XCOMM cd ../util
-	XCOMM make saber
+	XCOMM make debug_src
 	XCOMM unload atom.c miscutil.c
 	XCOMM cd ../../../programs/xfs
 #endif
