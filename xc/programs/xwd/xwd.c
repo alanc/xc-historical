@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.19 87/06/23 14:37:12 chariot Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.20 87/07/01 18:48:20 chariot Locked $";
 #endif
 
 /*%
@@ -84,7 +84,7 @@ main(argc, argv)
         format = ZPixmap;
 
     /* Get window select on command line, if any */
-    target_win = Select_Window_Args(&argc, &argv);
+    target_win = Select_Window_Args(&argc, argv);
 
     for (i = 1; i < argc; i++) {
 	if (!strcmp(argv[i], "-nobdrs")) {
