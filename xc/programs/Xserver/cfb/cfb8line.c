@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.19 91/07/09 16:07:32 rws Exp $
+ * $XConsortium: cfb8line.c,v 1.20 91/12/19 14:15:34 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -623,18 +623,18 @@ cfb8LineSS1Rect (pDrawable, pGC, mode, npt, pptInit)
     }
 }
 
-#define round(dividend, divisor) \
-( (((dividend)<<1) + (divisor)) / ((divisor)<<1) )
-#define ceiling(m,n)  (((m)-1)/(n) + 1)
+#define round(m,n)	    ((((m)<<1) + (n)) / ((n)<<1))
+#define ceiling(m,n)	    (((m)-1)/(n) + 1)
 #define SignTimes(sign,n)   (((sign) < 0) ? -(n) : (n))
 
-cfbClipPoint (oc, xp, yp, dx, dy, boxp)
+cfbClipPoint (oc, xp, yp, dx, dy, boxp, first)
     int	oc;
     int	*xp, *yp;
     BoxPtr  boxp;
+    Bool    first;
 {
     int	x, y;
-    int	adx, ady, signdx, signdy;
+    int	signdx, signdy;
     int	utmp;
     
     signdx = 1;
@@ -664,13 +664,18 @@ cfbClipPoint (oc, xp, yp, dx, dy, boxp)
     	utmp *= dy;
 	if (dy > dx)
 	{
-	    utmp = (utmp << 1) - dy + 1;
-	    y = *yp + SignTimes(signdy, ceiling(utmp, (dx << 1)));
+	    utmp <<= 1;
+	    if (first)
+		utmp -= dy;
+	    else
+		utmp += dy;
+	    utmp = ceiling (utmp, dx << 1);
+	    if (!first)
+		utmp -= 1;
 	}
 	else
-	{
-    	    y = *yp + SignTimes(signdy, round(utmp, dx));
-	}
+	    utmp = round (utmp, dx);
+	y = *yp + SignTimes (signdy, utmp);
 	oc = 0;
 	OUTCODES (oc, x, y, boxp);
     }
@@ -689,13 +694,18 @@ cfbClipPoint (oc, xp, yp, dx, dy, boxp)
 	utmp *= dx;
 	if (dx > dy)
 	{
-	    utmp = (utmp << 1) - dx + 1;
-	    x = *xp + SignTimes(signdx, ceiling(utmp, (dy << 1)));
+	    utmp <<= 1;
+	    if (first)
+		utmp -= dx;
+	    else
+		utmp += dx;
+	    utmp = ceiling (utmp, dy << 1);
+	    if (!first)
+		utmp -= 1;
 	}
 	else
-	{
-	    x = *xp + SignTimes(signdx, round(utmp, dy));
-	}
+	    utmp = round (utmp, dy);
+	x = *xp + SignTimes(signdx, utmp);
 	oc = 0;
 	OUTCODES (oc, x, y, boxp);
     }
@@ -784,7 +794,7 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
 	int	dx = x2 - x1, dy = y2 - y1;
 	int change;
 
-	oc2 = cfbClipPoint (oc2, &xt, &yt, -dx, -dy, boxp);
+	oc2 = cfbClipPoint (oc2, &xt, &yt, -dx, -dy, boxp, FALSE);
 	if (axis == Y_AXIS)
 	    change = y2 - yt;
 	else
@@ -800,7 +810,7 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
 	int	dx = x2 - x1, dy = y2 - y1;
 	int	changex, changey;
 
-	oc1 = cfbClipPoint (oc1, &xt, &yt, dx, dy, boxp);
+	oc1 = cfbClipPoint (oc1, &xt, &yt, dx, dy, boxp, TRUE);
 	changex = x1 - xt;
 	if (changex < 0)
 	    changex = -changex;
