@@ -1,4 +1,4 @@
-/* $XConsortium: readfile.c,v 1.2 94/04/11 14:44:02 gildea Exp $ */
+/* $XConsortium: readfile.c,v 1.3 94/04/17 20:45:56 gildea Exp $ */
 /*
 
 Copyright (c) 1988, 1991  X Consortium
@@ -39,8 +39,9 @@ extern char *malloc();
  * get_data_from_file - read data from a file into a single buffer; meant 
  * for small files containing messages.
  */
-static char *get_data_from_file (filename)
+static char *get_data_from_file (filename, len)
     char *filename;
+    int *len;			/* return */
 {
     FILE *fp;
     struct stat statbuf;
@@ -54,33 +55,37 @@ static char *get_data_from_file (filename)
 
     cp = malloc (statbuf.st_size + 1);
     if (!cp) {
-	perror("malloc");
+	fprintf(stderr, "cannot get memory for message file\n");
 	return NULL;
     }
 
     fp = fopen (filename, "r");
     if (!fp) {
+	perror(filename);
 	(void) free (cp);
 	return NULL;
     }
 
     if (fread (cp, 1, statbuf.st_size, fp) != statbuf.st_size) {
+	perror(filename);
 	(void) free (cp);
 	(void) fclose (fp);
 	return NULL;
     }
 
     cp[statbuf.st_size] = '\0';		/* since we allocated one extra */
+    *len = statbuf.st_size;
     (void) fclose (fp);
     return cp;
 }
 
 /*
  * get_data_from_stdin - copy data from stdin to file, use get_data_from_file,
- * and then remove file.  Reads data twices, but avoid mallocing extra memory.
+ * and then remove file.  Read data twice, but avoid mallocing extra memory.
  * Meant for small files.
  */
-static char *get_data_from_stdin ()
+static char *get_data_from_stdin (len)
+    int *len;			/* return */
 {
     char filename[80];
     char buf[BUFSIZ];
@@ -100,7 +105,7 @@ static char *get_data_from_stdin ()
     }
     (void) close (mfile);
 
-    cp = get_data_from_file (filename);
+    cp = get_data_from_file (filename, len);
     (void) unlink (filename);
     return cp;
 }
@@ -110,12 +115,13 @@ static char *get_data_from_stdin ()
  * read_file - read data from indicated file and return pointer to malloced
  * buffer.  Returns NULL on error or if no such file.
  */
-char *read_file (filename)
+char *read_file (filename, len)
     char *filename;
+    int *len;			/* returned */
 {
     if (filename[0] == '-' && filename[1] == '\0') {
-	return (get_data_from_stdin ());
+	return (get_data_from_stdin (len));
     } else {
-	return (get_data_from_file (filename));
+	return (get_data_from_file (filename, len));
     }
 }
