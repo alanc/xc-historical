@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocutil.c,v 1.14 87/09/11 08:19:27 toddb Exp $";
+static char rcs_id[] = "$Header: tocutil.c,v 1.8 88/01/07 09:34:44 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -28,21 +28,19 @@ static char rcs_id[] = "$Header: tocutil.c,v 1.14 87/09/11 08:19:27 toddb Exp $"
 
 /* tocutil.c -- internal routines for toc stuff. */
 
+#include <X/Xos.h>
 #include "xmh.h"
 #include "toc.h"
 #include "tocutil.h"
 #include "tocintrnl.h"
-#ifdef X10
-#include <sys/file.h>
-#endif	/* X10 */
 
 Toc TUMalloc()
 {
     Toc toc;
-    toc = (Toc) XtMalloc(sizeof(TocRec));
+    toc = XtNew(TocRec);
     bzero((char *)toc, (int) sizeof(TocRec));
-    toc->msgs = (Msg *) XtMalloc(1);
-    toc->seqlist = (Sequence *) XtMalloc(1);
+    toc->msgs = (Msg *) XtMalloc((unsigned) 1);
+    toc->seqlist = (Sequence *) XtMalloc((unsigned) 1);
     toc->validity = unknown;
     return toc;
 }
@@ -63,35 +61,40 @@ int TUScanFileOutOfDate(toc)
 static void CheckSeqButtons(toc)
 Toc toc;
 {
-    Scrn scrn = toc->scrn;
-    int i, numinbox;
+    Scrn scrn;
+    int w, i, numinbox;
     int rebuild;
-    extern void PrepareDoubleClickSequence();
-    if (scrn == NULL) return;
-    rebuild = FALSE;
-    numinbox = BBoxNumButtons(scrn->seqbuttons);
-    if (numinbox != toc->numsequences)
-	rebuild = TRUE;
-    else {
-	for (i=0 ; i<toc->numsequences && !rebuild; i++)
-	    rebuild =
-		strcmp(toc->seqlist[i]->name,
-		       BBoxNameOfButton(BBoxButtonNumber(scrn->seqbuttons,
-							 i)));
+    static char *extra[] = {
+	"<Btn1Down>(2): open-sequence()",
+	NULL
+    };
+    for (w=0 ; w<toc->num_scrns ; w++) {
+	scrn = toc->scrn[w];
+	rebuild = FALSE;
+	numinbox = BBoxNumButtons(scrn->seqbuttons);
+	if (numinbox != toc->numsequences)
+	    rebuild = TRUE;
+	else {
+	    for (i=0 ; i<toc->numsequences && !rebuild; i++)
+		rebuild =
+		    strcmp(toc->seqlist[i]->name,
+			   BBoxNameOfButton(BBoxButtonNumber(scrn->seqbuttons,
+							     i)));
+	}
+	if (rebuild) {
+	    BBoxStopUpdate(scrn->seqbuttons);
+	    for (i = 1; i < numinbox ; i++)
+		BBoxDeleteButton(BBoxButtonNumber(scrn->seqbuttons, 1));
+	    for (i = (numinbox ? 1 : 0); i < toc->numsequences; i++)
+		BBoxAddButton(scrn->seqbuttons, toc->seqlist[i]->name,
+			      NoOp, 999, TRUE, extra);
+	    BBoxStartUpdate(scrn->seqbuttons);
+	}
+	if (scrn->seqbuttons) 
+	    BBoxSetRadio(scrn->seqbuttons,
+			 BBoxFindButtonNamed(scrn->seqbuttons,
+					     toc->viewedseq->name));
     }
-    if (rebuild) {
-	BBoxStopUpdate(scrn->seqbuttons);
-	for (i = 1; i < numinbox ; i++)
-	    BBoxDeleteButton(BBoxButtonNumber(scrn->seqbuttons, 1));
-	for (i = (numinbox ? 1 : 0); i < toc->numsequences; i++)
-	    BBoxAddButton(scrn->seqbuttons, toc->seqlist[i]->name,
-			  PrepareDoubleClickSequence, 999, TRUE);
-	BBoxStartUpdate(scrn->seqbuttons);
-    }
-    if (scrn->seqbuttons) 
-	BBoxSetRadio(scrn->seqbuttons,
-		     BBoxFindButtonNamed(scrn->seqbuttons,
-					 toc->viewedseq->name));
 }
 
 
@@ -105,21 +108,22 @@ void TUScanFileForToc(toc)
 	{XtNy, (XtArgVal) 30}
     };
 
-    Window parent, label;
+    Widget parent, label;
     Scrn scrn;
     char  **argv, str[100], str2[10];
     if (toc) {
 	TUGetFullFolderInfo(toc);
-	scrn = toc->scrn;
-	if (!scrn) scrn = scrnList[0];
-	parent = scrn->tocwindow;
-	if (!parent) parent = scrn->window;
+	if (toc->num_scrns) scrn = toc->scrn[0];
+	else scrn = scrnList[0];
+	parent = (Widget) scrn->tocwidget;
 	(void) sprintf(str, "Rescanning %s", toc->foldername);
 	arglist[0].value = (XtArgVal) str;
-	label = XtLabelCreate(DISPLAY parent, arglist, XtNumber(arglist));
-	QXMapWindow(theDisplay, label);
-	(void) XtSendExpose(DISPLAY label);
-	QXFlush(theDisplay);
+/* %%% Need to reimplement message box. */
+	label = XtCreateWidget( "alert", labelWidgetClass, parent,
+			        arglist, XtNumber(arglist) );
+	XtRealizeWidget(label);
+	(*(label->core.widget_class->core_class.expose))(label, NULL); /* %%%Hack. */
+	XFlush(XtDisplay(label));
 
 	argv = MakeArgv(4);
 	argv[0] = "scan";
@@ -130,9 +134,7 @@ void TUScanFileForToc(toc)
 	argv[3] = str2;
 	DoCommand(argv, (char *) NULL, toc->scanfile);
 	XtFree((char *) argv);
-
-	(void) XtSendDestroyNotify(DISPLAY label);
-	QXDestroyWindow(theDisplay, label);
+	XtDestroyWidget(label);
 	toc->validity = valid;
 	toc->curmsg = NULL;	/* Get cur msg somehow! %%% */
     }
@@ -183,7 +185,7 @@ void TUResetTocLabel(scrn)
 			   toc->viewedseq->name);
 	    toc->needslabelupdate = FALSE;
 	}
-	ChangeLabel(scrn->toclabel, str);
+	ChangeLabel((Widget) scrn->toclabel, str);
     }
 }
 
@@ -195,26 +197,27 @@ void TURedisplayToc(scrn)
   Scrn scrn;
 {
     Toc toc;
-    int lines, width, height;
+    int lines, height;
     XtTextPosition position;
-    if (scrn != NULL && scrn->tocwindow != NULL) {
+    XtTextSource source;
+    if (scrn != NULL && scrn->tocwidget != NULL) {
 	toc = scrn->toc;
  	if (toc) {
 	    if (toc->stopupdate) {
 		toc->needsrepaint = TRUE;
 		return;
 	    }
-	    GetWindowSize(scrn->tocwindow, &width, &height);
-	    lines = scrn->tocsink->maxLines(scrn->tocsink, height);
-	    position = toc->source->getLastPos(toc->source);
-	    position = toc->source->scan(toc->source, position, XtstEOL,
-					 XtsdLeft, lines, FALSE);
-	    XtTextNewSource(DISPLAY scrn->tocwindow, toc->source, position);
+	    XtTextDisableRedisplay(scrn->tocwidget, TRUE);
+	    source = XtTextGetSource(scrn->tocwidget);
+	    if (source != toc->source)
+		XtTextSetSource(scrn->tocwidget, toc->source,
+				 (XtTextPosition) 0);
 	    TocSetCurMsg(toc, TocGetCurMsg(toc));
+	    XtTextEnableRedisplay(scrn->tocwidget);
 	    CheckSeqButtons(toc);
 	    toc->needsrepaint = FALSE;
 	} else {
-	    XtTextNewSource(DISPLAY scrn->tocwindow, NullSource, (XtTextPosition) 0);
+	    XtTextSetSource(scrn->tocwidget, NullSource, (XtTextPosition) 0);
 	}
     }
 }
@@ -238,8 +241,8 @@ void TULoadSeqLists(toc)
     }
     toc->numsequences = 1;
     toc->seqlist = (Sequence *) XtRealloc((char *) toc->seqlist,
-					       sizeof(Sequence));
-    seq = toc->seqlist[0] = (Sequence) XtMalloc(sizeof(SequenceRec));
+					  (Cardinal) sizeof(Sequence));
+    seq = toc->seqlist[0] = XtNew(SequenceRec);
     bzero((char *) seq, sizeof(SequenceRec));
     seq->name = MallocACopy("all");
     seq->mlist = NULL;
@@ -259,7 +262,7 @@ void TULoadSeqLists(toc)
 			XtRealloc((char *) toc->seqlist,
 				  (unsigned) toc->numsequences * sizeof(Sequence));
 		    seq = toc->seqlist[toc->numsequences - 1] =
-			(Sequence) XtMalloc(sizeof(SequenceRec));
+			XtNew(SequenceRec);
 		    bzero((char *) seq, sizeof(SequenceRec));
 		    seq->name = MallocACopy(ptr);
 		    seq->mlist = StringToMsgList(toc, ptr2 + 1);
@@ -312,9 +315,11 @@ Toc toc;
 		    toc->curmsg = TocMsgBefore(toc, oldcurmsg);
 	    } else toc->curmsg = oldcurmsg;
 	}
-	TURedisplayToc(toc->scrn);
+	for (i=0 ; i<toc->num_scrns ; i++)
+	    TURedisplayToc(toc->scrn[i]);
     } else TocSetCurMsg(toc, oldcurmsg);
-    TUResetTocLabel(toc->scrn);
+    for (i=0 ; i<toc->num_scrns ; i++)
+	TUResetTocLabel(toc->scrn[i]);
 }
 
 
@@ -353,7 +358,7 @@ void TULoadTocFile(toc)
     i = 0;
     curmsg = NULL;
     while (ptr = ReadLineWithCR(fid)) {
-	toc->msgs[toc->nummsgs++] = msg = (Msg) XtMalloc(sizeof(MsgRec));
+	toc->msgs[toc->nummsgs++] = msg = XtNew(MsgRec);
 	bzero((char *) msg, sizeof(MsgRec));
 	l = strlen(ptr);
 	msg->toc = toc;
@@ -543,7 +548,7 @@ Msg TUAppendToc(toc, ptr)
     (toc->nummsgs)++;
     toc->msgs = (Msg *) XtRealloc((char *) toc->msgs,
 				  (unsigned) toc->nummsgs * sizeof(Msg));
-    toc->msgs[toc->nummsgs - 1] = msg = (Msg) XtMalloc(sizeof(MsgRec));
+    toc->msgs[toc->nummsgs - 1] = msg = XtNew(MsgRec);
     bzero((char *) msg, (int) sizeof(MsgRec));
     msg->toc = toc;
     msg->buf = MallocACopy(ptr);
@@ -563,7 +568,7 @@ Msg TUAppendToc(toc, ptr)
     else
 	msg->visible = FALSE;
     toc->length += msg->length;
-    TURedisplayToc(toc->scrn);
+    if (msg->visible) TSourceInvalid(toc, msg->position, msg->length);
     TUSaveTocFile(toc);
     return msg;
 }
