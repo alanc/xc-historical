@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSink.c,v 1.58 91/10/16 21:03:19 eswu Exp $ */
+/* $XConsortium: AsciiSink.c,v 1.59 91/10/16 22:16:18 eswu Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -240,7 +240,7 @@ XawTextPosition pos1, pos2;
 
     y += sink->text_sink.font->ascent;
     for ( j = 0 ; pos1 < pos2 ; ) {
-	pos1 = XawTextSourceRead(source, pos1, &blk, pos2 - pos1);
+	pos1 = XawTextSourceRead(source, pos1, &blk, (int) pos2 - pos1);
 	for (k = 0; k < blk.length; k++) {
 	    if (j >= BUFSIZ) {	/* buffer full, dump the text. */
 	        x += PaintText(w, gc, x, y, buf, j);
@@ -366,11 +366,11 @@ int *resHeight;			/* Height required. */
 
     /* we may not need this */
     lastPos = GETLASTPOS;
-    XawTextSourceRead(source, fromPos, &blk, toPos - fromPos);
+    XawTextSourceRead(source, fromPos, &blk, (int) toPos - fromPos);
     *resWidth = 0;
     for (index = fromPos; index != toPos && index < lastPos; index++) {
 	if (index - blk.firstPos >= blk.length)
-	    XawTextSourceRead(source, index, &blk, toPos - fromPos);
+	    XawTextSourceRead(source, index, &blk, (int) toPos - fromPos);
 	c = blk.ptr[index - blk.firstPos];
 	*resWidth += CharWidth(w, fromx + *resWidth, c);
 	if (c == XawLF) {

@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.59 93/09/17 11:03:46 rws Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.60 93/09/26 20:19:08 rws Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -97,9 +97,17 @@ static Boolean SetValues(), WriteToFile();
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
-#ifndef WIN32
+#if !defined(WIN32) && (defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)))
 extern int sys_nerr;
 extern char* sys_errlist[];
+#endif
+
+#ifdef X_NOT_POSIX
+#define Off_t long
+#define Size_t unsigned int
+#else
+#define Off_t off_t
+#define Size_t size_t
 #endif
 
 #define superclass		(&textSrcClassRec)
@@ -553,7 +561,7 @@ XawTextBlock *        text;
     position--;
   }
 
-  buf = XtMalloc(sizeof(unsigned char) * text->length);
+  buf = XtMalloc((unsigned)sizeof(unsigned char) * text->length);
   strncpy(buf, (text->ptr + text->firstPos), text->length);
   piece = FindPiece(src, position, &first);
   ptr = (position - first) + piece->text;
@@ -992,8 +1000,8 @@ Boolean newString;
     
     if (!src->ascii_src.is_tempfile) {
 	if ((file = fopen(src->ascii_src.string, open_mode)) != 0) {
-	    (void) fseek(file, 0L, 2);
-	    src->ascii_src.length = ftell(file);
+	    (void) fseek(file, (Off_t)0, 2);
+	    src->ascii_src.length = (XawTextPosition) ftell(file);
 	    return file;
 	} else {
 	    String params[2];
@@ -1001,12 +1009,16 @@ Boolean newString;
 	    char msg[11];
 	    
 	    params[0] = src->ascii_src.string;
+#if defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4))
 	    if (errno <= sys_nerr)
 		params[1] = sys_errlist[errno];
 	    else {
 		sprintf(msg, "errno=%.4d", errno);
 		params[1] = msg;
 	    }
+#else
+	    params[1] = strerror(errno);
+#endif
 	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)src),
 			    "openError", "asciiSourceCreate", "XawWarning",
 			    "Cannot open file %s; %s", params, &num_params);
@@ -1028,11 +1040,12 @@ char * string;
 
   if (string == NULL) {
     if (src->ascii_src.type == XawAsciiFile) {
-      local_str = XtMalloc((src->ascii_src.length + 1) *sizeof(unsigned char));
+      local_str = XtMalloc((unsigned) (src->ascii_src.length + 1)
+			   * sizeof(unsigned char));
       if (src->ascii_src.length != 0) {
-	fseek(file, 0L, 0);
-	src->ascii_src.length = fread(local_str, sizeof(unsigned char),
-				      src->ascii_src.length, file);
+	fseek(file, (Off_t)0, 0);
+	src->ascii_src.length = fread(local_str, (Size_t)sizeof(unsigned char),
+				      (Size_t)src->ascii_src.length, file);
 	if (src->ascii_src.length <= 0)
 	  XtErrorMsg("readError", "asciiSourceCreate", "XawError",
 		     "fread returned error.", NULL, NULL);
@@ -1065,7 +1078,8 @@ char * string;
   do {
     piece = AllocNewPiece(src, piece);
 
-    piece->text = XtMalloc(src->ascii_src.piece_size * sizeof(unsigned char));
+    piece->text = XtMalloc((unsigned)src->ascii_src.piece_size
+			   * sizeof(unsigned char));
     piece->used = Min(left, src->ascii_src.piece_size);
     if (piece->used != 0)
       strncpy(piece->text, ptr, piece->used);
