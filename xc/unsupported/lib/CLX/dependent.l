@@ -370,150 +370,6 @@
 		      :unsigned-long) v))
 
   
-  ;; Allegro 3.0 (like most stock hardware CL's) does not support inlining of
-  ;; functions.  So we use compiler-macros to accomplish the same thing.
-
-(defcmacro card8->int8 (x)
-  (let ((xx (gensym)))
-    `(let ((,xx ,x))
-       ,(declare-bufmac)
-       (declare (type card8 ,xx))
-       (the int8 (if (logbitp 7 ,xx)
-		     (the int8 (- ,xx #x100))
-		   ,xx)))))
-
-(defcmacro int8->card8 (x)
-  `(locally ,(declare-bufmac)
-     (the card8 (ldb (byte 8 0) (the int8 ,x)))))
-
-(defcmacro card16->int16 (x)
-  (let ((xx (gensym)))
-    `(let ((,xx ,x))
-       ,(declare-bufmac)
-       (declare (type card16 ,xx))
-       (the int16 (if (logbitp 15 ,xx)
-		      (the int16 (- ,xx #x10000))
-		    ,xx)))))
-
-(defcmacro int16->card16 (x)
-  `(locally ,(declare-bufmac)
-     (the card16 (ldb (byte 16 0) (the int16 ,x)))))
-
-(defcmacro card32->int32 (x)
-  (let ((xx (gensym)))
-    `(let ((,xx ,x))
-       ,(declare-bufmac)
-       (declare (type card32 ,xx))
-       (the int32 (if (logbitp 31 ,xx)
-		      (the int32 (- ,xx #x100000000))
-		    ,xx)))))
-
-(defcmacro int32->card32 (x)
-  `(locally ,(declare-bufmac)
-     (the card32 (ldb (byte 32 0) (the int32 ,x)))))
-
-(defcmacro aref-card8 (a i)
-  `(locally ,(declare-bufmac)
-	    (the card8 (aref (the buffer-bytes ,a) (the array-index ,i)))))
-
-(defcmacro aset-card8 (v a i)
-  `(locally ,(declare-bufmac)
-	    (setf (aref (the buffer-bytes ,a) (the array-index ,i))
-	      (the card8 ,v))))
-
-(defcmacro aref-int8 (a i)
-  `(locally ,(declare-bufmac)
-	    (card8->int8 (aref (the buffer-bytes ,a) (the array-index ,i)))))
-
-(defcmacro aset-int8 (v a i)
-  `(locally ,(declare-bufmac)
-	    (setf (aref (the buffer-bytes ,a) (the array-index ,i))
-	      (int8->card8 ,v))))
-
-(defcmacro aref-card16 (a i)
-  `(locally ,(declare-bufmac)
-     (the card16 (sys:memref (the buffer-bytes ,a)
-			     #.(comp::mdparam 'comp::md-svector-data0-adj)
-			     (the array-index ,i)
-			     :unsigned-word))))
-  
-(defcmacro aset-card16 (v a i)
-  `(locally ,(declare-bufmac)
-     (setf (sys:memref (the buffer-bytes ,a)
-			     #.(comp::mdparam 'comp::md-svector-data0-adj)
-			     (the array-index ,i)
-			     :unsigned-word)
-       (the card16 ,v))))
-  
-(defcmacro aref-int16 (a i)
-  `(locally ,(declare-bufmac)
-     (the int16 (sys:memref (the buffer-bytes ,a)
-			    #.(comp::mdparam 'comp::md-svector-data0-adj)
-			    (the array-index ,i)
-			    :signed-word))))
-  
-(defcmacro aset-int16 (v a i)
-  `(locally ,(declare-bufmac)
-     (setf (sys:memref (the buffer-bytes ,a)
-		       #.(comp::mdparam 'comp::md-svector-data0-adj)
-		       (the array-index ,i)
-		       :signed-word)
-       (the int16 ,v))))
-  
-(defcmacro aref-card32 (a i)
-  `(locally ,(declare-bufmac)
-     (the card32 (sys:memref (the buffer-bytes ,a)
-			     #.(comp::mdparam 'comp::md-svector-data0-adj)
-			     (the array-index ,i)
-			     :unsigned-long))))
-    
-(defcmacro aset-card32 (v a i)
-  `(locally ,(declare-bufmac)
-     (setf (sys:memref (the buffer-bytes ,a)
-		       #.(comp::mdparam 'comp::md-svector-data0-adj)
-		       (the array-index ,i)
-		       :unsigned-long)
-       (the card32 ,v))))
-
-(defcmacro aref-int32 (a i)
-  `(locally ,(declare-bufmac)
-     (the int32 (sys:memref (the buffer-bytes ,a)
-			    #.(comp::mdparam 'comp::md-svector-data0-adj)
-			    (the array-index ,i)
-			    :signed-long))))
-    
-(defcmacro aset-int32 (v a i)
-  `(locally ,(declare-bufmac)
-     (setf (sys:memref (the buffer-bytes ,a)
-		       #.(comp::mdparam 'comp::md-svector-data0-adj)
-		       (the array-index ,i)
-		       :signed-long)
-       (the int32 ,v))))
-
-(defcmacro aref-card29 (a i)
-  ;; Don't need to mask bits here since X protocol guarantees top bits zero
-  `(locally ,(declare-bufmac)
-     (the card29 (sys:memref (the buffer-bytes ,a)
-			     #.(comp::mdparam 'comp::md-svector-data0-adj)
-			     (the array-index ,i)
-			     :unsigned-long))))
-
-(defcmacro aset-card29 (v a i)
-  ;; I also assume here Lisp is passing a number that fits in 29 bits.
-  `(locally ,(declare-bufmac)
-     (setf (sys:memref (the buffer-bytes ,a)
-		       #.(comp::mdparam 'comp::md-svector-data0-adj)
-		       (the array-index ,i)
-		       :unsigned-long)
-       (the card29 ,v))))
-
-(defcmacro char->card8 (char)
-  `(locally ,(declare-bufmac)
-     (the card8 (char-code (the string-char ,char)))))
-
-(defcmacro card8->char (card8)
-  `(locally ,(declare-bufmac)
-     (the string-char (code-char (the card8 ,card8)))))
 )
 
 #-(or excl clx-overlapping-arrays)
@@ -965,46 +821,37 @@
 
 
 #+excl
-(progn
-
 (defmacro holding-lock ((locator display &optional whostate &key timeout)
 			&body body)
   (declare (ignore display))
-  ;; Note -- calling holding-lock from within a process-wait function is
-  ;; currently not allowed.  XXX
-  (let ((lock (gensym)) (curproc (gensym)) (locker (gensym))
-	(scheduling (gensym)) (obtained-lock (gensym)))
-    `(let ((,scheduling mp::*scheduler-stack-group*)
-  	   ,lock ,curproc ,locker ,obtained-lock)
-       (unwind-protect
-	    (block --doit--
-	      (when ,scheduling
-		(setq ,lock ,locator
-		      ,curproc mp::*current-process*	; nil if in scheduler
-						        ; running process-wait fun
-		      ,locker (mp::process-lock-locker ,lock))
-		(when (not (eq ,locker ,curproc))
-		  ;; Then we need to grab the lock.
-		  ,(if timeout
-		       `(if (not (mp::with-timeout (,timeout)
-				   (mp::process-lock
-				     ,lock ,curproc
-				     ,@(when whostate `(,whostate)))))
-			    (return-from --doit-- nil)
-			  (setq ,obtained-lock t))
-		     `(progn
-			(mp::process-lock ,lock ,curproc
-					  ,@(when whostate `(,whostate)))
-			(setq ,obtained-lock t)))))
-	      ,@body)
-	 (if (and ,obtained-lock
-		  ;; Note -- next form added to allow error handler inside
-		  ;; body to unlock the lock prematurely if it knows that
-		  ;; the current process cannot possibly continue but will
-		  ;; throw out (or is it throw up?).
-		  (eq (mp::process-lock-locker ,lock) ,curproc))
-	     (mp::process-unlock ,lock ,curproc))))))
-)
+  `(let (.hl-lock. .hl-obtained-lock. .hl-curproc.)
+     (unwind-protect
+	 (block .hl-doit.
+	   (when mp::*scheduler-stack-group* ; fast test for scheduler running
+	     (setq .hl-lock. ,locator
+		   .hl-curproc. mp::*current-process*)
+	     (when (and .hl-curproc.	; nil if in process-wait fun
+			(not (eq (mp::process-lock-locker .hl-lock.)
+				 .hl-curproc.)))
+	       ;; Then we need to grab the lock.
+	       ,(if timeout
+		    `(if (eq (mp::process-lock .hl-lock. .hl-curproc. ,whostate
+					       ,timeout)
+			     #+allegro-v3.0 'mp::with-timeout-internal
+			     #+(and allegro (not allegro-v3.0)) nil)
+			 (return-from .hl-doit. nil))
+		  `(mp::process-lock .hl-lock. .hl-curproc.
+				     ,@(when whostate `(,whostate))))
+	       (setq .hl-obtained-lock. t)))
+	   ,@body)
+       (if (and .hl-obtained-lock.
+		;; Note -- next form added to allow error handler inside
+		;; body to unlock the lock prematurely if it knows that
+		;; the current process cannot possibly continue but will
+		;; throw out (or is it throw up?).
+		(eq (mp::process-lock-locker .hl-lock.) .hl-curproc.))
+	   (mp::process-unlock .hl-lock. .hl-curproc.)))))
+
 
 ;;; WITHOUT-ABORTS
 
@@ -1013,7 +860,7 @@
 ;;; request writing and reply reading to ensure that requests are atomically
 ;;; written and replies are atomically read from the stream.
 
-#-(or Genera lcl3.0)
+#-(or Genera excl lcl3.0)
 (defmacro without-aborts (&body body)
   `(progn ,@body))
 
@@ -1022,6 +869,10 @@
   `(sys:without-aborts (clx "CLX is in the middle of an operation that should be atomic.")
      ,@body))
 
+#+excl
+(defmacro without-aborts (&body body)
+  `(without-interrupts ,@body))
+    
 #+lcl3.0
 (defmacro without-aborts (&body body)
   `(lcl:with-interruptions-inhibited ,@body))
@@ -1070,10 +921,10 @@
 
 #+excl
 (defun process-wakeup (process)
-  (if (and mp::*current-process*
-	   (> (mp::process-priority process)
-	      (mp::process-priority mp::*current-process*)))
-      (mp::process-allow-schedule process)))
+  (let ((curproc mp::*current-process*))
+    (if (and curproc process (> (mp::process-priority process)
+				(mp::process-priority curproc)))
+	(mp::process-allow-schedule process))))
 
 #+CLX-Genera-New-Scheduler
 (defun process-wakeup (process)
@@ -1096,7 +947,6 @@
 
 #+excl
 (defun current-process ()
-  (declare (special mp::*current-process*))
   (and mp::*scheduler-stack-group*
        mp::*current-process*))
 
@@ -1323,25 +1173,10 @@
 	(funcall stream :string-in nil vector start end)
       eofp)))
 
-#+excl
-;;
-;; This is used so an 'eq' test may be used to find out whether or not we can
-;; safely throw this process out of the CLX read loop.
-;;
-(defparameter *read-whostate* "blocked on read from X server")
-
-#+excl
-(defmacro with-interrupt-checking-on (&body body)
-  `(locally (declare (optimize (safety 1)))
-     ,@body))
 
 #+excl
 ;;
-;; Changed 10/10/88 to not wait for all characters to be available before
-;; going out to C to do the read.  This is because the X server *does* try
-;; to write out the full request at once, but the kernel (on the sun4/4.0, at
-;; least) apparently doesn't guarantee writing at least 4096 bytes to the
-;; socket. (In my test case it wrote 3987 bytes, a very strange number indeed).
+;; Rewritten 10/89 to not use foreign function interface to do I/O.
 ;;
 (defun buffer-read-default (display vector start end timeout)
   (declare (type display display)
@@ -1351,70 +1186,20 @@
   #.(declare-buffun)
     
   (let* ((howmany (- end start))
-	 (fd (display-input-stream display))
-	 (numread (c-read-bytes fd vector start howmany)))
-    (declare (fixnum howmany fd numread))
+	 (fd (display-input-stream display)))
+    (declare (type array-index howmany)
+	     (fixnum fd))
 	  
-    (cond ((minusp numread)
-	   t)					;; error or eof
-	  ((eql numread howmany)
-	   nil)					;; success
+    (cond ((fd-char-avail-p fd)
+	   ;; Either bytes are available, or error or eof.
+	   (fd-read-bytes fd vector start howmany))
 	  (t
-	   ;; No bytes were available on the socket
-	   (cond ((and timeout (zerop timeout))
-		  ;; If there aren't enough and timeout == 0, timeout.
-		  :timeout)
-	  
-		 ;; Otherwise if the scheduler is running let it do timeouts.
-		 (mp::*scheduler-stack-group*
-		  (unwind-protect
-		       (progn
-			 (mp::mpwatchfor fd)
-			 (if (null timeout)
-			     ;; Timeout is infinity.
-			     (mp::process-wait
-			      *read-whostate*
-			      #'fd-char-avail-p fd)
-			   ;; Otherwise timeout in a number of seconds.
-			   #+allegro-v3.0
-			   (if (eql (mp::process-wait-with-timeout
-				     *read-whostate* timeout
-				     #'fd-char-avail-p fd)
-				    'mp::with-timeout-internal)
-			       (return-from buffer-read-default :timeout))
-			   #+(and allegro (not allegro-v3.0))
-			   (if (not (mp::process-wait-with-timeout
-				     *read-whostate* timeout
-				     #'fd-char-avail-p fd))
-			       (return-from buffer-read-default :timeout))
-			   #-allegro
-			   (mp::process-wait
-			    *read-whostate*
-			    #'fd-char-avail-p fd))
-			 ;; Now the read will succeed or return error.
-			 (minusp (c-read-bytes fd vector start howmany)))
-		    (mp::mpunwatchfor fd)))
-	  
-		 ;; Otherwise we have to handle timeouts by hand, and call a
-		 ;; special c read function that will return on interrupt.
-		 (t
-		  (with-interrupt-checking-on 
-		      (if (null timeout)
-			  (loop
-			   (setq numread (c-read-bytes-interruptible
-					  fd vector start howmany))
-			   (cond ((plusp numread) ; success
-				  (return-from buffer-read-default nil))
-				 ((eql numread -1) ; error
-				  (return-from buffer-read-default t))))
-		    
-			(dotimes (i (round timeout) :timeout)
-			  (declare (fixnum i))
-			  (if (null (fd-char-avail-p fd))
-			      (sleep 1)
-			    (return-from buffer-read-default
-			      (minusp (c-read-bytes fd vector start howmany))))
-			  )))))))))
+	   ;; This shouldn't happen, since buffer-input-wait is always called
+	   ;; before buffer-read.
+	   (if* (buffer-input-wait display timeout)
+	      thenret
+	      else
+		   (fd-read-bytes fd vector start howmany))))))
 
 
 #+lcl3.0
@@ -1631,7 +1416,7 @@
 ;;; :TIMEOUT if it times out, NIL otherwise.
 
 ;;; The default implementation is to just return right away.
-#-(or Genera lcl3.0)
+#-(or Genera excl lcl3.0)
 (defun buffer-input-wait-default (display timeout)
   (declare (type display display)
 	   (type (or null number) timeout)
@@ -1660,6 +1445,77 @@
 	       #-CLX-Genera-new-scheduler (scl:send stream :input-wait "CLX Input")))))
     nil))
 
+#+excl
+;;
+;; This is used so an 'eq' test may be used to find out whether or not we can
+;; safely throw this process out of the CLX read loop.
+;;
+(defparameter *read-whostate* "blocked on read from X server")
+
+;;
+;; Note that this function returns nil on error if the scheduler is running,
+;; t on error if not.  This is ok since buffer-read will detect the error.
+;;
+#+excl
+(defun buffer-input-wait-default (display timeout)
+  (declare (type display display)
+	   (type (or null number) timeout))
+  (declare (values timeout))
+  (let ((fd (display-input-stream display)))
+    (declare (fixnum fd))
+    (when (>= fd 0)
+      (cond ((fd-char-avail-p fd)
+	     nil)
+	    
+	    ;; Otherwise no bytes were available on the socket
+	    ((and timeout (zerop timeout))
+	     ;; If there aren't enough and timeout == 0, timeout.
+	     :timeout)
+	  
+	    ;; If the scheduler is running let it do timeouts.
+	    (mp::*scheduler-stack-group*
+	     (unwind-protect
+		 (progn
+		   (mp::mpwatchfor fd)
+		   (if (null timeout)
+		       ;; Timeout is infinity.
+		       (mp::process-wait *read-whostate* #'fd-char-avail-p fd)
+		     ;; Otherwise timeout in a number of seconds.
+		     #+allegro-v3.0
+		     (if (eq (mp::process-wait-with-timeout
+			      *read-whostate* timeout
+			      #'fd-char-avail-p fd)
+			     'mp::with-timeout-internal)
+			 (return-from buffer-input-wait-default :timeout))
+		     #+(and allegro (not allegro-v3.0))
+		     (if (not (mp::process-wait-with-timeout
+			       *read-whostate* timeout
+			       #'fd-char-avail-p fd))
+			 (return-from buffer-input-wait-default :timeout))
+		     #-allegro
+		     (mp::process-wait *read-whostate* #'fd-char-avail-p fd)))
+	       (mp::mpunwatchfor fd)))
+	  
+	    ;; Otherwise we have to handle timeouts by hand, and call select()
+	    ;; to block until input is available.  Note we don't really handle
+	    ;; the interaction of interrupts and (numberp timeout) here.  XX
+	    (t
+	     (let ((res 0))
+	       (declare (fixnum res))
+	       (with-interrupt-checking-on
+		(loop
+		  (setq res (fd-wait-for-input fd (if (null timeout) 0
+						    (truncate timeout))))
+		  (cond ((plusp res)	; success
+			 (return nil))
+			((eq res 0)	; timeout
+			 (return :timeout))
+			((eq res -1)	; error
+			 (return t))
+			;; Otherwise we got an interrupt -- go around again.
+			)))))))))
+
+	   
 #+lcl3.0
 (defun buffer-input-wait-default (display timeout)
   (declare (type display display)
@@ -1897,15 +1753,19 @@
 	`(typep ,object ',type))
       #-(or Genera explorer)
       (let ((predicate (assoc type
-			      '((drawable drawable-p) (window window-p) (pixmap pixmap-p)
-				(cursor cursor-p) (font font-p)
-				(gcontext gcontext-p) (colormap colormap-p)
-				(null null) (integer integerp)))))
-	(if predicate
-	    `(,(second predicate) ,object)
-	  (if *type-check?*
-	      `(locally (declare (optimize safety)) (typep ,object ',type))
-	    `(typep ,object ',type)))))))
+			      '((drawable drawable-p) (window window-p)
+				(pixmap pixmap-p) (cursor cursor-p)
+				(font font-p) (gcontext gcontext-p)
+				(colormap colormap-p) (null null)
+				(integer integerp)))))
+	(cond (predicate
+	       `(,(second predicate) ,object))
+	      ((eq type 'boolean)
+	       't)			; Everything is a boolean.
+	      (*type-check?*
+	       `(locally (declare (optimize safety)) (typep ,object ',type)))
+	      (t
+	       `(typep ,object ',type)))))))
 
 ;; X-TYPE-ERROR is the function called for type errors.
 ;; If you want lots of checking, but are concerned about code size,

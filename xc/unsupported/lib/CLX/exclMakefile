@@ -27,10 +27,10 @@ C_SRC	= excldep.c socket.c
 C_OBJS	= excldep.o socket.o
 
 L_OBJS	= excldep.fasl defsystem.fasl depdefs.fasl clx.fasl dependent.fasl \
-	macros.fasl bufmac.fasl buffer.fasl display.fasl gcontext.fasl \
-	requests.fasl input.fasl fonts.fasl graphics.fasl text.fasl \
-	attributes.fasl translate.fasl keysyms.fasl manager.fasl image.fasl \
-	resource.fasl
+	  exclcmac.fasl macros.fasl bufmac.fasl buffer.fasl display.fasl \
+	  gcontext.fasl requests.fasl input.fasl fonts.fasl graphics.fasl \
+	  text.fasl attributes.fasl translate.fasl keysyms.fasl manager.fasl \
+	  image.fasl resource.fasl
 
 L_NOMACROS_OBJS	= excldep.fasl depdefs.fasl clx.fasl dependent.fasl \
 	buffer.fasl display.fasl gcontext.fasl \
@@ -38,11 +38,11 @@ L_NOMACROS_OBJS	= excldep.fasl depdefs.fasl clx.fasl dependent.fasl \
 	attributes.fasl translate.fasl keysyms.fasl manager.fasl image.fasl \
 	resource.fasl
 
-L_SRC	= defsystem.cl depdefs.cl clx.cl dependent.cl \
-	macros.cl bufmac.cl buffer.cl display.cl gcontext.cl \
-	requests.cl input.cl fonts.cl graphics.cl text.cl \
-	attributes.cl translate.cl keysyms.cl manager.cl image.cl \
-	resource.cl
+L_SRC	= defsystem.cl depdefs.cl clx.cl dependent.cl exclcmac.cl \
+	  macros.cl bufmac.cl buffer.cl display.cl gcontext.cl \
+	  requests.cl input.cl fonts.cl graphics.cl text.cl \
+	  attributes.cl translate.cl keysyms.cl manager.cl image.cl \
+	  resource.cl
 
 
 all : $(C_OBJS) compile-CLX cat

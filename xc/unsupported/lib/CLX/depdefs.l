@@ -155,6 +155,12 @@
 (eval-when (eval compile load)
   (pushnew :clx-little-endian *features*))
 
+#+excl
+(eval-when (eval compile load)
+  (if (member :little-endian *features*)
+      (pushnew :clx-little-endian *features*)))
+
+
 ;;; Steele's Common-Lisp states:  "It is an error if the array specified
 ;;; as the :displaced-to argument  does not have the same :element-type
 ;;; as the array being created" If this is the case on your lisp, then

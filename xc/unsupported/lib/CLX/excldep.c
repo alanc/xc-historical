@@ -3,122 +3,71 @@
  */
 
 /*
- * This code requires select.  This means you probably need BSD, or a version
+ * This code requires select and interval timers.
+ * This means you probably need BSD, or a version
  * of Unix with select and interval timers added.
- * I only select on 32 file descriptors, so if your fd is higher than that you
- * lose.
  */
 
 #include <sys/types.h>
 #include <sys/errno.h>
 #include <sys/time.h>
-#include <sys/ioctl.h>
 #include <stdio.h>
-#include <signal.h>
 
 #define ERROR -1
 #define INTERRUPT -2
+#define TIMEOUT 0
+#define SUCCESS 1
 
-#define min(x,y) (((x) > (y)) ? (y) : (x))
+#ifdef FD_SETSIZE
+#define NUMBER_OF_FDS FD_SETSIZE	/* Highest possible file descriptor */
+#else
+#define NUMBER_OF_FDS 32
+#endif
+
+/* Length of array needed to hold all file descriptor bits */
+#define CHECKLEN ((NUMBER_OF_FDS+8*sizeof(int)-1) / (8 * sizeof(int)))
 
 extern int errno;
 
-static struct timeval zerotimeout = {0, 0};
-
-
 /*
- * Slightly misnamed for backwards compatibility.  This function returns 0
- * on interrupt or if there are no bytes available, ERROR on error, and 1
- * if bytes are available.  (Note 1 is also returned if the socket becomes
- * disconnected.  Thus it is up to the read to detect the eof)
+ * This function waits for input to become available on 'fd'.  If timeout is
+ * 0, wait forever.  Otherwise wait 'timeout' seconds.  If input becomes
+ * available before the timer expires, return SUCCESS.  If the timer expires
+ * return TIMEOUT.  If an error occurs, return ERROR.  If an interrupt occurs
+ * while waiting, return INTERRUPT.
  */
-static int c_howmany_bytes(fd)
+int fd_wait_for_input(fd, timeout)
     register int fd;
+    register int timeout;
 {
+    struct timeval timer;
     register int i;
-    int readfds = 1 << fd;
+    int checkfds[CHECKLEN];
 
-    i = select(32, &readfds, (int *)0, (int *)0, &zerotimeout);
-    if (i < 0)
-      /* error condition */
-      if (errno == EINTR)
-	return (0);
-      else
-	return (ERROR);
-    return (i);
-}
-
-
-/*
- * Tries to read length characters into array at position start.  This function
- * will either 1: return 0 if there are no characters available on the socket
- *	       2: return ERROR on eof or error
- *	       3: succeed in reading all length bytes and return length
- *
- * Note that this implicitly assumes there will be enough bytes available if
- * there are any bytes available.  This is safe (ie: won't block) unless CLX
- * gets out of sync.
- */
-int c_read_bytes(fd, array, start, length)
-    register int fd, start, length;
-    register unsigned char *array;
-
-{
-    register int numread, avail, totread;
-
-    totread = length;
-
-    avail = c_howmany_bytes(fd);
-
-    if (avail <= 0) {
-	return (avail);
-    } else {
-	while (length > 0) {
-	    numread = read(fd, (char *)&array[start], length);
-	    if (numread <= 0) {
-		return (ERROR);
-	    } else {
-		length -= numread;
-		start += numread;
-	    }
-	}
+    if (fd < 0 || fd >= NUMBER_OF_FDS) {
+	fprintf(stderr, "Bad file descriptor argument: %d to fd_wait_for_input\n", fd);
+	fflush(stderr);
     }
-    return (totread);
-}
 
+    for (i = 0; i < CHECKLEN; i++)
+      checkfds[i] = 0;
+    checkfds[fd / (8 * sizeof(int))] |= 1 << (fd % (8 * sizeof(int)));
 
-/*
- * When the scheduler is not running we must provide a way for the user
- * to interrupt the read from the X socket.  So we provide a separate
- * reading function, which returns INTERRUPT if it was interrupted.
- */
-int c_read_bytes_interruptible(fd, array, start, length)
-    register int fd, start, length;
-    register unsigned char *array;
+    if (timeout) {
+	timer.tv_sec = timeout;
+	timer.tv_usec = 0;
+	i = select(32, checkfds, (int *)0, (int *)0, &timer);
+    } else
+      i = select(32, checkfds, (int *)0, (int *)0, (struct timeval *)0);
 
-{
-    register int i, numread, totread;
-    int readfds;
-
-    totread = length;
-    readfds = 1 << fd;
-
-    i = select(32, &readfds, (int *)0, (int *)0, (struct timeval *)0);
     if (i < 0)
       /* error condition */
       if (errno == EINTR)
 	return (INTERRUPT);
       else
 	return (ERROR);
-
-    while (length > 0) {
-	numread = read(fd, (char *)&array[start], length);
-	if (numread <= 0) {
-	    return (ERROR);
-	} else {
-	    length -= numread;
-	    start += numread;
-	}
-    }
-    return (totread);
+    else if (i == 0)
+      return (TIMEOUT);
+    else
+      return (SUCCESS);
 }
