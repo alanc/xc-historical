@@ -1,4 +1,4 @@
-/* $XConsortium: FSConnServ.c,v 1.9 91/07/16 20:32:32 keith Exp $ */
+/* $XConsortium: FSConnServ.c,v 1.10 91/07/19 21:33:08 rws Exp $ */
 
 /* @(#)FSConnServ.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -29,6 +29,11 @@
 #include	<sys/socket.h>
 #ifdef NCD
 #include	<fcntl.h>
+#endif
+
+/* font server does not actually support unix domain yet */
+#ifdef UNIXCONN
+#undef UNIXCONN
 #endif
 
 #ifndef hpux
