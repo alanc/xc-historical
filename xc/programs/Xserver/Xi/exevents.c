@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.39 92/12/30 16:10:57 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.40 92/12/30 16:13:13 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -951,13 +951,19 @@ SetModifierMapping(client, dev, len, rlen, numKeyPerModifier, inputMap, k)
      *	Now build the keyboard's modifier bitmap from the
      *	list of keycodes.
      */
-    map = (KeyCode *)xalloc(inputMapLen);
-    if (!map)
-        return BadAlloc;
+    if (inputMapLen) {
+	map = (KeyCode *)xalloc(inputMapLen);
+        if (!map)
+            return BadAlloc;
+    }
     if ((*k)->modifierKeyMap)
         xfree((*k)->modifierKeyMap);
-    (*k)->modifierKeyMap = map;
-    bcopy((char *)inputMap, (char *)(*k)->modifierKeyMap, inputMapLen);
+    if (inputMapLen) {
+        (*k)->modifierKeyMap = map;
+        bcopy((char *)inputMap, (char *)(*k)->modifierKeyMap, inputMapLen);
+    } else
+	(*k)->modifierKeyMap = NULL;
+
     (*k)->maxKeysPerModifier = numKeyPerModifier;
     for (i = 0; i < MAP_LENGTH; i++)
         (*k)->modifierMap[i] = 0;
