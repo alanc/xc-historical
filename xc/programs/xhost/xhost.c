@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.42 91/02/17 14:07:38 rws Exp $ */
+/* $XConsortium: xhost.c,v 11.43 91/02/28 09:29:40 rws Exp $ */
  
 /*
 
@@ -78,15 +78,18 @@ extern char _XsTypeOfStream[];
 #ifdef SECURE_RPC
 #include <pwd.h>
 #include <rpc/rpc.h>
-#ifdef SVR4
-#include <limits.h>
-#else
+#ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
 #include <limits.h>
 #else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
+#ifndef NGROUPS_MAX
 #include <sys/param.h>
 #define NGROUPS_MAX NGROUPS
-#endif
 #endif
 #endif
  
