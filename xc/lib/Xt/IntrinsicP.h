@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicP.h,v 1.36 89/09/07 17:44:37 swick Exp $
+* $XConsortium: IntrinsicP.h,v 1.37 89/09/08 17:35:00 swick Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
@@ -84,6 +84,18 @@ typedef void (*XtExposeProc)();
     /* Widget    widget; */
     /* XEvent    *event; */
     /* Region	 region; */
+
+/* compress_exposure options*/
+#define XtExposeNoCompress		((XtEnum)False)
+#define XtExposeCompressSeries		((XtEnum)True)
+#define XtExposeCompressMultiple	2
+#define XtExposeCompressMaximal		3
+
+/* modifiers */
+#define XtExposeGraphicsExpose	  	0x10
+#define XtExposeGraphicsExposeMerged	0x20
+#define XtExposeNoExpose	  	0x40
+
 
 typedef void (*XtRealizeProc) ();
     /* Widget	widget;			    */
