@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Clock.c,v 1.45 89/05/11 01:04:50 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Clock.c,v 1.46 89/08/23 14:41:08 kit Exp $";
 #endif /* lint */
 
 
@@ -294,8 +294,7 @@ static void clock_tic(client_data, id)
 	struct tm *localtime();
 	struct tm tm; 
 	long	time_value;
-	char	time_string[28];
-	char	*time_ptr = time_string;
+	char	*time_ptr;
         register Display *dpy = XtDisplay(w);
         register Window win = XtWindow(w);
 
