@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Geometry.c,v 1.14 87/09/11 21:19:11 haynes Exp $";
+static char *sccsid = "@(#)Geometry.c	1.7	2/25/87";
 #endif lint
 
 /*
@@ -24,6 +24,8 @@ static char rcsid[] = "$Header: Geometry.c,v 1.14 87/09/11 21:19:11 haynes Exp $
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
+
+
 /* File: Geometry.c */
 
 #include "Intrinsic.h"
@@ -71,7 +73,7 @@ void XtResizeWidget(w, width, height, borderWidth)
 	    XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &changes);
     if ((mask & (CWWidth | CWHeight)) &&
 	XtClass(w)->core_class.resize != (XtWidgetProc) NULL)
-	    w->core.widget_class->core_class.resize(w);
+	    (*(w->core.widget_class->core_class.resize))(w);
     }
 } /* XtResizeWidget */
 
@@ -92,18 +94,31 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
     if (manager == (XtGeometryHandler) NULL) {
 	XtError("XtMakeGeometryRequest - parent has no geometry manger");
     }
-    if ( ! widget->core.managed) {
-	XtWarning("XtMakeGeometryRequest - widget not managed");
-	return XtGeometryNo;
-    }
     if (widget->core.being_destroyed) {
         return XtGeometryNo;
     }
-    if (reply == (XtWidgetGeometry *) NULL) {
-        returnCode = (*manager)(widget, request, &junk);
-    } else {
-	returnCode = (*manager)(widget, request, reply);
+    if ( ! widget->core.managed) {
+    /* if widget not managed, copy values from request to widget
+       and resize window */
+         if ((request->request_mode & CWX) != 0)
+         widget->core.x = request->x;
+        if ((request->request_mode & CWY) != 0)
+         widget->core.y = request->y;
+        if ((request->request_mode & CWWidth) != 0)
+	 widget->core.width = request->width;
+        if ((request->request_mode & CWHeight) != 0)
+         widget->core.height = request->height;
+        if ((request->request_mode & CWBorderWidth) != 0)
+         widget->core.border_width = request->border_width;
+	returnCode = XtGeometryYes; 
     }
+    else {
+     if (reply == (XtWidgetGeometry *) NULL) {
+        returnCode = (*manager)(widget, request, &junk);
+     } else {
+	returnCode = (*manager)(widget, request, reply);
+     }
+    }    
     /* ||| Right now this is automatic.  However, we may want it to be
     explicitely called by geometry manager in order to effect the window resize
     (especially to smaller size) before the windows are layed out. */
@@ -135,7 +150,7 @@ XtGeometryResult XtMakeResizeRequest
 	if (r == XtGeometryAlmost && reply.request_mode & CWHeight)
 	    *replyHeight = reply.height;
 	else
-	    *replyWidth = width;
+	    *replyHeight = height;
     return r;
 } /* XtMakeResizeRequest */
 
