@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: transport.c,v 1.4 94/02/06 16:07:01 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -37,6 +37,9 @@
 #endif
 #ifdef STREAMSCONN
 #include "Xtranstli.c"
+#endif
+#if defined(AMRPCCONN) || defined(AMTCPCONN)
+#include "Xtransam.c"
 #endif
 #include "Xtrans.c"
 #include "Xtransutil.c"

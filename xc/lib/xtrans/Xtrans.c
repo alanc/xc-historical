@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.c,v 1.16 94/03/02 12:15:59 mor Exp $ */
+/* $XConsortium: Xtrans.c,v 1.17 94/03/15 13:19:07 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -23,6 +23,8 @@
  * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
+#include <ctype.h>
 
 /*
  * The transport table contains a definition for every transport (protocol)
@@ -78,6 +80,9 @@ Xtransport_table Xtransports[] = {
     &TRANS(ISCFuncs),		TRANS_LOCAL_ISC_INDEX,
     &TRANS(SCOFuncs),		TRANS_LOCAL_SCO_INDEX,
 #endif /* LOCALCONN */
+#if defined(AMRPCCONN) || defined(AMTCPCONN)
+    &TRANS(AmConnFuncs),
+#endif /* AMRPCCONN || AMTCPCONN */
 };
 
 #define NUMTRANS	(sizeof(Xtransports)/sizeof(Xtransport_table))
@@ -901,7 +906,7 @@ Xtransaddr	**addrp;
 
     if ((*addrp = (Xtransaddr *) malloc (ciptr->peeraddrlen)) == NULL)
     {
-	PRMSG (1,"TRANS(GetMyAddr) malloc failed\n", 0, 0, 0);
+	PRMSG (1,"TRANS(GetPeerAddr) malloc failed\n", 0, 0, 0);
 	return -1;
     }
     memcpy(*addrp, ciptr->peeraddr, ciptr->peeraddrlen);
