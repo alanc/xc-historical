@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.122 89/04/11 09:58:24 rws Exp $ */
+/* $XConsortium: gc.c,v 1.123 89/04/17 10:44:18 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -991,26 +991,19 @@ register unsigned char *pdash;
     return Success;
 }
 
-
 int
-SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
-    GCPtr		pGC;
-    int			xOrigin, yOrigin;
+VerifyRectOrder(nrects, prects, ordering)
     int			nrects;
     xRectangle		*prects;
     int			ordering;
 {
     register xRectangle	*prectP, *prectN;
     register int	i;
-    int			newct, size;
-    xRectangle 		*prectsNew;
-    GCInterestPtr	pQ, pQInit;
 
     switch(ordering)
     {
       case Unsorted:
-	  newct = CT_UNSORTED;
-	  break;
+	  return CT_UNSORTED;
       case YSorted:
 	  if(nrects > 1)
 	  {
@@ -1018,10 +1011,9 @@ SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
 		  i < nrects;
 		  i++, prectP++, prectN++)
 		  if(prectN->y < prectP->y)
-		      return(BadMatch);
+		      return -1;
 	  }
-	  newct = CT_YSORTED;
-	  break;
+	  return CT_YSORTED;
       case YXSorted:
 	  if(nrects > 1)
 	  {
@@ -1031,10 +1023,9 @@ SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
 		  if((prectN->y < prectP->y) ||
 		      ( (prectN->y == prectP->y) &&
 		        (prectN->x < prectP->x) ) )
-		      return(BadMatch);
+		      return -1;
 	  }
-	  newct = CT_YXSORTED;
-	  break;
+	  return CT_YXSORTED;
       case YXBanded:
 	  if(nrects > 1)
 	  {
@@ -1045,12 +1036,28 @@ SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
 		      ( (prectN->y == prectP->y) &&
 		        (  (prectN->x < prectP->x)   ||
 		           (prectN->height != prectP->height) ) ) )
-		      return(BadMatch);
+		      return -1;
 	  }
-	  newct = CT_YXBANDED;
-	  break;
+	  return CT_YXBANDED;
     }
+    return -1;
+}
 
+int
+SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
+    GCPtr		pGC;
+    int			xOrigin, yOrigin;
+    int			nrects;
+    xRectangle		*prects;
+    int			ordering;
+{
+    int			newct, size;
+    xRectangle 		*prectsNew;
+    GCInterestPtr	pQ, pQInit;
+
+    newct = VerifyRectOrder(nrects, prects, ordering);
+    if (newct < 0)
+	return(BadMatch);
     size = nrects * sizeof(xRectangle);
     prectsNew = (xRectangle *) xalloc(size);
     if (!prects && size)
