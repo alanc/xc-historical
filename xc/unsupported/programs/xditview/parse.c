@@ -12,6 +12,8 @@
 #include "DviP.h"
 
 static int StopSeen = 0;
+static ParseDrawFunction(), ParseDeviceControl();
+static push_env(), pop_env();
 
 #define HorizontalMove(dw, delta)	((dw)->dvi.state->x += (delta))
 
