@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: x11perf.man,v 1.10 91/08/26 18:00:44 gildea Exp $
 .TH X11PERF 1 "Release 5" "X Version 11"
 .SH NAME
 x11perf \- X11 server performance test program
@@ -600,6 +600,18 @@ Fill 10-pixel/side complex polygon.
 .TP 14
 .B \-complex100
 Fill 100-pixel/side complex polygon.
+.TP 14
+.B \-64poly10convex
+Fill 10x10 convex 64-gon.
+.TP 14
+.B \-64poly100convex
+Fill 100x100 convex 64-gon.
+.TP 14
+.B \-64poly10complex
+Fill 10x10 complex 64-gon.
+.TP 14
+.B \-64poly100complex
+Fill 100x100 complex 64-gon.
 .TP 14
 .B \-ftext
 Character in 80-char line (6x13).
