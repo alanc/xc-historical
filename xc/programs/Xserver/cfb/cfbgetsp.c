@@ -120,7 +120,6 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
     while(ppt < pptLast)
     {
 	xEnd = min(ppt->x + *pwidth, widthSrc << (PWSH-2) );
-	pwidth++;
 	psrc = psrcBase + (ppt->y * (widthSrc >> 2)) + (ppt->x >> PWSH); 
 	w = xEnd - ppt->x;
 	srcBit = ppt->x & PIM;
