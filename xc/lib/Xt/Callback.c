@@ -1,4 +1,4 @@
-/* $XConsortium: Callback.c,v 1.31 90/12/29 12:14:12 rws Exp $ */
+/* $XConsortium: Callback.c,v 1.32 90/12/31 16:59:41 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -223,6 +223,7 @@ void _XtRemoveCallback (callbacks, callback, closure)
 			*ncl++ = *ocl++;
 		    while (--i >= 0)
 			*ncl++ = *cl++;
+		    *callbacks = icl;
 		}
 	    } else {
 		if (--icl->count) {
@@ -314,7 +315,7 @@ void XtRemoveCallbacks (widget, name, xtcallbacks)
     }
     ccl = ToList(icl);
     while (--i >= 0) {
-	*ccl++ = *cl++;
+	*ccl++ = *cl;
 	for (rcl=xtcallbacks; rcl->callback; rcl++) {
 	    if (cl->callback == rcl->callback && cl->closure == rcl->closure) {
 		ccl--;
@@ -322,6 +323,7 @@ void XtRemoveCallbacks (widget, name, xtcallbacks)
 		break;
 	    }
 	}
+	cl++;
     }
     if (icl->count) {
 	icl = (InternalCallbackList)
