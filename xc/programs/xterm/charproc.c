@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.123 90/03/12 10:30:21 jim Exp $
+ * $XConsortium: charproc.c,v 1.124 90/04/30 16:53:13 converse Exp $
  */
 
 
@@ -101,6 +101,7 @@ static void VTallocbuf();
 #define	XtNmultiScroll		"multiScroll"
 #define	XtNnMarginBell		"nMarginBell"
 #define	XtNreverseWrap		"reverseWrap"
+#define XtNautoWrap		"autoWrap"
 #define	XtNsaveLines		"saveLines"
 #define	XtNscrollBar		"scrollBar"
 #define XtNscrollTtyOutput	"scrollTtyOutput"
@@ -133,6 +134,7 @@ static void VTallocbuf();
 #define	XtCMultiScroll		"MultiScroll"
 #define	XtCColumn		"Column"
 #define	XtCReverseWrap		"ReverseWrap"
+#define XtCAutoWrap		"AutoWrap"
 #define XtCSaveLines		"SaveLines"
 #define	XtCScrollBar		"ScrollBar"
 #define XtCScrollLines		"ScrollLines"
@@ -149,7 +151,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.123 90/03/12 10:30:21 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.124 90/04/30 16:53:13 converse Exp $";
 #endif	/* lint */
 
 static int nparam;
@@ -378,6 +380,9 @@ static XtResource resources[] = {
 {XtNreverseWrap,XtCReverseWrap, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, misc.reverseWrap),
 	XtRBoolean, (caddr_t) &defaultFALSE},
+{XtNautoWrap,XtCAutoWrap, XtRBoolean, sizeof(Boolean),
+	XtOffset(XtermWidget, misc.autoWrap),
+	XtRBoolean, (caddr_t) &defaultTRUE},
 {XtNsaveLines, XtCSaveLines, XtRInt, sizeof(int),
 	XtOffset(XtermWidget, screen.savelines),
 	XtRInt, (caddr_t) &defaultSaveLines},

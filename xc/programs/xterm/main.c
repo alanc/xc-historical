@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.148 90/03/20 14:22:26 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.149 90/04/30 16:53:00 converse Exp $";
 #endif	/* lint */
 
 /*
@@ -399,6 +399,8 @@ static XrmOptionDescRec optionDescList[] = {
 {"-nb",		"*nMarginBell",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-rw",		"*reverseWrap",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+rw",		"*reverseWrap",	XrmoptionNoArg,		(caddr_t) "off"},
+{"-aw",		"*autoWrap",	XrmoptionNoArg,		(caddr_t) "on"},
+{"+aw",		"*autoWrap",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-s",		"*multiScroll",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+s",		"*multiScroll",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-sb",		"*scrollBar",	XrmoptionNoArg,		(caddr_t) "on"},
@@ -763,8 +765,7 @@ char **argv;
 
         screen = &term->screen;
 
-	term->flags = WRAPAROUND;
-	update_autowrap();
+	term->flags = 0;
 	if (!screen->jumpscroll) {
 	    term->flags |= SMOOTHSCROLL;
 	    update_jumpscroll();
@@ -772,6 +773,10 @@ char **argv;
 	if (term->misc.reverseWrap) {
 	    term->flags |= REVERSEWRAP;
 	    update_reversewrap();
+	}
+	if (term->misc.autoWrap) {
+	    term->flags |= WRAPAROUND;
+	    update_autowrap();
 	}
 	if (term->misc.re_verse) {
 	    term->flags |= REVERSE_VIDEO;

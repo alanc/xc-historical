@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.77 89/12/22 11:37:41 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.78 90/03/16 17:22:19 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -110,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.77 89/12/22 11:37:41 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.78 90/03/16 17:22:19 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -1515,7 +1515,7 @@ TekCopy()
 	time(&l);
 	tp = localtime(&l);
 	sprintf(buf, "COPY%02d-%02d-%02d.%02d:%02d:%02d", tp->tm_year,
-	 tp->tm_mon, tp->tm_mday, tp->tm_hour, tp->tm_min, tp->tm_sec);
+	 tp->tm_mon + 1, tp->tm_mday, tp->tm_hour, tp->tm_min, tp->tm_sec);
 	if(access(buf, F_OK) >= 0) {	/* file exists */
 		if(access(buf, W_OK) < 0) {
 			Bell();

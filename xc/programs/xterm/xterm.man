@@ -173,6 +173,15 @@ the ``Modes'' menu.
 .B \+rw
 This option indicates that reverse-wraparound should not be allowed.
 .TP 8
+.B \-aw
+This option indicates that auto-wraparound should be allowed.  This
+allows the cursor to automatically wrap to the beginning of the next
+line when when it is at the rightmost position of a line and text is
+output.
+.TP 8
+.B \+aw
+This option indicates that auto-wraparound should not be allowed.
+.TP 8
 .B \-s
 This option indicates that \fIxterm\fP may scroll asynchronously, meaning that
 the screen does not have to be kept completely up to date while scrolling.
@@ -531,6 +540,10 @@ Specifies whether or not reverse video should be simulated.  The default is
 .B "reverseWrap (\fPclass\fB ReverseWrap)"
 Specifies whether or not reverse-wraparound should be enabled.  The default is
 ``false.''
+.TP 8
+.B "autoWrap (\fPclass\fB AutoWrap)"
+Specifies whether or not auto-wraparound should be enabled.  The
+default is ``true.''
 .TP 8
 .B "saveLines (\fPclass\fB SaveLines)"
 Specifies the number of lines to save beyond the top of the screen when a
