@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: xmbufinfo.c,v 1.1 89/10/08 15:09:00 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -50,6 +50,7 @@ main (argc, argv)
     char *displayname = NULL;
     Display *dpy;
     int i;    
+    int event_base, error_base;
 
     ProgramName = argv[0];
     for (i = 1; i < argc; i++) {
@@ -73,6 +74,19 @@ main (argc, argv)
 	exit (1);
     }
 
+    if (!XmbufQueryExtension (dpy, &event_base, &error_base)) {
+	fprintf (stderr, 
+	 "%s:  multibuffering extension not supported on server \"%s\"\n",
+		 ProgramName, DisplayString(dpy));
+	XCloseDisplay(dpy);
+	exit (1);
+    }
+
+    printf ("Multibuffer information for server \"%s\":\n",
+	    DisplayString(dpy));
+    printf ("  First event number:  %d\n", event_base);
+    printf ("  First error number:  %d\n", error_base);
+
     for (i = 0; i < ScreenCount(dpy); i++) {
 	int j;
 	int nmono, nstereo;
@@ -86,16 +100,16 @@ main (argc, argv)
 	    continue;
 	}
 
-	printf ("Screen %d:\n", i);
-	printf ("  Number of mono types:  %d\n", nmono);
+	printf ("  Screen %d:\n", i);
+	printf ("    Number of mono types:  %d\n", nmono);
 	for (j = 0; j < nmono; j++) {
-	    printf ("    Visual id, max buffers, depth:  0x%lx, %d, %d\n",
+	    printf ("      Visual id, max buffers, depth:  0x%lx, %d, %d\n",
 		    mono_info[j].visualid, mono_info[j].max_buffers,
 		    mono_info[j].depth);
 	}
 	printf ("    Number of stereo types:  %d\n", nstereo);
 	for (j = 0; j < nstereo; j++) {
-	    printf ("    Visual id, max buffers, depth:  0x%lx, %d, %d\n",
+	    printf ("      Visual id, max buffers, depth:  0x%lx, %d, %d\n",
 		   stereo_info[j].visualid, stereo_info[j].max_buffers,
 		   stereo_info[j].depth);
 	}
