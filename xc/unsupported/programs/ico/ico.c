@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.14 89/10/04 17:27:26 jim Exp $ */
+/* $XConsortium: ico.c,v 1.15 89/10/04 18:08:07 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -811,7 +811,7 @@ DBufInfo *b, *otherb;
 		}
 	}
 
-	if (softdbl) {
+	if (!multibuf) {
 	    setDrawBuf(0);
 	    XSetBackground(dpy, gc, dbpair.bufs[0].pixels[0]);
 	    XSetPlaneMask(dpy, gc, AllPlanes);
