@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.16 93/09/12 20:48:12 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.17 93/09/13 19:15:22 rws Exp $
 /* only tested with Digital OSF/1 V1.0 */
 
 #define OSName			OSF/1 1.0
@@ -17,6 +17,7 @@ XCOMM operating system:  OSName
 #define ThreadedX		YES
 #endif
 #define InstallCmd installbsd
+#define ShLibDir /usr/shlib
 
 #if ThreadedX
 /* no shared -lpthreads, so we have to play really ugly games */
