@@ -254,15 +254,14 @@ show_glyphs(fid, hdr, show_all, first, last)
 	    break;
 	}
 
+	if (offsets[ch].length == 0) {
+	    printf ("Non existant character\n");
+	    continue;
+	}
 	bpr = GLWIDTHBYTESPADDED(charwidth, scanpad);
 	if (offsets[ch].length != bottom * bpr) {
-	    if (offsets[ch].length == 0) {
-	    	printf ("Non existant character\n");
-	    	continue;
-	    } else {
-		fprintf (stderr, "length mismatch: %d != %d\n",
-				 bottom * bpr, offsets[ch].length);
-	    }
+	    fprintf (stderr, "length mismatch: %d != %d\n",
+			 bottom * bpr, offsets[ch].length);
 	}
 	offset = offsets[ch].position;
 	for (r = 0; r < bottom; r++) {
