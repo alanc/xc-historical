@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.4 93/07/19 15:21:27 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 93/08/17 21:21:54 rws Exp $
 
    SRCS = xieperf.c tests.c flo.c flomap.c \
 	  constrain.c dither.c point.c import.c \
@@ -14,8 +14,8 @@ XCOMM $XConsortium: Imakefile,v 1.4 93/07/19 15:21:27 rws Exp $
 	  abort.o await.o exportcl.o uconstrain.o \
 	  blend.o pasteup.o geometry.o cvttoindex.o
 
-   LOCAL_LIBRARIES = $(XIELIB) $(XLIB)
-           DEPLIBS = $(DEPXIELIB) $(DEPXLIB)
+   LOCAL_LIBRARIES = $(XIELIB) $(XMULIB) $(XLIB)
+           DEPLIBS = $(DEPXIELIB) $(DEPXMULIB) $(DEPXLIB)
      SYS_LIBRARIES = MathLibrary
            DEFINES = $(SIGNAL_DEFINES)
 
