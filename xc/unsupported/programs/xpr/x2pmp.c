@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: x2pmp.c,v 1.9 91/01/09 17:39:34 rws Exp $
+ *	$XConsortium: x2pmp.c,v 1.10 91/01/10 11:00:16 rws Exp $
  */
 
 /* x2pmp.c: Translate xwd window dump format into PMP format for the
@@ -18,7 +18,6 @@
 #define min_(a, b) (a) < (b) ? (a) : (b)
 #define abs_(a) (a) < 0 ? -(a) : (a)
 
-extern char *calloc();
 static void leave();
 static bits_set();
 static unsigned char *magnification_table();

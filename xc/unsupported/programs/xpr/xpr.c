@@ -1,4 +1,4 @@
-/* $XConsortium: xpr.c,v 1.49 91/01/09 17:39:23 rws Exp $ */
+/* $XConsortium: xpr.c,v 1.50 91/01/10 10:59:48 rws Exp $ */
 
 /*
  * XPR - process xwd(1) files for the LN03 or LA100 printer
@@ -101,7 +101,6 @@ int debug = 0;
 char *infilename = NULL;
 char *progname;
 
-char *malloc();
 char *convert_data();
 
 typedef struct _grayRec {
@@ -337,8 +336,10 @@ int *render;
     register int f;
     register int len;
     register int pos;
+#ifdef X_NOT_STDC_ENV
     double atof();
     int atoi();
+#endif
 
     output_filename = NULL;
     *device = LN03;	/* default */

@@ -1,3 +1,12 @@
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *malloc(), *realloc(), *calloc();
+#endif
+#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
+char *malloc(), *realloc(), *calloc();
+#endif /* macII */
+
 /* 3812 PagePrinter macros */
 #define PPI	240
 #define inch2pel(inches)	((int) ((inches) * PPI))

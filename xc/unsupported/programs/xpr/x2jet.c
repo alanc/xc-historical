@@ -1,4 +1,4 @@
-/* $XConsortium: x2jet.c,v 1.2 89/12/13 13:58:13 rws Exp $ */
+/* $XConsortium: x2jet.c,v 1.3 91/01/10 11:00:48 rws Exp $ */
 
 /* -*-C-*-
 ********************************************************************************
@@ -81,8 +81,6 @@ extern	nl_catd	nlmsg_fd;
 
 typedef struct { long width, height; } Area;
 typedef struct { long x, y; } Location;
-
-char *malloc();
 
 
 static Area limit;	/* image clip limits (dots) */
