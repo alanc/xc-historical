@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.14 93/09/04 16:44:23 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.15 94/01/31 12:03:44 mor Exp $
 XCOMM
 XCOMM Make file for font handling routines
 XCOMM
@@ -9,7 +9,7 @@ XCOMM
             SRCS = fsconvert.c fserve.c fsio.c transport.c
             OBJS = fsconvert.o fserve.o fsio.o transport.o
          DEFINES = $(SIGNAL_DEFINES)
-    CONN_DEFINES = ConnectionFlags -DFONT
+    CONN_DEFINES = ConnectionFlags -DFONT_t
 #if HasBSD44Sockets
     SOCK_DEFINES = -DBSD44SOCKETS
 #endif
