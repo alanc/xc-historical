@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.145 90/01/11 14:22:31 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.146 90/03/14 17:00:53 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -125,6 +125,10 @@ SOFTWARE.
 #include <local/openpty.h>
 int	Ptyfd;
 #endif /* PUCC_PTYD */
+
+#ifdef sequent
+#define USE_GET_PSEUDOTTY
+#endif
 
 #ifndef UTMP_FILENAME
 #define UTMP_FILENAME "/etc/utmp"
@@ -907,14 +911,16 @@ char *name;
 get_pty (pty)
 int *pty;
 {
-	static int devindex, letter = 0;
-
 #ifdef att
 	if ((*pty = open ("/dev/ptmx", O_RDWR)) < 0) {
 	    return 1;
 	}
 	return 0;
 #else /* !att, need lots of code */
+#ifdef USE_GET_PSEUDOTTY
+	return ((*pty = getpseudotty (&ttydev, &ptydev)) >= 0 ? 0 : 1);
+#else
+	static int devindex, letter = 0;
 
 #if defined(umips) && defined (SYSTYPE_SYSV)
 	struct stat fstat_buf;
@@ -971,6 +977,7 @@ int *pty;
 	 */
 	return(1);
 #endif /* umips && SYSTYPE_SYSV */
+#endif /* USE_GET_PSEUDOTTY */
 #endif /* att */
 }
 
