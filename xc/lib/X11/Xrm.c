@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.53 90/12/26 10:39:20 rws Exp $
+ * $XConsortium: Xrm.c,v 1.54 90/12/27 15:02:46 rws Exp $
  */
 
 /***********************************************************
@@ -1677,6 +1677,8 @@ Bool XrmEnumerateDatabase(db, names, classes, mode, proc, closure)
     register NTable table;
     EClosureRec	eclosure;
    
+    if (!db)
+	return False;
     eclosure.db = db;
     eclosure.proc = proc;
     eclosure.closure = closure;
