@@ -1,4 +1,4 @@
-/* $XConsortium: XKBproto.h,v 1.1 93/09/26 21:12:20 rws Exp $ */
+/* $XConsortium: XKBproto.h,v 1.2 93/09/27 22:49:53 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -630,7 +630,7 @@ typedef struct _SetDebuggingFlags {
 
 typedef struct _xkbAnyEvent {
     BYTE	type;
-    BYTE	minor;
+    BYTE	xkbType;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
     Time	time;
@@ -643,7 +643,7 @@ typedef struct _xkbAnyEvent {
 
 typedef	struct _xkbStateNotify {
     BYTE	type;
-    BYTE	minor;
+    BYTE	xkbType;
     CARD16	sequenceNumber B16;
     Time	time;
     CARD8	deviceID;
@@ -670,7 +670,7 @@ typedef	struct _xkbStateNotify {
 
 typedef	struct _xkbMapNotify {
     BYTE	type;
-    BYTE	minor;
+    BYTE	xkbType;
     CARD16	sequenceNumber B16;
     Time	time;
     CARD8	pad1;
@@ -690,7 +690,7 @@ typedef	struct _xkbMapNotify {
 
 typedef struct _xkbControlsNotify {
     BYTE	type;
-    BYTE	minor;
+    BYTE	xkbType;
     CARD16	sequenceNumber B16;
     Time	time;
     CARD8	deviceID;
@@ -709,7 +709,7 @@ typedef struct _xkbControlsNotify {
 
 typedef struct _xkbIndicatorNotify {
     BYTE	type;
-    BYTE	minor;
+    BYTE	xkbType;
     CARD16	sequenceNumber B16;
     Time	time;
     CARD8	deviceID;
@@ -724,7 +724,7 @@ typedef struct _xkbIndicatorNotify {
 
 typedef struct _xkbBellNotify {
     BYTE	type;
-    BYTE	minor;
+    BYTE	xkbType;
     CARD16	sequenceNumber B16;
     Time	time;
     CARD8	deviceID;
@@ -740,7 +740,7 @@ typedef struct _xkbBellNotify {
 
 typedef struct _xkbSlowKeyNotify {
     BYTE	type;
-    BYTE	minor;
+    BYTE	xkbType;
     CARD16	sequenceNumber B16;
     Time	time;
     CARD8	deviceID;
@@ -755,7 +755,7 @@ typedef struct _xkbSlowKeyNotify {
 
 typedef struct _xkbNamesNotify {
     BYTE	type;
-    BYTE	minor;
+    BYTE	xkbType;
     CARD16	sequenceNumber B16;
     Time	time;
     CARD8	deviceID;
@@ -776,7 +776,7 @@ typedef struct _xkbNamesNotify {
 
 typedef struct _xkbCompatMapNotify {
     BYTE	type;
-    BYTE	minor;
+    BYTE	xkbType;
     CARD16	sequenceNumber B16;
     Time	time;
     CARD8	deviceID;
@@ -790,7 +790,7 @@ typedef struct _xkbCompatMapNotify {
 
 typedef struct _xkbAlternateSymsNotify {
     BYTE	type;
-    BYTE	minor;
+    BYTE	xkbType;
     CARD16	sequenceNumber B16;
     Time	time;
     CARD8	deviceID;

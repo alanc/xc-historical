@@ -1,4 +1,4 @@
-/* $XConsortium: xkbEvents.c,v 1.1 93/09/26 21:12:50 rws Exp $ */
+/* $XConsortium: xkbEvents.c,v 1.2 93/09/28 00:00:25 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -56,7 +56,7 @@ XkbSendStateNotify(kbd,pSN)
 	return;
 
     pSN->type = XkbEventCode + XkbEventBase;
-    pSN->minor = XkbStateNotify;
+    pSN->xkbType = XkbStateNotify;
     pSN->deviceID = kbd->id;
     pSN->time = time = GetTimeInMillis();
     pSN->mods = xkb->state.mods;
@@ -108,7 +108,7 @@ XkbSendMapNotify(kbd,pMN)
 
     xkb = kbd->key->xkbInfo;
     pMN->type = XkbEventCode + XkbEventBase;
-    pMN->minor = XkbMapNotify;
+    pMN->xkbType = XkbMapNotify;
     pMN->deviceID = kbd->id;
 
     changed = pMN->changed;
@@ -211,7 +211,7 @@ XkbSendControlsNotify(kbd,pCN)
 	    (interest->controlsNotifyMask&changedControls)) {
 	    if (!initialized) {
 		pCN->type = XkbEventCode + XkbEventBase;
-		pCN->minor = XkbControlsNotify;
+		pCN->xkbType = XkbControlsNotify;
 		pCN->deviceID = kbd->id;
 		pCN->time = time = GetTimeInMillis();
 		enabledControls = pCN->enabledControls;
@@ -266,7 +266,7 @@ XkbSendIndicatorNotify(kbd,pEv)
 	     (interest->iMapNotifyMask&mapChanged))) {
 	    if (!initialized) {
 		pEv->type = XkbEventCode + XkbEventBase;
-		pEv->minor = XkbIndicatorNotify;
+		pEv->xkbType = XkbIndicatorNotify;
 		pEv->deviceID = kbd->id;
 		pEv->time = time = GetTimeInMillis();
 		initialized= 1;
@@ -348,7 +348,7 @@ XkbHandleBell(kbd,percent,pCtrl,class,name)
 	    if (!initialized) {
 		time = GetTimeInMillis();
 		bn.type = XkbEventCode + XkbEventBase;
-		bn.minor = XkbBellNotify;
+		bn.xkbType = XkbBellNotify;
 		bn.deviceID = kbd->id;
 		bn.bellClass = class;
 		bn.bellID = id;
@@ -400,7 +400,7 @@ XkbSendSlowKeyNotify(kbd,pEv)
 	    (interest->slowKeyNotifyMask&pEv->slowKeyType)) {
 	    if (!initialized) {
 		pEv->type = XkbEventCode + XkbEventBase;
-		pEv->minor = XkbSlowKeyNotify;
+		pEv->xkbType = XkbSlowKeyNotify;
 		pEv->deviceID = kbd->id;
 		pEv->time = time = GetTimeInMillis();
 		initialized= 1;
@@ -448,7 +448,7 @@ XkbSendNamesNotify(kbd,pEv)
 	    (interest->namesNotifyMask&pEv->changed)) {
 	    if (!initialized) {
 		pEv->type = XkbEventCode + XkbEventBase;
-		pEv->minor = XkbNamesNotify;
+		pEv->xkbType = XkbNamesNotify;
 		pEv->deviceID = kbd->id;
 		pEv->time = time = GetTimeInMillis();
 		initialized= 1;
@@ -495,7 +495,7 @@ XkbSendCompatMapNotify(kbd,pEv)
 	    (interest->compatNotifyMask)) {
 	    if (!initialized) {
 		pEv->type = XkbEventCode + XkbEventBase;
-		pEv->minor = XkbCompatMapNotify;
+		pEv->xkbType = XkbCompatMapNotify;
 		pEv->deviceID = kbd->id;
 		pEv->time = time = GetTimeInMillis();
 		firstSym= pEv->firstSym;
