@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.11 94/08/10 19:44:15 mor Exp mor $ */
+/* $XConsortium: info.c,v 1.12 94/08/10 21:27:18 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -428,16 +428,17 @@ UpdateClientList ()
 	if (!client->running)
 	    continue;
 
+	progName = NULL;
 	restart_service_prop = NULL;
 
 	for (j = 0; j < client->numProps; j++)
 	{
 	    if (strcmp (client->props[j]->name, SmProgram) == 0)
 	    {
-		char *temp = GetProgramName (client->props[j]->vals[0].value);
+		progName = GetProgramName (client->props[j]->vals[0].value);
 
-		if (strlen (temp) > maxlen1)
-		    maxlen1 = strlen (temp);
+		if (strlen (progName) > maxlen1)
+		    maxlen1 = strlen (progName);
 	    }
 	    else if (strcmp (client->props[j]->name,
 		"_XC_RestartService") == 0)
@@ -447,10 +448,15 @@ UpdateClientList ()
 	    }
 	}
 
+	if (!progName)
+	    continue;
+
 	if (restart_service_prop)
 	    tmp1 = restart_service_prop;
-	else
+	else if (client->clientHostname)
 	    tmp1 = client->clientHostname;
+	else
+	    continue;
 
 	if ((tmp2 = (char *) strchr (tmp1, '/')) == NULL)
 	    hostname = tmp1;
@@ -469,6 +475,8 @@ UpdateClientList ()
 
     for (client = ClientList, i = 0; client; client = client->next)
     {
+	int extra1, extra2;
+
 	if (!client->running)
 	    continue;
 
@@ -491,40 +499,36 @@ UpdateClientList ()
 	}
 
 	if (!progName)
-	{
-	    clientInfo = XtNewString ("???????????");
-	}
+	    continue;
+
+	if (restart_service_prop)
+	    tmp1 = restart_service_prop;
+	else if (client->clientHostname)
+	    tmp1 = client->clientHostname;
 	else
-	{
-	    int extra1, extra2;
+	    continue;
 
-	    if (restart_service_prop)
-		tmp1 = restart_service_prop;
-	    else
-		tmp1 = client->clientHostname;
+	if ((tmp2 = (char *) strchr (tmp1, '/')) == NULL)
+	    hostname = tmp1;
+	else
+	    hostname = tmp2 + 1;
 
-	    if ((tmp2 = (char *) strchr (tmp1, '/')) == NULL)
-		hostname = tmp1;
-	    else
-		hostname = tmp2 + 1;
+	extra1 = maxlen1 - strlen (progName) + 5;
+	extra2 = maxlen2 - strlen (hostname);
 
-	    extra1 = maxlen1 - strlen (progName) + 5;
-	    extra2 = maxlen2 - strlen (hostname);
+	clientInfo = (String) XtMalloc (strlen (progName) +
+	    extra1 + extra2 + 4 + strlen (hostname));
 
-	    clientInfo = (String) XtMalloc (strlen (progName) +
-		extra1 + extra2 + 4 + strlen (hostname));
+	for (k = 0; k < extra1; k++)
+	    extraBuf1[k] = ' ';
+	extraBuf1[extra1] = '\0';
 
-	    for (k = 0; k < extra1; k++)
-		extraBuf1[k] = ' ';
-	    extraBuf1[extra1] = '\0';
+	for (k = 0; k < extra2; k++)
+	    extraBuf2[k] = ' ';
+	extraBuf2[extra2] = '\0';
 
-	    for (k = 0; k < extra2; k++)
-		extraBuf2[k] = ' ';
-	    extraBuf2[extra2] = '\0';
-
-	    sprintf (clientInfo, "%s%s (%s%s)", progName, extraBuf1,
-		    hostname, extraBuf2);
-	}
+	sprintf (clientInfo, "%s%s (%s%s)", progName, extraBuf1,
+	    hostname, extraBuf2);
 
 	clientListRecs[i] = client;
 	clientListNames[i++] = clientInfo;
