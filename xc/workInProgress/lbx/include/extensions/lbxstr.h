@@ -1,4 +1,4 @@
-/* $XConsortium: lbxstr.h,v 1.4 94/03/08 20:27:49 dpw Exp $ */
+/* $XConsortium: lbxstr.h,v 1.5 94/03/27 11:43:24 dpw Exp mor $ */
 /*
  * $NCDId: @(#)lbxstr.h,v 1.19 1994/03/22 18:22:47 lemke Exp $
  *
@@ -361,6 +361,23 @@ typedef struct _LbxFillPoly {
     CARD8	padBytes;
 } xLbxFillPolyReq;
 #define sz_xLbxFillPolyReq	14
+
+typedef struct _LbxPutImage {
+    CARD8	reqType;	/* always LbxReqCode */
+    CARD8	lbxReqType;
+    CARD16	lbxLength B16;
+    CARD16	xLength B16;
+    CARD8	compressionMethod;
+    CARD8	format;
+    Drawable	drawable B32;
+    GContext	gc B32;
+    CARD16	width B16, height B16;
+    INT16	dstX B16, dstY B16;
+    CARD8	depth;
+    CARD8	leftPad;
+    CARD8	padBytes;
+} xLbxPutImageReq;
+#define sz_xLbxPutImageReq	27
 
 typedef struct {
     CARD8       offset;
