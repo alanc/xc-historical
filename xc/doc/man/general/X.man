@@ -1,6 +1,6 @@
 .TH X 1 "1 March 1988"  "X Version 11"
 .SH NAME
-X - A portable, network transparent window system
+X - a portable, network transparent window system
 .SH SYNOPSIS
 .PP
 X is a network transparent window system developed at MIT which
@@ -26,7 +26,7 @@ Note that the phrases X.11, X-11, X Windows or any permutation thereof, are
 explicity excluded from this list and should not be used to describe the
 X Window System (window system should be thought of as one word).
 .PP
-``X Window System'' is a trademark of the
+\fIX Window System\fP is a trademark of the
 Massachusetts Institute of Technology.
 .SH DESCRIPTION
 X window system servers run on computers with bitmap displays.
@@ -42,8 +42,8 @@ X supports overlapping windows, hierarchical subwindows, text and
 graphics operations within windows, on both monochrome and color
 displays.
 For a full explanation of functions, see the
-``Xlib - C Language X Interface'' manual, the
-``X Window System Protocol'' specification,
+\fIXlib - C Language X Interface\fP manual, the
+\fIX Window System Protocol\fP specification,
 and various toolkit documents.
 .PP
 When you first log in on a display running X, you are
@@ -87,9 +87,7 @@ with zero.  The format
 of the DISPLAY string depends on the type of communications channel used
 to contact the server.
 
-The sample server and 
-.I Xlib
-support the following connection protocols:
+The following connection protocols are supported:
 .TP 8
 .B TCP\/IP
 .br
@@ -311,7 +309,7 @@ you may specify the value ``on'' for the resource named
 ``StringConversionWarnings.''  If you want
 such warnings for all applications, specify ``*StringConversionWarnings:on''
 to the resource manager.  If you want warnings only for a single
-application named ``zowie'', specify ``\fIzowie\fP*StringConversionWarnings:on''
+application named ``zowie'', specify ``zowie*StringConversionWarnings:on''
 to the resource manager.
 .SH DIAGNOSTICS
 The default error handler uses the Resource Manager to build diagnostic
