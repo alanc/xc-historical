@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.83 91/05/07 15:36:21 gildea Exp $
+ *	$XConsortium: misc.c,v 1.84 91/05/10 16:57:32 gildea Exp $
  */
 
 /*
@@ -84,13 +84,13 @@ xevents()
 		   (event.xcrossing.window == XtWindow(XtParent(term)) ||
 		    (tekWidget &&
 		     event.xcrossing.window == XtWindow(XtParent(tekWidget)))))
-		  DoSpecialEnterNotify (&event);
+		  DoSpecialEnterNotify (&event.xcrossing);
 		else 
 		if(event.type == LeaveNotify &&
 		   (event.xcrossing.window == XtWindow(XtParent(term)) ||
 		    (tekWidget &&
 		     event.xcrossing.window == XtWindow(XtParent(tekWidget)))))
-		  DoSpecialLeaveNotify (&event);
+		  DoSpecialLeaveNotify (&event.xcrossing);
 
 		if (!event.xany.send_event ||
 		    screen->allowSendEvents ||

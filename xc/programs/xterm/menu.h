@@ -1,4 +1,4 @@
-/* $XConsortium: menu.h,v 1.19 91/04/26 15:03:47 gildea Exp $ */
+/* $XConsortium: menu.h,v 1.20 91/05/10 16:57:29 gildea Exp $ */
 
 /* Copyright 1989 Massachusetts Institute of Technology */
 
@@ -113,6 +113,7 @@ extern void DoSecureKeyboard();
 #define fontMenu_font4 4
 #define fontMenu_font5 5
 #define fontMenu_font6 6
+#define fontMenu_lastBuiltin fontMenu_font6
 #define fontMenu_fontescape 7
 #define fontMenu_fontsel 8
 /* number of non-line items should match NMENUFONTS in ptyx.h */

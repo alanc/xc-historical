@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.162 91/05/10 16:57:07 gildea Exp $
+ * $XConsortium: charproc.c,v 1.163 91/05/11 16:14:01 gildea Exp $
  */
 
 /*
@@ -2160,7 +2160,7 @@ static void VTInitialize (request, new)
    new->screen.output_eight_bits = request->screen.output_eight_bits;
    new->screen.allowSendEvents = request->screen.allowSendEvents;
    new->misc.titeInhibit = request->misc.titeInhibit;
-   for (i = 0; i < NMENUFONTS; i++) {
+   for (i = fontMenu_font1; i <= fontMenu_lastBuiltin; i++) {
        new->screen.menu_font_names[i] = request->screen.menu_font_names[i];
    }
    /* set default in realize proc */
@@ -2958,12 +2958,12 @@ int LoadNewFont (screen, nfontname, bfontname, doresize, fontnum)
 	if (!new_reverseboldGC) goto bad;
     }
 
-    XtReleaseGC ((Widget) term, screen->normalGC);
     if (screen->normalGC != screen->normalboldGC)
-      XtReleaseGC ((Widget) term, screen->normalboldGC);
-    XtReleaseGC ((Widget) term, screen->reverseGC);
+	XtReleaseGC ((Widget) term, screen->normalboldGC);
+    XtReleaseGC ((Widget) term, screen->normalGC);
     if (screen->reverseGC != screen->reverseboldGC)
-      XtReleaseGC ((Widget) term, screen->reverseboldGC);
+	XtReleaseGC ((Widget) term, screen->reverseboldGC);
+    XtReleaseGC ((Widget) term, screen->reverseGC);
     screen->normalGC = new_normalGC;
     screen->normalboldGC = new_normalboldGC;
     screen->reverseGC = new_reverseGC;
