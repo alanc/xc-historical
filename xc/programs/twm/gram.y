@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.45 89/06/16 10:29:14 jim Exp $
+ * $XConsortium: gram.y,v 1.46 89/06/22 16:46:11 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.45 89/06/16 10:29:14 jim Exp $";
+"$XConsortium: gram.y,v 1.46 89/06/22 16:46:11 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -105,7 +105,7 @@ extern int yylineno;
 %token <num> CUR_TITLE CUR_ICONMGR CUR_ICON NO_ICONMGRS F_SORTICONMGR
 %token <num> CUR_MOVE CUR_RESIZE CUR_WAIT CUR_SELECT CUR_KILL
 %token <num> ICON_REGION NORTH SOUTH EAST WEST RESTART_PREVIOUS_STATE
-%token <num> F_WARPTOSCREEN
+%token <num> F_WARPTOSCREEN AUTO_RELATIVE_RESIZE
 %token <ptr> STRING
 
 %type <ptr> string
@@ -122,6 +122,7 @@ stmts		: /* Empty */
 		;
 
 stmt		: error
+		| AUTO_RELATIVE_RESIZE	{ Scr->AutoRelativeResize = True; }
 		| FORCE_ICON		{ if (Scr->FirstTime) Scr->ForceIcon = TRUE; }
 		| ICON_REGION string grav grav number number
 					{ AddIconRegion($2, $3, $4, $5, $6); }

@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.24 89/06/22 18:54:34 jim Exp $
+ * $XConsortium: resize.c,v 1.25 89/06/23 13:17:38 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.24 89/06/22 18:54:34 jim Exp $";
+"$XConsortium: resize.c,v 1.25 89/06/23 13:17:38 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -71,49 +71,15 @@ static int last_width;
 static int last_height;
 
 
-/***********************************************************************
- *
- *  Procedure:
- *      StartResize - begin a window resize operation
- *
- *  Inputs:
- *      ev      - the event structure (button press)
- *      tmp_win - the TwmWindow pointer
- *
- ***********************************************************************
- */
-
-void
-StartResize(ev, tmp_win, autoclamp)
-XEvent ev;
-TwmWindow *tmp_win;
-Bool autoclamp;
+static void do_auto_clamping (tmp_win)
+    TwmWindow *tmp_win;
 {
-    Window      junkRoot;
-    int         junkbw, junkDepth;
-    int		x, y;
+    Window junkRoot;
+    int x, y, junkbw;
     unsigned int junkMask;
 
-    ResizeWindow = tmp_win->frame;
-    XGrabServer(dpy);
-    XGrabPointer(dpy, Scr->Root, True,
-        ButtonPressMask | ButtonReleaseMask,
-        GrabModeAsync, GrabModeAsync,
-        Scr->Root, Scr->ResizeCursor, CurrentTime);
-
-    XGetGeometry(dpy, (Drawable) tmp_win->frame, &junkRoot,
-        &dragx, &dragy, &dragWidth, &dragHeight, &junkbw,
-                 &junkDepth);
-    dragx += tmp_win->frame_bw;
-    dragy += tmp_win->frame_bw;
-    origx = dragx;
-    origy = dragy;
-    origWidth = dragWidth;
-    origHeight = dragHeight;
-    clampTop = clampBottom = clampLeft = clampRight = clampDX = clampDY = 0;
-
-    if (autoclamp && XQueryPointer (dpy, Scr->Root, &junkRoot, &junkRoot,
-				    &x, &y, &junkbw, &junkbw, &junkMask)) {
+    if (XQueryPointer (dpy, Scr->Root, &junkRoot, &junkRoot,
+		       &x, &y, &junkbw, &junkbw, &junkMask)) {
 	int h = ((x - dragx) / (dragWidth / 3));
 	int v = ((y - dragy - tmp_win->title_height) / (dragHeight / 3));
 	
@@ -133,6 +99,48 @@ Bool autoclamp;
 	    clampDY = (y - dragy - dragWidth);
 	}
     }
+}
+
+
+/***********************************************************************
+ *
+ *  Procedure:
+ *      StartResize - begin a window resize operation
+ *
+ *  Inputs:
+ *      ev      - the event structure (button press)
+ *      tmp_win - the TwmWindow pointer
+ *
+ ***********************************************************************
+ */
+
+void
+StartResize(ev, tmp_win)
+XEvent ev;
+TwmWindow *tmp_win;
+{
+    Window      junkRoot;
+    int         junkbw, junkDepth;
+
+    ResizeWindow = tmp_win->frame;
+    XGrabServer(dpy);
+    XGrabPointer(dpy, Scr->Root, True,
+        ButtonPressMask | ButtonReleaseMask,
+        GrabModeAsync, GrabModeAsync,
+        Scr->Root, Scr->ResizeCursor, CurrentTime);
+
+    XGetGeometry(dpy, (Drawable) tmp_win->frame, &junkRoot,
+        &dragx, &dragy, &dragWidth, &dragHeight, &junkbw,
+                 &junkDepth);
+    dragx += tmp_win->frame_bw;
+    dragy += tmp_win->frame_bw;
+    origx = dragx;
+    origy = dragy;
+    origWidth = dragWidth;
+    origHeight = dragHeight;
+    clampTop = clampBottom = clampLeft = clampRight = clampDX = clampDY = 0;
+
+    if (Scr->AutoRelativeResize) do_auto_clamp (tmp_win);
 
     XMoveWindow(dpy, Scr->SizeWindow, 0, 0);
     XMapRaised(dpy, Scr->SizeWindow);
