@@ -301,15 +301,3 @@ char *name;
 
 	return(c);
 }
-
-
-/*
- * Tempary replace for not implemented Xlib routine.
- */
-char *XGetDefault(dpy, name, option_name)
-Display *dpy;
-char *name;
-char *option_name;
-{
-	return(NULL);
-}
