@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.57 92/09/11 17:57:35 rws Exp $
+ * $XConsortium: xrdb.c,v 11.58 92/09/11 18:08:42 rws Exp $
  */
 
 /*
@@ -41,6 +41,7 @@
  */
 
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -409,11 +410,15 @@ DoDisplayDefines(display, defs, host)
 	AddDefTok(defs, "EXT_", extnames[nexts]);
 }
 
-/*
- * It would probably be best to enumerate all of the screens/visuals
- * rather than just using the defaults. However, most of the current
- * servers only have one screen/visual.
- */
+char *ClassNames[] = {
+    "StaticGray",
+    "GrayScale",
+    "StaticColor",
+    "PseudoColor",
+    "TrueColor",
+    "DirectColor"
+};
+
 void
 DoScreenDefines(display, scrno, defs)
     Display *display;
@@ -422,9 +427,14 @@ DoScreenDefines(display, scrno, defs)
 {
     Screen *screen;
     Visual *visual;
+    XVisualInfo vinfo, *vinfos;
+    int nv;
+    char name[50];
     
     screen = ScreenOfDisplay(display, scrno);
     visual = DefaultVisualOfScreen(screen);
+    vinfo.screen = scrno;
+    vinfos = XGetVisualInfo(display, VisualScreenMask, &vinfo, &nv);
     AddNum(defs, "SCREEN_NUM", scrno);
     AddNum(defs, "WIDTH", screen->width);
     AddNum(defs, "HEIGHT", screen->height);
@@ -432,33 +442,23 @@ DoScreenDefines(display, scrno, defs)
     AddNum(defs, "Y_RESOLUTION", Resolution(screen->height,screen->mheight));
     AddNum(defs, "PLANES", DisplayPlanes(display, scrno));
     AddNum(defs, "BITS_PER_RGB", visual->bits_per_rgb);
+    AddDef(defs, "CLASS", ClassNames[visual->class]);
+    sprintf(name, "CLASS_%s", ClassNames[visual->class]);
+    AddNum(defs, name, visual->visualid);
     switch(visual->class) {
-	case StaticGray:
-	    AddDef(defs, "CLASS", "StaticGray");
-	    break;
-	case GrayScale:
-	    AddDef(defs, "CLASS", "GrayScale");
-	    break;
 	case StaticColor:
-	    AddDef(defs, "CLASS", "StaticColor");
-	    AddSimpleDef(defs, "COLOR");
-	    break;
 	case PseudoColor:
-	    AddDef(defs, "CLASS", "PseudoColor");
-	    AddSimpleDef(defs, "COLOR");
-	    break;
 	case TrueColor:
-	    AddDef(defs, "CLASS", "TrueColor");
-	    AddSimpleDef(defs, "COLOR");
-	    break;
 	case DirectColor:
-	    AddDef(defs, "CLASS", "DirectColor");
 	    AddSimpleDef(defs, "COLOR");
 	    break;
-	default:
-	    fatal("%s: unexpected visual class=%d\n",
-		  ProgramName, visual->class);
     }
+    while (--nv >= 0) {
+	sprintf(name, "CLASS_%s_%d",
+		ClassNames[vinfos[nv].class], vinfos[nv].depth);
+	AddNum(defs, name, vinfos[nv].visualid);
+    }
+    XFree((char *)vinfos);
 }
 
 Entry *FindEntry(db, b)
