@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunMfb.c,v 1.3 94/02/01 11:02:34 kaleb Exp $ */
+/* $XConsortium: sunMfb.c,v 1.4 94/04/17 20:29:46 kaleb Exp kaleb $ */
 
 /*
 Copyright (c) 1990, 1993  X Consortium
@@ -86,13 +86,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "sun.h"
 #include "mfb.h"
-/* #include <sys/mman.h> */
-
-#ifdef SVR4
-#include <sys/bw2reg.h>
-#else
-#include <sundev/bw2reg.h>
-#endif
 
 Bool sunBW2Init (screen, pScreen, argc, argv)
     int		    screen;    	/* what screen am I going to be */
