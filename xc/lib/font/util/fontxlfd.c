@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontxlfd.c,v 1.11 93/09/22 16:59:25 gildea Exp $
+ * $XConsortium: fontxlfd.c,v 1.12 94/01/01 16:43:22 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -342,19 +342,20 @@ fsRange *ranges;
     {
         int i;
 
-        strcat(fname, "=");
+        strcat(fname, "[");
         for (i = 0; i < nranges && strlen(fname) < 1010; i++)
         {
-	    if (i) strcat(fname, ",");
+	    if (i) strcat(fname, " ");
 	    sprintf(fname + strlen(fname), "%d",
 		    minchar(ranges[i]));
 	    if (ranges[i].min_char_low ==
 	        ranges[i].max_char_low &&
 	        ranges[i].min_char_high ==
 	        ranges[i].max_char_high) continue;
-	    sprintf(fname + strlen(fname), ":%d",
+	    sprintf(fname + strlen(fname), "_%d",
 		    maxchar(ranges[i]));
         }
+        strcat(fname, "]");
     }
 }
 
@@ -407,7 +408,7 @@ FontParseXLFDName(fname, vals, subst)
        subsetting.  */
 
     if (subst != FONT_XLFD_REPLACE_NONE &&
-	(p = strchr(strrchr(fname, '-'), '=')))
+	(p = strchr(strrchr(fname, '-'), '[')))
     {
 	tmpvals.values_supplied |= CHARSUBSET_SPECIFIED;
 	*p = '\0';
@@ -570,7 +571,7 @@ FontParseXLFDName(fname, vals, subst)
 		spacingLen, spacingLen, ptr3, tmpvals.width, ptr5);
 	strcpy(ptr1 + 1, tmpBuf);
 	if ((vals->values_supplied & CHARSUBSET_SPECIFIED) && !vals->nranges)
-	    strcat(fname, "=");
+	    strcat(fname, "[]");
 	else
 	    append_ranges(fname, vals->nranges, vals->ranges);
 	break;
@@ -592,36 +593,35 @@ int *nranges;
 	name = strchr(name + 1, '-');
 
     *nranges = 0;
-    if (!name || !(name = strchr(name, '='))) return NULL;
+    if (!name || !(p1 = strchr(name, '['))) return NULL;
+    p1++;
 
-    p1 = name;
-
-    while (*p1)
+    while (*p1 && *p1 != ']')
     {
 	fsRange thisrange;
 
-	l = strtol(++p1, &p2, 0);
+	l = strtol(p1, &p2, 0);
 	if (p2 == p1 || l > 0xffff) break;
 	thisrange.max_char_low = thisrange.min_char_low = l & 0xff;
 	thisrange.max_char_high = thisrange.min_char_high = l >> 8;
 
 	p1 = p2;
-	while (*p1 && isspace(*p1)) p1++;
-	if (*p1 == '\0' || *p1 == ',')
+	if (*p1 == ']' || *p1 == ' ')
 	{
+	    while (*p1 == ' ') p1++;
 	    if (add_range(&thisrange, nranges, &result, TRUE) != Successful)
 		break;
 	}
-	else if (*p1 == ':')
+	else if (*p1 == '_')
 	{
 	    l = strtol(++p1, &p2, 0);
 	    if (p2 == p1 || l > 0xffff) break;
 	    thisrange.max_char_low = l & 0xff;
 	    thisrange.max_char_high = l >> 8;
 	    p1 = p2;
-	    while (*p1 && isspace(*p1)) p1++;
-	    if (*p1 == '\0' || *p1 == ',')
+	    if (*p1 == ']' || *p1 == ' ')
 	    {
+		while (*p1 == ' ') p1++;
 		if (add_range(&thisrange, nranges, &result, TRUE) != Successful)
 		    break;
 	    }
