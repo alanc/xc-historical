@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: glyphcurs.c,v 1.17 89/06/09 14:56:03 keith Exp $ */
+/* $XConsortium: glyphcurs.c,v 5.0 89/06/09 14:59:21 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -46,16 +46,12 @@ a bitmap, then read the bits out with GetImage, which
 uses server-natural format.
     since all screens return the same bitmap format, we'll just use
 the first one we find.
-    if the font isn't there, it's probably been sent from
-the mask part of CreateGlyphCursor, so we return a bitmap
-filled with 1s.
     the character origin lines up with the hotspot in the
 cursor metrics.
 */
 
 int
-ServerBitsFromGlyph(fontID, pfont, ch, cm, ppbits)
-    XID		fontID;
+ServerBitsFromGlyph(pfont, ch, cm, ppbits)
     FontPtr	pfont;
     unsigned short ch;
     register CursorMetricPtr cm;
@@ -65,26 +61,17 @@ ServerBitsFromGlyph(fontID, pfont, ch, cm, ppbits)
     register GCPtr pGC;
     xRectangle rect;
     PixmapPtr ppix;
-    int nby;
+    long nby;
     unsigned char *pbits;
     XID gcval[3];
     unsigned char char2b[2];
 
-    /* this takes in a short, which needs to be made into a char2b 
-       the msb of the short is byte1, the lsb is byte2
-       this is the way a short is on the 68000 anyway.  not a whole lot
-    of time here, so just do it always to cut down on extra flags in the
-    compilation.  the glyph access code might turn this all back into
-    a short; this routine takes a short for the beneffit of application
-    writers using a linear cursor font, so they don't have to think
-    about 2-byte characters.
-       sigh.
-    */
+    /* turn glyph index into a protocol-format char2b */
     char2b[0] = (unsigned char)(ch >> 8);
     char2b[1] = (unsigned char)(ch & 0xff);
 
     pScreen = screenInfo.screens[0];
-    nby = PixmapBytePad(cm->width, 1) * cm->height;
+    nby = PixmapBytePad(cm->width, 1) * (long)cm->height;
     pbits = (unsigned char *)xalloc(nby);
     if (!pbits)
 	return BadAlloc;
@@ -109,31 +96,19 @@ ServerBitsFromGlyph(fontID, pfont, ch, cm, ppbits)
     rect.width = cm->width;
     rect.height = cm->height;
 
-    if (!pfont)
-    {
-	/* fill the pixmap with 1 */
-	gcval[0] = GXcopy;
-	gcval[1] = 1;
-	DoChangeGC(pGC, GCFunction | GCForeground, gcval, 0);
-	ValidateGC((DrawablePtr)ppix, pGC);
-	(*pGC->ops->PolyFillRect)(ppix, pGC, 1, &rect);
-    }
-    else
-    {
-	/* fill the pixmap with 0 */
-	gcval[0] = GXcopy;
-	gcval[1] = 0;
-	gcval[2] = fontID;
-	DoChangeGC(pGC, GCFunction | GCForeground | GCFont, gcval, 0);
-	ValidateGC((DrawablePtr)ppix, pGC);
-	(*pGC->ops->PolyFillRect)(ppix, pGC, 1, &rect);
+    /* fill the pixmap with 0 */
+    gcval[0] = GXcopy;
+    gcval[1] = 0;
+    gcval[2] = (XID)pfont;
+    DoChangeGC(pGC, GCFunction | GCForeground | GCFont, gcval, 1);
+    ValidateGC((DrawablePtr)ppix, pGC);
+    (*pGC->ops->PolyFillRect)(ppix, pGC, 1, &rect);
 
-	/* draw the glyph */
-	gcval[0] = 1;
-	DoChangeGC(pGC, GCForeground, gcval, 0);
-	ValidateGC((DrawablePtr)ppix, pGC);
-	(*pGC->ops->PolyText16)(ppix, pGC, cm->xhot, cm->yhot, 1, char2b);
-    }
+    /* draw the glyph */
+    gcval[0] = 1;
+    DoChangeGC(pGC, GCForeground, gcval, 0);
+    ValidateGC((DrawablePtr)ppix, pGC);
+    (*pGC->ops->PolyText16)(ppix, pGC, cm->xhot, cm->yhot, 1, char2b);
     (*pScreen->GetImage)(ppix, 0, 0, cm->width, cm->height,
 			 ZPixmap, 1, pbits);
     *ppbits = pbits;
@@ -153,19 +128,32 @@ CursorMetricsFromGlyph( pfont, ch, cm)
 
     if (   ch < pfont->pFI->chFirst
 	|| ch >= pfont->pFI->chFirst + n1dChars(pfont->pFI))
-    {
-	cm->width = 0;
-	cm->height = 0;
-	cm->xhot = 0;
-	cm->yhot = 0;
 	return FALSE;
-    }
     pci = ADDRXTHISCHARINFO(pfont, ch);
-    cm->xhot = - pci->metrics.leftSideBearing;
-    cm->yhot =   pci->metrics.ascent;
-    cm->width = pci->metrics.rightSideBearing + cm->xhot;
-    cm->height = pci->metrics.descent + cm->yhot;
-
+    cm->width = pci->metrics.rightSideBearing - pci->metrics.leftSideBearing;
+    cm->height = pci->metrics.descent + pci->metrics.ascent;
+    if (pci->metrics.leftSideBearing > 0)
+    {
+	cm->width += pci->metrics.leftSideBearing;
+	cm->xhot = 0;
+    }
+    else
+    {
+	cm->xhot = -pci->metrics.leftSideBearing;
+	if (pci->metrics.rightSideBearing < 0)
+	    cm->width -= pci->metrics.rightSideBearing;
+    }
+    if (pci->metrics.ascent < 0)
+    {
+	cm->height -= pci->metrics.ascent;
+	cm->yhot = 0;
+    }
+    else
+    {
+	cm->yhot = pci->metrics.ascent;
+	if (pci->metrics.descent < 0)
+	    cm->height -= pci->metrics.descent;
+    }
     return TRUE;
 }
 
