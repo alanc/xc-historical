@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.73 89/11/16 14:34:54 jim Exp $
+ * $XConsortium: gram.y,v 1.74 89/11/16 17:08:55 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.73 89/11/16 14:34:54 jim Exp $";
+"$XConsortium: gram.y,v 1.74 89/11/16 17:08:55 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -76,7 +76,7 @@ extern int yylineno;
     char *ptr;
 };
 
-%token <num> LB RB LP RP MENUS MENU BUTTON TBUTTON DEFAULT_FUNCTION PLUS MINUS
+%token <num> LB RB LP RP MENUS MENU BUTTON DEFAULT_FUNCTION PLUS MINUS
 %token <num> ALL OR CURSORS PIXMAPS ICONS COLOR MONOCHROME FUNCTION 
 %token <num> ICONMGR_SHOW ICONMGR WINDOW_FUNCTION ZOOM ICONMGRS
 %token <num> ICONMGR_GEOMETRY ICONMGR_NOSHOW MAKE_TITLE
@@ -91,7 +91,7 @@ extern int yylineno;
 %token <ptr> STRING SKEYWORD
 
 %type <ptr> string
-%type <num> action button number signed_number tbutton full fullkey
+%type <num> action button number signed_number full fullkey
 
 %start twmrc 
 
@@ -161,26 +161,6 @@ stmt		: error
 					}
 		| string fullkey	{ GotKey($1, $2); }
 		| button full		{ GotButton($1, $2); }
-		| tbutton action	{ Scr->Mouse[$1][C_TITLE][0].func = $2;
-					  Scr->Mouse[$1][C_ICON][0].func = $2;
-					  if ($2 == F_MENU)
-					  {
-					    pull->prev = NULL;
-					    Scr->Mouse[$1][C_TITLE][0].menu = pull;
-					    Scr->Mouse[$1][C_ICON][0].menu = pull;
-					  }
-					  else
-					  {
-					    root = GetRoot(TWM_ROOT, 0, 0);
-					    Scr->Mouse[$1][C_TITLE][0].item = 
-						AddToMenu(root,"x",Action,0,$2,
-							NULL, NULL);
-					    Scr->Mouse[$1][C_ICON][0].item =
-						Scr->Mouse[$1][C_TITLE][0].item;
-					  }
-					  Action = "";
-					  pull = NULL;
-					}
 		| DONT_ICONIFY_BY_UNMAPPING { list = &Scr->DontIconify; }
 		  win_list
 		| ICONMGR_NOSHOW	{ list = &Scr->IconMgrNoShow; }
@@ -586,22 +566,11 @@ signed_number	: number		{ $$ = $1; }
 		| MINUS number		{ $$ = -($2); }
 		;
 
-button		: BUTTON		{ $$ = $1;
-					  if ($1 == 0)
+button		: BUTTON number		{ $$ = $2;
+					  if ($2 == 0)
 						yyerror();
 
-					  if ($1 > MAX_BUTTONS)
-					  {
-						$$ = 0;
-						yyerror();
-					  }
-					}
-		;
-tbutton		: TBUTTON		{ $$ = $1;
-					  if ($1 == 0)
-						yyerror();
-
-					  if ($1 > MAX_BUTTONS)
+					  if ($2 > MAX_BUTTONS)
 					  {
 						$$ = 0;
 						yyerror();
