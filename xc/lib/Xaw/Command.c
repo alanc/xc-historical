@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Command.c,v 1.22 87/09/13 16:43:03 newman Locked $";
+static char rcsid[] = "$Header: Command.c,v 1.23 87/09/13 19:16:31 newman Locked $";
 #endif lint
 
 /*
@@ -387,7 +387,7 @@ static void Destroy(w)
 /*
  * Set specified arguments into widget
  */
-static void SetValues (current, request, new, last)
+static Boolean SetValues (current, request, new, last)
     Widget current, request, new;
     Boolean last;
 {
@@ -420,6 +420,5 @@ static void SetValues (current, request, new, last)
     /* Change Label to remove ClearWindow and Redisplay */
     /* Change Label to change GCs if foreground, etc */
 
-    /**** how to get a redisplay without triggering redisplays
-      in superclasses ****/
+    return (FALSE);  /* actually need to return TRUE if Redisplay is needed! */
 }
