@@ -1,5 +1,5 @@
-/* $XConsortium: cards.c,v 1.1 95/01/06 20:53:10 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.1 1995/01/12 12:06:39 dawes Exp $ */
+/* $XConsortium: cards.c,v 1.2 95/01/16 13:18:30 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.2 1995/01/23 01:33:07 dawes Exp $ */
 
 /*
  *  Functions to manipulate card database.
@@ -79,6 +79,10 @@ static char *s3_comment =
 "# Use Option \"nolinear\" if the server doesn't start up correctly\n"
 "# (this avoids the linear framebuffer probe). If that fails try\n"
 "# option \"nomemaccess\".\n"
+"#\n"
+"# Use Option \"sw_cursor\" if the server completely locked up\n"
+"# several times while you're moving the mouse.\n"
+"#\n"
 "# Refer to /usr/X11R6/lib/doc/README.S3, and the XF86_S3 man page.\n";
 
 static char *cirrus_comment =
@@ -91,23 +95,25 @@ static char *cirrus_comment =
 int parse_database() {
 	FILE *f;
 	char buf[128];
-	int i;
+	int i, lineno;
 	f = fopen(CARD_DATABASE_FILE, "r");
 	if (f == NULL)
 		return -1;
 
 	lastcard = -1;
+	lineno = 0;
 
 	for (;;) {
 		if (getline(f, buf))
 			break;
+		lineno++;
 		if (buf[0] == '#')
 			/* Comment. */
 			continue;
 		if (strncmp(buf, "END", 3) == 0)
 			/* End of database. */
 			break;
-		if (strncmp(buf, "LINE", 4) == 0) {
+		if (strncmp(buf, "LINE", 4) == 0 && lastcard>=0) {
 			/* Line of Device comment. */
 			char *lines;
 			/* Append to existing lines. */
@@ -118,7 +124,16 @@ int parse_database() {
 		 * The following keywords require the trailing newline
 		 * to be deleted.
 		 */
-		buf[strlen(buf) - 1] = '\0';
+		i = strlen(buf);
+		buf[--i] = '\0';
+
+		/* remove trailing spaces or tabs */
+		for(--i; i>=0 && (buf[i] == ' ' || buf[i] == '\011'); i--) ;
+		if (i>=0)
+		   buf[i+1] = '\0';
+		else 
+		   continue; /* skip empty lines */
+
 		if (strncmp(buf, "NAME", 4) == 0) {
 			/* New entry. */
 			lastcard++;
@@ -132,6 +147,8 @@ int parse_database() {
 			card[lastcard].lines = "";
 			continue;
 		}
+		if (lastcard < 0)  /* no NAME line found yet */
+		   continue; 
 		if (strncmp(buf, "SEE", 3) == 0) {
 			/* Reference to another entry. */
 			int i;
@@ -177,6 +194,7 @@ int parse_database() {
 			/* Clockchip indentifier. */
 			card[lastcard].clockchip = malloc(strlen(buf + 10) + 1);
 			strcpy(card[lastcard].clockchip, buf + 10);
+			card[lastcard].flags |= NOCLOCKPROBE;
 			continue;
 		}
 		if (strncmp(buf, "DACSPEED", 8) == 0) {
@@ -196,14 +214,16 @@ int parse_database() {
 		/* test for missing required fields */
 		if (card[lastcard].server == NULL) {
 		    fprintf(stderr, "Warning SERVER specification missing "
-			    "in Card database entry %s.\n", 
-			    card[lastcard].name);
-		    card[lastcard].server = "unknown";
+			    "in Card database entry %s (line %d).\n", 
+			    card[lastcard].name, lineno);
+		    keypress();
+		       card[lastcard].server = "unknown";
 		}
 		if (card[lastcard].chipset == NULL) {
 		    fprintf(stderr, "Warning CHIPSET specification missing "
-			    "in Card database entry %s.\n", 
-			    card[lastcard].name);
+			    "in Card database entry %s (line %d).\n", 
+			    card[lastcard].name, lineno);
+		    keypress();
 		    card[lastcard].chipset = "unknown";
 		}
 	    }

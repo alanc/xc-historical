@@ -1,5 +1,5 @@
-XCOMM $XConsortium: $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.3 1994/12/25 12:27:17 dawes Exp $
+XCOMM $XConsortium: Imakefile,v 1.1 95/01/06 20:29:55 kaleb Exp kaleb $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.4 1995/01/19 05:22:47 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -46,6 +46,7 @@ LinuxDocReadmeTarget(SVR4)
 #endif
 
 /* Hardware docs */
+LinuxDocReadmeTarget(Oak)
 LinuxDocReadmeTarget(P9000)
 LinuxDocReadmeTarget(Video7)
 LinuxDocReadmeTarget(S3)
@@ -62,6 +63,7 @@ LinuxDocTargetLong(CPYRIGHT.sgml,COPYRIGHT,COPYRIGHT)
 LinuxDocReadmeTarget(Config)
 LinuxDocTarget(INSTALL)
 LinuxDocTarget(README)
+LinuxDocTarget(DocIndex)
 
 /* Other docs */
 LinuxDocReadmeTarget(LinkKit)

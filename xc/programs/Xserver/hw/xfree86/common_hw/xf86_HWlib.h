@@ -1,5 +1,5 @@
-/* $XConsortium: xf86_HWlib.h,v 1.3 95/01/05 20:41:28 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.5 1995/01/15 10:33:36 dawes Exp $ */
+/* $XConsortium: xf86_HWlib.h,v 1.4 95/01/16 13:17:08 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.7 1995/01/21 14:07:59 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -145,6 +145,20 @@ extern void xf86clrdaccommbit(
 
 /* S3gendac.c */
 extern int S3gendacSetClock(
+#if NeedFunctionPrototypes
+	long,
+	int
+#endif
+);
+
+extern int ICS5342SetClock(
+#if NeedFunctionPrototypes
+	long,
+	int
+#endif
+);
+
+extern int S3TrioSetClock(
 #if NeedFunctionPrototypes
 	long,
 	int

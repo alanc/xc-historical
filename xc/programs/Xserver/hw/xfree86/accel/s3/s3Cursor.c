@@ -1,6 +1,6 @@
 /*
- * $XConsortium: s3Cursor.c,v 1.3 94/10/12 20:07:37 kaleb Exp kaleb $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.10 1995/01/12 12:03:08 dawes Exp $
+ * $XConsortium: s3Cursor.c,v 1.4 95/01/16 13:16:49 kaleb Exp kaleb $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.13 1995/01/21 14:07:34 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -101,6 +101,7 @@ extern unsigned char s3SwapBits[256];
 
 static int s3CursGeneration = -1;
 static CursorPtr s3SaveCursors[MAXSCREENS];
+static Bool useSWCursor = FALSE;
 
 extern int s3hotX, s3hotY;
 
@@ -122,7 +123,10 @@ s3CursorInit(pm, pScr)
    s3ReloadCursor = FALSE;
    
    if (s3CursGeneration != serverGeneration) {
-      if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options)) {
+      if (OFLG_ISSET(OPTION_SW_CURSOR, &s3InfoRec.options)) {
+	 useSWCursor = TRUE;
+	 miDCInitialize (pScr, &xf86PointerScreenFuncs);
+      } else if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options)) {
          if (!(miPointerInitialize(pScr, &s3BtPointerSpriteFuncs,
 				   &xf86PointerScreenFuncs, FALSE)))
             return FALSE;
@@ -132,6 +136,7 @@ s3CursorInit(pm, pScr)
             return FALSE;
       } else if (s3InfoRec.bitsPerPixel == 32 
 		 && S3_928_SERIES(s3ChipId) && !S3_x64_SERIES(s3ChipId)) {
+	 useSWCursor = TRUE;
 	 miDCInitialize (pScr, &xf86PointerScreenFuncs);
       } else {
          if (!(miPointerInitialize(pScr, &s3PointerSpriteFuncs,
@@ -147,6 +152,9 @@ s3CursorInit(pm, pScr)
 void
 s3ShowCursor()
 {
+   if (useSWCursor) 
+      return;
+
    if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options))
       s3BtCursorOn();
    else if (OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options))
@@ -157,6 +165,9 @@ s3ShowCursor()
 void
 s3HideCursor()
 {
+   if (useSWCursor) 
+      return;
+
    if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options))
       s3BtCursorOff();
    else if (OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options))
@@ -178,6 +189,9 @@ s3RealizeCursor(pScr, pCurs)
    int   wsrc, h;
    unsigned short *ram;
    CursorBitsPtr bits = pCurs->bits;
+
+   if (useSWCursor) 
+      return TRUE;
 
    if (pCurs->bits->refcnt > 1)
       return TRUE;
@@ -368,6 +382,9 @@ s3SetCursor(pScr, pCurs, x, y, generateEvent)
    if (!pCurs)
       return;
 
+   if (useSWCursor) 
+      return;
+
    s3hotX = pCurs->bits->xhot;
    s3hotY = pCurs->bits->yhot;
    s3SaveCursors[index] = pCurs;
@@ -390,6 +407,9 @@ s3RestoreCursor(pScr)
    int index = pScr->myNum;
    int x, y;
 
+   if (useSWCursor) 
+      return;
+
    s3ReloadCursor = FALSE;
    miPointerPosition(&x, &y);
    if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options))
@@ -405,6 +425,9 @@ s3RepositionCursor(pScr)
      ScreenPtr pScr;
 {
    int x, y;
+
+   if (useSWCursor) 
+      return;
 
    miPointerPosition(&x, &y);
    if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options))
@@ -426,6 +449,9 @@ s3MoveCursor(pScr, x, y)
    unsigned char xoff, yoff;
    extern int s3AdjustCursorXPos;
 
+   if (useSWCursor) 
+      return;
+
    if (!xf86VTSema)
       return;
 
@@ -435,10 +461,12 @@ s3MoveCursor(pScr, x, y)
    x -= s3InfoRec.frameX0 - s3AdjustCursorXPos;
    y -= s3InfoRec.frameY0;
 
-   if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId)) 
-      x *= s3Bpp;
-   else if (s3Bpp > 2)
-      x *= 2;
+   if (!S3_TRIOxx_SERIES(s3ChipId)) {
+      if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId)) 
+	 x *= s3Bpp;
+      else if (s3Bpp > 2)
+	 x *= 2;
+   }
 
    x -= s3hotX;
    y -= s3hotY;
@@ -515,6 +543,9 @@ s3RecolorCursor(pScr, pCurs, displayed)
    unsigned short packedcolfg, packedcolbg;
    xColorItem sourceColor, maskColor;
 
+   if (useSWCursor) 
+      return;
+
    switch (s3InfoRec.bitsPerPixel) {
      case 8:
 	s3GetInstalledColormaps(pScr, &pmap);
@@ -528,11 +559,25 @@ s3RecolorCursor(pScr, pCurs, displayed)
 	FakeAllocColor(pmap, &maskColor);
 	FakeFreeColor(pmap, sourceColor.pixel);
 	FakeFreeColor(pmap, maskColor.pixel);
-	
-	outb(vgaCRIndex, 0x0E);
-	outb(vgaCRReg, sourceColor.pixel);
-	outb(vgaCRIndex, 0x0F);
-	outb(vgaCRReg, maskColor.pixel);
+
+	if (S3_TRIOxx_SERIES(s3ChipId)) {
+	   outb(vgaCRIndex, 0x45);
+	   inb(vgaCRReg);  /* reset stack pointer */
+	   outb(vgaCRIndex, 0x4A);
+	   outb(vgaCRReg, sourceColor.pixel);
+	   outb(vgaCRReg, sourceColor.pixel);
+	   outb(vgaCRIndex, 0x45);
+	   inb(vgaCRReg);  /* reset stack pointer */
+	   outb(vgaCRIndex, 0x4B);
+	   outb(vgaCRReg, maskColor.pixel);
+	   outb(vgaCRReg, maskColor.pixel);
+	}
+	else {
+	   outb(vgaCRIndex, 0x0E);
+	   outb(vgaCRReg, sourceColor.pixel);
+	   outb(vgaCRIndex, 0x0F);
+	   outb(vgaCRReg, maskColor.pixel);
+	}
 	break;
      case 16:
         if (s3InfoRec.depth == 15) {

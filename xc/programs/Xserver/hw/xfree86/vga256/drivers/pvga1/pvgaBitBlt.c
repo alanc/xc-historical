@@ -1,5 +1,5 @@
-/* $XConsortium: pvgaBitBlt.c,v 1.2 94/10/13 13:26:38 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgaBitBlt.c,v 3.1 1995/01/14 10:48:59 dawes Exp $ */
+/* $XConsortium: pvgaBitBlt.c,v 1.3 95/01/16 13:18:22 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgaBitBlt.c,v 3.2 1995/01/18 11:00:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -127,9 +127,9 @@ wd90c31BitBlt(unsigned char *psrcBase, unsigned char *pdstBase,
   
   WAIT_BLIT;
   SET_BLT_SRC_LOW ((psrc & 0xFFF));
-  SET_BLT_SRC_HGH (((psrc >> 12) & 0xFF));
+  SET_BLT_SRC_HGH ((psrc >> 12));
   SET_BLT_DST_LOW ((pdst & 0xFFF));
-  SET_BLT_DST_HGH (((pdst >> 12) & 0xFF));
+  SET_BLT_DST_HGH ((pdst >> 12));
   SET_BLT_ROW_PTCH (widthDst);
   SET_BLT_DIM_X    (w);
   SET_BLT_DIM_Y    (h);

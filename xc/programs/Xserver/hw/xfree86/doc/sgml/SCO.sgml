@@ -48,7 +48,7 @@ This file may not be present if the upgrade is too substantial
 <tag/XFXXX-lkit.tz/         The server link kit (all drivers + PEX).
 <tag/XFXXX-util.tz/         Lots of PD utilities provided as is.
 <tag/XFXXX-pex.tz/          All files relating to PEX including libraries
-                          and header files.  The likkit is required to
+                          and header files.  The LinkKit is required to
                           obtain servers capable of running PEX.
 </descrip></quote>
 
@@ -131,7 +131,7 @@ mapping in high memory when accessing the card. The dmmap driver comes in
 two forms, a binary archive which is supplied with the full binary
 distribution and a source archive which is located in 
 <tt>/usr/X11R6/lib/X11/etc</tt>.
-Both distributions provide instuctions for installation/removal within the
+Both distributions provide instructions for installation/removal within the
 <tt>README file</tt>. <p>
 
 <sect>Switching Consoles<p>
@@ -140,7 +140,7 @@ XFree86 uses similar console switching keys as the SCO R4 and R5
 servers.  That is, <tt>Ctrl-PrntScr</tt> takes you to the next console along
 from the one X is running on.  If this is the last console it will take
 you to console 1.  Those interested in modifying the console switching
-should look in <tt>mit/server/ddx/x386/common/x386Events.c</tt>.
+should look in <tt>xc/programs/Xserver/hw/xfree86/common/xf86Events.c</tt>.
 
 
 <sect>Setting up Man Pages<p>
@@ -309,7 +309,7 @@ Compiling XFree86,
 <itemize>
 <item>Compress is used instead of pack for compressing the man pages.
 <item>The default compile line will contain <tt>-D_NO_PROTOTYPE</tt> instead
-      of <tt>-DNO_PROTOTYP</tt>E as this is what 3.2.4 expects.
+      of <tt>-DNO_PROTOTYPE</tt> as this is what 3.2.4 expects.
 </itemize>
 <item> If you have problems with <tt>mkshlib</tt> reporting an error like
 <verb>
@@ -395,17 +395,17 @@ been debugged.<p>
 </quote>
 <tag/Problem:/
 <quote>
-    <tt>x386install</tt> does not work.
+    <tt>xf86install</tt> does not work.
 </quote>
 <tag/Causes:/
 <quote>
-    You should not be running <tt>x386install</tt> when using the 
+    You should not be running <tt>xf86install</tt> when using the 
     XFree86 server
     under SCO.  It is used for Interactive (ISC) installations.
 </quote>
 <tag/Problem:/
 <quote>
-    The server starts but the screen is not aligned correctly or is shakey
+    The server starts but the screen is not aligned correctly or is shaky
     and impossible to view.
 </quote>
 <tag/Causes:/
@@ -582,7 +582,7 @@ for providing an
 ftp site for the binary distribution.
 
 <verb>  
-$XConsortium: SCO.sgml,v 1.1 95/01/06 20:29:55 kaleb Exp kaleb $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.2 1995/01/15 10:34:22 dawes Exp $
+$XConsortium: SCO.sgml,v 1.2 95/01/16 13:17:47 kaleb Exp kaleb $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.4 1995/01/21 10:44:32 dawes Exp $
 </verb>
 </article>

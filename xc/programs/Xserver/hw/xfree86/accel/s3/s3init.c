@@ -1,5 +1,5 @@
-/* $XConsortium: s3init.c,v 1.4 95/01/06 20:57:20 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.45 1995/01/12 12:03:12 dawes Exp $ */
+/* $XConsortium: s3init.c,v 1.5 95/01/16 13:16:52 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.51 1995/01/23 01:29:26 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -56,6 +56,7 @@ typedef struct {
    unsigned char Ti3025[9];	/* Ti3025 N,M,P for PCLK, MCLK, LOOP PLL */
    unsigned char STG1700[5];    /* STG1700 index and command registers */
    unsigned char SDAC[6];       /* S3 SDAC command and PLL registers */
+   unsigned char Trio[8];       /* Trio32/64 ext. sequenzer (PLL) registers */
    unsigned char s3reg[10];     /* Video Atribute (CR30-34, CR38-3C) */
    unsigned char s3sysreg[46];  /* Video Atribute (CR40-6D)*/
 }
@@ -65,6 +66,7 @@ int   vgaIOBase = 0x3d0; /* These defaults are overriden in s3Probe() */
 int   vgaCRIndex = 0x3d4;
 int   vgaCRReg = 0x3d5;
 int   s3InitCursorFlag = TRUE;
+int   s3HDisplay;
 extern xf86InfoRec xf86Info;
 
 static vgaS3Ptr oldS3 = NULL;
@@ -203,6 +205,23 @@ s3CleanUp(void)
       outb(0x3c7, oldS3->SDAC[1]);      /* PLL read index */
 
       outb(vgaCRReg, tmp & ~1);
+   }
+   
+   /* Restore S3 Trio32/64 ext. sequenzer (PLL) registers */
+   if (DAC_IS_TRIO)
+   {
+      outb(0x3c2, oldS3->Trio[0]);
+      outb(0x3c4, 0x08); outb(0x3c5, 0x06);
+
+      outb(0x3c4, 0x09); outb(0x3c5, oldS3->Trio[2]);
+      outb(0x3c4, 0x0a); outb(0x3c5, oldS3->Trio[3]);
+      outb(0x3c4, 0x0b); outb(0x3c5, oldS3->Trio[4]);
+      outb(0x3c4, 0x0d); outb(0x3c5, oldS3->Trio[5]);
+      outb(0x3c4, 0x15); outb(0x3c5, oldS3->Trio[6]); 
+      outb(0x3c4, 0x18); outb(0x3c5, oldS3->Trio[7]);
+
+      outb(0x3c4, 0x08); outb(0x3c5, oldS3->Trio[1]);
+
    }
    
    /*
@@ -362,6 +381,8 @@ s3Init(mode)
    extern Bool s3DAC8Bit, s3DACSyncOnGreen;
    int pixMuxShift = 0;
 
+   s3HDisplay = mode->HDisplay;
+
    UNLOCK_SYS_REGS;
 
    /* Force use of colour I/O address */
@@ -392,7 +413,7 @@ s3Init(mode)
        * Set up the Serial Access Mode 256 Words Control
        *   (bit 6 in CR58)
        */
-      if (S3_964_SERIES(s3ChipId) && !DAC_IS_TI3025)
+      if (S3_964_SERIES(s3ChipId))
          s3SAM256 = 0x40;
       else if ((OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
                S3_928_ONLY(s3ChipId)) ||
@@ -455,6 +476,26 @@ s3Init(mode)
          outb(vgaCRReg, tmp & ~1);
       }
    
+      /* Save S3 Trio32/64 ext. sequenzer (PLL) registers */
+      if (DAC_IS_TRIO)
+      {
+	 oldS3->Trio[0] = inb(0x3cc);
+
+	 outb(0x3c4, 0x08); oldS3->Trio[1] = inb(0x3c5);
+	 outb(0x3c5, 0x06);
+
+	 outb(0x3c4, 0x09); oldS3->Trio[2] = inb(0x3c5);
+	 outb(0x3c4, 0x0a); oldS3->Trio[3] = inb(0x3c5);
+	 outb(0x3c4, 0x0b); oldS3->Trio[4] = inb(0x3c5);
+	 outb(0x3c4, 0x0d); oldS3->Trio[5] = inb(0x3c5);
+	 outb(0x3c4, 0x15); oldS3->Trio[6] = inb(0x3c5) & 0xfe; 
+	 outb(0x3c5, oldS3->Trio[6]);
+	 outb(0x3c4, 0x18); oldS3->Trio[7] = inb(0x3c5);
+
+	 outb(0x3c4, 8);
+	 outb(0x3c5, 0x00);
+      }
+
       /*
        * Save Sierra SC15025/6 command registers.
        */
@@ -615,6 +656,8 @@ s3Init(mode)
    else if (S3_864_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId))
 	    /* && (DAC_IS_ATT498 || DAC_IS_STG1700) */
       pixMuxShift = -(s3Bpp>>1);  /* for 16/32 bpp */
+   else if (S3_TRIOxx_SERIES(s3ChipId))
+      pixMuxShift = -(s3Bpp == 2);
    else if (S3_x64_SERIES(s3ChipId)) /* XXXX Better to test the DAC type? */
       pixMuxShift = 0;
    else if ((S3_928_SERIES(s3ChipId) && 
@@ -811,7 +854,7 @@ s3Init(mode)
       }
    }
 
-   /* NO 8bit mode for S3 SDAC or GENDAC */
+   /* NO 8bit mode for S3 SDAC or GENDAC or Trio32/64 */
 
    /*
     * Set Sierra SC 15025/6 command registers to 8-bit mode if desired.
@@ -1159,6 +1202,71 @@ s3Init(mode)
       outb(0x3C5, tmp2);        /* unblank the screen */
    }
 
+   if (DAC_IS_TRIO)
+   {
+      int pixmux = 0;           /* SDAC command and CR67 */
+      int invert_vclk = 0;      /* CR66 bit 0 */
+      int sr8, sr15, sr18, cr33;
+      
+      outb(0x3C4, 1);
+      tmp2 = inb(0x3C5);
+      outb(0x3C5, tmp2 | 0x20); /* blank the screen */
+
+      outb(0x3c4, 0x08);
+      sr8 = inb(0x3c5);
+      outb(0x3c5, 0x06);
+      outb(0x3c4, 0x15);
+      sr15 = inb(0x3c5) & ~0x10;  /* XXXX ~0x40 and SynthClock /= 2 in s3.c might be better... */
+      outb(0x3c4, 0x18);
+      sr18 = inb(0x3c5) & ~0x80;
+      outb(vgaCRIndex, 0x33);
+      cr33 = (inb(vgaCRReg) & ~0x08) | 0x20;
+
+      if (s3PixelMultiplexing)
+      {
+	 /* x64:pixmux */
+	 /* pixmux with 16/32 bpp not possible for 864 ==> only 8bit mode  */
+         pixmux = 0x10;         /* two 8bit pixels per clock */
+         invert_vclk = 2;       /* XXXX strange: reserved bit which helps! */
+	 sr15 |= 0x10;  /* XXXX 0x40? see above! */
+	 sr18 |= 0x80;
+      }
+      else
+      {
+         switch (s3InfoRec.bitsPerPixel) 
+         {
+            case 8:  /* 8-bit color, 1 VCLK/pixel */
+               break;
+
+            case 16: /* 15/16-bit color, 1VCLK/pixel */
+	       cr33 |= 0x08;
+               if (s3Weight == RGB16_555)
+                  pixmux = 0x30;
+               else
+                  pixmux = 0x50;
+               break;
+
+            case 32: /* 32-bit color, 2VCLK/pixel */
+               pixmux = 0xd0;
+         }
+      }
+
+      outb(vgaCRReg, cr33);
+
+      outb(vgaCRIndex, 0x67);
+      outb(vgaCRReg, pixmux | invert_vclk);    /* set S3 mux mode */
+
+      outb(0x3c4, 0x15);
+      outb(0x3c5, sr15);
+      outb(0x3c4, 0x18);
+      outb(0x3c5, sr18);
+      outb(0x3c4, 0x08);
+      outb(0x3c5, sr8);
+
+      outb(0x3C4, 1);
+      outb(0x3C5, tmp2);        /* unblank the screen */
+   }
+
    if (DAC_IS_BT485_SERIES) {
       outb(0x3C4, 1);
       tmp2 = inb(0x3C5);
@@ -1381,8 +1489,7 @@ s3Init(mode)
 
       outb(vgaCRIndex, 0x65);
       if (DAC_IS_TI3025) {
-         outb(vgaCRReg, 0x82);
-         /* was 0x02 for all, now 0x82 is required on new ones */
+         outb(vgaCRReg, 0);
       } else {
 	 /* set s3 reg65 for some unknown reason			*/
 	 if (s3InfoRec.bitsPerPixel == 32)
@@ -1573,21 +1680,37 @@ s3Init(mode)
                s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00, TI_GID_TI_DAC_6BIT);
          }
          if (DAC_IS_TI3025) {
-            outb(vgaCRIndex, 0x6D);             /* set blank delay */
-            if (s3InfoRec.bitsPerPixel == 32) {
-               outb(vgaCRReg, 0x00);
-            } else if (s3InfoRec.bitsPerPixel == 16) {
-               if (mode->Flags & V_DBLCLK)
-                  outb(vgaCRReg, 0x00);
+	    if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
+	       outb(vgaCRIndex, 0x6D);             /* set blank delay */
+	       if (s3InfoRec.bitsPerPixel == 32)
+		  if (mode->Flags & V_DBLCLK)
+		     outb(vgaCRReg, 0x10);
+		  else
+		     outb(vgaCRReg, 0x20);
+	       else if (s3InfoRec.bitsPerPixel == 16)
+		  if (mode->Flags & V_DBLCLK) 
+		     outb(vgaCRReg, 0x20);
+		  else
+		     outb(vgaCRReg, 0x31);
 	       else
-                  outb(vgaCRReg, 0x01);
-            } else if (s3InfoRec.bitsPerPixel == 8) {
-               if (mode->Flags & V_DBLCLK)
-                  outb(vgaCRReg, 0x01);
-	       else
-                  outb(vgaCRReg, 0x04);
-            }
-         }
+		  outb(vgaCRReg, 0x20);
+	    }
+	    else {
+	       outb(vgaCRIndex, 0x6D);
+	       if (s3Bpp == 1)
+		  if (mode->Flags & V_DBLCLK) 
+		     outb(vgaCRReg, 0x02);
+		  else
+		     outb(vgaCRReg, 0x03);
+	       else if (s3Bpp == 2)
+		  if (mode->Flags & V_DBLCLK) 
+		     outb(vgaCRReg, 0x00);
+		  else
+		     outb(vgaCRReg, 0x01);
+	       else /* (s3Bpp == 4) */
+		  outb(vgaCRReg, 0x00);
+	    }
+	 }
       } else {
          /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */
          outb(vgaCRIndex, 0x53);
@@ -1671,7 +1794,8 @@ s3Init(mode)
    if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options))
      /* Blank border comes earlier than display enable. */
      outb(vgaCRReg, 0x00);
-   else outb(vgaCRReg, 0x20);
+   else if (!S3_TRIOxx_SERIES(s3ChipId))
+      outb(vgaCRReg, 0x20);
    outb(vgaCRIndex, 0x34);
    outb(vgaCRReg, 0x10);		/* 1024 */
    outb(vgaCRIndex, 0x35);
@@ -1955,9 +2079,11 @@ s3Init(mode)
 	  * some Diamond Stealth 64 VRAM cards have a problem with VRAM timing,
 	  * increase -RAS low timing from 3.5 MCLKs to 4.5 MCLKs 
 	  */ 
+	 outb(vgaCRIndex, 0x39);
+	 outb(vgaCRReg, 0xa5);
 	 outb(vgaCRIndex, 0x68);
 	 tmp = inb(vgaCRReg);
-	 if (tmp & 0x30 == 0x30) 		/* 3.5 MCLKs */
+	 if ((tmp & 0x30) == 0x30) 		/* 3.5 MCLKs */
 	    outb(vgaCRReg, tmp & 0xef);		/* 4.5 MCLKs */
       }
       if (OFLG_ISSET(OPTION_S3_964_BT485_VCLK, &s3InfoRec.options)) {
@@ -2025,6 +2151,8 @@ s3Init(mode)
    if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions))
          (void) (s3ClockSelectFunc)(mode->SynthClock);
          /* fixes the ICS2595 initialisation problems */
+
+   s3AdjustFrame(s3InfoRec.frameX0, s3InfoRec.frameY0);
 
 #ifdef REG_DEBUG
    for (i=0; i<10; i++) {
@@ -2241,4 +2369,3 @@ s3Unlock()
    outb(vgaCRReg, 0x00);
 
 }
-

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.6 1995/01/11 03:53:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.8 1995/01/23 01:33:09 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -842,19 +842,22 @@ static char *clockchipcomment_text =
 "Choose from the following list:\n"
 "\n";
 
-#define NU_CLOCKCHIPS 6
+#define NU_CLOCKCHIPS 8
 
 static char *clockchip_name[] = {
+	"Chrontel 8391 (uncertain at the time of writing)",
 	"ICD2061A and compatibles (ICS9161A, DCS2824)",
 	"ICS2595",
+	"ICS5342 (similar to SDAC, but not completely compatible)",
 	"S3 GenDAC (86C708) and ICS5300 (autodetected)",
-	"S3 SDAC (86C716) and ICS5342 (autodetected)",
+	"S3 SDAC (86C716)",
 	"Sierra SC11412",
 	"TI 3025",
 };
 
 static char *clockchip_id[] = {
-	"icd2061a", "ics2595", "s3gendac", "s3_sdac", "sc11412", "ti3025"
+	"ch8391", "icd2061a", "ics2595", "ics5342", "s3gendac", "s3_sdac",
+	"sc11412", "ti3025"
 };
 
 static char *deviceclockscomment_text =
@@ -1438,11 +1441,16 @@ static char *XF86Config_firstchunk_text =
 "# Multiple FontPath entries are allowed (which are concatenated together),\n"
 "# as well as specifying multiple comma-separated entries in one FontPath\n"
 "# command (or a combination of both methods)\n"
+"# \n"
+"# If you don't have a floating point coprocessor and emacs, Mosaic or other\n"
+"# programs take long to start up, try moving the Type1 and Speedo directory\n"
+"# to the end of this list (or comment them out).\n"
+"# \n"
 "\n"
 "    FontPath	\"/usr/X11R6/lib/X11/fonts/misc/\"\n"
-"        FontPath	\"/usr/X11R6/lib/X11/fonts/Type1/\"\n"
-"        FontPath	\"/usr/X11R6/lib/X11/fonts/Speedo/\"\n"
-"        FontPath	\"/usr/X11R6/lib/X11/fonts/75dpi/\"\n"
+"    FontPath	\"/usr/X11R6/lib/X11/fonts/Type1/\"\n"
+"    FontPath	\"/usr/X11R6/lib/X11/fonts/Speedo/\"\n"
+"    FontPath	\"/usr/X11R6/lib/X11/fonts/75dpi/\"\n"
 "    FontPath	\"/usr/X11R6/lib/X11/fonts/100dpi/\"\n"
 "\n"
 "EndSection\n"

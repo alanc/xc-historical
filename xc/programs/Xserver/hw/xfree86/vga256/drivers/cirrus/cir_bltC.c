@@ -1,5 +1,5 @@
-/* $XConsortium: cir_bltC.c,v 1.3 94/10/13 13:21:46 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bltC.c,v 3.5 1994/12/05 03:47:59 dawes Exp $ */
+/* $XConsortium: cir_bltC.c,v 1.4 95/01/05 20:47:57 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bltC.c,v 3.6 1995/01/18 06:14:32 dawes Exp $ */
 /*
  
 
@@ -165,7 +165,7 @@ CirrusDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
   else 
        if (CHECKSCREEN(pdstBase)) /* Mem -> Screen */
 	    {
-	    if(NoCirrus || !HAVEBITBLTENGINE())
+	    if(NoCirrus || !HAVEBITBLTENGINE() || cirrusAvoidImageBLT)
 	    /* ImageWrite seems prone to pixel errors. Probably
 	     * caused by other function -- ImageWrite is used all
 	     * the time by the cursor.

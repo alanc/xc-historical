@@ -1,5 +1,5 @@
-/* $XConsortium: cir_imblt.s,v 1.1 94/10/05 13:52:22 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_imblt.s,v 3.3 1994/08/31 04:44:27 dawes Exp $ */
+/* $XConsortium: cir_imblt.s,v 1.3 94/10/13 13:21:46 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_imblt.s,v 3.4 1995/01/21 07:18:08 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -153,8 +153,9 @@ GLNAME(CirrusImageWriteTransfer):
 	JE	(.two_bytes_remaining)
 
 	/* Three bytes remaining. */
-	MOV_L	(REGOFF(-1,ESI),EAX)
-	SHR_L	(CONST(8),EAX)
+	MOV_B	(REGOFF(2,ESI),AL)
+	SHL_L	(CONST(16),EAX)
+	MOV_W	(REGIND(ESI),AX)
 	ADD_L	(CONST(0x03),ESI)
 	MOV_L	(EAX,REGIND(EDI))		/* Write dword. */
 	JMP	(.line_finished)

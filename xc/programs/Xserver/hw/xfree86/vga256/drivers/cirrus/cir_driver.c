@@ -1,5 +1,5 @@
-/* $XConsortium: cir_driver.c,v 1.4 95/01/06 20:58:37 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.28 1995/01/15 10:35:22 dawes Exp $ */
+/* $XConsortium: cir_driver.c,v 1.5 95/01/16 13:18:07 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.31 1995/01/21 07:18:04 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -117,6 +117,7 @@ Bool cirrusMMIOFlag = FALSE;
 unsigned char *cirrusMMIOBase = NULL;
 Bool cirrusUseLinear = FALSE;
 Bool cirrusFavourBLT = FALSE;
+Bool cirrusAvoidImageBLT = FALSE;
 int cirrusDRAMBandwidth;
 int cirrusDRAMBandwidthLimit;
 int cirrusReprogrammedMCLK = 0;
@@ -1091,6 +1092,7 @@ cirrusProbe()
          OFLG_SET(OPTION_NO_2MB_BANKSEL, &CIRRUS.ChipOptionFlags);
          OFLG_SET(OPTION_NO_BITBLT, &CIRRUS.ChipOptionFlags);
          OFLG_SET(OPTION_FAVOUR_BITBLT, &CIRRUS.ChipOptionFlags);
+         OFLG_SET(OPTION_NO_IMAGEBLT, &CIRRUS.ChipOptionFlags);
      }
 #ifdef CIRRUS_SUPPORT_MMIO
      if (cirrusChip == CLGD5434 || cirrusChip == CLGD5430 ||
@@ -1165,12 +1167,17 @@ cirrusFbInit()
           cirrusUseBLTEngine = FALSE;
       else {
           if (cirrusChip == CLGD5429 && cirrusChipRevision == 0) {
-              ErrorF("%s %s: %s: CL-GD5429 Rev A detected, BitBLT disabled\n",
+              ErrorF("%s %s: %s: CL-GD5429 Rev A detected\n",
                 XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
-              cirrusUseBLTEngine = FALSE;
+              cirrusAvoidImageBLT = TRUE;
               }
           }
-      }
+          if (OFLG_ISSET(OPTION_NO_IMAGEBLT, &vga256InfoRec.options))
+              cirrusAvoidImageBLT = TRUE;
+          if (xf86Verbose && cirrusAvoidImageBLT)
+              ErrorF("%s %s: %s: Not using system-to-video BitBLT\n",
+                XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
+     }
 
 #endif
 
@@ -1365,9 +1372,17 @@ nolinear:
 
         vga256TEOps1Rect.PolyGlyphBlt = CirrusPolyGlyphBlt;
         vga256TEOps.PolyGlyphBlt = CirrusPolyGlyphBlt;
-        vga256LowlevFuncs.teGlyphBlt8 = CirrusImageGlyphBlt;
-        vga256TEOps1Rect.ImageGlyphBlt = CirrusImageGlyphBlt;
-        vga256TEOps.ImageGlyphBlt = CirrusImageGlyphBlt;
+	/*
+	 * If using the BitBLT engine but avoiding image blit,
+	 * prefer the framebuffer routines for ImageGlyphBlt.
+	 * The color-expand text functions would be allowable, but
+	 * the use of "no_imageblt" generally implies a fast host bus.
+	 */
+	if (!cirrusAvoidImageBLT) {
+	    vga256LowlevFuncs.teGlyphBlt8 = CirrusImageGlyphBlt;
+            vga256TEOps1Rect.ImageGlyphBlt = CirrusImageGlyphBlt;
+            vga256TEOps.ImageGlyphBlt = CirrusImageGlyphBlt;
+       }
     }
 
     CirrusInvalidateShadowVariables();
@@ -1382,16 +1397,20 @@ nolinear:
 
 	}
 	else {
-	    if (xf86Verbose)
+	    if (xf86Verbose) {
               ErrorF("%s %s: %s: Using BitBLT engine\n",
 	             XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
+              }
+
 #ifdef CIRRUS_INCLUDE_COPYPLANE1TO8
-	    if (vgaBitsPerPixel == 8)
+	    if (vgaBitsPerPixel == 8 && !cirrusAvoidImageBLT)
 	        vga256LowlevFuncs.copyPlane1to8 = CirrusCopyPlane1to8;
 #endif	
 	    if (vgaBitsPerPixel == 16) {
-		cfb16TEOps1Rect.ImageGlyphBlt = CirrusImageGlyphBlt;
-	        cfb16TEOps.ImageGlyphBlt = CirrusImageGlyphBlt;
+	        if (!cirrusAvoidImageBLT) {
+		    cfb16TEOps1Rect.ImageGlyphBlt = CirrusImageGlyphBlt;
+	            cfb16TEOps.ImageGlyphBlt = CirrusImageGlyphBlt;
+	        }
         	cfb16TEOps1Rect.CopyArea = Cirrus16CopyArea;
         	cfb16NonTEOps1Rect.CopyArea = Cirrus16CopyArea;
         	cfb16TEOps.CopyArea = Cirrus16CopyArea;
@@ -1399,8 +1418,10 @@ nolinear:
 /*	        xf86Info.currentScreenCopyWindow = CirrusCopyWindow; */
 	    }
 	    if (vgaBitsPerPixel == 32) {
-		cfb32TEOps1Rect.ImageGlyphBlt = CirrusImageGlyphBlt;
-	        cfb32TEOps.ImageGlyphBlt = CirrusImageGlyphBlt;
+	        if (!cirrusAvoidImageBLT) {
+		    cfb32TEOps1Rect.ImageGlyphBlt = CirrusImageGlyphBlt;
+	            cfb32TEOps.ImageGlyphBlt = CirrusImageGlyphBlt;
+	        }
         	cfb32TEOps1Rect.CopyArea = Cirrus32CopyArea;
         	cfb32NonTEOps1Rect.CopyArea = Cirrus32CopyArea;
         	cfb32TEOps.CopyArea = Cirrus32CopyArea;
@@ -1430,9 +1451,11 @@ nolinear:
             if (vgaBitsPerPixel == 8) {
                 vga256TEOps1Rect.PolyGlyphBlt = CirrusMMIOPolyGlyphBlt;
                 vga256TEOps.PolyGlyphBlt = CirrusMMIOPolyGlyphBlt;
-                vga256LowlevFuncs.teGlyphBlt8 = CirrusMMIOImageGlyphBlt;
-                vga256TEOps1Rect.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
-                vga256TEOps.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+		if (!cirrusAvoidImageBLT) {
+                    vga256LowlevFuncs.teGlyphBlt8 = CirrusMMIOImageGlyphBlt;
+                    vga256TEOps1Rect.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+                    vga256TEOps.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+                }
 		/* These functions need to be initialized in the GC handling */
 		/* of vga256. */
 	        vga256TEOps1Rect.FillSpans = CirrusFillSolidSpansGeneral;
@@ -1459,8 +1482,10 @@ nolinear:
              }
             else
             if (vgaBitsPerPixel == 16) {
-		cfb16TEOps1Rect.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
-	        cfb16TEOps.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+                if (!cirrusAvoidImageBLT) {
+		    cfb16TEOps1Rect.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+	            cfb16TEOps.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+	        }
 	        cfb16TEOps1Rect.FillSpans = CirrusFillSolidSpansGeneral;
 	        cfb16TEOps.FillSpans = CirrusFillSolidSpansGeneral;
 	        cfb16NonTEOps1Rect.FillSpans = CirrusFillSolidSpansGeneral;
@@ -1477,8 +1502,10 @@ nolinear:
 #endif
             }
             else { /* vgaBitsPerPixel == 32 */
-		cfb32TEOps1Rect.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
-	        cfb32TEOps.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+                if (!cirrusAvoidImageBLT) {
+		    cfb32TEOps1Rect.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+	            cfb32TEOps.ImageGlyphBlt = CirrusMMIOImageGlyphBlt;
+	        }
 	        cfb32TEOps1Rect.FillSpans = CirrusFillSolidSpansGeneral;
 	        cfb32TEOps.FillSpans = CirrusFillSolidSpansGeneral;
 	        cfb32NonTEOps1Rect.FillSpans = CirrusFillSolidSpansGeneral;
@@ -2063,6 +2090,7 @@ cirrusInit(mode)
          new->SRF |= 0x20;	/* Enable 64 byte FIFO. */
          }
 
+#ifndef MONOVGA
      if (cirrusChip == CLGD5424 || cirrusChip == CLGD5426 ||
          cirrusChip == CLGD5428 || cirrusChip == CLGD5429 ||
 	 cirrusChip == CLGD5434 || cirrusChip == CLGD5430)
@@ -2141,6 +2169,7 @@ cirrusInit(mode)
 		 new->SR16 |= threshold - fifoshift_5430;
          } /* endelse */
          } /* endif */
+#endif
 
      if (cirrusChip == CLGD5430
      && !OFLG_ISSET(OPTION_NO_2MB_BANKSEL, &vga256InfoRec.options))

@@ -29,16 +29,20 @@ The following items have been added since XFree86 3.1 was released in
 October 1994:
 <enum>
     <item> XFree86 3.1.1 includes the X Consortium's recently released
-	public patches (up to fix-11).  The XFree86 Project, Inc has
+	public patches (up to fix-10).  The XFree86 Project, Inc has
 	worked with the X Consortium to have much of XFree86 3.1.1
-	included in the X Consortium's fix-11.
+	included in the X Consortium's fix-10.
     <item> A new accelerated server for Mach64 boards.
+    <item> Support for the S3 Trio32 and Trio64 chipsets.
+    <item> Support in the S3 server for the Chrontel 8391 clock chip.
+    <item> Support for SPEA Mercury P64 and MIRO Crystal 40SV.
     <item> Bug fixes and some performance improvements for most of the
 	accelerated servers.
     <item> Support for `double scan' video modes (most servers).
     <item> New chipset support for the SVGA server.  This includes the
 	Avance Logic 2228/2301, Chips &amp; Technology 655xx, Cirrus Logic
-	6440, and improved support for the Oak OTI-087.
+	6440, and Oak OTI-087.  Accelerated support is included for the
+	OTI-087.
     <item> Support for FreeBSD 2.0.
     <item> Preliminary support for OS/2 (client-only at this stage; this
 	is still under development).
@@ -47,12 +51,12 @@ October 1994:
 	url="S3.html" name="README.S3"> for details).
     <item> Support for ISC's SVR3 (only tested for 3.x and 4.x).
     <item> The `xf86config' utility for generating XF86Config files has
-	been improved and how uses a database of video cards.
+	been improved and now uses a database of video cards.
     <item> The X server LinkKit has been updated to include support for LBX.
-    <item> The slow X server startup time on machine without hardware
+    <item> The slow X server startup time on machines without hardware
 	floating point has been improved.
 </enum>
-Plus a number of other small.  Refer to the CHANGELOG file in the
+Plus a number of other small items.  Refer to the CHANGELOG file in the
 source distribution for full details.
 
 <sect> What's new in XFree86 3.1?
@@ -161,7 +165,8 @@ At this time, XFree86 3.1.1 supports the following accelerated chipsets:
 	CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
            CLGD5430, CLGD5434
     <tag/S3 /
-	86C911, 86C924, 86C801, 86C805, 86C805i, 86C928, 86C864, 86C964
+	86C911, 86C924, 86C801, 86C805, 86C805i, 86C928, 86C864, 86C964,
+	86C732, 86C764
     <tag/Western Digital /
 	WD90C31, WD90C33
     <tag/Weitek /
@@ -172,7 +177,7 @@ At this time, XFree86 3.1.1 supports the following accelerated chipsets:
 	ET4000/W32, ET4000/W32i, ET4000/W32p 
  </DESCRIP>
 
-The Cirrus and Western Digital accelerators are supported in the SVGA
+The Cirrus, Western Digital and Oak accelerators are supported in the SVGA
 server; the other chipsets each have their own server.  A list of some
 cards which the accelerated servers have been tested is included in the
 files AccelCards, Devices, and some of the chipset-specific <tt>README</tt> files.
@@ -221,9 +226,9 @@ the exception of the Advance Logic, MX, Chips &amp; Technology and Video 7
 chipsets, which are only
 supported in 256 color mode.
 
-Refer to the chipset-specific <tt>README</tt> files (currently for Cirrus, Tseng,
-Western Digital, ATI, Trident and Video 7) for more information about using
-those chipsets.
+Refer to the chipset-specific <tt>README</tt> files (currently for Cirrus,
+Tseng, Western Digital, ATI, Trident, Oak and Video 7) for more
+information about using those chipsets.
 
 The monochrome server also supports generic VGA cards, using 64k of video
 memory in a single bank, the Hercules monochrome card, the Hyundai HGC1280,
@@ -237,8 +242,7 @@ about 1600x1200 (with 1MB of video memory).  For other chipsets the display
 size is limited to approximately 800x600.
 
 
-<bf> Note:</bf>
-<quote>
+<bf>Note:</bf>
       The Diamond SpeedStar 24 (and possibly recent SpeedStar+) boards are
       NOT supported, even though they use the ET4000.  The Stealth 32 which
       uses the ET4000/W32p is also not supported.  Most other Diamond boards
@@ -248,7 +252,6 @@ size is limited to approximately 800x600.
       agreed to provide The XFree86 Project, Inc. with detailed information
       about Diamond products.  This should permit us to better support
       these in future versions of XFree86.
-</quote>
 
 
 <sect><heading><label id="Changes">Important Changes</>
@@ -267,7 +270,7 @@ The old <tt>Xconfig</tt> file has been replaced in XFree86 3.1 by an
 This is more than just a name change.  
 The new <tt>XF86Config</tt> file uses a format that is quite different
 from the old <tt>Xconfig</tt> file.   
-The new format is more structured, logical, and extendable than the
+The new format is more structured, logical, and extensible than the
 old format.  
 We realise that the transition to this new format won't be without
 problems.  
@@ -420,7 +423,7 @@ XFree86 support was integrated into the base X11R6 distribution by:
 </itemize>
 <tag/ISC SVR3 support by:  /
 <itemize>
-       <item> Michael Rohleder <it>&lt;michael.rohleder%iktffm.uucp@germany.eu.net&gt</it>
+       <item> Michael Rohleder <it>&lt;michael.rohleder&percnt;iktffm.uucp@germany.eu.net&gt</it>
 </itemize>
 <tag/Linux shared libraries by:  /
 <itemize>
@@ -476,6 +479,10 @@ XFree86 support was integrated into the base X11R6 distribution by:
 <itemize>
        <item> Mike Tierney <it>&lt;floyd@pepsi.eng.umd.edu&gt;</it>,
        <item> Bill Conn <it>&lt;conn@bnr.ca&gt;</it>
+</itemize>
+<tag/Oak Technologies Inc. accelerated code by:  /
+<itemize>
+       <item> Jorge Delgado <it>&lt;ernar@dit.upm.es&gt;</it>,
 </itemize>
 
 <tag/16 color VGA server by:  /
@@ -584,7 +591,7 @@ The XFree86 Project, Inc, has been founded to accomplish two major goals:
 	   X Consortium, Inc, the organization responsible for the
 	   design, development, and release of The X Window System.
 	<item> To provide some basic funding for acquisition of facilities for
-	   ongoing XFree86 development, largly to consist of new video
+	   ongoing XFree86 development, largely to consist of new video
 	   hardware and basic computing facilities.
 </enum>
 The first of these was the primary motivation.  We have held discussions
@@ -605,7 +612,7 @@ is still being determined.
 
 An additional benefit of this incorporation is that The XFree86 Project,
 Inc has obtained outside financial support for our work.  This will
-hopefully give us the freedom to be more proactive in obtaining new
+hopefully give us the freedom to be more pro-active in obtaining new
 video hardware, and enable us to release better products more quickly,
 as we will be able to go and get what we need, and get it into the hands
 of the people who can do the work.
@@ -666,12 +673,14 @@ involvement in X11R6.
   <item>  <url url="http://www.infomagic.com/"  
 	name="InfoMagic">, Rocky Hill, NJ
   <item>  LunetIX Softfair, Berlin, Germany
+  <item>  MIRO Computer Products AG, Braunschweig, Germany
   <item>  Rich &amp; Amy Murphey
   <item>  Brett Neumeier
   <item>  Number Nine, Lexington, MA
   <item>  Kazuyuki Okamoto, Japan
   <item>  Prime Time Freeware, San Bruno, CA
   <item>  Red Hat Software, Chapel Hill, NC
+  <item>  SPEA Software AG, Starnberg, Germany
   <item>  Clifford M Stein
   <item>  Joel Storm 
   <item>  S.u.S.E, GmbH, Fuerth, Germany
@@ -679,8 +688,9 @@ involvement in X11R6.
   <item>  Jim Tsillas
   <item>  Trans-Ameritech Enterprises, Inc., Santa Clara, CA
   <item>  Unifix Software GmbH, Braunschweig, Germany
-  <item>  Vixie Enterprises, La Honda, CA
-  <item>  <url url="//www.cdrom.com/"  
+  <item>  <url url="http://www.vix.com/"
+	       name="Vixie Enterprises">, La Honda, CA
+  <item>  <url url="http://www.cdrom.com/"  
 	name="Walnut Creek CDROM">, Concord, CA
   <item>  Xtreme s.a.s., Livorno, Italy
 </itemize>
@@ -693,7 +703,7 @@ information, contact The XFree86 Project, Inc, at
 <sect>Source and binary archive sites
 <p>
 
-Source patches are available to upgrade X11R6 PL11 from the X Consortium
+Source patches are available to upgrade X11R6 PL10 from the X Consortium
 to XFree86 3.1.1.  They and binaries for many OSs are available via anonymous
 FTP from:
 
@@ -741,7 +751,10 @@ and the following mirror sites:
 	name="ftp.gwdg.de:/pub/Xfree86">
 	(source and binaries)
 <item>   <url url="ftp://ftp.uni-stuttgart.de/pub/X11/Xfree86" 
-	name="ftp.uni-stuttgart.de:/Pub/X11/Xfree86">
+	name="ftp.uni-stuttgart.de:/pub/X11/Xfree86">
+	(source and binaries)
+<item>   <url url="ftp://fvkma.tu-graz.ac.at/pub/XFree86/3.1.1" 
+	name="fvkma.tu-graz.ac.at:/pub/X11/XFree86/3.1.1">
 	(source and binaries)
 <item>   <url url="ftp://ftp.funet.fi/pub/X11/XFree86" 
 	name="ftp.funet.fi:/pub/X11/XFree86">
@@ -797,8 +810,8 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XConsortium: README.sgml,v 1.1 95/01/06 20:29:55 kaleb Exp kaleb $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.7 1995/01/15 10:34:19 dawes Exp $
+$XConsortium: README.sgml,v 1.2 95/01/16 13:17:45 kaleb Exp kaleb $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.14 1995/01/23 01:30:05 dawes Exp $
 </verb>
 
 </article>
