@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Grip.c,v 1.18 88/09/06 09:56:04 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Grip.c,v 1.19 88/09/06 16:41:29 jim Exp $";
 #endif lint
 
 /***********************************************************
@@ -37,23 +37,20 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 #include <X11/GripP.h>
 
-static Dimension defDim = 8;
-static Dimension defBorder = 0;
-static Cursor defNone = None;
-
 static XtResource resources[] = {
    {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-      XtOffset(GripWidget, core.width), XtRDimension, (caddr_t)&defDim},
+      XtOffset(GripWidget, core.width), XtRImmediate, (caddr_t)8},
    {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-      XtOffset(GripWidget, core.height), XtRDimension, (caddr_t)&defDim},
-   {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
-      XtOffset(GripWidget, core.background_pixel), XtRString, "Black"},
+      XtOffset(GripWidget, core.height), XtRImmediate, (caddr_t)8},
+   {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
+      XtOffset(GripWidget, core.background_pixel), XtRString,
+	"XtDefaultForeground"},
    {XtNborderWidth, XtCBorderWidth, XtRDimension, sizeof(Dimension),
-      XtOffset(GripWidget, core.border_width), XtRDimension, (caddr_t)&defBorder},
+      XtOffset(GripWidget, core.border_width), XtRImmediate, (caddr_t)0},
    {XtNcallback, XtCCallback, XtRCallback, sizeof(caddr_t), 
       XtOffset(GripWidget, grip.grip_action), XtRCallback, NULL},
    {XtNcursor, XtCCursor, XtRCursor, sizeof(Cursor),
-      XtOffset(GripWidget, grip.cursor), XtRCursor, (caddr_t)&defNone}
+      XtOffset(GripWidget, grip.cursor), XtRImmediate, (caddr_t)None},
 };
 
 void GripAction( /* Widget, XEvent*, String*, Cardinal */ );
