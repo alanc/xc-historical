@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.123 87/09/07 13:39:36 toddb Locked $ */
+/* $Header: main.c,v 1.124 87/09/07 18:17:41 rws Locked $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -49,7 +49,6 @@ char *ConnectionInfo;
 xConnSetupPrefix connSetupPrefix;
 
 extern WindowRec WindowTable[];
-extern xColorItem screenWhite, screenBlack;
 extern FontPtr defaultFont;
 
 extern void SetInputCheck();
