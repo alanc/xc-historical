@@ -93,7 +93,7 @@ void EndScroll(xp, p)
 {
 }
 
-void InitCopyLocations(xp, p, reps)
+static void InitCopyLocations(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
@@ -155,7 +155,7 @@ void InitCopyLocations(xp, p, reps)
 }
 
 
-int InitCopyArea(xp, p, reps)
+int InitCopyWin(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
@@ -170,13 +170,12 @@ int InitCopyPix(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    (void) InitCopyArea(xp, p, reps);
+    (void) InitCopyWin(xp, p, reps);
 
     /* Create pixmap to write stuff into, and initialize it */
     pix = XCreatePixmap(xp->d, xp->w, WIDTH, HEIGHT,
 		DefaultDepth(xp->d, DefaultScreen(xp->d)));
     XCopyArea(xp->d, xp->w, pix, xp->fggc, 0, 0, WIDTH, HEIGHT, 0, 0);
-    XClearWindow(xp->d, xp->w);
     return reps;
 }
 
@@ -185,7 +184,7 @@ Bool InitGetImage(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    (void) InitCopyArea(xp, p, reps);
+    (void) InitCopyWin(xp, p, reps);
 
     /* Create image to stuff bits into */
     image = XGetImage(xp->d, xp->w, 0, 0, WIDTH, HEIGHT, ~0, ZPixmap);
@@ -202,46 +201,58 @@ Bool InitPutImage(xp, p, reps)
     return reps;
 }
 
-void DoCopyArea(xp, p, reps)
+static void CopyArea(xp, p, reps, src, dst)
     XParms  xp;
     Parms   p;
     int     reps;
+    Drawable src, dst;
 {
     int i, size;
     XSegment *sa, *sb;
 
     size = p->special;
     for (sa = segsa, sb = segsb, i = 0; i != reps; i++, sa++, sb++) {
-	XCopyArea(xp->d, xp->w, xp->w, xp->fggc,
+	XCopyArea(xp->d, src, dst, xp->fggc,
 	    sa->x1, sa->y1, size, size, sa->x2, sa->y2);
-	XCopyArea(xp->d, xp->w, xp->w, xp->fggc,
+	XCopyArea(xp->d, src, dst, xp->fggc,
 	    sa->x2, sa->y2, size, size, sa->x1, sa->y1);
-	XCopyArea(xp->d, xp->w, xp->w, xp->fggc,
+	XCopyArea(xp->d, src, dst, xp->fggc,
 	    sb->x2, sb->y2, size, size, sb->x1, sb->y1);
-	XCopyArea(xp->d, xp->w, xp->w, xp->fggc,
+	XCopyArea(xp->d, src, dst, xp->fggc,
 	    sb->x1, sb->y1, size, size, sb->x2, sb->y2);
     }
 }
 
-void DoCopyPix(xp, p, reps)
+void DoCopyWinWin(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
 {
-    int i, size;
-    XSegment *sa, *sb;
+    CopyArea(xp, p, reps, xp->w, xp->w);
+}
 
-    size = p->special;
-    for (sa = segsa, sb = segsb, i = 0; i != reps; i++, sa++, sb++) {
-	XCopyArea(xp->d, pix, xp->w, xp->fggc,
-	    sa->x1, sa->y1, size, size, sa->x2, sa->y2);
-	XCopyArea(xp->d, pix, xp->w, xp->fggc,
-	    sa->x2, sa->y2, size, size, sa->x1, sa->y1);
-	XCopyArea(xp->d, pix, xp->w, xp->fggc,
-	    sb->x2, sb->y2, size, size, sb->x1, sb->y1);
-	XCopyArea(xp->d, pix, xp->w, xp->fggc,
-	    sb->x1, sb->y1, size, size, sb->x2, sb->y2);
-    }
+void DoCopyPixWin(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    CopyArea(xp, p, reps, pix, xp->w);
+}
+
+void DoCopyWinPix(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    CopyArea(xp, p, reps, xp->w, pix);
+}
+
+void DoCopyPixPix(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    CopyArea(xp, p, reps, pix, pix);
 }
 
 void DoGetImage(xp, p, reps)
@@ -393,7 +404,7 @@ void MidCopyPix(xp, p)
     XClearWindow(xp->d, xp->w);
 }
 
-void EndCopyArea(xp, p)
+void EndCopyWin(xp, p)
     XParms  xp;
     Parms   p;
 {
@@ -406,7 +417,7 @@ void EndCopyPix(xp, p)
     XParms  xp;
     Parms   p;
 {
-    EndCopyArea(xp, p);
+    EndCopyWin(xp, p);
     XFreePixmap(xp->d, pix);
 }
 
@@ -414,7 +425,7 @@ void EndGetImage(xp, p)
     XParms  xp;
     Parms   p;
 {
-    EndCopyArea(xp, p);
+    EndCopyWin(xp, p);
     XDestroyImage(image);
 }
 
