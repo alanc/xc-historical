@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.c,v 1.4 89/02/07 18:01:47 kit Exp $
+ * $XConsortium: man.c,v 1.5 89/02/14 16:08:01 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -45,8 +45,6 @@ typedef struct _SectionList {
  *	Description: Builds a list of all manual directories and files.
  *	Arguments: none. 
  *	Returns: the number of manual sections.
- *
- *      NOTE: This function maintains internal state.
  */
 
 int
