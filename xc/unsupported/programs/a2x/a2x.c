@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.41 92/04/05 17:48:36 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.42 92/04/05 19:01:47 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -29,7 +29,7 @@ Syntax of magic values in the input stream:
 ^T^C			set Control key for next character
 ^T^D<dx> <dy>^T		move mouse by (<dx>, <dy>) pixels
 ^T^E			exit the program
-^T^J<options> [mult]^T	jump to next closest top-level window
+^T^J<options>[ <mult>]^T jump to next closest top-level window
 	C		closest top-level window
 	D		top-level window going down
 	L		top-level window going left
@@ -42,7 +42,7 @@ Syntax of magic values in the input stream:
 	u		top-level widget going up
 	k		require windows that select for key events
 	b		require windows that select for button events
-	[mult]		off-axis distance multiplier
+	[mult]		off-axis distance multiplier (float)
 ^T^M			set Meta key for next character
 ^T^P			print debugging info
 ^T^Q			quit moving (mouse or key)
@@ -518,8 +518,9 @@ do_warp(buf)
 }
 
 Region
-compute_univ(puniv, w, wa, level)
+compute_univ(puniv, iuniv, w, wa, level)
     Region puniv;
+    Region iuniv;
     Window w;
     XWindowAttributes *wa;
     int level;
@@ -531,12 +532,13 @@ compute_univ(puniv, w, wa, level)
     Region univ;
 
     univ = XCreateRegion();
+    XIntersectRegion(iuniv, univ, iuniv);
     if (!level &&
 	(rects = XShapeGetRectangles(dpy, w, ShapeBounding, &n, &order))) {
 	while (--n >= 0) {
 	    rects[n].x += wa->x;
 	    rects[n].y += wa->y;
-	    XUnionRectWithRegion(&rects[n], univ, univ);
+	    XUnionRectWithRegion(&rects[n], iuniv, iuniv);
 	}
 	XFree((char *)rects);
     } else {
@@ -544,13 +546,14 @@ compute_univ(puniv, w, wa, level)
 	rect.y = wa->y;
 	rect.width = wa->width + (2 * wa->border_width);
 	rect.height = wa->height + (2 * wa->border_width);
-	XUnionRectWithRegion(&rect, univ, univ);
+	XUnionRectWithRegion(&rect, iuniv, iuniv);
     }
-    XIntersectRegion(puniv, univ, univ);
+    XIntersectRegion(puniv, iuniv, univ);
     if (XEmptyRegion(univ)) {
 	XDestroyRegion(univ);
 	return NULL;
     }
+    XSubtractRegion(iuniv, univ, iuniv);
     XSubtractRegion(puniv, univ, puniv);
     return univ;
 }
@@ -567,6 +570,19 @@ compute_box(univ, box)
     box->y1 = rect.y;
     box->x2 = rect.x + (int)rect.width;
     box->y2 = rect.y + (int)rect.height;
+}
+
+Bool
+box_left(univ, iuniv)
+    Region univ;
+    Region iuniv;
+{
+    XRectangle rect;
+
+    XUnionRegion(iuniv, univ, iuniv);
+    XClipBox(iuniv, &rect);
+    return (XRectInRegion(iuniv, rect.x, rect.y, rect.width, rect.height) ==
+	    RectangleIn);
 }
 
 void
@@ -654,13 +670,17 @@ find_closest(rec, parent, pwa, puniv, level)
     unsigned int nchild;
     XWindowAttributes wa;
     int i;
-    Bool found = False;
+    Bool found;
     double dist;
     BBox box;
     int x, y;
-    Region univ;
+    Region iuniv, univ;
 
     XQueryTree(dpy, parent, &wa.root, &wa.root, &children, &nchild);
+    if (!nchild)
+	return False;
+    found = False;
+    iuniv = XCreateRegion();
     univ = NULL;
     for (i = nchild; --i >= 0; univ = destroy_region(univ)) {
 	if (!XGetWindowAttributes(dpy, children[i], &wa))
@@ -669,7 +689,7 @@ find_closest(rec, parent, pwa, puniv, level)
 	    continue;
 	wa.x += pwa->x;
 	wa.y += pwa->y;
-	univ = compute_univ(puniv, children[i], &wa, level);
+	univ = compute_univ(puniv, iuniv, children[i], &wa, level);
 	if (!univ)
 	    continue;
 	compute_box(univ, &box);
@@ -698,7 +718,7 @@ find_closest(rec, parent, pwa, puniv, level)
 	    continue;
 	if (XEmptyRegion(univ))
 	    continue;
-	if (XPointInRegion(univ, rec->rootx, rec->rooty))
+	if (rec->recurse && !box_left(univ, iuniv))
 	    continue;
 	compute_box(univ, &box);
 	switch (rec->dir) {
@@ -728,7 +748,9 @@ find_closest(rec, parent, pwa, puniv, level)
 		y = rec->rooty;
 	    x = (rec->dir == 'R') ? box.x1 : box.x2;
 	    break;
-	default:
+	case 'C':
+	    if (XPointInRegion(univ, rec->rootx, rec->rooty))
+		continue;
 	    if (box.x2 < rec->rootx)
 		x = box.x2;
 	    else if (box.x1 > rec->rootx)
