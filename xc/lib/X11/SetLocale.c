@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.22 91/04/03 10:39:55 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.23 91/04/07 16:37:09 rws Exp $
  */
 
 /*
@@ -39,43 +39,12 @@
 #define MAXLOCALE	64	/* buffer size of locale name */
 
 XLocale		_Xlocale_ = (XLocale)0;		/* global locale */
-XLocaleTable   *_Xlctbl_ = (XLocaleTable *)0;	/* locale data base table */
+
 #ifndef lint
 static int lock;
-static int lock_tbl;
 #endif
 
 #define XREALLOC(p, size)	((p) ? Xrealloc(p, size) : Xmalloc(size))
-
-static XLocaleDB *
-_XSetLocaleDB(lc_name)
-    char	*lc_name;	/* locale name */
-{
-    XLocaleDB	     *template;
-    extern XLocaleDB *_XlcGetLocaleTemplate();
-    extern XLocaleDB *_XlcLoadTemplate();
-
-    LockMutex(&lock_tbl);
-
-    if (_Xlctbl_ == (XLocaleTable *)0) {
-	_Xlctbl_ = (XLocaleTable *) Xmalloc(sizeof(XLocaleTable));
-	if (!_Xlctbl_) {
-	    UnlockMutex(&lock_tbl);
-	    return (XLocaleDB *)0;
-	}
-	_Xlctbl_->num_loc = 0;
-	_Xlctbl_->template = (XLocaleList *)0;
-    }
-    /* set current locale from template. */
-    if ((template = _XlcGetLocaleTemplate(lc_name)) == (XLocaleDB *)0) {
-	if ((template = _XlcLoadTemplate(lc_name)) == (XLocaleDB *)0) {
-	    UnlockMutex(&lock_tbl);
-	    return((XLocaleDB *)0);
-	}
-    }
-    UnlockMutex(&lock_tbl);
-    return (template);
-}
 
 #ifndef X_NOT_STDC_ENV
 static char *_XGetOSLocaleName();
@@ -93,6 +62,7 @@ _XChangeLocale(xlocale, lc_category, lc_name)
     char       *lc_alias;
     char	lang[256];
     char	*_XlcResolveName();
+    XLocaleDB	*_XlcSetLocaleDB();
 
     if (lc_name == NULL && xlocale)
 	return (True);
@@ -113,7 +83,7 @@ _XChangeLocale(xlocale, lc_category, lc_name)
     }
 
     if (! (xlocale->lc_lang = XREALLOC(xlocale->lc_lang,
-				      (unsigned)strlen(lc_name) + 1)))
+				       (unsigned)strlen(lc_name) + 1)))
 	return (False);
     strcpy(xlocale->lc_lang, lc_name);
 
@@ -130,7 +100,7 @@ _XChangeLocale(xlocale, lc_category, lc_name)
     strncpy(lang, lc_alias, i);
     lang[i] = '\0';
 
-    if (! (xlocale->xlc_db = _XSetLocaleDB(lang)))
+    if (! (xlocale->xlc_db = _XlcSetLocaleDB(lang)))
 	return (False);
 
     return (True);
@@ -160,6 +130,31 @@ _XSetLocale(lc_category, lc_name)
     }
     return (xlocale);
 }
+
+#ifdef	XML
+void
+_XIMChangeLocale(ic, lc_name)
+    XipIC ic;
+    char *lc_name;
+{
+    XLocale xlc;
+    int i;
+
+    for (i = 0; i < ic->xlc_num; i++) {
+	if ((!strcmp(lc_name, ic->mb_temp[i]->lc_lang)) ||
+	    (!strcmp(lc_name, ic->mb_temp[i]->xlc_db->lc_name))) {
+	    ic->mb = ic->mb_temp[i];
+	    ic->wc = ic->wc_temp[i];
+	    return;
+	}
+    }
+    xlc = _XSetLocale(LC_ALL, lc_name);
+    ic->mb = ic->mb_temp[ic->xlc_num] = xlc;
+    ic->wc = ic->wc_temp[ic->xlc_num] = _XlcDupLocale(xlc);
+    ic->xlc_num++;
+    return;
+}
+#endif	/* XML */
 
 char *
 _Xsetlocale(lc_category, lc_name)
