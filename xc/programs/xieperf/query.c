@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_query.c,v 1.1 93/07/19 13:03:36 rws Exp $ */
 
 /**** module do_query.c ****/
 /******************************************************************************
@@ -119,10 +119,10 @@ int InitQueryPhotoflo(xp, p, reps)
         }
 
         lutSize = 1 << p->levelsIn;
-        lut1 = malloc( lutSize * sizeof( unsigned char ) );
+        lut1 = (unsigned char *)malloc( lutSize * sizeof( unsigned char ) );
         if ( lut1 == ( unsigned char * ) NULL )
                 return 0;
-        lut2 = malloc( lutSize * sizeof( unsigned char ) );
+        lut2 = (unsigned char *)malloc( lutSize * sizeof( unsigned char ) );
         if ( lut2 == ( unsigned char * ) NULL )
         {
                 XieFreePhotofloGraph(flograph,2);

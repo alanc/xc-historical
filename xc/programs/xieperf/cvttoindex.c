@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_converttoindex.c,v 1.1 93/07/19 13:02:18 rws Exp $ */
 
 /**** module do_converttoindex.c ****/
 /******************************************************************************
@@ -212,7 +212,7 @@ void DoConvertToIndex(xp, p, reps)
 			clist,	
 			False,
 			xieValColorAllocAll,
-			color_param
+			(char *)color_param
 		);
 		
 		XSync( xp->d, 0 );

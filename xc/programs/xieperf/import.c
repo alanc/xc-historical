@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_import.c,v 1.1 93/07/19 13:02:50 rws Exp $ */
 
 /**** module do_import.c ****/
 /******************************************************************************
@@ -145,7 +145,7 @@ int InitImportLUT(xp, p, reps)
 	int lutSize, i;
 
 	lutSize = ( 1 << xp->vinfo.depth ) * sizeof( unsigned char );
-	lut = malloc( lutSize );
+	lut = (unsigned char *)malloc( lutSize );
 	if ( lut == ( unsigned char * ) NULL )
 		reps = 0;
 	else
@@ -180,7 +180,7 @@ int InitImportROI(xp, p, reps)
 	int     rectsSize, i;
 
 	rectsSize = 10;
-	rects = malloc( rectsSize * sizeof( XieRectangle ) );
+	rects = (XieRectangle *)malloc( rectsSize * sizeof( XieRectangle ) );
 	if ( rects == ( XieRectangle * ) NULL )
 		reps = 0;
 	else

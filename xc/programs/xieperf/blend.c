@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_blend.c,v 1.1 93/07/19 13:02:05 rws Exp $ */
 
 /**** module do_blend.c ****/
 /******************************************************************************
@@ -158,7 +158,7 @@ int InitROIBlendMonadic(xp, p, reps)
 		}
         }
         rectsSize = 5;
-        rects = malloc( rectsSize * sizeof( XieRectangle ) );
+        rects = (XieRectangle *)malloc( rectsSize * sizeof( XieRectangle ) );
         if ( rects == ( XieRectangle * ) NULL )
                 reps = 0;
         else
@@ -216,7 +216,7 @@ int InitROIBlendDyadic(xp, p, reps)
 		}
         }
         rectsSize = 5;
-        rects = malloc( rectsSize * sizeof( XieRectangle ) );
+        rects = (XieRectangle *)malloc( rectsSize * sizeof( XieRectangle ) );
         if ( rects == ( XieRectangle * ) NULL )
                 reps = 0;
         else
@@ -328,7 +328,7 @@ void DoBlendMonadicImmediate(xp, p, reps)
 			i,
 			levels,
 			tech,
-			parms
+			(char *)parms
 		); i++;		
 	}	
 	XieFloExportDrawable(&flograph[i],
@@ -417,7 +417,7 @@ void DoBlendDyadicImmediate(xp, p, reps)
 			i,
 			levels,
 			tech,
-			parms
+			(char *)parms
 		); i++;
 	}
 
@@ -508,7 +508,7 @@ void DoROIBlendMonadicImmediate(xp, p, reps)
 			i,
 			levels,
 			tech,
-			parms
+			(char *)parms
 		); i++;
 	}
 
@@ -602,7 +602,7 @@ void DoROIBlendDyadicImmediate(xp, p, reps)
 			i,
 			levels,
 			tech,
-			parms
+			(char *)parms
 		); i++;
 	}
        XieFloExportDrawable(&flograph[i],

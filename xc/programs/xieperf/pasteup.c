@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_pasteup.c,v 1.1 93/07/19 13:03:17 rws Exp $ */
 
 /**** module do_pasteup.c ****/
 /******************************************************************************
@@ -53,6 +53,8 @@ terms and conditions:
 
 #define NTILES 16	/* has an integer square root and be a power of 2 */
 #define	SPLIT  4 	/* square root of NTILES */
+
+static int BuildPasteUpFlograph();
 
 static XiePhotomap XIEPhotomap;
 static XiePhotomap segments[NTILES];		
@@ -269,7 +271,7 @@ int	height;
                         size + 1,
                         levels,
                         tech,
-                        parms
+                        (char *)parms
                 );
         }
 

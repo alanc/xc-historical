@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_modify.c,v 1.1 93/07/19 13:03:10 rws Exp $ */
 
 /**** module do_modify.c ****/
 /******************************************************************************
@@ -51,6 +51,10 @@ terms and conditions:
 #include "xieperf.h"
 #include <stdio.h>
 
+static int BuildModifyPointFlograph();
+static int BuildModifySimpleFlograph();
+static int BuildModifyROIFlograph();
+
 static XiePhotomap XIEPhotomap;
 static XieRoi XIERoi1, XIERoi2;
 static XieLut XIELut1, XIELut2;
@@ -82,7 +86,7 @@ int InitModifyROI(xp, p, reps)
 		}
         }
         rectsSize = 4;
-        rects = malloc( rectsSize * sizeof( XieRectangle ) );
+        rects = (XieRectangle *)malloc( rectsSize * sizeof( XieRectangle ) );
         if ( rects == ( XieRectangle * ) NULL )
 	{
                 reps = 0;
@@ -182,7 +186,7 @@ XiePhotoElement **flograph;
 			3,
 			levels,
 			tech,
-			parms
+			(char *)parms
 		);
 	}
 
@@ -254,7 +258,7 @@ int InitModifyPoint(xp, p, reps)
         int     lutSize, i;
 
         lutSize = 1 << xp->vinfo.depth;
-        lut = malloc( lutSize * sizeof( unsigned char ) );
+        lut = (unsigned char *)malloc( lutSize * sizeof( unsigned char ) );
         if ( lut == ( unsigned char * ) NULL )
 		return( 0 );
 	for ( i = 0; i < lutSize; i++ )
@@ -268,7 +272,7 @@ int InitModifyPoint(xp, p, reps)
 		return( 0 );
 	}
 	free( lut );
-        lut = malloc( lutSize * sizeof( unsigned char ) );
+        lut = (unsigned char *)malloc( lutSize * sizeof( unsigned char ) );
         if ( lut == ( unsigned char * ) NULL )
 	{
 		XieDestroyLUT( xp->d, XIELut1 );
@@ -446,7 +450,7 @@ XiePhotoElement **flograph;
                         1,
                         levels,
                         tech,
-                        parms
+                        (char *)parms
                 );
         }
 

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_point.c,v 1.1 93/07/19 13:03:23 rws Exp $ */
 
 /**** module do_point.c ****/
 /******************************************************************************
@@ -79,7 +79,7 @@ int InitPoint(xp, p, reps)
         }
 
 	lutSize = 1 << p->levelsIn;
-	lut = malloc( lutSize * sizeof( unsigned char ) );
+	lut = (unsigned char *)malloc( lutSize * sizeof( unsigned char ) );
 	if ( lut == ( unsigned char * ) NULL )
 		reps = 0;
 	else if ( p->levelsIn == 8 && p->levelsOut == 8 )
@@ -173,7 +173,7 @@ void DoPointImmediate(xp, p, reps)
 			3,
 			levels,
 			tech,
-			parms
+			(char *)parms
 		);
 	}
 
@@ -263,7 +263,7 @@ void DoPointStored(xp, p, reps)
 			3,
 			levels,
 			tech,
-			parms
+			(char *)parms
 		);
 	}
 

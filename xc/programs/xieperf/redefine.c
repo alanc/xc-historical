@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_redefine.c,v 1.1 93/07/19 13:03:42 rws Exp $ */
 
 /**** module do_redefine.c ****/
 /******************************************************************************
@@ -50,6 +50,8 @@ terms and conditions:
 *****************************************************************************/
 #include "xieperf.h"
 #include <stdio.h>
+
+static int BuildRedefineFlograph();
 
 static XiePhotomap XIEPhotomap;
 static XieLTriplet levels;
@@ -140,7 +142,7 @@ unsigned long op;
 			2,
 			levels,
 			tech,
-			parms
+			(char *)parms
 		);
 	}
 	XieFloExportDrawable(&(*flograph)[flo_elements - 1],

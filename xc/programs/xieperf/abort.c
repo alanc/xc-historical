@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_abort.c,v 1.1 93/07/19 13:01:51 rws Exp $ */
 
 /**** module do_abort.c ****/
 /******************************************************************************
@@ -50,6 +50,8 @@ terms and conditions:
 *****************************************************************************/
 #include "xieperf.h"
 #include <stdio.h>
+
+static int AbortAndWaitForEvent();
 
 static XieLut XIELut;
 static XiePhotoElement *flograph;

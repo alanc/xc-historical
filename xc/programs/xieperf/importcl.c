@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_importclient.c,v 1.1 93/07/19 13:02:57 rws Exp $ */
 
 /**** module do_importclient.c ****/
 /******************************************************************************
@@ -81,7 +81,7 @@ int InitImportClientLUT(xp, p, reps)
 	XIELut = XieCreateLUT(xp->d);
 
 	lutSize = ( 1 << xp->vinfo.depth ) * sizeof( unsigned char );
-	lut = malloc( lutSize );
+	lut = (unsigned char *)malloc( lutSize );
 	if ( lut == ( unsigned char * ) NULL )
 		reps = 0;
 	else
@@ -104,7 +104,7 @@ int InitImportClientROI(xp, p, reps)
 	XIERoi = XieCreateROI( xp->d );
 
 	rectsSize = 10;
-	rects = malloc( rectsSize * sizeof( XieRectangle ) );
+	rects = (XieRectangle *)malloc( rectsSize * sizeof( XieRectangle ) );
 	if ( rects == ( XieRectangle * ) NULL )
 		reps = 0;
 	else
@@ -160,7 +160,7 @@ void DoImportClientPhotoImmediate(xp, p, reps)
 		p->class,
 		width, height, levels,
 		False,
-		p->decode, decode_params
+		p->decode, (char *)decode_params
 	);
 
 	XieFloExportPhotomap(&flograph[1],
@@ -228,7 +228,7 @@ void DoImportClientPhotoStored(xp, p, reps)
 		p->class,
 		width, height, levels,
 		False,
-		p->decode, decode_params
+		p->decode, (char *)decode_params
 	);
 
         XieFloExportPhotomap(&flograph[1],

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_logical.c,v 1.1 93/07/19 13:03:04 rws Exp $ */
 
 /**** module do_logical.c ****/
 /******************************************************************************
@@ -127,7 +127,7 @@ int InitROILogicalMonadic(xp, p, reps)
 		}
         }
         rectsSize = 5;
-        rects = malloc( rectsSize * sizeof( XieRectangle ) );
+        rects = (XieRectangle *)malloc( rectsSize * sizeof( XieRectangle ) );
         if ( rects == ( XieRectangle * ) NULL )
                 reps = 0;
         else
@@ -171,7 +171,7 @@ int InitROILogicalDyadic(xp, p, reps)
 		}
         }
         rectsSize = 5;
-        rects = malloc( rectsSize * sizeof( XieRectangle ) );
+        rects = (XieRectangle *)malloc( rectsSize * sizeof( XieRectangle ) );
         if ( rects == ( XieRectangle * ) NULL )
                 reps = 0;
         else
@@ -256,7 +256,7 @@ void DoLogicalMonadicImmediate(xp, p, reps)
 			2,
 			levels,
 			tech,
-			parms
+			(char *)parms
 		); 		
 	}	
 	XieFloExportDrawable(&flograph[flo_elements - 1],
@@ -336,7 +336,7 @@ void DoLogicalDyadicImmediate(xp, p, reps)
 			3,
 			levels,
 			tech,
-			parms
+			(char *)parms
 		);
 	}
 
@@ -417,7 +417,7 @@ void DoROILogicalMonadicImmediate(xp, p, reps)
 			3,
 			levels,
 			tech,
-			parms
+			(char *)parms
 		);
 	}
 
@@ -502,7 +502,7 @@ void DoROILogicalDyadicImmediate(xp, p, reps)
 			4,
 			levels,
 			tech,
-			parms
+			(char *)parms
 		);
 	}
        XieFloExportDrawable(&flograph[flo_elements - 1],

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_exportclient.c,v 1.1 93/07/19 13:02:37 rws Exp $ */
 
 /**** module do_exportclient.c ****/
 /******************************************************************************
@@ -78,8 +78,8 @@ int InitExportClientLUT(xp, p, reps)
 	int	i;
 
 	lutSize = ( 1 << xp->vinfo.depth ) * sizeof( unsigned char );
-	lut = malloc( lutSize );
-	p->data = malloc( lutSize );
+	lut = (unsigned char *)malloc( lutSize );
+	p->data = (char *)malloc( lutSize );
 	if ( lut == ( unsigned char * ) NULL || p->data == ( char * ) NULL )
 	{
 		if ( lut )
@@ -111,8 +111,8 @@ int InitExportClientROI(xp, p, reps)
 	int	i;
 
 	rectsSize = 10;
-	rects = malloc( rectsSize * sizeof( XieRectangle ) );
-	p->data = malloc( rectsSize * sizeof( XieRectangle ) );
+	rects = (XieRectangle *)malloc( rectsSize * sizeof( XieRectangle ) );
+	p->data = (char *)malloc( rectsSize * sizeof( XieRectangle ) );
 	if ( rects == ( XieRectangle * ) NULL || p->data == ( char * ) NULL )
 	{
 		reps = 0;

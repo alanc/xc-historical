@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_await.c,v 1.1 93/07/19 13:01:58 rws Exp $ */
 
 /**** module do_await.c ****/
 /******************************************************************************
@@ -76,7 +76,7 @@ int InitAwait(xp, p, reps)
 	xplocal = xp;		/* so the signal handler can access it */
 
         lutSize = ( 1 << xp->vinfo.depth ) * sizeof( unsigned char );
-        lut = malloc( lutSize );
+        lut = (unsigned char *)malloc( lutSize );
         if ( lut == ( unsigned char * ) NULL )
 	{
 		fprintf( stderr, "malloc failed\n" );
@@ -145,8 +145,13 @@ int InitAwait(xp, p, reps)
 	return( reps );
 }
 
+#ifdef SIGNALRETURNSINT
+int
+#else
 void
-AwaitHandler()
+#endif
+AwaitHandler(sig)
+    int sig;
 {
 	XieExtensionInfo *xieInfo;
 	int	pid;

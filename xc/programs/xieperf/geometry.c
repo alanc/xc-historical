@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_geometry.c,v 1.1 93/07/19 13:02:44 rws Exp $ */
 
 /**** module do_logical.c ****/
 /******************************************************************************
@@ -155,7 +155,7 @@ void DoGeometry(xp, p, reps)
 			idx,
 			levels,
 			tech,
-			parms
+			(char *)parms
 		); idx++;		
 	}	
 
@@ -270,7 +270,7 @@ void DoGeometryFAX(xp, p, reps)
                 p->class,
                 width, height, mylevels,
                 False,
-                p->decode, G42Ddecode_params
+                p->decode, (char *)G42Ddecode_params
         ); idx++;
  
 	geo_tech = p->geo.geoTech;
@@ -284,7 +284,7 @@ void DoGeometryFAX(xp, p, reps)
 			idx,
 			levels,
 			tech,
-			parms
+			(char *)parms
 		); idx++;		
 	}	
 

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xieperf.c,v 1.1 93/07/19 13:04:19 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -1195,7 +1195,7 @@ fflush( stderr );
                         element,              /* element */
                         final,          /* signal that this is all the data */
                         0,              /* band_number */
-                        data,
+                        (unsigned char *)data,
                         nbytes
                 );
 #if 0
@@ -1234,7 +1234,7 @@ unsigned int nbytes;
 	{  
         	XieGetClientData ( xp->d, namespace, flo_id, element,  
 			bytes > 2048 ? 2048 : bytes, terminate, 0,
-			&new_state_ret, &cp, &nbytes_ret );
+			&new_state_ret, (unsigned char **)&cp, &nbytes_ret );
 
 /* this rots */
 
@@ -1286,14 +1286,24 @@ char *arg;
 
 static int sigFloFinishedSeen, sigExportClientSeen;
 
+#ifdef SIGNALRETURNSINT
+int
+#else
 void
-SigFloFinishedHandler()
+#endif
+SigFloFinishedHandler(sig)
+    int sig;
 {
 	sigFloFinishedSeen = 1;
 }
 
+#ifdef SIGNALRETURNSINT
+int
+#else
 void
-SigExportClientHandler()
+#endif
+SigExportClientHandler(sig)
+    int sig;
 {
 	sigExportClientSeen = 1;
 }
@@ -1485,7 +1495,7 @@ int	which;
                 p->class,
                 width, height, levels,
                 False,
-                p->decode, decode_params
+                p->decode, (char *)decode_params
         );
 
         XieFloExportPhotomap(&flograph[1],
@@ -1591,7 +1601,7 @@ int	which;
                 p->class,
                 width, height, levels,
                 False,
-                p->decode, decode_params
+                p->decode, (char *)decode_params
         );
 
         XieFloExportPhotomap(&flograph[1],
@@ -1691,7 +1701,7 @@ int	which;
                 p->class,
                 width, height, levels,
                 False,
-                p->decode, decode_params
+                p->decode, (char *)decode_params
         );
 
         XieFloExportPhotomap(&flograph[1],
@@ -1796,7 +1806,7 @@ int	which;
                 p->class,
                 width, height, levels,
                 False,
-                p->decode, decode_params
+                p->decode, (char *)decode_params
         );
 
 	if ( monoflag)
@@ -1805,7 +1815,7 @@ int	which;
 			1,
 			MONOlevels,
 			MONOtech,
-			MONOparms
+			(char *)MONOparms
 		);
 	}
 
@@ -1915,7 +1925,7 @@ int	which;
                 p->class,
                 width, height, levels,
                 False,
-                p->decode, decode_params
+                p->decode, (char *)decode_params
         );
 
         if ( monoflag )
@@ -1924,7 +1934,7 @@ int	which;
 			1,
 			MONOlevels,
 			MONOtech,
-			MONOparms
+			(char *)MONOparms
 		);
 	}
 
@@ -2021,7 +2031,7 @@ int	which;
                 p->class,
                 width, height, levels,
                 False,
-                p->decode, decode_params
+                p->decode, (char *)decode_params
         );
 
         levels[ 0 ] = 2;		/* bitonal */
@@ -2116,7 +2126,7 @@ int	which;
 
         /* allocate the data buffer */
 
-        if ( ( p->data = malloc( *size ) ) == ( char * ) NULL )
+        if ( ( p->data = (char *)malloc( *size ) ) == ( char * ) NULL )
         {
                 fprintf( stderr, "Couldn't allocate buffer\n" );
                 goto out;
