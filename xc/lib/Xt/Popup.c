@@ -1,4 +1,4 @@
-/* $XConsortium: Popup.c,v 1.28 90/12/28 17:25:33 gildea Exp $ */
+/* $XConsortium: Popup.c,v 1.29 91/05/06 19:49:15 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -67,7 +67,9 @@ void _XtPopup(widget, grab_kind, spring_loaded)
 	}
 	XtRealizeWidget(widget);
 	XMapRaised(XtDisplay(widget), XtWindow(widget));
-    }
+    } else
+	XRaiseWindow(XtDisplay(widget), XtWindow(widget));
+
 } /* _XtPopup */
 
 void XtPopup (widget, grab_kind)
