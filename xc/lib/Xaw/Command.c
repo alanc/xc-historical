@@ -1,5 +1,5 @@
 #ifndef lint
-static char *sccsid = "@(#)Command.c	1.13	2/25/87";
+static char *sccsid = "@(#)Command.c	1.15	2/25/87";
 #endif lint
 
 /*
@@ -26,45 +26,116 @@ static char *sccsid = "@(#)Command.c	1.13	2/25/87";
  */
 
 
+/*
+ * Command.c - Command button widget
+ *
+ * Rewritten for beta toolkit
+ * Author:      Mark Ackerman
+ *              MIT/Project Athena
+ * Date:        August 27, 1987
+ *
+ * from Command.c (XToolkit, alpha version)
+ *              Charles Haynes
+ *              Digital Equipment Corporation
+ *              Western Research Laboratory
+ */
+
+#define XtStrlen(s)	((s) ? strlen(s) : 0)
+
+  /* The following are defined for the reader's convenience.  Any
+     Xt..Field macro in this code just refers to some field in
+     one of the substructures of the WidgetRec.  */
+
 #include <stdio.h>
 #include <string.h>
-#include "Xlib.h"
+#include <ctype.h>
 #include "Intrinsic.h"
 #include "Label.h"
+#include "LabelPrivate.h"
 #include "Command.h"
+#include "CommandPrivate.h"
+#include "CommandInternal.h"
 #include "Atoms.h"
 
-/* Private Definitions */
+/****************************************************************
+ *
+ * Full class record constant
+ *
+ ****************************************************************/
 
-typedef void  (*CommandProc)();
-        
-typedef struct _WidgetRec {
-	core_data	core;	/* commonWidget fields */
-	label_data	super; 	/* label super-class fields */
-	command_data	instance; /* command instance variables */
-} WidgetRec, *Widget;
+/* Private Data */
 
-static char *defaultEventBindings[] = {
-    "<ButtonPress>left:       set\n",
-    "<ButtonRelease>left:      notify unset\n",
-    "<EnterWindow>:             highlight\n",
-    "<LeaveWindow>:             unhighlight unset\n",
+static char *defaultTranslations[] = {
+    "<ButtonPress>:       set",
+    "<ButtonRelease>:     notify unset",
+    "<EnterWindow>:       highlight",
+    "<LeaveWindow>:       unhighlight unset",
     NULL
 };
 
-static Resources resources[] = {
-    {XtNfunction, XtCFunction, XtRFunction,
-	sizeof(CommandProc), (caddr_t)&data.proc, (caddr_t)NULL},
-    {XtNparameter, XtCParameter, XrmRPointer,
-	sizeof(caddr_t), (caddr_t)&data.tag, (caddr_t)NULL},
-    {XtNsensitive, XtCBoolean, XrmRBoolean, sizeof(Boolean),
-	 (caddr_t)&data.sensitive, NULL},
-    {XtNgrayPixmap, XtCPixmap, XtRPixmap,
-	sizeof(Pixmap),XtRString,"grey"},
-    {XtNeventBindings, XtCEventBindings, XtREventBindings, sizeof(caddr_t),
-        (caddr_t)&data.eventTable, XtREventTable,defaultEventBindings},
+static Resource resources[] = { 
+
+   {XtNfunction, XtCFunction, XtRFunction, sizeof(CallbackProc), 
+      Offset(CommandWidget, command.callback), XtRFunction, (caddr_t)NULL},
+   {XtNparameter, XtCParameter, XtRPointer, sizeof(caddr_t), 
+      Offset(CommandWidget,command.closure), XtRPointer, (caddr_t)NULL},
+
+   {XtNhighlightThickness, XtCThickness, XrmRInt, sizeof(Dimension),
+      Offset(CommandWidget,command.highlightThickness), XrmRString,"1"},
+   {XtNtranslations, XtCTranslations, XtRTranslationTable,
+      sizeof(Translations),
+      Offset(CommandWidget, core.translations),XtRString,
+      (caddr_t)defaultTranslations},
+ };  
+
+static XtActionsRec actionsList[] =
+{
+  {"set", (caddr_t) Set},
+  {"notify", (caddr_t) Notify},
+  {"highlight", (caddr_t) Highlight},
+  {"unset", (caddr_t) Unset},
+  {"unhighlight", (caddr_t) Unhighlight},
 };
 
+  /* ...ClassData must be initialized at compile time.  Must
+     initialize all substructures.  (Actually, last two here
+     need not be initialized since not used.)
+  */
+CommandClassRec commandClassRec = {
+  {
+    (WidgetClass) &labelClassRec,    /* superclass	*/    
+    "Label",                               /* class_name	*/
+    sizeof(LabelClassRec),                 /* size		*/
+    ClassInitialize,                       /* class initialize  */
+    FALSE,                                 /* class_inited      */
+    Initialize,                            /* initialize	*/
+    Realize,                               /* realize		*/
+    actionsList,                           /* actions		*/
+    XtNumber(actionsList),
+    resources,                             /* resources	        */
+    XtNumber(resources),                   /* resource_count	*/
+    NULLQUARK,                             /* xrm_class	        */
+    FALSE,
+    FALSE,
+    FALSE,                                 /* visible_interest	*/
+    Destroy,                               /* destroy		*/
+    Resize,                                /* resize		*/
+    Redisplay,                             /* expose		*/
+    SetValues,                             /* set_values	*/
+    NULL,                                  /* accept_focus	*/
+  },  /* CoreClass fields initialization */
+  {
+    0,                                     /* field not used    */
+  },  /* LabelClass fields initialization */
+  {
+    0,                                     /* field not used    */
+  },  /* CommandClass fields initialization */
+};
+
+  /* for public consumption */
+WidgetClass commandWidgetClass = (WidgetClass) &commandClassRec;
+
+XtCallbackType  activateCommand;   /* for public consumption*/
 /****************************************************************
  *
  * Private Procedures
@@ -72,316 +143,264 @@ static Resources resources[] = {
  ****************************************************************/
 
 
-
-/*ARGSUSED*/
-static void Dummy(p)                  /* default call back proc */
-caddr_t p;
+static void ClassInitialize()
 {
-    (void) printf("dummy call back for Command\n");
+  /*activateCommand = XtRegisterCallbackType(commandWidgetClass,
+					   Offset(CommandWidget,
+						  command.callbackList));
+						  */
+} 
+
+static void Get_inverseGC(cbw)
+    CommandWidget cbw;
+{
+    XGCValues	values;
+
+    /* Set up a GC for inverse (set) state */
+
+    values.background	= ComWforeground;
+    values.foreground   = ComWbackground;
+    values.font		= ComWfont->fid;
+    values.fill_style   = FillSolid;
+
+    ComWinverseGC = XtGetGC(XtDisplay((Widget)cbw), XtWindow((Widget)cbw),
+    	GCBackground | GCForeground | GCFont | GCFillStyle, &values);
 }
 
-static void Ignore()
-{}
-
-
-/*
- * Build the gc's for the widget.
- */
-
-#define gray_width	32
-#define gray_height	32
-
-static BuildGcs(data)
-Widget data;
+static void Get_highlightedGC(cbw)
+    CommandWidget cbw;
 {
+    XGCValues	values;
+    
+    /* Set up a GC for highlighted state.  It has a thicker
+       line width for the highlight border */
 
+    values.background   = ComWbackground;
+    values.line_width   = ComWhighlightThickness;
 
-    valuemask = GCForeground | GCBackground | GCFont | GCFillStyle;
-    values.font = data->super.fontstruct->fid;
-    values.foreground = data->core.background_pixel;
-    values.background = data->instance.foreground_pixel;
-    values.fill_style = FillSolid;
-    data->invgc = XtGetGC(data->core.dpy,  data->core.window,
-			  valuemask, &values);
-    values.foreground = data->instance.foreground_pixel;
-    values.background = data->core.background_pixel;
-    data->normgc = XtGetGC(data->core.dpy, widgetContext, data->instance.window,
-			   valuemask, &values);
-    valuemask |= GCStipple;
-    values.fill_style = FillStippled;
-    values.stipple = data->instance.grayPixamp;
-    data->graygc = XtGetGC(data->core.dpy, widgetContext, data->core.window,
-			   valuemask, &values);
+    ComWhighlightGC = XtGetGC(XtDisplay((Widget)cbw),XtWindow((Widget)cbw),
+    	GCForeground | GCLineWidth, &values);
 }
 
 
+static void Initialize(w)
+ Widget w;
+{
+    CommandWidget cbw = (CommandWidget) w;
+
+      /*** MAKE SURE core_class and coreClass standardized in
+	             Label&Command   Intrinsic
+      ****/
+    XtCallParentProcedure(initialize,w);
+        /* The above call will set all of the label fields such as
+	   label text and internal width and height. */
+    Get_inverseGC(cbw);
+    Get_highlightGC(cbw);
+      /* Start the callback list if the client specified one in
+	 the arglist */
+/*    if (ComWcallback != NULL)
+      XtAddCallback(activateCommand,ComWcallback,ComWclosure);
+*/
+      /* init flags for state */
+    ComWset = FALSE;
+    ComWhighlighted = FALSE;  
+    ComWdisplayHighlighted = FALSE;
+    ComWdisplaySet = FALSE;
+
+} 
+
+static void Realize(w, valueMask, attributes) 
+     /* This is the same as LabelWidget */
+    register Widget w;
+    Mask valueMask;
+    XSetWindowAttributes *attributes;
+{
+  XtCallParentProcedure3Args(realize,w,valueMask,attributes);
+} 
+
 /*
- *
+static void AddCallback(widget,resourceName,callback,closure,position)
+     Widget widget;
+     XrmAtom resourceName;
+     Callback callback;
+     caddr_t closure;
+     enum {Head, Tail} position;
+{
+  CommandWidget cbw = (CommandWidget)widget;
+  XtAddSingleCallback(ComWcallbackList,resourceName,
+		      callback,closure,position);
+}
+*/
+
+/***************************
+*
+*  EVENT HANDLERS
+*
+***************************/
+
+static void Set(w,event)
+     Widget w;
+     XEvent *event;
+{
+  CommandWidget cbw = (CommandWidget)w;
+  ComWset = TRUE;
+  Redisplay(w);
+}
+
+static void Unset(w,event)
+     Widget w;
+     XEvent *event;
+{
+  CommandWidget cbw = (CommandWidget)w;
+  ComWset = FALSE;
+  Redisplay(w);
+}
+
+static void Highlight(w,event)
+     Widget w;
+     XEvent *event;
+{
+  CommandWidget cbw = (CommandWidget)w;
+  ComWhighlightThickness = TRUE;
+  Redisplay(w);
+}
+
+static void Unhighlight(w,event)
+     Widget w;
+     XEvent *event;
+{
+  CommandWidget cbw = (CommandWidget)w;
+  ComWhighlightThickness = FALSE;
+  Redisplay(w);
+}
+
+static void Notify(w,event)
+     Widget w;
+     XEvent *event;
+{
+  CommandWidget cbw = (CommandWidget)w;
+/*  XtCallCallback(cbw,activateCommand,NULL);*/
+}
+/*
  * Repaint the widget window
- *
  */
 
-static void Redisplay(data)
-Widget	data;
+/************************
+*
+*  REDISPLAY (DRAW)
+*
+************************/
+
+static void Redisplay(w)
+    Widget w;
 {
-    int     textx, texty;
-    Window  w = data->core.window;
+   CommandWidget cbw = (CommandWidget) w;
+   XSetWindowAttributes window_attributes;
 
+   /* Here's the scoop:  If the command button button is normal,
+      you show the text.  If the command button is highlighted but 
+      not set, you draw a thick border and show the text.
+      If the command button is set, draw the button and text
+      in inverse. */
 
-    /*
-     * Calculate Text x,y given window width and text width
-     * to the specified justification
-     */
+   /* Just to make sure everything is okay, check for sensitivity,
+      too.  If non-sensitive, then gray out the border. */
 
-    if (data->needsfreeing) return;
+   /* Note that Redisplay must remember the state of its last
+      draw to determine whether to erase the window before
+      redrawing to avoid flicker.  If the state is the same,
+      the window just needs to redraw (even on an expose). */
 
-    if (data->super.justify == XtjustifyLeft) 
-	textx = 2;
-    else if (data->super.justify == XtjustifyRight)
-	textx = data->core.width - data->super.twidth - 2;
-    else
-        textx = ((data->core.width - data->super.twidth) / 2);
-    if (textx < 0) textx = 0;
-    texty = (data->core.height - data->super.theight) / 2 +
-	data->super.fontstruct->max_bounds.ascent;
+   if (ComWsensitive && !ComWdisplaySensitive) 
+      {
+	  /* change border to gray */
+	window_attributes.border_pixmap = ComWgrayPixmap;
+	XChangeWindowAttributes(XtDisplay(w),XtWindow(w),
+				CWBorderPixmap,window_attributes);
+      }
+   else if (!ComWsensitive && ComWdisplaySensitive)
+     {
+       /* change border to black */
+       window_attributes.border_pixel = ComWforeground;
+       XChangeWindowAttributes(XtDisplay(w),XtWindow(w),
+			       CWBorderPixel,window_attributes);
+     }
 
-    XFillRectangle(data->core.dpy, w,
-		   ((data->instance.highlighted || data->instance.set)
-		    ? data->instance.normgc : data->instance.invgc),
-		   0, 0, data->core.width, data->core.height);
+   if (ComWhighlighted != ComWdisplayHighlighted ||
+       ComWsensitive != ComWdisplaySensitive ||
+       (!ComWset && ComWdisplaySet))
+     XClearWindow(XtDisplay(w),XtWindow(w));
+     /* Don't clear the window if the button's in a set condition;
+	instead, fill it with black to avoid flicker. */
+   else if (ComWset == ComWdisplaySet ||  (ComWset && !ComWdisplaySet))
+     XFillRectangle(XtDisplay(w),XtWindow(w), ComWinverseGC,
+		    0,0,ComWlabelWidth,ComWlabelHeight);
 
-    if (data->instance.highlighted || data->instance.set)
-	XFillRectangle(data->core.dpy, w,
-		       data->instance.set ? data->instance.normgc : data->instance.invgc,
-		       textx, (int) ((data->core.height - data->super.theight) / 2),
-		       data->super.twidth, data->super.theight);
+     /* check whether border is taken out of size of rectangle or
+	is outside of rectangle */
+   if (ComWhighlighted)
+     XDrawRectangle(XtDisplay(w),XtWindow(w), ComWhighlightGC,
+		    0,0,ComWlabelWidth,ComWlabelHeight);
 
-    XDrawString(data->core.dpy, w,
-		data->instance.set ? data->instance.invgc : (data->core.sensitive ? data->core.normgc : data->instance.graygc),
-		textx, texty, data->super.text, strlen(data->super.text));
+     /* draw the string:  there are three different "styles" for it,
+	all in separate GCs */
+   XDrawString(XtDisplay(w),XtWindow(w),
+	       (ComWset ?  ComWinverseGC : 
+		    (ComWsensitive ? ComWnormalGC : ComWgrayGC)),
+		ComWlabelX, ComWlabelY, ComWlabel, ComWlabelLen);
+
+   ComWdisplayHighlighted = ComWhighlighted;
+   ComWdisplaySet = ComWset;
+   ComWdisplaySensitive = ComWsensitive;
 }
 
-extern void Destroy();
 
-/*
- *
- * Generic widget event handler
- *
- */
-
-void Resize(data)
-Widget data;
+static void Resize(w)
+    Widget	w;
 {
-    data->core.eventlevels++;
-	    data->core.x = event->xconfigure.x;
-	    data->core.y = event->xconfigure.y;
-	    data->core.width = event->xconfigure.width;
-	    data->core.height = event->xconfigure.height;
-	    data->core.borderWidth = event->xconfigure.border_width;
+    /* Nothing changes specific to command.  Label must change. */
+  XtCallParentProcedure(realize,w);
 }
 
-void Expose(data)
-Widget data;
+static void Destroy()
 {
-	    if (event->xexpose.count == 0)
-		Redisplay(data);
-
+  /* must free GCs and pixmaps */
 }
-
-
-    data->core.eventlevels--;
-    if (data->core.needsfreeing && data->core.eventlevels == 0) {
-	XtClearAllEventHandlers(data->core.dpy, data->core.window);
-        XtFree((char*)data->super.text);
-        XtFree((char *) data);
-
-
-/*
- *
- * Widget hilight event handler
- *
- */
-
-static void Highlight(data)
-Widget data;
-{
-    data->instance.highlighted = TRUE;
-    Redisplay(data);
-}
-
-/*
- *
- * Widget un-hilight event handler
- *
- */
-
-static void UnHighlight(data)
-Widget data;
-{
-    data->instance.highlighted = FALSE;
-    Redisplay(data);
-}
-
-/*
- *
- * Widget set event handler
- *
- */
-
-static void Set(data)
-Widget data;
-{
-    data->instance.set = TRUE;
-    Redisplay(data);
-}
-
-/*
- *
- * Widget un-set event handler
- *
- */
-
-static void UnSet(data)
-Widget data;
-{
-    data->instance.set = FALSE;
-    Redisplay(data);
-}
-
-/*
- *
- * Widget notify event handler
- *
- */
-
-static void Notify(data)
-Widget data;
-{
-    data->instance.notifying = TRUE;
-    XFlush(data->core.dpy);
-    data->instance.proc(data->instance.tag);
-    data->instance.notifying = FALSE;
-}
-
-/*
- *
- * Destroy the widget; the window's been destroyed already.
- *
- */
-
-static void Destroy(data)
-    Widget	data;
-{
-    data->core.needsfreeing = TRUE;
-}
-
-/****************************************************************
- *
- * Public Procedures
- *
- ****************************************************************/
-
-Widget XtCommandCreate(dpy, parent, args, argCount)
- Display  *dpy;
- Window   parent;
- ArgList  args;
- int      argCount;
- {
- Widget	data;
- XrmNameList  names;
- XrmClassList	classes;
- Drawable 	root;
- Position x, y;
- unsigned int depth;
- unsigned long valuemask;
- XSetWindowAttributes wvals;
-
-    static XtActionsRec actionsTable[] = {
-        {"set",		(caddr_t)Set},
-        {"unset",	(caddr_t)UnSet},
-        {"highlight",	(caddr_t)Highlight},
-        {"unhighlight",	(caddr_t)UnHighlight},
-        {"notify",	(caddr_t)Notify},
-        {NULL, NULL}
-    };
-
-    data = (Widget) XtMalloc (sizeof (WidgetRec));
-
-    /* Set Default Values */
-    data.dpy = dpy;
-    XtGetResources(dpy, resources, XtNumber(resources), args, argCount, parent,
-	"command", "Command", &names, &classes);
-
-    data->core.state = (TranslationPtr) XtSetActionBindings(
-	data->core.dpy,
-	data->core.eventTable, actionsTable, (caddr_t) Ignore);
-
-    /* obtain text dimensions and calculate the window size */
-    SetTextWidthAndHeight(data);
-    if (data->core.width == 0) data->core.width = data->super.twidth + 2*data->super.ibw;
-    if (data->core.height == 0) data->core.height = data->super.theight + 2*data->super.ibh;
-
-    wvals.background_pixel = data->core.bgpixel;
-    wvals.border_pixel = data->core.brpixel;
-    wvals.bit_gravity = CenterGravity;
-    
-    valuemask = CWBackPixel | CWBorderPixel | CWBitGravity;
-    
-    BuildGcs(data);
-
-    XtSetNameAndClass(data->core.dpy,&data, names, classes);
-    XrmFreeNameList(names);
-    XrmFreeClassList(classes);
-
-
-}
-
 
 
 /*
- * Set Attributes
+ * Set specified arguments into widget
  */
-
-void XtCommandSetValues(dpy, window, args, argCount)
-Display *dpy;
-Window window;
-ArgList args;
-int argCount;
+static void SetValues(old, new)
+    Widget old, new;
 {
-    Widget data;
-    if (data == NULL) return;
+    CommandWidget cbw = (CommandWidget) old;
+    CommandWidget newcbw = (CommandWidget) new;
 
-    data = *data;
-    XtSetValues(resources, XtNumber(resources), args, argCount);
+    XtCallParentProcedure2Args(set_values,old,new);
 
-    if (strcmp (data->super.text, data.text)
-	  || data->super.fontstruct != data.fontstruct) {
-	XtGeometryReturnCode reply;
-	WindowBox reqbox, replybox;
+     /* XtDestroyGC */
+     if (XtLField(newcbw,foreground) != ComWforeground)
+       {
+	 Get_inverseGC(newcbw);
+	 Get_highlightedGC(newcbw);
+       }
+    else 
+      {
+	if (XtCField(newcbw,background_pixel) != ComWbackground ||
+	     XtLField(newcbw,font) != ComWfont)
+	  Get_inverseGC(newcbw);
+	if (XtCBField(newcbw,highlightThickness) != ComWhighlightThickness)
+	  Get_highlightGC(newcbw);
+      }
+     
+    /*  NEED TO RESET PROC AND CLOSURE */
 
-	data.text = strcpy(
-	    XtMalloc ((unsigned) strlen(data.text) + 1),
-	    data.text);
-        XtFree ((char *) data->super.text);
+     /* ACTIONS */
+    /* Change Label to remove ClearWindow and Redisplay */
+    /* Change Label to change GCs if foreground, etc */
 
-	/* obtain text dimensions and calculate the window size */
-	SetTextWidthAndHeight(&data);
-	reqbox.width = data.twidth + 2*data.ibw;
-	reqbox.height = data.theight + 2*data.ibh;
-	reply = XtMakeGeometryRequest(data.dpy, data.mywin, XtgeometryResize, 
-				      &reqbox, &replybox);
-	if (reply == XtgeometryAlmost) {
-	    reqbox = replybox;
-	    (void) XtMakeGeometryRequest(data.dpy, data.mywin, XtgeometryResize, 
-					 &reqbox, &replybox);
-	}
-    }
-
-    if (data->core.fgpixel != data.fgpixel ||
-	data->core.bgpixel != data.bgpixel ||
-	data->super.fontstruct != data.fontstruct) BuildGcs(&data);
-    *data = data;
-    if (!data->core.sensitive) data->instance.set = data->instance.highlighted = FALSE;
-    Redisplay (data);
+    *cbw = *newcbw;
+    /**** how to get a redisplay without triggering redisplays
+      in superclasses ****/
 }
-
