@@ -358,9 +358,9 @@ static int IgnoreError(dpy, event)
 static char *bounds_metrics_title =
                       "width   left    right    asc    desc   attr\n";
 static char *char_metrics_fmt = 
-"    0x%04x 0x%04x    %4d    %4d    %4d    %4d    %4d    0x%x\n";
+"\t0x%02x%0x (%u)\t%4d    %4d    %4d    %4d    %4d    0x%x\n";
 static char *bounds_metrics_fmt =
-"         %3s         %4d    %4d    %4d    %4d    %4d    0x%x\n";
+"\t%3s\t\t%4d    %4d    %4d    %4d    %4d    0x%x\n";
 
 
 #define PrintBounds(_what,_ptr) \
@@ -497,14 +497,19 @@ print_character_metrics (info)
 {
     register XCharStruct *pc = info->per_char;
     register int i, j;
+    int unsigned n, saven;
 
     printf ("  character metrics:\n");
+    saven = ((info->min_byte1 << 8) | info->min_char_or_byte2);
     for (j = info->min_byte1; j <= info->max_byte1; j++) {
+	n = saven;
 	for (i = info->min_char_or_byte2; i <= info->max_char_or_byte2; i++) {
-	    printf (char_metrics_fmt, j, i, pc->width, pc->lbearing,
+	    printf (char_metrics_fmt, j, i, n, pc->width, pc->lbearing,
 		    pc->rbearing, pc->ascent, pc->descent, pc->attributes);
 	    pc++;
+	    n++;
 	}
+	saven += 256;
     }
 }
 
@@ -523,10 +528,10 @@ do_query_font (dpy, name)
     printf ("name:  %s\n", name ? name : "(nil)");
     printf ("  direction:\t\t%s\n", ((info->direction == FontLeftToRight)
 				     ? "left to right" : "right to left"));
-    printf ("  char rows:\t\t0x%04x thru 0x%04x (%d thru %d)\n",
+    printf ("  char rows:\t\t0x%02x thru 0x%02x (%d thru %d)\n",
 	    info->min_byte1, info->max_byte1,
 	    info->min_byte1, info->max_byte1);
-    printf ("  char columns:\t\t0x%04x thru 0x%04x (%d thru %d)\n",
+    printf ("  char columns:\t\t0x%02x thru 0x%02x (%d thru %d)\n",
 	    info->min_char_or_byte2, info->max_char_or_byte2,
 	    info->min_char_or_byte2, info->max_char_or_byte2);
     printf ("  all chars exist:\t%s\n",
@@ -536,7 +541,7 @@ do_query_font (dpy, name)
     printf ("  ascent:\t\t%d\n", info->ascent);
     printf ("  descent:\t\t%d\n", info->descent);
     ComputeFontType (info);
-    printf ("  bounds:             %s", bounds_metrics_title);
+    printf ("  bounds:\t\t%s", bounds_metrics_title);
     PrintBounds ("min", &info->min_bounds);
     PrintBounds ("max", &info->max_bounds);
     if (info->per_char && long_list >= L_VERYLONG) 
