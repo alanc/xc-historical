@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.113 93/07/19 11:12:53 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.114 93/08/16 14:05:22 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,6 +27,9 @@ SOFTWARE.
 #include "IntrinsicI.h"
 #include <stdio.h>
 #include <errno.h>
+#ifdef WIN32
+#include <sys/timeb.h>
+#endif
 
 extern int errno;
 
@@ -66,10 +69,20 @@ static SignalEventRec* freeSignalRecs;
 #define FIXUP_TIMEVAL(t)
 #endif /*NEEDS_NTPD_FIXUP*/
 
-#if defined(SVR4)
+#ifdef WIN32
+#define GETTIMEOFDAY(t) \
+{ \
+    struct _timeb _tmptime; \
+    _ftime (&_tmptime); \
+    (t)->tv_sec = _tmptime.time; \
+    (t)->tv_usec = _tmptime.millitm * 1000; \
+}
+#else
+#ifdef SVR4
 #define GETTIMEOFDAY(t) (void) gettimeofday(t)
 #else
 #define GETTIMEOFDAY(t) (void) gettimeofday(t,(struct timezone*)NULL)
+#endif
 #endif
 
 /*
