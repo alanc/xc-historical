@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMstate.c,v 1.39 88/02/02 08:45:51 swick Locked $";
+static char rcsid[] = "$Header: TMstate.c,v 6.38 88/01/29 16:42:27 asente Exp $";
 #endif lint
 /*LINTLIBRARY*/
 
@@ -588,12 +588,39 @@ void _XtInstallTranslations(widget, stateTable)
     register EventMask	eventMask = 0;
     register Boolean	nonMaskable = FALSE;
     register Cardinal	i;
+    static struct {
+        unsigned long	modifier;
+	EventMask	mask;
+      } buttonMotionMask[] = {
+	{Button1Mask, Button1MotionMask}, 
+	{Button2Mask, Button2MotionMask}, 
+	{Button3Mask, Button3MotionMask}, 
+	{Button4Mask, Button4MotionMask}, 
+	{Button5Mask, Button5MotionMask},
+      };
 
 /*    widget->core.translations = stateTable; */
     if (stateTable == NULL) return;
 
     for (i = 0; i < stateTable->numEvents; i++) {
-	register EventMask mask = EventToMask(&stateTable->eventObjTbl[i]);
+	register EventObjPtr eventObj = &stateTable->eventObjTbl[i];
+	register EventMask mask = EventToMask(eventObj);
+	unsigned long modifiers = eventObj->event.modifiers;
+
+	if ((eventObj->event.eventType == MotionNotify)
+	    && !(modifiers & ~AnyButtonModifier)) {
+	    /* optimize traffic when PointerMotion only with button down */
+	    if (modifiers == AnyButtonModifier)
+	        mask = ButtonMotionMask;
+	    else {
+	        int mod;
+	        mask = 0;
+		for (mod = 0; mod < XtNumber(buttonMotionMask); mod++) {
+		    if (modifiers & buttonMotionMask[mod].modifier)
+		        mask |= buttonMotionMask[mod].mask;
+		}
+	    }
+	}
 
 	eventMask |= mask;
 	nonMaskable |= (mask == 0);
