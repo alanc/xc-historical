@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Form.c,v 1.8 88/02/01 12:03:28 swick Locked $";
+static char rcsid[] = "$Header: Form.c,v 1.9 88/02/05 23:15:16 swick Locked $";
 #endif lint
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -212,7 +212,7 @@ XtEdgeType type;
 	    return loc;
     if (type == XtChainTop || type == XtChainLeft)
 	return loc;
-    return loc + new - old;
+    return (loc + new - old > 0 ? loc + new - old : 0);
 }
 
 
