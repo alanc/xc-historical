@@ -1,6 +1,4 @@
-#if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.34 90/12/01 13:01:58 rws Exp $";
-#endif /* lint && SABER */
+/* $XConsortium: TextAction.c,v 1.35 90/12/27 10:03:19 rws Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -127,9 +125,9 @@ static void GetSelection();
 static void 
 _SelectionReceived(w, client_data, selection, type, value, length, format)
 Widget w;
-caddr_t client_data;
+XtPointer client_data;
 Atom *selection, *type;
-caddr_t value;
+XtPointer value;
 unsigned long *length;
 int *format;
 {
@@ -205,7 +203,7 @@ Cardinal num_params;
 	    list->time = time;
 	} else list = NULL;
 	XtGetSelectionValue(w, selection, XA_STRING, _SelectionReceived,
-			    (caddr_t)list, time);
+			    (XtPointer)list, time);
     }
 }
 
@@ -611,7 +609,7 @@ Cardinal *n;
 /*ARGSUSED*/
 static void 
 KillBackwardWord(w, event, p, n)
-TextWidget w;
+Widget w;
 XEvent *event;
 String *p;
 Cardinal *n;
@@ -722,10 +720,13 @@ TextWidget ctx;
   return(error);
 }
 
+/*ARGSUSED*/
 static void 
-InsertNewLineAndBackup(w, event)
+InsertNewLineAndBackup(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   StartAction( (TextWidget) w, event );
   (void) InsertNewLineAndBackupInternal( (TextWidget) w );
@@ -906,7 +907,7 @@ Cardinal *num_params;	/* unused */
 
 static void 
 ExtendEnd(w, event, params, num_params)
-TextWidget w;
+Widget w;
 XEvent *event;
 String *params;
 Cardinal *num_params;
@@ -917,7 +918,7 @@ Cardinal *num_params;
 
 static void
 SelectSave(w, event, params, num_params)
-TextWidget  w;
+Widget  w;
 XEvent *event;
 String *params;
 Cardinal *num_params;
@@ -929,7 +930,7 @@ Cardinal *num_params;
     num_atoms = *num_params;
     if (num_atoms > 256)
 	num_atoms = 256;
-    XmuInternStrings(XtDisplay((Widget)w), params, num_atoms, selections);
+    XmuInternStrings(XtDisplay(w), params, num_atoms, selections);
     _XawTextSaltAwaySelection (w, selections, num_atoms);
     EndAction (w);
 }
@@ -956,7 +957,7 @@ Cardinal *n;
 /*ARGSUSED*/
 static void
 TextFocusIn (w, event, p, n)
-TextWidget w;
+Widget w;
 XEvent *event;
 String *p;
 Cardinal *n;
@@ -969,7 +970,7 @@ Cardinal *n;
 /*ARGSUSED*/
 static void
 TextFocusOut(w, event, p, n)
-TextWidget w;
+Widget w;
 XEvent *event;
 String *p;
 Cardinal *n;
@@ -1004,7 +1005,7 @@ TextWidget ctx;
       break;
   line_num--;			/* backup a line. */
 
-  max_width = Max(0, ctx->core.width - HMargins(ctx));
+  max_width = Max(0, (int)(ctx->core.width - HMargins(ctx)));
 
   x = ctx->text.margin.left;
   XawTextSinkFindPosition( ctx->text.sink,ctx->text.lt.info[line_num].position,
