@@ -1,16 +1,13 @@
-XCOMM
-XCOMM IDL-to-MIF documentation generator
-XCOMM
+XCOMM $XConsortium: Imakefile,v 1.2 94/02/10 19:32:24 matt Exp $
 
-#ifdef InObjectCodeDir
+        DEPLIBS = FrescoClientDepLibs
+LOCAL_LIBRARIES = FrescoClientLibs $(TCL_LIBRARIES)
+       INCLUDES = $(TCL_INCLUDES)
+           SRCS = main.CCsuf
+           OBJS = main.Osuf
 
-Use_libFresco()
-ComplexProgramTarget(i2mif)
+#define CplusplusSource
 
-MakeObjectFromSrc(main)
+NormalCplusplusObjectRule()
 
-#else
-
-MakeInObjectCodeDir()
-
-#endif
+ComplexCplusplusProgramTarget(i2mif)
