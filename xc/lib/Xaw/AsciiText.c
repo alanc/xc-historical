@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.23 89/07/16 14:54:13 jim Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.24 89/07/17 18:09:14 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -52,7 +52,7 @@ SOFTWARE.
 
 #include <X11/Xaw/AsciiTextP.h>
 
-extern void _XawTextForceBuildLineTable(); /* in Text.c */
+extern void _XawTextBuildLineTable(); /* in Text.c */
 
 static void ClassInitialize(), Initialize(), CreateSourceSink(), Destroy();
 
@@ -123,7 +123,7 @@ Widget widget;
 ArgList args;
 Cardinal *num_args;
 {
-  AsciiWidget w = (AsciiWidget)widget;
+  AsciiWidget w = (AsciiWidget) widget;
   void (*NullProc)() = NULL;	/* some compilers require this */
   
   w->text.source = XawAsciiSourceCreate( widget, args, *num_args );
@@ -144,11 +144,11 @@ Cardinal *num_args;
 	for (i=0, tab=0; i<TAB_COUNT;i++) {
 	    tabs[i] = (tab += 8);
 	}
-	(w->text.sink->SetTabs) (widget, w->text.leftmargin, TAB_COUNT, tabs);
+	(w->text.sink->SetTabs)(widget, w->text.leftmargin, TAB_COUNT, tabs);
 #undef TAB_COUNT
     }
 
-    _XawTextForceBuildLineTable( (TextWidget) w );
+    _XawTextBuildLineTable( (TextWidget) w, w->text.lt.top, TRUE );
 }
 
 static void 
