@@ -82,9 +82,11 @@ SUBDIRS = bitmaps
 
 INSTALLFLAGS = $(INSTINCFLAGS)
 
-all: $(IMPORTS) $(SUBIMPORTS) extensions
-	@-(list=`echo $(IMPORTS) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
-	$(LN) $(IMPORTS) .
+all: $(IMPORTS1) $(IMPORTS2) $(SUBIMPORTS) extensions
+	@-(list=`echo $(IMPORTS1) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
+	$(LN) $(IMPORTS1) .
+	@-(list=`echo $(IMPORTS2) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
+	$(LN) $(IMPORTS2) .
 	@-(list=`echo $(SUBIMPORTS) | sed -e 's/[^ ]*\///g'`; \
 		set -x; cd extensions; $(RM) $$list)
 	@for i in $(SUBIMPORTS); do \
@@ -102,7 +104,8 @@ install::
 InstallMultiple($(EXPORTS),$(INCDIR))
 
 clean::
-	@-(list=`echo $(IMPORTS) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
+	@-(list=`echo $(IMPORTS1) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
+	@-(list=`echo $(IMPORTS2) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
 	@-(list=`echo $(SUBIMPORTS) | sed -e 's/[^ ]*\///g'`; \
 		set -x; cd extensions; $(RM) $$list)
 	$(RM) Atoms.h
