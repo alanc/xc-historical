@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: winh.c,v 1.15 92/06/11 15:47:28 rws Exp $
  */
 /*LINTLIBRARY*/
 
@@ -43,9 +43,13 @@
 #define	ADD_TO_EXPECTED(c, w, e)	\
 	{\
 		Display	*tmp_display;\
-		/* fudge display */\
+		Window tmp_window;\
+		/* fudge display and window */\
 		tmp_display = (e)->xany.display;\
 		(e)->xany.display = (c)->display;\
+		tmp_window = (e)->xany.window;\
+		if (tmp_window == WINH_BAD)\
+			(e)->xany.window = (w)->window;\
 		if (((w)->expected = addto((w)->expected, (e))) == (Winhe *) NULL)\
 			return(1);\
 		debug(4, "Client 0x%x expecting %s on window 0x%x",\
@@ -53,6 +57,7 @@
 			eventname((e)->type),\
 			(w)->window);\
 		(e)->xany.display = tmp_display;\
+		(e)->xany.window = tmp_window;\
 	}\
 	ADD_TO_EXPECTED_GLOBAL((e))
 
