@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mifpolycon.c,v 1.16 89/05/14 11:59:28 rws Exp $ */
+/* $XConsortium: mifpolycon.c,v 5.0 89/06/09 15:08:24 keith Exp $ */
 #include <math.h>
 #include "X.h"
 #include "gcstruct.h"
@@ -42,30 +42,6 @@ static int GetFPolyYBounds();
  *	to traverse each edge is digital differencing analyzer
  *	line algorithm with y as the major axis. There's some funny linear
  *	interpolation involved because of the subpixel postioning.
- *
- *	Given the opportunity to write non-portable code, I would replace
- * 	this with a fixed point extended precision Bresenham line algorithm.
- *	Instead of doubles in the SppPointRecs, I'd use 64 bit fixed point
- *	values.  I'd have to write a fixed point math pack in assembler,
- *	but these things are relatively straight forward. (Alas, not portable.)
- *	
- *	It can be shown that given 16 bit values for x and y, there's no
- *	room to extend the precision and still fit intermediate results in
- *	a 32 bit integer.  It should also be clear that trying to write a
- *	extended precision math pack in C would not produce code that runs
- * 	much faster than your average floating point coprocessor.  Even
- *	floating point emulation should be able to run faster if the assembly
- *	language coding is handled at all well.
- *
- *	"So why not at least use float, instead of double," my friends ask
- *	me.  Well, C is going to cast everything to double as soon as you
- * 	try to do anything with it anyway.  (Check out K&R.)  I'd rather
- *	trade a little space and skip all the superflous type conversions.
- *	(This decision could be revisited if you have an ANSI C compiler.)
- *
- *	So, in sum, I apologize for doing all the wide lines with doubles,
- *	but it seems the best trade off  of complexity, performance, and
- *	time pressure.
  */
 void
 miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans, xFtrans, yFtrans)
