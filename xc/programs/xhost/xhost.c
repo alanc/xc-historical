@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.44 91/04/17 11:07:25 rws Exp $ */
+/* $XConsortium: xhost.c,v 11.45 91/05/14 14:51:50 rws Exp $ */
  
 /*
 
@@ -175,10 +175,11 @@ main(argc, argv)
 #endif
 		sethostent(1); /* don't close the data base each time */
 		list = XListHosts(dpy, &nhosts, &enabled);
-		printf ("access control %s\n", 
-			(enabled ? 
-			 "enabled (only the following hosts are allowed)": 
-			 "disabled (any host is allowed)"));
+		if (enabled)
+		    printf ("access control enabled, only authorized clients can connect\n");
+		else
+		    printf ("access control disabled, clients can connect from any host\n");
+
 		if (nhosts != 0) {
 		    for (i = 0; i < nhosts; i++ )  {
 		      hostname = get_hostname(&list[i]);
@@ -213,7 +214,7 @@ main(argc, argv)
 	    if (*arg == '-') {
 	    
 	        if (!argv[i][1] && ((i+1) == argc)) {
-		    printf ("all hosts being restricted (access control enabled)\n");
+		    printf ("access control enabled, only authorized clients can connect\n");
 		    XEnableAccessControl(dpy);
 		} else {
 		    arg = argv[i][1]? &argv[i][1] : argv[++i];
@@ -224,7 +225,7 @@ main(argc, argv)
 		}
 	    } else {
 	        if (*arg == '+' && !argv[i][1] && ((i+1) == argc)) {
-		    printf ("all hosts being allowed (access control disabled)\n");
+		    printf ("access control disabled, clients can connect from any host\n");
 		    XDisableAccessControl(dpy);
 		} else {
 		    if (*arg == '+') {
