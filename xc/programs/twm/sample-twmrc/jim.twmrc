@@ -4,6 +4,7 @@
 #
 #**********************************************************************
 
+UsePPosition "on"
 NoVersion
 NoHighlight
 OpaqueMove
@@ -14,7 +15,7 @@ BorderWidth 2
 NoGrabServer
 NoRaiseOnMove
 NoRaiseOnResize
-#NoTitleFocus
+NoTitleFocus
 DecorateTransients
 TitleFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 MenuFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
@@ -46,8 +47,8 @@ Color
     TitleForeground "#dee"
     MenuBackground "#b36"
     MenuForeground "#dee"
-    MenuTitleBackground "#b36"
-    MenuTitleForeground "#dee"
+    MenuTitleBackground "#bcc"
+    MenuTitleForeground "#b36"
     IconBackground "#b36"
     IconForeground "#dee"
     IconBorderColor "#dee"
@@ -69,11 +70,11 @@ Monochrome
 ###############################################################################
 
 MoveDelta 3
-Function "move-or-raiselower"
+Function "move-or-raise"
 {
     f.move
     f.deltastop
-    f.raiselower
+    f.raise
 }
 
 
@@ -81,6 +82,7 @@ DefaultFunction f.nop
 
 Button1 =      : root                     : f.menu "twmops"
 Button1 =      : title                    : f.move
+Button1 =      : iconmgr                  : f.iconify
 Button1 = m    : window|icon|frame|title  : f.lower
 Button2 =      : root                     : f.menu "windowops"
 Button2 = m    : window                   : f.resize
@@ -88,20 +90,18 @@ Button2 =      : icon                     : f.iconify
 Button2 = m    : icon                     : f.iconify
 Button3 =      : root                     : f.menu "apps"
 Button3 =      : title                    : f.zoom
-Button3 = m    : window|icon|frame|title  : f.function "move-or-raiselower"
-"Left"  = m    : all                      : f.raiselower
-"F20"   =      : all                      : f.warptoscreen "next"
+Button3 = m    : window|icon|frame|title  : f.function "move-or-raise"
+#"F20"   =      : all                      : f.warptoscreen "next"
 
-"F8"    =      : all                      : f.warptoiconmgr ""
-
-"F9"    =      : all                      : f.backiconmgr
-"F10"   =      : all                      : f.forwiconmgr
-"F11"   =      : all                      : f.raiselower
-"F12"   =      : all                      : f.iconify
-"KP_F1" =      : all                      : f.backiconmgr
-"KP_F2" =      : all                      : f.forwiconmgr
-"KP_F3" =      : all                      : f.raiselower
-"KP_F4" =      : all                      : f.iconify
+"F28"   =      : all                      : f.colormap "next"
+"F30"   =      : all                      : f.warptoiconmgr ""
+"F32"   =      : all                      : f.raiselower
+"F34"   =      : all                      : f.iconify
+"Home"  =      : all                      : f.warptoiconmgr ""
+"Left"  = m    : all                      : f.backiconmgr
+"Right" = m    : all                      : f.forwiconmgr
+"Up"    = m    : all                      : f.upiconmgr
+"Down"  = m    : all                      : f.downiconmgr
 
 ###############################################################################
 #                                                                             #
@@ -112,7 +112,7 @@ Button3 = m    : window|icon|frame|title  : f.function "move-or-raiselower"
 
 SortIconManager
 ShowIconManager
-IconManagerGeometry	"370x50+494+1" 6
+IconManagerGeometry	"370x50+576+1" 6
 IconifyByUnmapping
 DontIconifyByUnmapping
 {
@@ -139,14 +139,6 @@ NoTitle
   "TWM Icon Manager"
 }
 
-IconDirectory "/users/jim/icons"
-Icons
-{
-  "XTerm"	"terminal"
-  "emacs"	"paper"
-}
-#UnknownIcon	"icon"
-
 
 
 
@@ -161,23 +153,25 @@ menu "twmops"
 "twm"			f.title
 "Restart"		f.restart
 "Exit"			f.quit
+""			f.nop
+"Show Iconmgr"		f.showiconmgr
+"Hide Iconmgr"		f.hideiconmgr
 }
 
 menu "windowops"
 {
 "Windows"		f.title
 "Kill"			f.destroy
-""			f.nop
+"Delete"		f.delete
+"Save"			f.saveyourself
 "Refresh"		f.refresh
 ""			f.nop
 "Iconify"		f.iconify
 "Resize"		f.resize
-"Zoom"			f.zoom
 "Move"			f.move
 "Raise"			f.raise
 "Lower"			f.lower
-"Info"			f.identify
-""			f.nop
+"Identify"		f.identify
 "Focus"			f.focus
 "Unfocus"		f.unfocus
 }
@@ -189,7 +183,4 @@ menu "apps"
 "xterm -e /bin/sh"	!"xterm -e /bin/sh &"
 "xhost +"		!"xhost + >/dev/null"
 "xhost -"		!"xhost - >/dev/null"
-"Show Iconmgr"		f.showiconmgr
-"Hide Iconmgr"		f.hideiconmgr
-"Sort Iconmgr"		f.sorticonmgr
 }
