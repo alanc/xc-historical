@@ -1,5 +1,17 @@
 /*
- * $XConsortium: pr.c,v 1.14 91/07/25 11:51:15 rws Exp $
+ * $XConsortium: pr.c,v 1.15 93/07/12 18:00:27 gildea Exp $
+ *
+ * Copyright 1993 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
  */
 #include "def.h"
 
