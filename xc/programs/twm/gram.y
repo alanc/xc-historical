@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.36 89/05/10 01:25:52 keith Exp $
+ * $XConsortium: gram.y,v 1.37 89/05/11 16:17:58 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.36 89/05/10 01:25:52 keith Exp $";
+"$XConsortium: gram.y,v 1.37 89/05/11 16:17:58 jim Exp $";
 
 #include <stdio.h>
 #include "twm.h"
@@ -98,8 +98,8 @@ extern int yylineno;
 %token <num> BORDER_TILE_FOREGROUND BORDER_TILE_BACKGROUND F_IDENTIFY
 %token <num> F_FORWICONMGR F_BACKICONMGR F_NEXTICONMGR F_PREVICONMGR
 %token <num> START_ICONIFIED NO_MENU_SHADOWS LP RP NO_VERSION
-%token <num> INTERPOLATE_MENUS NO_TITLE_HILITE ICON_BORDERWIDTH
-%token <num> F_WARPTOICONMGRE ALL OR CURSORS CUR_BUTTON CUR_FRAME
+%token <num> INTERPOLATE_MENUS NO_TITLE_HILITE ICON_BORDERWIDTH TITLE_HILITE
+%token <num> F_WARPTOICONMGRE ALL OR CURSORS PIXMAPS CUR_BUTTON CUR_FRAME
 %token <num> CUR_TITLE CUR_ICONMGR CUR_ICON NO_ICONMGRS F_SORTICONMGR
 %token <num> CUR_MOVE CUR_RESIZE CUR_WAIT CUR_SELECT CUR_KILL
 %token <num> ICON_REGION NORTH SOUTH EAST WEST RESTART_PREVIOUS_STATE
@@ -199,6 +199,7 @@ stmt		: error
 						Scr->RandomPlacement=TRUE; }
 		| DECORATE_TRANSIENTS	{ if (Scr->FirstTime) 
 						Scr->DecorateTransients = TRUE;}
+		| PIXMAPS pixmap_list	{}
 		| CURSORS cursor_list	{}
 		| ICONIFY_BY_UNMAPPING	{ list = &Scr->IconifyByUn; }
 		  win_list
@@ -361,6 +362,18 @@ contextkey	: WINDOW		{ cont |= C_WINDOW_BIT; }
 		| OR			{ }
 		| string		{ Name = $1; cont |= C_NAME_BIT; }
 		;
+
+
+pixmap_list	: LB pixmap_entries RB
+		;
+
+pixmap_entries	: /* Empty */
+		| pixmap_entries pixmap_entry
+		;
+
+pixmap_entry	: TITLE_HILITE string { SetHighlightPixmap ($2); }
+		;
+
 
 cursor_list	: LB cursor_entries RB
 		;

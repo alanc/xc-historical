@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.25 89/05/11 13:54:41 jim Exp $
+ * $XConsortium: twm.h,v 1.26 89/05/11 16:18:39 jim Exp $
  *
  * twm include file
  *
@@ -152,7 +152,6 @@ typedef struct TwmWindow
     Window focus_w;		/* the focus window */
 #endif
     Window hilite_w;		/* the hilite window */
-    Pixmap hilite_pm;
     Pixmap gray;
     Window icon_w;		/* the icon window */
     Window icon_bm_w;		/* the icon bitmap window */

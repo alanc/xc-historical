@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.39 89/05/03 14:37:04 jim Exp $
+ * $XConsortium: add_window.c,v 1.40 89/05/04 19:02:32 keith Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.39 89/05/03 14:37:04 jim Exp $";
+"$XConsortium: add_window.c,v 1.40 89/05/04 19:02:32 keith Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -989,32 +989,60 @@ TwmWindow *tmp_win;
     XSelectInput(dpy, tmp_win->resize_w, ButtonPressMask |
 	ButtonReleaseMask | ExposureMask);
 
-    if (tmp_win->titlehighlight)
-    {
+    if (tmp_win->titlehighlight) {
+	XGCValues gcv;
 	GC gc;
-	int h;
+	Pixmap pm = None;
+	int h = Scr->TitleHeight - 4;
 
-	h = Scr->TitleHeight - 4;
-	x = 2;
+	/*
+	 * If a special highlight pixmap was given, use that.  Otherwise,
+	 * use the little lines (which looks awful on interlaced monitors).
+	 * If that fails, then use the foreground color to look like a solid
+	 * line.
+	 */
+	if (Scr->hilitePm) {
+	    pm = XCreatePixmap (dpy, tmp_win->title_w,
+				Scr->hilite_pm_width, Scr->hilite_pm_height,
+				Scr->d_depth);
+	    gcv.foreground = tmp_win->title.fore;
+	    gcv.background = tmp_win->title.back;
+	    gcv.graphics_exposures = False;
+	    gc = XCreateGC (dpy, pm,
+			    (GCForeground|GCBackground|GCGraphicsExposures),
+			    &gcv);
+	    if (gc) {
+		XCopyPlane (dpy, Scr->hilitePm, pm, gc, 0, 0, 
+			    Scr->hilite_pm_width, Scr->hilite_pm_height,
+			    0, 0, 1);
+		XFreeGC (dpy, gc);
+	    } else {
+		XFreePixmap (dpy, pm);
+		pm = None;
+	    }
+	} else {
+	    pm = XCreatePixmap (dpy, tmp_win->title_w, 8, h, Scr->d_depth);
+	    gc = XCreateGC (dpy, pm, (unsigned long)0, (XGCValues *) NULL);
+	    XSetForeground (dpy, gc, tmp_win->title.back);
+	    XFillRectangle (dpy, pm, gc, 0,0, 8, h);
+	    XSetForeground (dpy, gc, tmp_win->title.fore);
+	    for (y = 1; y < h; y += 2) XDrawLine(dpy, pm, gc, 0, y, 10, y);
+	    XFreeGC (dpy, gc);
+	}
+	if (pm) {
+	    valuemask = CWBackPixmap;
+	    attributes.background_pixmap = pm;
+	} else {
+	    valuemask = CWBackPixel;
+	    attributes.background_pixel = tmp_win->title.fore;
+	}
 
-	tmp_win->hilite_pm = XCreatePixmap(dpy, tmp_win->title_w,
-	    8, h, Scr->d_depth);
-	gc = XCreateGC(dpy, tmp_win->hilite_pm,(unsigned long)0,(XGCValues *)0);
-	XSetForeground(dpy, gc, tmp_win->title.back);
-	XFillRectangle(dpy, tmp_win->hilite_pm, gc, 0,0, 8, h);
-	XSetForeground(dpy, gc, tmp_win->title.fore);
-	for (y = 1; y < h; y += 2)
-	    XDrawLine(dpy, tmp_win->hilite_pm, gc, 0, y, 10, y);
-	valuemask = CWBackPixmap;
-	attributes.background_pixmap = tmp_win->hilite_pm;
-
-	tmp_win->hilite_w = XCreateWindow(dpy, tmp_win->title_w,
-	    TitleBarX, x,
-	    8, h,
-	    0, Scr->d_depth, CopyFromParent,
-	    Scr->d_visual, valuemask, &attributes);
-
-	XFreeGC(dpy, gc);
+	tmp_win->hilite_w = XCreateWindow (dpy, tmp_win->title_w,
+					   TitleBarX, 2, 8, h,
+					   0, Scr->d_depth, CopyFromParent,
+					   Scr->d_visual, valuemask,
+					   &attributes);
+	if (pm) XFreePixmap (dpy, pm);
     }
     else
 	tmp_win->hilite_w = 0;
@@ -1024,3 +1052,17 @@ TwmWindow *tmp_win;
 	XUnmapWindow(dpy, tmp_win->hilite_w);
 }
 
+SetHighlightPixmap (filename)
+    char *filename;
+{
+    Pixmap pm = GetBitmap (filename);
+
+    if (pm) {
+	if (Scr->hilitePm) {
+	    XFreePixmap (dpy, Scr->hilitePm);
+	}
+	Scr->hilitePm = pm;
+	Scr->hilite_pm_width = JunkWidth;
+	Scr->hilite_pm_height = JunkHeight;
+    }
+}

@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.32 89/05/10 01:25:57 keith Exp $
+ * $XConsortium: lex.l,v 1.33 89/05/11 16:18:09 jim Exp $
  *
  * .twmrc lex file
  *
@@ -35,7 +35,7 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.32 89/05/10 01:25:57 keith Exp $";
+"$XConsortium: lex.l,v 1.33 89/05/11 16:18:09 jim Exp $";
 
 #include <stdio.h>
 #include "gram.h"
@@ -164,6 +164,7 @@ t.move				{ return F_MOVE; }
 
 
 [Cc][Uu][Rr][Ss][Oo][Rr][Ss]	{ return CURSORS; }
+[Pp][Ii][Xx][Mm][Aa][Pp][Ss]	{ return PIXMAPS; }
 [Ff][Rr][Aa][Mm][Ee]		{ return CUR_FRAME; }
 [Tt][Ii][Tt][Ll][Ee]		{ return CUR_TITLE; }
 [Ii][Cc][Oo][Nn]		{ return CUR_ICON; }
@@ -184,6 +185,7 @@ t.move				{ return F_MOVE; }
 [Nn][Oo][Ii][Cc][Oo][Nn][Mm][Aa][Nn][Aa][Gg][Ee][Rr][Ss] { return NO_ICONMGRS;}
 [Ii][Nn][Tt][Ee][Rr][Pp][Oo][Ll][Aa][Tt][Ee][Mm][Ee][Nn][Uu][Cc][Oo][Ll][Oo][Rr][Ss] { return (INTERPOLATE_MENUS); }
 [Nn][Oo][Tt][Ii][Tt][Ll][Ee][Hh][Ii][Gg][Hh][Ll][Ii][Gg][Hh][Tt] { return (NO_TITLE_HILITE); }
+[Tt][Ii][Tt][Ll][Ee][Hh][Ii][Gg][Hh][Ll][Ii][Gg][Hh][Tt]	{ return (TITLE_HILITE); }
 [Nn][Oo][Mm][Ee][Nn][Uu][Ss][Hh][Aa][Dd][Oo][Ww][Ss] { return (NO_MENU_SHADOWS);}
 [Nn][Oo][Ss][Hh][Aa][Dd][Oo][Ww][Mm][Ee][Nn][Uu][Ss] { return (NO_MENU_SHADOWS);}
 [Cc][Ll][Ii][Ee][Nn][Tt][Bb][Oo][Rr][Dd][Ee][Rr][Ww][Ii][Dd][Tt][Hh] { return (CLIENT_BORDERWIDTH); }

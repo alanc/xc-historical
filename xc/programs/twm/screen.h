@@ -1,6 +1,6 @@
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.27 89/05/04 19:02:55 keith Exp $
+ * $XConsortium: screen.h,v 1.28 89/05/15 17:21:48 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -42,6 +42,8 @@ typedef struct ScreenInfo
     Pixmap resizePm;		/* the titlebar resize pixmap */
     Pixmap siconifyPm;		/* the icon manager iconify pixmap */
     Pixmap pullPm;		/* pull right menu arrow */
+    Pixmap hilitePm;		/* focus highlight window background */
+    int hilite_pm_width, hilite_pm_height;  /* cache the size */
 
     MenuRoot *MenuList;		/* head of the menu list */
     MenuRoot *LastMenu;		/* the last menu (mostly unused?) */
