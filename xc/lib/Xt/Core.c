@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char rcsid[] = "$Header: Core.c,v 1.10 88/02/19 15:49:56 swick Exp $";
+static char rcsid[] = "$Header: Core.c,v 1.11 88/02/21 15:15:08 swick Exp $";
 #endif lint
 
 /*
@@ -189,6 +189,10 @@ static void CoreClassPartInitialize(wc)
 
     if (wc->core_class.accept_focus == XtInheritAcceptFocus) {
 	wc->core_class.accept_focus = super->core_class.accept_focus;
+    }
+
+    if (wc->core_class.query_geometry == XtInheritQueryGeometry) {
+	wc->core_class.query_geometry = super->core_class.query_geometry;
     }
 
     if (wc->core_class.resources != NULL) {

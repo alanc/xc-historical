@@ -1,5 +1,5 @@
 /*
-* $Header: CoreP.h,v 1.2 88/02/03 15:06:04 swick Exp $
+* $Header: CoreP.h,v 1.3 88/02/14 18:40:04 swick Exp $
 */
 
 /*
@@ -73,8 +73,8 @@ typedef struct _CorePart {
     Boolean	    mapped_when_managed;/* map window if it's managed?       */
     Boolean         being_destroyed;	/* marked for destroy		     */
     XtCallbackList  destroy_callbacks;	/* who to call when widget destroyed */
-    WidgetList      popup_list;         /* list of popups */
-    Cardinal        num_popups;         /* how many popups */
+    WidgetList      popup_list;         /* list of popups                    */
+    Cardinal        num_popups;         /* how many popups                   */
 } CorePart;
 
 typedef struct _WidgetRec {
@@ -103,12 +103,12 @@ typedef struct _CoreClassPart {
     String          class_name;		/* widget resource class name       */
     Cardinal        widget_size;	/* size in bytes of widget record   */
     XtProc	    class_initialize;   /* class initialization proc	    */
-    XtWidgetClassProc class_part_initialize; /* dynamic initialization   */
+    XtWidgetClassProc class_part_initialize; /* dynamic initialization      */
     Boolean         class_inited;       /* has class been initialized?      */
     XtInitProc      initialize;		/* initialize subclass fields       */
     XtArgsProc      initialize_hook;    /* notify that initialize called    */
     XtRealizeProc   realize;		/* XCreateWindow for widget	    */
-    XtActionList    actions;		/* widget semantics name to proc map */
+    XtActionList    actions;		/* widget semantics name to proc map*/
     Cardinal	    num_actions;	/* number of entries in actions     */
     XtResourceList  resources;		/* resources for subclass fields    */
     Cardinal        num_resources;      /* number of entries in resources   */
@@ -122,12 +122,13 @@ typedef struct _CoreClassPart {
     XtExposeProc    expose;		/* rediplay window		    */
     XtSetValuesFunc set_values;		/* set subclass resource values     */
     XtArgsFunc      set_values_hook;    /* notify that set_values called    */
-    XtAlmostProc    set_values_almost;  /* set_values got "Almost" geo reply */
+    XtAlmostProc    set_values_almost;  /* set_values got "Almost" geo reply*/
     XtArgsProc      get_values_hook;    /* notify that get_values called    */
-    XtWidgetProc    accept_focus;      /* assign input focus to widget      */
-    XtVersionType   version;	       /* version of intrinsics used	    */
+    XtWidgetProc    accept_focus;       /* assign input focus to widget     */
+    XtVersionType   version;	        /* version of intrinsics used	    */
     struct _XtOffsetRec *callback_private;/* list of callback offsets       */
-    String         tm_table;          /* state machine                      */
+    String         tm_table;            /* state machine                    */
+    XtGeometryHandler query_geometry;	/* return preferred geometry        */
   } CoreClassPart;
 
 typedef struct _WidgetClassRec {
@@ -143,6 +144,7 @@ extern int _XtInheritTranslations;
 #define XtInheritExpose ((XtExposeProc) _XtInherit)
 #define XtInheritSetValuesAlmost ((XtAlmostProc) _XtInherit)
 #define XtInheritAcceptFocus ((XtWidgetProc) _XtInherit)
+#define XtInheritQueryGeometry ((XtGeometryHandler) _XtInherit)
 
 #endif _XtCoreP_h
 /* DON'T ADD STUFF AFTER THIS #endif */
