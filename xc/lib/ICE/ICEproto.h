@@ -1,4 +1,4 @@
-/* $XConsortium: ICEproto.h,v 1.1 93/08/17 18:58:50 mor Exp $ */
+/* $XConsortium: ICEproto.h,v 1.1 93/08/19 18:25:19 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -62,8 +62,10 @@ typedef struct {
     CARD8	majorOpcode;
     CARD8	minorOpcode;
     CARD8	authIndex;
-    CARD8	unused;
+    CARD8	unused1;
     CARD32	length B32;
+    CARD16	authDataLength B16;
+    CARD8	unused2[6];
     /* n	varying data */
     /* p	p = pad (n) */
 } iceAuthRequiredMsg;
@@ -71,8 +73,10 @@ typedef struct {
 typedef struct {
     CARD8	majorOpcode;
     CARD8	minorOpcode;
-    CARD8	unused[2];
+    CARD8	unused1[2];
     CARD32	length B32;
+    CARD16	authDataLength B16;
+    CARD8	unused2[6];
     /* n	varying data */
     /* p	p = pad (n) */
 } iceAuthReplyMsg;
@@ -80,8 +84,10 @@ typedef struct {
 typedef struct {
     CARD8	majorOpcode;
     CARD8	minorOpcode;
-    CARD8	unused[2];
+    CARD8	unused1[2];
     CARD32	length B32;
+    CARD16	authDataLength B16;
+    CARD8	unused2[6];
     /* n	varying data */
     /* p	p = pad (n) */
 } iceAuthNextPhaseMsg;
@@ -139,9 +145,9 @@ typedef iceMsg  iceNoCloseMsg;
 #define sz_iceErrorMsg			16
 #define sz_iceByteOrderMsg		8
 #define sz_iceConnectionSetupMsg        8
-#define sz_iceAuthRequiredMsg		8
-#define sz_iceAuthReplyMsg		8
-#define sz_iceAuthNextPhaseMsg		8
+#define sz_iceAuthRequiredMsg		16
+#define sz_iceAuthReplyMsg		16
+#define sz_iceAuthNextPhaseMsg		16
 #define sz_iceConnectionReplyMsg	8
 #define sz_iceProtocolSetupMsg		16
 #define sz_iceProtocolReplyMsg		8
