@@ -1,4 +1,4 @@
-! $XConsortium: XSm.ad,v 1.25 94/12/21 16:58:26 mor Exp mor $
+! $XConsortium: XSm.ad,v 1.26 94/12/30 16:14:48 mor Exp mor $
 *chooseSessionPopup*font:		12x24
 *chooseSessionLabel.label:		Session Menu
 *chooseSessionMessageLabel.label:	Press button again to confirm...
@@ -20,6 +20,7 @@
 *shutdownDontSave.label:	Immediately
 
 *logPopup.title:		Session Log
+*logPopup.iconName:		Session Log
 *logOkButton.label:		OK
 *logText.width:			600
 *logText.height:		300
