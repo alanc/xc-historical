@@ -27,7 +27,14 @@
  * Get major data types (esp. caddr_t)
  */
 
+#ifdef CRAY
+#ifndef __TYPES__
+#define __TYPES__
+#include <sys/types.h>			/* forgot to protect it... */
+#endif /* __TYPES__ */
+#else
 #include <sys/types.h>
+#endif /* CRAY */
 
 
 /*
