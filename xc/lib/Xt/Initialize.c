@@ -1,4 +1,4 @@
-/* "$XConsortium: Initialize.c,v 1.161 90/12/11 12:20:25 rws Exp $"; */
+/* "$XConsortium: Initialize.c,v 1.162 90/12/12 14:51:41 rws Exp $"; */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 
 /***********************************************************
@@ -654,7 +654,7 @@ XrmOptionDescRec *options,
 Cardinal num_options,
 Cardinal *argc_in_out,
 String *argv_in_out,
-_Xconst char** fallback_resources,
+_Xconst char * _Xconst * fallback_resources,
 ArgList args_in,
 Cardinal num_args_in
 )
