@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.22 89/02/24 12:54:11 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.23 89/02/24 13:37:06 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -356,11 +356,11 @@
 #define StandardDefines         /**/
 #endif
 #endif
-#ifndef SysLastLibraries
-#define SysLastLibraries       /**/
+#ifndef ExtraLibraries
+#define ExtraLibraries        /**/
 #endif
-#ifndef SysAuxLibraries
-#define SysAuxLibraries        /**/
+#ifndef ExtraLoadFlags
+#define ExtraLoadFlags       /**/
 #endif
 #ifndef TagsCmd
 #define TagsCmd                ctags
@@ -393,8 +393,8 @@
                RM = RmCmd
   STD_CPP_DEFINES = StandardCppDefines
       STD_DEFINES = StandardDefines
-SYSLAST_LIBRARIES = SysLastLibraries
- SYSAUX_LIBRARIES = SysAuxLibraries
+ EXTRA_LOAD_FLAGS = ExtraLoadFlags
+  EXTRA_LIBRARIES = ExtraLibraries
              TAGS = TagsCmd
 #if ConstructMFLAGS
            MFLAGS = -$(MAKEFLAGS)
@@ -417,7 +417,7 @@ SYSLAST_LIBRARIES = SysLastLibraries
       CDEBUGFLAGS = DefaultCDebugFlags
            CFLAGS = $(CDEBUGFLAGS) $(INCLUDES) $(STD_DEFINES) $(DEFINES)
         LINTFLAGS = $(LINTOPTS) $(INCLUDES) $(STD_DEFINES) $(DEFINES) -DLINT
-          LDFLAGS = $(CDEBUGFLAGS) $(SYS_LIBRARIES) $(SYSAUX_LIBRARIES)
+          LDFLAGS = $(CDEBUGFLAGS) $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
 
         MACROFILE = MacroFile
            RM_CMD = $(RM) *.CKP *.ln *.BAK *.bak *.o core errs ,* *~ *.a \

@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.10 89/01/20 11:00:39 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.11 89/02/21 18:48:22 jim Exp $
 
 /*
  * MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -11,10 +11,11 @@
 
 /*
  * general linking order:
- *   program-objects programlibs syslibs SYSAUX systemlibs SYSLAST
+ *   program-objects programlibs syslibs EXTRA_LIBRARIES systemlibs \
+ *              EXTRA_LOAD_FLAGS
  *
  * where programlibs is LOCAL_LIBRARIES for ComplexProgramTarget
- * and SYSAUX comes with syslibs from the LDFLAGS
+ * and EXTRA comes with syslibs from the LDFLAGS
  */
 
 
@@ -25,7 +26,7 @@
 #define	SingleProgramTarget(program,objects,locallibs,syslibs)		@@\
 program: objects locallibs						@@\
 	$(RM) $@							@@\
-	$(CC) -o $@ objects locallibs $(LDFLAGS) syslibs $(SYSLAST_LIBRARIES)		@@\
+	$(CC) -o $@ objects locallibs $(LDFLAGS) syslibs $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 relink::								@@\
 	$(RM) program							@@\
@@ -55,7 +56,7 @@ AllTarget(program)							@@\
 									@@\
 program: $(OBJS) $(LOCAL_LIBRARIES)					@@\
 	$(RM) $@							@@\
-	$(CC) -o $@ $(OBJS) $(LOCAL_LIBRARIES) $(LDFLAGS) $(SYSLAST_LIBRARIES)		@@\
+	$(CC) -o $@ $(OBJS) $(LOCAL_LIBRARIES) $(LDFLAGS) $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 relink::								@@\
 	$(RM) $(PROGRAM)						@@\
@@ -79,7 +80,7 @@ AllTarget($(PROGRAMS))							@@\
 									@@\
 program: $(OBJS1) locallib						@@\
 	$(RM) $@							@@\
-	$(CC) -o $@ $(OBJS1) locallib $(LDFLAGS) syslib $(SYSLAST_LIBRARIES)			@@\
+	$(CC) -o $@ $(OBJS1) locallib $(LDFLAGS) syslib $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))					@@\
@@ -96,7 +97,7 @@ clean::									@@\
 #define	ComplexProgramTarget_2(program,locallib,syslib)			@@\
 program: $(OBJS2) locallib						@@\
 	$(RM) $@							@@\
-	$(CC) -o $@ $(OBJS2) locallib $(LDFLAGS) syslib $(SYSLAST_LIBRARIES)			@@\
+	$(CC) -o $@ $(OBJS2) locallib $(LDFLAGS) syslib $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))
@@ -104,7 +105,7 @@ InstallManPage(program,$(MANDIR))
 #define	ComplexProgramTarget_3(program,locallib,syslib)			@@\
 program: $(OBJS3) locallib						@@\
 	$(RM) $@							@@\
-	$(CC) -o $@ $(OBJS3) locallib $(LDFLAGS) syslib $(SYSLAST_LIBRARIES)			@@\
+	$(CC) -o $@ $(OBJS3) locallib $(LDFLAGS) syslib $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))
@@ -113,12 +114,12 @@ InstallManPage(program,$(MANDIR))
 server: subdirs objects libs						@@\
 	-@if [ -f server ]; then echo "$(MV) server server.bak"; \	@@\
 		$(MV) server server.bak; else exit 0; fi		@@\
-	$(CC) $(CDEBUGFLAGS) -o server objects libs $(SYSAUX_LIBRARIES) syslibs $(SYSLAST_LIBRARIES)		@@\
+	$(CC) $(CDEBUGFLAGS) -o server objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 load/**/server:								@@\
 	-@if [ -f server ]; then echo "$(MV) server server.bak"; \	@@\
 		$(MV) server server.bak; else exit 0; fi		@@\
-	$(CC) $(CDEBUGFLAGS) -o server objects libs $(SYSAUX_LIBRARIES) syslibs $(SYSLAST_LIBRARIES)
+	$(CC) $(CDEBUGFLAGS) -o server objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)
 
 /*
  * Install a Library.
