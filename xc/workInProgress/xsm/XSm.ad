@@ -1,6 +1,7 @@
-*clientInfoButton.label:	Client List...
-*checkPointButton.label:	Checkpoint...
-*shutdownButton.label:		Shutdown...
+*clientInfoButton.label:	Client List
+*checkPointButton.label:	Checkpoint
+*shutdownButton.label:		Shutdown
+*nameSessionButton.label:	Name Session...
 
 *clientInfoPopup.title:		Client List
 *viewPropButton.label:		View Properties
@@ -8,7 +9,7 @@
 *clientInfoDoneButton.label:	Done
 
 *clientPropTextWidget.width:	500
-*clientPropTextWidget.height:	250
+*clientPropTextWidget.height:	300
 *clientPropDoneButton.label:	Done
 
 *saveTypeLabel.label:		Save Type     
