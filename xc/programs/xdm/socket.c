@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.15 89/12/13 15:24:29 keith Exp $
+ * $XConsortium: socket.c,v 1.16 90/02/12 17:56:32 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -96,7 +96,7 @@ WaitForSomething ()
     extern int Rescan, ChildReady;
 
     Debug ("WaitForSomething\n");
-    if (socketFd != -1) {
+    if (socketFd != -1 && !ChildReady) {
 	reads = WellKnownSocketsMask;
 	nready = select (WellKnownSocketsMax + 1, &reads, 0, 0, 0);
 	Debug ("select returns %d.  Rescan: %d  ChildReady: %d\n",
