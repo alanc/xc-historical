@@ -1,4 +1,4 @@
-/* $XConsortium: StNColor.c,v 11.23 93/07/05 11:43:56 rws Exp $ */
+/* $XConsortium: StNColor.c,v 11.24 93/11/05 11:13:18 kaleb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -46,7 +46,7 @@ int flags;  /* DoRed, DoGreen, DoBlue */
      */
     if ((ccc = XcmsCCCOfColormap(dpy, cmap)) != (XcmsCCC)NULL) {
 	if (_XcmsResolveColorString(ccc, &name, &cmsColor_exact,
-		XcmsRGBFormat) != XcmsFailure) {
+		XcmsRGBFormat) >= XcmsSuccess) {
 	    _XcmsRGB_to_XColor(&cmsColor_exact, &scr_def, 1);
 	    scr_def.pixel = pixel;
 	    scr_def.flags = flags;

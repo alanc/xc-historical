@@ -1,4 +1,4 @@
-/* $XConsortium: GetColor.c,v 11.26 93/07/05 11:43:46 rws Exp $ */
+/* $XConsortium: GetColor.c,v 11.27 93/09/07 21:30:41 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -51,7 +51,7 @@ XColor *exact_def; /* RETURN */
     /* copy string to allow overwrite by _XcmsResolveColorString() */
     if ((ccc = XcmsCCCOfColormap(dpy, cmap)) != (XcmsCCC)NULL) {
 	if (_XcmsResolveColorString(ccc, &colorname, &cmsColor_exact,
-		XcmsRGBFormat) != XcmsFailure) {
+		XcmsRGBFormat) >= XcmsSuccess) {
 	    _XcmsRGB_to_XColor(&cmsColor_exact, exact_def, 1);
 	    memcpy((char *)hard_def, (char *)exact_def, sizeof(XColor));
 	    ret = XAllocColor(dpy, cmap, hard_def);

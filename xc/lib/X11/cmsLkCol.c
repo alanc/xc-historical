@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLkCol.c,v 1.12 93/07/05 11:44:13 rws Exp $ */
+/* $XConsortium: cmsLkCol.c,v 1.13 93/09/07 21:33:01 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -114,7 +114,10 @@ XcmsLookupColor(dpy, cmap, colorname, pColor_exact_return, pColor_scrn_return,
  * 1. Convert string to a XcmsColor
  */
     if ((retval1 = _XcmsResolveColorString(ccc, &colorname,
-	    pColor_exact_return, result_format)) != XcmsSuccess) {
+	    pColor_exact_return, result_format)) == XcmsFailure) {
+	return(XcmsFailure);
+    }
+    if (retval1 == _XCMS_NEWNAME) {
 	goto PassToServer;
     }
 

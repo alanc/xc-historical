@@ -1,4 +1,4 @@
-/* $XConsortium: XParseCol.c,v 11.28 93/07/05 11:38:56 rws Exp $ */
+/* $XConsortium: ParseCol.c,v 11.29 93/07/05 11:43:53 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -83,7 +83,7 @@ Status XParseColor (dpy, cmap, spec, def)
 	 */
 	if ((ccc = XcmsCCCOfColormap(dpy, cmap)) != (XcmsCCC)NULL) {
 	    if (_XcmsResolveColorString(ccc, &spec,
-		    &cmsColor, XcmsRGBFormat) != XcmsFailure) {
+		    &cmsColor, XcmsRGBFormat) >= XcmsSuccess) {
 		cmsColor.pixel = def->pixel;
 		_XcmsRGB_to_XColor(&cmsColor, def, 1);
 		return(1);
