@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.17 87/06/16 10:18:57 toddb Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.18 87/06/22 23:40:33 dkk Locked $";
 #endif
 
 /*%
@@ -60,10 +60,13 @@ static char *rcsid_xwd_c = "$Header: xwd.c,v 1.17 87/06/16 10:18:57 toddb Locked
 
 /* Setable Options */
 
-int format = ZPixmap;
+int format = XYPixmap;
 Bool nobdrs = False;
 Bool standard_out = True;
 Bool debug = False;
+
+extern int (*_XErrorFunction)();
+extern int _XDefaultError();
 
 main(argc, argv)
     int argc;
@@ -76,6 +79,9 @@ main(argc, argv)
     INIT_NAME;
 
     Setup_Display_And_Screen(&argc, argv);
+
+    if (DisplayPlanes(dpy, 0) > 1)
+        format = ZPixmap;
 
     for (i = 1; i < argc; i++) {
 	if (!strcmp(argv[i], "-nobdrs")) {
@@ -190,7 +196,7 @@ Window_Dump(window, out)
      */
 
     image = XGetImage ( dpy, window, 0, 0, virt_width,
-		       virt_height, ~0, format);
+		       virt_height, ~0, format); 
     if (debug) outl("xwd: Getting pixmap.\n");
 
     /*
@@ -201,6 +207,8 @@ Window_Dump(window, out)
     /*
      * Get XColors of all pixels used in the pixmap
      */
+
+    if (debug) outl("xwd: Getting Colors.\n");
 
     ncolors = Get_XColors(win_info, &pixcolors);
 
@@ -367,19 +375,22 @@ int Image_Size(image)
  */
 int Get_XColors(win_info, pixcolors)
      XWindowAttributes win_info;
-     XColor *pixcolors[];
+     XColor **pixcolors;
 {
     int i, ncolors;
+#ifndef COLOR
+    return(0);
+#endif
 
     ncolors = 1 << (win_info.depth);
 
-    if (!(*pixcolors = (XColor *) malloc( sizeof(XColor *) * ncolors )))
+    if (!(*pixcolors = (XColor *) malloc( sizeof(XColor) * ncolors )))
       Fatal_Error("Out of memory!");
 
     for (i=0; i<ncolors; i++)
       (*pixcolors)[i].pixel = i;
 
-    XQueryColors(dpy, win_info.colormap, pixcolors, ncolors);
+    XQueryColors(dpy, win_info.colormap, *pixcolors, ncolors);
     
     return(ncolors);
 }
