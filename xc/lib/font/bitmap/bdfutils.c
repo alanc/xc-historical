@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfutils.c,v 1.1 91/05/10 14:45:36 keith Exp $ */
+/* $XConsortium: bdfutils.c,v 1.2 91/05/10 15:58:21 keith Exp $ */
 
 #include <ctype.h>
 
@@ -258,6 +258,10 @@ static char *SpecialAtoms[] = {
 #define BDF_QUAD_WIDTH 7
     "FONT",
 #define BDF_FONT 8
+    "RESOLUTION_X",
+#define BDF_RESOLUTION_X 9
+    "RESOLUTION_Y",
+#define BDF_RESOLUTION_Y 10
     0,
 };
 
@@ -312,6 +316,12 @@ bdfSpecialProperty(pFont, prop, isString, bdfState)
 	return FALSE;
     case BDF_FONT:
 	bdfState->fontProp = prop;
+	return FALSE;
+    case BDF_RESOLUTION_X:
+	bdfState->resolutionXProp = prop;
+	return FALSE;
+    case BDF_RESOLUTION_Y:
+	bdfState->resolutionYProp = prop;
 	return FALSE;
     default:
 	return FALSE;
