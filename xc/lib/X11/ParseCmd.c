@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: ParseCmd.c,v 1.3 87/11/23 12:40:47 swick Locked $";
+static char rcsid[] = "$Header: ParseCmd.c,v 1.4 88/01/29 10:38:01 swick Locked $";
 #endif lint
 
 /*
@@ -91,7 +91,7 @@ void XrmParseCommand(rdb, table, tableCount, prependName, argc, argv)
 		strcmp(table[i].option, table[i-1].option) < 0) {
 		table_is_sorted = NotSorted;
 	    }
-	    for (argP=*argv, optP=table[i].option;
+	    for (argP = *argv, optP = table[i].option;
 		 (optchar = *optP++) != NULL &&
 		 (argchar = *argP++) != NULL &&
 		 argchar == optchar;);
