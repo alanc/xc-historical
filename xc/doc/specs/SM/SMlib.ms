@@ -2613,10 +2613,10 @@ In both cases, the host based authentication procedure invoked is of type
 .LP
 .sM
 typedef Bool (*IceHostBasedAuthProc) ();
-.br
-    char *\fIhost_name\fP\^;
 .FD 0
 Bool HostBasedAuthProc\^(\^\fIhost_name\fP\^)
+.br
+    char *\fIhost_name\fP\^;
 .FN
 .IP \fIhost_name\fP 1i
 The host name of the client.
