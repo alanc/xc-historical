@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.22 91/01/09 14:51:11 rws Exp $
+XCOMM platform:  $XConsortium: cray.cf,v 1.23 91/02/15 21:11:31 rws Exp $
 
 
 /*
@@ -11,47 +11,36 @@ XCOMM platform:  $XConsortium: cray.cf,v 1.22 91/01/09 14:51:11 rws Exp $
 #define OSMajorVersion		5
 #define OSMinorVersion		1
 
-#define InstallCmd sh $(SCRIPTSRC)/install.sh
 #define RemoveTargetProgramByMoving YES
+#define InstallCmd		sh $(SCRIPTSRC)/install.sh
+#define ArCmd			bld cr
 #define LibraryDefines 		-DSYSV -DUSG
 #define StandardDefines		-DSYSV -DUSG
 #define StandardCppDefines	-DSYSV -DUSG
 #define ExecableScripts		NO
 #define BuildServer		NO
-#if OSMajorVersion >= 6 || OSMajorVersion >= 5 && OSMinorVersion >= 1
 #define CcCmd			scc
-#define CrayUsingSCC		YES
-#else
-#define CcCmd			cc
+#define ConnectionFlags		-DTCPCONN 
+
+#ifdef CRAY2
+#define DefaultCCOptions	-hpagelm -hlimitlm
 #endif
 
-
-#ifdef CRAY1
-#define Cray1Architecture
-#define DefaultCCOptions /**/
-#else /* CRAY 2 */
-#define Cray2Architecture
-#ifdef CrayUsingSCC
-#define DefaultCCOptions -hpagelm -hlimitlm
-#else
-#define DefaultCCOptions -hsharelm -hnocache
-#endif
-#endif
-
-
-#if CRAY2 && OSMajorVersion < 6
-#define LoaderLibPrefix -L
-#else			/* XMP, YMP, CRAY2 && UNICOS6 */
+#ifndef UseInstalled
 #define LoaderLibPrefix -l
+#  if CRAY2 && OSMajorVersion < 6
+#  undef  LoaderLibPrefix
+#  define LoaderLibPrefix -L
+#  endif
 #endif
 
-#if UNICOS4
-#define ConnectionFlags -DTCPCONN -DOLDTCP
+#if OSMajorVersion >= 6
+#define PreProcessCmd 		/lib/pcpp
+#define CppCmd	 		/lib/pcpp
 #else
-#define ConnectionFlags -DTCPCONN 
+#  if OSMajorVersion == 5
+#  define PreProcessCmd 	/lib/cpp
+#  define CppCmd	 	/lib/cpp
+#  define ExtraLoadFlags        -lnet
+#  endif
 #endif
-
-#define ExtraLoadFlags        -lnet
-#define ArCmd                 bld cr
-
-
