@@ -998,7 +998,7 @@
 (defun free-colormap (colormap)
   (declare (type colormap colormap))
   (let ((display (colormap-display colormap)))
-    (with-buffer-request (display *x-freeColormap*)
+    (with-buffer-request (display *x-freecolormap*)
       (colormap colormap))
     (deallocate-resource-id display (colormap-id colormap) 'colormap)))
 
