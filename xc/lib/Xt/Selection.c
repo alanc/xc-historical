@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.47 90/04/04 11:28:27 swick Exp $ */
+/* $XConsortium: Selection.c,v 1.48 90/07/27 12:02:09 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -677,6 +677,8 @@ Boolean incremental;
     SelectRec oldctx;
     Window window;
     Boolean old_context = FALSE;
+
+    if (!XtIsRealized(widget)) return False;
 
     ctx = FindCtx(XtDisplay(widget), selection);
     if (ctx->widget != widget || ctx->time != time)
