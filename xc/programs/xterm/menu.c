@@ -15,8 +15,10 @@
 Arg menuArgs[2] = {{ XtNleftBitmap, (XtArgVal) 0 },
 		   { XtNsensitive, (XtArgVal) 0 }};
 
+void do_hangup();
+
 static void do_securekbd(), do_allowsends(), do_visualbell(), do_logging(),
-  do_redraw(), do_suspend(), do_continue(), do_interrupt(), do_hangup(),
+  do_redraw(), do_suspend(), do_continue(), do_interrupt(), 
   do_terminate(), do_kill(), do_quit(), do_scrollbar(), do_jumpscroll(),
   do_reversevideo(), do_autowrap(), do_reversewrap(), do_autolinefeed(),
   do_appcursor(), do_appkeypad(), do_scrollkey(), do_scrollttyoutput(),
@@ -393,7 +395,7 @@ static void do_interrupt (gw, closure, data)
 }
 
 
-static void do_hangup (gw, closure, data)
+void do_hangup (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.157 90/08/23 09:26:03 rws Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.158 90/11/08 15:27:42 dave Exp $";
 #endif	/* lint */
 
 /*
@@ -563,6 +563,7 @@ XtAppContext app_con;
 Widget toplevel;
 Bool waiting_for_initial_map;
 
+extern void do_hangup();
 /*
  * DeleteWindow(): Action proc to implement ICCCM delete_window.
  */
@@ -577,12 +578,12 @@ Cardinal * num_params;
     if (term->screen.Tshow)
       set_vt_visibility(FALSE);
     else
-      exit(0);
+      do_hangup(w);
   else
     if (term->screen.Vshow)
       set_tek_visibility(FALSE);
     else
-      exit(0);
+      do_hangup(w);
 }
 
 XtActionsRec actionProcs[] = {
