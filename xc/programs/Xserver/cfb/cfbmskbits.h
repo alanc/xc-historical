@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $Header: cfbmskbits.h,v 4.2 87/09/10 17:53:42 rws Locked $ */
+/* $Header: cfbmskbits.h,v 4.3 88/02/01 20:36:10 rws Exp $ */
 
 extern int cfbstarttab[];
 extern int cfbendtab[];
@@ -201,9 +201,9 @@ getleftbits(psrc, w, dst)
 	<=PPW bits wide.
 */
 
-#include	<X.h>
-#include	<Xmd.h>
-#include	<servermd.h>
+#include	"X.h"
+#include	"Xmd.h"
+#include	"servermd.h"
 #if	(BITMAP_BIT_ORDER == MSBFirst)
 #define SCRLEFT(lw, n)	((lw) << ((n)*PSZ))
 #define SCRRIGHT(lw, n)	((lw) >> ((n)*PSZ))
