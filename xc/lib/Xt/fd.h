@@ -1,5 +1,5 @@
 /*
-* $Header: fd.h,v 1.4 88/02/02 08:39:07 swick Locked $
+* $Header: fd.h,v 1.5 88/02/03 14:03:52 swick Exp $
 */
 
 /*
@@ -39,20 +39,16 @@
 #define	FD_SETSIZE	256
 #endif
 
-#ifndef FD_SET
-typedef long	fd_mask;
-#define NFDBITS	(sizeof(fd_mask) * NBBY)	/* bits per mask */
-#ifndef howmany
-#define	howmany(x, y)	(((x)+((y)-1))/(y))
-#endif
+typedef long	xfd_mask;
+#define NXFDBITS (sizeof(xfd_mask) * NBBY)	/* bits per mask */
+#define	countfdmasks(x, y) (((x)+((y)-1))/(y))
 
-typedef	struct fd_set {
-	fd_mask	fds_bits[howmany(FD_SETSIZE, NFDBITS)];
-} fd_set;
+typedef	struct xfd_set {
+	xfd_mask fds_bits[countfdmasks(FD_SETSIZE, NXFDBITS)];
+} xfd_set;
 
-#define	FD_SET(n, p)	((p)->fds_bits[(n)/NFDBITS] |= (1 << ((n) % NFDBITS)))
-#define	FD_CLR(n, p)	((p)->fds_bits[(n)/NFDBITS] &= ~(1 << ((n) % NFDBITS)))
-#define	FD_ISSET(n, p)	((p)->fds_bits[(n)/NFDBITS] & (1 << ((n) % NFDBITS)))
-#endif /* FD_SET */
+#define	XFD_SET(n, p)	((p)->fds_bits[(n)/NXFDBITS] |= (1 << ((n) % NXFDBITS)))
+#define	XFD_CLR(n, p)	((p)->fds_bits[(n)/NXFDBITS] &= ~(1 << ((n) % NXFDBITS)))
+#define	XFD_ISSET(n, p)	((p)->fds_bits[(n)/NXFDBITS] & (1 << ((n) % NXFDBITS)))
 
 #endif

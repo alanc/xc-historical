@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: NextEvent.c,v 1.35 88/02/03 14:06:04 swick Locked $";
+static char rcsid[] = "$Header: NextEvent.c,v 1.36 88/02/03 22:04:42 swick Exp $";
 #endif lint
 
 /*
@@ -71,9 +71,9 @@ static struct  InputEvent *outstanding_queue = NULL;
 
 static struct 
 {
-  	fd_set rmask;
-	fd_set wmask;
-	fd_set emask;
+  	xfd_set rmask;
+	xfd_set wmask;
+	xfd_set emask;
 	int	nfds;
 } composite;
 
@@ -151,8 +151,8 @@ unsigned long *howlong;
 	struct timeval	max_wait_time;
 	static struct timeval  zero_time = { 0 , 0};
 	register struct timeval *wait_time_ptr;
-	fd_set rmaskfd, wmaskfd, emaskfd;
-	static fd_set zero = { 0 };
+	xfd_set rmaskfd, wmaskfd, emaskfd;
+	static xfd_set zero = { 0 };
 	register int     nfound, i;
 	Boolean ret;
 	
@@ -186,14 +186,14 @@ unsigned long *howlong;
 		    } else wait_time_ptr = &zero_time;
 		} 
 		if( !ignoreInputs ) {
-			FD_SET (ConnectionNumber (toplevelDisplay), 
-				&composite.rmask);
+			XFD_SET (ConnectionNumber (toplevelDisplay), 
+				 &composite.rmask);
 			rmaskfd = composite.rmask;
 			wmaskfd = composite.wmask;
 			emaskfd = composite.emask;
 		} else {
 			rmaskfd = wmaskfd = emaskfd = zero;
-			FD_SET (ConnectionNumber (toplevelDisplay), &rmaskfd);
+			XFD_SET (ConnectionNumber (toplevelDisplay), &rmaskfd);
 		}
 		if ((nfound = select (composite.nfds,
 			      (int *) & rmaskfd, (int *) & wmaskfd,
@@ -242,12 +242,12 @@ unsigned long *howlong;
 	        }
 	}
 	if(ignoreInputs) {
-	  if(FD_ISSET( ConnectionNumber (toplevelDisplay), &rmaskfd))
+	  if(XFD_ISSET( ConnectionNumber (toplevelDisplay), &rmaskfd))
 	    return TRUE;
         }
 	ret = FALSE;
 	for (i = 0; i < composite.nfds && nfound > 0; i++) {
-	    if (FD_ISSET (i, &rmaskfd)) {
+	    if (XFD_ISSET (i, &rmaskfd)) {
 		if (i == ConnectionNumber (toplevelDisplay)) {
 			ret = TRUE;
 		} else {
@@ -256,12 +256,12 @@ unsigned long *howlong;
 		    nfound--;
 		}
 	    }
-	    if (FD_ISSET (i, &wmaskfd)) {
+	    if (XFD_ISSET (i, &wmaskfd)) {
 		Select_wqueue[i]->ie_oq = outstanding_queue;
 		outstanding_queue = Select_wqueue[i];
 		nfound--;
 	    }
-	    if (FD_ISSET (i, &emaskfd)) {
+	    if (XFD_ISSET (i, &emaskfd)) {
 		Select_equeue[i]->ie_oq = outstanding_queue;
 		outstanding_queue = Select_equeue[i];
 		nfound--;
@@ -344,17 +344,17 @@ caddr_t closure;
 	    sptr->ie_next = Select_rqueue[source];
 	    sptr->ie_source = source;
 	    Select_rqueue[source] = sptr;
-	    FD_SET(source, &composite.rmask);
+	    XFD_SET(source, &composite.rmask);
 	} else if(condition == XtInputWriteMask) {
 	    sptr = (struct InputEvent *) XtMalloc((unsigned) sizeof (*sptr));
 	    sptr->ie_next = Select_wqueue[source];
 	    Select_wqueue[source] = sptr;
-	    FD_SET(source, &composite.wmask);
+	    XFD_SET(source, &composite.wmask);
 	} else if(condition == XtInputExceptMask) {
 	    sptr = (struct InputEvent *) XtMalloc((unsigned) sizeof (*sptr));
 	    sptr->ie_next = Select_equeue[source];
 	    Select_equeue[source] = sptr;
-	    FD_SET(source, &composite.emask);
+	    XFD_SET(source, &composite.emask);
 	} else
 	  XtError("invalid condition passed to XtAddInput");
 	sptr->ie_proc = proc;
@@ -378,7 +378,7 @@ XtInputId  id;
 			if(sptr == (struct InputEvent *) id) {
 				if(lptr == NULL) {
 					Select_rqueue[source] = sptr->ie_next;
-					FD_CLR(source, &composite.rmask);
+					XFD_CLR(source, &composite.rmask);
 				} else {
 					lptr->ie_next = sptr->ie_next;
 				}
@@ -393,7 +393,7 @@ XtInputId  id;
 			if ( sptr ==  (struct InputEvent *) id) {
 				if(lptr == NULL){
 					Select_wqueue[source] = sptr->ie_next;
-					FD_CLR(source, &composite.wmask);
+					XFD_CLR(source, &composite.wmask);
 				}else {
 					lptr->ie_next = sptr->ie_next;
 				}
@@ -409,7 +409,7 @@ XtInputId  id;
 			if ( sptr ==  (struct InputEvent *) id) {
 				if(lptr == NULL){
 					Select_equeue[source] = sptr->ie_next;
-					FD_CLR(source, &composite.emask);
+					XFD_CLR(source, &composite.emask);
 				}else {
 					lptr->ie_next = sptr->ie_next;
 				}
@@ -512,7 +512,7 @@ Boolean XtPending()
 XtPeekEvent(event)
 XEvent *event;
 {
-    fd_set rmaskfd, wmaskfd, emaskfd;
+    xfd_set rmaskfd, wmaskfd, emaskfd;
     register int nfound, i;
     struct timeval cur_time, wait_time, *wait_time_ptr;
     struct timezone curzone;
@@ -547,7 +547,7 @@ XEvent *event;
 	    if (ConnectionNumber (toplevelDisplay) + 1 > composite.nfds)
 	      composite.nfds = ConnectionNumber (toplevelDisplay) + 1;
 	    while (1) {
-		    FD_SET(ConnectionNumber (toplevelDisplay), 
+		    XFD_SET(ConnectionNumber (toplevelDisplay), 
 			   &composite.rmask);
 		    if (TimerQueue != NULL) {
 			    TIMEDELTA (wait_time, TimerQueue->te_timer_value, 
@@ -569,7 +569,7 @@ XEvent *event;
 	      continue;
 	    
 	    for(i = 0; i < composite.nfds && nfound > 0;i++) {
-		    if(FD_ISSET(i,&rmaskfd)) {
+		    if(XFD_ISSET(i,&rmaskfd)) {
 			    if(i == ConnectionNumber(toplevelDisplay)) {
 				    Claims_X_is_pending= 1;
 			    } 
@@ -579,13 +579,13 @@ XEvent *event;
 				    outstanding_queue = Select_rqueue[i];
 				    nfound--;
 			    }
-			    if(FD_ISSET(i,&wmaskfd)) {
+			    if(XFD_ISSET(i,&wmaskfd)) {
 				    Select_wqueue[i] -> ie_oq = 
 				      outstanding_queue;
 				    outstanding_queue = Select_wqueue[i];
 				    nfound--;
 			    }
-			    if(FD_ISSET(i,&emaskfd)) {
+			    if(XFD_ISSET(i,&emaskfd)) {
 				    Select_equeue[i] -> ie_oq = 
 				      outstanding_queue;
 				    outstanding_queue = Select_equeue[i];
