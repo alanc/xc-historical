@@ -1,4 +1,4 @@
-.\" $XConsortium: protocol.ms,v 1.16 94/05/02 09:25:10 gildea Exp $
+.\" $XConsortium: protocol.ms,v 1.17 94/05/02 09:55:38 gildea Exp $
 .\" Use tbl, -ms, and macros.t
 .EH ''''
 .OH ''''
@@ -18,6 +18,8 @@
 .sp 6
 Jim Fulton
 Network Computing Devices, Inc.
+.sp 6
+Revised May 2, 1994
 .ce 0
 .bp
 .br
