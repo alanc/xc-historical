@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.68 94/02/02 08:42:14 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.69 94/03/31 18:32:39 gildea Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -6,6 +6,7 @@ XCOMM $XConsortium: Imakefile,v 1.68 94/02/02 08:42:14 gildea Exp $
 
 #ifndef SharedLibXdmGreet
 /* Can someone figure out how to make this work on more systems? */
+/* Theoretically works on SVR4Architecture, but hasn't been tested enough */
 #define SharedLibXdmGreet defined(AlphaArchitecture)
 /* #define SharedLibXdmGreet HasSharedLibraries */
 #endif
@@ -32,6 +33,9 @@ KRB5SRCS = krb5auth.c
 
 #if SharedLibXdmGreet
 GREET_DIR = greeter
+#if defined(SVR4Architecture)
+    DLLIB = -ldl
+#endif
 #else
 GREET_DEFINES = -DGREET_USER_STATIC
 GREETSRCS = greet.c verify.c Login.c
@@ -58,7 +62,7 @@ SOCK_DEFINES = -DBSD44SOCKETS
 
 INCLUDES = $(KRB5_INCLUDE)
 DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB) $(DEPXAUTHLIB) $(DEPXDMCPLIB)
-LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB)
+LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB) $(DLLIB)
 
           SRCS1 = auth.c daemon.c server.c dpylist.c dm.c error.c file.c \
 		  netaddr.c reset.c resource.c protodpy.c policy.c \

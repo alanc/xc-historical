@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.67 94/02/10 15:47:28 gildea Exp $
+ * $XConsortium: session.c,v 1.68 94/02/10 19:04:50 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -48,11 +48,67 @@
 #endif
 #endif
 
+extern	int	PingServer();
+extern	int	SessionPingFailed();
+extern	int	Debug();
+extern	int	RegisterCloseOnFork();
+extern	int	SecureDisplay();
+extern	int	UnsecureDisplay();
+extern	int	ClearCloseOnFork();
+extern	int	SetupDisplay();
+extern	int	LogError();
+extern	int	SessionExit();
+extern	int	DeleteXloginResources();
+extern	int	source();
+extern	char	**defaultEnv();
+extern	char	**setEnv();
+extern	char	**parseArgs();
+extern	int	printEnv();
+extern	char	**systemEnv();
+extern	int	LogOutOfMem();
+extern	void	setgrent();
+extern	struct group	*getgrent();
+extern	void	endgrent();
+#ifdef USESHADOW
+extern	struct spwd	*getspnam();
+extern	void	endspent();
+#endif
+extern	struct passwd	*getpwnam();
+extern	char	*crypt();
+
+static	struct dlfuncs	dlfuncs = {
+	PingServer,
+	SessionPingFailed,
+	Debug,
+	RegisterCloseOnFork,
+	SecureDisplay,
+	UnsecureDisplay,
+	ClearCloseOnFork,
+	SetupDisplay,
+	LogError,
+	SessionExit,
+	DeleteXloginResources,
+	source,
+	defaultEnv,
+	setEnv,
+	parseArgs,
+	printEnv,
+	systemEnv,
+	LogOutOfMem,
+	setgrent,
+	getgrent,
+	endgrent,
+#ifdef USESHADOW
+	getspnam,
+	endspent,
+#endif
+	getpwnam,
+	crypt,
+	};
+
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
-
-extern char **setEnv();
 
 static Bool StartClient();
 
@@ -78,6 +134,55 @@ catchAlrm (n)
     int n;
 {
     Longjmp (pingTime, 1);
+}
+
+static Jmp_buf	tenaciousClient;
+
+/* ARGSUSED */
+static SIGVAL
+waitAbort (n)
+    int n;
+{
+	Longjmp (tenaciousClient, 1);
+}
+
+#if defined(_POSIX_SOURCE) || defined(SYSV) || defined(SVR4)
+#define killpg(pgrp, sig) kill(-(pgrp), sig)
+#endif
+
+static void
+AbortClient (pid)
+    int pid;
+{
+    int	sig = SIGTERM;
+#if __STDC__
+    volatile int	i;
+#else
+    int	i;
+#endif
+    int	retId;
+    for (i = 0; i < 4; i++) {
+	if (killpg (pid, sig) == -1) {
+	    switch (errno) {
+	    case EPERM:
+		LogError ("xdm can't kill client\n");
+	    case EINVAL:
+	    case ESRCH:
+		return;
+	    }
+	}
+	if (!Setjmp (tenaciousClient)) {
+	    (void) Signal (SIGALRM, waitAbort);
+	    (void) alarm ((unsigned) 10);
+	    retId = wait ((waitType *) 0);
+	    (void) alarm ((unsigned) 0);
+	    (void) Signal (SIGALRM, SIG_DFL);
+	    if (retId == pid)
+		break;
+	} else
+	    (void) Signal (SIGALRM, SIG_DFL);
+	sig = SIGKILL;
+    }
 }
 
 SessionPingFailed (d)
@@ -148,7 +253,7 @@ struct display	*d;
     Debug("ManageSession: loading greeter library %s\n", greeterLib);
     greet_lib_handle = dlopen(greeterLib, RTLD_NOW);
     if (greet_lib_handle != NULL)
-	greet_user_proc = dlsym(greet_lib_handle, "GreetUser");
+	greet_user_proc = (GreetUserProc)dlsym(greet_lib_handle, "GreetUser");
     if (greet_user_proc == NULL)
 	{
 	LogError("%s while loading %s\n", dlerror(), greeterLib);
@@ -161,7 +266,7 @@ struct display	*d;
      * These version numbers are registered with the X Consortium. */
     verify.version = 1;
     greet.version = 1;
-    greet_stat = (*greet_user_proc)(d, &dpy, &verify, &greet);
+    greet_stat = (*greet_user_proc)(d, &dpy, &verify, &greet, &dlfuncs);
 
     if (greet_stat == Greet_Success)
     {
@@ -528,54 +633,6 @@ StartClient (verify, d, pidp, name, passwd)
     }
 }
 
-static Jmp_buf	tenaciousClient;
-
-/* ARGSUSED */
-static SIGVAL
-waitAbort (n)
-    int n;
-{
-	Longjmp (tenaciousClient, 1);
-}
-
-#if defined(_POSIX_SOURCE) || defined(SYSV) || defined(SVR4)
-#define killpg(pgrp, sig) kill(-(pgrp), sig)
-#endif
-
-AbortClient (pid)
-int	pid;
-{
-    int	sig = SIGTERM;
-#if __STDC__
-    volatile int	i;
-#else
-    int	i;
-#endif
-    int	retId;
-    for (i = 0; i < 4; i++) {
-	if (killpg (pid, sig) == -1) {
-	    switch (errno) {
-	    case EPERM:
-		LogError ("xdm can't kill client\n");
-	    case EINVAL:
-	    case ESRCH:
-		return;
-	    }
-	}
-	if (!Setjmp (tenaciousClient)) {
-	    (void) Signal (SIGALRM, waitAbort);
-	    (void) alarm ((unsigned) 10);
-	    retId = wait ((waitType *) 0);
-	    (void) alarm ((unsigned) 0);
-	    (void) Signal (SIGALRM, SIG_DFL);
-	    if (retId == pid)
-		break;
-	} else
-	    (void) Signal (SIGALRM, SIG_DFL);
-	sig = SIGKILL;
-    }
-}
-
 int
 source (environ, file)
 char			**environ;
@@ -629,9 +686,10 @@ runAndWait (args, environ)
     return waitVal (result);
 }
 
+void
 execute (argv, environ)
-char	**argv;
-char	**environ;
+    char **argv;
+    char **environ;
 {
     /* give /dev/null as stdin */
     (void) close (0);

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.39 94/03/31 16:05:44 gildea Exp $
+ * $XConsortium: Login.c,v 1.40 94/03/31 16:25:27 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -29,6 +29,8 @@
 
 # include <stdio.h>
 
+# include "dm.h"
+# include "greet.h"
 # include "LoginP.h"
 
 #define offset(field) XtOffsetOf(LoginRec, login.field)

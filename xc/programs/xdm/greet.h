@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: greet.h,v 1.1 94/02/02 08:42:19 gildea Exp $
  *
  * Copyright 1994 Massachusetts Institute of Technology
  *
@@ -17,6 +17,36 @@
  */
 
 #include <X11/Xlib.h>
+
+struct dlfuncs {
+    int (*_PingServer)();
+    int (*_SessionPingFailed)();
+    int (*_Debug)();
+    int (*_RegisterCloseOnFork)();
+    int (*_SecureDisplay)();
+    int (*_UnsecureDisplay)();
+    int (*_ClearCloseOnFork)();
+    int (*_SetupDisplay)();
+    int (*_LogError)();
+    int (*_SessionExit)();
+    int (*_DeleteXloginResources)();
+    int (*_source)();
+    char **(*_defaultEnv)();
+    char **(*_setEnv)();
+    char **(*_parseArgs)();
+    int (*_printEnv)();
+    char **(*_systemEnv)();
+    int (*_LogOutOfMem)();
+    void (*_setgrent)();
+    struct group *(*_getgrent)();
+    void (*_endgrent)();
+#ifdef USESHADOW
+    struct spwd *(*_getspnam)();
+    void (*_endspent)();
+#endif
+    struct passwd *(*_getpwnam)();
+    char *(*_crypt)();
+};
 
 /*
  * Return values for GreetUser();
@@ -53,7 +83,8 @@ extern greet_user_rtn GreetUser(
     struct display *d,
     Display **dpy,
     struct verify_info *verify,
-    struct greet_info *greet
+    struct greet_info *greet,
+    struct dlfuncs *dlfcns
 #endif
 );
 
@@ -62,30 +93,80 @@ typedef greet_user_rtn (*GreetUserProc)(
     struct display *,
     Display **,
     struct verify_info *,
-    struct greet_info *
+    struct greet_info *,
+    struct dlfuncs *dlfcns
 #endif
 );
 
-/* The greeter uses these xdm symbols.
-   Should they be renamed to have a consistent prefix?
-   Should we try to reduce their number?
+#ifdef GREET_LIB
+/*
+ * The greeter uses some symbols from the main xdm executable.  Since some
+ * dynamic linkers are broken, we need to fix things up so that the symbols
+ * are referenced indirectly through function pointers.  The definitions
+ * here, are used to hold the pointers to the functions in the main xdm
+ * executable.  The pointers are filled in when the GreetUser function is
+ * called, with the pointer values passed as a paramter.
+ */
 
-PingServer
-SessionPingFailed
-Debug
-RegisterCloseOnFork
-SecureDisplay
-UnsecureDisplay
-ClearCloseOnFork
-SetupDisplay
-LogError
-SessionExit
-DeleteXloginResources
-source
-defaultEnv
-setEnv
-parseArgs
-printEnv
-systemEnv
-LogOutOfMem
-*/
+extern	int     (*__xdm_PingServer)();
+extern	int     (*__xdm_SessionPingFailed)();
+extern	int     (*__xdm_Debug)();
+extern	int     (*__xdm_RegisterCloseOnFork)();
+extern	int     (*__xdm_SecureDisplay)();
+extern	int     (*__xdm_UnsecureDisplay)();
+extern	int     (*__xdm_ClearCloseOnFork)();
+extern	int     (*__xdm_SetupDisplay)();
+extern	int     (*__xdm_LogError)();
+extern	int     (*__xdm_SessionExit)();
+extern	int     (*__xdm_DeleteXloginResources)();
+extern	int     (*__xdm_source)();
+extern	char    **(*__xdm_defaultEnv)();
+extern	char    **(*__xdm_setEnv)();
+extern	char    **(*__xdm_parseArgs)();
+extern	int     (*__xdm_printEnv)();
+extern	char    **(*__xdm_systemEnv)();
+extern	int     (*__xdm_LogOutOfMem)();
+extern	void    (*__xdm_setgrent)();
+extern	struct group    *(*__xdm_getgrent)();
+extern	void    (*__xdm_endgrent)();
+#ifdef USESHADOW
+extern	struct spwd   *(*__xdm_getspnam)();
+extern	void   (*__xdm_endspent)();
+#endif
+extern	struct passwd   *(*__xdm_getpwnam)();
+extern	char     *(*__xdm_crypt)();
+
+/*
+ * Force the shared library to call through the function pointer
+ * initialized during the initial call into the library.
+ */
+
+#define	PingServer	(*__xdm_PingServer)
+#define	SessionPingFailed	(*__xdm_SessionPingFailed)
+#define	Debug	(*__xdm_Debug)
+#define	RegisterCloseOnFork	(*__xdm_RegisterCloseOnFork)
+#define	SecureDisplay	(*__xdm_SecureDisplay)
+#define	UnsecureDisplay	(*__xdm_UnsecureDisplay)
+#define	ClearCloseOnFork	(*__xdm_ClearCloseOnFork)
+#define	SetupDisplay	(*__xdm_SetupDisplay)
+#define	LogError	(*__xdm_LogError)
+#define	SessionExit	(*__xdm_SessionExit)
+#define	DeleteXloginResources	(*__xdm_DeleteXloginResources)
+#define	source	(*__xdm_source)
+#define	defaultEnv	(*__xdm_defaultEnv)
+#define	setEnv	(*__xdm_setEnv)
+#define	parseArgs	(*__xdm_parseArgs)
+#define	printEnv	(*__xdm_printEnv)
+#define	systemEnv	(*__xdm_systemEnv)
+#define	LogOutOfMem	(*__xdm_LogOutOfMem)
+#define	setgrent	(*__xdm_setgrent)
+#define	getgrent	(*__xdm_getgrent)
+#define	endgrent	(*__xdm_endgrent)
+#ifdef USESHADOW
+#define	getspnam	(*__xdm_getspnam)
+#define	endspent	(*__xdm_endspent)
+#endif
+#define	getpwnam	(*__xdm_getpwnam)
+#define	crypt		(*__xdm_crypt)
+
+#endif /* GREET_LIB */

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.27 94/02/02 08:42:26 gildea Exp $
+ * $XConsortium: verify.c,v 1.28 94/02/03 08:28:06 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -32,6 +32,9 @@
 #ifdef USESHADOW
 # include	<shadow.h>
 #endif
+
+# include	"greet.h"
+
 #ifdef X_NOT_STDC_ENV
 char *getenv();
 #endif

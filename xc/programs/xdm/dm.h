@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.58 94/02/10 19:04:51 gildea Exp $
+ * $XConsortium: dm.h,v 1.59 94/03/30 21:28:01 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -309,6 +309,9 @@ extern void registerHostname();
 
 /* in dm.c */
 extern void StartDisplay();
+
+/* in session.c */
+extern void execute();
 
 /*
  * CloseOnFork flags

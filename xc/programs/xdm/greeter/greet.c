@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.35 94/02/03 08:21:16 gildea Exp $
+ * $XConsortium: greet.c,v 1.36 94/03/31 18:32:40 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -30,6 +30,41 @@
 #include "dm.h"
 #include "greet.h"
 #include "Login.h"
+
+#if GREET_LIB
+/*
+ * Function pointers filled in by the initial call ito the library
+ */
+
+int     (*__xdm_PingServer)() = NULL;
+int     (*__xdm_SessionPingFailed)() = NULL;
+int     (*__xdm_Debug)() = NULL;
+int     (*__xdm_RegisterCloseOnFork)() = NULL;
+int     (*__xdm_SecureDisplay)() = NULL;
+int     (*__xdm_UnsecureDisplay)() = NULL;
+int     (*__xdm_ClearCloseOnFork)() = NULL;
+int     (*__xdm_SetupDisplay)() = NULL;
+int     (*__xdm_LogError)() = NULL;
+int     (*__xdm_SessionExit)() = NULL;
+int     (*__xdm_DeleteXloginResources)() = NULL;
+int     (*__xdm_source)() = NULL;
+char    **(*__xdm_defaultEnv)() = NULL;
+char    **(*__xdm_setEnv)() = NULL;
+char    **(*__xdm_parseArgs)() = NULL;
+int     (*__xdm_printEnv)() = NULL;
+char    **(*__xdm_systemEnv)() = NULL;
+int     (*__xdm_LogOutOfMem)() = NULL;
+void    (*__xdm_setgrent)() = NULL;
+struct group    *(*__xdm_getgrent)() = NULL;
+void    (*__xdm_endgrent)() = NULL;
+#ifdef USESHADOW
+struct spwd   *(*__xdm_getspnam)() = NULL;
+void   (*__xdm_endspent)() = NULL;
+#endif
+struct passwd   *(*__xdm_getpwnam)() = NULL;
+char     *(*__xdm_crypt)() = NULL;
+
+#endif
 
 #ifdef SECURE_RPC
 #include <rpc/rpc.h>
@@ -224,13 +259,47 @@ FailedLogin (d, greet)
 }
 
 
-greet_user_rtn GreetUser(d, dpy, verify, greet)
+greet_user_rtn GreetUser(d, dpy, verify, greet, dlfuncs)
     struct display          *d;
     Display                 ** dpy;
     struct verify_info      *verify;
     struct greet_info       *greet;
+    struct dlfuncs       *dlfuncs;
 {
     int i;
+
+#ifdef GREET_LIB
+/*
+ * These must be set before they are used.
+ */
+    __xdm_PingServer = dlfuncs->_PingServer;
+    __xdm_SessionPingFailed = dlfuncs->_SessionPingFailed;
+    __xdm_Debug = dlfuncs->_Debug;
+    __xdm_RegisterCloseOnFork = dlfuncs->_RegisterCloseOnFork;
+    __xdm_SecureDisplay = dlfuncs->_SecureDisplay;
+    __xdm_UnsecureDisplay = dlfuncs->_UnsecureDisplay;
+    __xdm_ClearCloseOnFork = dlfuncs->_ClearCloseOnFork;
+    __xdm_SetupDisplay = dlfuncs->_SetupDisplay;
+    __xdm_LogError = dlfuncs->_LogError;
+    __xdm_SessionExit = dlfuncs->_SessionExit;
+    __xdm_DeleteXloginResources = dlfuncs->_DeleteXloginResources;
+    __xdm_source = dlfuncs->_source;
+    __xdm_defaultEnv = dlfuncs->_defaultEnv;
+    __xdm_setEnv = dlfuncs->_setEnv;
+    __xdm_parseArgs = dlfuncs->_parseArgs;
+    __xdm_printEnv = dlfuncs->_printEnv;
+    __xdm_systemEnv = dlfuncs->_systemEnv;
+    __xdm_LogOutOfMem = dlfuncs->_LogOutOfMem;
+    __xdm_setgrent = dlfuncs->_setgrent;
+    __xdm_getgrent = dlfuncs->_getgrent;
+    __xdm_endgrent = dlfuncs->_endgrent;
+#ifdef USESHADOW
+    __xdm_getspnam = dlfuncs->_getspnam;
+    __xdm_endspent = dlfuncs->_endspent;
+#endif
+    __xdm_getpwnam = dlfuncs->_getpwnam;
+    __xdm_crypt = dlfuncs->_crypt;
+#endif
 
     *dpy = InitGreet (d);
     /*
