@@ -5,7 +5,7 @@
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
-#include <X11/AsciiText.h>
+#include <X11/Xaw/AsciiText.h>
 #include "xgc.h"
 #include "math.h"
 #include "stdio.h"
@@ -444,7 +444,7 @@ void set_text(w,string)
   static Arg args[] = {
     {XtNstring,  (XtArgVal) NULL}
   };
-  XtTextSource source;
+  XawTextSource source;
   char *current_string;
 
   args[0].value = (XtArgVal) &current_string;
@@ -453,8 +453,8 @@ void set_text(w,string)
   strcpy(current_string,string);
 
   args[0].value = (XtArgVal) current_string;
-  source = XtStringSourceCreate(w,args,XtNumber(args));
-  XtTextSetSource(w,source,(XtTextPosition) 0);
+  source = XawStringSourceCreate(w,args,XtNumber(args));
+  XawTextSetSource(w,source,(XawTextPosition) 0);
 }
 
 void show_result(string)

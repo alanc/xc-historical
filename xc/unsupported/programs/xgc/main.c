@@ -7,10 +7,10 @@
 */
 
 #include <X11/Intrinsic.h>
-#include <X11/Form.h>
-#include <X11/Command.h>
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/Command.h>
 #include <X11/Core.h>
-#include <X11/AsciiText.h>
+#include <X11/Xaw/AsciiText.h>
 #include <X11/StringDefs.h>
 #include <stdio.h>
 

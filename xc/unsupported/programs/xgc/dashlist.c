@@ -7,9 +7,9 @@
 */
 
 #include <X11/IntrinsicP.h>
-#include <X11/Form.h>
-#include <X11/Label.h>
-#include <X11/Command.h>
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/Label.h>
+#include <X11/Xaw/Command.h>
 #include <X11/StringDefs.h>
 #include "xgc.h"
 

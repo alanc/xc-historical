@@ -11,9 +11,9 @@
 				   because we need to delve directly into
 				   the ComopositeWidget structure to find
 				   out what children a widget has */
-#include <X11/Form.h>
-#include <X11/Label.h>
-#include <X11/Command.h>
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/Label.h>
+#include <X11/Xaw/Command.h>
 #include <X11/StringDefs.h>
 
 #include "xgc.h"
