@@ -2,7 +2,7 @@
  * XDM-AUTHENTICATION-1 (XDMCP authentication) and
  * XDM-AUTHORIZATION-1 (client authorization) protocols
  *
- * $XConsortium: xdmauth.c,v 1.4 91/04/03 10:19:34 rws Exp $
+ * $XConsortium: xdmauth.c,v 1.5 91/07/24 18:36:20 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -23,6 +23,8 @@
 #include "os.h"
 
 #ifdef HASXDMAUTH
+
+static Bool authFromXDMCP;
 
 #ifdef XDMCP
 #include "Xmd.h"
@@ -76,8 +78,12 @@ XdmAuthenticationAddAuth (name_len, name, data_len, data)
     int	    name_len, data_len;
     char    *name, *data;
 {
+    Bool    ret;
     XdmcpUnwrap (data, &privateKey, data, data_len);
-    AddAuthorization (name_len, name, data_len, data);
+    authFromXDMCP = TRUE;
+    ret = AddAuthorization (name_len, name, data_len, data);
+    authFromXDMCP = FALSE;
+    return ret;
 }
 
 
@@ -278,8 +284,19 @@ XID	id;
     switch (data_length)
     {
     case 16:		    /* auth from files is 16 bytes long */
-	rho_bits = (unsigned char *) data;
-	key_bits = (unsigned char *) (data + 8);
+	if (authFromXDMCP)
+	{
+	    /* R5 xdm sent bogus authorization data in the accept packet,
+	     * but we can recover */
+	    rho_bits = rho.data;
+	    key_bits = (unsigned char *) data;
+	    key_bits[0] = '\0';
+	}
+	else
+	{
+	    rho_bits = (unsigned char *) data;
+	    key_bits = (unsigned char *) (data + 8);
+	}
 	break;
     case 8:		    /* auth from XDMCP is 8 bytes long */
 	rho_bits = rho.data;
