@@ -1,9 +1,10 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.1 94/02/02 08:42:24 gildea Exp $
 #define DoNormalLib NO
 #define DoSharedLib YES
 #define DoDebugLib NO
 #define DoProfileLib NO
 #define LibName XdmGreet
+#define LibHeaders NO
 SOXDMGREETREV = 1.0
 #define SoRev SOXDMGREETREV
 
