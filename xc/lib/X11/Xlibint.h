@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.122 93/10/21 09:55:54 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.123 93/10/23 14:12:47 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -130,6 +130,7 @@ struct _XDisplay
 	XPointer filedes;	/* struct pollfd cache for _XWaitForReadable */
 	int (*savedsynchandler)(); /* user synchandler when Xlib usurps */
 	XID resource_max;	/* allocator max ID */
+	int xcmisc_opcode;	/* major opcode for XC-MISC */
 	struct _XkbInfoRec *xkb_info; /* XKB info */
 };
 
@@ -309,6 +310,7 @@ extern int errno;			/* Internal system error number. */
 #define XlibDisplayIOError	(1L << 0)
 #define XlibDisplayClosing	(1L << 1)
 #define XlibDisplayNoXkb	(1L << 2)
+#define XlibDisplayPrivSync	(1L << 3)
 
 /*
  * X Protocol packetizing macros.
