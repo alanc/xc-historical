@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.16 88/10/23 14:36:28 swick Exp $
+* $XConsortium: Text.h,v 1.17 89/03/30 16:06:00 jim Exp $
 */
 
 
@@ -46,7 +46,10 @@ SOFTWARE.
  destroyCallback     Callback		Pointer		NULL
  dialogHOffset	     Margin		int		10
  dialogVOffset	     Margin		int		10
+ displayCaret	     Output		Boolean		True
+ displayNonPrinting  Output		Boolean		True
  displayPosition     TextPosition	int		0
+ echo		     Output		Boolean		True
  editType	     EditType		XtTextEditType	XttextRead
  height		     Height		Dimension	font height
  insertPosition	     TextPosition	int		0
@@ -68,7 +71,10 @@ SOFTWARE.
 #define XtNtextOptions		"textOptions"
 #define XtNdialogHOffset	"dialogHOffset"
 #define XtNdialogVOffset	"dialogVOffset"
+#define XtNdisplayCaret		"displayCaret"
+#define XtNdisplayNonPrinting	"displayNonPrinting"
 #define XtNdisplayPosition      "displayPosition"
+#define XtNecho			"echo"
 #define XtNinsertPosition	"insertPosition"
 #define XtNleftMargin		"leftMargin"
 #define XtNselectTypes		"selectTypes"
@@ -82,6 +88,7 @@ SOFTWARE.
 #define XtNlength		"length"
 #define XtNfont			"font"
 
+#define XtCOutput		"Output"
 #define XtCSelectTypes		"SelectTypes"
 
 /* Return codes from XtTextReplace */
