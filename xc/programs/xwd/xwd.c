@@ -29,7 +29,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.4 87/05/19 20:09:56 dkk Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.5 87/05/20 20:38:50 dkk Locked $";
 #endif
 
 #include <X11/X.h>
@@ -42,13 +42,16 @@ char *calloc();
 
 /*  typedef enum _bool {FALSE, TRUE} Bool;   %%*/
 
+/*
 #include "target.cursor"
 #include "target_mask.cursor"
+ %%*/
 
 #include "XWDFile.h"
 
 #define MAX(a, b) (a) > (b) ? (a) : (b)
 #define MIN(a, b) (a) < (b) ? (a) : (b)
+
 #define ABS(a) (a) < 0 ? -(a) : (a)
 
 #define UBPS (sizeof(short)/2) /* useful bytes per short */
@@ -63,6 +66,7 @@ char *calloc();
 
 #define DONT_KNOW_YET 17
 
+#define target 50
 
 extern int errno;
 extern XImage *XCreateImage();
@@ -76,7 +80,8 @@ main(argc, argv)
     register char *buffer, *cbuffer;
 
     unsigned buffer_size;
-    unsigned int x, y;
+/*    unsigned int x, y;  %*/
+    unsigned int shape;
     int virt_x, virt_y;
     int virt_width, virt_height;
     int pixmap_format = -1;
@@ -120,7 +125,7 @@ main(argc, argv)
 
     FILE *out_file = stdout;
 
-    pointer_mode = keyboard_mode = GrabModeSync;
+    pointer_mode = keyboard_mode = GrabModeAsync;
 
 /*    *bcolor = *scolor = DONT_KNOW_YET    %%*/
 
@@ -179,16 +184,13 @@ main(argc, argv)
     /*
      * Store the cursor incase we need it.
      */
+    shape = target;
+    source = BlackPixel(dpy, screen); /* *target_bits; %%*/
+    mask = WhitePixel(dpy, screen);   /* *target_mask_bits; %%*/
     if (debug) fprintf(stderr,"xwd: Storing target cursor.\n");
-    if((cursor = XCreateCursor(dpy, source, mask, scolor, bcolor,
-	8, 8)) == FAILURE)
-/*    	target_width, target_height, 
- *   	target_bits, target_mask_bits, %%*/
+    if(!(cursor = XCursor(dpy, shape)))
 
-/*	BlackPixel, WhitePixel,
- *	GXcopy  %%*/
-
-	Error("Error occured while trying to store target cursor.");
+	Error("Error occured while trying to store target cursor.\n");
 
     /*
      * Set the right pixmap format for the display type.
@@ -208,11 +210,12 @@ main(argc, argv)
     /*
      * Let the user select the target window.
      */
+    confine_to = rootwin;
     if(XGrabPointer(dpy, rootwin, owner_events, ButtonPress,
 		    pointer_mode, keyboard_mode, confine_to, cursor,
-		    CurrentTime) == FAILURE)
-      Error("Can't grab the mouse.");
-    XNextEvent(&rep);
+		    CurrentTime) != GrabSuccess)
+      Error("Can't grab the mouse.\n");
+    XNextEvent(dpy, &rep);
     XUngrabPointer(dpy, CurrentTime);
     target_win = rep.subwindow;
     if (target_win == 0) {
@@ -237,12 +240,17 @@ main(argc, argv)
     if (debug) fprintf(stderr,"xwd: Getting target window information.\n");
 
     if(XGetWindowAttributes(dpy, target_win, &win_info) == FAILURE) 
-     Error("Can't query target window.");
-    if(XFetchName(target_win, &win_name) == FAILURE)
-     Error("Can't fetch target window name.");
+     Error("Can't query target window.\n");
 
-    /* sizeof(char) is included for the null string terminator. */
+    if(XFetchName(dpy, target_win, &win_name) == FAILURE) {
+      strcpy(win_name, "xwdump");
+    }
+
+    /*
+     * sizeof(char) is included for the null string terminator.
+     */
     win_name_size = strlen(win_name) + sizeof(char);
+    printf("Window name size: %d", win_name_size);
 
     /*
      * Calculate the virtual x, y, width and height of the window pane image
