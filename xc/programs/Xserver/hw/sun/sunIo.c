@@ -1,4 +1,4 @@
-/* $XConsortium: sunIo.c,v 5.8 91/11/15 18:28:37 gildea Exp $ */
+/* $XConsortium: sunIo.c,v 5.9 92/03/20 18:52:12 rws Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -238,7 +238,11 @@ AbortDDX()
     int		i;
     ScreenPtr	pScreen;
 
+#ifdef SVR4
+    Signal (SIGPOLL, SIG_IGN);
+#else
     signal (SIGIO, SIG_IGN);
+#endif
     sunChangeKbdTranslation (LookupKeyboardDevice (), FALSE);
     sunNonBlockConsoleOff ((char *) 0);
     for (i = 0; i < screenInfo.numScreens; i++)

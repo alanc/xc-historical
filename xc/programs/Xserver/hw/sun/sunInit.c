@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.29 92/11/18 14:10:30 rws Exp $ */
+/* $XConsortium: sunInit.c,v 5.30 92/11/20 13:49:49 rws Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -85,6 +85,21 @@ unsigned long sunGeneration = 0;
 int sunScreenIndex;
 Bool FlipPixels = FALSE;
 
+#ifdef SVR4
+Signal(sig, handler)
+    int sig;
+    void (*handler)();
+{
+    struct sigaction act;
+
+    sigemptyset(&act.sa_mask);
+    if (handler != SIG_IGN)
+	sigaddset(&act.sa_mask, sig);
+    act.sa_flags = 0;
+    act.sa_handler = handler;
+    sigaction(sig, &act, NULL);
+}
+#endif
 
 /*-
  *-----------------------------------------------------------------------
@@ -307,7 +322,11 @@ InitInput(argc, argv)
     miRegisterPointerDevice(screenInfo.screens[0], p);
     if (!mieqInit (k, p))
 	return FALSE;
+#ifdef SVR4
+    Signal(SIGPOLL, SigIOHandler);
+#else
     signal(SIGIO, SigIOHandler);
+#endif
 }
 
 
@@ -319,7 +338,11 @@ sunCloseScreen (i, pScreen)
     SetupScreen(pScreen);
     Bool    ret;
 
+#ifdef SVR4
+    Signal (SIGPOLL, SIG_IGN);
+#else
     signal (SIGIO, SIG_IGN);
+#endif
     sunDisableCursor (pScreen);
     pScreen->CloseScreen = pPrivate->CloseScreen;
     ret = (*pScreen->CloseScreen) (i, pScreen);

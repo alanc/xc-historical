@@ -1,4 +1,4 @@
-/* $XConsortium: sunMouse.c,v 5.12 91/11/15 18:28:42 gildea Exp $ */
+/* $XConsortium: sunMouse.c,v 5.13 92/11/20 14:40:16 rws Exp $ */
 /*-
  * sunMouse.c --
  *	Functions for playing cat and mouse... sorry.
@@ -47,6 +47,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define NEED_EVENTS
 #include    "sun.h"
 #include    "mipointer.h"
+#ifdef SVR4
+#include <sys/stropts.h>
+#endif
 
 Bool ActiveZaphod = TRUE;
 
@@ -126,7 +129,12 @@ sunMouseProc (pMouse, what)
 			return (!Success);
 		    }
 		    if (fcntl (fd, F_SETFL, (FNDELAY|FASYNC)) < 0
-			|| fcntl(fd, F_SETOWN, getpid()) < 0) {
+#ifdef SVR4
+			|| ioctl(fd, I_SETSIG, S_RDNORM|S_RDBAND|S_HIPRI) < 0
+#else
+			|| fcntl(fd, F_SETOWN, getpid()) < 0
+#endif
+			) {
 			    perror("sunMouseProc");
 			    ErrorF("Can't set up mouse on fd %d\n", fd);
 			}
@@ -433,7 +441,7 @@ sunWarpCursor (pScreen, x, y)
 
 #ifdef SVR4
     sigemptyset(&newmask);
-    sigaddset(&newmask, SIGIO);
+    sigaddset(&newmask, SIGPOLL);
     sigprocmask(SIG_BLOCK, &newmask, &oldmask);
 #else
     oldmask = sigblock (sigmask(SIGIO));

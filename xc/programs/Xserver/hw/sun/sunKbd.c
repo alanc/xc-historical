@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.16 92/11/18 14:10:21 rws Exp $ */
+/* $XConsortium: sunKbd.c,v 5.17 92/11/20 14:39:51 rws Exp $ */
 /*-
  * sunKbd.c --
  *	Functions for retrieving data from a keyboard.
@@ -53,6 +53,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <sys/ioctl.h>
 #ifdef SVR4
 #include <sys/filio.h>
+#include <sys/stropts.h>
 #endif
 
 typedef struct {
@@ -183,7 +184,12 @@ sunKbdProc (pKeyboard, what)
 		    sysKbPriv.fd = -1;
 		} else {
 		    if (fcntl (kbdFd, F_SETFL, (FNDELAY|FASYNC)) < 0
-			|| fcntl(kbdFd, F_SETOWN, getpid()) < 0) {
+#ifdef SVR4
+			|| ioctl(kbdFd, I_SETSIG, S_RDNORM|S_RDBAND|S_HIPRI) < 0
+#else
+			|| fcntl(kbdFd, F_SETOWN, getpid()) < 0
+#endif
+			) {
 			perror("sunKbdProc");
 			FatalError("Can't set up kbd on fd %d\n", kbdFd);
 		    }
@@ -657,7 +663,7 @@ sunEnqueueAutoRepeat ()
     autoRepeatEvent.u.u.type = KeyRelease;
 #ifdef SVR4
     sigemptyset(&newmask);
-    sigaddset(&newmask, SIGIO);
+    sigaddset(&newmask, SIGPOLL);
     sigprocmask(SIG_BLOCK, &newmask, &oldmask);
 #else
     oldmask = sigblock (sigmask(SIGIO));
