@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Converters.c,v 1.49 89/10/11 18:40:34 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Converters.c,v 1.50 89/12/07 20:24:41 kit Exp $";
 /* $oHeader: Converters.c,v 1.6 88/09/01 09:26:23 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -49,9 +49,9 @@ SOFTWARE.
 	    else {						\
 		static type static_val;				\
 		static_val = (value);				\
-		toVal->size = sizeof(type);			\
 		toVal->addr = (XtPointer)&static_val;		\
 	    }							\
+	    toVal->size = sizeof(type);				\
 	    return True;					\
 	}
 
@@ -427,8 +427,28 @@ static void FreePixel(app, toVal, closure, args, num_args)
 }
 
 
+/* no longer used by Xt, but it's in the spec */
 XtConvertArgRec screenConvertArg[] = {
     {XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.screen), sizeof(Screen *)}
+};
+
+/*ARGSUSED*/
+static void FetchDisplayArg(widget, size, value)
+    Widget widget;
+    Cardinal *size;
+    XrmValue* value;
+{
+    if (widget == NULL) {
+	XtErrorMsg("missingWidget", "fetchDisplayArg", "XtToolkitError",
+		   "FetchDisplayArg called without a widget to reference",
+		   (String*)NULL, (Cardinal*)NULL);
+    }
+    value->size = sizeof(Display*);
+    value->addr = (caddr_t)DisplayOfScreen(XtScreenOfObject(widget));
+}
+
+static XtConvertArgRec displayConvertArg[] = {
+    {XtProcedureArg, (XtPointer)FetchDisplayArg, 0},
 };
 
 /*ARGSUSED*/
@@ -526,19 +546,17 @@ static Boolean CvtStringToCursor(dpy, args, num_args, fromVal, toVal, closure_re
     struct _CursorName *nP;
     char *name = (char *)fromVal->addr;
     register int i;
-    Screen	    *screen;
 
     if (*num_args != 1)
-     XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
+	XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
 	     "wrongParameters","cvtStringToCursor","XtToolkitError",
-             "String to cursor conversion needs screen argument",
+             "String to cursor conversion needs display argument",
               (String *)NULL, (Cardinal *)NULL);
 
-    screen = *((Screen **) args[0].addr);
     for (i=0, nP=cursor_names; i < XtNumber(cursor_names); i++, nP++ ) {
 	if (strcmp(name, nP->name) == 0) {
-	    Cursor cursor =
-		XCreateFontCursor(DisplayOfScreen(screen), nP->shape );
+	    Display *display = *((Display **) args->addr);
+	    Cursor cursor = XCreateFontCursor(display, nP->shape );
 	    done(Cursor, cursor);
 	}
     }
@@ -554,16 +572,16 @@ static void FreeCursor(app, toVal, closure, args, num_args)
     XrmValuePtr	args;		/* unused */
     Cardinal	*num_args;
 {
-    Screen	    *screen;
+    Display*	display;
 
     if (*num_args != 1)
      XtAppErrorMsg(app,
 	     "wrongParameters","freeCursor","XtToolkitError",
-             "Free cursor requires screen argument",
+             "Free Cursor requires display argument",
               (String *)NULL, (Cardinal *)NULL);
 
-    screen = *((Screen **) args[0].addr);
-    XFreeCursor( DisplayOfScreen(screen), *(Cursor*)toVal->addr );
+    display = *((Display **) args->addr);
+    XFreeCursor( display, *(Cursor*)toVal->addr );
 }
 
 /*ARGSUSED*/
@@ -665,19 +683,19 @@ static Boolean CvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
     XrmValuePtr	toVal;
     XtPointer	*closure_ret;
 {
-    Font	    f;
-    Screen	    *screen;
+    Font	f;
+    Display*	display;
 
     if (*num_args != 1)
 	XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
 	     "wrongParameters","cvtStringToFont","XtToolkitError",
-             "String to font conversion needs screen argument",
+             "String to font conversion needs display argument",
               (String *) NULL, (Cardinal *)NULL);
 
-    screen = *((Screen **) args[0].addr);
+    display = *((Display **) args[0].addr);
 
     if (CompareISOLatin1((String)fromVal->addr, XtDefaultFont) != 0) {
-	f = XLoadFont(DisplayOfScreen(screen), (char *)fromVal->addr);
+	f = XLoadFont(display, (char *)fromVal->addr);
 	if (f != 0) {
   Done:	    done( Font, f );
 	}
@@ -698,7 +716,7 @@ static Boolean CvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
 	if (XrmQGetResource(XtDatabase(dpy), xrm_name, xrm_class, 
 			    &rep_type, &value)) {
 	    if (rep_type == XtQString) {
-		f = XLoadFont(DisplayOfScreen(screen), (char *)value.addr);
+		f = XLoadFont(display, (char *)value.addr);
 		if (f != 0)
 		    goto Done;
 		else {
@@ -735,15 +753,15 @@ static void FreeFont(app, toVal, closure, args, num_args)
     XrmValuePtr	args;
     Cardinal	*num_args;
 {
-    Screen *screen;
+    Display *display;
     if (*num_args != 1)
 	XtAppErrorMsg(app,
-	     "wrongParameters","cvtStringToFont","XtToolkitError",
-             "String to font conversion needs screen argument",
+	     "wrongParameters","freeFont","XtToolkitError",
+             "Free Font needs display argument",
               (String *) NULL, (Cardinal *)NULL);
 
-    screen = *((Screen **) args[0].addr);
-    XUnloadFont( DisplayOfScreen(screen), *(Font*)toVal->addr );
+    display = *((Display **) args[0].addr);
+    XUnloadFont( display, *(Font*)toVal->addr );
 }
 
 /*ARGSUSED*/
@@ -775,18 +793,18 @@ CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
     XtPointer	*closure_ret;
 {
     XFontStruct	    *f;
-    Screen	    *screen;
+    Display*	display;
 
     if (*num_args != 1)
      XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
 	     "wrongParameters","cvtStringToFontStruct","XtToolkitError",
-             "String to font conversion needs screen argument",
+             "String to font conversion needs display argument",
               (String *) NULL, (Cardinal *)NULL);
 
-    screen = *((Screen **) args[0].addr);
+    display = *((Display **) args[0].addr);
 
     if (CompareISOLatin1((String)fromVal->addr, XtDefaultFont) != 0) {
-	f = XLoadQueryFont(DisplayOfScreen(screen), (char *)fromVal->addr);
+	f = XLoadQueryFont(display, (char *)fromVal->addr);
 	if (f != NULL) {
   Done:	    done( XFontStruct*, f);
 	}
@@ -810,7 +828,7 @@ CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
 	if (XrmQGetResource(XtDatabase(dpy), xrm_name, xrm_class, 
 			    &rep_type, &value)) {
 	    if (rep_type == XtQString) {
-		f = XLoadQueryFont(DisplayOfScreen(screen), (char*)value.addr);
+		f = XLoadQueryFont(display, (char*)value.addr);
 		if (f != NULL)
 		    goto Done;
 		else {
@@ -847,15 +865,15 @@ static void FreeFontStruct(app, toVal, closure, args, num_args)
     XrmValuePtr	args;
     Cardinal	*num_args;
 {
-    Screen *screen;
+    Display *display;
     if (*num_args != 1)
      XtAppErrorMsg(app,
 	     "wrongParameters","freeFontStruct","XtToolkitError",
-             "Free FontStruct requires screen argument",
+             "Free FontStruct requires display argument",
               (String *) NULL, (Cardinal *)NULL);
 
-    screen = *((Screen **) args[0].addr);
-    XFreeFont( DisplayOfScreen(screen), *(XFontStruct**)toVal->addr );
+    display = *((Display **) args[0].addr);
+    XFreeFont( display, *(XFontStruct**)toVal->addr );
 }
 
 /*ARGSUSED*/
@@ -1131,6 +1149,30 @@ CvtStringToVisual(dpy, args, num_args, fromVal, toVal, closure_ret)
 }
 
 
+/*ARGSUSED*/
+static Boolean 
+CvtStringToAtom(dpy, args, num_args, fromVal, toVal, closure_ret)
+    Display*	dpy;
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr	fromVal;
+    XrmValuePtr	toVal;
+    XtPointer	*closure_ret;
+{
+    Atom atom;
+    if (*num_args != 1)
+	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+		  "wrongParameters","cvtStringToAtom","XtToolkitError",
+                  "String to Atom conversion needs Display argument",
+                   (String *) NULL, (Cardinal *)NULL);
+
+    
+    atom =  XInternAtom( (Display*)args->addr, (char*)fromVal->addr, False );
+    done(Atom, atom);
+}
+
+
+XrmQuark  XtQAtom;
 XrmQuark  XtQBoolean;
 XrmQuark  XtQBool;
 XrmQuark  XtQColor;
@@ -1158,6 +1200,7 @@ void _XtConvertInitialize()
 {
 /* Representation types */
 
+    XtQAtom		= XrmStringToQuark(XtRAtom);
     XtQBoolean		= XrmStringToQuark(XtRBoolean);
     XtQColor		= XrmStringToQuark(XtRColor);
     XtQCursor		= XrmStringToQuark(XtRCursor);
@@ -1209,7 +1252,7 @@ _XtAddDefaultConverters(table)
     Add(XtQString,  XtQBoolean,	    CvtStringToBoolean, NULL, 0, XtCacheNone);
     Add(XtQString,  XtQBool,	    CvtStringToBool,	NULL, 0, XtCacheNone);
     Add2(XtQString,  XtQCursor,	    CvtStringToCursor,
-	screenConvertArg, XtNumber(screenConvertArg),
+	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeCursor);
     Add(XtQString,  XtQDimension,   CvtStringToShort,	NULL, 0, XtCacheNone);
     Add(XtQString,  XtQDisplay,	    CvtStringToDisplay, NULL, 0, XtCacheAll);
@@ -1217,10 +1260,10 @@ _XtAddDefaultConverters(table)
 	 XtCacheAll | XtCacheRefCount, FreeFile);
     Add(XtQString,  XtQFloat,	    CvtStringToFloat,	NULL, 0, XtCacheNone);
     Add2(XtQString, XtQFont,	    CvtStringToFont,
-	screenConvertArg, XtNumber(screenConvertArg),
+	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeFont);
     Add2(XtQString, XtQFontStruct,  CvtStringToFontStruct,
-	screenConvertArg, XtNumber(screenConvertArg),
+	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeFontStruct);
     Add(XtQString,  XtQInt,	    CvtStringToInt,	NULL, 0, XtCacheAll);
     Add(XtQString,  XtQPosition,    CvtStringToShort,	NULL, 0, XtCacheAll);
@@ -1238,6 +1281,9 @@ _XtAddDefaultConverters(table)
     Add2(XtQString, XtQVisual,	    CvtStringToVisual,
 	visualConvertArgs, XtNumber(visualConvertArgs),
 	XtCacheByDisplay, NULL);
+
+    Add(XtQString,  XtQAtom,	    CvtStringToAtom,
+	displayConvertArg, XtNumber(displayConvertArg), XtCacheByDisplay);
 
    _XtAddTMConverters(table);
 }
