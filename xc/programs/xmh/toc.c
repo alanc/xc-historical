@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: toc.c,v 1.9 88/01/07 08:18:22 swick Exp $";
+static char rcs_id[] = "$Header: toc.c,v 1.10 88/01/19 14:07:10 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -632,9 +632,17 @@ Toc toc;
 }
 
 
-/* Return the foldername of the given toc. */
+/* Return the full folder pathname of the given toc, prefixed w/'+' */
 
-char *TocGetFolderName(toc)
+char *TocMakeFolderName(toc)
+Toc toc;
+{
+    char* name = XtMalloc( strlen(toc->path) + 2 );
+    (void)sprintf( name, "+%s", toc->path );
+    return name;
+}
+
+char *TocName(toc)
 Toc toc;
 {
     return toc->foldername;
@@ -717,8 +725,7 @@ Toc toc;
 		switch (curfate) {
 		  case Fdelete:
 		    argv[0] = MallocACopy("rmm");
-		    (void) sprintf(str, "+%s", toc->foldername);
-		    argv[1] = MallocACopy(str);
+		    argv[1] = TocMakeFolderName(toc);
 		    cur = 2;
 		    curdesttoc = NULL;
 		    break;
@@ -758,10 +765,8 @@ Toc toc;
 		argv[cur++] = MallocACopy(curfate == Fmove ? "-nolink"
 				       			   : "-link");
 		argv[cur++] = MallocACopy("-src");
-		(void) sprintf(str, "+%s", toc->foldername);
-		argv[cur++] = MallocACopy(str);
-		(void) sprintf(str, "+%s", curdesttoc->foldername);
-		argv[cur++] = MallocACopy(str);
+		argv[cur++] = TocMakeFolderName(toc);
+		argv[cur++] = TocMakeFolderName(curdesttoc);
 		break;
 	    }
 	    if (debug) {
@@ -802,22 +807,22 @@ void TocIncorporate(toc)
 Toc toc;
 {
     char **argv;
-    char str[100], str2[10], *file, *ptr;
+    char str[100], *file, *ptr;
     Msg msg, firstmessage;
     FILEPTR fid;
     argv = MakeArgv(toc->incfile ? 7 : 5);
     argv[0] = "inc";
-    (void) sprintf(str, "+%s", toc->foldername);
-    argv[1] = str;
+    argv[1] = TocMakeFolderName(toc);
     argv[2] = "-width";
-    (void) sprintf(str2, "%d", defTocWidth);
-    argv[3] = str2;
+    (void) sprintf(str, "%d", defTocWidth);
+    argv[3] = str;
     if (toc->incfile) {
 	argv[4] = "-file";
 	argv[5] = toc->incfile;
 	argv[6] = "-truncate";
     } else argv[4] = "-truncate";
     file = DoCommandToFile(argv);
+    XtFree(argv[1]);
     XtFree((char *)argv);
     TUGetFullFolderInfo(toc);
     if (toc->validity == valid) {
@@ -847,7 +852,7 @@ void TocMsgChanged(toc, msg)
 Toc toc;
 Msg msg;
 {
-    char **argv, str[100], str2[10], str3[10], *ptr;
+    char **argv, str[100], str2[10], *ptr;
     int length, delta, i;
     FateType fate;
     Toc desttoc;
@@ -856,14 +861,14 @@ Msg msg;
     MsgSetFate(msg, Fignore, (Toc) NULL);
     argv = MakeArgv(5);
     argv[0] = "scan";
-    (void) sprintf(str, "+%s", toc->foldername);
-    argv[1] = str;
-    (void) sprintf(str2, "%d", msg->msgid);
-    argv[2] = str2;
+    argv[1] = TocMakeFolderName(toc);
+    (void) sprintf(str, "%d", msg->msgid);
+    argv[2] = str;
     argv[3] = "-width";
-    (void) sprintf(str3, "%d", defTocWidth);
-    argv[4] = str3;
+    (void) sprintf(str2, "%d", defTocWidth);
+    argv[4] = str2;
     ptr = DoCommandToString(argv);
+    XtFree(argv[1]);
     XtFree((char *) argv);
     if (strcmp(ptr, msg->buf) != 0) {
 	length = strlen(ptr);
