@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.180 87/11/19 14:42:46 rws Locked $ */
+/* $Header: window.c,v 1.181 87/11/19 16:38:56 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -728,8 +728,8 @@ DeleteWindow(pWin, wid)
             pWin->nextSib->prevSib = pWin->prevSib;
         if (pWin->prevSib) 
             pWin->prevSib->nextSib = pWin->nextSib;
+	Xfree(pWin);
     }
-    Xfree(pWin);
 }
 
 DestroySubwindows(pWin, client)
