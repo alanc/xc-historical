@@ -56,6 +56,7 @@ typedef struct {
 } SunMsPrivRec, *SunMsPrivPtr;
 
 Bool			PointerConfinedToScreen();
+extern void		NewCurrentScreen();
 
 static void 	  	sunMouseCtrl();
 static int 	  	sunMouseGetMotionEvents();
