@@ -1,5 +1,5 @@
 /**/###########################################################################
-/**/# rules:  $XConsortium: Imake.rules,v 1.2 89/01/17 15:59:40 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.3 89/01/17 17:52:00 jim Exp $
 
 /*
  * MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -186,7 +186,7 @@ step:: list								@@\
 
 
 #define InstallMultipleDest(step,list,dest)				@@\
-InstallMultipleDest(step,list,dest,$(INSTALLFLAGS))
+InstallMultipleDestFlags(step,list,dest,$(INSTALLFLAGS))
 
 /*
  * Install multiple programs
