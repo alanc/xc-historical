@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.38 88/08/30 17:18:37 swick Exp $
+ * $Header: Tekproc.c,v 1.39 88/08/31 18:45:10 rws Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -119,7 +119,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.38 88/08/30 17:18:37 swick Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.39 88/08/31 18:45:10 rws Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1110,6 +1110,8 @@ static void TekRealize (gw, valuemaskp, values)
     XSizeHints sizehints;
     char Tdefault[32];
     extern char *malloc();
+
+    tw->core.border_pixel = term->core.border_pixel;
 
     if (!(screen->Tfont[SMALLFONT] = XLoadQueryFont (screen->display,
 						     SMALLFONTNAME))) {
