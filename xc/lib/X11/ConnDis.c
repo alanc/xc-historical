@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.74 91/03/28 11:23:44 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.75 91/03/29 15:03:22 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -278,18 +278,18 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
      * Set the connection non-blocking since we use select() to block; also
      * set close-on-exec so that programs that fork() doesn't get confused.
      */
-#if defined(O_NONBLOCK) && !defined(hpux)
-    (void) fcntl (fd, F_SETFL, O_NONBLOCK);
-#else
-#ifdef FIOSNBIO
+#if defined(hpux) && defined(FIOSNBIO)
     {
 	int arg = 1;
 	ioctl (fd, FIOSNBIO, &arg);
     }
 #else
+#ifdef O_NONBLOCK
+    (void) fcntl (fd, F_SETFL, O_NONBLOCK);
+#else
     (void) fcntl (fd, F_SETFL, FNDELAY);
-#endif /* FIOSNBIO */
 #endif /* O_NONBLOCK */
+#endif /* hpux */
 
     (void) fcntl (fd, F_SETFD, 1);
 

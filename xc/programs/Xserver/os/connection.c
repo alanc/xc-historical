@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.128 91/03/28 16:58:15 rws Exp $ */
+/* $XConsortium: connection.c,v 1.129 91/03/29 15:04:16 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -613,15 +613,15 @@ EstablishNewConnections()
 	    }
 	}
 #endif /* TCP_NODELAY */
-#if defined(O_NONBLOCK) && !defined(hpux)
-	(void) fcntl (newconn, F_SETFL, O_NONBLOCK);
-#else
-#ifdef FIOSNBIO
+#if defined(hpux) && defined(FIOSNBIO)
 	{
 	    int	arg;
 	    arg = 1;
 	    ioctl(newconn, FIOSNBIO, &arg);
 	}
+#else
+#ifdef O_NONBLOCK
+	(void) fcntl (newconn, F_SETFL, O_NONBLOCK);
 #else
 	fcntl (newconn, F_SETFL, FNDELAY);
 #endif
