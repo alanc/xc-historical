@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: miglblt.c,v 1.14 87/09/07 18:59:53 rws Locked $ */
+/* $Header: miglblt.c,v 1.15 87/09/07 19:01:22 toddb Locked $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -160,9 +160,9 @@ miImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
     QueryGlyphExtents(pGC->font, ppci, nglyph, &info);
 
-    backrect.x = x + info.overallLeft;
+    backrect.x = x;
     backrect.y = y - pGC->font->pFI->fontAscent;
-    backrect.width = info.overallRight - info.overallLeft;
+    backrect.width = info.overallWidth;
     backrect.height = pGC->font->pFI->fontAscent + 
 		      pGC->font->pFI->fontDescent;
 
