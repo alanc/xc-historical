@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.172 92/04/15 19:15:24 rws Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.173 93/02/26 16:37:13 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -212,6 +212,7 @@ static void RealizeWidget(widget)
     XSetWindowAttributes	values;
     XtRealizeProc		realize;
     Window			window;
+    Display*                    display = XtDisplay (widget);
 
     if (!XtIsWidget(widget) || XtIsRealized(widget)) return;
 
@@ -227,7 +228,7 @@ static void RealizeWidget(widget)
     else (*realize) (widget, &value_mask, &values);
     window = XtWindow(widget);
 #ifndef NO_IDENTIFY_WINDOWS
-    if (_XtGetPerDisplay(XtDisplay(widget))->appContext->identify_windows) {
+    if (_XtGetPerDisplay(display)->appContext->identify_windows) {
 	int len_nm, len_cl;
 	char *s;
 
@@ -239,8 +240,8 @@ static void RealizeWidget(widget)
 	    strcpy(s, widget->core.name);
 	strcpy(s + len_nm + 1,
 	       widget->core.widget_class->core_class.class_name);
-	XChangeProperty(XtDisplay(widget), window,
-			XInternAtom(XtDisplay(widget), "_MIT_OBJ_CLASS",
+	XChangeProperty(display, window,
+			XInternAtom(display, "_MIT_OBJ_CLASS",
 				    False),
 			XA_STRING, 8, PropModeReplace, (unsigned char *) s, 
 			len_nm + len_cl + 2);
@@ -251,7 +252,10 @@ static void RealizeWidget(widget)
     _XtRegisterAsyncHandlers(widget);
 #endif
     _XtRegisterGrabs(widget);
+    XtRegisterDrawable (display, window, widget);
+#ifdef notdef
     _XtRegisterWindow (window, widget);
+#endif
 
     if (XtIsComposite (widget)) {
 	register Cardinal		i;
@@ -265,7 +269,7 @@ static void RealizeWidget(widget)
 
 	if (cwp->num_children != 0) {
 	    if (ShouldMapAllChildren(cwp)) {
-		XMapSubwindows (XtDisplay(widget), window);
+		XMapSubwindows (display, window);
 	    } else {
 		MapChildren(cwp);
 	    }
@@ -318,7 +322,7 @@ static void UnrealizeWidget(widget)
 	XtCallCallbacks(widget, XtNunrealizeCallback, NULL);
 
     /* Unregister window */
-    _XtUnregisterWindow(XtWindow(widget), widget);
+    XtUnregisterDrawable(XtDisplay(widget), XtWindow(widget));
 
     /* Remove Event Handlers */
     /* remove grabs. Happens automatically when window is destroyed. */

@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.78 93/05/13 11:09:15 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.79 93/05/24 17:50:21 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -380,7 +380,7 @@ XtPointer closure;
 			       (char *)requestWindowRec);
 	}
 	if (requestWindowRec->active_transfer_count++ == 0) {
-	    _XtRegisterWindow(window, widget);
+	    XtRegisterDrawable(dpy, window, widget);
 	    XSelectInput(dpy, window, mask);
 	}
 	XtAddRawEventHandler(widget, mask, FALSE, proc, closure);
@@ -405,7 +405,7 @@ XtPointer closure;
 	(void)XFindContext(dpy, window, selectWindowContext,
 			   (XPointer *)&requestWindowRec);
 	if (--requestWindowRec->active_transfer_count == 0) {
-	    _XtUnregisterWindow(window, widget);
+	    XtUnregisterDrawable(dpy, window);
 	    StartProtectedSection(dpy, window);
 	    XSelectInput(dpy, window, 0L);
 	    EndProtectedSection(dpy);

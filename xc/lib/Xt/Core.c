@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.54 91/06/11 20:12:35 converse Exp $ */
+/* $XConsortium: Core.c,v 1.55 91/06/11 20:25:04 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -260,7 +260,7 @@ static void CoreDestroy (widget)
 {
     _XtFreeEventTable(&widget->core.event_table);
     _XtDestroyTMData(widget);
-    _XtUnregisterWindow(widget->core.window, widget);
+    XtUnregisterDrawable(XtDisplay(widget), widget->core.window);
 
     if (widget->core.popup_list != NULL)
         XtFree((char *)widget->core.popup_list);
