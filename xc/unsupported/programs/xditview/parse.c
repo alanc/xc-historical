@@ -1,4 +1,4 @@
-/* $XConsortium: parse.c,v 1.6 91/07/25 21:34:24 keith Exp $ */
+/* $XConsortium: parse.c,v 1.8 91/07/26 12:30:55 keith Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -256,7 +256,8 @@ CharacterWidth (dw, c)
 {
     if (!dw->dvi.display_enable)
 	return 0;
-    if (dw->dvi.cache.font_size != dw->dvi.state->font_size ||
+    if (!dw->dvi.font ||
+	dw->dvi.cache.font_size != dw->dvi.state->font_size ||
 	dw->dvi.cache.font_number != dw->dvi.state->font_number)
     {
 	SetFont (dw);
