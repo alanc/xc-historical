@@ -1,4 +1,4 @@
-/* $XConsortium: lcDB.c,v 1.3 93/09/29 15:14:38 rws Exp $ */
+/* $XConsortium: lcDB.c,v 1.4 94/01/20 18:06:28 rws Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -316,17 +316,15 @@ _XlcCreateLocaleDataBase(lcd)
 		    break;
 	       case T_END_NEST:
 	       {
-		    int	nest_d = parse_info.nest_depth;
-
 		    if((parse_info.pre_state != S_NULL) ||
 		       (--parse_info.nest_depth < 0)){
 			 error = True;
 			 break;
 		    }
-		    if(parse_info.name[nest_d] != NULL){
-			 Xfree(parse_info.name[nest_d]);
+		    if(parse_info.name[parse_info.nest_depth] != NULL){
+			 Xfree(parse_info.name[parse_info.nest_depth]);
 		    }
-		    parse_info.name[nest_d] = NULL;
+		    parse_info.name[parse_info.nest_depth] = NULL;
 		    parse_info.pre_state = S_NEST_MARK;
 		    buf_ptr+=token_len;
 		    break;
