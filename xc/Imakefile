@@ -35,7 +35,7 @@ CLIENTDIRSTOMAKE = \
 		$(EXTENSIONSRC) \
 		$(LIBSRC)
 
-MakeSubdirs($(DIRSTOMAKE) $(XMANSRC))
+MakeSubdirs($(SUBDIRS))
 
 install.ln::
 	-mkdir $(LINTLIBDIR)
