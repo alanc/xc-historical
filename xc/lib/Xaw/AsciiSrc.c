@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.40 90/11/27 08:40:06 swick Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.41 90/11/30 18:30:02 rws Exp $";
 #endif 
 
 /*
@@ -802,7 +802,7 @@ Widget w;
 
 Boolean
 #if NeedFunctionPrototypes
-XawAsciiSaveAsFile(Widget w, const String name)
+XawAsciiSaveAsFile(Widget w, _Xconst char* name)
 #else
 XawAsciiSaveAsFile(w, name)
 Widget w;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiSrc.h,v 1.7 90/05/08 15:23:07 converse Exp $
+ * $XConsortium: AsciiSrc.h,v 1.8 90/12/01 13:02:06 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -125,7 +125,7 @@ extern Boolean XawAsciiSave(
 extern Boolean XawAsciiSaveAsFile(
 #if NeedFunctionPrototypes
     Widget		/* w */,
-    const String	/* name */
+    _Xconst char*	/* name */
 #endif 
 );
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Dialog.h,v 1.22 90/05/08 15:22:30 converse Exp $ */
+/* $XConsortium: Dialog.h,v 1.23 90/12/01 13:02:45 rws Exp $ */
 
 
 /***********************************************************
@@ -72,7 +72,7 @@ extern "C" {					/* for C++ V2.0 */
 extern void XawDialogAddButton(
 #if NeedFunctionPrototypes
     Widget		/* dialog */,
-    const String	/* name */,
+    _Xconst char*	/* name */,
     XtCallbackProc	/* function */,
     XtPointer		/* client_data */
 #endif

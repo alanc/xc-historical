@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.40 90/05/08 15:23:22 converse Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.41 90/11/28 13:42:20 converse Exp $";
 #endif /* lint */
 
 
@@ -353,7 +353,7 @@ Widget w;
 
 void
 #if NeedFunctionPrototypes
-XawDialogAddButton(Widget dialog, const String name, XtCallbackProc function,
+XawDialogAddButton(Widget dialog, _Xconst char* name, XtCallbackProc function,
 		   XtPointer param)
 #else
 XawDialogAddButton(dialog, name, function, param)
