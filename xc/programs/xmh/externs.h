@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.16 89/07/20 21:15:06 converse Exp $
+ * $XConsortium: externs.h,v 2.17 89/07/21 18:56:08 converse Exp $
  */
 
 /*
@@ -44,6 +44,9 @@ extern void	IconInit();
 extern void	PopupPrompt();
 extern void	PopupConfirm();
 extern void	PopupNotice();
+extern void 	PopupError();
+extern void 	DestroyPopupAlert();
+extern Widget	PopupAlert();
 
 	/* from screen.c */
 
