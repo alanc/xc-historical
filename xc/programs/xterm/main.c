@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.120 89/07/12 14:16:38 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.121 89/07/13 18:00:51 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -422,7 +422,7 @@ static struct _options {
 { "#geom",                 "icon window geometry" },
 { "-T string",             "title name for window" },
 { "-n string",             "icon name for window" },
-{ "-C",                    "console mode" },
+{ "-C",                    "intercept console messages, if supported" },
 { "-Sxxd",                 "slave mode on \"ttyxx\", file descriptor \"d\"" },
 { NULL, NULL }};
 
@@ -666,11 +666,11 @@ char **argv;
 	     case 'h':
 		Help ();
 		/* NOTREACHED */
-#ifdef TIOCCONS
 	     case 'C':
+#ifdef TIOCCONS
 		Console = TRUE;
-		continue;
 #endif	/* TIOCCONS */
+		continue;
 	     case 'S':
 		sscanf(*argv + 2, "%c%c%d", passedPty, passedPty+1,
 		 &am_slave);
