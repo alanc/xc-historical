@@ -1,5 +1,5 @@
 /*
- * $XConsortium: SetLocale.c,v 1.36 94/03/07 21:42:51 rws Exp $
+ * $XConsortium: SetLocale.c,v 1.37 94/03/08 20:19:26 rws Exp $
  */
 
 /*
@@ -104,6 +104,7 @@ _Xsetlocale(category, name)
  * _XlcMapOSLocaleName is an implementation dependent routine that derives
  * the LC_CTYPE locale name as used in the sample implementation from that
  * returned by setlocale.
+ * Should match the code in Xt ExtractLocaleName.
  */
 
 char *
@@ -126,6 +127,7 @@ _XlcMapOSLocaleName(osname, siname)
 #define SKIPCOUNT 1
 #define STARTCHAR '='
 #define ENDCHAR ';'
+#define WHITEFILL
 #else
 #if defined(__osf__) || defined(AIXV3)
 #define STARTCHAR ' '
@@ -164,13 +166,26 @@ _XlcMapOSLocaleName(osname, siname)
 	    len = end - start;
 	    strncpy(siname, start, len);
 	    *(siname + len) = '\0';
+#ifdef WHITEFILL
+	    for (start = siname; start = strchr(start, ' '); )
+		*start++ = '-';
+#endif
 	    return siname;
 #ifdef STARTCHAR
 	}
 #endif
     }
+#ifdef WHITEFILL
+    if (strchr(osname, ' ')) {
+	strcpy(siname, osname);
+	for (start = siname; start = strchr(start, ' '); )
+	    *start++ = '-';
+	return siname;
+    }
+#endif
 #undef STARTCHAR
 #undef ENDCHAR
+#undef WHITEFILL
 #endif
     return osname;
 }

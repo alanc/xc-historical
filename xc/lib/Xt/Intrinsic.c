@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.190 94/03/07 21:43:47 rws Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.191 94/03/08 20:21:32 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1027,6 +1027,7 @@ String XtFindFile(path, substitutions, num_substitutions, predicate)
 
 
 /* The implementation of this routine is operating system dependent */
+/* Should match the code in Xlib _XlcMapOSLocaleName */
 
 static char *ExtractLocaleName(lang)
     String	lang;
@@ -1047,6 +1048,7 @@ static char *ExtractLocaleName(lang)
 #define SKIPCOUNT 1
 #define STARTCHAR '='
 #define ENDCHAR ';'
+#define WHITEFILL
 #else
 #if defined(__osf__) || defined(AIXV3)
 #define STARTCHAR ' '
@@ -1087,13 +1089,26 @@ static char *ExtractLocaleName(lang)
             len = end - start;
             strncpy(buf, start, len);
             *(buf + len) = '\0';
-            lang = buf;
+#ifdef WHITEFILL
+	    for (start = buf; start = strchr(start, ' '); )
+		*start++ = '-';
+#endif
+	    return buf;
 #ifdef STARTCHAR
       }
 #endif
     }
+#ifdef WHITEFILL
+    if (strchr(lang, ' ')) {
+	strcpy(buf, lang);
+	for (start = buf; start = strchr(start, ' '); )
+	    *start++ = '-';
+	return buf;
+    }
+#endif
 #undef STARTCHAR
 #undef ENDCHAR
+#undef WHITEFILL
 #endif
 
     return lang;
