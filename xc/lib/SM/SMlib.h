@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.11 93/12/06 20:04:08 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.12 93/12/07 11:05:25 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -254,6 +254,18 @@ typedef void (*SmsInteractDoneProc) (
 #endif
 );
 
+typedef void (*SmsSaveYourselfRequestProc) (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */,
+    SmPointer		/* managerData */,
+    int  		/* saveType */,
+    Bool		/* shutdown */,
+    int			/* interactStyle */,
+    Bool		/* fast */,
+    Bool		/* global */
+#endif
+);
+
 typedef void (*SmsSaveYourselfDoneProc) (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
@@ -266,7 +278,6 @@ typedef void (*SmsCloseConnectionProc) (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
     SmPointer		/* managerData */,
-    char *		/* locale */,
     int			/* count */,
     char **		/* reasonMsgs */
 #endif
@@ -279,6 +290,15 @@ typedef void (*SmsSetPropertiesProc) (
     unsigned long 	/* sequenceRef */,
     int			/* numProps */,
     SmProp **		/* props */
+#endif
+);
+
+typedef void (*SmsDeletePropertiesProc) (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */,
+    SmPointer		/* managerData */,
+    int			/* numProps */,
+    char **		/* propNames */
 #endif
 );
 
@@ -312,6 +332,11 @@ typedef struct {
     } interact_done;
 
     struct {
+	SmsSaveYourselfRequestProc	callback;
+	SmPointer			manager_data;
+    } save_yourself_request;
+
+    struct {
 	SmsSaveYourselfDoneProc	callback;
 	SmPointer		manager_data;
     } save_yourself_done;
@@ -325,6 +350,11 @@ typedef struct {
 	SmsSetPropertiesProc	callback;
 	SmPointer		manager_data;
     } set_properties;
+
+    struct {
+	SmsDeletePropertiesProc	callback;
+	SmPointer		manager_data;
+    } delete_properties;
 
     struct {
 	SmsGetPropertiesProc	callback;
@@ -468,6 +498,14 @@ extern void SmcSetProperties (
 #endif
 );
 
+extern void SmcDeleteProperties (
+#if NeedFunctionPrototypes
+    SmcConn		/* smcConn */,
+    int      	        /* numProps */,
+    char **		/* propNames */
+#endif
+);
+
 extern void SmcGetProperties (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
@@ -537,13 +575,13 @@ extern IceConn SmcGetIceConnection (
 
 extern Status SmsInitialize (
 #if NeedFunctionPrototypes
-    char *		/* vendor */,
-    char *		/* release */,
-    SmsNewClientProc	/* newClientProc */,
-    SmPointer		/* managerData */,
-    IceHostBasedAuthProc /* hostBasedAuthProc */,
-    int			/* errorLength */,
-    char *		/* errorStringRet */
+    char *			/* vendor */,
+    char *			/* release */,
+    SmsNewClientProc		/* newClientProc */,
+    SmPointer			/* managerData */,
+    IceHostBasedAuthProc	/* hostBasedAuthProc */,
+    int				/* errorLength */,
+    char *			/* errorStringRet */
 #endif
 );
 
