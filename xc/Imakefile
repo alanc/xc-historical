@@ -30,7 +30,7 @@ CLIENTDIRSTOMAKE = \
         SUBDIRS = \
 		$(DIRSTOMAKE) \
 		$(UTILSRC) \
-		$(XMANSRC)
+		$(DOCSRC)
   LNINSTALLDIRS = \
 		$(EXTENSIONSRC) \
 		$(LIBSRC)
@@ -137,3 +137,16 @@ flushlinks::
 	make -k clean
 	find . -type l -exec rm {} \;
 	find . \( \! \( -type d -o -name Makefile \) \) -print
+
+/**/# rebuild the Makefiles in the master source tree
+mastermakefiles::
+	cd $(IMAKESRC); $(MAKE) clean; $(MAKE) BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
+	-$(MV) Makefile Makefile.bak
+	$(MAKE) -f Makefile.bak Makefile
+	$(MAKE) Makefiles
+	cd $(DEPENDSRC); $(MAKE) clean; $(MAKE) all
+	$(MAKE) depend
+	cd $(IMAKESRC); $(MAKE) clean
+	cd $(DEPENDSRC); $(MAKE) clean
+	find . -name Makefile.bak -exec $(RM) {} \;
+
