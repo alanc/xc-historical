@@ -12,17 +12,44 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: issuppvis.c,v 1.7 92/06/11 15:43:48 rws Exp $
  */
 
 #include	"Xlib.h"
 #include	"Xutil.h"
+#include	"xtest.h"
 #include	"xtestlib.h"
 #include	"pixval.h"
+#include	"string.h"
 
 static int Nsupvis;
 static unsigned long Supvismsk;
 
+static int
+issupid(n, vip)
+int		n;
+XVisualInfo	*vip;
+{
+XVisualInfo	*vp;
+char	*idlist;
+int 	id;
+int 	i;
+
+	idlist = config.debug_visual_ids;
+	while (idlist) {
+		id = atov(idlist); /* Allow hex/octal/decimal values */
+		for (vp = vip,i = 0; i < n; vp++,i++) {
+
+			if (vp->visualid == id)
+				return True;
+		}
+
+		idlist = strchr(idlist, ',');
+		if (idlist)
+			idlist++;
+	}
+	return False;
+}
 /*
  * issuppvis() takes a visual class as argument and returns true
  * if such a class is supported.
@@ -37,13 +64,26 @@ int 	vis;
 XVisualInfo	templ;
 XVisualInfo	*vip;
 int 	n;
+int	result;
 
 	templ.class = vis;
 	templ.screen = DefaultScreen(disp);
 	vip = XGetVisualInfo(disp, VisualClassMask|VisualScreenMask, &templ, &n);
+
+	/*
+	 * The visual may be supported by the server, but the user may
+	 * wish to avoid testing against it so check XT_DEBUG_VISUAL_IDS.
+	 * - Cal, UniSoft.  Thu Aug 26 14:30:21 1993
+	 */
+	if(config.debug_visual_ids)
+		result = issupid(n, vip);
+	else
+		result = (n>0)? True: False;
+
 	if(vip != (XVisualInfo *) 0)
 		XFree((char*)vip);
-	return((n>0)? True: False);
+
+	return result;
 }
 
 /*
