@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.18 90/12/19 14:05:22 gildea Exp $
+ * $XConsortium: xdpyinfo.c,v 1.19 91/01/23 11:55:10 rws Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -22,9 +22,7 @@
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#ifdef MULTIBUFFER
 #include <X11/extensions/multibuf.h>
-#endif
 
 char *ProgramName;
 
@@ -43,10 +41,8 @@ main (argc, argv)
     Display *dpy;			/* X connection */
     char *displayname = NULL;		/* server to contact */
     int i;				/* temp variable:  iterator */
-#ifdef MULTIBUFFER
     Bool multibuf = False;
     int mbuf_event_base, mbuf_error_base;
-#endif
 
     ProgramName = argv[0];
 
@@ -73,18 +69,14 @@ main (argc, argv)
 	exit (1);
     }
 
-#ifdef MULTIBUFFER
     if (XmbufQueryExtension (dpy, &mbuf_event_base, &mbuf_error_base))
       multibuf = True;
-#endif
 
     print_display_info (dpy);
     for (i = 0; i < ScreenCount (dpy); i++) {
 	print_screen_info (dpy, i);
-#ifdef MULTIBUFFER
 	if (multibuf)
 	    print_multibuf_info (dpy, i);
-#endif
     }
 
     XCloseDisplay (dpy);
@@ -288,7 +280,6 @@ print_screen_info (dpy, scr)
 }
 
 
-#ifdef MULTIBUFFER
 print_multibuf_info(dpy, scr)
     Display *dpy;
     int scr;
@@ -319,7 +310,6 @@ print_multibuf_info(dpy, scr)
 	if (stereo_info) XFree ((char *) stereo_info);
     }
 }
-#endif
 
 
 print_visual_info (vip)
