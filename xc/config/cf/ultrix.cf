@@ -2,14 +2,12 @@
  * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
  */
 
-#ifdef SYSV
-#define SystemV           YES
-#endif
-
-#define OSName            RandomOS
-#define OSMajorVersion    0
+#define OSName            Ultrix-32 3.0
+#define OSMajorVersion    3
 #define OSMinorVersion    0
 
+#define XqvssServer Xqvss
+#define XqdssServer Xqdss
 
 /**/# platform:  $XConsortium$
 /**/# operating system:  OSName
@@ -18,3 +16,4 @@
  *			  Platform-specfic parameters                        *
  *****************************************************************************/
 
+#define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */

@@ -1,59 +1,26 @@
-/**/# platform:  $XConsortium: MacII.macros,v 1.30 88/10/23 11:00:39 jim Exp $
-
-/* it really is a system 5 box... */
-#define StandardSystemDefines -DmacII /* -DSYSV */
-#define StandardDefines StandardSystemDefines
-
-BOOTSTRAPCFLAGS = -DmacII
-             AS = as
-             CC = cc -B /usr/lib/big/
-            CPP = /lib/cpp
-             LD = ld
-           LINT = lint
-        INSTALL = bsdinstall
-           TAGS = ctags
-             RM = rm -f
-             MV = mv
-             LN = ln -s
-         RANLIB = /bin/true
-RANLIBINSTFLAGS = 
-             AR = ar clq
-             LS = ls
-       LINTOPTS = -axz
-    LINTLIBFLAG = -C
-           MAKE = make SHELL=/bin/sh
-STD_CPP_DEFINES = StandardSystemDefines
-    STD_DEFINES = StandardDefines
-
-/* This defines the server you want */
-#define XmacIIServer XmacII
-
-/* define this as you like for normal library compilation */
-#define LibraryDefines		StandardDefines
-
-#define BandAidLibraryNeeded		YES
-#define BandAidLibrarySources		Berklib.c
-#define BandAidLibraryObjects		Berklib.o
-#define BandAidLibraryMake()					@@\
-Berklib.c: sysV/Berklib.c					@@\
-	-rm -f Berklib.c					@@\
-	-ln -s sysV/Berklib.c .
-
-/* define this as you like for server compilation */
-#define ServerDefines		StandardDefines
-/* define this as you like for server font support */
-#define FontDefines	-DFONT_SNF -DFONT_BDF -DCOMPRESSED_FONTS
-
-/* -DTCPCONN allows TCP connections */
-/* -DUNIXCONN allows Unix domain connections */
-/* -DDNETCONN allows DECnet connections */
-
-#define ConnectionFlags		-DTCPCONN -DUNIXCONN
-
 /*
- * override any parameters from site.def
+ * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
  */
-#define SystemV			YES	/* need system 5 style */
+
+#define SystemV           YES
+
+#define OSName            A/UX 1.1
+#define OSMajorVersion    1
+#define OSMinorVersion    1
+#define StandardDefines   -DmacII -DSYSV
+#define XmacIIServer      XmacII
+#define BootstripCFlags   -DmacII
+#define CcCmd             cc -B /usr/lib/big/
+#define LnCmd             ln -s
+#define MakeCmd           make
+#define NeedBerklibInXlib YES
+
+/**/# platform:  $XConsortium$
+/**/# operating system:  OSName
+
+/*****************************************************************************
+ *			  Platform-specfic parameters                        *
+ *****************************************************************************/
 
 
 /*

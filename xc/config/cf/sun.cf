@@ -9,54 +9,22 @@
 #define OSMajorVersion    3
 #define OSMinorVersion    4
 
+#define SystemV           NO
+#define XsunServer Xsun
+/* #define Xplx Xplx */
 
-/*
- ****************************************************************************
- */
-
-/**/# platform:  $XConsortium: Sun.macros,v 1.53 88/11/14 12:00:12 jim Exp $
+/**/# platform:  $XConsortium: sun.sys,v 1.1 89/01/10 18:15:21 jim Exp $
 /**/# operating system:  OSName
+
 
 #if SunOSPlatform && OSMajorVersion == 3 && OSMinorVersion <= 2
 #define OptimizedCDebugFlags /* as nothing */
 #endif
 
-BOOTSTRAPCFLAGS = 
-             AS = as
-             CC = cc
-            CPP = /lib/cpp
-             LD = ld
-           LINT = lint
-        INSTALL = install
-           TAGS = ctags
-             RM = rm -f
-             MV = mv
-             LN = ln -s
-         RANLIB = ranlib
-RANLIBINSTFLAGS = -t
-             AR = ar clq
-             LS = ls
-       LINTOPTS = -axz
-    LINTLIBFLAG = -C
-           MAKE = make
-STD_CPP_DEFINES = 
-    STD_DEFINES = 
-
-/* This defines the server you want */
-#define XsunServer Xsun
-/* #define Xplx Xplx */
-
-/* define this as you like for normal library compilation */
-#define LibraryDefines
-
-/* define this as you like for server font support */
-#define FontDefines	-DFONT_SNF -DFONT_BDF -DCOMPRESSED_FONTS
-
-
 /*
- * link in SunWindows support?
+ * Sun-specific parameters
  */
-#define UseSunWindowsInServer	NO
+#define UseSunWindowsInServer	NO	/* link in SunWindows support? */
 
 #if UseSunWindowsInServer
 #define SunWindowsDefines -DSUN_WINDOWS
@@ -70,17 +38,4 @@ STD_CPP_DEFINES =
 #else
 #define ServerDefines SunWindowsDefines
 #endif
-
-/* -DTCPCONN allows TCP connections */
-/* -DUNIXCONN allows Unix domain connections */
-/* -DDNETCONN allows DECnet connections */
-
-#define ConnectionFlags		-DTCPCONN -DUNIXCONN
-
-/*
- * override any parameters from site.def
- */
-#define ExpandManNames		YES	/* expand Xlib man page filenames */
-
-
 

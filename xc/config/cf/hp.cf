@@ -1,66 +1,44 @@
-/**/# platform:  $XConsortium: hpux.macros,v 1.52 88/10/23 11:01:09 jim Exp $
+/*
+ * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
+ */
 
-#define StandardSystemDefines -DSYSV
-#define StandardDefines -Wc,-Nd4000,-Ns3000 StandardSystemDefines
+#define SystemV                YES
 
-BOOTSTRAPCFLAGS = 
-             AS = as
-             CC = cc
-            CPP = /lib/cpp
-             LD = ld
-           LINT = lint
-        INSTALL = bsdinstall
-           TAGS = ctags
-             RM = rm -f
-             MV = mv
-             LN = ln -s
-         RANLIB = /bin/true
-RANLIBINSTFLAGS = 
-             AR = ar clq
-             LS = ls
-       LINTOPTS = -ax -Nd4000 -Ns3000 -Na25000
-    LINTLIBFLAG = -o
-           MAKE = make
-STD_CPP_DEFINES = StandardSystemDefines
-    STD_DEFINES = StandardDefines
+#define OSName                 HP-UX 6.01
+#define OSMajorVersion         6
+#define OSMinorVersion         0
+#define StandardDefines        -Wc,-Nd4000,-Ns3000 -DSYSV
+#define LintOpts               -ax -Nd4000 -Ns3000 -Na25000 -DSYSV
+#define StandardCppDefines     -DSYSV
+#define LnCmd                  ln -s
 
 /* This defines the server you want */
-#define XHPServer Xhp
+#define XHPServer              Xhp
+
+#define NeedBerklibInXlib      YES		/* snag Berklib for Xlib */
 
 
-/* define this as you like for normal library compilation */
-#define LibraryDefines		StandardDefines
+/**/# platform:  $XConsortium: sun.sys,v 1.1 89/01/10 18:15:21 jim Exp $
+/**/# operating system:  OSName
 
-#define BandAidLibraryNeeded		YES
-#define BandAidLibrarySources		Berklib.c
-#define BandAidLibraryObjects		Berklib.o
-#define BandAidLibraryMake()					@@\
-Berklib.c: sysV/Berklib.c					@@\
-	-rm -f Berklib.c					@@\
-	-ln -s sysV/Berklib.c .
+/*
+ ****************************************************************************
+ */
+
 
 /* define this as you like for server compilation */
 /* 
  * The normal malloc in libc returns a real pointer on malloc of 0;
  * the malloc in libmalloc returns null on malloc of 0.
  */
-/* #define ServerMallocLib		YES	*//* use -lmalloc for server */
+/* #define ServerMallocLib      YES	*//* use -lmalloc for server */
 /* take out -DMALLOC_0_RETURNS_NULL if you have ServerMallocLib NO */
-#define ServerDefines		StandardDefines
-/* define this as you like for server font support */
-#define FontDefines	-DFONT_SNF -DFONT_BDF -DCOMPRESSED_FONTS
-#define UNCOMPRESSPATH /usr/bin/uncompress
 
-/* -DTCPCONN allows TCP connections */
-/* -DUNIXCONN allows Unix domain connections */
-/* -DDNETCONN allows DECnet connections */
+#define UNCOMPRESSPATH          /usr/bin/uncompress
 
-#define ConnectionFlags		-DTCPCONN
-
-/*
- * override any parameters from site.def
- */
-#define SystemV			YES	/* need system 5 style */
+#if OSMajorVersion < 6 || (OSMajorVersion == 6 && OSMinorVersion < 2)
+#define ConnectionFlags		-DTCPCONN	/* no unix sockets */
+#endif
 
 
 /*

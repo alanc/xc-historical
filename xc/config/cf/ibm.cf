@@ -1,22 +1,46 @@
-/**/# platform:  $XConsortium: Rt.macros,v 1.47 88/10/25 18:39:43 keith Exp $
+/*
+ * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
+ */
 
-#include "IBM.macros"
+#define SystemV                NO
+
+#define OSName                 ACIS
+#define OSMajorVersion         0
+#define OSMinorVersion         0
+#define CcCmd                  hc
+
+
+
+/* 
+ * This defines the name of server you want.
+ * affected: .../X11/server/Makefile
+ */
+#define XibmServer Xibm
+
+/*****************************************************************************
+ *                        Platform-specfic parameters                        *
+ *****************************************************************************/
+
+	/*
+	 * affected:	.../server/ddx/ibm/common/Makefile
+	 *		.../server/os/4.2bsd/Makefile
+	 * remove:	.../server/ddx/ibm/common/ibminit.o
+	 *		.../server/ddx/ibm/common/ibmio.o
+	 *		.../server/ddx/ibm/common/ibmutils.o
+	 *		.../server/os/4.2bsd/utils.o
+	 */
+
+#define	SpecialMalloc		YES
+/* Need This Also For our IBM Imakefiles */
+#define	ibmSpecialMalloc		YES
 
 #define	GlobalDefines	-DHCVERSION=HCRevision
 #define OPERATING_SYSTEM BSDrt
 #define OSDefines -DBSDrt
 
-BOOTSTRAPCFLAGS = 
-             CC = hc
  LDCOMBINEFLAGS = -X -r
-             LN = ln -s
-         RANLIB = ranlib
-RANLIBINSTFLAGS = -t
-             AR = ar cq
-       LINTOPTS = -axz
-    LINTLIBFLAG = -C
-
             PCC = pcc
+
 /*
  * It's real useful to know the version of hc we're using, but hc doesn't
  * identify itself in the pre-processor, so we have to do it by hand.
@@ -45,9 +69,9 @@ RANLIBINSTFLAGS = -t
  * hc revision 1.4r won't compile parts of Xt and some clients.
  */
 #if HCRevision == 14018
-#define BandAidCompiler "Rt.BAC"
+#define BandAidCompiler "rt.bac"
 #undef MacroFile
-#define MacroFile Rt.macros $(IRULESRC)/Rt.BAC
+#define MacroFile rt.cf $(IRULESRC)/rt.bac
 #endif
 
 /* 

@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Makefile generated from template file Imake.tmpl
-/**/# $XConsortium: Imake.tmpl,v 1.93 88/11/29 16:24:46 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.1 89/01/10 18:15:16 jim Exp $
 /**/#
 /**/# Do not change the body of the imake template file.  Server-specific
 /**/# parameters may be set in the appropriate .macros file; site-specific
@@ -33,82 +33,100 @@
  */
 
 #ifdef ibm032
-#define MacroIncludeFile "Rt.macros"
-#define MacroFile Rt.macros
+#define MacroIncludeFile "rt.cf"
+#define MacroFile rt.cf
 #undef ibm032
 #define RtArchitecture
 #endif /* ibm032 */
 
 #ifdef vax
-#define MacroIncludeFile "Vax.macros"
-#define MacroFile Vax.macros
+#ifdef ultrix
+#define MacroIncludeFile "vax-dec.cf"
+#define MacroFile vax-dec.cf
 #undef vax
+#undef ultrix
+#define UltrixArchitecture
+#else
+#define MacroIncludeFile "vax-bsd.cf"
+#define MacroFile vax-bsd.cf
+#undef vax
+#endif
 #define VaxArchitecture
 #endif /* vax */
 
 #ifdef sun
-#define MacroIncludeFile "Sun.macros"
-#define MacroFile Sun.macros
+#define MacroIncludeFile "sun.cf"
+#define MacroFile sun.cf
 #undef sun
 #define SunArchitecture
 #endif /* sun */
 
 #ifdef hpux
-#define MacroIncludeFile "hpux.macros"
-#define MacroFile hpux.macros
+#define MacroIncludeFile "hp.cf"
+#define MacroFile hp.cf
 #undef hpux
 #define HPArchitecture
 #endif /* hpux */
 
 #ifdef apollo
-#define MacroIncludeFile "Apllo.macros"
-#define MacroFile Apllo.macros
+#define MacroIncludeFile "apollo.cf"
+#define MacroFile apollo.cf
 #undef apollo
 #define ApolloArchitecture
 #endif /* apollo */
 
 #ifdef M4310
-#define MacroIncludeFile "Pegasus.macros"
-#define MacroFile Pegasus.macros
+#define MacroIncludeFile "pegasus.cf"
+#define MacroFile pegasus.cf
 #undef M4310
 #define PegasusArchitecture
 #endif /* M4310 */
 
 #ifdef M4330
-#define MacroIncludeFile "M4330.macros"
-#define MacroFile M4330.macros
+#define MacroIncludeFile "m4330.cf"
+#define MacroFile m4330.cf
 #undef  M4330
 #define M4330Architecture
 #endif /* M4330 */
 
 #ifdef macII
 /* A/UX cpp has no unique symbol:  build imake with BOOTSTRAPCFLAGS=-DmacII */
-#define MacroIncludeFile "MacII.macros"
-#define MacroFile MacII.macros
+#define MacroIncludeFile "macII.cf"
+#define MacroFile macII.cf
 #undef  macII
 #define MacIIArchitecture
 #endif /* macII */
 
 #ifdef CRAY
-#define MacroIncludeFile "cray.macros"
-#define MacroFile cray.macros
+#define MacroIncludeFile "cray.cf"
+#define MacroFile cray.cf
 #undef CRAY
 #undef cray
 #define CrayArchitecture
 #endif /* CRAY */
 
 #ifdef mips
-#define MacroIncludeFile "Mips.macros"
-#define MacroFile Mips.macros
+#ifdef ultrix
+#define MacroIncludeFile "mips-dec.cf"
+#define MacroFile mips-dec.cf
 #undef mips
+#undef ultrix
+#define UltrixArchitecture
+#else
+#if defined(SYSTYPE_SYSV) || defined(SYSTYPE_BSD)
+#define MacroIncludeFile "mips-mips.cf"
+#define MacroFile mips-mips.cf
+#undef mips
+#endif
+#endif
 #define MipsArchitecture
 #endif /* mips */
 
 #ifndef MacroIncludeFile
 /**/# WARNING:  Imake.tmpl not configured; guessing at definitions!!!
 /**/# This might mean that BOOTSTRAPCFLAGS wasn't set when building imake.
-#define MacroIncludeFile "Guess.macros"
-#define MacroFile Guess.macros
+#define MacroIncludeFile "generic.cf"
+#define MacroFile generic.cf
 #endif
 
 /*****************************************************************************
@@ -126,348 +144,133 @@
 /**/# site-specific configuration parameters - edit site.def to change
 #include "site.def"
 
+/**/###########################################################################
+/**/# global configuration parameters - do not change
+#include "global.def"
 
-/*****************************************************************************
- *                                                                           *
- *			      DEFAULT DEFINITONS                             *
- *                                                                           *
- * The following section contains defaults for things that can be overridden *
- * in the various .macros files and site.def.  DO NOT EDIT!                  *
- *                                                                           *
- ****************************************************************************/
 
-#ifndef SystemV
-#define SystemV			NO	/* need system 5 style */
-#endif
-#ifndef BuildServer
-#define BuildServer		YES	/* go ahead and build server */
-#endif
-#ifndef UnalignedReferencesAllowed
-#define UnalignedReferencesAllowed NO	/* if arbitrary deref is okay */
-#endif
-#ifndef BourneShell			/* to force shell in makefile */
-#define BourneShell		/bin/sh
-#endif
-#ifndef InstallxinitConfig
-#define InstallxinitConfig	NO	/* install sample xinit config */
-#endif
-#ifndef InstallxdmConfig
-#define InstallxdmConfig	NO	/* install sample xdm config */
-#endif
-#ifndef InstallAppDefFiles
-#define InstallAppDefFiles	YES	/* install application defaults */
-#endif
-#ifndef ExpandManNames
-#define ExpandManNames		NO	/* expand Xlib man page filenames */
-#endif
-#ifndef DebugLibX
-#define DebugLibX		NO	/* debugged X library */
-#endif
-#ifndef DebugLibXArchive
-#define DebugLibXArchive	NO	/* archive file of above */
-#endif
-#ifndef ProfileLibX
-#define ProfileLibX		NO	/* profiled X library */
-#endif
-#ifndef ProfileLibXArchive
-#define ProfileLibXArchive	NO	/* archive file of above */
-#endif
-#ifndef DebugOldLibX
-#define DebugOldLibX		NO	/* debugged old X library */
-#endif
-#ifndef ProfileOldLibX
-#define ProfileOldLibX		NO	/* profiled old X library */
-#endif
-#ifndef DebugLibXt
-#define DebugLibXt		NO	/* debugged toolkit library */
-#endif
-#ifndef ProfileLibXt
-#define ProfileLibXt		NO	/* profiled toolkit library */
-#endif
-#ifndef DebugLibXaw
-#define DebugLibXaw		NO	/* debugged widget library */
-#endif
-#ifndef ProfileLibXaw
-#define ProfileLibXaw		NO	/* profiled widget library */
-#endif
-#ifndef DebugLibXext
-#define DebugLibXext		NO	/* debugged Xext library */
-#endif
-#ifndef ProfileLibXext
-#define ProfileLibXext		NO	/* profiled Xext library */
-#endif
-#ifndef DebugLibXmu
-#define DebugLibXmu		NO	/* debugged Xmu library */
-#endif
-#ifndef ProfileLibXmu
-#define ProfileLibXmu		NO	/* profiled Xmu library */
-#endif
-#ifndef ManDirectoryRoot
-#define ManDirectoryRoot /usr/man		/* if not set in .macros */
-#endif
-#ifndef ManSuffix
-#define ManSuffix	n		/* use just one tab or cpp will die */
-#endif
-#ifndef LibManSuffix
-#define LibManSuffix	3		/* use just one tab or cpp will die */
-#endif
-#ifndef ExtensionDefines
-#define ExtensionDefines /* as nothing or perhaps -DZOID -DBEZIER */
-#endif
-#ifndef UNCOMPRESSPATH
-#define UNCOMPRESSPATH /usr/ucb/uncompress
-#endif
-#ifndef UNCOMPRESSFILT
-#define UNCOMPRESSFILT -DUNCOMPRESSFILT=\"UNCOMPRESSPATH\"
-#endif
-#ifndef BDFTOSNFFILT
-#define BDFTOSNFFILT -DBDFTOSNFFILT=\"$(BINDIR)/bdftosnf\"
-#endif
-#ifndef SHELLPATH
-#define SHELLPATH -DSHELLPATH=\"/bin/sh\"
-#endif
-#ifndef ZBDFTOSNFFILT
-#define ZBDFTOSNFFILT -DZBDFTOSNFFILT=\"UNCOMPRESSPATH" | $(BINDIR)/bdftosnf $(FCFLAGS)\""
-#endif
-#ifndef PrimaryScreenResolution
-#define PrimaryScreenResolution 72		/* a common resolution */
-#endif
-#ifndef DefaultFontPath
-#if PrimaryScreenResolution < 88		/* (75 + 100) / 2 */
-#define DefaultFontPath $(FONTDIR)/misc/,$(FONTDIR)/75dpi/,$(FONTDIR)/100dpi/
-#else
-#define DefaultFontPath $(FONTDIR)/misc/,$(FONTDIR)/100dpi/,$(FONTDIR)/75dpi/
-#endif
-#endif
-#ifndef DefaultRGBDatabase
-#define DefaultRGBDatabase $(LIBDIR)/rgb
-#endif
-#ifndef FontCompilerFlags
-#define FontCompilerFlags -t
-#endif
-#ifndef OptimizedCDebugFlags
-#define OptimizedCDebugFlags -O
-#endif
-#ifndef DebuggableCDebugFlags
-#define DebuggableCDebugFlags -g
-#endif
-#ifndef NoOpCDebugFlags
-#define NoOpCDebugFlags /* as nothing */
-#endif
-#ifndef DefaultCDebugFlags
-#define DefaultCDebugFlags OptimizedCDebugFlags
-#endif
-#ifndef LibraryCDebugFlags
-#define LibraryCDebugFlags OptimizedCDebugFlags
-#endif
-#ifndef ServerCDebugFlags
-#define ServerCDebugFlags OptimizedCDebugFlags
-#endif
-#ifndef CppSourcesPresent
-#define CppSourcesPresent	NO	/* only works with BSD sources */
-#endif
-#ifndef CppSources
-#define CppSources /usr/src/lib/cpp
-#endif
-#ifndef ConstructMFLAGS
-#if SystemV
-#define ConstructMFLAGS		YES	/* build MFLAGS from MAKEFLAGS */
-#else
-#define ConstructMFLAGS		NO	/* build MFLAGS from MAKEFLAGS */
-#endif
-#endif
-#ifndef DestDir
-#define DestDir /* as nothing */
-#endif
-#ifndef UsrLibDir
-#define UsrLibDir $(DESTDIR)/usr/lib
-#endif
-#ifndef BinDir
-#define BinDir $(DESTDIR)/usr/bin/X11
-#endif
-#ifndef IncDir
-#define IncDir $(DESTDIR)/usr/include/X11
-#endif
-#ifndef AdmDir
-#define AdmDir $(DESTDIR)/usr/adm
-#endif
-#ifndef LibDir
-#define LibDir $(USRLIBDIR)/X11
-#endif
-#ifndef LintlibDir
-#define LintlibDir $(USRLIBDIR)/lint
-#endif
-#ifndef FontDir
-#define FontDir $(LIBDIR)/fonts
-#endif
-#ifndef XinitDir
-#define XinitDir $(LIBDIR)/xinit
-#endif
-#ifndef XdmDir
-#define XdmDir $(LIBDIR)/xdm
-#endif
-#ifndef XdmConfigurationSubdirectory		/* under xdm sources */
-#define XdmConfigurationSubdirectory config/default
-#endif
-#ifndef UwmDir
-#define UwmDir $(LIBDIR)/uwm
-#endif
-#ifndef AwmDir
-#define AwmDir $(LIBDIR)/awm
-#endif
-#ifndef TwmDir
-#define TwmDir $(LIBDIR)/twm
-#endif
-#ifndef ManPath
-#define ManPath $(DESTDIR)/**/ManDirectoryRoot
-#endif
-#ifndef ManSourcePath
-#define ManSourcePath $(MANPATH)/man
-#endif
-#ifndef ManDir
-#define ManDir $(MANSOURCEPATH)/**/ManSuffix
-#endif
-#ifndef LibmanDir
-#define LibmanDir $(MANSOURCEPATH)/**/LibManSuffix
-#endif
-#ifndef XAppLoadDir
-#define XAppLoadDir $(LIBDIR)/app-defaults
-#endif
-#ifndef InstBinFlags
-#define InstBinFlags -m 0755
-#endif
-#ifndef InstUidFlags
-#define InstUidFlags -m 4755
-#endif
-#ifndef InstLibFlags
-#define InstLibFlags -m 0664
-#endif
-#ifndef InstIncFlags
-#define InstIncFlags -m 0444
-#endif
-#ifndef InstManFlags
-#define InstManFlags -m 0444
-#endif
-#ifndef InstAppFlags
-#define InstAppFlags -m 0444
-#endif
-#ifndef InstKmemFlags
-#define InstKmemFlags InstUidFlags    /* put -g kmem -m 2755 in site.def... */
-#endif
-#ifndef BandAidLibraryNeeded
-#define BandAidLibraryNeeded NO		/* for getting right stuff into Xlib */
-#endif
-#ifndef OsNameDefines
-#define OsNameDefines /* as nothing */
-#endif
-#ifndef DefaultUserPath			/* for xdm */
-#define DefaultUserPath :/bin:/usr/bin:$(BINDIR):/usr/ucb
-#endif
-#ifndef DefaultSystemPath		/* for xdm */
-#define DefaultSystemPath /etc:/bin:/usr/bin:$(BINDIR):/usr/ucb
-#endif
-#ifndef DefaultSystemShell		/* for xdm to set in SHELL */
-#define DefaultSystemShell BourneShell
-#endif
 
 /**/###########################################################################
 /**/# definitions common to all Makefiles - do not edit
 
-#define FontFilters UNCOMPRESSFILT BDFTOSNFFILT SHELLPATH ZBDFTOSNFFILT
+               AR = ArCmd
+  BOOTSTRAPCFLAGS = BootstripCFlags	/* set if cpp doesn't have uniq sym */
+               CC = CcCmd
+         COMPRESS = CompressCmd
+              CPP = CppCmd
+          INSTALL = InstallCmd
+               LD = LdCmd
+             LINT = LintCmd
+      LINTLIBFLAG = LintLibFlag
+         LINTOPTS = LintOpts
+               LN = LnCmd
+             MAKE = MakeCmd
+               MV = MvCmd
+               CP = CpCmd
+           RANLIB = RanlibCmd
+  RANLIBINSTFLAGS = RanlibInstFlags
+               RM = RemoveCmd
+  STD_CPP_DEFINES = StandardCppDefines
+      STD_DEFINES = SpecialDefines
+SYSLAST_LIBRARIES = SysLastLibraries
+             TAGS = TagsCmd
 
-          SHELL = BourneShell
+            SHELL = BourneShell
 #if ConstructMFLAGS
-         MFLAGS = -$(MAKEFLAGS)
+           MFLAGS = -$(MAKEFLAGS)
 #endif
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
  * Makefile.
  */
-        DESTDIR = DestDir		/* root of install */
-      USRLIBDIR = UsrLibDir		/* libraries */
-         BINDIR = BinDir		/* programs */
-         INCDIR = IncDir		/* header files */
-         ADMDIR = AdmDir		/* server log files */
-         LIBDIR = LibDir		/* rgb, XErrorDB, etc. */
-     LINTLIBDIR = LintlibDir		/* lint libraries */
-        FONTDIR = FontDir		/* font directories */
-       XINITDIR = XinitDir		/* xinit config files */
-         XDMDIR = XdmDir		/* xdm config files */
-         UWMDIR = UwmDir		/* uwm config files */
-         AWMDIR = AwmDir		/* awm config files */
-         TWMDIR = TwmDir		/* twm config files */
-        MANPATH = ManPath		/* top of manual page tree */
-  MANSOURCEPATH = ManSourcePath		/* prefix for man page sources */
-         MANDIR = ManDir		/* man pages for commands */
-      LIBMANDIR = LibmanDir		/* man pages for library routines */
-    XAPPLOADDIR = XAppLoadDir		/* application default resources */
+          DESTDIR = DestDir		/* root of install */
+        USRLIBDIR = UsrLibDir		/* libraries */
+           BINDIR = BinDir		/* programs */
+           INCDIR = IncDir		/* header files */
+           ADMDIR = AdmDir		/* server log files */
+           LIBDIR = LibDir		/* rgb, XErrorDB, etc. */
+       LINTLIBDIR = LintlibDir		/* lint libraries */
+          FONTDIR = FontDir		/* font directories */
+         XINITDIR = XinitDir		/* xinit config files */
+           XDMDIR = XdmDir		/* xdm config files */
+           UWMDIR = UwmDir		/* uwm config files */
+           AWMDIR = AwmDir		/* awm config files */
+           TWMDIR = TwmDir		/* twm config files */
+          MANPATH = ManPath		/* top of manual page tree */
+    MANSOURCEPATH = ManSourcePath	/* prefix for man page sources */
+           MANDIR = ManDir		/* man pages for commands */
+        LIBMANDIR = LibmanDir		/* man pages for library routines */
+      XAPPLOADDIR = XAppLoadDir		/* application default resources */
 
-   INSTBINFLAGS = InstBinFlags		/* install flags for programs */
-   INSTUIDFLAGS = InstUidFlags		/* install flags for setuid programs */
-   INSTLIBFLAGS = InstLibFlags		/* install flags for libraries */
-   INSTINCFLAGS = InstIncFlags		/* install flags for headers */
-   INSTMANFLAGS = InstManFlags		/* install flags for man pages */
-   INSTAPPFLAGS = InstAppFlags		/* install flags for app defaults */
-  INSTKMEMFLAGS = InstKmemFlags		/* install flags for /dev/kmem progs */
-        FCFLAGS = FontCompilerFlags
-    CDEBUGFLAGS = DefaultCDebugFlags
+     INSTBINFLAGS = InstBinFlags	/* install flags for programs */
+     INSTUIDFLAGS = InstUidFlags	/* install flags for setuid programs */
+     INSTLIBFLAGS = InstLibFlags	/* install flags for libraries */
+     INSTINCFLAGS = InstIncFlags	/* install flags for headers */
+     INSTMANFLAGS = InstManFlags	/* install flags for man pages */
+     INSTAPPFLAGS = InstAppFlags	/* install flags for app defaults */
+    INSTKMEMFLAGS = InstKmemFlags	/* install flags for /dev/kmem progs */
+          FCFLAGS = FontCompilerFlags
+      CDEBUGFLAGS = DefaultCDebugFlags
 
-        PATHSEP = /
-         DEPEND = $(DEPENDSRC)/makedepend
-          IMAKE = $(IMAKESRC)/imake
-            RGB = $(RGBSRC)/rgb
-             FC = $(BDFTOSNFSRC)/bdftosnf
-      MKFONTDIR = $(MKFONTDIRSRC)/mkfontdir
-      MKDIRHIER = $(SCRIPTSSRC)/mkdirhier.sh
+           CFLAGS = $(CDEBUGFLAGS) $(INCLUDES) $(STD_DEFINES) $(DEFINES)
+        LINTFLAGS = $(LINTOPTS) $(INCLUDES) $(STD_DEFINES) $(DEFINES) -DLINT
+          LDFLAGS = $(CDEBUGFLAGS) $(SYS_LIBRARIES) $(SYSAUX_LIBRARIES)
 
-         CFLAGS = $(CDEBUGFLAGS) $(INCLUDES) $(STD_DEFINES) $(DEFINES)
-      LINTFLAGS = $(LINTOPTS) $(INCLUDES) $(STD_DEFINES) $(DEFINES) -DLINT
-        LDFLAGS = $(CDEBUGFLAGS) $(SYS_LIBRARIES) $(SYSAUX_LIBRARIES)
-            TOP = TOPDIR
-      CLIENTSRC = $(TOP)/clients
-        DEMOSRC = $(TOP)/demos
-         LIBSRC = $(TOP)/lib
-        FONTSRC = $(TOP)/fonts
-     INCLUDESRC = $(TOP)/X11
-      SERVERSRC = $(TOP)/server
-        UTILSRC = $(TOP)/util
-     SCRIPTSSRC = $(UTILSRC)/scripts
-     EXAMPLESRC = $(TOP)/examples
-     CONTRIBSRC = $(TOP)/contrib
-         DOCSRC = $(TOP)/doc
-         RGBSRC = $(TOP)/rgb
-      DEPENDSRC = $(UTILSRC)/makedepend
-       IMAKESRC = $(UTILSRC)/imake
-       IRULESRC = $(UTILSRC)/imake.includes
-       XAUTHSRC = $(LIBSRC)/Xau
-        XLIBSRC = $(LIBSRC)/X
-         XMUSRC = $(LIBSRC)/Xmu
-     TOOLKITSRC = $(LIBSRC)/Xt
-     AWIDGETSRC = $(LIBSRC)/Xaw
-     OLDXLIBSRC = $(LIBSRC)/oldX
-    BDFTOSNFSRC = $(FONTSRC)/bdftosnf
-   MKFONTDIRSRC = $(FONTSRC)/mkfontdir
-   EXTENSIONSRC = $(TOP)/extensions
-   EXTENSIONLIB = $(EXTENSIONSRC)/lib/libXext.a
-       XAUTHLIB = $(XAUTHSRC)/libXau.a
-           XLIB = $(XLIBSRC)/libX11.a
-         XMULIB = $(XMUSRC)/libXmu.a
-        OLDXLIB = $(OLDXLIBSRC)/liboldX.a
-       XTOOLLIB = $(TOOLKITSRC)/libXt.a
-         XAWLIB = $(AWIDGETSRC)/libXaw.a
-       LINTXLIB = $(XLIBSRC)/llib-lX11.ln
-        LINTXMU = $(XMUSRC)/llib-lXmu.ln
-      LINTXTOOL = $(TOOLKITSRC)/llib-lXt.ln
-        LINTXAW = $(AWIDGETSRC)/llib-lXaw.ln
-       INCLUDES = -I$(TOP)
-      MACROFILE = MacroFile
-   ICONFIGFILES = $(IRULESRC)/Imake.tmpl \
-			$(IRULESRC)/$(MACROFILE) $(IRULESRC)/site.def 
-  IMAKE_DEFINES = /* leave blank, for command line use only */
-      IMAKE_CMD = $(NEWTOP)$(IMAKE) -TImake.tmpl -I$(NEWTOP)$(IRULESRC) \
+          PATHSEP = /
+           DEPEND = $(DEPENDSRC)/makedepend
+            IMAKE = $(IMAKESRC)/imake
+              RGB = $(RGBSRC)/rgb
+               FC = $(BDFTOSNFSRC)/bdftosnf
+        MKFONTDIR = $(MKFONTDIRSRC)/mkfontdir
+        MKDIRHIER = $(SCRIPTSSRC)/mkdirhier.sh
+
+              TOP = TOPDIR
+        CONFIGSRC = $(TOP)/conf
+        CLIENTSRC = $(TOP)/clients
+          DEMOSRC = $(TOP)/demos
+           LIBSRC = $(TOP)/lib
+          FONTSRC = $(TOP)/fonts
+       INCLUDESRC = $(TOP)/X11
+        SERVERSRC = $(TOP)/server
+          UTILSRC = $(TOP)/util
+       SCRIPTSSRC = $(UTILSRC)/scripts
+       EXAMPLESRC = $(TOP)/examples
+       CONTRIBSRC = $(TOP)/contrib
+           DOCSRC = $(TOP)/doc
+           RGBSRC = $(TOP)/rgb
+        DEPENDSRC = $(UTILSRC)/makedepend
+         IMAKESRC = $(UTILSRC)/imake
+         IRULESRC = $(CONFIGSRC)
+         XAUTHSRC = $(LIBSRC)/Xau
+          XLIBSRC = $(LIBSRC)/X
+           XMUSRC = $(LIBSRC)/Xmu
+       TOOLKITSRC = $(LIBSRC)/Xt
+       AWIDGETSRC = $(LIBSRC)/Xaw
+       OLDXLIBSRC = $(LIBSRC)/oldX
+      BDFTOSNFSRC = $(FONTSRC)/bdftosnf
+     MKFONTDIRSRC = $(FONTSRC)/mkfontdir
+     EXTENSIONSRC = $(TOP)/extensions
+     EXTENSIONLIB = $(EXTENSIONSRC)/lib/libXext.a
+         XAUTHLIB = $(XAUTHSRC)/libXau.a
+             XLIB = $(XLIBSRC)/libX11.a
+           XMULIB = $(XMUSRC)/libXmu.a
+          OLDXLIB = $(OLDXLIBSRC)/liboldX.a
+         XTOOLLIB = $(TOOLKITSRC)/libXt.a
+           XAWLIB = $(AWIDGETSRC)/libXaw.a
+         LINTXLIB = $(XLIBSRC)/llib-lX11.ln
+          LINTXMU = $(XMUSRC)/llib-lXmu.ln
+        LINTXTOOL = $(TOOLKITSRC)/llib-lXt.ln
+          LINTXAW = $(AWIDGETSRC)/llib-lXaw.ln
+         INCLUDES = -I$(TOP)
+        MACROFILE = MacroFile
+     ICONFIGFILES = $(IRULESRC)/Imake.tmpl \
+			$(IRULESRC)/$(MACROFILE) \
+			$(IRULESRC)/site.def $(IRULESRC)/global.def
+    IMAKE_DEFINES = /* leave blank, for command line use only */
+        IMAKE_CMD = $(NEWTOP)$(IMAKE) -TImake.tmpl -I$(NEWTOP)$(IRULESRC) \
 			-s Makefile $(IMAKE_DEFINES)
-         RM_CMD = $(RM) *.CKP *.ln *.BAK *.bak *.o core errs ,* *~ *.a \
+           RM_CMD = $(RM) *.CKP *.ln *.BAK *.bak *.o core errs ,* *~ *.a \
 			.emacs_* tags TAGS make.log MakeOut
 
 #include "Imake.rules"

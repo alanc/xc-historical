@@ -1,0 +1,371 @@
+/*****************************************************************************
+ *                                                                           *
+ *			      DEFAULT DEFINITONS                             *
+ *                                                                           *
+ * The following section contains defaults for things that can be overridden *
+ * in the various sys.* files and def.site.  DO NOT EDIT!                    *
+ *                                                                           *
+ ****************************************************************************/
+
+#ifndef SystemV
+#ifdef SYSV
+#define SystemV			YES	/* need system 5 style */
+#else
+#define SystemV			NO	/* bsd */
+#endif
+#endif
+#ifndef OSMajorVersion
+#define OSMajorVersion          0
+#endif
+#ifndef OSMinorVersion
+#define OSMinorVersion          0
+#endif
+#ifndef BuildServer
+#define BuildServer		YES	/* go ahead and build server */
+#endif
+#ifndef UnalignedReferencesAllowed
+#define UnalignedReferencesAllowed NO	/* if arbitrary deref is okay */
+#endif
+#ifndef BourneShell			/* to force shell in makefile */
+#define BourneShell		/bin/sh
+#endif
+#ifndef InstallxinitConfig
+#define InstallxinitConfig	NO	/* install sample xinit config */
+#endif
+#ifndef InstallxdmConfig
+#define InstallxdmConfig	NO	/* install sample xdm config */
+#endif
+#ifndef InstallAppDefFiles
+#define InstallAppDefFiles	YES	/* install application defaults */
+#endif
+#ifndef ExpandManNames
+#define ExpandManNames		NO	/* expand Xlib man page filenames */
+#endif
+#ifndef DebugLibX
+#define DebugLibX		NO	/* debugged X library */
+#endif
+#ifndef DebugLibXArchive
+#define DebugLibXArchive	NO	/* archive file of above */
+#endif
+#ifndef ProfileLibX
+#define ProfileLibX		NO	/* profiled X library */
+#endif
+#ifndef ProfileLibXArchive
+#define ProfileLibXArchive	NO	/* archive file of above */
+#endif
+#ifndef DebugOldLibX
+#define DebugOldLibX		NO	/* debugged old X library */
+#endif
+#ifndef ProfileOldLibX
+#define ProfileOldLibX		NO	/* profiled old X library */
+#endif
+#ifndef DebugLibXt
+#define DebugLibXt		NO	/* debugged toolkit library */
+#endif
+#ifndef ProfileLibXt
+#define ProfileLibXt		NO	/* profiled toolkit library */
+#endif
+#ifndef DebugLibXaw
+#define DebugLibXaw		NO	/* debugged widget library */
+#endif
+#ifndef ProfileLibXaw
+#define ProfileLibXaw		NO	/* profiled widget library */
+#endif
+#ifndef DebugLibXext
+#define DebugLibXext		NO	/* debugged Xext library */
+#endif
+#ifndef ProfileLibXext
+#define ProfileLibXext		NO	/* profiled Xext library */
+#endif
+#ifndef DebugLibXmu
+#define DebugLibXmu		NO	/* debugged Xmu library */
+#endif
+#ifndef ProfileLibXmu
+#define ProfileLibXmu		NO	/* profiled Xmu library */
+#endif
+#ifndef NeedBerklibInXlib
+#define NeedBerklibInXlib       NO
+#endif
+#ifndef ManDirectoryRoot
+#define ManDirectoryRoot /usr/man		/* if not set in .macros */
+#endif
+#ifndef ManSuffix
+#define ManSuffix	n		/* use just one tab or cpp will die */
+#endif
+#ifndef LibManSuffix
+#define LibManSuffix	3		/* use just one tab or cpp will die */
+#endif
+#ifndef ExtensionDefines
+#define ExtensionDefines /* as nothing or perhaps -DZOID -DBEZIER */
+#endif
+#ifndef UNCOMPRESSPATH
+#define UNCOMPRESSPATH /usr/ucb/uncompress
+#endif
+#ifndef UNCOMPRESSFILT
+#define UNCOMPRESSFILT -DUNCOMPRESSFILT=\"UNCOMPRESSPATH\"
+#endif
+#ifndef BDFTOSNFFILT
+#define BDFTOSNFFILT -DBDFTOSNFFILT=\"$(BINDIR)/bdftosnf\"
+#endif
+#ifndef SHELLPATH
+#define SHELLPATH -DSHELLPATH=\"/bin/sh\"
+#endif
+#ifndef ZBDFTOSNFFILT
+#define ZBDFTOSNFFILT -DZBDFTOSNFFILT=\"UNCOMPRESSPATH" | $(BINDIR)/bdftosnf $(FCFLAGS)\""
+#endif
+#ifndef FontFilters
+#define FontFilters UNCOMPRESSFILT BDFTOSNFFILT SHELLPATH ZBDFTOSNFFILT
+#endif
+#ifndef PrimaryScreenResolution
+#define PrimaryScreenResolution 72		/* a common resolution */
+#endif
+#ifndef DefaultFontPath
+#if PrimaryScreenResolution < 88		/* (75 + 100) / 2 */
+#define DefaultFontPath $(FONTDIR)/misc/,$(FONTDIR)/75dpi/,$(FONTDIR)/100dpi/
+#else
+#define DefaultFontPath $(FONTDIR)/misc/,$(FONTDIR)/100dpi/,$(FONTDIR)/75dpi/
+#endif
+#endif
+#ifndef DefaultRGBDatabase
+#define DefaultRGBDatabase $(LIBDIR)/rgb
+#endif
+#ifndef FontCompilerFlags
+#define FontCompilerFlags -t
+#endif
+#ifndef ConnectionFlags
+#define ConnectionFlags -DTCPCONN -DUNIXCONN
+#endif
+#ifndef FontDefines
+#define FontDefines -DFONT_SNF -DFONT_BDF -DCOMPRESSED_FONTS
+#endif
+#ifndef OptimizedCDebugFlags
+#define OptimizedCDebugFlags -O
+#endif
+#ifndef DebuggableCDebugFlags
+#define DebuggableCDebugFlags -g
+#endif
+#ifndef NoOpCDebugFlags
+#define NoOpCDebugFlags /* as nothing */
+#endif
+#ifndef DefaultCDebugFlags
+#define DefaultCDebugFlags OptimizedCDebugFlags
+#endif
+#ifndef LibraryCDebugFlags
+#define LibraryCDebugFlags OptimizedCDebugFlags
+#endif
+#ifndef ServerCDebugFlags
+#define ServerCDebugFlags OptimizedCDebugFlags
+#endif
+#ifndef LibraryDefines
+#define LibraryDefines StandardDefines
+#endif
+#ifndef ServerDefines
+#define StandardDefines
+#endif
+#ifndef CppSourcesPresent
+#define CppSourcesPresent	NO	/* only works with BSD sources */
+#endif
+#ifndef CppSources
+#define CppSources /usr/src/lib/cpp
+#endif
+#ifndef ConstructMFLAGS
+#if SystemV
+#define ConstructMFLAGS		YES	/* build MFLAGS from MAKEFLAGS */
+#else
+#define ConstructMFLAGS		NO	/* build MFLAGS from MAKEFLAGS */
+#endif
+#endif
+#ifndef DestDir
+#define DestDir /* as nothing */
+#endif
+#ifndef UsrLibDir
+#define UsrLibDir $(DESTDIR)/usr/lib
+#endif
+#ifndef BinDir
+#define BinDir $(DESTDIR)/usr/bin/X11
+#endif
+#ifndef IncDir
+#define IncDir $(DESTDIR)/usr/include/X11
+#endif
+#ifndef AdmDir
+#define AdmDir $(DESTDIR)/usr/adm
+#endif
+#ifndef LibDir
+#define LibDir $(USRLIBDIR)/X11
+#endif
+#ifndef LintlibDir
+#define LintlibDir $(USRLIBDIR)/lint
+#endif
+#ifndef FontDir
+#define FontDir $(LIBDIR)/fonts
+#endif
+#ifndef XinitDir
+#define XinitDir $(LIBDIR)/xinit
+#endif
+#ifndef XdmDir
+#define XdmDir $(LIBDIR)/xdm
+#endif
+#ifndef XdmConfigurationSubdirectory		/* under xdm sources */
+#define XdmConfigurationSubdirectory config/default
+#endif
+#ifndef UwmDir
+#define UwmDir $(LIBDIR)/uwm
+#endif
+#ifndef AwmDir
+#define AwmDir $(LIBDIR)/awm
+#endif
+#ifndef TwmDir
+#define TwmDir $(LIBDIR)/twm
+#endif
+#ifndef ManPath
+#define ManPath $(DESTDIR)/**/ManDirectoryRoot
+#endif
+#ifndef ManSourcePath
+#define ManSourcePath $(MANPATH)/man
+#endif
+#ifndef ManDir
+#define ManDir $(MANSOURCEPATH)/**/ManSuffix
+#endif
+#ifndef LibmanDir
+#define LibmanDir $(MANSOURCEPATH)/**/LibManSuffix
+#endif
+#ifndef XAppLoadDir
+#define XAppLoadDir $(LIBDIR)/app-defaults
+#endif
+#ifndef InstBinFlags
+#define InstBinFlags -m 0755
+#endif
+#ifndef InstUidFlags
+#define InstUidFlags -m 4755
+#endif
+#ifndef InstLibFlags
+#define InstLibFlags -m 0664
+#endif
+#ifndef InstIncFlags
+#define InstIncFlags -m 0444
+#endif
+#ifndef InstManFlags
+#define InstManFlags -m 0444
+#endif
+#ifndef InstAppFlags
+#define InstAppFlags -m 0444
+#endif
+#ifndef InstKmemFlags
+#define InstKmemFlags InstUidFlags    /* put -g kmem -m 2755 in site.def... */
+#endif
+#ifndef BandAidLibraryNeeded
+#define BandAidLibraryNeeded NO		/* for getting right stuff into Xlib */
+#endif
+#ifndef OsNameDefines
+#define OsNameDefines /* as nothing */
+#endif
+#ifndef DefaultUserPath			/* for xdm */
+#define DefaultUserPath :/bin:/usr/bin:$(BINDIR):/usr/ucb
+#endif
+#ifndef DefaultSystemPath		/* for xdm */
+#define DefaultSystemPath /etc:/bin:/usr/bin:$(BINDIR):/usr/ucb
+#endif
+#ifndef DefaultSystemShell		/* for xdm to set in SHELL */
+#define DefaultSystemShell BourneShell
+#endif
+#ifndef ArCmd
+#define ArCmd                  ar clq
+#endif
+#ifndef BootstripCFlags
+#define BootstripCFlags        /**/
+#endif
+#ifndef CcCmd
+#define CcCmd                  cc
+#endif
+#ifndef CompressCmd
+#define CompressCmd            compress
+#endif
+#ifndef CppCmd
+#define CppCmd                 /lib/cpp
+#endif
+#ifndef InstallCmd
+#if SystemV
+#define InstallCmd             bsdinstall
+#else
+#define InstallCmd             install
+#endif
+#endif
+#ifndef LdCmd
+#define LdCmd                  ld
+#endif
+#ifndef LintCmd
+#define LintCmd                lint
+#endif
+#ifndef LintLibFlag
+#if SystemV
+#define LintLibFlag            -o
+#else
+#define LintLibFlag            -C
+#endif
+#endif
+#ifndef LintOpts
+#if SystemV
+#define LintOpts               -ax
+#else
+#define LintOpts               -axz
+#endif
+#endif
+#ifndef CpCmd
+#define CpCmd                  cp
+#endif
+#ifndef LnCmd
+#if SystemV
+#define LnCmd                  ln			/* or even cp */
+#else
+#define LnCmd                  ln -s
+#endif
+#endif
+#ifndef MakeCmd
+#define MakeCmd                make
+#endif
+#ifndef MvCmd
+#define MvCmd                  mv
+#endif
+#ifndef RanlibCmd
+#if SystemV
+#define RanlibCmd              /bin/true
+#else
+#define RanlibCmd              ranlib
+#endif
+#endif
+#ifndef RanlibInstFlags
+#define RanlibInstFlags        /**/
+#endif
+#ifndef RemoveCmd
+#define RemoveCmd              rm -f
+#endif
+#ifndef StandardCppDefines
+#if SystemV
+#define StandardCppDefines     -DSYSV
+#else
+#define StandardCppDefines     /**/
+#endif
+#endif
+#ifndef StandardDefines
+#if SystemV
+#define StandardDefines         -DSYSV
+#else
+#define StandardDefines         /**/
+#endif
+#endif
+#ifndef SysLastLibraries
+#define SysLastLibraries       /**/
+#endif
+#ifndef TagsCmd
+#define TagsCmd                ctags
+#endif
+
+#if NeedBerklibinXlib
+#define BandAidLibraryNeeded		YES
+#define BandAidLibrarySources		Berklib.c
+#define BandAidLibraryObjects		Berklib.o
+#define BandAidLibraryMake()					@@\
+Berklib.c: sysV/Berklib.c					@@\
+	-$(RM) Berklib.c					@@\
+	-$(LN) sysV/Berklib.c .
+#endif
