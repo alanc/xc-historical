@@ -13,6 +13,7 @@
 
 *clientInfoPopup.title:		Client List
 *viewPropButton.label:		View Properties
+*cloneButton.label:		Clone
 *killClientButton.label:	Kill Client
 *clientInfoDoneButton.label:	Done
 
