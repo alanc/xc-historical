@@ -1,4 +1,4 @@
-.TH XDPYINFO 1 "Release 4" "X Version 11"
+.TH XDPYINFO 1 "Release 5" "X Version 11"
 .SH NAME
 xdpyinfo \- display information utility for X
 .SH SYNOPSIS
