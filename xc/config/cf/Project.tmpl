@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.76 90/12/11 13:23:09 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.77 90/12/21 16:10:03 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -322,17 +322,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.76 90/12/11 13:23:09 rws Exp $
 #define DoInstallExtensionsIntoXlib NO	/* merge libXext.a into libX11.a */
 #endif
 
-#if NeedBerklibInXlib		/* what about regular Berklib */
-#define BandAidLibraryNeeded		YES
-#define BandAidLibrarySources		Berklib.c
-#define BandAidLibraryObjects		Berklib.o
-#define BandAidLibraryMake()					@@\
-Berklib.c: sysV/Berklib.c					@@\
-	-$(RM) Berklib.c					@@\
-	-$(LN) sysV/Berklib.c .
-#endif /* NeedBerklibInXlib */
-
-
 #ifndef BandAidLibraryNeeded
 #define BandAidLibraryNeeded NO		/* for getting right stuff into Xlib */
 #endif
@@ -346,7 +335,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.76 90/12/11 13:23:09 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.77 90/12/21 16:10:03 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
