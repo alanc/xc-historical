@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ViewportP.h,v 1.11 90/02/12 18:37:16 jim Exp $
+ * $XConsortium: ViewportP.h,v 1.12 90/02/13 10:56:48 jim Exp $
  * Private declarations for ViewportWidgetClass
  */
 
@@ -53,7 +53,7 @@ typedef struct _ViewportPart {
     Boolean allowvert;		/* Whether we allow vertical scrollbars. */
     Boolean usebottom;		/* True iff horiz bars appear at bottom. */
     Boolean useright;		/* True iff vert bars appear at right. */
-    XtCallbackList notify_callbacks;	/* when size/position changes */
+    XtCallbackList report_callbacks;	/* when size/position changes */
     /* private state */
     Widget clip, child;		/* The clipping and (scrolled) child widgets */
     Widget  horiz_bar, vert_bar;/* What scrollbars we currently have. */

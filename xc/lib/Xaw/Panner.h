@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.8 90/02/13 10:56:19 jim Exp $
+ * $XConsortium: Panner.h,v 1.9 90/02/13 12:44:50 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,6 +26,8 @@
 #ifndef _XawPanner_h
 #define _XawPanner_h
 
+#include <X11/Xaw/Reports.h>
+
 /*****************************************************************************
  * 
  * Panner Widget (subclass of Simple)
@@ -39,13 +41,13 @@
  * 
  *  allowOff		AllowOff	Boolean		FALSE
  *  background		Background	Pixel		XtDefaultBackground
- *  callback		Callback	XtCallbackList	NULL
  *  canvasWidth		CanvasWidth	Dimension	0
  *  canvasHeight	CanvasHeight	Dimension	0
  *  defaultScale	DefaultScale	Dimension	10 (percent)
  *  foreground		Foreground	Pixel		XtDefaultForeground
- *  internalBorderWidth	BorderWidth	Dimension	2
+ *  internalBorderWidth	BorderWidth	Dimension	4
  *  lineWidth		LineWidth	Dimension	0
+ *  reportCallback	ReportCallback	XtCallbackList	NULL
  *  resize		Boolean		Boolean		TRUE
  *  rubberBand		RubberBand	Boolean		FALSE
  *  shadow		Shadow		Boolean		TRUE
@@ -69,6 +71,8 @@
 #define XtNinternalBorderWidth "internalBorderWidth"
 #define XtNlineWidth "lineWidth"
 #define XtCLineWidth "LineWidth"
+#define XtNreportCallback "reportCallback"
+#define XtCReportCallback "ReportCallback"
 #define XtNresize "resize"
 #define XtNrubberBand "rubberBand"
 #define XtCRubberBand "RubberBand"
@@ -88,11 +92,5 @@ extern WidgetClass pannerWidgetClass;
 
 typedef struct _PannerClassRec *PannerWidgetClass;
 typedef struct _PannerRec      *PannerWidget;
-
-typedef struct {
-    Position slider_x, slider_y;
-    Dimension slider_width, slider_height;
-    Dimension canvas_width, canvas_height;
-} XawPannerReport;
 
 #endif /* _XawPanner_h */

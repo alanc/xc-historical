@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.10 90/02/13 12:44:45 jim Exp $
+ * $XConsortium: Panner.c,v 1.11 90/02/13 12:48:15 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -60,8 +60,8 @@ static XtResource resources[] = {
 	poff(allow_off), XtRImmediate, (XtPointer) FALSE },
     { XtNresize, XtCBoolean, XtRBoolean, sizeof(Boolean),
 	poff(resize_to_pref), XtRImmediate, (XtPointer) TRUE },
-    { XtNcallback, XtCCallback, XtRCallback, sizeof(XtPointer),
-	poff(callbacks), XtRCallback, (XtPointer) NULL },
+    { XtNreportCallback, XtCReportCallback, XtRCallback, sizeof(XtPointer),
+	poff(report_callbacks), XtRCallback, (XtPointer) NULL },
     { XtNdefaultScale, XtCDefaultScale, XtRDimension, sizeof(Dimension),
 	poff(default_scale), XtRImmediate, (XtPointer) PANNER_DEFAULT_SCALE },
     { XtNrubberBand, XtCRubberBand, XtRBoolean, sizeof(Boolean),
@@ -69,7 +69,7 @@ static XtResource resources[] = {
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel), 
 	poff(foreground), XtRImmediate, (XtPointer) "XtDefaultForeground" },
     { XtNinternalBorderWidth, XtCBorderWidth, XtRDimension, sizeof(Dimension),
-	poff(internal_border), XtRImmediate, (XtPointer) 2 },
+	poff(internal_border), XtRImmediate, (XtPointer) 4 },
     { XtNlineWidth, XtCLineWidth, XtRDimension, sizeof(Dimension),
 	poff(line_width), XtRImmediate, (XtPointer) 0 },
     { XtNcanvasWidth, XtCCanvasWidth, XtRDimension, sizeof(Dimension),
@@ -649,13 +649,14 @@ static void ActionNotify (gw, event, params, num_params)
 	XawPannerReport rep;
 
 	Redisplay (gw, (XEvent*) NULL, (Region) NULL);
-	rep.slider_x = pw->panner.slider_x;
-	rep.slider_y = pw->panner.slider_y;
-	rep.slider_width = pw->panner.slider_width;
-	rep.slider_height = pw->panner.slider_height;
-	rep.canvas_width = pw->panner.canvas_width;
-	rep.canvas_height = pw->panner.canvas_height;
-	XtCallCallbackList (gw, pw->panner.callbacks, (caddr_t) &rep);
+	rep.changed = (XawPRInnerX | XawPRInnerY);
+	rep.inner_x = pw->panner.slider_x;
+	rep.inner_y = pw->panner.slider_y;
+	rep.inner_width = pw->panner.slider_width;
+	rep.inner_height = pw->panner.slider_height;
+	rep.outer_width = pw->panner.canvas_width;
+	rep.outer_height = pw->panner.canvas_height;
+	XtCallCallbackList (gw, pw->panner.report_callbacks, (caddr_t) &rep);
     }
 }
 

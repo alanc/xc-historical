@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.52 90/02/12 18:37:11 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.53 90/02/13 10:56:44 jim Exp $";
 #endif /* lint */
 
 
@@ -50,8 +50,8 @@ static XtResource resources[] = {
 	 offset(usebottom), XtRImmediate, (caddr_t)False},
     {XtNuseRight, XtCBoolean, XtRBoolean, sizeof(Boolean),
 	 offset(useright), XtRImmediate, (caddr_t)False},
-    {XtNnotifyCallback, XtCNotifyCallback, XtRCallback, sizeof(XtPointer),
-	 offset(notify_callbacks), XtRImmediate, (caddr_t) NULL},
+    {XtNreportCallback, XtCReportCallback, XtRCallback, sizeof(XtPointer),
+	 offset(report_callbacks), XtRImmediate, (caddr_t) NULL},
 };
 #undef offset
 
@@ -389,22 +389,24 @@ static void RedrawThumbs(w)
 
 
 
-static void SendReport (w)
+static void SendReport (w, changed)
     ViewportWidget w;
+    unsigned int changed;
 {
-    XawViewportReport rep;
+    XawPannerReport rep;
 
-    if (w->viewport.notify_callbacks) {
+    if (w->viewport.report_callbacks) {
 	register Widget child = w->viewport.child;
 	register Widget clip = w->viewport.clip;
 
-	rep.child_x = child->core.x;
-	rep.child_y = child->core.y;
-	rep.child_width = child->core.width;
-	rep.child_height = child->core.height;
-	rep.clip_width = clip->core.width;
-	rep.clip_height = clip->core.height;
-	XtCallCallbackList ((Widget) w, w->viewport.notify_callbacks,
+	rep.changed = changed;
+	rep.inner_x = -child->core.x;
+	rep.inner_y = -child->core.y;
+	rep.inner_width = clip->core.width;
+	rep.inner_height = clip->core.height;
+	rep.outer_width = child->core.width;
+	rep.outer_height = child->core.height;
+	XtCallCallbackList ((Widget) w, w->viewport.report_callbacks,
 			    (caddr_t) &rep);
     }
 }
@@ -429,7 +431,7 @@ static void MoveChild(w, x, y)
     if (y >= 0) y = 0;
 
     XtMoveWidget(child, x, y);
-    SendReport (w);
+    SendReport (w, (XawPRInnerX | XawPRInnerY));
 
     RedrawThumbs(w);
 }
@@ -622,7 +624,7 @@ static void ComputeLayout(widget, query, destroy_scrollbars)
 		  needsvert ? child->core.y : 0);
     }
 
-    SendReport (w);
+    SendReport (w, XawPRAll);
 }
 
 /*      Function Name: ComputeWithForceBars
