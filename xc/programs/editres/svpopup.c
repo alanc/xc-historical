@@ -1,5 +1,5 @@
 /*
- * $XConsortium: svpopup.c,v 1.10 91/04/04 21:35:30 gildea Exp $
+ * $XConsortium: svpopup.c,v 1.11 91/07/08 11:06:14 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -22,8 +22,6 @@
  *
  * Author:  Chris D. Peterson, MIT X Consortium
  */
-
-#ifdef SET_VALUES_POPUP
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>	/* Get standard string definations. */
@@ -325,4 +323,3 @@ caddr_t junk, garbage;
 {
     XtPopdown(XtParent(XtParent(w))); 
 }
-#endif /* SET_VALUES_POPUP */

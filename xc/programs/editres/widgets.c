@@ -1,5 +1,5 @@
 /*
- * $XConsortium: widgets.c,v 1.15 91/07/08 10:32:20 rws Exp $
+ * $XConsortium: widgets.c,v 1.16 91/07/08 11:56:31 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -65,9 +65,7 @@ extern void ResourceListCallback(), PopdownResBox(), SaveResource();
 extern void GetNamesAndClasses(), ApplyResource(), ActivateResourceWidgets();
 extern void ActivateWidgetsAndSetResourceString(), SetFile();
 
-#ifdef SET_VALUES_POPUP    
-    extern InitSetValues();
-#endif
+extern InitSetValues();
 
 /*	Function Name: BuildWidgetTree
  *	Description: Creates all widgets for Editres.
@@ -166,11 +164,9 @@ Widget parent;
 				 NULL, ZERO);
     XtAddCallback(entry, XtNcallback, GetResourceList, NULL);
 
-#ifdef SET_VALUES_POPUP    
     entry = XtCreateManagedWidget("setValues", smeBSBObjectClass, menu,
 				    NULL, ZERO);
     XtAddCallback(entry, XtNcallback, InitSetValues, NULL);
-#endif /* SET_VALUES_POPUP */
 
     entry = XtCreateManagedWidget("line", smeLineObjectClass, menu,
 				  NULL, ZERO);
