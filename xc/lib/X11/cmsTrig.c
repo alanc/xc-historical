@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsTrig.c,v 1.1 91/06/27 16:39:59 rws Exp $" */
+/* $XConsortium: XcmsTrig.c,v 1.2 91/07/23 12:13:52 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -43,6 +43,11 @@
  *	author did not fully support union initialization features.
  *
  */
+
+/*
+ *	EXTERNS
+ */
+extern double _XcmsSquareRoot();
 
 /*
  *	FORWARD DECLARATIONS
