@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.5 92/05/20 17:40:35 gildea Exp $ */
+/* $XConsortium: error.c,v 1.6 92/05/29 18:04:45 gildea Exp $ */
 /*
  * error message handling
  */
@@ -139,7 +139,7 @@ NoticeF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)	/* limit of 10 args */
 #endif
 
     /* XXX should Notices just be ignored if not using syslog? */
-    fprintf(stderr, "Notice: ");
+    fprintf(stderr, "xfs notice: ");
     fprintf(stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
 }
 
@@ -169,7 +169,7 @@ ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)	/* limit of 10 args */
     }
 #endif
 
-    fprintf(stderr, "Error: ");
+    fprintf(stderr, "xfs error: ");
     fprintf(stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
 }
 
@@ -188,9 +188,8 @@ FatalError(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)	/* limit of 10 args */
                *s8,
                *s9;
 {
-    ErrorF("\nFatal font server error!\n");
+    ErrorF("Fatal font server error:\n");
     ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-    ErrorF("\n");
     abort_server();
     /* NOTREACHED */
 }

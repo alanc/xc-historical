@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.24 94/02/03 16:07:10 mor Exp $ */
+/* $XConsortium: connection.c,v 1.25 94/02/09 15:41:56 gildea Exp $ */
 /*
  * handles connections
  */
@@ -178,7 +178,7 @@ CreateSockets(oldsock)
     if (oldsock >= 0) {		/* must be forked, and have a different socket
 				 * to listen to */
 
-	    FatalError("Cannot re-establish the listening socket");
+	    FatalError("Cannot re-establish the listening socket\n");
 	    return;
 #if 0
 /*
@@ -195,7 +195,7 @@ CreateSockets(oldsock)
 	if (listen(oldsock, 5)) {
 	    Error("TCP listening");
 	    close(oldsock);
-	    FatalError("Cannot re-establish the listening socket");
+	    FatalError("Cannot re-establish the listening socket\n");
 	    return;
 	}
 #endif
@@ -224,7 +224,7 @@ CreateSockets(oldsock)
     }
 
     if (WellKnownConnections == 0)
-	FatalError("Cannot establish any listening sockets");
+	FatalError("Cannot establish any listening sockets\n");
 
 
     /* set up all the signal handlers */

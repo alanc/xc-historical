@@ -1,4 +1,4 @@
-/* $XConsortium: resource.c,v 1.4 91/06/21 18:23:50 keith Exp $ */
+/* $XConsortium: resource.c,v 1.5 91/07/18 22:36:40 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -383,7 +383,7 @@ FreeResource(cid, id, skipDeleteFuncType)
 	}
     }
     if (!gotOne)
-	FatalError("Freeing resource id=%X which isn't there", id);
+	FatalError("Freeing resource id=%X which isn't there\n", id);
 }
 
 #ifdef NOTYET

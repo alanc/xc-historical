@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.10 92/11/18 21:29:37 gildea Exp $ */
+/* $XConsortium: main.c,v 1.11 93/09/20 18:10:41 hersh Exp $ */
 /*
  * Font server main routine
  */
@@ -77,7 +77,7 @@ main(argc, argv)
      * startup time.  it is erad again each time the server resets
      */
     if (ReadConfigFile(configfilename) != FSSuccess)
-	FatalError("couldn't parse config file");
+	FatalError("couldn't parse config file\n");
 
     while (1) {
 	serverGeneration++;
@@ -89,13 +89,13 @@ main(argc, argv)
 	    InitProcVectors();
 	    clients = (ClientPtr *) fsalloc(MAXCLIENTS * sizeof(ClientPtr));
 	    if (!clients)
-		FatalError("couldn't create client array");
+		FatalError("couldn't create client array\n");
 	    for (i = MINCLIENT; i < MAXCLIENTS; i++)
 		clients[i] = NullClient;
 	    /* make serverClient */
 	    serverClient = (ClientPtr) fsalloc(sizeof(ClientRec));
 	    if (!serverClient)
-		FatalError("couldn't create server client");
+		FatalError("couldn't create server client\n");
 	}
 	ResetSockets();
 
@@ -107,14 +107,14 @@ main(argc, argv)
 	currentClient = serverClient;
 
 	if (!InitClientResources(serverClient))
-	    FatalError("couldn't init server resources");
+	    FatalError("couldn't init server resources\n");
 
 	InitExtensions();
 	InitAtoms();
 	InitFonts();
 	SetConfigValues();
 	if (!create_connection_block())
-	    FatalError("couldn't create connection block");
+	    FatalError("couldn't create connection block\n");
 
 #ifdef DEBUG
 	fprintf(stderr, "Entering Dispatch loop\n");
@@ -134,7 +134,7 @@ main(argc, argv)
 	fsfree(ConnectionInfo);
 	/* note that we're parsing it again, for each time the server resets */
 	if (ReadConfigFile(configfilename) != FSSuccess)
-	    FatalError("couldn't parse config file");
+	    FatalError("couldn't parse config file\n");
     }
 
     CloseErrors();
@@ -145,7 +145,7 @@ void
 NotImplemented()
 {
     NoopDDA();			/* dummy to get difsutils.o to link */
-    FatalError("Not implemented");
+    FatalError("Not implemented\n");
 }
 
 static Bool

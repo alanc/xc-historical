@@ -1,4 +1,4 @@
-/* $XConsortium: utils.c,v 1.12 94/01/01 17:35:41 rws Exp $ */
+/* $XConsortium: utils.c,v 1.13 94/02/09 15:42:19 gildea Exp $ */
 /*
  * misc os utilities
  */
@@ -264,7 +264,7 @@ FSalloc (amount)
 	return (unsigned long *)ptr;
 #endif
     if (Must_have_memory)
-	FatalError("Out of memory");
+	FatalError("Out of memory\n");
     return (unsigned long *)NULL;
 }
 
@@ -319,7 +319,7 @@ FSrealloc (ptr, amount)
         return (unsigned long *)ptr;
 #endif
     if (Must_have_memory)
-	FatalError("Out of memory");
+	FatalError("Out of memory\n");
     return (unsigned long *)NULL;
 }
                     

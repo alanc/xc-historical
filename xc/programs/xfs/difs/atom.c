@@ -1,4 +1,4 @@
-/* $XConsortium: atom.c,v 1.2 91/05/13 16:53:12 gildea Exp $ */
+/* $XConsortium: atom.c,v 1.3 92/03/26 18:02:04 gildea Exp $ */
 /*
  * font server atom manipulations
  */
@@ -141,7 +141,7 @@ NameForAtom(atom)
 static void
 atom_error()
 {
-    FatalError("initializing atoms");
+    FatalError("initializing atoms\n");
 }
 
 static void

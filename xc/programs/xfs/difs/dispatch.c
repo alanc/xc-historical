@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.20 93/09/23 14:45:22 gildea Exp $ */
+/* $XConsortium: dispatch.c,v 1.21 94/02/08 15:29:25 gildea Exp $ */
 /*
  * protocol dispatcher
  */
@@ -138,7 +138,7 @@ Dispatch()
 	    if (dispatchException & DE_RECONFIG) {
 		NoticeF("Re-reading config file\n");
 		if (ReadConfigFile(configfilename) != FSSuccess)
-		    ErrorF("couldn't parse config file");
+		    ErrorF("couldn't parse config file\n");
 		SetConfigValues();
 		dispatchException &= ~DE_RECONFIG;
 	    }
@@ -819,7 +819,7 @@ ProcQueryXInfo(client)
 	SendErrToClient(client, FSBadAlloc, (pointer) 0);
 	return err;
     default:
-	ErrorF("ProcQueryXInfo: unexpected return val %d from convert_props",
+	ErrorF("ProcQueryXInfo: unexpected return val %d from convert_props\n",
 	       err);
 	SendErrToClient(client, FSBadImplementation, (pointer) 0);
 	return err;
