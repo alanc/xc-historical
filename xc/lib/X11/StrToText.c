@@ -30,7 +30,10 @@ Status XStringListToTextProperty (argv, argc, textprop)
     /* fill in a prototype containing results so far */
     proto.encoding = XA_STRING;
     proto.format = 8;
-    proto.nitems = nbytes - 1;		/* subtract one for trailing <NUL> */
+    if (nbytes)
+	proto.nitems = nbytes - 1;	/* subtract one for trailing <NUL> */
+    else
+	proto.nitems = 0;
     proto.value = NULL;
 
     /* build concatenated list of strings */
