@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.6 91/07/17 00:47:34 gildea Exp $
 #ifdef MacIIArchitecture
       IEEE_DEFS = -DIEEE
 #endif /* MacIIArchitecture */
@@ -11,5 +11,5 @@ LOCAL_LIBRARIES = XawClientLibs
            OBJS = actions.o math.o xcalc.o 
 
 ComplexProgramTarget(xcalc)
-
 InstallAppDefaults(XCalc)
+InstallAppDefaultsLong(XCalc-col,XCalc-color)
