@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.178 93/07/29 09:37:33 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.179 93/08/09 14:50:04 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -652,8 +652,13 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef CompressCmd
 #define CompressCmd compress
 #endif
+#ifndef HasCppCmd
+#define HasCppCmd YES
+#endif
 #ifndef CppCmd
+#if HasCppCmd
 #define CppCmd /lib/cpp
+#endif
 #endif
 #ifndef PreProcessCmd
 #define PreProcessCmd CcCmd -E
@@ -890,7 +895,9 @@ XCOMM the platform-specific parameters - edit site.def to change
           FCFLAGS = FortranFlags $(FDEBUGFLAGS)
 #endif
          COMPRESS = CompressCmd
+#ifdef CppCmd
               CPP = CppCmd $(STD_CPP_DEFINES)		/* simple filters */
+#endif
     PREPROCESSCMD = PreProcessCmd $(STD_CPP_DEFINES)	/* prefered; mdep */
           INSTALL = InstallCmd
                LD = LdCmd
