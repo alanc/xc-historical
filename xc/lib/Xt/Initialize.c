@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.89 87/12/04 13:57:09 swick Locked $";
+static char rcsid[] = "$Header: Initialize.c,v 1.90 87/12/04 16:48:42 swick Locked $";
 #endif lint
 
 /*
@@ -618,7 +618,7 @@ Widget wid;
 XtWidgetGeometry *request;
 XtWidgetGeometry *reply;
 {
-  	XWindowChanges values;
+	Position x, y;
 	ShellWidget w = (ShellWidget)(wid->core.parent);
 
 	if(w->shell.resizeable == FALSE &&
@@ -638,6 +638,22 @@ XtWidgetGeometry *reply;
 /* ||| this code depends on the core x,y,width,height,borderwidth fields */
 /* being the same size and same order as an XWindowChanges record. Yechh!!! */
 	_ask_wm_for_size(w, (XWindowChanges *) &(request->x), request->request_mode);
+
+
+	/* ||| we're responsible for x,y, but Intrinsics do w,h,bw */
+	x = (request->request_mode & CWX) ? request->x : wid->core.x;
+	y = (request->request_mode & CWY) ? request->y : wid->core.y;
+	XtMoveWidget(wid, x, y);
+
+	if (request->request_mode & CWWidth)
+	    wid->core.width = request->width;
+
+	if (request->request_mode & CWHeight)
+	    wid->core.height = request->height;
+
+	if (request->request_mode & CWBorderWidth)
+	    wid->core.border_width = request->border_width;
+
 	return(XtGeometryYes);
 }
 
