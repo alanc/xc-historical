@@ -664,7 +664,7 @@ badfb:
 
 	    type = fbattr.real_type;
 	    *pfbType = fbattr.fbtype;
-	    if (expect != type)
+	    if (expect == FBTYPE_SUN2BW && expect != type)
 	    {
 	    	for (i = 0; i < FB_ATTR_NEMUTYPES; i++)
 	    	{
