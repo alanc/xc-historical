@@ -22,7 +22,7 @@
  * $NCDId: @(#)lbxfuncs.c,v 1.43 1995/03/09 00:54:06 lemke Exp $
  */
 
-/* $XConsortium: lbxfuncs.c,v 1.8 95/04/04 21:06:19 dpw Exp mor $ */
+/* $XConsortium: lbxfuncs.c,v 1.9 95/05/02 19:33:09 mor Exp mor $ */
 
 /*
  * top level LBX request & reply handling
@@ -1305,7 +1305,6 @@ get_queryfont_reply(client, data)
     QueryTagRec qt;
     CARD32      tag;
     char        n;
-    Bool	free_fi = FALSE;
 
     rep = (xLbxQueryFontReply *) data;
 
@@ -1329,7 +1328,6 @@ get_queryfont_reply(client, data)
 		LbxSwapFontInfo(sqtag_data, rep->compression);
 	    }
 
-	    free_fi = TRUE;
 	    /*
 	     * store squished version of data, since that's what comes through
 	     * through QueryTag
@@ -1384,8 +1382,7 @@ get_queryfont_reply(client, data)
 
     FinishQueryFontReply(client, rep->sequenceNumber, len, tag_data);
 
-    if (free_fi)		/* free unsquished version */
-    	xfree(tag_data);
+    xfree(tag_data);		/* free unsquished version */
 
     return TRUE;
 }
