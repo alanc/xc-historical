@@ -26,12 +26,14 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $Header: xmodmap.c,v 1.4 87/09/13 22:03:20 swick Locked $ */
+/* $Header: xmodmap.c,v 1.5 87/09/30 08:09:11 jim Locked $ */
 #include <stdio.h>
 #include <ctype.h>
 #include "X11/Xlib.h"
 #include "X11/Xutil.h"
 #include "X11/Xatom.h"
+
+char *ProgramName;
 
 extern char *XKeysymToString();
 
@@ -40,6 +42,28 @@ Display *dpy;
 static update_map = 0;
 static output_map = 0;
 static FILE *fout = stdout;
+
+usage () 
+{
+    fprintf (stderr,
+	"usage:  %s [-display host:dpy] [-options ...]\n\n", ProgramName);
+    fprintf (stderr,
+	"where options include:\n");
+    fprintf (stderr,
+	"    -S, -L, -C,         remove all keys for Shift, Lock, Control\n");
+    fprintf (stderr,
+	"    -[12345]            remove all keys for indicated ModN\n");
+    fprintf (stderr,
+	"    -s keysym, -l keysym, -c keysym,     remove indicated keysym\n");
+    fprintf (stderr,
+	"    +s keysym, +l keysym, +c keysym,     added indicated keysym\n");
+    fprintf (stderr,
+	"    +[12345] keysym     add keysym to modifier\n");
+    fprintf (stderr,
+	"\n");
+    exit (1);
+}
+
 
 StartConnectionToServer(argc, argv)
 int	argc;
@@ -51,13 +75,17 @@ char	*argv[];
     display = NULL;
     for(i = 1; i < argc; i++)
     {
-        if(index(argv[i], ':') != NULL)
+	if (strcmp ("-display", argv[i]) == 0 || strcmp ("-d", argv[i]) == 0) {
+	    if (++i >= argc) usage ();
+	    display = argv[i];
+	    continue;
+	} else if (index(argv[i], ':') != NULL)		/* obsolete */
 	    display = argv[i];
     }
     if (!(dpy = XOpenDisplay(display)))
     {
        perror("Cannot open display\n");
-       exit(0);
+       exit(1);
    }
 }
 UpdateModifierMapping(map)
@@ -132,6 +160,9 @@ DecodeArgs(argc, argv, map)
 	argv++;
 	if (**argv == '-') {
 	    switch (*++*argv) {
+		case 'd':		/* display */
+		    --argc, argv++;
+		    continue;
 		case '1':
 		case '2':
 		case '3':
@@ -159,6 +190,8 @@ DecodeArgs(argc, argv, map)
 		    update_map++;
 		    fout = NULL;
 		    break;
+		default:
+		    usage ();
 	    }
 	}
 	else if (**argv == '+') {
@@ -194,7 +227,11 @@ DecodeArgs(argc, argv, map)
 		    update_map++;
 		    fout = NULL;
 		    break;
+		default:
+		    usage ();
 	    }
+	} else {
+	    usage ();
 	}
     }
 }
@@ -244,6 +281,8 @@ main(argc, argv)
 {
     XModifierKeymap *map;
 
+    ProgramName = argv[0];
+
     StartConnectionToServer(argc, argv);
 
     map = XGetModifierMapping(dpy);
@@ -255,5 +294,8 @@ main(argc, argv)
 
     if (update_map)
 	UpdateModifierMapping(map);
+
+    XCloseDisplay (dpy);
+    exit (0);
 }
 

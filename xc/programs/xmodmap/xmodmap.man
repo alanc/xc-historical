@@ -19,9 +19,10 @@ xmodmap, xprkbd - X Window System keyboard modifier utilities
 [ +3 \fIn\fP ]
 [ +4 \fIn\fP ]
 [ +5 \fIn\fP ]
-[ \fIhost\fP:\fIdisplay\fP ]
+[ -display \fIhost\fP:\fIdisplay\fP ]
 .sp
 .B "xprkbd"
+[ -display \fIhost\fP:\fIdisplay\fP ]
 .SH DESCRIPTION
 .PP
 .I Xmodmap
