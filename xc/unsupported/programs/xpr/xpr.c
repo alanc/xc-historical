@@ -1,4 +1,4 @@
-#include <X/mit-copyright.h>
+#include <X11/copyright.h>
 
 /*
  * XPR - process xwd(1) files for the LN03 or LA100 printer
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$Header: xpr.c,v 1.11 86/09/19 15:58:01 solomon Exp $";
+static char *rcsid_xpr_c = "$Header: xpr_lw.c,v 1.11 87/06/04 17:42:58 dkk Locked $";
 #endif
 
 #include <sys/types.h>
