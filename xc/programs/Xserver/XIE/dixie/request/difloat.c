@@ -1,4 +1,4 @@
-/* $XConsortium: difloat.c,v 1.3 94/01/12 19:56:32 rws Exp $ */
+/* $XConsortium: difloat.c,v 1.4 94/04/17 20:33:53 rws Exp $ */
 /**** module difloat.c ****/
 /******************************************************************************
 
@@ -103,7 +103,7 @@ double ConvertIEEEtoNative(ieee)
   double exponent;
   double fraction;
   
-  if(!ieee) return(0.0);
+  if(!(ieee & 0x7fffffff)) return(0.0);
   
   sign     = (ieee & ieeeFloatSignMask) == ieeeFloatSignMask ? -1.0 : 1.0;
   exponent = (int)((ieee & ieeeFloatExpMask) >> ieeeFloatExpShift) - 127;
