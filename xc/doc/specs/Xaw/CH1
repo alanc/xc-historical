@@ -1,9 +1,9 @@
-.\" $XConsortium: CH1,v 1.12 91/09/30 13:46:16 converse Exp $
+.\" $XConsortium: CH1,v 1.13 94/05/01 19:20:54 gildea Exp $
 .ps 11
 .nr PS 11
 .ds LH \fBAthena Widget Set\fP
 .ds CH
-.ds RH \fBX11, Release 6\fP.
+.ds RH \fBX11, Release 6\fP
 .bp 1
 .af PN 1
 \&
