@@ -20,6 +20,8 @@
 .XS
 Chapter 7 - Creating New Widgets (Subclassing)
 .XE
+.IN "Subclasing" "" "@DEF@"
+.IN "Creating New Widgets" "" "@DEF@"
 .LP
 Although the task of creating a new widget may at first appear a little
 daunting, there is a basic simple pattern that all widgets follow.  The
@@ -69,6 +71,9 @@ for a certain set of functions and that many copies of these functions
 will be needed.  For example, when converting an older application to use
 the Toolkit, it may be desirable to have a "Window Widget" class that
 might have the following semantics:
+.IN "Window Widget"
+.IN "Core Widget"
+.IN "widgetClass"
 .IP \(bu 3
 Allocate 2 drawing colors in addition to a background color.
 .IP \(bu 3
