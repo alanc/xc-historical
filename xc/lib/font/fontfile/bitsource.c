@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitsource.c,v 1.1 91/05/10 14:46:26 keith Exp $
+ * $XConsortium: bitsource.c,v 1.2 91/06/12 14:35:05 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -65,6 +65,7 @@ FontFileUnregisterBitmapSource (fpe)
 	    {
 		FontFileBitmapSources.size = 0;
 		xfree (FontFileBitmapSources.fpe);
+		FontFileBitmapSources.fpe = 0;
 	    }
 	    else
 	    {
