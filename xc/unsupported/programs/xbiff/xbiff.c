@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xbiff.c,v 1.10 89/05/11 17:44:51 kit Exp $
+ * $XConsortium: xbiff.c,v 1.11 89/12/07 19:27:16 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -21,8 +21,10 @@
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/Mailbox.h>
+#include <X11/Xaw/Cardinals.h>
 
 extern void exit();
+static void quit();
 
 char *ProgramName;
 
@@ -32,6 +34,11 @@ static XrmOptionDescRec options[] = {
 { "-volume", "*mailbox.volume", XrmoptionSepArg, (caddr_t) NULL },
 { "-shape",  "*mailbox.shapeWindow", XrmoptionNoArg, (caddr_t) "on" },
 };
+
+static XtActionsRec xbiff_actions[] = {
+    { "quit", quit },
+};
+static Atom wm_delete_window;
 
 static void Usage ()
 {
@@ -63,6 +70,7 @@ void main (argc, argv)
     char **argv;
 {
     Widget toplevel, w;
+    Arg args[1];
 
     ProgramName = argv[0];
 
@@ -70,9 +78,37 @@ void main (argc, argv)
 			     &argc, argv);
     if (argc != 1) Usage ();
 
+    /*
+     * This is a hack so that f.delete will do something useful in this
+     * single-window application.
+     */
+    XtAppAddActions (XtWidgetToApplicationContext(toplevel),
+                     xbiff_actions, XtNumber(xbiff_actions));
+    XtSetArg (args[0], XtNtranslations,
+              XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
+    XtSetValues (toplevel, args, ONE);
+
     w = XtCreateManagedWidget ("mailbox", mailboxWidgetClass, toplevel,
 			       NULL, 0);
     XtRealizeWidget (toplevel);
+    wm_delete_window = XInternAtom (XtDisplay(toplevel), "WM_DELETE_WINDOW",
+                                    False);
+    (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
+                            &wm_delete_window, 1);
     XtMainLoop ();
 }
 
+static void quit (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    if (event->type == ClientMessage &&
+        event->xclient.data.l[0] != wm_delete_window) {
+        XBell (XtDisplay(w), 0);
+        return;
+    }
+    XCloseDisplay (XtDisplay(w));
+    exit (0);
+}
