@@ -225,7 +225,7 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
     int         new_line, new_text, new_fillspans;
     /* flags for changing the proc vector */
     cfbPrivGCPtr devPriv;
-    int	    	  procChanges = 0;
+    unsigned long procChanges = 0;
 
     switch (pGC->depth) {
     case PSZ:

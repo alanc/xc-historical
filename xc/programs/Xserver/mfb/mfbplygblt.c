@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbplygblt.c,v 1.16 88/01/24 15:03:42 rws Exp $ */
+/* $XConsortium: mfbplygblt.c,v 1.17 88/09/06 14:54:05 jim Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -37,6 +37,7 @@ SOFTWARE.
 #include "maskbits.h"
 #include "miscstruct.h"
 
+extern void QueryGlyphExtents();
 
 /*
     we should eventually special-case fixed-width fonts, although
@@ -139,7 +140,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     x += xorg;
     y += yorg;
 
-    QueryGlyphExtents(pGC->font, ppci, nglyph, &info);
+    QueryGlyphExtents(pGC->font, ppci, (unsigned long)nglyph, &info);
     bbox.x1 = x + info.overallLeft;
     bbox.x2 = x + info.overallRight;
     bbox.y1 = y - info.overallAscent;

@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.25 89/03/22 10:49:50 rws Exp $ */
+/* $XConsortium: mibstore.c,v 1.26 89/03/23 18:34:40 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3052,15 +3052,15 @@ void
 miValidateBackingStore(pDrawable, pGC, procChanges)
     DrawablePtr   pDrawable;
     GCPtr   	  pGC;
-    int	    	  procChanges;	/* Bits indicating changed output functions.
+    unsigned long procChanges;	/* Bits indicating changed output functions.
 				 * Bitwise OR of MIBS_ constants */
 {
     GCPtr   	  	pBackingGC;
     MIBackingStorePtr	pBackingStore;
     MIBSGCPrivPtr 	pPriv;
     WindowPtr		pWin;
-    unsigned long	stateChanges;
-    register int  	index, mask;
+    unsigned long	stateChanges, mask;
+    register int  	index;
     int			lift_functions;
     RegionPtr		backingCompositeClip = NULL;
 

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 1.57 89/03/16 14:47:07 jim Exp $ */
+/* $XConsortium: mfbbitblt.c,v 1.58 89/03/18 12:29:33 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -310,8 +310,9 @@ int dstx, dsty;
 	    prgnExposed =
 		miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
 				  origSource.x, origSource.y,
-				  origSource.width, origSource.height,
-				  origDest.x, origDest.y, 0);
+				  (int)origSource.width,
+				  (int)origSource.height,
+				  origDest.x, origDest.y, (unsigned long)0);
 	}
 #ifdef PURDUE
     
@@ -1004,7 +1005,7 @@ register GC *pGC;
 int srcx, srcy;
 int width, height;
 int dstx, dsty;
-unsigned int plane;
+unsigned long plane;
 {
     int alu;
     RegionPtr	prgnExposed;

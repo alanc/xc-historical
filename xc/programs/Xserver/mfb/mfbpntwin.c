@@ -1,4 +1,4 @@
-/* $XConsortium: mfbpntwin.c,v 1.4 89/03/18 12:29:17 rws Exp $ */
+/* $XConsortium: mfbpntwin.c,v 1.5 89/03/22 19:34:26 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -33,6 +33,9 @@ SOFTWARE.
 
 #include "mfb.h"
 #include "maskbits.h"
+
+extern void miPaintWindow();
+
 /*
 NOTE
    PaintArea32() doesn't need to rotate the tile, since

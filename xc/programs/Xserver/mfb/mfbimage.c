@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimage.c,v 1.34 88/09/06 14:53:31 jim Exp $ */
+/* $XConsortium: mfbimage.c,v 1.35 89/03/18 12:30:26 rws Exp $ */
 
 #include "X.h"
 
@@ -113,7 +113,7 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
     DrawablePtr pDrawable;
     int		sx, sy, w, h;
     unsigned int format;
-    unsigned int planeMask;
+    unsigned long planeMask;
     pointer	pdstLine;
 {
     int xorg, yorg;
@@ -152,7 +152,7 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
 	if ((pDrawable->type == DRAWABLE_WINDOW) &&
 	    (((WindowPtr)pDrawable)->backingStore != NotUseful))
 	{
-	    miBSGetImage(pDrawable, pPixmap, sx, sy, w, h, format,
+	    miBSGetImage((WindowPtr)pDrawable, pPixmap, sx, sy, w, h, format,
 			 planeMask, (pointer) 0);
 	}
 

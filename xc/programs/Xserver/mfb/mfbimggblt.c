@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimggblt.c,v 1.5 88/09/06 14:54:07 jim Exp $ */
+/* $XConsortium: mfbimggblt.c,v 1.6 89/03/16 14:46:38 jim Exp $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -36,6 +36,7 @@ SOFTWARE.
 #include	"mfb.h"
 #include	"maskbits.h"
 
+extern void QueryGlyphExtents();
 
 /*
     we should eventually special-case fixed-width fonts for ImageText.
@@ -140,7 +141,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
-    QueryGlyphExtents(pGC->font, ppci, nglyph, &info);
+    QueryGlyphExtents(pGC->font, ppci, (unsigned long)nglyph, &info);
 
     backrect.x = x;
     backrect.y = y - pGC->font->pFI->fontAscent;

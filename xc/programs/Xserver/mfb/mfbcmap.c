@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbcmap.c,v 1.14 87/11/07 16:17:52 rws Exp $ */
+/* $XConsortium: mfbcmap.c,v 1.15 88/09/06 14:54:03 jim Exp $ */
 #include "X.h"
 #include "scrnintstr.h"
 #include "colormapst.h"
@@ -67,10 +67,10 @@ mfbInstallColormap(pmap)
 	/* Uninstall pInstalledMap. No hardware changes required, just
 	 * notify all interested parties. */
 	if(oldpmap != (ColormapPtr)None)
-	    WalkTree(pmap->pScreen, TellLostMap, (char *)&oldpmap->mid);
+	    WalkTree(pmap->pScreen, TellLostMap, (pointer)&oldpmap->mid);
 	/* Install pmap */
 	InstalledMaps[index] = pmap;
-	WalkTree(pmap->pScreen, TellGainedMap, (char *)&pmap->mid);
+	WalkTree(pmap->pScreen, TellGainedMap, (pointer)&pmap->mid);
 
     }
 }
@@ -85,12 +85,12 @@ mfbUninstallColormap(pmap)
     if(pmap == curpmap)
     {
         /* Uninstall pmap */
-	WalkTree(pmap->pScreen, TellLostMap, (char *)&pmap->mid);
+	WalkTree(pmap->pScreen, TellLostMap, (pointer)&pmap->mid);
 	curpmap = (ColormapPtr) LookupID(pmap->pScreen->defColormap,
 					 RT_COLORMAP, RC_CORE);
 	/* Install default map */
 	InstalledMaps[index] = curpmap;
-	WalkTree(pmap->pScreen, TellGainedMap, (char *)&curpmap->mid);
+	WalkTree(pmap->pScreen, TellGainedMap, (pointer)&curpmap->mid);
     }
 	
 }
