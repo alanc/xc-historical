@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.13 93/12/15 17:30:55 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.14 93/12/28 11:48:10 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -129,7 +129,6 @@ typedef struct {
 #define SmcSaveYourselfProcMask		1
 #define SmcDieProcMask			2
 #define SmcShutdownCancelledProcMask	4
-#define SmcAllProcMask			(1+2+4)
 
 
 /*
@@ -584,6 +583,12 @@ extern Status SmsInitialize (
 );
 
 extern char *SmsClientHostName (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */
+#endif
+);
+
+extern char *SmsGenerateClientID (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */
 #endif
