@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: VTparse.h,v 1.2 88/07/20 12:25:51 jim Exp $
+ *	$XConsortium: VTparse.h,v 1.3 88/09/06 17:07:45 jim Exp $
  */
 
 
@@ -109,3 +109,4 @@
 #define CASE_XTERM_SAVE 64
 #define CASE_XTERM_RESTORE 65
 #define CASE_XTERM_TITLE 66
+#define CASE_DECID 67

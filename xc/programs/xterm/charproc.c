@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.62 88/11/16 18:15:34 rws Exp $
+ * $XConsortium: charproc.c,v 1.63 88/12/09 15:42:52 swick Exp $
  */
 
 
@@ -134,7 +134,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.62 88/11/16 18:15:34 rws Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.63 88/12/09 15:42:52 swick Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -646,6 +646,9 @@ VTparse()
 			 param[3]-1, param[4]-2);
 			break;
 
+		 case CASE_DECID:
+			param[0] = -1;		/* Default ID parameter */
+			/* Fall through into ... */
 		 case CASE_DA1:
 			/* DA1 */
 			if (param[0] <= 0) {	/* less than means DEFAULT */

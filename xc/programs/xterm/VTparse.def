@@ -1,5 +1,5 @@
 #
-# $XConsortium$
+# $XConsortium: VTparse.def,v 1.2 88/09/06 14:35:13 jim Exp $
 #
 # List of symbols that need to be defined for VTparse.h.  If you need to 
 # change any of the CASE_ macros, make the change here and rerun the command
@@ -73,3 +73,4 @@ CASE_PRINT
 CASE_XTERM_SAVE
 CASE_XTERM_RESTORE
 CASE_XTERM_TITLE
+CASE_DECID
