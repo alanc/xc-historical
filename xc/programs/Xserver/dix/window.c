@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.233 89/03/20 14:09:56 rws Exp $ */
+/* $XConsortium: window.c,v 1.234 89/03/24 07:52:32 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -669,7 +669,7 @@ InitRootWindow(pWin)
     pWin->backingStore = defaultBackingStore;
     /* We SHOULD check for an error value here XXX */
     (*pScreen->ChangeWindowAttributes)(pWin,
-				       CWBackPixmap|CWCursor|CWBackingStore);
+		       CWBackPixmap|CWBorderPixel|CWCursor|CWBackingStore);
 
     MapWindow(pWin, DONT_HANDLE_EXPOSURES, BITS_DISCARDED,
 	      DONT_SEND_NOTIFICATION, serverClient);
