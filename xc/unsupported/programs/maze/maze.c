@@ -1,3 +1,5 @@
+/* $XConsortium$ */
+
 /******************************************************************************
  * [ maze ] ...
  *
@@ -35,16 +37,22 @@
  OR PERFORMANCE OF THIS SOFTWARE.
  *****************************************************************************/
 
-#include  <stdio.h>
-#include  <X11/Xlib.h>
-#include  <X11/Xutil.h>
-#include  <X11/Xos.h>
-#include  <X11/bitmaps/gray1>
-#include  <X11/bitmaps/xlogo64>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xos.h>
+#include <stdio.h>
+
+#include <X11/bitmaps/gray1>
+#include <X11/bitmaps/xlogo64>
 #define logo_width xlogo64_width
 #define logo_height xlogo64_height
 #define logo_bits xlogo64_bits
 
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern char *getenv();
+#endif
 
 #define LOGOSIZE	7
 #define MIN_MAZE_SIZE	3
@@ -127,7 +135,6 @@ main(argc,argv)                                               /* main module */
   char	*geo = NULL;
   char	*cmd;
   int	c;
-  extern char	*getenv();
   int	screen_saver = 0;
   XSizeHints size_hints;
   Pixmap gray;
