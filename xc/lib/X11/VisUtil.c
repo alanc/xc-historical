@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XVisUtil.c,v 11.8 87/09/11 08:15:44 toddb Exp $ */
+/* $XConsortium: XVisUtil.c,v 11.9 88/09/06 16:11:22 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -79,8 +79,8 @@ int *nitems;	/* RETURN */
 
           /* LOOP THROUGH VISUALS */
 
-          for (vp=dp->visuals; vp<(dp->visuals + dp->nvisuals); vp++)
-            {
+	  if (dp->visuals) {
+	    for (vp=dp->visuals; vp<(dp->visuals + dp->nvisuals); vp++) {
               if ((visual_info_mask & VisualIDMask) &&
                 (vp->visualid != visual_info_template->visualid)) continue;
               if ((visual_info_mask & VisualClassMask) &&
@@ -121,6 +121,7 @@ int *nitems;	/* RETURN */
               vip++;
 
             } /* END OF LOOP ON VISUALS */
+	  } /* END OF IF THERE ARE ANY VISUALS AT THIS DEPTH */
           
         } /* END OF LOOP ON DEPTHS */
 
@@ -184,6 +185,7 @@ Status XMatchVisualInfo( dpy, screen, depth, class, visual_info)
 
         /* LOOK THROUGH VISUALS FOR THE WANTED CLASS */
 
+	/* if nvisuals == 0 then vp will be NULL */
         for (jj=0; jj<dp->nvisuals; jj++)
           {
             if (vp->class == class) 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.91 89/02/01 18:15:50 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.92 89/03/22 15:14:14 rws Exp $
  */
 
 #include "copyright.h"
@@ -1313,6 +1313,7 @@ Visual *_XVIDtoVisual (dpy, id)
 		sp = &dpy->screens[i];
 		for (j = 0; j < sp->ndepths; j++) {
 			dp = &sp->depths[j];
+			/* if nvisuals == 0 then visuals will be NULL */
 			for (k = 0; k < dp->nvisuals; k++) {
 				vp = &dp->visuals[k];
 				if (vp->visualid == id) return (vp);

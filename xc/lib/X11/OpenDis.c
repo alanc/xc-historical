@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.78 89/03/06 13:59:08 jim Exp $
+ * $XConsortium: XOpenDis.c,v 11.79 89/03/10 17:47:18 rws Exp $
  */
 
 #include "copyright.h"
@@ -403,14 +403,15 @@ Display *XOpenDisplay (display)
 		dp->depth = u.dp->depth;
 		dp->nvisuals = u.dp->nVisuals;
 		u.dp += 1;
-		dp->visuals = 
-		  (Visual *)Xmalloc((unsigned)dp->nvisuals*sizeof(Visual));
-		if (dp->visuals == NULL) {
-		    OutOfMemory (dpy, setup);
-		    UnlockMutex(&lock);
-		    return(NULL);
-		}
-		for (k = 0; k < dp->nvisuals; k++) {
+		if (dp->nvisuals > 0) {
+		    dp->visuals = 
+		      (Visual *)Xmalloc((unsigned)dp->nvisuals*sizeof(Visual));
+		    if (dp->visuals == NULL) {
+			OutOfMemory (dpy, setup);
+			UnlockMutex(&lock);
+			return(NULL);
+		    }
+		    for (k = 0; k < dp->nvisuals; k++) {
 			register Visual *vp = &dp->visuals[k];
 			if ((vp->visualid = u.vp->visualID) == root_visualID)
 			   sp->root_visual = vp;
@@ -422,6 +423,9 @@ Display *XOpenDisplay (display)
 			vp->blue_mask	= u.vp->blueMask;
 			vp->ext_data	= NULL;
 			u.vp += 1;
+		    }
+		} else {
+		    dp->visuals = (Visual *) NULL;
 		}
 	    }
 	}
