@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.2 89/06/16 16:57:59 keith Exp $ */
+/* $XConsortium: mfbgc.c,v 5.3 89/07/09 15:56:27 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -336,13 +336,7 @@ mfbCreateGC(pGC)
 	pGC->devPrivates[mfbGCPrivateIndex].ptr = (pointer)pPriv;
 	pPriv->pRotatedTile = NullPixmap;
 	pPriv->pRotatedStipple = NullPixmap;
-	pPriv->pAbsClientRegion =(* pGC->pScreen->RegionCreate)(NULL, 1); 
-
-	/* since freeCompClip isn't FREE_CC, we don't need to create
-	   a null region -- no one will try to free the field.
-	*/
-	pPriv->freeCompClip = REPLACE_CC;
-	pPriv->ppPixmap = &BogusPixmap;
+	pPriv->freeCompClip = FALSE;
 	pPriv->FillArea = mfbSolidInvertArea;
     }
     return TRUE;
@@ -393,10 +387,8 @@ mfbDestroyGC(pGC)
 	mfbDestroyPixmap(pPriv->pRotatedTile);
     if (pPriv->pRotatedStipple)
 	mfbDestroyPixmap(pPriv->pRotatedStipple);
-    if (pPriv->freeCompClip == FREE_CC)
+    if (pPriv->freeCompClip)
 	(*pGC->pScreen->RegionDestroy)(pPriv->pCompositeClip);
-    if(pPriv->pAbsClientRegion)
-	(*pGC->pScreen->RegionDestroy)(pPriv->pAbsClientRegion);
     xfree(pGC->devPrivates[mfbGCPrivateIndex].ptr);
     mfbDestroyOps (pGC->ops);
 }
@@ -458,73 +450,53 @@ mfbValidateGC(pGC, changes, pDrawable)
 				*/
     int new_rotate, new_rrop,  new_line, new_text, new_fill;
     DDXPointRec	oldOrg;		/* origin of thing GC was last used with */
-    Bool win_moved;		/* window has moved since last time */
 
     oldOrg = pGC->lastWinOrg;
 
     pGC->lastWinOrg.x = pDrawable->x;
     pGC->lastWinOrg.y = pDrawable->y;
     if (pDrawable->type == DRAWABLE_WINDOW)
-    {
 	pWin = (WindowPtr)pDrawable;
-    }
     else
-    {
 	pWin = (WindowPtr)NULL;
-    }
-    win_moved = (oldOrg.x != pGC->lastWinOrg.x) ||
-		(oldOrg.y != pGC->lastWinOrg.y);
+
+    /* we need to re-rotate the tile if the previous window/pixmap
+       origin (oldOrg) differs from the new window/pixmap origin
+       (pGC->lastWinOrg)
+    */
+    new_rotate = (oldOrg.x != pGC->lastWinOrg.x) ||
+		 (oldOrg.y != pGC->lastWinOrg.y);
 
     devPriv = ((mfbPrivGCPtr) (pGC->devPrivates[mfbGCPrivateIndex].ptr));
+
     /*
 	if the client clip is different or moved OR
 	the subwindowMode has changed OR
 	the window's clip has changed since the last validation
 	we need to recompute the composite clip
     */
-
     if ((changes & (GCClipXOrigin|GCClipYOrigin|GCClipMask)) ||
 	(changes & GCSubwindowMode) ||
 	(pDrawable->serialNumber != (pGC->serialNumber & DRAWABLE_SERIAL_BITS))
        )
     {
-
-        /* if there is a client clip (always a region, for us) AND
-	        it has moved or is different OR
-	        the window has moved
-           we need to (re)translate it.
-        */
-	if ((pGC->clientClipType == CT_REGION) &&
-	    ((changes & (GCClipXOrigin|GCClipYOrigin|GCClipMask)) ||
-	     win_moved
-	    )
-	   )
-	{
-	    /* retranslate client clip */
-	    (* pGC->pScreen->RegionCopy)( devPriv->pAbsClientRegion, 
-			                  pGC->clientClip);
-
-	    (* pGC->pScreen->TranslateRegion)(
-			   devPriv->pAbsClientRegion, 
-			   pGC->lastWinOrg.x + pGC->clipOrg.x,
-			   pGC->lastWinOrg.y + pGC->clipOrg.y);
-	}
+	ScreenPtr pScreen = pGC->pScreen;
 
 	if (pWin)
 	{
-	    int freeTmpClip, freeCompClip;
+	    Bool freeTmpClip, freeCompClip;
 	    RegionPtr pregWin;		/* clip for this window, without
 					   client clip */
 
 	    if (pGC->subWindowMode == IncludeInferiors)
 	    {
 	        pregWin = NotClippedByChildren(pWin);
-		freeTmpClip = FREE_CC;
+		freeTmpClip = TRUE;
 	    }
 	    else
 	    {
 	        pregWin = &pWin->clipList;
-		freeTmpClip = REPLACE_CC;
+		freeTmpClip = FALSE;
 	    }
 	    freeCompClip = devPriv->freeCompClip;
 
@@ -537,10 +509,8 @@ mfbValidateGC(pGC, changes, pDrawable)
 	    */
 	    if (pGC->clientClipType == CT_NONE)
 	    {
-	        if(freeCompClip == FREE_CC) 
-		{
-		    (* pGC->pScreen->RegionDestroy) (devPriv->pCompositeClip);
-		}
+	        if(freeCompClip) 
+		    (*pScreen->RegionDestroy) (devPriv->pCompositeClip);
 	        devPriv->pCompositeClip = pregWin;
 	        devPriv->freeCompClip = freeTmpClip;
 	    }
@@ -560,42 +530,34 @@ mfbValidateGC(pGC, changes, pDrawable)
 		   do the intersection into it.
 		*/
 
-		if ((freeTmpClip == FREE_CC) && (freeCompClip == FREE_CC))
+		(*pScreen->TranslateRegion)(pGC->clientClip,
+					    pDrawable->x + pGC->clipOrg.x,
+					    pDrawable->y + pGC->clipOrg.y);
+						  
+		if (freeCompClip)
 		{
-		    (* pGC->pScreen->Intersect)(
-		        devPriv->pCompositeClip,
-			pregWin,
-			devPriv->pAbsClientRegion);
-		    (* pGC->pScreen->RegionDestroy)(pregWin);
+		    (*pScreen->Intersect)(devPriv->pCompositeClip,
+					  pregWin, pGC->clientClip);
+		    if (freeTmpClip)
+			(*pScreen->RegionDestroy)(pregWin);
 		}
-		else if ((freeTmpClip == REPLACE_CC) && 
-		        (freeCompClip == FREE_CC))
+		else if (freeTmpClip)
 		{
-		    (* pGC->pScreen->Intersect)(
-			devPriv->pCompositeClip,
-		        pregWin,
-			devPriv->pAbsClientRegion);
-		}
-		else if ((freeTmpClip == FREE_CC) &&
-		         (freeCompClip == REPLACE_CC))
-		{
-		    (* pGC->pScreen->Intersect)( 
-		       pregWin,
-		       pregWin,
-		       devPriv->pAbsClientRegion);
+		    (*pScreen->Intersect)(pregWin, pregWin, pGC->clientClip);
 		    devPriv->pCompositeClip = pregWin;
 		}
-		else if ((freeTmpClip == REPLACE_CC) &&
-		         (freeCompClip == REPLACE_CC))
+		else
 		{
-		    devPriv->pCompositeClip = 
-			(* pGC->pScreen->RegionCreate)(NULL, 1);
-		    (* pGC->pScreen->Intersect)(
-			devPriv->pCompositeClip,
-		        pregWin,
-			devPriv->pAbsClientRegion);
+		    devPriv->pCompositeClip = (*pScreen->RegionCreate)(NullBox,
+								       0);
+		    (*pScreen->Intersect)(devPriv->pCompositeClip,
+					  pregWin, pGC->clientClip);
 		}
-		devPriv->freeCompClip = FREE_CC;
+		devPriv->freeCompClip = TRUE;
+		(*pScreen->TranslateRegion)(pGC->clientClip,
+					    -(pDrawable->x + pGC->clipOrg.x),
+					    -(pDrawable->y + pGC->clipOrg.y));
+						  
 	    }
 	} /* end of composite clip for a window */
 	else
@@ -607,35 +569,20 @@ mfbValidateGC(pGC, changes, pDrawable)
 	    pixbounds.x2 = pDrawable->width;
 	    pixbounds.y2 = pDrawable->height;
 
-	    if (devPriv->freeCompClip == FREE_CC)
-	        (* pGC->pScreen->RegionReset)(
-		    devPriv->pCompositeClip, &pixbounds);
+	    if (devPriv->freeCompClip)
+	        (*pScreen->RegionReset)(devPriv->pCompositeClip, &pixbounds);
 	    else
 	    {
-		devPriv->freeCompClip = FREE_CC;
-		devPriv->pCompositeClip = 
-			(* pGC->pScreen->RegionCreate)(&pixbounds, 1);
+		devPriv->freeCompClip = TRUE;
+		devPriv->pCompositeClip = (*pScreen->RegionCreate)(&pixbounds,
+								   1);
 	    }
 
 	    if (pGC->clientClipType == CT_REGION)
-		(* pGC->pScreen->Intersect)(
-		   devPriv->pCompositeClip, 
-		   devPriv->pCompositeClip,
-		   devPriv->pAbsClientRegion);
+		(*pScreen->Intersect)(devPriv->pCompositeClip, 
+				      devPriv->pCompositeClip,
+				      pGC->clientClip);
 	} /* end of composite clip for pixmap */
-    }
-
-    /* we need to re-rotate the tile if the previous window/pixmap
-       origin (oldOrg) differs from the new window/pixmap origin
-       (pGC->lastWinOrg)
-    */
-    if (win_moved)
-    {
-	new_rotate = TRUE;
-    }
-    else
-    {
-	new_rotate = FALSE;
     }
 
     new_rrop = FALSE;
@@ -1023,7 +970,6 @@ mfbValidateGC(pGC, changes, pDrawable)
 	   )
 	{
 	    pGC->ops->PolyFillRect = miPolyFillRect;
-	    devPriv->ppPixmap = &BogusPixmap;
 	}
 	else /* deal with solids and natural stipples and tiles */
 	{
@@ -1033,7 +979,6 @@ mfbValidateGC(pGC, changes, pDrawable)
 		((pGC->fillStyle == FillOpaqueStippled) &&
 		 (pGC->fgPixel == pGC->bgPixel)))
 	    {
-	        devPriv->ppPixmap = &BogusPixmap;
 		switch(devPriv->rop)
 		{
 		  case RROP_WHITE:
@@ -1052,7 +997,6 @@ mfbValidateGC(pGC, changes, pDrawable)
 	    }
 	    else if (pGC->fillStyle == FillStippled)
 	    {
-		devPriv->ppPixmap = &devPriv->pRotatedStipple;
 		switch(devPriv->rop)
 		{
 		  case RROP_WHITE:
@@ -1071,10 +1015,6 @@ mfbValidateGC(pGC, changes, pDrawable)
 	    }
 	    else /* deal with tiles */
 	    {
-		if (pGC->fillStyle == FillTiled)
-		    devPriv->ppPixmap = &devPriv->pRotatedTile;
-		else
-		    devPriv->ppPixmap = &devPriv->pRotatedStipple;
 		devPriv->FillArea = mfbTileArea32;
 	    }
 	} /* end of natural rectangles */
