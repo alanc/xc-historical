@@ -1,15 +1,15 @@
-/**/#!/bin/sh
+XCOMM!/bin/sh
 
-/**/# 
-/**/# This is just a sample implementation of a slightly less primitive 
-/**/# interface than xinit.  It looks for user .xinitrc and .xserverrc
-/**/# files, then system xinitrc and xserverrc files, else lets xinit choose
-/**/# its default.  The system xinitrc should probably do things like check
-/**/# for .Xresources files and merge them in, startup up a window manager,
-/**/# and pop a clock and serveral xterms.
-/**/#
-/**/# Site administrators are STRONGLY urged to write nicer versions.
-/**/# 
+XCOMM 
+XCOMM This is just a sample implementation of a slightly less primitive 
+XCOMM interface than xinit.  It looks for user .xinitrc and .xserverrc
+XCOMM files, then system xinitrc and xserverrc files, else lets xinit choose
+XCOMM its default.  The system xinitrc should probably do things like check
+XCOMM for .Xresources files and merge them in, startup up a window manager,
+XCOMM and pop a clock and serveral xterms.
+XCOMM
+XCOMM Site administrators are STRONGLY urged to write nicer versions.
+XCOMM 
 
 userclientrc=$HOME/.xinitrc
 userserverrc=$HOME/.xserverrc

@@ -1,11 +1,11 @@
-/**/#!/bin/sh
+XCOMM!/bin/sh
 
 userresources=$HOME/.Xresources
 usermodmap=$HOME/.Xmodmap
 sysresources=XINITDIR/.Xresources
 sysmodmap=XINITDIR/.Xmodmap
 
-/**/# merge in defaults and keymaps
+XCOMM merge in defaults and keymaps
 
 if [ -f $sysresources ]; then
     xrdb -merge $sysresources
@@ -23,7 +23,7 @@ if [ -f $usermodmap ]; then
     xmodmap $usermodmap
 fi
 
-/**/# start some nice programs
+XCOMM start some nice programs
 
 twm &
 xclock -geometry 50x50-1+1 &

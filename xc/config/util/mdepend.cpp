@@ -1,27 +1,27 @@
-/**/#!/bin/sh
-/**/#
-/**/#	@(#)mdepend.sh	1.3	5/11/88 19:44:36
-/**/#
-/**/#	Do the equivalent of the 'makedepend' program, but do it right.
-/**/#
-/**/#	Usage:
-/**/#
-/**/#	makedepend [cpp-flags] [-w width] [-s magic-string] [-f makefile]
-/**/#	  [-o object-suffix]
-/**/#
-/**/#	Notes:
-/**/#
-/**/#	The C compiler used can be overridden with the environment
-/**/#	variable "CC".
-/**/#
-/**/#	The "-v" switch of the "makedepend" program is not supported.
-/**/#
-/**/#
-/**/#	This script should
-/**/#	work on both USG and BSD systems.  However, when System V.4 comes out,
-/**/#	USG users will probably have to change "silent" to "-s" instead of
-/**/#	"-" (at least, that is what the documentation implies).
-/**/#
+XCOMM!/bin/sh
+XCOMM
+XCOMM	@(#)mdepend.sh	1.3	5/11/88 19:44:36
+XCOMM
+XCOMM	Do the equivalent of the 'makedepend' program, but do it right.
+XCOMM
+XCOMM	Usage:
+XCOMM
+XCOMM	makedepend [cpp-flags] [-w width] [-s magic-string] [-f makefile]
+XCOMM	  [-o object-suffix]
+XCOMM
+XCOMM	Notes:
+XCOMM
+XCOMM	The C compiler used can be overridden with the environment
+XCOMM	variable "CC".
+XCOMM
+XCOMM	The "-v" switch of the "makedepend" program is not supported.
+XCOMM
+XCOMM
+XCOMM	This script should
+XCOMM	work on both USG and BSD systems.  However, when System V.4 comes out,
+XCOMM	USG users will probably have to change "silent" to "-s" instead of
+XCOMM	"-" (at least, that is what the documentation implies).
+XCOMM
 CC=PREPROC
 
 silent='-'
@@ -199,11 +199,11 @@ case "$makefile" in
 	;;
 esac
 
-/**/#
-/**/# Append the magic string and a blank line so that /^$magic_string/+1,\$d
-/**/# can be used to delete everything from after the magic string to the end
-/**/# of the file.  Then, append a blank line again and then the dependencies.
-/**/#
+XCOMM
+XCOMM Append the magic string and a blank line so that /^$magic_string/+1,\$d
+XCOMM can be used to delete everything from after the magic string to the end
+XCOMM of the file.  Then, append a blank line again and then the dependencies.
+XCOMM
 cat >> $makefile << END_OF_APPEND
 
 $magic_string

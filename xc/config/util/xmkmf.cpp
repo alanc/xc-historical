@@ -1,9 +1,9 @@
-/**/#!/bin/sh
+XCOMM!/bin/sh
 
-/**/#
-/**/# generate a Makefile from an Imakefile from inside or outside the sources
-/**/# 
-/**/# $XConsortium$
+XCOMM
+XCOMM generate a Makefile from an Imakefile from inside or outside the sources
+XCOMM 
+XCOMM $XConsortium: xmkmf.cpp,v 1.17 91/08/17 13:09:52 rws Exp $
 
 usage="usage:  $0 [-a] [top_of_sources_pathname [current_directory]]"
 
