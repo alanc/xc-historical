@@ -1,3 +1,4 @@
+.\" $XConsortium: ddx.tbl.ms,v 1.31 91/07/27 17:05:51 rws Exp $"
 .EF 'Porting Layer Definition'- % -'June 23, 1993'
 .OF 'Porting Layer Definition'- % -'June 23, 1993'
 .EH '''
