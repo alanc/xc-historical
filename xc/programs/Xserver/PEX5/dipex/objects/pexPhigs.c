@@ -1,4 +1,4 @@
-/* $XConsortium: pexPhigs.c,v 5.1 91/02/16 09:56:44 rws Exp $ */
+/* $XConsortium: pexPhigs.c,v 5.2 92/05/01 17:49:17 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -113,6 +113,9 @@ pexCreatePhigsWksReq    *strmPtr;
     if (!pw) {
 	PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
     }
+    pw->did = strmPtr->drawable;
+    pw->dd_data.id = strmPtr->wks;
+    pw->dd_data.deviceData = NULL;
 
     tables.pDrawable = pdraw;
     tables.drawableId = strmPtr->drawable;
@@ -170,12 +173,11 @@ pexCreatePhigsWksReq    *strmPtr;
 	wks_draw->id = strmPtr->drawable;
 	wks_draw->x_drawable = pdraw;
 	wks_draw->wks_list = (dipexWksDrawableLink *)(wks_draw +1);
+	wks_draw->wks_list->wks = pw;
 	wks_draw->wks_list->wksid = strmPtr->wks;
 	wks_draw->wks_list->next = 0;
 	if (!( AddResource(   strmPtr->drawable, PEXWksDrawableType,
 				    (pointer)wks_draw))) {
-	    Xfree((pointer)wks_draw);
-	    Xfree(pw->dd_data);
 	    PEX_ERR_EXIT(BadAlloc,0,cntxtPtr); }
     } else {
 	plink = (dipexWksDrawableLink *) 
@@ -188,12 +190,8 @@ pexCreatePhigsWksReq    *strmPtr;
 	wks_draw->wks_list = plink;
     }
 
-    wks_draw->wks_list->wks = pw;
-    pw->did = strmPtr->drawable;
 
     /* ddpex create */
-    pw->dd_data.id = strmPtr->wks;
-    pw->dd_data.deviceData = NULL;
     err = CreatePhigsWks (&tables, &(pw->dd_data));
     if (err) {
 	RemoveWksFromDrawableList(strmPtr->wks, wks_draw);
