@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.28 94/01/29 11:09:05 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.29 94/02/13 12:03:17 rws Exp $ */
 
 /**** module xieperf.c ****/
 /******************************************************************************
@@ -1725,7 +1725,7 @@ int	*n_colors;
 	DCGreenMask = xp->vinfo.green_mask;
 	DCBlueMask = xp->vinfo.blue_mask;
 
-	mask = 1 << ( ( sizeof( long ) << 3 ) - 1 );
+	mask = 1L << ( ( sizeof( long ) << 3 ) - 1 );
 	rbits = gbits = bbits = 0;
 
 	while ( mask )
