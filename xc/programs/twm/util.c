@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.45 91/04/02 14:48:43 gildea Exp $
+ * $XConsortium: util.c,v 1.46 91/05/01 17:33:11 keith Exp $
  *
  * utility routines for twm
  *
@@ -494,13 +494,7 @@ char *name;
     if (Scr->Monochrome != kind)
 	return;
 
-    /*
-     * small hack to avoid extra roundtrip for color allocation
-     */
-    if (!((name[0] == '#')
-	  ? ((stat = XParseColor (dpy, cmap, name, &color)) &&
-	     XAllocColor (dpy, cmap, &color))
-	  : XAllocNamedColor (dpy, cmap, name, &color, &junkcolor)))
+    if (!XAllocNamedColor (dpy, cmap, name, &color, &junkcolor))
     {
 	/* if we could not allocate the color, let's see if this is a
 	 * standard colormap
