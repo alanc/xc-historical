@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.46 91/05/01 17:33:11 keith Exp $
+ * $XConsortium: util.c,v 1.47 91/07/14 13:40:37 rws Exp $
  *
  * utility routines for twm
  *
@@ -555,6 +555,33 @@ char *name;
     }
 
     *what = color.pixel;
+}
+
+GetColorValue(kind, what, name)
+int kind;
+XColor *what;
+char *name;
+{
+    XColor junkcolor;
+    Colormap cmap = Scr->TwmRoot.cmaps.cwins[0]->colormap->c;
+
+#ifndef TOM
+    if (!Scr->FirstTime)
+	return;
+#endif
+
+    if (Scr->Monochrome != kind)
+	return;
+
+    if (!XLookupColor (dpy, cmap, name, what, &junkcolor))
+    {
+	fprintf (stderr, "%s:  invalid color name \"%s\"\n", 
+		 ProgramName, name);
+    }
+    else
+    {
+	what->pixel = AllPlanes;
+    }
 }
 
 GetFont(font)
