@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: daemon.c,v 1.8 91/05/11 15:37:38 gildea Exp $
+ * $XConsortium: daemon.c,v 1.9 93/09/29 17:27:22 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,7 +25,9 @@
 #else
 #include <sys/ioctl.h>
 #endif
-
+#ifdef __osf__
+#define setpgrp setpgid
+#endif
 #ifdef hpux
 #include <sys/ptyio.h>
 #endif

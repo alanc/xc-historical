@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.209 93/12/23 19:22:26 gildea Exp $";
+static char *rid="$XConsortium: main.c,v 1.210 94/01/14 16:04:33 gildea Exp $";
 #endif /* lint */
 
 /*
@@ -268,6 +268,10 @@ extern char *ttyname();
 
 #ifdef SYSV
 extern char *ptsname();
+#endif
+
+#ifdef __osf__
+#define setpgrp setpgid
 #endif
 
 extern char *strindex ();

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: util.c,v 1.14 92/01/21 15:38:28 gildea Exp $
+ * $XConsortium: util.c,v 1.15 93/12/06 15:19:35 kaleb Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -37,6 +37,9 @@
 #include <signal.h>
 #undef _POSIX_SOURCE
 #endif
+#endif
+#ifdef __osf__
+#define setpgrp setpgid
 #endif
 
 printEnv (e)
