@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.38 89/07/16 21:10:15 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.39 89/07/16 21:22:28 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -63,10 +63,10 @@
  *      NormalLintTarget                         (srclist)
  *      LintTarget                               ()
  *      MakeSubincludesForBuild                  (step,dir,srclist)
+ *      NamedTargetSubdirs                       (name,dirs,verb,flags,subname)
  *      MakeSubdirs                              (dirs)
  *      NamedMakeSubdirs                         (name,dirs)
  *      DependSubdirs                            (dirs)
- *      NamedDependSubdirs                       (name,dirs)
  *      InstallSubdirs                           (dirs)
  *      InstallManSubdirs                        (dirs)
  *      NamedIncludesSubdirs                     (name,dirs)
@@ -136,9 +136,9 @@ $(RM) program; if [ -f program ]; then $(MV) program program/**/~; fi
 includes::								@@\
 	$(MKDIRHIER) $(BUILDINCDIR)/dstsubdir				@@\
 	@(for i in srclist; do \					@@\
-		echo $(RM) $(BUILDINCDIR)/dstsubdir/$$i; \		@@\
+		echo "	" $(RM) $(BUILDINCDIR)/dstsubdir/$$i; \		@@\
 		$(RM) $(BUILDINCDIR)/dstsubdir/$$i; \			@@\
-		echo $(LN) $(BUILDINCTOP)/dstupdir/$(CURRENT_DIR)/$$i $(BUILDINCDIR)/dstsubdir/$$i; \	@@\
+		echo "	" $(LN) $(BUILDINCTOP)/dstupdir/$(CURRENT_DIR)/$$i $(BUILDINCDIR)/dstsubdir/$$i; \	@@\
 		$(LN) $(BUILDINCTOP)/dstupdir/$(CURRENT_DIR)/$$i $(BUILDINCDIR)/dstsubdir/$$i; \	@@\
 	done)
 #endif /* BuildIncludes */
@@ -298,12 +298,12 @@ InstallManPage(program,$(MANDIR))
 #ifndef ServerTarget
 #define	ServerTarget(server,subdirs,objects,libs,syslibs)		@@\
 server: subdirs objects libs						@@\
-	-@if [ -f server ]; then echo "$(MV) server server.bak"; \	@@\
+	-@if [ -f server ]; then echo "	$(MV) server server.bak"; \	@@\
 		$(MV) server server.bak; else exit 0; fi		@@\
 	$(CC) $(CDEBUGFLAGS) $(CCOPTIONS) -o server objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 load/**/server:								@@\
-	-@if [ -f server ]; then echo "$(MV) server server.bak"; \	@@\
+	-@if [ -f server ]; then echo "	$(MV) server server.bak"; \	@@\
 		$(MV) server server.bak; else exit 0; fi		@@\
 	$(CC) $(CDEBUGFLAGS) $(CCOPTIONS) -o server objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)
 #endif /* ServerTarget */
@@ -426,7 +426,7 @@ install:: program.script						@@\
 #define LinkFileList(step,list,dir,sub)					@@\
 step:: list								@@\
 	@case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
-	echo cd dir; cd dir; for i in list; do (set -x; $(LN) sub/$$i .); done
+	echo "	cd" dir; cd dir; for i in list; do (set -x; $(LN) sub/$$i .); done
 #endif
 
 
@@ -586,14 +586,14 @@ ImakeDependency(Makefile)						@@\
 									@@\
 Makefile:: imakefile $(ICONFIGFILES)					@@\
 	-@if [ -f Makefile ]; then \					@@\
-		echo "$(RM) Makefile.bak; $(MV) Makefile Makefile.bak"; \ @@\
+		echo "	$(RM) Makefile.bak; $(MV) Makefile Makefile.bak"; \ @@\
 		$(RM) Makefile.bak; $(MV) Makefile Makefile.bak; \	@@\
 	else exit 0; fi							@@\
 	$(IMAKE_CMD) -DTOPDIR=$(TOP) -DCURDIR=$(CURRENT_DIR) imakeflags	@@\
 									@@\
 forceMakefile::								@@\
 	-@if [ -f Makefile ]; then \					@@\
-		echo "$(RM) Makefile.bak; $(MV) Makefile Makefile.bak"; \ @@\
+		echo "	$(RM) Makefile.bak; $(MV) Makefile Makefile.bak"; \ @@\
 		$(RM) Makefile.bak; $(MV) Makefile Makefile.bak; \	@@\
 	else exit 0; fi							@@\
 	$(IMAKE_CMD) -DTOPDIR=$(TOP) -DCURDIR=$(CURRENT_DIR) imakeflags
@@ -809,7 +809,7 @@ lib/**/libname/**/_p.a: objlist						@@\
 	$(RANLIB) $@							@@\
 									@@\
 clean::									@@\
-	-@if [ -d profiled ]; then echo "$(RM) profiled/?*.o"; \	@@\
+	-@if [ -d profiled ]; then echo "	$(RM) profiled/?*.o"; \	@@\
 		$(RM) profiled/?*.o; else exit 0; fi
 #endif /* ProfiledLibraryTarget */
 
@@ -827,7 +827,7 @@ lib/**/libname/**/_d.a: objlist						@@\
 	$(RANLIB) $@							@@\
 									@@\
 clean::									@@\
-	-@if [ -d debugger ]; then echo "$(RM) debugger/?*.o"; \	@@\
+	-@if [ -d debugger ]; then echo "	$(RM) debugger/?*.o"; \	@@\
 		$(RM) debugger/?*.o; else exit 0; fi
 #endif /* DebuggedLibraryTarget */
 
@@ -872,7 +872,7 @@ objname/**/_p.o: objlist						@@\
 	$(LD) -X -r objlist -o $@					@@\
 									@@\
 clean::									@@\
-	-@if [ -d profiled ]; then echo "$(RM) profiled/?*.o"; \	@@\
+	-@if [ -d profiled ]; then echo "	$(RM) profiled/?*.o"; \	@@\
 		$(RM) profiled/?*.o; else exit 0; fi
 #endif /* ProfiledRelocatableTarget */
 
@@ -890,7 +890,7 @@ objname/**/_d.o: objlist						@@\
 	$(LD) -X -r objlist -o $@					@@\
 									@@\
 clean::									@@\
-	-@if [ -d debugger ]; then echo "$(RM) debugger/?*.o"; \	@@\
+	-@if [ -d debugger ]; then echo "	$(RM) debugger/?*.o"; \	@@\
 		$(RM) debugger/?*.o; else exit 0; fi
 #endif /* DebuggedRelocatableTarget */
 
@@ -952,25 +952,15 @@ clean::									@@\
  * NamedTargetSubdirs - recursively make a series of steps
  */
 #ifndef NamedTargetSubdirs
-#define NamedTargetSubdirs(name,dirs,what,flags)			@@\
+#define NamedTargetSubdirs(name,dirs,verb,flags,subname)		@@\
 name::									@@\
 	@case '${MFLAGS}' in *[ik]*) set +e;; esac; \			@@\
 	for i in dirs ;\						@@\
 	do \								@@\
-		(cd $$i ; echo what "in $(CURRENT_DIR)/$$i"; \		@@\
-			$(MAKE) $(MFLAGS) flags name); \		@@\
+		(cd $$i ; echo verb "in $(CURRENT_DIR)/$$i"; \		@@\
+			$(MAKE) $(MFLAGS) flags subname); \		@@\
 	done
 #endif
-
-
-/*
- * MakeSubdirs - generate rules to have make all do recursive makes in 
- * indicated subdirectories.
- */
-#ifndef MakeSubdirs
-#define MakeSubdirs(dirs)						@@\
-NamedMakeSubdirs(all,dirs)
-#endif /* MakeSubdirs */
 
 
 /*
@@ -982,14 +972,13 @@ NamedMakeSubdirs(all,dirs)
  */
 #ifndef NamedMakeSubdirs
 #define NamedMakeSubdirs(name,dirs)					@@\
-name::									@@\
-	@case '${MFLAGS}' in *[ik]*) set +e;; esac; \			@@\
-	for i in dirs ;\						@@\
-	do \								@@\
-		(cd $$i ; echo "making name in $(CURRENT_DIR)/$$i"; \	@@\
-			$(MAKE) PassCDebugFlags $(MFLAGS)); \		@@\
-	done
+NamedTargetSubdirs(name,dirs,"making" name,PassCDebugFlags,/**/)
 #endif /* NamedMakeSubdirs */
+
+#ifndef MakeSubdirs
+#define MakeSubdirs(dirs)						@@\
+NamedMakeSubdirs(all,dirs)
+#endif /* MakeSubdirs */
 
 
 /*
@@ -998,24 +987,8 @@ name::									@@\
  */
 #ifndef DependSubdirs
 #define DependSubdirs(dirs)						@@\
-NamedDependSubdirs(depend,dirs)
+NamedTargetSubdirs(depend,dirs,"depending",/**/,depend)
 #endif /* DependSubdirs */
-
-
-/*
- * NamedDependSubdirs - generate rules to recursively compute dependencies
- * as part of the named step.  Should use DependSubdirs whenever possible.
- */
-#ifndef NamedDependSubdirs
-#define NamedDependSubdirs(name,dirs)					@@\
-name::									@@\
-	@case '${MFLAGS}' in *[ik]*) set +e;; esac; \			@@\
-	for i in dirs ;\						@@\
-	do \								@@\
-		(cd $$i ; echo "depending in $(CURRENT_DIR)/$$i"; \	@@\
-			$(MAKE) $(MFLAGS) depend ); \			@@\
-	done
-#endif /* NamedDependSubdirs */
 
 
 /*
@@ -1023,14 +996,7 @@ name::									@@\
  */
 #ifndef InstallSubdirs
 #define InstallSubdirs(dirs)						@@\
-install::								@@\
-	@case '${MFLAGS}' in *[ik]*) set +e;; esac; \			@@\
-	for i in dirs ;\						@@\
-	do \								@@\
-		(cd $$i ; echo "installing in $(CURRENT_DIR)/$$i"; \	@@\
-			$(MAKE) $(MFLAGS) \				@@\
-				DESTDIR='$(DESTDIR)' install ); \	@@\
-	done
+NamedTargetSubdirs(install,dirs,"installing",DESTDIR='$(DESTDIR)',install)
 #endif /* InstallSubdirs */
 
 
@@ -1039,20 +1005,16 @@ install::								@@\
  */
 #ifndef InstallManSubdirs
 #define InstallManSubdirs(dirs)						@@\
-install.man::								@@\
-	@case '${MFLAGS}' in *[ik]*) set +e;; esac; \			@@\
-	for i in dirs ;\						@@\
-	do \								@@\
-		(cd $$i ; echo "installing man pages in $(CURRENT_DIR)/$$i"; \ @@\
-			$(MAKE) $(MFLAGS) \				@@\
-				DESTDIR='$(DESTDIR)' install.man ); \	@@\
-	done
+NamedTargetSubdirs(install.man,dirs,"installing man pages",DESTDIR='$(DESTDIR)',install.man)
 #endif /* InstallManSubdirs */
 
 
+/*
+ * IncludesSubdirs - generate rules to recursively put include files in build
+ */
 #ifndef IncludesSubdirs
 #define IncludesSubdirs(dirs) \						@@\
-NamedTargetSubdirs(includes,dirs,including,)
+NamedTargetSubdirs(includes,dirs,including,/**/,includes)
 #endif
 
 
@@ -1061,13 +1023,7 @@ NamedTargetSubdirs(includes,dirs,including,)
  */
 #ifndef NamedCleanSubdirs
 #define NamedCleanSubdirs(name,dirs)					@@\
-name::									@@\
-	@case '${MFLAGS}' in *[ik]*) set +e;; esac; \			@@\
-	for i in dirs ;\						@@\
-	do \								@@\
-		(cd $$i ; echo "cleaning in $(CURRENT_DIR)/$$i"; \	@@\
-			$(MAKE) $(MFLAGS) RM_CMD='$(RM_CMD)' clean ); \	@@\
-	done
+NamedTargetSubdirs(name,dirs,"cleaning",RM_CMD='$(RM_CMD)',clean)
 #endif /* NamedCleanSubdirs */
 
 #ifndef CleanSubdirs
@@ -1081,13 +1037,7 @@ NamedCleanSubdirs(clean,dirs)
  */
 #ifndef NamedTagSubdirs
 #define NamedTagSubdirs(name,dirs)					@@\
-name::									@@\
-	@case '${MFLAGS}' in *[ik]*) set +e;; esac; \			@@\
-	for i in dirs ;\						@@\
-	do \								@@\
-		(cd $$i ; echo "tagging in $(CURRENT_DIR)/$$i"; \	@@\
-			$(MAKE) $(MFLAGS) TAGS='$(TAGS)' tags ); \	@@\
-	done
+NamedTargetSubdirs(name,dirs,"tagging",TAGS='$(TAGS)',tags)
 #endif /* TagSubdirs */
 
 #ifndef TagSubdirs
@@ -1101,14 +1051,7 @@ NamedTagSubdirs(tags,dirs)
  */
 #ifndef MakeLintSubdirs
 #define MakeLintSubdirs(dirs,target,subtarget)				@@\
-target::								@@\
-	@case '${MFLAGS}' in *[ik]*) set +e;; esac; \			@@\
-	for i in dirs ;\						@@\
-	do \								@@\
-		(cd $$i ; echo "making lint subdirs for target and subtarget in $(CURRENT_DIR)$$i"; \		@@\
-			$(MAKE) $(MFLAGS) DESTDIR='$(DESTDIR)' \	@@\
-				LINTOPTS='$(LINTOPTS)' subtarget ); \	@@\
-	done
+NamedTargetSubdirs(target,dirs,"linting" for target and subtarget,DESTDIR='$(DESTDIR)' LINTOPTS='$(LINTOPTS)',subtarget)
 #endif /* MakeLintSubdirs */
 
 
@@ -1141,7 +1084,7 @@ target::								@@\
 	@case '${MFLAGS}' in *[ik]*) set +e;; esac; \			@@\
 	for i in dirs ;\						@@\
 	do \								@@\
-		echo "Making Makefiles in $(CURRENT_DIR)/$$i..."; \			@@\
+		echo "making Makefiles in $(CURRENT_DIR)/$$i..."; \			@@\
 		case "$$i" in \						@@\
 		./?*/?*/?*/?*) newtop=../../../../ sub=subsubsubsub;; \	@@\
 		./?*/?*/?*) newtop=../../../ sub=subsubsub;; \		@@\
@@ -1166,7 +1109,7 @@ target::								@@\
 subdirMakefiles:							@@\
 	$(RM) $(MAKEFILE_SUBDIR)/Makefile.bak				@@\
 	-@if [ -f $(MAKEFILE_SUBDIR)/Makefile ]; then \			@@\
-	echo "$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \ @@\
+	echo "	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \ @@\
 	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak; \ @@\
 	else exit 0; fi							@@\
 	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=../$(TOP) -DCURDIR=$(NEW_CURRENT_DIR); \	@@\
@@ -1175,7 +1118,7 @@ subdirMakefiles:							@@\
 subsubdirMakefiles:							@@\
 	$(RM) $(MAKEFILE_SUBDIR)/Makefile.bak				@@\
 	-@if [ -f $(MAKEFILE_SUBDIR)/Makefile ]; then \			@@\
-	echo "$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \ @@\
+	echo "	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \ @@\
 	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak; \ @@\
 	else exit 0; fi							@@\
 	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=../../$(TOP) -DCURDIR=$(NEW_CURRENT_DIR); \	@@\
@@ -1184,7 +1127,7 @@ subsubdirMakefiles:							@@\
 subsubsubdirMakefiles:							@@\
 	$(RM) $(MAKEFILE_SUBDIR)/Makefile.bak				@@\
 	-@if [ -f $(MAKEFILE_SUBDIR)/Makefile ]; then \			@@\
-	echo "$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \ @@\
+	echo "	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \ @@\
 	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak; \ @@\
 	else exit 0; fi @@\
 	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=../../../$(TOP) -DCURDIR=$(NEW_CURRENT_DIR); \	@@\
@@ -1193,7 +1136,7 @@ subsubsubdirMakefiles:							@@\
 subsubsubsubdirMakefiles:						@@\
 	$(RM) $(MAKEFILE_SUBDIR)/Makefile.bak				@@\
 	-@if [ -f $(MAKEFILE_SUBDIR)/Makefile ]; then \			@@\
-	echo "$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \ @@\
+	echo "	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak"; \ @@\
 	$(MV) $(MAKEFILE_SUBDIR)/Makefile $(MAKEFILE_SUBDIR)/Makefile.bak; \ @@\
 	else exit 0; fi 						@@\
 	cd $(MAKEFILE_SUBDIR); $(IMAKE_CMD) -DTOPDIR=../../../../$(TOP) -DCURDIR=$(NEW_CURRENT_DIR); \	@@\
