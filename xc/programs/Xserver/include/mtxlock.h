@@ -28,7 +28,7 @@
  *
  ************************************************************************/
 
-/* $XConsortium$ */
+/* $XConsortium: mtxlock.h,v 1.1 93/11/12 17:03:10 rob Exp $ */
 
 #ifndef MTXLOCK_H
 #define MTXLOCK_H
@@ -43,7 +43,6 @@
 #include "xthreads.h"
 #include "resource.h"
 #include "POQ.h"
-
 
 
 /***********************************************************************
@@ -219,7 +218,7 @@
 }
 /***********************************************************************
  *
- * STX to MTX merge Unock two drawables and a GC.  If the srcID and dstID 
+ * STX to MTX merge Unlock two drawables and a GC.  If the srcID and dstID 
  * drawable ID's are the same, then only one drawable was locked.
  *
  ***********************************************************************/
