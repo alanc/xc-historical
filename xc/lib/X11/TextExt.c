@@ -1,226 +1,167 @@
-/* $XConsortium: XTextExt.c,v 11.16 89/04/25 19:17:03 jim Exp $ */
-/************************************************************************
-Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
-and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
-
-                        All Rights Reserved
-
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
-provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
-supporting documentation, and that the names of Digital or MIT not be
-used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
-
-DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
-ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
-DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
-ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
-ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
-SOFTWARE.
-
-************************************************************************/
-
 #define NEED_REPLIES
 
 #include "Xlibint.h"
 
-/* text support routines. Three different access methods, a */
-/* charinfo array builder, and a bounding box calculator */
+#define min_byte2 min_char_or_byte2
+#define max_byte2 max_char_or_byte2
 
 
-/*ARGSUSED*/
-static
-XCharStruct *GetCS(min_bounds, pCS, firstCol, numCols, firstRow, numRows, ind, 
-	chars, chDefault)
-    XCharStruct *min_bounds;
-    XCharStruct pCS[];
-    unsigned int firstCol, numCols, firstRow, numRows, ind, chDefault;
-    unsigned char *chars;
+/*
+ * GetCS - Return the charinfo struct for the indicated 8bit character.  If
+ * the character is in the column and exists, then return the appropriate
+ * metrics (note that fonts with common per-character metrics will return
+ * min_bounds).  If none of these hold true, try again with the default char. 
+ */
+
+static XCharStruct *InitGetGS (fs)
+    XFontStruct *fs;
 {
-    XCharStruct *cs;
-    unsigned int c;
+    register XCharStruct *cs;
+    unsigned int col = fs->default_char;
 
-    c = chars[ind] - firstCol;
-    if (c < numCols) {
-  	if ( pCS == NULL ) return min_bounds;
-	cs = &pCS[c];
+    if (col >= fs->min_byte2 && col <= fs->max_byte2) {
+	if (fs->per_char == NULL) return &fs->min_bounds;
+	cs = &fs->per_char[(col - fs->min_byte2)];
 	if (! CI_NONEXISTCHAR(cs)) return cs;
     }
-    c = chDefault - firstCol;
-    if (c >= numCols) return NULL;
-    if ( pCS == NULL ) return min_bounds;
-    cs = &pCS[c];
-    if (! CI_NONEXISTCHAR(cs)) return cs;
+
     return NULL;
 }
 
-static
-XCharStruct *GetCS2d(min_bounds, pCS, firstCol, numCols, firstRow, numRows, ind, 
-	chars, chDefault)
-    XCharStruct *min_bounds;
-    XCharStruct pCS[];
-    unsigned int firstCol, numCols, firstRow, numRows, ind, chDefault;
-    unsigned char *chars;
-{
-    XCharStruct *cs;
-    unsigned int row, col, c;
 
-    c = chars[ind] - firstCol;
-    if ((firstRow == 0) && (c < numCols)) {
-  	if ( pCS == NULL ) return min_bounds;
-	cs = &pCS[c];
+static XCharStruct *GetCS (fs, col, def)
+    register XFontStruct *fs;
+    unsigned int col;
+    XCharStruct *def;
+{
+    register XCharStruct *cs;
+
+    if (col >= fs->min_byte2 && col <= fs->max_byte2) {
+	if (fs->per_char == NULL) return &fs->min_bounds;
+	cs = &fs->per_char[(col - fs->min_byte2)];
 	if (! CI_NONEXISTCHAR(cs)) return cs;
     }
-    row = (chDefault >> 8)-firstRow;
-    col = (chDefault & 0xff)-firstCol;
-    if ((row >= numRows) || (col >= numCols)) return NULL;
-    if ( pCS == NULL ) return min_bounds;
-    c = row*numCols + col;
-    cs = &pCS[c];
-    if (! CI_NONEXISTCHAR(cs)) return cs;
+
+    return def;
+}
+
+
+/*
+ * GetCS2d - do the same thing as GetCS, except that the font has more than
+ * one row.
+ */
+
+static XCharStruct *InitGetCS (fs)
+    XFontStruct *fs;
+{
+    unsigned int row = (fs->default_char >> 8);
+    unsigned int col = (fs->default_char & 0xff);
+
+    if (row >= fs->min_byte1 && row <= fs->max_byte1 &&
+	col >= fs->min_byte2 && col <= fs->max_byte2) {
+	if (fs->per_char == NULL) return &fs->min_bounds;
+	cs = &fs->per_char[(row - fs->min_byte1) * numCols + 
+			   (col - fs->min_byte2)];
+	if (! CI_NONEXISTCHAR(cs)) return cs;
+    }
+
     return NULL;
 }
 
-static void
-GetGlyphs(font, count, chars, getGlyph, glyphcount, glyphs)
-    XFontStruct *font;
-    int count;
-    char *chars;
-    XCharStruct *(*getGlyph)();
-    unsigned int *glyphcount;	/* RETURN */
-    XCharStruct *glyphs[];	/* RETURN */
-{
-    unsigned int    firstCol = font->min_char_or_byte2;
-    unsigned int    numCols = font->max_char_or_byte2 - firstCol + 1;
-    unsigned int    firstRow = font->min_byte1;
-    unsigned int    numRows = font->max_byte1 - firstRow + 1;
-    unsigned int    chDefault = font->default_char;
-    int		    i, n;
-    XCharStruct	    *cs;
 
-    n = 0;
-    for (i=0; i < count; i++) {
-	cs = (* getGlyph)(
-	    &font->min_bounds, font->per_char, firstCol, numCols, firstRow, numRows,
-	    i, (unsigned char *) chars, chDefault);
-	if (cs != NULL) glyphs[n++] = cs;
+static XCharStruct *GetCS2d (fs, row, col, def)
+    register XFontStruct *fs;
+    unsigned int row, col;
+    XCharStruct *def;
+{
+    register XCharStruct *cs;
+    int numRows = fs->max_byte1 - fs->min_byte1 + 1;
+    int numCols = fs->max_byte2 - fs->min_byte2 + 1;
+
+    if (row >= fs->min_byte1 && row <= fs->max_byte1 &&
+	col >= fs->min_byte2 && col <= fs->max_byte2) {
+	if (fs->per_char == NULL) return &fs->min_bounds;
+	cs = &fs->per_char[(row - fs->min_byte1) * numCols + 
+			   (col - fs->min_byte2)];
+	if (! CI_NONEXISTCHAR(cs)) return cs;
     }
-    *glyphcount = n;
+
+    return def;
 }
 
-XTextExtents (fontstruct, string, nchars, dir, font_ascent, font_descent,
-	           overall)
-    XFontStruct *fontstruct;
-    register char *string;
-    register int nchars;
-    int *dir;
-    int *font_ascent, *font_descent;
-    register XCharStruct *overall;
+
+XTextExtents (fs, string, nchars, dir, font_ascent, font_descent, overall)
+    XFontStruct *fs;
+    char *string;
+    int nchars;
+    int *dir, *font_ascent, *font_descent;  /* RETURN font information */
+    register XCharStruct *overall;	/* RETURN character information */
 {
-    int	i;
-    unsigned int n;
+    int i;				/* iterator */
+    int nfound = 0;			/* number of characters found */
+    XCharStruct *getglyph() = ((fs->max_byte1 == 0) ? GetCS : GetCS2d);
+    XCharStruct *def = (*((fs->max_byte1 == 0) ? GetCS : GetCS2d)) (fs);
+    unsigned char *ustring = (unsigned char *) string;
 
     *dir = fontstruct->direction;
     *font_ascent = fontstruct->ascent;
     *font_descent = fontstruct->descent;
 
-    {
-	XCharStruct **charstruct =
-	    (XCharStruct **)Xmalloc((unsigned)nchars*sizeof(XCharStruct *));
-    
-	if (fontstruct->max_byte1 == 0)
-	    GetGlyphs(fontstruct, nchars, string, GetCS, &n, charstruct);
-	else
-	    GetGlyphs(fontstruct, nchars, string, GetCS2d, &n, charstruct);
-    
-	if (n != 0) {
-    
-	    overall->ascent  = charstruct[0]->ascent;
-	    overall->descent = charstruct[0]->descent;
-	    overall->width   = charstruct[0]->width;
-	    overall->lbearing    = charstruct[0]->lbearing;
-	    overall->rbearing   = charstruct[0]->rbearing;
-    
-	    for (i=1; i < n; i++) {
-		overall->ascent = max(
-		    overall->ascent,
-		    charstruct[i]->ascent);
-		overall->descent = max(
-		    overall->descent,
-		    charstruct[i]->descent);
-		overall->lbearing = min(
-		    overall->lbearing,
-		    overall->width+charstruct[i]->lbearing);
-		overall->rbearing = max(
-		    overall->rbearing,
-		    overall->width+charstruct[i]->rbearing);
-		overall->width += charstruct[i]->width;
+    /*
+     * iterate over all character in the input string
+     */
+    for (i = 0; i < nchars; i++) {
+	register XCharStruct *cs = (*getglyph) (&fs, (unsigned) *ustring, def);
+
+	if (cs) {
+	    if (nfound++ == 0) {
+		*overall = *cs;
+	    } else {
+		overall->ascent = max (overall->ascent, cs->ascent);
+		overall->descent = max (overall->descent, cs->descent);
+		overall->lbearing = min (overall->lbearing, 
+					 overall->width + cs->lbearing);
+		overall->rbearing = max (overall->rbearing,
+					 overall->width + cs->rbearing);
+		overall->width += cs->width;
 	    }
-    
-	} else {
-    
-	    overall->ascent  = 0;
-	    overall->descent = 0;
-	    overall->width   = 0;
-	    overall->lbearing = 0;
-	    overall->rbearing = 0;
 	}
-    
-	Xfree((char *)charstruct);
-    } 
-    return (1);
+    }
+
+    /*
+     * if there were no characters, then set everything to 0
+     */
+    if (nfound == 0) {
+	overall->width = overall->ascent = overall->descent = 
+	  overall->lbearing = overall->rbearing = 0;
+    }
+
+    return;
 }
 
-int XTextWidth (fontstruct, string, count)
-    XFontStruct *fontstruct;
+
+int XTextWidth (fs, string, count)
+    XFontStruct *fs;
     char *string;
     int count;
 {
-    register int    i, width = 0;
-    register unsigned char *ustring = (unsigned char *) string;
-    register XCharStruct     *cs;
-    unsigned int    firstCol = fontstruct->min_char_or_byte2;
-    unsigned int    numCols = fontstruct->max_char_or_byte2 - firstCol + 1;
-    unsigned int    firstRow = fontstruct->min_byte1;
-    unsigned int    numRows = fontstruct->max_byte1 - firstRow + 1;
-    unsigned int    chDefault = fontstruct->default_char;
+    int i;				/* iterator */
+    int nfound = 0;			/* number of characters found */
+    XCharStruct *getglyph() = ((fs->max_byte1 == 0) ? GetCS : GetCS2d);
+    XCharStruct *def = (*((fs->max_byte1 == 0) ? GetCS : GetCS2d)) (fs);
+    unsigned char *ustring = (unsigned char *) string;
+    int width = 0;
 
     /*
-     * This is similar to doing a GetGlyphs of GetCS (or GetCS2d) and then
-     * summing up all of the glyphs.  But, by inlining the code, we avoid a
-     * malloc and free as well as a lot of copying.
+     * iterate over all character in the input string
      */
+    for (i = 0; i < nchars; i++) {
+	register XCharStruct *cs = (*getglyph) (&fs, (unsigned) *ustring, def);
 
-    if (fontstruct->max_byte1 == 0) {
-	register unsigned int c;
-	XCharStruct *pCS = fontstruct->per_char;
-	int min_bounds_width = fontstruct->min_bounds.width;
-
-	for (i = count; i > 0; i--) {
-	    c = *ustring++ - firstCol;
-	    if (c >= numCols) {
-		if ((c = chDefault - firstCol) >= numCols) continue;
-	    }
-
-	    if (!pCS) {
-		width += min_bounds_width;
-	    } else {
-		cs = &pCS[c];
-		if (! CI_NONEXISTCHAR(cs)) width += cs->width;
-	    }
-	}
-    } else {
-	for (i = 0; i < count; i++) {
-	    cs = GetCS2d (&fontstruct->min_bounds, fontstruct->per_char, 
-			  firstCol, numCols, firstRow, numRows, i, ustring,
-			  chDefault);
-	    if (cs != NULL) width += cs->width;
-	}
+	if (cs) width += cs->width;
     }
-    
-    return (width);
+
+    return width;
 }
 
+	    
