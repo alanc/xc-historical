@@ -1,6 +1,6 @@
 XCOMM!/bin/sh
 XCOMM
-XCOMM $XConsortium: mdepend.cpp,v 1.7 91/08/22 11:42:53 rws Exp $
+XCOMM $XConsortium: mdepend.cpp,v 1.8 92/04/14 18:18:37 rws Exp $
 XCOMM
 XCOMM	Do the equivalent of the 'makedepend' program, but do it right.
 XCOMM
@@ -161,7 +161,7 @@ done \
   | sed -e 's|/[^/.][^/]*/\.\.||g' -e 's|/\.[^.][^/]*/\.\.||g' \
     -e 's|"||g' -e 's| \./| |' \
   | awk '{
-	if ($1 != $4  &&  $2 != "#ident")
+	if ($1 != $4  &&  $2 != "#ident" && $2 != "#pragma")
 	    {
 	    ofile = substr ($1, 1, length ($1) - 2) "'"$objsuffix"'"
 	    print ofile, $4
