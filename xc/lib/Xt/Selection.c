@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.78 93/05/13 10:43:20 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.78 93/05/13 11:09:15 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1070,7 +1070,7 @@ Boolean *cont;
     XtRemoveTimeOut(info->timeout); 
 #endif 
     if (length == 0) {
-       unsigned long u_offset = info->offset;
+       unsigned long u_offset = NUMELEM(info->offset, info->format);
        (*info->callback)(widget, *info->req_closure, &ctx->selection, 
 			  &info->type, 
 			  (info->offset == 0 ? value : info->value), 
