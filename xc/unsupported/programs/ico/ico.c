@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.11 89/10/04 16:46:02 jim Exp $ */
+/* $XConsortium: ico.c,v 1.12 89/10/04 17:13:45 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -50,6 +50,11 @@ SOFTWARE.
 
 typedef double Transform3D[4][4];
 
+#define MIN_ICO_WIDTH 5
+#define MIN_ICO_HEIGHT 5
+#define DEFAULT_ICO_WIDTH 150
+#define DEFAULT_ICO_HEIGHT 150
+
 #include "polyinfo.h"	/* define format of one polyhedron */
 
 /* Now include all the files which define the actual polyhedra */
@@ -90,6 +95,7 @@ char *ProgramName;
 Display *dpy;
 Window win, draw_window;
 int winX, winY, winW, winH;
+int icoW = 0, icoH = 0;
 Colormap cmap;
 GC gc;
 int multibuf = 0;
@@ -116,6 +122,7 @@ static char *help_message[] = {
 "where options include:",
 "    -display host:dpy            X server to use",
 "    -geometry geom               geometry of window to use",
+"    -size geom                   size of object to rotate",
 "    -r                           draw in the root window",
 "    -d number                    dashed line pattern for wire frames",
 "    -bg color                    background color",
@@ -153,7 +160,6 @@ char **argv;
 	Polyinfo *poly;		/* the poly to draw */
 	int icoX, icoY;
 	int icoDeltaX, icoDeltaY;
-	int icoW, icoH;
 	XEvent xev;
 	Bool blocking = False;
 	unsigned long vmask;
@@ -161,6 +167,7 @@ char **argv;
 	int linewidth = 0;
 	char *background_colorname = NULL;
 	unsigned long backpixel;
+	char *ico_geom = NULL;
 
 	ProgramName = argv[0];
 
@@ -209,6 +216,8 @@ char **argv;
 			dofaces = 1;
 		else if (!strcmp(*argv, "-i"))
 			invert = 1;
+		else if (!strcmp(*argv, "-size"))
+			ico_geom = *++argv;
 		else if (!strcmp (*argv, "-sleep"))
 			sleepcount = atoi(*++argv);
 		else if (!strcmp (*argv, "-obj"))
@@ -358,6 +367,13 @@ char **argv;
 	}
 #endif
 
+	if (ico_geom) 
+	  XParseGeometry (ico_geom, &icoX, &icoY, &icoW, &icoH);
+	if (icoW <= 0) icoW = DEFAULT_ICO_WIDTH;
+	if (icoH <= 0) icoH = DEFAULT_ICO_HEIGHT;
+	if (icoW < MIN_ICO_WIDTH) icoW = MIN_ICO_WIDTH;
+	if (icoH < MIN_ICO_HEIGHT) icoH = MIN_ICO_HEIGHT;
+
 	if (dofaces && numcolors>=1) {
 	    int i,t,bits;
 		bits = 0;
@@ -379,7 +395,6 @@ char **argv;
 
 	/* Get the initial position, size, and speed of the bounding-box: */
 
-	icoW = icoH = 150;
 	srandom((int) time(0) % 231);
 	icoX = ((winW - icoW) * (random() & 0xFF)) >> 8;
 	icoY = ((winH - icoH) * (random() & 0xFF)) >> 8;
