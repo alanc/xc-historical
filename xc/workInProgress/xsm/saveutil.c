@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.28 94/12/29 00:24:50 mor Exp mor $ */
+/* $XConsortium: saveutil.c,v 1.29 94/12/29 16:27:37 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -325,7 +325,7 @@ char *sm_id;
 
     if (!f)
     {
-	perror ("open session save file for write");
+	perror ("Error creating session save file");
     }
     else
     {
