@@ -1,7 +1,25 @@
 /*
- * $XConsortium: RdBitF.c,v 1.5 89/03/08 14:04:03 jim Exp $
+ * $XConsortium: RdBitF.c,v 1.6 89/12/12 18:43:10 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
  *
  * This file contains miscellaneous utility routines and is not part of the
  * Xlib standard.
@@ -17,7 +35,6 @@
  * without the other).
  */
 
-#include <X11/copyright.h>
 
 /*
  * Based on an optimized version provided by Jim Becker, Auguest 5, 1988.
@@ -233,11 +250,17 @@ int XmuReadBitmapData (fstream, width, height, datap, x_hot, y_hot)
 }
 
 
+#if NeedFunctionPrototypes
+int XmuReadBitmapDataFromFile (_Xconst char *filename, unsigned int *width, 
+			       unsigned int *height, unsigned char **datap,
+			       int *x_hot, int *y_hot)
+#else
 int XmuReadBitmapDataFromFile (filename, width, height, datap, x_hot, y_hot)
     char *filename;
     unsigned int *width, *height;	/* RETURNED */
     unsigned char **datap;		/* RETURNED */
     int *x_hot, *y_hot;			/* RETURNED */
+#endif
 {
     FILE *fstream;
     int status;
