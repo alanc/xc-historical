@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.155 93/08/25 10:00:48 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.156 93/08/25 14:43:17 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1453,20 +1453,24 @@ target::								@@\
 	case '${MFLAGS}' in *n*) executeit="no";; esac; \		@@\
 	for i in dirs ;\						@@\
 	do \								@@\
-		echo "making Makefiles in $(CURRENT_DIR)/$$i..."; \	@@\
+		case "$(CURRENT_DIR)" in \				@@\
+		.) curdir= ;; \						@@\
+		*) curdir=$(CURRENT_DIR)/ ;; \				@@\
+		esac; \							@@\
+		echo "making Makefiles in $$curdir$$i..."; \		@@\
 		case "$$i" in \						@@\
-		./?*/?*/?*/?*)	newtop=../../../../;; \			@@\
-		./?*/?*/?*)	newtop=../../../;; \			@@\
-		./?*/?*)	newtop=../../;; \			@@\
-		./?*)		newtop=../;; \				@@\
-		*/?*/?*/?*)	newtop=../../../../;; \			@@\
-		*/?*/?*)	newtop=../../../;; \			@@\
-		*/?*)		newtop=../../;; \			@@\
-		*)		newtop=../;; \				@@\
+		*/?*/?*/?*)	newtop=../../../..;; \			@@\
+		*/?*/?*)	newtop=../../..;; \			@@\
+		*/?*)		newtop=../..;; \			@@\
+		*)		newtop=..;; \				@@\
 		esac; \							@@\
 		case "$(TOP)" in \					@@\
-		/?*) imaketop=  ;; \					@@\
-		*) imaketop=$$newtop ;; \				@@\
+		/?*) imaketop=$(TOP) \					@@\
+		     imakeprefix= ;; \					@@\
+		.) imaketop=$$newtop \					@@\
+		   imakeprefix=$$newtop/ ;; \				@@\
+		*) imaketop=$$newtop/$(TOP) \				@@\
+		   imakeprefix=$$newtop/ ;; \				@@\
 		esac; \							@@\
 		cd $$i; \						@@\
 		RemoveFile(Makefile.bak); \				@@\
@@ -1477,7 +1481,7 @@ target::								@@\
 			fi; \						@@\
 		fi; \							@@\
 		if [ "$$executeit" != "no" ]; then \			@@\
-			ImakeSubCmdHelper -DTOPDIR=$$imaketop$(TOP) -DCURDIR=$(CURRENT_DIR)/$$i; \ @@\
+			ImakeSubCmdHelper -DTOPDIR=$$imaketop -DCURDIR=$$curdir$$i; \ @@\
 		fi; \							@@\
 		$(MAKE) $(MFLAGS) Makefiles; \				@@\
 		cd $$newtop; \						@@\
@@ -1486,7 +1490,7 @@ target::								@@\
 #ifdef UseInstalled
 #define ImakeSubCmdHelper $(IMAKE_CMD)
 #else
-#define ImakeSubCmdHelper $$imaketop$(IMAKE) -I$$imaketop$(IRULESRC) $(IMAKE_DEFINES)
+#define ImakeSubCmdHelper $$imakeprefix$(IMAKE) -I$$imakeprefix$(IRULESRC) $(IMAKE_DEFINES)
 #endif
 
 #endif /* MakeMakeSubdirs */
