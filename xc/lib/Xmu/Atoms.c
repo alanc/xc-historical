@@ -1,4 +1,4 @@
-/* $XConsortium: Atoms.c,v 1.2 88/10/04 16:18:38 swick Exp $
+/* $XConsortium: Atoms.c,v 1.3 88/10/07 09:48:30 swick Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -85,7 +85,8 @@ static void _DeclareAtoms()
 	__XA_TARGETS, __XA_CHARACTER_POSITION, __XA_DELETE, __XA_HOSTNAME,
 	__XA_IP_ADDRESS, __XA_DECNET_ADDRESS, __XA_USER, __XA_CLASS,
 	__XA_NAME, __XA_CLIENT_WINDOW, __XA_ATOM_PAIR, __XA_SPAN,
-	__XA_NET_ADDRESS, __XA_NULL, __XA_FILENAME, __XA_OWNER_OS;
+	__XA_NET_ADDRESS, __XA_NULL, __XA_FILENAME, __XA_OWNER_OS,
+	__XA_CLIPBOARD;
 
 #if defined(__STDC__) && !defined(UNIXCPP)
 #define DeclareAtom(atom, text) \
@@ -115,6 +116,7 @@ static void _DeclareAtoms()
     DeclareAtom(XA_NULL,		"NULL"			)
     DeclareAtom(XA_FILENAME,		"FILENAME"		)
     DeclareAtom(XA_OWNER_OS,		"OWNER_OS"		)
+    DeclareAtom(XA_CLIPBOARD,		"CLIPBOARD"		)
 
 #undef DeclareAtom
 }

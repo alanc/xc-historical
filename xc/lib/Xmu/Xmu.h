@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.7 88/10/04 16:17:52 swick Exp $
+ * $XConsortium: Xmu.h,v 1.8 88/10/07 09:54:41 swick Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -37,7 +37,7 @@ globalref AtomPtr
     _XA_TARGETS, _XA_CHARACTER_POSITION, _XA_DELETE, _XA_HOSTNAME,
     _XA_IP_ADDRESS, _XA_DECNET_ADDRESS, _XA_USER, _XA_CLASS,
     _XA_NAME, _XA_CLIENT_WINDOW, _XA_ATOM_PAIR, _XA_SPAN,
-    _XA_NET_ADDRESS, _XA_NULL, _XA_FILENAME, _XA_OWNER_OS;
+    _XA_NET_ADDRESS, _XA_NULL, _XA_FILENAME, _XA_OWNER_OS, _XA_CLIPBOARD;
 
 /*
  * types and constants
@@ -92,6 +92,7 @@ int XmuReadBitmapDataFromFile();
 #define XA_CHARACTER_POSITION(d) XmuInternAtom(d, _XA_CHARACTER_POSITION)
 #define XA_CLASS(d)		XmuInternAtom(d, _XA_CLASS)
 #define XA_CLIENT_WINDOW(d)	XmuInternAtom(d, _XA_CLIENT_WINDOW)
+#define XA_CLIPBOARD(d)		XmuInternAtom(d, _XA_CLIPBOARD)
 #define XA_DECNET_ADDRESS(d)	XmuInternAtom(d, _XA_DECNET_ADDRESS)
 #define XA_DELETE(d)		XmuInternAtom(d, _XA_DELETE)
 #define XA_FILENAME(d)		XmuInternAtom(d, _XA_FILENAME)
