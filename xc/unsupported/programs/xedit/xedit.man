@@ -2,7 +2,7 @@
 .SH NAME
 xedit - simple text editor for X
 .SH SYNTAX
-\fBxedit\fR [ \fI-toolkitoption\fP ...] [ filename ]
+\fBxedit\fP [ \fI-toolkitoption\fP ...] [ filename ]
 .SH OPTIONS
 .I Xedit
 accepts all of the standard X Toolkit command line options, plus:
@@ -31,7 +31,7 @@ If any changes have not been saved,
 .I xedit 
 displays a warning message and allows you to save the file.
 .IP "Save"
-Stores a copy of the original, unedited file in \fIfile\fR.BAK. 
+Stores a copy of the original, unedited file in \fIfile\fP.BAK. 
 Then, overwrites the original file with the edited contents.
 .IP "Edit"
 Allows the text displayed in the Edit window to be edited.
@@ -110,7 +110,7 @@ the available resources are:
 Specifies that,
 when edits made to an existing file are saved,
 .I xedit
-is to copy the original version of that file to \fIfile\fR.BAK 
+is to copy the original version of that file to \fIfile\fP.BAK 
 before it saves the changes.
 If the value of this option is specified as off, 
 a backup file is not created.
@@ -166,12 +166,12 @@ key and/or mouse combination and has the format:
 .DS
 .TA .5i 1.5i
 .ta .5i 1.5i
-\fIkey\fP\^:	\fIfunction\fR
+\fIkey\fP\^:	\fIfunction\fP
 .DE
 .sp
-.IP \fIkey\fR 15
+.IP \fIkey\fP 15
 Specifies the key or mouse button that is used to invoke the named function.
-.IP \fIfunction\fR
+.IP \fIfunction\fP
 Specifies the function to be invoked when the named key is pressed.
 .LP
 For more information about specifications in the
