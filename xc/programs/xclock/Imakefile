@@ -1,5 +1,6 @@
-LOCAL_LIBRARIES = $(XTOOLLIB) $(OLDXRMLIB) $(XLIB)
-  SYS_LIBRARIES = -lm
        INCLUDES = -I$(OLDXRMSRC) -I$(TOP) -I$(TOP)/X11
+           OBJS = xclock.o
+           SRCS = xclock.c
 
-SimpleProgramTarget(xclock)
+SingleProgramTarget(xclock,$(OBJS),$(XTOOLLIB) $(OLDXRMLIB) $(XLIB),-lm)
+DependTarget()
