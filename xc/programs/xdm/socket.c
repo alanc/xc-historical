@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.31 92/08/24 13:16:40 gildea Exp $
+ * $XConsortium: socket.c,v 1.32 93/09/20 18:03:07 hersh Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -68,7 +68,7 @@ CreateWellKnownSockets ()
     sock_addr.sin_family = AF_INET;
     sock_addr.sin_port = htons ((short) request_port);
     sock_addr.sin_addr.s_addr = htonl (INADDR_ANY);
-    if (bind (xdmcpFd, &sock_addr, sizeof (sock_addr)) == -1)
+    if (bind (xdmcpFd, (struct sockaddr *)&sock_addr, sizeof (sock_addr)) == -1)
     {
 	LogError ("error %d binding socket address %d\n", errno, request_port);
 	close (xdmcpFd);
@@ -99,7 +99,7 @@ GetChooserAddr (addr, lenp)
     int			len;
 
     len = sizeof in_addr;
-    if (getsockname (chooserFd, &in_addr, &len) < 0)
+    if (getsockname (chooserFd, (struct sockaddr *)&in_addr, &len) < 0)
 	return -1;
     memmove( addr, (char *) &in_addr, len);
     *lenp = len;
