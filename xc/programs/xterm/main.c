@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.65 88/08/12 11:39:00 swick Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.66 88/08/12 14:17:14 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -678,42 +678,41 @@ char **argv;
 
 	term->initflags = term->flags;
 
-	if ((get_ty || command_to_exec) && 
-	    !resource.title && !resource.icon_name) {
+/*
+ * Set title and icon name if not specified
+ */
+
+	if (get_ty || command_to_exec) {
 	    char window_title[1024];
-	    static Arg args[] = {
-		{XtNtitle, NULL},
-		{XtNiconName, NULL},
-	    };
-	    if (get_ty) {
+	    Arg args[2];
+
+	    if (!resource.title) {
+		if (get_ty) {
 #ifdef hpux
-		struct utsname name;
-#endif /* hpux */
-
-		strcpy(window_title, "login(");
-
-#ifdef hpux
-		/* Why not use gethostname()?  On older hpux's, we hve to make
-		 * an ugly kernel patch to get a name longer than 8 characters, and
-		 * uname() lets me access to the whole string, wherease gethostname
-		 * truncates it.
-		 */
-
-		uname(&name);
-		strcpy(window_title+6, name.nodename);
-#else /* else not hpux */
-		(void) gethostname(window_title+6, sizeof(window_title)-6);
-#endif /* hpux */
-
-		strcat( window_title, ")" );
-		args[0].value = args[1].value = (XtArgVal)window_title;
+		    struct utsname name;    /* crock for hpux 8 char names */
+		    uname(&name);
+		    strcpy (window_title, "login(");
+		    strcpy (window_title+6, name.nodename);
+		    strcat (window_title, ")");
+#else 
+		    strcpy (window_title, "login(");
+		    (void) gethostname(window_title+6, sizeof(window_title)-6);
+		    strcat (window_title, ")");
+#endif
+		    resource.title = window_title;
+		} else if (command_to_exec) {
+		    resource.title = basename (command_to_exec[0]);
+		} /* else not reached */
 	    }
-	    else if (command_to_exec) {
-		args[0].value = args[1].value =
-		    (XtArgVal)basename(command_to_exec[0]);
-	    }
-	    XtSetValues( toplevel, args, 2 );
+
+	    if (!resource.icon_name) 
+	      resource.icon_name = resource.title;
+	    XtSetArg (args[0], XtNtitle, resource.title);
+	    XtSetArg (args[1], XtNiconName, resource.icon_name);		
+
+	    XtSetValues (toplevel, args, 2);
 	}
+
 
 	if(inhibit & I_TEK)
 		screen->TekEmu = FALSE;
