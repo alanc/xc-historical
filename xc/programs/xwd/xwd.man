@@ -1,4 +1,4 @@
-.TH XWD 1 "24 October 1988" "X Version 11"
+.TH XWD 1 "Release 4" "X Version 11"
 .SH NAME
 xwd - dump an image of an X window
 .SH SYNOPSIS

@@ -11,7 +11,7 @@
 .if n .sp 1
 .if t .sp .5
 ..
-.TH XMODMAP 1 "25 October 1988" "X Version 11"
+.TH XMODMAP 1 "Release 4" "X Version 11"
 .SH NAME
 xmodmap - utility for modifying keymaps in X
 .SH SYNOPSIS

@@ -1,4 +1,4 @@
-.TH XPR 1 "24 October 1988" "X Version 11"
+.TH XPR 1 "Release 4" "X Version 11"
 .SH NAME
 xpr \- print an X window dump
 .SH SYNOPSIS
@@ -154,10 +154,10 @@ the paper.
 .IP "\fB\-plane\fP \fInumber\fP"
 Specifies which bit plane to use in an image.  The default is to use the
 entire image and map values into black and white based on color intensities.
-.IP "\fB\-gray\fP"
-Uses a simple 5-level gray scale conversion on a color image, rather than
-mapping to strictly black and white.  This essentially doubles the effective
-width and height of the image.
+.IP "\fB\-gray\fP \fI 2 | 3 | 4\fP"
+Uses a simple 2x2, 3x3, or 4x4 gray scale conversion on a color image,
+rather than mapping to strictly black and white.  This doubles,
+triples, or quadruples the effective width and height of the image.
 .IP "\fB\-portrait\fP"
 Forces the window to be printed in portrait mode.  By default
 a window is printed such that its longest side follows the long side of
