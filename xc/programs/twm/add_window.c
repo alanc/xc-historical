@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.55 89/06/30 18:30:38 jim Exp $
+ * $XConsortium: add_window.c,v 1.56 89/06/30 19:03:18 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.55 89/06/30 18:30:38 jim Exp $";
+"$XConsortium: add_window.c,v 1.56 89/06/30 19:03:18 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -609,9 +609,6 @@ IconMgr *iconp;
     {
 	XDefineCursor(dpy, tmp_win->title_w, Scr->TitleCursor);
 	XDefineCursor(dpy, tmp_win->iconify_w, Scr->ButtonCursor);
-#ifndef NOFOCUS
-	XDefineCursor(dpy, tmp_win->focus_w, Scr->ButtonCursor);
-#endif
 	XDefineCursor(dpy, tmp_win->resize_w, Scr->ButtonCursor);
     }
 
@@ -696,10 +693,6 @@ IconMgr *iconp;
 	XSaveContext(dpy, tmp_win->iconify_w, ScreenContext, Scr);
 	XSaveContext(dpy, tmp_win->resize_w, TwmContext, tmp_win);
 	XSaveContext(dpy, tmp_win->resize_w, ScreenContext, Scr);
-#ifndef NOFOCUS
-	XSaveContext(dpy, tmp_win->focus_w, TwmContext, tmp_win);
-	XSaveContext(dpy, tmp_win->focus_w, ScreenContext, Scr);
-#endif
 	if (tmp_win->hilite_w)
 	{
 	    XSaveContext(dpy, tmp_win->hilite_w, TwmContext, tmp_win);
@@ -1003,9 +996,6 @@ TwmWindow *tmp_win;
     if (tmp_win->title_height == 0)
     {
 	tmp_win->iconify_w = 0;
-#ifndef NOFOCUS
-	tmp_win->focus_w = 0;
-#endif
 	tmp_win->resize_w = 0;
 	tmp_win->hilite_w = 0;
 	return;
@@ -1023,12 +1013,6 @@ TwmWindow *tmp_win;
 	XFillRectangle(dpy, Scr->iconifyPm, gc, 0,0,
 	    Scr->TitleHeight, Scr->TitleHeight);
 
-#ifndef NOFOCUS
-	Scr->focusPm = XCreatePixmap(dpy, tmp_win->title_w,
-	    Scr->TitleHeight, Scr->TitleHeight, 1);
-	XFillRectangle(dpy, Scr->focusPm, gc, 0,0,
-	    Scr->TitleHeight, Scr->TitleHeight);
-#endif
 	Scr->resizePm = XCreatePixmap(dpy, tmp_win->title_w,
 	    Scr->TitleHeight, Scr->TitleHeight, 1);
 	XFillRectangle(dpy, Scr->resizePm, gc, 0,0,
@@ -1055,17 +1039,6 @@ TwmWindow *tmp_win;
 	XDrawRectangle (dpy, Scr->iconifyPm, gc, 2, 2,
 			Scr->TitleHeight - 5, Scr->TitleHeight - 5);
 	XFreeGC (dpy, gcBack);
-
-#ifndef NOFOCUS
-	/* draw the focus button */
-	XDrawRectangle(dpy, Scr->focusPm, gc, 1, 1,
-	    Scr->TitleHeight - 3, Scr->TitleHeight - 3);
-	XDrawArc(dpy, Scr->focusPm, gc, 3, 3,
-	    Scr->TitleHeight - 7, Scr->TitleHeight - 7,
-	    0, 360*64);
-	XDrawPoint(dpy, Scr->focusPm, gc, 
-	    Scr->TitleHeight/2, Scr->TitleHeight/2);
-#endif
 
 	/* now the resize button */
 	XDrawRectangle(dpy, Scr->resizePm, gc, 1, 1,
@@ -1096,14 +1069,6 @@ TwmWindow *tmp_win;
 	0, Scr->Black, tmp_win->title.back);
     XSelectInput(dpy, tmp_win->iconify_w, ButtonPressMask |
 	ButtonReleaseMask | ExposureMask);
-
-#ifndef NOFOCUS
-    tmp_win->focus_w = XCreateSimpleWindow(dpy, tmp_win->title_w,
-	0, 0, Scr->TitleHeight, Scr->TitleHeight,
-	0, Scr->Black, tmp_win->title.back);
-    XSelectInput(dpy, tmp_win->focus_w, ButtonPressMask |
-	ButtonReleaseMask | ExposureMask);
-#endif
 
     tmp_win->resize_w = XCreateSimpleWindow(dpy, tmp_win->title_w,
 	0, 0, Scr->TitleHeight, Scr->TitleHeight,

@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.71 89/06/22 16:46:14 jim Exp $
+ * $XConsortium: menus.c,v 1.72 89/06/22 17:27:56 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.71 89/06/22 16:46:14 jim Exp $";
+"$XConsortium: menus.c,v 1.72 89/06/22 17:27:56 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1888,9 +1888,6 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 			Scr->TitleC.back);
 		}
 		XDestroyWindow(dpy, tmp_win->iconify_w, Scr->TitleC.back);
-#ifndef NOFOCUS
-		XDestroyWindow(dpy, tmp_win->focus_w, Scr->TitleC.back);
-#endif
 		XDestroyWindow(dpy, tmp_win->resize_w, Scr->TitleC.back);
 		XDestroyWindow(dpy, tmp_win->hilite_w, Scr->TitleC.back);
 		CreateTitleButtons(tmp_win);

@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.29 89/06/09 13:38:14 jim Exp $
+ * $XConsortium: twm.h,v 1.30 89/06/22 16:46:22 jim Exp $
  *
  * twm include file
  *
@@ -52,10 +52,6 @@
 #endif
 
 typedef SIGPROCTYPE (*SigProc)();
-
-
-/* Define this if you want the Focus button on the titlebar */
-/* #define FOCUS */
 
 #define BW 2			/* border width */
 #define BW2 4			/* border width  * 2 */
@@ -148,9 +144,6 @@ typedef struct TwmWindow
     Window title_w;		/* the title bar window */
     Window iconify_w;		/* the iconify button */
     Window resize_w;		/* the resize button */
-#ifndef NOFOCUS
-    Window focus_w;		/* the focus window */
-#endif
     Window hilite_w;		/* the hilite window */
     Pixmap gray;
     Window icon_w;		/* the icon window */

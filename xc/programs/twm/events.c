@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.68 89/06/12 15:32:26 jim Exp $
+ * $XConsortium: events.c,v 1.69 89/06/30 18:38:00 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.68 89/06/12 15:32:26 jim Exp $";
+"$XConsortium: events.c,v 1.69 89/06/30 18:38:00 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -710,16 +710,6 @@ HandleExpose()
 	    flush_expose (Event.xany.window);
 	    return;
 	}
-#ifndef NOFOCUS
-	if (Tmp_win->focus_w == Event.xany.window)
-	{
-	    FB(Tmp_win->title.fore, Tmp_win->title.back);
-	    XCopyPlane(dpy, Scr->focusPm, Tmp_win->focus_w, Scr->NormalGC,
-		0,0, Scr->TitleHeight, Scr->TitleHeight, 0, 0, 1);
-	    flush_expose (Event.xany.window);
-	    return;
-	}
-#endif
 	if (Tmp_win->resize_w == Event.xany.window)
 	{
 	    FB(Tmp_win->title.fore, Tmp_win->title.back);
@@ -823,10 +813,6 @@ HandleDestroyNotify()
 	XDeleteContext(dpy, Tmp_win->iconify_w, ScreenContext);
 	XDeleteContext(dpy, Tmp_win->resize_w, TwmContext);
 	XDeleteContext(dpy, Tmp_win->resize_w, ScreenContext);
-#ifndef NOFOCUS
-	XDeleteContext(dpy, Tmp_win->focus_w, TwmContext);
-	XDeleteContext(dpy, Tmp_win->focus_w, ScreenContext);
-#endif
 	if (Tmp_win->hilite_w)
 	{
 	    XDeleteContext(dpy, Tmp_win->hilite_w, TwmContext);
@@ -1297,15 +1283,6 @@ HandleButtonPress()
 		Event, C_TITLE, FALSE);
 	    return;
 	}
-
-#ifndef NOFOCUS
-	if (Event.xany.window == Tmp_win->focus_w)
-	{
-	    ExecuteFunction(F_FOCUS, NULL, Event.xany.window, Tmp_win,
-		Event, C_TITLE, FALSE);
-	    return;
-	}
-#endif
     }
 
     Context = C_NO_CONTEXT;
@@ -1333,9 +1310,6 @@ HandleButtonPress()
 		int width;
 
 		width = 2 * Scr->TitleHeight;
-#ifndef NOFOCUS
-		width += Scr->TitleHeight;
-#endif
 	    Context = C_TITLE;
 	}
 	else if (Event.xany.window == Tmp_win->w)
