@@ -60,11 +60,11 @@
   ;; This macro is for use in a multi-process environment.  It provides
   ;; exclusive access to the local buffer object for request generation and
   ;; reply processing.
-  (macrolet ((with-buffer ((buffer &key timeout) &body body)
-	       ;; Speedup hack for lexically nested with-buffers
-	       `(progn ,buffer ,@(and timeout `(,timeout)) ,@body)))
-    (let ((buf (if (or (symbolp buffer) (constantp buffer)) buffer '.buffer.)))
-      `(let (,@(unless (eq buf buffer) `((,buf ,buffer))))
+  (let ((buf (if (or (symbolp buffer) (constantp buffer)) buffer '.buffer.)))
+    `(macrolet ((with-buffer ((buffer &key timeout) &body body)
+		  ;; Speedup hack for lexically nested with-buffers
+		  `(progn ,buffer ,@(and timeout `(,timeout)) ,@body)))
+       (let (,@(unless (eq buf buffer) `((,buf ,buffer))))
 	 ,@(unless (eq buf buffer) `((declare (type buffer ,buf))))
 	 ,(declare-bufmac)
 	 (when (buffer-dead ,buf)
@@ -268,7 +268,7 @@
 	(without-aborts (funcall request-function)))
       (display-invoke-after-function display))))
 
-(defstruct (pending-command (:copier nil))
+(defstruct (pending-command (:copier nil) (:predicate nil))
   (sequence 0 :type card16)
   (reply-buffer nil :type (or null reply-buffer))
   (process nil)
