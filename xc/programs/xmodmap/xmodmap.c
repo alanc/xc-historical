@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $Header: xmodmap.c,v 1.5 87/09/30 08:09:11 jim Locked $ */
+/* $Header: xmodmap.c,v 1.6 88/02/05 17:16:17 jim Locked $ */
 #include <stdio.h>
 #include <ctype.h>
 #include "X11/Xlib.h"
@@ -97,15 +97,15 @@ UpdateModifierMapping(map)
 	res = XSetModifierMapping(dpy, map);
 	fprintf(stderr, "res %d\n", res);
 	switch (res) {
-	    case 0:	/* Success */
+	    case MappingSuccess:	/* Success */
 	        return (0);
-	    case 1:	/* Busy */
+	    case MappingBusy:		/* Busy */
 	        fprintf (stderr, "You have %d seconds to lift your hands\n",
 			 tim);
 		sleep(tim);
 		tim <<= 1;
 	        break;
-	    case 2:
+	    case MappingFailed:
 	        fprintf(stderr, "Re-map failed\n");
 		return (1);
 	    default:
