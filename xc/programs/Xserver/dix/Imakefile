@@ -10,7 +10,7 @@ OBJS = atom.o colormap.o cursor.o devices.o dispatch.o dixutils.o events.o \
 	tables.o window.o initatoms.o dixfonts.o
 
     INCLUDES = -I. -I../include -I$(INCLUDESRC) -I$(FONTSRC)/include
-    LINTLIBS = ../ddx/snf/llib-lsnf.ln ../os/4.2bsd/llib-los.ln
+    LINTLIBS = ../os/llib-los.ln
 
 /*
  * The following configuration parameters may be set in the appropriate
