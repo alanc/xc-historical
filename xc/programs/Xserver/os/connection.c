@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.62 87/09/07 17:12:18 rws Exp $ */
+/* $Header: connection.c,v 1.63 87/10/03 15:38:59 swick Locked $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -116,7 +116,6 @@ extern int GiveUp();
 void
 CreateWellKnownSockets()
 {
-    char	fname[32];
     int		request, i;
     int		whichbyte;	    /* used to figure out whether this is
    					 LSB or MSB */
@@ -153,26 +152,6 @@ CreateWellKnownSockets()
 	lastfdesc = MAXSOCKS;
 	ErrorF( "GOT TO END OF SOCKETS %d\n", MAXSOCKS);
     }
-
-	/* hack test to decide where to log errors */
-
-    if (write (2, fname, 0)) 
-    {
-	long t; 
-
-	char *ctime();
-        close(stdin);
-        close(stdout);
-	strcpy (fname, "/usr/adm/X");
-	strcat (fname, display);
-	strcat (fname, "msgs");
-	freopen (fname, "a+", stderr);
-	setlinebuf(stderr);
-	time (&t);
-	fprintf (stderr, "start %s", ctime(&t));
-    }
-	if (getpgrp (0) == 0)
-	    setpgrp (0, getpid ());
 
     WellKnownConnections = 0;
     whichbyte = 1;
