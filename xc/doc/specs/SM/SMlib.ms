@@ -89,17 +89,26 @@ The Session Management Library
 \*(SN The Session Management Library
 .XE
 .LP
-The Session Management Library (SMlib) is designed to hide the details of
-the XSMP protocol from applications.  The library has two parts to it -
-one set of functions for clients that want to be part of a session, and
-one set of functions for session managers to call.
+The Session Management Library (SMlib) is a low level interface to XSMP.
+It is expected that higher level toolkits, such as Xt, will hide many of
+the details of session management from clients.  Higher level toolkits
+might also be developed for session managers to use, but no such effort
+is currently under way.
+.LP
+SMlib has two parts to it - one set of functions for clients that want to
+be part of a session, and one set of functions for session managers to call.
+Some applications will use both sets of functions and act as \fInested
+session managers\fP\^ - they will be both a session manager and a client of
+another session.  An example is a mail program that could start a text
+editor for editing the text of a mail message.  The mail program is part of
+a regular session, and at the same time, is also acting as a session manager
+to the editor.
 .LP
 Clients initialize by connecting to the session manager and obtaining
 a \fIclient-ID\fP\^ which uniquely identifies them in the session.
 The session manager maintains a list of properties for each client in
-the session.  These properties describe the client's environment
-(for example, the operating system the client is running on), and
-most importantly, describe how the client can be restarted (via an
+the session.  These properties describe the client's environment,
+and most importantly, describe how the client can be restarted (via an
 \fISmRestartCommand\fP\^).  Clients are expected to initialize a set of
 required properties when they start up.  They should make sure that they encode
 their \fIclient-ID\fP\^ in the \fISmRestartCommand\fP\^, to insure that they
@@ -126,8 +135,7 @@ Exchange (ICE) Protocol.  The ICE protocol is designed to multiplex several
 protocols over a single connection.  As a result, working with SMlib requires
 a little knowledge of how the ICE library works.
 .LP
-Since there may be multiple protocols active on an ICE connection, the
-ICE library utilizes callbacks to process messages.  When a client
+The ICE library utilizes callbacks to process messages.  When a client
 detects that there is data to read on an ICE connection, it should call
 the
 .PN IceProcessMessage
@@ -140,16 +148,15 @@ off to the client via a callback.
 .LP
 The main point to be aware of is that an application using SMlib must
 have some code which detects when there is data to read on an ICE connection.
-This can be done via select() on the file descriptor for the ICE connection,
-but more typically,
+This can be done via a select() call on the file descriptor for the
+ICE connection, but more typically,
 .PN XtAppAddInput
 will be used to register a callback which will invoke
 .PN IceProcessMessage
 each time there is data to read on the ICE connection.
 .LP
-To further complicate things, using SMlib requires an understanding of how
-ICE connections are created.  Understanding how ICE connections are created
-is necessary in order to know which file descriptors to select() on.
+To further complicate things, knowing which file descriptors to select()
+on requires an understanding of how ICE connections are created.
 On the client side, a call must be made to
 .PN SmcOpenConnection
 in order to open a connection with a session manager.
@@ -158,13 +165,13 @@ will internally make a call into
 .PN IceOpenConnection
 which will in turn determine if an ICE connection already exists between
 the client and session manager.  Most likely, a connection will not already
-exist and a new ICE connection will be created.  The main point is that
-on the client side, an ICE connection may be shared by several protocol
-libraries, and the application needs to know when a new ICE connection
-is created.  To solve this problem, the ICE library lets the application
-register \fIwatch procedures\fP\^ which will be invoked each time an ICE
-connection is opened or closed.  These watch procedure could be used to
-add or remove ICE file descriptors from the list of descriptors to select() on.
+exist and a new ICE connection will be created.  The main point to be aware
+of is that on the client side, it is not obvious when ICE connections get
+created, since connections are shared when possible.  To solve this problem,
+the ICE library lets the application register \fIwatch procedures\fP\^ which
+will be invoked each time an ICE connection is opened or closed.  These watch
+procedure could be used to add or remove ICE file descriptors from the list of
+descriptors to select() on.
 .LP
 On the session manager side, things work a bit differently.  The session
 manager has complete control over the creation
@@ -177,7 +184,7 @@ must be called, and the session manager can simply add the new ICE
 file descriptor to the list of descriptors to select() on.
 .LP
 Please refer to the \fIInter-Client Exchange Library\fP\^ document for
-more details on the library functions releated to ICE connections.
+more details on the library functions related to ICE connections.
 .LP
 .NH 1
 Header Files and Library Name
@@ -190,9 +197,8 @@ header file \fI<X11/SM/SMlib.h>\fP\^.  This header file defines all of the
 SMlib data structures and function prototypes.  \fISMlib.h\fP\^ includes the
 header file \fI<X11/SM/SM.h>\fP\^ which defines all of the SMlib constants.
 .LP
-SMlib uses the ICE protocol to establish a connection between a client
-and session manager.  Applications should link against SMlib and ICElib
-by using \fI-lSM -lICE\fP\^.
+Since SMlib is depended on ICE, applications should link against
+SMlib and ICElib by using \fI-lSM -lICE\fP\^.
 .LP
 .NH 1
 Session Management Client (Smc) Functions
@@ -308,8 +314,8 @@ more details.
 .LP
 .sp 0.5
 A client must be ready to respond to messages sent by a session manager.
-\fIcallbacks\fP\^ is a set of mandatory callbacks; if any of these
-callbacks are
+\fIcallbacks\fP\^ contains a set of mandatory callbacks; if any of these
+function pointers are
 .PN NULL ,
 .PN SmcOpenConnection
 will fail.
@@ -2006,6 +2012,17 @@ void SmFreeReasons\^(\^\fIcount\fP, \fIreasons\fP\^)
 The number of reason strings.
 .IP \fIreasons\fP 1i
 The list of reason strings to free.
+
+.bp
+authentication
+
+client ids
+
+
+.bp
+
+
+
 .LP
 .eM
 .EH ''''
