@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranssock.c,v 1.20 94/03/15 13:20:33 mor Exp $ */
+/* $XConsortium: Xtranssock.c,v 1.21 94/03/29 14:26:52 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -55,6 +55,9 @@
 #ifdef __osf__
 #include <sys/param.h>
 #endif /* osf */
+#if defined(__NetBSD__) || defined(__FreeBSD__)
+#include <machine/endian.h>
+#endif /* __NetBSD__ || __FreeBSD__ */
 #include <netinet/tcp.h>
 #endif /* !NO_TCP_H */
 #include <sys/ioctl.h>
