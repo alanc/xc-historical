@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsXRGB.c,v 1.3 91/02/12 16:13:55 dave Exp $" */
+/* $XConsortium: XcmsXRGB.c,v 1.4 91/05/13 23:30:24 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -37,11 +37,17 @@
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
+#if __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
+
 /*
  *      LOCAL VARIABLES
  */
 
-static unsigned short MASK[17] = {
+static unsigned short Const MASK[17] = {
     0x0000,	/*  0 bitsPerRGB */
     0x8000,	/*  1 bitsPerRGB */
     0xc000,	/*  2 bitsPerRGB */
@@ -144,10 +150,9 @@ _XColor_to_XcmsRGB(ccc, pXColors, pColors, nColors)
  *	SYNOPSIS
  */
 void
-_XcmsResolveColor(ccc, pXColors, nColors)
+_XcmsResolveColor(ccc, pXcmsColor)
     XcmsCCC ccc;
-    XColor *pXColors;
-    unsigned int nColors;
+    XcmsColor *pXcmsColor;
 /*
  *	DESCRIPTION
  *	    Uses the X Server ResolveColor() algorithm to
@@ -172,17 +177,15 @@ _XcmsResolveColor(ccc, pXColors, nColors)
     max_color = (1 << ccc->visual->bits_per_rgb) - 1;
 
 
-    for (; nColors--; pXColors++) {
-	pXColors->red =
-		((unsigned long)(pXColors->red >> shift) * 0xFFFF)
-		/ max_color;
-	pXColors->green =
-		((unsigned long)(pXColors->green >> shift) * 0xFFFF)
-		/ max_color;
-	pXColors->blue  =
-		((unsigned long)(pXColors->blue  >> shift) * 0xFFFF)
-		/ max_color;
-    }
+    pXcmsColor->spec.RGB.red =
+	    ((unsigned long)(pXcmsColor->spec.RGB.red >> shift) * 0xFFFF)
+	    / max_color;
+    pXcmsColor->spec.RGB.green =
+	    ((unsigned long)(pXcmsColor->spec.RGB.green >> shift) * 0xFFFF)
+	    / max_color;
+    pXcmsColor->spec.RGB.blue =
+	    ((unsigned long)(pXcmsColor->spec.RGB.blue  >> shift) * 0xFFFF)
+	    / max_color;
 }
 
 
@@ -193,10 +196,9 @@ _XcmsResolveColor(ccc, pXColors, nColors)
  *	SYNOPSIS
  */
 void
-_XcmsUnresolveColor(ccc, pColors, nColors)
+_XcmsUnresolveColor(ccc, pColor)
     XcmsCCC ccc;
-    XcmsColor *pColors;
-    unsigned int nColors;
+    XcmsColor *pColor;
 /*
  *	DESCRIPTION
  *		Masks out insignificant bits.
@@ -210,9 +212,34 @@ _XcmsUnresolveColor(ccc, pColors, nColors)
 {
     int bits_per_rgb = ccc->visual->bits_per_rgb;
 
-    for (; nColors--; pColors++) {
-	pColors->spec.RGB.red &= MASK[bits_per_rgb];
-	pColors->spec.RGB.green &= MASK[bits_per_rgb];
-	pColors->spec.RGB.blue &= MASK[bits_per_rgb];
-    }
+    pColor->spec.RGB.red &= MASK[bits_per_rgb];
+    pColor->spec.RGB.green &= MASK[bits_per_rgb];
+    pColor->spec.RGB.blue &= MASK[bits_per_rgb];
 }
+
+
+/*
+ *	NAME
+ *		_XUnresolveColor
+ *
+ *	SYNOPSIS
+ */
+void
+_XUnresolveColor(ccc, pXColor)
+    XcmsCCC ccc;
+    XColor *pXColor;
+/*
+ *	DESCRIPTION
+ *		Masks out insignificant bits.
+ *
+ *	RETURNS
+ *		void.
+ */
+{
+    int bits_per_rgb = ccc->visual->bits_per_rgb;
+
+    pXColor->red &= MASK[bits_per_rgb];
+    pXColor->green &= MASK[bits_per_rgb];
+    pXColor->blue &= MASK[bits_per_rgb];
+}
+
