@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: mpntfy.m,v 1.8 92/06/11 17:22:54 rws Exp $
  */
 >>TITLE MapNotify CH08
 >>EXTERN
@@ -77,6 +77,7 @@ struct area area;
 	XSync(display, True);
 	XSync(client2, True);
 	XCloseDisplay(client2);
+	sleep(config.speedfactor);
 	XSync(display, False);
 /* Verify that a MapNotify event was delivered. */
 	if (!XCheckTypedWindowEvent(display, child, EVENT, &event_return)) {

@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: addtsvst.m,v 1.8 92/06/11 17:10:55 rws Exp $
  */
 >>TITLE XAddToSaveSet CH07
 void
@@ -149,6 +149,7 @@ int 	pass = 0, fail = 0;
 	XSync(Dsp, False);
 
 	XCloseDisplay(client1);
+	sleep(config.speedfactor);
 
 	XSync(Dsp, False);
 	XSync(client2, False);
