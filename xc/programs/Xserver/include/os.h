@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.51 93/09/24 12:17:42 rws Exp $ */
+/* $XConsortium: os.h,v 1.52 93/09/26 12:06:16 rws Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -286,6 +286,47 @@ extern int AdjustWaitForDelay(
 #if NeedFunctionPrototypes
     pointer /*waitTime*/,
     unsigned long /*newdelay*/
+#endif
+);
+
+typedef	struct _OsTimerRec *OsTimerPtr;
+
+typedef CARD32 (*OsTimerCallback)(
+#if NeedFunctionPrototypes
+    OsTimerPtr /* timer */,
+    CARD32 /* time */,
+    pointer /* arg */
+#endif
+);
+
+extern Bool TimerForce(
+#if NeedFunctionPrototypes
+    OsTimerPtr /* timer */
+#endif
+);
+
+#define TimerAbsolute (1<<0)
+#define TimerForceOld (1<<1)
+
+extern OsTimerPtr TimerSet(
+#if NeedFunctionPrototypes
+    OsTimerPtr /* timer */,
+    int /* flags */,
+    CARD32 /* millis */,
+    OsTimerCallback /* func */,
+    pointer /* arg */
+#endif
+);
+
+extern void TimerCheck(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void TimerFree(
+#if NeedFunctionPrototypes
+    OsTimerPtr /* pTimer */
 #endif
 );
 
