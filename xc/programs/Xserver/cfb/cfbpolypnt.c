@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbpolypnt.c,v 5.10 91/02/11 14:08:18 keith Exp $ */
+/* $XConsortium: cfbpolypnt.c,v 5.11 91/04/10 11:41:53 keith Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -34,7 +34,7 @@ without any express or implied warranty.
 	 pbox++) \
     { \
 	c1 = *((long *) &pbox->x1) - off; \
-	c2 = *((long *) &pbox->x2) - off; \
+	c2 = *((long *) &pbox->x2) - off - 0x00010001; \
 	for (ppt = (long *) pptInit, i = npt; --i >= 0;) \
 	{ \
 	    pt = *ppt++; \
@@ -91,7 +91,8 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	    pptPrev->y += (pptPrev-1)->y;
 	}
     }
-    off = coordToInt(pDrawable->x, pDrawable->y);
+    off = *((int *) &pDrawable->x);
+    off -= (off & 0x8000) << 1;
 #if PPW == 4
     cfbGetByteWidthAndPointer(pDrawable, nbwidth, addrb);
     addrb = addrb + pDrawable->y * nbwidth + pDrawable->x;
