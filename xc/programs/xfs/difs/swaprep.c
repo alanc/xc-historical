@@ -1,4 +1,4 @@
-/* $XConsortium: swaprep.c,v 1.3 91/07/16 20:23:39 keith Exp $ */
+/* $XConsortium: swaprep.c,v 1.4 91/07/25 12:25:19 keith Exp $ */
 /*
  * font server reply swapping
  */
@@ -300,6 +300,7 @@ SOpenBitmapFontReply(client, size, pRep)
     int         n;
 
     swaps(&pRep->sequenceNumber, n);
+    swapl(&pRep->length, n);
     swapl(&pRep->otherid, n);
 
     (void) WriteToClient(client, size, (char *) pRep);
