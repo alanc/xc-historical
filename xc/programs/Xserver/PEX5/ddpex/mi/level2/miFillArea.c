@@ -1,4 +1,4 @@
-/* $XConsortium: miFillArea.c,v 5.2 91/02/18 21:23:13 rws Exp $ */
+/* $XConsortium: miFillArea.c,v 5.3 91/03/15 18:23:35 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -39,7 +39,6 @@ SOFTWARE.
 
 #include <stdio.h>
 
-extern ddFLOAT  ident4x4[];
 
 /*++
  |
@@ -98,7 +97,8 @@ miFillArea(pRend, pExecuteOC)
 			*dc_facet;
 
       listofddPoint	*sp;
-      int		i, j, clip_mode;
+      int		i, j;
+      ddUSHORT 	      	clip_mode;
       ddpex3rtn		status;
       ddPointType	out_type;
 
@@ -161,8 +161,7 @@ miFillArea(pRend, pExecuteOC)
 	/* Transform to WC prior to applying lighting */
 	out_type = input_list->type;
 	if (DD_IsVertNormal(out_type)) VALIDATEINVTRMCTOWCXFRM(pddc);
-	if (status = miTransform(pddc, 
-				 mc_list, &wc_list, 
+	if (status = miTransform(pddc, mc_list, &wc_list, 
 				 pddc->Dynamic->mc_to_wc_xform,
 				 pddc->Static.misc.inv_tr_mc_to_wc_xform,
 				 DD_SetVert4D(out_type)))
@@ -188,8 +187,7 @@ miFillArea(pRend, pExecuteOC)
 	
 	/* Transform to CC for clipping */
 	if (DD_IsVertNormal(light_list->type)) VALIDATEINVTRWCTOCCXFRM(pddc);
-	if (status = miTransform(pddc, 
-				 light_list, &cc_list, 
+	if (status = miTransform(pddc, light_list, &cc_list, 
 				 pddc->Dynamic->wc_to_cc_xform,
 				 pddc->Static.misc.inv_tr_wc_to_cc_xform,
 				 light_list->type))
@@ -211,8 +209,7 @@ miFillArea(pRend, pExecuteOC)
          
         out_type = mc_list->type;
 	if (DD_IsVertNormal(out_type)) VALIDATEINVTRMCTOCCXFRM(pddc);
-        if (status = miTransform(pddc,
-                                 mc_list, &cc_list,
+        if (status = miTransform(pddc, mc_list, &cc_list,
                                  pddc->Dynamic->mc_to_cc_xform,
                                  pddc->Static.misc.inv_tr_mc_to_cc_xform,
                                  DD_SetVert4D(out_type)))
@@ -259,8 +256,7 @@ miFillArea(pRend, pExecuteOC)
       DD_SetVert2D(out_type);
       DD_SetVertShort(out_type);
       if (DD_IsVertNormal(out_type)) VALIDATEINVTRCCTODCXFRM(pddc);
-      if (status = miTransform(pddc, 
-				 cull_list, &dc_list, 
+      if (status = miTransform(pddc, cull_list, &dc_list, 
 				 pddc->Dynamic->cc_to_dc_xform,
 				 pddc->Static.misc.inv_tr_cc_to_dc_xform,
 				 out_type) )
@@ -682,7 +678,7 @@ miLightFillArea(pRend, pddc, input_vert, input_fct, output_vert, output_fct)
 	     {
 	      out_pt->pt = in_pt->pt;
 	      if (status = miApply_Lighting(pRend, pddc, 
-					    in_pt,
+					    &(in_pt->pt),
 					    &(in_pt->colour),
 				            &(in_pt->normal),
 				            &(out_pt->colour)))
@@ -748,7 +744,7 @@ miCullFillArea(pddc, input_vert, input_fct, output_vert, output_fct)
      */
     if ( (!input_fct) || (input_fct->numFacets <= 0) ) {
 	Calculate_FillArea_Facet_Normal(pddc, input_vert, 
-					0, &input_fct);
+					(listofddFacet *)0, &input_fct);
 	return_facet_list = 0;
 	*output_fct = 0;
 
@@ -1384,7 +1380,7 @@ miDepthCueFillArea(pRend, input_vert, input_fct, output_vert)
     ddFLOAT                     pt_depth;
     ddULONG                     colourindex;
     ddColourSpecifier           intcolour;
-    ddpex3rtn                   status;
+    ddUSHORT                   status;
     ddDepthCueEntry             *dcue_entry;
 
     /* look for empty list header */
@@ -1428,7 +1424,7 @@ miDepthCueFillArea(pRend, input_vert, input_fct, output_vert)
                         == PEXIndexedColour)) {
       if ((InquireLUTEntryAddress (PEXColourLUT, pRend->lut[PEXColourLUT],
              pddc->Static.attrs->surfaceColour.colour.indexed.index,
-             &status, &pintcolour)) == PEXLookupTableError)
+             &status, (ddPointer *)&pintcolour)) == PEXLookupTableError)
           return (PEXLookupTableError);
     }
 
