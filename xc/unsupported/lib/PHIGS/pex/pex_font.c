@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pex_font.c,v 5.1 91/02/16 09:50:05 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -217,9 +217,9 @@ Display			*display;
 XID			 rid;
 pexTableIndex		 font;
 CARD16			 text_path;
-FLOAT			 char_expansion;
-FLOAT			 char_spacing;
-FLOAT			 char_height;
+PEXFLOAT			 char_expansion;
+PEXFLOAT			 char_spacing;
+PEXFLOAT			 char_height;
 pexTextHAlignment	 horizontal;
 pexTextVAlignment	 vertical;
 CARD32			 num_istrings;

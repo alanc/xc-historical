@@ -1,4 +1,4 @@
-/* $XConsortium: phigspex.h,v 5.1 91/02/16 09:49:17 rws Exp $ */
+/* $XConsortium: phigspex.h,v 5.2 91/02/18 11:15:15 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -45,32 +45,32 @@ SOFTWARE.
  * back again.
  */
 #define PEX_CONV_FROM_Ppoint4(phigsdataPtr,pexdataPtr) { \
-        (pexdataPtr)->x = (FLOAT)(phigsdataPtr)->x; \
-        (pexdataPtr)->y = (FLOAT)(phigsdataPtr)->y; \
-        (pexdataPtr)->z = (FLOAT)(phigsdataPtr)->z; \
-        (pexdataPtr)->w = (FLOAT)(phigsdataPtr)->w; \
+        (pexdataPtr)->x = (PEXFLOAT)(phigsdataPtr)->x; \
+        (pexdataPtr)->y = (PEXFLOAT)(phigsdataPtr)->y; \
+        (pexdataPtr)->z = (PEXFLOAT)(phigsdataPtr)->z; \
+        (pexdataPtr)->w = (PEXFLOAT)(phigsdataPtr)->w; \
 }
 
 #define PEX_CONV_FROM_Ppoint3(phigsdataPtr,pexdataPtr) { \
-        (pexdataPtr)->x = (FLOAT)(phigsdataPtr)->x; \
-        (pexdataPtr)->y = (FLOAT)(phigsdataPtr)->y; \
-        (pexdataPtr)->z = (FLOAT)(phigsdataPtr)->z; \
+        (pexdataPtr)->x = (PEXFLOAT)(phigsdataPtr)->x; \
+        (pexdataPtr)->y = (PEXFLOAT)(phigsdataPtr)->y; \
+        (pexdataPtr)->z = (PEXFLOAT)(phigsdataPtr)->z; \
 }
 
 #define PEX_CONV_FROM_Ppoint(phigsdataPtr,pexdataPtr) { \
-        (pexdataPtr)->x = (FLOAT)(phigsdataPtr)->x; \
-        (pexdataPtr)->y = (FLOAT)(phigsdataPtr)->y; \
+        (pexdataPtr)->x = (PEXFLOAT)(phigsdataPtr)->x; \
+        (pexdataPtr)->y = (PEXFLOAT)(phigsdataPtr)->y; \
 }
 
 #define PEX_CONV_FROM_Pvec3(phigsdataPtr,pexdataPtr) { \
-        (pexdataPtr)->x = (FLOAT)(phigsdataPtr)->delta_x; \
-        (pexdataPtr)->y = (FLOAT)(phigsdataPtr)->delta_y; \
-        (pexdataPtr)->z = (FLOAT)(phigsdataPtr)->delta_z; \
+        (pexdataPtr)->x = (PEXFLOAT)(phigsdataPtr)->delta_x; \
+        (pexdataPtr)->y = (PEXFLOAT)(phigsdataPtr)->delta_y; \
+        (pexdataPtr)->z = (PEXFLOAT)(phigsdataPtr)->delta_z; \
 }
 
 #define PEX_CONV_FROM_Pvec(phigsdataPtr,pexdataPtr) { \
-        (pexdataPtr)->x = (FLOAT)(phigsdataPtr)->delta_x; \
-        (pexdataPtr)->y = (FLOAT)(phigsdataPtr)->delta_y; \
+        (pexdataPtr)->x = (PEXFLOAT)(phigsdataPtr)->delta_x; \
+        (pexdataPtr)->y = (PEXFLOAT)(phigsdataPtr)->delta_y; \
 }
 
 #define PEX_CONV_TO_Ppoint4(pexdataPtr,phigsdataPtr) { \

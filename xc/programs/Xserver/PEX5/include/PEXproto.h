@@ -1,4 +1,4 @@
-/* $XConsortium: PEXproto.h,v 5.1 91/02/16 09:47:01 rws Exp $ */
+/* $XConsortium: PEXproto.h,v 5.2 91/02/17 12:25:52 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1131,7 +1131,7 @@ typedef struct {
     CARD16		unused B16;
     pexPhigsWks		wks B32;
     pexStructure	sid B32;
-    FLOAT		priority;
+    PEXFLOAT		priority;
 } pexPostStructureReq;
 
 typedef struct {
@@ -1249,9 +1249,9 @@ typedef struct {
     pexTableIndex	    fontGroupIndex  B16;
     CARD16		    unused B16;
     XID			    id B32;	/* renderer, wks, or text font lut */
-    FLOAT		    charExpansion;
-    FLOAT		    charSpacing;
-    FLOAT		    charHeight;
+    PEXFLOAT		    charExpansion;
+    PEXFLOAT		    charSpacing;
+    PEXFLOAT		    charHeight;
     pexTextAlignmentData    textAlignment;
     CARD32		    numStrings B32;
     /* LISTof LISTof MONO_ENCODINGS() */
@@ -1270,7 +1270,7 @@ typedef struct {
 
 typedef struct {
     pexElementInfo	head;
-    FLOAT		scale;
+    PEXFLOAT		scale;
 } pexMarkerScale;
 
 typedef struct {
@@ -1324,17 +1324,17 @@ typedef struct {
 
 typedef struct {
     pexElementInfo	head;
-    FLOAT		expansion;
+    PEXFLOAT		expansion;
 } pexCharExpansion;
 
 typedef struct {
     pexElementInfo	head;
-    FLOAT		spacing;
+    PEXFLOAT		spacing;
 } pexCharSpacing;
 
 typedef struct {
     pexElementInfo	head;
-    FLOAT		height;
+    PEXFLOAT		height;
 } pexCharHeight;
 typedef pexCharHeight pexAtextHeight;
 
@@ -1365,7 +1365,7 @@ typedef struct {
 
 typedef struct {
     pexElementInfo	head;
-    FLOAT		width;
+    PEXFLOAT		width;
 } pexLineWidth;
 typedef pexLineWidth	pexSurfaceEdgeWidth;
 
@@ -1642,8 +1642,8 @@ typedef struct {
     pexElementInfo	head;
     CARD16		curveOrder B16;
     pexCoordType	coordType B16;
-    FLOAT		tmin;
-    FLOAT		tmax;
+    PEXFLOAT		tmin;
+    PEXFLOAT		tmax;
     CARD32		numKnots B32;
     CARD32		numPoints B32;
     /* LISTof FLOAT( numKnots ) */

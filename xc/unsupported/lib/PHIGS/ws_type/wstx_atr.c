@@ -1,4 +1,4 @@
-/* $XConsortium: wstx_atr.c,v 5.1 91/02/16 09:50:40 rws Exp $ */
+/* $XConsortium: wstx_atr.c,v 5.2 91/05/30 14:21:09 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -442,6 +442,7 @@ init_idc( wdt, idcs )
 {
     register	Wst_output_wsdt	*odt = &wdt->phigs_dt.out_dt;
 
+    /* explicit casts to type Pfloat aren't really necessary */  
     odt->max_edgewidth = (Pfloat)*idcs++;
     odt->max_linewidth = (Pfloat)*idcs++;
     odt->max_marker_size = (Pfloat)*idcs++;
@@ -458,30 +459,32 @@ init_idc( wdt, idcs )
     odt->num_linewidths = *idcs++;
     odt->num_marker_sizes = *idcs++;
     odt->chroma_info.flags.coefs_calculated = 0;
-    odt->chroma_info.xr = *((FLOAT *)idcs);
-    idcs += sizeof(FLOAT)/sizeof(CARD32);
-    odt->chroma_info.yr = *((FLOAT *)idcs);
-    idcs += sizeof(FLOAT)/sizeof(CARD32);
-    odt->chroma_info.Yr = *((FLOAT *)idcs);
-    idcs += sizeof(FLOAT)/sizeof(CARD32);
-    odt->chroma_info.xg = *((FLOAT *)idcs);
-    idcs += sizeof(FLOAT)/sizeof(CARD32);
-    odt->chroma_info.yg = *((FLOAT *)idcs);
-    idcs += sizeof(FLOAT)/sizeof(CARD32);
-    odt->chroma_info.Yg = *((FLOAT *)idcs);
-    idcs += sizeof(FLOAT)/sizeof(CARD32);
-    odt->chroma_info.xb = *((FLOAT *)idcs);
-    idcs += sizeof(FLOAT)/sizeof(CARD32);
-    odt->chroma_info.yb = *((FLOAT *)idcs);
-    idcs += sizeof(FLOAT)/sizeof(CARD32);
-    odt->chroma_info.Yb = *((FLOAT *)idcs);
-    idcs += sizeof(FLOAT)/sizeof(CARD32);
-    odt->chroma_info.xw = *((FLOAT *)idcs);
-    idcs += sizeof(FLOAT)/sizeof(CARD32);
-    odt->chroma_info.yw = *((FLOAT *)idcs);
-    idcs += sizeof(FLOAT)/sizeof(CARD32);
-    odt->chroma_info.Yw = *((FLOAT *)idcs);
-    idcs += sizeof(FLOAT)/sizeof(CARD32);
+    /* cast CARD32s over to PEXFLOAT, 
+	implicit cast to Pfloat on assignment */
+    odt->chroma_info.xr = *((PEXFLOAT *)idcs);
+    idcs += sizeof(PEXFLOAT)/sizeof(CARD32);
+    odt->chroma_info.yr = *((PEXFLOAT *)idcs);
+    idcs += sizeof(PEXFLOAT)/sizeof(CARD32);
+    odt->chroma_info.Yr = *((PEXFLOAT *)idcs);
+    idcs += sizeof(PEXFLOAT)/sizeof(CARD32);
+    odt->chroma_info.xg = *((PEXFLOAT *)idcs);
+    idcs += sizeof(PEXFLOAT)/sizeof(CARD32);
+    odt->chroma_info.yg = *((PEXFLOAT *)idcs);
+    idcs += sizeof(PEXFLOAT)/sizeof(CARD32);
+    odt->chroma_info.Yg = *((PEXFLOAT *)idcs);
+    idcs += sizeof(PEXFLOAT)/sizeof(CARD32);
+    odt->chroma_info.xb = *((PEXFLOAT *)idcs);
+    idcs += sizeof(PEXFLOAT)/sizeof(CARD32);
+    odt->chroma_info.yb = *((PEXFLOAT *)idcs);
+    idcs += sizeof(PEXFLOAT)/sizeof(CARD32);
+    odt->chroma_info.Yb = *((PEXFLOAT *)idcs);
+    idcs += sizeof(PEXFLOAT)/sizeof(CARD32);
+    odt->chroma_info.xw = *((PEXFLOAT *)idcs);
+    idcs += sizeof(PEXFLOAT)/sizeof(CARD32);
+    odt->chroma_info.yw = *((PEXFLOAT *)idcs);
+    idcs += sizeof(PEXFLOAT)/sizeof(CARD32);
+    odt->chroma_info.Yw = *((PEXFLOAT *)idcs);
+    idcs += sizeof(PEXFLOAT)/sizeof(CARD32);
 
     wdt->xwin_dt.dithering_supported = *idcs++;
     wdt->xwin_dt.best_colour_approx = *idcs++;

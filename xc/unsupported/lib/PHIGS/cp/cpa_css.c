@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cpa_css.c,v 5.1 91/02/16 09:48:27 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -949,7 +949,7 @@ phg_cpa_inc_spa_search( cph, cp_args, ret, css_srvr )
     CARD16			*card16_p;
     CARD32			length, *card32_p, ret_path_count;
     pexCoord3D			*pex_pt;
-    FLOAT			*pex_dist;
+    PEXFLOAT			*pex_dist;
     pexElementRef		*ret_path;
     Cpa_struct_data		*stp;
     Cp_a			*asrvr = &css_srvr->model.a;
@@ -1057,7 +1057,7 @@ phg_cpa_inc_spa_search( cph, cp_args, ret, css_srvr )
     /* Update the search context. */
     mask = PEXSCPosition | PEXSCDistance | PEXSCCeiling | PEXSCModelClipFlag
 	| PEXSCStartPath;
-    length = sizeof(pexCoord3D) + sizeof(FLOAT) + 3 * sizeof(CARD32);
+    length = sizeof(pexCoord3D) + sizeof(PEXFLOAT) + 3 * sizeof(CARD32);
     if ( args->start_path.num_elem_refs > 0 )
 	length += args->start_path.num_elem_refs * sizeof(pexElementRef);
     if ( !PHG_SCRATCH_SPACE( &asrvr->scratch, length ) ) {
@@ -1066,7 +1066,7 @@ phg_cpa_inc_spa_search( cph, cp_args, ret, css_srvr )
     }
     pex_pt = (pexCoord3D *)asrvr->scratch.buf;
     PEX_CONV_FROM_Ppoint3(&args->ref_pt, pex_pt)
-    pex_dist = (FLOAT *)(pex_pt + 1);
+    pex_dist = (PEXFLOAT *)(pex_pt + 1);
     *pex_dist = args->distance;
     card16_p = (CARD16 *)(pex_dist + 1);
     *card16_p = args->ceiling;

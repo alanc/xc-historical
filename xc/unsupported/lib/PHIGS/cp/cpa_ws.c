@@ -1,4 +1,4 @@
-/* $XConsortium: cpa_ws.c,v 5.1 91/02/16 09:48:28 rws Exp $ */
+/* $XConsortium: cpa_ws.c,v 5.2 91/04/04 21:05:44 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -194,7 +194,7 @@ phg_cpa_post_struct( cph, cp_args, ws )
 
     if ( stp ) {
 	(void)PEXPostStructure( ws->display, ws->rid, stp->xid,
-	    (FLOAT)args->disp_pri );
+	    (PEXFLOAT)args->disp_pri );
 	WS_FLUSH( ws )
     }
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: ar_conv.c,v 5.1 91/02/16 09:47:30 rws Exp $ */
+/* $XConsortium: ar_conv.c,v 5.2 91/05/12 22:30:28 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -49,29 +49,29 @@ static pexSwap  *swp = &clientSwapStructure;
 static int fromFormat;
 static int toFormat;
 
-extern FLOAT	ConvertIEEEToVax();
-extern FLOAT	SwapIEEEToVax();
-extern FLOAT	ConvertVaxToIEEE();
-extern FLOAT	SwapVaxToIEEE();
+extern PEXFLOAT	ConvertIEEEToVax();
+extern PEXFLOAT	SwapIEEEToVax();
+extern PEXFLOAT	ConvertVaxToIEEE();
+extern PEXFLOAT	SwapVaxToIEEE();
 extern CARD16	SwapCARD16();
 extern CARD32	SwapCARD32();
 
 typedef struct {
 	CARD16 (*s)();		/* Function to convert a short */
 	CARD32 (*l)();		/* Function to convert a long */
-	FLOAT  (*f)();		/* Function to convert a float */
+	PEXFLOAT  (*f)();		/* Function to convert a float */
 } ThreeFuncs;
 
 static ThreeFuncs ConversionFunction[4][4] = {
 	{   /* From Big Endian Ieee */
 	    { 0, 0, 0 },
-	    { SwapCARD16, SwapCARD32, (FLOAT (*)())SwapCARD32 },
+	    { SwapCARD16, SwapCARD32, (PEXFLOAT (*)())SwapCARD32 },
 	    { 0, 0, ConvertIEEEToVax },
 	    { SwapCARD16, SwapCARD32, SwapIEEEToVax }
 	},
 	{
 	    /* From Big Endian DecF */
-	    { SwapCARD16, SwapCARD32, (FLOAT (*)())SwapCARD32 },
+	    { SwapCARD16, SwapCARD32, (PEXFLOAT (*)())SwapCARD32 },
 	    { 0, 0, 0 },
 	    { SwapCARD16, SwapCARD32, SwapIEEEToVax },
 	    { 0, 0, ConvertIEEEToVax }
@@ -81,13 +81,13 @@ static ThreeFuncs ConversionFunction[4][4] = {
 	    { 0, 0, ConvertVaxToIEEE },
 	    { SwapCARD16, SwapCARD32, SwapVaxToIEEE },
 	    { 0, 0, 0 },
-	    { SwapCARD16, SwapCARD32, (FLOAT (*)())SwapCARD32 }
+	    { SwapCARD16, SwapCARD32, (PEXFLOAT (*)())SwapCARD32 }
 	},
 	{
 	    /* From Little Endian DecF */
 	    { SwapCARD16, SwapCARD32, SwapVaxToIEEE },
 	    { 0, 0, ConvertVaxToIEEE },
-	    { SwapCARD16, SwapCARD32, (FLOAT (*)())SwapCARD32 },
+	    { SwapCARD16, SwapCARD32, (PEXFLOAT (*)())SwapCARD32 },
 	    { 0, 0, 0 }
 	}
 };

@@ -1,4 +1,4 @@
-/* $XConsortium: utx_conv.c,v 5.1 91/02/16 09:50:16 rws Exp $ */
+/* $XConsortium: utx_conv.c,v 5.2 91/06/18 18:09:36 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -571,7 +571,7 @@ trim_curves_to_pex( surf, buf )
     register	int		i, j, k;
     register	Ptrimcurve	*crv;
     register	pexTrimCurve	*pcrv;
-    register	FLOAT		*pknots;
+    register	PEXFLOAT		*pknots;
 
     for  ( i = 0; i < surf->nloops; i++ ) {
 	num_curves = (CARD32 *)buf; buf += sizeof(CARD32);
@@ -588,10 +588,10 @@ trim_curves_to_pex( surf, buf )
 	    pcrv->numKnots = crv->knots.num_floats;
 	    pcrv->approxMethod = crv->approx_type;
 	    pcrv->tolerance = crv->approx_val;
-	    pknots = (FLOAT *)buf;
+	    pknots = (PEXFLOAT *)buf;
 	    for ( k = 0; k < crv->knots.num_floats; k++ ) {
 		pknots[k] = crv->knots.floats[k];
-		buf += sizeof(FLOAT);
+		buf += sizeof(PEXFLOAT);
 	    }
 	    if ( crv->rationality == PRATIONAL ) {
 		pexCoord3D	*ppt;
@@ -630,7 +630,7 @@ trim_curves_size( oc )
     
     totalSize = oc->numLists * sizeof(Ptrimcurve_list);
     /* skip over knots and grid points */
-    pexptr += oc->numUknots * oc->numVknots * sizeof(FLOAT);
+    pexptr += oc->numUknots * oc->numVknots * sizeof(PEXFLOAT);
     pexptr += oc->mPts * oc->nPts * 
 	  ((oc->type == PEXRational)
 	      ? sizeof(pexCoord4D) : sizeof(pexCoord3D));
@@ -646,7 +646,7 @@ trim_curves_size( oc )
 	    pexTrimCurve    *xtc = (pexTrimCurve *)ptr;
 	    totKnots += xtc->numKnots;
 	    totPoints += xtc->numCoord;
-	    ptr += sizeof(pexTrimCurve) + xtc->numKnots * sizeof(FLOAT) +
+	    ptr += sizeof(pexTrimCurve) + xtc->numKnots * sizeof(PEXFLOAT) +
 		 xtc->numCoord * (xtc->type == PEXRational
 		     ? sizeof(pexCoord3D) : sizeof(pexCoord2D));
 	}
@@ -668,7 +668,7 @@ trim_curves_from_pex( oc, buf, ed )
     Pelem_data		*ed;	/* IN/OUT: the destination for the data */
 {
     register	int		i, j, k;
-    register	FLOAT		*xknot;
+    register	PEXFLOAT		*xknot;
     register	Ptrimcurve	*crv;
     register	pexTrimCurve	*xtc;
     register	char		*pexptr;
@@ -676,7 +676,7 @@ trim_curves_from_pex( oc, buf, ed )
     
     /* Skip over knots and grid points. */
     pexptr = (char *)(oc + 1);
-    pexptr += oc->numUknots * oc->numVknots * sizeof(FLOAT);
+    pexptr += oc->numUknots * oc->numVknots * sizeof(PEXFLOAT);
     pexptr += oc->mPts * oc->nPts * ((oc->type == PEXRational)
 	? sizeof(pexCoord4D) : sizeof(pexCoord3D));
 
@@ -700,8 +700,8 @@ trim_curves_from_pex( oc, buf, ed )
 	    crv->knots.num_floats = xtc->numKnots;
 	    crv->knots.floats = (Pfloat *)buf;
 	    buf += crv->knots.num_floats * sizeof(Pfloat);
-	    xknot = (FLOAT *)pexptr;
-	    pexptr += crv->knots.num_floats * sizeof(FLOAT);
+	    xknot = (PEXFLOAT *)pexptr;
+	    pexptr += crv->knots.num_floats * sizeof(PEXFLOAT);
 	    for ( k = 0; k < crv->knots.num_floats; k++ )
 		crv->knots.floats[k] = *xknot++;
 	    crv->tmin = xtc->tMin;
@@ -1921,11 +1921,11 @@ phg_utx_map_update_state( def_mode, mod_mode )
 		  ((_ct) == PEXRgb8Colour ? sizeof(pexRgb8Colour) :	\
 		    ((_ct) == PEXRgb16Colour ? sizeof(pexRgb16Colour) :	\
 		      sizeof(pexRgbFloatColour)))) : 0) +		\
-     (((_attr) & PEXGANormal) ? 3 * sizeof(FLOAT) : 0) +		\
+     (((_attr) & PEXGANormal) ? 3 * sizeof(PEXFLOAT) : 0) +		\
      (((_attr) & PEXGAEdges) ? sizeof(CARD32) : 0))
 
 #define PEX_VERTEX_SIZE(_ct, _va)   \
-    (3 * sizeof(FLOAT) + PEX_OPT_DATA_SIZE(_ct, _va))
+    (3 * sizeof(PEXFLOAT) + PEX_OPT_DATA_SIZE(_ct, _va))
 
 #define PHIGS_VERTEX_SIZE(_va)						    \
     ((_va) == 0x0000 ? sizeof(Ppoint3) :				    \
@@ -2785,7 +2785,7 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 
 	    for ( i = 0; i < RHEADER(NurbCurve)->numKnots; i++ ) {
 		ed->nurb_curve.knots.floats[i] = *(Pfloat *)pexptr;
-		pexptr += sizeof(FLOAT);
+		pexptr += sizeof(PEXFLOAT);
 	    }
 
 	    if (ed->nurb_curve.rationality == PRATIONAL) {
@@ -2823,11 +2823,11 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 
 	    for ( i = 0; i < ed->nurb_surf.uknots.num_floats; i++ ) {
 		ed->nurb_surf.uknots.floats[i] = *((Pfloat *)pexptr);
-		pexptr += sizeof(FLOAT);
+		pexptr += sizeof(PEXFLOAT);
 	    }
 	    for (i = 0; i < ed->nurb_surf.vknots.num_floats; i++) {
 		ed->nurb_surf.vknots.floats[i] = *((Pfloat *)pexptr);
-		pexptr += sizeof(FLOAT); 
+		pexptr += sizeof(PEXFLOAT); 
 	    }
 
 	    count = ed->nurb_surf.grid.num_points.u_dim *
@@ -3112,7 +3112,7 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 		case PSC_LEVEL_CURVES_MC:
 		case PSC_LEVEL_CURVES_WC: {
 		    pexPSC_LevelCurves	*drec;
-		    FLOAT		*params;
+		    PEXFLOAT		*params;
 
 		    drec = (pexPSC_LevelCurves *)
 			(RHEADER(ParaSurfCharacteristics) + 1);
@@ -3124,7 +3124,7 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 			drec->numberIntersections;
 		    ed->para_surf_characs.data.psc_4.params.floats =
 			(Pfloat *)buf;
-		    params = (FLOAT *)(drec + 1);
+		    params = (PEXFLOAT *)(drec + 1);
 		    for ( i = 0; i < drec->numberIntersections; i ++ )
 			ed->para_surf_characs.data.psc_4.params.floats[i] =
 			    params[i];
@@ -3228,7 +3228,7 @@ phg_utx_build_pex_oc( erh, el_type, ed, scratch, pex_oc )
     char		*buf;
     CARD32		*bufp32;
     pexTableIndex	*bufptblind;
-    FLOAT		*bufpfloat;
+    PEXFLOAT		*bufpfloat;
     Pextmpl_colour_spec	*cspec;
 
     /* Fill in the header and calculate the length. */
@@ -3356,15 +3356,15 @@ phg_utx_build_pex_oc( erh, el_type, ed, scratch, pex_oc )
 	    break;
 	case PELEM_NUNI_BSP_CURVE:
 	    TYPE_AND_SIZE(NurbCurve)
-	    data_size = ed->nurb_curve.data.knots.num_floats * sizeof(FLOAT);
+	    data_size = ed->nurb_curve.data.knots.num_floats * sizeof(PEXFLOAT);
 	    data_size += ed->nurb_curve.data.npts *
 		(ed->nurb_curve.data.rationality == PRATIONAL ?
 		    sizeof(pexCoord4D) : sizeof(pexCoord3D));
 	    break;
 	case PELEM_NUNI_BSP_SURF:
 	    TYPE_AND_SIZE(NurbSurface)
-	    data_size  = ed->nurb_surf.data.uknots.num_floats * sizeof(FLOAT);
-	    data_size += ed->nurb_surf.data.vknots.num_floats * sizeof(FLOAT);
+	    data_size  = ed->nurb_surf.data.uknots.num_floats * sizeof(PEXFLOAT);
+	    data_size += ed->nurb_surf.data.vknots.num_floats * sizeof(PEXFLOAT);
 	    count = ed->nurb_surf.data.npts.u_dim
 		* ed->nurb_surf.data.npts.v_dim;
 	    data_size += count *
@@ -3374,7 +3374,7 @@ phg_utx_build_pex_oc( erh, el_type, ed, scratch, pex_oc )
 		data_size += ed->nurb_surf.data.nloops * sizeof(CARD32);
 		data_size += ed->nurb_surf.data.num_tcurves *
 		    sizeof(pexTrimCurve);
-		data_size += ed->nurb_surf.data.num_tknots * sizeof(FLOAT);
+		data_size += ed->nurb_surf.data.num_tknots * sizeof(PEXFLOAT);
 		data_size += ed->nurb_surf.data.num_3D_tpoints
 		    * sizeof(pexCoord3D);
 		data_size += ed->nurb_surf.data.num_2D_tpoints
@@ -3595,7 +3595,7 @@ phg_utx_build_pex_oc( erh, el_type, ed, scratch, pex_oc )
 		case PSC_LEVEL_CURVES_MC:
 		case PSC_LEVEL_CURVES_WC:
 		    data_size = sizeof(pexPSC_LevelCurves) +
-			ed->psc.data.psc_4.params.num_floats * sizeof(FLOAT);
+			ed->psc.data.psc_4.params.num_floats * sizeof(PEXFLOAT);
 		    break;
 	    }
 	    break;
@@ -3854,7 +3854,7 @@ phg_utx_build_pex_oc( erh, el_type, ed, scratch, pex_oc )
 	    HEADER(NurbCurve)->numPoints = ed->nurb_curve.data.npts;
 	    HEADER(NurbCurve)->coordType
 		= PEX_CONV_FROM_Prational(ed->nurb_curve.data.rationality);
-	    bufpfloat = (FLOAT *)buf;
+	    bufpfloat = (PEXFLOAT *)buf;
 	    for ( i = 0; i < ed->nurb_curve.data.knots.num_floats; i++ )
 		*bufpfloat++ = ed->nurb_curve.data.knots.floats[i];
 	    buf = (char *)bufpfloat;
@@ -3877,7 +3877,7 @@ phg_utx_build_pex_oc( erh, el_type, ed, scratch, pex_oc )
 	    HEADER(NurbSurface)->type
 		= PEX_CONV_FROM_Prational(ed->nurb_surf.data.rationality);
 	    HEADER(NurbSurface)->numLists = ed->nurb_surf.data.nloops;
-	    bufpfloat = (FLOAT *)buf;
+	    bufpfloat = (PEXFLOAT *)buf;
 	    for ( i = 0; i < ed->nurb_surf.data.uknots.num_floats; i++ )
 		*bufpfloat++ = ed->nurb_surf.data.uknots.floats[i];
 	    for ( i = 0; i < ed->nurb_surf.data.vknots.num_floats; i++ )
@@ -4230,7 +4230,7 @@ phg_utx_build_pex_oc( erh, el_type, ed, scratch, pex_oc )
 			&drec->direction)
 		    drec->numberIntersections =
 			ed->psc.data.psc_4.params.num_floats;
-		    bufpfloat = (FLOAT *)(drec + 1);
+		    bufpfloat = (PEXFLOAT *)(drec + 1);
 		    for (i = 0; i < ed->psc.data.psc_4.params.num_floats; i++)
 			*bufpfloat++ = ed->psc.data.psc_4.params.floats[i];
 		} break;

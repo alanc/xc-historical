@@ -1,4 +1,4 @@
-/* $XConsortium: OCattr.c,v 5.1 91/02/16 09:57:08 rws Exp $ */
+/* $XConsortium: OCattr.c,v 5.2 91/03/15 18:33:22 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -736,7 +736,7 @@ pexTrimCurve *pTC;
 {
     int i;
     pexCoord3D *pc;
-    float *pf = 0;
+    PEXFLOAT *pf = 0;
     unsigned char *ptr = 0;
     SWAP_CARD16 (pTC->order);
     SWAP_INT16 (pTC->approxMethod);
@@ -746,7 +746,7 @@ pexTrimCurve *pTC;
 
     /* curveType, numKnots and numCoord are swapped by the calling routines */
 
-    for (i=0, pf = (FLOAT *)(pTC+1); i<pTC->numKnots; i++, pf++)
+    for (i=0, pf = (PEXFLOAT *)(pTC+1); i<pTC->numKnots; i++, pf++)
 	SWAP_FLOAT((*pf));
 
     ptr = (unsigned char *)pf;

@@ -1,4 +1,4 @@
-/* $XConsortium: pexExtract.h,v 5.2 91/05/02 13:36:18 hersh Exp $ */
+/* $XConsortium: pexExtract.h,v 5.3 91/06/25 16:25:52 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -65,8 +65,8 @@ SOFTWARE.
     (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD32); }
 
 #define REFER_FLOAT(dst, srcPtr) {	    \
-    (dst) = *((FLOAT *)(srcPtr));	    \
-    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(FLOAT); }
+    (dst) = *((PEXFLOAT *)(srcPtr));	    \
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(PEXFLOAT); }
 
 /** This is a very general macro which will set the destination pointer to
  ** be whatever the src pointer is, typecast to the specified type.  The
@@ -130,8 +130,8 @@ SOFTWARE.
     (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD32); }
 
 #define EXTRACT_FLOAT(dst, srcPtr)	{   \
-    (dst) = *((FLOAT *)(srcPtr));	    \
-    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(FLOAT); }
+    (dst) = *((PEXFLOAT *)(srcPtr));	    \
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(PEXFLOAT); }
 
 
 #define EXTRACT_COLOUR_SPECIFIER(dst, srcPtr) { \
@@ -239,8 +239,8 @@ SOFTWARE.
     (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(CARD32); }
 
 #define PACK_FLOAT(src, dstPtr)	{\
-    *((FLOAT *)(dstPtr)) = (FLOAT)(src);\
-    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(FLOAT); }
+    *((PEXFLOAT *)(dstPtr)) = (PEXFLOAT)(src);\
+    (dstPtr) = ((CARD8 *) (dstPtr)) + sizeof(PEXFLOAT); }
 
 
 #define PACK_COLOUR_SPECIFIER(src, dstPtr) {\
@@ -318,7 +318,7 @@ SOFTWARE.
     (cs->colourType == PEXIndexedColour)?sizeof(CARD32):\
 	((cs->colourType == PEXRgb8Colour)?sizeof(CARD32):\
 	    ((cs->colourType == PEXRgb16Colour)?2*sizeof(CARD32):\
-		3*sizeof(FLOAT) ) )
+		3*sizeof(PEXFLOAT) ) )
 */
 
 #endif /* PEX_EXTRACT_H */

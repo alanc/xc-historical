@@ -1,4 +1,4 @@
-/* $XConsortium: wsx.c,v 5.1 91/02/16 09:50:33 rws Exp $ */
+/* $XConsortium: wsx.c,v 5.2 91/04/05 17:29:53 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -167,8 +167,8 @@ phg_wsx_inq_text_extent( cph, args, ret, ws )
 	if ( !PEXQueryTextExtents( ws->display, ws->rid,
 		(pexTableIndex)args->font,
 		(CARD16)PEX_CONV_FROM_Ptxpath(args->path),
-		(FLOAT)args->char_expan, (FLOAT)args->spacing,
-		(FLOAT)args->height,
+		(PEXFLOAT)args->char_expan, (PEXFLOAT)args->spacing,
+		(PEXFLOAT)args->height,
 		(pexTextHAlignment)PEX_CONV_FROM_Ptxhor(args->hor),
 		(pexTextVAlignment)PEX_CONV_FROM_Ptxver(args->ver),
 		(CARD32)1, size, (char *)ws->scratch.buf, &extents ) ) {
