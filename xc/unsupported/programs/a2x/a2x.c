@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.6 92/03/12 11:25:00 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.7 92/03/12 13:29:04 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -17,11 +17,14 @@ without express or implied warranty.
 
 /*
 
-Syntax:
+Command line:  a2x [-d display] [-e]
+
+Syntax of magic values in the input stream:
 
 ^T^B<number>^T		toggle button <number> state (press or release)
 ^T^C			Control key for next character
 ^T^D			slow down moving mouse
+^T^G			start continuous motion
 ^T^M			Meta key for next character
 ^T^Q			quit moving mouse
 ^T^S			Shift key for next character
@@ -33,7 +36,7 @@ Syntax:
 ^Tname^T		press and release key with keysym named <name>
 
 Note: if key is attached to a modifier, pressing it is temporary, will be
-released automatically at next non-modifier key.
+released automatically at next button or non-modifier key.
 
 */
 
@@ -189,17 +192,8 @@ reset_mapping()
     last_sym = 0;
 }
 
-do_key(key, mods)
-    int key;
-    unsigned short mods;
+setup_tempmods()
 {
-
-    if (!key)
-	return;
-    if (modmask[key]) {
-	tempmods |= modmask[key];
-	return;
-    }
     if (tempmods) {
 	if (tempmods & ShiftMask)
 	    XTestFakeKeyEvent(dpy, shift, True, 0);
@@ -217,6 +211,42 @@ do_key(key, mods)
 	    XTestFakeKeyEvent(dpy, mod5, True, 0);
 	curmods |= tempmods;
     }
+}
+
+teardown_tempmods()
+{
+    if (tempmods) {
+	if (tempmods & ShiftMask)
+	    XTestFakeKeyEvent(dpy, shift, False, 0);
+	if (tempmods & ControlMask)
+	    XTestFakeKeyEvent(dpy, control, False, 0);
+	if (tempmods & Mod1Mask)
+	    XTestFakeKeyEvent(dpy, mod1, False, 0);
+	if (tempmods & Mod2Mask)
+	    XTestFakeKeyEvent(dpy, mod2, False, 0);
+	if (tempmods & Mod3Mask)
+	    XTestFakeKeyEvent(dpy, mod3, False, 0);
+	if (tempmods & Mod4Mask)
+	    XTestFakeKeyEvent(dpy, mod4, False, 0);
+	if (tempmods & Mod5Mask)
+	    XTestFakeKeyEvent(dpy, mod5, False, 0);
+	curmods &= ~tempmods;
+	tempmods = 0;
+    }
+}
+
+do_key(key, mods)
+    int key;
+    unsigned short mods;
+{
+
+    if (!key)
+	return;
+    if (modmask[key]) {
+	tempmods |= modmask[key];
+	return;
+    }
+    setup_tempmods();
     if (!(tempmods & ShiftMask)) {
 	if ((mods & ShiftMask) && !(curmods & ShiftMask)) {
 	    XTestFakeKeyEvent(dpy, shift, True, 0);
@@ -239,24 +269,7 @@ do_key(key, mods)
     }
     XTestFakeKeyEvent(dpy, key, True, 0);
     XTestFakeKeyEvent(dpy, key, False, 0);
-    if (tempmods) {
-	if (tempmods & ShiftMask)
-	    XTestFakeKeyEvent(dpy, shift, False, 0);
-	if (tempmods & ControlMask)
-	    XTestFakeKeyEvent(dpy, control, False, 0);
-	if (tempmods & Mod1Mask)
-	    XTestFakeKeyEvent(dpy, mod1, False, 0);
-	if (tempmods & Mod2Mask)
-	    XTestFakeKeyEvent(dpy, mod2, False, 0);
-	if (tempmods & Mod3Mask)
-	    XTestFakeKeyEvent(dpy, mod3, False, 0);
-	if (tempmods & Mod4Mask)
-	    XTestFakeKeyEvent(dpy, mod4, False, 0);
-	if (tempmods & Mod5Mask)
-	    XTestFakeKeyEvent(dpy, mod5, False, 0);
-	curmods &= ~tempmods;
-	tempmods = 0;
-    }
+    teardown_tempmods();
 }
 
 dochar(c)
@@ -286,8 +299,10 @@ do_button(button)
 	return;
     XQueryPointer(dpy, DefaultRootWindow(dpy), &root, &child, &rx, &ry,
 		  &x, &y, &state);
+    setup_tempmods();
     XTestFakeButtonEvent(dpy, button,
 			 (state & (Button1Mask << (button - 1))) == 0, 0);
+    teardown_tempmods();
 }
 
 move_pointer(dx, dy)
