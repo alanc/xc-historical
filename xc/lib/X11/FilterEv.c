@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XFilterEv.c,v 1.3 91/02/19 19:37:52 rws Exp $
+ * $XConsortium: XFilterEv.c,v 1.4 91/02/20 19:05:37 rws Exp $
  */
 
  /*
@@ -50,7 +50,6 @@ XFilterEvent(ev, window)
 {
     XFilterEventList	p;
     Window		win;
-    int			ret = False;
     long		mask;
 
     if (window)
