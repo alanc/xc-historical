@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: generic.cf,v 1.4 91/01/08 09:31:33 rws Exp $
+XCOMM platform:  $XConsortium: generic.cf,v 1.5 91/03/27 09:13:04 rws Exp $
 
 #define OSName            Unknown Operating System
 XCOMM operating system:  OSName
@@ -6,8 +6,10 @@ XCOMM operating system:  OSName
 #define OSMinorVersion    0
 
 #ifdef SYSV
-#define SystemV           YES
+#define SystemV		YES
 #endif
 #ifdef SVR4
-#define SystemV4	  YES
+#define SystemV4	YES
 #endif
+
+#define BuildServer	NO
