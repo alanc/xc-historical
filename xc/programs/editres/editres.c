@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editres.c,v 1.6 90/06/28 12:10:36 kit Exp $
+ * $XConsortium: editres.c,v 1.7 90/07/03 16:06:47 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -83,7 +83,8 @@ char **argv;
     Widget toplevel;
 
     toplevel = XtAppInitialize(&app_con, "Editres", NULL, ZERO,
-			       &argc, argv, fallback_resources, NULL, ZERO);
+			       (Cardinal *)&argc, argv, fallback_resources,
+			       NULL, ZERO);
 
     if (argc != 1)		
 	Syntax(app_con, argv[0]);
