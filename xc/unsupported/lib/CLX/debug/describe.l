@@ -20,7 +20,7 @@
 
 ;;; Created 07/15/87 by LaMott G. OREN
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 (defparameter *request-parameters* (make-array (length *request-names*)))
 

@@ -20,7 +20,7 @@
 
 ;;; Created 04/09/87 14:30:41 by LaMott G. OREN
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 (export '(display-listen
 	  readflush

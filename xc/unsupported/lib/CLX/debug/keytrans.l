@@ -18,7 +18,7 @@
 ;;; express or implied warranty.
 ;;;
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 (defun list-missing-keysyms ()
   ;; Lists explorer characters which have no keysyms

@@ -1,4 +1,6 @@
-;;; -*- Mode: LISP; Syntax: Common-lisp; Package: (XTEST (SCL XLIB)); Base: 10 -*-
+;;; -*- Mode: LISP; Syntax: Common-lisp; Package: (XTEST (XLIB LISP)); Base: 10; Lowercase: Yes -*-
+
+(in-package :xtest :use '(:xlib :lisp))
 
 (defstruct event
   key					   ; Event key

@@ -16,7 +16,7 @@
 ;;; express or implied warranty.  
 ;;;
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 
 ;;;----------------------------------------------------------------------------------+

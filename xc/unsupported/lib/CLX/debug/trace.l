@@ -24,7 +24,7 @@
 
 ;;; Created 09/14/87 by LaMott G. OREN
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 (export '(trace-display
 	  untrace-display

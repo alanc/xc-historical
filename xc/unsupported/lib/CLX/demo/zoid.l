@@ -18,7 +18,7 @@
 ;;; express or implied warranty.
 ;;;
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 (export '(draw-filled-trapezoids
 	   gcontext-trapezoid-alignment ;; Setf'able

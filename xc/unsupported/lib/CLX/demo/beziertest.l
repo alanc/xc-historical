@@ -18,7 +18,7 @@
 ;;; express or implied warranty.
 ;;;
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 (defun bezier-test (host &optional (pathname "/usr/X.V11R1/extensions/test/datafile"))
   ;; Display the part picture in /extensions/test/datafile

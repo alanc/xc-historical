@@ -6,7 +6,7 @@
 ;;; then somewhere something is broken.  Entry point is the function
 ;;; IMAGE-TEST
 
-(in-package 'xlib :use '(lisp))
+(in-package :xlib)
 
 (export '(image-test))
 
