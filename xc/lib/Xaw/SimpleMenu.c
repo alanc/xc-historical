@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.11 89/05/30 13:28:16 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpMenu.c,v 1.12 89/07/06 16:53:05 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -991,6 +991,40 @@ char * name;
     CalculateNewSize(w);
   RefreshEntry(w, NULL, XawErefreshAll);
 }
+
+/*	Function Name: XawSimpleMenuEntryCount
+ *	Description: Determines the number of entries in a menu.
+ *	Arguments: w - specifies the menu widget
+ *		   entry_mask - specifies the type(s) of entries to count.
+ *	Returns: the number of entries of the type(s) specified in the menu.
+ */
+ 
+Cardinal
+XawSimpleMenuEntryCount(w, entry_mask)
+Widget w;
+unsigned long entry_mask;
+{
+    SimpleMenuWidget smw = (SimpleMenuWidget) w;
+    register int i;
+    register MenuEntry *entry;
+    register Boolean t=False, s=False, b=False;
+    Cardinal count = 0;
+    
+    if (entry_mask == XawMenuAllMask)
+	return (smw->simple_menu.num_entries);
+
+    if (entry_mask & XawMenuTextMask) t++;
+    if (entry_mask & XawMenuSeparatorMask) s++;
+    if (entry_mask & XawMenuBlankMask) b++;
+    
+    for (i=0, entry = smw->simple_menu.entries; (entry != NULL); i++, 
+	 entry = entry->next) 
+	if ((t && entry->type == XawMenuText) ||
+	    (s && entry->type == XawMenuSeparator) ||
+	    (b && entry->type == XawMenuBlank))
+	    count++;
+    return count;
+}
   
 /*      Function Name: XawSimpleMenuSetEntryValues
  *      Description: Sets the values for an entry's resources.
@@ -999,7 +1033,7 @@ char * name;
  *                 args - the argument list.
  *                 num_args -  number of arguments.
  *      Returns: none.
- *      NOTE: figureing out whether or not to redisplay is an annoying
+ *      NOTE: figuring out whether or not to redisplay is an annoying
  *            amount of code and time.  Since the only resource that would
  *            not cause a redisplay is the callback list, I will just 
  *            always redisplay - CDP 3/22/89.

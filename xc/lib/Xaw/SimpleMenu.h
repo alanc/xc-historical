@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: SimpleMenu.h,v 1.4 89/05/11 01:06:31 kit Exp $";
+ "$XConsortium: SimpMenu.h,v 1.5 89/07/06 16:53:14 kit Exp $";
 
                         All Rights Reserved
 
@@ -42,8 +42,8 @@ SOFTWARE.
  * This is the public header file for the Athena SimpleMenu widget.
  * It is intended to provide one pane pulldown and popup menus within
  * the framework of the X Toolkit.  As the name implies it is a first and
- * by no means complete implementation of menu code. It does not attempt fill
- * the needs all applications, but does allow a resource orientated
+ * by no means complete implementation of menu code. It does not attempt to
+ * fill the needs of all applications, but does allow a resource oriented
  * interface to menus.
  *
  * Date:    April 3, 1989
@@ -105,12 +105,19 @@ SOFTWARE.
  * XawMenuBlank               blank
  *
  * The text type is the only one that can be selected.
- * The seperator will be rendered as a one pixel wide line in the center
+ * The separator will be rendered as a one pixel wide line in the center
  * of the area.
  */
 
 typedef enum {XawMenuText, XawMenuSeparator, 
 	      XawMenuBlank, XawMenuNone} XawMenuEntryType;
+
+/* Masks for XawSimpleMenuEntryCount() */
+
+#define XawMenuTextMask		0x1
+#define XawMenuSeparatorMask	0x2
+#define XawMenuBlankMask	0x4
+#define XawMenuAllMask		0x7
 
 #define XAW_MENU_ENTRY ("MenuEntry")
 
@@ -198,7 +205,7 @@ Cardinal num_args;
 */
 
 /*      Function Name: XawSimpleMenuRemoveEntry
- *      Description: removes and entry from the menu.
+ *      Description: removes an entry from the menu.
  *      Arguments: w - the menu widget
  *                 name - name of the menu item to remove.
  *      Returns: none.
@@ -208,6 +215,19 @@ void XawSimpleMenuRemoveEntry( /* w, name */);
 /*
 Widget w;
 char * name;
+*/
+
+/*	Function Name: XawSimpleMenuEntryCount
+ *	Description: Determines the number of entries in a menu.
+ *	Arguments: w - specifies the menu widget
+ *		   entry_mask - specifies the type(s) of entries to count.
+ *	Returns: the number of entries of the type(s) specified in the menu.
+ */
+
+Cardinal XawSimpleMenuEntryCount( /* w, entry_mask */ );
+/*
+Widget w;
+unsigned long entry_mask;
 */
 
 /*      Function Name: XawSimpleMenuSetEntryValues

@@ -1,6 +1,6 @@
 /***********************************************************
 
- "$XConsortium: SimpleMenuP.h,v 1.3 89/05/11 01:06:33 kit Exp $";
+ "$XConsortium: SimpMenuP.h,v 1.4 89/07/06 16:53:15 kit Exp $";
 
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
@@ -85,7 +85,7 @@ typedef struct _SimpleMenuPart {
 
   Cursor       cursor;		/* The menu's cursor. */
   String       label;		/* label the menu will display. */
-  XawMenuEntryType  label_sep_type; /* Type of label seperator. */
+  XawMenuEntryType  label_sep_type; /* Type of label separator. */
 
   String       popup_entry;	/* The entry to position the cursor on for
 				   when using XawPositionSimpleMenu. */
@@ -115,8 +115,7 @@ typedef struct _SimpleMenuPart {
 
   MenuEntry * entries;		/* a pointer to list of entries. */
   MenuEntry * tail;		/* a pointer to the last entry in the list. */
-  Cardinal num_entries;		/* number of current menu
-				   entries + menu label. */
+  Cardinal num_entries;		/* number of current menu entries */
   Boolean recursive_set_values;	/* contain a possible infinite loop. */
   int          entry_set;	/* The entry that is currently set or
 				   highlighted. */
