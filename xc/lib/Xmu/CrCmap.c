@@ -1,4 +1,4 @@
-/* $XConsortium$
+/* $XConsortium: CrCmap.c,v 1.1 89/05/19 14:35:28 converse Exp $
  *
  * CreateCmap.c - given a standard colormap description, make the map.
  * 
@@ -29,7 +29,6 @@
 #include <X11/Xutil.h>
 
 extern char	*calloc();
-extern void	free();
 
 static int	ROmap();		/* allocate entire map Read Only */
 static Status	ROorRWcell();		/* allocate a cell, prefer Read Only */
