@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.75 89/10/08 13:39:24 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.76 89/11/14 14:51:34 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -1411,11 +1411,9 @@ static void ChangeManaged(wid)
     if (!XtIsRealized (wid))	/* then we're about to be realized... */
 	GetGeometry(wid, child);
 
-    if (child != NULL) {
+    if (child != NULL)
 	XtConfigureWidget (child, (Position)0, (Position)0,
 			   w->core.width, w->core.height, (Dimension)0 );
-	XtSetKeyboardFocus(wid, child);
-    }
 }
 
 /*
