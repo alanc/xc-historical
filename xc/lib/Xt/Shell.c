@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Shell.c,v 1.22 88/02/24 17:38:00 swick Exp $";
+static char rcsid[] = "$Header: Shell.c,v 1.23 88/02/26 09:28:48 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -497,21 +497,6 @@ static void Initialize(req, new)
 
 	w->shell.popped_up = FALSE;
 
-	if(w->shell.geometry != NULL) {
-		flag = XParseGeometry(w->shell.geometry, &w->core.x, &w->core.y,
-			       &w->core.width, &w->core.height);
-		
-		if(flag & XNegative) 
-		    w->core.x += WidthOfScreen(XtScreen(w))
-				 - w->core.width - (w->core.border_width<<1);
-		if(flag & YNegative) 
-		    w->core.y += HeightOfScreen(XtScreen(w))
-				 - w->core.height - (w->core.border_width<<1);
-	}
-	if(w->core.width != 0 && w->core.height != 0) {
-	  	w->shell.client_specified = TRUE;
-        } else	w->shell.client_specified = FALSE;
-
 	XtAddEventHandler(new, (EventMask) StructureNotifyMask,
 		FALSE, EventHandler, (caddr_t) NULL);
 }
@@ -537,10 +522,6 @@ static void WMInitialize(req, new)
 	}
 	w->wm.size_hints.flags = 0;
 	w->wm.wm_hints.flags = 0;
-
-	if(w->shell.geometry != NULL) {
-	    w->wm.size_hints.flags |= USPosition | USSize;
-	}
 }
 
 /* ARGSUSED */
@@ -937,6 +918,7 @@ static void ChangeManaged(wid)
     register int     i;
     Widget childwid;
     Boolean needresize = FALSE;
+    int flag;
 
     if(w->composite.num_mapped_children > 1) {
       	XtError("The root and popup sheels widget only support one  child");
@@ -946,17 +928,38 @@ static void ChangeManaged(wid)
 	if (w->composite.children[i]->core.managed) {
 	    childwid = w->composite.children[i];
 	    if (!XtIsRealized ((Widget) wid)) {
+
+		if(w->shell.geometry != NULL)
+		    flag = XParseGeometry(w->shell.geometry,
+					  &w->core.x, &w->core.y,
+					  &w->core.width, &w->core.height);
+		else
+		    flag = 0;
+
+		if (XtIsSubclass(wid, wmShellWidgetClass)) {
+		    WMShellWidget wmshell = (WMShellWidget) wid;
+		    if (flag & (XValue|YValue))
+			wmshell->wm.size_hints.flags |= USSize|USPosition;
+		    if (flag & (WidthValue|HeightValue))
+			wmshell->wm.size_hints.flags |= USSize;
+		}
+
 		/* we inherit our child's width or height if either is 0 */
 		if (w->core.width == 0	&& w->core.height == 0) {
 		    if (w->core.width == 0)
 			w->core.width = childwid->core.width;
 		    if (w->core.height == 0)
 			w->core.height = childwid->core.height;
-		    if (XtIsSubclass(wid, wmShellWidgetClass)) {
-			WMShellWidget wmshell = (WMShellWidget) wid;
-			wmshell->wm.size_hints.flags |= PSize;
-		    }
+		    if ((w->core.width == 0) || (w->core.height == 0))
+			XtError("Application window width and height must be non-zero.");
 		} else needresize = TRUE;
+
+		if(flag & XNegative) 
+		    w->core.x += WidthOfScreen(XtScreen(w))
+				 - w->core.width - (w->core.border_width<<1);
+		if(flag & YNegative) 
+		    w->core.y += HeightOfScreen(XtScreen(w))
+				 - w->core.height - (w->core.border_width<<1);
 
 		if (childwid->core.border_width != 0) needresize = TRUE;
 
@@ -994,8 +997,7 @@ XtWidgetGeometry *reply;
 {
 	ShellWidget w = (ShellWidget)(wid->core.parent);
 
-	if(w->shell.allow_shell_resize == FALSE &&
-	   (w->shell.client_specified == TRUE || XtIsRealized(wid)))
+	if(w->shell.allow_shell_resize == FALSE && XtIsRealized(wid))
 		return(XtGeometryNo);
 
 	if(!XtIsRealized((Widget)w)){
@@ -1223,19 +1225,11 @@ static Boolean SetValues(old, ref, new)
 	}
 
 	if (!XtIsRealized((Widget)ow)) { 
-	    if (nw->shell.client_specified) {
- 		nw->core.x = ow->core.x;
-		nw->core.y = ow->core.y;
-		nw->core.width = ow->core.width;
-		nw->core.height = ow->core.height;
-		nw->core.border_width = ow->core.border_width;
- 	    } else {
-		ow->core.x = nw->core.x;
-		ow->core.y = nw->core.y;
-		ow->core.width = nw->core.width;
-		ow->core.height = nw->core.height;
-		ow->core.border_width = nw->core.border_width;
-	    }
+	    ow->core.x = nw->core.x;
+	    ow->core.y = nw->core.y;
+	    ow->core.width = nw->core.width;
+	    ow->core.height = nw->core.height;
+	    ow->core.border_width = nw->core.border_width;
 	} else {
 	    if (nw->shell.allow_shell_resize) {
 		mask = 0;
