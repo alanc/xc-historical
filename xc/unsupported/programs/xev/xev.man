@@ -2,7 +2,7 @@
 .SH NAME
 xev - event diagnostics
 .SH SYNOPSIS
-.B "xmag"
+.B "xev"
 [\-display \fIdisplayname\fP] [\-geometry \fIgeom\fP]
 .SH DESCRIPTION
 .PP
