@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.11 89/10/09 16:20:48 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.12 89/11/06 17:24:13 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -138,7 +138,7 @@ ToggleClassRec toggleClassRec = {
     NULL				/* extension		  */
   },  /* CoreClass fields initialization */
   {
-    0                                     /* field not used    */
+    XtInheritChangeSensitive		/* change_sensitive	  */ 
   },  /* SimpleClass fields initialization */
   {
     0                                     /* field not used    */

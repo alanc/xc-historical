@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.23 89/12/06 15:13:06 kit Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.24 89/12/07 20:17:55 kit Exp $";
 #endif
 
 /***********************************************************
@@ -154,6 +154,10 @@ ListClassRec listClassRec = {
     /* callback_private   	*/	NULL,
     /* tm_table		   	*/	defaultTranslations,
    /* query_geometry		*/      PreferredGeom,
+  },
+/* Simple class fields initialization */
+  {
+    /* change_sensitive		*/	XtInheritChangeSensitive
   }
 };
 

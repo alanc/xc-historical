@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Grip.c,v 1.25 89/05/11 01:05:23 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Grip.c,v 1.26 89/10/09 16:20:10 jim Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -95,6 +95,10 @@ GripClassRec gripClassRec = {
     /* query_geometry     */   XtInheritQueryGeometry,
     /* display_accelerator*/   XtInheritDisplayAccelerator,
     /* extension          */   NULL
+   },
+/* Simple class fields initialization */
+   {
+    /* change_sensitive   */   XtInheritChangeSensitive
    }
 };
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.10 89/11/14 14:00:07 kit Exp $";
+static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.11 89/11/28 15:02:53 kit Exp $";
 #endif
 
 /***********************************************************
@@ -98,6 +98,9 @@ StripChartClassRec stripChartClassRec = {
     /* query_geometry		*/	XtInheritQueryGeometry,
     /* display_accelerator	*/	XtInheritDisplayAccelerator,
     /* extension		*/	NULL
+    },
+    { /* Simple class fields */
+    /* change_sensitive		*/	XtInheritChangeSensitive
     }
 };
 

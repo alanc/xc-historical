@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.128 89/11/21 15:51:23 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.129 89/12/06 15:32:24 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -2834,6 +2834,9 @@ TextClassRec textClassRec = {
     /* query_geometry   */	XtInheritQueryGeometry,
     /* display_accelerator*/	XtInheritDisplayAccelerator,
     /* extension	*/	NULL
+  },
+  { /* Simple fields */
+    /* change_sensitive	*/	XtInheritChangeSensitive
   },
   { /* text fields */
     /* empty            */	0

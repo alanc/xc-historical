@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.75 89/12/06 15:30:25 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.76 89/12/07 20:17:51 kit Exp $";
 #endif /* lint */
 
 
@@ -117,6 +117,10 @@ LabelClassRec labelClassRec = {
     /* query_geometry		*/	QueryGeometry,
     /* display_accelerator	*/	XtInheritDisplayAccelerator,
     /* extension		*/	NULL
+  },
+/* Simple class fields initialization */
+  {
+    /* change_sensitive		*/	XtInheritChangeSensitive
   }
 };
 WidgetClass labelWidgetClass = (WidgetClass)&labelClassRec;
@@ -344,7 +348,7 @@ static void _Reposition(lw, width, height, dx, dy)
 
 static void Resize(w)
     Widget w;
-
+{
     LabelWidget lw = (LabelWidget)w;
     Position dx, dy;
     _Reposition(lw, w->core.width, w->core.height, &dx, &dy);

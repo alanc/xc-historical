@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.67 89/12/06 19:12:05 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.68 89/12/07 20:15:16 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -166,6 +166,9 @@ CommandClassRec commandClassRec = {
     XtInheritDisplayAccelerator,	/* display_accelerator	  */
     NULL				/* extension		  */
   },  /* CoreClass fields initialization */
+  {
+    XtInheritChangeSensitive		/* change_sensitive	*/
+  },  /* SimpleClass fields initialization */
   {
     0,                                     /* field not used    */
   },  /* LabelClass fields initialization */

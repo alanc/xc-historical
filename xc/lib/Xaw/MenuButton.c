@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.10 89/10/09 16:20:58 jim Exp $";
+static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.11 89/11/06 14:54:56 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -125,6 +125,9 @@ MenuButtonClassRec menuButtonClassRec = {
     XtInheritDisplayAccelerator,	/* display_accelerator	  */
     NULL				/* extension		  */
   },  /* CoreClass fields initialization */
+  {
+    XtInheritChangeSensitive		/* change_sensitive	  */ 
+  },  /* SimpleClass fields initialization */
   {
     0,                                     /* field not used    */
   },  /* LabelClass fields initialization */
