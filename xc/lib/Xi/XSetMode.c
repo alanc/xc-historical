@@ -1,4 +1,4 @@
-/* $XConsortium: XSetMode.c,v 1.4 89/12/06 20:38:55 rws Exp $ */
+/* $Header: XSetMode.c,v 1.1 90/06/20 14:11:40 xbuild ic1C-80 $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -59,6 +59,6 @@ XSetDeviceMode (dpy, dev, mode)
     (void) _XReply (dpy, (xReply *) &rep, 0, xTrue);
     UnlockDisplay(dpy);
     SyncHandle();
-    return (Success);
+    return (rep.status);
     }
 
