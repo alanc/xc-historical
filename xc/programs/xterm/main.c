@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.224 94/12/06 16:10:21 kaleb Exp kaleb $";
+static char *rid="$XConsortium: main.c,v 1.225 94/12/12 16:28:13 kaleb Exp kaleb $";
 #endif /* lint */
 
 /*
@@ -88,14 +88,9 @@ SOFTWARE.
 #define SYSV			/* SVR4 is (approx) superset of SVR3 */
 #define ATT
 #define USE_SYSV_UTMP
+#ifndef sgi
 #define USE_TERMIOS
-#define HAS_UTMP_UT_HOST
 #endif
-
-#if defined(sgi) && OSMAJORVERSION >= 5
-#define SVR4			/* close enough for xterm */
-#define USE_SYSV_UTMP
-#define USE_TERMIOS
 #define HAS_UTMP_UT_HOST
 #endif
 
@@ -106,7 +101,7 @@ SOFTWARE.
 static Bool IsPts = False;
 #endif
 
-#ifdef ATT
+#if defined(ATT) && !defined(sgi)
 #define USE_USG_PTYS
 #else
 #define USE_HANDSHAKE
@@ -198,6 +193,8 @@ static Bool IsPts = False;
 #include <sys/ptyio.h>
 #endif /* hpux */
 #ifdef sgi
+#define USE_SYSV_ENVVARS
+#define HAS_BSD_GROUPS
 #include <sys/sysmacros.h>
 #endif /* sgi */
 #ifdef sun
@@ -347,6 +344,10 @@ extern void exit();
 extern char *ttyname();
 #endif
 
+#ifdef sgi
+#include <locale.h>
+#endif
+
 #ifdef SYSV
 extern char *ptsname();
 #endif
@@ -371,6 +372,11 @@ static struct termio d_tio;
 #ifdef TIOCSLTC
 static struct ltchars d_ltc;
 #endif	/* TIOCSLTC */
+
+#ifdef sgi
+#undef TIOCLSET /* XXX why is this undef-ed again? */
+#endif
+
 #ifdef TIOCLSET
 static unsigned int d_lmode;
 #endif	/* TIOCLSET */
@@ -517,6 +523,9 @@ static struct _resource {
     Boolean sunFunctionKeys;	/* %%% should be widget resource? */
     Boolean wait_for_map;
     Boolean useInsertMode;
+#ifdef sgi
+    Boolean useLocale;
+#endif
 } resource;
 
 /* used by VT (charproc.c) */
@@ -544,6 +553,10 @@ static XtResource application_resources[] = {
         offset(wait_for_map), XtRString, "false"},
     {"useInsertMode", "UseInsertMode", XtRBoolean, sizeof (Boolean),
         offset(useInsertMode), XtRString, "false"},
+#ifdef sgi
+    {"useLocale", "UseLocale", XtRBoolean, sizeof(Boolean),
+	offset(useLocale), XtRString, "true"},
+#endif
 };
 #undef offset
 
@@ -611,6 +624,10 @@ static XrmOptionDescRec optionDescList[] = {
 {"+t",		"*tekStartup",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-tm",		"*ttyModes",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-tn",		"*termName",	XrmoptionSepArg,	(caddr_t) NULL},
+#ifdef sgi
+{"-ul",		"*useLocale",	XrmoptionNoArg,		(caddr_t) "on"},
+{"+ul",		"*useLocale",	XrmoptionNoArg,		(caddr_t) "off"},
+#endif
 {"-ut",		"*utmpInhibit",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+ut",		"*utmpInhibit",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-im",		"*useInsertMode", XrmoptionNoArg,	(caddr_t) "on"},
@@ -683,6 +700,9 @@ static struct _options {
 { "-/+t",                  "turn on/off Tek emulation window" },
 { "-tm string",            "terminal mode keywords and characters" },
 { "-tn name",              "TERM environment variable name" },
+#ifdef sgi
+{ "-/+ul",                 "use/don't use locale for character input" },
+#endif
 #ifdef UTMP
 { "-/+ut",                 "turn on/off utmp inhibit" },
 #else
@@ -859,21 +879,25 @@ char **argv;
 	strcpy (ttydev, TTYDEV);
 	strcpy (ptydev, PTYDEV);
 
-#ifdef USE_SYSV_TERMIO
+#ifdef USE_SYSV_TERMIO /* { */
 	/* Initialization is done here rather than above in order
 	** to prevent any assumptions about the order of the contents
 	** of the various terminal structures (which may change from
 	** implementation to implementation).
 	*/
-#if defined(macII) || defined(ATT) || defined(CRAY)
+#if defined(macII) || defined(ATT) || defined(CRAY) /* { */
 	d_tio.c_iflag = ICRNL|IXON;
 	d_tio.c_oflag = OPOST|ONLCR|TAB3;
     	d_tio.c_cflag = B9600|CS8|CREAD|PARENB|HUPCL;
+#ifndef sgi /* { */
     	d_tio.c_lflag = ISIG|ICANON|ECHO|ECHOE|ECHOK;
+#else /* }{ */
+    	d_tio.c_lflag = ISIG|ICANON|ECHO|ECHOE|ECHOK|ECHOKE;
+#endif /* } */
 
-#ifndef USE_TERMIOS
+#ifndef USE_TERMIOS /* { */
 	d_tio.c_line = 0;
-#endif
+#endif /* } */
 
 	d_tio.c_cc[VINTR] = CINTR;
 	d_tio.c_cc[VQUIT] = CQUIT;
@@ -884,52 +908,76 @@ char **argv;
 	d_tio.c_cc[VEOL2] = CNUL;
 	d_tio.c_cc[VSWTCH] = CNUL;
 
-#ifdef USE_TERMIOS
+#ifdef USE_TERMIOS /* { */
 	d_tio.c_cc[VSUSP] = CSUSP;
 	d_tio.c_cc[VDSUSP] = CDSUSP;
 	d_tio.c_cc[VREPRINT] = CNUL;
 	d_tio.c_cc[VDISCARD] = CNUL;
 	d_tio.c_cc[VWERASE] = CNUL;
 	d_tio.c_cc[VLNEXT] = CNUL;
-#endif
-#ifdef TIOCSLTC
+#endif /* } */
+#ifdef TIOCSLTC /* { */
         d_ltc.t_suspc = CSUSP;		/* t_suspc */
         d_ltc.t_dsuspc = CDSUSP;	/* t_dsuspc */
         d_ltc.t_rprntc = 0;		/* reserved...*/
         d_ltc.t_flushc = 0;
         d_ltc.t_werasc = 0;
         d_ltc.t_lnextc = 0;
-#endif /* TIOCSLTC */
-#ifdef TIOCLSET
+#endif /* } TIOCSLTC */
+#ifdef TIOCLSET /* { */
 	d_lmode = 0;
-#endif /* TIOCLSET */
-#else  /* else !macII */
+#endif /* } TIOCLSET */
+#else  /* }{ else !macII, ATT, CRAY */
 	d_tio.c_iflag = ICRNL|IXON;
 	d_tio.c_oflag = OPOST|ONLCR|TAB3;
-#ifdef BAUD_0
+#ifdef BAUD_0 /* { */
     	d_tio.c_cflag = CS8|CREAD|PARENB|HUPCL;
-#else	/* !BAUD_0 */
+#else	/* }{ !BAUD_0 */
     	d_tio.c_cflag = B9600|CS8|CREAD|PARENB|HUPCL;
-#endif	/* !BAUD_0 */
+#endif	/* } !BAUD_0 */
+#ifndef sgi /* { */
     	d_tio.c_lflag = ISIG|ICANON|ECHO|ECHOE|ECHOK;
-#ifndef sgi
 	d_tio.c_line = 0;
-#endif
-#ifndef linux
+#else /* }{ sgi */
+    	d_tio.c_lflag = ISIG|ICANON|ECHO|ECHOE|ECHOK|ECHOKE;
+        d_tio.c_cflag &= ~(HUPCL|PARENB);
+        d_tio.c_iflag |= BRKINT|ISTRIP|IGNPAR;
+        d_tio.c_line = NTTYDISC;
+#endif /* } sgi */
+#ifndef sgi /* { */
+#ifndef linux /* { */
 	d_tio.c_cc[VINTR] = 0x7f;		/* DEL  */
 	d_tio.c_cc[VERASE] = '#';		/* '#'	*/
 	d_tio.c_cc[VKILL] = '@';		/* '@'	*/
-#else
+#else /* }{ linux */
 	d_tio.c_cc[VINTR] = 'C' & 0x3f;		/* '^C'	*/
 	d_tio.c_cc[VERASE] = 0x7f;		/* DEL	*/
 	d_tio.c_cc[VKILL] = 'U' & 0x3f;		/* '^U'	*/
-#endif
+#endif /* } linux */
 	d_tio.c_cc[VQUIT] = '\\' & 0x3f;	/* '^\'	*/
     	d_tio.c_cc[VEOF] = 'D' & 0x3f;		/* '^D'	*/
 	d_tio.c_cc[VEOL] = '@' & 0x3f;		/* '^@'	*/
-#ifdef VSWTCH
+#else /* }{ sgi */
+	d_tio.c_cc[VINTR] = CINTR;              /* DEL  */
+	d_tio.c_cc[VQUIT] = CQUIT;              /* '^\' */
+	d_tio.c_cc[VERASE] = CERASE;            /* '#'  */
+	d_tio.c_cc[VKILL] = CKILL;              /* '@'  */
+	d_tio.c_cc[VEOF] = CEOF;                /* '^D' */
+	d_tio.c_cc[VEOL] = CNUL;                /* '^@' */
+	d_tio.c_cc[VSWTCH] = CSWTCH;            /* usually '^Z' */
+	d_tio.c_cc[VEOL2] = CNUL;
+	d_tio.c_cc[VLNEXT] = CLNEXT;
+	d_tio.c_cc[VWERASE] = CWERASE;
+	d_tio.c_cc[VRPRNT] = CRPRNT;
+	d_tio.c_cc[VFLUSHO] = CFLUSH;
+	d_tio.c_cc[VSTOP] = CSTOP;
+	d_tio.c_cc[VSTART] = CSTART;
+	d_tio.c_cc[VSUSP] = CSUSP;
+	d_tio.c_cc[VDSUSP] = CDSUSP;
+#endif /* } sgi */
+#ifdef VSWTCH /* { */
 	d_tio.c_cc[VSWTCH] = '@' & 0x3f;	/* '^@'	*/
-#endif	/* VSWTCH */
+#endif	/* } VSWTCH */
 	/* now, try to inherit tty settings */
 	{
 	    int i;
@@ -943,38 +991,49 @@ char **argv;
 		    d_tio.c_cc[VKILL] = deftio.c_cc[VKILL];
 		    d_tio.c_cc[VEOF] = deftio.c_cc[VEOF];
 		    d_tio.c_cc[VEOL] = deftio.c_cc[VEOL];
-#ifdef VSWTCH
+#ifdef VSWTCH /* { */
 		    d_tio.c_cc[VSWTCH] = deftio.c_cc[VSWTCH];
-#endif /* VSWTCH */
+#endif /* } VSWTCH */
+#ifdef sgi /* { */
+		    d_tio.c_cc[VEOL2] = deftio.c_cc[VEOL2];
+		    d_tio.c_cc[VLNEXT] = deftio.c_cc[VLNEXT];
+		    d_tio.c_cc[VWERASE] = deftio.c_cc[VWERASE];
+		    d_tio.c_cc[VRPRNT] = deftio.c_cc[VRPRNT];
+		    d_tio.c_cc[VFLUSHO] = deftio.c_cc[VFLUSHO];
+		    d_tio.c_cc[VSTOP] = deftio.c_cc[VSTOP];
+		    d_tio.c_cc[VSTART] = deftio.c_cc[VSTART];
+		    d_tio.c_cc[VSUSP] = deftio.c_cc[VSUSP];
+		    d_tio.c_cc[VDSUSP] = deftio.c_cc[VDSUSP];
+#endif /* } sgi */
 		    break;
 		}
 	    }
 	}
-#ifdef TIOCSLTC
+#ifdef TIOCSLTC /* { */
         d_ltc.t_suspc = '\000';		/* t_suspc */
         d_ltc.t_dsuspc = '\000';	/* t_dsuspc */
         d_ltc.t_rprntc = '\377';	/* reserved...*/
         d_ltc.t_flushc = '\377';
         d_ltc.t_werasc = '\377';
         d_ltc.t_lnextc = '\377';
-#endif	/* TIOCSLTC */
-#ifdef USE_TERMIOS
-#ifndef linux
+#endif	/* } TIOCSLTC */
+#ifdef USE_TERMIOS /* { */
+#ifndef linux /* { */
 	d_tio.c_cc[VSUSP] = '\000';
-#else
+#else /* }{ linux */
 	d_tio.c_cc[VSUSP] = 'Z' & 0x3f;
-#endif
+#endif /* } linux */
 	d_tio.c_cc[VDSUSP] = '\000';
 	d_tio.c_cc[VREPRINT] = '\377';
 	d_tio.c_cc[VDISCARD] = '\377';
 	d_tio.c_cc[VWERASE] = '\377';
 	d_tio.c_cc[VLNEXT] = '\377';
-#endif
-#ifdef TIOCLSET
+#endif /* } USE_TERMIOS */
+#ifdef TIOCLSET /* { */
 	d_lmode = 0;
-#endif	/* TIOCLSET */
-#endif  /* macII */
-#endif	/* USE_SYSV_TERMIO */
+#endif	/* } TIOCLSET */
+#endif  /* } macII, ATT, CRAY */
+#endif	/* } USE_SYSV_TERMIO */
 
 	/* Init the Toolkit. */
 	XtSetErrorHandler(xt_error);
@@ -985,6 +1044,11 @@ char **argv;
 	XtGetApplicationResources(toplevel, (XtPointer) &resource,
 				  application_resources,
 				  XtNumber(application_resources), NULL, 0);
+
+#ifdef sgi
+	if (resource.useLocale)
+	    setlocale(LC_ALL,"");
+#endif
 
 	waiting_for_initial_map = resource.wait_for_map;
 
@@ -1041,6 +1105,7 @@ char **argv;
 		/* NOTREACHED */
 	     case 'C':
 #if defined(TIOCCONS) || defined(SRIOCSREDIR)
+#ifndef sgi
 		{
 		    struct stat sbuf;
 
@@ -1054,6 +1119,9 @@ char **argv;
 		    } else
 			Console = FALSE;
 		}
+#else /* sgi */
+		Console = TRUE;
+#endif /* sgi */
 #endif	/* TIOCCONS */
 		continue;
 	     case 'S':
@@ -1318,7 +1386,7 @@ get_pty (pty)
         if (pty_search(pty) == 0)
 	    return 0;
 #endif /* SYSV && i386 && !SVR4 */
-#ifdef ATT
+#if defined(ATT) && !defined(sgi)
 	if ((*pty = open ("/dev/ptmx", O_RDWR)) < 0) {
 	    return 1;
 	}
@@ -2156,6 +2224,16 @@ spawn ()
 			TMODE (XTTYMODE_weras, ltc.t_werasc);
 			TMODE (XTTYMODE_lnext, ltc.t_lnextc);
 #endif
+#ifdef sgi
+			TMODE (XTTYMODE_susp, tio.c_cc[VSUSP]);
+			TMODE (XTTYMODE_dsusp, tio.c_cc[VDSUSP]);
+			TMODE (XTTYMODE_rprnt, tio.c_cc[VRPRNT]);
+			TMODE (XTTYMODE_flush, tio.c_cc[VFLUSHO]);
+			TMODE (XTTYMODE_weras, tio.c_cc[VWERASE]);
+			TMODE (XTTYMODE_lnext, tio.c_cc[VLNEXT]);
+			TMODE (XTTYMODE_start, tio.c_cc[VSTART]);
+			TMODE (XTTYMODE_stop, tio.c_cc[VSTOP]);
+#endif
 		    }
 #undef TMODE
 
@@ -2353,8 +2431,14 @@ spawn ()
 		(void) setutent ();
 		/* set up entry to search for */
 		ptyname = ttydev;
+#ifndef sgi
 		(void) strncpy(utmp.ut_id,ptyname + strlen(ptyname)-PTYCHARLEN,
 			       sizeof (utmp.ut_id));
+#else
+		(void) strncpy(utmp.ut_id,ptyname + sizeof("/dev/tty")-1,
+			       sizeof (utmp.ut_id));
+
+#endif
 		utmp.ut_type = DEAD_PROCESS;
 
 		/* position to entry in utmp file */
