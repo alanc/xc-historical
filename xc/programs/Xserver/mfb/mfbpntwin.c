@@ -1,4 +1,4 @@
-/* $XConsortium: mfbpntwin.c,v 5.1 89/07/09 15:58:47 rws Exp $ */
+/* $XConsortium: mfbpntwin.c,v 5.2 89/07/12 17:17:59 keith Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -42,8 +42,7 @@ NOTE
 mfbPositionWIndow() and mfbChangeWindowAttributes() do it.
 */
 
-static void mfbPaintWindowNone(),   mfbPaintWindowPR();
-static void mfbPaintWindow32(),	    mfbPaintWindowSolid();
+static void mfbPaintWindow32();
 
 void
 mfbPaintWindow(pWin, pRegion, what)
@@ -51,96 +50,59 @@ mfbPaintWindow(pWin, pRegion, what)
     RegionPtr	pRegion;
     int		what;
 {
-    void    (*painter)();
     register mfbPrivWin	*pPrivWin;
 
     pPrivWin = (mfbPrivWin *)(pWin->devPrivates[mfbWindowPrivateIndex].ptr);
     
-    painter = miPaintWindow;
     switch (what) {
     case PW_BACKGROUND:
 	switch (pWin->backgroundState) {
 	case None:
-	    painter = mfbPaintWindowNone;
-	    break;
+	    return;
 	case ParentRelative:
-	    painter = mfbPaintWindowPR;
-	    break;
+	    {
+		pWin = pWin->parent;
+	    } while (pWin->backgroundState == ParentRelative);
+	    (*pWin->drawable.pScreen->PaintWindowBackground)(pWin, pRegion,
+							     what);
+	    return;
 	case BackgroundPixmap:
 	    if (pPrivWin->fastBackground)
-		painter = mfbPaintWindow32;
+	    {
+		mfbPaintWindow32(pWin, pRegion, what);
+		return;
+	    }
 	    break;
 	case BackgroundPixel:
-	    painter = mfbPaintWindowSolid;
-	    break;
+	    if (pWin->background.pixel)
+		mfbSolidWhiteArea(pWin, REGION_NUM_RECTS(pRegion),
+				  REGION_RECTS(pRegion), GXset, NullPixmap);
+	    else
+		mfbSolidBlackArea(pWin, REGION_NUM_RECTS(pRegion),
+				  REGION_RECTS(pRegion), GXclear, NullPixmap);
+	    return;
     	}
     	break;
     case PW_BORDER:
 	if (pWin->borderIsPixel)
-	    painter = mfbPaintWindowSolid;
+	{
+	    if (pWin->border.pixel)
+		mfbSolidWhiteArea(pWin, REGION_NUM_RECTS(pRegion),
+				  REGION_RECTS(pRegion), GXset, NullPixmap);
+	    else
+		mfbSolidBlackArea(pWin, REGION_NUM_RECTS(pRegion),
+				  REGION_RECTS(pRegion), GXclear, NullPixmap);
+	    return;
+	}
 	else if (pPrivWin->fastBorder)
-	    painter = mfbPaintWindow32;
+	{
+	    mfbPaintWindow32(pWin, pRegion, what);
+	    return;
+	}
 	break;
     }
-    (*painter) (pWin, pRegion, what);
+    miPaintWindow(pWin, pRegion, what);
 }
-
-/* Paint Window None -- just return */
-/*ARGSUSED*/
-static void
-mfbPaintWindowNone(pWin, pRegion, what)
-    WindowPtr pWin;
-    RegionPtr pRegion;
-    int what;		
-{
-}
-
-/* Paint Window Parent Relative -- Find first ancestor which isn't parent
- * relative and paint as it would, but with this region */ 
-static void
-mfbPaintWindowPR(pWin, pRegion, what)
-    WindowPtr pWin;
-    RegionPtr pRegion;
-    int what;		
-{
-    WindowPtr pParent;
-
-    pParent = pWin->parent;
-    while(pParent->backgroundState == ParentRelative)
-	pParent = pParent->parent;
-
-    if(what == PW_BORDER)
-        (*pParent->drawable.pScreen->PaintWindowBorder)(pParent, pRegion, what);
-    else
-	(*pParent->drawable.pScreen->PaintWindowBackground)(pParent, pRegion, what);
-}
-
-static void
-mfbPaintWindowSolid(pWin, pRegion, what)
-    WindowPtr pWin;
-    RegionPtr pRegion;
-    int what;		
-{
-    if (what == PW_BACKGROUND)
-    {
-	if (pWin->background.pixel)
-	    mfbSolidWhiteArea(pWin, REGION_NUM_RECTS(pRegion),
-			      REGION_RECTS(pRegion), GXset, NullPixmap);
-	else
-	    mfbSolidBlackArea(pWin, REGION_NUM_RECTS(pRegion),
-			      REGION_RECTS(pRegion), GXclear, NullPixmap);
-    } 
-    else
-    {
-	if (pWin->border.pixel)
-	    mfbSolidWhiteArea(pWin, REGION_NUM_RECTS(pRegion),
-			      REGION_RECTS(pRegion), GXset, NullPixmap);
-	else
-	    mfbSolidBlackArea(pWin, REGION_NUM_RECTS(pRegion),
-			      REGION_RECTS(pRegion), GXclear, NullPixmap);
-    }
-}
-
 
 /* Tile Window with a 32 bit wide tile 
    this could call mfbTileArea32, but that has to do a switch on the
