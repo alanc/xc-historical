@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.28 89/12/12 14:16:36 rws Exp $ */
+/* $XConsortium: ico.c,v 1.29 89/12/14 09:52:11 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -304,6 +304,15 @@ char **argv;
 	    else 
 	      icoFatal ("no such color \"%s\"", background_colorname);
 	}
+	if (numcolors && (!dofaces || numcolors == 1)) {
+	    XColor cdef;
+
+	    if (XParseColor (dpy, cmap, colornames[0], &cdef) &&
+		XAllocColor (dpy, cmap, &cdef))
+	      fg = cdef.pixel;
+	    else 
+	      icoFatal ("no such color \"%s\"", colornames[0]);
+	}
 
 	if (invert) {
 	    unsigned long tmp = fg;
@@ -408,7 +417,7 @@ char **argv;
 	}
 	gc = XCreateGC (dpy, draw_window, vmask, &xgcv);
 
-	if (dofaces && numcolors>=1) {
+	if (dofaces && numcolors>1) {
 	    int i,t,bits;
 		bits = 0;
 		for (t=numcolors; t; t=t>>1) bits++;
@@ -762,11 +771,16 @@ DBufInfo *b, *otherb;
 			xalloc(dbpair.pixelsperbuf * sizeof(unsigned long));
 	}
 
-	t = XAllocColorCells(dpy,cmap,0,
-		dbpair.plane_masks,dbpair.totalplanes, dbpair.pixels,1);
-			/* allocate color planes */
-	if (t==0) {
-		icoFatal("can't allocate enough color planes");
+	if (dbpair.totalplanes == 1) {
+	    dbpair.pixels[0] = bg;
+	    dbpair.plane_masks[0] = fg ^ bg;
+	} else {
+	    t = XAllocColorCells(dpy,cmap,0,
+		    dbpair.plane_masks,dbpair.totalplanes, dbpair.pixels,1);
+			    /* allocate color planes */
+	    if (t==0) {
+		    icoFatal("can't allocate enough color planes");
+	    }
 	}
 
 	fgcolor.pixel = fg;
@@ -788,7 +802,7 @@ DBufInfo *b, *otherb;
 			b->colors[jj].pixel = dbpair.pixels[0];
 			for (k=0, m=j; m; k++, m=m>>1) {
 				if (m&1)
-				   b->colors[jj].pixel |= dbpair.plane_masks[k];
+				   b->colors[jj].pixel ^= dbpair.plane_masks[k];
 			}
 			b->colors[jj].flags = DoRed | DoGreen | DoBlue;
 		    }
@@ -802,7 +816,7 @@ DBufInfo *b, *otherb;
 			b->pixels[j] = dbpair.pixels[0];
 			for (k=0, m=j; m; k++, m=m>>1) {
 				if (m&1)
-				   b->pixels[j] |= b->plane_masks[k];
+				   b->pixels[j] ^= b->plane_masks[k];
 			}
 		}
 	}
@@ -893,7 +907,8 @@ int n;
     {
       storecolors:
 	dbpair.dpybuf= dbpair.bufs+n;
-	XStoreColors(dpy,cmap,dbpair.dpybuf->colors,dbpair.totalpixels);
+	if (dbpair.totalpixels > 2)
+	    XStoreColors(dpy,cmap,dbpair.dpybuf->colors,dbpair.totalpixels);
     }
 }
 
