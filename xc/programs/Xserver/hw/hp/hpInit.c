@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: hpInit.c,v 1.1 93/08/08 13:00:42 rws Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.
@@ -146,10 +146,10 @@ InitOutput(pScreenInfo, argc, argv)
     /*************************
 	Set up signal handling 
     **/
-    signal (SIGPIPE, SIG_IGN);
-    signal (SIGHUP, AutoResetServer);
-    signal (SIGINT, GiveUp);
-    signal (SIGTERM, GiveUp);
+    OsSignal (SIGPIPE, SIG_IGN);
+    OsSignal (SIGHUP, AutoResetServer);
+    OsSignal (SIGINT, GiveUp);
+    OsSignal (SIGTERM, GiveUp);
 }
 
 hpPrivPtr           hpPrivates[MAXSCREENS];

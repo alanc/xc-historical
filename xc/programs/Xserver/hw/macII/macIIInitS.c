@@ -111,10 +111,8 @@ static int autoRepeatHandlersInstalled; /* FALSE each time InitOutput called */
  */
 /*ARGSUSED*/
 static void
-SigIOHandler(sig, code, scp)
-    int		code;
+SigIOHandler(sig)
     int		sig;
-    struct sigcontext *scp;
 {
     macIIEnqueueEvents ();
 }
@@ -342,7 +340,7 @@ InitInput(argc, argv)
     setcompat (getcompat() | COMPAT_BSDSIGNALS);
     if (!mieqInit (k, p))
 	return FALSE;
-    signal(SIGIO, SigIOHandler);
+    OsSignal(SIGIO, SigIOHandler);
     SetTimeSinceLastInputEvent ();
 }
 
@@ -653,10 +651,8 @@ have gained this knowledge only by promising to remove their tongues.
 static int noSlotMgr;
 
 static void
-SigSYSHandler(sig, code, scp)
-    int		code;
+SigSYSHandler(sig)
     int		sig;
-    struct sigcontext *scp;
 {
     noSlotMgr++;
 }
@@ -681,9 +677,9 @@ register struct video *vp;
 	pb.spTBMask = 1;
 
 	noSlotMgr = 0;
-	signal(SIGSYS, SigSYSHandler);
+	OsSignal(SIGSYS, SigSYSHandler);
 	err = slotmanager(_sNextTypesRsrc,&pb);
-	signal(SIGSYS, SIG_DFL);
+	OsSignal(SIGSYS, SIG_DFL);
 	if (noSlotMgr) return(-1);
 
 	if (err == 0 && pb.spSlot != vp->dce.dCtlSlot)
@@ -742,9 +738,9 @@ register struct video *vp;
         slot = vp->dce.dCtlSlot;
 
 	noSlotMgr = 0;
-	signal(SIGSYS, SigSYSHandler);
+	OsSignal(SIGSYS, SigSYSHandler);
 	err = slotmanager(_sNextTypesRsrc,&pb);
-	signal(SIGSYS, SIG_DFL);
+	OsSignal(SIGSYS, SIG_DFL);
 	if (noSlotMgr) return(-1);
 
 	if (err == 0 && pb.spSlot != vp->dce.dCtlSlot)
@@ -788,9 +784,9 @@ int slot;
 	pb.spExtDev= 0;
 
 	noSlotMgr = 0;
-	signal(SIGSYS, SigSYSHandler);
+	OsSignal(SIGSYS, SigSYSHandler);
 	err = slotmanager(_sNextTypesRsrc,&pb);
-	signal(SIGSYS, SIG_DFL);
+	OsSignal(SIGSYS, SIG_DFL);
 	if (noSlotMgr) return(-1);
 
 	if (err == 0 && pb.spSlot == slot && slotmanager(_sFindDevBase,&pb) == 0)

@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunFbs.c,v 1.1 93/08/08 18:01:27 kaleb Exp $ */
+/* $XConsortium: sunFbs.c,v 1.2 93/08/08 18:17:44 kaleb Exp $ */
 
 /*
  * Copyright 1990, 1993 Massachusetts Institute of Technology
@@ -167,7 +167,7 @@ static Bool closeScreen (i, pScreen)
     SetupScreen(pScreen);
     Bool    ret;
 
-    signal (SIGIO, SIG_IGN);
+    (void) OsSignal (SIGIO, SIG_IGN);
     sunDisableCursor (pScreen);
     pScreen->CloseScreen = pPrivate->CloseScreen;
     ret = (*pScreen->CloseScreen) (i, pScreen);

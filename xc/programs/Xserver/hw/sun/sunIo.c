@@ -1,4 +1,4 @@
-/* $XConsortium: sunIo.c,v 5.13 93/08/08 18:19:55 kaleb Exp $ */
+/* $XConsortium: sunIo.c,v 5.14 93/08/31 18:18:00 kaleb Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -166,9 +166,9 @@ void AbortDDX()
     ScreenPtr	pScreen;
 
 #ifdef SVR4
-    signal (SIGPOLL, SIG_IGN);
+    (void) OsSignal (SIGPOLL, SIG_IGN);
 #else
-    signal (SIGIO, SIG_IGN);
+    (void) OsSignal (SIGIO, SIG_IGN);
 #endif
     (void) sunChangeKbdTranslation (LookupKeyboardDevice (), FALSE);
     sunNonBlockConsoleOff ();

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: omronInit.c,v 1.1 91/06/29 13:48:57 xguest Exp $
  *
  * Copyright 1991 by OMRON Corporation
  * 
@@ -141,7 +141,7 @@ InitInput(argc, argv)
 	omronSetIoHandler(omronEnqueueEvents);
 
 #ifndef UNUSE_SIGIO_SIGNAL
-	signal(SIGIO, omronSigIOHandler);
+	(void) OsSignal(SIGIO, omronSigIOHandler);
 #else
     if(RegisterBlockAndWakeupHandlers(NoopDDA, omronWakeupProc, (pointer)0) != TRUE) {
 		FatalError("Can't register WakeupHandler\n");
