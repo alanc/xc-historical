@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.32 91/08/23 13:57:34 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.33 92/03/25 19:06:44 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -532,6 +532,8 @@ doListFonts(client, c)
     }
     /* try each fpe in turn, returning if one wants to be blocked */
 
+    if (!c->patlen)
+	goto finish;
     while (c->current_fpe < c->num_fpes && c->names->nnames <= c->max_names)
     {
 
@@ -556,6 +558,7 @@ doListFonts(client, c)
 	SendErrorToClient(client, X_ListFonts, 0, 0, FontToXError(err));
 	goto bail;
     }
+finish:
     names = c->names;
     nnames = names->nnames;
     client = c->client;
@@ -614,7 +617,7 @@ MakeListFontsClosure(client, pattern, length, max_names)
     if (!c)
 	return 0;
     c->pattern = (char *) xalloc(length);
-    if (!c->pattern) {
+    if (!c->pattern && length) {
 	xfree(c);
 	return 0;
     }
@@ -692,6 +695,8 @@ doListFontsWithInfo(client, c)
 	goto bail;
     }
     client->pSwapReplyFunc = ReplySwapVector[X_ListFontsWithInfo];
+    if (!c->current.patlen)
+	goto finish;
     while (c->current.current_fpe < c->num_fpes)
     {
 	fpe = c->fpe_list[c->current.current_fpe];
@@ -851,6 +856,7 @@ doListFontsWithInfo(client, c)
 	    --c->current.max_names;
 	}
     }
+finish:
     length = sizeof(xListFontsWithInfoReply);
     bzero((char *) &finalReply, sizeof(xListFontsWithInfoReply));
     finalReply.type = X_Reply;
@@ -883,7 +889,7 @@ StartListFontsWithInfo(client, length, pattern, max_names)
 
     if (!(c = (LFWIclosurePtr) xalloc(sizeof *c)))
 	goto badAlloc;
-    if (!(c->current.pattern = (char *) xalloc(length)))
+    if (!(c->current.pattern = (char *) xalloc(length)) && length)
     {
 	xfree(c);
 	goto badAlloc;
