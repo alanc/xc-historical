@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.20 89/07/22 15:07:51 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.21 89/07/26 12:16:45 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -97,13 +97,16 @@ implied warranty.
     	(miBSWindowPtr)((WindowPtr)(pDrawable))->backStorage; \
     SETUP_BACKING(pDrawable, pGC)
 
-#define PROLOGUE(pGC) \
+#define PROLOGUE(pGC) { \
     pGC->ops = pGCPrivate->wrapOps;\
-    pGC->funcs = pGCPrivate->wrapFuncs
+    pGC->funcs = pGCPrivate->wrapFuncs; \
+    }
 
-#define EPILOGUE(pGC) \
-    (pGC->ops = &miBSGCOps), \
-    (pGC->funcs = oldFuncs)
+#define EPILOGUE(pGC) { \
+    pGCPrivate->wrapOps = (pGC)->ops; \
+    (pGC)->ops = &miBSGCOps; \
+    (pGC)->funcs = oldFuncs; \
+    }
    
 static void	    miCreateBSPixmap();
 static void	    miDestroyBSPixmap();

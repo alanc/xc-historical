@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.15 89/08/03 15:05:35 rws Exp $ */
+/* $XConsortium: misprite.c,v 5.16 89/08/03 17:24:49 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -160,13 +160,16 @@ static GCOps miSpriteGCOps = {
 	(pWin)->drawable.y < pScreenPriv->saved.y2 &&		    \
 	pScreenPriv->saved.y1 < (pWin)->drawable.y + (int) (pWin)->drawable.height)
 
-#define GC_OP_PROLOGUE(pGC) (\
-    ((pGC)->funcs = pGCPrivate->wrapFuncs), \
-    ((pGC)->ops = pGCPrivate->wrapOps))
+#define GC_OP_PROLOGUE(pGC) { \
+    (pGC)->funcs = pGCPrivate->wrapFuncs; \
+    (pGC)->ops = pGCPrivate->wrapOps; \
+    }
 
-#define GC_OP_EPILOGUE(pGC) (\
-    ((pGC)->funcs = oldFuncs), \
-    ((pGC)->ops = &miSpriteGCOps))
+#define GC_OP_EPILOGUE(pGC) { \
+    pGCPrivate->wrapOps = (pGC)->ops; \
+    (pGC)->funcs = oldFuncs; \
+    (pGC)->ops = &miSpriteGCOps; \
+    }
 
 /*
  * pointer-sprite method table
