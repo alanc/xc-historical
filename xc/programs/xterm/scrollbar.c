@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.19 89/01/06 16:21:51 jim Exp $
+ *	$XConsortium: scrollbar.c,v 1.20 89/03/01 20:00:43 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -43,7 +43,7 @@
 extern void Bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.19 89/01/06 16:21:51 jim Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.20 89/03/01 20:00:43 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -205,7 +205,7 @@ ScrollBarDrawThumb(scrollWidget)
 	thumbHeight = screen->max_row + 1;
 	totalHeight = thumbHeight + screen->savedlines;
 
-	XtScrollBarSetThumb(scrollWidget,
+	XawScrollBarSetThumb(scrollWidget,
 	 ((float)thumbTop) / totalHeight,
 	 ((float)thumbHeight) / totalHeight);
 	

@@ -2,7 +2,7 @@
 static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #endif
 /*
- *	$XConsortium: menu.c,v 1.13 89/03/27 15:08:30 jim Exp $
+ *	$XConsortium: menu.c,v 1.14 89/04/06 15:51:38 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -45,7 +45,7 @@ static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #include "data.h"
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: menu.c,v 1.13 89/03/27 15:08:30 jim Exp $";
+static char rcs_id[] = "$XConsortium: menu.c,v 1.14 89/04/06 15:51:38 jim Exp $";
 #endif	lint
 
 #define DEFMENUBORDER	2
@@ -534,7 +534,11 @@ register XButtonPressedEvent *event;
 		XtRealizeWidget (menu->menuWidget);
 		menu->menuWindow = XtWindow (menu->menuWidget);
 	        attr.override_redirect = True;
-		attr.border_pixmap = XtGrayPixmap(XtScreen(xw));
+		attr.border_pixmap = XmuCreateStippledPixmap(
+					  XtScreen(xw),
+					  BlackPixelOfScreen(XtScreen(xw)),
+					  WhitePixelOfScreen(XtScreen(xw)),
+					  DefaultDepthOfScreen(XtScreen(xw)));
 		attr.background_pixel = menu->menuBgColor;
 		attr.cursor = menu->menuCursor;
 		attr.save_under = True;
