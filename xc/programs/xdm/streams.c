@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.27 91/07/15 15:58:55 gildea Exp $
+ * $XConsortium: streams.c,v 1.1 91/07/16 23:40:30 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -104,8 +104,8 @@ CreateWellKnownSockets ()
 }
 
 GetChooserAddr (addr, lenp)
-    XdmcpNetaddr addr;		/* return */
-    int		 *lenp;		/* size of addr, returned as amt used */
+    char	*addr;		/* return */
+    int		*lenp;		/* size of addr, returned as amt used */
 {
     struct netbuf nbuf;
     int retval;
