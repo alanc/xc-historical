@@ -1606,7 +1606,7 @@ int item;
 
 	case TMENU_HIDETEK:
 		screen->Tshow = FALSE;
-		XUnmapWindow(screen->display, TWindow(screen));
+		XUnmapWindow(screen->display, TShellWindow);
 		/* SyncUnmap(TWindow(screen), TWINDOWEVENTS); */
 		reselectwindow(screen);
 		TekRefresh = (TekLink *)0;
@@ -1627,12 +1627,12 @@ int item;
 	case TMENU_VTWIN:
 		if(screen->Vshow = !screen->Vshow) {
 			if(VWindow(screen) || VTInit()) {
-				XMapWindow(screen->display, VWindow(screen));
+				XMapWindow(screen->display, VShellWindow);
 				screen->Vshow = TRUE;
 			}
 		} else {
 			screen->Vshow = FALSE;
-			XUnmapWindow(screen->display, VWindow(screen));
+			XUnmapWindow(screen->display, VShellWindow);
 			/* SyncUnmap(VWindow(screen), WINDOWEVENTS); */
 			if(!screen->TekEmu) {
 				if(TekRefresh)
