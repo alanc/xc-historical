@@ -1,5 +1,5 @@
 /*
- * $XConsortium: patcache.c,v 1.3 92/03/23 16:46:12 keith Exp $
+ * $XConsortium: patcache.c,v 1.4 92/05/29 18:01:11 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -159,11 +159,9 @@ CacheFontPattern (cache, pattern, patlen, pFont)
     /* link to new hash chain */
     e->hash = Hash (pattern, patlen);
     i = e->hash % NBUCKETS;
-    if (cache->buckets[i])
-    {
-	e->next = cache->buckets[i];
+    e->next = cache->buckets[i];
+    if (e->next)
 	e->next->prev = &(e->next);
-    }
     cache->buckets[i] = e;
     e->prev = &(cache->buckets[i]);
     e->pFont = pFont;
