@@ -1,5 +1,5 @@
 ##
-# $XConsortium$
+# $XConsortium: Imakefile,v 5.3 91/02/16 09:48:37 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -29,16 +29,10 @@
 #define PexPhigsCDebugFlags OptimizedCDebugFlags
 #endif
 
-#ifndef PexPhigsDefines
-#define PexPhigsDefines 
-#endif
-
 CDEBUGFLAGS = PexPhigsCDebugFlags
-/*	Default is to use SYsV shared memory to phigsmon	*/
-/*    DEFINES = PexPhigsDefines -DPEX_API_SOCKET_IPC		/**/
     DEFINES = PexPhigsDefines
 
-     LIBCODE = ./libcp.a
+     LIBCODE = libcp.a
 
 CSRCS = cp_util.c cp_ccom.c cp_rcom.c cp_inp.c psl.c \
 	cpx_clnt.c cpx_util.c cpx_css.c cpx_ws.c cpx_ar.c cpx_misc.c cpx_pm.c \
@@ -77,7 +71,7 @@ extract : $(ASRCS)
 
 Pex: ${OBJS}
 	@echo "putting off ar of $(LIBCODE)"
-#	ar rvl $(LIBCODE) $(OBJS)
+#	ar rl $(LIBCODE) $(OBJS)
 
 # Force Re-Compliation
 FRC:

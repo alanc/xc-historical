@@ -1,5 +1,5 @@
 ##
-# $XConsortium$
+# $XConsortium: Imakefile,v 5.3 91/02/16 09:50:25 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -29,14 +29,10 @@
 #define PexPhigsCDebugFlags OptimizedCDebugFlags
 #endif
 
-#ifndef PexPhigsDefines
-#define PexPhigsDefines 
-#endif
-
 CDEBUGFLAGS = PexPhigsCDebugFlags
     DEFINES = PexPhigsDefines
 
-     LIBCODE = ./libws.a
+     LIBCODE = libws.a
 
 SRCS = wsx.c wsx_lut.c wsx_util.c ws_inp.c wsa.c wsa_pm.c wsb.c wsb_pm.c \
        ws_pm.c wsa_inp.c
@@ -62,7 +58,7 @@ extract : $(SRCS)
 
 Pex: ${OBJS}
 	@echo "putting off ar of $(LIBCODE)"
-#	ar rvl $(LIBCODE) $(OBJS)
+#	ar rl $(LIBCODE) $(OBJS)
 
 # Force Re-Compliation
 FRC:
