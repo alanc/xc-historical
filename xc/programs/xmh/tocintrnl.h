@@ -1,4 +1,4 @@
-/* $Header: tocintrnl.h,v 2.4 88/02/06 09:58:37 swick Exp $ */
+/* $XConsortium: tocintrnl.h,v 2.5 88/08/10 09:36:53 swick Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: xload.c,v 1.12 88/09/03 10:14:27 rws Exp $";
+static char rcsid[] = "$XConsortium: xload.c,v 1.13 88/09/03 16:23:17 jim Exp $";
 #endif  lint
 
 #include <X11/Intrinsic.h>

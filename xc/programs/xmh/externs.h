@@ -1,5 +1,5 @@
 /*
- * $Header: externs.h,v 2.8 88/01/19 14:24:16 swick Locked $
+ * $XConsortium: externs.h,v 2.9 88/02/06 09:38:02 swick Exp $
  */
 
 /*

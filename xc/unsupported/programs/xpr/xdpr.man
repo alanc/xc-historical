@@ -1,4 +1,4 @@
-.\" $Header: xdpr.man,v 1.7 88/05/09 16:02:49 swick Exp $
+.\" $XConsortium: xdpr.man,v 1.8 88/05/10 09:37:15 swick Exp $
 .TH XDPR 1 "10 May 1988" "X Version 11"
 .SH NAME
 xdpr \- dump an X window directly to a printer

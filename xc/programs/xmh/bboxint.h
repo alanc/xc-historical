@@ -1,4 +1,4 @@
-/* $Header: bboxint.h,v 1.3 88/01/25 15:39:35 swick Locked $ */
+/* $XConsortium: bboxint.h,v 2.3 88/01/25 15:39:35 swick Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION

@@ -1,4 +1,4 @@
-/* $Header: mlist.h,v 1.2 88/01/25 15:43:11 swick Locked $ */
+/* $XConsortium: mlist.h,v 2.2 88/01/25 15:43:11 swick Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION

@@ -1,6 +1,5 @@
 /*
- *	$Source: /orpheus/u1/X11/clients/xpr/RCS/pmp.h,v $
- *	$Header: pmp.h,v 1.2 87/10/21 16:38:13 swick Locked $
+ *	$XConsortium: pmp.h,v 1.3 87/10/30 12:59:33 swick Exp $
  */
 
 /* Written by Jose' J. Capo' */

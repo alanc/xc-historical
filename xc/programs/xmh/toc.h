@@ -1,4 +1,4 @@
-/* $Header: toc.h,v 1.3 88/01/25 15:25:17 swick Locked $ */
+/* $XConsortium: toc.h,v 2.3 88/01/25 15:25:17 swick Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION

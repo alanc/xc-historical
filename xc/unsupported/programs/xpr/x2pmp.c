@@ -1,10 +1,9 @@
 /*
- *	$Source: /usr/expo/X/src/clients/xpr/RCS/x2pmp.c,v $
- *	$Header: x2pmp.c,v 1.3 87/10/30 12:58:50 swick Exp $
+ *	$XConsortium: x2pmp.c,v 1.4 88/07/21 14:35:48 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_x2pmp_c = "$Header: x2pmp.c,v 1.3 87/10/30 12:58:50 swick Exp $";
+static char *rcsid_x2pmp_c = "$XConsortium: x2pmp.c,v 1.4 88/07/21 14:35:48 jim Exp $";
 #endif	lint
 
 /* x2pmp.c: Translate xwd window dump format into PMP format for the

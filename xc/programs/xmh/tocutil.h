@@ -1,4 +1,4 @@
-/* $Header: tocutil.h,v 1.2 88/01/25 16:13:56 swick Locked $ */
+/* $XConsortium: tocutil.h,v 2.2 88/01/25 16:13:56 swick Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION

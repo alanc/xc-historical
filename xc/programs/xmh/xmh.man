@@ -1,4 +1,4 @@
-.\" $Header$
+.\" $XConsortium: xmh.man,v 1.12 88/05/13 13:15:09 swick Exp $
 .TH XMH 1 "13 May 1988" "X Version 11"
 .SH NAME
 \fIxmh\fR \- X window interface to the mh Mail Handler

@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: xmh.h,v 2.12 88/05/12 16:54:33 swick Locked $";
+ *	rcs_id[] = "$XConsortium: xmh.h,v 2.13 88/08/22 13:16:06 swick Exp $";
  */
 
 /*

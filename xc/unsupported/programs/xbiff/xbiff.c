@@ -1,6 +1,5 @@
 /*
- * $Source: /usr/expo/X/src/clients/xbiff/RCS/xbiff.c,v $
- * $Header: xbiff.c,v 1.3 88/02/23 17:39:54 jim Exp $
+ * $XConsortium: xbiff.c,v 1.4 88/03/04 09:50:11 swick Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *

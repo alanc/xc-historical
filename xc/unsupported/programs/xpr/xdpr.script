@@ -1,6 +1,6 @@
 #! /bin/csh -f
 # Copyright 1985,1988 Massacusetts Institute of Technology.
-# $Header$
+# $XConsortium: xdpr.script,v 1.3 88/05/09 15:24:43 swick Exp $
 # origin: paul 4/12/88
 	set xwdv=()
 	set xprv=() noglob

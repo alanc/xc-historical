@@ -1,4 +1,4 @@
-/* $Header: msg.h,v 2.2 88/01/25 15:45:50 swick Exp $ */
+/* $XConsortium: msg.h,v 2.3 88/02/24 15:37:53 swick Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION

@@ -2,7 +2,7 @@
 
 /* Copyright Massachusetts Institute of Technology 1985 */
 
-/* $Header: lncmd.h,v 10.4 87/09/11 08:17:54 toddb Exp $ */
+/* $XConsortium: lncmd.h,v 10.5 88/05/16 11:00:29 swick Exp $ */
 /* lncmd.h - Command sequences DEC printers, in particular LN0x laser
    printers */
 
