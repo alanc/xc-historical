@@ -461,9 +461,9 @@ static int
 CmpEntryLabel(e1, e2) 
 char **e1, **e2;
 {
-  char *l1, *l2, *p1, *p2, *subl1, *subl2;
-  
-  int i, len1, len2, result;
+  char *l1, *l2;
+  char *s1, *s2;
+  int result;
 
 /*
  * What we really want to compare is the actual names of the manual pages,
@@ -474,23 +474,18 @@ char **e1, **e2;
     PrintError("Internal error while sorting manual pages.");
   if ( (l2 = rindex(*e2, '/')) == NULL)
     PrintError("Internal error while sorting manual pages.");
-  if ( (p1 = rindex(*e1, '.')) == NULL)
-    PrintError("Internal error while sorting manual pages.");
-  if ( (p2 = rindex(*e2, '.')) == NULL)
-    PrintError("Internal error while sorting manual pages.");
-  len1 = p1 - l1; len2 = p2 - l2;
-#define min(x, y) (x > y ? y : x)
-  for (i=0; i<min(len1, len2); i++) {
-    if (*l1 > *l2)
-      return 1;
-    else if (*l2 > *l1)
-      return -1;
-    l1++; l2++;
-  } 
-  if (len1 > len2) return 1; 
-  else if (len1 == len2) return 0;
-  else return -1;
-
+  
+    /* temporarily remove suffixes of the two entries */
+  
+    if ( (s1 = rindex(*e1, '.')) != NULL) *s1 = '\0';
+    if ( (s2 = rindex(*e2, '.')) != NULL) *s2 = '\0';
+  
+    result = strcmp(l1+1, l2+1); 
+  
+    if (s1 != NULL) *s1 = '.';	/* restore suffixes */
+    if (s2 != NULL) *s2 = '.';
+   
+    return result;
 }
 
 
