@@ -1,4 +1,4 @@
-/* $Header: XInput.h,v 1.18 90/11/13 13:14:55 gms Exp $ */
+/* $Header: XInput.h,v 1.11 91/01/24 16:55:58 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -55,91 +55,91 @@ SOFTWARE.
 #define _deviceMappingNotify	1
 #define _changeDeviceNotify	2
 
-#define FindTypeAndClass(d, type, class, classid, offset) \
+#define FindTypeAndClass(d,type,_class,classid,offset) \
     { int i; XInputClassInfo *ip; \
-    type = 0; class = 0; \
+    type = 0; _class = 0; \
     for (i=0, ip= ((XDevice *) d)->classes; \
 	 i< ((XDevice *) d)->num_classes; \
 	 i++, ip++) \
 	if (ip->input_class == classid) \
 	    {type =  ip->event_type_base + offset; \
-	     class =  ((XDevice *) d)->device_id << 8 | type;}}
+	     _class =  ((XDevice *) d)->device_id << 8 | type;}}
 
-#define DeviceKeyPress(d, type, class) \
-    FindTypeAndClass(d, type, class, KeyClass, _deviceKeyPress)
+#define DeviceKeyPress(d,type,_class) \
+    FindTypeAndClass(d, type, _class, KeyClass, _deviceKeyPress)
 
-#define DeviceKeyRelease(d, type, class) \
-    FindTypeAndClass(d, type, class, KeyClass, _deviceKeyRelease)
+#define DeviceKeyRelease(d,type,_class) \
+    FindTypeAndClass(d, type, _class, KeyClass, _deviceKeyRelease)
 
-#define DeviceButtonPress(d, type, class) \
-    FindTypeAndClass(d, type, class, ButtonClass, _deviceButtonPress)
+#define DeviceButtonPress(d,type,_class) \
+    FindTypeAndClass(d, type, _class, ButtonClass, _deviceButtonPress)
 
-#define DeviceButtonRelease(d, type, class) \
-    FindTypeAndClass(d, type, class, ButtonClass, _deviceButtonRelease)
+#define DeviceButtonRelease(d,type,_class) \
+    FindTypeAndClass(d, type, _class, ButtonClass, _deviceButtonRelease)
 
-#define DeviceMotionNotify(d, type, class) \
-    FindTypeAndClass(d, type, class, ValuatorClass, _deviceMotionNotify)
+#define DeviceMotionNotify(d,type,_class) \
+    FindTypeAndClass(d, type, _class, ValuatorClass, _deviceMotionNotify)
 
-#define DeviceFocusIn(d, type, class) \
-    FindTypeAndClass(d, type, class, FocusClass, _deviceFocusIn)
+#define DeviceFocusIn(d,type,_class) \
+    FindTypeAndClass(d, type, _class, FocusClass, _deviceFocusIn)
 
-#define DeviceFocusOut(d, type, class) \
-    FindTypeAndClass(d, type, class, FocusClass, _deviceFocusOut)
+#define DeviceFocusOut(d,type,_class) \
+    FindTypeAndClass(d, type, _class, FocusClass, _deviceFocusOut)
 
-#define ProximityIn(d, type, class) \
-    FindTypeAndClass(d, type, class, ProximityClass, _proximityIn)
+#define ProximityIn(d,type,_class) \
+    FindTypeAndClass(d, type, _class, ProximityClass, _proximityIn)
 
-#define ProximityOut(d, type, class) \
-    FindTypeAndClass(d, type, class, ProximityClass, _proximityOut)
+#define ProximityOut(d,type,_class) \
+    FindTypeAndClass(d, type, _class, ProximityClass, _proximityOut)
 
-#define DeviceStateNotify(d, type, class) \
-    FindTypeAndClass(d, type, class, OtherClass, _deviceStateNotify)
+#define DeviceStateNotify(d,type,_class) \
+    FindTypeAndClass(d, type, _class, OtherClass, _deviceStateNotify)
 
-#define DeviceMappingNotify(d, type, class) \
-    FindTypeAndClass(d, type, class, OtherClass, _deviceMappingNotify)
+#define DeviceMappingNotify(d,type,_class) \
+    FindTypeAndClass(d, type, _class, OtherClass, _deviceMappingNotify)
 
-#define ChangeDeviceNotify(d, type, class) \
-    FindTypeAndClass(d, type, class, OtherClass, _changeDeviceNotify)
+#define ChangeDeviceNotify(d,type,_class) \
+    FindTypeAndClass(d, type, _class, OtherClass, _changeDeviceNotify)
 
-#define DevicePointerMotionHint(d, type, class) \
-    { class =  ((XDevice *) d)->device_id << 8 | _devicePointerMotionHint;}
+#define DevicePointerMotionHint(d,type,_class) \
+    { _class =  ((XDevice *) d)->device_id << 8 | _devicePointerMotionHint;}
 
-#define DeviceButton1Motion(d, type, class) \
-    { class =  ((XDevice *) d)->device_id << 8 | _deviceButton1Motion;}
+#define DeviceButton1Motion(d,type,_class) \
+    { _class =  ((XDevice *) d)->device_id << 8 | _deviceButton1Motion;}
 
-#define DeviceButton2Motion(d, type, class) \
-    { class =  ((XDevice *) d)->device_id << 8 | _deviceButton2Motion;}
+#define DeviceButton2Motion(d,type,_class) \
+    { _class =  ((XDevice *) d)->device_id << 8 | _deviceButton2Motion;}
 
-#define DeviceButton3Motion(d, type, class) \
-    { class =  ((XDevice *) d)->device_id << 8 | _deviceButton3Motion;}
+#define DeviceButton3Motion(d,type,_class) \
+    { _class =  ((XDevice *) d)->device_id << 8 | _deviceButton3Motion;}
 
-#define DeviceButton4Motion(d, type, class) \
-    { class =  ((XDevice *) d)->device_id << 8 | _deviceButton4Motion;}
+#define DeviceButton4Motion(d,type,class) \
+    { _class =  ((XDevice *) d)->device_id << 8 | _deviceButton4Motion;}
 
-#define DeviceButton5Motion(d, type, class) \
-    { class =  ((XDevice *) d)->device_id << 8 | _deviceButton5Motion;}
+#define DeviceButton5Motion(d,type,_class) \
+    { _class =  ((XDevice *) d)->device_id << 8 | _deviceButton5Motion;}
 
-#define DeviceButtonMotion(d, type, class) \
-    { class =  ((XDevice *) d)->device_id << 8 | _deviceButtonMotion;}
+#define DeviceButtonMotion(d,type,class) \
+    { _class =  ((XDevice *) d)->device_id << 8 | _deviceButtonMotion;}
 
-#define DeviceOwnerGrabButton(d, type, class) \
-    { class =  ((XDevice *) d)->device_id << 8 | _deviceOwnerGrabButton;}
+#define DeviceOwnerGrabButton(d,type,_class) \
+    { _class =  ((XDevice *) d)->device_id << 8 | _deviceOwnerGrabButton;}
 
-#define DeviceButtonPressGrab(d, type, class) \
-    { class =  ((XDevice *) d)->device_id << 8 | _deviceButtonGrab;}
+#define DeviceButtonPressGrab(d,type,_class) \
+    { _class =  ((XDevice *) d)->device_id << 8 | _deviceButtonGrab;}
 
-#define NoExtensionEvent(d, type, class) \
-    { class =  ((XDevice *) d)->device_id << 8 | _noExtensionEvent;}
+#define NoExtensionEvent(d,type,_class) \
+    { _class =  ((XDevice *) d)->device_id << 8 | _noExtensionEvent;}
 
-#define BadDevice(dpy, error) _xibaddevice(dpy, &error)
+#define BadDevice(dpy,error) _xibaddevice(dpy, &error)
 
-#define BadClass(dpy, error) _xibadclass(dpy, &error)
+#define BadClass(dpy,error) _xibadclass(dpy, &error)
 
-#define BadEvent(dpy, error) _xibadevent(dpy, &error)
+#define BadEvent(dpy,error) _xibadevent(dpy, &error)
 
-#define BadMode(dpy, error) _xibadmode(dpy, &error)
+#define BadMode(dpy,error) _xibadmode(dpy, &error)
 
-#define DeviceBusy(dpy, error) _xidevicebusy(dpy, &error)
+#define DeviceBusy(dpy,error) _xidevicebusy(dpy, &error)
 
 /***************************************************************
  *
@@ -305,7 +305,11 @@ typedef XProximityNotifyEvent XProximityOutEvent;
 
 typedef struct
     {
+#if defined(__cplusplus) || defined(c_plusplus)
+    unsigned char	c_class;
+#else
     unsigned char	class;
+#endif
     unsigned char	length;
     } XInputClass;
 
@@ -322,7 +326,11 @@ typedef struct {
 } XDeviceStateNotifyEvent;	
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    unsigned char	c_class;
+#else
     unsigned char	class;
+#endif
     unsigned char	length;
     unsigned char	num_valuators;
     unsigned char	mode;
@@ -330,14 +338,22 @@ typedef struct {
 } XValuatorStatus;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    unsigned char	c_class;
+#else
     unsigned char	class;
+#endif
     unsigned char	length;
     short		num_keys;
     char        	keys[32];
 } XKeyStatus;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    unsigned char	c_class;
+#else
     unsigned char	class;
+#endif
     unsigned char	length;
     short		num_buttons;
     char        	buttons[32];
@@ -391,13 +407,21 @@ typedef struct {
  */
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+     XID            c_class;
+#else
      XID            class;
+#endif
      int            length;
      XID            id;
 } XFeedbackState;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    XID     c_class;
+#else
     XID     class;
+#endif
     int     length;
     XID     id;
     int     click;
@@ -410,7 +434,11 @@ typedef struct {
 } XKbdFeedbackState;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    XID     c_class;
+#else
     XID     class;
+#endif
     int     length;
     XID     id;
     int     accelNum;
@@ -419,7 +447,11 @@ typedef struct {
 } XPtrFeedbackState;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    XID     c_class;
+#else
     XID     class;
+#endif
     int     length;
     XID     id;
     int     resolution;
@@ -428,7 +460,11 @@ typedef struct {
 } XIntegerFeedbackState;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    XID     c_class;
+#else
     XID     class;
+#endif
     int     length;
     XID     id;
     int     max_symbols;
@@ -437,7 +473,11 @@ typedef struct {
 } XStringFeedbackState;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    XID     c_class;
+#else
     XID     class;
+#endif
     int     length;
     XID     id;
     int     percent;
@@ -446,7 +486,11 @@ typedef struct {
 } XBellFeedbackState;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    XID     c_class;
+#else
     XID     class;
+#endif
     int     length;
     XID     id;
     int     led_values;
@@ -454,13 +498,21 @@ typedef struct {
 } XLedFeedbackState;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+     XID            c_class;
+#else
      XID            class;
+#endif
      int            length;
      XID	    id;
 } XFeedbackControl;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    XID     c_class;
+#else
     XID     class;
+#endif
     int     length;
     XID     id;
     int     accelNum;
@@ -469,7 +521,11 @@ typedef struct {
 } XPtrFeedbackControl;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    XID     c_class;
+#else
     XID     class;
+#endif
     int     length;
     XID     id;
     int     click;
@@ -483,7 +539,11 @@ typedef struct {
 } XKbdFeedbackControl;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    XID     c_class;
+#else
     XID     class;
+#endif
     int     length;
     XID     id;
     int     num_keysyms;
@@ -491,14 +551,22 @@ typedef struct {
 } XStringFeedbackControl;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    XID     c_class;
+#else
     XID     class;
+#endif
     int     length;
     XID     id;
     int     int_to_display;
 } XIntegerFeedbackControl;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    XID     c_class;
+#else
     XID     class;
+#endif
     int     length;
     XID     id;
     int     percent;
@@ -507,7 +575,11 @@ typedef struct {
 } XBellFeedbackControl;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    XID     c_class;
+#else
     XID     class;
+#endif
     int     length;
     XID     id;
     int     led_mask;
@@ -527,7 +599,11 @@ typedef struct {
 typedef struct _XAnyClassinfo *XAnyClassPtr;
 
 typedef struct _XAnyClassinfo {
+#if defined(__cplusplus) || defined(c_plusplus)
+    XID 	c_class;
+#else
     XID 	class;
+#endif
     int 	length;
     } XAnyClassInfo;
 
@@ -547,7 +623,11 @@ typedef struct _XKeyInfo *XKeyInfoPtr;
 
 typedef struct _XKeyInfo
     {
+#if defined(__cplusplus) || defined(c_plusplus)
+    XID			c_class;
+#else
     XID			class;
+#endif
     int			length;
     unsigned short      min_keycode;
     unsigned short      max_keycode;
@@ -557,7 +637,11 @@ typedef struct _XKeyInfo
 typedef struct _XButtonInfo *XButtonInfoPtr;
 
 typedef struct _XButtonInfo {
+#if defined(__cplusplus) || defined(c_plusplus)
+    XID		c_class;
+#else
     XID		class;
+#endif
     int		length;
     short 	num_buttons;
     } XButtonInfo;
@@ -574,7 +658,11 @@ typedef struct _XValuatorInfo *XValuatorInfoPtr;
 
 typedef struct	_XValuatorInfo
     {
+#if defined(__cplusplus) || defined(c_plusplus)
+    XID			c_class;
+#else
     XID			class;
+#endif
     int			length;
     unsigned char       num_axes;
     unsigned char       mode;
@@ -645,7 +733,11 @@ typedef struct {
 } XDeviceState;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    unsigned char	c_class;
+#else
     unsigned char	class;
+#endif
     unsigned char	length;
     unsigned char	num_valuators;
     unsigned char	mode;
@@ -653,14 +745,22 @@ typedef struct {
 } XValuatorState;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    unsigned char	c_class;
+#else
     unsigned char	class;
+#endif
     unsigned char	length;
     short		num_keys;
     char        	keys[32];
 } XKeyState;
 
 typedef struct {
+#if defined(__cplusplus) || defined(c_plusplus)
+    unsigned char	c_class;
+#else
     unsigned char	class;
+#endif
     unsigned char	length;
     short		num_buttons;
     char        	buttons[32];
