@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.36 91/07/02 13:13:12 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.37 92/04/20 17:12:04 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -1278,8 +1278,8 @@ miRoundCap(pDraw, pGC, pCenter, pEnd, pCorner, pOtherCorner, fLineEnd,
 	 * to be the corners, we assure that the cap will meet up with the
 	 * rest of the line */
 	miFillSppPoly(pDraw, pGC, cpt, pArcPts, -xOrg, -yOrg, xFtrans, yFtrans);
-	xfree(pArcPts);
     }
+    xfree(pArcPts);
 }
 
 /*
