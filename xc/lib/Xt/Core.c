@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.37 90/04/13 20:14:01 swick Exp $ */
+/* $XConsortium: Core.c,v 1.39 90/07/03 10:52:32 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -248,6 +248,10 @@ static void CoreDestroy (widget)
 {
     _XtFreeEventTable(&widget->core.event_table);
     XtFree((char *) widget->core.tm.proc_table);
+    if (widget->core.tm.translations &&
+        widget->core.tm.translations->accProcTbl) {
+	  XtFree( (char*)widget->core.tm.translations );
+    }
     _XtUnregisterWindow(widget->core.window, widget);
 
     if (widget->core.popup_list != NULL)
