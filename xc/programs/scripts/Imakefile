@@ -7,7 +7,7 @@ CppScriptTarget(makedepend,mdepend.cpp,-DPREPROC='"'"$(PREPROCESSCMD)"'"',$(ICON
 CppScriptTarget(mergelib,mergelib.cpp,"-DARCMD=$(AR)" "-DRANLIB=$(RANLIB)",$(ICONFIGFILES))
 
 InstallProgram(xmkmf,$(BINDIR))
-InstallNamedProgram(mkdirhier.sh,mkdirhier,$(BINDIR))
+InstallNamedProg(mkdirhier.sh,mkdirhier,$(BINDIR))
 #if UseCCMakeDepend
 InstallProgram(makedepend,$(BINDIR))
 #endif
