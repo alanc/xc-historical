@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium$";
+static char Xrcsid[] = "$XConsortium: Pointer.c,v 1.1 89/12/14 14:56:54 swick Exp $";
 #endif
 
 /********************************************************
@@ -55,10 +55,9 @@ Widget _XtProcessPointerEvent(event, widget, pdi)
 		    for (i = pdi->traceDepth; 
 			 i > 0 && !newGrab; 
 			 i--)
-		      newGrab = _XtCheckServerGrabsOnWidget(event, 
+		      newGrab = _XtCheckServerGrabsOnWidget((XEvent*)event, 
 							    pdi->trace[i-1],
-							    POINTER,
-							    pdi);
+							    POINTER);
 		}
 	      if (newGrab)
 		{
