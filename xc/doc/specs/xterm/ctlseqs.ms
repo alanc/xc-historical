@@ -1,6 +1,6 @@
 .\"#! troff -Q -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
-.\" $XConsortium: ctlseqs.ms,v 1.5 91/07/01 10:55:40 gildea Exp $
+.\" $XConsortium: ctlseqs.ms,v 1.6 91/07/01 17:15:04 gildea Exp $
 .\"
 .\" Originally written by Edward Moy, University of California,
 .\" Berkeley, edmoy@violet.berkeley.edu, for the X.V10R4 xterm.
@@ -337,7 +337,7 @@ Request Terminal Parameters (DECREQTPARM)
 DEC Private Mode Set (DECSET)
   \*(Ps = \*1 \(-> Application Cursor Keys (DECCKM)
   \*(Ps = \*2 \(-> Designate USASCII for character sets G0-G3.
-(In a real VT102, this selects VT52 mode (DECANM), which \fIxterm\fP
+(In the VT102, this selects VT52 mode (DECANM), which \fIxterm\fP
 doesn't support.)
   \*(Ps = \*3 \(-> 132 Column Mode (DECCOLM)
   \*(Ps = \*4 \(-> Smooth (Slow) Scroll (DECSCLM)
@@ -501,13 +501,17 @@ Form Feed or New Page (Ctrl-L)
 .IP \\*(Cr
 Carriage Return (Ctrl-M)
 .IP \\*(Es\\*(Et
-Switch to VT100 Mode (ESC Ctrl-D)
+Switch to VT100 Mode (ESC Ctrl-C)
 .IP \\*(Es\\*(En
 Return Terminal Status (ESC Ctrl-E)
 .IP \\*(Es\\*(Lf
 PAGE (Clear Screen)
+.IP \\*(Es\\*(So
+Begin 4015 APL mode (ignored by \fIxterm\fP) (ESC Ctrl-N)
+.IP \\*(Es\\*(Si
+End 4015 APL mode (ignored by \fIxterm\fP) (ESC Ctrl-O)
 .IP \\*(Es\\*(Eb
-COPY (Save Tektronix Codes to File COPYyy-mm-dd.hh:mm:ss) (ESC Ctrl-W)
+COPY (Save Tektronix Codes to file COPYyy-mm-dd.hh:mm:ss) (ESC Ctrl-W)
 .IP \\*(Es\\*(Ca
 Bypass Condition (ESC Ctrl-X)
 .IP \\*(Es\\*(Su
