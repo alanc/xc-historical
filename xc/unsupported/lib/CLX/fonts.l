@@ -74,39 +74,43 @@
 	     `(defun ,name (font index)
 		(declare (type font font)
 			 (type array-index index))
-		(declare (values ,type))
-		(the ,type
-		     ,(from
-			`(the int16
-			      (let ((char-info-vector (font-char-infos font)))
-				(declare (type char-info-vec char-info-vector))
-				(if (index-zerop (length char-info-vector))
-				    ;; Fixed width font
-				    (aref (the char-info-vec (font-max-bounds font)) ,n)
-				  ;; Variable width font
-				  (aref char-info-vector
-					(index+ (index* 6 (index- index (font-min-char font)))
-						,n))))))))
+		(declare (values (or null ,type)))
+		(when (and (font-name font)
+			   (index>= (font-max-char font) index (font-min-char font)))
+		  (let ((char-info-vector (font-char-infos font)))
+		    (declare (type char-info-vec char-info-vector))
+		    (if (index-zerop (length char-info-vector))
+			;; Fixed width font
+			(let ((bounds (font-max-bounds font)))
+			  (declare (type char-info-vec bounds))
+			  (the ,type ,(from `(the int16 (aref bounds ,n)))))
+		      ;; Variable width font
+		      (let ((info-index
+			      (index+ (index* 6 (index- index (font-min-char font))) ,n)))
+			(declare (type array-index info-index))
+			(aref char-info-vector info-index))))))
 	     result)
 	   (push `(proclaim '(inline ,name)) result)
 	   (setq name (xintern 'min-char- (caar field)))
 	   (push
 	     `(defun ,name (font)
 		(declare (type font font))
-		(declare (values ,type))
-		(the ,type ,(from `(the int16
-					(aref (the char-info-vec (font-min-bounds font))
-					      ,n)))))
+		(declare (values (or null ,type)))
+		(when (font-name font)
+		  (the ,type ,(from `(the int16
+					  (aref (the char-info-vec (font-min-bounds font))
+						,n))))))
 	     result)
 	   (push `(proclaim '(inline ,name)) result)
 	   (setq name (xintern 'max-char- (caar field)))
 	   (push
 	     `(defun ,name (font)
 		(declare (type font font))
-		(declare (values ,type))
-		(the ,type ,(from `(the int16
-					(aref (the char-info-vec (font-max-bounds font))
-					      ,n)))))
+		(declare (values (or null ,type)))
+		(when (font-name font)
+		  (the ,type ,(from `(the int16
+					  (aref (the char-info-vec (font-max-bounds font))
+						,n))))))
 	     result)
 	   (push `(proclaim '(inline ,name)) result)))
 	  
