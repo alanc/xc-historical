@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.108 87/09/09 10:18:23 rws Locked $ */
+/* $Header: events.c,v 1.109 87/10/02 15:31:47 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -155,7 +155,7 @@ static ScreenPtr currentScreen;
  *	This is a CARD16 bitmap 'cos it includes the mouse buttons to
  *	make grab processing simpler.
  */
-static CARD16 keyModifiersList[MAP_LENGTH];
+CARD16 keyModifiersList[MAP_LENGTH];
 static CARD16 maxKeysPerModifier;
 /*
  *	We also keep a copy of the modifier map in the format
