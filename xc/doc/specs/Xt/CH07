@@ -1,4 +1,4 @@
-.\" $XConsortium: CH07,v 1.6 91/07/31 20:24:11 swick Exp $
+.\" $XConsortium: CH07,v 1.7 91/08/26 13:34:16 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -864,7 +864,7 @@ If the descendant's class is not a subclass of Core, the descendant is
 replaced by its closest windowed ancestor.
 .LP
 When there is no modal cascade, keyboard events can be dispatched
-to a widget in one of four ways.  Assume the server delivered the
+to a widget in one of five ways.  Assume the server delivered the
 event to the window for widget E (because of X input focus, key or
 keyboard grabs, or pointer position).
 .IP \(bu 3
