@@ -1,4 +1,4 @@
-/* $XConsortium: spglyph.c,v 1.4 91/06/04 15:50:16 rws Exp $ */
+/* $XConsortium: spglyph.c,v 1.8 91/07/16 20:19:40 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -226,8 +226,14 @@ sp_open_bitmap(x_set_width, y_set_width, xorg, yorg, xsize, ysize)
     int         off_horz;
     int         off_vert;
 
-    off_horz = (fix15) ((xorg + 32768L) / 65536);
-    off_vert = (fix15) ((yorg + 32768L) / 65536);
+    if (xorg < 0)
+	off_horz = (fix15) ((xorg - 32768L) / 65536);
+    else
+	off_horz = (fix15) ((xorg + 32768L) / 65536);
+    if (yorg < 0)
+	off_vert = (fix15) ((yorg - 32768L) / 65536);
+    else
+	off_vert = (fix15) ((yorg + 32768L) / 65536);
     ci->metrics.leftSideBearing = off_horz;
     ci->metrics.descent = -off_vert;
     ci->metrics.rightSideBearing = xsize + off_horz;
