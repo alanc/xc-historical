@@ -1,4 +1,4 @@
-/* $XConsortium: miStruct.c,v 5.3 91/12/26 18:03:59 hersh Exp $ */
+/* $XConsortium: miStruct.c,v 5.4 92/01/30 15:33:14 mor Exp $ */
 
 
 /***********************************************************
@@ -589,7 +589,7 @@ InquireStructureInfo(fpFormat, pStruct, itemMask, pEditMode, pElOffset, pNumElem
 	 * length
 	 */
 	*pLength = MISTR_LENGTH(pheader);
-	*pHasRefs = MISTR_NUM_REFS(pheader);
+	*pHasRefs = MISTR_NUM_PARENTS(pheader) != 0;
 	return (Success);
 }				/* InquireStructureInfo */
 
@@ -2041,47 +2041,34 @@ ChangeStructureReferences(pStruct, pNewStruct)
     execStrOC.head.length = 2;
     execStrOC.id = (pexStructure) pNewStruct;
 
-    /** Search through each of the structure's parents **/
+    /*
+     * Update all references to this structure by walking through the
+     * structure's parent list.  Note that if the structure is referenced
+     * more than once by a parent structure, there will be more than one
+     * occurence of the parent in the parent list.
+     */
+    
     for (loopcount = pstruct->parents->numObj; loopcount > 0; loopcount--) {
 
-	/*
-	 * look through all of this structure's elements to change all 
-	 * references to this structure the parent list is changed in loop, 
-	 * so always get first parent
-	 */
+	/* The parent list changes in loop, so always get first parent */
 	parentHandle = *(diStructHandle *) pstruct->parents->pList;
 	pparentStruct = (miStructPtr) (parentHandle)->deviceData;
 
 	/* start looking at the beginning of the parent structure */
-	position.whence = PEXBeginning;
-	position.offset = 0;
-	offsetFromStart = 0;
+        position.whence = PEXBeginning;
+        position.offset = 0;
+        offsetFromStart = 0;
 
-	do {
-	    if ((foundExecuteElement =
-			find_execute_structure(	parentHandle, &position,
-						pStruct, &offsetFromStart))
-		    == PEXFound) {
+    	foundExecuteElement = find_execute_structure (parentHandle, &position,
+		pStruct, &offsetFromStart);
+
+    	if (foundExecuteElement == PEXFound) {
 		MISTR_FIND_EL(pparentStruct, offsetFromStart, pel);
 		err = (*ReplaceCSSElementTable[PEXOCExecuteStructure])
 					(parentHandle, pel, &execStrOC);
-		if (err != Success) return (err); }
-
-	    /*
-	     * continue looking for other elements at the element
-	     * following the last one found
-	     */
-	    position.whence = PEXBeginning;
-	    position.offset = offsetFromStart + 1;
-
-	    /*
-	     * if the last one found was the last element in the
-	     * struct, don't continue
-	     */
-	    if (offsetFromStart == MISTR_NUM_EL(pstruct)) break;
-
-	} while (foundExecuteElement == PEXFound);
-
+		if (err != Success) return (err);
+	} else
+		return (!Success);
     }
 
     /*
