@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.9 92/01/30 16:53:17 eswu Exp $ */
+/* $XConsortium: fonts.c,v 1.10 92/03/17 18:55:15 eswu Exp $ */
 /*
  * font control
  */
@@ -23,9 +23,6 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * $NCDId: @(#)fonts.c,v 4.14 1991/06/27 19:01:42 lemke Exp $
- *
  */
 
 #include        "FS.h"
@@ -963,7 +960,7 @@ do_list_fonts_with_info(client, c)
 		name = c->savedName;
 		namelen = strlen(name);
 	    }
-	    err = LoadFontHeader(pFontInfo, &hdr, &prop_info);
+	    err = LoadXFontInfo(client, pFontInfo, &hdr, &prop_info);
 	    if (err != Successful)
 		break;
 	    lenpropdata = sizeof(fsPropInfo) +
@@ -972,45 +969,62 @@ do_list_fonts_with_info(client, c)
 
 	    reply->type = FS_Reply;
 	    reply->length =
-		(sizeof(fsListFontsWithXInfoReply) + sizeof(fsFontHeader) +
+		(sizeof(fsListFontsWithXInfoReply) +
 		 lenpropdata + namelen + 3) >> 2;
 	    reply->sequenceNumber = client->sequence;
 	    reply->nameLength = namelen;
 	    reply->nReplies = numFonts;
 	    reply->header = hdr;
 	    WriteReplyToClient(client, sizeof(fsListFontsWithXInfoReply), reply);
-	    (void) WriteToClient(client, namelen, name);
+	    if (client->major_version == 1)
+		(void) WriteToClient(client, namelen, name);
+
 	    if (client->swapped)
 		SwapPropInfo(prop_info);
-	    (void) WriteToClient(client, lenpropdata, (char *) prop_info);
+	    if (client->major_version > 1)
+		(void) WriteToClientUnpadded(client, lenpropdata, (char *) prop_info);
+	    else
+		(void) WriteToClient(client, lenpropdata, (char *) prop_info);
 	    if (pFontInfo == &fontInfo) {
 		fsfree(fontInfo.props);
 		fsfree(fontInfo.isStringProp);
 	    }
 	    fsfree(prop_info);
+
+	    if (client->major_version != 1)
+		(void) WriteToClient(client, namelen, name);
+
 	    --c->current.max_names;
 	    if (c->current.max_names < 0)
 		abort();
 	}
     }
 
+    /*
+     * send the final reply
+     */
     if (err == Successful) {
-	reply = c->reply;
-	length = sizeof(fsListFontsWithXInfoReply);
+	fsGenericReply *final_reply;
+
+	final_reply = (fsGenericReply *)c->reply;
+	if (client->major_version > 1)
+	    length = sizeof(fsGenericReply);
+	else
+	    length = sizeof(fsListFontsWithXInfoReply);
 	if (c->length < length) {
-	    reply = (fsListFontsWithXInfoReply *) fsrealloc(c->reply, length);
-	    if (reply) {
-		c->reply = reply;
+	    final_reply = (fsGenericReply *) fsrealloc(c->reply, length);
+	    if (final_reply) {
+		c->reply = (fsListFontsWithXInfoReply *)final_reply;
 		c->length = length;
 	    } else
 		err = AllocError;
 	}
 	if (err == Successful) {
-	    bzero((char *) reply, sizeof(fsListFontsWithXInfoReply));
-	    reply->type = FS_Reply;
-	    reply->sequenceNumber = client->sequence;
-	    reply->length = sizeof(fsListFontsWithXInfoReply) >> 2;
-	    WriteReplyToClient(client, length, reply);
+	    final_reply->type = FS_Reply;
+	    final_reply->data1 = 0; /* notes that this is final */
+	    final_reply->sequenceNumber = client->sequence;
+	    final_reply->length = length >> 2;
+	    WriteReplyToClient(client, length, final_reply);
 	}
     }
     if (err != Successful)
