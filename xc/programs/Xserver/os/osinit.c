@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.25 89/03/31 08:40:23 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.26 89/05/21 13:56:34 rws Exp $ */
 #ifdef apollo
 #ifndef APOLLO_SR9
 #define NDBM
@@ -113,6 +113,7 @@ OsInit()
 
 
 #ifndef SYSV
+#if !defined(AIXrt) && !defined(AIX386)
 	if (limitDataSpace >= 0)
 	{
 	    struct rlimit	rlim;
@@ -139,6 +140,7 @@ OsInit()
 		(void)setrlimit(RLIMIT_STACK, &rlim);
 	    }
 	}
+#endif
 #endif
 	been_here = TRUE;
     }
