@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.52 87/09/11 07:18:27 toddb Exp $ */
+/* $Header: colormap.c,v 1.53 87/10/03 12:52:36 rws Locked $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -728,7 +728,7 @@ AllocColor (pmap, pred, pgreen, pblue, pPix, client)
     case TrueColor:
 	/* Look up each component in its own map, then OR them together */
 	pixel = FindBestPixel(pmap->red, entries, &rgb, REDMAP);
-	*pPix |= pixel << pVisual->offsetRed;
+	*pPix = pixel << pVisual->offsetRed;
 	pixel = FindBestPixel(pmap->green, entries, &rgb, GREENMAP);
 	*pPix |= pixel << pVisual->offsetGreen;
 	pixel = FindBestPixel(pmap->blue, entries, &rgb, BLUEMAP);
