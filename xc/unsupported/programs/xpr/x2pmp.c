@@ -1,10 +1,10 @@
 /*
- *	$Source: /orpheus/u1/X11/clients/xpr/RCS/x2pmp.c,v $
- *	$Header: x2pmp.c,v 1.2 87/10/21 16:34:52 swick Locked $
+ *	$Source: /usr/expo/X/src/clients/xpr/RCS/x2pmp.c,v $
+ *	$Header: x2pmp.c,v 1.3 87/10/30 12:58:50 swick Exp $
  */
 
 #ifndef lint
-static char *rcsid_x2pmp_c = "$Header: x2pmp.c,v 1.2 87/10/21 16:34:52 swick Locked $";
+static char *rcsid_x2pmp_c = "$Header: x2pmp.c,v 1.3 87/10/30 12:58:50 swick Exp $";
 #endif	lint
 
 /* x2pmp.c: Translate xwd window dump format into PMP format for the
@@ -383,7 +383,7 @@ FILE *p;
 enum orientation orient;
 {
     PMP(p, 2);
-    fprintf(p, "\322%c", (char) orient);
+    fprintf(p, "\322%c", (int) orient);
 }
 
 /* generate bitmap */
