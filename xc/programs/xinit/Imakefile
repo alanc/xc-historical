@@ -1,0 +1,4 @@
+       INCLUDES = -I../../
+LOCAL_LIBRARIES = ../../Xlib/libX11.a
+
+SimpleProgramTarget(xinit, $(BINDIR))
