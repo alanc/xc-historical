@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicI.h,v 1.36 89/09/14 10:36:17 swick Exp $
+* $XConsortium: IntrinsicI.h,v 1.37 89/09/19 20:12:43 swick Exp $
 * $oHeader: IntrinsicI.h,v 1.5 88/08/31 16:21:08 asente Exp $
 */
 
@@ -149,8 +149,8 @@ extern int bcmp();
  *
  **************************************************************/
 
-#ifndef XAPPLOADDIR
-#define XAPPLOADDIR "/usr/lib/X11/app-defaults/"
+#ifndef XFILESEARCHPATHDEFAULT
+#define XFILESEARCHPATHDEFAULT "/usr/lib/X11/%L/%T/%N%S:/usr/lib/X11/%l/%T/%N%S:/usr/lib/X11/%T/%N%S"
 #endif
 #ifndef ERRORDB
 #define ERRORDB "/usr/lib/X11/XtErrorDB"
