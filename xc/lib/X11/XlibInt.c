@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.90 88/09/30 17:25:18 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.91 89/02/01 18:15:50 rws Exp $
  */
 
 #include "copyright.h"
@@ -143,7 +143,11 @@ _XEventsQueued (dpy, mode)
 	register xReply *rep;
 	
 	if (mode == QueuedAfterFlush)
+	{
 	    _XFlush(dpy);
+	    if (dpy->qlen)
+		return(dpy->qlen);
+	}
 	if (BytesReadable(dpy->fd, (char *) &pend) < 0)
 	    (*_XIOErrorFunction)(dpy);
 	if ((len = pend) < SIZEOF(xReply))
