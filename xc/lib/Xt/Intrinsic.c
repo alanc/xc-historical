@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.157 90/12/27 14:35:20 rws Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.158 90/12/28 14:52:05 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -209,7 +209,7 @@ static void RealizeWidget(widget)
 
     if (widget->core.tm.proc_table == NULL)
 	_XtBindActions(widget, &widget->core.tm);
-    _XtInstallTranslations(widget, widget->core.tm.translations);
+    _XtInstallTranslations(widget);
 
     ComputeWindowAttributes (widget, &value_mask, &values);
     realize = widget->core.widget_class->core_class.realize;

@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.41 90/07/12 17:49:14 swick Exp $ */
+/* $XConsortium: Core.c,v 1.42 90/08/17 15:23:04 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -351,7 +351,7 @@ static Boolean CoreSetValues(old, reference, new)
 	    XtUninstallTranslations((Widget)new);
 	    new->core.tm.translations = translations;
 	    _XtBindActions(new, &new->core.tm);
-	    _XtInstallTranslations((Widget) new, new->core.tm.translations);
+	    _XtInstallTranslations((Widget) new);
 	    _XtRegisterGrabs(new, False);
 	    if (translations->accProcTbl) _XtRegisterAccRemoveCallbacks(new);
 	}
