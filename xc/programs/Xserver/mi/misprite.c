@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.44 94/01/07 09:44:57 dpw Exp $ */
+/* $XConsortium: misprite.c,v 5.45 94/03/16 15:02:02 dpw Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -1510,7 +1510,7 @@ miSpriteTextOverlap (pDraw, font, x, y, n, charinfo, imageblt, w, cursorBox)
     DrawablePtr   pDraw;
     FontPtr	  font;
     int		  x, y;
-    unsigned long n;
+    unsigned int  n;
     CharInfoPtr   *charinfo;
     Bool	  imageblt;
     unsigned int  w;
@@ -1601,7 +1601,8 @@ miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, textType, cursorBox)
 {
     CharInfoPtr *charinfo;
     register CharInfoPtr *info;
-    unsigned long n, i;
+    unsigned long i;
+    unsigned int  n;
     int		  w;
     void   	  (*drawFunc)();
 
@@ -1614,10 +1615,11 @@ miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, textType, cursorBox)
 	return x;
 
     GetGlyphs(pGC->font, count, (unsigned char *)chars,
-	      fontEncoding, &n, charinfo);
+	      fontEncoding, &i, charinfo);
+    n = (unsigned int)i;
     w = 0;
     if (!imageblt)
-	for (info = charinfo, i = n; i--; info++)
+	for (info = charinfo; i--; info++)
 	    w += (*info)->metrics.characterWidth;
 
     if (n != 0) {
