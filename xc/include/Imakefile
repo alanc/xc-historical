@@ -26,7 +26,6 @@ IMPORTS = \
 	$(TOOLKITSRC)/Intrinsic.h \
 	$(TOOLKITSRC)/IntrinsicP.h \
 	$(TOOLKITSRC)/Misc.h \
-	$(TOOLKITSRC)/Popup.h \
 	$(TOOLKITSRC)/Quarks.h \
 	$(TOOLKITSRC)/Shell.h \
 	$(TOOLKITSRC)/TM.h \
