@@ -75,100 +75,28 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.IP accelerators 1.5i
-A list of event to action bindings to be executed by this widget, even
-though the event occurred in another widget.  See Section 10.4 in the
-\fI\*(xT\fP.
-.IP ancestorSensitive 1.5i
-The sensitivity state of the ancestors of this widget.  A widget is
-insensitive if either it or any of its ancestors is insensitive.
-This resource should not be changed with \fBXtSetValues\fP.  It may,
-however, be queried.
-.IP background 1.5i
-An index into this widget's colormap specifying the background color of the
-widget's window.
-.IP backgroundPixmap 1.5i
-The background pixmap of this widget's window..  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
-used instead of the background color.
-.IP \fBbitmap\fP 1.5i
-A bitmap to display instead of a label.  The default size of the Label
-will be just large enough to contain the bitmap and the widget's
-internal width and height.  The resource converter for this resource
-constructs bitmaps from the contents of files, given a file name.  See
-\fBConverting Bitmaps\fP for details on the string to bitmap
-conversion.  If this bitmap is one bit deep then the 1's will be
-rendered in the foreground color, and the 0's in the background color.
-If \fBbitmap\fP has a depth equal to the depth resource, it is copied
-directly into the window.
-.IP borderColor 1.5i
-An index into this widget's colormap specifying the border color of the
-widget's window.
-.IP borderPixmap 1.5i
-The border pixmap of this widget's window.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will
-be used instead of the border color.
-.IP borderWidth 1.5i
-The width of this widget's window border.
-.IP colormap 1.5i
-The colormap that this widget will use.
-.IP cursor 1.5i
-The cursor that will be displayed as the pointer, whenever the pointer
-is in this widget.
-.IP depth 1.5i
-The depth of this widget's window.
-.IP destroyCallback 1.5i
-All functions on this list are called when this widget is destroyed.
-.IP \fBfont\fP 1.5i
-The text font to use when displaying the \fBlabel\fP.
-.IP \fBforeground\fP 1.5i
-An index into this widget's colormap specifying the color that will be
-used to draw the \fBlabel\fP.  This color is also used to render all
-1's in \fBbitmap\fP if it is one plane deep. 
-.IP height 1.5i
-.br
-.ns
-.IP width 1.5i
-The height and width of this widget in pixels.
-.IP insensitiveBorder 1.5i
-This pixmap will be tiled into the widget's border if the widget becomes
-insensitive.
-.IP \fBinternalHeight\fP 1.5i
-.br
-.ns
-.IP \fBinternalWidth\fP 1.5i
-The minimum amount of space to leave between the label or bitmap and the
-vertical and horizontal edges of the window.
-.IP \fBjustify\fP 1.5i
-Specifies left, center, or right alignment of the label within the
-widget.  This resource may be specified with the values
-\fBXtJustifyLeft\fP, \fBXtJustifyCenter\fP, or \fBXtJustifyRight\fP.
-When specifying the justification from a resource file the values
-\fBleft\fP, \fBcenter\fP, or \fBright\fP may be used.  This resource
-only has noticable effect when the width of the widget is larger than
-necessary.
-.IP \fBlabel\fP 1.5i
-This is a Latin1 text string to be displayed in the Label's window.
-.IP mappedWhenManaged 1.5i
-If this resource is \fBTrue\fP, then the widget's window will
-automatically be mapped by the Toolkit when it is realized and managed.
-.IP \fBresize\fP 1.5i
-Specifies whether the Label widget should attempt to resize to its
-preferred dimensions whenever its resources are modified with
-\fBXtSetValues\fP.  This attempt to resize may be denied by the parent
-of this widget.  Also, the parent is free to resize the widget
-regardless of the state of this resource.
-.IP screen 1.5i
-The screen on which this widget is displayed.  This is not a settable
-resource.
-.IP sensitive 1.5i
-Whether or not the toolkit will pass user events to this widget.  The
-widget will not get input events if either \fBancestorSensitive\fP or 
-\fBsensitive\fP is \fBFalse\fP.
-.IP translations 1.5i
-The event bindings associated with this widget.
-.IP x 1.5i
-.br
-.ns
-.IP y 1.5i
-The location of the upper left outside corner of this widget in its parent.
+.Ac
+.As
+.Bg
+.Gp
+.Bm Bold
+.Bc
+.Bp
+.Bw
+.Cm
+.Cu
+.De
+.Dc
+.Lf Bold
+.Lg Bold
+.Hw
+.Ib
+.Ih Bold
+.Ju Bold
+.La Bold
+.Mm
+.Re Bold
+.Sc
+.Se
+.Tr
+.Xy
