@@ -1,5 +1,5 @@
 /*
-* $XConsortium: CoreP.h,v 1.11 89/06/16 18:09:00 jim Exp $
+* $XConsortium: CoreP.h,v 1.12 89/09/07 17:49:01 swick Exp $
 * $oHeader: CoreP.h,v 1.2 88/08/18 15:54:37 asente Exp $
 */
 
@@ -106,7 +106,7 @@ typedef struct _CoreClassPart {
     Cardinal        widget_size;	/* size in bytes of widget record   */
     XtProc	    class_initialize;   /* class initialization proc	    */
     XtWidgetClassProc class_part_initialize; /* dynamic initialization	    */
-    Boolean         class_inited;       /* has class been initialized?      */
+    XtEnum          class_inited;       /* has class been initialized?      */
     XtInitProc      initialize;		/* initialize subclass fields       */
     XtArgsProc      initialize_hook;    /* notify that initialize called    */
     XtRealizeProc   realize;		/* XCreateWindow for widget	    */
@@ -116,7 +116,7 @@ typedef struct _CoreClassPart {
     Cardinal        num_resources;      /* number of entries in resources   */
     XrmClass        xrm_class;		/* resource class quarkified	    */
     Boolean         compress_motion;    /* compress MotionNotify for widget */
-    Boolean         compress_exposure;  /* compress Expose events for widget*/
+    XtEnum          compress_exposure;  /* compress Expose events for widget*/
     Boolean         compress_enterleave;/* compress enter and leave events  */
     Boolean         visible_interest;   /* select for VisibilityNotify      */
     XtWidgetProc    destroy;		/* free data for subclass pointers  */
@@ -126,9 +126,9 @@ typedef struct _CoreClassPart {
     XtArgsFunc      set_values_hook;    /* notify that set_values called    */
     XtAlmostProc    set_values_almost;  /* set_values got "Almost" geo reply */
     XtArgsProc      get_values_hook;    /* notify that get_values called    */
-    XtAcceptFocusProc accept_focus;      /* assign input focus to widget     */
+    XtAcceptFocusProc accept_focus;     /* assign input focus to widget     */
     XtVersionType   version;	        /* version of intrinsics used	    */
-    struct _XtOffsetRec *callback_private;/* list of callback offsets       */
+    XtPointer       callback_private;   /* list of callback offsets       */
     String          tm_table;           /* state machine                    */
     XtGeometryHandler query_geometry;	/* return preferred geometry        */
     XtStringProc    display_accelerator;/* display your accelerator	    */
