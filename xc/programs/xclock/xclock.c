@@ -1,4 +1,4 @@
-/* $XConsortium: xclock.c,v 1.32 91/04/19 13:46:20 converse Exp $ */
+/* $XConsortium: xclock.c,v 1.33 93/09/18 19:59:58 rws Exp $ */
 
 /*
  * xclock --  Hacked from Tony Della Fera's much hacked clock program.
@@ -35,7 +35,6 @@
 #include "clmask.bit"
 
 extern void exit();
-static void quit();
 
 /* Command line options table.  Only resources are entered here...there is a
    pass over the remaining options after XtParseCommand is let loose. */
@@ -53,7 +52,7 @@ static XrmOptionDescRec options[] = {
 {"-analog",	"*clock.analog",	XrmoptionNoArg,		"TRUE"},
 };
 
-
+static void quit();
 static XtActionsRec xclock_actions[] = {
     { "quit",	quit },
 };
@@ -75,17 +74,65 @@ Syntax(call)
 	exit(1);
 }
 
+static void die(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    XCloseDisplay(XtDisplayOfObject(w));
+    exit(0);
+}
+
+static Widget FindSessionWidget(w)
+    Widget	w;
+{
+    Widget	session = NULL;
+    Arg		arg;
+
+    while (w && ! XtIsApplicationShell(w))
+	w = XtParent(w);
+    if (w) {
+	XtSetArg(arg, XtNsession, &session);
+	XtGetValues(w, &arg, ONE);
+    }
+    return session;
+}
+
+static void quit (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    Widget session;
+
+    if (event->type == ClientMessage &&
+	event->xclient.data.l[0] != wm_delete_window) {
+	XBell (XtDisplay(w), 0);
+	return;
+    }
+
+    /* close the connection to the session manager if one exists */
+    session = FindSessionWidget(w);
+    if (session)
+	XtCallCallbacks(session, XtNdieCallback, NULL);
+    else 
+	die(w, NULL, NULL);
+}
+ 
 void main(argc, argv)
     int argc;
     char **argv;
 {
-    Widget toplevel;
+    Widget toplevel, session;
     Arg arg;
     Pixmap icon_pixmap = None;
     XtAppContext app_con;
 
-    toplevel = XtAppInitialize (&app_con, "XClock", options, XtNumber(options),
-				&argc, argv, NULL, NULL, ZERO);
+    toplevel = XtSessionInitialize(&app_con, "XClock",
+				   NULL, sessionObjectClass,
+				   options, XtNumber(options),
+				   &argc, argv, NULL, NULL, ZERO);
     if (argc != 1) Syntax(argv[0]);
 
     XtAppAddActions (app_con, xclock_actions, XtNumber(xclock_actions));
@@ -121,21 +168,9 @@ void main(argc, argv)
 				    False);
     (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
 			    &wm_delete_window, 1);
+    session = FindSessionWidget(toplevel);
+    if (session)
+	XtAddCallback(session, XtNdieCallback, die, NULL);
+
     XtAppMainLoop (app_con);
-}
-
-
-static void quit (w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
-{
-    if (event->type == ClientMessage &&
-	event->xclient.data.l[0] != wm_delete_window) {
-	XBell (XtDisplay(w), 0);
-	return;
-    }
-    XCloseDisplay (XtDisplay(w));
-    exit (0);
 }
