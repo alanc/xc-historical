@@ -160,7 +160,7 @@ static void _CvtStringToEdgeType(args, num_args, fromVal, toVal)
     XrmQuark q;
     char lowerName[1000];
 
-    XmuCopyISOLatin1Lowered ((char*)fromVal->addr, lowerName);
+    XmuCopyISOLatin1Lowered (lowerName, (char*)fromVal->addr);
     q = XrmStringToQuark(lowerName);
     if (q == XtQChainLeft) {
 	edgeType = XtChainLeft;

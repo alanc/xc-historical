@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.86 89/05/11 18:00:03 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.87 89/05/19 17:18:26 kit Exp $";
 #endif
 
 
@@ -45,7 +45,6 @@ SOFTWARE.
 Atom FMT8BIT = NULL;
 
 extern void bcopy();
-extern void LowerCase();
 extern int errno, sys_nerr;
 extern char* sys_errlist[];
 
@@ -77,7 +76,8 @@ static XawTextSelectType defaultSelectTypes[] = {
 };
 
 static caddr_t defaultSelectTypesPtr = (caddr_t)defaultSelectTypes;
-extern char defaultTextTranslations[];	/* fwd ref */
+extern char *_XawDefaultTextTranslations1, *_XawDefaultTextTranslations2,
+  *_XawDefaultTextTranslations3;
 static Dimension defWidth = 100;
 static Dimension defHeight = DEFAULT_TEXT_HEIGHT;
 
@@ -136,8 +136,7 @@ static void CvtStringToEditMode(args, num_args, fromVal, toVal)
     XrmQuark    q;
     char        lowerName[1000];
 
-/* ||| where to put LowerCase */
-    LowerCase((char *)fromVal->addr, lowerName);
+    XmuCopyISOLatin1Lowered (lowerName, (char *)fromVal->addr);
     q = XrmStringToQuark(lowerName);
     if (q == XtQTextRead ) {
         editType = XawtextRead;
@@ -161,9 +160,21 @@ static void CvtStringToEditMode(args, num_args, fromVal, toVal)
 
 static void ClassInitialize()
 {
+    int len1 = strlen (_XawDefaultTextTranslations1);
+    int len2 = strlen (_XawDefaultTextTranslations2);
+    int len3 = strlen (_XawDefaultTextTranslations3);
+    char *buf = XtMalloc (len1 + len2 + len3 + 1);
+
     XtQTextRead   = XrmStringToQuark(XtEtextRead);
     XtQTextAppend = XrmStringToQuark(XtEtextAppend);
     XtQTextEdit   = XrmStringToQuark(XtEtextEdit);
+
+    if (buf) {
+	char *cp = buf;
+	strcpy (cp, _XawDefaultTextTranslations1); cp += len1;
+	strcpy (cp, _XawDefaultTextTranslations2); cp += len2;
+	strcpy (cp, _XawDefaultTextTranslations3);
+    }
 
     XtAddConverter(XtRString, XtREditMode, CvtStringToEditMode, NULL, 0);
 }
@@ -3220,7 +3231,7 @@ TextClassRec textClassRec = {
     /* accept_focus     */      NULL,
     /* version          */	XtVersion,
     /* callback_private */      NULL,
-    /* tm_table         */      defaultTextTranslations,
+    /* tm_table         */      NULL,		    /* set in ClassInitialize */
     /* query_geometry   */	XtInheritQueryGeometry,
     /* display_accelerator*/	XtInheritDisplayAccelerator,
     /* extension	*/	NULL
