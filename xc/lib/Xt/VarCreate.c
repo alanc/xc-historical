@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: VarCreate.c,v 1.7 89/11/13 12:35:05 swick Exp $";
+    "$XConsortium: VarCreate.c,v 1.8 89/11/14 14:24:09 swick Exp $";
 #endif
 
 /*
@@ -238,7 +238,7 @@ void XtVaSetSubvalues(base, resources, num_resources, va_alist)
     va_end(var);
 
     if (typed_count != 0) {
-	XtWarning("XtVaTyped is an invalid argument to XtVaSetSubvalues()\n");
+	XtWarning("XtVaTypedArg is not valid in XtVaSetSubvalues()\n");
     }
 
     Va_start(var, num_resources);
