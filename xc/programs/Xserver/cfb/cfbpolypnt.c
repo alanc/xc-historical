@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbpolypnt.c,v 5.14 91/12/19 14:17:12 keith Exp $ */
+/* $XConsortium: cfbpolypnt.c,v 5.15 93/12/13 17:22:22 dpw Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -68,6 +68,7 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 #else
     register unsigned long    *addrl;
     register int    nlwidth;
+    register int    xoffset;
     unsigned long   *addrlt;
 #endif
     register INT32  *ppt;
@@ -125,10 +126,16 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	PointLoop(  addrpt = addrp + intToY(pt) * npwidth + intToX(pt);
 		    *addrpt = DoRRop (*addrpt, and, xor);)
     }
-#else
+#else /* !PIXEL_ADDR */
     cfbGetLongWidthAndPointer(pDrawable, nlwidth, addrl);
+    addrl = addrl + pDrawable->y * nlwidth + (pDrawable->x >> PWSH);
+    xoffset = pDrawable->x & PIM;
     and = devPriv->and;
-    PointLoop(	addrlt = addrl + intToY(pt) * nlwidth + intToX(pt);
-		*addrlt = DoRRop (*addrlt, and, xor); )
-#endif
+    PointLoop(   addrlt = addrl + intToY(pt) * nlwidth
+ 	                   + ((intToX(pt) + xoffset) >> PWSH);
+ 		   *addrlt = DoRRop (*addrlt,
+ 			   and | ~cfbmask[(intToX(pt) + xoffset) & PIM],
+ 			   xor & cfbmask[(intToX(pt) + xoffset) & PIM]);
+	     )
+#endif /* PIXEL_ADDR */
 }
