@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.11 90/11/19 17:29:45 keith Exp $
+ * $XConsortium: cfb8line.c,v 1.12 90/11/28 18:21:15 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -43,10 +43,16 @@
 #define STUPID
 #endif
 
+#ifdef __GNUC__
+/* lame compiler doesn't even look at 'register' attributes */
 #define I_H do{
 #define I_T }while(0);
 #define IMPORTANT_START I_H I_H I_H I_H I_H I_H I_H I_H I_H I_H
 #define IMPORTANT_END	I_T I_T I_T I_T I_T I_T I_T I_T I_T I_T
+#else
+#define IMPORTANT_START
+#define IMPORTANT_END
+#endif
 
 #define OUTCODES(result, x, y, box) \
     if (x < box->x1) \
