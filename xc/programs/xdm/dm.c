@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.28 89/12/05 19:04:43 keith Exp $
+ * $XConsortium: dm.c,v 1.29 89/12/06 19:32:31 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,8 +26,14 @@
 # include	<X11/Xos.h>
 # include	<sys/signal.h>
 # include	<sys/stat.h>
+# include	<errno.h>
 # include	<varargs.h>
+#ifndef F_TLOCK
+# include	<unistd.h>
+#endif
 # include	"dm.h"
+
+extern int	errno;
 
 extern void	exit (), abort ();
 
@@ -47,6 +53,7 @@ main (argc, argv)
 int	argc;
 char	**argv;
 {
+    int	oldpid;
 #ifndef SYSV
     static SIGVAL	ChildNotify ();
 #endif
@@ -72,9 +79,17 @@ char	**argv;
     }
     if (debugLevel == 0 && daemonMode)
 	    BecomeDaemon ();
-    CreateWellKnownSockets ();
+    if (oldpid = StorePid ())
+    {
+	if (oldpid == -1)
+	    LogError ("Can't create/lock pid file %s\n", pidFile);
+	else
+	    LogError ("Can't lock pid file %s, another xdm is running (pid %d)\n",
+		 pidFile, oldpid);
+	exit (1);
+    }
     InitErrorLog ();
-    StorePid ();
+    CreateWellKnownSockets ();
     (void) signal (SIGTERM, StopAll);
     (void) signal (SIGINT, StopAll);
     /*
@@ -526,20 +541,63 @@ CloseOnFork ()
     max = 0;
 }
 
+static int  pidFd;
+static FILE *pidFilePtr;
+
 StorePid ()
 {
-    FILE	*f;
+    int		oldpid;
 
     if (pidFile[0] != '\0') {
-	f = fopen (pidFile, "w");
-	if (!f) {
+	pidFd = open (pidFile, 2);
+	if (pidFd == -1 && errno == ENOENT)
+	    pidFd = creat (pidFile, 0666);
+	if (pidFd == -1 || !(pidFilePtr = fdopen (pidFd, "r+")))
+	{
 	    LogError ("process-id file %s cannot be opened\n",
 		      pidFile);
-	} else {
-	    fprintf (f, "%d\n", getpid ());
-	    fclose (f);
+	    return -1;
 	}
+	if (fscanf (pidFilePtr, "%d", &oldpid) != 1)
+	    oldpid = -1;
+	fseek (pidFilePtr, 0l, 0);
+	if (lockfPidFile)
+	{
+	    if (lockf (pidFd, F_TLOCK, 0) == -1)
+	    {
+		if (errno == EACCES)
+		    return oldpid;
+		else
+		    return -1;
+	    }
+	}
+#ifndef SYSV
+	if (flockPidFile)
+	{
+	    if (flock (pidFd, LOCK_EX|LOCK_NB) == -1)
+	    {
+		if (errno == EWOULDBLOCK)
+		    return oldpid;
+		else
+		    return -1;
+	    }
+	}
+#endif
+	fprintf (pidFilePtr, "%d\n", getpid ());
     }
+    return 0;
+}
+
+UnlockPidFile ()
+{
+    if (lockfPidFile)
+	lockf (pidFd, F_ULOCK, 0);
+#ifndef SYSV
+    if (flockPidFile)
+	flock (pidFd, LOCK_UN);
+#endif
+    close (pidFd);
+    fclose (pidFilePtr);
 }
 
 /*VARARGS*/
