@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.47 88/02/02 17:34:06 swick Locked $";
+static char rcsid[] = "$Header: Event.c,v 1.48 88/02/02 17:54:58 swick Locked $";
 #endif lint
 
 /*
@@ -314,6 +314,68 @@ static void InitializeHash()
 }
 
 
+/* %%% the following typedefs are lifted from X/lib/X/region.h;
+ * that file is too big to be included here.  XRectToRegion should
+ * become a standard part of Xlib anyway...
+ */
+
+typedef struct {
+    short x1, x2, y1, y2;
+} BOX, Box;
+
+typedef struct _XRegion {
+    short size;
+    short numRects;
+    BOX *rects;
+    BOX extents;
+} REGION;
+
+
+XUnionRectWithRegion(rect, source, dest)
+    register XRectangle *rect;
+    Region source, dest;
+{
+    REGION region;
+
+    region.rects = &region.extents;
+    region.numRects = 1;
+    region.extents.x1 = rect->x;
+    region.extents.y1 = rect->y;
+    region.extents.x2 = rect->x + rect->width;
+    region.extents.y2 = rect->y + rect->height;
+    region.size = 1;
+
+    XUnionRegion(&region, source, dest);
+}
+
+
+XtAddExposureToRegion(event, region)
+    XEvent   *event;
+    Region   region;
+{
+    XRectangle rect;
+
+    switch (event->type) {
+	case Expose:
+		rect.x = event->xexpose.x;
+		rect.y = event->xexpose.y;
+		rect.width = event->xexpose.width;
+		rect.height = event->xexpose.height;
+		break;
+	case GraphicsExpose:
+		rect.x = event->xgraphicsexpose.x;
+		rect.y = event->xgraphicsexpose.y;
+		rect.width = event->xgraphicsexpose.width;
+		rect.height = event->xgraphicsexpose.height;
+		break;
+	default:
+		return;
+    }
+
+    XUnionRectWithRegion(&rect, region, region);
+}
+
+
 static void DispatchEvent(event, widget, mask)
     register XEvent    *event;
     Widget    widget;
@@ -324,15 +386,26 @@ static void DispatchEvent(event, widget, mask)
     Opaque closure[100];
     int numprocs, i;
     XEvent nextEvent;
+    static Region exposeRegion = NULL;
 
     if (mask == ExposureMask) {
 	if (widget->core.widget_class->core_class.compress_exposure) {
-	    if (event->xexpose.count != 0) return;
-	    else {
-		/* Patch event to make it look like everything was exposed */
-		event->xexpose.x = event->xexpose.y = 0;
-		event->xexpose.width = widget->core.width;
-		event->xexpose.height = widget->core.height;
+	    if (event->xexpose.count != 0) {
+		if (exposeRegion == NULL) exposeRegion = XCreateRegion();
+		XtAddExposureToRegion(event, exposeRegion);
+		return;
+	    }
+	    if (exposeRegion != NULL) {
+		/* Patch event to have the new bounding box */
+		XRectangle rect;
+		XtAddExposureToRegion(event, exposeRegion);
+		XClipBox(exposeRegion, &rect);
+		event->xexpose.x = rect.x;
+		event->xexpose.y = rect.y;
+		event->xexpose.width = rect.width;
+		event->xexpose.height = rect.height;
+		XDestroyRegion(exposeRegion);
+		exposeRegion = NULL;
 	    }
 	}
 	if (widget->core.widget_class->core_class.expose != NULL) {
