@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.137 91/03/11 12:10:16 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.138 91/03/28 15:42:35 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1574,49 +1574,6 @@ static XtTranslations MergeThem(dest, first, second)
     }
     return newTable;
 }
-    
-
-XtTranslations TMIndexToComposer(xlations, treeIndex, numTrees, currIndex)
-    XtTranslations	xlations;
-    TMShortCard		treeIndex;
-    TMShortCard		numTrees;
-    TMShortCard		currIndex;
-{
-    XtTranslations result = NULL;
-    
-    if (currIndex == treeIndex) {
-#ifdef DEBUG
-	if (numTrees != xlations->numStateTrees)
-	  XtWarning("mismatch in TreeIndexToComposer");
-	else
-#endif /* DEBUG */
-	  return xlations;
-    }
-    else {
-	if (xlations->composers[0] &&
-	    (((int)treeIndex - (int)currIndex) <
-	     (int)xlations->composers[0]->numStateTrees)) {
-	    if (result = TMIndexToComposer(xlations->composers[0],
-					   treeIndex, 
-					   numTrees, 
-					   currIndex))
-	      return result;
-	}
-	else if (xlations->composers[1]) {
-	    TMShortCard idx ;
-	    
-	    idx = currIndex + xlations->composers[0]->numStateTrees;
-	    if (result = TMIndexToComposer(xlations->composers[1],
-					   treeIndex, 
-					   numTrees, 
-					   idx))
-	      return result;
-	}
-    }
-    return NULL;
-}
-
-
 
 /*
  * Unmerge will recursively traverse the xlation compose tree and
