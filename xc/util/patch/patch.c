@@ -1,5 +1,6 @@
 char rcsid[] =
-	"$Header: patch.c,v 2.0.2.0 90/05/01 22:17:50 davison Locked $";
+	"$XConsortium$";
+/*	"oldHeader: patch.c,v 2.0.2.0 90/05/01 22:17:50 davison Locked $"; */
 
 /* patch - a program to apply diffs to original files
  *
@@ -8,7 +9,6 @@ char rcsid[] =
  * This program may be copied as long as you don't try to make any
  * money off of it, or pretend that you wrote it.
  *
- * $Log:	patch.c,v $
  * Revision 2.0.2.0  90/05/01  22:17:50  davison
  * patch12u: unidiff support added
  * 
