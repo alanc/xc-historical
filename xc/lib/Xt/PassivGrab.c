@@ -1,11 +1,11 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: PassivGrab.c,v 1.14 90/07/26 10:07:39 swick Exp $";
+static char Xrcsid[] = "$XConsortium: PassivGrab.c,v 1.15 90/12/12 14:52:51 rws Exp $";
 #endif
 
 /********************************************************
 
 Copyright (c) 1988 by Hewlett-Packard Company
-Copyright (c) 1987, 1988, 1989 by Digital Equipment Corporation, Maynard, 
+Copyright (c) 1987, 1988, 1989,1990 by Digital Equipment Corporation, Maynard, 
               Massachusetts, and the Massachusetts Institute of Technology, 
               Cambridge, Massachusetts
 
@@ -53,42 +53,24 @@ static String XtNinvalidWidget = "invalidWidget";
 /***************************************************************************/
 
 /*
- * Create a detail mask (32 bits * 8 bytes = 256 bits), which initially
- * has all of the mask bits enabled.
- */
-
-static Mask *
-  CreateDetailMask()
-{
-    Mask *pTempMask;
-    int i;
-    
-    pTempMask = (Mask *)XtMalloc(sizeof(Mask) * MasksPerDetailMask);
-    
-    for ( i = 0; i < MasksPerDetailMask; i++)
-      pTempMask[i]= ~0;
-    
-    return pTempMask;
-    
-}
-
-
-/*
  * Turn off (clear) the bit in the specified detail mask which is associated
  * with the detail.
  */
 
-static void
-  DeleteDetailFromMask(ppDetailMask, detail)
-
-Mask **ppDetailMask;
-unsigned short detail;
-
+static void DeleteDetailFromMask(ppDetailMask, detail)
+    Mask **ppDetailMask;
+    unsigned short detail;
 {
-    if (*ppDetailMask == NULL)
-      *ppDetailMask = CreateDetailMask();
-    
-    BITCLEAR((*ppDetailMask), detail);
+    Mask *pDetailMask = *ppDetailMask;
+
+    if (!pDetailMask) {
+	int i;
+	pDetailMask = (Mask *)XtMalloc(sizeof(Mask) * MasksPerDetailMask);
+	for (i = MasksPerDetailMask; --i >= 0; )
+	    pDetailMask[i] = ~0;
+	*ppDetailMask = pDetailMask;
+    }
+    BITCLEAR((pDetailMask), detail);
 }
 
 
@@ -96,17 +78,14 @@ unsigned short detail;
  * Make an exact copy of the specified detail mask.
  */
 
-static Mask *
-  CopyDetailMask(pOriginalDetailMask)
-
-Mask *pOriginalDetailMask;
-
+static Mask *CopyDetailMask(pOriginalDetailMask)
+    Mask *pOriginalDetailMask;
 {
     Mask *pTempMask;
     int i;
     
-    if (pOriginalDetailMask == NULL)
-      return NULL;
+    if (!pOriginalDetailMask)
+	return NULL;
     
     pTempMask = (Mask *)XtMalloc(sizeof(Mask) * MasksPerDetailMask);
     
@@ -114,22 +93,6 @@ Mask *pOriginalDetailMask;
       pTempMask[i]= pOriginalDetailMask[i];
     
     return pTempMask;
-    
-}
-
-
-/*
- * Add a new passive grab entry to the current list of passive grabs.
- */
-
-static void
-  AddServerGrabToList(passiveListPtr, pGrab)
-
-XtServerGrabPtr	pGrab;
-XtServerGrabPtr	*passiveListPtr;
-{
-    pGrab->next = *passiveListPtr;
-    *passiveListPtr = pGrab;
 }
 
 
@@ -138,34 +101,42 @@ XtServerGrabPtr	*passiveListPtr;
  * specified parameters.
  */
 
-static XtServerGrabPtr CreateGrab(widget, ownerEvents, modifiers, 
-				key, pointer_mode, keyboard_mode,
-				event_mask, confine_to, cursor)
-    
+static XtServerGrabPtr CreateGrab(widget, ownerEvents, modifiers,
+				  keybut, pointer_mode, keyboard_mode,
+				  event_mask, confine_to, cursor, need_ext)
     Widget	widget;
     Boolean	ownerEvents;
     Modifiers	modifiers;
-    KeyCode 	key;
+    KeyCode 	keybut;
     int		pointer_mode, keyboard_mode;
     Mask	event_mask;
     Window 	confine_to;
     Cursor 	cursor;
+    Boolean	need_ext;
 {
     XtServerGrabPtr grab;
     
-    grab = (XtServerGrabPtr)XtMalloc(sizeof(XtServerGrabRec));
+    if (confine_to || cursor)
+	need_ext = True;
+    grab = (XtServerGrabPtr)XtMalloc(sizeof(XtServerGrabRec) +
+				     (need_ext ? sizeof(XtServerGrabExtRec)
+				      : 0));
+    grab->next = NULL;
     grab->widget = widget;
     grab->ownerEvents = ownerEvents;
-    grab->modifiersDetail.exact = modifiers;
-    grab->modifiersDetail.pMask = NULL;
-    grab->detail.exact = key;
-    grab->detail.pMask = NULL;
     grab->pointerMode = pointer_mode;
     grab->keyboardMode = keyboard_mode;
     grab->eventMask = event_mask;
-    grab->confineTo = confine_to;
-    grab->cursor = cursor;
-    grab->next = NULL;
+    grab->hasExt = need_ext;
+    grab->modifiers = modifiers;
+    grab->keybut = keybut;
+    if (need_ext) {
+	XtServerGrabExtPtr ext = GRABEXT(grab);
+	ext->pModifiersMask = NULL;
+	ext->pKeyButMask = NULL;
+	ext->confineTo = confine_to;
+	ext->cursor = cursor;
+    }
     return grab;
 }
 
@@ -177,40 +148,41 @@ static XtServerGrabPtr CreateGrab(widget, ownerEvents, modifiers,
 static void FreeGrab(pGrab)
     XtServerGrabPtr pGrab;
 {
-    if (pGrab->modifiersDetail.pMask != NULL)
-      XtFree((XtPointer)pGrab->modifiersDetail.pMask);
-    
-    if (pGrab->detail.pMask != NULL)
-      XtFree((XtPointer)pGrab->detail.pMask);
-    
-    XtFree((XtPointer)pGrab);
+    if (pGrab->hasExt) {
+	XtServerGrabExtPtr ext = GRABEXT(pGrab);
+	if (ext->pModifiersMask)
+	    XtFree((char *)ext->pModifiersMask);
+	if (ext->pKeyButMask)
+	    XtFree((char *)ext->pKeyButMask);
+    }
+    XtFree((char *)pGrab);
 }
 
+typedef struct _DetailRec {
+    unsigned short 	exact;
+    Mask  		*pMask;
+} DetailRec, *DetailPtr;
 
 /*
  * If the first detail is set to 'exception' and the second detail
  * is contained in the mask of the first, then TRUE is returned.
  */
 
-static Bool
-  IsInGrabMask(firstDetail, secondDetail, exception)
-
-DetailRec firstDetail, secondDetail;
-unsigned short exception;
-
+static Bool IsInGrabMask(firstDetail, secondDetail, exception)
+    register DetailPtr firstDetail, secondDetail;
+    unsigned short exception;
 {
-    if (firstDetail.exact == exception)
-      {
-	  if (firstDetail.pMask == NULL)
+    if (firstDetail->exact == exception) {
+	if (!firstDetail->pMask)
 	    return TRUE;
 	  
-	  /* (at present) never called with two non-null pMasks */
-	  if (secondDetail.exact == exception)
+	/* (at present) never called with two non-null pMasks */
+	if (secondDetail->exact == exception)
 	    return FALSE;
 	  
-	  if (GETBIT(firstDetail.pMask, secondDetail.exact))
+	if (GETBIT(firstDetail->pMask, secondDetail->exact))
 	    return TRUE;
-      }
+    }
     
     return FALSE;
 }
@@ -221,17 +193,14 @@ unsigned short exception;
  * exactly, then TRUE is returned.
  */
 
-static Bool 
-  IdenticalExactDetails(firstExact, secondExact, exception)
-
-unsigned short firstExact, secondExact, exception;
-
+static Bool IdenticalExactDetails(firstExact, secondExact, exception)
+    unsigned short firstExact, secondExact, exception;
 {
     if ((firstExact == exception) || (secondExact == exception))
-      return FALSE;
+	return FALSE;
     
     if (firstExact == secondExact)
-      return TRUE;
+	return TRUE;
     
     return FALSE;
 }
@@ -244,18 +213,16 @@ unsigned short firstExact, secondExact, exception;
  * TRUE is returned.
  */
 
-static Bool 
-  DetailSupersedesSecond(firstDetail, secondDetail, exception)
-
-DetailRec firstDetail, secondDetail;
-unsigned short exception;
-
+static Bool DetailSupersedesSecond(firstDetail, secondDetail, exception)
+    register DetailPtr firstDetail, secondDetail;
+    unsigned short exception;
 {
     if (IsInGrabMask(firstDetail, secondDetail, exception))
-      return TRUE;
+	return TRUE;
     
-    if (IdenticalExactDetails(firstDetail.exact, secondDetail.exact, exception))
-      return TRUE;
+    if (IdenticalExactDetails(firstDetail->exact, secondDetail->exact,
+			      exception))
+	return TRUE;
     
     return FALSE;
 }
@@ -266,20 +233,35 @@ unsigned short exception;
  * 'encompasses' the second grab entry, then TRUE is returned.
  */
 
-static Bool
-  GrabSupersedesSecond(pFirstGrab, pSecondGrab)
-
-XtServerGrabPtr pFirstGrab, pSecondGrab;
-
+static Bool GrabSupersedesSecond(pFirstGrab, pSecondGrab)
+    register XtServerGrabPtr pFirstGrab, pSecondGrab;
 {
-    if (!DetailSupersedesSecond(pFirstGrab->modifiersDetail,
-				pSecondGrab->modifiersDetail, 
-				(unsigned short)AnyModifier))
+    DetailRec first, second;
+
+    first.exact = pFirstGrab->modifiers;
+    if (pFirstGrab->hasExt)
+	first.pMask = GRABEXT(pFirstGrab)->pModifiersMask;
+    else
+	first.pMask = NULL;
+    second.exact = pSecondGrab->modifiers;
+    if (pSecondGrab->hasExt)
+	second.pMask = GRABEXT(pSecondGrab)->pModifiersMask;
+    else
+	second.pMask = NULL;
+    if (!DetailSupersedesSecond(&first, &second, (unsigned short)AnyModifier))
       return FALSE;
     
-    if (DetailSupersedesSecond(pFirstGrab->detail,
-			       pSecondGrab->detail, 
-			       (unsigned short)AnyKey))
+    first.exact = pFirstGrab->keybut;
+    if (pFirstGrab->hasExt)
+	first.pMask = GRABEXT(pFirstGrab)->pKeyButMask;
+    else
+	first.pMask = NULL;
+    second.exact = pSecondGrab->keybut;
+    if (pSecondGrab->hasExt)
+	second.pMask = GRABEXT(pSecondGrab)->pKeyButMask;
+    else
+	second.pMask = NULL;
+    if (DetailSupersedesSecond(&first, &second, (unsigned short)AnyKey))
       return TRUE;
     
     return FALSE;
@@ -298,36 +280,46 @@ XtServerGrabPtr pFirstGrab, pSecondGrab;
  *    for the other entry encompasses the first.
  */
 
-static Bool
-  GrabMatchesSecond(pFirstGrab, pSecondGrab)
-
-XtServerGrabPtr pFirstGrab, pSecondGrab;
-
+static Bool GrabMatchesSecond(pFirstGrab, pSecondGrab)
+    register XtServerGrabPtr pFirstGrab, pSecondGrab;
 {
+    DetailRec firstD, firstM, secondD, secondM;
+
     if (pDisplay(pFirstGrab) != pDisplay(pSecondGrab))
-      return FALSE;
+	return FALSE;
     
     if (GrabSupersedesSecond(pFirstGrab, pSecondGrab))
-      return TRUE;
+	return TRUE;
     
     if (GrabSupersedesSecond(pSecondGrab, pFirstGrab))
-      return TRUE;
+	return TRUE;
     
-    if (DetailSupersedesSecond(pSecondGrab->detail, 
-			       pFirstGrab->detail, 
-			       (unsigned short)AnyKey) 	&& 
-	DetailSupersedesSecond(pFirstGrab->modifiersDetail, 
-			       pSecondGrab->modifiersDetail, 
-			       (unsigned short)AnyModifier))
-      return TRUE;
+    firstD.exact = pFirstGrab->keybut;
+    firstM.exact = pFirstGrab->modifiers;
+    if (pFirstGrab->hasExt) {
+	firstD.pMask = GRABEXT(pFirstGrab)->pKeyButMask;
+	firstM.pMask = GRABEXT(pFirstGrab)->pModifiersMask;
+    } else {
+	firstD.pMask = NULL;
+	firstM.pMask = NULL;
+    }
+    secondD.exact = pSecondGrab->keybut;
+    secondM.exact = pSecondGrab->modifiers;
+    if (pSecondGrab->hasExt) {
+	secondD.pMask = GRABEXT(pSecondGrab)->pKeyButMask;
+	secondM.pMask = GRABEXT(pSecondGrab)->pModifiersMask;
+    } else {
+	secondD.pMask = NULL;
+	secondM.pMask = NULL;
+    }
+
+    if (DetailSupersedesSecond(&secondD, &firstD, (unsigned short)AnyKey) &&
+	DetailSupersedesSecond(&firstM, &secondM, (unsigned short)AnyModifier))
+	return TRUE;
     
-    if (DetailSupersedesSecond(pFirstGrab->detail, 
-			       pSecondGrab->detail, 
-			       (unsigned short)AnyKey) && 
-	DetailSupersedesSecond(pSecondGrab->modifiersDetail, 
-			       pFirstGrab->modifiersDetail, 
-			       (unsigned short)AnyModifier))
-      return TRUE;
+    if (DetailSupersedesSecond(&firstD, &secondD, (unsigned short)AnyKey) && 
+	DetailSupersedesSecond(&secondM, &firstM, (unsigned short)AnyModifier))
+	return TRUE;
     
     return FALSE;
 }
@@ -339,130 +331,114 @@ XtServerGrabPtr pFirstGrab, pSecondGrab;
  * may result in multiple entries being modified/deleted.
  */
 
-static void  DeleteServerGrabFromList(passiveListPtr, 
-				       pdi, 
-				       pMinuendGrab)
+static void DeleteServerGrabFromList(passiveListPtr, pMinuendGrab)
     XtServerGrabPtr 	*passiveListPtr;	
-    XtPerDisplayInput	pdi;
     XtServerGrabPtr 	pMinuendGrab;
 {
     register XtServerGrabPtr *next;
     register XtServerGrabPtr grab;
+    register XtServerGrabExtPtr ext;
     
-    for (next = passiveListPtr; *next; )
-      {
-	  grab = *next;
-	  
-	  if (GrabMatchesSecond(grab, pMinuendGrab) && 
-	      (pDisplay(grab) == pDisplay(pMinuendGrab)))
+    for (next = passiveListPtr; grab = *next; )
+    {
+	if (GrabMatchesSecond(grab, pMinuendGrab) && 
+	    (pDisplay(grab) == pDisplay(pMinuendGrab)))
+	{
+	    if (GrabSupersedesSecond(pMinuendGrab, grab))
 	    {
-		if (GrabSupersedesSecond(pMinuendGrab, grab))
-		  {
-		      /*
-		       * The entry being deleted encompasses the list entry,
-		       * so delete the list entry.
-		       */
-		      *next = grab->next;
-		      FreeGrab(grab);
-		      continue;
-		  }
-		
-		if ((grab->detail.exact == AnyKey)
-		    && (grab->modifiersDetail.exact != AnyModifier))
-		  {
-		      /*
-		       * If the list entry has the key detail of AnyKey, and
-		       * a modifier detail not set to AnyModifier, then we
-		       * simply need to turn off the key detail bit in the
-		       * list entry's key detail mask.
-		       */
-		      DeleteDetailFromMask(&(grab->detail.pMask),
-					   pMinuendGrab->detail.exact);
-		  }
-		else
-		  {
-		      if ((grab->modifiersDetail.exact == AnyModifier) 
-			  && (grab->detail.exact != AnyKey))
-			{
-			    /*
-			     * The list entry has a specific key detail, but its
-			     * modifier detail is set to AnyModifier; so, we only
-			     * need to turn off the specified modifier combination
-			     * in the list entry's modifier mask.
-			     */
-			    DeleteDetailFromMask(&(grab->modifiersDetail.pMask),
-						 pMinuendGrab->modifiersDetail.exact); 
-			}
-		      else
-			{
-			    if ((pMinuendGrab->detail.exact != AnyKey)
-				&& (pMinuendGrab->modifiersDetail.exact != AnyModifier))
-			      {
-				  /*
-				   * The list entry has a key detail of AnyKey and a
-				   * modifier detail of AnyModifier; the entry being
-				   * deleted has a specific key and a specific modifier
-				   * combination.  Therefore, we need to mask off the
-				   * keycode from the list entry, and also create a
-				   * new entry for this keycode, which has a modifier
-				   * mask set to AnyModifier & ~(deleted modifiers).
-				   */
-				  XtServerGrabPtr pNewGrab;
-				  
-				  DeleteDetailFromMask(&(grab->detail.pMask),
-						       pMinuendGrab->detail.exact);
-				  
-				  pNewGrab = CreateGrab(grab->widget,
-							grab->ownerEvents,
-							(Modifiers)AnyModifier,
-							pMinuendGrab->detail.exact,
-							grab->pointerMode,
-							grab->keyboardMode, 0, 0, 0);
-				  
-				  pNewGrab->modifiersDetail.pMask = 
-				    CopyDetailMask(grab->modifiersDetail.pMask);
-				  
-				  DeleteDetailFromMask
-				    (&(pNewGrab->modifiersDetail.pMask),
-				     pMinuendGrab->modifiersDetail.exact); 
-				  
-				  AddServerGrabToList(passiveListPtr, pNewGrab);
-			      }   
-			    else
-			      {
-				  if (pMinuendGrab->detail.exact == AnyKey)
-				    {
-					/*
-					 * The list entry has keycode AnyKey and modifier
-					 * AnyModifier; the entry being deleted has
-					 * keycode AnyKey and specific modifiers.  So we
-					 * simply need to mask off the specified modifier
-					 * combination.
-					 */
-					DeleteDetailFromMask
-					  (&(grab->modifiersDetail.pMask),
-					   pMinuendGrab->modifiersDetail.exact);   	
-				    }
-				  else
-				    {
-					/*
-					 * The list entry has keycode AnyKey and modifier
-					 * AnyModifier; the entry being deleted has a
-					 * specific keycode and modifier AnyModifier.  So 
-					 * we simply need to mask off the specified 
-					 * keycode.
-					 */
-					DeleteDetailFromMask
-					  ( &(grab->detail.pMask),
-					   pMinuendGrab->detail.exact); 	
-				    }
-			      }
-			}
-		      
-		  }
+		/*
+		 * The entry being deleted encompasses the list entry,
+		 * so delete the list entry.
+		 */
+		*next = grab->next;
+		FreeGrab(grab);
+		continue;
 	    }
-	  next = &((*next)->next);
-      }
+
+	    if (!grab->hasExt) {
+		grab = (XtServerGrabPtr)
+		    XtRealloc((char *)grab, (sizeof(XtServerGrabRec) +
+					     sizeof(XtServerGrabExtRec)));
+		*next = grab;
+		grab->hasExt = True;
+		ext = GRABEXT(grab);
+		ext->pKeyButMask = NULL;
+		ext->pModifiersMask = NULL;
+		ext->confineTo = None;
+		ext->cursor = None;
+	    } else
+		ext = GRABEXT(grab);
+	    if ((grab->keybut == AnyKey) && (grab->modifiers != AnyModifier))
+	    {
+		/*
+		 * If the list entry has the key detail of AnyKey, and
+		 * a modifier detail not set to AnyModifier, then we
+		 * simply need to turn off the key detail bit in the
+		 * list entry's key detail mask.
+		 */
+		DeleteDetailFromMask(&ext->pKeyButMask, pMinuendGrab->keybut);
+	    } else if ((grab->modifiers == AnyModifier) &&
+		       (grab->keybut != AnyKey)) {
+		/*
+		 * The list entry has a specific key detail, but its
+		 * modifier detail is set to AnyModifier; so, we only
+		 * need to turn off the specified modifier combination
+		 * in the list entry's modifier mask.
+		 */
+		DeleteDetailFromMask(&ext->pModifiersMask,
+				     pMinuendGrab->modifiers);
+	    } else if ((pMinuendGrab->keybut != AnyKey) &&
+		       (pMinuendGrab->modifiers != AnyModifier)) {
+		/*
+		 * The list entry has a key detail of AnyKey and a
+		 * modifier detail of AnyModifier; the entry being
+		 * deleted has a specific key and a specific modifier
+		 * combination.  Therefore, we need to mask off the
+		 * keycode from the list entry, and also create a
+		 * new entry for this keycode, which has a modifier
+		 * mask set to AnyModifier & ~(deleted modifiers).
+		 */
+		XtServerGrabPtr pNewGrab;
+				  
+		DeleteDetailFromMask(&ext->pKeyButMask, pMinuendGrab->keybut);
+		pNewGrab = CreateGrab(grab->widget,
+				      (Boolean)grab->ownerEvents,
+				      (Modifiers)AnyModifier,
+				      pMinuendGrab->keybut,
+				      (int)grab->pointerMode,
+				      (int)grab->keyboardMode,
+				      (Mask)0, (Window)0, (Cursor)0, True);
+		GRABEXT(pNewGrab)->pModifiersMask =
+		    CopyDetailMask(ext->pModifiersMask);
+				  
+		DeleteDetailFromMask(&GRABEXT(pNewGrab)->pModifiersMask,
+				     pMinuendGrab->modifiers);
+				  
+		pNewGrab->next = *passiveListPtr;
+		*passiveListPtr = pNewGrab;
+	    } else if (pMinuendGrab->keybut == AnyKey) {
+		/*
+		 * The list entry has keycode AnyKey and modifier
+		 * AnyModifier; the entry being deleted has
+		 * keycode AnyKey and specific modifiers.  So we
+		 * simply need to mask off the specified modifier
+		 * combination.
+		 */
+		DeleteDetailFromMask(&ext->pModifiersMask,
+				     pMinuendGrab->modifiers);
+	    } else {
+		/*
+		 * The list entry has keycode AnyKey and modifier
+		 * AnyModifier; the entry being deleted has a
+		 * specific keycode and modifier AnyModifier.  So 
+		 * we simply need to mask off the specified 
+		 * keycode.
+		 */
+		DeleteDetailFromMask(&ext->pKeyButMask, pMinuendGrab->keybut);
+	    }
+	}
+	next = &(*next)->next;
+    }
 }
 
 static void DestroyPassiveList(passiveListPtr)
@@ -470,17 +446,16 @@ static void DestroyPassiveList(passiveListPtr)
 {
     XtServerGrabPtr	next, grab;
 
-    for (next = *passiveListPtr; next;)
-      {
-	  grab = next;
-	  next = grab->next;
+    for (next = *passiveListPtr; next; ) {
+	grab = next;
+	next = grab->next;
 	  
-	  /* not necessary to explicitly ungrab key or button;
-	   * window is being destroyed so server will take care of it.
-	   */ 
+	/* not necessary to explicitly ungrab key or button;
+	 * window is being destroyed so server will take care of it.
+	 */ 
 
-	  FreeGrab(grab);
-      }
+	FreeGrab(grab);
+    }
 }
 
 
@@ -501,10 +476,10 @@ void _XtDestroyServerGrabs(w, closure, call_data)
     /* Remove the active grab, if necessary */
     if ((pdi->keyboard.grabType != XtNoServerGrab) && 
 	(pdi->keyboard.grab.widget == w))
-      XtUngrabKeyboard(w, CurrentTime);
+	XtUngrabKeyboard(w, CurrentTime);
     if ((pdi->pointer.grabType != XtNoServerGrab) && 
 	(pdi->pointer.grab.widget == w))
-      XtUngrabPointer(w, CurrentTime);
+	XtUngrabPointer(w, CurrentTime);
     
     DestroyPassiveList(&pwi->keyList);
     DestroyPassiveList(&pwi->ptrList);
@@ -535,42 +510,32 @@ XtServerGrabPtr _XtCheckServerGrabsOnWidget (event, widget, isKeyboard)
     XtServerGrabPtr	*passiveListPtr;
     XtPerWidgetInput	pwi;
 
-    if ((pwi = _XtGetPerWidgetInput(widget, FALSE)) == NULL)
-      return (XtServerGrabPtr)0;
+    if (!(pwi = _XtGetPerWidgetInput(widget, FALSE)))
+	return (XtServerGrabPtr)NULL;
 
     if (isKeyboard)
-	  passiveListPtr = &pwi->keyList;
+	passiveListPtr = &pwi->keyList;
     else
-	  passiveListPtr = &pwi->ptrList;
+	passiveListPtr = &pwi->ptrList;
 
     /*
      * if either there is no entry in the context manager or the entry
      * is empty, or the keyboard is grabed, then no work to be done
      */
-    if (*passiveListPtr == 0)
-      return (XtServerGrabPtr)0;
-    
+    if (!*passiveListPtr)
+	return (XtServerGrabPtr)NULL;
     
     tempGrab.widget = widget;
-    tempGrab.detail.exact = event->xkey.keycode; /* also xbutton.button */
-    tempGrab.modifiersDetail.exact = event->xkey.state; /*also xbutton.state*/
-    tempGrab.detail.pMask = NULL;
-    tempGrab.modifiersDetail.pMask = NULL;
+    tempGrab.keybut = event->xkey.keycode; /* also xbutton.button */
+    tempGrab.modifiers = event->xkey.state; /*also xbutton.state*/
+    tempGrab.hasExt = False;
 
-    for (grab = *passiveListPtr; grab; grab = grab->next)
-      {
-	  if (GrabMatchesSecond(&tempGrab, grab))
-	    {
-		return (grab);
-	    }
-      }
-    return (XtServerGrabPtr)0;
+    for (grab = *passiveListPtr; grab; grab = grab->next) {
+	if (GrabMatchesSecond(&tempGrab, grab))
+	    return (grab);
+    }
+    return (XtServerGrabPtr)NULL;
 }
-
-
-
-
-
 
 /*
  * This handler is needed to guarantee that we see releases on passive
@@ -586,9 +551,8 @@ static void  ActiveHandler (widget, pdi, event, cont)
     XEvent 		*event;
     Boolean		*cont;
 {
-    
+    /* nothing */
 }
-
 
 
 /*
@@ -601,41 +565,39 @@ static void  MakeGrab(grab, passiveListPtr, isKeyboard, pdi, pwi)
     XtPerDisplayInput	pdi;
     XtPerWidgetInput	pwi;
 {
-    Mask	mask = (isKeyboard ? 
-			(KeyPressMask | KeyReleaseMask) :
-			(ButtonPressMask | ButtonReleaseMask));
-    
-    
     if (!pwi->active_handler_added)
-      {
-	  XtAddEventHandler(grab->widget, mask, FALSE,
-			    ActiveHandler,
-			    (XtPointer)pdi);
-	  pwi->active_handler_added = TRUE;
-      }
+    {
+	Mask mask = (isKeyboard ? 
+		     (KeyPressMask | KeyReleaseMask) :
+		     (ButtonPressMask | ButtonReleaseMask));
+	XtAddEventHandler(grab->widget, mask, FALSE,
+			  ActiveHandler, (XtPointer)pdi);
+	pwi->active_handler_added = TRUE;
+    }
 	
-    if (isKeyboard)
-      XGrabKey(pDisplay(grab),
-	       grab->detail.exact, grab->modifiersDetail.exact, 
-	       pWindow(grab), grab->ownerEvents,
-	       grab->pointerMode, grab->keyboardMode);
-    
-    else
-      {
-      XGrabButton(pDisplay(grab),
-		  grab->detail.exact, grab->modifiersDetail.exact, 
-		  pWindow(grab), grab->ownerEvents, grab->eventMask,
-		  grab->pointerMode, grab->keyboardMode,
-		  grab->confineTo, grab->cursor);
-      }
+    if (isKeyboard) {
+	XGrabKey(pDisplay(grab),
+		 grab->keybut, grab->modifiers,
+		 pWindow(grab), grab->ownerEvents,
+		 grab->pointerMode, grab->keyboardMode);
+    } else {
+	Window confineTo = None;
+	Cursor cursor = None;
 
-#ifdef notdef
-    /* Delete any existing grabs which will be superseded by the new grab */
-    DeleteServerGrabFromList(passiveListPtr, pdi, grab);
-#endif /* notdef */
+	if (grab->hasExt) {
+	    confineTo = GRABEXT(grab)->confineTo;
+	    cursor = GRABEXT(grab)->cursor;
+	}
+	XGrabButton(pDisplay(grab),
+		    grab->keybut, grab->modifiers,
+		    pWindow(grab), grab->ownerEvents, grab->eventMask,
+		    grab->pointerMode, grab->keyboardMode,
+		    confineTo, cursor);
+    }
 
     /* Add the new grab entry to the passive key grab list */
-    AddServerGrabToList(passiveListPtr, grab);
+    grab->next = *passiveListPtr;
+    *passiveListPtr = grab;
 }
 
 static void MakeGrabs(passiveListPtr, isKeyboard, pdi)
@@ -712,7 +674,7 @@ void GrabKeyOrButton (widget, keyOrButton, modifiers, owner_events,
     Boolean	isKeyboard;
 {
     XtServerGrabPtr	*passiveListPtr;
-    XtServerGrabPtr 	newGrab, *nextPtr;
+    XtServerGrabPtr 	newGrab;
     XtPerWidgetInput	pwi;
     XtPerDisplayInput	pdi;
     
@@ -734,7 +696,7 @@ void GrabKeyOrButton (widget, keyOrButton, modifiers, owner_events,
     
     newGrab = CreateGrab(widget, owner_events, modifiers, 
 			 keyOrButton, pointer_mode, keyboard_mode, 
-			 event_mask, confine_to, cursor);
+			 event_mask, confine_to, cursor, False);
     /*
      *  if the widget is realized then process the entry into the grab
      * list. else if the list is empty (i.e. first time) then add the
@@ -752,10 +714,9 @@ void GrabKeyOrButton (widget, keyOrButton, modifiers, owner_events,
 		pwi->realize_handler_added = TRUE;
 	    }
 	
-	for (nextPtr = passiveListPtr;
-	     *nextPtr; 
-	     nextPtr = (XtServerGrabPtr *)&((*nextPtr)->next)) {};
-	*nextPtr = newGrab;
+	while (*passiveListPtr)
+	    passiveListPtr = &(*passiveListPtr)->next;
+	*passiveListPtr = newGrab;
     }
 }
 
@@ -780,10 +741,9 @@ void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
     
     /* Build a temporary grab list entry */
     tempGrab.widget = widget;
-    tempGrab.modifiersDetail.exact = modifiers;
-    tempGrab.modifiersDetail.pMask = NULL;
-    tempGrab.detail.exact = keyOrButton;
-    tempGrab.detail.pMask = NULL;
+    tempGrab.modifiers = modifiers;
+    tempGrab.keybut = keyOrButton;
+    tempGrab.hasExt = False;
     
     
     pwi = _XtGetPerWidgetInput(widget, FALSE);
@@ -815,7 +775,6 @@ void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
    
     /* Delete all entries which are encompassed by the specified grab. */
     DeleteServerGrabFromList(isKeyboard ? &pwi->keyList : &pwi->ptrList,
-			     _XtGetPerDisplayInput(XtDisplay(widget)), 
 			     &tempGrab);
 }
 
@@ -873,7 +832,7 @@ void  XtGrabButton(widget, button, modifiers, owner_events,
 {
     GrabKeyOrButton(widget, (KeyCode)button, modifiers, owner_events,
 		    pointer_mode, keyboard_mode, 
-		    event_mask, confine_to, cursor, POINTER);
+		    (Mask)event_mask, confine_to, cursor, POINTER);
 }
 
 
@@ -905,7 +864,7 @@ void   XtUngrabButton (widget, button, modifiers)
     Modifiers	modifiers;
 {
 
-    UngrabKeyOrButton(widget, button, modifiers, POINTER);
+    UngrabKeyOrButton(widget, (KeyCode)button, modifiers, POINTER);
 }
 
 /*
@@ -945,24 +904,18 @@ static int GrabDevice (widget, owner_events,
 				owner_events, pointer_mode, 
 				keyboard_mode, time);
 
-    if (returnVal == GrabSuccess)
-      {	
-	  XtServerGrabPtr	grab;
+    if (returnVal == GrabSuccess) {
 	  XtDevice		device;
 	  
 	  device = isKeyboard ? &pdi->keyboard : &pdi->pointer;
-	  grab =  &device->grab;
-
 	  /* fill in the server grab rec */
-	  grab->widget = widget;
-	  grab->modifiersDetail.exact = 0;
-	  grab->modifiersDetail.pMask = NULL;
-	  grab->detail.exact = 0;
-	  grab->detail.pMask = NULL;
-	  grab->ownerEvents = owner_events;
-	  grab->pointerMode = pointer_mode;
-	  grab->keyboardMode = keyboard_mode;
-
+	  device->grab.widget = widget;
+	  device->grab.modifiers = 0;
+	  device->grab.keybut = 0;
+	  device->grab.ownerEvents = owner_events;
+	  device->grab.pointerMode = pointer_mode;
+	  device->grab.keyboardMode = keyboard_mode;
+	  device->grab.hasExt = False;
 	  device->grabType = XtActiveServerGrab;
 	  pdi->activatingKey = (KeyCode)0;
       }
@@ -1069,7 +1022,7 @@ int XtGrabPointer (widget, owner_events, event_mask,
 {
     return (GrabDevice (widget, owner_events,
 			pointer_mode, keyboard_mode, 
-			event_mask, confine_to, 
+			(Mask)event_mask, confine_to, 
 			cursor, time, POINTER));
 }
 
