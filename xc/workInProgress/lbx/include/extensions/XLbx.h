@@ -1,4 +1,4 @@
-/* $XConsortium: XLbx.h,v 1.7 94/11/08 19:49:53 mor Exp $ */
+/* $XConsortium: XLbx.h,v 1.8 94/12/01 19:57:30 mor Exp mor $ */
 /*
  * $NCDId: @(#)XLbx.h,v 1.21 1994/11/18 20:29:53 lemke Exp $
  *
@@ -29,6 +29,11 @@
 
 #include <X11/Xfuncproto.h>
 
+/*
+ * NOTE:  any changes or additions to the opcodes needs to be reflected
+ * in the lbxCacheable array in Xserver/lbx/lbxmain.c
+ */
+ 
 #define X_LbxQueryVersion		0
 #define X_LbxStartProxy			1
 #define X_LbxStopProxy			2
