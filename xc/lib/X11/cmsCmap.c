@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCmap.c,v 1.13 92/01/19 15:04:21 rws Exp $" */
+/* $XConsortium: XcmsCmap.c,v 1.14 92/01/19 15:10:44 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -471,4 +471,20 @@ XcmsCCCOfColormap(dpy, cmap)
      * No such cmap
      */
     return(NULL);
+}
+
+XcmsCCC XcmsSetCCCOfColormap(dpy, cmap, ccc)
+    Display *dpy;
+    Colormap cmap;
+    XcmsCCC ccc;
+{
+    XcmsCCC prev_ccc = NULL;
+    XcmsCmapRec *pRec;
+
+    pRec = CmapRecForColormap(dpy, cmap);
+    if (pRec) {
+	prev_ccc = pRec->ccc;
+	pRec->ccc = ccc;
+    }
+    return prev_ccc;
 }
