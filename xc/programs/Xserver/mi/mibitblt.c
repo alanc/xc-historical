@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.16 93/07/12 09:28:50 dpw Exp $ */
+/* $XConsortium: mibitblt.c,v 5.17 93/09/20 20:25:03 dpw Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -614,19 +614,29 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
     {
 	if ( (((1<<depth)-1)&planeMask) != (1<<depth)-1 )
 	{
+	    xPoint pt;
+
 	    pGC = GetScratchGC(depth, pDraw->pScreen);
 	    if (!pGC)
 		return;
             pPixmap = (*pDraw->pScreen->CreatePixmap)
-			       (pDraw->pScreen, w, h, depth);
+			       (pDraw->pScreen, w, 1, depth);
 	    if (!pPixmap)
 	    {
 		FreeScratchGC(pGC);
 		return;
 	    }
-	    gcv[0] = GXcopy;
-	    gcv[1] = planeMask;
-	    DoChangeGC(pGC, GCPlaneMask | GCFunction, gcv, 0);
+ 	    /*
+ 	     * Clear the pixmap before doing anything else (FIX XBUG 4994,5551)
+ 	     */
+ 	    ValidateGC((DrawablePtr)pPixmap, pGC);
+ 	    pt.x = pt.y = 0;
+	    (*pGC->ops->FillSpans)((DrawablePtr)pPixmap, pGC, 1, &pt, &width,
+				   TRUE);
+ 
+	    /* alu is already GXCopy */
+	    gcv[0] = planeMask;
+	    DoChangeGC(pGC, GCPlaneMask, gcv, 0);
 	    ValidateGC((DrawablePtr)pPixmap, pGC);
 	}
 
