@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.79 93/12/06 15:16:20 kaleb Exp $
+ * $XConsortium: main.c,v 1.80 94/02/04 19:11:43 matt Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -513,17 +513,16 @@ done:
 	return(bol);
 }
 
+/*
+ * Strip the file name down to what we want to see in the Makefile.
+ * It will have objprefix and objsuffix around it.
+ */
 char *base_name(file)
 	register char	*file;
 {
 	register char	*p;
 
-	for (p=file+strlen(file); p>file && *p != '/'; p--) ;
-
-	if (*p == '/')
-		p++;
-
-	file = copy(p);
+	file = copy(file);
 	for(p=file+strlen(file); p>file && *p != '.'; p--) ;
 
 	if (*p == '.')
