@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: tocutil.c,v 2.20 88/09/16 13:41:32 swick Exp $";
+static char rcs_id[] = "$XConsortium: tocutil.c,v 2.21 89/04/10 11:50:09 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -64,10 +64,7 @@ Toc toc;
     Scrn scrn;
     int w, i, numinbox;
     int rebuild;
-    static char *extra[] = {
-	"<Btn1Down>(2): open-sequence()",
-	NULL
-    };
+
     for (w=0 ; w<toc->num_scrns ; w++) {
 	scrn = toc->scrn[w];
 	rebuild = FALSE;
@@ -82,13 +79,11 @@ Toc toc;
 							     i)));
 	}
 	if (rebuild) {
-	    BBoxStopUpdate(scrn->seqbuttons);
 	    for (i = 1; i < numinbox ; i++)
 		BBoxDeleteButton(BBoxButtonNumber(scrn->seqbuttons, 1));
 	    for (i = (numinbox ? 1 : 0); i < toc->numsequences; i++)
 		BBoxAddButton(scrn->seqbuttons, toc->seqlist[i]->name,
-			      NoOp, 999, TRUE, extra);
-	    BBoxStartUpdate(scrn->seqbuttons);
+			      NoOp, 999, TRUE);
 	}
 	if (scrn->seqbuttons) 
 	    BBoxSetRadio(BBoxFindButtonNamed(scrn->seqbuttons,
