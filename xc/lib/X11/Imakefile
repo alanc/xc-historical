@@ -1,8 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 1.161 93/09/29 19:13:14 gildea Exp $
-#define DoNormalLib NormalLibX
-#define DoSharedLib SharedLibX
-#define DoDebugLib DebugLibX
-#define DoProfileLib ProfileLibX
+XCOMM $XConsortium: Imakefile,v 1.162 93/10/01 14:06:04 rws Exp $
+#define DoNormalLib NormalLibX11
+#define DoSharedLib SharedLibX11
+#define DoDebugLib DebugLibX11
+#define DoProfileLib ProfileLibX11
 #define LibName X11
 #define SoRev SOXLIBREV
 #define HugeLibrary YES
