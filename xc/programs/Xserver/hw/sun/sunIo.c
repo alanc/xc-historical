@@ -1,4 +1,4 @@
-/* $XConsortium: sunCursor.c,v 5.9 91/11/14 13:57:03 keith Exp $ */
+/* $XConsortium: sunIo.c,v 5.8 91/11/15 18:28:37 gildea Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -47,7 +47,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include    "sun.h"
 #include    "opaque.h"
 
-int	    	lastEventTime = 0;
 extern int      screenIsSaved;
 extern void	SaveScreens();
 
@@ -56,33 +55,6 @@ int	windowFd = 0;
 int	sunIgnoreEvent = TRUE;
 #define	INPBUFSIZE	128
 #endif /* SUN_WINDOWS */
-
-/*-
- *-----------------------------------------------------------------------
- * TimeSinceLastInputEvent --
- *	Function used for screensaver purposes by the os module.
- *
- * Results:
- *	The time in milliseconds since there last was any
- *	input.
- *
- * Side Effects:
- *	None.
- *
- *-----------------------------------------------------------------------
- */
-int
-TimeSinceLastInputEvent()
-{
-    struct timeval	now;
-
-    gettimeofday (&now, (struct timezone *)0);
-
-    if (lastEventTime == 0) {
-	lastEventTime = TVTOMILLI(now);
-    }
-    return TVTOMILLI(now) - lastEventTime;
-}
 
 /*-
  *-----------------------------------------------------------------------
@@ -131,10 +103,6 @@ sunEnqueueEvents ()
     DevicePtr		    pKeyboard;
     register PtrPrivPtr     ptrPriv;
     register KbPrivPtr	    kbdPriv;
-    Firm_event	  	    *lastEvent;	    	/* Last event processed */
-    enum {
-	NoneYet, Ptr, Kbd
-    }			    lastType = NoneYet;	/* Type of last event */
 
 #ifdef SUN_WINDOWS
     struct inputevent sunevents[INPBUFSIZE];
@@ -160,7 +128,6 @@ sunEnqueueEvents ()
 	}
 
 	for (seL = sunevents + (n/(sizeof sunevents[0]));  se < seL; se++) {
-	    lastEventTime = TVTOMILLI(event_time(se));
 
 	    /*
 	     * Decide whether or not to pay attention to events.
@@ -215,7 +182,6 @@ sunEnqueueEvents ()
 	PtrAgain = TRUE;
 	numKbdEvents = 0;
 	KbdAgain = TRUE;
-	lastEvent = (Firm_event *)0;
 
 	/*
 	 * So long as one event from either device remains unprocess, we loop:
@@ -243,53 +209,25 @@ sunEnqueueEvents ()
 		if (timercmp (&kbdEvents->time, &ptrEvents->time, <)) {
 		    (* kbdPriv->EnqueueEvent) (pKeyboard, kbdEvents);
 		    numKbdEvents--;
-		    lastEvent = kbdEvents++;
-		    lastType = Kbd;
+		    kbdEvents++;
 		} else {
 		    (* ptrPriv->EnqueueEvent) (pPointer, ptrEvents);
 		    numPtrEvents--;
-		    lastEvent = ptrEvents++;
-		    lastType = Ptr;
+		    ptrEvents++;
 		}
 	    } else if (numKbdEvents) {
 		(* kbdPriv->EnqueueEvent) (pKeyboard, kbdEvents);
 		numKbdEvents--;
-		lastEvent = kbdEvents++;
-		lastType = Kbd;
+		kbdEvents++;
 	    } else {
 		(* ptrPriv->EnqueueEvent) (pPointer, ptrEvents);
 		numPtrEvents--;
-		lastEvent = ptrEvents++;
-		lastType = Ptr;
+		ptrEvents++;
 	    }
 	}
-	if (lastEvent)
-	    lastEventTime = TVTOMILLI(lastEvent->time);
     }
 }
 
-
-/*-
- *-----------------------------------------------------------------------
- * SetTimeSinceLastInputEvent --
- *	Set the lastEventTime to now.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	lastEventTime is altered.
- *
- *-----------------------------------------------------------------------
- */
-void
-SetTimeSinceLastInputEvent()
-{
-    struct timeval now;
-
-    gettimeofday (&now, (struct timezone *)0);
-    lastEventTime = TVTOMILLI(now);
-}
 
 /*
  * DDX - specific abort routine.  Called by AbortServer().
