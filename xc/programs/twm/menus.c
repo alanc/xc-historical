@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.151 90/03/16 11:16:29 jim Exp $
+ * $XConsortium: menus.c,v 1.152 90/03/20 11:17:06 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.151 90/03/16 11:16:29 jim Exp $";
+"$XConsortium: menus.c,v 1.152 90/03/20 11:17:06 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -57,10 +57,6 @@ static char RCSinfo[] =
 #include "version.h"
 
 extern XEvent Event;
-
-#if defined(SYSV) && !defined(hpux)
-#define vfork fork
-#endif
 
 int RootFunction = NULL;
 MenuRoot *ActiveMenu = NULL;		/* the active menu */
@@ -2030,13 +2026,12 @@ void
 Execute(s)
     char *s;
 {
-    int status, pid, w;
-    SigProc istat, qstat;
     static char buf[256];
     char *ds = DisplayString (dpy);
     char *colon, *dot1;
     char oldDisplay[256];
     char *doisplay;
+    int restorevar = 0;
 
     oldDisplay[0] = '\0';
     doisplay=getenv("DISPLAY");
@@ -2058,29 +2053,15 @@ Execute(s)
 	if (!dot1) dot1 = colon + strlen (colon);  /* if not there, append */
 	(void) sprintf (dot1, ".%d", Scr->screen);
 	putenv (buf);
+	restorevar = 1;
     }
 
-    if ((pid = vfork()) == 0)
-    {
-	(void) signal(SIGINT, SIG_DFL);
-	(void) signal(SIGQUIT, SIG_DFL);
-	(void) signal(SIGHUP, SIG_DFL);
-#ifdef macII
-	setpgrp();
-#endif
-	execl("/bin/sh", "sh", "-c", s, 0);
-	_exit(127);
-    }
-    istat = signal(SIGINT, SIG_IGN);
-    qstat = signal(SIGQUIT, SIG_IGN);
-    while ((w = wait(&status)) != pid && w != -1);
-    if (w == -1)
-	status = -1;
-    signal(SIGINT, istat);
-    signal(SIGQUIT, qstat);
+    (void) system (s);
 
-    (void) sprintf (buf, "DISPLAY=%s", oldDisplay);
-    putenv (buf);
+    if (restorevar) {		/* why bother? */
+	(void) sprintf (buf, "DISPLAY=%s", oldDisplay);
+	putenv (buf);
+    }
 }
 
 /***********************************************************************
