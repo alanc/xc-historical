@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Converters.h,v 1.10 90/12/19 18:04:17 converse Exp $
+ * $XConsortium: Converters.h,v 1.11 91/05/16 18:04:24 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -229,6 +229,20 @@ extern void XmuCvtStringToWidget(
     Cardinal*		/* num_args */,
     XrmValuePtr		/* fromVal */,
     XrmValuePtr		/* toVal */
+#endif
+);
+
+/******************************************************************************
+ * XmuNewCvtStringToWidget
+ */
+extern void XmuNewCvtStringToWidget(
+#if NeedFunctionPrototypes
+    Display*            /* display */,
+    XrmValue*		/* args */,
+    Cardinal*		/* num_args */,
+    XrmValue*		/* fromVal */,
+    XrmValue*		/* toVal */,
+    XtPointer*          /* converter_data */
 #endif
 );
 
