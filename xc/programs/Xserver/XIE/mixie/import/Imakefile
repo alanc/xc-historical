@@ -1,30 +1,33 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/07/19 10:15:58 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 93/11/01 10:20:53 rws Exp $
 XCOMM build device dependent machine independent import element objects
 #include <Server.tmpl>
 
-       SRCS = 	mig4.c \
-		miclut.c \
-		micphoto.c \
-		microi.c \
-		midraw.c \
-		milut.c \
-		miphoto.c \
-		miroi.c
+SRCS1 = mifax.c miclut.c micphoto.c midraw.c \
+        milut.c miphoto.c miuncomp.c
 
+OBJS1 = mifax.o miclut.o micphoto.o midraw.o \
+        milut.o miphoto.o miuncomp.o
+		
+#if BuildDIS
+DEFINES = -DXIE_DIS
+#else
+SRCS2 = microi.c miroi.c miregion.c mijpeg.c 
+OBJS2 = microi.o miroi.o miregion.o mijpeg.o
+#endif
 
-       OBJS = 	mig4.o \
-		miclut.o \
-		micphoto.o \
-		microi.o \
-		midraw.o \
-		milut.o \
-		miphoto.o \
-		miroi.o
+       SRCS = $(SRCS1) $(SRCS2)
 
-   INCLUDES = -I../include -I../../../include -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(INCLUDESRC)/extensions
+       OBJS = $(OBJS1) $(OBJS2)
+
+   INCLUDES = -I../include -I../../../include -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(INCLUDESRC)/extensions -I../jpeg
+   LINTLIBS = ../../../dixie/export/llib-lexp.ln ../../../dixie/import/llib-limp.ln \
+              ../../../dixie/process/llib-lproc.ln ../../../dixie/request/llib-lreq.ln \
+              ../control/llib-lctrl.ln ../export/llib-lmexp.ln ../fax/llib-lfax.ln \
+              ../import/llib-lmimp.ln ../jpeg/llib-ljpeg.ln ../process/llib-lmproc.ln
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
+LintLibraryTarget(mimp,$(SRCS))
 NormalLintTarget($(SRCS))
 
 DependTarget()
