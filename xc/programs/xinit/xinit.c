@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.40 89/12/13 13:52:38 rws Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.41 89/12/15 18:16:49 rws Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -378,9 +378,6 @@ startServer(server)
 	serverpid = vfork();
 	switch(serverpid) {
 	case 0:
-		close(0);
-		close(1);
-
 		/*
 		 * don't hang on read/write to control tty
 		 */
