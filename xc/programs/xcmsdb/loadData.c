@@ -1,4 +1,4 @@
-/* $XConsortium: loadData.c,v 1.5 91/05/14 15:00:33 dave Exp $ */
+/* $XConsortium: loadData.c,v 1.6 91/05/14 15:07:06 rws Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -1167,7 +1167,8 @@ LoadSCCData(pDpy, screenNumber, filename)
      */
     if (filename == NULL) {
 	stream = stdin;
-    } else if ((int)(stream = fopen(filename, "r")) == NULL) {
+	filename = "stdin";
+    } else if ((stream = fopen(filename, "r")) == NULL) {
 	fprintf(stderr,"Could not open file %s.\n", filename);
 	return (0);
     }
@@ -1208,7 +1209,7 @@ LoadSCCData(pDpy, screenNumber, filename)
     }
 
     while ((pStr = nextline(buf, BUFSIZ, stream)) != NULL) {
-	token1[0] = NULL; token2[0] = NULL;
+	token1[0] = '\0'; token2[0] = '\0';
 	if (sscanf(buf, "%s %s %s", keyword, token1, token2) > 0) {
 	    switch (SCKeyOf(keyword)) {
 	      case COMMENT :
