@@ -1,4 +1,4 @@
-/* $XConsortium: GetValues.c,v 1.4 90/07/03 17:27:06 swick Exp $ */
+/* $XConsortium: GetValues.c,v 1.5 90/12/03 16:30:32 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -148,6 +148,7 @@ void XtGetValues(w, args, num_args)
     register Cardinal num_args;
 {
     WidgetClass wc = XtClass(w);
+    XtPointer garbage;
 
     if (num_args == 0) return;
     if ((args == NULL) && (num_args != 0)) {
@@ -156,6 +157,15 @@ void XtGetValues(w, args, num_args)
             "Argument count > 0 on NULL argument list in XtGetValues",
               (String *)NULL, (Cardinal *)NULL);
     }
+
+    /* Do garbage collection of previous GetValues on callbacks */
+    garbage = XtGarbageCollection;
+    while (garbage != NULL) {
+      XtGarbageCollection = * (XtPointer *) garbage;
+      XtFree((char *) garbage);
+      garbage = XtGarbageCollection;
+    }
+
     /* Get widget values */
     GetValues((char*)w, (XrmResourceList *) wc->core_class.resources,
 	wc->core_class.num_resources, args, num_args);
