@@ -54,6 +54,7 @@ void 			DeactivateKeyboardGrab();
 void 			ProcessOtherEvent();
 void 			RecalculateDeviceDeliverableEvents();
 static Bool		ShouldFreeInputMasks();
+static Bool		MakeInputMasks ();
 extern int		DeviceKeyPress;
 extern int		DeviceButtonPress;
 extern int		DeviceValuator;
@@ -249,7 +250,7 @@ InitProximityClassDeviceStruct(dev)
     return TRUE;
     }
 
-InitValuatorAxisStruct(dev, axnum, minval, maxval, resolution)
+InitValuatorAxisStruct(dev, axnum, minval, maxval, resolution, min_res, max_res)
     DeviceIntPtr dev;
     int axnum;
     int minval;
@@ -261,6 +262,8 @@ InitValuatorAxisStruct(dev, axnum, minval, maxval, resolution)
     ax->min_value = minval;
     ax->max_value = maxval;
     ax->resolution = resolution;
+    ax->min_resolution = min_res;
+    ax->max_resolution = max_res;
     }
 
 DeviceFocusEvent(dev, type, mode, detail, pWin)
