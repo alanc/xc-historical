@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.108 94/02/07 21:24:17 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.109 94/02/21 10:19:16 kaleb Exp $
 
 #ifdef SVR4
 #define OSName            SunOS 5.3
@@ -12,6 +12,13 @@ XCOMM operating system:  OSName
 #define OSMajorVersion    4
 #define OSMinorVersion    1
 #define OSTeenyVersion    3
+#endif
+
+#ifndef SparcWorksCCompilerMajorVersion
+#define SparcWorksCCompilerMajorVersion 2
+#endif
+#ifndef SparcWorksCCompilerMajorVersion
+#define SparcWorksCplusplusCompilerMajorVersion 3
 #endif
 
 #if OSMajorVersion < 4 || (OSMajorVersion == 4 && OSMinorVersion < 1)
@@ -35,8 +42,18 @@ XCOMM operating system:  OSName
 #define StandardDefines	  -Dsun -DSVR4
 #if OSMinorVersion > 1
 #define ThreadedX	  YES
+#if HasGcc || HasCenterLineC || SparcWorksCCompilerMajorVersion < 3
 #define SystemMTDefines -D_REENTRANT
 #define ThreadsLibraries -lthread
+#else
+#define ThreadsCompileFlags -mt
+#endif
+#if HasGcc2ForCplusplus || HasCenterLineCplusplus || SparcWorksCplusplusCompilerMajorVersion < 4
+#define CplusplusSystemMTDefines -D_REENTRANT
+#define ThreadsCplusplusLibraries -lthread
+#else
+#define ThreadsCplusplusCompileFlags -mt
+#endif
 #endif
 #if OSMinorVersion == 2 || OSMinorVersion == 3
 /* over-ride for broken thread stubs in libc -- fixed in 2.4 ??? */
