@@ -18,6 +18,7 @@ HEADERS = \
 
 SRCS = \
 	Atoms.c \
+	ClientWin.c \
 	CrPixFBit.c \
 	CvtStdSel.c \
 	DefErrMsg.c \
@@ -35,6 +36,7 @@ SRCS = \
 
 OBJS = \
 	Atoms.o \
+	ClientWin.o \
 	CrPixFBit.o \
 	CvtStdSel.o \
 	DefErrMsg.o \
