@@ -1,4 +1,4 @@
-/* $XConsortium: fsconvert.c,v 1.13 92/11/18 21:31:01 gildea Exp $ */
+/* $XConsortium: fsconvert.c,v 1.14 93/08/24 18:49:07 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -699,5 +699,5 @@ _fs_init_font(pfont)
     pfont->get_glyphs = _fs_get_glyphs;
     pfont->get_metrics = _fs_get_metrics;
     pfont->unload_font = _fs_unload_font;
-    pfont->unload_glyphs = (void *)0;
+    pfont->unload_glyphs = (void (*)())0;
 }
