@@ -1,4 +1,4 @@
-/* $XConsortium: TextTr.c,v 1.3 88/10/04 16:13:31 swick Exp $ */
+/* $XConsortium: TextTr.c,v 1.4 88/10/07 09:28:18 swick Exp $ */
 
 char defaultTextTranslations[] =
 "\
@@ -36,8 +36,8 @@ Meta<Key>Z:	scroll-one-line-down() \n\
 :Meta<Key>[:	backward-paragraph() \n\
 ~Shift Meta<Key>Delete:		delete-previous-word() \n\
  Shift Meta<Key>Delete:		backward-kill-word() \n\
-~Shift Meta<Key>Backspace:	delete-previous-word() \n\
- Shift Meta<Key>Backspace:	backward-kill-word() \n\
+~Shift Meta<Key>BackSpace:	delete-previous-word() \n\
+ Shift Meta<Key>BackSpace:	backward-kill-word() \n\
 <Key>Right:	forward-character() \n\
 <Key>Left:	backward-character() \n\
 <Key>Down:	next-line() \n\
