@@ -1,4 +1,4 @@
-/* $XConsortium: FSConnServ.c,v 1.10 91/07/19 21:33:08 rws Exp $ */
+/* $XConsortium: FSConnServ.c,v 1.11 91/07/20 13:39:41 rws Exp $ */
 
 /* @(#)FSConnServ.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -76,7 +76,6 @@ _FSConnectServer(server_name, expanded_name)
 #ifdef	X_NOT_STDC_ENV
     extern char *getenv();
 #endif
-    extern struct hostent *gethostbyname();
     int         fd;		/* Network socket */
 
 #ifdef DNETCONN
