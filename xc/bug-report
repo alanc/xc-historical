@@ -2,20 +2,20 @@ To: xbugs@x.org
 Subject: [area]: [synopsis]   [replace with actual area and short description]
 
 VERSION:
-    R5, public-patch-25
-    [MIT public patches will edit this line to indicate the patch level]
+    R6alpha
+    [X Consortium public patches edit this line to indicate the patch level]
 
 CLIENT MACHINE and OPERATING SYSTEM:
-    [e.g. Sparc/SunOS 4.1.1, DECstation 3100/Ultrix 4.2, ...]
+    [e.g. Sparc/SunOS 5.2, DECstation 5000/Ultrix 4.3, HP 9000-730/HP-UX 9.1]
 
 DISPLAY TYPE:
-    [e.g. Sun GX, 8-bit framebuffer, IBM APA16 ...]
+    [e.g. Sun GX, 8-bit framebuffer, IBM Skyway ...]
 
 WINDOW MANAGER:
-    [e.g. twm, gwm, olwm, mwm, ...]
+    [e.g. twm, mwm, gwm, olwm, ...]
 
 COMPILER:
-    [e.g. native cc, native ANSI cc, gcc 1.39, ...]
+    [e.g. native cc, native ANSI cc, gcc 2.4.5, ...]
 
 AREA:
     [Area of the source tree affected,
