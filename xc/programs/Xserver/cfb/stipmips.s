@@ -77,6 +77,9 @@
 #define sbase	$8
 #define stemp	$2
 
+#define CASE_SIZE	5	/* case blocks are 2^5 bytes each */
+#define CASE_MASK	0x1e0	/* first case mask */
+
 #define ForEachLine	$200
 #define NextLine	$201
 #define NextLine1	$202
@@ -99,9 +102,9 @@ stipplestack:
 	li	lshift, 4			/* compute offset within */
 	subu	lshift, lshift, shift		/*  stipple of remaining bits */
 #ifdef MIPSEL
-	addu	shift, shift, 4			/* first shift for LSB */
+	addu	shift, shift, CASE_SIZE		/* first shift for LSB */
 #else
-	addu	shift, shift, 24		/* first shift for MSB */
+	addu	shift, shift, 28-CASE_SIZE	/* first shift for MSB */
 #endif
 	/* do ... while (--count > 0); */
 ForEachLine:
@@ -113,7 +116,7 @@ ForEachLine:
 #endif
 	addu	addr, addr, stride		/* step for the loop */
 	BitsR	stemp, bits, shift		/* get first bits */
-	and	stemp, stemp, 0xf0		/* compute first branch */
+	and	stemp, stemp, CASE_MASK		/* compute first branch */
 	addu	stemp, stemp, sbase		/*  ... */
 	j	stemp				/*  ... */
 	BitsL	bits, bits, lshift		/* set remaining bits */
@@ -122,103 +125,154 @@ ForEachBits:
 	addu	atemp, atemp, 4
 ForEachBits1:
 	FourBits(stemp, bits)			/* compute jump for */
-	sll	stemp, stemp, 4			/*  next four bits */
+	sll	stemp, stemp, CASE_SIZE		/*  next four bits */
 	addu	stemp, stemp, sbase		/*  ... */
 	j	stemp				/*  ... */
 	BitsL	bits, bits, 4			/* step for remaining bits */
 CaseBegin:
 	bnez	bits, ForEachBits1		/* 0 */
 	addu	atemp, atemp, 4
-	b	NextLine1
+NextLine:
  	addu	count, count, -1
+	bnez	count, ForEachLine
+	addu	stipple, stipple, 4
+	j	$31
+	nop
+	nop
 
 	bnez	bits, ForEachBits		/* 1 */
 	sb	value, BO(0)(atemp)
-	b	NextLine1
  	addu	count, count, -1
+	bnez	count, ForEachLine
+	addu	stipple, stipple, 4
+	j	$31
+	nop
+	nop
 					
 	bnez	bits, ForEachBits		/* 2 */
 	sb	value, BO(1)(atemp)
-	b	NextLine1
  	addu	count, count, -1
+	bnez	count, ForEachLine
+	addu	stipple, stipple, 4
+	j	$31
+	nop
+	nop
 					
 	bnez	bits, ForEachBits		/* 3 */
 	sh	value, HO(0)(atemp)
-	b	NextLine1
  	addu	count, count, -1
+	bnez	count, ForEachLine
+	addu	stipple, stipple, 4
+	j	$31
+	nop
+	nop
 					
 	bnez	bits, ForEachBits		/* 4 */
 	sb	value, BO(2)(atemp)
-	b	NextLine1
  	addu	count, count, -1
+	bnez	count, ForEachLine
+	addu	stipple, stipple, 4
+	j	$31
+	nop
+	nop
 					
 	sb	value, BO(0)(atemp)		/* 5 */
-	b	NextBits
+	bnez	bits, ForEachBits
 	sb	value, BO(2)(atemp)
+ 	addu	count, count, -1
+	bnez	count, ForEachLine
+	addu	stipple, stipple, 4
+	j	$31
 	nop
 					
 	sb	value, BO(1)(atemp)		/* 6 */
-	b	NextBits
+	bnez	bits, ForEachBits
 	sb	value, BO(2)(atemp)
+ 	addu	count, count, -1
+	bnez	count, ForEachLine
+	addu	stipple, stipple, 4
+	j	$31
 	nop
 					
 	bnez	bits, ForEachBits		/* 7 */
 	swl	value, BO(2)(atemp)		/* untested on MSB */
-	b	NextLine1
  	addu	count, count, -1
+	bnez	count, ForEachLine
+	addu	stipple, stipple, 4
+	j	$31
+	nop
+	nop
 					
 	bnez	bits, ForEachBits		/* 8 */
 	sb	value, BO(3)(atemp)
-	b	NextLine1
  	addu	count, count, -1
+	bnez	count, ForEachLine
+	addu	stipple, stipple, 4
+	j	$31
+	nop
+	nop
 					
 	sb	value, BO(0)(atemp)		/* 9 */
-	b	NextBits
+	bnez	bits, ForEachBits
 	sb	value, BO(3)(atemp)
+ 	addu	count, count, -1
+	bnez	count, ForEachLine
+	addu	stipple, stipple, 4
+	j	$31
 	nop
 					
 	sb	value, BO(1)(atemp)		/* a */
-	b	NextBits
+	bnez	bits, ForEachBits
 	sb	value, BO(3)(atemp)
+ 	addu	count, count, -1
+	bnez	count, ForEachLine
+	addu	stipple, stipple, 4
+	j	$31
 	nop
-					
+
 	sh	value, HO(0)(atemp)		/* b */
-	b	NextBits
+	bnez	bits, ForEachBits
 	sb	value, BO(3)(atemp)
+ 	addu	count, count, -1
+	bnez	count, ForEachLine
+	addu	stipple, stipple, 4
+	j	$31
 	nop
 					
 	bnez	bits, ForEachBits		/* c */
 	sh	value, HO(2)(atemp)
-	b	NextLine1
  	addu	count, count, -1
-					
-	sb	value, BO(0)(atemp)		/* d */
-	b	NextBits
-	sh	value, HO(2)(atemp)
+	bnez	count, ForEachLine
+	addu	stipple, stipple, 4
+	j	$31
+	nop
 	nop
 					
+	sb	value, BO(0)(atemp)		/* d */
+	bnez	bits, ForEachBits
+	sh	value, HO(2)(atemp)
+ 	addu	count, count, -1
+	bnez	count, ForEachLine
+	addu	stipple, stipple, 4
+	j	$31
+	nop
+
 	bnez	bits, ForEachBits		/* e */
 	swr	value, BO(1)(atemp)		/* untested on MSB */
-	b	NextLine1
  	addu	count, count, -1
+	bnez	count, ForEachLine
+	addu	stipple, stipple, 4
+	j	$31
+	nop
+	nop
 					
 	bnez	bits, ForEachBits		/* f */
 	sw	value, WO(0)(atemp)
-	b	NextLine1
  	addu	count, count, -1
-
-	/*
- 	 * code for cases where there isn't room to
- 	 * do the loop test inside the case
-	 */
-NextBits:
-	bnez	bits,ForEachBits1
-	addu	atemp, atemp, 4
-NextLine:
-	addu	count, count, -1
-NextLine1:
-	bnez	count, ForEachLine		/* test for next line */
-	addu	stipple, stipple, 4		/* step stipple */
-	j	$31				/* return */
+	bnez	count, ForEachLine
+	addu	stipple, stipple, 4
+	j	$31
 	nop
+	nop
+					
 	.end	stipplestack
