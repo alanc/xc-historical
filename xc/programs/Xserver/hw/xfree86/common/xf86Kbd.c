@@ -1,5 +1,5 @@
-/* $XConsortium: xf86Kbd.c,v 1.1 94/10/05 13:34:15 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.1 1994/09/23 10:13:07 dawes Exp $ */
+/* $XConsortium: xf86Kbd.c,v 1.2 94/10/12 20:33:21 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.2 1994/11/30 20:41:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -293,7 +293,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
     }
     if (j >= 0)
       switch (xf86Info.specialKeyMap[j]) {
-        case K_META:
+        case KM_META:
           if (k[0] == XK_Alt_R)
             k[1] = XK_Meta_R;
           else {
@@ -301,21 +301,21 @@ xf86KbdGetMapping (pKeySyms, pModMap)
             k[1] = XK_Meta_L;
           }
           break;
-        case K_COMPOSE:
+        case KM_COMPOSE:
           k[0] = XK_Multi_key;
           break;
-        case K_MODESHIFT:
+        case KM_MODESHIFT:
           k[0] = XK_Mode_switch;
           k[1] = NoSymbol;
           break;
-        case K_MODELOCK:
+        case KM_MODELOCK:
           k[0] = XK_Mode_switch;
           k[1] = XK_Mode_Lock;
           break;
-        case K_SCROLLLOCK:
+        case KM_SCROLLLOCK:
           k[0] = XK_Scroll_Lock;
           break;
-        case K_CONTROL:
+        case KM_CONTROL:
           k[0] = XK_Control_R;
           break;
       }
@@ -384,5 +384,8 @@ xf86KbdGetMapping (pKeySyms, pModMap)
   pKeySyms->map        = map;
   pKeySyms->mapWidth   = GLYPHS_PER_KEY;
   pKeySyms->minKeyCode = MIN_KEYCODE;
-  pKeySyms->maxKeyCode = MAX_KEYCODE;
+  if (xf86Info.serverNumLock)
+    pKeySyms->maxKeyCode = MAX_KEYCODE;
+  else
+    pKeySyms->maxKeyCode = MAX_STD_KEYCODE;
 }

@@ -1,5 +1,5 @@
-/* $XConsortium: xf86KbdMach.c,v 1.2 94/10/12 20:33:21 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdMach.c,v 3.0 1994/09/23 10:13:09 dawes Exp $ */
+/* $XConsortium: xf86KbdMach.c,v 1.3 94/12/10 12:12:18 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdMach.c,v 3.1 1994/11/30 20:41:17 dawes Exp $ */
 /*
  *****************************************************************************
  * HISTORY
@@ -219,7 +219,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
     }
     if (j >= 0)
       switch (xf86Info.specialKeyMap[j]) {
-        case K_META:
+        case KM_META:
           if (k[0] == XK_Alt_R)
             k[1] = XK_Meta_R;
           else {
@@ -227,21 +227,21 @@ xf86KbdGetMapping (pKeySyms, pModMap)
             k[1] = XK_Meta_L;
           }
           break;
-        case K_COMPOSE:
+        case KM_COMPOSE:
           k[0] = XK_Multi_key;
           break;
-        case K_MODESHIFT:
+        case KM_MODESHIFT:
           k[0] = XK_Mode_switch;
           k[1] = NoSymbol;
           break;
-        case K_MODELOCK:
+        case KM_MODELOCK:
           k[0] = XK_Mode_switch;
           k[1] = XK_Mode_Lock;
           break;
-        case K_SCROLLLOCK:
+        case KM_SCROLLLOCK:
           k[0] = XK_Scroll_Lock;
           break;
-        case K_CONTROL:
+        case KM_CONTROL:
           k[0] = XK_Control_R;
           break;
       }

@@ -1,5 +1,5 @@
-/* $XConsortium: xf86_ClkPr.c,v 1.1 94/10/05 13:34:52 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_ClkPr.c,v 3.1 1994/09/23 10:17:08 dawes Exp $ */
+/* $XConsortium: xf86_ClkPr.c,v 1.2 94/10/12 20:38:44 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_ClkPr.c,v 3.3 1994/11/26 12:45:59 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -44,7 +44,7 @@
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 
-#if defined(__BSD__) || defined(MACH386)
+#if defined(CSRG_BASED) || defined(MACH386)
 #include <sys/resource.h>
 #endif
 
@@ -69,7 +69,7 @@ ScrnInfoRec *InfoRec;
     /* First save registers that get written on */
     (*ClockFunc)(CLK_REG_SAVE);
 
-#if defined(__BSD__) || defined(MACH386)
+#if defined(CSRG_BASED) || defined(MACH386)
     saved_nice = getpriority(PRIO_PROCESS, 0);
     setpriority(PRIO_PROCESS, 0, -20);
 #endif
@@ -104,8 +104,12 @@ ScrnInfoRec *InfoRec;
 	}
 	while ((inb(status) & maskval) == 0x00) 
 	    if (sync-- == 0) goto finish;
+	/* Something appears to be happening, so reset sync count */
+	sync = 200000;
 	while ((inb(status) & maskval) == maskval) 
 	    if (sync-- == 0) goto finish;
+	/* Something appears to be happening, so reset sync count */
+	sync = 200000;
 	while ((inb(status) & maskval) == 0x00) 
 	    if (sync-- == 0) goto finish;
     
@@ -124,7 +128,7 @@ finish:
         (*SaveScreen)(NULL, TRUE);
     }
 
-#if defined(__BSD__) || defined(MACH386)
+#if defined(CSRG_BASED) || defined(MACH386)
     setpriority(PRIO_PROCESS, 0, saved_nice);
 #endif
 #if defined(SYSV) || defined(SVR4) || defined(linux)

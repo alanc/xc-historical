@@ -1,5 +1,5 @@
-/* $XConsortium: vga.h,v 1.1 94/10/05 13:51:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.4 1994/09/11 00:53:25 dawes Exp $ */
+/* $XConsortium: vga.h,v 1.2 94/10/13 13:04:50 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.5 1994/11/26 12:48:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -127,7 +127,7 @@ extern int vgaIOBase;
 extern int vgaInterlaceType;
 extern int vgaBitsPerPixel;
 
-#if !defined(S3_SERVER) && !defined(MACH32_SERVER)
+#if !defined(S3_SERVER) && !defined(MACH32_SERVER) && !defined(MACH64_SERVER)
 #include "vgaBank.h"
 #endif
 
@@ -188,6 +188,9 @@ extern void vgaDoBitBlt();
 #endif
 #ifdef MACH32_SERVER
 #define vga256InfoRec mach32InfoRec
+#endif
+#ifdef MACH64_SERVER
+#define vga256InfoRec mach64InfoRec
 #endif
 #ifdef AGX_SERVER
 #define vga256InfoRec agxInfoRec

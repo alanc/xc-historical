@@ -1,5 +1,5 @@
-/* $XConsortium: SC11412.c,v 1.1 94/10/05 13:34:52 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/SC11412.c,v 3.0 1994/04/29 14:08:29 dawes Exp $ */
+/* $XConsortium: SC11412.c,v 1.2 94/10/12 20:38:44 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/SC11412.c,v 3.1 1994/11/05 23:44:05 dawes Exp $ */
 
 /* Norbert Distler ndistler@physik.tu-muenchen.de  */
 
@@ -25,7 +25,8 @@ unsigned i;
 unsigned  Multiplier, Divider, BigD;
 unsigned ErrorTerm=32767;
 
-SetSC11412(105,32,0,0);    /* set Mclock to 46,... MHz */
+SetSC11412(106,31,0,0);  /* set Mclock to 49 MHz */
+ 
 
   /* calculate postscalar divider */
   BigD = 0;
@@ -58,6 +59,8 @@ for (i=0; i<125; i++)
       }
         Multiplier+=3; 
         Divider+=2;
+ if (Divider == 31)         /* avoid commom denominators of MCLK and PCLK  */
+    SetSC11412(107,32,0,0); 
 
  return SetSC11412(Multiplier,Divider,BigD,1);
 

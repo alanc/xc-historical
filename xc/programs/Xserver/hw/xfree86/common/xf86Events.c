@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Events.c,v 1.7 94/12/10 12:12:18 kaleb Exp kaleb $ */
+/* $XConsortium: xf86Events.c,v 1.8 94/12/13 15:03:47 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.4 1994/11/30 20:41:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -465,7 +465,7 @@ xf86PostKbdEvent(key)
 	if (down) xf86ZoomViewport(xf86Info.currentScreen,  1);
 	return;
 
-#if defined(linux) || defined(CSRG_BASED) && !defined(__bsdi__)
+#if defined(linux) || (defined(CSRG_BASED) && !defined(__bsdi__))
 	/*
 	 * Under Linux, the raw keycodes are consumed before the kernel
 	 * does any processing on them, so we must emulate the vt switching
@@ -963,8 +963,7 @@ xf86SigHandler(signo)
 {
   signal(signo,SIG_IGN);
   xf86Info.caughtSignal = TRUE;
-  ErrorF("Caught signal %d.  Server aborting\n", signo);
-  AbortServer();
+  FatalError("Caught signal %d.  Server aborting\n", signo);
 }
 
 /*

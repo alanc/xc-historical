@@ -1,5 +1,5 @@
-/* $XConsortium: xf86_OSlib.h,v 1.3 94/11/02 16:07:45 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.5 1994/09/07 15:53:28 dawes Exp $ */
+/* $XConsortium: xf86_OSlib.h,v 1.4 94/12/01 16:57:59 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.8 1994/12/05 03:46:56 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@physics.su.oz.au>
@@ -185,12 +185,17 @@ extern int errno;
 #ifdef __BSD__
 # undef __BSD__
 #endif
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined (__bsdi__)
-# define __BSD__
-#endif
 
 #if defined(__386BSD__) && (defined(__FreeBSD__) || defined(__NetBSD__))
 # undef __386BSD__
+#endif
+
+/*
+ * Use __BSD__ instead of CSRG_BASED to avoid excessive warnings
+ * from makedepend (because makedepend doesn't have __FreeBSD__ etc defined).
+ */
+#if defined(__386BSD__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__bsdi__)
+#define __BSD__
 #endif
 
 #ifdef __BSD__
@@ -282,7 +287,7 @@ extern int errno;
 #   define NULL 0
 # endif
 
-# undef __BSD__
+#undef __BSD__
 #endif /* __BSD__ */
 
 /**************************************************************************/
@@ -425,6 +430,21 @@ extern int sys_nerr;
 #define EXTENDED_REGION 2
 
 #ifndef NO_OSLIB_PROTOTYPES
+/*
+ * This is to prevent re-entrancy to FatalError() when aborting.
+ * Anything that can be called as a result of AbortDDX() should use this
+ * instead of FatalError(). (xf86Exiting gets set to TRUE the first time
+ * AbortDDX() is called.)
+ */
+
+extern Bool xf86Exiting;
+
+#define xf86FatalError(a, b) \
+	if (xf86Exiting) { \
+		ErrorF(a, b); \
+		return; \
+	} else FatalError(a, b)
+
 /***************************************************************************/
 /* Prototypes                                                              */
 /***************************************************************************/

@@ -1,5 +1,5 @@
-/* $XConsortium: xf86_Config.h,v 1.1 94/10/05 13:34:15 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.13 1994/09/23 10:13:11 dawes Exp $ */
+/* $XConsortium: xf86_Config.h,v 1.2 94/10/12 20:33:21 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.17 1994/11/30 20:41:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -27,6 +27,8 @@
 
 
 #ifndef XCONFIG_FLAGS_ONLY
+
+#define CLOCK_TOLERANCE 2000         /* Clock matching tolerance (2MHz) */
 
 #ifdef BLACK
 #undef BLACK
@@ -88,6 +90,8 @@ typedef struct {
    int COPbase;
    int POSbase;
    int instance;
+   int s3Madjust;
+   int s3Nadjust;
 } GDevRec, *GDevPtr;
 
 typedef struct {
@@ -277,24 +281,34 @@ static SymTabRec ScreenTab[] = {
 #endif /* INIT_CONFIG */
 
 /* Mode timing keywords */
-#define INTERLACE	1090
-#define PHSYNC		1091
-#define NHSYNC		1092
-#define PVSYNC		1093
-#define NVSYNC		1094
-#define CSYNC		1095
+#define TT_INTERLACE	1090
+#define TT_PHSYNC	1091
+#define TT_NHSYNC	1092
+#define TT_PVSYNC	1093
+#define TT_NVSYNC	1094
+#define TT_CSYNC	1095
+#define TT_PCSYNC	1096
+#define TT_NCSYNC	1097
+#define TT_DBLSCAN	1098
 
 #ifdef INIT_CONFIG
-static SymTabRec TimingTab[] = {
-  { INTERLACE,	"interlace"},
-  { PHSYNC,	"+hsync"},
-  { NHSYNC,	"-hsync"},
-  { PVSYNC,	"+vsync"},
-  { NVSYNC,	"-vsync"},
-  { CSYNC,	"composite"},
-  { -1,		"" },
+SymTabRec TimingTab[] = {
+  { TT_INTERLACE,	"interlace"},
+  { TT_PHSYNC,		"+hsync"},
+  { TT_NHSYNC,		"-hsync"},
+  { TT_PVSYNC,		"+vsync"},
+  { TT_NVSYNC,		"-vsync"},
+  { TT_CSYNC,		"composite"},
+  { TT_PCSYNC,		"+csync"},
+  { TT_NCSYNC,		"-csync"},
+  { TT_DBLSCAN,		"doublescan"},
+  { -1,			"" },
 };
-#endif /* INIT_CONFIG */
+#else  /* defined(INIT_CONFIG) */
+
+extern SymTabRec TimingTab[];
+
+#endif /* !defined(INIT_CONFIG) */
 
 /* Indexes for the specialKeyMap array */
 #define K_INDEX_LEFTALT		0
@@ -303,21 +317,21 @@ static SymTabRec TimingTab[] = {
 #define K_INDEX_RIGHTCTL	3
 
 /* Values for the specialKeyMap array */
-#define K_META		0
-#define K_COMPOSE	1
-#define K_MODESHIFT	2
-#define K_MODELOCK	3
-#define K_SCROLLLOCK	4
-#define K_CONTROL	5
+#define KM_META		0
+#define KM_COMPOSE	1
+#define KM_MODESHIFT	2
+#define KM_MODELOCK	3
+#define KM_SCROLLLOCK	4
+#define KM_CONTROL	5
 
 #ifdef INIT_CONFIG
 static SymTabRec KeyMapTab[] = {
-  { K_META,		"meta" },
-  { K_COMPOSE,		"compose" },
-  { K_MODESHIFT,	"modeshift" },
-  { K_MODELOCK,		"modelock" },
-  { K_SCROLLLOCK,	"scrolllock" },
-  { K_CONTROL,		"control" },
+  { KM_META,		"meta" },
+  { KM_COMPOSE,		"compose" },
+  { KM_MODESHIFT,	"modeshift" },
+  { KM_MODELOCK,	"modelock" },
+  { KM_SCROLLLOCK,	"scrolllock" },
+  { KM_CONTROL,		"control" },
   { -1,			"" },
 };
 #endif /* INIT_CONFIG */

@@ -1,6 +1,6 @@
 /*
- * $XConsortium: xf86Config.c,v 1.1 94/10/05 13:34:15 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.24 1994/09/24 15:13:13 dawes Exp $
+ * $XConsortium: xf86Config.c,v 1.3 94/10/12 20:33:21 kaleb Exp kaleb $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.29 1994/11/30 20:41:09 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -52,8 +52,6 @@ static LexRec val;                        /* global return value */
 
 static int screenno = -100;      /* some little number ... */
 
-#define TOLERANCE	2000	/* 2MHz */
-
 extern char *getenv();
 extern char *defaultFontPath;
 extern char *rgbPath;
@@ -62,7 +60,6 @@ extern Bool xf86fpFlag, xf86coFlag;
 extern Bool xf86ScreensOpen;
 
 extern int defaultColorVisualClass;
-int s3Madjust=0, s3Nadjust=0;
 
 char *xf86VisualNames[] = {
     "StaticGray",
@@ -1014,10 +1011,10 @@ configKeyboardSection()
   xf86Info.vtSysreq      = VT_SYSREQ_DEFAULT;
   xf86Info.specialKeyMap = (int *)xalloc((RIGHTCTL - LEFTALT + 1) *
                                             sizeof(int));
-  xf86Info.specialKeyMap[LEFTALT - LEFTALT] = K_META;
-  xf86Info.specialKeyMap[RIGHTALT - LEFTALT] = K_META;
-  xf86Info.specialKeyMap[SCROLLLOCK - LEFTALT] = K_COMPOSE;
-  xf86Info.specialKeyMap[RIGHTCTL - LEFTALT] = K_CONTROL;
+  xf86Info.specialKeyMap[LEFTALT - LEFTALT] = KM_META;
+  xf86Info.specialKeyMap[RIGHTALT - LEFTALT] = KM_META;
+  xf86Info.specialKeyMap[SCROLLLOCK - LEFTALT] = KM_COMPOSE;
+  xf86Info.specialKeyMap[RIGHTCTL - LEFTALT] = KM_CONTROL;
 
   while ((token = getToken(KeyboardTab)) != ENDSECTION) {
     switch (token) {
@@ -1068,12 +1065,12 @@ configKeyboardSection()
 	configError("KeyMap type token expected");
       else {
 	switch(ntoken) {
-	case K_META:
-	case K_COMPOSE:
-	case K_MODESHIFT:
-	case K_MODELOCK:
-	case K_SCROLLLOCK:
-	case K_CONTROL:
+	case KM_META:
+	case KM_COMPOSE:
+	case KM_MODESHIFT:
+	case KM_MODELOCK:
+	case KM_SCROLLLOCK:
+	case KM_CONTROL:
           xf86Info.specialKeyMap[token - LEFTALT] = ntoken;
 	  break;
 	default:
@@ -1352,6 +1349,8 @@ configDeviceSection()
   devp->instance = 0;
   devp->BIOSbase = 0;
   devp->MemBase = 0;
+  devp->s3Madjust = 0;
+  devp->s3Nadjust = 0;
 
   while ((token = getToken(DeviceTab)) != ENDSECTION) {
     switch (token) {
@@ -1572,14 +1571,23 @@ configDeviceSection()
       break;
 
     case S3MNADJUST:
-      if (getToken(NULL) != NUMBER || val.num<-31 || val.num>31) 
+      if ((token = getToken(NULL)) == DASH) {  /* negative number */
+	 token = getToken(NULL);
+	 val.num = -val.num;
+      }
+      if (token != NUMBER || val.num<-31 || val.num>31) 
 	 configError("M adjust (max. 31) expected");
-      s3Madjust = val.num;
-      if ((token = getToken(NULL)) == NUMBER) {
+        devp->s3Madjust = val.num;
+
+      if ((token = getToken(NULL)) == DASH) {  /* negative number */
+	 token = getToken(NULL);
+	 val.num = -val.num;
+      }
+      if (token == NUMBER) {
 	 if (val.num<-255 || val.num>255) 
 	    configError("N adjust (max. 255) expected");
 	 else
-	    s3Nadjust = val.num;
+	    devp->s3Nadjust = val.num;
       }
       else pushToken = token;
       break;
@@ -1694,18 +1702,23 @@ configMonitorSection()
       else configError("Vertical total expected");
 
       token = getToken(TimingTab);
-      while ( (token == INTERLACE) || (token == PHSYNC) ||
-              (token == NHSYNC) || (token == PVSYNC) ||
-              (token == NVSYNC) || (token == CSYNC) )
+      while ( (token == TT_INTERLACE) || (token == TT_PHSYNC) ||
+              (token == TT_NHSYNC) || (token == TT_PVSYNC) ||
+              (token == TT_NVSYNC) || (token == TT_CSYNC) ||
+              (token == TT_PCSYNC) || (token == TT_NCSYNC) ||
+              (token == TT_DBLSCAN) )
       {
         switch(token) {
               
-        case INTERLACE: pNew->Flags |= V_INTERLACE;  break;
-        case PHSYNC:    pNew->Flags |= V_PHSYNC;     break;
-        case NHSYNC:    pNew->Flags |= V_NHSYNC;     break;
-        case PVSYNC:    pNew->Flags |= V_PVSYNC;     break;
-        case NVSYNC:    pNew->Flags |= V_NVSYNC;     break;
-        case CSYNC:     pNew->Flags |= V_CSYNC;      break;
+        case TT_INTERLACE: pNew->Flags |= V_INTERLACE;  break;
+        case TT_PHSYNC:    pNew->Flags |= V_PHSYNC;     break;
+        case TT_NHSYNC:    pNew->Flags |= V_NHSYNC;     break;
+        case TT_PVSYNC:    pNew->Flags |= V_PVSYNC;     break;
+        case TT_NVSYNC:    pNew->Flags |= V_NVSYNC;     break;
+        case TT_CSYNC:     pNew->Flags |= V_CSYNC;      break;
+        case TT_PCSYNC:    pNew->Flags |= V_PCSYNC;     break;
+        case TT_NCSYNC:    pNew->Flags |= V_NCSYNC;     break;
+        case TT_DBLSCAN:   pNew->Flags |= V_DBLSCAN;    break;
         default:
           configError("bug found in config reader"); break;
         }
@@ -1925,14 +1938,17 @@ MonPtr monp;
       while ( token == STRING ) {
         token2 = getStringToken(TimingTab);
         switch(token2) {
-        case INTERLACE: pNew->Flags |= V_INTERLACE;  break;
-        case PHSYNC:    pNew->Flags |= V_PHSYNC;     break;
-        case NHSYNC:    pNew->Flags |= V_NHSYNC;     break;
-        case PVSYNC:    pNew->Flags |= V_PVSYNC;     break;
-        case NVSYNC:    pNew->Flags |= V_NVSYNC;     break;
-        case CSYNC:     pNew->Flags |= V_CSYNC;      break;
+        case TT_INTERLACE: pNew->Flags |= V_INTERLACE;  break;
+        case TT_PHSYNC:    pNew->Flags |= V_PHSYNC;     break;
+        case TT_NHSYNC:    pNew->Flags |= V_NHSYNC;     break;
+        case TT_PVSYNC:    pNew->Flags |= V_PVSYNC;     break;
+        case TT_NVSYNC:    pNew->Flags |= V_NVSYNC;     break;
+        case TT_CSYNC:     pNew->Flags |= V_CSYNC;      break;
+        case TT_PCSYNC:    pNew->Flags |= V_PCSYNC;     break;
+        case TT_NCSYNC:    pNew->Flags |= V_NCSYNC;     break;
+        case TT_DBLSCAN:   pNew->Flags |= V_DBLSCAN;    break;
         default:
-          configError("bug found in config reader"); break;
+          configError("Unknown flag string"); break;
         }
         token = getToken(NULL);
       }
@@ -2088,6 +2104,8 @@ configScreenSection()
             screen->POSbase = device_list[i].POSbase;
           if (OFLG_ISSET(XCONFIG_INSTANCE, &screen->xconfigFlag))
             screen->instance = device_list[i].instance;
+          screen->s3Madjust = device_list[i].s3Madjust;
+          screen->s3Nadjust = device_list[i].s3Nadjust;
           break;
         }
       }
@@ -2244,7 +2262,7 @@ configScreenSection()
     {
       driver->textclock = xf86GetNearestClock(driver, textClockValue);
       if (abs(textClockValue - driver->clock[driver->textclock]) >
-          TOLERANCE)
+          CLOCK_TOLERANCE)
         FatalError(
           "There is no defined dot-clock matching the text clock\n");
       if (xf86Verbose)
@@ -2451,7 +2469,7 @@ xf86LookupMode(target, driver)
   DisplayModePtr p;
   DisplayModePtr best_mode = NULL;
   int            i, Gap;
-  int            Minimum_Gap = TOLERANCE + 1;
+  int            Minimum_Gap = CLOCK_TOLERANCE + 1;
   Bool           found_mode = FALSE;
   Bool           clock_too_high = FALSE;
   static Bool	 first_time = TRUE;

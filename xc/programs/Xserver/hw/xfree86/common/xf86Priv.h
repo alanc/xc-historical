@@ -1,5 +1,5 @@
-/* $XConsortium: xf86Priv.h,v 1.2 94/10/12 20:33:21 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.1 1994/07/24 11:49:20 dawes Exp $ */
+/* $XConsortium: xf86Priv.h,v 1.3 94/11/18 11:06:20 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.2 1994/11/26 12:45:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *

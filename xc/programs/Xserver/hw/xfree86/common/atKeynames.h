@@ -1,4 +1,5 @@
-/* $XConsortium: atKeynames.h,v 1.2 94/11/18 11:06:20 kaleb Exp kaleb $ */
+/* $XConsortium: atKeynames.h,v 1.3 94/12/10 12:12:18 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.0 1994/11/22 02:38:48 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -183,6 +184,9 @@
 #define KEY_KP_Divide    /* Didive                0x68  */  104
 #define KEY_AltLang      /* AtlLang(right)        0x69  */  105
 #define KEY_Break        /* Break                 0x6a  */  106
+#define KEY_LMeta        /* Left Meta             0x6b  */  107
+#define KEY_RMeta        /* Right Meta            0x6c  */  108
+#define KEY_Menu         /* Menu                  0x6d  */  109
 #define KEY_LMeta        /* Left Meta             0x6b  */  107
 #define KEY_RMeta        /* Right Meta            0x6c  */  108
 #define KEY_Menu         /* Menu                  0x6d  */  109

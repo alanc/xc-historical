@@ -1,4 +1,5 @@
-/* $XConsortium: xf86Keymap.h,v 1.2 94/11/18 11:06:20 kaleb Exp kaleb $ */
+/* $XConsortium: xf86Keymap.h,v 1.3 94/12/10 12:12:18 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.0 1994/11/22 02:38:53 dawes Exp $ */
 /*
  * For Scancodes see notes in atKeynames.h  !!!!
  */

@@ -1,5 +1,5 @@
-/* $XConsortium: cir_textblt.s,v 1.1 94/10/05 13:52:22 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_textblt.s,v 3.3 1994/09/19 13:45:55 dawes Exp $ */
+/* $XConsortium: cir_textblt.s,v 1.3 94/10/13 13:21:46 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_textblt.s,v 3.4 1994/10/23 13:01:01 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -1119,7 +1119,7 @@ GLNAME(CirrusTransferText32bitSpecial):
 	MOV_L	(REGOFF(16,EDI),EBX)	/* Next char */
 	MOV_L	(REGBISD(EBX,EDX,4,0),ECX)
 	MOV_L	(ECX,EBX)
-	SHL_L	(CONST(22),EBX)
+	SHL_L	(CONST(24),EBX)		/* (was 22) */
 	ADD_L	(EBX,EAX)
 	/* write dword */
 	XOR_L	(EBX,EBX)

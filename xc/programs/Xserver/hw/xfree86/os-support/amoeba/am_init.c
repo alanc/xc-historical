@@ -1,5 +1,5 @@
-/* $XConsortium: am_init.c,v 1.1 94/10/05 13:41:20 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/amoeba/am_init.c,v 3.0 1994/09/23 10:22:13 dawes Exp $ */
+/* $XConsortium: am_init.c,v 1.2 94/10/12 20:44:34 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/amoeba/am_init.c,v 3.1 1994/10/23 12:59:40 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -85,8 +85,8 @@ void xf86CloseConsole()
 	/* Unmap video's memory segment */
 	if ((err = iop_unmap_mem(&iopcap, &vgaMemCap)) != STD_OK)
 	{
-	    FatalError("xf86CloseConsole: iop_map_mem failed (%s)\n", 
-		       err_why(err));
+	    xf86FatalError("xf86CloseConsole: iop_map_mem failed (%s)\n", 
+			   err_why(err));
 	}
 	vgaMemCap.cap_port = nullport;
     }

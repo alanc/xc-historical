@@ -1,5 +1,5 @@
-/* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.22 1994/09/24 15:15:18 dawes Exp $ */
+/* $XConsortium: vga.c,v 1.3 94/12/06 16:11:26 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.24 1994/10/23 13:01:26 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -150,6 +150,8 @@ ScrnInfoRec vga256InfoRec = {
   0,			/* int COPbase */
   0,			/* int POSbase */
   0,			/* int instance */
+  0,			/* int s3Madjust */
+  0,			/* int s3Nadjust */
 };
 
 pointer vgaOrigVideoState = NULL;
@@ -1158,7 +1160,7 @@ vgaEnterLeaveVT(enter, screen_idx)
   else
     {
 
-      /* Make sure that another dirver hasn't disabeled IO */    
+      /* Make sure that another driver hasn't disabeled IO */    
       xf86MapDisplay(screen_idx, VGA_REGION);
       if (vgaUseLinearAddressing)
         xf86MapDisplay(screen_idx, LINEAR_REGION);
@@ -1283,6 +1285,10 @@ vgaSwitchMode(mode)
   if ((vgaInitFunc)(mode))
   {
     vgaRestore(vgaNewVideoState);
+    if (vgaHWCursor.Initialized)
+    {
+      vgaHWCursor.Restore(savepScreen);
+    }
     return(TRUE);
   }
   else

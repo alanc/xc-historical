@@ -1,6 +1,6 @@
 /*
- * $XConsortium: vgaHW.c,v 1.1 94/10/05 13:51:06 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.10 1994/09/23 10:27:05 dawes Exp $
+ * $XConsortium: vgaHW.c,v 1.4 94/10/13 13:04:50 kaleb Exp kaleb $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.12 1994/11/26 12:48:19 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -68,7 +68,7 @@
 #endif
 #endif
 
-#if defined(__BSD__) || defined(MACH386) || defined(linux) || defined(AMOEBA) || defined(MINIX)
+#if defined(CSRG_BASED) || defined(MACH386) || defined(linux) || defined(AMOEBA) || defined(MINIX)
 #ifndef NEED_SAVED_CMAP
 #define NEED_SAVED_CMAP
 #endif
@@ -92,7 +92,7 @@
 /* bytes per plane to save for font data */
 #define FONT_AMOUNT 8192
 
-#if defined(__BSD__) || defined(MACH386)
+#if defined(CSRG_BASED) || defined(MACH386)
 #include <sys/time.h>
 #endif
 
@@ -892,6 +892,8 @@ vgaHWInit(mode, size)
 		| ((mode->VSyncStart & 0x200) >> 2 );
   new->CRTC[8]  = 0x00;
   new->CRTC[9]  = ((mode->VSyncStart & 0x200) >>4) | 0x40;
+  if (mode->Flags & V_DBLSCAN)
+    new->CRTC[9] |= 0x80;
   new->CRTC[10] = 0x00;
   new->CRTC[11] = 0x00;
   new->CRTC[12] = 0x00;

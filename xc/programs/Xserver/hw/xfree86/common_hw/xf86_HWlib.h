@@ -1,5 +1,5 @@
-/* $XConsortium: xf86_HWlib.h,v 1.1 94/10/05 13:34:52 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.3 1994/09/20 12:47:02 dawes Exp $ */
+/* $XConsortium: xf86_HWlib.h,v 1.2 94/10/12 20:38:44 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.4 1994/11/30 20:41:39 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -103,6 +103,43 @@ extern void xf86GetClocks(
 	int,
 	int,
 	ScrnInfoRec *
+#endif
+);
+
+/* ATTDac.c */
+extern void xf86dactopel(
+#if NeedFunctionPrototypes
+	void
+#endif
+);
+
+extern unsigned char xf86dactocomm(
+#if NeedFunctionPrototypes
+	void
+#endif
+);
+
+extern unsigned char xf86getdaccomm(
+#if NeedFunctionPrototypes
+	void
+#endif
+);
+
+extern void xf86setdaccomm(
+#if NeedFunctionPrototypes
+	unsigned char
+#endif
+);
+
+extern void xf86setdaccommbit(
+#if NeedFunctionPrototypes
+	unsigned char
+#endif
+);
+
+extern void xf86clrdaccommbit(
+#if NeedFunctionPrototypes
+	unsigned char
 #endif
 );
 

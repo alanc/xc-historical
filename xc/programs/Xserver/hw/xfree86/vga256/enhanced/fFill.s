@@ -1,5 +1,5 @@
-/* $XConsortium: fFill.s,v 1.1 94/10/05 13:50:07 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fFill.s,v 3.1 1994/08/31 06:20:25 dawes Exp $ */
+/* $XConsortium: fFill.s,v 1.3 94/10/13 13:16:19 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fFill.s,v 3.2 1994/10/21 11:24:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -71,11 +71,7 @@
 
 	AS_BEGIN
 
-#if (defined(SYSV) || defined(SVR4)) && !defined(ACK_ASSEMBLER)
-#define GL_RROP_NAME	RROP_NAME(fastFillSolid)
-#else
-#define GL_RROP_NAME	RROP_NAME(_fastFillSolid)
-#endif
+#define GL_RROP_NAME    RROP_NAME(GLNAME(fastFillSolid))
 
 /*
  *

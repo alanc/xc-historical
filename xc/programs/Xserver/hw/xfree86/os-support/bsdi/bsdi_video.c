@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: bsdi_video.c,v 1.1 94/03/28 21:28:38 dpw Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_video.c,v 3.0 1994/10/29 22:40:34 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -74,7 +75,7 @@ unsigned long Size;
 
 Bool xf86LinearVidMem()
 {
-	return(FALSE);
+	return(TRUE);
 }
 
 /***************************************************************************/

@@ -1,4 +1,5 @@
-/* $XConsortium: vgaFasm.h,v 1.1 94/03/28 21:55:05 dpw Exp kaleb $ */
+/* $XConsortium: vgaFasm.h,v 1.2 94/12/05 11:52:30 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/vgaFasm.h,v 3.2 1994/10/21 11:24:26 dawes Exp $ */
 /* Copyright 1992 by James Tsillas, Arlignton, Massachusetts.
 
 		All Rights Reserved
@@ -84,8 +85,8 @@ PERFORMANCE OF THIS SOFTWARE.
                      pushl %4          \n\
                      call fastBitBltCopy \n\
                      addl $16, %%esp"    \
-		    : "=D" ((unsigned char *) (dst)), \
-                      "=S" ((unsigned char *) (src))  \
+		    : "=D" (/*(unsigned char *)*/ (dst)), \
+                      "=S" (/*(unsigned char *)*/ (src))  \
                     : "D0" ((unsigned char *) (dst)), \
 		      "S1" ((unsigned char *) (src)), \
                       "g" ((unsigned int) (xdir)),    \
@@ -114,9 +115,9 @@ PERFORMANCE OF THIS SOFTWARE.
                                movl %8, %0            \n\
                                jmp .label00           \n\
                      .label02:"                         \
-		    : "=S" ((unsigned long *) (psrc)),  \
-		      "=D" ((unsigned long *) (pdst)),  \
-		      "=b" ((unsigned int) (srcR))      \
+		    : "=S" (/*(unsigned long *)*/ (psrc)),  \
+		      "=D" (/*(unsigned long *)*/ (pdst)),  \
+		      "=b" (/*(unsigned int)*/ (srcR))      \
 		    : "S0" ((unsigned long *) (psrc)),  \
 		      "D1" ((unsigned long *) (pdst)),  \
                       "b2" ((unsigned int) (srcR)),     \
@@ -150,9 +151,9 @@ PERFORMANCE OF THIS SOFTWARE.
                                movl %8, %0            \n\
                                jmp .label10           \n\
                      .label12:"                         \
-		    : "=S" ((unsigned long *) (psrc)),  \
-		      "=D" ((unsigned long *) (pdst)),  \
-		      "=b" ((unsigned int) (srcR))      \
+		    : "=S" (/*(unsigned long *)*/ (psrc)),  \
+		      "=D" (/*(unsigned long *)*/ (pdst)),  \
+		      "=b" (/*(unsigned int)*/ (srcR))      \
 		    : "S0" ((unsigned long *) (psrc)),  \
 		      "D1" ((unsigned long *) (pdst)),  \
                       "b2" ((unsigned int) (srcR)),     \
@@ -186,9 +187,9 @@ PERFORMANCE OF THIS SOFTWARE.
                                movl %8, %0            \n\
                                jmp .label20           \n\
                      .label22:"                         \
-		    : "=S" ((unsigned long *) (psrc)),  \
-		      "=D" ((unsigned long *) (pdst)),  \
-		      "=b" ((unsigned int) (srcR))      \
+		    : "=S" (/*(unsigned long *)*/ (psrc)),  \
+		      "=D" (/*(unsigned long *)*/ (pdst)),  \
+		      "=b" (/*(unsigned int)*/ (srcR))      \
 		    : "S0" ((unsigned long *) (psrc)),  \
 		      "D1" ((unsigned long *) (pdst)),  \
                       "b2" ((unsigned int) (srcR)),     \
@@ -215,8 +216,8 @@ PERFORMANCE OF THIS SOFTWARE.
                                 shll %%cl, %%eax       \n\
                                 orl %%edx, %%eax       \n\
                                 stosl"                 \
-		    : "=S" ((unsigned long *) (psrc)), \
-		      "=D" ((unsigned long *) (pdst))  \
+		    : "=S" (/*(unsigned long *)*/ (psrc)), \
+		      "=D" (/*(unsigned long *)*/ (pdst))  \
 		    : "S0" ((unsigned long *) (psrc)), \
 		      "D1" ((unsigned long *) (pdst)), \
 		      "g" ((unsigned long) (bits)),    \
@@ -239,7 +240,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #define RROP_SOLID_L_X(pdst, nl, fill, rep) \
   __asm__ __volatile__ ( rep##                  \
                      "stosl"                \
-		    : "=D" ((unsigned long *) (pdst))  \
+		    : "=D" (/*(unsigned long *)*/ (pdst))  \
 		    : "D0" ((unsigned long *) (pdst)), \
 		      "c"  ((unsigned long) (nl)),     \
 		      "a"  ((unsigned long) (fill)));

@@ -1,6 +1,6 @@
 /*
- * $XConsortium: et4_driver.c,v 1.1 94/10/05 13:53:02 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.5 1994/09/11 00:52:44 dawes Exp $
+ * $XConsortium: et4_driver.c,v 1.3 94/10/13 13:24:00 kaleb Exp kaleb $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.6 1994/11/19 07:58:28 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -63,8 +63,6 @@ typedef struct {
 #endif
   } vgaET4000Rec, *vgaET4000Ptr;
 
-
-#define W32_SUPPORT
 
 #define TYPE_ET4000		0
 #define TYPE_ET4000W32		1

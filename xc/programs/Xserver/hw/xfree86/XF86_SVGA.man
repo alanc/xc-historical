@@ -1,6 +1,6 @@
-.\" $XConsortium: XF86_SVGA.man,v 1.1 94/10/05 13:20:29 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.10 1994/09/27 10:27:17 dawes Exp $
-.TH XF86_SVGA 1 "Version 3.1"  "XFree86"
+.\" $XConsortium: XF86_SVGA.man,v 1.3 94/10/12 19:34:26 kaleb Exp kaleb $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.13 1994/10/30 04:57:11 dawes Exp $
+.TH XF86_SVGA 1 "Version 3.1.1"  "XFree86"
 .SH NAME
 XF86_SVGA - non-accelerated SVGA X Window System servers for UNIX on 
 x86 platforms
@@ -59,10 +59,10 @@ Compaq:
 AVGA
 .TP 4
 Oak:
-OTI067, OTI077
+OTI067, OTI077, OTI087
 .TP 4
-Advance Logic:
-AL2101
+Avance Logic:
+AL2101, ALI2301, ALI2302, ALI2308, ALI2401
 .TP 4
 MX:\ \ 
 MX68000, MX68010
@@ -133,10 +133,10 @@ Compaq:
 cpq_avga
 .TP 4
 OAK:
-oti067, oti077
+oti067, oti077, oti087
 .TP 4
-Advance Logic:
-al2101
+Avance Logic:
+al2101, ali2301, ali2302, ali2308, ali2401
 .TP 4
 MX:\ \ 
 mx
