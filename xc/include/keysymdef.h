@@ -1,4 +1,4 @@
-/* $Header: keysymdef.h,v 1.2 87/09/01 16:41:18 toddb Locked $ */
+/* $Header: keysymdef.h,v 1.3 87/09/03 10:04:32 toddb Locked $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -608,7 +608,7 @@ SOFTWARE.
 #ifdef XK_ARABIC
 #define XK_Arabic_comma                                0x5ac                 
 #define XK_Arabic_semicolon                            0x5bb                 
-#define XK_Arabic_question mark                        0x5bf                 
+#define XK_Arabic_question_mark                        0x5bf                 
 #define XK_Arabic_hamza                                0x5c1           
 #define XK_Arabic_maddaonalef                          0x5c2           
 #define XK_Arabic_hamzaonalef                          0x5c3           
