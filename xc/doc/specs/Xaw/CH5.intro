@@ -50,13 +50,17 @@ Read-only mode does not allow the user or the programmer to modify the text
 in the widget.  While the programmer may reset the entire string in
 read-only mode with \fBXtSetValues\fP, it may not modify parts of the
 text with \fBXawTextReplace\fP.  Append-only and editable modes allow
-the text at the insert point to be modified.  The only
-difference is that text may only be added to or removed from the end of
-a buffer in append-only mode.
+.IN "XawTextReplace" ""
+the text at the insert point to be modified.  The only difference is
+that text may only be added to or removed from the end of a buffer in
+append-only mode.
 .LP
 .NH 2
 Text Widget for Users
 .IN "Text Widgets" "User Guide"
+.XS
+	Text Widget for Users
+.XE
 .LP
 The Text widget provides many of the common keyboard editing commands.
 These commands allow users to move around and edit the buffer.  If an
@@ -64,6 +68,7 @@ illegal operation is attempted, (such as deleting characters in a
 read-only text widget), the terminal bell will be rung.
 .NH3
 Default Key Bindings
+.IN "Text widget" "default key bindings"
 .LP
 The default key bindings are patterned after those in the EMACS text editor:
 .sp
@@ -180,10 +185,10 @@ file.  There is no key sequence to perform this action.
 .IP \fBCancel\fP 15
 Remove the search popup from the screen.
 .LP
-.IN "text widgets" "File Insertion"
 .NH 3
 File Insertion
 .LP
+.IN "text widgets" "File Insertion"
 To insert a file into a text widget, type the key sequence \fIMeta-i\fP,
 which will activate the file insert popup.  This popup will appear under
 the pointer, and any text typed while the focus is in this popup will be
@@ -196,10 +201,10 @@ to enter the filename again.  The file insert may be aborted by clicking
 on \fICancel\fP.  If \fIMeta-i\fP is typed at a text widget that is
 read-only, it will beep, as no file insertion is allowed.
 .LP
-.IN "text widgets" "Text Selections for users"
 .NH 3
 Text Selections for Users
 .LP
+.IN "text widgets" "Text Selections for users"
 The text widgets have a very powerful text selection mechanism that allows
 the user to copy pieces of the text into the \fBPRIMARY\fP selection,
 and paste 

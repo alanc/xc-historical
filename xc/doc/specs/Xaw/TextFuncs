@@ -89,11 +89,14 @@ be able to append text to an append-only text widget.
 .LP
 This function may return the following values:
 .IP \fBXawEditDone\fP 1.25i
+.IN "XawEditDone" ""
 The text replacement was successful.
 .IP \fBXawPositionError\fP 1.25i
+.IN "XawPositionError" ""
 The edit mode is \fBXawtextAppend\fP and \fIstart\fP is not the last
 character of the source.
 .IP \fBXawEditError\fP 1.25i
+.IN "XawEditError" ""
 Either the Source was read-only or the range to be deleted is larger
 than the length of the Source. 
 .LP
@@ -113,6 +116,8 @@ typedef struct {
 } XawTextBlock, *TextBlockPtr;
 .De
 .LP
+.IN "XawTextBlock" ""
+.IN "TextBlockPtr" ""
 .IP \fIfirstPos\fP 1.0i
 The starting point to use within the ptr field.
 The value is usually zero.  
@@ -250,7 +255,7 @@ Specifies the Text widget.
 .sp 1
 To assign a new selection array to a text widget use
 \fBXawTextSetSelectionArray\fP:
-.IN "XawTextGetInsertionPoint" "" "@DEF@"
+.IN "XawTextSetSelectionArray" "" "@DEF@"
 .FD 0
 void XawTextSetSelectionArray(\fIw\fP, \fIsarray\fP)
 .br

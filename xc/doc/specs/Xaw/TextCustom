@@ -2,7 +2,7 @@
 Customizing the Text Widget
 .LP
 .XS
-\*(SN Customizing the Text Widget
+	Customizing the Text Widget
 .XE
 .IN "Text Widget" "Customizing" "@DEF@" 
 .LP
@@ -22,33 +22,33 @@ a Text widget.
 .LP
 Each of the following pieces of the Text widget has a specific purpose,
 and will be, or has been, discussed in detail in this chapter:
-.IN "Text Widget" ""
+.IN "Text widget" ""
 .IP \fBText\fP 15 
 This is the glue that binds everything else together.  This widget reads
 the text data from the source, and displays the information in the sink.
 All translations and actions are handled in the Text widget itself.
-.IN "TextSink Object" ""
+.IN "TextSink object" ""
 .IP \fBTextSink\fP 15 
 This object is responsible for displaying and clearing the drawing area.
 It also reports the configuration of the window that contains the
 drawing area.  The TextSink does not have its own window, instead it does
 its drawing on the Text widget's window. 
-.IN "TextSource Object" ""
+.IN "TextSource object" ""
 .IP \fBTextSource\fP 15 
 This object is responsible for reading, editing and searching through the
 text buffer.  This bugger can be any source of information that this
 particular TextSource knows how to read. 
-.IN "AsciiSink Object" ""
+.IN "AsciiSink object" ""
 .IP \fBAsciiSink\fP 15
 This object is a subclass of the TextSink and knows how to display
 ASCII text.  Support has been added to display 8-bit characters.
-.IN "AsciiSource Object" ""
+.IN "AsciiSource object" ""
 .IP \fBAsciiSource\fP 15
 This object is a subclass of the TextSource and knows how to read strings
 and files.
-.IN "AsciiText Widget" ""
+.IN "AsciiText widget" ""
 .IP \fBAsciiText\fP 15
 This widget is a subclass of the Text widget that automatically attaches
 an AsciiSource and AsciiSink to itself at creation time.  This widget
-provides the simplest interface to the AthenaText widget.
+provides the simplest interface to the Athena Text widgets.
 

@@ -1,8 +1,9 @@
 .NH 2
 Text Widget Actions.
 .LP
+.IN "Text widet" "actions"
 .XS
-\*(SN Actions Supported by all Text Widgets
+	Actions Supported by all Text Widgets
 .XE
 .IN "Actions" "Text Widgets" "@DEF@"
 .IN "Text Widgets" "Actions" "@DEF@"
@@ -198,7 +199,7 @@ Kill and Actions
 .IP kill-word(\|) 2.0i
 .br
 .ns
-.IP backword-kill-word(\|) 2.0i
+.IP backward-kill-word(\|) 2.0i
 These actions act exactly like the \fIdelete-next-word\fP and
 \fIdelete-previous-word\fP actions, but they stuff the word that was
 killed into the kill buffer (\fBCUT_BUFFER_1\fP).
@@ -306,7 +307,8 @@ section called \fBText Selections for Users\fP.  To modify the selections
 a programmer must construct a \fBXawTextSelectType\fP array (called the
 selection array), containing the selections desired, and pass this as
 the new value for the \fBselectionTypes\fP resource.  The selection
-array may also be modified using the \fBXawSetSelectionArray\fP
+array may also be modified using the \fBXawTextSetSelectionArray\fP
+.IN "XawTextSetSelectionArray" ""
 function.  All selection arrays must end with the value
 \fBXawselectNull\fP.  The \fBselectionTypes\fP resource has no converter
 registered and cannot be modified through the resource manager.
@@ -324,42 +326,49 @@ is recycled beginning with the first element.
 lw(1.25i) lw(4.25i).
 T{
 \fBXawselectAll\fP
+.IN "XawselectAll" ""
 T}	T{
 Selects the contents of the entire buffer.
 T}
 .sp 6p
 T{
 \fBXawselectChar\fP
+.IN "XawselectChar" ""
 T}	T{
 Selects text characters as the pointer moves over them.
 T}
 .sp 6p
 T{
 \fBXawselectLine\fP
+.IN "XawselectLine" ""
 T}	T{
 Selects the entire line.
 T}
 .sp 6p
 T{
 \fBXawselectNull\fP
+.IN "XawselectNull" ""
 T}	T{
 Indicates the end of the selection array.
 T}
 .sp 6p
 T{
 \fBXawselectParagraph\fP
+.IN "XawselectParagraph" ""
 T}	T{
 Selects the entire paragraph.
 T}
 .sp 6p
 T{
 \fBXawselectPosition\fP
+.IN "XawselectPosition" ""
 T}	T{
 Selects the current pointer position.
 T}
 .sp 6p
 T{
 \fBXawselectWord\fP
+.IN "XawselectWord" ""
 T}	T{
 Selects whole words as the pointer moves onto them.
 T}
@@ -380,6 +389,9 @@ array is set.
 .NH 2
 Default Translation Bindings
 .LP
+.XS
+	Default Translation Bindings
+.XE
 .IN "text widgets" "Default Translations"
 The following translations are defaults built into every Text widget.
 They can be overridden, or replaced by specifying a new value for the
