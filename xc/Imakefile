@@ -126,6 +126,17 @@ Everything::
 	@echo "Rebuild of Release 4 of the X Window System complete."
 	@echo ""
 
+
+README.PS::  README.tbl.ms
+	tbl README.tbl.ms | ptroff -t -ms >$@
+
+README.lpt:  README.tbl.ms
+	tbl README.tbl.ms | ntroff -ms >$@
+
+README.txt:  README.tbl.ms
+	tbl README.tbl.ms | ntroff -ms | colcrt >$@
+
+
 CHANGES.ALL::
 	$(RM) $@
 	(for i in `find . -name CHANGES -print`; do \
