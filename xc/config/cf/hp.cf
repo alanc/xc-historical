@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.43 91/07/21 18:24:00 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.44 91/07/24 11:20:09 rws Exp $
 
 #define OSName                 HP-UX 7.0
 XCOMM operating system:  OSName
@@ -11,6 +11,7 @@ XCOMM operating system:  OSName
 #else
 #define DefaultCCOptions       -Wc,-Nd4000,-Ns4100,-Ne700,-Np200,-Nw300
 #define PexCCOptions           -Wp,-H150000 -Wc,-Nd4000,-Ns8100,-Ne700,-Np200
+#define PexShmIPC              NO
 #define LintOpts               -ax -Nd4000 -Ns8000 -Ne700 -Np200 -Na25000
 #endif
 #define LnCmd                  ln -s

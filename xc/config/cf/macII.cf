@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: macII.cf,v 1.35 91/07/05 15:46:11 rws Exp $
+XCOMM platform:  $XConsortium: macII.cf,v 1.36 91/07/21 18:36:10 rws Exp $
 
 #define OSName            A/UX 2.0.1
 #define OSMajorVersion    2
@@ -17,6 +17,7 @@ XCOMM operating system:  OSName
 #define ExecableScripts   NO
 #define RemoveTargetProgramByMoving YES
 #define HasSockets        YES
+#define PexShmIPC         NO
 #define HasVoidSignalReturn NO
 #define XmacIIServer      YES
 
