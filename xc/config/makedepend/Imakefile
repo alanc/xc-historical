@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.17 92/08/22 13:05:25 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.18 93/08/17 21:29:34 rws Exp $
 
     SRCS = include.c main.c parse.c pr.c cppsetup.c ifparser.c 
     OBJS = include.o main.o parse.o pr.o cppsetup.o ifparser.o 
@@ -20,7 +20,9 @@ POSTINCDIR = PostIncDir
 POSTINC_DEFINES = -DPOSTINCDIR=\"$(POSTINCDIR)\"
 #endif
 INC_DEFINES = $(PREINC_DEFINES) $(STDINC_DEFINES) $(POSTINC_DEFINES)
-MAIN_DEFINES = $(INC_DEFINES) $(SIGNAL_DEFINES)
+OSUF = .Osuf
+OSUF_DEFINES = -DOBJSUFFIX=\"$(OSUF)\"
+MAIN_DEFINES = $(INC_DEFINES) $(SIGNAL_DEFINES) $(OSUF_DEFINES)
 INCLUDES = -I$(CONFIGSRC)
  DEPLIBS =
 
