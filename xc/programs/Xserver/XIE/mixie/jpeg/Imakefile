@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.2 93/07/19 13:32:46 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 93/10/26 09:56:58 rws Exp $
 XCOMM build device dependent machine independent fax processing element objects
 #include <Server.tmpl>
 
@@ -53,7 +53,7 @@ XCOMM build device dependent machine independent fax processing element objects
 	       jutils.o \
 	       jwrjfif.o 
 
-   INCLUDES = -I. -I../include -I../../../include -I../../../../../include -I../../../../../../include -I../../../../../../server/include -I$(INCLUDESRC)
+   INCLUDES = -I../include -I../../../include -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(INCLUDESRC)/extensions
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
