@@ -848,7 +848,7 @@ Display_Property(thunks, dformat, format)
  *
  */
 
-long Extract_Value(pointer, length, size, signed)
+long Extract_Value(pointer, length, size, signedp)
      char **pointer;
      int *length;
      int size;
@@ -877,7 +877,7 @@ long Extract_Value(pointer, length, size, signed)
 		mask = 0xffffffff;
 		break;
 	}
-	if (!signed)
+	if (!signedp)
 	  value &= mask;
 	return(value);
 }
