@@ -98,123 +98,187 @@ a new one is to:
 
 Imake.tmpl provides defaults for the following variables:
 
-    SystemV			whether or not based on SVR2
-    OSMajorVersion		major version number of OS
-    OSMinorVersion		minor version number of OS
-    UnalignedReferencesAllowed	if allowed to deref arbitrary addresses
-    ExecableScripts		if scripts with #! may be exec'ed
-    BourneShell			filename of Bourne shell
-    ConstructMFLAGS		whether or not to do MFLAGS with MAKEFLAGS
-    HasSockets			whether or not system has bsd sockets
-    HasVFork			whether or not libc has vfork()
-    HasPutenv			whether or not libc has putenv()
-    HasVoidSignalReturn		whether or not signal() proc is type void
-    HasBsearch			whether or not libc has bsearch()
-    HasSaberC			whether or not system has Saber C
-    IncRoot			path below which X11 includes live
-    UNCOMPRESSPATH		name of uncompress program
-    OptimizedCDebugFlags	C compiler flags to turn on optimizer
-    DebuggableCDebugFlags	C compiler flags to turn on debugger
-    NoOpCDebugFlags		C compiler default flags
-    DefaultCDebugFlags		one of previous 3 for compiling programs
-    LibraryCDebugFlags		one of previous 3 for compiling libraries
-    DefaultCCOptions		C compiler flags for floating point, etc.
-    LibraryCCOptions		C compiler flags for libraries for f.p. etc.
-    ServerCCOptions		C compiler flags for server for f.p. etc.
-    InstBinFlags		install modes for program binaries
-    InstUidFlags		install modes for setuid programs (xterm)
-    InstLibFlags		install modes for libraries
-    InstIncFlags		install modes for includes
-    InstManFlags		install modes for manual pages
-    InstDatFlags		install modes for data files
-    InstKmemFlags		install modes for setgid kmem programs (xload)
-    ArCmd			command to create and add to libraries
-    BootstrapCFlags		initial -Dmacro for systems that don't have 'em
-    CcCmd			command to run C compiler
-    AsCmd			command to run assembler
-    CompressCmd			command to run compress
-    CppCmd			command to run C preprocessor
-    PreProcessCmd		command to run cpp with C default defines
-    InstallCmd			command to do bsd-style install
-    LdCmd			command to run loader
-    LintCmd			command to run linter
-    LintLibFlag			flag to tell lint to create a library
-    LintOpts			default lint options
-    CpCmd			command to copy a file
-    LnCmd			command to soft link (if possible) a file
-    MakeCmd			command to make from Makefile
-    MvCmd			command to rename a file
-    RanlibCmd			command to run after creating a library
-    RanlibInstFlags		special flags to ranlib for installed libs
-    RmCmd			command to remove a file
-    StandardCppDefines		defines for cpp'ing scripts
-    StandardDefines		defines and flags for C compiler
-    ExtraLibraries		special libraries at end of load line
-    ExtraLoadFlags		special flags for load lines
-    CompatibilityFlags		defines for turning on source code compat 
-    TagsCmd			command for generating C tags
+	ArCmd			command used to create libraries
+	AsCmd			command used to run assembler
+	BootstrapCFlags		missing cpp symbols needed to get started
+	BourneShell		command used to run Bourne Shell
+	CURDIR			current directory relative to top of sources
+	CcCmd			command to run C compiler
+	CompatibilityFlags	flags turn on backwards compatibility
+	CompressCmd		command to run compress program
+	ConstructMFLAGS		System V option to set MFLAGS make variable
+	CpCmd			command to copy one file to another
+	CppCmd			command to run C preprocessor
+	DebuggableCDebugFlags	C compiler -I's and -D's to turn on debug info
+	DefaultCCOptions	default special C compiler options
+	DefaultCDebugFlags	debug/optimize flags for programs
+	DestDir			prefix to root directory when installed
+	ExecableScripts		boolean indicating that #!/bin/sh execs
+	ExtraLibraries		system-specific libraries need to link
+	ExtraLoadFlags		system-specific loader flags
+	FilesToClean		files to delete in make clean
+	FortranCmd		command to run Fortran compiler
+	FortranDebugFlags	flags for Fortran debug info
+	FortranFlags		Fortran compiler flags
+	HasBsearch		boolean indicating libc has bsearch()
+	HasDESLibrary		boolean indicating system has DES library
+	HasFortran		boolean indicating system has Fortran compiler
+	HasGcc			boolean indicating system has GNU C compiler
+	HasLargeTmp		boolean indicating system has /tmp space
+	HasNdbm			boolean indicating system has ndbm routines
+	HasPutenv		boolean indicating libc has putenv()
+	HasSaberC		boolean indicating system has Saber C
+	HasSharedLibraries	boolean indicating system has shared libraries
+	HasSockets		boolean indicating system has BSD sockets
+	HasSunOSSharedLibraries	boolean indicating system has SunOS shared libs
+	HasVFork		boolean indicating system has vfork()
+	HasVoidSignalReturn	boolean indicating POSIX signal() procs
+	IncRoot			parent of X11 include directory
+	InstDatFlags		install flags for data files
+	InstIncFlags		install flags for header files
+	InstKmemFlags		install flags for xload to get at /dev/kmem
+	InstLibFlags		install flags for libraries
+	InstManFlags		install flags for manual pages
+	InstPgmFlags		install flags for normal programs
+	InstUidFlags		install flags for xterm to chown /dev/ptys
+	InstallCmd		command to install files
+	LdCmd			command to run loader
+	LdCombineFlags		flags for incremental loading
+	LibraryCCOptions	special C compiler options for libraries
+	LibraryCDebugFlags	library debug/optimize flags to override defs
+	LibraryCcCmd		command to run C compiler in libraries
+	LintCmd			command to run lint
+	LintLibFlag		flags to generate lint libraries
+	LintOpts		lint options to control strictness
+	LnCmd			command to link two files
+	LoaderLibPrefix		loader flags before libraries
+	MacroFile		name of machine-dependent config params file
+	MacroIncludeFile	<MacroFile>
+	MakeCmd			command to run make
+	MvCmd			command to rename a file
+	NdbmDefines		-D's to turn on use of ndbm routines
+	NeedFunctionPrototypes	whether or not to force function prototypes
+	NeedWidePrototypes	whether or not to widen function prototypes
+	NoOpCDebugFlags		C compiler flags to not debug or optimize
+	OSMajorVersion		major version number of operating system
+	OSMinorVersion		minor version number of operating system
+	OptimizedCDebugFlags	C compiler flags to turn on optimization
+	PexCDebugFlags		special -D's for PEX
+	PreProcessCmd		command to run /lib/cpp on scripts
+	RanlibCmd		command to clean up libraries
+	RanlibInstFlags		flags to ranlib after copying
+	RmCmd			command to delete files
+	ServerCCOptions		server C compiler options to override defaults
+	ServerCcCmd		command to run C compiler in server
+	SharedCodeDef		-D's to turn on sharable code in libraries
+	SharedLibraryDef	-D's to turn on use of shared libraries
+	StandardCppDefines	-D's for running cpp
+	StandardDefines		-D's for running C compiler
+	StandardIncludes	-I's for running C compiler
+	StripInstalledPrograms	boolean indicating that install should do -s 
+	SystemV			boolean indicating that system is at least SVR2
+	TOPDIR			relative path to top of sources
+	TagsCmd			command to run tags
+	UNCOMPRESSPATH		command to run uncompress
+	UnalignedReferencesAllowed	boolean indicating unaligned copies ok
+	UsrLibDir		directory in which to install libraries
 
 
 Project.tmpl provides defaults for the following variables:
 
-    BuildServer			whether or not to build a server
-    InstallXinitConfig		whether or not to install xinit config stuff
-    InstallXdmConfig		whether or not to install xdm config stuff
-    InstallAppDefFiles		whether or not to install app-defaults
-    InstallOldHeaderFiles	whether or not to install old include files
-    NeedBerklibInXlib		whether or not need BSDisms in Xlib
-    ManDirectoryRoot		top of manual pages
-    ManSuffix			suffix for X program manual pages
-    LibManSuffix		suffix for Xlib manual pages
-    UNCOMPRESSFILT		define for server command to uncompress stdin
-    BDFTOSNFFILT		define for server command to compile bdf files
-    SHELLPATH			define for server command to run shell
-    ZBDFTOSNFFILT		define for server command to uncompress,comp
-    FontFilters			define for server for filters to provide
-    PrimaryScreenResolution	resolution of primary screen for servers
-    DefaultFontPath		default font path for servers
-    DefaultRGBDatabase		default rgb database path for servers
-    FontCompilerFlags		flags for font compiler
-    ConnectionFlags		flags for turning on networking transports
-    FontDefines			server compile flags for enabling font filters
-    ExtensionDefines		types of extensions desired
-    ServerCDebugFlags		C compiler flags for server
-    LibraryDefines		special C compiler for building libraries
-    ServerDefines		special C compiler flags for building servers
-    BinDir			path for installed programs
-    IncRoot			path for top of X11 includes directory
-    LibDir			path for installed libraries
-    ConfigDir			path for installed config stuff
-    LintlibDir			path for installed lint libraries
-    FontDir			path for installed fonts
-    AdmDir			path for system administrative directories
-    XinitDir			path for xinit config stuff
-    XdmDir			path for xdm config stuff
-    XdmConfigurationSubdirectory	default xdm config sources
-    AwmDir			path for installed awm default stuff
-    TwmDir			path for installed twm default stuff
-    GwmDir			path for installed gwm default stuff
-    ManPath			macro for directory where to put man pages
-    ManSourcePath		macro for subdirectory where to put man pages
-    ManDir			macro for program man page subdir
-    LibmanDir			macro for library man page subdir
-    XAppLoadDir			path for installed app-defaults
-    OsNameDefines		define for giving OS name
-    DefaultUserPath		default user login path for xdm
-    DefaultSystemPath		default system path for xdm
-    DefaultSystemShell		default shell for xdm
-    UseCCMakeDepend		whether or not to use slow shell script
-    DependDir			source directory for makedepend
-    DependCmd			command to run make depend
-    RemoveTargetProgramByMoving	whether or not files removed by moving
-    HasSunOSSharedLibraries	whether or not system has SunOS 4.0 shared libs
-    SharedXlib			whether or not to share Xlib
-    SharedXlibRev		version for shared Xlib
-    BandAidLibraryNeeded	whether or not Xlib needs extra files
-    BandAidLibrarySources	extra Xlib source files
-    BandAidLibraryObjects	extra Xlib object files
-    NeedDefaultDepLibs		whether or not Imakefiles have been updated
-
+	AdmDir			directory containing system log files
+	AllocateLocalDefines	-D's to turn on alloca()
+	AwmDir			directory containing awm config files
+	BDFTOSNFFILT		command to run bdftosnf
+	BandAidLibraryNeeded	boolean indicating that extra Xlib needed
+	BandAidLibraryObjects	Xlib object files to merge in
+	BandAidLibrarySources	Xlib source files to merge in
+	BinDir			directory in which to install programs
+	BuildExamples		boolean indicating that examples should be made
+	BuildIncRoot		relative path to location of headers in build
+	BuildIncTop		
+	BuildServer
+	BuildXawBC
+	ConfigDir
+	ConnectionFlags
+	ContribDir
+	CppSources
+	CppSourcesPresent
+	DebugLibX
+	DebugLibXArchive
+	DebugLibXaw
+	DebugLibXext
+	DebugLibXmu
+	DebugLibXt
+	DebugOldLibX
+	DefaultFontPath
+	DefaultRGBDatabase
+	DefaultSystemPath
+	DefaultSystemShell
+	DefaultUserPath
+	DependCmd
+	DependDir
+	DoInstallExtensionsIntoXlib
+	ExtensionDefines
+	FontCompilerFlags
+	FontDefines
+	FontDir
+	FontFilters
+	GwmDir
+	HasInputExtension
+	IncRoot
+	InstallAppDefFiles
+	InstallOldHeaderFiles
+	InstallXdmConfig
+	InstallXinitConfig
+	LibDir
+	LibManSuffix
+	LibmanDir
+	LibraryDefines
+	LintlibDir
+	ManDir
+	ManDirectoryRoot
+	ManPath
+	ManSourcePath
+	ManSuffix
+	NeedBerklibInXlib
+	NeedDefaultDepLibs
+	OsNameDefines
+	PrimaryScreenResolution
+	ProfileLibX
+	ProfileLibXArchive
+	ProfileLibXaw
+	ProfileLibXext
+	ProfileLibXmu
+	ProfileLibXt
+	ProfileOldLibX
+	ProjectX
+	RemoveTargetProgramByMoving
+	SHELLPATH
+	ServerCDebugFlags
+	ServerDefines
+	SharedLibX
+	SharedLibXaw
+	SharedLibXext
+	SharedLibXmu
+	SharedLibXt
+	SharedOldLibX
+	SharedOldXRev
+	SharedXawRev
+	SharedXextRev
+	SharedXlibRev
+	SharedXmuRev
+	SharedXtRev
+	TwmDir
+	UNCOMPRESSFILT
+	UseCCMakeDepend
+	XAppLoadDir
+	XawClientDepLibs
+	XawClientLibs
+	XdmConfigurationSubdirectory
+	XdmDir
+	XinitDir
+	ZBDFTOSNFFILT
 
 
 4.  Site-specific site.def file
@@ -227,6 +291,18 @@ The second use for site.def is to define installation directories and flags.
 We strongly recommend that people try to use the default directories if at
 all possible so that X11 can coexist peacefully with X10.
 
+	BuildXawBC
+	CcCmd
+	CompatibilityFlags
+	ContribDir
+	DoInstallExtensionsIntoXlib
+	ExtensionDefines
+	HasGcc
+	HasLargeTmp
+	HasXcuWidgets
+	HasXwWidgets
+	InstallOldHeaderFiles
+	SharedLibXext
 
 
 
