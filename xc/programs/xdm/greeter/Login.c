@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.27 91/02/21 23:36:20 rws Exp $
+ * $XConsortium: Login.c,v 1.28 91/04/03 17:14:07 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -24,7 +24,6 @@
 
 # include <X11/IntrinsicP.h>
 # include <X11/StringDefs.h>
-# include <X11/Quarks.h>
 # include <X11/keysym.h>
 # include <X11/Xfuncs.h>
 
@@ -925,7 +924,7 @@ WidgetClass loginWidgetClass = (WidgetClass) &loginClassRec;
 /*
  * Gratuitously copied from lib/Xt/Converters.c which was arbitrarily
  * changed for R4 to call XtAppErrorMsg (which calls exit) instead of
- * simply failing the conversion.
+ * simply failing the conversion.  Xt is so stupid.
  */
 
 #define	done(type, value, ret) \
@@ -1024,7 +1023,7 @@ CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
 	xrm_class[1] = NULL;
 	if (XrmQGetResource(XtDatabase(dpy), xrm_name, xrm_class, 
 			    &rep_type, &value)) {
-	    if (rep_type == XtQString) {
+	    if (rep_type == XrmPermStringToQuark(XtRString)) {
 		f = XLoadQueryFont(display, (char*)value.addr);
 		if (f != NULL)
 		    goto Done;
@@ -1032,10 +1031,10 @@ CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
 		    XtDisplayStringConversionWarning( dpy, (char*)value.addr,
 						      "FontStruct" );
 		}
-	    } else if (rep_type == XtQFont) {
+	    } else if (rep_type == XrmPermStringToQuark(XtRFont)) {
 		f = XQueryFont(dpy, *(Font*)value.addr );
 		if (f != NULL) goto Done;
-	    } else if (rep_type == XtQFontStruct) {
+	    } else if (rep_type == XrmPermStringToQuark(XtRFontStruct)) {
 		f = (XFontStruct*)value.addr;
 		goto Done;
 	    }
