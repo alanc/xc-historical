@@ -12,7 +12,7 @@
 #include <X11/StringDefs.h>
 #include <stdio.h>
 
-#include "xbench.h"
+#include "xgc.h"
 
 extern XStuff X;
 extern Widget topform;

@@ -1,5 +1,5 @@
 /*
-** xbench
+** xgc
 **
 ** text.c
 **
@@ -12,7 +12,7 @@
 #include <X11/Label.h>
 #include <X11/AsciiText.h>
 #include <X11/StringDefs.h>
-#include "xbench.h"
+#include "xgc.h"
 
 extern XStuff X;
 
@@ -34,7 +34,7 @@ static char *names[NUMTEXTWIDGETS] = {"linewidth ","font ","foreground ",
 ** ---------------------------------------
 ** Inside w (a form), creates an editable text widget of width width.  The
 ** user can enter a string of up to length characters.  type is one of
-** the constants defined in xbench.h; it decides things like the label,
+** the constants defined in xgc.h; it decides things like the label,
 ** what string will be displayed and edited, etc.  When the pointer leaves
 ** the widget, the widget does the appropriate thing with the text
 ** inside it; the user doesn't have to press an "enter" button or anything.

@@ -1,4 +1,4 @@
-XbenchData FunctionData[MAXCHOICES] = {
+XgcData FunctionData[MAXCHOICES] = {
   {"clear",        "clear",        GXclear},
   {"and",          "and",          GXand},
   {"andReverse",   "andReverse",   GXandReverse},
@@ -17,12 +17,12 @@ XbenchData FunctionData[MAXCHOICES] = {
   {"set",          "set",          GXset}
 }; 
 
-XbenchStuff FunctionStuff = {
+XgcStuff FunctionStuff = {
   {"Function","function",16,4},
   FunctionData
 };
 
-XbenchData TestData[MAXCHOICES] = {
+XgcData TestData[MAXCHOICES] = {
   {"Copy Area",          "CopyArea",      CopyArea},
   {"Copy Plane",         "CopyPlane",     CopyPlane},
   {"Points",             "PolyPoint",     PolyPoint},
@@ -41,78 +41,78 @@ XbenchData TestData[MAXCHOICES] = {
   {"(Image Text 16)",    "ImageText16",   ImageText16}
 };
 
-XbenchStuff TestStuff = {
+XgcStuff TestStuff = {
   {"Test","test",16,2},
   TestData
 };
 
-XbenchData LinestyleData[MAXCHOICES] = {
+XgcData LinestyleData[MAXCHOICES] = {
   {"Solid",      "Solid",       LineSolid},
   {"OnOffDash",  "OnOffDash",   LineOnOffDash},
   {"DoubleDash", "DoubleDash",  LineDoubleDash}
 };
 
-XbenchStuff LinestyleStuff = {
+XgcStuff LinestyleStuff = {
   {"LineStyle","linestyle",3,0},
   LinestyleData
 };
 
-XbenchData CapstyleData[MAXCHOICES] = {
+XgcData CapstyleData[MAXCHOICES] = {
   {"NotLast",    "NotLast",     CapNotLast},
   {"Butt",       "Butt",        CapButt},
   {"Round",      "Round",       CapRound},
   {"Projecting", "Projecting",  CapProjecting}
 };
 
-XbenchStuff CapstyleStuff = {
+XgcStuff CapstyleStuff = {
   {"CapStyle","capstyle",4,2},
   CapstyleData
 };
 
-XbenchData JoinstyleData[MAXCHOICES] = {
+XgcData JoinstyleData[MAXCHOICES] = {
   {"Miter",   "Miter",   JoinMiter},
   {"Round",   "Round",   JoinRound},
   {"Bevel",   "Bevel",   JoinBevel}
 };
 
-XbenchStuff JoinstyleStuff = {
+XgcStuff JoinstyleStuff = {
   {"JoinStyle","joinstyle",3,0},
   JoinstyleData
 };
 
-XbenchData FillstyleData[MAXCHOICES] = {
+XgcData FillstyleData[MAXCHOICES] = {
   {"Solid",          "Solid",          FillSolid},
   {"Tiled",          "Tiled",          FillTiled},
   {"Stippled",       "Stippled",       FillStippled},
   {"OpaqueStippled", "OpaqueStippled", FillOpaqueStippled}
 };
 
-XbenchStuff FillstyleStuff = {
+XgcStuff FillstyleStuff = {
   {"FillStyle","fillstyle",4,2},
   FillstyleData
 };
 
-XbenchData FillruleData[MAXCHOICES] = {
+XgcData FillruleData[MAXCHOICES] = {
   {"EvenOdd",  "EvenOdd",  EvenOddRule},
   {"Winding",  "Winding",  WindingRule}
 };
 
-XbenchStuff FillruleStuff = {
+XgcStuff FillruleStuff = {
   {"FillRule","fillrule",2,0},
   FillruleData
 };
 
-XbenchData ArcmodeData[MAXCHOICES] = {
+XgcData ArcmodeData[MAXCHOICES] = {
   {"Chord",    "Chord",    ArcChord},
  {"PieSlice", "PieSlice", ArcPieSlice}
 };
 
-XbenchStuff ArcmodeStuff = {
+XgcStuff ArcmodeStuff = {
   {"ArcMode","arcmode",2,0},
   ArcmodeData
 };
 
-static XbenchStuff *Everything[8] = {
+static XgcStuff *Everything[8] = {
   &FunctionStuff,
   &LinestyleStuff,
   &CapstyleStuff,

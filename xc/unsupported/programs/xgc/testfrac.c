@@ -10,7 +10,7 @@
 #include <X11/Label.h>
 #include <X11/Scroll.h>
 #include <X11/StringDefs.h>
-#include "xbench.h"
+#include "xgc.h"
 
 #define SLIDER_LENGTH 100
 
@@ -18,6 +18,7 @@ static Widget label;		/* the label */
 static Widget slider;		/* the scrollbar */
 static Widget percent;	/* label with chosen percentage */
 
+/*ARGSUSED*/
 void slider_jump(w, data, position)
      Widget w;
      caddr_t data;
@@ -39,6 +40,7 @@ void slider_jump(w, data, position)
   XtSetValues(percent, percentargs, XtNumber(percentargs));
 }
 
+/*ARGSUSED*/
 void slider_scroll(w, data, position)
      Widget w;
      caddr_t data;
