@@ -1,4 +1,4 @@
-/* $XConsortium: button.c,v 1.64 91/05/06 17:11:49 gildea Exp $ */
+/* $XConsortium: button.c,v 1.65 91/05/10 16:57:03 gildea Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -774,7 +774,7 @@ LastTextCol(row)
 
 	for ( i = screen->max_col,
 	        ch = screen->buf[2 * (row + screen->topline) + 1] + i ;
-	      i > 0 && !(*ch & CHARDRAWN) ;
+	      i >= 0 && !(*ch & CHARDRAWN) ;
 	      ch--, i--)
 	    ;
 	return(i);
@@ -1359,7 +1359,7 @@ SaveText(screen, row, scol, ecol, lp, eol)
 	register int c;
 
 	*eol = 0;
-	if ((i = Length(screen, row, scol, ecol)) == 0) return(lp);
+	i = Length(screen, row, scol, ecol);
 	ecol = scol + i;
 	if (*eol == 0) {
 		if(ScrnGetAttributes(screen, row + screen->topline, 0, &attr, 1) == 1) {
@@ -1374,17 +1374,15 @@ SaveText(screen, row, scol, ecol, lp, eol)
 	}
 	for (i = scol; i < ecol; i++) {
 	        c = ch[i];
-/* I have no idea why this was being done.  -gildea
 		if (c == 0)
 			c = ' ';
 		else if(c < ' ') {
 			if(c == '\036')
-				c = '#';
+				c = '#'; /* char on screen is pound sterling */
 			else
-				c += 0x5f;
+				c += 0x5f; /* char is from DEC drawing set */
 		} else if(c == 0x7f)
 			c = 0x5f;
-*/
 		*lp++ = c;
 	}
 	return(lp);
