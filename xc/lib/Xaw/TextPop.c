@@ -1,6 +1,4 @@
-#if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.11 90/06/01 17:48:26 converse Exp $";
-#endif /* lint && SABER */
+/* $XConsortium: TextPop.c,v 1.12 90/07/03 16:17:37 kit Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -79,6 +77,10 @@ static Widget CreateDialog(), GetShell();
 static Boolean DoSearch(), SetResourceByName(), Replace();
 static String GetString();
 
+static void AddInsertFileChildren();
+static Boolean InsertFileNamed();
+static void AddSearchChildren();
+
 static char radio_trans_string[] =
     "<Btn1Down>,<Btn1Up>:   set() notify()";
 
@@ -121,7 +123,7 @@ XEvent *event;
 String * params;
 Cardinal * num_params;
 {
-  DoInsert(w, (caddr_t) XtParent(XtParent(XtParent(w))), NULL);
+  DoInsert(w, (XtPointer) XtParent(XtParent(XtParent(w))), NULL);
 }
 
 /*	Function Name: _XawTextInsertFile
@@ -151,7 +153,6 @@ Cardinal * num_params;
   char * ptr;
   XawTextEditType edit_mode;
   Arg args[1];
-  static void AddInsertFileChildren();
 
   XtSetArg(args[0], XtNeditType,&edit_mode);
   XtGetValues(ctx->text.source, args, ONE);
@@ -189,8 +190,8 @@ Cardinal * num_params;
 static void 
 PopdownFileInsert(w, closure, call_data)
 Widget w;			/* The Dialog Button Pressed. */
-caddr_t closure;		/* Text Widget. */
-caddr_t call_data;		/* unused */
+XtPointer closure;		/* Text Widget. */
+XtPointer call_data;		/* unused */
 {
   TextWidget ctx = (TextWidget) closure;
 
@@ -212,11 +213,10 @@ caddr_t call_data;		/* unused */
 static void 
 DoInsert(w, closure, call_data)
 Widget w;			/* The Dialog Button Pressed. */
-caddr_t closure;		/* Text Widget */
-caddr_t call_data;		/* unused */
+XtPointer closure;		/* Text Widget */
+XtPointer call_data;		/* unused */
 {
   TextWidget ctx = (TextWidget) closure;
-  static Boolean InsertFileNamed();
   char buf[BUFSIZ], msg[BUFSIZ];
   Widget temp_widget;
 
@@ -340,8 +340,8 @@ char * ptr;
   cancel = XtCreateManagedWidget("cancel", commandWidgetClass, form,
 				 args, num_args);
 
-  XtAddCallback(cancel, XtNcallback, PopdownFileInsert, (caddr_t) tw);
-  XtAddCallback(insert, XtNcallback, DoInsert, (caddr_t) tw);
+  XtAddCallback(cancel, XtNcallback, PopdownFileInsert, (XtPointer) tw);
+  XtAddCallback(insert, XtNcallback, DoInsert, (XtPointer) tw);
 
   XtSetKeyboardFocus(form, text);
 
@@ -391,7 +391,7 @@ Cardinal * num_params;
       popdown = TRUE;
     
   if (DoSearch(tw->text.search) && popdown)
-    PopdownSearch(w, (caddr_t) tw->text.search, NULL);
+    PopdownSearch(w, (XtPointer) tw->text.search, NULL);
 }
 
 /*	Function Name: _XawTextPopdownSearchAction
@@ -411,7 +411,7 @@ Cardinal * num_params;
 {
   TextWidget tw = (TextWidget) XtParent(XtParent(XtParent(w)));
 
-  PopdownSearch(w, (caddr_t) tw->text.search, NULL);
+  PopdownSearch(w, (XtPointer) tw->text.search, NULL);
 }
 
 /*	Function Name: PopdownSeach
@@ -426,8 +426,8 @@ Cardinal * num_params;
 static void 
 PopdownSearch(w, closure, call_data)
 Widget w;			
-caddr_t closure;		
-caddr_t call_data;		
+XtPointer closure;		
+XtPointer call_data;		
 {
   struct SearchAndReplace * search = (struct SearchAndReplace *) closure;
 
@@ -447,8 +447,8 @@ caddr_t call_data;
 static void 
 SearchButton(w, closure, call_data)
 Widget w;			
-caddr_t closure;		
-caddr_t call_data;
+XtPointer closure;		
+XtPointer call_data;
 {
   (void) DoSearch( (struct SearchAndReplace *) closure );
 }
@@ -485,7 +485,6 @@ Cardinal * num_params;
   TextWidget ctx = (TextWidget)w;
   XawTextScanDirection dir;
   char * ptr, buf[BUFSIZ];
-  static void AddSearchChildren();
   XawTextEditType edit_mode;
   Arg args[1];
 
@@ -722,10 +721,10 @@ char * ptr;
   cancel = XtCreateManagedWidget("cancel", commandWidgetClass, form,
 				 args, num_args);
 
-  XtAddCallback(search_button, XtNcallback, SearchButton, (caddr_t) search);
-  XtAddCallback(search->rep_one, XtNcallback, DoReplaceOne, (caddr_t) search);
-  XtAddCallback(search->rep_all, XtNcallback, DoReplaceAll, (caddr_t) search);
-  XtAddCallback(cancel, XtNcallback, PopdownSearch, (caddr_t) search);
+  XtAddCallback(search_button, XtNcallback, SearchButton, (XtPointer) search);
+  XtAddCallback(search->rep_one, XtNcallback, DoReplaceOne, (XtPointer) search);
+  XtAddCallback(search->rep_all, XtNcallback, DoReplaceAll, (XtPointer) search);
+  XtAddCallback(cancel, XtNcallback, PopdownSearch, (XtPointer) search);
 
 /*
  * Initialize the text entry fields.
@@ -831,7 +830,7 @@ Cardinal * num_params;
     popdown = TRUE;
 
   if (Replace( ctx->text.search, TRUE, popdown) && popdown)
-    PopdownSearch(w, (caddr_t) ctx->text.search, NULL);
+    PopdownSearch(w, (XtPointer) ctx->text.search, NULL);
 }
 
 /*	Function Name: DoReplaceOne
@@ -848,8 +847,8 @@ Cardinal * num_params;
 static void 
 DoReplaceOne(w, closure, call_data)
 Widget w;			/* The Button Pressed. */
-caddr_t closure;		/* Text Widget. */
-caddr_t call_data;		/* unused */
+XtPointer closure;		/* Text Widget. */
+XtPointer call_data;		/* unused */
 {
   Replace( (struct SearchAndReplace *) closure, TRUE, FALSE);
 }
@@ -868,8 +867,8 @@ caddr_t call_data;		/* unused */
 static void 
 DoReplaceAll(w, closure, call_data)
 Widget w;			/* The Button Pressed. */
-caddr_t closure;		/* Text Widget. */
-caddr_t call_data;		/* unused */
+XtPointer closure;		/* Text Widget. */
+XtPointer call_data;		/* unused */
 {
   Replace( (struct SearchAndReplace *) closure, FALSE, FALSE);
 }
