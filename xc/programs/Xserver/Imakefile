@@ -6,7 +6,7 @@
      EXTENSIONS = $(EXTENSIONSRC)/server/libext.a
          EXTDIR = $(EXTENSIONSRC)/server
      ALLDDXDIRS = ddx/snf ddx/mi ddx/cfb ddx/mfb \
-                  ddx/dec/lk201 ddx/dec/qvss ddx/dec/qdss ddx/dec/qdds/libtl \
+                  ddx/dec/lk201 ddx/dec/qvss ddx/dec/qdss ddx/dec/qdss/libtl \
                   ddx/sun \
                   ddx/apollo \
                   ddx/ibm \
@@ -77,11 +77,11 @@ ServerTarget(Xqvss,$(EXTDIR) $(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
 # qdss server
 #
 QDSSDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/dec/lk201 ddx/dec/qdss \
-	ddx/dec/qdss/libtl os/4.2bsd
+           ddx/dec/qdss/libtl os/4.2bsd
 QDSSOBJS = ddx/dec/qdss/init.o ddx/dec/qdss/qdss_io.o ddx/dec/lk201/lk201.o
 QDSSLIBS = ddx/dec/qdss/libqdss.a ddx/dec/qdss/libtl/libtl.a \
-	ddx/dec/qdss/libqdss.a \
-	$(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+           ddx/dec/qdss/libqdss.a \
+           $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 XqdssDIRS = $(QDSSDIRS)
 
 ServerTarget(Xqdss,$(EXTDIR) $(QDSSDIRS),$(QDSSOBJS),$(QDSSLIBS),$(SYSLIBS))
