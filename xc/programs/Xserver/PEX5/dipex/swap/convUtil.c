@@ -1,4 +1,4 @@
-/* $XConsortium: convUtil.c,v 5.1 91/02/16 09:57:12 rws Exp $ */
+/* $XConsortium: convUtil.c,v 5.2 91/03/15 18:43:16 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -191,7 +191,7 @@ pexNpcSubvolume	    *ps;
 
 SwapListOfOutputCommands (cntxtPtr, num, oc)
 pexContext  *cntxtPtr;
-int	    num;
+CARD32      num;
 CARD32	    *oc;
 {
     pexElementInfo  *pe;
