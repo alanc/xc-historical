@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.53 90/08/27 20:47:57 swick Exp $ */
+/* $XConsortium: Selection.c,v 1.54 90/09/04 10:50:45 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -190,7 +190,7 @@ Atom target;
 	info->timeout = XtAppAddTimeOut(app,
 			 app->selectionTimeout, ReqTimedOut, (XtPointer)info);
 #endif 
-	XtAddEventHandler(info->widget, (EventMask) NULL, TRUE,
+	XtAddEventHandler(info->widget, (EventMask)0, TRUE,
 			  HandleSelectionReplies, (XtPointer)info);
 	XConvertSelection(info->ctx->dpy, selection, target, 
 			  info->property, XtWindow(info->widget), info->time);
@@ -259,7 +259,7 @@ Time time;
 	!ctx->was_disowned &&
 	((time == CurrentTime) || (time >= ctx->time)))
     {
-	XtRemoveEventHandler(widget, (EventMask) NULL, TRUE,
+	XtRemoveEventHandler(widget, (EventMask)0, TRUE,
 			     HandleSelectionEvents, (XtPointer)ctx); 
 	XtRemoveCallback(widget, XtNdestroyCallback, 
 			 WidgetDestroyed, (XtPointer)ctx); 
@@ -707,27 +707,44 @@ Boolean incremental;
     if (ctx->widget != widget || ctx->time != time ||
 	ctx->ref_count || ctx->was_disowned)
     {
+	Boolean replacement = FALSE;
 	window = XtWindow(widget);
         XSetSelectionOwner(ctx->dpy, selection, window, time);
         if (XGetSelectionOwner(ctx->dpy, selection) != window)
 	    return FALSE;
-    	if (ctx->widget != widget || ctx->was_disowned) {
-	    XtAddEventHandler(widget, (EventMask)NULL, TRUE,
+	if (ctx->ref_count) {	/* exchange is in-progress */
+	    if (ctx->widget != widget ||
+		ctx->convert != convert ||
+		ctx->loses != lose ||
+		ctx->notify != notify ||
+		ctx->owner_cancel != cancel ||
+		ctx->incremental != incremental ||
+		ctx->owner_closure != closure)
+	    {
+		if (ctx->widget == widget) {
+		    XtRemoveEventHandler(widget, (EventMask)0, TRUE,
+					HandleSelectionEvents, (XtPointer)ctx);
+		    XtRemoveCallback(widget, XtNdestroyCallback,
+				     WidgetDestroyed, (XtPointer)ctx);
+		    replacement = TRUE;
+		}
+		ctx->free_when_done = TRUE;
+		ctx = NewContext(XtDisplay(widget), selection);
+	    }
+	    else if (!ctx->was_disowned) { /* current owner is new owner */
+		ctx->time = time;
+		return TRUE;
+	    }
+	}
+    	if (ctx->widget != widget || ctx->was_disowned || replacement) {
+	    XtAddEventHandler(widget, (EventMask)0, TRUE,
 			      HandleSelectionEvents, (XtPointer)ctx);
 	    XtAddCallback(widget, XtNdestroyCallback,
 			  WidgetDestroyed, (XtPointer)ctx);
-	    if (ctx->widget && !ctx->was_disowned) {
+	    if (ctx->widget && !ctx->was_disowned && !replacement) {
 		oldctx = *ctx;
 		old_context = TRUE;
 	    }
-	}
-	if (ctx->ref_count) {
-	    if (!old_context) {
-		oldctx = *ctx;
-		old_context = TRUE;
-	    }
-	    ctx->free_when_done = TRUE;
-	    ctx = NewContext(XtDisplay(widget), selection);
 	}
 	ctx->widget = widget;	/* Selection offically changes hands. */
 	ctx->time = time;
@@ -828,7 +845,7 @@ Boolean *cont;
     if (ev->type == SelectionNotify) {
 	XSelectionEvent *event = (XSelectionEvent *) ev;
 	if (!MATCH_SELECT(event, info)) return; /* not really for us */
-         XtRemoveEventHandler(widget, (EventMask) NULL, TRUE,
+         XtRemoveEventHandler(widget, (EventMask)0, TRUE,
 			   ReqCleanup, (XtPointer) info );
 	if (IsINCRtype(info, XtWindow(widget), event->property)
 #ifndef NO_DRAFT_ICCCM_COMPATIBILITY
@@ -900,9 +917,9 @@ XtIntervalId   *id;
 
     /* change event handlers for straggler events */
     if (info->proc == (XtEventHandler)HandleSelectionReplies) {
-        XtRemoveEventHandler(info->widget, (EventMask) NULL, 
+        XtRemoveEventHandler(info->widget, (EventMask)0, 
 			TRUE, info->proc, (XtPointer) info);
-	XtAddEventHandler(info->widget, (EventMask) NULL, TRUE,
+	XtAddEventHandler(info->widget, (EventMask)0, TRUE,
 		ReqCleanup, (XtPointer) info);
     } else {
         XtRemoveEventHandler(info->widget,(EventMask) PropertyChangeMask, 
@@ -1145,7 +1162,7 @@ Boolean *cont;
 #ifndef DEBUG_WO_TIMERS
     XtRemoveTimeOut(info->timeout); 
 #endif 
-    XtRemoveEventHandler(widget, (EventMask) NULL, TRUE,
+    XtRemoveEventHandler(widget, (EventMask)0, TRUE,
 		HandleSelectionReplies, (XtPointer) info );
     if (event->target == ctx->prop_list->indirect_atom) {
         (void) XGetWindowProperty(dpy, XtWindow(widget), info->property, 0L,
