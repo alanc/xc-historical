@@ -1,4 +1,5 @@
-/* $XConsortium: InitializeI.h,v 1.1 88/08/31 10:51:44 swick Exp $ */
+/* $XConsortium: InitializeI.h,v 1.4 88/09/03 17:07:05 swick Exp $ */
+/* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -88,14 +89,17 @@ typedef struct _XtAppStruct {
     XtErrorMsgHandler errorMsgHandler, warningMsgHandler;
     XtErrorHandler errorHandler, warningHandler;
     struct _ActionListRec *action_table;
+    ConverterTable converterTable;
     unsigned long selectionTimeout;
     FdStruct fds;
     short count, max, last;
     Boolean sync, rv, being_destroyed, error_inited;
 } XtAppStruct;
 
-extern void _SetDefaultErrorHandlers();
-extern void _SetDefaultSelectionTimeout();
+extern void _XtSetDefaultErrorHandlers();
+extern void _XtSetDefaultSelectionTimeout();
+extern void _XtSetDefaultConverterTable();
+extern void _XtFreeConverterTable();
 
 extern XtAppContext _XtDefaultAppContext();
 extern void _XtDestroyAppContexts();
@@ -128,6 +132,9 @@ typedef struct _XtPerDisplayStruct {
 extern void _XtPerDisplayInitialize();
 
 extern XtPerDisplay _XtGetPerDisplay();
+    /* Display *dpy */
+
+extern XtAppContext _XtDisplayToApplicationContext();
     /* Display *dpy */
 
 extern void _XtDisplayInitialize();
