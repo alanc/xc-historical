@@ -20,6 +20,94 @@ AND IN LIEU OF ALL OTHERS, ORAL OR WRITTEN, EXPRESS OR
 IMPLIED.
 
 ************************************************************/
+
+/*
+ * Under A/UX 2.0 struct video has been "Macintized" and now incorporates
+ * a structure called AuxDCE which is defined once and for all in
+ * /usr/include/mac. Alas the definition for AuxDCE requires wheeling in
+ * lots of Mac stuff including QuickDraw. This is a headache as there are
+ * a variety of clashes between X and QuickDraw (they both do windows after
+ * all). So we define just what we need here and avoid pulling in the Mac
+ * includes. Of course if this ever changes ...
+ */
+
+#ifndef __OSUTILS__
+struct QElem {
+    struct QElem *qLink;
+    short qType;
+    short qData[1];
+};
+
+typedef struct QElem QElem;
+
+typedef QElem *QElemPtr;
+
+struct QHdr {
+    short qFlags;
+    QElemPtr qHead;
+    QElemPtr qTail;
+};
+#define __OSUTILS__
+#endif
+
+#ifndef __DEVICES__
+struct CntrlParam {
+        struct QElem *qLink;
+        short qType;
+        short ioTrap;
+        char *ioCmdAddr;
+        int (*ioCompletion)();
+        short ioResult;
+        char *ioNamePtr;
+        short ioVRefNum;
+        short ioCRefNum;
+        short csCode;
+        short csParam[11];
+};
+
+struct DCtlEntry {
+        char **dCtlDriver;
+        short dCtlFlags;
+        struct QHdr dCtlQHdr;
+        long dCtlPosition;
+        char **dCtlStorage;
+        short dCtlRefNum;
+        long dCtlCurTicks;
+        char *dCtlWindow;
+        short dCtlDelay;
+        short dCtlEMask;
+        short dCtlMenu;
+        char dCtlSlot;
+        char dCtlSlotId;
+        long dCtlDevBase;
+        long reserved;
+        char dCtlExtDev;
+        char fillByte;
+};
+
+struct AuxDCE {
+        char **dCtlDriver;
+        short dCtlFlags;
+        struct QHdr dCtlQHdr;
+        long dCtlPosition;
+        char **dCtlStorage;
+        short dCtlRefNum;
+        long dCtlCurTicks;
+        char *dCtlWindow;
+        short dCtlDelay;
+        short dCtlEMask;
+        short dCtlMenu;
+        char dCtlSlot;
+        char dCtlSlotId;
+        long dCtlDevBase;
+        long reserved;
+        char dCtlExtDev;
+        char fillByte;
+};
+
+#define __DEVICES__
+#endif
+
 #include <sys/stropts.h>
 #include <sys/termio.h>
 #include <sys/video.h>
@@ -67,13 +155,11 @@ main()
 		printf("Could not ioctl FIONBIO. \r\n");
 	    }
 	    
-#ifdef notdef
 	    iarg = 0;
 	    if (ioctl(fd, FIOASYNC, &iarg) < 0) {
 		errors++;
 		printf("Could not ioctl FIOASYNC. \r\n");
 	    }
-#endif
 	    
 	    if (ioctl(fd, I_FLUSH, FLUSHRW) < 0) {
 		errors++;
@@ -87,12 +173,25 @@ main()
 		printf("Failed to ioctl I_STR VIDEO_NOMOUSE.\r\n");
 	    }
 	    
+#ifdef VIDEO_MAC
+	    ctl.ic_len = 0;
+	    ctl.ic_cmd = VIDEO_MAC; /* For A/UX 2.0 and later */
+	    if (ioctl(fd, I_STR, &ctl) < 0) {
+	        ctl.ic_len = 0;
+	        ctl.ic_cmd = VIDEO_ASCII; /* A/UX 1.* */
+	        if (ioctl(fd, I_STR, &ctl) < 0) {
+		    errors++;
+		    printf("Failed to ioctl I_STR VIDEO_MAC VIDEO_ASCII.\r\n");
+	        }
+	    }
+#else
 	    ctl.ic_len = 0;
 	    ctl.ic_cmd = VIDEO_ASCII;
 	    if (ioctl(fd, I_STR, &ctl) < 0) {
 		errors++;
 		printf("Failed to ioctl I_STR VIDEO_ASCII.\r\n");
 	    }
+#endif
 
 	    if(ioctl(fd, I_PUSH, "line") < 0) {
 		errors++;
