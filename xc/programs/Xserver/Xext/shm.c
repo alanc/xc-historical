@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 /* EXPERIMENTAL! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
 
-/* $XConsortium: shm.c,v 1.5 89/08/31 12:57:54 rws Exp $ */
+/* $XConsortium: shm.c,v 1.6 89/12/02 16:13:57 rws Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -38,6 +38,7 @@ without any express or implied warranty.
 #include "servermd.h"
 #define _XSHM_SERVER_
 #include "shmstr.h"
+#include "Xfuncproto.h"
 
 typedef struct _ShmDesc {
     struct _ShmDesc *next;
@@ -48,7 +49,11 @@ typedef struct _ShmDesc {
     unsigned long size;
 } ShmDescRec, *ShmDescPtr;
 
+#if NeedFunctionPrototypes
+void *shmat(int, void*, int);
+#else
 char *shmat();
+#endif
 static void miShmPutImage(), fbShmPutImage();
 static PixmapPtr fbShmCreatePixmap();
 
