@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.47 92/04/09 10:22:00 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.48 92/04/09 11:07:11 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -26,6 +26,7 @@ Syntax of magic values in the input stream:
 			<kdelay> and <mdelay> are floating point
 			zero for any value means don't change it
 ^T^B<button>^T		toggle button <button> state (press or release)
+^T^B0^T			release all pressed buttons
 ^T^C			set Control key for next character
 ^T^D<dx> <dy>^T		move mouse by (<dx>, <dy>) pixels
 ^T^E			exit the program
@@ -120,6 +121,7 @@ typedef struct _undo {
 Undo *undos[256];
 int curbscount = 0;
 Bool in_control_seq = False;
+Bool skip_next_control_char = False;
 
 typedef struct {
     char dir;
@@ -456,6 +458,13 @@ void
 do_button(button)
     int button;
 {
+    if (!button) {
+	for (button = 1; button < 256; button++) {
+	    if (button_state[button])
+		do_button(button);
+	}
+	return;
+    }
     if (button < 1 || button > 255)
 	return;
     button = button_map[button];
@@ -1256,10 +1265,8 @@ process(buf, n, len)
 	    } else if (curbscount) {
 		while (curbscount)
 		    undo_stroke();
-	    } else if (in_control_seq) {
-		fprintf(stderr, "still in control seq\n");
-		debug_state();
-	    }
+	    } else if (in_control_seq)
+		skip_next_control_char = True;
 	}
 	if (buf[i] != control_char) {
 	    if (len) {
@@ -1268,6 +1275,12 @@ process(buf, n, len)
 		history[history_end++] = buf[i];
 	    }
 	    do_char(((unsigned char *)buf)[i]);
+	    continue;
+	}
+	if (skip_next_control_char) {
+	    skip_next_control_char = False;
+	    in_control_seq = False;
+	    save_control(buf, i, i);
 	    continue;
 	}
 	i++;
@@ -1353,10 +1366,9 @@ process(buf, n, len)
 	    default:
 		do_keysym(buf + i, j - i);
 	    }
-	    if (len) {
-		buf[j] = control_char;
+	    buf[j] = control_char;
+	    if (len)
 		save_control(buf, i - 1, j);
-	    }
 	    i = j;
 	    break;
 	}
