@@ -42,73 +42,58 @@ It is provided ``as is'' without express or implied warranty.
 .ps 11
 .nr PS 11
 .bp
+.XS iii
+Acknowledgments
+.XE
 \&
 .sp 1
-.SH
-Contributors
-.RS
+.ce 3
+\s+1\fBAcknowledgments\fP\s-1
+.sp 2
+.na
 .LP
+The primary contributers to the X11 protocol are:
+.LP
+.Ds
 Dave Carver (Digital HPW)
-.br
 Branko Gerovac (Digital HPW)
-.br
 Jim Gettys (MIT/Project Athena, Digital)
-.br
 Phil Karlton (Digital WSL)
-.br
 Scott McGregor (Digital SSG)
-.br
 Ram Rao (Digital UEG)
-.br
 David Rosenthal (Sun)
-.br
 Dave Winchell (Digital UEG)
-.RE
-.SH
-Implementors 
+.De
 .LP
 The implementors of initial server who provided useful 
 input are:
-.RS
 .LP
+.Ds
 Susan Angebranndt (Digital)
-.br
 Raymond Drewry (Digital)
-.br
 Todd Newman (Digital)
-.RE
-.SH
-Reviewers
+.De
 .LP
 The invited reviewers who provided useful input are:
-.RS
 .LP
+.Ds
 Andrew Cherenson (Berkeley)
-.br
 Burns Fisher (Digital)
-.br
 Dan Garfinkel (HP)
-.br
 Leo Hourvitz (Next)
-.br
 Brock Krizan (HP)
-.br
 David Laidlaw (Stellar)
-.br
 Dave Mellinger (Interleaf)
-.br
 Ron Newman (MIT)
-.br
 John Ousterhout (Berkeley)
-.br
 Andrew Palay (ITC CMU)
-.br
 Ralph Swick (MIT)
-.br
 Craig Taylor (Sun)
-.br
 Jeffery Vroom (Stellar)
-.RE
+.De
+.LP
+Thanks go to Al Mento of Digital's UEG Documentation Group for
+formatting this document.
 .LP
 This document does not attempt to provide the rationale or pragmatics required
 to fully understand the protocol or to place it in perspective within a
@@ -119,6 +104,12 @@ normal applications.
 Not all mechanisms are needed to build a particular user interface.
 It is important to keep in mind that the protocol is intended to
 provide mechanism, not policy.
+.LP
+.Ds 0
+Robert W. Scheifler
+Massachusetts Institute of Technology
+Laboratory for Computer Science
+.De
 .bp 1
 .EH '\fBX Protocol\fP''\fBX11, Release 2\fP'
 .OH '\fBX Protocol\fP''\fBX11, Release 2\fP'
@@ -9948,4 +9939,10 @@ In addition, the effect of any other cause (for example, activation of a grab,
 pointer motion) that can generate multiple events must effectively generate 
 (and queue) all required events indivisibly with respect to all other causes 
 and requests.
-.bp
+.XS 83
+Appendix A \- KEYSYM Encoding
+.XE
+.XS 100
+Appendix B \- Protocol Encoding
+.XE
+.TC

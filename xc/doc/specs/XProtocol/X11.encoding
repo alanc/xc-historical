@@ -1,3 +1,7 @@
+.EH ''''
+.OH ''''
+.EF ''''
+.OF ''''
 \&
 .sp 1
 .ce 3
@@ -8,9 +12,6 @@
 \s+1\fBProtocol Encoding\fP\s-1
 .sp 2
 .LP
-.XS
-Appendix B \- Protocol Encoding
-.XE
 .ps 9
 .nr PS 9
 .vs 10
@@ -4257,4 +4258,3 @@ VISUALTYPE
 	1	CARD8		count
 	25			unused
 .De
-.TC
