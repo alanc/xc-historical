@@ -1,5 +1,5 @@
 .\" Contrib manifest  -*- Nroff -*-
-.\" $XConsortium$
+.\" $XConsortium: Manifest.ms,v 1.2 94/06/10 15:17:03 gildea Exp $
 .\" #! troff -ms
 .nr PS 11
 .if n \{
@@ -171,10 +171,10 @@ emu	X based extensible terminal emulator
 fdraw	graphics editor supporting instancing and embedding widgets
 gpc/plbpex	picture level benchmark program
 hterm	terminal emulator for X
-i2mif
+i2mif	IDL to FrameMaker Interchange Format, generate docs from IDL
 ico	animate an icosahedron or other polyhedron
 ImageMagick	display and interactive manipulation of images
-ixx
+ixx	IDL compiler, generates C++
 kgames	a collection of games, and some useful widgets
 kinput2	an input server for easy input of Japanese text
 kterm-6.1.0	kanji terminal emulator for X
