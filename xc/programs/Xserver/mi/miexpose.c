@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 5.11 89/11/12 13:51:46 rws Exp $ */
+/* $XConsortium: miexpose.c,v 5.13 90/06/12 17:46:54 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -391,12 +391,14 @@ miWindowExposures(pWin, prgn, other_exposed)
 {
     if ((prgn && !REGION_NIL(prgn)) || other_exposed)
     {
-	RegionPtr exposures = prgn;
-	RegionRec expRec;
+	RegionPtr   exposures = prgn;
+	RegionRec   expRec;
+	int	    clientInterested;
 
 	/*
 	 * Restore from backing-store FIRST.
 	 */
+	clientInterested = (pWin->eventMask|wOtherEventMasks(pWin)) & ExposureMask;
  	if (pWin->backStorage && prgn)
 	    /*
 	     * in some cases, backing store will cause a different
@@ -421,7 +423,7 @@ miWindowExposures(pWin, prgn, other_exposed)
 	    }
 	    exposures = other_exposed;
 	}
-	if (exposures && (REGION_NUM_RECTS(exposures) > RECTLIMIT))
+	if (clientInterested && exposures && (REGION_NUM_RECTS(exposures) > RECTLIMIT))
 	{
 	    /*
 	     * If we have LOTS of rectangles, we decide to take the extents
@@ -454,7 +456,7 @@ miWindowExposures(pWin, prgn, other_exposed)
 	}
 	if (prgn && !REGION_NIL(prgn))
 	    (*pWin->drawable.pScreen->PaintWindowBackground)(pWin, prgn, PW_BACKGROUND);
-	if (exposures && !REGION_NIL(exposures))
+	if (clientInterested && exposures && !REGION_NIL(exposures))
 	    miSendExposures(pWin, exposures,
 			    pWin->drawable.x, pWin->drawable.y);
 	if (exposures == &expRec)
