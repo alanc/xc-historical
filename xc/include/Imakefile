@@ -18,6 +18,7 @@ EXPORTS = \
 	JUSkeysym.h
 
 IMPORTS1 = \
+	$(XAUTHSRC)/Xauth.h \
 	$(OLDXLIBSRC)/X10.h \
 	$(XLIBSRC)/Xlib.h \
 	$(XLIBSRC)/Xresource.h \
