@@ -1,4 +1,4 @@
-/* $XConsortium: brf_prt.h,v 5.2 91/02/16 10:07:16 rws Exp $ */
+/* $XConsortium: brf_prt.h,v 5.3 91/03/28 19:22:35 rws Exp $ */
 
 /*
  */
@@ -125,36 +125,64 @@ NULL
 	and the test timing is invalid. */
 #endif
 
+char _brf_sys[] =
+"|  System Make and Model  :   Unknown                                  |\n";
+char _brf_hdw[] =
+"|  Hardware Configuration :   Unknown                                  |\n";
+char _brf_os[] =
+"|  Operating System       :   Unknown                                  |\n";
+char _brf_ws[] =
+"|  Windowing System       :   Unknown                                  |\n";
+char _brf_wz[] =
+"|  PLB Window Size        :   Unknown                                  |\n";
+char _brf_sa[] =
+"|  Stopwatch Accuracy     :   Unknown                                  |\n";
+
 char *brf_sysinfo[] = 
 {
 "|----------------------------------------------------------------------|\n",
 "|   System Configuration                                               |\n",
 "|----------------------------------------------------------------------|\n",
-"|  System Make and Model  :   Unknown                                  |\n",
-"|  Hardware Configuration :   Unknown                                  |\n",
+_brf_sys,
+_brf_hdw,
 "|                                                                      |\n",
 "|                                                                      |\n",
-"|  Operating System       :   Unknown                                  |\n",
-"|  Windowing System       :   Unknown                                  |\n",
-"|  PLB Window Size        :   Unknown                                  |\n",
-"|  Stopwatch Accuracy     :   Unknown                                  |\n",
+_brf_os,
+_brf_ws,
+_brf_wz,
+_brf_sa,
 "|                                                                      |\n",
 "------------------------------------------------------------------------\n",
 NULL
 };
+
+char _brf_nf[] =
+"|  Number of Frames        :                                           |\n";
+char _brf_et[] =
+"|  Elapsed Time (sec)      :                                           |\n";
+char _brf_td[] =
+"|  Transport Delay         :                                           |\n";
+char _brf_fps[] =
+"|  Avg. Frames per Second  :                                           |\n";
+char _brf_tpf[] =
+"|  Avg. Time per Frame     :                                           |\n";
+char _brf_mm1[] =
+"|  Timing Merit Mthd 1     :                                           |\n";
+char _brf_mm2[] =
+"|  Timing Merit Mthd 2     :                                           |\n";
 
 char *brf_timeinfo[] = 
 {
 "|----------------------------------------------------------------------|\n",
 "|   Test Loop Timing Information                                       |\n",
 "|----------------------------------------------------------------------|\n",
-"|  Number of Frames        :                                           |\n",
-"|  Elapsed Time (sec)      :                                           |\n",
-"|  Transport Delay         :                                           |\n",
-"|  Avg. Frames per Second  :                                           |\n",
-"|  Avg. Time per Frame     :                                           |\n",
-"|  Timing Merit Mthd 1     :                                           |\n",
-"|  Timing Merit Mthd 2     :                                           |\n"
+_brf_nf,
+_brf_et,
+_brf_td,
+_brf_fps,
+_brf_tpf,
+_brf_mm1,
+_brf_mm2
 ,NULL
 };
 
