@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: Exp $";
+static char rcsid[] = "$XConsortium: xditview.c,v 1.1 89/03/01 15:47:44 keith Exp $";
 #endif  lint
 
 #include <X11/Xatom.h>
@@ -20,6 +20,8 @@ static char rcsid[] = "$XConsortium: Exp $";
 #include <X11/Dialog.h>
 #include <X11/Label.h>
 #include "libXdvi/Dvi.h"
+#include "xditview.bm"
+#include "xditview_mask.bm"
 
 extern void exit();
 
@@ -27,8 +29,9 @@ extern void exit();
    pass over the remaining options after XtParseCommand is let loose. */
 
 static XrmOptionDescRec options[] = {
-{"-page",	    "*dvi.pageNumber",	    XrmoptionSepArg,	"1"},
-{"-backingStore",   "*dvi.backingStore",    XrmoptionSepArg,	"default"},
+{"-page",	    "*dvi.pageNumber",	    XrmoptionSepArg,	NULL},
+{"-backingStore",   "*dvi.backingStore",    XrmoptionSepArg,	NULL},
+{"-noPolyText",	    "*dvi.noPolyText",	    XrmoptionNoArg,	"TRUE"},
 };
 
 /*
@@ -83,6 +86,7 @@ void main(argc, argv)
     static Arg	    labelArgs[] = {
 			{XtNlabel, (int) pageLabel},
     };
+    Arg		    topLevelArgs[2];
     int		    height;
 
     toplevel = XtInitialize("main", "XDvi",
@@ -90,6 +94,16 @@ void main(argc, argv)
  			    &argc, argv);
     if (argc > 2)
 	Syntax(argv[0]);
+    XtSetArg (topLevelArgs[0], XtNiconPixmap,
+	      XCreateBitmapFromData (XtDisplay (toplevel),
+				     XtScreen(toplevel)->root,
+				     xditview_bits, xditview_width, xditview_height));
+				    
+    XtSetArg (topLevelArgs[1], XtNiconMask,
+	      XCreateBitmapFromData (XtDisplay (toplevel),
+				     XtScreen(toplevel)->root,
+				     xditview_mask_bits, xditview_mask_width, xditview_mask_height));
+    XtSetValues (toplevel, topLevelArgs, 2);
     if (argc > 1)
 	file_name = argv[1];
 
@@ -180,16 +194,16 @@ commandCall (cw, closure, data)
 	XtGetValues (dvi, dviArg, 1);
 	SetPageNumber (number-1);
     } else if (cw == selectPage) {
-	MakePrompt ("Page number", SelectPage);
+	MakePrompt (cw, "Page number", SelectPage);
     } else if (cw == open) {
-	MakePrompt ("File to open:", NewFile);
+	MakePrompt (cw, "File to open:", NewFile);
     } else if (cw == quit) {
 	exit (0);
     }
 }
 
 
-Widget	promptwidget;
+Widget	promptShell, promptDialog;
 void	(*promptfunction)();
 
 /* ARGSUSED */
@@ -198,10 +212,10 @@ void DestroyPromptWidget(widget, client_data, call_data)
     caddr_t client_data;	/* scrn */
     caddr_t call_data;		/* unused */
 {
-    if (promptwidget) {
-	XtSetKeyboardFocus(toplevel, vpaned);
-	XtDestroyWidget(promptwidget);
-	promptwidget = NULL;
+    if (promptShell) {
+	XtSetKeyboardFocus(toplevel, (Widget) None);
+	XtDestroyWidget(promptShell);
+	promptShell = (Widget) 0;
     }
 }
 
@@ -213,28 +227,52 @@ void TellPrompt(widget, client_data, call_data)
     caddr_t call_data;
 
 {
-    (*promptfunction)(XtDialogGetValueString(promptwidget));
+    (*promptfunction)(XtDialogGetValueString(promptDialog));
     DestroyPromptWidget(widget, client_data, call_data);
 }
 
-MakePrompt(prompt, func)
+MakePrompt(cw, prompt, func)
+Widget	cw;
 char *prompt;
 void (*func)();
 {
-    static Arg args[] = {
+    static Boolean true = TRUE;
+    static Arg dialogArgs[] = {
 	{XtNlabel, NULL},
 	{XtNvalue, NULL},
     };
-    args[0].value = (XtArgVal)prompt;
-    args[1].value = (XtArgVal)"";
+    Arg valueArgs[1];
+    static Arg shellArgs[] = {
+	{XtNx, 0},
+	{XtNy, 0},
+	{XtNallowShellResize, TRUE},
+    };
+    XWindowAttributes	xwa;
+    int	dest_x, dest_y, child_return;
+    Widget  valueWidget;
+    
+    XGetWindowAttributes (XtDisplay (cw), XtWindow (cw), &xwa);
+    XTranslateCoordinates (XtDisplay (cw), XtWindow (cw), xwa.root,
+			    0, xwa.height * 2,
+			    &dest_x, &dest_y, &child_return);
+    shellArgs[0].value = dest_x;
+    shellArgs[1].value = dest_y;
     DestroyPromptWidget((Widget)NULL, (caddr_t)0, NULL);
-    promptwidget = XtCreateWidget( "prompt", dialogWidgetClass, vpaned,
-				   args, (Cardinal)2 );
-    XtDialogAddButton(promptwidget, "Accept", TellPrompt, (caddr_t)0);
-    XtDialogAddButton(promptwidget, "Cancel", DestroyPromptWidget, (caddr_t)0);
-    XtRealizeWidget(promptwidget);
-    XtSetKeyboardFocus(promptwidget, XtNameToWidget(promptwidget,"value"));
-    XtSetKeyboardFocus(toplevel, (Widget)None);
-    XtMapWidget( promptwidget );
+    promptShell = XtCreatePopupShell ("promptShell", transientShellWidgetClass,
+		    toplevel, shellArgs, XtNumber (shellArgs));
+    dialogArgs[0].value = (XtArgVal)prompt;
+    dialogArgs[1].value = (XtArgVal)"";
+    promptDialog = XtCreateManagedWidget( "promptDialog", dialogWidgetClass,
+		    promptShell, dialogArgs, XtNumber (dialogArgs));
+    XtDialogAddButton(promptDialog, "Accept", TellPrompt, (caddr_t)0);
+    XtDialogAddButton(promptDialog, "Cancel", DestroyPromptWidget, (caddr_t)0);
+    XtSetKeyboardFocus(toplevel, promptShell);
+    XtSetKeyboardFocus(promptShell, promptDialog);
+    valueWidget = XtNameToWidget (promptDialog, "value");
+    XtSetArg (valueArgs[0], XtNresizable, TRUE);
+    XtSetValues (valueWidget, valueArgs, 1);
+    XtSetKeyboardFocus(promptDialog, valueWidget);
+    XtRealizeWidget(promptShell);
+    XtMapWidget(promptShell);
     promptfunction = func;
 }
