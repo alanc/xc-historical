@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.19 94/03/15 13:37:02 mor Exp $ */
+/* $XConsortium: accept.c,v 1.20 94/03/18 10:55:21 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,7 +18,7 @@ Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/ICE/ICElib.h>
-#include <X11/ICE/ICElibint.h>
+#include "ICElibint.h"
 #include <X11/Xtrans.h>
 
 

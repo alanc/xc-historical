@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.24 94/03/15 13:37:23 mor Exp $ */
+/* $XConsortium: connect.c,v 1.25 94/03/18 10:55:28 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,7 +18,7 @@ Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/ICE/ICElib.h>
-#include <X11/ICE/ICElibint.h>
+#include "ICElibint.h"
 #include <X11/Xtrans.h>
 #include "globals.h"
 

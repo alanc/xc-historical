@@ -1,4 +1,4 @@
-/* $XConsortium: protosetup.c,v 1.15 94/03/07 15:22:33 mor Exp $ */
+/* $XConsortium: protosetup.c,v 1.16 94/03/15 13:34:23 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,7 +18,7 @@ Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/ICE/ICElib.h>
-#include <X11/ICE/ICElibint.h>
+#include "ICElibint.h"
 
 
 IceProtocolSetupStatus

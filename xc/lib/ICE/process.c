@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.31 94/03/17 10:16:04 mor Exp $ */
+/* $XConsortium: process.c,v 1.32 94/03/17 12:26:43 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,7 +18,7 @@ Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/ICE/ICElib.h>
-#include <X11/ICE/ICElibint.h>
+#include "ICElibint.h"
 
 
 /*

@@ -1,4 +1,4 @@
-/* $XConsortium: replywait.c,v 1.1 93/08/26 17:34:41 mor Exp $ */
+/* $XConsortium: replywait.c,v 1.2 93/12/07 11:04:15 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,7 +18,7 @@ Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/ICE/ICElib.h>
-#include <X11/ICE/ICElibint.h>
+#include "ICElibint.h"
 
 
 void

@@ -1,4 +1,4 @@
-/* $XConsortium: getauth.c,v 1.5 94/03/08 12:18:50 mor Exp $ */
+/* $XConsortium: getauth.c,v 1.6 94/03/17 12:22:34 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,7 +18,7 @@ Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/ICE/ICElib.h>
-#include <X11/ICE/ICElibint.h>
+#include "ICElibint.h"
 #include <X11/ICE/ICEutil.h>
 
 static Bool auth_valid ();

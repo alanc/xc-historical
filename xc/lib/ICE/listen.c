@@ -1,4 +1,4 @@
-/* $XConsortium: listen.c,v 1.11 94/03/15 13:32:59 mor Exp $ */
+/* $XConsortium: listen.c,v 1.12 94/03/18 10:55:30 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,7 +18,7 @@ Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/ICE/ICElib.h>
-#include <X11/ICE/ICElibint.h>
+#include "ICElibint.h"
 #include <X11/Xtrans.h>
 #include <stdio.h>
 

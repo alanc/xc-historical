@@ -1,4 +1,4 @@
-/* $XConsortium: register.c,v 1.9 93/12/07 11:04:15 mor Exp $ */
+/* $XConsortium: register.c,v 1.10 94/01/31 10:16:49 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,7 +18,7 @@ Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/ICE/ICElib.h>
-#include <X11/ICE/ICElibint.h>
+#include "ICElibint.h"
 
 int
 IceRegisterForProtocolSetup (protocolName, vendor, release,

@@ -1,4 +1,4 @@
-/* $XConsortium: iceauth.c,v 1.14 94/03/17 12:24:19 mor Exp $ */
+/* $XConsortium: iceauth.c,v 1.15 94/03/17 15:41:48 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,7 +18,7 @@ Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/ICE/ICElib.h>
-#include <X11/ICE/ICElibint.h>
+#include "ICElibint.h"
 #include <X11/ICE/ICEutil.h>
 
 #ifdef X_NOT_STDC_ENV

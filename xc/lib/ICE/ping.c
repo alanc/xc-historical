@@ -1,4 +1,4 @@
-/* $XConsortium: ping.c,v 1.4 93/09/21 14:15:39 mor Exp $ */
+/* $XConsortium: ping.c,v 1.5 93/12/07 11:04:12 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,7 +18,7 @@ Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/ICE/ICElib.h>
-#include <X11/ICE/ICElibint.h>
+#include "ICElibint.h"
 
 void
 IcePing (iceConn, pingReplyProc, clientData)

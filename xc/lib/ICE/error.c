@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.9 94/03/15 13:35:52 mor Exp $ */
+/* $XConsortium: error.c,v 1.10 94/03/16 15:47:55 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,7 +18,7 @@ Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/ICE/ICElib.h>
-#include <X11/ICE/ICElibint.h>
+#include "ICElibint.h"
 #include <stdio.h>
 
 void

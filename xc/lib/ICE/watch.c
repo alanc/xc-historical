@@ -1,4 +1,4 @@
-/* $XConsortium: watch.c,v 1.2 93/09/14 15:36:04 mor Exp $ */
+/* $XConsortium: watch.c,v 1.3 93/12/07 11:04:18 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,7 +18,7 @@ Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/ICE/ICElib.h>
-#include <X11/ICE/ICElibint.h>
+#include "ICElibint.h"
 
 
 Status

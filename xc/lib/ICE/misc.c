@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.20 94/03/18 10:19:43 mor Exp $ */
+/* $XConsortium: misc.c,v 1.21 94/03/18 10:55:31 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -21,7 +21,7 @@ Author: Ralph Mor, X Consortium
 #define _WILLWINSOCK_
 #endif
 #include <X11/ICE/ICElib.h>
-#include <X11/ICE/ICElibint.h>
+#include "ICElibint.h"
 #include <X11/Xtrans.h>
 #include <stdio.h>
 #ifdef WIN32

@@ -1,4 +1,4 @@
-/* $XConsortium: authutil.c,v 1.11 94/03/05 12:45:27 rws Exp $ */
+/* $XConsortium: authutil.c,v 1.12 94/03/17 12:23:05 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -18,7 +18,7 @@ Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/ICE/ICElib.h>
-#include <X11/ICE/ICElibint.h>
+#include "ICElibint.h"
 #include <X11/ICE/ICEutil.h>
 #include <X11/Xos.h>
 #include <sys/stat.h>
