@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: gc.h,v 1.51 91/07/09 15:58:13 rws Exp $ */
+/* $XConsortium: gc.h,v 1.52 93/07/12 09:44:51 dpw Exp $ */
 
 #ifndef GC_H
 #define GC_H 
@@ -59,6 +59,7 @@ SOFTWARE.
 
 typedef struct _GCInterest *GCInterestPtr;
 typedef struct _GC    *GCPtr;
+typedef struct _GCOps *GCOpsPtr;
 
 extern void ValidateGC(
 #if NeedFunctionPrototypes
