@@ -9,7 +9,7 @@
  *
  *      $Author: jim $
  *      $oHeader: List.h,v 1.4 88/08/30 16:36:53 kit Exp $
- *      $XConsortium: List.h,v 1.7 88/09/06 16:41:48 jim Exp $
+ *      $XConsortium: List.h,v 1.8 88/09/06 18:14:38 jim Exp $
  *	
  *
  */
@@ -54,34 +54,32 @@ SOFTWARE.
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
- foreground	     Foreground		pixel		Black
- background	     Background		pixel		White
- border		     BorderColor	pixel		Black
- borderWidth	     BorderWidth	int		1
+ background	     Background		Pixel		XtDefaultBackground
+ border		     BorderColor	Pixel		XtDefaultForeground
+ borderWidth	     BorderWidth	Dimension	1
+ callback            Callback           XtCallbackList  NULL       **6
+ columnSpacing       Spacing            Dimension       6
+ cursor		     Cursor		Cursor		left_ptr
+ defaultColumns      Columns            int             2          **5
  destroyCallback     Callback		Pointer		NULL 
- mappedWhenManaged   MappedWhenManaged	Boolean		True
- sensitive	     Sensitive		Boolean		True
- x		     Position		int		0
- y		     Position		int		0
- height		     Height		int		0          **1
- width		     Width		int		0          **1
-
- cursor		     Cursor		Cursor		None
+ font		     Font		XFontStruct*	XtDefaultFont
+ forceColumns        Columns            Boolean         False      **5
+ foreground	     Foreground		Pixel		XtDefaultForeground
+ height		     Height		Dimension	0          **1
  insensitiveBorder   Insensitive	Pixmap		Gray
-
- font		     Font		FontStruct	fixed
+ internalHeight	     Height		Dimension	2
+ internalWidth	     Width		Dimension	4
  list                List               String *        NULL       **2
  longest             Longest            int             0          **3  **4
+ mappedWhenManaged   MappedWhenManaged	Boolean		True
  numberStrings       NumberStrings      int             0          **4
- pasterBuffer        Boolean            Boolean         False
- defaultColumns      Columns            int             2          **5
- forceColumns        Columns            Boolean         False      **5
- verticalList        Boolean            Boolean         False
- columnSpacing       Spacing            Dimension       6
+ pasteBuffer         Boolean            Boolean         False
  rowSpacing          Spacing            Dimension       4
- internalHeight	     Height		int		2
- internalWidth	     Width		int		4
- callback            Callback           XtCallbackList  NULL       **6
+ sensitive	     Sensitive		Boolean		True
+ verticalList        Boolean            Boolean         False
+ width		     Width		Dimension	0          **1
+ x		     Position		Position	0
+ y		     Position		Position	0
 
  **1 - If the Width or Height of the list widget is zero (0) then the value
        is set to the minimum size necessay to fit the entire list.
