@@ -26,11 +26,11 @@ void DoValGC(d, p)
     XGCValues gcv;
 
     for (i=0; i < p->reps; i++) {
-        gcv.background = BlackPixel(d, 0);
+        gcv.background = fgPixel;
         XChangeGC(d, gc, GCBackground , &gcv);
         XDrawPoint(d, win[0], gc, 5, 5);       
 
-        gcv.background = WhitePixel(d, 0);
+        gcv.background = bgPixel;
         XChangeGC(d, gc, GCBackground , &gcv);
         XDrawPoint(d, win[1], gc, 5, 5);       
     }
