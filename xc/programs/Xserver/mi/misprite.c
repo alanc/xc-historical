@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.9 89/07/12 17:17:27 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.10 89/07/16 10:47:35 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -34,6 +34,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 # include   "gcstruct.h"
 # include   "mipointer.h"
 # include   "mispritest.h"
+# include   "dixfontstr.h"
+# include   "fontstruct.h"
 
 /*
  * screen wrappers
@@ -1025,6 +1027,57 @@ miSpriteCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
     return rgn;
 }
 
+/*
+ * return true if the cursor overlaps the given set of points
+ */
+
+static Bool
+miSpritePointOverlap (xorg, yorg, mode, lw, pPts, nPts, pCursorBox)
+    register int  	    xorg;   	    /* X-Origin for points */
+    register int  	    yorg;   	    /* Y-Origin for points */
+    int	    	  	    mode;   	    /* CoordModeOrigin or
+					     * CoordModePrevious */
+    int			    lw;		    /* line width */
+    register DDXPointPtr    pPts;   	    /* Array of points */
+    int	    	  	    nPts;   	    /* Number of points */
+    register BoxPtr 	    pCursorBox;	    /* Bounding box for cursor */
+{
+    register int  	    minx,
+			    miny,
+			    maxx,
+			    maxy;
+
+    minx = maxx = pPts->x + xorg;
+    miny = maxy = pPts->y + yorg;
+
+    pPts++;
+    nPts--;
+
+    if (mode == CoordModeOrigin) {
+	while (nPts--) {
+	    minx = min(minx, pPts->x + xorg);
+	    maxx = max(maxx, pPts->x + xorg);
+	    miny = min(miny, pPts->y + yorg);
+	    maxy = max(maxy, pPts->y + yorg);
+	    pPts++;
+	}
+    } else {
+	xorg = minx;
+	yorg = miny;
+	while (nPts--) {
+	    minx = min(minx, pPts->x + xorg);
+	    maxx = max(maxx, pPts->x + xorg);
+	    miny = min(miny, pPts->y + yorg);
+	    maxy = max(maxy, pPts->y + yorg);
+	    xorg += pPts->x;
+	    yorg += pPts->y;
+	    pPts++;
+	}
+    }
+    lw = lw >> 1;
+    return BOX_OVERLAP(pCursorBox,minx-lw,miny-lw,maxx+lw,maxy+lw);
+}
+
 static void
 miSpritePolyPoint (pDrawable, pGC, mode, npt, pptInit)
     DrawablePtr pDrawable;
@@ -1033,7 +1086,48 @@ miSpritePolyPoint (pDrawable, pGC, mode, npt, pptInit)
     int		npt;
     xPoint 	*pptInit;
 {
-    GC_SETUP_AND_CHECK(pDrawable, pGC);
+    xPoint	t;
+    int		i;
+    BoxRec	cursor;
+
+    GC_SETUP (pDrawable, pGC);
+
+    if (GC_CHECK((WindowPtr) pDrawable))
+    {
+	cursor.x1 = pScreenPriv->saved.x1 - pDrawable->x;
+	cursor.y1 = pScreenPriv->saved.y1 - pDrawable->y;
+	cursor.x2 = pScreenPriv->saved.x2 - pDrawable->x;
+	cursor.y2 = pScreenPriv->saved.y2 - pDrawable->y;
+
+	if (mode == CoordModePrevious)
+	{
+	    t.x = 0;
+	    t.y = 0;
+	    for (i = 0; i < npt; i++)
+	    {
+		t.x += pptInit[i].x;
+		t.y += pptInit[i].y;
+		if (cursor.x1 <= t.x && t.x <= cursor.x2 &&
+		    cursor.y1 <= t.y && t.y <= cursor.y2)
+		{
+		    miSpriteRemoveCursor (pDrawable->pScreen);
+		    break;
+		}
+	    }
+	}
+	else
+	{
+	    for (i = 0; i < npt; i++)
+	    {
+		if (cursor.x1 <= pptInit[i].x && pptInit[i].x <= cursor.x2 &&
+		    cursor.y1 <= pptInit[i].y && pptInit[i].y <= cursor.y2)
+		{
+		    miSpriteRemoveCursor (pDrawable->pScreen);
+		    break;
+		}
+	    }
+	}
+    }
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1050,7 +1144,14 @@ miSpritePolylines (pDrawable, pGC, mode, npt, pptInit)
     int	    	  npt;
     DDXPointPtr	  pptInit;
 {
-    GC_SETUP_AND_CHECK(pDrawable, pGC);
+    GC_SETUP (pDrawable, pGC);
+
+    if (GC_CHECK((WindowPtr) pDrawable) &&
+	miSpritePointOverlap (pDrawable->x, pDrawable->y, mode, pGC->lineWidth,
+			      pptInit, npt, &pScreenPriv->saved))
+    {
+	miSpriteRemoveCursor (pDrawable->pScreen);
+    }
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1066,7 +1167,38 @@ miSpritePolySegment(pDrawable, pGC, nseg, pSegs)
     int		nseg;
     xSegment	*pSegs;
 {
-    GC_SETUP_AND_CHECK(pDrawable, pGC);
+    int	    i;
+    BoxPtr  cursor;
+    int	    x, y, w, h;
+    int	    lw;
+
+    GC_SETUP(pDrawable, pGC);
+
+    if (GC_CHECK((WindowPtr) pDrawable))
+    {
+	cursor = &pScreenPriv->saved;
+
+	lw = (pGC->lineWidth + 1) / 2;
+	for (i = 0; i < nseg; i++)
+	{
+	    if (pSegs[i].x1 <= pSegs[i].x2)
+	    {
+		x = pSegs[i].x1 - lw;
+		w = pSegs[i].x2 - pSegs[i].x1 + lw;
+	    }
+	    if (pSegs[i].y1 <= pSegs[i].y2)
+	    {
+		y = pSegs[i].y1 - lw;
+		h = pSegs[i].y2 - pSegs[i].y1 + lw;
+	    }
+	    if (ORG_OVERLAP (cursor, pDrawable->x, pDrawable->y,
+			     x, y, w, h))
+	    {
+		miSpriteRemoveCursor (pDrawable->pScreen);
+		break;
+	    }
+	}
+    }
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1082,7 +1214,29 @@ miSpritePolyRectangle(pDrawable, pGC, nrects, pRects)
     int		nrects;
     xRectangle	*pRects;
 {
-    GC_SETUP_AND_CHECK(pDrawable, pGC);
+    BoxPtr  cursor;
+    int	    x, y, w, h;
+    int	    lw;
+    int	    i;
+    
+    GC_SETUP (pDrawable, pGC);
+
+    if (GC_CHECK((WindowPtr) pDrawable))
+    {
+	lw = (pGC->lineWidth + 1) / 2;
+	cursor = &pScreenPriv->saved;
+	for (i = 0; i < nrects; i++)
+	{
+	    if (ORG_OVERLAP (cursor, pDrawable->x, pDrawable->y,
+			     pRects[i].x - lw, pRects[i].y - lw,
+			     (int) pRects[i].width + lw,
+ 			     (int) pRects[i].height + lw))
+	    {
+		miSpriteRemoveCursor (pDrawable->pScreen);
+		break;
+	    }
+	}
+    }
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1098,7 +1252,29 @@ miSpritePolyArc(pDrawable, pGC, narcs, parcs)
     int		narcs;
     xArc	*parcs;
 {
-    GC_SETUP_AND_CHECK(pDrawable, pGC);
+    BoxPtr  cursor;
+    int	    x, y, w, h;
+    int	    lw;
+    int	    i;
+    
+    GC_SETUP (pDrawable, pGC);
+
+    if (GC_CHECK((WindowPtr) pDrawable))
+    {
+	lw = (pGC->lineWidth + 1) / 2;
+	cursor = &pScreenPriv->saved;
+	for (i = 0; i < narcs; i++)
+	{
+	    if (ORG_OVERLAP (cursor, pDrawable->x, pDrawable->y,
+			     parcs[i].x - lw, parcs[i].y - lw,
+			     (int) parcs[i].width + lw,
+ 			     (int) parcs[i].height + lw))
+	    {
+		miSpriteRemoveCursor (pDrawable->pScreen);
+		break;
+	    }
+	}
+    }
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1115,7 +1291,14 @@ miSpriteFillPolygon(pDrawable, pGC, shape, mode, count, pPts)
     register int	count;
     DDXPointPtr		pPts;
 {
-    GC_SETUP_AND_CHECK(pDrawable, pGC);
+    GC_SETUP (pDrawable, pGC);
+
+    if (GC_CHECK((WindowPtr) pDrawable) &&
+	miSpritePointOverlap (pDrawable->x, pDrawable->y, mode, 0,
+			      pPts, count, &pScreenPriv->saved))
+    {
+	miSpriteRemoveCursor (pDrawable->pScreen);
+    }
 
     GC_OP_PROLOGUE (pGC);
 
@@ -1164,13 +1347,150 @@ miSpritePolyFillArc(pDrawable, pGC, narcs, parcs)
     int		narcs;
     xArc	*parcs;
 {
-    GC_SETUP_AND_CHECK(pDrawable, pGC);
+    GC_SETUP(pDrawable, pGC);
+
+    if (GC_CHECK((WindowPtr) pDrawable))
+    {
+	register int	i;
+	BoxPtr		cursor;
+
+	cursor = &pScreenPriv->saved;
+
+	for (i = 0; i < narcs; i++)
+	{
+	    if (ORG_OVERLAP(cursor, pDrawable->x, pDrawable->y,
+			    parcs[i].x, parcs[i].y,
+ 			    (int) parcs[i].width, (int) parcs[i].height))
+	    {
+		miSpriteRemoveCursor (pDrawable->pScreen);
+		break;
+	    }
+	}
+    }
 
     GC_OP_PROLOGUE (pGC);
 
     (*pGC->ops->PolyFillArc) (pDrawable, pGC, narcs, parcs);
 
     GC_OP_EPILOGUE (pGC);
+}
+
+/*
+ * general Poly/Image text function.  Extract glyph information,
+ * compute bounding box and remove cursor if it is overlapped.
+ */
+
+static Bool
+miSpriteTextOverlap (pDraw, font, x, y, n, charinfo, imageblt, w, cursorBox)
+    DrawablePtr   pDraw;
+    FontPtr	  font;
+    int		  x, y;
+    unsigned long n;
+    CharInfoPtr   *charinfo;
+    Bool	  imageblt;
+    unsigned int  w;
+    BoxPtr	  cursorBox;
+{
+    ExtentInfoRec extents;
+
+    x += pDraw->x;
+    y += pDraw->y;
+
+    if (font->pFI->minbounds.metrics.characterWidth >= 0)
+    {
+	/* compute an approximate (but covering) bounding box */
+	if (!imageblt || (charinfo[0]->metrics.leftSideBearing < 0))
+	    extents.overallLeft = charinfo[0]->metrics.leftSideBearing;
+	else
+	    extents.overallLeft = 0;
+	if (w)
+	    extents.overallRight = w - charinfo[n-1]->metrics.characterWidth;
+	else
+	    extents.overallRight = font->pFI->maxbounds.metrics.characterWidth
+				    * (n - 1);
+	if (imageblt && (charinfo[n-1]->metrics.characterWidth >
+			 charinfo[n-1]->metrics.rightSideBearing))
+	    extents.overallRight += charinfo[n-1]->metrics.characterWidth;
+	else
+	    extents.overallRight += charinfo[n-1]->metrics.rightSideBearing;
+	if (imageblt &&
+	    (font->pFI->fontAscent > font->pFI->maxbounds.metrics.ascent))
+	    extents.overallAscent = font->pFI->fontAscent;
+	else
+	    extents.overallAscent = font->pFI->maxbounds.metrics.ascent;
+	if (imageblt &&
+	    (font->pFI->fontDescent > font->pFI->maxbounds.metrics.descent))
+	    extents.overallDescent = font->pFI->fontDescent;
+	else
+	    extents.overallDescent = font->pFI->maxbounds.metrics.descent;
+	if (!BOX_OVERLAP(cursorBox,
+			 x + extents.overallLeft,
+			 y - extents.overallAscent,
+			 x + extents.overallRight,
+			 y + extents.overallDescent))
+	    return FALSE;
+	else if (imageblt && w)
+	    return TRUE;
+	/* if it does overlap, fall through and compute exactly, because
+	 * taking down the cursor is expensive enough to make this worth it
+	 */
+    }
+    QueryGlyphExtents(font, charinfo, n, &extents);
+    if (imageblt)
+    {
+	if (extents.overallWidth > extents.overallRight)
+	    extents.overallRight = extents.overallWidth;
+	if (extents.overallLeft > 0)
+	    extents.overallLeft = 0;
+	if (extents.fontAscent > extents.overallAscent)
+	    extents.overallAscent = extents.fontAscent;
+	if (extents.fontDescent > extents.overallDescent)
+	    extents.overallDescent = extents.fontDescent;
+    }
+    return (BOX_OVERLAP(cursorBox,
+			x + extents.overallLeft,
+			y - extents.overallAscent,
+			x + extents.overallRight,
+			y + extents.overallDescent));
+}
+
+static int 
+miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, imageblt, cursorBox)
+    DrawablePtr	    pDraw;
+    GCPtr	    pGC;
+    int		    x,
+		    y;
+    int		    count;
+    char	    *chars;
+    FontEncoding    fontEncoding;
+    Bool	    imageblt;
+    BoxPtr	    cursorBox;
+{
+    CharInfoPtr *charinfo;
+    unsigned long n, i;
+    unsigned int w;
+    void    	  (*drawFunc)();
+
+    charinfo = (CharInfoPtr *) ALLOCATE_LOCAL(count * sizeof(CharInfoPtr));
+    if (!charinfo)
+	return x;
+
+    GetGlyphs(pGC->font, (unsigned long)count, (unsigned char *)chars,
+	      fontEncoding, &n, charinfo);
+    w = 0;
+    if (!imageblt)
+	for (i = 0; i < n; i++)
+	    w += charinfo[i]->metrics.characterWidth;
+
+    if (n != 0) {
+	if (miSpriteTextOverlap(pDraw, pGC->font, x, y, n, charinfo, imageblt, w, cursorBox))
+	    miSpriteRemoveCursor(pDraw->pScreen);
+
+	drawFunc = imageblt ? pGC->ops->ImageGlyphBlt : pGC->ops->PolyGlyphBlt;
+	(*drawFunc) (pDraw, pGC, x, y, n, charinfo, pGC->font->pGlyphs);
+    }
+    DEALLOCATE_LOCAL(charinfo);
+    return x + w;
 }
 
 static int
@@ -1183,11 +1503,14 @@ miSpritePolyText8(pDrawable, pGC, x, y, count, chars)
 {
     int	ret;
 
-    GC_SETUP_AND_CHECK(pDrawable, pGC);
+    GC_SETUP (pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
-    ret = (*pGC->ops->PolyText8) (pDrawable, pGC, x, y, count, chars);
+    if (GC_CHECK((WindowPtr) pDrawable))
+	ret = miSpriteText (pDrawable, pGC, x, y, count, chars, Linear8Bit, FALSE, &pScreenPriv->saved);
+    else
+	ret = (*pGC->ops->PolyText8) (pDrawable, pGC, x, y, count, chars);
 
     GC_OP_EPILOGUE (pGC);
     return ret;
@@ -1203,11 +1526,16 @@ miSpritePolyText16(pDrawable, pGC, x, y, count, chars)
 {
     int	ret;
 
-    GC_SETUP_AND_CHECK(pDrawable, pGC);
+    GC_SETUP(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
-    ret = (*pGC->ops->PolyText16) (pDrawable, pGC, x, y, count, chars);
+    if (GC_CHECK((WindowPtr) pDrawable))
+	ret = miSpriteText (pDrawable, pGC, x, y, count, (char *)chars,
+			    pGC->font->pFI->lastRow == 0 ?
+			    Linear16Bit : TwoD16Bit, FALSE, &pScreenPriv->saved);
+    else
+	ret = (*pGC->ops->PolyText16) (pDrawable, pGC, x, y, count, chars);
 
     GC_OP_EPILOGUE (pGC);
     return ret;
@@ -1221,11 +1549,14 @@ miSpriteImageText8(pDrawable, pGC, x, y, count, chars)
     int		count;
     char	*chars;
 {
-    GC_SETUP_AND_CHECK(pDrawable, pGC);
+    GC_SETUP(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
-    (*pGC->ops->ImageText8) (pDrawable, pGC, x, y, count, chars);
+    if (GC_CHECK((WindowPtr) pDrawable))
+	(void) miSpriteText (pDrawable, pGC, x, y, count, chars, Linear8Bit, TRUE, &pScreenPriv->saved);
+    else
+	(*pGC->ops->ImageText8) (pDrawable, pGC, x, y, count, chars);
 
     GC_OP_EPILOGUE (pGC);
 }
@@ -1238,11 +1569,16 @@ miSpriteImageText16(pDrawable, pGC, x, y, count, chars)
     int		count;
     unsigned short *chars;
 {
-    GC_SETUP_AND_CHECK(pDrawable, pGC);
+    GC_SETUP(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
-    (*pGC->ops->ImageText16) (pDrawable, pGC, x, y, count, chars);
+    if (GC_CHECK((WindowPtr) pDrawable))
+	(void) miSpriteText (pDrawable, pGC, x, y, count, (char *)chars,
+			    pGC->font->pFI->lastRow == 0 ?
+			    Linear16Bit : TwoD16Bit, TRUE, &pScreenPriv->saved);
+    else
+	(*pGC->ops->ImageText16) (pDrawable, pGC, x, y, count, chars);
 
     GC_OP_EPILOGUE (pGC);
 }
@@ -1256,10 +1592,15 @@ miSpriteImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     CharInfoPtr *ppci;		/* array of character info */
     pointer 	pglyphBase;	/* start of array of glyphs */
 {
-    GC_SETUP_AND_CHECK(pDrawable, pGC);
+    GC_SETUP(pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
+    if (GC_CHECK((WindowPtr) pDrawable) &&
+	miSpriteTextOverlap (pDrawable, pGC->font, x, y, nglyph, ppci, TRUE, 0, &pScreenPriv->saved))
+    {
+	miSpriteRemoveCursor(pDrawable->pScreen);
+    }
     (*pGC->ops->ImageGlyphBlt) (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
 
     GC_OP_EPILOGUE (pGC);
@@ -1274,10 +1615,15 @@ miSpritePolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     CharInfoPtr *ppci;		/* array of character info */
     char 	*pglyphBase;	/* start of array of glyphs */
 {
-    GC_SETUP_AND_CHECK(pDrawable, pGC);
+    GC_SETUP (pDrawable, pGC);
 
     GC_OP_PROLOGUE (pGC);
 
+    if (GC_CHECK((WindowPtr) pDrawable) &&
+	miSpriteTextOverlap (pDrawable, pGC->font, x, y, nglyph, ppci, FALSE, 0, &pScreenPriv->saved))
+    {
+	miSpriteRemoveCursor(pDrawable->pScreen);
+    }
     (*pGC->ops->PolyGlyphBlt) (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
 
     GC_OP_EPILOGUE (pGC);
@@ -1304,6 +1650,11 @@ miSpritePushPixels(pGC, pBitMap, pDrawable, w, h, x, y)
 
     GC_OP_EPILOGUE (pGC);
 }
+
+/*
+ * I don't expect this routine will ever be called, as the GC
+ * will have been unwrapped for the line drawing
+ */
 
 static void
 miSpriteLineHelper(pDrawable, pGC, cap, npts, pts, xOrg, yOrg)
