@@ -1,7 +1,5 @@
-# $XConsortium: Imakefile,v 1.12 89/10/08 15:10:08 jim Exp $
+# $XConsortium: Imakefile,v 1.13 89/10/08 15:12:41 jim Exp $
     DEFINES = ExtensionDefines
- BEZIERSRCS = beziertest.c
- BEZIEROBJS = beziertest.o
   SHAPESRCS = shapetest.c
   SHAPEOBJS = shapetest.o
     SHMSRCS = shmtest.c
@@ -9,16 +7,13 @@
    MBUFSRCS = xmbufinfo.c
    MBUFOBJS = xmbufinfo.o
    INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I../include
-       SRCS = /* $(BEZIERSRCS) */ $(SHAPESRCS) $(SHMSRCS) $(MBUFSRCS)
-       OBJS = /* $(BEZIEROBJS) */ $(SHAPEOBJS) $(SHMOBJS) $(MBUFOBJS)
+       SRCS = $(SHAPESRCS) $(SHMSRCS) $(MBUFSRCS)
+       OBJS = $(SHAPEOBJS) $(SHMOBJS) $(MBUFOBJS)
 
 all: /* beziertest */ shapetest shmtest xmbufinfo
 
 SingleProgramTarget(xmbufinfo,$(MBUFOBJS), $(XLIB),)
 SingleProgramTarget(shapetest,$(SHAPEOBJS),$(XLIB),)
 SingleProgramTarget(shmtest,$(SHMOBJS),$(XLIB),)
-/*
-SingleProgramTarget(beziertest,$(BEZIEROBJS),$(XLIB),)
- */
 
 DependTarget()
