@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.53 92/04/21 19:34:48 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.54 92/04/23 19:35:18 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -120,7 +120,7 @@ static void	    miBSAllocate(), miBSFree();
 static Bool	    miBSCreateGCPrivate	();
 static void	    miBSClearBackingRegion ();
 
-#define MoreCopy0 /* */
+#define MoreCopy0 ;
 #define MoreCopy2 *dstCopy++ = *srcCopy++; *dstCopy++ = *srcCopy++;
 #define MoreCopy4 MoreCopy2 MoreCopy2
 
@@ -2511,13 +2511,10 @@ miBSAllocate(pWin)
 	
 	/*
 	 * deliver all the newly available regions
-	 * as exposure events to the window, unless
-	 * miTileVirtualBS has already done it for us
+	 * as exposure events to the window
 	 */
 
-	if ((pBackingStore->status == StatusVirtual) ||
-	    (pBackingStore->status == StatusVDirty))
-	    miSendExposures(pWin, pSavedRegion, 0, 0);
+	miSendExposures(pWin, pSavedRegion, 0, 0);
     }
 }
 
@@ -2548,9 +2545,6 @@ miBSFree(pWin)
 	miDestroyBSPixmap (pWin);
 
 	(* pScreen->RegionUninit)(&pBackingStore->SavedRegion);
-
-	if (pBackingStore->backgroundState == BackgroundPixmap)
-	    (*pScreen->DestroyPixmap) (pBackingStore->background.pixmap);
 
 	xfree(pBackingStore);
 	pWin->backStorage = NULL;
@@ -2867,9 +2861,6 @@ miBSRestoreAreas(pWin, prgnExposed)
 	}
 	else
 	{
-	    /* background has changed, virtually retile and expose */
-	    if (pBackingStore->backgroundState == BackgroundPixmap)
-		(* pScreen->DestroyPixmap) (pBackingStore->background.pixmap);
 	    miTileVirtualBS(pWin);
 
 	    /* we need to expose all we have (virtually) retiled */
@@ -3550,6 +3541,9 @@ miTileVirtualBS (pWin)
     miBSWindowPtr	pBackingStore;
 
     pBackingStore = (miBSWindowPtr) pWin->backStorage;
+    if (pBackingStore->backgroundState == BackgroundPixmap)
+ 	(* pWin->drawable.pScreen->DestroyPixmap)
+	    (pBackingStore->background.pixmap);
     pBackingStore->backgroundState = pWin->backgroundState;
     pBackingStore->background = pWin->background;
     if (pBackingStore->backgroundState == BackgroundPixmap)
