@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.14 87/09/13 18:50:07 newman Locked $";
+static char rcsid[] = "$Header: Clock.c,v 1.16 87/09/13 20:48:42 newman Locked $";
 #endif lint
 
 /*
@@ -171,9 +171,9 @@ static void Initialize (request, new)
     myXGCV.foreground = w->clock.Hdpixel;
     w->clock.HandGC = XtGetGC(w, valuemask, &myXGCV);
 
-    XtAddEventHandler (w, 0, TRUE, EventHandler, NULL);
+    XtAddEventHandler (request, 0, TRUE, EventHandler, NULL);
 
-    w->clock.interval_id = XtAddTimeOut(w, w->clock.update*1000);
+    w->clock.interval_id = XtAddTimeOut(request, w->clock.update*1000);
     w->clock.show_second_hand = (w->clock.update <= SECOND_HAND_TIME);
 }
 
@@ -639,7 +639,7 @@ static Boolean SetValues (gcurrent, grequest, gnew, last)
 
       if (new->clock.update != current->clock.update) {
 	    XtRemoveTimeOut (current->clock.interval_id);
-	    new->clock.interval_id = XtAddTimeOut(gnew, new->clock.update*1000);
+	    new->clock.interval_id = XtAddTimeOut(gcurrent, new->clock.update*1000);
 	    new->clock.show_second_hand = (new->clock.update <= SECOND_HAND_TIME);
       }
 
