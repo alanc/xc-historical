@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XHeader: xrdb.c,v 11.19 88/06/29 14:31:57 jim Exp $";
+static char rcs_id[] = "$XHeader: xrdb.c,v 11.20 88/06/29 14:39:59 jim Exp $";
 #endif
 
 /*
@@ -490,6 +490,7 @@ main (argc, argv)
     char **argv;
 {
     Display *dpy;
+    char *xdefs;
     int i;
     char *displayname = NULL;
     char *filename = NULL;
@@ -581,15 +582,17 @@ main (argc, argv)
 	fatal("%s: Can't open display '%s'\n", ProgramName,
 		 XDisplayName (displayname));
 
+    xdefs = XResourceManagerString (dpy);
+
     DoDefines(dpy, defines, ProgramName, displayname);
     if (showDefines) {
 	printf ("%s\n", defines);
     }
     if (printit == 1) {
 	/* user wants to print contents */
-	if (dpy->xdefaults)
-	    fputs(dpy->xdefaults, stdout);
-	}
+	if (xdefs)
+	    fputs (xdefs, stdout);
+    }
     if (showDefines || printit) {
 	XCloseDisplay (dpy);
 	exit (0);
@@ -598,7 +601,7 @@ main (argc, argv)
     /* modify property */
 
     if (removeProp) {
-	if (dpy->xdefaults)
+	if (XResourceManagerString (dpy))
 	    XDeleteProperty(dpy, RootWindow(dpy, 0), XA_RESOURCE_MANAGER);
     } else if (editFile) {
 	char template[100], old[100];
@@ -626,8 +629,8 @@ main (argc, argv)
 	output = fopen(mktemp(template), "w");
 	if (output == NULL)
 	    fatal("%s: can't open temporary file '%s'\n", ProgramName, template);
-	buffer.used = (dpy->xdefaults ? strlen(dpy->xdefaults) : 0);
-	buffer.buff = dpy->xdefaults;		/* drop it on the floor */
+	buffer.used = (xdefs ? strlen(xdefs) : 0);
+	buffer.buff = xdefs;		/* drop it on the floor */
 	buffer.room = buffer.used;
 	GetEntries(&newDB, &buffer);
 	EditFile(&newDB, input, output);
@@ -652,10 +655,10 @@ main (argc, argv)
 	}
 	ReadFile(&buffer, input);
 	GetEntries(&newDB, &buffer);
-	if (merge && dpy->xdefaults) {
+	if (merge && xdefs) {
 	    char *saveBuff = buffer.buff;
-	    buffer.used = strlen(dpy->xdefaults);
-	    buffer.buff = dpy->xdefaults;
+	    buffer.used = strlen(xdefs);
+	    buffer.buff = xdefs;
 	    GetEntries(&oldDB, &buffer);
 	    buffer.buff = saveBuff;
 	} else
