@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsInt.c,v 1.1 91/01/30 18:42:36 dave Exp $" */
+/* $XConsortium: XcmsInt.c,v 1.2 91/02/11 18:17:45 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991, Tektronix Inc.
@@ -35,7 +35,7 @@
 
 /* #define NEED_EVENTS */
 #include <stdio.h>
-#include "Xlibos.h"
+#include "Xlibint.h"
 #include "Xcmsint.h"
 
 /*
@@ -43,6 +43,8 @@
  */
 extern XcmsColorSpace **_XcmsDIColorSpaces;
 extern XcmsSCCFuncSet **_XcmsSCCFuncSets;
+
+static void _XcmsFreeDefaultCCCs();
 
 /*
  *      GLOBALS
@@ -184,6 +186,7 @@ _XcmsInitDefaultCCCs(dpy)
 	return(0);
     } 
     dpy->cms.defaultCCCs = (caddr_t)pCCC;
+    dpy->free_funcs->defaultCCCs = _XcmsFreeDefaultCCCs;
 
     for (i = 0; i < nScrn; i++, pCCC++) {
 	pCCC->dpy = dpy;
@@ -213,7 +216,7 @@ _XcmsInitDefaultCCCs(dpy)
  *
  *	SYNOPSIS
  */
-void
+static void
 _XcmsFreeDefaultCCCs(dpy)
     Display *dpy;
 /*
