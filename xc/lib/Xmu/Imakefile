@@ -90,7 +90,12 @@ SRCS = \
 	UpdMapHint.c \
 	VisCmap.c \
 	WidgetNode.c \
-	Xct.c
+	Xct.c \
+	sharedlib.c
+
+#if SharedDataSeparation
+UNSHAREDOBJS = sharedlib.o
+#endif
 
 OBJS = \
 	AllCmap.o \
@@ -140,6 +145,9 @@ LibraryObjectRule()
 
 SpecialLibObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
 SpecialLibObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
+#if DoSharedLib && SharedDataSeparation
+SpecialObjectRule(sharedlib.o,,$(SHLIBDEF))
+#endif
 
 #if DoSharedLib
 #if DoNormalLib
@@ -147,6 +155,7 @@ SharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),shared,..)
 #else
 SharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),.,.)
 #endif
+SharedLibraryDataTarget(Xmu,$(SOXMUREV),$(UNSHAREDOBJS))
 #ifdef RsArchitecture
 libXmu.a: $(EXTENSIONSRC)/lib/libXext.a
 
@@ -154,6 +163,7 @@ $(EXTENSIONSRC)/lib/libXext.a:
 	cd $(EXTENSIONSRC)/lib; make libXext.a
 #endif
 InstallSharedLibrary(Xmu,$(SOXMUREV),$(USRLIBDIR))
+InstallSharedLibraryData(Xmu,$(SOXMUREV),$(USRLIBDIR))
 #endif
 #if DoNormalLib
 NormalLibraryTarget(Xmu,$(OBJS))
