@@ -69,7 +69,6 @@ typedef int             Boolean;
 typedef char*           Opaque;
 typedef struct _TranslationData	*Translations;
 typedef struct _CallbackRec*    CallbackList;
-typedef Opaque          XrmExtra;
 typedef unsigned long   ValueMask;
 typedef unsigned long   XtIntervalId;
 typedef unsigned long   GeometryMask;
@@ -130,11 +129,11 @@ typedef char *XtArgVal;
  *
  **************************************************************/
 
- typedef struct _Core {
-        struct _WidgetClassData    *widget_class;   /* pointer to Core Class data */
+ typedef struct _CorePart {
+        struct _WidgetClassRec    *widget_class;   /* pointer to Core Class data */
 	Screen		*screen;		/* widget screen */
 	Window		window;		/* window ID */
-	struct _CompositeWidgetData	*parent;/* parent widget */
+	struct _CompositeRec	 *parent;/* parent widget */
         String          name;
 	XrmName		xrm_name;
         Boolean         managed;        /* is this widget controlled by geometry manager */
@@ -149,18 +148,16 @@ typedef char *XtArgVal;
         Pixmap          border_pixmap;    /* window border pixmap */
 	EventMask	event_mask;	/* events to select for */
         EventTable      event_table;    /* private to event dispatcher */
-        Boolean         compress_motion; /* compress MotionNotify for this window */
-        Boolean         compress_exposure; /*compress Expos events for window*/
 	Boolean		sensitive;	/* is this widget sensitive */
         Boolean         ancestor_sensitive; /* are all ancestors sensitive */
         Translations    translations;    /* private to Translation Manager */
         CallbackList    destroy_callbacks; /* who to call if this widget destroyed */
         Boolean         being_destroyed;  /* marked for deletion */
-} Core;
+} CorePart;
 
- typedef struct _WidgetData {
-        Core    core;
- } WidgetData, *Widget;
+ typedef struct _WidgetRec {
+        CorePart    core;
+ } WidgetRec, *Widget;
 
 typedef Widget *WidgetList;
 
@@ -181,8 +178,8 @@ typedef Widget *WidgetList;
  * class structures, such as CommandClass.
  ********************************************************************/
 
- typedef struct _Class {
-        struct _WidgetClassData   *superclass;    /* pointer to superclass Class struct */
+ typedef struct _CoreClassPart {
+        struct _WidgetClassRec   *superclass;    /* pointer to superclass Class struct */
         String         class_name;    
         Cardinal       size;          /* size for pickling */
         WidgetProc     class_initialize;    /* widget class initialization proc */
@@ -190,23 +187,25 @@ typedef Widget *WidgetList;
         WidgetProc     initialize;    /* create a widget of this class */
         RealizeProc     realize;       /* realize a widget of this class */
 	struct _XtActionsRec *actions;       /* tokens to widget semantics bindings */
+        Cardinal       num_actions;   /* number of actions in translation table*/
         struct _Resource *resources;     /* resources for this class */
-        Cardinal       num_resource;  /* number of resources in class list */
-        XrmExtra       xrm_extra;     /* private for resource manager */
+        Cardinal       num_resources;  /* number of resources in class list */
         XrmClass       xrm_class;     /* resource class */
+        Boolean         compress_motion; /* compress MotionNotify for this window */
+        Boolean         compress_exposure; /*compress Expos events for window*/
         Boolean        visible_interest; 
 	WidgetProc     destroy;	/* proc called to delete widget */
 	WidgetProc     resize;	/* proc called to inform widget of size change */
 	WidgetExposeProc expose;	/* proc to call when window is exposed */
 	SetValuesProc	set_values;	/* proc called to set widget values */
 	WidgetProc	accept_focus;	/* proc called to give widget the focus */
-  } CoreClass;
+  } CoreClassPart;
 
-typedef struct _WidgetClassData {
-      CoreClass coreClass;
- } WidgetClassData, *WidgetClass;
+typedef struct _WidgetClassRec {
+      CoreClassPart core_class;
+ } WidgetClassRec, *WidgetClass;
 
-extern WidgetClassData widgetClassData;
+extern WidgetClassRec widgetClassRec;
 extern WidgetClass widgetClass;
 
 /*********************************************************************
@@ -215,35 +214,37 @@ extern WidgetClass widgetClass;
  *
  ********************************************************************/
 
- typedef struct _CompositeClass { /* incremental additions to Core for composites */
+ typedef struct _CompositeClassPart { /* incremental additions to Core for composites */
 	XtGeometryHandler	geometry_manager; 	/* geometry manager for children of widget */
 	WidgetProc		change_managed; /* change managed status of children */
         WidgetProc              insert_child;   /* physically add child to parent*/
 	WidgetProc		move_focus_to_next; /* move Focus to next child */
 	WidgetProc		move_focus_to_prev; /* move Focus to previous child */
-  } CompositeClass;
+        Cardinal                num_slots;        /*used by insert_child*/
+        WidgetProc              order_proc;
+  } CompositeClassPart;
 
- typedef struct _CompositeWidgetClassData {
-     CoreClass coreClass;
-     CompositeClass compositeClass;
- } CompositeWidgetClassData, *CompositeWidgetClass;
+ typedef struct _CompositeClassRec {
+     CoreClassPart core_class;
+     CompositeClassPart composite_class;
+ } CompositeClassRec, *CompositeWidgetClass;
 
-CompositeWidgetClassData compositeWidgetClassData;
+CompositeClassRec compositeClassRec;
 extern CompositeWidgetClass compositeWidgetClass;
 
 
-typedef struct _ConstraintClass { /*incremental addditions to Composite for constrained */
+typedef struct _ConstraintClassPart { /*incremental addditions to Composite for constrained */
       struct _Resource *resources; /*constraint resource list*/
       Cardinal   num_resource;     /*number of resources in list*/
-} ConstraintClass;
+} ConstraintClassPart;
 
-typedef struct _ConstraintWidgetClassData {
-     CoreClass coreClass;
-     CompositeClass compositeClass;
-     ConstraintClass constraintClass;
-} ConstraintWidgetClassData, *ConstraintWidgetClass;
+typedef struct _ConstraintClassRec {
+     CoreClassPart core_class;
+     CompositeClassPart composite_class;
+     ConstraintClassPart constraint_class;
+} ConstraintClassRec, *ConstraintWidgetClass;
 
-ConstraintWidgetClassData constraintWidgetClassData;
+ConstraintClassRec constraintClassRec;
 extern ConstraintWidgetClass constraintWidgetClass;
 
 /************************************************************************
@@ -252,32 +253,32 @@ extern ConstraintWidgetClass constraintWidgetClass;
  *
  ************************************************************************/
 
-typedef struct _composite {
+typedef struct _CompositePart {
       WidgetList   children;  /* list of widget children (managed and unmanaged) */
       Cardinal     num_children; /* total number of widget children */
       Cardinal     num_managed_children; /* number of geometry managed children */
-} Composite;
+} CompositePart;
 
-typedef struct _CompositeWidgetData {
-      Core core;
-      Composite composite;
-} CompositeWidgetData, *CompositeWidget;
+typedef struct _CompositeRec {
+      CorePart core;
+      CompositePart composite;
+} CompositeRec, *CompositeWidget;
 
-typedef struct _ConstraintRec { 
+typedef struct _ConstraintData { /*Constraint records, not Constraint Widgets */
    Widget  widget;   
-}ConstraintRec;
+}ConstraintData;
 
-typedef ConstraintRec *ConstraintList;
+typedef ConstraintData *ConstraintList;
 
-typedef struct _constraint {
-     ConstraintList constraintList;
-} Constraint;
+typedef struct _ConstraintPart {
+     ConstraintList constraint_list;
+} ConstraintPart;
 
-typedef struct _ConstraintWidgetData {
-    Core  core;
-    Composite composite;
-    Constraint constraint;
-}ConstraintWidgetData, *ConstraintWidget;
+typedef struct _ConstraintRec {
+    CorePart  core;
+    CompositePart composite;
+    ConstraintPart constraint;
+}ConstraintRec, *ConstraintWidget;
 
 /* ||| Kludge definitions until class initialization procedure let you inherit
    from your superclass */

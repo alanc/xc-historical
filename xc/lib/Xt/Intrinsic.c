@@ -33,22 +33,24 @@ static Resource resources[] = {
 extern void CoreDestroy();
 extern void SetValues ();
 
-CompositeWidgetClass compositeWidgetClass = &compositeWidgetClassData;
-ConstraintWidgetClass constraintWidgetClass = &constraintWidgetClassData;
+CompositeWidgetClass compositeWidgetClass = &compositeClassRec;
+ConstraintWidgetClass constraintWidgetClass = &constraintClassRec;
 
-WidgetClassData widgetClassData = {
+WidgetClassRec widgetClassRec = {
          (WidgetClass)NULL,	/*superclass pointer*/
          "Core",		/*class_name*/
-          sizeof(WidgetData),   /*size of core data record*/
+          sizeof(WidgetRec),   /*size of core data record*/
 	  (WidgetProc)NULL,     /* class initializer routine */
 	  FALSE,		/* not init'ed */
           (WidgetProc)NULL,	/* Instance Initializer routine*/
           (WidgetProc)NULL,	/*Realize*/
           NULL,			/*actions*/
+          0,                   /*number of actions in translation table*/
           resources,		/*resource list*/
           XtNumber(resources),	/*resource_count*/
-          NULL,			/*xrm_extra*/
           NULLQUARK,		/*xrm_class*/
+          FALSE,                /*compress motion*/
+          TRUE,                 /*compress exposure*/
           FALSE,		/*visible_interest*/
           CoreDestroy,		/*destroy proc*/
           (WidgetProc) NULL,	 /*resize*/
@@ -60,19 +62,21 @@ WidgetClassData widgetClassData = {
 extern void CompositeInsertChild();
 static void CompositeDestroy();
 
-CompositeWidgetClassData compositeWidgetClassData = {
-         (WidgetClass)&widgetClassData,	/*superclass pointer*/
+CompositeClassRec compositeClassRec = {
+         (WidgetClass)&widgetClassRec,	/*superclass pointer*/
          "Composite",		/*class_name*/
-          sizeof(CompositeWidgetData),   /*size of core data record*/
+          sizeof(CompositeRec),   /*size of core data record*/
 	  (WidgetProc)NULL,     /* class initializer routine */
 	  FALSE,		/* not init'ed */
           (WidgetProc)NULL,	/* Instance Initializer routine*/
           (WidgetProc)NULL,	/*Realize*/
           NULL,			/*actions*/
+          0,                    /*number of actions*/
           NULL,			/*resource list*/
           0,			/*resource_count*/
-          NULL,			/*xrm_extra*/
           NULLQUARK,		/*xrm_class*/
+          FALSE,                /*compress motion*/
+          TRUE,                 /*compress expose*/
           FALSE,		/*visible_interest*/
           (WidgetProc) CompositeDestroy,	/*destroy proc*/
           (WidgetProc) NULL,	 /*resize*/
@@ -89,12 +93,12 @@ CompositeWidgetClassData compositeWidgetClassData = {
 void ClassInit(widgetClass)
     WidgetClass widgetClass;
 {
-    if ((widgetClass->coreClass.superclass != NULL) 
-            && (!(widgetClass->coreClass.superclass-> coreClass.class_inited)))
- 	ClassInit(widgetClass->coreClass.superclass);
-    if (widgetClass->coreClass.class_initialize != NULL)
-       widgetClass->coreClass.class_initialize();
-    widgetClass->coreClass.class_inited = TRUE;
+    if ((widgetClass->core_class.superclass != NULL) 
+            && (!(widgetClass->core_class.superclass-> core_class.class_inited)))
+ 	ClassInit(widgetClass->core_class.superclass);
+    if (widgetClass->core_class.class_initialize != NULL)
+       widgetClass->core_class.class_initialize();
+    widgetClass->core_class.class_inited = TRUE;
     return;
 }
 
@@ -106,7 +110,7 @@ Widget TopLevelCreate(name,widgetClass,screen,args,argCount)
     Cardinal argCount;
 {
    Widget widget;
-    widget = (Widget)XtMalloc(widgetClass->coreClass.size);
+    widget = (Widget)XtMalloc(widgetClass->core_class.size);
     widget->core.window = (Window) NULL;
     widget->core.name = (char *)strcpy(XtMalloc(strlen(name)+1), name);
     widget->core.widget_class = widgetClass;
@@ -117,15 +121,13 @@ Widget TopLevelCreate(name,widgetClass,screen,args,argCount)
     widget->core.border_pixmap = (Pixmap) NULL;
     widget->core.event_mask = 0;
     widget->core.event_table = NULL;
-    widget->core.compress_motion = FALSE;
-    widget->core.compress_exposure = FALSE;
     widget->core.sensitive = TRUE;
     widget->core.ancestor_sensitive = TRUE;
     widget->core.translations = NULL;
     widget->core.destroy_callbacks = NULL;
     widget->core.being_destroyed = FALSE;
 
-    if(!(widget->core.widget_class->coreClass.class_inited))
+    if(!(widget->core.widget_class->core_class.class_inited))
 	 ClassInit(widgetClass);
    if (XtIsSubClass (widget,compositeWidgetClass)) {
                 ((CompositeWidget)widget)->composite.num_children = 0;
@@ -136,7 +138,7 @@ Widget TopLevelCreate(name,widgetClass,screen,args,argCount)
    if (widget->core.depth == 0)
     /* ||| gross kludge! fix this!!! */
 	widget->core.depth = XtScreen(widget)->root_depth;
-   widgetClass->coreClass.initialize();
+   widgetClass->core_class.initialize();
    return (widget);
 }
 
@@ -184,7 +186,7 @@ Widget XtCreateWidget(name,widgetClass,parent,args,argCount)
 			XtError("invalid parameters to XtCreateWidget");
 			return;
 			}
-    widget = (Widget)XtMalloc(widgetClass->coreClass.size); 
+    widget = (Widget)XtMalloc(widgetClass->core_class.size); 
     widget->core.window = (Window) NULL;
     widget->core.name = (char *)strcpy(XtMalloc(strlen(name)+1), name);
     widget->core.widget_class = widgetClass;
@@ -196,14 +198,12 @@ Widget XtCreateWidget(name,widgetClass,parent,args,argCount)
     widget->core.border_pixmap = (Pixmap) NULL;
     widget->core.event_mask = 0;
     widget->core.event_table = NULL;
-    widget->core.compress_motion = FALSE;
-    widget->core.compress_exposure = FALSE;
     widget->core.sensitive = TRUE;
     widget->core.ancestor_sensitive = TRUE;
     widget->core.translations = NULL;
     widget->core.destroy_callbacks = NULL;
     widget->core.being_destroyed = parent -> core.being_destroyed;
-    if(!(widget->core.widget_class->coreClass.class_inited))
+    if(!(widget->core.widget_class->core_class.class_inited))
 	 ClassInit(widgetClass);
     if (XtIsSubClass (widget,compositeWidgetClass)) {
 		((CompositeWidget)widget)->composite.num_children = 0;
@@ -215,13 +215,13 @@ Widget XtCreateWidget(name,widgetClass,parent,args,argCount)
     /* ||| gross kludge! fix this!!! */
 	widget->core.depth = widget->core.parent->core.depth;
     DefineTranslation(widget);
-    widgetClass->coreClass.initialize();
-    if (widget->core.widget_class->coreClass.expose != NULL)
+    widgetClass->core_class.initialize();
+    if (widget->core.widget_class->core_class.expose != NULL)
        widget->core.event_mask |= ExposureMask;
-    if (widget->core.widget_class->coreClass.visible_interest) 
+    if (widget->core.widget_class->core_class.visible_interest) 
        widget->core.event_mask |= VisibilityChangeMask;
 
-    ((CompositeWidgetClass)(widget->core.parent->core.widget_class))->compositeClass.insert_child(widget);
+    ((CompositeWidgetClass)(widget->core.parent->core.widget_class))->composite_class.insert_child(widget);
     return (widget);
 }
 void FillInParameters(widget,valuemask,values)
@@ -247,7 +247,7 @@ Boolean XtIsSubClass(widget, widgetClass)
     WidgetClass widgetClass;
 {
   WidgetClass w;
-  for(w=widget->core.widget_class; w != NULL; w = w->coreClass.superclass)
+  for(w=widget->core.widget_class; w != NULL; w = w->core_class.superclass)
         if (w == widgetClass) return (TRUE);
   return (FALSE);
 }
@@ -262,7 +262,7 @@ void XtRealizeWidget (widget)
     Cardinal i;
    if (XtIsRealized(widget)) return;
    FillInParameters (widget,&valuemask,&values);
-   widget->core.widget_class->coreClass.realize(widget,valuemask,&values);
+   widget->core.widget_class->core_class.realize(widget,valuemask,&values);
    RegisterWindow(widget->core.window, widget);
    if (XtIsSubClass (widget, compositeWidgetClass)) {
         cwidget = (CompositeWidget)widget;
@@ -312,7 +312,7 @@ void XtCompositeRemoveChildren(children, childCount)
     	parent->composite.num_managed_children - newCount;
 
     ((CompositeWidgetClass)parent->core.widget_class)
-        ->compositeClass.change_managed(parent);
+        ->composite_class.change_managed(parent);
 }
 
 void XtCompositeRemoveChild(child)
@@ -353,7 +353,7 @@ void XtCompositeAddChildren(children, childCount)
     	parent->composite.num_managed_children + newCount;
 
     ((CompositeWidgetClass)parent->core.widget_class)
-        ->compositeClass.change_managed(parent);
+        ->composite_class.change_managed(parent);
 }
 
 void XtCompositeAddChild(child)
@@ -378,8 +378,8 @@ void XtSetSensitive(widget,sensitive)
 #define ClassToSuperclass(widget, proc)	\
 {  WidgetClass widgetClass; \
   for(widgetClass = widget->core.widget_class;widgetClass != NULL; \
-                         widgetClass = widgetClass ->coreClass.superclass) \
-                         widgetClass->coreClass.proc; \
+                         widgetClass = widgetClass ->core_class.superclass) \
+                         widgetClass->core_class.proc; \
 }
 
 void XtAddCallback (callbackList,callback,widget,closure)
@@ -429,7 +429,7 @@ void XtRemoveAllCallbacks (callbackList)
    if (*callbackList == NULL) return;
    for (cl = (*callbackList); cl->next != NULL; cl = cl->next) 
         XtFree (*cl);
-   (*callbackList) == NULL;
+   (*callbackList) = NULL;
    return;
 }
 
