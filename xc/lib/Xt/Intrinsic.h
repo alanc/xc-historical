@@ -62,7 +62,8 @@
 #define XtNumber(arr)			(sizeof(arr) / sizeof(arr[0]))
 #define Offset(type,field)    ((unsigned int)&(((type)NULL)->field))
 typedef char *String;
-typedef caddr_t         EventTable;
+typedef struct _EventRec *EventTable;
+typedef struct _GrabRec  *GrabList;
 typedef unsigned long   Cardinal;
 typedef int             Boolean;
 typedef char*           Opaque;
@@ -149,6 +150,7 @@ typedef char *XtArgVal;
 	EventMask	event_mask;	/* events to select for */
         EventTable      event_table;    /* private to event dispatcher */
         Boolean         compress_motion; /* compress MotionNotify for this window */
+        Boolean         compress_exposure; /*compress Expos events for window*/
 	Boolean		sensitive;	/* is this widget sensitive */
         Boolean         ancestor_sensitive; /* are all ancestors sensitive */
         Translations    translations;    /* private to Translation Manager */
@@ -201,7 +203,7 @@ typedef struct _WidgetClassData {
  } WidgetClassData, *WidgetClass;
 
 extern WidgetClassData widgetClassData;
-#define widgetClass (&widgetClassData)
+extern WidgetClass widgetClass;
 
 /*********************************************************************
  *
@@ -212,6 +214,7 @@ extern WidgetClassData widgetClassData;
  typedef struct _CompositeClass { /* incremental additions to Core for composites */
 	XtGeometryHandler	geometry_manager; 	/* geometry manager for children of widget */
 	WidgetProc		change_managed; /* change managed status of children */
+        WidgetProc              insert_child;   /* physically add child to parent*/
 	WidgetProc		move_focus_to_next; /* move Focus to next child */
 	WidgetProc		move_focus_to_prev; /* move Focus to previous child */
   } CompositeClass;
@@ -223,6 +226,21 @@ extern WidgetClassData widgetClassData;
 
 CompositeWidgetClassData compositeWidgetClassData;
 CompositeWidgetClass compositeWidgetClass = &compositeWidgetClassData;
+
+
+typedef struct _ConstraintClass { /*incremental addditions to Composite for constrained */
+      struct _Resource *resources; /*constraint resource list*/
+      Cardinal   num_resource;     /*number of resources in list*/
+} ConstraintClass;
+
+typedef struct _ConstraintWidgetClassData {
+     CoreClass coreClass;
+     CompositeClass compositeClass;
+     ConstraintClass constraintClass;
+} ConstraintWidgetClassData, *ConstraintWidgetClass;
+
+ConstraintWidgetClassData constraintWidgetClassData;
+ConstraintWidgetClass constraintWidgetClass = &constraintWidgetClassData;
 
 /************************************************************************
  *
@@ -241,6 +259,21 @@ typedef struct _CompositeWidgetData {
       Composite composite;
 } CompositeWidgetData, *CompositeWidget;
 
+typedef struct _ConstraintRec { 
+   Widget  widget;   
+}ConstraintRec;
+
+typedef ConstraintRec *ConstraintList;
+
+typedef struct _constraint {
+     ConstraintList constraintList;
+} Constraint;
+
+typedef struct _ConstraintWidgetData {
+    Core  core;
+    Composite composite;
+    Constraint constraint;
+}ConstraintWidgetData, *ConstraintWidget;
 
 /*************************************************************************
  *
@@ -405,11 +438,34 @@ extern ArgList XtMergeArgLists(); /* args1, argCount1, args2, argCount2 */
  *
  ****************************************************************/
 CallbackList DestroyList;
-
+typedef enum {pass,ignore,remap} GrabType;
 typedef void (*XtEventHandler)(); /* widget,event, closure */
     /* Widget  widget   */
     /* XEvent  *event;  */
     /* caddr_t closure  */
+
+typedef struct _EventRec {
+     struct _EventRec  *next;
+     EventMask   mask;
+     Boolean     non_filter;
+     XtEventHandler proc;
+     Opaque closure;
+}EventRec;
+
+typedef struct _GrabRec {
+    struct _GrabRec *next;
+    Widget  widget;
+    Boolean  exclusive;
+}GrabRec;
+
+typedef struct _MaskRec {
+    EventMask   mask;
+    GrabType    grabType;
+    Boolean     sensitive;
+}MaskRec;
+#define is_sensitive TRUE
+#define not_sensitive FALSE
+GrabRec *grabList;
 
 extern void XtSetEventHandler(); /* widget, proc, eventMask, closure , other */
     /* Widget		widget      */
