@@ -1,12 +1,12 @@
 #ifndef lint
-static char rcsid[] = "$Header: Simple.c,v 1.6 88/02/14 13:59:51 rws Exp $";
+static char rcsid[] = "$Header: Simple.c,v 1.7 88/02/14 18:30:41 swick Exp $";
 #endif lint
 
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 #include <X11/IntrinsicP.h>
 #include <X11/copyright.h>
-#include <X11/Atoms.h>
+#include <X11/StringDefs.h>
 #include <X11/SimpleP.h>
 
 #define IsSensitive(w) ((w)->core.sensitive && (w)->core.ancestor_sensitive)
