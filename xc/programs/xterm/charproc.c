@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.136 91/02/28 17:57:29 gildea Exp $
+ * $XConsortium: charproc.c,v 1.137 91/03/04 14:50:44 gildea Exp $
  */
 
 
@@ -1118,61 +1118,61 @@ static int write_mask;
 
 in_put()
 {
-	register TScreen *screen = &term->screen;
-	register int i;
-	static struct timeval trackTimeOut;
+    register TScreen *screen = &term->screen;
+    register int i;
+    static struct timeval trackTimeOut;
 
-	select_mask = pty_mask;	/* force initial read */
-	for( ; ; ) {
+    select_mask = pty_mask;	/* force initial read */
+    for( ; ; ) {
 #ifdef        CRAY
-		trackTimeOut.tv_sec = 0;
-		trackTimeOut.tv_usec = 0;
-		(void) select(max_plus1, &select_mask, (int *) NULL,
-		    (int *)NULL, &trackTimeOut);
-#endif        /* CRAY */
+	trackTimeOut.tv_sec = 0;
+	trackTimeOut.tv_usec = 0;
+	(void) select(max_plus1, &select_mask, (int *) NULL,
+		      (int *)NULL, &trackTimeOut);
+#endif				/* CRAY */
 
-		if((select_mask & pty_mask) && (eventMode == NORMAL)) {
-			if(screen->logging)
-				FlushLog(screen);
-			if((bcnt = read(screen->respond, bptr = buffer,
-			 BUF_SIZE)) < 0) {
-				if(errno == EIO)
-					Cleanup (0);
-				else if(errno != EWOULDBLOCK)
-					Panic(
-				 "input: read returned unexpected error (%d)\n",
-					 errno);
-			} else if(bcnt == 0)
-				Panic("input: read returned zero\n", 0);
-			else {
-			        if (!screen->output_eight_bits) {
-				    register int bc = bcnt;
-				    register Char *b = bptr;
+	if((select_mask & pty_mask) && (eventMode == NORMAL)) {
+	    if(screen->logging)
+		FlushLog(screen);
+	    bcnt = read(screen->respond, bptr = buffer, BUF_SIZE);
+	    if(bcnt < 0) {
+		if(errno == EIO)
+		    Cleanup (0);
+		else if(errno != EWOULDBLOCK)
+		    Panic(
+			  "input: read returned unexpected error (%d)\n",
+			  errno);
+	    } else if(bcnt == 0)
+		Panic("input: read returned zero\n", 0);
+	    else {
+		if (!screen->output_eight_bits) {
+		    register int bc = bcnt;
+		    register Char *b = bptr;
 
-				    for (; bc > 0; bc--, b++) {
-					*b &= (Char) 0x7f;
-				    }
-				}
-				if(screen->scrollWidget && screen->scrollttyoutput &&
-				 screen->topline < 0)
-					/* Scroll to bottom */
-					WindowScroll(screen, 0);
-				break;
-			}
+		    for (; bc > 0; bc--, b++) {
+			*b &= (Char) 0x7f;
+		    }
 		}
-		if(screen->scroll_amt)
-			FlushScroll(screen);
-		if(screen->cursor_set && (screen->cursor_col != screen->cur_col
-		 || screen->cursor_row != screen->cur_row)) {
-			if(screen->cursor_state)
-				HideCursor();
-			ShowCursor();
-		} else if(screen->cursor_set != screen->cursor_state) {
-			if(screen->cursor_set)
-				ShowCursor();
-			else
-				HideCursor();
-		}
+		if(screen->scrollWidget && screen->scrollttyoutput &&
+		   screen->topline < 0)
+		    /* Scroll to bottom */
+		    WindowScroll(screen, 0);
+		break;
+	    }
+	}
+	if(screen->scroll_amt)
+	    FlushScroll(screen);
+	if(screen->cursor_set && (screen->cursor_col != screen->cur_col
+				  || screen->cursor_row != screen->cur_row)) {
+	    if(screen->cursor_state)
+		HideCursor();
+	    ShowCursor();
+	} else if(screen->cursor_set != screen->cursor_state) {
+	    if(screen->cursor_set)
+		ShowCursor();
+	    else
+		HideCursor();
+	}
 		
 	if (waitingForTrackInfo) {
 	    trackTimeOut.tv_sec = TRACKTIMESEC;
@@ -1190,34 +1190,34 @@ in_put()
 		select_mask = Select_mask;
 	    }
 	} else if (QLength(screen->display))
-			select_mask = X_mask;
-		else {
-			write_mask = ptymask();
-			XFlush(screen->display);
-			select_mask = Select_mask;
-			if (eventMode != NORMAL)
-				select_mask = X_mask;
-			if(select(max_plus1, &select_mask, &write_mask, 
-				(int *)NULL, (struct timeval *) NULL) < 0){
-				if (errno != EINTR)
-					SysError(ERROR_SELECT);
-				continue;
-			} 
-		}
-		if (write_mask & ptymask())
-			v_write(screen->respond, 0, 0);	/* flush buffer */
-		if(select_mask & X_mask) {
-			if (bcnt <= 0) {
-				bcnt = 0;
-				bptr = buffer;
-			}
-			xevents();
-			if (bcnt > 0)
-				break;
-		}
+	    select_mask = X_mask;
+	else {
+	    write_mask = ptymask();
+	    XFlush(screen->display);
+	    select_mask = Select_mask;
+	    if (eventMode != NORMAL)
+		select_mask = X_mask;
+	    if(select(max_plus1, &select_mask, &write_mask, 
+		      (int *)NULL, (struct timeval *) NULL) < 0){
+		if (errno != EINTR)
+		    SysError(ERROR_SELECT);
+		continue;
+	    } 
 	}
-	bcnt--;
-	return(*bptr++);
+	if (write_mask & ptymask())
+	    v_write(screen->respond, 0, 0); /* flush buffer */
+	if(select_mask & X_mask) {
+	    if (bcnt <= 0) {
+		bcnt = 0;
+		bptr = buffer;
+	    }
+	    xevents();
+	    if (bcnt > 0)
+		break;
+	}
+    }
+    bcnt--;
+    return(*bptr++);
 }
 
 /*
