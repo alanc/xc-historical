@@ -66,7 +66,7 @@ typedef caddr_t         EventTable;
 typedef unsigned long   Cardinal;
 typedef int             Boolean;
 typedef char*           Opaque;
-typedef Opaque          Translations;
+typedef struct _TranslationData	*Translations;
 typedef struct _CallbackRec*    CallbackList;
 typedef Opaque          XrmExtra;
 typedef unsigned long   ValueMask;
@@ -563,55 +563,10 @@ extern Widget XtNameToWidget ();
  *
  ****************************************************************/
 
-typedef caddr_t XtEventsPtr;
-
 typedef struct _XtActionsRec{
     char    *string;
     caddr_t value;
 } XtActionsRec, *XtActionsPtr;
-
-/* Different classes of action tokens */
-
-typedef enum {XttokenChar, XttokenString,XttokenProc,
-       XttokenAtom,XttokenNumber} XtTokenType;
-
-typedef XrmQuark XtAction;
-
-typedef struct _XtActionTokenRec {
-    XtTokenType type;
-    union {
-       char c;
-       char *str;
-       XtAction action; 
-    } value;
-    struct _XtActionTokenRec *next;
-} XtActionTokenRec, *XtActionTokenPtr;
-
-extern caddr_t XtInterpretAtom ();
-    /* TranslationPtr table; */
-    /* XtAction action; */
-
-/* List of tokens. */
-
-
-extern XtEventsPtr XtSetActionBindings();
-			/* eventTable, actionTable, defaultValue */
-    /*  XtEventsPtr  eventTable;    */
-    /*  XtActionsPtr actionTable;   */
-    /*  caddr_t      defaultValue;  */
-
-extern XtEventsPtr XtMergeEventBindings ();
-    /* XtEventsPtr event1; */
-    /* XtEventsPtr event2; */
-
-extern XtEventsPtr XtParseEventBindings(); /* stringTable */
-    /* char **stringTable */
-
-extern XtActionTokenPtr XtTranslateEvent ();
-    /* Widget    widget; */
-    /* XKeyvent  *event; */
-    /* XtTranslationTable table; */
-
 
 /*************************************************************
  *
