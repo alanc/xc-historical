@@ -1,4 +1,4 @@
-/* $XConsortium: difsutils.c,v 1.8 93/08/24 18:49:40 gildea Exp $ */
+/* $XConsortium: difsutils.c,v 1.9 93/09/20 18:10:30 hersh Exp $ */
 /*
  * misc utility routines
  */
@@ -340,7 +340,7 @@ BlockHandler(pTimeout, pReadmask)
 
 
 WakeupHandler(result, pReadmask)
-    unsigned long result;	/* 32 bits of undefined result from the wait */
+    int		result;		/* result from the wait */
     pointer     pReadmask;	/* the resulting descriptor mask */
 {
     register int i,

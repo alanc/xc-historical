@@ -1,4 +1,4 @@
-/* $XConsortium: waitfor.c,v 1.8 91/09/11 11:59:39 rws Exp $ */
+/* $XConsortium: waitfor.c,v 1.9 93/09/20 18:08:52 hersh Exp $ */
 /*
  * waits for input
  */
@@ -130,7 +130,7 @@ WaitForSomething(pClientsReady)
 	}
 	selecterr = errno;
 
-	WakeupHandler((unsigned long) i, (pointer) LastSelectMask);
+	WakeupHandler(i, (pointer) LastSelectMask);
 	if (i <= 0) {		/* error or timeout */
 	    CLEARBITS(clientsWriteable);
 	    if (i < 0) {
