@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Paned.c,v 1.15 90/04/30 17:05:54 converse Exp $";
+static char Xrcsid[] = "$XConsortium: Paned.c,v 1.16 90/05/08 15:16:07 converse Exp $";
 #endif /* lint */
 
 
@@ -1557,6 +1557,7 @@ XSetWindowAttributes *attributes;
     }
 
     RefigureLocationsAndCommit(w);
+    pw->paned.resize_children_to_pref = FALSE;
 } /* Realize */
 
 static void 
@@ -1686,7 +1687,6 @@ Widget w;
 XEvent * event;			/* unused. */
 Region region;			/* unused. */
 {
-    ((PanedWidget) w)->paned.resize_children_to_pref = FALSE;
     DrawInternalBorders( (PanedWidget) w);
 }
 
