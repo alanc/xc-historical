@@ -1,5 +1,5 @@
 /*
-* $Header: Text.h,v 1.7 88/01/22 11:13:25 swick Locked $
+* $Header: Text.h,v 1.8 88/01/25 07:43:17 swick Locked $
 */
 
 /*
@@ -41,6 +41,8 @@
  border		     BorderColor	pixel		Black
  borderWidth	     BorderWidth	int		1
  destroyCallback     Callback		Pointer		NULL
+ dialogHOffset	     Margin		int		10
+ dialogVOffset	     Margin		int		10
  displayPosition     TextPosition	int		0
  editType	     EditType		XtTextEditType	XttextRead
  height		     Height		int		font height
@@ -61,6 +63,8 @@
 
 
 #define XtNtextOptions		"textOptions"
+#define XtNdialogHOffset	"dialogHOffset"
+#define XtNdialogVOffset	"dialogVOffset"
 #define XtNdisplayPosition      "displayPosition"
 #define XtNinsertPosition	"insertPosition"
 #define XtNleftMargin		"leftMargin"
