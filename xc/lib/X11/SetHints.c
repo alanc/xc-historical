@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSetHints.c,v 11.21 88/01/30 10:44:20 jim Locked $ */
+/* $Header: XSetHints.c,v 11.22 88/02/07 13:00:41 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -105,7 +105,7 @@ XSetZoomHints (dpy, w, zhints)
  *	WM_NORMAL_HINTS 	type: WM_SIZE_HINTS format: 32
  */
 
-void XSetNormalHints (dpy, w, hints)
+XSetNormalHints (dpy, w, hints)
 	Display *dpy;
 	Window w;
 	XSizeHints *hints;
@@ -207,7 +207,6 @@ XSetStandardProperties (dpy, w, name, icon_string, icon_pixmap, argv, argc, hint
 	if (phints.flags != 0) XSetWMHints(dpy, w, &phints);
 }
 
-void
 XSetTransientForHint(dpy, w, propWindow)
 	Display *dpy;
 	Window w;
@@ -217,7 +216,6 @@ XSetTransientForHint(dpy, w, propWindow)
 		PropModeReplace, (unsigned char *) &propWindow, 1);
 }
 
-void
 XSetClassHint(dpy, w, classhint)
 	Display *dpy;
 	Window w;
