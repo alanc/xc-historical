@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.39 90/07/03 10:52:32 swick Exp $ */
+/* $XConsortium: Core.c,v 1.40 90/07/03 17:25:04 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -352,6 +352,7 @@ static Boolean CoreSetValues(old, reference, new)
 	    new->core.tm.translations = translations;
 	    _XtBindActions(new, &new->core.tm);
 	    _XtInstallTranslations((Widget) new, new->core.tm.translations);
+	    _XtRegisterGrabs(new, False);
 	}
     } /* if realized */
 
