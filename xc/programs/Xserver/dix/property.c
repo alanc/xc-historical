@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: property.c,v 1.56 87/12/30 08:47:04 rws Locked $ */
+/* $Header: property.c,v 1.57 88/01/02 14:25:01 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -248,7 +248,7 @@ DeleteProperty(pWin, propName)
     xEvent event;
 
     if (!(pProp = pWin->userProps))
-	return(BadAtom);
+	return(Success);
     prevProp = (PropertyPtr)NULL;
     while (pProp)
     {
@@ -276,11 +276,8 @@ DeleteProperty(pWin, propName)
         event.u.property.atom = pProp->propertyName;
 	event.u.property.time = currentTime.milliseconds;
 	DeliverEvents(pWin, &event, 1, (WindowPtr)NULL);
-
-        return(Success);
     }
-    else 
-	return(BadAtom);
+    return(Success);
 }
 
 DeleteAllWindowProperties(pWin)
