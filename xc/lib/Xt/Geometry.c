@@ -85,19 +85,10 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
     XtGeometryHandler manager;
     XtGeometryResult returnCode;
 
-    if (! XtIsComposite(widget->core.parent)) {
-	/* Should never happen - XtCreateWidget should have checked */
-	XtError("XtMakeGeometryRequest - parent not composite");
-    }
-    manager = ((CompositeWidgetClass) (widget->core.parent->core.widget_class))
-    		->composite_class.geometry_manager;
-    if (manager == (XtGeometryHandler) NULL) {
-	XtError("XtMakeGeometryRequest - parent has no geometry manger");
-    }
     if (widget->core.being_destroyed) {
         return XtGeometryNo;
     }
-    if ( ! widget->core.managed) {
+    if ( ! widget->core.managed || ! XtIsComposite(widget->core.parent) ) {
     /* if widget not managed, copy values from request to widget
        and resize window */
          if ((request->request_mode & CWX) != 0)
@@ -113,6 +104,15 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
 	returnCode = XtGeometryYes; 
     }
     else {
+     if (! XtIsComposite(widget->core.parent)) {
+	 /* Should never happen - XtCreateWidget should have checked */
+	 XtError("XtMakeGeometryRequest - parent not composite");
+     }
+     manager = ((CompositeWidgetClass)(widget->core.parent->core.widget_class))
+		 ->composite_class.geometry_manager;
+     if (manager == (XtGeometryHandler) NULL) {
+	 XtError("XtMakeGeometryRequest - parent has no geometry manger");
+     }
      if (reply == (XtWidgetGeometry *) NULL) {
         returnCode = (*manager)(widget, request, &junk);
      } else {
