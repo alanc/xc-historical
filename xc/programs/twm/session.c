@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.4 94/07/19 12:37:11 mor Exp $ */
+/* $XConsortium: session.c,v 1.5 94/07/21 16:38:23 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -238,13 +238,10 @@ char	**stringp;
  *   WM_CLASS "res class"               LIST of bytes
  *   WM_NAME length			1
  *   WM_NAME				LIST of bytes
- *
- *   if no SM_CLIENT_ID
- *
- *     WM_COMMAND arg count		1
- *     For each arg in WM_COMMAND
- *        arg length			1
- *        arg				LIST of bytes
+ *   WM_COMMAND arg count		1      		(0 if no SM_CLIENT_ID)
+ *   For each arg in WM_COMMAND
+ *      arg length			1
+ *      arg				LIST of bytes
  *
  * Iconified bool			1
  * Geom x				2
@@ -284,7 +281,7 @@ char *windowRole;
 	wm_command_count = 0;
 	XGetCommand (dpy, theWindow->w, &wm_command, &wm_command_count);
 
-	if (!clientId || !wm_command || wm_command_count == 0)
+	if (clientId || !wm_command || wm_command_count == 0)
 	{
 	    if (!write_byte (configFile, 0))
 		return 0;
