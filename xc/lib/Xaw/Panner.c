@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.25 90/03/01 17:05:07 jim Exp $
+ * $XConsortium: Panner.c,v 1.26 90/03/01 17:33:11 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -607,7 +607,8 @@ static Boolean SetValues (gcur, greq, gnew)
 	 cur->panner.canvas_height != new->panner.canvas_height ||
 	 cur->panner.resize_to_pref != new->panner.resize_to_pref)) {
 	get_default_size (new, &new->core.width, &new->core.height);
-	/* do not need to redisplay since resize will cause expose */
+	Resize (gnew);
+	redisplay = TRUE;
     } else if (cur->panner.canvas_width != new->panner.canvas_width ||
 	cur->panner.canvas_height != new->panner.canvas_height ||
 	cur->panner.internal_border != new->panner.internal_border) {
