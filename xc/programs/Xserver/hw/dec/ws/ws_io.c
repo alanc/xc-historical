@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: ws_io.c,v 1.12 94/02/23 15:56:34 dpw Exp $ */
+/* $XConsortium: ws_io.c,v 1.13 94/04/17 20:29:57 dpw Exp kaleb $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -67,6 +67,7 @@ SOFTWARE.
 #include "regionstr.h"
 #include "resource.h"
 #include "dixstruct.h"
+#include "servermd.h"
 #include <sys/workstation.h>
 #include <sys/inputdevice.h>
 #include <sys/wsdevice.h>
@@ -316,11 +317,8 @@ wsMouseProc(pDev, onoff, argc, argv)
 	    InitPointerDeviceStruct(
 		wsPointer, map, numButtons, wsGetMotionEvents,
 		wsChangePointerControl, MOTION_BUFFER_SIZE);
-#ifdef __alpha
-	    SetInputCheck(&queue->head, &queue->tail);
-#else
-	    SetInputCheck((long *)&queue->head, (long *)&queue->tail);
-#endif
+	    SetInputCheck((HWEventQueuePtr)&queue->head, 
+			  (HWEventQueuePtr)&queue->tail);
 	    break;
 	case DEVICE_ON: 
 	    pDev->on = TRUE;
@@ -590,6 +588,12 @@ Bool GetKeyboardMappings(pKeySyms, pModMap)
     ws_keysyms_and_modifiers km;
     int min_keycode = 256, max_keycode = 0;
 
+    def.device_number = wsinfo.console_keyboard;
+    if (ioctl (wsFd, GET_KEYBOARD_DEFINITION, &def) == -1) {
+	ErrorF ("error getting keyboard definition\n");
+    }
+    lockLed = def.lock_key_led;
+
     /* If it exists, load special keysym map from file instead of driver.
 	This is for backward compatibility with the i18n stuff from the
 	DEC R3 servers.
@@ -608,11 +612,6 @@ Bool GetKeyboardMappings(pKeySyms, pModMap)
 	return (TRUE);
     }
 
-    def.device_number = wsinfo.console_keyboard;
-    if (ioctl (wsFd, GET_KEYBOARD_DEFINITION, &def) == -1) {
-	ErrorF ("error getting keyboard definition\n");
-    }
-    lockLed = def.lock_key_led;
     km.device_number = wsinfo.console_keyboard;
     km.modifiers = mods;
     *((KeySym **)(&km.keysyms)) = rawsyms; /* XXX bad type in inputdevice.h */
@@ -691,12 +690,12 @@ ProcessInputEvents()
 {
     xEvent x;
     register ws_event *e;
-    register int    i;
+    register HWEventQueueType    i;
     int screen;
     DeviceIntPtr dev = (DeviceIntPtr) wsKeyboard;
     i = queue->head;
     while (i != queue->tail)  {
-	e = (ws_event *)((int)(queue->events) + queue->event_size * i);
+	e = (ws_event *)((char*)(queue->events) + queue->event_size * i);
 
 	if (screenIsSaved == SCREEN_SAVER_ON)
 	    SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
@@ -911,13 +910,41 @@ wsDisplayCursor( pScr, pCurs)
 {
     ws_cursor_data cd;
     ws_cursor_color cc;
+#ifdef __alpha
+    unsigned int sourcebits[1024], maskbits[1024];
+    unsigned char *pSrc, *pDst;
+    int i;
+    int widthBytesLineSrc, widthBytesLineDest;
+#endif
     cd.screen = screenDesc[pScr->myNum].screen;
     cd.width = pCurs->bits->width;
     cd.height = pCurs->bits->height;
     cd.x_hot =  pCurs->bits->xhot;
     cd.y_hot =  pCurs->bits->yhot;
+#ifdef __alpha
+    /*
+     * convert from an image padded on 8-byte boundaries to an
+     * image padded on 4-byte boundaries for the hardware
+     */
+    widthBytesLineSrc = BitmapBytePad (pCurs->bits->width);
+    widthBytesLineDest = BitmapBytePadProto (pCurs->bits->width);
+
+    pSrc = (unsigned char*) pCurs->bits->source;
+    pDst = (unsigned char*) sourcebits;
+    for (i = 0; i < pCurs->bits->height; 
+	i++, pSrc += widthBytesLineSrc, pDst += widthBytesLineDest)
+	memmove((void*) pDst, (void*)pSrc, widthBytesLineDest);
+    cd.cursor = sourcebits;
+    pSrc = (unsigned char*) pCurs->bits->mask;
+    pDst = (unsigned char*) maskbits;
+    for (i = 0; i < pCurs->bits->height; 
+	i++, pSrc += widthBytesLineSrc, pDst += widthBytesLineDest)
+	memmove((void*) pDst, (void*)pSrc, widthBytesLineDest);
+    cd.mask = maskbits;
+#else
     cd.cursor = (unsigned int *) pCurs->bits->source;
     cd.mask =   (unsigned int *) pCurs->bits->mask;
+#endif
     if ( ioctl( wsFd, LOAD_CURSOR, &cd) == -1)    {
 	ErrorF( "error loading bits of new cursor\n");
         return FALSE;
