@@ -1,0 +1,5 @@
+XCOMM $XConsortium$
+
+MakeEqnDoc(SMlib,SMlib.ms)
+
+MakeEqnDoc(xsmp,xsmp.ms)
