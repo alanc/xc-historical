@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.125 92/02/27 16:57:07 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.126 92/02/27 17:01:53 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1073,8 +1073,10 @@ static String ParseEvent(str, event, reps, plus, error)
          return PanicModeRecovery(str);
     }
     else str++;
-    if (*str == '(')
-	str = ParseRepeat(str, reps, plus);
+    if (*str == '(') {
+	str = ParseRepeat(str, reps, plus, error);
+	if (*error) return str;
+    }
     str = (*(events[tmEvent].parseDetail))(
         str, events[tmEvent].closure, event,error);
     if (*error) return str;
@@ -1426,19 +1428,17 @@ static void RepeatEvent(eventP, reps, plus, actionsP)
     }
 }
 
-static String ParseRepeat(str, reps, plus)
+static String ParseRepeat(str, reps, plus, error)
     register String str;
     int	*reps;
-    Boolean *plus;
+    Boolean *plus, *error;
 {
-    String right_paren;
 
     /*** Parse the repetitions, for double click etc... ***/
-    if (*str != '(') return str;
+    if (*str != '(' || !(isdigit(str[1]) || str[1] == '+' || str[1] == ')'))
+	return str;
     str++;
-    right_paren = str;
-    ScanFor(right_paren, ')');
-    if (isascii(*str) && isdigit(*str)) {
+    if (isdigit(*str)) {
 	String start = str;
 	char repStr[7];
 	int len;
@@ -1450,12 +1450,15 @@ static String ParseRepeat(str, reps, plus)
 	    repStr[len] = '\0';
 	    *reps = StrToNum(repStr);
 	} else {
-	    Syntax ("Repeat count too large; ignored.", "");
-	    return right_paren;
+	    Syntax("Repeat count too large.", "");
+	    *error = True;
+	    return str;
 	}
-    } else {
+    }
+    if (*reps == 0) {
 	Syntax("Missing repeat count.","");
-	return right_paren;
+	*error = True;
+	return str;
     }
 
     if (*str == '+') {
@@ -1466,7 +1469,7 @@ static String ParseRepeat(str, reps, plus)
 	str++;
     else {
 	Syntax("Missing ')'.","");
-	return right_paren;
+	*error = True;
     }
 
     return str;
