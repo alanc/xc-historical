@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.26 89/10/17 10:42:27 jim Exp $ */
+/* $XConsortium: ico.c,v 1.27 89/12/07 11:14:24 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -178,7 +178,6 @@ char **argv;
 	XGCValues xgcv;
 	int linewidth = 0;
 	char *background_colorname = NULL;
-	unsigned long backpixel;
 	char *ico_geom = NULL;
 	char *delta_geom = NULL;
 	int icodeltax2, icodeltay2;
@@ -328,7 +327,9 @@ char **argv;
 		winX = (DisplayWidth(dpy, DefaultScreen(dpy)) - winW) >> 1;
 		winY = (DisplayHeight(dpy, DefaultScreen(dpy)) - winH) >> 1;
 		if (geom) 
-			XParseGeometry(geom, &winX, &winY, &winW, &winH);
+			XParseGeometry(geom, &winX, &winY,
+				       (unsigned int *)&winW,
+				       (unsigned int *)&winH);
 
 		xswa.event_mask = ExposureMask | StructureNotifyMask;
 		xswa.background_pixel = bg;
@@ -354,14 +355,16 @@ char **argv;
 		}
 
 	if (ico_geom) 
-	  XParseGeometry (ico_geom, &icoX, &icoY, &icoW, &icoH);
+	  XParseGeometry (ico_geom, &icoX, &icoY,
+			  (unsigned int *)&icoW,
+			  (unsigned int *)&icoH);
 	if (icoW <= 0) icoW = DEFAULT_ICO_WIDTH;
 	if (icoH <= 0) icoH = DEFAULT_ICO_HEIGHT;
 	if (icoW < MIN_ICO_WIDTH) icoW = MIN_ICO_WIDTH;
 	if (icoH < MIN_ICO_HEIGHT) icoH = MIN_ICO_HEIGHT;
 
 	if (delta_geom) {
-	    int junk;
+	    unsigned int junk;
 
 	    XParseGeometry (delta_geom, &icoDeltaX, &icoDeltaY, &junk, &junk);
 	    if (icoDeltaX == 0 && icoDeltaY == 0) {
@@ -922,7 +925,6 @@ register Transform3D m;
 	{
 	register int i;
 	register int j;
-	register int k;
 
 	for (i = 0; i < 4; ++i)
 		for (j = 0; j < 4; ++j)

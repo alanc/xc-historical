@@ -98,7 +98,6 @@ extern long random();
   
 static int logo_x, logo_y;
 
-static long int randnum[NUM_RANDOM];
 static unsigned short maze[MAX_MAZE_SIZE_X][MAX_MAZE_SIZE_Y];
 
 static struct {
@@ -110,7 +109,6 @@ static struct {
 static int maze_size_x, maze_size_y;
 static int sqnum, cur_sq_x, cur_sq_y, path_length;
 static int start_x, start_y, start_dir, end_x, end_y, end_dir;
-static int maze_restart_flag, random_index;
 
 Display	*dpy;
 Window	win;
@@ -138,9 +136,7 @@ main(argc,argv)                                               /* main module */
   int	c;
   extern char	*getenv();
   int	screen_saver = 0;
-  Pixmap	backmap, bdrmap;
   XSizeHints size_hints;
-  XWindowAttributes	wind_info;
   Pixmap gray;
   int bw = 2;
   int flags;
