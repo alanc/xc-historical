@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.27 90/02/08 16:03:16 rws Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.28 90/02/08 16:04:40 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -1066,40 +1066,44 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 		    bits = *psrc++;
 		    if (rightShift != 32)
 		    	tmp |= BitRight(bits, rightShift);
+
 #ifdef FAST_CONSTANT_OFFSET_MODE
-		    pdst[0] = GetFourPixels(tmp);
-		    NextFourBits(tmp);
-		    pdst[1] = GetFourPixels(tmp);
-		    NextFourBits(tmp);
-		    pdst[2] = GetFourPixels(tmp);
-		    NextFourBits(tmp);
-		    pdst[3] = GetFourPixels(tmp);
-		    NextFourBits(tmp);
-		    pdst[4] = GetFourPixels(tmp);
-		    NextFourBits(tmp);
-		    pdst[5] = GetFourPixels(tmp);
-		    NextFourBits(tmp);
-		    pdst[6] = GetFourPixels(tmp);
-		    NextFourBits(tmp);
-		    pdst[7] = GetFourPixels(tmp);
-		    pdst += 8;
+# define StorePixels(pdst,o,pixels)	(pdst)[o] = (pixels)
+# define EndStep(pdst,o)		(pdst) += (o)
 #else
-	    	    *pdst++ = GetFourPixels(tmp);
-	    	    NextFourBits(tmp);
-	    	    *pdst++ = GetFourPixels(tmp);
-	    	    NextFourBits(tmp);
-	    	    *pdst++ = GetFourPixels(tmp);
-	    	    NextFourBits(tmp);
-	    	    *pdst++ = GetFourPixels(tmp);
-	    	    NextFourBits(tmp);
-	    	    *pdst++ = GetFourPixels(tmp);
-	    	    NextFourBits(tmp);
-	    	    *pdst++ = GetFourPixels(tmp);
-	    	    NextFourBits(tmp);
-	    	    *pdst++ = GetFourPixels(tmp);
-	    	    NextFourBits(tmp);
-	    	    *pdst++ = GetFourPixels(tmp);
+# define StorePixels(pdst,o,pixels)	*(pdst)++ = (pixels)
+# define EndStep(pdst,o)
 #endif
+
+#define Step(c)			NextFourBits(c);
+#define StoreBitsPlain(o,c)	StorePixels(pdst,o,GetFourPixels(c))
+#define StoreBits0(c)		StoreBitsPlain(0,c)
+
+#if (BITMAP_BIT_ORDER == MSBFirst)
+# define StoreBits(o,c)	StoreBitsPlain(o,c)
+# define FirstStep(c)	Step(c)
+#else
+# define StoreBits(o,c)	StorePixels(pdst,o,*((unsigned long *)\
+			    (((char *) cfb8Pixels) + (c & 0x3c))))
+# define FirstStep(c)	c = BitLeft (c, 2);
+#endif
+
+		    StoreBits0(tmp);
+		    FirstStep(tmp);
+		    StoreBits(1,tmp);
+		    Step(tmp);
+		    StoreBits(2,tmp);
+		    Step(tmp);
+		    StoreBits(3,tmp);
+		    Step(tmp);
+		    StoreBits(4,tmp);
+		    Step(tmp);
+		    StoreBits(5,tmp);
+		    Step(tmp);
+		    StoreBits(6,tmp);
+		    Step(tmp);
+		    StoreBits(7,tmp);
+		    EndStep (pdst,8);
 	    	}
 	    	if (nl || endmask)
 	    	{
@@ -1113,58 +1117,31 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 		    	bits = *psrc++;
 		    	tmp |= BitRight (bits, rightShift);
 		    }
-#ifdef FAST_CONSTANT_OFFSET_MODE
-		    pdst += nl;
+		    EndStep (pdst, nl);
 		    switch (nl)
 		    {
 		    case 7:
-		    	pdst[-7] = GetFourPixels(tmp);
-		    	NextFourBits(tmp);
+			StoreBitsPlain(-7,tmp);
+			Step(tmp);
 		    case 6:
-		    	pdst[-6] = GetFourPixels(tmp);
-		    	NextFourBits(tmp);
+			StoreBitsPlain(-6,tmp);
+			Step(tmp);
 		    case 5:
-		    	pdst[-5] = GetFourPixels(tmp);
-		    	NextFourBits(tmp);
+			StoreBitsPlain(-5,tmp);
+			Step(tmp);
 		    case 4:
-		    	pdst[-4] = GetFourPixels(tmp);
-		    	NextFourBits(tmp);
+			StoreBitsPlain(-4,tmp);
+			Step(tmp);
 		    case 3:
-		    	pdst[-3] = GetFourPixels(tmp);
-		    	NextFourBits(tmp);
+			StoreBitsPlain(-3,tmp);
+			Step(tmp);
 		    case 2:
-		    	pdst[-2] = GetFourPixels(tmp);
-		    	NextFourBits(tmp);
+			StoreBitsPlain(-2,tmp);
+			Step(tmp);
 		    case 1:
-		    	pdst[-1] = GetFourPixels(tmp);
-		    	NextFourBits(tmp);
+			StoreBitsPlain(-1,tmp);
+			Step(tmp);
 		    }
-#else
-		    switch (nl)
-		    {
-		    case 7:
-		    	*pdst++ = GetFourPixels(tmp);
-		    	NextFourBits(tmp);
-		    case 6:
-		    	*pdst++ = GetFourPixels(tmp);
-		    	NextFourBits(tmp);
-		    case 5:
-		    	*pdst++ = GetFourPixels(tmp);
-		    	NextFourBits(tmp);
-		    case 4:
-		    	*pdst++ = GetFourPixels(tmp);
-		    	NextFourBits(tmp);
-		    case 3:
-		    	*pdst++ = GetFourPixels(tmp);
-		    	NextFourBits(tmp);
-		    case 2:
-		    	*pdst++ = GetFourPixels(tmp);
-		    	NextFourBits(tmp);
-		    case 1:
-		    	*pdst++ = GetFourPixels(tmp);
-		    	NextFourBits(tmp);
-		    }
-#endif
 		    if (endmask)
 		    	*pdst = *pdst & ~endmask | GetFourPixels(tmp) & endmask;
 	    	}
