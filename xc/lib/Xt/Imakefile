@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.106 94/01/19 21:22:07 converse Exp $
+XCOMM $XConsortium: Imakefile,v 1.107 94/02/04 21:30:37 converse Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -9,6 +9,13 @@ XCOMM $XConsortium: Imakefile,v 1.106 94/01/19 21:22:07 converse Exp $
 
 #ifndef MotifBC
 #define MotifBC NO
+#endif
+				   
+/* "YES" allows illegal XtGetValues requests with NULL ArgVal to
+   usually succeed, as R5 did.  Some applications erroneously rely on
+   this behavior.  Support for this will be removed in a future release. */
+#ifndef GetValuesBC
+#define GetValuesBC NO
 #endif
 
 #ifdef SharedXtReqs
@@ -46,6 +53,9 @@ XTWARNINGPREFIX = XtWarningPrefix
 #endif
 #if MotifBC
      BC_DEFINES = -DMOTIFBC
+#endif
+#if GetValuesBC
+     GETVALUES_DEFINES = -DGETVALUES_BUG
 #endif
 #if NoRConst
  RCONST_DEFINES = -DNORCONST
@@ -196,6 +206,7 @@ SpecialCLibObjectRule(Intrinsic,$(ICONFIGFILES),$(SRCH_DEFINES))
 SpecialCLibObjectRule(Error,$(ICONFIGFILES),$(DB_DEFINES))
 SpecialCLibObjectRule(Alloc,$(_NOOP_),$(ALLOC_DEFINES))
 SpecialCLibObjectRule(Converters,$(ICONFIGFILES),$(BC_DEFINES))
+SpecialCLibObjectRule(Resources,$(ICONFIGFILES),$(GETVALUES_DEFINES))
 SpecialCLibObjectRule(TMaction,$(_NOOP_),$(RCONST_DEFINES))
 #if DoSharedLib
 SpecialCObjectRule(sharedlib,$(_NOOP_),$(SHLIBDEF))
