@@ -1,5 +1,17 @@
-/* $XConsortium: Xlibint.h,v 11.83 90/12/11 22:39:30 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.84 90/12/12 11:55:29 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
+
+/*
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  M.I.T. makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
+*/
 
 /*
  *	XlibInternal.h - Header definition and support file for the internal
@@ -8,8 +20,6 @@
  *
  *	Warning, there be dragons here....
  */
-
-#include <X11/copyright.h>
 
 #ifndef NEED_EVENTS
 #define _XEVENT_
@@ -61,7 +71,6 @@ extern "C" {					/* for C++ V2.0 */
 #define UNLOCKED 0
 
 extern int errno;			/* Internal system error number. */
-extern void bcopy();
 
 extern int _XError();			/* prepare to upcall user handler */
 extern int _XIOError();			/* prepare to upcall user handler */
