@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.15 93/02/05 17:33:35 rws Exp $ */
+/* $XConsortium: xtest.c,v 1.16 93/02/10 14:38:15 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -146,8 +146,6 @@ ProcXTestFakeInput(client)
 #ifdef XINPUT
     if (type >= EXTENSION_EVENT_BASE)
     {
-	if (nev > 2)
-	    return BadLength;
 	type -= DeviceValuator;
 	switch (type) {
 	case XI_DeviceKeyPress:
@@ -162,22 +160,28 @@ ProcXTestFakeInput(client)
 	    client->errorValue = ev->u.u.type;
 	    return BadValue;
 	}
-	if (nev > 1)
+	if (nev == 1 && type == XI_DeviceMotionNotify)
+	    return BadLength;
+	for (n = 1; n < nev; n++)
 	{
-	    if (ev[1].u.u.type != DeviceValuator)
+	    if (ev[n].u.u.type != DeviceValuator)
 	    {
-		client->errorValue = ev[1].u.u.type;
+		client->errorValue = ev[n].u.u.type;
 		return BadValue;
 	    }
-	    if (((deviceValuator *)(ev+1))->first_valuator)
+	    if (((deviceValuator *)(ev+n))->first_valuator != ((n - 1) * 6))
 	    {
 		client->errorValue =
-		    ((deviceValuator *)(ev+1))->first_valuator;
+		    ((deviceValuator *)(ev+n))->first_valuator;
+		return BadValue;
+	    }
+	    if (((deviceValuator *)(ev+n))->num_valuators !=
+		((deviceValuator *)(ev+1))->num_valuators)
+	    {
+		client->errorValue = ((deviceValuator *)(ev+n))->num_valuators;
 		return BadValue;
 	    }
 	}
-	else if (type == XI_DeviceMotionNotify)
-	    return BadLength;
 	type = type - XI_DeviceKeyPress + KeyPress;
 	extension = TRUE;
     }
@@ -241,14 +245,16 @@ ProcXTestFakeInput(client)
 	    client->errorValue = stuff->deviceid & 0177;
 	    return BadValue;
 	}
-	if ((nev > 1 && (!dev->valuator || !dev->valuator->numAxes)) ||
-	    (nev == 1 && dev->valuator && dev->valuator->numAxes))
-	    return BadLength;
-	if (nev > 1 && (((deviceValuator *)(ev+1))->num_valuators !=
-			dev->valuator->numAxes))
+	if (nev > 1)
 	{
-	    client->errorValue = ((deviceValuator *)(ev+1))->num_valuators;
-	    return BadValue;
+	    if (!dev->valuator || nev != ((dev->valuator->numAxes + 11) / 6))
+		return BadLength;
+	    if (((deviceValuator *)(ev+1))->num_valuators !=
+		dev->valuator->numAxes)
+	    {
+		client->errorValue = ((deviceValuator *)(ev+1))->num_valuators;
+		return BadValue;
+	    }
 	}
     }
 #endif /* XINPUT */
