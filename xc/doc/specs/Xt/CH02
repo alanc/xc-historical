@@ -220,7 +220,7 @@ void XtDisplayInitialize(\fIapp_context\fP, \fIdisplay\fP, \
 .br
       Cardinal \fInum_options\fP;
 .br
-      Cardinal *\fIargc\fP;
+      int *\fIargc\fP;
 .br
       String *\fIargv\fP;
 .FN
@@ -251,7 +251,7 @@ The
 .PN XtDisplayInitialize
 function retrieves the language string to be
 used for the specified display (see Section 11.11),
-builds the resource database, calls the Xlib
+builds the resource database(s), calls the Xlib
 .PN XrmParseCommand
 function to parse the command line, 
 and performs other per-display initialization.
@@ -273,6 +273,12 @@ calls the Xlib
 .PN XSynchronize
 function to put Xlib into synchronous mode for this display connection
 and any others currently open in the application context.
+.PN XtDisplayInitialize
+calls
+.PN XrmSetDatabase
+to associate the full resource database of the default screen with the
+display.
+
 .sp
 .LP
 To open a display, initialize it, and then
@@ -297,7 +303,7 @@ Display *XtOpenDisplay(\fIapp_context\fP, \fIdisplay_string\fP, \
 .br
        Cardinal \fInum_options\fP;
 .br
-       Cardinal *\fIargc\fP;
+       int *\fIargc\fP;
 .br
        String *\fIargv\fP;
 .FN
@@ -385,11 +391,13 @@ if they are to continue executing after closing the display;
 otherwise, they should call
 .PN XtDestroyApplicationContext
 or just exit.
+
 .NH 2
 Loading the Resource Database
 .XS
 \fB\*(SN Loading the Resource Database\fP
 .XE
+
 .LP
 The
 .PN XtDisplayInitialize
@@ -404,16 +412,18 @@ Application-specific class resource file on the local host.
 .IP \(bu 5
 Application-specific user resource file on the local host.
 .IP \(bu 5
-Resource property on the server or user preference resource file on the local
-host.
+Per-display resource property in the server or user preference file on the
+local host.
+.IP \(bu 5
+Per-screen resource property in the server.
 .IP \(bu 5
 Per-host user environment resource file on the local host.
 .IP \(bu 5
 Application command line (argv).
 .LP
 .PN XtDisplayInitialize
-creates a unique resource database for each
-Display specified.  When creating the database, a language string is
+creates a unique resource database for each screen of the specified
+display.  When creating the databases, a language string is
 determined for the display in a manner equivalent to the following
 sequence of actions:
 .PN XtDisplayInitialize
@@ -519,9 +529,34 @@ in the server resource file.
 .LP
 Finally, the temporary database constructed by parsing the command
 line is merged into the resource database.
+
 .sp
 .LP
-To obtain the resource database for a particular display, use
+To obtain the resource database for a particular screen, use
+.PN XtScreenDatabase .
+.IN "XtScreenDatabase" "" "@DEF@"
+.FD 0
+XrmDatabase XtScreenDatabase(\fIscreen\fP)
+.br
+      Screen *\fIscreen\fP;
+.FN
+.IP \fIscreen\fP 1i
+Specifies the screen whose resource database is to be returned.
+.LP
+The
+.PN XtScreenDatabase
+function returns the fully merged resource database built by
+.PN XtDisplayInitialize ,
+associated with the specified screen.  If the specified \fIscreen\fP
+does not belong to a
+.PN Display
+initialized by
+.PN XtDisplayInitialize ,
+the results are undefined.
+
+.sp
+.LP
+To obtain the default resource database associated with a particular display, use
 .PN XtDatabase .
 .IN "XtDatabase" "" "@DEF@"
 .FD 0
@@ -534,12 +569,11 @@ Specifies the display.
 .LP
 The
 .PN XtDatabase
-function returns the fully merged resource database that was built by
-.PN XtDisplayInitialize ,
-associated with the specified display.
-If this display has not been initialized by
-.PN XtDisplayInitialize ,
-the results are not defined.
+function is equivalent to
+.PN XrmGetDatabase .
+It returns the database associated with the specified display.
+It returns NULL if a database has not been set.
+
 .sp
 .LP
 To specify a default set of resource values that will be used to
@@ -632,7 +666,7 @@ typedef struct {
 	char *option;	/* Option name in argv */
 	char *specifier;	/* Resource name (without application name) */
 	XrmOptionKind argKind;	/* Location of the resource value */
-	caddr_t value;	/* Value to provide if XrmoptionNoArg */
+	XPointer value;	/* Value to provide if XrmoptionNoArg */
 } XrmOptionDescRec, *XrmOptionDescList;
 
 .De
@@ -1204,12 +1238,12 @@ to create independent widget trees.
 .LP
 .IN "XtAppCreateShell" "" "@DEF@"
 .FD 0
-Widget XtAppCreateShell(\fIapplication_name\fP, \
+Widget XtAppCreateShell(\fIname\fP, \
 \fIapplication_class\fP, \fIwidget_class\fP, \fIdisplay\fP,
 .br
                         \fIargs\fP, \fInum_args\fP)
 .br
-      String \fIapplication_name\fP;
+      String \fIname\fP;
 .br
       String \fIapplication_class\fP;
 .br
@@ -1221,48 +1255,68 @@ Widget XtAppCreateShell(\fIapplication_name\fP, \
 .br
       Cardinal \fInum_args\fP;
 .FN
-.IP \fIapplication_name\fP 1.25i
-Specifies the name of the application instance.
-If \fIapplication_name\fP is NULL,
+.IP \fIname\fP 1.25i
+Specifies the instance name of the shell widget.
+If \fIname\fP is NULL,
 the application name passed to
 .PN XtDisplayInitialize
 is used.
 .IP \fIapplication_class\fP 1.25i
-Specifies the class name of this application.
+Specifies the resource class string to be used in
+place of the widget \fIclass_name\fP string when
+\fIwidget_class\fP is
+.PN applicationShellWidgetClass
+or a subclass thereof.
 .IP \fIwidget_class\fP 1.25i
-Specifies the widget class for the top-level widget (normally
+Specifies the widget class for the top-level widget (e.g.,
 .PN applicationShellWidgetClass )
 .IP \fIdisplay\fP 1.25i
-Specifies the display.
+Specifies the display for the default screen
+and for the resource database used to retrieve
+the shell widget resources.
 .IP \fIargs\fP 1.25i
 Specifies the argument list to override any other resource specifications.
 .IP \fInum_args\fP 1.25i
 Specifies the number of entries in the argument list.
+
 .LP
 The
 .PN XtAppCreateShell
-function saves the specified application name and application class 
-for qualifying all widget resource specifiers
-and to set the \s-1WM_CLASS\s+1 property on the shell's window.
-.IN \s-1WM_CLASS\s+1
-The application name and application class are used as the leftmost components
-in all widget resource names for this application.
-.PN XtAppCreateShell
-should be used to create a new logical application within a program
-or to create a shell on another display.
-In the first case, 
-it allows the specification of a new root in the resource hierarchy.
-In the second case,
-it uses the resource database associated with the other display.
+function
+creates a new shell widget instance as the root of a widget tree.
+The screen resource for this widget is determined by first scanning
+\fIargs\fP for the XtNscreen argument.  If no XtNscreen argument is
+found, the resource database associated with the default screen of
+the specified display is queried for the resource \fIname\fP.screen,
+class \fIClass\fP.Screen where \fIClass\fP is the specified
+\fIapplication_class\fP if \fIwidget_class\fP is
+.PN applicationShellWidgetClass
+or a subclass thereof.  If \fIwidget_class\fP is not
+.PN applicationShellWidgetClass
+or a subclass, \fIClass\fP is the \fIclass_name\fP
+field from the
+.PN CoreClassPart
+of the specified \fIwidget_class\fP.
+If this query fails, the default
+screen of the specified display is used.  Once the screen is determined,
+the resource database associated with that screen is used to retrieve
+all remaining resources for the shell widget not specified in
+\fIargs\fP.  The widget name and \fIClass\fP as determined above are
+used as the leftmost (i.e., root) components in all fully qualified
+resource names for objects within this widget tree.
+
 .LP
-The widget returned by
-.PN XtAppCreateShell
-has the \s-1WM_COMMAND\s+1
-and \s-1WM_CLASS\s+1
-properties set for window and session managers
-if the specified \fIwidget_class\fP is a subclass of
-.PN ApplicationShell
-(see Chapter 4).
+If the specified widget class is a subclass of WMShell, the name and
+<Class> as determined above will be stored into the
+.PN WM_CLASS
+property on the widget's window when it becomes realized.
+If the specified widgetclass is
+.PN applicationShellWidgetClass
+or a subclass thereof the
+.PN WM_COMMAND
+property will also be set from the values of the XtNargv and
+XtNargc resources.
+
 .LP
 To create multiple top-level shells within a single (logical)
 application, 
@@ -1362,7 +1416,7 @@ Widget XtAppInitialize(\fIapp_context_return\fP, \fIapplication_class\fP, \
 .br
       Cardinal \fInum_options\fP;
 .br
-      Cardinal *\fIargc_in_out\fP;
+      int *\fIargc_in_out\fP;
 .br
       String *\fIargv_in_out\fP;
 .br
@@ -1437,7 +1491,7 @@ Widget XtVaAppInitialize(\fIapp_context_return\fP, \fIapplication_class\fP, \
 .br
     Cardinal \fInum_options\fP;
 .br
-    Cardinal *\fIargc_in_out\fP;
+    int *\fIargc_in_out\fP;
 .br
     String *\fIargv_in_out\fP;
 .br
@@ -1714,8 +1768,8 @@ Binds all action names in the widget's
 translation table to procedures (see Section 10.1.2).
 .IP \(bu 5
 Makes a postorder traversal of the widget tree rooted
-at the specified widget and calls the change_managed procedure
-of each composite widget that has one or more managed children.
+at the specified widget and calls each non-NULL change_managed procedure
+of all composite widgets that have one or more managed children.
 .IP \(bu 5
 Constructs an
 .PN XSetWindowAttributes
@@ -1769,13 +1823,15 @@ are mapped.
 .LP
 All \*(xI functions and all widget routines should accept
 either realized or unrealized widgets.
-When calling the realize procedures for children of a composite
+When calling the realize or change_managed
+procedures for children of a composite
 widget,
 .PN XtRealizeWidget
 calls the procedures in reverse order of
 appearance in the
 .PN CompositePart
-\fIchildren\fP list.  By default, this will
+\fIchildren\fP list.  By default, this
+ordering of the realize procedures will
 result in the stacking order of any newly created subwindows being
 top-to-bottom in the order of appearance on the list, and the most
 recently created child will be at the bottom.
