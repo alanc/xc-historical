@@ -39,12 +39,12 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.11 89/07/14 13:45:32 rws Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.12 89/07/14 17:14:11 keith Exp $ SPRITE (Berkeley)";
 #endif lint
 
-#include    <stdio.h>
 #include    "X.h"
 #include    "scrnintstr.h"
+#include    "validate.h"
 #include    "windowstr.h"
 #include    "mi.h"
 #include    "regionstr.h"
