@@ -119,10 +119,11 @@ SRCS = \
 	Tree.c \
 	Vendor.c \
 	Viewport.c \
-	XawInit.c 
+	XawInit.c \
+	sharedlib.c
 
 #if SharedDataSeparation
-UNSHAREDOBJS = AllWidgets.o
+UNSHAREDOBJS = AllWidgets.o sharedlib.o
 #else
 DATAOBJS = AllWidgets.o
 #endif
@@ -169,6 +170,9 @@ OBJS = \
 LibraryObjectRule()
 
 SpecialObjectRule(AllWidgets.o,,$(SHLIBDEF))
+#if DoSharedLib && SharedDataSeparation
+SpecialObjectRule(sharedlib.o,,$(SHLIBDEF))
+#endif
 
 #if DoSharedLib
 #if DoNormalLib
