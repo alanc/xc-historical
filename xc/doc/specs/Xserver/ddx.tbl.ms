@@ -1,4 +1,5 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.20 89/04/05 11:32:18 rws Exp $
+
+.\" $XConsortium: ddx.tbl.ms,v 1.21 89/12/02 15:31:47 keith Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -23,7 +24,7 @@ Bob Scheifler
 .AI
 Massachusetts Institute of Technology
 .sp
-revisions for release 4 by
+Revised for release 4 by
 .AU
 Keith Packard
 .AI
@@ -247,7 +248,7 @@ object
 .IP \(bu 5
 A private field (or two) used by your DDX code to keep private data
 (probably a pointer
-to another data structure), or an array of private fields, which are
+to another data structure), or an array of private fields, which is
 sized as the server initializes.
 .LP
 DIX calls through
@@ -418,6 +419,7 @@ of the Screen,  and the arguments to the DIX BlockHandler().
 In addition to the per-screen BlockHandlers, any module may register
 block and wakeup handlers (only together) using:
 .nf
+
 	Bool RegisterBlockAndWakeupHandlers (blockHandler, wakeupHandler, blockData)
 		void    (*blockHandler)();
 		void    (*wakeupHandler)();
@@ -437,6 +439,7 @@ RegisterBlockAndWakeupHandlers.
 .LP
 These registered block handlers are called after the per-screen handlers:
 .nf
+
 	void (*BlockHandler) (blockData, pptv, pReadmask)
 		pointer	blockData;
 		pointer	pptv;
@@ -459,6 +462,7 @@ of the Screen,  and the arguments to the DIX BlockHandler().
 Any wakeup handlers registered with RegisterBlockAndWakeupHandlers will
 be called before the Screen handlers:
 .nf
+
 	void (*WakeupHandler) (blockData, err, pReadmask)
 		pointer	blockData;
 		unsigned long err;
@@ -1006,6 +1010,27 @@ If you leak a few dozen k per day, that will add up and will cause problems
 for users that leave their workstations on.
 
 .NH 2
+Per-Client Flow Control
+.XS
+Per-Client Flow Control
+.XE
+.LP
+To support the Multi-buffering extension, some OS routines were added
+which provide the ability to suspend request processing on a particular
+client, resuming it at some later time:
+.nf
+
+	IgnoreClient (who)
+		ClientPtr who;
+
+	AttendClient (who)
+		ClientPtr who;
+.fi
+Ignore client is responsible for pretending that the given client doesn't
+exist.  WaitForSomething should not return this client as ready for reading
+and should not return if only this client is ready.  AttendClient undoes
+whatever IgnoreClient did, setting it up for input again.
+.NH 2
 Other OS Functions
 .XS
 Other OS Functions
@@ -1243,8 +1268,7 @@ something pending.
 
 The DDX layer of the sample server calls SetInputCheck()
 once when the
-server's private internal queue is initialized 
-(server/ddx/dec/qvss/qvss_io.c, qvssMouseProc).
+server's private internal queue is initialized.
 It passes pointers to the queue's head and tail.
 
 .nf
@@ -1255,7 +1279,7 @@ events.  But DIX sometimes needs to know the
 time and the OS layer needs to know the time since the last hardware
 input event in
 order for the screen saver to work.   TimeSinceLastEvent() returns
-the this time in milliseconds.  (See server/ddx/dec/qvss/qvss_io.c)
+the this time in milliseconds.
 
 .NH 3
 Controlling Input Devices
@@ -1267,8 +1291,6 @@ You must write four routines to do various device-specific
 things with the keyboard and pointing device.
 They can have any name you wish because 
 you pass the procedure pointers to DIX routines.
-
-The sample server implementations are in server/ddx/dec/qvss/qvss_io.c.
 
 .nf
 
@@ -1348,7 +1370,6 @@ input subsystem in DDX.
 It must call AddInputDevice() for each device that might generate events.
 In addition, you must register the main keyboard and pointing devices by
 calling RegisterPointerDevice() and RegisterKeyboardDevice().
-The sample server implementation is in server/ddx/dec/qvss/init.c.
 .nf
 
 	DevicePtr AddInputDevice(deviceProc, autoStart)
@@ -1437,9 +1458,6 @@ The device will appear to be dead to the user.
 .IP \(bu 5
 DEVICE_CLOSE - At DEVICE_CLOSE (terminate or reset) time, the device should
 be totally closed down.
-.LP
-The sample server implementations for keyboard and mouse are in
-server/ddx/dec/qvss/qvss_io.c.
 .nf
 
 	void InitPointerDeviceStruct(device, map, mapLength,
@@ -1691,7 +1709,6 @@ You should also set certain implementation-dependent numbers and
 procedures in your
 screenInfo, which determines
 the pixmap and scanline padding rules for all screens in the server.
-(See the QVSS sample server implementation in server/ddx/ddx/qvss/init.c.)
 .nf
 
 	int AddScreen(scrInitProc, argc, argv)
@@ -1735,8 +1752,6 @@ It is probably easiest to have one procedure for each screen.
 The initialization procedure should fill in all the screen procedures
 for that screen (windowing functions, region functions, etc.) and certain
 screen attributes for that screen.
-.LP
-See server/ddx/dec/qvss/init.c and server/ddx/mfb/mfbscrinit.c for more details.
 
 .NH 3
 Region Routines in the ScreenRec
@@ -1949,7 +1964,7 @@ regions overlap; FALSE otherwise.
 .fi
 Given a depth-1 pixmap, this routine must create a valid region which
 includes all the areas of the pixmap filled with 1's and excludes the
-areas filled with 0's.  The sample implementation is in mfbclip.c.  This
+areas filled with 0's.  This
 routine returns NULL if out of memory.
 .nf
 	RegionPtr pScreen->RectsToRegion (nrects, pRects, ordering)
@@ -2026,9 +2041,6 @@ This is done because the change from one cursor shape to another must
 be fast and responsive;
 the cursor image should be able to flutter as fast as the user moves it 
 across the screen.
-
-The sample server implementations of most of these routines are in 
-server/ddx/dec/qvss/qvss_io.c.
 
 You must implement the following routines for your hardware:
 .nf
@@ -2755,7 +2767,6 @@ The sample server implementation is in server/ddx/mfb/mfbmisc.c.
 .fi
 SaveScreen() is used for Screen Saver support (see WaitForSomething()).
 pScreen is the screen to save.
-See also server/ddx/dec/qvss/qvss_io.c, and server/os/4.2bsd/WaitFor.c.
 .nf
 
 	Bool pScreen->CloseScreen(pScreen)
@@ -4324,6 +4335,187 @@ device-dependent arguments in ddxUseMsg(), which will be
 called from UseMsg() after printing out the device-independent arguments.
 
 .bp
+.NH 2
+Wrappers and devPrivates
+.XS
+Wrappers and devPrivates
+.XE
+.LP
+Two new extensibility concepts have been developed for release 4, Wrappers
+and devPrivates.  These replace the GCInterest queues, which were not a
+general enough mechanism for many extensions and only provided hooks into a
+single data structure.
+.NH 3
+devPrivates
+.XS
+devPrivates
+.XE
+.LP
+devPrivates are arrays of values attached to various data structures
+(Screens, GCs and Windows currently).  These arrays are sized dynamically at
+server startup (and reset) time as various modules allocate portions of
+them.  They can be used for any purpose; each array entry is actually a
+union, DevUnion, of common useful types (pointer, long and unsigned long).
+devPrivates must be allocated on startup and whenever the server resets.  To
+make this easier, the global variable "serverGeneration" is incremented each
+time devPrivates should be allocated, but before the initialization process
+begins, typical usage would be:
+.nf
+static int privateGeneration = 0;
+
+	if (privateGeneration != serverGeneration)
+	{
+		allocate devPrivates here.
+
+		privateGeneration = serverGeneration;
+	}
+.fi
+.NH 4
+Screen devPrivates
+.XS
+Screen devPrivates
+.XE
+.LP
+An index into every screen devPrivates array is allocated with
+.nf
+	int AllocateScreenPrivateIndex()
+.fi
+This call can occur at any time, each existing devPrivates array is resized
+to accommodate the new entry.  This routine returns -1 indicating an
+allocation failure.  Otherwise, the return value can be used to index the
+array of devPrivates on any screen:
+.nf
+	private = (PrivatePointer) pScreen->devPrivates[screenPrivateIndex].ptr;
+.fi
+The pointer in each screen is not initialized by
+AllocateScreenPrivateIndex().
+.NH 4
+Window devPrivates
+.XS
+Window devPrivates
+.XE
+.LP
+An index into every window devPrivates array is allocated with
+.nf
+	int AllocateWindowPrivateIndex ()
+.fi
+AllocateWindowPrivateIndex() never returns an error.  This call must be
+associated with a call which causes a chunk of memory to be automatically
+allocated and attached to the devPrivate entry on every screen which the
+module will need to use the index:
+.nf
+	Bool AllocateWindowPrivate (pScreen, index, amount)
+		ScreenPtr pScreen;
+		int index;
+		unsigned amount;
+.fi
+If this space is not always needed for every object, use 0 as the amount.
+In this case, the pointer field of the entry in the devPrivates array is
+initialized to NULL.  This call exists so that DIX may preallocate all of
+the space required for an object with one call; this reduces memory
+fragmentation considerably.  AllocateWindowPrivate returns FALSE on
+allocation failure.  Both of these calls must occur before any window
+structures are allocated; the server is careful to avoid window creation
+until all modules are initialized, but do not call this after
+initialization.  A typical allocation sequence for WindowPrivates would be:
+.nf
+    privateInitialize (pScreen)
+    	ScreenPtr pScreen;
+    {
+    	if (privateGeneration != serverGeneration)
+    	{
+	    windowPrivateIndex = AllocateWindowPrivateIndex();
+	    privateGeneration = serverGeneration;
+    	}
+    	
+    	return (AllocateWindowPrivate(pScreen, windowPrivateIndex,
+				      sizeof(windowPrivateStructure)));
+    }
+.fi
+.NH
+GC devPrivates
+.XS
+GC devPrivates
+.XE
+.LP
+The calls for GC's mirror the Window calls exactly; they have the same
+requirements and limitations:
+.nf
+	int AllocateGCPrivateIndex ()
+
+	Bool AllocateGCPrivate (pScreen, index, amount)
+		ScreenPtr pScreen;
+		int index;
+		unsigned amount;
+.fi
+.NH 3
+Wrappers
+.XS
+Wrappers
+.XE
+.LP
+Wrappers are not a body of code, nor an interface spec.  They are, instead,
+a technique for hooking a new module into an existing calling sequence.
+There are limitations on other portions of the server implementation which
+make using wrappers possible; limits on when specific fields of data
+structures may be modified.  They are intended as a replacement for
+GCInterest queues, which were not general enough to support existing
+modules; in particular software cursors and backing store both needed more
+control over the activity.  The general mechanism for using wrappers is:
+.nf
+privateWrapperFunction (object, ...)
+	ObjectPtr	object;
+{
+	pre-wrapped-function-stuff ...
+
+	object->functionVector = (void *) object->devPrivates[privateIndex].ptr;
+	(*object->functionVector) (object, ...);
+	/*
+	 * this next line is occasionally required by the rules governing
+	 * wrapper functions.  Always using it will not cause problems.
+	 * Not using it when necessary can cause severe troubles.
+	 */
+	object->devPrivates[privateIndex].ptr = (pointer) object->functionVector;
+	object->functionVector = privateWrapperFunction;
+
+	post-wrapped-function-stuff ...
+}
+
+privateInitialize (object)
+	ObjectPtr	object;
+{
+	object->devPrivates[privateIndex].ptr = (pointer) object->functionVector;
+	object->functionVector = privateWrapperFunction;
+}
+.fi
+Thus the privateWrapperFunction provides hooks for performing work both
+before and after the wrapped function has been called; the process of
+resetting the functionVector is called "unwrapping" while the process of
+fetching the wrapped function and replacing it with the wrapping function
+is called "wrapping".  It should be clear that GCInterest queues could
+be emulated using wrappers.  In general, any function vectors contained in
+objects can be wrapped, but only vectors in GCs and Screens have been tested.
+.LP
+Wrapping screen functions is quite easy; each vector is individually
+wrapped.  Screen functions are not supposed to change after initialization,
+so rewrapping is technically not necessary, but causes no problems.
+.LP
+Wrapping GC functions is a bit more complicated.  GC's have two sets of
+function vectors, one hanging from gc->ops and the other from gc->funcs.
+Wrappers should modify only those values, not the internal values as they
+may be shared by more than one GC (and, in the case of funcs, are probably
+shared by all gcs).  To wrap the ops, wrap the funcs and, in each func
+wrapper, unwrap the ops and funcs, call down, and re-wrap.  In each op
+wrapper, unwrap both the funcs and ops, call down and rewrap afterwards.  The
+rule is:  if you wrap funcs+ops, you must always unwrap both before down
+calling.  If you wrap ops, you must always pull the ops value out of the GC
+in the func wrapper and save it.  If you wrap funcs, you needn't pull the
+funcs value out of the GC to rewrap as the func values are required to be
+constant.  In this way, the wrapped validation routine can change the op
+vector and not have it lost when your wrapper routine rewraps the GC.  This
+occurs when the wrapped op revalidates the GC with new entries (many mi
+routines do this for opaque stipples or double dashes).  The corollary to
+this rule is:  Never change the func vector after CreateGC.
 .NH 1
 Summary of Routines
 .XS
@@ -4344,7 +4536,7 @@ dix	portable to all systems; do not attempt to rewrite (server/dix)
 ddx	frame buffer dependent (examples in server/ddx/mfb,server/ddx/cfb)
 mi	routine provided in server/ddx/mi
 snf	routine provided in server/ddx/snf
-hd	hardware dependent (example in server/ddx/dec/qvss)
+hd	hardware dependent (examples in many server/ddx directories)
 none	not implemented in sample implementation
 .TE
 .TS
