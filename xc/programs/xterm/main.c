@@ -1,4 +1,6 @@
-/* $XConsortium: main.c,v 1.186 91/05/10 16:57:18 gildea Exp $ */
+#ifndef lint
+static char *rid="$XConsortium: main.c,v 1.188 91/06/24 18:16:38 gildea Exp $";
+#endif  /* lint */
 
 /*
  * 				 W A R N I N G
@@ -2084,9 +2086,10 @@ spawn ()
 #ifdef WTMP
 				if (term->misc.login_shell &&
 				(i = open(etc_wtmp, O_WRONLY|O_APPEND)) >= 0) {
-				    write(i, (char *)&utmp,
-					sizeof(struct utmp));
-				    close(i);
+				    int status;
+				    status = write(i, (char *)&utmp,
+						   sizeof(struct utmp));
+				    status = close(i);
 				}
 #endif /* WTMP */
 #ifdef LASTLOG
@@ -2422,6 +2425,7 @@ Exit(n)
 	char *ptyname;
 #ifdef WTMP
 	int fd;			/* for /etc/wtmp */
+	int i;
 #endif
 	/* cleanup the utmp entry we forged earlier */
 	if (!resource.utmpInhibit
@@ -2443,8 +2447,8 @@ Exit(n)
 #ifdef WTMP
 		    /* set wtmp entry if wtmp file exists */
 		    if ((fd = open(etc_wtmp, O_WRONLY | O_APPEND)) >= 0) {
-		      (void) write(fd, utptr, sizeof(utmp));
-		      (void) close(fd);
+		      i = write(fd, utptr, sizeof(utmp));
+		      i = close(fd);
 		    }
 #endif
 
@@ -2452,23 +2456,24 @@ Exit(n)
 	    (void) endutent();
 	}
 #else	/* not USE_SYSV_UTMP */
+	register int wfd;
 	register int i;
 	struct utmp utmp;
 
 	if (!resource.utmpInhibit && added_utmp_entry &&
-	    (!am_slave && tslot > 0 && (i = open(etc_utmp, O_WRONLY)) >= 0)) {
+	    (!am_slave && tslot > 0 && (wfd = open(etc_utmp, O_WRONLY)) >= 0)){
 		bzero((char *)&utmp, sizeof(struct utmp));
-		lseek(i, (long)(tslot * sizeof(struct utmp)), 0);
-		write(i, (char *)&utmp, sizeof(struct utmp));
-		close(i);
+		lseek(wfd, (long)(tslot * sizeof(struct utmp)), 0);
+		write(wfd, (char *)&utmp, sizeof(struct utmp));
+		close(wfd);
 #ifdef WTMP
 		if (term->misc.login_shell &&
-		    (i = open(etc_wtmp, O_WRONLY | O_APPEND)) >= 0) {
-			(void) strncpy(utmp.ut_line, ptyname +
+		    (wfd = open(etc_wtmp, O_WRONLY | O_APPEND)) >= 0) {
+			(void) strncpy(utmp.ut_line, ttydev +
 			    sizeof("/dev"), sizeof (utmp.ut_line));
 			time(&utmp.ut_time);
-			write(i, (char *)&utmp, sizeof(struct utmp));
-			close(i);
+			i = write(wfd, (char *)&utmp, sizeof(struct utmp));
+			i = close(wfd);
 		}
 #endif /* WTMP */
 	}
