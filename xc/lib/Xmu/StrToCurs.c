@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: StrToCurs.c,v 1.6 89/06/30 09:00:50 swick Exp $";
+static char rcsid[] = "$XConsortium: StrToCurs.c,v 1.7 89/07/21 16:11:54 jim Exp $";
 #endif /* lint */
 
 
@@ -35,6 +35,7 @@ SOFTWARE.
 #define MAXPATHLEN 256
 #endif
 #include	<X11/Xmu/Converters.h>
+#include	<X11/Xmu/Drawing.h>
 
 
 /*
@@ -76,16 +77,16 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
 {
-    static Cursor cursor;
+    static Cursor cursor;		/* static for cvt magic */
     char *name = (char *)fromVal->addr;
     Screen *screen;
     register int i;
-    static char* bitmap_file_path = NULL;
-    char filename[MAXPATHLEN], maskname[MAXPATHLEN];
+    char maskname[MAXPATHLEN];
     Pixmap source, mask;
-    static XColor bgColor = {0, ~0, ~0, ~0};
-    static XColor fgColor = {0, 0, 0, 0};
-    int width, height, xhot, yhot;
+    static XColor bgColor = {0, ~0, ~0, ~0};  /* XXX - make a resource */
+    static XColor fgColor = {0, 0, 0, 0};     /* XXX - ditto */
+    int xhot, yhot;
+    int len;
 
 
     if (*num_args != 1)
@@ -158,48 +159,19 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
 	return;
     }
 
-    /* isn't a standard cursor in cursorfont; try to open a bitmap file */
-    if (bitmap_file_path == NULL) {
-	XrmName xrm_name[2];
-	XrmClass xrm_class[2];
-	XrmRepresentation rep_type;
-	XrmValue value;
-	xrm_name[0] = XrmStringToName( "bitmapFilePath" );
-	xrm_name[1] = NULL;
-	xrm_class[0] = XrmStringToClass( "BitmapFilePath" );
-	xrm_class[1] = NULL;
-	if (XrmQGetResource( XtDatabase(DisplayOfScreen(screen)),
-			     xrm_name, xrm_class, &rep_type, &value )
-	    && rep_type == XrmStringToQuark(XtRString))
-	    bitmap_file_path = value.addr;
-	else
-	    bitmap_file_path = BITMAPDIR;
+    if ((source = XmuLocateBitmapFile (screen, name, 
+				       maskname, (sizeof maskname) - 4,
+				       NULL, NULL, &xhot, &yhot)) == None) {
+	XtStringConversionWarning (name, "Cursor");
+    }
+    len = strlen (maskname);
+    for (i = 0; i < 2; i++) {
+	strcpy (maskname + len, i == 0 ? "Mask" : "msk");
+	if ((mask = XmuLocateBitmapFile (screen, maskname, NULL, 0, 
+					 NULL, NULL, NULL, NULL)) != None)
+	  break;
     }
 
-    if ( name[0] == '/' || name[0] == '.' )
- 	strcpy( filename, name );
-    else
-	sprintf( filename, "%s/%s", bitmap_file_path, name );
-
-    if (XReadBitmapFile( DisplayOfScreen(screen), RootWindowOfScreen(screen),
-			 filename, &width, &height, &source, &xhot, &yhot )
-	!= BitmapSuccess) {
-	XtStringConversionWarning( name, "Cursor" );
-	return;
-    }
-    (void) strcpy( maskname, filename );
-    (void) strcat( maskname, "Mask" );
-    if (XReadBitmapFile( DisplayOfScreen(screen), RootWindowOfScreen(screen),
-			 maskname, &width, &height, &mask, &width, &height )
-	!= BitmapSuccess) {
-	(void) strcpy( maskname, filename );
-	(void) strcat( maskname, "msk" );
-	if (XReadBitmapFile(DisplayOfScreen(screen),RootWindowOfScreen(screen),
-			    maskname, &width, &height, &mask, &width, &height )
-	    != BitmapSuccess) {
-	    mask = None;
-	}
-    }
     cursor = XCreatePixmapCursor( DisplayOfScreen(screen), source, mask,
 				  &fgColor, &bgColor, xhot, yhot );
     XFreePixmap( DisplayOfScreen(screen), source );

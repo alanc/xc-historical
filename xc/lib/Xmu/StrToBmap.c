@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: StrToBmap.c,v 1.4 89/03/31 10:35:32 jim Exp $";
+static char rcsid[] = "$XConsortium: StrToBmap.c,v 1.5 89/04/13 17:12:26 jim Exp $";
 #endif /* lint */
 
 
@@ -33,7 +33,10 @@ SOFTWARE.
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 256
 #endif
-#include	"Xmu.h"
+#include	<X11/Xmu/Converters.h>
+#include	<X11/Xmu/CvtCache.h>
+#include	<X11/Xmu/Drawing.h>
+
 
 /*
  * XmuConvertStringToPixmap:
@@ -60,9 +63,6 @@ static XtConvertArgRec screenConvertArg[] = {
 #define	done(address, type) \
 	{ (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
 
-#ifndef BITMAPDIR
-#define BITMAPDIR "/usr/include/X11/bitmaps"
-#endif
 
 /*ARGSUSED*/
 void XmuCvtStringToPixmap(args, num_args, fromVal, toVal)
@@ -71,29 +71,13 @@ void XmuCvtStringToPixmap(args, num_args, fromVal, toVal)
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
 {
-    static Pixmap pixmap;
+    static Pixmap pixmap;		/* static for cvt magic */
     char *name = (char *)fromVal->addr;
-    Screen *screen;
-    static char *bitmap_file_path = NULL;
-    static Bool try_default_path = True;
-    Bool try_plain_name = True;
-    char filename[MAXPATHLEN];
-    static XColor bgColor = {0, 0, 0, 0};
-    static XColor fgColor = {0, ~0, ~0, ~0};
-    int width, height, xhot, yhot;
-    int i;
-    Bool gotit;
-    Display *dpy;
-    Window root;
 
     if (*num_args != 1)
      XtErrorMsg("wrongParameters","cvtStringToPixmap","XtToolkitError",
              "String to pixmap conversion needs screen argument",
               (String *)NULL, (Cardinal *)NULL);
-
-    screen = *((Screen **) args[0].addr);
-    dpy = DisplayOfScreen (screen);
-    root = RootWindowOfScreen (screen);
 
     if (strcmp(name, "None") == 0) {
 	pixmap = None;
@@ -107,27 +91,75 @@ void XmuCvtStringToPixmap(args, num_args, fromVal, toVal)
 	return;
     }
 
-    /*
-     * the following will only work on single displays....
-     */
-    if (bitmap_file_path == NULL) {
-	XrmName xrm_name[2];
-	XrmClass xrm_class[2];
-	XrmRepresentation rep_type;
-	XrmValue value;
-	xrm_name[0] = XrmStringToName( "bitmapFilePath" );
-	xrm_name[1] = NULL;
-	xrm_class[0] = XrmStringToClass( "BitmapFilePath" );
-	xrm_class[1] = NULL;
-	if (XrmQGetResource (XtDatabase(dpy), xrm_name, xrm_class, 
-			     &rep_type, &value) &&
-	    rep_type == XrmStringToQuark(XtRString))
-	    bitmap_file_path = value.addr;
-	else {
-	    bitmap_file_path = BITMAPDIR;
-	    try_default_path = False;
-	}
+    pixmap = XmuLocateBitmapFile (*((Screen **) args[0].addr), name,
+				  NULL, 0, NULL, NULL, NULL, NULL);
+
+    if (pixmap != None) {
+	done (&pixmap, Pixmap);
+    } else {
+	XtStringConversionWarning (name, "Pixmap");
+	return;
     }
+}
+
+
+/*
+ * XmuLocateBitmapFile - read a bitmap file using the normal defaults
+ */
+
+Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
+			    widthp, heightp, xhotp, yhotp)
+    Screen *screen;
+    char *name;
+    char *srcname;			/* RETURN */
+    int srcnamelen;			/* RETURN */
+    int *widthp, *heightp, *xhotp, *yhotp;  /* RETURN */
+{
+    Display *dpy = DisplayOfScreen (screen);
+    Window root = RootWindowOfScreen (screen);
+    XmuCvtCache *cache = XmuCCLookupDisplay (dpy);
+    char *bitmap_file_path;
+    Bool try_default_path, try_plain_name = True;
+    char filename[MAXPATHLEN];
+    int width, height, xhot, yhot;
+    int i;
+
+
+#ifndef BITMAPDIR
+#define BITMAPDIR "/usr/include/X11/bitmaps"
+#endif
+
+    /*
+     * look in cache for bitmap path
+     */
+    if (cache) {
+	if (!cache->string_to_bitmap.file_path) {
+	    XrmName xrm_name[2];
+	    XrmClass xrm_class[2];
+	    XrmRepresentation rep_type;
+	    XrmValue value;
+
+	    xrm_name[0] = XrmStringToName ("bitmapFilePath");
+	    xrm_name[1] = NULL;
+	    xrm_class[0] = XrmStringToClass ("BitmapFilePath");
+	    xrm_class[1] = NULL;
+	    if (XrmQGetResource (XtDatabase(dpy), xrm_name, xrm_class, 
+				 &rep_type, &value) &&
+		rep_type == XrmStringToQuark(XtRString)) {
+		cache->string_to_bitmap.file_path = value.addr;
+		cache->string_to_bitmap.try_default_path = True;
+	    } else {
+		cache->string_to_bitmap.file_path = BITMAPDIR;
+		cache->string_to_bitmap.try_default_path = False;
+	    }
+	}
+	bitmap_file_path = cache->string_to_bitmap.file_path;
+	try_default_path = cache->string_to_bitmap.try_default_path;
+    } else {
+	bitmap_file_path = BITMAPDIR;
+	try_default_path = False;
+    }
+
 
     /*
      * Search order:
@@ -137,9 +169,9 @@ void XmuCvtStringToPixmap(args, num_args, fromVal, toVal)
      *    4.  name if didn't begin with / or .
      */
 
-    gotit = False;
     for (i = 1; i <= 4; i++) {
 	char *fn = filename;
+	Pixmap pixmap;
 
 	switch (i) {
 	  case 1:
@@ -163,15 +195,17 @@ void XmuCvtStringToPixmap(args, num_args, fromVal, toVal)
 
 	if (XReadBitmapFile (dpy, root, fn, &width, &height, 
 			     &pixmap, &xhot, &yhot) == BitmapSuccess) {
-	    gotit = True;
-	    break;
+	    if (widthp) *widthp = width;
+	    if (heightp) *heightp = height;
+	    if (xhotp) *xhotp = xhot;
+	    if (yhotp) *yhotp = yhot;
+	    if (srcname && srcnamelen > 0) {
+		strncpy (srcname, fn, srcnamelen - 1);
+		srcname[srcnamelen - 1] = '\0';
+	    }
+	    return pixmap;
 	}
     }
 
-    if (gotit) {
-	done (&pixmap, Pixmap);
-    } else {
-	XtStringConversionWarning (name, "Pixmap");
-	return;
-    }
+    return None;
 }
