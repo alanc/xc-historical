@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.38 94/04/01 19:58:56 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.39 94/11/04 00:35:43 kaleb Exp kaleb $
 
 #define OSName			Microsoft Windows NT 3.5
 XCOMM operating system:  OSName
@@ -10,7 +10,7 @@ XCOMM operating system:  OSName
 #define CpuDefines -D_X86_
 #endif
 /* brain-damaged windows headers will not compile with -Za */
-#define StandardDefines -DWIN32 -D_DLL -D_MT -D__STDC__ CpuDefines
+#define StandardDefines -DWIN32 -DWIN32_LEAN_AND_MEAN -D_DLL -D_MT -D__STDC__ CpuDefines
 #define DefaultCCOptions -nologo -batch -G4 -W2
 #define DebuggableCDebugFlags -Zi
 #define ThreadedX		YES
@@ -18,15 +18,22 @@ XCOMM operating system:  OSName
 #define LnCmd copy
 #define MvCmd ren
 #define RmCmd del
+#ifndef RmTreeCmd
 /* if you do not have deltree, substitute rd /s and suffer the prompts */
 #define RmTreeCmd deltree /y
+#endif
 #define CcCmd cl
 #define HasCplusplus		YES
 #define CplusplusCmd cl
 #define PreProcessCmd CcCmd -nologo -batch -EP
 #define CppCmd  CcCmd -nologo -batch -E
 #define PatheticCpp		YES
+#define ConstructMFLAGS		YES
+#if (OSMajorVersion == 3) && (OSMinorVersion < 5)
 #define ArCmdBase lib32
+#else
+#define ArCmdBase lib
+#endif
 #define ArCmd ArCmdBase
 #define CplusplusCmd cl
 #define MkdirHierCmd mkdir
@@ -39,13 +46,24 @@ XCOMM operating system:  OSName
 #define InstManFlags /**/
 #define InstDatFlags /**/
 #define InstallFlags /**/
+#if (OSMajorVersion == 3) && (OSMinorVersion < 5)
 #define ExtraLibraries crtdll.lib kernel32.lib wsock32.lib
+#else
+#define ExtraLibraries msvcrt.lib kernel32.lib wsock32.lib
+#endif
 #define MakeCmd nmake -nologo
+#if (OSMajorVersion == 3) && (OSMinorVersion < 5)
 #define LdCmd link32
+#else
+#define LdCmd link
+#endif
 #define MathLibrary
 #define HasSymLinks		NO
 #define HasPutenv		YES
 #define Osuf obj
+#ifndef CCsuf
+#define CCsuf cxx
+#endif
 #define BuildServer		NO
 #define ConnectionFlags		-DTCPCONN
 #define StdIncDir /mstools/h
