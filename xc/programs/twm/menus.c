@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.65 89/06/09 13:51:54 jim Exp $
+ * $XConsortium: menus.c,v 1.66 89/06/09 14:16:52 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.65 89/06/09 13:51:54 jim Exp $";
+"$XConsortium: menus.c,v 1.66 89/06/09 14:16:52 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1077,6 +1077,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
     case F_TITLE:
     case F_DELTASTOP:
     case F_RAISELOWER:
+    case F_WARPTOSCREEN:
 	break;
     default:
         XGrabPointer(dpy, Scr->Root, True,
