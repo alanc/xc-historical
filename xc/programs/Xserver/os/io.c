@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.58 89/05/10 23:56:53 keith Exp $ */
+/* $XConsortium: io.c,v 1.59 89/05/16 18:17:05 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -64,30 +64,17 @@ extern int errno;
 
 /*****************************************************************
  * ReadRequestFromClient
- *    Returns one request from client.  If the client misbehaves,
- *    returns NULL.  The dispatcher closes down all misbehaving clients.  
+ *    Returns one request in client->requestBuffer.  Return status is:
  *
- *        client:  index into bit array returned from WaitForSomething() 
+ *    > 0  if  successful, specifies length in bytes of the request
+ *    = 0  if  entire request is not yet available
+ *    < 0  if  client should be terminated
  *
- *        status: status is set to
- *            > 0 the number of bytes in the request if the read is sucessful 
- *            = 0 if action would block (entire request not ready)
- *            < 0 indicates an error (probably client died)
- *
- *        oldbuf:
- *            To facilitate buffer management (e.g. on multi-processor
- *            systems), the diX layer must tell the OS layer when it is 
- *            done with a request, so the parameter oldbuf is a pointer 
- *            to a request that diX is finished with.  In the 
- *            sample implementation, which is single threaded,
- *            oldbuf is ignored.  We assume that when diX calls
- *            ReadRequestFromClient(), the previous buffer is finished with.
- *
- *    The returned string returned must be contiguous so that it can be
+ *    The request returned must be contiguous so that it can be
  *    cast in the dispatcher to the correct request type.  Because requests
  *    are variable length, ReadRequestFromClient() must look at the first 4
  *    bytes of a request to determine the length (the request length is
- *    always the 3rd byte in the request).  
+ *    always the 3rd and 4th bytes of the request).  
  *
  *    Note: in order to make the server scheduler (WaitForSomething())
  *    "fair", the ClientsWithInput mask is used.  This mask tells which
@@ -104,23 +91,17 @@ extern int errno;
 #define YieldControlNoInput()			\
         { YieldControl();			\
 	  BITCLEAR(ClientsWithInput, fd); }
-#define YieldControlAndReturnNull()		\
-        { YieldControlNoInput();		\
-	  return((char *) NULL ); }
+#define YieldControlDeath()			\
+        { timesThisConnection = 0; }
 
-/*ARGSUSED*/
-char *
-ReadRequestFromClient(client, status, oldbuf)
+int
+ReadRequestFromClient(client)
     ClientPtr client;
-    int *status;          /* read at least n from client */
-    char *oldbuf;
 {
     register OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int fd = oc->fd;
     int result, gotnow, needed;
     register xReq *request;
-
-    /* ignore oldbuf, just assume we're done with prev. buffer */
 
     oc->input.bufptr += oc->input.lenLastReq;
 
@@ -134,8 +115,8 @@ ReadRequestFromClient(client, status, oldbuf)
 	   needed = sizeof(xReq);
 	else if (needed > MAXBUFSIZE)
 	{
-	    *status = -1;
-	    YieldControlAndReturnNull();
+	    YieldControlDeath();
+	    return -1;
 	}
 	if ((gotnow == 0) ||
 	    ((oc->input.bufptr - oc->input.buffer + needed) > oc->input.size))
@@ -149,8 +130,8 @@ ReadRequestFromClient(client, status, oldbuf)
 		ibuf = (char *)xrealloc(oc->input.buffer, needed);
 		if (!ibuf)
 		{
-		    *status = -1;
-		    YieldControlAndReturnNull();
+		    YieldControlDeath();
+		    return -1;
 		}
 		oc->input.size = needed;
 		oc->input.buffer = ibuf;
@@ -163,10 +144,12 @@ ReadRequestFromClient(client, status, oldbuf)
 	if (result <= 0)
 	{
 	    if ((result < 0) && (errno == EWOULDBLOCK))
-		*status = 0;
-	    else
-		*status = -1;
-	    YieldControlAndReturnNull();
+	    {
+		YieldControlNoInput();
+		return 0;
+	    }
+	    YieldControlDeath();
+	    return -1;
 	}
 	oc->input.bufcnt += result;
 	gotnow += result;
@@ -188,13 +171,12 @@ ReadRequestFromClient(client, status, oldbuf)
 	if ((gotnow < sizeof(xReq)) ||
 	    (gotnow < (needed = request_length(request, client))))
 	{
-	    *status = 0;
-	    YieldControlAndReturnNull();
+	    YieldControlNoInput();
+	    return 0;
 	}
     }
     if (needed == 0)
 	needed = sizeof(xReq);
-    *status = needed;
     oc->input.lenLastReq = needed;
 
     /*
@@ -217,7 +199,8 @@ ReadRequestFromClient(client, status, oldbuf)
     if (++timesThisConnection >= MAX_TIMES_PER)
 	YieldControl();
 
-    return(oc->input.bufptr);
+    client->requestBuffer = (pointer)oc->input.bufptr;
+    return needed;
 }
 
 /*****************************************************************
