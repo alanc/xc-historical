@@ -32,18 +32,19 @@ OBJS = \
 
 CDEBUGFLAGS = ServerCDebugFlags
    INCLUDES = -I.  -I../../include -I../mfb -I../../dix -I../../../include
-     LFLAGS = -buxz
+   LINTLIBS = -lc ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln \
+	      ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln ../cfb/llib-lcfb.ln
 
 NormalLibraryObjectRule()
 
 all:: $(OFILES) kbd_mode
 
+lintlib:
+
 NormalLibraryTarget(sun,$(OBJS))
+NormalLintTarget($(SRCS))
 SingleProgramTarget(kbd_mode, kbd_mode.o,,)
 InstallProgram(kbd_mode,$(BINDIR))
 InstallManPage(kbd_mode,$(MANDIR))
 DependTarget()
 InstallManPage(Xsun,$(MANDIR))
-
-lint: ${CFILES} ${LIBCFILES}
-	$(LINT) $(LFLAGS) -Clibsun $(INCLUDES) $(SRCS) >lint.out 2>&1
