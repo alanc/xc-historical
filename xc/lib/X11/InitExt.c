@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XInitExt.c,v 11.13 87/08/28 13:35:22 toddb Exp $ */
+/* $Header: XInitExt.c,v 11.14 88/02/20 20:24:09 rws Exp $ */
 /* Copyright  Massachusetts Institute of Technology 1987 */
 
 #include "Xlibint.h"
@@ -37,6 +37,23 @@ XExtCodes *XInitExtension (dpy, name)
 	return (&ext->codes);		/* tell him which extension */
 }
 
+XExtCodes *XAddExtension (dpy)
+    Display *dpy;
+{
+    register _XExtension *ext;
+
+    LockDisplay (dpy);
+    ext = (_XExtension *) Xcalloc (1, sizeof (_XExtension));
+    ext->codes.extension = dpy->ext_number++;
+
+    /* chain it onto the display list */
+    ext->next = dpy->ext_procs;
+    dpy->ext_procs = ext;
+    UnlockDisplay (dpy);
+
+    return (&ext->codes);		/* tell him which extension */
+}
+
 static _XExtension *XLookupExtension (dpy, extension)
 	register Display *dpy;	/* display */
 	register int extension;	/* extension number */
@@ -47,6 +64,12 @@ static _XExtension *XLookupExtension (dpy, extension)
 		ext = ext->next;
 	}
 	return (NULL);
+}
+
+XExtData **XEHeadOfExtensionList(object)
+    XEDataObject object;
+{
+    return *(XExtData ***)&object;
 }
 
 /*
