@@ -1,4 +1,4 @@
-/* $XConsortium: xfontsel.c,v 1.21 91/01/22 18:34:47 gildea Exp $
+/* $XConsortium: xfontsel.c,v 1.22 91/01/24 17:06:34 gildea Exp $
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
 Massachusetts Institute of Technology

@@ -3,7 +3,7 @@
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
- * $XConsortium: xload.c,v 1.30 91/01/10 21:48:41 gildea Exp $
+ * $XConsortium: xload.c,v 1.31 91/01/22 18:05:46 gildea Exp $
  */
 
 #include <stdio.h> 
