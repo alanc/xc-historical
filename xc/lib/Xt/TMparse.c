@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.121 91/06/14 16:28:09 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.122 91/07/21 17:06:21 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2000,7 +2000,7 @@ void _XtTranslateInitialize()
 {
     if (initialized) {
 	XtWarningMsg("translationError","xtTranslateInitialize",
-                  XtCXtToolkitError,"Intializing Translation manager twice.",
+                  XtCXtToolkitError,"Initializing Translation manager twice.",
                     (String *)NULL, (Cardinal *)NULL);
 	return;
     }
