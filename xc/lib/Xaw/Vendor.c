@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.10 89/10/09 16:20:46 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.11 89/10/09 16:51:47 jim Exp $";
 /* $oHeader: Vendor.c,v 1.3 88/08/19 13:11:01 asente Exp $ */
 #endif /* lint */
 
@@ -47,6 +47,12 @@ SOFTWARE.
 #include <X11/Xmu/Converters.h>
 
 
+static XtResource resources[] = {
+  {XtNinput, XtCInput, XtRBool, sizeof(Bool),
+		XtOffsetOf(VendorShellRec, wm.wm_hints.input),
+		XtRImmediate, (XtPointer)True}
+};
+
 /***************************************************************************
  *
  * Vendor shell class record
@@ -56,54 +62,55 @@ SOFTWARE.
 static void _VendorShellClassInitialize();
 static void _VendorShellInitialize();
 static Boolean _VendorShellSetValues();
-static void Realize();
+static void Realize(), ChangeManaged();
 
+#define SuperClass (&wmShellClassRec)
 externaldef(vendorshellclassrec) VendorShellClassRec vendorShellClassRec = {
   {
-    /* superclass         */    (WidgetClass) &wmShellClassRec,
-    /* class_name         */    "VendorShell",
-    /* size               */    sizeof(VendorShellRec),
-    /* class_initialize   */	_VendorShellClassInitialize,
+    /* superclass	  */	(WidgetClass)SuperClass,
+    /* class_name	  */	"VendorShell",
+    /* size		  */	sizeof(VendorShellRec),
+    /* class_initialize	  */	_VendorShellClassInitialize,
     /* class_part_initialize*/	NULL,
-    /* Class init'ed ?    */	FALSE,
-    /* initialize         */    _VendorShellInitialize,
-    /* initialize_notify    */	NULL,		
-    /* realize            */    Realize,
-    /* actions            */    NULL,
-    /* num_actions        */    0,
-    /* resources          */    NULL,
-    /* resource_count     */	0,
-    /* xrm_class          */    NULLQUARK,
-    /* compress_motion    */    FALSE,
-    /* compress_exposure  */    TRUE,
+    /* Class init'ed ?	  */	FALSE,
+    /* initialize	  */	_VendorShellInitialize,
+    /* initialize_hook	  */	NULL,		
+    /* realize		  */	Realize,
+    /* actions		  */	NULL,
+    /* num_actions	  */	0,
+    /* resources	  */	resources,
+    /* resource_count	  */	XtNumber(resources),
+    /* xrm_class	  */	NULLQUARK,
+    /* compress_motion	  */	FALSE,
+    /* compress_exposure  */	TRUE,
     /* compress_enterleave*/	FALSE,
-    /* visible_interest   */    FALSE,
-    /* destroy            */    NULL,
-    /* resize             */    XtInheritResize,
-    /* expose             */    NULL,
-    /* set_values         */    _VendorShellSetValues,
-    /* set_values_hook      */	NULL,			
-    /* set_values_almost    */	XtInheritSetValuesAlmost,  
-    /* get_values_hook      */	NULL,
-    /* accept_focus       */    NULL,
+    /* visible_interest	  */	FALSE,
+    /* destroy		  */	NULL,
+    /* resize		  */	XtInheritResize,
+    /* expose		  */	NULL,
+    /* set_values	  */	_VendorShellSetValues,
+    /* set_values_hook	  */	NULL,			
+    /* set_values_almost  */	XtInheritSetValuesAlmost,  
+    /* get_values_hook	  */	NULL,
+    /* accept_focus	  */	NULL,
     /* intrinsics version */	XtVersion,
-    /* callback offsets   */    NULL,
+    /* callback offsets	  */	NULL,
     /* tm_table		  */	NULL,
-    /* query_geometry	    */  NULL,
-    /* display_accelerator  */  NULL,
-    /* extension	    */  NULL
+    /* query_geometry	  */	NULL,
+    /* display_accelerator*/	NULL,
+    /* extension	  */	NULL
   },{
-    /* geometry_manager   */    XtInheritGeometryManager,
-    /* change_managed     */    XtInheritChangeManaged,
+    /* geometry_manager	  */	XtInheritGeometryManager,
+    /* change_managed	  */	ChangeManaged,
     /* insert_child	  */	XtInheritInsertChild,
     /* delete_child	  */	XtInheritDeleteChild,
-    /* extension	    */  NULL
+    /* extension	  */	NULL
   },{
-    /* extension	    */  NULL
+    /* extension	  */	NULL
   },{
-    /* extension	    */  NULL
+    /* extension	  */	NULL
   },{
-    /* extension	    */  NULL
+    /* extension	  */	NULL
   }
 };
 
@@ -112,7 +119,6 @@ externaldef(vendorshellwidgetclass) WidgetClass vendorShellWidgetClass =
 
 static void _VendorShellClassInitialize()
 {
-    /* %%% botch; this requires an Application Context */
     static XtConvertArgRec screenConvertArg[] = {
         {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
 	     sizeof(Screen *)}
@@ -150,3 +156,19 @@ static void Realize(wid, vmask, attr)
 	(*super->core_class.realize) (wid, vmask, attr);
 }
 
+static void ChangeManaged(wid)
+	Widget wid;
+{
+	ShellWidget w = (ShellWidget) wid;
+	Widget* childP;
+	int i;
+
+	(*SuperClass->composite_class.change_managed)(wid);
+	for (i = w->composite.num_children, childP = w->composite.children;
+	     i; i--) {
+	    if (XtIsManaged(*childP)) {
+		XtSetKeyboardFocus(wid, *childP);
+		break;
+	    }
+	}
+}
