@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.98 89/09/19 11:32:04 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.99 89/09/19 20:13:46 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -609,7 +609,7 @@ typedef struct {
 } Arg, *ArgList;
 
 #define XtSetArg(arg, n, d) \
-    ( (arg).name = (n), (arg).value = (XtArgVal)(d) )
+    ((void)( (arg).name = (n), (arg).value = (XtArgVal)(d) ))
 
 extern ArgList XtMergeArgLists(); /* args1, num_args1, args2, num_args2 */
     /* ArgList	args1;	    */
@@ -1204,6 +1204,32 @@ extern void XtCallbackReleaseCacheRefList(); /* widget, closure, call_data */
     /* Widget widget;	*/
     /* XtPointer closure; */	/* XtCacheRef* */
     /* XtPointer call_data */
+
+extern void XtSetWMColormapWindows();
+/*     Widget widget;
+       Widget* list;
+       Cardinal* count;
+*/
+
+typedef struct {
+    char match;
+    String substitution;
+} SubstitutionRec, *Substitution;
+
+typedef Boolean (*XtFilePredicate)();
+
+extern String XtFindFile();
+/*     String path;
+       Substitution substitutions;
+       Cardinal num_substitutions;
+       XtFilePredicate predicate;
+*/
+
+extern String XtResolvePathname();
+/*     Display *dpy;
+       String type, filename, suffix, path;
+       XtFilePredicate predicate;
+*/
 
 #endif /*_XtIntrinsic_h*/
 /* DON'T ADD STUFF AFTER THIS #endif */
