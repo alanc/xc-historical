@@ -52,6 +52,8 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 #include    "mipointer.h"
 #include    "misprite.h"
 
+Bool ActiveZaphod = TRUE;
+
 static long sunEventTime();
 static Bool sunCursorOffScreen();
 static void sunCrossScreen();
@@ -446,7 +448,8 @@ sunCursorOffScreen (pScreen, x, y)
      *    if the x is to the right or the left of
      *    the current screen.
      */
-    if (screenInfo.numScreens > 1 && (*x >= (*pScreen)->width || *x < 0))
+    if (ActiveZaphod &&
+	screenInfo.numScreens > 1 && (*x >= (*pScreen)->width || *x < 0))
     {
 	index = (*pScreen)->myNum;
 	if (*x < 0)

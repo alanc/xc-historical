@@ -344,12 +344,17 @@ ddxProcessArgument (argc, argv, i)
     int	i;
 {
     extern void UseMsg();
+    extern Bool ActiveZaphod;
 
     if (strcmp (argv[i], "-dev") == 0) {	/* -dev /dev/mumble */
 	if (++i >= argc) UseMsg ();
 	return 2;
     }
     if (strcmp (argv[i], "-mono") == 0) {	/* -mono */
+	return 1;
+    }
+    if (strcmp (argv[i], "-zaphod") == 0) {	/* -zaphod */
+	ActiveZaphod = FALSE;
 	return 1;
     }
     return 0;
@@ -360,4 +365,5 @@ ddxUseMsg()
 {
     ErrorF("-dev filename          name of device to open\n");
     ErrorF("-mono                  force monochrome-only screen\n");
+    ErrorF("-zaphod               disable active Zaphod mode\n");
 }

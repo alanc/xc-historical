@@ -1,4 +1,4 @@
-.\" $XConsortium: Xsun.man,v 1.6 88/09/06 15:11:01 jim Exp $
+.\" $XConsortium: Xsun.man,v 1.7 88/10/26 17:09:19 converse Exp $
 .TH XSUN 1 "26 October 1988" "X Version 11"
 .SH NAME
 Xsun \- Sun server for X Version 11
@@ -91,6 +91,11 @@ by sliding the mouse from one screen to another.
 means use a \fBcgtwo\fP,  if present,  as a monochrome device.  Default is use it as
 a color device.
 Using it as a monochrome device is,  for the present,  mush faster.
+.TP
+\fB-zaphod\fP
+disables active zaphod mode, in which sliding the mouse off the left and right
+edges causes a screen swap.  With this disabled, you must use a window manager
+function to switch screens.
 .TP
 \fB-debug\fP
 means that the server is being run from a debugger,
