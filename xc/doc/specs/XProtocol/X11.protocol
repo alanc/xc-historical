@@ -8188,7 +8188,7 @@ Only clients selecting
 on a window receive 
 .PN EnterNotify 
 events, and only clients selecting 
-.PN LeaveNotify 
+.PN LeaveWindow 
 receive 
 .PN LeaveNotify 
 events.
