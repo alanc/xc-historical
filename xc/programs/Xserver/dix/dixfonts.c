@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.23 91/06/21 18:16:53 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.24 91/06/29 16:50:56 rws Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -660,6 +660,7 @@ doListFontsWithInfo(client, c)
     int			length;
     xFontProp		*pFP;
     int			i;
+    xListFontsWithInfoReply finalReply;
 
     if (client->clientGone)
     {
@@ -796,32 +797,16 @@ doListFontsWithInfo(client, c)
 	    }
 	    --c->current.max_names;
 	    if (c->current.max_names < 0)
-		abort ();
+		break;
 	}
     }
-    if (err == Successful) {
-	reply = c->reply;
-	length = sizeof(xListFontsWithInfoReply);
-	if (c->length < length);
-	{
-	    reply = (xListFontsWithInfoReply *) xrealloc(c->reply, length);
-	    if (reply) {
-		c->reply = reply;
-		c->length = length;
-	    } else
-		err = AllocError;
-	}
-	if (err == Successful) {
-	    bzero((char *) reply, sizeof(xListFontsWithInfoReply));
-	    reply->type = X_Reply;
-	    reply->sequenceNumber = client->sequence;
-	    reply->length = (sizeof(xListFontsWithInfoReply)
-			     - sizeof(xGenericReply)) >> 2;
-	    WriteReplyToClient(client, length, reply);
-	}
-    }
-    if (err != Successful)
-	SendErrorToClient(client, X_ListFontsWithInfo, 0, 0, FontToXError(err));
+    length = sizeof(xListFontsWithInfoReply);
+    bzero((char *) &finalReply, sizeof(xListFontsWithInfoReply));
+    finalReply.type = X_Reply;
+    finalReply.sequenceNumber = client->sequence;
+    finalReply.length = (sizeof(xListFontsWithInfoReply)
+		     - sizeof(xGenericReply)) >> 2;
+    WriteReplyToClient(client, length, &finalReply);
 bail:
     if (c->slept)
 	ClientWakeup(client);
