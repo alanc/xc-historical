@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.21 91/01/06 12:48:39 rws Exp $
+ *	$XConsortium: util.c,v 1.22 91/02/05 19:44:11 gildea Exp $
  */
 
 /*
@@ -726,14 +726,19 @@ register TScreen *screen;
 	       (screen->max_col - screen->cur_col + 1));
 	bzero(screen->buf [2 * screen->cur_row + 1] + screen->cur_col,
 	       (screen->max_col - screen->cur_col + 1));
+	/* with the right part cleared, we can't be wrapping */
+	screen->buf [2 * screen->cur_row + 1] [0] &= ~LINEWRAPPED;
 }
 
 /*
  * Clear first part of cursor's line, inclusive.
  */
 ClearLeft (screen)
-register TScreen *screen;
+    register TScreen *screen;
 {
+        int i;
+	Char *cp;
+
 	if(screen->cursor_state)
 		HideCursor();
 	screen->do_wrap = 0;
@@ -749,8 +754,15 @@ register TScreen *screen;
 		     FontHeight(screen));
 	    }
 	}
-	bzero (screen->buf [2 * screen->cur_row], (screen->cur_col + 1));
-	bzero (screen->buf [2 * screen->cur_row + 1], (screen->cur_col + 1));
+	
+	for ( i=0, cp=screen->buf[2 * screen->cur_row];
+	      i < screen->cur_col + 1;
+	      i++, cp++)
+	    *cp = ' ';
+	for ( i=0, cp=screen->buf[2 * screen->cur_row + 1];
+	      i < screen->cur_col + 1;
+	      i++, cp++)
+	    *cp = CHARDRAWN;
 }
 
 /* 
