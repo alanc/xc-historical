@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.37 94/04/09 20:45:31 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.38 94/06/03 21:38:48 matt Exp $
 /* only tested with Digital OSF/1 */
 
 #ifdef AlphaArchitecture
@@ -23,7 +23,7 @@ XCOMM operating system:  OSName
 #define HasPoll			YES
 #define HasVFork                NO
 #define InstallCmd installbsd
-#if OSMinorVersion > 0
+#if OSMajorVersion > 1 || OSMinorVersion > 0
 #define ModernOSF1		YES
 #else
 #define ModernOSF1		NO
