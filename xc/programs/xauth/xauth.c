@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xauth.c,v 1.12 88/12/11 19:12:33 jim Exp $
+ * $XConsortium: xauth.c,v 1.13 88/12/12 14:59:05 jim Exp $
  *
  * xauth - manipulate authorization file
  *
@@ -49,54 +49,37 @@ static char *defsource = "(stdin)";
 /*
  * utility routines
  */
-void print_help (printall)
-    Bool printall;
+static void usage ()
 {
-    static char *help[] = {
+    static char *prefixmsg[] = {
 "",
 "where options include:",
-"    -f authfilename           name of authority file to use",
-"    -v                        turn on extra messages",
-"    -q                        turn off extra messages",
-"    -i                        ignore locks on authority file",
-"    -b                        break locks on authority file",
+"    -f authfilename                name of authority file to use",
+"    -v                             turn on extra messages",
+"    -q                             turn off extra messages",
+"    -i                             ignore locks on authority file",
+"    -b                             break locks on authority file",
 "",
-"and commands have the following syntax",
+"and commands have the following syntax:",
+"",
 NULL };
-    static char *cmds[] = {
-"    add dpyname protoname hexkey      add entry to authority file",
-"    [n]extract filename dpyname...    extract auth entries into file",
-"    [n]list [dpyname...]              list auth entries",
-"    [n]merge filename...              merge in cookies from given files",
-"    remove dpyname...                 remove entry for given display",
-"    source filename                   read command from the given file",
-"    info                              print out info about inputs",
-"    exit                              exit program (same as end of file)",
-"    quit                              exit program and abort any changes",
-"    help                              display this message",
-"",
+    static char *suffixmsg[] = {
 "A dash may be used with the \"merge\" and \"source\" to read from the",
 "standard input.  Commands beginning with [n] use numeric format.",
 "",
 NULL };
     char **msg;
 
-    if (printall) {
-	fprintf (stderr, "usage:  %s [-options ...] [command arg ...]\n",
-		 ProgramName);
-	for (msg = help; *msg; msg++) {
-	    fprintf (stderr, "%s\n", *msg);
-	}
-    }
-    for (msg = cmds; *msg; msg++) {
+    fprintf (stderr, "usage:  %s [-options ...] [command arg ...]\n",
+	     ProgramName);
+    for (msg = prefixmsg; *msg; msg++) {
 	fprintf (stderr, "%s\n", *msg);
     }
-    return;
-}
-
-static void usage ()
-{
-    print_help (True);
+    print_help (stderr, NULL, "    ");	/* match prefix indentation */
+    fprintf (stderr, "\n");
+    for (msg = suffixmsg; *msg; msg++) {
+	fprintf (stderr, "%s\n", *msg);
+    }
     exit (1);
 }
 

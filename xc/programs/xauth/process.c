@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.18 88/12/12 15:53:13 jim Exp $
+ * $XConsortium: process.c,v 1.19 89/01/02 16:37:29 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -56,6 +56,7 @@ typedef struct _CommandTable {		/* commands that are understood */
     int minlen;				/* unique prefix */
     int maxlen;				/* strlen(name) */
     int (*processfunc)();		/* handler */
+    char *helptext;			/* what to print for help */
 } CommandTable;
 
 struct _extract_data {
@@ -87,24 +88,38 @@ static int do_help(), do_source(), do_info(), do_exit();
 static int do_quit(), do_questionmark();
 
 CommandTable command_table[] = {
-    { "add",      2, 3, do_add },	/* add dpy proto hexkey */
-    { "exit",     3, 4, do_exit },	/* exit */
-    { "extract",  3, 7, do_extract },	/* extract filename dpy... */
-    { "help",     1, 4, do_help },	/* help */
-    { "info",     1, 4, do_info },	/* info */
-    { "list",     1, 4, do_list },	/* list [dpy...] */
-    { "merge",    1, 5, do_merge },	/* merge filename... */
-    { "nextract", 2, 8, do_extract },	/* nextract filename dpy... */
-    { "nlist",    2, 5, do_list },	/* nlist [dpy...] */
-    { "nmerge",   2, 6, do_merge },	/* nmerge filename... */
-    { "quit",     1, 4, do_quit },	/* quit */
-    { "remove",   1, 6, do_remove },	/* remove dpy... */
-    { "source",   1, 6, do_source },	/* source filename */
-    { "?",        1, 1, do_questionmark },  /* print xauth commands */
-    { NULL,       0, 0, NULL },
+    { "add",      2, 3, do_add,
+	"add dpyname protoname hexkey   add entry to authority file" },
+    { "exit",     3, 4, do_exit,
+	"exit                           exit program (same as end of file)" },
+    { "extract",  3, 7, do_extract,
+	"extract filename dpyname...    extract auth entries into file" },
+    { "help",     1, 4, do_help,
+	"help [topic]                   print help about topic" },
+    { "info",     1, 4, do_info,
+	"info                           print information about input" },
+    { "list",     1, 4, do_list,
+	"list [dpyname...]              list auth entries" },
+    { "merge",    1, 5, do_merge,
+	"merge filename...              merge in cookies from given files" },
+    { "nextract", 2, 8, do_extract,
+	"nextract filename dpyname...   extract auth entries into file" },
+    { "nlist",    2, 5, do_list,
+	"nlist [dpyname...]             list auth entries" },
+    { "nmerge",   2, 6, do_merge,
+	"nmerge filename...             merge in cookies from given files" },
+    { "quit",     1, 4, do_quit,
+	"quit                           exit program and abort changes" },
+    { "remove",   1, 6, do_remove,
+	"remove dpyname...              remove entries for given displays" },
+    { "source",   1, 6, do_source,
+	"source filename                read commands from given file" },
+    { "?",        1, 1, do_questionmark,
+	"?                              list available commands" },
+    { NULL,       0, 0, NULL, NULL },
 };
 
-#define COMMAND_NAMES_PADDED 10		/* widget than anything above */
+#define COMMAND_NAMES_PADDED_WIDTH 10	/* widget than anything above */
 
 
 static Bool okay_to_use_stdin = True;	/* set to false after using */
@@ -1107,14 +1122,61 @@ static int remove_entry (inputfilename, lineno, auth, data)
 /*
  * help
  */
+int print_help (fp, cmd, prefix)
+    FILE *fp;
+    char *cmd;
+    char *prefix;
+{
+    CommandTable *ct;
+    int n = 0;
+
+    if (!prefix) prefix = "";
+
+    if (!cmd) {				/* if no cmd, print all help */
+	for (ct = command_table; ct->name; ct++) {
+	    fprintf (fp, "%s%s\n", prefix, ct->helptext);
+	    n++;
+	}
+    } else {
+	int len = strlen (cmd);
+	for (ct = command_table; ct->name; ct++) {
+	    if (strncmp (cmd, ct->name, len) == 0) {
+		fprintf (fp, "%s%s\n", prefix, ct->helptext);
+		n++;
+	    }
+	}
+    }
+	
+    return n;
+}
+
 static int do_help (inputfilename, lineno, argc, argv)
     char *inputfilename;
     int lineno;
     int argc;
     char **argv;
 {
-    /* allow bad lines since this is help */
-    print_help (False);
+    char *cmd = (argc > 1 ? argv[1] : NULL);
+    int n;
+
+    n = print_help (stdout, cmd, "    ");  /* a nice amount */
+
+    if (n < 0 || (n == 0 && !cmd)) {
+	prefix (inputfilename, lineno);
+	fprintf (stderr, "internal error with help");
+	if (cmd) {
+	    fprintf (stderr, " on command \"%s\"", cmd);
+	}
+	fprintf (stderr, "\n");
+	return 1;
+    }
+
+    if (n == 0) {
+	prefix (inputfilename, lineno);
+	/* already know that cmd is set in this case */
+	fprintf (stderr, "no help for noexistent command \"%s\"\n", cmd);
+    }
+
     return 0;
 }
 
@@ -1143,7 +1205,7 @@ static int do_questionmark (inputfilename, lineno, argc, argv)
 	}
 	fputs (ct->name, stdout);
 	col += ct->maxlen;
-	for (i = ct->maxlen; i < COMMAND_NAMES_PADDED; i++) {
+	for (i = ct->maxlen; i < COMMAND_NAMES_PADDED_WIDTH; i++) {
 	    putc (' ', stdout);
 	    col++;
 	}
