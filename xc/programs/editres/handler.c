@@ -1,5 +1,5 @@
 /*
- * $XConsortium: handler.c,v 1.22 91/07/08 11:56:06 rws Exp $
+ * $XConsortium: handler.c,v 1.23 91/07/09 09:39:26 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -656,16 +656,6 @@ Widget w;
 XtPointer junk, filename_ptr;
 {
     char buf[BUFSIZ], *filename = (char *) filename_ptr;
-
-    /* Check to be sure that file is okay */
-
-    if (access(filename, W_OK) != 0) {
-	sprintf(buf, "Unable to open this file for writing, would %s",
-		"you like To try again?");
-	_PopupFileDialog(toplevel, buf, filename,
-			 _SetResourcesFile, NULL);
-	return;
-    }
 
     if (global_resources.allocated_save_resources_file) 
 	XtFree(global_resources.save_resources_file);
