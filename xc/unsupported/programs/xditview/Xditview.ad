@@ -1,14 +1,14 @@
+Xditview.geometry: 600x800
+
 *paned.allowResize:		true
-*paned.form.showGrip:		false
-*paned.form.skipAdjust:		false
-*paned.form.porthole.width:		600
-*paned.form.porthole.height:		800
+*paned.?.showGrip:		false
+*paned.?.skipAdjust:		false
+*paned.form.porthole.width:	600
+*paned.form.porthole.height:	800
 *paned.label.skipAdjust:	true
 
 *MenuButton.shapeStyle: oval
 *Command.shapeStyle: oval
-
-*resizable: false
 
 *fileMenuButton.label:		File
 *fileMenuButton.leftBitmap:	menu12
@@ -48,29 +48,19 @@
 *nextButton.internalHeight:	0
 *nextButton.translations: 	#override <BtnUp>: NextPage() unset()
 
+*viewport.allowResize:	false
+*viewport.forceBars:	true
+*viewport.allowHoriz: true
+*viewport.allowVert: true
 
-*paned.form.porthole.dvi.translations: #augment \
+*dvi.translations: #augment \
 	<Btn1Down>:	XawPositionSimpleMenu(popupMenu) MenuPopup(popupMenu)\n\
 	Ctrl<Key>v:	NextPage()\n\
 	Meta<Key>v:	PreviousPage()\n\
 	<Key>Next:	NextPage()\n\
 	<Key>Prior:	PreviousPage()\n\
 	<Key>Find:	OpenFile()
-*paned.form.porthole.dvi.baseTranslations: #augment \
-	<Btn1Down>:	XawPositionSimpleMenu(popupMenu) MenuPopup(popupMenu)\n\
-	Ctrl<Key>v:	NextPage()\n\
-	Meta<Key>v:	PreviousPage()\n\
-	<Key>Next:	NextPage()\n\
-	<Key>Prior:	PreviousPage()\n\
-	<Key>Find:	OpenFile()
-*paned.label.translations: #augment \
-	<Btn1Down>:	XawPositionSimpleMenu(popupMenu) MenuPopup(popupMenu)\n\
-	Ctrl<Key>v:	NextPage()\n\
-	Meta<Key>v:	PreviousPage()\n\
-	<Key>Next:	NextPage()\n\
-	<Key>Prior:	PreviousPage()\n\
-	<Key>Find:	OpenFile()
-*paned.label.baseTranslations: #augment \
+*dvi.baseTranslations: #augment \
 	<Btn1Down>:	XawPositionSimpleMenu(popupMenu) MenuPopup(popupMenu)\n\
 	Ctrl<Key>v:	NextPage()\n\
 	Meta<Key>v:	PreviousPage()\n\

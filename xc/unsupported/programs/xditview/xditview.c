@@ -35,6 +35,7 @@
 #include <X11/Xaw/Paned.h>
 #include <X11/Xaw/Panner.h>
 #include <X11/Xaw/Porthole.h>
+#include <X11/Xaw/Viewport.h>
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Dialog.h>
@@ -267,6 +268,7 @@ void main(argc, argv)
     nextButton = XtCreateManagedWidget ("nextButton", commandWidgetClass,
 					 menuBar, NULL, (Cardinal) 0);
 
+#ifdef NOTDEF
     form = XtCreateManagedWidget ("form", formWidgetClass, paned,
 				    NULL, (Cardinal) 0);
     panner = XtCreateManagedWidget ("panner", pannerWidgetClass,
@@ -277,7 +279,10 @@ void main(argc, argv)
 		  XtNreportCallback, PortholeCallback, (XtPointer) panner);
     XtAddCallback(panner, 
 		  XtNreportCallback, PannerCallback, (XtPointer) porthole);
-
+#else
+    porthole = XtCreateManagedWidget ("viewport", viewportWidgetClass,
+				      paned, NULL, 0);
+#endif
     dvi = XtCreateManagedWidget ("dvi", dviWidgetClass, porthole, NULL, 0);
     if (file_name)
 	VisitFile (file_name, FALSE);
