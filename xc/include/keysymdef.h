@@ -1,4 +1,4 @@
-/* $XConsortium: keysymdef.h,v 1.10 89/03/27 08:43:56 rws Exp $ */
+/* $XConsortium: keysymdef.h,v 1.11 89/04/17 16:41:46 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -23,6 +23,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+
+#define XK_VoidSymbol		0xFFFFFF	/* void symbol */
 
 #ifdef XK_MISCELLANY
 /*
