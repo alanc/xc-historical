@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.104 91/05/11 16:14:27 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.105 91/05/17 18:36:28 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -148,6 +148,8 @@ extern int Tspttable[];
 static int *curstate = Talptable;
 static int *Tparsestate = Talptable;
 
+static void TekEnq();
+
 /* event handlers */
 extern void HandleKeyPressed(), HandleEightBitKeyPressed();
 extern void HandleStringEvent();
@@ -216,6 +218,14 @@ static XtActionsRec actionsList[] = {
 
 static Dimension defOne = 1;
 
+#define GIN_TERM_NONE_STR	"none"
+#define GIN_TERM_CR_STR		"CRonly"
+#define GIN_TERM_EOT_STR	"CR&EOT"
+
+#define GIN_TERM_NONE	0
+#define GIN_TERM_CR	1
+#define GIN_TERM_EOT	2
+
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
 	 XtOffsetOf(CoreRec, core.width), XtRDimension, (caddr_t)&defOne},
@@ -236,6 +246,9 @@ static XtResource resources[] = {
     {"initialFont", "InitialFont", XtRString, sizeof(char *),
        XtOffsetOf(TekWidgetRec, tek.initial_font),
        XtRString, "large"},
+    {"ginTerminator", "GinTerminator", XtRString, sizeof(char *),
+       XtOffsetOf(TekWidgetRec, tek.gin_terminator_str),
+       XtRString, GIN_TERM_NONE_STR},
 };
 
 static void TekInitialize(), TekRealize(), TekConfigure();
@@ -1020,7 +1033,7 @@ TekGINoff()
 }
 
 TekEnqMouse(c)
-int c;
+    int c;			/* character pressed */
 {
 	register TScreen *screen = &term->screen;
 	int mousex, mousey, rootx, rooty;
@@ -1045,23 +1058,31 @@ int c;
 	TekEnq(c, mousex, mousey);
 }
 
-TekEnq (status, x, y)
-int status;
-register int x, y;
+static void TekEnq (status, x, y)
+    int status;
+    register int x, y;
 {
-	register TScreen *screen = &term->screen;
-	int pty = screen->respond;
-	char cplot [5];
+    register TScreen *screen = &term->screen;
+    int pty = screen->respond;
+    char cplot [7];
+    int len = 5;
 
-	/* Translate x and y to Tektronix code */
-	cplot[1] = 040 | ((x >> SHIFTHI) & FIVEBITS);
-	cplot[2] = 040 | ((x >> SHIFTLO) & FIVEBITS);
-	cplot[3] = 040 | ((y >> SHIFTHI) & FIVEBITS);
-	cplot[4] = 040 | ((y >> SHIFTLO) & FIVEBITS);
-	if(cplot[0] = status)
-		v_write(pty, cplot, 5);
-	else
-		v_write(pty, &cplot[1], 4);
+    cplot[0] = status;
+    /* Translate x and y to Tektronix code */
+    cplot[1] = 040 | ((x >> SHIFTHI) & FIVEBITS);
+    cplot[2] = 040 | ((x >> SHIFTLO) & FIVEBITS);
+    cplot[3] = 040 | ((y >> SHIFTHI) & FIVEBITS);
+    cplot[4] = 040 | ((y >> SHIFTLO) & FIVEBITS);
+
+    if (screen->gin_terminator != GIN_TERM_NONE)
+	cplot[len++] = '\r';
+    if (screen->gin_terminator == GIN_TERM_EOT)
+	cplot[len++] = '\004';
+
+    if(cplot[0])
+	v_write(pty, cplot, len);
+    else
+	v_write(pty, cplot+1, len-1);
 }
 
 TekRun()
@@ -1301,6 +1322,16 @@ static void TekRealize (gw, valuemaskp, values)
 	else if (XmuCompareISOLatin1 (s, "small") == 0)
 	  screen->cur.fontsize = TEK_FONT_SMALL;
     }
+
+    if(XmuCompareISOLatin1(tw->tek.gin_terminator_str, GIN_TERM_NONE_STR) == 0)
+	screen->gin_terminator = GIN_TERM_NONE;
+    else if(XmuCompareISOLatin1(tw->tek.gin_terminator_str, GIN_TERM_CR_STR) == 0)
+	screen->gin_terminator = GIN_TERM_CR;
+    else if(XmuCompareISOLatin1(tw->tek.gin_terminator_str, GIN_TERM_EOT_STR) == 0)
+	screen->gin_terminator = GIN_TERM_EOT;
+    else
+	fprintf(stderr, "%s: illegal GIN terminator setting \"%s\"\n",
+		xterm_name, tw->tek.gin_terminator_str);
 
     gcv.graphics_exposures = TRUE;	/* default */
     gcv.font = tw->tek.Tfont[screen->cur.fontsize]->fid;

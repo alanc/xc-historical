@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.58 91/05/31 18:42:31 gildea Exp $
+ *	$XConsortium: ptyx.h,v 1.59 91/06/24 18:41:57 gildea Exp $
  */
 
 /*
@@ -329,6 +329,8 @@ typedef struct {
 	int		margin;		/* 0 -> margin 1, 1 -> margin 2	*/
 	int		pen;		/* current Tektronix pen 0=up, 1=dn */
 	char		*TekGIN;	/* nonzero if Tektronix GIN mode*/
+	int		gin_terminator; /* Tek strap option */
+
 	int		multiClickTime;	 /* time between multiclick selects */
 	int		bellSuppressTime; /* msecs after Bell before another allowed */
 	Boolean		bellInProgress; /* still ringing/flashing prev bell? */
@@ -357,6 +359,7 @@ typedef struct _TekPart {
     XFontStruct *Tfont[TEKNUMFONTS];
     int		tobaseline[TEKNUMFONTS]; /* top to baseline for each font */
     char	*initial_font;		/* large, 2, 3, small */
+    char	*gin_terminator_str;	/* ginTerminator resource */
 } TekPart;
 
 
