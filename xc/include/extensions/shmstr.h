@@ -20,7 +20,7 @@ without any express or implied warranty.
 #ifndef _SHMSTR_H_
 #define _SHMSTR_H_
 
-/* $XConsortium: shmstr.h,v 1.6 91/07/12 09:18:52 rws Exp $ */
+/* $XConsortium: shmstr.h,v 1.7 93/09/11 15:04:58 rws Exp $ */
 
 #include "XShm.h"
 
@@ -71,11 +71,11 @@ typedef struct _ShmAttach {
     CARD8	reqType;	/* always ShmReqCode */
     CARD8	shmReqType;	/* always X_ShmAttach */
     CARD16	length B16;
-    ShmSeg	shmseg;
-    CARD32	shmid;
+    ShmSeg	shmseg B32;
+    CARD32	shmid B32;
     BOOL	readOnly;
     BYTE	pad0;
-    CARD16	pad1;
+    CARD16	pad1 B16;
 } xShmAttachReq;
 #define sz_xShmAttachReq	16
 
@@ -83,7 +83,7 @@ typedef struct _ShmDetach {
     CARD8	reqType;	/* always ShmReqCode */
     CARD8	shmReqType;	/* always X_ShmDetach */
     CARD16	length B16;
-    ShmSeg	shmseg;
+    ShmSeg	shmseg B32;
 } xShmDetachReq;
 #define sz_xShmDetachReq	8
 
