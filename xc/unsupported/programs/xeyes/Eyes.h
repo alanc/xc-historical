@@ -1,5 +1,5 @@
 /*
-* $Header: $
+* $Header: Eyes.h,v 1.1 88/08/13 09:49:53 jim Exp $
 */
 
 #ifndef _XtEyes_h
@@ -30,10 +30,12 @@
 */
 
 #define XtNoutline	"outline"
-#define XtNcenterColor	"centerColor"
+#define XtNcenterColor	"center"
+#define XtNuseWideLines	"useWideLines"
+#define XtNuseBevel	"useBevel"
 
-#define XtCOutline	"Outline"
-#define XtCCenterColor	"CenterColor"
+#define XtCUseWideLines	"UseWideLines"
+#define XtCUseBevel	"UseBevel"
 
 typedef struct _EyesRec *EyesWidget;  /* completely defined in EyesPrivate.h */
 typedef struct _EyesClassRec *EyesWidgetClass;    /* completely defined in EyesPrivate.h */

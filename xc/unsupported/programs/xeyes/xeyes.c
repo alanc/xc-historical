@@ -1,16 +1,14 @@
 #ifndef lint
-static char rcsid[] = "$Header: xeyes.c,v 1.11 88/07/07 17:33:51 jim Exp $";
+static char rcsid[] = "$Header: xeyes.c,v 1.1 88/08/13 09:49:55 jim Exp $";
 #endif  lint
 
 #include <X11/Intrinsic.h>
 #include <X11/Xatom.h>
-#include <X11/Atoms.h>
+#include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include "Eyes.h"
 #include <stdio.h> 
-#ifdef notdef
-#include "xeyes.bit"
-#endif
+#include "eyes.bit"
 
 extern void exit();
 
@@ -22,16 +20,21 @@ extern void exit();
 void usage()
 {
     fprintf(stderr,
-"usage: xeyes [-geometry [{width}][x{height}][{+-}{xoff}[{+-}{yoff}]]] [-display [{host}]:[{vs}]]\n"
-);
+"usage: xeyes\n");
+    fprintf (stderr, 
+"       [-geometry [{width}][x{height}][{+-}{xoff}[{+-}{yoff}]]] [-display [{host}]:[{vs}]]\n");
     fprintf(stderr,
-"             [-fg {color}] [-bg {color}] [-bd {color}] [-bw {pixels}]\n");
+"       [-fg {color}] [-bg {color}] [-bd {color}] [-bw {pixels}]\n");
+    fprintf(stderr,
+"       [-outline {color}] [-center {color}] [-backing {backing-store}]\n");
     exit(1);
 }
 
 static XrmOptionDescRec options[] = {
-{"-outline",	"*eyes.outline",	XrmoptionSepArg,	 NULL},
-{"-center",	"*eyes.centerColor",	XrmoptionSepArg,	 NULL},
+{"-outline",	"*eyes.outline",	XrmoptionSepArg,	NULL},
+{"-center",	"*eyes.center",		XrmoptionSepArg,	NULL},
+{"-backing",	"*eyes.backingStore",	XrmoptionSepArg,	NULL},
+{"-widelines",	"*eyes.useWideLines",	XrmoptionNoArg,		"TRUE"},
 };
 
 void main(argc, argv)
@@ -49,12 +52,10 @@ void main(argc, argv)
       
     if (argc != 1) usage();
     
-#ifdef notdef
     XtSetArg (arg, XtNiconPixmap, 
 	      XCreateBitmapFromData (XtDisplay(toplevel),
 				     XtScreen(toplevel)->root,
-				     xeyes_bits, xeyes_width, xeyes_height));
-#endif
+				     eyes_bits, eyes_width, eyes_height));
     XtSetValues (toplevel, &arg, 1);
 
     XtSetArg (arg, XtNlabel, &labelname);

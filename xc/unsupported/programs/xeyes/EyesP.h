@@ -26,6 +26,7 @@ typedef struct {
 	 int		update;		/* current timeout index */
 	 int		thickness;	/* line thickness */
 	 int		odx, ody;	/* old mouse position */
+	 XPoint		pupil[2];	/* pupil position */
 	 XtIntervalId	interval_id;
    } EyesPart;
 

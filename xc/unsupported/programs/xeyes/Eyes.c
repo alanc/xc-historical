@@ -164,6 +164,8 @@ static void Initialize (greq, gnew)
 
     w->eyes.interval_id =
 	    XtAddTimeOut(delays[w->eyes.update], draw_it, (caddr_t)gnew);
+    w->eyes.pupil[0].x = w->eyes.pupil[1].x = -1;
+    w->eyes.pupil[0].y = w->eyes.pupil[1].y = -1;
 }
 
  
@@ -214,6 +216,54 @@ static void Redisplay(gw, event, region)
     (void) repaint_window ((EyesWidget)gw);
 }
 
+static XPoint computePupil (w, num, dx, dy)
+    EyesWidget	w;
+    int		num;
+    int		dx, dy;
+{
+	int	cx, cy;
+	double	dist;
+	double	angle;
+	double	x, y;
+	double	h;
+	double	a, b;
+	XPoint	ret;
+
+	dx = dx - EYE_CENTER_X(w, num);
+	dy = dy - EYE_CENTER_Y(w, num);
+	if (dx == 0 && dy == 0) {
+		cx = EYE_CENTER_X(w, num);
+		cy = EYE_CENTER_Y(w, num);
+	} else {
+		angle = atan2 ((double) dy, (double) dx);
+		a = EYE_WIDTH(w) / 2.0;
+		b = EYE_HEIGHT(w) / 2.0;
+		h = hypot (b * cos (angle), a * sin (angle));
+		x = a * b * cos (angle) / h;
+		y = a * b * sin (angle) / h;
+		dist = BALL_DIST * hypot (x, y);
+		if (dist > hypot ((double) dx, (double) dy)) {
+			cx = dx + EYE_CENTER_X(w, num);
+			cy = dy + EYE_CENTER_Y(w, num);
+		} else {
+			cx = dist * cos (angle) + EYE_CENTER_X(w, num);
+			cy = dist * sin (angle) + EYE_CENTER_Y(w, num);
+		}
+	}
+	ret.x = cx;
+	ret.y = cy;
+	return ret;
+}
+
+static void computePupils (w, dx, dy, pupils)
+    EyesWidget	w;
+    int		dx, dy;
+    XPoint	pupils[2];
+{
+    pupils[0] = computePupil (w, 0, dx, dy);
+    pupils[1] = computePupil (w, 1, dx, dy);
+}
+
 /* ARGSUSED */
 static int draw_it(client_data, id)
      caddr_t client_data;
@@ -225,15 +275,27 @@ static int draw_it(client_data, id)
 	int		dx, dy;
 	Display		*dpy = XtDisplay (w);
 	Window		win = XtWindow (w);
+	XPoint		newpupil[2];
 
 	if (XtIsRealized((Widget)w)) {
     		XQueryPointer (dpy, win, &rep_root, &rep_child,
  			&rep_rootx, &rep_rooty, &dx, &dy, &rep_mask);
 		if (dx != w->eyes.odx || dy != w->eyes.ody) {
-			eyeBall (w, w->eyes.centerGC, 0, w->eyes.odx, w->eyes.ody);
-			eyeBall (w, w->eyes.centerGC, 1, w->eyes.odx, w->eyes.ody);
-			eyeBall (w, w->eyes.pupGC, 0, dx, dy);
-			eyeBall (w, w->eyes.pupGC, 1, dx, dy);
+			computePupils (w, dx, dy, newpupil);
+			if (newpupil[0].x != w->eyes.pupil[0].x ||
+			    newpupil[0].y != w->eyes.pupil[0].y)
+			{
+			    eyeBall (w, w->eyes.centerGC, 0);
+			    w->eyes.pupil[0] = newpupil[0];
+			    eyeBall (w, w->eyes.pupGC, 0, dx, dy);
+			}
+			if (newpupil[1].x != w->eyes.pupil[1].x ||
+			    newpupil[1].y != w->eyes.pupil[1].y)
+			{
+			    eyeBall (w, w->eyes.centerGC, 1);
+			    w->eyes.pupil[1] = newpupil[1];
+			    eyeBall (w, w->eyes.pupGC, 1, dx, dy);
+			}
 			XFlush(XtDisplay(w));	   /* Flush output buffers */
 			w->eyes.odx = dx;
 			w->eyes.ody = dy;
@@ -254,8 +316,9 @@ repaint_window (w)
 	if (XtIsRealized ((Widget) w)) {
 		eyeLiner (w, w->eyes.outGC, w->eyes.centerGC, 0);
 		eyeLiner (w, w->eyes.outGC, w->eyes.centerGC, 1);
-		eyeBall (w, w->eyes.pupGC, 0, w->eyes.odx, w->eyes.ody);
-		eyeBall (w, w->eyes.pupGC, 1, w->eyes.odx, w->eyes.ody);
+		computePupils (w, w->eyes.odx, w->eyes.ody, w->eyes.pupil);
+		eyeBall (w, w->eyes.pupGC, 0);
+		eyeBall (w, w->eyes.pupGC, 1);
 	}
 }
     
@@ -296,43 +359,19 @@ int		num;
 	}
 }
 
-eyeBall (w, gc, num, dx, dy)
+eyeBall (w, gc, num)
 EyesWidget	w;
 GC	gc;
 int	num;
-int	dx, dy;
 {
 	int	cx, cy;
-	double	dist;
-	double	angle;
-	double	x, y;
-	double	h;
-	double	a, b;
 	Display *dpy = XtDisplay(w);
 	Window win = XtWindow(w);
 	int bw = BALL_WIDTH(w), bh = BALL_HEIGHT(w);
 
-	dx = dx - EYE_CENTER_X(w, num);
-	dy = dy - EYE_CENTER_Y(w, num);
-	if (dx == 0 && dy == 0) {
-		cx = EYE_CENTER_X(w, num);
-		cy = EYE_CENTER_Y(w, num);
-	} else {
-		angle = atan2 ((double) dy, (double) dx);
-		a = EYE_WIDTH(w) / 2.0;
-		b = EYE_HEIGHT(w) / 2.0;
-		h = hypot (b * cos (angle), a * sin (angle));
-		x = a * b * cos (angle) / h;
-		y = a * b * sin (angle) / h;
-		dist = BALL_DIST * hypot (x, y);
-		if (dist > hypot ((double) dx, (double) dy)) {
-			cx = dx + EYE_CENTER_X(w, num);
-			cy = dy + EYE_CENTER_Y(w, num);
-		} else {
-			cx = dist * cos (angle) + EYE_CENTER_X(w, num);
-			cy = dist * sin (angle) + EYE_CENTER_Y(w, num);
-		}
-	}
+	cx = w->eyes.pupil[num].x;
+	cy = w->eyes.pupil[num].y;
+
 	XFillArc (dpy, win, gc, (cx - bw/2), (cy - bh/2), bw, bh, 
 		  90 * 64, 360 * 64);
 }
