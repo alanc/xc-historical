@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.34 92/10/21 14:15:44 rws Exp $
+XCOMM platform:  $XConsortium: cray.cf,v 1.35 92/12/23 16:56:52 gildea Exp $
 
 #define OSName			UNICOS 6.1
 XCOMM operating system:  OSName
@@ -19,7 +19,6 @@ XCOMM operating system:  OSName
 #define ConnectionFlags		-DTCPCONN 
 #define HasShm			NO
 #define PexNativeFPFormat	PEXCRAY_Floating
-#define HasSymLinks		NO
 
 #ifdef CRAY2
 #define DefaultCCOptions	-hpagelm -hlimitlm
