@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: xset.c,v 1.68 94/04/17 20:24:16 rws Exp mor $ 
+ * $XConsortium: xset.c,v 1.69 95/05/12 16:36:37 mor Exp mor $ 
  */
 
 /*
@@ -28,8 +28,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-
-/* $XConsortium: xset.c,v 1.68 94/04/17 20:24:16 rws Exp mor $ */
 
 #include <stdio.h>
 #include <ctype.h>
