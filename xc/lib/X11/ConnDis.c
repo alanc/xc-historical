@@ -1,4 +1,4 @@
-/* $XConsortium: ConnDis.c,v 11.121 94/04/17 20:18:53 mor Exp $ */
+/* $XConsortium: ConnDis.c,v 11.122 94/05/05 13:13:24 mor Exp $ */
 /*
  
 Copyright (c) 1989  X Consortium
@@ -312,7 +312,7 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
 	 * X protocol (ie FamilyInternet).
 	 */
 
-	if( _X11TransConvertAddress(&family, &saddrlen, saddr) < 0 )
+	if( _X11TransConvertAddress(&family, &saddrlen, &saddr) < 0 )
 	    {
 	    _X11TransClose(trans_conn);
 	    trans_conn = NULL;

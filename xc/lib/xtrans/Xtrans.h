@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.h,v 1.23 94/04/17 20:23:00 mor Exp $ */
+/* $XConsortium: Xtrans.h,v 1.24 94/05/02 10:45:32 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -443,7 +443,7 @@ int TRANS(ConvertAddress)(
 #if NeedFunctionPrototypes
     int *,		/* familyp */
     int *,		/* addrlenp */
-    Xtransaddr *	/* addrp */
+    Xtransaddr **	/* addrp */
 #endif
 );
 

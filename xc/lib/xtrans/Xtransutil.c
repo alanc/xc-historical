@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransutil.c,v 1.15 94/04/17 20:23:07 mor Exp $ */
+/* $XConsortium: Xtransutil.c,v 1.16 94/05/02 11:13:42 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -86,10 +86,10 @@ int
 TRANS(ConvertAddress)(familyp,addrlenp,addrp)
 int	*familyp;
 int	*addrlenp;
-Xtransaddr	*addrp;
+Xtransaddr	**addrp;
 {
 
-    PRMSG(2,"TRANS(ConvertAddress)(%d,%d,%x)\n",*familyp,*addrlenp,addrp);
+    PRMSG(2,"TRANS(ConvertAddress)(%d,%d,%x)\n",*familyp,*addrlenp,*addrp);
 
     switch( *familyp )
     {
@@ -114,7 +114,7 @@ Xtransaddr	*addrp;
 	char *cp = (char *) &saddr.sin_addr.s_addr;
 #endif /* CRAY */
 
-	memcpy (&saddr, addrp, sizeof (struct sockaddr_in));
+	memcpy (&saddr, *addrp, sizeof (struct sockaddr_in));
 
 	if ((len == 4) && (cp[0] == 127) && (cp[1] == 0) &&
 	    (cp[2] == 0) && (cp[3] == 1))
@@ -125,7 +125,7 @@ Xtransaddr	*addrp;
 	{
 	    *familyp=FamilyInternet;
 	    *addrlenp=len;
-	    memcpy(addrp,&saddr.sin_addr,len);
+	    memcpy(*addrp,&saddr.sin_addr,len);
 	}
 	break;
     }
@@ -136,11 +136,11 @@ Xtransaddr	*addrp;
     {
 	struct sockaddr_dn saddr;
 
-	memcpy (&saddr, addrp, sizeof (struct sockaddr_dn));
+	memcpy (&saddr, *addrp, sizeof (struct sockaddr_dn));
 
 	*familyp=FamilyDECnet;
 	*addrlenp=sizeof(struct dn_naddr);
-	memcpy(addrp,&saddr.sdn_add,*addrlenp);
+	memcpy(*addrp,&saddr.sdn_add,*addrlenp);
 
 	break;
     }
@@ -187,15 +187,15 @@ Xtransaddr	*addrp;
 	int len = TRANS(GetHostname) (hostnamebuf, sizeof hostnamebuf);
 
 	if (len > 0) {
-	    if (addrp && *addrlenp < (len + 1))
+	    if (*addrp && *addrlenp < (len + 1))
 	    {
-		free ((char *) addrp);
-		addrp = NULL;
+		free ((char *) *addrp);
+		*addrp = NULL;
 	    }
-	    if (!addrp)
-		addrp = (Xtransaddr *) malloc (len + 1);
-	    if (addrp) {
-		strcpy ((char *) addrp, hostnamebuf);
+	    if (!*addrp)
+		*addrp = (Xtransaddr *) malloc (len + 1);
+	    if (*addrp) {
+		strcpy ((char *) *addrp, hostnamebuf);
 		*addrlenp = len;
 	    } else {
 		*addrlenp = 0;
@@ -203,9 +203,9 @@ Xtransaddr	*addrp;
 	}
 	else
 	{
-	    if (addrp)
-		free ((char *) addrp);
-	    addrp = NULL;
+	    if (*addrp)
+		free ((char *) *addrp);
+	    *addrp = NULL;
 	    *addrlenp = 0;
 	}
     }
