@@ -27,20 +27,17 @@ Pixmap XCreateBitmapFromData(display, d, data, width, height)
 {
     XImage ximage;
     GC gc;
-    XGCValues gcv;
     Pixmap pix;
 
     pix = XCreatePixmap(display, d, width, height, 1);
     if (!pix)
       return(0);
-    gcv.foreground = 1;
-    gcv.background = 0;
-    gc = XCreateGC(display, pix, GCForeground|GCBackground, &gcv);
+    gc = XCreateGC(display, pix, (unsigned long)0, (XGCValues *)0);
     ximage.height = height;
     ximage.width = width;
     ximage.depth = 1;
     ximage.xoffset = 0;
-    ximage.format = XYBitmap;
+    ximage.format = ZPixmap;
     ximage.data = data;
     ximage.byte_order = LSBFirst;
     ximage.bitmap_unit = 8;
