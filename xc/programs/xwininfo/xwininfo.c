@@ -4,7 +4,7 @@
  * xwininfo.c	- MIT Project Athena, X Window system window
  *		  information utility.
  *
- * $XConsortium: xwininfo.c,v 1.45 90/12/13 12:06:54 gildea Exp $
+ * $XConsortium: xwininfo.c,v 1.46 90/12/14 15:38:35 gildea Exp $
  *
  *	This program will report all relevant information
  *	about a specific window.
@@ -446,10 +446,20 @@ static binding _window_gravity_states[] = {
 	{ StaticGravity, "StaticGravity" },
 	{ 0, 0 }};
 
+static binding _visual_classes[] = {
+	{ StaticGray, "StaticGray" },
+	{ GrayScale, "GrayScale" },
+	{ StaticColor, "StaticColor" },
+	{ PseudoColor, "PseudoColor" },
+	{ TrueColor, "TrueColor" },
+	{ DirectColor, "DirectColor" },
+	{ 0, 0 }};
+
 Display_Stats_Info(window)
      Window window;
 {
   XWindowAttributes win_attributes;
+  XVisualInfo vistemplate, *vinfo;
   XSizeHints hints;
   int dw = DisplayWidth (dpy, screen), dh = DisplayHeight (dpy, screen);
   int xright, ybelow, rx, ry;
@@ -458,6 +468,8 @@ Display_Stats_Info(window)
 
   if (!XGetWindowAttributes(dpy, window, &win_attributes))
     Fatal_Error("Can't get window attributes.");
+  vistemplate.visualid = XVisualIDFromVisual(win_attributes.visual);
+  vinfo = XGetVisualInfo(dpy, VisualIDMask, &vistemplate, &junk);
 
   (void) XTranslateCoordinates (dpy, window, win_attributes.root, 
 				-win_attributes.border_width,
@@ -477,6 +489,7 @@ Display_Stats_Info(window)
   printf("  Width: %s\n", xscale(win_attributes.width));
   printf("  Height: %s\n", yscale(win_attributes.height));
   printf("  Depth: %d\n", win_attributes.depth);
+  printf("  Visual Class: %s\n", Lookup(vinfo->class, _visual_classes));
   printf("  Border width: %s\n", bscale(win_attributes.border_width));
   printf("  Class: %s\n",
   	 Lookup(win_attributes.class, _window_classes));
