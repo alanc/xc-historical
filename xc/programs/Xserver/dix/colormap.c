@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.9 90/01/23 13:35:31 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.10 90/03/20 15:27:56 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -577,6 +577,7 @@ UpdateColors (pmap)
 	    pdef->red = pmap->red[i].co.local.red;
 	    pdef->green = pmap->green[i].co.local.green;
 	    pdef->blue = pmap->blue[i].co.local.blue;
+	    pdef->flags = DoRed|DoGreen|DoBlue;
 	    pdef++;
 	    n++;
 	}
@@ -600,6 +601,7 @@ UpdateColors (pmap)
 		pdef->green = pent->co.local.green;
 		pdef->blue = pent->co.local.blue;
 	    }
+	    pdef->flags = DoRed|DoGreen|DoBlue;
 	    pdef++;
 	    n++;
 	}
