@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlcWrap.c,v 11.1 91/04/01 18:13:55 gildea Exp $
+ * $XConsortium: XlcWrap.c,v 11.1 91/04/06 13:18:51 rws Exp $
  */
 
 /*
@@ -43,9 +43,9 @@
 extern char *getenv();
 #endif
 
-extern Bool _XlcDefaultLoader(
+extern XLCd _XlcDefaultLoader(
 #if NeedFunctionPrototypes
-    XLCd
+    char*
 #endif
 );
 
@@ -199,15 +199,6 @@ _XlcCurrentLocale ()
 	if (lcd) {
 	    XLCd *new_list;
 
-	    if (!lcd->core.name) {
-		j = strlen(name) + 1;
-		lcd->core.name = Xmalloc(j);
-		if (!lcd->core.name) {
-		    Xfree((char *)lcd);
-		    goto bad;
-		}
-		strcpy(lcd->core.name, name);
-	    }
 	    new_list = (XLCd *) Xrealloc ((char *)lcd_list,
 					  (sizeof (XLCd) * (i+2)));
 	    if (!new_list)
