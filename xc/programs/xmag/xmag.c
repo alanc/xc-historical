@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
-#include <X11/Xaw/Form.h>
+#include <X11/Xaw/Paned.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Label.h>
 #include <X11/Shell.h>
@@ -777,7 +777,7 @@ GetMinIntensity(data)
 
 
 
-static Widget form, cclose, replace, new;
+static Widget pane1, pane2, pane3, cclose, replace, new, label;
 
 /*
  * PopupNewScale() -- Create and popup a new scale composite.
@@ -791,27 +791,31 @@ PopupNewScale(data)
   data->scaleShell = 
     XtVaCreatePopupShell("xmag", topLevelShellWidgetClass, toplevel, 
 			 NULL);
-  form = XtCreateManagedWidget("form", formWidgetClass, data->scaleShell,
-                               (Arg *) NULL, 0);
-  cclose = XtCreateManagedWidget("close", commandWidgetClass, form,
-                               (Arg *) NULL, 0);
+  pane1 = XtCreateManagedWidget("pane1", panedWidgetClass, data->scaleShell,
+				(Arg *) NULL, 0);
+  pane2 = XtCreateManagedWidget("pane2", panedWidgetClass, pane1,
+				(Arg *) NULL, 0);
+  cclose = XtCreateManagedWidget("close", commandWidgetClass, pane2,
+				 (Arg *) NULL, 0);
   XtAddCallback(cclose, XtNcallback, CloseCB, (XtPointer)data->scaleShell);
-  replace = XtVaCreateManagedWidget("replace", commandWidgetClass, form,
-				    XtNfromHoriz, (XtArgVal)cclose,
-				    NULL);
+  replace = XtCreateManagedWidget("replace", commandWidgetClass, pane2,
+				  (Arg *) NULL, 0);
   XtAddCallback(replace, XtNcallback, ReplaceCB, (XtPointer)data);
-  new = XtVaCreateManagedWidget("new", commandWidgetClass, form,
-				XtNfromHoriz, (XtArgVal)replace,
-				NULL);
+  new = XtCreateManagedWidget("new", commandWidgetClass, pane2,
+			      (Arg *) NULL, 0);
   XtAddCallback(new, XtNcallback, NewCB, (XtPointer)NULL);
 
+  label = XtCreateManagedWidget("helpLabel", labelWidgetClass, pane2,
+				(Arg *) NULL, 0);
+  
+  pane3 = XtCreateManagedWidget("pane2", panedWidgetClass, pane1,
+				(Arg *) NULL, 0);
   data->scaleInstance = 
     XtVaCreateManagedWidget("scale", scaleWidgetClass, 
-			    form,
+			    pane3,
 			    XtNvisual, (XtArgVal)data->win_info.visual,
 			    XtNcolormap, (XtArgVal)data->win_info.colormap,
 			    XtNdepth, (XtArgVal)data->win_info.depth,
-			    XtNfromVert, (XtArgVal)cclose,
 			    XtNscaleX, (XtArgVal)options.mag,
 			    XtNscaleY, (XtArgVal)options.mag,
 			    NULL);
@@ -836,7 +840,7 @@ PopupNewScale(data)
 			    XtNbackground, (XtPointer)GetMinIntensity(data),
 			    XtNborderWidth, (XtPointer)0,
 			    NULL);
-  XtInstallAllAccelerators(form, form);	/* install accelerators */
+  XtInstallAllAccelerators(pane1, pane1);	/* install accelerators */
   if (data->newScale) {
     XtPopup(data->scaleShell, XtGrabNone);
     (void) XSetWMProtocols	/* ICCCM delete window */

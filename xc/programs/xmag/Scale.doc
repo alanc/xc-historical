@@ -10,7 +10,7 @@ The Scale widget is an immutable image displayed within a rectangular
 region of the screen.  When the widget is selected, it is highlighted, 
 and an application callback routine is invoked.  When the
 widget is resized the image can be autoscaled to fit new size of the 
-widget window.  Widget can cut and paste its contents.
+widget window.  The widget can also cut and paste its contents.
 
 When creating a Scale widget instance, the following resources are
 retreived from the argument list or from the resource database:
@@ -55,13 +55,13 @@ All the Simple Widget resources plus...
  background	This resource has the same meaning as for the Simple widget.
 		However, it is worth mentioning that if the most frequent
 		pixel value in the XYPixmap or ZPixmap image is specified
-		as backgroud, scaling process can be speeded up noticably.
+		as backgroud, the scaling process can be speeded up noticably.
 
  foreground	The color used to paint the image if in XYBitmap format.
 		If the image is XYPixmap or ZPixmap format, the foreground
 		resource has no effect.
 
- gravity	This resource will determine where to put image if it does 
+ gravity	This resource will determine where to put the image if it does 
 		not fit the window size minus internal width and height.
 		The widget will try to preserve gravity rather than internal
 		width and height resources.
@@ -85,22 +85,22 @@ All the Simple Widget resources plus...
  precision	This resource specifies the precision of the scale factors
 		when scaling the image.  The precision resource can be any 
 		positive number greater than zero. (For example, if precision
-		is 1.0 then image will be scaled only by integer values.)
+		is 1.0 then the image will be scaled only by integer values.)
 
- proportional	If this resource is set to true it will make sure that image
-		proportions, as specified by aspectRatio resource, are being
-		kept whenever it is scaled.  
+ proportional	If this resource is set to true it will make sure that the 
+                image proportions, as specified by aspectRatio resource,
+                are being kept whenever it is scaled.  
 		
  resize		If this resource is true the widget will try to resize when
 		addopting a new image thus preserveing the scale values.
-		If it is false the scale values will not be preserver unless
+		If it is false the scale values will not be preserved unless
 		the image can fit in the current window size with the same
 		scale values.
 
  scaleX
  scaleY		These resources specify the scaling values for the widget
 		image.  They will be floored to satisfy precision resource
-		value.  If uniform resource is true the scale values will
+		values.  If uniform resource is true the scale values will
 		be only integers.  These resources can be any positive number
 		greater than zero.
 

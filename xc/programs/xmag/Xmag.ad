@@ -1,3 +1,6 @@
+*Font: fixed
+*pane2*orientation: horizontal
+*pane2*showGrip: False
 *allowShellResize: on
 *Scale.Translations:#augment\
 			<EnterWindow>: set-colors()\n\
@@ -19,5 +22,5 @@
 			<Key>space:set()notify()unset()\n\
 			<Btn2Up>:set()notify()unset()\n\
 			<Btn3Up>:set()notify()unset()
-*Label.Font: fixed
-*Label.Translations:<Enter>:popdown-pixel()
+*pixLabel.Translations:<Enter>:popdown-pixel()
+*helpLabel.label:	Use MB1 to examine pixels.

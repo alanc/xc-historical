@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Scale.c,v 1.6 91/02/17 16:14:56 dave Exp $
+ * $XConsortium: Scale.c,v 1.7 91/03/11 18:49:14 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -134,7 +134,8 @@ ScaleClassRec scaleClassRec = {
     /* num_resources		*/	XtNumber(resources),
     /* xrm_class		*/	NULLQUARK,
     /* compress_motion		*/	TRUE,
-    /* compress_exposure	*/      FALSE,
+    /* compress_exposure	*/      XtExposeCompressMaximal|
+                                        XtExposeGraphicsExposeMerged,
     /* compress_enterleave	*/	TRUE,
     /* visible_interest		*/	TRUE,
     /* destroy			*/	Destroy,
@@ -524,8 +525,9 @@ static void Redisplay(w, event, region)
     ScaleWidget sw = (ScaleWidget) w;
     Position  x, y, img_x, img_y;
     Dimension width, height;
-    
+
     if (event->type == Expose) {
+
 	if (event->xexpose.x < sw->scale.x) {
 	    x = 0;
 	    width = event->xexpose.width -
@@ -582,9 +584,9 @@ void TryResize(sw)
 	floor(sw->scale.image->height * sw->scale.scale_y)
 	    + 2 * sw->scale.internal_height;
     
-while ((result =   
+    while ((result =   
 /* SUPPRESS 530 */XtMakeResizeRequest((Widget)sw,width,height,&width,&height))
-			  == XtGeometryAlmost);  
+	   == XtGeometryAlmost);  
     
     if (result != XtGeometryNo) {
 	sw->core.width = width;
