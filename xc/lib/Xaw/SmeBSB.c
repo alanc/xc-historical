@@ -178,6 +178,8 @@ Widget request, new;
 
     GetDefaultSize(new, &(entry->rectangle.width), &(entry->rectangle.height));
     CreateGCs(new);
+    entry->sme_bsb.left_bitmap_width = entry->sme_bsb.left_bitmap_height = 0;
+    entry->sme_bsb.right_bitmap_width = entry->sme_bsb.right_bitmap_height = 0;
 }
 
 /*      Function Name: Destroy
