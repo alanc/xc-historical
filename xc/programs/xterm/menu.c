@@ -1,4 +1,4 @@
-/* $XConsortium: menu.c,v 1.56 91/05/08 18:42:42 gildea Exp $ */
+/* $XConsortium: menu.c,v 1.57 91/05/10 16:57:25 gildea Exp $ */
 /*
 Copyright 1989 Massachusetts Institute of Technology
 
@@ -815,10 +815,12 @@ static void handle_toggle (proc, var, params, nparams, w, closure, data)
     switch (nparams) {
       case 0:
 	dir = -1;
+	break;
       case 1:
 	if (XmuCompareISOLatin1 (params[0], "on") == 0) dir = 1;
 	else if (XmuCompareISOLatin1 (params[0], "off") == 0) dir = 0;
 	else if (XmuCompareISOLatin1 (params[0], "toggle") == 0) dir = -1;
+	break;
     }
 
     switch (dir) {
