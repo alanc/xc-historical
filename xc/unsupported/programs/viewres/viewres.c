@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.33 90/02/08 10:04:07 jim Exp $
+ * $XConsortium: viewres.c,v 1.2 90/02/08 13:33:53 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -40,7 +40,7 @@
 #include <X11/Xaw/Text.h>
 #include <X11/Xaw/List.h>
 #include <X11/Xaw/Scrollbar.h>
-#include "Tree.h"
+#include <X11/Xaw/Tree.h>
 #include <X11/Xmu/Converters.h>
 #include <X11/Xmu/CharSet.h>
 #include "defs.h"
@@ -57,7 +57,6 @@
 
 char *ProgramName;
 static int NumberShowing = 0;
-static int TotalWithResources = 0;
 
 extern WidgetNode widget_list[];
 extern int nwidgets;
@@ -131,11 +130,9 @@ static XtActionsRec viewres_actions[] = {
 #define SELECT_PARENTS 2
 #define SELECT_CHILDREN 3
 #define SELECT_ALL 4
-#define SELECT_WITH_RESOURCES 5
-#define SELECT_WITHOUT_RESOURCES 6
-#define SELECT_SHOWN_RESOURCES 7
-#define SELECT_HIDDEN_RESOURCES 8
-#define SELECT_number 9
+#define SELECT_HAS_RESOURCES 5
+#define SELECT_SHOWN_RESOURCES 6
+#define SELECT_number 7
 
 static struct _nametable {
     char *name;
@@ -146,10 +143,8 @@ static struct _nametable {
     { "parents", SELECT_PARENTS },
     { "children", SELECT_CHILDREN },
     { "all", SELECT_ALL },
-    { "resources", SELECT_WITH_RESOURCES },
-    { "noresources", SELECT_WITHOUT_RESOURCES },
+    { "resources", SELECT_HAS_RESOURCES },
     { "shown", SELECT_SHOWN_RESOURCES },
-    { "hidden", SELECT_HIDDEN_RESOURCES },
 }, boolean_nametable[] = {
     { "off", BOOL_OFF },
     { "false", BOOL_OFF },
@@ -286,8 +281,6 @@ static void update_selection_items ()
     XtSetValues (select_widgets[SELECT_CHILDREN], args, ONE);
     args[0].value = (XtArgVal) ((Boolean) (NumberShowing > 0));
     XtSetValues (select_widgets[SELECT_SHOWN_RESOURCES], args, ONE);
-    args[0].value = (XtArgVal) ((Boolean)(NumberShowing < TotalWithResources));
-    XtSetValues (select_widgets[SELECT_HIDDEN_RESOURCES], args, ONE);
 }
 
 
@@ -475,23 +468,39 @@ static void select_callback (gw, closure, data)
 	break;
 
       case SELECT_PARENTS:		/* chain up adding to selection_list */
-	nselected = selected_list.n_elements;
-	for (i = 0; i < nselected; i++) {
-	    WidgetNode *parent = selected_list.elements[i];
+	node = (XtIsSubclass (gw, toggleWidgetClass) ? widget_to_node (gw)
+		: NULL);
+	if (node) {
+	    do {
+		add_to_selected_list (node, TRUE);
+	    } while (node = node->superclass);
+	} else {
+	    for (i = 0; i < nselected; i++) {
+		WidgetNode *parent = selected_list.elements[i];
 
-	    while (parent = parent->superclass) {  /* do parents */
-		if (parent->selection_index >= 0 &&  /* hit already selected */
-		    parent->selection_index < nselected) break;	 /* later... */
-		add_to_selected_list (parent, TRUE);
+		/*
+		 * chain up the tree, but stop if we get to nodes that
+		 * are already in the selected list.
+		 */
+		while (parent = parent->superclass) {  /* do parents */
+		    if (parent->selection_index >= 0) break;
+		    add_to_selected_list (parent, TRUE);
+		}
 	    }
 	}
 	break;
 
       case SELECT_CHILDREN:		/* all sub nodes */
-	for (i = 0; i < nselected; i++) {
-	    WidgetNode *parent = selected_list.elements[i];
+	node = (XtIsSubclass (gw, toggleWidgetClass) ? widget_to_node (gw)
+		: NULL);
+	if (node) {
+	    add_subtree_to_selected_list (node);
+	} else {
+	    for (i = 0; i < nselected; i++) {
+		WidgetNode *parent = selected_list.elements[i];
 
-	    add_subtree_to_selected_list (parent, TRUE);
+		add_subtree_to_selected_list (parent, TRUE);
+	    }
 	}
 	break;
 
@@ -499,28 +508,15 @@ static void select_callback (gw, closure, data)
 	add_subtree_to_selected_list (topnode, TRUE);
 	break;
 
-      case SELECT_WITH_RESOURCES:	/* put all w/ rescnt > 0 on sel_list */
+      case SELECT_HAS_RESOURCES:	/* put all w/ rescnt > 0 on sel_list */
 	for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
 	    if (node->nnewresources > 0) add_to_selected_list (node, TRUE);
-	}
-	break;
-
-      case SELECT_WITHOUT_RESOURCES:	/* put all w recnt == 0 on sel_list */
-	for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
-	    if (node->nnewresources == 0) add_to_selected_list (node, TRUE);
 	}
 	break;
 
       case SELECT_SHOWN_RESOURCES:
 	for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
 	    if (IsShowing(node)) add_to_selected_list (node, TRUE);
-	}
-	break;
-
-      case SELECT_HIDDEN_RESOURCES:
-	for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
-	    if (node->nnewresources > 0 && !IsShowing(node))
-	      add_to_selected_list (node, TRUE);
 	}
 	break;
 
@@ -548,17 +544,6 @@ static void toggle_callback (gw, closure, data)
     }
 
     update_selection_items ();
-}
-
-static int count_with_resources (node)
-    WidgetNode *node;
-{
-    int i = ((node->nnewresources > 0) ? 1 : 0);
-
-    for (node = node->children; node; node = node->siblings) {
-	i += count_with_resources (node);
-    }
-    return i;
 }
 
 
@@ -608,8 +593,6 @@ main (argc, argv)
 	node->nnewresources = count_owned_resources (node, node);
     }
     XtDestroyWidget (dummy);
-
-    TotalWithResources = count_with_resources (topnode);
 
     pane = XtCreateManagedWidget ("pane", panedWidgetClass, toplevel,
 				  NULL, ZERO);
@@ -671,10 +654,8 @@ main (argc, argv)
     MAKE_SELECT (SELECT_PARENTS, "selectParents");
     MAKE_SELECT (SELECT_CHILDREN, "selectChildren");
     MAKE_SELECT (SELECT_ALL, "selectAll");
-    MAKE_SELECT (SELECT_WITH_RESOURCES, "selectWithResources");
-    MAKE_SELECT (SELECT_WITHOUT_RESOURCES, "selectWithoutResources");
+    MAKE_SELECT (SELECT_HAS_RESOURCES, "selectHasResources");
     MAKE_SELECT (SELECT_SHOWN_RESOURCES, "selectShownResources");
-    MAKE_SELECT (SELECT_HIDDEN_RESOURCES, "selectHiddenResources");
 #undef MAKE_SELECT
 
 
