@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miDDCtoGC.c,v 5.1 91/02/16 09:55:01 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -23,6 +23,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+#include <stdio.h>
 #include "miLUT.h"
 #include "misc.h"
 #include "miscstruct.h"
@@ -32,7 +33,6 @@ SOFTWARE.
 #include "gcstruct.h"
 #include "miLineDash.h"
 
-#include <stdio.h>
 
 /*++
  |
@@ -201,7 +201,7 @@ GCPtr		pgc;	/* X GC handle */
       /* Register changes with ddx */
       if (gcmask) {
 	pgc->serialNumber |= GC_CHANGE_SERIAL_BIT;
-	pgc->stateChanges = gcmask;
+	pgc->stateChanges |= gcmask;
 	(*pgc->funcs->ChangeGC)(pgc, gcmask);
       }
 
@@ -376,7 +376,7 @@ GCPtr		pgc;	/* X GC handle */
       /* Register changes with ddx */
       if (gcmask) {
 	pgc->serialNumber |= GC_CHANGE_SERIAL_BIT;
-	pgc->stateChanges = gcmask;
+	pgc->stateChanges |= gcmask;
 	(*pgc->funcs->ChangeGC)(pgc, gcmask);
       }
 
@@ -468,7 +468,7 @@ GCPtr		pgc;	/* X GC handle */
       /* Register changes with ddx */
       if (gcmask) {
 	pgc->serialNumber |= GC_CHANGE_SERIAL_BIT;
-	pgc->stateChanges = gcmask;
+	pgc->stateChanges |= gcmask;
 	(*pgc->funcs->ChangeGC)(pgc, gcmask);
       }
 
@@ -533,7 +533,7 @@ GCPtr		pgc;	/* X GC handle */
       /* Register changes with ddx */
       if (gcmask) {
 	pgc->serialNumber |= GC_CHANGE_SERIAL_BIT;
-	pgc->stateChanges = gcmask;
+	pgc->stateChanges |= gcmask;
 	(*pgc->funcs->ChangeGC)(pgc, gcmask);
       }
 
