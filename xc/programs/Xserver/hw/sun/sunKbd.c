@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.36 93/11/16 10:15:58 kaleb Exp $ */
+/* $XConsortium: sunKbd.c,v 5.37 94/02/01 14:57:26 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -631,6 +631,71 @@ Firm_event* sunKbdGetEvents (pNumEvents, pAgain)
  */
 #ifndef XKB
 static xEvent	autoRepeatEvent;
+
+static Bool DoSpecialKeys(device, xE, fe)
+    DeviceIntPtr  device;
+    xEvent*       xE;
+    Firm_event* fe;
+{
+    int	shift_index, map_index, bit;
+    KeySym ksym;
+    BYTE* kptr;
+    KbPrivPtr pPriv = (KbPrivPtr)device->public.devicePrivate;
+    BYTE keycode = xE->u.u.detail;
+    CARD8 keyModifiers = device->key->modifierMap[keycode];
+
+    /* look up the present idea of the keysym */
+    shift_index = 0;
+    if (device->key->state & ShiftMask) 
+	shift_index ^= 1;
+    if (device->key->state & LockMask) 
+	shift_index ^= 1;
+    map_index = (fe->id - 1) * device->key->curKeySyms.mapWidth;
+    ksym = device->key->curKeySyms.map[shift_index + map_index];
+    if (ksym == NoSymbol)
+	ksym = device->key->curKeySyms.map[map_index];
+
+    /*
+     * Toggle functionality is hardcoded. This is achieved by always
+     * discarding KeyReleases on these keys, and converting every other
+     * KeyPress into a KeyRelease.
+     */
+    if (xE->u.u.type == KeyRelease 
+	&& (ksym == XK_Num_Lock 
+	|| ksym == XK_Scroll_Lock 
+	|| ksym == SunXK_Compose
+	|| (keyModifiers & LockMask))) 
+	return TRUE;
+
+    kptr = &device->key->down[keycode >> 3];
+    bit = 1 << (keycode & 7);
+    if ((*kptr & bit) &&
+	(ksym == XK_Num_Lock || ksym == XK_Scroll_Lock ||
+	ksym == SunXK_Compose || (keyModifiers & LockMask)))
+	xE->u.u.type = KeyRelease;
+
+    if (ksym == XK_Num_Lock) {
+	if (pPriv->type == KB_SUN4)
+	    ModLight (device, xE->u.u.type == KeyPress, XLED_NUM_LOCK);
+    } else if (ksym == XK_Scroll_Lock) {
+	if (pPriv->type == KB_SUN4)
+	    ModLight (device, xE->u.u.type == KeyPress, XLED_SCROLL_LOCK);
+    } else if (ksym == SunXK_Compose) {
+	if (pPriv->type == KB_SUN4)
+	    ModLight (device, xE->u.u.type == KeyPress, XLED_COMPOSE);
+    } else if (keyModifiers & LockMask) {
+	if (pPriv->type == KB_SUN4)
+	    ModLight (device, xE->u.u.type == KeyPress, XLED_CAPS_LOCK);
+    } else if ((xE->u.u.type == KeyPress) && (keyModifiers == 0)) {
+	/* initialize new AutoRepeater event & mark AutoRepeater on */
+	autoRepeatEvent = *xE;
+	autoRepeatFirst = TRUE;
+	autoRepeatKeyDown++;
+	autoRepeatLastKeyDownTv = fe->time;
+    }
+    return FALSE;
+}
+
 #endif
 
 #if NeedFunctionPrototypes
@@ -646,11 +711,6 @@ void sunKbdEnqueueEvent (device, fe)
     xEvent		xE;
     BYTE		keycode;
     CARD8		keyModifiers;
-    KeySym		ksym, base_ksym;
-    int			shift_index, map_index, bit;
-    KbPrivPtr		pPriv = (KbPrivPtr)device->public.devicePrivate;
-    KeybdCtrl*		ctrl = &device->kbdfeed->ctrl;
-    BYTE*		kptr;
 
     keycode = (fe->id & 0x7f) + MIN_KEYCODE;
 
@@ -668,56 +728,8 @@ void sunKbdEnqueueEvent (device, fe)
     xE.u.u.type = ((fe->value == VKEY_UP) ? KeyRelease : KeyPress);
     xE.u.u.detail = keycode;
 #ifndef XKB
-    /* look up the present idea of the keysym */
-    shift_index = 0;
-    if (device->key->state & ShiftMask) 
-	shift_index ^= 1;
-    if (device->key->state & LockMask) 
-	shift_index ^= 1;
-    map_index = (fe->id - 1) * device->key->curKeySyms.mapWidth;
-    base_ksym = device->key->curKeySyms.map[map_index];
-    ksym = device->key->curKeySyms.map[shift_index + map_index];
-    if (ksym == 0)
-	ksym = base_ksym;
-
-    /*
-     * Toggle functionality is hardcoded. This is achieved by always
-     * discarding KeyReleases on these keys, and converting every other
-     * KeyPress into a KeyRelease.
-     */
-    if (xE.u.u.type == KeyRelease 
-	&& (ksym == XK_Num_Lock 
-	|| ksym == XK_Scroll_Lock 
-	|| ksym == SunXK_Compose
-	|| (keyModifiers & LockMask))) 
+    if (DoSpecialKeys(device, &xE, fe))
 	return;
-
-    kptr = &device->key->down[keycode >> 3];
-    bit = 1 << (keycode & 7);
-    if ((*kptr & bit) &&
-	(ksym == XK_Num_Lock || ksym == XK_Scroll_Lock ||
-	ksym == SunXK_Compose || (keyModifiers & LockMask)))
-	xE.u.u.type = KeyRelease;
-
-    if (ksym == XK_Num_Lock) {
-	if (pPriv->type == KB_SUN4)
-	    ModLight (device, xE.u.u.type == KeyPress, XLED_NUM_LOCK);
-    } else if (ksym == XK_Scroll_Lock) {
-	if (pPriv->type == KB_SUN4)
-	    ModLight (device, xE.u.u.type == KeyPress, XLED_SCROLL_LOCK);
-    } else if (ksym == SunXK_Compose) {
-	if (pPriv->type == KB_SUN4)
-	    ModLight (device, xE.u.u.type == KeyPress, XLED_COMPOSE);
-    } else if (keyModifiers & LockMask) {
-	if (pPriv->type == KB_SUN4)
-	    ModLight (device, xE.u.u.type == KeyPress, XLED_CAPS_LOCK);
-    } else if ((xE.u.u.type == KeyPress) && (keyModifiers == 0)) {
-	/* initialize new AutoRepeater event & mark AutoRepeater on */
-	autoRepeatEvent = xE;
-	autoRepeatFirst = TRUE;
-	autoRepeatKeyDown++;
-	autoRepeatLastKeyDownTv = fe->time;
-    }
 #endif /* ! XKB */
     mieqEnqueue (&xE);
 }
