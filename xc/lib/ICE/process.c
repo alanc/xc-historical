@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.36 94/04/08 11:19:23 mor Exp $ */
+/* $XConsortium: process.c,v 1.37 94/04/12 14:41:32 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -115,7 +115,7 @@ Bool		 *replyReadyRet;
     iceMsg		*header;
     Bool		replyReady = False;
     IceReplyWaitInfo	*useThisReplyWait = NULL;
-    int			retStatus = IceProcessMessagesSuccess;
+    IceProcessMessagesStatus retStatus = IceProcessMessagesSuccess;
 
     if (replyWait)
 	*replyReadyRet = False;
@@ -1816,8 +1816,8 @@ Bool		swap;
     pData = pStart;
 
     if (iceConn->process_msg_info &&
-	message->protocolOpcode >= iceConn->his_min_opcode &&
-        message->protocolOpcode <= iceConn->his_max_opcode &&
+	(int) message->protocolOpcode >= iceConn->his_min_opcode &&
+        (int) message->protocolOpcode <= iceConn->his_max_opcode &&
 	iceConn->process_msg_info[
 	message->protocolOpcode - iceConn->his_min_opcode].in_use)
     {
