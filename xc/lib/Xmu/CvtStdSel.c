@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.12 89/10/09 14:28:01 jim Exp $
+/* $XConsortium: CvtStdSel.c,v 1.13 89/12/02 15:28:25 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -59,7 +59,9 @@ static char *get_os_name ()
 
 #ifdef USE_UNAME
 #ifdef ultrix
+#ifndef __STDC__
 #include <limits.h>		/* fixed in Ultrix 3.0 */
+#endif
 #endif
 #include <sys/utsname.h>
 	struct utsname uts;
