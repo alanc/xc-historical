@@ -26,7 +26,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.88 92/04/20 17:34:59 rws Exp $ */
+/* $XConsortium: resource.c,v 1.1 94/02/04 13:36:35 dpw Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -90,21 +90,21 @@ static RESTYPE lastResourceType;
 static RESTYPE lastResourceClass;
 static RESTYPE TypeMask;
 
-typedef int (*DeleteType)();
+typedef int (*LbxDeleteType)();
 
-static DeleteType *DeleteFuncs = (DeleteType *)NULL;
+static LbxDeleteType *DeleteFuncs = (LbxDeleteType *)NULL;
 
 RESTYPE
 CreateNewResourceType(deleteFunc)
-    DeleteType deleteFunc;
+    LbxDeleteType deleteFunc;
 {
     RESTYPE next = lastResourceType + 1;
-    DeleteType *funcs;
+    LbxDeleteType *funcs;
 
     if (next & lastResourceClass)
 	return 0;
-    funcs = (DeleteType *)xrealloc(DeleteFuncs,
-				   (next + 1) * sizeof(DeleteType));
+    funcs = (LbxDeleteType *)xrealloc(DeleteFuncs,
+				   (next + 1) * sizeof(LbxDeleteType));
     if (!funcs)
 	return 0;
     lastResourceType = next;
@@ -137,8 +137,8 @@ InitDeleteFuncs()
     TypeMask = RC_LASTPREDEF - 1;
     if (DeleteFuncs)
 	xfree(DeleteFuncs);
-    DeleteFuncs = (DeleteType *) xalloc((lastResourceType + 1) *
-					sizeof(DeleteType));
+    DeleteFuncs = (LbxDeleteType *) xalloc((lastResourceType + 1) *
+					sizeof(LbxDeleteType));
     if (!DeleteFuncs)
 	return FALSE;
 #ifdef notyet

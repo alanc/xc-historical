@@ -33,6 +33,15 @@ SOFTWARE.
 #include <sys/resource.h>
 #endif
 
+/* lifted from Xt/VarargsI.h */
+#if NeedVarargsPrototypes
+#include <stdarg.h>
+#endif
+
+#if NeedVarargsPrototypes
+void VErrorF(char*, va_list);
+#endif
+
 #ifdef SIGNALRETURNSINT
 #define SIGVAL int
 #else
@@ -46,6 +55,7 @@ extern Bool PartialNetwork;
 extern Bool defeatAccessControl;
 
 Bool CoreDump;
+int auditTrailLevel = 1;
 
 #ifdef DEBUG
 #ifndef SPECIAL_MALLOC
@@ -63,10 +73,18 @@ Bool Must_have_memory = FALSE;
 
 char *dev_tty_from_init = NULL;		/* since we need to parse it anyway */
 
+OsSigHandlerPtr
+OsSignal(sig, handler)
+    int sig;
+    OsSigHandlerPtr handler;
+{
+}
+
 /* Force connections to close on SIGHUP from init */
 
 SIGVAL
-AutoResetServer ()
+AutoResetServer (sig)
+    int	sig;
 {
     dispatchException |= DE_RESET;
     isItTimeToYield = TRUE;
@@ -82,7 +100,8 @@ AutoResetServer ()
 /* Force connections to close and then exit on SIGTERM, SIGINT */
 
 SIGVAL
-GiveUp()
+GiveUp(sig)
+    int	sig;
 {
     dispatchException |= DE_TERMINATE;
     isItTimeToYield = TRUE;
@@ -106,7 +125,7 @@ Error(str)
 }
 
 #ifndef DDXTIME
-long
+CARD32
 GetTimeInMillis()
 {
     struct timeval  tp;
@@ -375,24 +394,118 @@ OsInitAllocator ()
 
 /*VARARGS1*/
 void
-FatalError(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
+AuditF(
+#if NeedVarargsPrototypes
+    char * f, ...)
+#else
+ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     char *f;
     char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
+#endif
 {
-    ErrorF("\nFatal server error:\n");
+#ifdef notyet		/* ever ? */
+#ifdef X_NOT_STDC_ENV
+    long tm;
+#else
+    time_t tm;
+#endif
+    char *autime, *s;
+#if NeedVarargsPrototypes
+    va_list args;
+#endif
+
+    if (*f != ' ')
+    {
+	time(&tm);
+	autime = ctime(&tm);
+	if (s = strchr(autime, '\n'))
+	    *s = '\0';
+	if (s = strrchr(argvGlobal[0], '/'))
+	    s++;
+	else
+	    s = argvGlobal[0];
+	ErrorF("AUDIT: %s: %d %s: ", autime, getpid(), s);
+    }
+#if NeedVarargsPrototypes
+    va_start(args, f);
+    VErrorF(f, args);
+    va_end(args);
+#else
     ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+#endif
+#endif
+}
+
+/*VARARGS1*/
+void
+FatalError(
+#if NeedVarargsPrototypes
+    char *f, ...)
+#else
+f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
+    char *f;
+    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
+#endif
+{
+#if NeedVarargsPrototypes
+    va_list args;
+#endif
+    ErrorF("\nFatal server error:\n");
+#if NeedVarargsPrototypes
+    va_start(args, f);
+    VErrorF(f, args);
+    va_end(args);
+#else
+    ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+#endif
     ErrorF("\n");
     AbortServer();
     /*NOTREACHED*/
 }
 
+#if NeedVarargsPrototypes
+void
+VErrorF(f, args)
+    char *f;
+    va_list args;
+{
+#ifdef AIXV3
+    vfprintf(aixfd, f, args);
+    fflush (aixfd);
+    if (SyncOn)
+        sync();
+#else
+    vfprintf(stderr, f, args);
+#endif /* AIXV3 */
+}
+#endif
+
 /*VARARGS1*/
 void
-ErrorF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
+ErrorF(
+#if NeedVarargsPrototypes
+    char * f, ...)
+#else
+ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     char *f;
     char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
+#endif
 {
+#if NeedVarargsPrototypes
+    va_list args;
+    va_start(args, f);
+    VErrorF(f, args);
+    va_end(args);
+#else
+#ifdef AIXV3
+    fprintf(aixfd, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+    fflush (aixfd);
+    if (SyncOn)
+        sync();
+#else /* not AIXV3 */
     fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+#endif /* AIXV3 */
+#endif
 }
 
 char *

@@ -1,6 +1,6 @@
 /*
  * $NCDOr: wire.c,v 1.2 1993/11/19 21:29:10 keithp Exp keithp $
- * $NCDId: @(#)wire.c,v 1.18 1994/01/22 02:10:30 dct Exp $
+ * $NCDId: @(#)wire.c,v 1.19 1994/02/03 01:48:39 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -28,7 +28,6 @@
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include "Xproto.h"
-#include "osstruct.h"
 #include "opaque.h"
 #include "input.h"
 #include <stdio.h>
@@ -506,7 +505,7 @@ StartProxyReply (server, rep)
 {
     LBXInitDeltaCache(&server->indeltas, rep->deltaN, rep->deltaMaxLen);
     LBXInitDeltaCache(&server->outdeltas, rep->deltaN, rep->deltaMaxLen);
-    QueueWorkProc (ProxyWorkProc, NULL, server->index);
+    QueueWorkProc (ProxyWorkProc, NULL, (pointer) server->index);
     if (rep->comptype == LbxCompressLZW) {
 	char *extra = (char *) rep;
 	int  maxbits = *(CARD32 *)(extra + sizeof (xReply));

@@ -2,7 +2,7 @@
  * Copyright 1988-1993 Network Computing Devices, Inc.  All rights reserved.
  * An unpublished work.
  *
- * $NCDId: @(#)colormap.c,v 1.1 1993/12/01 23:46:29 lemke Exp $
+ * $NCDId: @(#)colormap.c,v 1.2 1994/02/03 01:49:04 lemke Exp $
  */
 
 /*
@@ -152,11 +152,11 @@ typedef struct _visual {
     int         class;
     VisualID    id;
     int         depth;
-}           VisualRec, *VisualPtr;
+}           LbxVisualRec, *LbxVisualPtr;
 
 static int  num_visuals = 0;
 
-VisualPtr  *visuals;
+LbxVisualPtr *visuals;
 
 typedef struct {
     Colormap    mid;
@@ -168,16 +168,16 @@ CreateVisual(depth, vis)
     int         depth;
     xVisualType *vis;
 {
-    VisualPtr   pvis;
+    LbxVisualPtr pvis;
 
-    pvis = (VisualPtr) xalloc(sizeof(VisualRec));
+    pvis = (LbxVisualPtr) xalloc(sizeof(LbxVisualRec));
     if (!pvis)
 	return 0;
     pvis->id = vis->visualID;
     pvis->class = vis->class;
     pvis->depth = depth;
-    visuals = (VisualPtr *) xrealloc(visuals, 
-    	(num_visuals + 1) * sizeof(VisualPtr));
+    visuals = (LbxVisualPtr *) xrealloc(visuals,
+				   (num_visuals + 1) * sizeof(LbxVisualPtr));
     if (!visuals) {
 	xfree(pvis);
 	return 0;
@@ -187,11 +187,11 @@ CreateVisual(depth, vis)
     return 1;
 }
 
-static      VisualPtr
+static      LbxVisualPtr
 get_visual(vid)
     VisualID    vid;
 {
-    VisualPtr   pvis;
+    LbxVisualPtr pvis;
     int         i;
 
     for (i = 0; i < num_visuals; i++) {
@@ -200,7 +200,7 @@ get_visual(vid)
 	    return pvis;
     }
     assert(0);
-    return (VisualPtr) 0;
+    return (LbxVisualPtr) 0;
 }
 
 static int
@@ -644,7 +644,7 @@ create_colormap(cmap, win, visual)
     VisualID    visual;
 {
     ColormapPtr pmap;
-    VisualPtr   pvis;
+    LbxVisualPtr pvis;
     int         tsize,
                 size;
     Pixel     **pptr;
