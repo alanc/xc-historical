@@ -1,18 +1,20 @@
 /* 
- * $XHeader: xset.c,v 1.18 87/07/11 08:47:46 dkk Locked $ 
+ * $XHeader: xset.c,v 1.32 88/07/05 14:24:20 jim Exp $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$XHeader: xset.c,v 1.31 88/07/05 14:05:37 jim Exp $";
+static char *rcsid_xset_c = "$XHeader: xset.c,v 1.32 88/07/05 14:24:20 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 /*  #include <X11/Xlibwm.h>  [Doesn't exist yet  5-14-87]  %*/
 #include <X11/keysym.h>
+#include <X11/Xproto.h>
+#include <X11/Xutil.h>
 #include <stdio.h>
 #include <ctype.h>
 
@@ -34,6 +36,8 @@ static char *rcsid_xset_c = "$XHeader: xset.c,v 1.31 88/07/05 14:05:37 jim Exp $
 		break; \
 
 char *progName;
+
+int local_xerror();
 
 main(argc, argv)
 int argc;
@@ -61,10 +65,11 @@ for (i = 1; i < argc; i++) {
 }
 dpy = XOpenDisplay(disp);  /*  Open display and check for success */
 if (dpy == NULL) {
-  fprintf(stderr, "%s: Can't open display '%s'\n",
-	  argv[0], XDisplayName(disp ? disp : NULL ));
+  fprintf(stderr, "%s:  unable to open display \"%s\"\n",
+	  argv[0], XDisplayName (disp));
   exit(1);
 }
+XSetErrorHandler (local_xerror);
 for (i = 1; i < argc; ) {
   arg = argv[i++];
   if (strcmp (arg, "-display") == 0 || strcmp (arg, "-d") == 0) {
@@ -75,6 +80,10 @@ for (i = 1; i < argc; ) {
   } 
   else if (*arg == 'c') {         /* Well, does it start with "c", then? */
     percent = SERVER_DEFAULT;		/* Default click volume. */
+    if (i >= argc) {
+	set_click (dpy, percent);	/* set click to default */
+	break;
+    }
     arg = nextarg(i, argv);
     if (strcmp(arg, "on") == 0) {               /* Let click be default. */
       i++;
@@ -94,6 +103,10 @@ for (i = 1; i < argc; ) {
   } 
   else if (*arg == 'b') {                       /* Does it start w/ "b".  */
     percent = SERVER_DEFAULT;		/* Set bell to default. */
+    if (i >= argc) {
+	set_bell_vol (dpy, percent);	/* set bell to default */
+	break;
+    }
     arg = nextarg(i, argv);
     if (strcmp(arg, "on") == 0) {               /* Let it stay that way.  */
       set_bell_vol(dpy, percent);
@@ -121,6 +134,8 @@ for (i = 1; i < argc; ) {
 	}
       }
     }
+    else
+      set_bell_vol (dpy, percent);		/* set bell to default */
   }
   else if (strcmp(arg, "fp") == 0) {	       /* set font path */
     arg = nextarg(i, argv);
@@ -140,6 +155,10 @@ for (i = 1; i < argc; ) {
   else if (strcmp(arg, "led") == 0) {         /* Turn on one or all LEDs  */
     values.led_mode = ON;
     values.led = ALL;
+    if (i >= argc) {
+	set_led (dpy, values.led, values.led_mode);	/* set led to def */
+	break;
+    }
     arg = nextarg(i, argv);
     if (strcmp(arg, "on") == 0) {
       i++;
@@ -450,26 +469,63 @@ int numpixels;
 {
   XColor def;
   int scr = DefaultScreen (dpy);
+  Visual *visual = DefaultVisual (dpy, scr);
   Colormap cmap = DefaultColormap (dpy, scr);
   int max_cells = DisplayCells(dpy, scr);
+  XVisualInfo viproto, *vip;
+  int nvisuals = 0;
+  char *visual_type = NULL;
+  int i;
 
-  if(DisplayCells(dpy, scr) >= 2) {
-    while (--numpixels >= 0) {
-      def.pixel = pixels[numpixels];
+  viproto.visualid = XVisualIDFromVisual (visual);
+  vip = XGetVisualInfo (dpy, VisualIDMask, &viproto, &nvisuals);
+  if (!vip || nvisuals != 1) {
+      fprintf (stderr, "%s:  got %d visual info structures for visual 0x%lx\n",
+	       progName, nvisuals, viproto.visualid);
+      return;
+  }
+
+  switch (vip->class) {
+      case GrayScale:
+      case PseudoColor:
+      case DirectColor:
+	break;
+      case StaticGray:
+	visual_type = "StaticGray";
+	break;
+      case StaticColor:
+	visual_type = "StaticColor";
+	break;
+      case TrueColor:
+	visual_type = "TrueColor";
+	break;
+      default:
+	fprintf (stderr, "%s:  unknown visual class type %d\n",
+		 progName, vip->class);
+	numpixels = 0;
+  }
+
+  if (visual_type) {
+    fprintf (stderr, "%s:  cannot set pixel values in read-only %s visuals\n",
+	     progName, visual_type);
+  } else {
+    for (i = 0; i < numpixels; i++) {
+      def.pixel = pixels[i];
       if (def.pixel >= max_cells)
 	fprintf(stderr, 
-		"%s:  Attempt to set pixel #%d in 0-%d colormap\n",
+		"%s:  pixel value %d out of colormap range 0 through %d\n",
 		progName, def.pixel, max_cells - 1);
       else {
-        if (XParseColor (dpy, cmap, colors[numpixels], &def))
+        if (XParseColor (dpy, cmap, colors[i], &def))
 	  XStoreColor(dpy, cmap, &def);
         else
-	  fprintf(stderr, 
-		"%s:  No such color '%s' in colormap %ld = 0x%lx\n",
-		progName, colors[numpixels], cmap, cmap);
+	  fprintf (stderr, "%s:  invalid color \"%s\"\n", progName, colors[i]);
       }
     }
   }
+
+  XFree ((char *) vip);
+
   return;
 }
 
@@ -582,4 +638,32 @@ error( message )
 {
     fprintf( stderr, "%s: %s\n", progName, message );
     exit( 1 );
+}
+
+
+int local_xerror (dpy, rep)
+    Display *dpy;
+    XErrorEvent *rep;
+{
+    char dummy[10];
+    char *errname = NULL;
+
+    if (rep->request_code == X_StoreColors) {
+	switch (rep->error_code) {
+	  case BadAccess:
+	    errname = "BadAccess, pixel not allocated read/write";
+	    break;
+	  case BadValue:
+	    errname = "BadValue, invalid pixel number";
+	    break;
+	}
+    }
+
+    if (errname) {
+	fprintf (stderr, "%s:  error in storing color:  %s\n",
+		 progName, errname);
+    } else {
+	_XDefaultError (dpy, rep);
+    }
+    return (0);
 }
