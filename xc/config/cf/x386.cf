@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: x386.cf,v 1.5 91/07/23 11:10:08 rws Exp $
+XCOMM platform:  $XConsortium: x386.cf,v 1.6 91/07/25 12:05:43 rws Exp $
 
 /*****************************************************************************
  *			  Site-specfic parameters                            *
@@ -142,11 +142,12 @@ install.man:: list                                                      @@\
 #define OSRelease		-DSVR4 -DSYSV386
 
 #if HasGcc
-# define LibraryCcCmd		cc
-# define LibraryCCOptions	-Xc
+# define CcCmd 		gcc -ansi -fstrength-reduce -fpcc-struct-return -Di386
+# if HasSharedLibraries
+#  define LibraryCcCmd	cc -Xc -Di386 -Dasm=__asm
+# endif
 #else
-# define DefaultCCOptions	-Xc 
-# define ExtraLoadFlags		-z nodefs
+# define CcCmd		cc -Xc -Di386 -Dasm=__asm
 #endif
 
 #include <sv4Lib.rules>
