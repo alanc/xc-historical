@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.114 93/04/03 10:42:59 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.115 93/04/12 13:30:51 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -695,6 +695,11 @@ reset_mapping()
 	j = XKeysymToKeycode(dpy, pc_keys[i].keysym);
 	if (!j)
 	    continue;
+	if (c > 255) {
+	    fprintf(stderr, "%s: key overflow at scan code 0x%x\n",
+		    progname, c);
+	    break;
+	}
 	pc_keys[i].c = c;
 	keycodes[c] = j;
 	modifiers[c] = pc_keys[i].modifiers;
