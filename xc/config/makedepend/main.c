@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.56 91/07/25 11:50:59 rws Exp $
+ * $XConsortium: main.c,v 1.57 91/10/31 09:23:25 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -267,30 +267,43 @@ main(argc, argv)
 	sigemptyset(&sig_act.sa_mask);
 	sigaddset(&sig_act.sa_mask, SIGINT);
 	sigaddset(&sig_act.sa_mask, SIGQUIT);
+#ifdef SIGBUS
 	sigaddset(&sig_act.sa_mask, SIGBUS);
+#endif
 	sigaddset(&sig_act.sa_mask, SIGILL);
 	sigaddset(&sig_act.sa_mask, SIGSEGV);
 	sigaddset(&sig_act.sa_mask, SIGHUP);
 	sigaddset(&sig_act.sa_mask, SIGPIPE);
+#ifdef SIGSYS
 	sigaddset(&sig_act.sa_mask, SIGSYS);
+#endif
 #else
 	sig_act.sa_mask = ((1<<(SIGINT -1))
 			   |(1<<(SIGQUIT-1))
+#ifdef SIGBUS
 			   |(1<<(SIGBUS-1))
+#endif
 			   |(1<<(SIGILL-1))
 			   |(1<<(SIGSEGV-1))
 			   |(1<<(SIGHUP-1))
 			   |(1<<(SIGPIPE-1))
-			   |(1<<(SIGSYS-1)));
+#ifdef SIGSYS
+			   |(1<<(SIGSYS-1))
+#endif
+			   );
 #endif /* _POSIX_SOURCE */
 	sig_act.sa_flags = 0;
 	sigaction(SIGHUP, &sig_act, (struct sigaction *)0);
 	sigaction(SIGINT, &sig_act, (struct sigaction *)0);
 	sigaction(SIGQUIT, &sig_act, (struct sigaction *)0);
 	sigaction(SIGILL, &sig_act, (struct sigaction *)0);
+#ifdef SIGBUS
 	sigaction(SIGBUS, &sig_act, (struct sigaction *)0);
+#endif
 	sigaction(SIGSEGV, &sig_act, (struct sigaction *)0);
+#ifdef SIGSYS
 	sigaction(SIGSYS, &sig_act, (struct sigaction *)0);
+#endif
 #endif /* USGISH */
 
 	/*
