@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: GCManager.c,v 1.32 89/01/16 15:47:04 swick Exp $";
+static char Xrcsid[] = "$XConsortium: GCManager.c,v 1.33 89/06/16 19:34:41 jim Exp $";
 /* $oHeader: GCManager.c,v 1.4 88/08/19 14:19:51 asente Exp $ */
 #endif /* lint */
 
@@ -32,7 +32,6 @@ SOFTWARE.
 
 
 typedef struct _GCrec {
-    Display	*dpy;		/* Display for GC */
     Screen	*screen;	/* Screen for GC */
     Cardinal	depth;		/* Depth for GC */
     Cardinal    ref_count;      /* # of shareholders */
@@ -41,9 +40,6 @@ typedef struct _GCrec {
     XGCValues 	values;		/* What values those fields have. */
     struct _GCrec *next;	/* Next GC for this widgetkind. */
 } GCrec, *GCptr;
-
-static Drawable GCparents[256]; /* static initialized to zero, K&R ss 4.9 */
-static GCrec    *GClist = NULL;
 
 static Bool Matches(ptr, valueMask, v)
 	     GCptr	    ptr;
@@ -95,6 +91,18 @@ static Bool Matches(ptr, valueMask, v)
     return True;
 } /* Matches */
 
+/* Called by CloseDisplay to free the per-display GC list */
+void _XtGClistFree(GClist)
+    register GCptr GClist;
+{
+    register GCptr next;
+    while (GClist != NULL) {
+	next = GClist->next;
+	XtFree((char*)GClist);
+	GClist = next;
+    }
+}
+
 
 /* 
  * Return a read-only GC with the given values.  
@@ -110,19 +118,19 @@ GC XtGetGC(widget, valueMask, values)
     register Cardinal   depth   = widget->core.depth;
     register Screen     *screen = XtScreen(widget);
 	     Drawable   drawable;
-    register Display 	*dpy = XtDisplay(widget);
+	     XtPerDisplay pd = _XtGetPerDisplay(XtDisplay(widget));
 
     /* Search for existing GC that matches exactly */
-    for (cur = GClist, prev = NULL; cur != NULL; prev = cur, cur = cur->next) {
+    for (cur = pd->GClist, prev = NULL; cur != NULL; prev = cur, cur = cur->next) {
 	if (cur->valueMask == valueMask && cur->depth == depth
-		&& cur->screen == screen && cur->dpy == dpy
+		&& cur->screen == screen
 		&& Matches(cur, valueMask, values)) {
             cur->ref_count++;
 	    /* Move this GC to front of list if not already there */
 	    if (prev != NULL) {
 		prev->next = cur->next;
-		cur->next = GClist;
-		GClist = cur;
+		cur->next = pd->GClist;
+		pd->GClist = cur;
 	    }
 	    return cur->gc;
 	}
@@ -130,30 +138,38 @@ GC XtGetGC(widget, valueMask, values)
 
     /* No matches, have to create a new one */
     cur		= XtNew(GCrec);
-    cur->next   = GClist;
-    GClist      = cur;
+    cur->next   = pd->GClist;
+    pd->GClist  = cur;
 
-    cur->dpy	    = XtDisplay(widget);
     cur->screen     = screen;
     cur->depth      = depth;
     cur->ref_count  = 1;
     cur->valueMask  = valueMask;
     if (values != NULL) cur->values = *values;
     if (XtWindow(widget) == NULL) {
-	/* Have to create a bogus pixmap for the GC.  Stupid X protocol. */
-	if (GCparents[depth] != 0) {
-	    drawable = GCparents[depth];
-        } else {
+	/* Have to find a Drawable to identify the depth for the GC */
+	if (depth >= pd->drawable_count) {
+	    int i;
+	    pd->drawables =
+		(Drawable*)XtRealloc((char*)pd->drawables,
+				     (unsigned)(depth+1)*sizeof(Drawable));
+	    for (i = pd->drawable_count; i <= depth; i++)
+		pd->drawables[i] = 0;
+	    pd->drawable_count = depth+1;
+	}
+	if (pd->drawables[depth] != 0)
+	    drawable = pd->drawables[depth];
+        else {
 	    if (depth == DefaultDepthOfScreen(screen))
 		drawable = RootWindowOfScreen(screen);
 	    else 
-		drawable = XCreatePixmap(cur->dpy, screen->root, 1, 1, depth);
-           GCparents[depth] = drawable;
+		drawable = XCreatePixmap(DisplayOfScreen(screen), screen->root, 1, 1, depth);
+	    pd->drawables[depth] = drawable;
         }
     } else {
 	drawable = XtWindow(widget);
     }
-    cur->gc = XCreateGC(cur->dpy, drawable, valueMask, values);
+    cur->gc = XCreateGC(DisplayOfScreen(screen), drawable, valueMask, values);
     return cur->gc;
 } /* XtGetGC */
 
@@ -162,16 +178,17 @@ void  XtReleaseGC(widget, gc)
     GC      gc;
 {
     register GCptr cur, prev;
+    XtPerDisplay pd = _XtGetPerDisplay(XtDisplay(widget));
     
-    for (cur = GClist, prev = NULL; cur != NULL; prev = cur, cur = cur->next) {
-	if (cur->gc == gc && cur->dpy == XtDisplay(widget)) {
+    for (cur = pd->GClist, prev = NULL; cur != NULL; prev = cur, cur = cur->next) {
+	if (cur->gc == gc) {
 	    if (--(cur->ref_count) == 0) {
 		if (prev != NULL) prev->next = cur->next;
-		else GClist = cur->next;
-		XFreeGC(cur->dpy, gc);
+		else pd->GClist = cur->next;
+		XFreeGC(DisplayOfScreen(cur->screen), gc);
 		XtFree((char *) cur);
-		break;
 	    }
+	    break;
 	}
     }
 } /* XtReleaseGC */
@@ -185,15 +202,26 @@ void XtDestroyGC(gc)
     GC      gc;
 {
     register GCptr cur, prev;
+    XtAppContext app = _XtGetProcessContext()->appContextList;
     
-    for (cur = GClist, prev = NULL; cur != NULL; prev = cur, cur = cur->next) {
-	if (cur->gc == gc) {
-	    if (--(cur->ref_count) == 0) {
-		if (prev != NULL) prev->next = cur->next;
-		else GClist = cur->next;
-		XFreeGC(cur->dpy, gc);
-		XtFree((char *) cur);
-		break;
+    /* This is awful; we have to search through all the lists
+       to find the GC. */
+    for (; app; app = app->next) {
+	int i;
+	for (i = app->count; i ;) {
+	    XtPerDisplay pd = _XtGetPerDisplay(app->list[--i]);
+	    for (cur = pd->GClist, prev = NULL;
+		 cur != NULL; 
+		 prev = cur, cur = cur->next) {
+		if (cur->gc == gc) {
+		    if (--(cur->ref_count) == 0) {
+			if (prev != NULL) prev->next = cur->next;
+			else pd->GClist = cur->next;
+			XFreeGC(DisplayOfScreen(cur->screen), gc);
+			XtFree((char *) cur);
+		    }
+		    return;
+		}
 	    }
 	}
     }
