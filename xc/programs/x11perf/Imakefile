@@ -11,11 +11,10 @@
 		  do_triangles.o do_complex.o do_traps.o
  SYS_LIBRARIES	= -lm
     CDEBUGFLAGS = -g
-         LIBSRC = /usr/src/pmax/src/lib
 
 all: $(PROGRAMS)
 
-SingleProgramTarget(x11perf, $(OBJS), $(XLIB),)
+SingleProgramTarget(x11perf, $(OBJS), , -lX11)
 
 DependTarget()
 clean::
