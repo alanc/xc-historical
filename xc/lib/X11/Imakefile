@@ -78,7 +78,6 @@ V11LIST=\
 	XErrDes.o \
 	XErrHndlr.o \
 	XEvToWire.o \
-	XExpEvents.o \
 	XFetchName.o \
 	XFillArc.o \
 	XFillArcs.o \
