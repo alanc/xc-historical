@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: io.c,v 1.43 88/07/25 10:49:24 toddb Exp $ */
+/* $Header: io.c,v 1.44 88/07/29 15:51:02 toddb Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -134,7 +134,7 @@ ReadRequestFromClient(who, status, oldbuf)
 
             /* handle buffer empty or full case first */
 
-    if ((pBuff->bufptr - pBuff->buffer >= pBuff->bufcnt) || (!pBuff->bufcnt))
+    if ((pBuff->bufptr - pBuff->buffer) >= pBuff->bufcnt)
     {
         result = read(client, pBuff->buffer, pBuff->size);
 	if (result < 0) 
@@ -153,6 +153,12 @@ ReadRequestFromClient(who, status, oldbuf)
 	else 
 	{
 	    pBuff->bufcnt = result; 
+	    /* free up some space after huge requests */
+	    if ((pBuff->size > BUFWATERMARK) && (result < BUFSIZE))
+	    {
+		pBuff->size = BUFSIZE;
+		pBuff->buffer = (char *)Xrealloc(pBuff->buffer, pBuff->size);
+	    }
 	    pBuff->bufptr = pBuff->buffer;
 	}
     }
