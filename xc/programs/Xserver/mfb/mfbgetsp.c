@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbgetsp.c,v 1.17 87/09/07 19:08:27 toddb Exp $ */
+/* $Header: mfbgetsp.c,v 1.18 88/07/29 11:43:48 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 
@@ -63,7 +63,6 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
     int	 		startmask, endmask, nlMiddle, nl, srcBit;
     int			w;
     unsigned int	*pdstStart;
-    unsigned int	*pdstNext;
     DDXPointPtr	  	pptInit;
     int	    	  	*pwidthInit;
     int	    	  	*pwidthPadded;
@@ -105,8 +104,6 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 	psrc = psrcBase + (ppt->y * (widthSrc >> 2)) + (ppt->x >> 5); 
 	w = xEnd - ppt->x;
 	srcBit = ppt->x & 0x1f;
-	/* This shouldn't be needed */
-	pdstNext = pdst + PixmapWidthInPadUnits(w, 1);
 
 	pwidthPadded[i] = PixmapBytePad(w, 1) << 3;
 	i++;
@@ -150,11 +147,8 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 		if(nstart + nend > 32)
 		    pdst++;
 	    } 
-	    pdst++; 
-	    while(pdst < pdstNext)
-	    {
-		*pdst++ = 0;
-	    }
+	    if (startmask || endmask)
+		pdst++; 
 	} 
         ppt++;
     }
