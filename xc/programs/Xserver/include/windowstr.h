@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 5.4 89/07/04 16:10:16 rws Exp $ */
+/* $XConsortium: windowstr.h,v 5.5 89/07/05 17:32:39 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -28,7 +28,7 @@ SOFTWARE.
 
 #include "window.h"
 #include "pixmapstr.h"
-#include "region.h"
+#include "regionstr.h"
 #include "cursor.h"
 #include "property.h"
 #include "resource.h"	/* for ROOT_WINDOW_ID_BASE */
@@ -57,9 +57,8 @@ typedef struct _BackingStore {
 typedef enum { VTOther, VTStack, VTMove, VTUnmap, VTMap } VTKind;
 
 typedef struct _Validate {
-    RegionPtr		exposed;	/* exposed regions, translated */
-    RegionPtr		borderExposed;
-    RegionPtr		borderVisible;
+    RegionRec		exposed;	/* exposed regions, translated */
+    RegionRec		borderExposed;
     DDXPointRec		oldAbsCorner;
 } ValidateRec, *ValidatePtr;
 
@@ -106,11 +105,11 @@ typedef struct _Window {
     WindowPtr		prevSib;	/* next higher sibling */
     WindowPtr		firstChild;	/* top-most child */
     WindowPtr		lastChild;	/* bottom-most child */
-    RegionPtr		clipList;	/* clipping rectangle for output */
-    RegionPtr		borderClip;	/* NotClippedByChildren + border */
+    RegionRec		clipList;	/* clipping rectangle for output */
+    RegionRec		borderClip;	/* NotClippedByChildren + border */
     ValidatePtr		valdata;
-    RegionPtr		winSize;
-    RegionPtr		borderSize;
+    RegionRec		winSize;
+    RegionRec		borderSize;
     DDXPointRec		origin;		/* position relative to parent */
     unsigned short	borderWidth;
     unsigned short	deliverableEvents;
