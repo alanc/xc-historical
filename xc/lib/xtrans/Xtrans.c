@@ -900,7 +900,7 @@ int 		iovcnt;
 	base = iov->iov_base;
 	while (len > 0) {
 	    register int nbytes;
-	    nbytes = TRANS(Read) (ciptr->fd, base, len);
+	    nbytes = TRANS(Read) (ciptr, base, len);
 	    if (nbytes < 0 && total == 0)  return -1;
 	    if (nbytes <= 0)  return total;
 	    ESET(0);
@@ -936,7 +936,7 @@ int 		iovcnt;
 	base = iov->iov_base;
 	while (len > 0) {
 	    register int nbytes;
-	    nbytes = TRANS(Write) (ciptr->fd, base, len);
+	    nbytes = TRANS(Write) (ciptr, base, len);
 	    if (nbytes < 0 && total == 0)  return -1;
 	    if (nbytes <= 0)  return total;
 	    ESET(0);
