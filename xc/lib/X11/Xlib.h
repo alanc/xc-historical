@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.180 90/09/11 08:44:04 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.181 90/12/09 16:21:40 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -39,7 +39,7 @@
 #include <X11/X.h>
 
 #ifndef NeedFunctionPrototypes
-#if defined(FUNCPROTO) || defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus)
+#if defined(FUNCPROTO) || __STDC__ || defined(__cplusplus) || defined(c_plusplus)
 #define NeedFunctionPrototypes 1
 #else
 #define NeedFunctionPrototypes 0

@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.80 90/03/26 12:12:44 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.81 90/12/09 16:24:55 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -142,7 +142,7 @@ extern Screen *_XScreenOfWindow ();	/* get Screen pointer for window */
  *
  */
 
-#if defined(__STDC__) && !defined(UNIXCPP)
+#if __STDC__ && !defined(UNIXCPP)
 #define GetReq(name, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(x##name##Req)) > dpy->bufmax)\
@@ -168,7 +168,7 @@ extern Screen *_XScreenOfWindow ();	/* get Screen pointer for window */
 /* GetReqExtra is the same as GetReq, but allocates "n" additional
    bytes after the request. "n" must be a multiple of 4!  */
 
-#if defined(__STDC__) && !defined(UNIXCPP)
+#if __STDC__ && !defined(UNIXCPP)
 #define GetReqExtra(name, n, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(x##name##Req) + n) > dpy->bufmax)\
@@ -197,7 +197,7 @@ extern Screen *_XScreenOfWindow ();	/* get Screen pointer for window */
  * "rid" is the name of the resource. 
  */
 
-#if defined(__STDC__) && !defined(UNIXCPP)
+#if __STDC__ && !defined(UNIXCPP)
 #define GetResReq(name, rid, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(xResourceReq)) > dpy->bufmax)\
@@ -225,7 +225,7 @@ extern Screen *_XScreenOfWindow ();	/* get Screen pointer for window */
  * GetEmptyReq is for those requests that have no arguments
  * at all. 
  */
-#if defined(__STDC__) && !defined(UNIXCPP)
+#if __STDC__ && !defined(UNIXCPP)
 #define GetEmptyReq(name, req) \
         WORD64ALIGN\
 	if ((dpy->bufptr + SIZEOF(xReq)) > dpy->bufmax)\
