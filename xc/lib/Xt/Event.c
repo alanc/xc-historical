@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.49 88/02/02 18:10:47 swick Locked $";
+static char rcsid[] = "$Header: Event.c,v 1.50 88/02/03 10:01:02 swick Locked $";
 #endif lint
 
 /*
@@ -52,7 +52,7 @@ static void RemoveEventHandler(widget, eventMask, other, proc, closure, raw)
     EventMask   eventMask;
     Boolean	other;
     XtEventHandler proc;
-    Opaque	closure;
+    caddr_t	closure;
     Boolean	raw;
 {
     XtEventRec *p, **pp;
@@ -94,7 +94,7 @@ static void AddEventHandler(widget, eventMask, other, proc, closure, raw)
     EventMask   eventMask;
     Boolean         other;
     XtEventHandler  proc;
-    Opaque	closure;
+    caddr_t	closure;
     Boolean	raw;
 {
    register XtEventRec *p,**pp;
@@ -147,7 +147,7 @@ void XtRemoveEventHandler(widget, eventMask, other, proc, closure)
     EventMask   eventMask;
     Boolean	other;
     XtEventHandler proc;
-    Opaque	closure;
+    caddr_t	closure;
 {
     RemoveEventHandler(widget, eventMask, other, proc, closure, FALSE);
 }
@@ -158,7 +158,7 @@ void XtAddEventHandler(widget, eventMask, other, proc, closure)
     EventMask   eventMask;
     Boolean         other;
     XtEventHandler  proc;
-    Opaque	closure;
+    caddr_t	closure;
 {
     AddEventHandler(widget, eventMask, other, proc, closure, FALSE);
 }
@@ -169,7 +169,7 @@ void XtRemoveRawEventHandler(widget, eventMask, other, proc, closure)
     EventMask   eventMask;
     Boolean	other;
     XtEventHandler proc;
-    Opaque	closure;
+    caddr_t	closure;
 {
     RemoveEventHandler(widget, eventMask, other, proc, closure, TRUE);
 }
@@ -180,7 +180,7 @@ void XtAddRawEventHandler(widget, eventMask, other, proc, closure)
     EventMask   eventMask;
     Boolean         other;
     XtEventHandler  proc;
-    Opaque	closure;
+    caddr_t	closure;
 {
     AddEventHandler(widget, eventMask, other, proc, closure, FALSE);
 }
@@ -385,7 +385,7 @@ static void DispatchEvent(event, widget, mask)
 {
     XtEventRec *p;   
     XtEventHandler proc[100];
-    Opaque closure[100];
+    caddr_t closure[100];
     int numprocs, i;
     XEvent nextEvent;
     static Region exposeRegion = NULL;
@@ -630,7 +630,7 @@ void XtAddGrab(widget, exclusive, spring_loaded)
     gl->spring_loaded = spring_loaded;
 
     XtAddCallback(
-	widget, XtNdestroyCallback, GrabDestroyCallback, (Opaque)NULL);
+	widget, XtNdestroyCallback, GrabDestroyCallback, (caddr_t)NULL);
 }
 
 void XtRemoveGrab(widget)
@@ -664,7 +664,7 @@ void XtRemoveGrab(widget)
 	}
     }
     XtRemoveCallback(
-	widget, XtNdestroyCallback, GrabDestroyCallback, (Opaque)NULL);
+	widget, XtNdestroyCallback, GrabDestroyCallback, (caddr_t)NULL);
 }
 
 
