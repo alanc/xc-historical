@@ -54,15 +54,20 @@ SRCS = \
 	GCManager.c \
 	Geometry.c \
 	GetActKey.c \
+	GetResList.c \
+	GetValues.c \
 	Initialize.c \
 	Intrinsic.c \
 	Manage.c \
 	NextEvent.c \
 	Object.c \
 	Popup.c \
+	PopupCB.c \
 	RectObj.c \
 	Resources.c \
 	Selection.c \
+	SetSens.c \
+	SetValues.c \
 	SetWMCW.c \
 	Shell.c \
 	TMparse.c \
@@ -90,15 +95,20 @@ OBJS = \
 	GCManager.o \
 	Geometry.o \
 	GetActKey.o \
+	GetResList.o \
+	GetValues.o \
 	Initialize.o \
 	Intrinsic.o \
 	Manage.o \
 	NextEvent.o \
 	Object.o \
 	Popup.o \
+	PopupCB.o \
 	RectObj.o \
 	Resources.o \
 	Selection.o \
+	SetSens.o \
+	SetValues.o \
 	SetWMCW.o \
 	Shell.o \
 	TMparse.o \
