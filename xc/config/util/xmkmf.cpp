@@ -6,6 +6,9 @@
 
 usage="usage:  $0 [top_of_sources_pathname [current_directory]]"
 
+topdir=
+curdir=.
+
 case $# in 
     0) ;;
     1) topdir=$1 ;;
