@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Quarks.c,v 1.13 88/09/19 13:55:48 jim Exp $
  */
 
 /***********************************************************
@@ -82,37 +82,34 @@ typedef struct _NodeRec {
 #define HASHTABLEMASK 1023
 static Node nodeTable[HASHTABLESIZE];
 
-
-
 /* predefined quarks */
 
 /* Representation types */
 
-XrmQuark  XrmQBoolean;
-XrmQuark  XrmQColor;
-XrmQuark  XrmQCursor;
-XrmQuark  XrmQDims;
-XrmQuark  XrmQDisplay;
-XrmQuark  XrmQFile;
-XrmQuark  XrmQFont;
-XrmQuark  XrmQFontStruct;
-XrmQuark  XrmQGeometry;
-XrmQuark  XrmQInt;
-XrmQuark  XrmQPixel;
-XrmQuark  XrmQPixmap;
-XrmQuark  XrmQPointer;
-XrmQuark  XrmQString;
-XrmQuark  XrmQWindow;
+static XrmQuark  XrmQBoolean;
+static XrmQuark  XrmQColor;
+static XrmQuark  XrmQCursor;
+static XrmQuark  XrmQDims;
+static XrmQuark  XrmQDisplay;
+static XrmQuark  XrmQFile;
+static XrmQuark  XrmQFont;
+static XrmQuark  XrmQFontStruct;
+static XrmQuark  XrmQGeometry;
+static XrmQuark  XrmQInt;
+static XrmQuark  XrmQPixel;
+static XrmQuark  XrmQPixmap;
+static XrmQuark  XrmQPointer;
+static XrmQuark  XrmQString;
+static XrmQuark  XrmQWindow;
 
 /* "Enumeration" constants */
 
-XrmQuark  XrmQEfalse;
-XrmQuark  XrmQEno;
-XrmQuark  XrmQEoff;
-XrmQuark  XrmQEon;
-XrmQuark  XrmQEtrue;
-XrmQuark  XrmQEyes;
-
+static XrmQuark  XrmQEfalse;
+static XrmQuark  XrmQEno;
+static XrmQuark  XrmQEoff;
+static XrmQuark  XrmQEon;
+static XrmQuark  XrmQEtrue;
+static XrmQuark  XrmQEyes;
 
 static XrmAllocMoreQuarkToStringTable()
 {

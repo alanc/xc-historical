@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.84 89/04/25 19:20:20 jim Exp $
+ * $XConsortium: XOpenDis.c,v 11.85 89/04/25 19:36:26 jim Exp $
  */
 
 #include "copyright.h"
@@ -14,12 +14,13 @@
 #include "Xatom.h"
 
 extern void bzero();
+extern int _Xdebug;
+extern Display *_XHeadOfDisplayList;
 
 #ifndef lint
 static int lock;	/* get rid of ifdefs when locking implemented */
 #endif
 
-int _Xdebug = 0;
 static xReq _dummy_request = {
 	0, 0, 0
 };
@@ -82,9 +83,6 @@ void XSetAuthorization (name, namelen, data, datalen)
 
 
 
-/* head of the linked list of open displays */
-Display *_XHeadOfDisplayList = NULL;
-
 extern Bool _XWireToEvent();
 extern Status _XUnknownNativeEvent();
 extern Bool _XUnknownWireEvent();
@@ -146,9 +144,21 @@ Display *XOpenDisplay (display)
 	}
 
 /*
- * Attempt to allocate a display structure. Return NULL if allocation fails.
+ * Lock against other threads trying to access global data (like the error
+ * handlers and display list).
  */
 	LockMutex(&lock);
+
+/*
+ * Set the default error handlers.  This allows the global variables to
+ * default to NULL for use with shared libraries.
+ */
+	if (_XErrorFunction == NULL) (void) XSetErrorHandler (NULL);
+	if (_XIOErrorFunction == NULL) (void) XSetIOErrorHandler (NULL);
+
+/*
+ * Attempt to allocate a display structure. Return NULL if allocation fails.
+ */
 	if ((dpy = (Display *)Xcalloc(1, sizeof(Display))) == NULL) {
 		errno = ENOMEM;
 		UnlockMutex(&lock);

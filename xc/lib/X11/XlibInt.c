@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.104 89/06/15 12:17:24 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.105 89/06/15 15:58:58 jim Exp $
  */
 
 #include "copyright.h"
@@ -1289,12 +1289,6 @@ int _XDefaultError(dpy, event)
     exit(1);
     /*NOTREACHED*/
 }
-
-/*
- * XXX - These should be moved to another file for shared libraries...
- */
-int (*_XIOErrorFunction)() = _XIOError;
-int (*_XErrorFunction)() = _XDefaultError;
 
 /*
  * This routine can be used to (cheaply) get some memory within a single
