@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: SMlib.h,v 1.1 93/09/03 13:24:47 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -130,6 +130,17 @@ typedef union {
 
 
 /*
+ * Waiting for Properties Reply
+ */
+
+typedef struct _SmcPropReplyWait {
+    SmcPropReplyCB		prop_reply_cb;
+    struct _SmcPropReplyWait 	*next;
+} _SmcPropReplyWait;
+
+
+
+/*
  * Client connection object
  */
 
@@ -142,8 +153,15 @@ struct _SmcConn {
     int			client_id_len;
     char		*client_id;
     SmPointer		call_data;
-    SmcPropReplyCB	prop_reply_cb;
+
     SmcInteractCB	interact_cb;
+
+    /*
+     * We keep track of all Get Properties sent by the client.  When the
+     * Properties Reply arrives, we remove it from the list.
+     */
+
+    _SmcPropReplyWait	*prop_reply_waits;
 };
 
 

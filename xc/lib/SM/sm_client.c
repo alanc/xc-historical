@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: client.c,v 1.1 93/09/03 13:25:08 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -111,8 +111,8 @@ char 		*errorStringRet;
     }
 
     smcConn->call_data = callData;
-    smcConn->prop_reply_cb = NULL;
     smcConn->interact_cb = NULL;
+    smcConn->prop_reply_waits = NULL;
 
     if (!IceProtocolSetup (iceConn, _SmcOpcode,	_SmAuthCount, NULL,
 	&smcConn->proto_major_version, &smcConn->proto_minor_version,
@@ -274,15 +274,24 @@ SmcConn		smcConn;
 SmcPropReplyCB	propReplyCB;
 
 {
-    if (smcConn->prop_reply_cb == NULL)
-    {
-	IceConn	iceConn = smcConn->iceConn;
+    IceConn		iceConn = smcConn->iceConn;
+    _SmcPropReplyWait 	*wait, *ptr;
 
-	IceSimpleMessage (iceConn, _SmcOpcode, SM_GetProperties);
-	IceFlush (iceConn);
+    wait = (_SmcPropReplyWait *) malloc (sizeof (_SmcPropReplyWait));
+    wait->prop_reply_cb = propReplyCB;
+    wait->next = NULL;
 
-	smcConn->prop_reply_cb = propReplyCB;
-    }
+    ptr = smcConn->prop_reply_waits;
+    while (ptr && ptr->next)
+	ptr = ptr->next;
+
+    if (ptr == NULL)
+	smcConn->prop_reply_waits = wait;
+    else
+	ptr->next = wait;
+
+    IceSimpleMessage (iceConn, _SmcOpcode, SM_GetProperties);
+    IceFlush (iceConn);
 }
 
 

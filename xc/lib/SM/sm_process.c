@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: process.c,v 1.1 93/09/03 13:25:15 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -135,7 +135,7 @@ IceReplyWaitInfo *replyWait;
 
     case SM_PropertiesReply:
 
-        if (!smcConn->prop_reply_cb)
+        if (!smcConn->prop_reply_waits)
 	{
 	    _SmcErrorBadState (iceConn,
 		SM_PropertiesReply, IceCanContinue);
@@ -146,6 +146,7 @@ IceReplyWaitInfo *replyWait;
 	    char 			*pData;
 	    int				numProps;
 	    SmProp			*props;
+	    _SmcPropReplyWait 		*next;
 
 	    IceReadCompleteMessage (iceConn,
 		SIZEOF (smPropertiesReplyMsg),
@@ -153,10 +154,13 @@ IceReplyWaitInfo *replyWait;
 
 	    EXTRACT_LISTOF_PROPERTY (pData, numProps, props);
 
-	    (*smcConn->prop_reply_cb) (smcConn,
+	    next = smcConn->prop_reply_waits->next;
+
+	    (*smcConn->prop_reply_waits->prop_reply_cb) (smcConn,
 		smcConn->call_data, numProps, props);
 
-	    smcConn->prop_reply_cb = NULL;
+	    free ((char *) smcConn->prop_reply_waits);
+	    smcConn->prop_reply_waits = next;
 	}
 	break;
 
