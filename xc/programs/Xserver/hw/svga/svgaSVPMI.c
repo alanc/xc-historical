@@ -1,4 +1,4 @@
-/* $XConsortium: svgaSVPMI.c,v 1.2 93/09/19 12:04:19 rws Exp $ */
+/* $XConsortium: svgaSVPMI.c,v 1.3 93/09/20 13:18:08 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -335,7 +335,7 @@ VESASection(
     ret->num_keys = ctxt->num_keys;
 
     for (i = 0; i < ret->num_keys; i++)
-      ret->keys[i] = strdup(ctxt->keys[i]);
+      ret->keys[i] = (char *)strdup(ctxt->keys[i]);
   }
 
   if (name) {
@@ -343,7 +343,7 @@ VESASection(
      * get next matching section that matches name
      */
     maxlevels = ret->num_keys;
-    ret->keys[ret->num_keys++] = strdup(name);
+    ret->keys[ret->num_keys++] = (char *)strdup(name);
   }
   else {
     /*
