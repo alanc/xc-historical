@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.48 92/10/20 09:27:53 rws Exp $ */
+/* $XConsortium: os.h,v 1.49 93/07/12 10:44:58 dpw Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -276,7 +276,7 @@ extern void Error(
 #endif
 );
 
-extern long GetTimeInMillis(
+extern CARD32 GetTimeInMillis(
 #if NeedFunctionPrototypes
     void
 #endif
