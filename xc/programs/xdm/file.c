@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: file.c,v 1.6 88/10/22 21:49:19 keith Exp $
+ * $XConsortium: file.c,v 1.7 88/12/15 18:32:11 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,6 +26,8 @@
 # include	"buf.h"
 # include	<signal.h>
 
+extern void	free (), bcopy ();
+
 DisplayTypeMatch (d1, d2)
 DisplayType	d1, d2;
 {
@@ -34,11 +36,10 @@ DisplayType	d1, d2;
 	       d1.mutable == d2.mutable;
 }
 
-ReadDisplay (file, acceptableTypes, numAcceptable, sockaddr)
+ReadDisplay (file, acceptableTypes, numAcceptable)
 struct buffer	*file;
 DisplayType	*acceptableTypes;
 int		numAcceptable;
-char		*sockaddr;
 {
 	int		c;
 	char		**args, **newargs;
@@ -93,21 +94,21 @@ acceptable:;
 		while (c != EOB && c != '\n') {
 			c = readWord (file, word, sizeof (word));
 			if (word[0] != '\0') {
-				args[i] = malloc (strlen (word) + 1);
+				args[i] = malloc ((unsigned) (strlen (word) + 1));
 				if (!args[i]) {
 					LogOutOfMem ("ReadDisplay");
 					break;
 				}
 				strcpy (args[i], word);
 				newargs = (char **) 
-				    malloc ((i+2) * sizeof (char **));
+				    malloc ((unsigned) ((i+2) * sizeof (char **)));
 				if (!newargs) {
 					LogOutOfMem ("ReadDisplay");
 					break;
 				}
 				bcopy ((char *) args, (char *) newargs,
 				       (i+1) * sizeof (char **));
-				free (args);
+				free ((char *) args);
 				args = newargs;
 				i++;
 			}

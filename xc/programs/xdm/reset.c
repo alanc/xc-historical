@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: pseudoreset.c,v 1.2 88/11/17 17:04:58 keith Exp $
+ * $XConsortium: pseudoreset.c,v 1.3 88/12/14 17:36:17 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,6 +28,7 @@
 # include	<setjmp.h>
 # include	<sys/signal.h>
 
+/*ARGSUSED*/
 static int
 ignoreErrors (dpy, event)
 Display	*dpy;
@@ -63,7 +64,7 @@ Window	window;
 
 static jmp_buf	resetJmp;
 
-static int
+static void
 abortReset ()
 {
 	longjmp (resetJmp, 1);
@@ -95,6 +96,6 @@ Display	*dpy;
 		alarm (0);
 	}
 	signal (SIGALRM, SIG_DFL);
-	XSetErrorHandler ((int (*)) 0);
+	XSetErrorHandler ((int (*)()) 0);
 	Debug ("pseudoReset done\n");
 }

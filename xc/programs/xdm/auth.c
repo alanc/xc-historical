@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.3 88/12/05 17:32:18 keith Exp $
+ * $XConsortium: auth.c,v 1.4 88/12/15 18:32:20 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -50,6 +50,9 @@ static int  auth_pid = -1;
 static int  to_auth, from_auth;
 static FILE *from_auth_file;
 
+extern void	exit (), bcopy (), free ();
+extern char	*mktemp ();
+
 InitAuthorization (d)
 struct display	*d;
 {
@@ -68,6 +71,7 @@ struct display	*d;
     }
     switch (auth_pid = fork ()) {
     case 0:
+	CleanUpChild ();
 	Debug ("starting authGen: %s\n", d->authGen);
 	argv = parseArgs ((char **) 0, d->authGen);
 	close (pipein[1]);
@@ -102,12 +106,12 @@ struct display	*d;
 }
 
 static jmp_buf	authAbort;
-static int	(*oldpipe)();
+static void	(*oldpipe)();
 
-static
+static void
 abortAuth ()
 {
-    longjmp (authAbort);
+    longjmp (authAbort, 1);
 }
 
 Xauth *
@@ -118,13 +122,13 @@ GenerateAuthorization (timeout)
     Debug ("GenerateAuthorization %d\n", timeout);
     if (auth_pid == -1)
 	return 0;
-    oldpipe = (int (*)()) signal (SIGPIPE, SIG_IGN);
+    oldpipe = (void (*)()) signal (SIGPIPE, SIG_IGN);
     if (setjmp (authAbort)) {
 	Debug ("Authorization timeout\n");
 	ret = 0;
     } else {
         signal (SIGALRM, abortAuth);
-	alarm (timeout);
+	alarm ((unsigned) timeout);
 	Debug ("writing byte\n");
         if (write (to_auth, "\n", 1) != 1) {
 	    Debug ("Write failed\n");
@@ -148,7 +152,6 @@ struct display	*d;
 {
 	Xauth	*auth, *GenerateAuthorization ();
 	FILE	*auth_file;
-	int	ret = 1;
 	int	mask;
 
 	Debug ("SetServerAuthorization\n");
@@ -223,9 +226,10 @@ unsigned short	len;
 }
 
 dumpBytes (len, data)
+unsigned short	len;
 char	*data;
 {
-	int	i;
+	unsigned short	i;
 
 	Debug ("%d: ", len);
 	for (i = 0; i < len; i++)
@@ -272,7 +276,7 @@ doneAddrs ()
 			free (a->address);
 		if (a->number)
 			free (a->number);
-		free (a);
+		free ((char *) a);
 	}
 }
 
@@ -295,10 +299,10 @@ char	*address, *number;
 		new->address = malloc (address_length);
 		if (!new->address) {
 			LogOutOfMem ("saveAddr");
-			free (new);
+			free ((char *) new);
 			return;
 		}
-		bcopy (address, new->address, address_length);
+		bcopy (address, new->address, (int) address_length);
 	} else
 		new->address = 0;
 	if ((new->number_length = number_length) > 0) {
@@ -306,10 +310,10 @@ char	*address, *number;
 		if (!new->number) {
 			LogOutOfMem ("saveAddr");
 			free (new->address);
-			free (new);
+			free ((char *) new);
 			return;
 		}
-		bcopy (number, new->number, number_length);
+		bcopy (number, new->number, (int) number_length);
 	} else
 		new->number = 0;
 	new->family = family;
@@ -353,8 +357,6 @@ char	*addr;
 FILE	*file;
 Xauth	*auth;
 {
-	int	i;
-
 	Debug ("writeAddr ");
 	dumpAuth (auth);
 	auth->family = (unsigned short) family;
@@ -364,6 +366,8 @@ Xauth	*auth;
 }
 
 DefineLocal (file, auth)
+FILE	*file;
+Xauth	*auth;
 {
 	char	displayname[100];
 
@@ -459,7 +463,7 @@ DefineSelf (fd, file, auth)
     if (hp != NULL) {
 	saddr.sa.sa_family = hp->h_addrtype;
 	inetaddr = (struct sockaddr_in *) (&(saddr.sa));
-	bcopy ( hp->h_addr, &(inetaddr->sin_addr), hp->h_length);
+	bcopy ( (char *) hp->h_addr, (char *) &(inetaddr->sin_addr), (int) hp->h_length);
 	family = ConvertAddr ( &(saddr.sa), &len, &addr);
 	if ( family > 0) {
 	    writeAddr (FamilyInternet, sizeof (inetaddr->sin_addr),
@@ -488,7 +492,7 @@ DefineSelf (fd, file, auth)
     
     ifc.ifc_len = sizeof (buf);
     ifc.ifc_buf = buf;
-    if (ioctl (fd, (int) SIOCGIFCONF, (char *) &ifc) < 0)
+    if (ioctl (fd, SIOCGIFCONF, (char *) &ifc) < 0)
         LogError ("Trouble getting network interface configuration");
     for (ifr = ifc.ifc_req, n = ifc.ifc_len / sizeof (struct ifreq); --n >= 0;
      ifr++)
@@ -628,7 +632,7 @@ struct verify_info	*verify;
 	 		writeAuth (new, auth);
 		if (old) {
 			if (fstat (fileno (old), &statb) != -1)
-				chmod (name, statb.st_mode & 0777);
+				chmod (name, (int) (statb.st_mode & 0777));
 			while (entry = XauReadAuth (old)) {
 				if (!checkAddr (entry->family,
 					       entry->address_length, entry->address,

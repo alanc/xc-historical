@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.8 88/11/23 17:00:14 keith Exp $
+ * $XConsortium: greet.c,v 1.9 88/12/07 18:23:15 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -35,14 +35,14 @@
 
 extern Display	*dpy;
 
+extern void	exit ();
 static int	done;
 static char	name[128], password[128];
 static Widget		toplevel;
 static Widget		login;
-static Widget		logoToplevel;
-static Widget		logo;
 static XtAppContext	context;
 
+/*ARGSUSED*/
 GreetDone (w, data, status)
     Widget	w;
     LoginData	*data;
@@ -162,6 +162,7 @@ struct greet_info	*greet;
 }
 
 
+/*ARGSUSED*/
 FailedLogin (d, greet)
 struct display	*d;
 struct greet_info	*greet;

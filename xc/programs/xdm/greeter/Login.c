@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.12 88/11/23 16:53:34 keith Exp $
+ * $XConsortium: Login.c,v 1.13 88/12/15 18:31:45 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,6 +28,8 @@
 # include <X11/StringDefs.h>
 # include <X11/Xmu.h>
 # include "LoginP.h"
+
+extern void	bcopy ();
 
 #define offset(field) XtOffset(LoginWidget,login.field)
 #define goffset(field) XtOffset(Widget,core.field)
@@ -242,6 +244,7 @@ EraseCursor (w)
     realizeCursor (w, w->login.bgGC);
 }
 
+/*ARGSUSED*/
 failTimeout (client_data, id)
     caddr_t	client_data;
     XtIntervalId	id;
@@ -252,9 +255,12 @@ failTimeout (client_data, id)
     EraseFail (w);
 }
 
-DrawFail (w)
-    LoginWidget	w;
+DrawFail (ctx)
+    Widget	ctx;
 {
+    LoginWidget	w;
+
+    w = (LoginWidget) ctx;
     XorCursor (w);
     ResetLogin (w);
     XorCursor (w);
@@ -314,6 +320,7 @@ draw_it (w)
     }
 }
 
+/*ARGSUSED*/
 static void
 DeleteBackwardChar (ctx, event)
     LoginWidget ctx;
@@ -339,6 +346,7 @@ DeleteBackwardChar (ctx, event)
     XorCursor (ctx);	
 }
 
+/*ARGSUSED*/
 static void
 DeleteForwardChar (ctx, event)
     LoginWidget	ctx;
@@ -365,6 +373,7 @@ DeleteForwardChar (ctx, event)
     XorCursor (ctx);	
 }
 
+/*ARGSUSED*/
 static void
 MoveBackwardChar (ctx, event)
     LoginWidget	ctx;
@@ -377,6 +386,7 @@ MoveBackwardChar (ctx, event)
     XorCursor (ctx);
 }
 
+/*ARGSUSED*/
 static void
 MoveForwardChar (ctx, event)
     LoginWidget	ctx;
@@ -397,6 +407,7 @@ MoveForwardChar (ctx, event)
     XorCursor (ctx);
 }
 
+/*ARGSUSED*/
 static void
 MoveToBegining (ctx, event)
     LoginWidget	ctx;
@@ -408,6 +419,7 @@ MoveToBegining (ctx, event)
     XorCursor (ctx);
 }
 
+/*ARGSUSED*/
 static void
 MoveToEnd (ctx, event)
     LoginWidget	ctx;
@@ -426,6 +438,7 @@ MoveToEnd (ctx, event)
     XorCursor (ctx);
 }
 
+/*ARGSUSED*/
 static void
 EraseToEndOfLine (ctx, event)
     LoginWidget	ctx;
@@ -454,6 +467,7 @@ EraseLine (ctx, event)
     EraseToEndOfLine (ctx, event);
 }
 
+/*ARGSUSED*/
 static void
 FinishField (ctx, event)
     LoginWidget	ctx;
@@ -475,6 +489,7 @@ FinishField (ctx, event)
     XorCursor (ctx);
 }
 
+/*ARGSUSED*/
 static void
 AllowAccess (ctx, event, params, num_params)
     LoginWidget	ctx;
@@ -487,11 +502,12 @@ AllowAccess (ctx, event, params, num_params)
 
     RemoveFail (ctx);
     XtSetArg (arglist[0], XtNallowAccess, (char *) &allow);
-    XtGetValues (ctx, arglist, 1);
+    XtGetValues ((Widget) ctx, arglist, 1);
     XtSetArg (arglist[0], XtNallowAccess, !allow);
-    XtSetValues (ctx, arglist, 1);
+    XtSetValues ((Widget) ctx, arglist, 1);
 }
 
+/*ARGSUSED*/
 static void
 SetSessionArgument (ctx, event, params, num_params)
     LoginWidget	ctx;
@@ -512,6 +528,7 @@ SetSessionArgument (ctx, event, params, num_params)
     }
 }
 
+/*ARGSUSED*/
 static void
 RestartSession (ctx, event)
     LoginWidget	ctx;
@@ -525,6 +542,7 @@ RestartSession (ctx, event)
     XorCursor (ctx);
 }
 
+/*ARGSUSED*/
 static void
 AbortSession (ctx, event)
     LoginWidget	ctx;
@@ -538,6 +556,7 @@ AbortSession (ctx, event)
     XorCursor (ctx);
 }
 
+/*ARGSUSED*/
 static void
 AbortDisplay (ctx, event)
     LoginWidget	ctx;
@@ -709,6 +728,7 @@ static void Redisplay(gw, event, region)
     draw_it ((LoginWidget) gw);
 }
 
+/*ARGSUSED*/
 static Boolean SetValues (current, request, new)
     Widget  current, request, new;
 {

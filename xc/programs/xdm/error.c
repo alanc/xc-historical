@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: error.c,v 1.6 88/11/14 12:29:19 keith Exp $
+ * $XConsortium: error.c,v 1.7 88/12/15 18:32:05 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,6 +28,8 @@
 # include "dm.h"
 # include <stdio.h>
 
+extern void	exit ();
+
 InitErrorLog ()
 {
 	int	i;
@@ -43,6 +45,7 @@ InitErrorLog ()
 	}
 }
 
+/*VARARGS1*/
 LogError (fmt, arg1, arg2, arg3, arg4, arg5)
 char	*fmt;
 int	arg1, arg2, arg3, arg4, arg5;
@@ -51,6 +54,7 @@ int	arg1, arg2, arg3, arg4, arg5;
 	fflush (stderr);
 }
 
+/*VARARGS1*/
 LogPanic (fmt, arg1, arg2, arg3, arg4, arg5)
 char	*fmt;
 int	arg1, arg2, arg3, arg4, arg5;
@@ -60,6 +64,7 @@ int	arg1, arg2, arg3, arg4, arg5;
 	exit (1);
 }
 
+/*VARARGS1*/
 LogOutOfMem (fmt, arg1, arg2, arg3, arg4, arg5)
 char	*fmt;
 int	arg1, arg2, arg3, arg4, arg5;
@@ -81,6 +86,7 @@ char	*mesg;
 }
 
 
+/*VARARGS1*/
 Debug (fmt, arg1, arg2, arg3, arg4, arg5)
 char	*fmt;
 int	arg1, arg2, arg3, arg4, arg5;

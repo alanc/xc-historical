@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: displaylist.c,v 1.7 88/12/14 17:36:30 keith Exp $
+ * $XConsortium: displaylist.c,v 1.8 88/12/15 18:32:13 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,6 +25,8 @@
 # include "dm.h"
 
 struct display	*displays;
+
+extern void	free ();
 
 AnyDisplaysLeft ()
 {
@@ -78,7 +80,7 @@ struct display	*old;
 				p->next = d->next;
 			else
 				displays = d->next;
-			free (d);
+			free ((char *) d);
 			break;
 		}
 		p = d;
@@ -97,12 +99,13 @@ char	*name;
 		return 0;
 	}
 	d->next = displays;
-	d->name = strcpy (malloc (strlen (name) + 1), name);
+	d->name = malloc ((unsigned) (strlen (name) + 1));
 	if (!d->name) {
 		LogOutOfMem ("NewDisplay");
-		free (d);
+		free ((char *) d);
 		return 0;
 	}
+	strcpy (d->name, name);
 	d->argv = 0;
 	d->status = notRunning;
 	d->pid = -1;
