@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: xedit.c,v 1.23 89/12/07 19:19:17 kit Exp $";
+static char Xrcsid[] = "$XConsortium: xedit.c,v 1.24 90/05/01 18:58:03 converse Exp $";
 #endif /* lint && SABER */
  
 /*
@@ -28,6 +28,12 @@ static char Xrcsid[] = "$XConsortium: xedit.c,v 1.23 89/12/07 19:19:17 kit Exp $
  */
 
 #include "xedit.h"
+
+static XtActionsRec actions[] = {
+{"quit", DoQuit}
+};
+
+static Atom wm_delete_window;
 
 Widget textwindow, messwidget, labelwindow, filenamewindow;
 
@@ -58,6 +64,11 @@ char **argv;
   static void makeButtonsAndBoxes();
 
   top = XtInitialize( "xedit", "Xedit", NULL, 0, (Cardinal *) &argc, argv);
+
+  XtAppAddActions
+      (XtWidgetToApplicationContext(top), actions, XtNumber(actions));
+  XtOverrideTranslations
+      (top, XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
   
   XtGetApplicationResources(top, (XtPointer) &app_resources, resources,
 			    XtNumber(resources), NULL, 0);
@@ -94,6 +105,12 @@ char **argv;
   XtRealizeWidget(top);
   XDefineCursor(XtDisplay(top),XtWindow(top),
 		XCreateFontCursor( XtDisplay(top), XC_left_ptr));
+  
+  wm_delete_window = XInternAtom(XtDisplay(top), "WM_DELETE_WINDOW",
+				 False);
+  (void) XSetWMProtocols (XtDisplay(top), XtWindow(top),
+			  &wm_delete_window, 1);
+  
   XtMainLoop();
 }
 

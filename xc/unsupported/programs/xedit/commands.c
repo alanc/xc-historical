@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: commands.c,v 1.27 89/12/10 17:08:26 rws Exp $";
+static char Xrcsid[] = "$XConsortium: commands.c,v 1.28 90/01/12 13:56:54 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -88,7 +88,7 @@ DoQuit()
   if( double_click || !source_changed ) 
     exit(0); 
 
-  XeditPrintf("Unsaved changes. Save them, or press Quit again.\n");
+  XeditPrintf("Unsaved changes. Save them, or Quit again.\n");
   Feep();
   double_click = TRUE;
   AddDoubleClickCallback(textwindow, TRUE);
