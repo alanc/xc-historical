@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.83 90/04/05 11:43:46 swick Exp $ */
+/* $XConsortium: NextEvent.c,v 1.84 90/07/15 21:44:05 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -261,7 +261,7 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 					 wait_time_ptr->tv_sec,
 					 wait_time_ptr->tv_usec,
 					 loop_count );
-				XtWarning( msg );
+				XtAppWarning( app, msg );
 			    }
 #endif /*DEBUG_SELECT*/
 			    continue;

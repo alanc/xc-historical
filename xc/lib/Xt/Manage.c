@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Manage.c,v 1.21 90/03/19 12:55:46 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Manage.c,v 1.22 90/04/04 11:27:06 swick Exp $";
 /* $oHeader: Manage.c,v 1.3 88/09/01 11:41:51 asente Exp $ */
 #endif /* lint */
 
@@ -63,7 +63,8 @@ void XtUnmanageChildren(children, num_children)
     for (i = 0; i < num_children; i++) {
 	child = children[i];
 	if (child == NULL) {
-        XtWarningMsg(XtNinvalidChild,XtNxtUnmanageChildren,XtCXtToolkitError,
+	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)parent),
+		  XtNinvalidChild,XtNxtUnmanageChildren,XtCXtToolkitError,
                   "Null child passed to XtUnmanageChildren",
 		  (String *)NULL, (Cardinal *)NULL);
 	    return;
@@ -153,7 +154,8 @@ void XtManageChildren(children, num_children)
     for (i = 0; i < num_children; i++) {
 	child = children[i];
 	if (child == NULL) {
-	    XtWarningMsg(XtNinvalidChild,XtNxtManageChildren,XtCXtToolkitError,
+	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)parent),
+		XtNinvalidChild,XtNxtManageChildren,XtCXtToolkitError,
 		"null child passed to XtManageChildren",
 		(String *)NULL, (Cardinal *)NULL);
 	    if (unique_children != cache) XtFree((char *) unique_children);
