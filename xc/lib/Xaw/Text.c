@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.59 88/09/22 07:32:03 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.60 88/09/22 14:07:54 swick Exp $";
 #endif
 
 
@@ -567,7 +567,7 @@ _XtTextScroll(ctx, n)
 				     XtsdLeft, n+1, FALSE);
 	BuildLineTable(ctx, top);
 	if (ctx->text.lt.info[n].position == target) {
-	    tempHeight = ctx->text.lt.info[ctx->text.lt.lines-n].y;
+	    tempHeight = ctx->text.lt.info[ctx->text.lt.lines-n].y - 1;
 	    XCopyArea(XtDisplay(ctx), XtWindow(ctx), XtWindow(ctx), ctx->text.gc,
 		      0, ctx->text.lt.info[0].y, (int)ctx->core.width, tempHeight,
 		      0, ctx->text.lt.info[n].y);
