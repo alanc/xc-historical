@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.110 94/03/28 15:24:37 gildea Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.111 94/03/28 17:12:52 matt Exp $
 
 #ifdef SVR4
 #define OSName            SunOS 5.3
@@ -96,6 +96,16 @@ XCOMM operating system:  OSName
 #define HasVFork          NO
 #define InstKmemFlags	  -g sys -m 2755
 #define ShLibIncludeFile <sunLib.tmpl>
+/*
+ * Set flags for position independent code before including sv4Lib.rules
+ * if the compiler in use doesn't use standard SVR4 flags
+ */
+#if defined(HasSunC) || defined(HasCenterLineC)
+#define PositionIndependentCFlags -Kpic
+#endif
+#if defined(HasSunCplusplus) || defined(HasCenterLineCplusplus)
+#define PositionIndependentCplusplusFlags -Kpic
+#endif
 #include <sv4Lib.rules>
 #else
 #define InstKmemFlags	  -g kmem -m 2755
