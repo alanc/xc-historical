@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.126 92/11/03 18:42:50 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.127 92/11/07 17:22:14 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -16,14 +16,23 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
+#define NEED_REPLIES
 #include <X11/Xlibint.h>
 #include <X11/Xos.h>
 #include <X11/Xatom.h>
+#include "bigreqstr.h"
 #include <stdio.h>
 
 #ifdef X_NOT_STDC_ENV
 extern char *getenv();
 #endif
+
+#define bignamelen (sizeof(XBigReqExtensionName) - 1)
+
+typedef struct {
+    unsigned long seq;
+    int opcode;
+} _XBigReqState;
 
 extern int _Xdebug;
 
@@ -36,6 +45,7 @@ static xReq _dummy_request = {
 };
 
 static OutOfMemory();
+static Bool _XBigReqHandler();
 
 extern Bool _XWireToEvent();
 extern Status _XUnknownNativeEvent();
@@ -177,6 +187,7 @@ Display *XOpenDisplay (display)
 	dpy->cms.defaultCCCs	= NULL;
 	dpy->cms.perVisualIntensityMaps = NULL;
 	dpy->im_filters		= NULL;
+	dpy->bigreq_size	= 0;
 
 /*
  * Setup other information in this display structure.
@@ -468,29 +479,55 @@ Display *XOpenDisplay (display)
 	UnlockMutex(&lock);
 
 /*
+ * get availability of large requests, and
  * get the resource manager database off the root window.
  */
+	LockDisplay(dpy);
 	{
-	    Atom actual_type;
-	    int actual_format;
-	    unsigned long nitems;
-	    unsigned long leftover;
-	    char *xdef = NULL;
+	    _XAsyncHandler async;
+	    _XBigReqState async_state;
+	    xQueryExtensionReq *qreq;
+	    xGetPropertyReply reply;
+	    xGetPropertyReq *req;
+	    xBigReqEnableReq *breq;
+	    xBigReqEnableReply brep;
 
-	    if (XGetWindowProperty (dpy, RootWindow(dpy, 0),
-				    XA_RESOURCE_MANAGER, 0L, 100000000L, False,
-				    XA_STRING, &actual_type, &actual_format,
-				    &nitems, &leftover,
-				    (unsigned char **) &xdef) == Success) {
-		if ((actual_type == XA_STRING) && (actual_format == 8)) {
-		    LockDisplay (dpy);
-		    dpy->xdefaults = xdef;
-		    UnlockDisplay (dpy);
-		} else if (xdef) {
-		    Xfree (xdef);
-		}
+	    GetReq(QueryExtension, qreq);
+	    async_state.seq = dpy->request;
+	    async_state.opcode = 0;
+	    async.next = dpy->async_handlers;
+	    async.handler = _XBigReqHandler;
+	    async.data = (XPointer)&async_state;
+	    dpy->async_handlers = &async;
+	    qreq->nbytes = bignamelen;
+	    qreq->length += (bignamelen+3)>>2;
+	    Data(dpy, XBigReqExtensionName, bignamelen);
+
+	    GetReq (GetProperty, req);
+	    req->window = RootWindow(dpy, 0);
+	    req->property = XA_RESOURCE_MANAGER;
+	    req->type = XA_STRING;
+	    req->delete = False;
+	    req->longOffset = 0;
+	    req->longLength = 100000000L;
+
+	    if (_XReply (dpy, (xReply *) &reply, 0, xFalse)) {
+		if (reply.format == 8 && reply.propertyType == XA_STRING &&
+		    (dpy->xdefaults = Xmalloc (reply.nItems + 1)))
+		    _XReadPad (dpy, dpy->xdefaults, reply.nItems);
+		else if (reply.propertyType != None)
+		    _XEatData(dpy, reply.nItems * (reply.format >> 3));
+	    }
+	    DeqAsyncHandler(dpy, &async);
+	    if (async_state.opcode) {
+		GetReq(BigReqEnable, breq);
+		breq->reqType = async_state.opcode;
+		breq->brReqType = X_BigReqEnable;
+		if (_XReply(dpy, (xReply *)&brep, 0, xFalse))
+		    dpy->bigreq_size = brep.max_request_size;
 	    }
 	}
+	UnlockDisplay(dpy);
 
 #ifdef MOTIFBC
 	{
@@ -504,6 +541,31 @@ Display *XOpenDisplay (display)
  	return(dpy);
 }
 
+static Bool
+_XBigReqHandler(dpy, rep, buf, len, data)
+    register Display *dpy;
+    register xReply *rep;
+    char *buf;
+    int len;
+    XPointer data;
+{
+    _XBigReqState *state;
+    xQueryExtensionReply replbuf;
+    xQueryExtensionReply *repl;
+
+    state = (_XBigReqState *)data;
+    if (dpy->last_request_read != state->seq)
+	return False;
+    if (rep->generic.type == X_Error)
+	return True;
+    repl = (xQueryExtensionReply *)
+	_XGetAsyncReply(dpy, (char *)&replbuf, rep, buf, len,
+			(SIZEOF(xQueryExtensionReply) - SIZEOF(xReply)) >> 2,
+			True);
+    if (repl->present)
+	state->opcode = repl->major_opcode;
+    return True;
+}
 
 /* OutOfMemory is called if malloc fails.  XOpenDisplay returns NULL
    after this returns. */
