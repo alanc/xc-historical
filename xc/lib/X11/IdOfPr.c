@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsIdOfPr.c,v 1.4 91/05/13 23:22:36 rws Exp $" */
+/* $XConsortium: XcmsIdOfPr.c,v 1.5 91/11/05 13:48:45 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -84,8 +84,7 @@ XcmsFormatOfPrefix(prefix)
     papColorSpaces = _XcmsDIColorSpaces;
     if (papColorSpaces != NULL) {
 	while (*papColorSpaces != NULL) {
-	    if (strncmp((*papColorSpaces)->prefix, string_lowered,
-		    strlen((*papColorSpaces)->prefix)) == 0) {
+	    if (strcmp((*papColorSpaces)->prefix, string_lowered) == 0) {
 		if (len >= sizeof(string_buf)) Xfree(string_lowered);
 		return((*papColorSpaces)->id);
 	    }
@@ -99,8 +98,7 @@ XcmsFormatOfPrefix(prefix)
     papColorSpaces = _XcmsDDColorSpaces;
     if (papColorSpaces != NULL) {
 	while (*papColorSpaces != NULL) {
-	    if (strncmp((*papColorSpaces)->prefix, string_lowered,
-		    strlen((*papColorSpaces)->prefix)) == 0) {
+	    if (strcmp((*papColorSpaces)->prefix, string_lowered) == 0) {
 		if (len >= sizeof(string_buf)) Xfree(string_lowered);
 		return((*papColorSpaces)->id);
 	    }
