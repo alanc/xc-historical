@@ -11,7 +11,7 @@ OTHERSUBDIRS = xdm xhost
 
 SUBDIRS = \
 	appres bitmap editres listres oclock twm viewres \
-	xauth xbiff xcalc xclipboard xclock \
+	xauth xbiff xcalc xclipboard xclock xconsole \
 	xditview xdpyinfo xedit xfd xinit xkill xload xlogo \
 	xlsatoms xlsclients xlsfonts xlswins xmag xman xmh \
 	xmodmap xpr xprop xrdb xrefresh xfontsel $(OTHERSUBDIRS) \
