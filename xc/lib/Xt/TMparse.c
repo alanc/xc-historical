@@ -509,11 +509,12 @@ static KeySym XStringToKeySym(str)
 
 static char * ParseKeySym(str, eventCodeMaskP, eventCodeP)
     char *str;
+    EventCode *eventCodeMaskP;
     EventCode *eventCodeP;
 {
-    char keySymName[100];
+    char keySymName[100], *start;
 
-    str = ScanWhitepace(str);
+    str = ScanWhitespace(str);
 
     if (*str == '\\') {
 	str++;
