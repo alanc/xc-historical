@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xconsole.c,v 1.11 91/11/09 16:24:17 keith Exp $
+ * $XConsortium: xconsole.c,v 1.12 92/08/16 09:37:23 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -118,9 +118,12 @@ static XrmOptionDescRec options[] = {
 #ifdef SVR4
 #include    <termios.h>
 #include    <sys/stropts.h>		/* for I_PUSH */
+#ifdef sun
+#include    <sys/strredir.h>
+#endif
 #endif
 
-#ifdef TIOCCONS
+#if defined(TIOCCONS) || defined(SRIOCSREDIR)
 #define USE_PTY
 static int  tty_fd, pty_fd;
 static char ttydev[64], ptydev[64];
@@ -151,12 +154,21 @@ OpenConsole ()
 	    	input = fopen (FILE_NAME, "r");
 #endif
 #ifdef USE_PTY
-		int	on = 1;
-
-		if (get_pty (&pty_fd, &tty_fd, ttydev, ptydev) == 0 &&
-		    ioctl (tty_fd, TIOCCONS, (char *) &on) != -1)
+		if (get_pty (&pty_fd, &tty_fd, ttydev, ptydev) == 0)
 		{
-		    input = fdopen (pty_fd, "r");
+#ifdef TIOCCONS
+		    int on = 1;
+		    if (ioctl (tty_fd, TIOCCONS, (char *) &on) != -1)
+			input = fdopen (pty_fd, "r");
+#else
+		    int consfd = open("/dev/console", O_RDONLY);
+		    if (consfd >= 0)
+		    {
+			if (ioctl(consfd, SRIOCSREDIR, tty_fd) != -1)
+			    input = fdopen (pty_fd, "r");
+			close(consfd);
+		    }
+#endif
 		}
 #endif
 	    }
