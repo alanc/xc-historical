@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.156 90/03/23 13:30:49 jim Exp $
+ * $XConsortium: menus.c,v 1.157 90/04/13 13:27:17 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.156 90/03/23 13:30:49 jim Exp $";
+"$XConsortium: menus.c,v 1.157 90/04/13 13:27:17 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -585,9 +585,11 @@ NewMenuRoot(name)
 {
     MenuRoot *tmp;
 
+#define UNUSED_PIXEL ((unsigned long) (~0))	/* more than 24 bits */
+
     tmp = (MenuRoot *) malloc(sizeof(MenuRoot));
-    tmp->hi_fore = -1;
-    tmp->hi_back = -1;
+    tmp->hi_fore = UNUSED_PIXEL;
+    tmp->hi_back = UNUSED_PIXEL;
     tmp->name = name;
     tmp->prev = NULL;
     tmp->first = NULL;
@@ -827,7 +829,7 @@ MenuRoot *mr;
 	    }
 	}
 
-	if (mr->hi_fore != -1)
+	if (mr->hi_fore != UNUSED_PIXEL)
 	{
 	    tmp->hi_fore = mr->hi_fore;
 	    tmp->hi_back = mr->hi_back;
