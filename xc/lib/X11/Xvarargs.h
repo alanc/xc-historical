@@ -9,6 +9,10 @@
 #  define _XSTDVAR
 # endif
 # endif
+#else
+#ifdef sgi
+#define _XSTDVAR
+#endif
 #endif
 
 #ifdef _XSTDVAR
