@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: xlogo.c,v 1.1 88/02/23 10:31:59 rws Exp $";
+static char rcsid[] = "$Header: xlogo.c,v 1.3 88/02/27 15:56:20 rws Exp $";
 #endif  lint
 
 #include <X11/Xlib.h>
@@ -39,12 +39,12 @@ void main(argc, argv)
     icon = XCreatePixmap(XtDisplay(toplevel), XtScreen(toplevel)->root,
 			 32, 32, 1);
     gcv.foreground = 1;
-    gcFore = XtGetGC(toplevel, GCForeground, &gcv);
+    gcFore = XCreateGC(XtDisplay(toplevel), icon, GCForeground, &gcv);
     gcv.foreground = 0;
-    gcBack = XtGetGC(toplevel, GCForeground, &gcv);
+    gcBack = XCreateGC(XtDisplay(toplevel), icon, GCForeground, &gcv);
     XDrawLogo(XtDisplay(toplevel), icon, gcFore, gcBack, 0, 0, 32, 32);
-    XtDestroyGC(gcFore);
-    XtDestroyGC(gcBack);
+    XFreeGC(XtDisplay(toplevel), gcFore);
+    XFreeGC(XtDisplay(toplevel), gcBack);
     arg.name = XtNiconPixmap;
     arg.value = (XtArgVal) icon;
     XtSetValues (toplevel, &arg, ONE); 
