@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XQuTextExt.c,v 11.14 89/11/08 17:07:48 converse Exp $ */
+/* $XConsortium: XQuTextExt.c,v 11.15 89/12/11 20:56:40 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986, 1987	*/
 
 #define NEED_REPLIES
@@ -10,7 +10,7 @@
 XQueryTextExtents (
     register Display *dpy,
     Font fid,
-    register const char *string,
+    register _Xconst char *string,
     register int nchars,
     int *dir,
     int *font_ascent,

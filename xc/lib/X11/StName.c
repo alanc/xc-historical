@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XStName.c,v 11.11 88/09/06 16:11:00 jim Exp $ */
+/* $XConsortium: XStName.c,v 11.12 89/12/11 19:10:32 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -10,7 +10,7 @@
 XStoreName (
     register Display *dpy,
     Window w,
-    const char *name)
+    _Xconst char *name)
 #else
 XStoreName (dpy, w, name)
     register Display *dpy;
@@ -27,7 +27,7 @@ XStoreName (dpy, w, name)
 XSetIconName (
     register Display *dpy,
     Window w,
-    const char *icon_name)
+    _Xconst char *icon_name)
 #else
 XSetIconName (dpy, w, icon_name)
     register Display *dpy;

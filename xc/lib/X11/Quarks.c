@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.25 90/10/31 14:50:23 rws Exp $
+ * $XConsortium: Quarks.c,v 1.26 90/12/09 16:28:46 rws Exp $
  */
 
 /***********************************************************
@@ -182,7 +182,7 @@ ExpandQuarkTable()
 
 #if NeedFunctionPrototypes
 XrmQuark _XrmInternalStringToQuark(
-    register const char *name, register int len, register Signature sig,
+    register _Xconst char *name, register int len, register Signature sig,
     Bool permstring)
 #else
 XrmQuark _XrmInternalStringToQuark(name, len, sig, permstring)
@@ -290,7 +290,7 @@ nomatch:    if (!rehash)
 
 #if NeedFunctionPrototypes
 XrmQuark XrmStringToQuark(
-    const char *name)
+    _Xconst char *name)
 #else
 XrmQuark XrmStringToQuark(name)
     XrmString name;
@@ -310,7 +310,7 @@ XrmQuark XrmStringToQuark(name)
 
 #if NeedFunctionPrototypes
 XrmQuark XrmPermStringToQuark(
-    const char *name)
+    _Xconst char *name)
 #else
 XrmQuark XrmPermStringToQuark(name)
     XrmString name;

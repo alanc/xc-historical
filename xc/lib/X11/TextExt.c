@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XTextExt.c,v 11.23 89/10/08 14:45:36 rws Exp $
+ * $XConsortium: XTextExt.c,v 11.24 89/12/11 19:10:40 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  */
@@ -43,7 +43,7 @@
 #if NeedFunctionPrototypes
 XTextExtents (
     XFontStruct *fs,
-    const char *string,
+    _Xconst char *string,
     int nchars,
     int *dir,           /* RETURN font information */
     int *font_ascent,   /* RETURN font information */
@@ -125,7 +125,7 @@ XTextExtents (fs, string, nchars, dir, font_ascent, font_descent, overall)
 #if NeedFunctionPrototypes
 int XTextWidth (
     XFontStruct *fs,
-    const char *string,
+    _Xconst char *string,
     int count)
 #else
 int XTextWidth (fs, string, count)

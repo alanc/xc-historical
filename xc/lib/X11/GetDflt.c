@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XGetDflt.c,v 1.19 89/12/11 19:09:21 rws Exp $
+ * $XConsortium: XGetDflt.c,v 1.20 90/01/22 09:08:17 rws Exp $
  */
 
 /***********************************************************
@@ -115,8 +115,8 @@ static XrmDatabase InitDefaults (dpy)
 #if NeedFunctionPrototypes
 char *XGetDefault(
 	Display *dpy,			/* display for defaults.... */
-	char const *prog,		/* name of program for option	*/
-	register const char *name)	/* name of option program wants */
+	char _Xconst *prog,		/* name of program for option	*/
+	register _Xconst char *name)	/* name of option program wants */
 #else
 char *XGetDefault(dpy, prog, name)
 	Display *dpy;			/* display for defaults.... */

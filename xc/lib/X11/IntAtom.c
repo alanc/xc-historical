@@ -1,4 +1,4 @@
-/* $XConsortium: XIntAtom.c,v 11.14 90/12/09 16:33:41 rws Exp $ */
+/* $XConsortium: XIntAtom.c,v 11.15 90/12/09 20:40:18 rws Exp $ */
 /*
 
 Copyright 1986, 1990 by the Massachusetts Institute of Technology
@@ -55,7 +55,7 @@ _XFreeAtomTable(dpy)
 #if NeedFunctionPrototypes
 Atom XInternAtom (
     Display *dpy,
-    const char *name,
+    _Xconst char *name,
     Bool onlyIfExists)
 #else
 Atom XInternAtom (dpy, name, onlyIfExists)

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XQuExt.c,v 11.14 88/09/06 16:09:56 jim Exp $ */
+/* $XConsortium: XQuExt.c,v 11.15 89/12/11 19:10:04 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -9,7 +9,7 @@
 #if NeedFunctionPrototypes
 Bool XQueryExtension(
     register Display *dpy,
-    const char *name,
+    _Xconst char *name,
     int *major_opcode,  /* RETURN */
     int *first_event,   /* RETURN */
     int *first_error)	/* RETURN */

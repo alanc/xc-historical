@@ -1,7 +1,7 @@
 #include "copyright.h"
 
 /* Copyright 	Massachusetts Institute of Technology  1985, 1986, 1987 */
-/* $XConsortium: XParseGeom.c,v 11.13 88/09/06 16:09:29 jim Exp $ */
+/* $XConsortium: XParseGeom.c,v 11.14 89/12/11 19:09:57 rws Exp $ */
 
 #include "Xlibint.h"
 #include "Xutil.h"
@@ -64,7 +64,7 @@ char **NextString;
 
 #if NeedFunctionPrototypes
 int XParseGeometry (
-const char *string,
+_Xconst char *string,
 int *x,
 int *y,
 unsigned int *width,    /* RETURN */

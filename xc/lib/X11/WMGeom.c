@@ -21,8 +21,8 @@ static int _GeometryMaskToGravity();
 int XWMGeometry (
     Display *dpy,			/* user's display connection */
     int screen,				/* screen on which to do computation */
-    const char *user_geom,		/* user provided geometry spec */
-    const char *def_geom,		/* default geometry spec for window */
+    _Xconst char *user_geom,		/* user provided geometry spec */
+    _Xconst char *def_geom,		/* default geometry spec for window */
     unsigned int bwidth,		/* border width */
     XSizeHints *hints,			/* usually WM_NORMAL_HINTS */
     int *x_return,			/* location of window */

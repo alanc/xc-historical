@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XStNColor.c,v 11.10 88/09/06 16:10:59 jim Exp $ */
+/* $XConsortium: XStNColor.c,v 11.11 89/12/11 19:10:29 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -9,7 +9,7 @@
 XStoreNamedColor(
 register Display *dpy,
 Colormap cmap,
-const char *name, /* STRING8 */
+_Xconst char *name, /* STRING8 */
 unsigned long pixel, /* CARD32 */
 int flags)  /* DoRed, DoGreen, DoBlue */
 #else

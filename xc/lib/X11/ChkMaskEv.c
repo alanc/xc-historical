@@ -1,18 +1,12 @@
 #include "copyright.h"
 
-/* $XConsortium: XChkMaskEv.c,v 11.18 90/06/15 17:20:31 rws Exp $ */
+/* $XConsortium: XChkMaskEv.c,v 11.19 90/12/11 11:07:47 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1987	*/
 #define NEED_EVENTS
 #include "Xlibint.h"
 
-#if __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
-
 extern _XQEvent *_qfree;
-extern long Const _event_to_mask[];
+extern long _Xconst _event_to_mask[];
 #define AllPointers (PointerMotionMask|PointerMotionHintMask|ButtonMotionMask)
 #define AllButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
 		    Button4MotionMask|Button5MotionMask)

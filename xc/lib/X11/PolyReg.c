@@ -1,4 +1,4 @@
-/* $XConsortium: XPolyReg.c,v 11.16 89/09/12 09:08:53 rws Exp $ */
+/* $XConsortium: XPolyReg.c,v 11.17 89/11/08 17:07:30 converse Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -435,7 +435,6 @@ static int PtsToRegion(numFullPtBlocks, iCurPtBlock, FirstPtBlock, reg)
     return(TRUE);
 }
 
-Region XCreateRegion();
 /*
  *     polytoregion
  *

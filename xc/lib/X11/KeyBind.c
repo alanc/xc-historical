@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XKeyBind.c,v 11.58 89/12/11 19:09:38 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.59 90/12/09 16:47:29 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -406,7 +406,7 @@ XRebindKeysym (
     KeySym keysym,
     KeySym *mlist,
     int nm,		/* number of modifiers in mlist */
-    const unsigned char *str,
+    _Xconst unsigned char *str,
     int nbytes)
 #else
 XRebindKeysym (dpy, keysym, mlist, nm, str, nbytes)

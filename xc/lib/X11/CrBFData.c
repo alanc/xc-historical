@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XCrBFData.c,v 1.7 89/11/08 17:06:27 converse Exp $ */
+/* $XConsortium: XCrBFData.c,v 1.8 89/12/11 19:08:53 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlib.h"
@@ -26,7 +26,7 @@
 Pixmap XCreateBitmapFromData(
      Display *display,
      Drawable d,
-     const char *data,
+     _Xconst char *data,
      unsigned int width,
      unsigned int height)
 #else

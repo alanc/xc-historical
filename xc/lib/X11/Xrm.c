@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.50 90/12/02 18:21:20 rws Exp $
+ * $XConsortium: Xrm.c,v 1.51 90/12/11 11:10:27 rws Exp $
  */
 
 /***********************************************************
@@ -265,7 +265,7 @@ void XrmSetDatabase(display, database)
 
 #if NeedFunctionPrototypes
 void XrmStringToQuarkList(
-    register const char  *name,
+    register _Xconst char  *name,
     register XrmQuarkList quarks)   /* RETURN */
 #else
 void XrmStringToQuarkList(name, quarks)
@@ -303,7 +303,7 @@ void XrmStringToQuarkList(name, quarks)
 
 #if NeedFunctionPrototypes
 void XrmStringToBindingQuarkList(
-    register const char	   *name,
+    register _Xconst char   *name,
     register XrmBindingList bindings,   /* RETURN */
     register XrmQuarkList   quarks)     /* RETURN */
 #else
@@ -879,8 +879,8 @@ void XrmQPutResource(pdb, bindings, quarks, type, value)
 #if NeedFunctionPrototypes
 void XrmPutResource(
     XrmDatabase     *pdb,
-    const char	    *specifier,
-    const char	    *type,
+    _Xconst char    *specifier,
+    _Xconst char    *type,
     XrmValuePtr	    value)
 #else
 void XrmPutResource(pdb, specifier, type, value)
@@ -903,7 +903,7 @@ void XrmQPutStringResource(
     XrmDatabase     *pdb,
     XrmBindingList  bindings,
     XrmQuarkList    quarks,
-    const char	    *str)
+    _Xconst char    *str)
 #else
 void XrmQPutStringResource(pdb, bindings, quarks, str)
     XrmDatabase     *pdb;
@@ -1285,8 +1285,8 @@ static void GetDatabase(db, str, filename)
 #if NeedFunctionPrototypes
 void XrmPutStringResource(
     XrmDatabase *pdb,
-    const char	*specifier,
-    const char	*str)
+    _Xconst char*specifier,
+    _Xconst char*str)
 #else
 void XrmPutStringResource(pdb, specifier, str)
     XrmDatabase *pdb;
@@ -1309,7 +1309,7 @@ void XrmPutStringResource(pdb, specifier, str)
 #if NeedFunctionPrototypes
 void XrmPutLineResource(
     XrmDatabase *pdb,
-    const char	*line)
+    _Xconst char*line)
 #else
 void XrmPutLineResource(pdb, line)
     XrmDatabase *pdb;
@@ -1322,7 +1322,7 @@ void XrmPutLineResource(pdb, line)
 
 #if NeedFunctionPrototypes
 XrmDatabase XrmGetStringDatabase(
-    const char	    *data)
+    _Xconst char    *data)
 #else
 XrmDatabase XrmGetStringDatabase(data)
     char	    *data;
@@ -1402,7 +1402,7 @@ GetIncludeFile(db, base, fname, fnamelen)
 
 #if NeedFunctionPrototypes
 XrmDatabase XrmGetFileDatabase(
-    const char 	    *filename)
+    _Xconst char    *filename)
 #else
 XrmDatabase XrmGetFileDatabase(filename)
     char 	    *filename;
@@ -1422,7 +1422,7 @@ XrmDatabase XrmGetFileDatabase(filename)
 
 #if NeedFunctionPrototypes
 Status XrmCombineFileDatabase(
-    const char 	    *filename,
+    _Xconst char    *filename,
     XrmDatabase     *target,
     Bool             override)
 #else
@@ -1788,7 +1788,7 @@ void PrintTable(table, file)
 #if NeedFunctionPrototypes
 void XrmPutFileDatabase(
     XrmDatabase db,
-    const char 	*fileName)
+    _Xconst char *fileName)
 #else
 void XrmPutFileDatabase(db, fileName)
     XrmDatabase db;
@@ -2254,8 +2254,8 @@ Bool XrmQGetResource(db, names, classes, pType, pValue)
 #if NeedFunctionPrototypes
 Bool XrmGetResource(db, name_str, class_str, pType_str, pValue)
     XrmDatabase         db;
-    const char		*name_str;
-    const char		*class_str;
+    _Xconst char	*name_str;
+    _Xconst char	*class_str;
     XrmString		*pType_str;  /* RETURN */
     XrmValuePtr		pValue;      /* RETURN */
 #else

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.95 90/09/13 18:22:17 keith Exp $
+ * $XConsortium: XOpenDis.c,v 11.96 90/12/09 16:44:30 rws Exp $
  */
 
 #include "copyright.h"
@@ -123,7 +123,7 @@ extern Bool _XUnknownWireEvent();
  */
 #if NeedFunctionPrototypes
 Display *XOpenDisplay (
-	register const char *display)
+	register _Xconst char *display)
 #else
 Display *XOpenDisplay (display)
 	register char *display;

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XInitExt.c,v 11.23 89/12/11 19:09:33 rws Exp $ */
+/* $XConsortium: XInitExt.c,v 11.24 90/12/09 16:46:47 rws Exp $ */
 /* Copyright  Massachusetts Institute of Technology 1987 */
 
 #include "Xlibint.h"
@@ -19,7 +19,7 @@ extern Bool _XDefaultWireError();
 #if NeedFunctionPrototypes
 XExtCodes *XInitExtension (
 	Display *dpy,
-	const char *name)
+	_Xconst char *name)
 #else
 XExtCodes *XInitExtension (dpy, name)
 	Display *dpy;

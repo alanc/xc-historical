@@ -1,4 +1,4 @@
-/* $XConsortium: XStrKeysym.c,v 11.9 90/10/30 08:51:40 rws Exp $ */
+/* $XConsortium: XStrKeysym.c,v 11.10 90/12/11 11:08:37 rws Exp $ */
 /* Copyright 1985, 1987, 1990 Massachusetts Institute of Technology */
 
 #include "Xlibint.h"
@@ -42,7 +42,7 @@ _XInitKeysymDB()
 
 #if NeedFunctionPrototypes
 KeySym XStringToKeysym(s)
-    const char *s;
+    _Xconst char *s;
 #else
 KeySym XStringToKeysym(s)
     char *s;

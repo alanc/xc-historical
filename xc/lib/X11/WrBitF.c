@@ -60,7 +60,7 @@ int *resultsize;
 #if NeedFunctionPrototypes
 int XWriteBitmapFile(
      Display *display,
-     const char *filename,
+     _Xconst char *filename,
      Pixmap bitmap,
      unsigned int width,
      unsigned int height,

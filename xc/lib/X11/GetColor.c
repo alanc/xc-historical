@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetColor.c,v 11.14 88/09/06 16:07:43 jim Exp $ */
+/* $XConsortium: XGetColor.c,v 11.15 89/12/11 19:09:19 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -10,7 +10,7 @@
 Status XAllocNamedColor(
 register Display *dpy,
 Colormap cmap,
-const char *colorname, /* STRING8 */
+_Xconst char *colorname, /* STRING8 */
 XColor *hard_def, /* RETURN */
 XColor *exact_def) /* RETURN */
 #else

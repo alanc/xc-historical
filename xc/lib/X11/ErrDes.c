@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.40 90/06/15 15:56:26 rws Exp $
+ * $XConsortium: XErrDes.c,v 11.41 90/12/11 11:08:11 rws Exp $
  */
 
 /***********************************************************
@@ -97,9 +97,9 @@ XGetErrorText(dpy, code, buffer, nbytes)
 /*ARGSUSED*/
 XGetErrorDatabaseText(
     Display *dpy,
-    register const char *name,
-    register const char *type,
-    const char *defaultp,
+    register _Xconst char *name,
+    register _Xconst char *type,
+    _Xconst char *defaultp,
     char *buffer,
     int nbytes)
 #else

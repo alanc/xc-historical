@@ -1,14 +1,12 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetImage.c,v 11.23 89/01/18 08:22:36 rws Exp $ */
+/* $XConsortium: XGetImage.c,v 11.24 89/11/08 17:06:49 converse Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
 #include "Xlibint.h"
 
 #define ROUNDUP(nbytes, pad) (((((nbytes) - 1) + (pad)) / (pad)) * (pad))
-
-extern XImage *XCreateImage();
 
 static unsigned int Ones(mask)                /* HACKMEM 169 */
     unsigned long mask;

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XSetDashes.c,v 11.9 88/09/06 16:10:28 jim Exp $ */
+/* $XConsortium: XSetDashes.c,v 11.10 89/12/11 19:10:15 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -10,7 +10,7 @@ XSetDashes (
     register Display *dpy,
     GC gc,
     int dash_offset,
-    const char *list,
+    _Xconst char *list,
     int n)
 #else
 XSetDashes (dpy, gc, dash_offset, list, n)

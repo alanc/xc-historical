@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XLookupCol.c,v 11.8 88/09/06 16:09:08 jim Exp $ */
+/* $XConsortium: XLookupCol.c,v 11.9 89/12/11 19:09:46 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #define NEED_REPLIES
@@ -10,7 +10,7 @@
 Status XLookupColor (
 	register Display *dpy,
         Colormap cmap,
-	register const char *spec,
+	register _Xconst char *spec,
 	XColor *def,
 	XColor *scr)
 #else

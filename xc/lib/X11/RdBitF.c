@@ -103,7 +103,7 @@ static NextInt (fstream)
 int XReadBitmapFile (
     Display *display,
     Drawable d,
-    const char *filename,
+    _Xconst char *filename,
     unsigned int *width,                /* RETURNED */
     unsigned int *height,               /* RETURNED */
     Pixmap *pixmap,                     /* RETURNED */

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XSetPntMap.c,v 11.10 89/12/09 19:14:11 rws Exp $ */
+/* $XConsortium: XSetPntMap.c,v 11.11 89/12/11 19:10:22 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -11,7 +11,7 @@
 #if NeedFunctionPrototypes
 int XSetPointerMapping (
     register Display *dpy,
-    const unsigned char *map,
+    _Xconst unsigned char *map,
     int nmaps)
 #else
 int XSetPointerMapping (dpy, map, nmaps)

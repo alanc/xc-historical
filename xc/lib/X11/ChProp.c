@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XChProp.c,v 11.18 89/05/30 11:44:21 rws Exp $ */
+/* $XConsortium: XChProp.c,v 11.19 89/12/11 19:08:47 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -13,7 +13,7 @@ XChangeProperty (
     Atom type,
     int format,  /* 8, 16, or 32 */
     int mode,  /* PropModeReplace, PropModePrepend, PropModeAppend */
-    const unsigned char *data,
+    _Xconst unsigned char *data,
     int nelements)
 #else
 XChangeProperty (dpy, w, property, type, format, mode, data, nelements)

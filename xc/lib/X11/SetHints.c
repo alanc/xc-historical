@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XSetHints.c,v 11.34 89/12/09 19:14:46 rws Exp $ */
+/* $XConsortium: XSetHints.c,v 11.35 89/12/11 19:10:18 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -190,8 +190,8 @@ XSetCommand (dpy, w, argv, argc)
 XSetStandardProperties (
     	Display *dpy,
     	Window w,		/* window to decorate */
-    	const char *name,	/* name of application */
-    	const char *icon_string,/* name string for icon */
+    	_Xconst char *name,	/* name of application */
+    	_Xconst char *icon_string,/* name string for icon */
 	Pixmap icon_pixmap,	/* pixmap to use as icon, or None */
     	char **argv,		/* command to be used to restart application */
     	int argc,		/* count of arguments */

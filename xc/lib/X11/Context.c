@@ -1,4 +1,4 @@
-/* $XConsortium: Context.c,v 1.8 90/01/10 19:54:30 converse Exp $ */
+/* $XConsortium: Context.c,v 1.9 90/12/09 16:45:30 rws Exp $ */
 /* static char *sccsid = "@(#)Context.c	1.5	2/24/87"; */
 
 
@@ -50,7 +50,7 @@ typedef struct _TableEntryRec {	/* Stores one entry. */
     Window 			window;
     XContext			context;
 #if NeedFunctionPrototypes
-    const void			*data;
+    _Xconst void		*data;
 #else
     caddr_t			data;
 #endif
@@ -135,7 +135,7 @@ int XSaveContext(
     Display *display,
     register Window window,
     register XContext context,
-    const void* data)
+    _Xconst void* data)
 #else
 int XSaveContext(display, window, context, data)
     Display *display;

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XFont.c,v 11.33 89/11/18 11:56:40 rws Exp $ */
+/* $XConsortium: XFont.c,v 11.34 89/12/11 19:09:07 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -10,7 +10,7 @@ static int _XQueryFont();
 #if NeedFunctionPrototypes
 XFontStruct *XLoadQueryFont(
    register Display *dpy,
-   const char *name)
+   _Xconst char *name)
 #else
 XFontStruct *XLoadQueryFont(dpy, name)
    register Display *dpy;

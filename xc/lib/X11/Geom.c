@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGeom.c,v 1.5 88/10/06 11:58:52 jim Exp $ */
+/* $XConsortium: XGeom.c,v 1.6 89/12/11 19:09:17 rws Exp $ */
 /* Copyright Massachusetts Institute of Technology 1985 */
 
 #include "Xlibint.h"
@@ -16,8 +16,8 @@
 int XGeometry (
      Display *dpy,			/* user's display connection */
      int screen,			/* screen on which to do computation */
-     const char *pos,			/* user provided geometry spec */
-     const char *def,			/* default geometry spec for window */
+     _Xconst char *pos,			/* user provided geometry spec */
+     _Xconst char *def,			/* default geometry spec for window */
      unsigned int bwidth,		/* border width */
      unsigned int fwidth,		/* size of position units */
      unsigned int fheight,

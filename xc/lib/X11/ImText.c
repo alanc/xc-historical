@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XImText.c,v 11.12 88/09/06 16:08:38 jim Exp $ */
+/* $XConsortium: XImText.c,v 11.13 89/12/11 19:09:30 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -12,7 +12,7 @@ XDrawImageString(
     GC gc,
     int x,
     int y,
-    const char *string,
+    _Xconst char *string,
     int length)
 #else
 XDrawImageString(dpy, d, gc, x, y, string, length)

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XParseCol.c,v 11.17 89/10/08 14:36:05 rws Exp $ */
+/* $XConsortium: XParseCol.c,v 11.18 89/12/11 19:09:55 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #define NEED_REPLIES
@@ -10,7 +10,7 @@
 Status XParseColor (
 	register Display *dpy,
         Colormap cmap,
-	register const char *spec,
+	register _Xconst char *spec,
 	XColor *def)
 #else
 Status XParseColor (dpy, cmap, spec, def)

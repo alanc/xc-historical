@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ParseCmd.c,v 1.18 89/07/20 15:38:26 jim Exp $
+ * $XConsortium: ParseCmd.c,v 1.19 89/12/11 19:08:30 rws Exp $
  */
 
 /***********************************************************
@@ -55,7 +55,7 @@ void XrmParseCommand(
     XrmDatabase		*pdb,		/* data base */
     register XrmOptionDescList options, /* pointer to table of valid options */
     int			num_options,	/* number of options		     */
-    const char		*prefix,	/* name to prefix resources with     */
+    _Xconst char	*prefix,	/* name to prefix resources with     */
     int			*argc,		/* address of argument count 	     */
     char		**argv)		/* argument list (command line)	     */
 #else
