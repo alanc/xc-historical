@@ -1,5 +1,5 @@
 /*
- * $Header: XRegstFlt.c,v 1.6 91/04/02 17:37:01 rws Exp $
+ * $Header: XRegstFlt.c,v 1.7 91/04/02 20:19:24 rws Exp $
  * $Id: XRegstFlt.c,v 1.3 91/02/01 08:09:30 proj Exp Locker: proj $
  */
 
@@ -31,7 +31,7 @@
   */				
 
 #include "Xlibint.h"
-#include "Xi18nint.h"
+#include "Xlcint.h"
 
 static void
 _XFreeIMFilters(display)

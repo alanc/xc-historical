@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XFilterEv.c,v 1.5 91/02/21 18:27:21 rws Exp $
+ * $XConsortium: XFilterEv.c,v 1.6 91/04/02 17:25:44 rws Exp $
  */
 
  /*
@@ -31,7 +31,7 @@
 
 #define NEED_EVENTS
 #include "Xlibint.h"
-#include "Xi18nint.h"
+#include "Xlcint.h"
 
 #if __STDC__
 #define Const const
