@@ -1,5 +1,5 @@
 #ifdef XINPUT
-/* $XConsortium: xstubs.c,v 1.0 89/10/12 12:22:10 gms Exp $ */
+/* $XConsortium: xstubs.c,v 1.1 89/11/08 17:54:37 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -39,6 +39,7 @@ SOFTWARE.
  *
  */
 
+int
 ChangeKeyboardDevice (old_dev, new_dev)
     DeviceIntPtr	old_dev;
     DeviceIntPtr	new_dev;
