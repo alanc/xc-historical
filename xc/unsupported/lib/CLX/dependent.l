@@ -1654,6 +1654,13 @@
 	       collect `(si:bind (si:locf ,accessor) ,value))
        ,@body)))
 
+#+ti
+(defun (:property with-location-bindings compiler::cw-handler) (exp)
+  (let* ((bindlist (mapcar #'compiler::cw-clause (second exp)))
+	 (body (compiler::cw-clause (cddr exp))))
+    (and compiler::cw-return-expansion-flag
+	 (list* (first exp) bindlist body))))
+
 #+(and lispm (not ti))
 (defmacro with-location-bindings (bindings &body body)
   `(sys:letf* ,bindings ,@body))
