@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Porthole.c,v 1.10 90/03/07 18:12:53 jim Exp $
+ * $XConsortium: Porthole.c,v 1.11 90/03/15 11:07:07 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -143,7 +143,7 @@ static void SendReport (pw, changed)
 	prep.slider_height = pw->core.height;
 	prep.canvas_width = child->core.width;
 	prep.canvas_height = child->core.height;
-	XtCallCallbackList (pw, pw->porthole.report_callbacks,
+	XtCallCallbackList ((Widget)pw, pw->porthole.report_callbacks,
 			    (caddr_t) &prep);
     }
 }

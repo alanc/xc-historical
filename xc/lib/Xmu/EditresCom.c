@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditResCom.c,v 1.8 90/03/16 16:39:09 kit Exp $
+ * $XConsortium: EditResCom.c,v 1.9 90/04/01 16:34:18 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -572,12 +572,12 @@ Widget top, parent, child;
 
     for (i = 0; i < num_children; i++) {
 	if (children[i] == child) {
-	    XtFree(children);
+	    XtFree((char *)children);
 	    return(TRUE);
 	}
     }
 
-    XtFree(children);
+    XtFree((char *)children);
     return(FALSE);
 }
 
@@ -774,7 +774,7 @@ Cardinal *end, *bytes;
     for (i = 0; i < num_children; i++) 
 	DumpChildren(children[i], my_name, list, end, bytes);
 
-    XtFree(children);
+    XtFree((char *)children);
 }
 
 /*	Function Name: DumpName
@@ -1217,12 +1217,12 @@ int x, y;
 	if (PositionInChild(children[i], x, y)) {
 	    Widget child = children[i];
 	    
-	    XtFree(children);
+	    XtFree((char *)children);
 	    return(FindChild(child, x - child->core.x, y - child->core.y));
 	}
     }
 
-    XtFree(children);
+    XtFree((char *)children);
     return(parent);
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.14 89/12/10 15:45:01 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.15 89/12/11 15:22:59 kit Exp $";
 #endif /* lint */
 
 /*
@@ -284,7 +284,7 @@ String *params;		/* unused */
 Cardinal *num_params;	/* unused */
 {
   ToggleWidget tw = (ToggleWidget) w;
-  XtCallCallbacks(w, XtNcallback, tw->command.set);
+  XtCallCallbacks(w, XtNcallback, (XtPointer) tw->command.set);
 }
 
 /************************************************************
@@ -455,7 +455,7 @@ Widget w;
       (group->prev)->next = group->next;
     if (group->next != NULL)
       (group->next)->prev = group->prev;
-    XtFree(group);
+    XtFree((char *) group);
   }
 }
 

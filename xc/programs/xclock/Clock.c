@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Clock.c,v 1.50 89/12/06 15:23:24 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Clock.c,v 1.51 90/04/11 17:27:25 jim Exp $";
 #endif /* lint */
 
 
@@ -735,7 +735,7 @@ static Boolean SetValues (gcurrent, grequest, gnew)
       if (new->clock.update != current->clock.update) {
 	  if (current->clock.interval_id)
 	      XtRemoveTimeOut (current->clock.interval_id);
-	  if (XtIsRealized(new))
+	  if (XtIsRealized( (Widget) new))
 	      new->clock.interval_id = XtAppAddTimeOut( 
                                          XtWidgetToApplicationContext(gnew),
 					 new->clock.update*1000,

@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.8 89/11/21 12:09:01 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.9 89/11/21 15:53:22 swick Exp $";
 #endif 
 
 /*
@@ -462,10 +462,12 @@ short *tabs;
       figure_width = font->max_bounds.width;
 
   if (tab_count > sink->text_sink.tab_count) {
-    sink->text_sink.tabs = (Position *) XtRealloc(sink->text_sink.tabs,
-			            (Cardinal) (tab_count * sizeof(Position)));
-    sink->text_sink.char_tabs = (short *) XtRealloc(sink->text_sink.char_tabs,
-				      (Cardinal) (tab_count * sizeof(short)));
+    sink->text_sink.tabs = (Position *)
+	XtRealloc((char *) sink->text_sink.tabs,
+		  (Cardinal) (tab_count * sizeof(Position)));
+    sink->text_sink.char_tabs = (short *)
+	XtRealloc((char *) sink->text_sink.char_tabs,
+		  (Cardinal) (tab_count * sizeof(short)));
   }
 
   for ( i = 0 ; i < tab_count ; i++ ) {

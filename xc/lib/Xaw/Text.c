@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.144 90/04/20 17:57:12 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.145 90/04/26 15:22:55 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -342,7 +342,7 @@ TextWidget ctx;
   if (ctx->text.vbar != NULL) return;
 
   ctx->text.vbar = vbar =
-    XtCreateWidget("vScrollbar", scrollbarWidgetClass, ctx, NULL, ZERO);
+    XtCreateWidget("vScrollbar", scrollbarWidgetClass, (Widget)ctx, NULL, ZERO);
   XtAddCallback( vbar, XtNscrollProc, VScroll, (caddr_t)ctx );
   XtAddCallback( vbar, XtNjumpProc, VJump, (caddr_t)ctx );
 
@@ -352,7 +352,7 @@ TextWidget ctx;
   PositionVScrollBar(ctx);
   PositionHScrollBar(ctx);	/* May modify location of Horiz. Bar. */
 
-  if (XtIsRealized(ctx)) {
+  if (XtIsRealized((Widget)ctx)) {
     XtRealizeWidget(vbar);
     XtMapWidget(vbar);
   }
@@ -390,12 +390,12 @@ TextWidget ctx;
 
   XtSetArg(args[0], XtNorientation, XtorientHorizontal);
   ctx->text.hbar = hbar =
-    XtCreateWidget("hScrollbar", scrollbarWidgetClass, ctx, args, ONE);
+    XtCreateWidget("hScrollbar", scrollbarWidgetClass, (Widget)ctx, args, ONE);
   XtAddCallback( hbar, XtNscrollProc, HScroll, (caddr_t)ctx );
   XtAddCallback( hbar, XtNjumpProc, HJump, (caddr_t)ctx );
 
   PositionHScrollBar(ctx);
-  if (XtIsRealized(ctx)) {
+  if (XtIsRealized((Widget)ctx)) {
     XtRealizeWidget(hbar);
     XtMapWidget(hbar);
   }
@@ -1571,13 +1571,13 @@ Atom *selection;
     	    }
 	if (salt->s.atom_count == 0)
 	{
-	    XtFree (salt->s.selections);
+	    XtFree ((char *) salt->s.selections);
 	    XtFree (salt->contents);
 	    if (prevSalt)
 		prevSalt->next = nextSalt;
 	    else
 		ctx->text.salt = nextSalt;
-	    XtFree (salt);
+	    XtFree ((char *) salt);
 	}
 	else
 	    prevSalt = salt;
@@ -1594,7 +1594,7 @@ int	num_atoms;
     int			    i, j;
 
     for (i = 0; i < num_atoms; i++)
-	LoseSelection (ctx, selections + i);
+	LoseSelection ((Widget) ctx, selections + i);
     if (num_atoms == 0)
 	return;
     salt = (XawTextSelectionSalt *) XtMalloc (sizeof (XawTextSelectionSalt));
@@ -1603,7 +1603,7 @@ int	num_atoms;
     salt->s.selections = (Atom *) XtMalloc (num_atoms * sizeof (Atom));
     if (!salt->s.selections)
     {
-	XtFree (salt);
+	XtFree ((char *) salt);
 	return;
     }
     salt->s.left = ctx->text.s.left;
@@ -1619,7 +1619,7 @@ int	num_atoms;
 	if (GetCutBufferNumber (selections[i]) == NOT_A_CUT_BUFFER)
 	{
 	    salt->s.selections[j++] = selections[i];
-	    XtOwnSelection (ctx, selections[i], ctx->text.time,
+	    XtOwnSelection ((Widget) ctx, selections[i], ctx->text.time,
 			    ConvertSelection, LoseSelection, NULL);
 	}
     }
@@ -2219,7 +2219,7 @@ Cardinal nelems;
   Atom * sel = ctx->text.s.selections;
 
   if (nelems > ctx->text.s.array_size) {
-    sel = (Atom *) XtRealloc(sel, sizeof(Atom) * nelems);
+    sel = (Atom *) XtRealloc((char *) sel, sizeof(Atom) * nelems);
     ctx->text.s.array_size = nelems;
   }
   XmuInternStrings(XtDisplay((Widget)ctx), list, nelems, sel);
@@ -2410,7 +2410,6 @@ Region region;			/* Unused. */
  * This routine does all setup required to syncronize batched screen updates
  */
 
-int 
 _XawTextPrepareToUpdate(ctx)
 TextWidget ctx;
 {
@@ -2770,7 +2769,7 @@ TextWidget ctx;
 	printf("empty copy queue\n");
     else {
 	ctx->text.copy_area_offsets = offsets->next;
-	XtFree(offsets);	/* free what you allocate. */
+	XtFree((char *) offsets);	/* free what you allocate. */
     }
 }
 
@@ -2778,7 +2777,7 @@ TextWidget ctx;
  *	Description: Translates the expose that came into
  *                   the cordinates that now exist in the Text widget.
  *	Arguments: ctx - the text widget.
- *                 expose - a Rectanle, who's region currently
+ *                 expose - a Rectangle, who's region currently
  *                          contains the expose event location.
  *                          this region will be returned containing
  *                          the new rectangle.

@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.31 89/12/11 14:58:42 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.32 89/12/11 15:01:50 kit Exp $";
 #endif 
 
 /*
@@ -415,14 +415,14 @@ Widget current, request, new;
     
     if (smw_old->simple_menu.label_string !=smw_new->simple_menu.label_string) 
 	if (smw_new->simple_menu.label_string == NULL)         /* Destroy. */
-	    XtDestroyWidget(smw_old->simple_menu.label);
+	    XtDestroyWidget((Widget) smw_old->simple_menu.label);
 	else if (smw_old->simple_menu.label_string == NULL)    /* Create. */
 	    CreateLabel(new);
 	else {                                                 /* Change. */
 	    Arg args[1];
 	    
 	    XtSetArg(args[0], XtNlabel, smw_new->simple_menu.label_string);
-	    XtSetValues(smw_new->simple_menu.label, args, ONE);
+	    XtSetValues((Widget) smw_new->simple_menu.label, args, ONE);
 	}
     
     if (smw_old->simple_menu.label_class != smw_new->simple_menu.label_class)
@@ -1150,7 +1150,7 @@ Widget w, w_ent;
 	if (!XtIsManaged( (Widget) *entry)) continue;
 	
 	if (*entry != cur_entry) {
-	    XtQueryGeometry(*entry, NULL, &preferred);
+	    XtQueryGeometry((Widget) *entry, NULL, &preferred);
 	    
 	    if (preferred.request_mode & CWWidth)
 		width = preferred.width;

@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.29 90/04/18 14:17:15 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.30 90/04/20 16:41:43 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1417,7 +1417,7 @@ Cardinal * num_params;
     text.ptr = (char *) buf;
     if (_XawTextReplace (ctx, start, end, &text))
 	XBell(XtDisplay(w), 0);	/* Unable to edit, complain. */
-    XtFree(buf);
+    XtFree((char *) buf);
   }
   EndAction(ctx);
 }

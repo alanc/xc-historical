@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.78 90/02/05 10:11:30 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.79 90/02/05 16:16:23 jim Exp $";
 #endif /* lint */
 
 
@@ -320,7 +320,7 @@ static void Redisplay(w, event, region)
 	     == RectangleOut)
        return;
 
-   gc = XtIsSensitive(lw) ? lw->label.normal_GC : lw->label.gray_GC;
+   gc = XtIsSensitive((Widget)lw) ? lw->label.normal_GC : lw->label.gray_GC;
 #ifdef notdef
    if (region != NULL) XSetRegion(XtDisplay(w), gc, region);
 #endif /*notdef*/
@@ -389,6 +389,7 @@ static void _Reposition(lw, width, height, dx, dy)
 	    break;
 
 	case XtJustifyCenter :
+	default:
 	    newPos = (width - lw->label.label_width) / 2;
 	    break;
     }

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.37 90/04/11 17:02:57 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.38 90/04/11 17:20:26 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -523,7 +523,7 @@ static void CloseDown (w, status)
 {
     Display *dpy = XtDisplay (w);
 
-    XtDestroyWidget (w);
+    XtDestroyWidget ((Widget)w);
     XCloseDisplay (dpy);
     exit (status);
 }
