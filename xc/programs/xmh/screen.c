@@ -180,7 +180,7 @@ Scrn scrn;
  *	{XtNselectionArrayCount, (XtArgVal) XtNumber(sarray)}
  */
 
-    XtPanedRefigureMode(scrn->widget, FALSE);
+    XtPanedSetRefigureMode(scrn->widget, FALSE);
     scrn->folderbuttons = BBoxRadioCreate(scrn, 0, "folders",
 					  &(scrn->curfolder));
     scrn->mainbuttons = BBoxCreate(scrn, 1, "folderButtons");
@@ -250,7 +250,7 @@ Scrn scrn;
 
     FillViewButtons(scrn);
 
-    XtPanedRefigureMode(scrn->widget, TRUE);
+    XtPanedSetRefigureMode(scrn->widget, TRUE);
 
 /* %%%  XtPanedAllowResizing(scrn->widget, FALSE); */
     theight = GetHeight((Widget)scrn->tocwidget) +
