@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.107 93/12/28 14:39:56 kaleb Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.108 94/02/07 21:24:17 rws Exp $
 
 #ifdef SVR4
 #define OSName            SunOS 5.3
@@ -65,6 +65,7 @@ XCOMM operating system:  OSName
 #define HasSecureRPC	  YES
 #define SetTtyGroup	  YES
 #define HasPutenv	  YES
+#define Xsun24Server	  YES
 #define XsunServer	  YES		/* has color and mono support */
 #define XsunMonoServer	  YES		/* monochrome only */
 #ifndef BuildPexExt
