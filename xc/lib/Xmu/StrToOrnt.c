@@ -1,5 +1,5 @@
 static char rcsid[] =
-	"$XConsortium: StrToOrnt.c,v 1.0 88/09/05 19:10:42 rws Exp $";
+	"$XConsortium: StrToOrnt.c,v 1.1 89/05/11 14:52:56 kit Exp $";
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -55,4 +55,4 @@ XmuCvtStringToOrientation(args, num_args, fromVal, toVal)
 	done(&orient, XtOrientation);
 	return;
     }
-};
+}
