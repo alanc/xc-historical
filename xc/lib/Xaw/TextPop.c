@@ -1,4 +1,4 @@
-/* $XConsortium: TextPop.c,v 1.14 91/02/18 12:21:16 rws Exp $ */
+/* $XConsortium: TextPop.c,v 1.15 91/03/11 12:21:38 converse Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -45,9 +45,8 @@ SOFTWARE.
  *
  *************************************************************/
 
-#include <stdio.h>
-#include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
 #include <X11/Shell.h> 
 
 #include <X11/Xaw/TextP.h>
@@ -56,6 +55,9 @@ SOFTWARE.
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Toggle.h>
+
+#include <stdio.h>
+#include <X11/Xos.h>		/* for O_RDONLY */
 
 extern int errno, sys_nerr;
 extern char* sys_errlist[];
