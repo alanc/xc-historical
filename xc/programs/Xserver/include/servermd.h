@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $Header: servermd.h,v 1.23 87/09/11 09:59:54 toddb Locked $ */
+/* $Header: servermd.h,v 1.24 87/09/12 23:22:47 toddb Locked $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -157,22 +157,4 @@ extern PaddingInfo PixmapWidthPaddingInfo[];
 #define PixmapBytePad(w, d) \
     (PixmapWidthInPadUnits(w, d) << LOG2_BYTES_PER_SCANLINE_PAD)
 
-/*
- * Get a bit from a pixel.  pixel is a pixel of the specified depth and we
- * want the bit in position plane (where 0 is the least significant plane
- * and depth -1 is the most significant.) 
- * How you extract the bit depends on image-byte-order and depth.
- * You can assume that pixel is big enough to  hold a pixel depth bits deep.
- *
- * The result is cast to be an unsigned char.  This seems like the least
- * common denominator, no matter what depth you have, you're only getting a
- * bit out.  
- * 
- * (Currently this is used only by miGetPlane.)
- * The one bit case, shown below, is obvious.  The least significant bit
- * is the one we want.
- */
-
-#define GetBitFromPixel(pixel, plane, depth) \
-    ((unsigned char) ((pixel) & (1 << (plane))))
 #endif SERVERMD_H
