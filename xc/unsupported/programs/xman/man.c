@@ -1,7 +1,7 @@
 /*
  * xman - X Window System manual page display program.
  *
- * $XConsortium: man.c,v 1.17 91/01/09 17:31:30 rws Exp $
+ * $XConsortium: man.c,v 1.18 91/02/08 11:31:36 gildea Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -20,6 +20,7 @@
  */
 
 #include "globals.h"
+#include "vendor.h"		/* vendor-specific defines and data */
 
 #ifdef _POSIX_SOURCE
 #define DIRENT_STRUCT
@@ -45,18 +46,11 @@ static char error_buf[BUFSIZ];		/* The buffer for error messages. */
 #endif /* DEBUG */
 
 static void SortList(), ReadMandescFile(), SortAndRemove(), InitManual();
-static void AddToCurrentSection(), AddNewSection(), AddStandardSections();
+static void AddToCurrentSection();
 static void ReadCurrentSection();
 static int CmpEntryLabel();
 
 #define SECT_ERROR -1
-
-typedef struct _SectionList {
-  struct _SectionList * next;	/* link to next elem in list. */
-  char * label, *directory;	/* The label and directory that this 
-				   section represents. */
-  Boolean standard;		/* Is this one of the standard sections? */
-} SectionList;
 
 /*	Function Name: Man
  *	Description: Builds a list of all manual directories and files.
@@ -98,6 +92,7 @@ Man()
   num_alloced = SECTALLOC;
   manual = (Manual *) XtMalloc( sizeof(Manual) * num_alloced );
   InitManual( manual, list->label );
+  manual[sect].flags = list->flags;
   current_label = NULL;
 
   while ( list != NULL ) {
@@ -109,6 +104,7 @@ Man()
       if (manual[sect].nentries == 0) {	/* empty section, re-use it. */
 	XtFree(manual[sect].blabel);
 	manual[sect].blabel = list->label;
+	manual[sect].flags = list->flags;
       }
       else {
 	if ( ++sect >= num_alloced ) {
@@ -119,6 +115,7 @@ Man()
 	    PrintError("Could not allocate memory for manual sections.");
 	}
 	InitManual( manual + sect, list->label );
+	manual[sect].flags = list->flags;
       }
       AddToCurrentSection( manual + sect, list->directory);
     }
@@ -176,13 +173,13 @@ SectionList ** list;
 
   last = NULL;			/* keep Saber happy. */
   for ( local = *list ; local->next != NULL ; local = local->next) {
-    if ( local->standard ) {
+    if ( local->flags ) {
       if ( local == *list )	/* top element is already standard. */
 	break;
       head = local;
 
       /* Find end of standard block */
-      for ( ; (local->next != NULL) && (local->standard) 
+      for ( ; (local->next != NULL) && (local->flags) 
 	   ; old = local, local = local->next); 
 
       last->next = old->next; /* Move the block. */
@@ -225,6 +222,14 @@ SectionList ** list;
  *	Returns: TRUE in we should use default sections
  */
   
+#define SUFFIX "suffix"
+#define FOLD "fold"
+#define FOLDSUFFIX "foldsuffix"
+#define MNULL 0
+#define MSUFFIX 1
+#define MFOLD 2
+#define MFOLDSUFFIX 3
+
 static void
 ReadMandescFile( section_list, path )
 SectionList ** section_list;
@@ -234,6 +239,7 @@ char * path;
   FILE * descfile;
   char string[BUFSIZ], local_file[BUFSIZ];
   Boolean use_defaults = TRUE;
+  char *cp;
 
   sprintf(mandesc_file, "%s/%s", path, MANDESC);
   if ( (descfile = fopen(mandesc_file, "r")) != NULL) {
@@ -245,137 +251,33 @@ char * path;
 	continue;
       }
 
-      sprintf(local_file, "%s%c", MAN, string[0]);
-      AddNewSection(section_list, path, local_file, (string + 1), FALSE );
+      if ((cp = index(string,'\t')) != NULL) {
+	char *s;
+	*cp++ = '\0';
+	strcpy(local_file, MAN);
+	strcat(local_file, string);
+	if ((s = index(cp,'\t')) != NULL) {
+	  *s++ = '\0';
+	  if (streq(s, SUFFIX))
+	    AddNewSection(section_list, path, local_file, cp, MSUFFIX);
+	  else if (streq(s, FOLD))
+	    AddNewSection(section_list, path, local_file, cp, MFOLD);
+	  else if (streq(s, FOLDSUFFIX))
+	    AddNewSection(section_list, path, local_file, cp, MFOLDSUFFIX);
+	  else
+	    AddNewSection(section_list, path, local_file, cp, MNULL);
+        } else
+	    AddNewSection(section_list, path, local_file, cp, MNULL);
+      } else {
+	sprintf(local_file, "%s%c", MAN, string[0]);
+	AddNewSection(section_list, path, local_file, (string + 1), FALSE );
+      }
     }
+
     fclose(descfile);
   }
   if (use_defaults)
     AddStandardSections(section_list, path);
-}
-
-#ifdef CRAY
-/*	Function Name: AddStandardCraySections
- *	Description: Add sections specific to the Cray.
- *	Arguments: list - a pointer to the section list.
- *                 path - the path to these standard sections.
- *                 names - standard section names.
- *	Returns: none.
- */
-
-AddStandardCraySections(list, path, names)
-SectionList **list;
-char *path, **names;
-{
-  char file[BUFSIZ];
-
-  sprintf(file, "%s1bsd", SEARCHDIR);
-  AddNewSection(list, path, file, names[0], TRUE);
-  sprintf(file, "%s1m", SEARCHDIR);
-  AddNewSection(list, path, file, names[0], TRUE);
-  sprintf(file, "%s1r", SEARCHDIR);
-  AddNewSection(list, path, file, names[0], TRUE);
-  sprintf(file, "%s1rb", SEARCHDIR);
-  AddNewSection(list, path, file, names[0], TRUE);
-  
-  sprintf(file, "%s3X11", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3Xt", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3bsd", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3c", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3db", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3f", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3io", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3m", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3mt", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3n", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3q", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3rpc", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3s", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3sci", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3svc", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3u", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3w", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3x", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3yp", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  sprintf(file, "%s3z", SEARCHDIR);
-  AddNewSection(list, path, file, names[2], TRUE);
-  
-  sprintf(file, "%s4d", SEARCHDIR);
-  AddNewSection(list, path, file, names[3], TRUE);
-  sprintf(file, "%s4f", SEARCHDIR);
-  AddNewSection(list, path, file, names[3], TRUE);
-  sprintf(file, "%s4n", SEARCHDIR);
-  AddNewSection(list, path, file, names[3], TRUE);
-}
-#endif /* CRAY */
-
-/*	Function Name: AddStandardSections
- *	Description: Adds all the standard sections to the list for this path.
- *	Arguments: list - a pointer to the section list.
- *                 path - the path to these standard sections.
- *	Returns: none.
- */
-
-static void
-AddStandardSections(list, path)
-SectionList **list;
-char * path;
-{
-  static char * names[] = {
-    "(1) User Commands",
-    "(2) System Calls",
-    "(3) Subroutines",
-    "(4) Devices",
-    "(5) File Formats",
-    "(6) Games",
-    "(7) Miscellaneous",
-    "(8) Sys. Administration",
-    "(l) Local",
-    "(n) New",
-    "(o) Old",
-    };
-  register int i;
-  char file[BUFSIZ];
-
-  for (i = 0 ; i < 8 ; i++) {
-    sprintf(file, "%s%d", SEARCHDIR, i + 1);
-    AddNewSection(list, path, file, names[i], TRUE);
-#ifdef hpux			/* Puts in in the correct order */
-    if (i == 0) {
-      sprintf(file, "%s1m", SEARCHDIR);
-      AddNewSection(list, path, file, "(1m) Sys. Administration", TRUE);
-    }
-#endif
-  }
-  sprintf(file, "%sl", SEARCHDIR);
-  AddNewSection(list, path, file, names[i++], TRUE);
-  sprintf(file, "%sn", SEARCHDIR);
-  AddNewSection(list, path, file, names[i++], TRUE);
-  sprintf(file, "%so", SEARCHDIR);
-  AddNewSection(list, path, file, names[i], TRUE);
-
-#ifdef CRAY			/* The Cray's sections are all screwed up. */
-  AddStandardCraySections(list, path, names);
-#endif
 }
 
 /*	Function Name: AddNewSection
@@ -384,15 +286,16 @@ char * path;
  *                 path - the path to the current manual section.
  *                 file - the file to save.
  *                 label - the current section label.
- *                 standard - one of the standard labels?
+ *                 flags = 1 - add a suffix
+ *			 = 2 - fold to lower case
  *	Returns: none.
  */
 
-static void
-AddNewSection(list, path, file, label, standard)
+void
+AddNewSection(list, path, file, label, flags)
 SectionList **list;
 char * path, * label, * file;
-Boolean standard;
+int flags;
 {
   SectionList * local_list, * end;
   char full_path[BUFSIZ];
@@ -412,7 +315,7 @@ Boolean standard;
   local_list->label = StrAlloc(label);
   sprintf(full_path, "%s/%s", path, file);
   local_list->directory = StrAlloc(full_path);
-  local_list->standard = standard;
+  local_list->flags = flags;
 }  
 
 /*	Function Name: AddToCurrentSection
@@ -482,8 +385,12 @@ char * path;
 
   while( (dp = readdir(dir)) != NULL ) {
     char * name = dp->d_name;
-    if( (name[0] == '.') || (index(name, '.') == NULL) ) 
+    if (name[0] == '.')
       continue;
+#ifndef CRAY
+    if (index(name, '.') == NULL)
+      continue;
+#endif
     if( nentries >= nalloc ) {
       nalloc += ENTRYALLOC;
       local_manual->entries =(char **) XtRealloc((char *)local_manual->entries,
@@ -541,14 +448,15 @@ int number;
       PrintError("Internal error while removing duplicate manual pages.");
     j++;
 
-    while (j < (man->nentries - 1) ) {
+    while (j < man->nentries ) {
       l2 = l1;
       if ( (l1 = rindex(man->entries[j], '/')) == NULL)
 	PrintError("Internal error while removing duplicate manual pages.");
-      if ( streq(l1, l2) ) {
+       if (man->flags & MFOLD ?  (XmuCompareISOLatin1(l1,l2) == 0)
+	                      : (streq(l1, l2))) {
 	register int k;
 	for( k = j; k < (man->nentries); k++)
-	  man->entries[k - 1] = man->entries[k];
+	  man->entries[k] = man->entries[k+1];
 	(man->nentries)--;
       }
       else
@@ -568,6 +476,7 @@ CmpEntryLabel(e1, e2)
 char **e1, **e2;
 {
   char *l1, *l2;
+  int result;
 
 /*
  * What we really want to compare is the actual names of the manual pages,
@@ -578,8 +487,12 @@ char **e1, **e2;
     PrintError("Internal error while sorting manual pages.");
   if ( (l2 = rindex(*e2, '/')) == NULL)
     PrintError("Internal error while sorting manual pages.");
-  return( strcmp(l1, l2) );
+
+  if (result = XmuCompareISOLatin1(l1, l2))
+      return result;
+  return strcmp(l1, l2);
 }
+
 
 /*	Function Name: InitManual
  *	Description: Initializes this manual section.
