@@ -1,4 +1,4 @@
-/* $XConsortium: omGeneric.c,v 1.7 95/02/22 22:48:22 kaleb Exp converse $ */
+/* $XConsortium: omGeneric.c,v 1.8 95/06/02 23:29:17 converse Exp kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -32,11 +32,11 @@
 
 #define MAXFONTS		100
 
-extern int _XmbDefalutTextEscapement(), _XwcDefalutTextEscapement();
-extern int _XmbDefalutTextExtents(), _XwcDefalutTextExtents();
-extern Status _XmbDefalutTextPerCharExtents(), _XwcDefalutTextPerCharExtents();
-extern int _XmbDefalutDrawString(), _XwcDefalutDrawString();
-extern void _XmbDefalutDrawImageString(), _XwcDefalutDrawImageString();
+extern int _XmbDefaultTextEscapement(), _XwcDefaultTextEscapement();
+extern int _XmbDefaultTextExtents(), _XwcDefaultTextExtents();
+extern Status _XmbDefaultTextPerCharExtents(), _XwcDefaultTextPerCharExtents();
+extern int _XmbDefaultDrawString(), _XwcDefaultDrawString();
+extern void _XmbDefaultDrawImageString(), _XwcDefaultDrawImageString();
 
 extern int _XmbGenericTextEscapement(), _XwcGenericTextEscapement();
 extern int _XmbGenericTextExtents(), _XwcGenericTextExtents();
@@ -373,7 +373,7 @@ parse_fontname(oc)
     char *pattern, *last, buf[BUFSIZ];
     int font_set_num, font_data_count, length, found_num = 0;
     Bool is_found;
-    int count;
+    int count, num_fields;
     char *base_name, *font_name, **name_list, **cur_name_list;
 
     name_list = _XParseBaseFontNameList(oc->core.base_name_list, &count);
@@ -419,17 +419,35 @@ parse_fontname(oc)
 		continue;
 	}
 
+/*
+ * The BaseFontSetList didn't specify explicit fonts. Now it's necessary 
+ * to try to find a font by using the required charsets (specified in the 
+ * locale database) in conjunction with the BaseFontName. See Section 13.3 
+ * of the Xlib specification.
+ */
  	strcpy(buf, pattern);
- 	length = strlen(pattern);
+ 	length = strlen(buf);
 	last = buf + length - 1;
-
- 	if (length > 1 && *last == '*' && *(last - 1) == '-') {
-	    if (length > 3 && *(last - 2) == '*' && *(last - 3) == '-')
-		last -= 2;
+	for (num_fields = 0, base_name = buf; *base_name != '\0'; base_name++)
+	    if (*base_name == '-') num_fields++;
+	if (num_fields == 13 || num_fields == 14) {
+	    /* 
+	     * There are 14 fields in an XLFD name -- make certain the
+	     * charset (& encoding) is placed in the correct field.
+	     */
+	    last = strrchr (last, '-');
+	    if (num_fields == 14) last = strrchr (last - 1, '-');
 	} else {
-	    ++last;
-	    *last++ = '-';
+/*
+ * Keep in mind that the server will provide a scaled font in response to 
+ * a ListFonts Request only if all 14 dashes ('-') appear in the XLFD name. 
+ * That means that "-*-*-*-r-*-*-*-120-*-*" as a BaseFontSet name won't work 
+ * e.g. for JISX0208.1983-0 unless there is a 120 point font available to 
+ * the server.
+ */
+	    *++last = '-';
 	}
+	last++;
 
 	font_set = gen->font_set;
 	font_set_num = gen->font_set_num;
@@ -443,13 +461,13 @@ parse_fontname(oc)
 
 	    for ( ; font_data_count-- > 0; font_data++) {
 		strcpy(last, font_data->name);
-		if (font_set->font_name = get_font_name(oc, buf))
+		if ((font_set->font_name = get_font_name(oc, buf)))
 		    break;
 
 		*last = '*';
 		*(last + 1) = '-';
 		strcpy(last + 2, font_data->name);
-		if (font_set->font_name = get_font_name(oc, buf))
+		if ((font_set->font_name = get_font_name(oc, buf)))
 		    break;
 	    }
 
@@ -654,16 +672,16 @@ static XOCMethodsRec oc_default_methods = {
     destroy_oc,
     set_oc_values,
     get_oc_values,
-    _XmbDefalutTextEscapement,
-    _XmbDefalutTextExtents,
-    _XmbDefalutTextPerCharExtents,
-    _XmbDefalutDrawString,
-    _XmbDefalutDrawImageString,
-    _XwcDefalutTextEscapement,
-    _XwcDefalutTextExtents,
-    _XwcDefalutTextPerCharExtents,
-    _XwcDefalutDrawString,
-    _XwcDefalutDrawImageString
+    _XmbDefaultTextEscapement,
+    _XmbDefaultTextExtents,
+    _XmbDefaultTextPerCharExtents,
+    _XmbDefaultDrawString,
+    _XmbDefaultDrawImageString,
+    _XwcDefaultTextEscapement,
+    _XwcDefaultTextExtents,
+    _XwcDefaultTextPerCharExtents,
+    _XwcDefaultDrawString,
+    _XwcDefaultDrawImageString
 };
 
 static XOCMethodsRec oc_generic_methods = {
