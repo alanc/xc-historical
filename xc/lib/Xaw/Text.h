@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.31 89/09/06 17:30:10 kit Exp $
+* $XConsortium: Text.h,v 1.32 89/10/19 15:01:11 kit Exp $
 */
 
 
@@ -109,6 +109,7 @@ SOFTWARE.
 
 /* Return codes from XawTextReplace */
 
+#define XawReplaceError	       -1
 #define XawEditDone		0
 #define XawEditError		1
 #define XawPositionError	2
