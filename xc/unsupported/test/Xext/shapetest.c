@@ -15,11 +15,12 @@ implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: shapetest.c,v 1.2 89/08/21 08:56:32 rws Exp $ */
+/* $XConsortium: shapetest.c,v 1.3 89/12/10 15:50:06 rws Exp $ */
 #include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xproto.h>
+#include <X11/Xutil.h>
 #include <X11/extensions/shape.h>
 
 Display *dpy;
