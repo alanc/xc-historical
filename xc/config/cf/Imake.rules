@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.91 91/03/13 14:55:16 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.92 91/03/13 15:16:38 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -125,10 +125,10 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.91 91/03/13 14:55:16 rws Exp $
 #ifndef SaberProgramTarget
 #if HasSaberC
 #define SaberProgramTarget(program,srclist,objlist,locallibs,syslibs)	@@\
-Concat(saber_,program):							@@\
+Concat(saber_,program):: srclist					@@\
 	XCOMM load $(ALLDEFINES) srclist locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs @@\
 									@@\
-Concat(osaber_,program):						@@\
+Concat(osaber_,program):: objlist					@@\
 	XCOMM load $(ALLDEFINES) objlist locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs
 
 #else
