@@ -19,6 +19,10 @@ the dump is completed.
 .SH OPTIONS
 .PP
 .TP 8
+.B "-display \fIdisplay\fP"
+This  argument  allow  you  to  specify server to connect to; see \fIX(1)\fP.
+.PP
+.TP 8
 .B "-help"
 Print out the `Usage:' command syntax summary.
 .PP
@@ -40,8 +44,8 @@ This option applies to color displays only. It selects `XY' format dumping
 instead of the default `Z' format.
 .PP
 .TP 8
-.B "-display \fIdisplay\fP"
-This  argument  allow  you  to  specify server to connect to; see \fIX(1)\fP.
+.B "-add \fIvalue\fP"
+This option specifies an unsigned value to be added to every pixel.
 .SH ENVIRONMENT
 .PP
 .TP 8
