@@ -431,7 +431,7 @@ sunKbdProcessEvent (pKeyboard, fe)
 	    xE.u.u.type = KeyRelease;
     }
 
-    if ((fe->value == VKEY_DOWN) && !autoRepeatKeyDown)
+    if ((fe->value == VKEY_DOWN) && !keyModifiersList[key])
     {	/* turn on AutoRepeater */
 	if (autoRepeatDebug)
             ErrorF("sunKbdProcessEvent: VKEY_DOWN\n");
