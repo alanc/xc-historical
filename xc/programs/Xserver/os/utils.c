@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.111 92/03/31 17:50:08 keith Exp $ */
+/* $XConsortium: utils.c,v 1.112 92/04/20 14:41:39 keith Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -92,6 +92,10 @@ extern int SelectWaitTime;
 long Memory_fail = 0;
 
 #endif
+
+#ifdef sgi
+int userdefinedfontpath = 0;
+#endif /* sgi */
 
 Bool Must_have_memory = FALSE;
 
@@ -353,7 +357,12 @@ char	*argv[];
 	else if ( strcmp( argv[i], "-fp") == 0)
 	{
 	    if(++i < argc)
+	    {
+#ifdef sgi
+		userdefinedfontpath = 1;
+#endif /* sgi */
 	        defaultFontPath = argv[i];
+	    }
 	    else
 		UseMsg();
 	}
