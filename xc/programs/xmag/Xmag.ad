@@ -1,0 +1,22 @@
+*allowShellResize: on
+*Scale.Translations:#augment\
+			<Btn1Down>:popup-pixel()\n\
+			Button1<Enter>:popup-pixel()\n\
+			<Btn1Motion>:update-pixel()\n\
+			<Btn1Up>:popdown-pixel()\n\
+			<Leave>:popdown-pixel()\n\
+			<Key>q:close()\n\
+			Ctrl<Key>c:close()\n\
+			<Key>space:replace()\n\
+			<Btn2Up>:replace()\n\
+			<Btn3Up>:replace()          
+*close.accelerators:#augment\
+			<Key>q:set()notify()unset()\n\
+			Ctrl<Key>c:set()notify()unset()
+*replace.accelerators:#augment\
+			<Key>space:set()notify()unset()\n\
+			<Btn2Up>:set()notify()unset()\n\
+			<Btn3Up>:set()notify()unset()
+			
+*Label.Font: fixed
+*Label.Translations:<Enter>:popdown-pixel()
