@@ -1,8 +1,8 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $Source: /usr.MC68020/expo.lcs.mit.edu/jim/X11/xmodmap/RCS/handle.c,v $
- * $Header: handle.c,v 1.5 88/02/08 18:10:24 jim Exp $
+ * $Source: /u1/X11/clients/xmodmap/RCS/handle.c,v $
+ * $Header: handle.c,v 1.1 88/02/08 18:34:03 jim Locked $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -946,6 +946,7 @@ int execute_work_queue ()
     union op *op;
     int errors;
     Bool update_map = False;
+    enum opcode lastop;
 
     if (verbose) {
 	printf ("!\n");
@@ -954,8 +955,28 @@ int execute_work_queue ()
     }
 
     errors = 0;
+    lastop = doClearModifier;				/* fake it for op test */
+
     for (op = work_queue.head; op; op = op->generic.next) {
 	if (verbose) print_opcode (op);
+
+	/* check to see if we have to update the keyboard mapping */
+	if (lastop == doKeycode && op->generic.type != doKeycode) {
+	    XSync (dpy, 0);
+	    while (XEventsQueued (dpy, QueuedAlready) > 0) {
+		XEvent event;
+		XNextEvent (dpy, &event);
+		if (event.type == MappingNotify) {
+		    /* read all MappingNotify events */
+		    while (XCheckTypedEvent (dpy, MappingNotify, &event)) ;
+		    XRefreshKeyboardMapping (&event);
+		} else {
+		    fprintf (stderr, "%s:  unknown event %ld\n", 
+		    	     ProgramName, (long) event.type);
+		}
+	    }
+	}
+
 	switch (op->generic.type) {
 	  case doKeycode:
 	    if (exec_keycode (op) < 0) errors++;
@@ -976,6 +997,8 @@ int execute_work_queue ()
 	    fprintf (stderr, "%s:  unknown opcode %d\n", op->generic.type);
 	    break;
 	}
+	lastop = op->generic.type;
+
     }
 
     if (update_map) {
@@ -990,18 +1013,6 @@ static int exec_keycode (opk)
 {
     XChangeKeyboardMapping (dpy, opk->target_keycode, opk->count, 
 			    opk->keysyms, 1);
-    XSync (dpy, 0);
-    while (XEventsQueued (dpy, QueuedAlready) > 0) {
-	XEvent event;
-	XNextEvent (dpy, &event);
-	if (event.type == MappingNotify) {
-	    XRefreshKeyboardMapping (&event);
-	} else {
-	    fprintf (stderr, "%s:  unknown event %ld\n", 
-	    	     ProgramName, (long) event.type);
-	}
-    }
-
     return (0);
 }
 
