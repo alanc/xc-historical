@@ -1,3 +1,6 @@
+#define IHaveSubdirs
+#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+
 INSTALLFLAGS = $(INSTDATFLAGS)
 
 #ifndef BuildXimp
@@ -9,34 +12,13 @@ INSTALLFLAGS = $(INSTDATFLAGS)
 #endif
 #endif
 
-all::
-
-depend::
-
 #if BuildXsi
-
-LCFILES = Xsi/C \
-	Xsi/ja_JP.jis7 Xsi/ja_JP.jis8 Xsi/ja_JP.mscode Xsi/ja_JP.ujis \
-	Xsi/ko_KR.euc \
-	Xsi/lt_LN.bit7 Xsi/lt_LN.bit8 \
-	Xsi/wr_WR.ct \
-	Xsi/zh_CN.ugb Xsi/zh_TW.big5 \
-	Xsi/nls.dir Xsi/nls.alias
-
-IMFILES = Xsi/local_im_tbl/lt_LN.bit7 \
-	Xsi/local_im_tbl/lt_LN.bit8
-
-InstallMultiple($(LCFILES),$(NLSDIR))
-InstallMultiple($(IMFILES),$(NLSDIR)/local_im_tbl)
-
-#endif /* BuildXsi */
+SUBDIRS = Xsi
+#endif
 
 #if BuildXimp
+SUBDIRS = Ximp
+#endif /* BuildXsi */
 
-CFILES = C/codeset.dat C/fontset.dat
-JEUCFILES = ja_JP.EUC/codeset.dat ja_JP.EUC/fontset.dat
-
-InstallMultiple($(CFILES),$(LIBDIR)/C)
-InstallMultiple($(JEUCFILES),$(LIBDIR)/ja_JP.EUC)
-
-#endif /* BuildXimp */
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
