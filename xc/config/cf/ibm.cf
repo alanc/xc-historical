@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.46 94/03/08 18:47:24 matt Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.47 94/03/08 19:56:52 matt Exp $
 
 #ifdef RsArchitecture
 #define OSName		AIX 3.2.5
@@ -57,6 +57,12 @@ XCOMM operating system:  OSName
  */
 #define NormalLibObjCplusplusCompile(options) test -r $*.C || $(LN) $*.CCsuf $*.C @@\
 	$(CCC) -c $(CCFLAGS) options $*.C
+
+#define SpecialCplusplusObjectRule(baseobj,basedep,options)		@@\
+baseobj.Osuf:	basedep.CCsuf						@@\
+	test -r basedep.C || $(LN) basedep.CCsuf basedep.C		@@\
+	$(CCC) -c $(CCFLAGS) options basedep.C
+
 
 #define SystemV			YES
 #define LdCombineFlags		-r
