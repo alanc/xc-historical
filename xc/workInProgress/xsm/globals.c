@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.2 94/07/15 10:01:08 mor Exp $ */
+/* $XConsortium: globals.c,v 1.3 94/07/15 14:11:27 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -32,10 +32,11 @@ int		saveDoneCount = 0;
 int		interactCount = 0;
 Bool		shutdownDialogUp = False;
 Bool		shutdownInProgress = False;
+Bool		saveInProgress = False;
 Bool		shutdownCancelled = False;
 jmp_buf		JumpHere;
 
-Bool		verbose = 0;
+Bool		verbose = False;
 
 char		*sm_id = NULL;
 
@@ -44,13 +45,15 @@ char		*session_name = NULL;
 IceAuthDataEntry *authDataEntries = NULL;
 int		numTransports = 0;
 
-Bool		client_info_visible = 0;
+Bool		client_info_visible = False;
 
 String 		*clientNames = NULL;
 int		numClientNames = 0;
 
 int		sessionNameCount = 0;
 String		*sessionNames = NULL;
+
+Bool		issued_checkpoint = False;
 
 XtAppContext	appContext;
 
