@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lock.c,v 1.2 94/12/06 14:46:34 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -42,6 +42,8 @@ GetPath ()
 	if (!path)
 	    path = ".";
     }
+
+    return (path);
 }
 
 
