@@ -516,7 +516,8 @@ set.
 .IP "\fBMaxWindowSize\fP \fIstring\fP" 8
 This variable specifies a geometry in which the width and height
 give the maximum size for a given window.  This is typically used to 
-restrict windows to the size of the screen.  The default is "30000x30000".
+restrict windows to the size of the screen.  The default width is 32767 -
+screen width.  The default height is 32767 - screen height.  
 .IP "\fBMenuBackground\fP \fIstring\fP" 8
 This variable specifies the background color used for menus,
 and can only be specified inside of a 
