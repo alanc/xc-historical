@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.98 88/02/02 15:13:15 swick Locked $";
+static char rcsid[] = "$Header: Initialize.c,v 1.101 88/02/02 16:56:23 swick Locked $";
 #endif lint
 
 /*
@@ -401,7 +401,11 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	    
 	/* initialize the toolkit */
 	DO_Initialize();
+#ifndef VMS
+#define XAPPLOADDIR  "/usr/lib/X/app-defaults/"
+#else
 #define XAPPLOADDIR  "SYS$LIBRARY:"
+#endif VMS
 	(void) strcpy(filename, XAPPLOADDIR);
 	(void) strcat(filename, classname);
 
