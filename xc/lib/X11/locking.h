@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.h,v 1.12 94/02/09 23:19:51 rws Exp $
+ * $XConsortium: locking.h,v 1.13 94/02/27 21:12:31 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -45,12 +45,6 @@ extern xthread_t (*_Xthread_self_fn)( /* in XlibInt.c */
 #endif
 );
 
-extern struct _XCVList *(*_XCreateCVL_fn)(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
-
 /* Display->lock is a pointer to one of these */
 
 struct _XLockInfo {
@@ -61,6 +55,7 @@ struct _XLockInfo {
 	struct _XCVList **reply_awaiters_tail;
 	struct _XCVList *event_awaiters; /* list of CVs for _XReadEvents */
 	struct _XCVList **event_awaiters_tail;
+	Bool reply_first;	/* who may read, reply queue or event queue */
 	/* for XLockDisplay */
 	int locking_level;	/* how many times into XLockDisplay we are */
 	xthread_t locking_thread; /* thread that did XLockDisplay */
@@ -68,17 +63,19 @@ struct _XLockInfo {
 	xthread_t reading_thread; /* cache */
 	xthread_t conni_thread;	/* thread in XProcessInternalConnection */
 	xcondition_t writers;	/* wait for writable */
+	int num_free_cvls;
+	struct _XCVList *free_cvls;
 	/* used only in XlibInt.c */
 	void (*pop_reader)(
 #if NeedNestedPrototypes
 			   Display* /* dpy */,
-			   struct _XCVList* /* cvl */,
 			   struct _XCVList** /* list */,
 			   struct _XCVList*** /* tail */
 #endif
 			   );
 	struct _XCVList *(*push_reader)(
 #if NeedNestedPrototypes
+					Display *	   /* dpy */,
 					struct _XCVList*** /* tail */
 #endif
 					);
@@ -137,10 +134,15 @@ struct _XLockInfo {
 				    Display* /* dpy */
 #endif
 				    );
+	struct _XCVList *(*create_cvl)(
+#if NeedNestedPrototypes
+				       Display * /* dpy */
+#endif
+				       );
 };
 
-#define UnlockNextEventReader(d,c) if ((d)->lock) \
-    (*(d)->lock->pop_reader)((d),(c), &(d)->lock->event_awaiters,&(d)->lock->event_awaiters_tail)
+#define UnlockNextEventReader(d) if ((d)->lock) \
+    (*(d)->lock->pop_reader)((d),&(d)->lock->event_awaiters,&(d)->lock->event_awaiters_tail)
 
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 #define ConditionWait(d,c) if ((d)->lock) \
