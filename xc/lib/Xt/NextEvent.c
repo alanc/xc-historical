@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.128 93/09/20 17:05:26 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.129 93/09/25 10:39:04 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -669,7 +669,7 @@ void  XtRemoveTimeOut(id)
 
 	/* find it */
 	LOCK_APP(app);
-	for(t = tid->app->timerQueue, last = NULL;
+	for(t = app->timerQueue, last = NULL;
 	    t != NULL && t != tid;
 	    t = t->te_next) last = t;
 
@@ -678,7 +678,7 @@ void  XtRemoveTimeOut(id)
 	    return; /* couldn't find it */
 	}
 	if(last == NULL) { /* first one on the list */
-	    t->app->timerQueue = t->te_next;
+	    app->timerQueue = t->te_next;
 	} else last->te_next = t->te_next;
 
 	LOCK_PROCESS;
@@ -726,14 +726,15 @@ void  XtRemoveWorkProc(id)
 
 	LOCK_APP(app);
 	/* find it */
-	for(w = wid->app->workQueue, last = NULL; w != NULL && w != wid; w = w->next) last = w;
+	for(w = app->workQueue, last = NULL; 
+	    w != NULL && w != wid; w = w->next) last = w;
 
 	if (w == NULL) {
 	    UNLOCK_APP(app);
 	    return; /* couldn't find it */
 	}
 
-	if(last == NULL) wid->app->workQueue = w->next;
+	if(last == NULL) app->workQueue = w->next;
 	else last->next = w->next;
 	LOCK_PROCESS;
 	w->next = freeWorkRecs;
@@ -781,14 +782,14 @@ void XtRemoveSignal(id)
 	XtAppContext app = sid->app;
 
 	LOCK_APP(app);
-	for (s = sid->app->signalQueue; s != NULL && s != sid; s = s->se_next)
+	for (s = app->signalQueue; s != NULL && s != sid; s = s->se_next)
 	    last = s;
 	if (s == NULL) {
 	    UNLOCK_APP(app);
 	    return;
 	}
 	if (last == NULL)
-	    sid->app->signalQueue = s->se_next;
+	    app->signalQueue = s->se_next;
 	else
 	    last->se_next = s->se_next;
 	LOCK_PROCESS;
@@ -909,7 +910,9 @@ void XtRemoveInput( id )
 	if(app->input_list && (sptr = app->input_list[source]) != NULL) {
 		for( lptr = NULL ; sptr; sptr = sptr->ie_next ){
 			if(sptr == (InputEvent *) id) {
+#ifndef USE_POLL
 				XtInputMask condition = 0;
+#endif
 				if(lptr == NULL) {
 				    app->input_list[source] = sptr->ie_next;
 				} else {
