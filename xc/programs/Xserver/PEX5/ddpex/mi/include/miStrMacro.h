@@ -1,4 +1,4 @@
-/* $XConsortium: miStrMacro.h,v 5.1 91/02/16 09:54:43 rws Exp $ */
+/* $XConsortium: miStrMacro.h,v 5.2 91/12/26 17:53:13 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -39,7 +39,9 @@ SOFTWARE.
 
 #define MISTR_LENGTH(PS)		(PS)->totalSize
 
-#define MISTR_NUM_REFS(PS)		(PS)->children->numObj
+#define MISTR_NUM_CHILDREN(PS)		(PS)->children->numObj
+
+#define MISTR_NUM_PARENTS(PS)		(PS)->parents->numObj
 
 #define MISTR_CURR_EL_OFFSET(PS)	(PS)->currElementOffset
 
