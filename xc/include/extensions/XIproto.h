@@ -1,4 +1,4 @@
-/* $Header: XIproto.h,v 1.15 91/05/05 16:23:22 rws Exp $ */
+/* $Header: XIproto.h,v 1.16 91/05/05 18:25:06 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -744,8 +744,8 @@ typedef struct {
     CARD8   	id;
     CARD16  	length B16; 	/* feedback length  		*/
     CARD32	resolution B32;
-    CARD32	min_value B32;
-    CARD32	max_value B32;
+    INT32	min_value B32;
+    INT32	max_value B32;
 } xIntegerFeedbackState;
 
 typedef struct {
