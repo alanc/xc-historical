@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.51 91/05/31 11:58:54 dave Exp $
+ * $XConsortium: parse.c,v 1.52 91/07/12 09:59:37 dave Exp $
  *
  * parse the .twmrc file
  *
@@ -450,6 +450,8 @@ static TwmKeyword keytable[] = {
     { "frame",			FRAME, 0 },
     { "framepadding",		NKEYWORD, kwn_FramePadding },
     { "function",		FUNCTION, 0 },
+    { "grayscale",		GRAYSCALE, 0 },
+    { "greyscale",		GRAYSCALE, 0 },
     { "i",			ICON, 0 },
     { "icon",			ICON, 0 },
     { "iconbackground",		CLKEYWORD, kwcl_IconBackground },

@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: twm.man,v 1.55 92/04/28 12:16:39 dave Exp $
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1
@@ -206,7 +206,8 @@ sweeping out window sizes.
 .IP "\fBBorderColor\fP \fIstring\fP [{ \fIwincolorlist\fP }]" 8
 This variable specifies the default color of the border to be placed around 
 all 
-non-iconified windows, and may only be given within a \fBColor\fP or 
+non-iconified windows, and may only be given within a \fBColor\fP,
+\fBGrayscale\fb or
 \fBMonochrome\fP list.  The optional \fIwincolorlist\fP specifies a list
 of window and color name pairs for specifying particular border colors for
 different types of windows.  For example:
@@ -221,14 +222,14 @@ The default is "black".
 .IP "\fBBorderTileBackground\fP \fIstring\fP [{ \fIwincolorlist\fP }]" 8
 This variable specifies the default background color in the gray pattern 
 used in unhighlighted borders (only if \fBNoHighlight\fP hasn't been set),
-and may only be given within a \fBColor\fP or \fBMonochrome\fP list.  The
+and may only be given within a \fBColor\fP, \fBGrayscale\fb or \fBMonochrome\fP list.  The
 optional \fIwincolorlist\fP allows per-window colors to be specified.
 The default  is "white".
 .IP "\fBBorderTileForeground\fP \fIstring\fP [{ \fIwincolorlist\fP }]" 8
 This variable specifies the default foreground color in the gray pattern
 used in unhighlighted borders (only
 if \fBNoHighlight\fP hasn't been set), and may only be given within a 
-\fBColor\fP or \fBMonochrome\fP list.  The optional \fIwincolorlist\fP allows
+\fBColor\fP, \fBGrayscale\fb or \fBMonochrome\fP list.  The optional \fIwincolorlist\fP allows
 per-window colors to be specified.  The default is "black".
 .IP "\fBBorderWidth\fP \fIpixels\fP" 8
 This variable specifies the width in pixels of the border surrounding
@@ -356,16 +357,19 @@ variable should override any client-supplied pixmaps.
 .IP "\fBFramePadding\fP \fIpixels\fP" 8
 This variable specifies the distance between the titlebar decorations (the
 button and text) and the window frame.  The default is 2 pixels.
+.IP "\fBGrayscale\fP { \fIcolors\fP }" 8
+This variable specifies a list of color assignments that should be made if
+the screen has a GrayScale default visual.  See the description of \fBColors\fP.
 .IP "\fBIconBackground\fP \fIstring\fP [{ \fIwin-list\fP }]" 8
 This variable specifies the background color of icons, and may
-only be specified inside of a \fBColor\fP or \fBMonochrome\fP list.
+only be specified inside of a \fBColor\fP, \fBGrayscale\fb or \fBMonochrome\fP list.
 The optional \fIwin-list\fP is a list of window names and colors so that
 per-window colors may be specified.  See the \fBBorderColor\fP
 variable for a complete description of the \fIwin-list\fP.
 The default is "white".
 .IP "\fBIconBorderColor\fP \fIstring\fP [{ \fIwin-list\fP }]" 8
 This variable specifies the color of the border used for icon windows, and
-may only be specified inside of a \fBColor\fP or \fBMonochrome\fP list.
+may only be specified inside of a \fBColor\fP, \fBGrayscale\fb or \fBMonochrome\fP list.
 The optional \fIwin-list\fP is a list of window names and colors so that
 per-window colors may be specified.  See the \fBBorderColor\fP
 variable for a complete description of the \fIwin-list\fP. 
@@ -383,7 +387,7 @@ icons.  The default is "variable".
 .IP "\fBIconForeground\fP \fIstring\fP [{ \fIwin-list\fP }]" 8
 This variable specifies the foreground color to be used when displaying icons,
 and may only be specified inside of a 
-\fBColor\fP or \fBMonochrome\fP list.
+\fBColor\fP, \fBGrayscale\fb or \fBMonochrome\fP list.
 The optional \fIwin-list\fP is a list of window names and colors so that
 per-window colors may be specified.  See the \fBBorderColor\fP
 variable for a complete description of the \fIwin-list\fP.
@@ -400,7 +404,7 @@ to the \fITwmWindows\fP menu is set in the user's startup file.
 .IP "\fBIconManagerBackground\fP \fIstring\fP [{ \fIwin-list\fP }]" 8
 This variable specifies the background color to use for icon manager entries,
 and may only be specified inside of a 
-\fBColor\fP or \fBMonochrome\fP list.
+\fBColor\fP, \fBGrayscale\fb or \fBMonochrome\fP list.
 The optional \fIwin-list\fP is a list of window names and colors so that
 per-window colors may be specified.  See the \fBBorderColor\fP
 variable for a complete description of the \fIwin-list\fP.
@@ -417,7 +421,7 @@ entries.  The default is "variable".
 .IP "\fBIconManagerForeground\fP \fIstring\fP [{ \fIwin-list\fP }]" 8
 This variable specifies the foreground color to be used when displaying
 icon manager entries, and may only be specified inside of a 
-\fBColor\fP or \fBMonochrome\fP list.
+\fBColor\fP, \fBGrayscale\fb or \fBMonochrome\fP list.
 The optional \fIwin-list\fP is a list of window names and colors so that
 per-window colors may be specified.  See the \fBBorderColor\fP
 variable for a complete description of the \fIwin-list\fP.
@@ -433,7 +437,7 @@ additional rows.  The default number of columns is 1.
 This variable specifies the border color to be used when highlighting
 the icon manager entry that currently has the focus,
 and can only be specified inside of a 
-\fBColor\fP or \fBMonochrome\fP list.
+\fBColor\fP, \fBGrayscale\fb or \fBMonochrome\fP list.
 The optional \fIwin-list\fP is a list of window names and colors so that
 per-window colors may be specified.  See the \fBBorderColor\fP
 variable for a complete description of the \fIwin-list\fP.
@@ -529,16 +533,16 @@ is "variable".
 .IP "\fBMenuForeground\fP \fIstring\fP" 8
 This variable specifies the foreground color used for menus,
 and can only be specified inside of a 
-\fBColor\fP or \fBMonochrome\fP list.  The default is "black".
+\fBColor\fP, \fBGrayscale\fb or \fBMonochrome\fP list.  The default is "black".
 .IP "\fBMenuShadowColor\fP \fIstring\fP" 8
 This variable specifies the color of the shadow behind pull-down menus
 and can only be specified inside of a 
-\fBColor\fP or \fBMonochrome\fP list.  The default is "black".
+\fBColor\fP, \fBGrayscale\fb or \fBMonochrome\fP list.  The default is "black".
 .IP "\fBMenuTitleBackground\fP \fIstring\fP" 8
 This variable specifies the background color for \fBf.title\fP entries in
 menus, and
 can only be specified inside of a 
-\fBColor\fP or \fBMonochrome\fP list.  The default is "white".
+\fBColor\fP, \fBGrayscale\fb or \fBMonochrome\fP list.  The default is "white".
 .IP "\fBMenuTitleForeground\fP \fIstring\fP" 8
 This variable specifies the foreground color for \fBf.title\fP entries in
 menus and
@@ -724,7 +728,7 @@ resource.
 .IP "\fBTitleBackground\fP \fIstring\fP [{ \fIwin-list\fP }]" 8
 This variable specifies the background color used in titlebars,
 and may only be specified inside of a 
-\fBColor\fP or \fBMonochrome\fP list.
+\fBColor\fP, \fBGrayscale\fb or \fBMonochrome\fP list.
 The optional \fIwin-list\fP is a list of window names and colors so that
 per-window colors may be specified.
 The default is "white".
@@ -739,7 +743,7 @@ titlebars.  The default is "variable".
 .IP "\fBTitleForeground\fP \fIstring\fP [{ \fIwin-list\fP }]" 8
 This variable specifies the foreground color used in titlebars, and
 may only be specified inside of a 
-\fBColor\fP or \fBMonochrome\fP list.
+\fBColor\fP, \fBGrayscale\fb or \fBMonochrome\fP list.
 The optional \fIwin-list\fP is a list of window names and colors so that
 per-window colors may be specified.
 The default is "black".

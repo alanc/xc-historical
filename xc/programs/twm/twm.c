@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.123 91/05/01 17:32:58 keith Exp $
+ * $XConsortium: twm.c,v 1.124 91/05/08 11:01:54 dave Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -345,6 +345,8 @@ main(argc, argv, environ)
 
 	if (DisplayCells(dpy, scrnum) < 3)
 	    Scr->Monochrome = MONOCHROME;
+ 	else if (DefaultVisual(dpy, scrnum)->class == GrayScale) 
+ 	    Scr->Monochrome = GRAYSCALE;
 	else
 	    Scr->Monochrome = COLOR;
 

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.90 90/12/01 13:06:26 rws Exp $
+ * $XConsortium: gram.y,v 1.91 91/02/08 18:21:56 dave Exp $
  *
  * .twmrc command grammer
  *
@@ -81,7 +81,7 @@ extern int yylineno;
 %token <num> LB RB LP RP MENUS MENU BUTTON DEFAULT_FUNCTION PLUS MINUS
 %token <num> ALL OR CURSORS PIXMAPS ICONS COLOR SAVECOLOR MONOCHROME FUNCTION 
 %token <num> ICONMGR_SHOW ICONMGR WINDOW_FUNCTION ZOOM ICONMGRS
-%token <num> ICONMGR_GEOMETRY ICONMGR_NOSHOW MAKE_TITLE
+%token <num> ICONMGR_GEOMETRY ICONMGR_NOSHOW MAKE_TITLE GRAYSCALE
 %token <num> ICONIFY_BY_UNMAPPING DONT_ICONIFY_BY_UNMAPPING 
 %token <num> NO_TITLE AUTO_RAISE NO_HILITE ICON_REGION 
 %token <num> META SHIFT LOCK CONTROL WINDOW TITLE ICON ROOT FRAME 
@@ -206,6 +206,8 @@ stmt		: error
 		  icon_list
 		| COLOR 		{ color = COLOR; }
 		  color_list
+  		| GRAYSCALE 		{ color = GRAYSCALE; }
+  		  color_list
                 | SAVECOLOR          
                   save_color_list
                 | MONOCHROME 		{ color = MONOCHROME; }
