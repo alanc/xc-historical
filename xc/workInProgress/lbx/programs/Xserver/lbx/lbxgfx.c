@@ -1,4 +1,4 @@
-/* $XConsortium: lbxgfx.c,v 1.2 94/02/20 10:51:35 dpw Exp $ */
+/* $XConsortium: lbxgfx.c,v 1.3 94/03/27 13:15:58 dpw Exp mor $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -43,6 +43,7 @@
 #include "lbxserve.h"
 #include "lbxtags.h"
 #include "Xfuncproto.h"
+#include "lbximage.h"
 
 extern int (*ProcVector[256])();
 
@@ -244,3 +245,58 @@ LbxDecodeArc(in, inend, out)
     }
     return ((char *)out - start_out);
 }
+
+
+int
+LbxDecodePutImage (client)
+    register ClientPtr  client;
+{
+    REQUEST(xLbxPutImageReq);
+    char		*in;
+    xPutImageReq	*xreq;
+    int			len;
+    int			retval;
+
+    if (stuff->compressionMethod != LbxImageCompressFaxG42D &&
+        stuff->compressionMethod != LbxImageCompressPackBits)
+    {
+	return BadValue;
+    }
+
+    if ((xreq = (xPutImageReq *) xalloc (stuff->xLength << 2)) == NULL)
+	return BadAlloc;
+
+    in = (char *)stuff + sz_xLbxPutImageReq;
+
+    if (stuff->compressionMethod == LbxImageCompressFaxG42D)
+    {
+	len = ImageDecodeFaxG42D (
+	    (unsigned char *) in, (unsigned char *) &xreq[1],
+	    (long) ((stuff->xLength << 2) - sz_xPutImageReq),
+	    (int) stuff->width);
+    }
+    else
+    {
+	len = ImageDecodePackBits (in, (char *) &xreq[1],
+	    (int) stuff->height, (int) stuff->width);
+    }
+
+    xreq->reqType = X_PutImage;
+    xreq->drawable = stuff->drawable;
+    xreq->gc = stuff->gc;
+    xreq->width = stuff->width;
+    xreq->height = stuff->height;
+    xreq->format = stuff->format;
+    xreq->dstX = stuff->dstX;
+    xreq->dstY = stuff->dstY;
+    xreq->leftPad = stuff->leftPad;
+    xreq->depth = stuff->depth;
+
+    client->req_len = xreq->length = stuff->xLength;
+    client->requestBuffer = (pointer) xreq;
+
+    retval = (*ProcVector[X_PutImage])(client);
+    xfree(xreq);
+    return retval;
+}
+

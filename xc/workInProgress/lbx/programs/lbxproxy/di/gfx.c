@@ -1,4 +1,4 @@
-/* $XConsortium: gfx.c,v 1.2 94/02/21 08:04:30 dpw Exp $ */
+/* $XConsortium: gfx.c,v 1.3 94/03/27 14:06:51 dpw Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -39,6 +39,7 @@
 #include	"wire.h"
 #define _XLBX_SERVER_
 #include	"lbxstr.h"	/* gets dixstruct.h */
+#include        "image.h"
 
 static int  pad[4] = {0, 3, 2, 1};
 
@@ -349,4 +350,103 @@ ProcLBXPolyFillArc(client)
     ClientPtr   client;
 {
     return reencode_poly(client, X_LbxPolyFillArc, reencode_arc);
+}
+
+
+int
+ProcLBXPutImage(client)
+    ClientPtr   client;
+{
+    REQUEST(xPutImageReq);
+    XServerPtr  server = client->server;
+    int         len = stuff->length << 2;
+    xLbxPutImageReq *newreq = NULL;
+    int         method, bytes = 0;
+    int		compressIt = 1;
+    float	percentCompression;
+
+    /* If it's delta compressible, don't try to reencode */
+
+    if (DELTA_CACHEABLE(&server->outdeltas, len) ||
+        !((stuff->format == ZPixmap && stuff->depth == 8) ||
+	   stuff->depth == 1) ||
+	((newreq = (xLbxPutImageReq *) xalloc(len*5)) == NULL))
+    {
+	compressIt = 0;
+    }
+    else
+    {
+	if (stuff->depth == 1)
+	{
+	    bytes = ImageEncodeFaxG42D ((unsigned char *) &stuff[1],
+		      (unsigned char *) newreq + sz_xLbxPutImageReq,
+		      (long) ((stuff->length << 2) - sz_xPutImageReq),
+		      (int) stuff->width);
+
+	    method = LbxImageCompressFaxG42D;
+	}
+	else
+	{
+	    bytes = ImageEncodePackBits ((char *) &stuff[1],
+		      (char *) newreq + sz_xLbxPutImageReq,
+		      (int) stuff->height, (int) stuff->width);
+
+	    method = LbxImageCompressPackBits;
+	}
+
+	if (bytes == 0)
+	{
+	    compressIt = 0;
+	}
+	else
+	{
+	    len = sz_xLbxPutImageReq + bytes;
+	    newreq->padBytes = pad[len % 4];
+	    len += newreq->padBytes;
+	    newreq->lbxLength = len >> 2;
+	    newreq->xLength = stuff->length;
+
+	    percentCompression = 100.0 * (1.0 -
+	        ((float) newreq->lbxLength / (float) newreq->xLength));
+
+	    if (percentCompression <= 0.0)
+		compressIt = 0;
+	}
+    }
+
+    if (!compressIt)
+    {
+#ifdef LBX_STATS
+	fprintf (stderr, "PutImage: no compression attempted (%s)\n",
+	    bytes > 0 ? "not worth it" : "incapable");
+#endif
+	if (newreq)
+	    xfree (newreq);
+
+	return ProcStandardRequest (client);
+    }
+
+#ifdef LBX_STATS
+    fprintf (stderr, "PutImage: %f percent compression\n", percentCompression);
+#endif
+
+    FinishLBXRequest (client, REQ_PASSTHROUGH);
+
+    newreq->reqType = server->lbxReq;
+    newreq->lbxReqType = X_LbxPutImage;
+    newreq->compressionMethod = method;
+    newreq->drawable = stuff->drawable;
+    newreq->gc = stuff->gc;
+    newreq->width = stuff->width;
+    newreq->height = stuff->height;
+    newreq->dstX = stuff->dstX;
+    newreq->dstY = stuff->dstY;
+    newreq->format = stuff->format;
+    newreq->leftPad = stuff->leftPad;
+    newreq->depth = stuff->depth;
+
+    WriteToServer (client, len, (char *) newreq);
+
+    xfree (newreq);
+    return Success;
 }
