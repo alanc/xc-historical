@@ -1,6 +1,6 @@
 #! /bin/csh -f
 # Copyright 1985,1988 Massacusetts Institute of Technology.
-# $XConsortium: xdpr.script,v 1.6 91/06/30 18:36:31 rws Exp $
+# $XConsortium: xdpr.script,v 1.7 91/06/30 18:40:29 rws Exp $
 # origin: paul 4/12/88
 	set xwdv=()
 	set xprv=() noglob
@@ -8,7 +8,7 @@
 	set trailer=()
 	set lprv=()
 	set usage="Usage: xdpr [filename] [-out filename ] \
-	[-display host:display] [-Pprinter] [-device printer_device] \
+	[-display host:display] [-Pprinter] [-device devtype] \
 	[{-root | -id <id> | -name <name>}] [-nobdrs] [-xy] \
 	[-scale scale] [-height inches] [-width inches] [-left inches] \
 	[-top inches] [-split n] [-header string] [-trailer string] \
