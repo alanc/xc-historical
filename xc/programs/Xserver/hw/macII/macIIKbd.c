@@ -216,6 +216,7 @@ macIIKbdSetUp(fd, openClose)
     struct strioctl ctl;
     struct termio tio;
     static struct termio save_tio;
+    char buff[FMNAMESZ+1];
     int iarg;
 
     if (openClose) {
@@ -225,24 +226,19 @@ macIIKbdSetUp(fd, openClose)
 		return (!Success);
 	}
 
-	{
-		/* 
-		 * Pop all streams modules off /dev/console. Someday we
-		 * will remember which ones and restore them on exit.
-		 */
-		char buff[FMNAMESZ+1];
-
-		errno = 0;
-		ioctl(fd, I_LOOK, buff);
-		while (errno != EINVAL) {
-			if(ioctl(fd, I_POP, 0) < 0) {
-				FatalError("Failed to ioctl I_POP %s.\r\n", buff);
-				return (!Success);
-			}
-			ioctl(fd, I_LOOK, buff);
+	/* 
+	 * Pop all streams modules off /dev/console. Someday we
+	 * will remember which ones and restore them on exit.
+	 */
+	errno = 0;
+	ioctl(fd, I_LOOK, buff);
+	while (errno != EINVAL) {
+		if(ioctl(fd, I_POP, 0) < 0) {
+			FatalError("Failed to ioctl I_POP %s.\r\n", buff);
+			return (!Success);
 		}
+		ioctl(fd, I_LOOK, buff);
 	}
-
 		
 	iarg = 1;
 	if (ioctl(fd, FIONBIO, &iarg) < 0) {
@@ -253,8 +249,8 @@ macIIKbdSetUp(fd, openClose)
 	iarg = 1;
 	if (fcntl (fd, F_SETOWN, getpid()) < 0)
 	{
-	    FatalError("Could not fcntl F_SETOWN \r\n");
-	    return !Success;
+		FatalError("Could not fcntl F_SETOWN \r\n");
+		return !Success;
 	}
 
 	if (ioctl(fd, FIOASYNC, &iarg) < 0) {
@@ -332,6 +328,24 @@ macIIKbdSetUp(fd, openClose)
 	if (ioctl(fd, I_STR, &ctl) < 0) {
 		MessageF("Failed to ioctl I_STR VIDEO_NOMOUSE.\r\n");
 	}
+
+#ifdef VIDEO_MAC
+        ctl.ic_len = 0;
+        ctl.ic_cmd = VIDEO_MAC; /* For A/UX 2.0 and later */
+        if (ioctl(fd, I_STR, &ctl) < 0) {
+            ctl.ic_len = 0;
+            ctl.ic_cmd = VIDEO_ASCII; /* A/UX 1.* */
+            if (ioctl(fd, I_STR, &ctl) < 0) {
+		MessageF("Failed to ioctl I_STR VIDEO_MAC VIDEO_ASCII.\r\n");
+            }
+        }
+#else
+        ctl.ic_len = 0;
+        ctl.ic_cmd = VIDEO_ASCII;
+        if (ioctl(fd, I_STR, &ctl) < 0) {
+	    MessageF("Failed to ioctl I_STR VIDEO_ASCII.\r\n");
+        }
+#endif
 
 	ctl.ic_len = 0;
 	ctl.ic_cmd = VIDEO_ASCII;
@@ -577,16 +591,10 @@ macIIWakeupHandler(nscreen, pbdata, err, pReadmask)
       return;
 
     if (autoRepeatKeyDown) {
-#ifdef USE_TOD_CLOCK
 	struct timeval tv;
 
 	gettimeofday (&tv, (struct timezone *)0);
 	now = TVTOMILLI(tv);
-#else
-	struct tms  tms;
-
-	now = times (&tms) << 4;
-#endif USE_TOD_CLOCK
 
         autoRepeatDeltaTv = now - autoRepeatLastKeyDownTv;
         if ((!autoRepeatFirst && autoRepeatDeltaTv > AUTOREPEAT_DELAY) ||
