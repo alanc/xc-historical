@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: CH10,v 1.7 91/07/31 20:24:30 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -405,6 +405,7 @@ The \*(xI use the compiled form of the translation table to register the
 necessary events with the event manager.
 Widgets need do nothing other than specify the action and translation tables
 for events to be processed by the translation manager.
+
 .NH 3
 Event Sequences
 .XS
@@ -421,6 +422,7 @@ an event-specific suffix.
 Various abbreviations are supported to make translation tables easier
 to read.  The events must match incoming events in left-to-right order
 to trigger the action sequence.
+
 .NH 3
 Action Sequences
 .XS
@@ -597,7 +599,12 @@ or
 directive that may have been specified
 in the translation string.  The translation table specified by
 \fItranslations\fP is not altered by this process.
-If the new translations contain an event or event sequence that
+.PN XtAugmentTranslations
+logically appends the string representation of the new translations to
+the string representation of the widget's current translations and reparses
+the result with no warning messages about duplicate left-hand sides, then
+stores the result back into the widget instance; i.e.,
+if the new translations contain an event or event sequence that
 already exists in the widget's translations,
 the new translation is ignored.
 .sp
@@ -628,9 +635,14 @@ or
 directive that may have been
 specified in the translation string.  The translation table
 specified by \fItranslations\fP is not altered by this process.
-If the new translations contain an event or event sequence that
+.PN XtOverrideTranslations
+logically appends the string representation of the widget's current
+translations to the string representation of the new translations and
+reparses the result with no warning messages about duplicate left-hand
+sides, then stores the result back into the widget instance; i.e.,
+if the new translations contain an event or event sequence that
 already exists in the widget's translations,
-the new translation is merged in and overrides the widget's translation.
+the new translation overrides the widget's translation.
 .LP
 To replace a widget's translations completely, use
 .PN XtSetValues
@@ -690,6 +702,7 @@ Specifies the widget from which the translations are to be removed.   \*(cI
 The
 .PN XtUninstallTranslations
 function causes the entire translation table for the widget to be removed.
+
 .NH 2
 Using Accelerators
 .XS
@@ -834,6 +847,7 @@ of each widget encountered onto \fIdestination\fP.
 A common use is to call
 .PN XtInstallAllAccelerators
 and pass the application main window as the source.
+
 .NH 2
 KeyCode-to-KeySym Conversions
 .XS
@@ -1064,7 +1078,7 @@ you need to register an identity converter.
 When a new converter is registered,
 the \*(xI  refresh the keyboard state if necessary.
 The default converter understands case conversion for all
-Latin KeySyms defined in \fI\*(xP\fP, Appendix E.
+Latin KeySyms defined in \fI\*(xP\fP, Appendix A.
 .sp
 .LP
 To determine upper- and lower-case equivalents for a KeySym, use
