@@ -17,7 +17,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.c,v 5.11 90/10/06 13:57:08 rws Exp $ */
+/* $XConsortium: mifillarc.c,v 5.12 90/11/19 15:17:03 keith Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -204,39 +204,49 @@ miEllipseAngleToSlope (angle, width, height, dxp, dyp, d_dxp, d_dyp)
     case 0:
 	*dxp = -1;
 	*dyp = 0;
-	*d_dxp = width / 2.0;
-	*d_dyp = 0;
+	if (d_dxp) {
+	    *d_dxp = width / 2.0;
+	    *d_dyp = 0;
+	}
 	break;
     case QUADRANT:
 	*dxp = 0;
 	*dyp = 1;
-	*d_dxp = 0;
-	*d_dyp = - height / 2.0;
+	if (d_dxp) {
+	    *d_dxp = 0;
+	    *d_dyp = - height / 2.0;
+	}
 	break;
     case HALFCIRCLE:
 	*dxp = 1;
 	*dyp = 0;
-	*d_dxp = - width / 2.0;
-	*d_dyp = 0;
+	if (d_dxp) {
+	    *d_dxp = - width / 2.0;
+	    *d_dyp = 0;
+	}
 	break;
     case QUADRANT3:
 	*dxp = 0;
 	*dyp = -1;
-	*d_dxp = 0;
-	*d_dyp = height / 2.0;
+	if (d_dxp) {
+	    *d_dxp = 0;
+	    *d_dyp = height / 2.0;
+	}
 	break;
     default:
-	negative_dx = FALSE;
 	d_dx = Dcos(angle) * width;
-	*d_dxp = d_dx / 2.0;
+	d_dy = Dsin(angle) * height;
+	if (d_dxp) {
+	    *d_dxp = d_dx / 2.0;
+	    *d_dyp = - d_dy / 2.0;
+	}
+	negative_dx = FALSE;
 	if (d_dx < 0.0)
 	{
 	    d_dx = -d_dx;
 	    negative_dx = TRUE;
 	}
 	negative_dy = FALSE;
-	d_dy = Dsin(angle) * height;
-	*d_dyp = - d_dy / 2.0;
 	if (d_dy < 0.0)
 	{
 	    d_dy = -d_dy;
@@ -265,10 +275,9 @@ miGetPieEdge(arc, angle, edge, top, left)
     Bool top, left;
 {
     register int k, signdx, signdy;
-    double d_dx, d_dy;
     int	dx, dy;
 
-    miEllipseAngleToSlope (angle, arc->width, arc->height, &dx, &dy, &d_dx, &d_dy);
+    miEllipseAngleToSlope (angle, arc->width, arc->height, &dx, &dy, 0, 0);
 
     if (dy == 0)
     {
@@ -289,6 +298,10 @@ miGetPieEdge(arc, angle, edge, top, left)
 	edge->e = 0;
 	edge->dx = -1;
 	return;
+    }
+    if (dy < 0) {
+	dx = -dx;
+	dy = -dy;
     }
     k = (arc->height & 1) ? dx : 0;
     if (arc->width & 1)
