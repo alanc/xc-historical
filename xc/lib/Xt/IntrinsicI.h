@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicI.h,v 1.26 88/09/06 16:28:11 jim Exp $
+* $XConsortium: IntrinsicI.h,v 1.27 88/09/26 11:42:47 swick Exp $
 * $oHeader: IntrinsicI.h,v 1.5 88/08/31 16:21:08 asente Exp $
 */
 
@@ -125,8 +125,12 @@ extern int XtUnspecifiedPixmap;
  *
  **************************************************************/
 
+#ifndef XAPPLOADDIR
 #define XAPPLOADDIR "/usr/lib/X11/app-defaults/"
-#define ERRORDB "/usr/lib/XtErrorDB"
+#endif
+#ifndef ERRORDB
+#define ERRORDB "/usr/lib/X11/XtErrorDB"
+#endif
 
 /*************************************************************
  *
