@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: input.c,v 1.11 91/01/06 12:47:40 rws Exp $
+ *	$XConsortium: input.c,v 1.12 91/02/06 17:25:22 gildea Exp $
  */
 
 /*
@@ -73,16 +73,41 @@ Input (keyboard, screen, event, eightbit)
 
 #define STRBUFSIZE 100
 
-	 char strbuf[STRBUFSIZE];
+	char strbuf[STRBUFSIZE];
 	register char *string;
 	register int key = FALSE;
 	int	pty	= screen->respond;
 	int	nbytes;
 	KeySym  keysym;
 	ANSI	reply;
+	char	tmp[STRBUFSIZE];
+	char	*bp = strbuf;
+	int	count;
+	XEvent	ev;
 
-	nbytes = XLookupString ((XKeyEvent *)event, strbuf, STRBUFSIZE, 
-		&keysym, &compose_status);
+	count = XLookupString ((XKeyEvent *)event, tmp, STRBUFSIZE,
+			       &keysym, &compose_status);
+	strncpy(bp, tmp, count);
+	bp += count;
+	nbytes = count;
+	/*
+	 * Make sure we get every keystroke available
+	 * before we start doing the update, so can issue a single
+	 * DrawString instead of several.
+	 */
+	while (nbytes < STRBUFSIZE && 
+	       XCheckMaskEvent(screen->display, KeyPressMask, &ev))	{
+	    count = XLookupString ((XKeyEvent *)&ev, tmp, STRBUFSIZE,
+				   &keysym, &compose_status);
+	    if (nbytes + count <= STRBUFSIZE) {
+		strncpy(bp, tmp, count);
+		bp += count;
+		nbytes += count;
+	    } else {
+		XPutBackEvent(screen->display, &ev);
+		break;
+	    }
+	}
 
 	string = &strbuf[0];
 	reply.a_pintro = 0;
