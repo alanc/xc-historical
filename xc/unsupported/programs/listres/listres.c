@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.3 89/07/10 17:43:30 jim Exp $
+ * $XConsortium: listres.c,v 1.4 89/07/10 18:56:08 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -40,6 +40,7 @@ static XrmOptionDescRec listres_options[] = {
 static struct _appresources {
     Boolean known;
     Boolean objects;
+    char *format;
 } listres_resources;
 
 static XtResource Resources[] = {
@@ -48,6 +49,8 @@ static XtResource Resources[] = {
       offset(known), XtRString, "FALSE" },
   { "showObjects", "ShowObjects", XtRBoolean, sizeof(Boolean),
       offset(objects), XtRString, "FALSE" },
+  { "resourceFormat", "ResourceFormat", XtRString, sizeof(char *),
+      offset(format), XtRString, "  %28s %-28s    %s" },
 #undef offset
 };
 
@@ -105,7 +108,8 @@ main (argc, argv)
 
     if (argc == 0) {
 	for (i = 0, wl = widget_list; i < nwidgets; i++, wl++) {
-	    list_resources (wl->label, wl->widget_class[0], top, toplevel);
+	    list_resources (listres_resources.format,
+			    wl->label, wl->widget_class[0], top, toplevel);
 	}
     } else {
 	char tmpbuf[1024];
@@ -153,7 +157,8 @@ main (argc, argv)
 		ep = (struct _extra *) wl->extra;
 		if (strcmp (*argv, ep->data) == 0 ||
 		    strcmp (*argv, ep->data + ep->off_cl) == 0) {
-		    list_resources (wl->label, wl->widget_class[0], top,
+		    list_resources (listres_resources.format,
+				    wl->label, wl->widget_class[0], top,
 				    toplevel);
 		    found++;
 		}
