@@ -1,5 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$xHeader: Shell.c,v 1.27 88/08/30 14:05:25 swick Exp $";
+static char rcsid[] =
+    "$XConsortium: Shell.c,v 1.27 88/08/31 09:24:52 swick Exp $";
 /* $oHeader: Shell.c,v 1.6 88/08/19 16:49:51 asente Exp $ */
 #endif lint
 
@@ -33,6 +34,9 @@ SOFTWARE.
 #include <stdio.h>
 #include <sys/param.h>
 #include <X11/Xatom.h>
+#ifdef hpux
+#include <sys/utsname.h>
+#endif
 
 extern void XSetNormalHints(); /* this was not declared in Xlib.h... */
 extern void XSetTransientForHint(); /* this was not declared in Xlib.h... */
@@ -774,7 +778,20 @@ static void _popup_set_prop(w)
 
 	if (!gothost) {
 	    char hostbuf[1000];
+#ifdef hpux
+	    /* Why not use gethostname()?  Well, at least on my system, I've
+	     * had to make an ugly kernel patch to get a name longer than 8
+	     * characters, and uname() lets me access to the whole string
+	     * (it smashes release, you see), whereas gethostname() kindly
+	     * truncates it for me.
+	     */
+	    struct utsname name;
+
+	    uname(&name);
+	    (void) strncpy(hostbuf, name.nodename, sizeof(hostbuf));
+#else
 	    (void) gethostname(hostbuf, sizeof(hostbuf));
+#endif /*hpux*/
 	    hostname = XtNewString(hostbuf);
 	    gothost = TRUE;
 	}
