@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.89 89/03/18 16:21:09 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.90 89/03/23 09:06:29 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2009,7 +2009,7 @@ ProcGetImage(client)
 				         pBuf);
 	    /* Note that this is NOT a call to WriteSwappedDataToClient,
                as we do NOT byte swap */
-	    (void)WriteToClient(client, nlines * widthBytesLine, pBuf);
+	    (void)WriteToClient(client, (int)(nlines * widthBytesLine), pBuf);
 	    linesDone += nlines;
         }
     }
@@ -2033,7 +2033,8 @@ ProcGetImage(client)
 				                 pBuf);
 		    /* Note: NOT a call to WriteSwappedDataToClient,
 		       as we do NOT byte swap */
-		    (void)WriteToClient(client, nlines * widthBytesLine, pBuf);
+		    (void)WriteToClient(client, (int)(nlines * widthBytesLine),
+					pBuf);
 		    linesDone += nlines;
 		}
             }
@@ -3438,8 +3439,9 @@ ProcEstablishConnection(client)
 	(prefix->minorVersion != X_PROTOCOL_REVISION))
 	reason = "Protocol version mismatch";
     else
-	reason = ClientAuthorized(client, prefix->nbytesAuthProto, auth_proto,
-				  prefix->nbytesAuthString, auth_string);
+	reason = ClientAuthorized(client, (int)prefix->nbytesAuthProto,
+				  auth_proto, (int)prefix->nbytesAuthString,
+				  auth_string);
     if (reason)
     {
 	xConnSetupPrefix csp;
@@ -3454,9 +3456,10 @@ ProcEstablishConnection(client)
 	    WriteSConnSetupPrefix(client, &csp);
 	else
 	    (void)WriteToClient(client, sz_xConnSetupPrefix, (char *) &csp);
-        (void)WriteToClient(client, csp.lengthReason, reason);
+        (void)WriteToClient(client, (int)csp.lengthReason, reason);
 	if (csp.lengthReason & 3)
-	    (void)WriteToClient(client, 4 - (csp.lengthReason & 3), pad);
+	    (void)WriteToClient(client, (int)(4 - (csp.lengthReason & 3)),
+				pad);
 	return (client->noClientException = -1);
     }
 
@@ -3493,7 +3496,7 @@ ProcEstablishConnection(client)
     {
 	(void)WriteToClient(client, sizeof(xConnSetupPrefix),
 			    (char *) &connSetupPrefix);
-	(void)WriteToClient(client, connSetupPrefix.length << 2,
+	(void)WriteToClient(client, (int)(connSetupPrefix.length << 2),
 			    ConnectionInfo);
     }
     return (client->noClientException);

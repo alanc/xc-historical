@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.173 89/03/18 16:19:53 rws Exp $ */
+/* $XConsortium: events.c,v 1.175 89/03/23 09:12:00 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -43,6 +43,7 @@ extern WindowPtr *WindowTable;
 extern void (* EventSwapVector[128]) ();
 extern void (* ReplySwapVector[256]) ();
 extern void CopySwap32Write(), SwapTimeCoordWrite();
+extern void SetCriticalOutputPending();
 
 #define NoSuchEvent 0x80000000	/* so doesn't match NoEventMask */
 #define StructureAndSubMask ( StructureNotifyMask | SubstructureNotifyMask )
@@ -2686,8 +2687,8 @@ SetKeySymsMap(pKeySyms)
     bcopy(
 	(char *)pKeySyms->map,
 	(char *)&curKeySyms.map[rowDif * curKeySyms.mapWidth],
-	(pKeySyms->maxKeyCode - pKeySyms->minKeyCode + 1) *
-	    curKeySyms.mapWidth * sizeof(KeySym));
+	(int)(pKeySyms->maxKeyCode - pKeySyms->minKeyCode + 1) *
+	  curKeySyms.mapWidth * sizeof(KeySym));
     return TRUE;
 }
 
@@ -2726,7 +2727,7 @@ InitModMap(modifierMap, pKeyMap, pMax)
 	return (FALSE);
     xfree(*pKeyMap);
     *pKeyMap = map;
-    bzero((char *)map, 8*maxKeysPerMod);
+    bzero((char *)map, 8*(int)maxKeysPerMod);
     bzero((char *)keysPerModifier, sizeof keysPerModifier);
 
     for (i = 8; i < MAP_LENGTH; i++) {
@@ -3049,7 +3050,8 @@ ProcGetModifierMapping(client)
     WriteReplyToClient(client, sizeof(xGetModifierMappingReply), &rep);
 
     /* Reply with the (modified by DDX) map that SetModifierMapping passed in */
-    (void)WriteToClient(client, 8*maxKeysPerModifier, (char *)modifierKeyMap);
+    (void)WriteToClient(client, (int)(8*maxKeysPerModifier),
+			(char *)modifierKeyMap);
     return client->noClientException;
 }
 
@@ -3177,7 +3179,7 @@ ProcGetPointerMapping(client)
     rep.nElts = inputInfo.pointer->u.ptr.mapLength;
     rep.length = (rep.nElts + (4-1))/4;
     WriteReplyToClient(client, sizeof(xGetPointerMappingReply), &rep);
-    (void)WriteToClient(client, rep.nElts,
+    (void)WriteToClient(client, (int)rep.nElts,
 			(char *)&inputInfo.pointer->u.ptr.map[1]);
     return Success;    
 }

@@ -279,11 +279,11 @@ sunRealizeCursor (pScreen, pCursor)
 		     pCursor->backBlue, &pPriv->bg))
 	goto cleanup3;
     tGC1 = sunCreatePrivGC((DrawablePtr)pScreen->devPrivate,
-			   GCForeground, (long *)&pPriv->fg, &status);
+			   GCForeground, (XID *)&pPriv->fg, &status);
     if (!tGC1)
 	goto cleanup3;
     tGC2 = sunCreatePrivGC((DrawablePtr)pScreen->devPrivate,
-			   GCForeground, (long *)&pPriv->bg, &status);
+			   GCForeground, (XID *)&pPriv->bg, &status);
     if (!tGC2) {
 cleanup4:
 	FreeScratchGC(tGC1);

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swaprep.c,v 1.33 89/03/18 16:20:52 rws Exp $ */
+/* $XConsortium: swaprep.c,v 1.34 89/03/22 07:22:01 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1308,7 +1308,7 @@ WriteSConnectionInfo(pClient, size, pInfo)
 	    }
 	}
     }
-    (void)WriteToClient(pClient, size, (char *) pInfoTBase);
+    (void)WriteToClient(pClient, (int)size, (char *) pInfoTBase);
     DEALLOCATE_LOCAL(pInfoTBase);
 }
 
