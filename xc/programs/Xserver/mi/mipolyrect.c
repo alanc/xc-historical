@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolyrect.c,v 5.1 89/07/14 17:14:10 keith Exp $ */
+/* $XConsortium: mipolyrect.c,v 5.2 90/11/19 15:16:14 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "miscstruct.h"
@@ -38,7 +38,8 @@ miPolyRectangle(pDraw, pGC, nrects, pRects)
     int i;
     xRectangle *pR = pRects;
 
-    if (pGC->lineStyle == LineSolid && pGC->joinStyle == JoinMiter)
+    if (pGC->lineStyle == LineSolid && pGC->joinStyle == JoinMiter &&
+	pGC->lineWidth != 0)
     {
 	xRectangle  *tmp, *t;
 	int	    ntmp;
