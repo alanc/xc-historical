@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.5 94/01/19 21:06:03 converse Exp $ */
+/* $XConsortium: xsmclient.c,v 1.6 94/01/19 21:16:55 converse Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -39,7 +39,9 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <X11/Xaw/Cardinals.h>
 #include <X11/SM/SMlib.h>
 #include <stdio.h>
+#ifndef X_NOT_POSIX
 #include <unistd.h>
+#endif
 #include <sys/param.h>
 
 extern Status XtInitializeICE ();
@@ -127,6 +129,7 @@ SaveState()
 
     props[nprops++] = &Program;
 
+#ifndef X_NOT_POSIX
     CurrentDirectory.name = "CurrentDirectory";
     CurrentDirectory.type = "ARRAY8";
     CurrentDirectory.num_vals = 1;
@@ -136,6 +139,7 @@ SaveState()
     CurrentDirectory_val.length = strlen (CurrentDirectory_val.value);
 
     props[nprops++] = &CurrentDirectory;
+#endif
 
     RestartCommand.name = "RestartCommand";
     RestartCommand.type = "ARRAY8";
@@ -700,7 +704,12 @@ char **argv;
 
     cwdDataLabel = XtVaCreateManagedWidget (
 	"cwdDataLabel", labelWidgetClass, mainWindow,
-	XtNlabel, getcwd((char *)NULL, MAXPATHLEN),
+	XtNlabel,
+#ifndef X_NOT_POSIX
+	getcwd((char *)NULL, MAXPATHLEN),
+#else
+	"unknown-cwd"
+#endif
         XtNfromHoriz, cwdLabel,
         XtNfromVert, testLabel,
         XtNborderWidth, 0,
