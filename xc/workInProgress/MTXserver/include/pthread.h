@@ -1,3 +1,4 @@
+/* $XConsortium: dix.h,v 1.1 94/03/17 11:35:18 dpw Exp $ */
 
 /*
  *
