@@ -1065,29 +1065,28 @@
 	 ,(when multiple-p
 	    `(case ,event-key
 	       ,@(do ((keys event-keys (cdr keys))
-		      (result nil) ;; alist of (binding-code . event-keys))
-		      (event-key)
+		      (clauses nil) ;; alist of (event-keys bindings)
+		      (clause nil nil)
 		      (temp))
 		     ((endp keys)
-		      ;; Reverse result into a case clause
-		      (do ((clause (nreverse result) (cdr clause))
-			   (code nil))
-			  ((endp clause) code)
-			(push `(,(if (cddar clause)
-				     (cdar clause)
-				     (cadar clause))
-				,(caar clause))
-			      code)))
-		   (setq event-key (car keys))
+		      (dolist (clause clauses)
+			(unless (cdar clause) ;; Atomize single element lists
+			  (setf (car clause) (caar clause))))
+		      clauses)
+		   ;; Gather up all the bindings associated with (car keys)
 		   (dolist (var vars)
-		     (when (cddr var) ;; more than one binding form
-		       (dolist (code (cdr var))
-			 (let* ((var-name (var-symbol (car var)))
-				(var-code `(setq ,var-name ,(cdr code))))
-			   (when (member event-key (car code))
-			     (if (setq temp (assoc var-code result :test #'equal))
-				 (push event-key (cdr temp))
-			       (push `(,var-code ,event-key) result))))))))))
+		     (when (cddr var) ;; when more than one binding form
+		       (dolist (events (cdr var))
+			 (when (member (car keys) (car events))
+			   ;; Optimize for event-window being the same as some other binding
+			   (if (setq temp (member (cdr events) clause :key #'caddr :test #'equal))
+			       (setq clause (nconc clause `((setq ,(car var) ,(second (car temp))))))
+			     (push `(setq ,(car var) ,(cdr events)) clause))))))
+		   ;; Merge bindings for (car keys) with other bindings
+		   (when clause
+		     (if (setq temp (member clause clauses :key #'cdr :test #'equal))
+			 (push (car keys) (caar temp))
+		       (push `((,(car keys)) . ,clause) clauses))))))
 	 ,@body))))
 
 
