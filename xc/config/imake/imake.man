@@ -52,7 +52,7 @@ IMAKEINCLUDE.
 Template file.
 Specifies the template file to be initially included by cpp,
 instead of the default file
-.I Imake.template.
+.I Imake.tmpl.
 .TP 5
 .B \-f imakefile
 File.
@@ -110,7 +110,7 @@ flag or from the content of the current directory, depending
 on whether Imakefile or imakefile exist.
 We shall call this \fI<imakefile>\fP.
 It also determines the name of the template
-from the command line \-T flag or the default, Imake.template.
+from the command line \-T flag or the default, Imake.tmpl.
 Call this \fI<template>\fP.
 .PP
 The program then examines the imakefile looking for any lines
