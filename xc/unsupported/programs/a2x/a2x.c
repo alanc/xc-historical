@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.72 92/06/27 20:05:24 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.73 92/07/01 21:22:44 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -31,8 +31,8 @@ Syntax of magic values in the input stream:
 ^T^D<dx> <dy>^T		move mouse by (<dx>, <dy>) pixels
 ^T^E			exit the program
 ^T^F<options>^T
-	a		abort recording of macro
 	r		start recording macro
+	a		abort recording of macro
 	s<digit>	save recording as macro <digit>
 	e<digit>	execute macro <digit>
 ^T^J<options>[ <mult>]^T
