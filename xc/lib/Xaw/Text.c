@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.119 89/10/19 15:00:55 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.120 89/11/01 17:00:32 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -2096,10 +2096,10 @@ static Boolean
 RectanglesOverlap(rect1, rect2)
 XRectangle *rect1, *rect2;
 {
-  return ( (rect1->x + rect1->width <= rect2->x) ||
-	   (rect1->x >= rect2->x + rect2->width) ||
-	   (rect1->y + rect1->height <= rect2->y) ||
-	   (rect1->y >= rect2->y + rect2->height) );
+  return ( (rect1->x < rect2->x + rect2->width) &&
+	   (rect2->x < rect1->x + rect1->width) &&
+	   (rect1->y < rect2->y + rect2->height) &&
+	   (rect2->y < rect1->y + rect1->height) );
 }
 
 /*	Function Name: UpdateTextInRectangle.
