@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.h,v 1.1 89/09/27 19:10:26 converse Exp $
+ * $XConsortium: actions.h,v 1.2 89/11/16 21:01:41 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,7 +39,6 @@ extern void	XmhDeleteFolder();
 extern void	XmhPopupFolderMenu();
 extern void	XmhSetCurrentFolder();
 extern void	XmhLeaveFolderButton();
-extern void	XmhOpenFolderFromMenu();
 extern void 	XmhPushFolder();
 extern void	XmhPopFolder();
 
@@ -76,7 +75,6 @@ extern void	XmhUseAsComposition();
 extern void	XmhPrint();
 extern void	XmhPickMessages();
 extern void	XmhOpenSequence();
-extern void	XmhOpenSequenceFromSequenceMenu();
 extern void	XmhAddToSequence();
 extern void	XmhRemoveFromSequence();
 extern void	XmhDeleteSequence();

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.24 89/11/21 15:34:02 converse Exp $
+ * $XConsortium: folder.c,v 2.26 89/11/25 21:05:55 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -144,37 +144,30 @@ void XmhOpenFolder(w, event, params, num_params)
     String	*params;	/* unused */
     Cardinal	*num_params;	/* unused */
 {
-    /* To be invoked by folder menu buttons that do not have menus, or
-     * by keyboard translations, or by any widget's translations except
-     * the folder menu itself.  An argument to this routine is taken as
-     * the name of a folder to select and open.
+    Scrn	scrn = ScrnFromWidget(w);
+
+    /* This action may be invoked from folder menu buttons or from folder
+     * menus, as an action procedure on an event specified in translations.
+     * In this case, the action will open a folder only if that folder
+     * was actually selected from a folder button or menu.  If the folder
+     * was selected from a folder menu, the menu entry callback procedure,
+     * which changes the selected folder, and is invoked by the "notify" 
+     * action, must have already executed; and the menu entry "unhightlight"
+     * action must execute after this action.
+     *
+     * This action does not execute if invoked as an accelerator whose
+     * source widget is a menu button or a folder menu.  However, it 
+     * may be invoked as a keyboard accelerator of any widget other than
+     * the folder menu buttons or the folder menus.  In that case, it will
+     * open the currently selected folder.
+     *
+     * If given a parameter, it will take it as the name of a folder to
+     * select and open.
      */
 
-    Scrn 	scrn = ScrnFromWidget(w);
-
+    if (! UserWantsAction(w, scrn)) return;
     if (*num_params) SetCurrentFolderName(scrn, params[0]);
     DoOpenFolder(w, (XtPointer) scrn, (XtPointer) NULL);
-}
-
-
-/*ARGSUSED*/
-void XmhOpenFolderFromMenu(w, event, vector, count)
-    Widget	w;
-    XEvent	*event;
-    String	*vector;
-    Cardinal	*count;
-{
-    /* To be invoked by special translations on folder menus.  This 
-     * action will open a folder only if that folder was actually
-     * selected from the widget, which must be the menu containing
-     * the folder entry.  The menu entry callback procedure, which
-     * changes the selected folder, and is invoked by the ``notify'' 
-     * action, must have already executed; and the menu entry 
-     * ``unhightlight'' action must execute after this action.
-     */
-
-    if (XawSimpleMenuGetActiveEntry(w) != NULL)
-	XmhOpenFolder(w, event, vector, count);
 }
 
 
@@ -722,7 +715,7 @@ static void DeleteFolderMenuEntry(button, foldername)
  *	the first reference to it, by this routine.  If there are no 
  *	subfolders, this routine will mark the folder as having no 
  *	subfolders, and no menu will be built.  In that case, the menu
- *	button emulates a command button.  Wwhen subfolders exist,
+ *	button emulates a command button.  When subfolders exist,
  *	the menu will popup, using the menu button action PopupMenu.
  */
 
@@ -772,7 +765,7 @@ void XmhSetCurrentFolder(w, event, vector, count)
     Scrn	scrn;
 
     /* The MenuButton widget has a button grab currently active; the
-     * currently selected folder will be updated if hte user has released
+     * currently selected folder will be updated if the user has released
      * the mouse button while the mouse pointer was on the same menu button
      * widget that orginally activated the button grab.  This mechanism is
      * insured by the XmhPopupFolderMenu action setting LastMenuButtonPressed.

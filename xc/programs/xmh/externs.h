@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.28 89/11/20 21:05:27 converse Exp $
+ * $XConsortium: externs.h,v 2.29 89/11/25 21:07:25 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -92,6 +92,7 @@ extern Scrn	ScrnFromWidget		(/* Widget */);
 
 	/* from tocfuncs.c */
 
+extern Boolean	UserWantsAction		(/* Widget, Scrn */);
 extern void 	DoIncorporateNewMail	(/* Widget, XtPointer, XtPointer */);
 extern void 	DoCommit		(/* Widget, XtPointer, XtPointer */);
 extern void	DoPack			(/* Widget, XtPointer, XtPointer */);

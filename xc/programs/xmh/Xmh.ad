@@ -80,7 +80,7 @@ Xmh*folders*MenuButton.Translations:#override\n\
 <LeaveWindow>:reset()XmhLeaveFolderButton()\n
 
 Xmh*folders*SimpleMenu.Translations:#override\n\
-<Btn2Up>:XtMenuPopdown()notify()XmhOpenFolderFromMenu()unhighlight()\n\
+<Btn2Up>:XtMenuPopdown()notify()XmhOpenFolder()unhighlight()\n\
 <Btn3Up>:XtMenuPopdown()XmhPushFolder()notify()XmhMarkMove()XmhPopFolder()unhighlight()\n\
 <BtnUp>:XtMenuPopdown()notify()unhighlight()\n
 

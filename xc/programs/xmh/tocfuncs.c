@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocfuncs.c,v 2.26 89/11/16 21:04:16 converse Exp $
+ * $XConsortium: tocfuncs.c,v 2.27 89/11/25 21:06:27 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -31,7 +31,7 @@
 
 #define MAX_SYSTEM_LEN 510
 
-static Boolean UserWantsAction(w, scrn) /* general action procedure "filter" */
+Boolean UserWantsAction(w, scrn) /* general action procedure "filter" */
     Widget	w;
     Scrn	scrn;
 {
