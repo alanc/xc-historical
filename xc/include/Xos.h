@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.35 91/03/27 18:41:47 gildea Exp $
+ * $XConsortium: Xos.h,v 1.36 91/03/28 14:36:30 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -54,7 +54,7 @@
 
 #ifndef X_NOT_STDC_ENV
 #include <string.h>
-#ifdef _XOS_STR_FUNCS
+#ifndef _XOS_STR_FUNCS
 #define index strchr
 #define rindex strrchr
 #else
@@ -63,7 +63,7 @@
 #endif
 #else
 #include <strings.h>
-#ifdef _XOS_STR_FUNCS
+#ifndef _XOS_STR_FUNCS
 #define strchr index
 #define strrchr rindex
 #else
