@@ -1,4 +1,4 @@
-/* $XConsortium: redefine.c,v 1.2 93/10/26 10:07:07 rws Exp $ */
+/* $XConsortium: redefine.c,v 1.3 93/10/27 21:52:44 rws Exp $ */
 
 /**** module redefine.c ****/
 /******************************************************************************
@@ -54,7 +54,6 @@ terms and conditions:
 static int BuildRedefineFlograph();
 
 static XiePhotomap XIEPhotomap;
-static XieLTriplet levels;
 XieLut XIELut;
 static int monoflag = 0;
 static XiePhotoElement *flograph1;
