@@ -1,4 +1,4 @@
-/* $XConsortium: lcConv.c,v 1.1 93/09/17 13:29:50 rws Exp $ */
+/* $XConsortium: lcConv.c,v 1.2 93/09/17 14:24:03 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by TOSHIBA Corp.
@@ -90,7 +90,7 @@ _XlcSetConverter(from_lcd, from, to_lcd, to, converter)
     char *from;
     XLCd to_lcd;
     char *to;
-    XlcConv (*converter)();
+    XlcOpenConverterProc converter;
 {
     register XlcConverterList list;
     register XrmQuark from_type, to_type;
