@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: bits.h,v 1.1 93/07/19 10:15:12 rws Exp $ */
 /**** module fax/bits.h ****/
 /******************************************************************************
 				NOTICE
@@ -99,8 +99,10 @@ terms and conditions:
 		goal = FAX_GOAL_RecoverZero;				\
 	        break;							\
 	      }								\
-	      else							\
-	        return(-1);						\
+              else {                                                    \
+                goal = FAX_GOAL_FallOnSword;                            \
+                break;                                                  \
+              }                                                         \
 	    }								\
 	    if (rl != EOL_RUN_LENGTH)					\
 	      length_acc += rl;						\
@@ -128,8 +130,10 @@ terms and conditions:
 		goal = FAX_GOAL_RecoverZero;				\
 	        break;							\
 	      }								\
-	      else							\
-	        return(-1);						\
+              else {                                                    \
+                goal = FAX_GOAL_FallOnSword;                            \
+                break;                                                  \
+              }                                                         \
 	    }								\
 	    if (rl != EOL_RUN_LENGTH)					\
 	      length_acc += rl;						\

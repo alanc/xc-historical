@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: g31d.c,v 1.1 93/07/19 10:14:45 rws Exp $ */
 /**** module fax/g31d.c ****/
 /******************************************************************************
 				NOTICE
@@ -49,7 +49,7 @@ terms and conditions:
 *****************************************************************************/
 
 
-#define xoft_verbose_not
+#define lenient_decoder
 
 
 /* the folling define causes extra stuff to be saved in state recorder */
@@ -71,6 +71,7 @@ register unsigned char *byteptr;
 register unsigned char *endptr;
 register int a0_color;
 register int a0_pos;
+register int a1_pos;
 register int goal;
 register int mode;	/* could overload goal, but will resist */
 register int length;
@@ -132,7 +133,7 @@ int	magic_blab = 0;
 		}
 		if (byteptr == endptr) {
 			state->decoder_done = FAX_DECODE_DONE_ErrorSkipPast;
-			exit(1);
+			return(lines_found);
 		}
 	    	nbits  = _WhiteFaxTable[code].n_bits;
 	    	goal = FAX_GOAL_StartNewLine;
@@ -156,9 +157,10 @@ int	magic_blab = 0;
  		 	adjust_1bit(byteptr,bitpos,endptr);
 		}
 		if (byteptr == endptr) {
-			printf(" program error, byteptr 0x%x = endptr 0x%x\n",
-				byteptr,endptr);
-			exit(1);
+		    printf(" program error, byteptr 0x%x = endptr 0x%x\n",
+			byteptr,endptr);
+		    state->decoder_done =  FAX_DECODE_DONE_ErrorBadPtr;
+		    return(lines_found);
 		}
 	    	nbits  = _WhiteFaxTable[code].n_bits;
 	    	goal = FAX_GOAL_StartNewLine;
@@ -190,7 +192,7 @@ int	magic_blab = 0;
 	  case  FAX_GOAL_RecoverZero:
 
 #ifndef old_yucko_code
-	    goal = FAX_GOAL_SeekFillAndEOL;
+	    goal = FAX_GOAL_SkipPastAnyToEOL;
 	    break;
 #else
 	    /* have to set new goal in case adjusting throws us	*/
@@ -269,6 +271,19 @@ int	magic_blab = 0;
 		/* we want to jump to state FAX_GOAL_RecordA0A1 when	*/
 		/* we reenter the decoder.				*/
 
+	  case FAX_GOAL_FallOnSword:
+	    if (goal == FAX_GOAL_FallOnSword) {
+#if defined(lenient_decoder)
+	        goal = FAX_GOAL_SkipPastAnyToEOL;
+	        ++lines_found;
+	        break;
+
+#else
+		state->decoder_done = FAX_DECODE_DONE_ErrorBadCode;
+		return(lines_found);
+#endif
+	    }
+
 	  case  FAX_GOAL_RecordA0A1:
 	    a0a1 = length_acc;
 	    if (a0a1 < 0) {
@@ -280,7 +295,7 @@ int	magic_blab = 0;
 	    if (a0_pos < 0) {
 		/* at start of line, a0a1 is the number of white pixels,  */
 		/* which is also the index on the line where white->black */
-		new_trans[n_new_trans++] = a0a1;
+		new_trans[n_new_trans++] = a1_pos = a0a1;
 	    } else {
 		/* in middle of the line, a0a1 is run-length, so
 		 * a1_pos = a0_pos + a0a1, a2_pos = a1_pos + a1a2
@@ -289,7 +304,21 @@ int	magic_blab = 0;
 		 *    |w |w |w |b |b |b |b |b |w |  |  |  |  |
 		 *     a0       a1             a2
 		 */ 
-		new_trans[n_new_trans++] = a0_pos + a0a1;
+		new_trans[n_new_trans++] = a1_pos = a0_pos + a0a1;
+	    }
+	    if (a1_pos >= width) {
+		if (a1_pos > width) {
+#if defined(lenient_decoder)
+		   /* we went too far, but we'll be forgiving */
+		   a1_pos = width;
+#else
+		   state->decoder_done = FAX_DECODE_DONE_ErrorPastWidth;
+		   return(lines_found);
+#endif
+		}
+	        ++lines_found;
+	        goal = FAX_GOAL_SkipPastAnyToEOL;
+		break;
 	    }
 	    if (new_trans[n_new_trans-1] < 0){
 	       printf(" program error, bad transition position\n");
@@ -310,7 +339,7 @@ int	magic_blab = 0;
 	        /* variable number of zeros, which is legal according to    */
 	        /* the coding spec.  So we will record the increment in     */
 	        /* line number and then attempt to recover.		    */
-	        goal = FAX_GOAL_SeekFillAndEOL;
+	        goal = FAX_GOAL_SkipPastAnyToEOL;
 	        ++lines_found;
 	        break;
 			/* break out of the switch, loop with the while */
@@ -377,12 +406,22 @@ int	magic_blab = 0;
 	    /* variable number of zeros, which is legal according to	*/
 	    /* the coding spec.  So we will update the line count and	*/
 	    /* then attempt to recover.					*/
-	    if (goal == FAX_GOAL_RecoverZero) {
-	        /* assume we have hit the begining of an EOL */
-	        goal = FAX_GOAL_SeekFillAndEOL;
+	    if (goal == FAX_GOAL_FallOnSword) {
+#if defined(lenient_decoder)
+	        goal = FAX_GOAL_SkipPastAnyToEOL;
 	        ++lines_found;
-		printf(" hit zero, assuming it starts an EOL, %dlines\n",
-			lines_found);
+	        break;
+
+#else
+		state->decoder_done = FAX_DECODE_DONE_ErrorBadCode;
+		return(lines_found);
+#endif
+	    }
+	    if (goal == FAX_GOAL_RecoverZero ) {
+	        /* assume we have hit the begining of an EOL */
+	        /* goal = FAX_GOAL_SeekFillAndEOL; */
+	        goal = FAX_GOAL_SkipPastAnyToEOL;
+	        ++lines_found;
 	        break;
 	    }
 	    if (rl == EOL_RUN_LENGTH) {
@@ -394,13 +433,19 @@ int	magic_blab = 0;
 	    }
 	    if (a0_pos >= width) {
 		if (a0_pos > width) {
+#if defined(lenient_decoder)
+		   /* we went too far, but we'll be forgiving */
+		   a0_pos = width;
+#else
 		   state->decoder_done = FAX_DECODE_DONE_ErrorPastWidth;
 		   return(lines_found);
+#endif
 		}
 	        ++lines_found;
 		if (state->decoder_done)
 	    		save_state_and_return(state);
-		goal = FAX_GOAL_SeekFillAndEOL;
+		/* goal = FAX_GOAL_SeekFillAndEOL; */
+	        goal = FAX_GOAL_SkipPastAnyToEOL;
 		break;
 	    }
 	    else {

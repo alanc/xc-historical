@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: fax.h,v 1.1 93/07/19 10:17:03 rws Exp $ */
 /**** module fax.h ****/
 /******************************************************************************
 				NOTICE
@@ -95,6 +95,7 @@ int decode_g31d();
 #define FAX_GOAL_FoundOneEOL			24
 #define FAX_GOAL_SkipPastAnyToEOL		25
 #define FAX_GOAL_SeekFillAndEOL			26
+#define FAX_GOAL_FallOnSword			27
 
 #define FAX_DECODE_DONE_NOT			0
 #define FAX_DECODE_DONE_OK			1
@@ -104,6 +105,8 @@ int decode_g31d();
 #define FAX_DECODE_DONE_ErrorBadMagic		5
 #define FAX_DECODE_DONE_ErrorBadStripper	6
 #define FAX_DECODE_DONE_ErrorPastWidth		7
+#define FAX_DECODE_DONE_ErrorBadCode		8
+#define FAX_DECODE_DONE_ErrorBadPtr		9
 
 #if defined(XoftWare) && defined(HandleTiffStrips)
 #define FAX_GOAL_StripEnd1stAdj  31

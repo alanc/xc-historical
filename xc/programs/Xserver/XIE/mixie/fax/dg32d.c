@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: g32d.c,v 1.1 93/07/19 10:14:53 rws Exp $ */
 /**** module fax/g32d.c ****/
 /******************************************************************************
 				NOTICE
@@ -49,6 +49,7 @@ terms and conditions:
 *****************************************************************************/
 
 #define RETURN_after_anything 0
+#define lenient_decoder
 
 #define use_verbosity_groups_not
 #define vbdecoder 0
@@ -73,7 +74,7 @@ register int bitpos;
 register unsigned char *byteptr;
 register unsigned char *endptr;
 register int a0_color;
-register int a0_pos;
+register int a0_pos,a1_pos;
 register int goal;
 register int mode;	/* could overload goal, but will resist */
 register int length;
@@ -100,20 +101,12 @@ int	magic_blab = 0;
 	/* set up initial bitstream for the very first strip */
 	if (!state->bits.started) {
 	    if (state->strip_state != StripStateNew) {
-	       if (vbdecoder || be_verbose(decoder)) 
-	 	 printf(" %s%d,program error, unexpected strip state\n",
-			__FILE__,__LINE__,state->strip_state);
 	       return(-1);
 	    }
 	    state->bits.byteptr = (unsigned char *)state->strip;
 	    state->bits.endptr  = state->bits.byteptr + state->strip_size-4;
 	       /* we will panic with four bytes to go */
 
-	    if (vbdecoder || be_verbose(decoder)) {
-		printf(" started a bitstream for strip 0x%x, len %d\n",
-			state->strip,
-			state->strip_size);
-	    }
 	    state->bits.bitpos = 0;
 	    state->bits.started = 1;
 	}
@@ -124,105 +117,55 @@ int	magic_blab = 0;
 	    finish_magic(state->final);
 		/* a magic strip was waiting for 1st word of next strip */
 
-	if (vbdecoder || be_verbose(decoder)) {
-	    printf(" seeking to decode %d lines\n",state->nl_sought);
-	    printf(" bitstream is at 0x%x + %d bits, limit 0x%x\n",
-		byteptr,bitpos,endptr);
-	    printf(" four bytes starting at 0x%x are %x %x %x %x\n",
-		byteptr,*byteptr,*(byteptr+1),*(byteptr+2),*(byteptr+3));
-	    fflush(stdout);
-	}
 
 /***	Main Decoding Loop	***/
 	while(1) {
-	  set_verbosity_group_level(decoder,3);
-	  if (vbdecoder || be_verbose(decoder)) {		
-	    printf(" top of while, bitstream is 0x%x + %d bits, limit 0x%x\n",
-		byteptr,bitpos,endptr);
-	    printf(" four bytes starting at 0x%x are %x %x %x %x\n",
-		byteptr,*byteptr,*(byteptr+1),*(byteptr+2),*(byteptr+3));
-	    fflush(stdout);
+	  if (endptr < byteptr) {
+	      return(-1);
 	  }
-	  set_verbosity_group_level(decoder,2);
-	  if (vbdecoder || be_verbose(decoder))
-	  	printf(" goal is %d, lines_found is %d\n",goal,lines_found);
 	  switch(goal) {
+
+	  case FAX_GOAL_SkipPastAnyToEOL:
+		while (byteptr < endptr) {
+	    	  /* look for EOL code */
+	    	  code = get_wcode(byteptr,bitpos,endptr);
+	    	  rl     = _WhiteFaxTable[code].run_length;
+	      	  if (rl == EOL_RUN_LENGTH) 
+			break;
+		  else
+			/* move bitstream one bit further and try again */
+ 		 	adjust_1bit(byteptr,bitpos,endptr);
+		}
+		if (byteptr == endptr) {
+			state->decoder_done = FAX_DECODE_DONE_ErrorSkipPast;
+			exit(1);
+		}
+	    	nbits  = _WhiteFaxTable[code].n_bits;
+	    	goal = FAX_GOAL_SeekTagBit;
+	    	adjust_bitstream(nbits,byteptr,bitpos,endptr);
+		break;
+
 	  case FAX_GOAL_SeekEOLandTag:
-	    /* look for EOL code */
-	    code = get_wcode(byteptr,bitpos,endptr);
-	    rl     = _WhiteFaxTable[code].run_length;
-	    if (rl != EOL_RUN_LENGTH) {
-	        if (vbdecoder || be_verbose(decoder)) {
-		  printf(" Rats, didn't get EOL_RUN_LENGTH\n");
-	          printf(" %s(%d):get_wcode got code 0x%x\n",
-			__FILE__,__LINE__,code);
-	          printf(" byteptr %x, endptr %x, bitpos %x, = %x%x%x\n",
-	      	     byteptr,endptr,bitpos,*byteptr,*(byteptr+1),*(byteptr+2));
-		  printf(" probably must skip variable number of fill bits\n");
-	        }
-	        return(-1);
-	    }
-	    set_verbosity_group_level(decoder,3);
-	    if (vbdecoder || be_verbose(decoder)) {
-	         printf(" wow! got the EOL!\n");
-	         fflush(stdout);
-	    }
-	    nbits  = _WhiteFaxTable[code].n_bits;
-	    if (vbdecoder || be_verbose(decoder)) {
-	         printf(" adjusting %d bits\n",nbits);
-	          printf(" byteptr %x, endptr %x, bitpos %x, = %x%x%x\n",
-	      	     byteptr,endptr,bitpos,*byteptr,*(byteptr+1),*(byteptr+2));
-	    }
-	    set_verbosity_group_level(decoder,2);
-
-	    goal =  FAX_GOAL_SeekTagBit;
-		/*  must set goal in case adjusting causes a return 	*/
-		/*  to get more data.  The adjust will be finished  	*/
-		/*  on entry to this routine,  then we need to 		*/
-		/*  switch to the position after the adjust bitstream 	*/
-
-	    adjust_bitstream(nbits,byteptr,bitpos,endptr);
+	    goal =  FAX_GOAL_SkipPastAnyToEOL;
+	    break;
 
 	    case FAX_GOAL_SeekTagBit:
-	    set_verbosity_group_level(decoder,3);
-	    if (vbdecoder || be_verbose(decoder)) {
-	         printf(" after adjusting for the 12 EOL bits,\n");
-	          printf(" byteptr %x, endptr %x, bitpos %x, = %x%x%x\n",
-	      	     byteptr,endptr,bitpos,*byteptr,*(byteptr+1),*(byteptr+2));
-	    }
 	    if (get_bit(byteptr,bitpos,endptr)) {
-	       	if (vbdecoder || be_verbose(decoder)) 
-	           printf(" tag bit is on,  in horizontal mode\n");
 		g32d_horiz = 1;
 	    }
 	    else {
-	       	if (vbdecoder || be_verbose(decoder)) 
-	       	    printf(" tag bit is off, in vertical mode\n");
 		g32d_horiz = 0;
 	    }
-	    set_verbosity_group_level(decoder,2);
 	    goal = FAX_GOAL_AdjustTag;
 		/* have to set this goal in case adjusting throws us 
 		   back to the caller in order  to get more data. */
 
-	    set_verbosity_group_level(decoder,3);
 	    adjust_1bit(byteptr,bitpos,endptr);
 	    case FAX_GOAL_AdjustTag:
 
 		
-	    set_verbosity_group_level(decoder,3);
-	    if (vbdecoder || be_verbose(decoder)) {
-	         printf(" after adjusting past tag bits\n");
-	          printf(" byteptr %x, endptr %x, bitpos %x, = %x %x %x %x\n",
-	      	     byteptr,endptr,bitpos,*byteptr,*(byteptr+1),
-			*(byteptr+2),*(byteptr+3));
-	    }
-	    set_verbosity_group_level(decoder,2);
 	    /*** ok, now start a new line ***/
 	    goal = FAX_GOAL_StartNewLine;
-#if RETURN_after_anything
-	    save_state_and_return(state);
-#endif
 	    break;
 
 	  case FAX_GOAL_StartNewLine:
@@ -247,30 +190,18 @@ int	magic_blab = 0;
 	        goal = FAX_GOAL_DetermineMode;
 
 	    reset_transitions();
-	    set_verbosity_group_level(decoder,3);
-	    if (vbdecoder || be_verbose(decoder)) {
-		printf(" new goal is %s\n",
-		  goal == FAX_GOAL_HandleHoriz ? "Handle Horizontal" :
-		  "Determine Mode");
-		fflush(stdout);
-	    }
-	    set_verbosity_group_level(decoder,2);
-#if RETURN_after_anything
-	    save_state_and_return(state);
-#endif
 	    break;
 	  case FAX_GOAL_DetermineMode:
 	    get_mode_and_length(mode,length,byteptr,bitpos,endptr); 
 	    goal = mode;
 		/* our goal is now to handle whatever mode we're in! */
 
-	    set_verbosity_group_level(decoder,3);
-	    if (mode != FAX_MODE_Unknown) 
+	    if (mode == FAX_MODE_Unknown)  {
+		/* hopefully, we just hit the first 0 in an EOL */
+		goal = FAX_GOAL_SeekEOLandTag;
+	    }
+	    else
 	         adjust_bitstream_8(length,byteptr,bitpos,endptr);
-	    set_verbosity_group_level(decoder,2);
-#if RETURN_after_anything
-	    save_state_and_return(state);
-#endif
 	    break;
 
 	  case  FAX_GOAL_RecoverZero:
@@ -323,52 +254,27 @@ int	magic_blab = 0;
 	    /* one the way.  If this is a normal EOL,  next code will not   */
 	    /* be an EOL,  and we should interpret the next bit as tag bit  */
 
-	    if (vbdecoder || be_verbose(decoder)) {
-	      printf(" Well, I guess I found one EOL!\n");
-	      printf(" bitstream is 0x%x+%d bits, limit 0x%x\n",
-		byteptr,bitpos,endptr);
-	      printf(" four bytes starting at 0x%x are %x %x %x %x\n",
-		byteptr,*byteptr,*(byteptr+1),*(byteptr+2),*(byteptr+3));
-	      fflush(stdout);
-	    }
 
 	    /* look for second EOL code */
 	    code = get_wcode(byteptr,bitpos,endptr);
-	    if (vbdecoder || be_verbose(decoder))
-	         printf(" %s(%d): get_wcode got code 0x%x\n",
-			__FILE__,__LINE__,code);
 	    rl = _WhiteFaxTable[code].run_length;
-	    set_verbosity_group_level(decoder,2);
 	    if (rl != EOL_RUN_LENGTH) {
-	    	if (vbdecoder || be_verbose(decoder)) {
-		 printf(" Didn't get second EOL_RUN_LENGTH\n");
-		 printf(" I assume that means this is a normal EOL\n");
-		}
 	        goal =  FAX_GOAL_SeekTagBit;
 		break;
 	    }
 
 	    /* Got a second EOL code */
-	    printf(" Got a second EOL code!!!\n");
-	    exit(0);
+	    return(-1);
 	    break;
 
 	  case  FAX_GOAL_HandleHoriz: 
-	    if (vbdecoder || be_verbose(decoder)) {
-		printf(" wow! I'm in horizontal mode!\n");
-	    }
 	    length_acc=0;
 	    goal = FAX_GOAL_AccumulateA0A1;
 		/* in case I run out of data while getting a0-a1 distance */
 
-#if RETURN_after_anything
-	    save_state_and_return(state);
-#endif
 
 	  case FAX_GOAL_AccumulateA0A1:
-	    set_verbosity_group_level(decoder,3);
 	    get_a0a1(FAX_GOAL_RecordA0A1);
-	    set_verbosity_group_level(decoder,2);
 		/* If we have to return for data before getting the 	*/
 		/* whole a0a1 distance, we want to return to the a0a1	*/
 		/* accumulate state when we reenter the decoder. If	*/
@@ -382,7 +288,7 @@ int	magic_blab = 0;
 	    if (a0_pos < 0) {
 		/* at start of line, a0a1 is the number of white pixels,  */
 		/* which is also the index on the line where white->black */
-		new_trans[n_new_trans++] = a0a1;
+		new_trans[n_new_trans++] = a1_pos = a0a1;
 	    } else {
 		/* in middle of the line, a0a1 is run-length, so
 		 * a1_pos = a0_pos + a0a1, a2_pos = a1_pos + a1a2
@@ -391,7 +297,21 @@ int	magic_blab = 0;
 		 *    |w |w |w |b |b |b |b |b |w |  |  |  |  |
 		 *     a0       a1             a2
 		 */ 
-		new_trans[n_new_trans++] = a0_pos + a0a1;
+		new_trans[n_new_trans++] = a1_pos = a0_pos + a0a1;
+	    }
+	    if (a1_pos >= width) {
+		if (a1_pos > width) {
+#if defined(lenient_decoder)
+		   /* we went too far, but we'll be forgiving */
+		  a1_pos = width;
+#else  /* not so lenient */
+		  state->decoder_done = FAX_DECODE_DONE_ErrorPastWidth;
+		  return(lines_found);
+#endif
+		}
+	        ++lines_found;
+		goal = FAX_GOAL_SeekEOLandTag;
+		break;
 	    }
 
 	    if (goal == FAX_GOAL_RecoverZero) {
@@ -402,6 +322,7 @@ int	magic_blab = 0;
 	        /* the coding spec.  So we will record the increment in     */
 	        /* line number and then attempt to recover.		    */
 	        ++lines_found;
+	  goal = FAX_GOAL_SkipPastAnyToEOL;
 	        break;
 			/* break out of the switch, loop with the while */
 	    }
@@ -409,9 +330,6 @@ int	magic_blab = 0;
 	    if (rl == EOL_RUN_LENGTH) {
 	        ++lines_found;
 	        goal =  FAX_GOAL_SeekTagBit;
-		if (vbdecoder || be_verbose(decoder))
-		   printf(" found an EOL while looking for a0a1 (%d)!\n",
-			a0a1);
 		/* if we got a non-zero length, remember the transition */
 		/* in case the next line is coded in vertical mode	*/
 		if (a0a1)
@@ -423,19 +341,9 @@ int	magic_blab = 0;
 		break;
 			/* break out of the switch, loop with the while */
 	    }
-	    set_verbosity_group_level(decoder,3);
-	    if (vbdecoder || be_verbose(decoder)) {
-	      printf(" a0a1 is %d!\n",a0a1);
-	      printf(" will try to finish horizontal stuff\n");
-	      fflush(stdout);
-	    }
-	    set_verbosity_group_level(decoder,2);
 	    length_acc=0;
 	    goal = FAX_GOAL_AccumulateA1A2;
 		/* in case I run out of data while getting a1-a2 distance */
-#if RETURN_after_anything
-	    save_state_and_return(state);
-#endif
 
 	  case  FAX_GOAL_AccumulateA1A2:
 	    get_a1a2(FAX_GOAL_FinishHoriz);
@@ -449,20 +357,10 @@ int	magic_blab = 0;
 
 	  case  FAX_GOAL_FinishHoriz:
 	    a1a2 = length_acc;
-	    set_verbosity_group_level(decoder,3);
-	    if (vbdecoder || be_verbose(decoder)) {
-	      printf(" a1a2 is %d!\n",a1a2);
-	      fflush(stdout);
-	    }
-	    set_verbosity_group_level(decoder,2);
 	    /* XXX - I may regret not checking for a1a2 > 0 later... */
 	    new_trans[n_new_trans] = a0_pos = new_trans[n_new_trans-1]+a1a2;
 	    n_new_trans++;
 
-	    set_verbosity_group_level(decoder,3);
-	    if (vbdecoder || be_verbose(decoder))
-	        printf("  a0_pos is now %d\n",a0_pos);
-	    set_verbosity_group_level(decoder,2);
 
 	    /* it's possible we got here by reading a zero in get_a1a2, */
 	    /* in which case 'goal' was set to FAX_GOAL_RecoverZero. We */
@@ -473,26 +371,25 @@ int	magic_blab = 0;
 	    if (goal == FAX_GOAL_RecoverZero) {
 	        /* assume we have hit the begining of an EOL */
 	        ++lines_found;
+	  	goal = FAX_GOAL_SkipPastAnyToEOL;
 	        break;
 	    }
 	    if (rl == EOL_RUN_LENGTH) {
 	        ++lines_found;
 	        goal =  FAX_GOAL_SeekTagBit;
-		if (vbdecoder || be_verbose(decoder))
-		    printf(" found an EOL while looking for a1a2!\n");
 		break;
 	    }
 	    if (a0_pos >= width) {
 		if (a0_pos > width) {
-		   if (vbdecoder || be_verbose(decoder))
-		     printf(" error, a0 (%d) spilled past width (%d)\n",
-			a0_pos,width);
-		   return(-1);
+#if defined(lenient_decoder)
+		   /* we went too far, but we'll be forgiving */
+		   a0_pos = width;
+#else
+		   state->decoder_done = FAX_DECODE_DONE_ErrorPastWidth;
+		   return(lines_found);
+#endif
 		}
 	        ++lines_found;
-		if (vbdecoder || be_verbose(decoder))
-		     printf(" found end of line %d with Horizontal!\n",
-			lines_found);
 		goal = FAX_GOAL_SeekEOLandTag;
 		break;
 	    }
@@ -502,39 +399,16 @@ int	magic_blab = 0;
 		else
 	            goal = FAX_GOAL_DetermineMode;
 	    }
-#if RETURN_after_anything
-	    save_state_and_return(state);
-#endif
 	    break;
 
 	  case FAX_MODE_Pass:
-	    set_verbosity_group_level(decoder,3);
-	    if (vbdecoder || be_verbose(decoder)) {
-	      printf(" Yoiks! I'm in pass mode!\n");
-	      fflush(stdout);
-	    }
-	    set_verbosity_group_level(decoder,2);
 	    if (!n_old_trans) {	/* line above all white */
-	      if (vbdecoder || be_verbose(decoder)) {
-		printf(" line above pass mode has no transitions - ");
-		printf(" is that legal?\n");
-		fflush(stdout);
-	      }
 	      return(-1);
 	    }
 	    find_b2pos(a0_pos,a0_color,n_old_trans,old_trans);
-	    if (vbdecoder || be_verbose(decoder))
-	        printf(" %s-%d: b2 pos returned is %d\n",
-		     __FILE__,__LINE__,b2_pos);
 
 	    a0_pos = b2_pos;
-	    set_verbosity_group_level(decoder,3);
-	    if (vbdecoder || be_verbose(decoder))
-	        printf("  after passing, a0_pos is now %d\n",a0_pos);
-	    set_verbosity_group_level(decoder,2);
 	    if (a0_pos < 0) {
-	       if (vbdecoder || be_verbose(decoder))
-	         printf(" Yoiks! pass mode yielded b2_pos of %d!\n",b2_pos);
 	       ++lines_found;
 	       goal = FAX_GOAL_SeekEOLandTag;
 	       break;
@@ -545,9 +419,6 @@ int	magic_blab = 0;
 		return(-1);
 	    }
 	    goal = FAX_GOAL_DetermineMode;
-#if RETURN_after_anything
-	    save_state_and_return(state);
-#endif
 	    break;
 
 	  case FAX_GOAL_HandleVertL3:
@@ -557,33 +428,11 @@ int	magic_blab = 0;
 	  case FAX_GOAL_HandleVertR1:
 	  case FAX_GOAL_HandleVertR2:
 	  case FAX_GOAL_HandleVertR3:
-	    set_verbosity_group_level(decoder,3);
-	    if (vbdecoder || be_verbose(decoder)) {
-	      printf(" about to try some vertical stuff\n");
-	      fflush(stdout);
-	    }
-	    set_verbosity_group_level(decoder,2);
 	    if (n_old_trans) {	/* line above not all white */
-	        set_verbosity_group_level(decoder,3);
-		if (vbdecoder || be_verbose(decoder)) {
-		   printf(" egads! line above us (at %d) not all white!\n",
-			a0_pos);
-		   printf(" number of transitions was %d, last idx %d was %d\n",
-			n_old_trans,last_b1_idx,old_trans[last_b1_idx]);
-		}
 		find_b1pos(a0_pos,a0_color,n_old_trans,old_trans);
-		if (vbdecoder || be_verbose(decoder))
-		   printf(" %s-%d: b1 pos returned is %d\n",
-		     __FILE__,__LINE__,b1_pos);
-	        set_verbosity_group_level(decoder,2);
 
 		if (b1_pos < 0) {
 		   if (goal > FAX_GOAL_HandleVert0) {
-		     if (vbdecoder || be_verbose(decoder)) {
-			printf(" got b1pos negative, vertical RIGHT mode\n");
-		        printf(" %s-%d: b1 pos is %d, a0_pos %d\n",
-		          __FILE__,__LINE__,b1_pos,a0_pos);
-		     }
 		     return(-1);	/* error! */
 		   }
 		   b1_pos = width;
@@ -608,124 +457,12 @@ int	magic_blab = 0;
 	       /* words, there are no more transitions! Done with line	 */
 
 	        ++lines_found;
-		if (vbdecoder || be_verbose(decoder))
-		   printf(" no more vertical transitions: found %d lines!!\n",
-			lines_found);
 		goal = FAX_GOAL_SeekEOLandTag;
 	    }
-#if RETURN_after_anything
-	    save_state_and_return(state);
-#endif
 	    break;
 
 	  default:
-#if defined(XoftWare) && defined(HandleTiffStrips)
-	    if (vbdecoder || be_verbose(decoder)) {
-	     printf(" Bad goal(%d), byteptr %x, endptr %x, bitpos %x %x%x%x\n",
-	      goal,byteptr,endptr,bitpos,*byteptr,*(byteptr+1),*(byteptr+2));
-	     printf(" Will hope it is a signal of an EOFB\n");
-	    }
-	    /* look for first EOL code */
-	    code = get_wcode(byteptr,bitpos,endptr);
-	    if (vbdecoder || be_verbose(decoder))
-	        printf(" %s(%d): get_wcode got code 0x%x\n",
-		   __FILE__,__LINE__,code);
-	    rl     = _WhiteFaxTable[code].run_length;
-	    if (rl != EOL_RUN_LENGTH) {
-	        if (vbdecoder || be_verbose(decoder)) {
-		  printf(" Rats, didn't get first EOL_RUN_LENGTH\n");
-	          printf(" %s(%d):get_wcode got code 0x%x\n",
-			__FILE__,__LINE__,code);
-	          printf(" byteptr %x, endptr %x, bitpos %x, = %x%x%x\n",
-	      	     byteptr,endptr,bitpos,*byteptr,*(byteptr+1),*(byteptr+2));
-	        }
-	        return(-1);
-	    }
-	    nbits  = _WhiteFaxTable[code].n_bits;
-	    if (vbdecoder || be_verbose(decoder)) {
-	         printf(" adjusting %d bits\n",nbits);
-	          printf(" byteptr %x, endptr %x, bitpos %x, = %x%x%x\n",
-	      	     byteptr,endptr,bitpos,*byteptr,*(byteptr+1),*(byteptr+2));
-	    }
-
-	    goal =  FAX_GOAL_StripEnd1stAdj;
-		/*  must set goal in case adjusting causes a return 	*/
-		/*  to get more data.  The adjust will be finished  	*/
-		/*  on entry to this routine,  then we need to 		*/
-		/*  switch to the position after the adjust bitstream 	*/
-
-	    adjust_bitstream(nbits,byteptr,bitpos,endptr);
-
-	  case FAX_GOAL_StripEnd1stAdj:
-
-	    if (vbdecoder || be_verbose(decoder)) {
-	         printf(" after adjusting %d bits,\n",nbits);
-	          printf(" byteptr %x, endptr %x, bitpos %x, = %x%x%x\n",
-	      	     byteptr,endptr,bitpos,*byteptr,*(byteptr+1),*(byteptr+2));
-	    }
-	    /* look for second EOL code */
-	    code = get_wcode(byteptr,bitpos,endptr);
-	    if (vbdecoder || be_verbose(decoder))
-	         printf(" %s(%d): get_wcode got code 0x%x\n",
-			__FILE__,__LINE__,code);
-	    rl     = _WhiteFaxTable[code].run_length;
-	    if (rl != EOL_RUN_LENGTH) {
-	        if (vbdecoder || be_verbose(decoder)) {
-		  printf(" Rats, didn't get second EOL_RUN_LENGTH\n");
-	          printf(" %s(%d):get_wcode got code 0x%x\n",
-			__FILE__,__LINE__,code);
-	          printf(" byteptr %x, endptr %x, bitpos %x, = %x%x%x\n",
-	      	     byteptr,endptr,bitpos,*byteptr,*(byteptr+1),*(byteptr+2));
-	        }
-	        return(-1);
-	    }
-	    nbits  = _WhiteFaxTable[code].n_bits;
-	    if (vbdecoder || be_verbose(decoder)) {
-	         printf(" before adjusting %d bits\n",nbits);
-	          printf(" byteptr %x, endptr %x, bitpos %x, = %x%x%x\n",
-	      	     byteptr,endptr,bitpos,*byteptr,*(byteptr+1),*(byteptr+2));
-	    }
-
-	    goal =  FAX_GOAL_StripEnd2ndAdj;
-		/*  must set goal in case adjusting causes a return 	*/
-		/*  to get more data.  The adjust will be finished  	*/
-		/*  on entry to this routine,  then we need to 		*/
-		/*  switch to the position after the adjust bitstream 	*/
-
-	    adjust_bitstream(nbits,byteptr,bitpos,endptr);
-
-	  case FAX_GOAL_StripEnd2ndAdj:
-	    if (vbdecoder || be_verbose(decoder)) {
-	         printf(" after adjusting %d bits,\n",nbits);
-	          printf(" byteptr %x, endptr %x, bitpos %x, = %x%x%x\n",
-	      	     byteptr,endptr,bitpos,*byteptr,*(byteptr+1),*(byteptr+2));
-	    }
-
-	    goal = FAX_GOAL_StripEndSkipEOL;
-		/*  must set goal in case skipping causes a return 	*/
-		/*  to get more data.  The skipping will be finished  	*/
-		/*  on entry to this routine,  then we need to 		*/
-		/*  switch to the position after the skipping 		*/
-	    skip_bits_at_eol(byteptr,bitpos,endptr);
-
-	  case FAX_GOAL_StripEndSkipEOL:
-	    
-	    if (vbdecoder || be_verbose(decoder)) {
-	         printf(" after skipping,\n",nbits);
-	          printf(" byteptr %x, endptr %x, bitpos %x, = %x%x%x\n",
-	      	     byteptr,endptr,bitpos,*byteptr,*(byteptr+1),*(byteptr+2));
-	    }
-	    magic_blab = 0;
-	    goal = FAX_GOAL_StartNewLine;
-	    if (vbdecoder || be_verbose(decoder))
-	       printf(" got EOFB!!!!!!!!!!!!\n");
-	    /* this is conclusion of the strip code */
-#else
-	    if (vbdecoder || be_verbose(decoder))
-	       printf(" error, strange goal (%d), byteptr %x, bitpos %x\n",
-		goal,byteptr,bitpos);
 	    return(-1);
-#endif
 	  break;
 	  }  /* end of switch */
 	}
