@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: RectObj.c,v 1.9 89/09/11 17:43:23 swick Exp $";
+static char Xrcsid[] = "$XConsortium: RectObj.c,v 1.10 89/09/12 16:48:15 swick Exp $";
 /* $oHeader: RectObj.c,v 1.2 88/08/18 15:51:21 asente Exp $ */
 #endif /* lint */
 
@@ -134,9 +134,11 @@ static void RectClassPartInitialize(wc)
 }
 
 /* ARGSUSED */
-static void RectObjInitialize(requested_widget, new_widget)
+static void RectObjInitialize(requested_widget, new_widget, args, num_args)
     Widget   requested_widget;
     register Widget new_widget;
+    ArgList args;
+    Cardinal *num_args;
 {
     ((RectObj)new_widget)->rectangle.managed = FALSE;
 }
