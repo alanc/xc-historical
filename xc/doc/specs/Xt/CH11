@@ -1,4 +1,4 @@
-.\" $XConsortium: CH11,v 1.7 91/08/26 13:40:14 swick Exp $
+.\" $XConsortium: CH11,v 1.8 91/08/27 10:03:30 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -1061,7 +1061,7 @@ the \*(xI selection mechanism informs the previous owner that it
 has lost ownership of the selection.
 However, in response to some user actions 
 (for example, when a user deletes the information selected),
-the application may with to explicitly inform the \*(xI that it
+the application may wish to explicitly inform the \*(xI that it
 no longer is to be the selection owner by using
 .PN XtDisownSelection .
 .IN "XtDisownSelection" "" "@DEF@"
@@ -2395,7 +2395,7 @@ The territory part of the display's language string.
 The codeset part of the display's language string.
 .IP %C 5
 The customization string retrieved from the resource
-database associated with \fIdispay\fP.
+database associated with \fIdisplay\fP.
 .LP
 If a path is passed to
 .PN XtResolvePathname ,
