@@ -92,6 +92,7 @@ typedef struct {
         CARD32  ack B32;
         CARD8   action_list[XTestMAX_ACTION_LIST_SIZE];
 } xTestFakeInputReq;
+#define sizeof_xTestFakeInputReq (XTestMAX_ACTION_LIST_SIZE + 8)
 
 typedef struct {
         CARD8   reqType;        /* always XTestReqCode  */
@@ -99,24 +100,28 @@ typedef struct {
         CARD16  length B16;     /* 2                    */
         CARD32  mode B32;
 } xTestGetInputReq;
+#define sizeof_xTestGetInputReq 8
 
 typedef struct {
         CARD8   reqType;        /* always XTestReqCode   */
         CARD8   XTestReqType;   /* always X_TestStopInput */
         CARD16  length B32;     /* 1                     */
 } xTestStopInputReq;
+#define sizeof_xTestStopInputReq 4
 
 typedef struct {
         CARD8   reqType;        /* always XTestReqCode */
         CARD8   XTestReqType;   /* always X_TestReset   */
         CARD16  length B16;     /* 1                   */
 } xTestResetReq;
+#define sizeof_xTestResetReq 4
 
 typedef struct {
         CARD8   reqType;        /* always XTestReqCode        */
         CARD8   XTestReqType;   /* always X_TestQueryInputSize */
         CARD16  length B16;     /* 1                          */
 } xTestQueryInputSizeReq;
+#define sizeof_xTestQueryInputSizeReq 4
 
 /*
  * This is the definition of the reply for the xTestQueryInputSize
