@@ -149,7 +149,7 @@ struct Timer_event *ptr;
  */
 
 XtIntervalId
-XtSetTimeOut(wID, interval)
+XtAddTimeOut(wID, interval)
 Widget wID;
 int interval;
 {
