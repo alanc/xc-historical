@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.131 91/04/14 15:43:29 rws Exp $ */
+/* $XConsortium: connection.c,v 1.132 91/05/08 10:01:49 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -160,7 +160,7 @@ open_tcp_socket ()
 #endif /* SO_LINGER */
 #endif /* SO_DONTLINGER */
 
-#if defined(AIX) && defined(IBM_OS_HAS_HFT) && !defined(IBM_OS_HAS_X_QUEUE)
+#ifdef AIXV3
 #ifndef FORCE_DISPLAY_NUM
     extern int AIXTCPSocket;
     if (AIXTCPSocket>=0) {
@@ -184,7 +184,7 @@ open_tcp_socket ()
     }
 #endif
 #endif /* SO_REUSEADDR */
-#if defined(AIX) && defined(IBM_OS_HAS_HFT) && !defined(IBM_OS_HAS_X_QUEUE)
+#ifdef AIXV3
 #ifndef FORCE_DISPLAY_NUMBER
     if (AIXTCPSocket<0)
 #endif
@@ -950,7 +950,7 @@ AttendClient (client)
     }
 }
 
-#if defined(AIX) && defined(IBM_OS_HAS_HFT) && !defined(IBM_OS_HAS_X_QUEUE)
+#ifdef AIXV3
 
 static int grabbingClient;
 static int reallyGrabbed;
