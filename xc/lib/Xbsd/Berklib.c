@@ -1,4 +1,4 @@
-/* $XConsortium: Berklib.c,v 1.23 94/04/12 17:37:27 dpw Exp $ */
+/* $XConsortium: Berklib.c,v 1.24 94/04/17 20:23:08 dpw Exp kaleb $ */
 /*
 
 Copyright (c) 1987 X Consortium
@@ -63,8 +63,8 @@ from the X Consortium.
 #define WANT_FFS
 #endif
 
-#ifdef SYSV386
 #ifdef SYSV
+#ifdef i386
 #define WANT_FFS
 #define WANT_MEMMOVE
 #endif

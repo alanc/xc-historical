@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.219 94/03/30 19:50:33 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.220 94/04/17 20:14:13 converse Exp kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -229,8 +229,10 @@ String _XtGetUserName()
 #else
     int uid;
     extern int getuid();
-#ifndef SYSV386
+#ifndef i386
+# ifndef SYSV
     extern struct passwd *getpwuid(), *getpwnam();
+# endif
 #endif
 #endif
 #if defined(sun) && defined(SVR4) && defined(XTHREADS)

@@ -1,4 +1,4 @@
-/* $XConsortium: GetDflt.c,v 1.32 93/12/06 15:17:33 kaleb Exp $ */
+/* $XConsortium: GetDflt.c,v 1.33 94/04/17 20:19:31 kaleb Exp kaleb $ */
 
 /***********************************************************
 
@@ -84,8 +84,10 @@ static char *GetHomeDir (dest, destlen)
 #else
 	int uid;
 	extern int getuid();
-#ifndef SYSV386
+#ifndef i386
+# ifndef SYSV
 	extern struct passwd *getpwuid(), *getpwnam();
+# endif
 #endif
 #endif
 #if defined(sun) && defined(SVR4) && defined(XTHREADS)
