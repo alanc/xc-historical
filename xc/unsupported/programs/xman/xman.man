@@ -190,7 +190,7 @@ X(1), X(8C), man(1), apropos(1)
 .PP
 .SH ENVIRONMENT
 DISPLAY - the default host and display to use.
-.PP
+.br
 MANPATH - the search path for manual pages.  Directories are separated by
 colons (e.g. /usr/man:/mit/kit/man:/foo/bar/man).
 .PP
@@ -201,9 +201,10 @@ and not the text of the manpages or directories.
 Protocol error upon selecting "Remove This Manpage".
 .br
 Specification of the \fImandesc\fP file format is not given in the man page.
-.PP
-.SH AUTHORS
+.SH COPYRIGHT
 Copyright 1988 by Massachusetts Institute of Technology.
 .br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHORS
 Chris Peterson, MIT Project Athena from the V10 version written by Barry
 Shein of Boston University.
