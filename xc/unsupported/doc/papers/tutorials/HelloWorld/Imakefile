@@ -8,11 +8,13 @@
           OBJS4 = hw.o
           SRCS = $(SRCS1) $(SRCS2) $(SRCS3) $(SRCS4)
 
+all:
+
 SingleProgramTarget(xhw0, $(OBJS1), $(XLIB), )
 
 SingleProgramTarget(xhw1, $(OBJS2), $(XLIB), )
 
-SingleProgramTarget(xhw3, $(OBJS3), $(XTOOLLIB) $(OLDXRMLIB) $(XLIB), )
+SingleProgramTarget(xhw3, $(OBJS3), $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB), )
 
 SingleProgramTarget(hw, $(OBJS4),, )
 
