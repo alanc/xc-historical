@@ -1680,6 +1680,7 @@ Xtransport	TRANS(LocalFuncs) = {
 	TRANS(LocalOpenCLTSServer),
 	TRANS(LocalSetOption),
 	TRANS(LocalCreateListener),
+	NULL,					/* ResetListener */
 	TRANS(LocalAccept),
 	TRANS(LocalConnect),
 	TRANS(LocalBytesReadable),
@@ -1703,6 +1704,7 @@ Xtransport	TRANS(PTSFuncs) = {
 	TRANS(LocalOpenCLTSServer),
 	TRANS(LocalSetOption),
 	TRANS(LocalCreateListener),
+	NULL,					/* ResetListener */
 	TRANS(LocalAccept),
 	TRANS(LocalConnect),
 	TRANS(LocalBytesReadable),
@@ -1726,6 +1728,7 @@ Xtransport	TRANS(NAMEDFuncs) = {
 	TRANS(LocalOpenCLTSServer),
 	TRANS(LocalSetOption),
 	TRANS(LocalCreateListener),
+	NULL,					/* ResetListener */
 	TRANS(LocalAccept),
 	TRANS(LocalConnect),
 	TRANS(LocalBytesReadable),
@@ -1749,6 +1752,7 @@ Xtransport	TRANS(ISCFuncs) = {
 	TRANS(LocalOpenCLTSServer),
 	TRANS(LocalSetOption),
 	TRANS(LocalCreateListener),
+	NULL,					/* ResetListener */
 	TRANS(LocalAccept),
 	TRANS(LocalConnect),
 	TRANS(LocalBytesReadable),
@@ -1771,6 +1775,7 @@ Xtransport	TRANS(SCOFuncs) = {
 	TRANS(LocalOpenCLTSServer),
 	TRANS(LocalSetOption),
 	TRANS(LocalCreateListener),
+	NULL,					/* ResetListener */
 	TRANS(LocalAccept),
 	TRANS(LocalConnect),
 	TRANS(LocalBytesReadable),
