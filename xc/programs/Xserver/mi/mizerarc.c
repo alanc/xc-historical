@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.19 89/09/20 10:14:21 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.20 89/09/20 18:56:29 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -31,6 +31,24 @@ without any express or implied warranty.
 #include "pixmapstr.h"
 #include "mi.h"
 #include "mizerarc.h"
+
+#define FULLCIRCLE (360 * 64)
+#define OCTANT (45 * 64)
+#define QUADRANT (90 * 64)
+#define HALFCIRCLE (180 * 64)
+#define QUADRANT3 (270 * 64)
+
+#ifndef M_PI
+#define M_PI	3.14159265358979323846
+#endif
+
+#define Dsin(d)	((d) == 0 ? 0.0 : ((d) == QUADRANT ? 1.0 : \
+		 ((d) == HALFCIRCLE ? 0.0 : \
+		 ((d) == QUADRANT3 ? -1.0 : sin((double)d*(M_PI/11520.0))))))
+
+#define Dcos(d)	((d) == 0 ? 1.0 : ((d) == QUADRANT ? 0.0 : \
+		 ((d) == HALFCIRCLE ? -1.0 : \
+		 ((d) == QUADRANT3 ? 0.0 : cos((double)d*(M_PI/11520.0))))))
 
 typedef struct {
     DDXPointRec startPt;
@@ -185,14 +203,14 @@ miZeroArcSetup(arc, info, ok360)
     startseg = startAngle / OCTANT;
     if (!arc->height || (((startseg + 1) & 2) && arc->width))
     {
-	start.x = Dcos((double)startAngle/64.0) * ((arc->width + 1) / 2.0);
+	start.x = Dcos(startAngle) * ((arc->width + 1) / 2.0);
 	if (start.x < 0)
 	    start.x = -start.x;
 	start.y = -1;
     }
     else
     {
-	start.y = Dsin((double)startAngle/64.0) * (arc->height / 2.0);
+	start.y = Dsin(startAngle) * (arc->height / 2.0);
 	if (start.y < 0)
 	    start.y = -start.y;
 	start.y = info->h - start.y;
@@ -201,14 +219,14 @@ miZeroArcSetup(arc, info, ok360)
     endseg = endAngle / OCTANT;
     if (!arc->height || (((endseg + 1) & 2) && arc->width))
     {
-	end.x = Dcos((double)endAngle/64.0) * ((arc->width + 1) / 2.0);
+	end.x = Dcos(endAngle) * ((arc->width + 1) / 2.0);
 	if (end.x < 0)
 	    end.x = -end.x;
 	end.y = -1;
     }
     else
     {
-	end.y = Dsin((double)endAngle/64.0) * (arc->height / 2.0);
+	end.y = Dsin(endAngle) * (arc->height / 2.0);
 	if (end.y < 0)
 	    end.y = -end.y;
 	end.y = info->h - end.y;
