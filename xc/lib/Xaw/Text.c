@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.29 88/02/14 12:04:15 rws Exp $";
+static char rcsid[] = "$Header: Text.c,v 1.30 88/02/14 14:00:08 rws Exp $";
 #endif
 
 /*
@@ -26,7 +26,7 @@ static char rcsid[] = "$Header: Text.c,v 1.29 88/02/14 12:04:15 rws Exp $";
  */
 /* File: Text.c */
 
-#include "IntrinsicP.h"
+#include <X11/IntrinsicP.h>
 #include <X11/Label.h>
 #include <X11/Command.h>
 #include <X11/Dialog.h>
@@ -34,7 +34,7 @@ static char rcsid[] = "$Header: Text.c,v 1.29 88/02/14 12:04:15 rws Exp $";
 #include <X11/Shell.h>
 #include <X11/Atoms.h>
 #include <X11/Xos.h>
-#include "TextP.h"
+#include <X11/TextP.h>
 
 Atom FMT8BIT = NULL;
 

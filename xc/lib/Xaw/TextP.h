@@ -1,5 +1,5 @@
 /*
-* $Header: TextP.h,v 1.12 88/02/08 15:09:52 swick Exp $
+* $Header: TextP.h,v 1.13 88/02/14 14:00:57 rws Exp $
 */
 
 /*
@@ -29,7 +29,7 @@
 
 
 #include <X11/Text.h>
-#include "CoreP.h"
+#include <X11/CoreP.h>
 
 /****************************************************************
  *
