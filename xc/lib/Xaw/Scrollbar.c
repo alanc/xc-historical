@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.28 88/02/24 16:00:03 swick Exp $";
+static char rcsid[] = "$Header: Scroll.c,v 1.29 88/02/26 12:14:36 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -321,9 +321,12 @@ static void Initialize( request, new )
 {
     ScrollbarWidget w = (ScrollbarWidget) new;
     XGCValues gcValues;
+    extern Pixmap XtSimpleStippledPixmap();
 
     if (w->scrollbar.thumb == NULL) {
-        w->scrollbar.thumb = XtGrayPixmap( XtScreen(w) );
+        w->scrollbar.thumb = XtSimpleStippledPixmap (XtScreen(w),
+						     w->scrollbar.foreground,
+						     w->core.background_pixel);
     }
 
     gcValues.foreground = w->scrollbar.foreground;
