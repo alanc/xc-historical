@@ -545,7 +545,7 @@
 	    (end (index+ start nitems))
 	    (index 0 (index+ index 1)))
 	   ((index>= j end))
-	(declare (type array-index j index))
+	(declare (type array-index j end index))
 	(setf (aref data j) (the card8 (funcall transform (read-card8 index))))))))
 
 (defun read-vector-card8 (reply-buffer nitems data start index)
@@ -568,7 +568,7 @@
 	    (end (index+ start nitems))
 	    (index 0 (index+ index 1)))
 	   ((index>= j end))
-	(declare (type array-index j index))
+	(declare (type array-index j end index))
 	(setf (aref data j) (funcall transform (read-card8 index)))))))
 
 (defun read-sequence-card8 (reply-buffer result-type nitems &optional transform data
@@ -664,7 +664,7 @@
 	    (end (index+ start nitems))
 	    (index 0 (index+ index 2)))
 	   ((index>= j end))
-	(declare (type array-index j index))
+	(declare (type array-index j end index))
 	(setf (aref data j) (the card16 (read-card16 index))))
       #+clx-overlapping-arrays
       (buffer-replace data buffer-wbuf start (index+ start nitems) (index-floor index 2)))))
@@ -682,7 +682,7 @@
 	    (end (index+ start nitems))
 	    (index 0 (index+ index 2)))
 	   ((index>= j end))
-	(declare (type array-index j index))
+	(declare (type array-index j end index))
 	(setf (aref data j) (the card16 (funcall transform (read-card16 index))))))))
 
 (defun read-vector-card16 (reply-buffer nitems data start index)
@@ -696,7 +696,7 @@
 	    (end (index+ start nitems))
 	    (index 0 (index+ index 2)))
 	   ((index>= j end))
-	(declare (type array-index j index))
+	(declare (type array-index j end index))
 	(setf (aref data j) (read-card16 index)))
       #+clx-overlapping-arrays
       (buffer-replace data buffer-wbuf start (index+ start nitems) (index-floor index 2)))))
@@ -713,7 +713,7 @@
 	    (end (index+ start nitems))
 	    (index 0 (index+ index 2)))
 	   ((index>= j end))
-	(declare (type array-index j index))
+	(declare (type array-index j end index))
 	(setf (aref data j) (funcall transform (read-card16 index)))))))
 
 (defun read-sequence-card16 (reply-buffer result-type nitems &optional transform data
@@ -808,7 +808,7 @@
 	    (end (index+ start nitems))
 	    (index 0 (index+ index 4)))
 	   ((index>= j end))
-	(declare (type array-index j index))
+	(declare (type array-index j end index))
 	(setf (aref data j) (the card32 (read-card32 index))))
       #+clx-overlapping-arrays
       (buffer-replace data buffer-lbuf start (index+ start nitems) (index-floor index 4)))))
@@ -826,7 +826,7 @@
 	    (end (index+ start nitems))
 	    (index 0 (index+ index 4)))
 	   ((index>= j end))
-	(declare (type array-index j index))
+	(declare (type array-index j end index))
 	(setf (aref data j) (the card32 (funcall transform (read-card32 index))))))))
 
 (defun read-vector-card32 (reply-buffer nitems data start index)
@@ -840,7 +840,7 @@
 	    (end (index+ start nitems))
 	    (index 0 (index+ index 4)))
 	   ((index>= j end))
-	(declare (type array-index j index))
+	(declare (type array-index j end index))
 	(setf (aref data j) (read-card32 index)))
       #+clx-overlapping-arrays
       (buffer-replace data buffer-lbuf start (index+ start nitems) (index-floor index 4)))))
@@ -857,7 +857,7 @@
 	    (end (index+ start nitems))
 	    (index 0 (index+ index 4)))
 	   ((index>= j end))
-	(declare (type array-index j index))
+	(declare (type array-index j end index))
 	(setf (aref data j) (funcall transform (read-card32 index)))))))
 
 (defun read-sequence-card32 (reply-buffer result-type nitems &optional transform data
@@ -1509,7 +1509,8 @@
 	  ((zerop byte)
 	   (when data ;; Clear uninitialized bits in data
 	     (do ((end (index+ j 8)))
-		 ((= k end))
+		 ((index= k end))
+	       (declare (type array-index end))
 	       (setf (aref result k) 0)
 	       (index-incf k))))
 	(declare (type array-index k)
