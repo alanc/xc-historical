@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.152 89/03/23 09:19:55 rws Exp $ */
+/* $XConsortium: main.c,v 1.153 89/03/24 07:30:22 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -212,7 +212,7 @@ main(argc, argv)
 	InitOutput(&screenInfo, argc, argv);
 	if (screenInfo.numScreens < 1)
 	    FatalError("no screens found");
-	InitExtensions(); 
+	InitExtensions(argc, argv);
 	InitInput(argc, argv);
 	if (InitAndStartDevices(argc, argv) != Success)
 	    FatalError("failed to initialize core devices");
