@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: ws_io.c,v 1.8 93/07/10 11:29:35 rws Exp $ */
+/* $XConsortium: ws_io.c,v 1.9 93/09/03 19:45:32 dpw Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -70,7 +70,7 @@ static DevicePtr	wsPointer;
 static DevicePtr	wsKeyboard;
 char *blackValue, *whiteValue;
 extern	ws_event_queue	*queue;
-int lastEventTime;
+CARD32 lastEventTime;
 int wsNumButtons = -1;
 static Bool cursorConfined = FALSE;
 
@@ -788,7 +788,7 @@ out:
     }
 }
 
-long
+CARD32
 GetTimeInMillis()
 {
     struct timeval  tp;
