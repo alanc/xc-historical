@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: TextSrc.c,v 1.5 90/03/07 15:26:20 jim Exp $";
+static char Xrcsid[] = "$XConsortium: TextSrc.c,v 1.6 90/04/30 17:46:13 converse Exp $";
 #endif 
 
 /*
@@ -403,8 +403,18 @@ XawTextBlock *text;
 
 XawTextPosition
 #if NeedFunctionPrototypes
-XawTextSourceScan(Widget w, XawTextPosition position, XawTextScanType type,
-		  XawTextScanDirection dir, int count, Boolean include)
+XawTextSourceScan(Widget w, XawTextPosition position,
+#if NeedWidePrototypes
+		  int type, int dir,
+#else
+		  XawTextScanType type, XawTextScanDirection dir,
+#endif
+		  int count,
+#if NeedWidePrototypes
+		  int include)
+#else
+		  Boolean include)
+#endif
 #else
 XawTextSourceScan(w, position, type, dir, count, include)
 Widget                w;
@@ -432,8 +442,13 @@ Boolean	              include;
 
 XawTextPosition 
 #if NeedFunctionPrototypes
-XawTextSourceSearch(Widget w, XawTextPosition position, 
-		    XawTextScanDirection dir, XawTextBlock *text)
+XawTextSourceSearch(Widget w, XawTextPosition position,
+#if NeedWidePrototypes
+		    int dir,
+#else
+		    XawTextScanDirection dir,
+#endif
+		    XawTextBlock *text)
 #else
 XawTextSourceSearch(w, position, dir, text)
 Widget                w;
