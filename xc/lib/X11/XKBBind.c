@@ -1,4 +1,4 @@
-/* $XConsortium: XKBBind.c,v 1.2 93/09/28 19:29:39 rws Exp $ */
+/* $XConsortium: XKBBind.c,v 1.3 93/09/28 19:48:37 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -74,7 +74,7 @@ XKeycodeToKeysym(dpy, kc, col)
     if ((kc<xkb->minKeyCode)||(kc>xkb->maxKeyCode))
 	return NoSymbol;
 
-    if (( col<0 ) || (col>=XkbKeyNumSyms(xkb,kc)))
+    if (( col<0 ) || (XkbKeyNumSyms(xkb,kc)<=(unsigned)col))
 	return NoSymbol;
     
     return XkbKeySym(xkb,kc,col);
@@ -96,7 +96,7 @@ XKeysymToKeycode(dpy, ks)
 	register XkbDescRec *xkb = dpy->xkb_info->desc;
 	gotOne= 0;
 	for (i = dpy->min_keycode; i <= dpy->max_keycode; i++) {
-	    if ( j<XkbKeyNumSyms(xkb,i) ) {
+	    if ( XkbKeyNumSyms(xkb,i)>(unsigned)j ) {
 		gotOne = 1;
 		if ((XkbKeySym(xkb,i,j)==ks))
 		    return i;
@@ -143,7 +143,8 @@ XkbKeysymToModifiers(dpy,ks)
     KeySym ks;
 {
     XkbDescRec *xkb;
-    register int i,j;
+    register KeyCode i;
+    register CARD8 j;
     register KeySym *pSyms;
     CARD8 mods;
 
@@ -218,7 +219,7 @@ XTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return)
     col = 0;
     keyType = XkbKeyKeyType(xkb->desc,keycode);
     if ( XkbModifiersGroup(modifiers)!=0 ) {
-	int effectiveGroup = XkbModifiersGroup(modifiers);
+	unsigned int effectiveGroup = XkbModifiersGroup(modifiers);
 	if ( effectiveGroup >= XkbKeyNumGroups(xkb->desc,keycode) ) {
 	    if ( XkbKeyGroupsWrap(xkb->desc,keycode) )
 		 effectiveGroup %= XkbKeyNumGroups(xkb->desc,keycode);
@@ -284,7 +285,7 @@ XRefreshKeyboardMapping(event)
 	}
 	UnlockDisplay(dpy);
     }
-    return;
+    return 0;
 }
 
 static int

@@ -1,4 +1,4 @@
-/* $XConsortium: XKB.c,v 1.4 93/09/28 21:40:02 rws Exp $ */
+/* $XConsortium: XKB.c,v 1.5 93/09/28 21:54:07 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -46,7 +46,8 @@ mergePendingMaps(xkb,new)
     xkbMapNotify *new;
 {
     XkbMapChangesRec *old = &xkb->changes;
-    int first,oldLast,newLast;
+    int oldLast,newLast;
+    CARD8 first;
 
     if (new->changed&XkbKeyTypesMask) {
 	if (old->changed&XkbKeyTypesMask) {
@@ -951,13 +952,14 @@ XkbEnlargeKeySymbols(xkb,key,needed)
     int key;
     int needed;
 {
-register int i,nSyms;
+register KeyCode i;
+register int nSyms;
 KeySym	*newSyms;
 
-    if (XkbKeyNumSyms(xkb,key)>=needed) {
+    if (XkbKeyNumSyms(xkb,key)>=(unsigned)needed) {
 	return XkbKeySymsPtr(xkb,key);
     }
-    if (xkb->map->szSyms-xkb->map->nSyms>=needed) {
+    if (xkb->map->szSyms-xkb->map->nSyms>=(unsigned)needed) {
 	bcopy(XkbKeySymsPtr(xkb,key),&xkb->map->syms[xkb->map->nSyms],
 					XkbKeyNumSyms(xkb,key)*sizeof(KeySym));
 	xkb->map->keySymMap[key].offset = xkb->map->nSyms;
@@ -986,13 +988,15 @@ XkbEnlargeKeyActions(xkb,key,needed)
     int key;
     int needed;
 {
-register int i,nActs;
+register KeyCode i;
+register int nActs;
 XkbAction *newActs;
 
-    if ((xkb->server->keyActions[key]!=0)&&(XkbKeyNumSyms(xkb,key)>=needed)) {
+    if ((xkb->server->keyActions[key]!=0) &&
+	(XkbKeyNumSyms(xkb,key)>=(unsigned)needed)) {
 	return XkbKeyActionsPtr(xkb,key);
     }
-    if (xkb->server->szActions-xkb->server->nActions>=needed) {
+    if (xkb->server->szActions-xkb->server->nActions>=(unsigned)needed) {
 	xkb->server->keyActions[key]= xkb->server->nActions;
 	xkb->server->nActions+= needed;
 	return &xkb->server->actions[xkb->server->keyActions[key]];
@@ -1138,7 +1142,7 @@ int nGroups,nSyms;
 	pChanges->firstKeySym= key;
 	pChanges->nKeySyms= 1;
     }
-    return;
+    return 0;
 }
 
 static int
@@ -1149,7 +1153,7 @@ _XkbReadKeyTypes(dpy,info,rep,replace)
     int replace;
 {
 int		len;
-int		 i,last;
+CARD8		i,last;
 XkbKeyTypeRec	*map;
 
     if ( rep->nKeyTypes>0 ) {
@@ -1186,7 +1190,8 @@ XkbKeyTypeRec	*map;
 		    Xfree(map->preserve);
 		map->preserve= NULL;
 	    }
-	    if ( (map->map==NULL) || (desc.mapWidth > XkbKTMapWidth(map)) ) {
+	    if ( (map->map==NULL) || 
+		 (desc.mapWidth > (CARD8)XkbKTMapWidth(map)) ) {
 		if ( map->map ) {
 		     map->map = (CARD8 *)Xrealloc(map->map,desc.mapWidth);
 		     if ( map->preserve )
@@ -1205,7 +1210,7 @@ XkbKeyTypeRec	*map;
 	    map->groupWidth = desc.groupWidth;
 	    _XRead(dpy, (char *)map->map, desc.mapWidth);
 	    len+= desc.mapWidth;
-	    last = (((desc.mapWidth+3)/4)*4)-desc.mapWidth;
+	    last = (((desc.mapWidth+3)/(unsigned)4)*4)-desc.mapWidth;
 	    if ( last ) {
 		_XEatData(dpy, last);
 		len+= last;
@@ -1231,7 +1236,7 @@ _XkbReadKeySyms(dpy,xkb,rep,replace)
     xkbGetMapReply *rep;
     int replace;
 {
-register int i;
+register CARD8 i;
 
     if (xkb->map->keySymMap==NULL) {
 	register int offset;
@@ -1241,7 +1246,7 @@ register int i;
 	if (!xkb->map->keySymMap)
 	    return 0;
 	if (!xkb->map->syms) {
-	    int sz = ((rep->totalSyms+128)/128)*128;
+	    int sz = ((rep->totalSyms+128)/(unsigned)128)*128;
 	    xkb->map->syms = (KeySym *)Xmalloc(sz*sizeof(KeySym));
 	    if (!xkb->map->syms)
 		return 1;
@@ -1283,8 +1288,8 @@ _XkbReadKeyActions(dpy,info,rep,replace)
     int replace;
 {
 int		 len;
-int		 i,last;
-CARD8		 numDesc[248];
+int		 last;
+CARD8		 i,numDesc[248];
 XkbAction	*actDesc;
 
     if ( rep->nKeyActions>0 ) {
@@ -1292,7 +1297,7 @@ XkbAction	*actDesc;
 	_XRead(dpy, (char *)numDesc, rep->nKeyActions);
 	len = rep->nKeyActions;
 	i= ((len+3)/4)*4;
-	if (i>len) {
+	if (i>(unsigned)len) {
 	    _XEatData(dpy,i-len);
 	    len = i;
 	}
@@ -1764,7 +1769,8 @@ _XkbReadGetNamesReply(dpy,rep,pMap)
     xkbGetNamesReply *rep;
     XkbDescRec *pMap;
 {
-    int				i,len;
+    int				len;
+    CARD8			i;
     char		 	*start,*desc;
 
     if ( pMap->deviceSpec == XkbUseCoreKbd )
@@ -1807,7 +1813,7 @@ _XkbReadGetNamesReply(dpy,rep,pMap)
 	    bzero((char *)pMap->names->levels,len);
 	}
 	nLevels = desc;
-	desc+= ((rep->nKeyTypes+3)/4)*4;
+	desc+= ((rep->nKeyTypes+3)/(unsigned)4)*4;
 	for (i=0;i<rep->nKeyTypes;i++) {
 	    if (nLevels[i]!=pMap->map->keyTypes[i].groupWidth) {
 		fprintf(stderr,"groupWidth in names doesn't match key types\n");
@@ -2052,14 +2058,15 @@ _XkbSizeKeyTypes(xkb,firstKeyType,nKeyTypes)
     unsigned nKeyTypes;
 {
     XkbKeyTypeRec 	*map;
-    int			i,len;
+    int			len;
+    CARD8		i;
 
     len= 0;
     map= &xkb->map->keyTypes[firstKeyType];
     for (i=0;i<nKeyTypes;i++,map++){
-	len+= sizeof(xkbKeyTypeWireDesc)+(((XkbKTMapWidth(map)+3)/4)*4);
+	len+= sizeof(xkbKeyTypeWireDesc)+(((XkbKTMapWidth(map)+3)/(unsigned)4)*4);
 	if (map->preserve)
-	    len+= (((XkbKTMapWidth(map)+3)/4)*4);
+	    len+= (((XkbKTMapWidth(map)+3)/(unsigned)4)*4);
     }
     return len;
 }
@@ -2078,7 +2085,7 @@ _XkbWriteKeyTypes(dpy,xkb,firstKeyType,nKeyTypes)
 
     map= &xkb->map->keyTypes[firstKeyType];
     for (i=0;i<nKeyTypes;i++,map++) {
-	sz= (((XkbKTMapWidth(map)*(map->preserve?2:1))+3)/4)*4;
+	sz= (((XkbKTMapWidth(map)*(map->preserve?2:1))+3)/(unsigned)4)*4;
 	BufAlloc(xkbKeyTypeWireDesc *,desc,sz+sizeof(xkbKeyTypeWireDesc));
 	desc->flags = (map->preserve?xkb_KTHasPreserve:0);
 	desc->mask = map->mask;

@@ -1,4 +1,4 @@
-/* $XConsortium: XChProp.c,v 11.23 91/12/19 14:56:42 gildea Exp $ */
+/* $XConsortium: ChProp.c,v 11.24 92/12/29 14:56:10 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -56,7 +56,7 @@ XChangeProperty (dpy, w, property, type, format, mode, data, nelements)
     switch (req->format) {
       case 8:
 	len = ((long)nelements + 3)>>2;
-	if (dpy->bigreq_size || req->length + len <= 65535) {
+	if (dpy->bigreq_size || req->length + len <= (unsigned) 65535) {
 	    SetReqLen(req, len, len);
 	    Data (dpy, (char *)data, nelements);
 	} /* else force BadLength */
@@ -64,7 +64,7 @@ XChangeProperty (dpy, w, property, type, format, mode, data, nelements)
  
       case 16:
 	len = ((long)nelements + 1)>>1;
-	if (dpy->bigreq_size || req->length + len <= 65535) {
+	if (dpy->bigreq_size || req->length + len <= (unsigned) 65535) {
 	    SetReqLen(req, len, len);
 	    len = (long)nelements << 1;
 	    Data16 (dpy, (short *) data, len);
@@ -73,7 +73,7 @@ XChangeProperty (dpy, w, property, type, format, mode, data, nelements)
 
       case 32:
 	len = nelements;
-	if (dpy->bigreq_size || req->length + len <= 65535) {
+	if (dpy->bigreq_size || req->length + len <= (unsigned) 65535) {
 	    SetReqLen(req, len, len);
 	    len = (long)nelements << 2;
 	    Data32 (dpy, (long *) data, len);
