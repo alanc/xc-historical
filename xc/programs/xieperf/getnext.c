@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: getnext.c,v 1.1 93/10/26 10:08:57 rws Exp $ */
 
 /**** module getnext.c ****/
 /******************************************************************************
@@ -49,6 +49,7 @@ terms and conditions:
   
 *****************************************************************************/
 #include	<stdio.h>
+#include	<ctype.h>
 
 #define MAXARGS	5
 
