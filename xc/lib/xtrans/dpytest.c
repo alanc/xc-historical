@@ -14,8 +14,6 @@ char	*test_displays[] = {
 	THISHOST":0",
 	THISHOST":1",
 	THISHOST":2",
-	"153.78.17.16:0",
-	"153.78.17.16:1",
 	"local/:0",
 	"local/:1",
 	"local/:2",
