@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CmapAlloc.c,v 1.2 89/05/22 17:56:55 converse Exp $
+ * $XConsortium: CmapAlloc.c,v 1.3 89/06/14 11:58:06 converse Exp $
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -23,15 +23,17 @@
  * Author:  Donna Converse, MIT X Consortium
  */
 
-#include <stdio.h>
-#include <math.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
+#include <stdio.h>
 
 static int default_allocation();
 static void best_allocation();
 static void gray_allocation();
+static int icbrt();
+static int icbrt_with_bits();
+static int icbrt_with_guess();
 
 /* To determine the best allocation of reds, greens, and blues in a 
  * standard colormap, use XmuGetColormapAllocation.
@@ -114,8 +116,6 @@ static void gray_allocation(n, red_max, green_max, blue_max)
  * Return 0 if an allocation has been determined, non-zero otherwise.
  */
 
-#define cube_root(n) (pow((double) (n), (double) 1.0/3.0))
-
 static int default_allocation(vinfo, red, green, blue)
     XVisualInfo		*vinfo;
     unsigned long	*red, *green, *blue;
@@ -138,7 +138,7 @@ static int default_allocation(vinfo, red, green, blue)
 	else
 	    /* intended for displays with 8 planes */
 	    *red = *green = *blue = (unsigned long)
-		(floor(cube_root(vinfo->colormap_size - 125)) - 1);  
+		(icbrt(vinfo->colormap_size - 125) - 1);
 	break;
 
       case GrayScale:
@@ -227,8 +227,7 @@ static void best_allocation(vinfo, red, green, blue)
 	}
 	else
 	{
-	    *red = (int) floor(pow((double) vinfo->colormap_size, 
-				   (double) 1.0/3.0));
+	    *red = icbrt_with_bits(vinfo->colormap_size, bits);
 	    *blue = *red;	
 	    *green = (vinfo->colormap_size / ((*red) * (*blue)));
 	}
@@ -237,4 +236,76 @@ static void best_allocation(vinfo, red, green, blue)
 	(*blue)--;
     }
     return;
+}
+
+/*
+ * integer cube roots by Newton's method
+ *
+ * Stephen Gildea, MIT X Consortium, July 1991
+ */
+
+static int icbrt(a)		/* integer cube root */
+    int a;
+{
+    register int bits = 0;
+    register unsigned n = a;
+
+    while (n)
+    {
+	bits++;
+	n >>= 1;
+    }
+    return icbrt_with_bits(a, bits);
+}
+
+
+static int icbrt_with_bits(a, bits)
+    int a;
+    int bits;			/* log 2 of a */
+{
+    return icbrt_with_guess(a, a>>2*bits/3);
+}
+
+#ifdef _X_ROOT_STATS
+int icbrt_loopcount;
+#endif
+
+/* Newton's Method:  x_n+1 = x_n - ( f(x_n) / f'(x_n) ) */
+
+/* for cube roots, x^3 - a = 0,  x_new = x - 1/3 (x - a/x^2) */
+
+/*
+ * Quick and dirty cube roots.  Nothing fancy here, just Newton's method.
+ * Only works for positive integers (since that's all we need).
+ * We actually return floor(cbrt(a)) because that's what we need here, too.
+ */
+
+static int icbrt_with_guess(a, guess)
+    int a, guess;
+{
+    register int delta;
+
+#ifdef _X_ROOT_STATS
+    icbrt_loopcount = 0;
+#endif
+    if (a <= 0)
+	return 0;
+    if (guess < 1)
+	guess = 1;
+
+    do {
+#ifdef _X_ROOT_STATS
+	icbrt_loopcount++;
+#endif
+	delta = (guess - a/(guess*guess))/3;
+#ifdef DEBUG
+	printf("pass %d: guess=%d, delta=%d\n", icbrt_loopcount, guess, delta);
+#endif
+	guess -= delta;
+    } while (delta != 0);
+
+    if (guess*guess*guess > a)
+	guess--;
+
+    return guess;
 }
