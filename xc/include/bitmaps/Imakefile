@@ -3,6 +3,7 @@ SRCS = \
 	2x2 \
 	black \
 	boxes \
+	calculator \
 	cntr_ptr \
 	cntr_ptrmsk \
 	cross_weave \
