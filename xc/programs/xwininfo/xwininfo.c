@@ -47,6 +47,8 @@ usage()
     fprintf (stderr,
 	"    -name windowname     use the window with the specifed name\n");
     fprintf (stderr,
+	"    -int                 print window id's in decimal\n");
+    fprintf (stderr,
 	"    -tree                print out parent and child identifiers\n");
     fprintf (stderr,
 	"    -stats               print out window geometry [DEFAULT]\n");
