@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.130 89/09/12 16:47:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.131 89/09/13 14:47:57 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -437,9 +437,6 @@ Display *XtDisplayOfObject(object)
 Display *XtDisplay(widget)
 	Widget widget;
 {
-    if (!XtIsWidget(widget))
-	widget = _XtWindowedAncestor(widget);
-
     return DisplayOfScreen(widget->core.screen);
 }
 
@@ -454,9 +451,6 @@ Screen *XtScreenOfObject(object)
 Screen *XtScreen(widget)
 	Widget widget;
 {
-    if (!XtIsWidget(widget))
-	widget = _XtWindowedAncestor(widget);
-
     return widget->core.screen;
 }
 
@@ -472,9 +466,6 @@ Window XtWindowOfObject(object)
 Window XtWindow(widget)
 	Widget widget;
 {
-    if (!XtIsWidget(widget))
-	widget = _XtWindowedAncestor(widget);
-
     return widget->core.window;
 }
 
@@ -532,7 +523,7 @@ Widget _XtWindowedAncestor(object)
 	String params = XtName(object);
 	Cardinal num_params = 1;
 	XtErrorMsg("noWidgetAncestor", "windowedAncestor", "XtToolkitError",
-   "Object \"%s\" does not have windowed ancestor for conversion arguments",
+		   "Object \"%s\" does not have windowed ancestor",
 		   &params, &num_params);
     }
 
