@@ -1,4 +1,4 @@
-/* $XConsortium: ConvertI.h,v 1.9 90/06/04 15:06:49 kit Exp $ */
+/* $XConsortium: ConvertI.h,v 1.10 91/02/07 17:57:45 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -42,6 +42,11 @@ extern void _XtFreeConverterTable(
 #endif
 );
 
+
+#ifdef NeedWidePrototypes
+#define Boolean int
+#endif
+
 extern void _XtTableAddConverter(
 #if NeedFunctionPrototypes
     ConverterTable		/* table */,
@@ -50,11 +55,13 @@ extern void _XtTableAddConverter(
     XtTypeConverter      	/* converter */,
     XtConvertArgList     	/* convert_args */,
     Cardinal             	/* num_args */,
-    _XtBoolean              	/* new_style */,
+    Boolean              	/* new_style */,
     XtCacheType	    		/* cache_type */,
     XtDestructor         	/* destructor */
 #endif
 );
+
+#undef Boolean
 
 extern Boolean _XtConvert(
 #if NeedFunctionPrototypes
