@@ -1,4 +1,4 @@
-/* $XConsortium: makekeys.C,v 11.4 91/04/08 17:11:16 rws Exp $ */
+/* $XConsortium: makekeys.c,v 11.5 91/04/24 18:39:28 gildea Exp $ */
 /*
 Copyright 1990 by the Massachusetts Institute of Technology
 
@@ -23,8 +23,11 @@ without express or implied warranty.
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #else
-extern char *malloc();
+char *malloc();
 #endif
+#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
+char *malloc();
+#endif /* macII */
 
 typedef unsigned long Signature;
 
