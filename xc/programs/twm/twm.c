@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.80 89/11/05 18:17:45 jim Exp $
+ * $XConsortium: twm.c,v 1.81 89/11/06 09:17:40 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.80 89/11/05 18:17:45 jim Exp $";
+"$XConsortium: twm.c,v 1.81 89/11/06 09:17:40 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -392,6 +392,9 @@ main(argc, argv, environ)
 	Scr->TitleHeight = Scr->TitleBarFont.height + Scr->FramePadding * 2;
 	/* make title height be odd so buttons look nice and centered */
 	if (!(Scr->TitleHeight & 1)) Scr->TitleHeight++;
+	if (!Scr->NoDefaults) {
+	    AddDefaultBindings ();
+	}
 
 	XGrabServer(dpy);
 	XSync(dpy, 0);
@@ -796,3 +799,5 @@ InternUsefulAtoms ()
     _XA_WM_SAVE_YOURSELF = XInternAtom (dpy, "WM_SAVE_YOURSELF", False);
     _XA_WM_DELETE_WINDOW = XInternAtom (dpy, "WM_DELETE_WINDOW", False);
 }
+
+

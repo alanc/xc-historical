@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.102 89/11/05 18:35:27 jim Exp $
+ * $XConsortium: add_window.c,v 1.103 89/11/05 19:01:14 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.102 89/11/05 18:35:27 jim Exp $";
+"$XConsortium: add_window.c,v 1.103 89/11/05 19:01:14 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -879,6 +879,48 @@ UngrabAllKeys()
 	UngrabKeys(tmp_win);
     }
 }
+
+
+/***********************************************************************
+ * 
+ *  Procedure:
+ *      AddDefaultBindings - attach default bindings so that naive users
+ *      don't get messed up if they provide a minimal twmrc.
+ */
+static void do_add_binding (button, context, modifier, func)
+    int button, context, modifier;
+    int func;
+{
+    MouseButton *mb = &Scr->Mouse[button][context][modifier];
+
+    if (mb->func) return;		/* already defined */
+
+    mb->func = func;
+    mb->item = NULL;
+}
+
+AddDefaultBindings ()
+{
+    /*
+     * The bindings are stored in Scr->Mouse, indexed by
+     * Mouse[button_number][C_context][modifier].
+     */
+
+#define NoModifierMask 0
+
+    do_add_binding (Button1, C_TITLE, NoModifierMask, F_MOVE);
+    do_add_binding (Button1, C_ICON, NoModifierMask, F_ICONIFY);
+    do_add_binding (Button1, C_ICONMGR, NoModifierMask, F_ICONIFY);
+
+    do_add_binding (Button2, C_TITLE, NoModifierMask, F_RAISELOWER);
+    do_add_binding (Button2, C_ICON, NoModifierMask, F_ICONIFY);
+    do_add_binding (Button2, C_ICONMGR, NoModifierMask, F_ICONIFY);
+
+#undef NoModifierMask
+}
+
+
+
 
 /***********************************************************************
  *
