@@ -1,4 +1,4 @@
-/* $XConsortium: ibm8514.h,v 1.2 94/10/12 19:52:10 kaleb Exp kaleb $ */
+/* $XConsortium: ibm8514.h,v 1.3 94/10/13 21:35:20 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.h,v 3.1 1994/07/24 11:43:17 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -59,48 +59,23 @@ extern int ibm8514ValidTokens[];
 
 void ibm8514ImageRead(
 #if NeedFunctionPrototypes
-    int,
-    int,
-    int,
-    int,
-    char *,
-    int,
-    int,
-    int,
-    short
+    int, int, int, int, char *, int, int, int, unsigned long
 #endif
 );
 void ibm8514ImageWrite(
 #if NeedFunctionPrototypes
-    int,
-    int,
-    int,
-    int,
-    char *,
-    int,
-    int,
-    int,
-    short,
-    short
+    int, int, int, int, char *, int, int, int, short, unsigned long
+#endif
+);
+void ibm8514RealImageFill(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, int, int, short, unsigned long
 #endif
 );
 void ibm8514ImageStipple(
 #if NeedFunctionPrototypes
-    int,
-    int,
-    int,
-    int,
-    char *,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    short,
-    unsigned long,
-    int 
+    int, int, int, int, char *, int, int, int, int, int, Pixel, Pixel, short,
+    unsigned long, int 
 #endif
 );
 
@@ -282,18 +257,7 @@ void ibm8514ImageInit(
 );
 void ibm8514ImageFill(
 #if NeedFunctionPrototypes
-    int,
-    int,
-    int,
-    int,
-    char *,
-    int,
-    int,
-    int,
-    int,
-    int,
-    short,
-    unsigned long 
+    int, int, int, int, char *, int, int, int, int, int, short, unsigned long 
 #endif
 );
 /* ibm8514bsto.c */

@@ -1,4 +1,4 @@
-/* $XConsortium: s3.h,v 1.2 94/10/12 20:07:37 kaleb Exp kaleb $ */
+/* $XConsortium: s3.h,v 1.3 94/10/13 13:12:55 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.13 1994/09/26 15:31:41 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -130,9 +130,21 @@ extern short s3ChipId;
 #ifndef LINKKIT
 _XFUNCPROTOBEGIN
 
-extern void (*s3ImageReadFunc)();
-extern void (*s3ImageWriteFunc)();
-extern void (*s3ImageFillFunc)();
+extern void (*s3ImageReadFunc)(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, unsigned long
+#endif
+);
+extern void (*s3ImageWriteFunc)(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, short, unsigned long
+#endif
+);
+extern void (*s3ImageFillFunc)(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, int, int, short, unsigned long
+#endif
+);
 
 extern int s3DisplayWidth;
 extern int s3ScissB;
@@ -403,8 +415,8 @@ void s3ImageWriteNoMem(
     int,
     int,
     int,
-    int,
-    Pixel
+    short,
+    unsigned long
 #endif
 );
 void s3ImageStipple(
@@ -420,8 +432,8 @@ void s3ImageStipple(
     int,
     int,
     Pixel,
-    int,
-    Pixel
+    short,
+    unsigned long
 #endif
 );
 void s3ImageOpStipple(
@@ -430,7 +442,7 @@ void s3ImageOpStipple(
     int,
     int,
     int,
-    unsigned char *,
+    char *,
     int,
     int,
     int,
@@ -439,7 +451,7 @@ void s3ImageOpStipple(
     Pixel,
     Pixel,
     short,
-    Pixel 
+    unsigned long 
 #endif
 );
 /* s3bstor.c */

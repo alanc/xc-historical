@@ -1,4 +1,4 @@
-/* $XConsortium: s3.c,v 1.1 94/10/05 13:32:36 kaleb Exp kaleb $ */
+/* $XConsortium: s3.c,v 1.2 94/10/12 20:07:37 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.43 1994/09/26 16:10:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -193,9 +193,21 @@ unsigned char s3Port54;
 unsigned char s3Port59 = 0x00;
 unsigned char s3Port5A = 0x0A;
 unsigned char s3Port31 = 0x8d;
-void (*s3ImageReadFunc)();
-void (*s3ImageWriteFunc)();
-void (*s3ImageFillFunc)();
+void (*s3ImageReadFunc)(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, unsigned long
+#endif
+);
+void (*s3ImageWriteFunc)(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, short, unsigned long
+#endif
+);
+void (*s3ImageFillFunc)(
+#if NeedFunctionPrototypes
+    int, int, int, int, char *, int, int, int, int, int, short, unsigned long
+#endif
+);
 int s3hotX, s3hotY;
 Bool s3BlockCursor, s3ReloadCursor;
 int s3CursorStartX, s3CursorStartY, s3CursorLines;

@@ -1,4 +1,4 @@
-/* $XConsortium: s3gs.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XConsortium: s3gs.c,v 1.3 94/10/12 20:07:37 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gs.c,v 3.3 1994/08/20 07:34:07 dawes Exp $ */
 /*
 
@@ -91,7 +91,7 @@ s3GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
      char *pdstStart;		/* where to put the bits */
 {
    int   j;
-   unsigned char *pdst;		/* where to put the bits */
+   char *pdst;		/* where to put the bits */
    int   pixmapStride;
 
    if (!xf86VTSema)
@@ -131,7 +131,7 @@ s3GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
       return;
    }
    pixmapStride = PixmapBytePad(wMax, pDrawable->depth);
-   pdst = (unsigned char *)pdstStart;
+   pdst = pdstStart;
 
    for (; nspans--; ppt++, pwidth++) {
       (s3ImageReadFunc) (ppt->x, ppt->y, j = *pwidth, 1, pdst, 
