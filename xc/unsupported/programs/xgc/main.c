@@ -1,4 +1,4 @@
-/* $XConsortium$
+/* $XConsortium: main.c,v 1.18 91/02/18 16:10:12 converse Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -32,7 +32,6 @@
 #include <X11/StringDefs.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Command.h>
-#include <X11/Core.h>
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Shell.h>
 #include <stdio.h>
@@ -456,12 +455,12 @@ set_foreground_and_background()
 {
   static XtResource resources[] = {
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-       XtOffset(XStuff *, foreground), XtRString, XtDefaultForeground},
+       XtOffsetOf(XStuff, foreground), XtRString, XtDefaultForeground},
     {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
-       XtOffset(XStuff *, background), XtRString, XtDefaultBackground}
+       XtOffsetOf(XStuff, background), XtRString, XtDefaultBackground}
   };
   
-  XtGetApplicationResources(bigdaddy, (caddr_t) &X, resources,
+  XtGetApplicationResources(bigdaddy, (XtPointer) &X, resources,
 			    XtNumber(resources), NULL, (Cardinal) 0);
 
   X.gcv.foreground = X.foreground;
