@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.170 91/06/11 20:26:02 converse Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.171 91/07/16 18:30:20 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -28,6 +28,9 @@ SOFTWARE.
 
 #include "IntrinsicI.h"
 #include "StringDefs.h"
+#ifndef NO_IDENTIFY_WINDOWS
+#include <X11/Xatom.h>
+#endif
 #ifndef VMS
 #include <sys/stat.h>
 #endif /* VMS */
@@ -225,11 +228,23 @@ static void RealizeWidget(widget)
     window = XtWindow(widget);
 #ifndef NO_IDENTIFY_WINDOWS
     if (_XtGetPerDisplay(XtDisplay(widget))->appContext->identify_windows) {
-	XClassHint classhint;
+	int len_nm, len_cl;
+	char *s;
 
-	classhint.res_name = widget->core.name;
-	classhint.res_class = widget->core.widget_class->core_class.class_name;
-	XSetClassHint (XtDisplay(widget), window, &classhint);
+	len_nm = widget->core.name ? strlen(widget->core.name) : 0;
+	len_cl = strlen(widget->core.widget_class->core_class.class_name);
+	s = XtMalloc((unsigned) (len_nm + len_cl + 2));
+	s[0] = '\0';
+	if (len_nm)
+	    strcpy(s, widget->core.name);
+	strcpy(s + len_nm + 1,
+	       widget->core.widget_class->core_class.class_name);
+	XChangeProperty(XtDisplay(widget), window,
+			XInternAtom(XtDisplay(widget), "_MIT_OBJ_CLASS",
+				    False),
+			XA_STRING, 8, PropModeReplace, (unsigned char *) s, 
+			len_nm + len_cl + 2);
+	XtFree(s);
     }
 #endif
 #ifdef notdef
