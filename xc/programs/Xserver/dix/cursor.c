@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: cursor.c,v 1.35 89/07/03 14:28:40 rws Exp $ */
+/* $XConsortium: cursor.c,v 1.36 89/07/09 15:38:22 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -88,8 +88,7 @@ FreeCursor( pCurs, cid)
     for (nscr = 0; nscr < screenInfo.numScreens; nscr++)
     {
 	pscr = screenInfo.screens[nscr];
-        if ( pscr->UnrealizeCursor)
-	    (void)( *pscr->UnrealizeCursor)( pscr, pCurs);
+	(void)( *pscr->UnrealizeCursor)( pscr, pCurs);
     }
     FreeCursorBits(pCurs->bits);
     xfree( pCurs);
@@ -143,13 +142,12 @@ AllocCursor(psrcbits, pmaskbits, cm,
     for (nscr = 0; nscr < screenInfo.numScreens; nscr++)
     {
 	pscr = screenInfo.screens[nscr];
-        if ( pscr->RealizeCursor && !( *pscr->RealizeCursor)( pscr, pCurs))
+        if (!( *pscr->RealizeCursor)( pscr, pCurs))
 	{
 	    while (--nscr >= 0)
 	    {
 		pscr = screenInfo.screens[nscr];
-		if ( pscr->UnrealizeCursor)
-		    ( *pscr->UnrealizeCursor)( pscr, pCurs);
+		( *pscr->UnrealizeCursor)( pscr, pCurs);
 	    }
 	    xfree(pCurs);
 	    return (CursorPtr)NULL;
@@ -313,13 +311,12 @@ AllocGlyphCursor(source, sourceChar, mask, maskChar,
     for (nscr = 0; nscr < screenInfo.numScreens; nscr++)
     {
 	pscr = screenInfo.screens[nscr];
-        if ( pscr->RealizeCursor && !( *pscr->RealizeCursor)( pscr, pCurs))
+        if (!( *pscr->RealizeCursor)( pscr, pCurs))
 	{
 	    while (--nscr >= 0)
 	    {
 		pscr = screenInfo.screens[nscr];
-		if ( pscr->UnrealizeCursor)
-		    ( *pscr->UnrealizeCursor)( pscr, pCurs);
+		( *pscr->UnrealizeCursor)( pscr, pCurs);
 	    }
 	    FreeCursorBits(pCurs->bits);
 	    xfree(pCurs);
