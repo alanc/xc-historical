@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.18 89/12/02 17:44:26 swick Exp $ */
+/* $XConsortium: SelectionI.h,v 1.19 89/12/15 11:21:42 swick Exp $ */
 /* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -95,7 +95,6 @@ typedef struct {
     Widget widget;
     Time time;
     Select ctx;
-    XtCancelSelectionCallbackProc req_cancel;
     Boolean incremental;
 } CallBackInfoRec, *CallBackInfo;
 
