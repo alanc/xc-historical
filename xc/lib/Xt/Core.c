@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Core.c,v 1.29 89/09/21 09:20:44 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Core.c,v 1.30 89/10/02 15:28:53 swick Exp $";
 /* $oHeader: Core.c,v 1.2 88/08/18 15:37:59 asente Exp $ */
 #endif /* lint */
 
@@ -193,7 +193,7 @@ static void CoreClassPartInitialize(wc)
 		wc->core_class.superclass->core_class.tm_table;
     } else if (wc->core_class.tm_table != NULL) {
 	wc->core_class.tm_table =
-	      (String) _XtParseTranslationTable(wc->core_class.tm_table);
+	      (String)XtParseTranslationTable(wc->core_class.tm_table);
     }
     if (wc->core_class.actions != NULL) {
 	/* Compile the action table into a more efficient form */
