@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.67 88/08/12 14:34:45 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.68 88/08/13 09:11:53 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1234,7 +1234,7 @@ spawn ()
 		envnew = vtterm;
 		ptr = termcap;
 	}
-	while(*envnew) {
+	while (*envnew != NULL) {
 		if(tgetent(ptr, *envnew) == 1) {
 			TermName = *envnew;
 			if(!screen->TekEmu)
@@ -1243,7 +1243,11 @@ spawn ()
 		}
 		envnew++;
 	}
-
+	if (TermName == NULL) {
+	    fprintf (stderr, "%s:  unable to find usable termcap entry.\n",
+		     ProgramName);
+	    Exit (1);
+	}
 
 #ifdef sun
 #ifdef TIOCSSIZE
