@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.18 92/11/19 15:18:26 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.19 92/11/19 16:23:41 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -727,7 +727,10 @@ pexGetRendererAttributesReq 	*strmPtr;
 	ddElementRef *per = (ddElementRef *)(prend->curPath->pList);
 	PACK_CARD32( prend->curPath->numObj, ptr);
 	for (i=0; i<prend->curPath->numObj; i++, per++) {
-	    sid = GetId(per->structure);
+	    /* Begin Structure uses the structure handle field to store the
+	       ID so there is no need to look it up, just assign it
+	    */
+	    sid = (pexStructure) per->structure;
 	    PACK_CARD32(sid, ptr);
 	    PACK_CARD32(per->offset, ptr);
 	}
