@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcs_id[] =
-    "$XConsortium: init.c,v 2.22 88/09/02 17:04:04 swick Exp $";
+    "$XConsortium: init.c,v 2.23 88/09/03 11:07:01 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -207,7 +207,7 @@ char **argv;
     if (app_resources.mailDir == NULL)
 	app_resources.mailDir = MallocACopy(str2);
 
-    NullSource = XtCreateEDiskSource("/dev/null", FALSE);
+    NullSource = CreateFileSource(toplevel, "/dev/null", FALSE);
 
     l = strlen(app_resources.defMhPath) - 1;
     if (l > 0 && app_resources.defMhPath[l] == '/')

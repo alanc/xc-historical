@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: tocutil.c,v 2.23 89/05/11 19:24:25 converse Exp $";
+    "$XConsortium: tocutil.c,v 2.24 89/06/28 15:26:59 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -565,6 +565,7 @@ Msg TUAppendToc(toc, ptr)
     msg->changed = TRUE;
     msg->fate = Fignore;
     msg->desttoc = NULL;
+    msg->widget = NULL;
     if (toc->viewedseq == toc->seqlist[0]) {
 	msg->visible = TRUE;
 	toc->lastPos += msg->length;

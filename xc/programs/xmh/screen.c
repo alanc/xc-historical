@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: screen.c,v 2.35 89/06/13 10:36:34 converse Exp $";
+    "$XConsortium: screen.c,v 2.36 89/06/28 16:08:13 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -104,16 +104,23 @@ Scrn scrn;
 
 	  case STcomp:
 	    if (scrn->msg != NULL) {
+#ifdef notdef		  
 		changed = MsgChanged(scrn->msg);
+#else
+		changed = TRUE;
+#endif
 		reapable = MsgGetReapable(scrn->msg);
 		SetButton(scrn->viewbuttons, "send", changed || !reapable);
 		SetButton(scrn->viewbuttons, "save", changed || reapable);
 		SetButton(scrn->viewbuttons, "insert",
 			  scrn->assocmsg != NULL ? TRUE : FALSE);
-		if (!changed) MsgSetCallOnChange(scrn->msg,
-						 EnableProperButtons,
-						 (caddr_t) scrn);
-		else MsgClearCallOnChange(scrn->msg);
+#ifdef notdef		  
+		if (!changed) 
+		    MsgSetCallOnChange(scrn->msg,EnableProperButtons,
+				       (caddr_t) scrn);
+		else 
+		    MsgClearCallOnChange(scrn->msg);
+#endif
 	    } else {
 		SetButton(scrn->viewbuttons, "send", FALSE);
 		SetButton(scrn->viewbuttons, "save", FALSE);

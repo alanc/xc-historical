@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: compfuncs.c,v 2.8 88/02/24 15:37:14 swick Exp $";
+static char rcs_id[] = "$XConsortium: compfuncs.c,v 2.9 88/09/06 17:23:13 jim Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -86,7 +86,7 @@ CreateForward(mlist)
     Msg msg;
     scrn = NewCompScrn();
     msg = TocMakeNewMsg(DraftsFolder);
-    MsgLoadForward(msg, mlist);
+    MsgLoadForward(scrn, msg, mlist);
     MsgSetTemporary(msg);
     (void) MsgSetScrn(msg, scrn);
     MapScrn(scrn);

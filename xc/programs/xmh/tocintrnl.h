@@ -1,4 +1,4 @@
-/* $XConsortium: tocintrnl.h,v 2.7 89/05/04 15:14:51 converse Exp $ */
+/* $XConsortium: tocintrnl.h,v 2.8 89/05/11 19:26:55 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -51,6 +51,7 @@ typedef struct _MsgRec {
     Scrn	*scrn;		/* Scrns showing this message (if any) */
     Cardinal	num_scrns;	/* How many scrns are currently showing msg. */
     XawTextSource source;	/* Source (if any) containing this msg. */
+    Widget      widget;		/* Widget this message is in. */
     short	reapable;	/* True iff we don't need to keep this
 				   composition around. */
     XawTextPosition startPos;	/* Where to start the insertion point. */
