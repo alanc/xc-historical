@@ -1,8 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.29 93/08/19 20:30:02 rws Exp $
-#define IHaveSubdirs
-#define PassCDebugFlags
-
-SUBDIRS = PEX
+XCOMM $XConsortium: Imakefile,v 1.31 93/09/04 16:22:15 rws Exp $
 
 HEADERS = Xext.h multibuf.h shape.h XShm.h MITMisc.h XI.h XInput.h XIproto.h \
 	XTest.h xtestext1.h saver.h scrnsaver.h XIE.h XIEproto.h XIEprotost.h \
@@ -16,6 +12,3 @@ BuildIncludes($(HEADERS),extensions,..)
 InstallMultiple($(HEADERS),$(INCDIR)/extensions)
 
 depend::
-
-MakeSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
