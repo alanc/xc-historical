@@ -412,8 +412,8 @@
   (input-lock (make-process-lock))		; Lock over reading from the input stream
   (event-lock (make-process-lock))		; with-event-queue lock
   (event-queue-lock (make-process-lock))	; new-events/event-queue lock
-  (new-events nil)				; unprocessed events (a cons of event-queue)
-  (event-queue nil)				; processed and unprocessed events
+  (new-events nil :type list)			; unprocessed events (a cons of event-queue)
+  (event-queue (list nil) :type cons)		; processed and unprocessed events
   (atom-cache (make-hash-table :test #'eq :size *atom-cache-size*)
 	      :type hash-table)			; EQ Hash table relating atoms keywords
 						; to resource id's
