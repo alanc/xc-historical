@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: rprntwdw.m,v 1.5 92/06/11 17:15:57 rws Exp $
  */
 >>TITLE XReparentWindow CH07
 void
@@ -589,22 +589,22 @@ Call xname.
 Verify that BadMatch error occurs.
 >>CODE BadMatch
 XVisualInfo	*vp;
-unsigned int 	depth = 0;
-int 	found;
+unsigned int	depth;
 
-	found = 0;
+	depth = DefaultDepth(display, DefaultScreen(display));
 	for (resetvinf(VI_WIN); nextvinf(&vp); ) {
-		if (depth && depth != vp->depth) {
-			found = 1;
+		if (!w && vp->depth == depth) {
 			w = makewin(display, vp);
-			break;
-		} else {
-			depth = vp->depth;
+			if (parent)
+				break;
+		} else if (!parent && vp->depth != depth) {
 			parent = makewin(display, vp);
+			if (w)
+				break;
 		}
 	}
 
-	if (!found) {
+	if (!parent) {
 		unsupported("Only one depth window supported");
 		return;
 	}
