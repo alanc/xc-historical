@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Converters.h,v 1.4 90/02/26 14:16:05 kit Exp $
+ * $XConsortium: Converters.h,v 1.5 90/03/28 17:10:25 swick Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -88,6 +88,36 @@ extern Boolean XmuCvtStringToColorCursor(
 #define XtRColorCursor "ColorCursor"
 #define XtNpointerColor "pointerColor"
 #define XtNpointerColorBackground "pointerColorBackground"
+
+
+/******************************************************************************
+ * XmuCvtStringToGravity
+ */
+typedef int XtGravity;
+
+#define XtRGravity "Gravity"
+#define XtEForget "forget"
+#define XtENorthWest "northwest"
+#define XtENorth "north"
+#define XtENorthEast "northeast"
+#define XtEWest "west"
+#define XtECenter "center"
+#define XtEEast "east"
+#define XtESouthWest "southwest"
+#define XtESouth "south"
+#define XtESouthEast "southeast"
+#define XtEStatic "static"
+#define XtEUnmap "unmap"
+
+extern void XmuCvtStringToGravity (
+#if NeedFunctionPrototypes
+    XrmValue*		/* args */,
+    Cardinal*		/* num_args */,
+    XrmValuePtr		/* fromVal */,
+    XrmValuePtr		/* toVal */
+#endif
+);
+
 
 /******************************************************************************
  * XmuCvtStringToJustify
