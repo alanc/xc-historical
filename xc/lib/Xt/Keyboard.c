@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.22 91/07/21 14:01:51 converse Exp $ */
+/* $XConsortium: Keyboard.c,v 1.23 91/07/21 16:32:32 converse Exp $ */
 
 /********************************************************
 
@@ -244,12 +244,7 @@ static Widget 	FindKeyDestination(widget, event,
 		    (devGrabType == XtPassiveServerGrab))
 		     {
 			 if (IsOutside(event, widget) ||
-#ifdef OWNER_EVENTS_FIX
-			     !devGrab->ownerEvents
-#else
 			     event->type ==KeyPress
-#endif /* OWNER_EVENTS_FIX */
-			     
 			     )
 			   dspWidget = devGrab->widget;
 		     }
@@ -265,11 +260,6 @@ static Widget 	FindKeyDestination(widget, event,
 		      if ((ewRelFw != XtMyAncestor) 
 			  && (devGrabType == XtPassiveServerGrab)
 			  && (!IsAnyGrab(prevGrabType))
-#ifdef OWNER_EVENTS_FIX
-			  &&
-			  (!devGrab->ownerEvents || 
-			   (devGrab->keyboardMode == GrabModeSync))
-#endif /* OWNER_EVENTS_FIX */
 			  )
 			{
 			    XtUngrabKeyboard(devGrab->widget,
@@ -283,12 +273,7 @@ static Widget 	FindKeyDestination(widget, event,
 		       * focus 
 		       */
 		      if (
-#ifdef OWNER_EVENTS_FIX
-			  IsAnyGrab(devGrabType) && 
-			  (devGrab->ownerEvents)
-#else
 			  (event->type != KeyPress)
-#endif /* OWNER_EVENTS_FIX */
 			  )
 			dspWidget = focusWidget;
 		      else
@@ -326,9 +311,6 @@ static Widget 	FindKeyDestination(widget, event,
 				  device->grab = *grab;
 
 				  if (grab 
-#ifdef OWNER_EVENTS_FIX
-				      && !grab->ownerEvents
-#endif /* OWNER_EVENTS_FIX */
 				      )
 				    dspWidget = grab->widget;
 				  else
