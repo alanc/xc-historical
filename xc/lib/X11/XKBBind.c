@@ -1,4 +1,4 @@
-/* $XConsortium: XKBBind.c,v 1.3 93/09/28 19:48:37 rws Exp $ */
+/* $XConsortium: XKBBind.c,v 1.5 94/02/03 18:48:58 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -24,8 +24,12 @@ without express or implied warranty.
 #include <locale.h>
 
 #include <X11/extensions/XKBproto.h>
-#include <X11/extensions/XKBstr.h>
 #include "XKBlibint.h"
+
+#if defined(__sgi) && defined(USE_OWN_COMPOSE)
+#define	COMPOSE_NO_CONST_MEMBERS
+#include "Compose.h"
+#endif
 
 #define AllMods (ShiftMask|LockMask|ControlMask| \
 		 Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask)
@@ -86,7 +90,7 @@ XKeycodeToKeysym(dpy, kc, col)
     CHECK_PENDING_REFRESH(dpy);
 
     xkb = dpy->xkb_info->desc;
-    if ((kc<xkb->minKeyCode)||(kc>xkb->maxKeyCode))
+    if ((kc<xkb->min_key_code)||(kc>xkb->max_key_code))
 	return NoSymbol;
 
     if (( col<0 ) || (col>=(int)XkbKeyNumSyms(xkb,kc)))
@@ -130,9 +134,9 @@ XModifierKeymap	*modmap;
 
     if (!dpy->xkb_info)		return 0;
     if (dpy->xkb_info->modmap)	return 1;
-    dpy->xkb_info->modmap = (char *)Xmalloc(dpy->xkb_info->desc->maxKeyCode+1);
+    dpy->xkb_info->modmap= (char *)Xmalloc(dpy->xkb_info->desc->max_key_code+1);
     if (!dpy->xkb_info->modmap)	return 0;
-    bzero(dpy->xkb_info->modmap,dpy->xkb_info->desc->maxKeyCode+1);
+    bzero(dpy->xkb_info->modmap,dpy->xkb_info->desc->max_key_code+1);
     modmap = XGetModifierMapping(dpy);
     if (modmap) {
 	register int m,k;
@@ -140,8 +144,8 @@ XModifierKeymap	*modmap;
 	map= modmap->modifiermap;
 	for (m=0;m<8;m++) {
 	    for (k=0;k<modmap->max_keypermod;k++,map++) {
-		if (((*map)>=dpy->xkb_info->desc->minKeyCode)&&
-		    ((*map)<=dpy->xkb_info->desc->maxKeyCode)) {
+		if (((*map)>=dpy->xkb_info->desc->min_key_code)&&
+		    ((*map)<=dpy->xkb_info->desc->max_key_code)) {
 		    dpy->xkb_info->modmap[*map]|= (1<<m);
 		}
 	    }
@@ -171,7 +175,7 @@ XkbKeysymToModifiers(dpy,ks)
 
     xkb= dpy->xkb_info->desc;
     mods= 0;
-    for (i = xkb->minKeyCode; i <= (int)xkb->maxKeyCode; i++) {
+    for (i = xkb->min_key_code; i <= (int)xkb->max_key_code; i++) {
 	pSyms= XkbKeySymsPtr(xkb,i);
 	for (j=XkbKeyNumSyms(xkb,i)-1;j>=0;j--) {
 	    if (pSyms[j]==ks) {
@@ -206,8 +210,9 @@ XkbTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return)
     KeySym *keysym_return;
 {
     register XkbInfoPtr xkb;
-    XkbKeyTypeRec *keyType;
+    XkbKeyTypeRec *type;
     int col;
+    unsigned preserve;
     KeySym *syms;
 
     if (XKB_UNAVAILABLE(dpy))
@@ -231,7 +236,7 @@ XkbTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return)
 
     /* find the offset of the effective group */
     col = 0;
-    keyType = XkbKeyKeyType(xkb->desc,keycode);
+    type = XkbKeyKeyType(xkb->desc,keycode);
     if ( XkbModifiersGroup(modifiers)!=0 ) {
 	unsigned effectiveGroup = XkbModifiersGroup(modifiers);
 	if ( effectiveGroup >= XkbKeyNumGroups(xkb->desc,keycode) ) {
@@ -239,16 +244,27 @@ XkbTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return)
 		 effectiveGroup %= XkbKeyNumGroups(xkb->desc,keycode);
 	    else effectiveGroup = XkbKeyNumGroups(xkb->desc,keycode)-1;
 	}
-	col= effectiveGroup*keyType->groupWidth;
+	col= effectiveGroup*type->group_width;
     }
 
-    /* find the column within the group */
-    col+= keyType->map[modifiers&keyType->mask];
+    preserve= 0;
+    if (type->map) { /* find the column (shift level) within the group */
+	register int i;
+	register XkbKTMapEntryPtr entry;
+	for (i=0,entry=type->map;i<type->map_count;i++,entry++) {
+	    if ((entry->active)&&((modifiers&type->mask)==entry->mask)) {
+		col+= entry->level;
+		if (type->preserve)
+		    preserve= type->preserve[i].mask;
+		break;
+	    }
+	}
+    }
 
     if (keysym_return!=NULL)
 	*keysym_return= syms[col];
     if (modifiers_return)
-	*modifiers_return&= ~keyType->mask;
+	*modifiers_return&= ~(type->mask&(~preserve));
     return (syms[col]!=NoSymbol);
 }
 
@@ -274,19 +290,50 @@ XRefreshKeyboardMapping(event)
 	else {
 	    bzero(&changes,sizeof(changes));
 	    changes.changed= XkbKeySymsMask;
-	    if (xkbi->desc->minKeyCode<xkbi->desc->maxKeyCode) {
-		changes.firstKeySym= xkbi->desc->minKeyCode;
-		changes.nKeySyms= xkbi->desc->maxKeyCode-
-						xkbi->desc->minKeyCode+1;
+	    if (xkbi->desc->min_key_code<xkbi->desc->max_key_code) {
+		changes.first_key_sym= xkbi->desc->min_key_code;
+		changes.num_key_syms= xkbi->desc->max_key_code-
+						xkbi->desc->min_key_code+1;
 	    }
 	    else {
-		changes.firstKeySym= event->first_keycode;
-		changes.nKeySyms= event->count;
+		changes.first_key_sym= event->first_keycode;
+		changes.num_key_syms= event->count;
 	    }
 	}
 
 	if (!XkbRefreshMap(dpy,xkbi->desc, &changes)){
-		fprintf(stderr,"XkbRefreshMap failed\n");
+		fprintf(stderr,"Internal Error! XkbRefreshMap failed:\n");
+#ifdef DEBUG
+		if (changes.changed&XkbKeyTypesMask) {
+		    int first= changes.first_type;
+		    int last= changes.first_type+changes.num_types-1;
+		    fprintf(stderr,"       types:  %d..%d\n",first,last);
+		}
+		if (changes.changed&XkbKeySymsMask) {
+		    int first= changes.first_key_sym;
+		    int last= changes.first_key_sym+changes.num_key_syms-1;
+		    fprintf(stderr,"     symbols:  %d..%d\n",first,last);
+		}
+		if (changes.changed&XkbKeyActionsMask) {
+		    int last,first= changes.first_key_act;
+		    last= changes.first_key_act+changes.num_key_acts-1;
+		    fprintf(stderr,"     acts:  %d..%d\n",first,last);
+		}
+		if (changes.changed&XkbKeyBehaviorsMask) {
+		    int last,first= changes.first_key_behavior;
+		    last= first+changes.num_key_behaviors-1;
+		    fprintf(stderr,"   behaviors:  %d..%d\n",first,last);
+		}
+		if (changes.changed&XkbVirtualModsMask) {
+		    fprintf(stderr,"virtual mods: 0x%04x\n",
+					changes.vmods);
+		}
+		if (changes.changed&XkbExplicitComponentsMask) {
+		    int last,first= changes.first_key_explicit;
+		    last= first+changes.num_key_explicit-1;
+		    fprintf(stderr,"    explicit:  %d..%d\n",first,last);
+		}
+#endif
 	}
 	LockDisplay(dpy);
 	if (xkbi->flags&XkbMapPending) {
@@ -330,16 +377,20 @@ _XkbLoadDpy(dpy)
     xkbi = dpy->xkb_info;
     query = XkbFullClientInfoMask;
     desc = XkbGetMap(dpy,query,XkbUseCoreKbd);
+    if (!desc) {
+#ifdef DEBUG
+	fprintf(stderr,"Warning! XkbGetMap failed!\n");
+#endif
+	return 0;
+    }
     LockDisplay(dpy);
     xkbi->desc = desc;
 
     xkbi->charset = _XkbGetCharset(NULL);
-    if ( xkbi->charset ) {
-	_XkbGetConverters(xkbi->charset,&xkbi->cvt);
-    }
+    _XkbGetConverters(xkbi->charset,&xkbi->cvt);
     UnlockDisplay(dpy);
     oldEvents= xkbi->selected_events;
-    XkbSelectEventDetails(dpy,xkbi->desc->deviceSpec,XkbMapNotify,
+    XkbSelectEventDetails(dpy,xkbi->desc->device_spec,XkbMapNotify,
 				XkbAllMapComponentsMask,XkbFullClientInfoMask);
     LockDisplay(dpy);
     xkbi->selected_events= oldEvents;
@@ -451,6 +502,72 @@ XLookupString (event, buffer, nbytes, keysym, status)
 
     if (!XkbTranslateKey(dpy,event->keycode,event->state, &new_mods,keysym))
 	return 0;
+
+#if defined(__sgi) && defined(USE_OWN_COMPOSE)
+    if ( status ) {
+	static int been_here= 0;
+	if ( !been_here ) {
+	    ComposeInitTables();
+	    been_here = 1;
+	}
+	if ( !ComposeLegalStatus(status) ) {
+	    status->compose_ptr = NULL;
+	    status->chars_matched = 0;
+	}
+	if ( ((status->chars_matched>0)&&(status->compose_ptr!=NULL)) || 
+		IsComposeKey(*keysym,event->keycode,status) ) {
+	    ComposeRtrn rtrn;
+	    switch (ComposeProcessSym(status,*keysym,&rtrn)) {
+		case COMPOSE_IGNORE:
+		    break;
+		case COMPOSE_IN_PROGRESS:
+		    if ( keysym!=NULL )
+			*keysym = NoSymbol;
+		    return 0;
+		case COMPOSE_FAIL:
+		{
+		    int n = 0, len= 0;
+		    for (n=len=0;rtrn.sym[n]!=XK_VoidSymbol;n++) {
+			if ( nbytes-len > 0 ) {
+			    len+= _XTranslateKeySym(event->display,&rtrn.sym[n],
+							new_mods,
+							buffer+len,nbytes-len);
+			}
+		    }
+		    if ( keysym!=NULL ) {
+			if ( n==1 )	*keysym = rtrn.sym[0];
+			else		*keysym = NoSymbol;
+		    }
+		    return len;
+		}
+		case COMPOSE_SUCCEED:
+		{
+		    int len,n = 0;
+
+		    *keysym = rtrn.matchSym;
+		    if ( rtrn.str[0]!='\0' ) {
+			strncpy(buffer,rtrn.str,nbytes-1);
+			buffer[nbytes-1]= '\0';
+			len = strlen(buffer);
+		    }
+		    else {
+			len = XkbTranslateKeySym(event->display,keysym,
+							new_mods,
+							buffer,nbytes);
+		    }
+		    for (n=0;rtrn.sym[n]!=XK_VoidSymbol;n++) {
+			if ( nbytes-len > 0 ) {
+			    len+= _XTranslateKeySym(event->display,rtrn.sym[n],
+							event->state,
+							buffer+len,nbytes-len);
+			}
+		    }
+		    return len;
+		}
+	    }
+	}
+    }
+#endif
 
     rtrnLen = XkbTranslateKeySym(dpy,keysym,new_mods,buffer,nbytes);
     return rtrnLen;

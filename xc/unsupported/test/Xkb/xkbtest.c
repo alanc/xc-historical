@@ -47,8 +47,8 @@ static	int		 startTest= -1;
 
 int
 parseArgs(argc,argv)
-    int		argc;
-    char *	argv[];
+    int argc;
+    char *argv[];
 {
 int i;
 unsigned on= 0;
@@ -57,8 +57,8 @@ unsigned off= 0;
     if (argc<2)
 	return 0;
     if (argv[1][0]!='-') {
-	if (strcmp(argv[1],"start")==0)	startTest= 1;
-	else if (strcmp(argv[1],"end")==0)	startTest= 0;
+	if (strcasecmp(argv[1],"start")==0)	startTest= 1;
+	else if (strcasecmp(argv[1],"end")==0)	startTest= 0;
 	if (argc>2) {
 	    unsigned int tmp;
 	    wantDebug= 1;
@@ -158,49 +158,49 @@ ChangeCompatMap(dpy,xkb,start)
 register int i;
 XkbSymInterpretPtr si;
 
-    si= xkb->compat->symInterpret;
-    for (i=0;i<xkb->compat->nSymInterpret;i++,si++) {
+    si= xkb->compat->sym_interpret;
+    for (i=0;i<xkb->compat->num_si;i++,si++) {
 	if (start) {
-	    switch(si->action.type) {
-		case XkbSAISOLock:
-		case XkbSALockMods:
-		case XkbSALatchMods:
-		    si->action.type= XkbSASetMods;
+	    switch(si->act.type) {
+		case XkbSA_ISOLock:
+		case XkbSA_LockMods:
+		case XkbSA_LatchMods:
+		    si->act.type= XkbSA_SetMods;
 		    break;
-		case XkbSALatchGroup:
-		case XkbSALockGroup:
-		    si->action.type= XkbSASetGroup;
+		case XkbSA_LatchGroup:
+		case XkbSA_LockGroup:
+		    si->act.type= XkbSA_SetGroup;
 		    break;
 	    }
 	}
-	else if (si->action.type==XkbSASetMods) {
+	else if (si->act.type==XkbSA_SetMods) {
 	    switch (si->sym) {
 		case XK_Num_Lock:
 		case XK_Scroll_Lock:
 		case XK_Caps_Lock:
 		case XK_Shift_Lock:
-		    si->action.type= XkbSALockMods;
+		    si->act.type= XkbSA_LockMods;
 		    break;
 		case XK_ISO_Lock:
-		    si->action.type= XkbSAISOLock;
+		    si->act.type= XkbSA_ISOLock;
 		    break;
 		case XK_ISO_Level2_Latch:
 		case XK_ISO_Level3_Latch:
-		    si->action.type= XkbSALatchMods;
+		    si->act.type= XkbSA_LatchMods;
 		    break;
 	    }
 	}
-	else if (si->action.type==XkbSASetGroup) {
+	else if (si->act.type==XkbSA_SetGroup) {
 	    switch (si->sym) {
 		case XK_Mode_switch:
-		    si->action.type= XkbSASetGroup;
+		    si->act.type= XkbSA_SetGroup;
 		    break;
 		case XK_ISO_Group_Latch:
-		    si->action.type= XkbSALatchGroup;
+		    si->act.type= XkbSA_LatchGroup;
 		    break;
 		case XK_ISO_Next_Group:
 		case XK_ISO_Prev_Group:
-		    si->action.type= XkbSALockGroup;
+		    si->act.type= XkbSA_LockGroup;
 		    break;
 	    }
 	}
@@ -234,10 +234,10 @@ XkbDescPtr	xkb;
 	fprintf(stderr,"-mdebug             turn on allocator debugging\n");
 #endif
 	fprintf(stderr,"At the start of testing, disables all XKB controls\n");
-	fprintf(stderr,"and changes any LockMods or LatchMods key actions\n");
+	fprintf(stderr,"and changes any LockMods or LatchMods key acts\n");
 	fprintf(stderr,"to SetMods, which makes the key map conform to some\n");
 	fprintf(stderr,"assumptions made by the X test suite.\n");
-	fprintf(stderr,"When testing ends, returns XKB controls and actions\n");
+	fprintf(stderr,"When testing ends, returns XKB controls and acts\n");
 	fprintf(stderr,"to their defaults, which does not necessarily\n");
 	fprintf(stderr,"correspond to their state at the start of testing\n");
 	return 1;

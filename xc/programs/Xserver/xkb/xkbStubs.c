@@ -38,10 +38,15 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifdef sgi
 #define	NEED_UPDATE_INDICATORS		0
 #define	NEED_INIT_DEVICE		0
+#define	NEED_CHANGE_XKB_CONTROLS	0
+#define	NEED_KEY_CLICK			0
 #endif
 
 #ifndef NEED_UPDATE_INDICATORS
 #define	NEED_UPDATE_INDICATORS		1
+#endif
+#ifndef NEED_KEY_CLICK
+#define NEED_KEY_CLICK			1
 #endif
 #ifndef NEED_FAKE_POINTER_MOTION
 #define	NEED_FAKE_POINTER_MOTION	1
@@ -62,6 +67,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define NEED_INIT_DEVICE		1
 #endif
 
+extern	CARD16	xkbDebugFlags;
+
 #if NEED_UPDATE_INDICATORS
 void
 DDXUpdateIndicators(pXDev,old,new)
@@ -71,12 +78,26 @@ DDXUpdateIndicators(pXDev,old,new)
 {
     if (pXDev->kbdfeed) {
 	int realRepeat= pXDev->kbdfeed->ctrl.autoRepeat;
-	pXDev->kbdfeed->ctrl.autoRepeat= FALSE;
+	if (XkbUsesSoftRepeat(pXDev))
+	    pXDev->kbdfeed->ctrl.autoRepeat= FALSE;
 	pXDev->kbdfeed->ctrl.leds= new;
 	if (pXDev->kbdfeed->CtrlProc)
 	    (*pXDev->kbdfeed->CtrlProc)(pXDev,&pXDev->kbdfeed->ctrl);
 	pXDev->kbdfeed->ctrl.autoRepeat= realRepeat;
     }
+    return;
+}
+#endif
+
+#if NEED_KEY_CLICK
+void
+DDXKeyClick(pXDev,keycode,synthetic)
+    DeviceIntPtr	pXDev;
+    int			keycode;
+    int			synthetic;
+{
+    if (xkbDebugFlags)
+	ErrorF("Click.\n");
     return;
 }
 #endif
@@ -143,10 +164,10 @@ DDXChangeXkbControls(dev,old,new)
 
 #if NEED_TERMINATE_SERVER
 int
-DDXTerminateServer(dev,key,action)
+DDXTerminateServer(dev,key,act)
     DeviceIntPtr  dev;
     KeyCode	  key;
-    XkbAction	 *action;
+    XkbAction	 *act;
 {
     GiveUp(1);
     return 0;
@@ -155,10 +176,10 @@ DDXTerminateServer(dev,key,action)
 
 #if NEED_SWITCH_VIRTUAL_SCREEN
 int
-DDXSwitchScreen(dev,key,action)
+DDXSwitchScreen(dev,key,act)
     DeviceIntPtr  dev;
     KeyCode	  key;
-    XkbAction	 *action;
+    XkbAction	 *act;
 {
     return 1;
 }
@@ -166,8 +187,8 @@ DDXSwitchScreen(dev,key,action)
 
 #if NEED_INIT_DEVICE
 int
-DDXInitXkbDevice(pXDev)
-    DeviceIntPtr    pXDev;
+DDXInitXkbDevice(dev)
+    DeviceIntPtr    dev;
 {
     return 1;
 }

@@ -84,7 +84,89 @@ typedef struct _XkbInfoRec {
 	 */
 #define XKB_XLIB_MAP_MASK (XkbFullClientInfoMask)
 
+	/*
+	 * Handy helper macros 
+	 */
+#define	XKB_INSURE_SIZE(f,t,nNum,oNum)	{\
+	if ((f)==NULL)	\
+	     (f)=(t *)Xmalloc(sizeof(t)*(nNum));\
+	else if ((nNum)<(oNum))\
+	     (f)=(t *)Xrealloc((f),sizeof(t)*(nNum));\
+	}
+
+typedef struct _XkbReadBuffer {
+	int	 error;
+	int	 size;
+	char	*start;
+	char	*data;
+} XkbReadBufferRec,*XkbReadBufferPtr;
+
 _XFUNCPROTOBEGIN
+
+extern	int _XkbInitReadBuffer(
+#if NeedFunctionPrototypes
+    Display *		/* dpy */,
+    XkbReadBufferPtr	/* buf */,
+    int			/* size */
+#endif
+);
+
+extern int _XkbSkipReadBufferData(
+#if NeedFunctionPrototypes
+    XkbReadBufferPtr	/* from */,
+    int			/* size */
+#endif
+);
+
+extern int _XkbCopyFromReadBuffer(
+#if NeedFunctionPrototypes
+    XkbReadBufferPtr	/* from */,
+    char *		/* to */,
+    int			/* size */
+#endif
+);
+
+
+#if defined(WORD64) || defined(LONG64)
+extern	int _XkbCopyData32(
+#if NeedFunctionPrototypes
+    int *		/* from */,
+    long *		/* lp */,
+    int			/* num_words */
+#endif
+);
+
+extern int _XkbReadBufferCopy32(
+#if NeedFunctionPrototypes
+    XkbReadBufferPtr	/* from */,
+    long *		/* to */,
+    int			/* size */
+#endif
+);
+#else
+#define	_XkbCopyData32(f,t,s)	    memcpy((char *)(t),(char *)(f),(s)*4)
+#define	_XkbReadBufferCopy32(f,t,s) _XkbCopyFromReadBuffer(f,(char *)t,(s)*4)
+#endif
+
+extern char *_XkbPeekAtReadBuffer(
+#if NeedFunctionPrototypes
+    XkbReadBufferPtr	/* from */,
+    int			/*  size */
+#endif
+);
+
+extern char *_XkbGetReadBufferPtr(
+#if NeedFunctionPrototypes
+    XkbReadBufferPtr	/* from */,
+    int			/* size */
+#endif
+);
+
+extern int _XkbFreeReadBuffer(
+#if NeedFunctionPrototypes
+    XkbReadBufferPtr	/* buf */
+#endif
+);
 
 extern char	*_XkbGetCharset(
 #if NeedFunctionPrototypes

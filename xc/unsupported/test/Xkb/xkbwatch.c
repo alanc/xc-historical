@@ -36,11 +36,12 @@ static	char		*dpyName = NULL;
 static	unsigned	 device = XkbUseCoreKbd;
 static	unsigned	 which = XkbAllStateComponentsMask;
 static	int		 page_size = 24;
+static	int		 synch= 0;
 
 int
 parseArgs(argc,argv)
-    int		argc;
-    char *	argv[];
+    int argc;
+    char *argv[];
 {
 int i;
 
@@ -63,6 +64,9 @@ int i;
 		fprintf(stderr,"Must specify a device with -device option\n");
 		return 0;
 	    }
+	}
+	else if ( strcmp(argv[i],"-synch")==0 ) {
+	    synch= 1;
 	}
 	else if ( strcmp(argv[i],"-page")==0 ) {
 	    if ( ++i<argc ) {
@@ -125,13 +129,13 @@ int i;
 
 int
 main(argc,argv)
-    int		argc;
-    char *	argv[];
+    int argc;
+    char *argv[];
 {
 Display	*dpy;
 int	i1,i2,i3,i4;
 int		ev_base,num_out;
-XEvent		xev;
+XkbEvent		xev;
 XkbStateNotifyEvent	*sn;
 
   
@@ -139,6 +143,7 @@ XkbStateNotifyEvent	*sn;
 	fprintf(stderr,"Usage: %s <options>\n",argv[0]);
 	fprintf(stderr,"Where legal options are:\n");
 	fprintf(stderr,"-display <dpy>     specifies display to use\n");
+	fprintf(stderr,"-synch             force synchronization\n");
 	fprintf(stderr,"-device <id>       specifies device to use\n");
 	fprintf(stderr,"-page              specifies lines per output page\n");
 	fprintf(stderr,"[+-][aA]           watch/ignore all components\n");
@@ -165,46 +170,48 @@ XkbStateNotifyEvent	*sn;
 	fprintf(stderr,"use extension failed (%d,%d)\n",i3,i4);
 	goto BAIL;
     }
-    XSynchronize(dpy,1);
+    if (synch)
+	XSynchronize(dpy,1);
     XkbSelectEventDetails(dpy,device,XkbStateNotify,which,which);
     num_out = 0;
     printf("Watching the keyboard state...\n");
     while (1) {
-	XNextEvent(dpy,&xev);
-	if (xev.type==XkbStateNotify+ev_base) {
+	XNextEvent(dpy,&xev.core);
+	if ((xev.type==ev_base+XkbEventCode)&&
+	    (xev.any.xkb_type==XkbStateNotify)) {
 	    if ((num_out%page_size)==0) {
 		printf("                ------- group --------  ------- modifiers -------------\n");
 		printf("id key   event  eff  base  latch  lock   eff  base  latch  lock  compat\n");
 	    }
 	    num_out++;
-	    sn = (XkbStateNotifyEvent *)&xev;
-		printf("%2d  %2d",sn->device, sn->keycode);
+	    sn= &xev.state;
+	    printf("%2d  %2d",sn->device, sn->keycode);
 		if (sn->keycode!=0)
-		     printf(" %7s",(sn->eventType==KeyPress?"down":"up"));
+		     printf(" %7s",(sn->event_type==KeyPress?"down":"up"));
 		else {
 		    char buf[30];
-		    sprintf(buf,"%d/%d",sn->requestMajor,sn->requestMinor);
+		    sprintf(buf,"%d/%d",sn->req_major,sn->req_minor);
 		    printf(" %7s",buf);
 		}
 		printf("   %2d%c   %2d%c    %2d%c   %2d%c",
 				sn->group,
 				(sn->changed&XkbGroupStateMask?'*':' '),
-				sn->baseGroup,
+				sn->base_group,
 				(sn->changed&XkbGroupBaseMask?'*':' '),
-				sn->latchedGroup,
+				sn->latched_group,
 				(sn->changed&XkbGroupLatchMask?'*':' '),
-				sn->lockedGroup,
+				sn->locked_group,
 				(sn->changed&XkbGroupLockMask?'*':' '));
 		printf(" 0x%02x%c 0x%02x%c  0x%02x%c 0x%02x%c   0x%02x%c\n",
 				sn->mods,
 				(sn->changed&XkbModifierStateMask?'*':' '),
-				sn->baseMods,
+				sn->base_mods,
 				(sn->changed&XkbModifierBaseMask?'*':' '),
-				sn->latchedMods,
+				sn->latched_mods,
 				(sn->changed&XkbModifierLatchMask?'*':' '),
-				sn->lockedMods,
+				sn->locked_mods,
 				(sn->changed&XkbModifierLockMask?'*':' '),
-				sn->compatState,
+				sn->compat_state,
 				(sn->changed&XkbCompatStateMask?'*':' '));
 	}
 	else {

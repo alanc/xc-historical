@@ -34,17 +34,18 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 static	char		*dpyName = NULL;
 static	int		 volume = 100;
-static	int		 deviceSpec = XkbUseCoreKbd;
+static	int		 devSpec = XkbUseCoreKbd;
 static	int		 bellClass= -1;
 static	int		 bellID= -1;
 static	char		 bellName[20];
 static	Atom		 nameAtom = None;
 static	int		 synch= 0;
+static	int		 win = None;
 
 int
 parseArgs(argc,argv)
-    int		argc;
-    char *	argv[];
+    int argc;
+    char *argv[];
 {
 int i;
 
@@ -64,7 +65,7 @@ int i;
 	}
 	else if ( strcmp(argv[i],"-dev")==0 ) {
 	    if ( ++i<argc ) {
-		if (sscanf(argv[i]," %i ",&deviceSpec)!=1) {
+		if (sscanf(argv[i]," %i ",&devSpec)!=1) {
 		    fprintf(stderr,"Device ID must be an integer\n");
 		    return 0;
 		}
@@ -113,6 +114,18 @@ int i;
 		return 0;
 	    }
 	}
+	else if ( strcmp(argv[i],"-w")==0 ) {
+	    if ( ++i<argc ) {
+		if (sscanf(argv[i]," %i ",&win)!=1) {
+		    fprintf(stderr,"Must specify a numeric window ID\n");
+		    return 0;
+		}
+	    }
+	    else {
+		fprintf(stderr,"Must specify a window ID for -w\n");
+		return 0;
+	    }
+	}
 	else {
 	    if ( i<argc-1 ) {
 		fprintf(stderr,"Bell name must be the last argument\n");
@@ -127,8 +140,8 @@ int i;
 
 int
 main(argc,argv)
-    int		argc;
-    char *	argv[];
+    int argc;
+    char *argv[];
 {
 Display	*dpy;
 int	i1,i2,i3,i4,i5;
@@ -147,6 +160,7 @@ unsigned	 	 query;
 	fprintf(stderr,"-bf <id>           specifies bell feedback to use\n");
 	fprintf(stderr,"-kf <id>           specifies keyboard feedback to use\n");
 	fprintf(stderr,"-v <volume>        specifies volume to use\n");
+	fprintf(stderr,"-w <id>            specifies window to use\n");
 	fprintf(stderr,"If neither device nor feedback are specified, %s uses the\n",argv[0]);
 	fprintf(stderr,"default values for the core keyboard device.\n");
 	return 1;
@@ -166,15 +180,15 @@ unsigned	 	 query;
     }
     if (bellName[0]!='\0')
 	nameAtom = XInternAtom(dpy,bellName,0);
-    if ((deviceSpec==XkbUseCoreKbd)&&(bellClass<0)) {
-	if (!XkbBell(dpy,volume,nameAtom)) {
+    if ((devSpec==XkbUseCoreKbd)&&(bellClass<0)) {
+	if (!XkbBell(dpy,win,volume,nameAtom)) {
 	    fprintf(stderr,"XkbBell request failed\n");
 	}
     }
     else {
 	if (bellClass<0)	bellClass= KbdFeedbackClass;
 	if (bellID<0)		bellID= 0;
-	if (!XkbDeviceBell(dpy,deviceSpec,bellClass,bellID,volume,nameAtom)) {
+	if (!XkbDeviceBell(dpy,win,devSpec,bellClass,bellID,volume,nameAtom)) {
 	    fprintf(stderr,"XkbDeviceBell request failed\n");
 	}
     }

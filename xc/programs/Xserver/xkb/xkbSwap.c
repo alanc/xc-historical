@@ -62,22 +62,68 @@ SProcXkbSelectEvents(client)
     swaps(&stuff->length,n);
     REQUEST_SIZE_MATCH(xkbSelectEventsReq);
     swaps(&stuff->deviceSpec,n);
-    swaps(&stuff->affectState,n);
-    swaps(&stuff->state,n);
+    swaps(&stuff->affectWhich,n);
+    swaps(&stuff->clear,n);
+    swaps(&stuff->selectAll,n);
     swaps(&stuff->affectMap,n);
     swaps(&stuff->map,n);
-    swapl(&stuff->affectControls,n);
-    swapl(&stuff->controls,n);
-    swaps(&stuff->affectNames,n);
-    swaps(&stuff->names,n);
-    swaps(&stuff->affectCompatMap,n);
-    swaps(&stuff->compatMap,n);
-    swapl(&stuff->affectIndicatorState,n);
-    swapl(&stuff->indicatorState,n);
-    swapl(&stuff->affectIndicatorMap,n);
-    swapl(&stuff->indicatorMap,n);
-    swaps(&stuff->affectAlternateSyms,n);
-    swaps(&stuff->alternateSyms,n);
+    if (stuff->affectWhich&(~XkbMapNotifyMask)!=0)  {
+	union {
+	    BOOL	*b;
+	    CARD8	*c8;
+	    CARD16	*c16;
+	    CARD32	*c32;
+	} from,to;
+	register unsigned bit,ndx,maskLeft,dataLeft,size;
+
+	from.c8= (CARD8 *)&stuff[1];
+	dataLeft= (stuff->length*4)-SIZEOF(xkbSelectEventsReq);
+	maskLeft= (stuff->affectWhich&(~XkbMapNotifyMask));
+	for (ndx=1,bit=2; (maskLeft!=0); ndx++, bit<<=1) {
+	    if ((bit&maskLeft)==0)
+		continue;
+	    maskLeft&= ~bit;
+	    if ((stuff->selectAll&bit)||(stuff->clear&bit))
+		continue;
+	    switch (ndx) {
+		case XkbStateNotify:
+		case XkbNamesNotify:
+		case XkbAlternateSymsNotify:
+		    size= 2;
+		    break;
+		case XkbControlsNotify:
+		case XkbIndicatorStateNotify:
+		case XkbIndicatorMapNotify:
+		    size= 4;
+		    break;
+		case XkbBellNotify:
+		case XkbActionMessage:
+		case XkbSlowKeyNotify:
+		case XkbCompatMapNotify:
+		    size= 1;
+		    break;
+		default:
+		    client->errorValue = XkbError2(0x1,bit);
+		    return BadValue;
+	    }
+	    if (dataLeft<(size*2))
+		return BadLength;
+	    if (size==2) {
+		swaps(&to.c16[0],n);
+		swaps(&to.c16[1],n);
+	    }
+	    else if (size==4) {
+		swapl(to.c32[0],n);
+		swapl(to.c32[0],n);
+	    }
+	    from.c8+= (size*2);
+	    dataLeft-= (size*2);
+	}
+	if (dataLeft>2) {
+	    ErrorF("Extra data (%d bytes) after SelectEvents\n",dataLeft);
+	    return BadLength;
+	}
+    }
     return ProcXkbSelectEvents(client);
 }
 
@@ -116,6 +162,7 @@ SProcXkbBell(client)
     REQUEST_SIZE_MATCH(xkbBellReq);
     swaps(&stuff->deviceSpec,n);
     swapl(&stuff->name,n);
+    swapl(&stuff->window,n);
     return ProcXkbBell(client);
 }
 
@@ -168,10 +215,10 @@ SProcXkbSetControls(client)
     swaps(&stuff->length,n);
     REQUEST_SIZE_MATCH(xkbSetControlsReq);
     swaps(&stuff->deviceSpec,n);
-    swaps(&stuff->affectInternalMods,n);
-    swaps(&stuff->internalMods,n);
-    swaps(&stuff->affectIgnoreLockMods,n);
-    swaps(&stuff->ignoreLockMods,n);
+    swaps(&stuff->affectInternalVirtualMods,n);
+    swaps(&stuff->internalVirtualMods,n);
+    swaps(&stuff->affectIgnoreLockVirtualMods,n);
+    swaps(&stuff->ignoreLockVirtualMods,n);
     swapl(&stuff->affectEnabledControls,n);
     swapl(&stuff->enabledControls,n);
     swapl(&stuff->changeControls,n);
@@ -200,6 +247,7 @@ SProcXkbGetMap(client)
     swaps(&stuff->deviceSpec,n);
     swaps(&stuff->full,n);
     swaps(&stuff->partial,n);
+    swaps(&stuff->virtualMods,n);
     return ProcXkbGetMap(client);
 }
 
@@ -217,7 +265,7 @@ SProcXkbSetMap(client)
     swaps(&stuff->resize,n);
     swaps(&stuff->totalSyms,n);
     swaps(&stuff->totalActions,n);
-    /* 11/15/93 (ef) -- XXX! what about keysyms and actions? */
+    /* 11/15/93 (ef) -- XXX! what about keysyms and acts? */
     return ProcXkbSetMap(client);
 }
 
@@ -232,8 +280,8 @@ SProcXkbGetCompatMap(client)
     swaps(&stuff->length,n);
     REQUEST_SIZE_MATCH(xkbGetCompatMapReq);
     swaps(&stuff->deviceSpec,n);
-    swaps(&stuff->firstSym,n);
-    swaps(&stuff->nSyms,n);
+    swaps(&stuff->firstSI,n);
+    swaps(&stuff->nSI,n);
     return ProcXkbGetCompatMap(client);
 }
 
@@ -247,8 +295,8 @@ SProcXkbSetCompatMap(client)
     swaps(&stuff->length,n);
     REQUEST_AT_LEAST_SIZE(xkbSetCompatMapReq);
     swaps(&stuff->deviceSpec,n);
-    swaps(&stuff->firstSym,n);
-    swaps(&stuff->nSyms,n);
+    swaps(&stuff->firstSI,n);
+    swaps(&stuff->nSI,n);
     /* 11/15/93 (ef) -- XXX! What about SymInterps and ModCompats? */
     return ProcXkbSetCompatMap(client);
 }
@@ -304,7 +352,7 @@ SProcXkbGetNames(client)
     swaps(&stuff->length,n);
     REQUEST_SIZE_MATCH(xkbGetNamesReq);
     swaps(&stuff->deviceSpec,n);
-    swaps(&stuff->which,n);
+    swapl(&stuff->which,n);
     return ProcXkbGetNames(client);
 }
 
@@ -318,12 +366,9 @@ SProcXkbSetNames(client)
     swaps(&stuff->length,n);
     REQUEST_AT_LEAST_SIZE(xkbSetNamesReq);
     swaps(&stuff->deviceSpec,n);
-    swaps(&stuff->which,n);
-    swapl(&stuff->keycodes,n);
-    swapl(&stuff->geometry,n);
-    swapl(&stuff->symbols,n);
+    swapl(&stuff->which,n);
     swapl(&stuff->indicators,n);
-    swaps(&stuff->resize,n);
+    swapl(&stuff->resize,n);
     return ProcXkbSetNames(client);
 }
 
@@ -462,14 +507,19 @@ SProcXkbDispatch (client)
 	return SProcXkbListAlternateSyms(client);
     case X_kbGetAlternateSyms:
 	return SProcXkbGetAlternateSyms(client);
-#ifdef NOTYET
     case X_kbSetAlternateSyms:
+#ifdef NOTYET
 	return SProcXkbSetAlternateSyms(client);
+#endif
     case X_kbGetGeometry:
+#ifdef NOTYET
 	return SProcXkbGetGeometry(client);
+#endif
     case X_kbSetGeometry:
+#ifdef NOTYET
 	return SProcXkbSetGeometry(client);
 #endif
+	return BadImplementation;
     case X_kbSetDebuggingFlags:
 	return SProcXkbSetDebuggingFlags(client);
     default:

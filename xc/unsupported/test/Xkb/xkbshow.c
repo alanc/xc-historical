@@ -31,6 +31,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/X.h>
 #include <X11/XKBlib.h>
 
+#ifdef sgi
+#include <malloc.h>
+#endif
+
 void
 printSyms(map,sym,num)
     XkbKeyTypeRec *map;
@@ -84,21 +88,67 @@ char *
 behaviorText(behavior)
     XkbBehavior behavior;
 {
-static char buf[30];
+static char buf[30],*str;
 
-    switch (behavior.type) {
-	case XkbRadioGroupKB:
-		sprintf(buf,"radio group (%d)",behavior.data);
+    str= buf;
+    if (behavior.type&XkbKB_Permanent) {
+	strcpy(buf,"permanent ");
+	str= &buf[strlen(buf)];
+    }
+    switch (behavior.type&XkbKB_OpMask) {
+	case XkbKB_RadioGroup:
+		sprintf(str,"radio group %d",behavior.data);
 		break;
-	case XkbDefaultKB:	  
-		strcpy(buf,"default");
+	case XkbKB_Default:	  
+		strcpy(str,"default");
 		break;
-	case XkbLockKB:	 
-		strcpy(buf,"lock");
+	case XkbKB_Lock:	 
+		strcpy(str,"lock");
 		break;
 	default:		 
-		sprintf(buf,"(unknown 0x%x)",behavior.type);
+		sprintf(str,"(unknown 0x%x)",behavior.type);
 		break;
+    }
+    return buf;
+}
+
+char *
+modIndexText(ndx)
+    CARD8 ndx;
+{
+static char buf[12];
+
+    switch (ndx) {
+	case ShiftMapIndex:
+	    strcpy(buf,"Shift");
+	    break;
+	case LockMapIndex:
+	    strcpy(buf,"Lock");
+	    break;
+	case ControlMapIndex:
+	    strcpy(buf,"Control");
+	    break;
+	case Mod1MapIndex:
+	    strcpy(buf,"Mod1");
+	    break;
+	case Mod2MapIndex:
+	    strcpy(buf,"Mod2");
+	    break;
+	case Mod3MapIndex:
+	    strcpy(buf,"Mod3");
+	    break;
+	case Mod4MapIndex:
+	    strcpy(buf,"Mod4");
+	    break;
+	case Mod5MapIndex:
+	    strcpy(buf,"Mod5");
+	    break;
+	case XkbNoModifier:
+	    strcpy(buf,"None");
+	    break;
+	default:
+	    strcpy(buf,"ERROR");
+	    break;
     }
     return buf;
 }
@@ -135,12 +185,12 @@ modsFlagsText(flags)
 static char buf[48];
 char *str= buf;
 
-    if (flags&XkbSAClearLocks) {
+    if (flags&XkbSA_ClearLocks) {
 	if (str!=buf)	*str++= '+';
 	strcpy(str,"clear");
 	str+= strlen("clear");
     }
-    if (flags&XkbSALatchToLock) {
+    if (flags&XkbSA_LatchToLock) {
 	if (str!=buf)	*str++= '+';
 	strcpy(str,"latch->lock");
 	str+= strlen("latch->lock");
@@ -156,19 +206,19 @@ isoAffectText(flags)
 static char buf[48];
 char *str= buf;
 
-    if (flags&XkbSAISONoAffectMods) {
+    if (flags&XkbSA_ISONoAffectMods) {
 	if (str==buf)	*str++= '!';
 	*str++= 'M';
     }
-    if (flags&XkbSAISONoAffectGroup) {
+    if (flags&XkbSA_ISONoAffectGroup) {
 	if (str==buf)	*str++= '!';
 	*str++= 'G';
     }
-    if (flags&XkbSAISONoAffectPtr) {
+    if (flags&XkbSA_ISONoAffectPtr) {
 	if (str==buf)	*str++= '!';
 	*str++= 'P';
     }
-    if (flags&XkbSAISONoAffectCtrls) {
+    if (flags&XkbSA_ISONoAffectCtrls) {
 	if (str==buf)	*str++= '!';
 	*str++= 'C';
     }
@@ -179,104 +229,143 @@ char *str= buf;
 }
 
 char *
-actionText(sa)
+actText(sa)
     XkbAction sa;
 {
 static char buf[100];
 char	*str1,*str2;
 
     switch (sa.type) {
-	case XkbSANoAction:
+	case XkbSA_NoAction:
 	    strcpy(buf,"NoAction");
 	    break;
-	case XkbSASetMods:
+	case XkbSA_SetMods:
 	    str1= (sa.mods.flags?modsFlagsText(sa.mods.flags):NULL);
-	    str2= (sa.mods.suppressLocks?stateText(sa.mods.suppressLocks):NULL);
-	    sprintf(buf,"SetMods(%s%s%s%s%s)",stateText(sa.mods.mods),
-					(str1?",":""),(str1?str1:""),
-					(str2?",suppress=":""),(str2?str2:""));
+	    sprintf(buf,"SetMods(%s%s%s)",stateText(sa.mods.mask),
+					(str1?",":""),(str1?str1:""));
 	    break;
-	case XkbSAISOLock:
+	case XkbSA_ISOLock:
 	    str1= isoAffectText(sa.iso.affect);
-	    if (sa.iso.flags&XkbSAISODfltIsGroup)
-		 sprintf(buf,"ISOLock(group=%d,affect=%s)",sa.iso.group,str1);
+	    if (sa.iso.flags&XkbSA_ISODfltIsGroup)
+		 sprintf(buf,"ISOLock(group=%d,affect=%s)",
+				XkbSAGroup(&sa.iso),str1);
 	    else sprintf(buf,"ISOLock(mods=%s,affect=%s)",
-				stateText(sa.iso.mods),str1);
+				stateText(sa.iso.mask),str1);
 	    break;
-	case XkbSALockMods:
-	    sprintf(buf,"LockMods(%s)",stateText(sa.mods.mods));
+	case XkbSA_LockMods:
+	    sprintf(buf,"LockMods(%s)",stateText(sa.mods.mask));
 	    break;
-	case XkbSALatchMods:
+	case XkbSA_LatchMods:
 	    str1= (sa.mods.flags?modsFlagsText(sa.mods.flags):NULL);
-	    str2= (sa.mods.suppressLocks?stateText(sa.mods.suppressLocks):NULL);
-	    sprintf(buf,"LatchMods(%s%s%s%s%s)",stateText(sa.mods.mods),
-					(str1?",":""),(str1?str1:""),
-					(str2?",":""),(str2?str2:""));
+	    sprintf(buf,"LatchMods(%s%s%s)",stateText(sa.mods.mask),
+					(str1?",":""),(str1?str1:""));
 	    break;
-	case XkbSASetGroup:
+	case XkbSA_SetGroup:
 	    str1= (sa.group.flags?modsFlagsText(sa.group.flags):NULL);
-	    sprintf(buf,"SetGroup(%d(%s)%s%s%s)",sa.group.group,
-		(sa.group.flags&XkbSAGroupAbsolute?"absolute":"relative"),
-		(str1?",":""),(str1?str1:""),
-		(sa.group.suppressLocks?",suppress=group":""));
+	    sprintf(buf,"SetGroup(%d(%s)%s)",XkbSAGroup(&sa.group),
+		(sa.group.flags&XkbSA_GroupAbsolute?"absolute":"relative"),
+		(str1?",":""),(str1?str1:""));
 	    break;
-	case XkbSALatchGroup:
+	case XkbSA_LatchGroup:
 	    str1= (sa.group.flags?modsFlagsText(sa.group.flags):NULL);
-	    sprintf(buf,"LatchGroup(%d(%s)%s%s%s)",sa.group.group,
-		(sa.group.flags&XkbSAGroupAbsolute?"absolute":"relative"),
-		(str1?",":""),(str1?str1:""),
-		(sa.group.suppressLocks?",suppress=group":""));
+	    sprintf(buf,"LatchGroup(%d(%s)%s)",XkbSAGroup(&sa.group),
+		(sa.group.flags&XkbSA_GroupAbsolute?"absolute":"relative"),
+		(str1?",":""),(str1?str1:""));
 	    break;
-	case XkbSALockGroup:
-	    sprintf(buf,"LockGroup(%d(%s))",sa.group.group,
-		(sa.group.flags&XkbSAGroupAbsolute?"absolute":"relative"));
+	case XkbSA_LockGroup:
+	    sprintf(buf,"LockGroup(%d(%s))",XkbSAGroup(&sa.group),
+		(sa.group.flags&XkbSA_GroupAbsolute?"absolute":"relative"));
 	    break;
-	case XkbSAMovePtr:
+	case XkbSA_MovePtr:
 	    sprintf(buf,"MovePtr=(%d,%d)",XkbPtrActionX(&sa.ptr),
 						XkbPtrActionY(&sa.ptr));
 	    break;
-	case XkbSAAccelPtr:
+	case XkbSA_AccelPtr:
 	    sprintf(buf,"AccelPtr=(%d,%d)",XkbPtrActionX(&sa.ptr),
 						XkbPtrActionY(&sa.ptr));
 	    break;
-	case XkbSAPtrBtn:
-	    if (sa.btn.button==XkbSAUseDfltButton)
+	case XkbSA_PtrBtn:
+	    if (sa.btn.button==XkbSA_UseDfltButton)
 		 sprintf(buf,"PtrBtn(dflt)");
 	    else sprintf(buf,"PtrBtn(%d)",sa.btn.button);
 	    break;
-	case XkbSAClickPtrBtn:
-	    if (sa.btn.button==XkbSAUseDfltButton)
+	case XkbSA_ClickPtrBtn:
+	    if (sa.btn.button==XkbSA_UseDfltButton)
 		 sprintf(buf,"ClickPtrBtn(%d,default)",sa.btn.count);
 	    else sprintf(buf,"ClickPtrBtn(%d,%d)",sa.btn.count,sa.btn.button);
 	    break;
-	case XkbSALockPtrBtn:
-	    if (sa.btn.button==XkbSAUseDfltButton)
+	case XkbSA_LockPtrBtn:
+	    if (sa.btn.button==XkbSA_UseDfltButton)
 		 sprintf(buf,"LockPtrBtn(default)");
 	    else sprintf(buf,"LockPtrBtn(%d)",sa.btn.button);
 	    break;
-	case XkbSASetPtrDflt:
-	    sprintf(buf,"SetPtrDflt(%s,%d)",
-		(sa.dflt.flags==XkbSASetDfltBtn?"setDfltBtn":
-			(sa.dflt.flags==XkbSAIncrDfltBtn?"IncrDfltBtn":
-							 "Unknown")),
-		sa.dflt.value);
+	case XkbSA_SetPtrDflt:
+	    if (sa.dflt.affect==XkbSA_AffectDfltBtn) {
+		int value;
+		value= XkbSAPtrDfltValue(&sa.dflt);
+		if ((sa.dflt.flags&XkbSA_DfltBtnAbsolute)||(value<0))
+		     sprintf(buf,"SetPtrDflt(SetDfltBtn,%d)",value);
+		else sprintf(buf,"SetPtrDflt(SetDfltBtn,+%d)",value);
+	    }
+	    else sprintf(buf,"SetPtrDflt(Unknown(%d),%d)",sa.dflt.affect,
+						 XkbSAPtrDfltValue(&sa.dflt));
 	    break; 
-	case XkbSATerminate:
+	case XkbSA_Terminate:
 	    sprintf(buf,"Terminate");
 	    break;
-	case XkbSASwitchScreen:
+	case XkbSA_SwitchScreen:
 	    sprintf(buf,"SwitchScreen(0x%x,%d)",sa.screen.flags,
-						sa.screen.screen);
+						XkbSAScreen(&sa.screen));
 	    break;
-	case XkbSASetControls:
+	case XkbSA_SetControls:
 	    sprintf(buf,"SetControls(0x%x)",XkbActionCtrls(&sa.ctrls));
 	    break;
-	case XkbSALockControls:
+	case XkbSA_LockControls:
 	    sprintf(buf,"LockControls(0x%x)",XkbActionCtrls(&sa.ctrls));
+	    break;
+	case XkbSA_ActionMessage:
+	    sprintf(buf,"ActionMessage(0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x)\n",
+			sa.msg.flags,
+			sa.msg.message[0],sa.msg.message[1],sa.msg.message[2],
+			sa.msg.message[3],sa.msg.message[4],sa.msg.message[5]);
 	    break;
 	default:
 	    sprintf(buf,"Unknown(0x%x)",sa);
 	    break;
+    }
+    return buf;
+}
+
+char *
+vmodsText(dpy,xkb,vmods)
+    Display *	dpy;
+    XkbDescPtr	xkb;
+    unsigned	vmods;
+{
+register int i,bit,nVMods;
+static char buf[256],*tmp;
+
+    buf[0]= '\0';
+    if (vmods==0)
+	strcpy(buf,"none");
+    else {
+	Atom atm;
+	for (i=nVMods=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
+	    if ((vmods&bit)==0)
+		continue;
+	    if (xkb->names&&(xkb->names->vmods[i]!=None)) {
+		tmp= atomText(dpy,xkb->names->vmods[i]);
+		if (nVMods>0)
+		    strcat(buf,"+");
+		strcat(buf,tmp);
+	    }
+	    else {
+		tmp= &buf[strlen(buf)];
+		if (nVMods>0)
+		    *tmp++= '+';
+		sprintf(tmp,"VMod%d",i);
+	    }
+	}
     }
     return buf;
 }
@@ -293,22 +382,38 @@ int	i,key,nKeys;
 
     if ( !(which & (XkbKeySymsMask|XkbKeyBehaviorsMask|XkbKeyActionsMask)) )
 	return;
-    nKeys = xkb->maxKeyCode-xkb->minKeyCode+1;
-    for (i=0,key=xkb->minKeyCode;i<nKeys;i++,key++) {
-	printf("Key %d:\n",key);
+    nKeys = xkb->max_key_code-xkb->min_key_code+1;
+    for (i=0,key=xkb->min_key_code;i<nKeys;i++,key++) {
+	int n = XkbKeyNumSyms(xkb,key);
+	if (n==0)
+	    continue;
+	printf("Key %d",key);
+	if (xkb->map && xkb->map->types) {
+	    Atom name;
+	    name= xkb->map->types[xkb->map->key_sym_map[key].kt_index].name;
+	    if (name==None)
+		 printf(" (%d",xkb->map->key_sym_map[key].kt_index);
+	    else printf(" (%s",atomText(dpy,name));
+	    if (xkb->names && xkb->names->keys) {
+		char buf[5];
+		memcpy(buf,xkb->names->keys[key].name,4);
+		buf[4]= '\0';
+		printf("/<%s>",buf);
+	    }
+	    printf(")");
+	}
+	printf(":\n");
 	if ( which & XkbKeySymsMask ) {
 	    int n = XkbKeyNumSyms(xkb,key);
 	    int ng= XkbKeyNumGroups(xkb,key);
 	    int tmp;
-	    printf("    %d symbol%s in %d %swrapping group%s",
-				n,(n>1?"s":""),ng,
-				(XkbKeyGroupsWrap(xkb,key)?"":"non-"),
-				(ng>1?"s":""));
-	    if (xkb->names && xkb->names->keyTypes) 
-		printf(" (%s)",atomText(dpy,
-		xkb->names->keyTypes[xkb->map->keySymMap[key].ktIndex]));
+	    if (XkbKeyGroupsWrap(xkb,key))
+		printf("    Groups wrap\n");
 	    for (tmp=0;tmp<ng;tmp++) {
-		printf("\n    [ ");
+		if (tmp==0) {
+		     printf("    Symbols: [ ");
+		}
+		else printf("             [ ");
 		printSyms(XkbKeyKeyType(xkb,key),
 				XkbKeySymsPtr(xkb,key)+(tmp*n/ng),n/ng);
 		printf("]");
@@ -318,25 +423,27 @@ int	i,key,nKeys;
 	if ( which & XkbKeyActionsMask ) {
 	    int nActs = XkbKeyNumActions(xkb,key);
 	    XkbAction *acts=XkbKeyActionsPtr(xkb,key);
-	    if ((nActs>1)||(acts[0].type!=XkbSANoAction)) {
+	    if ((nActs>1)||(acts[0].type!=XkbSA_NoAction)) {
 		int nGroups= XkbKeyNumGroups(xkb,key);
 		int nLevels= nActs/nGroups;
 		int g,l;
-		printf("    Actions: ");
 		for (g=0;g<nGroups;g++) {
-		    if (g==0)
-			printf("[ ");
-		    else printf("              [ ");
+		    if (g==0) {
+			 printf("    Actions: [ ");
+		    }
+		    else printf("             [ ");
 		    for (l=0;l<nLevels;l++) {
-			printf("%s ",actionText(acts[(g*nGroups)+l]));
+			printf("%s ",actText(acts[(g*nGroups)+l]));
 		    }
 		    printf("]\n");
 		}
 	    }
 	}
 	if ( which & XkbKeyBehaviorsMask ) {
-	    printf("    Behavior: %s\n",
-				behaviorText(xkb->server->keyBehaviors[key]));
+	    if (xkb->server->behaviors[key].type!=XkbKB_Default) {
+		printf("    Behavior: %s\n",
+				behaviorText(xkb->server->behaviors[key]));
+	    }
 	}
     }
 }
@@ -349,35 +456,44 @@ showKeyTypes(dpy,desc)
 XkbClientMapRec *map = desc->map;
 int	i,m;
 
-    for (i=0;i<map->nKeyTypes;i++) {
-	XkbKeyTypeRec *type= &map->keyTypes[i];
-	printf("Key Type %d",i);
-	if (desc->names && desc->names->keyTypes)
-	     printf(" (%s):\n",atomText(dpy,desc->names->keyTypes[i]));
-	else printf("\n");
-	printf("    mask:         0x%x\n",type->mask);
-	printf("    groupWidth:   %d\n",type->groupWidth);
-	printf("    map:\n");
-	printf("       no modifiers:  %d",type->map[0]);
-	if (desc->names && desc->names->levels)
-	    printf("  \"%s\"  ",atomText(dpy,desc->names->levels[i][0]));
-	if ( type->preserve ) {
-	    printf("(preserve %s)",stateText(type->preserve[0]));
-	}
-	printf("\n");
-	for (m=1;m<255;m++) {
-	    if ( (m&type->mask)==m ) {
-		printf("       %12s:  %d",stateText(m),type->map[m]);
-		if (desc->names && desc->names->levels) 
-		    printf("  \"%s\"  ",atomText(dpy,
-					 desc->names->levels[i][type->map[m]]));
-		if ( type->preserve ) {
-		    printf("(preserve %s)",stateText(type->preserve[m]));
+    for (i=0;i<map->num_types;i++) {
+	XkbKeyTypeRec *type= &map->types[i];
+	printf("Key Type %d (%s):\n",i,atomText(dpy,type->name));
+	printf("    mask:         %s\n",stateText(type->mask));
+	printf("    real mods:    %s\n",stateText(type->real_mods));
+	printf("    virtual mods: %s\n",
+				vmodsText(dpy,desc,type->vmods));
+	printf("    group width:  %d\n",type->group_width);
+	if (type->map_count>0) {
+	    printf("    map:          ");
+	    for (m=0;m<type->map_count;m++) {
+		if (m!=0)
+		    printf("                  ");
+		if (type->map[m].real_mods==0) {
+		    printf("%s= %d\n",
+			vmodsText(dpy,desc,type->map[m].vmods),
+			type->map[m].level);
 		}
-		printf("\n");
+		else if (type->map[m].vmods==0) {
+		    printf("%s= %d\n",
+			stateText(type->map[m].real_mods),type->map[m].level);
+		}
+		else {
+		    printf("%s+%s= %d\n",
+			vmodsText(dpy,desc,type->map[m].vmods),
+			stateText(type->map[m].real_mods),type->map[m].level);
+		}
 	    }
 	}
+	if (type->lvl_names!=NULL) {
+	    for (m=0;m<type->group_width;m++) {
+		printf("        level %d:  %s\n",type->group_width,
+					atomText(dpy,type->lvl_names[m]));
+	    }
+	}
+	else printf("     level names: none\n");
     }
+    return;
 }
 
 /***====================================================================***/
@@ -388,6 +504,7 @@ static	int		 getMap = -1;
 static	unsigned	 which = XkbAllMapComponentsMask;
 static	int		 usePartialQueries = 0;
 static	int		 synch = 0;
+static	int		 debug = 0;
 
 int
 parseArgs(argc,argv)
@@ -436,6 +553,9 @@ int i;
 	else if ( strcmp(argv[i],"-synch")==0 ) {
 	    synch= 1;
 	}
+	else if ( strcmp(argv[i],"-debug")==0 ) {
+	    debug= 1;
+	}
 	else {
 	    fprintf(stderr,"Unknown option %s\n",argv[i]);
 	    return 0;
@@ -455,6 +575,7 @@ XkbDescRec	*desc;
 XkbClientMapRec	*map;
 XkbStateRec	 state;
 XkbControlsRec	*ctrls;
+XKeyboardState	 coreKbdState;
 unsigned	 query;
 
   
@@ -462,6 +583,7 @@ unsigned	 query;
 	fprintf(stderr,"Usage: %s <options>\n",argv[0]);
 	fprintf(stderr,"Where legal options are:\n");
 	fprintf(stderr,"-display <dpy>     specifies display to use\n");
+	fprintf(stderr,"-debug             turn on extra debugging\n");
 	fprintf(stderr,"-s                 report keyboard state\n");
 	fprintf(stderr,"-m <subsets>       specifies subset of keyboard mapping to display\n");
 	fprintf(stderr,"                   Legal subsets are:\n");
@@ -473,6 +595,10 @@ unsigned	 query;
 	fprintf(stderr,"-1                 specifies use of partial queries\n");
 	return 1;
     }
+#ifdef sgi
+    if (debug)
+	mallopt(M_DEBUG,~0);
+#endif
     dpy = XOpenDisplay(dpyName);
     if ( !dpy )
 	return 1;
@@ -487,16 +613,18 @@ unsigned	 query;
     else if ((getMap<0) && (getState<0))	getMap = getState = 1;
 
     if ( getState ) {
+	XGetKeyboardControl(dpy,&coreKbdState);
 	if (!XkbGetState(dpy,XkbUseCoreKbd,&state)) {
 	    fprintf(stderr,"get keyboard state request failed\n");
 	    goto BAIL;
 	}
         printf("group:         %d\n",state.group);
-        printf("latched group: %d\n",state.latchedGroup);
+        printf("latched group: %d\n",state.latched_group);
+        printf("locked group:  %d\n",state.locked_group);
 	printf("mods:          %s\n",stateText(state.mods));
-	printf("latched:       %s\n",stateText(state.latchedMods));
-	printf("locked:        %s\n",stateText(state.lockedMods));
-	printf("compatibility state: %s\n",stateText(state.compatState));
+	printf("latched:       %s\n",stateText(state.latched_mods));
+	printf("locked:        %s\n",stateText(state.locked_mods));
+	printf("compatibility state: %s\n",stateText(state.compat_state));
     }
     if ( getMap ) {
 	query = which;
@@ -527,39 +655,59 @@ unsigned	 query;
 	    fprintf(stderr,"XkbGetNames failed\n");
 	    goto BAIL;
 	}
-	ctrls= desc->controls;
-	printf("Device ID:     %d\n",desc->deviceSpec);
+	ctrls= desc->ctrls;
+	printf("Device ID:     %d\n",desc->device_spec);
 	printf("keycodes type: %s\n",atomText(dpy,desc->names->keycodes));
-	printf("geometry type: %s\n",atomText(dpy,desc->names->geometry));
-	printf("keycode range: %d-%d\n",desc->minKeyCode,desc->maxKeyCode);
-	printf("audible bell:     %s\n",
-		((ctrls->enabledControls&XkbAudibleBellMask)?"on":"off"));
-	printf("auto autorepeat:  %s\n",
-		((ctrls->enabledControls&XkbAutoAutorepeatMask)?"on":"off"));
-	printf("internal mods:    0x%x\n",ctrls->internalMods);
-	printf("ignore lock mods: 0x%x\n",ctrls->ignoreLockMods);
-	printf("repeat keys:      %s (%d/%d)\n",
-		((ctrls->enabledControls&XkbRepeatKeysMask)?"on":"off"),
-		ctrls->repeatDelay,ctrls->repeatInterval);
-	printf("slow keys:        %s (%d)\n",
-		(ctrls->enabledControls&XkbSlowKeysMask?"on":"off"),
-		ctrls->slowKeysDelay);
-	printf("bounce keys:      %s (%d)\n",
-		(ctrls->enabledControls&XkbBounceKeysMask?"on":"off"),
-		ctrls->debounceDelay);
-	printf("sticky keys:      %s\n",
-		(ctrls->enabledControls&XkbStickyKeysMask?"on":"off"));
-	printf("mouse keys:      %s (btn=%d,accel=%d/%d/%d/%d)\n",
-		(ctrls->enabledControls&XkbMouseKeysMask?"on":"off"),
-		ctrls->mouseKeysDfltBtn,
-		ctrls->mouseKeysDelay, ctrls->mouseKeysInterval,
-		ctrls->mouseKeysTimeToMax, ctrls->mouseKeysCurve);
-	printf("access X keys:   %s (timeout=%d)\n",
-		(ctrls->enabledControls&XkbAccessXKeysMask?"on":"off"),
-		ctrls->accessXTimeout);
+	printf("geometry type: %s (%s)\n",atomText(dpy,desc->names->geometry),
+				atomText(dpy,desc->names->phys_geometry));
+	printf("symbols type:  %s (%s)\n",atomText(dpy,desc->names->symbols),
+				atomText(dpy,desc->names->phys_symbols));
+	printf("semantics:     %s\n",atomText(dpy,desc->names->semantics));
+	printf("keycode range: %d-%d\n",desc->min_key_code,desc->max_key_code);
+	printf("audible bell:      %s\n",
+		((ctrls->enabled_ctrls&XkbAudibleBellMask)?"on":"off"));
+	printf("auto autorepeat:   %s\n",
+		((ctrls->enabled_ctrls&XkbAutoAutorepeatMask)?"on":"off"));
+	printf("internal mods:     %s ",stateText(ctrls->internal_mask));
+	printf("(%s) ",stateText(ctrls->internal_real_mods));
+	printf("(%s)\n",vmodsText(dpy,desc,ctrls->internal_vmods));
+	printf("ignore lock mods:  %s ",stateText(ctrls->ignore_lock_mask));
+	printf("(%s) ",stateText(ctrls->ignore_lock_real_mods));
+	printf("(%s)\n",vmodsText(dpy,desc,ctrls->ignore_lock_vmods));
+	printf("repeat keys:       %s (%d/%d -- %s)\n",
+		(coreKbdState.global_auto_repeat?"on":"off"),
+		ctrls->repeat_delay,ctrls->repeat_interval,
+		((ctrls->enabled_ctrls&XkbRepeatKeysMask)?"sw":"hw"));
+	printf("slow keys:         %s (%d)\n",
+		(ctrls->enabled_ctrls&XkbSlowKeysMask?"on":"off"),
+		ctrls->slow_keys_delay);
+	printf("bounce keys:       %s (%d)\n",
+		(ctrls->enabled_ctrls&XkbBounceKeysMask?"on":"off"),
+		ctrls->debounce_delay);
+	printf("sticky keys:       %s\n",
+		(ctrls->enabled_ctrls&XkbStickyKeysMask?"on":"off"));
+	printf("mouse keys:        %s (btn=%d,accel=%d/%d/%d/%d)\n",
+		(ctrls->enabled_ctrls&XkbMouseKeysMask?"on":"off"),
+		ctrls->mouse_keys_dflt_btn,
+		ctrls->mouse_keys_delay, ctrls->mouse_keys_interval,
+		ctrls->mouse_keys_time_to_max, ctrls->mouse_keys_curve);
+	printf("access X keys:     %s (timeout=%d,mask=0x%x)\n",
+		(ctrls->enabled_ctrls&XkbAccessXKeysMask?"on":"off"),
+		ctrls->accessx_timeout,ctrls->accessx_timeout_mask);
 	printf("modifier names:\n");
-	for (i1=0;i1<8;i1++) {
-	    printf("    %s\n",atomText(dpy,desc->names->modifiers[i1]));
+	for (i1=0;i1<XkbNumModifiers;i1++) {
+	    if (desc->names->mods[i1]!=None)
+		printf("%2d: %s\n",i1,atomText(dpy,desc->names->mods[i1]));
+	}
+	printf("virtual modifier names:\n");
+	for (i1=0;i1<XkbNumVirtualMods;i1++) {
+	    XkbNamesPtr names= desc->names;
+	    if (desc->names->vmods[i1]!=None)
+		 printf("%2d: %12s",i1,atomText(dpy,names->vmods[i1]));
+	    else if (desc->server->vmods[i1]!=XkbNoModifier)
+		 printf("%2d: %12s","(no name)");
+	    else continue;
+	    printf(" = %s\n",modIndexText(desc->server->vmods[i1]));
 	}
 	for (i1=0;i1<XkbNumIndicators;i1++) {
 	    if (desc->names->indicators[i1]!=None) {
@@ -569,23 +717,36 @@ unsigned	 query;
 		    printf("indicator names:\n");
 		}
 		printf("%2d: %s\n",i1,
-				   atomText(dpy,desc->names->indicators[i1]));
+				atomText(dpy,desc->names->indicators[i1]));
 	    }
 	}
-	printf("symbols name:  %s\n",atomText(dpy,desc->names->symbols));
-	if (desc->names->nCharSets) {
+	if (desc->names->keys) {
+	    register int nKeys= desc->max_key_code-desc->min_key_code+1;
+	    char buf[5];
+	    buf[4]= '\0';
+	    printf("keys:\n");
+	    for (i1=0;i1<nKeys;i1++) {
+		memcpy(buf,desc->names->keys[i1+desc->min_key_code].name,4);
+		printf("%4s ",buf);
+		if ((i1&0x7)==7)
+		    printf("\n");
+	    }
+	    if ((i1&0x7)!=0)
+		printf("\n");
+	}
+	if (desc->names->num_char_sets) {
 	    printf("character sets: ");
-	    for (i1=0;i1<desc->names->nCharSets;i1++) {
+	    for (i1=0;i1<desc->names->num_char_sets;i1++) {
 		if (i1==0)
-		     printf("%s",atomText(dpy,desc->names->charSets[i1]));
-		else printf(", %s",atomText(dpy,desc->names->charSets[i1]));
+		     printf("%s",atomText(dpy,desc->names->char_sets[i1]));
+		else printf(", %s",atomText(dpy,desc->names->char_sets[i1]));
 	    }
 	    printf("\n");
 	}
 	else printf("No character sets defined\n");
-	printf("%d keyboard groups\n",ctrls->numGroups);
+	printf("%d keyboard groups\n",ctrls->num_groups);
 	printf("keyboard groups %s\n",
-		(ctrls->enabledControls&XkbGroupsWrapMask)?"wrap":"don't wrap");
+		(ctrls->enabled_ctrls&XkbGroupsWrapMask)?"wrap":"don't wrap");
 	showKeys(dpy,desc,which);
 	if ( which & XkbKeyTypesMask )
 	    showKeyTypes(dpy,desc);

@@ -39,8 +39,8 @@ static	int		 synch = 0;
 
 int
 parseArgs(argc,argv)
-    int 	argc;
-    char *	argv[];
+    int argc;
+    char *argv[];
 {
 int i;
 
@@ -65,13 +65,14 @@ int i;
 
 int
 main(argc,argv)
-    int 	argc;
-    char *	argv[];
+    int argc;
+    char *argv[];
 {
 Display	*dpy;
 int	i1,i2,i3,i4,i5;
 XkbIndicatorRec	*map;
-unsigned	 	 query;
+char 		*srvName;
+unsigned	 query;
 
   
     if (!parseArgs(argc,argv)) {
@@ -84,6 +85,7 @@ unsigned	 	 query;
     dpy = XOpenDisplay(dpyName);
     if ( !dpy )
 	return 1;
+    srvName= XDisplayString(dpy);
     if (synch)
 	XSynchronize(dpy,1);
     if ( !XkbQueryExtension(dpy,&i1,&i2,&i3,&i4,&i5)>0 ) {
@@ -94,11 +96,15 @@ unsigned	 	 query;
 							XkbMinorVersion);
     XkbLibraryVersion(&i1,&i2);
     printf("X library supports XKB version %d.%02d\n",i1,i2);
+    printf("X server");
+    if (srvName)
+	printf(" (%s)",srvName);
+    printf(" supports XKB version %d.%02d\n",i4,i5);
     if ( !XkbUseExtension(dpy) ) {
 	printf("VERSION MISMATCH!\n");
-	printf("X server supports XKB version %d.%02d\n",i4,i5);
 	goto BAIL;
     }
+
     printf("versions match\n");
     return 0;
 BAIL:

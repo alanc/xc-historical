@@ -33,15 +33,24 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/X.h>
 #include <X11/XKBlib.h>
 
+#define	ON	 1
+#define	OFF	 0
+#define	IGNORE	-1
+
 static	char		*dpyName = NULL;
 static	unsigned	 which;
 static	XkbControlsRec	 newControls;
 static	unsigned	 changeInternal;
 static	unsigned	 internal;
+static	unsigned	 changeVInternal;
+static	unsigned	 vInternal;
 static	unsigned	 changeIgnoreLocks;
 static	unsigned	 ignoreLocks;
+static	unsigned	 changeVIgnoreLocks;
+static	unsigned	 vIgnoreLocks;
 static	unsigned	 changeEnabled;
 static	unsigned	 enabled;
+static	unsigned	 changeCoreRepeat= IGNORE;
 static	int		 synch = 0;
 static	int		 device = XkbUseCoreKbd;
 
@@ -99,6 +108,38 @@ register char *tmp;
     return 1;
 }
 
+int
+parseVMods(modText,onOff,changes,mods)
+    char *modText;
+    int   onOff;
+    unsigned *changes;
+    unsigned *mods;
+{
+register char *tmp;
+
+    for (tmp=modText;*tmp;tmp++) {
+	if (isdigit(*tmp)) {
+	    int ndx= *tmp-'0';
+	    *changes|= (1<<ndx);
+	    if (onOff)	*mods|= (1<<ndx);
+	    else	*mods&= ~(1<<ndx);
+	}
+	else if ( (*tmp>='a') && (*tmp<='f') ) {
+	    int ndx= 10+(*tmp-'a');
+	    *changes|= (1<<ndx);
+	    if (onOff)	*mods|= (1<<ndx);
+	    else	*mods&= ~(1<<ndx);
+	}
+	else if ( (*tmp>='A') && (*tmp<='F') ) {
+	    int ndx= 10+(*tmp-'F');
+	    *changes|= (1<<ndx);
+	    if (onOff)	*mods|= (1<<ndx);
+	    else	*mods&= ~(1<<ndx);
+	}
+    }
+    return 1;
+}
+
 #define	E(m)	fprintf(stderr,m)
 void
 usage(argc,argv)
@@ -114,15 +155,20 @@ usage(argc,argv)
     E("[+-]bell                       audible bell on/off\n");
     E("[+-]autoautorepeat             automatic determination of repeating keys on/off\n");
     E("[+-]internal <mods>            set/clear internal modifiers\n");
-    E("[+-]ignorelock <mods>          set/clear internal modifiers\n");
+    E("[+-]ignorelock <mods>          set/clear ignore locks modifiers\n");
     E("                               <mods> can contain one or more of:\n");
     E("                               s:         Shift\n");
     E("                               l:         Lock\n");
     E("                               c:         Control\n");
     E("                               [am]:      Alt/Meta (mod1)\n");
     E("                               [1-5]:     Mod1-Mod5\n");
-    E("-repeat                        disable RepeatKeys\n");
-    E("+repeat [ delay [ interval ] ] enable RepeatKeys with the specified delay\n");
+    E("[+-]vinternal <vmods>          set/clear internal virtual modifiers\n");
+    E("[+-]vignorelock <vmods>        set/clear ignore locks virtual mods\n");
+    E("                               virtual modifiers are specified by\n");
+    E("                               using one hexadecimal digit per vmod\n");
+    E("-{hw,sw}repeat                 disable RepeatKeys\n");
+    E("+swrepeat [ delay [ ival ] ]   enable software RepeatKeys with the specified delay\n");
+    E("+hwrepeat [ delay [ ival ] ]   enable hardware RepeatKeys with the specified delay\n");
     E("                               and interval\n");
     E("-slow                          disable SlowKeys\n");
     E("+slow [ delay ]                enable SlowKeys with the specified delay\n");
@@ -192,6 +238,7 @@ int onoff;
 		fprintf(stderr,"Must specify the internal modifiers\n");
 		return 0;
 	    }
+	    i++;
 	}
 	else if ( strcmp(&argv[i][1],"ignorelock")==0 ) {
 	    which|= XkbIgnoreLockModsMask;
@@ -200,8 +247,27 @@ int onoff;
 		fprintf(stderr,"Must specify the ignore lock modifiers\n");
 		return 0;
 	    }
+	    i++;
 	}
-	else if ( strcmp(&argv[i][1],"repeat")==0 ) {
+	else if ( strcmp(&argv[i][1],"vinternal")==0 ) {
+	    which|= XkbInternalModsMask;
+	    if (((i+1)>=argc) ||
+		(!parseVMods(argv[i+1],onoff,&changeVInternal,&vInternal))) {
+		fprintf(stderr,"Must specify the internal virtual modifiers\n");
+		return 0;
+	    }
+	    i++;
+	}
+	else if ( strcmp(&argv[i][1],"vignorelock")==0 ) {
+	    which|= XkbIgnoreLockModsMask;
+	    if (((i+1)>=argc) || (!parseVMods(argv[i+1],onoff,
+					&changeVIgnoreLocks,&vIgnoreLocks))) {
+		fprintf(stderr,"Must specify the ignore lock virtual mods\n");
+		return 0;
+	    }
+	    i++;
+	}
+	else if ( strcmp(&argv[i][1],"swrepeat")==0 ) {
 	    which|= XkbControlsEnabledMask;
 	    changeEnabled|= XkbRepeatKeysMask;
 	    enabled|= (onoff?XkbRepeatKeysMask:0);
@@ -209,12 +275,36 @@ int onoff;
 		int ok= 0;
 		if ( ((i+1)<argc) && (isdigit(argv[i+1][0])) ) {
 		    which|= XkbRepeatKeysMask;
-		    newControls.repeatDelay= atoi(argv[++i]);
+		    newControls.repeat_delay= atoi(argv[++i]);
 		    ok= 1;
 		}
 		if (ok && ((i+1)<argc) && (isdigit(argv[i+1][0]))) {
-		    newControls.repeatInterval= atoi(argv[++i]);
+		    newControls.repeat_interval= atoi(argv[++i]);
 		}
+		changeCoreRepeat= ON;
+	    }
+	    else {
+		changeCoreRepeat= OFF;
+	    }
+	}
+	else if ( strcmp(&argv[i][1],"hwrepeat")==0 ) {
+	    which|= XkbControlsEnabledMask;
+	    changeEnabled|= XkbRepeatKeysMask;
+	    enabled&= ~XkbRepeatKeysMask;
+	    if (onoff) {
+		int ok= 0;
+		if ( ((i+1)<argc) && (isdigit(argv[i+1][0])) ) {
+		    which|= XkbRepeatKeysMask;
+		    newControls.repeat_delay= atoi(argv[++i]);
+		    ok= 1;
+		}
+		if (ok && ((i+1)<argc) && (isdigit(argv[i+1][0]))) {
+		    newControls.repeat_interval= atoi(argv[++i]);
+		}
+		changeCoreRepeat= ON;
+	    }
+	    else {
+		changeCoreRepeat= OFF;
 	    }
 	}
 	else if ( strcmp(&argv[i][1],"slow")==0 ) {
@@ -224,7 +314,7 @@ int onoff;
 	    if (onoff) {
 		if ( ((i+1)<argc) && (isdigit(argv[i+1][0])) ) {
 		    which|= XkbSlowKeysMask;
-		    newControls.slowKeysDelay= atoi(argv[++i]);
+		    newControls.slow_keys_delay= atoi(argv[++i]);
 		}
 	    }
 	}
@@ -235,7 +325,7 @@ int onoff;
 	    if (onoff) {
 		if ( ((i+1)<argc) && (isdigit(argv[i+1][0])) ) {
 		    which|= XkbBounceKeysMask;
-		    newControls.debounceDelay= atoi(argv[++i]);
+		    newControls.debounce_delay= atoi(argv[++i]);
 		}
 	    }
 	}
@@ -252,20 +342,20 @@ int onoff;
 		int ok= 0;
 		if ( ((i+1)<argc) && (isdigit(argv[i+1][0])) ) {
 		    which|= XkbMouseKeysMask;
-		    newControls.mouseKeysDelay= atoi(argv[++i]);
+		    newControls.mouse_keys_delay= atoi(argv[++i]);
 		    ok= 1;
 		}
 		if (ok && ((i+1)<argc) && (isdigit(argv[i+1][0]))) {
-		    newControls.mouseKeysInterval= atoi(argv[++i]);
+		    newControls.mouse_keys_interval= atoi(argv[++i]);
 		}
 		if (ok && ((i+1)<argc) && (isdigit(argv[i+1][0]))) {
-		    newControls.mouseKeysTimeToMax= atoi(argv[++i]);
+		    newControls.mouse_keys_time_to_max= atoi(argv[++i]);
 		}
 		if (ok && ((i+1)<argc) && (isdigit(argv[i+1][0]))) {
-		    newControls.mouseKeysCurve= atoi(argv[++i]);
+		    newControls.mouse_keys_curve= atoi(argv[++i]);
 		}
 		if (ok && ((i+1)<argc) && (isdigit(argv[i+1][0]))) {
-		    newControls.mouseKeysDfltBtn= atoi(argv[++i]);
+		    newControls.mouse_keys_dflt_btn= atoi(argv[++i]);
 		}
 	    }
 	}
@@ -276,7 +366,7 @@ int onoff;
 	    if (onoff) {
 		if ( ((i+1)<argc) && (isdigit(argv[i+1][0])) ) {
 		    which|= XkbAccessXKeysMask;
-		    newControls.accessXTimeout= atoi(argv[++i]);
+		    newControls.accessx_timeout= atoi(argv[++i]);
 		}
 	    }
 	}
@@ -300,6 +390,7 @@ Display	*dpy;
 int	i1,i2,i3,i4,i5;
 XkbDescRec	*desc;
 XkbControlsRec	*ctrls;
+XKeyboardState	 coreKbdState;
 unsigned	 query;
 
   
@@ -320,6 +411,7 @@ unsigned	 query;
 	fprintf(stderr,"use extension failed (%d,%d)\n",i4,i5);
 	goto BAIL;
     }
+    XGetKeyboardControl(dpy,&coreKbdState);
 
     desc = XkbGetMap(dpy,0,device);
     if (desc) {
@@ -330,101 +422,127 @@ unsigned	 query;
 	if (which) {
 	    if (which&XkbRepeatKeysMask) {
 		fprintf(stderr,"Changing RepeatKeys delay%s",
-			newControls.repeatInterval>0?" and interval\n":"\n");
-		desc->controls->repeatDelay= newControls.repeatDelay;
-		if (newControls.repeatInterval>0)
-		    desc->controls->repeatInterval= newControls.repeatInterval;
+			newControls.repeat_interval>0?" and interval\n":"\n");
+		desc->ctrls->repeat_delay= newControls.repeat_delay;
+		if (newControls.repeat_interval>0)
+		    desc->ctrls->repeat_interval= newControls.repeat_interval;
 	    }
 	    if (which&XkbSlowKeysMask) {
 		fprintf(stderr,"Changing SlowKeys delay\n");
-		desc->controls->slowKeysDelay= newControls.slowKeysDelay;
+		desc->ctrls->slow_keys_delay= newControls.slow_keys_delay;
 	    }
 	    if (which&XkbBounceKeysMask) {
 		fprintf(stderr,"Changing BounceKeys delay\n");
-		desc->controls->debounceDelay= newControls.debounceDelay;
+		desc->ctrls->debounce_delay= newControls.debounce_delay;
 	    }
 	    if (which&XkbMouseKeysMask) {
 		fprintf(stderr,"Changing MouseKeys delay");
-		desc->controls->mouseKeysDelay= newControls.mouseKeysDelay;
-		if (newControls.mouseKeysInterval>0) {
+		desc->ctrls->mouse_keys_delay= newControls.mouse_keys_delay;
+		if (newControls.mouse_keys_interval>0) {
 		    fprintf(stderr,", interval");
-		    desc->controls->mouseKeysInterval=
-					newControls.mouseKeysInterval;
+		    desc->ctrls->mouse_keys_interval=
+					newControls.mouse_keys_interval;
 		}
-		if (newControls.mouseKeysTimeToMax) {
+		if (newControls.mouse_keys_time_to_max) {
 		    fprintf(stderr,", time-to-max");
-		    desc->controls->mouseKeysTimeToMax=
-					newControls.mouseKeysTimeToMax;
+		    desc->ctrls->mouse_keys_time_to_max=
+					newControls.mouse_keys_time_to_max;
 		}
-		if (newControls.mouseKeysTimeToMax) {
+		if (newControls.mouse_keys_time_to_max) {
 		    fprintf(stderr,", curve");
-		    desc->controls->mouseKeysCurve= newControls.mouseKeysCurve;
+		    desc->ctrls->mouse_keys_curve= newControls.mouse_keys_curve;
 		}
-		if (newControls.mouseKeysDfltBtn) {
+		if (newControls.mouse_keys_dflt_btn) {
 		    fprintf(stderr,", default button");
-		    desc->controls->mouseKeysDfltBtn=
-					newControls.mouseKeysDfltBtn;
+		    desc->ctrls->mouse_keys_dflt_btn=
+					newControls.mouse_keys_dflt_btn;
 		}
 		fprintf(stderr,"\n");
 	    }
 	    if (which&XkbAccessXKeysMask) {
 		fprintf(stderr,"Changing AccessX timeout\n");
-		desc->controls->accessXTimeout= 
-					newControls.accessXTimeout;
+		desc->ctrls->accessx_timeout= 
+					newControls.accessx_timeout;
 	    }
 	    if (which&XkbControlsEnabledMask) {
-		fprintf(stderr,"Changing enabled controls\n");
-		desc->controls->enabledControls&= ~changeEnabled;
-		desc->controls->enabledControls|= (changeEnabled&enabled);
+		fprintf(stderr,"Changing enabled ctrls\n");
+		desc->ctrls->enabled_ctrls&= ~changeEnabled;
+		desc->ctrls->enabled_ctrls|= (changeEnabled&enabled);
 	    }
 	    if (which&XkbInternalModsMask) {
 		fprintf(stderr,"Changing internal modifiers\n");
-		desc->controls->internalMods&= ~changeInternal;
-		desc->controls->internalMods|= (changeInternal|internal);
+		desc->ctrls->internal_real_mods&= ~changeInternal;
+		desc->ctrls->internal_real_mods|= (changeInternal|internal);
+		desc->ctrls->internal_vmods&= ~changeVInternal;
+		desc->ctrls->internal_vmods|= 
+					(changeVInternal&vInternal);
 	    }
 	    if (which&XkbIgnoreLockModsMask) {
 		fprintf(stderr,"Changing ignore locks modifiers\n");
-		desc->controls->ignoreLockMods&= ~changeIgnoreLocks;
-		desc->controls->ignoreLockMods|=(changeIgnoreLocks|ignoreLocks);
+		desc->ctrls->ignore_lock_real_mods&= ~changeIgnoreLocks;
+		desc->ctrls->ignore_lock_real_mods|=
+					(changeIgnoreLocks|ignoreLocks);
+		desc->ctrls->ignore_lock_vmods&= ~changeVIgnoreLocks;
+		desc->ctrls->ignore_lock_vmods|=
+					(changeVIgnoreLocks&vIgnoreLocks);
 	    }
 	    XkbSetControls(dpy,which,desc);
+	}
+	if (((changeCoreRepeat==ON)&&(!coreKbdState.global_auto_repeat))||
+	    ((changeCoreRepeat==OFF)&&coreKbdState.global_auto_repeat)) {
+	    XKeyboardControl coreCtrl;
+	    if (changeCoreRepeat==ON) {
+		coreCtrl.auto_repeat_mode= AutoRepeatModeOn;
+		coreKbdState.global_auto_repeat= 1;
+	    }
+	    else {
+		coreCtrl.auto_repeat_mode= AutoRepeatModeOff;
+		coreKbdState.global_auto_repeat= 0;
+	    }
+	    fprintf(stderr,"Changing core protocol repeat mode\n");
+	    XChangeKeyboardControl(dpy,KBAutoRepeatMode,&coreCtrl);
 	}
     }
     else {
 	fprintf(stderr,"Get keyboard description request failed\n");
 	return 1;
     }
-    ctrls= desc->controls;
-    printf("Device ID:        %d\n",desc->deviceSpec);
-    printf("Groups:           %swrap\n",
-		(ctrls->enabledControls&XkbGroupsWrapMask)?"":"don't ");
-    printf("audible bell:     %s\n",
-		(ctrls->enabledControls&XkbAudibleBellMask)?"on":"off");
-    printf("auto autorepeat:  %s\n",
-		(ctrls->enabledControls&XkbAutoAutorepeatMask)?"on":"off");
-    printf("internal mods:    0x%x\n",ctrls->internalMods);
-    printf("ignore lock mods: 0x%x\n",ctrls->ignoreLockMods);
-    printf("repeat keys:      %s (%d/%d)\n",
-		(ctrls->enabledControls&XkbRepeatKeysMask?"on":"off"),
-		ctrls->repeatDelay,ctrls->repeatInterval);
-    printf("slow keys:        %s (%d)\n",
-		(ctrls->enabledControls&XkbSlowKeysMask?"on":"off"),
-		ctrls->slowKeysDelay);
-    printf("bounce keys:      %s (%d)\n",
-		(ctrls->enabledControls&XkbBounceKeysMask?"on":"off"),
-		ctrls->debounceDelay);
-    printf("sticky keys:      %s\n",
-		(ctrls->enabledControls&XkbStickyKeysMask?"on":"off"));
-    printf("mouse keys:       %s (btn=%d,accel=%d/%d/%d/%d)\n",
-		(ctrls->enabledControls&XkbMouseKeysMask?"on":"off"),
-		ctrls->mouseKeysDfltBtn,
-		ctrls->mouseKeysDelay,
-		ctrls->mouseKeysInterval,
-		ctrls->mouseKeysTimeToMax,
-		ctrls->mouseKeysCurve);
-    printf("access X keys:    %s (timeout=%d)\n",
-		(ctrls->enabledControls&XkbAccessXKeysMask?"on":"off"),
-		ctrls->accessXTimeout);
+    ctrls= desc->ctrls;
+    printf("Device ID:         %d\n",desc->device_spec);
+    printf("Groups:            %swrap\n",
+		(ctrls->enabled_ctrls&XkbGroupsWrapMask)?"":"don't ");
+    printf("audible bell:      %s\n",
+		(ctrls->enabled_ctrls&XkbAudibleBellMask)?"on ":"off");
+    printf("auto autorepeat:   %s\n",
+		(ctrls->enabled_ctrls&XkbAutoAutorepeatMask)?"on ":"off");
+    printf("internal mask:     0x%x\n",ctrls->internal_mask);
+    printf("ignore lock mask:  0x%x\n",ctrls->ignore_lock_mask);
+    printf("internal mods:     0x%x\n",ctrls->internal_real_mods);
+    printf("ignore lock mods:  0x%x\n",ctrls->ignore_lock_real_mods);
+    printf("internal vmods:    0x%x\n",ctrls->internal_vmods);
+    printf("ignore lock vmods: 0x%x\n",ctrls->ignore_lock_vmods);
+    printf("repeat keys:       %s (%d/%d -- %s)\n",
+		(coreKbdState.global_auto_repeat?"on ":"off"),
+		ctrls->repeat_delay,ctrls->repeat_interval,
+		(ctrls->enabled_ctrls&XkbRepeatKeysMask?"sw":"hw"));
+    printf("slow keys:         %s (%d)\n",
+		(ctrls->enabled_ctrls&XkbSlowKeysMask?"on ":"off"),
+		ctrls->slow_keys_delay);
+    printf("bounce keys:       %s (%d)\n",
+		(ctrls->enabled_ctrls&XkbBounceKeysMask?"on ":"off"),
+		ctrls->debounce_delay);
+    printf("sticky keys:       %s\n",
+		(ctrls->enabled_ctrls&XkbStickyKeysMask?"on ":"off"));
+    printf("mouse keys:        %s (btn=%d,accel=%d/%d/%d/%d)\n",
+		(ctrls->enabled_ctrls&XkbMouseKeysMask?"on ":"off"),
+		ctrls->mouse_keys_dflt_btn,
+		ctrls->mouse_keys_delay,
+		ctrls->mouse_keys_interval,
+		ctrls->mouse_keys_time_to_max,
+		ctrls->mouse_keys_curve);
+    printf("access X keys:     %s (timeout=%d, mask= 0x%x)\n",
+		(ctrls->enabled_ctrls&XkbAccessXKeysMask?"on ":"off"),
+		ctrls->accessx_timeout,ctrls->accessx_timeout_mask);
     XCloseDisplay(dpy);
     return 0;
 BAIL:

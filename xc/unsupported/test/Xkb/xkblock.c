@@ -40,8 +40,8 @@ static	unsigned	 latch = 0;
 
 int
 parseArgs(argc,argv)
-    int		argc;
-    char *	argv[];
+    int argc;
+    char *argv[];
 {
 int i;
 
@@ -133,8 +133,8 @@ int i;
 
 int
 main(argc,argv)
-    int		argc;
-    char *	argv[];
+    int argc;
+    char *argv[];
 {
 Display	*dpy;
 int	i1,i2,i3,i4,i5;
@@ -181,9 +181,9 @@ XkbStateRec	state;
     printf("       ------- group --------    ------- modifiers -------------\n");
     printf("       eff  base  latch  lock     eff  base  latch  lock  compat\n");
     printf("before: %2d    %2d     %2d    %2d    0x%02x  0x%02x   0x%02x  0x%02x    0x%02x\n",
-       state.group, state.baseGroup, state.latchedGroup, state.lockedGroup,
-       state.mods, state.baseMods, state.latchedMods, state.lockedMods,
-       state.compatState);
+       state.group, state.base_group, state.latched_group, state.locked_group,
+       state.mods, state.base_mods, state.latched_mods, state.locked_mods,
+       state.compat_state);
     if (latch)		XkbLatchModifiers(dpy,device,mask,value);
     else 		XkbLockModifiers(dpy,device,mask,value);
     bzero(&state,sizeof(state));
@@ -192,9 +192,9 @@ XkbStateRec	state;
 	exit(1);
     }
     printf("after:  %2d    %2d     %2d    %2d    0x%02x  0x%02x   0x%02x  0x%02x    0x%02x\n",
-       state.group, state.baseGroup, state.latchedGroup, state.lockedGroup,
-       state.mods, state.baseMods, state.latchedMods, state.lockedMods,
-       state.compatState);
+       state.group, state.base_group, state.latched_group, state.locked_group,
+       state.mods, state.base_mods, state.latched_mods, state.locked_mods,
+       state.compat_state);
     XCloseDisplay(dpy);
     return 0;
 BAIL:

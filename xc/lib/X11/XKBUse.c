@@ -1,4 +1,4 @@
-/* $XConsortium: XKB.c,v 1.7 94/02/03 18:48:37 rws Exp $ */
+/* $XConsortium: XKBUse.c,v 1.1 94/02/04 21:23:36 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -29,7 +29,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include "Xlibint.h"
-#include <X11/extensions/XKBstr.h>
+#include <X11/extensions/XKBproto.h>
 #include "XKBlibint.h"
 
 #ifdef X_NOT_STDC_ENV
@@ -49,74 +49,95 @@ XkbNoteMapChanges(old,new,wanted)
 
     if (wanted&XkbKeyTypesMask) {
 	if (old->changed&XkbKeyTypesMask) {
-	    first = old->firstKeyType;
-	    oldLast = old->firstKeyType+old->nKeyTypes-1;
-	    newLast = new->firstKeyType+new->nKeyTypes-1;
+	    first = old->first_type;
+	    oldLast = old->first_type+old->num_types-1;
+	    newLast = new->first_type+new->num_types-1;
 
-	    if (new->firstKeyType<first)
-		first = new->firstKeyType;
+	    if (new->first_type<first)
+		first = new->first_type;
 	    if (oldLast>newLast)
 		newLast= oldLast;
-	    old->firstKeyType = first;
-	    old->nKeyTypes = newLast-first+1;
+	    old->first_type = first;
+	    old->num_types = newLast-first+1;
 	}
 	else {
-	    old->firstKeyType= new->firstKeyType;
-	    old->nKeyTypes = new->nKeyTypes;
+	    old->first_type= new->first_type;
+	    old->num_types = new->num_types;
 	}
     }
     if (wanted&XkbKeySymsMask) {
 	if (old->changed&XkbKeySymsMask) {
-	    first = old->firstKeySym;
-	    oldLast = old->firstKeySym+old->nKeySyms-1;
-	    newLast = new->firstKeySym+new->nKeySyms-1;
+	    first = old->first_key_sym;
+	    oldLast = old->first_key_sym+old->num_key_syms-1;
+	    newLast = new->first_key_sym+new->num_key_syms-1;
 
-	    if (new->firstKeySym<first)
-		first = new->firstKeySym;
+	    if (new->first_key_sym<first)
+		first = new->first_key_sym;
 	    if (oldLast>newLast)
 		newLast= oldLast;
-	    old->firstKeySym = first;
-	    old->nKeySyms = newLast-first+1;
+	    old->first_key_sym = first;
+	    old->num_key_syms = newLast-first+1;
 	}
 	else {
-	    old->firstKeySym = new->firstKeySym;
-	    old->nKeySyms = new->nKeySyms;
+	    old->first_key_sym = new->first_key_sym;
+	    old->num_key_syms = new->num_key_syms;
 	}
     }
     if (wanted&XkbKeyActionsMask) {
 	if (old->changed&XkbKeyActionsMask) {
-	    first = old->firstKeyAction;
-	    oldLast = old->firstKeyAction+old->nKeyActions-1;
-	    newLast = new->firstKeyAction+new->nKeyActions-1;
+	    first = old->first_key_act;
+	    oldLast = old->first_key_act+old->num_key_acts-1;
+	    newLast = new->first_key_act+new->num_key_acts-1;
 
-	    if (new->firstKeyAction<first)
-		first = new->firstKeyAction;
+	    if (new->first_key_act<first)
+		first = new->first_key_act;
 	    if (oldLast>newLast)
 		newLast= oldLast;
-	    old->firstKeyAction = first;
-	    old->nKeyActions = newLast-first+1;
+	    old->first_key_act = first;
+	    old->num_key_acts = newLast-first+1;
 	}
 	else {
-	    old->firstKeyAction = new->firstKeyAction;
-	    old->nKeyActions = new->nKeyActions;
+	    old->first_key_act = new->first_key_act;
+	    old->num_key_acts = new->num_key_acts;
 	}
     }
     if (wanted&XkbKeyBehaviorsMask) {
 	if (old->changed&XkbKeyBehaviorsMask) {
-	    first = old->firstKeyBehavior;
-	    oldLast = old->firstKeyBehavior+old->nKeyBehaviors-1;
-	    newLast = new->firstKeyBehavior+new->nKeyBehaviors-1;
+	    first = old->first_key_behavior;
+	    oldLast = old->first_key_behavior+old->num_key_behaviors-1;
+	    newLast = new->first_key_behavior+new->num_key_behaviors-1;
 
-	    if (new->firstKeyBehavior<first)
-		first = new->firstKeyBehavior;
+	    if (new->first_key_behavior<first)
+		first = new->first_key_behavior;
 	    if (oldLast>newLast)
 		newLast= oldLast;
-	    old->firstKeyBehavior = first;
-	    old->nKeyBehaviors = newLast-first+1;
+	    old->first_key_behavior = first;
+	    old->num_key_behaviors = newLast-first+1;
 	}
 	else {
-	    old->firstKeyBehavior = new->firstKeyBehavior;
-	    old->nKeyBehaviors = new->nKeyBehaviors;
+	    old->first_key_behavior = new->first_key_behavior;
+	    old->num_key_behaviors = new->num_key_behaviors;
+	}
+    }
+    if (wanted&XkbVirtualModsMask) {
+	old->vmods|= new->vmods;
+    }
+    if (wanted&XkbExplicitComponentsMask) {
+	if (old->changed&XkbExplicitComponentsMask) {
+	    first = old->first_key_explicit;
+	    oldLast = old->first_key_explicit+old->num_key_explicit-1;
+	    newLast = new->first_key_explicit+new->num_key_explicit-1;
+
+	    if (new->first_key_explicit<first)
+		first = new->first_key_explicit;
+	    if (oldLast>newLast)
+		newLast= oldLast;
+	    old->first_key_explicit = first;
+	    old->num_key_explicit = newLast-first+1;
+	}
+	else {
+	    old->first_key_explicit = new->first_key_explicit;
+	    old->num_key_explicit = new->num_key_explicit;
 	}
     }
     old->changed|= wanted;
@@ -134,21 +155,21 @@ XkbNoteCoreMapChanges(old,new,wanted)
 
     if ((new->request==MappingKeyboard)&&(wanted&XkbKeySymsMask)) {
 	if (old->changed&XkbKeySymsMask) {
-	    first = old->firstKeySym;
-	    oldLast = old->firstKeySym+old->nKeySyms-1;
+	    first = old->first_key_sym;
+	    oldLast = old->first_key_sym+old->num_key_syms-1;
 	    newLast = new->first_keycode+new->count-1;
 
 	    if (new->first_keycode<first)
 		first = new->first_keycode;
 	    if (oldLast>newLast)
 		newLast= oldLast;
-	    old->firstKeySym = first;
-	    old->nKeySyms = newLast-first+1;
+	    old->first_key_sym = first;
+	    old->num_key_syms = newLast-first+1;
 	}
 	else {
 	    old->changed|= XkbKeySymsMask;
-	    old->firstKeySym = new->first_keycode;
-	    old->nKeySyms = new->count;
+	    old->first_key_sym = new->first_keycode;
+	    old->num_key_syms = new->count;
 	}
     }
     return;
@@ -177,7 +198,7 @@ wire_to_event(dpy,re,event)
 		if ( xkbi->selected_events&XkbStateNotifyMask ) {
 		    XkbStateNotifyEvent *sev=(XkbStateNotifyEvent *)re;
 		    sev->type = XkbEventCode+xkbi->codes->first_event;
-		    sev->xkbType = XkbStateNotify;
+		    sev->xkb_type = XkbStateNotify;
 		    sev->serial = _XSetLastRequestRead(dpy,
 					(xGenericReply *)event);
 		    sev->send_event = ((event->u.u.type & 0x80) != 0);
@@ -185,21 +206,19 @@ wire_to_event(dpy,re,event)
 		    sev->time = sn->time; 
 		    sev->device = sn->deviceID;
 		    sev->keycode = sn->keycode;
-		    sev->eventType = sn->eventType;
-		    sev->requestMajor = sn->requestMajor;
-		    sev->requestMinor = sn->requestMinor;
+		    sev->event_type = sn->eventType;
+		    sev->req_major = sn->requestMajor;
+		    sev->req_minor = sn->requestMinor;
 		    sev->changed = sn->changed;
 		    sev->group = sn->group;
-		    sev->baseGroup = sn->baseGroup;
-		    sev->latchedGroup = sn->latchedGroup;
-		    sev->lockedGroup = sn->lockedGroup;
+		    sev->base_group = sn->baseGroup;
+		    sev->latched_group = sn->latchedGroup;
+		    sev->locked_group = sn->lockedGroup;
 		    sev->mods = sn->mods;
-		    sev->baseMods = sn->baseMods;
-		    sev->latchedMods = sn->latchedMods;
-		    sev->lockedMods = sn->lockedMods;
-		    sev->compatState = sn->compatState;
-		    sev->unlockedMods = sn->unlockedMods;
-		    sev->groupsUnlocked = sn->groupsUnlocked;
+		    sev->base_mods = sn->baseMods;
+		    sev->latched_mods = sn->latchedMods;
+		    sev->locked_mods = sn->lockedMods;
+		    sev->compat_state = sn->compatState;
 		    return True;
 		}
 	    }
@@ -211,7 +230,7 @@ wire_to_event(dpy,re,event)
 		    XkbMapNotifyEvent *mev;
 		    mev =(XkbMapNotifyEvent *)re;
 		    mev->type = XkbEventCode+xkbi->codes->first_event;
-		    mev->xkbType = XkbMapNotify;
+		    mev->xkb_type = XkbMapNotify;
 		    mev->serial = _XSetLastRequestRead(dpy,
 						(xGenericReply *)event);
 		    mev->send_event = ((event->u.u.type&0x80)!=0);
@@ -219,14 +238,17 @@ wire_to_event(dpy,re,event)
 		    mev->time = mn->time;
 		    mev->device = mn->deviceID;
 		    mev->changed =  mn->changed;
-		    mev->firstKeyType = mn->firstKeyType;
-		    mev->nKeyTypes = mn->nKeyTypes;
-		    mev->firstKeySym = mn->firstKeySym;
-		    mev->nKeySyms = mn->nKeySyms;
-		    mev->firstKeyAction = mn->firstKeyAction;
-		    mev->nKeyActions = mn->nKeyActions;
-		    mev->firstKeyBehavior = mn->firstKeyBehavior;
-		    mev->nKeyBehaviors = mn->nKeyBehaviors;
+		    mev->first_type = mn->firstType;
+		    mev->num_types = mn->nTypes;
+		    mev->first_key_sym = mn->firstKeySym;
+		    mev->num_key_syms = mn->nKeySyms;
+		    mev->first_key_act = mn->firstKeyAction;
+		    mev->num_key_acts = mn->nKeyActions;
+		    mev->first_key_behavior = mn->firstKeyBehavior;
+		    mev->num_key_behaviors = mn->nKeyBehaviors;
+		    mev->vmods = mn->virtualMods;
+		    mev->first_key_explicit = mn->firstKeyExplicit;
+		    mev->num_key_explicit = mn->nKeyExplicit;
 		    XkbNoteMapChanges(&xkbi->changes,mev,XKB_XLIB_MAP_MASK);
 		    if (xkbi->changes.changed)
 			xkbi->flags|= XkbMapPending;
@@ -257,42 +279,64 @@ wire_to_event(dpy,re,event)
 		    XkbControlsNotifyEvent *cev;
 		    cev =(XkbControlsNotifyEvent *)re;
 		    cev->type = XkbEventCode+xkbi->codes->first_event;
-		    cev->xkbType = XkbControlsNotify;
+		    cev->xkb_type = XkbControlsNotify;
 		    cev->serial = _XSetLastRequestRead(dpy,
 						(xGenericReply *)event);
 		    cev->send_event = ((event->u.u.type&0x80)!=0);
 		    cev->display = dpy;
 		    cev->time = cn->time;
 		    cev->device = cn->deviceID;
-		    cev->changedControls =  cn->changedControls;
-		    cev->enabledControlChanges = cn->enabledControlChanges;
-		    cev->enabledControls =  cn->enabledControls;
+		    cev->changed_ctrls =  cn->changedControls;
+		    cev->enabled_ctrls =  cn->enabledControls;
+		    cev->enabled_ctrl_changes = cn->enabledControlChanges;
 		    cev->keycode = cn->keycode;
-		    cev->eventType = cn->eventType;
-		    cev->requestMajor = cn->requestMajor;
-		    cev->requestMinor = cn->requestMinor;
+		    cev->event_type = cn->eventType;
+		    cev->req_major = cn->requestMajor;
+		    cev->req_minor = cn->requestMinor;
 		    return True;
 		}
 		return False;
 	    }
 	    break;
-	case XkbIndicatorNotify:
+	case XkbIndicatorMapNotify:
 	    {
-		if (xkbi->selected_events&XkbIndicatorNotifyMask) {
+		if (xkbi->selected_events&XkbIndicatorMapNotifyMask) {
 		    xkbIndicatorNotify *in =(xkbIndicatorNotify *)event;
 		    XkbIndicatorNotifyEvent *iev;
 		    iev =(XkbIndicatorNotifyEvent *)re;
 		    iev->type = XkbEventCode+xkbi->codes->first_event;
-		    iev->xkbType = XkbIndicatorNotify;
+		    iev->xkb_type = XkbIndicatorMapNotify;
 		    iev->serial = _XSetLastRequestRead(dpy,
 						(xGenericReply *)event);
 		    iev->send_event = ((event->u.u.type&0x80)!=0);
 		    iev->display = dpy;
 		    iev->time = in->time;
 		    iev->device = in->deviceID;
-		    iev->stateChanged =  in->stateChanged;
+		    iev->state_changed =  in->stateChanged;
 		    iev->state=  in->state;
-		    iev->mapChanged =  in->mapChanged;
+		    iev->map_changed =  in->mapChanged;
+		    return True;
+		}
+		return False;
+	    }
+	    break;
+	case XkbIndicatorStateNotify:
+	    {
+		if (xkbi->selected_events&XkbIndicatorStateNotifyMask) {
+		    xkbIndicatorNotify *in =(xkbIndicatorNotify *)event;
+		    XkbIndicatorNotifyEvent *iev;
+		    iev =(XkbIndicatorNotifyEvent *)re;
+		    iev->type = XkbEventCode+xkbi->codes->first_event;
+		    iev->xkb_type = XkbIndicatorStateNotify;
+		    iev->serial = _XSetLastRequestRead(dpy,
+						(xGenericReply *)event);
+		    iev->send_event = ((event->u.u.type&0x80)!=0);
+		    iev->display = dpy;
+		    iev->time = in->time;
+		    iev->device = in->deviceID;
+		    iev->state_changed =  in->stateChanged;
+		    iev->state=  in->state;
+		    iev->state_changed =  in->mapChanged;
 		    return True;
 		}
 		return False;
@@ -305,7 +349,7 @@ wire_to_event(dpy,re,event)
 		    XkbBellNotifyEvent *bev;
 		    bev =(XkbBellNotifyEvent *)re;
 		    bev->type = XkbEventCode+xkbi->codes->first_event;
-		    bev->xkbType = XkbBellNotify;
+		    bev->xkb_type = XkbBellNotify;
 		    bev->serial = _XSetLastRequestRead(dpy,
 						(xGenericReply *)event);
 		    bev->send_event = ((event->u.u.type&0x80)!=0);
@@ -315,9 +359,10 @@ wire_to_event(dpy,re,event)
 		    bev->percent = bn->percent;
 		    bev->pitch = bn->percent;
 		    bev->duration = bn->duration;
-		    bev->bellClass = bn->bellClass;
-		    bev->bellID = bn->bellID;
+		    bev->bell_class = bn->bellClass;
+		    bev->bell_id = bn->bellID;
 		    bev->name = bn->name;
+		    bev->window = bn->window;
 		    return True;
 		}
 		return False;
@@ -330,14 +375,14 @@ wire_to_event(dpy,re,event)
 		    XkbSlowKeyNotifyEvent *skev;
 		    skev =(XkbSlowKeyNotifyEvent *)re;
 		    skev->type = XkbEventCode+xkbi->codes->first_event;
-		    skev->xkbType = XkbSlowKeyNotify;
+		    skev->xkb_type = XkbSlowKeyNotify;
 		    skev->serial = _XSetLastRequestRead(dpy,
 						(xGenericReply *)event);
 		    skev->send_event = ((event->u.u.type&0x80)!=0);
 		    skev->display = dpy;
 		    skev->time = skn->time;
 		    skev->device = skn->deviceID;
-		    skev->slowKeyType = skn->slowKeyType;
+		    skev->slow_key_state = skn->slowKeyState;
 		    skev->keycode = skn->keycode;
 		    skev->delay = skn->delay;
 		    return True;
@@ -352,7 +397,7 @@ wire_to_event(dpy,re,event)
 		    XkbNamesNotifyEvent *nev;
 		    nev =(XkbNamesNotifyEvent *)re;
 		    nev->type = XkbEventCode+xkbi->codes->first_event;
-		    nev->xkbType = XkbNamesNotify;
+		    nev->xkb_type = XkbNamesNotify;
 		    nev->serial = _XSetLastRequestRead(dpy,
 						(xGenericReply *)event);
 		    nev->send_event = ((event->u.u.type&0x80)!=0);
@@ -360,14 +405,16 @@ wire_to_event(dpy,re,event)
 		    nev->time = nn->time;
 		    nev->device = nn->deviceID;
 		    nev->changed = nn->changed;
-		    nev->firstKeyType = nn->firstKeyType;
-		    nev->nKeyTypes = nn->nKeyTypes;
-		    nev->firstLevel = nn->firstLevelName;
-		    nev->nLevels = nn->nLevelNames;
-		    nev->nRadioGroups = nn->nRadioGroups;
-		    nev->nCharSets = nn->nCharSets;
-		    nev->changedMods = nn->changedMods;
-		    nev->changedIndicators = nn->changedIndicators;
+		    nev->first_type = nn->firstType;
+		    nev->num_types = nn->nTypes;
+		    nev->first_lvl = nn->firstLevelName;
+		    nev->num_lvls = nn->nLevelNames;
+		    nev->first_radio_group = nn->firstRadioGroup;
+		    nev->num_radio_groups = nn->nRadioGroups;
+		    nev->num_char_sets = nn->nCharSets;
+		    nev->changed_mods = nn->changedMods;
+		    nev->changed_vmods = nn->changedVirtualMods;
+		    nev->changed_indicators = nn->changedIndicators;
 		    return True;
 		}
 		return False;
@@ -380,17 +427,18 @@ wire_to_event(dpy,re,event)
 		    XkbCompatMapNotifyEvent *cmev;
 		    cmev =(XkbCompatMapNotifyEvent *)re;
 		    cmev->type = XkbEventCode+xkbi->codes->first_event;
-		    cmev->xkbType = XkbCompatMapNotify;
+		    cmev->xkb_type = XkbCompatMapNotify;
 		    cmev->serial = _XSetLastRequestRead(dpy,
 						(xGenericReply *)event);
 		    cmev->send_event = ((event->u.u.type&0x80)!=0);
 		    cmev->display = dpy;
 		    cmev->time = cmn->time;
 		    cmev->device = cmn->deviceID;
-		    cmev->changedMods = cmn->changedMods;
-		    cmev->firstSym = cmn->firstSym;
-		    cmev->nSyms = cmn->nSyms;
-		    cmev->nTotalSyms = cmn->nTotalSyms;
+		    cmev->changed_mods = cmn->changedMods;
+		    cmev->changed_vmods = cmn->changedVirtualMods;
+		    cmev->first_sym = cmn->firstSI;
+		    cmev->num_syms = cmn->nSI;
+		    cmev->num_total_syms = cmn->nTotalSI;
 		    return True;
 		}
 		return False;
@@ -403,19 +451,40 @@ wire_to_event(dpy,re,event)
 		    XkbAlternateSymsNotifyEvent *asev;
 		    asev =(XkbAlternateSymsNotifyEvent *)re;
 		    asev->type = XkbEventCode+xkbi->codes->first_event;
-		    asev->xkbType = XkbAlternateSymsNotify;
+		    asev->xkb_type = XkbAlternateSymsNotify;
 		    asev->serial = _XSetLastRequestRead(dpy,
 						(xGenericReply *)event);
 		    asev->send_event = ((event->u.u.type&0x80)!=0);
 		    asev->display = dpy;
 		    asev->time = asn->time;
 		    asev->device = asn->deviceID;
-		    asev->altSymsID = asn->altSymsID;
-		    asev->firstKey = asn->firstKey;
-		    asev->nKeys = asn->nKeys;
+		    asev->alt_syms_id = asn->altSymsID;
+		    asev->first_key = asn->firstKey;
+		    asev->num_keys = asn->nKeys;
 		    return True;
 		}
 		return False;
+	    }
+	    break;
+	case XkbActionMessage:
+	    {
+		if (xkbi->selected_events&XkbActionMessageMask) {
+		    xkbActionMessage *am= (xkbActionMessage *)event;
+		    XkbActionMessageEvent *amev;
+		    amev= (XkbActionMessageEvent *)am;
+		    amev->type = XkbEventCode+xkbi->codes->first_event;
+		    amev->xkb_type = XkbActionMessage;
+		    amev->serial = _XSetLastRequestRead(dpy,
+						(xGenericReply *)event);
+		    amev->send_event = ((event->u.u.type&0x80)!=0);
+		    amev->display = dpy;
+		    amev->time = am->time;
+		    amev->device = am->deviceID;
+		    amev->keycode = am->keycode;
+		    amev->press = am->press;
+		    amev->key_event_follows = am->keyEventFollows;
+		    memcpy(amev->message,am->message,XkbActionMessageLength);
+		}
 	    }
 	    break;
 	default:

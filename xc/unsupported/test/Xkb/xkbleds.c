@@ -26,6 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
 
 #include <stdio.h>
+#include <ctype.h>
 #include <X11/Xproto.h>
 #include <X11/Xlib.h>
 #include <X11/X.h>
@@ -33,8 +34,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 char *
 atomText(dpy,atom)
-    Display *	dpy;
-    Atom	atom;
+   Display *	dpy;
+   Atom		atom;
 {
 static char buf[256];
 char	*name = XGetAtomName(dpy,atom);
@@ -57,7 +58,7 @@ char	*name = XGetAtomName(dpy,atom);
 
 char *
 indComponentText(which)
-    CARD8	which;
+    CARD8 which;
 {
 register int i;
 static char buf[8];
@@ -65,17 +66,15 @@ char *str;
 
     if (which) {
 	str= buf;
-	if (which&XkbIMUseBase)
+	if (which&XkbIM_UseBase)
 	    *str++= 'b';
-	if (which&XkbIMUseLatched)
+	if (which&XkbIM_UseLatched)
 	    *str++= 'l';
-	if (which&XkbIMUseLocked)
+	if (which&XkbIM_UseLocked)
 	    *str++= 'L';
-	if (which&XkbIMUseEffectiveLocked)
-	    *str++= 'E';
-	if (which&XkbIMUseEffective)
+	if (which&XkbIM_UseEffective)
 	    *str++= 'e';
-	if (which&XkbIMUseCompat)
+	if (which&XkbIM_UseCompat)
 	    *str++= 'c';
 	*str++= '\0';
     }
@@ -94,8 +93,8 @@ static	XkbIndicatorMapRec	map[XkbNumIndicators];
 
 int
 parseArgs(argc,argv)
-    int		argc;
-    char *	argv[];
+    int argc;
+    char *argv[];
 {
 int i;
 
@@ -115,11 +114,12 @@ int i;
 	}
 	else if ( isdigit(argv[i][0]) ) {
 	    char buf[20],*tmp;
-	    int  led,mods,group,ctrls,which;
+	    int  led,mods,vmods,group,ctrls,which;
 	    int	   got;
 	    led= mods= group= ctrls= which= 0;
-	    got= sscanf(argv[i],"%i %s %i %i %i",&led,buf,&mods,&group,&ctrls);
-	    if (got<2) {
+	    got= sscanf(argv[i],"%i %s %i %i %i %i",
+				&led,buf,&mods,&vmods,&group,&ctrls);
+	    if (got<6) {
 		fprintf(stderr,"Couldn't parse map for indicator %d\n",led);
 		return 0;
 	    }
@@ -131,12 +131,11 @@ int i;
 	    led--;
 	    tmp= buf;
 	    while (*tmp) {
-		if (*tmp=='b')		which|= XkbIMUseBase;
-		else if (*tmp=='l')	which|= XkbIMUseLatched;
-		else if (*tmp=='L')	which|= XkbIMUseLocked;
-		else if (*tmp=='e')	which|= XkbIMUseEffective;
-		else if (*tmp=='E')	which|= XkbIMUseEffectiveLocked;
-		else if (*tmp=='c')	which|= XkbIMUseCompat;
+		if (*tmp=='b')		which|= XkbIM_UseBase;
+		else if (*tmp=='l')	which|= XkbIM_UseLatched;
+		else if (*tmp=='L')	which|= XkbIM_UseLocked;
+		else if (*tmp=='e')	which|= XkbIM_UseEffective;
+		else if (*tmp=='c')	which|= XkbIM_UseCompat;
 		else if (*tmp=='x')	which= 0;
 		else {
 		    fprintf(stderr,"Unknown specifier '%c' ignored\n",*tmp);
@@ -144,11 +143,12 @@ int i;
 		tmp++;
 	    }
 	    changed|= (1<<led);
-	    map[led].whichMods= which;
-	    map[led].mods= mods;
-	    map[led].whichGroups= which;
+	    map[led].which_mods= which;
+	    map[led].real_mods= mods;
+	    map[led].vmods= vmods;
+	    map[led].which_groups= which;
 	    map[led].groups= group;
-	    map[led].controls= ctrls;
+	    map[led].ctrls= ctrls;
 	}
 	else {
 	    fprintf(stderr,"Unknown option %s\n",argv[i]);
@@ -162,42 +162,48 @@ int i;
 
 void
 showMaps(dpy,desc)
-    Display *		dpy;
-    XkbDescRec *	desc;
+    Display *dpy;
+    XkbDescRec *desc;
 {
 register int i;
 CARD8	*action;
 char	*name;
 XkbIndicatorRec *leds;
 XkbNamesRec	*names;
-unsigned long	 state;
+unsigned state;
 
     XkbGetIndicatorState(dpy,XkbUseCoreKbd,&state);
     printf("state: 0x%08x\n",state);
     leds= desc->indicators;
     names= desc->names;
-    printf("%d physical indicators\n",leds->nRealIndicators);
+    printf("%d physical indicators\n",leds->num_phys_indicators);
     for (i=0;i<XkbNumIndicators;i++) {
-	if ((leds->maps[i].whichMods==0)&&(leds->maps[i].whichGroups==0)&&
-					  (leds->maps[i].controls==0))
+	if ((leds->maps[i].which_mods==0)&&(leds->maps[i].which_groups==0)&&
+	    (leds->maps[i].ctrls==0)&&(leds->maps[i].flags==0))
 	    continue;
 	printf("Indicator %d",i+1);
 	if (names&&(name=atomText(dpy,names->indicators[i]))&&(name[0]))
 	    printf(" (%s)",name);
 	printf(":\n");
-	printf("   mods:     0x%x (%s)\n",leds->maps[i].mods,
-				indComponentText(leds->maps[i].whichMods));
-	printf("   groups:   0x%x (%s)\n",leds->maps[i].groups,
-				indComponentText(leds->maps[i].whichGroups));
-	printf("   controls: 0x%x\n",leds->maps[i].controls);
+	if (leds->maps[i].flags&XkbIM_NoExplicit)
+	    printf("  explicit control disabled\n");
+	if (leds->maps[i].flags&XkbIM_NoAutomatic)
+	    printf("  automatic control disabled\n");
+	printf("          mask: 0x%x (%s)\n",leds->maps[i].mask,
+				indComponentText(leds->maps[i].which_mods));
+	printf("     real mods: 0x%x\n",leds->maps[i].real_mods);
+	printf("  virtual mods: 0x%x\n",leds->maps[i].vmods);
+	printf("        groups: 0x%x (%s)\n",leds->maps[i].groups,
+				indComponentText(leds->maps[i].which_groups));
+	printf("      controls: 0x%x\n",leds->maps[i].ctrls);
     }
     return;
 }
 
 int
 main(argc,argv)
-    int		argc;
-    char *	argv[];
+    int argc;
+    char *argv[];
 {
 Display	*dpy;
 int	i1,i2,i3,i4,i5;
@@ -206,11 +212,24 @@ unsigned	 	 query;
 
   
     if (!parseArgs(argc,argv)) {
-	fprintf(stderr,"Usage: %s <options>\n",argv[0]);
+	fprintf(stderr,"Usage: %s <options> [map [map...]]\n",argv[0]);
 	fprintf(stderr,"Where legal options are:\n");
 	fprintf(stderr,"-display <dpy>     specifies display to use\n");
-	fprintf(stderr,"-v        show current indicator mapping\n");
-	fprintf(stderr,"-synch    turn on synchronization\n");
+	fprintf(stderr,"-v                 show current indicator mapping\n");
+	fprintf(stderr,"-synch             turn on synchronization\n");
+	fprintf(stderr,"Indicator maps have the format:\n");
+	fprintf(stderr,"    led which mods vmods group ctrls\n");
+	fprintf(stderr,"led                specifies led map to change\n");
+	fprintf(stderr,"which              state components that affect map\n");
+	fprintf(stderr,"                   [blLecx]+\n");
+	fprintf(stderr,"mods               modifiers that affect the map\n");
+	fprintf(stderr,"vmods              virtual mods that affect the map\n");
+	fprintf(stderr,"group              groups that affect the map\n");
+	fprintf(stderr,"controls           controls that affect the map\n");
+	fprintf(stderr,"All fields except which have integer values that\n");
+	fprintf(stderr,"are interpreted as bit masks.  If no indicator maps\n");
+	fprintf(stderr,"are specified on the command line, all current maps\n");
+	fprintf(stderr,"and the current state are reported.\n");
 	return 1;
     }
     dpy = XOpenDisplay(dpyName);

@@ -26,10 +26,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
 
 #include <stdio.h>
+#include <ctype.h>
 #include <X11/Xproto.h>
 #include <X11/Xlib.h>
 #include <X11/X.h>
 #include <X11/XKBlib.h>
+#include <X11/extensions/XKBproto.h>
 
 static	char		*dpyName = NULL;
 static	unsigned	 flags = 0;
@@ -39,8 +41,8 @@ static	Bool		 disableLocks = XkbLeaveLocks;
 
 int
 parseArgs(argc,argv)
-    int		argc;
-    char *	argv[];
+    int argc;
+    char *argv[];
 {
 int i;
 unsigned on= 0;
@@ -119,8 +121,8 @@ unsigned off= 0;
 
 int
 main(argc,argv)
-    int		argc;
-    char *	argv[];
+    int argc;
+    char *argv[];
 {
 Display	*dpy;
 int	i1,i2,i3,i4,i5;

@@ -42,8 +42,8 @@ static	unsigned	 state = 0;
 
 int
 parseArgs(argc,argv)
-    int		argc;
-    char *	argv[];
+    int argc;
+    char *argv[];
 {
 int i;
 
@@ -133,8 +133,8 @@ int i;
 
 int
 main(argc,argv)
-    int		argc;
-    char *	argv[];
+    int argc;
+    char *argv[];
 {
 Display	*dpy;
 int	i1,i2,i3,i4,i5;
@@ -180,7 +180,7 @@ unsigned	query;
     }
     else if ( which==KEY_ONLY ) {
 	printf("Setting \"key event only\" modifiers\n");
-	XkbSetKeyOnlyMods(dpy,device,mask,state);
+	XkbSetIgnoreLockMods(dpy,device,mask,state);
     }
     XCloseDisplay(dpy);
     return 0;

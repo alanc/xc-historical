@@ -1,4 +1,4 @@
-/* $XConsortium: xkbrefresh.c,v 1.1 93/09/28 22:31:21 rws Exp $ */
+/* $XConsortium: xkbrefresh.c,v 1.2 93/09/28 23:51:55 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -43,7 +43,9 @@ static	CARD8		firstNamesKeyType = 0;
 static	CARD8		nNamesKeyTypes = 0;
 
 int
-parseArgs(int argc,char *argv[])
+parseArgs(argc,argv)
+    int argc;
+    char *argv[];
 {
 int i;
 
@@ -61,8 +63,8 @@ int i;
 		if (sscanf(argv[++i],"%i-%i",&low,&high)==2) {
 		    full&= ~XkbKeyTypesMask;
 		    changes.changed|= XkbKeyTypesMask;
-		    changes.firstKeyType = low;
-		    changes.nKeyTypes = high-low+1;
+		    changes.first_type = low;
+		    changes.num_types = high-low+1;
 		    continue;
 		}
 		fprintf(stderr,"must specify a range of key types\n");
@@ -76,8 +78,8 @@ int i;
 		if (sscanf(argv[++i],"%i-%i",&low,&high)!=2) {
 		    full&= ~XkbKeySymsMask;
 		    changes.changed|= XkbKeySymsMask;
-		    changes.firstKeySym = low;
-		    changes.nKeySyms = high-low+1;
+		    changes.first_key_sym = low;
+		    changes.num_key_syms = high-low+1;
 		    continue;
 		}
 		fprintf(stderr,"must specify a range of key syms\n");
@@ -85,17 +87,17 @@ int i;
 	    }
 	    else full|= XkbKeySymsMask;
 	}
-	else if ((strcmp(argv[i],"-a")==0) || (strcmp(argv[i],"-actions")==0)){
+	else if ((strcmp(argv[i],"-a")==0) || (strcmp(argv[i],"-acts")==0)){
 	    if ((i+1<argc)&&(argv[i+1][0]!='-')) {
 		int low,high;
 		if (sscanf(argv[++i],"%i-%i",&low,&high)!=2) {
 		    full&= ~XkbKeyActionsMask;
 		    changes.changed|= XkbKeyActionsMask;
-		    changes.firstKeyAction = low;
-		    changes.nKeyActions = high-low+1;
+		    changes.first_key_act = low;
+		    changes.num_key_acts = high-low+1;
 		    continue;
 		}
-		fprintf(stderr,"must specify a range of actions\n");
+		fprintf(stderr,"must specify a range of acts\n");
 		return 0;
 	    }
 	    else full|= XkbKeyActionsMask;
@@ -106,11 +108,40 @@ int i;
 		if (sscanf(argv[++i],"%i-%i",&low,&high)!=2) {
 		    full&= ~XkbKeyBehaviorsMask;
 		    changes.changed|= XkbKeyBehaviorsMask;
-		    changes.firstKeyBehavior = low;
-		    changes.nKeyBehaviors = high-low+1;
+		    changes.first_key_behavior = low;
+		    changes.num_key_behaviors = high-low+1;
 		    continue;
 		}
 		fprintf(stderr,"must specify a range of key behaviors\n");
+		return 0;
+	    }
+	    else full|= XkbKeyBehaviorsMask;
+	}
+	else if ((strcmp(argv[i],"-v")==0)||(strcmp(argv[i],"-vmods")==0)){
+	    if ((i+1<argc)&&(argv[i+1][0]!='-')) {
+		int mods;
+		if (sscanf(argv[++i],"%i",&mods)!=2) {
+		    full&= ~XkbVirtualModsMask;
+		    changes.changed|= XkbVirtualModsMask;
+		    changes.vmods = mods;
+		    continue;
+		}
+		fprintf(stderr,"must specify virtual modifiers\n");
+		return 0;
+	    }
+	    else full|= XkbKeyBehaviorsMask;
+	}
+	else if ((strcmp(argv[i],"-e")==0)||(strcmp(argv[i],"-explicit")==0)){
+	    if ((i+1<argc)&&(argv[i+1][0]!='-')) {
+		int low,high;
+		if (sscanf(argv[++i],"%i-%i",&low,&high)!=2) {
+		    full&= ~XkbExplicitComponentsMask;
+		    changes.changed|= XkbExplicitComponentsMask;
+		    changes.first_key_explicit = low;
+		    changes.num_key_explicit = high-low+1;
+		    continue;
+		}
+		fprintf(stderr,"must specify a range of keys for explicit components \n");
 		return 0;
 	    }
 	    else full|= XkbKeyBehaviorsMask;
@@ -125,6 +156,8 @@ int i;
 			case 'a':	which|= XkbKeyActionsMask; break;
 			case 's':	which|= XkbKeySymsMask; break;
 			case 'b':	which|= XkbKeyBehaviorsMask; break;
+			case 'v':	which|= XkbVirtualModsMask; break;
+			case 'e':	which|= XkbExplicitComponentsMask;break;
 			default:
 			    fprintf(stderr,"Unknown subset %c\n",*subsets);
 			    return 0;
@@ -155,6 +188,7 @@ int i;
 			case 'g':	which|= XkbGeometryNameMask; break;
 			case 'm':	which|= XkbModifierNamesMask; break;
 			case 'l':	which|= XkbKTLevelNamesMask; break;
+			case 'v':	which|= XkbVirtualModNamesMask; break;
 			default:
 			    fprintf(stderr,"Unknown subset %c\n",*subsets);
 			    return 0;
@@ -197,7 +231,9 @@ int i;
 }
 
 int
-main(int argc,char *argv[])
+main(argc,argv)
+    int argc;
+    char *argv[];
 {
 Display	*dpy;
 int	i1,i2,i3,i4,i5;
@@ -212,14 +248,18 @@ unsigned	 query;
 	fprintf(stderr,"-display <dpy>         specifies display to use\n");
 	fprintf(stderr,"-t[ypes] [range]       specifies a range of key types to refresh\n");
 	fprintf(stderr,"-s[yms] [range]        specifies a range of key syms to refresh\n");
-	fprintf(stderr,"-a[ctions] [range]     specifies a range of actions to refresh\n");
+	fprintf(stderr,"-a[ctions] [range]     specifies a range of acts to refresh\n");
 	fprintf(stderr,"-b[ehaviors] [range]   specifies a range of key behaviors to refresh\n");
+	fprintf(stderr,"-v[mods] [mask]        specifies a mask of virtual modifiers to refresh\n");
+	fprintf(stderr,"-e[xplicit] [range]    specifies a mask of key explicit components to refresh\n");
 	fprintf(stderr,"-x <subsets>           specifies unchanged subset of keyboard mapping\n");
 	fprintf(stderr,"                       Legal subsets are:\n");
 	fprintf(stderr,"		       t:  Key Types\n");
 	fprintf(stderr,"                       a:  Key Actions\n");
 	fprintf(stderr,"                       s:  Key Syms\n");
 	fprintf(stderr,"                       b:  Key Behavior\n");
+	fprintf(stderr,"                       v:  Virtual Modifiers\n");
+	fprintf(stderr,"                       e:  Explicit Components\n");
 	fprintf(stderr,"-xn <name subsets>     specifies unchanges subset of keyboard names\n");
 	fprintf(stderr,"                       legal name subsets are:\n");
 	fprintf(stderr,"                       c:  Keycode name\n");
@@ -228,6 +268,7 @@ unsigned	 query;
 	fprintf(stderr,"                       i:  Indicator names\n");
 	fprintf(stderr,"                       m:  Modifier names\n");
 	fprintf(stderr,"                       l:  Key type level names\n");
+	fprintf(stderr,"                       v:  Virtual modifier names\n");
 	fprintf(stderr,"-cmn [range]           specifies a range of column map names to refresh\n");
 	return 1;
     }
@@ -267,34 +308,34 @@ unsigned	 query;
     else {
 	printf("Refreshing:");
 	if (changes.changed&XkbKeyTypesMask) {
-	    if ((changes.firstKeyType==0)&&(changes.nKeyTypes==0))
-	    	changes.nKeyTypes = map->map->nKeyTypes;
-	    printf("   column maps:      %d-%d\n",changes.firstKeyType,
-	    						changes.nKeyTypes);
+	    if ((changes.first_type==0)&&(changes.num_types==0))
+	    	changes.num_types = map->map->num_types;
+	    printf("     key types:      %d-%d\n",changes.first_type,
+	    						changes.num_types);
 	}
 	if (changes.changed&XkbKeySymsMask) {
-	    if ((changes.firstKeySym==0)&&(changes.nKeySyms==0)) {
-		changes.firstKeySym = map->minKeyCode;
-	    	changes.nKeySyms = map->maxKeyCode-map->minKeyCode+1;
+	    if ((changes.first_key_sym==0)&&(changes.num_key_syms==0)) {
+		changes.first_key_sym = map->min_key_code;
+	    	changes.num_key_syms = map->max_key_code-map->min_key_code+1;
 	    }
-	    printf("   key syms:         %d-%d\n",changes.firstKeySym,
-	    						changes.nKeySyms);
+	    printf("   key syms:         %d-%d\n",changes.first_key_sym,
+	    						changes.num_key_syms);
 	}
 	if (changes.changed&XkbKeyActionsMask) {
-	    if ((changes.firstKeyAction==0)&&(changes.nKeyActions==0)) {
-		changes.firstKeyAction = map->minKeyCode;
-	    	changes.nKeyActions = map->maxKeyCode-map->minKeyCode+1;
+	    if ((changes.first_key_act==0)&&(changes.num_key_acts==0)) {
+		changes.first_key_act = map->min_key_code;
+	    	changes.num_key_acts = map->max_key_code-map->min_key_code+1;
 	    }
-	    printf("   key actions:      %d-%d\n",changes.firstKeyAction,
-	    						changes.nKeyActions);
+	    printf("   key acts:      %d-%d\n",changes.first_key_act,
+    						changes.num_key_acts);
 	}
 	if (changes.changed&XkbKeyBehaviorsMask) {
-	    if ((changes.firstKeyBehavior==0)&&(changes.nKeyBehaviors==0)) {
-		changes.firstKeyBehavior = map->minKeyCode;
-	    	changes.nKeyBehaviors = map->maxKeyCode-map->minKeyCode+1;
+	    if ((!changes.first_key_behavior)&&(!changes.num_key_behaviors)) {
+		changes.first_key_behavior = map->min_key_code;
+	    	changes.num_key_behaviors = map->max_key_code-map->min_key_code+1;
 	    }
-	    printf("   key behaviors:    %d-%d\n",changes.firstKeyBehavior,
-	    						changes.nKeyBehaviors);
+	    printf("   key behaviors:    %d-%d\n",changes.first_key_behavior,
+	    					changes.num_key_behaviors);
 	}
 	if (XkbChangeMap(dpy,map,&changes))
 	     printf("Map refreshed\n");
@@ -304,7 +345,7 @@ unsigned	 query;
 	printf("Refreshing names...");
 	if (nNamesKeyTypes==0) {
 	    firstNamesKeyType = 0;
-	    nNamesKeyTypes= map->map->nKeyTypes;
+	    nNamesKeyTypes= map->map->num_types;
 	}
 	XkbSetNames(dpy,whichNames,firstNamesKeyType,nNamesKeyTypes,map);
 	printf("done\n");

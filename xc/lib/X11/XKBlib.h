@@ -36,7 +36,7 @@ typedef struct _XkbAnyEvent {
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
-	int xkbType;		/* XkbStateNotify ... XkbCompatMapNotify */
+	int xkb_type;		/* XkbStateNotify ... XkbCompatMapNotify */
 	unsigned int device;	/* device ID */
 } XkbAnyEvent;
 
@@ -46,24 +46,22 @@ typedef struct _XkbStateNotifyEvent {
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
-	int xkbType;		/* XkbStateNotify */
+	int xkb_type;		/* XkbStateNotify */
 	unsigned int device;	/* device ID */
 	unsigned int keycode;	/* keycode that caused the change */
-	unsigned int eventType;	/* KeyPress or KeyRelease */
-	unsigned int requestMajor;/* Major opcode of request */
-	unsigned int requestMinor;/* Minor opcode of request */
+	unsigned int event_type;/* KeyPress or KeyRelease */
+	unsigned int req_major;/* Major opcode of request */
+	unsigned int req_minor;/* Minor opcode of request */
 	unsigned int changed;	/* mask of changed state components */
 	unsigned int group;	/* keyboard group */
-	unsigned int baseGroup;	/* base keyboard group */
-	unsigned int latchedGroup;/* latched keyboard group */
-	unsigned int lockedGroup; /* locked keyboard group */
+	unsigned int base_group;/* base keyboard group */
+	unsigned int latched_group;/* latched keyboard group */
+	unsigned int locked_group; /* locked keyboard group */
 	unsigned int mods;	  /* modifier state */
-	unsigned int baseMods;	  /* base modifier state */
-	unsigned int latchedMods; /* latched modifiers */
-	unsigned int lockedMods;  /* locked modifiers */
-	unsigned int compatState; /* compatibility state */
-	unsigned int unlockedMods;
-	Bool groupsUnlocked;
+	unsigned int base_mods;	  /* base modifier state */
+	unsigned int latched_mods; /* latched modifiers */
+	unsigned int locked_mods;  /* locked modifiers */
+	unsigned int compat_state; /* compatibility state */
 } XkbStateNotifyEvent;
 
 typedef struct _XkbMapNotifyEvent {
@@ -72,18 +70,21 @@ typedef struct _XkbMapNotifyEvent {
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
-	int xkbType;		/* XkbMapNotify */
+	int xkb_type;		/* XkbMapNotify */
 	unsigned int device;	/* device ID */
 	unsigned int changed;		/* fields which have been changed */
 	unsigned int resized;		/* fields which have been resized */
-	unsigned int firstKeyType;	/* first changed key type */
-	unsigned int nKeyTypes;		/* number of changed key types */
-	unsigned int firstKeySym;	/* first changed key sym */
-	unsigned int nKeySyms;		/* number of changed key syms */
-	unsigned int firstKeyAction;	/* first changed key action */
-	unsigned int nKeyActions;	/* number of changed key actions */
-	unsigned int firstKeyBehavior;	/* first changed key behavior */
-	unsigned int nKeyBehaviors;	/* number of changed key behaviors */
+	unsigned int first_type;	/* first changed key type */
+	unsigned int num_types;		/* number of changed key types */
+	unsigned int first_key_sym;	/* first changed key sym */
+	unsigned int num_key_syms;	/* number of changed key syms */
+	unsigned int first_key_act;	/* first changed key act */
+	unsigned int num_key_acts;	/* number of changed key acts */
+	unsigned int first_key_behavior;/* first changed key behavior */
+	unsigned int num_key_behaviors;	/* number of changed key behaviors */
+	unsigned int vmods;	/* mask of changed virtual mods */
+	unsigned int first_key_explicit;/* range of keys with changed... */
+	unsigned int num_key_explicit;	/* ...explicit component settings */
 } XkbMapNotifyEvent;
 
 typedef struct _XkbControlsNotify {
@@ -92,15 +93,15 @@ typedef struct _XkbControlsNotify {
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
-	int xkbType;		/* XkbControlsNotify */
+	int xkb_type;		/* XkbControlsNotify */
 	unsigned int device;	/* device ID */
-	unsigned long int changedControls;
-	unsigned long int enabledControls;
-	unsigned long int enabledControlChanges;
+	unsigned long int changed_ctrls;
+	unsigned long int enabled_ctrls;
+	unsigned long int enabled_ctrl_changes;
 	unsigned int keycode;
-	unsigned int eventType;
-	unsigned int requestMajor;
-	unsigned int requestMinor;
+	unsigned int event_type;
+	unsigned int req_major;
+	unsigned int req_minor;
 } XkbControlsNotifyEvent;
 
 typedef struct _XkbIndicatorNotify {
@@ -109,11 +110,11 @@ typedef struct _XkbIndicatorNotify {
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
-	int xkbType;		/* XkbIndicatorNotify */
+	int xkb_type;		/* XkbIndicatorNotify */
 	unsigned int device;	/* device ID */
-	unsigned int stateChanged;/* indicators that have changed state */
-	unsigned int state;	/* current state of all indicators */
-	unsigned int mapChanged;/* indicators whose maps have changed */
+	unsigned int state_changed;/* indicators that have changed state */
+	unsigned int state;	 /* current state of all indicators */
+	unsigned int map_changed;/* indicators whose maps have changed */
 } XkbIndicatorNotifyEvent;
 
 typedef struct _XkbBellNotify {
@@ -122,14 +123,15 @@ typedef struct _XkbBellNotify {
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
-	int xkbType;		/* XkbBellNotify */
+	int xkb_type;		/* XkbBellNotify */
 	unsigned int device;	/* device ID */
 	unsigned int percent;	/* requested volume as a percent of maximum */
 	unsigned int pitch;	/* requested pitch in Hz */
 	unsigned int duration;	/* requested duration in milliseconds */
-	unsigned int bellClass;	/* (input extension) class of feedback */
-	unsigned int bellID;	/* (input extension) ID of feedback */
+	unsigned int bell_class;/* (input extension) class of feedback */
+	unsigned int bell_id;	/* (input extension) ID of feedback */
 	Atom name;		/* "name" of requested bell */
+	Window window;		/* window associated with event (if any) */
 } XkbBellNotifyEvent;
 
 typedef struct _XkbSlowKeyNotify {
@@ -138,9 +140,9 @@ typedef struct _XkbSlowKeyNotify {
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
-	int xkbType;		/* XkbSlowKeyNotify */
+	int xkb_type;		/* XkbSlowKeyNotify */
 	unsigned int device;	/* device ID */
-	unsigned int slowKeyType;/* press, release, accept, reject */
+	unsigned int slow_key_state;/* press, release, accept, reject */
 	unsigned int keycode;	/* key of event */
 	unsigned int delay;	/* current delay in milliseconds */
 } XkbSlowKeyNotifyEvent;
@@ -151,18 +153,19 @@ typedef struct _XkbNamesNotify {
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
-	int xkbType;		/* XkbNamesNotify */
+	int xkb_type;		/* XkbNamesNotify */
 	unsigned int device;	/* device ID */
 	unsigned int changed;	/* names that have changed */
-	unsigned int firstKeyType;	/* first key type with new name */
-	unsigned int nKeyTypes;		/* number of key types with new names */
-	unsigned int firstLevel;	/* first key type new new level names */
-	unsigned int nLevels;		/* # of key types w/new level names */
-	unsigned int firstRadioGroup;	/* first radio group with new name */
-	unsigned int nRadioGroups;	/* # of radio groups with new names */
-	unsigned int nCharSets;		/* total number of charsets */
-	unsigned int changedMods;	/* modifiers with new names */
-	unsigned int changedIndicators;	/* indicators with new names */
+	unsigned int first_type;	/* first key type with new name */
+	unsigned int num_types;		/* number of key types with new names */
+	unsigned int first_lvl;	/* first key type new new level names */
+	unsigned int num_lvls;	/* # of key types w/new level names */
+	unsigned int first_radio_group;	/* first radio group with new name */
+	unsigned int num_radio_groups;	/* # of radio groups with new names */
+	unsigned int num_char_sets;	/* total number of charsets */
+	unsigned int changed_mods;	/* modifiers with new names */
+	unsigned int changed_vmods;/* virtual modifiers with new names */
+	unsigned int changed_indicators;/* indicators with new names */
 } XkbNamesNotifyEvent;
 
 typedef struct _XkbCompatMapNotify {
@@ -171,12 +174,13 @@ typedef struct _XkbCompatMapNotify {
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
-	int xkbType;		/* XkbCompatMapNotify */
+	int xkb_type;		/* XkbCompatMapNotify */
 	unsigned int device;	/* device ID */
-	unsigned int changedMods;	/* modifiers with new compat maps */
-	unsigned int firstSym;		/* first new symbol interp */
-	unsigned int nSyms;		/* number of new symbol interps */
-	unsigned int nTotalSyms;	/* total # of symbol interps */
+	unsigned int changed_mods;	/* modifiers with new compat maps */
+	unsigned int changed_vmods;/* virtual mods w/new compat maps */
+	unsigned int first_sym;		/* first new symbol interp */
+	unsigned int num_syms;		/* number of new symbol interps */
+	unsigned int num_total_syms;	/* total # of symbol interps */
 } XkbCompatMapNotifyEvent;
 
 typedef struct _XkbAlternateSymsNotify {
@@ -185,66 +189,42 @@ typedef struct _XkbAlternateSymsNotify {
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
-	int xkbType;		/* XkbAlternateSymsNotify */
+	int xkb_type;		/* XkbAlternateSymsNotify */
 	unsigned int device;	/* device ID */
-	unsigned int altSymsID;	/* identifier of changed alt symbol set */
-	unsigned int firstKey;	/* first key with new alternate syms */
-	unsigned int nKeys;	/* number of keys with alternate syms */
+	unsigned int alt_syms_id;/* identifier of changed alt symbol set */
+	unsigned int first_key;	/* first key with new alternate syms */
+	unsigned int num_keys;	/* number of keys with alternate syms */
 } XkbAlternateSymsNotifyEvent;
 
+typedef struct _XkbActionMessage {
+	int type;		/* XkbAnyEvent */
+	unsigned long serial;	/* of last request processed by server */
+	Bool send_event;	/* true if this came from a SendEvent request */
+	Display *display;	/* Display the event was read from */
+	Time time;		/* milliseconds */
+	int xkb_type;		/* XkbActionMessage */
+	unsigned int device;	/* device ID */
+	unsigned int keycode;	/* key that generated the event */
+	Bool press;		/* true if act caused by key press */
+	Bool key_event_follows;	/* true if key event is also generated */
+	char message[XkbActionMessageLength]; /* message generated by key */
+} XkbActionMessageEvent;
+
 typedef union _XkbEvent {
-	XkbAnyEvent		u;
+	int			type;
 	XkbAnyEvent		any;
 	XkbStateNotifyEvent	state;
 	XkbMapNotifyEvent	map;
-	XkbControlsNotifyEvent	controls;
+	XkbControlsNotifyEvent	ctrls;
 	XkbIndicatorNotifyEvent indicators;
 	XkbBellNotifyEvent	bell;
-	XkbSlowKeyNotifyEvent	slowKey;
+	XkbSlowKeyNotifyEvent	slow_key;
 	XkbNamesNotifyEvent	names;
 	XkbCompatMapNotifyEvent	compat;
-	XkbAlternateSymsNotifyEvent altSyms;
+	XkbAlternateSymsNotifyEvent alt_syms;
+	XkbActionMessageEvent	message;
+	XEvent			core;
 } XkbEvent;
-
-#define	XkbGeometryNameLength	24
-
-typedef	struct _XkbSimpleKeyShape {
-	unsigned short	width;
-	unsigned short	height;
-} XkbSimpleKeyShapeRec;
-
-typedef	struct _XkbKbdKeyRec {
-	unsigned char	keycode;
-	unsigned char	shape;
-	short		offset;
-} XkbKbdKeyRec;
-
-typedef	struct _XkbKbdGroupRec {
-	unsigned short	nKeys;
-	short		top;
-	XkbKbdKeyRec	*keys;
-} XkbKbdGroupRec;
-
-typedef struct _XkbKbdSectionRec {
-	char		name[XkbGeometryNameLength];
-	unsigned short	left;
-	unsigned short	top;
-	unsigned short	right;
-	unsigned short	bottom;
-	unsigned short	nKeys;
-	unsigned short	nGroups;
-	XkbKbdGroupRec	*groups;
-} XkbKbdSectionRec;
-
-typedef struct _XkbKbdGeometryRec {
-	char			 desc[XkbGeometryNameLength];
-	unsigned short		 widthMM;
-	unsigned short		 heightMM;
-	unsigned short		 nKeys;
-	unsigned short		 nSections;
-	XkbSimpleKeyShapeRec	*simpleShapes;
-	XkbKbdSectionRec	*sections;
-} XkbKbdGeometryRec;
 
 typedef struct	_XkbKbdDpyState	XkbKbdDpyStateRec,*XkbKbdDpyStatePtr;
 
@@ -301,6 +281,7 @@ extern	Bool	XkbGetAutoRepeatRate(
 extern	Bool	XkbDeviceBell(
 #if NeedFunctionPrototypes
 	Display *		/* display */,
+	Window			/* win */,
 	int			/* deviceSpec */,
 	int			/* bellClass */,
 	int			/* bellID */,
@@ -309,11 +290,29 @@ extern	Bool	XkbDeviceBell(
 #endif
 );
 
+extern	Bool	XkbForceDeviceBell(
+#if NeedFunctionPrototypes
+	Display *		/* display */,
+	int			/* deviceSpec */,
+	int			/* bellClass */,
+	int			/* bellID */,
+	int			/* percent */
+#endif
+);
+
 extern	Bool	XkbBell(
 #if NeedFunctionPrototypes
 	Display *		/* display */,
+	Window			/* win */,
 	int			/* percent */,
 	Atom			/* name */
+#endif
+);
+
+extern	Bool	XkbForceBell(
+#if NeedFunctionPrototypes
+	Display *		/* display */,
+	int			/* percent */
 #endif
 );
 
@@ -340,7 +339,7 @@ extern	Status	XkbGetIndicatorState(
 #if NeedFunctionPrototypes
     Display *			/* dpy */,
     unsigned int 		/* deviceSpec */,
-    CARD32 *			/* pStateRtrn */
+    unsigned int *		/* pStateRtrn */
 #endif
 );
 
@@ -387,12 +386,60 @@ extern	Status	XkbSetServerInternalMods(
 #endif
 );
 
-extern	Status	XkbSetKeyOnlyMods(
+extern	Status	XkbSetIgnoreLockMods(
 #if NeedFunctionPrototypes
 	Display *		/* display */,
 	unsigned 		/* deviceSpec */,
 	unsigned 		/* affect */,
 	unsigned 		/* values */
+#endif
+);
+
+
+extern	Status	XkbVirtualModsToReal(
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */,
+	unsigned		/* virtual_mask */,
+	unsigned *		/* mask_rtrn */
+#endif
+);
+
+extern	Status XkbComputeEffectiveMap(
+#if NeedFunctionPrototypes
+	XkbDescPtr 		/* xkb */,
+	XkbKeyTypePtr		/* type */,
+	unsigned char *		/* map_rtrn */
+#endif
+);
+
+extern	Status XkbInitCanonicalKeyTypes(
+#if NeedFunctionPrototypes
+    XkbDescPtr			/* xkb */,
+    unsigned			/* which */,
+    int				/* keypadVMod */
+#endif
+);
+
+extern	Status XkbAllocKeyType(
+#if NeedFunctionPrototypes
+	XkbKeyTypePtr *		/* type_inout */,
+	unsigned		/* nVMapEntries */
+#endif
+);
+
+extern	Status XkbAllocClientMap(
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */,
+	unsigned		/* which */,
+	unsigned		/* nTypes */
+#endif
+);
+
+extern	Status XkbAllocServerMap(
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */,
+	unsigned		/* which */,
+	unsigned		/* nActions */
 #endif
 );
 
@@ -447,6 +494,15 @@ extern	Status	XkbGetKeySyms(
 #endif
 );
 
+extern	Status	XkbGetKeyActions(
+#if NeedFunctionPrototypes
+	Display *		/* display */,
+	unsigned 		/* firstKey */,
+	unsigned		/* nKeys */,
+	XkbDescPtr		/* desc */
+#endif
+);
+
 extern	Status	XkbGetKeyBehaviors(
 #if NeedFunctionPrototypes
 	Display *		/* display */,
@@ -456,7 +512,15 @@ extern	Status	XkbGetKeyBehaviors(
 #endif
 );
 
-extern	Status	XkbGetKeyActions(
+extern	Status	XkbGetVirtualMods(
+#if NeedFunctionPrototypes
+	Display *		/* display */,
+	unsigned 		/* which */,
+	XkbDescPtr		/* desc */
+#endif
+);
+
+extern	Status	XkbGetKeyExplicitComponents(
 #if NeedFunctionPrototypes
 	Display *		/* display */,
 	unsigned 		/* firstKey */,
@@ -481,6 +545,22 @@ extern	Status	XkbSetControls(
 #endif
 );
 
+extern	Status	XkbAllocCompatMap(
+#if NeedFunctionPrototypes
+    XkbDescPtr			/* xkb */,
+    unsigned			/* which */,
+    unsigned			/* nInterpret */
+#endif
+);
+
+extern	Status XkbFreeCompatMap(
+#if NeedFunctionPrototypes
+    XkbDescPtr			/* xkb */,
+    Bool			/* all */,
+    unsigned			/* which */
+#endif
+);
+
 extern Status XkbGetCompatMap(
 #if NeedFunctionPrototypes
 	Display *		/* dpy */,
@@ -495,6 +575,21 @@ extern Status XkbSetCompatMap(
 	unsigned 		/* which */,
 	XkbDescPtr 		/* xkb */,
 	Bool			/* updateActions */
+#endif
+);
+
+extern	Status XkbAllocNames(
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */,
+	unsigned		/* which */
+#endif
+);
+
+extern	Status XkbFreeNames(
+#if NeedFunctionPrototypes
+	XkbDescPtr		/* xkb */,
+	Bool			/* all */,
+	unsigned		/* which */
 #endif
 );
 
@@ -540,7 +635,7 @@ extern	Status	XkbChangeMap(
 #endif
 );
 
-extern	KeySym *XkbEnlargeKeySymbols(
+extern	KeySym *XkbEnlargeKeySyms(
 #if NeedFunctionPrototypes
 	XkbDescPtr		/* desc */,
 	int 			/* forKey */,
@@ -575,6 +670,8 @@ extern	Status XkbChangeSymsForKey(
 #endif
 );
 
+#ifdef NOTYET
+
 extern	XkbKbdGeometryRec	*XkbGetKbdGeometry(
 #if NeedFunctionPrototypes
     Display *dpy, char *name
@@ -593,6 +690,7 @@ extern	XkbKbdKeyRec		*XkbKbdNextKey(
     int *right,int *bottom
 #endif
 );
+#endif
 
 extern	Status			 XkbSetDebuggingFlags(
 #if NeedFunctionPrototypes

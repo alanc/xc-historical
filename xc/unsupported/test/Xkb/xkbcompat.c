@@ -62,74 +62,75 @@ char	*str;
 }
 
 char *
-actionText(sa)
+actText(sa)
     XkbAction sa;
 {
 static char buf[60];
 
     switch (sa.type) {
-	case XkbSANoAction:
+	case XkbSA_NoAction:
 	    strcpy(buf,"NO_ACTION");
 	    break;
-	case XkbSASetMods:
-	    sprintf(buf,"SET_MODS(%s)",stateText(sa.mods.mods));
+	case XkbSA_SetMods:
+	    sprintf(buf,"SET_MODS(%s)",stateText(sa.mods.mask));
 	    break;
-	case XkbSAISOLock:
-	    sprintf(buf,"ISO_LOCK(%s)",stateText(sa.iso.mods));
+	case XkbSA_ISOLock:
+	    sprintf(buf,"ISO_LOCK(%s)",stateText(sa.iso.mask));
 	    break;
-	case XkbSALockMods:
-	    sprintf(buf,"LOCK_MODS(%s)",stateText(sa.mods.mods));
+	case XkbSA_LockMods:
+	    sprintf(buf,"LOCK_MODS(%s)",stateText(sa.mods.mask));
 	    break;
-	case XkbSALatchMods:
-	    sprintf(buf,"LATCH_MODS(%s)",stateText(sa.mods.mods));
+	case XkbSA_LatchMods:
+	    sprintf(buf,"LATCH_MODS(%s)",stateText(sa.mods.mask));
 	    break;
-	case XkbSASetGroup:
+	case XkbSA_SetGroup:
 	    sprintf(buf,"SET_GROUP(%s=%d)",
-		(sa.group.flags&XkbSAGroupAbsolute?"absolute":"relative"),
-		sa.group.group);
+		(sa.group.flags&XkbSA_GroupAbsolute?"absolute":"relative"),
+		XkbSAGroup(&sa.group));
 	    break;
-	case XkbSALatchGroup:
+	case XkbSA_LatchGroup:
 	    sprintf(buf,"LATCH_GROUP(%s=%d)",
-		(sa.group.flags&XkbSAGroupAbsolute?"absolute":"relative"),
-		sa.group.group);
+		(sa.group.flags&XkbSA_GroupAbsolute?"absolute":"relative"),
+		XkbSAGroup(&sa.group));
 	    break;
-	case XkbSALockGroup:
+	case XkbSA_LockGroup:
 	    sprintf(buf,"LOCK_GROUP(%s=%d)",
-		(sa.group.flags&XkbSAGroupAbsolute?"absolute":"relative"),
-		sa.group.group);
+		(sa.group.flags&XkbSA_GroupAbsolute?"absolute":"relative"),
+		XkbSAGroup(&sa.group));
 	    break;
-	case XkbSAMovePtr:
+	case XkbSA_MovePtr:
 	    sprintf(buf,"MOVE_POINTER=(%d,%d)",XkbPtrActionX(&sa.ptr),
 						XkbPtrActionY(&sa.ptr));
 	    break;
-	case XkbSAAccelPtr:
+	case XkbSA_AccelPtr:
 	    sprintf(buf,"ACCEL_POINTER=(%d,%d)",XkbPtrActionX(&sa.ptr),
 						XkbPtrActionY(&sa.ptr));
 	    break;
-	case XkbSAPtrBtn:
+	case XkbSA_PtrBtn:
 	    sprintf(buf,"POINTER_BUTTON(%d)",sa.btn.button);
 	    break;
-	case XkbSAClickPtrBtn:
+	case XkbSA_ClickPtrBtn:
 	    sprintf(buf,"CLICK_POINTER_BUTTON(%d,%d)",
 				sa.btn.count,sa.btn.button);
 	    break;
-	case XkbSALockPtrBtn:
+	case XkbSA_LockPtrBtn:
 	    sprintf(buf,"LOCK_POINTER_BUTTON(%d)",sa.btn.button);
 	    break;
-	case XkbSASetPtrDflt:
-	    sprintf(buf,"SET_POINTER_DFLT(%d,%d)",sa.dflt.flags,sa.dflt.value);
+	case XkbSA_SetPtrDflt:
+	    sprintf(buf,"SET_POINTER_DFLT(%d,%d)",sa.dflt.affect,
+						  XkbSAPtrDfltValue(&sa.dflt));
 	    break; 
-	case XkbSATerminate:
+	case XkbSA_Terminate:
 	    sprintf(buf,"TERMINATE_SERVER");
 	    break;
-	case XkbSASwitchScreen:
+	case XkbSA_SwitchScreen:
 	    sprintf(buf,"SWITCH_TO_SCREEN(0x%x,%d)",sa.screen.flags,
-						sa.screen.screen);
+						XkbSAScreen(&sa.screen));
 	    break;
-	case XkbSASetControls:
+	case XkbSA_SetControls:
 	    sprintf(buf,"SET_CONTROLS(0x%x)",XkbActionCtrls(&sa.ctrls));
 	    break;
-	case XkbSALockControls:
+	case XkbSA_LockControls:
 	    sprintf(buf,"LOCK_CONTROLS(0x%x)",XkbActionCtrls(&sa.ctrls));
 	    break;
 	default:
@@ -174,37 +175,36 @@ PrintCompatMap(file,xkb)
 register int i;
 XkbSymInterpretPtr	si;
 
-    fprintf(file,"%d symbol interpretations\n",xkb->compat->nSymInterpret);
-    si= xkb->compat->symInterpret;
-    for (i=0;i<xkb->compat->nSymInterpret;i++,si++) {
+    fprintf(file,"%d symbol interpretations\n",xkb->compat->num_si);
+    si= xkb->compat->sym_interpret;
+    for (i=0;i<xkb->compat->num_si;i++,si++) {
 	register char *name= XKeysymToString(si->sym);
 	if (name)	fprintf(file,"%s+",name);
+	else if (si->sym==NoSymbol)
+			fprintf(file,"Any+");
 	else		fprintf(file,"0x%x+",si->sym);
 	fprintf(file,"%s(%s) = {\n",SIMatchTypeText(si->match),
 							stateText(si->mods));
-	fprintf(file,"    action    = %s\n",actionText(si->action));
-	if (si->indicator!=XkbSI_NoIndicator)
-	    fprintf(file,"    indicator = %d\n",si->indicator);
+	fprintf(file,"    act    = %s\n",actText(si->act));
 	if (si->flags&XkbSI_Autorepeat)
 	    fprintf(file,"    repeats\n");
-	if (si->flags&XkbSI_UpdateGroup)
-	    fprintf(file,"    update group\n");
-	if (si->flags&XkbSI_UpdateKeypad)
-	    fprintf(file,"    update keypad\n");
-	if (si->flags&XkbSI_UseModMapMods)
-	    fprintf(file,"    use modmap modifiers\n");
-	if (si->flags&XkbSI_UpdateInternal)
-	    fprintf(file,"    update internal modifiers\n");
-	if (si->flags&XkbSI_UpdateIgnoreLocks)
-	    fprintf(file,"    update ignore locks modifiers\n");
+	if (si->virtual_mod!=XkbNoModifier)
+	    fprintf(file,"   virtual modifier= %d\n",si->virtual_mod);
 	fprintf(file,"}\n");
     }
     fprintf(file,"Modifier:    mods  groups\n");
-    for (i=0;i<8;i++) {
-	fprintf(file,"    %d        0x%02x   0x%02x\n",
+    for (i=0;i<XkbNumModifiers;i++) {
+	fprintf(file,"    %2d        0x%02x   0x%02x\n",
 			i,
-			xkb->compat->modCompat[i].mods,
-			xkb->compat->modCompat[i].groups);
+			xkb->compat->real_mod_compat[i].mods,
+			xkb->compat->real_mod_compat[i].groups);
+    }
+    fprintf(file,"Virtual Mod  mods  groups\n");
+    for (i=0;i<XkbNumVirtualMods;i++) {
+	fprintf(file,"    %2d        0x%02x   0x%02x\n",
+			i,
+			xkb->compat->vmod_compat[i].mods,
+			xkb->compat->vmod_compat[i].groups);
     }
 }
 
@@ -215,7 +215,7 @@ parseArgs(argc,argv)
 {
 int i;
 
-    for (i=2;i<argc;i++) {
+    for (i=1;i<argc;i++) {
 	if ( strcmp(argv[i],"-display")==0 ) {
 	    if ( ++i<argc )	dpyName= argv[i];
 	    else {
@@ -228,6 +228,9 @@ int i;
 	}
 	else if ((strcmp(argv[i],"-v")==0) || (strcmp(argv[i],"-verbose")==0)) {
 	    verbose= 1;
+	}
+	else if (strcmp(argv[i],"-help")==0) {
+	    return 0;
 	}
 	else {
 	    fprintf(stderr,"Unknown option %s\n",argv[i]);
@@ -250,7 +253,8 @@ XkbDescPtr	xkb;
 
   
     if (!parseArgs(argc,argv)) {
-	fprintf(stderr,"Usage: %s [<options>] or %s {start,end} [ <flags> [ <message> ] ]\n",
+	fprintf(stderr,"Usage: %s [<options>] \n",argv[0]);
+	fprintf(stderr,"       %s {start,end} [ <flags> [ <message> ] ]\n",
 								argv[0]);
 	fprintf(stderr,"Where legal options are:\n");
 	fprintf(stderr,"-display  <dpy>     specifies display to use\n");
