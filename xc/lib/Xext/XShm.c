@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShm.c,v 1.12 91/01/05 14:45:27 rws Exp $
+ * $XConsortium: XShm.c,v 1.13 91/05/05 19:41:29 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,7 +23,7 @@
  * Author:  Bob Scheifler and Keith Packard, MIT X Consortium
  */
 
-/* EXPERIMENTAL! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
+/* THIS IS NOT AN X CONSORTIUM STANDARD */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -194,6 +194,33 @@ Bool XShmQueryVersion(dpy, majorVersion, minorVersion, sharedPixmaps)
     UnlockDisplay(dpy);
     SyncHandle();
     return True;
+}
+
+
+int XShmPixmapFormat(dpy)
+    Display *dpy;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xShmQueryVersionReply rep;
+    register xShmQueryVersionReq *req;
+
+    ShmCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(ShmQueryVersion, req);
+    req->reqType = info->codes->major_opcode;
+    req->shmReqType = X_ShmQueryVersion;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return 0;
+    }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    if (rep.sharedPixmaps &&
+	(rep.majorVersion > 1 || rep.minorVersion > 0))
+	return rep.pixmapFormat;
+    return 0;
 }
 
 
