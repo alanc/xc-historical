@@ -464,9 +464,11 @@ be put into the ``myhost'' icon manager.
 This variable specifies a list of windows that should appear in the icon
 manager.  When used in conjunction with the \fBIconManagerDontShow\fP
 variable, only the windows in this list will be shown in the icon manager.
-.IP "\fBIconRegion\fP "\fIgeometry\fP" \fIvgrav hgrav gridwidth gridheight\fP"
+.IP "\fBIconRegion\fP \fIgeomstring\fP \fIvgrav hgrav gridwidth gridheight\fP"
 This variable specifies an area on the root window in which icons are placed
-if no specific icon location is provided by the client.  If more than one
+if no specific icon location is provided by the client.  The \fIgeomstring\fP
+is a quoted string containing a standard geometry specification.
+If more than one
 \fBIconRegion\fP lines are given,
 icons will be put into the succeeding icon regions when the first is full.
 The \fIvgrav\fP argument should be either \fBNorth\fP or \fBSouth\fP and
