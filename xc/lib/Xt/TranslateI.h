@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.19 90/07/03 08:17:14 swick Exp $ */
+/* $XConsortium: TranslateI.h,v 1.20 90/07/03 17:25:57 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -147,15 +147,6 @@ typedef struct _TMEventRec {
 extern void _XtAddEventSeqToStateTable();
 extern void _XtInitializeStateTable(); /* stateTable */
     /* _XtTranslations *stateTable; */
-
-typedef XrmQuark XtAction;
-
-typedef unsigned int	Value;
-typedef struct {
-    char	*name;
-    XrmQuark	signature;
-    Value	value;
-} NameValueRec, *NameValueTable;
 
 typedef struct _ActionHookRec {
     struct _ActionHookRec* next; /* must remain first */
