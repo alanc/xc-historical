@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.61 91/07/12 12:33:51 rws Exp $ */
+/* $XConsortium: InitialI.h,v 1.62 91/12/09 15:34:37 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -48,14 +48,6 @@ SOFTWARE.
 #define PATH_MAX 1024
 #endif
 #endif
-#endif
-
-#ifndef MAX
-#define MAX(a,b) (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef MIN
-#define MIN(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
 #include "fd.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.127 92/03/04 17:56:26 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.128 92/03/05 18:48:55 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -41,6 +41,14 @@ SOFTWARE.
 # endif
 #else
 # define CACHED XtCacheNone
+#endif
+
+#ifndef MAX
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef MIN
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
 static String XtNtranslationParseError = "translationParseError";
