@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.12 88/10/08 15:41:35 jim Exp $
+ * $XConsortium: handle.c,v 1.13 88/10/08 16:03:36 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -270,36 +270,33 @@ char *copystring (s, len)
     return (retval);
 }
 
-static KeySym parse_keysym (line, n)
-    char *line;
-    int n;
+static Bool parse_number (str, val)
+    char *str;
+    unsigned long *val;
 {
-    return (XStringToKeysym (copy_to_scratch (line, n)));
+    char *cp;
+    char *fmt = "%ld";
+
+    if (*str == '0') str++, fmt = "%lo";
+    if (*str == 'x' || *str == 'X') str++, fmt = "%lx";
+    return (sscanf (str, fmt, val) == 1);
 }
 
-
-static int parse_number (line, n)
+static Bool parse_keysym (line, n, name, keysym)
     char *line;
     int n;
+    char **name;
+    KeySym *keysym;
 {
-    char c;
-    char *cp;
-    char *fmt = "%d";
-    int neg = 0;
-    int val;
-
-    if (!line) return 0;
-
-    c = line[n];
-
-    cp = line;
-    cp[n] = '\0';
-    if (cp[0] == '-') neg = 1, cp++;
-    if (cp[0] == '0') cp++, fmt = "%o";
-    if (cp[0] == 'x' || cp[0] == 'X') cp++, fmt = "%x";
-    if (sscanf (cp, fmt, &val) != 1) val = 0;
-    line[n] = c;
-    return val;
+    *name = copy_to_scratch (line, n);
+    if (!strcmp(*name, "NoSymbol")) {
+	*keysym = NoSymbol;
+	return (True);
+    }
+    *keysym = XStringToKeysym (*name);
+    if (*keysym == NoSymbol && '0' <= **name && **name <= '9')
+	return parse_number(*name, keysym);
+    return (*keysym != NoSymbol);
 }
 
 /*
@@ -374,9 +371,7 @@ static int do_keysym (line, len)
 	badmsg ("target keysym name", NULL);
 	return (-1);
     }
-    tmpname = copy_to_scratch (line, n);
-    keysym = XStringToKeysym (tmpname);
-    if (keysym == NoSymbol) {
+    if (!parse_keysym(line, n, &tmpname, &keysym)) {
 	badmsg ("keysym target key symbol '%s'", tmpname);
 	return (-1);
     }
@@ -806,10 +801,12 @@ static int do_pointer (line, len)
 {
     int n;
     int i;
-    int val;
+    unsigned long val;
     struct op_pointer *opp;
     unsigned char buttons[MAXBUTTONCODES];
     int nbuttons;
+    char *strval;
+    Bool ok;
 
     if (len < 2 || !line || *line == '\0') {  /* =1 minimum */
 	badmsg ("buttons input line", NULL);
@@ -841,9 +838,10 @@ static int do_pointer (line, len)
 		badmsg ("skip of word in buttons line:  %s", line);
 		return (-1);
 	    }
-	    val = parse_number (line, n);
-	    if (val < 0 || val >= MAXBUTTONCODES) {
-		badmsg ("value %d given for buttons list", val);
+	    strval = copy_to_scratch(line, n);
+	    ok = parse_number (strval, &val);
+	    if (!ok || val >= MAXBUTTONCODES) {
+		badmsg ("value %s given for buttons list", strval);
 		return (-1);
 	    }
 	    buttons[i++] = (unsigned char) val;
@@ -912,6 +910,8 @@ static int get_keysym_list (line, len, np, kslistp)
     while (len > 0) {
 	KeySym keysym;
 	int n;
+	char *tmpname;
+	Bool ok;
 
 	n = skip_space (line, len);
 	line += n, len -= n;
@@ -922,10 +922,10 @@ static int get_keysym_list (line, len, np, kslistp)
 	    return (-1);
 	}
 
-	keysym = parse_keysym (line, n);
+	ok = parse_keysym (line, n, &tmpname, &keysym);
 	line += n, len -= n;
-	if (keysym == NoSymbol) {
-	    badmsgn ("keysym name '%s' in keysym list", line-n, n);
+	if (!ok) {
+	    badmsg ("keysym name '%s' in keysym list", tmpname);
 	    /* do NOT return here, look for others */
 	    continue;
 	}
