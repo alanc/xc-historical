@@ -1,4 +1,16 @@
 : "@(#) /usr/lib/X11/.x11start		Shell Script for X11"
+
+if [ -r /dev/oldmsgs ]
+then
+      # Do a tail to display any new console messages in this window,
+      # using -1c to ensure that we don't see any old messages.  Start
+      # this at the beginning of this script so that we see any messages
+      # generated while this script executes.
+      tail -1cf /dev/oldmsgs &
+      tailproc=$!
+fi
+
+xstdcmap -all
 xset m 4 2
 twm &
 sleep 1
@@ -12,12 +24,11 @@ xterm -geometry 80x24+40+88 -title "`hostname` 1" &
 sleep 1
 xterm -geometry 80x24+60+108 -title "`hostname` 2" &
 sleep 1
-if [ -r /dev/oldmsgs ]
+
+if [ "$tailproc" ]
 then
-	tail -f /dev/oldmsgs &
-	tailproc=$!
-	$SHELL
-	kill $tailproc
+    $SHELL
+    kill $tailproc
 else
 	exec $SHELL
 fi
