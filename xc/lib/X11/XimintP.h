@@ -1,4 +1,4 @@
-/* $XConsortium: XimintP.h,v 1.1 93/09/17 13:33:25 rws Exp $ */
+/* $XConsortium: XimintP.h,v 1.2 93/09/18 10:14:10 rws Exp $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.
@@ -73,7 +73,6 @@ typedef struct _XimProtoPrivateRec {
     unsigned long	 filter_events;		/* default filter event */
     BITMASK32		 register_filter_event; /* default register  */
     char		*im_attribute_name;
-    char		*ic_attribute_name;
     XimProtoIntrRec	*intrproto;
     XimPendingRec	*pending;
 
