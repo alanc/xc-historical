@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.51 91/02/20 09:16:47 rws Exp $ */
+/* $XConsortium: WaitFor.c,v 1.52 91/02/22 12:15:52 rws Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -213,6 +213,7 @@ WaitForSomething(pClientsReady)
 #endif /* XTESTEXT1 */
 	if (i <= 0) /* An error or timeout occurred */
 	{
+
 	    if (dispatchException)
 		return 0;
 	    CLEARBITS(clientsWritable);
@@ -226,6 +227,8 @@ WaitForSomething(pClientsReady)
 		else if (selecterr != EINTR)
 		    ErrorF("WaitForSomething(): select: errno=%d\n",
 			selecterr);
+	    if (*checkForInput[0] != *checkForInput[1])
+		return 0;
 	}
 	else
 	{
