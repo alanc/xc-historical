@@ -1,4 +1,4 @@
-/* $XConsortium: Callback.c,v 1.26 90/08/29 13:07:48 swick Exp $ */
+/* $XConsortium: Callback.c,v 1.27 90/12/03 16:31:09 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -127,10 +127,8 @@ static void AddCallbacks(widget, callbacks, newcallbacks)
 					     sizeof(XtCallbackRec) * (i+j));
 
     (*callbacks)->count = i+j;
-    for (cl = ToList(*callbacks) + i; --j >= 0; cl++, newcallbacks++) {
-	cl->callback = newcallbacks->callback;
-	cl->closure =  newcallbacks->closure;
-    }
+    for (cl = ToList(*callbacks) + i; --j >= 0; cl++, newcallbacks++)
+	*cl = *newcallbacks;
 } /* AddCallbacks */
 
 void XtAddCallbacks(widget, name, xtcallbacks)
@@ -165,10 +163,8 @@ void _XtRemoveCallback (callbacks, callback, closure)
     cl = ToList(*callbacks);
     for (i=(*callbacks)->count; --i >= 0; cl++) {
 	if (cl->callback == callback && cl->closure == closure) {
-	    for (ncl = cl + 1; i > 0; ncl++, cl++, i--) {
-		cl->callback = ncl->callback;
-		cl->closure  = ncl->closure;
-	    }
+	    for (ncl = cl + 1; i > 0; ncl++, cl++, i--)
+		*cl = *ncl;
 	    if (--(*callbacks)->count)
 		*callbacks = (InternalCallbackList)
 		    XtRealloc((char *) *callbacks, sizeof(InternalCallbackRec)
@@ -208,7 +204,9 @@ void XtRemoveCallbacks (widget, name, xtcallbacks)
     String	    name;
     register XtCallbackList  xtcallbacks;
 {
-    InternalCallbackList *callbacks;
+    register int i, remaining;
+    register XtCallbackList cl, ncl;
+    register InternalCallbackList *callbacks, old, new;
 
     callbacks = FetchInternalList(widget, name);
     if (callbacks == NULL) {
@@ -219,10 +217,33 @@ void XtRemoveCallbacks (widget, name, xtcallbacks)
 	return;
     }
 
-    for (; xtcallbacks->callback != NULL; xtcallbacks++) {
-	_XtRemoveCallback(callbacks, xtcallbacks->callback,
-			  xtcallbacks->closure);
+    old = *callbacks;
+    if (old == NULL) return;
+
+    remaining = old->count;
+    for (ncl=xtcallbacks; ncl->callback != NULL; ncl++)
+	for (i=old->count, cl=ToList(old); --i >= 0; cl++)
+	    if (cl->callback == ncl->callback && cl->closure == ncl->closure) {
+		remaining--;
+		cl->callback = NULL;
+		break;
+	    }
+
+    if (remaining) {
+	new = (InternalCallbackList) XtMalloc(sizeof(InternalCallbackRec) +
+			                   sizeof(XtCallbackRec) * remaining);
+	new->count = remaining;
+	ncl = ToList(new);
+	for (i=old->count, cl=ToList(old); --i >= 0; cl++)
+	    if (cl->callback != NULL)
+		*ncl++ = *cl;
+	XtFree((char *) old);
+	*callbacks = new;
+    } else {
+	XtFree((char *) old);
+	*callbacks = NULL;
     }
+    
 } /* XtRemoveCallbacks */
 
 
