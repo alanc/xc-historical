@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XClDisplay.c,v 11.18 88/08/18 12:22:50 jim Exp $ */
+/* $XConsortium: XClDisplay.c,v 11.19 88/09/06 16:10:14 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #include "Xlibint.h"
@@ -23,6 +23,9 @@ XCloseDisplay (dpy)
 	for (i = 0; i < dpy->nscreens; i++) {
 		register Screen *sp = &dpy->screens[i];
 		XFreeGC (dpy, sp->default_gc);
+	}
+	if (dpy->cursor_font != None) {
+	    XUnloadFont (dpy, dpy->cursor_font);
 	}
 	XSync(dpy, 1);  /* throw away pending input events */
 	ext = dpy->ext_procs;

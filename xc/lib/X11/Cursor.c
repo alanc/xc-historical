@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XCursor.c,v 11.11 87/09/08 14:31:05 newman Exp $ */
+/* $XConsortium: XCursor.c,v 11.12 88/09/06 16:06:08 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlibint.h"
@@ -11,9 +11,6 @@ Cursor XCreateFontCursor(dpy, which)
 	Display *dpy;
 	unsigned int which;
 {
-	static Font cfont = 0;
-	Cursor result;
-	static Display *olddpy = NULL;
 	/* 
 	 * the cursor font contains the shape glyph followed by the mask
 	 * glyph; so character position 0 contains a shape, 1 the mask for 0,
@@ -21,14 +18,12 @@ Cursor XCreateFontCursor(dpy, which)
 	 * for all of these.
 	 */
 
-	if (cfont == 0 || dpy != olddpy)	{
-		if (cfont && dpy) XUnloadFont (olddpy, cfont);
-		cfont = XLoadFont(dpy, CURSORFONT);
-		olddpy = dpy;
-		if (!cfont) return (Cursor) 0;
+	if (dpy->cursor_font == None) {
+	    dpy->cursor_font = XLoadFont (dpy, CURSORFONT);
+	    if (dpy->cursor_font == None) return None;
 	}
-	result = XCreateGlyphCursor 
-	       (dpy, cfont, cfont, which, which + 1, &foreground, &background);
-	return(result);
+
+	return XCreateGlyphCursor (dpy, dpy->cursor_font, dpy->cursor_font, 
+				   which, which + 1, &foreground, &background);
 }
 

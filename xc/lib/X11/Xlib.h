@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.147 88/08/19 17:26:00 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.148 88/09/06 16:10:06 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -477,6 +477,7 @@ typedef struct _XDisplay {
 	Status (*wire_vec[128])(); /* vector for event to wire */
 	KeySym lock_meaning;	   /* for XLookupString */
 	struct XKeytrans *key_bindings; /* for XLookupString */
+	Font cursor_font;	   /* for XCreateFontCursor */
 } Display;
 
 #ifndef _XEVENT_
