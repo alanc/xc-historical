@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.4 94/04/17 21:15:18 mor Exp $ */
+/* $XConsortium: save.c,v 1.5 94/06/07 12:08:51 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -73,6 +73,7 @@ char **sm_id;
 
     /* Read SM's id */
     getline(&buf, &buflen, f);
+    if(p = strchr(buf, '\n')) *p = '\0';
     *sm_id = XtNewString(buf);
 
     state = 0;
