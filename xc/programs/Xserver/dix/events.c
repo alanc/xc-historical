@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.6 89/07/20 11:40:45 rws Exp $ */
+/* $XConsortium: events.c,v 5.7 89/08/08 17:16:54 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -42,8 +42,9 @@ extern WindowPtr *WindowTable;
 
 extern void (* EventSwapVector[128]) ();
 extern void (* ReplySwapVector[256]) ();
-extern void CopySwap32Write(), SwapTimeCoordWrite();
 extern void SetCriticalOutputPending();
+
+#define EXTENSION_EVENT_BASE  64
 
 #define NoSuchEvent 0x80000000	/* so doesn't match NoEventMask */
 #define StructureAndSubMask ( StructureNotifyMask | SubstructureNotifyMask )
@@ -69,35 +70,16 @@ extern void SetCriticalOutputPending();
  * The following relies on the fact that the Button<n>MotionMasks are equal
  * to the corresponding Button<n>Masks from the current modifier/button state.
  */
-#define Motion_Filter(state) (PointerMotionMask | \
-		(AllButtonsMask & state) | buttonMotionMask)
+#define Motion_Filter(class) (PointerMotionMask | \
+			      (class)->state | (class)->motionMask)
 
 
 #define WID(w) ((w) ? ((w)->drawable.id) : 0)
 
-#define IsOn(ptr, bit) \
-	(((BYTE *) (ptr))[(bit)>>3] & (1 << ((bit) & 7)))
-
-#define SameClient(obj,client) \
-	(CLIENT_BITS((obj)->resource) == (client)->clientAsMask)
-
 #define rClient(obj) (clients[CLIENT_ID((obj)->resource)])
 
 static debug_events = 0;
-static debug_modifiers = 0;
-static InputInfo inputInfo;
-
-static int keyThatActivatedPassiveGrab; 	/* The key that activated the
-						current passive grab must be
-						recorded, so that the grab may
-						be deactivated upon that key's
-						release. PRH
-						*/
-
-static KeySymsRec curKeySyms;
-
-static GrabRec keybdGrab;	/* used for active grabs */
-static GrabRec ptrGrab;
+InputInfo inputInfo;
 
 static struct {
     QdEventPtr		pending, *pendtail;
@@ -117,19 +99,6 @@ static WindowPtr *spriteTrace = (WindowPtr *)NULL;
 static int spriteTraceSize = 0;
 static int spriteTraceGood;
 
-static WindowPtr *focusTrace = (WindowPtr *)NULL;
-static int focusTraceSize = 0;
-static int focusTraceGood;
-
-static CARD16 keyButtonState = 0;
-/*
- *	For each modifier,  we keep a count of the number of keys that
- *	are currently setting it.
- */
-static int modifierKeyCount[8];
-static int buttonsDown = 0;		/* number of buttons currently down */
-static Mask buttonMotionMask = 0;
-
 typedef struct {
     int		x, y;
     ScreenPtr	pScreen;
@@ -147,12 +116,10 @@ static  struct {
     HotSpot	hotPhys;	/* physical pointer position */
 } sprite;			/* info about the cursor sprite */
 
-static WindowPtr motionHintWindow;
-
 static void DoEnterLeaveEvents();	/* merely forward declarations */
 static WindowPtr XYToWindow();
 extern Bool CheckKeyboardGrabs();
-static void NormalKeyboardEvent();
+static void DeliverFocusedEvent();
 extern int DeliverDeviceEvents();
 static void DoFocusEvents();
 extern Mask EventMaskForClient();
@@ -167,19 +134,6 @@ extern Bool DeletePassiveGrabFromList();
 extern int AddPassiveGrabToList();
 
 extern Bool permitOldBugs;
-
-/*
- *	For each key,  we keep a bitmap showing the modifiers it sets
- *	This is a CARD16 bitmap 'cos it includes the mouse buttons to
- *	make grab processing simpler.
- */
-CARD16 keyModifiersList[MAP_LENGTH];
-static CARD8 maxKeysPerModifier;
-/*
- *	We also keep a copy of the modifier map in the format
- *	used by the protocol.
- */
-static KeyCode *modifierKeyMap = (KeyCode *)NULL;
 
 static Mask lastEventMask;
 
@@ -223,6 +177,11 @@ static Mask filters[128] =
 	CantBeFiltered		       /* MappingNotify */
 };
 
+static CARD8 criticalEvents[32] =
+{
+    0x3c				/* key and button events */
+};
+
 Mask
 GetNextEventMask()
 {
@@ -236,8 +195,17 @@ SetMaskForEvent(mask, event)
     int event;
 {
     if ((event < LASTEvent) || (event >= 128))
-	FatalError("MaskForEvent: bogus event number");
+	FatalError("SetMaskForEvent: bogus event number");
     filters[event] = mask;
+}
+
+void
+SetCriticalEvent(event)
+    int event;
+{
+    if (event >= 128)
+	FatalError("SetCriticalEvent: bogus event number");
+    criticalEvents[event >> 3] |= 1 << (event & 7);
 }
 
 static void
@@ -253,7 +221,7 @@ SyntheticMotion(x, y)
     else
 	xE.u.keyButtonPointer.time = currentTime.milliseconds;
     xE.u.u.type = MotionNotify;
-    (*inputInfo.pointer->public.processInputProc)(&xE, inputInfo.pointer);
+    (*inputInfo.pointer->public.processInputProc)(&xE, inputInfo.pointer, 1);
 }
 
 #ifdef SHAPE
@@ -347,8 +315,8 @@ CheckVirtualMotion(qe, pWin)
     if (qe)
     {
 	sprite.hot.pScreen = qe->pScreen;
-	sprite.hot.x = qe->event.u.keyButtonPointer.rootX;
-	sprite.hot.y = qe->event.u.keyButtonPointer.rootY;
+	sprite.hot.x = qe->event->u.keyButtonPointer.rootX;
+	sprite.hot.y = qe->event->u.keyButtonPointer.rootY;
 	pWin = inputInfo.pointer->grab ? inputInfo.pointer->grab->confineTo :
 					 NullWindow;
     }
@@ -377,8 +345,8 @@ CheckVirtualMotion(qe, pWin)
 	if (qe)
 	{
 	    qe->pScreen = sprite.hot.pScreen;
-	    qe->event.u.keyButtonPointer.rootX = sprite.hot.x;
-	    qe->event.u.keyButtonPointer.rootY = sprite.hot.y;
+	    qe->event->u.keyButtonPointer.rootX = sprite.hot.x;
+	    qe->event->u.keyButtonPointer.rootY = sprite.hot.y;
 	}
     }
     ROOT = WindowTable[sprite.hot.pScreen->myNum];
@@ -481,12 +449,14 @@ PostNewCursor()
  **************************************************************************/
 
 static void
-EnqueueEvent(xE, device)
+EnqueueEvent(xE, device, count)
     xEvent		*xE;
     DeviceIntPtr	device;
+    int			count;
 {
     register QdEventPtr tail = *syncEvents.pendtail;
     register QdEventPtr qe;
+    xEvent		*qxE;
 
     NoticeTime(xE)
     if (xE->u.u.type == MotionNotify)
@@ -495,22 +465,25 @@ EnqueueEvent(xE, device)
 	sprite.hotPhys.y = xE->u.keyButtonPointer.rootY;
 	/* do motion compression */
 	if (tail &&
-	    (tail->event.u.u.type == MotionNotify) &&
+	    (tail->event->u.u.type == MotionNotify) &&
 	    (tail->pScreen == sprite.hotPhys.pScreen))
 	{
-	    tail->event.u.keyButtonPointer.rootX = sprite.hotPhys.x;
-	    tail->event.u.keyButtonPointer.rootY = sprite.hotPhys.y;
+	    tail->event->u.keyButtonPointer.rootX = sprite.hotPhys.x;
+	    tail->event->u.keyButtonPointer.rootY = sprite.hotPhys.y;
 	    return;
 	}
     }
-    qe = (QdEventPtr)xalloc(sizeof(QdEventRec));
+    qe = (QdEventPtr)xalloc(sizeof(QdEventRec) + (count * sizeof(xEvent)));
     if (!qe)
 	return;
     qe->next = (QdEventPtr)NULL;
     qe->device = device;
     qe->pScreen = sprite.hotPhys.pScreen;
     qe->months = currentTime.months;
-    qe->event = *xE;
+    qe->event = (xEvent *)(qe + 1);
+    qe->evcount = count;
+    for (qxE = qe->event; --count >= 0; qxE++, xE++)
+	*qxE = *xE;
     if (tail)
 	syncEvents.pendtail = &tail->next;
     *syncEvents.pendtail = qe;
@@ -529,11 +502,12 @@ PlayReleasedEvents()
 	    *prev = qe->next;
 	    if (!qe->next)
 		syncEvents.pendtail = prev;
-	    if (qe->event.u.u.type == MotionNotify)
+	    if (qe->event->u.u.type == MotionNotify)
 		CheckVirtualMotion(qe, NullWindow);
 	    syncEvents.time.months = qe->months;
-	    syncEvents.time.milliseconds = qe->event.u.keyButtonPointer.time;
-	    (*qe->device->public.processInputProc)(&qe->event, qe->device);
+	    syncEvents.time.milliseconds = qe->event->u.keyButtonPointer.time;
+	    (*qe->device->public.processInputProc)(qe->event, qe->device,
+						   qe->evcount);
 	    xfree(qe);
 	    if (inputInfo.pointer->sync.frozen &&
 		inputInfo.keyboard->sync.frozen)
@@ -549,62 +523,65 @@ PlayReleasedEvents()
 
 static void
 FreezeThaw(dev, frozen)
-    DeviceIntPtr dev;
+    register DeviceIntPtr dev;
     Bool frozen;
 {
     dev->sync.frozen = frozen;
     if (frozen)
 	dev->public.processInputProc = EnqueueEvent;
-    else if (dev == inputInfo.pointer)
-	dev->public.processInputProc = ProcessPointerEvent;
-    else if (dev == inputInfo.keyboard)
-	dev->public.processInputProc = ProcessKeyboardEvent;
+    else
+	dev->public.processInputProc = dev->public.realInputProc;
 }
 
-static void
-ComputeFreezes(dev1, dev2)
-    DeviceIntPtr dev1, dev2;
+void
+ComputeFreezes()
 {
     register DeviceIntPtr replayDev = syncEvents.replayDev;
-    int i;
+    register int i;
     WindowPtr w;
-    Bool isKbd;
     register xEvent *xE;
+    int count;
     GrabPtr grab;
+    register DeviceIntPtr dev;
 
-    FreezeThaw(dev1,
-	       (dev1->sync.other != NullGrab) || (dev1->sync.state >= FROZEN));
-    FreezeThaw(dev2,
-	       (dev2->sync.other != NullGrab) || (dev2->sync.state >= FROZEN));
+    for (dev = inputInfo.devices; dev; dev = dev->next)
+	FreezeThaw(dev, dev->sync.other || (dev->sync.state >= FROZEN));
     if (syncEvents.playingEvents || (!replayDev && !syncEvents.pending))
 	return;
     syncEvents.playingEvents = TRUE;
     if (replayDev)
     {
-	isKbd = (replayDev == inputInfo.keyboard);
-	xE = &replayDev->sync.event;
+	xE = replayDev->sync.event;
+	count = replayDev->sync.evcount;
 	syncEvents.replayDev = (DeviceIntPtr)NULL;
 	w = XYToWindow(
 	    xE->u.keyButtonPointer.rootX, xE->u.keyButtonPointer.rootY);
 	for (i = 0; i < spriteTraceGood; i++)
 	    if (syncEvents.replayWin == spriteTrace[i])
 	    {
-		if (!CheckDeviceGrabs(replayDev, xE, i+1, isKbd))
-		    if (isKbd)
-			NormalKeyboardEvent(replayDev, xE, w);
+		if (!CheckDeviceGrabs(replayDev, xE, i+1, count))
+		    if (replayDev->focus)
+			DeliverFocusedEvent(replayDev, xE, w, count);
 		    else
-			DeliverDeviceEvents(w, xE, NullGrab, NullWindow);
+			DeliverDeviceEvents(w, xE, NullGrab, NullWindow,
+					    replayDev, count);
 		goto playmore;
 	    }
 	/* must not still be in the same stack */
-	if (isKbd)
-	    NormalKeyboardEvent(replayDev, xE, w);
+	if (replayDev->focus)
+	    DeliverFocusedEvent(replayDev, xE, w, count);
 	else
-	    DeliverDeviceEvents(w, xE, NullGrab, NullWindow);
+	    DeliverDeviceEvents(w, xE, NullGrab, NullWindow, replayDev, count);
     }
 playmore:
-    if (!dev1->sync.frozen || !dev2->sync.frozen)
-	PlayReleasedEvents();
+    for (dev = inputInfo.devices; dev; dev = dev->next)
+    {
+	if (!dev->sync.frozen)
+	{
+	    PlayReleasedEvents();
+	    break;
+	}
+    }
     syncEvents.playingEvents = FALSE;
     /* the following may have been skipped during replay, so do it now */
     if ((grab = inputInfo.pointer->grab) && grab->confineTo)
@@ -619,12 +596,14 @@ playmore:
     PostNewCursor();
 }
 
-static void
-CheckGrabForSyncs(grab, thisDev, thisMode, otherDev, otherMode)
-    GrabPtr grab;
-    DeviceIntPtr thisDev, otherDev;
+void
+CheckGrabForSyncs(thisDev, thisMode, otherMode)
+    register DeviceIntPtr thisDev;
     Bool thisMode, otherMode;
 {
+    register GrabPtr grab = thisDev->grab;
+    register DeviceIntPtr dev;
+
     if (thisMode == GrabModeSync)
 	thisDev->sync.state = FROZEN_NO_EVENT;
     else
@@ -635,21 +614,27 @@ CheckGrabForSyncs(grab, thisDev, thisMode, otherDev, otherMode)
 	     CLIENT_BITS(grab->resource)))
 	    thisDev->sync.other = NullGrab;
     }
-    if (otherMode == GrabModeSync)
-	otherDev->sync.other = grab;
-    else
-    {	/* free both if same client owns both */
-	if (otherDev->sync.other &&
-	    (CLIENT_BITS(otherDev->sync.other->resource) ==
-	     CLIENT_BITS(grab->resource)))
-	    otherDev->sync.other = NullGrab;
+    for (dev = inputInfo.devices; dev; dev = dev->next)
+    {
+	if (dev != thisDev)
+	{
+	    if (otherMode == GrabModeSync)
+		dev->sync.other = grab;
+	    else
+	    {	/* free both if same client owns both */
+		if (dev->sync.other &&
+		    (CLIENT_BITS(dev->sync.other->resource) ==
+		     CLIENT_BITS(grab->resource)))
+		    dev->sync.other = NullGrab;
+	    }
+	}
     }
-    ComputeFreezes(thisDev, otherDev);
+    ComputeFreezes();
 }
 
-static void
+void
 ActivatePointerGrab(mouse, grab, time, autoGrab)
-    GrabPtr grab;
+    register GrabPtr grab;
     register DeviceIntPtr mouse;
     TimeStamp time;
     Bool autoGrab;
@@ -664,45 +649,47 @@ ActivatePointerGrab(mouse, grab, time, autoGrab)
 	ConfineCursorToWindow(grab->confineTo, FALSE);
     }
     DoEnterLeaveEvents(oldWin, grab->window, NotifyGrab);
-    motionHintWindow = NullWindow;
+    mouse->valuator->motionHintWindow = NullWindow;
     if (syncEvents.playingEvents)
 	mouse->grabTime = syncEvents.time;
     else
 	mouse->grabTime = time;
-    ptrGrab = *grab;
     if (grab->cursor)
 	grab->cursor->refcnt++;
-    mouse->grab = &ptrGrab;
-    mouse->u.ptr.autoReleaseGrab = autoGrab;
+    mouse->activeGrab = *grab;
+    mouse->grab = &mouse->activeGrab;
+    mouse->fromPassiveGrab = autoGrab;
     PostNewCursor();
-    CheckGrabForSyncs(
-	mouse->grab, mouse, (Bool)grab->pointerMode,
-	inputInfo.keyboard, (Bool)grab->keyboardMode);
+    CheckGrabForSyncs(mouse,
+		      (Bool)grab->pointerMode, (Bool)grab->keyboardMode);
 }
 
-static void
+void
 DeactivatePointerGrab(mouse)
-    DeviceIntPtr mouse;
+    register DeviceIntPtr mouse;
 {
-    GrabPtr grab = mouse->grab;
-    DeviceIntPtr keybd = inputInfo.keyboard;
+    register GrabPtr grab = mouse->grab;
+    register DeviceIntPtr dev;
 
-    motionHintWindow = NullWindow;
+    mouse->valuator->motionHintWindow = NullWindow;
     mouse->grab = NullGrab;
     mouse->sync.state = NOT_GRABBED;
-    mouse->u.ptr.autoReleaseGrab = FALSE;
-    if (keybd->sync.other == grab)
-	keybd->sync.other = NullGrab;
+    mouse->fromPassiveGrab = FALSE;
+    for (dev = inputInfo.devices; dev; dev = dev->next)
+    {
+	if (dev->sync.other == grab)
+	    dev->sync.other = NullGrab;
+    }
     DoEnterLeaveEvents(grab->window, sprite.win, NotifyUngrab);
     if (grab->confineTo)
 	ConfineCursorToWindow(ROOT, FALSE);
     PostNewCursor();
     if (grab->cursor)
 	FreeCursor(grab->cursor, (Cursor)0);
-    ComputeFreezes(keybd, mouse);
+    ComputeFreezes();
 }
 
-static void
+void
 ActivateKeyboardGrab(keybd, grab, time, passive)
     GrabPtr grab;
     register DeviceIntPtr keybd;
@@ -710,58 +697,77 @@ ActivateKeyboardGrab(keybd, grab, time, passive)
     Bool passive;
 {
     WindowPtr oldWin = (keybd->grab) ? keybd->grab->window
-				     : keybd->u.keybd.focus.win;
+				     : keybd->focus->win;
 
-    DoFocusEvents(oldWin, grab->window, NotifyGrab);
+    if (oldWin == FollowKeyboardWin)
+	oldWin = inputInfo.keyboard->focus->win;
+    DoFocusEvents(keybd, oldWin, grab->window, NotifyGrab);
     if (syncEvents.playingEvents)
 	keybd->grabTime = syncEvents.time;
     else
 	keybd->grabTime = time;
-    keybdGrab = *grab;
-    keybd->grab = &keybdGrab;
-    keybd->u.keybd.passiveGrab = passive;
-    CheckGrabForSyncs(
-	keybd->grab, keybd, (Bool)grab->keyboardMode,
-	inputInfo.pointer, (Bool)grab->pointerMode);
+    keybd->activeGrab = *grab;
+    keybd->grab = &keybd->activeGrab;
+    keybd->fromPassiveGrab = passive;
+    CheckGrabForSyncs(keybd,
+		      (Bool)grab->keyboardMode, (Bool)grab->pointerMode);
 }
 
-static void
+void
 DeactivateKeyboardGrab(keybd)
-    DeviceIntPtr keybd;
+    register DeviceIntPtr keybd;
 {
-    DeviceIntPtr mouse = inputInfo.pointer;
-    GrabPtr grab = keybd->grab;
+    register GrabPtr grab = keybd->grab;
+    register DeviceIntPtr dev;
 
     keybd->grab = NullGrab;
     keybd->sync.state = NOT_GRABBED;
-    keybd->u.keybd.passiveGrab = FALSE;
-    if (mouse->sync.other == grab)
-	mouse->sync.other = NullGrab;
-    DoFocusEvents(grab->window, keybd->u.keybd.focus.win, NotifyUngrab);
-    ComputeFreezes(keybd, mouse);
+    keybd->fromPassiveGrab = FALSE;
+    for (dev = inputInfo.devices; dev; dev = dev->next)
+    {
+	if (dev->sync.other == grab)
+	    dev->sync.other = NullGrab;
+    }
+    DoFocusEvents(keybd, grab->window, keybd->focus->win, NotifyUngrab);
+    ComputeFreezes();
 }
 
-static void
-AllowSome(client, time, thisDev, otherDev, newState)
+void
+AllowSome(client, time, thisDev, newState)
     ClientPtr		client;
     TimeStamp		time;
-    DeviceIntPtr	thisDev, otherDev;
+    register DeviceIntPtr thisDev;
     int			newState;
 {
-    Bool	thisGrabbed, otherGrabbed;
-    TimeStamp	grabTime;
+    Bool thisGrabbed, otherGrabbed, othersFrozen, thisSynced;
+    TimeStamp grabTime;
+    register DeviceIntPtr dev;
 
     thisGrabbed = thisDev->grab && SameClient(thisDev->grab, client);
-    otherGrabbed = otherDev->grab && SameClient(otherDev->grab, client);
-    if (!((thisGrabbed && thisDev->sync.state >= FROZEN) ||
-	  (otherGrabbed && thisDev->sync.other)))
+    thisSynced = FALSE;
+    otherGrabbed = FALSE;
+    othersFrozen = TRUE;
+    grabTime = thisDev->grabTime;
+    for (dev = inputInfo.devices; dev; dev = dev->next)
+    {
+	if (dev == thisDev)
+	    continue;
+	if (dev->grab && SameClient(dev->grab, client))
+	{
+	    if (!(thisGrabbed || otherGrabbed) ||
+		(CompareTimeStamps(dev->grabTime, grabTime) == LATER))
+		grabTime = dev->grabTime;
+	    otherGrabbed = TRUE;
+	    if (thisDev->sync.other == dev->grab)
+		thisSynced = TRUE;
+	    if (dev->sync.state < FROZEN)
+		othersFrozen = FALSE;
+	}
+	else if (!thisGrabbed || (dev->sync.other != thisDev->grab))
+	    othersFrozen = FALSE;
+    }
+    if (!((thisGrabbed && thisDev->sync.state >= FROZEN) || thisSynced))
 	return;
-    if (thisGrabbed &&
-	(!otherGrabbed ||
-	 (CompareTimeStamps(otherDev->grabTime, thisDev->grabTime) == EARLIER)))
-	grabTime = thisDev->grabTime;
-    else
-	grabTime = otherDev->grabTime;
     if ((CompareTimeStamps(time, currentTime) == LATER) ||
 	(CompareTimeStamps(time, grabTime) == EARLIER))
 	return;
@@ -770,51 +776,43 @@ AllowSome(client, time, thisDev, otherDev, newState)
 	case THAWED:	 	       /* Async */
 	    if (thisGrabbed)
 		thisDev->sync.state = THAWED;
-	    if (otherGrabbed)
+	    if (thisSynced)
 		thisDev->sync.other = NullGrab;
-	    ComputeFreezes(thisDev, otherDev);
+	    ComputeFreezes();
 	    break;
 	case FREEZE_NEXT_EVENT:		/* Sync */
 	    if (thisGrabbed)
 	    {
 		thisDev->sync.state = FREEZE_NEXT_EVENT;
-		if (otherGrabbed)
+		if (thisSynced)
 		    thisDev->sync.other = NullGrab;
-		ComputeFreezes(thisDev, otherDev);
+		ComputeFreezes();
 	    }
 	    break;
 	case THAWED_BOTH:		/* AsyncBoth */
-	    if ((otherGrabbed && otherDev->sync.state >= FROZEN) ||
-		(thisGrabbed && otherDev->sync.other))
+	    if (othersFrozen)
 	    {
-		if (thisGrabbed)
+		for (dev = inputInfo.devices; dev; dev = dev->next)
 		{
-		    thisDev->sync.state = THAWED;
-		    otherDev->sync.other = NullGrab;
+		    if (dev->grab && SameClient(dev->grab, client))
+			dev->sync.state = THAWED;
+		    else
+			dev->sync.other = NullGrab;
 		}
-		if (otherGrabbed)
-		{
-		    otherDev->sync.state = THAWED;
-		    thisDev->sync.other = NullGrab;
-		}
-		ComputeFreezes(thisDev, otherDev);
+		ComputeFreezes();
 	    }
 	    break;
 	case FREEZE_BOTH_NEXT_EVENT:	/* SyncBoth */
-	    if ((otherGrabbed && otherDev->sync.state >= FROZEN) ||
-		(thisGrabbed && otherDev->sync.other))
+	    if (othersFrozen)
 	    {
-		if (thisGrabbed)
+		for (dev = inputInfo.devices; dev; dev = dev->next)
 		{
-		    thisDev->sync.state = FREEZE_BOTH_NEXT_EVENT;
-		    otherDev->sync.other = NullGrab;
+		    if (dev->grab && SameClient(dev->grab, client))
+			dev->sync.state = FREEZE_BOTH_NEXT_EVENT;
+		    else
+			dev->sync.other = NullGrab;
 		}
-		if (otherGrabbed)
-		{
-		    otherDev->sync.state = FREEZE_BOTH_NEXT_EVENT;
-		    thisDev->sync.other = NullGrab;
-		}
-		ComputeFreezes(thisDev, otherDev);
+		ComputeFreezes();
 	    }
 	    break;
 	case NOT_GRABBED:		/* Replay */
@@ -822,11 +820,23 @@ AllowSome(client, time, thisDev, otherDev, newState)
 	    {
 		syncEvents.replayDev = thisDev;
 		syncEvents.replayWin = thisDev->grab->window;
-		if (thisDev == inputInfo.pointer)
-		    DeactivatePointerGrab(thisDev);
-		else
- 		    DeactivateKeyboardGrab(thisDev);
+		(*thisDev->DeactivateGrab)(thisDev);
 		syncEvents.replayDev = (DeviceIntPtr)NULL;
+	    }
+	    break;
+	case THAW_OTHERS:		/* AsyncOthers */
+	    if (othersFrozen)
+	    {
+		for (dev = inputInfo.devices; dev; dev = dev->next)
+		{
+		    if (dev == thisDev)
+			continue;
+		    if (dev->grab && SameClient(dev->grab, client))
+			dev->sync.state = THAWED;
+		    else
+			dev->sync.other = NullGrab;
+		}
+		ComputeFreezes();
 	    }
 	    break;
     }
@@ -846,28 +856,28 @@ ProcAllowEvents(client)
     switch (stuff->mode)
     {
 	case ReplayPointer:
-	    AllowSome(client, time, mouse, keybd, NOT_GRABBED);
+	    AllowSome(client, time, mouse, NOT_GRABBED);
 	    break;
 	case SyncPointer: 
-	    AllowSome(client, time, mouse, keybd, FREEZE_NEXT_EVENT);
+	    AllowSome(client, time, mouse, FREEZE_NEXT_EVENT);
 	    break;
 	case AsyncPointer: 
-	    AllowSome(client, time, mouse, keybd, THAWED);
+	    AllowSome(client, time, mouse, THAWED);
 	    break;
 	case ReplayKeyboard: 
-	    AllowSome(client, time, keybd, mouse, NOT_GRABBED);
+	    AllowSome(client, time, keybd, NOT_GRABBED);
 	    break;
 	case SyncKeyboard: 
-	    AllowSome(client, time, keybd, mouse, FREEZE_NEXT_EVENT);
+	    AllowSome(client, time, keybd, FREEZE_NEXT_EVENT);
 	    break;
 	case AsyncKeyboard: 
-	    AllowSome(client, time, keybd, mouse, THAWED);
+	    AllowSome(client, time, keybd, THAWED);
 	    break;
 	case SyncBoth:
-	    AllowSome(client, time, keybd, mouse, FREEZE_BOTH_NEXT_EVENT);
+	    AllowSome(client, time, keybd, FREEZE_BOTH_NEXT_EVENT);
 	    break;
 	case AsyncBoth:
-	    AllowSome(client, time, keybd, mouse, THAWED_BOTH);
+	    AllowSome(client, time, keybd, THAWED_BOTH);
 	    break;
 	default: 
 	    client->errorValue = stuff->mode;
@@ -880,20 +890,12 @@ void
 ReleaseActiveGrabs(client)
     ClientPtr client;
 {
-    int i;
-    register DeviceIntPtr d;
-    for (i = 0; i < inputInfo.numDevices; i++)
+    register DeviceIntPtr dev;
+
+    for (dev = inputInfo.devices; dev; dev = dev->next)
     {
-	d = inputInfo.devices[i];
-	if (d->grab && SameClient(d->grab, client))
-	{
-	    if (d == inputInfo.keyboard)
-		DeactivateKeyboardGrab(d);
-	    else if (d == inputInfo.pointer)
-		DeactivatePointerGrab(d);
-	    else
-		d->grab = NullGrab;
-	}
+	if (dev->grab && SameClient(dev->grab, client))
+	    (*dev->DeactivateGrab)(dev);
     }
 }
 
@@ -910,6 +912,7 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
     Mask mask, filter;
 {
     int i;
+    int type;
 
     if (debug_events) ErrorF(
 	"Event([%d, %d], mask=0x%x), client=%d",
@@ -919,11 +922,13 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
     {
 	if (grab && !SameClient(grab, client))
 	    return -1; /* don't send, but notify caller */
-	if (pEvents->u.u.type == MotionNotify)
+	type = pEvents->u.u.type;
+	if (type == MotionNotify)
 	{
 	    if (mask & PointerMotionHintMask)
 	    {
-		if (WID(motionHintWindow) == pEvents->u.keyButtonPointer.event)
+		if (WID(inputInfo.pointer->valuator->motionHintWindow) ==
+		    pEvents->u.keyButtonPointer.event)
 		{
 		    if (debug_events) ErrorF("\n");
 		    return 1; /* don't send, but pretend we did */
@@ -935,16 +940,16 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 		pEvents->u.u.detail = NotifyNormal;
 	    }
 	}
-	if ((pEvents->u.u.type & 0177) != KeymapNotify)
+	type &= 0177;
+	if (type != KeymapNotify)
 	{
+	    /* all extension events must have a sequence number */
 	    for (i = 0; i < count; i++)
 		pEvents[i].u.u.sequenceNumber = client->sequence;
 	}
 
-	if (filters[pEvents->u.u.type & 0177] &
-	    (ButtonPressMask | ButtonReleaseMask
-             | KeyPressMask | KeyReleaseMask))
-		SetCriticalOutputPending();
+	if (BitIsOn(criticalEvents, type))
+	    SetCriticalOutputPending();
 
 	WriteEventsToClient(client, count, pEvents);
 	if (debug_events) ErrorF(  " delivered\n");
@@ -957,52 +962,72 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
     }
 }
 
-static int
-DeliverEventsToWindow(pWin, pEvents, count, filter, grab)
-    WindowPtr pWin;
+int
+DeliverEventsToWindow(pWin, pEvents, count, filter, grab, mskidx)
+    register WindowPtr pWin;
     GrabPtr grab;
     xEvent *pEvents;
     int count;
     Mask filter;
+    int mskidx;
 {
     int deliveries = 0, nondeliveries = 0;
     int attempt;
-    OtherClients *other;
+    register InputClients *other;
     ClientPtr client = NullClient;
     Mask deliveryMask; 	/* If a grab occurs due to a button press, then
 		              this mask is the mask of the grab. */
+    int type = pEvents->u.u.type;
 
-/* if nobody ever wants to see this event, skip some work */
-    if (filter != CantBeFiltered &&
-	!((wOtherEventMasks(pWin)|pWin->eventMask) & filter))
-	return 0;
-    if (attempt = TryClientEvents(
-	wClient(pWin), pEvents, count, pWin->eventMask, filter, grab))
+    /* CantBeFiltered means only window owner gets the event */
+    if ((filter == CantBeFiltered) || !(type & EXTENSION_EVENT_BASE))
     {
-	if (attempt > 0)
+	/* if nobody ever wants to see this event, skip some work */
+	if (filter != CantBeFiltered &&
+	    !((wOtherEventMasks(pWin)|pWin->eventMask) & filter))
+	    return 0;
+	if (attempt = TryClientEvents(wClient(pWin), pEvents, count,
+				      pWin->eventMask, filter, grab))
 	{
-	    deliveries++;
-	    client = wClient(pWin);
-	    deliveryMask = pWin->eventMask;
-	} else
-	    nondeliveries--;
+	    if (attempt > 0)
+	    {
+		deliveries++;
+		client = wClient(pWin);
+		deliveryMask = pWin->eventMask;
+	    } else
+		nondeliveries--;
+	}
     }
-    if (filter != CantBeFiltered) /* CantBeFiltered means only window owner gets the event */
-	for (other = wOtherClients(pWin); other; other = other->next)
+    if (filter != CantBeFiltered)
+    {
+	if (type & EXTENSION_EVENT_BASE)
 	{
-	    if (attempt = TryClientEvents(
-		  rClient(other), pEvents, count, other->mask, filter, grab))
+	    OtherInputMasks *inputMasks;
+
+	    inputMasks = wOtherInputMasks(pWin);
+	    if (!inputMasks ||
+		!(inputMasks->inputEvents[mskidx] & filter))
+		return 0;
+	    other = inputMasks->inputClients;
+	}
+	else
+	    other = (InputClients *)wOtherClients(pWin);
+	for (; other; other = other->next)
+	{
+	    if (attempt = TryClientEvents(rClient(other), pEvents, count,
+					  other->mask[mskidx], filter, grab))
 	    {
 		if (attempt > 0)
 		{
 		    deliveries++;
 		    client = rClient(other);
-		    deliveryMask = other->mask;
+		    deliveryMask = other->mask[mskidx];
 		} else
 		    nondeliveries--;
 	    }
 	}
-    if ((pEvents->u.u.type == ButtonPress) && deliveries && (!grab))
+    }
+    if ((type == ButtonPress) && deliveries && (!grab))
     {
 	GrabRec tempGrab;
 
@@ -1010,49 +1035,53 @@ DeliverEventsToWindow(pWin, pEvents, count, filter, grab)
 	tempGrab.resource = client->clientAsMask;
 	tempGrab.window = pWin;
 	tempGrab.ownerEvents = (deliveryMask & OwnerGrabButtonMask) ? TRUE : FALSE;
-	tempGrab.eventMask =  deliveryMask;
+	tempGrab.eventMask = deliveryMask;
 	tempGrab.keyboardMode = GrabModeAsync;
 	tempGrab.pointerMode = GrabModeAsync;
 	tempGrab.confineTo = NullWindow;
 	tempGrab.cursor = NullCursor;
-	ActivatePointerGrab(inputInfo.pointer, &tempGrab, currentTime, TRUE);
+	(*inputInfo.pointer->ActivateGrab)(inputInfo.pointer, &tempGrab,
+					   currentTime, TRUE);
     }
-    else if ((pEvents->u.u.type == MotionNotify) && deliveries)
-	motionHintWindow = pWin;
+    else if ((type == MotionNotify) && deliveries)
+	inputInfo.pointer->valuator->motionHintWindow = pWin;
     if (deliveries)
 	return deliveries;
     return nondeliveries;
 }
 
-/* If the event goes to dontDeliverToMe, don't send it and return 0.  if
+/* If the event goes to dontClient, don't send it and return 0.  if
    send works,  return 1 or if send didn't work, return 2.
+   Only works for core events.
 */
 
 int
-MaybeDeliverEventsToClient(pWin, pEvents, count, filter, dontDeliverToMe)
-    WindowPtr pWin;
+MaybeDeliverEventsToClient(pWin, pEvents, count, filter, dontClient)
+    register WindowPtr pWin;
     xEvent *pEvents;
     int count;
     Mask filter;
-    ClientPtr dontDeliverToMe;
+    ClientPtr dontClient;
 {
-    OtherClients * other;
+    register OtherClients *other;
 
     if (pWin->eventMask & filter)
     {
-        if (wClient (pWin) == dontDeliverToMe)
-		return 0;
-	return TryClientEvents(
-	    wClient(pWin), pEvents, count, pWin->eventMask, filter, NullGrab);
+        if (wClient(pWin) == dontClient)
+	    return 0;
+	return TryClientEvents(wClient(pWin), pEvents, count,
+			       pWin->eventMask, filter, NullGrab);
     }
     for (other = wOtherClients(pWin); other; other = other->next)
+    {
 	if (other->mask & filter)
 	{
-            if (SameClient(other, dontDeliverToMe))
+            if (SameClient(other, dontClient))
 		return 0;
-	    return TryClientEvents(
-		rClient(other), pEvents, count, other->mask, filter, NullGrab);
+	    return TryClientEvents(rClient(other), pEvents, count,
+				   other->mask, filter, NullGrab);
 	}
+    }
     return 2;
 }
 
@@ -1111,43 +1140,74 @@ FixUpEventFromWindow(xE, pWin, child, calcChild)
     }
 }
 
-
 int
-DeliverDeviceEvents(pWin, xE, grab, stopAt)
+DeliverDeviceEvents(pWin, xE, grab, stopAt, dev, count)
     register WindowPtr pWin, stopAt;
     register xEvent *xE;
     GrabPtr grab;
+    DeviceIntPtr dev;
+    int count;
 {
-    Mask filter;
-    int     deliveries;
     Window child = None;
+    int type = xE->u.u.type;
+    Mask filter = filters[type];
+    int deliveries = 0;
 
-    filter = filters[xE->u.u.type];
-    if (!(filter & pWin->deliverableEvents))
-	return 0;
-    deliveries = 0;
-    while (pWin)
+    if (type & EXTENSION_EVENT_BASE)
     {
-	if ((wOtherEventMasks(pWin)|pWin->eventMask) & filter)
-	{
-	    FixUpEventFromWindow(xE, pWin, child, FALSE);
-	    deliveries = DeliverEventsToWindow(pWin, xE, 1, filter, grab);
-	    if (deliveries > 0)
-		return deliveries;
-	}
-	if ((deliveries < 0) ||
-	    (pWin == stopAt) ||
-	    (filter & wDontPropagateMask(pWin)))
+	register OtherInputMasks *inputMasks;
+	int mskidx = dev->id;
+
+	inputMasks = wOtherInputMasks(pWin);
+	if (!inputMasks || !(filter & inputMasks->deliverableEvents[mskidx]))
 	    return 0;
-	child = pWin->drawable.id;
-	pWin = pWin->parent;
+	while (pWin && inputMasks)
+	{
+	    if (inputMasks->inputEvents[mskidx] & filter)
+	    {
+		FixUpEventFromWindow(xE, pWin, child, FALSE);
+		deliveries = DeliverEventsToWindow(pWin, xE, count, filter,
+						   grab, mskidx);
+		if (deliveries > 0)
+		    return deliveries;
+	    }
+	    if ((deliveries < 0) ||
+		(pWin == stopAt) ||
+		(filter & inputMasks->dontPropagateMask[mskidx]))
+		return 0;
+	    child = pWin->drawable.id;
+	    pWin = pWin->parent;
+	    inputMasks = wOtherInputMasks(pWin);
+	}
+    }
+    else
+    {
+	if (!(filter & pWin->deliverableEvents))
+	    return 0;
+	while (pWin)
+	{
+	    if ((wOtherEventMasks(pWin)|pWin->eventMask) & filter)
+	    {
+		FixUpEventFromWindow(xE, pWin, child, FALSE);
+		deliveries = DeliverEventsToWindow(pWin, xE, count, filter,
+						   grab, 0);
+		if (deliveries > 0)
+		    return deliveries;
+	    }
+	    if ((deliveries < 0) ||
+		(pWin == stopAt) ||
+		(filter & wDontPropagateMask(pWin)))
+		return 0;
+	    child = pWin->drawable.id;
+	    pWin = pWin->parent;
+	}
     }
     return 0;
 }
 
+/* not useful for events that propagate up the tree or extension events */
 int
 DeliverEvents(pWin, xE, count, otherParent)
-/* not useful for events that propagate up the tree */
     register WindowPtr pWin, otherParent;
     register xEvent *xE;
     int count;
@@ -1161,19 +1221,21 @@ DeliverEvents(pWin, xE, count, otherParent)
     if ((filter & SubstructureNotifyMask) && (xE->u.u.type != CreateNotify))
 	xE->u.destroyNotify.event = pWin->drawable.id;
     if (filter != StructureAndSubMask)
-	return DeliverEventsToWindow(pWin, xE, count, filter, NullGrab);
-    deliveries = DeliverEventsToWindow(
-	    pWin, xE, count, StructureNotifyMask, NullGrab);
+	return DeliverEventsToWindow(pWin, xE, count, filter, NullGrab, 0);
+    deliveries = DeliverEventsToWindow(pWin, xE, count, StructureNotifyMask,
+				       NullGrab, 0);
     if (pWin->parent)
     {
 	xE->u.destroyNotify.event = pWin->parent->drawable.id;
-	deliveries += DeliverEventsToWindow(
-		pWin->parent, xE, count, SubstructureNotifyMask, NullGrab);
+	deliveries += DeliverEventsToWindow(pWin->parent, xE, count,
+					    SubstructureNotifyMask, NullGrab,
+					    0);
 	if (xE->u.u.type == ReparentNotify)
 	{
 	    xE->u.destroyNotify.event = otherParent->drawable.id;
-	    deliveries += DeliverEventsToWindow(
-		    otherParent, xE, count, SubstructureNotifyMask, NullGrab);
+	    deliveries += DeliverEventsToWindow(otherParent, xE, count,
+						SubstructureNotifyMask,
+						NullGrab, 0);
 	}
     }
     return deliveries;
@@ -1266,7 +1328,8 @@ CheckMotion(xE)
 
     sprite.win = XYToWindow(sprite.hot.x, sprite.hot.y);
 #ifdef notyet
-    if (!(sprite.win->deliverableEvents & Motion_Filter(keyButtonState))
+    if (!(sprite.win->deliverableEvents &
+	  Motion_Filter(inputInfo.pointer->button))
 	!syncEvents.playingEvents)
     {
 	/* XXX Do PointerNonInterestBox here */
@@ -1421,31 +1484,31 @@ ProcWarpPointer(client)
 	passive grab set on the window to be activated. */
 
 static Bool
-CheckPassiveGrabsOnWindow(pWin, device, xE, isKeyboard)
+CheckPassiveGrabsOnWindow(pWin, device, xE, count)
     WindowPtr pWin;
     register DeviceIntPtr device;
     register xEvent *xE;
-    int isKeyboard;
+    int count;
 {
-    GrabPtr grab;
-    GrabRec temporaryGrab;
+    register GrabPtr grab = wPassiveGrabs(pWin);
+    GrabRec tempGrab;
+    register xEvent *dxE;
 
-    temporaryGrab.window = pWin;
-    temporaryGrab.device = device;
-    temporaryGrab.detail.exact = xE->u.u.detail;
-    temporaryGrab.detail.pMask = NULL;
-    temporaryGrab.modifiersDetail.exact = xE->u.keyButtonPointer.state
-					    & AllModifiersMask;
-    temporaryGrab.modifiersDetail.pMask = NULL;
-
-    for (grab = wPassiveGrabs(pWin); grab; grab = grab->next)
+    if (!grab)
+	return FALSE;
+    tempGrab.window = pWin;
+    tempGrab.device = device;
+    tempGrab.type = xE->u.u.type;
+    tempGrab.detail.exact = xE->u.u.detail;
+    tempGrab.detail.pMask = NULL;
+    tempGrab.modifiersDetail.pMask = NULL;
+    for (; grab; grab = grab->next)
     {
-	if (GrabMatchesSecond(&temporaryGrab, grab))
+	tempGrab.modifierDevice = grab->modifierDevice;
+	tempGrab.modifiersDetail.exact = grab->modifierDevice->key->state;
+	if (GrabMatchesSecond(&tempGrab, grab))
 	{
-	    if (isKeyboard)
-		ActivateKeyboardGrab(device, grab, currentTime, TRUE);
-	    else
-		ActivatePointerGrab(device, grab, currentTime, TRUE);
+	    (*device->ActivateGrab)(device, grab, currentTime, TRUE);
  
 	    FixUpEventFromWindow(xE, grab->window, None, TRUE);
 
@@ -1454,14 +1517,16 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, isKeyboard)
 
 	    if (device->sync.state == FROZEN_NO_EVENT)
 	    {
-	    	device->sync.event = *xE;
+	    	device->sync.event = (xEvent *)xrealloc(device->sync.event,
+							count*sizeof(xEvent));
+		device->sync.evcount = count;
+		for (dxE = device->sync.event; --count >= 0; dxE++, xE++)
+		    *dxE = *xE;
 	    	device->sync.state = FROZEN_WITH_EVENT;
             }	
-
 	    return TRUE;
 	}
     }
-
     return FALSE;
 }
 
@@ -1479,26 +1544,29 @@ tried. PRH
 */
 
 static Bool
-CheckDeviceGrabs(device, xE, checkFirst, isKeyboard)
+CheckDeviceGrabs(device, xE, checkFirst, count)
     register DeviceIntPtr device;
     register xEvent *xE;
     int checkFirst;
+    int count;
 {
-    int i;
-    WindowPtr pWin;
+    register int i;
+    register WindowPtr pWin;
+    register FocusClassPtr focus = device->focus;
 
     i = checkFirst;
 
-    if (isKeyboard)
+    if (focus)
     {
-	for (; i < focusTraceGood; i++)
+	for (; i < focus->traceGood; i++)
 	{
-	    pWin = focusTrace[i];
-	    if (CheckPassiveGrabsOnWindow(pWin, device, xE, isKeyboard))
+	    pWin = focus->trace[i];
+	    if (pWin->optional &&
+		CheckPassiveGrabsOnWindow(pWin, device, xE, count))
 		return TRUE;
 	}
   
-	if ((device->u.keybd.focus.win == NoneWin) ||
+	if ((focus->win == NoneWin) ||
 	    (i >= spriteTraceGood) ||
 	    ((i > 0) && (pWin != spriteTrace[i-1])))
 	    return FALSE;
@@ -1507,7 +1575,8 @@ CheckDeviceGrabs(device, xE, checkFirst, isKeyboard)
     for (; i < spriteTraceGood; i++)
     {
 	pWin = spriteTrace[i];
-	if (CheckPassiveGrabsOnWindow(pWin, device, xE, isKeyboard))
+	if (pWin->optional &&
+	    CheckPassiveGrabsOnWindow(pWin, device, xE, count))
 	    return TRUE;
     }
 
@@ -1515,51 +1584,66 @@ CheckDeviceGrabs(device, xE, checkFirst, isKeyboard)
 }
 
 static void
-NormalKeyboardEvent(keybd, xE, window)
+DeliverFocusedEvent(keybd, xE, window, count)
     xEvent *xE;
     DeviceIntPtr keybd;
     WindowPtr window;
+    int count;
 {
-    WindowPtr focus = keybd->u.keybd.focus.win;
-    if (focus == NullWindow)
+    WindowPtr focus = keybd->focus->win;
+    if (focus == FollowKeyboardWin)
+	focus = inputInfo.keyboard->focus->win;
+    if (!focus)
 	return;
     if (focus == PointerRootWin)
     {
-	DeliverDeviceEvents(window, xE, NullGrab, NullWindow);
+	DeliverDeviceEvents(window, xE, NullGrab, NullWindow, keybd, count);
 	return;
     }
     if ((focus == window) || IsParent(focus, window))
     {
-	if (DeliverDeviceEvents(window, xE, NullGrab, focus))
+	if (DeliverDeviceEvents(window, xE, NullGrab, focus, keybd, count))
 	    return;
     }
- /* just deliver it to the focus window */
+    /* just deliver it to the focus window */
     FixUpEventFromWindow(xE, focus, None, FALSE);
-    (void)DeliverEventsToWindow(focus, xE, 1, filters[xE->u.u.type], NullGrab);
+    (void)DeliverEventsToWindow(focus, xE, count, filters[xE->u.u.type],
+				NullGrab, 0);
 }
 
 static void
-DeliverGrabbedEvent(xE, thisDev, otherDev, deactivateGrab, isKeyboard)
+DeliverGrabbedEvent(xE, thisDev, deactivateGrab, count)
     register xEvent *xE;
     register DeviceIntPtr thisDev;
-    DeviceIntPtr otherDev;
     Bool deactivateGrab;
-    Bool isKeyboard;
+    int count;
 {
     register GrabPtr grab = thisDev->grab;
     int deliveries = 0;
+    register DeviceIntPtr dev;
+    register xEvent *dxE;
 
     if (grab->ownerEvents)
     {
-	WindowPtr focus = isKeyboard ? thisDev->u.keybd.focus.win
-				     : PointerRootWin;
+	WindowPtr focus;
 
+	if (thisDev->focus)
+	{
+	    focus = thisDev->focus->win;
+	    if (focus == FollowKeyboardWin)
+		focus = inputInfo.keyboard->focus->win;
+	}
+	else
+	    focus = PointerRootWin;
 	if (focus == PointerRootWin)
-	    deliveries = DeliverDeviceEvents(sprite.win, xE, grab, NullWindow);
+	    deliveries = DeliverDeviceEvents(sprite.win, xE, grab, NullWindow,
+					     thisDev, count);
 	else if (focus && (focus == sprite.win || IsParent(focus, sprite.win)))
-	    deliveries = DeliverDeviceEvents(sprite.win, xE, grab, focus);
+	    deliveries = DeliverDeviceEvents(sprite.win, xE, grab, focus,
+					     thisDev, count);
 	else if (focus)
-	    deliveries = DeliverDeviceEvents(focus, xE, grab, focus);
+	    deliveries = DeliverDeviceEvents(focus, xE, grab, focus,
+					     thisDev, count);
     }
     if (!deliveries)
     {
@@ -1568,51 +1652,62 @@ DeliverGrabbedEvent(xE, thisDev, otherDev, deactivateGrab, isKeyboard)
 				     (Mask)grab->eventMask,
 				     filters[xE->u.u.type], grab);
 	if (deliveries && (xE->u.u.type == MotionNotify))
-	    motionHintWindow = grab->window;
+	    thisDev->valuator->motionHintWindow = grab->window;
     }
     if (deliveries && !deactivateGrab && (xE->u.u.type != MotionNotify))
 	switch (thisDev->sync.state)
 	{
-	   case FREEZE_BOTH_NEXT_EVENT:
-		FreezeThaw(otherDev, TRUE);
-		if ((otherDev->sync.state == FREEZE_BOTH_NEXT_EVENT) &&
-		    (CLIENT_BITS(otherDev->grab->resource) ==
+	case FREEZE_BOTH_NEXT_EVENT:
+	    for (dev = inputInfo.devices; dev; dev = dev->next)
+	    {
+		if (dev == thisDev)
+		    continue;
+		FreezeThaw(dev, TRUE);
+		if ((dev->sync.state == FREEZE_BOTH_NEXT_EVENT) &&
+		    (CLIENT_BITS(dev->grab->resource) ==
 		     CLIENT_BITS(thisDev->grab->resource)))
-		    otherDev->sync.state = FROZEN_NO_EVENT;
+		    dev->sync.state = FROZEN_NO_EVENT;
 		else
-		    otherDev->sync.other = thisDev->grab;
-		/* fall through */
-	   case FREEZE_NEXT_EVENT:
-		thisDev->sync.state = FROZEN_WITH_EVENT;
-		FreezeThaw(thisDev, TRUE);
-		thisDev->sync.event = *xE;
-		break;
+		    dev->sync.other = thisDev->grab;
+	    }
+	    /* fall through */
+	case FREEZE_NEXT_EVENT:
+	    thisDev->sync.state = FROZEN_WITH_EVENT;
+	    FreezeThaw(thisDev, TRUE);
+	    thisDev->sync.event = (xEvent *)xrealloc(thisDev->sync.event,
+						     count*sizeof(xEvent));
+	    thisDev->sync.evcount = count;
+	    for (dxE = thisDev->sync.event; --count >= 0; dxE++, xE++)
+		*dxE = *xE;
+	    break;
 	}
 }
 
 void
-ProcessKeyboardEvent (xE, keybd)
+ProcessKeyboardEvent (xE, keybd, count)
     register xEvent *xE;
     register DeviceIntPtr keybd;
+    int count;
 {
     int             key, bit;
     register BYTE   *kptr;
     register int    i;
-    register CARD16 modifiers;
+    register CARD8  modifiers;
     register CARD16 mask;
-
     GrabPtr         grab = keybd->grab;
     Bool            deactivateGrab = FALSE;
+    register KeyClassPtr keyc = keybd->key;
 
     if (!syncEvents.playingEvents)
 	NoticeTime(xE)
-    xE->u.keyButtonPointer.state = keyButtonState;
+    xE->u.keyButtonPointer.state = (keyc->state |
+				    inputInfo.pointer->button->state);
     xE->u.keyButtonPointer.rootX = sprite.hot.x;
     xE->u.keyButtonPointer.rootY = sprite.hot.y;
     key = xE->u.u.detail;
-    kptr = &keybd->down[key >> 3];
+    kptr = &keyc->down[key >> 3];
     bit = 1 << (key & 7);
-    modifiers = keyModifiersList[key];
+    modifiers = keyc->modifierMap[key];
     switch (xE->u.u.type)
     {
 	case KeyPress: 
@@ -1621,73 +1716,75 @@ ProcessKeyboardEvent (xE, keybd)
 		if (!modifiers)
 		{
 		    xE->u.u.type = KeyRelease;
-		    ProcessKeyboardEvent(xE, keybd);
+		    ProcessKeyboardEvent(xE, keybd, count);
 		    xE->u.u.type = KeyPress;
 		    /* release can have side effects, don't fall through */
-		    ProcessKeyboardEvent(xE, keybd);
+		    ProcessKeyboardEvent(xE, keybd, count);
 		}
 		return;
 	    }
-	    motionHintWindow = NullWindow;
+	    inputInfo.pointer->valuator->motionHintWindow = NullWindow;
 	    *kptr |= bit;
 	    for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
 	    {
-		if (mask & modifiers) {
+		if (mask & modifiers)
+		{
 		    /* This key affects modifier "i" */
-		    modifierKeyCount[i]++;
-		    keyButtonState |= mask;
+		    keyc->modifierKeyCount[i]++;
+		    keyc->state |= mask;
 		    modifiers &= ~mask;
 		}
 	    }
-	    if (!grab && CheckDeviceGrabs(keybd, xE, 0, TRUE))
+	    if (!grab && CheckDeviceGrabs(keybd, xE, 0, count))
 	    {
-		keyThatActivatedPassiveGrab = key;
+		keybd->activatingKey = key;
 		return;
 	    }
 	    break;
 	case KeyRelease: 
 	    if (!(*kptr & bit)) /* guard against duplicates */
 		return;
-	    motionHintWindow = NullWindow;
+	    inputInfo.pointer->valuator->motionHintWindow = NullWindow;
 	    *kptr &= ~bit;
 	    for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
 	    {
 		if (mask & modifiers) {
 		    /* This key affects modifier "i" */
-		    if (--modifierKeyCount[i] <= 0) {
-			keyButtonState &= ~mask;
-			modifierKeyCount[i] = 0;
+		    if (--keyc->modifierKeyCount[i] <= 0) {
+			keyc->state &= ~mask;
+			keyc->modifierKeyCount[i] = 0;
 		    }
 		    modifiers &= ~mask;
 		}
 	    }
-	    if ((keybd->u.keybd.passiveGrab) &&
-			(key == keyThatActivatedPassiveGrab))
+	    if (keybd->fromPassiveGrab && (key == keybd->activatingKey))
 		deactivateGrab = TRUE;
 	    break;
 	default: 
 	    FatalError("Impossible keyboard event");
     }
     if (grab)
-	DeliverGrabbedEvent(xE, keybd, inputInfo.pointer, deactivateGrab,
-			    TRUE);
+	DeliverGrabbedEvent(xE, keybd, deactivateGrab, count);
     else
-	NormalKeyboardEvent(keybd, xE, sprite.win);
+	DeliverFocusedEvent(keybd, xE, sprite.win, count);
     if (deactivateGrab)
-        DeactivateKeyboardGrab(keybd);
+        (*keybd->DeactivateGrab)(keybd);
 }
 
 void
-ProcessPointerEvent (xE, mouse)
+ProcessPointerEvent (xE, mouse, count)
     register xEvent 		*xE;
     register DeviceIntPtr 	mouse;
+    int				count;
 {
     register GrabPtr	grab = mouse->grab;
     Bool                deactivateGrab = FALSE;
+    register ButtonClassPtr butc = mouse->button;
 
     if (!syncEvents.playingEvents)
 	NoticeTime(xE)
-    xE->u.keyButtonPointer.state = keyButtonState;
+    xE->u.keyButtonPointer.state = (butc->state |
+				    inputInfo.keyboard->key->state);
     if (xE->u.u.type != MotionNotify)
     {
 	register int  key;
@@ -1697,39 +1794,37 @@ ProcessPointerEvent (xE, mouse)
 	xE->u.keyButtonPointer.rootX = sprite.hot.x;
 	xE->u.keyButtonPointer.rootY = sprite.hot.y;
 	key = xE->u.u.detail;
-	kptr = &mouse->down[key >> 3];
+	kptr = &butc->down[key >> 3];
 	bit = 1 << (key & 7);
 	switch (xE->u.u.type)
 	{
 	case ButtonPress: 
-	    motionHintWindow = NullWindow;
-	    buttonsDown++;
-	    buttonMotionMask = ButtonMotionMask;
+	    mouse->valuator->motionHintWindow = NullWindow;
+	    butc->buttonsDown++;
+	    butc->motionMask = ButtonMotionMask;
 	    *kptr |= bit;
-	    xE->u.u.detail = mouse->u.ptr.map[key];
+	    xE->u.u.detail = butc->map[key];
 	    if (xE->u.u.detail == 0)
 		return;
 	    if (xE->u.u.detail <= 5)
-		keyButtonState |= keyModifiersList[xE->u.u.detail];
-	    filters[MotionNotify] = Motion_Filter(keyButtonState);
+		butc->state |= (Button1Mask >> 1) << xE->u.u.detail;
+	    filters[MotionNotify] = Motion_Filter(butc);
 	    if (!grab)
-		if (CheckDeviceGrabs(mouse, xE, 0, FALSE))
+		if (CheckDeviceGrabs(mouse, xE, 0, count))
 		    return;
 	    break;
 	case ButtonRelease: 
-	    motionHintWindow = NullWindow;
-	    buttonsDown--;
-	    if (!buttonsDown)
-		buttonMotionMask = 0;
+	    mouse->valuator->motionHintWindow = NullWindow;
+	    if (!--butc->buttonsDown)
+		butc->motionMask = 0;
 	    *kptr &= ~bit;
-	    xE->u.u.detail = mouse->u.ptr.map[key];
+	    xE->u.u.detail = butc->map[key];
 	    if (xE->u.u.detail == 0)
 		return;
 	    if (xE->u.u.detail <= 5)
-		keyButtonState &= ~keyModifiersList[xE->u.u.detail];
-	    filters[MotionNotify] = Motion_Filter(keyButtonState);
-	    if ((!(keyButtonState & AllButtonsMask)) &&
-		(mouse->u.ptr.autoReleaseGrab))
+		butc->state &= ~((Button1Mask >> 1) << xE->u.u.detail);
+	    filters[MotionNotify] = Motion_Filter(butc);
+	    if (!butc->state && mouse->fromPassiveGrab)
 		deactivateGrab = TRUE;
 	    break;
 	default: 
@@ -1739,23 +1834,12 @@ ProcessPointerEvent (xE, mouse)
     else if (!CheckMotion(xE))
 	return;
     if (grab)
-	DeliverGrabbedEvent(xE, mouse, inputInfo.keyboard, deactivateGrab,
-			    FALSE);
+	DeliverGrabbedEvent(xE, mouse, deactivateGrab, count);
     else
-	DeliverDeviceEvents(sprite.win, xE, NullGrab, NullWindow);
+	DeliverDeviceEvents(sprite.win, xE, NullGrab, NullWindow,
+			    mouse, count);
     if (deactivateGrab)
-        DeactivatePointerGrab(mouse);
-}
-
-/*ARGSUSED*/
-void
-ProcessOtherEvent (xE, pDevice)
-    xEvent *xE;
-    DevicePtr pDevice;
-{
-/*	XXX What should be done here ?
-    Bool propagate = filters[xE->type];
-*/
+        (*mouse->DeactivateGrab)(mouse);
 }
 
 #define AtMostOneClient \
@@ -1763,7 +1847,7 @@ ProcessOtherEvent (xE, pDevice)
 
 void
 RecalculateDeliverableEvents(pWin)
-    WindowPtr pWin;
+    register WindowPtr pWin;
 {
     register OtherClients *others;
     register WindowPtr pChild;
@@ -1797,7 +1881,7 @@ RecalculateDeliverableEvents(pWin)
 
 int
 OtherClientGone(pWin, id)
-    WindowPtr pWin;
+    register WindowPtr pWin;
     XID   id;
 {
     register OtherClientsPtr other, prev;
@@ -1826,9 +1910,9 @@ OtherClientGone(pWin, id)
 
 int
 EventSelectForWindow(pWin, client, mask)
-	WindowPtr pWin;
-	ClientPtr client;
-	Mask mask;
+    register WindowPtr pWin;
+    register ClientPtr client;
+    Mask mask;
 {
     Mask check;
     OtherClients * others;
@@ -1890,11 +1974,11 @@ EventSelectForWindow(pWin, client, mask)
 	    return BadAlloc;
     }
 maskSet: 
-    if ((motionHintWindow == pWin) &&
+    if ((inputInfo.pointer->valuator->motionHintWindow == pWin) &&
 	(mask & PointerMotionHintMask) &&
 	!(check & PointerMotionHintMask) &&
 	!inputInfo.pointer->grab)
-	motionHintWindow = NullWindow;
+	inputInfo.pointer->valuator->motionHintWindow = NullWindow;
     RecalculateDeliverableEvents(pWin);
     return Success;
 }
@@ -1902,9 +1986,9 @@ maskSet:
 /*ARGSUSED*/
 int
 EventSuppressForWindow(pWin, client, mask)
-	WindowPtr pWin;
-	ClientPtr client;
-	Mask mask;
+    register WindowPtr pWin;
+    register ClientPtr client;
+    Mask mask;
 {
     if ((mask & ~PropagateMask) && !permitOldBugs)
     {
@@ -1937,16 +2021,18 @@ CommonAncestor(a, b)
 static void
 EnterLeaveEvent(type, mode, detail, pWin)
     int type, mode, detail;
-    WindowPtr pWin;
+    register WindowPtr pWin;
 {
     xEvent		event;
-    DeviceIntPtr	keybd = inputInfo.keyboard;
+    register DeviceIntPtr keybd = inputInfo.keyboard;
     WindowPtr		focus;
-    GrabPtr		grab = inputInfo.pointer->grab;
+    register DeviceIntPtr mouse = inputInfo.pointer;
+    register GrabPtr	grab = mouse->grab;
     Mask		mask;
 
-    if ((pWin == motionHintWindow) && (detail != NotifyInferior))
-	motionHintWindow = NullWindow;
+    if ((pWin == mouse->valuator->motionHintWindow) &&
+	(detail != NotifyInferior))
+	mouse->valuator->motionHintWindow = NullWindow;
     if (grab)
     {
 	mask = (pWin == grab->window) ? grab->eventMask : 0;
@@ -1968,9 +2054,9 @@ EnterLeaveEvent(type, mode, detail, pWin)
 	FixUpEventFromWindow(&event, pWin, None, TRUE);		
 	event.u.enterLeave.flags = event.u.keyButtonPointer.sameScreen ?
 					    ELFlagSameScreen : 0;
-	event.u.enterLeave.state = keyButtonState;
+	event.u.enterLeave.state = keybd->key->state | mouse->button->state;
 	event.u.enterLeave.mode = mode;
-	focus = keybd->u.keybd.focus.win;
+	focus = keybd->focus->win;
 	if ((focus != NoneWin) &&
 	    ((pWin == focus) || (focus == PointerRootWin) ||
 	     IsParent(focus, pWin)))
@@ -1980,19 +2066,19 @@ EnterLeaveEvent(type, mode, detail, pWin)
 				  filters[type], grab);
 	else
 	    (void)DeliverEventsToWindow(pWin, &event, 1, filters[type],
-					NullGrab);
+					NullGrab, 0);
     }
     if ((type == EnterNotify) && (mask & KeymapStateMask))
     {
 	xKeymapEvent ke;
 	ke.type = KeymapNotify;
-	bcopy((char *)&keybd->down[1], (char *)&ke.map[0], 31);
+	bcopy((char *)&keybd->key->down[1], (char *)&ke.map[0], 31);
 	if (grab)
 	    (void)TryClientEvents(rClient(grab), (xEvent *)&ke, 1, mask,
 				  KeymapStateMask, grab);
 	else
 	    (void)DeliverEventsToWindow(pWin, (xEvent *)&ke, 1,
-					KeymapStateMask, NullGrab);
+					KeymapStateMask, NullGrab, 0);
     }
 }
 
@@ -2066,25 +2152,34 @@ DoEnterLeaveEvents(fromWin, toWin, mode)
 }
 
 static void
-FocusEvent(type, mode, detail, pWin)
+FocusEvent(dev, type, mode, detail, pWin)
+    DeviceIntPtr dev;
     int type, mode, detail;
-    WindowPtr pWin;
+    register WindowPtr pWin;
 {
-   xEvent	event;
-   DeviceIntPtr	keybd = inputInfo.keyboard;
+    xEvent event;
 
+#ifdef XINPUT
+    if (dev != inputInfo.keyboard)
+    {
+	DeviceFocusEvent(dev, type, mode, detail, pWin);
+	return;
+    }
+#endif
     event.u.focus.mode = mode;
     event.u.u.type = type;
     event.u.u.detail = detail;
     event.u.focus.window = pWin->drawable.id;
-    (void)DeliverEventsToWindow(pWin, &event, 1, filters[type], NullGrab);
-    if ((type == FocusIn) && ((pWin->eventMask | wOtherEventMasks(pWin)) & KeymapStateMask))
+    (void)DeliverEventsToWindow(pWin, &event, 1, filters[type], NullGrab,
+				0);
+    if ((type == FocusIn) &&
+	((pWin->eventMask | wOtherEventMasks(pWin)) & KeymapStateMask))
     {
 	xKeymapEvent ke;
 	ke.type = KeymapNotify;
-	bcopy((char *)keybd->down, (char *)&ke.map[0], 31);
+	bcopy((char *)dev->key->down, (char *)&ke.map[0], 31);
 	(void)DeliverEventsToWindow(pWin, (xEvent *)&ke, 1,
-				    KeymapStateMask, NullGrab);
+				    KeymapStateMask, NullGrab, 0);
     }
 }
 
@@ -2093,7 +2188,8 @@ FocusEvent(type, mode, detail, pWin)
   * no-op if child not descended from ancestor
   */
 static Bool
-FocusInEvents(ancestor, child, skipChild, mode, detail, doAncestor)
+FocusInEvents(dev, ancestor, child, skipChild, mode, detail, doAncestor)
+    DeviceIntPtr dev;
     WindowPtr ancestor, child, skipChild;
     int mode, detail;
     Bool doAncestor;
@@ -2103,14 +2199,14 @@ FocusInEvents(ancestor, child, skipChild, mode, detail, doAncestor)
     if (ancestor == child)
     {
 	if (doAncestor)
-	    FocusEvent(FocusIn, mode, detail, child);
+	    FocusEvent(dev, FocusIn, mode, detail, child);
 	return TRUE;
     }
-    if (FocusInEvents(
-	ancestor, child->parent, skipChild, mode, detail, doAncestor))
+    if (FocusInEvents(dev, ancestor, child->parent, skipChild, mode, detail,
+		      doAncestor))
     {
 	if (child != skipChild)
-	    FocusEvent(FocusIn, mode, detail, child);
+	    FocusEvent(dev, FocusIn, mode, detail, child);
 	return TRUE;
     }
     return FALSE;
@@ -2118,7 +2214,8 @@ FocusInEvents(ancestor, child, skipChild, mode, detail, doAncestor)
 
 /* dies horribly if ancestor is not an ancestor of child */
 static void
-FocusOutEvents(child, ancestor, mode, detail, doAncestor)
+FocusOutEvents(dev, child, ancestor, mode, detail, doAncestor)
+    DeviceIntPtr dev;
     WindowPtr child, ancestor;
     int detail;
     Bool doAncestor;
@@ -2126,13 +2223,14 @@ FocusOutEvents(child, ancestor, mode, detail, doAncestor)
     register WindowPtr  pWin;
 
     for (pWin = child; pWin != ancestor; pWin = pWin->parent)
-	FocusEvent(FocusOut, mode, detail, pWin);
+	FocusEvent(dev, FocusOut, mode, detail, pWin);
     if (doAncestor)
-	FocusEvent(FocusOut, mode, detail, ancestor);
+	FocusEvent(dev, FocusOut, mode, detail, ancestor);
 }
 
-static void
-DoFocusEvents(fromWin, toWin, mode)
+void
+DoFocusEvents(dev, fromWin, toWin, mode)
+    DeviceIntPtr dev;
     WindowPtr fromWin, toWin;
     int mode;
 {
@@ -2151,58 +2249,60 @@ DoFocusEvents(fromWin, toWin, mode)
 	if ((fromWin == NullWindow) || (fromWin == PointerRootWin))
    	{
 	    if (fromWin == PointerRootWin)
-		FocusOutEvents(sprite.win, ROOT, mode, NotifyPointer, TRUE);
+		FocusOutEvents(dev, sprite.win, ROOT, mode, NotifyPointer,
+			       TRUE);
 	    /* Notify all the roots */
 	    for (i=0; i<screenInfo.numScreens; i++)
-	        FocusEvent(FocusOut, mode, out, WindowTable[i]);
+	        FocusEvent(dev, FocusOut, mode, out, WindowTable[i]);
 	}
 	else
 	{
 	    if (IsParent(fromWin, sprite.win))
-	      FocusOutEvents(sprite.win, fromWin, mode, NotifyPointer, FALSE);
-	    FocusEvent(FocusOut, mode, NotifyNonlinear, fromWin);
+	      FocusOutEvents(dev, sprite.win, fromWin, mode, NotifyPointer,
+			     FALSE);
+	    FocusEvent(dev, FocusOut, mode, NotifyNonlinear, fromWin);
 	    /* next call catches the root too, if the screen changed */
-	    FocusOutEvents( fromWin->parent, NullWindow, mode,
-			    NotifyNonlinearVirtual, FALSE);
+	    FocusOutEvents(dev, fromWin->parent, NullWindow, mode,
+			   NotifyNonlinearVirtual, FALSE);
 	}
 	/* Notify all the roots */
 	for (i=0; i<screenInfo.numScreens; i++)
-	    FocusEvent(FocusIn, mode, in, WindowTable[i]);
+	    FocusEvent(dev, FocusIn, mode, in, WindowTable[i]);
 	if (toWin == PointerRootWin)
-	    (void)FocusInEvents(
-		ROOT, sprite.win, NullWindow, mode, NotifyPointer, TRUE);
+	    (void)FocusInEvents(dev, ROOT, sprite.win, NullWindow, mode,
+				NotifyPointer, TRUE);
     }
     else
     {
 	if ((fromWin == NullWindow) || (fromWin == PointerRootWin))
 	{
 	    if (fromWin == PointerRootWin)
-		FocusOutEvents(sprite.win, ROOT, mode, NotifyPointer, TRUE);
+		FocusOutEvents(dev, sprite.win, ROOT, mode, NotifyPointer,
+			       TRUE);
 	    for (i=0; i<screenInfo.numScreens; i++)
-	      FocusEvent(FocusOut, mode, out, WindowTable[i]);
+	      FocusEvent(dev, FocusOut, mode, out, WindowTable[i]);
 	    if (toWin->parent != NullWindow)
-	      (void)FocusInEvents(
-		ROOT, toWin, toWin, mode, NotifyNonlinearVirtual, TRUE);
-	    FocusEvent(FocusIn, mode, NotifyNonlinear, toWin);
+	      (void)FocusInEvents(dev, ROOT, toWin, toWin, mode,
+				  NotifyNonlinearVirtual, TRUE);
+	    FocusEvent(dev, FocusIn, mode, NotifyNonlinear, toWin);
 	    if (IsParent(toWin, sprite.win))
-    	       (void)FocusInEvents(
-		 toWin, sprite.win, NullWindow, mode, NotifyPointer, FALSE);
+    	       (void)FocusInEvents(dev, toWin, sprite.win, NullWindow, mode,
+				   NotifyPointer, FALSE);
 	}
 	else
 	{
 	    if (IsParent(toWin, fromWin))
 	    {
-		FocusEvent(FocusOut, mode, NotifyAncestor, fromWin);
-		FocusOutEvents(
-		    fromWin->parent, toWin, mode, NotifyVirtual, FALSE);
-		FocusEvent(FocusIn, mode, NotifyInferior, toWin);
+		FocusEvent(dev, FocusOut, mode, NotifyAncestor, fromWin);
+		FocusOutEvents(dev, fromWin->parent, toWin, mode,
+			       NotifyVirtual, FALSE);
+		FocusEvent(dev, FocusIn, mode, NotifyInferior, toWin);
 		if ((IsParent(toWin, sprite.win)) &&
 			(sprite.win != fromWin) &&
 			(!IsParent(fromWin, sprite.win)) &&
 			(!IsParent(sprite.win, fromWin)))
-		    (void)FocusInEvents(
-			toWin, sprite.win, NullWindow, mode,
-			NotifyPointer, FALSE);
+		    (void)FocusInEvents(dev, toWin, sprite.win, NullWindow,
+					mode, NotifyPointer, FALSE);
 	    }
 	    else
 		if (IsParent(fromWin, toWin))
@@ -2211,12 +2311,12 @@ DoFocusEvents(fromWin, toWin, mode)
 			    (sprite.win != fromWin) &&
 			    (!IsParent(toWin, sprite.win)) &&
 			    (!IsParent(sprite.win, toWin)))
-			FocusOutEvents(
-			    sprite.win, fromWin, mode, NotifyPointer, FALSE);
-		    FocusEvent(FocusOut, mode, NotifyInferior, fromWin);
-		    (void)FocusInEvents(
-			fromWin, toWin, toWin, mode, NotifyVirtual, FALSE);
-		    FocusEvent(FocusIn, mode, NotifyAncestor, toWin);
+			FocusOutEvents(dev, sprite.win, fromWin, mode,
+				       NotifyPointer, FALSE);
+		    FocusEvent(dev, FocusOut, mode, NotifyInferior, fromWin);
+		    (void)FocusInEvents(dev, fromWin, toWin, toWin, mode,
+					NotifyVirtual, FALSE);
+		    FocusEvent(dev, FocusIn, mode, NotifyAncestor, toWin);
 		}
 		else
 		{
@@ -2224,51 +2324,52 @@ DoFocusEvents(fromWin, toWin, mode)
 		    WindowPtr common = CommonAncestor(toWin, fromWin);
 		/* common == NullWindow ==> different screens */
 		    if (IsParent(fromWin, sprite.win))
-			FocusOutEvents(
-			    sprite.win, fromWin, mode, NotifyPointer, FALSE);
-		    FocusEvent(FocusOut, mode, NotifyNonlinear, fromWin);
+			FocusOutEvents(dev, sprite.win, fromWin, mode,
+				       NotifyPointer, FALSE);
+		    FocusEvent(dev, FocusOut, mode, NotifyNonlinear, fromWin);
 		    if (fromWin->parent != NullWindow)
-		      FocusOutEvents(
-			fromWin->parent, common, mode, NotifyNonlinearVirtual,
-			FALSE);
+		      FocusOutEvents(dev, fromWin->parent, common, mode,
+				     NotifyNonlinearVirtual, FALSE);
 		    if (toWin->parent != NullWindow)
-		      (void)FocusInEvents(
-			common, toWin, toWin, mode, NotifyNonlinearVirtual,
-			FALSE);
-		    FocusEvent(FocusIn, mode, NotifyNonlinear, toWin);
+		      (void)FocusInEvents(dev, common, toWin, toWin, mode,
+					  NotifyNonlinearVirtual, FALSE);
+		    FocusEvent(dev, FocusIn, mode, NotifyNonlinear, toWin);
 		    if (IsParent(toWin, sprite.win))
-			(void)FocusInEvents(
-			    toWin, sprite.win, NullWindow, mode,
-			    NotifyPointer, FALSE);
+			(void)FocusInEvents(dev, toWin, sprite.win, NullWindow,
+					    mode, NotifyPointer, FALSE);
 		}
 	}
     }
 }
 
 int
-ProcSetInputFocus(client)
+SetInputFocus(client, dev, focusID, revertTo, ctime, followOK)
     ClientPtr client;
+    DeviceIntPtr dev;
+    Window focusID;
+    char revertTo;
+    Time ctime;
+    Bool followOK;
 {
-    TimeStamp			time;
-    WindowPtr			focusWin;
-    int				mode;
-    register DeviceIntPtr	kbd = inputInfo.keyboard;
-    register FocusPtr		focus = &kbd->u.keybd.focus;
-    REQUEST(xSetInputFocusReq);
+    register FocusClassPtr focus = dev->focus;
+    register WindowPtr focusWin;
+    int mode;
+    TimeStamp time;
 
-    REQUEST_SIZE_MATCH(xSetInputFocusReq);
     UpdateCurrentTime();
-    if ((stuff->revertTo != RevertToParent) &&
-	    (stuff->revertTo != RevertToPointerRoot) &&
-	    (stuff->revertTo != RevertToNone))
+    if ((revertTo != RevertToParent) &&
+	(revertTo != RevertToPointerRoot) &&
+	(revertTo != RevertToNone))
     {
-	client->errorValue = stuff->revertTo;
+	client->errorValue = revertTo;
 	return BadValue;
     }
-    time = ClientTimeToServerTime(stuff->time);
-    if ((stuff->focus == None) || (stuff->focus == PointerRoot))
-	focusWin = (WindowPtr)(stuff->focus);
-    else if (!(focusWin = LookupWindow(stuff->focus, client)))
+    time = ClientTimeToServerTime(ctime);
+    if ((focusID == None) || (focusID == PointerRoot))
+	focusWin = (WindowPtr)focusID;
+    else if ((focusID == FollowKeyboard) && followOK)
+	focusWin = inputInfo.keyboard->focus->win;
+    else if (!(focusWin = LookupWindow(focusID, client)))
 	return BadWindow;
     else
     {
@@ -2278,39 +2379,47 @@ ProcSetInputFocus(client)
 	if(!focusWin->realized)
 	    return(BadMatch);
     }
-
     if ((CompareTimeStamps(time, currentTime) == LATER) ||
-	    (CompareTimeStamps(time, focus->time) == EARLIER))
+	(CompareTimeStamps(time, focus->time) == EARLIER))
 	return Success;
-
-    mode = (kbd->grab) ? NotifyWhileGrabbed : NotifyNormal;
-
-    DoFocusEvents(focus->win, focusWin, mode);
+    mode = (dev->grab) ? NotifyWhileGrabbed : NotifyNormal;
+    DoFocusEvents(dev, focus->win, focusWin, mode);
     focus->time = time;
-    focus->revert = stuff->revertTo;
+    focus->revert = revertTo;
     focus->win = focusWin;
     if ((focusWin == NoneWin) || (focusWin == PointerRootWin))
-        focusTraceGood = 0;
+	focus->traceGood = 0;
     else
     {
-        int depth=0;
-        WindowPtr pWin;
+        int depth = 0;
+	register WindowPtr pWin;
+
         for (pWin = focusWin; pWin; pWin = pWin->parent) depth++;
-        if (depth > focusTraceSize)
+        if (depth > focus->traceSize)
         {
-	    focusTraceSize = depth+1;
-	    focusTrace = (WindowPtr *)xrealloc(
-		    focusTrace, focusTraceSize*sizeof(WindowPtr));
-	    if (!focusTrace)
-		FatalError("could not realloc focusTrace"); /* XXX */
+	    focus->traceSize = depth+1;
+	    focus->trace = (WindowPtr *)xrealloc(focus->trace,
+						 focus->traceSize *
+						 sizeof(WindowPtr));
+	    if (!focus->trace)
+		FatalError("could not realloc focus trace"); /* XXX */
 	}
-
- 	focusTraceGood = depth;
-
-        for (pWin = focusWin; pWin; pWin = pWin->parent, depth--) 
-	    focusTrace[depth-1] = pWin;
+	focus->traceGood = depth;
+        for (pWin = focusWin, depth--; pWin; pWin = pWin->parent, depth--) 
+	    focus->trace[depth] = pWin;
     }
     return Success;
+}
+
+int
+ProcSetInputFocus(client)
+    ClientPtr client;
+{
+    REQUEST(xSetInputFocusReq);
+
+    REQUEST_SIZE_MATCH(xSetInputFocusReq);
+    return SetInputFocus(client, inputInfo.keyboard, stuff->focus,
+			 stuff->revertTo, stuff->time, FALSE);
 }
 
 int
@@ -2319,7 +2428,7 @@ ProcGetInputFocus(client)
 {
     xGetInputFocusReply rep;
     REQUEST(xReq);
-    FocusPtr focus = &(inputInfo.keyboard->u.keybd.focus);
+    FocusClassPtr focus = inputInfo.keyboard->focus;
 
     REQUEST_SIZE_MATCH(xReq);
     rep.type = X_Reply;
@@ -2431,7 +2540,8 @@ ProcGrabPointer(client)
 	tempGrab.keyboardMode = stuff->keyboardMode;
 	tempGrab.pointerMode = stuff->pointerMode;
 	tempGrab.device = inputInfo.pointer;
-	ActivatePointerGrab(inputInfo.pointer, &tempGrab, time, FALSE);
+	(*inputInfo.pointer->ActivateGrab)(inputInfo.pointer, &tempGrab,
+					   time, FALSE);
 	rep.status = GrabSuccess;
     }
     WriteReplyToClient(client, sizeof(xGrabPointerReply), &rep);
@@ -2498,8 +2608,76 @@ ProcUngrabPointer(client)
     if ((CompareTimeStamps(time, currentTime) != LATER) &&
 	    (CompareTimeStamps(time, device->grabTime) != EARLIER) &&
 	    (grab) && SameClient(grab, client))
-	DeactivatePointerGrab(inputInfo.pointer);
+	(*inputInfo.pointer->DeactivateGrab)(inputInfo.pointer);
     return Success;
+}
+
+int
+GrabDevice(client, dev, this_mode, other_mode, grabWindow, ownerEvents, ctime,
+	   mask)
+    register ClientPtr client;
+    register DeviceIntPtr dev;
+    unsigned this_mode;
+    unsigned other_mode;
+    Window grabWindow;
+    unsigned ownerEvents;
+    Time ctime;
+    Mask mask;
+{
+    int status;
+    register WindowPtr pWin;
+    register GrabPtr grab = dev->grab;
+    TimeStamp time;
+
+    UpdateCurrentTime();
+    if ((this_mode != GrabModeSync) && (this_mode != GrabModeAsync))
+    {
+	client->errorValue = this_mode;
+        return -1;
+    }
+    if ((other_mode != GrabModeSync) && (other_mode != GrabModeAsync))
+    {
+	client->errorValue = other_mode;
+        return -1;
+    }
+    if ((ownerEvents != xFalse) && (ownerEvents != xTrue))
+    {
+	client->errorValue = ownerEvents;
+        return -1;
+    }
+    pWin = LookupWindow(grabWindow, client);
+    if (!pWin)
+	return BadWindow;
+    time = ClientTimeToServerTime(ctime);
+    if (grab && !SameClient(grab, client))
+	status = AlreadyGrabbed;
+    else if (!pWin->realized)
+	status = GrabNotViewable;
+    else if ((CompareTimeStamps(time, currentTime) == LATER) ||
+	     (dev->grab &&
+	      (CompareTimeStamps(time, dev->grabTime) == EARLIER)))
+	status = GrabInvalidTime;
+    else if (dev->sync.frozen &&
+	     ((dev->sync.other &&
+	       !SameClient(dev->sync.other, client)) ||
+	     ((dev->sync.state >= FROZEN) &&
+	      !SameClient(dev->grab, client))))
+	status = GrabFrozen;
+    else
+    {
+	GrabRec tempGrab;
+
+	tempGrab.window = pWin;
+	tempGrab.resource = client->clientAsMask;
+	tempGrab.ownerEvents = ownerEvents;
+	tempGrab.keyboardMode = this_mode;
+	tempGrab.pointerMode = other_mode;
+	tempGrab.eventMask = mask;
+	tempGrab.device = dev;
+	(*dev->ActivateGrab)(dev, &tempGrab, time, FALSE);
+	status = GrabSuccess;
+    }
+    return status;
 }
 
 int
@@ -2507,68 +2685,20 @@ ProcGrabKeyboard(client)
     ClientPtr client;
 {
     xGrabKeyboardReply rep;
-    DeviceIntPtr device = inputInfo.keyboard;
-    GrabPtr grab = device->grab;
-    WindowPtr pWin;
-    TimeStamp time;
     REQUEST(xGrabKeyboardReq);
+    int status;
 
     REQUEST_SIZE_MATCH(xGrabKeyboardReq);
-    UpdateCurrentTime();
-    if ((stuff->pointerMode != GrabModeSync) &&
-	(stuff->pointerMode != GrabModeAsync))
-    {
-	client->errorValue = stuff->pointerMode;
-        return BadValue;
-    }
-    if ((stuff->keyboardMode != GrabModeSync) &&
-	(stuff->keyboardMode != GrabModeAsync))
-    {
-	client->errorValue = stuff->keyboardMode;
-        return BadValue;
-    }
-    if ((stuff->ownerEvents != xFalse) && (stuff->ownerEvents != xTrue))
-    {
-	client->errorValue = stuff->ownerEvents;
-        return BadValue;
-    }
-    pWin = LookupWindow(stuff->grabWindow, client);
-    if (!pWin)
-	return BadWindow;
-    time = ClientTimeToServerTime(stuff->time);
+    status = GrabDevice(client, inputInfo.keyboard, stuff->keyboardMode,
+			stuff->pointerMode, stuff->grabWindow,
+			stuff->ownerEvents, stuff->time,
+			KeyPressMask | KeyReleaseMask);
+    if (status < 0)
+	return BadValue;
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
     rep.length = 0;
-    if ((grab) && !SameClient(grab, client))
-	rep.status = AlreadyGrabbed;
-    else if (!pWin->realized)
-	rep.status = GrabNotViewable;
-    else if ((CompareTimeStamps(time, currentTime) == LATER) ||
-	     (device->grab &&
-	     (CompareTimeStamps(time, device->grabTime) == EARLIER)))
-	rep.status = GrabInvalidTime;
-    else if (device->sync.frozen &&
-	     ((device->sync.other &&
-	       !SameClient(device->sync.other, client)) ||
-	     ((device->sync.state >= FROZEN) &&
-	      !SameClient(device->grab, client))))
-	rep.status = GrabFrozen;
-    else
-    {
-	GrabRec tempGrab;
-
-	tempGrab.window = pWin;
-	tempGrab.resource = client->clientAsMask;
-	tempGrab.ownerEvents = stuff->ownerEvents;
-	tempGrab.keyboardMode = stuff->keyboardMode;
-	tempGrab.pointerMode = stuff->pointerMode;
-	tempGrab.eventMask = KeyPressMask | KeyReleaseMask;
-	tempGrab.device = inputInfo.keyboard;
-	ActivateKeyboardGrab(
-	    device, &tempGrab, ClientTimeToServerTime(stuff->time), FALSE);
-	
-	rep.status = GrabSuccess;
-    }
+    rep.status = status;
     WriteReplyToClient(client, sizeof(xGrabKeyboardReply), &rep);
     return Success;
 }
@@ -2588,1170 +2718,7 @@ ProcUngrabKeyboard(client)
     if ((CompareTimeStamps(time, currentTime) != LATER) &&
 	(CompareTimeStamps(time, device->grabTime) != EARLIER) &&
 	(grab) && SameClient(grab, client))
-	DeactivateKeyboardGrab(device);
-    return Success;
-}
-
-static void
-SetPointerStateMasks()
-{
- /* all have to be defined since some button might be mapped here */
-    keyModifiersList[1] = Button1Mask;
-    keyModifiersList[2] = Button2Mask;
-    keyModifiersList[3] = Button3Mask;
-    keyModifiersList[4] = Button4Mask;
-    keyModifiersList[5] = Button5Mask;
-}
-
-static void
-SetKeyboardStateMasks(keybd)
-    DeviceIntPtr keybd;
-{
-    int	i;
-
-    /*
-     *	For all valid keys (from 8 up) copy the bitmap of the modifiers
-     *	it sets from the keyboard info into the array we use internally.
-     *  No need to test for bad entries - these are detected when the
-     *	array in the kbd struct is built.
-     */
-    for (i = 8; i < MAP_LENGTH; i++)
-	keyModifiersList[i] = (CARD16) keybd->u.keybd.modifierMap[i];
-}
-
-DevicePtr
-AddInputDevice(deviceProc, autoStart)
-    DeviceProc deviceProc;
-    Bool autoStart;
-{
-    DeviceIntPtr d;
-    if (inputInfo.numDevices == inputInfo.arraySize)
-    {
-	DeviceIntPtr *ndevs;
-	inputInfo.arraySize += 5;
-	ndevs = (DeviceIntPtr *)xrealloc(
-				   inputInfo.devices,
-				   inputInfo.arraySize * sizeof(DeviceIntPtr));
-	if (!ndevs)
-	    return (DevicePtr)NULL;
-	inputInfo.devices = ndevs;
-    }
-    d = (DeviceIntPtr) xalloc(sizeof(DeviceIntRec));
-    if (!d)
-	return (DevicePtr)NULL;
-    inputInfo.devices[inputInfo.numDevices++] = d;
-    d->public.on = FALSE;
-    d->public.processInputProc = NoopDDA;
-    d->deviceProc = deviceProc;
-    d->startup = autoStart;
-    d->sync.frozen = FALSE;
-    d->sync.other = NullGrab;
-    d->sync.state = NOT_GRABBED;
-    d->grab = NullGrab;
-    bzero((char *)d->down, sizeof(d->down));
-    return &d->public;
-}
-
-DevicesDescriptor
-GetInputDevices()
-{
-    DevicesDescriptor devs;
-    devs.count = inputInfo.numDevices;
-    devs.devices = (DevicePtr *)inputInfo.devices;
-    return devs;
-}
-
-void
-InitEvents()
-{
-    curKeySyms.map = (KeySym *)NULL;
-    curKeySyms.minKeyCode = 0;
-    curKeySyms.maxKeyCode = 0;
-    curKeySyms.mapWidth = 0;
-
-    sprite.hot.pScreen = sprite.hotPhys.pScreen = (ScreenPtr)NULL;
-    inputInfo.numDevices = 0;
-    if (spriteTraceSize == 0)
-    {
-	spriteTraceSize = 32;
-	spriteTrace = (WindowPtr *)xalloc(32*sizeof(WindowPtr));
-	if (!spriteTrace)
-	    FatalError("failed to allocate spriteTrace");
-    }
-    spriteTraceGood = 0;
-    if (focusTraceSize == 0)
-    {
-	focusTraceSize = 32;
-	focusTrace = (WindowPtr *)xalloc(32*sizeof(WindowPtr));
-	if (!focusTrace)
-	    FatalError("failed to allocate focusTrace");
-    }
-    focusTraceGood = 0;
-    lastEventMask = OwnerGrabButtonMask;
-    sprite.win = NullWindow;
-    sprite.current = NullCursor;
-    sprite.hotLimits.x1 = 0;
-    sprite.hotLimits.y1 = 0;
-    sprite.hotLimits.x2 = 0;
-    sprite.hotLimits.y2 = 0;
-    motionHintWindow = NullWindow;
-    syncEvents.replayDev = (DeviceIntPtr)NULL;
-    while (syncEvents.pending)
-    {
-	QdEventPtr next = syncEvents.pending->next;
-	xfree(syncEvents.pending);
-	syncEvents.pending = next;
-    }
-    syncEvents.pendtail = &syncEvents.pending;
-    syncEvents.playingEvents = FALSE;
-    currentTime.months = 0;
-    currentTime.milliseconds = GetTimeInMillis();
-}
-
-int
-InitAndStartDevices(argc, argv)
-    int argc;
-    char *argv[];
-{
-    int     i;
-    DeviceIntPtr d;
-
-    for (i=0; i<8; i++)
-        modifierKeyCount[i] = 0;
-
-    keyButtonState = 0;
-    buttonsDown = 0;
-    buttonMotionMask = 0;
-    filters[MotionNotify] = PointerMotionMask;
-        
-    for (i = 0; i < inputInfo.numDevices; i++)
-    {
-	d = inputInfo.devices[i];
-	if ((*d->deviceProc) (d, DEVICE_INIT, argc, argv) == Success)
-	    d->inited = TRUE;
-	else
-	    d->inited = FALSE;
-    }
- /* do not turn any devices on until all have been inited */
-    for (i = 0; i < inputInfo.numDevices; i++)
-    {
-	d = inputInfo.devices[i];
-	if ((d->startup) && (d->inited))
-	    (*d->deviceProc) (d, DEVICE_ON, argc, argv);
-    }
-    if (inputInfo.pointer && inputInfo.pointer->inited &&
-	    inputInfo.keyboard && inputInfo.keyboard->inited)
-	return Success;
-    return BadImplementation;
-}
-
-void
-CloseDownDevices(argc, argv)
-    int argc;
-    char *argv[];
-{
-    int     		i;
-    DeviceIntPtr	d;
-
-    xfree(curKeySyms.map);
-    curKeySyms.map = (KeySym *)NULL;
-
-    for (i = inputInfo.numDevices - 1; i >= 0; i--)
-    {
-	d = inputInfo.devices[i];
-	if (d->inited)
-	    (*d->deviceProc) (d, DEVICE_CLOSE, argc, argv);
-	inputInfo.numDevices = i;
-	xfree(d);
-    }
-   
-    /* The array inputInfo.devices doesn't need to be freed here since it
-	will be reused when AddInputDevice is called when the server 
-	resets again.*/
-}
-
-int
-NumMotionEvents()
-{
-    return inputInfo.numMotionEvents;
-}
-
-void
-RegisterPointerDevice(device, numMotionEvents)
-    DevicePtr device;
-    int numMotionEvents;
-{
-    inputInfo.pointer = (DeviceIntPtr)device;
-    inputInfo.numMotionEvents = numMotionEvents;
-    device->processInputProc = ProcessPointerEvent;
-}
-
-void
-RegisterKeyboardDevice(device)
-    DevicePtr device;
-{
-    inputInfo.keyboard = (DeviceIntPtr)device;
-    device->processInputProc = ProcessKeyboardEvent;
-}
-
-void
-InitPointerDeviceStruct(device, map, mapLength, motionProc, controlProc)
-    DevicePtr device;
-    BYTE *map;
-    int mapLength;
-    void (*controlProc)();
-    int (*motionProc)();
-{
-    int i;
-    DeviceIntPtr mouse = (DeviceIntPtr)device;
-
-    mouse->grab = NullGrab;
-    mouse->public.on = FALSE;
-    mouse->u.ptr.mapLength = mapLength;
-    mouse->u.ptr.map[0] = 0;
-    for (i = 1; i <= mapLength; i++)
-	mouse->u.ptr.map[i] = map[i];
-    mouse->u.ptr.ctrl = defaultPointerControl;
-    mouse->u.ptr.GetMotionProc = motionProc;
-    mouse->u.ptr.CtrlProc = controlProc;
-    mouse->u.ptr.autoReleaseGrab = FALSE;
-    if (mouse == inputInfo.pointer)
-	SetPointerStateMasks();
-    (*mouse->u.ptr.CtrlProc)(mouse, &mouse->u.ptr.ctrl);
-}
-
-void
-QueryMinMaxKeyCodes(minCode, maxCode)
-    KeyCode *minCode, *maxCode;
-{
-    *minCode = curKeySyms.minKeyCode;
-    *maxCode = curKeySyms.maxKeyCode;
-}
-
-static Bool
-SetKeySymsMap(pKeySyms)
-    KeySymsPtr pKeySyms;
-{
-    int i, j;
-    int rowDif = pKeySyms->minKeyCode - curKeySyms.minKeyCode;
-           /* if keysym map size changes, grow map first */
-
-    if (pKeySyms->mapWidth < curKeySyms.mapWidth)
-    {
-        for (i = pKeySyms->minKeyCode; i <= pKeySyms->maxKeyCode; i++)
-	{
-#define SI(r, c) (((r-pKeySyms->minKeyCode)*pKeySyms->mapWidth) + (c))
-#define DI(r, c) (((r - curKeySyms.minKeyCode)*curKeySyms.mapWidth) + (c))
-	    for (j = 0; j < pKeySyms->mapWidth; j++)
-		curKeySyms.map[DI(i, j)] = pKeySyms->map[SI(i, j)];
-	    for (j = pKeySyms->mapWidth; j < curKeySyms.mapWidth; j++)
-		curKeySyms.map[DI(i, j)] = NoSymbol;
-#undef SI
-#undef DI
-	}
-	return TRUE;
-    }
-    else if (pKeySyms->mapWidth > curKeySyms.mapWidth)
-    {
-        KeySym *map;
-	int bytes = sizeof(KeySym) * pKeySyms->mapWidth *
-               (curKeySyms.maxKeyCode - curKeySyms.minKeyCode + 1);
-        map = (KeySym *)xalloc(bytes);
-	if (!map)
-	    return FALSE;
-	bzero((char *)map, bytes);
-        if (curKeySyms.map)
-	{
-            for (i = 0; i <= curKeySyms.maxKeyCode-curKeySyms.minKeyCode; i++)
-		bcopy(
-		    (char *)&curKeySyms.map[i*curKeySyms.mapWidth],
-		    (char *)&map[i*pKeySyms->mapWidth],
-		    curKeySyms.mapWidth * sizeof(KeySym));
-	    xfree(curKeySyms.map);
-	}
-	curKeySyms.mapWidth = pKeySyms->mapWidth;
-        curKeySyms.map = map;
-    }
-    bcopy(
-	(char *)pKeySyms->map,
-	(char *)&curKeySyms.map[rowDif * curKeySyms.mapWidth],
-	(int)(pKeySyms->maxKeyCode - pKeySyms->minKeyCode + 1) *
-	  curKeySyms.mapWidth * sizeof(KeySym));
-    return TRUE;
-}
-
-static Bool
-InitModMap(modifierMap, pKeyMap, pMax)
-    CARD8 modifierMap[];
-    KeyCode **pKeyMap;
-    CARD8 *pMax;
-{
-    int         i;
-    CARD8	keysPerModifier[8],maxKeysPerMod;
-    KeyCode	*map;
-
-    maxKeysPerMod = 0;
-    bzero((char *)keysPerModifier, sizeof keysPerModifier);
-
-    for (i = 8; i < MAP_LENGTH; i++) {
-	int         j;
-	CARD8       mask;
-
-	for (j = 0, mask = 1; j < 8; j++, mask <<= 1) {
-	    if (mask & modifierMap[i]) {
-		if (++keysPerModifier[j] > maxKeysPerMod) {
-		    maxKeysPerMod = keysPerModifier[j];
-		}
-		if (debug_modifiers)
-		    ErrorF("Key 0x%x modifier %d sequence %d\n",
-			i, j, keysPerModifier[j]);
-	    }
-	}
-    }
-    if (debug_modifiers)
-	ErrorF("Max Keys per Modifier = %d\n", maxKeysPerMod);
-    map = (KeyCode *)xalloc(8*maxKeysPerMod);
-    if (!map && maxKeysPerMod)
-	return (FALSE);
-    xfree(*pKeyMap);
-    *pKeyMap = map;
-    bzero((char *)map, 8*(int)maxKeysPerMod);
-    bzero((char *)keysPerModifier, sizeof keysPerModifier);
-
-    for (i = 8; i < MAP_LENGTH; i++) {
-	int         j;
-	CARD8       mask;
-
-	for (j = 0, mask = 1; j < 8; j++, mask <<= 1) {
-	    if (mask & modifierMap[i]) {
-		if (debug_modifiers)
-		    ErrorF("Key 0x%x modifier %d index %d\n", i, j,
-			   j*maxKeysPerMod+keysPerModifier[j]);
-		map[j*maxKeysPerMod+keysPerModifier[j]] = i;
-		keysPerModifier[j]++;
-	    }
-	}
-    }
-
-    *pMax = maxKeysPerMod;
-    return (TRUE);
-}
-
-void 
-InitKeyboardDeviceStruct(device, pKeySyms, pModifiers,
-			      bellProc, controlProc)
-    DevicePtr device;
-    KeySymsPtr pKeySyms;
-    CARD8	pModifiers[];
-    void (*bellProc)();
-    void (*controlProc)();
-{
-    DeviceIntPtr keybd = (DeviceIntPtr)device;
-
-    keybd->grab = NullGrab;
-    keybd->public.on = FALSE;
-
-    keybd->u.keybd.ctrl = defaultKeyboardControl;
-    keybd->u.keybd.BellProc = bellProc;
-    keybd->u.keybd.CtrlProc = controlProc;
-    keybd->u.keybd.focus.win = PointerRootWin;
-    keybd->u.keybd.focus.revert = None;
-    keybd->u.keybd.focus.time = currentTime;
-    keybd->u.keybd.passiveGrab = FALSE;
-    curKeySyms.minKeyCode = pKeySyms->minKeyCode;
-    curKeySyms.maxKeyCode = pKeySyms->maxKeyCode;
-    /*
-     *	Copy the modifier info into the kdb stuct.
-     */
-    {
-	int i;
-
-	for (i = 8; i < MAP_LENGTH; i++) {
-	    keybd->u.keybd.modifierMap[i] = pModifiers[i];
-	}
-    }
-    if (keybd == inputInfo.keyboard)
-    {
-	if (!InitModMap(pModifiers, &modifierKeyMap, &maxKeysPerModifier))
-	    FatalError("failed to create modifier map");
-	SetKeyboardStateMasks(keybd);
-	if (!SetKeySymsMap(pKeySyms))
-	    FatalError("failed to create keysym map");
-    }
-    (*keybd->u.keybd.CtrlProc)(keybd, &keybd->u.keybd.ctrl);  
-}
-
-void
-InitOtherDeviceStruct(device, map, mapLength)
-    DevicePtr device;
-    BYTE *map;
-    int mapLength;
-{
-    int i;
-    DeviceIntPtr other = (DeviceIntPtr)device;
-
-    other->grab = NullGrab;
-    other->public.on = FALSE;
-    other->u.other.mapLength = mapLength;
-    other->u.other.map[0] =  0;
-    for (i = 1; i <= mapLength; i++)
-	other->u.other.map[i] = map[i];
-    other->u.other.focus.win = NoneWin;
-    other->u.other.focus.revert = None;
-    other->u.other.focus.time = currentTime;
-}
-
-GrabPtr
-SetDeviceGrab(device, grab)
-    DevicePtr device;
-    GrabPtr grab;
-{
-    register DeviceIntPtr dev = (DeviceIntPtr)device;
-    GrabPtr oldGrab = dev->grab;
-    dev->grab = grab; /* must not be deallocated */
-    return oldGrab;
-}
-
-/*
- * Devices can't be resources since the bit patterns don't fit very well.
- * For one, where the client field would be, is random bits and the client
- * object might not be defined. For another, the "server" bit might be on.
- */
-
-#ifdef INPUT_EXTENSION
-
-DevicePtr
-LookupInputDevice(deviceID)
-    Device deviceID;
-{
-    int i;
-    for (i = 0; i < inputInfo.numDevices; i++)
-	if (inputInfo.devices[i]->public.deviceID == deviceID)
-	    return &(inputInfo.devices[i]->public);
-    return NullDevice;
-}
-#endif /* INTPUT_EXTENSION */
-
-DevicePtr
-LookupKeyboardDevice()
-{
-    return &inputInfo.keyboard->public;
-}
-
-DevicePtr
-LookupPointerDevice()
-{
-    return &inputInfo.pointer->public;
-}
-
-
-static int
-SendMappingNotify(request, firstKeyCode, count)
-    CARD8 request, count;
-    KeyCode firstKeyCode;
-{
-    int i;
-    xEvent event;
-
-    event.u.u.type = MappingNotify;
-    event.u.mappingNotify.request = request;
-    if (request == MappingKeyboard)
-    {
-        event.u.mappingNotify.firstKeyCode = firstKeyCode;
-        event.u.mappingNotify.count = count;
-    }
-    /* 0 is the server client */
-    for (i=1; i<currentMaxClients; i++)
-        if (clients[i] && ! clients[i]->clientGone)
-	{
-	    event.u.u.sequenceNumber = clients[i]->sequence;
-            WriteEventsToClient(clients[i], 1, &event);
-	}
-}
-
-/*
- * n-sqared algorithm. n < 255 and don't want to copy the whole thing and
- * sort it to do the checking. How often is it called? Just being lazy?
- */
-static Bool
-BadDeviceMap(buff, length, low, high, errval)
-    register BYTE *buff;
-    int length;
-    unsigned low, high;
-    XID *errval;
-{
-    register int     i, j;
-
-    for (i = 0; i < length; i++)
-	if (buff[i])		       /* only check non-zero elements */
-	{
-	    if ((low > buff[i]) || (high < buff[i]))
-	    {
-		*errval = buff[i];
-		return TRUE;
-	    }
-	    for (j = i + 1; j < length; j++)
-		if (buff[i] == buff[j])
-		{
-		    *errval = buff[i];
-		    return TRUE;
-		}
-	}
-    return FALSE;
-}
-
-static Bool
-AllModifierKeysAreUp(map1, per1, map2, per2)
-    register CARD8 *map1, *map2;
-    int per1, per2;
-{
-    register int i, j, k;
-
-    for (i = 8; --i >= 0; map2 += per2)
-    {
-	for (j = per1; --j >= 0; map1++)
-	{
-	    if (*map1 && IsOn(inputInfo.keyboard->down, *map1))
-	    {
-		for (k = per2; (--k >= 0) && (*map1 != map2[k]);)
-		  ;
-		if (k < 0)
-		    return FALSE;
-	    }
-	}
-    }
-    return TRUE;
-}
-
-int 
-ProcSetModifierMapping(client)
-    ClientPtr client;
-{
-    xSetModifierMappingReply rep;
-    REQUEST(xSetModifierMappingReq);
-    KeyCode *inputMap;
-    int inputMapLen;
-    register int i;
-    
-    REQUEST_AT_LEAST_SIZE(xSetModifierMappingReq);
-
-    if (stuff->length != ((stuff->numKeyPerModifier<<1) +
-			  (sizeof (xSetModifierMappingReq)>>2)))
-	return BadLength;
-
-    inputMapLen = 8*stuff->numKeyPerModifier;
-    inputMap = (KeyCode *)&stuff[1];
-
-    /*
-     *	Now enforce the restriction that "all of the non-zero keycodes must be
-     *	in the range specified by min-keycode and max-keycode in the
-     *	connection setup (else a Value error)"
-     */
-    i = inputMapLen;
-    while (i--) {
-	if (inputMap[i]
-	    && (inputMap[i] < curKeySyms.minKeyCode
-		|| inputMap[i] > curKeySyms.maxKeyCode)) {
-		client->errorValue = inputMap[i];
-		return BadValue;
-		}
-    }
-    rep.type = X_Reply;
-    rep.length = 0;
-    rep.sequenceNumber = client->sequence;
-    rep.success = MappingSuccess;
-
-    /*
-     *	Now enforce the restriction that none of the old or new
-     *	modifier keys may be down while we change the mapping,  and
-     *	that the DDX layer likes the choice.
-     */
-    if (!AllModifierKeysAreUp(modifierKeyMap, (int)maxKeysPerModifier,
-			      inputMap, (int)stuff->numKeyPerModifier)
-	    ||
-	!AllModifierKeysAreUp(inputMap, (int)stuff->numKeyPerModifier,
-			      modifierKeyMap, (int)maxKeysPerModifier)) {
-	if (debug_modifiers)
-	    ErrorF("Busy\n");
-	rep.success = MappingBusy;
-    } else {
-	for (i = 0; i < inputMapLen; i++) {
-	    if (inputMap[i] && !LegalModifier(inputMap[i])) {
-		if (debug_modifiers)
-		    ErrorF("Key 0x%x refused\n", inputMap[i]);
-		rep.success = MappingFailed;
-		break;
-	    }
-	}
-    }
-
-    if (rep.success == MappingSuccess)
-    {
-	KeyCode *map;
-	/*
-	 *	Now build the keyboard's modifier bitmap from the
-	 *	list of keycodes.
-	 */
-	map = (KeyCode *)xalloc(inputMapLen);
-	if (!map)
-	    return BadAlloc;
-	if (modifierKeyMap)
-	    xfree(modifierKeyMap);
-	modifierKeyMap = map;
-	bcopy((char *)inputMap, (char *)modifierKeyMap, inputMapLen);
-
-	maxKeysPerModifier = stuff->numKeyPerModifier;
-	for (i = 0; i < MAP_LENGTH; i++)
-	    inputInfo.keyboard->u.keybd.modifierMap[i] = 0;
-	for (i = 0; i < inputMapLen; i++) if (inputMap[i]) {
-	    inputInfo.keyboard->u.keybd.modifierMap[inputMap[i]]
-	      |= (1<<(i/maxKeysPerModifier));
-	    if (debug_modifiers)
-		ErrorF("Key 0x%x mod %d\n", inputMap[i], i/maxKeysPerModifier);
-	}
-    }
-
-    WriteReplyToClient(client, sizeof(xSetModifierMappingReply), &rep);
-
-    if (rep.success == MappingSuccess)
-    {
-	SetKeyboardStateMasks(inputInfo.keyboard);
-        SendMappingNotify(MappingModifier, 0, 0);
-    }
-    return(client->noClientException);
-}
-
-int
-ProcGetModifierMapping(client)
-    ClientPtr client;
-{
-    xGetModifierMappingReply rep;
-    REQUEST(xReq);
-
-    REQUEST_SIZE_MATCH(xReq);
-    rep.type = X_Reply;
-    rep.numKeyPerModifier = maxKeysPerModifier;
-    rep.sequenceNumber = client->sequence;
-    /* length counts 4 byte quantities - there are 8 modifiers 1 byte big */
-    rep.length = 2*maxKeysPerModifier;
-
-    WriteReplyToClient(client, sizeof(xGetModifierMappingReply), &rep);
-
-    /* Reply with the (modified by DDX) map that SetModifierMapping passed in */
-    (void)WriteToClient(client, (int)(8*maxKeysPerModifier),
-			(char *)modifierKeyMap);
-    return client->noClientException;
-}
-
-int
-ProcChangeKeyboardMapping(client)
-    ClientPtr client;
-{
-    REQUEST(xChangeKeyboardMappingReq);
-    unsigned len;
-    KeySymsRec keysyms;
-
-    REQUEST_AT_LEAST_SIZE(xChangeKeyboardMappingReq);
-
-    len = stuff->length - (sizeof(xChangeKeyboardMappingReq) >> 2);  
-    if (len != (stuff->keyCodes * stuff->keySymsPerKeyCode))
-            return BadLength;
-    if ((stuff->firstKeyCode < curKeySyms.minKeyCode) ||
-	(stuff->firstKeyCode + stuff->keyCodes - 1 > curKeySyms.maxKeyCode))
-    {
-	    client->errorValue = stuff->firstKeyCode;
-	    return BadValue;
-    }
-    if (stuff->keySymsPerKeyCode == 0)
-    {
-	    client->errorValue = 0;
-            return BadValue;
-    }
-    keysyms.minKeyCode = stuff->firstKeyCode;
-    keysyms.maxKeyCode = stuff->firstKeyCode + stuff->keyCodes - 1;
-    keysyms.mapWidth = stuff->keySymsPerKeyCode;
-    keysyms.map = (KeySym *)&stuff[1];
-    if (!SetKeySymsMap(&keysyms))
-	return BadAlloc;
-    SendMappingNotify(MappingKeyboard, stuff->firstKeyCode, stuff->keyCodes);
-    return client->noClientException;
-
-}
-
-int
-ProcSetPointerMapping(client)
-    ClientPtr client;
-{
-    REQUEST(xSetPointerMappingReq);
-    BYTE *map;
-    xSetPointerMappingReply rep;
-    register int i;
-
-    REQUEST_AT_LEAST_SIZE(xSetPointerMappingReq);
-    if (stuff->length != (sizeof(xSetPointerMappingReq) + stuff->nElts + 3)>>2)
-	return BadLength;
-    rep.type = X_Reply;
-    rep.length = 0;
-    rep.sequenceNumber = client->sequence;
-    rep.success = MappingSuccess;
-    map = (BYTE *)&stuff[1];
-    if (stuff->nElts != inputInfo.pointer->u.ptr.mapLength)
-    {
-	client->errorValue = stuff->nElts;
-	return BadValue;
-    }
-    if (BadDeviceMap(&map[0], (int)stuff->nElts, 1, 255, &client->errorValue))
-	return BadValue;
-    for (i=0; i < stuff->nElts; i++)
-	if ((inputInfo.pointer->u.ptr.map[i + 1] != map[i]) &&
-		IsOn(inputInfo.pointer->down, i + 1))
-	{
-    	    rep.success = MappingBusy;
-	    WriteReplyToClient(client, sizeof(xSetPointerMappingReply), &rep);
-            return Success;
-	}
-    for (i = 0; i < stuff->nElts; i++)
-	inputInfo.pointer->u.ptr.map[i + 1] = map[i];
-    WriteReplyToClient(client, sizeof(xSetPointerMappingReply), &rep);
-    SendMappingNotify(MappingPointer, 0, 0);
-    return Success;
-}
-
-int
-ProcGetKeyboardMapping(client)
-    ClientPtr client;
-{
-    xGetKeyboardMappingReply rep;
-    REQUEST(xGetKeyboardMappingReq);
-
-    REQUEST_SIZE_MATCH(xGetKeyboardMappingReq);
-
-    if ((stuff->firstKeyCode < curKeySyms.minKeyCode) ||
-        (stuff->firstKeyCode > curKeySyms.maxKeyCode))
-    {
-	client->errorValue = stuff->firstKeyCode;
-	return BadValue;
-    }
-    if (stuff->firstKeyCode + stuff->count > curKeySyms.maxKeyCode + 1)
-    {
-	client->errorValue = stuff->count;
-        return BadValue;
-    }
-
-    rep.type = X_Reply;
-    rep.sequenceNumber = client->sequence;
-    rep.keySymsPerKeyCode = curKeySyms.mapWidth;
-/* length is a count of 4 byte quantities and KeySyms are 4 bytes */
-    rep.length = (curKeySyms.mapWidth * stuff->count);
-    WriteReplyToClient(client, sizeof(xGetKeyboardMappingReply), &rep);
-    client->pSwapReplyFunc = CopySwap32Write;
-    WriteSwappedDataToClient(
-	client,
-	curKeySyms.mapWidth * stuff->count * sizeof(KeySym),
-	&curKeySyms.map[(stuff->firstKeyCode - curKeySyms.minKeyCode) *
-			curKeySyms.mapWidth]);
-
-    return client->noClientException;
-}
-
-int
-ProcGetPointerMapping(client)
-    ClientPtr client;
-{
-    xGetPointerMappingReply rep;
-    REQUEST(xReq);
-
-    REQUEST_SIZE_MATCH(xReq);
-    rep.type = X_Reply;
-    rep.sequenceNumber = client->sequence;
-    rep.nElts = inputInfo.pointer->u.ptr.mapLength;
-    rep.length = (rep.nElts + (4-1))/4;
-    WriteReplyToClient(client, sizeof(xGetPointerMappingReply), &rep);
-    (void)WriteToClient(client, (int)rep.nElts,
-			(char *)&inputInfo.pointer->u.ptr.map[1]);
-    return Success;    
-}
-
-int
-Ones(mask)                /* HACKMEM 169 */
-    Mask mask;
-{
-    register Mask y;
-
-    y = (mask >> 1) &033333333333;
-    y = mask - y - ((y >>1) & 033333333333);
-    return (((y + (y >> 3)) & 030707070707) % 077);
-}
-
-void
-NoteLedState(keybd, led, on)
-    DeviceIntPtr keybd;
-    int		led;
-    Bool	on;
-{
-    KeybdCtrl *ctrl = &keybd->u.keybd.ctrl;
-    if (on)
-	ctrl->leds |= ((Leds)1 << (led - 1));
-    else
-	ctrl->leds &= ~((Leds)1 << (led - 1));
-}
-
-int
-ProcChangeKeyboardControl (client)
-    ClientPtr client;
-{
-#define DO_ALL    (-1)
-    KeybdCtrl ctrl;
-    DeviceIntPtr keybd = inputInfo.keyboard;
-    XID *vlist;
-    int t;
-    int led = DO_ALL;
-    int key = DO_ALL;
-    BITS32 vmask, index;
-    int mask, i;
-    REQUEST(xChangeKeyboardControlReq);
-
-    REQUEST_AT_LEAST_SIZE(xChangeKeyboardControlReq);
-    vmask = stuff->mask;
-    if (stuff->length !=(sizeof(xChangeKeyboardControlReq)>>2) + Ones(vmask))
-	return BadLength;
-    vlist = (XID *)&stuff[1];		/* first word of values */
-    ctrl = keybd->u.keybd.ctrl;
-    while (vmask)
-    {
-	index = (BITS32) lowbit (vmask);
-	vmask &= ~index;
-	switch (index)
-	{
-	case KBKeyClickPercent: 
-	    t = (INT8)*vlist;
-	    vlist++;
-	    if (t == -1)
-		t = defaultKeyboardControl.click;
-	    else if (t < 0 || t > 100)
-	    {
-		client->errorValue = t;
-		return BadValue;
-	    }
-	    ctrl.click = t;
-	    break;
-	case KBBellPercent:
-	    t = (INT8)*vlist;
-	    vlist++;
-	    if (t == -1)
-		t = defaultKeyboardControl.bell;
-	    else if (t < 0 || t > 100)
-	    {
-		client->errorValue = t;
-		return BadValue;
-	    }
-	    ctrl.bell = t;
-	    break;
-	case KBBellPitch:
-	    t = (INT16)*vlist;
-	    vlist++;
-	    if (t == -1)
-		t = defaultKeyboardControl.bell_pitch;
-	    else if (t < 0)
-	    {
-		client->errorValue = t;
-		return BadValue;
-	    }
-	    ctrl.bell_pitch = t;
-	    break;
-	case KBBellDuration:
-	    t = (INT16)*vlist;
-	    vlist++;
-	    if (t == -1)
-		t = defaultKeyboardControl.bell_duration;
-	    else if (t < 0)
-	    {
-		client->errorValue = t;
-		return BadValue;
-	    }
-	    ctrl.bell_duration = t;
-	    break;
-	case KBLed:
-	    led = (CARD8)*vlist;
-	    vlist++;
-	    if (led < 1 || led > 32)
-	    {
-		client->errorValue = led;
-		return BadValue;
-	    }
-	    if (!(stuff->mask & KBLedMode))
-		return BadMatch;
-	    break;
-	case KBLedMode:
-	    t = (CARD8)*vlist;
-	    vlist++;
-	    if (t == LedModeOff)
-	    {
-		if (led == DO_ALL)
-		    ctrl.leds = 0x0;
-		else
-		    ctrl.leds &= ~(((Leds)(1)) << (led - 1));
-	    }
-	    else if (t == LedModeOn)
-	    {
-		if (led == DO_ALL)
-		    ctrl.leds = ~0L;
-		else
-		    ctrl.leds |= (((Leds)(1)) << (led - 1));
-	    }
-	    else
-	    {
-		client->errorValue = t;
-		return BadValue;
-	    }
-	    break;
-	case KBKey:
-	    key = (KeyCode)*vlist;
-	    vlist++;
-	    if (key < 8 || key > 255)
-	    {
-		client->errorValue = key;
-		return BadValue;
-	    }
-	    if (!(stuff->mask & KBAutoRepeatMode))
-		return BadMatch;
-	    break;
-	case KBAutoRepeatMode:
-	    i = (key >> 3);
-	    mask = (1 << (key & 7));
-	    t = (CARD8)*vlist;
-	    vlist++;
-	    if (t == AutoRepeatModeOff)
-	    {
-		if (key == DO_ALL)
-		    ctrl.autoRepeat = FALSE;
-		else
-		    ctrl.autoRepeats[i] &= ~mask;
-	    }
-	    else if (t == AutoRepeatModeOn)
-	    {
-		if (key == DO_ALL)
-		    ctrl.autoRepeat = TRUE;
-		else
-		    ctrl.autoRepeats[i] |= mask;
-	    }
-	    else if (t == AutoRepeatModeDefault)
-	    {
-		if (key == DO_ALL)
-		    ctrl.autoRepeat = defaultKeyboardControl.autoRepeat;
-		else
-		    ctrl.autoRepeats[i] &= ~mask;
-		    ctrl.autoRepeats[i] =
-			    (ctrl.autoRepeats[i] & ~mask) |
-			    (defaultKeyboardControl.autoRepeats[i] & mask);
-	    }
-	    else
-	    {
-		client->errorValue = t;
-		return BadValue;
-	    }
-	    break;
-	default:
-	    client->errorValue = stuff->mask;
-	    return BadValue;
-	}
-    }
-    keybd->u.keybd.ctrl = ctrl;
-    (*keybd->u.keybd.CtrlProc)(keybd, &keybd->u.keybd.ctrl);
-    return Success;
-#undef DO_ALL
-} 
-
-int
-ProcGetKeyboardControl (client)
-    ClientPtr client;
-{
-    int i;
-    DeviceIntPtr keybd = inputInfo.keyboard;
-    xGetKeyboardControlReply rep;
-    REQUEST(xReq);
-
-    REQUEST_SIZE_MATCH(xReq);
-    rep.type = X_Reply;
-    rep.length = 5;
-    rep.sequenceNumber = client->sequence;
-    rep.globalAutoRepeat = keybd->u.keybd.ctrl.autoRepeat;
-    rep.keyClickPercent = keybd->u.keybd.ctrl.click;
-    rep.bellPercent = keybd->u.keybd.ctrl.bell;
-    rep.bellPitch = keybd->u.keybd.ctrl.bell_pitch;
-    rep.bellDuration = keybd->u.keybd.ctrl.bell_duration;
-    rep.ledMask = keybd->u.keybd.ctrl.leds;
-    for (i = 0; i < 32; i++)
-	rep.map[i] = keybd->u.keybd.ctrl.autoRepeats[i];
-    WriteReplyToClient(client, sizeof(xGetKeyboardControlReply), &rep);
-    return Success;
-} 
-
-int
-ProcBell(client)
-    ClientPtr client;
-{
-    register DeviceIntPtr keybd = inputInfo.keyboard;
-    int base = keybd->u.keybd.ctrl.bell;
-    int newpercent;
-    REQUEST(xBellReq);
-    REQUEST_SIZE_MATCH(xBellReq);
-    if (stuff->percent < -100 || stuff->percent > 100)
-    {
-	client->errorValue = stuff->percent;
-	return BadValue;
-    }
-    newpercent = (base * stuff->percent) / 100;
-    if (stuff->percent < 0)
-        newpercent = base + newpercent;
-    else
-    	newpercent = base - newpercent + stuff->percent;
-    (*keybd->u.keybd.BellProc)(newpercent, keybd);
-    return Success;
-} 
-
-int
-ProcChangePointerControl(client)
-    ClientPtr client;
-{
-    DeviceIntPtr mouse = inputInfo.pointer;
-    PtrCtrl ctrl;		/* might get BadValue part way through */
-    REQUEST(xChangePointerControlReq);
-
-    REQUEST_SIZE_MATCH(xChangePointerControlReq);
-    ctrl = mouse->u.ptr.ctrl;
-    if (stuff->doAccel)
-    {
-	if (stuff->accelNum == -1)
-	    ctrl.num = defaultPointerControl.num;
-	else if (stuff->accelNum < 0)
-	{
-	    client->errorValue = stuff->accelNum;
-	    return BadValue;
-	}
-	else ctrl.num = stuff->accelNum;
-	if (stuff->accelDenum == -1)
-	    ctrl.den = defaultPointerControl.den;
-	else if (stuff->accelDenum <= 0)
-	{
-	    client->errorValue = stuff->accelDenum;
-	    return BadValue;
-	}
-	else ctrl.den = stuff->accelDenum;
-    }
-    if (stuff->doThresh)
-    {
-	if (stuff->threshold == -1)
-	    ctrl.threshold = defaultPointerControl.threshold;
-	else if (stuff->threshold < 0)
-	{
-	    client->errorValue = stuff->threshold;
-	    return BadValue;
-	}
-	else ctrl.threshold = stuff->threshold;
-    }
-    mouse->u.ptr.ctrl = ctrl;
-    (*mouse->u.ptr.CtrlProc)(mouse, &mouse->u.ptr.ctrl);
-    return Success;
-} 
-
-int
-ProcGetPointerControl(client)
-    ClientPtr client;
-{
-    register DeviceIntPtr mouse = inputInfo.pointer;
-    REQUEST(xReq);
-    xGetPointerControlReply rep;
-
-    REQUEST_SIZE_MATCH(xReq);
-    rep.type = X_Reply;
-    rep.length = 0;
-    rep.sequenceNumber = client->sequence;
-    rep.threshold = mouse->u.ptr.ctrl.threshold;
-    rep.accelNumerator = mouse->u.ptr.ctrl.num;
-    rep.accelDenominator = mouse->u.ptr.ctrl.den;
-    WriteReplyToClient(client, sizeof(xGenericReply), &rep);
-    return Success;
-}
-
-static void
-MaybeStopHint(client)
-    ClientPtr client;
-{
-    GrabPtr grab = inputInfo.pointer->grab;
-
-    if ((grab && SameClient(grab, client) &&
-	 ((grab->eventMask & PointerMotionHintMask) ||
-	  (grab->ownerEvents &&
-	   (EventMaskForClient(motionHintWindow, client) &
-	    PointerMotionHintMask)))) ||
-	(!grab && (EventMaskForClient(motionHintWindow, client) &
-		   PointerMotionHintMask)))
-	motionHintWindow = NullWindow;
-}
-
-int
-ProcGetMotionEvents(client)
-    ClientPtr client;
-{
-    WindowPtr pWin;
-    xTimecoord * coords;
-    xGetMotionEventsReply rep;
-    int     i, count, xmin, xmax, ymin, ymax;
-    unsigned long nEvents;
-    DeviceIntPtr mouse = inputInfo.pointer;
-    TimeStamp start, stop;
-    REQUEST(xGetMotionEventsReq);
-
-    REQUEST_SIZE_MATCH(xGetMotionEventsReq);
-    pWin = LookupWindow(stuff->window, client);
-    if (!pWin)
-	return BadWindow;
-    if (motionHintWindow)
-	MaybeStopHint(client);
-    rep.type = X_Reply;
-    rep.sequenceNumber = client->sequence;
-    nEvents = 0;
-    start = ClientTimeToServerTime(stuff->start);
-    stop = ClientTimeToServerTime(stuff->stop);
-    if ((CompareTimeStamps(start, stop) != LATER) &&
-	(CompareTimeStamps(start, currentTime) != LATER) &&
-	inputInfo.numMotionEvents)
-    {
-	if (CompareTimeStamps(stop, currentTime) == LATER)
-	    stop = currentTime;
-	coords = (xTimecoord *) ALLOCATE_LOCAL(
-		inputInfo.numMotionEvents * sizeof(xTimecoord));
-	if (!coords)
-	    return BadAlloc;
-	count = (*mouse->u.ptr.GetMotionProc) (
-		mouse, coords, start.milliseconds, stop.milliseconds,
-		pWin->drawable.pScreen);
-	xmin = pWin->drawable.x - wBorderWidth (pWin);
-	xmax = pWin->drawable.x + (int)pWin->drawable.width +
-		wBorderWidth (pWin);
-	ymin = pWin->drawable.y - wBorderWidth (pWin);
-	ymax = pWin->drawable.y + (int)pWin->drawable.height +
-		wBorderWidth (pWin);
-	for (i = 0; i < count; i++)
-	    if ((xmin <= coords[i].x) && (coords[i].x < xmax) &&
-		    (ymin <= coords[i].y) && (coords[i].y < ymax))
-	    {
-		coords[nEvents].x = coords[i].x - pWin->drawable.x;
-		coords[nEvents].y = coords[i].y - pWin->drawable.y;
-		nEvents++;
-	    }
-    }
-    rep.length = nEvents * (sizeof(xTimecoord) >> 2);
-    rep.nEvents = nEvents;
-    WriteReplyToClient(client, sizeof(xGetMotionEventsReply), &rep);
-    if (nEvents)
-    {
-	client->pSwapReplyFunc = SwapTimeCoordWrite;
-	WriteSwappedDataToClient(client, nEvents * sizeof(xTimecoord),
-				 (char *)coords);
-	DEALLOCATE_LOCAL(coords);
-    }
+	(*device->DeactivateGrab)(device);
     return Success;
 }
 
@@ -3762,16 +2729,17 @@ ProcQueryPointer(client)
     xQueryPointerReply rep;
     WindowPtr pWin, t;
     REQUEST(xResourceReq);
+    DeviceIntPtr mouse = inputInfo.pointer;
 
     REQUEST_SIZE_MATCH(xResourceReq);
     pWin = LookupWindow(stuff->id, client);
     if (!pWin)
 	return BadWindow;
-    if (motionHintWindow)
-	MaybeStopHint(client);
+    if (mouse->valuator->motionHintWindow)
+	MaybeStopHint(mouse, client);
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
-    rep.mask = keyButtonState;
+    rep.mask = mouse->button->state | inputInfo.keyboard->key->state;
     rep.length = 0;
     rep.root = (ROOT)->drawable.id;
     rep.rootX = sprite.hot.x;
@@ -3800,26 +2768,44 @@ ProcQueryPointer(client)
     return(Success);    
 }
 
-int
-ProcQueryKeymap(client)
-    ClientPtr client;
+void
+InitEvents()
 {
-    xQueryKeymapReply rep;
-    int i;
-
-    rep.type = X_Reply;
-    rep.sequenceNumber = client->sequence;
-    rep.length = 2;
-    for (i = 0; i<32; i++)
-	rep.map[i] = inputInfo.keyboard->down[i];
-    WriteReplyToClient(client, sizeof(xQueryKeymapReply), &rep);
-    return Success;
+    sprite.hot.pScreen = sprite.hotPhys.pScreen = (ScreenPtr)NULL;
+    inputInfo.numDevices = 0;
+    inputInfo.devices = (DeviceIntPtr)NULL;
+    inputInfo.off_devices = (DeviceIntPtr)NULL;
+    inputInfo.keyboard = (DeviceIntPtr)NULL;
+    inputInfo.pointer = (DeviceIntPtr)NULL;
+    if (spriteTraceSize == 0)
+    {
+	spriteTraceSize = 32;
+	spriteTrace = (WindowPtr *)xalloc(32*sizeof(WindowPtr));
+	if (!spriteTrace)
+	    FatalError("failed to allocate spriteTrace");
+    }
+    spriteTraceGood = 0;
+    lastEventMask = OwnerGrabButtonMask;
+    filters[MotionNotify] = PointerMotionMask;
+    sprite.win = NullWindow;
+    sprite.current = NullCursor;
+    sprite.hotLimits.x1 = 0;
+    sprite.hotLimits.y1 = 0;
+    sprite.hotLimits.x2 = 0;
+    sprite.hotLimits.y2 = 0;
+    syncEvents.replayDev = (DeviceIntPtr)NULL;
+    while (syncEvents.pending)
+    {
+	QdEventPtr next = syncEvents.pending->next;
+	xfree(syncEvents.pending);
+	syncEvents.pending = next;
+    }
+    syncEvents.pendtail = &syncEvents.pending;
+    syncEvents.playingEvents = FALSE;
+    currentTime.months = 0;
+    currentTime.milliseconds = GetTimeInMillis();
 }
 
-/* This define is taken from extension.c and must be consistent with it.
-	This is probably not the best programming practice. PRH */
-
-#define EXTENSION_EVENT_BASE  64
 int
 ProcSendEvent(client)
     ClientPtr client;
@@ -3851,7 +2837,7 @@ ProcSendEvent(client)
 	pWin = sprite.win;
     else if (stuff->destination == InputFocus)
     {
-	WindowPtr inputFocus = inputInfo.keyboard->u.keybd.focus.win;
+	WindowPtr inputFocus = inputInfo.keyboard->focus->win;
 
 	if (inputFocus == NoneWin)
 	    return Success;
@@ -3883,8 +2869,8 @@ ProcSendEvent(client)
     {
 	for (;pWin; pWin = pWin->parent)
 	{
-	    if (DeliverEventsToWindow(
-			pWin, &stuff->event, 1, stuff->eventMask, NullGrab))
+	    if (DeliverEventsToWindow(pWin, &stuff->event, 1, stuff->eventMask,
+				      NullGrab, 0))
 		return Success;
 	    if (pWin == effectiveFocus)
 		return Success;
@@ -3892,8 +2878,8 @@ ProcSendEvent(client)
 	}
     }
     else
-	(void)DeliverEventsToWindow(
-	    pWin, &stuff->event, 1, stuff->eventMask, NullGrab);
+	(void)DeliverEventsToWindow(pWin, &stuff->event, 1, stuff->eventMask,
+				    NullGrab, 0);
     return Success;
 }
 
@@ -3903,7 +2889,7 @@ ProcUngrabKey(client)
 {
     REQUEST(xUngrabKeyReq);
     WindowPtr pWin;
-    GrabRec temporaryGrab;
+    GrabRec tempGrab;
 
     REQUEST_SIZE_MATCH(xUngrabKeyReq);
     pWin = LookupWindow(stuff->grabWindow, client);
@@ -3916,15 +2902,17 @@ ProcUngrabKey(client)
 	return BadValue;
     }
 
-    temporaryGrab.resource = client->clientAsMask;
-    temporaryGrab.device = inputInfo.keyboard;
-    temporaryGrab.window = pWin;
-    temporaryGrab.modifiersDetail.exact = stuff->modifiers;
-    temporaryGrab.modifiersDetail.pMask = NULL;
-    temporaryGrab.detail.exact = stuff->key;
-    temporaryGrab.detail.pMask = NULL;
+    tempGrab.resource = client->clientAsMask;
+    tempGrab.device = inputInfo.keyboard;
+    tempGrab.window = pWin;
+    tempGrab.modifiersDetail.exact = stuff->modifiers;
+    tempGrab.modifiersDetail.pMask = NULL;
+    tempGrab.modifierDevice = inputInfo.keyboard;
+    tempGrab.type = KeyPress;
+    tempGrab.detail.exact = stuff->key;
+    tempGrab.detail.pMask = NULL;
 
-    if (!DeletePassiveGrabFromList(&temporaryGrab))
+    if (!DeletePassiveGrabFromList(&tempGrab))
 	return(BadAlloc);
     return(Success);
 }
@@ -3936,6 +2924,7 @@ ProcGrabKey(client)
     WindowPtr pWin;
     REQUEST(xGrabKeyReq);
     GrabPtr grab;
+    DeviceIntPtr keybd = inputInfo.keyboard;
 
     REQUEST_SIZE_MATCH(xGrabKeyReq);
     if ((stuff->pointerMode != GrabModeSync) &&
@@ -3950,7 +2939,8 @@ ProcGrabKey(client)
 	client->errorValue = stuff->keyboardMode;
         return BadValue;
     }
-    if (((stuff->key > curKeySyms.maxKeyCode) || (stuff->key < curKeySyms.minKeyCode))
+    if (((stuff->key > keybd->key->curKeySyms.maxKeyCode) ||
+	 (stuff->key < keybd->key->curKeySyms.minKeyCode))
 	&& (stuff->key != AnyKey))
     {
 	client->errorValue = stuff->key;
@@ -3966,10 +2956,10 @@ ProcGrabKey(client)
     if (!pWin)
 	return BadWindow;
 
-    grab = CreateGrab(client->index, inputInfo.keyboard, pWin, 
+    grab = CreateGrab(client->index, keybd, pWin, 
 	(Mask)(KeyPressMask | KeyReleaseMask), (Bool)stuff->ownerEvents,
 	(Bool)stuff->keyboardMode, (Bool)stuff->pointerMode,
-	stuff->modifiers, stuff->key, NullWindow, NullCursor);
+	keybd, stuff->modifiers, KeyPress, stuff->key, NullWindow, NullCursor);
     if (!grab)
 	return BadAlloc;
     return AddPassiveGrabToList(grab);
@@ -4041,8 +3031,8 @@ ProcGrabButton(client)
 			       ButtonPressMask | ButtonReleaseMask) :
 			(Mask)stuff->eventMask,
 	(Bool)stuff->ownerEvents, (Bool) stuff->keyboardMode,
-	(Bool)stuff->pointerMode, stuff->modifiers, stuff->button,
-	confineTo, cursor);
+	(Bool)stuff->pointerMode, inputInfo.keyboard, stuff->modifiers,
+	ButtonPress, stuff->button, confineTo, cursor);
     if (!grab)
 	return BadAlloc;
     return AddPassiveGrabToList(grab);
@@ -4054,7 +3044,7 @@ ProcUngrabButton(client)
 {
     REQUEST(xUngrabButtonReq);
     WindowPtr pWin;
-    GrabRec temporaryGrab;
+    GrabRec tempGrab;
 
     REQUEST_SIZE_MATCH(xUngrabButtonReq);
     if ((stuff->modifiers != AnyModifier) &&
@@ -4067,15 +3057,17 @@ ProcUngrabButton(client)
     if (!pWin)
 	return BadWindow;
 
-    temporaryGrab.resource = client->clientAsMask;
-    temporaryGrab.device = inputInfo.pointer;
-    temporaryGrab.window = pWin;
-    temporaryGrab.modifiersDetail.exact = stuff->modifiers;
-    temporaryGrab.modifiersDetail.pMask = NULL;
-    temporaryGrab.detail.exact = stuff->button;
-    temporaryGrab.detail.pMask = NULL;
+    tempGrab.resource = client->clientAsMask;
+    tempGrab.device = inputInfo.pointer;
+    tempGrab.window = pWin;
+    tempGrab.modifiersDetail.exact = stuff->modifiers;
+    tempGrab.modifiersDetail.pMask = NULL;
+    tempGrab.modifierDevice = inputInfo.keyboard;
+    tempGrab.type = ButtonPress;
+    tempGrab.detail.exact = stuff->button;
+    tempGrab.detail.pMask = NULL;
 
-    if (!DeletePassiveGrabFromList(&temporaryGrab))
+    if (!DeletePassiveGrabFromList(&tempGrab))
 	return(BadAlloc);
     return(Success);
 }
@@ -4086,8 +3078,9 @@ DeleteWindowFromAnyEvents(pWin, freeResources)
     Bool		freeResources;
 {
     WindowPtr		parent;
-    FocusPtr		focus = &inputInfo.keyboard->u.keybd.focus;
     DeviceIntPtr	mouse = inputInfo.pointer;
+    DeviceIntPtr	keybd = inputInfo.keyboard;
+    FocusClassPtr	focus = keybd->focus;
     OtherClientsPtr	oc;
     GrabPtr		passive;
 
@@ -4095,16 +3088,14 @@ DeleteWindowFromAnyEvents(pWin, freeResources)
     /* Deactivate any grabs performed on this window, before making any
 	input focus changes. */
 
-    if ((mouse->grab) &&
-	((mouse->grab->window == pWin) ||
-	 (mouse->grab->confineTo == pWin)))
-	DeactivatePointerGrab(mouse);
+    if (mouse->grab &&
+	((mouse->grab->window == pWin) || (mouse->grab->confineTo == pWin)))
+	(*mouse->DeactivateGrab)(mouse);
 
     /* Deactivating a keyboard grab should cause focus events. */
 
-    if ((inputInfo.keyboard->grab) &&
-	(inputInfo.keyboard->grab->window == pWin))
-	DeactivateKeyboardGrab(inputInfo.keyboard);
+    if (keybd->grab && (keybd->grab->window == pWin))
+	(*keybd->DeactivateGrab)(keybd);
 
     /* If the focus window is a root window (ie. has no parent) then don't 
 	delete the focus from it. */
@@ -4115,37 +3106,37 @@ DeleteWindowFromAnyEvents(pWin, freeResources)
 
  	/* If a grab is in progress, then alter the mode of focus events. */
 
-	if (inputInfo.keyboard->grab)
-		focusEventMode = NotifyWhileGrabbed;
+	if (keybd->grab)
+	    focusEventMode = NotifyWhileGrabbed;
 
 	switch (focus->revert)
 	{
-	    case RevertToNone:
-		DoFocusEvents(pWin, NoneWin, focusEventMode);
-		focus->win = NoneWin;
-	        focusTraceGood = 0;
-		break;
-	    case RevertToParent:
-		parent = pWin;
-		do
-		{
-		    parent = parent->parent;
-		    focusTraceGood--;
-		} while (!parent->realized);
-		DoFocusEvents(pWin, parent, focusEventMode);
-		focus->win = parent;
-		focus->revert = RevertToNone;
-		break;
-	    case RevertToPointerRoot:
-		DoFocusEvents(pWin, PointerRootWin, focusEventMode);
-		focus->win = PointerRootWin;
-		focusTraceGood = 0;
-		break;
+	case RevertToNone:
+	    DoFocusEvents(keybd, pWin, NoneWin, focusEventMode);
+	    focus->win = NoneWin;
+	    focus->traceGood = 0;
+	    break;
+	case RevertToParent:
+	    parent = pWin;
+	    do
+	    {
+		parent = parent->parent;
+		focus->traceGood--;
+	    } while (!parent->realized);
+	    DoFocusEvents(keybd, pWin, parent, focusEventMode);
+	    focus->win = parent;
+	    focus->revert = RevertToNone;
+	    break;
+	case RevertToPointerRoot:
+	    DoFocusEvents(keybd, pWin, PointerRootWin, focusEventMode);
+	    focus->win = PointerRootWin;
+	    focus->traceGood = 0;
+	    break;
 	}
     }
 
-    if (motionHintWindow == pWin)
-	motionHintWindow = NullWindow;
+    if (mouse->valuator->motionHintWindow == pWin)
+	mouse->valuator->motionHintWindow = NullWindow;
 
     if (freeResources)
     {
@@ -4170,7 +3161,7 @@ CheckCursorConfinement(pWin)
     {
 	if (!(* confineTo->drawable.pScreen->RegionNotEmpty)
 			(&confineTo->borderSize))
-	    DeactivatePointerGrab(inputInfo.pointer);
+	    (*inputInfo.pointer->DeactivateGrab)(inputInfo.pointer);
 	else if ((pWin == confineTo) || IsParent(pWin, confineTo))
 	    ConfineCursorToWindow(confineTo, TRUE);
     }
@@ -4192,7 +3183,6 @@ EventMaskForClient(pWin, client)
     }
     return 0;
 }
-
 
 int
 ProcRecolorCursor(client)
@@ -4256,4 +3246,3 @@ WriteEventsToClient(pClient, count, events)
 	(void)WriteToClient(pClient, count * sizeof(xEvent), (char *) events);
     }
 }
-
