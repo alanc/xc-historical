@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.30 89/10/08 14:48:25 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.31 89/10/09 10:07:06 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -656,7 +656,7 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
     XtAppContext	app = XtWidgetToApplicationContext(widget);
     register ConverterPtr	p;
     Cardinal		num_args;
-    XrmValue		stack_args[20], *args;
+    XrmValue		*args;
     String              params[2];
     Cardinal		num_params = 0;
 
@@ -668,9 +668,9 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 	    /* Compute actual arguments from widget and arg descriptor */
 	    num_args = p->num_args;
 	    if (num_args != 0) {
-		if (num_args > XtNumber(stack_args)) {
-		    args = (XrmValuePtr)XtMalloc(num_args * sizeof (XrmValue));
-		} else args = stack_args;
+		args = (XrmValue*)
+		    ALLOCATE_LOCAL( num_args * sizeof (XrmValue) );
+		if (args == NULL) _XtAllocError("alloca");
 		ComputeArgs(widget, p->convert_args, num_args, args);
 	    } else args = NULL;
 	    if (p->new_style) {
@@ -686,17 +686,21 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 		if (cache_ref_return != NULL)
 		    *cache_ref_return = NULL;
 		if (tempTo.addr != NULL) {
-		    static XrmRepresentation QString = NULLQUARK;
-		    if (QString == NULLQUARK)
-			QString = XrmStringToRepresentation(XtRString);
-		    if (to_type == QString)
-			*(String*)(to->addr) = tempTo.addr;
-		    else
-			XtBCopy(tempTo.addr, to->addr, to->size);
+		    if (to->addr != NULL) { /* new-style call */
+			static XrmRepresentation QString = NULLQUARK;
+			if (QString == NULLQUARK)
+			    QString = XrmStringToRepresentation(XtRString);
+			if (to_type == QString)
+			    *(String*)(to->addr) = tempTo.addr;
+			else
+			    XtBCopy(tempTo.addr, to->addr, to->size);
+		    } else {	/* old-style call */
+			*to = tempTo;
+		    }
 		    retval = True;
 		} else retval = False;
 	    }
-	    if (args != NULL && args != stack_args) XtFree((char *) args);
+	    if (args != NULL) DEALLOCATE_LOCAL( (XtPointer)args );
 	    return retval;
 	}
     }
@@ -755,8 +759,8 @@ Boolean XtConvertAndStore(object, from_type_str, from, to_type_str, to)
 	static XtPointer local_valueP = NULL;
 	static Cardinal local_valueS = 128;
 	XtCacheRef ref;
+	Boolean local = False;
 	do {
-	    Boolean local = False;
 	    if (to->addr == NULL) {
 		if (local_valueP == NULL)
 		    local_valueP = _XtHeapAlloc(&globalHeap, local_valueS);
@@ -777,7 +781,7 @@ Boolean XtConvertAndStore(object, from_type_str, from, to_type_str, to)
 			       XtCallbackReleaseCacheRef, (XtPointer)ref );
 	    }
 	    return True;
-	} while ( /*local && local_valueS < to->size*/ True);
+	} while (local /* && local_valueS < to->size */);
     }
     if (to->addr != NULL) {
 	if (to->size < from->size) {
