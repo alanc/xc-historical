@@ -1,4 +1,4 @@
-/* $XConsortium: iceauth.c,v 1.1 93/08/19 18:25:26 mor Exp $ */
+/* $XConsortium: iceauth.c,v 1.2 93/09/22 17:55:52 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -32,8 +32,8 @@ typedef struct {
 } Auth2State;
 
 
-IceOCLauthStatus
-_IceOCLauth1proc (authStatePtr, cleanUp, swap,
+IcePOauthStatus
+_IcePOauth1proc (authStatePtr, cleanUp, swap,
     authDataLen, authData, replyDataLenRet, replyDataRet, errorStringRet)
 
 IcePointer	*authStatePtr;
@@ -62,7 +62,7 @@ char    	**errorStringRet;
 	 */
 
 	free ((char *) state);
-	return (IceOCLauthDoneCleanup);
+	return (IcePOauthDoneCleanup);
     }
 
     *errorStringRet = NULL;
@@ -87,13 +87,13 @@ char    	**errorStringRet;
     *replyDataLenRet = 0;
     *replyDataRet = NULL;
 
-    return (IceOCLauthHaveReply);
+    return (IcePOauthHaveReply);
 }
 
 
 
-IceACLauthStatus
-_IceACLauth1proc (authStatePtr, swap, replyDataLen, replyData,
+IcePAauthStatus
+_IcePAauth1proc (authStatePtr, swap, replyDataLen, replyData,
     authDataLenRet, authDataRet, errorStringRet)
 
 IcePointer	*authStatePtr;
@@ -139,20 +139,20 @@ char    	**errorStringRet;
 
 	free ((char *) state);
 
-	return (IceACLauthAccepted);
+	return (IcePAauthAccepted);
     }
     else
     {
 	*authDataLenRet = 0;
 	*authDataRet = NULL;
 
-	return (IceACLauthContinue);
+	return (IcePAauthContinue);
     }
 }
 
 
-IceOCLauthStatus
-_IceOCLauth2proc (authStatePtr, cleanUp, swap,
+IcePOauthStatus
+_IcePOauth2proc (authStatePtr, cleanUp, swap,
     authDataLen, authData, replyDataLenRet, replyDataRet, errorStringRet)
 
 IcePointer	*authStatePtr;
@@ -181,7 +181,7 @@ char    	**errorStringRet;
 	 */
 
 	free ((char *) state);
-	return (IceOCLauthDoneCleanup);
+	return (IcePOauthDoneCleanup);
     }
 
     *errorStringRet = NULL;
@@ -206,13 +206,13 @@ char    	**errorStringRet;
     *replyDataLenRet = 0;
     *replyDataRet = NULL;
 
-    return (IceOCLauthHaveReply);
+    return (IcePOauthHaveReply);
 }
 
 
 
-IceACLauthStatus
-_IceACLauth2proc (authStatePtr, swap, replyDataLen, replyData,
+IcePAauthStatus
+_IcePAauth2proc (authStatePtr, swap, replyDataLen, replyData,
     authDataLenRet, authDataRet, errorStringRet)
 
 IcePointer 	*authStatePtr;
@@ -258,13 +258,13 @@ char    	**errorStringRet;
 
 	free ((char *) state);
 
-	return (IceACLauthAccepted);
+	return (IcePAauthAccepted);
     }
     else
     {
 	*authDataLenRet = 0;
 	*authDataRet = NULL;
 
-	return (IceACLauthContinue);
+	return (IcePAauthContinue);
     }
 }

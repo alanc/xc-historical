@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.10 93/09/14 15:33:53 mor Exp $ */
+/* $XConsortium: connect.c,v 1.11 93/09/22 11:15:33 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -188,7 +188,7 @@ char *errorStringRet;
 
     extra = XPCS_BYTES (IceVendorString) + XPCS_BYTES (IceReleaseString);
     for (i = 0; i < _IceAuthCount; i++)
-	extra += XPCS_BYTES (_IceOCLauthRecs[i].auth_name);
+	extra += XPCS_BYTES (_IcePOauthRecs[i].auth_name);
     extra += (_IceVersionCount * 2);
 
     IceGetHeaderExtra (iceConn, 0, ICE_ConnectionSetup,
@@ -205,7 +205,7 @@ char *errorStringRet;
 
     for (i = 0; i < _IceAuthCount; i++)
     {
-	STORE_XPCS (pData, _IceOCLauthRecs[i].auth_name);
+	STORE_XPCS (pData, _IcePOauthRecs[i].auth_name);
     }
 
     for (i = 0; i < _IceVersionCount; i++)

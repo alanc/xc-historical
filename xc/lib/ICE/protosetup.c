@@ -1,4 +1,4 @@
-/* $XConsortium: protosetup.c,v 1.5 93/09/21 14:17:15 mor Exp $ */
+/* $XConsortium: protosetup.c,v 1.6 93/09/23 11:52:44 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -46,7 +46,7 @@ char 	*errorStringRet;
     unsigned long	setup_sequence;
     IceReplyWaitInfo 	replyWait;
     _IceReply		reply;
-    IceOCLversionRec	*versionRec;
+    IcePOversionRec	*versionRec;
 
     if (errorStringRet && errorLength > 0)
 	*errorStringRet = '\0';

@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.13 93/09/26 16:38:45 mor Exp $ */
+/* $XConsortium: process.c,v 1.14 93/09/26 18:12:21 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -189,7 +189,7 @@ IceReplyWaitInfo *replyWait;
 
 	    if (processMsgInfo->accept_flag)
 	    {
-		IceACLprocessMsgProc processProc =
+		IcePAprocessMsgProc processProc =
 		    processMsgInfo->process_msg_proc.accept_client;
 
 		(*processProc) (iceConn, header->minorOpcode,
@@ -197,7 +197,7 @@ IceReplyWaitInfo *replyWait;
 	    }
 	    else
 	    {
-		IceOCLprocessMsgProc processProc =
+		IcePOprocessMsgProc processProc =
 		    processMsgInfo->process_msg_proc.orig_client;
 
 		replyReady = (*processProc) (iceConn, header->minorOpcode,
@@ -556,12 +556,12 @@ IceReplyWaitInfo *replyWait;
 	     * procedure to clean up.
 	     */
 
-	    IceOCLauthProc authProc;
+	    IcePOauthProc authProc;
 
 	    if (iceConn->connect_to_you &&
 		iceConn->connect_to_you->auth_active)
 	    {
-		authProc = _IceOCLauthRecs[
+		authProc = _IcePOauthRecs[
 		    iceConn->connect_to_you->my_auth_index].auth_proc;
 
 		(*authProc) (&iceConn->connect_to_you->my_auth_state,
@@ -571,7 +571,7 @@ IceReplyWaitInfo *replyWait;
 	    else if (iceConn->protosetup_to_you &&
 		iceConn->protosetup_to_you->auth_active)
 	    {
-		_IceOCLprotocol *protocol = _IceProtocols[
+		_IcePOprotocol *protocol = _IceProtocols[
 		    iceConn->protosetup_to_you->my_opcode - 1].orig_client;
 
 		authProc = protocol->auth_recs[iceConn->
@@ -686,7 +686,7 @@ Bool			swap;
 
 	for (i = found = 0; i < myAuthCount && !found; i++)
 	{
-	    myAuthName = _IceACLauthRecs[i].auth_name;
+	    myAuthName = _IcePAauthRecs[i].auth_name;
 
 	    for (j = 0; j < hisAuthCount && !found; j++)
 		if (strcmp (myAuthName, hisAuthNames[j]) == 0)
@@ -707,20 +707,20 @@ Bool			swap;
 	}
 	else
 	{
-	    IceACLauthStatus	status;
+	    IcePAauthStatus	status;
 	    int			authDataLen;
 	    IcePointer		authData = NULL;
 	    IcePointer		authState;
 	    char		*errorString = NULL;
-	    IceACLauthProc	authProc =
-		_IceACLauthRecs[myAuthIndex].auth_proc;
+	    IcePAauthProc	authProc =
+		_IcePAauthRecs[myAuthIndex].auth_proc;
 
 	    authState = NULL;
 
 	    status = (*authProc) (&authState, swap, 0, NULL,
 		&authDataLen, &authData, &errorString);
 
-	    if (status == IceACLauthContinue)
+	    if (status == IcePAauthContinue)
 	    {
 		_IceConnectToMeInfo *setupInfo;
 
@@ -736,7 +736,7 @@ Bool			swap;
 		setupInfo->my_auth_index = myAuthIndex;
 		setupInfo->my_auth_state = authState;
 	    }
-	    else if (status == IceACLauthAccepted)
+	    else if (status == IcePAauthAccepted)
 	    {
 		accept_setup_now = 1;
 	    }
@@ -785,8 +785,8 @@ IceReplyWaitInfo	*replyWait;
     int 		replyDataLen;
     IcePointer 		replyData = NULL;
     char		*errorString = NULL;
-    IceOCLauthProc	authProc;
-    IceOCLauthStatus	status;
+    IcePOauthProc	authProc;
+    IcePOauthStatus	status;
     IcePointer 		authState;
     int			realAuthIndex;
 
@@ -813,7 +813,7 @@ IceReplyWaitInfo	*replyWait;
 	}
 	else
 	{
-	    authProc = _IceOCLauthRecs[message->authIndex].auth_proc;
+	    authProc = _IcePOauthRecs[message->authIndex].auth_proc;
 
 	    iceConn->connect_to_you->auth_active = 1;
 	}
@@ -839,7 +839,7 @@ IceReplyWaitInfo	*replyWait;
 	}
 	else
 	{
-	    _IceOCLprotocol *myProtocol = _IceProtocols[
+	    _IcePOprotocol *myProtocol = _IceProtocols[
 	        iceConn->protosetup_to_you->my_opcode - 1].orig_client;
 
 	    realAuthIndex = iceConn->protosetup_to_you->
@@ -868,7 +868,7 @@ IceReplyWaitInfo	*replyWait;
     status = (*authProc) (&authState, False /* don't clean up */,
 	swap, authDataLen, authData, &replyDataLen, &replyData, &errorString);
 
-    if (status == IceOCLauthHaveReply)
+    if (status == IcePOauthHaveReply)
     {
 	AuthReply (iceConn, replyDataLen, replyData);
 
@@ -886,11 +886,11 @@ IceReplyWaitInfo	*replyWait;
 	    iceConn->protosetup_to_you->my_auth_index = realAuthIndex;
 	}
     }
-    else if (status == IceOCLauthRejected || status == IceOCLauthFailed)
+    else if (status == IcePOauthRejected || status == IcePOauthFailed)
     {
 	char *prefix, *returnErrorString;
 
-	if (status == IceOCLauthRejected)
+	if (status == IcePOauthRejected)
 	{
 	    _IceErrorAuthenticationRejected (iceConn,
 	        ICE_AuthRequired, errorString);
@@ -933,7 +933,7 @@ IceReplyWaitInfo	*replyWait;
 
     IceDisposeCompleteMessage (iceConn, authData);
 
-    return (status != IceOCLauthHaveReply);
+    return (status != IcePOauthHaveReply);
 }
 
 
@@ -959,17 +959,17 @@ Bool		swap;
 
     if (iceConn->connect_to_me)
     {
-	IceACLauthProc authProc = _IceACLauthRecs[
+	IcePAauthProc authProc = _IcePAauthRecs[
 	    iceConn->connect_to_me->my_auth_index].auth_proc;
-	IceACLauthStatus status =
+	IcePAauthStatus status =
 	    (*authProc) (&iceConn->connect_to_me->my_auth_state, swap,
 	    replyDataLen, replyData, &authDataLen, &authData, &errorString);
 
-	if (status == IceACLauthContinue)
+	if (status == IcePAauthContinue)
 	{
 	    AuthNextPhase (iceConn, authDataLen, authData);
 	}
-	else if (status == IceACLauthAccepted)
+	else if (status == IcePAauthAccepted)
 	{
 	    AcceptConnection (iceConn,
 		iceConn->connect_to_me->his_version_index);
@@ -982,14 +982,14 @@ Bool		swap;
 	    free ((char *) iceConn->connect_to_me);
 	    iceConn->connect_to_me = NULL;
 	}
-	else if (status == IceACLauthRejected || status == IceACLauthFailed)
+	else if (status == IcePAauthRejected || status == IcePAauthFailed)
 	{
 	    free (iceConn->connect_to_me->his_vendor);
 	    free (iceConn->connect_to_me->his_release);
 	    free ((char *) iceConn->connect_to_me);
 	    iceConn->connect_to_me = NULL;
 
-	    if (status == IceACLauthRejected)
+	    if (status == IcePAauthRejected)
 	    {
 		_IceErrorAuthenticationRejected (iceConn,
 	            ICE_AuthReply, errorString);
@@ -1003,23 +1003,23 @@ Bool		swap;
     }
     else if (iceConn->protosetup_to_me)
     {
-	_IceACLprotocol *myProtocol = _IceProtocols[iceConn->protosetup_to_me->
+	_IcePAprotocol *myProtocol = _IceProtocols[iceConn->protosetup_to_me->
 	    my_opcode - 1].accept_client;
-	IceACLauthProc authProc = myProtocol->auth_recs[
+	IcePAauthProc authProc = myProtocol->auth_recs[
 	    iceConn->protosetup_to_me->my_auth_index].auth_proc;
-	IceACLauthStatus status =
+	IcePAauthStatus status =
 	    (*authProc) (&iceConn->protosetup_to_me->my_auth_state, swap,
 	    replyDataLen, replyData, &authDataLen, &authData, &errorString);
 	int free_setup_info = 1;
 
-	if (status == IceACLauthContinue)
+	if (status == IcePAauthContinue)
 	{
 	    AuthNextPhase (iceConn, authDataLen, authData);
 	    free_setup_info = 0;
 	}
-	else if (status == IceACLauthAccepted)
+	else if (status == IcePAauthAccepted)
 	{
-	    IceACLprocessMsgProc	processMsgProc;
+	    IcePAprocessMsgProc	processMsgProc;
 	    IceProtocolSetupNotifyProc	protocolSetupNotifyProc;
 
 	    processMsgProc = myProtocol->version_recs[
@@ -1072,12 +1072,12 @@ Bool		swap;
 		iceConn->protosetup_to_me->his_release = NULL;
 	    }
 	}
-	else if (status == IceACLauthRejected)
+	else if (status == IcePAauthRejected)
 	{
 	    _IceErrorAuthenticationRejected (iceConn,
 	        ICE_AuthReply, errorString);
 	}
-	else if (status == IceACLauthFailed)
+	else if (status == IcePAauthFailed)
 	{
 	    _IceErrorAuthenticationFailed (iceConn,
 	        ICE_AuthReply, errorString);
@@ -1127,8 +1127,8 @@ IceReplyWaitInfo	*replyWait;
     int 		replyDataLen;
     IcePointer		replyData = NULL;
     char		*errorString = NULL;
-    IceOCLauthProc 	authProc;
-    IceOCLauthStatus	status;
+    IcePOauthProc 	authProc;
+    IcePOauthStatus	status;
     IcePointer 		*authState;
 
     IceReadCompleteMessage (iceConn, SIZEOF (iceAuthNextPhaseMsg),
@@ -1136,14 +1136,14 @@ IceReplyWaitInfo	*replyWait;
 
     if (iceConn->connect_to_you)
     {
-	authProc = _IceOCLauthRecs[
+	authProc = _IcePOauthRecs[
 	    iceConn->connect_to_you->my_auth_index].auth_proc;
 
 	authState = &iceConn->connect_to_you->my_auth_state;
     }
     else if (iceConn->protosetup_to_you)
     {
-	_IceOCLprotocol *myProtocol =
+	_IcePOprotocol *myProtocol =
 	  _IceProtocols[iceConn->protosetup_to_you->my_opcode - 1].orig_client;
 
 	authProc = myProtocol->auth_recs[
@@ -1168,24 +1168,24 @@ IceReplyWaitInfo	*replyWait;
     status = (*authProc) (authState, False /* don't clean up */,
 	swap, authDataLen, authData, &replyDataLen, &replyData, &errorString);
 
-    if (status == IceOCLauthHaveReply)
+    if (status == IcePOauthHaveReply)
     {
 	AuthReply (iceConn, replyDataLen, replyData);
 
 	replyWait->sequence_of_request = iceConn->sequence;
     }
-    else if (status == IceOCLauthRejected || status == IceOCLauthFailed)
+    else if (status == IcePOauthRejected || status == IcePOauthFailed)
     {
 	char *prefix, *returnErrorString;
 
-	if (status == IceOCLauthRejected)
+	if (status == IcePOauthRejected)
 	{
 	    _IceErrorAuthenticationRejected (iceConn,
 	       ICE_AuthNextPhase, errorString);
 
 	    prefix = "Authentication Rejected, reason : ";
 	}
-	else if (status == IceOCLauthFailed)
+	else if (status == IcePOauthFailed)
 	{
 	    _IceErrorAuthenticationFailed (iceConn,
 	       ICE_AuthNextPhase, errorString);
@@ -1221,7 +1221,7 @@ IceReplyWaitInfo	*replyWait;
 
     IceDisposeCompleteMessage (iceConn, authData);
 
-    return (status != IceOCLauthHaveReply);
+    return (status != IcePOauthHaveReply);
 }
 
 
@@ -1252,7 +1252,7 @@ IceReplyWaitInfo 	*replyWait;
 
 	if (iceConn->connect_to_you->auth_active)
 	{
-	    IceOCLauthProc authProc = _IceOCLauthRecs[
+	    IcePOauthProc authProc = _IcePOauthRecs[
 		iceConn->connect_to_you->my_auth_index].auth_proc;
 
 	    (*authProc) (&iceConn->connect_to_you->my_auth_state,
@@ -1299,7 +1299,7 @@ Bool			swap;
 
 {
     iceProtocolSetupMsg	*message;
-    _IceACLprotocol 	*myProtocol;
+    _IcePAprotocol 	*myProtocol;
     int  	      	myVersionCount, hisVersionCount;
     int	 	      	myVersionIndex, hisVersionIndex;
     int  	      	hisMajorVersion, hisMinorVersion;
@@ -1454,12 +1454,12 @@ Bool			swap;
 	}
 	else
 	{
-	    IceACLauthStatus   	status;
+	    IcePAauthStatus   	status;
 	    int 		authDataLen;
 	    IcePointer 		authData = NULL;
 	    IcePointer 		authState;
 	    char		*errorString = NULL;
-	    IceACLauthProc	authProc =
+	    IcePAauthProc	authProc =
 		myProtocol->auth_recs[myAuthIndex].auth_proc;
 
 	    authState = NULL;
@@ -1467,7 +1467,7 @@ Bool			swap;
 	    status = (*authProc) (&authState, swap, 0, NULL,
 	        &authDataLen, &authData, &errorString);
 
-	    if (status == IceACLauthContinue)
+	    if (status == IcePAauthContinue)
 	    {
 		_IceProtoSetupToMeInfo *setupInfo;
 
@@ -1487,7 +1487,7 @@ Bool			swap;
 		setupInfo->my_auth_index = myAuthIndex;
 		setupInfo->my_auth_state = authState;
 	    }
-	    else if (status == IceACLauthAccepted)
+	    else if (status == IcePAauthAccepted)
 	    {
 		accept_setup_now = 1;
 	    }
@@ -1503,7 +1503,7 @@ Bool			swap;
 
     if (accept_setup_now)
     {
-	IceACLprocessMsgProc		processMsgProc;
+	IcePAprocessMsgProc		processMsgProc;
 	IceProtocolSetupNotifyProc	protocolSetupNotifyProc;
 
 	processMsgProc = myProtocol->version_recs[
@@ -1589,10 +1589,10 @@ IceReplyWaitInfo 	*replyWait;
 
 	if (iceConn->protosetup_to_you->auth_active)
 	{
-	    _IceOCLprotocol *myProtocol = _IceProtocols[
+	    _IcePOprotocol *myProtocol = _IceProtocols[
 		iceConn->protosetup_to_you->my_opcode - 1].orig_client;
 
-	    IceOCLauthProc authProc = myProtocol->auth_recs[
+	    IcePOauthProc authProc = myProtocol->auth_recs[
 		iceConn->protosetup_to_you->my_auth_index].auth_proc;
 
 	    (*authProc) (&iceConn->protosetup_to_you->my_auth_state,

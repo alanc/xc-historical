@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.14 93/09/26 16:41:33 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.15 93/09/26 18:09:17 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -539,8 +539,8 @@ extern _IceProtocol	_IceProtocols[];
 extern int         	_IceLastMajorOpcode;
 
 extern int		_IceAuthCount;
-extern IceOCLauthRec	_IceOCLauthRecs[];
-extern IceACLauthRec	_IceACLauthRecs[];
+extern IcePOauthRec	_IcePOauthRecs[];
+extern IcePAauthRec	_IcePAauthRecs[];
 
 extern int		_IceVersionCount;
 extern _IceVersion	_IceVersions[];
