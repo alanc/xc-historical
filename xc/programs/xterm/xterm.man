@@ -272,7 +272,7 @@ This option indicates that a visual bell should not be used.
 .B \-wf
 This option indicates that \fIxterm\fP should wait for the window to be mapped
 the first time before starting the subprocess so that the initial terminal
-size settings and environment variables are correct.  It the application's
+size settings and environment variables are correct.  It is the application's
 responsibility to catch subsequent terminal size changes.
 .TP 8
 .B \+wf
