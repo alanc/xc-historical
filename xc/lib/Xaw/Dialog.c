@@ -1,6 +1,5 @@
-/* $Header: Dialog.c,v 1.1 87/09/11 07:57:23 rws Locked $ */
 #ifndef lint
-static char *sccsid = "@(#)Dialog.c	1.26	5/18/87";
+static char rcsid[] = "$Header: Dialog.c,v 1.2 87/12/20 14:39:22 swick Locked $";
 #endif lint
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -30,124 +29,132 @@ static char *sccsid = "@(#)Dialog.c	1.26	5/18/87";
    than just directly making your own form. */
 
 
-#include <X11/Xos.h>
-#include "Xlib.h"
-#include "Intrinsic.h"
-#include "Form.h"
-#include "Dialog.h"
-#include "Text.h"
-#include "Command.h"
-#include "Label.h"
-#include "Atoms.h"
+#include <X/Xlib.h>
+#include <X/Xos.h>
+#include <X/Intrinsic.h>
+#include <X/Misc.h>
+#include <X/Atoms.h>
+#include <X/Form.h>
+#include <X/Dialog.h>
+#include <X/Text.h>
+#include <X/Command.h>
+#include <X/Label.h>
+#include "FormP.h"
+#include "DialogP.h"
 
 
-/* Private Definitions. */
+XtResource resources[] = {
+  {XtNlabel, XtCLabel, XrmRString, sizeof(String),
+     XtOffset(DialogWidget, dialog.label), XrmRString, NULL},
+  {XtNvalue, XtCValue, XrmRString, sizeof(String),
+     XtOffset(DialogWidget, dialog.value), XrmRString, NULL},
+  {XtNmaximumLength, XtCMax, XrmRInt, sizeof(int),
+     XtOffset(DialogWidget, dialog.max_length), XrmRString, "256"}
+};
 
-typedef struct {
-    Display	*dpy;		/* Form window display connection */
-    Window	mywin;		/* Form window. */
-    int		width, height;	/* Size of form window. */
-    Window	label;		/* Window containing description of dialog. */
-    Window	value;		/* Window for entering user response. */
-    int		numbuttons;	/* How many buttons currently in window. */
-    Window	*button;	/* Array of buttons. */
-    char	*labelstring;	/* String containing data in label. */
-    char	*valuestring;	/* String containing data in value. */
-} WidgetDataRec, *WidgetData;
+static void ClassInitialize(), Initialize(), ConstraintInitialize();
+static Boolean SetValues();
 
-static XContext dialogContext = NULL;
+DialogClassRec dialogClassRec = {
+  { /* core_class fields */
+    /* superclass         */    (WidgetClass) &formClassRec,
+    /* class_name         */    "Dialog",
+    /* widget_size        */    sizeof(DialogRec),
+    /* class_initialize   */    ClassInitialize,
+    /* class_inited       */    FALSE,
+    /* initialize         */    Initialize,
+    /* realize            */    XtInheritRealize,
+    /* actions            */    NULL,
+    /* num_actions        */    0,
+    /* resources          */    resources,
+    /* num_resources      */    XtNumber(resources),
+    /* xrm_class          */    NULLQUARK,
+    /* compress_motion    */    TRUE,
+    /* compress_exposure  */    TRUE,
+    /* visible_interest   */    FALSE,
+    /* destroy            */    NULL,
+    /* resize             */    XtInheritResize,
+    /* expose             */    XtInheritExpose,
+    /* set_values         */    SetValues,
+    /* accept_focus       */    NULL,
+    /* callback_private   */    NULL,
+    /* reserved_private   */    NULL
+  },
+  { /* composite_class fields */
+    /* geometry_manager   */   XtInheritGeometryManager,
+    /* change_managed     */   XtInheritChangeManaged,
+    /* insert_child       */   XtInheritInsertChild,
+    /* delete_child       */   XtInheritDeleteChild,
+    /* move_focus_to_next */   NULL,
+    /* move_focus_to_prev */   NULL
+  },
+  { /* constraint_class fields */
+    /* subresourses       */   formConstraintResources,
+    /* subresource_count  */   0,
+    /* constraint_size    */   sizeof(FormConstraintsRec),
+    /* initialize         */   ConstraintInitialize,
+    /* destroy            */   NULL,
+    /* set_values         */   NULL
+  },
+  { /* form_class fields */
+    /* empty              */   0
+  },
+  { /* dialog_class fields */
+    /* empty              */   0
+  }
+};
+
+WidgetClass dialogWidgetClass = (WidgetClass)&dialogClassRec;
 
 
-
-static WidgetData DataFromWindow(dpy, window)
-Display *dpy;
-Window window;
+static void ClassInitialize()
 {
-    WidgetData result;
-    if (XFindContext(dpy, window, dialogContext, (caddr_t *)&result))
-	return NULL;
-    return result;
+    dialogClassRec.constraint_class.num_resources =
+       formConstraintResourceCount;
 }
 
 
-static XtGeometryReturnCode DialogGeometryHandler(dpy, window, request,
-						  reqBox, replBox)
-Display *dpy;
-Window window;
-XtGeometryRequest request;
-WindowBox *reqBox, *replBox;
+/* ARGSUSED */
+static void Initialize(request, new, args, num_args)
+Widget request, new;
+ArgList args;
+Cardinal num_args;
 {
-    WidgetData data;
-    data = DataFromWindow(dpy, window);
-    if (data && request == XtgeometryResize) {
-	data->width = reqBox->width;
-	data->height = reqBox->height;
-	XResizeWindow(data->dpy, window, reqBox->width, reqBox->height);
-	*replBox = *reqBox;
-	return XtgeometryYes;
-    }
-    return XtgeometryNo;
-}
-
-
-static XtEventReturnCode DialogEventHandler(event, data)
-XEvent *event;
-WidgetData data;
-{
-    if (event->type == DestroyNotify) {
-	XtFree(data->labelstring);
-	if (data->valuestring) XtFree(data->valuestring);
-	XtFree((char *)data->button);
-	XtFree((char *)data);
-	return XteventHandled;
-    }
-    return XteventNotHandled;
-}
-
-
-/* Public definitions. */
-
-Window XtDialogCreate(dpy, parent, description, valueinit, args, argCount)
-Display *dpy;			/* Display connection for the form */
-Window parent;			/* Window to put the form in. */
-char *description;		/* Title for this dialog box. */
-char *valueinit;		/* Initial string for value field (use NULL
-				   if you don't want a value field) */
-ArgList args;			/* Args to pass on to form (if any). */
-int argCount;
-{
-    WidgetData data;
-    static Arg arglist1[] = {
+    DialogWidget dw = (DialogWidget)new;
+    static Arg label_args[] = {
 	{XtNlabel, (XtArgVal)NULL},
 	{XtNborderWidth, (XtArgVal) 0}
     };
-    static Arg arglist2[] = {
+    static Arg text_args[] = {
 	{XtNwidth, (XtArgVal)NULL},
 	{XtNstring, (XtArgVal)NULL},
-	{XtNlength, (XtArgVal)1000},
-	{XtNtextOptions, (XtArgVal) (resizeWidth | resizeHeight)},
-	{XtNeditType, (XtArgVal) XttextEdit}
-    };
-    static Arg arglist3[] = {
+	{XtNlength, (XtArgVal)0},
 	{XtNfromVert, (XtArgVal)NULL},
-	{XtNresizable, (XtArgVal)TRUE}
+	{XtNresizable, (XtArgVal)TRUE},
+	{XtNtextOptions, (XtArgVal)(resizeWidth | resizeHeight)},
+	{XtNeditType, (XtArgVal)XttextEdit},
+	{XtNright, (XtArgVal)XtChainRight}
     };
-    if (dialogContext == NULL) dialogContext = XUniqueContext();
-    data = (WidgetData) XtMalloc(sizeof(WidgetDataRec));
-    data->dpy = dpy;
-    data->numbuttons = 0;
-    data->button = (Window *) XtMalloc(sizeof(Window));
-    data->mywin = XtFormCreate(dpy, parent, args, argCount);
-    (void)XSaveContext(data->dpy, data->mywin, dialogContext, (caddr_t) data);
-    (void)XtSetGeometryHandler(
-	data->dpy, data->mywin, (XtGeometryHandler) DialogGeometryHandler);
-    data->labelstring = XtMalloc((unsigned) strlen(description) + 1);
-    (void) strcpy(data->labelstring, description);
-    arglist1[0].value = (XtArgVal) data->labelstring;
-    data->label = XtLabelCreate(
-	data->dpy, data->mywin, arglist1, XtNumber(arglist1));
-    XtFormAddWidget(data->dpy, data->mywin, data->label, (ArgList) NULL, 0);
-    if (valueinit) {
+    Widget children[2], *childP = children;
+
+    label_args[0].value = (XtArgVal)dw->dialog.label;
+    dw->dialog.labelW = XtCreateWidget( "label", labelWidgetClass, new,
+				        label_args, XtNumber(label_args) );
+    *childP++ = dw->dialog.labelW;
+
+    if (dw->dialog.value) {
+        String initial_value = dw->dialog.value;
+	Cardinal length = Max( dw->dialog.max_length, strlen(initial_value) );
+	dw->dialog.value = XtMalloc( length );
+	strcpy( dw->dialog.value, initial_value );
+	text_args[0].value = (XtArgVal)dw->dialog.labelW->core.width; /*|||hack*/
+	text_args[1].value = (XtArgVal)dw->dialog.value;
+	text_args[2].value = (XtArgVal)length;
+	text_args[3].value = (XtArgVal)dw->dialog.labelW;
+	dw->dialog.valueW = XtTextStringCreate( new, text_args,
+					        XtNumber(text_args) );
+	*childP++ = dw->dialog.valueW;
+#ifdef notdef
 	static int grabfocus;
 	static Resource resources[] = {
 	    {XtNgrabFocus, XtCGrabFocus, XrmRBoolean, sizeof(int),
@@ -160,28 +167,60 @@ int argCount;
 		       parent, "dialog", "Dialog", &names, &classes);
 	XrmFreeNameList(names);
 	XrmFreeClassList(classes);
-	data->valuestring = XtMalloc(1010);
-	(void) strcpy(data->valuestring, valueinit);
-	arglist2[0].value = (XtArgVal) data->width;
-	arglist2[1].value = (XtArgVal) data->valuestring;
-	data->value = XtTextStringCreate(
-		data->dpy, data->mywin, arglist2, XtNumber(arglist2));
-	arglist3[0].value = (XtArgVal) data->label;
 	if (grabfocus) XSetInputFocus(dpy, data->value, RevertToParent,
 				      CurrentTime); /* !!! Hackish. |||*/
-	XtFormAddWidget(
-		data->dpy, data->mywin, data->value,
-		arglist3, XtNumber(arglist3));
+#endif notdef
     } else {
-	data->valuestring = NULL;
-	data->value = NULL;
+        dw->dialog.valueW = NULL;
     }
-    XtSetEventHandler(data->dpy, data->mywin, (XtEventHandler) DialogEventHandler,
-		      StructureNotifyMask, (caddr_t)data);
-    return data->mywin;
+
+    XtManageChildren( children, (Cardinal)(childP - children) );
 }
 
 
+/* ARGSUSED */
+static void ConstraintInitialize(request, new, args, num_args)
+Widget request, new;
+ArgList args;
+Cardinal num_args;
+{
+    DialogWidget dw = (DialogWidget)new->core.parent;
+    WidgetList children = dw->composite.children;
+    FormConstraints form = (FormConstraints)new->core.constraints;
+    Widget *childP;
+
+    if (dw->composite.num_children == 0		/* is labelW? */
+	|| (dw->composite.num_children == 1 &&
+	    XtClass(new) == textWidgetClass))	/* or valueW? */
+      return;					/* then just use defaults */
+
+    form->left = form->right = XtChainLeft;
+    form->vert_base = dw->dialog.valueW ? dw->dialog.valueW :dw->dialog.labelW;
+
+    if (dw->composite.num_mapped_children > 1) {
+        for (childP = children + dw->composite.num_children - 1;
+	     childP >= children; childP-- ) {
+	    if (*childP == dw->dialog.labelW || *childP == dw->dialog.valueW)
+	        break;
+	    if (XtIsManaged(*childP)) {
+	        form->horiz_base = *childP;
+		break;
+	    }
+	}
+    }
+}
+
+
+/* ARGSUSED */
+static Boolean SetValues(current, request, new, last)
+Widget current, request, new;
+Boolean last;
+{
+    return False;
+}
+
+
+#ifdef notdef
 void XtDialogAddButton(dpy, window, name, function, param)
 Display *dpy;
 Window window;
@@ -220,14 +259,11 @@ caddr_t param;
     XtFormAddWidget(data->dpy, data->mywin, data->button[data->numbuttons - 1],
 		    arglist2, XtNumber(arglist2));
 }
+#endif
 
 
-char *XtDialogGetValueString(dpy, window)
-Display *dpy;
-Window window;
+char *XtDialogGetValueString(w)
+Widget w;
 {
-    WidgetData data;
-    data = DataFromWindow(dpy, window);
-    if (data) return data->valuestring;
-    else return NULL;
+    return ((DialogWidget)w)->dialog.value;
 }
