@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.189 88/01/02 16:06:26 rws Exp $ */
+/* $Header: window.c,v 1.190 88/01/02 17:54:01 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1409,6 +1409,8 @@ ResizeChildrenWinSize(pWin, dx, dy, dw, dh)
 		event.u.gravity.x = cwsx - pSib->borderWidth;
 		event.u.gravity.y = cwsy - pSib->borderWidth;
 		DeliverEvents (pSib, &event, 1, NullWindow);
+		pSib->clientWinSize.x = cwsx;
+		pSib->clientWinSize.y = cwsy;
 	    }
 	}
 
