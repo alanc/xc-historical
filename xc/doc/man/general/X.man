@@ -1,6 +1,6 @@
 .TH X 1 "1 March 1988"  "X Version 11"
 .SH NAME
-X - A network transparent window system for Unix
+X - A portable, network transparent window system
 .SH SYNOPSIS
 .PP
 X is a network transparent window system developed at MIT which
@@ -11,18 +11,20 @@ support the X Window System under other operating systems.
 .SH "THE OFFICIAL NAMES"
 The official names of the software described herein are:
 .sp
-                X Window System
+.ce 5
+X
 .br
-                X
+X Window System
 .br
-                X Version 11
+X Version 11
 .br
-                X Window System, Version 11
+X Window System, Version 11
 .br
-                X11
+X11
 .sp
-Explicitly not included in this list are:  X.11, X-11, or any permutation 
-of the phrase X-Windows.
+Note that the phrases X.11, X-11, X Windows or any permutation thereof, are
+explicity excluded from this list and should not be used to describe the
+X Window System (window system should be thought of as one word).
 .SH DESCRIPTION
 X window system servers run on computers with bitmap displays.
 The server
