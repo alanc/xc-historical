@@ -85,11 +85,10 @@
   0 191 255		DeepSkyBlue
 135 206 235		sky blue
 135 206 235		SkyBlue
-176 226 230		powder blue
-176 226 230		PowderBlue
-171 197 245		PowderBlue
-171 197 245		light blue
-171 197 245		LightBlue
+176 224 230		powder blue
+176 224 230		PowderBlue
+173 216 230		light blue
+173 216 230		LightBlue
  96 154 194		light steel blue
  96 154 194		LightSteelBlue
  95 153 159		cadet blue
@@ -133,8 +132,8 @@
 107 142  35		MediumForestGreen
 107 142  35		olive drab
 107 142  35		OliveDrab
- 85 107  47             dark olive green
- 85 107  47             DarkOliveGreen
+ 85 107  47		dark olive green
+ 85 107  47		DarkOliveGreen
 173 255  47		green yellow
 173 255  47		GreenYellow
 154 205  50		yellow green
@@ -504,10 +503,10 @@
 179 238  58		MediumForestGreen2
 152 205  50		MediumForestGreen3
 105 139  34		MediumForestGreen4
-202 255 112             DarkOliveGreen1
-188 238 104             DarkOliveGreen2
-162 205  90             DarkOliveGreen3
-110 139  61             DarkOliveGreen4
+202 255 112		DarkOliveGreen1
+188 238 104		DarkOliveGreen2
+162 205  90		DarkOliveGreen3
+110 139  61		DarkOliveGreen4
 173 255  47		GreenYellow1
 161 238  43		GreenYellow2
 139 205  37		GreenYellow3
