@@ -1,11 +1,22 @@
-#include "copyright.h"
+/* $XConsortium: XClDisplay.c,v 11.21 89/07/18 11:06:05 jim Exp $ */
+/*
 
-/* $XConsortium: XClDisplay.c,v 11.20 88/09/30 14:02:55 jim Exp $ */
-/* Copyright    Massachusetts Institute of Technology    1985	*/
+Copyright 1985, 1990 by the Massachusetts Institute of Technology
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  M.I.T. makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
+
+*/
 
 #include "Xlibint.h"
 
-extern Display *_XHeadOfDisplayList;
 /* 
  * XCloseDisplay - XSync the connection to the X Server, close the connection,
  * and free all associated storage.  This is the only routine that can be
@@ -19,8 +30,6 @@ XCloseDisplay (dpy)
 {
 	register _XExtension *ext;
 	register int i;
-	register Display **dp = &_XHeadOfDisplayList;
-	register Display *cp = _XHeadOfDisplayList;
 	extern void _XFreeQ();
 
 	dpy->flags |= XlibDisplayClosing;
@@ -40,17 +49,6 @@ XCloseDisplay (dpy)
 	}    
         LockDisplay(dpy);
 	_XDisconnectDisplay(dpy->fd);
-	while (cp != NULL) {
-		if (cp == dpy) {
-			*dp = cp->next;
-			_XFreeDisplayStructure (dpy);
-			break;
-			}
-		dp = &(cp->next);
-		cp = *dp;
-		}
-	if (_XHeadOfDisplayList == NULL) {
-	    _XFreeQ ();
-	}
+	_XFreeQ ();
 	return;
 }
