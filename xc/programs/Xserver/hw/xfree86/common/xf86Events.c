@@ -1,5 +1,5 @@
-/* $XConsortium: xf86Events.c,v 1.6 94/12/01 16:51:56 kaleb Exp kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.0 1994/05/08 05:20:49 dawes Exp $ */
+/* $XConsortium: xf86Events.c,v 1.7 94/12/10 12:12:18 kaleb Exp kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.4 1994/11/30 20:41:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -739,7 +739,7 @@ xf86PostKbdEvent(key)
    * normal, non-keypad keys
    */
   if (scanCode < KEY_KP_7 || scanCode > KEY_KP_Decimal) {
-#if !defined(CSRG_BASED) && !defined(MACH386) && !defined(MINIX) && !defined(__OSF__)
+#if !defined(__bsdi__) && !defined(MACH386) && !defined(MINIX) && !defined(__OSF__)
     /*
      * magic ALT_L key on AT84 keyboards for multilingual support
      */
@@ -750,7 +750,7 @@ xf86PostKbdEvent(key)
 	UsePrefix = TRUE;
 	Direction = TRUE;
       }
-#endif /* !bsdi && !MACH386 && !MINIX && !__OSF__ */
+#endif /* !__bsdi__ && !MACH386 && !MINIX && !__OSF__ */
   }
 
 
@@ -964,7 +964,7 @@ xf86SigHandler(signo)
   signal(signo,SIG_IGN);
   xf86Info.caughtSignal = TRUE;
   ErrorF("Caught signal %d.  Server aborting\n", signo);
-  AbortDDX();
+  AbortServer();
 }
 
 /*
