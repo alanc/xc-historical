@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.74 89/01/05 09:26:15 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.75 89/01/16 11:35:31 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -82,9 +82,9 @@ static void KillAllClients();
 static void DeleteClientFromAnySelections();
 
 /* buffers for clients. legal values below */
-static int nextFreeClientID=1;	   /* 0 is for the server */
+static int nextFreeClientID;	   /* 0 is for the server */
 
-static int	nClients = 0;	/* number active clients */
+static int	nClients;	/* number active clients */
 
 
 /* Various of the DIX function interfaces were not designed to allow
@@ -3173,6 +3173,8 @@ CloseDownClient(client)
         CloseDownConnection(client);
 	--nClients;
     }
+    while (!clients[currentMaxClients-1])
+      currentMaxClients--;
 }
 
 static void
@@ -3236,14 +3238,14 @@ NextAvailableClient(ospriv)
 	if (currentMaxClients == MAXCLIENTS)
 	    return (ClientPtr) NULL;
 	i = currentMaxClients;
-	currentMaxClients++;
-	clients = (ClientPtr *)xrealloc(clients,
-					currentMaxClients * sizeof(ClientPtr));
 	break;
     }
     nextFreeClientID = i + 1;
-    if (nextFreeClientID == currentMaxClients)
+    if (nextFreeClientID >= currentMaxClients)
+    {
+	currentMaxClients = nextFreeClientID;
 	nextFreeClientID = 1;
+    }
 
     clients[i] = client =  (ClientPtr)xalloc(sizeof(ClientRec));
     client->index = i;
