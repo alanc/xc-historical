@@ -1,4 +1,4 @@
-/* $XConsortium: InitOutput.c,v 1.10 94/03/28 18:28:51 gildea Exp $ */
+/* $XConsortium: InitOutput.c,v 1.11 94/04/17 20:30:25 gildea Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -59,6 +59,7 @@ from the X Consortium.
 #include <sys/shm.h>
 #endif /* HAS_SHM */
 #include "dix.h"
+#include "miline.h"
 
 extern char *display;
 
@@ -67,6 +68,7 @@ extern char *display;
 #define VFB_DEFAULT_DEPTH  8
 #define VFB_DEFAULT_WHITEPIXEL 0
 #define VFB_DEFAULT_BLACKPIXEL 1
+#define VFB_DEFAULT_LINEBIAS 0
 #define XWD_WINDOW_NAME_LEN 60
 
 typedef struct
@@ -84,6 +86,7 @@ typedef struct
     XWDFileHeader *pXWDHeader;
     Pixel blackPixel;
     Pixel whitePixel;
+    unsigned int lineBias;
 
 #ifdef HAS_MMAP
     int mmap_fd;
@@ -135,6 +138,7 @@ vfbInitializeDefaultScreens()
 	vfbScreens[i].depth  = VFB_DEFAULT_DEPTH;
 	vfbScreens[i].blackPixel = VFB_DEFAULT_BLACKPIXEL;
 	vfbScreens[i].whitePixel = VFB_DEFAULT_WHITEPIXEL;
+	vfbScreens[i].lineBias = VFB_DEFAULT_LINEBIAS;
 	vfbScreens[i].pfbMemory = NULL;
     }
     vfbNumScreens = 1;
@@ -319,6 +323,25 @@ ddxProcessArgument (argc, argv, i)
 	return 2;
     }
 
+    if (strcmp (argv[i], "-linebias") == 0)	/* -linebias n */
+    {
+	unsigned int linebias;
+	if (++i >= argc) UseMsg();
+	linebias = atoi(argv[i]);
+	if (-1 == lastScreen)
+	{
+	    int i;
+	    for (i = 0; i < MAXSCREENS; i++)
+	    {
+		vfbScreens[i].lineBias = linebias;
+	    }
+	}
+	else
+	{
+	    vfbScreens[lastScreen].lineBias = linebias;
+	}
+	return 2;
+    }
 
 #ifdef HAS_MMAP
     if (strcmp (argv[i], "-fbdir") == 0)	/* -fbdir directory */
@@ -876,6 +899,8 @@ vfbScreenInit(index, pScreen, argc, argv)
     {
 	ret = cfbCreateDefColormap(pScreen);
     }
+
+    miSetZeroLineBias(pScreen, pvfb->lineBias);
 
     return ret;
 
