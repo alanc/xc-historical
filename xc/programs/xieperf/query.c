@@ -1,4 +1,4 @@
-/* $XConsortium: query.c,v 1.2 93/10/26 10:07:01 rws Exp $ */
+/* $XConsortium: query.c,v 1.3 93/10/27 21:52:42 rws Exp $ */
 
 /**** module query.c ****/
 /******************************************************************************
@@ -217,7 +217,6 @@ void DoQueryColorList(xp, p, reps)
     int     reps;
 {
 	int	i;
-	Status 	status;
 	Colormap cmap;
 	unsigned int ncolors;
 	unsigned long *colors;
