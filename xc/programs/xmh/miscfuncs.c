@@ -1,4 +1,4 @@
-/* $XConsortium: miscfuncs.c,v 1.2 91/02/07 16:31:20 rws Exp $ */
+/* $XConsortium: miscfuncs.c,v 1.3 91/02/08 10:48:11 rws Exp $ */
 
 #include <X11/Xos.h>
 #ifdef SYSV
@@ -14,7 +14,9 @@
 #include <dirent.h>
 #else
 #include <sys/dir.h>
+#ifndef dirent
 #define dirent direct
+#endif
 #endif
 #endif
 #endif
