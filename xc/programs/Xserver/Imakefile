@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.176 94/03/31 14:14:55 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 1.177 94/04/01 17:59:35 dpw Exp $
 /*
  * Server Master Makefile
  */
@@ -169,7 +169,7 @@ ServerTarget(Xsun,$(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SYSLIBS))
 
 #if Xsun24Server
 XCOMM
-XCOMM Sun server for 24 bit framebuffer - doesn't work yet
+XCOMM Sun multiple pixmap depth (8, 12, 24) server
 XCOMM
 MFBDIR = mfb
 CFB8DIR = cfb
@@ -200,25 +200,6 @@ ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(SYSLIBS))
 #define ServerToInstall XsunMono
 #endif
 #endif /* XsunMonoServer */
-
-
-#if XsunMultiDepthServer
-XCOMM
-XCOMM Sun multiple pixmap depth (8, 12, 24) server
-XCOMM
-MFBDIR = mfb
-CFB8DIR = cfb
-CFB16DIR = cfb16
-CFB32DIR = cfb32
-DDXDIR1 = hw/sun
-SUNMDDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
-SUNMDOBJS = hw/sun/sunInitMulti.o
-SUNMDLIBS = hw/sun/libsun.a CFBLibs
-ServerTarget(Xsun_md,$(SUNMDDIRS),$(SUNMDOBJS),$(SUNMDLIBS),$(SYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall Xsun_md
-#endif
-#endif /* XsunMultiDepthServer */
 
 
 #if XsunAmoebaServer
