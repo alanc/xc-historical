@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.9 91/04/09 20:28:00 rws Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.10 91/04/13 11:45:24 rws Exp $
 #ifdef Mc68000Architecture
 #define OSName            UNIOS-B 4.3BSD UNIX: 1.50
 #define OSMajorVersion    1
@@ -21,6 +21,9 @@ XCOMM operating system:  OSName
 #define HasSaberC		NO
 #define HasVoidSignalReturn	NO
 #define HasGcc			YES
+#ifdef Mc88000Architecture
+#define HasNdbm			YES
+#endif
 
 #define PrimaryScreenResolution 100
 
