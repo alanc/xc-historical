@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.14 89/09/18 19:22:13 jim Exp $
+ * $XConsortium: xdpyinfo.c,v 1.15 89/10/17 14:38:52 jim Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -210,18 +210,18 @@ print_screen_info (dpy, scr, multibuf)
 	    DisplayWidthMM(dpy, scr), DisplayHeightMM (dpy, scr));
     printf ("  resolution:    %dx%d dots per inch\n", 
 	    (int) (xres + 0.5), (int) (yres + 0.5));
-    if (XListDepths (dpy, scr, &depths, &ndepths)) {
-	printf ("  depths (%d):    ", ndepths);
-	for (i = 0; i < ndepths; i++) {
-	    printf ("%d", depths[i]);
-	    if (i < ndepths - 1) { 
-		putchar (',');
-		putchar (' ');
-	    }
+    depths = XListDepths (dpy, scr, &ndepths);
+    if (!depths) ndepths = 0;
+    printf ("  depths (%d):    ", ndepths);
+    for (i = 0; i < ndepths; i++) {
+	printf ("%d", depths[i]);
+	if (i < ndepths - 1) { 
+	    putchar (',');
+	    putchar (' ');
 	}
-	putchar ('\n');
-	if (depths) XFree ((char *) depths);
     }
+    putchar ('\n');
+    if (depths) XFree ((char *) depths);
     printf ("  root window id:    0x%lx\n", RootWindow (dpy, scr));
     printf ("  depth of root window:    %d plane%s\n",
 	    DisplayPlanes (dpy, scr),
