@@ -1,4 +1,4 @@
-/* $XConsortium: dsimple.c,v 1.10 89/12/13 11:47:29 rws Exp $ */
+/* $XConsortium: dsimple.c,v 1.11 91/05/04 10:00:10 rws Exp $ */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -471,6 +471,7 @@ Window Window_With_Name(dpy, top, name)
  *       in code so we can tell where we are.  Outl may be invoked like
  *       printf with up to 7 arguments.
  */
+/* VARARGS1 */
 outl(msg, arg0,arg1,arg2,arg3,arg4,arg5,arg6)
      char *msg;
      char *arg0, *arg1, *arg2, *arg3, *arg4, *arg5, *arg6;
@@ -486,6 +487,7 @@ outl(msg, arg0,arg1,arg2,arg3,arg4,arg5,arg6)
  * Standard fatal error routine - call like printf but maximum of 7 arguments.
  * Does not require dpy or screen defined.
  */
+/* VARARGS1 */
 void Fatal_Error(msg, arg0,arg1,arg2,arg3,arg4,arg5,arg6)
 char *msg;
 char *arg0, *arg1, *arg2, *arg3, *arg4, *arg5, *arg6;
