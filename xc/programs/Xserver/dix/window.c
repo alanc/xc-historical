@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.24 89/07/17 19:13:19 keith Exp $ */
+/* $XConsortium: window.c,v 5.25 89/07/17 20:22:01 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -378,8 +378,14 @@ PrintWindowTree()
 
 static int  windowPrivateCount;
 
+void
+ResetWindowPrivates()
+{
+    windowPrivateCount = 0;
+}
+
 int
-AllocateWindowPrivateIndex ()
+AllocateWindowPrivateIndex()
 {
     return windowPrivateCount++;
 }
@@ -559,33 +565,60 @@ MakeRootTile(pWin)
 
 }
 
+static WindowPtr
+AllocateWindow(pScreen)
+    ScreenPtr pScreen;
+{
+    WindowPtr pWin;
+    register char *ptr;
+    register DevUnion *ppriv;
+    register unsigned *sizes;
+    register unsigned size;
+    register int i;
+
+    pWin = (WindowPtr)xalloc(pScreen->totalWindowSize);
+    if (pWin)
+    {
+	ppriv = (DevUnion *)(pWin + 1);
+	pWin->devPrivates = ppriv;
+	sizes = pScreen->WindowPrivateSizes;
+	ptr = (char *)(ppriv + windowPrivateCount);
+	for (i = windowPrivateCount; --i >= 0; ppriv++, sizes++)
+	{
+	    if (size = *sizes)
+	    {
+		ppriv->ptr = (pointer)ptr;
+		ptr += size;
+	    }
+	    else
+		ppriv->ptr = (pointer)NULL;
+	}
+    }
+    return pWin;
+}
+
 /*****
  * CreateRootWindow
  *    Makes a window at initialization time for specified screen
  *****/
 
 Bool
-CreateRootWindow(screen)
-    int		screen;
+CreateRootWindow(pScreen)
+    ScreenPtr	pScreen;
 {
     WindowPtr	pWin;
     BoxRec	box;
-    ScreenPtr	pScreen;
     PixmapFormatRec *format;
 
-    pWin = (WindowPtr)xalloc(sizeof(WindowRec) +
-			     windowPrivateCount * sizeof (DevUnion));
+    pWin = AllocateWindow(pScreen);
     if (!pWin)
 	return FALSE;
 
-    pWin->devPrivates = (DevUnion *)(pWin + 1);
-
-    savedScreenInfo[screen].pWindow = NULL;
-    savedScreenInfo[screen].wid = FakeClientID(0);
+    savedScreenInfo[pScreen->myNum].pWindow = NULL;
+    savedScreenInfo[pScreen->myNum].wid = FakeClientID(0);
     screenIsSaved = SCREEN_SAVER_OFF;
 
-    WindowTable[screen] = pWin;
-    pScreen = screenInfo.screens[screen];
+    WindowTable[pScreen->myNum] = pWin;
 
     pWin->drawable.pScreen = pScreen;
     pWin->drawable.type = DRAWABLE_WINDOW;
@@ -764,7 +797,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     Bool fOK;
     DepthPtr pDepth;
     PixmapFormatRec *format;
-    VisualID visualParent;
+    WindowOptPtr ancwopt;
 
     if (class == CopyFromParent)
 	class = pParent->drawable.class;
@@ -792,12 +825,14 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 
     if ((class == InputOutput) && (depth == 0))
         depth = pParent->drawable.depth;
-    visualParent = wVisual (pParent);
+    ancwopt = pParent->optional;
+    if (!ancwopt)
+	ancwopt = FindWindowWithOptional(pParent)->optional;
     if (visual == CopyFromParent)
-	visual = visualParent;
+	visual = ancwopt->visual;
 
     /* Find out if the depth and visual are acceptable for this Screen */
-    if ((visual != visualParent) || (depth != pParent->drawable.depth))
+    if ((visual != ancwopt->visual) || (depth != pParent->drawable.depth))
     {
 	fOK = FALSE;
 	for(idepth = 0; idepth < pScreen->numDepths; idepth++)
@@ -832,20 +867,18 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 
     if (((vmask & CWColormap) == 0) &&
 	(class != InputOnly) &&
-	((visual != visualParent) || (wColormap (pParent) == None)))
+	((visual != ancwopt->visual) || (ancwopt->colormap == None)))
     {
 	*error = BadMatch;
         return NullWindow;
     }
 
-    pWin = (WindowPtr) xalloc(sizeof(WindowRec) +
-			      windowPrivateCount * sizeof (DevUnion));
+    pWin = AllocateWindow(pScreen);
     if (!pWin)
     {
 	*error = BadAlloc;
         return NullWindow;
     }
-    pWin->devPrivates = (DevUnion *)(pWin + 1);
     pWin->drawable = pParent->drawable;
     pWin->drawable.depth = depth;
     if (depth == pParent->drawable.depth)
@@ -865,7 +898,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 
     SetWindowToDefaults(pWin);
 
-    if (visual != visualParent)
+    if (visual != ancwopt->visual)
     {
 	if (!MakeWindowOptional (pWin))
 	{
