@@ -1,4 +1,4 @@
-.\" $XConsortium: CH06,v 1.6 91/08/26 13:32:57 swick Exp $
+.\" $XConsortium: CH06,v 1.7 91/08/27 10:02:24 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -239,7 +239,7 @@ The return codes from geometry managers are
 .Ds 0
 .TA .5i 1.75i
 .ta .5i 1.75i
-typedef enum _XtGeometryResult {
+typedef enum {
 	XtGeometryYes,
 	XtGeometryNo,
 	XtGeometryAlmost,
