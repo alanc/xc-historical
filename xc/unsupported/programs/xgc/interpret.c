@@ -57,9 +57,15 @@ extern Widget testchoiceform;
 ** -----------------
 ** Takes string, which is a line written in the xgc syntax, figures
 ** out what it means, and passes the buck to the right procedure.
-** This is a _very_ primitive parser...
+** That procedure gets called with feedback set to FALSE; interpret()
+** is only called if the user is selecting things interactively.
+**
+** This procedure will go away when I can figure out how to make yacc
+** and lex read from strings as well as files.
 */
-void interpret(string)
+
+void
+interpret(string)
      String string;
 {
   char word1[20], word2[80];
@@ -158,8 +164,15 @@ void interpret(string)
 #define select_correct_button(which,number) \
   select_button(GCdescs[(which)],(number));
 
+/* GC_change_blahzee(foo,feedback)
+** ---------------------
+** Changes the blahzee field in xgc's GC to foo.  If feedback is TRUE,
+** changes the display to reflect this (makes it look like the user
+** selected the button, or typed in the text, or whatever).
+*/
 
-void GC_change_function(function,feedback)
+void
+GC_change_function(function,feedback)
      int function;
      Boolean feedback;
 {
@@ -168,7 +181,8 @@ void GC_change_function(function,feedback)
   if (feedback) select_correct_button(CFunction,function);
 }
 
-void GC_change_foreground(foreground,feedback)
+void
+GC_change_foreground(foreground,feedback)
      unsigned long foreground;
      Boolean feedback;
 {
@@ -182,7 +196,8 @@ void GC_change_foreground(foreground,feedback)
   }
 }
 
-void GC_change_background(background,feedback)
+void
+GC_change_background(background,feedback)
      unsigned long background;
      Boolean feedback;
 {
@@ -190,15 +205,20 @@ void GC_change_background(background,feedback)
 
   XSetBackground(X.dpy,X.gc,background);
   X.gcv.background = background;
+
+  /* Update the background of the test window NOW. */
+
   XSetWindowBackground(X.dpy,XtWindow(test),background);
   XClearWindow(X.dpy,XtWindow(test));
+
   if (feedback) {
     sprintf(text,"%d",background);
     change_text(backgroundtext,text);
   }
 }
 
-void GC_change_linewidth(linewidth,feedback)
+void
+GC_change_linewidth(linewidth,feedback)
      int linewidth;
      Boolean feedback;
 {
@@ -212,7 +232,8 @@ void GC_change_linewidth(linewidth,feedback)
   }
 }
 
-void GC_change_linestyle(linestyle,feedback)
+void
+GC_change_linestyle(linestyle,feedback)
      int linestyle;
      Boolean feedback;
 {
@@ -221,7 +242,8 @@ void GC_change_linestyle(linestyle,feedback)
   if (feedback) select_correct_button(CLinestyle,linestyle);
 }
 
-void GC_change_capstyle(capstyle,feedback)
+void
+GC_change_capstyle(capstyle,feedback)
      int capstyle;
      Boolean feedback;
 {
@@ -230,7 +252,8 @@ void GC_change_capstyle(capstyle,feedback)
   if (feedback) select_correct_button(CCapstyle,capstyle);
 }
 
-void GC_change_joinstyle(joinstyle,feedback)
+void
+GC_change_joinstyle(joinstyle,feedback)
      int joinstyle;
      Boolean feedback;
 {
@@ -239,7 +262,8 @@ void GC_change_joinstyle(joinstyle,feedback)
   if (feedback) select_correct_button(CJoinstyle,joinstyle);
 }
 
-void GC_change_fillstyle(fillstyle,feedback)
+void
+GC_change_fillstyle(fillstyle,feedback)
      int fillstyle;
      Boolean feedback;
 {
@@ -248,7 +272,8 @@ void GC_change_fillstyle(fillstyle,feedback)
   if (feedback) select_correct_button(CFillstyle,fillstyle);
 }
 
-void GC_change_fillrule(fillrule,feedback)
+void
+GC_change_fillrule(fillrule,feedback)
      int fillrule;
      Boolean feedback;
 {
@@ -257,7 +282,8 @@ void GC_change_fillrule(fillrule,feedback)
   if (feedback) select_correct_button(CFillrule,fillrule);
 }
 
-void GC_change_arcmode(arcmode,feedback)
+void
+GC_change_arcmode(arcmode,feedback)
      int arcmode;
      Boolean feedback;
 {
@@ -274,30 +300,39 @@ void GC_change_arcmode(arcmode,feedback)
 **     119 => XXX_XXX_ => [3,1,3,1]
 */
 
-void GC_change_dashlist(dashlist,feedback) 
+void
+GC_change_dashlist(dashlist,feedback) 
      int dashlist;
      Boolean feedback;
 {
-  char dasharray[8];            /* what we're gonna pass to XSetDashes */
+  char dasharray[DASHLENGTH];	/* what we're gonna pass to XSetDashes */
   int dashnumber = 0;		/* which element of dasharray we're currently
 				   modifying */
-  int i;			/* which bit of dashlist we're on */
-  int state = 1;		/* whether the last bit we checked was on (1)
-				   or off (0) */
+  int i;			/* which bit of the dashlist we're on */
+  int state = 1;		/* whether the list bit we checked was
+				   on (1) or off (0) */
+				  
+  /* Initialize the dasharray */
 
-  for (i=0;i<8;++i) dasharray[i] = 0; /* initialize dasharray */
+  for (i = 0; i < DASHLENGTH; ++i) dasharray[i] = 0;
 
   if (dashlist == 0) return;	/* having no dashes at all is bogus */
 
   /* XSetDashes expects the dashlist to start with an on bit, so if it
-     doesn't, we keep on rotating it until it does */
+  ** doesn't, we keep on rotating it until it does */
+
   while (!(dashlist&1)) dashlist /= 2;
 
-  for (i=0;i<8;++i) {		/* i has 8 bits we want to look at */
+  /* Go through all the bits in dashlist, and update the dasharray
+  ** accordingly */
+
+  for (i = 0; i < DASHLENGTH; ++i) {
     /* the following if statements checks to see if the bit we're looking
-       at as the same on or offness as the one before it (state) */
+    ** at as the same on or offness as the one before it (state).  If
+    ** so, we increment the length of the current dash. */
+
     if (((dashlist&1<<i) && state) || (!(dashlist&1<<i) && !state))
-      ++dasharray[dashnumber];	/* if so, increment the length of this dash */
+      ++dasharray[dashnumber];
     else {			
       state = state^1;		/* reverse the state */
       ++dasharray[++dashnumber]; /* start a new dash */
@@ -306,19 +341,22 @@ void GC_change_dashlist(dashlist,feedback)
 
   XSetDashes(X.dpy,X.gc,0,dasharray,dashnumber+1);
   X.gcv.dashes = dashlist;
-  if (feedback) update_dashlist(dashlistchoice,dashlist);
+
+  if (feedback) update_dashlist(dashlist);
 }
 
-void GC_change_planemask(planemask,feedback)
+void
+GC_change_planemask(planemask,feedback)
      unsigned long planemask;
      Boolean feedback;
 {
   XSetPlaneMask(X.dpy,X.gc,planemask);
   X.gcv.plane_mask = planemask;
-  if (feedback) update_planemask(planemaskchoice,(long)planemask);
+  if (feedback) update_planemask((long)planemask);
 }
 
-void change_test(test,feedback) 
+void
+change_test(test,feedback) 
      int test;
      Boolean feedback;
 {
@@ -326,12 +364,12 @@ void change_test(test,feedback)
   if (feedback) select_button(testchoicedesc,test);
 }
 
-void GC_change_font(str,feedback)
+void
+GC_change_font(str,feedback)
      String str;
      Boolean feedback;
 {
-  int num_fonts;		/* number of fonts that match the string
-				  ( will be 1 or 0) */
+  int num_fonts;		/* number of fonts that match the string */
 
   XListFonts(X.dpy,str,1,&num_fonts); /* see if the font exists */
 
