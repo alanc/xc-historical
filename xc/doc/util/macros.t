@@ -1,4 +1,4 @@
-.\" $XConsortium: macros.t,v 1.5 93/12/20 17:24:06 rws Exp $
+.\" $XConsortium: macros.t,v 1.6 94/01/03 14:59:54 gildea Exp $
 .\" macros.t -- macros for X Consortium documents
 .\" Revised and commented by smarks 93.12.20.
 .\"
@@ -117,7 +117,6 @@
 .if \\n(.$ .ds NO \\$1
 .ie n .sp
 .el .sp 10p
-.TB
 .ce
 \\*(NO
 .ie n .sp
