@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.118 93/08/27 16:29:30 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.119 93/09/03 09:57:16 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1143,6 +1143,7 @@ void XtAppProcessEvent(app, mask)
 		    if (se_ptr->se_notice) {
 			se_ptr->se_notice = FALSE;
 			SeCallProc(se_ptr);
+			UNLOCK_APP(app);
 			return;
 		    }
 		    se_ptr = se_ptr->se_next;
