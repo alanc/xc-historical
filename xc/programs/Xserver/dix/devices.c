@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.31 93/09/03 08:05:26 dpw Exp $ */
+/* $XConsortium: devices.c,v 5.33 93/09/25 16:59:56 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -175,6 +175,10 @@ CloseDevice(dev)
     xfree(dev->name);
     if (dev->key)
     {
+#ifdef XKB
+	if (dev->key->xkbInfo)
+	    XKBFreeInfo(dev->key->xkbInfo);
+#endif
 	xfree(dev->key->curKeySyms.map);
 	xfree(dev->key->modifierKeyMap);
 	xfree(dev->key);
@@ -415,6 +419,9 @@ InitKeyClassDeviceStruct(dev, pKeySyms, pModifiers)
 	return FALSE;
     }
     dev->key = keyc;
+#ifdef XKB
+    XKBInitDevice(dev);
+#endif
     return TRUE;
 }
 
@@ -507,6 +514,15 @@ InitKbdFeedbackClassDeviceStruct(dev, bellProc, controlProc)
     if (feedc->next = dev->kbdfeed)
 	feedc->ctrl.id = dev->kbdfeed->ctrl.id + 1;
     dev->kbdfeed = feedc;
+#ifdef XKB
+    if (feedc->ctrl.autoRepeat)
+    {
+        feedc->ctrl.autoRepeat = FALSE;
+        (*controlProc)(dev, &feedc->ctrl);
+        feedc->ctrl.autoRepeat = TRUE;
+    }
+    else
+#endif
     (*controlProc)(dev, &feedc->ctrl);
     return TRUE;
 }
@@ -700,10 +716,19 @@ SendMappingNotify(request, firstKeyCode, count)
         event.u.mappingNotify.firstKeyCode = firstKeyCode;
         event.u.mappingNotify.count = count;
     }
+#ifdef XKB
+    if ((request == MappingKeyboard) || (request == MappingModifier))
+	XKBApplyMappingChange(inputInfo.keyboard, request, firstKeyCode,
+			      count);
+#endif
     /* 0 is the server client */
     for (i=1; i<currentMaxClients; i++)
         if (clients[i] && ! clients[i]->clientGone &&
-	    (clients[i]->requestVector != InitialVector))
+	    (clients[i]->requestVector != InitialVector)
+#ifdef XKB
+	    && (clients[i]->xkbClientFlags == 0)
+#endif
+	    )
 	{
 	    event.u.u.sequenceNumber = clients[i]->sequence;
             WriteEventsToClient(clients[i], 1, &event);
@@ -860,6 +885,9 @@ ProcSetModifierMapping(client)
 		    (1<<(i/keyc->maxKeysPerModifier));
 	}
     }
+#ifdef XKB
+    keyc->keymapSerial++;
+#endif
 
     if (rep.success == MappingSuccess)
         SendMappingNotify(MappingModifier, 0, 0);
@@ -923,6 +951,9 @@ ProcChangeKeyboardMapping(client)
     keysyms.map = (KeySym *)&stuff[1];
     if (!SetKeySymsMap(curKeySyms, &keysyms))
 	return BadAlloc;
+#ifdef XKB
+    inputInfo.keyboard->key->keymapSerial++;
+#endif
     SendMappingNotify(MappingKeyboard, stuff->firstKeyCode, stuff->keyCodes);
     return client->noClientException;
 
@@ -1174,6 +1205,10 @@ ProcChangeKeyboardControl (client)
 	    mask = (1 << (key & 7));
 	    t = (CARD8)*vlist;
 	    vlist++;
+#ifdef XKB
+	    if (key != DO_ALL)
+		XKBDisableComputedAutoRepeats();
+#endif
 	    if (t == AutoRepeatModeOff)
 	    {
 		if (key == DO_ALL)
@@ -1209,6 +1244,15 @@ ProcChangeKeyboardControl (client)
 	}
     }
     keybd->kbdfeed->ctrl = ctrl;
+#ifdef XKB
+    if (keybd->kbdfeed->ctrl.autoRepeat)
+    {
+        keybd->kbdfeed->ctrl.autoRepeat = FALSE;
+        (*keybd->kbdfeed->CtrlProc)(keybd, &keybd->kbdfeed->ctrl);
+        keybd->kbdfeed->ctrl.autoRepeat = TRUE;
+    }
+    else
+#endif
     (*keybd->kbdfeed->CtrlProc)(keybd, &keybd->kbdfeed->ctrl);
     return Success;
 #undef DO_ALL
@@ -1258,8 +1302,12 @@ ProcBell(client)
         newpercent = base + newpercent;
     else
     	newpercent = base - newpercent + stuff->percent;
+#ifdef XKB
+    XKBHandleBell(keybd, newpercent, &keybd->kbdfeed->ctrl, 0, None);
+#else
     (*keybd->kbdfeed->BellProc)(newpercent, keybd,
 				(pointer) &keybd->kbdfeed->ctrl, 0);
+#endif
     return Success;
 } 
 
