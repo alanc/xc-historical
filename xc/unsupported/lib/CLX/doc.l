@@ -102,14 +102,6 @@
 ;; Each of window, pixmap, drawable, cursor, font, gcontext, and colormap have the
 ;; following five functions:
 
-(defun make-<mumble> (display resource-id)
-  ;; This function should almost never be called by applications, except in handling
-  ;; events.  To minimize consing in some implementations, this may use a cache in
-  ;; the display.  Make-gcontext creates with :cache-p nil.
-  (declare (type display display)
-	   (type resource-id resource-id)
-	   (values <mumble>)))
-
 (defun <mumble>-display (<mumble>)
   (declare (type <mumble> <mumble>)
 	   (values display)))
