@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.8 91/05/06 19:44:06 rws Exp $
+# $XConsortium: Imakefile,v 5.9 91/05/09 12:26:58 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -34,9 +34,9 @@ CDEBUGFLAGS = PexPhigsCDebugFlags
     DEFINES = PexPhigsDefines
 API_DEFINES = -DPEXAPIDIR=\"$(PEXAPIDIR)\"
 
-SRCS = ut_path.c ut_mat.c ut_misc.c ut_vers.c utx.c utx_conv.c ut_ntfy.c \
+SRCS = ut_path.c ut_mat.c ut_misc.c utx.c utx_conv.c ut_ntfy.c \
        ut_htab.c
-OBJS = ut_path.o ut_mat.o ut_misc.o ut_vers.o utx.o utx_conv.o ut_ntfy.o \
+OBJS = ut_path.o ut_mat.o ut_misc.o utx.o utx_conv.o ut_ntfy.o \
        ut_htab.o
 
 .SUFFIXES: .o .lint
