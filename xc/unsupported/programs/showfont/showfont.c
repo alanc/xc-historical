@@ -1,4 +1,4 @@
-/* $XConsortium: showfont.c,v 1.2 91/05/13 16:36:36 gildea Exp $ */
+/* $XConsortium: showfont.c,v 1.3 91/09/07 13:18:49 keith Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -238,10 +238,6 @@ show_glyphs(fid, hdr, show_all, first, last)
 	if (offset != offsets[ch].position)
 	    fprintf(stderr, "offset mismatch 0x%x != 0x%x\n",
 		    offset, offsets[ch].position);
-	if (offsets[ch].length == 0) {
-	    printf ("Non existant character\n");
-	    continue;
-	}
 	switch (bitmap_pad) {
 	case BitmapFormatImageRectMin:
 	    bottom = extents[ch].descent + extents[ch].ascent;
@@ -259,6 +255,16 @@ show_glyphs(fid, hdr, show_all, first, last)
 	}
 
 	bpr = GLWIDTHBYTESPADDED(charwidth, scanpad);
+	if (offsets[ch].length != bottom * bpr) {
+	    if (offsets[ch].length == 0) {
+	    	printf ("Non existant character\n");
+	    	continue;
+	    } else {
+		fprintf (stderr, "length mismatch: %d != %d\n",
+				 bottom * bpr, offsets[ch].length);
+	    }
+	}
+	offset = offsets[ch].position;
 	for (r = 0; r < bottom; r++) {
 	    unsigned char *row = glyphs + offset;
 
