@@ -1,4 +1,4 @@
-.\" $XConsortium: appE,v 1.5 91/07/31 23:03:08 rws Exp $
+.\" $XConsortium: appE,v 1.6 94/01/07 19:37:09 converse Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -88,6 +88,7 @@ XtNinnerWindow	"innerWindow"
 XtNinsertPosition	"insertPosition"
 XtNinternalHeight	"internalHeight"
 XtNinternalWidth	"internalWidth"
+XtNjoinSession	"joinSession"
 XtNjumpProc	"jumpProc"
 XtNjustify	"justify"
 XtNknobHeight	"knobHeight"
@@ -108,6 +109,7 @@ XtNparameter	"parameter"
 XtNpixmap	"pixmap"
 XtNpopupCallback	"popupCallback"
 XtNpopdownCallback	"popdownCallback"
+XtNprogramPath	"programPath"
 XtNresignCommand	"resignCommand"
 XtNresize	"resize"
 XtNrestartCommand	"restartCommand"
@@ -149,7 +151,7 @@ XtNvSpace	"vSpace"
 XtNwidth	"width"
 XtNwindow	"window"
 XtNwindowRole	"windowRole"
-XtNvisible	"visible"
+XtNurgency	"urgency"
 XtNx	"x"
 XtNy	"y"
 .sp 6p
@@ -197,6 +199,7 @@ XtCIndex	"Index"
 XtCInitialResourcesPersistent	"InitialResourcesPersistent"
 XtCInsertPosition	"InsertPosition"
 XtCInterval	"Interval"
+XtCJoinSession	"JoinSession"
 XtCJustify	"Justify"
 XtCKnobIndent	"KnobIndent"
 XtCKnobPixel	"KnobPixel"
@@ -210,6 +213,7 @@ XtCOrientation	"Orientation"
 XtCParameter	"Parameter"
 XtCPixmap	"Pixmap"
 XtCPosition	"Position"
+XtCProgramPath	"ProgramPath"
 XtCReadOnly	"ReadOnly"
 XtCResignCommand	"ResignCommand"
 XtCResize	"Resize"
@@ -244,7 +248,7 @@ XtCVSpace	"VSpace"
 XtCWidth	"Width"
 XtCWindow	"Window"
 XtCWindowRole	"WindowRole"
-XtCVisible	"Visible"
+XtCUrgency	"Urgency"
 XtCX	"X"
 XtCY	"Y"
 .sp 6p
@@ -388,6 +392,46 @@ Symbol	Definition
 _
 .sp 6p
 XtExtdefaultfont	"xtdefaultfont"
+.sp 6p
+_
+.TE
+.LP
+Hooks for External Agents constants:
+.TS
+lw(2i) lw(2.5i).
+_
+.sp 6p
+Symbol	Definition
+.sp 6p
+_
+.sp 6p
+XtHcreate	"Xtcreate"
+XtHsetValues	"Xtsetvalues"
+XtHmanageChildren	"XtmanageChildren"
+XtHunmanageChildren	"XtunmanageChildren"
+XtHmanageSet	"XtmanageSet"
+XtHunmanageSet	"XtunmanageSet"
+XtHrealizeWidget	"XtrealizeWidget"
+XtHunrealizeWidget	"XtunrealizeWidget"
+XtHaddCallback	"XtaddCallback"
+XtHaddCallbacks	"XtaddCallbacks"
+XtHremoveCallback	"XtremoveCallback"
+XtHremoveCallbacks	"XtremoveCallbacks"
+XtHremoveAllCallbacks	"XtremoveAllCallbacks"
+XtHaugmentTranslations	"XtaugmentTranslations"
+XtHoverrideTranslations	"XtoverrideTranslations"
+XtHuninstallTranslations	"XtuninstallTranslations"
+XtHsetKeyboardFocus	"XtsetKeyboardFocus"
+XtHsetWMColormapWindows	"XtsetWMColormapWindows"
+XtHmapWidget	"XtmapWidget"
+XtHunmapWidget	"XtunmapWidget"
+XtHpopup	"Xtpopup"
+XtHpopupSpringLoaded	"XtpopupSpringLoaded"
+XtHpopdown	"Xtpopdown"
+XtHconfigure	"Xtconfigure"
+XtHpreGeometry	"XtpreGeometry"
+XtHpostGeometry	"XtpostGeometry"
+XtHdestroy	"Xtdestroy"
 .sp 6p
 _
 .TE
