@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.116 94/02/08 10:42:20 gildea Exp $
+ * $XConsortium: ConnDis.c,v 11.117 94/03/23 20:08:46 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -681,7 +681,7 @@ static int k5_clientauth(dpy, sprefix)
 	/* not an auth packet... so deal */
 	if (prefix.reqType == 0 || prefix.reqType == 1)
 	{
-	    bcopy((char *)&prefix, (char *)sprefix, sz_xReq);
+	    memcpy((char *)sprefix, (char *)&prefix, sz_xReq);
 	    _XRead(dpy, (char *)sprefix + sz_xReq,
 		   sz_xConnSetupPrefix - sz_xReq); /* ewww... gross */
 	    return 1;
@@ -742,8 +742,8 @@ static int k5_clientauth(dpy, sprefix)
 	    fprintf(stderr, "Xlib: malloc bombed in Krb5 auth\n");
 	    return -1;
 	}
-	bcopy(krb5_princ_component(sprinc, 0)->data, sname,
-	      krb5_princ_component(sprinc, 0)->length);
+	memcpy(sname, krb5_princ_component(sprinc, 0)->data,
+	       krb5_princ_component(sprinc, 0)->length);
 	sname[krb5_princ_component(sprinc, 0)->length] = '\0';
 	krb5_free_principal(sprinc);
 	if (dpy->display_name[0] != ':') /* hunt for a hostname */
@@ -860,7 +860,7 @@ static int k5_clientauth(dpy, sprefix)
     if (prefix.reqType != 2)
 	if (prefix.reqType == 0 || prefix.reqType == 1)
 	{
-	    bcopy((char *)&prefix, (char *)sprefix, sz_xReq);
+	    memcpy((char *)sprefix, (char *)&prefix, sz_xReq);
 	    _XRead(dpy, (char *)sprefix + sz_xReq,
 		   sz_xConnSetupPrefix - sz_xReq);
 	    return 1;
