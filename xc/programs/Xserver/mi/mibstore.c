@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.39 90/06/07 11:17:00 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.40 90/06/12 17:47:49 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -35,6 +35,14 @@ implied warranty.
 #include "dixstruct.h"		/* For requestingClient */
 #include "mi.h"
 #include "mibstorest.h"
+
+/*
+ * When the server fails to allocate a backing store pixmap, if you want
+ * it to dynamically retry to allocate backing store on every subsequent
+ * graphics op, you can enable BSEAGER; otherwise, backing store will be
+ * disabled on the window until it is unmapped and then remapped.
+ */
+/* #define BSEAGER */
 
 /*-
  * NOTES ON USAGE:
@@ -2159,7 +2167,8 @@ miBSClearBackingStore(pWin, x, y, w, h, generateExposures)
     pBackingStore = (miBSWindowPtr)pWin->backStorage;
     pScreen = pWin->drawable.pScreen;
 
-    if (pBackingStore->status == StatusNoPixmap)
+    if ((pBackingStore->status == StatusNoPixmap) ||
+	(pBackingStore->status == StatusBadAlloc))
 	return NullRegion;
     
     if (w == 0)
@@ -2566,7 +2575,11 @@ miResizeBackingStore(pWin)
     }
     if (!pNewPixmap)
     {
+#ifdef BSEAGER
 	pBackingStore->status = StatusNoPixmap;
+#else
+	pBackingStore->status = StatusBadAlloc;
+#endif
 	pBackingStore->x = 0;
 	pBackingStore->y = 0;
     }
@@ -2644,6 +2657,8 @@ miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
 	    miDestroyBSPixmap (pWin);
 	    return;
 	}
+	if (pBackingStore->status == StatusBadAlloc)
+	    pBackingStore->status = StatusNoPixmap;
     }
 
     /* Don't even pretend to save anything for a virtual background None */
@@ -2886,7 +2901,8 @@ miBSTranslateBackingStore(pWin, windx, windy, oldClip, oldx, oldy)
 
     pScreen = pWin->drawable.pScreen;
     pBackingStore = (miBSWindowPtr)(pWin->backStorage);
-    if (pBackingStore->status == StatusNoPixmap)
+    if ((pBackingStore->status == StatusNoPixmap) ||
+	(pBackingStore->status == StatusBadAlloc))
 	return NullRegion;
 
     /* bit gravity makes things virtually too hard, punt */
@@ -3424,6 +3440,8 @@ miCreateBSPixmap (pWin)
 
     pScreen = pWin->drawable.pScreen;
     pBackingStore = (miBSWindowPtr) pWin->backStorage;
+    if (pBackingStore->status == StatusBadAlloc)
+	return;
     backSet = ((pBackingStore->status == StatusVirtual) ||
 	       (pBackingStore->status == StatusVDirty));
 
@@ -3453,8 +3471,12 @@ miCreateBSPixmap (pWin)
 	if (failedIndex == FAILEDSIZE)
 		failedIndex = 0;
 #endif
+#ifdef BSEAGER
 	pBackingStore->status = StatusNoPixmap;
-	return; /* XXX */
+#else
+	pBackingStore->status = StatusBadAlloc;
+#endif
+	return;
     }
 
     pBackingStore->status = StatusContents;
@@ -3536,7 +3558,8 @@ miBSExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
 	return;
     pBackingStore = (miBSWindowPtr)pSrc->backStorage;
     
-    if (pBackingStore->status == StatusNoPixmap)
+    if ((pBackingStore->status == StatusNoPixmap) ||
+	(pBackingStore->status == StatusBadAlloc))
     	return;
 
     tempRgn = (* pGC->pScreen->RegionCreate) (NULL, 1);
