@@ -1,4 +1,15 @@
-.\" $XConsortium: xlsatoms.man,v 1.7 93/08/02 11:13:59 gildea Exp $
+.\" $XConsortium: xlsatoms.man,v 1.8 94/04/11 14:28:47 gildea Exp $
+.\" Copyright 1989 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH XLSATOMS 1 "Release 6" "X Version 11"
 .SH NAME
 xlsatoms - list interned atoms defined on server
@@ -38,9 +49,5 @@ X(1), Xserver(1), xprop(1)
 .TP 8
 .B DISPLAY
 to get the default host and display to use.
-.SH COPYRIGHT
-Copyright 1989, Massachusetts Institute of Technology.
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Jim Fulton, MIT X Consortium
