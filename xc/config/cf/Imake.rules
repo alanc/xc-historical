@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.195 94/11/21 17:13:14 kaleb Exp gildea $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.196 94/12/02 21:20:21 gildea Exp gildea $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1896,7 +1896,7 @@ target::								@@\
 		esac; \							@@\
 		echo "making Makefiles in $$curdir$$i..."; \		@@\
 		itmp="$$i" \						@@\
-		curtmp="$$curdir" \					@@\
+		curtmp="$(CURRENT_DIR)" \				@@\
 		toptmp=""; \						@@\
 		case "$$itmp" in \					@@\
 		    ../?*) \ 						@@\
