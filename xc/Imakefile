@@ -3,7 +3,8 @@
 
       WORLDOPTS = -k
 BOOTSTRAPCFLAGS = 
-        CHECKFN = $(UTILSRC)/checkfn
+     CHECKFNSRC = $(UTILSRC)/checkfn
+        CHECKFN = $(CHECKFNSRC/checkfn
 
 /**/#
 /**/# Preserve this order!
@@ -127,8 +128,8 @@ CHANGES.ALL::
  * people.
  */
 /**/# check all filenames for length, letters, and content
-checkfilenames::  $(CHECKFN)/checkfn
-	@find . -type d -exec $(CHECKFN)/find.sh $(CHECKFN)/checkfn {} \;
+checkfilenames::  $(CHECKFNSRC)/checkfn
+	@find . -type d -exec $(CHECKFNSRC)/find.sh $(CHECKFN) {} \;
 
 /**/# clean out link tree looking for stuff that should get checked in
 flushlinks::
