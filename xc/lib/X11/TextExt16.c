@@ -1,4 +1,4 @@
-/* $XConsortium: XTextExt16.c,v 11.12 88/09/06 16:11:06 jim Exp $ */
+/* $XConsortium: XTextExt16.c,v 11.13 89/02/01 13:44:38 rws Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -44,13 +44,13 @@ static XCharStruct *GetCS16(min_bounds, pCS, firstCol, numCols,
     if (c < numCols) {
 	if ( pCS == NULL ) return min_bounds;
 	cs = &pCS[c];
-	if (! (cs->attributes & CI_NONEXISTCHAR)) return cs;
+	if (! CI_NONEXISTCHAR(cs)) return cs;
     }
     c = chDefault - firstCol;
     if (c >= numCols) return NULL;
     if ( pCS == NULL ) return min_bounds;    
     cs = &pCS[c];
-    if (! (cs->attributes & CI_NONEXISTCHAR)) return cs;
+    if (! CI_NONEXISTCHAR(cs)) return cs;
     return NULL;
 }
 
@@ -72,7 +72,7 @@ XCharStruct *GetCS162d(min_bounds, pCS, firstCol, numCols, firstRow, numRows,
 	if ( pCS == NULL ) return min_bounds;
         c = row*numCols + col;
 	cs = &pCS[c];
-	if (! (cs->attributes & CI_NONEXISTCHAR)) return cs;
+	if (! CI_NONEXISTCHAR(cs)) return cs;
     }
     row = (chDefault >> 8)-firstRow;
     col = (chDefault & 0xff)-firstCol;
@@ -80,7 +80,7 @@ XCharStruct *GetCS162d(min_bounds, pCS, firstCol, numCols, firstRow, numRows,
 	if ( pCS == NULL ) return min_bounds;
     c = row*numCols + col;
     cs = &pCS[c];
-    if (! (cs->attributes & CI_NONEXISTCHAR)) return cs;
+    if (! CI_NONEXISTCHAR(cs)) return cs;
     return NULL;
 }
 
