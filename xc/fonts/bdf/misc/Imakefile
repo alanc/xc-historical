@@ -13,3 +13,6 @@ FontTarget(9x15)
 FontTarget(cursor)
 
 InstallFonts ($(FONTDIR)/misc)
+
+depend::
+	@echo "skipping make depend in bdf/misc"

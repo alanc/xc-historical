@@ -11,3 +11,7 @@ MakeFonts()
 InstallFonts($(FONTDIR)/100dpi)
 
  */
+
+depend::
+        @echo "skipping depend in bdf/100dpi"
+

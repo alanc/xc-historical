@@ -141,3 +141,6 @@ FontTarget(timR24)
 FontTarget(timR8)
 
 InstallFonts($(FONTDIR)/75dpi)
+
+depend::
+	@echo "skipping depend in bdf/75dpi"
