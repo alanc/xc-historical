@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: Makefile,v 5.2 91/02/16 09:59:40 rws Exp $
 ###################################################################
 # Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
 # 
@@ -27,18 +27,23 @@
 # note: give CPPFLAGS=-DBUG to work around old server bits_per_rgb bug
 
 # Destination directory for objects and the executable
+INSPEXDEST  = /tmp/inspex_test
 DESTBIN = $(INSPEXDEST)/bin
 
 # X11 libs and include directory
-XHOME = /usr
+XVIEWHOME = /usr/openwin
 
 # required libraries for XView and Athena Widgets:
 XVLIBS = -lxview -lolgx -lX11 -lm
 AWLIBS = -lXaw -lXmu -lXt -lXext -lX11 -lm
 
-CFLAGS= -g  -I$(XHOME)/include $(CPPFLAGS)
-LDFLAGS=-Bstatic -L$(XHOME)/lib $(XVLIBS)
-AW_LDFLAGS=-Bstatic -L$(XHOME)/lib $(AWLIBS)
+CFLAGS= -g  -I$(XVIEWHOME)/share/include $(CPPFLAGS)
+
+#LDFLAGS=-Bstatic -L$(XVIEWHOME)/lib $(XVLIBS)
+LDFLAGS=-L$(XVIEWHOME)/lib $(XVLIBS)
+
+#AW_LDFLAGS=-Bstatic -L$(XVIEWHOME)/lib $(AWLIBS)
+AW_LDFLAGS=$(AWLIBS)
 
 SRC = Makefile inspector.c imagelib.c imagelib.h portable.h \
 	toolkit.c toolkit.h toolkitaw.c toolkitaw.h
