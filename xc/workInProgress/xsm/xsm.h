@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.7 94/06/17 13:20:05 mor Exp $ */
+/* $XConsortium: xsm.h,v 1.8 94/06/27 14:18:12 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -32,6 +32,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xaw/List.h>
+#include <X11/Xaw/AsciiText.h>
 #include <X11/Xfuncs.h>
 #ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE
