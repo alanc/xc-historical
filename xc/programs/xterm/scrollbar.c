@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.39 91/02/05 19:44:34 gildea Exp $
+ *	$XConsortium: scrollbar.c,v 1.40 91/05/10 16:57:39 gildea Exp $
  */
 
 /*
@@ -285,30 +285,7 @@ WindowScroll(screen, top)
 		refreshtop = scrollheight;
 	}
 	x = screen->scrollbar +	screen->border;
-	if(scrollheight > 0) {
-		if (screen->multiscroll && scrollheight == 1 &&
-		 screen->topline == 0 && screen->top_marg == 0 &&
-		 screen->bot_marg == screen->max_row) {
-			if (screen->incopy < 0 && screen->scrolls == 0)
-				CopyWait (screen);
-			screen->scrolls++;
-		} else {
-			if (screen->incopy)
-				CopyWait (screen);
-			screen->incopy = -1;
-		}
-		XCopyArea(
-		    screen->display, 
-		    TextWindow(screen), TextWindow(screen),
-		    screen->normalGC,
-		    (int) x,
-		    (int) scrolltop * FontHeight(screen) + screen->border, 
-		    (unsigned) Width(screen),
-		    (unsigned) scrollheight * FontHeight(screen),
-		    (int) x,
-		    (int) (scrolltop + i) * FontHeight(screen)
-			+ screen->border);
-	}
+	scrolling_copy_area(screen, scrolltop, scrollheight, -i);
 	screen->topline = top;
 	XClearArea(
 	    screen->display,

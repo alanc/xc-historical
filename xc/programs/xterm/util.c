@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.25 91/05/06 17:12:19 gildea Exp $
+ *	$XConsortium: util.c,v 1.26 91/05/10 16:57:42 gildea Exp $
  */
 
 /*
@@ -99,32 +99,8 @@ register TScreen *screen;
 		if((i = screen->top_marg + refreshheight - 1 - bot) > 0)
 			refreshheight -= i;
 	}
-	if(scrollheight > 0) {
-		if (screen->multiscroll && scrollheight == 1 &&
-		 screen->topline == 0 && screen->top_marg == 0 &&
-		 screen->bot_marg == screen->max_row) {
-			if (screen->incopy < 0 && screen->scrolls == 0)
-				CopyWait (screen);
-			screen->scrolls++;
-		} else {
-			if (screen->incopy)
-				CopyWait (screen);
-			screen->incopy = -1;
-		}
-
-		XCopyArea (
-		    screen->display, 
-		    TextWindow(screen),
-		    TextWindow(screen),
-		    screen->normalGC,
-		    (int) screen->border + screen->scrollbar,
-		    (int) (scrolltop + screen->scroll_amt) * FontHeight(screen)
-			+ screen->border, 
-		    (unsigned) Width(screen),
-		    (unsigned) scrollheight * FontHeight(screen),
-		    (int) screen->border + screen->scrollbar, 
-		    (int) scrolltop*FontHeight(screen) + screen->border);
-	}
+	scrolling_copy_area(screen, scrolltop+screen->scroll_amt,
+			    scrollheight, screen->scroll_amt);
 	ScrollSelection(screen, -(screen->scroll_amt));
 	screen->scroll_amt = 0;
 	screen->refresh_amt = 0;
@@ -239,32 +215,7 @@ register int amount;
 			}
 		}
 	}
-	if(scrollheight > 0) {
-		if (screen->multiscroll
-		&& amount==1 && screen->topline == 0
-		&& screen->top_marg==0
-		&& screen->bot_marg==screen->max_row) {
-			if (screen->incopy<0 && screen->scrolls==0)
-				CopyWait(screen);
-			screen->scrolls++;
-		} else {
-			if (screen->incopy)
-				CopyWait(screen);
-			screen->incopy = -1;
-		}
-
-		XCopyArea(
-		    screen->display, 
-		    TextWindow(screen),
-		    TextWindow(screen),
-		    screen->normalGC,
-		    (int) screen->border + screen->scrollbar,
-		    (int) (scrolltop+amount) * FontHeight(screen) + screen->border, 
-		    (unsigned) Width(screen),
-		    (unsigned) scrollheight * FontHeight(screen),
-		    (int) screen->border + screen->scrollbar,
-		    (int) scrolltop * FontHeight(screen) + screen->border);
-	}
+	scrolling_copy_area(screen, scrolltop+amount, scrollheight, amount);
 	if(refreshheight > 0) {
 		XClearArea (
 		   screen->display,
@@ -336,32 +287,7 @@ register int amount;
 		scrollheight -= i;
 	if((i = screen->top_marg + refreshheight - 1 - bot) > 0)
 		refreshheight -= i;
-	if(scrollheight > 0) {
-		if (screen->multiscroll
-		&& amount==1 && screen->topline == 0
-		&& screen->top_marg==0
-		&& screen->bot_marg==screen->max_row) {
-			if (screen->incopy<0 && screen->scrolls==0)
-				CopyWait(screen);
-			screen->scrolls++;
-		} else {
-			if (screen->incopy)
-				CopyWait(screen);
-			screen->incopy = -1;
-		}
-
-		XCopyArea (
-		    screen->display,
-		    TextWindow(screen),
-		    TextWindow(screen),
-		    screen->normalGC,
-		    (int) screen->border + screen->scrollbar, 
-		    (int) (scrolltop-amount) * FontHeight(screen) + screen->border, 
-		    (unsigned) Width(screen),
-		    (unsigned) scrollheight * FontHeight(screen),
-		    (int) screen->border + screen->scrollbar,
-		    (int) scrolltop * FontHeight(screen) + screen->border);
-	}
+	scrolling_copy_area(screen, scrolltop-amount, scrollheight, -amount);
 	if(refreshheight > 0)
 		XClearArea (
 		    screen->display,
@@ -422,22 +348,7 @@ register int n;
 		scrollheight -= i;
 	if((i = screen->cur_row + refreshheight - 1 - bot) > 0)
 		refreshheight -= i;
-	if(scrollheight > 0) {
-		if (screen->incopy)
-			CopyWait (screen);
-		screen->incopy = -1;
-		XCopyArea (
-		    screen->display, 
-		    TextWindow(screen),
-		    TextWindow(screen),
-		    screen->normalGC,
-		    (int) screen->border + screen->scrollbar,
-		    (int) (scrolltop - n) * FontHeight(screen) + screen->border, 
-		    (unsigned) Width(screen),
-		    (unsigned) scrollheight * FontHeight(screen),
-		    (int) screen->border + screen->scrollbar,
-		    (int) scrolltop * FontHeight(screen) + screen->border);
-	}
+	vertical_copy_area(screen, scrolltop-n, scrollheight, -n);
 	if(refreshheight > 0)
 		XClearArea (
 		    screen->display,
@@ -514,23 +425,7 @@ register int n;
 			}
 		}
 	}
-	if(scrollheight > 0) {
-		if (screen->incopy)
-			CopyWait(screen);
-		screen->incopy = -1;
-
-		XCopyArea (
-		    screen->display,
-		    TextWindow(screen),
-		    TextWindow(screen),
-		    screen->normalGC,
-		    (int) screen->border + screen->scrollbar,
-		    (int) (scrolltop + n) * FontHeight(screen) + screen->border, 
-		    (unsigned) Width(screen),
-		    (unsigned) scrollheight * FontHeight(screen),
-		    (int) screen->border + screen->scrollbar,
-		    (int) scrolltop * FontHeight(screen) + screen->border);
-	}
+	vertical_copy_area(screen, scrolltop+n, scrollheight, n);
 	if(refreshheight > 0)
 		XClearArea (
 		    screen->display,
@@ -554,10 +449,10 @@ register int n;
  * Insert n blanks at the cursor's position, no wraparound
  */
 InsertChar (screen, n)
-register TScreen *screen;
-register int n;
+    register TScreen *screen;
+    register int n;
 {
-	register int width = n * FontWidth(screen), cx, cy;
+        register int cx, cy;
 
 	if(screen->cursor_state)
 		HideCursor();
@@ -566,38 +461,26 @@ register int n;
 	    if(!AddToRefresh(screen)) {
 		if(screen->scroll_amt)
 			FlushScroll(screen);
-	
-		if (screen->incopy)
-			CopyWait (screen);
-		screen->incopy = -1;
-	
-		cx = CursorX (screen, screen->cur_col);
-		cy = CursorY (screen, screen->cur_row);
 
 		/*
 		 * prevent InsertChar from shifting the end of a line over
 		 * if it is being appended to
 		 */
 		if (non_blank_line (screen->buf, screen->cur_row, 
-				    screen->cur_col, screen->max_col + 1)) {
-		  XCopyArea(
-		    screen->display,
-		    TextWindow(screen), TextWindow(screen),
-		    screen->normalGC,
-		    cx, cy,
-		    (unsigned) Width(screen)
-		        - (screen->cur_col + n) * FontWidth(screen),
-		    (unsigned) FontHeight(screen), 
-		    cx + width, cy);
-		} else
-			screen->incopy = 0;
+				    screen->cur_col, screen->max_col + 1))
+		    horizontal_copy_area(screen, screen->cur_col,
+					 screen->max_col+1 - (screen->cur_col+n),
+					 n);
+	
+		cx = CursorX (screen, screen->cur_col);
+		cy = CursorY (screen, screen->cur_row);
 
 		XFillRectangle(
 		    screen->display,
 		    TextWindow(screen), 
 		    screen->reverseGC,
 		    cx, cy,
-		    (unsigned) width, (unsigned) FontHeight(screen));
+		    (unsigned) n * FontWidth(screen), (unsigned) FontHeight(screen));
 	    }
 	}
 	/* adjust screen->buf */
@@ -609,10 +492,10 @@ register int n;
  * Deletes n chars at the cursor's position, no wraparound.
  */
 DeleteChar (screen, n)
-register TScreen *screen;
-register int	n;
+    register TScreen *screen;
+    register int	n;
 {
-	register int width, cx, cy;
+	register int width;
 
 	if(screen->cursor_state)
 		HideCursor();
@@ -625,25 +508,16 @@ register int	n;
 		if(screen->scroll_amt)
 			FlushScroll(screen);
 	
-		width = n * FontWidth(screen);
+		horizontal_copy_area(screen, screen->cur_col+n,
+				     screen->max_col+1 - (screen->cur_col+n),
+				     -n);
 	
-		if (screen->incopy)
-			CopyWait (screen);
-		screen->incopy = -1;
-	
-		cx = CursorX (screen, screen->cur_col);
-		cy = CursorY (screen, screen->cur_row);
-		XCopyArea(screen->display,
-		     TextWindow(screen), TextWindow(screen),
-		     screen->normalGC, 
-		     cx + width, cy,
-		     Width(screen) - (screen->cur_col + n) * FontWidth(screen),
-		     FontHeight(screen), 
-		     cx, cy);
-		XFillRectangle (screen->display, TextWindow(screen),
+		XFillRectangle
+		    (screen->display, TextWindow(screen),
 		     screen->reverseGC,
 		     screen->border + screen->scrollbar + Width(screen) - width,
-		     cy, width, FontHeight(screen));
+		     CursorY (screen, screen->cur_row), n * FontWidth(screen),
+		     FontHeight(screen));
 	    }
 	}
 	/* adjust screen->buf */
@@ -849,6 +723,87 @@ register TScreen *screen;
 		}
 	}
 }
+
+/*
+ * used by vertical_copy_area and and horizontal_copy_area
+ */
+static void
+copy_area(screen, src_x, src_y, width, height, dest_x, dest_y)
+    TScreen *screen;
+    int src_x, src_y;
+    unsigned int width, height;
+    int dest_x, dest_y;
+{
+    if (screen->incopy)
+	CopyWait(screen);
+    screen->incopy = -1;
+
+    XCopyArea(screen->display, 
+	      TextWindow(screen), TextWindow(screen),
+	      screen->normalGC,
+	      src_x, src_y, width, height, dest_x, dest_y);
+}
+
+/*
+ * use when inserting or deleting characters on the current line
+ */
+static
+horizontal_copy_area(screen, firstchar, nchars, amount)
+    TScreen *screen;
+    int firstchar;		/* char pos on screen to start copying at */
+    int nchars;
+    int amount;			/* number of characters to move right */
+{
+    int src_x = CursorX(screen, firstchar);
+    int src_y = CursorY(screen, screen->cur_row);
+
+    copy_area(screen, src_x, src_y,
+	      (unsigned)nchars*FontWidth(screen), FontHeight(screen),
+	      src_x + amount*FontWidth(screen), src_y);
+}
+
+/*
+ * use when inserting or deleting lines from the screen
+ */
+static
+vertical_copy_area(screen, firstline, nlines, amount)
+    TScreen *screen;
+    int firstline;		/* line on screen to start copying at */
+    int nlines;
+    int amount;			/* number of lines to move up (neg=down) */
+{
+    if(nlines > 0) {
+	int src_x = screen->border + screen->scrollbar;
+	int src_y = firstline * FontHeight(screen) + screen->border;
+
+	copy_area(screen, src_x, src_y,
+		  (unsigned)Width(screen), nlines*FontHeight(screen),
+		  src_x, src_y - amount*FontHeight(screen));
+    }
+}
+
+/*
+ * use when scrolling the entire screen
+ */
+scrolling_copy_area(screen, firstline, nlines, amount)
+    TScreen *screen;
+    int firstline;		/* line on screen to start copying at */
+    int nlines;
+    int amount;			/* number of lines to move up (neg=down) */
+{
+
+    if(nlines > 0) {
+	if (screen->multiscroll && amount == 1 &&
+	    screen->topline == 0 && screen->top_marg == 0 &&
+	    screen->bot_marg == screen->max_row) {
+	    if (screen->incopy < 0 && screen->scrolls == 0)
+		CopyWait(screen);
+	    screen->scrolls++;
+	}
+	vertical_copy_area(screen, firstline, nlines, amount);
+    }
+}
+
 /*
  * This routine handles exposure events
  */
