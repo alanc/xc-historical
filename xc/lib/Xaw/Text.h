@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.28 89/07/27 17:50:43 kit Exp $
+* $XConsortium: Text.h,v 1.29 89/08/14 14:43:18 kit Exp $
 */
 
 
@@ -30,6 +30,8 @@ SOFTWARE.
 #ifndef _XawText_h
 #define _XawText_h
 
+#include <X11/Xaw/TextSrc.h>
+
 /****************************************************************
  *
  * Text widget
@@ -58,7 +60,6 @@ SOFTWARE.
  selectTypes	     SelectTypes	Pointer		(internal)
  selection	     Selection		Pointer		empty selection
  sensitive	     Sensitive		Boolean		True
- textOptions	     TextOptions	int		0
  textSink	     TextSink		Pointer		(none)
  textSource	     TextSource		Pointer		(none)
  width		     Width		Dimension	100
@@ -99,9 +100,6 @@ SOFTWARE.
 #define XtNtopMargin "topMargin"
 #define XtNwrap "wrap"
 
-/* preserved for Back Compatability only. */
-#define XtNtextOptions "textOptions"
-
 #define XtCAutoFill "AutoFill"
 #define XtCOutput "Output"
 #define XtCResize "Resize"
@@ -119,18 +117,17 @@ SOFTWARE.
 #define XawEditError		1
 #define XawPositionError	2
 
+extern Atom FMT8BIT;
+
 /* Class record constants */
 
 extern WidgetClass textWidgetClass;
-extern Atom FMT8BIT;
 
 typedef struct _TextClassRec *TextWidgetClass;
 typedef struct _TextRec      *TextWidget;
 
 /* other stuff */
 
-typedef long XawTextPosition;
-typedef struct _XawTextSource XawTextSourceRec, *XawTextSource;
 typedef struct _XawTextSink XawTextSinkRec, *XawTextSink;
 
 typedef enum { XawtextScrollNever,
@@ -147,14 +144,6 @@ typedef enum {XawtextRead, XawtextAppend, XawtextEdit} XawTextEditType;
 typedef enum {XawselectNull, XawselectPosition, XawselectChar, XawselectWord,
     XawselectLine, XawselectParagraph, XawselectAll} XawTextSelectType;
 
-#define wordBreak		0x01
-#define scrollVertical		0x02
-#define scrollHorizontal	0x04
-#define scrollOnOverflow	0x08
-#define resizeWidth		0x10
-#define resizeHeight		0x20
-#define editable		0x40
-
 typedef struct {
     int  firstPos;
     int  length;
@@ -167,20 +156,32 @@ typedef struct {
  * This Stuff is only for compatibility, and will go away in 
  * future releases.                                         */
 
+/* preserved for Back Compatability only. */
+
+#define XawTextSource Widget
+#define XtTextSource  Widget
+
+#define wordBreak		0x01
+#define scrollVertical		0x02
+#define scrollHorizontal	0x04
+#define scrollOnOverflow	0x08
+#define resizeWidth		0x10
+#define resizeHeight		0x20
+#define editable		0x40
+
 typedef long XtTextPosition;
-typedef struct _XawTextSource XtTextSourceRec, *XtTextSource;
 typedef struct _XawTextSink XtTextSinkRec, *XtTextSink;
 
 #define XtTextBlock                XawTextBlock
 #define XtTextBlockPtr             XawTextBlockPtr
 
-#define EditDone	   XawEditDone
-#define EditError	   XawEditError
-#define PositionError	   XawPositionError
+#define EditDone	           XawEditDone
+#define EditError	           XawEditError
+#define PositionError	           XawPositionError
 
-#define XtEditDone	   XawEditDone
-#define XtEditError	   XawEditError
-#define XtPositionError	   XawPositionError
+#define XtEditDone	           XawEditDone
+#define XtEditError	           XawEditError
+#define XtPositionError	           XawPositionError
 
 #define XttextRead                 XawtextRead
 #define XttextAppend               XawtextAppend
@@ -285,7 +286,7 @@ extern void XawTextInvalidate(); /* w, from, to */
     /* Widget        w;		*/
     /* XawTextPosition from, to; */
 
-extern XawTextSource XawTextGetSource() ; /* w */
+extern Widget XawTextGetSource() ; /* w */
     /* Widget        w;		*/
 
 extern XawTextPosition XawTextSearch() ; /* w, dir, text */

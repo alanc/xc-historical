@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiSrc.h,v 1.1 89/06/29 13:43:07 kit Exp $
+ * $XConsortium: AsciiSrc.h,v 1.2 89/07/06 16:00:54 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -15,11 +15,6 @@
  *
  */
 
-/***********************************************************************
- *
- * Ascii Source
- *
- ***********************************************************************/
 
 /*
  * AsciiSrc.h - Public Header file for Ascii Text Source.
@@ -35,10 +30,33 @@
  *          kit@expo.lcs.mit.edu
  */
 
+
 #ifndef _XawAsciiSrc_h
 #define _XawAsciiSrc_h
 
-#include <X11/Xaw/Text.h>
+#include <X11/Xaw/TextSrc.h>
+
+/* Resources:
+
+ Name		     Class		RepType		Default Value
+ ----		     -----		-------		-------------
+
+
+*/
+ 
+/* Class record constants */
+
+extern WidgetClass asciiSrcWidgetClass;
+
+typedef struct _AsciiSrcClassRec *AsciiSrcWidgetClass;
+typedef struct _AsciiSrcRec      *AsciiSrcWidget;
+
+#define AsciiSourceWidgetClass AsciiSrcWidgetClass
+#define AsciiSourceWidget      AsciiSrcWidget
+
+/*
+ * Resource Definitions.
+ */
 
 #define XtCAsciiString "AsciiString"
 #define XtCDataCompression "DataCompression"
@@ -57,17 +75,6 @@
 
 typedef enum {XawAsciiFile, XawAsciiString} XawAsciiType;
 
-#define ASCII_STRING		/* Turn R3 AsciiDisk and AsciiString */
-#define ASCII_DISK		/* Emulation modes. */
-
-#ifdef ASCII_STRING
-#define XawStringSourceDestroy XawAsciiSourceDestroy
-#endif
-
-#ifdef ASCII_DISK
-#define XawDiskSourceDestroy XawAsciiSourceDestroy
-#endif
-
 /************************************************************
  *
  * Public routines 
@@ -77,7 +84,7 @@ typedef enum {XawAsciiFile, XawAsciiString} XawAsciiType;
 /*	Function Name: XawAsciiSourceFreeString
  *	Description: Frees the string returned by a get values call
  *                   on the string when the source is of type string.
- *	Arguments: w - the widget.
+ *	Arguments: w - the AsciiSrc widget.
  *	Returns: none.
  */
 
@@ -85,35 +92,10 @@ void XawAsciiSourceFreeString(/* w */);
 /*
 Widget w;
 */
-  
-/*	Function Name: XawAsciiSourceCreate
- *	Description: Creates the AsciiSource.
- *	Arguments: parent - the widget that will own this source.
- *                 args, num_args - the argument list.
- *	Returns: a pointer to the new text source.
- */
-  
-XawTextSource XawAsciiSourceCreate(/* parent, args, num_args */);
-/*
-Widget	parent;
-ArgList	args;
-Cardinal num_args;
-*/
-
-/*	Function Name: XawAsciiSourceDestroy
- *	Description: Destroys an ascii source (frees all data)
- *	Arguments: src - ths source to free.
- *	Returns: none.
- */
-
-void XawAsciiSourceDestroy(/* src */);
-/*
-XawTextSource src;
-*/
 
 /*	Function Name: XawAsciiSave
  *	Description: Saves all the pieces into a file or string as required.
- *	Arguments: w - the asciiText Widget.
+ *	Arguments: w - the asciiSrc Widget.
  *	Returns: TRUE if the save was successful.
  */
 
@@ -124,7 +106,7 @@ Widget w;
 
 /*	Function Name: XawAsciiSaveAsFile
  *	Description: Save the current buffer as a file.
- *	Arguments: w - the ascii text widget.
+ *	Arguments: w - the asciiSrc widget.
  *                 name - name of the file to save this file into.
  *	Returns: True if the save was sucessful.
  */
@@ -137,7 +119,7 @@ String name;
 
 /*	Function Name: XawAsciiSourceChanged
  *	Description: Returns true if the source has changed since last saved.
- *	Arguments: w - the ascii source widget.
+ *	Arguments: w - the asciiSource widget.
  *	Returns: a Boolean (see description).
  */
 
@@ -146,13 +128,24 @@ Boolean XawAsciiSourceChanged(/* w */);
 Widget w;
 */
 
+#ifdef XAW_BC
+/*************************************************************
+ *
+ * These functions are only preserved for compatability.     
+ */
+
+#define ASCII_STRING		/* Turn R3 AsciiDisk and AsciiString */
+#define ASCII_DISK		/* Emulation modes. */
+
 #ifdef ASCII_STRING
-/************************************************************
- *
- * Compatability functions.
- *
- ************************************************************/
- 
+#define XawStringSourceDestroy XtDestroyWidget
+#endif
+
+#ifdef ASCII_DISK
+#define XawDiskSourceDestroy XtDestroyWidget
+#endif
+
+#ifdef ASCII_STRING
 /*	Function Name: AsciiStringSourceCreate
  *	Description: Creates a string source.
  *	Arguments: parent - the widget that will own this source.
@@ -183,5 +176,11 @@ ArgList args;
 Cardinal num_args;
 */
 #endif /* ASCII_DISK */
+#endif /* XAW_BC */
+/*
+ * End of Compatability stuff.
+ *  
+ ***************************************************/
 
 #endif /* _XawAsciiSrc_h  - Don't add anything after this line. */
+

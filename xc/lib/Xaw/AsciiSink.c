@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.35 89/08/17 18:42:06 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.36 89/08/17 19:10:48 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -26,6 +26,8 @@ SOFTWARE.
 
 ******************************************************************/
 
+#define XAW_BC			/* Tempory. */
+
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
@@ -37,7 +39,7 @@ SOFTWARE.
 #undef GETLASTPOS		/* We will use our own GETLASTPOS. */
 #endif
 
-#define GETLASTPOS (*source->Scan)(source, 0, XawstAll, XawsdRight, 1, TRUE)
+#define GETLASTPOS XawTextSourceScan(source, 0, XawstAll, XawsdRight, 1, TRUE)
 
 /* Private Ascii TextSink Definitions */
 
@@ -190,7 +192,7 @@ XawTextPosition pos1, pos2;
 
     y += data->font->ascent;
     for ( j = 0 ; pos1 < pos2 ; ) {
-	pos1 = (*source->Read)(source, pos1, &blk, pos2 - pos1);
+	pos1 = XawTextSourceRead(source, pos1, &blk, pos2 - pos1);
 	for (k = 0; k < blk.length; k++) {
 	    if (j >= bufferSize - 5) {
 		bufferSize *= 2;
@@ -336,11 +338,11 @@ AsciiFindDistance (w, fromPos, fromx, toPos, resWidth, resPos, resHeight)
     data = (AsciiSinkData *) sink->data;
     /* we may not need this */
     lastPos = GETLASTPOS;
-    (*source->Read)(source, fromPos, &blk, toPos - fromPos);
+    XawTextSourceRead(source, fromPos, &blk, toPos - fromPos);
     *resWidth = 0;
     for (index = fromPos; index != toPos && index < lastPos; index++) {
 	if (index - blk.firstPos >= blk.length)
-	    (*source->Read)(source, index, &blk, toPos - fromPos);
+	    XawTextSourceRead(source, index, &blk, toPos - fromPos);
 	c = blk.ptr[index - blk.firstPos];
 	if (c == LF) {
 	    *resWidth += CharWidth(w, fromx + *resWidth, SP);
@@ -378,14 +380,14 @@ AsciiFindPosition(w, fromPos, fromx, width, stopAtWordBreak,
     data = (AsciiSinkData *) sink->data;
     lastPos = GETLASTPOS;
 
-    (*source->Read)(source, fromPos, &blk, bufferSize);
+    XawTextSourceRead(source, fromPos, &blk, bufferSize);
     *resWidth = 0;
     whiteSpaceSeen = FALSE;
     c = 0;
     for (index = fromPos; *resWidth <= width && index < lastPos; index++) {
 	lastWidth = *resWidth;
 	if (index - blk.firstPos >= blk.length)
-	    (*source->Read)(source, index, &blk, bufferSize);
+	    XawTextSourceRead(source, index, &blk, bufferSize);
 	c = blk.ptr[index - blk.firstPos];
 	*resWidth += CharWidth(w, fromx + *resWidth, c);
 

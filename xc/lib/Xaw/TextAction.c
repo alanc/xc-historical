@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.10 89/08/18 14:31:49 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.11 89/08/22 16:29:43 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -36,6 +36,8 @@ SOFTWARE.
 #include <X11/Xmu/Misc.h>
 
 #include <X11/Xaw/TextP.h>
+
+#define SrcScan                XawTextSourceScan
 
 /*
  * These are defined in TextPop.c
@@ -111,8 +113,8 @@ int buffer;
     XBell(XtDisplay(ctx), 50);
     return;
   }
-  ctx->text.insertPos = (*ctx->text.source->Scan)(ctx->text.source, 
-	   ctx->text.insertPos, XawstPositions, XawsdRight, text.length, TRUE);
+  ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
+				XawstPositions, XawsdRight, text.length, TRUE);
   XawTextUnsetSelection((Widget)ctx);
   XtFree(text.ptr);
 }
@@ -176,8 +178,8 @@ int *format;
     XBell(XtDisplay(ctx), 50);
     return;
   }
-  ctx->text.insertPos = (*ctx->text.source->Scan)(ctx->text.source, 
-	   ctx->text.insertPos, XawstPositions, XawsdRight, text.length, TRUE);
+  ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos, 
+				XawstPositions, XawsdRight, text.length, TRUE);
 
   XawTextUnsetSelection((Widget)ctx);
   EndAction(ctx);
@@ -265,8 +267,8 @@ XawTextScanType type;
 Boolean include;
 {
   StartAction(ctx, event);
-  ctx->text.insertPos = (*ctx->text.source->Scan)(ctx->text.source,
-		    ctx->text.insertPos, type, dir, ctx->text.mult, include);
+  ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
+				type, dir, ctx->text.mult, include);
   EndAction(ctx);
 }
 
@@ -346,20 +348,18 @@ XawTextScanDirection dir;
   if (dir == XawsdLeft)
     ctx->text.mult++;
 
-  new = (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
-				  XawstEOL, XawsdLeft, 1, FALSE);
+  new = SrcScan(ctx->text.source, ctx->text.insertPos,
+		XawstEOL, XawsdLeft, 1, FALSE);
 
   from_left = (ctx->text.insertPos - new);
 
-  new = (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
-				  XawstEOL, dir,
-				  ctx->text.mult, (dir == XawsdRight));
+  new = SrcScan(ctx->text.source, ctx->text.insertPos, XawstEOL, dir,
+		ctx->text.mult, (dir == XawsdRight));
 
-  next_line = (*ctx->text.source->Scan)(ctx->text.source, new,
-					XawstEOL, XawsdRight, 1, FALSE);
+  next_line = SrcScan(ctx->text.source, new, XawstEOL, XawsdRight, 1, FALSE);
 
-  ctx->text.insertPos = (*ctx->text.source->Scan)(ctx->text.source, new,
-				  XawstPositions, XawsdRight, from_left, TRUE);
+  ctx->text.insertPos = SrcScan(ctx->text.source, new,
+				XawstPositions, XawsdRight, from_left, TRUE);
 
   if (ctx->text.insertPos > next_line)
     ctx->text.insertPos = next_line;
@@ -507,8 +507,8 @@ Boolean	   include, kill;
   XawTextPosition from, to;
   
   StartAction(ctx, event);
-  to = (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
-				 type, dir, ctx->text.mult, include);
+  to = SrcScan(ctx->text.source, ctx->text.insertPos,
+	       type, dir, ctx->text.mult, include);
   
   if (dir == XawsdLeft) {
     from = to;
@@ -583,13 +583,11 @@ XEvent *event;
   XawTextPosition end_of_line;
 
   StartAction(ctx, event);
-  end_of_line = (*ctx->text.source->Scan)(ctx->text.source,
-					  ctx->text.insertPos, XawstEOL, 
-					  XawsdRight, ctx->text.mult, FALSE);
+  end_of_line = SrcScan(ctx->text.source, ctx->text.insertPos, XawstEOL, 
+			XawsdRight, ctx->text.mult, FALSE);
   if (end_of_line == ctx->text.insertPos)
-    end_of_line = (*ctx->text.source->Scan)(ctx->text.source,
-					    ctx->text.insertPos, XawstEOL, 
-					    XawsdRight, ctx->text.mult, TRUE);
+    end_of_line = SrcScan(ctx->text.source, ctx->text.insertPos, XawstEOL, 
+			  XawsdRight, ctx->text.mult, TRUE);
 
   _DeleteOrKill(ctx, ctx->text.insertPos, end_of_line, TRUE);
   EndAction(ctx);
@@ -687,8 +685,8 @@ XEvent *event;
   StartAction(ctx, event);
   if (InsertNewLineAndBackupInternal(ctx) == XawEditError)
     return(XawEditError);
-  ctx->text.insertPos = (*ctx->text.source->Scan)(ctx->text.source,
-        ctx->text.insertPos, XawstPositions, XawsdRight, ctx->text.mult, TRUE);
+  ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos, 
+			     XawstPositions, XawsdRight, ctx->text.mult, TRUE);
   EndAction(ctx);
   _XawTextSetScrollBars(ctx);
   return(XawEditDone);
@@ -712,12 +710,10 @@ XEvent *event;
   TextWidget ctx = (TextWidget) w;
 
   StartAction(ctx, event);
-  pos1 = (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos, 
-				   XawstEOL, XawsdLeft, 1, FALSE);
-  pos2 = (*ctx->text.source->Scan)(ctx->text.source, pos1, XawstEOL, 
-				   XawsdLeft, 1, TRUE);
-  pos2 = (*ctx->text.source->Scan)(ctx->text.source, pos2, XawstWhiteSpace, 
-				   XawsdRight, 1, TRUE);
+  pos1 = SrcScan(ctx->text.source, ctx->text.insertPos, 
+		 XawstEOL, XawsdLeft, 1, FALSE);
+  pos2 = SrcScan(ctx->text.source, pos1, XawstEOL, XawsdLeft, 1, TRUE);
+  pos2 = SrcScan(ctx->text.source, pos2, XawstWhiteSpace, XawsdRight, 1, TRUE);
   text.ptr = _XawTextGetText(ctx, pos1, pos2);
   text.length = strlen(text.ptr);
   if (LocalInsertNewLine(ctx, event)) return;
@@ -727,8 +723,8 @@ XEvent *event;
     EndAction(ctx);
     return;
   }
-  ctx->text.insertPos = (*ctx->text.source->Scan)(ctx->text.source, 
-	   ctx->text.insertPos, XawstPositions, XawsdRight, text.length, TRUE);
+  ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
+				XawstPositions, XawsdRight, text.length, TRUE);
   XtFree(text.ptr);
   EndAction(ctx);
   _XawTextSetScrollBars(ctx);
@@ -751,10 +747,9 @@ Cardinal *num_params;
   XawTextPosition l, r;
 
   StartAction(ctx, event);
-  l = (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos, 
-				XawstWhiteSpace, XawsdLeft, 1, FALSE);
-  r = (*ctx->text.source->Scan)(ctx->text.source, l, XawstWhiteSpace, 
-				XawsdRight, 1, FALSE);
+  l = SrcScan(ctx->text.source, ctx->text.insertPos, 
+	      XawstWhiteSpace, XawsdLeft, 1, FALSE);
+  r = SrcScan(ctx->text.source, l, XawstWhiteSpace, XawsdRight, 1, FALSE);
   _XawTextSetSelection(ctx, l, r, params, *num_params);
   EndAction(ctx);
 }
@@ -935,7 +930,7 @@ TextWidget ctx;
    * Do not make any changes if we could not find a word break.
    */
   
-  (*ctx->text.source->Read)(ctx->text.source, ret_pos - 1, &text, 1);
+  XawTextSourceRead(ctx->text.source, ret_pos - 1, &text, 1);
   if ( (text.length != 1) || !isspace(text.ptr[0]) )
     return;
   
@@ -991,8 +986,8 @@ XEvent *event;
 
   if (error == XawEditDone) {
     ctx->text.insertPos = 
-      (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
-				XawstPositions, XawsdRight, text.length, TRUE);
+      SrcScan(ctx->text.source, ctx->text.insertPos,
+	      XawstPositions, XawsdRight, text.length, TRUE);
     AutoFill(ctx);
     XawTextUnsetSelection((Widget)ctx);
   }
@@ -1046,8 +1041,8 @@ Cardinal *num_params;
       return;
     }
     ctx->text.insertPos =
-      (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
-				XawstPositions, XawsdRight, text.length, TRUE);
+      SrcScan(ctx->text.source, ctx->text.insertPos,
+	      XawstPositions, XawsdRight, text.length, TRUE);
   }
   XawTextUnsetSelection((Widget)ctx);
   EndAction(ctx);
@@ -1154,7 +1149,6 @@ StripOutOldCRs(ctx, from, to)
 TextWidget ctx;
 XawTextPosition from, to;
 {
-  XawTextPosition (*Scan)() = ctx->text.source->Scan;
   XawTextPosition startPos, endPos, eop_begin, eop_end;
   XawTextBlock text;
   char *buf;
@@ -1169,24 +1163,24 @@ XawTextPosition from, to;
 
   eop_begin = eop_end = startPos = endPos = from;
   while (TRUE) {
-    endPos=(*Scan)(ctx->text.source, startPos, XawstEOL, XawsdRight, 1, FALSE);
+    endPos=SrcScan(ctx->text.source, startPos, XawstEOL, XawsdRight, 1, FALSE);
     if (endPos >= to)
       break;
 
     if (endPos >= eop_begin) {
       startPos = eop_end;
-      eop_begin = (*Scan)(ctx->text.source, startPos, XawstParagraph,
+      eop_begin = SrcScan(ctx->text.source, startPos, XawstParagraph,
 			  XawsdRight, 1, FALSE);
-      eop_end = (*Scan)(ctx->text.source, startPos, XawstParagraph,
+      eop_end = SrcScan(ctx->text.source, startPos, XawstParagraph,
 			XawsdRight, 1, TRUE);
     }
     else {
       XawTextPosition periodPos, next_word;
       int i, len, start;
 
-      periodPos=(*Scan)(ctx->text.source, endPos, 
-			XawstPositions, XawsdLeft, 1, TRUE);
-      next_word = (*Scan)(ctx->text.source, endPos, XawstWhiteSpace,
+      periodPos= SrcScan(ctx->text.source, endPos, 
+			 XawstPositions, XawsdLeft, 1, TRUE);
+      next_word = SrcScan(ctx->text.source, endPos, XawstWhiteSpace,
 			  XawsdRight, 1, FALSE);
 
       len = next_word - periodPos;
@@ -1211,7 +1205,7 @@ XawTextPosition from, to;
       XtFree(buf);
 
       to -= i - text.length;
-      startPos = (*Scan)(ctx->text.source, periodPos,
+      startPos = SrcScan(ctx->text.source, periodPos,
 			 XawstPositions, XawsdRight, i + start, TRUE);
       _XawTextReplace(ctx, endPos, startPos, &text);
 	startPos -= i - text.length;
@@ -1233,7 +1227,6 @@ TextWidget ctx;
 XawTextPosition from, to;
 {
   void (*FindPosition)() = ctx->text.sink->FindPosition;
-  XawTextPosition (*Scan)() = ctx->text.source->Scan;
   XawTextPosition startPos, endPos, space, eol;
   XawTextBlock text;
   int i, width, height, len;
@@ -1252,10 +1245,8 @@ XawTextPosition from, to;
     if (eol >= to)
       break;
 
-    eol = (*Scan)(ctx->text.source, eol, XawstPositions, XawsdLeft, 1,
-		  TRUE);
-    space = (*Scan)(ctx->text.source, eol, XawstWhiteSpace, XawsdRight, 1,
-		    TRUE);
+    eol = SrcScan(ctx->text.source, eol, XawstPositions, XawsdLeft, 1, TRUE);
+    space= SrcScan(ctx->text.source, eol, XawstWhiteSpace, XawsdRight, 1,TRUE);
     
     startPos = endPos = eol;
     if (eol == space) 
@@ -1268,12 +1259,12 @@ XawTextPosition from, to;
 	break;
 
     to -= (i - 1);
-    endPos = (*Scan)(ctx->text.source, endPos,
+    endPos = SrcScan(ctx->text.source, endPos,
 		     XawstPositions, XawsdRight, i, TRUE);
     XtFree(buf);
     
     _XawTextReplace(ctx, startPos, endPos, &text);
-    startPos = (*Scan)(ctx->text.source, startPos,
+    startPos = SrcScan(ctx->text.source, startPos,
 		       XawstPositions, XawsdRight, 1, TRUE);
   }
 }  
@@ -1318,10 +1309,10 @@ Cardinal * num_params;
 
   StartAction(ctx, event);
 
-  from =  (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
-				    XawstParagraph, XawsdLeft, 1, FALSE);
-  to  =  (*ctx->text.source->Scan)(ctx->text.source, from,
-				   XawstParagraph, XawsdRight, 1, FALSE);
+  from =  SrcScan(ctx->text.source, ctx->text.insertPos,
+		  XawstParagraph, XawsdLeft, 1, FALSE);
+  to  =  SrcScan(ctx->text.source, from,
+		 XawstParagraph, XawsdRight, 1, FALSE);
 
   FormRegion(ctx, from, to);
   EndAction(ctx);
@@ -1346,7 +1337,6 @@ String * params;
 Cardinal * num_params;
 {
   TextWidget ctx = (TextWidget) w;
-  XawTextSource src = ctx->text.source;
   XawTextPosition start, end;
   XawTextBlock text;
   unsigned char * buf, c;
@@ -1358,10 +1348,10 @@ Cardinal * num_params;
  * Get bounds. 
  */
 
-  start = (*src->Scan) (src, ctx->text.insertPos, XawstPositions, XawsdLeft,
-			1, TRUE);
-  end = (*src->Scan) (src, ctx->text.insertPos, XawstPositions, XawsdRight,
-		      ctx->text.mult, TRUE);
+  start = SrcScan(ctx->text.source, ctx->text.insertPos, XawstPositions, 
+		  XawsdLeft, 1, TRUE);
+  end = SrcScan(ctx->text.source, ctx->text.insertPos, XawstPositions, 
+		XawsdRight, ctx->text.mult, TRUE);
 
   if ( (start == ctx->text.insertPos) || (end == ctx->text.insertPos) ) 
     XBell(XtDisplay(w), 0);	/* complain. */

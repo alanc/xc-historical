@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.111 89/08/25 17:12:17 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.112 89/08/30 19:09:12 converse Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -43,6 +43,13 @@ SOFTWARE.
 #include <X11/Xaw/TextP.h>
 
 Atom FMT8BIT = NULL;
+
+#define SrcScan                XawTextSourceScan
+#define SrcRead                XawTextSourceRead
+#define SrcReplace             XawTextSourceReplace
+#define SrcSearch              XawTextSourceSearch
+#define SrcCvtSel              XawTextSourceConvertSelection
+#define SrcSetSelection        XawTextSourceSetSelection
 
 extern void bcopy();
 extern int errno, sys_nerr;
@@ -108,8 +115,8 @@ static XtResource resources[] = {
   {XtNselectTypes, XtCSelectTypes, XtRPointer,
      sizeof(XawTextSelectType*), offset(text.sarray),
      XtRPointer, (caddr_t)&defaultSelectTypesPtr},
-  {XtNtextSource, XtCTextSource, XtRPointer, sizeof (caddr_t),
-     offset(text.source), XtRPointer, NULL},
+  {XtNtextSource, XtCTextSource, XtRWidget, sizeof (Widget),
+     offset(text.source), XtRImmediate, NULL},
   {XtNtextSink, XtCTextSink, XtRPointer, sizeof (caddr_t),
      offset(text.sink), XtRPointer, NULL},
   {XtNdisplayCaret, XtCOutput, XtRBoolean, sizeof(Boolean),
@@ -125,11 +132,13 @@ static XtResource resources[] = {
   {XtNautoFill, XtCAutoFill, XtRBoolean, sizeof(Boolean),
      offset(text.auto_fill), XtRImmediate, (caddr_t) FALSE},
 
-/* This resource is obsolete. */
-
+#ifdef XAW_BC
+/*
+ * This resource is obsolete. 
+ */
   {XtNtextOptions, XtCTextOptions, XtRInt, sizeof (int),
      offset(text.options), XtRImmediate, (caddr_t)0},
-
+#endif
 };
 #undef offset
 
@@ -464,7 +473,7 @@ Widget request, new;
   ctx->text.lasttime = 0; /* ||| correct? */
   ctx->text.time = 0; /* ||| correct? */
   ctx->text.showposition = TRUE;
-  ctx->text.lastPos = ctx->text.source ? GETLASTPOS : 0;
+  ctx->text.lastPos = (ctx->text.source != NULL) ? GETLASTPOS : 0;
   ctx->text.file_insert = NULL;
   ctx->text.search = NULL;
   ctx->text.updateFrom = (XawTextPosition *) XtMalloc(ONE);
@@ -477,12 +486,14 @@ Widget request, new;
   ctx->text.old_insert = -1;
   ctx->text.mult = 1;
 
+#ifdef XAW_BC
 /*******************************
  * For Compatability.          */
 
   if (ctx->text.options != 0)
     XawTextChangeOptions((Widget) ctx, ctx->text.options);
 /*******************************/
+#endif /* XAW_BC */  
 
   if (ctx->core.height == DEFAULT_TEXT_HEIGHT) {
     ctx->core.height = VMargins(ctx);
@@ -660,12 +671,11 @@ XawTextPosition left, right;
 {
   char *result, *tempResult;
   XawTextBlock text;
-  XawTextSource src = ctx->text.source;
   Cardinal length = (Cardinal) (right - left);
 
   tempResult = result = XtMalloc(length + ONE);	/* leave space for '\0'. */
   while (left < right) {
-    left = (*src->Read)(src, left, &text, right - left);
+    left = SrcRead(ctx->text.source, left, &text, right - left);
     (void) strncpy(tempResult, text.ptr, text.length);
     tempResult += text.length;
   }
@@ -689,7 +699,6 @@ Position x,y;
 {
   int fromx, line, width, height;
   XawTextPosition position;
-  XawTextSource src = ctx->text.source;
 
   if (ctx->text.lt.lines == 0) return 0;
   
@@ -704,8 +713,9 @@ Position x,y;
   (*ctx->text.sink->FindPosition)((Widget) ctx, position, fromx, x - fromx,
 				  FALSE, &position, &width, &height);
   if (position >= ctx->text.lt.info[line + 1].position)
-    position = (*src->Scan)(src, ctx->text.lt.info[line + 1].position,
-			    XawstPositions, XawsdLeft, 1, TRUE);
+    position = SrcScan(ctx->text.source, ctx->text.lt.info[line + 1].position,
+		       XawstPositions, XawsdLeft, 1, TRUE);
+  if (position > ctx->text.lastPos) position = ctx->text.lastPos;
   return(position);
 }
 
@@ -814,7 +824,7 @@ int line;
   Position y;
   int count, width, realW, realH;
   void (*FindPosition)() = ctx->text.sink->FindPosition;
-  XawTextSource src = ctx->text.source;
+  Widget src = ctx->text.source;
 
   if ( ((ctx->text.resize == XawtextResizeWidth) ||
 	(ctx->text.resize == XawtextResizeBoth)    ) ||
@@ -836,10 +846,10 @@ int line;
     y += realH;
 
     if (ctx->text.wrap == XawtextWrapNever) 
-      endPos = (*src->Scan)(src, position, XawstEOL, XawsdRight, 1, TRUE);
+      endPos = SrcScan(src, position, XawstEOL, XawsdRight, 1, TRUE);
 
     if ( endPos == ctx->text.lastPos) { /* We have reached the end. */
-      if((*src->Scan)(src, position, XawstEOL, XawsdRight, 1, FALSE) == endPos)
+      if(SrcScan(src, position, XawstEOL, XawsdRight, 1, FALSE) == endPos)
 	break;
     }
 
@@ -1040,8 +1050,8 @@ int n;
 
     n = -n;
     target = lt->top;
-    top = (*ctx->text.source->Scan)(ctx->text.source, target, XawstEOL,
-				    XawsdLeft, n+1, FALSE);
+    top = SrcScan(ctx->text.source, target, XawstEOL,
+		  XawsdLeft, n+1, FALSE);
 
     _XawTextBuildLineTable(ctx, top, FALSE);
     y = IsValidLine(ctx, n) ? lt->info[n].y : ctx->core.height;
@@ -1189,7 +1199,6 @@ TextWidget ctx;
 int line;
 Position left, right;
 {
-  XawTextSource src = ctx->text.source;
   XawTextPosition pos1, pos2; 
   int width, height, local_left, local_width;
   XawTextLineTableEntry * lt = ctx->text.lt.info + line;
@@ -1206,7 +1215,7 @@ Position left, right;
   if (right >= (Position) lt->textWidth - ctx->text.margin.left) 
     if ( (IsValidLine(ctx, line + 1)) &&
 	 (ctx->text.lt.info[line + 1].position <= ctx->text.lastPos) )
-      pos2 = (*src->Scan) (src, (lt + 1)->position, XawstPositions, 
+      pos2 = SrcScan( ctx->text.source, (lt + 1)->position, XawstPositions, 
 			   XawsdLeft, 1, TRUE);
     else 
       pos2 = GETLASTPOS;
@@ -1219,7 +1228,8 @@ Position left, right;
 				    local_width, FALSE,
 				    &pos2, &width, &height);
     
-    t_pos = (*src->Scan) (src, pos2, XawstPositions, XawsdRight, 1, TRUE);
+    t_pos = SrcScan( ctx->text.source, pos2,
+		     XawstPositions, XawsdRight, 1, TRUE);
     if (t_pos < (lt + 1)->position)
       pos2 = t_pos;
   }
@@ -1273,7 +1283,6 @@ caddr_t closure, callData; /* closuer = TextWidget, callData = percent. */
   TextWidget ctx = (TextWidget)closure;
   XawTextPosition position, old_top, old_bot;
   XawTextLineTable * lt = &(ctx->text.lt);
-  XawTextSource src = ctx->text.source;
 
   _XawTextPrepareToUpdate(ctx);
   old_top = lt->top;
@@ -1283,7 +1292,7 @@ caddr_t closure, callData; /* closuer = TextWidget, callData = percent. */
     old_bot = ctx->text.lastPos;
 
   position = (long) (*percent * (float) ctx->text.lastPos);
-  position = (*src->Scan)(src, position, XawstEOL, XawsdLeft, 1, FALSE);
+  position= SrcScan(ctx->text.source, position, XawstEOL, XawsdLeft, 1, FALSE);
   if ( (position >= old_top) && (position <= old_bot) ) {
     int line = 0;
     for (;(line < lt->lines) && (position > lt->info[line].position) ; line++);
@@ -1318,15 +1327,15 @@ int *format;
 {
   Display* d = XtDisplay(w);
   TextWidget ctx = (TextWidget)w;
-  XawTextSource src = ctx->text.source;
-  Boolean (*nullproc)() = NULL, (*CvtSel)() = src->ConvertSelection;
+  Widget src = ctx->text.source;
+  XawTextEditType edit_mode;
+  Arg args[1];
 
   if (*target == XA_TARGETS(d)) {
     Atom* targetP, * std_targets;
     unsigned long std_length;
 
-    if ( (CvtSel == nullproc) || !(*CvtSel)(d, src, selection, target, 
-					    type, value, length, format) ) {
+    if ( SrcCvtSel(d, src, selection, target, type, value, length, format) ) {
       *value = NULL;
       *length = 0;
     }
@@ -1342,7 +1351,11 @@ int *format;
     *targetP++ = XA_LENGTH(d);
     *targetP++ = XA_LIST_LENGTH(d);
     *targetP++ = XA_CHARACTER_POSITION(d);
-    if (src->edit_mode == XawtextEdit) {
+
+    XtSetArg(args[0], XtNeditType,&edit_mode);
+    XtGetValues(src, args, ONE);
+
+    if (edit_mode == XawtextEdit) {
       *targetP++ = XA_DELETE(d);
       (*length)++;
     }
@@ -1353,10 +1366,9 @@ int *format;
     return True;
   }
   
-  if ( (CvtSel != NULL) && (*CvtSel)(d, src, selection, target, type,
-				     value, length, format) )
+  if ( SrcCvtSel(d, src, selection, target, type, value, length, format) )
     return True;
-  
+
   if (*target == XA_STRING || *target == XA_TEXT(d)) {
     *type = XA_STRING;
     *value = _XawTextGetText(ctx, ctx->text.s.left, ctx->text.s.right);
@@ -1486,7 +1498,6 @@ Atom *selections;
 Cardinal count;
 {
   XawTextPosition pos;
-  void (*nullProc)() = NULL;
   
   if (left < ctx->text.s.left) {
     pos = Min(right, ctx->text.s.left);
@@ -1508,9 +1519,8 @@ Cardinal count;
   ctx->text.s.left = left;
   ctx->text.s.right = right;
 
-  if (ctx->text.source->SetSelection != nullProc) 
-    (*ctx->text.source->SetSelection)(ctx->text.source, left, right,
-				      (count == 0) ? NULL : selections[0]);
+  SrcSetSelection(ctx->text.source, left, right,
+		  (count == 0) ? NULL : selections[0]);
 
   if (left < right) {
     Widget w = (Widget) ctx;
@@ -1556,8 +1566,9 @@ XawTextBlock *text;
 {
   int i, line1, delta, error;
   XawTextPosition updateFrom, updateTo;
-  XawTextSource src = ctx->text.source;
-  XawTextPosition (*Scan)() = src->Scan;
+  Widget src = ctx->text.source;
+  XawTextEditType edit_mode;
+  Arg args[1];
   
   ctx->text.update_disabled = True; /* No redisplay during replacement. */
 
@@ -1565,9 +1576,12 @@ XawTextBlock *text;
  * The insertPos may not always be set to the right spot in XawtextAppend 
  */
 
-  if ((pos1 == ctx->text.insertPos) && (src->edit_mode == XawtextAppend)) {
+  XtSetArg(args[0], XtNeditType, &edit_mode);
+  XtGetValues(src, args, ONE);
+
+  if ((pos1 == ctx->text.insertPos) && (edit_mode == XawtextAppend)) {
     ctx->text.insertPos = ctx->text.lastPos;
-    pos2 = (*Scan)(src, ctx->text.insertPos, XawstPositions, XawsdRight,
+    pos2 = SrcScan(src, ctx->text.insertPos, XawstPositions, XawsdRight,
 		   (ctx->text.insertPos - pos1), TRUE);
     pos1 = ctx->text.insertPos;
     if ( (pos1 == pos2) && (text->length == 0) ) {
@@ -1576,12 +1590,12 @@ XawTextBlock *text;
     }
   }
 
-  updateFrom = (*Scan)(src, pos1, XawstWhiteSpace, XawsdLeft, 1, TRUE);
-  updateFrom = (*Scan)(src, updateFrom, XawstPositions, XawsdLeft, 1, TRUE);
+  updateFrom = SrcScan(src, pos1, XawstWhiteSpace, XawsdLeft, 1, TRUE);
+  updateFrom = SrcScan(src, updateFrom, XawstPositions, XawsdLeft, 1, TRUE);
   updateFrom = Max(updateFrom, ctx->text.lt.top);
 
   line1 = LineForPosition(ctx, updateFrom);
-  if ( (error = (*src->Replace)(src, pos1, pos2, text)) != 0) {
+  if ( (error = SrcReplace(src, pos1, pos2, text)) != 0) {
     ctx->text.update_disabled = FALSE; /* rearm redisplay. */
     return(error);
   }
@@ -1717,7 +1731,7 @@ Boolean motion;
 {
   XawTextPosition newLeft, newRight;
   XawTextSelectType newType, *sarray;
-  XawTextSource src = ctx->text.source;
+  Widget src = ctx->text.source;
 
   if (motion)
     newType = ctx->text.s.type;
@@ -1743,23 +1757,23 @@ Boolean motion;
     break;
   case XawselectChar: 
     newLeft = pos;
-    newRight = (*src->Scan)(src, pos, XawstPositions, XawsdRight, 1, FALSE);
+    newRight = SrcScan(src, pos, XawstPositions, XawsdRight, 1, FALSE);
     break;
   case XawselectWord: 
-    newRight = (*src->Scan)(src, pos, XawstWhiteSpace, XawsdRight, 1, FALSE);
-    newLeft= (*src->Scan)(src, newRight, XawstWhiteSpace, XawsdLeft, 1, FALSE);
+    newRight = SrcScan(src, pos, XawstWhiteSpace, XawsdRight, 1, FALSE);
+    newLeft= SrcScan(src, newRight, XawstWhiteSpace, XawsdLeft, 1, FALSE);
     break;
   case XawselectParagraph: 
-    newRight = (*src->Scan)(src, pos, XawstParagraph, XawsdRight, 1, FALSE);
-    newLeft = (*src->Scan)(src, newRight, XawstParagraph, XawsdLeft, 1, FALSE);
+    newRight = SrcScan(src, pos, XawstParagraph, XawsdRight, 1, FALSE);
+    newLeft = SrcScan(src, newRight, XawstParagraph, XawsdLeft, 1, FALSE);
     break;
   case XawselectLine: 
-    newLeft = (*src->Scan)(src, pos, XawstEOL, XawsdLeft, 1, FALSE);
-    newRight = (*src->Scan)(src, pos, XawstEOL, XawsdRight, 1, FALSE);
+    newLeft = SrcScan(src, pos, XawstEOL, XawsdLeft, 1, FALSE);
+    newRight = SrcScan(src, pos, XawstEOL, XawsdRight, 1, FALSE);
     break;
   case XawselectAll: 
-    newLeft = (*src->Scan)(src, pos, XawstAll, XawsdLeft, 1, FALSE);
-    newRight = (*src->Scan)(src, pos, XawstAll, XawsdRight, 1, FALSE);
+    newLeft = SrcScan(src, pos, XawstAll, XawsdLeft, 1, FALSE);
+    newRight = SrcScan(src, pos, XawstAll, XawsdRight, 1, FALSE);
     break;
   }
 
@@ -1802,7 +1816,6 @@ XawTextPosition pos;
 Boolean motion;
 {
   XawTextScanDirection dir;
-  XawTextPosition (*Scan)() = ctx->text.source->Scan;
 
   if (!motion) {		/* setup for extending selection */
     ctx->text.origSel.type = ctx->text.s.type;
@@ -1824,13 +1837,13 @@ Boolean motion;
   dir = ctx->text.extendDir;
   switch (ctx->text.s.type) {
   case XawselectWord: 
-    pos = (*Scan) (ctx->text.source, pos, XawstWhiteSpace, dir, 1, FALSE);
+    pos = SrcScan(ctx->text.source, pos, XawstWhiteSpace, dir, 1, FALSE);
     break;
   case XawselectLine:
-    pos = (*Scan) (ctx->text.source, pos, XawstEOL, dir, 1, dir == XawsdRight);
+    pos = SrcScan(ctx->text.source, pos, XawstEOL, dir, 1, dir == XawsdRight);
     break;
   case XawselectParagraph:
-    pos = (*Scan) (ctx->text.source, pos, XawstParagraph, dir, 1, FALSE);
+    pos = SrcScan(ctx->text.source, pos, XawstParagraph, dir, 1, FALSE);
     break;
   case XawselectAll: 
     pos = ctx->text.insertPos;
@@ -2221,8 +2234,8 @@ TextWidget ctx;
   else
     number = lines;
 
-  top = (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
-				  XawstEOL, XawsdLeft, number, FALSE);
+  top = SrcScan(ctx->text.source, ctx->text.insertPos,
+		XawstEOL, XawsdLeft, number, FALSE);
 
   _XawTextBuildLineTable(ctx, top, FALSE);
   while (ctx->text.insertPos >= ctx->text.lt.info[lines].position) {
@@ -2310,13 +2323,16 @@ Widget current, request, new;
   Boolean    redisplay = FALSE;
   Boolean    display_caret = newtw->text.display_caret;
 
+
+#ifdef XAW_BC
 /*******************************
  * For Compatability.          */
 
   if (newtw->text.options != oldtw->text.options)
     XawTextChangeOptions((Widget) newtw, newtw->text.options);
 /*******************************/
-  
+#endif /* XAW_BC */  
+
   newtw->text.display_caret = oldtw->text.display_caret;
   _XawTextPrepareToUpdate(newtw);
   newtw->text.display_caret = display_caret;
@@ -2377,11 +2393,12 @@ Widget current, request, new;
 }
 
 /*	Function Name: SetValuesHook
- *	Description: set the values in the text source and sink.
- *	Arguments: w - the text widget.
- *                 args - the arg list.
- *                 num_args - the number of args in the list.
- *	Returns: True if redisplay is needed.
+ *	Description: This is a get values hook routine that sets the
+ *                   values in the text source and sink.
+ *	Arguments: w - the Text Widget.
+ *                 args - the argument list.
+ *                 num_args - the number of args.
+ *	Returns: none.
  */
 
 static Boolean
@@ -2390,26 +2407,16 @@ Widget w;
 ArgList args;
 Cardinal * num_args;
 {
-  TextWidget ctx = (TextWidget) w;
-  Boolean ret = FALSE;
-
-  if (ctx->text.source->SetValuesHook != NULL) 
-    ret = (*ctx->text.source->SetValuesHook) (ctx->text.source,
-					      args, num_args);
-
-#ifdef notdef
-  if (ctx->text.sink->SetValuesHook != NULL) 
-    ret = (*ctx->text.sink->SetValuesHook) (w, args, num_args);
-#endif
-
-  return(ret);
+  XtSetValues( ((TextWidget) w)->text.source, args, *num_args );
+  return(FALSE);
 }
 
 /*	Function Name: GetValuesHook
- *	Description: get the values in the text source and sink.
- *	Arguments: w - the text widget.
- *                 args - the arg list.
- *                 num_args - the number of args in the list.
+ *	Description: This is a get values hook routine that gets the
+ *                   values in the text source and sink.
+ *	Arguments: w - the Text Widget.
+ *                 args - the argument list.
+ *                 num_args - the number of args.
  *	Returns: none.
  */
 
@@ -2419,16 +2426,7 @@ Widget w;
 ArgList args;
 Cardinal * num_args;
 {
-  TextWidget ctx = (TextWidget) w;
-
-  if (ctx->text.source->GetValuesHook != NULL) 
-    (void) (*ctx->text.source->GetValuesHook) (ctx->text.source,
-					       args, num_args);
-
-#ifdef notdef
-  if (ctx->text.sink->GetValuesHook != NULL) 
-    (void) (*ctx->text.sink->GetValuesHook) (w, args, num_args);
-#endif
+  XtGetValues( ((TextWidget) w)->text.source, args, *num_args );
 }
 
 /*	Function Name: FindGoodPosition
@@ -2475,29 +2473,6 @@ XawTextSelectType *sarray;
   ((TextWidget)w)->text.sarray = sarray;
 }
 
-/*
- * This function is no longer needed, and is left only for
- * compatability with the String source.
- */
-
-void
-XawTextSetLastPos (w, lastPos)
-Widget w;
-XawTextPosition lastPos;
-{
-  TextWidget  ctx = (TextWidget) w;
-
-  _XawTextPrepareToUpdate(ctx);
-
-  (*ctx->text.source->SetLastPos)(ctx->text.source, lastPos);
-  ctx->text.lastPos = GETLASTPOS;
-  _XawTextBuildLineTable(ctx, ctx->text.lt.top, TRUE);
-  if (XtIsRealized(w)) 
-    DisplayTextWindow(w);
-
-  _XawTextExecuteUpdate(ctx);
-}
-
 void
 XawTextGetSelectionPos(w, left, right)
 Widget w;
@@ -2510,8 +2485,7 @@ XawTextPosition *left, *right;
 
 void 
 XawTextSetSource(w, source, startPos)
-Widget w;
-XawTextSource   source;
+Widget w, source;
 XawTextPosition startPos;
 {
   TextWidget ctx = (TextWidget) w;
@@ -2540,7 +2514,6 @@ XawTextPosition  startPos, endPos;
 XawTextBlock *text;
 {
   TextWidget ctx = (TextWidget) w;
-  XawTextPosition (*Scan)() = ctx->text.source->Scan;
   int result;
 
   _XawTextPrepareToUpdate(ctx);
@@ -2550,8 +2523,8 @@ XawTextBlock *text;
     int delta = text->length - (endPos - startPos);
     if (ctx->text.insertPos >= (endPos + delta)) {
       XawTextScanDirection sd = (delta < 0) ? XawsdLeft : XawsdRight;
-      ctx->text.insertPos = (*Scan) (ctx->text.source, ctx->text.insertPos,
-				     XawstPositions, sd, abs(delta), TRUE);
+      ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
+				    XawstPositions, sd, abs(delta), TRUE);
     }
   }
 
@@ -2613,6 +2586,7 @@ Widget w;
   }
 }
 
+#ifdef XAW_BC
 void 
 XawTextChangeOptions(w, options)
 Widget w;
@@ -2647,6 +2621,7 @@ int options;
   else
     ctx->text.wrap = XawtextWrapNever;
 }
+#endif /* XAW_BC */
 
 int 
 XawTextGetOptions(w)
@@ -2680,7 +2655,7 @@ XawTextPosition from,to;
   ctx->text.lastPos = GETLASTPOS;
   _XawTextPrepareToUpdate(ctx);
   _XawTextNeedsUpdating(ctx, from, to);
-/*  _XawTextBuildLineTable(ctx, ctx->text.lt.top, TRUE); */
+  _XawTextBuildLineTable(ctx, ctx->text.lt.top, TRUE);
   _XawTextExecuteUpdate(ctx);
 }
 
@@ -2715,7 +2690,7 @@ Widget w;
   _XawTextExecuteUpdate(ctx);
 }
 
-XawTextSource
+Widget
 XawTextGetSource(w)
 Widget w;
 {
@@ -2758,11 +2733,7 @@ XawTextBlock * text;
 {
   TextWidget ctx = (TextWidget) w;
 
-  if (*ctx->text.source->Search != NULL)
-      return(*ctx->text.source->Search)(ctx->text.source, 
-					ctx->text.insertPos, dir, text);
-  else
-      return XawTextSearchError;
+  return(SrcSearch(ctx->text.source, ctx->text.insertPos, dir, text));
 }
   
 TextClassRec textClassRec = {

@@ -1,25 +1,31 @@
 /*
- * $XConsortium: AsciiSrcP.h,v 1.2 89/07/06 16:00:56 kit Exp $
- *
- * Copyright 1989 Massachusetts Institute of Technology
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted, provided
- * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of M.I.T. not be used in advertising or
- * publicity pertaining to distribution of the software without specific,
- * written prior permission.  M.I.T. makes no representations about the
- * suitability of this software for any purpose.  It is provided "as is"
- * without express or implied warranty.
- *
- */
+* $XConsortium: LabelP.h,v 1.24 89/06/08 18:05:01 swick Exp $
+*/
 
-/***********************************************************************
- *
- * Ascii Source
- *
- ***********************************************************************/
+
+/***********************************************************
+Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
+and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
+
+                        All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software and its 
+documentation for any purpose and without fee is hereby granted, 
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in 
+supporting documentation, and that the names of Digital or MIT not be
+used in advertising or publicity pertaining to distribution of the
+software without specific, written prior permission.  
+
+DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+SOFTWARE.
+
+******************************************************************/
 
 /*
  * AsciiSrcP.h - Private Header for Ascii Text Source.
@@ -35,11 +41,22 @@
  *          kit@expo.lcs.mit.edu
  */
 
+/* 
+ * TextSrcP.h - Private definitions for AsciiSrc widget
+ * 
+ */
+
 #ifndef _XawAsciiSrcP_h
 #define _XawAsciiSrcP_h
 
-#include <X11/Xaw/TextP.h>
 #include <X11/Xaw/AsciiSrc.h>
+#include <X11/Xaw/TextSrcP.h>
+
+/************************************************************
+ *
+ * Private declarations.
+ *
+ ************************************************************/
 
 #define TMPSIZ 32		/* bytes to allocate for tmpnam */
 #define DEFAULT_PIECE_SIZE BUFSIZ
@@ -58,16 +75,33 @@ typedef struct _Piece {		/* Piece of the text file of BUFSIZ allocated
   struct _Piece *prev, *next;	/* linked list pointers. */
 } Piece;
 
-typedef struct _AsciiSourceData {
+/************************************************************
+ *
+ * New fields for the AsciiSrc widget class record.
+ *
+ ************************************************************/
 
-/*
- * Resources.
- */
+typedef struct _AsciiSrcClassPart { char foo; } AsciiSrcClassPart;
+
+/* Full class record declaration */
+typedef struct _AsciiSrcClassRec {
+    ObjectClassPart     object_class;
+    TextSrcClassPart	text_src_class;
+    AsciiSrcClassPart	ascii_src_class;
+} AsciiSrcClassRec;
+
+extern AsciiSrcClassRec asciiSrcClassRec;
+
+/* New fields for the AsciiSrc widget record */
+
+typedef struct _AsciiSrcPart {
+
+  /* Resources. */
 
   char       *string;		/* either the string, or the
 				   file name, depending upon the type. */
   XawAsciiType type;		/* either string or disk. */
-  long piece_size;		/* Size of text buffer for each piece. */
+  XawTextPosition piece_size;	/* Size of text buffer for each piece. */
   Boolean data_compression;	/* compress to minimum memory automatically
 				   on save? */
   XtCallbackList callback;	/* A callback list to call when the source is
@@ -81,17 +115,26 @@ typedef struct _AsciiSourceData {
   String filename;		/* name of file for Compatability. */
 #endif /* ASCII_DISK */
 
-/*
- * Private data.
- */
+/* Private data. */
 
   Boolean	is_tempfile;	  /* Is this a temporary file? */
   Boolean       changes;	  /* Has this file been edited? */
   Boolean       allocated_string; /* Have I allocated the
-				     string in data->string? */
+				     string in ascii_src->string? */
   XawTextPosition length; 	/* length of file */
   Piece * first_piece;		/* first piece of the text. */
+} AsciiSrcPart;
 
-} AsciiSourceData, *AsciiSourcePtr;
+/****************************************************************
+ *
+ * Full instance record declaration
+ *
+ ****************************************************************/
 
-#endif /* _XawAsciiSrcP_h  - Don't add anything after this line. */
+typedef struct _AsciiSrcRec {
+  ObjectPart    object;
+  TextSrcPart	text_src;
+  AsciiSrcPart	ascii_src;
+} AsciiSrcRec;
+
+#endif /* _XawAsciiSrcP_h  --- Don't add anything after this line. */

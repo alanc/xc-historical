@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.37 89/07/27 17:50:38 kit Exp $
+* $XConsortium: TextP.h,v 1.38 89/08/14 14:43:20 kit Exp $
 */
 
 
@@ -32,7 +32,28 @@ SOFTWARE.
 
 #include <X11/Xaw/Text.h>
 #include <X11/Xaw/SimpleP.h>
-#include <X11/Xaw/TextSrcP.h>
+
+/*
+ * This only temporary.
+ */
+
+typedef struct _XawTextSink {
+    XFontStruct	*font;
+    int foreground;
+
+    void (*Display)();
+    void (*InsertCursor)();
+    void (*ClearToBackground)();
+    void (*FindPosition)();
+    void (*FindDistance)();
+    void (*Resolve)();
+    int (*MaxLines)();
+    int (*MaxHeight)();
+    void (*SetTabs)();		/* widget, offset, tab_count, *tabs */
+    void (*GetCursorBounds)();	/* widget, rectangle */
+
+    caddr_t data;
+};
 
 /****************************************************************
  *
@@ -43,7 +64,8 @@ SOFTWARE.
 
 #define abs(x)	(((x) < 0) ? (-(x)) : (x))
 
-#define GETLASTPOS  (*ctx->text.source->Scan) (ctx->text.source, 0, XawstAll, XawsdRight, 1, TRUE)
+#define GETLASTPOS  XawTextSourceScan(ctx->text.source, 0, \
+				      XawstAll, XawsdRight, 1, TRUE)
 
 #define zeroPosition ((XawTextPosition) 0)
 
@@ -68,6 +90,14 @@ typedef struct {
   Position y;
   Dimension textWidth;
 } XawTextLineTableEntry, *XawTextLineTableEntryPtr;
+
+typedef struct {
+    XawTextPosition   left, right;
+    XawTextSelectType type;
+    Atom*	     selections;
+    int		     atom_count;
+    int		     array_size;
+} XawTextSelection;
 
 /* Line Tables are n+1 long - last position displayed is in last lt entry */
 typedef struct {
@@ -128,7 +158,7 @@ extern TextClassRec textClassRec;
 typedef struct _TextPart {
     /* resources */
 
-    XawTextSource	source;
+    Widget              source;
     XawTextSink		sink;
     XawTextPosition	insertPos;
     XawTextSelection	s;

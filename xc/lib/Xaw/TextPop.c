@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.4 89/07/27 18:20:43 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextPop.c,v 1.5 89/08/30 19:09:52 converse Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -146,9 +146,14 @@ Cardinal * num_params;
 {
   TextWidget ctx = (TextWidget)w;
   char * ptr;
+  XawTextEditType edit_mode;
+  Arg args[1];
   static void AddInsertFileChildren();
 
-  if (ctx->text.source->edit_mode != XawtextEdit) {
+  XtSetArg(args[0], XtNeditType,&edit_mode);
+  XtGetValues(ctx->text.source, args, ONE);
+  
+  if (edit_mode != XawtextEdit) {
     XBell(XtDisplay(w), 0);
     return;
   }
@@ -310,7 +315,7 @@ char * ptr;
   XtSetArg(args[num_args], XtNright, XtChainLeft); num_args++;
   XtSetArg(args[num_args], XtNeditType, XawtextEdit); num_args++;
   XtSetArg(args[num_args], XtNresizable, TRUE); num_args++;
-  XtSetArg(args[num_args], XtNtextOptions, resizeWidth); num_args++;
+  XtSetArg(args[num_args], XtNresize, XawtextResizeWidth); num_args++;
   XtSetArg(args[num_args], XtNstring, ptr); num_args++;
   text = XtCreateManagedWidget(TEXT_NAME, asciiTextWidgetClass, form,
 				args, num_args);
@@ -478,11 +483,15 @@ Cardinal * num_params;
   XawTextScanDirection dir;
   char * ptr, buf[BUFSIZ];
   static void AddSearchChildren();
+  XawTextEditType edit_mode;
+  Arg args[1];
 
+#ifdef notdef
   if (ctx->text.source->Search == NULL) {
       XBell(XtDisplay(w), 0);
       return;
   }
+#endif
 
   if ( (*num_params < 1) || (*num_params > 2) ) {
     sprintf(buf, "%s %s\n%s", SEARCH_HEADER, "This action must have only", 
@@ -518,8 +527,10 @@ Cardinal * num_params;
     XtRealizeWidget(ctx->text.search->search_popup);
   }
 
-  InitializeSearchWidget(ctx->text.search, dir, 
-			 (ctx->text.source->edit_mode == XawtextEdit) );
+  XtSetArg(args[0], XtNeditType,&edit_mode);
+  XtGetValues(ctx->text.source, args, ONE);
+
+  InitializeSearchWidget(ctx->text.search, dir, (edit_mode == XawtextEdit));
 
   CenterWidgetOnPoint(ctx->text.search->search_popup, event);
   XtPopup(ctx->text.search->search_popup, XtGrabNone);
@@ -637,7 +648,7 @@ char * ptr;
   XtSetArg(args[num_args], XtNright, XtChainLeft); num_args++;
   XtSetArg(args[num_args], XtNeditType, XawtextEdit); num_args++;
   XtSetArg(args[num_args], XtNresizable, TRUE); num_args++;
-  XtSetArg(args[num_args], XtNtextOptions, resizeWidth); num_args++;
+  XtSetArg(args[num_args], XtNresize, XawtextResizeWidth); num_args++;
   XtSetArg(args[num_args], XtNstring, ptr); num_args++;
   s_text = XtCreateManagedWidget("searchText", asciiTextWidgetClass, form,
 				 args, num_args);
@@ -659,7 +670,7 @@ char * ptr;
   XtSetArg(args[num_args], XtNright, XtChainLeft); num_args++;
   XtSetArg(args[num_args], XtNeditType, XawtextEdit); num_args++;
   XtSetArg(args[num_args], XtNresizable, TRUE); num_args++;
-  XtSetArg(args[num_args], XtNtextOptions, resizeWidth); num_args++;
+  XtSetArg(args[num_args], XtNresize, XawtextResizeWidth); num_args++;
   XtSetArg(args[num_args], XtNstring, ""); num_args++;
   r_text = XtCreateManagedWidget("replaceText", asciiTextWidgetClass,
 				 form, args, num_args);

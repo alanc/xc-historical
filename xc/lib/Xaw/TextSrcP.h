@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSrcP.h,v 1.12 89/08/15 12:43:05 kit Exp $
+* $XConsortium: LabelP.h,v 1.24 89/06/08 18:05:01 swick Exp $
 */
 
 
@@ -27,110 +27,79 @@ SOFTWARE.
 
 ******************************************************************/
 
+/* 
+ * TextSrcP.h - Private definitions for TextSrc widget
+ * 
+ */
+
 #ifndef _XawTextSrcP_h
 #define _XawTextSrcP_h
 
-#include <X11/Xaw/Text.h>
+/***********************************************************************
+ *
+ * TextSrc Widget Private Data
+ *
+ ***********************************************************************/
 
-typedef enum {XawstPositions, XawstWhiteSpace, XawstEOL, XawstParagraph,
-		XawstAll} XawTextScanType;
+#include <X11/ObjectP.h>
+#include <X11/Xaw/TextSrc.h>
+#include <X11/Xaw/TextP.h>	/* This source works with the Text widget. */
 
-typedef struct _XawTextSource {
-    XawTextPosition	(*Read)();
-    int			(*Replace)();
-    XawTextPosition	(*Scan)();
-    XawTextPosition     (*Search)();
-    void		(*SetSelection)( /* source, left, right, selection */);
-    Boolean		(*ConvertSelection)( /* Display*, source, ... */ );
-    Boolean             (*SetValuesHook)(); /* source, ArgList, NumArgs */
-    void                (*GetValuesHook)(); /* source, ArgList, NumArgs */
-    Widget              widget;	/* Parent of this text source. */
-    XawTextEditType	edit_mode;
-    caddr_t		data;	
-/* 
- * For Compatability only.
- */
-    int			(*SetLastPos)();
-    };
+/************************************************************
+ *
+ * New fields for the TextSrc widget class record.
+ *
+ ************************************************************/
 
-typedef struct _XawTextSink {
-    XFontStruct	*font;
-    int foreground;
+typedef struct _TextSrcClassPart {
+  XawTextPosition	(*Read)();
+  int			(*Replace)();
+  XawTextPosition	(*Scan)();
+  XawTextPosition       (*Search)();
+  void                  (*SetSelection)();
+  Boolean		(*ConvertSelection)();
+} TextSrcClassPart;
 
-    void (*Display)();
-    void (*InsertCursor)();
-    void (*ClearToBackground)();
-    void (*FindPosition)();
-    void (*FindDistance)();
-    void (*Resolve)();
-    int (*MaxLines)();
-    int (*MaxHeight)();
-    void (*SetTabs)();		/* widget, offset, tab_count, *tabs */
-    void (*GetCursorBounds)();	/* widget, rectangle */
+/* Full class record declaration */
+typedef struct _TextSrcClassRec {
+    ObjectClassPart     object_class;
+    TextSrcClassPart	textSrc_class;
+} TextSrcClassRec;
 
-    caddr_t data;
-    };
+extern TextSrcClassRec textSrcClassRec;
 
-typedef enum {XawisOn, XawisOff} XawTextInsertState;
-
-typedef enum {XawsmTextSelect, XawsmTextExtend} XawTextSelectionMode;
-
-typedef enum {XawactionStart, XawactionAdjust, XawactionEnd}
-    XawTextSelectionAction;
-
+/* New fields for the TextSrc widget record */
 typedef struct {
-    XawTextPosition   left, right;
-    XawTextSelectType type;
-    Atom*	     selections;
-    int		     atom_count;
-    int		     array_size;
-} XawTextSelection;
+    /* resources */
+  XawTextEditType	edit_mode;
+} TextSrcPart;
 
-typedef enum  {Normal, Selected }highlightType;
+/****************************************************************
+ *
+ * Full instance record declaration
+ *
+ ****************************************************************/
 
-/*
- * Error Conditions:
- */
+typedef struct _TextSrcRec {
+  ObjectPart    object;
+  TextSrcPart	textSrc;
+} TextSrcRec;
 
-#define XawTextReadError -1
-#define XawTextScanError -1
+/************************************************************
+ *
+ * Private declarations.
+ *
+ ************************************************************/
 
-#ifdef XAW_BC
-/*************************************************************
- * For Compatibility only.                                   */
+typedef Boolean (*_XawBooleanFunc)();
+typedef int (*_XawIntFunc)();
+typedef XawTextPosition (*_XawTextPositionFunc)();
 
-#define _XtTextSink        _XawTextSink
-#define _XtTextSource      _XawTextSource
-
-#define XtisOn             XawisOn
-#define XtisOff            XawisOff
-
-#define XtsmTextSelect     XawsmTextSelect
-#define XtsmTextExtend     XawsmTextExtend
-
-#define XtactionStart      XawactionStart
-#define XtactionAdjust     XawactionAdjust
-#define XtactionEnd        XawactionEnd
-
-#define XtsdLeft           XawsdLeft
-#define XtsdRight          XawsdRight
-
-#define XtstPositions      XawstPositions
-#define XtstWhiteSpace     XawstWhiteSpace
-#define XtstEOL            XawstEOL
-#define XtstParagraph      XawstParagraph
-#define XtstAll            XawstAll
-
-#define XtTextSelectionAction XawTextSelectionAction
-#define XtTextSelection       XawTextSelection
-#define XtTextScanDirection   XawTextScanDirection
-#define XtTextScanType        XawTextScanType
-
-
-/*************************************************************/
-#endif /* XAW_BC */
+#define XtInheritRead                 ((_XawTextPositionFunc) _XtInherit)
+#define XtInheritReplace              ((_XawIntFunc) _XtInherit)
+#define XtInheritScan                 ((_XawTextPositionFunc) _XtInherit)
+#define XtInheritSearch               ((_XawTextPositionFunc) _XtInherit)
+#define XtInheritSetSelection         _XtInherit
+#define XtInheritConvertSelection     ((_XawBooleanFunc) _XtInherit)
 
 #endif /* _XawTextSrcP_h */
-
-
-

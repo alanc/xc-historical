@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.28 89/08/21 15:57:28 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.29 89/08/24 16:52:52 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -50,6 +50,7 @@ SOFTWARE.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
+#include <X11/Xaw/AsciiSrc.h>
 #include <X11/Xaw/AsciiTextP.h>
 #include <X11/Xaw/Cardinals.h>
 
@@ -125,29 +126,14 @@ ArgList args;
 Cardinal *num_args;
 {
   AsciiWidget w = (AsciiWidget) widget;
-  Arg arglist[1];
-  XawTextEditType type;
   void (*NullProc)() = NULL;	/* some compilers require this */
   
-  w->text.source = XawAsciiSourceCreate( widget, args, *num_args );
+  w->text.source = XtCreateWidget( "textSource", asciiSrcWidgetClass,
+				   widget, args, *num_args );
   w->text.sink = XawAsciiSinkCreate( widget, args, *num_args );
 
-#ifdef notdef  
-/*
- * Do not display caret in read only widget. 
- */
-
-  XtSetArg(arglist[0], XtNeditType, &type);
-  XtGetValues(w, arglist, ONE);
-  if (type == XawtextRead) {
-    XtSetArg(arglist[0], XtNdisplayCaret, FALSE);
-    XtSetValues(w, arglist, ONE);
-  }
-#endif /* notdef */  
-
   w->text.lastPos = /* GETLASTPOS */
-    (*w->text.source->Scan) ( w->text.source, 0, XawstAll,
-			     XawsdRight, 1, TRUE );
+    XawTextSourceScan(w->text.source, 0, XawstAll, XawsdRight, 1, TRUE );
 
 
   if (w->core.height == DEFAULT_TEXT_HEIGHT)
@@ -172,7 +158,7 @@ static void
 Destroy(w)
 Widget w;
 {
-  XawAsciiSourceDestroy( ((AsciiWidget)w)->text.source );
+  XtDestroyWidget( ((AsciiWidget)w)->text.source);
   XawAsciiSinkDestroy( ((AsciiWidget)w)->text.sink );
 }
 

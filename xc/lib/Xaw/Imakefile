@@ -49,6 +49,7 @@ HEADERS = \
 	TemplateP.h \
 	Text.h \
 	TextP.h \
+	TextSrc.h \
 	TextSrcP.h \
 	Toggle.h \
 	ToggleP.h \
@@ -77,6 +78,7 @@ SRCS = \
 	SimpleMenu.c \
 	StripChart.c \
 	Text.c \
+	TextSrc.c \
         TextAction.c \
         TextPop.c \
 	TextTr.c \
@@ -105,6 +107,7 @@ OBJS = \
 	SimpleMenu.o \
 	StripChart.o \
 	Text.o \
+	TextSrc.o \
         TextAction.o \
 	TextPop.o \
 	TextTr.o \
