@@ -1,3 +1,8 @@
+*chooseSessionPopup*font:		12x24
+*chooseSessionLabel.label:		Choose a session...
+*chooseSessionOkButton.label:		OK
+*chooseSessionCancelButton.label:	Cancel
+
 *clientInfoButton.label:	Client List
 *checkPointButton.label:	Checkpoint
 *shutdownButton.label:		Shutdown
