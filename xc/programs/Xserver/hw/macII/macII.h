@@ -34,28 +34,106 @@ IMPLIED.
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- * $XConsortium: macII.h,v 1.13 89/08/29 15:31:13 keith Exp $
+ * $XConsortium: macII.h,v 1.14 89/08/30 19:28:20 keith Exp $
  */
 #ifndef _MACII_H_
 #define _MACII_H_
 
-#define USE_TOD_CLOCK
-
-#ifdef macII
-#define gettimeofday(time, timezone) _gettimeofday(time)
-#endif
-
 #include    <errno.h>
 #include    <sys/param.h>
 #include    <sys/types.h>
-#ifdef USE_TOD_CLOCK
 #include    <sys/time.h>
-#else
-#include    <sys/times.h>
-#endif USE_TOD_CLOCK
 #include    <sys/file.h>
 #include    <sys/signal.h>
 #include    <sys/stropts.h>
+
+/*
+ * Under A/UX 2.0 struct video has been "Macintized" and now incorporates
+ * a structure called AuxDCE which is defined once and for all in
+ * /usr/include/mac. Alas the definition for AuxDCE requires wheeling in
+ * lots of Mac stuff including QuickDraw. This is a headache as there are
+ * a variety of clashes between X and QuickDraw (they both do windows after
+ * all). So we define just what we need here and avoid pulling in the Mac
+ * includes. Of course if this ever changes ...
+ */
+
+#ifndef __OSUTILS__
+struct QElem {
+    struct QElem *qLink;
+    short qType;
+    short qData[1];
+};
+
+typedef struct QElem QElem;
+
+typedef QElem *QElemPtr;
+
+struct QHdr {
+    short qFlags;
+    QElemPtr qHead;
+    QElemPtr qTail;
+};
+#define __OSUTILS__
+#endif
+
+#ifndef __DEVICES__
+struct CntrlParam {
+        struct QElem *qLink;
+        short qType;
+        short ioTrap;
+        char *ioCmdAddr;
+        int (*ioCompletion)();
+        short ioResult;
+        char *ioNamePtr;
+        short ioVRefNum;
+        short ioCRefNum;
+        short csCode;
+        short csParam[11];
+};
+
+struct DCtlEntry {
+        char **dCtlDriver;
+        short dCtlFlags;
+        struct QHdr dCtlQHdr;
+        long dCtlPosition;
+        char **dCtlStorage;
+        short dCtlRefNum;
+        long dCtlCurTicks;
+        char *dCtlWindow;
+        short dCtlDelay;
+        short dCtlEMask;
+        short dCtlMenu;
+        char dCtlSlot;
+        char dCtlSlotId;
+        long dCtlDevBase;
+        long reserved;
+        char dCtlExtDev;
+        char fillByte;
+};
+
+struct AuxDCE {
+        char **dCtlDriver;
+        short dCtlFlags;
+        struct QHdr dCtlQHdr;
+        long dCtlPosition;
+        char **dCtlStorage;
+        short dCtlRefNum;
+        long dCtlCurTicks;
+        char *dCtlWindow;
+        short dCtlDelay;
+        short dCtlEMask;
+        short dCtlMenu;
+        char dCtlSlot;
+        char dCtlSlotId;
+        long dCtlDevBase;
+        long reserved;
+        char dCtlExtDev;
+        char fillByte;
+};
+
+#define __DEVICES__
+#endif
+
 #include    <sys/video.h>
 
 #include    "X.h"
@@ -158,13 +236,6 @@ typedef struct ptrPrivate {
  *	fb  	  	pointer to the mapped image of the frame buffer. Used
  *	    	  	by the driving routines for the specific frame buffer
  *	    	  	type.
- *	pGC 	  	A GC for realizing cursors.
- *	GetImage  	Original GetImage function for this screen.
- *	CreateGC  	Original CreateGC function
- *	CreateWindow	Original CreateWindow function
- *	ChangeWindowAttributes	Original function
- *	GetSpans  	GC function which needs to be here b/c GetSpans isn't
- *	    	  	called with the GC as an argument...
  *	slot
  *	default_depth
  *	installedMap
@@ -216,7 +287,7 @@ extern int  	  macIICheckInput;    /* Non-zero if input is available */
 extern int  	  lastEventTime;    /* Time (in ms.) of last event */
 extern void 	  SetTimeSinceLastInputEvent();
 
-#define AUTOREPEAT_INITIATE     (200)           /* milliseconds */
+#define AUTOREPEAT_INITIATE     (400)           /* milliseconds */
 #define AUTOREPEAT_DELAY        (50)           /* milliseconds */
 /*
  * We signal autorepeat events with the unique id AUTOREPEAT_EVENTID.
@@ -229,7 +300,6 @@ extern int	autoRepeatDebug;		/* TRUE if debugging */
 extern long 	autoRepeatLastKeyDownTv;
 extern long 	autoRepeatDeltaTv;
 
-#ifdef USE_TOD_CLOCK
 /*-
  * TVTOMILLI(tv)
  *	Given a struct timeval, convert its time into milliseconds...
@@ -251,7 +321,8 @@ extern long 	autoRepeatDeltaTv;
                       (tv).tv_usec -= 1000000; \
                       (tv).tv_sec += 1; \
               }
-#endif USE_TOD_CLOCK
+
+#define gettimeofday(time, timezone) _gettimeofday(time)
 
 #define LookupPointerDevice()	pPointerDevice
 #define LookupKeyboardDevice()	pKeyboardDevice
