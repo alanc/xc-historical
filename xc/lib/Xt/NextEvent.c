@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.120 93/09/03 15:25:30 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.121 93/09/08 08:25:22 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -350,6 +350,12 @@ int _XtWaitForSomething(app,
 		    }
 		} 
 #endif /* } */
+		if (app->block_hook_list) {
+		    BlockHook hook;
+		    for (hook = app->block_hook_list; 
+			 hook != NULL; hook = hook->next)
+			(*hook->proc) (hook->closure);
+		}
 
 #ifdef XTHREADS /* { */
 		if (drop_lock) {

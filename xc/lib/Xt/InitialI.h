@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.73 93/09/03 09:57:14 kaleb Exp $ */
+/* $XConsortium: InitialI.h,v 1.74 93/09/08 08:25:20 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -156,6 +156,7 @@ typedef struct _XtAppStruct {
     Heap heap;
     String * fallback_resources;	/* Set by XtAppSetFallbackResources. */
     struct _ActionHookRec* action_hook_list;
+    struct _BlockHookRec* block_hook_list;
     int destroy_list_size;		/* state data for 2-phase destroy */
     int destroy_count;
     int dispatch_level;

@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.181 93/08/27 16:22:36 kaleb Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.182 93/09/08 15:51:34 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -270,6 +270,14 @@ typedef void (*XtActionHookProc)(
     XEvent*		/* event */,
     String*		/* params */,
     Cardinal*		/* num_params */
+#endif
+);
+
+typedef unsigned long XtBlockHookId;
+
+typedef void (*XtBlockHookProc)(
+#if NeedFunctionPrototypes
+    XtPointer		/* client_data */
 #endif
 );
 
@@ -1269,6 +1277,20 @@ extern XtInputMask XtPending( /* obsolete */
 extern XtInputMask XtAppPending(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app_context */
+#endif
+);
+
+extern XtBlockHookId XtAppAddBlockHook(
+#if NeedFunctionPrototypes
+    XtAppContext 	/* app_context */,
+    XtBlockHookProc 	/* proc */,
+    XtPointer 		/* client_data */
+#endif
+);
+
+extern void XtRemoveBlockHook(
+#if NeedFunctionPrototypes
+    XtBlockHookId 	/* id */
 #endif
 );
 

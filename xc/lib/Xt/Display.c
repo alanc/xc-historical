@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.98 93/09/05 18:20:14 rws Exp $ */
+/* $XConsortium: Display.c,v 1.99 93/09/08 08:24:39 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -368,6 +368,7 @@ XtAppContext XtCreateApplicationContext()
 	app->fallback_resources = NULL;
 	_XtPopupInitialize(app);
 	app->action_hook_list = NULL;
+	app->block_hook_list = NULL;
 	app->destroy_list_size = app->destroy_count = app->dispatch_level = 0;
 	app->destroy_list = NULL;
 #ifndef NO_IDENTIFY_WINDOWS

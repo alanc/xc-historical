@@ -1,4 +1,4 @@
-/* $XConsortium: EventI.h,v 1.19 93/08/09 17:09:58 kaleb Exp $ */
+/* $XConsortium: EventI.h,v 1.20 93/08/11 14:06:46 kaleb Exp $ */
 /* $oHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 
 /***********************************************************
@@ -62,6 +62,12 @@ typedef struct _XtGrabRec {
     unsigned int spring_loaded:1;
 }XtGrabRec;
 
+typedef struct _BlockHookRec {
+    struct _BlockHookRec* next;
+    XtAppContext app;
+    XtBlockHookProc proc;
+    XtPointer closure;
+} BlockHookRec, *BlockHook;
 
 extern void _XtFreeEventTable(
 #if NeedFunctionPrototypes
