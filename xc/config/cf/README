@@ -145,9 +145,6 @@ Imake.tmpl provides defaults for the following variables:
 	InstallCmd		command to install files
 	LdCmd			command to run loader
 	LdCombineFlags		flags for incremental loading
-	LibraryCCOptions	special C compiler options for libraries
-	LibraryCDebugFlags	library debug/optimize flags to override defs
-	LibraryCcCmd		command to run C compiler in libraries
 	LintCmd			command to run lint
 	LintLibFlag		flags to generate lint libraries
 	LintOpts		lint options to control strictness
@@ -169,8 +166,6 @@ Imake.tmpl provides defaults for the following variables:
 	RanlibCmd		command to clean up libraries
 	RanlibInstFlags		flags to ranlib after copying
 	RmCmd			command to delete files
-	ServerCCOptions		server C compiler options to override defaults
-	ServerCcCmd		command to run C compiler in server
 	SharedCodeDef		-D's to turn on sharable code in libraries
 	SharedLibraryDef	-D's to turn on use of shared libraries
 	ShLibIncludeFile	template file for shared libraries
@@ -185,15 +180,11 @@ Imake.tmpl provides defaults for the following variables:
 	UnalignedReferencesAllowed	boolean for unaligned copies ok
 	UsrLibDir		directory in which to install libraries
 
-
 Project.tmpl provides defaults for the following variables:
 
 	AdmDir			directory containing system log files
 	AllocateLocalDefines	-D's to turn on alloca()
 	BDFTOSNFFILT		command to run bdftosnf
-	BandAidLibraryNeeded	boolean for systems that need extra Xlib stuff
-	BandAidLibraryObjects	Xlib object files to merge in
-	BandAidLibrarySources	Xlib source files to merge in
 	BinDir			directory in which to install programs
 	BuildIncRoot		relative path to location of headers in build
 	BuildIncTop		path from build includes directory to top
@@ -229,7 +220,6 @@ Project.tmpl provides defaults for the following variables:
 	LibDir			directory in which to install X11 data files
 	LibManSuffix		man suffix for library pages
 	LibmanDir		directory in which to install library man pages
-	LibraryDefines		-D's for libraries
 	LintlibDir		directory in which to install lint libs
 	ManDir			directory in which to install program man pages
 	ManDirectoryRoot	parent of man directories relative to root
@@ -249,7 +239,6 @@ Project.tmpl provides defaults for the following variables:
 	ProjectX		version indicating this is the X Window System
 	RemoveTargetProgramByMoving	boolean for rm -f that doesn't
 	SHELLPATH		-D for /bin/sh
-	ServerCDebugFlags	server debug/opt compiler flags
 	ServerDefines		-D's for server
 	SharedLibX		boolean for making sharable libX11
 	SharedLibXaw		boolean for making sharable libXaw
@@ -276,6 +265,20 @@ Project.tmpl provides defaults for the following variables:
 	XtErrorPrefix		leading text in XtError() msg; eg. 'X Toolkit '
 	XtWarningPrefix		leading text in XtWarning()msg, same as above
 	ZBDFTOSNFFILT		-D to run uncompress and bdftosnf
+
+Library.tmpl provides defaults for the following variables:
+
+	LibraryCCOptions	special C compiler options for libraries
+	LibraryCDebugFlags	library debug/optimize flags to override defs
+	LibraryCcCmd		command to run C compiler in libraries
+	LibraryDefines		-D's for libraries
+
+
+Server.tmpl provides defaults for the following variables:
+
+	ServerCCOptions		server C compiler options to override defaults
+	ServerCcCmd		command to run C compiler in server
+	ServerCDebugFlags	server debug/opt compiler flags
 
 
 4.  Site-specific site.def file
