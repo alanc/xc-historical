@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.22 89/06/06 16:37:43 swick Exp $
+* $XConsortium: Text.h,v 1.23 89/07/06 16:00:46 kit Exp $
 */
 
 
@@ -82,6 +82,10 @@ SOFTWARE.
 #define XtCOutput		"Output"
 #define XtCSelectTypes		"SelectTypes"
 
+/* Return Error code for XawTextSearch */
+
+#define XawTextSearchError      (-12345L)
+
 /* Return codes from XawTextReplace */
 
 #define XawEditDone		0
@@ -102,6 +106,7 @@ typedef long XawTextPosition;
 typedef struct _XawTextSource XawTextSourceRec, *XawTextSource;
 typedef struct _XawTextSink XawTextSinkRec, *XawTextSink;
 
+typedef enum {XawsdLeft, XawsdRight} XawTextScanDirection;
 typedef enum {XawtextRead, XawtextAppend, XawtextEdit} XawTextEditType;
 typedef enum {XawselectNull, XawselectPosition, XawselectChar, XawselectWord,
     XawselectLine, XawselectParagraph, XawselectAll} XawTextSelectType;
@@ -240,6 +245,11 @@ extern void XawTextInvalidate(); /* w, from, to */
 
 extern XawTextSource XawTextGetSource() ; /* w */
     /* Widget        w;		*/
+
+extern XawTextPosition XawTextSearch() ; /* w, dir, text */
+    /* Widget        w;		 */
+    /* XawTextScanDirection dir; */
+    /* XawTextBlock      *text;  */
 
 /*
  * Stuff from AsciiSink

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSrcP.h,v 1.7 89/07/06 16:00:48 kit Exp $
+* $XConsortium: TextSrcP.h,v 1.8 89/07/07 14:28:42 kit Exp $
 */
 
 
@@ -32,7 +32,6 @@ SOFTWARE.
 
 #include <X11/Xaw/Text.h>
 
-typedef enum {XawsdLeft, XawsdRight} XawTextScanDirection;
 typedef enum {XawstPositions, XawstWhiteSpace, XawstEOL, XawstParagraph,
 		XawstAll} XawTextScanType;
 
@@ -40,6 +39,7 @@ typedef struct _XawTextSource {
     XawTextPosition	(*Read)();
     int			(*Replace)();
     XawTextPosition	(*Scan)();
+    int                 (*Search)();
     void		(*SetSelection)( /* source, left, right, selection */);
     Boolean		(*ConvertSelection)( /* Display*, source, ... */ );
     Boolean             (*SetValuesHook)(); /* source, ArgList, NumArgs */
