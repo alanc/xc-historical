@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.64 94/02/06 11:02:27 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.65 94/04/02 17:29:05 erik Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -20,7 +20,7 @@ MTXDIR = MTXserver
 #if BuildLBX
 LBXPROXYDIR = lbxproxy
 #endif
-#if BuildXkbLib
+#if BuildXKBlib
 XKBCOMP = xkbcomp
 #endif
 
