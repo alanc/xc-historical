@@ -13,6 +13,11 @@ A joint production of:
 	Geoff Lee
 	Mark Opperman		Sun Microsystems
 
+Special thanks to:
+
+	MIT's Statistics Center,  for generously allowing us to monopolize
+	their Suns while we integrated the Sun code into the releases.
+
 This version of the Sun X.11 drivers uses ../mi,  ../mfb and ../cfb to support
 the following configurations:
 
