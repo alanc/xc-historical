@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.119 91/07/30 12:06:02 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.120 91/08/22 11:02:21 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1314,6 +1314,16 @@ MakeMakeSubdirs(dirs,Makefiles)						@@\
 MakeNsubdirMakefiles()
 #endif /* MakefileSubdirs */
 
+/*
+ * Translate XCOMM into pound sign with sed, rather than passing -DXCOMM=XCOMM
+ * to cpp, because that trick does not work on all ANSI C preprocessors.
+ * Also delete line numbers from the cpp output (-P is not portable, I guess).
+ */
+#ifndef CppSedMagic
+#define CppSedMagic sed -e '/^#  *[0-9][0-9]*  *.*$$/d' \
+		    -e '/^XCOMM$$/s//#/' \
+		    -e '/^XCOMM[^a-zA-Z0-9_]/s/^XCOMM/#/'
+#endif /* CppSedMagic */
 
 /*
  * CppScriptTarget - generate rules to create a shell script by running the
@@ -1325,16 +1335,14 @@ MakeNsubdirMakefiles()
 #define CppScriptTarget(dst,src,defs,deplist)				@@\
 dst::  src deplist							@@\
 	$(RM) $@							@@\
-	$(CPP) -DXCOMM=XCOMM defs <src | \				@@\
-		sed -e '/^#  *[0-9][0-9]*  *.*$$/d' >$@			@@\
+	$(CPP) defs <src | CppSedMagic >$@				@@\
 	chmod a+x $@
 #else
 #define CppScriptTarget(dst,src,defs,deplist)				@@\
 dst::  src deplist							@@\
 	$(RM) $@							@@\
 	echo \: >$@							@@\
-	sed '1d' src | $(CPP) -DXCOMM=XCOMM defs  | \			@@\
-		sed -e '/^#  *[0-9][0-9]*  *.*$$/d' >>$@		@@\
+	sed '1d' src | $(CPP) defs | CppSedMagic >>$@			@@\
 	chmod a+x $@
 #endif /* ExecableScripts */
 #endif /* CppScriptTarget */
@@ -1353,8 +1361,7 @@ CppScriptTarget(name,name.cpp,defs,NullParameter)
 #define CppFileTarget(dst,src,defs,deplist)				@@\
 dst::  src deplist							@@\
 	$(RM) $@							@@\
-	$(CPP) -DXCOMM=XCOMM defs <src | \				@@\
-		sed -e '/^#  *[0-9][0-9]*  *.*$$/d' >$@
+	$(CPP) defs <src | CppSedMagic >$@
 #endif /* CppFileTarget */
 
 /*
