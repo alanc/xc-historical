@@ -176,13 +176,20 @@ ServerTarget(Xhp,$(EXTDIR) $(FONTUTILDIR) $(HPDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSL
 # ibm server
 #
 #if SpecialMalloc
-IBMALLOCLIB = ddx/ibm/rt/librtalloc.a
+IBMALLOCLIB = ddx/ibm/common/libibmalloc.a
 #else
 IBMALLOCLIB = 
 #endif
 
+ddx/ibm/common/ibmdate.o: AlwaysForce
+	(cd ddx/ibm/common; $(MAKE) ibmdate.o)
+
+AlwaysForce:
+
+loadXibm: ddx/ibm/common/ibmdate.o
+
 IBMDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/ibm os/4.2bsd
-IBMOBJS = ddx/ibm/rt/rt.o $(FONTUTIL)
+IBMOBJS = ddx/ibm/common/ibmcomm.o ddx/ibm/common/ibmdate.o $(FONTUTIL)
 IBMLIBS = ddx/ibm/libibm.a $(IBMALLOCLIB) \
 		$(DIX)  $(UNIX) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 IBMSYSLIBS = $(SYSLIBS)
