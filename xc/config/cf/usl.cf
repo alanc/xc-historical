@@ -1,10 +1,10 @@
-XCOMM platform:  $XConsortium: usl.cf,v 1.37 95/06/30 18:07:55 kaleb Exp $
+XCOMM platform:  $XConsortium: usl.cf,v 1.37 95/06/30 18:11:39 kaleb Exp kaleb $
 
-#define OSName			UNIX System V/386 Release 4.2 Version 1.1.1
+#define OSName			UNIX System V/386 Release 4.2 Version 2.0
 XCOMM operating system:  OSName
 #define OSMajorVersion		4
 #define OSMinorVersion		2
-#define OSTeenyVersion		1
+#define OSTeenyVersion		2
 
 #define BootstrapCFlags		-DUSL
 #define StandardDefines		-DUSL -DSVR4 -Di386
