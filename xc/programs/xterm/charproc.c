@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.159 91/05/06 17:11:53 gildea Exp $
+ * $XConsortium: charproc.c,v 1.160 91/05/06 17:48:06 gildea Exp $
  */
 
 /*
@@ -2058,9 +2058,6 @@ XEvent *event;
 Boolean *cont;			/* unused */
 {
     switch (event->type) {
-       case MappingNotify:
-	  XRefreshKeyboardMapping (&event->xmapping);
-	  break;
        case GraphicsExpose:
        case NoExpose:
 	  VTGraphicsOrNoExpose (event);
@@ -2082,15 +2079,17 @@ static void VTResize(w)
 				
 extern Atom wm_delete_window;	/* for ICCCM delete window */
 
+static String xterm_trans =
+    "<ClientMessage>WM_PROTOCOLS: DeleteWindow()\n\
+     <MappingNotify>: KeyboardMapping()\n";
+
 int VTInit ()
 {
     register TScreen *screen = &term->screen;
     Widget vtparent = term->core.parent;
 
     XtRealizeWidget (vtparent);
-    XtOverrideTranslations(vtparent, 
-			   XtParseTranslationTable
-			    ("<Message>WM_PROTOCOLS: DeleteWindow()"));
+    XtOverrideTranslations(vtparent, XtParseTranslationTable(xterm_trans));
     (void) XSetWMProtocols (XtDisplay(vtparent), XtWindow(vtparent),
 			    &wm_delete_window, 1);
 

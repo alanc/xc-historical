@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.181 91/05/06 17:22:23 gildea Exp $ */
+/* $XConsortium: main.c,v 1.182 91/05/07 15:20:32 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -641,6 +641,7 @@ Widget toplevel;
 Bool waiting_for_initial_map;
 
 extern void do_hangup();
+
 /*
  * DeleteWindow(): Action proc to implement ICCCM delete_window.
  */
@@ -663,8 +664,24 @@ DeleteWindow(w, event, params, num_params)
       do_hangup(w);
 }
 
+/* ARGSUSED */
+void
+KeyboardMapping(w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    switch (event->type) {
+       case MappingNotify:
+	  XRefreshKeyboardMapping(&event->xmapping);
+	  break;
+    }
+}
+
 XtActionsRec actionProcs[] = {
-  "DeleteWindow", DeleteWindow,
+    "DeleteWindow", DeleteWindow,
+    "KeyboardMapping", KeyboardMapping,
 };
 
 Atom wm_delete_window;
