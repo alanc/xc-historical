@@ -26,7 +26,7 @@
 #include "input.h"
 #include "opaque.h"
 
-#ifdef SERVER_XDMCP
+#ifdef XDMCP
 #include "Xdmcp/Xdmcp.h"
 
 extern int argcGlobal;
@@ -1024,4 +1024,4 @@ get_manager_by_name(argc, argv, i)
 	exit (1);
     }
 }
-#endif /* SERVER_XDMCP */
+#endif /* XDMCP */

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.84 89/09/30 10:51:14 keith Exp $ */
+/* $XConsortium: utils.c,v 1.85 89/10/03 16:42:27 keith Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -190,7 +190,7 @@ void UseMsg()
     ErrorF("-v                     screen-saver without video blanking\n");
     ErrorF("-wm                    WhenMapped default backing-store\n");
     ErrorF("-x string              loads named extension at init time \n");
-#ifdef SERVER_XDMCP
+#ifdef XDMCP
     ErrorF("-query host-name       contact named host for XDMCP\n");
     ErrorF("-broadcast             broadcast for XDMCP\n");
     ErrorF("-indirect host-name    contact named host for indirect XDMCP\n");
@@ -416,7 +416,7 @@ char	*argv[];
 	    /* just in case any body is interested */
 	    dev_tty_from_init = argv[i];
 	}
-#ifdef SERVER_XDMCP
+#ifdef XDMCP
 	else if ((skip = XdmcpOptions(argc, argv, i)) != i)
 	{
 	    i = skip - 1;

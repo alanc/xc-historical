@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.4 89/09/08 14:32:47 keith Exp $
+ * $XConsortium: auth.c,v 1.5 89/09/14 16:20:13 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -87,7 +87,7 @@ char	*file_name;
     return count;
 }
 
-#ifdef SERVER_XDMCP
+#ifdef XDMCP
 /*
  * XdmcpInit calls this function to discover all authorization
  * schemes supported by the display

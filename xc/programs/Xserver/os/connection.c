@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.114 89/09/29 10:46:13 keith Exp $ */
+/* $XConsortium: connection.c,v 1.115 89/10/03 16:42:04 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -132,7 +132,7 @@ extern XID CheckAuthorization();
 static void CloseDownFileDescriptor(), ErrorConnMax();
 extern void FreeOsBuffers(), ResetOsBuffers();
 
-#ifdef SERVER_XDMCP
+#ifdef XDMCP
 void XdmcpOpenDisplay(), XdmcpInit(), XdmcpReset(), XdmcpCloseDisplay();
 #endif
 
@@ -386,7 +386,7 @@ CreateWellKnownSockets()
 	    kill (ParentProcess, SIGUSR1);
 	}
     }
-#ifdef SERVER_XDMCP
+#ifdef XDMCP
     XdmcpInit ();
 #endif
 }
@@ -430,7 +430,7 @@ ResetWellKnownSockets ()
     /*
      * restart XDMCP
      */
-#ifdef SERVER_XDMCP
+#ifdef XDMCP
     XdmcpReset ();
 #endif
 }
@@ -618,10 +618,10 @@ EstablishNewConnections()
 	    ErrorConnMax(newconn);
 	    CloseDownFileDescriptor(oc);
 	}
-#ifdef SERVER_XDMCP
+#ifdef XDMCP
 	/* indicate to Xdmcp protocol that we've opened new client */
 	XdmcpOpenDisplay(newconn);
-#endif /* SERVER_XDMCP */
+#endif /* XDMCP */
     }
 }
 
@@ -760,7 +760,7 @@ CloseDownConnection(client)
     if (oc->output && oc->output->count)
 	FlushClient(client, oc, (char *)NULL, 0);
     ConnectionTranslation[oc->fd] = 0;
-#ifdef SERVER_XDMCP
+#ifdef XDMCP
     XdmcpCloseDisplay(oc->fd);
 #endif
     CloseDownFileDescriptor(oc);

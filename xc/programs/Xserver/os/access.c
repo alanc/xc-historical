@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.39 89/09/14 16:20:08 rws Exp $ */
+/* $XConsortium: access.c,v 1.40 89/10/03 16:43:48 keith Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -244,7 +244,7 @@ DefineSelf (fd)
 	    host->next = selfhosts;
 	    selfhosts = host;
 	}
-#ifdef SERVER_XDMCP
+#ifdef XDMCP
 	{
 	    struct sockaddr broad_addr;
 
