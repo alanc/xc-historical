@@ -27,7 +27,7 @@ ratio=
 allfiles=
 /**/# Include relative rates in output?  Report only relative rates?
 case $1 in
--r)
+-r|-a)
 	ratio=1
 	shift;
 	;;
