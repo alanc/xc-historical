@@ -1,5 +1,5 @@
 /*
- *	$Header: Xproto.h,v 1.75 88/05/16 11:51:21 rws Exp $
+ *	$Header: Xproto.h,v 1.76 88/08/11 16:13:56 jim Exp $
  */
 
 /* Definitions for the X window system used by server and c bindings */
@@ -1235,6 +1235,7 @@ typedef struct {
     Window destination B32;
     CARD32 eventMask B32;
 #ifdef WORD64
+    /* the structure should have been quad-aligned */
     BYTE eventdata[SIZEOF(xEvent)];
 #else
     xEvent event;
