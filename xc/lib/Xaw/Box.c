@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Box.c,v 1.34 88/09/06 09:54:46 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Box.c,v 1.35 88/09/06 16:40:51 jim Exp $";
 #endif lint
 
 
@@ -163,19 +163,30 @@ static DoLayout(bbw, width, height, reply_width, reply_height, position)
 	    if (widget->core.mapped_when_managed) num_mapped_children++;
 	    /* Compute widget width */
 	    bw = widget->core.width + 2*widget->core.border_width + h_space;
-	    if ((lw + bw > width) && (lw > h_space)) {
-		/* At least one widget on this line, and can't fit any more.
-		   Start new line */
-		attributes.win_gravity = UnmapGravity;
-		AssignMax(w, lw);
-		h += lh + bbw->box.v_space;
-		lh = 0;
-		lw = h_space;
+	    if (lw + bw > width) {
+		if (lw > h_space) {
+		    /* At least one widget on this line, and
+		     * can't fit any more.  Start new line.
+		     */
+		    attributes.win_gravity = UnmapGravity;
+		    AssignMax(w, lw);
+		    h += lh + bbw->box.v_space;
+		    lh = 0;
+		    lw = h_space;
+		}
+		else if (!position) {
+		    /* too narrow for this widget; we'll assume we can grow */
+		    DoLayout(bbw, lw + bw, height, reply_width,
+			     reply_height, position);
+		    return;
+		}
 	    }
 	    if (position && (lw != widget->core.x || h != widget->core.y)) {
+#ifdef SERVERBROKEN
 		if (widget->core.y == bbw->box.v_space && XtIsRealized(widget))
 		    /* %%% dunno why, but on our server we get cruft */
 		    XUnmapWindow( XtDisplay(widget), XtWindow(widget) );
+#endif /*SERVERBROKEN*/
 		XtMoveWidget(bbw->composite.children[i], (int)lw, (int)h);
 		if (XtIsRealized(widget)) {
 		    XChangeWindowAttributes( XtDisplay(widget),
