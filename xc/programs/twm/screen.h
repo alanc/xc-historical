@@ -1,6 +1,6 @@
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.23 89/04/13 10:01:31 jim Exp $
+ * $XConsortium: screen.h,v 1.24 89/04/13 15:48:41 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -123,7 +123,6 @@ typedef struct ScreenInfo
     int TitleHeight;		/* height of the title bar window */
     TwmWindow *Focus;		/* the twm window that has focus */
     int EntryHeight;		/* menu entry height */
-    short ReverseVideo;		/* flag to do reverse video */
     short FocusRoot;		/* is the input focus on the root ? */
     short WarpCursor;		/* warp cursor on de-iconify ? */
     short ForceIcon;		/* force the icon to the user specified */

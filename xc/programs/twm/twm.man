@@ -522,11 +522,6 @@ This variable names the font to be displayed within
 the window title bar.  Note that the title bar is only 17 pixels in height,
 so the largest practical font would be something like "9x15". The default
 is "8x13".
-.IP "\fBReverseVideo\fP" 20 
-This variable causes \fItwm\fP to display white characters
-on a black background,
-rather than black characters on white.  This variable doesn't really do
-much now that you can specify individual colors.
 .IP "\fBShowIconManager\fP" 20 
 This variable causes the icon manager window to be displayed when
 twm is started.  The default is to not display the icon manager window.

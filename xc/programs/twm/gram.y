@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.30 89/04/13 10:01:09 jim Exp $
+ * $XConsortium: gram.y,v 1.31 89/04/18 13:31:33 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.30 89/04/13 10:01:09 jim Exp $";
+"$XConsortium: gram.y,v 1.31 89/04/18 13:31:33 jim Exp $";
 
 #include <stdio.h>
 #include "twm.h"
@@ -84,7 +84,7 @@ extern int yylineno;
 %token <num> ICONMGR_GEOMETRY SHOW_ICONMGR ICONMGR_NOSHOW MAKE_TITLE
 %token <num> F_RAISELOWER DECORATE_TRANSIENTS RANDOM_PLACEMENT
 %token <num> ICONIFY_BY_UNMAPPING DONT_ICONIFY_BY_UNMAPPING
-%token <num> WARPCURSOR NUMBER BORDERWIDTH TITLE_FONT REVERSE_VIDEO
+%token <num> WARPCURSOR NUMBER BORDERWIDTH TITLE_FONT 
 %token <num> RESIZE_FONT NO_TITLE AUTO_RAISE FORCE_ICON NO_HILITE
 %token <num> MENU_FONT ICON_FONT UNKNOWN_ICON ICONS ICON_DIRECTORY
 %token <num> META SHIFT CONTROL WINDOW TITLE ICON ROOT FRAME
@@ -120,7 +120,6 @@ stmts		: /* Empty */
 
 stmt		: error
 		| FORCE_ICON		{ if (Scr->FirstTime) Scr->ForceIcon = TRUE; }
-		| REVERSE_VIDEO		{ /* ignore */ }
 		| ICON_REGION string grav grav { AddIconRegion($2, $3, $4); }
 		| ICON_FONT string	{   Scr->IconFont.name = $2;
 					    GetFont(&Scr->IconFont);
