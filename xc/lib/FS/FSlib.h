@@ -54,6 +54,9 @@
 #undef QLength
 #endif
 #define	QLength(svr)		((svr)->qlen)
+#ifdef NextRequest
+#undef NextRequest
+#endif
 #define	NextRequest(svr)	((svr)->request + 1)
 #ifdef LastKnownRequestProcessed
 #undef LastKnownRequestProcessed
