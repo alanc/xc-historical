@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.87 90/08/22 11:51:24 swick Exp $ */
+/* $XConsortium: NextEvent.c,v 1.88 90/08/24 09:47:32 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -898,7 +898,7 @@ Boolean XtAppPeekEvent(app, event)
 	    if (foundCall) {
 		event->xany.type = 0;
 		event->xany.display = NULL;
-		event->xany.window = NULL;
+		event->xany.window = 0;
 		return FALSE;
 	    }
 

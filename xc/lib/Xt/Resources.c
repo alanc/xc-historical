@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.87 90/08/20 15:25:43 swick Exp $ */
+/* $XConsortium: Resources.c,v 1.88 90/09/04 10:50:38 swick Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -183,7 +183,7 @@ void _XtCopyToArg(src, dst, size)
     XtArgVal *dst;
     register unsigned int size;
 {
-    if (*dst == NULL) {
+    if (!*dst) {
 	/* old GetValues semantics (storing directly into arglists) are bad,
 	 * but preserve for compatibility as long as arglist contains NULL.
 	 */

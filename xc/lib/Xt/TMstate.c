@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.114 90/08/17 15:20:33 swick Exp $ */
+/* $XConsortium: TMstate.c,v 1.115 90/08/17 15:49:53 swick Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -269,7 +269,7 @@ static String PrintLateModifiers(buf, len, str, lateModifiers)
     register String str;
     LateBindingsPtr lateModifiers;
 {
-    for (; lateModifiers->keysym != NULL; lateModifiers++) {
+    for (; lateModifiers->keysym != 0; lateModifiers++) {
 	CHECK_STR_OVERFLOW;
 	if (lateModifiers->knot) {
 	    *str++ = '~';
@@ -419,7 +419,7 @@ static Boolean ComputeLateBindings(event,eventSeq,computed,computedMask)
          return FALSE;
     }
     _InitializeKeysymTables(dpy, perDisplay);
-    for (ref=0;event->lateModifiers[ref].keysym != NULL;ref++) {
+    for (ref=0;event->lateModifiers[ref].keysym != 0;ref++) {
         found = FALSE;
         for (i=0;i<8;i++) {
             temp = &(perDisplay->modsToKeysyms[i]);
@@ -1031,7 +1031,7 @@ CompiledActionTable _CompileActionTable(actions, count)
     }
 
     compiledActionTable[count].name = NULL;
-    compiledActionTable[count].signature = NULL;
+    compiledActionTable[count].signature = 0;
     compiledActionTable[count].proc = NULL;
 
 #ifdef lint
