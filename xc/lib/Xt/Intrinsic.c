@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.105 88/01/20 10:42:23 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.107 88/01/25 09:40:43 swick Exp $";
 #endif lint
 
 /*
@@ -1499,6 +1499,11 @@ void XtCallbackPopdown(widget, closure, call_data)
  * Start of core class method inheritance routines.
  */
 
+/* XXX
+ * This is a kludge (for now?) because various compilers barf when
+ * comparing (void (*)()) entities.
+ */
+typedef int (*XtComp)();
 
 void XtInheritRealize(w, mask, attr)
     register Widget w;
@@ -1520,7 +1525,7 @@ void XtInheritRealize(w, mask, attr)
 	XtClass(w) = class;
     }
 
-    if (XtClass(w)->core_class.realize == XtInheritRealize)
+    if ((XtComp)XtClass(w)->core_class.realize == (XtComp)XtInheritRealize)
       XtClass(w)->core_class.realize = (XtSuperclass(w))->core_class.realize;
 }
 
@@ -1542,7 +1547,7 @@ void XtInheritResize(w)
 	XtClass(w) = class;
     }
 
-    if (XtClass(w)->core_class.resize == XtInheritResize)
+    if ((XtComp)XtClass(w)->core_class.resize == (XtComp)XtInheritResize)
       XtClass(w)->core_class.resize = (XtSuperclass(w))->core_class.resize;
 }
 
@@ -1565,7 +1570,7 @@ void XtInheritExpose(w, event)
 	XtClass(w) = class;
     }
 
-    if (XtClass(w)->core_class.expose == XtInheritExpose)
+    if ((XtComp)XtClass(w)->core_class.expose == (XtComp)XtInheritExpose)
       XtClass(w)->core_class.expose = (XtSuperclass(w))->core_class.expose;
 }
 
@@ -1674,8 +1679,8 @@ void XtInheritChangeManaged(w)
 	XtClass(w) = class;
     }
 
-    if (((CompositeWidgetClass)XtClass(w))->composite_class.change_managed
-	== XtInheritChangeManaged) {
+    if ((XtComp)((CompositeWidgetClass)XtClass(w))->composite_class.change_managed
+	== (XtComp)XtInheritChangeManaged) {
       ((CompositeWidgetClass)(XtClass(w)))->composite_class.change_managed =
 	((CompositeWidgetClass) XtSuperclass(w))->
 	    composite_class.change_managed;
@@ -1706,8 +1711,8 @@ void XtInheritInsertChild(child, args, num_args)
 	    composite_class.insert_child))(child, args, num_args);
 	XtClass(parent) = class;
     }
-    if (((CompositeWidgetClass)XtClass(parent))->composite_class.insert_child
-	== XtInheritInsertChild) {
+    if ((XtComp)((CompositeWidgetClass)XtClass(parent))->composite_class.insert_child
+	== (XtComp)XtInheritInsertChild) {
       ((CompositeWidgetClass)XtClass(parent))->composite_class.insert_child =
 	((CompositeWidgetClass) XtSuperclass(parent))->
 	    composite_class.insert_child;
@@ -1736,8 +1741,8 @@ void XtInheritDeleteChild(child)
 	     composite_class.delete_child))(child);
 	XtClass(parent) = class;
     }
-    if (((CompositeWidgetClass)XtClass(parent))->composite_class.delete_child
-	== XtInheritDeleteChild) {
+    if ((XtComp)((CompositeWidgetClass)XtClass(parent))->composite_class.delete_child
+	== (XtComp)XtInheritDeleteChild) {
       ((CompositeWidgetClass)(XtClass(parent)))->composite_class.delete_child =
 	((CompositeWidgetClass) XtSuperclass(parent))->
 	    composite_class.delete_child;
