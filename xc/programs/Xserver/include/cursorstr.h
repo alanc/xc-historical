@@ -1,4 +1,4 @@
-/* $XConsortium: cursorstr.h,v 1.3 88/01/18 17:28:55 rws Exp $ */
+/* $XConsortium: cursorstr.h,v 1.4 88/09/06 15:47:19 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -30,29 +30,34 @@ SOFTWARE.
 #include "misc.h"
 /* 
  * device-independent cursor storage
- *
+ */
+
+/*
  * source and mask point directly to the bits, which are in the server-defined
  * bitmap format.
  */
-typedef struct _Cursor {
+typedef struct _CursorBits {
     unsigned char *source;			/* points to bits */
     unsigned char *mask;			/* points to bits */
-    long width;
-    long height;
-    long xhot;					/* must be within bitmap */
-    long yhot;					/* must be within bitmap */
-    unsigned foreRed, foreGreen, foreBlue;	/* device-independent color */
-    unsigned backRed, backGreen, backBlue;	/* device-independent color */
+    unsigned short width, height, xhot, yhot;	/* metrics */
+    int refcnt;					/* can be shared */
+} CursorBits, *CursorBitsPtr;
+
+typedef struct _Cursor {
+    CursorBitsPtr bits;
+    unsigned short foreRed, foreGreen, foreBlue; /* device-independent color */
+    unsigned short backRed, backGreen, backBlue; /* device-independent color */
     int refcnt;
     pointer devPriv[MAXSCREENS];		/* set by pScr->RealizeCursor*/
 } CursorRec;
 
 typedef struct _CursorMetric {
-    long width, height, xhot, yhot;
+    unsigned short width, height, xhot, yhot;
 } CursorMetricRec;
 
 extern int		FreeCursor();
 extern CursorPtr	AllocCursor();		/* also realizes it */
+extern int		AllocGlyphCursor();	/* also realizes it */
 				/* created from default cursor font */
 extern CursorPtr	CreateRootCursor();
 
