@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.44 91/05/13 20:48:30 rws Exp $
+ * $XConsortium: Xos.h,v 1.45 91/07/09 18:23:30 gildea Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -77,6 +77,9 @@
  */
 #ifdef X_NOT_POSIX
 #include <fcntl.h>
+#ifdef USL
+#include <unistd.h>
+#endif /* USL */
 #ifdef CRAY
 #include <unistd.h>
 #endif /* CRAY */
@@ -101,20 +104,24 @@
 
 #ifdef SYSV
 
+#ifndef USL
 #include <sys/time.h>
+#endif
 #include <time.h>
 #ifdef CRAY
 #undef word
 #endif /* CRAY */
-#if defined(USG) && !defined(CRAY)
+#if defined(USG) && !defined(CRAY) && !defined(MOTOROLA)
 struct timeval {
     long tv_sec;
     long tv_usec;
 };
+#ifndef USL_SHARELIB
 struct timezone {
     int tz_minuteswest;
     int tz_dsttime;
 };
+#endif /* USL_SHARELIB */
 #endif /* USG */
 
 #else /* not SYSV */
