@@ -5,7 +5,7 @@
    where red/green/blue are decimal values, and inserts them in a database.
  */
 #ifndef lint
-static char *rcsid_rgb_c = "$Header: rgb.c,v 10.2 85/11/26 16:16:29 jg rel $";
+static char *rcsid_rgb_c = "$Header: rgb.c,v 10.3 86/01/08 06:52:42 jg Exp $";
 #endif
 
 #include <dbm.h>
