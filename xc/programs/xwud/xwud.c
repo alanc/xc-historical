@@ -4,7 +4,7 @@
 /* xwud - marginally useful raster image undumper */
 
 #ifndef lint
-static char *rcsid = "$XConsortium: xwud.c,v 1.26 89/03/29 09:47:03 rws Exp $";
+static char *rcsid = "$XConsortium: xwud.c,v 1.27 89/05/02 18:41:08 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -23,7 +23,7 @@ char *progname;
 
 usage()
 {
-    fprintf(stderr, "usage: %s [-in <file>] [-geometry <geom>] [-display <display>]\n", progname);
+    fprintf(stderr, "usage: %s [-in <file>] [-noclick] [-geometry <geom>] [-display <display>]\n", progname);
     fprintf(stderr, "            [-new] [-std <maptype>] [-raw] [-vis <vis-type-or-id>]\n");
     fprintf(stderr, "            [-help] [-rv] [-plane <number>] [-fg <color>] [-bg <color>]\n");
     exit(1);
@@ -49,6 +49,7 @@ main(argc, argv)
     char *file_name = NULL;
     char *win_name;
     Bool inverse = False, rawbits = False, newmap = False;
+    Bool onclick = True;
     int plane = -1;
     char *std = NULL;
     char *vis = NULL;
@@ -69,7 +70,8 @@ main(argc, argv)
     FILE *in_file = stdin;
     char *map_name;
     Atom map_prop;
-    XStandardColormap *stdmaps, stdmap;
+    XStandardColormap *stdmaps, *stdmap;
+    char c;
 
     progname = argv[0];
 
@@ -109,6 +111,10 @@ main(argc, argv)
 	if (strcmp(argv[i], "-new") == 0) {
 	    newmap = True;
 	    if (std) usage();
+	    continue;
+	}
+	if (strcmp(argv[i], "-noclick") == 0) {
+	    onclick = False;
 	    continue;
 	}
 	if (strcmp(argv[i], "-plane") == 0) {
@@ -281,6 +287,9 @@ main(argc, argv)
 	} else if (strcmp(vt, "MATCH") == 0) {
 	    vinfo.class = header.visual_class;
 	    mask |= VisualClassMask;
+	} else if (strcmp(vt, "DEFAULT") == 0) {
+	    vinfo.visualid= XVisualIDFromVisual(DefaultVisual(dpy, screen));
+	    mask |= VisualIDMask;
 	} else {
 	    vinfo.visualid = 0;
 	    mask |= VisualIDMask;
@@ -301,19 +310,19 @@ main(argc, argv)
 
     /* find a workable visual */
     if (std) {
-	stdmap = stdmaps[0];
+	stdmap = &stdmaps[0];
 	if (mask & VisualIDMask) {
 	    for (i = 0; i < stdcnt; i++) {
 		if (stdmaps[i].visualid == vinfo.visualid) {
-		    stdmap = stdmaps[i];
+		    stdmap = &stdmaps[i];
 		    break;
 		}
 	    }
-	    if (stdmap.visualid != vinfo.visualid)
+	    if (stdmap->visualid != vinfo.visualid)
 		Error("no standard colormap matching specified visual");
 	}
 	for (i = 0; i < count; i++) {
-	    if (stdmap.visualid == vinfos[i].visualid) {
+	    if (stdmap->visualid == vinfos[i].visualid) {
 		vinfo = vinfos[i];
 		break;
 	    }
@@ -333,13 +342,22 @@ main(argc, argv)
 	    }
 	}
     } else {
-	/* get the visual with sufficient entries, prefer matching depth  */
-	for (i = 0; i < count; i++) {
-	    if (((vinfos[i].depth == in_image.depth) &&
-		 (vinfos[i].colormap_size >= ncolors) &&
-		 (vinfo.colormap_size < ncolors)) ||
-		((vinfo.depth != in_image.depth) &&
-		 (vinfos[i].colormap_size > vinfo.colormap_size)))
+	/* get best visual */
+	vinfo = vinfos[0];
+	for (i = 1; i < count; i++) {
+	    int z1, z2;
+	    z2 = EffectiveSize(&vinfos[i]);
+	    if ((z2 >= ncolors) &&
+		(vinfos[i].depth == in_image.depth) &&
+		(vinfos[i].class == header.visual_class))
+	    {
+		vinfo = vinfos[i];
+		break;
+	    }
+	    z1 = EffectiveSize(&vinfo);
+	    if ((z2 > z1) ||
+		((z2 == z1) &&
+		 (VisualRank(vinfos[i].class) >= VisualRank(vinfo.class))))
 		vinfo = vinfos[i];
 	}
 	if ((newmap || (vinfo.visual != DefaultVisual(dpy, screen))) &&
@@ -370,8 +388,7 @@ main(argc, argv)
 	if (ncolors)
 	    XStoreColors(dpy, colormap, colors, ncolors);
     } else if (std) {
-	colormap = stdmap.colormap;
-	newmap = False;
+	colormap = stdmap->colormap;
     } else {
 	if (!newmap && (vinfo.visual == DefaultVisual(dpy, screen)))
 	    colormap = DefaultColormap(dpy, screen);
@@ -399,10 +416,13 @@ main(argc, argv)
 				 in_image.width, in_image.height,
 				 XBitmapPad(dpy), 0);
 	out_image->data = malloc(Image_Size(out_image));
-	if (std)
-	    Do_Standard(dpy, &stdmap, ncolors, colors, &in_image, out_image);
-	else if ((header.visual_class == TrueColor) ||
-		 (header.visual_class == DirectColor))
+	if (std) {
+	    if (!stdmap->green_max && !stdmap->blue_max && IsGray(dpy, stdmap))
+		Do_StdGray(dpy, stdmap, ncolors, colors, &in_image, out_image);
+	    else
+		Do_StdCol(dpy, stdmap, ncolors, colors, &in_image, out_image);
+	} else if ((header.visual_class == TrueColor) ||
+		   (header.visual_class == DirectColor))
 	    Do_Direct(dpy, &header, &colormap, ncolors, colors,
 		      &in_image, out_image);
 	else
@@ -433,7 +453,8 @@ main(argc, argv)
 
     attributes.background_pixel = gc_val.background;
     attributes.bit_gravity = NorthWestGravity;
-    attributes.event_mask = ButtonPressMask|ButtonReleaseMask|ExposureMask;
+    attributes.event_mask = ButtonPressMask|ButtonReleaseMask|KeyPressMask|
+			    ExposureMask;
     attributes.colormap = colormap;
 
     hints.x = header.window_x;
@@ -476,8 +497,16 @@ main(argc, argv)
 	  case ButtonPress:
 	    break;
 	  case ButtonRelease:
-	    XCloseDisplay(dpy);
-	    exit(0);
+	    if (onclick) {
+		XCloseDisplay(dpy);
+		return;
+	    }
+	case KeyPress:
+	    i = XLookupString(&event, &c, 1, NULL, NULL);
+	    if ((i == 1) && ((c == 'q') || (c == 'Q') || (c == '\03'))) {
+		XCloseDisplay(dpy);
+		return;
+	  }
 	  case Expose:
 	    if ((expose->x < out_image->width) &&
 		(expose->y < out_image->height)) {
@@ -521,7 +550,48 @@ Extract_Plane(in_image, out_image, plane)
 		      (XGetPixel(in_image, x, y) >> plane) & 1);
 }
 
-Do_Standard(dpy, stdmap, ncolors, colors, in_image, out_image)
+int
+EffectiveSize(vinfo)
+    XVisualInfo *vinfo;
+{
+    if ((vinfo->class == DirectColor) || (vinfo->class == TrueColor))
+	return (vinfo->red_mask | vinfo->green_mask | vinfo->blue_mask) + 1;
+    else
+	return vinfo->colormap_size;
+}
+
+VisualRank(class)
+    int class;
+{
+    switch (class) {
+    case PseudoColor:
+	return 5;
+    case DirectColor:
+	return 4;
+    case TrueColor:
+	return 3;
+    case StaticColor:
+	return 2;
+    case GrayScale:
+	return 1;
+    case StaticGray:
+	return 0;
+    }
+}
+
+int
+IsGray(dpy, stdmap)
+    Display *dpy;
+    XStandardColormap *stdmap;
+{
+    XColor color;
+
+    color.pixel = stdmap->base_pixel + (stdmap->red_max * stdmap->red_mult);
+    XQueryColor(dpy, stdmap->colormap, &color);
+    return (color.green || color.blue);
+}
+
+Do_StdGray(dpy, stdmap, ncolors, colors, in_image, out_image)
     Display *dpy;
     XStandardColormap *stdmap;
     int ncolors;
@@ -530,23 +600,46 @@ Do_Standard(dpy, stdmap, ncolors, colors, in_image, out_image)
 {
     register int i, x, y;
     register XColor *color;
+    unsigned lim;
 
-    for (i = 0; i < ncolors; i++)
-	colors[i].flags = 0;
+    lim = stdmap->red_max + 1;
+    for (i = 0, color = colors; i < ncolors; i++, color++)
+	color->pixel = stdmap->base_pixel +
+		       (((((30L * color->red +
+			    59L * color->green +
+			    11L * color->blue) / 100)
+			  * lim) >> 16) * stdmap->red_mult);
     for (y = 0; y < in_image->height; y++) {
 	for (x = 0; x < in_image->width; x++) {
-	    color = &colors[XGetPixel(in_image, x, y)];
-	    if (!color->flags) {
-		color->flags = DoRed | DoGreen | DoBlue;
-		color->pixel = stdmap->base_pixel +
-			       (((color->red * stdmap->red_max) / 65535) *
-				stdmap->red_mult) +
-			       (((color->green * stdmap->green_max) / 65535) *
-				stdmap->green_mult) +
-			       (((color->blue * stdmap->blue_max) / 65535) *
-				stdmap->blue_mult);
-	    }
-	    XPutPixel(out_image, x, y, color->pixel);
+	    XPutPixel(out_image, x, y,
+		      colors[XGetPixel(in_image, x, y)].pixel);
+	}
+    }
+}
+
+Do_StdCol(dpy, stdmap, ncolors, colors, in_image, out_image)
+    Display *dpy;
+    XStandardColormap *stdmap;
+    int ncolors;
+    XColor *colors;
+    register XImage *in_image, *out_image;
+{
+    register int i, x, y;
+    register XColor *color;
+    unsigned limr, limg, limb;
+
+    limr = stdmap->red_max + 1;
+    limg = stdmap->green_max + 1;
+    limb = stdmap->blue_max + 1;
+    for (i = 0, color = colors; i < ncolors; i++, color++)
+	color->pixel = stdmap->base_pixel +
+		       (((color->red * limr) >> 16) * stdmap->red_mult) +
+		       (((color->green * limg) >> 16) * stdmap->green_mult) +
+		       (((color->blue * limb) >> 16) * stdmap->blue_mult);
+    for (y = 0; y < in_image->height; y++) {
+	for (x = 0; x < in_image->width; x++) {
+	    XPutPixel(out_image, x, y,
+		      colors[XGetPixel(in_image, x, y)].pixel);
 	}
     }
 }
