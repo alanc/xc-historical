@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.61 91/07/18 18:53:47 gildea Exp $
+ * $XConsortium: dm.c,v 1.62 91/07/18 18:55:52 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -684,18 +684,18 @@ StorePid ()
 	fseek (pidFilePtr, 0l, 0);
 	if (lockPidFile)
 	{
-#ifdef F_TLOCK
-	    if (lockf (pidFd, F_TLOCK, 0) == -1)
+#ifdef LOCK_EX
+	    if (flock (pidFd, LOCK_EX|LOCK_NB) == -1)
 	    {
-		if (errno == EACCES)
+		if (errno == EWOULDBLOCK)
 		    return oldpid;
 		else
 		    return -1;
 	    }
 #else
-	    if (flock (pidFd, LOCK_EX|LOCK_NB) == -1)
+	    if (lockf (pidFd, F_TLOCK, 0) == -1)
 	    {
-		if (errno == EWOULDBLOCK)
+		if (errno == EACCES)
 		    return oldpid;
 		else
 		    return -1;
