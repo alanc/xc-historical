@@ -1,5 +1,5 @@
 /*
- * $XConsortium: lcWrap.c,v 11.14 93/12/09 15:02:26 kaleb Exp $
+ * $XConsortium: lcWrap.c,v 11.15 94/01/20 18:07:52 rws Exp $
  */
 
 /*
@@ -35,6 +35,9 @@
 #include "Xlcint.h"
 #include <X11/Xlocale.h>
 #include <X11/Xos.h>
+#ifdef WIN32
+#undef close
+#endif
 #include <X11/Xutil.h>
 
 #if __STDC__

@@ -1,3 +1,6 @@
+#ifdef WIN32
+#define _WILLWINSOCK_
+#endif
 #include "Xtransint.h"
 
 #ifdef DNETCONN

@@ -1,4 +1,4 @@
-/* $XConsortium: authutil.c,v 1.7 93/12/07 11:04:04 mor Exp $ */
+/* $XConsortium: authutil.c,v 1.8 94/01/17 18:48:03 rws Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -35,7 +35,9 @@ extern char *getenv();
 #ifndef X_NOT_POSIX
 #include <unistd.h>
 #else
+#ifndef WIN32
 extern unsigned	sleep ();
+#endif
 #endif
 
 static Status read_short ();
