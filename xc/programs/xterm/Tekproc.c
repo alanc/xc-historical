@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.96 91/05/04 19:06:02 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.97 91/05/04 21:44:40 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -149,6 +149,7 @@ extern void HandleStringEvent();
 extern void HandleEnterWindow();
 extern void HandleLeaveWindow();
 extern void HandleFocusChange();
+extern void HandleBellPropertyChange();
 extern void HandleSecure();
 extern void HandleGINInput();
 extern void HandleCreateMenu(), HandlePopupMenu();
@@ -609,7 +610,7 @@ static void Tekparse()
 
 TekSetGCFont (size)
     int size;  /* TEK_FONT_{LARGE,2,3,SMALL} */
-    {
+{
     register TScreen *screen = &term->screen;
     Font fid = tekWidget->tek.Tfont[size]->fid;
     if (fid == DefaultGCID) 
@@ -620,7 +621,7 @@ TekSetGCFont (size)
 	  GCFont, screen->TnormalGC);
    else
        XSetFont (screen->display, screen->TnormalGC, fid);
-    }
+}
 
 static int rcnt;
 static char *rptr;
@@ -1140,6 +1141,8 @@ static void TekInitialize(request, new)
 		      HandleLeaveWindow, (caddr_t)NULL);
     XtAddEventHandler(XtParent(new), FocusChangeMask, FALSE,
 		      HandleFocusChange, (caddr_t)NULL);
+   XtAddEventHandler((Widget)new, PropertyChangeMask, FALSE,
+		     HandleBellPropertyChange, (Opaque)NULL);
 }
 
 
@@ -1445,7 +1448,7 @@ register TScreen *screen;
  * Toggles cursor on or off at cursor position in screen.
  */
 TCursorToggle(toggle)
-int toggle;
+    int toggle;			/* TOGGLE or CLEAR */
 {
 	register TScreen *screen = &term->screen;
 	register int c, x, y;
@@ -1461,7 +1464,7 @@ int toggle;
 	x = (screen->cur_X * TekScale(screen)) + screen->border;
 	y = ((TEKHEIGHT + TEKTOPPAD - screen->cur_Y) * TekScale(screen)) +
 	 screen->border - tekWidget->tek.tobaseline[c];
-	if (toggle) {
+	if (toggle == TOGGLE) {
 	   if (screen->select || screen->always_highlight) 
 		XFillRectangle(
 		    screen->display, TWindow(screen), screen->TcursorGC,
