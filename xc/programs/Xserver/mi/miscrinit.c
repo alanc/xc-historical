@@ -14,7 +14,7 @@ without express or implied warranty.
 
 */
 
-/* $XConsortium: miscrinit.c,v 5.1 90/09/24 10:17:45 rws Exp $ */
+/* $XConsortium: miscrinit.c,v 5.2 91/05/14 11:17:40 rws Exp $ */
 
 #include "X.h"
 #include "servermd.h"
@@ -25,15 +25,67 @@ without express or implied warranty.
 #include "mibstore.h"
 #include "dix.h"
 
+
+/* this plugs into pScreen->ModifyPixmapHeader */
+Bool
+miModifyPixmapHeader(pPixmap, width, height, depth, bitsPerPixel, devKind,
+		     pPixData)
+    PixmapPtr   pPixmap;
+    int		width;
+    int		height;
+    int		depth;
+    int		bitsPerPixel;
+    int		devKind;
+    pointer     pPixData;
+{
+    if (!pPixmap)
+	return FALSE;
+    pPixmap->drawable.depth = depth;
+    pPixmap->drawable.bitsPerPixel = bitsPerPixel;
+    pPixmap->drawable.id = 0;
+    pPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+    pPixmap->drawable.x = 0;
+    pPixmap->drawable.y = 0;
+    pPixmap->drawable.width = width;
+    pPixmap->drawable.height = height;
+    pPixmap->devKind = devKind;
+    pPixmap->refcnt = 1;
+    pPixmap->devPrivate.ptr = pPixData;
+    return TRUE;
+}
+
+
 /*ARGSUSED*/
 static Bool
 miCloseScreen (index, pScreen)
     int		index;
     ScreenPtr	pScreen;
 {
-    xfree (pScreen->devPrivate);
+    return ((*pScreen->DestroyPixmap)((PixmapPtr)pScreen->devPrivate));
+}
+
+static Bool
+miCreateScreenResources(pScreen)
+    ScreenPtr pScreen;
+{
+    PixmapPtr pPixmap;
+
+    /* create a pixmap with no data, then redirect it to point to the screen
+     */
+    pPixmap = (*pScreen->CreatePixmap)(pScreen, 0, 0, pScreen->rootDepth);
+    if (!pPixmap)
+	return FALSE;
+
+    if (!(*pScreen->ModifyPixmapHeader)(pPixmap, pScreen->width,
+		pScreen->height, pScreen->rootDepth, pScreen->rootDepth,
+		PixmapBytePad(pScreen->width, pScreen->rootDepth),
+		pScreen->devPrivate))
+	return FALSE;
+    pScreen->devPrivate = (pointer)pPixmap;
+
     return TRUE;
 }
+
 
 /*
  * If you pass in bsfuncs, then you must preinitialize the missing
@@ -72,31 +124,15 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     pScreen->backingStoreSupport = Always;
     pScreen->saveUnderSupport = NotUseful;
     /* whitePixel, blackPixel */
-    if (width)
-    {
-	PixmapPtr pPixmap;
-
-	pPixmap = (PixmapPtr ) xalloc(sizeof(PixmapRec));
-	if (!pPixmap)
-	    return FALSE;
-	pPixmap->drawable.type = DRAWABLE_PIXMAP;
-	pPixmap->drawable.depth = rootDepth;
-	pPixmap->drawable.pScreen = pScreen;
-	pPixmap->drawable.serialNumber = 0;
-	pPixmap->drawable.x = 0;
-	pPixmap->drawable.y = 0;
-	pPixmap->drawable.width = xsize;
-	pPixmap->drawable.height = ysize;
-	pPixmap->refcnt = 1;
-	pPixmap->devPrivate.ptr = pbits;
-	pPixmap->devKind = PixmapBytePad(width, rootDepth);
-	pScreen->devPrivate = (pointer)pPixmap;
+    pScreen->ModifyPixmapHeader = miModifyPixmapHeader;
+    pScreen->CreateScreenResources = miCreateScreenResources;
 #ifdef MITSHM
-	ShmRegisterFbFuncs(pScreen);
+    ShmRegisterFbFuncs(pScreen);
 #endif
-    }
-    else
-	pScreen->devPrivate = pbits;
+    /* shove pbits in here temporarily, until CreateScreenResources can put
+     * it in the screen pixmap
+     */
+    pScreen->devPrivate = pbits; 
     pScreen->numVisuals = numVisuals;
     pScreen->visuals = visuals;
     if (width)
