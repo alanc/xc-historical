@@ -7,6 +7,7 @@ SRCS =	 cfbgc.c cfbrrop.c cfbwindow.c \
 	 cfbcmap.c cfbzerarcC.c cfbzerarcX.c cfbzerarcG.c \
 	 cfbfillarcC.c cfbfillarcG.c \
 	 cfbtegblt.c cfbbstore.c \
+	 cfbbltC.c cfbbltX.c cfbbltCXARO.c cfbbltG.c \
 	 cfb8bit.c cfbteblt8.c cfbglblt8.c cfbglrop8.c \
  	 cfbpush8.c cfbrctstp8.c cfbpolypnt.c \
 	 cfbbres.c cfbline.c cfbhrzvert.c cfbbresd.c cfbimage.c cfbseg.c
@@ -18,6 +19,7 @@ OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
 	 cfbcmap.o cfbzerarcC.o cfbzerarcX.o cfbzerarcG.o \
 	 cfbfillarcC.o cfbfillarcG.o \
 	 cfbtegblt.o cfbbstore.o \
+	 cfbbltC.o cfbbltX.o cfbbltCXARO.o cfbbltG.o \
 	 cfb8bit.o cfbteblt8.o cfbglblt8.o cfbglrop8.o \
  	 cfbpush8.o cfbrctstp8.o cfbpolypnt.o \
 	 cfbbres.o cfbline.o cfbhrzvert.o cfbbresd.o cfbimage.o cfbseg.o
@@ -59,5 +61,13 @@ MultiObj(cfbzerarcC,cfbzerarc,-DRROP=GXcopy)
 MultiObj(cfbzerarcX,cfbzerarc,-DRROP=GXxor)
 
 MultiObj(cfbzerarcG,cfbzerarc,-DRROP=GXset)
+
+MultiObj(cfbbltC,cfbblt,-DMROP=Mcopy)
+
+MultiObj(cfbbltX,cfbblt,-DMROP=Mxor)
+
+MultiObj(cfbbltCXARO,cfbblt,'-DMROP=Mcopy|Mxor|MandReverse|Mor')
+
+MultiObj(cfbbltG,cfbblt,-DMROP=0)
 
 DependTarget()

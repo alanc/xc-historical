@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.29 90/02/12 18:35:55 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.30 90/02/13 14:26:22 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -35,687 +35,22 @@ Author: Keith Packard
 #include	"cfb8bit.h"
 #include	"fastblt.h"
 
-#if defined (FAST_UNALIGNED_READS) && (PPW == 4)
-#define DO_UNALIGNED_BITBLT
-#endif
+extern int  cfbDoBitbltCopy();
+extern int  cfbDoBitbltXor();
+extern int  cfbDoBitbltCopyXorAndReverseOr();
+extern int  cfbDoBitbltGeneral();
 
-cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
+cfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     DrawablePtr	    pSrc, pDst;
     int		    alu;
     RegionPtr	    prgnDst;
     DDXPointPtr	    pptSrc;
     unsigned long   planemask;
 {
-    unsigned int *psrcBase, *pdstBase;	
-				/* start of src and dst bitmaps */
-    int widthSrc, widthDst;	/* add to get to same position in next line */
-
-    BoxPtr pbox;
-    int nbox;
-
-    BoxPtr pboxTmp, pboxNext, pboxBase, pboxNew1, pboxNew2;
-				/* temporaries for shuffling rectangles */
-    DDXPointPtr pptTmp, pptNew1, pptNew2;
-				/* shuffling boxes entails shuffling the
-				   source points too */
-    int w, h;
-    int xdir;			/* 1 = left right, -1 = right left/ */
-    int ydir;			/* 1 = top down, -1 = bottom up */
-
-    unsigned int *psrcLine, *pdstLine;	
-				/* pointers to line with current src and dst */
-    register unsigned int *psrc;/* pointer to current src longword */
-    register unsigned int *pdst;/* pointer to current dst longword */
-
-				/* following used for looping through a line */
-    unsigned int startmask, endmask;	/* masks for writing ends of dst */
-    int nlMiddle;		/* whole longwords in dst */
-    int xoffSrc, xoffDst;
-    register int leftShift, rightShift;
-    register unsigned int bits;
-    register unsigned int bits1;
-    register int nl;		/* temp copy of nlMiddle */
-
-				/* place to store full source word */
-    int nstart;			/* number of ragged bits at start of dst */
-    int nend;			/* number of ragged bits at end of dst */
-    int srcStartOver;		/* pulling nstart bits from src
-				   overflows into the next word? */
-    int careful;
-    int tmpSrc;
-
-    if (pSrc->type == DRAWABLE_WINDOW)
-    {
-	psrcBase = (unsigned int *)
-		(((PixmapPtr)(pSrc->pScreen->devPrivate))->devPrivate.ptr);
-	widthSrc = (int)
-		   ((PixmapPtr)(pSrc->pScreen->devPrivate))->devKind
-		    >> 2;
-    }
-    else
-    {
-	psrcBase = (unsigned int *)(((PixmapPtr)pSrc)->devPrivate.ptr);
-	widthSrc = (int)(((PixmapPtr)pSrc)->devKind) >> 2;
-    }
-
-    if (pDst->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned int *)
-		(((PixmapPtr)(pDst->pScreen->devPrivate))->devPrivate.ptr);
-	widthDst = (int)
-		   ((PixmapPtr)(pDst->pScreen->devPrivate))->devKind
-		    >> 2;
-    }
-    else
-    {
-	pdstBase = (unsigned int *)(((PixmapPtr)pDst)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDst)->devKind) >> 2;
-    }
-
-    /* XXX we have to err on the side of safety when both are windows,
-     * because we don't know if IncludeInferiors is being used.
-     */
-    careful = ((pSrc == pDst) ||
-	       ((pSrc->type == DRAWABLE_WINDOW) &&
-		(pDst->type == DRAWABLE_WINDOW)));
-
-    pbox = REGION_RECTS(prgnDst);
-    nbox = REGION_NUM_RECTS(prgnDst);
-
-    pboxNew1 = NULL;
-    pptNew1 = NULL;
-    pboxNew2 = NULL;
-    pptNew2 = NULL;
-    if (careful && (pptSrc->y < pbox->y1))
-    {
-        /* walk source botttom to top */
-	ydir = -1;
-	widthSrc = -widthSrc;
-	widthDst = -widthDst;
-
-	if (nbox > 1)
-	{
-	    /* keep ordering in each band, reverse order of bands */
-	    pboxNew1 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
-	    if(!pboxNew1)
-		return;
-	    pptNew1 = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
-	    if(!pptNew1)
-	    {
-	        DEALLOCATE_LOCAL(pboxNew1);
-	        return;
-	    }
-	    pboxBase = pboxNext = pbox+nbox-1;
-	    while (pboxBase >= pbox)
-	    {
-	        while ((pboxNext >= pbox) &&
-		       (pboxBase->y1 == pboxNext->y1))
-		    pboxNext--;
-	        pboxTmp = pboxNext+1;
-	        pptTmp = pptSrc + (pboxTmp - pbox);
-	        while (pboxTmp <= pboxBase)
-	        {
-		    *pboxNew1++ = *pboxTmp++;
-		    *pptNew1++ = *pptTmp++;
-	        }
-	        pboxBase = pboxNext;
-	    }
-	    pboxNew1 -= nbox;
-	    pbox = pboxNew1;
-	    pptNew1 -= nbox;
-	    pptSrc = pptNew1;
-        }
-    }
-    else
-    {
-	/* walk source top to bottom */
-	ydir = 1;
-    }
-
-    if (careful && (pptSrc->x < pbox->x1))
-    {
-	/* walk source right to left */
-        xdir = -1;
-
-	if (nbox > 1)
-	{
-	    /* reverse order of rects in each band */
-	    pboxNew2 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
-	    pptNew2 = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
-	    if(!pboxNew2 || !pptNew2)
-	    {
-		if (pptNew2) DEALLOCATE_LOCAL(pptNew2);
-		if (pboxNew2) DEALLOCATE_LOCAL(pboxNew2);
-		if (pboxNew1)
-		{
-		    DEALLOCATE_LOCAL(pptNew1);
-		    DEALLOCATE_LOCAL(pboxNew1);
-		}
-	        return;
-	    }
-	    pboxBase = pboxNext = pbox;
-	    while (pboxBase < pbox+nbox)
-	    {
-	        while ((pboxNext < pbox+nbox) &&
-		       (pboxNext->y1 == pboxBase->y1))
-		    pboxNext++;
-	        pboxTmp = pboxNext;
-	        pptTmp = pptSrc + (pboxTmp - pbox);
-	        while (pboxTmp != pboxBase)
-	        {
-		    *pboxNew2++ = *--pboxTmp;
-		    *pptNew2++ = *--pptTmp;
-	        }
-	        pboxBase = pboxNext;
-	    }
-	    pboxNew2 -= nbox;
-	    pbox = pboxNew2;
-	    pptNew2 -= nbox;
-	    pptSrc = pptNew2;
-	}
-    }
-    else
-    {
-	/* walk source left to right */
-        xdir = 1;
-    }
-
-    /* special case copy */
-    if (alu == GXcopy && (planemask & PMSK) == PMSK)
-    {
-	while(nbox--)
-	{
-	    w = pbox->x2 - pbox->x1;
-	    h = pbox->y2 - pbox->y1;
-
-	    if (ydir == -1) /* start at last scanline of rectangle */
-	    {
-	        psrcLine = psrcBase + ((pptSrc->y+h-1) * -widthSrc);
-	        pdstLine = pdstBase + ((pbox->y2-1) * -widthDst);
-	    }
-	    else /* start at first scanline */
-	    {
-	        psrcLine = psrcBase + (pptSrc->y * widthSrc);
-	        pdstLine = pdstBase + (pbox->y1 * widthDst);
-	    }
-	    if ((pbox->x1 & PIM) + w <= PPW)
-	    {
-		pdst = pdstLine + (pbox->x1 >> PWSH);
-		psrc = psrcLine + (pptSrc->x >> PWSH);
-		xoffSrc = pptSrc->x & PIM;
-		xoffDst = pbox->x1 & PIM;
-		while (h--)
-		{
-		    getbits (psrc, xoffSrc, w, bits)
-		    putbits (bits, xoffDst, w, pdst, ~0)
-		    psrc += widthSrc;
-		    pdst += widthDst;
-		}
-	    }
-	    else
-	    {
-	    	maskbits(pbox->x1, w, startmask, endmask, nlMiddle);
-	    	if (xdir == 1)
-	    	{
-	    	    xoffSrc = pptSrc->x & PIM;
-	    	    xoffDst = pbox->x1 & PIM;
-		    pdstLine += (pbox->x1 >> PWSH);
-		    psrcLine += (pptSrc->x >> PWSH);
-#ifdef DO_UNALIGNED_BITBLT
-		    nl = xoffSrc - xoffDst;
-		    psrcLine = (unsigned int *)
-			        (((unsigned char *) psrcLine) + nl);
-#else
-		    if (xoffSrc == xoffDst)
-#endif
-		    {
-	    	    	while (h--)
-	    	    	{
-		    	    psrc = psrcLine;
-		    	    pdst = pdstLine;
-		    	    pdstLine += widthDst;
-		    	    psrcLine += widthSrc;
-			    if (startmask)
-			    {
-			    	*pdst = (*pdst & ~startmask) | (*psrc++ & startmask);
-			    	pdst++;
-			    }
-			    nl = nlMiddle;
-
-#ifdef LARGE_INSTRUCTION_CACHE
-#ifdef FAST_CONSTANT_OFFSET_MODE
-
-			    psrc += nl & (UNROLL-1);
-			    pdst += nl & (UNROLL-1);
-
-#define BodyOdd(n) pdst[-n] = psrc[-n];
-#define BodyEven(n) pdst[-n] = psrc[-n];
-
-#define LoopReset \
-    pdst += UNROLL; \
-    psrc += UNROLL;
-
-#else
-
-#define BodyOdd(n)  *pdst++ = *psrc++;
-#define BodyEven(n) BodyOdd(n)
-
-#define LoopReset   ;
-
-#endif
-			    PackedLoop
-
-#undef BodyOdd
-#undef BodyEven
-#undef LoopReset
-
-#else
-#ifdef NOTDEF
-			    /* you'd think this would be faster --
-			     * a single instruction instead of 6
-			     * but measurements show it to be ~15% slower
-			     */
-			    while ((nl -= 6) >= 0)
-			    {
-				asm ("moveml %1+,#0x0c0f;moveml#0x0c0f,%0"
-				     : "=m" (*(char *)pdst)
-				     : "m" (*(char *)psrc)
-				     : "d0", "d1", "d2", "d3",
-				       "a2", "a3");
-				pdst += 6;
-			    }
-			    nl += 6;
-			    while (nl--)
-				*pdst++ = *psrc++;
-#endif
-			    DuffL(nl, label1, *pdst++ = *psrc++;)
-#endif
-
-			    if (endmask)
-			    	*pdst = (*pdst & ~endmask) | (*psrc++ & endmask);
-		    	}
-		    }
-#ifndef DO_UNALIGNED_BITBLT
-		    else
-		    {
-		    	if (xoffSrc > xoffDst)
-			{
-			    leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
-			    rightShift = 32 - leftShift;
-			}
-		    	else
-			{
-			    rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
-			    leftShift = 32 - rightShift;
-			}
-		    	while (h--)
-		    	{
-			    psrc = psrcLine;
-			    pdst = pdstLine;
-			    pdstLine += widthDst;
-			    psrcLine += widthSrc;
-			    bits = 0;
-			    if (xoffSrc > xoffDst)
-			    	bits = *psrc++;
-			    if (startmask)
-			    {
-			    	bits1 = BitLeft(bits,leftShift);
-			    	bits = *psrc++;
-			    	bits1 |= BitRight(bits,rightShift);
-			    	*pdst = (*pdst & ~startmask) |
-				    	(bits1 & startmask);
-			    	pdst++;
-			    }
-			    nl = nlMiddle;
-
-#ifdef LARGE_INSTRUCTION_CACHE
-			    bits1 = bits;
-
-#ifdef FAST_CONSTANT_OFFSET_MODE
-
-			    psrc += nl & (UNROLL-1);
-			    pdst += nl & (UNROLL-1);
-
-#define BodyOdd(n) \
-    bits = psrc[-n]; \
-    pdst[-n] = BitLeft(bits1, leftShift) | BitRight(bits, rightShift);
-
-#define BodyEven(n) \
-    bits1 = psrc[-n]; \
-    pdst[-n] = BitLeft(bits, leftShift) | BitRight(bits1, rightShift);
-
-#define LoopReset \
-    pdst += UNROLL; \
-    psrc += UNROLL;
-
-#else
-
-#define BodyOdd(n) \
-    bits = *psrc++; \
-    *pdst++ = BitLeft(bits1, leftShift) | BitRight(bits, rightShift);
-			   
-#define BodyEven(n) \
-    bits1 = *psrc++; \
-    *pdst++ = BitLeft(bits, leftShift) | BitRight(bits1, rightShift);
-
-#define LoopReset   ;
-
-#endif	/* !FAST_CONSTANT_OFFSET_MODE */
-
-			    PackedLoop
-
-#undef BodyOdd
-#undef BodyEven
-#undef LoopReset
-
-#else
-			    DuffL (nl,label2,
-				bits1 = BitLeft(bits, leftShift);
-				bits = *psrc++;
-				*pdst++ = bits1 | BitRight(bits, rightShift);
-			    )
-#endif
-
-			    if (endmask)
-			    {
-			    	bits1 = BitLeft(bits, leftShift);
-			    	if (BitLeft(endmask, rightShift))
-			    	{
-				    bits = *psrc++;
-				    bits1 |= BitRight(bits, rightShift);
-			    	}
-			    	*pdst = (*pdst & ~endmask) |
-				    	(bits1 & endmask);
-			    }
-		    	}
-		    }
-#endif /* DO_UNALIGNED_BITBLT */
-	    	}
-	    	else	/* xdir == -1 */
-	    	{
-	    	    xoffSrc = (pptSrc->x + w - 1) & PIM;
-	    	    xoffDst = (pbox->x2 - 1) & PIM;
-		    pdstLine += ((pbox->x2-1) >> PWSH) + 1;
-		    psrcLine += ((pptSrc->x+w - 1) >> PWSH) + 1;
-#ifdef DO_UNALIGNED_BITBLT
-		    nl = xoffSrc - xoffDst;
-		    psrcLine = (unsigned int *)
-			        (((unsigned char *) psrcLine) + nl);
-#else
-		    if (xoffSrc == xoffDst)
-#endif
-		    {
-	    	    	while (h--)
-	    	    	{
-		    	    psrc = psrcLine;
-		    	    pdst = pdstLine;
-		    	    pdstLine += widthDst;
-		    	    psrcLine += widthSrc;
-			    if (endmask)
-			    {
-			    	pdst--;
-			    	*pdst = (*pdst & ~endmask) | (*--psrc & endmask);
-			    }
-			    nl = nlMiddle;
-
-#ifdef LARGE_INSTRUCTION_CACHE
-#ifdef FAST_CONSTANT_OFFSET_MODE
-			    psrc -= nl & (UNROLL - 1);
-			    pdst -= nl & (UNROLL - 1);
-
-#define BodyOdd(n) pdst[n-1] = psrc[n-1];
-
-#define BodyEven(n) pdst[n-1] = psrc[n-1];
-
-#define LoopReset \
-    pdst -= UNROLL;\
-    psrc -= UNROLL;
-
-#else
-
-#define BodyOdd(n)  *--pdst = *--psrc;
-#define BodyEven(n) BodyOdd(n)
-#define LoopReset   ;
-
-#endif
-			    PackedLoop
-
-#undef BodyOdd
-#undef BodyEven
-#undef LoopReset
-
-#else
-			    DuffL(nl,label3, *--pdst = *--psrc;)
-#endif
-
-			    if (startmask)
-			    {
-			    	--pdst;
-			    	*pdst = (*pdst & ~startmask) | (*--psrc & startmask);
-			    }
-		    	}
-		    }
-#ifndef DO_UNALIGNED_BITBLT
-		    else
-		    {
-			if (xoffDst > xoffSrc)
-			{
-			    rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
-			    leftShift = 32 - rightShift;
-			}
-			else
-			{
-		    	    leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
-		    	    rightShift = 32 - leftShift;
-			}
-	    	    	while (h--)
-	    	    	{
-		    	    psrc = psrcLine;
-		    	    pdst = pdstLine;
-		    	    pdstLine += widthDst;
-		    	    psrcLine += widthSrc;
-			    bits = 0;
-			    if (xoffDst > xoffSrc)
-				bits = *--psrc;
-			    if (endmask)
-			    {
-			    	bits1 = BitRight(bits, rightShift);
-			    	bits = *--psrc;
-			    	bits1 |= BitLeft(bits, leftShift);
-			    	pdst--;
-			    	*pdst = (*pdst & ~endmask) |
-				    	(bits1 & endmask);
-			    }
-			    nl = nlMiddle;
-
-#ifdef LARGE_INSTRUCTION_CACHE
-			    bits1 = bits;
-#ifdef FAST_CONSTANT_OFFSET_MODE
-			    psrc -= nl & (UNROLL - 1);
-			    pdst -= nl & (UNROLL - 1);
-
-#define BodyOdd(n) \
-    bits = psrc[n-1]; \
-    pdst[n-1] = BitRight(bits1, rightShift) | BitLeft(bits, leftShift);
-
-#define BodyEven(n) \
-    bits1 = psrc[n-1]; \
-    pdst[n-1] = BitRight(bits, rightShift) | BitLeft(bits1, leftShift);
-
-#define LoopReset \
-    pdst -= UNROLL; \
-    psrc -= UNROLL;
-
-#else
-
-#define BodyOdd(n) \
-    bits = *--psrc; \
-    *--pdst = BitRight(bits1, rightShift) | BitLeft(bits, leftShift);
-
-#define BodyEven(n) \
-    bits1 = *--psrc; \
-    *--pdst = BitRight(bits, rightShift) | BitLeft(bits1, leftShift);
-
-#define LoopReset   ;
-
-#endif
-
-			    PackedLoop
-
-#undef BodyOdd
-#undef BodyEven
-#undef LoopReset
-
-#else
-			    DuffL (nl, label4,
-				bits1 = BitRight(bits, rightShift);
-				bits = *--psrc;
-				*--pdst = bits1 | BitLeft(bits, leftShift);
-			    )
-#endif
-
-			    if (startmask)
-			    {
-			    	bits1 = BitRight(bits, rightShift);
-			    	if (BitRight (startmask, leftShift))
-			    	{
-				    bits = *--psrc;
-				    bits1 |= BitLeft(bits, leftShift);
-			    	}
-			    	--pdst;
-			    	*pdst = (*pdst & ~startmask) |
-				    	(bits1 & startmask);
-			    }
-		    	}
-		    }
-#endif
-		}
-	    }
-	    pbox++;
-	    pptSrc++;
-	}
-    } else {
-    	while (nbox--)
-    	{
-    	    w = pbox->x2 - pbox->x1;
-    	    h = pbox->y2 - pbox->y1;
-    	    if (ydir == -1)
-    	    {
-            	psrcLine = psrcBase + ((pptSrc->y+h-1) * -widthSrc);
-            	pdstLine = pdstBase + ((pbox->y2-1) * -widthDst);
-    	    }
-    	    else
-    	    {
-            	psrcLine = psrcBase + (pptSrc->y * widthSrc);
-            	pdstLine = pdstBase + (pbox->y1 * widthDst);
-    	    }
-    	    if (w <= PPW)
-    	    {
-	    	int tmpSrc;
-            	int srcBit, dstBit;
-            	pdstLine += (pbox->x1 >> PWSH);
-            	psrcLine += (pptSrc->x >> PWSH);
-            	psrc = psrcLine;
-            	pdst = pdstLine;
-            	srcBit = pptSrc->x & PIM;
-            	dstBit = pbox->x1 & PIM;
-            	while(h--)
-            	{
-	    	    getbits(psrc, srcBit, w, tmpSrc)
-    		    putbitsrop(tmpSrc, dstBit, w, pdst, planemask, alu)
-	    	    pdst += widthDst;
-	    	    psrc += widthSrc;
-            	}
-    	    }
-    	    else
-    	    {
-            	maskbits(pbox->x1, w, startmask, endmask, nlMiddle)
-            	if (startmask)
-	    	    nstart = PPW - (pbox->x1 & PIM);
-            	else
-	    	    nstart = 0;
-            	if (endmask)
-            	    nend = pbox->x2 & PIM;
-            	else
-	    	    nend = 0;
-            	xoffSrc = ((pptSrc->x & PIM) + nstart) & PIM;
-            	srcStartOver = ((pptSrc->x & PIM) + nstart) > PLST;
-            	if (xdir == 1)
-            	{
-            	    pdstLine += (pbox->x1 >> PWSH);
-            	    psrcLine += (pptSrc->x >> PWSH);
-	    	    while (h--)
-	    	    {
-	            	psrc = psrcLine;
-	            	pdst = pdstLine;
-	            	if (startmask)
-	            	{
-		    	    getbits(psrc, (pptSrc->x & PIM), nstart, tmpSrc)
-    			    putbitsrop(tmpSrc, (pbox->x1 & PIM), nstart, pdst, planemask, alu)
-		    	    pdst++;
-		    	    if (srcStartOver)
-		            	psrc++;
-	            	}
-	            	nl = nlMiddle;
-	            	while (nl--)
-	            	{
-		    	    getbits(psrc, xoffSrc, PPW, tmpSrc)
-			    putbitsrop (tmpSrc, 0, PPW, pdst, planemask, alu)
-		    	    pdst++;
-		    	    psrc++;
-	            	}
-	            	if (endmask)
-	            	{
-		    	    getbits(psrc, xoffSrc, nend, tmpSrc)
-    			    putbitsrop(tmpSrc, 0, nend, pdst, planemask, alu)
-	            	}
-	            	pdstLine += widthDst;
-	            	psrcLine += widthSrc;
-	    	    }
-            	}
-            	else
-            	{
-            	    pdstLine += (pbox->x2 >> PWSH);
-            	    psrcLine += (pptSrc->x+w >> PWSH);
-	    	    if (xoffSrc + nend >= PPW)
-	            	--psrcLine;
-	    	    while (h--)
-	    	    {
-	            	psrc = psrcLine;
-	            	pdst = pdstLine;
-	            	if (endmask)
-	            	{
-		    	    getbits(psrc, xoffSrc, nend, tmpSrc)
-    			    putbitsrop(tmpSrc, 0, nend, pdst, planemask, alu)
-	            	}
-	            	nl = nlMiddle;
-	            	while (nl--)
-	            	{
-		    	    --psrc;
-		    	    getbits(psrc, xoffSrc, PPW, tmpSrc)
-		    	    --pdst;
-			    putbitsrop(tmpSrc, 0, PPW, pdst, planemask, alu);
-	            	}
-	            	if (startmask)
-	            	{
-		    	    if (srcStartOver)
-		            	--psrc;
-		    	    --pdst;
-		    	    getbits(psrc, (pptSrc->x & PIM), nstart, tmpSrc)
-    			    putbitsrop(tmpSrc, (pbox->x1 & PIM), nstart, pdst, planemask, alu)
-	            	}
-	            	pdstLine += widthDst;
-	            	psrcLine += widthSrc;
-	    	    }
-            	}
-    	    }
-    	    pbox++;
-    	    pptSrc++;
-    	}
-    }
+    return cfbDoBitbltCopy (pSrc, pDst, alu, prgnDst, pptSrc, planemask);
 }
 
-static int (*doBitBlt)() = cfbDoBitblt;
+static int (*doBitBlt)() = cfbDoBitbltCopy;
 
 RegionPtr
 cfbCopyArea(pSrcDrawable, pDstDrawable,
@@ -744,6 +79,7 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
     BoxRec fastBox;
     int fastClip = 0;		/* for fast clipping with pixmap source */
     int fastExpose = 0;		/* for fast exposures with pixmap source */
+    int (*localDoBitBlt)();
 
     origSource.x = srcx;
     origSource.y = srcy;
@@ -752,15 +88,33 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
     origDest.x = dstx;
     origDest.y = dsty;
 
+    localDoBitBlt = doBitBlt;
+    doBitBlt = cfbDoBitbltCopy;
+
     if ((pSrcDrawable != pDstDrawable) &&
 	pSrcDrawable->pScreen->SourceValidate)
     {
-	int (*SaveDoBitBlt)();
-
-	SaveDoBitBlt = doBitBlt;
-	doBitBlt = cfbDoBitblt;
 	(*pSrcDrawable->pScreen->SourceValidate) (pSrcDrawable, srcx, srcy, width, height);
-	doBitBlt = SaveDoBitBlt;
+    }
+
+    if (localDoBitBlt == cfbDoBitbltCopy)
+    {
+	if (pGC->alu != GXcopy || (pGC->planemask & PMSK) != PMSK)
+	{
+	    localDoBitBlt = cfbDoBitbltGeneral;
+	    if ((pGC->planemask & PMSK) == PMSK)
+	    {
+		switch (pGC->alu) {
+		case GXxor:
+		    localDoBitBlt = cfbDoBitbltXor;
+		    break;
+		case GXandReverse:
+		case GXor:
+		    localDoBitBlt = cfbDoBitbltCopyXorAndReverseOr;
+		    break;
+		}
+	    }
+	}
     }
 
     srcx += pSrcDrawable->x;
@@ -944,7 +298,7 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 	    ppt->y = pbox->y1 + dy;
 	}
 
-	(*doBitBlt) (pSrcDrawable, pDstDrawable, pGC->alu, &rgnDst, pptSrc, pGC->planemask);
+	(*localDoBitBlt) (pSrcDrawable, pDstDrawable, pGC->alu, &rgnDst, pptSrc, pGC->planemask);
 	DEALLOCATE_LOCAL(pptSrc);
     }
 
@@ -1499,7 +853,6 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 				    pGC->planemask);
     	    ret = cfbCopyArea (pSrcDrawable, pDstDrawable,
 	    	    pGC, srcx, srcy, width, height, dstx, dsty);
-    	    doBitBlt = cfbDoBitblt;
 	}
 	else
 	    ret = miHandleExposures (pSrcDrawable, pDstDrawable,
@@ -1519,7 +872,6 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	doBitBlt = cfbCopyPlane8to1;
 	ret = cfbCopyArea (pSrcDrawable, pDstDrawable,
 		    pGC, srcx, srcy, width, height, dstx, dsty);
-	doBitBlt = cfbDoBitblt;
 	pGC->alu = oldalu;
     }
     else
@@ -1557,7 +909,6 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	/* no exposures here, copy bits from inside a pixmap */
 	(void) cfbCopyArea ((DrawablePtr) pBitmap, pDstDrawable, pGC,
 			    0, 0, width, height, dstx, dsty);
-	doBitBlt = cfbDoBitblt;
 	FreeScratchGC (pGC1);
 	(*pScreen->DestroyPixmap) (pBitmap);
 	/* compute resultant exposures */
