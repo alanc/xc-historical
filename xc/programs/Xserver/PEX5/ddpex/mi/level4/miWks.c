@@ -1,4 +1,4 @@
-/* $XConsortium: miWks.c,v 5.1 91/02/16 09:56:07 rws Exp $ */
+/* $XConsortium: miWks.c,v 5.2 91/03/15 18:24:36 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1468,7 +1468,7 @@ MapDcWc(pWKS, numPoints, pDCpoints, pRetPoints, pWCpoints, pView)
 	 * given dc with w=1.0)
 	 */
 	miBldViewport_xform(pwks->pRend, pwks->pRend->pDrawable,
-				&npc_dc_xform[0][0], NULL);
+				npc_dc_xform, NULL);
 	miMatInverse(npc_dc_xform);
 
 	/*
@@ -1580,7 +1580,7 @@ MapWcDc(pWKS, numPoints, pWCpoints, view, pRetPoints, pDCpoints)
 	 * dc_point = [npc_to_dc_xform][npc_point]
 	 */
 	miBldViewport_xform(pwks->pRend, pwks->pRend->pDrawable,
-				&npc_to_dc_xform[0][0], NULL);
+				npc_to_dc_xform, NULL);
 
 	err = get_view(pwks->pRend->lut[PEXViewLUT], view, &clipFlags, &clipLimits, wc_to_npc_xform, MI_TRUE);
 	if (err != Success)
