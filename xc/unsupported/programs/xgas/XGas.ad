@@ -1,0 +1,46 @@
+########################################################
+# XGas: Resources for the Ideal Gas Simulation
+#   xgas: Copyright 1990 Larry Medwin: @(#)Gas	1.10 2/9/90
+########################################################
+#
+XGas*font:			9x15
+XGas*background:		black
+XGas*foreground:		red
+#
+#
+# Constraints
+#
+XGas*lab.height:		300
+XGas*lab.width:			300
+XGas*Scrollbar.height:		300
+#
+# Special Options
+#
+XGas*timestepSize:		3
+XGas*delay:			30
+XGas*randomBounce:		0.2
+XGas*equilibrium:		0.5
+XGas*maxMolecules:		50
+#
+#
+XGas*help.label:		help
+XGas*run.label:			run
+XGas*pause.label:		pause
+XGas*step.label:		step
+XGas*quit.label:		quit
+#
+XGas*helpText*font:		fixed
+XGas*helpText.fromVert:		helpQuick
+XGas*helpText.height:		450
+XGas*helpText.width:		475
+XGas*helpText.bottom:		chainBottom
+XGas*helpText.left:		chainLeft
+XGas*helpText.right:		chainRight
+XGas*helpText.top:		chainTop
+XGas*helpText.scrollVertical:	always
+XGas*helpText*resize:		width
+#
+XGas*helpQuick.label:		quick
+XGas*helpMan.label:		man
+XGas*helpDoc.label:		doc
+XGas*helpQuit.label:		quit
