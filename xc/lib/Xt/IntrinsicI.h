@@ -1,5 +1,5 @@
 /*
- * $XConsortium: IntrinsicI.h,v 1.45 91/03/15 15:11:48 gildea Exp $
+ * $XConsortium: IntrinsicI.h,v 1.45 91/03/25 11:41:31 gildea Exp $
  */
 
 /***********************************************************
@@ -40,7 +40,6 @@ SOFTWARE.
 
 #include "TranslateI.h"
 #include "CallbackI.h"
-#include "CompositeI.h"
 #include "ConvertI.h"
 #include "EventI.h"
 #include "PassivGraI.h"
