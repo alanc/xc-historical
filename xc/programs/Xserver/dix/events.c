@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.49 91/12/17 19:41:32 keith Exp $ */
+/* $XConsortium: events.c,v 5.50 91/12/24 12:10:48 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -831,7 +831,7 @@ AllowSome(client, time, thisDev, newState)
 	    if (dev->sync.state < FROZEN)
 		othersFrozen = FALSE;
 	}
-	else if (!thisGrabbed || (dev->sync.other != thisDev->grab))
+	else if (!dev->sync.other || !SameClient(dev->sync.other, client))
 	    othersFrozen = FALSE;
     }
     if (!((thisGrabbed && thisDev->sync.state >= FROZEN) || thisSynced))
