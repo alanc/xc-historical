@@ -10,6 +10,12 @@
 #define OtherObjects hpsocket.o dbm.o 
 #endif
 
+#ifdef R4FontStructtures
+FONTSRCS = osfonts.c fonttype.c
+FONTOBJS = osfonts.o fonttype.o
+FONT_DEFINES = FontDefines FontFilters
+#endif
+
 /*
  * do not modify the following two definitions
  */
@@ -33,13 +39,12 @@ DESSCRS =
 #endif
 
 BOOTSTRAPCFLAGS = 
-           SRCS = WaitFor.c access.c connection.c fonttype.c io.c oscolor.c \
-                  osfonts.c osinit.c utils.c auth.c mitauth.c $(DESSRCS) \
+           SRCS = WaitFor.c access.c connection.c io.c oscolor.c \
+                  osinit.c utils.c auth.c mitauth.c $(FONTSRCS) $(DESSRCS) \
  		  xdmcp.c decompress.c OtherSources
-           OBJS = WaitFor.o access.o connection.o fonttype.o io.o oscolor.o \
-                  osfonts.o osinit.o utils.o auth.o mitauth.o $(DESOBJS) \
+           OBJS = WaitFor.o access.o connection.o io.o oscolor.o \
+                  osinit.o utils.o auth.o mitauth.o $(FONTOBJS) $(DESOBJS) \
  		  xdmcp.o decompress.o OtherObjects
-   FONT_DEFINES = FontDefines FontFilters
 #if SpecialMalloc
      OS_DEFINES = -DSPECIAL_MALLOC
 #else
