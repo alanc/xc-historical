@@ -14,7 +14,7 @@
 #define ExecableScripts   NO
 #define NeedBerklibInXlib YES
 #define HasSockets        YES
-#define HasGcc            YES	/* the server *really* needs this; see site.def */
+#define HasGcc            NO /* the server *REALLY* needs this, GET it */
 
 #undef ExtensionDefines
 #define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITSHM -DMITMISC
@@ -31,7 +31,7 @@
 #define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 
 
-/**/# platform:  $XConsortium: macII.cf,v 1.13 89/09/06 15:23:52 jim Exp $
+/**/# platform:  $XConsortium: macII.cf,v 1.14 89/10/11 18:54:50 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
