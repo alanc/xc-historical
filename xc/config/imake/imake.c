@@ -14,8 +14,8 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.24 88/02/20 19:46:58 rws Exp $
- * $Locker: toddb $
+ * $Header: imake.c,v 1.25 88/07/11 17:14:36 toddb Exp $
+ * $Locker: rws $
  *
  * Author:
  *	Todd Brunhoff
@@ -421,7 +421,7 @@ cppit(Imakefile, template, outfd)
 	/*
 	 * Fork and exec cpp
 	 */
-	pid = vfork();
+	pid = fork();
 	if (pid < 0)
 		LogFatal("Cannot fork.", "");
 	if (pid) {	/* parent */
@@ -473,7 +473,7 @@ makeit()
 	/*
 	 * Fork and exec make
 	 */
-	pid = vfork();
+	pid = fork();
 	if (pid < 0)
 		LogFatal("Cannot fork.", "");
 	if (pid) {	/* parent... simply wait */
