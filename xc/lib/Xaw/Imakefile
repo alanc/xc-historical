@@ -42,6 +42,7 @@ HEADERS = \
 	PanedP.h \
 	Panner.h \
 	PannerP.h \
+	Reports.h \
 	Scroll.h \
 	Scrollbar.h \
 	ScrollbarP.h \
