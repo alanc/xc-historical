@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Scale.c,v 1.4 91/01/10 18:16:31 dave Exp $
+ * $XConsortium: Scale.c,v 1.5 91/01/23 09:47:57 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -48,39 +48,42 @@ double rint();
 #define DefaultBufferSize 1024
 #define DefaultScaleFactor NULL
 
+#define Offset(field) XtOffsetOf(ScaleRec, scale.field)
+
 static XtResource resources[] = {
-#define offset(field) XtOffset(ScaleWidget, scale.field)
 {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-     offset(foreground_pixel), XtRString, (XtPointer) XtDefaultForeground},
+     Offset(foreground_pixel), XtRString, (XtPointer) XtDefaultForeground},
 {XtNgravity, XtCGravity, XtRGravity, sizeof(XtGravity),
-     offset(gravity), XtRImmediate, (XtPointer) "ForgetGravity"},
+     Offset(gravity), XtRImmediate, (XtPointer) "ForgetGravity"},
 {XtNinternalWidth, XtCWidth, XtRDimension,  sizeof(Dimension),
-     offset(internal_width), XtRImmediate, (XtPointer) 2},
+     Offset(internal_width), XtRImmediate, (XtPointer) 2},
 {XtNinternalHeight, XtCHeight, XtRDimension, sizeof(Dimension),
-     offset(internal_height), XtRImmediate, (XtPointer) 2},
+     Offset(internal_height), XtRImmediate, (XtPointer) 2},
 {XtNresize, XtCResize, XtRBoolean, sizeof(Boolean),
-     offset(resize), XtRImmediate, (XtPointer) True},
+     Offset(resize), XtRImmediate, (XtPointer) True},
 {XtNautoscale, XtCAutoscale, XtRBoolean, sizeof(Boolean),
-     offset(autoscale), XtRImmediate, (XtPointer) True},
+     Offset(autoscale), XtRImmediate, (XtPointer) True},
 {XtNproportional, XtCProportional, XtRBoolean, sizeof(Boolean),
-     offset(proportional), XtRImmediate, (XtPointer) True},
+     Offset(proportional), XtRImmediate, (XtPointer) True},
 {XtNscaleX, XtCScaleFactor, XtRString, sizeof(String),
-     offset(scale_x_str), XtRImmediate, (XtPointer) DefaultScaleFactor},
+     Offset(scale_x_str), XtRImmediate, (XtPointer) DefaultScaleFactor},
 {XtNscaleY, XtCScaleFactor, XtRString, sizeof(String),
-     offset(scale_y_str), XtRImmediate, (XtPointer) DefaultScaleFactor},
+     Offset(scale_y_str), XtRImmediate, (XtPointer) DefaultScaleFactor},
 {XtNaspectRatio, XtCAspectRatio, XtRString, sizeof(String),
-     offset(aspect_ratio_str), XtRImmediate, (XtPointer) "1.0"},
+     Offset(aspect_ratio_str), XtRImmediate, (XtPointer) "1.0"},
 {XtNprecision, XtCPrecision, XtRString, sizeof(String),
-     offset(precision_str), XtRImmediate, (XtPointer) "0.001"},
+     Offset(precision_str), XtRImmediate, (XtPointer) "0.001"},
 {XtNimage, XtCImage, XtRImage, sizeof(XImage*),
-     offset(image), XtRImmediate, (XtPointer) NULL},
+     Offset(image), XtRImmediate, (XtPointer) NULL},
 {XtNpasteBuffer, XtCPasteBuffer, XtRBoolean, sizeof(Boolean),
-     offset(paste_buffer), XtRImmediate, (XtPointer) False},
+     Offset(paste_buffer), XtRImmediate, (XtPointer) False},
 {XtNbufferSize, XtCBufferSize, XtRCardinal, sizeof(Cardinal),
-     offset(buffer_size), XtRImmediate, (XtPointer) DefaultBufferSize},
+     Offset(buffer_size), XtRImmediate, (XtPointer) DefaultBufferSize},
 {XtNuserData, XtCuserData, XtRuserData, sizeof(XtPointer),
-     offset(userData), XtRImmediate, (XtPointer) NULL}
+     Offset(userData), XtRImmediate, (XtPointer) NULL}
 };
+
+#undef Offset
 
 static void ClassInitialize();
 static void Initialize();
