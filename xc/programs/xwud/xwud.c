@@ -4,7 +4,7 @@
 /* xwud - marginally useful raster image undumper */
 
 #ifndef lint
-static char *rcsid = "$XConsortium: xwud.c,v 1.22 88/10/20 17:39:59 jim Exp $";
+static char *rcsid = "$XConsortium: xwud.c,v 1.23 88/12/27 15:31:48 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -221,33 +221,32 @@ main(argc, argv)
     }
     in_image.data = buffer;
 
-    /* find the desired visual */
+    /* prefer the default visual, when possible */
     vinfo.screen = screen;
-    if (in_image.depth == 1) {
-	vinfo.visualid = XVisualIDFromVisual(DefaultVisual(dpy, screen));
-	vinfos = (XVisualInfo *)
-		    XGetVisualInfo(dpy, VisualScreenMask|VisualIDMask,
-				   &vinfo, &count);
-	vinfo = vinfos[0];
-    } else if (defvis) {
-	vinfo.depth = in_image.depth;
-	vinfos = (XVisualInfo *)
-		    XGetVisualInfo(dpy, VisualScreenMask|VisualDepthMask,
-				   &vinfo, &count);
-	if (!count)
-	    Error("No visual matches the image depth");
-	vinfo = vinfos[0];
+    vinfo.visualid = XVisualIDFromVisual(DefaultVisual(dpy, screen));
+    vinfo.depth = DefaultDepth(dpy, screen);
+    vinfos = XGetVisualInfo(dpy, VisualScreenMask|VisualIDMask|VisualDepthMask,
+			    &vinfo, &count);
+    vinfo = vinfos[0];
+    /* find a workable visual */
+    if (defvis) {
+	if (vinfo.depth != in_image.depth) {
+	    vinfo.depth = in_image.depth;
+	    vinfos = XGetVisualInfo(dpy, VisualScreenMask|VisualDepthMask,
+				    &vinfo, &count);
+	    if (!count)
+		Error("No visual matches the image depth");
+	    vinfo = vinfos[0];
+	}
     } else {
-	vinfo.colormap_size = 0;
-	vinfo.depth = 0;
-	vinfos = (XVisualInfo *)
-		    XGetVisualInfo(dpy, VisualScreenMask, &vinfo, &count);
-	/* get the visual with the most entries, preferring matching depth  */
+	vinfos = XGetVisualInfo(dpy, VisualScreenMask, &vinfo, &count);
+	/* get the visual with sufficient entries, prefer matching depth  */
 	for (i = 0; i < count; i++) {
 	    if (((vinfos[i].depth == in_image.depth) &&
-		 (vinfos[i].colormap_size >= ncolors)) ||
-		((vinfos[i].colormap_size > vinfo.colormap_size) &&
-		 (vinfo.depth != in_image.depth)))
+		 (vinfos[i].colormap_size >= ncolors) &&
+		 (vinfo.colormap_size < ncolors)) ||
+		((vinfo.depth != in_image.depth) &&
+		 (vinfos[i].colormap_size > vinfo.colormap_size)))
 		vinfo = vinfos[i];
 	}
 	if ((vinfo.class == DirectColor) &&
