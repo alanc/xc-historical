@@ -1,4 +1,4 @@
-/* $XConsortium: tests.c,v 1.2 93/10/30 15:28:18 rws Exp $ */
+/* $XConsortium: tests.c,v 1.3 93/11/01 17:51:51 rws Exp $ */
 
 /**** module tests.c ****/
 /******************************************************************************
@@ -983,7 +983,7 @@ Test test[] = {
   {"-ExportAvailable","ExportAvailable event",
 		InitEvents, DoExportAvailableEvent, NullProc, 
 		EndEvents, VALL, 0, 0,
-		{1, CAPA_EVENT, 2048, {  &ImageInfo[ 0 ], NULL, NULL }, 
+		{1, CAPA_EVENT | SUBSET_FULL, 2048, {  &ImageInfo[ 0 ], NULL, NULL }, 
 		( XPointer ) &EventParmVec[ 4 ] } }, 
   {"-BadValue","BadValue error event",
 		InitErrors, DoBadValueError, NullProc, 
@@ -1104,7 +1104,7 @@ Test test[] = {
   {"-FloValueError","FloValue error event",
 		InitFloErrors, DoErrors, NullProc, 
 		EndFloErrors, VALL, 0, 0,
-		{1, CAPA_ERROR, 2048, 
+		{1, CAPA_ERROR | SUBSET_FULL, 2048, 
 		{  NULL, NULL, NULL }, 
 		( XPointer ) &ErrorParmVec[ 25 ] } }, 
   {"-ColorList","XieCreateColorList/XieDestroyColorList",
