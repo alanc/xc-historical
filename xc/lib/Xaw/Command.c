@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.59 89/10/03 11:34:41 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.60 89/10/03 14:51:19 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -570,7 +570,6 @@ CommandWidget cbw;
 	corner_size = (corner_size * cbw->command.corner_round) / 100;
     }
 
-    printf("corner_size: %d\n", (int) corner_size);
     if (cbw->command.shape_style != XawShapeRectangle) {
 	if (!XmuReshapeWidget((Widget) cbw, cbw->command.shape_style,
 			      corner_size, corner_size)) {
