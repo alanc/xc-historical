@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.42 91/01/09 17:13:54 rws Exp $
+ * $XConsortium: util.c,v 1.43 91/01/18 17:26:38 dave Exp $
  *
  * utility routines for twm
  *
@@ -541,13 +541,13 @@ char *name;
       gotit:
 	if (stdcmap) {
             color.pixel = (stdcmap->base_pixel +
-			   ((Pixel)((color.red / 65535.0) *
+			   ((Pixel)(((float)color.red / 65535.0) *
 				    stdcmap->red_max + 0.5) *
 			    stdcmap->red_mult) +
-			   ((Pixel)((color.green /65535.0) *
+			   ((Pixel)(((float)color.green /65535.0) *
 				    stdcmap->green_max + 0.5) *
 			    stdcmap->green_mult) +
-			   ((Pixel)((color.blue  / 65535.0) *
+			   ((Pixel)(((float)color.blue  / 65535.0) *
 				    stdcmap->blue_max + 0.5) *
 			    stdcmap->blue_mult));
         } else {
