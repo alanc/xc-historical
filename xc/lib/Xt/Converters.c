@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: Conversion.c,v 1.1 87/09/12 12:25:24 toddb Locked $ */
 #ifndef lint
 static char *sccsid = "@(#)Conversion.c	1.11	3/19/87";
 #endif lint
@@ -334,3 +334,19 @@ void XrmInitialize()
     _XrmRegisterTypeConverter(XrmQPixel, XrmQColor,	CvtIntOrPixelToXColor);
 
 }
+
+#ifndef lint
+/*
+ * This hack is to pull in the right error description code from
+ * the resource manager library if you have a load line:
+ *	cc -o foo *.o -loldRm -lX
+ * or
+ *	cc -o foo *.o -lnewRm -lX
+ * This should be removed as soon as the resource manager makes its way
+ * into Xlib.
+ */
+static kludge()
+{
+	XGetErrorText();
+}
+#endif /* lint */
