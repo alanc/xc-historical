@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: pf.c,v 1.1 88/02/08 18:34:00 jim Exp $
+ * $XConsortium: pf.c,v 1.2 88/09/06 17:33:39 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -28,8 +28,9 @@
 char *inputFilename = NOTINFILEFILENAME;
 int lineno = 0;
 
-int process_file (filename)
+int process_file (filename, errorsp)
     char *filename;			/* NULL means use stdin */
+    int *errorsp;
 {
     FILE *fp;
     char buffer[BUFSIZ];
@@ -45,6 +46,7 @@ int process_file (filename)
 	if (!fp) {
 	    fprintf (stderr, "%s:  unable to open file '%s' for reading\n",
 		     ProgramName, filename);
+	    *errorsp += 1;
 	    return (-1);
 	}
 	inputFilename = filename;
@@ -63,8 +65,10 @@ int process_file (filename)
 	if (fgets (buffer, BUFSIZ, fp) == NULL)
 	  break;
 
-	if (process_line (buffer) < 0) 
+	if (process_line (buffer) < 0) {
+	  *errorsp += 1;
 	  status = -1;
+      }
     }
 
     inputFilename = NOTINFILEFILENAME;

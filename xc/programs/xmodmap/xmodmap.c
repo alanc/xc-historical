@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: xmodmap.c,v 1.17 89/07/07 10:56:36 jim Exp $
+ * $XConsortium: xmodmap.c,v 1.18 89/12/10 19:48:08 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -189,7 +189,7 @@ main (argc, argv)
 		/*NOTREACHED*/
 	      case '\0':		/* - (use standard input) */
 		didAnything = True;
-		if (process_file (NULL) != 0) errors++;
+		process_file (NULL, &errors);
 		continue;
 
 	      /*
@@ -272,7 +272,7 @@ main (argc, argv)
 	    }
 	} else {
 	    didAnything = True;
-	    if (process_file (arg) != 0) errors++;
+	    process_file (arg, &errors);
 	    continue;
 	}
     }					/* end for loop */
