@@ -1,4 +1,4 @@
-/* $XConsortium: tsource.c,v 2.21 91/02/17 16:49:31 dave Exp $ */
+/* $XConsortium: tsource.c,v 2.22 91/03/28 16:23:12 gildea Exp $ */
 
 /*
  *			  COPYRIGHT 1987
@@ -101,7 +101,7 @@ TocSourceClassRec tocSourceClassRec = {
   },
 /* toc_source_class fields */
   {
-    /* keeping the compiler happy. */   NULL
+    /* keeping the compiler happy */	0
   }
 };
 
