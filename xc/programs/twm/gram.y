@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.65 89/11/05 17:47:00 jim Exp $
+ * $XConsortium: gram.y,v 1.2 89/11/13 08:56:44 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.65 89/11/05 17:47:00 jim Exp $";
+"$XConsortium: gram.y,v 1.2 89/11/13 08:56:44 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -66,6 +66,11 @@ int num[5], mult, indx = 0;
 int mods = 0;
 
 int ConstrainedMoveTime = 400;		/* milliseconds, event times */
+
+/*
+%token <num> CUR_BUTTON CUR_FRAME CUR_TITLE CUR_ICONMGR CUR_ICON 
+%token <num> CUR_MOVE CUR_RESIZE CUR_WAIT CUR_SELECT CUR_KILL
+*/
 
 extern int yylineno;
 %}
@@ -107,10 +112,10 @@ extern int yylineno;
 %token <num> F_FORWICONMGR F_BACKICONMGR F_NEXTICONMGR F_PREVICONMGR
 %token <num> START_ICONIFIED NO_MENU_SHADOWS LP RP NO_VERSION
 %token <num> INTERPOLATE_MENUS NO_TITLE_HILITE ICON_BORDERWIDTH TITLE_HILITE
-%token <num> ALL OR CURSORS PIXMAPS CUR_BUTTON CUR_FRAME
-%token <num> CUR_TITLE CUR_ICONMGR CUR_ICON NO_ICONMGRS F_SORTICONMGR
-%token <num> CUR_MOVE CUR_RESIZE CUR_WAIT CUR_SELECT CUR_KILL
-%token <num> ICON_REGION NORTH SOUTH EAST WEST RESTART_PREVIOUS_STATE
+%token <num> ALL OR CURSORS PIXMAPS NO_ICONMGRS F_SORTICONMGR
+%token <num> MOVE RESIZE WAIT SELECT KILL
+%token <num> NORTH SOUTH EAST WEST
+%token <num> ICON_REGION RESTART_PREVIOUS_STATE
 %token <num> F_WARPTOSCREEN AUTO_RELATIVE_RESIZE FRAME_PADDING TITLE_PADDING
 %token <num> CONSTRAINED_MOVE_TIME USE_PPOSITION NODEFAULTS
 %token <num> LEFT_TITLEBUTTON RIGHT_TITLEBUTTON SQUEEZETITLE
@@ -418,49 +423,49 @@ cursor_entries	: /* Empty */
 		| cursor_entries cursor_entry
 		;
 
-cursor_entry	: CUR_FRAME string string {
+cursor_entry	: FRAME string string {
 			NewBitmapCursor(&Scr->FrameCursor, $2, $3); }
-		| CUR_FRAME string	{
+		| FRAME string	{
 			NewFontCursor(&Scr->FrameCursor, $2); }
-		| CUR_TITLE string string {
+		| TITLE string string {
 			NewBitmapCursor(&Scr->TitleCursor, $2, $3); }
-		| CUR_TITLE string {
+		| TITLE string {
 			NewFontCursor(&Scr->TitleCursor, $2); }
-		| CUR_ICON string string {
+		| ICON string string {
 			NewBitmapCursor(&Scr->IconCursor, $2, $3); }
-		| CUR_ICON string {
+		| ICON string {
 			NewFontCursor(&Scr->IconCursor, $2); }
-		| CUR_ICONMGR string string {
+		| ICONMGR string string {
 			NewBitmapCursor(&Scr->IconMgrCursor, $2, $3); }
-		| CUR_ICONMGR string {
+		| ICONMGR string {
 			NewFontCursor(&Scr->IconMgrCursor, $2); }
-		| CUR_BUTTON string string {
+		| BUTTON string string {
 			NewBitmapCursor(&Scr->ButtonCursor, $2, $3); }
-		| CUR_BUTTON string {
+		| BUTTON string {
 			NewFontCursor(&Scr->ButtonCursor, $2); }
-		| CUR_MOVE string string {
+		| MOVE string string {
 			NewBitmapCursor(&Scr->MoveCursor, $2, $3); }
-		| CUR_MOVE string {
+		| MOVE string {
 			NewFontCursor(&Scr->MoveCursor, $2); }
-		| CUR_RESIZE string string {
+		| RESIZE string string {
 			NewBitmapCursor(&Scr->ResizeCursor, $2, $3); }
-		| CUR_RESIZE string {
+		| RESIZE string {
 			NewFontCursor(&Scr->ResizeCursor, $2); }
-		| CUR_WAIT string string {
+		| WAIT string string {
 			NewBitmapCursor(&Scr->WaitCursor, $2, $3); }
-		| CUR_WAIT string {
+		| WAIT string {
 			NewFontCursor(&Scr->WaitCursor, $2); }
 		| MENU string string {
 			NewBitmapCursor(&Scr->MenuCursor, $2, $3); }
 		| MENU string {
 			NewFontCursor(&Scr->MenuCursor, $2); }
-		| CUR_SELECT string string {
+		| SELECT string string {
 			NewBitmapCursor(&Scr->SelectCursor, $2, $3); }
-		| CUR_SELECT string {
+		| SELECT string {
 			NewFontCursor(&Scr->SelectCursor, $2); }
-		| CUR_KILL string string {
+		| KILL string string {
 			NewBitmapCursor(&Scr->DestroyCursor, $2, $3); }
-		| CUR_KILL string {
+		| KILL string {
 			NewFontCursor(&Scr->DestroyCursor, $2); }
 		;
 
@@ -718,10 +723,10 @@ action		: F_NOP			{ $$ = F_NOP; }
 	
 		;
 
-grav		: NORTH			{ $$ = NORTH; }
-		| SOUTH			{ $$ = SOUTH; }
-		| EAST			{ $$ = EAST; }
-		| WEST			{ $$ = WEST; }
+grav		: NORTH		{ $$ = $1; }
+		| SOUTH		{ $$ = $1; }
+		| EAST		{ $$ = $1; }
+		| WEST		{ $$ = $1; }
 		;
 
 geometry	: plus_minus_number plus_minus_number {
