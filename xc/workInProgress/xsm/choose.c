@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.2 94/07/07 19:48:48 mor Exp $ */
+/* $XConsortium: choose.c,v 1.3 94/07/08 14:06:19 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -163,6 +163,7 @@ create_choose_session_popup ()
     chooseSessionPopup = XtVaCreatePopupShell (
 	"chooseSessionPopup", transientShellWidgetClass, topLevel,
         XtNmappedWhenManaged, False,
+	XtNallowShellResize, True,
 	NULL);
     
 
