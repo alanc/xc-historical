@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: spdo_prv.h,v 1.2 91/05/11 09:55:38 rws Exp $ */
 
 /*
 
@@ -69,22 +69,22 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
 #define NEXT_BYTE(A) (*(A)++)
 
-
 #define NEXT_WORD(A) \
-    ((fix15)(((A) += 2, ((fix15)((A)[-1]) << 8) | (fix15)((A)[-2]))))
+    ((fix15)(sp_globals.key32 ^ ((A) += 2, ((fix15)((A)[-1]) << 8) | (fix15)((A)[-2]))))
 
 #if INCL_EXT                       /* Extended fonts supported? */
 
 #define NEXT_BYTES(A, B) \
-    (((B = (ufix16)(*(A)++)) >= 248)? \
-     ((ufix16)(B & 0x07) << 8) + ((*(A)++)) + 248: \
+    (((B = (ufix16)(*(A)++) ^ sp_globals.key7) >= 248)? \
+     ((ufix16)(B & 0x07) << 8) + ((*(A)++) ^ sp_globals.key8) + 248: \
      B)
 
 #else                              /* Compact fonts only supported? */
 
-#define NEXT_BYTES(A, B) ((*(A)++))
+#define NEXT_BYTES(A, B) ((*(A)++) ^ sp_globals.key7)
 
 #endif
+
 
 #define NEXT_BYTE_U(A) (*(A)++) 
 

@@ -1,4 +1,4 @@
-/* $XConsortium: spfile.c,v 1.9 93/09/17 18:27:45 gildea Exp $ */
+/* $XConsortium: spfile.c,v 1.10 93/09/22 16:59:17 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -64,6 +64,21 @@ static ufix8 rkey[] =
 };				/* Retail Font decryption key */
 
 #endif				/* EXTRAFONTS */
+
+#ifdef XSAMPLEFONTS
+static ufix8 xkey[] =
+{
+    XKEY0,
+    XKEY1,
+    XKEY2,
+    XKEY3,
+    XKEY4,
+    XKEY5,
+    XKEY6,
+    XKEY7,
+    XKEY8
+};				/* Sample Font decryption key */
+#endif
 
 static ufix8 mkey[] =
 {
@@ -206,6 +221,12 @@ sp_open_master(filename, master)
 	key = skey;
     } else if (cust_no == RCUS0) {
 	key = rkey;
+    } else
+#endif
+
+#ifdef XSAMPLEFONTS
+    if (cust_no == XCUS0) {
+	key = xkey;
     } else
 #endif
 

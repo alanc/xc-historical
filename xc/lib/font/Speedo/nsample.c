@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: nsample.c,v 1.2 91/05/11 09:50:53 rws Exp $ */
 
 /*
 
@@ -257,10 +257,11 @@ font.org = font_buffer;
 font.no_bytes = bytes_read;
 
 #if REENTRANT_ALLOC
-if ((cust_no=sp_get_cust_no(sp_global_ptr,font)) != CUS0) /* NOT STANDARD ENCRYPTION */
+if ((cust_no=sp_get_cust_no(sp_global_ptr,font)) != CUS0 && /* NOT STANDARD ENCRYPTION */
 #else
-if ((cust_no=sp_get_cust_no(font)) != CUS0) /* NOT STANDARD ENCRYPTION */
+if ((cust_no=sp_get_cust_no(font)) != CUS0 && /* NOT STANDARD ENCRYPTION */
 #endif
+				cust_no != 0)
 	{
 #if REENTRANT_ALLOC
 	printf("Unable to use fonts for customer number %d\n",

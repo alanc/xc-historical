@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: set_spcs.c,v 1.2 91/05/11 09:54:30 rws Exp $ */
 
 /*
 
@@ -30,6 +30,7 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
  ****************************************************************************/
 #define SET_SPCS
 #include "spdo_prv.h"               /* General definitions for Speedo    */
+#include "keys.h"
 
 #define   DEBUG      0
 
@@ -89,6 +90,24 @@ if (read_word_u(sp_globals.font_org + FH_FMVER + 6) != 0x0000)
     report_error(4);           /* Font format error */
     return FALSE;
     }
+
+if (get_cust_no(*specsarg->pfont) == 0)
+	{
+	sp_globals.key32 = 0;
+	sp_globals.key4 = 0;
+	sp_globals.key6 = 0;
+	sp_globals.key7 = 0;
+	sp_globals.key8 = 0;
+	}
+else
+	{
+	sp_globals.key32 = (KEY3 << 8) | KEY2;
+	sp_globals.key4 = KEY4;
+	sp_globals.key6 = KEY6;
+	sp_globals.key7 = KEY7;
+	sp_globals.key8 = KEY8;
+	}
+	
 
 sp_globals.no_chars_avail = read_word_u(sp_globals.font_org + FH_NCHRF);
 
