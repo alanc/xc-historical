@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.31 91/06/15 13:04:04 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.32 91/06/15 15:10:23 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -1512,7 +1512,7 @@ miGetArcPts(parc, cpt, ppPts)
     count = i = npts;
 #endif				/* ARCCOMPRESSION */
     /* adjust the last point */
-    if (abs(parc->angle2) >= FULLCIRCLE)
+    if (abs(parc->angle2) >= 360.0)
 	poly[cpt +i -1] = poly[0];
     else {
 	poly[cpt +i -1].x = (miDcos(st + et) * parc->width/2.0 + xc);
