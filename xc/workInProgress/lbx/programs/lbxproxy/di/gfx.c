@@ -1,4 +1,4 @@
-/* $XConsortium: gfx.c,v 1.7 94/09/13 22:57:34 mor Exp mor $ */
+/* $XConsortium: gfx.c,v 1.8 94/11/08 20:22:47 mor Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -353,6 +353,24 @@ ProcLBXPolyFillArc(client)
 }
 
 
+static void
+SwapXPutImage (req)
+
+xPutImageReq *req;
+
+{
+    char n;
+
+    swaps (&req->length, n);
+    swapl (&req->drawable, n);
+    swapl (&req->gc, n);
+    swaps (&req->width, n);
+    swaps (&req->height, n);
+    swaps (&req->dstX, n);
+    swaps (&req->dstY, n);
+}
+
+
 int
 ProcLBXPutImage (client)
 
@@ -366,17 +384,7 @@ ClientPtr   client;
     float		percentCompression;
 
     if (client->swapped)
-    {
-	char n;
-
-	swaps (&stuff->length, n);
-	swapl (&stuff->drawable, n);
-	swapl (&stuff->gc, n);
-	swaps (&stuff->width, n);
-	swaps (&stuff->height, n);
-	swaps (&stuff->dstX, n);
-	swaps (&stuff->dstY, n);
-    }
+	SwapXPutImage (stuff);
 
     len = stuff->length << 2;
 
@@ -426,6 +434,9 @@ ClientPtr   client;
 #endif
 	if (newreq)
 	    xfree (newreq);
+
+	if (client->swapped)   /* Swap it back */
+	    SwapXPutImage (stuff);
 
 	return ProcStandardRequest (client);
     }
