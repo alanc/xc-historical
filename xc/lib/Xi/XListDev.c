@@ -1,4 +1,4 @@
-/* $XConsortium: XListDev.c,v 1.17 91/07/23 12:28:18 rws Exp $ */
+/* $XConsortium: XListDev.c,v 1.18 92/11/14 12:55:20 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -60,7 +60,7 @@ XDeviceInfo
 
     LockDisplay (dpy);
     if (CheckExtInit(dpy, XInput_Initial_Release) == -1)
-	return ((XDeviceInfo *) NoSuchExtension);
+	return ((XDeviceInfo *) NULL);
 
     GetReq(ListInputDevices,req);		
     req->reqType = info->codes->major_opcode;
