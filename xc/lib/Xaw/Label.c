@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.2 90/02/03 16:55:30 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.78 90/02/05 10:11:30 jim Exp $";
 #endif /* lint */
 
 
@@ -69,8 +69,6 @@ static XtResource resources[] = {
 	offset(label.internal_height), XtRImmediate, (caddr_t)2},
     {XtNleftBitmap, XtCLeftBitmap, XtRBitmap, sizeof(Pixmap),
        offset(label.left_bitmap), XtRImmediate, (caddr_t) None},
-    {XtNleftOffset, XtCLeftOffset, XtRPosition, sizeof(Position),
-       offset(label.left_offset), XtRImmediate, (caddr_t) 0},
     {XtNbitmap, XtCPixmap, XtRBitmap, sizeof(Pixmap),
 	offset(label.pixmap), XtRImmediate, (caddr_t)None},
     {XtNresize, XtCResize, XtRBoolean, sizeof(Boolean),
@@ -289,13 +287,14 @@ static void Initialize(request, new)
 
     SetTextWidthAndHeight(lw);
 
-    if (lw->core.width == 0)
-        lw->core.width = (lw->label.label_width + 2 * lw->label.internal_width
-			  + LEFT_OFFSET(lw));
     if (lw->core.height == 0)
         lw->core.height = lw->label.label_height + 2*lw->label.internal_height;
 
-    set_bitmap_info (lw);
+    set_bitmap_info (lw);		/* need core.height */
+
+    if (lw->core.width == 0)		/* need label.lbm_width */
+        lw->core.width = (lw->label.label_width + 2 * lw->label.internal_width
+			  + LEFT_OFFSET(lw));
 
     lw->label.label_x = lw->label.label_y = 0;
     (*XtClass(new)->core_class.resize) ((Widget)lw);
@@ -448,26 +447,11 @@ static Boolean SetValues(current, request, new, args, num_args)
     }
 
     /*
-     * resizing on the following conditions:
-     * 
-     *     1.  bitmap:  None <-> present (enables/disables offset)
-     *     2.  offset changes and bitmap present
-     * 
+     * resize on bitmap change
      */
-    if ((!curlw->label.left_bitmap && newlw->label.left_bitmap) ||
-	(curlw->label.left_bitmap && !newlw->label.left_bitmap) ||
-	((curlw->label.left_offset != newlw->label.left_offset &&
-	  newlw->label.left_bitmap)))
-      was_resized = True;
-
-    /*
-     * resizing not necessary, but needs redisplay
-     *
-     *     1.  bitmap changes id, but offset does not change
-     */
-    if (curlw->label.left_bitmap && newlw->label.left_bitmap &&
-	curlw->label.left_bitmap != newlw->label.left_bitmap)
-      redisplay = True;
+    if (curlw->label.left_bitmap != newlw->label.left_bitmap) {
+	was_resized = True;
+    }
 
     if (curlw->label.label != newlw->label.label) {
         if (curlw->label.label != curlw->core.name)
@@ -488,14 +472,16 @@ static Boolean SetValues(current, request, new, args, num_args)
 
     /* recalculate the window size if something has changed. */
     if (newlw->label.resize && was_resized) {
+	if ((curlw->core.height == reqlw->core.height) && !checks[HEIGHT])
+	    newlw->core.height = (newlw->label.label_height + 
+				  2 * newlw->label.internal_height);
+
+	set_bitmap_info (newlw);
+
 	if ((curlw->core.width == reqlw->core.width) && !checks[WIDTH])
 	    newlw->core.width = (newlw->label.label_width +
 				 LEFT_OFFSET(newlw) +
 				 2 * newlw->label.internal_width);
-
-	if ((curlw->core.height == reqlw->core.height) && !checks[HEIGHT])
-	    newlw->core.height = (newlw->label.label_height + 
-				  2 * newlw->label.internal_height);
     }
 
     if (curlw->label.foreground != newlw->label.foreground
@@ -515,10 +501,6 @@ static Boolean SetValues(current, request, new, args, num_args)
 	/* Resize() will be called if geometry changes succeed */
 	Position dx, dy;
 	_Reposition(newlw, curlw->core.width, curlw->core.height, &dx, &dy);
-    }
-
-    if (curlw->label.left_bitmap != newlw->label.left_bitmap) {
-	set_bitmap_info (newlw);
     }
 
     return was_resized || redisplay ||
