@@ -1,10 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.1 91/10/10 13:45:54 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 91/10/31 13:05:36 rws Exp $
 OBJS = UTRG____.pfa UTB_____.pfa UTBI____.pfa UTI_____.pfa \
       cour.pfa courb.pfa courbi.pfa couri.pfa
 
 FONTINSTDIR = $(FONTDIR)/Type1
 
-MakeFontsDir(NullParameter)
+MakeFontsDir(fonts.scale)
 
 InstallFonts($(FONTINSTDIR))
 InstallFontScale($(FONTINSTDIR))
