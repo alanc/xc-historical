@@ -1,4 +1,4 @@
-/* $XConsortium: miRender.c,v 5.8 92/08/12 15:22:53 hersh Exp $ */
+/* $XConsortium: miRender.c,v 5.9 92/10/05 17:03:42 hersh Exp $ */
 
 
 /***********************************************************
@@ -41,6 +41,7 @@ SOFTWARE.
 #include "miStrMacro.h"
 #include "miWks.h"
 #include "ddpex4.h"
+#include "gcstruct.h"
 
 /* External variables used */
 
@@ -70,6 +71,7 @@ ddFLOAT		ident4x4[4][4] = {
     {0.0, 0.0, 1.0, 0.0},
     {0.0, 0.0, 0.0, 1.0}
 };
+
 
 /* Level III Rendering Procedures */
 
@@ -319,6 +321,7 @@ RenderOCs(pRend, numOCs, pOCs)
 	miTraverserState      	trav_state;
 	diPMHandle            	pPM = (diPMHandle) NULL;
 	unsigned long 		PEXStructType;
+	miStructPtr 		pheader;
 
 
 #ifdef DDTEST
@@ -335,6 +338,10 @@ RenderOCs(pRend, numOCs, pOCs)
     /* state == PEXPicking, call through traverser */
 
 	sh = pRend->pickstr.fakeStr;
+	pheader = (miStructPtr) sh->deviceData;
+	offset1 = MISTR_NUM_EL(pheader) + 1;
+	offset2 = offset1 + numOCs - 1;
+
 
 	/* now do the work of storing stuff into the structure */
 	numberOCs = numOCs;
@@ -356,21 +363,8 @@ RenderOCs(pRend, numOCs, pOCs)
 	trav_state.pickId = 0;
 	pPM = pRend->pickstr.pseudoPM;
 
-	offset1 = 1;
-	offset2 = numOCs;
-
 	err = traverser(pRend, sh, offset1, offset2, pPM, NULL, &trav_state);
 
-	/* clean up structure for next time */
-	{
-	  miStructPtr pheader = (miStructPtr) sh->deviceData;
-	  extern cssTableType DestroyCSSElementTable[];
-
-	  MISTR_DEL_ELS(sh, pheader, 1, numOCs);
-	  MISTR_CURR_EL_PTR(pheader) = MISTR_ZERO_EL(pheader);
-	  MISTR_CURR_EL_OFFSET(pheader) = 0;
-
-	}
     }
     else { 
     /* state == PEXRendering, call directly to level 2 for efficiency */
@@ -935,6 +929,58 @@ BeginRendering(pRend, pDrawable)
      */
      miBldCC_xform(pRend, pddc);
 
+    /*
+     * Clear the window if clearI flag is on.
+     * Use the background color in the renderer attributes.
+     * The default (0) entry in the Color Approx Table is used
+     * to compute the pixel.
+     */
+    if (pddc->Static.attrs->clearI) {
+
+      unsigned long   colorindex, gcmask;
+      GCPtr           pGC;
+      extern GCPtr    CreateScratchGC();
+      extern int      ChangeGC();
+      extern void     ValidateGC();
+      xRectangle      xrect;
+      DrawablePtr     pDraw;
+      xRectangle      *xrects, *p;
+      ddDeviceRect    *ddrects;
+      ddLONG          numrects;
+      int             i;
+
+      pDraw = pRend->pDrawable;
+      miColourtoIndex(pRend, 0, &pddc->Static.attrs->backgroundColour,
+                      &colorindex);
+      pGC = CreateScratchGC(pDraw->pScreen, pDraw->depth);
+      gcmask = GCForeground;
+      ChangeGC(pGC, gcmask, &colorindex);
+      /* Set the Clip List if there is one */
+      numrects = pRend->clipList->numObj;
+      if (numrects) {
+        ddrects = (ddDeviceRect *) pRend->clipList->pList;
+        xrects = (xRectangle*) Xalloc(numrects * sizeof(xRectangle));
+        if (!xrects) return BadAlloc;
+        /* Need to convert to XRectangle format and flip Y */
+        for (i = 0, p = xrects; i < numrects; i++, p++, ddrects++) {
+          p->x = ddrects->xmin;
+          p->y = pDraw->height - ddrects->ymax;
+          p->width = ddrects->xmax - ddrects->xmin + 1;
+          p->height = ddrects->ymax - ddrects->ymin + 1;
+        }
+        SetClipRects(pGC, 0, 0, (int)numrects, xrects, Unsorted);
+        Xfree((char*)xrects);
+      }
+      ValidateGC(pDraw, pGC);
+      /* Now draw a filled rectangle to clear the image buffer */
+      xrect.x = 0;
+      xrect.y = 0;
+      xrect.width = pDraw->width;
+      xrect.height = pDraw->height;
+      (*pGC->ops->PolyFillRect) (pDraw, pGC, 1, &xrect);
+      FreeScratchGC(pGC);
+    }
+
     /* do double buffering stuff */
     /* do hlhsr stuff */
 
@@ -1283,6 +1329,8 @@ BeginPicking(pRend, pPM)
 
     /* create listoflist for doing Pick All */
     pRend->pickstr.list = puCreateList(DD_LIST_OF_LIST);
+    pRend->pickstr.more_hits = PEXNoMoreHits;
+
 
     /*
      * Reinitialize level 1 procedure jump table for PICKING !
