@@ -108,6 +108,7 @@ sunMouseProc (pMouse, what)
     int	    	  format;
     static int	  oformat;
     BYTE    	  map[4];
+    char	  *device, *getenv ();
 
     switch (what) {
 	case DEVICE_INIT:
@@ -120,7 +121,9 @@ sunMouseProc (pMouse, what)
 		if (sysMousePriv.fd >= 0) {
 		    fd = sysMousePriv.fd;
 		} else {
-		    fd = open ("/dev/mouse", O_RDWR, 0);
+		    if (!(device = getenv ("MOUSE")) ||
+			 (fd = open (device, O_RDWR, 0)) == -1)
+			fd = open ("/dev/mouse", O_RDWR, 0);
 		    if (fd < 0) {
 			Error ("Opening /dev/mouse");
 			return (!Success);
@@ -308,6 +311,7 @@ sunMouseEnqueueEvent (pMouse, fe)
     register SunMsPrivPtr pSunPriv; /* Private data for mouse */
     register int  	bmask;	/* Temporary button mask */
     register unsigned long  time;
+    int			x, y;
 
     pPriv = (PtrPrivPtr)pMouse->devicePrivate;
     pSunPriv = (SunMsPrivPtr) pPriv->devPrivate;
@@ -355,6 +359,14 @@ sunMouseEnqueueEvent (pMouse, fe)
 	 * here instead of add...
 	 */
 	miPointerDeltaCursor (0,-MouseAccelerate(pMouse,fe->value),time);
+	break;
+    case LOC_X_ABSOLUTE:
+	miPointerPosition (&x, &y);
+	miPointerAbsoluteCursor (fe->value, y, time);
+	break;
+    case LOC_Y_ABSOLUTE:
+	miPointerPosition (&x, &y);
+	miPointerAbsoluteCursor (x, fe->value, time);
 	break;
     default:
 	FatalError ("sunMouseEnqueueEvent: unrecognized id\n");
