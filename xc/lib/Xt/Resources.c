@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.79 89/11/14 13:08:34 swick Exp $";
+    "$XConsortium: Resources.c,v 1.80 89/11/14 14:21:14 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -352,11 +352,14 @@ void _XtDependencies(class_resp, class_num_resp, super_res, super_num_res,
 	    /* Probably an override of superclass resources--look for overlap */
 	    for (j = 0; j < super_num_res; j++) {
 		if (class_res[i].xrm_offset == new_res[j]->xrm_offset) {
-		    /* Ensure type, size identical to superclass */
-		    if (class_res[i].xrm_type != new_res[j]->xrm_type) {
-			BadType(class_res[i].xrm_type, class_res[i].xrm_name);
-			class_res[i].xrm_type = new_res[j]->xrm_type;
-		    }
+		    /* Spec is silent on what fields subclass can override.
+		     * The only two of real concern are type & size.
+		     * Although allowing type to be over-ridden introduces
+		     * the possibility of errors, it's at present the only
+		     * reasonable way to allow a subclass to force a private
+		     * converter to be invoked for a subset of fields.
+		     */
+		    /* We do insist that size be identical to superclass */
 		    if (class_res[i].xrm_size != new_res[j]->xrm_size) {
 			BadSize(class_res[i].xrm_size, class_res[i].xrm_name);
 			class_res[i].xrm_size = new_res[j]->xrm_size;
