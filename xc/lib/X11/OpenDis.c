@@ -18,9 +18,12 @@ without express or implied warranty.
 
 /* Converted to V11 by jg */
 
-#ifdef SVR4
-/* until AT&T condescends to document t_getname(), no DES */
-#undef HASDES
+#ifdef STREAMSCONN
+# ifdef SVR4
+#  include <tiuser.h>
+# else
+#  undef HASDES
+# endif
 #endif
 
 #include <stdio.h>
@@ -276,33 +279,57 @@ Display *XOpenDisplay (display)
 	    !strncmp (conn_auth_name, "XDM-AUTHORIZATION-1", 19))
 	{
 	    int	    i, j;
-	    struct sockaddr_in	in_addr;
-	    int	    addrlen;
 	    long    now;
-	    unsigned long	addr;
-	    unsigned short	port;
-
-
 	    for (j = 0; j < 8; j++)
 		encrypted_data[j] = conn_auth_data[j];
-	    addrlen = sizeof (in_addr);
-	    getsockname (dpy->fd, (struct sockaddr *) &in_addr, &addrlen);
-	    if (in_addr.sin_family == 2)
+#ifdef STREAMSCONN /* && SVR4 */
 	    {
-		addr = ntohl (in_addr.sin_addr.s_addr);
-		port = ntohs (in_addr.sin_port);
+	    	struct netbuf	netb;
+	    	char		addrret[1024];
+    
+	    	netb.maxlen = sizeof addrret;
+	    	netb.buf = addrret;
+	    	if (t_getname (dpy->fd, &netb, LOCALNAME) == -1)
+		    t_error ("t_getname");
+		/*
+		 * XXX - assumes that the return data
+		 * are in a struct sockaddr_in, and that
+		 * the data structure is layed out in
+		 * the normal fashion.  This WILL NOT WORK
+		 * on a non 32-bit machine (same in Xstreams.c)
+		 */
+		for (i = 4; i < 8; i++)
+		    encrypted_data[j++] = netb.buf[i];
+		for (i = 2; i < 4; i++)
+		    encrypted_data[j++] = netb.buf[i];
 	    }
-	    else
+#else
 	    {
-		addr = 0xFFFFFFFF;
-		port = getpid ();
+	    	unsigned long	addr;
+	    	unsigned short	port;
+	    	int	    addrlen;
+	    	struct sockaddr_in	in_addr;
+    
+	    	addrlen = sizeof (in_addr);
+	    	getsockname (dpy->fd, (struct sockaddr *) &in_addr, &addrlen);
+	    	if (in_addr.sin_family == 2)
+	    	{
+		    addr = ntohl (in_addr.sin_addr.s_addr);
+		    port = ntohs (in_addr.sin_port);
+	    	}
+	    	else
+	    	{
+		    addr = 0xFFFFFFFF;
+		    port = getpid ();
+	    	}
+	    	encrypted_data[j++] = (addr >> 24) & 0xFF;
+	    	encrypted_data[j++] = (addr >> 16) & 0xFF;
+	    	encrypted_data[j++] = (addr >>  8) & 0xFF;
+	    	encrypted_data[j++] = (addr >>  0) & 0xFF;
+	    	encrypted_data[j++] = (port >>  8) & 0xFF;
+	    	encrypted_data[j++] = (port >>  0) & 0xFF;
 	    }
-	    encrypted_data[j++] = (addr >> 24) & 0xFF;
-	    encrypted_data[j++] = (addr >> 16) & 0xFF;
-	    encrypted_data[j++] = (addr >>  8) & 0xFF;
-	    encrypted_data[j++] = (addr >>  0) & 0xFF;
-	    encrypted_data[j++] = (port >>  8) & 0xFF;
-	    encrypted_data[j++] = (port >>  0) & 0xFF;
+#endif
 	    time (&now);
 	    encrypted_data[j++] = (now >> 24) & 0xFF;
 	    encrypted_data[j++] = (now >> 16) & 0xFF;
