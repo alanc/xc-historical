@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.38 89/08/15 11:41:56 jim Exp $
+ * $XConsortium: twm.h,v 1.39 89/10/27 14:01:38 jim Exp $
  *
  * twm include file
  *
@@ -133,6 +133,21 @@ typedef struct ColorPair
     int back;
 } ColorPair;
 
+typedef struct _TitleButton {
+    struct _TitleButton *next;		/* next link in chain */
+    Pixmap bitmap;			/* image to display in button */
+    int srcx, srcy;			/* from where to start copying */
+    int width, height;			/* size of pixmap */
+    int dstx, dsty;			/* to where to start copying */
+    int func;				/* function to execute */
+    char *action;			/* optional action arg */
+} TitleButton;
+
+typedef struct _TBWindow {
+    Window window;			/* which window in this frame */
+    TitleButton *info;			/* description of this window */
+} TBWindow;
+
 
 /* for each window that is on the display, one of these structures
  * is allocated and linked into a list 
@@ -213,6 +228,7 @@ typedef struct TwmWindow
     int number_cmap_windows;	/* number of elements in cmapws */
     int current_cmap_window;	/* current index into cmapws list */
     Bool xfree_cmap_windows;	/* t if need to XFree prop instead of free */
+    TBWindow *titlebuttons;
 } TwmWindow;
 
 #define DoesWmTakeFocus		(1L << 0)

@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.92 89/10/27 14:01:03 jim Exp $
+ * $XConsortium: add_window.c,v 1.93 89/10/30 09:44:30 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.92 89/10/27 14:01:03 jim Exp $";
+"$XConsortium: add_window.c,v 1.93 89/10/30 09:44:30 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -693,12 +693,20 @@ IconMgr *iconp;
     XSaveContext(dpy, tmp_win->frame, ScreenContext, Scr);
     if (tmp_win->title_height)
     {
+	int i;
+
 	XSaveContext(dpy, tmp_win->title_w, TwmContext, tmp_win);
 	XSaveContext(dpy, tmp_win->title_w, ScreenContext, Scr);
 	XSaveContext(dpy, tmp_win->iconify_w, TwmContext, tmp_win);
 	XSaveContext(dpy, tmp_win->iconify_w, ScreenContext, Scr);
 	XSaveContext(dpy, tmp_win->resize_w, TwmContext, tmp_win);
 	XSaveContext(dpy, tmp_win->resize_w, ScreenContext, Scr);
+	for (i = 0; i < Scr->TBInfo.nbuttons; i++) {
+	    XSaveContext(dpy, tmp_win->titlebuttons[i].window, TwmContext,
+			 tmp_win);
+	    XSaveContext(dpy, tmp_win->titlebuttons[i].window, ScreenContext,
+			 Scr);
+	}
 	if (tmp_win->hilite_w)
 	{
 	    XSaveContext(dpy, tmp_win->hilite_w, TwmContext, tmp_win);
@@ -991,8 +999,6 @@ TwmWindow *tmp_win;
     }
 }
 
-#define TITLEBUTTON_BORDERWIDTH 1
-
 
 CreateTitleButtons(tmp_win)
 TwmWindow *tmp_win;
@@ -1002,6 +1008,7 @@ TwmWindow *tmp_win;
     int x, y, h;
     GC gc;
     XGCValues gcv;
+    TitleButton *tb;
 
     if (tmp_win->title_height == 0)
     {
@@ -1011,11 +1018,39 @@ TwmWindow *tmp_win;
 	return;
     }
 
-    h = (Scr->TitleHeight - 2 *
-	 (Scr->FramePadding + Scr->ButtonIndent + TITLEBUTTON_BORDERWIDTH));
+    if (!Scr->TBInfo.inited) {
+	TitleButton *tb;
+	Scr->TBInfo.width = h = (Scr->TitleHeight - 2 *
+				 (Scr->FramePadding + Scr->ButtonIndent +
+				  TITLEBUTTON_BORDERWIDTH));
+	Scr->TBInfo.pad = ((Scr->TitlePadding > 1)
+			   ? (Scr->TitlePadding / 2) : 1);
+	Scr->TBInfo.totalwidth = (Scr->TBInfo.nbuttons * h +
+				  Scr->TBInfo.pad + Scr->TBInfo.border * 2);
+	for (tb = Scr->TBInfo.head; tb; tb = tb->next) {
+	    tb->dstx = (h - tb->width) / 2;
+	    if (tb->dstx < 0) {		/* clip to minimize copy */
+		tb->srcx = -(tb->dstx);
+		tb->width = h;
+		tb->dstx = 0;
+	    } else {
+		tb->srcx = 0;
+	    }
+	    tb->dsty = (h - tb->height) / 2;
+	    if (tb->dsty < 0) {
+		tb->srcy = -(tb->dsty);
+		tb->height = h;
+		tb->dsty = 0;
+	    } else {
+		tb->srcy = 0;
+	    }
+	}
 
-    if (Scr->iconifyPm == NULL)
-    {
+	Scr->TBInfo.inited = True;
+    } else
+      h = Scr->TBInfo.width;
+
+    if (!Scr->iconifyPm) {
 	XSegment segs[4];
 	GC gcBack;
 	int w;
@@ -1083,7 +1118,41 @@ TwmWindow *tmp_win;
 					h, h, 1, 0, 
 					CopyFromParent, CopyFromParent,
 				        valuemask, &attributes);
+    /*
+     * XXX - eventually make resize be a titlebutton
+     */
+    tmp_win->titlebuttons = NULL;
+    if (Scr->TBInfo.nbuttons > 0) {
+	tmp_win->titlebuttons = (TBWindow *) malloc (Scr->TBInfo.nbuttons *
+						     sizeof(TBWindow));
+	if (!tmp_win->titlebuttons) {
+	    fprintf (stderr, "twm:  unable to allocate %d titlebuttons\n",
+		     Scr->TBInfo.nbuttons);
+	} else {
+	    TBWindow *tbw;
+	    int boxwidth = (Scr->TBInfo.width + Scr->TBInfo.border * 2 +
+			    Scr->TBInfo.pad);
 
+	    x -= Scr->TBInfo.totalwidth;
+	    for (tb = Scr->TBInfo.head, tbw = tmp_win->titlebuttons; tb;
+		 tb = tb->next, tbw++) {
+		/*
+		 * XXX - put windows in other direction
+		 */
+		tbw->window = XCreateWindow (dpy, tmp_win->title_w, x, y,
+					     h, h, 1, 0, 
+					     CopyFromParent, CopyFromParent,
+					     valuemask, &attributes);
+		tbw->info = tb;
+		x += boxwidth;
+	    }
+	}
+    }
+
+    /*
+     * now go make the highlight bar; note that this could perhaps be a
+     * special titlebutton?
+     */
     h = (Scr->TitleHeight - 2 * Scr->FramePadding);
 
     if (tmp_win->titlehighlight) {

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.92 89/10/27 14:01:11 jim Exp $
+ * $XConsortium: events.c,v 1.93 89/10/27 15:54:31 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.92 89/10/27 14:01:11 jim Exp $";
+"$XConsortium: events.c,v 1.93 89/10/27 15:54:31 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -840,9 +840,26 @@ HandleExpose()
 		Tmp_win->icon_name, strlen(Tmp_win->icon_name));
 	    flush_expose (Event.xany.window);
 	    return;
+	} else {
+	    int i;
+	    Window w = Event.xany.window;
+	    register TBWindow *tbw;
+
+	    for (i = 0, tbw = Tmp_win->titlebuttons; i < Scr->TBInfo.nbuttons;
+		 i++, tbw++) {
+		if (w == tbw->window) {
+		    register TitleButton *tb = tbw->info;
+
+		    FB(Tmp_win->title.fore, Tmp_win->title.back);
+		    XCopyPlane (dpy, tb->bitmap, w, Scr->NormalGC,
+				tb->srcx, tb->srcy, tb->width, tb->height,
+				tb->dstx, tb->dsty, 1);
+		    flush_expose (w);
+		    return;
+		}
+	    }
 	}
-	else if (Tmp_win->list)
-	{
+	if (Tmp_win->list) {
 	    if (Event.xany.window == Tmp_win->list->w)
 	    {
 		FBF(Tmp_win->list->fore, Tmp_win->list->back,
@@ -863,11 +880,11 @@ HandleExpose()
 		flush_expose (Event.xany.window);
 		return;
 	    }
-	}
+	} 
     }
     else if (Event.xany.window == Scr->VersionWindow)
     {
-	FBF(Scr->DefaultC.fore, Scr->DefaultC.back, Scr->VersionFont.font->fid);
+	FBF(Scr->DefaultC.fore,Scr->DefaultC.back, Scr->VersionFont.font->fid);
 	XDrawString (dpy, Scr->VersionWindow, Scr->NormalGC,
 	    twm_width + 10,
 	    2 + Scr->VersionFont.font->ascent, Version, strlen(Version));
@@ -887,6 +904,8 @@ HandleExpose()
 void
 HandleDestroyNotify()
 {
+    int i;
+
 #ifdef DEBUG_EVENTS
     fprintf(stderr, "DestroyNotify\n");
 #endif
@@ -926,6 +945,10 @@ HandleDestroyNotify()
 	    XDeleteContext(dpy, Tmp_win->hilite_w, TwmContext);
 	    XDeleteContext(dpy, Tmp_win->hilite_w, ScreenContext);
 	}
+    }
+    for (i = 0; i < Scr->TBInfo.nbuttons; i++) {
+	XDeleteContext(dpy, Tmp_win->titlebuttons[i].window, TwmContext);
+	XDeleteContext(dpy, Tmp_win->titlebuttons[i].window, ScreenContext);
     }
 
     if (Tmp_win->gray) XFreePixmap (dpy, Tmp_win->gray);
@@ -1390,6 +1413,9 @@ HandleButtonPress()
     /* check the title bar buttons */
     if (Tmp_win && Tmp_win->title_height)
     {
+	int i;
+	TBWindow *tbw;
+
 	if (Event.xany.window == Tmp_win->iconify_w)
 	{
 	    ExecuteFunction(F_ICONIFY, NULL, Event.xany.window,
@@ -1402,6 +1428,16 @@ HandleButtonPress()
 	    ExecuteFunction(F_RESIZE, NULL, Event.xany.window, Tmp_win,
 		&Event, C_TITLE, FALSE);
 	    return;
+	}
+
+	for (i = 0, tbw = Tmp_win->titlebuttons; i < Scr->TBInfo.nbuttons;
+	     i++, tbw++) {
+	    if (Event.xany.window == tbw->window) {
+		ExecuteFunction (tbw->info->func, tbw->info->action,
+				 Event.xany.window, Tmp_win, &Event,
+				 C_TITLE, FALSE);
+		return;
+	    }
 	}
     }
 

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.101 89/08/21 19:08:07 jim Exp $
+ * $XConsortium: menus.c,v 1.102 89/10/27 14:01:24 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.101 89/08/21 19:08:07 jim Exp $";
+"$XConsortium: menus.c,v 1.102 89/10/27 14:01:24 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -53,6 +53,12 @@ static char RCSinfo[] =
 #include "screen.h"
 #include "pull.bm"
 #include "version.h"
+
+#define questionmark_width 8
+#define questionmark_height 8
+static char questionmark_bits[] = {
+   0x38, 0x7c, 0x64, 0x30, 0x18, 0x00, 0x18, 0x18};
+
 
 #define SYNC XSync(dpy, 0);
 
@@ -192,6 +198,40 @@ Bool AddFuncKey (name, cont, mods, func, win_name, action)
 
     return True;
 }
+
+int AddTitleButton (bitmapname, func, action)
+    char *bitmapname;
+    int func;
+    char *action;
+{
+    TitleButton *tb = (TitleButton *) malloc (sizeof(TitleButton));
+
+    if (!tb) {
+	fprintf (stderr,
+		 "twm:  unable to allocate %d bytes for title button \"%s\"\n",
+		 sizeof(TitleButton), bitmapname);
+	return 0;
+    }
+
+    tb->next = Scr->TBInfo.head;
+    tb->bitmap = FindBitmap (bitmapname, &tb->width, &tb->height);
+    if (!tb->bitmap) {
+	if (!Scr->questionPm)
+	  Scr->questionPm = XCreateBitmapFromData (dpy, Scr->Root,
+						   questionmark_bits,
+						   questionmark_width,
+						   questionmark_height);
+	tb->bitmap = Scr->questionPm;
+	tb->width = questionmark_width;
+	tb->height = questionmark_height;
+    }
+    tb->func = func;
+    tb->action = action;
+    Scr->TBInfo.nbuttons++;
+    Scr->TBInfo.head = tb;		/* link it into list */
+    return;
+}
+
 
 PaintEntry(mr, mi, exposure)
 MenuRoot *mr;

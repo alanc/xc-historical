@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.39 89/09/19 17:51:40 jim Exp $
+ * $XConsortium: screen.h,v 1.40 89/10/27 15:54:36 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -40,11 +40,13 @@
 #include "iconmgr.h"
 
 typedef struct _StdCmap {
-    struct _StdCmap *next;
-    Atom atom;
-    int nmaps;
-    XStandardColormap *maps;
+    struct _StdCmap *next;		/* next link in chain */
+    Atom atom;				/* property from which this came */
+    int nmaps;				/* number of maps below */
+    XStandardColormap *maps;		/* the actual maps */
 } StdCmap;
+
+#define TITLEBUTTON_BORDERWIDTH 1
 
 typedef struct ScreenInfo
 {
@@ -71,6 +73,7 @@ typedef struct ScreenInfo
     Pixmap siconifyPm;		/* the icon manager iconify pixmap */
     Pixmap pullPm;		/* pull right menu arrow */
     Pixmap hilitePm;		/* focus highlight window background */
+    Pixmap questionPm;		/* unknown item pixmap */
     int hilite_pm_width, hilite_pm_height;  /* cache the size */
 
     MenuRoot *MenuList;		/* head of the menu list */
@@ -87,6 +90,15 @@ typedef struct ScreenInfo
 	StdCmap *mru;			/* most recently used in list */
 	int mruindex;			/* index of mru in entry */
     } StdCmapInfo;
+    struct {
+	Bool inited;			/* has been initialized */
+	int nbuttons;			/* how many buttons in list */
+	TitleButton *head;		/* start of list */
+	int border;			/* button border */
+	int pad;			/* button-padding */
+	int width;			/* width of single button w/o border */
+	int totalwidth;			/* including padding */
+    } TBInfo;
     ColorPair BorderTileC;	/* border tile colors */
     ColorPair TitleC;		/* titlebar colors */
     ColorPair MenuC;		/* menu colors */

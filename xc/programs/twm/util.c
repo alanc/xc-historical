@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.25 89/10/27 14:01:01 jim Exp $
+ * $XConsortium: util.c,v 1.26 89/10/27 15:54:28 jim Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.25 89/10/27 14:01:01 jim Exp $";
+"$XConsortium: util.c,v 1.26 89/10/27 15:54:28 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -354,10 +354,12 @@ char *name;
 /***********************************************************************
  *
  *  Procedure:
- *	GetBitmap - read in a bitmap file
+ *	FindBitmap - read in a bitmap file and return size
  *
  *  Returned Value:
  *	the pixmap associated with the bitmap
+ *      widthp	- pointer to width of bitmap
+ *      heightp	- pointer to height of bitmap
  *
  *  Inputs:
  *	name	- the filename to read
@@ -365,9 +367,9 @@ char *name;
  ***********************************************************************
  */
 
-Pixmap
-GetBitmap(name)
-char *name;
+Pixmap FindBitmap (name, widthp, heightp)
+    char *name;
+    int *widthp, *heightp;
 {
     char *bigname;
     Pixmap pm;
@@ -382,8 +384,7 @@ char *name;
     }
 
     pm = XmuLocateBitmapFile (ScreenOfDisplay(dpy, Scr->screen), bigname,
-			      NULL, 0, &JunkWidth, &JunkHeight,
-			      &HotX, &HotY);
+			      NULL, 0, widthp, heightp, &HotX, &HotY);
     if (pm == None && Scr->IconDirectory && bigname[0] != '/') {
 	if (bigname != name) free (bigname);
 	bigname = (char *) malloc (strlen(name) + strlen(Scr->IconDirectory) +
@@ -395,9 +396,8 @@ char *name;
 	    return None;
 	}
 	sprintf (bigname, "%s/%s", Scr->IconDirectory, name);
-	if (XReadBitmapFile (dpy, Scr->Root, bigname, &JunkWidth,
-			     &JunkHeight, &pm, &HotX, &HotY) !=
-	    BitmapSuccess) {
+	if (XReadBitmapFile (dpy, Scr->Root, bigname, widthp, heightp, &pm,
+			     &HotX, &HotY) != BitmapSuccess) {
 	    pm = None;
 	}
     }
@@ -408,6 +408,13 @@ char *name;
 
     return pm;
 }
+
+Pixmap GetBitmap (name)
+    char *name;
+{
+    return FindBitmap (name, &JunkWidth, &JunkHeight);
+}
+
 
 InsertRGBColormap (a, maps, nmaps, replace)
     Atom a;

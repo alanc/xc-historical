@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.59 89/09/19 17:51:32 jim Exp $
+ * $XConsortium: gram.y,v 1.60 89/10/27 14:01:18 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.59 89/09/19 17:51:32 jim Exp $";
+"$XConsortium: gram.y,v 1.60 89/10/27 14:01:18 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -50,14 +50,13 @@ static char RCSinfo[]=
 
 static char *Action = "";
 static char *Name = "";
-static MenuRoot	*root,
-		*pull = NULL;
-
+static MenuRoot	*root, *pull = NULL;
 
 MenuRoot *GetRoot();
 
 static int ParseUsePPosition();
 static Bool CheckWarpScreenArg(), CheckColormapArg();
+static void GotButton(), GotKey(), GotTitleButton();
 static char *ptr;
 static int Button;
 static name_list **list;
@@ -113,7 +112,7 @@ extern int yylineno;
 %token <num> CUR_MOVE CUR_RESIZE CUR_WAIT CUR_SELECT CUR_KILL
 %token <num> ICON_REGION NORTH SOUTH EAST WEST RESTART_PREVIOUS_STATE
 %token <num> F_WARPTOSCREEN AUTO_RELATIVE_RESIZE FRAME_PADDING TITLE_PADDING
-%token <num> CONSTRAINED_MOVE_TIME USE_PPOSITION
+%token <num> CONSTRAINED_MOVE_TIME USE_PPOSITION TITLEBUTTON
 %token <ptr> STRING
 
 %type <ptr> string
@@ -232,6 +231,7 @@ stmt		: error
 		    Scr->IconifyByUnmapping = TRUE; }
 		| SHOW_ICONMGR	{ if (Scr->FirstTime) 
 					Scr->ShowIconManager = TRUE; }
+		| TITLEBUTTON string EQUALS action { GotTitleButton ($2, $4); }
 		| button string		{ root = GetRoot($2, 0, 0);
 					  Scr->Mouse[$1][C_ROOT][0].func = F_MENU;
 					  Scr->Mouse[$1][C_ROOT][0].menu = root;
@@ -872,7 +872,7 @@ char *fore, *back;
     return tmp;
 }
 
-GotButton(butt, func)
+static void GotButton(butt, func)
 int butt, func;
 {
     int i;
@@ -901,7 +901,7 @@ int butt, func;
     mods = 0;
 }
 
-GotKey(key, func)
+static void GotKey(key, func)
 char *key;
 int func;
 {
@@ -921,6 +921,18 @@ int func;
     mods = 0;
 }
 
+
+static void GotTitleButton (bitmapname, func)
+    char *bitmapname;
+    int func;
+{
+    if (!AddTitleButton (bitmapname, func, Action)) {
+	fprintf (stderr, 
+		 "twm: line %d:  unable to add titlebutton \"%s\"\n",
+		 yylineno, bitmapname);
+    }
+    Action = "";
+}
 
 static Bool CheckWarpScreenArg (s)
     register char *s;
