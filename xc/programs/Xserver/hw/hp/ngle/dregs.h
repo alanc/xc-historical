@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: dregs.h,v 1.1 93/08/08 12:56:22 rws Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.
@@ -87,10 +87,14 @@ typedef volatile struct {
     long int pad17[62];
     dreg_cplx_t reg17;
     dreg_cplx_t reg18;
-    long int pad19[62];
+    long int pad18[4];
+    unsigned long int reg26;
+    long int pad19[57];
     dreg_cplx_t reg19;
     long int pad20[1];
     dreg_cplx_t reg20;
     long int pad21[3];
     dreg_cplx_t reg21;
+    long int pad22[59];
+    dreg_cplx_t reg27;
 } ngle_dregs_t;

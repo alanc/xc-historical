@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ngle.h,v 1.1 93/08/08 12:56:28 rws Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.
@@ -94,6 +94,10 @@ performance, or use of this material.
 
 #   ifndef CRX24_OVERLAY_PLANES		/* Overlay planes on CRX24 */
 #       define CRX24_OVERLAY_PLANES	0x920825AA
+#   endif
+
+#   ifndef S9000_ID_ARTIST		/* Artist (Gecko) Graphics */
+#       define S9000_ID_ARTIST          0x2B4DED6D
 #   endif
 
 #define hpGivingUp  (dispatchException & DE_TERMINATE)

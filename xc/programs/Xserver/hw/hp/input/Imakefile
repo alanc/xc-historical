@@ -1,5 +1,9 @@
-XCOMM $XConsortium: Imakefile,v 1.3 93/09/04 17:28:07 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 93/09/06 15:25:54 rws Exp $
 #include <Server.tmpl>
+
+#define IHaveSubdirs
+
+SUBDIRS=drivers
 
 #if defined(HPArchitecture) || defined(HPOSFArchitecture)
 
@@ -80,11 +84,17 @@ LOBJS = \
 	xtest1imp.ln	\
 	getkeysym.ln
 
-   DEFINES = ExtensionOSDefines
+   DEFINES = ExtensionOSDefines -DOSMAJORVERSION=OSMajorVersion
+   LIB_DEFINES = -DLIBDIR=\"$(LIBDIR)\"
    INCLUDES = -I. -I.. -I../include -I../../../include -I./X11 \
 	      -I../../../cfb -I../../../mfb -I../../../mi \
-	      -I$(INCLUDESRC) -I$(EXTINCSRC)
+	      -I$(INCLUDESRC) -I$(EXTINCSRC) -I./drivers
    LINTLIBS = ../../../dix/llib-ldix.ln ../../../os/hpux/llib-los.ln
+
+all::
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(hp,$(OBJS))
@@ -98,6 +108,8 @@ ObjectFromSpecialSource(x_hilinit800,x_hilinit,-U__hp9000s700)
 NormalLibraryTarget(hp800,$(OBJS800))
 #endif
 
+SpecialCObjectRule(x_hilinit,$(ICONFIGFILES),$(LIB_DEFINES))
+SpecialCObjectRule(getkeysym,$(ICONFIGFILES),$(LIB_DEFINES))
 DependTarget()
 
 LintLibraryTarget(hp,$(SRCS1))

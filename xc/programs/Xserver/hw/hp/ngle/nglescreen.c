@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: nglescreen.c,v 1.1 93/08/08 12:57:53 rws Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.
@@ -280,44 +280,52 @@ static NgleDevRomDataPtr ngleGetDeviceRomData(
 	    __FILE__);
     }
 
-    /* Get pointer to unpacked byte/long data in ROM */
-    pBytePerLongDevDepData = (Card32 *)
-			    gcDescribe.crt_region[NGLEDEVDEPROM_CRT_REGION];
-
     SETUP_HW(pDregs);
 
-    /* Tomcat supports several resolutions: 1280x1024, 1024x768, 640x480.
-     * This code reads the index into a device dependent ROM array containing
-     * the device's currently selected resolution.
-     */
-    if (pScreenPriv->deviceID == S9000_ID_TOMCAT)
+    if (pScreenPriv->deviceID == S9000_ID_ARTIST)
     {
-        /*  jump to the correct ROM table  */
-        GET_ROMTABLE_INDEX(romTableIdx);
-        while  (romTableIdx > 0)
-        {
-            pCard8 = (Card8 *) pPackedDevRomData;
-            pRomTable = pBytePerLongDevDepData;
-            /* Pack every fourth byte from ROM into structure */
-            for (i = 0; i < sizePackedDevRomData; i++)
-            {
-	        *pCard8++ = (Card8) (*pRomTable++);
-            }
-
-            pBytePerLongDevDepData = (Card32 *)
-                ((Card8 *) pBytePerLongDevDepData +
-                           pPackedDevRomData->sizeof_ngle_data);
-
-            romTableIdx--;
-        }
+	pPackedDevRomData->cursor_pipeline_delay = 4;
+	pPackedDevRomData->video_interleaves     = 4;
     }
-
-    pCard8 = (Card8 *) pPackedDevRomData;
-
-    /* Pack every fourth byte from ROM into structure */
-    for (i = 0; i < sizePackedDevRomData; i++)
+    else
     {
-	*pCard8++ = (Card8) (*pBytePerLongDevDepData++);
+	/* Get pointer to unpacked byte/long data in ROM */
+	pBytePerLongDevDepData = (Card32 *)
+				gcDescribe.crt_region[NGLEDEVDEPROM_CRT_REGION];
+
+	/* Tomcat supports several resolutions: 1280x1024, 1024x768, 640x480.
+	 * This code reads the index into a device dependent ROM array containing
+	 * the device's currently selected resolution.
+	 */
+	if (pScreenPriv->deviceID == S9000_ID_TOMCAT)
+	{
+	    /*  jump to the correct ROM table  */
+	    GET_ROMTABLE_INDEX(romTableIdx);
+	    while  (romTableIdx > 0)
+	    {
+		pCard8 = (Card8 *) pPackedDevRomData;
+		pRomTable = pBytePerLongDevDepData;
+		/* Pack every fourth byte from ROM into structure */
+		for (i = 0; i < sizePackedDevRomData; i++)
+		{
+		    *pCard8++ = (Card8) (*pRomTable++);
+		}
+
+		pBytePerLongDevDepData = (Card32 *)
+			((Card8 *) pBytePerLongDevDepData +
+			       pPackedDevRomData->sizeof_ngle_data);
+
+		romTableIdx--;
+	    }
+	}
+
+	pCard8 = (Card8 *) pPackedDevRomData;
+
+	/* Pack every fourth byte from ROM into structure */
+	for (i = 0; i < sizePackedDevRomData; i++)
+	{
+	    *pCard8++ = (Card8) (*pBytePerLongDevDepData++);
+	}
     }
 
     SETUP_FB(pDregs,pScreenPriv->deviceID,pScreenPriv->devDepth);
@@ -554,6 +562,7 @@ Bool ngleScreenInit(
 	&&  (gcDescribe.crt_id != S9000_ID_TIMBER)	/* 710 Any */
 	&&  (gcDescribe.crt_id != S9000_ID_TOMCAT)	/* Dual CRX */
 	&&  (gcDescribe.crt_id != S9000_ID_A1439A)	/* CRX24 */
+	&&  (gcDescribe.crt_id != S9000_ID_ARTIST)	/* Artist */
 	)
     {
 	ioctl(fildes, GCUNMAP, &mapOrigin);
@@ -653,6 +662,11 @@ Bool ngleScreenInit(
 	 * appropriately consider this to be a CRX.
 	 */
 	pScreenPriv->deviceID   = S9000_ID_A1659A;
+	break;
+
+    case S9000_ID_ARTIST:	/* Artist */
+
+	pScreenPriv->isGrayScale = FALSE;
 	break;
 
     case S9000_ID_A1659A:	/* CRX */
@@ -1032,15 +1046,20 @@ Bool ngleScreenInit(
 	elkSetupPlanes(pScreenPriv);
     }
 
-    /* Clear attribute planes on CRX, CRX24 and GRX devices.
+    /* Clear attribute planes on Artist, CRX, CRX24 and GRX devices.
      */
     if ((pScreenPriv->deviceID == S9000_ID_A1659A) ||	/* CRX or GRX */
-	(pScreenPriv->deviceID == S9000_ID_A1439A))
+	(pScreenPriv->deviceID == S9000_ID_A1439A) ||	/* CRX24 */
+	(pScreenPriv->deviceID == S9000_ID_ARTIST)	/* Artist */
+       )
     {
 	if (pScreenPriv->devDepth == 24)
 	    ngleSetupAttrPlanes(pScreenPriv,BUFF1_CMAP3);
 	else  /* depth = 8 */
-	    ngleSetupAttrPlanes(pScreenPriv,BUFF1_CMAP0);
+	    if (pScreenPriv->deviceID == S9000_ID_ARTIST)
+		ngleSetupAttrPlanes(pScreenPriv,ARTIST_CMAP0);
+	    else
+		ngleSetupAttrPlanes(pScreenPriv,BUFF1_CMAP0);
 	
     }
 
@@ -1225,10 +1244,12 @@ static Bool ngleClearScreen(
         } 
     }
 
-    /* Clear attribute planes on CRX, CRX24 and GRX devices.
+    /* Clear attribute planes on Artist, CRX, CRX24 and GRX devices.
      */
     if ((pScreenPriv->deviceID == S9000_ID_A1659A) ||	/* CRX or GRX */
-	(pScreenPriv->deviceID == S9000_ID_A1439A))     /* CRX24 */
+	(pScreenPriv->deviceID == S9000_ID_A1439A) ||   /* CRX24 */
+	(pScreenPriv->deviceID == S9000_ID_ARTIST)      /* Artist */
+       )
     {
 	ngleSetupAttrPlanes(pScreenPriv,BUFF0_CMAP0);
     }
@@ -1274,8 +1295,12 @@ static void ngleBlankOrUnblankScreen(
 
 	    CRX24_DISABLE_DISPLAY(pDregs);
 	}
+	else if (pScreenPriv->deviceID == S9000_ID_ARTIST)
+	{
+	    ARTIST_DISABLE_DISPLAY(pDregs);
+	}
 	else
-	{   /* CRX and like ilk */
+	{   /* CRX and like elk */
 	    DISABLE_DISPLAY(pDregs);
 	}
     }
@@ -1300,8 +1325,12 @@ static void ngleBlankOrUnblankScreen(
 	{   /* CRX24 */
 	    CRX24_ENABLE_DISPLAY(pDregs);
 	}
+	else if (pScreenPriv->deviceID == S9000_ID_ARTIST)
+	{
+	    ARTIST_ENABLE_DISPLAY(pDregs);
+	}
 	else
-	{   /* CRX and like ilk */
+	{   /* CRX and like elk */
 	    ENABLE_DISPLAY(pDregs);
 	}
     }

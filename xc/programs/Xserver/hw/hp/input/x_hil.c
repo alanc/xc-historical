@@ -1,4 +1,4 @@
-/* $XConsortium: x_hil.c,v 8.141 94/02/23 15:57:00 dpw Exp $ */
+/* $XConsortium: x_hil.c,v 8.142 94/04/17 20:30:15 dpw Exp $ */
 
 /*******************************************************************
 **
@@ -615,7 +615,7 @@ static void process_hil_data (dev, phys, info)
 		    }
 		else
 		    {
-		    if (dev==inputInfo.keyboard)
+		    if (dev==inputInfo.keyboard || dev==inputInfo.pointer)
 			if (bcode & UP_MASK) 
 			    type = KeyRelease;
 			else
@@ -692,7 +692,7 @@ static void process_serial_data (dev, phys, info)
 	    kcode += MIN_KEYCODE;		        /* avoid mouse codes. */
 
 	    if (*hil_code & UP_MASK) 
-		if (dev==inputInfo.keyboard)
+		if (dev==inputInfo.keyboard || dev==inputInfo.pointer)
 		    type = KeyRelease;
 		else
 		    type = DeviceKeyRelease;
@@ -700,7 +700,7 @@ static void process_serial_data (dev, phys, info)
 		{
 		if (KeyIsDown(dev,kcode) && !KeyIsRepeating(dev,kcode))
 		    return;
-		if (dev==inputInfo.keyboard)
+		if (dev==inputInfo.keyboard || dev==inputInfo.pointer)
 		    type = KeyPress;
 		else
 		    type = DeviceKeyPress;
@@ -1008,8 +1008,8 @@ int parse_keycode (dev, phys, ev)
 	    dev->key->modifierKeyCount[LockMapIndex] <= 1)
 	    if (phys->hpflags & IS_SERIAL_DEVICE){
 		HPKeyboardFeedbackControl	d;
-		d.class = KbdFeedbackClass;
-		d.leds = 0;
+		copy_kbd_ctrl_params (&d, &dev->kbdfeed->ctrl);
+		d.leds &= ~CAPSLOCK_LED;
 		SERIAL_DRIVER_WRITE(phys->file_ds, _XChangeFeedbackControl, &d);
 	    }
 	    else
@@ -1017,8 +1017,8 @@ int parse_keycode (dev, phys, ev)
 	else
 	    if (phys->hpflags & IS_SERIAL_DEVICE){
 		HPKeyboardFeedbackControl	d;
-		d.class = KbdFeedbackClass;
-		d.leds = 4;
+		copy_kbd_ctrl_params (&d, &dev->kbdfeed->ctrl);
+		d.leds |= CAPSLOCK_LED;
 		SERIAL_DRIVER_WRITE(phys->file_ds, _XChangeFeedbackControl, &d);
 	    }
 	    else

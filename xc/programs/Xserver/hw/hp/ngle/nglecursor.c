@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: nglecursor.c,v 1.1 93/08/08 12:57:08 rws Exp $ */
 
 /*************************************************************************
  * 
@@ -251,6 +251,7 @@ Bool ngleDisplayCursor(pScreen, pCursor)
     Card32		cursorXYValue = 0;  
     int 		nTopPadLines = 0;
     int 		nBotPadLines = 0;
+    Int32		hbp_times_vi;
 
 
 
@@ -471,10 +472,21 @@ Bool ngleDisplayCursor(pScreen, pCursor)
      * all cursor position information except the number
      * of scanlines hidden.
      */
-    xHi = (x0 / pScreenPriv->sprite.videoInterleave) 
-	+ pScreenPriv->sprite.horizBackPorch
-	- pScreenPriv->sprite.pipelineDelay;
-    xLo = x0 % pScreenPriv->sprite.videoInterleave;
+    if (pScreenPriv->deviceID != S9000_ID_ARTIST)
+    {
+	xHi = (x0 / pScreenPriv->sprite.videoInterleave)
+	    + pScreenPriv->sprite.horizBackPorch
+	    - pScreenPriv->sprite.pipelineDelay;
+	xLo = x0 % pScreenPriv->sprite.videoInterleave;
+    }
+    else
+    {
+	hbp_times_vi = (pScreenPriv->sprite.horizBackPorch *
+			pScreenPriv->sprite.videoInterleave);
+	xHi = ((x0 + hbp_times_vi) / pScreenPriv->sprite.videoInterleave)
+			- pScreenPriv->sprite.pipelineDelay;
+	xLo = (x0 + hbp_times_vi) % pScreenPriv->sprite.videoInterleave;
+    }
 	    
     /* if y0 < 0, y0 has already been set to 0 above */
     cursorXYValue = 
@@ -642,7 +654,10 @@ void ngleMoveSprite(pScreen, xhot, yhot, forceit)
 			    pScreenPriv->sprite.videoInterleave);
 	    xHi = ((x0 + hbp_times_vi) / pScreenPriv->sprite.videoInterleave)
 		- pScreenPriv->sprite.pipelineDelay;
-	    xLo = x0 % pScreenPriv->sprite.videoInterleave;
+	    if (pScreenPriv->deviceID != S9000_ID_ARTIST)
+		xLo = x0 % pScreenPriv->sprite.videoInterleave;
+	    else
+		xLo = (x0 + hbp_times_vi) % pScreenPriv->sprite.videoInterleave;
 
 	    /* if y0 < 0, y0 has already been set to 0 above */
     	    cursorXYValue = 

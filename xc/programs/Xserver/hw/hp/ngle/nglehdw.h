@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: nglehdw.h,v 1.1 93/08/08 12:57:34 rws Exp $ */
 
 /*************************************************************************
  * 
@@ -44,8 +44,10 @@ typedef ngle_dregs_t	*NgleHdwPtr;
 #define SETUP_FB(pDregs,ID, depth) {					\
 	    SETUP_HW(pDregs);						\
 	    switch (ID) {						\
+		case S9000_ID_ARTIST:					\
 		case S9000_ID_A1659A:					\
     		    (pDregs)->reg10 = 0x13601000;			\
+		    break;						\
 		case S9000_ID_A1439A:					\
     		    if (depth == 24)					\
 		        (pDregs)->reg10 = 0xBBA0A000;			\
@@ -78,7 +80,10 @@ typedef ngle_dregs_t	*NgleHdwPtr;
 
 #define FINISH_CURSOR_COLORMAP_ACCESS(pDregs,ID,depth) {		\
 	    (pDregs)->reg2 = 0;						\
-	    (pDregs)->reg1 = 0x80008004;				\
+	    if (ID == S9000_ID_ARTIST)					\
+		(pDregs)->reg26 = 0x80008004;				\
+	    else							\
+		(pDregs)->reg1 = 0x80008004;				\
 	    SETUP_FB(pDregs,ID,depth);					\
 	}
 
@@ -100,14 +105,24 @@ typedef ngle_dregs_t	*NgleHdwPtr;
 	    if (depth == 24)						\
     		(pDregs)->reg1 = 0x83000100;				\
     	    else  /* depth = 8 */					\
-	        (pDregs)->reg1 = 0x80000100;				\
+	    {								\
+		if (ID == S9000_ID_ARTIST)				\
+		    (pDregs)->reg26 = 0x80000100;			\
+		else							\
+		    (pDregs)->reg1 = 0x80000100;			\
+	    }								\
 	    SETUP_FB(pDregs,ID,depth);					\
 	}
 
 #define GET_CURSOR_SPECS(pDregs,pScreenPriv) {				      \
 	    Card32 activeLinesHi, activeLinesLo;			      \
 									      \
-	    (pScreenPriv)->sprite.horizBackPorch = (pDregs)->reg19.b.b1;      \
+	    if ((pScreenPriv)->deviceID != S9000_ID_ARTIST)		      \
+		(pScreenPriv)->sprite.horizBackPorch = (pDregs)->reg19.b.b1;  \
+	    else							      \
+		(pScreenPriv)->sprite.horizBackPorch = (pDregs)->reg19.b.b1 + \
+						       (pDregs)->reg19.b.b2 + \
+						       2;		      \
 	    activeLinesLo   = (pDregs)->reg20.b.b0;		      	      \
 	    activeLinesHi   = ((pDregs)->reg21.b.b2) & 0xf;		      \
 	    (pScreenPriv)->sprite.maxYLine = ((activeLinesHi << 8)	      \
@@ -155,7 +170,11 @@ typedef ngle_dregs_t	*NgleHdwPtr;
 		    (pScreenPriv)->sprite.enabledCursorXYValue;		\
 									\
 	    SETUP_HW((pScreenPriv)->pDregs);				\
-	    *pDregsCursorXY = (enabledCursorValue & 0xe007ffff);	\
+	    if ((pScreenPriv)->deviceID != S9000_ID_ARTIST)		\
+		*pDregsCursorXY = (enabledCursorValue & 0xe007ffff);	\
+	    else							\
+		(pScreenPriv)->pDregs->reg18.all =			\
+			(enabledCursorValue & 0x0000003f);		\
 	}
 
 #define GET_ROMTABLE_INDEX(romTableIdx) {				\
@@ -233,10 +252,33 @@ typedef ngle_dregs_t	*NgleHdwPtr;
 	    *(pAuxControlSpace+2) = 0x30000000;				\
 	}
 
+#define ARTIST_ENABLE_DISPLAY(pDregs) {					\
+	    volatile unsigned long *pDregsMiscVideo = 			\
+		    &((pDregs)->reg21.all);				\
+	    volatile unsigned long *pDregsMiscCtl = 			\
+		    &((pDregs)->reg27.all);				\
+									\
+	    SETUP_HW(pDregs);						\
+	    (pDregs)->reg21.all = *pDregsMiscVideo | 0x0A000000;	\
+	    (pDregs)->reg27.all = *pDregsMiscCtl   | 0x00800000;	\
+	}
+
+#define ARTIST_DISABLE_DISPLAY(pDregs) {				\
+	    volatile unsigned long *pDregsMiscVideo = 			\
+		    &((pDregs)->reg21.all);				\
+	    volatile unsigned long *pDregsMiscCtl = 			\
+		    &((pDregs)->reg27.all);				\
+									\
+	    SETUP_HW(pDregs);						\
+	    (pDregs)->reg21.all = *pDregsMiscVideo & ~0x0A000000;	\
+	    (pDregs)->reg27.all = *pDregsMiscCtl   & ~0x00800000;	\
+	}
+
 
 #define BUFF0_CMAP0 0x00001e02
 #define BUFF1_CMAP0 0x02001e02
 #define BUFF1_CMAP3 0x0c001e02
+#define ARTIST_CMAP0 0x00000102
 
 #define SETUP_ATTR_ACCESS(pDregs,BufferNumber) {			\
 	    SETUP_HW(pDregs);						\

@@ -1,4 +1,4 @@
-/* $XConsortium: x_hilinit.c,v 8.200 94/02/23 15:57:04 dpw Exp $ */
+/* $XConsortium: x_hilinit.c,v 8.201 94/04/17 20:30:17 dpw Exp $ */
 /*
 
 Copyright (c) 1988-1992  X Consortium
@@ -57,12 +57,14 @@ SOFTWARE.
 		if ((*(serialprocs[i].write)) (f, type, ptr)==WRITE_SUCCESS) \
 		    return Success; } }
 
-#define SERIAL_DRIVER_WRITE_VOID(f, type, ptr) \
-	{ int i; \
-	for (i=0; i<num_serial_devices; i++) \
-	    if (f==serialprocs[i].fd) { \
-		if ((*(serialprocs[i].write)) (f, type, ptr)==WRITE_SUCCESS) \
-		    return; } }
+#ifndef LIBDIR
+#if OSMAJORVERSION >= 10
+#define LIBDIR "/etc/X11"
+#else
+#define LIBDIR "/usr/lib/X11"
+#endif
+#endif
+#define DRVRLIBDIR LIBDIR/**/"/extensions/"
 
 #define	 MAXNAMLEN	255
 #define  spare  	MAX_LOGICAL_DEVS - 2
@@ -83,6 +85,7 @@ SOFTWARE.
 #include <fcntl.h>
 #include <dl.h>
 #include <sys/utsname.h>
+#include "ps2io.h"
 #endif /* __hpux */
 
 #include "X.h"
@@ -143,6 +146,7 @@ extern	int	DeviceKeyRelease;
 extern	int	DeviceButtonPress;
 extern	int	DeviceButtonRelease;
 extern	int	DeviceMotionNotify; 
+XID	hp_device_ids[MAX_DEVICES];
 XID		x_device_ids[MAX_DEVICES];
 #endif  /* XINPUT */
 
@@ -188,6 +192,8 @@ int     device_ndx;
  *
  */
 
+static Bool din_mouse_present();
+static Bool din_kbd_present();
 static int init_hil_devs ();
 static int get_device_details();
 static int get_device_type();
@@ -271,12 +277,12 @@ static char  *default_names[MAX_LOGICAL_DEVS] =
  * could use them.
  */
 
-static void hpChangeIntegerControl(pDevice, ctrl)
-    DeviceIntPtr pDevice;
+static hpChangeIntegerControl(pDevice, ctrl)
+    DevicePtr pDevice;
     IntegerCtrl *ctrl;
     {
     HPIntegerFeedbackControl	dctrl;
-    HPInputDevice *d = GET_HPINPUTDEVICE (pDevice);
+    HPInputDevice *d = GET_HPINPUTDEVICE ((DeviceIntPtr) pDevice);
 
     if (d->hpflags & IS_SERIAL_DEVICE)
 	{
@@ -284,16 +290,16 @@ static void hpChangeIntegerControl(pDevice, ctrl)
 	dctrl.resolution = ctrl->resolution;
 	dctrl.max_value = ctrl->max_value;
 	dctrl.integer_displayed = ctrl->integer_displayed;
-	SERIAL_DRIVER_WRITE_VOID(d->file_ds, _XChangeFeedbackControl, &dctrl);
+	SERIAL_DRIVER_WRITE(d->file_ds, _XChangeFeedbackControl, &dctrl);
 	}
     }
 
-static void hpChangeStringControl(pDevice, ctrl)
-    DeviceIntPtr pDevice;
+static StringCtrlProcPtr hpChangeStringControl(pDevice, ctrl)
+    DevicePtr pDevice;
     StringCtrl *ctrl;
     {
     HPStringFeedbackControl	dctrl;
-    HPInputDevice *d = GET_HPINPUTDEVICE (pDevice);
+    HPInputDevice *d = GET_HPINPUTDEVICE ((DeviceIntPtr) pDevice);
 
     if (d->hpflags & IS_SERIAL_DEVICE)
 	{
@@ -303,16 +309,16 @@ static void hpChangeStringControl(pDevice, ctrl)
 	dctrl.num_symbols_displayed = ctrl->num_symbols_displayed;
 	dctrl.symbols_supported = (int *) ctrl->symbols_supported;
 	dctrl.symbols_displayed = (int *) ctrl->symbols_displayed;
-	SERIAL_DRIVER_WRITE_VOID(d->file_ds, _XChangeFeedbackControl, &dctrl);
+	SERIAL_DRIVER_WRITE(d->file_ds, _XChangeFeedbackControl, &dctrl);
 	}
     }
 
-static void hpChangeBellControl(pDevice, ctrl)
-    DeviceIntPtr pDevice;
+static BellCtrlProcPtr hpChangeBellControl(pDevice, ctrl)
+    DevicePtr pDevice;
     BellCtrl *ctrl;
     {
     HPBellFeedbackControl	dctrl;
-    HPInputDevice *d = GET_HPINPUTDEVICE (pDevice);
+    HPInputDevice *d = GET_HPINPUTDEVICE ((DeviceIntPtr) pDevice);
 
     if (d->hpflags & IS_SERIAL_DEVICE)
 	{
@@ -320,7 +326,7 @@ static void hpChangeBellControl(pDevice, ctrl)
 	dctrl.percent = ctrl->percent;
 	dctrl.pitch = ctrl->pitch;
 	dctrl.duration = ctrl->duration;
-	SERIAL_DRIVER_WRITE_VOID(d->file_ds, _XChangeFeedbackControl, &dctrl);
+	SERIAL_DRIVER_WRITE(d->file_ds, _XChangeFeedbackControl, &dctrl);
 	}
     }
 
@@ -334,8 +340,8 @@ static void hpChangeBellControl(pDevice, ctrl)
  *
  */
 
-static void hpChangePointerControl(pDevice, ctrl)
-    DeviceIntPtr pDevice;
+static hpChangePointerControl(pDevice, ctrl)
+    DevicePtr pDevice;
     PtrCtrl *ctrl;
     {
     HPInputDevice *d;
@@ -343,7 +349,7 @@ static void hpChangePointerControl(pDevice, ctrl)
 #ifdef XINPUT
     PtrFeedbackPtr b;
 
-    b = pDevice->ptrfeed;
+    b = ((DeviceIntPtr) pDevice)->ptrfeed;
 
     b->ctrl = *ctrl;
 #else
@@ -356,13 +362,13 @@ static void hpChangePointerControl(pDevice, ctrl)
 	acceleration = 1;
 #endif /* XINPUT */
 
-    d = GET_HPINPUTDEVICE (pDevice);
+    d = GET_HPINPUTDEVICE ((DeviceIntPtr) pDevice);
 #ifdef __apollo
     {
     smd_$pos_t pos;
     extern smd_unit_event_data_t olddata;
 
-    if (pDevice == inputInfo.pointer)
+    if ((DeviceIntPtr) pDevice == inputInfo.pointer)
 	{
 	pos.column = d->coords[0];
 	pos.line = d->coords[1];
@@ -377,7 +383,7 @@ static void hpChangePointerControl(pDevice, ctrl)
 	dctrl.num = ctrl->num;
 	dctrl.den = ctrl->den;
 	dctrl.threshold = ctrl->threshold;
-	SERIAL_DRIVER_WRITE_VOID(d->file_ds, _XChangeFeedbackControl, &dctrl);
+	SERIAL_DRIVER_WRITE(d->file_ds, _XChangeFeedbackControl, &dctrl);
 	}
     }
 
@@ -427,21 +433,21 @@ static SetLeds (d, leds, mask)
  *
  */
 
-static void hpChangeLedControl(pDevice, ctrl)
-    DeviceIntPtr pDevice;
+static hpChangeLedControl(pDevice, ctrl)
+    DevicePtr pDevice;
     LedCtrl *ctrl;
     {
     HPInputDevice	*d;
     HPLedFeedbackControl	dctrl;
 
-    d = GET_HPINPUTDEVICE (pDevice);
+    d = GET_HPINPUTDEVICE ((DeviceIntPtr) pDevice);
     SetLeds(d, ctrl->led_values, ctrl->led_mask);
     if (d->hpflags & IS_SERIAL_DEVICE)
 	{
 	dctrl.class = LedFeedbackClass;
 	dctrl.led_values = ctrl->led_values;
 	dctrl.led_mask = ctrl->led_mask;
-	SERIAL_DRIVER_WRITE_VOID(d->file_ds, _XChangeFeedbackControl, &dctrl);
+	SERIAL_DRIVER_WRITE(d->file_ds, _XChangeFeedbackControl, &dctrl);
 	}
     }
 
@@ -457,32 +463,40 @@ static void hpChangeLedControl(pDevice, ctrl)
  * keyboard_click is checked whenever a key is pressed, in x_hil.c.
  */
 
-static void hpChangeKeyboardControl(pDevice, ctrl)
-    DeviceIntPtr pDevice;
+static hpChangeKeyboardControl(pDevice, ctrl)
+    DevicePtr pDevice;
     KeybdCtrl *ctrl;
     {
     HPInputDevice	*d;
     HPKeyboardFeedbackControl	dctrl;
 
-    if (inputInfo.keyboard && pDevice->id==inputInfo.keyboard->id)
+    if (inputInfo.keyboard &&
+        ((DeviceIntPtr) pDevice)->id==inputInfo.keyboard->id)
         keyboard_click = (int)((double)(ctrl->click) * 15.0 / 100.0);
 
-    d = GET_HPINPUTDEVICE (pDevice);
+    d = GET_HPINPUTDEVICE ((DeviceIntPtr) pDevice);
     SetAutoRepeat(d, ctrl->autoRepeat);
     SetBellAttributes(d, ctrl);
     SetLeds(d, ctrl->leds, 0xffffffff);
     if (d->hpflags & IS_SERIAL_DEVICE)
 	{
-	dctrl.class = KbdFeedbackClass;
-	dctrl.click = ctrl->click;
-	dctrl.bell_percent = ctrl->bell;
-	dctrl.bell_pitch = ctrl->bell_pitch;
-	dctrl.bell_duration = ctrl->bell_duration;
-	dctrl.autoRepeat = ctrl->autoRepeat;
-	memmove(dctrl.autoRepeats, ctrl->autoRepeats, 32);
-	dctrl.leds = ctrl->leds;
-	SERIAL_DRIVER_WRITE_VOID(d->file_ds, _XChangeFeedbackControl, &dctrl);
+	copy_kbd_ctrl_params (&dctrl, ctrl);
+	SERIAL_DRIVER_WRITE(d->file_ds, _XChangeFeedbackControl, &dctrl);
 	}
+    }
+
+copy_kbd_ctrl_params (dctrl, ctrl)
+    HPKeyboardFeedbackControl	*dctrl;
+    KeybdCtrl *ctrl;
+    {
+    dctrl->class = KbdFeedbackClass;
+    dctrl->click = ctrl->click;
+    dctrl->bell_percent = ctrl->bell;
+    dctrl->bell_pitch = ctrl->bell_pitch;
+    dctrl->bell_duration = ctrl->bell_duration;
+    dctrl->autoRepeat = ctrl->autoRepeat;
+    memmove(dctrl->autoRepeats, ctrl->autoRepeats, 32);
+    dctrl->leds = ctrl->leds;
     }
 
 /****************************************************************************
@@ -491,20 +505,18 @@ static void hpChangeKeyboardControl(pDevice, ctrl)
  *
  */
 
-
 static int hpGetDeviceMotionEvents (dev, coords, start, stop, pScreen)
     DeviceIntPtr  dev;
-    xTimecoord * coords;
-    unsigned long start, stop;
+    CARD32 start, stop;
+    xTimecoord  *coords;
     ScreenPtr pScreen;
     {
-    char *buff;
     HPInputDevice 	*pHPDev = (HPInputDevice *) dev->public.devicePrivate;
     int			i;
     int			evcount = 0;
     int			size = pHPDev->hil_header.ax_num + 1;
     int 		*first, *last, 	*curr;
-    int 		*buffp = (int *) buff;
+    int 		*buffp = (int *) coords;
     int 		*pmBuf = dpmotionBuf[dev->id];
     int 		*hmBuf = dheadmotionBuf[dev->id];
 
@@ -569,6 +581,7 @@ static Bool hpDeviceProc(pDev, onoff)
     DevicePtr pDev;
     int onoff;
     {
+    char 		*x_basename ();
     int			keyId;
     unsigned int	mask;
     KeySymsRec		*key_syms, keysym_rec;
@@ -589,7 +602,6 @@ static Bool hpDeviceProc(pDev, onoff)
 				   MOTION_BUFFER_SIZE;
 #ifdef XINPUT
     char		*strchr();
-    char		*nptr;
 #endif /* XINPUT */
 
     switch (onoff)
@@ -597,8 +609,7 @@ static Bool hpDeviceProc(pDev, onoff)
 	case DEVICE_INIT: 
 	    pDev->on = FALSE;
 	    pHPDev->pScreen = screenInfo.screens[0];
-    	    nptr = strchr (pHPDev->x_name, '_');
-    	    AssignTypeAndName (pDev, pHPDev->x_atom, ++nptr);
+    	    AssignTypeAndName (pDev, pHPDev->x_atom, x_basename(pHPDev->x_name));
 
 	    if (h->num_keys)
 		{
@@ -647,7 +658,7 @@ static Bool hpDeviceProc(pDev, onoff)
 		    i = pHPDev->sndx;
 		    if (!HPKget_kb_info_by_name(serialprocs[i].keymap_file, 
 			serialprocs[i].keymap_name, &keysym_rec, &the_modmap))
-			FatalError ("Can't find a keymap in the /usr/lib/X11/XHPKeymaps file for device %s.\n", pHPDev->x_name);
+			FatalError ("Can't find a keymap in the %s/XHPKeymaps file for device %s.\n", LIBDIR, pHPDev->x_name);
 		    h->keymap_name = serialprocs[i].keymap_name;
 		    }
 		else
@@ -655,12 +666,12 @@ static Bool hpDeviceProc(pDev, onoff)
 		key_syms = &keysym_rec;
 		h->min_kcode = key_syms->minKeyCode;
 		h->max_kcode = key_syms->maxKeyCode;
-		h->num_keys = key_syms->maxKeyCode - key_syms->minKeyCode;
+		h->num_keys = key_syms->maxKeyCode - key_syms->minKeyCode + 1;
 		pHPDev->x_type = KEYBOARD;
 		if (dev->id == inputInfo.keyboard->id)
 		    {
-		    InitKeyboardDeviceStruct(pDev, key_syms,
-		 	the_modmap, hpBell, hpChangeKeyboardControl);
+		    InitKeyboardDeviceStruct(pDev, key_syms, the_modmap, hpBell,
+			(KbdCtrlProcPtr) hpChangeKeyboardControl);
 		    get_pointerkeys();
 		    fix_modifierkeys();
 		    }
@@ -669,7 +680,7 @@ static Bool hpDeviceProc(pDev, onoff)
 		    {
 		    InitKeyClassDeviceStruct (dev, key_syms, the_modmap);
 		    InitKbdFeedbackClassDeviceStruct (dev, hpBell,
-			hpChangeKeyboardControl);
+			(KbdCtrlProcPtr) hpChangeKeyboardControl);
 		    InitFocusClassDeviceStruct (dev);
 		    }
 		}
@@ -678,7 +689,7 @@ static Bool hpDeviceProc(pDev, onoff)
 		dev->id != inputInfo.keyboard->id)
 		{
 		LedFeedbackPtr led;
-		InitLedFeedbackClassDeviceStruct(dev,hpChangeLedControl);
+		InitLedFeedbackClassDeviceStruct(dev,(LedCtrlProcPtr) hpChangeLedControl);
 		mask=0;
 		for (i=0; i<h->num_leds; i++)
 		    mask |= (1 << i);
@@ -697,25 +708,26 @@ static Bool hpDeviceProc(pDev, onoff)
 		    j<serialprocs[i].num_fdbk; j++,ptrf++)
 		    if (*ptrf == IntegerFeedbackClass)
 			InitIntegerFeedbackClassDeviceStruct (
-			    dev, hpChangeIntegerControl);
+			    dev, (IntegerCtrlProcPtr) hpChangeIntegerControl);
 		    else if (*ptrf == BellFeedbackClass)
 			InitBellFeedbackClassDeviceStruct (
-			    dev, hpBell, hpChangeBellControl);
+			    dev, hpBell, (BellCtrlProcPtr) hpChangeBellControl);
 		    else if (*ptrf == KbdFeedbackClass)
-			InitKbdFeedbackClassDeviceStruct(
-			    dev, hpBell, hpChangeKeyboardControl);
+			InitKbdFeedbackClassDeviceStruct( dev, hpBell, 
+			    (KbdCtrlProcPtr) hpChangeKeyboardControl);
 		    else if (*ptrf == PtrFeedbackClass)
 			InitPtrFeedbackClassDeviceStruct(
-			    dev, hpChangePointerControl);
+			    dev, (PtrCtrlProcPtr) hpChangePointerControl);
 		for (j=0, ptrf=serialprocs[i].ledf; 
 		     j<serialprocs[i].num_ledf; j++,ptrf++)
-		    InitLedFeedbackClassDeviceStruct ( dev, hpChangeLedControl);
+		    InitLedFeedbackClassDeviceStruct ( dev, (LedCtrlProcPtr) hpChangeLedControl);
 		for (j=0, ptrs=serialprocs[i].strf; 
 		     j<serialprocs[i].num_strf; j++, ptrs++)
 		    InitStringFeedbackClassDeviceStruct ( dev, 
-			hpChangeStringControl, ptrs->max_symbols,
+			(StringCtrlProcPtr) hpChangeStringControl, 
+			ptrs->max_symbols,
 			ptrs->num_symbols_supported,
-			ptrs->symbols_supported);
+			(KeySym *) ptrs->symbols_supported);
 		}
 
 #endif /* XINPUT */
@@ -744,7 +756,7 @@ static Bool hpDeviceProc(pDev, onoff)
 		    smd_$set_unit_cursor_pos (1, pos, &status);
 #endif /* __apollo */
 		    InitPointerDeviceStruct (pDev, ptr_button_map, button_count,
-			hpGetDeviceMotionEvents, hpChangePointerControl, 
+			hpGetDeviceMotionEvents, (PtrCtrlProcPtr) hpChangePointerControl, 
 			    MOTION_BUFFER_SIZE);
 		    }
 #ifdef XINPUT
@@ -759,7 +771,7 @@ static Bool hpDeviceProc(pDev, onoff)
 			hpGetDeviceMotionEvents, 100, 
 			(h->flags & HIL_ABSOLUTE)?1:0);
 		    InitPtrFeedbackClassDeviceStruct (dev, 
-			hpChangePointerControl);
+			(PtrCtrlProcPtr) hpChangePointerControl);
 		    }
 		InitValuatorAxisStruct (dev, 0, 0, (unsigned int) h->size_x, 
 		    (unsigned int) h->resx, 0, (unsigned int) h->resx);
@@ -807,6 +819,7 @@ static Bool hpDeviceProc(pDev, onoff)
 	    if (dev->key) {
 		memset(dev->key->down, 0, DOWN_LENGTH);
 		dev->key->state = 0;
+		dev->key->prev_state = 0;
 	    }
 	    if (dev->id != inputInfo.pointer->id &&
 		pHPDev->file_ds == hpPointer->file_ds)
@@ -816,14 +829,12 @@ static Bool hpDeviceProc(pDev, onoff)
 #ifndef __hp_osf
 		RemoveEnabledDevice(pHPDev->file_ds);
 #endif /* __hp_osf */
-	        SetAutoRepeat(pHPDev, FALSE);
     	        close_device (pHPDev);
 		}
 	    break;
 	case DEVICE_CLOSE: 
 	    if ( pHPDev != NULL && pHPDev->file_ds >= 0)
 		{
-	        SetAutoRepeat(pHPDev, FALSE);
 #ifndef __hp_osf
 		RemoveEnabledDevice( pHPDev->file_ds);
 #endif /* __hp_osf */
@@ -860,7 +871,7 @@ InitInput(argc, argv)
     {
     int	i, j;
     DeviceIntPtr x_init_device();
-    void CheckInput();
+    int CheckInput();
 
     mflg = (char *)getenv("XHPPRINTDEBUGMSG");
     x_axis = 0;
@@ -876,6 +887,10 @@ InitInput(argc, argv)
 	identity_map[i]=i;
     for (i=0; i<NUM_DEV_TYPES; i++)
 	count[i] = 0;
+    if (din_mouse_present())
+	count[MOUSE]++;
+    if (din_kbd_present())
+	count[KEYBOARD]++;
     serial[XPOINTER].name[0]='\0';
     serial[XKEYBOARD].name[0]='\0';
     lockcode = 0;
@@ -906,8 +921,9 @@ InitInput(argc, argv)
     AddEnabledDevice (beeper_fd);
 #endif /* __hp_osf */
 
-    RegisterBlockAndWakeupHandlers ((BlockHandlerProcPtr)NoopDDA,
-				    CheckInput, NULL);
+    RegisterBlockAndWakeupHandlers ((BlockHandlerProcPtr) NoopDDA, 
+				    (WakeupHandlerProcPtr) CheckInput, 
+				    (pointer) NULL);
     loopnum = atoi(display);
     hilpath[0] = '\0';
     ldigit = '\0';
@@ -915,9 +931,7 @@ InitInput(argc, argv)
     init_l_devs ();
     init_events_queue ( &ev_queue);
 #if defined(__hpux)
-    if ((strcmp(uts_name.machine, "9000/7LC") != 0) &&
-        (strcmp(uts_name.machine, "9000/712") != 0))
-	init_beeper();			/* beeper_fd = /dev/rhil */
+    init_beeper();			/* beeper_fd = /dev/rhil */
 #endif /* __hpux */
 
     /*
@@ -965,8 +979,8 @@ x_init_device (dev, start_it)
 	miRegisterPointerDevice(screenInfo.screens[0], pXDev);
 #endif
 	if (dev->x_type == KEYBOARD)
-	    InitKbdFeedbackClassDeviceStruct ((DeviceIntPtr)pXDev, hpBell,
-		hpChangeKeyboardControl);
+	    InitKbdFeedbackClassDeviceStruct ((DeviceIntPtr) pXDev, hpBell,
+		(KbdCtrlProcPtr) hpChangeKeyboardControl);
 	screen_change_dev = (DeviceIntPtr) pXDev;
 	if (screen_change_amt == SCREEN_CHANGE_DEFAULT)
 	    if (dev->hil_header.flags & HIL_ABSOLUTE)
@@ -1027,7 +1041,7 @@ init_l_devs()
 #endif /* __hpux */
 	}
 
-    sprintf(fname, "/usr/lib/X11/X%sdevices",display);
+    sprintf(fname, "%s/X%sdevices",LIBDIR,display);
     fp = fopen ( fname, "r");
     if (fp) 
 	{
@@ -1148,6 +1162,9 @@ compute_device_names (opendevs, dev_num)
  *
  */
 
+#define DEFAULT_DEV 	0
+#define EXPLICIT_DEV	1
+
 #if defined(__hpux) || defined(__hp_osf)
 static int init_hil_devs (opendevs, numdev)
     struct	opendevs opendevs [];
@@ -1185,16 +1202,20 @@ static int init_hil_devs (opendevs, numdev)
 	    {
 	    for (j=0; j<numdev; j++)
 		{
-	        if ((d->dev_type==opendevs[j].type && 
-		    count[d->dev_type]==opendevs[j].pos) ||
-		    (opendevs[j].type == -1 &&
+	        if ((d->dev_type == opendevs[j].type && 
+		     count[d->dev_type]==opendevs[j].pos) ||
+		    (opendevs[j].type == -1 && 
 		     strcmp (opendevs[j].path, d->dev_name) == 0))
 		    {
 		    d->hpflags |= OPEN_THIS_DEVICE;
-		    if (j==XKEYBOARD && hpKeyboard==NULL)
+		    if (j==XKEYBOARD && hpKeyboard==NULL){
 			hpKeyboard = d;
-		    else if (j==XPOINTER && hpPointer==NULL)
+			hpKeyboard->pad2 = EXPLICIT_DEV;
+			}
+		    else if (j==XPOINTER && hpPointer==NULL){
 			hpPointer = d;
+			hpPointer->pad2 = EXPLICIT_DEV;
+			}
 		    else
 			{
 			d->hpflags |= MERGED_DEVICE;
@@ -1236,6 +1257,7 @@ static int init_hil_devs (opendevs, numdev)
 	    }
 	hpKeyboard->hpflags |= OPEN_THIS_DEVICE;
 	hpKeyboard->hpflags &= ~MERGED_DEVICE;
+	hpKeyboard->pad2 = DEFAULT_DEV;
 	}
 
     if (hpPointer==NULL)
@@ -1248,6 +1270,7 @@ static int init_hil_devs (opendevs, numdev)
 	    hpPointer = hpKeyboard;
 	hpPointer->hpflags |= OPEN_THIS_DEVICE;
 	hpPointer->hpflags &= ~MERGED_DEVICE;
+	hpPointer->pad2 = DEFAULT_DEV;
 	}
 
     if (hpPointer == hpKeyboard)
@@ -1318,8 +1341,11 @@ init_beeper()
     {
 
 #if defined(__hp9000s300) || defined(__hp9000s700)
-    if ((beeper_fd = open(BEEPER_DEVICE,O_RDWR)) < 0)
- 	ErrorF ("Unable to open beeper device \"%s\".\n",BEEPER_DEVICE);
+    if ((beeper_fd = open(BEEPER_DEVICE,O_RDWR)) < 0 &&
+	((beeper_fd = open("/dev/beep",O_RDWR)) < 0) &&
+	((strcmp(uts_name.machine, "9000/7LC") != 0) &&
+	 (strcmp(uts_name.machine, "9000/712") != 0)))
+ 	    ErrorF ("Unable to open beeper device \"%s\".\n",BEEPER_DEVICE);
 #endif /*__hp9000s300 or __hp9000s700 */
 
 #if defined(__hp9000s800) && !defined(__hp9000s700)
@@ -1701,7 +1727,7 @@ static void SetAutoRepeat (d, onoff)
 
 /********************************************************************
  *
- * If the file "/usr/lib/X11/X[display#]devices exists, this routine 
+ * If the file LIBDIR/X[display#]devices exists, this routine 
  * processes it.
  * It translates the strings in the file to a device type and relative
  * position on the HIL.
@@ -1981,17 +2007,18 @@ parse_description(fd, o, ondx, sdev_num)
  *
  */
 
-static get_codes (key, code, type)
+static get_codes (key, code, type, makeupper)
     char	*key;
     int		*code;
     int		type;
+    Bool	makeupper;
     {
-    char	keybuf[256];
     int		i;
     KeySym	sym;
 
-    for (i=0; i<strlen(key); i++)
-	keybuf[i] = toupper(key[i]);
+    if (makeupper)
+	for (i=0; i<strlen(key); i++)
+	    *(key+i) = toupper(*(key+i));
 
     if (type == UCHAR_NUMBER || type == USHORT_NUMBER || type == UINT_NUMBER)
 	{
@@ -2000,13 +2027,13 @@ static get_codes (key, code, type)
 	}
     else if (type == STRING)
 	for (i=0; i<MAX_STRINGS; i++)
-	    if (strcmp (keybuf, strings[i].string) == 0)
+	    if (strcmp (key, strings[i].string) == 0)
 		{
 		*code = strings[i].value;
 		return (0);
 		}
     for (i=0; keyset1[i].keystr; i++)
-        if (strcmp (keybuf, keyset1[i].keystr) == 0)
+        if (strcmp (key, keyset1[i].keystr) == 0)
 	    break;
     if (!inputInfo.keyboard)
 	return(0);
@@ -2105,26 +2132,26 @@ get_pointerkeys()
 	} codevar;
 
     if (inputInfo.keyboard) {
-	get_codes ("keypad_2", &code, KEY);
+	get_codes ("KEYPAD_2", &code, KEY, FALSE);
 	cursor_down = (unsigned char) code;
-	get_codes ("keypad_5", &code, KEY);
+	get_codes ("KEYPAD_5", &code, KEY, FALSE);
 	cursor_up = (unsigned char) code;
-	get_codes ("keypad_1", &code, KEY);
+	get_codes ("KEYPAD_1", &code, KEY, FALSE);
 	cursor_left = (unsigned char) code;
-	get_codes ("keypad_3", &code, KEY);
+	get_codes ("KEYPAD_3", &code, KEY, FALSE);
 	cursor_right = (unsigned char) code;
-	get_codes ("keypad_*", &code, KEY);
+	get_codes ("KEYPAD_*", &code, KEY, FALSE);
 	button_1 = (unsigned char) code;
-	get_codes ("keypad_/", &code, KEY);
+	get_codes ("KEYPAD_/", &code, KEY, FALSE);
 	button_2 = (unsigned char) code;
-	get_codes ("keypad_+", &code, KEY);
+	get_codes ("KEYPAD_+", &code, KEY, FALSE);
 	button_3 = (unsigned char) code;
-	get_codes ("keypad_-", &code, KEY);
+	get_codes ("KEYPAD_-", &code, KEY, FALSE);
 	button_4 = (unsigned char) code;
-	get_codes ("keypad_7", &code, KEY);
+	get_codes ("KEYPAD_7", &code, KEY, FALSE);
 	button_5 = (unsigned char) code;
 	}
-    sprintf(fname, "/usr/lib/X11/X%spointerkeys",display);
+    sprintf(fname, "%s/X%spointerkeys",LIBDIR,display);
     fp = fopen ( fname, "r");
     if (fp == NULL)
 	return;
@@ -2147,7 +2174,7 @@ get_pointerkeys()
 		    function);
 		continue;		/* error - skip this one*/
 		}
-	    cret = get_codes (key, &code, pointerfunc[index].type);
+	    cret = get_codes (key, &code, pointerfunc[index].type, TRUE);
 	    if (cret < 0 &&		/* not a key or modifier*/
 	        pointerfunc[index].type == KEY) /* but must be  */
 		{
@@ -2198,14 +2225,17 @@ static DevicePtr hpAddInputDevice(deviceProc, autoStart, pHPDev)
 #ifdef XINPUT
     if (pHPDev == hpPointer)
 	{
+	hp_device_ids[pHPDev->dev_id] = XPOINTER;
 	x_device_ids[XPOINTER] = pHPDev->dev_id;
 	}
     else if (pHPDev == hpKeyboard)
 	{
+	hp_device_ids[pHPDev->dev_id] = XKEYBOARD;
 	x_device_ids[XKEYBOARD] = pHPDev->dev_id;
 	}
     else
 	{
+	hp_device_ids[pHPDev->dev_id] = otherndx;
 	x_device_ids[otherndx++] = pHPDev->dev_id;
 	}
 #endif /* XINPUT */
@@ -2220,7 +2250,6 @@ static DevicePtr hpAddInputDevice(deviceProc, autoStart, pHPDev)
  *
  */
 
-Bool
 LegalModifier(key, dev)
     unsigned int key;
     DevicePtr dev;
@@ -2336,13 +2365,11 @@ deallocate_event (ev)
 
 extern int apLeave_X, apReenter_X;      /*  in hp/apollo/apInit2.c */
 
-void
-CheckInput (data, result, selmask)
+CheckInput (data, result, LastSelectMask)
     pointer data;
-    int result;
-    pointer selmask;
+    unsigned long result;
+    long LastSelectMask[];
     {
-    long *LastSelectMask = (long*)selmask;
     long devicesReadable[mskcnt];
     extern long EnabledDevices[];
     extern Bool	display_borrowed;	/* in x_hil.c */
@@ -2414,6 +2441,9 @@ ChangeKeyboardDevice (old_dev, new_dev)
 
     if (old->hpflags & OPEN_THIS_DEVICE)
 	old->hpflags &= ~OPEN_THIS_DEVICE;
+    tmp = hp_device_ids[new_dev->id];
+    hp_device_ids[new_dev->id] = XKEYBOARD;
+    hp_device_ids[old_dev->id] = tmp;
     x_device_ids[XKEYBOARD] = new_dev->id;
     x_device_ids[tmp] = old->dev_id;
     hpKeyboard = new;
@@ -2445,6 +2475,9 @@ ChangePointerDevice (old_dev, new_dev, x, y)
 	old->hpflags &= ~OPEN_THIS_DEVICE;
 
     screen_change_dev = new_dev;
+    tmp = hp_device_ids[new_dev->id];
+    hp_device_ids[new_dev->id] = XPOINTER;
+    hp_device_ids[old_dev->id] = tmp;
     x_device_ids[XPOINTER] = new_dev->id;
     x_device_ids[tmp] = old->dev_id;
     hpPointer = new;
@@ -2551,7 +2584,7 @@ RecordOpenRequest (client, d, id, token)
     new_client->count = 1;
     new_client->mode = token;
 
-    AddResource(new_client->resource, HPType, (pointer)id);
+    AddResource((XID) new_client->resource, (RESTYPE) HPType, (pointer) id);
     }
 
 
@@ -2953,45 +2986,16 @@ init_dynamic_devs(opendevs, numdev)
     shl_t ldr_module_id;
     long ldr_module_entry;
     int ret_val;
-    char driver_path[255];
-    char driver_init[255];
+    char driver_path[255], driver_init[255];
 
-    if (count[KEYBOARD] == opendevs[XPOINTER].pos && 
-	opendevs[XPOINTER].use == XPOINTER &&
-	opendevs[XPOINTER].type == KEYBOARD)
-	keyboard_is_pointer = TRUE;
    /*
-    * See if this is a hp90007LC.  If so, we need to load a serial driver
-    * for the keyboard and mouse.
+    * See if we can access a DIN mouse and keyboard.  If so, we need to load
+    * a driver to support them.
     *
     */
 
-    if ((strcmp(uts_name.machine, "9000/7LC") == 0) ||
-        (strcmp(uts_name.machine, "9000/712") == 0)) {
-	if (!keyboard_is_pointer && serial[XPOINTER].name[0] == '\0') {
-	    sndx = XPOINTER;
-	    serial[sndx].use = XPOINTER;
-	}
-	else {
-	    sndx = numdev++;
-	    serial[sndx].use = XOTHER+1;
-	}
-	strcpy (serial[sndx].name, "hp7lc2m.sl");
-	strcpy (serial[sndx].entry, "hp7lc2m_Init");
-	strcpy (serial[sndx].path, "/dev/ps2mouse");
-
-	if (serial[XKEYBOARD].name[0]=='\0') {
-	    sndx = XKEYBOARD;
-	    serial[sndx].use = XKEYBOARD;
-	}
-	else {
-	    sndx = numdev++;
-	    serial[sndx].use = XOTHER+1;
-	}
-	strcpy (serial[sndx].name, "hp7lc2k.sl");
-	strcpy (serial[sndx].entry, "hp7lc2k_Init");
-	strcpy (serial[sndx].path, "/dev/ps2kbd");
-    }
+    find_din_kbd_use(opendevs, &keyboard_is_pointer, &numdev, &sndx);
+    find_din_mouse_use(&keyboard_is_pointer, &numdev, &sndx);
 
    /*
     * For each device, 
@@ -3006,7 +3010,7 @@ init_dynamic_devs(opendevs, numdev)
 	if (!serial[i].name[0])
 	    continue;
 
-	strcpy (driver_path, "/usr/lib/X11/extensions/");
+	strcpy (driver_path, DRVRLIBDIR);
 	strcat (driver_path, serial[i].name);
 #if defined(__hp9000s300)
 	strcpy (driver_init, "_");
@@ -3028,8 +3032,8 @@ init_dynamic_devs(opendevs, numdev)
 
 	    if ( ldr_module_id == NULL ) 
 		{
-		ErrorF ("Failed to load serial input device driver %s\n",
-		    driver_path);
+		ErrorF ("Failed to load serial input device driver %s, errno %d\n",
+		    driver_path, errno);
 		ErrorF ("Check spelling and case of device name.\n");
 		continue;
 		}
@@ -3075,7 +3079,10 @@ init_dynamic_devs(opendevs, numdev)
 	if ((*(serialprocs[sndx].configure))(&dhdr) == INIT_SUCCESS)
 	    {
 
-	    for (k=0; l_devs[k].hil_header.id != 1 && k<MAX_DEVICES-1; k++)
+	    for (k=MAX_DEVICES-1; l_devs[k].hil_header.id != 1 && k>=0; k--)
+	        ;
+	    if (k<0)
+	        for (k=MAX_DEVICES-1; (l_devs[k].hpflags & OPEN_THIS_DEVICE) && k>=0; k--)
 	        ;
 	    serialprocs[sndx].fd = dhdr.file_ds;
 	    serialprocs[sndx].keymap_name = dhdr.keymap_name;
@@ -3086,8 +3093,7 @@ init_dynamic_devs(opendevs, numdev)
 	    serialprocs[sndx].num_strf = dhdr.num_strf;
 	    serialprocs[sndx].ledf = dhdr.ledf;
 	    serialprocs[sndx].num_ledf = dhdr.num_ledf;
-	    strcpy(l_devs[k].x_name,"FIRST_");
-	    strcat(l_devs[k].x_name, dhdr.x_name);
+	    strcpy(l_devs[k].x_name, dhdr.x_name);
 	    l_devs[k].x_atom = MakeAtom (dhdr.x_name, strlen(dhdr.x_name),0);
 	    if (!l_devs[k].x_atom)
 	        l_devs[k].x_atom = MakeAtom(dhdr.x_name, strlen(dhdr.x_name),1);
@@ -3155,9 +3161,9 @@ init_dynamic_devs(opendevs, numdev)
 		serial[i].name);
 	}
     if (!hpPointer)
-	FatalError ("Couldn't open X pointer device!\n");
+	FatalError ("Couldn't open X pointer device!  Is there one attached?\n");
     if (!hpKeyboard)
-	FatalError ("Couldn't open X keyboard!\n");
+	FatalError ("Couldn't open X keyboard!  Is there one attached?\n");
     }
 
 #define DYNAMIC_DEVICE 	0xffff
@@ -3201,3 +3207,201 @@ x_init_dynamic_device(d, dhdr)
  d->hil_header.id = 0;
  d->id_detail &= ~HP_HIL;
 }
+/******************************************************************************
+ *
+ * shl_driver_load() is passed the path of a shared library to load, and the
+ * name of an entry point to find.  It loads the library and returns the 
+ * entry point address.
+ */
+
+Bool (*shl_driver_load( driver_path, driver_init ))()
+char *driver_path, *driver_init;
+{
+   /*
+    * pfrb = pointer to a function returning a Bool
+    */
+   typedef Bool (*pfrb)();
+
+   shl_t            ldr_module_id;
+   long             ldr_module_entry=0;
+   int              ret_val;
+   char             *dummy_handle = NULL;
+#define ALL_SHLIBS_HANDLE &dummy_handle
+
+   /**********************************************************************
+    *
+    * If the driver entrypoint is already visible within the current program,
+    * skip the load and return the address of the routine we already have
+    * loaded.
+    *
+    */
+
+   ret_val = shl_findsym((shl_t *) PROG_HANDLE, driver_init, 
+       TYPE_PROCEDURE, &ldr_module_entry );
+   if ( ! ret_val ) {
+      return( (pfrb) ldr_module_entry );
+   }
+
+   /*
+    * If the driver entrypoint is already visible within a shared library we
+    * are already accessing, skip the load and return the address.
+    */
+   ret_val = shl_findsym((shl_t *) ALL_SHLIBS_HANDLE, driver_init,
+	TYPE_PROCEDURE, &ldr_module_entry );
+   if ( ! ret_val ) {
+      return( (pfrb) ldr_module_entry );
+   }
+
+
+   /**********************************************************************
+    *
+    * Load driver into the current VA space.
+    */
+   ldr_module_id = shl_load( driver_path, (BIND_IMMEDIATE | BIND_VERBOSE), 0L );
+
+   if ( ldr_module_id == NULL )
+	FatalError ("X server failed to load shared library %s, errno is %d\n", 
+	driver_path,errno);
+
+
+   /**********************************************************************
+    *
+    * Use the module ID to find the address of the requested entry point.
+    */
+
+   ret_val = shl_findsym( &ldr_module_id, driver_init, TYPE_PROCEDURE,
+                          &ldr_module_entry );
+   if (ret_val && driver_init != NULL)
+	FatalError ("X server couldn't find entry point '%s' in library %s\n",
+	    driver_init, driver_path);
+
+   return( (pfrb) ldr_module_entry );
+}
+
+/***********************************************************************
+ *
+ * din_mouse_present
+ *
+ */
+
+static Bool
+din_mouse_present()
+    {
+    int fd;
+    unsigned char cmdbuf[2];
+
+    fd = open("/dev/ps2mouse", O_RDWR);
+    ioctl (fd, PS2_PORTSTAT, &cmdbuf[0]);
+    ioctl (fd, PS2_IDENT, &cmdbuf[1]);
+    close (fd);
+    if (cmdbuf[0] != 1 || cmdbuf[1] != 0)
+	return FALSE;
+    return TRUE;
+    }
+
+/***********************************************************************
+ *
+ * find_din_mouse_use
+ *
+ */
+
+find_din_mouse_use(keyboard_is_pointer, numdev, sndx)
+    int *keyboard_is_pointer, *numdev, *sndx;
+    {
+
+    if (!din_mouse_present())          		/* no DIN mouse attached */
+	{
+	if (!hpPointer || 			/* no HIL pointer device */
+	     (hpPointer->dev_type != MOUSE &&	/* or it's not a motion device  */
+	     hpPointer->pad2 != EXPLICIT_DEV))	/* and not explicitly specified */
+	    *keyboard_is_pointer = TRUE;
+	return;
+	}
+
+    if ((serial[XPOINTER].name[0] != '\0') || 	   /* RS232 pointer specified */
+	(hpPointer && hpPointer->pad2 == EXPLICIT_DEV)||/* HIL ptr specified  */
+	*keyboard_is_pointer)
+	{
+	*sndx = (*numdev)++;
+	serial[*sndx].use = XOTHER+1;
+	}
+    else
+	{
+	*sndx = XPOINTER;
+	serial[*sndx].use = XPOINTER;
+	}
+    strcpy (serial[*sndx].name, "hp7lc2m.sl");
+    strcpy (serial[*sndx].entry, "hp7lc2m_Init");
+    strcpy (serial[*sndx].path, "/dev/ps2mouse");
+    }
+
+/***********************************************************************
+ *
+ * din_kbd_present
+ *
+ */
+
+static Bool
+din_kbd_present()
+    {
+    int fd;
+    unsigned char cmdbuf[2];
+
+    fd = open("/dev/ps2kbd", O_RDWR);
+    ioctl (fd, PS2_PORTSTAT, &cmdbuf[0]);
+    ioctl (fd, PS2_IDENT, &cmdbuf[1]);
+    close (fd);
+    if (cmdbuf[0]!=2 && cmdbuf[1]!=0xab && cmdbuf[2]!=0x83) /* no DIN kbd  */
+	return FALSE;
+    return TRUE;
+    }
+
+/***********************************************************************
+ *
+ * find_din_kbd_use
+ *
+ */
+
+find_din_kbd_use(opendevs, keyboard_is_pointer, numdev, sndx)
+    struct	opendevs opendevs [];
+    int *keyboard_is_pointer, *numdev, *sndx;
+    {
+
+    if (!din_kbd_present())				/* no DIN kbd  */
+	return;
+
+    if ((serial[XKEYBOARD].name[0]!='\0') ||           /* RS232 kbd specified */
+	(hpKeyboard && hpKeyboard->pad2 == EXPLICIT_DEV))/* HIL kbd specified */
+	{
+	*sndx = (*numdev)++;
+	serial[*sndx].use = XOTHER+1;
+	}
+    else
+	{
+	*sndx = XKEYBOARD;
+	serial[*sndx].use = XKEYBOARD;
+	}
+    if (opendevs[XPOINTER].type == KEYBOARD && opendevs[XPOINTER].pos == 0)
+	*keyboard_is_pointer = TRUE;
+
+    strcpy (serial[*sndx].name, "hp7lc2k.sl");
+    strcpy (serial[*sndx].entry, "hp7lc2k_Init");
+    strcpy (serial[*sndx].path, "/dev/ps2kbd");
+    }
+
+char *x_basename (name)
+    char *name;
+    {
+    int i;
+    char *nptr = strchr (name, '_');
+    char *ordinal[] = {"FIRST", "SECOND", "THIRD", "FOURTH", "FIFTH", "SIXTH", 
+	"SEVENTH"};
+
+    if (!nptr)
+	return (name);
+
+    for (i=0; i<7; i++)
+	if (!strncmp(name, ordinal[i], strlen(ordinal[i])))
+	    return(++nptr);
+    return (name);
+    }
