@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.45 89/07/26 11:02:31 jim Exp $
+ * $XConsortium: lex.l,v 1.46 89/07/27 15:28:12 jim Exp $
  *
  * .twmrc lex file
  *
@@ -37,7 +37,7 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.45 89/07/26 11:02:31 jim Exp $";
+"$XConsortium: lex.l,v 1.46 89/07/27 15:28:12 jim Exp $";
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
 #include "gram.h"
@@ -292,9 +292,11 @@ t.move				{ return F_MOVE; }
 %%
 yywrap() { return(1);}
 
-#undef unput(c)
-#undef input()
-#undef output(c)
+#undef unput
+#undef input
+#undef output
+#undef feof
 #define unput(c)	(*twmUnputFunc)(c)
 #define input()		(*twmInputFunc)()
 #define output(c)	TwmOutput(c)
+#define feof()		(1)
