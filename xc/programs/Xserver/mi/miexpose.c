@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 1.41 89/03/24 07:33:29 rws Exp $ */
+/* $XConsortium: miexpose.c,v 1.42 89/03/31 13:19:47 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -426,15 +426,17 @@ miWindowExposures(pWin)
 					     FALSE);
 	}
         (*pWin->PaintWindowBackground)(pWin, prgn, PW_BACKGROUND);
-	if (exposures)
+	if (exposures && exposures->numRects > 0)
 	{
 	    (* pWin->drawable.pScreen->TranslateRegion)(exposures,
 			-pWin->absCorner.x, -pWin->absCorner.y);
 	    pBox = exposures->rects;
 
 	    if(!(pEvent = (xEvent *)
-		ALLOCATE_LOCAL(exposures->numRects * sizeof(xEvent))))
+		ALLOCATE_LOCAL(exposures->numRects * sizeof(xEvent)))) {
+		prgn->numRects = 0;
 		return;
+	    }
 	    pe = pEvent;
 
 	    for (i=1; i<=exposures->numRects; i++, pe++, pBox++)
@@ -449,9 +451,9 @@ miWindowExposures(pWin)
 	    }
 	    DeliverEvents(pWin, pEvent, (int)exposures->numRects, NullWindow);
 	    DEALLOCATE_LOCAL(pEvent);
-	    if (exposures != prgn)
-	        (* pWin->drawable.pScreen->RegionDestroy) (exposures);
 	}
+	if (exposures && exposures != prgn)
+	    (* pWin->drawable.pScreen->RegionDestroy) (exposures);
 	prgn->numRects = 0;
     }
 }
