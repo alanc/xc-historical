@@ -608,7 +608,7 @@ void ProcessTest(xp, test, func, label)
 	DisplayStatus(xp->d, "Testing", label);
 	XDestroySubwindows(xp->d, xp->w);
 	XClearWindow(xp->d, xp->w);
-	(void)(*test->init) (xp, &test->parms, reps);
+	reps = (*test->init) (xp, &test->parms, reps);
 	/* Create clip windows if requested */
 	CreateClipWindows(xp, test->clips);
 
