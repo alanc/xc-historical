@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.39 88/05/18 13:44:11 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.40 88/05/18 14:47:04 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -565,6 +565,7 @@ char **argv;
 	/* open a terminal for client */
 	get_terminal ();
 	spawn ();
+	/* Realize procs have now been executed */
 
 	Xsocket = screen->display->fd;
 	pty = screen->respond;
@@ -573,8 +574,9 @@ char **argv;
 	    char buf[80];
 
 	    buf[0] = '\0';
-	    sprintf (buf, "%lx\n", (screen->TekEmu ?
-				    TWindow (screen) : VWindow (screen)));
+	    sprintf (buf, "%lx\n", 
+	    	     screen->TekEmu ? XtWindow (XtParent (tekWidget)) :
+				      XtWindow (XtParent (term)));
 	    write (pty, buf, strlen (buf));
 	}
 
