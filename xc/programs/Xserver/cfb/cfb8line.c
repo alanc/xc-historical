@@ -43,6 +43,9 @@
 #define STUPID
 #endif
 
+#define IMPORTANT_START	do { do { do { do { do { do {
+#define IMPORTANT_END	} while (0); } while (0); } while (0); } while (0); } while (0); } while (0);
+
 #define OUTCODES_IMPLICIT(result, x, y) \
     if (x < bx1) \
 	result |= OUT_LEFT; \
@@ -168,16 +171,6 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, boxp)
 #endif
 	if (oc1 & oc2)
 	    continue;
-	if (oc1 | oc2)
-	{
-	    cfbDrawClippedLine (pDrawable, pGC, x1, y1, x2, y2, boxp,
-#ifdef POLYSEGMENT
-			 pGC->capStyle == CapNotLast
-#else
-			FALSE
-#endif
-			 );
-	}
 #ifdef REARRANGE
 	{
 	register int e, e1, e3, len;
@@ -192,12 +185,15 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, boxp)
 	    stepx = -1;
 	}
 	stepy = nwidth;
-	if ((ady = y2 - y1) <= 0)
+	if ((ady = y2 - y1) < 0)
 	{
 	    ady = -ady;
 	    stepy = -nwidth;
 	}
-	if (adx <= ady)
+	/* tricky here - rename the values so that the same code
+	 * can be used for X major and Y major lines
+ 	 */
+	if (adx < ady)
 	{
 	    int	t;
 	    t = adx;
@@ -208,16 +204,23 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, boxp)
 	    stepy = stepx;
 	    stepx = t;
 	}
+	/* bresenham terms - e3 = e2 - e1 saves a branch */
 	e1 = ady << 1;
 	e3 = - (adx << 1);
 	e = - adx;
 	len = adx;
 
+	/* shorten the line to avoid pixelating the end point, except
+	 * for segments in non CapNotLast cap style.  Final line endpoint
+	 * will be done outside the loop, saving an additional test
+	 * inside.
+	 */
 #ifdef POLYSEGMENT
 	if (capStyle == CapNotLast)
 #endif
 	    if (!len--)
 		continue;
+
 #ifdef REARRANGE
 	{
 	register char	*addrb;
@@ -227,6 +230,29 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, boxp)
 #endif
 
 	addrb = addr + (y1 * nwidth) + x1;
+
+	/* clip the line if necessary.  This code is heavily
+	 * optimized for the case where lines are either
+	 * fully clipped or unclipped; rearranging things
+	 * would allow clipped lines to run a bit faster perhaps
+	 */
+	if (oc1 | oc2)
+	{
+	    STUPID int	xt = x1, yt = y1, lent;
+#ifdef POLYSEGMENT
+#define shorten	(capStyle == CapNotLast)
+#else
+#define shorten	TRUE
+#endif
+	    e = cfbClipLine (&xt, &yt, &lent, x2, y2, boxp, shorten);
+#undef shorten
+	    len = lent;
+	    addrb = addr + (yt * nwidth) + xt;
+
+	    /* make sure the line is still visible */
+	    if (len < 0)
+		continue;
+	}
 
 #ifndef REARRANGE
 	if (!ady)
@@ -268,12 +294,17 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, boxp)
 	    case  3: body case 2: body case 1: body
 	    }
 #else
+	    IMPORTANT_START
+
 	    while ((len -= 2) >= 0)
 	    {
 	    	body body
 	    }
 	    if (len & 1)
 	    	body;
+
+	    IMPORTANT_END
+
 #endif
 	}
 	RROP_SOLID(addrb);
@@ -285,6 +316,9 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, boxp)
 #endif
 
     }
+    /* special case for the last point; draw it only when the first
+     * and last don't join
+     */
 #ifndef POLYSEGMENT
     if (capStyle != CapNotLast && !oc2 &&
 	(x2 != pptInit->x || y2 != pptInit->y))
@@ -319,8 +353,6 @@ cfbClipPoint (oc, xp, yp, dx, dy, boxp)
     int	adx, ady, signdx, signdy;
     int	utmp;
     
-    x = *xp;
-    y = *yp;
     signdx = 1;
     if (dx < 0)
     {
@@ -346,58 +378,62 @@ cfbClipPoint (oc, xp, yp, dx, dy, boxp)
 	    utmp = *xp - x;
     	}
     	utmp *= dy;
-    	y = y + SignTimes(signdy, round(utmp, dx));
-    	*xp = x;
-    	*yp = y;
-    	if (boxp->y1 <= y && y < boxp->y2)
-	    return;
+	if (dy > dx)
+	{
+	    utmp = (utmp << 1) - dy + 1;
+	    y = *yp + SignTimes(signdy, ceiling(utmp, (dx << 1)));
+	}
+	else
+	{
+    	    y = *yp + SignTimes(signdy, round(utmp, dx));
+	}
+	oc = 0;
+	OUTCODES (oc, x, y, boxp);
     }
-    if (oc & OUT_ABOVE)
+    if (oc & (OUT_ABOVE | OUT_BELOW))
     {
-    	y = boxp->y1;
-    	utmp = y - *yp;
+    	if (oc & OUT_ABOVE)
+    	{
+    	    y = boxp->y1;
+    	    utmp = y - *yp;
+    	}
+    	else
+    	{
+    	    y = boxp->y2 - 1;
+    	    utmp = *yp - y;
+    	}
+	utmp *= dx;
+	if (dx > dy)
+	{
+	    utmp = (utmp << 1) - dx + 1;
+	    x = *xp + SignTimes(signdx, ceiling(utmp, (dy << 1)));
+	}
+	else
+	{
+	    x = *xp + SignTimes(signdx, round(utmp, dy));
+	}
+	oc = 0;
+	OUTCODES (oc, x, y, boxp);
     }
-    else
-    {
-    	y = boxp->y2 - 1;
-    	utmp = *yp - y;
-    }
-    utmp *= dx;
-    x = x + SignTimes(signdx, round(utmp, dy));
     *xp = x;
     *yp = y;
+    return oc;
 }
 
-cfbDrawClippedLine (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    int		x1, y1, x2, y2;
+cfbClipLine (x1p, y1p, lenp, x2, y2, boxp, shorten)
+    int		*x1p, *y1p;
+    int		*lenp;
+    int		x2, y2;
     BoxPtr	boxp;
     Bool	shorten;
 {
+    int		    x1, y1;
     int		    oc1, oc2;
-    int		    signdx, signdy, axis, e, e1, e2, len;
+    int		    signdx, signdy, axis, e, e1, e3, len;
     int		    adx, ady;
-    cfbPrivGCPtr    devPriv;
-    unsigned long   *addrl;
-    int		    nlwidth;
     
-    x1 += pDrawable->x;
-    y1 += pDrawable->y;
-    x2 += pDrawable->x;
-    y2 += pDrawable->y;
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrl = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrl = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    x1 = *x1p;
+    y1 = *y1p;
     signdx = 1;
     if ((adx = x2 - x1) < 0)
     {
@@ -422,22 +458,20 @@ cfbDrawClippedLine (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
 	axis = Y_AXIS;
     }
     e1 = ady << 1;
-    e2 = e1 - (adx << 1);
-    e = e1 - adx;
-    len = adx + 1;
+    e3 = - (adx << 1);
+    e = - adx;
+    len = adx;
     oc1 = 0;
     oc2 = 0;
     OUTCODES (oc1, x1, y1, boxp);
     OUTCODES (oc2, x2, y2, boxp);
-    if (oc1 & oc2)
-	return;
     if (oc2)
     {
 	int xt = x2, yt = y2;
 	int	dx = x2 - x1, dy = y2 - y1;
 	int change;
 
-	cfbClipPoint (oc2, &xt, &yt, -dx, -dy, boxp);
+	oc2 = cfbClipPoint (oc2, &xt, &yt, -dx, -dy, boxp);
 	if (axis == Y_AXIS)
 	    change = y2 - yt;
 	else
@@ -445,14 +479,15 @@ cfbDrawClippedLine (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
 	if (change < 0)
 	    change = -change;
 	len -= change;
-    }
+    } else if (shorten)
+	--len;
     if (oc1)
     {
 	int	xt = x1, yt = y1;
 	int	dx = x2 - x1, dy = y2 - y1;
 	int	changex, changey;
 
-	cfbClipPoint (oc1, &xt, &yt, dx, dy, boxp);
+	oc1 = cfbClipPoint (oc1, &xt, &yt, dx, dy, boxp);
 	changex = x1 - xt;
 	if (changex < 0)
 	    changex = -changex;
@@ -462,22 +497,20 @@ cfbDrawClippedLine (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
 	if (axis == X_AXIS)
 	{
 	    len -= changex;
-	    e = e + (changey * e2) + ((changex - changey) * e1);
+	    e = e + changey * e3 + changex * e1;
 	}
 	else
 	{
 	    len -= changey;
-	    e = e + (changex * e2) + ((changey - changex) * e1);
+	    e = e + changex * e3 + changey * e1;
 	}
-	x1 = xt;
-	y1 = yt;
+	*x1p = xt;
+	*y1p = yt;
     }
-    if (shorten && !oc2)
-	--len;
-    if (len <= 0)
-	return;
-    cfbBresS (devPriv->rop, devPriv->and, devPriv->xor, addrl, nlwidth,
-	      signdx, signdy, axis, x1, y1, e, e1, e2, len);
+    if (oc1 | oc2)
+	len = -1;
+    *lenp = len;
+    return e;
 }
 
 extern int cfb8LineSS1RectCopy(), cfb8LineSS1RectXor(), cfb8LineSS1RectGeneral(); 
