@@ -149,9 +149,9 @@ confusing \fBa2x\fP.  (One simple exception to this rule is that you can use
 \fBa2x\fP to press/release buttons and keys while directly moving the pointer
 with your hand.)
 .LP
-This document uses the notation {c\-\fIchar\fP} to represent a control
+This document uses the notation {c\-\fI<char>\fP} to represent a control
 character, the character you get by holding down the Ctrl (Control) key and
-typing the character \fIchar\fP.  For example, {c\-t} represents what you get
+typing the character \fI<char>\fP.  For example, {c\-t} represents what you get
 by holding Ctrl and typing 't'.  This syntax is the same as what you will see
 in DragonDictate menus if you enter control characters into macros.
 .LP
