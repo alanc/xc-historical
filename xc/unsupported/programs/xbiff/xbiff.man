@@ -94,11 +94,13 @@ to get the default host and display number.
 .B XENVIRONMENT
 to get the name of a resource file that overrides the global resources
 stored in the RESOURCE_MANAGER property.
-.SH SEE ALSO
-X(1), xrdb(1), stat(2)
+.SH "SEE ALSO"
+X(1), Xserver(1), xrdb(1), stat(2)
 .SH BUGS
 The mailbox bitmaps are ugly.
-.SH AUTHORS
+.SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHOR
 Jim Fulton, MIT X Consortium
