@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiSrc.h,v 1.1 89/06/29 13:43:07 kit Exp $
+ * $XConsortium: AsciiSrcP.h,v 1.2 89/07/06 16:00:56 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -89,8 +89,6 @@ typedef struct _AsciiSourceData {
   Boolean       changes;	  /* Has this file been edited? */
   Boolean       allocated_string; /* Have I allocated the
 				     string in data->string? */
-  FILE *file;		
-  
   XawTextPosition length; 	/* length of file */
   Piece * first_piece;		/* first piece of the text. */
 

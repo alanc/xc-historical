@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.4 89/07/07 16:43:08 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.5 89/07/10 17:35:00 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -85,8 +85,8 @@ static XtResource sourceResources[] = {
 };
 
 static Piece * FindPiece(), * AllocNewPiece();
-static void InitStringOrFile(), LoadPieces();
-static void FreeAllPieces(), RemovePiece(), BreakPiece();
+static FILE * InitStringOrFile();
+static void FreeAllPieces(), RemovePiece(), BreakPiece(), LoadPieces();
 static String MyStrncpy(), StorePiecesInString();
 static Boolean WriteToFile(), SetValuesHook();
 static void GetValuesHook(), RemoveOldStringOrFile(),  CvtStringToAsciiType();
@@ -496,7 +496,7 @@ Cardinal * num_args;
   Boolean total_reset = FALSE;
   AsciiSourcePtr data = (AsciiSourcePtr) src->data;
   AsciiSourcePtr old_data = XtNew(AsciiSourceData);
-  XawTextEditType old_mode;
+  FILE * file;
 
   bcopy( (char *) data, (char *) old_data, sizeof(AsciiSourceData));
   
@@ -515,8 +515,9 @@ Cardinal * num_args;
       data->allocated_string = FALSE;
     }
 
-    InitStringOrFile(src);	              /* Init new info. */
-    LoadPieces(data, NULL);	     /* load new info into internal buffers. */
+    file = InitStringOrFile(src);    /* Init new info. */
+    LoadPieces(data, file, NULL);    /* load new info into internal buffers. */
+    if (file != NULL) fclose(file);
     XawTextSetSource(src->widget, src, 0);   /* tell text widget 
 						what happened. */
     total_reset = TRUE;
@@ -525,26 +526,14 @@ Cardinal * num_args;
   if ( !total_reset && (old_data->piece_size != data->piece_size) ) {
     String string = StorePiecesInString(old_data);
     FreeAllPieces(old_data);
-    LoadPieces(data, string);
+    LoadPieces(data, NULL, string);
     XtFree(string);
   }
 
   XtFree(old_data);
 
-  old_mode = src->edit_mode;
-
   XtSetSubvalues((caddr_t) src, sourceResources, XtNumber(sourceResources),
 		 args, * num_args);
-
-/*
- * If the mode has changed we need to open the file in a new mode.
- */
-
-  if ( (data->type == XawAsciiFile) && 
-       (old_mode != src->edit_mode) ) {
-    fclose(data->file);
-    InitStringOrFile(src);
-  }
 
   return(FALSE);
 }
@@ -627,6 +616,7 @@ Cardinal num_args;
   XawTextSource src;
   AsciiSourcePtr data;
   static Boolean src_init = FALSE;
+  FILE * file;
 
   if (!src_init) {		/* Call this only once. */
     src_init = TRUE;
@@ -681,8 +671,9 @@ Cardinal num_args;
   data->changes = FALSE;
   data->allocated_string = FALSE;
 
-  InitStringOrFile(src);
-  LoadPieces(data, NULL);
+  file = InitStringOrFile(src);
+  LoadPieces(data, file, NULL);
+  if (file != NULL) fclose(file);
   return src;
 }
 
@@ -732,7 +723,7 @@ Widget w;
   string = StorePiecesInString(data);
 
   if (data->type == XawAsciiFile) {
-    if (WriteToFile(w, string, data->string, data->file) == FALSE) {
+    if (WriteToFile(w, string, data->string) == FALSE) {
       XtFree(string);
       return(FALSE);
     }
@@ -764,20 +755,11 @@ String name;
 {
   AsciiSourcePtr data = (AsciiSourcePtr) ((TextWidget) w)->text.source->data;
   String string;
-  FILE * file;
   Boolean ret;
 
   string = StorePiecesInString(data); 
 
-  if ( (file = fopen(name, "w")) == NULL) {
-    char buf[BUFSIZ];
-    
-    sprintf(buf, "Could not open file named '%s' for writing.", name);
-    XtAppWarning(XtWidgetToApplicationContext(w), buf); 
-  }
-
-  ret = WriteToFile(w, string, name, file);
-  fclose(file);
+  ret = WriteToFile(w, string, name);
   XtFree(string);
   return(ret);
 }
@@ -808,8 +790,6 @@ AsciiSourcePtr data;
   FreeAllPieces(data);
 
   if (data->type == XawAsciiFile) {
-    (void) fclose(data->file);
-    
     if (data->is_tempfile) 
       unlink(data->string);
   }
@@ -830,26 +810,22 @@ AsciiSourcePtr data;
  */
 
 static Boolean
-WriteToFile(w, string, name, file)
+WriteToFile(w, string, name)
 Widget w;
 String string, name;
-FILE * file;
 {
   char buf[BUFSIZ];
+  int fd;
   
-  if (fseek(file, 0L, 0) != 0) {
-    sprintf(buf, "%s %s %s.", "Error, while attempting to fseek the",
-	    "begining of the file", name);
-    XtAppWarning(XtWidgetToApplicationContext(w), buf);
-    return(FALSE);
-  }
-  if (fwrite(string, sizeof(char), strlen(string), file) == 0) {
+  if ( ((fd = creat(name, 0)) == -1 ) ||
+       (write(fd, string, sizeof(char) * strlen(string)) == -1) ) {
     sprintf(buf, "Error, while attempting to write to the file %s.", name);
     XtAppWarning(XtWidgetToApplicationContext(w), buf); 
     return(FALSE);
   }
-  if (fflush(file) != 0) {
-    sprintf(buf, "Error, while attempting to flush the file %s.", name);
+
+  if ( close(fd) == -1 ) {
+    sprintf(buf, "Error, while attempting to close the file %s.", name);
     XtAppWarning(XtWidgetToApplicationContext(w), buf); 
     return(FALSE);
   }
@@ -880,7 +856,7 @@ AsciiSourcePtr data;
 
   if (data->data_compression) {	/* This will refill all pieces to capacity. */
     FreeAllPieces(data);
-    LoadPieces(data, string);
+    LoadPieces(data, NULL, string);
   }
 
   return(string);
@@ -892,12 +868,13 @@ AsciiSourcePtr data;
  *	Returns: none - May exit though.
  */
 
-static void 
+static FILE *
 InitStringOrFile(src)
 XawTextSource src;
 {
   AsciiSourcePtr data = (AsciiSourcePtr) src->data;
   char * open_mode;
+  FILE * file;
 
   if (data->type == XawAsciiString) {
 
@@ -915,7 +892,7 @@ XawTextSource src;
     }
 #endif
 
-    return;
+    return(NULL);
   }
 
 /*
@@ -952,7 +929,7 @@ XawTextSource src;
 	       NULL, NULL);
   }
 
-  if ((data->file = fopen(data->string, open_mode)) == 0) {
+  if ((file = fopen(data->string, open_mode)) == 0) {
     String params[2];
     Cardinal num_params = 2;
     
@@ -968,13 +945,15 @@ XawTextSource src;
 	       "Cannot open source file %s; %s", params, &num_params);
   }
 
-  (void) fseek(data->file, 0L, 2);
-  data->length = ftell (data->file);  
+  (void) fseek(file, 0L, 2);
+  data->length = ftell (file);  
+  return(file);
 }
 
 static void
-LoadPieces(data, string)
+LoadPieces(data, file, string)
 AsciiSourcePtr data;
+FILE * file;
 char * string;
 {
   char *local_str, *ptr;
@@ -983,10 +962,10 @@ char * string;
 
   if (string == NULL) {
     if (data->type == XawAsciiFile) {
-      fseek(data->file, 0L, 0);
+      fseek(file, 0L, 0);
       local_str = XtMalloc((data->length + 1) * sizeof(char));
       if (fread(local_str, sizeof(char), 
-		data->length, data->file) != data->length) {
+		data->length, file) != data->length) {
 	XtErrorMsg("readError", "asciiSourceCreate", "XawError",
 		   "fread returned error.", NULL, NULL);
       }
