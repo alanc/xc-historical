@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.16 89/11/19 14:06:56 rws Exp $
+ * $XConsortium: Quarks.c,v 1.17 89/12/11 19:08:34 rws Exp $
  */
 
 /***********************************************************
@@ -113,7 +113,7 @@ static int XrmAllocMoreQuarkToStringTable()
 
 #if NeedFunctionPrototypes
 XrmQuark XrmStringToQuark(
-    const register XrmString name)
+    register const char *name)
 #else
 XrmQuark XrmStringToQuark(name)
     register XrmString name;
@@ -131,7 +131,7 @@ XrmQuark XrmStringToQuark(name)
 	return (NULLQUARK);
 
     /* Compute string signature (sparse 32-bit hash value) */
-    for (tname = name; *tname != '\0'; tname++) {
+    for (tname = (XrmString) name; *tname != '\0'; tname++) {
 	sig = sig*scale + (unsigned int) *tname;
     }
     strLength = tname - name + 1;
@@ -140,7 +140,7 @@ XrmQuark XrmStringToQuark(name)
     hashp = &nodeTable[sig & HASHTABLEMASK];
     for (np = *hashp; np != NULL; np = np->next) {
 	if (np->sig == sig) {
-	    for (npn=np->name, tname = name;
+	    for (npn=np->name, tname = (XrmString) name;
 	     ((scale = *tname) != 0) && (scale == *npn); ++tname, ++npn) {};
 	    if (scale == *npn) {
 	        return np->quark;
