@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.48 91/07/25 18:02:05 rws Exp $ */
+/* $XConsortium: xwud.c,v 1.49 91/12/17 19:40:49 keith Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 
 /*
@@ -293,7 +293,7 @@ main(argc, argv)
 	in_image->depth = 1;
 	ncolors = 0;
     }
-    if (in_image->depth == 1) {
+    if (in_image->bits_per_pixel == 1) {
 	in_image->format = XYBitmap;
 	newmap = False;
 	rawbits = True;
