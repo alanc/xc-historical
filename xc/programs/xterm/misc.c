@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.93 92/12/22 16:29:01 gildea Exp $
+ *	$XConsortium: misc.c,v 1.94 93/02/08 16:51:01 gildea Exp $
  */
 
 /*
@@ -61,8 +61,6 @@ char *malloc();
 #endif /* macII */
 
 extern int child_wait();
-
-static void creat_as();
 
 static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
@@ -448,6 +446,75 @@ Redraw()
 	}
 }
 
+#if defined(ALLOWLOGGING) || defined(DEBUG)
+
+#ifndef X_NOT_POSIX
+#define HAS_WAITPID
+#endif
+
+/*
+ * create a file only if we could with the permissions of the real user id.
+ * We could emulate this with careful use of access() and following
+ * symbolic links, but that is messy and has race conditions.
+ * Forking is messy, too, but we can't count on setreuid() or saved set-uids
+ * being available.
+ */
+void
+creat_as(uid, gid, pathname, mode)
+    int uid;
+    int gid;
+    char *pathname;
+    int mode;
+{
+    int fd;
+    int waited;
+    int pid;
+#ifndef HAS_WAITPID
+    int (*chldfunc)();
+
+    chldfunc = signal(SIGCHLD, SIG_DFL);
+#endif
+    pid = fork();
+    switch (pid)
+    {
+    case 0:			/* child */
+	setgid(gid);
+	setuid(uid);
+	fd = open(pathname, O_WRONLY|O_CREAT|O_APPEND, mode);
+	if (fd >= 0) {
+	    close(fd);
+	    _exit(0);
+	} else
+	    _exit(1);
+    case -1:			/* error */
+	return;
+    default:			/* parent */
+#ifdef HAS_WAITPID
+	waitpid(pid, NULL, 0);
+#else
+	waited = wait(NULL);
+	signal(SIGCHLD, chldfunc);
+	/*
+	  Since we had the signal handler uninstalled for a while,
+	  we might have missed the termination of our screen child.
+	  If we can check for this possibility without hanging, do so.
+	*/
+	do
+	    if (waited == term->screen.pid)
+		Cleanup(0);
+	while ( (waited=nonblocking_wait()) > 0);
+#endif
+    }
+}
+#endif
+
+#ifdef ALLOWLOGGING
+/*
+ * logging is a security hole, since it allows a setuid program to
+ * write arbitrary data to an arbitrary file.  So it is disabled
+ * by default.
+ */ 
+
 StartLog(screen)
 register TScreen *screen;
 {
@@ -545,8 +612,8 @@ register TScreen *screen;
 		if(access(screen->logfile, F_OK) != 0
 		   || access(screen->logfile, W_OK) != 0)
 		    return;
-		if((screen->logfd = open(screen->logfile, O_WRONLY | O_APPEND |
-		 O_CREAT, 0644)) < 0)
+		if((screen->logfd = open(screen->logfile, O_WRONLY | O_APPEND,
+					 0644)) < 0)
 			return;
 		chown(screen->logfile, screen->uid, screen->gid);
 
@@ -555,66 +622,6 @@ register TScreen *screen;
 	screen->logging = TRUE;
 	update_logging();
 }
-
-#ifndef X_NOT_POSIX
-#define HAS_WAITPID
-#endif
-
-/*
- * create a file only if we could with the permissions of the real user id.
- * We could emulate this with careful use of access() and following
- * symbolic links, but that is messy and has race conditions.
- * Forking is messy, too, but we can't count on setreuid() or saved set-uids
- * being available.
- */
-static void
-creat_as(uid, gid, pathname, mode)
-    int uid;
-    int gid;
-    char *pathname;
-    int mode;
-{
-    int fd;
-    int waited;
-    int pid;
-#ifndef HAS_WAITPID
-    int (*chldfunc)();
-
-    chldfunc = signal(SIGCHLD, SIG_DFL);
-#endif
-    pid = fork();
-    switch (pid)
-    {
-    case 0:			/* child */
-	setgid(gid);
-	setuid(uid);
-	fd = open(pathname, O_WRONLY|O_CREAT|O_APPEND, mode);
-	if (fd >= 0) {
-	    close(fd);
-	    _exit(0);
-	} else
-	    _exit(1);
-    case -1:			/* error */
-	return;
-    default:			/* parent */
-#ifdef HAS_WAITPID
-	waitpid(pid, NULL, 0);
-#else
-	waited = wait(NULL);
-	signal(SIGCHLD, chldfunc);
-	/*
-	  Since we had the signal handler uninstalled for a while,
-	  we might have missed the termination of our screen child.
-	  If we can check for this possibility without hanging, do so.
-	*/
-	do
-	    if (waited == term->screen.pid)
-		Cleanup(0);
-	while ( (waited=nonblocking_wait()) > 0);
-#endif
-    }
-}
-
 
 CloseLog(screen)
 register TScreen *screen;
@@ -651,6 +658,7 @@ void logpipe()
 		CloseLog(screen);
 }
 #endif /* ALLOWLOGFILEEXEC */
+#endif /* ALLOWLOGGING */
 
 
 do_osc(func)
@@ -690,6 +698,7 @@ int (*func)();
 		Changetitle(buf);
 		break;
 
+#ifdef ALLOWLOGGING
 	 case 46:	/* new log file */
 #ifdef ALLOWLOGFILECHANGES
 		/*
@@ -707,6 +716,7 @@ int (*func)();
 		Bell();
 #endif
 		break;
+#endif /* ALLOWLOGGING */
 
 	case 50:
 		SetVTFont (fontMenu_fontescape, True, buf, NULL);
@@ -967,10 +977,12 @@ void end_tek_mode ()
     register TScreen *screen = &term->screen;
 
     if (screen->TekEmu) {
+#ifdef ALLOWLOGGING
 	if (screen->logging) {
 	    FlushLog (screen);
 	    screen->logstart = buffer;
 	}
+#endif
 	longjmp(Tekend, 1);
     } 
     return;
@@ -981,10 +993,12 @@ void end_vt_mode ()
     register TScreen *screen = &term->screen;
 
     if (!screen->TekEmu) {
+#ifdef ALLOWLOGGING
 	if(screen->logging) {
 	    FlushLog(screen);
 	    screen->logstart = Tbuffer;
 	}
+#endif
 	screen->TekEmu = TRUE;
 	longjmp(VTend, 1);
     } 
