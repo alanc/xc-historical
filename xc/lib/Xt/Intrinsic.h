@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.92 89/09/07 17:47:22 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.93 89/09/08 17:37:22 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -907,6 +907,7 @@ typedef struct _XtResource {
     caddr_t     default_addr;   /* Address of default resource              */
 } XtResource;
 
+#define XtUnspecifiedPixmap	((Pixmap)2)
 #define XtDefaultForeground	"XtDefaultForeground"
 #define XtDefaultBackground	"XtDefaultBackground"
 #define XtDefaultFont		"XtDefaultFont"
