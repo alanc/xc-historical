@@ -25,7 +25,6 @@
 	  draw-points
 	  draw-line
 	  draw-lines
-	  fill-polygon
 	  draw-segments
 	  draw-rectangle
 	  draw-rectangles
@@ -155,7 +154,7 @@
 	   (type boolean relative-p fill-p)
 	   (type (member :complex :non-convex :convex) shape))
   (if fill-p
-      (fill-polygon drawable gcontext points :relative-p relative-p :shape shape)
+      (fill-polygon drawable gcontext points relative-p shape)
     (with-buffer-request ((drawable-display drawable)  *x-polyline* :gc-force gcontext)
       ((data boolean) relative-p)
       (drawable drawable)
@@ -163,7 +162,7 @@
       ((sequence :format int16) points))))
 
 ;; Internal function called from DRAW-LINES
-(defun fill-polygon (drawable gcontext points &key relative-p (shape :complex))
+(defun fill-polygon (drawable gcontext points relative-p shape)
   ;; This is clever about appending to previous requests.  Should it be?
   (declare (type drawable drawable)
 	   (type gcontext gcontext)
