@@ -1,4 +1,4 @@
-/* $XConsortium: registry,v 1.91 93/09/27 16:10:37 rws Exp $ */
+/* $XConsortium: registry,v 1.92 93/10/06 17:07:00 rws Exp $ */
 
 				  X Registry
 
@@ -252,6 +252,14 @@ SunXK_Copy		0x1005FF72		[58]
 SunXK_Open		0x1005FF73		[58]
 SunXK_Paste		0x1005FF74		[58]
 SunXK_Cut		0x1005FF75		[58]
+SunXK_PowerSwitch		0x1005FF76	[58]
+SunXK_AudioLowerVolume		0x1005FF77	[58]
+SunXK_AudioMute			0x1005FF78	[58]
+SunXK_AudioRaiseVolume		0x1005FF79	[58]
+SunXK_VideoDegauss		0x1005FF7A	[58]
+SunXK_VideoLowerBrightness	0x1005FF7B  	[58]
+SunXK_SunVideoRaiseBrightness	0x1005FF7C	[58]
+SunXK_PowerSwitchShift		0x1005FF7D	[58]
 
 WYXK_Setup		0x1006FF00		[68]
 
@@ -1179,8 +1187,8 @@ REFERENCES
 	2550 Garcia Avenue
 	Mountain View, CA  94043
 
-[58]	Ridge McGhee
-	Mailstop 14-01
+[58]	Murali V. Srinivasan
+	MTV21-228
 	Sun Microsystems, Inc.
 	2550 Garcia Avenue
 	Mountain View, CA  94043-1100
