@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.163 92/12/22 17:19:30 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.164 93/02/05 16:47:46 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -2173,24 +2173,4 @@ void _XtUnmergeTranslations(widget, xlations)
     XtTranslations	xlations;
 {
     ComposeTranslations(widget, XtTableUnmerge, (Widget)NULL, xlations);
-}
-
-
-void _XtPopupInitialize(app)
-    XtAppContext app;
-{
-    /*
-     * The _XtGlobalTM.newMatchSemantics flag determines whether
-     * we support old or new matching
-     * behavior. This is mainly an issue of whether subsequent lhs will
-     * get pushed up in the match table if a lhs containing thier initial
-     * sequence has already been encountered. Currently inited to False;
-     */
-#ifdef NEW_TM
-    _XtGlobalTM.newMatchSemantics = True;
-#else
-    _XtGlobalTM.newMatchSemantics = False;
-#endif
-    _XtActionInitialize(app);
-    _XtGrabInitialize(app);
 }
