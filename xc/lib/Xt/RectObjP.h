@@ -1,4 +1,4 @@
-/* $XConsortium: RectObjP.h,v 1.10 89/10/04 12:22:46 swick Exp $ */
+/* $XConsortium: RectObjP.h,v 1.11 90/03/19 12:52:48 swick Exp $ */
 /* $oHeader: RectObjP.h,v 1.2 88/08/18 15:55:52 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -78,7 +78,7 @@ typedef struct _RectObjClassPart {
     Cardinal        num_resources;      /* number of entries in resources   */
     XrmClass        xrm_class;          /* resource class quarkified        */
     Boolean         rect4;              /* NULL                             */
-    Boolean         rect5;              /* NULL                             */
+    XtEnum          rect5;              /* NULL                             */
     Boolean         rect6;              /* NULL				    */
     Boolean         rect7;              /* NULL                             */
     XtWidgetProc    destroy;            /* free data for subclass pointers  */
