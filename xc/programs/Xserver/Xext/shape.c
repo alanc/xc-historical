@@ -1,8 +1,6 @@
 /************************************************************
 Copyright 1989 by The Massachusetts Institute of Technology
 
-                    All Rights Reserved
-
 Permission to use, copy, modify, and distribute this
 software and its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright
@@ -26,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.3 89/07/16 17:23:29 rws Exp $ */
+/* $XConsortium: shape.c,v 5.4 89/07/17 10:21:38 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>

@@ -1,8 +1,6 @@
 /************************************************************
 Copyright 1989 by the Massachusetts Institute of Technology
 
-                    All Rights Reserved
-
 Permission  to  use,  copy,  modify,  and  distribute   this
 software  and  its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright no-
@@ -25,7 +23,7 @@ implied warranty.
 #include "XShm.h"
 #include "shmstr.h"
 
-/* $XConsortium: XShm.c,v 1.2 89/08/21 07:41:05 rws Exp $ */
+/* $XConsortium: XShm.c,v 1.3 89/08/21 08:10:35 rws Exp $ */
 
 struct DpyHasShm {
     struct DpyHasShm	*next;

@@ -1,8 +1,6 @@
 /************************************************************
 Copyright 1989 by The Massachusetts Institute of Technology
 
-                    All Rights Reserved
-
 Permission to use, copy, modify, and distribute this
 software and its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright
@@ -26,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shapestr.h,v 1.5 89/04/22 12:03:34 rws Exp $ */
+/* $XConsortium: shapestr.h,v 1.6 89/08/16 16:31:37 rws Exp $ */
 
 /*
  * Protocol requests constants and alignment values

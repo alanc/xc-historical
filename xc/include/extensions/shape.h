@@ -1,8 +1,6 @@
 /************************************************************
 Copyright 1989 by The Massachusetts Institute of Technology
 
-                    All Rights Reserved
-
 Permission to use, copy, modify, and distribute this
 software and its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright
@@ -26,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.h,v 1.5 89/03/28 16:41:32 keith Exp $ */
+/* $XConsortium: shape.h,v 1.6 89/03/31 13:16:33 keith Exp $ */
 
 #ifndef _SHAPE_H_
 #define _SHAPE_H_

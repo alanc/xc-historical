@@ -1,8 +1,6 @@
 /************************************************************
 Copyright 1989 by The Massachusetts Institute of Technology
 
-                    All Rights Reserved
-
 Permission to use, copy, modify, and distribute this
 software and its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright
@@ -17,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: shm.c,v 1.2 89/08/20 17:02:02 rws Exp $ */
+/* $XConsortium: shm.c,v 1.3 89/08/20 18:54:47 rws Exp $ */
 
 #ifdef MITSHM
 

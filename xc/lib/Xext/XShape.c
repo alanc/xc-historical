@@ -1,8 +1,6 @@
 /************************************************************
 Copyright 1989 by the Massachusetts Institute of Technology
 
-                    All Rights Reserved
-
 Permission  to  use,  copy,  modify,  and  distribute   this
 software  and  its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright no-
@@ -26,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: XShape.c,v 1.8 89/04/13 13:33:06 keith Exp $ */
+/* $XConsortium: XShape.c,v 1.9 89/04/22 12:03:06 rws Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
