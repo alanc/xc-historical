@@ -1277,7 +1277,7 @@
   ;;;input stream structure.
   `(or (getf (display-plist ,display) ,direction)
        (setf (getf (display-plist ,display) ,direction)
-	     (lcl:underlying-stream
+	     (lucid::underlying-stream
 	       ,stream (if (eq ,direction 'input) :input :output)))))
 
 #+lcl3.0
@@ -1581,7 +1581,7 @@
 	  ((eql timeout 0) :timeout)
 	  ((let ((stream (extract-underlying-stream stream display 'input)))
 	     (lucid::waiting-for-input-from-stream stream
-               (sys:with-io-unlocked
+               (lucid::with-io-unlocked
 		 (if (null timeout)
 		     (lcl:process-wait "CLX Input" #'listen stream)
 		   (lcl:process-wait-with-timeout
