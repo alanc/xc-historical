@@ -26,7 +26,7 @@
  ********************************************************/
 
 #include "xkbcomp.h"
-#include "xkbio.h"
+#include "xkbfile.h"
 #include "tokens.h"
 #include "expr.h"
 #include "vmod.h"
@@ -46,7 +46,8 @@ typedef struct _PreserveInfo {
 } PreserveInfo;
 
 typedef struct _KeyTypeInfo {
-    StringToken		name;
+    Display *		dpy;
+    Atom		name;
     int			fileID;
     unsigned		defined;
     unsigned		mask;
@@ -58,13 +59,14 @@ typedef struct _KeyTypeInfo {
     XkbKTMapEntryPtr	entries;
     PreserveInfo *	preserve;
     int			szNames;
-    StringToken	*	lvl_names;
+    Atom	*	lvl_names;
 } KeyTypeInfo;
 
 #define	KEYTYPE_CHUNK	8
 
 typedef struct _KeyTypesInfo {
-    StringToken		name;
+    Display *		dpy;
+    Atom		name;
     int			errorCount;
     int			fileID;
     unsigned		stdPresent;
@@ -75,9 +77,9 @@ typedef struct _KeyTypesInfo {
     VModInfo		vmods;
 } KeyTypesInfo;
 
-StringToken	tok_ONE_LEVEL;
-StringToken	tok_TWO_LEVEL;
-StringToken	tok_KEYPAD;
+Atom	tok_ONE_LEVEL;
+Atom	tok_TWO_LEVEL;
+Atom	tok_KEYPAD;
 
 static void
 InitKeyTypesInfo(info,xkb)
@@ -87,13 +89,14 @@ InitKeyTypesInfo(info,xkb)
     tok_ONE_LEVEL= stGetToken("ONE_LEVEL");
     tok_TWO_LEVEL= stGetToken("TWO_LEVEL");
     tok_KEYPAD= stGetToken("KEYPAD");
+    info->dpy= NULL;
     info->name= stGetToken("default");
     info->errorCount= 0;
     info->stdPresent= 0;
     info->szTypes= KEYTYPE_CHUNK;
     info->nTypes= 0;
     info->types= uTypedCalloc(KEYTYPE_CHUNK,KeyTypeInfo);
-    info->dflt.name= NullStringToken;
+    info->dflt.name= None;
     info->dflt.defined= 0;
     info->dflt.mask= 0;
     info->dflt.vmask= 0;
@@ -113,10 +116,11 @@ ClearKeyTypesInfo(info,xkb)
     KeyTypesInfo *	info;
     XkbDescPtr		xkb;
 {
+    info->dpy= NULL;
     info->name= stGetToken("default");
     info->nTypes= 0;
     info->stdPresent= 0;
-    info->dflt.name= NullStringToken;
+    info->dflt.name= None;
     info->dflt.defined= 0;
     info->dflt.mask= 0;
     info->dflt.vmask= 0;
@@ -131,6 +135,7 @@ static void
 FreeKeyTypesInfo(info)
     KeyTypesInfo *	info;
 {
+    info->dpy= NULL;
     if (info->types) {
 	register int i;
 	register KeyTypeInfo *type;
@@ -179,6 +184,7 @@ NextKeyType(info)
 	    return NULL;
     }
     bzero((char *)&info->types[info->nTypes],sizeof(KeyTypeInfo));
+    info->types[info->nTypes].dpy= info->dpy;
     return &info->types[info->nTypes++];
 }
 
@@ -421,7 +427,7 @@ NextMapEntry(type)
 	type->entries= uTypedCalloc(2,XkbKTMapEntryRec);
 	if (type->entries==NULL) {
 	    uError("Couldn't allocate map entries for key type %s\n",
-							stText(type->name));
+				XkbAtomText(type->dpy,type->name,XkbMessage));
 	    uAction("Map entries lost\n");
 	    return NULL;
 	}
@@ -435,7 +441,7 @@ NextMapEntry(type)
 					XkbKTMapEntryRec);
 	if (type->entries==NULL) {
 	    uError("Couldn't reallocate map entries for key type %s\n",
-							stText(type->name));
+				XkbAtomText(type->dpy,type->name,XkbMessage));
 	    uAction("Map entries lost\n");
 	    return NULL;
 	}
@@ -463,8 +469,8 @@ PreserveInfo	*pre;
 	if ((pre->preMods==preMods)&&(pre->preVMods==preVMods)) {
 	    if (report) {
 		uWarning("Identical definitions for preserve[%s] in %s\n",
-				vmodMaskText(xkb,mods,vmods,XkbMessage),
-							stText(type->name));
+			XkbVModMaskText(type->dpy,xkb,mods,vmods,XkbMessage),
+			XkbAtomText(type->dpy,type->name,XkbMessage));
 		uAction("Ignored\n");
 	    }
 	    return True;
@@ -472,15 +478,17 @@ PreserveInfo	*pre;
 	if (report) {
 	    char *str;
 	    uWarning("Multiple defintions for preserve[%s] in %s\n",
-				vmodMaskText(xkb,mods,vmods,XkbMessage),
-				stText(type->name));
+			XkbVModMaskText(type->dpy,xkb,mods,vmods,XkbMessage),
+			XkbAtomText(type->dpy,type->name,XkbMessage));
 	    if (merge==MergeAugment)
-		 str= vmodMaskText(xkb,pre->preMods,pre->preVMods,XkbMessage);
-	    else str= vmodMaskText(xkb,preMods,preVMods,XkbMessage);
+		 str= XkbVModMaskText(type->dpy,xkb,pre->preMods,pre->preVMods,
+								XkbMessage);
+	    else str=XkbVModMaskText(type->dpy,xkb,preMods,preVMods,XkbMessage);
 	    uAction("Using %s, ",str);
 	    if (merge==MergeAugment)
-		 str= vmodMaskText(xkb,preMods,preVMods,XkbMessage);
-	    else str= vmodMaskText(xkb,pre->preMods,pre->preVMods,XkbMessage);
+		 str=XkbVModMaskText(type->dpy,xkb,preMods,preVMods,XkbMessage);
+	    else str= XkbVModMaskText(type->dpy,xkb,pre->preMods,pre->preVMods,
+								XkbMessage);
 	    uInformation("ignoring %s\n",str);
 	}
 	if (merge==MergeOverride) {
@@ -493,9 +501,9 @@ PreserveInfo	*pre;
     pre= uTypedAlloc(PreserveInfo);
     if (!pre) {
 	uInternalError("Couldn't allocate preserve entry in %s\n",
-							stText(type->name));
+				XkbAtomText(type->dpy,type->name,XkbMessage));
 	uAction("Definition of preserve[%s] lost\n",
-			vmodMaskText(xkb,preMods,preVMods,XkbMessage));
+		XkbVModMaskText(type->dpy,xkb,preMods,preVMods,XkbMessage));
 	return False;
     }
     pre->matchingMapIndex= -1;
@@ -524,15 +532,15 @@ XkbKTMapEntryPtr	entry;
     if ((entry=FindMatchingMapEntry(type,mods,vmods))!=NULL) {
 	if ((report)&&(entry->level!=level)) {
 	    uWarning("Duplicate map entries for %s in %s\n",
-				     vmodMaskText(xkb,mods,vmods,XkbMessage),
-							stText(type->name));
+			XkbVModMaskText(type->dpy,xkb,mods,vmods,XkbMessage),
+			XkbAtomText(type->dpy,type->name,XkbMessage));
 	    uInformation("Using %d, ignoring %d\n",
 			     (merge==MergeOverride?level+1:entry->level+1));
 	}
 	else if (report) {
 	    uWarning("Multiple occurences of map[%s]= %s in %s\n",
-					vmodMaskText(xkb,mods,vmods,XkbMessage),
-					level+1,stText(type->name));
+			XkbVModMaskText(type->dpy,xkb,mods,vmods,XkbMessage),
+			level+1,XkbAtomText(type->dpy,type->name,XkbMessage));
 	    uInformation("Ignored\n");
 	    return True;
 	}
@@ -546,6 +554,7 @@ XkbKTMapEntryPtr	entry;
 	type->group_width= level+1;
     if (vmods==0)	entry->active= True;
     else		entry->active= False;
+    entry->mask= mods;
     entry->real_mods= mods;
     entry->vmods= vmods;
     entry->level= level;
@@ -579,13 +588,13 @@ XkbKTMapEntryPtr	entry;
 
     if (arrayNdx==NULL) {
 	uError("Map entry without array subscript in key type %s\n",
-							stText(type->name));
+				XkbAtomText(type->dpy,type->name,XkbMessage));
 	uAction("Ignoring illegal map entry\n");
 	return False;
     }
     if (!ExprResolveModMask(arrayNdx,&rtrn,LookupVModMask,(XPointer)xkb)) {
 	uError("Map entry index not a modifier mask in key type %s\n",
-							stText(type->name));
+				XkbAtomText(type->dpy,type->name,XkbMessage));
 	uAction("Ignoring illegal map entry\n");
 	return False;
     }
@@ -593,11 +602,13 @@ XkbKTMapEntryPtr	entry;
     vmods= (rtrn.uval>>8)&0xffff;
     if (((mods&(~type->mask))!=0)||((vmods&(~type->vmask))!=0)) {
 	uWarning("Map entry for modifiers that are not used by the %s type\n",
-							stText(type->name));
-	uAction("Using %s instead of ",vmodMaskText(xkb,mods&type->mask,
+				XkbAtomText(type->dpy,type->name,XkbMessage));
+	uAction("Using %s instead of ",XkbVModMaskText(type->dpy,xkb,
+							mods&type->mask,
 							vmods&type->vmask,
 							XkbMessage));
-	uInformation("%s\n",vmodMaskText(xkb,mods,vmods,XkbMessage));
+	uInformation("%s\n",XkbVModMaskText(type->dpy,xkb,mods,vmods,
+							XkbMessage));
 	mods= mods&type->mask;
 	vmods= vmods&type->vmask;
     }
@@ -608,9 +619,10 @@ XkbKTMapEntryPtr	entry;
     }
     if ((rtrn.ival<1)||(rtrn.ival>256)) {
 	uError("Shift level %d out of range (1..256) in key type %s\n",
-							stText(type->name));
+				XkbAtomText(type->dpy,type->name,XkbMessage));
 	uAction("Ignoring illegal map entry %s\n",
-				vmodMaskText(xkb,mods,vmods,XkbMessage));
+				XkbVModMaskText(type->dpy,xkb,mods,vmods,
+							XkbMessage));
 	return False;
     }
     return AddMapEntry(xkb,type,mods,vmods,rtrn.ival-1,merge,report);
@@ -633,13 +645,13 @@ PreserveInfo *	 pre;
 
     if (arrayNdx==NULL) {
 	uError("Preseve entry without array subscript in key type %s\n",
-							stText(type->name));
+				XkbAtomText(type->dpy,type->name,XkbMessage));
 	uAction("Ignoring illegal entry\n");
 	return False;
     }
     if (!ExprResolveModMask(arrayNdx,&rtrn,LookupVModMask,(XPointer)xkb)) {
 	uError("Preserve entry index not a modifier mask in key type %s\n",
-							stText(type->name));
+				XkbAtomText(type->dpy,type->name,XkbMessage));
 	uAction("Ignoring illegal entry\n");
 	return False;
     }
@@ -647,11 +659,13 @@ PreserveInfo *	 pre;
     vmods= (rtrn.uval>>8)&0xffff;
     if (((mods&(~type->mask))!=0)||((vmods&(~type->vmask))!=0)) {
 	uWarning("Preserve for modifiers that are not used by the %s type\n",
-							stText(type->name));
-	uAction("Using %s instead of ",vmodMaskText(xkb,mods&type->mask,
+				XkbAtomText(type->dpy,type->name,XkbMessage));
+	uAction("Using %s instead of ",XkbVModMaskText(type->dpy,xkb,
+							mods&type->mask,
 							vmods&type->vmask,
 							XkbMessage));
-	uInformation("%s\n",vmodMaskText(xkb,mods,vmods,XkbMessage));
+	uInformation("%s\n",XkbVModMaskText(type->dpy,xkb,mods,vmods,
+							XkbMessage));
 	mods= mods&type->mask;
 	vmods= vmods&type->vmask;
     }
@@ -665,7 +679,8 @@ PreserveInfo *	 pre;
     if ((pmods&(~mods))||(pvmods&&(~vmods))) {
 	uError("Preserve value cannot include mods that are not in the mask\n");
 	uAction("Ignoring %s in preserve result\n",
-		vmodMaskText(xkb,pmods&(~mods),pvmods&(~vmods),XkbMessage));
+	     XkbVModMaskText(type->dpy,xkb,pmods&(~mods),pvmods&(~vmods),
+							XkbMessage));
 	pmods&= mods;
 	pvmods&= vmods;
     }
@@ -678,32 +693,35 @@ static Bool
 AddLevelName(type,level,name,merge,report)
     KeyTypeInfo *	type;
     unsigned		level;
-    StringToken		name;
+    Atom		name;
     unsigned		merge;
     Bool		report;
 {
     if ((type->lvl_names==NULL)||(type->szNames<=level)) {
 	register int i;
-	type->lvl_names= uTypedRealloc(type->lvl_names,level+1,StringToken);
+	type->lvl_names= uTypedRealloc(type->lvl_names,level+1,Atom);
 	if (type->lvl_names==NULL) {
 	    uError("Couldn't allocate level names for key type %s\n",
-							stText(type->name));
+				XkbAtomText(type->dpy,type->name,XkbMessage));
 	    uAction("Level names lost\n");
 	    type->szNames= 0;
 	    return False;
 	}
 	type->szNames= level+1;
     }
-    else if (type->lvl_names[level]!=NullStringToken) {
+    else if (type->lvl_names[level]!=None) {
 	if (report) {
 	    uError("Multiple names for level %d of key type %s\n",level+1,
-							stText(type->name));
+				XkbAtomText(type->dpy,type->name,XkbMessage));
 	    if (merge==MergeOverride)
-		 uAction("Using %s, ignoring %s\n",stText(name),
-						 stText(type->lvl_names[level]));
+		 uAction("Using %s, ignoring %s\n",
+				XkbAtomText(type->dpy,name,XkbMessage),
+				XkbAtomText(type->dpy,type->lvl_names[level],
+								XkbMessage));
 	    else uAction("Using %s, ignoring %s\n",
-						 stText(type->lvl_names[level]),
-						 stText(name));
+				 XkbAtomText(type->dpy,type->lvl_names[level],
+								XkbMessage),
+				 XkbAtomText(type->dpy,name,XkbMessage));
 	}
 	if (merge!=MergeOverride)
 	    return True;
@@ -727,27 +745,27 @@ unsigned 	level;
 
     if (arrayNdx==NULL) {
 	uError("Level name without array subscript in key type %s\n",
-							stText(type->name));
+				XkbAtomText(type->dpy,type->name,XkbMessage));
 	uAction("Ignoring illegal level name definition\n");
 	return False;
     }
     if (!ExprResolveInteger(arrayNdx,&rtrn,SimpleLookup,(XPointer)lnames)) {
 	uError("Level name index not an integer in key type %s\n",
-							stText(type->name));
+				XkbAtomText(type->dpy,type->name,XkbMessage));
 	uAction("Ignoring illegal level name definition\n");
 	return False;
     }
     if ((rtrn.ival<1)||(rtrn.ival>256)) {
 	uError("Level name %d out of range (1..256) in key type %s\n",
-							rtrn.ival,
-							stText(type->name));
+				rtrn.ival,
+				XkbAtomText(type->dpy,type->name,XkbMessage));
 	uAction("Ignoring illegal level name definition\n");
 	return False;
     }
     level= rtrn.ival-1;
     if (!ExprResolveString(value,&rtrn,NULL,NULL)) {
 	uError("Non-string name for level %d in key type %s\n",level+1,
-							stText(type->name));
+				XkbAtomText(type->dpy,type->name,XkbMessage));
 	uAction("Ignoring illegal level name definition\n");
 	return False;
     }
@@ -784,11 +802,13 @@ ExprResult	tmp;
 	vmods= (tmp.uval>>8)&0xffff;
 	if ((type->mask!=0)||(type->vmask!=0)) {
 	    uWarning("Multiple modifier mask definitions for key type %s\n",
-							stText(type->name));
-	    uAction("Using %s, ",vmodMaskText(xkb,type->mask,type->vmask,
-							     XkbMessage));
-	    uInformation("ignoring %s\n",vmodMaskText(xkb,mods,vmods,
-							     XkbMessage));
+				XkbAtomText(type->dpy,type->name,XkbMessage));
+	    uAction("Using %s, ",XkbVModMaskText(type->dpy,xkb,type->mask,
+								type->vmask,
+								XkbMessage));
+	    uInformation("ignoring %s\n",XkbVModMaskText(type->dpy,xkb,mods,
+								vmods,
+								XkbMessage));
 	    return False;
 	}
 	type->mask= mods;
@@ -805,13 +825,14 @@ ExprResult	tmp;
     else if (uStrCaseCmp(field,"groupswrap")==0) {
 	if (!ExprResolveBoolean(value,&tmp,NULL,NULL)) {
 	    uError("Non-boolean value for groupsWrap in key type %s\n",
-							stText(type->name));
+				XkbAtomText(type->dpy,type->name,XkbMessage));
 	    uInternalError("Illegal value ignored\n");
 	    return False;
 	}
 	type->groupsWrap= tmp.uval;
     }
-    uError("Unknown field %s in key type %s\n",field,stText(type->name));
+    uError("Unknown field %s in key type %s\n",field,
+				XkbAtomText(type->dpy,type->name,XkbMessage));
     uAction("Definition ignored\n");
     return False;
 }
@@ -911,7 +932,7 @@ KeyTypeInfo 		type;
 	}
     }
     for (i=0;i<info->dflt.szNames;i++) {
-	if ((i<type.group_width)&&(info->dflt.lvl_names[i]!=NullStringToken)) {
+	if ((i<type.group_width)&&(info->dflt.lvl_names[i]!=None)) {
 	    AddLevelName(&type,i,info->dflt.lvl_names[i],MergeAugment,False);
 	}
     }
@@ -931,7 +952,7 @@ HandleKeyTypesFile(file,xkb,merge,info)
 {
 ParseCommon	*stmt;
 
-    if ((merge==MergeOverride)||(info->name==NullStringToken))
+    if ((merge==MergeOverride)||(info->name==None))
 	info->name= file->name;
 
     stmt= file->defs;
@@ -1009,7 +1030,8 @@ PreserveInfo *pre;
 	type->preserve= uTypedCalloc(type->map_count,XkbKTPreserveRec);
 	if (!type->preserve) {
 	    uWarning("Couldn't allocate preserve array in CopyDefToKeyType\n");
-	    uAction("Preserve setting for type %s lost\n",stText(def->name));
+	    uAction("Preserve setting for type %s lost\n",
+				XkbAtomText(def->dpy,def->name,XkbMessage));
 	}
 	else {
 	    for (pre=def->preserve;pre!=NULL;pre=pre->next) {
@@ -1042,7 +1064,7 @@ PreserveInfo *pre;
 Bool
 CompileKeyTypes(file,result,merge)
     XkbFile *		file;
-    XkbFileResult *	result;
+    XkbFileInfo *	result;
     unsigned	 	merge;
 {
 int		errorCount= 0;
