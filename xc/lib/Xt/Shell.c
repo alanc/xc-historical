@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.147 94/02/04 21:48:49 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.148 94/02/08 20:59:18 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -965,8 +965,6 @@ static void ApplicationInitialize(req, new, args, num_args)
 	NewStringArray(w->application.environment);
     if (w->application.current_dir) w->application.current_dir =
 	XtNewString(w->application.current_dir);
-    if (w->application.program_path) w->application.program_path =
-	XtNewString(w->application.program_path);
 
     w->application.checkpointing = False;
     w->application.input_id = (XtInputId) NULL;
@@ -982,8 +980,13 @@ static void ApplicationInitialize(req, new, args, num_args)
 
     w->application.clone_command = w->application.clone_command
 	? NewStringArray(w->application.clone_command)
-	: HackParseArgv(w->application.session_id, w->application.argv, False);
-    
+	: HackParseArgv(w->application.session_id,
+			w->application.restart_command, False);
+
+    w->application.program_path = w->application.program_path
+	? XtNewString(w->application.program_path)
+	: XtNewString(w->application.restart_command[0]);
+
     if (w->application.connection)
 	SetSessionProperties(w, True);
 }
@@ -2458,9 +2461,14 @@ static void JoinSession(w)
 	    SmcOpenConnection(NULL, &smcb, w->application.session_id,
 			      &sm_client_id, XT_MSG_LENGTH, error_msg);
 	if (error_msg[0]) {
-	    XtAppWarning(XtWidgetToApplicationContext((Widget) w),
-			 error_msg);
-	    return;
+	    String params[1];
+	    Cardinal num_params = 1;
+	    params[0] = error_msg;
+	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget) w),
+			    "sessionManagement", "SmcOpenConnection",
+			    XtCXtToolkitError,
+			    "Tried to connect to session manager, %s",
+			    params, &num_params);
 	}
     }
     if (w->application.connection) {
@@ -2487,34 +2495,36 @@ static String * NewStringArray(str)
 {
     Cardinal nbytes = 0;
     Cardinal num = 0;
-    String *vector;
+    String *newarray, *new;
+    String *strarray = str;
     String sptr;
 
     if (!str) return NULL;
 
-    for (num = 0; str[num]; num++) {
-	nbytes += strlen(str[num]);
+    for (num = 0; *str; num++, str++) {
+	nbytes += strlen(*str);
 	nbytes++;
     }
     num = (num + 1) * sizeof(String);
-    vector = (String *) XtMalloc(num + nbytes);
-    sptr = ((char *) vector) + num;
+    new = newarray = (String *) XtMalloc(num + nbytes);
+    sptr = ((char *) new) + num;
 
-    for (num = 0; str[num]; num++) {
-	vector[num] = sptr;
-	strcpy(vector[num], str[num]);
+    for (str = strarray; *str; str++) {
+	*new = sptr;
+	strcpy(*new, *str);
+	new++;
 	sptr = strchr(sptr, '\0');
 	sptr++;
     }
-    vector[num] = NULL;
-    return vector;
+    *new = NULL;
+    return newarray;
 }
 
 static void FreeStringArray(str)
     String *str;
 {
-    if (!str) return;
-     XtFree((char *) str);
+    if (str)
+	XtFree((char *) str);
 }
 
 
@@ -2531,7 +2541,7 @@ static SmProp * CardPack(name, closure)
     p->type = SmCARD8;
     p->name = name;
     p->vals->length = 1;
-    p->vals->value = prop;
+    p->vals->value = (SmPointer) prop;
     return p;
 }
 
@@ -2689,11 +2699,11 @@ static void XtCallSaveCallbacks(connection, client_data, save_type, shutdown,
 /*ARGSUSED*/
 static void DieCallback(widget, client_data, call_data)
     Widget	widget;
-    XtPointer	client_data;	/* unused */
-    XtPointer	call_data;	/* XXX if abnormal termination, the reasons */
+    XtPointer	client_data; /*XXX if called by default err handler, the msg */
+    XtPointer	call_data;
 {
     ApplicationShellWidget w = (ApplicationShellWidget) widget;
-    String *reason_msgs = (String *) call_data;
+    String *reason_msgs = (String*) client_data;
     int count = 0;
 
     if (w->application.connection) {
@@ -2715,6 +2725,10 @@ static void XtCallDieCallbacks(connection, client_data)
     ApplicationShellWidget w =  (ApplicationShellWidget) client_data;
     XtCallCallbackList((Widget)w, w->application.die_callbacks,
 		       (XtPointer) NULL);
+    /* call_data should be modified to include save_type, fast, and
+     * save_success from the previous SaveYourself if it was a shutdown,
+     * else, call_data is NULL.
+     */
 }
 
 static void XtCallCancelCallbacks(connection, client_data)
@@ -2898,10 +2912,11 @@ static String* HackParseArgv(str, sarray, want)
      * clone command will have to take into account the application's 
      * options table and will have re-employ Xt parsing of argv.
      */
+    if (! sarray) return NULL;
     have = IsInArray("-xtsessionID", sarray);
     if ((want && have) || (!want && !have) || !str)
 	return NewStringArray(sarray);
-	
+
     count = 0;
     for (s = sarray; *s; s++)
 	count++;
@@ -2911,11 +2926,13 @@ static String* HackParseArgv(str, sarray, want)
 	*s = *sarray;		s++; sarray++;
 	*s = "-xtsessionID";	s++;
 	*s = str;		s++;
-	for (; --count >= 0; s++, sarray++) 
+	for (; --count > 0; s++, sarray++) 
 	    *s = *sarray;
 	*s = (String) NULL;
     } else {
-	s = new = (String *) XtMalloc((Cardinal)(count-2) * sizeof(String*));
+	if (count < 3)
+	    return NewStringArray(sarray);
+	s = new = (String *) XtMalloc((Cardinal)(count-1) * sizeof(String*));
 	for (; --count >= 0; sarray++) {
 	    if (strcmp(*sarray, "-xtsessionID") == 0) {
 		sarray++;
