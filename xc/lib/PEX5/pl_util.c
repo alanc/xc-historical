@@ -1,4 +1,4 @@
-/* $XConsortium: pl_util.c,v 1.7 92/12/07 19:48:43 mor Exp $ */
+/* $XConsortium: pl_util.c,v 1.8 93/02/23 14:41:08 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -1282,12 +1282,12 @@ OUTPUT PEXMatrix	matrix_return;
 
 
 int
-PEXOrthoProjMatrix (height, aspect, near, far, matrix_return)
+PEXOrthoProjMatrix (height, aspect, near_plane, far_plane, matrix_return)
 
 INPUT double		height;
 INPUT double		aspect;
-INPUT double		near;
-INPUT double		far;
+INPUT double		near_plane;
+INPUT double		far_plane;
 OUTPUT PEXMatrix	matrix_return;
 
 {
@@ -1295,7 +1295,7 @@ OUTPUT PEXMatrix	matrix_return;
     float	depth;
 
     width = height * aspect;
-    depth = near - far;
+    depth = near_plane - far_plane;
 
     if (NEAR_ZERO (depth) || NEAR_ZERO (width) || NEAR_ZERO (height))
     {
@@ -1324,7 +1324,7 @@ OUTPUT PEXMatrix	matrix_return;
     matrix_return[2][0] = 0.0;
     matrix_return[2][1] = 0.0;
     matrix_return[2][2] = 1.0 / depth;
-    matrix_return[2][3] = 1.0  - (near / depth);
+    matrix_return[2][3] = 1.0  - (near_plane / depth);
 
     matrix_return[3][0] = 0.0;
     matrix_return[3][1] = 0.0;
@@ -1336,13 +1336,13 @@ OUTPUT PEXMatrix	matrix_return;
 
 
 int
-PEXPerspProjMatrix (fovy, distance, aspect, near, far, matrix_return)
+PEXPerspProjMatrix (fovy, distance, aspect, near_plane, far_plane, matrix_return)
 
 INPUT double		fovy;
 INPUT double		distance;
 INPUT double		aspect;
-INPUT double		near;
-INPUT double		far;
+INPUT double		near_plane;
+INPUT double		far_plane;
 OUTPUT PEXMatrix	matrix_return;
 
 {
@@ -1354,8 +1354,8 @@ OUTPUT PEXMatrix	matrix_return;
     float	width;
     float	eye_distance;
 
-    if (near <= far || NEAR_ZERO (fovy) ||
-        NEAR_ZERO (aspect) || distance <= near)
+    if (near_plane <= far_plane || NEAR_ZERO (fovy) ||
+        NEAR_ZERO (aspect) || distance <= near_plane)
     {
 	return (PEXBadLimits);
     }
@@ -1387,9 +1387,9 @@ OUTPUT PEXMatrix	matrix_return;
     c_hy = cos (fovy2);
     s_hy = sin (fovy2);
 
-    eye_distance = distance - near;
+    eye_distance = distance - near_plane;
     height = 2.0 * eye_distance * (s_hy / c_hy);
-    depth = near - far;
+    depth = near_plane - far_plane;
     width = height * aspect;
 
     /*
@@ -1480,22 +1480,22 @@ OUTPUT PEXMatrix	matrix_return;
     matrix_return[0][0] = 1.0 / width;
     matrix_return[0][1] = 0.0;
     matrix_return[0][2] = -1.0 / (2.0 * eye_distance);
-    matrix_return[0][3] = (1.0 + (near / eye_distance)) / 2.0;
+    matrix_return[0][3] = (1.0 + (near_plane / eye_distance)) / 2.0;
 
     matrix_return[1][0] = 0.0;
     matrix_return[1][1] = 1.0 / height;
     matrix_return[1][2] = -1.0 / (2.0 * eye_distance);
-    matrix_return[1][3] = (1.0 + (near / eye_distance)) / 2.0;
+    matrix_return[1][3] = (1.0 + (near_plane / eye_distance)) / 2.0;
 
     matrix_return[2][0] = 0.0;
     matrix_return[2][1] = 0.0;
     matrix_return[2][2] = 1.0 / depth;
-    matrix_return[2][3] = -far / depth;
+    matrix_return[2][3] = -far_plane / depth;
 
     matrix_return[3][0] = 0.0;
     matrix_return[3][1] = 0.0;
     matrix_return[3][2] = -1.0 / eye_distance;
-    matrix_return[3][3] = 1.0 + (near / eye_distance);
+    matrix_return[3][3] = 1.0 + (near_plane / eye_distance);
 
     return (0);
 }
