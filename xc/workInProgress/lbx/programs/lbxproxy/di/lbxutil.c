@@ -1,4 +1,4 @@
-/* $XConsortium: lbxutil.c,v 1.3 94/03/08 20:51:24 dpw Exp $ */
+/* $XConsortium: lbxutil.c,v 1.4 94/03/27 14:08:16 dpw Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -471,6 +471,10 @@ GetConnectionInfo(client, cs, changes)
     /* get more as needed */
     LBXMinKeyCode(client) = cs->minKeyCode;
     LBXMaxKeyCode(client) = cs->maxKeyCode;
+    LBXImageByteOrder(client) = cs->imageByteOrder;
+    LBXBitmapBitOrder(client) = cs->bitmapBitOrder;
+    LBXBitmapScanlineUnit(client) = cs->bitmapScanlineUnit;
+    LBXBitmapScanlinePad(client) = cs->bitmapScanlinePad;
 
     if (have_client_setup_info && !changes)
 	return;
