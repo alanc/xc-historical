@@ -25,12 +25,16 @@
 #define HasVoidSignalReturn NO
 
 
-/**/# platform:  $XConsortium: apollo.cf,v 1.14 89/10/10 14:42:02 jim Exp $
+/**/# platform:  $XConsortium: apollo.cf,v 1.15 89/10/11 18:54:55 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
  *			  Platform-specific parameters                       *
  *****************************************************************************/
+
+#if OSMajorVersion >= 10
+#define HasNdbm YES
+#endif
 
 #if (OSMajorVersion == 10) && (! CppFullANSISupport)
 #define DefaultCCOptions -U__STDC__ -D_PROTOTYPES
