@@ -18,7 +18,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfb8bit.h,v 1.8 90/01/31 12:31:09 keith Exp $ */
+/* $XConsortium: cfb8bit.h,v 1.9 90/02/22 18:44:44 keith Exp $ */
 
 #if (PPW == 4)
 
@@ -274,7 +274,7 @@ extern int			cfb8SetStipple (), cfb8SetOpaqueStipple();
 		     ((char *) (dst))[1] = (pixel);) \
 	    break; \
 	case 8: \
-	    SwitchBitsLoop (((char *) (dst))[3] = (pixel);) \
+	    SwitchBitsLoop (((char *) (dst))[0] = (pixel);) \
 	    break; \
 	case 9: \
 	    SwitchBitsLoop (((char *) (dst))[3] = (pixel); \
@@ -395,7 +395,7 @@ extern int			cfb8SetStipple (), cfb8SetOpaqueStipple();
 		     ((char *) (dst))[2] = (pixel);) \
 	    break; \
 	case 8: \
-	    SwitchBitsLoop (((char *) (dst))[0] = (pixel);) \
+	    SwitchBitsLoop (((char *) (dst))[3] = (pixel);) \
 	    break; \
 	case 9: \
 	    SwitchBitsLoop (((char *) (dst))[0] = (pixel); \
