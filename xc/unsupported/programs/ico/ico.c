@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.20 89/10/05 20:54:31 jim Exp $ */
+/* $XConsortium: ico.c,v 1.21 89/10/05 21:00:41 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -402,7 +402,7 @@ char **argv;
 	else if (dblbuf || dofaces) {
 		initDBufs(fg,bg,1);
 	}
-	setDisplayBuf(softdbl?1:0);	/* insert new colors */
+	setDisplayBuf(dblbuf?1:0);	/* insert new colors */
 	if (!numcolors) numcolors=1;
 
 	if (dsync)
@@ -790,7 +790,7 @@ DBufInfo *b, *otherb;
 	    icoClearArea(0, 0, winW, winH); /* clear entire window */
 	}
 
-	if (softdbl) setDisplayBuf(1);
+/*	if (softdbl) setDisplayBuf(1); */
 }
 
 setBufColname(n,colname)
