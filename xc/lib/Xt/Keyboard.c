@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.17 90/07/26 17:41:20 swick Exp $ */
+/* $XConsortium: Keyboard.c,v 1.18 90/08/20 15:19:54 swick Exp $ */
 
 /********************************************************
 
@@ -751,6 +751,9 @@ void XtSetKeyboardFocus(widget, descendant)
 	    else if (pwi->map_handler_added) {
 		pwi->map_handler_added = FALSE;
 	    }
+
+	    if (pwi->haveFocus)
+		pdi->focusWidget = NULL; /* invalidate cache */
 
 	    /*
 	     * If there was a forward path then remove the handler if
