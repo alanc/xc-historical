@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.9 89/07/10 21:30:11 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.10 89/07/12 17:17:04 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3368,8 +3368,7 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
 	    pWindowPriv->status = StatusVDirty;
     }
 
-    if (!lift_functions && (pWin->backingStore == NotUseful ||
-        (pWin->backingStore != Always && !pWin->realized)))
+    if (!lift_functions && !pWin->realized && pWin->backingStore != Always)
     {
 	lift_functions = TRUE;
     }
