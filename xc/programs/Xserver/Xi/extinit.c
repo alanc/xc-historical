@@ -1,4 +1,4 @@
-/* $XConsortium: xextinit.c,v 1.13 91/02/22 15:31:41 rws Exp $ */
+/* $XConsortium: xextinit.c,v 1.14 92/11/14 10:32:01 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -167,7 +167,6 @@ XInputExtensionInit()
         {
 	IReqCode = extEntry->base;
 	AllExtensionVersions[IReqCode-128] = thisversion;
-	(void)MakeAtom(INAME, 11, TRUE);
 	MakeDeviceTypeAtoms ();
 	RT_INPUTCLIENT = CreateNewResourceType(InputClientGone);
 	FixExtensionEvents (extEntry);
