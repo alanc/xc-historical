@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.1 89/01/12 18:48:59 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.2 89/01/13 18:39:12 kit Exp $";
 #endif lint
 
 /***********************************************************
@@ -225,7 +225,7 @@ static void Initialize(request, new)
  * widget to be unset, thus calling the notify proceedure.
  */
 
-    if (tw->command.set)
+    if (tw->toggle.state)
       ToggleSet(new, NULL, NULL, 0);
 }
 
