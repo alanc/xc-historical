@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.2 93/06/25 16:27:06 gildea Exp $
+ * $XConsortium: locking.c,v 1.3 93/07/09 15:25:32 gildea Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -47,34 +47,18 @@
 extern int  (*_XInitDisplayLock_fn)();
 extern void (*_XFreeDisplayLock_fn)();
 
+#ifndef CTHREADS
+xthread_t _X_no_thread_id;
+#endif
 
 static mutex_t _Xglobal_lock;
 
-Status XInitThreads()
-{
-    cthread_init();		/* return value? */
-    _Xglobal_lock = mutex_alloc();
-    if (_Xglobal_lock == NULL)
-	return 1;
-    _XLockMutex_fn = _XLockMutex;
-    _XUnlockMutex_fn = _XUnlockMutex;
-    _XInitDisplayLock_fn = _XInitDisplayLock;
-    _XFreeDisplayLock_fn = _XFreeDisplayLock;
-
-#ifdef TDEBUG
-    setlinebuf(stdout);		/* for debugging messages */
-#endif
-
-    return 0;
-}
-
-
-void _XLockMutex()
+static void _XLockMutex()
 {
     mutex_lock(_Xglobal_lock);
 }
 
-void _XUnlockMutex()
+static void _XUnlockMutex()
 {
     mutex_unlock(_Xglobal_lock);
 }
@@ -82,7 +66,7 @@ void _XUnlockMutex()
 #if TWARN
 static char *locking_file;
 static int locking_line;
-static cthread_t locking_thread = NULL;
+static xthread_t locking_thread;
 static Bool xlibint_unlock = False; /* XlibInt.c may Unlock and re-Lock */
 
 /* history that is useful to examine in a debugger */
@@ -90,7 +74,7 @@ static Bool xlibint_unlock = False; /* XlibInt.c may Unlock and re-Lock */
 
 static struct {
     Bool lockp;			/* True for lock, False for unlock */
-    cthread_t thread;
+    xthread_t thread;
     char *file;
     int line;
 } locking_history[LOCK_HIST_SIZE];
@@ -104,13 +88,15 @@ void _XLockDisplay(dpy,file,line)
     int line;
 {
 #if TWARN
-    cthread_t self = cthread_self();
-    cthread_t old_locker = locking_thread;
+    xthread_t self;
+    xthread_t old_locker;
 
-    if (old_locker) {
-	if (old_locker == self)
+    self = xthread_self();
+    old_locker = locking_thread;
+    if (have_thread_id(old_locker)) {
+	if (same_thread_id(old_locker, self))
 	    printf("Xlib ERROR: %s line %d thread %x: locking display already locked at %s line %d\n",
-		   file, line, cthread_self(), locking_file, locking_line);
+		   file, line, self, locking_file, locking_line);
 #ifdef TDEBUG
 	else
 	    printf("%s line %d: thread %x waiting on lock held by %s line %d thread %x\n",
@@ -157,14 +143,14 @@ static void _XUnlockDisplay(dpy,file,line)
     int line;
 {
 #if TWARN
-    cthread_t self = cthread_self();
+    xthread_t self = xthread_self();
 
 #ifdef TDEBUG
     if (strcmp("XClearArea.c", file) && strcmp("XDrSegs.c", file)) /* ico */
 	printf("%s line %d: thread %x unlocking display\n", file, line, self);
 #endif /* TDEBUG */
 
-    if (!locking_thread)
+    if (!have_thread_id(locking_thread))
 	printf("Xlib ERROR: %s line %d thread %x: unlocking display that is not locked\n",
 	       file, line, self);
     else if (strcmp(file, "XlibInt.c") == 0)
@@ -175,7 +161,7 @@ static void _XUnlockDisplay(dpy,file,line)
 	printf("%s line %d: unlocking display locked from %s line %d (probably okay)\n",
 	       file, line, locking_file, locking_line);
 #endif /* TDEBUG */
-    locking_thread = NULL;
+    clear_thread_id(locking_thread);
 
     locking_history[lock_hist_loc].file = file;
     locking_history[lock_hist_loc].line = line;
@@ -192,18 +178,19 @@ static void _XUnlockDisplay(dpy,file,line)
 /* Put ourselves on the queue to read the connection.
    Allocates and returns a queue element. */
 
-struct _XCVList *
+static struct _XCVList *
 _XPushReader(tail)
     struct _XCVList ***tail;
 {
     struct _XCVList *cvl;
 
     cvl = (struct _XCVList *)Xmalloc(sizeof(struct _XCVList));
-    cvl->cv = condition_alloc();
+    cvl->cv = (condition_t)Xmalloc(sizeof(condition_rep_t));
+    condition_init(cvl->cv);
     cvl->next = NULL;
 #ifdef TDEBUG
     printf("_XPushReader called in thread %x, pushing %x\n",
-	   cthread_self(), cvl);
+	   xthread_self(), cvl);
 #endif
     **tail = cvl;
     *tail = &cvl->next;
@@ -212,7 +199,7 @@ _XPushReader(tail)
 
 /* signal the next thread waiting to read the connection */
 
-void _XPopReader(dpy, list, tail)
+static void _XPopReader(dpy, list, tail)
     Display *dpy;
     struct _XCVList **list;
     struct _XCVList ***tail;
@@ -221,14 +208,15 @@ void _XPopReader(dpy, list, tail)
 
 #ifdef TDEBUG
     printf("_XPopReader called in thread %x, popping %x\n",
-	   cthread_self(), front);
+	   xthread_self(), front);
 #endif
 
     *list = front->next;
     if (*tail == &front->next)	/* did we free the last elt? */
 	*tail = list;
-    condition_free(front->cv);
-    Xfree(front);
+    condition_clear(front->cv);
+    Xfree((char *)front->cv);
+    Xfree((char *)front);
 
     /* signal new front after it is in place */
     if (dpy->lock->reply_awaiters) {
@@ -239,21 +227,21 @@ void _XPopReader(dpy, list, tail)
 }
 
 
-void _XConditionWait(cv, mutex,file,line)
+static void _XConditionWait(cv, mutex,file,line)
     condition_t cv;
     mutex_t mutex;
     char *file;
     int line;
 {
 #if TWARN
-    cthread_t self = cthread_self();
+    xthread_t self = xthread_self();
     char *old_file = locking_file;
     int old_line = locking_line;
     
 #ifdef TDEBUG
     printf("line %d thread %x in condition wait\n", line, self);
 #endif
-    locking_thread = NULL;
+    clear_thread_id(locking_thread);
 
     locking_history[lock_hist_loc].file = file;
     locking_history[lock_hist_loc].line = line;
@@ -284,13 +272,13 @@ void _XConditionWait(cv, mutex,file,line)
 #endif /* TWARN */
 }
 
-void _XConditionSignal(cv,file,line)
+static void _XConditionSignal(cv,file,line)
     condition_t cv;
     char *file;
     int line;
 {
 #ifdef TDEBUG
-    printf("line %d thread %x is signalling\n", line, cthread_self());
+    printf("line %d thread %x is signalling\n", line, xthread_self());
 #endif
     condition_signal(cv);
 }
@@ -299,7 +287,7 @@ void _XConditionSignal(cv,file,line)
 /* returns 0 if initialized ok, -1 if unable to allocate
    a mutex or other memory */
 
-int _XInitDisplayLock(dpy)
+static int _XInitDisplayLock(dpy)
     Display *dpy;
 {
     dpy->lock = (struct _XLockInfo *)Xmalloc(sizeof(struct _XLockInfo));
@@ -315,13 +303,13 @@ int _XInitDisplayLock(dpy)
     dpy->lock->reply_awaiters_tail = &dpy->lock->reply_awaiters;
     dpy->lock->event_awaiters = NULL;
     dpy->lock->event_awaiters_tail = &dpy->lock->event_awaiters;
-    dpy->lock->locking_thread = 0;
+    clear_thread_id(dpy->lock->locking_thread);
     dpy->lock->cv = NULL;
 
-    dpy->lock->mutex = mutex_alloc();
-
+    dpy->lock->mutex = (mutex_t)Xmalloc(sizeof(mutex_rep_t));
     if (dpy->lock->mutex==NULL)
 	return -1;
+    mutex_init(dpy->lock->mutex);
 
     dpy->lock_fns->lock_display = _XLockDisplay;
     dpy->lock_fns->unlock_display = _XUnlockDisplay;
@@ -334,23 +322,50 @@ int _XInitDisplayLock(dpy)
     return 0;
 }
 
-void _XFreeDisplayLock(dpy)
+static void _XFreeDisplayLock(dpy)
     Display *dpy;
 {
     if (dpy->lock != NULL) {
-	if (dpy->lock->mutex != NULL)
-	    mutex_free(dpy->lock->mutex);
-	if (dpy->lock->cv != NULL)
-	    condition_free(dpy->lock->cv);
-	Xfree(dpy->lock);
+	if (dpy->lock->mutex != NULL) {
+	    mutex_clear(dpy->lock->mutex);
+	    Xfree((char *)dpy->lock->mutex);
+	}
+	if (dpy->lock->cv != NULL) {
+	    condition_clear(dpy->lock->cv);
+	    Xfree((char *)dpy->lock->cv);
+	}
+	Xfree((char *)dpy->lock);
 	dpy->lock = NULL;
     }
     if (dpy->lock_fns != NULL) {
-	Xfree(dpy->lock_fns);
+	Xfree((char *)dpy->lock_fns);
 	dpy->lock_fns = NULL;
     }
 }
 
+Status XInitThreads()
+{
+#ifdef xthread_init
+    xthread_init();		/* return value? */
+#endif
+    _Xglobal_lock = (mutex_t)Xmalloc(sizeof(mutex_rep_t));
+    if (_Xglobal_lock == NULL)
+	return 1;
+    mutex_init(_Xglobal_lock);
+    _XLockMutex_fn = _XLockMutex;
+    _XUnlockMutex_fn = _XUnlockMutex;
+    _XInitDisplayLock_fn = _XInitDisplayLock;
+    _XFreeDisplayLock_fn = _XFreeDisplayLock;
+
+#ifdef TDEBUG
+    setlinebuf(stdout);		/* for debugging messages */
+#endif
+
+    return 0;
+}
+
 #else /* XTHREADS */
-static int unused;		/* always create a symbol table */
+Status XInitThreads()
+{
+}
 #endif /* XTHREADS */

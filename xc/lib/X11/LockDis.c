@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XLockDis.c,v 1.2 93/06/25 16:27:30 gildea Exp $
+ * $XConsortium: XLockDis.c,v 1.3 93/07/09 15:27:08 gildea Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -51,10 +51,10 @@ void XLockDisplay(dpy)
 	dpy->lock_fns->lock_display = _XFancyLockDisplay;
 	/* really only needs to be done once */
 	dpy->lock_fns->lock_wait = _XDisplayLockWait;
-	if (dpy->lock->locking_thread) {
+	if (have_thread_id(dpy->lock->locking_thread)) {
 	    /* XXX - we are in XLockDisplay, error.  Print message? */
 	}
-	dpy->lock->locking_thread = cthread_self();
+	dpy->lock->locking_thread = xthread_self();
     }
 #endif
 }
@@ -69,14 +69,14 @@ void XUnlockDisplay(dpy)
 {
 #ifdef XTHREADS
     if (dpy->lock) {
-	if (!dpy->lock->locking_thread) {
+	if (!have_thread_id(dpy->lock->locking_thread)) {
 	    /* XXX - we are not in XLockDisplay, error.  Print message? */
 	}
 	/* signal other threads that might be waiting in XLockDisplay */
 	condition_broadcast(dpy->lock->cv);
 	/* substitute function back */
 	dpy->lock_fns->lock_display = _XLockDisplay;
-	dpy->lock->locking_thread = 0;
+	clear_thread_id(dpy->lock->locking_thread);
     }
     UnlockDisplay(dpy);
 #endif
@@ -91,13 +91,20 @@ void XUnlockDisplay(dpy)
 static void _XDisplayLockWait(dpy)
     Display *dpy;
 {
-    if (dpy->lock->locking_thread &&
-	dpy->lock->locking_thread != cthread_self())
+    if (have_thread_id(dpy->lock->locking_thread))
     {
-	if (!dpy->lock->cv)
-	    dpy->lock->cv = condition_alloc();
+	xthread_t self;
 
-	ConditionWait(dpy, dpy->lock);
+	self = xthread_self();
+	if (same_thread_id(dpy->lock->locking_thread, self))
+	{
+	    if (!dpy->lock->cv) {
+		dpy->lock->cv = (condition_t)Xmalloc(sizeof(condition_rep_t));
+		condition_init(dpy->lock->cv);
+	    }
+
+	    ConditionWait(dpy, dpy->lock);
+	}
     }
 }
 
