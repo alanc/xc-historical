@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.14 89/10/03 08:43:32 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.15 89/11/29 13:57:05 keith Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1187,7 +1187,7 @@ ProcListFonts(client)
     reply.sequenceNumber = client->sequence;
 
     bufptr = bufferStart = (char *)ALLOCATE_LOCAL(reply.length << 2);
-    if(!bufptr)
+    if(!bufptr && reply.length)
     {
 	FreeFontRecord(fpr);
         return(BadAlloc);
