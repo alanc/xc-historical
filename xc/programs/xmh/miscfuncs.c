@@ -1,56 +1,35 @@
-/* $XConsortium: miscfuncs.c,v 1.0 91/01/06 21:08:48 rws Exp $ */
+/* $XConsortium: miscfuncs.c,v 1.1 91/02/07 14:45:16 rws Exp $ */
 
-/*
-**  ALPHASORT
-**  Trivial sorting predicate for scandir; puts entries in alphabetical order.
-**
-**  This code is by Rich Salz (rsalz@bbn.com), and ported to SVR4
-**  by David Elliott (dce@smsc.sony.com).  No copyrights were found
-**  in the original.
-*/
 #include <X11/Xos.h>
 #include <dirent.h>
-#include <stdlib.h>
+char *malloc();
+char *realloc();
 
 /* A convenient shorthand. */
 typedef struct dirent	 ENTRY;
 
-int
-alphasort(d1, d2)
-    ENTRY	**d1;
-    ENTRY	**d2;
-{
-    return(strcmp(d1[0]->d_name, d2[0]->d_name));
-}
-
 /*
-**  SCANDIR
-**  Scan a directory, collecting all (selected) items into a an array.
-**
 **  This code is by Rich Salz (rsalz@bbn.com), and ported to SVR4
 **  by David Elliott (dce@smsc.sony.com).  No copyrights were found
-**  in the original.
+**  in the original.  Subsequently modified by Bob Scheifler.
 */
-
-#ifndef NULL
-#define NULL 0
-#endif
-
-#ifndef DIRSIZ
-#define DIRSIZ(dp) (((dp)->d_reclen + 1 + 3) & ~3)
-#endif
 
 /* Initial guess at directory size. */
 #define INITIAL_SIZE	20
 
-int
-scandir(Name, List, Selector, Sorter)
-    char		  *Name;
-    ENTRY		***List;
-    int			 (*Selector)();
-    int			 (*Sorter)();
+static int StrCmp(a, b)
+    char **a, **b;
 {
-    register ENTRY	 **names;
+    return strcmp(*a, *b);
+}
+
+int
+ScanDir(Name, List, Selector)
+    char		  *Name;
+    char		***List;
+    int			 (*Selector)();
+{
+    register char	 **names;
     register ENTRY	  *E;
     register DIR	  *Dp;
     register int	   i;
@@ -58,41 +37,39 @@ scandir(Name, List, Selector, Sorter)
 
     /* Get initial list space and open directory. */
     size = INITIAL_SIZE;
-    if ((names = (ENTRY **)malloc(size * sizeof names[0])) == NULL
-     || (Dp = opendir(Name)) == NULL)
+    if (!(names = (char **)malloc(size * sizeof(char *))) ||
+	!(Dp = opendir(Name)))
 	return(-1);
 
     /* Read entries in the directory. */
     for (i = 0; E = readdir(Dp); )
-	if (Selector == NULL || (*Selector)(E)) {
+	if (!Selector || (*Selector)(E->d_name)) {
 	    /* User wants them all, or he wants this one. */
 	    if (++i >= size) {
 		size <<= 1;
-		names = (ENTRY **)realloc((char *)names, size * sizeof names[0]);
-		if (names == NULL) {
+		names = (char**)realloc((char *)names, size * sizeof(char*));
+		if (!names) {
 		    closedir(Dp);
 		    return(-1);
 		}
 	    }
 
 	    /* Copy the entry. */
-	    if ((names[i - 1] = (ENTRY *)malloc(DIRSIZ(E))) == NULL) {
+	    if (!(names[i - 1] = (char *)malloc(strlen(E->d_name) + 1))) {
 		closedir(Dp);
 		return(-1);
 	    }
-	    names[i - 1]->d_ino = E->d_ino;
-	    names[i - 1]->d_reclen = E->d_reclen;
-	    (void)strcpy(names[i - 1]->d_name, E->d_name);
+	    (void)strcpy(names[i - 1], E->d_name);
 	}
 
     /* Close things off. */
-    names[i] = NULL;
+    names[i] = (char *)0;
     *List = names;
     closedir(Dp);
 
     /* Sort? */
-    if (i && Sorter)
-	qsort((char *)names, i, sizeof names[0], Sorter);
+    if (i)
+	qsort((char *)names, i, sizeof(char *), StrCmp);
 
     return(i);
 }
