@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.192 95/04/05 19:58:27 kaleb Exp mor $ */
+/* $XConsortium: connection.c,v 1.193 95/04/06 16:10:29 mor Exp dpw $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -73,7 +73,6 @@ extern int errno;
 #include <sys/socket.h>
 
 #include <signal.h>
-#include <setjmp.h>
 
 #ifdef hpux
 #include <sys/utsname.h>
