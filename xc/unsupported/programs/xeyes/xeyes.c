@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xeyes.c,v 1.2 88/09/03 20:30:26 keith Exp $";
+static char rcsid[] = "$XConsortium: xeyes.c,v 1.3 88/09/06 17:55:29 jim Exp $";
 #endif  lint
 
 #include <X11/Intrinsic.h>
@@ -9,6 +9,7 @@ static char rcsid[] = "$XConsortium: xeyes.c,v 1.2 88/09/03 20:30:26 keith Exp $
 #include "Eyes.h"
 #include <stdio.h> 
 #include "eyes.bit"
+#include "eyes_mask.bit"
 
 extern void exit();
 
@@ -35,32 +36,40 @@ static XrmOptionDescRec options[] = {
 {"-center",	"*eyes.center",		XrmoptionSepArg,	NULL},
 {"-backing",	"*eyes.backingStore",	XrmoptionSepArg,	NULL},
 {"-widelines",	"*eyes.useWideLines",	XrmoptionNoArg,		"TRUE"},
+{"-shape",	"*eyes.shapeWindow",	XrmoptionNoArg,		"TRUE"},
 };
 
 void main(argc, argv)
     int argc;
     char **argv;
 {
-    char host[256];
     Widget toplevel;
     Widget eyes;
-    Arg arg;
+    Arg arg[2];
     char *labelname = NULL;
+    int	i;
     
     toplevel = XtInitialize("main", "XEyes", options, XtNumber (options),
 				    &argc, argv);
       
     if (argc != 1) usage();
     
-    XtSetArg (arg, XtNiconPixmap, 
+    i = 0;
+    XtSetArg (arg[i], XtNiconPixmap, 
 	      XCreateBitmapFromData (XtDisplay(toplevel),
 				     XtScreen(toplevel)->root,
 				     eyes_bits, eyes_width, eyes_height));
-    XtSetValues (toplevel, &arg, 1);
+    i++;
+    XtSetArg (arg[i], XtNiconMask, 
+	      XCreateBitmapFromData (XtDisplay(toplevel),
+				     XtScreen(toplevel)->root,
+				     eyes_mask_bits, eyes_mask_width, eyes_mask_height));
+    i++;
+    XtSetValues (toplevel, arg, i);
 
-    XtSetArg (arg, XtNlabel, &labelname);
+    XtSetArg (arg[0], XtNlabel, &labelname);
     eyes = XtCreateManagedWidget ("eyes", eyesWidgetClass, toplevel, NULL, 0);
-    XtGetValues(eyes, &arg, 1);
+    XtGetValues(eyes, arg, 1);
     XtRealizeWidget (toplevel);
     XtMainLoop();
 }

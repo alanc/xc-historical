@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Eyes.h,v 1.2 88/09/03 20:30:23 keith Exp $
+* $XConsortium: Eyes.h,v 1.3 88/09/06 17:55:27 jim Exp $
 */
 
 #ifndef _XtEyes_h
@@ -33,9 +33,11 @@
 #define XtNcenterColor	"center"
 #define XtNuseWideLines	"useWideLines"
 #define XtNuseBevel	"useBevel"
+#define XtNshapeWindow	"shapeWindow"
 
 #define XtCUseWideLines	"UseWideLines"
 #define XtCUseBevel	"UseBevel"
+#define XtCShapeWindow	"ShapeWindow"
 
 typedef struct _EyesRec *EyesWidget;  /* completely defined in EyesPrivate.h */
 typedef struct _EyesClassRec *EyesWidgetClass;    /* completely defined in EyesPrivate.h */

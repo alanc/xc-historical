@@ -11,6 +11,7 @@
 # include <X11/Xmu.h>
 # include "EyesP.h"
 # include <math.h>
+# include <X11/extensions/shape.h>
 
 #define offset(field) XtOffset(EyesWidget,eyes.field)
 #define goffset(field) XtOffset(Widget,core.field)
@@ -34,6 +35,8 @@ static XtResource resources[] = {
         offset (use_wide_lines), XtRString, "FALSE"},
     {XtNuseBevel, XtCUseBevel, XtRBoolean, sizeof (Boolean),
 	offset (use_bevel), XtRString, "FALSE"},
+    {XtNshapeWindow, XtCShapeWindow, XtRBoolean, sizeof (Boolean),
+	offset (shape_window), XtRString, "FALSE"},
 };
 
 #undef offset
@@ -170,8 +173,45 @@ static void Initialize (greq, gnew)
 
     w->eyes.pupil[0].x = w->eyes.pupil[1].x = -1;
     w->eyes.pupil[0].y = w->eyes.pupil[1].y = -1;
+
+    if (w->eyes.shape_window && !XQueryShapeExtension (XtDisplay (w)))
+	w->eyes.shape_window = False;
+    w->eyes.shape_mask = 0;
+    w->eyes.shapeGC = 0;
 }
 
+static void Shape (w)
+    EyesWidget	w;
+{
+    XGCValues	xgcv;
+    Window	win, root, parent, *childp, nchild;
+
+    w->eyes.shape_mask = XCreatePixmap (XtDisplay (w), XtWindow (w),
+	    w->core.width, w->core.height, 1);
+    if (!w->eyes.shapeGC)
+        w->eyes.shapeGC = XCreateGC (XtDisplay (w), w->eyes.shape_mask, 0, &xgcv);
+    XSetForeground (XtDisplay (w), w->eyes.shapeGC, 0);
+    XFillRectangle (XtDisplay (w), w->eyes.shape_mask, w->eyes.shapeGC, 0, 0,
+	w->core.width, w->core.height);
+    XSetForeground (XtDisplay (w), w->eyes.shapeGC, 1);
+    eyeLiner (w, w->eyes.shape_mask, w->eyes.shapeGC, (GC) 0, 0);
+    eyeLiner (w, w->eyes.shape_mask, w->eyes.shapeGC, (GC) 0, 1);
+    win = XtWindow (w);
+    for (;;) {
+        XShapeMask (XtDisplay (w), win, ShapeWindow,
+		w->eyes.shape_mask, ShapeSet, 0, 0);
+	XShapeMask (XtDisplay  (w), win, ShapeBorder,
+		w->eyes.shape_mask, ShapeSet, 0, 0);
+	XQueryTree (XtDisplay (w), win, &root, &parent, &childp, &nchild);
+	if (nchild)
+	    XFree (childp);
+	if (parent == root)
+	    break;
+	win = parent;
+    }
+    XFreePixmap (XtDisplay (w), w->eyes.shape_mask);
+    w->eyes.shape_mask = 0;
+}
  
 static void Realize (gw, valueMask, attrs)
      Widget gw;
@@ -212,6 +252,8 @@ static void Redisplay(gw, event, region)
     Display	*dpy;
 
     w = (EyesWidget) gw;
+    if (w->eyes.shape_window)
+        Shape (w);
     thick = EYE_THICK (w);
     if (thick != w->eyes.thickness) {
 	dpy = XtDisplay (w);
@@ -298,7 +340,7 @@ static int draw_it(client_data, id)
 			    if (w->eyes.pupil[0].x != -1 || w->eyes.pupil[0].y != -1)
 				eyeBall (w, w->eyes.centerGC, 0);
 			    w->eyes.pupil[0] = newpupil[0];
-			    eyeBall (w, w->eyes.pupGC, 0, dx, dy);
+			    eyeBall (w, w->eyes.pupGC, 0);
 			}
 			if (newpupil[1].x != w->eyes.pupil[1].x ||
 			    newpupil[1].y != w->eyes.pupil[1].y)
@@ -306,7 +348,7 @@ static int draw_it(client_data, id)
 			    if (w->eyes.pupil[1].x != -1 || w->eyes.pupil[1].y != -1)
 				eyeBall (w, w->eyes.centerGC, 1);
 			    w->eyes.pupil[1] = newpupil[1];
-			    eyeBall (w, w->eyes.pupGC, 1, dx, dy);
+			    eyeBall (w, w->eyes.pupGC, 1);
 			}
 			XFlush(XtDisplay(w));	   /* Flush output buffers */
 			w->eyes.odx = dx;
@@ -326,8 +368,8 @@ repaint_window (w)
     EyesWidget	w;
 {
 	if (XtIsRealized ((Widget) w)) {
-		eyeLiner (w, w->eyes.outGC, w->eyes.centerGC, 0);
-		eyeLiner (w, w->eyes.outGC, w->eyes.centerGC, 1);
+		eyeLiner (w, XtWindow (w), w->eyes.outGC, w->eyes.centerGC, 0);
+		eyeLiner (w, XtWindow (w), w->eyes.outGC, w->eyes.centerGC, 1);
 		computePupils (w, w->eyes.odx, w->eyes.ody, w->eyes.pupil);
 		eyeBall (w, w->eyes.pupGC, 0);
 		eyeBall (w, w->eyes.pupGC, 1);
@@ -343,13 +385,13 @@ static Boolean SetValues (current, request, new)
     return( FALSE );
 }
 
-eyeLiner (w, outgc, centergc, num)
+eyeLiner (w, d, outgc, centergc, num)
 EyesWidget	w;
+Drawable	d;
 GC		outgc, centergc;
 int		num;
 {
 	Display *dpy = XtDisplay(w);
-	Window win = XtWindow(w);
 	int ecx = (int) EYE_CENTER_X(w, num), ecy = (int) EYE_CENTER_Y(w, num);
 	int et = EYE_THICK(w);
 	int ew = EYE_WIDTH(w), eh = EYE_HEIGHT(w);
@@ -359,21 +401,23 @@ int		num;
 	if (ew < 0 || eh < 0)
 		return;
 	if (w->eyes.use_wide_lines) {
-		XDrawArc (dpy, win, outgc,
+		XDrawArc (dpy, d, outgc,
 			  (ecx - ewdiv2), (ecy - ehdiv2),
 			  (unsigned) ew, (unsigned) eh,
 			  90 * 64, 360 * 64);
 	} else {
-		XFillArc (dpy, win, outgc, 
+		XFillArc (dpy, d, outgc, 
 			  (ecx - ewdiv2 - etdiv2), (ecy - ehdiv2 - etdiv2),
 			  (unsigned) (ew + et), (unsigned) (eh + et),
  			  90 * 64, 360 * 64);
 		if (et > ew || et > eh)
 			return;
-		XFillArc (dpy, win, centergc,
-			  (ecx - ewdiv2 + etdiv2), (ecy - ehdiv2 + etdiv2),
-			  (unsigned) (ew - et), (unsigned) (eh - et),
-			  90 * 64, 360 * 64);
+		if (centergc) {
+    		    XFillArc (dpy, d, centergc,
+    			      (ecx - ewdiv2 + etdiv2), (ecy - ehdiv2 + etdiv2),
+			      (unsigned) (ew - et), (unsigned) (eh - et),
+			      90 * 64, 360 * 64);
+		}
 	}
 }
 
@@ -390,6 +434,7 @@ int	num;
 	cx = w->eyes.pupil[num].x;
 	cy = w->eyes.pupil[num].y;
 
-	XFillArc (dpy, win, gc, (cx - bw/2), (cy - bh/2), bw, bh, 
+	XFillArc (dpy, win, gc, (cx - bw/2), (cy - bh/2),
+		  (unsigned) bw, (unsigned) bh, 
 		  90 * 64, 360 * 64);
 }

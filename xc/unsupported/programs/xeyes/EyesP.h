@@ -1,5 +1,5 @@
 /*
-* $XConsortium: EyesP.h,v 1.3 88/09/03 20:30:24 keith Exp $
+* $XConsortium: EyesP.h,v 1.4 88/09/06 17:55:28 jim Exp $
 */
 
 #ifndef _EyesP_h
@@ -18,16 +18,19 @@ typedef struct {
 	 GC		outGC;		/* pointer to GraphicsContext */
 	 GC		pupGC;		/* pointer to GraphicsContext */
 	 GC		centerGC;	/* pointer to GraphicsContext */
+	 GC		shapeGC;	/* pointer to GraphicsContext */
 /* start of graph stuff */
 	 int		backing_store;	/* backing store variety */
 	 Boolean	reverse_video;	/* swap fg and bg pixels */
 	 Boolean	use_wide_lines;	/* use wide lines instead of fills */
 	 Boolean	use_bevel;	/* use bevel join style for arcs */
+	 Boolean	shape_window;	/* use SetWindowShapeMask */
 	 int		update;		/* current timeout index */
 	 int		thickness;	/* line thickness */
 	 int		odx, ody;	/* old mouse position */
 	 XPoint		pupil[2];	/* pupil position */
 	 XtIntervalId	interval_id;
+	 Pixmap		shape_mask;	/* window shape */
    } EyesPart;
 
 /* Full instance record declaration */
