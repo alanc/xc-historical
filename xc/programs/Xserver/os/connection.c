@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.129 91/03/29 15:04:16 rws Exp $ */
+/* $XConsortium: connection.c,v 1.130 91/03/29 15:21:08 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -89,6 +89,12 @@ static int unixDomainConnection = -1;
 #include <netdnet/dn.h>
 #endif /* DNETCONN */
 
+#ifdef SIGNALRETURNSINT
+#define SIGVAL int
+#else
+#define SIGVAL void
+#endif
+
 typedef long CCID;      /* mask of indices into client socket table */
 
 #ifndef X_UNIX_PATH
@@ -131,8 +137,8 @@ static int GrabInProgress = 0;
 int ConnectionTranslation[MAXSOCKS];
 extern ClientPtr NextAvailableClient();
 
-extern int AutoResetServer();
-extern int GiveUp();
+extern SIGVAL AutoResetServer();
+extern SIGVAL GiveUp();
 extern XID CheckAuthorization();
 static void CloseDownFileDescriptor(), ErrorConnMax();
 extern void FreeOsBuffers(), ResetOsBuffers();
