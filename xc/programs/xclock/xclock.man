@@ -108,7 +108,7 @@ The default is ``black'' since the core default for background is ``white.''
 .B hand (\fPclass\fB Foreground)
 Specifies the color of the insides of the clock's hands.
 .TP 8
-.B high (\fPclass\fB Foreground)
+.B highlight (\fPclass\fB Foreground)
 Specifies the color used to highlight the clock's hands.
 .TP 8
 .B analog (\fPclass\fB Boolean)
