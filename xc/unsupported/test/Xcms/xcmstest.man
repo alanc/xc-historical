@@ -1,4 +1,4 @@
-.\" $XConsortium: xcmstest.man,v 1.4 93/08/02 11:14:27 gildea Exp $
+.\" $XConsortium: xcmstest.man,v 1.5 94/04/11 14:30:42 gildea Exp $
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1
@@ -68,4 +68,4 @@ For example:
 .PP
 xcmsdb(1), Chapter 6 of Xlib - C Language X Interface.
 .SH COPYRIGHT
-Copyright 1991, Massachusetts Institute of Technology.
+Copyright 1991, X Consortium
