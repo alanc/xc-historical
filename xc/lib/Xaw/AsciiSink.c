@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: AsciiSink.c,v 1.12 88/02/25 12:20:31 swick Exp $";
+static char rcsid[] = "$Header: AsciiSink.c,v 1.13 88/05/16 15:26:12 swick Exp $";
 #endif lint
 
 
@@ -93,12 +93,6 @@ static int CharWidth (data, x, c)
 
 /* Sink Object Functions */
 
-#define LBEARING(x) \
-    ((font->per_char != NULL && \
-      ((x) >= font->min_char_or_byte2 && (x) <= font->max_char_or_byte2)) \
-	? font->per_char[(x) - font->min_char_or_byte2].lbearing \
-	: font->min_bounds.lbearing)
-
 static int AsciiDisplayText (w, x, y, pos1, pos2, highlight)
   Widget w;
   Position x, y;
@@ -130,7 +124,7 @@ static int AsciiDisplayText (w, x, y, pos1, pos2, highlight)
 		buf[j] = ' ';
 	    else if (buf[j] == '\t') {
 	        XDrawImageString(XtDisplay(w), XtWindow(w),
-			gc, x - LBEARING(*buf), y, buf, j);
+			gc, x, y, buf, j);
 		buf[j] = 0;
 		x += XTextWidth(data->font, buf, j);
 		width = CharWidth(data, x, '\t');
@@ -150,7 +144,7 @@ static int AsciiDisplayText (w, x, y, pos1, pos2, highlight)
 	    j++;
 	}
     }
-    XDrawImageString(XtDisplay(w), XtWindow(w), gc, x - LBEARING(*buf), y, buf, j);
+    XDrawImageString(XtDisplay(w), XtWindow(w), gc, x, y, buf, j);
 }
 
 
