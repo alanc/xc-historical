@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Manage.c,v 1.18 89/06/16 19:34:53 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Manage.c,v 1.19 89/09/11 17:42:58 swick Exp $";
 /* $oHeader: Manage.c,v 1.3 88/09/01 11:41:51 asente Exp $ */
 #endif /* lint */
 
@@ -52,7 +52,7 @@ void XtUnmanageChildren(children, num_children)
     if (XtIsComposite((Widget) parent)) {
         change_managed = ((CompositeWidgetClass) parent->core.widget_class)
 		    ->composite_class.change_managed;
-	parent_realized = XtIsRealized(parent);
+	parent_realized = XtIsRealized((Widget)parent);
     }
 
     num_unique_children = 0;
@@ -129,7 +129,7 @@ void XtManageChildren(children, num_children)
     if (XtIsComposite((Widget) parent)) {
         change_managed = ((CompositeWidgetClass) parent->core.widget_class)
 		    ->composite_class.change_managed;
-	parent_realized = XtIsRealized(parent);
+	parent_realized = XtIsRealized((Widget)parent);
 
     } else {
 	XtAppErrorMsg(XtWidgetToApplicationContext((Widget)parent),
