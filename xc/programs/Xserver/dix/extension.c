@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: extension.c,v 1.42 88/01/02 15:10:49 rws Exp $ */
+/* $XConsortium: extension.c,v 1.43 88/09/06 15:41:03 jim Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -59,6 +59,7 @@ ExtensionEntry *AddExtension(name, NumEvents, NumErrors, MainProc,
     void (* CloseDownProc)();
 {
     int i;
+    register ExtensionEntry *ext, **newexts;
 
     if (!MainProc || !SwappedMainProc || !CloseDownProc)
         return((ExtensionEntry *) NULL);
@@ -66,41 +67,56 @@ ExtensionEntry *AddExtension(name, NumEvents, NumErrors, MainProc,
 	        (unsigned)(lastError + NumErrors > LAST_ERROR))
         return((ExtensionEntry *) NULL);
 
+    ext = (ExtensionEntry *) xalloc(sizeof(ExtensionEntry));
+    if (!ext)
+	return((ExtensionEntry *) NULL);
+    ext->name = (char *)xalloc(strlen(name) + 1);
+    if (!ext->name)
+    {
+	xfree(ext);
+	return((ExtensionEntry *) NULL);
+    }
+    strcpy(ext->name,  name);
     i = NumExtensions;
-    NumExtensions += 1;
-    extensions = (ExtensionEntry **) xrealloc(extensions,
-			      NumExtensions * sizeof(ExtensionEntry *));
-    extensions[i] = (ExtensionEntry *) xalloc(sizeof(ExtensionEntry));
-    extensions[i]->name = (char *)xalloc(strlen(name) + 1);
-    strcpy(extensions[i]->name,  name);
-    extensions[i]->index = i;
-    extensions[i]->base = i + EXTENSION_BASE;
-    extensions[i]->CloseDown = CloseDownProc;
+    newexts = (ExtensionEntry **) xrealloc(extensions,
+					   (i + 1) * sizeof(ExtensionEntry *));
+    if (!newexts)
+    {
+	xfree(ext->name);
+	xfree(ext);
+	return((ExtensionEntry *) NULL);
+    }
+    NumExtensions++;
+    extensions = newexts;
+    extensions[i] = ext;
+    ext->index = i;
+    ext->base = i + EXTENSION_BASE;
+    ext->CloseDown = CloseDownProc;
     ProcVector[i + EXTENSION_BASE] = MainProc;
     SwappedProcVector[i + EXTENSION_BASE] = SwappedMainProc;
     if (NumEvents)
     {
-        extensions[i]->eventBase = lastEvent;
-	extensions[i]->eventLast = lastEvent + NumEvents;
+        ext->eventBase = lastEvent;
+	ext->eventLast = lastEvent + NumEvents;
 	lastEvent += NumEvents;
     }
     else
     {
-        extensions[i]->eventBase = 0;
-        extensions[i]->eventLast = 0;
+        ext->eventBase = 0;
+        ext->eventLast = 0;
     }
     if (NumErrors)
     {
-        extensions[i]->errorBase = lastError;
-	extensions[i]->errorLast = lastError + NumErrors;
+        ext->errorBase = lastError;
+	ext->errorLast = lastError + NumErrors;
 	lastError += NumErrors;
     }
     else
     {
-        extensions[i]->errorBase = 0;
-        extensions[i]->errorLast = 0;
+        ext->errorBase = 0;
+        ext->errorLast = 0;
     }
-    return(extensions[i]);
+    return(ext);
 }
 
 CloseDownExtensions()
@@ -199,6 +215,8 @@ ProcListExtensions(client)
 
         reply.length = (total_length + 3) >> 2;
 	buffer = bufptr = (char *)ALLOCATE_LOCAL(total_length);
+	if (!buffer)
+	    return(BadAlloc);
         for (i=0;  i<NumExtensions; i++)
         {
 	    int len;
@@ -234,16 +252,16 @@ LookupProc(name, pGC)
     return (ExtensionLookupProc)NULL;
 }
 
-void
+Bool
 RegisterProc(name, pGC, proc)
     char *name;
     GC *pGC;
     ExtensionLookupProc proc;
 {
-    RegisterScreenProc(name, pGC->pScreen, proc);
+    return RegisterScreenProc(name, pGC->pScreen, proc);
 }
 
-void
+Bool
 RegisterScreenProc(name, pScreen, proc)
     char *name;
     ScreenPtr pScreen;
@@ -251,6 +269,7 @@ RegisterScreenProc(name, pScreen, proc)
 {
     register ScreenProcEntry *spentry;
     register ProcEntryPtr procEntry = (ProcEntryPtr)NULL;
+    char *newname;
     int i;
 
     spentry = &AuxillaryScreenProcs[pScreen->myNum];
@@ -268,15 +287,25 @@ RegisterScreenProc(name, pScreen, proc)
         procEntry->proc = proc;
     else
     {
-	spentry->procList = (ProcEntryPtr)
+	newname = (char *)xalloc(strlen(name)+1);
+	if (!newname)
+	    return FALSE;
+	procEntry = (ProcEntryPtr)
 			    xrealloc(spentry->procList,
 				     sizeof(ProcEntryRec) * (spentry->num+1));
-        procEntry = &spentry->procList[spentry->num];
-        procEntry->name = (char *)xalloc(strlen(name)+1);
-        strcpy(procEntry->name, name);
+	if (!procEntry)
+	{
+	    xfree(newname);
+	    return FALSE;
+	}
+	spentry->procList = procEntry;
+        procEntry += spentry->num;
+        procEntry->name = newname;
+        strcpy(newname, name);
         procEntry->proc = proc;
         spentry->num++;        
     }
+    return TRUE;
 }
 
 
