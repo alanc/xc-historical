@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.64 91/02/17 14:13:22 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.65 91/04/08 14:37:49 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1204,21 +1204,6 @@ CvtStringToGeometry(dpy, args, num_args, fromVal, toVal, closure_ret)
                   "String to Geometry conversion needs no extra arguments",
                    (String *) NULL, (Cardinal *)NULL);
     done(String, *(String*)fromVal->addr);
-}
-
-void LowerCase(source, dest)	/* %%% shouldn't be global */
-    register char  *source, *dest;
-{
-    register char ch;
-    int i;
-
-    for (i = 0; (ch = *source) != 0 && i < 999; source++, dest++, i++) {
-    	if ('A' <= ch && ch <= 'Z')
-	    *dest = ch - 'A' + 'a';
-	else
-	    *dest = ch;
-    }
-    *dest = 0;
 }
 
 static int CompareISOLatin1 (first, second)
