@@ -1,4 +1,4 @@
-/* $XConsortium: XExtToWire.c,v 1.14 92/11/14 12:56:14 rws Exp $ */
+/* $XConsortium: XExtToWire.c,v 1.15 93/09/08 10:23:31 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -38,7 +38,7 @@ SOFTWARE.
 #include "extutil.h"
 
 Status
-XInputEventToWire(dpy, re, event, count)
+_XiEventToWire(dpy, re, event, count)
     register Display *dpy;	/* pointer to display structure */
     register XEvent *re;	/* pointer to client event */
     register xEvent **event;	/* wire protocol event */

@@ -1,4 +1,4 @@
-/* $XConsortium: XSndExEv.c,v 1.5 89/12/13 20:28:10 rws Exp $ */
+/* $XConsortium: XSndExEv.c,v 1.6 94/02/14 17:39:48 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -36,7 +36,7 @@ SOFTWARE.
 #include "XInput.h"
 #include "extutil.h"
 
-extern Status XInputEventToWire();
+extern Status _XiEventToWire();
 
 Status
 XSendExtensionEvent (dpy, dev, dest, prop, count, list, event)
@@ -64,7 +64,7 @@ XSendExtensionEvent (dpy, dev, dest, prop, count, list, event)
 
     fp = &dpy->wire_vec[event->type & 0177];
     if (*fp == NULL) 
-	*fp = XInputEventToWire;
+	*fp = _XiEventToWire;
     status = (**fp)(dpy, event, &ev, &num_events);
 
     if (status) 

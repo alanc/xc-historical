@@ -1,4 +1,4 @@
-/* $XConsortium: XExtInt.c,v 1.31 94/02/07 23:49:49 rws Exp $ */
+/* $XConsortium: XExtInt.c,v 1.32 94/02/14 17:38:14 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -47,7 +47,7 @@ static	/* const */ char *xinput_extension_name = INAME;
 static	int XInputClose();
 static	char *XInputError();
 static Bool XInputWireToEvent();
-Status	XInputEventToWire();
+Status	_XiEventToWire();
 static	/* const */ XEvent	emptyevent;
 
 typedef struct _XInputData
@@ -68,7 +68,7 @@ static /* const */ XExtensionHooks xinput_extension_hooks = {
     NULL,				/* free_font */
     XInputClose,			/* close_display */
     XInputWireToEvent,			/* wire_to_event */
-    XInputEventToWire,			/* event_to_wire */
+    _XiEventToWire,			/* event_to_wire */
     NULL,				/* error */
     XInputError,			/* error_string */
 };
