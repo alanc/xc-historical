@@ -1,4 +1,4 @@
-XCOMM $XConsortium: ibmLib.rules,v 1.7 93/07/14 11:00:05 rws Exp $
+XCOMM $XConsortium: ibmLib.rules,v 1.8 93/09/04 16:00:31 rws Exp $
 
 /*
  * AIX shared library rules
@@ -27,6 +27,11 @@ XCOMM $XConsortium: ibmLib.rules,v 1.7 93/07/14 11:00:05 rws Exp $
 #endif
 #ifndef ExtraLoadFlags
 #define ExtraLoadFlags -bnodelcsect
+#endif
+#if ThreadedX
+#define BaseShLibReqs -lc_r -lm
+#else
+#define BaseShLibReqs -lc -lm
 #endif
 
 /*
@@ -75,7 +80,7 @@ Concat(lib,libname.a):  solist $(UNSHAREDOBJS)				@@\
 	$(RM) $@~ shr.o							@@\
 	(cd down; $(AR) up/$@~ solist)					@@\
 	dump -g $@~ | sed -n -e 's/^[ 	]*[0-9][0-9]*[	 ]*\([^	 .][^	 ]*\)$$/\1/p' > $@.syms	@@\
-	$(LD) -o shr.o $@~ -H512 -T512 -bM\:SRE -bE\:$@.syms $(REQUIREDLIBS) -lc -lm -L$(USRLIBDIR)	@@\
+	$(LD) -o shr.o $@~ -H512 -T512 -bM\:SRE -bE\:$@.syms $(REQUIREDLIBS) BaseShLibReqs -L$(USRLIBDIR)	@@\
 	$(RM) $@~							@@\
 	$(AR) $@~ shr.o $(UNSHAREDOBJS)					@@\
 	$(RM) $@.syms $@ shr.o						@@\
