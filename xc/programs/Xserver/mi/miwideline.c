@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.30 90/11/19 15:17:35 keith Exp $
+ * $XConsortium: miwideline.c,v 1.31 91/05/04 23:10:30 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1045,7 +1045,7 @@ miWideSegment (pDrawable, pGC, pixel, spanData,
 	rights[0].height = lw;
 	rights[0].x = x2 - 1;
 	if (projectRight)
-	    rights[0].x += (lw >> 1);
+	    rights[0].x += (lw + 1 >> 1);
 	rights[0].stepx = 0;
 	rights[0].signdx = 1;
 	rights[0].e = -lw;
@@ -1330,29 +1330,33 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 	    x2 += x1;
 	    y2 += y1;
 	}
-	if (x1 == x2 && y1 == y2)
-	    continue;
-	somethingDrawn = TRUE;
-	if (npt == 1 && pGC->capStyle == CapProjecting && !selfJoin)
-	    projectRight = TRUE;
-	miWideSegment (pDrawable, pGC, pixel, spanData, x1, y1, x2, y2,
-		       projectLeft, projectRight, &leftFace, &rightFace);
-	if (first)
+	if (x1 != x2 || y1 != y2)
 	{
-	    if (selfJoin)
-		firstFace = leftFace;
-	    else if (pGC->capStyle == CapRound)
-		miLineArc (pDrawable, pGC, pixel, spanData,
-			   &leftFace, (LineFacePtr) NULL,
- 			   (double)0.0, (double)0.0,
-			   TRUE);
+	    somethingDrawn = TRUE;
+	    if (npt == 1 && pGC->capStyle == CapProjecting && !selfJoin)
+	    	projectRight = TRUE;
+	    miWideSegment (pDrawable, pGC, pixel, spanData, x1, y1, x2, y2,
+		       	   projectLeft, projectRight, &leftFace, &rightFace);
+	    if (first)
+	    {
+	    	if (selfJoin)
+		    firstFace = leftFace;
+	    	else if (pGC->capStyle == CapRound)
+		    miLineArc (pDrawable, pGC, pixel, spanData,
+			       &leftFace, (LineFacePtr) NULL,
+ 			       (double)0.0, (double)0.0,
+			       TRUE);
+	    }
+	    else
+	    {
+	    	miLineJoin (pDrawable, pGC, pixel, spanData, &leftFace,
+		            &prevRightFace);
+	    }
+	    prevRightFace = rightFace;
+	    first = FALSE;
+	    projectLeft = FALSE;
 	}
-	else
-	{
-	    miLineJoin (pDrawable, pGC, pixel, spanData, &leftFace,
-		        &prevRightFace);
-	}
-	if (npt == 1)
+	if (npt == 1 && somethingDrawn)
  	{
 	    if (selfJoin)
 		miLineJoin (pDrawable, pGC, pixel, spanData, &firstFace,
@@ -1363,9 +1367,6 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 			   (double)0.0, (double)0.0,
 			   TRUE);
 	}
-	prevRightFace = rightFace;
-	first = FALSE;
-	projectLeft = FALSE;
     }
     /* handle crock where all points are coincedent */
     if (!somethingDrawn)
