@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.101 91/02/08 16:00:04 converse Exp $ */
+/* $XConsortium: Resources.c,v 1.102 91/03/07 19:16:40 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -437,12 +437,12 @@ XrmResourceList* _XtCreateIndirectionTable (resources, num_resources)
     XtResourceList  resources;
     Cardinal	    num_resources;
 {
-    register int index;
+    register int idx;
     XrmResourceList* table;
 
     table = (XrmResourceList*)XtMalloc(num_resources * sizeof(XrmResourceList));
-    for (index = 0; index < num_resources; index++)
-        table[index] = (XrmResourceList)(&(resources[index]));
+    for (idx = 0; idx < num_resources; idx++)
+        table[idx] = (XrmResourceList)(&(resources[idx]));
     return table;
 }
 
