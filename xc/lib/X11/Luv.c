@@ -1,4 +1,4 @@
-/* $XConsortium: CIELuv.c,v 1.8 91/07/24 22:32:06 rws Exp $" */
+/* $XConsortium: CIELuv.c,v 1.9 91/07/25 01:07:28 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -366,7 +366,7 @@ XcmsCIEuvYToCIELuv(ccc, pLuv_WhitePt, pColors_in_out, nColors)
 	Luv_return.L_star = 
 	    (pColor->spec.CIEuvY.Y < 0.008856)
 	    ?
-	    (pColor->spec.CIEuvY.Y * 9.0329)
+	    (pColor->spec.CIEuvY.Y * 903.29)
 	    :
 	    ((XcmsFloat)(XCMS_CUBEROOT(pColor->spec.CIEuvY.Y) * 116.0) - 16.0);
 	tmpVal = 13.0 * (Luv_return.L_star / 100.0);
