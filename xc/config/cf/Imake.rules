@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.36 89/07/11 11:45:30 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.37 89/07/16 18:26:16 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -130,13 +130,14 @@ $(RM) program; if [ -f program ]; then $(MV) program program/**/~; fi
 
 
 #ifndef BuildIncludes
-#define BuildIncludes(srclist,dstdir)					@@\
+#define BuildIncludes(srclist,dstsubdir,dstupdir)			@@\
 includes::								@@\
-	$(MKDIRHIER) dstdir						@@\
+	$(MKDIRHIER) $(BUILDINCDIR)/dstsubdir				@@\
 	@(for i in srclist; do \					@@\
-		echo $(RM) dstdir/$$i; $(RM) dstdir/$$i; \		@@\
-		echo $(LN) $(TOP)/$(CURRENT_DIR)/$$i dstdir/$$i; \	@@\
-		$(LN) $(TOP)/$(CURRENT_DIR)/$$i dstdir/$$i; \		@@\
+		echo $(RM) $(BUILDINCDIR)/dstsubdir/$$i; \		@@\
+		$(RM) $(BUILDINCDIR)/dstsubdir/$$i; \			@@\
+		echo $(LN) $(BUILDINCTOP)/dstupdir/$(CURRENT_DIR)/$$i $(BUILDINCDIR)/dstsubdir/$$i; \	@@\
+		$(LN) $(BUILDINCTOP)/dstupdir/$(CURRENT_DIR)/$$i $(BUILDINCDIR)/dstsubdir/$$i; \	@@\
 	done)
 #endif /* BuildIncludes */
 
