@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.45 89/11/03 21:56:39 keith Exp $
+ * $XConsortium: screen.h,v 1.46 89/11/05 17:47:18 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -49,7 +49,6 @@ typedef struct _StdCmap {
 #define TITLEBUTTON_BORDERWIDTH 1
 #define SIZE_HINDENT 10
 #define SIZE_VINDENT 2
-#define SQUEEZED_HIGHLIGHT 8
 
 typedef struct ScreenInfo
 {
