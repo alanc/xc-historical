@@ -1,5 +1,5 @@
 ##
-# $XConsortium$
+# $XConsortium: Imakefile,v 5.2 91/02/16 09:32:44 rws Exp $
 ##
 ##
 ## Copyright 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -33,24 +33,13 @@
 #endif
 
     CDEBUGFLAGS = PexClientCDebugFlags
-            DEFINES = PexClientDefines
-
-   PHIGS_LIBDIR = ../../../lib/PEX
-
+        DEFINES = PexClientDefines
        INCLUDES = -I. -I$(INCDIR) $(TOP_INCLUDES) -I$(TOP)/X11
-
-      PHIGS_LIB = $(PHIGS_LIBDIR)/libphigs.a
-LOCAL_LIBRARIES = $(PHIGS_LIB) $(XLIB)
+LOCAL_LIBRARIES = $(PHIGSLIB) $(XLIB)
   SYS_LIBRARIES = -lm
-
-        DEPLIBS = $(PHIGS_LIB) $(DEPXLIB)
+        DEPLIBS = $(DEPPHIGSLIB) $(DEPXLIB)
 
            SRCS = auto_box.c init_win.c
            OBJS = auto_box.o init_win.o
-          PROGS = auto_box
 
-AllTarget( $(PROGS) )
-
-NormalProgramTarget($(PROGS), $(OBJS), $(DEPLIBS), $(LOCAL_LIBRARIES), $(SYS_LIBRARIES))
-
-DependTarget()
+ComplexProgramTarget(auto_box)
