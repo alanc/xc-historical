@@ -24,20 +24,19 @@ building startup scripts and is not intended for use by end users.  Site
 administrators are \fBstrongly\fP urged to use \fIxdm\fP,
 or build other interfaces for novice users.
 .PP
-When the sample server starts up, it takes over the display.  If you 
+When the X server starts up, it takes over the display.  If you 
 are running on a workstation whose console is the display, you cannot log into
 the console while the server is running.
 .SH "NETWORK CONNECTIONS"
-The sample server supports connections made using the following reliable
+The X server supports connections made using the following reliable
 byte-streams:
 .TP 4
 .I TCP\/IP
 .br
-The server listens on port htons(6000+\fIn\fP), where \fIn\fP is the 
-display number.
+The server listens on port 6000+\fIn\fP, where \fIn\fP is the display number.
 .TP 4
 .I "Unix Domain"
-The sample server uses \fI/tmp/.X11-unix/X\fBn\fR as the filename for 
+The X server uses \fI/tmp/.X11-unix/X\fBn\fR as the filename for 
 the socket, where \fIn\fP is the display number.
 .TP 4
 .I "DECnet"
@@ -45,7 +44,7 @@ the socket, where \fIn\fP is the display number.
 The server responds to connections to object \fIX$X\fBn\fR, where \fIn\fP
 is the display number.  This is not supported in all environments.
 .SH OPTIONS
-All of the sample servers accept the following command line options:
+All of the X servers accept the following command line options:
 .TP 8
 .B \-a \fInumber\fP
 sets pointer acceleration (i.e. the ratio of how much is reported to how much
@@ -53,7 +52,8 @@ the user actually moved the pointer).
 .TP 8
 .B \-auth \fIauthorization-file\fP
 Specifies a file which contains a collection of authorization records used
-to authenticate access.
+to authenticate access.  See also the \fIxdm\fP and \fIXsecurity\fP manual
+pages.
 .TP 8
 .B bc
 disables certain kinds of error checking, for bug compatibility with
@@ -92,7 +92,7 @@ sets the default font.
 .TP 8
 .B \-fp \fIfontPath\fP
 sets the search path for fonts.  This path is a comma separated list of
-directories which the sample server searches for font databases.
+directories which the X server searches for font databases.
 .TP 8
 .B \-help
 prints a usage message.
@@ -165,12 +165,13 @@ a cheap trick way of getting backing-store to apply to all windows.
 loads the specified extension at init.
 Not supported in most implementations.
 .PP
-You can also have the X server connect to xdm using XDMCP.  Although this is
-not typically useful as it doesn't allow xdm to manage the server process,
-it can be used to debug XDMCP implementations, and servers as a sample
+You can also have the X server connect to \fIxdm\fP using XDMCP.
+Although this is not typically useful as it does not allow \fIxdm\fP
+to manage the server process,
+it can be used to debug XDMCP implementations, and serves as a sample
 implementation of the server side of XDMCP.  For more information on this
-protocol, see the XDMCP specification in docs/XDMCP/xdmcp.ms.  The following
-options control the behavior of XDMCP.
+protocol, see the \fIX Display Manager Control Protocol\fP specification.
+The following options control the behavior of XDMCP.
 .TP 8
 .B \-query \fIhost-name\fP
 Enable XDMCP and send Query packets to the specified host.
@@ -198,7 +199,7 @@ is "MIT-Unspecified" (not a very useful value).
 .B \-cookie \fIxdm-auth-bits\fP
 When testing XDM-AUTHENTICATION-1, a private key is shared between the
 server and the manager.  This option sets the value of that private
-data (not that it's very private, being on the command line and all...).
+data (not that it is very private, being on the command line!).
 .TP 8
 .B \-displayID \fIdisplay-id\fP
 Yet another XDMCP specific value, this one allows the display manager to
@@ -206,9 +207,9 @@ identify each display so that it can locate the shared key.
 .PP
 Many servers also have device-specific command line options.  See the
 manual pages for the individual servers for more details.
-.SH "SECURITY"
+.SH SECURITY
 .PP
-The sample server implements a simplistic authorization protocol,
+The X server implements a simplistic authorization protocol,
 MIT-MAGIC-COOKIE-1 which uses data private to authorized clients and the
 server.  This is a rather trivial scheme; if the client passes authorization
 data which is the same as the server has, it is allowed access.  This scheme
@@ -220,10 +221,9 @@ per-user instead of per-host.
 .PP
 In addition, the server provides support for a DES-based authorization
 scheme, XDM-AUTHORIZATION-1, which is more secure (given a secure key
-distribution mechanism), but as DES is not generally distributable, the
-implementation is missing routines to encrypt and decrypt the authorization
-data.  This authorization scheme can be used in conjunction with XDMCP's
-authentication scheme, XDM-AUTHENTICATION-1 or in isolation.
+distribution mechanism).  This authorization scheme can be used in
+conjunction with XDMCP's authentication scheme (XDM-AUTHENTICATION-1)
+or in isolation.
 .PP
 The authorization data is passed to the server in a private file named with
 the \fB\-auth\fP command line option.  Each time the server is about to
@@ -236,11 +236,14 @@ manual page for a description of the binary format of this file.
 Maintenance of this file, and distribution of its contents to remote sites
 for use there is left as an exercise for the reader.
 .PP
-The server also provides support for SUN-DES-1, using Sun secure RPC.
+The server also provides support for SUN-DES-1, using Sun's Secure RPC.
+It involves encrypting data with the X server's public key.
+See the \fIXsecurity\fP manual page for more information.
 .PP
-The sample server also uses a host-based access control list for deciding
+The X server also uses a host-based access control list for deciding
 whether or not to accept connections from clients on a particular machine.
-This list initially consists of the host on which the server is running as
+If no other authorization mechanism is being used,
+this list initially consists of the host on which the server is running as
 well as any machines listed in the file \fI/etc/X\fBn\fI.hosts\fR, where
 \fBn\fP is the display number of the server.  Each line of the file should
 contain either an Internet hostname (e.g. expo.lcs.mit.edu) or a DECnet
@@ -258,35 +261,15 @@ bigcpu::
 .PP
 Users can add or remove hosts from this list and enable or disable access
 control using the \fIxhost\fP command from the same machine as the server.
-For example:
-.sp
-.in +8
-.nf
-%  xhost +janesworkstation
-janesworkstation being added to access control list
-%  xhost \-star::
-public:: being removed from access control list
-%  xhost +
-all hosts being allowed (access control disabled)
-%  xhost \-
-all hosts being restricted (access control enabled)
-%  xhost
-access control enabled (only the following hosts are allowed)
-joesworkstation
-janesworkstation
-corporate.company.com
-bigcpu::
-.fi
-.in -8
 .PP
-Unlike some window systems, X does not have any notion of window operation
+The X protocol intrinsically does not have any notion of window operation
 permissions or place any restrictions on what a client can do; if a program can
 connect to a display, it has full run of the screen.  Sites that have better
 authentication and authorization systems (such as Kerberos) might wish to make
 use of the hooks in the libraries and the server to provide additional
 security models.
-.SH "SIGNALS"
-The sample server attaches special meaning to the following signals:
+.SH SIGNALS
+The X server attaches special meaning to the following signals:
 .TP 8
 .I SIGHUP
 This signal causes the server to close all existing connections, free all
@@ -302,19 +285,19 @@ This signal causes the server to exit cleanly.
 This signal is used quite differently from either of the above.  When the
 server starts, it checks to see if it has inherited SIGUSR1 as SIG_IGN
 instead of the usual SIG_DFL.  In this case, the server sends a SIGUSR1 to
-its parent process after it has set up the various connection schemes.  Xdm
-uses this feature to recognize when connecting to the server is possible.
-.SH "FONTS"
+its parent process after it has set up the various connection schemes.
+\fIXdm\fP uses this feature to recognize when connecting to the server
+is possible.
+.SH FONTS
 Fonts are usually stored as individual files in directories.  The X server
-can obtain fonts from individual files stored in directories,
-and/or from a font server.  The list of directories and font servers
+can obtain fonts from directories and/or from font servers.
+The list of directories and font servers
 the X server uses when trying to open a font is controlled
 by the \fIfont path\fP.  Although most sites will choose to have the X server
 start up with the appropriate font path (using the \fI\-fp\fP option mentioned
 above), it can be overridden using the \fIxset\fP program.
 .PP
-The default font path for
-the sample server contains four directories:
+The default font path for the X server contains four directories:
 .TP 8
 .I /usr/lib/X11/fonts/misc
 This directory contains many miscellaneous bitmap fonts that are useful on all
@@ -378,8 +361,8 @@ Unix domain socket
 /usr/adm/X*msgs
 Error log file
 .SH "SEE ALSO"
-X(1), xdm(1), bdftopcf(1), mkfontdir(1), fs(1),
-xinit(1), xterm(1), twm(1), xhost(1), xauth(1), xset(1), xsetroot(1),
+X(1), bdftopcf(1), mkfontdir(1), fs(1), xauth(1), xdm(1), xhost(1),
+xinit(1), xset(1), xsetroot(1), xterm(1),
 Xdec(1), Xibm(1), XmacII(1), Xmips(1),
 Xqdss(1), Xqvss(1), Xsun(1), Xtek(1), X386(1)
 .I "X Window System Protocol,"
