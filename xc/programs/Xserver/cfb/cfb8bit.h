@@ -18,9 +18,11 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfb8bit.h,v 1.4 89/09/12 18:08:23 keith Exp $ */
+/* $XConsortium: cfb8bit.h,v 1.5 89/09/19 15:36:33 keith Exp $ */
 
 #if (PPW == 4)
+
+#include "servermd.h"
 
 #if (BITMAP_BIT_ORDER == MSBFirst)
 #define GetFourBits(x)		(((unsigned long) (x)) >> 28)
@@ -55,7 +57,7 @@ extern void			cfb8SetPixels ();
  * is a copy-mode only operation.
  */
 
-#ifndef AVOID_SCREEN_READ
+#ifndef AVOID_MEMORY_READ
 
 #define WriteFourBits(dst,pixel,bits)				\
     {								\
@@ -63,7 +65,7 @@ extern void			cfb8SetPixels ();
     *(dst) = (*(dst) & ~_maskTmp) | ((pixel) & _maskTmp);	\
     }
 
-#else /* AVOID_SCREEN_READ */
+#else /* AVOID_MEMORY_READ */
 
 #if (BITMAP_BIT_ORDER == MSBFirst)
 #define WriteFourBits(dst,pixel,bits) \
@@ -185,7 +187,7 @@ extern void			cfb8SetPixels ();
 	    break;			\
 	}
 # endif /* BITMAP_BIT_ORDER */
-#endif /* AVOID_SCREEN_READ */
+#endif /* AVOID_MEMORY_READ */
 
 extern unsigned long	cfb8BitLenMasks[32];
 extern int		cfb8ComputeClipMasks32 ();
