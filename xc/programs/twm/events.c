@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.143 90/03/20 15:38:49 jim Exp $
+ * $XConsortium: events.c,v 1.144 90/03/20 15:44:52 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.143 90/03/20 15:38:49 jim Exp $";
+"$XConsortium: events.c,v 1.144 90/03/20 15:44:52 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2110,7 +2110,15 @@ HandleConfigureRequest()
 	fprintf(stderr, "  stack = %d\n", cre->detail);
 #endif
 
-    Event.xany.window = cre->window;	/* effectively mashing parent field */
+    /*
+     * Event.xany.window is Event.xconfigurerequest.parent, so Tmp_win will
+     * be wrong
+     */
+    Event.xany.window = cre->window;	/* mash parent field */
+    if (XFindContext (dpy, cre->window, TwmContext, (caddr_t) &Tmp_win) ==
+	XCNOENT)
+      Tmp_win = NULL;
+
 
     /*
      * According to the July 27, 1988 ICCCM draft, we should ignore size and
