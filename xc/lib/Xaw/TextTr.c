@@ -1,4 +1,4 @@
-/* $XConsortium: TextTr.c,v 1.5 89/02/03 11:33:13 swick Exp $ */
+/* $XConsortium: TextTr.c,v 1.6 89/07/06 16:55:22 jim Exp $ */
 
 char *_XawDefaultTextTranslations1 =
 "\
@@ -15,6 +15,8 @@ Ctrl<Key>M:	newline() \n\
 Ctrl<Key>N:	next-line() \n\
 Ctrl<Key>O:	newline-and-backup() \n\
 Ctrl<Key>P:	previous-line() \n\
+Ctrl<Key>R:	search(left) \n\
+Ctrl<Key>S:	search(right) \n\
 Ctrl<Key>V:	next-page() \n\
 Ctrl<Key>W:	kill-selection() \n\
 Ctrl<Key>Y:	unkill() \n\
