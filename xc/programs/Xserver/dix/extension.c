@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: extension.c,v 1.47 89/06/21 16:24:46 rws Exp $ */
+/* $XConsortium: extension.c,v 1.48 89/07/03 19:51:28 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -208,7 +208,7 @@ ProcQueryExtension(client)
     int i, j;
     REQUEST(xQueryExtensionReq);
 
-    REQUEST_AT_LEAST_SIZE(xQueryExtensionReq);
+    REQUEST_FIXED_SIZE(xQueryExtensionReq, stuff->nbytes);
     
     reply.type = X_Reply;
     reply.length = 0;
