@@ -1,4 +1,4 @@
-/* $XConsortium: command.c,v 2.33 90/06/27 13:43:59 swick Exp $ */
+/* $XConsortium: command.c,v 2.34 91/01/06 21:08:48 rws Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -104,7 +104,8 @@ static void ReadStdout(closure, fd, id)
     XtInputId *id;	/* unused */
 {
     register CommandStatus status = (CommandStatus)closure;
-    CheckReadFromPipe(*fd, &status->output_buffer, &status->output_buf_size);
+    CheckReadFromPipe(*fd, &status->output_buffer, &status->output_buf_size,
+		      False);
 }
 
 
@@ -115,7 +116,8 @@ static void ReadStderr(closure, fd, id)
     XtInputId *id;	/* unused */
 {
     register CommandStatus status = (CommandStatus)closure;
-    CheckReadFromPipe(*fd, &status->error_buffer, &status->error_buf_size);
+    CheckReadFromPipe(*fd, &status->error_buffer, &status->error_buf_size,
+		      False);
 }
 
 
@@ -310,7 +312,7 @@ DEBUG("read.\n")}
 		XtDispatchEvent(eventP);
 	    }
 	}
-#ifdef SYSV
+#if defined(SYSV) || defined(SVR4) || defined(_POSIX_SOURCE)
 	(void) wait((int *) NULL);
 #else /* !SYSV */
 	(void) wait((union wait *) NULL);
@@ -321,7 +323,8 @@ DEBUG("read.\n")}
 	if (output_to_pipe) {
 	    CheckReadFromPipe( status->output_pipe[0],
 			       &status->output_buffer,
-			       &status->output_buf_size
+			       &status->output_buf_size,
+			       True
 			      );
 	    *bufP = status->output_buffer;
 	    *lenP = status->output_buf_size;
@@ -332,7 +335,8 @@ DEBUG("read.\n")}
 	if (status->error_pipe[0]) {
 	    CheckReadFromPipe( status->error_pipe[0],
 			       &status->error_buffer,
-			       &status->error_buf_size
+			       &status->error_buf_size,
+			       True
 			      );
 	    close( status->error_pipe[0] );
 	    close( status->error_pipe[1] );
@@ -371,29 +375,35 @@ DEBUG("read.\n")}
 
 
 static /*void*/
-CheckReadFromPipe( fd, bufP, lenP )
+CheckReadFromPipe( fd, bufP, lenP, waitEOF )
     int fd;
     char **bufP;
     int *lenP;
+    Bool waitEOF;
 {
     long nread;
+#ifdef FIONREAD
     if (ioctl( fd, FIONREAD, &nread ) /*failed*/) {
 	SystemError( "couldn't inquire bytes in pipe" );
     }
     else if (nread) {
-	char buf[BUFSIZ];
 	int old_end = *lenP;
 	*bufP = XtRealloc( *bufP, (Cardinal) ((*lenP += nread) + 1) );
-	while (nread > BUFSIZ) {
-	    read( fd, buf, BUFSIZ );
-	    bcopy( buf, *bufP+old_end, BUFSIZ );
-	    nread -= BUFSIZ;
-	    old_end += BUFSIZ;
-	}
-	read( fd, buf, (int) nread );
-	bcopy( buf, *bufP+old_end, (int) nread );
+	read( fd, *bufP+old_end, nread );
 	(*bufP)[old_end+nread] = '\0';
     }
+#else
+    do {
+	char buf[BUFSIZ];
+	int old_end = *lenP;
+	nread = read( fd, buf, BUFSIZ );
+	if (nread <= 0)
+	    break;
+	*bufP = XtRealloc( *bufP, (Cardinal) ((*lenP += nread) + 1) );
+	bcopy( buf, *bufP+old_end, (int) nread );
+	(*bufP)[old_end+nread] = '\0';
+    } while (waitEOF);
+#endif
 }
 
 
