@@ -67,13 +67,7 @@ _XExtEventToWire(dpy, re, event, count)
 	    register deviceKeyButtonPointer *kev;
 	    register deviceValuator *vev;
 
-	    if (ev->axes_count > 6)
-		*count = 3;
-	    else if (ev->axes_count > 0)
-		*count = 2;
-	    else
-		*count = 1;
-
+	    *count = 2;
 	    kev = (deviceKeyButtonPointer *) Xmalloc (*count * sizeof (xEvent));
 	    *event = (xEvent *) kev;
 
@@ -97,20 +91,11 @@ _XExtEventToWire(dpy, re, event, count)
 		vev = (deviceValuator *) ++kev;
 		vev->type = _devicevaluator;
 		vev->deviceid = ev->deviceid;
+		vev->device_state = ev->device_state;
 		vev->first_valuator = 0;
-		vev->num_valuators = ev->axes_count < 6 ? ev->axes_count : 6;
+		vev->num_valuators = ev->axes_count;
 		for (i=0; i<vev->num_valuators; i++)
 		    vev->valuators[i] = ev->axis_data[i];
-		}
-	    if (ev->axes_count > 6)
-		{
-		(vev++)->deviceid |= MORE_EVENTS;
-		vev->type = _devicevaluator;
-		vev->deviceid = ev->deviceid;
-		vev->first_valuator = 6;
-		vev->num_valuators = ev->axes_count - 6;
-		for (i=0; i<vev->num_valuators; i++)
-		    vev->valuators[i] = ev->axis_data[6+i];
 		}
 	    }
     else if (re->type == _proximityin ||
@@ -121,13 +106,7 @@ _XExtEventToWire(dpy, re, event, count)
 	    register deviceKeyButtonPointer *pev;
 	    register deviceValuator *vev;
 
-	    if (ev->axes_count > 6)
-		*count = 3;
-	    else if (ev->axes_count > 0)
-		*count = 2;
-	    else
-		*count = 1;
-
+	    *count = 2;
 	    pev = (deviceKeyButtonPointer *) Xmalloc (*count * sizeof (xEvent));
 	    *event = (xEvent *) pev;
 
@@ -150,20 +129,11 @@ _XExtEventToWire(dpy, re, event, count)
 		vev = (deviceValuator *) ++pev;
 		vev->type = _devicevaluator;
 		vev->deviceid = ev->deviceid;
+		vev->device_state = ev->device_state;
 		vev->first_valuator = 0;
-		vev->num_valuators = ev->axes_count < 6 ? ev->axes_count : 6;
+		vev->num_valuators = ev->axes_count;
 		for (i=0; i<vev->num_valuators; i++)
 		    vev->valuators[i] = ev->axis_data[i];
-		}
-	    if (ev->axes_count > 6)
-		{
-		(vev++)->deviceid |= MORE_EVENTS;
-		vev->type = _devicevaluator;
-		vev->deviceid = ev->deviceid;
-		vev->first_valuator = 6;
-		vev->num_valuators = ev->axes_count - 6;
-		for (i=0; i<vev->num_valuators; i++)
-		    vev->valuators[i] = ev->axis_data[6+i];
 		}
 	    }
     else if (re->type == _devicebuttonPress ||
@@ -174,13 +144,7 @@ _XExtEventToWire(dpy, re, event, count)
 	    register deviceKeyButtonPointer *bev;
 	    register deviceValuator *vev;
 
-	    if (ev->axes_count > 6)
-		*count = 3;
-	    else if (ev->axes_count > 0)
-		*count = 2;
-	    else
-		*count = 1;
-
+	    *count = 2;
 	    bev = (deviceKeyButtonPointer *) Xmalloc (*count * sizeof (xEvent));
 	    *event = (xEvent *) bev;
 
@@ -204,20 +168,11 @@ _XExtEventToWire(dpy, re, event, count)
 		vev = (deviceValuator *) ++bev;
 		vev->type = _devicevaluator;
 		vev->deviceid = ev->deviceid;
+		vev->device_state = ev->device_state;
 		vev->first_valuator = 0;
-		vev->num_valuators = ev->axes_count < 6 ? ev->axes_count : 6;
+		vev->num_valuators = ev->axes_count;
 		for (i=0; i<vev->num_valuators; i++)
 		    vev->valuators[i] = ev->axis_data[i];
-		}
-	    if (ev->axes_count > 6)
-		{
-		(vev++)->deviceid |= MORE_EVENTS;
-		vev->type = _devicevaluator;
-		vev->deviceid = ev->deviceid;
-		vev->first_valuator = 6;
-		vev->num_valuators = ev->axes_count - 6;
-		for (i=0; i<vev->num_valuators; i++)
-		    vev->valuators[i] = ev->axis_data[6+i];
 		}
 	    }
     else if (re->type == _devicemotionNotify)
@@ -227,13 +182,7 @@ _XExtEventToWire(dpy, re, event, count)
 	    register deviceKeyButtonPointer *mev;
 	    register deviceValuator *vev;
 
-	    if (ev->axes_count > 6)
-		*count = 3;
-	    else if (ev->axes_count > 0)
-		*count = 2;
-	    else
-		*count = 1;
-
+	    *count = 2;
 	    mev = (deviceKeyButtonPointer *) Xmalloc (*count * sizeof (xEvent));
 	    *event = (xEvent *) mev;
 
@@ -257,20 +206,11 @@ _XExtEventToWire(dpy, re, event, count)
 		vev = (deviceValuator *) ++mev;
 		vev->type = _devicevaluator;
 		vev->deviceid = ev->deviceid;
+		vev->device_state = ev->device_state;
 		vev->first_valuator = 0;
-		vev->num_valuators = ev->axes_count < 6 ? ev->axes_count : 6;
+		vev->num_valuators = ev->axes_count;
 		for (i=0; i<vev->num_valuators; i++)
 		    vev->valuators[i] = ev->axis_data[i];
-		}
-	    if (ev->axes_count > 6)
-		{
-		(vev++)->deviceid |= MORE_EVENTS;
-		vev->type = _devicevaluator;
-		vev->deviceid = ev->deviceid;
-		vev->first_valuator = 6;
-		vev->num_valuators = ev->axes_count - 6;
-		for (i=0; i<vev->num_valuators; i++)
-		    vev->valuators[i] = ev->axis_data[6+i];
 		}
 	    }
     else if (re->type == _devicefocusIn ||
