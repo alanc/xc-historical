@@ -1,5 +1,5 @@
 /*
- * $XHeader: xdpyinfo.c,v 1.5 88/07/07 13:18:51 jim Exp $
+ * $XHeader: xdpyinfo.c,v 1.6 88/07/12 12:09:54 jim Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -25,43 +25,11 @@
 
 char *ProgramName;
 
-#ifdef PRINT_PIXMAP_FORMATS
-#ifdef PROTOTYPE_PIXMAP_FORMAT_ROUTINES
 /*
- * Until the following are in Xlib; note this means this program may
- * not be portable to all systems.
+ * There needs to be some sort of interface to the PixmapFormats in the
+ * display structure.  But, since it is opaque, we aren't allowed to refer
+ * to them.  Sigh.
  */
-
-int XDisplayPixmapFormatCount (dpy)
-    Display *dpy;
-{
-    return dpy->nformats;
-}
-
-int XDisplayPixmapDepth (dpy, i)
-    Display *dpy;
-    int i;
-{
-    return dpy->pixmap_format[i].depth;
-}
-
-
-int XDisplayPixmapBitsPerPixel (dpy, i)
-    Display *dpy;
-    int i;
-{
-    return dpy->pixmap_format[i].bits_per_pixel;
-}
-
-
-int XDisplayPixmapScanlinePad (dpy, i)
-    Display *dpy;
-    int i;
-{
-    return dpy->pixmap_format[i].scanline_pad;
-}
-#endif /* PROTOTYPE_PIXMAP_FORMAT_ROUTINES */
-#endif /* PRINT_PIXMAP_FORMATS */
 
 static void usage ()
 {
@@ -151,17 +119,9 @@ print_display_info (dpy)
     }
     printf ("image byte order:    %s\n", cp);
 
-#ifdef PRINT_PIXMAP_FORMATS
-    n = XDisplayPixmapFormatCount (dpy);
-    printf ("number of supported pixmap formats:    %d\n", n);
-    printf ("supported pixmap formats:  ");
-    for (i = 0; i < n; i++) {
-	printf ("  <%d,%d,%d>", XDisplayPixmapDepth (dpy, i),
-		XDisplayPixmapBitsPerPixel (dpy, i), 
-		XDisplayPixmapScanlinePad (dpy, i));
-    }
-    printf ("\n");	
-#endif /* PRINT_PIXMAP_FORMATS */
+    /*
+     * when we get interfaces to the PixmapFormat stuff, insert code here
+     */
 
     XDisplayKeycodes (dpy, &minkeycode, &maxkeycode);
     printf ("keycode range:    minimum %d, maximum %d\n",
