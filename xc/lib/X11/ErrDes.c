@@ -61,7 +61,7 @@ XGetErrorText(dpy, code, buffer, nbytes)
     char buf[32];
     register _XExtension *ext;
 
-    sprintf(buf, "%d\0", code);
+    sprintf(buf, "%d", code);
     if (code <= (XErrorListSize/ sizeof (char *)) && code > 0) {
 	defaultp =  XErrorList[code];
 	XGetErrorDatabaseText(dpy, "XProtoError", buf, defaultp, buffer, nbytes);
