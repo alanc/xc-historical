@@ -1,4 +1,4 @@
-$XConsortium: README,v 1.33 93/10/11 12:25:06 rws Exp $
+$XConsortium: README,v 1.34 93/10/11 12:39:49 rws Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -277,8 +277,13 @@ An <os>Lib.rules file provides defaults for the following variables:
 	SharedLibraryDef	-D's for defining which kind of shared lib
 	ShLibIncludeFile	location of the <os>Lib.tmpl file
 	SharedLibraryLoadFlags	loader flags when making the library
-	PositionIndependentCFlags PIC compiler flags
+	PositionIndependentCFlags 		PIC compiler flags for C
+	PositionIndependentCplusplusFlags	PIC compiler flags for C++
 
+	  Note: PositionIndependentCplusplusFlags is only required if the 
+	  C and C++ compilers use different flags to build PIC code.  The
+	  default configuration will try to use PositionIndependentCFlags 
+	  for both C and C++ compiles.
 
 An <os>Lib.tmpl file provides defaults for the following variables:
 
