@@ -1,5 +1,5 @@
 /*
- *	$Header: util.c,v 1.4 88/02/18 17:54:48 jim Exp $
+ *	$Header: util.c,v 1.5 88/07/12 16:43:26 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* util.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 1.4 88/02/18 17:54:48 jim Exp $";
+static char rcs_id[] = "$Header: util.c,v 1.5 88/07/12 16:43:26 jim Exp $";
 #endif	/* lint */
 
 #include <stdio.h>
@@ -914,12 +914,14 @@ ReverseVideo (term)
 	    recolor_cursor (screen->arrow, fg, bg);
 
 	}
+	term->misc.re_verse = !term->misc.re_verse;
 
 	XDefineCursor(screen->display, TextWindow(screen), screen->pointer_cursor);
 	if(tek)
 		XDefineCursor(screen->display, tek, screen->arrow);
 #ifdef MODEMENU
 	MenuNewCursor(screen->arrow);
+	ReverseVideoAllMenus ();
 #endif	/* MODEMENU */
 
 	
