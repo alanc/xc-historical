@@ -69,6 +69,7 @@ static	send_manage_msg();
 static	send_keepalive_msg();
 
 static XdmcpFatal(), XdmcpWarning();
+static void XdmcpBlockHandler(), XdmcpWakeupHandler();
 
 static short	xdm_udp_port = XDM_UDP_PORT;
 
@@ -335,6 +336,8 @@ XdmcpInit()
     {
 	XdmcpRegisterAuthorizations();
 	AccessUsingXdmcp();
+	RegisterBlockAndWakeupHandlers (XdmcpBlockHandler, XdmcpWakeupHandler,
+				        (pointer) 0);
     	timeOutRtx = 0;
     	DisplayNumber = (CARD16) atoi(display);
     	get_xdmcp_sock();
@@ -348,6 +351,8 @@ XdmcpReset ()
     state = XDM_INIT_STATE;
     if (state != XDM_OFF)
     {
+	RegisterBlockAndWakeupHandlers (XdmcpBlockHandler, XdmcpWakeupHandler,
+				        (pointer) 0);
     	timeOutRtx = 0;
     	send_packet();
     }
@@ -388,8 +393,9 @@ XdmcpCloseDisplay(sock)
  * dynamically while starting up
  */
 
-void
-XdmcpBlockHandler(wt, LastSelectMask)
+static void
+XdmcpBlockHandler(data, wt, LastSelectMask)
+    pointer	    data;   /* unused */
     struct timeval  **wt;
     long	    *LastSelectMask;
 {
@@ -427,8 +433,9 @@ XdmcpBlockHandler(wt, LastSelectMask)
  * process them appropriately
  */
 
-void
-XdmcpWakeupHandler(i, LastSelectMask)
+static void
+XdmcpWakeupHandler(data, i, LastSelectMask)
+    pointer data;   /* unused */
     int	    i;
     long    *LastSelectMask;
 {
