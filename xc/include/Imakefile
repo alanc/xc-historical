@@ -70,9 +70,7 @@ SUBIMPORTS = \
 	$(EXTENSIONSRC)/include/zoid.h \
 	$(EXTENSIONSRC)/include/bezier.h
    
-SUBDIRS = \
-	bitmaps \
-	extensions
+SUBDIRS = bitmaps
 
 INSTALLFLAGS = -m 0444
 
@@ -89,8 +87,6 @@ extensions:
 	-mkdir $@
 	
 InstallMultiple($(EXPORTS),$(INCDIR))
-
-InstallMultiple($(IMPORTS),$(INCDIR))
 
 clean::
 	@-(list=`echo $(IMPORTS) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
