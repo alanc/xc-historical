@@ -2,14 +2,4 @@ LOCAL_LIBRARIES = $(XLIB)
         DEFINES = -DNOINLINE
 
 SimpleProgramTarget(xpr)
-
-install::
-	install -c xdpr.script ${DESTDIR}${CONFDIR}/xdpr
-
-# If you are on a 68000 or a Vax, uncomment the next three lines
-# and remove -DNOINLINE from DEFINES above
-#C2=/lib/c2
-#.c.o:
-#	${CC} ${CFLAGS} -S $*.c
-#	${C2} $*.s | ../inline/inline | ${AS} -o $*.o
-#	rm -f $*.s
+InstallScript(xdpr,$(BINDIR))
