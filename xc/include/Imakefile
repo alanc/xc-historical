@@ -1,0 +1,48 @@
+EXPORTS = \
+	IBMDevices.h \
+	X.h \
+	XWDFile.h \
+	Xmd.h \
+	Xproto.h \
+	Xprotostr.h \
+	copyright.h \
+	keysym.h
+
+IMPORTS = \
+	$(XMENUDIR)/XMenu.h \
+	$(XLIBDIR)/Conversion.h \
+	$(XLIBDIR)/X10.h \
+	$(XLIBDIR)/Xlib.h \
+	$(XLIBDIR)/Xresource.h \
+	$(XLIBDIR)/XrmConvert.h \
+	$(XLIBDIR)/Xutil.h \
+	$(CLIENTDIR)/bitmaps \
+	$(FONTDIR)/cursorfont.h \
+	$(TOOLKITDIR)/Atoms.h \
+	$(TOOLKITDIR)/Boolean.h \
+	$(TOOLKITDIR)/ButtonBox.h \
+	$(TOOLKITDIR)/Clock.h \
+	$(TOOLKITDIR)/Command.h \
+	$(TOOLKITDIR)/Dialog.h \
+	$(TOOLKITDIR)/Form.h \
+	$(TOOLKITDIR)/Intrinsic.h \
+	$(TOOLKITDIR)/Label.h \
+	$(TOOLKITDIR)/Load.h \
+	$(TOOLKITDIR)/Menu.h \
+	$(TOOLKITDIR)/Scroll.h \
+	$(TOOLKITDIR)/Text.h \
+	$(TOOLKITDIR)/TextDisp.h \
+	$(TOOLKITDIR)/VPane.h \
+	$(TOOLKITDIR)/Xtlib.h \
+	$(TOOLKITDIR)/fd.h
+
+INSTALLFLAGS = -m 0444
+
+all: $(IMPORTS)
+	@-(list=`echo $(IMPORTS) | sed -e 's/[^ ]*\///g'`; set -x; rm $$list)
+	ln -s $(IMPORTS) .
+	
+InstallMultiple($(EXPORTS),$(INCDIR))
+
+depend:
+	@echo "depend: skipping include"
