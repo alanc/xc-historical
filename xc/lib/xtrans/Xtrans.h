@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Xtrans.h,v 1.13 94/02/06 16:03:21 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -331,7 +331,7 @@ int TRANS(GetConnectionNumber)(
 int TRANS(MakeAllCOTSServerListeners)(
 #if NeedFunctionPrototypes
     char *,		/* port */
-    int *,		/* max_ret */
+    int *,		/* partial */
     int *,		/* count_ret */
     XtransConnInfo **	/* ciptrs_ret */
 #endif
@@ -340,7 +340,7 @@ int TRANS(MakeAllCOTSServerListeners)(
 int TRANS(MakeAllCLTSServerListeners)(
 #if NeedFunctionPrototypes
     char *,		/* port */
-    int *,		/* max_ret */
+    int *,		/* partial */
     int *,		/* count_ret */
     XtransConnInfo **	/* ciptrs_ret */
 #endif
