@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.3 94/04/17 21:15:16 mor Exp mor $ */
+/* $XConsortium: misc.c,v 1.4 94/08/17 17:45:07 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -129,6 +129,22 @@ char *s2;
     return NULL;
 }
 
+#endif
+
+
+
+#if defined(sun) && defined(SVR4)
+int System (s)
+    char *s;
+{
+    int pid, status;
+    if ((pid = fork ()) == 0) {
+	(void) setpgrp();
+	execl ("/bin/sh", "sh", "-c", s, 0);
+    } else
+	waitpid (pid, &status, 0);
+    return status;
+}
 #endif
 
 
