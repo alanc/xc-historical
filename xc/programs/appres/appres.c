@@ -1,5 +1,5 @@
 /*
- * $XConsortium: appres.c,v 1.6 90/05/01 12:09:07 converse Exp $
+ * $XConsortium: appres.c,v 1.7 91/01/10 13:56:54 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,8 +23,8 @@
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-#include <stdio.h>
 #include <X11/Intrinsic.h>
+#include <stdio.h>
 
 #define NOCLASS "-NoSuchClass-"
 
@@ -78,13 +78,18 @@ main (argc, argv)
 			       &argc, argv, NULL, NULL, 0);
     if (argc != 1) usage ();
 
-    strcpy (tmpbuf, "/tmp/ar.XXXXXX~");
+    strcpy (tmpbuf, "/tmp/appres.XXXXXX");
     mktemp (tmpbuf);
 
     unlink (tmpbuf);
     XrmPutFileDatabase (XtDatabase(XtDisplay(toplevel)), tmpbuf);
     
     fp = fopen (tmpbuf, "r");
+    if(fp == NULL) {
+	fprintf(stderr, "%s: cannot open temp file\n", ProgramName);
+	perror(tmpbuf);
+	exit(1);
+    }
     unlink (tmpbuf);
     printit = False;
     incont = False;
