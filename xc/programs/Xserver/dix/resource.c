@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.81 90/09/13 09:38:02 rws Exp $ */
+/* $XConsortium: resource.c,v 1.82 90/09/23 15:17:47 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -258,6 +258,13 @@ FakeClientID(client)
 	    else
 		id = res->id + 1;
 	}
+    }
+    if (id > maxid) {
+	if (!client)
+	    FatalError("FakeClientID: server internal ids exhausted\n");
+	MarkClientException(clients[client]);
+	id = ((Mask)client << CLIENTOFFSET) | (SERVER_BIT * 3);
+	maxid = id | RESOURCE_ID_MASK;
     }
     clientTable[client].fakeID = id + 1;
     clientTable[client].endFakeID = maxid + 1;
