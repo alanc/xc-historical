@@ -1,4 +1,4 @@
-/* $XConsortium: Vendor.c,v 1.17 91/02/17 16:44:25 converse Exp $ */
+/* $XConsortium: Vendor.c,v 1.18 91/04/04 21:36:07 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -58,8 +58,7 @@ static XtResource resources[] = {
 
 static void XawVendorShellClassInitialize();
 static void XawVendorShellInitialize();
-static Boolean XawVendorShellSetValues();
-static void Realize(), ChangeManaged();
+static void ChangeManaged();
 
 #define SuperClass (&wmShellClassRec)
 externaldef(vendorshellclassrec) VendorShellClassRec vendorShellClassRec = {
@@ -72,7 +71,7 @@ externaldef(vendorshellclassrec) VendorShellClassRec vendorShellClassRec = {
     /* Class init'ed ?	  */	FALSE,
     /* initialize	  */	XawVendorShellInitialize,
     /* initialize_hook	  */	NULL,		
-    /* realize		  */	Realize,
+    /* realize		  */	XtInheritRealize,
     /* actions		  */	NULL,
     /* num_actions	  */	0,
     /* resources	  */	resources,
@@ -85,7 +84,7 @@ externaldef(vendorshellclassrec) VendorShellClassRec vendorShellClassRec = {
     /* destroy		  */	NULL,
     /* resize		  */	XtInheritResize,
     /* expose		  */	NULL,
-    /* set_values	  */	XawVendorShellSetValues,
+    /* set_values	  */	NULL,
     /* set_values_hook	  */	NULL,			
     /* set_values_almost  */	XtInheritSetValuesAlmost,  
     /* get_values_hook	  */	NULL,
@@ -135,25 +134,6 @@ static void XawVendorShellInitialize(req, new)
     void _XEditResCheckMessages();
 
     XtAddEventHandler(new, (EventMask) 0, TRUE, _XEditResCheckMessages, NULL);
-}
-
-/* ARGSUSED */
-static Boolean XawVendorShellSetValues(old, ref, new)
-	Widget old, ref, new;
-{
-	return FALSE;
-}
-
-static void Realize(wid, vmask, attr)
-	Widget wid;
-	Mask *vmask;
-	XSetWindowAttributes *attr;
-{
-	WidgetClass super = wmShellWidgetClass;
-
-	/* Make my superclass do all the dirty work */
-
-	(*super->core_class.realize) (wid, vmask, attr);
 }
 
 static void ChangeManaged(wid)
