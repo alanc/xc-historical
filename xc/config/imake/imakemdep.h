@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.46 92/10/16 18:19:02 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.47 92/10/18 16:03:48 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -121,6 +121,9 @@
 #endif
 #if defined(_IBMR2) && !defined(DEFAULT_CPP)
 #define DEFAULT_CPP "/usr/lpp/X11/Xamples/util/cpp/cpp"
+#endif
+#if defined(sun) && defined(SVR4)
+#define DEFAULT_CPP "/usr/ccs/lib/cpp"
 #endif
 
 /*
@@ -251,6 +254,11 @@ char *cpp_argv[ARGUMENTS] = {
 #ifdef Oki
 	"-DOki",
 #endif
+#ifdef sun
+#ifdef SVR4
+	"-DSVR4",
+#endif
+#endif
 };
 #else /* else MAKEDEPEND */
 /*
@@ -287,8 +295,14 @@ struct symtab	predefs[] = {
 #ifdef sparc
 	{"sparc", "1"},
 #endif
+#ifdef __sparc__
+	{"__sparc__", "1"},
+#endif
 #ifdef hpux
 	{"hpux", "1"},
+#endif
+#ifdef __hp9000s800__
+	{"__hp9000s800__", "1"},
 #endif
 #ifdef vax
 	{"vax", "1"},
@@ -307,6 +321,9 @@ struct symtab	predefs[] = {
 #endif
 #ifdef mips
 	{"mips", "1"},
+#endif
+#ifdef __mips__
+	{"__mips__", "1"},
 #endif
 #ifdef ultrix
 	{"ultrix", "1"},
@@ -361,6 +378,9 @@ struct symtab	predefs[] = {
 #endif
 #ifdef m88k
         {"m88k", "1"},
+#endif
+#ifdef __m88k__
+	{"__m88k__", "1"},
 #endif
 #ifdef bsd43
 	{"bsd43", "1"},
