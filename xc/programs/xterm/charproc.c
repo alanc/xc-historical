@@ -1,5 +1,5 @@
 /*
- * $XHeader: charproc.c,v 1.40 88/07/13 11:04:08 jim Exp $
+ * $XHeader: charproc.c,v 1.41 88/07/13 11:11:23 jim Exp $
  */
 
 
@@ -122,7 +122,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XHeader: charproc.c,v 1.40 88/07/13 11:04:08 jim Exp $";
+static char rcs_id[] = "$XHeader: charproc.c,v 1.41 88/07/13 11:11:23 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2561,7 +2561,6 @@ int item;
 		break;
 
 	case MMENU_VIDEO:
-		term->flags ^= REVERSE_VIDEO;
 		ReverseVideo(term);
 		break;
 
