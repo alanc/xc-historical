@@ -1,4 +1,4 @@
-/* $XConsortium: registry,v 1.89 93/09/10 09:52:54 rws Exp $ */
+/* $XConsortium: registry,v 1.90 93/09/27 16:03:25 gildea Exp $ */
 
 				  X Registry
 
@@ -313,6 +313,7 @@ String						Reference
 "Wolfram Research, Inc."			[102]
 "Wyse Technology Inc."				[68]
 "X11/NeWS - Sun Microsystems, Inc."		[58]
+"X Consortium"					[106]
 
 5. PROTOCOL EXTENSION NAMES
 
@@ -1413,6 +1414,11 @@ REFERENCES
 	Cambridge MA 02142-1301
 
 [105]	Stephen Gildea
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
+
+[106]	Lu Abel
 	X Consortium
 	1 Memorial Dr
 	Cambridge MA 02142-1301
