@@ -1,4 +1,4 @@
-/**/# site:  $XConsortium: site.def,v 1.1 89/01/10 18:15:24 jim Exp $
+/**/# site:  $XConsortium: site.def,v 1.2 89/02/20 10:25:20 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -36,4 +36,7 @@
 
 #ifndef ExtensionDefines
 #define ExtensionDefines -DSHAPE
+#endif
+#ifndef CompatibilityFlags
+#define CompatibilityFlags -DXAW_BC	/* temp hack until Imakefiles fixed */
 #endif
