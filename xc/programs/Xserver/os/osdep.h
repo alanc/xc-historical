@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.25 91/05/12 10:07:53 rws Exp $ */
+/* $XConsortium: osdep.h,v 1.26 91/07/03 19:08:45 rws Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
@@ -38,12 +38,16 @@ SOFTWARE.
 #endif
 #endif
 #ifndef OPEN_MAX
+#ifdef SVR4
+#define OPEN_MAX 128
+#else
 #include <sys/param.h>
 #ifndef OPEN_MAX
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #else
 #define OPEN_MAX NOFILES_MAX
+#endif
 #endif
 #endif
 #endif
