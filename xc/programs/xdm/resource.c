@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.36 90/09/14 17:51:50 keith Exp $
+ * $XConsortium: resource.c,v 1.37 90/11/19 17:34:47 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -175,7 +175,7 @@ struct displayResource serverResources[] = {
 "terminateServer","TerminateServer",DM_BOOL,	boffset(terminateServer),
 				"false",
 "grabServer",	"GrabServer",	DM_BOOL,	boffset(grabServer),
-				"true",
+				"false",
 "grabTimeout",	"GrabTimeout",	DM_INT,		boffset(grabTimeout),
 				"3",
 "resetSignal",	"Signal",	DM_INT,		boffset(resetSignal),
@@ -204,6 +204,8 @@ struct displayResource sessionResources[] = {
 				XRDB_PROGRAM,
 "cpp",		"Cpp",		DM_STRING,	boffset(cpp),
 				CPP_PROGRAM,
+"setup",	"Setup",	DM_STRING,	boffset(setup),
+				"",
 "startup",	"Startup",	DM_STRING,	boffset(startup),
 				"",
 "reset",	"Reset",	DM_STRING,	boffset(reset),

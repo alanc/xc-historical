@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.37 90/09/14 17:51:38 keith Exp $
+ * $XConsortium: session.c,v 1.38 90/11/29 20:02:59 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -59,7 +59,7 @@ SessionPingFailed (d)
     if (clientPid > 1)
     {
     	AbortClient (clientPid);
-    	source (&verify, d->reset);
+	source (verify.systemEnviron, d->reset);
     }
     SessionExit (d, RESERVER_DISPLAY, TRUE);
 }
@@ -110,10 +110,16 @@ struct display	*d;
     (void)XSetErrorHandler(ErrorHandler);
     SetTitle(d->name, (char *) 0);
     /*
-     * Step 5: Load system default Resources
+     * Load system default Resources
      */
     LoadXloginResources (d);
     dpy = InitGreet (d);
+    /*
+     * Run the setup script - note this usually will not work when
+     * the server is grabbed, so we don't even bother trying.
+     */
+    if (!d->grabServer)
+	SetupDisplay (d);
     if (!dpy) {
 	LogError ("Cannot reopen display %s for greet window\n", d->name);
 	exit (RESERVER_DISPLAY);
@@ -132,9 +138,9 @@ struct display	*d;
 	 * Verify user
 	 */
 	if (Verify (d, &greet, &verify))
-		break;
+	    break;
 	else
-		FailedLogin (d, &greet);
+	    FailedLogin (d, &greet);
     }
     DeleteXloginResources (d, dpy);
     CloseGreet (d);
@@ -142,7 +148,7 @@ struct display	*d;
     /*
      * Run system-wide initialization file
      */
-    if (source (&verify, d->startup) != 0)
+    if (source (verify.systemEnviron, d->startup) != 0)
     {
 	Debug ("Startup program %s exited with non-zero status\n",
 		d->startup);
@@ -198,7 +204,7 @@ struct display	*d;
      * run system-wide reset file
      */
     Debug ("Source reset program %s\n", d->reset);
-    source (&verify, d->reset);
+    source (verify.systemEnviron, d->reset);
     SessionExit (d, OBEYSESS_DISPLAY, TRUE);
 }
 
@@ -220,6 +226,23 @@ struct display	*d;
 	Debug ("Loading resource file: %s\n", d->resources);
 	(void) runAndWait (args, env);
 	freeEnv (env);
+    }
+}
+
+SetupDisplay (d)
+struct display	*d;
+{
+    char	**env = 0, **setEnv(), **defaultEnv();
+
+    if (d->setup && d->setup[0])
+    {
+    
+    	env = defaultEnv ();
+    	env = setEnv (env, "DISPLAY", d->name);
+    	if (d->authFile)
+	    env = setEnv (env, "XAUTHORITY", d->authFile);
+    	(void) source (env, d->setup);
+    	freeEnv (env);
     }
 }
 
@@ -280,8 +303,10 @@ Display		*dpy;
 {
     Debug ("Unsecure display %s\n", d->name);
     if (d->grabServer)
+    {
 	XUngrabServer (dpy);
-    XSync (dpy, 0);
+	XSync (dpy, 0);
+    }
 }
 
 SessionExit (d, status, removeAuth)
@@ -413,12 +438,13 @@ int	pid;
 }
 
 int
-source (verify, file)
-struct verify_info	*verify;
+source (environ, file)
+char			**environ;
 char			*file;
 {
     char	**args, *args_safe[2];
     extern char	**parseArgs ();
+
     if (file && file[0]) {
 	Debug ("source %s\n", file);
 	args = parseArgs ((char **) 0, file);
@@ -428,7 +454,7 @@ char			*file;
 	    args[0] = file;
 	    args[1] = NULL;
 	}
-	return runAndWait (args, verify->systemEnviron);
+	return runAndWait (args, environ);
     }
     return 0;
 }
