@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.163 90/12/01 13:02:23 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.164 90/12/26 16:35:03 rws Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1690,7 +1690,7 @@ Cardinal count;
 	  _CreateCutBuffers(XtDisplay(w));
 	  XRotateBuffers(XtDisplay(w), 1);
 	}
-	amount = Min ( (len = strlen(ptr)), max_len);
+	amount = Min ( (len = strlen((char *)ptr)), max_len);
 	XChangeProperty(XtDisplay(w), RootWindow(XtDisplay(w), 0), selection, 
 			XA_STRING, 8, PropModeReplace, ptr, amount);
 

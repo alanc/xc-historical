@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.33 90/06/18 14:20:39 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.34 90/12/01 13:01:58 rws Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1439,7 +1439,7 @@ Cardinal * num_params;
      */
     
     buf = (unsigned char *) _XawTextGetText(ctx, start, end);
-    text.length = strlen(buf);
+    text.length = strlen((char *)buf);
     text.firstPos = 0;
     text.format = FMT8BIT;
     
