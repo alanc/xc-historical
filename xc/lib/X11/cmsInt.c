@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsInt.c,v 1.3 91/02/11 18:59:04 rws Exp $" */
+/* $XConsortium: XcmsInt.c,v 1.4 91/02/12 16:13:02 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991, Tektronix Inc.
@@ -143,7 +143,7 @@ _XcmsPushPointerArray(pap, p)
 
     if (newArray = (caddr_t *)Xmalloc(n * sizeof(caddr_t))) {
 	bcopy((char *)pap, (char *)(newArray+1),
-		(unsigned)(n * sizeof(caddr_t)));
+		(unsigned)((n-1) * sizeof(caddr_t)));
 	*newArray = p;
     }
     _XcmsFreePointerArray(pap);

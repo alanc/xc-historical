@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVC.c,v 1.3 91/02/11 18:16:54 dave Exp $" */
+/* $XConsortium: TekHVC.c,v 1.4 91/02/12 16:09:51 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -35,6 +35,7 @@
 #include "Xlibint.h"
 #include "Xcmsint.h"
 #include <X11/Xos.h>
+#include <math.h>
 
 /*
  *	DEFINES

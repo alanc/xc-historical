@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCGcVC.c,v 1.3 91/02/11 18:17:02 dave Exp $" */
+/* $XConsortium: TekHVCGcVC.c,v 1.4 91/02/12 16:10:01 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -28,9 +28,9 @@
  *		compression function.
  */
 
-#include <math.h>
 #include "Xlibint.h"
 #include "Xcmsint.h"
+#include <math.h>
 
 /*
  *	INTERNALS
