@@ -1,4 +1,17 @@
-/* $XConsortium: access.c,v 1.72 94/03/31 23:19:34 rws Exp $ */
+/* $XConsortium: iopreader.c,v 1.1 94/04/01 18:15:06 dpw Exp $ */
+
+/* Copyright (c) 1987 by the Regents of the University of California
+ * Copyright (c) 1994 by the Vrije Universiteit, Amsterdam.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software and its documentation for any purpose and without
+ * fee is hereby granted, provided that the above copyright
+ * notice appear in all copies.  The University of California
+ * and the Vrije Universiteit make no representations about
+ * the suitability of this software for any purpose.
+ * It is provided "as is" without express or implied warranty.
+ */
+
 #ifdef AMOEBA
 /*
  * iopreader.c
