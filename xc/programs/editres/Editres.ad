@@ -96,17 +96,6 @@ Editres.Geometry:			500x600
 *fileDialog*Text.Translations:		#override \n\
 	<Key>Return:		PopdownFileDialog(okay)
 
-! The Author popup message
-
-*authorPopup*okay.label:              Okay
-*authorPopup*label.label:              \n\
-                Editres Version 0.1              \n\
-\n\
-           Written by Chris D. Peterson \n\
-\n\
-                    kit@ics.com \n 
-
-
 ! Resources for the Resource Box.
 
 *resourceBox*resourceLabel.font:			\
