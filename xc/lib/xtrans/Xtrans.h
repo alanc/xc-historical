@@ -24,13 +24,13 @@
  */
 
 #include <X11/Xfuncproto.h>
-#ifdef WIN32
-#define _WILLWINSOCK_
-#endif
 #include <X11/Xos.h>
+
+
 /*
  * Set the functions names according to where this code is being compiled.
  */
+
 #ifdef X11
 #if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define TRANS(func) _X11Trans##func
@@ -46,6 +46,14 @@
 #define TRANS(func) _FSTrans/**/func
 #endif
 #endif /* FS */
+
+#ifdef FONT
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#define TRANS(func) _FONTTrans##func
+#else
+#define TRANS(func) _FONTTrans/**/func
+#endif
+#endif /* FONT */
 
 #ifdef ICE
 #if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
@@ -71,28 +79,13 @@
 #endif
 #endif /* !TRANS */
 
-/*
- * Some useful type definitions
- */
-
-#ifdef LONG64
-typedef int BytesReadable_t;
-#else
-typedef long BytesReadable_t;
-#endif
-
-/*
- * Some useful #defines
- */
-#define X_TCP_PORT	6000
 
 /*
  * Create a single address structure that can be used wherever
  * an address structure is needed. struct sockaddr is not big enough
  * to hold a sockadd_un, so we create this definition to have a single
  * structure that is big enough for all the structures we might need.
- */
-/*
+ *
  * This structure needs to be independent of the socket/TLI interface used.
  */
 
@@ -103,38 +96,16 @@ typedef	union {
 	unsigned char	addr[XTRANS_MAX_ADDR_LEN];
 	}	Xtransaddr;
 
-/*
- * Transport Option definitions
- */
-#define TRANS_NONBLOCKING	1
-#define	TRANS_CLOSEONEXEC	2
 
-/*
- * Some WIN32 stuff
- */
-#ifdef WIN32
-#undef EWOULDBLOCK
-#define EWOULDBLOCK WSAEWOULDBLOCK
-#undef EINTR
-#define EINTR WSAEINTR
+#ifdef LONG64
+typedef int BytesReadable_t;
+#else
+typedef long BytesReadable_t;
+#endif
 
-#define NEEDIOVEC
 
-#define BOOL wBOOL
-#undef Status
-#define Status wStatus
-#include <winsock.h>
-#undef Status
-#define Status int
-#undef BOOL
-#include <X11/Xw32defs.h>
-#endif /* WIN32 */
+#if defined(WIN32) || (defined(USG) && !defined(CRAY) && !defined(umips) && !defined(MOTOROLA) && !defined(uniosu))
 
-#if defined(USG) && !defined(CRAY) && !defined(umips) && !defined(MOTOROLA) && !defined(uniosu) 
-#define NEEDIOVEC
-#endif /* USG && !CRAY && !umips && !MOTOROLA && !uniosu */
-
-#ifdef NEEDIOVEC
 /*
  *      TRANS(Readv) and TRANS(Writev) use struct iovec, normally found
  *      in Berkeley systems in <sys/uio.h>.  See the readv(2) and writev(2)
@@ -146,17 +117,19 @@ struct iovec {
     int iov_len;
 };
 
-#undef NEEDIOVEC
-
 #else
 #include <sys/uio.h>
-#endif /* NEEDIOVEC */
-
-#ifndef NULL
-#define NULL 0
 #endif
 
 typedef struct _XtransConnInfo *XtransConnInfo;
+
+
+/*
+ * Transport Option definitions
+ */
+
+#define TRANS_NONBLOCKING	1
+#define	TRANS_CLOSEONEXEC	2
 
 
 /*
