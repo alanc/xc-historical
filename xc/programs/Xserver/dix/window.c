@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.231 89/03/18 16:20:32 rws Exp $ */
+/* $XConsortium: window.c,v 1.236 89/03/20 13:50:13 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -545,6 +545,7 @@ SetWindowToDefaults(pWin, pScreen)
     pWin->firstChild = NullWindow;
     pWin->lastChild = NullWindow;
 
+    pWin->cursor = (CursorPtr)None;
     pWin->userProps = (PropertyPtr)NULL;
 
     pWin->backingStore = NotUseful;
@@ -661,9 +662,6 @@ CreateRootWindow(screen)
 
     pWin->nextSib = NullWindow;
 
-    pWin->cursor = rootCursor;
-    rootCursor->refcnt++;
-
     pWin->client = serverClient;        /* since belongs to server */
     pWin->wid = FakeClientID(0);
 
@@ -696,28 +694,6 @@ CreateRootWindow(screen)
 		     RC_CORE))
 	return FALSE;
 
-    /* re-validate GC for use with root Window */
-
-    if (!(*pScreen->CreateWindow)(pWin))
-    {
-	DeleteWindow(pWin, pWin->wid);
-	return FALSE;
-    }
-    (*pScreen->PositionWindow)(pWin, 0, 0);
-
-    MakeRootTile(pWin);
-    /* We SHOULD check for an error value here XXX */
-    (*pScreen->ChangeWindowAttributes)(pWin, CWBackPixmap | CWBorderPixel);
-    (void)EventSelectForWindow(pWin, serverClient, (Mask)0); /* can't fail */
-
-    MapWindow(pWin, DONT_HANDLE_EXPOSURES, BITS_DISCARDED, 
-	      DONT_SEND_NOTIFICATION, serverClient);
-    (*pWin->PaintWindowBackground)(pWin, pWin->clipList, PW_BACKGROUND);
-
-    pWin->backingStore = defaultBackingStore;
-    /* We SHOULD check for an error value here XXX */
-    (*pScreen->ChangeWindowAttributes)(pWin, CWBackingStore);
-
     if (disableBackingStore)
 	pScreen->backingStoreSupport = NotUseful;
 
@@ -737,6 +713,28 @@ CreateRootWindow(screen)
 	pScreen->saveUnderSupport = NotUseful;
 
     return TRUE;
+}
+
+InitRootWindow(pWin)
+    WindowPtr pWin;
+{
+    ScreenPtr pScreen;
+
+    pScreen = pWin->drawable.pScreen;
+    if (!(*pScreen->CreateWindow)(pWin))
+	return; /* XXX */
+    (*pScreen->PositionWindow)(pWin, 0, 0);
+
+    pWin->cursor = rootCursor;
+    rootCursor->refcnt++;
+    MakeRootTile(pWin);
+    pWin->backingStore = defaultBackingStore;
+    /* We SHOULD check for an error value here XXX */
+    (*pScreen->ChangeWindowAttributes)(pWin,
+				       CWBackPixmap|CWCursor|CWBackingStore);
+
+    MapWindow(pWin, DONT_HANDLE_EXPOSURES, BITS_DISCARDED,
+	      DONT_SEND_NOTIFICATION, serverClient);
 }
 
 /* Set the region to the intersection of the rectangle and the
@@ -904,8 +902,6 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 	pWin->colormap = None;
     else
 	pWin->colormap = pParent->colormap;
-
-    pWin->cursor = (CursorPtr)None;
 
     pWin->borderWidth = (int) bw;
     pWin->backgroundTile = (PixmapPtr)None;
@@ -3230,6 +3226,7 @@ MapWindow(pWin, SendExposures, BitsAvailable, SendNotification, client)
         pWin->viewable = pWin->class == InputOutput;
     	/* We SHOULD check for an error value here XXX */
         (* pScreen->RealizeWindow)(pWin);
+	(*pWin->PaintWindowBackground)(pWin, pWin->clipList, PW_BACKGROUND);
     }
     
     return(Success);
