@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: list.c,v 1.13 89/07/18 17:16:01 jim Exp $
+ * $XConsortium: list.c,v 1.14 89/10/27 14:01:21 jim Exp $
  *
  * TWM code to deal with the name lists for the NoTitle list and
  * the AutoRaise list
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: list.c,v 1.13 89/07/18 17:16:01 jim Exp $";
+"$XConsortium: list.c,v 1.14 89/10/27 14:01:21 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -74,6 +74,8 @@ char *name;
 char *ptr;
 {
     name_list *nptr;
+
+    if (!list_head) return;	/* ignore empty inserts */
 
     nptr = (name_list *)malloc(sizeof(name_list));
     if (nptr == NULL)
