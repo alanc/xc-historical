@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Knob.c,v 1.2 87/09/11 21:21:41 swick Locked $";
+static char rcsid[] = "$Header: Knob.c,v 1.3 87/09/13 13:14:45 swick Locked $";
 #endif lint
 
 /*
@@ -35,7 +35,7 @@ static char rcsid[] = "$Header: Knob.c,v 1.2 87/09/11 21:21:41 swick Locked $";
  */
 
 
-#include "/usr/src/x11/include/Xlib.h"
+#include "Xlib.h"
 #include "cursorfont.h"
 #include "Intrinsic.h"
 #include "KnobP.h"
