@@ -19,6 +19,7 @@ extern Widget topform;
 
 static Widget popupshell;
 char filename[40];
+extern XtAppContext appcontext;
 
 void kill_popup_shell();
 
@@ -112,7 +113,7 @@ void get_filename(success,failure)
 			    textargs,XtNumber(textargs));
 
   actiontable[1].proc = (XtActionProc) success;
-  XtAddActions(actiontable,XtNumber(actiontable));
+  XtAppAddActions(appcontext,actiontable,XtNumber(actiontable));
   XtOverrideTranslations(text,XtParseTranslationTable(translationtable));
 
   cancelcallbacklist[1].callback = (XtCallbackProc) failure;

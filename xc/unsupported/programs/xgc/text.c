@@ -8,19 +8,22 @@
 */
 
 #include <X11/Intrinsic.h>
-#include <X11/Form.h>
-#include <X11/Label.h>
-#include <X11/AsciiText.h>
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/Label.h>
+#include <X11/Xaw/AsciiText.h>
 #include <X11/StringDefs.h>
 #include "xgc.h"
 
 extern XStuff X;
+extern XtAppContext appcontext;
 
 /* the strings which are displayed on the screen, edited, and sent
    to interpret() */
-static char textstrings[NUMTEXTWIDGETS][80] = {"0","6x10","0","1"};
+static char textstrings[NUMTEXTWIDGETS][80];
 
-static char oldtextstrings[NUMTEXTWIDGETS][80] = {"0","6x10","0","1"};
+static char oldtextstrings[NUMTEXTWIDGETS][80];
+
+static char *defaultstrings[NUMTEXTWIDGETS] = {"0","6x10","0","1"};
 
 /* The labels displayed next to them */
 static char *labels[NUMTEXTWIDGETS] = {"Line Width","Font","Foreground",
@@ -59,7 +62,7 @@ void create_text_choice(w,type,length,width)
   };
 
   static Arg textargs[] = {
-    {XtNeditType,   (XtArgVal) XttextEdit},
+    {XtNeditType,   (XtArgVal) XawtextEdit},
     {XtNstring,     (XtArgVal) NULL},
     {XtNlength,     (XtArgVal) NULL},
     {XtNwidth,      (XtArgVal) NULL},
@@ -104,6 +107,9 @@ void create_text_choice(w,type,length,width)
     sprintf(textstrings[type],"%d",(int) X.gcv.background);
     sprintf(oldtextstrings[type],"%d",(int) X.gcv.background);
     break;
+  default:
+    strcpy(textstrings[type],defaultstrings[type]);
+    strcpy(oldtextstrings[type],defaultstrings[type]);
   }
   textargs[1].value = (XtArgVal) textstrings[type];
   textargs[2].value = (XtArgVal) length;
@@ -115,7 +121,7 @@ void create_text_choice(w,type,length,width)
 			       textargs,XtNumber(textargs));
 
   /* like before, look in the Xt Manual for an explanation */
-  XtAddActions(actionTable,XtNumber(actionTable));
+  XtAppAddActions(appcontext,actionTable,XtNumber(actionTable));
   XtOverrideTranslations(text,XtParseTranslationTable(translationtable));
 }
 
@@ -150,6 +156,7 @@ void WriteText(w,event,params,num_params)
 ** Changes the text in the text widget w of type type to newtext.
 */
 
+
 void change_text(w,type,newtext)
      Widget w;
      int type;
@@ -159,3 +166,33 @@ void change_text(w,type,newtext)
   strcpy(oldtextstrings[type],newtext);
  /* XtTextDisplay(w); */
 }
+
+#ifdef notdef
+
+void change_text(w,type,newtext)
+     Widget w;
+     int type;
+     String newtext;
+{
+  XawTextBlock text;
+  XawTextPosition first, last;
+  int length;
+  static Arg textargs[] = {
+    {XtNlength, NULL}
+  };
+
+  text.firstPos = 0;
+  text.length = strlen(newtext);
+  text.ptr = newtext;
+  text.format = FMT8BIT;
+
+  textargs[0].value = (XtArgVal) &length;
+  XtGetValues(w,textargs,XtNumber(textargs));
+
+  first = XawTextTopPosition(w);
+  last = (XawTextPosition) length;
+
+  XawTextReplace(w, first, last, &text);
+}
+
+#endif
