@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.30 94/04/07 15:10:08 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.31 94/04/08 13:44:19 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0\"	\" make tall enough to span paragraph skip
 ..
@@ -191,8 +191,10 @@ Support Scalable and Polymorphic Fonts
 \*(SN Support Scalable and Polymorphic Fonts
 .XE
 .LP
-If a font source can be scaled to arbitrary size or varied in other
+.sC
+If a font source can be scaled to an arbitrary size or varied in other
 ways, it should be possible for an application to determine
+.eC
 that fact from the font name, and the
 application should be able to construct a font name for any specific
 instance.
@@ -486,8 +488,10 @@ FAMILY_NAME Field
 \*(SN FAMILY_NAME Field
 .XE
 .LP
-FAMILY_NAME is a string that identifies the range or \*Qfamily\*U of 
+.sC
+FAMILY_NAME is a string that identifies the range or family of 
 typeface designs that are all variations of one basic typographic style.
+.eC
 This must be spelled out in full,
 with words separated by spaces, as required.
 This name must be human-understandable and suitable for presentation to a 
@@ -1027,10 +1031,13 @@ T}
 _
 .TE
 .NL
+.sC
 .NH 2
-FontProperties
+Font Properties
+.br
+.eC
 .XS
-\*(SN FontProperties
+\*(SN Font Properties
 .XE
 .LP
 All font properties are optional but will generally include the 
@@ -1211,9 +1218,11 @@ ENspace = ROUND (EMspace / 2)
 THINspace = ROUND (EMspace / 3)\fP
 .DE
 .LP
-where a slash \*Q/\*U denotes real division, 
-the asterisk \*Q*\*U denotes real multiplication,
-and \*QROUND\*U denotes a function that rounds its real argument
+.sC
+where a slash (\^/\^) denotes real division, 
+an asterisk (\^*\^) denotes real multiplication,
+and ROUND denotes a function that rounds its real argument
+.eC
 \fIa\fP up or down
 to the next integer.
 This rounding is done according to X = FLOOR (\fIa\fP + 0.5),
@@ -1776,8 +1785,10 @@ X_HEIGHT
 \*(SN X_HEIGHT
 .XE
 .LP
-X_HEIGHT is a integer value (of type INT32)
+.sC
+X_HEIGHT is an integer value (of type INT32)
 that gives the nominal height above the baseline of the lowercase glyphs 
+.eC
 contained in the font, 
 as specified by the FOUNDRY or typeface designer.
 .LP
@@ -2000,7 +2011,9 @@ of the digital font data.
 This information is a required component of a font
 but is independent of the particular format used to represent it 
 (that is, it cannot be captured as a comment that could later 
-be \*Qthrown away\*U for efficiency reasons).
+.sC
+be thrown away for efficiency reasons).
+.eC
 .LP
 COPYRIGHT cannot be calculated or approximated if not provided as a font 
 property.
@@ -2481,26 +2494,22 @@ zero or more bitmap fonts, or some other format
 The following definitions are useful for discussing scalable fonts:
 .LP
 \fBWell-formed XLFD pattern\fP
-.br
 .IP
 A pattern string containing 14 hyphens, one of which is
 the first character of the pattern.  Wildcard characters are permitted
 in the fields of a well-formed XLFD pattern.
 .LP
 \fBScalable font name\fP
-.br
 .IP
 A well-formed XLFD pattern containing no wildcards and containing the
 digit \*Q0\*U in the PIXEL_SIZE, POINT_SIZE, and AVERAGE_WIDTH fields.
 .LP
 \fBScalable fields\fP
-.br
 .IP
 The XLFD fields PIXEL_SIZE, POINT_SIZE, RESOLUTION_X,
 RESOLUTION_Y, and AVERAGE_WIDTH.
 .LP
 \fBDerived instance\fP
-.br
 .IP
 The result of replacing the scalable fields of a font name
 with values to yield a font name that could actually be
@@ -2509,7 +2518,6 @@ permitted, but not required, to interpret the scalable
 fields in font names to support anamorphic scaling.
 .LP
 \fBGlobal list\fP
-.br
 .IP
 The list of names that would be returned by an X server for a
 .PN ListFonts
@@ -2517,8 +2525,8 @@ protocol request on the pattern \*Q*\*U if there were no protocol
 restrictions on the total number of names returned.
 .sp
 .LP
-The global list consists of font names derived from font sources.  If a single
-font source can support multiple character sets (specified
+The global list consists of font names derived from font sources.
+If a single font source can support multiple character sets (specified
 in the CHARSET_REGISTRY and CHARSET_ENCODING fields), each such character
 set should be used to form a separate font name in the list.
 For a nonscalable font source, the simple font name
@@ -2528,15 +2536,22 @@ is included in the list.  In addition to the scalable font name,
 specific derived instance names may also be included in the list.
 The relative order of derived instances with respect to the scalable
 font name is not constrained.  Finally, font name aliases may also be included
-in the list.  The relative order of aliases with respect to the \*Qreal\*U
-font name is not constrained.
+in the list.  The relative order of aliases
+.sC
+with respect to the real font name is not constrained.
+.br
+.eC
 .LP
 The values of the RESOLUTION_X and RESOLUTION_Y fields of a scalable font name
-are implementation dependent, but to maximize backward compatibility they
-should be reasonable non-zero values, for example, a resolution close to that
-provided by the screen (in a single-screen server).  Since some existing
+are implementation dependent,
+.sC
+but to maximize backward compatibility, they
+should be reasonable nonzero values, for example, a resolution close to that
+provided by the screen (in a single-screen server).
+Because some existing
 applications rely on seeing a collection of point and pixel sizes,
 server vendors are strongly encouraged in the near term to
+.eC
 provide a mechanism for including, for each scalable font name,
 a set of specific derived instance names.  For font sources that contain
 a collection of hand-tuned bitmap fonts, including names of these instances
@@ -2549,9 +2564,12 @@ implementation-dependent derived instance of that font name.
 .LP
 The X protocol request
 .PN ListFonts
-on a well-formed XLFD pattern returns the following.  Start with the
-global list.  If the actual pattern argument has values containing no wildcards
-in scalable fields, then substitute each such field into the corresponding
+on a well-formed XLFD pattern returns the following.
+.sC
+Starting with the global list, if the actual pattern argument
+has values containing no wildcards in scalable fields,
+.eC
+then substitute each such field into the corresponding
 field in each scalable font name in the list.  For each resulting font name,
 if the remaining scalable fields cannot be replaced with values to produce a
 derived instance, remove the font name from the list.  Now take the modified
@@ -2567,9 +2585,12 @@ For example, given the global list:
 -Linotype-Times-Medium-R-Normal--0-0-100-100-P-0-ISO8859-1
 .DE
 .LP
-A
+.sC
+a
 .PN ListFonts
 request with the pattern:
+.br
+.eC
 .LP
 .DS
 -*-Times-*-R-Normal--*-120-100-100-P-*-ISO8859-1
@@ -2912,12 +2933,16 @@ DEFAULT_CHAR
 \*(SN DEFAULT_CHAR
 .XE
 .LP
-The DEFAULT_CHAR is a unsigned integer value (of type CARD32)
+.sC
+The DEFAULT_CHAR is an unsigned integer value (of type CARD32)
 that specifies the index
 of the default character to be used by the X server when an attempt
+.eC
 is made to display an undefined or nonexistent character in the font.
-(For a font using two byte matrix format,
+.sC
+(For a font using two-byte matrix format,
 the index bytes are encoded in the integer as byte1 * 65536 + byte2.)
+.eC
 If the DEFAULT_CHAR itself specifies an undefined or nonexistent character 
 in the font, 
 then no display is performed.
