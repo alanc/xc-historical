@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: AsciiSink.c,v 1.12 88/02/25 12:02:24 swick Exp $";
+static char rcsid[] = "$Header: AsciiSink.c,v 1.12 88/02/25 12:20:31 swick Exp $";
 #endif lint
 
 
@@ -57,7 +57,7 @@ static char *buf = NULL;
 static XtResource SinkResources[] = {
     {XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
         XtOffset(AsciiSinkPtr, font), XtRString, "Fixed"},
-    {XtNforeground, XtCColor, XtRPixel, sizeof (int),
+    {XtNforeground, XtCForeground, XtRPixel, sizeof (int),
         XtOffset(AsciiSinkPtr, foreground), XtRString, "Black"},    
 };
 
