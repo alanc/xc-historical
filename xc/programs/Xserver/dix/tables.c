@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: tables.c,v 1.13 87/08/01 15:16:00 newman Locked $ */
+/* $Header: tables.c,v 1.14 87/08/06 15:33:14 newman Locked $ */
 
 extern int    ProcBadRequest(), ProcCreateWindow(),
     ProcChangeWindowAttributes(), ProcGetWindowAttributes(),
@@ -86,7 +86,7 @@ extern int    SProcSProcBadRequest(), SProcCreateWindow(),
     SProcCreateGC(), SProcChangeGC(), SProcCopyGC(),
     SProcSetDashes(), SProcSetClipRectangles(),
     SProcClearToBackground(), SProcCopyArea(), SProcCopyPlane(),
-    SProcPoly(), SProcPutImage(),
+    SProcPoly(), SProcFillPoly(), SProcPutImage(),
     SProcGetImage(), SProcPolyText(), 
     SProcImageText(), SProcCreateColormap(),
     SProcCopyColormapAndFree(), SProcAllocColor(),
@@ -336,7 +336,7 @@ int (* SwappedProcVector[256]) () =
     SProcPoly,				/* PolySegment, */
     SProcPoly,				/* PolyRectangle, */
     SProcPoly,				/* PolyArc, */
-    SProcPoly,				/* FillPoly */
+    SProcFillPoly,
     SProcPoly,				/* 70 PolyFillRectangle */
     SProcPoly,				/* PolyFillArc, */
     SProcPutImage,
