@@ -172,8 +172,6 @@ will use whatever
 .I make
 program is found using
 .I execvp(3).
-.SH "BUGS"
-Comments should be preceded by ``/**/#'' to protect them from \fIcpp\fP.
 .SH "AUTHOR"
 Todd Brunhoff, Tektronix and MIT Project Athena; Jim Fulton, MIT X Consortium
 
