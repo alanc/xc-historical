@@ -13,7 +13,7 @@
 #  make no representations about the suitability of this software for any
 #  purpose.  It is provided "as is" without express or implied warranty.
 # 
-# $XConsortium: rpt,v 1.8 92/06/11 18:01:47 rws Exp $
+# $XConsortium: rpt,v 1.9 94/03/06 17:51:52 rws Exp $
 #
 
 # A simple report generator for development use
@@ -28,6 +28,7 @@ DODEBUG=0
 DOTRACE=0
 DOPASS=1
 DOSUM=1
+DOGLOBAL=0
 
 usefile=
 number=
