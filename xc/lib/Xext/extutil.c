@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: extutil.c,v 1.2 89/09/25 16:09:07 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -33,11 +33,17 @@
  *         XextAddDisplay		add another display
  *         XextRemoveDisplay		remove a display
  *         XextFindDisplay		is a display open
+ * 
+ * In addition, the following Xlib-style interfaces are provided:
+ * 
+ *         XSetExtensionErrorHandler	establish an extension error handler
+ *         XMissingExtension		raise an error about missing ext
  */
 
 #include <stdio.h>
 #include <X11/Xlib.h>
-#include "extutil.h"
+#include "../include/Xext.h"
+#include "../include/extutil.h"
 
 
 /*
@@ -47,7 +53,8 @@
  */
 XExtensionInfo *XextCreateExtension ()
 {
-    register XExtensionInfo *info = Xmalloc (sizeof (XExtensionInfo));
+    register XExtensionInfo *info =
+      (XExtensionInfo *) Xmalloc (sizeof (XExtensionInfo));
 
     if (info) {
 	info->head = NULL;
@@ -61,13 +68,13 @@ XExtensionInfo *XextCreateExtension ()
 /*
  * XextDestroyExtension - free memory the given extension descriptor
  */
-void XextDestroyExtension (extinfo)
-    XExtensionInfo *extinfo;
+void XextDestroyExtension (info)
+    XExtensionInfo *info;
 {
-    extinfo->head = NULL;		/* to catch refs after this */
-    extinfo->cur = NULL;
+    info->head = NULL;			/* to catch refs after this */
+    info->cur = NULL;
     info->ndisplays = 0;
-    XFree ((char *) extinfo);
+    XFree ((char *) info);
 }
 
 
@@ -101,7 +108,7 @@ XExtDisplayInfo *XextAddDisplay (extinfo, dpy, ext_name, close_display,
     if (dpyinfo->codes) {
 	int i, j;
 
-	XESetCloseDisplay (dpy, dpyinfo->codes->extension, close_proc);
+	XESetCloseDisplay (dpy, dpyinfo->codes->extension, close_display);
 	for (i = 0, j = dpyinfo->codes->first_event; i < nevents; i++, j++) {
 	    XESetWireToEvent (dpy, j, wire_to_event);
 	    XESetEventToWire (dpy, j, event_to_wire);
@@ -184,3 +191,45 @@ XExtDisplayInfo *XextFindDisplay (extinfo, dpy)
 
 
 
+static int _default_exterror (dpy, ext_name, reason)
+    Display *dpy;
+    char *ext_name;
+    char *reason;
+{
+    fprintf (stderr, "Xlib:  extension \"%s\" %s on display \"%s\".\n",
+	     ext_name, reason, DisplayString(dpy));
+    exit (1);
+}
+
+
+/*
+ * XSetExtensionErrorHandler - sets the handler that gets called when a 
+ * requested extension is referenced.  This should eventually move into Xlib.
+ */
+
+extern int (*_XExtensionErrorFunction)();
+
+int (*XSetExtensionErrorHandler(handler))()
+    int (*handler)();
+{
+    int (*oldhandler)() = _XExtensionErrorFunction;
+
+    _XExtensionErrorFunction = (handler ? handler :
+				_default_exterror);
+    return oldhandler;
+}
+
+
+/*
+ * XMissingExtension - call the extension error handler
+ */
+int XMissingExtension (dpy, ext_name)
+    Display *dpy;
+    char *ext_name;
+{
+    int (*func)() = (_XExtensionErrorFunction ?
+		     (*_XExtensionErrorFunction) : _default_exterror);
+
+    if (!ext_name) ext_name = X_EXTENSION_UNKNOWN;
+    return (*func) (dpy, ext_name, X_EXTENSION_MISSING);
+}
