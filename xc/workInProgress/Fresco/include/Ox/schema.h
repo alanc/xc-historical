@@ -28,11 +28,12 @@
 #include "obj-impl.h"
 
 /*
- * This function handles narrowing of a nil object reference.
- * It should be a static member function in BaseObject, but
- * cannot be to workaround a C++ compiler bug.
+ * These functions handle narrowing of a nil object reference.
+ * They should be static member functions in BaseObject, but
+ * currently are not because of a C++ compiler bug.
  */
-void* _BaseObject_tnarrow_(BaseObjectRef, TypeObjId, StubCreator);
+void* _BaseObject_tnarrow(BaseObjectRef, TypeObjId, StubCreator);
+void* _BaseObject_tcast(BaseObjectRef, TypeObjId);
 
 typedef ULong ExchangeId;
 
@@ -63,6 +64,7 @@ struct TypeObj_Descriptor {
     TypeObjId* id;
     char* name;
     TypeObj_Descriptor** parents;
+    Long* offsets;
     TypeObj_UnmarshalException* excepts;
     TypeObj_OpData* methods;
     TypeObj_ParamData* params;
@@ -106,8 +108,8 @@ public:
     void load(TypeObj_Descriptor*);
     void load_list(TypeObj_Descriptor**);
     TypeObjRef map(TypeObjId);
-    Boolean compatible(TypeObjId ancestor, TypeObjId descendant);
-    Boolean match(TypeObj_Descriptor*, TypeObjId);
+    void* cast(void* obj, TypeObjId ancestor, TypeObjId descendant);
+    void* match(void*, TypeObj_Descriptor*, TypeObjId);
     void receiver(TypeObjId, TypeObj_CallFunc);
     TypeObj_Descriptor* descriptor(TypeObjId);
     void save();
@@ -123,19 +125,19 @@ protected:
 
 /*
  * Handy macros for referring to type variables.
- * The id (TypeIdVar) is _<type>_tid_ and the descriptor (TypeVar)
- * is _<type>_type_.
+ * The id (TypeIdVar) is _<type>_tid and the descriptor (TypeVar)
+ * is _<type>_type.
  */
 
 #if defined(__STDC__) || defined(__ANSI_CPP__)
-#define __TypeIdVar(T) _##T##_##tid##_
+#define __TypeIdVar(T) _##T##_##tid
 #define TypeIdVar(T) __TypeIdVar(T)
-#define __TypeVar(T) _##T##_##type##_
+#define __TypeVar(T) _##T##_##type
 #define TypeVar(T) __TypeVar(T)
 #else
-#define __TypeIdVar(T) _/**/T/**/_/**/tid/**/_
+#define __TypeIdVar(T) _/**/T/**/_/**/tid
 #define TypeIdVar(T) __TypeIdVar(T)
-#define __TypeVar(T) _/**/T/**/_/**/type/**/_
+#define __TypeVar(T) _/**/T/**/_/**/type
 #define TypeVar(T) __TypeVar(T)
 #endif
 

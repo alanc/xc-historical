@@ -6,54 +6,44 @@
 #include <X11/Fresco/_enter.h>
 #include <X11/Fresco/glyph.h>
 
-class EventType;
-typedef EventType* EventRef;
-class Event;
-class _EventExpr;
-class _EventElem;
-
 class FocusType;
 typedef FocusType* FocusRef;
+typedef FocusRef Focus_in;
 class Focus;
-class _FocusExpr;
-class _FocusElem;
+class Focus_tmp;
+class Focus_var;
 
-class ViewerType;
-typedef ViewerType* ViewerRef;
-class Viewer;
-class _ViewerExpr;
-class _ViewerElem;
-
-class WindowType;
-typedef WindowType* WindowRef;
-class Window;
-class _WindowExpr;
-class _WindowElem;
+class EventType;
+typedef EventType* EventRef;
+typedef EventRef Event_in;
+class Event;
+class Event_tmp;
+class Event_var;
 
 class Event {
 public:
-    EventRef _obj;
+    EventRef _obj_;
 
-    Event() { _obj = 0; }
-    Event(EventRef p) { _obj = p; }
+    Event() { _obj_ = 0; }
+    Event(EventRef p) { _obj_ = p; }
     Event& operator =(EventRef p);
     Event(const Event&);
     Event& operator =(const Event& r);
-    Event(const _EventExpr&);
-    Event& operator =(const _EventExpr&);
-    Event(const _EventElem&);
-    Event& operator =(const _EventElem&);
+    Event(const Event_tmp&);
+    Event& operator =(const Event_tmp&);
+    Event(const Event_var&);
+    Event& operator =(const Event_var&);
     ~Event();
 
-    operator EventRef() const { return _obj; }
-    EventRef operator ->() { return _obj; }
+    EventRef operator ->() { return _obj_; }
 
+    operator Event_in() const { return _obj_; }
     operator FrescoObject() const;
     static EventRef _narrow(BaseObjectRef p);
-    static _EventExpr _narrow(const BaseObject& r);
+    static Event_tmp _narrow(const BaseObject& r);
 
     static EventRef _duplicate(EventRef obj);
-    static _EventExpr _duplicate(const Event& r);
+    static Event_tmp _duplicate(const Event& r);
     typedef Long ButtonIndex;
     typedef ULong KeySym;
     class KeyChord {
@@ -78,21 +68,21 @@ public:
     };
 };
 
-class _EventExpr : public Event {
+class Event_tmp : public Event {
 public:
-    _EventExpr(EventRef p) { _obj = p; }
-    _EventExpr(const Event& r) { _obj = r._obj; }
-    _EventExpr(const _EventExpr& r) { _obj = r._obj; }
-    ~_EventExpr();
+    Event_tmp(EventRef p) { _obj_ = p; }
+    Event_tmp(const Event& r);
+    Event_tmp(const Event_tmp& r);
+    ~Event_tmp();
 };
 
-class _EventElem {
+class Event_var {
 public:
-    EventRef _obj;
+    EventRef _obj_;
 
-    _EventElem(EventRef p) { _obj = p; }
-    operator EventRef() const { return _obj; }
-    EventRef operator ->() { return _obj; }
+    Event_var(EventRef p) { _obj_ = p; }
+    operator EventRef() const { return _obj_; }
+    EventRef operator ->() { return _obj_; }
 };
 
 class EventType : public FrescoObjectType {
@@ -102,6 +92,7 @@ protected:
 public:
     virtual Event::TypeId type();
     virtual Event::TimeStamp time();
+    virtual Boolean positional();
     virtual Coord pointer_x();
     virtual Coord pointer_y();
     virtual Event::ButtonIndex pointer_button();
@@ -110,8 +101,8 @@ public:
     virtual Event::KeySym key();
     virtual CharCode character();
     virtual void unread();
-
-    _EventExpr _ref();
+    EventRef _obj() { return this; }
+    void* _this();
     virtual TypeObjId _tid();
 };
 
@@ -126,97 +117,55 @@ protected:
     Exchange* exch_;
 };
 
-inline EventRef Event::_duplicate(EventRef obj) {
-    return (EventRef)_BaseObject__duplicate(obj, &EventStub::_create);
-}
-inline Event& Event::operator =(EventRef p) {
-    _BaseObject__release(_obj);
-    _obj = Event::_duplicate(p);
-    return *this;
-}
-inline Event::Event(const Event& r) {
-    _obj = Event::_duplicate(r._obj);
-}
-inline Event& Event::operator =(const Event& r) {
-    _BaseObject__release(_obj);
-    _obj = Event::_duplicate(r._obj);
-    return *this;
-}
-inline Event::Event(const _EventExpr& r) {
-    _obj = r._obj;
-    ((_EventExpr*)&r)->_obj = 0;
-}
-inline Event& Event::operator =(const _EventExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_EventExpr*)&r)->_obj = 0;
-    return *this;
-}
-inline Event::Event(const _EventElem& e) {
-    _obj = Event::_duplicate(e._obj);
-}
-inline Event& Event::operator =(const _EventElem& e) {
-    _BaseObject__release(_obj);
-    _obj = Event::_duplicate(e._obj);
-    return *this;
-}
-inline Event::~Event() {
-    _BaseObject__release(_obj);
-}
-inline _EventExpr Event::_narrow(const BaseObject& r) {
-    return _narrow(r._obj);
-}
-inline _EventExpr Event::_duplicate(const Event& r) {
-    return _duplicate(r._obj);
-}
-inline Event::operator FrescoObject() const {
-    return _FrescoObjectExpr((FrescoObjectRef)_BaseObject__duplicate(_obj, &FrescoObjectStub::_create));
-}
-inline _EventExpr::~_EventExpr() { }
-inline _EventExpr EventType::_ref() { return this; }
+class ViewerType;
+typedef ViewerType* ViewerRef;
+typedef ViewerRef Viewer_in;
+class Viewer;
+class Viewer_tmp;
+class Viewer_var;
 
 class Viewer {
 public:
-    ViewerRef _obj;
+    ViewerRef _obj_;
 
-    Viewer() { _obj = 0; }
-    Viewer(ViewerRef p) { _obj = p; }
+    Viewer() { _obj_ = 0; }
+    Viewer(ViewerRef p) { _obj_ = p; }
     Viewer& operator =(ViewerRef p);
     Viewer(const Viewer&);
     Viewer& operator =(const Viewer& r);
-    Viewer(const _ViewerExpr&);
-    Viewer& operator =(const _ViewerExpr&);
-    Viewer(const _ViewerElem&);
-    Viewer& operator =(const _ViewerElem&);
+    Viewer(const Viewer_tmp&);
+    Viewer& operator =(const Viewer_tmp&);
+    Viewer(const Viewer_var&);
+    Viewer& operator =(const Viewer_var&);
     ~Viewer();
 
-    operator ViewerRef() const { return _obj; }
-    ViewerRef operator ->() { return _obj; }
+    ViewerRef operator ->() { return _obj_; }
 
+    operator Viewer_in() const { return _obj_; }
     operator Glyph() const;
     operator FrescoObject() const;
     static ViewerRef _narrow(BaseObjectRef p);
-    static _ViewerExpr _narrow(const BaseObject& r);
+    static Viewer_tmp _narrow(const BaseObject& r);
 
     static ViewerRef _duplicate(ViewerRef obj);
-    static _ViewerExpr _duplicate(const Viewer& r);
+    static Viewer_tmp _duplicate(const Viewer& r);
 };
 
-class _ViewerExpr : public Viewer {
+class Viewer_tmp : public Viewer {
 public:
-    _ViewerExpr(ViewerRef p) { _obj = p; }
-    _ViewerExpr(const Viewer& r) { _obj = r._obj; }
-    _ViewerExpr(const _ViewerExpr& r) { _obj = r._obj; }
-    ~_ViewerExpr();
+    Viewer_tmp(ViewerRef p) { _obj_ = p; }
+    Viewer_tmp(const Viewer& r);
+    Viewer_tmp(const Viewer_tmp& r);
+    ~Viewer_tmp();
 };
 
-class _ViewerElem {
+class Viewer_var {
 public:
-    ViewerRef _obj;
+    ViewerRef _obj_;
 
-    _ViewerElem(ViewerRef p) { _obj = p; }
-    operator ViewerRef() const { return _obj; }
-    ViewerRef operator ->() { return _obj; }
+    Viewer_var(ViewerRef p) { _obj_ = p; }
+    operator ViewerRef() const { return _obj_; }
+    ViewerRef operator ->() { return _obj_; }
 };
 
 class ViewerType : public GlyphType {
@@ -224,46 +173,46 @@ protected:
     ViewerType();
     virtual ~ViewerType();
 public:
-    _ViewerExpr parent_viewer() {
+    Viewer_tmp parent_viewer() {
         return _c_parent_viewer();
     }
     virtual ViewerRef _c_parent_viewer();
-    _ViewerExpr next_viewer() {
+    Viewer_tmp next_viewer() {
         return _c_next_viewer();
     }
     virtual ViewerRef _c_next_viewer();
-    _ViewerExpr prev_viewer() {
+    Viewer_tmp prev_viewer() {
         return _c_prev_viewer();
     }
     virtual ViewerRef _c_prev_viewer();
-    _ViewerExpr first_viewer() {
+    Viewer_tmp first_viewer() {
         return _c_first_viewer();
     }
     virtual ViewerRef _c_first_viewer();
-    _ViewerExpr last_viewer() {
+    Viewer_tmp last_viewer() {
         return _c_last_viewer();
     }
     virtual ViewerRef _c_last_viewer();
-    virtual void append_viewer(ViewerRef v);
-    virtual void prepend_viewer(ViewerRef v);
-    virtual void insert_viewer(ViewerRef v);
-    virtual void replace_viewer(ViewerRef v);
+    virtual void append_viewer(Viewer_in v);
+    virtual void prepend_viewer(Viewer_in v);
+    virtual void insert_viewer(Viewer_in v);
+    virtual void replace_viewer(Viewer_in v);
     virtual void remove_viewer();
-    virtual void set_viewer_links(ViewerRef parent, ViewerRef prev, ViewerRef next);
-    virtual void set_first_viewer(ViewerRef v);
-    virtual void set_last_viewer(ViewerRef v);
-    _FocusExpr request_focus(ViewerRef requestor, Boolean temporary);
-    virtual FocusRef _c_request_focus(ViewerRef requestor, Boolean temporary);
-    virtual Boolean receive_focus(FocusRef f, Boolean primary);
+    virtual void set_viewer_links(Viewer_in parent, Viewer_in prev, Viewer_in next);
+    virtual void set_first_viewer(Viewer_in v);
+    virtual void set_last_viewer(Viewer_in v);
+    Focus_tmp request_focus(Viewer_in requestor, Boolean temporary);
+    virtual FocusRef _c_request_focus(Viewer_in requestor, Boolean temporary);
+    virtual Boolean receive_focus(Focus_in f, Boolean primary);
     virtual void lose_focus(Boolean temporary);
     virtual Boolean first_focus();
     virtual Boolean last_focus();
     virtual Boolean next_focus();
     virtual Boolean prev_focus();
-    virtual Boolean handle(GlyphTraversalRef t, EventRef e);
+    virtual Boolean handle(GlyphTraversal_in t, Event_in e);
     virtual void close();
-
-    _ViewerExpr _ref();
+    ViewerRef _obj() { return this; }
+    void* _this();
     virtual TypeObjId _tid();
 };
 
@@ -278,99 +227,47 @@ protected:
     Exchange* exch_;
 };
 
-inline ViewerRef Viewer::_duplicate(ViewerRef obj) {
-    return (ViewerRef)_BaseObject__duplicate(obj, &ViewerStub::_create);
-}
-inline Viewer& Viewer::operator =(ViewerRef p) {
-    _BaseObject__release(_obj);
-    _obj = Viewer::_duplicate(p);
-    return *this;
-}
-inline Viewer::Viewer(const Viewer& r) {
-    _obj = Viewer::_duplicate(r._obj);
-}
-inline Viewer& Viewer::operator =(const Viewer& r) {
-    _BaseObject__release(_obj);
-    _obj = Viewer::_duplicate(r._obj);
-    return *this;
-}
-inline Viewer::Viewer(const _ViewerExpr& r) {
-    _obj = r._obj;
-    ((_ViewerExpr*)&r)->_obj = 0;
-}
-inline Viewer& Viewer::operator =(const _ViewerExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_ViewerExpr*)&r)->_obj = 0;
-    return *this;
-}
-inline Viewer::Viewer(const _ViewerElem& e) {
-    _obj = Viewer::_duplicate(e._obj);
-}
-inline Viewer& Viewer::operator =(const _ViewerElem& e) {
-    _BaseObject__release(_obj);
-    _obj = Viewer::_duplicate(e._obj);
-    return *this;
-}
-inline Viewer::~Viewer() {
-    _BaseObject__release(_obj);
-}
-inline _ViewerExpr Viewer::_narrow(const BaseObject& r) {
-    return _narrow(r._obj);
-}
-inline _ViewerExpr Viewer::_duplicate(const Viewer& r) {
-    return _duplicate(r._obj);
-}
-inline Viewer::operator Glyph() const {
-    return _GlyphExpr((GlyphRef)_BaseObject__duplicate(_obj, &GlyphStub::_create));
-}
-inline Viewer::operator FrescoObject() const {
-    return _FrescoObjectExpr((FrescoObjectRef)_BaseObject__duplicate((GlyphRef)_obj, &FrescoObjectStub::_create));
-}
-inline _ViewerExpr::~_ViewerExpr() { }
-inline _ViewerExpr ViewerType::_ref() { return this; }
-
 class Focus {
 public:
-    FocusRef _obj;
+    FocusRef _obj_;
 
-    Focus() { _obj = 0; }
-    Focus(FocusRef p) { _obj = p; }
+    Focus() { _obj_ = 0; }
+    Focus(FocusRef p) { _obj_ = p; }
     Focus& operator =(FocusRef p);
     Focus(const Focus&);
     Focus& operator =(const Focus& r);
-    Focus(const _FocusExpr&);
-    Focus& operator =(const _FocusExpr&);
-    Focus(const _FocusElem&);
-    Focus& operator =(const _FocusElem&);
+    Focus(const Focus_tmp&);
+    Focus& operator =(const Focus_tmp&);
+    Focus(const Focus_var&);
+    Focus& operator =(const Focus_var&);
     ~Focus();
 
-    operator FocusRef() const { return _obj; }
-    FocusRef operator ->() { return _obj; }
+    FocusRef operator ->() { return _obj_; }
 
+    operator Focus_in() const { return _obj_; }
     operator FrescoObject() const;
     static FocusRef _narrow(BaseObjectRef p);
-    static _FocusExpr _narrow(const BaseObject& r);
+    static Focus_tmp _narrow(const BaseObject& r);
 
     static FocusRef _duplicate(FocusRef obj);
-    static _FocusExpr _duplicate(const Focus& r);
+    static Focus_tmp _duplicate(const Focus& r);
 };
 
-class _FocusExpr : public Focus {
+class Focus_tmp : public Focus {
 public:
-    _FocusExpr(FocusRef p) { _obj = p; }
-    _FocusExpr(const Focus& r) { _obj = r._obj; }
-    _FocusExpr(const _FocusExpr& r) { _obj = r._obj; }
-    ~_FocusExpr();
+    Focus_tmp(FocusRef p) { _obj_ = p; }
+    Focus_tmp(const Focus& r);
+    Focus_tmp(const Focus_tmp& r);
+    ~Focus_tmp();
 };
 
-class _FocusElem {
+class Focus_var {
 public:
-    FocusRef _obj;
+    FocusRef _obj_;
 
-    _FocusElem(FocusRef p) { _obj = p; }
-    operator FocusRef() const { return _obj; }
-    FocusRef operator ->() { return _obj; }
+    Focus_var(FocusRef p) { _obj_ = p; }
+    operator FocusRef() const { return _obj_; }
+    FocusRef operator ->() { return _obj_; }
 };
 
 class FocusType : public FrescoObjectType {
@@ -378,13 +275,13 @@ protected:
     FocusType();
     virtual ~FocusType();
 public:
-    virtual void add_focus_interest(ViewerRef v);
-    virtual void receive_focus_below(ViewerRef v, Boolean temporary);
-    virtual void lose_focus_below(ViewerRef v, Boolean temporary);
-    virtual void map_keystroke(Event::KeySym k, ActionRef a);
-    virtual void map_keychord(const Event::KeyChord& k, ActionRef a);
-
-    _FocusExpr _ref();
+    virtual void add_focus_interest(Viewer_in v);
+    virtual void receive_focus_below(Viewer_in v, Boolean temporary);
+    virtual void lose_focus_below(Viewer_in v, Boolean temporary);
+    virtual void map_keystroke(Event::KeySym k, Action_in a);
+    virtual void map_keychord(const Event::KeyChord& k, Action_in a);
+    FocusRef _obj() { return this; }
+    void* _this();
     virtual TypeObjId _tid();
 };
 
@@ -399,53 +296,172 @@ protected:
     Exchange* exch_;
 };
 
+inline EventRef Event::_duplicate(EventRef obj) {
+    return (EventRef)_BaseObject__duplicate(obj, &EventStub::_create);
+}
+inline Event& Event::operator =(EventRef p) {
+    _BaseObject__release(_obj_);
+    _obj_ = Event::_duplicate(p);
+    return *this;
+}
+inline Event::Event(const Event& r) {
+    _obj_ = Event::_duplicate(r._obj_);
+}
+inline Event& Event::operator =(const Event& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = Event::_duplicate(r._obj_);
+    return *this;
+}
+inline Event::Event(const Event_tmp& r) {
+    _obj_ = r._obj_;
+    ((Event_tmp*)&r)->_obj_ = 0;
+}
+inline Event& Event::operator =(const Event_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((Event_tmp*)&r)->_obj_ = 0;
+    return *this;
+}
+inline Event::Event(const Event_var& e) {
+    _obj_ = Event::_duplicate(e._obj_);
+}
+inline Event& Event::operator =(const Event_var& e) {
+    _BaseObject__release(_obj_);
+    _obj_ = Event::_duplicate(e._obj_);
+    return *this;
+}
+inline Event::~Event() {
+    _BaseObject__release(_obj_);
+}
+inline Event_tmp Event::_narrow(const BaseObject& r) {
+    return _narrow(r._obj_);
+}
+inline Event_tmp Event::_duplicate(const Event& r) {
+    return _duplicate(r._obj_);
+}
+inline Event::operator FrescoObject() const {
+    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
+}
+inline Event_tmp::Event_tmp(const Event& r) {
+    _obj_ = Event::_duplicate(r._obj_);
+}
+inline Event_tmp::Event_tmp(const Event_tmp& r) {
+    _obj_ = r._obj_;
+    ((Event_tmp*)&r)->_obj_ = 0;
+}
+inline Event_tmp::~Event_tmp() { }
+
+inline ViewerRef Viewer::_duplicate(ViewerRef obj) {
+    return (ViewerRef)_BaseObject__duplicate(obj, &ViewerStub::_create);
+}
+inline Viewer& Viewer::operator =(ViewerRef p) {
+    _BaseObject__release(_obj_);
+    _obj_ = Viewer::_duplicate(p);
+    return *this;
+}
+inline Viewer::Viewer(const Viewer& r) {
+    _obj_ = Viewer::_duplicate(r._obj_);
+}
+inline Viewer& Viewer::operator =(const Viewer& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = Viewer::_duplicate(r._obj_);
+    return *this;
+}
+inline Viewer::Viewer(const Viewer_tmp& r) {
+    _obj_ = r._obj_;
+    ((Viewer_tmp*)&r)->_obj_ = 0;
+}
+inline Viewer& Viewer::operator =(const Viewer_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((Viewer_tmp*)&r)->_obj_ = 0;
+    return *this;
+}
+inline Viewer::Viewer(const Viewer_var& e) {
+    _obj_ = Viewer::_duplicate(e._obj_);
+}
+inline Viewer& Viewer::operator =(const Viewer_var& e) {
+    _BaseObject__release(_obj_);
+    _obj_ = Viewer::_duplicate(e._obj_);
+    return *this;
+}
+inline Viewer::~Viewer() {
+    _BaseObject__release(_obj_);
+}
+inline Viewer_tmp Viewer::_narrow(const BaseObject& r) {
+    return _narrow(r._obj_);
+}
+inline Viewer_tmp Viewer::_duplicate(const Viewer& r) {
+    return _duplicate(r._obj_);
+}
+inline Viewer::operator Glyph() const {
+    return Glyph_tmp((GlyphRef)_BaseObject__duplicate((GlyphRef)_obj_, &GlyphStub::_create));
+}
+inline Viewer::operator FrescoObject() const {
+    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((GlyphRef)(FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
+}
+inline Viewer_tmp::Viewer_tmp(const Viewer& r) {
+    _obj_ = Viewer::_duplicate(r._obj_);
+}
+inline Viewer_tmp::Viewer_tmp(const Viewer_tmp& r) {
+    _obj_ = r._obj_;
+    ((Viewer_tmp*)&r)->_obj_ = 0;
+}
+inline Viewer_tmp::~Viewer_tmp() { }
+
 inline FocusRef Focus::_duplicate(FocusRef obj) {
     return (FocusRef)_BaseObject__duplicate(obj, &FocusStub::_create);
 }
 inline Focus& Focus::operator =(FocusRef p) {
-    _BaseObject__release(_obj);
-    _obj = Focus::_duplicate(p);
+    _BaseObject__release(_obj_);
+    _obj_ = Focus::_duplicate(p);
     return *this;
 }
 inline Focus::Focus(const Focus& r) {
-    _obj = Focus::_duplicate(r._obj);
+    _obj_ = Focus::_duplicate(r._obj_);
 }
 inline Focus& Focus::operator =(const Focus& r) {
-    _BaseObject__release(_obj);
-    _obj = Focus::_duplicate(r._obj);
+    _BaseObject__release(_obj_);
+    _obj_ = Focus::_duplicate(r._obj_);
     return *this;
 }
-inline Focus::Focus(const _FocusExpr& r) {
-    _obj = r._obj;
-    ((_FocusExpr*)&r)->_obj = 0;
+inline Focus::Focus(const Focus_tmp& r) {
+    _obj_ = r._obj_;
+    ((Focus_tmp*)&r)->_obj_ = 0;
 }
-inline Focus& Focus::operator =(const _FocusExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_FocusExpr*)&r)->_obj = 0;
+inline Focus& Focus::operator =(const Focus_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((Focus_tmp*)&r)->_obj_ = 0;
     return *this;
 }
-inline Focus::Focus(const _FocusElem& e) {
-    _obj = Focus::_duplicate(e._obj);
+inline Focus::Focus(const Focus_var& e) {
+    _obj_ = Focus::_duplicate(e._obj_);
 }
-inline Focus& Focus::operator =(const _FocusElem& e) {
-    _BaseObject__release(_obj);
-    _obj = Focus::_duplicate(e._obj);
+inline Focus& Focus::operator =(const Focus_var& e) {
+    _BaseObject__release(_obj_);
+    _obj_ = Focus::_duplicate(e._obj_);
     return *this;
 }
 inline Focus::~Focus() {
-    _BaseObject__release(_obj);
+    _BaseObject__release(_obj_);
 }
-inline _FocusExpr Focus::_narrow(const BaseObject& r) {
-    return _narrow(r._obj);
+inline Focus_tmp Focus::_narrow(const BaseObject& r) {
+    return _narrow(r._obj_);
 }
-inline _FocusExpr Focus::_duplicate(const Focus& r) {
-    return _duplicate(r._obj);
+inline Focus_tmp Focus::_duplicate(const Focus& r) {
+    return _duplicate(r._obj_);
 }
 inline Focus::operator FrescoObject() const {
-    return _FrescoObjectExpr((FrescoObjectRef)_BaseObject__duplicate(_obj, &FrescoObjectStub::_create));
+    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
 }
-inline _FocusExpr::~_FocusExpr() { }
-inline _FocusExpr FocusType::_ref() { return this; }
+inline Focus_tmp::Focus_tmp(const Focus& r) {
+    _obj_ = Focus::_duplicate(r._obj_);
+}
+inline Focus_tmp::Focus_tmp(const Focus_tmp& r) {
+    _obj_ = r._obj_;
+    ((Focus_tmp*)&r)->_obj_ = 0;
+}
+inline Focus_tmp::~Focus_tmp() { }
 
 #endif

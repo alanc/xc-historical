@@ -36,7 +36,7 @@ public:
     //+ Action::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();

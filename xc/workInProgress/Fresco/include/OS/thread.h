@@ -8,50 +8,51 @@
 
 class BaseThreadsObjType;
 typedef BaseThreadsObjType* BaseThreadsObjRef;
+typedef BaseThreadsObjRef BaseThreadsObj_in;
 class BaseThreadsObj;
-class _BaseThreadsObjExpr;
-class _BaseThreadsObjElem;
+class BaseThreadsObj_tmp;
+class BaseThreadsObj_var;
 
 class BaseThreadsObj {
 public:
-    BaseThreadsObjRef _obj;
+    BaseThreadsObjRef _obj_;
 
-    BaseThreadsObj() { _obj = 0; }
-    BaseThreadsObj(BaseThreadsObjRef p) { _obj = p; }
+    BaseThreadsObj() { _obj_ = 0; }
+    BaseThreadsObj(BaseThreadsObjRef p) { _obj_ = p; }
     BaseThreadsObj& operator =(BaseThreadsObjRef p);
     BaseThreadsObj(const BaseThreadsObj&);
     BaseThreadsObj& operator =(const BaseThreadsObj& r);
-    BaseThreadsObj(const _BaseThreadsObjExpr&);
-    BaseThreadsObj& operator =(const _BaseThreadsObjExpr&);
-    BaseThreadsObj(const _BaseThreadsObjElem&);
-    BaseThreadsObj& operator =(const _BaseThreadsObjElem&);
+    BaseThreadsObj(const BaseThreadsObj_tmp&);
+    BaseThreadsObj& operator =(const BaseThreadsObj_tmp&);
+    BaseThreadsObj(const BaseThreadsObj_var&);
+    BaseThreadsObj& operator =(const BaseThreadsObj_var&);
     ~BaseThreadsObj();
 
-    operator BaseThreadsObjRef() const { return _obj; }
-    BaseThreadsObjRef operator ->() { return _obj; }
+    BaseThreadsObjRef operator ->() { return _obj_; }
 
+    operator BaseThreadsObj_in() const { return _obj_; }
     static BaseThreadsObjRef _narrow(BaseObjectRef p);
-    static _BaseThreadsObjExpr _narrow(const BaseObject& r);
+    static BaseThreadsObj_tmp _narrow(const BaseObject& r);
 
     static BaseThreadsObjRef _duplicate(BaseThreadsObjRef obj);
-    static _BaseThreadsObjExpr _duplicate(const BaseThreadsObj& r);
+    static BaseThreadsObj_tmp _duplicate(const BaseThreadsObj& r);
 };
 
-class _BaseThreadsObjExpr : public BaseThreadsObj {
+class BaseThreadsObj_tmp : public BaseThreadsObj {
 public:
-    _BaseThreadsObjExpr(BaseThreadsObjRef p) { _obj = p; }
-    _BaseThreadsObjExpr(const BaseThreadsObj& r) { _obj = r._obj; }
-    _BaseThreadsObjExpr(const _BaseThreadsObjExpr& r) { _obj = r._obj; }
-    ~_BaseThreadsObjExpr();
+    BaseThreadsObj_tmp(BaseThreadsObjRef p) { _obj_ = p; }
+    BaseThreadsObj_tmp(const BaseThreadsObj& r);
+    BaseThreadsObj_tmp(const BaseThreadsObj_tmp& r);
+    ~BaseThreadsObj_tmp();
 };
 
-class _BaseThreadsObjElem {
+class BaseThreadsObj_var {
 public:
-    BaseThreadsObjRef _obj;
+    BaseThreadsObjRef _obj_;
 
-    _BaseThreadsObjElem(BaseThreadsObjRef p) { _obj = p; }
-    operator BaseThreadsObjRef() const { return _obj; }
-    BaseThreadsObjRef operator ->() { return _obj; }
+    BaseThreadsObj_var(BaseThreadsObjRef p) { _obj_ = p; }
+    operator BaseThreadsObjRef() const { return _obj_; }
+    BaseThreadsObjRef operator ->() { return _obj_; }
 };
 
 class BaseThreadsObjType : public BaseObjectType {
@@ -60,104 +61,59 @@ protected:
     virtual ~BaseThreadsObjType();
 public:
     virtual Long ref__(Long references) = 0;
-
-    _BaseThreadsObjExpr _ref();
+    BaseThreadsObjRef _obj() { return this; }
+    void* _this();
     virtual TypeObjId _tid();
 };
 
-inline BaseThreadsObjRef BaseThreadsObj::_duplicate(BaseThreadsObjRef obj) {
-    return (BaseThreadsObjRef)_BaseObject__duplicate(obj, 0);
-}
-inline BaseThreadsObj& BaseThreadsObj::operator =(BaseThreadsObjRef p) {
-    _BaseObject__release(_obj);
-    _obj = BaseThreadsObj::_duplicate(p);
-    return *this;
-}
-inline BaseThreadsObj::BaseThreadsObj(const BaseThreadsObj& r) {
-    _obj = BaseThreadsObj::_duplicate(r._obj);
-}
-inline BaseThreadsObj& BaseThreadsObj::operator =(const BaseThreadsObj& r) {
-    _BaseObject__release(_obj);
-    _obj = BaseThreadsObj::_duplicate(r._obj);
-    return *this;
-}
-inline BaseThreadsObj::BaseThreadsObj(const _BaseThreadsObjExpr& r) {
-    _obj = r._obj;
-    ((_BaseThreadsObjExpr*)&r)->_obj = 0;
-}
-inline BaseThreadsObj& BaseThreadsObj::operator =(const _BaseThreadsObjExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_BaseThreadsObjExpr*)&r)->_obj = 0;
-    return *this;
-}
-inline BaseThreadsObj::BaseThreadsObj(const _BaseThreadsObjElem& e) {
-    _obj = BaseThreadsObj::_duplicate(e._obj);
-}
-inline BaseThreadsObj& BaseThreadsObj::operator =(const _BaseThreadsObjElem& e) {
-    _BaseObject__release(_obj);
-    _obj = BaseThreadsObj::_duplicate(e._obj);
-    return *this;
-}
-inline BaseThreadsObj::~BaseThreadsObj() {
-    _BaseObject__release(_obj);
-}
-inline _BaseThreadsObjExpr BaseThreadsObj::_narrow(const BaseObject& r) {
-    return _narrow(r._obj);
-}
-inline _BaseThreadsObjExpr BaseThreadsObj::_duplicate(const BaseThreadsObj& r) {
-    return _duplicate(r._obj);
-}
-inline _BaseThreadsObjExpr::~_BaseThreadsObjExpr() { }
-inline _BaseThreadsObjExpr BaseThreadsObjType::_ref() { return this; }
-
 class ThreadObjType;
 typedef ThreadObjType* ThreadObjRef;
+typedef ThreadObjRef ThreadObj_in;
 class ThreadObj;
-class _ThreadObjExpr;
-class _ThreadObjElem;
+class ThreadObj_tmp;
+class ThreadObj_var;
 
 class ThreadObj {
 public:
-    ThreadObjRef _obj;
+    ThreadObjRef _obj_;
 
-    ThreadObj() { _obj = 0; }
-    ThreadObj(ThreadObjRef p) { _obj = p; }
+    ThreadObj() { _obj_ = 0; }
+    ThreadObj(ThreadObjRef p) { _obj_ = p; }
     ThreadObj& operator =(ThreadObjRef p);
     ThreadObj(const ThreadObj&);
     ThreadObj& operator =(const ThreadObj& r);
-    ThreadObj(const _ThreadObjExpr&);
-    ThreadObj& operator =(const _ThreadObjExpr&);
-    ThreadObj(const _ThreadObjElem&);
-    ThreadObj& operator =(const _ThreadObjElem&);
+    ThreadObj(const ThreadObj_tmp&);
+    ThreadObj& operator =(const ThreadObj_tmp&);
+    ThreadObj(const ThreadObj_var&);
+    ThreadObj& operator =(const ThreadObj_var&);
     ~ThreadObj();
 
-    operator ThreadObjRef() const { return _obj; }
-    ThreadObjRef operator ->() { return _obj; }
+    ThreadObjRef operator ->() { return _obj_; }
 
+    operator ThreadObj_in() const { return _obj_; }
     operator BaseThreadsObj() const;
     static ThreadObjRef _narrow(BaseObjectRef p);
-    static _ThreadObjExpr _narrow(const BaseObject& r);
+    static ThreadObj_tmp _narrow(const BaseObject& r);
 
     static ThreadObjRef _duplicate(ThreadObjRef obj);
-    static _ThreadObjExpr _duplicate(const ThreadObj& r);
+    static ThreadObj_tmp _duplicate(const ThreadObj& r);
 };
 
-class _ThreadObjExpr : public ThreadObj {
+class ThreadObj_tmp : public ThreadObj {
 public:
-    _ThreadObjExpr(ThreadObjRef p) { _obj = p; }
-    _ThreadObjExpr(const ThreadObj& r) { _obj = r._obj; }
-    _ThreadObjExpr(const _ThreadObjExpr& r) { _obj = r._obj; }
-    ~_ThreadObjExpr();
+    ThreadObj_tmp(ThreadObjRef p) { _obj_ = p; }
+    ThreadObj_tmp(const ThreadObj& r);
+    ThreadObj_tmp(const ThreadObj_tmp& r);
+    ~ThreadObj_tmp();
 };
 
-class _ThreadObjElem {
+class ThreadObj_var {
 public:
-    ThreadObjRef _obj;
+    ThreadObjRef _obj_;
 
-    _ThreadObjElem(ThreadObjRef p) { _obj = p; }
-    operator ThreadObjRef() const { return _obj; }
-    ThreadObjRef operator ->() { return _obj; }
+    ThreadObj_var(ThreadObjRef p) { _obj_ = p; }
+    operator ThreadObjRef() const { return _obj_; }
+    ThreadObjRef operator ->() { return _obj_; }
 };
 
 class ThreadObjType : public BaseThreadsObjType {
@@ -168,107 +124,59 @@ public:
     virtual void run() = 0;
     virtual void terminate() = 0;
     virtual void wait(Long& status, Long& exitcode) = 0;
-
-    _ThreadObjExpr _ref();
+    ThreadObjRef _obj() { return this; }
+    void* _this();
     virtual TypeObjId _tid();
 };
 
-inline ThreadObjRef ThreadObj::_duplicate(ThreadObjRef obj) {
-    return (ThreadObjRef)_BaseObject__duplicate(obj, 0);
-}
-inline ThreadObj& ThreadObj::operator =(ThreadObjRef p) {
-    _BaseObject__release(_obj);
-    _obj = ThreadObj::_duplicate(p);
-    return *this;
-}
-inline ThreadObj::ThreadObj(const ThreadObj& r) {
-    _obj = ThreadObj::_duplicate(r._obj);
-}
-inline ThreadObj& ThreadObj::operator =(const ThreadObj& r) {
-    _BaseObject__release(_obj);
-    _obj = ThreadObj::_duplicate(r._obj);
-    return *this;
-}
-inline ThreadObj::ThreadObj(const _ThreadObjExpr& r) {
-    _obj = r._obj;
-    ((_ThreadObjExpr*)&r)->_obj = 0;
-}
-inline ThreadObj& ThreadObj::operator =(const _ThreadObjExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_ThreadObjExpr*)&r)->_obj = 0;
-    return *this;
-}
-inline ThreadObj::ThreadObj(const _ThreadObjElem& e) {
-    _obj = ThreadObj::_duplicate(e._obj);
-}
-inline ThreadObj& ThreadObj::operator =(const _ThreadObjElem& e) {
-    _BaseObject__release(_obj);
-    _obj = ThreadObj::_duplicate(e._obj);
-    return *this;
-}
-inline ThreadObj::~ThreadObj() {
-    _BaseObject__release(_obj);
-}
-inline _ThreadObjExpr ThreadObj::_narrow(const BaseObject& r) {
-    return _narrow(r._obj);
-}
-inline _ThreadObjExpr ThreadObj::_duplicate(const ThreadObj& r) {
-    return _duplicate(r._obj);
-}
-inline ThreadObj::operator BaseThreadsObj() const {
-    return _BaseThreadsObjExpr((BaseThreadsObjRef)_BaseObject__duplicate(_obj, 0));
-}
-inline _ThreadObjExpr::~_ThreadObjExpr() { }
-inline _ThreadObjExpr ThreadObjType::_ref() { return this; }
-
 class LockObjType;
 typedef LockObjType* LockObjRef;
+typedef LockObjRef LockObj_in;
 class LockObj;
-class _LockObjExpr;
-class _LockObjElem;
+class LockObj_tmp;
+class LockObj_var;
 
 class LockObj {
 public:
-    LockObjRef _obj;
+    LockObjRef _obj_;
 
-    LockObj() { _obj = 0; }
-    LockObj(LockObjRef p) { _obj = p; }
+    LockObj() { _obj_ = 0; }
+    LockObj(LockObjRef p) { _obj_ = p; }
     LockObj& operator =(LockObjRef p);
     LockObj(const LockObj&);
     LockObj& operator =(const LockObj& r);
-    LockObj(const _LockObjExpr&);
-    LockObj& operator =(const _LockObjExpr&);
-    LockObj(const _LockObjElem&);
-    LockObj& operator =(const _LockObjElem&);
+    LockObj(const LockObj_tmp&);
+    LockObj& operator =(const LockObj_tmp&);
+    LockObj(const LockObj_var&);
+    LockObj& operator =(const LockObj_var&);
     ~LockObj();
 
-    operator LockObjRef() const { return _obj; }
-    LockObjRef operator ->() { return _obj; }
+    LockObjRef operator ->() { return _obj_; }
 
+    operator LockObj_in() const { return _obj_; }
     operator BaseThreadsObj() const;
     static LockObjRef _narrow(BaseObjectRef p);
-    static _LockObjExpr _narrow(const BaseObject& r);
+    static LockObj_tmp _narrow(const BaseObject& r);
 
     static LockObjRef _duplicate(LockObjRef obj);
-    static _LockObjExpr _duplicate(const LockObj& r);
+    static LockObj_tmp _duplicate(const LockObj& r);
 };
 
-class _LockObjExpr : public LockObj {
+class LockObj_tmp : public LockObj {
 public:
-    _LockObjExpr(LockObjRef p) { _obj = p; }
-    _LockObjExpr(const LockObj& r) { _obj = r._obj; }
-    _LockObjExpr(const _LockObjExpr& r) { _obj = r._obj; }
-    ~_LockObjExpr();
+    LockObj_tmp(LockObjRef p) { _obj_ = p; }
+    LockObj_tmp(const LockObj& r);
+    LockObj_tmp(const LockObj_tmp& r);
+    ~LockObj_tmp();
 };
 
-class _LockObjElem {
+class LockObj_var {
 public:
-    LockObjRef _obj;
+    LockObjRef _obj_;
 
-    _LockObjElem(LockObjRef p) { _obj = p; }
-    operator LockObjRef() const { return _obj; }
-    LockObjRef operator ->() { return _obj; }
+    LockObj_var(LockObjRef p) { _obj_ = p; }
+    operator LockObjRef() const { return _obj_; }
+    LockObjRef operator ->() { return _obj_; }
 };
 
 class LockObjType : public BaseThreadsObjType {
@@ -279,107 +187,59 @@ public:
     virtual void acquire() = 0;
     virtual void release() = 0;
     virtual Boolean try_acquire() = 0;
-
-    _LockObjExpr _ref();
+    LockObjRef _obj() { return this; }
+    void* _this();
     virtual TypeObjId _tid();
 };
 
-inline LockObjRef LockObj::_duplicate(LockObjRef obj) {
-    return (LockObjRef)_BaseObject__duplicate(obj, 0);
-}
-inline LockObj& LockObj::operator =(LockObjRef p) {
-    _BaseObject__release(_obj);
-    _obj = LockObj::_duplicate(p);
-    return *this;
-}
-inline LockObj::LockObj(const LockObj& r) {
-    _obj = LockObj::_duplicate(r._obj);
-}
-inline LockObj& LockObj::operator =(const LockObj& r) {
-    _BaseObject__release(_obj);
-    _obj = LockObj::_duplicate(r._obj);
-    return *this;
-}
-inline LockObj::LockObj(const _LockObjExpr& r) {
-    _obj = r._obj;
-    ((_LockObjExpr*)&r)->_obj = 0;
-}
-inline LockObj& LockObj::operator =(const _LockObjExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_LockObjExpr*)&r)->_obj = 0;
-    return *this;
-}
-inline LockObj::LockObj(const _LockObjElem& e) {
-    _obj = LockObj::_duplicate(e._obj);
-}
-inline LockObj& LockObj::operator =(const _LockObjElem& e) {
-    _BaseObject__release(_obj);
-    _obj = LockObj::_duplicate(e._obj);
-    return *this;
-}
-inline LockObj::~LockObj() {
-    _BaseObject__release(_obj);
-}
-inline _LockObjExpr LockObj::_narrow(const BaseObject& r) {
-    return _narrow(r._obj);
-}
-inline _LockObjExpr LockObj::_duplicate(const LockObj& r) {
-    return _duplicate(r._obj);
-}
-inline LockObj::operator BaseThreadsObj() const {
-    return _BaseThreadsObjExpr((BaseThreadsObjRef)_BaseObject__duplicate(_obj, 0));
-}
-inline _LockObjExpr::~_LockObjExpr() { }
-inline _LockObjExpr LockObjType::_ref() { return this; }
-
 class ConditionVariableType;
 typedef ConditionVariableType* ConditionVariableRef;
+typedef ConditionVariableRef ConditionVariable_in;
 class ConditionVariable;
-class _ConditionVariableExpr;
-class _ConditionVariableElem;
+class ConditionVariable_tmp;
+class ConditionVariable_var;
 
 class ConditionVariable {
 public:
-    ConditionVariableRef _obj;
+    ConditionVariableRef _obj_;
 
-    ConditionVariable() { _obj = 0; }
-    ConditionVariable(ConditionVariableRef p) { _obj = p; }
+    ConditionVariable() { _obj_ = 0; }
+    ConditionVariable(ConditionVariableRef p) { _obj_ = p; }
     ConditionVariable& operator =(ConditionVariableRef p);
     ConditionVariable(const ConditionVariable&);
     ConditionVariable& operator =(const ConditionVariable& r);
-    ConditionVariable(const _ConditionVariableExpr&);
-    ConditionVariable& operator =(const _ConditionVariableExpr&);
-    ConditionVariable(const _ConditionVariableElem&);
-    ConditionVariable& operator =(const _ConditionVariableElem&);
+    ConditionVariable(const ConditionVariable_tmp&);
+    ConditionVariable& operator =(const ConditionVariable_tmp&);
+    ConditionVariable(const ConditionVariable_var&);
+    ConditionVariable& operator =(const ConditionVariable_var&);
     ~ConditionVariable();
 
-    operator ConditionVariableRef() const { return _obj; }
-    ConditionVariableRef operator ->() { return _obj; }
+    ConditionVariableRef operator ->() { return _obj_; }
 
+    operator ConditionVariable_in() const { return _obj_; }
     operator BaseThreadsObj() const;
     static ConditionVariableRef _narrow(BaseObjectRef p);
-    static _ConditionVariableExpr _narrow(const BaseObject& r);
+    static ConditionVariable_tmp _narrow(const BaseObject& r);
 
     static ConditionVariableRef _duplicate(ConditionVariableRef obj);
-    static _ConditionVariableExpr _duplicate(const ConditionVariable& r);
+    static ConditionVariable_tmp _duplicate(const ConditionVariable& r);
 };
 
-class _ConditionVariableExpr : public ConditionVariable {
+class ConditionVariable_tmp : public ConditionVariable {
 public:
-    _ConditionVariableExpr(ConditionVariableRef p) { _obj = p; }
-    _ConditionVariableExpr(const ConditionVariable& r) { _obj = r._obj; }
-    _ConditionVariableExpr(const _ConditionVariableExpr& r) { _obj = r._obj; }
-    ~_ConditionVariableExpr();
+    ConditionVariable_tmp(ConditionVariableRef p) { _obj_ = p; }
+    ConditionVariable_tmp(const ConditionVariable& r);
+    ConditionVariable_tmp(const ConditionVariable_tmp& r);
+    ~ConditionVariable_tmp();
 };
 
-class _ConditionVariableElem {
+class ConditionVariable_var {
 public:
-    ConditionVariableRef _obj;
+    ConditionVariableRef _obj_;
 
-    _ConditionVariableElem(ConditionVariableRef p) { _obj = p; }
-    operator ConditionVariableRef() const { return _obj; }
-    ConditionVariableRef operator ->() { return _obj; }
+    ConditionVariable_var(ConditionVariableRef p) { _obj_ = p; }
+    operator ConditionVariableRef() const { return _obj_; }
+    ConditionVariableRef operator ->() { return _obj_; }
 };
 
 class ConditionVariableType : public BaseThreadsObjType {
@@ -387,110 +247,62 @@ protected:
     ConditionVariableType();
     virtual ~ConditionVariableType();
 public:
-    virtual void wait(LockObjRef lock) = 0;
+    virtual void wait(LockObj_in lock) = 0;
     virtual void notify() = 0;
     virtual void broadcast() = 0;
-
-    _ConditionVariableExpr _ref();
+    ConditionVariableRef _obj() { return this; }
+    void* _this();
     virtual TypeObjId _tid();
 };
 
-inline ConditionVariableRef ConditionVariable::_duplicate(ConditionVariableRef obj) {
-    return (ConditionVariableRef)_BaseObject__duplicate(obj, 0);
-}
-inline ConditionVariable& ConditionVariable::operator =(ConditionVariableRef p) {
-    _BaseObject__release(_obj);
-    _obj = ConditionVariable::_duplicate(p);
-    return *this;
-}
-inline ConditionVariable::ConditionVariable(const ConditionVariable& r) {
-    _obj = ConditionVariable::_duplicate(r._obj);
-}
-inline ConditionVariable& ConditionVariable::operator =(const ConditionVariable& r) {
-    _BaseObject__release(_obj);
-    _obj = ConditionVariable::_duplicate(r._obj);
-    return *this;
-}
-inline ConditionVariable::ConditionVariable(const _ConditionVariableExpr& r) {
-    _obj = r._obj;
-    ((_ConditionVariableExpr*)&r)->_obj = 0;
-}
-inline ConditionVariable& ConditionVariable::operator =(const _ConditionVariableExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_ConditionVariableExpr*)&r)->_obj = 0;
-    return *this;
-}
-inline ConditionVariable::ConditionVariable(const _ConditionVariableElem& e) {
-    _obj = ConditionVariable::_duplicate(e._obj);
-}
-inline ConditionVariable& ConditionVariable::operator =(const _ConditionVariableElem& e) {
-    _BaseObject__release(_obj);
-    _obj = ConditionVariable::_duplicate(e._obj);
-    return *this;
-}
-inline ConditionVariable::~ConditionVariable() {
-    _BaseObject__release(_obj);
-}
-inline _ConditionVariableExpr ConditionVariable::_narrow(const BaseObject& r) {
-    return _narrow(r._obj);
-}
-inline _ConditionVariableExpr ConditionVariable::_duplicate(const ConditionVariable& r) {
-    return _duplicate(r._obj);
-}
-inline ConditionVariable::operator BaseThreadsObj() const {
-    return _BaseThreadsObjExpr((BaseThreadsObjRef)_BaseObject__duplicate(_obj, 0));
-}
-inline _ConditionVariableExpr::~_ConditionVariableExpr() { }
-inline _ConditionVariableExpr ConditionVariableType::_ref() { return this; }
-
 class SemaphoreType;
 typedef SemaphoreType* SemaphoreRef;
+typedef SemaphoreRef Semaphore_in;
 class Semaphore;
-class _SemaphoreExpr;
-class _SemaphoreElem;
+class Semaphore_tmp;
+class Semaphore_var;
 
 class Semaphore {
 public:
-    SemaphoreRef _obj;
+    SemaphoreRef _obj_;
 
-    Semaphore() { _obj = 0; }
-    Semaphore(SemaphoreRef p) { _obj = p; }
+    Semaphore() { _obj_ = 0; }
+    Semaphore(SemaphoreRef p) { _obj_ = p; }
     Semaphore& operator =(SemaphoreRef p);
     Semaphore(const Semaphore&);
     Semaphore& operator =(const Semaphore& r);
-    Semaphore(const _SemaphoreExpr&);
-    Semaphore& operator =(const _SemaphoreExpr&);
-    Semaphore(const _SemaphoreElem&);
-    Semaphore& operator =(const _SemaphoreElem&);
+    Semaphore(const Semaphore_tmp&);
+    Semaphore& operator =(const Semaphore_tmp&);
+    Semaphore(const Semaphore_var&);
+    Semaphore& operator =(const Semaphore_var&);
     ~Semaphore();
 
-    operator SemaphoreRef() const { return _obj; }
-    SemaphoreRef operator ->() { return _obj; }
+    SemaphoreRef operator ->() { return _obj_; }
 
+    operator Semaphore_in() const { return _obj_; }
     operator BaseThreadsObj() const;
     static SemaphoreRef _narrow(BaseObjectRef p);
-    static _SemaphoreExpr _narrow(const BaseObject& r);
+    static Semaphore_tmp _narrow(const BaseObject& r);
 
     static SemaphoreRef _duplicate(SemaphoreRef obj);
-    static _SemaphoreExpr _duplicate(const Semaphore& r);
+    static Semaphore_tmp _duplicate(const Semaphore& r);
 };
 
-class _SemaphoreExpr : public Semaphore {
+class Semaphore_tmp : public Semaphore {
 public:
-    _SemaphoreExpr(SemaphoreRef p) { _obj = p; }
-    _SemaphoreExpr(const Semaphore& r) { _obj = r._obj; }
-    _SemaphoreExpr(const _SemaphoreExpr& r) { _obj = r._obj; }
-    ~_SemaphoreExpr();
+    Semaphore_tmp(SemaphoreRef p) { _obj_ = p; }
+    Semaphore_tmp(const Semaphore& r);
+    Semaphore_tmp(const Semaphore_tmp& r);
+    ~Semaphore_tmp();
 };
 
-class _SemaphoreElem {
+class Semaphore_var {
 public:
-    SemaphoreRef _obj;
+    SemaphoreRef _obj_;
 
-    _SemaphoreElem(SemaphoreRef p) { _obj = p; }
-    operator SemaphoreRef() const { return _obj; }
-    SemaphoreRef operator ->() { return _obj; }
+    Semaphore_var(SemaphoreRef p) { _obj_ = p; }
+    operator SemaphoreRef() const { return _obj_; }
+    SemaphoreRef operator ->() { return _obj_; }
 };
 
 class SemaphoreType : public BaseThreadsObjType {
@@ -500,107 +312,59 @@ protected:
 public:
     virtual void P() = 0;
     virtual void V() = 0;
-
-    _SemaphoreExpr _ref();
+    SemaphoreRef _obj() { return this; }
+    void* _this();
     virtual TypeObjId _tid();
 };
 
-inline SemaphoreRef Semaphore::_duplicate(SemaphoreRef obj) {
-    return (SemaphoreRef)_BaseObject__duplicate(obj, 0);
-}
-inline Semaphore& Semaphore::operator =(SemaphoreRef p) {
-    _BaseObject__release(_obj);
-    _obj = Semaphore::_duplicate(p);
-    return *this;
-}
-inline Semaphore::Semaphore(const Semaphore& r) {
-    _obj = Semaphore::_duplicate(r._obj);
-}
-inline Semaphore& Semaphore::operator =(const Semaphore& r) {
-    _BaseObject__release(_obj);
-    _obj = Semaphore::_duplicate(r._obj);
-    return *this;
-}
-inline Semaphore::Semaphore(const _SemaphoreExpr& r) {
-    _obj = r._obj;
-    ((_SemaphoreExpr*)&r)->_obj = 0;
-}
-inline Semaphore& Semaphore::operator =(const _SemaphoreExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_SemaphoreExpr*)&r)->_obj = 0;
-    return *this;
-}
-inline Semaphore::Semaphore(const _SemaphoreElem& e) {
-    _obj = Semaphore::_duplicate(e._obj);
-}
-inline Semaphore& Semaphore::operator =(const _SemaphoreElem& e) {
-    _BaseObject__release(_obj);
-    _obj = Semaphore::_duplicate(e._obj);
-    return *this;
-}
-inline Semaphore::~Semaphore() {
-    _BaseObject__release(_obj);
-}
-inline _SemaphoreExpr Semaphore::_narrow(const BaseObject& r) {
-    return _narrow(r._obj);
-}
-inline _SemaphoreExpr Semaphore::_duplicate(const Semaphore& r) {
-    return _duplicate(r._obj);
-}
-inline Semaphore::operator BaseThreadsObj() const {
-    return _BaseThreadsObjExpr((BaseThreadsObjRef)_BaseObject__duplicate(_obj, 0));
-}
-inline _SemaphoreExpr::~_SemaphoreExpr() { }
-inline _SemaphoreExpr SemaphoreType::_ref() { return this; }
-
 class ThreadKitType;
 typedef ThreadKitType* ThreadKitRef;
+typedef ThreadKitRef ThreadKit_in;
 class ThreadKit;
-class _ThreadKitExpr;
-class _ThreadKitElem;
+class ThreadKit_tmp;
+class ThreadKit_var;
 
 class ThreadKit {
 public:
-    ThreadKitRef _obj;
+    ThreadKitRef _obj_;
 
-    ThreadKit() { _obj = 0; }
-    ThreadKit(ThreadKitRef p) { _obj = p; }
+    ThreadKit() { _obj_ = 0; }
+    ThreadKit(ThreadKitRef p) { _obj_ = p; }
     ThreadKit& operator =(ThreadKitRef p);
     ThreadKit(const ThreadKit&);
     ThreadKit& operator =(const ThreadKit& r);
-    ThreadKit(const _ThreadKitExpr&);
-    ThreadKit& operator =(const _ThreadKitExpr&);
-    ThreadKit(const _ThreadKitElem&);
-    ThreadKit& operator =(const _ThreadKitElem&);
+    ThreadKit(const ThreadKit_tmp&);
+    ThreadKit& operator =(const ThreadKit_tmp&);
+    ThreadKit(const ThreadKit_var&);
+    ThreadKit& operator =(const ThreadKit_var&);
     ~ThreadKit();
 
-    operator ThreadKitRef() const { return _obj; }
-    ThreadKitRef operator ->() { return _obj; }
+    ThreadKitRef operator ->() { return _obj_; }
 
+    operator ThreadKit_in() const { return _obj_; }
     operator BaseThreadsObj() const;
     static ThreadKitRef _narrow(BaseObjectRef p);
-    static _ThreadKitExpr _narrow(const BaseObject& r);
+    static ThreadKit_tmp _narrow(const BaseObject& r);
 
     static ThreadKitRef _duplicate(ThreadKitRef obj);
-    static _ThreadKitExpr _duplicate(const ThreadKit& r);
+    static ThreadKit_tmp _duplicate(const ThreadKit& r);
 };
 
-class _ThreadKitExpr : public ThreadKit {
+class ThreadKit_tmp : public ThreadKit {
 public:
-    _ThreadKitExpr(ThreadKitRef p) { _obj = p; }
-    _ThreadKitExpr(const ThreadKit& r) { _obj = r._obj; }
-    _ThreadKitExpr(const _ThreadKitExpr& r) { _obj = r._obj; }
-    ~_ThreadKitExpr();
+    ThreadKit_tmp(ThreadKitRef p) { _obj_ = p; }
+    ThreadKit_tmp(const ThreadKit& r);
+    ThreadKit_tmp(const ThreadKit_tmp& r);
+    ~ThreadKit_tmp();
 };
 
-class _ThreadKitElem {
+class ThreadKit_var {
 public:
-    ThreadKitRef _obj;
+    ThreadKitRef _obj_;
 
-    _ThreadKitElem(ThreadKitRef p) { _obj = p; }
-    operator ThreadKitRef() const { return _obj; }
-    ThreadKitRef operator ->() { return _obj; }
+    ThreadKit_var(ThreadKitRef p) { _obj_ = p; }
+    operator ThreadKitRef() const { return _obj_; }
+    ThreadKitRef operator ->() { return _obj_; }
 };
 
 class ThreadKitType : public BaseThreadsObjType {
@@ -608,82 +372,360 @@ protected:
     ThreadKitType();
     virtual ~ThreadKitType();
 public:
-    _ThreadObjExpr thread(ActionRef a) {
+    ThreadObj_tmp thread(Action_in a) {
         return _c_thread(a);
     }
-    virtual ThreadObjRef _c_thread(ActionRef a) = 0;
-    _LockObjExpr lock() {
+    virtual ThreadObjRef _c_thread(Action_in a) = 0;
+    LockObj_tmp lock() {
         return _c_lock();
     }
     virtual LockObjRef _c_lock() = 0;
-    _ConditionVariableExpr condition() {
+    ConditionVariable_tmp condition() {
         return _c_condition();
     }
     virtual ConditionVariableRef _c_condition() = 0;
-    _SemaphoreExpr general_semaphore(Long count) {
+    Semaphore_tmp general_semaphore(Long count) {
         return _c_general_semaphore(count);
     }
     virtual SemaphoreRef _c_general_semaphore(Long count) = 0;
-    _SemaphoreExpr mutex_semaphore() {
+    Semaphore_tmp mutex_semaphore() {
         return _c_mutex_semaphore();
     }
     virtual SemaphoreRef _c_mutex_semaphore() = 0;
-    _SemaphoreExpr wait_semaphore() {
+    Semaphore_tmp wait_semaphore() {
         return _c_wait_semaphore();
     }
     virtual SemaphoreRef _c_wait_semaphore() = 0;
-
-    _ThreadKitExpr _ref();
+    ThreadKitRef _obj() { return this; }
+    void* _this();
     virtual TypeObjId _tid();
 };
+
+inline BaseThreadsObjRef BaseThreadsObj::_duplicate(BaseThreadsObjRef obj) {
+    return (BaseThreadsObjRef)_BaseObject__duplicate(obj, 0);
+}
+inline BaseThreadsObj& BaseThreadsObj::operator =(BaseThreadsObjRef p) {
+    _BaseObject__release(_obj_);
+    _obj_ = BaseThreadsObj::_duplicate(p);
+    return *this;
+}
+inline BaseThreadsObj::BaseThreadsObj(const BaseThreadsObj& r) {
+    _obj_ = BaseThreadsObj::_duplicate(r._obj_);
+}
+inline BaseThreadsObj& BaseThreadsObj::operator =(const BaseThreadsObj& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = BaseThreadsObj::_duplicate(r._obj_);
+    return *this;
+}
+inline BaseThreadsObj::BaseThreadsObj(const BaseThreadsObj_tmp& r) {
+    _obj_ = r._obj_;
+    ((BaseThreadsObj_tmp*)&r)->_obj_ = 0;
+}
+inline BaseThreadsObj& BaseThreadsObj::operator =(const BaseThreadsObj_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((BaseThreadsObj_tmp*)&r)->_obj_ = 0;
+    return *this;
+}
+inline BaseThreadsObj::BaseThreadsObj(const BaseThreadsObj_var& e) {
+    _obj_ = BaseThreadsObj::_duplicate(e._obj_);
+}
+inline BaseThreadsObj& BaseThreadsObj::operator =(const BaseThreadsObj_var& e) {
+    _BaseObject__release(_obj_);
+    _obj_ = BaseThreadsObj::_duplicate(e._obj_);
+    return *this;
+}
+inline BaseThreadsObj::~BaseThreadsObj() {
+    _BaseObject__release(_obj_);
+}
+inline BaseThreadsObj_tmp BaseThreadsObj::_narrow(const BaseObject& r) {
+    return _narrow(r._obj_);
+}
+inline BaseThreadsObj_tmp BaseThreadsObj::_duplicate(const BaseThreadsObj& r) {
+    return _duplicate(r._obj_);
+}
+inline BaseThreadsObj_tmp::BaseThreadsObj_tmp(const BaseThreadsObj& r) {
+    _obj_ = BaseThreadsObj::_duplicate(r._obj_);
+}
+inline BaseThreadsObj_tmp::BaseThreadsObj_tmp(const BaseThreadsObj_tmp& r) {
+    _obj_ = r._obj_;
+    ((BaseThreadsObj_tmp*)&r)->_obj_ = 0;
+}
+inline BaseThreadsObj_tmp::~BaseThreadsObj_tmp() { }
+
+inline ThreadObjRef ThreadObj::_duplicate(ThreadObjRef obj) {
+    return (ThreadObjRef)_BaseObject__duplicate(obj, 0);
+}
+inline ThreadObj& ThreadObj::operator =(ThreadObjRef p) {
+    _BaseObject__release(_obj_);
+    _obj_ = ThreadObj::_duplicate(p);
+    return *this;
+}
+inline ThreadObj::ThreadObj(const ThreadObj& r) {
+    _obj_ = ThreadObj::_duplicate(r._obj_);
+}
+inline ThreadObj& ThreadObj::operator =(const ThreadObj& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = ThreadObj::_duplicate(r._obj_);
+    return *this;
+}
+inline ThreadObj::ThreadObj(const ThreadObj_tmp& r) {
+    _obj_ = r._obj_;
+    ((ThreadObj_tmp*)&r)->_obj_ = 0;
+}
+inline ThreadObj& ThreadObj::operator =(const ThreadObj_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((ThreadObj_tmp*)&r)->_obj_ = 0;
+    return *this;
+}
+inline ThreadObj::ThreadObj(const ThreadObj_var& e) {
+    _obj_ = ThreadObj::_duplicate(e._obj_);
+}
+inline ThreadObj& ThreadObj::operator =(const ThreadObj_var& e) {
+    _BaseObject__release(_obj_);
+    _obj_ = ThreadObj::_duplicate(e._obj_);
+    return *this;
+}
+inline ThreadObj::~ThreadObj() {
+    _BaseObject__release(_obj_);
+}
+inline ThreadObj_tmp ThreadObj::_narrow(const BaseObject& r) {
+    return _narrow(r._obj_);
+}
+inline ThreadObj_tmp ThreadObj::_duplicate(const ThreadObj& r) {
+    return _duplicate(r._obj_);
+}
+inline ThreadObj::operator BaseThreadsObj() const {
+    return BaseThreadsObj_tmp((BaseThreadsObjRef)_BaseObject__duplicate((BaseThreadsObjRef)_obj_, 0));
+}
+inline ThreadObj_tmp::ThreadObj_tmp(const ThreadObj& r) {
+    _obj_ = ThreadObj::_duplicate(r._obj_);
+}
+inline ThreadObj_tmp::ThreadObj_tmp(const ThreadObj_tmp& r) {
+    _obj_ = r._obj_;
+    ((ThreadObj_tmp*)&r)->_obj_ = 0;
+}
+inline ThreadObj_tmp::~ThreadObj_tmp() { }
+
+inline LockObjRef LockObj::_duplicate(LockObjRef obj) {
+    return (LockObjRef)_BaseObject__duplicate(obj, 0);
+}
+inline LockObj& LockObj::operator =(LockObjRef p) {
+    _BaseObject__release(_obj_);
+    _obj_ = LockObj::_duplicate(p);
+    return *this;
+}
+inline LockObj::LockObj(const LockObj& r) {
+    _obj_ = LockObj::_duplicate(r._obj_);
+}
+inline LockObj& LockObj::operator =(const LockObj& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = LockObj::_duplicate(r._obj_);
+    return *this;
+}
+inline LockObj::LockObj(const LockObj_tmp& r) {
+    _obj_ = r._obj_;
+    ((LockObj_tmp*)&r)->_obj_ = 0;
+}
+inline LockObj& LockObj::operator =(const LockObj_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((LockObj_tmp*)&r)->_obj_ = 0;
+    return *this;
+}
+inline LockObj::LockObj(const LockObj_var& e) {
+    _obj_ = LockObj::_duplicate(e._obj_);
+}
+inline LockObj& LockObj::operator =(const LockObj_var& e) {
+    _BaseObject__release(_obj_);
+    _obj_ = LockObj::_duplicate(e._obj_);
+    return *this;
+}
+inline LockObj::~LockObj() {
+    _BaseObject__release(_obj_);
+}
+inline LockObj_tmp LockObj::_narrow(const BaseObject& r) {
+    return _narrow(r._obj_);
+}
+inline LockObj_tmp LockObj::_duplicate(const LockObj& r) {
+    return _duplicate(r._obj_);
+}
+inline LockObj::operator BaseThreadsObj() const {
+    return BaseThreadsObj_tmp((BaseThreadsObjRef)_BaseObject__duplicate((BaseThreadsObjRef)_obj_, 0));
+}
+inline LockObj_tmp::LockObj_tmp(const LockObj& r) {
+    _obj_ = LockObj::_duplicate(r._obj_);
+}
+inline LockObj_tmp::LockObj_tmp(const LockObj_tmp& r) {
+    _obj_ = r._obj_;
+    ((LockObj_tmp*)&r)->_obj_ = 0;
+}
+inline LockObj_tmp::~LockObj_tmp() { }
+
+inline ConditionVariableRef ConditionVariable::_duplicate(ConditionVariableRef obj) {
+    return (ConditionVariableRef)_BaseObject__duplicate(obj, 0);
+}
+inline ConditionVariable& ConditionVariable::operator =(ConditionVariableRef p) {
+    _BaseObject__release(_obj_);
+    _obj_ = ConditionVariable::_duplicate(p);
+    return *this;
+}
+inline ConditionVariable::ConditionVariable(const ConditionVariable& r) {
+    _obj_ = ConditionVariable::_duplicate(r._obj_);
+}
+inline ConditionVariable& ConditionVariable::operator =(const ConditionVariable& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = ConditionVariable::_duplicate(r._obj_);
+    return *this;
+}
+inline ConditionVariable::ConditionVariable(const ConditionVariable_tmp& r) {
+    _obj_ = r._obj_;
+    ((ConditionVariable_tmp*)&r)->_obj_ = 0;
+}
+inline ConditionVariable& ConditionVariable::operator =(const ConditionVariable_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((ConditionVariable_tmp*)&r)->_obj_ = 0;
+    return *this;
+}
+inline ConditionVariable::ConditionVariable(const ConditionVariable_var& e) {
+    _obj_ = ConditionVariable::_duplicate(e._obj_);
+}
+inline ConditionVariable& ConditionVariable::operator =(const ConditionVariable_var& e) {
+    _BaseObject__release(_obj_);
+    _obj_ = ConditionVariable::_duplicate(e._obj_);
+    return *this;
+}
+inline ConditionVariable::~ConditionVariable() {
+    _BaseObject__release(_obj_);
+}
+inline ConditionVariable_tmp ConditionVariable::_narrow(const BaseObject& r) {
+    return _narrow(r._obj_);
+}
+inline ConditionVariable_tmp ConditionVariable::_duplicate(const ConditionVariable& r) {
+    return _duplicate(r._obj_);
+}
+inline ConditionVariable::operator BaseThreadsObj() const {
+    return BaseThreadsObj_tmp((BaseThreadsObjRef)_BaseObject__duplicate((BaseThreadsObjRef)_obj_, 0));
+}
+inline ConditionVariable_tmp::ConditionVariable_tmp(const ConditionVariable& r) {
+    _obj_ = ConditionVariable::_duplicate(r._obj_);
+}
+inline ConditionVariable_tmp::ConditionVariable_tmp(const ConditionVariable_tmp& r) {
+    _obj_ = r._obj_;
+    ((ConditionVariable_tmp*)&r)->_obj_ = 0;
+}
+inline ConditionVariable_tmp::~ConditionVariable_tmp() { }
+
+inline SemaphoreRef Semaphore::_duplicate(SemaphoreRef obj) {
+    return (SemaphoreRef)_BaseObject__duplicate(obj, 0);
+}
+inline Semaphore& Semaphore::operator =(SemaphoreRef p) {
+    _BaseObject__release(_obj_);
+    _obj_ = Semaphore::_duplicate(p);
+    return *this;
+}
+inline Semaphore::Semaphore(const Semaphore& r) {
+    _obj_ = Semaphore::_duplicate(r._obj_);
+}
+inline Semaphore& Semaphore::operator =(const Semaphore& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = Semaphore::_duplicate(r._obj_);
+    return *this;
+}
+inline Semaphore::Semaphore(const Semaphore_tmp& r) {
+    _obj_ = r._obj_;
+    ((Semaphore_tmp*)&r)->_obj_ = 0;
+}
+inline Semaphore& Semaphore::operator =(const Semaphore_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((Semaphore_tmp*)&r)->_obj_ = 0;
+    return *this;
+}
+inline Semaphore::Semaphore(const Semaphore_var& e) {
+    _obj_ = Semaphore::_duplicate(e._obj_);
+}
+inline Semaphore& Semaphore::operator =(const Semaphore_var& e) {
+    _BaseObject__release(_obj_);
+    _obj_ = Semaphore::_duplicate(e._obj_);
+    return *this;
+}
+inline Semaphore::~Semaphore() {
+    _BaseObject__release(_obj_);
+}
+inline Semaphore_tmp Semaphore::_narrow(const BaseObject& r) {
+    return _narrow(r._obj_);
+}
+inline Semaphore_tmp Semaphore::_duplicate(const Semaphore& r) {
+    return _duplicate(r._obj_);
+}
+inline Semaphore::operator BaseThreadsObj() const {
+    return BaseThreadsObj_tmp((BaseThreadsObjRef)_BaseObject__duplicate((BaseThreadsObjRef)_obj_, 0));
+}
+inline Semaphore_tmp::Semaphore_tmp(const Semaphore& r) {
+    _obj_ = Semaphore::_duplicate(r._obj_);
+}
+inline Semaphore_tmp::Semaphore_tmp(const Semaphore_tmp& r) {
+    _obj_ = r._obj_;
+    ((Semaphore_tmp*)&r)->_obj_ = 0;
+}
+inline Semaphore_tmp::~Semaphore_tmp() { }
 
 inline ThreadKitRef ThreadKit::_duplicate(ThreadKitRef obj) {
     return (ThreadKitRef)_BaseObject__duplicate(obj, 0);
 }
 inline ThreadKit& ThreadKit::operator =(ThreadKitRef p) {
-    _BaseObject__release(_obj);
-    _obj = ThreadKit::_duplicate(p);
+    _BaseObject__release(_obj_);
+    _obj_ = ThreadKit::_duplicate(p);
     return *this;
 }
 inline ThreadKit::ThreadKit(const ThreadKit& r) {
-    _obj = ThreadKit::_duplicate(r._obj);
+    _obj_ = ThreadKit::_duplicate(r._obj_);
 }
 inline ThreadKit& ThreadKit::operator =(const ThreadKit& r) {
-    _BaseObject__release(_obj);
-    _obj = ThreadKit::_duplicate(r._obj);
+    _BaseObject__release(_obj_);
+    _obj_ = ThreadKit::_duplicate(r._obj_);
     return *this;
 }
-inline ThreadKit::ThreadKit(const _ThreadKitExpr& r) {
-    _obj = r._obj;
-    ((_ThreadKitExpr*)&r)->_obj = 0;
+inline ThreadKit::ThreadKit(const ThreadKit_tmp& r) {
+    _obj_ = r._obj_;
+    ((ThreadKit_tmp*)&r)->_obj_ = 0;
 }
-inline ThreadKit& ThreadKit::operator =(const _ThreadKitExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_ThreadKitExpr*)&r)->_obj = 0;
+inline ThreadKit& ThreadKit::operator =(const ThreadKit_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((ThreadKit_tmp*)&r)->_obj_ = 0;
     return *this;
 }
-inline ThreadKit::ThreadKit(const _ThreadKitElem& e) {
-    _obj = ThreadKit::_duplicate(e._obj);
+inline ThreadKit::ThreadKit(const ThreadKit_var& e) {
+    _obj_ = ThreadKit::_duplicate(e._obj_);
 }
-inline ThreadKit& ThreadKit::operator =(const _ThreadKitElem& e) {
-    _BaseObject__release(_obj);
-    _obj = ThreadKit::_duplicate(e._obj);
+inline ThreadKit& ThreadKit::operator =(const ThreadKit_var& e) {
+    _BaseObject__release(_obj_);
+    _obj_ = ThreadKit::_duplicate(e._obj_);
     return *this;
 }
 inline ThreadKit::~ThreadKit() {
-    _BaseObject__release(_obj);
+    _BaseObject__release(_obj_);
 }
-inline _ThreadKitExpr ThreadKit::_narrow(const BaseObject& r) {
-    return _narrow(r._obj);
+inline ThreadKit_tmp ThreadKit::_narrow(const BaseObject& r) {
+    return _narrow(r._obj_);
 }
-inline _ThreadKitExpr ThreadKit::_duplicate(const ThreadKit& r) {
-    return _duplicate(r._obj);
+inline ThreadKit_tmp ThreadKit::_duplicate(const ThreadKit& r) {
+    return _duplicate(r._obj_);
 }
 inline ThreadKit::operator BaseThreadsObj() const {
-    return _BaseThreadsObjExpr((BaseThreadsObjRef)_BaseObject__duplicate(_obj, 0));
+    return BaseThreadsObj_tmp((BaseThreadsObjRef)_BaseObject__duplicate((BaseThreadsObjRef)_obj_, 0));
 }
-inline _ThreadKitExpr::~_ThreadKitExpr() { }
-inline _ThreadKitExpr ThreadKitType::_ref() { return this; }
+inline ThreadKit_tmp::ThreadKit_tmp(const ThreadKit& r) {
+    _obj_ = ThreadKit::_duplicate(r._obj_);
+}
+inline ThreadKit_tmp::ThreadKit_tmp(const ThreadKit_tmp& r) {
+    _obj_ = r._obj_;
+    ((ThreadKit_tmp*)&r)->_obj_ = 0;
+}
+inline ThreadKit_tmp::~ThreadKit_tmp() { }
 
 #endif

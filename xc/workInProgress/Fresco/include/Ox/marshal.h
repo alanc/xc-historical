@@ -32,8 +32,13 @@ public:
     typedef void (*MarshalFunc)(MarshalBuffer*, void*);
     enum {
 	_t_addr,
-	_t_void, _t_boolean, _t_char, _t_octet, _t_short, _t_unsigned_short,
-	_t_long, _t_unsigned_long, _t_float, _t_double, _t_string, _t_object
+	_t_void, _t_void_oneway,
+	_t_boolean, _t_char, _t_octet,
+	_t_short, _t_unsigned_short,
+	_t_long, _t_unsigned_long,
+	_t_longlong, _t_unsigned_longlong,
+	_t_float, _t_double,
+	_t_string, _t_object
     };
     typedef unsigned char ArgDesc;
     typedef void* ArgMarshal;
@@ -51,6 +56,8 @@ public:
 	unsigned short u_unsigned_short;
 	Long u_long;
 	ULong u_unsigned_long;
+	LongLong u_longlong;
+	ULongLong u_unsigned_longlong;
 	float u_float;
 	double u_double;
 	char* u_string;
@@ -69,6 +76,8 @@ public:
     void put_unsigned_short(unsigned short);
     void put_long(Long);
     void put_unsigned_long(ULong);
+    void put_longlong(LongLong);
+    void put_unsigned_longlong(ULongLong);
     void put_float(float);
     void put_double(double);
     void put_string(const char*, Long length = -1);
@@ -83,6 +92,8 @@ public:
     unsigned short get_unsigned_short();
     Long get_long();
     ULong get_unsigned_long();
+    LongLong get_longlong();
+    ULongLong get_unsigned_longlong();
     float get_float();
     double get_double();
     char* get_string();

@@ -41,7 +41,7 @@ public:
     //+ DrawingKit::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -52,30 +52,36 @@ public:
     BrushRef _c_dither_brush(Coord width, Long pattern);
     BrushRef _c_patterned_brush(Coord width, const DrawingKit::Data& pattern);
     ColorRef _c_color_rgb(Color::Intensity r, Color::Intensity g, Color::Intensity b);
-    ColorRef _c_find_color(CharStringRef name);
-    ColorRef _c_resolve_color(StyleObjRef s, CharStringRef name);
-    ColorRef _c_foreground(StyleObjRef s);
-    ColorRef _c_background(StyleObjRef s);
-    FontRef _c_find_font(CharStringRef fullname);
-    FontRef _c_find_font_match(CharStringRef family, CharStringRef style, Coord ptsize);
-    FontRef _c_resolve_font(StyleObjRef s, CharStringRef name);
-    FontRef _c_default_font(StyleObjRef s);
-    RasterRef _c_bitmap_file(CharStringRef filename);
+    ColorRef _c_find_color(CharString_in name);
+    ColorRef _c_resolve_color(StyleObj_in s, CharString_in name);
+    ColorRef _c_foreground(StyleObj_in s);
+    ColorRef _c_background(StyleObj_in s);
+    FontRef _c_find_font(CharString_in fullname);
+    FontRef _c_find_font_match(CharString_in family, CharString_in style, Coord ptsize);
+    FontRef _c_resolve_font(StyleObj_in s, CharString_in name);
+    FontRef _c_default_font(StyleObj_in s);
+    RasterRef _c_bitmap_file(CharString_in filename);
     RasterRef _c_bitmap_data(const DrawingKit::Data& data, Raster::Index rows, Raster::Index columns, Raster::Index origin_row, Raster::Index origin_column);
-    RasterRef _c_bitmap_char(FontRef f, CharCode c);
-    RasterRef _c_raster_tiff(CharStringRef filename);
+    RasterRef _c_bitmap_char(Font_in f, CharCode c);
+    RasterRef _c_raster_tiff(CharString_in filename);
     TransformObjRef _c_transform(TransformObj::Matrix m);
     TransformObjRef _c_identity_transform();
-    PainterObjRef _c_printer(CharStringRef output);
+    PainterObjRef _c_printer(CharString_in output);
     //+
 protected:
     SharedFrescoObjectImpl object_;
     DisplayImpl* display_;
     DrawingKitColorTable* colors_;
     DrawingKitFontTable* fonts_;
+    CharString foreground_str_;
+    CharString Foreground_str_;
+    CharString background_str_;
+    CharString Background_str_;
+    CharString font_str_;
+    CharString Font_str_;
 
     ColorRef resolve_colors(
-	StyleObjRef s, const char* name1, const char* name2
+	StyleObjRef s, CharString_in name1, CharString_in name2
     );
 };
 
@@ -94,13 +100,13 @@ public:
     //+ Brush::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
     void update();
     /* Brush */
-    Boolean equal(BrushRef b);
+    Boolean equal(Brush_in b);
     ULong hash();
     //+
 
@@ -128,14 +134,14 @@ public:
     //+ Color::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
     void update();
     /* Color */
     void rgb(Color::Intensity& r, Color::Intensity& g, Color::Intensity& b);
-    Boolean equal(ColorRef c);
+    Boolean equal(Color_in c);
     ULong hash();
     //+
 
@@ -174,20 +180,20 @@ public:
     //+ Font::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
     void update();
     /* Font */
-    Boolean equal(FontRef f);
+    Boolean equal(Font_in f);
     ULong hash();
     CharStringRef _c_name();
     CharStringRef _c_encoding();
     Coord point_size();
     void font_info(Font::Info& i);
     void char_info(CharCode c, Font::Info& i);
-    void string_info(CharStringRef s, Font::Info& i);
+    void string_info(CharString_in s, Font::Info& i);
     //+
 
     void load();

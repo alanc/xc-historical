@@ -43,7 +43,7 @@ public:
     //+ Region::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -51,12 +51,12 @@ public:
     /* Region */
     Boolean contains(const Vertex& v);
     Boolean contains_plane(const Vertex& v, Axis a);
-    Boolean intersects(RegionRef r);
-    void copy(RegionRef r);
-    void merge_intersect(RegionRef r);
-    void merge_union(RegionRef r);
-    void subtract(RegionRef r);
-    void transform(TransformObjRef t);
+    Boolean intersects(Region_in r);
+    void copy(Region_in r);
+    void merge_intersect(Region_in r);
+    void merge_union(Region_in r);
+    void subtract(Region_in r);
+    void transform(TransformObj_in t);
     void bounds(Vertex& lower, Vertex& upper);
     void origin(Vertex& v);
     void span(Axis a, Region::BoundingSpan& s);

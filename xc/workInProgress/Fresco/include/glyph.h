@@ -9,51 +9,52 @@
 
 class DamageObjType;
 typedef DamageObjType* DamageObjRef;
+typedef DamageObjRef DamageObj_in;
 class DamageObj;
-class _DamageObjExpr;
-class _DamageObjElem;
+class DamageObj_tmp;
+class DamageObj_var;
 
 class DamageObj {
 public:
-    DamageObjRef _obj;
+    DamageObjRef _obj_;
 
-    DamageObj() { _obj = 0; }
-    DamageObj(DamageObjRef p) { _obj = p; }
+    DamageObj() { _obj_ = 0; }
+    DamageObj(DamageObjRef p) { _obj_ = p; }
     DamageObj& operator =(DamageObjRef p);
     DamageObj(const DamageObj&);
     DamageObj& operator =(const DamageObj& r);
-    DamageObj(const _DamageObjExpr&);
-    DamageObj& operator =(const _DamageObjExpr&);
-    DamageObj(const _DamageObjElem&);
-    DamageObj& operator =(const _DamageObjElem&);
+    DamageObj(const DamageObj_tmp&);
+    DamageObj& operator =(const DamageObj_tmp&);
+    DamageObj(const DamageObj_var&);
+    DamageObj& operator =(const DamageObj_var&);
     ~DamageObj();
 
-    operator DamageObjRef() const { return _obj; }
-    DamageObjRef operator ->() { return _obj; }
+    DamageObjRef operator ->() { return _obj_; }
 
+    operator DamageObj_in() const { return _obj_; }
     operator FrescoObject() const;
     static DamageObjRef _narrow(BaseObjectRef p);
-    static _DamageObjExpr _narrow(const BaseObject& r);
+    static DamageObj_tmp _narrow(const BaseObject& r);
 
     static DamageObjRef _duplicate(DamageObjRef obj);
-    static _DamageObjExpr _duplicate(const DamageObj& r);
+    static DamageObj_tmp _duplicate(const DamageObj& r);
 };
 
-class _DamageObjExpr : public DamageObj {
+class DamageObj_tmp : public DamageObj {
 public:
-    _DamageObjExpr(DamageObjRef p) { _obj = p; }
-    _DamageObjExpr(const DamageObj& r) { _obj = r._obj; }
-    _DamageObjExpr(const _DamageObjExpr& r) { _obj = r._obj; }
-    ~_DamageObjExpr();
+    DamageObj_tmp(DamageObjRef p) { _obj_ = p; }
+    DamageObj_tmp(const DamageObj& r);
+    DamageObj_tmp(const DamageObj_tmp& r);
+    ~DamageObj_tmp();
 };
 
-class _DamageObjElem {
+class DamageObj_var {
 public:
-    DamageObjRef _obj;
+    DamageObjRef _obj_;
 
-    _DamageObjElem(DamageObjRef p) { _obj = p; }
-    operator DamageObjRef() const { return _obj; }
-    DamageObjRef operator ->() { return _obj; }
+    DamageObj_var(DamageObjRef p) { _obj_ = p; }
+    operator DamageObjRef() const { return _obj_; }
+    DamageObjRef operator ->() { return _obj_; }
 };
 
 class DamageObjType : public FrescoObjectType {
@@ -62,13 +63,13 @@ protected:
     virtual ~DamageObjType();
 public:
     virtual void incur();
-    virtual void extend(RegionRef r);
-    _RegionExpr current() {
+    virtual void extend(Region_in r);
+    Region_tmp current() {
         return _c_current();
     }
     virtual RegionRef _c_current();
-
-    _DamageObjExpr _ref();
+    DamageObjRef _obj() { return this; }
+    void* _this();
     virtual TypeObjId _tid();
 };
 
@@ -83,103 +84,58 @@ protected:
     Exchange* exch_;
 };
 
-inline DamageObjRef DamageObj::_duplicate(DamageObjRef obj) {
-    return (DamageObjRef)_BaseObject__duplicate(obj, &DamageObjStub::_create);
-}
-inline DamageObj& DamageObj::operator =(DamageObjRef p) {
-    _BaseObject__release(_obj);
-    _obj = DamageObj::_duplicate(p);
-    return *this;
-}
-inline DamageObj::DamageObj(const DamageObj& r) {
-    _obj = DamageObj::_duplicate(r._obj);
-}
-inline DamageObj& DamageObj::operator =(const DamageObj& r) {
-    _BaseObject__release(_obj);
-    _obj = DamageObj::_duplicate(r._obj);
-    return *this;
-}
-inline DamageObj::DamageObj(const _DamageObjExpr& r) {
-    _obj = r._obj;
-    ((_DamageObjExpr*)&r)->_obj = 0;
-}
-inline DamageObj& DamageObj::operator =(const _DamageObjExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_DamageObjExpr*)&r)->_obj = 0;
-    return *this;
-}
-inline DamageObj::DamageObj(const _DamageObjElem& e) {
-    _obj = DamageObj::_duplicate(e._obj);
-}
-inline DamageObj& DamageObj::operator =(const _DamageObjElem& e) {
-    _BaseObject__release(_obj);
-    _obj = DamageObj::_duplicate(e._obj);
-    return *this;
-}
-inline DamageObj::~DamageObj() {
-    _BaseObject__release(_obj);
-}
-inline _DamageObjExpr DamageObj::_narrow(const BaseObject& r) {
-    return _narrow(r._obj);
-}
-inline _DamageObjExpr DamageObj::_duplicate(const DamageObj& r) {
-    return _duplicate(r._obj);
-}
-inline DamageObj::operator FrescoObject() const {
-    return _FrescoObjectExpr((FrescoObjectRef)_BaseObject__duplicate(_obj, &FrescoObjectStub::_create));
-}
-inline _DamageObjExpr::~_DamageObjExpr() { }
-inline _DamageObjExpr DamageObjType::_ref() { return this; }
-
 class GlyphOffsetType;
 typedef GlyphOffsetType* GlyphOffsetRef;
+typedef GlyphOffsetRef GlyphOffset_in;
 class GlyphOffset;
-class _GlyphOffsetExpr;
-class _GlyphOffsetElem;
+class GlyphOffset_tmp;
+class GlyphOffset_var;
 
 class GlyphTraversalType;
 typedef GlyphTraversalType* GlyphTraversalRef;
+typedef GlyphTraversalRef GlyphTraversal_in;
 class GlyphTraversal;
-class _GlyphTraversalExpr;
-class _GlyphTraversalElem;
+class GlyphTraversal_tmp;
+class GlyphTraversal_var;
 
 class GlyphVisitorType;
 typedef GlyphVisitorType* GlyphVisitorRef;
+typedef GlyphVisitorRef GlyphVisitor_in;
 class GlyphVisitor;
-class _GlyphVisitorExpr;
-class _GlyphVisitorElem;
+class GlyphVisitor_tmp;
+class GlyphVisitor_var;
 
 class GlyphType;
 typedef GlyphType* GlyphRef;
+typedef GlyphRef Glyph_in;
 class Glyph;
-class _GlyphExpr;
-class _GlyphElem;
+class Glyph_tmp;
+class Glyph_var;
 
 class Glyph {
 public:
-    GlyphRef _obj;
+    GlyphRef _obj_;
 
-    Glyph() { _obj = 0; }
-    Glyph(GlyphRef p) { _obj = p; }
+    Glyph() { _obj_ = 0; }
+    Glyph(GlyphRef p) { _obj_ = p; }
     Glyph& operator =(GlyphRef p);
     Glyph(const Glyph&);
     Glyph& operator =(const Glyph& r);
-    Glyph(const _GlyphExpr&);
-    Glyph& operator =(const _GlyphExpr&);
-    Glyph(const _GlyphElem&);
-    Glyph& operator =(const _GlyphElem&);
+    Glyph(const Glyph_tmp&);
+    Glyph& operator =(const Glyph_tmp&);
+    Glyph(const Glyph_var&);
+    Glyph& operator =(const Glyph_var&);
     ~Glyph();
 
-    operator GlyphRef() const { return _obj; }
-    GlyphRef operator ->() { return _obj; }
+    GlyphRef operator ->() { return _obj_; }
 
+    operator Glyph_in() const { return _obj_; }
     operator FrescoObject() const;
     static GlyphRef _narrow(BaseObjectRef p);
-    static _GlyphExpr _narrow(const BaseObject& r);
+    static Glyph_tmp _narrow(const BaseObject& r);
 
     static GlyphRef _duplicate(GlyphRef obj);
-    static _GlyphExpr _duplicate(const Glyph& r);
+    static Glyph_tmp _duplicate(const Glyph& r);
     struct Requirement {
         Boolean defined;
         Coord natural, maximum, minimum;
@@ -208,21 +164,21 @@ public:
     };
 };
 
-class _GlyphExpr : public Glyph {
+class Glyph_tmp : public Glyph {
 public:
-    _GlyphExpr(GlyphRef p) { _obj = p; }
-    _GlyphExpr(const Glyph& r) { _obj = r._obj; }
-    _GlyphExpr(const _GlyphExpr& r) { _obj = r._obj; }
-    ~_GlyphExpr();
+    Glyph_tmp(GlyphRef p) { _obj_ = p; }
+    Glyph_tmp(const Glyph& r);
+    Glyph_tmp(const Glyph_tmp& r);
+    ~Glyph_tmp();
 };
 
-class _GlyphElem {
+class Glyph_var {
 public:
-    GlyphRef _obj;
+    GlyphRef _obj_;
 
-    _GlyphElem(GlyphRef p) { _obj = p; }
-    operator GlyphRef() const { return _obj; }
-    GlyphRef operator ->() { return _obj; }
+    Glyph_var(GlyphRef p) { _obj_ = p; }
+    operator GlyphRef() const { return _obj_; }
+    GlyphRef operator ->() { return _obj_; }
 };
 
 class GlyphType : public FrescoObjectType {
@@ -230,51 +186,55 @@ protected:
     GlyphType();
     virtual ~GlyphType();
 public:
-    _GlyphExpr clone_glyph() {
+    Glyph_tmp clone_glyph() {
         return _c_clone_glyph();
     }
     virtual GlyphRef _c_clone_glyph();
-    _StyleObjExpr style() {
+    StyleObj_tmp style() {
         return _c_style();
     }
     virtual StyleObjRef _c_style();
-    void style(StyleObjRef _p) {
+    void style(StyleObj_in _p) {
         _c_style(_p);
     }
-    virtual void _c_style(StyleObjRef _p);
-    _TransformObjExpr transform() {
+    virtual void _c_style(StyleObj_in _p);
+    TransformObj_tmp transform() {
         return _c_transform();
     }
     virtual TransformObjRef _c_transform();
     virtual void request(Glyph::Requisition& r);
-    virtual void extension(const Glyph::AllocationInfo& a, RegionRef r);
-    virtual void shape(RegionRef r);
-    virtual void traverse(GlyphTraversalRef t);
-    virtual void draw(GlyphTraversalRef t);
-    virtual void pick(GlyphTraversalRef t);
-    _GlyphExpr body() {
+    virtual void extension(const Glyph::AllocationInfo& a, Region_in r);
+    Region_tmp shape() {
+        return _c_shape();
+    }
+    virtual RegionRef _c_shape();
+    virtual void traverse(GlyphTraversal_in t);
+    virtual void draw(GlyphTraversal_in t);
+    virtual void pick(GlyphTraversal_in t);
+    Glyph_tmp body() {
         return _c_body();
     }
     virtual GlyphRef _c_body();
-    void body(GlyphRef _p) {
+    void body(Glyph_in _p) {
         _c_body(_p);
     }
-    virtual void _c_body(GlyphRef _p);
-    _GlyphOffsetExpr append(GlyphRef g);
-    virtual GlyphOffsetRef _c_append(GlyphRef g);
-    _GlyphOffsetExpr prepend(GlyphRef g);
-    virtual GlyphOffsetRef _c_prepend(GlyphRef g);
-    virtual Tag add_parent(GlyphOffsetRef parent_offset);
+    virtual void _c_body(Glyph_in _p);
+    GlyphOffset_tmp append(Glyph_in g);
+    virtual GlyphOffsetRef _c_append(Glyph_in g);
+    GlyphOffset_tmp prepend(Glyph_in g);
+    virtual GlyphOffsetRef _c_prepend(Glyph_in g);
+    virtual Tag add_parent(GlyphOffset_in parent_offset);
     virtual void remove_parent(Tag add_tag);
-    virtual void visit_children(GlyphVisitorRef v);
-    virtual void visit_children_reversed(GlyphVisitorRef v);
-    virtual void visit_parents(GlyphVisitorRef v);
+    virtual void visit_children(GlyphVisitor_in v);
+    virtual void visit_children_reversed(GlyphVisitor_in v);
+    virtual void visit_parents(GlyphVisitor_in v);
     virtual void allocations(Glyph::AllocationInfoList& a);
     virtual void need_redraw();
-    virtual void need_redraw_region(RegionRef r);
+    virtual void need_redraw_region(Region_in r);
     virtual void need_resize();
-
-    _GlyphExpr _ref();
+    virtual Boolean restore_trail(GlyphTraversal_in t);
+    GlyphRef _obj() { return this; }
+    void* _this();
     virtual TypeObjId _tid();
 };
 
@@ -289,96 +249,47 @@ protected:
     Exchange* exch_;
 };
 
-inline GlyphRef Glyph::_duplicate(GlyphRef obj) {
-    return (GlyphRef)_BaseObject__duplicate(obj, &GlyphStub::_create);
-}
-inline Glyph& Glyph::operator =(GlyphRef p) {
-    _BaseObject__release(_obj);
-    _obj = Glyph::_duplicate(p);
-    return *this;
-}
-inline Glyph::Glyph(const Glyph& r) {
-    _obj = Glyph::_duplicate(r._obj);
-}
-inline Glyph& Glyph::operator =(const Glyph& r) {
-    _BaseObject__release(_obj);
-    _obj = Glyph::_duplicate(r._obj);
-    return *this;
-}
-inline Glyph::Glyph(const _GlyphExpr& r) {
-    _obj = r._obj;
-    ((_GlyphExpr*)&r)->_obj = 0;
-}
-inline Glyph& Glyph::operator =(const _GlyphExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_GlyphExpr*)&r)->_obj = 0;
-    return *this;
-}
-inline Glyph::Glyph(const _GlyphElem& e) {
-    _obj = Glyph::_duplicate(e._obj);
-}
-inline Glyph& Glyph::operator =(const _GlyphElem& e) {
-    _BaseObject__release(_obj);
-    _obj = Glyph::_duplicate(e._obj);
-    return *this;
-}
-inline Glyph::~Glyph() {
-    _BaseObject__release(_obj);
-}
-inline _GlyphExpr Glyph::_narrow(const BaseObject& r) {
-    return _narrow(r._obj);
-}
-inline _GlyphExpr Glyph::_duplicate(const Glyph& r) {
-    return _duplicate(r._obj);
-}
-inline Glyph::operator FrescoObject() const {
-    return _FrescoObjectExpr((FrescoObjectRef)_BaseObject__duplicate(_obj, &FrescoObjectStub::_create));
-}
-inline _GlyphExpr::~_GlyphExpr() { }
-inline _GlyphExpr GlyphType::_ref() { return this; }
-
 class GlyphVisitor {
 public:
-    GlyphVisitorRef _obj;
+    GlyphVisitorRef _obj_;
 
-    GlyphVisitor() { _obj = 0; }
-    GlyphVisitor(GlyphVisitorRef p) { _obj = p; }
+    GlyphVisitor() { _obj_ = 0; }
+    GlyphVisitor(GlyphVisitorRef p) { _obj_ = p; }
     GlyphVisitor& operator =(GlyphVisitorRef p);
     GlyphVisitor(const GlyphVisitor&);
     GlyphVisitor& operator =(const GlyphVisitor& r);
-    GlyphVisitor(const _GlyphVisitorExpr&);
-    GlyphVisitor& operator =(const _GlyphVisitorExpr&);
-    GlyphVisitor(const _GlyphVisitorElem&);
-    GlyphVisitor& operator =(const _GlyphVisitorElem&);
+    GlyphVisitor(const GlyphVisitor_tmp&);
+    GlyphVisitor& operator =(const GlyphVisitor_tmp&);
+    GlyphVisitor(const GlyphVisitor_var&);
+    GlyphVisitor& operator =(const GlyphVisitor_var&);
     ~GlyphVisitor();
 
-    operator GlyphVisitorRef() const { return _obj; }
-    GlyphVisitorRef operator ->() { return _obj; }
+    GlyphVisitorRef operator ->() { return _obj_; }
 
+    operator GlyphVisitor_in() const { return _obj_; }
     operator FrescoObject() const;
     static GlyphVisitorRef _narrow(BaseObjectRef p);
-    static _GlyphVisitorExpr _narrow(const BaseObject& r);
+    static GlyphVisitor_tmp _narrow(const BaseObject& r);
 
     static GlyphVisitorRef _duplicate(GlyphVisitorRef obj);
-    static _GlyphVisitorExpr _duplicate(const GlyphVisitor& r);
+    static GlyphVisitor_tmp _duplicate(const GlyphVisitor& r);
 };
 
-class _GlyphVisitorExpr : public GlyphVisitor {
+class GlyphVisitor_tmp : public GlyphVisitor {
 public:
-    _GlyphVisitorExpr(GlyphVisitorRef p) { _obj = p; }
-    _GlyphVisitorExpr(const GlyphVisitor& r) { _obj = r._obj; }
-    _GlyphVisitorExpr(const _GlyphVisitorExpr& r) { _obj = r._obj; }
-    ~_GlyphVisitorExpr();
+    GlyphVisitor_tmp(GlyphVisitorRef p) { _obj_ = p; }
+    GlyphVisitor_tmp(const GlyphVisitor& r);
+    GlyphVisitor_tmp(const GlyphVisitor_tmp& r);
+    ~GlyphVisitor_tmp();
 };
 
-class _GlyphVisitorElem {
+class GlyphVisitor_var {
 public:
-    GlyphVisitorRef _obj;
+    GlyphVisitorRef _obj_;
 
-    _GlyphVisitorElem(GlyphVisitorRef p) { _obj = p; }
-    operator GlyphVisitorRef() const { return _obj; }
-    GlyphVisitorRef operator ->() { return _obj; }
+    GlyphVisitor_var(GlyphVisitorRef p) { _obj_ = p; }
+    operator GlyphVisitorRef() const { return _obj_; }
+    GlyphVisitorRef operator ->() { return _obj_; }
 };
 
 class GlyphVisitorType : public FrescoObjectType {
@@ -386,9 +297,9 @@ protected:
     GlyphVisitorType();
     virtual ~GlyphVisitorType();
 public:
-    virtual Boolean visit(GlyphRef glyph, GlyphOffsetRef offset);
-
-    _GlyphVisitorExpr _ref();
+    virtual Boolean visit(Glyph_in glyph, GlyphOffset_in offset);
+    GlyphVisitorRef _obj() { return this; }
+    void* _this();
     virtual TypeObjId _tid();
 };
 
@@ -403,96 +314,47 @@ protected:
     Exchange* exch_;
 };
 
-inline GlyphVisitorRef GlyphVisitor::_duplicate(GlyphVisitorRef obj) {
-    return (GlyphVisitorRef)_BaseObject__duplicate(obj, &GlyphVisitorStub::_create);
-}
-inline GlyphVisitor& GlyphVisitor::operator =(GlyphVisitorRef p) {
-    _BaseObject__release(_obj);
-    _obj = GlyphVisitor::_duplicate(p);
-    return *this;
-}
-inline GlyphVisitor::GlyphVisitor(const GlyphVisitor& r) {
-    _obj = GlyphVisitor::_duplicate(r._obj);
-}
-inline GlyphVisitor& GlyphVisitor::operator =(const GlyphVisitor& r) {
-    _BaseObject__release(_obj);
-    _obj = GlyphVisitor::_duplicate(r._obj);
-    return *this;
-}
-inline GlyphVisitor::GlyphVisitor(const _GlyphVisitorExpr& r) {
-    _obj = r._obj;
-    ((_GlyphVisitorExpr*)&r)->_obj = 0;
-}
-inline GlyphVisitor& GlyphVisitor::operator =(const _GlyphVisitorExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_GlyphVisitorExpr*)&r)->_obj = 0;
-    return *this;
-}
-inline GlyphVisitor::GlyphVisitor(const _GlyphVisitorElem& e) {
-    _obj = GlyphVisitor::_duplicate(e._obj);
-}
-inline GlyphVisitor& GlyphVisitor::operator =(const _GlyphVisitorElem& e) {
-    _BaseObject__release(_obj);
-    _obj = GlyphVisitor::_duplicate(e._obj);
-    return *this;
-}
-inline GlyphVisitor::~GlyphVisitor() {
-    _BaseObject__release(_obj);
-}
-inline _GlyphVisitorExpr GlyphVisitor::_narrow(const BaseObject& r) {
-    return _narrow(r._obj);
-}
-inline _GlyphVisitorExpr GlyphVisitor::_duplicate(const GlyphVisitor& r) {
-    return _duplicate(r._obj);
-}
-inline GlyphVisitor::operator FrescoObject() const {
-    return _FrescoObjectExpr((FrescoObjectRef)_BaseObject__duplicate(_obj, &FrescoObjectStub::_create));
-}
-inline _GlyphVisitorExpr::~_GlyphVisitorExpr() { }
-inline _GlyphVisitorExpr GlyphVisitorType::_ref() { return this; }
-
 class GlyphOffset {
 public:
-    GlyphOffsetRef _obj;
+    GlyphOffsetRef _obj_;
 
-    GlyphOffset() { _obj = 0; }
-    GlyphOffset(GlyphOffsetRef p) { _obj = p; }
+    GlyphOffset() { _obj_ = 0; }
+    GlyphOffset(GlyphOffsetRef p) { _obj_ = p; }
     GlyphOffset& operator =(GlyphOffsetRef p);
     GlyphOffset(const GlyphOffset&);
     GlyphOffset& operator =(const GlyphOffset& r);
-    GlyphOffset(const _GlyphOffsetExpr&);
-    GlyphOffset& operator =(const _GlyphOffsetExpr&);
-    GlyphOffset(const _GlyphOffsetElem&);
-    GlyphOffset& operator =(const _GlyphOffsetElem&);
+    GlyphOffset(const GlyphOffset_tmp&);
+    GlyphOffset& operator =(const GlyphOffset_tmp&);
+    GlyphOffset(const GlyphOffset_var&);
+    GlyphOffset& operator =(const GlyphOffset_var&);
     ~GlyphOffset();
 
-    operator GlyphOffsetRef() const { return _obj; }
-    GlyphOffsetRef operator ->() { return _obj; }
+    GlyphOffsetRef operator ->() { return _obj_; }
 
+    operator GlyphOffset_in() const { return _obj_; }
     operator FrescoObject() const;
     static GlyphOffsetRef _narrow(BaseObjectRef p);
-    static _GlyphOffsetExpr _narrow(const BaseObject& r);
+    static GlyphOffset_tmp _narrow(const BaseObject& r);
 
     static GlyphOffsetRef _duplicate(GlyphOffsetRef obj);
-    static _GlyphOffsetExpr _duplicate(const GlyphOffset& r);
+    static GlyphOffset_tmp _duplicate(const GlyphOffset& r);
 };
 
-class _GlyphOffsetExpr : public GlyphOffset {
+class GlyphOffset_tmp : public GlyphOffset {
 public:
-    _GlyphOffsetExpr(GlyphOffsetRef p) { _obj = p; }
-    _GlyphOffsetExpr(const GlyphOffset& r) { _obj = r._obj; }
-    _GlyphOffsetExpr(const _GlyphOffsetExpr& r) { _obj = r._obj; }
-    ~_GlyphOffsetExpr();
+    GlyphOffset_tmp(GlyphOffsetRef p) { _obj_ = p; }
+    GlyphOffset_tmp(const GlyphOffset& r);
+    GlyphOffset_tmp(const GlyphOffset_tmp& r);
+    ~GlyphOffset_tmp();
 };
 
-class _GlyphOffsetElem {
+class GlyphOffset_var {
 public:
-    GlyphOffsetRef _obj;
+    GlyphOffsetRef _obj_;
 
-    _GlyphOffsetElem(GlyphOffsetRef p) { _obj = p; }
-    operator GlyphOffsetRef() const { return _obj; }
-    GlyphOffsetRef operator ->() { return _obj; }
+    GlyphOffset_var(GlyphOffsetRef p) { _obj_ = p; }
+    operator GlyphOffsetRef() const { return _obj_; }
+    GlyphOffsetRef operator ->() { return _obj_; }
 };
 
 class GlyphOffsetType : public FrescoObjectType {
@@ -500,24 +362,26 @@ protected:
     GlyphOffsetType();
     virtual ~GlyphOffsetType();
 public:
-    _GlyphExpr parent() {
+    Glyph_tmp parent() {
         return _c_parent();
     }
     virtual GlyphRef _c_parent();
-    _GlyphExpr child() {
+    Glyph_tmp child() {
         return _c_child();
     }
     virtual GlyphRef _c_child();
     virtual void allocations(Glyph::AllocationInfoList& a);
-    _GlyphOffsetExpr insert(GlyphRef g) {
+    GlyphOffset_tmp insert(Glyph_in g) {
         return _c_insert(g);
     }
-    virtual GlyphOffsetRef _c_insert(GlyphRef g);
-    virtual void replace(GlyphRef g);
+    virtual GlyphOffsetRef _c_insert(Glyph_in g);
+    virtual void replace(Glyph_in g);
     virtual void remove();
     virtual void notify();
-
-    _GlyphOffsetExpr _ref();
+    virtual void visit_trail(GlyphTraversal_in t);
+    virtual void child_allocate(Glyph::AllocationInfo& a);
+    GlyphOffsetRef _obj() { return this; }
+    void* _this();
     virtual TypeObjId _tid();
 };
 
@@ -532,105 +396,57 @@ protected:
     Exchange* exch_;
 };
 
-inline GlyphOffsetRef GlyphOffset::_duplicate(GlyphOffsetRef obj) {
-    return (GlyphOffsetRef)_BaseObject__duplicate(obj, &GlyphOffsetStub::_create);
-}
-inline GlyphOffset& GlyphOffset::operator =(GlyphOffsetRef p) {
-    _BaseObject__release(_obj);
-    _obj = GlyphOffset::_duplicate(p);
-    return *this;
-}
-inline GlyphOffset::GlyphOffset(const GlyphOffset& r) {
-    _obj = GlyphOffset::_duplicate(r._obj);
-}
-inline GlyphOffset& GlyphOffset::operator =(const GlyphOffset& r) {
-    _BaseObject__release(_obj);
-    _obj = GlyphOffset::_duplicate(r._obj);
-    return *this;
-}
-inline GlyphOffset::GlyphOffset(const _GlyphOffsetExpr& r) {
-    _obj = r._obj;
-    ((_GlyphOffsetExpr*)&r)->_obj = 0;
-}
-inline GlyphOffset& GlyphOffset::operator =(const _GlyphOffsetExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_GlyphOffsetExpr*)&r)->_obj = 0;
-    return *this;
-}
-inline GlyphOffset::GlyphOffset(const _GlyphOffsetElem& e) {
-    _obj = GlyphOffset::_duplicate(e._obj);
-}
-inline GlyphOffset& GlyphOffset::operator =(const _GlyphOffsetElem& e) {
-    _BaseObject__release(_obj);
-    _obj = GlyphOffset::_duplicate(e._obj);
-    return *this;
-}
-inline GlyphOffset::~GlyphOffset() {
-    _BaseObject__release(_obj);
-}
-inline _GlyphOffsetExpr GlyphOffset::_narrow(const BaseObject& r) {
-    return _narrow(r._obj);
-}
-inline _GlyphOffsetExpr GlyphOffset::_duplicate(const GlyphOffset& r) {
-    return _duplicate(r._obj);
-}
-inline GlyphOffset::operator FrescoObject() const {
-    return _FrescoObjectExpr((FrescoObjectRef)_BaseObject__duplicate(_obj, &FrescoObjectStub::_create));
-}
-inline _GlyphOffsetExpr::~_GlyphOffsetExpr() { }
-inline _GlyphOffsetExpr GlyphOffsetType::_ref() { return this; }
-
 class ViewerType;
 typedef ViewerType* ViewerRef;
+typedef ViewerRef Viewer_in;
 class Viewer;
-class _ViewerExpr;
-class _ViewerElem;
+class Viewer_tmp;
+class Viewer_var;
 
 class GlyphTraversal {
 public:
-    GlyphTraversalRef _obj;
+    GlyphTraversalRef _obj_;
 
-    GlyphTraversal() { _obj = 0; }
-    GlyphTraversal(GlyphTraversalRef p) { _obj = p; }
+    GlyphTraversal() { _obj_ = 0; }
+    GlyphTraversal(GlyphTraversalRef p) { _obj_ = p; }
     GlyphTraversal& operator =(GlyphTraversalRef p);
     GlyphTraversal(const GlyphTraversal&);
     GlyphTraversal& operator =(const GlyphTraversal& r);
-    GlyphTraversal(const _GlyphTraversalExpr&);
-    GlyphTraversal& operator =(const _GlyphTraversalExpr&);
-    GlyphTraversal(const _GlyphTraversalElem&);
-    GlyphTraversal& operator =(const _GlyphTraversalElem&);
+    GlyphTraversal(const GlyphTraversal_tmp&);
+    GlyphTraversal& operator =(const GlyphTraversal_tmp&);
+    GlyphTraversal(const GlyphTraversal_var&);
+    GlyphTraversal& operator =(const GlyphTraversal_var&);
     ~GlyphTraversal();
 
-    operator GlyphTraversalRef() const { return _obj; }
-    GlyphTraversalRef operator ->() { return _obj; }
+    GlyphTraversalRef operator ->() { return _obj_; }
 
+    operator GlyphTraversal_in() const { return _obj_; }
     operator FrescoObject() const;
     static GlyphTraversalRef _narrow(BaseObjectRef p);
-    static _GlyphTraversalExpr _narrow(const BaseObject& r);
+    static GlyphTraversal_tmp _narrow(const BaseObject& r);
 
     static GlyphTraversalRef _duplicate(GlyphTraversalRef obj);
-    static _GlyphTraversalExpr _duplicate(const GlyphTraversal& r);
+    static GlyphTraversal_tmp _duplicate(const GlyphTraversal& r);
     enum Operation {
         draw, pick_top, pick_any, pick_all, other
     };
 };
 
-class _GlyphTraversalExpr : public GlyphTraversal {
+class GlyphTraversal_tmp : public GlyphTraversal {
 public:
-    _GlyphTraversalExpr(GlyphTraversalRef p) { _obj = p; }
-    _GlyphTraversalExpr(const GlyphTraversal& r) { _obj = r._obj; }
-    _GlyphTraversalExpr(const _GlyphTraversalExpr& r) { _obj = r._obj; }
-    ~_GlyphTraversalExpr();
+    GlyphTraversal_tmp(GlyphTraversalRef p) { _obj_ = p; }
+    GlyphTraversal_tmp(const GlyphTraversal& r);
+    GlyphTraversal_tmp(const GlyphTraversal_tmp& r);
+    ~GlyphTraversal_tmp();
 };
 
-class _GlyphTraversalElem {
+class GlyphTraversal_var {
 public:
-    GlyphTraversalRef _obj;
+    GlyphTraversalRef _obj_;
 
-    _GlyphTraversalElem(GlyphTraversalRef p) { _obj = p; }
-    operator GlyphTraversalRef() const { return _obj; }
-    GlyphTraversalRef operator ->() { return _obj; }
+    GlyphTraversal_var(GlyphTraversalRef p) { _obj_ = p; }
+    operator GlyphTraversalRef() const { return _obj_; }
+    GlyphTraversalRef operator ->() { return _obj_; }
 };
 
 class GlyphTraversalType : public FrescoObjectType {
@@ -640,63 +456,67 @@ protected:
 public:
     virtual GlyphTraversal::Operation op();
     virtual GlyphTraversal::Operation swap_op(GlyphTraversal::Operation op);
-    virtual void begin_trail(ViewerRef v);
+    virtual void begin_trail(Viewer_in v);
     virtual void end_trail();
-    virtual void traverse_child(GlyphOffsetRef o, RegionRef allocation);
+    virtual void traverse_child(GlyphOffset_in o, Region_in allocation);
     virtual void visit();
-    _GlyphTraversalExpr trail() {
+    GlyphTraversal_tmp trail() {
         return _c_trail();
     }
     virtual GlyphTraversalRef _c_trail();
-    _ViewerExpr current_viewer();
-    virtual ViewerRef _c_current_viewer();
-    _GlyphExpr current_glyph() {
+    Glyph_tmp current_glyph() {
         return _c_current_glyph();
     }
     virtual GlyphRef _c_current_glyph();
-    _GlyphOffsetExpr offset() {
-        return _c_offset();
+    GlyphOffset_tmp current_offset() {
+        return _c_current_offset();
     }
-    virtual GlyphOffsetRef _c_offset();
-    virtual void forward();
-    virtual void backward();
-    _PainterObjExpr painter() {
+    virtual GlyphOffsetRef _c_current_offset();
+    Viewer_tmp current_viewer();
+    virtual ViewerRef _c_current_viewer();
+    virtual Boolean forward();
+    virtual Boolean backward();
+    PainterObj_tmp painter() {
         return _c_painter();
     }
     virtual PainterObjRef _c_painter();
-    void painter(PainterObjRef _p) {
+    void painter(PainterObj_in _p) {
         _c_painter(_p);
     }
-    virtual void _c_painter(PainterObjRef _p);
-    _DisplayObjExpr display() {
+    virtual void _c_painter(PainterObj_in _p);
+    DisplayObj_tmp display() {
         return _c_display();
     }
     virtual DisplayObjRef _c_display();
-    _ScreenObjExpr screen() {
+    ScreenObj_tmp screen() {
         return _c_screen();
     }
     virtual ScreenObjRef _c_screen();
-    _RegionExpr allocation() {
+    Region_tmp allocation() {
         return _c_allocation();
     }
     virtual RegionRef _c_allocation();
     virtual Boolean bounds(Vertex& lower, Vertex& upper, Vertex& origin);
     virtual Boolean origin(Vertex& origin);
     virtual Boolean span(Axis a, Region::BoundingSpan& s);
-    _DamageObjExpr damage() {
+    TransformObj_tmp transform() {
+        return _c_transform();
+    }
+    virtual TransformObjRef _c_transform();
+    DamageObj_tmp damage() {
         return _c_damage();
     }
     virtual DamageObjRef _c_damage();
     virtual void hit();
     virtual Long hit_info();
     virtual void hit_info(Long _p);
-    _GlyphTraversalExpr picked() {
+    GlyphTraversal_tmp picked() {
         return _c_picked();
     }
     virtual GlyphTraversalRef _c_picked();
     virtual void clear();
-
-    _GlyphTraversalExpr _ref();
+    GlyphTraversalRef _obj() { return this; }
+    void* _this();
     virtual TypeObjId _tid();
 };
 
@@ -711,53 +531,279 @@ protected:
     Exchange* exch_;
 };
 
+inline DamageObjRef DamageObj::_duplicate(DamageObjRef obj) {
+    return (DamageObjRef)_BaseObject__duplicate(obj, &DamageObjStub::_create);
+}
+inline DamageObj& DamageObj::operator =(DamageObjRef p) {
+    _BaseObject__release(_obj_);
+    _obj_ = DamageObj::_duplicate(p);
+    return *this;
+}
+inline DamageObj::DamageObj(const DamageObj& r) {
+    _obj_ = DamageObj::_duplicate(r._obj_);
+}
+inline DamageObj& DamageObj::operator =(const DamageObj& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = DamageObj::_duplicate(r._obj_);
+    return *this;
+}
+inline DamageObj::DamageObj(const DamageObj_tmp& r) {
+    _obj_ = r._obj_;
+    ((DamageObj_tmp*)&r)->_obj_ = 0;
+}
+inline DamageObj& DamageObj::operator =(const DamageObj_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((DamageObj_tmp*)&r)->_obj_ = 0;
+    return *this;
+}
+inline DamageObj::DamageObj(const DamageObj_var& e) {
+    _obj_ = DamageObj::_duplicate(e._obj_);
+}
+inline DamageObj& DamageObj::operator =(const DamageObj_var& e) {
+    _BaseObject__release(_obj_);
+    _obj_ = DamageObj::_duplicate(e._obj_);
+    return *this;
+}
+inline DamageObj::~DamageObj() {
+    _BaseObject__release(_obj_);
+}
+inline DamageObj_tmp DamageObj::_narrow(const BaseObject& r) {
+    return _narrow(r._obj_);
+}
+inline DamageObj_tmp DamageObj::_duplicate(const DamageObj& r) {
+    return _duplicate(r._obj_);
+}
+inline DamageObj::operator FrescoObject() const {
+    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
+}
+inline DamageObj_tmp::DamageObj_tmp(const DamageObj& r) {
+    _obj_ = DamageObj::_duplicate(r._obj_);
+}
+inline DamageObj_tmp::DamageObj_tmp(const DamageObj_tmp& r) {
+    _obj_ = r._obj_;
+    ((DamageObj_tmp*)&r)->_obj_ = 0;
+}
+inline DamageObj_tmp::~DamageObj_tmp() { }
+
+inline GlyphRef Glyph::_duplicate(GlyphRef obj) {
+    return (GlyphRef)_BaseObject__duplicate(obj, &GlyphStub::_create);
+}
+inline Glyph& Glyph::operator =(GlyphRef p) {
+    _BaseObject__release(_obj_);
+    _obj_ = Glyph::_duplicate(p);
+    return *this;
+}
+inline Glyph::Glyph(const Glyph& r) {
+    _obj_ = Glyph::_duplicate(r._obj_);
+}
+inline Glyph& Glyph::operator =(const Glyph& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = Glyph::_duplicate(r._obj_);
+    return *this;
+}
+inline Glyph::Glyph(const Glyph_tmp& r) {
+    _obj_ = r._obj_;
+    ((Glyph_tmp*)&r)->_obj_ = 0;
+}
+inline Glyph& Glyph::operator =(const Glyph_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((Glyph_tmp*)&r)->_obj_ = 0;
+    return *this;
+}
+inline Glyph::Glyph(const Glyph_var& e) {
+    _obj_ = Glyph::_duplicate(e._obj_);
+}
+inline Glyph& Glyph::operator =(const Glyph_var& e) {
+    _BaseObject__release(_obj_);
+    _obj_ = Glyph::_duplicate(e._obj_);
+    return *this;
+}
+inline Glyph::~Glyph() {
+    _BaseObject__release(_obj_);
+}
+inline Glyph_tmp Glyph::_narrow(const BaseObject& r) {
+    return _narrow(r._obj_);
+}
+inline Glyph_tmp Glyph::_duplicate(const Glyph& r) {
+    return _duplicate(r._obj_);
+}
+inline Glyph::operator FrescoObject() const {
+    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
+}
+inline Glyph_tmp::Glyph_tmp(const Glyph& r) {
+    _obj_ = Glyph::_duplicate(r._obj_);
+}
+inline Glyph_tmp::Glyph_tmp(const Glyph_tmp& r) {
+    _obj_ = r._obj_;
+    ((Glyph_tmp*)&r)->_obj_ = 0;
+}
+inline Glyph_tmp::~Glyph_tmp() { }
+
+inline GlyphVisitorRef GlyphVisitor::_duplicate(GlyphVisitorRef obj) {
+    return (GlyphVisitorRef)_BaseObject__duplicate(obj, &GlyphVisitorStub::_create);
+}
+inline GlyphVisitor& GlyphVisitor::operator =(GlyphVisitorRef p) {
+    _BaseObject__release(_obj_);
+    _obj_ = GlyphVisitor::_duplicate(p);
+    return *this;
+}
+inline GlyphVisitor::GlyphVisitor(const GlyphVisitor& r) {
+    _obj_ = GlyphVisitor::_duplicate(r._obj_);
+}
+inline GlyphVisitor& GlyphVisitor::operator =(const GlyphVisitor& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = GlyphVisitor::_duplicate(r._obj_);
+    return *this;
+}
+inline GlyphVisitor::GlyphVisitor(const GlyphVisitor_tmp& r) {
+    _obj_ = r._obj_;
+    ((GlyphVisitor_tmp*)&r)->_obj_ = 0;
+}
+inline GlyphVisitor& GlyphVisitor::operator =(const GlyphVisitor_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((GlyphVisitor_tmp*)&r)->_obj_ = 0;
+    return *this;
+}
+inline GlyphVisitor::GlyphVisitor(const GlyphVisitor_var& e) {
+    _obj_ = GlyphVisitor::_duplicate(e._obj_);
+}
+inline GlyphVisitor& GlyphVisitor::operator =(const GlyphVisitor_var& e) {
+    _BaseObject__release(_obj_);
+    _obj_ = GlyphVisitor::_duplicate(e._obj_);
+    return *this;
+}
+inline GlyphVisitor::~GlyphVisitor() {
+    _BaseObject__release(_obj_);
+}
+inline GlyphVisitor_tmp GlyphVisitor::_narrow(const BaseObject& r) {
+    return _narrow(r._obj_);
+}
+inline GlyphVisitor_tmp GlyphVisitor::_duplicate(const GlyphVisitor& r) {
+    return _duplicate(r._obj_);
+}
+inline GlyphVisitor::operator FrescoObject() const {
+    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
+}
+inline GlyphVisitor_tmp::GlyphVisitor_tmp(const GlyphVisitor& r) {
+    _obj_ = GlyphVisitor::_duplicate(r._obj_);
+}
+inline GlyphVisitor_tmp::GlyphVisitor_tmp(const GlyphVisitor_tmp& r) {
+    _obj_ = r._obj_;
+    ((GlyphVisitor_tmp*)&r)->_obj_ = 0;
+}
+inline GlyphVisitor_tmp::~GlyphVisitor_tmp() { }
+
+inline GlyphOffsetRef GlyphOffset::_duplicate(GlyphOffsetRef obj) {
+    return (GlyphOffsetRef)_BaseObject__duplicate(obj, &GlyphOffsetStub::_create);
+}
+inline GlyphOffset& GlyphOffset::operator =(GlyphOffsetRef p) {
+    _BaseObject__release(_obj_);
+    _obj_ = GlyphOffset::_duplicate(p);
+    return *this;
+}
+inline GlyphOffset::GlyphOffset(const GlyphOffset& r) {
+    _obj_ = GlyphOffset::_duplicate(r._obj_);
+}
+inline GlyphOffset& GlyphOffset::operator =(const GlyphOffset& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = GlyphOffset::_duplicate(r._obj_);
+    return *this;
+}
+inline GlyphOffset::GlyphOffset(const GlyphOffset_tmp& r) {
+    _obj_ = r._obj_;
+    ((GlyphOffset_tmp*)&r)->_obj_ = 0;
+}
+inline GlyphOffset& GlyphOffset::operator =(const GlyphOffset_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((GlyphOffset_tmp*)&r)->_obj_ = 0;
+    return *this;
+}
+inline GlyphOffset::GlyphOffset(const GlyphOffset_var& e) {
+    _obj_ = GlyphOffset::_duplicate(e._obj_);
+}
+inline GlyphOffset& GlyphOffset::operator =(const GlyphOffset_var& e) {
+    _BaseObject__release(_obj_);
+    _obj_ = GlyphOffset::_duplicate(e._obj_);
+    return *this;
+}
+inline GlyphOffset::~GlyphOffset() {
+    _BaseObject__release(_obj_);
+}
+inline GlyphOffset_tmp GlyphOffset::_narrow(const BaseObject& r) {
+    return _narrow(r._obj_);
+}
+inline GlyphOffset_tmp GlyphOffset::_duplicate(const GlyphOffset& r) {
+    return _duplicate(r._obj_);
+}
+inline GlyphOffset::operator FrescoObject() const {
+    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
+}
+inline GlyphOffset_tmp::GlyphOffset_tmp(const GlyphOffset& r) {
+    _obj_ = GlyphOffset::_duplicate(r._obj_);
+}
+inline GlyphOffset_tmp::GlyphOffset_tmp(const GlyphOffset_tmp& r) {
+    _obj_ = r._obj_;
+    ((GlyphOffset_tmp*)&r)->_obj_ = 0;
+}
+inline GlyphOffset_tmp::~GlyphOffset_tmp() { }
+
 inline GlyphTraversalRef GlyphTraversal::_duplicate(GlyphTraversalRef obj) {
     return (GlyphTraversalRef)_BaseObject__duplicate(obj, &GlyphTraversalStub::_create);
 }
 inline GlyphTraversal& GlyphTraversal::operator =(GlyphTraversalRef p) {
-    _BaseObject__release(_obj);
-    _obj = GlyphTraversal::_duplicate(p);
+    _BaseObject__release(_obj_);
+    _obj_ = GlyphTraversal::_duplicate(p);
     return *this;
 }
 inline GlyphTraversal::GlyphTraversal(const GlyphTraversal& r) {
-    _obj = GlyphTraversal::_duplicate(r._obj);
+    _obj_ = GlyphTraversal::_duplicate(r._obj_);
 }
 inline GlyphTraversal& GlyphTraversal::operator =(const GlyphTraversal& r) {
-    _BaseObject__release(_obj);
-    _obj = GlyphTraversal::_duplicate(r._obj);
+    _BaseObject__release(_obj_);
+    _obj_ = GlyphTraversal::_duplicate(r._obj_);
     return *this;
 }
-inline GlyphTraversal::GlyphTraversal(const _GlyphTraversalExpr& r) {
-    _obj = r._obj;
-    ((_GlyphTraversalExpr*)&r)->_obj = 0;
+inline GlyphTraversal::GlyphTraversal(const GlyphTraversal_tmp& r) {
+    _obj_ = r._obj_;
+    ((GlyphTraversal_tmp*)&r)->_obj_ = 0;
 }
-inline GlyphTraversal& GlyphTraversal::operator =(const _GlyphTraversalExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_GlyphTraversalExpr*)&r)->_obj = 0;
+inline GlyphTraversal& GlyphTraversal::operator =(const GlyphTraversal_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((GlyphTraversal_tmp*)&r)->_obj_ = 0;
     return *this;
 }
-inline GlyphTraversal::GlyphTraversal(const _GlyphTraversalElem& e) {
-    _obj = GlyphTraversal::_duplicate(e._obj);
+inline GlyphTraversal::GlyphTraversal(const GlyphTraversal_var& e) {
+    _obj_ = GlyphTraversal::_duplicate(e._obj_);
 }
-inline GlyphTraversal& GlyphTraversal::operator =(const _GlyphTraversalElem& e) {
-    _BaseObject__release(_obj);
-    _obj = GlyphTraversal::_duplicate(e._obj);
+inline GlyphTraversal& GlyphTraversal::operator =(const GlyphTraversal_var& e) {
+    _BaseObject__release(_obj_);
+    _obj_ = GlyphTraversal::_duplicate(e._obj_);
     return *this;
 }
 inline GlyphTraversal::~GlyphTraversal() {
-    _BaseObject__release(_obj);
+    _BaseObject__release(_obj_);
 }
-inline _GlyphTraversalExpr GlyphTraversal::_narrow(const BaseObject& r) {
-    return _narrow(r._obj);
+inline GlyphTraversal_tmp GlyphTraversal::_narrow(const BaseObject& r) {
+    return _narrow(r._obj_);
 }
-inline _GlyphTraversalExpr GlyphTraversal::_duplicate(const GlyphTraversal& r) {
-    return _duplicate(r._obj);
+inline GlyphTraversal_tmp GlyphTraversal::_duplicate(const GlyphTraversal& r) {
+    return _duplicate(r._obj_);
 }
 inline GlyphTraversal::operator FrescoObject() const {
-    return _FrescoObjectExpr((FrescoObjectRef)_BaseObject__duplicate(_obj, &FrescoObjectStub::_create));
+    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
 }
-inline _GlyphTraversalExpr::~_GlyphTraversalExpr() { }
-inline _GlyphTraversalExpr GlyphTraversalType::_ref() { return this; }
+inline GlyphTraversal_tmp::GlyphTraversal_tmp(const GlyphTraversal& r) {
+    _obj_ = GlyphTraversal::_duplicate(r._obj_);
+}
+inline GlyphTraversal_tmp::GlyphTraversal_tmp(const GlyphTraversal_tmp& r) {
+    _obj_ = r._obj_;
+    ((GlyphTraversal_tmp*)&r)->_obj_ = 0;
+}
+inline GlyphTraversal_tmp::~GlyphTraversal_tmp() { }
 
 #endif

@@ -49,7 +49,7 @@ public:
     //+ ScreenObj::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -64,11 +64,11 @@ public:
     Coord to_coord(PixelCoord p);
     Coord to_pixels_coord(Coord c);
     void move_pointer(Coord x, Coord y);
-    WindowRef _c_application(ViewerRef v);
-    WindowRef _c_top_level(ViewerRef v, WindowRef group_leader);
-    WindowRef _c_transient(ViewerRef v, WindowRef transient_for);
-    WindowRef _c_popup(ViewerRef v);
-    WindowRef _c_icon(ViewerRef v);
+    WindowRef _c_application(Viewer_in v);
+    WindowRef _c_top_level(Viewer_in v, Window_in group_leader);
+    WindowRef _c_transient(Viewer_in v, Window_in transient_for);
+    WindowRef _c_popup(Viewer_in v);
+    WindowRef _c_icon(Viewer_in v);
     //+
 
     struct OverlayInfo {

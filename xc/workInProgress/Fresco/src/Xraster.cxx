@@ -83,27 +83,11 @@ RasterImpl::~RasterImpl() {
     invalidate();
 }
 
-void RasterImpl::invalidate() {
-    while (per_screen_ != nil) {
-	PerScreenData& psd = *per_screen_;
-	per_screen_ = psd.next;
-	if (psd.pixmap != nil) {
-	    XFreePixmap(psd.xdisplay, psd.pixmap);
-	}
-	if (psd.mask != nil) {
-	    XFreePixmap(psd.xdisplay, psd.mask);
-	}
-
-	Fresco::unref(psd.trans);
-	Fresco::unref(psd.screen);
-    }
-}
-
 //+ RasterImpl(FrescoObject::ref__)
 Long RasterImpl::ref__(Long references) { return object_.ref__(references); }
 
 //+ RasterImpl(FrescoObject::attach)
-Tag RasterImpl::attach(FrescoObjectRef observer) {
+Tag RasterImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 
@@ -136,7 +120,8 @@ void RasterImpl::update() {
     object_.update();
 }
 
-Boolean RasterImpl::equal(RasterRef r) {
+//+ RasterImpl(Raster::equal)
+Boolean RasterImpl::equal(Raster_in r) {
     if (r == this) {
 	return true;
     }
@@ -149,21 +134,49 @@ Boolean RasterImpl::equal(RasterRef r) {
 	return false;
     }
 
-    RasterImpl* i = (RasterImpl*)r;
     // Here, derived classes are responsible for performing better
     // tests to assure equality.
     return true;
 }
 
-unsigned long RasterImpl::hash() { return hash_; }
+//+ RasterImpl(Raster::hash)
+ULong RasterImpl::hash() { return hash_; }
 
+//+ RasterImpl(Raster::rows)
 Raster::Index RasterImpl::rows() { return rows_; }
+
+//+ RasterImpl(Raster::columns)
 Raster::Index RasterImpl::columns() { return columns_; }
+
+//+ RasterImpl(Raster::origin_x)
 Raster::Index RasterImpl::origin_x() { return origin_x_; }
+
+//+ RasterImpl(Raster::origin_y)
 Raster::Index RasterImpl::origin_y() { return origin_y_; }
 
+//+ RasterImpl(Raster::scale=s)
 void RasterImpl::scale(Coord s) { scale_ = s; }
+
+//+ RasterImpl(Raster::scale?)
 Coord RasterImpl::scale() { return scale_; }
+
+RasterBitmap* RasterImpl::bitmap() { return nil; }
+
+void RasterImpl::invalidate() {
+    while (per_screen_ != nil) {
+	PerScreenData& psd = *per_screen_;
+	per_screen_ = psd.next;
+	if (psd.pixmap != nil) {
+	    XFreePixmap(psd.xdisplay, psd.pixmap);
+	}
+	if (psd.mask != nil) {
+	    XFreePixmap(psd.xdisplay, psd.mask);
+	}
+
+	Fresco::unref(psd.trans);
+	Fresco::unref(psd.screen);
+    }
+}
 
 RasterImpl::PerScreenData* RasterImpl::lookup(WindowImpl* w, TransformRef t) {
     /*
@@ -321,17 +334,26 @@ RasterBitmap::~RasterBitmap() {
     delete [] data_;
 }
 
-Boolean RasterBitmap::equal(RasterRef r) {
+//+ RasterBitmap(Raster::equal)
+Boolean RasterBitmap::equal(Raster_in r) {
     if (RasterImpl::equal(r)) {
-	RasterBitmap* i = (RasterBitmap*)r;
-
-	return !Memory::compare(data_, i->data_, size_);
-    } else {
-	return false;
+	RasterImpl* ri = RasterImpl::_narrow(r);
+	if (ri != nil) {
+	    RasterBitmap* i = ri->bitmap();
+	    if (i != nil) {
+		return Memory::compare(data_, i->data_, size_) == 0;
+	    }
+	}
+	/*
+	 * When all else fails here, we should extract the data
+	 * (slow, ugh) and compare it with our data.
+	 */
     }
+    return false;
 }
 
-unsigned long RasterBitmap::hash() {
+//+ RasterBitmap(Raster::hash)
+ULong RasterBitmap::hash() {
     if (hash_ == 0) {
 	unsigned long hash = 0;
 	unsigned long* ptr = (unsigned long*) data_;
@@ -352,32 +374,30 @@ Boolean RasterBitmap::inline_peek(
     return (data_[index] & mask);
 }
 
-void RasterBitmap::peek(
-    Raster::Index row, Raster::Index column, Raster::Element& element
-) {
+//+ RasterBitmap(Raster::peek)
+void RasterBitmap::peek(Raster::Index row, Raster::Index column, Raster::Element& e) {
     if (row >= rows_ || column >= columns_) {
-	element.on = false;
-	element.pixel = nil;
-	element.blend = 0;
+	e.on = false;
+	e.pixel = nil;
+	e.blend = 0;
 	return;
     }
 
     row = rows_ - row;		// bitmap is kept in X format
 
     if (inline_peek(row, column)) {
-	element.on = true;
-	element.pixel = nil;
-	element.blend = 1;
+	e.on = true;
+	e.pixel = nil;
+	e.blend = 1;
     } else {
-	element.on = false;
-	element.pixel = nil;
-	element.blend = 0;
+	e.on = false;
+	e.pixel = nil;
+	e.blend = 0;
     }
 }
 
-void RasterBitmap::poke(
-    Raster::Index row, Raster::Index column, const Raster::Element& e
-) {
+//+ RasterBitmap(Raster::poke)
+void RasterBitmap::poke(Raster::Index row, Raster::Index column, const Raster::Element& e) {
     if (row >= rows_ || column >= columns_) {
 	return;
     }
@@ -394,7 +414,9 @@ void RasterBitmap::poke(
     invalidate();
 }
 
-RasterImpl::PerScreenData* RasterBitmap::create(WindowImpl* w, TransformRef t) {
+RasterImpl::PerScreenData* RasterBitmap::create(
+    WindowImpl* w, TransformRef t
+) {
     // Compute transform to map to device coordinates
     ScreenImpl* screen = ScreenImpl::_narrow(w->screen());
     TransformObj internal_t = device_transform(t, screen);
@@ -414,8 +436,7 @@ RasterImpl::PerScreenData* RasterBitmap::create(WindowImpl* w, TransformRef t) {
 	    return nil;
 	}
     } else {
-	// I don't understand this code.
-	// origin_y = origin_y - rows_;
+	origin_y = origin_y - rows_;
     }
 
     RasterImpl::PerScreenData* psc = new RasterImpl::PerScreenData;
@@ -486,6 +507,8 @@ void RasterBitmap::read_drawable(
     }
     XDestroyImage(image);
 }
+
+RasterBitmap* RasterBitmap::bitmap() { return this; }
 
 void RasterBitmap::invalidate() {
     RasterImpl::invalidate();
@@ -730,7 +753,7 @@ RasterImpl::PerScreenData* RasterChannels::create(
 	XDrawable xwindow = w->xwindow();
 	XCoord pwidth = XCoord(width);
 	XCoord pheight = XCoord(height);
-	long_int depth = vi->depth;
+	Long depth = vi->depth;
 
 	origin_y = origin_y - rows_;
 
@@ -851,7 +874,7 @@ void RasterChannels::read_drawable(
 
     for (int y = 0; y < rows_; y++) {
 	for (int x = 0; x < columns_; x++) {
-	    u_long_int pixel = XGetPixel(image, x, y);
+	    ULong pixel = XGetPixel(image, x, y);
 	    
 	}
     }
@@ -1116,7 +1139,7 @@ RasterImpl::PerScreenData* RasterLUT::create(WindowImpl* w, TransformRef t) {
 	XDrawable xwindow = w->xwindow();
 	XCoord pwidth = XCoord(width);
 	XCoord pheight = XCoord(height);
-	long_int depth = vi->depth;
+	Long depth = vi->depth;
 	
 	origin_y = origin_y - rows_;
 
@@ -1176,7 +1199,7 @@ void RasterLUT::read_drawable(
 
     for (int y = 0; y < rows_; y++) {
 	for (int x = 0; x < columns_; x++) {
-	    u_long_int pixel = XGetPixel(image, x, y);
+	    ULong pixel = XGetPixel(image, x, y);
 	}
     }
     XDestroyImage(image);
@@ -1210,7 +1233,7 @@ Boolean RasterLUT::compute_transform(
     XDrawable xwindow = w->xwindow();
     XCoord pwidth = XCoord(width);
     XCoord pheight = XCoord(height);
-    long_int depth = vi->depth;
+    Long depth = vi->depth;
     
     pixmap =  XCreatePixmap(xdpy, xwindow, pwidth, pheight, int(depth));
     XImage* image = XGetImage(

@@ -62,7 +62,7 @@ public:
     Double get_double();
     void put_string(string value);
     string get_string();
-    void put_object(BaseObjectRef obj);
+    void put_object(BaseObject_in obj);
     BaseObjectRef _c_get_object();
     void begin_aggregate();
     void end_aggregate();

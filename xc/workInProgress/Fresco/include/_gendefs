@@ -2,7 +2,8 @@
 
 set defs = _defines.h
 set undefs = _undefs.h
-set tmp = /tmp/$$
+set tmp = /usr/tmp/$$
+set srcs = "../src/*.cxx ../../Xtf/*.cxx"
 cp /dev/null $tmp
 echo "Boolean" >> $tmp
 echo "Alignment" >> $tmp
@@ -11,7 +12,7 @@ echo "CharCode" >> $tmp
 echo "Coord" >> $tmp
 echo "PixelCoord" >> $tmp
 echo "Tag" >> $tmp
-egrep "^((class)|(struct))" {.,Impls,OS}/*.h ../../lib/{Fresco,Xtf}/*.cxx | \
+egrep "^((class)|(struct))" {.,Impls,OS}/*.h $srcs | \
     sed -e 's/.*class \([^ ;\*]*\).*$/\1/' \
 	-e 's/.*struct \([^ ;\*]*\).*$/\1/' | \
     sort | uniq | \

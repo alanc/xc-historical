@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: transport.cxx,v 1.2 94/03/07 15:34:20 matt Exp $
  */
  
 /*
@@ -28,6 +28,9 @@
 
 #include <X11/Fresco/Ox/marshal.h>
 #include <X11/Fresco/Ox/transport.h>
+#if defined(sgi)
+#include <rpc/rpc.h>
+#endif
 #if defined(sun) && defined(SVR4)
 #include <rpc/types.h>
 #include <rpc/clnt_soc.h>

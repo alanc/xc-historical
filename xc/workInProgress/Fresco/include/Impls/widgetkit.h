@@ -48,7 +48,7 @@ public:
     //+ Button::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -56,55 +56,56 @@ public:
     /* Glyph */
     GlyphRef _c_clone_glyph();
     StyleObjRef _c_style();
-    void _c_style(StyleObjRef _p);
+    void _c_style(StyleObj_in _p);
     TransformObjRef _c_transform();
     void request(Glyph::Requisition& r);
-    void extension(const Glyph::AllocationInfo& a, RegionRef r);
-    void shape(RegionRef r);
-    void traverse(GlyphTraversalRef t);
-    void draw(GlyphTraversalRef t);
-    void pick(GlyphTraversalRef t);
+    void extension(const Glyph::AllocationInfo& a, Region_in r);
+    RegionRef _c_shape();
+    void traverse(GlyphTraversal_in t);
+    void draw(GlyphTraversal_in t);
+    void pick(GlyphTraversal_in t);
     GlyphRef _c_body();
-    void _c_body(GlyphRef _p);
-    GlyphOffsetRef _c_append(GlyphRef g);
-    GlyphOffsetRef _c_prepend(GlyphRef g);
-    Tag add_parent(GlyphOffsetRef parent_offset);
+    void _c_body(Glyph_in _p);
+    GlyphOffsetRef _c_append(Glyph_in g);
+    GlyphOffsetRef _c_prepend(Glyph_in g);
+    Tag add_parent(GlyphOffset_in parent_offset);
     void remove_parent(Tag add_tag);
-    void visit_children(GlyphVisitorRef v);
-    void visit_children_reversed(GlyphVisitorRef v);
-    void visit_parents(GlyphVisitorRef v);
+    void visit_children(GlyphVisitor_in v);
+    void visit_children_reversed(GlyphVisitor_in v);
+    void visit_parents(GlyphVisitor_in v);
     void allocations(Glyph::AllocationInfoList& a);
     void need_redraw();
-    void need_redraw_region(RegionRef r);
+    void need_redraw_region(Region_in r);
     void need_resize();
+    Boolean restore_trail(GlyphTraversal_in t);
     /* Viewer */
     ViewerRef _c_parent_viewer();
     ViewerRef _c_next_viewer();
     ViewerRef _c_prev_viewer();
     ViewerRef _c_first_viewer();
     ViewerRef _c_last_viewer();
-    void append_viewer(ViewerRef v);
-    void prepend_viewer(ViewerRef v);
-    void insert_viewer(ViewerRef v);
-    void replace_viewer(ViewerRef v);
+    void append_viewer(Viewer_in v);
+    void prepend_viewer(Viewer_in v);
+    void insert_viewer(Viewer_in v);
+    void replace_viewer(Viewer_in v);
     void remove_viewer();
-    void set_viewer_links(ViewerRef parent, ViewerRef prev, ViewerRef next);
-    void set_first_viewer(ViewerRef v);
-    void set_last_viewer(ViewerRef v);
-    FocusRef _c_request_focus(ViewerRef requestor, Boolean temporary);
-    Boolean receive_focus(FocusRef f, Boolean primary);
+    void set_viewer_links(Viewer_in parent, Viewer_in prev, Viewer_in next);
+    void set_first_viewer(Viewer_in v);
+    void set_last_viewer(Viewer_in v);
+    FocusRef _c_request_focus(Viewer_in requestor, Boolean temporary);
+    Boolean receive_focus(Focus_in f, Boolean primary);
     void lose_focus(Boolean temporary);
     Boolean first_focus();
     Boolean last_focus();
     Boolean next_focus();
     Boolean prev_focus();
-    Boolean handle(GlyphTraversalRef t, EventRef e);
+    Boolean handle(GlyphTraversal_in t, Event_in e);
     void close();
     /* Button */
     TelltaleRef _c_state();
-    void _c_state(TelltaleRef _p);
+    void _c_state(Telltale_in _p);
     ActionRef _c_click_action();
-    void _c_click_action(ActionRef _p);
+    void _c_click_action(Action_in _p);
     //+
 
     Boolean press(GlyphTraversalRef, EventRef);
@@ -152,7 +153,7 @@ public:
     //+ Telltale::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -162,7 +163,7 @@ public:
     void clear(Telltale::Flag f);
     Boolean test(Telltale::Flag f);
     TelltaleRef _c_current();
-    void _c_current(TelltaleRef _p);
+    void _c_current(Telltale_in _p);
     //+
 
     //- flags
@@ -203,7 +204,8 @@ public:
     virtual ~Beveler();
 
     void request(Glyph::Requisition& r); //+ Glyph::request
-    void traverse(GlyphTraversalRef t); //+ Glyph::traverse
+    void extension(const Glyph::AllocationInfo& a, Region_in r); //+ Glyph::extension
+    void traverse(GlyphTraversal_in t); //+ Glyph::traverse
 
     RegionRef allocate_body(GlyphTraversalRef t);
     void allocate_span(
@@ -305,38 +307,38 @@ public:
     //+ WidgetKit::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
     void update();
     /* WidgetKit */
-    GlyphRef _c_inset_frame(GlyphRef g);
-    GlyphRef _c_outset_frame(GlyphRef g);
-    GlyphRef _c_bright_inset_frame(GlyphRef g);
-    ViewerRef _c_label(CharStringRef s);
+    GlyphRef _c_inset_frame(Glyph_in g);
+    GlyphRef _c_outset_frame(Glyph_in g);
+    GlyphRef _c_bright_inset_frame(Glyph_in g);
+    ViewerRef _c_label(CharString_in s);
     MenuRef _c_menubar();
     MenuRef _c_pulldown();
     MenuRef _c_pullright();
-    MenuItemRef _c_menubar_item(GlyphRef g);
-    MenuItemRef _c_menu_item(GlyphRef g);
-    MenuItemRef _c_check_menu_item(GlyphRef g);
-    MenuItemRef _c_radio_menu_item(GlyphRef g, TelltaleRef group);
+    MenuItemRef _c_menubar_item(Glyph_in g);
+    MenuItemRef _c_menu_item(Glyph_in g);
+    MenuItemRef _c_check_menu_item(Glyph_in g);
+    MenuItemRef _c_radio_menu_item(Glyph_in g, Telltale_in group);
     MenuItemRef _c_menu_item_separator();
     TelltaleRef _c_telltale_group();
-    ButtonRef _c_push_button(GlyphRef g, ActionRef a);
-    ButtonRef _c_default_button(GlyphRef g, ActionRef a);
-    ButtonRef _c_palette_button(GlyphRef g, ActionRef a);
-    ButtonRef _c_check_box(GlyphRef g, ActionRef a);
-    ButtonRef _c_radio_button(GlyphRef g, ActionRef a, TelltaleRef group);
-    ViewerRef _c_slider(Axis a, AdjustmentRef adj);
-    ViewerRef _c_scroll_bar(Axis a, AdjustmentRef adj);
-    ViewerRef _c_panner(AdjustmentRef x, AdjustmentRef y);
-    ButtonRef _c_zoomer(Coord scale, AdjustmentRef x, AdjustmentRef y, AdjustmentRef z);
-    ButtonRef _c_up_mover(AdjustmentRef a);
-    ButtonRef _c_down_mover(AdjustmentRef a);
-    ButtonRef _c_left_mover(AdjustmentRef a);
-    ButtonRef _c_right_mover(AdjustmentRef a);
+    ButtonRef _c_push_button(Glyph_in g, Action_in a);
+    ButtonRef _c_default_button(Glyph_in g, Action_in a);
+    ButtonRef _c_palette_button(Glyph_in g, Action_in a);
+    ButtonRef _c_check_box(Glyph_in g, Action_in a);
+    ButtonRef _c_radio_button(Glyph_in g, Action_in a, Telltale_in group);
+    ViewerRef _c_slider(Axis a, Adjustment_in adj);
+    ViewerRef _c_scroll_bar(Axis a, Adjustment_in adj);
+    ViewerRef _c_panner(Adjustment_in x, Adjustment_in y);
+    ButtonRef _c_zoomer(Coord scale, Adjustment_in x, Adjustment_in y, Adjustment_in z);
+    ButtonRef _c_up_mover(Adjustment_in a);
+    ButtonRef _c_down_mover(Adjustment_in a);
+    ButtonRef _c_left_mover(Adjustment_in a);
+    ButtonRef _c_right_mover(Adjustment_in a);
     //+
 
     struct Info {

@@ -36,7 +36,7 @@ public:
 
     virtual Long ref__(Long) = 0;
     virtual void op(MarshalBuffer&, TypeObjId, Long op) = 0;
-    virtual Long invoke(MarshalBuffer&) = 0;
+    virtual Long invoke(MarshalBuffer&, Boolean oneway) = 0;
     virtual void marshal(MarshalBuffer&) = 0;
     virtual BaseObjectRef narrow(TypeObjId, StubCreator) = 0;
 };
@@ -51,7 +51,7 @@ public:
 
     Long ref__(Long);
     void op(MarshalBuffer&, TypeObjId, Long op);
-    Long invoke(MarshalBuffer&);
+    Long invoke(MarshalBuffer&, Boolean oneway);
     void marshal(MarshalBuffer&);
     BaseObjectRef narrow(TypeObjId, StubCreator);
 protected:

@@ -80,23 +80,31 @@ typedef unsigned short UShort;
 #if (_MIPS_SZLONG == 64)
 typedef __int32_t Long;
 typedef __uint32_t ULong;
+typedef long LongLong;
+typedef unsigned long ULongLong;
 #else
 typedef long Long;
 typedef unsigned long ULong;
+#if defined(sgi)
+/* compiler supports long long */
+typedef long long LongLong;
+typedef unsigned long long ULongLong;
+#else
+/* compiler does not support long long */
+typedef long LongLong;
+typedef unsigned long ULongLong;
+#endif
 #endif
 
 typedef float Float;
 typedef double Double;
 
-/* Anachronisms */
-typedef Long long_int;
-typedef ULong u_long_int;
-
 class BaseObjectType;
 typedef BaseObjectType* BaseObjectRef;
+typedef BaseObjectRef BaseObject_in;
 class BaseObject;
-class _BaseObjectExpr;
-class _BaseObjectElem;
+class BaseObject_tmp;
+class BaseObject_var;
 
 #ifndef ox_is_nil
 #define ox_is_nil
@@ -118,79 +126,80 @@ extern void _BaseObject__release(BaseObjectRef);
 
 class BaseObject {
 public:
-    BaseObjectRef _obj;
+    BaseObjectRef _obj_;
 
-    BaseObject() { _obj = 0; }
-    BaseObject(BaseObjectRef p) { _obj = p; }
+    BaseObject() { _obj_ = 0; }
+    BaseObject(BaseObjectRef p) { _obj_ = p; }
     BaseObject& operator =(BaseObjectRef p) {
-	_BaseObject__release(_obj);
-	_obj = p;
+	_BaseObject__release(_obj_);
+	_obj_ = p;
 	return *this;
     }
     BaseObject(const BaseObject& r) {
-	_obj = (BaseObjectRef)_BaseObject__duplicate(r._obj, 0);
+	_obj_ = (BaseObjectRef)_BaseObject__duplicate(r._obj_, 0);
     }
     BaseObject& operator =(const BaseObject& r) {
-	_BaseObject__release(_obj);
-	_obj = (BaseObjectRef)_BaseObject__duplicate(r._obj, 0);
+	_BaseObject__release(_obj_);
+	_obj_ = (BaseObjectRef)_BaseObject__duplicate(r._obj_, 0);
 	return *this;
     }
-    BaseObject(const _BaseObjectExpr& r);
-    BaseObject& operator =(const _BaseObjectExpr& r);
-    BaseObject(const _BaseObjectElem& r);
-    BaseObject& operator =(const _BaseObjectElem& r);
-    ~BaseObject() { _BaseObject__release(_obj); }
+    BaseObject(const BaseObject_tmp& r);
+    BaseObject& operator =(const BaseObject_tmp& r);
+    BaseObject(const BaseObject_var& r);
+    BaseObject& operator =(const BaseObject_var& r);
+    ~BaseObject() { _BaseObject__release(_obj_); }
 
-    operator BaseObjectRef() const { return _obj; }
-    BaseObjectRef operator ->() { return _obj; }
+    BaseObjectRef operator ->() { return _obj_; }
+    operator BaseObjectRef() const { return _obj_; }
+    BaseObjectRef _obj() { return _obj_; }
 
     static BaseObjectRef _duplicate(BaseObjectRef p) {
 	return (BaseObjectRef)_BaseObject__duplicate(p, 0);
     }
-    static _BaseObjectExpr _duplicate(const BaseObject& r);
+    static BaseObject_tmp _duplicate(const BaseObject& r);
 };
 
-class _BaseObjectExpr : public BaseObject {
+class BaseObject_tmp : public BaseObject {
 public:
-    _BaseObjectExpr(BaseObjectRef p) { _obj = p; }
-    _BaseObjectExpr(const BaseObject& r) { _obj = r._obj; }
-    _BaseObjectExpr(const _BaseObjectExpr& r) { _obj = r._obj; }
-    ~_BaseObjectExpr() { }
+    BaseObject_tmp(BaseObjectRef p) { _obj_ = p; }
+    BaseObject_tmp(const BaseObject& r) { _obj_ = r._obj_; }
+    BaseObject_tmp(const BaseObject_tmp& r) { _obj_ = r._obj_; }
+    ~BaseObject_tmp() { }
 };
 
-inline BaseObject::BaseObject(const _BaseObjectExpr& r) {
-    _obj = r._obj;
-    ((_BaseObjectExpr*)&r)->_obj = 0;
+inline BaseObject::BaseObject(const BaseObject_tmp& r) {
+    _obj_ = r._obj_;
+    ((BaseObject_tmp*)&r)->_obj_ = 0;
 }
 
-inline BaseObject& BaseObject::operator =(const _BaseObjectExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_BaseObjectExpr*)&r)->_obj = 0;
+inline BaseObject& BaseObject::operator =(const BaseObject_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((BaseObject_tmp*)&r)->_obj_ = 0;
     return *this;
 }
 
-inline _BaseObjectExpr BaseObject::_duplicate(const BaseObject& r) {
-    return (BaseObjectRef)_BaseObject__duplicate(r._obj, 0);
+inline BaseObject_tmp BaseObject::_duplicate(const BaseObject& r) {
+    return (BaseObjectRef)_BaseObject__duplicate(r._obj_, 0);
 }
 
-class _BaseObjectElem {
+class BaseObject_var {
 public:
-    BaseObjectRef _obj;
+    BaseObjectRef _obj_;
 
-    _BaseObjectElem(BaseObjectRef p) { _obj = p; }
-    operator BaseObjectRef() const { return _obj; }
-    BaseObjectRef operator ->() { return _obj; }
+    BaseObject_var(BaseObjectRef p) { _obj_ = p; }
+    operator BaseObjectRef() const { return _obj_; }
+    BaseObjectRef operator ->() { return _obj_; }
 };
 
-inline BaseObject::BaseObject(const _BaseObjectElem& r) {
-    _BaseObject__release(_obj);
-    _obj = (BaseObjectRef)_BaseObject__duplicate(r._obj, 0);
+inline BaseObject::BaseObject(const BaseObject_var& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = (BaseObjectRef)_BaseObject__duplicate(r._obj_, 0);
 }
 
-inline BaseObject& BaseObject::operator =(const _BaseObjectElem& r) {
-    _BaseObject__release(_obj);
-    _obj = (BaseObjectRef)_BaseObject__duplicate(r._obj, 0);
+inline BaseObject& BaseObject::operator =(const BaseObject_var& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = (BaseObjectRef)_BaseObject__duplicate(r._obj_, 0);
     return *this;
 }
 
@@ -214,7 +223,7 @@ public:
 
     virtual Long ref__(Long references);
     virtual Exchange* _exchange();
-    virtual void* _tnarrow(TypeObjId, StubCreator);
+    virtual void* _this();
     virtual TypeObjId _tid();
 private:
     BaseObjectType(const BaseObjectType&);

@@ -1,4 +1,8 @@
 /*
+ * $XConsortium$
+ */
+
+/*
  * Copyright (c) 1987-91 Stanford University
  * Copyright (c) 1991-93 Silicon Graphics, Inc.
  * Copyright (c) 1993 Fujitsu, Ltd.
@@ -48,7 +52,7 @@ GlyphImpl::~GlyphImpl() { }
 Long GlyphImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag GlyphImpl::attach(FrescoObjectRef observer) {
+Tag GlyphImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void GlyphImpl::detach(Tag attach_tag) {
@@ -66,7 +70,7 @@ void GlyphImpl::update() {
 //+
 
 //+ GlyphImpl(Glyph::style=)
-void GlyphImpl::_c_style(StyleObjRef s) { }
+void GlyphImpl::_c_style(StyleObj_in) { }
 
 //+ GlyphImpl(Glyph::style?)
 StyleObjRef GlyphImpl::_c_style() { return nil; }
@@ -78,36 +82,39 @@ TransformObjRef GlyphImpl::_c_transform() { return nil; }
 void GlyphImpl::request(Glyph::Requisition&) { }
 
 //+ GlyphImpl(Glyph::extension)
-void GlyphImpl::extension(const Glyph::AllocationInfo& a, RegionRef r) {
-    TransformObj cumulative = new TransformImpl;
-    if (is_not_nil(a.transform)) {
-	cumulative->load(a.transform);
-    }
-    TransformObj t = transform();
-    if (is_not_nil(t)) {
-	cumulative->premultiply(t);
-    }
+void GlyphImpl::extension(const Glyph::AllocationInfo& a, Region_in r) {
     if (is_not_nil(a.allocation)) {
-	r->copy(a.allocation);
-    } else {
-	Region tmp = new RegionImpl;
-	r->copy(tmp);
+	TransformObj t = transform();
+	if (is_nil(a.transform) && is_nil(t)) {
+	    r->merge_union(a.allocation);
+	} else {
+	    TransformImpl cumulative;
+	    if (is_not_nil(a.transform)) {
+		cumulative.load(a.transform);
+	    }
+	    if (is_not_nil(t)) {
+		cumulative.premultiply(t);
+	    }
+	    RegionImpl tmp;
+	    tmp.copy(a.allocation);
+	    tmp.transform(&cumulative);
+	    r->merge_union(&tmp);
+	}
     }
-    r->transform(cumulative);
 }
 
 //+ GlyphImpl(Glyph::shape)
-void GlyphImpl::shape(RegionRef) { }
+RegionRef GlyphImpl::_c_shape() { return nil; }
 
 //+ GlyphImpl(Glyph::allocations)
 void GlyphImpl::allocations(Glyph::AllocationInfoList& a) {
     for (ListItr(GlyphOffsetList) i(parents_); i.more(); i.next()) {
-	i.cur()->parent()->allocations(a);
+	i.cur()->allocations(a);
     }
 }
 
 //+ GlyphImpl(Glyph::traverse)
-void GlyphImpl::traverse(GlyphTraversalRef t) {
+void GlyphImpl::traverse(GlyphTraversal_in t) {
     switch (t->op()) {
     case GlyphTraversal::draw:
 	draw(t);
@@ -124,31 +131,31 @@ void GlyphImpl::traverse(GlyphTraversalRef t) {
 }
 
 //+ GlyphImpl(Glyph::draw)
-void GlyphImpl::draw(GlyphTraversalRef) { }
+void GlyphImpl::draw(GlyphTraversal_in) { }
 
 //+ GlyphImpl(Glyph::pick)
-void GlyphImpl::pick(GlyphTraversalRef) { }
+void GlyphImpl::pick(GlyphTraversal_in) { }
 
 //+ GlyphImpl(Glyph::body=)
-void GlyphImpl::_c_body(GlyphRef) { }
+void GlyphImpl::_c_body(Glyph_in) { }
 
 //+ GlyphImpl(Glyph::body?)
 GlyphRef GlyphImpl::_c_body() { return nil; }
 
 //+ GlyphImpl(Glyph::append)
-GlyphOffsetRef GlyphImpl::_c_append(GlyphRef g) { return nil; }
+GlyphOffsetRef GlyphImpl::_c_append(Glyph_in g) { return nil; }
 
 //+ GlyphImpl(Glyph::prepend)
-GlyphOffsetRef GlyphImpl::_c_prepend(GlyphRef g) { return nil; }
+GlyphOffsetRef GlyphImpl::_c_prepend(Glyph_in g) { return nil; }
 
 //+ GlyphImpl(Glyph::visit_children)
-void GlyphImpl::visit_children(GlyphVisitorRef) { }
+void GlyphImpl::visit_children(GlyphVisitor_in) { }
 
 //+ GlyphImpl(Glyph::visit_children_reversed)
-void GlyphImpl::visit_children_reversed(GlyphVisitorRef) { }
+void GlyphImpl::visit_children_reversed(GlyphVisitor_in) { }
 
 //+ GlyphImpl(Glyph::visit_parents)
-void GlyphImpl::visit_parents(GlyphVisitorRef v) {
+void GlyphImpl::visit_parents(GlyphVisitor_in v) {
     GlyphOffsetRef g;
     for (ListItr(GlyphOffsetList) i(parents_); i.more(); i.next()) {
 	g = i.cur();
@@ -159,7 +166,7 @@ void GlyphImpl::visit_parents(GlyphVisitorRef v) {
 }
 
 //+ GlyphImpl(Glyph::add_parent)
-Tag GlyphImpl::add_parent(GlyphOffsetRef parent_offset) {
+Tag GlyphImpl::add_parent(GlyphOffset_in parent_offset) {
     long n = parents_.count();
     parents_.append(parent_offset);
     return n;
@@ -177,24 +184,38 @@ void GlyphImpl::remove_parent(Tag add_tag) {
 void GlyphImpl::need_redraw() {
     Glyph::AllocationInfoList a;
     allocations(a);
-    RegionImpl region;
-    for (long i = 0; i < a._length; i++) {
+    for (Long i = 0; i < a._length; i++) {
 	Glyph::AllocationInfo& info = a._buffer[i];
 	if (is_not_nil(info.damage)) {
-	    extension(info, &region);
-	    info.damage->extend(&region);
+	    RegionImpl r;
+	    extension(info, &r);
+	    info.damage->extend(&r);
 	}
     }
 }
 
 //+ GlyphImpl(Glyph::need_redraw_region)
-void GlyphImpl::need_redraw_region(RegionRef) { }
+void GlyphImpl::need_redraw_region(Region_in r) {
+    Glyph::AllocationInfoList a;
+    allocations(a);
+    for (Long i = 0; i < a._length; i++) {
+	Glyph::AllocationInfo& info = a._buffer[i];
+	if (is_not_nil(info.damage)) {
+	    info.damage->extend(r);
+	}
+    }
+}
 
 //+ GlyphImpl(Glyph::need_resize)
 void GlyphImpl::need_resize() {
     for (ListItr(GlyphOffsetList) i(parents_); i.more(); i.next()) {
 	i.cur()->notify();
     }
+}
+
+//+ GlyphImpl(Glyph::restore_trail)
+Boolean GlyphImpl::restore_trail(GlyphTraversal_in t) {
+    return false;
 }
 
 //+ GlyphImpl(Glyph::clone_glyph)
@@ -290,7 +311,7 @@ GlyphVisitorImpl::~GlyphVisitorImpl() { }
 Long GlyphVisitorImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag GlyphVisitorImpl::attach(FrescoObjectRef observer) {
+Tag GlyphVisitorImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void GlyphVisitorImpl::detach(Tag attach_tag) {
@@ -308,7 +329,7 @@ void GlyphVisitorImpl::update() {
 //+
 
 //+ GlyphVisitorImpl(GlyphVisitor::visit)
-Boolean GlyphVisitorImpl::visit(GlyphRef glyph, GlyphOffsetRef offset) {
+Boolean GlyphVisitorImpl::visit(Glyph_in glyph, GlyphOffset_in offset) {
     return false;
 }
 
@@ -329,20 +350,25 @@ void MonoGlyph::request(Glyph::Requisition& r) {
 }
 
 //+ MonoGlyph(Glyph::extension)
-void MonoGlyph::extension(const Glyph::AllocationInfo& a, RegionRef r) {
-    offset_.child_->extension(a, r);
+void MonoGlyph::extension(const Glyph::AllocationInfo& a, Region_in r) {
+    Glyph::AllocationInfo i;
+    i.allocation = a.allocation;
+    i.transform = a.transform;
+    i.damage = a.damage;
+    child_allocate(i);
+    offset_.child_->extension(i, r);
 }
 
 //+ MonoGlyph(Glyph::shape)
-void MonoGlyph::shape(RegionRef r) { offset_.child_->shape(r); }
+RegionRef MonoGlyph::_c_shape() { return offset_.child_->shape(); }
 
 //+ MonoGlyph(Glyph::traverse)
-void MonoGlyph::traverse(GlyphTraversalRef t) {
+void MonoGlyph::traverse(GlyphTraversal_in t) {
     t->traverse_child(&offset_, nil);
 }
 
 //+ MonoGlyph(Glyph::body=g)
-void MonoGlyph::_c_body(GlyphRef g) {
+void MonoGlyph::_c_body(Glyph_in g) {
     if (is_not_nil(offset_.child_)) {
 	offset_.child_->remove_parent(offset_.remove_tag_);
     }
@@ -357,28 +383,37 @@ GlyphRef MonoGlyph::_c_body() {
 }
 
 //+ MonoGlyph(Glyph::append)
-GlyphOffsetRef MonoGlyph::_c_append(GlyphRef g) {
+GlyphOffsetRef MonoGlyph::_c_append(Glyph_in g) {
     return offset_.child_->append(g);
 }
 
 //+ MonoGlyph(Glyph::prepend)
-GlyphOffsetRef MonoGlyph::_c_prepend(GlyphRef g) {
+GlyphOffsetRef MonoGlyph::_c_prepend(Glyph_in g) {
     return offset_.child_->prepend(g);
 }
 
 //+ MonoGlyph(Glyph::visit_children)
-void MonoGlyph::visit_children(GlyphVisitorRef v) {
+void MonoGlyph::visit_children(GlyphVisitor_in v) {
     offset_.child_->visit_children(v);
 }
 
 //+ MonoGlyph(Glyph::visit_children_reversed)
-void MonoGlyph::visit_children_reversed(GlyphVisitorRef v) {
+void MonoGlyph::visit_children_reversed(GlyphVisitor_in v) {
     offset_.child_->visit_children_reversed(v);
 }
 
+void MonoGlyph::visit_trail(GlyphTraversalRef t) {
+    Glyph::AllocationInfo a;
+    a.allocation = t->allocation();
+    a.transform = t->painter()->matrix();
+    child_allocate(a);
+}
+
+void MonoGlyph::child_allocate(Glyph::AllocationInfo&) { }
+
 /* class MonoGlyphOffset */
 
-MonoGlyphOffset::MonoGlyphOffset(GlyphRef g) { parent_ = g; }
+MonoGlyphOffset::MonoGlyphOffset(MonoGlyph* g) { parent_ = g; }
 MonoGlyphOffset::~MonoGlyphOffset() { }
 
 //+ MonoGlyphOffset(FrescoObject::*parent_->)
@@ -386,7 +421,7 @@ MonoGlyphOffset::~MonoGlyphOffset() { }
 Long MonoGlyphOffset::ref__(Long references) {
     return parent_->ref__(references);
 }
-Tag MonoGlyphOffset::attach(FrescoObjectRef observer) {
+Tag MonoGlyphOffset::attach(FrescoObject_in observer) {
     return parent_->attach(observer);
 }
 void MonoGlyphOffset::detach(Tag attach_tag) {
@@ -416,6 +451,19 @@ GlyphRef MonoGlyphOffset::_c_child() {
 //+ MonoGlyphOffset(GlyphOffset::allocations)
 void MonoGlyphOffset::allocations(Glyph::AllocationInfoList& a) {
     parent_->allocations(a);
+    for (Long i = 0; i < a._length; i++) {
+	parent_->child_allocate(a._buffer[i]);
+    }
+}
+
+//+ MonoGlyphOffset(GlyphOffset::visit_trail)
+void MonoGlyphOffset::visit_trail(GlyphTraversal_in t) {
+    parent_->visit_trail(t);
+}
+
+//+ MonoGlyphOffset(GlyphOffset::child_allocate)
+void MonoGlyphOffset::child_allocate(Glyph::AllocationInfo& a) {
+    parent_->child_allocate(a);
 }
 
 /*
@@ -423,12 +471,12 @@ void MonoGlyphOffset::allocations(Glyph::AllocationInfoList& a) {
  */
 
 //+ MonoGlyphOffset(GlyphOffset::insert)
-GlyphOffsetRef MonoGlyphOffset::_c_insert(GlyphRef g) {
+GlyphOffsetRef MonoGlyphOffset::_c_insert(Glyph_in g) {
     return nil;
 }
 
 //+ MonoGlyphOffset(GlyphOffset::replace)
-void MonoGlyphOffset::replace(GlyphRef) { }
+void MonoGlyphOffset::replace(Glyph_in) { }
 
 //+ MonoGlyphOffset(GlyphOffset::remove)
 void MonoGlyphOffset::remove() { }
@@ -464,7 +512,7 @@ void DebugGlyph::request(Glyph::Requisition& r) {
 }
 
 //+ DebugGlyph(Glyph::traverse)
-void DebugGlyph::traverse(GlyphTraversalRef t) {
+void DebugGlyph::traverse(GlyphTraversal_in t) {
     if ((flags_ & DebugGlyph::trace_traverse) != 0) {
 	const char* op;
 	DebugGlyph::Flags f;
@@ -549,45 +597,51 @@ void DebugGlyph::print_span(const Region::BoundingSpan& s) {
 
 Allocator::Allocator() {
     requested_ = false;
-    nat_ = new RegionImpl;
 }
 
-Allocator::~Allocator() {
-    Fresco::unref(nat_);
-}
+Allocator::~Allocator() { }
 
 //+ Allocator(Glyph::request)
 void Allocator::request(Glyph::Requisition& r) {
-    if (!requested_) {
-	update_requisition(r);
-    } else {
-	r = req_;
-    }
+    update_requisition();
+    r = req_;
 }
 
 //+ Allocator(Glyph::allocations)
 void Allocator::allocations(Glyph::AllocationInfoList& a) {
-    if (!requested_) {
-	Glyph::Requisition req;
-	update_requisition(req);
-    }
+    update_requisition();
     MonoGlyph::allocations(a);
-    for (Long i = 0; i < a._length; i++) {
-	adjust_allocation(a._buffer[i]);
-    }
 }
 
-void Allocator::adjust_allocation(Glyph::AllocationInfo& i) {
-    i.allocation->copy(nat_);
+//+ Allocator(Glyph::extension)
+void Allocator::extension(const Glyph::AllocationInfo& a, Region_in r) {
+    Glyph::AllocationInfo ga;
+    if (is_nil(a.transform)) {
+	ga.transform = new TransformImpl;
+    } else {
+	ga.transform = TransformObj::_duplicate(a.transform);
+    }
+    if (is_nil(a.allocation)) {
+	ga.allocation = new RegionImpl;
+    } else {
+	ga.allocation = Region::_duplicate(a.allocation);
+    }
+    ga.damage = DamageObj::_duplicate(a.damage);
+    child_allocate(ga);
+    GlyphImpl::extension(ga, r);
+    Fresco::unref(ga.transform);
+    Fresco::unref(ga.allocation);
+}
+
+void Allocator::child_allocate(Glyph::AllocationInfo& i) {
+    update_requisition();
+    i.allocation->copy(&nat_);
 }
 
 //+ Allocator(Glyph::traverse)
-void Allocator::traverse(GlyphTraversalRef t) {
-    if (!requested_) {
-	Glyph::Requisition req;
-	update_requisition(req);
-    }
-    t->traverse_child(&offset_, nat_);
+void Allocator::traverse(GlyphTraversal_in t) {
+    update_requisition();
+    t->traverse_child(&offset_, &nat_);
 }
 
 //+ Allocator(Glyph::need_resize)
@@ -596,25 +650,28 @@ void Allocator::need_resize() {
     MonoGlyph::need_resize();
 }
 
-void Allocator::update_requisition(Glyph::Requisition& r) {
-    MonoGlyph::request(r);
-    req_ = r;
-    if (r.x.defined) {
-	nat_->xalign_ = r.x.align;
-	nat_->lower_.x = -r.x.align * r.x.natural;
-	nat_->upper_.x = nat_->lower_.x + r.x.natural;
+void Allocator::update_requisition() {
+    if (!requested_) {
+	Glyph::Requisition r;
+	MonoGlyph::request(r);
+	req_ = r;
+	if (r.x.defined) {
+	    nat_.xalign_ = r.x.align;
+	    nat_.lower_.x = -r.x.align * r.x.natural;
+	    nat_.upper_.x = nat_.lower_.x + r.x.natural;
+	}
+	if (r.y.defined) {
+	    nat_.yalign_ = r.y.align;
+	    nat_.lower_.y = -r.y.align * r.y.natural;
+	    nat_.upper_.y = nat_.lower_.y + r.y.natural;
+	}
+	if (r.z.defined) {
+	    nat_.lower_.z = -r.z.align * r.z.natural;
+	    nat_.upper_.z = nat_.lower_.z + r.z.natural;
+	    nat_.zalign_ = r.z.align;
+	}
+	requested_ = true;
     }
-    if (r.y.defined) {
-	nat_->yalign_ = r.y.align;
-	nat_->lower_.y = -r.y.align * r.y.natural;
-	nat_->upper_.y = nat_->lower_.y + r.y.natural;
-    }
-    if (r.z.defined) {
-	nat_->lower_.z = -r.z.align * r.z.natural;
-	nat_->upper_.z = nat_->lower_.z + r.z.natural;
-	nat_->zalign_ = r.z.align;
-    }
-    requested_ = true;
 }
 
 /* class TransformAllocator */
@@ -629,12 +686,9 @@ TransformAllocator::TransformAllocator(
     x_child_ = x_child;
     y_child_ = y_child;
     z_child_ = z_child;
-    tx_ = new TransformImpl;
 }
 
-TransformAllocator::~TransformAllocator() {
-    Fresco::unref(tx_);
-}
+TransformAllocator::~TransformAllocator() { }
 
 //+ TransformAllocator(Glyph::request)
 void TransformAllocator::request(Glyph::Requisition& r) {
@@ -658,31 +712,31 @@ void TransformAllocator::request(Glyph::Requisition& r) {
     }
 }
 
-void TransformAllocator::adjust_allocation(Glyph::AllocationInfo& i) {
+void TransformAllocator::child_allocate(Glyph::AllocationInfo& i) {
     Vertex lower, upper, delta;
+    TransformImpl tx;
+
     i.allocation->bounds(lower, upper);
     compute_delta(lower, upper, delta);
-    tx_->load_identity();
-    tx_->translate(delta);
-    i.transform->premultiply(tx_);
-    i.allocation->copy(nat_);
+    tx.load_identity();
+    tx.translate(delta);
+    i.transform->premultiply(&tx);
+    i.allocation->copy(&nat_);
 }
 
 //+ TransformAllocator(Glyph::traverse)
-void TransformAllocator::traverse(GlyphTraversalRef t) {
-    if (!requested_) {
-	Glyph::Requisition req;
-	update_requisition(req);
-    }
+void TransformAllocator::traverse(GlyphTraversal_in t) {
+    TransformImpl tx;
+    update_requisition();
     PainterObj p = t->painter();
     Vertex lower, upper, v;
     t->bounds(lower, upper, v);
     compute_delta(lower, upper, v);
-    tx_->load_identity();
-    tx_->translate(v);
+    tx.load_identity();
+    tx.translate(v);
     p->push_matrix();
-    p->transform(tx_);
-    t->traverse_child(&offset_, nat_);
+    p->transform(&tx);
+    t->traverse_child(&offset_, &nat_);
     p->pop_matrix();
 }
 
@@ -690,19 +744,19 @@ void TransformAllocator::compute_delta(
     const Vertex& lower, const Vertex& upper, Vertex& delta
 ) {
     delta.x = (
-	lower.x - nat_->lower_.x +
+	lower.x - nat_.lower_.x +
 	x_parent_ * (upper.x - lower.x) -
-	x_child_ * (nat_->upper_.x - nat_->lower_.x)
+	x_child_ * (nat_.upper_.x - nat_.lower_.x)
     );
     delta.y = (
-	lower.y - nat_->lower_.y +
+	lower.y - nat_.lower_.y +
 	y_parent_ * (upper.y - lower.y) -
-	y_child_ * (nat_->upper_.y - nat_->lower_.y)
+	y_child_ * (nat_.upper_.y - nat_.lower_.y)
     );
     delta.z = (
-	lower.z - nat_->lower_.z +
+	lower.z - nat_.lower_.z +
 	z_parent_ * (upper.z - lower.z) -
-	z_child_ * (nat_->upper_.z - nat_->lower_.z)
+	z_child_ * (nat_.upper_.z - nat_.lower_.z)
     );
 }
 
@@ -719,7 +773,7 @@ PolyGlyph::~PolyGlyph() {
 }
 
 //+ PolyGlyph(Glyph::append)
-GlyphOffsetRef PolyGlyph::_c_append(GlyphRef g) {
+GlyphOffsetRef PolyGlyph::_c_append(Glyph_in g) {
     PolyGlyphOffset* offset = new PolyGlyphOffset(
 	this, children_.count(), Glyph::_duplicate(g)
     );
@@ -729,7 +783,7 @@ GlyphOffsetRef PolyGlyph::_c_append(GlyphRef g) {
 }
 
 //+ PolyGlyph(Glyph::prepend)
-GlyphOffsetRef PolyGlyph::_c_prepend(GlyphRef g) {
+GlyphOffsetRef PolyGlyph::_c_prepend(Glyph_in g) {
     fixup(0, +1);
     PolyGlyphOffset* offset = new PolyGlyphOffset(
 	this, 0, Glyph::_duplicate(g)
@@ -740,7 +794,7 @@ GlyphOffsetRef PolyGlyph::_c_prepend(GlyphRef g) {
 }
 
 //+ PolyGlyph(Glyph::visit_children)
-void PolyGlyph::visit_children(GlyphVisitorRef v) {
+void PolyGlyph::visit_children(GlyphVisitor_in v) {
     GlyphOffsetRef g;
     for (ListItr(PolyGlyphOffsetList) i(children_); i.more(); i.next()) {
 	g = i.cur();
@@ -751,7 +805,7 @@ void PolyGlyph::visit_children(GlyphVisitorRef v) {
 }
 
 //+ PolyGlyph(Glyph::visit_children_reversed)
-void PolyGlyph::visit_children_reversed(GlyphVisitorRef v) {
+void PolyGlyph::visit_children_reversed(GlyphVisitor_in v) {
     GlyphOffsetRef g;
     long n = children_.count();
     for (long i = n - 1; i >= 0; i--) {
@@ -781,7 +835,9 @@ Glyph::Requisition* PolyGlyph::children_requests(
     return child_reqs;
 }
 
-void PolyGlyph::child_allocation(long, Glyph::AllocationInfo&) { }
+void PolyGlyph::visit_trail(Long, GlyphTraversalRef) { }
+
+void PolyGlyph::child_allocate(long, Glyph::AllocationInfo&) { }
 
 void PolyGlyph::fixup(long start, long delta) {
     long n = children_.count();
@@ -809,7 +865,7 @@ PolyGlyphOffset::~PolyGlyphOffset() {
 Long PolyGlyphOffset::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag PolyGlyphOffset::attach(FrescoObjectRef observer) {
+Tag PolyGlyphOffset::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void PolyGlyphOffset::detach(Tag attach_tag) {
@@ -840,12 +896,22 @@ GlyphRef PolyGlyphOffset::_c_child() {
 void PolyGlyphOffset::allocations(Glyph::AllocationInfoList& a) {
     parent_->allocations(a);
     for (Long i = 0; i < a._length; i++) {
-	parent_->child_allocation(index_, a._buffer[i]);
+	parent_->child_allocate(index_, a._buffer[i]);
     }
 }
 
+//+ PolyGlyphOffset(GlyphOffset::visit_trail)
+void PolyGlyphOffset::visit_trail(GlyphTraversal_in t) {
+    parent_->visit_trail(index_, t);
+}
+
+//+ PolyGlyphOffset(GlyphOffset::child_allocate)
+void PolyGlyphOffset::child_allocate(Glyph::AllocationInfo& a) {
+    parent_->child_allocate(index_, a);
+}
+
 //+ PolyGlyphOffset(GlyphOffset::insert)
-GlyphOffsetRef PolyGlyphOffset::_c_insert(GlyphRef g) {
+GlyphOffsetRef PolyGlyphOffset::_c_insert(Glyph_in g) {
     PolyGlyphOffset* p = new PolyGlyphOffset(
 	parent_, index_, Glyph::_duplicate(g)
     );
@@ -857,7 +923,7 @@ GlyphOffsetRef PolyGlyphOffset::_c_insert(GlyphRef g) {
 }
 
 //+ PolyGlyphOffset(GlyphOffset::replace)
-void PolyGlyphOffset::replace(GlyphRef g) {
+void PolyGlyphOffset::replace(Glyph_in g) {
     if (index_ < parent_->children_.count()) {
 	child_->remove_parent(remove_tag_);
 	Fresco::unref(child_);
@@ -913,11 +979,13 @@ GlyphTraversalImpl::GlyphTraversalImpl(const GlyphTraversalImpl& t) {
     index_ = 0;
     op_ = t.op_;
     for (ListItr(GTStack) sp(*t.stack_); sp.more(); sp.next()) {
-	GlyphTraversalImpl::Info& i = sp.cur_ref();
-	Fresco::ref(i.viewer);
-	Fresco::ref(i.glyph);
-	Fresco::ref(i.offset);
-	Fresco::ref(i.allocation);
+	GlyphTraversalImpl::Info& info = sp.cur_ref();
+	GlyphTraversalImpl::Info i;
+	i.viewer = Viewer::_duplicate(info.viewer);
+	i.glyph = Glyph::_duplicate(info.glyph);
+	i.offset = GlyphOffset::_duplicate(info.offset);
+	i.allocation = Region::_duplicate(info.allocation);
+	i.transform = TransformObj::_duplicate(info.transform);
 	stack_->append(i);
     }
     index_ = t.index_;
@@ -925,7 +993,6 @@ GlyphTraversalImpl::GlyphTraversalImpl(const GlyphTraversalImpl& t) {
     window_ = t.window_;
     damage_ = t.damage_;
     picked_ = t.picked_;
-    Fresco::ref(picked_);
     hit_info_ = t.hit_info_;
 }
 
@@ -936,6 +1003,7 @@ GlyphTraversalImpl::~GlyphTraversalImpl() {
 	Fresco::unref(i.glyph);
 	Fresco::unref(i.offset);
 	Fresco::unref(i.allocation);
+	Fresco::unref(i.transform);
     }
     delete stack_;
     Fresco::unref(picked_);
@@ -945,7 +1013,7 @@ GlyphTraversalImpl::~GlyphTraversalImpl() {
 Long GlyphTraversalImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag GlyphTraversalImpl::attach(FrescoObjectRef observer) {
+Tag GlyphTraversalImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void GlyphTraversalImpl::detach(Tag attach_tag) {
@@ -989,9 +1057,9 @@ GlyphTraversal::Operation GlyphTraversalImpl::swap_op(GlyphTraversal::Operation 
  */
 
 //+ GlyphTraversalImpl(GlyphTraversal::begin_trail)
-void GlyphTraversalImpl::begin_trail(ViewerRef v) {
+void GlyphTraversalImpl::begin_trail(Viewer_in v) {
     GlyphTraversalImpl::Info* i = top();
-    push(v, nil, nil, i->allocation);
+    push(v, nil, nil, i->allocation, nil);
 }
 
 //+ GlyphTraversalImpl(GlyphTraversal::end_trail)
@@ -1000,8 +1068,8 @@ void GlyphTraversalImpl::end_trail() {
 }
 
 //+ GlyphTraversalImpl(GlyphTraversal::traverse_child)
-void GlyphTraversalImpl::traverse_child(GlyphOffsetRef o, RegionRef allocation) {
-    push(nil, nil, o, allocation);
+void GlyphTraversalImpl::traverse_child(GlyphOffset_in o, Region_in allocation) {
+    push(nil, nil, o, allocation, nil);
     o->child()->traverse(this);
     pop();
 }
@@ -1011,14 +1079,7 @@ void GlyphTraversalImpl::visit() { }
 
 //+ GlyphTraversalImpl(GlyphTraversal::trail)
 GlyphTraversalRef GlyphTraversalImpl::_c_trail() {
-    /* not implemented */
-    return nil;
-}
-
-//+ GlyphTraversalImpl(GlyphTraversal::current_viewer)
-ViewerRef GlyphTraversalImpl::_c_current_viewer() {
-    GlyphTraversalImpl::Info* i = cur();
-    return (i == nil) ? nil : Viewer::_duplicate(i->viewer);
+    return new GlyphTraversalImpl(*this);
 }
 
 //+ GlyphTraversalImpl(GlyphTraversal::current_glyph)
@@ -1027,28 +1088,38 @@ GlyphRef GlyphTraversalImpl::_c_current_glyph() {
     return (i == nil) ? nil : Glyph::_duplicate(i->glyph);
 }
 
-//+ GlyphTraversalImpl(GlyphTraversal::offset)
-GlyphOffsetRef GlyphTraversalImpl::_c_offset() {
+//+ GlyphTraversalImpl(GlyphTraversal::current_viewer)
+ViewerRef GlyphTraversalImpl::_c_current_viewer() {
+    GlyphTraversalImpl::Info* i = cur();
+    return (i == nil) ? nil : Viewer::_duplicate(i->viewer);
+}
+
+//+ GlyphTraversalImpl(GlyphTraversal::current_offset)
+GlyphOffsetRef GlyphTraversalImpl::_c_current_offset() {
     GlyphTraversalImpl::Info* i = cur();
     return (i == nil) ? nil : GlyphOffset::_duplicate(i->offset);
 }
 
 //+ GlyphTraversalImpl(GlyphTraversal::forward)
-void GlyphTraversalImpl::forward() {
+Boolean GlyphTraversalImpl::forward() {
     if (index_ < stack_->count()) {
 	++index_;
+	return true;
     }
+    return false;
 }
 
 //+ GlyphTraversalImpl(GlyphTraversal::backward)
-void GlyphTraversalImpl::backward() {
+Boolean GlyphTraversalImpl::backward() {
     if (index_ > 0) {
 	--index_;
+	return true;
     }
+    return false;
 }
 
 //+ GlyphTraversalImpl(GlyphTraversal::painter=p)
-void GlyphTraversalImpl::_c_painter(PainterObjRef p) {
+void GlyphTraversalImpl::_c_painter(PainterObj_in p) {
     Fresco::unref(painter_);
     painter_ = PainterObj::_duplicate(p);
 }
@@ -1105,6 +1176,12 @@ Boolean GlyphTraversalImpl::span(Axis a, Region::BoundingSpan& s) {
     return true;
 }
 
+//+ GlyphTraversalImpl(GlyphTraversal::transform)
+TransformObjRef GlyphTraversalImpl::_c_transform() {
+    GlyphTraversalImpl::Info* i = cur();
+    return i == nil ? nil : TransformObj::_duplicate(i->transform);
+}
+
 //+ GlyphTraversalImpl(GlyphTraversal::damage)
 DamageObjRef GlyphTraversalImpl::_c_damage() {
     return DamageObj::_duplicate(damage_);
@@ -1142,13 +1219,14 @@ void GlyphTraversalImpl::clear() {
  */
 
 void GlyphTraversalImpl::push(
-    ViewerRef v, GlyphRef g, GlyphOffsetRef o, RegionRef a
+    ViewerRef v, GlyphRef g, GlyphOffsetRef o, RegionRef a, TransformObjRef tx
 ) {
     GlyphTraversalImpl::Info i;
     i.viewer = Viewer::_duplicate(v);
     i.glyph = Glyph::_duplicate(g);
     i.offset = GlyphOffset::_duplicate(o);
     i.allocation = Region::_duplicate(a);
+    i.transform = TransformObj::_duplicate(tx);
     if (is_nil(g) && is_not_nil(o)) {
 	i.glyph = o->_c_child();
     }
@@ -1173,6 +1251,7 @@ void GlyphTraversalImpl::pop() {
 	Fresco::unref(i.glyph);
 	Fresco::unref(i.offset);
 	Fresco::unref(i.allocation);
+	Fresco::unref(i.transform);
 	stack_->remove(n);
 	--index_;
     }

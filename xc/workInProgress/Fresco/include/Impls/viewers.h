@@ -30,6 +30,37 @@
 #include <X11/Fresco/Impls/styles.h>
 
 class RegionImpl;
+class ViewerImpl;
+
+class ViewerOffset : public GlyphOffsetType {
+public:
+    ViewerOffset(ViewerImpl*);
+    ~ViewerOffset();
+
+    //+ GlyphOffset::*
+    /* FrescoObject */
+    Long ref__(Long references);
+    Tag attach(FrescoObject_in observer);
+    void detach(Tag attach_tag);
+    void disconnect();
+    void notify_observers();
+    void update();
+    /* GlyphOffset */
+    GlyphRef _c_parent();
+    GlyphRef _c_child();
+    void allocations(Glyph::AllocationInfoList& a);
+    GlyphOffsetRef _c_insert(Glyph_in g);
+    void replace(Glyph_in g);
+    void remove();
+    void notify();
+    void visit_trail(GlyphTraversal_in t);
+    void child_allocate(Glyph::AllocationInfo& a);
+    //+
+
+    ViewerImpl* parent_;
+    GlyphRef child_;
+    Tag remove_tag_;
+};
 
 //- ViewerImpl*
 class ViewerImpl : public ViewerType, public StyleObjType {
@@ -50,7 +81,7 @@ public:
     //+ Viewer::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -58,84 +89,76 @@ public:
     /* Glyph */
     GlyphRef _c_clone_glyph();
     StyleObjRef _c_style();
-    void _c_style(StyleObjRef _p);
+    void _c_style(StyleObj_in _p);
     TransformObjRef _c_transform();
     void request(Glyph::Requisition& r);
-    void extension(const Glyph::AllocationInfo& a, RegionRef r);
-    void shape(RegionRef r);
-    void traverse(GlyphTraversalRef t);
-    void draw(GlyphTraversalRef t);
-    void pick(GlyphTraversalRef t);
+    void extension(const Glyph::AllocationInfo& a, Region_in r);
+    RegionRef _c_shape();
+    void traverse(GlyphTraversal_in t);
+    void draw(GlyphTraversal_in t);
+    void pick(GlyphTraversal_in t);
     GlyphRef _c_body();
-    void _c_body(GlyphRef _p);
-    GlyphOffsetRef _c_append(GlyphRef g);
-    GlyphOffsetRef _c_prepend(GlyphRef g);
-    Tag add_parent(GlyphOffsetRef parent_offset);
+    void _c_body(Glyph_in _p);
+    GlyphOffsetRef _c_append(Glyph_in g);
+    GlyphOffsetRef _c_prepend(Glyph_in g);
+    Tag add_parent(GlyphOffset_in parent_offset);
     void remove_parent(Tag add_tag);
-    void visit_children(GlyphVisitorRef v);
-    void visit_children_reversed(GlyphVisitorRef v);
-    void visit_parents(GlyphVisitorRef v);
+    void visit_children(GlyphVisitor_in v);
+    void visit_children_reversed(GlyphVisitor_in v);
+    void visit_parents(GlyphVisitor_in v);
     void allocations(Glyph::AllocationInfoList& a);
     void need_redraw();
-    void need_redraw_region(RegionRef r);
+    void need_redraw_region(Region_in r);
     void need_resize();
+    Boolean restore_trail(GlyphTraversal_in t);
     /* Viewer */
     ViewerRef _c_parent_viewer();
     ViewerRef _c_next_viewer();
     ViewerRef _c_prev_viewer();
     ViewerRef _c_first_viewer();
     ViewerRef _c_last_viewer();
-    void append_viewer(ViewerRef v);
-    void prepend_viewer(ViewerRef v);
-    void insert_viewer(ViewerRef v);
-    void replace_viewer(ViewerRef v);
+    void append_viewer(Viewer_in v);
+    void prepend_viewer(Viewer_in v);
+    void insert_viewer(Viewer_in v);
+    void replace_viewer(Viewer_in v);
     void remove_viewer();
-    void set_viewer_links(ViewerRef parent, ViewerRef prev, ViewerRef next);
-    void set_first_viewer(ViewerRef v);
-    void set_last_viewer(ViewerRef v);
-    FocusRef _c_request_focus(ViewerRef requestor, Boolean temporary);
-    Boolean receive_focus(FocusRef f, Boolean primary);
+    void set_viewer_links(Viewer_in parent, Viewer_in prev, Viewer_in next);
+    void set_first_viewer(Viewer_in v);
+    void set_last_viewer(Viewer_in v);
+    FocusRef _c_request_focus(Viewer_in requestor, Boolean temporary);
+    Boolean receive_focus(Focus_in f, Boolean primary);
     void lose_focus(Boolean temporary);
     Boolean first_focus();
     Boolean last_focus();
     Boolean next_focus();
     Boolean prev_focus();
-    Boolean handle(GlyphTraversalRef t, EventRef e);
+    Boolean handle(GlyphTraversal_in t, Event_in e);
     void close();
     //+
 
     //+ StyleObj::=
     StyleObjRef _c_new_style();
     StyleObjRef _c_parent_style();
-    void link_parent(StyleObjRef parent);
+    void link_parent(StyleObj_in parent);
     void unlink_parent();
-    Tag link_child(StyleObjRef child);
+    Tag link_child(StyleObj_in child);
     void unlink_child(Tag link_tag);
-    void merge(StyleObjRef s);
+    void merge(StyleObj_in s);
     CharStringRef _c_name();
-    void _c_name(CharStringRef _p);
-    void alias(CharStringRef s);
-    Boolean is_on(CharStringRef name);
-    StyleValueRef _c_bind(CharStringRef name);
-    void unbind(CharStringRef name);
-    StyleValueRef _c_resolve(CharStringRef name);
-    StyleValueRef _c_resolve_wildcard(CharStringRef name, StyleObjRef start);
-    Long match(CharStringRef name);
-    void visit_aliases(StyleVisitorRef v);
-    void visit_attributes(StyleVisitorRef v);
-    void visit_styles(StyleVisitorRef v);
+    void _c_name(CharString_in _p);
+    void alias(CharString_in s);
+    Boolean is_on(CharString_in name);
+    StyleValueRef _c_bind(CharString_in name);
+    void unbind(CharString_in name);
+    StyleValueRef _c_resolve(CharString_in name);
+    StyleValueRef _c_resolve_wildcard(CharString_in name, StyleObj_in start);
+    Long match(CharString_in name);
+    void visit_aliases(StyleVisitor_in v);
+    void visit_attributes(StyleVisitor_in v);
+    void visit_styles(StyleVisitor_in v);
     void lock();
     void unlock();
     //+
-
-    //- position_event
-    virtual Boolean position_event(GlyphTraversalRef t, EventRef e);
-	//. Handle a event for a positional device, including as pointer
-	//. motion, button press, and button release.  The default
-	//. implementation does a pick to see if the event
-	//. is contained in a nested viewer; if so, then the event
-	//. is passed to the nested viewer.  Otherwise, this operation
-	//. calls handle_position_event.
 
     //- handle_position_event
     virtual Boolean handle_position_event(GlyphTraversalRef t, EventRef e);
@@ -219,11 +242,14 @@ public:
 	//. calls several grabs, then only one filter will be created
 	//. but it will not be removed until a corresponding number
 	//. of ungrab calls are made.
+
+    void visit_trail(GlyphTraversal_in t);
+    void child_allocate(Glyph::AllocationInfo&);
 protected:
     SharedFrescoObjectImpl object_;
     SharedStyleImpl style_;
     GlyphOffsetList glyph_parents_;
-    MonoGlyphOffset offset_;
+    ViewerOffset offset_;
     ViewerRef parent_;
     ViewerRef next_;
     ViewerRef prev_;
@@ -271,17 +297,17 @@ public:
     //+ Focus::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
     void update();
     /* Focus */
-    void add_focus_interest(ViewerRef v);
-    void receive_focus_below(ViewerRef v, Boolean temporary);
-    void lose_focus_below(ViewerRef v, Boolean temporary);
-    void map_keystroke(Event::KeySym k, ActionRef a);
-    void map_keychord(const Event::KeyChord& k, ActionRef a);
+    void add_focus_interest(Viewer_in v);
+    void receive_focus_below(Viewer_in v, Boolean temporary);
+    void lose_focus_below(Viewer_in v, Boolean temporary);
+    void map_keystroke(Event::KeySym k, Action_in a);
+    void map_keychord(const Event::KeyChord& k, Action_in a);
     //+
 protected:
     SharedFrescoObjectImpl object_;
@@ -294,11 +320,11 @@ public:
 
     void notify_observers(); //+ FrescoObject::notify_observers
     void allocations(Glyph::AllocationInfoList& a); //+ Glyph::allocations
-    void traverse(GlyphTraversalRef t); //+ Glyph::traverse
-    void draw(GlyphTraversalRef t); //+ Glyph::draw
+    void traverse(GlyphTraversal_in t); //+ Glyph::traverse
+    void draw(GlyphTraversal_in t); //+ Glyph::draw
     void need_redraw(); //+ Glyph::need_redraw
     void need_resize(); //+ Glyph::need_resize
-    FocusRef _c_request_focus(ViewerRef requestor, Boolean temporary); //+ Viewer::request_focus
+    FocusRef _c_request_focus(Viewer_in requestor, Boolean temporary); //+ Viewer::request_focus
     void close(); //+ Viewer::close
 
     WindowRef window_;

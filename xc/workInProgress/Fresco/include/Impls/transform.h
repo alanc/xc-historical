@@ -43,24 +43,24 @@ public:
     //+ TransformObj::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
     void update();
     /* TransformObj */
-    void load(TransformObjRef t);
+    void load(TransformObj_in t);
     void load_identity();
     void load_matrix(TransformObj::Matrix m);
     void store_matrix(TransformObj::Matrix m);
-    Boolean equal(TransformObjRef t);
+    Boolean equal(TransformObj_in t);
     Boolean identity();
     Boolean det_is_zero();
     void scale(const Vertex& v);
     void rotate(Float angle, Axis a);
     void translate(const Vertex& v);
-    void premultiply(TransformObjRef t);
-    void postmultiply(TransformObjRef t);
+    void premultiply(TransformObj_in t);
+    void postmultiply(TransformObj_in t);
     void invert();
     void transform(Vertex& v);
     void inverse_transform(Vertex& v);

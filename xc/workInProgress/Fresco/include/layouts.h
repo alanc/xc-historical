@@ -8,64 +8,67 @@
 
 class ColorType;
 typedef ColorType* ColorRef;
+typedef ColorRef Color_in;
 class Color;
-class _ColorExpr;
-class _ColorElem;
+class Color_tmp;
+class Color_var;
 
 class FontType;
 typedef FontType* FontRef;
+typedef FontRef Font_in;
 class Font;
-class _FontExpr;
-class _FontElem;
+class Font_tmp;
+class Font_var;
 
 class DeckObjType;
 typedef DeckObjType* DeckObjRef;
+typedef DeckObjRef DeckObj_in;
 class DeckObj;
-class _DeckObjExpr;
-class _DeckObjElem;
+class DeckObj_tmp;
+class DeckObj_var;
 
 class DeckObj {
 public:
-    DeckObjRef _obj;
+    DeckObjRef _obj_;
 
-    DeckObj() { _obj = 0; }
-    DeckObj(DeckObjRef p) { _obj = p; }
+    DeckObj() { _obj_ = 0; }
+    DeckObj(DeckObjRef p) { _obj_ = p; }
     DeckObj& operator =(DeckObjRef p);
     DeckObj(const DeckObj&);
     DeckObj& operator =(const DeckObj& r);
-    DeckObj(const _DeckObjExpr&);
-    DeckObj& operator =(const _DeckObjExpr&);
-    DeckObj(const _DeckObjElem&);
-    DeckObj& operator =(const _DeckObjElem&);
+    DeckObj(const DeckObj_tmp&);
+    DeckObj& operator =(const DeckObj_tmp&);
+    DeckObj(const DeckObj_var&);
+    DeckObj& operator =(const DeckObj_var&);
     ~DeckObj();
 
-    operator DeckObjRef() const { return _obj; }
-    DeckObjRef operator ->() { return _obj; }
+    DeckObjRef operator ->() { return _obj_; }
 
+    operator DeckObj_in() const { return _obj_; }
     operator Glyph() const;
     operator FrescoObject() const;
     static DeckObjRef _narrow(BaseObjectRef p);
-    static _DeckObjExpr _narrow(const BaseObject& r);
+    static DeckObj_tmp _narrow(const BaseObject& r);
 
     static DeckObjRef _duplicate(DeckObjRef obj);
-    static _DeckObjExpr _duplicate(const DeckObj& r);
+    static DeckObj_tmp _duplicate(const DeckObj& r);
 };
 
-class _DeckObjExpr : public DeckObj {
+class DeckObj_tmp : public DeckObj {
 public:
-    _DeckObjExpr(DeckObjRef p) { _obj = p; }
-    _DeckObjExpr(const DeckObj& r) { _obj = r._obj; }
-    _DeckObjExpr(const _DeckObjExpr& r) { _obj = r._obj; }
-    ~_DeckObjExpr();
+    DeckObj_tmp(DeckObjRef p) { _obj_ = p; }
+    DeckObj_tmp(const DeckObj& r);
+    DeckObj_tmp(const DeckObj_tmp& r);
+    ~DeckObj_tmp();
 };
 
-class _DeckObjElem {
+class DeckObj_var {
 public:
-    DeckObjRef _obj;
+    DeckObjRef _obj_;
 
-    _DeckObjElem(DeckObjRef p) { _obj = p; }
-    operator DeckObjRef() const { return _obj; }
-    DeckObjRef operator ->() { return _obj; }
+    DeckObj_var(DeckObjRef p) { _obj_ = p; }
+    operator DeckObjRef() const { return _obj_; }
+    DeckObjRef operator ->() { return _obj_; }
 };
 
 class DeckObjType : public GlyphType {
@@ -73,13 +76,13 @@ protected:
     DeckObjType();
     virtual ~DeckObjType();
 public:
-    _GlyphOffsetExpr card() {
+    GlyphOffset_tmp card() {
         return _c_card();
     }
     virtual GlyphOffsetRef _c_card();
-    virtual void flip_to(GlyphOffsetRef off);
-
-    _DeckObjExpr _ref();
+    virtual void flip_to(GlyphOffset_in off);
+    DeckObjRef _obj() { return this; }
+    void* _this();
     virtual TypeObjId _tid();
 };
 
@@ -94,106 +97,55 @@ protected:
     Exchange* exch_;
 };
 
-inline DeckObjRef DeckObj::_duplicate(DeckObjRef obj) {
-    return (DeckObjRef)_BaseObject__duplicate(obj, &DeckObjStub::_create);
-}
-inline DeckObj& DeckObj::operator =(DeckObjRef p) {
-    _BaseObject__release(_obj);
-    _obj = DeckObj::_duplicate(p);
-    return *this;
-}
-inline DeckObj::DeckObj(const DeckObj& r) {
-    _obj = DeckObj::_duplicate(r._obj);
-}
-inline DeckObj& DeckObj::operator =(const DeckObj& r) {
-    _BaseObject__release(_obj);
-    _obj = DeckObj::_duplicate(r._obj);
-    return *this;
-}
-inline DeckObj::DeckObj(const _DeckObjExpr& r) {
-    _obj = r._obj;
-    ((_DeckObjExpr*)&r)->_obj = 0;
-}
-inline DeckObj& DeckObj::operator =(const _DeckObjExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_DeckObjExpr*)&r)->_obj = 0;
-    return *this;
-}
-inline DeckObj::DeckObj(const _DeckObjElem& e) {
-    _obj = DeckObj::_duplicate(e._obj);
-}
-inline DeckObj& DeckObj::operator =(const _DeckObjElem& e) {
-    _BaseObject__release(_obj);
-    _obj = DeckObj::_duplicate(e._obj);
-    return *this;
-}
-inline DeckObj::~DeckObj() {
-    _BaseObject__release(_obj);
-}
-inline _DeckObjExpr DeckObj::_narrow(const BaseObject& r) {
-    return _narrow(r._obj);
-}
-inline _DeckObjExpr DeckObj::_duplicate(const DeckObj& r) {
-    return _duplicate(r._obj);
-}
-inline DeckObj::operator Glyph() const {
-    return _GlyphExpr((GlyphRef)_BaseObject__duplicate(_obj, &GlyphStub::_create));
-}
-inline DeckObj::operator FrescoObject() const {
-    return _FrescoObjectExpr((FrescoObjectRef)_BaseObject__duplicate((GlyphRef)_obj, &FrescoObjectStub::_create));
-}
-inline _DeckObjExpr::~_DeckObjExpr() { }
-inline _DeckObjExpr DeckObjType::_ref() { return this; }
-
 class ScrollBoxType;
 typedef ScrollBoxType* ScrollBoxRef;
+typedef ScrollBoxRef ScrollBox_in;
 class ScrollBox;
-class _ScrollBoxExpr;
-class _ScrollBoxElem;
+class ScrollBox_tmp;
+class ScrollBox_var;
 
 class ScrollBox {
 public:
-    ScrollBoxRef _obj;
+    ScrollBoxRef _obj_;
 
-    ScrollBox() { _obj = 0; }
-    ScrollBox(ScrollBoxRef p) { _obj = p; }
+    ScrollBox() { _obj_ = 0; }
+    ScrollBox(ScrollBoxRef p) { _obj_ = p; }
     ScrollBox& operator =(ScrollBoxRef p);
     ScrollBox(const ScrollBox&);
     ScrollBox& operator =(const ScrollBox& r);
-    ScrollBox(const _ScrollBoxExpr&);
-    ScrollBox& operator =(const _ScrollBoxExpr&);
-    ScrollBox(const _ScrollBoxElem&);
-    ScrollBox& operator =(const _ScrollBoxElem&);
+    ScrollBox(const ScrollBox_tmp&);
+    ScrollBox& operator =(const ScrollBox_tmp&);
+    ScrollBox(const ScrollBox_var&);
+    ScrollBox& operator =(const ScrollBox_var&);
     ~ScrollBox();
 
-    operator ScrollBoxRef() const { return _obj; }
-    ScrollBoxRef operator ->() { return _obj; }
+    ScrollBoxRef operator ->() { return _obj_; }
 
+    operator ScrollBox_in() const { return _obj_; }
     operator Glyph() const;
     operator FrescoObject() const;
     static ScrollBoxRef _narrow(BaseObjectRef p);
-    static _ScrollBoxExpr _narrow(const BaseObject& r);
+    static ScrollBox_tmp _narrow(const BaseObject& r);
 
     static ScrollBoxRef _duplicate(ScrollBoxRef obj);
-    static _ScrollBoxExpr _duplicate(const ScrollBox& r);
+    static ScrollBox_tmp _duplicate(const ScrollBox& r);
 };
 
-class _ScrollBoxExpr : public ScrollBox {
+class ScrollBox_tmp : public ScrollBox {
 public:
-    _ScrollBoxExpr(ScrollBoxRef p) { _obj = p; }
-    _ScrollBoxExpr(const ScrollBox& r) { _obj = r._obj; }
-    _ScrollBoxExpr(const _ScrollBoxExpr& r) { _obj = r._obj; }
-    ~_ScrollBoxExpr();
+    ScrollBox_tmp(ScrollBoxRef p) { _obj_ = p; }
+    ScrollBox_tmp(const ScrollBox& r);
+    ScrollBox_tmp(const ScrollBox_tmp& r);
+    ~ScrollBox_tmp();
 };
 
-class _ScrollBoxElem {
+class ScrollBox_var {
 public:
-    ScrollBoxRef _obj;
+    ScrollBoxRef _obj_;
 
-    _ScrollBoxElem(ScrollBoxRef p) { _obj = p; }
-    operator ScrollBoxRef() const { return _obj; }
-    ScrollBoxRef operator ->() { return _obj; }
+    ScrollBox_var(ScrollBoxRef p) { _obj_ = p; }
+    operator ScrollBoxRef() const { return _obj_; }
+    ScrollBoxRef operator ->() { return _obj_; }
 };
 
 class ScrollBoxType : public GlyphType {
@@ -201,17 +153,17 @@ protected:
     ScrollBoxType();
     virtual ~ScrollBoxType();
 public:
-    virtual Boolean shown(GlyphOffsetRef off);
-    _GlyphOffsetExpr first_shown() {
+    virtual Boolean shown(GlyphOffset_in off);
+    GlyphOffset_tmp first_shown() {
         return _c_first_shown();
     }
     virtual GlyphOffsetRef _c_first_shown();
-    _GlyphOffsetExpr last_shown() {
+    GlyphOffset_tmp last_shown() {
         return _c_last_shown();
     }
     virtual GlyphOffsetRef _c_last_shown();
-
-    _ScrollBoxExpr _ref();
+    ScrollBoxRef _obj() { return this; }
+    void* _this();
     virtual TypeObjId _tid();
 };
 
@@ -226,105 +178,54 @@ protected:
     Exchange* exch_;
 };
 
-inline ScrollBoxRef ScrollBox::_duplicate(ScrollBoxRef obj) {
-    return (ScrollBoxRef)_BaseObject__duplicate(obj, &ScrollBoxStub::_create);
-}
-inline ScrollBox& ScrollBox::operator =(ScrollBoxRef p) {
-    _BaseObject__release(_obj);
-    _obj = ScrollBox::_duplicate(p);
-    return *this;
-}
-inline ScrollBox::ScrollBox(const ScrollBox& r) {
-    _obj = ScrollBox::_duplicate(r._obj);
-}
-inline ScrollBox& ScrollBox::operator =(const ScrollBox& r) {
-    _BaseObject__release(_obj);
-    _obj = ScrollBox::_duplicate(r._obj);
-    return *this;
-}
-inline ScrollBox::ScrollBox(const _ScrollBoxExpr& r) {
-    _obj = r._obj;
-    ((_ScrollBoxExpr*)&r)->_obj = 0;
-}
-inline ScrollBox& ScrollBox::operator =(const _ScrollBoxExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_ScrollBoxExpr*)&r)->_obj = 0;
-    return *this;
-}
-inline ScrollBox::ScrollBox(const _ScrollBoxElem& e) {
-    _obj = ScrollBox::_duplicate(e._obj);
-}
-inline ScrollBox& ScrollBox::operator =(const _ScrollBoxElem& e) {
-    _BaseObject__release(_obj);
-    _obj = ScrollBox::_duplicate(e._obj);
-    return *this;
-}
-inline ScrollBox::~ScrollBox() {
-    _BaseObject__release(_obj);
-}
-inline _ScrollBoxExpr ScrollBox::_narrow(const BaseObject& r) {
-    return _narrow(r._obj);
-}
-inline _ScrollBoxExpr ScrollBox::_duplicate(const ScrollBox& r) {
-    return _duplicate(r._obj);
-}
-inline ScrollBox::operator Glyph() const {
-    return _GlyphExpr((GlyphRef)_BaseObject__duplicate(_obj, &GlyphStub::_create));
-}
-inline ScrollBox::operator FrescoObject() const {
-    return _FrescoObjectExpr((FrescoObjectRef)_BaseObject__duplicate((GlyphRef)_obj, &FrescoObjectStub::_create));
-}
-inline _ScrollBoxExpr::~_ScrollBoxExpr() { }
-inline _ScrollBoxExpr ScrollBoxType::_ref() { return this; }
-
 class LayoutKitType;
 typedef LayoutKitType* LayoutKitRef;
+typedef LayoutKitRef LayoutKit_in;
 class LayoutKit;
-class _LayoutKitExpr;
-class _LayoutKitElem;
+class LayoutKit_tmp;
+class LayoutKit_var;
 
 class LayoutKit {
 public:
-    LayoutKitRef _obj;
+    LayoutKitRef _obj_;
 
-    LayoutKit() { _obj = 0; }
-    LayoutKit(LayoutKitRef p) { _obj = p; }
+    LayoutKit() { _obj_ = 0; }
+    LayoutKit(LayoutKitRef p) { _obj_ = p; }
     LayoutKit& operator =(LayoutKitRef p);
     LayoutKit(const LayoutKit&);
     LayoutKit& operator =(const LayoutKit& r);
-    LayoutKit(const _LayoutKitExpr&);
-    LayoutKit& operator =(const _LayoutKitExpr&);
-    LayoutKit(const _LayoutKitElem&);
-    LayoutKit& operator =(const _LayoutKitElem&);
+    LayoutKit(const LayoutKit_tmp&);
+    LayoutKit& operator =(const LayoutKit_tmp&);
+    LayoutKit(const LayoutKit_var&);
+    LayoutKit& operator =(const LayoutKit_var&);
     ~LayoutKit();
 
-    operator LayoutKitRef() const { return _obj; }
-    LayoutKitRef operator ->() { return _obj; }
+    LayoutKitRef operator ->() { return _obj_; }
 
+    operator LayoutKit_in() const { return _obj_; }
     operator FrescoObject() const;
     static LayoutKitRef _narrow(BaseObjectRef p);
-    static _LayoutKitExpr _narrow(const BaseObject& r);
+    static LayoutKit_tmp _narrow(const BaseObject& r);
 
     static LayoutKitRef _duplicate(LayoutKitRef obj);
-    static _LayoutKitExpr _duplicate(const LayoutKit& r);
+    static LayoutKit_tmp _duplicate(const LayoutKit& r);
 };
 
-class _LayoutKitExpr : public LayoutKit {
+class LayoutKit_tmp : public LayoutKit {
 public:
-    _LayoutKitExpr(LayoutKitRef p) { _obj = p; }
-    _LayoutKitExpr(const LayoutKit& r) { _obj = r._obj; }
-    _LayoutKitExpr(const _LayoutKitExpr& r) { _obj = r._obj; }
-    ~_LayoutKitExpr();
+    LayoutKit_tmp(LayoutKitRef p) { _obj_ = p; }
+    LayoutKit_tmp(const LayoutKit& r);
+    LayoutKit_tmp(const LayoutKit_tmp& r);
+    ~LayoutKit_tmp();
 };
 
-class _LayoutKitElem {
+class LayoutKit_var {
 public:
-    LayoutKitRef _obj;
+    LayoutKitRef _obj_;
 
-    _LayoutKitElem(LayoutKitRef p) { _obj = p; }
-    operator LayoutKitRef() const { return _obj; }
-    LayoutKitRef operator ->() { return _obj; }
+    LayoutKit_var(LayoutKitRef p) { _obj_ = p; }
+    operator LayoutKitRef() const { return _obj_; }
+    LayoutKitRef operator ->() { return _obj_; }
 };
 
 class LayoutKitType : public FrescoObjectType {
@@ -334,272 +235,272 @@ protected:
 public:
     virtual Coord fil();
     virtual void fil(Coord _p);
-    _GlyphExpr hbox() {
+    Glyph_tmp hbox() {
         return _c_hbox();
     }
     virtual GlyphRef _c_hbox();
-    _GlyphExpr vbox() {
+    Glyph_tmp vbox() {
         return _c_vbox();
     }
     virtual GlyphRef _c_vbox();
-    _GlyphExpr hbox_first_aligned() {
+    Glyph_tmp hbox_first_aligned() {
         return _c_hbox_first_aligned();
     }
     virtual GlyphRef _c_hbox_first_aligned();
-    _GlyphExpr vbox_first_aligned() {
+    Glyph_tmp vbox_first_aligned() {
         return _c_vbox_first_aligned();
     }
     virtual GlyphRef _c_vbox_first_aligned();
-    _ScrollBoxExpr vscrollbox() {
+    ScrollBox_tmp vscrollbox() {
         return _c_vscrollbox();
     }
     virtual ScrollBoxRef _c_vscrollbox();
-    _GlyphExpr overlay() {
+    Glyph_tmp overlay() {
         return _c_overlay();
     }
     virtual GlyphRef _c_overlay();
-    _DeckObjExpr deck() {
+    DeckObj_tmp deck() {
         return _c_deck();
     }
     virtual DeckObjRef _c_deck();
-    _GlyphExpr back(GlyphRef g, GlyphRef under) {
+    Glyph_tmp back(Glyph_in g, Glyph_in under) {
         return _c_back(g, under);
     }
-    virtual GlyphRef _c_back(GlyphRef g, GlyphRef under);
-    _GlyphExpr front(GlyphRef g, GlyphRef over) {
+    virtual GlyphRef _c_back(Glyph_in g, Glyph_in under);
+    Glyph_tmp front(Glyph_in g, Glyph_in over) {
         return _c_front(g, over);
     }
-    virtual GlyphRef _c_front(GlyphRef g, GlyphRef over);
-    _GlyphExpr between(GlyphRef g, GlyphRef under, GlyphRef over) {
+    virtual GlyphRef _c_front(Glyph_in g, Glyph_in over);
+    Glyph_tmp between(Glyph_in g, Glyph_in under, Glyph_in over) {
         return _c_between(g, under, over);
     }
-    virtual GlyphRef _c_between(GlyphRef g, GlyphRef under, GlyphRef over);
-    _GlyphExpr glue(Axis a, Coord natural, Coord stretch, Coord shrink, Alignment align) {
+    virtual GlyphRef _c_between(Glyph_in g, Glyph_in under, Glyph_in over);
+    Glyph_tmp glue(Axis a, Coord natural, Coord stretch, Coord shrink, Alignment align) {
         return _c_glue(a, natural, stretch, shrink, align);
     }
     virtual GlyphRef _c_glue(Axis a, Coord natural, Coord stretch, Coord shrink, Alignment align);
-    _GlyphExpr glue_requisition(const Glyph::Requisition& r) {
+    Glyph_tmp glue_requisition(const Glyph::Requisition& r) {
         return _c_glue_requisition(r);
     }
     virtual GlyphRef _c_glue_requisition(const Glyph::Requisition& r);
-    _GlyphExpr hfil() {
+    Glyph_tmp hfil() {
         return _c_hfil();
     }
     virtual GlyphRef _c_hfil();
-    _GlyphExpr hglue_fil(Coord natural) {
+    Glyph_tmp hglue_fil(Coord natural) {
         return _c_hglue_fil(natural);
     }
     virtual GlyphRef _c_hglue_fil(Coord natural);
-    _GlyphExpr hglue(Coord natural, Coord stretch, Coord shrink) {
+    Glyph_tmp hglue(Coord natural, Coord stretch, Coord shrink) {
         return _c_hglue(natural, stretch, shrink);
     }
     virtual GlyphRef _c_hglue(Coord natural, Coord stretch, Coord shrink);
-    _GlyphExpr hglue_aligned(Coord natural, Coord stretch, Coord shrink, Alignment a) {
+    Glyph_tmp hglue_aligned(Coord natural, Coord stretch, Coord shrink, Alignment a) {
         return _c_hglue_aligned(natural, stretch, shrink, a);
     }
     virtual GlyphRef _c_hglue_aligned(Coord natural, Coord stretch, Coord shrink, Alignment a);
-    _GlyphExpr hspace(Coord natural) {
+    Glyph_tmp hspace(Coord natural) {
         return _c_hspace(natural);
     }
     virtual GlyphRef _c_hspace(Coord natural);
-    _GlyphExpr vfil() {
+    Glyph_tmp vfil() {
         return _c_vfil();
     }
     virtual GlyphRef _c_vfil();
-    _GlyphExpr vglue_fil(Coord natural) {
+    Glyph_tmp vglue_fil(Coord natural) {
         return _c_vglue_fil(natural);
     }
     virtual GlyphRef _c_vglue_fil(Coord natural);
-    _GlyphExpr vglue(Coord natural, Coord stretch, Coord shrink) {
+    Glyph_tmp vglue(Coord natural, Coord stretch, Coord shrink) {
         return _c_vglue(natural, stretch, shrink);
     }
     virtual GlyphRef _c_vglue(Coord natural, Coord stretch, Coord shrink);
-    _GlyphExpr vglue_aligned(Coord natural, Coord stretch, Coord shrink, Alignment a) {
+    Glyph_tmp vglue_aligned(Coord natural, Coord stretch, Coord shrink, Alignment a) {
         return _c_vglue_aligned(natural, stretch, shrink, a);
     }
     virtual GlyphRef _c_vglue_aligned(Coord natural, Coord stretch, Coord shrink, Alignment a);
-    _GlyphExpr vspace(Coord natural) {
+    Glyph_tmp vspace(Coord natural) {
         return _c_vspace(natural);
     }
     virtual GlyphRef _c_vspace(Coord natural);
-    _GlyphExpr shape_of(GlyphRef g) {
+    Glyph_tmp shape_of(Glyph_in g) {
         return _c_shape_of(g);
     }
-    virtual GlyphRef _c_shape_of(GlyphRef g);
-    _GlyphExpr shape_of_xy(GlyphRef gx, GlyphRef gy) {
+    virtual GlyphRef _c_shape_of(Glyph_in g);
+    Glyph_tmp shape_of_xy(Glyph_in gx, Glyph_in gy) {
         return _c_shape_of_xy(gx, gy);
     }
-    virtual GlyphRef _c_shape_of_xy(GlyphRef gx, GlyphRef gy);
-    _GlyphExpr shape_of_xyz(GlyphRef gx, GlyphRef gy, GlyphRef gz) {
+    virtual GlyphRef _c_shape_of_xy(Glyph_in gx, Glyph_in gy);
+    Glyph_tmp shape_of_xyz(Glyph_in gx, Glyph_in gy, Glyph_in gz) {
         return _c_shape_of_xyz(gx, gy, gz);
     }
-    virtual GlyphRef _c_shape_of_xyz(GlyphRef gx, GlyphRef gy, GlyphRef gz);
-    _GlyphExpr strut(FontRef f, Coord natural, Coord stretch, Coord shrink) {
+    virtual GlyphRef _c_shape_of_xyz(Glyph_in gx, Glyph_in gy, Glyph_in gz);
+    Glyph_tmp strut(Font_in f, Coord natural, Coord stretch, Coord shrink) {
         return _c_strut(f, natural, stretch, shrink);
     }
-    virtual GlyphRef _c_strut(FontRef f, Coord natural, Coord stretch, Coord shrink);
-    _GlyphExpr hstrut(Coord right_bearing, Coord left_bearing, Coord natural, Coord stretch, Coord shrink) {
+    virtual GlyphRef _c_strut(Font_in f, Coord natural, Coord stretch, Coord shrink);
+    Glyph_tmp hstrut(Coord right_bearing, Coord left_bearing, Coord natural, Coord stretch, Coord shrink) {
         return _c_hstrut(right_bearing, left_bearing, natural, stretch, shrink);
     }
     virtual GlyphRef _c_hstrut(Coord right_bearing, Coord left_bearing, Coord natural, Coord stretch, Coord shrink);
-    _GlyphExpr vstrut(Coord ascent, Coord descent, Coord natural, Coord stretch, Coord shrink) {
+    Glyph_tmp vstrut(Coord ascent, Coord descent, Coord natural, Coord stretch, Coord shrink) {
         return _c_vstrut(ascent, descent, natural, stretch, shrink);
     }
     virtual GlyphRef _c_vstrut(Coord ascent, Coord descent, Coord natural, Coord stretch, Coord shrink);
-    _GlyphExpr spaces(Long count, Coord each, FontRef f, ColorRef c) {
+    Glyph_tmp spaces(Long count, Coord each, Font_in f, Color_in c) {
         return _c_spaces(count, each, f, c);
     }
-    virtual GlyphRef _c_spaces(Long count, Coord each, FontRef f, ColorRef c);
-    _GlyphExpr center(GlyphRef g) {
+    virtual GlyphRef _c_spaces(Long count, Coord each, Font_in f, Color_in c);
+    Glyph_tmp center(Glyph_in g) {
         return _c_center(g);
     }
-    virtual GlyphRef _c_center(GlyphRef g);
-    _GlyphExpr center_aligned(GlyphRef g, Alignment x, Alignment y) {
+    virtual GlyphRef _c_center(Glyph_in g);
+    Glyph_tmp center_aligned(Glyph_in g, Alignment x, Alignment y) {
         return _c_center_aligned(g, x, y);
     }
-    virtual GlyphRef _c_center_aligned(GlyphRef g, Alignment x, Alignment y);
-    _GlyphExpr center_axis(GlyphRef g, Axis a, Alignment align) {
+    virtual GlyphRef _c_center_aligned(Glyph_in g, Alignment x, Alignment y);
+    Glyph_tmp center_axis(Glyph_in g, Axis a, Alignment align) {
         return _c_center_axis(g, a, align);
     }
-    virtual GlyphRef _c_center_axis(GlyphRef g, Axis a, Alignment align);
-    _GlyphExpr hcenter(GlyphRef g) {
+    virtual GlyphRef _c_center_axis(Glyph_in g, Axis a, Alignment align);
+    Glyph_tmp hcenter(Glyph_in g) {
         return _c_hcenter(g);
     }
-    virtual GlyphRef _c_hcenter(GlyphRef g);
-    _GlyphExpr hcenter_aligned(GlyphRef g, Alignment x) {
+    virtual GlyphRef _c_hcenter(Glyph_in g);
+    Glyph_tmp hcenter_aligned(Glyph_in g, Alignment x) {
         return _c_hcenter_aligned(g, x);
     }
-    virtual GlyphRef _c_hcenter_aligned(GlyphRef g, Alignment x);
-    _GlyphExpr vcenter(GlyphRef g) {
+    virtual GlyphRef _c_hcenter_aligned(Glyph_in g, Alignment x);
+    Glyph_tmp vcenter(Glyph_in g) {
         return _c_vcenter(g);
     }
-    virtual GlyphRef _c_vcenter(GlyphRef g);
-    _GlyphExpr vcenter_aligned(GlyphRef g, Alignment y) {
+    virtual GlyphRef _c_vcenter(Glyph_in g);
+    Glyph_tmp vcenter_aligned(Glyph_in g, Alignment y) {
         return _c_vcenter_aligned(g, y);
     }
-    virtual GlyphRef _c_vcenter_aligned(GlyphRef g, Alignment y);
-    _GlyphExpr fixed(GlyphRef g, Coord x, Coord y) {
+    virtual GlyphRef _c_vcenter_aligned(Glyph_in g, Alignment y);
+    Glyph_tmp fixed(Glyph_in g, Coord x, Coord y) {
         return _c_fixed(g, x, y);
     }
-    virtual GlyphRef _c_fixed(GlyphRef g, Coord x, Coord y);
-    _GlyphExpr fixed_axis(GlyphRef g, Axis a, Coord size) {
+    virtual GlyphRef _c_fixed(Glyph_in g, Coord x, Coord y);
+    Glyph_tmp fixed_axis(Glyph_in g, Axis a, Coord size) {
         return _c_fixed_axis(g, a, size);
     }
-    virtual GlyphRef _c_fixed_axis(GlyphRef g, Axis a, Coord size);
-    _GlyphExpr hfixed(GlyphRef g, Coord x) {
+    virtual GlyphRef _c_fixed_axis(Glyph_in g, Axis a, Coord size);
+    Glyph_tmp hfixed(Glyph_in g, Coord x) {
         return _c_hfixed(g, x);
     }
-    virtual GlyphRef _c_hfixed(GlyphRef g, Coord x);
-    _GlyphExpr vfixed(GlyphRef g, Coord y) {
+    virtual GlyphRef _c_hfixed(Glyph_in g, Coord x);
+    Glyph_tmp vfixed(Glyph_in g, Coord y) {
         return _c_vfixed(g, y);
     }
-    virtual GlyphRef _c_vfixed(GlyphRef g, Coord y);
-    _GlyphExpr flexible(GlyphRef g, Coord stretch, Coord shrink) {
+    virtual GlyphRef _c_vfixed(Glyph_in g, Coord y);
+    Glyph_tmp flexible(Glyph_in g, Coord stretch, Coord shrink) {
         return _c_flexible(g, stretch, shrink);
     }
-    virtual GlyphRef _c_flexible(GlyphRef g, Coord stretch, Coord shrink);
-    _GlyphExpr flexible_fil(GlyphRef g) {
+    virtual GlyphRef _c_flexible(Glyph_in g, Coord stretch, Coord shrink);
+    Glyph_tmp flexible_fil(Glyph_in g) {
         return _c_flexible_fil(g);
     }
-    virtual GlyphRef _c_flexible_fil(GlyphRef g);
-    _GlyphExpr flexible_axis(GlyphRef g, Axis a, Coord stretch, Coord shrink) {
+    virtual GlyphRef _c_flexible_fil(Glyph_in g);
+    Glyph_tmp flexible_axis(Glyph_in g, Axis a, Coord stretch, Coord shrink) {
         return _c_flexible_axis(g, a, stretch, shrink);
     }
-    virtual GlyphRef _c_flexible_axis(GlyphRef g, Axis a, Coord stretch, Coord shrink);
-    _GlyphExpr hflexible(GlyphRef g, Coord stretch, Coord shrink) {
+    virtual GlyphRef _c_flexible_axis(Glyph_in g, Axis a, Coord stretch, Coord shrink);
+    Glyph_tmp hflexible(Glyph_in g, Coord stretch, Coord shrink) {
         return _c_hflexible(g, stretch, shrink);
     }
-    virtual GlyphRef _c_hflexible(GlyphRef g, Coord stretch, Coord shrink);
-    _GlyphExpr vflexible(GlyphRef g, Coord stretch, Coord shrink) {
+    virtual GlyphRef _c_hflexible(Glyph_in g, Coord stretch, Coord shrink);
+    Glyph_tmp vflexible(Glyph_in g, Coord stretch, Coord shrink) {
         return _c_vflexible(g, stretch, shrink);
     }
-    virtual GlyphRef _c_vflexible(GlyphRef g, Coord stretch, Coord shrink);
-    _GlyphExpr natural(GlyphRef g, Coord x, Coord y) {
+    virtual GlyphRef _c_vflexible(Glyph_in g, Coord stretch, Coord shrink);
+    Glyph_tmp natural(Glyph_in g, Coord x, Coord y) {
         return _c_natural(g, x, y);
     }
-    virtual GlyphRef _c_natural(GlyphRef g, Coord x, Coord y);
-    _GlyphExpr natural_axis(GlyphRef g, Axis a, Coord size) {
+    virtual GlyphRef _c_natural(Glyph_in g, Coord x, Coord y);
+    Glyph_tmp natural_axis(Glyph_in g, Axis a, Coord size) {
         return _c_natural_axis(g, a, size);
     }
-    virtual GlyphRef _c_natural_axis(GlyphRef g, Axis a, Coord size);
-    _GlyphExpr hnatural(GlyphRef g, Coord x) {
+    virtual GlyphRef _c_natural_axis(Glyph_in g, Axis a, Coord size);
+    Glyph_tmp hnatural(Glyph_in g, Coord x) {
         return _c_hnatural(g, x);
     }
-    virtual GlyphRef _c_hnatural(GlyphRef g, Coord x);
-    _GlyphExpr vnatural(GlyphRef g, Coord y) {
+    virtual GlyphRef _c_hnatural(Glyph_in g, Coord x);
+    Glyph_tmp vnatural(Glyph_in g, Coord y) {
         return _c_vnatural(g, y);
     }
-    virtual GlyphRef _c_vnatural(GlyphRef g, Coord y);
-    _GlyphExpr margin(GlyphRef g, Coord all) {
+    virtual GlyphRef _c_vnatural(Glyph_in g, Coord y);
+    Glyph_tmp margin(Glyph_in g, Coord all) {
         return _c_margin(g, all);
     }
-    virtual GlyphRef _c_margin(GlyphRef g, Coord all);
-    _GlyphExpr margin_lrbt(GlyphRef g, Coord lmargin, Coord rmargin, Coord bmargin, Coord tmargin) {
+    virtual GlyphRef _c_margin(Glyph_in g, Coord all);
+    Glyph_tmp margin_lrbt(Glyph_in g, Coord lmargin, Coord rmargin, Coord bmargin, Coord tmargin) {
         return _c_margin_lrbt(g, lmargin, rmargin, bmargin, tmargin);
     }
-    virtual GlyphRef _c_margin_lrbt(GlyphRef g, Coord lmargin, Coord rmargin, Coord bmargin, Coord tmargin);
-    _GlyphExpr margin_lrbt_flexible(GlyphRef g, Coord lmargin, Coord lstretch, Coord lshrink, Coord rmargin, Coord rstretch, Coord rshrink, Coord bmargin, Coord bstretch, Coord bshrink, Coord tmargin, Coord tstretch, Coord tshrink) {
+    virtual GlyphRef _c_margin_lrbt(Glyph_in g, Coord lmargin, Coord rmargin, Coord bmargin, Coord tmargin);
+    Glyph_tmp margin_lrbt_flexible(Glyph_in g, Coord lmargin, Coord lstretch, Coord lshrink, Coord rmargin, Coord rstretch, Coord rshrink, Coord bmargin, Coord bstretch, Coord bshrink, Coord tmargin, Coord tstretch, Coord tshrink) {
         return _c_margin_lrbt_flexible(g, lmargin, lstretch, lshrink, rmargin, rstretch, rshrink, bmargin, bstretch, bshrink, tmargin, tstretch, tshrink);
     }
-    virtual GlyphRef _c_margin_lrbt_flexible(GlyphRef g, Coord lmargin, Coord lstretch, Coord lshrink, Coord rmargin, Coord rstretch, Coord rshrink, Coord bmargin, Coord bstretch, Coord bshrink, Coord tmargin, Coord tstretch, Coord tshrink);
-    _GlyphExpr hmargin(GlyphRef g, Coord both) {
+    virtual GlyphRef _c_margin_lrbt_flexible(Glyph_in g, Coord lmargin, Coord lstretch, Coord lshrink, Coord rmargin, Coord rstretch, Coord rshrink, Coord bmargin, Coord bstretch, Coord bshrink, Coord tmargin, Coord tstretch, Coord tshrink);
+    Glyph_tmp hmargin(Glyph_in g, Coord both) {
         return _c_hmargin(g, both);
     }
-    virtual GlyphRef _c_hmargin(GlyphRef g, Coord both);
-    _GlyphExpr hmargin_lr(GlyphRef g, Coord lmargin, Coord rmargin) {
+    virtual GlyphRef _c_hmargin(Glyph_in g, Coord both);
+    Glyph_tmp hmargin_lr(Glyph_in g, Coord lmargin, Coord rmargin) {
         return _c_hmargin_lr(g, lmargin, rmargin);
     }
-    virtual GlyphRef _c_hmargin_lr(GlyphRef g, Coord lmargin, Coord rmargin);
-    _GlyphExpr hmargin_lr_flexible(GlyphRef g, Coord lmargin, Coord lstretch, Coord lshrink, Coord rmargin, Coord rstretch, Coord rshrink) {
+    virtual GlyphRef _c_hmargin_lr(Glyph_in g, Coord lmargin, Coord rmargin);
+    Glyph_tmp hmargin_lr_flexible(Glyph_in g, Coord lmargin, Coord lstretch, Coord lshrink, Coord rmargin, Coord rstretch, Coord rshrink) {
         return _c_hmargin_lr_flexible(g, lmargin, lstretch, lshrink, rmargin, rstretch, rshrink);
     }
-    virtual GlyphRef _c_hmargin_lr_flexible(GlyphRef g, Coord lmargin, Coord lstretch, Coord lshrink, Coord rmargin, Coord rstretch, Coord rshrink);
-    _GlyphExpr vmargin(GlyphRef g, Coord both) {
+    virtual GlyphRef _c_hmargin_lr_flexible(Glyph_in g, Coord lmargin, Coord lstretch, Coord lshrink, Coord rmargin, Coord rstretch, Coord rshrink);
+    Glyph_tmp vmargin(Glyph_in g, Coord both) {
         return _c_vmargin(g, both);
     }
-    virtual GlyphRef _c_vmargin(GlyphRef g, Coord both);
-    _GlyphExpr vmargin_bt(GlyphRef g, Coord bmargin, Coord tmargin) {
+    virtual GlyphRef _c_vmargin(Glyph_in g, Coord both);
+    Glyph_tmp vmargin_bt(Glyph_in g, Coord bmargin, Coord tmargin) {
         return _c_vmargin_bt(g, bmargin, tmargin);
     }
-    virtual GlyphRef _c_vmargin_bt(GlyphRef g, Coord bmargin, Coord tmargin);
-    _GlyphExpr vmargin_bt_flexible(GlyphRef g, Coord bmargin, Coord bstretch, Coord bshrink, Coord tmargin, Coord tstretch, Coord tshrink) {
+    virtual GlyphRef _c_vmargin_bt(Glyph_in g, Coord bmargin, Coord tmargin);
+    Glyph_tmp vmargin_bt_flexible(Glyph_in g, Coord bmargin, Coord bstretch, Coord bshrink, Coord tmargin, Coord tstretch, Coord tshrink) {
         return _c_vmargin_bt_flexible(g, bmargin, bstretch, bshrink, tmargin, tstretch, tshrink);
     }
-    virtual GlyphRef _c_vmargin_bt_flexible(GlyphRef g, Coord bmargin, Coord bstretch, Coord bshrink, Coord tmargin, Coord tstretch, Coord tshrink);
-    _GlyphExpr lmargin(GlyphRef g, Coord natural) {
+    virtual GlyphRef _c_vmargin_bt_flexible(Glyph_in g, Coord bmargin, Coord bstretch, Coord bshrink, Coord tmargin, Coord tstretch, Coord tshrink);
+    Glyph_tmp lmargin(Glyph_in g, Coord natural) {
         return _c_lmargin(g, natural);
     }
-    virtual GlyphRef _c_lmargin(GlyphRef g, Coord natural);
-    _GlyphExpr lmargin_flexible(GlyphRef g, Coord natural, Coord stretch, Coord shrink) {
+    virtual GlyphRef _c_lmargin(Glyph_in g, Coord natural);
+    Glyph_tmp lmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink) {
         return _c_lmargin_flexible(g, natural, stretch, shrink);
     }
-    virtual GlyphRef _c_lmargin_flexible(GlyphRef g, Coord natural, Coord stretch, Coord shrink);
-    _GlyphExpr rmargin(GlyphRef g, Coord natural) {
+    virtual GlyphRef _c_lmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink);
+    Glyph_tmp rmargin(Glyph_in g, Coord natural) {
         return _c_rmargin(g, natural);
     }
-    virtual GlyphRef _c_rmargin(GlyphRef g, Coord natural);
-    _GlyphExpr rmargin_flexible(GlyphRef g, Coord natural, Coord stretch, Coord shrink) {
+    virtual GlyphRef _c_rmargin(Glyph_in g, Coord natural);
+    Glyph_tmp rmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink) {
         return _c_rmargin_flexible(g, natural, stretch, shrink);
     }
-    virtual GlyphRef _c_rmargin_flexible(GlyphRef g, Coord natural, Coord stretch, Coord shrink);
-    _GlyphExpr bmargin(GlyphRef g, Coord natural) {
+    virtual GlyphRef _c_rmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink);
+    Glyph_tmp bmargin(Glyph_in g, Coord natural) {
         return _c_bmargin(g, natural);
     }
-    virtual GlyphRef _c_bmargin(GlyphRef g, Coord natural);
-    _GlyphExpr bmargin_flexible(GlyphRef g, Coord natural, Coord stretch, Coord shrink) {
+    virtual GlyphRef _c_bmargin(Glyph_in g, Coord natural);
+    Glyph_tmp bmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink) {
         return _c_bmargin_flexible(g, natural, stretch, shrink);
     }
-    virtual GlyphRef _c_bmargin_flexible(GlyphRef g, Coord natural, Coord stretch, Coord shrink);
-    _GlyphExpr tmargin(GlyphRef g, Coord natural) {
+    virtual GlyphRef _c_bmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink);
+    Glyph_tmp tmargin(Glyph_in g, Coord natural) {
         return _c_tmargin(g, natural);
     }
-    virtual GlyphRef _c_tmargin(GlyphRef g, Coord natural);
-    _GlyphExpr tmargin_flexible(GlyphRef g, Coord natural, Coord stretch, Coord shrink) {
+    virtual GlyphRef _c_tmargin(Glyph_in g, Coord natural);
+    Glyph_tmp tmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink) {
         return _c_tmargin_flexible(g, natural, stretch, shrink);
     }
-    virtual GlyphRef _c_tmargin_flexible(GlyphRef g, Coord natural, Coord stretch, Coord shrink);
-
-    _LayoutKitExpr _ref();
+    virtual GlyphRef _c_tmargin_flexible(Glyph_in g, Coord natural, Coord stretch, Coord shrink);
+    LayoutKitRef _obj() { return this; }
+    void* _this();
     virtual TypeObjId _tid();
 };
 
@@ -614,53 +515,175 @@ protected:
     Exchange* exch_;
 };
 
+inline DeckObjRef DeckObj::_duplicate(DeckObjRef obj) {
+    return (DeckObjRef)_BaseObject__duplicate(obj, &DeckObjStub::_create);
+}
+inline DeckObj& DeckObj::operator =(DeckObjRef p) {
+    _BaseObject__release(_obj_);
+    _obj_ = DeckObj::_duplicate(p);
+    return *this;
+}
+inline DeckObj::DeckObj(const DeckObj& r) {
+    _obj_ = DeckObj::_duplicate(r._obj_);
+}
+inline DeckObj& DeckObj::operator =(const DeckObj& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = DeckObj::_duplicate(r._obj_);
+    return *this;
+}
+inline DeckObj::DeckObj(const DeckObj_tmp& r) {
+    _obj_ = r._obj_;
+    ((DeckObj_tmp*)&r)->_obj_ = 0;
+}
+inline DeckObj& DeckObj::operator =(const DeckObj_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((DeckObj_tmp*)&r)->_obj_ = 0;
+    return *this;
+}
+inline DeckObj::DeckObj(const DeckObj_var& e) {
+    _obj_ = DeckObj::_duplicate(e._obj_);
+}
+inline DeckObj& DeckObj::operator =(const DeckObj_var& e) {
+    _BaseObject__release(_obj_);
+    _obj_ = DeckObj::_duplicate(e._obj_);
+    return *this;
+}
+inline DeckObj::~DeckObj() {
+    _BaseObject__release(_obj_);
+}
+inline DeckObj_tmp DeckObj::_narrow(const BaseObject& r) {
+    return _narrow(r._obj_);
+}
+inline DeckObj_tmp DeckObj::_duplicate(const DeckObj& r) {
+    return _duplicate(r._obj_);
+}
+inline DeckObj::operator Glyph() const {
+    return Glyph_tmp((GlyphRef)_BaseObject__duplicate((GlyphRef)_obj_, &GlyphStub::_create));
+}
+inline DeckObj::operator FrescoObject() const {
+    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((GlyphRef)(FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
+}
+inline DeckObj_tmp::DeckObj_tmp(const DeckObj& r) {
+    _obj_ = DeckObj::_duplicate(r._obj_);
+}
+inline DeckObj_tmp::DeckObj_tmp(const DeckObj_tmp& r) {
+    _obj_ = r._obj_;
+    ((DeckObj_tmp*)&r)->_obj_ = 0;
+}
+inline DeckObj_tmp::~DeckObj_tmp() { }
+
+inline ScrollBoxRef ScrollBox::_duplicate(ScrollBoxRef obj) {
+    return (ScrollBoxRef)_BaseObject__duplicate(obj, &ScrollBoxStub::_create);
+}
+inline ScrollBox& ScrollBox::operator =(ScrollBoxRef p) {
+    _BaseObject__release(_obj_);
+    _obj_ = ScrollBox::_duplicate(p);
+    return *this;
+}
+inline ScrollBox::ScrollBox(const ScrollBox& r) {
+    _obj_ = ScrollBox::_duplicate(r._obj_);
+}
+inline ScrollBox& ScrollBox::operator =(const ScrollBox& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = ScrollBox::_duplicate(r._obj_);
+    return *this;
+}
+inline ScrollBox::ScrollBox(const ScrollBox_tmp& r) {
+    _obj_ = r._obj_;
+    ((ScrollBox_tmp*)&r)->_obj_ = 0;
+}
+inline ScrollBox& ScrollBox::operator =(const ScrollBox_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((ScrollBox_tmp*)&r)->_obj_ = 0;
+    return *this;
+}
+inline ScrollBox::ScrollBox(const ScrollBox_var& e) {
+    _obj_ = ScrollBox::_duplicate(e._obj_);
+}
+inline ScrollBox& ScrollBox::operator =(const ScrollBox_var& e) {
+    _BaseObject__release(_obj_);
+    _obj_ = ScrollBox::_duplicate(e._obj_);
+    return *this;
+}
+inline ScrollBox::~ScrollBox() {
+    _BaseObject__release(_obj_);
+}
+inline ScrollBox_tmp ScrollBox::_narrow(const BaseObject& r) {
+    return _narrow(r._obj_);
+}
+inline ScrollBox_tmp ScrollBox::_duplicate(const ScrollBox& r) {
+    return _duplicate(r._obj_);
+}
+inline ScrollBox::operator Glyph() const {
+    return Glyph_tmp((GlyphRef)_BaseObject__duplicate((GlyphRef)_obj_, &GlyphStub::_create));
+}
+inline ScrollBox::operator FrescoObject() const {
+    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((GlyphRef)(FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
+}
+inline ScrollBox_tmp::ScrollBox_tmp(const ScrollBox& r) {
+    _obj_ = ScrollBox::_duplicate(r._obj_);
+}
+inline ScrollBox_tmp::ScrollBox_tmp(const ScrollBox_tmp& r) {
+    _obj_ = r._obj_;
+    ((ScrollBox_tmp*)&r)->_obj_ = 0;
+}
+inline ScrollBox_tmp::~ScrollBox_tmp() { }
+
 inline LayoutKitRef LayoutKit::_duplicate(LayoutKitRef obj) {
     return (LayoutKitRef)_BaseObject__duplicate(obj, &LayoutKitStub::_create);
 }
 inline LayoutKit& LayoutKit::operator =(LayoutKitRef p) {
-    _BaseObject__release(_obj);
-    _obj = LayoutKit::_duplicate(p);
+    _BaseObject__release(_obj_);
+    _obj_ = LayoutKit::_duplicate(p);
     return *this;
 }
 inline LayoutKit::LayoutKit(const LayoutKit& r) {
-    _obj = LayoutKit::_duplicate(r._obj);
+    _obj_ = LayoutKit::_duplicate(r._obj_);
 }
 inline LayoutKit& LayoutKit::operator =(const LayoutKit& r) {
-    _BaseObject__release(_obj);
-    _obj = LayoutKit::_duplicate(r._obj);
+    _BaseObject__release(_obj_);
+    _obj_ = LayoutKit::_duplicate(r._obj_);
     return *this;
 }
-inline LayoutKit::LayoutKit(const _LayoutKitExpr& r) {
-    _obj = r._obj;
-    ((_LayoutKitExpr*)&r)->_obj = 0;
+inline LayoutKit::LayoutKit(const LayoutKit_tmp& r) {
+    _obj_ = r._obj_;
+    ((LayoutKit_tmp*)&r)->_obj_ = 0;
 }
-inline LayoutKit& LayoutKit::operator =(const _LayoutKitExpr& r) {
-    _BaseObject__release(_obj);
-    _obj = r._obj;
-    ((_LayoutKitExpr*)&r)->_obj = 0;
+inline LayoutKit& LayoutKit::operator =(const LayoutKit_tmp& r) {
+    _BaseObject__release(_obj_);
+    _obj_ = r._obj_;
+    ((LayoutKit_tmp*)&r)->_obj_ = 0;
     return *this;
 }
-inline LayoutKit::LayoutKit(const _LayoutKitElem& e) {
-    _obj = LayoutKit::_duplicate(e._obj);
+inline LayoutKit::LayoutKit(const LayoutKit_var& e) {
+    _obj_ = LayoutKit::_duplicate(e._obj_);
 }
-inline LayoutKit& LayoutKit::operator =(const _LayoutKitElem& e) {
-    _BaseObject__release(_obj);
-    _obj = LayoutKit::_duplicate(e._obj);
+inline LayoutKit& LayoutKit::operator =(const LayoutKit_var& e) {
+    _BaseObject__release(_obj_);
+    _obj_ = LayoutKit::_duplicate(e._obj_);
     return *this;
 }
 inline LayoutKit::~LayoutKit() {
-    _BaseObject__release(_obj);
+    _BaseObject__release(_obj_);
 }
-inline _LayoutKitExpr LayoutKit::_narrow(const BaseObject& r) {
-    return _narrow(r._obj);
+inline LayoutKit_tmp LayoutKit::_narrow(const BaseObject& r) {
+    return _narrow(r._obj_);
 }
-inline _LayoutKitExpr LayoutKit::_duplicate(const LayoutKit& r) {
-    return _duplicate(r._obj);
+inline LayoutKit_tmp LayoutKit::_duplicate(const LayoutKit& r) {
+    return _duplicate(r._obj_);
 }
 inline LayoutKit::operator FrescoObject() const {
-    return _FrescoObjectExpr((FrescoObjectRef)_BaseObject__duplicate(_obj, &FrescoObjectStub::_create));
+    return FrescoObject_tmp((FrescoObjectRef)_BaseObject__duplicate((FrescoObjectRef)_obj_, &FrescoObjectStub::_create));
 }
-inline _LayoutKitExpr::~_LayoutKitExpr() { }
-inline _LayoutKitExpr LayoutKitType::_ref() { return this; }
+inline LayoutKit_tmp::LayoutKit_tmp(const LayoutKit& r) {
+    _obj_ = LayoutKit::_duplicate(r._obj_);
+}
+inline LayoutKit_tmp::LayoutKit_tmp(const LayoutKit_tmp& r) {
+    _obj_ = r._obj_;
+    ((LayoutKit_tmp*)&r)->_obj_ = 0;
+}
+inline LayoutKit_tmp::~LayoutKit_tmp() { }
 
 #endif

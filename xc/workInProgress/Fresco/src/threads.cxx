@@ -1,4 +1,8 @@
 /*
+ * $XConsortium$
+ */
+
+/*
  * Copyright (c) 1991 Stanford University
  * Copyright (c) 1991-93 Silicon Graphics, Inc.
  *
@@ -32,6 +36,7 @@
 //+ BaseThreadsObj::%init,!type
 BaseThreadsObjType::BaseThreadsObjType() { }
 BaseThreadsObjType::~BaseThreadsObjType() { }
+void* BaseThreadsObjType::_this() { return this; }
 
 TypeObjId BaseThreadsObjType::_tid() { return 0; }
 //+
@@ -39,6 +44,7 @@ TypeObjId BaseThreadsObjType::_tid() { return 0; }
 //+ ThreadKit::%init,!type
 ThreadKitType::ThreadKitType() { }
 ThreadKitType::~ThreadKitType() { }
+void* ThreadKitType::_this() { return this; }
 
 TypeObjId ThreadKitType::_tid() { return 0; }
 //+
@@ -46,6 +52,7 @@ TypeObjId ThreadKitType::_tid() { return 0; }
 //+ ThreadObj::%init,!type
 ThreadObjType::ThreadObjType() { }
 ThreadObjType::~ThreadObjType() { }
+void* ThreadObjType::_this() { return this; }
 
 TypeObjId ThreadObjType::_tid() { return 0; }
 //+
@@ -53,6 +60,7 @@ TypeObjId ThreadObjType::_tid() { return 0; }
 //+ LockObj::%init,!type
 LockObjType::LockObjType() { }
 LockObjType::~LockObjType() { }
+void* LockObjType::_this() { return this; }
 
 TypeObjId LockObjType::_tid() { return 0; }
 //+
@@ -60,6 +68,7 @@ TypeObjId LockObjType::_tid() { return 0; }
 //+ ConditionVariable::%init,!type
 ConditionVariableType::ConditionVariableType() { }
 ConditionVariableType::~ConditionVariableType() { }
+void* ConditionVariableType::_this() { return this; }
 
 TypeObjId ConditionVariableType::_tid() { return 0; }
 //+
@@ -67,6 +76,7 @@ TypeObjId ConditionVariableType::_tid() { return 0; }
 //+ Semaphore::%init,!type
 SemaphoreType::SemaphoreType() { }
 SemaphoreType::~SemaphoreType() { }
+void* SemaphoreType::_this() { return this; }
 
 TypeObjId SemaphoreType::_tid() { return 0; }
 //+
@@ -164,7 +174,7 @@ public:
     /* BaseThreadsObj */
     Long ref__(Long references);
     /* ThreadKit */
-    ThreadObjRef _c_thread(ActionRef a);
+    ThreadObjRef _c_thread(Action_in a);
     LockObjRef _c_lock();
     ConditionVariableRef _c_condition();
     SemaphoreRef _c_general_semaphore(Long count);
@@ -251,7 +261,7 @@ public:
     /* BaseThreadsObj */
     Long ref__(Long references);
     /* ConditionVariable */
-    void wait(LockObjRef lock);
+    void wait(LockObj_in lock);
     void notify();
     void broadcast();
     //+
@@ -313,7 +323,7 @@ Long ThreadKitImpl::ref__(Long references) {
 //+
 
 //+ ThreadKitImpl(ThreadKit::thread)
-ThreadObjRef ThreadKitImpl::_c_thread(ActionRef a) {
+ThreadObjRef ThreadKitImpl::_c_thread(Action_in a) {
     lock_->acquire();
     ThreadImpl* t = new ThreadImpl(this, a);
     Fresco::ref(t);
@@ -565,7 +575,7 @@ Long ConditionImpl::ref__(Long references) {
 //+
 
 //+ ConditionImpl(ConditionVariable::wait)
-void ConditionImpl::wait(LockObjRef lock) {
+void ConditionImpl::wait(LockObj_in lock) {
     mutex_->acquire();
     lock->release();
     ++waiters_;
@@ -619,7 +629,7 @@ public:
     /* BaseThreadsObj */
     Long ref__(Long references);
     /* ThreadKit */
-    ThreadObjRef _c_thread(ActionRef a);
+    ThreadObjRef _c_thread(Action_in a);
     LockObjRef _c_lock();
     ConditionVariableRef _c_condition();
     SemaphoreRef _c_general_semaphore(Long count);
@@ -692,7 +702,7 @@ public:
     /* BaseThreadsObj */
     Long ref__(Long references);
     /* ConditionVariable */
-    void wait(LockObjRef lock);
+    void wait(LockObj_in lock);
     void notify();
     void broadcast();
     //+
@@ -723,7 +733,7 @@ Long ThreadKitImpl::ref__(Long references) {
 //+
 
 //+ ThreadKitImpl(ThreadKit::thread)
-ThreadObjRef ThreadKitImpl::_c_thread(ActionRef a) {
+ThreadObjRef ThreadKitImpl::_c_thread(Action_in a) {
     lock_->acquire();
     ThreadImpl* t = new ThreadImpl(this, lock(), a);
     threads_->append(t);
@@ -780,7 +790,7 @@ void ThreadKitImpl::terminate_all(int errcode) {
     report_error(errcode);
     lock_->acquire();
     for (ListItr(ThreadList) i(*threads_); i.more(); i.next()) {
-	ThreadRef t = i.cur();
+	ThreadObjRef t = i.cur();
 	t->terminate();
 	Fresco::unref(t);
     }
@@ -928,7 +938,7 @@ Long ConditionImpl::ref__(Long references) {
 //+
 
 //+ ConditionImpl(ConditionVariable::wait)
-void ConditionImpl::wait(LockObjRef lock) {
+void ConditionImpl::wait(LockObj_in lock) {
     LockImpl* i = (LockImpl*)lock;
     pthread_cond_wait(&cond_, &i->mutex_);
 }
@@ -963,7 +973,7 @@ public:
     /* BaseThreadsObj */
     Long ref__(Long references);
     /* ThreadKit */
-    ThreadObjRef _c_thread(ActionRef a);
+    ThreadObjRef _c_thread(Action_in a);
     LockObjRef _c_lock();
     ConditionVariableRef _c_condition();
     SemaphoreRef _c_general_semaphore(Long count);
@@ -1026,7 +1036,7 @@ public:
     /* BaseThreadsObj */
     Long ref__(Long references);
     /* ConditionVariable */
-    void wait(LockObjRef lock);
+    void wait(LockObj_in lock);
     void notify();
     void broadcast();
     //+
@@ -1077,7 +1087,7 @@ Long ThreadKitImpl::ref__(Long references) {
 //+
 
 //+ ThreadKitImpl(ThreadKit::thread)
-ThreadObjRef ThreadKitImpl::_c_thread(ActionRef a) {
+ThreadObjRef ThreadKitImpl::_c_thread(Action_in a) {
     return new ThreadImpl(a);
 }
 
@@ -1242,7 +1252,7 @@ Long ConditionImpl::ref__(Long references) {
 //+
 
 //+ ConditionImpl(ConditionVariable::wait)
-void ConditionImpl::wait(LockObjRef lock) {
+void ConditionImpl::wait(LockObj_in lock) {
     cond_wait(&wait_, ((LockImpl*)lock)->lock());
 }
 
@@ -1326,7 +1336,7 @@ public:
     /* BaseThreadsObj */
     Long ref__(Long references);
     /* ThreadKit */
-    ThreadObjRef _c_thread(ActionRef a);
+    ThreadObjRef _c_thread(Action_in a);
     LockObjRef _c_lock();
     ConditionVariableRef _c_condition();
     SemaphoreRef _c_general_semaphore(Long count);
@@ -1363,7 +1373,7 @@ public:
     /* BaseThreadsObj */
     Long ref__(Long references);
     /* ConditionVariable */
-    void wait(LockObjRef lock);
+    void wait(LockObj_in lock);
     void notify();
     void broadcast();
     //+
@@ -1384,7 +1394,7 @@ Long ThreadKitImpl::ref__(Long references) {
 //+
 
 //+ ThreadKitImpl(ThreadKit::thread)
-ThreadObjRef ThreadKitImpl::_c_thread(ActionRef a) {
+ThreadObjRef ThreadKitImpl::_c_thread(Action_in a) {
     return nil;
 }
 
@@ -1449,7 +1459,7 @@ Long ConditionImpl::ref__(Long references) {
 //+
 
 //+ ConditionImpl(ConditionVariable::wait)
-void ConditionImpl::wait(LockObjRef) { }
+void ConditionImpl::wait(LockObj_in) { }
 
 //+ ConditionImpl(ConditionVariable::notify)
 void ConditionImpl::notify() { }

@@ -63,7 +63,6 @@ interface Glyph : FrescoObject {
     //. operations for geometry management, drawing, picking, and
     //. a directed-acyclic structure (not strictly hierarchical).
 
-
     //- Requirement
     struct Requirement {
 	boolean defined;
@@ -111,7 +110,10 @@ interface Glyph : FrescoObject {
 
     //- clone_glyph
     Glyph clone_glyph();
-	//. Return a logical copy of this glyph.
+	//. Return a logical copy of this glyph.  Style information
+	//. for the target glyph is also copied, but inherited styles
+	//. are not copied.  The target data may be locked while
+	//. the copy is in progress.
 
     //- style
     attribute StyleObj style;
@@ -128,28 +130,26 @@ interface Glyph : FrescoObject {
 	//. If a glyph implementation does not provide a transform,
 	//. this operation will return nil.
 
-    //- request, extension, shape
+    //- request
     void request(out Glyph::Requisition r);
-    void extension(in Glyph::AllocationInfo a, in Region r);
-    void shape(in Region r);
-	//. These three operations query information about
-	//. the size of a glyph.  The request operation asks for
-	//. a glyph's desired geometry.  Request should be fast
-	//. to allow a composite glyph to compute rather than
-	//. store its components' requisitions.  If a requisition
-	//. might be expensive to compute, then a glyph should
-	//. store the requisition.  A composite glyph therefore
-	//. generally should store its requisition rather
+	//. This operation asks for a glyph's desired geometry.
+	//. The computation should be fast to allow a composite glyph
+	//. to compute rather than store its components' requisitions.
+	//. In general, if a requisition might be expensive to compute
+	//. then a glyph should store its own requisition.  A composite glyph
+	//. therefore generally should store its requisition rather
 	//. than traverse its components.  A composite can assume
 	//. that GlyphOffset::notify will be called if the requisition
 	//. of one of its children changes.
-	//.
-	//. The extension operation computes the region bounds
-	//. of where a glyph would naturally draw.  An extension
-	//. is normally the same as a requisition's natural size,
-	//. only differing in cases where the drawing goes outside
-	//. the object's allocation, such as a checkmark or slanted text.
-	//.
+
+    //- extension
+    void extension(in Glyph::AllocationInfo a, in Region r);
+	//. This operation extends the given region by the
+	//. bounds of where this glyph would draw when given
+	//. the allocation and transform defined by the AllocationInfo.
+
+    //- shape
+    Region shape();
 	//. The shape operation asks the glyph to generate the
 	//. precise shape of where it would naturally draw.
 	//. Calling shape may be more costly than calling extension
@@ -272,6 +272,13 @@ interface Glyph : FrescoObject {
 	//. two redraw requests (which will be handled with
 	//. a single draw traversal), one for the glyph's original area
 	//. and one for the glyph's new area.
+
+    //- restore_trail
+    boolean restore_trail(in GlyphTraversal t);
+	//. This operation attempts to restore the traversal state
+	//. (allocation and painter's state) for a particular
+	//. GlyphTraversal.  The return value indicates whether
+	//. restoration is successful.
 };
 
 //- GlyphVisitor
@@ -312,7 +319,8 @@ interface GlyphOffset : FrescoObject {
     //- insert
     GlyphOffset insert(in Glyph g);
 	//. Insert the given glyph into the composite before the glyph
-	//. referred to by the offset.  Return the newly-created offset.
+	//. referred to by the target offset.  Return the newly-created
+	//. offset.
 
     //- replace
     void replace(in Glyph g);
@@ -331,6 +339,16 @@ interface GlyphOffset : FrescoObject {
     void notify();
 	//. Notify the composite that the desired size of the glyph
 	//. at this offset has changed.
+
+    //- visit_trail
+    void visit_trail(in GlyphTraversal t);
+	//. Notify the composite that the desired size of the glyph
+	//. at this offset has changed.
+
+    //- child_allocate
+    void child_allocate(inout Glyph::AllocationInfo a);
+	//. Determinte the allocation for the child given the
+	//. allocation information for the parent.
 };
 
 interface Viewer;
@@ -391,25 +409,20 @@ interface GlyphTraversal : FrescoObject {
 	//. may be suitable for certain update or picking operations,
 	//. but is not usable for use in drawing.
 
-    //- viewer
-    Viewer current_viewer();
-	//. Return the viewer at the head of the current trail.
-
-    //- glyph
+    //- current_glyph, current_offset, current_viewer
     Glyph current_glyph();
-	//. Return the current glyph being traversed.
-
-    //- offset
-    GlyphOffset offset();
-	//. Return the current offset being traversed.
+    GlyphOffset current_offset();
+    Viewer current_viewer();
+	//. Return the information for the current element along the trail.
 
     //- forward, backward
-    void forward();
-    void backward();
+    boolean forward();
+    boolean backward();
 	//. These operations move the current glyph along the current trail.
 	//. The forward operation moves the current glyph away
 	//. from the viewer; the backward operation moves
-	//. toward the viewer.
+	//. toward the viewer.  Both operations return true
+	//. if successful at moving the current glyph.
 
     //- painter
     attribute PainterObj painter;
@@ -434,6 +447,11 @@ interface GlyphTraversal : FrescoObject {
 	//. The bounds, origin, and span operations return false
 	//. if the allocation is not defined (which could happen
 	//. during a non-allocating traversal).
+
+    //- transform
+    TransformObj transform();
+	//. Return the transformation matrix associated with
+	//. the current glyph.
 
     //- damage
     DamageObj damage();

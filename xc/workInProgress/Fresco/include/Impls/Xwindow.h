@@ -52,7 +52,7 @@ public:
     //+ Window::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -76,14 +76,14 @@ public:
     void lower();
     void redraw(Coord left, Coord bottom, Coord width, Coord height);
     void repair();
-    void handle_event(EventRef e);
-    void grab_pointer(CursorRef c);
+    void handle_event(Event_in e);
+    void grab_pointer(Cursor_in c);
     void ungrab_pointer();
     //+
 
     //+ DamageObj::=
     void incur();
-    void extend(RegionRef r);
+    void extend(Region_in r);
     RegionRef _c_current();
     //+
 
@@ -245,7 +245,7 @@ public:
     //+ StyleObj::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -253,23 +253,23 @@ public:
     /* StyleObj */
     StyleObjRef _c_new_style();
     StyleObjRef _c_parent_style();
-    void link_parent(StyleObjRef parent);
+    void link_parent(StyleObj_in parent);
     void unlink_parent();
-    Tag link_child(StyleObjRef child);
+    Tag link_child(StyleObj_in child);
     void unlink_child(Tag link_tag);
-    void merge(StyleObjRef s);
+    void merge(StyleObj_in s);
     CharStringRef _c_name();
-    void _c_name(CharStringRef _p);
-    void alias(CharStringRef s);
-    Boolean is_on(CharStringRef name);
-    StyleValueRef _c_bind(CharStringRef name);
-    void unbind(CharStringRef name);
-    StyleValueRef _c_resolve(CharStringRef name);
-    StyleValueRef _c_resolve_wildcard(CharStringRef name, StyleObjRef start);
-    Long match(CharStringRef name);
-    void visit_aliases(StyleVisitorRef v);
-    void visit_attributes(StyleVisitorRef v);
-    void visit_styles(StyleVisitorRef v);
+    void _c_name(CharString_in _p);
+    void alias(CharString_in s);
+    Boolean is_on(CharString_in name);
+    StyleValueRef _c_bind(CharString_in name);
+    void unbind(CharString_in name);
+    StyleValueRef _c_resolve(CharString_in name);
+    StyleValueRef _c_resolve_wildcard(CharString_in name, StyleObj_in start);
+    Long match(CharString_in name);
+    void visit_aliases(StyleVisitor_in v);
+    void visit_attributes(StyleVisitor_in v);
+    void visit_styles(StyleVisitor_in v);
     void lock();
     void unlock();
     //+
@@ -278,27 +278,27 @@ public:
     Boolean double_buffered();
     void double_buffered(Boolean _p);
     CursorRef _c_default_cursor();
-    void _c_default_cursor(CursorRef _p);
+    void _c_default_cursor(Cursor_in _p);
     ColorRef _c_cursor_foreground();
-    void _c_cursor_foreground(ColorRef _p);
+    void _c_cursor_foreground(Color_in _p);
     ColorRef _c_cursor_background();
-    void _c_cursor_background(ColorRef _p);
+    void _c_cursor_background(Color_in _p);
     CharStringRef _c_geometry();
-    void _c_geometry(CharStringRef _p);
+    void _c_geometry(CharString_in _p);
     WindowRef _c_icon();
-    void _c_icon(WindowRef _p);
+    void _c_icon(Window_in _p);
     RasterRef _c_icon_bitmap();
-    void _c_icon_bitmap(RasterRef _p);
+    void _c_icon_bitmap(Raster_in _p);
     RasterRef _c_icon_mask();
-    void _c_icon_mask(RasterRef _p);
+    void _c_icon_mask(Raster_in _p);
     CharStringRef _c_icon_name();
-    void _c_icon_name(CharStringRef _p);
+    void _c_icon_name(CharString_in _p);
     CharStringRef _c_icon_geometry();
-    void _c_icon_geometry(CharStringRef _p);
+    void _c_icon_geometry(CharString_in _p);
     Boolean iconic();
     void iconic(Boolean _p);
     CharStringRef _c_title();
-    void _c_title(CharStringRef _p);
+    void _c_title(CharString_in _p);
     Long xor_pixel();
     void xor_pixel(Long _p);
     //+

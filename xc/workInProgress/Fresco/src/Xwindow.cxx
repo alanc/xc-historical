@@ -1,4 +1,8 @@
 /*
+ * $XConsortium$
+ */
+
+/*
  * Copyright (c) 1987-91 Stanford University
  * Copyright (c) 1991-93 Silicon Graphics, Inc.
  *
@@ -34,6 +38,7 @@
 #include <X11/Fresco/Impls/glyphs.h>
 #include <X11/Fresco/Impls/region.h>
 #include <X11/Fresco/Impls/styles.h>
+#include <X11/Fresco/Impls/transform.h>
 #include <X11/Fresco/Impls/traversal.h>
 #include <X11/Fresco/Impls/viewers.h>
 #include <X11/Fresco/Impls/Xdisplay.h>
@@ -49,6 +54,60 @@
 #include <X11/Fresco/OS/thread.h>
 #include <X11/Xatom.h>
 #include <string.h>
+
+#include <stdio.h>
+
+class PickTraversal : public GlyphTraversalImpl {
+public:
+    PickTraversal(GlyphTraversal::Operation, WindowRef, DamageObjRef);
+    PickTraversal(const PickTraversal&);
+    ~PickTraversal();
+
+    void begin_trail(Viewer_in v); //+ GlyphTraversal::begin_trail
+    void traverse_child(GlyphOffset_in o, Region_in allocation); //+ GlyphTraversal::traverse_child
+    void hit(); //+ GlyphTraversal::hit
+};
+
+PickTraversal::PickTraversal(
+    GlyphTraversal::Operation op, WindowRef w, DamageObjRef d
+) : GlyphTraversalImpl(op, w, d) {
+    painter_ = new DefaultPainterImpl;
+}
+
+PickTraversal::PickTraversal(
+    const PickTraversal& p
+) : GlyphTraversalImpl(p) {
+    painter_ = p.painter_;
+    Fresco::ref(painter_);
+}
+
+PickTraversal::~PickTraversal() {
+    Fresco::unref(painter_);
+}
+
+//+ PickTraversal(GlyphTraversal::begin_trail)
+void PickTraversal::begin_trail(Viewer_in v) {
+    GlyphTraversalImpl::Info* i = top();
+    TransformImpl* t = new TransformImpl;
+    t->load(painter_->matrix());
+    push(v, nil, nil, i->allocation, t);
+    Fresco::unref(t);
+}
+
+//+ PickTraversal(GlyphTraversal::traverse_child)
+void PickTraversal::traverse_child(GlyphOffset_in o, Region_in allocation) {
+    TransformImpl* t = new TransformImpl;
+    t->load(painter_->matrix());
+    push(nil, nil, o, allocation, t);
+    Fresco::unref(t);
+    o->child()->traverse(this);
+    pop();
+}
+
+//+ PickTraversal(GlyphTraversal::hit)
+void PickTraversal::hit() {
+    picked_ = new PickTraversal(*this);
+}
 
 /*
  * The relationship with the main viewer is a bit tricky to avoid
@@ -91,9 +150,8 @@ WindowImpl::WindowImpl(DisplayImpl* d, ScreenImpl* s, ViewerRef v) {
     damage_ = new RegionImpl;
     damaged_ = false;
     draw_ = new GlyphTraversalImpl(GlyphTraversal::draw, this, this);
-    pick_ = new GlyphTraversalImpl(GlyphTraversal::pick_any, this, this);
+    pick_ = new PickTraversal(GlyphTraversal::pick_top, this, this);
     draw_->painter(painter_);
-    pick_->painter(painter_);
     placement_.x = 0;
     placement_.y = 0;
     placement_.align_x = 0;
@@ -118,7 +176,7 @@ WindowImpl::~WindowImpl() {
 Long WindowImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag WindowImpl::attach(FrescoObjectRef observer) {
+Tag WindowImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void WindowImpl::detach(Tag attach_tag) {
@@ -370,11 +428,7 @@ void WindowImpl::redraw(Coord left, Coord bottom, Coord width, Coord height) {
 //+ WindowImpl(Window::repair)
 void WindowImpl::repair() {
     lock_->acquire();
-    damage_lock_->acquire();
-    damaged_ = false;
-    damage_lock_->release();
     do_draw_traversal();
-    painter_->swapbuffers();
     lock_->release();
 }
 
@@ -384,17 +438,53 @@ void WindowImpl::repair() {
  */
 
 //+ WindowImpl(Window::handle_event)
-void WindowImpl::handle_event(EventRef e) {
-    Coord x = e->pointer_x(), y = e->pointer_y();
-    painter_->push_clipping();
-    painter_->clip_rect(x, y, x, y);
-    pick_->push(viewer_, viewer_, nil, viewer_->allocation_);
-    pick_->begin_trail(viewer_);
-    viewer_->handle(pick_, e);
-    pick_->end_trail();
-    pick_->pop();
-    pick_->clear();
-    painter_->pop_clipping();
+void WindowImpl::handle_event(Event_in e) {
+    if (!e->positional()) {
+	pick_->push(viewer_, viewer_, nil, viewer_->allocation_, nil);
+	pick_->begin_trail(viewer_);
+	viewer_->handle(pick_, e);
+	pick_->end_trail();
+	pick_->pop();
+    } else {
+	pick_->clear();
+	Coord x = e->pointer_x(), y = e->pointer_y();
+//printf("event %.2f,%.2f\n", x, y);
+	PainterObj painter = pick_->painter();
+	painter->push_clipping();
+	painter->clip_rect(x, y, x, y);
+	pick_->push(viewer_, viewer_, nil, viewer_->allocation_, nil);
+	viewer_->traverse(pick_);
+	pick_->pop();
+	painter->pop_clipping();
+
+	GlyphTraversal p = pick_->picked();
+	if (is_not_nil(p)) {
+	    Vertex ev;
+	    do {
+		Glyph g = p->current_glyph();
+		Viewer v = p->current_viewer();
+		if (is_nil(g) && is_not_nil(v)) {
+		    ev.x = x; ev.y = y; ev.z = 0;
+		    TransformObjRef t = p->transform();
+		    if (is_not_nil(t)) {
+			t->inverse_transform(ev);
+//printf("matrix: ");
+TransformObj::Matrix m;
+t->store_matrix(m);
+//printf("    %.2f %.2f; %.2f %.2f; %.2f %.2f\n",
+//m[0][0], m[0][1], m[1][0], m[1][1], m[2][0], m[2][1]);
+		    }
+		    painter->push_clipping();
+		    painter->clip_rect(ev.x, ev.y, ev.x, ev.y);
+		    Boolean ok = v->handle(p, e);
+		    painter->pop_clipping();
+		    if (ok) {
+			break;
+		    }
+		}
+	    } while (p->backward());
+	}
+    }
 }
 
 /*
@@ -403,7 +493,7 @@ void WindowImpl::handle_event(EventRef e) {
  */
 
 //+ WindowImpl(Window::grab_pointer)
-void WindowImpl::grab_pointer(CursorRef) { }
+void WindowImpl::grab_pointer(Cursor_in) { }
 #ifdef old_code
     XGrabPointer(
 	display_->xdisplay(), xwindow_, True,
@@ -554,11 +644,13 @@ void WindowImpl::incur() {
 }
 
 //+ WindowImpl(DamageObj::extend)
-void WindowImpl::extend(RegionRef r) {
+void WindowImpl::extend(Region_in r) {
     damage_lock_->acquire();
-    damage_->merge_union(r);
-    if (!damaged_) {
+    if (damaged_) {
+	damage_->merge_union(r);
+    } else {
 	damaged_ = true;
+	damage_->copy(r);
 	need_repair();
     }
     damage_lock_->release();
@@ -634,15 +726,15 @@ void WindowImpl::damage(Coord l, Coord b, Coord r, Coord t) {
     RegionImpl* d = damage_;
     if (damaged_) {
 	d->lower_.x = Math::min(d->lower_.x, l);
-	d->lower_.y = Math::min(d->lower_.x, b);
+	d->lower_.y = Math::min(d->lower_.y, b);
 	d->upper_.x = Math::max(d->upper_.x, r);
-	d->upper_.y = Math::max(d->upper_.x, t);
+	d->upper_.y = Math::max(d->upper_.y, t);
     } else {
 	damaged_ = true;
 	d->lower_.x = l;
 	d->lower_.y = b;
 	d->upper_.x = r;
-	d->upper_.y = b;
+	d->upper_.y = t;
 	need_repair();
     }
     damage_lock_->release();
@@ -663,9 +755,17 @@ void WindowImpl::do_request(Glyph::Requisition& r) {
  */
 
 void WindowImpl::do_draw_traversal() {
-    draw_->push(viewer_, viewer_, nil, viewer_->allocation_);
+    damage_lock_->acquire();
+    RegionImpl* d = damage_;
+    damaged_ = false;
+    painter_->push_clipping();
+    painter_->clip_rect(d->lower_.x, d->lower_.y, d->upper_.x, d->upper_.y);
+    damage_lock_->release();
+    draw_->push(viewer_, viewer_, nil, viewer_->allocation_, nil);
     viewer_->traverse(draw_);
     draw_->pop();
+    painter_->swapbuffers();
+    painter_->pop_clipping();
 }
 
 /*
@@ -703,7 +803,7 @@ void WindowImpl::resize() {
     }
 
     painter_->prepare(style_->is_on(Fresco::string_ref("double_buffered")));
-    need_repair();
+    damage(a->lower_.x, a->lower_.y, a->upper_.x, a->upper_.y);
 }
 
 /* class ManagedWindow */
@@ -1171,7 +1271,7 @@ WindowStyleImpl::~WindowStyleImpl() { }
 Long WindowStyleImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag WindowStyleImpl::attach(FrescoObjectRef observer) {
+Tag WindowStyleImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void WindowStyleImpl::detach(Tag attach_tag) {
@@ -1195,55 +1295,55 @@ StyleObjRef WindowStyleImpl::_c_new_style() {
 StyleObjRef WindowStyleImpl::_c_parent_style() {
     return impl_._c_parent_style();
 }
-void WindowStyleImpl::link_parent(StyleObjRef parent) {
+void WindowStyleImpl::link_parent(StyleObj_in parent) {
     impl_.link_parent(parent);
 }
 void WindowStyleImpl::unlink_parent() {
     impl_.unlink_parent();
 }
-Tag WindowStyleImpl::link_child(StyleObjRef child) {
+Tag WindowStyleImpl::link_child(StyleObj_in child) {
     return impl_.link_child(child);
 }
 void WindowStyleImpl::unlink_child(Tag link_tag) {
     impl_.unlink_child(link_tag);
 }
-void WindowStyleImpl::merge(StyleObjRef s) {
+void WindowStyleImpl::merge(StyleObj_in s) {
     impl_.merge(s);
 }
 CharStringRef WindowStyleImpl::_c_name() {
     return impl_._c_name();
 }
-void WindowStyleImpl::_c_name(CharStringRef _p) {
+void WindowStyleImpl::_c_name(CharString_in _p) {
     impl_._c_name(_p);
 }
-void WindowStyleImpl::alias(CharStringRef s) {
+void WindowStyleImpl::alias(CharString_in s) {
     impl_.alias(s);
 }
-Boolean WindowStyleImpl::is_on(CharStringRef name) {
+Boolean WindowStyleImpl::is_on(CharString_in name) {
     return impl_.is_on(name);
 }
-StyleValueRef WindowStyleImpl::_c_bind(CharStringRef name) {
+StyleValueRef WindowStyleImpl::_c_bind(CharString_in name) {
     return impl_._c_bind(name);
 }
-void WindowStyleImpl::unbind(CharStringRef name) {
+void WindowStyleImpl::unbind(CharString_in name) {
     impl_.unbind(name);
 }
-StyleValueRef WindowStyleImpl::_c_resolve(CharStringRef name) {
+StyleValueRef WindowStyleImpl::_c_resolve(CharString_in name) {
     return impl_._c_resolve(name);
 }
-StyleValueRef WindowStyleImpl::_c_resolve_wildcard(CharStringRef name, StyleObjRef start) {
+StyleValueRef WindowStyleImpl::_c_resolve_wildcard(CharString_in name, StyleObj_in start) {
     return impl_._c_resolve_wildcard(name, start);
 }
-Long WindowStyleImpl::match(CharStringRef name) {
+Long WindowStyleImpl::match(CharString_in name) {
     return impl_.match(name);
 }
-void WindowStyleImpl::visit_aliases(StyleVisitorRef v) {
+void WindowStyleImpl::visit_aliases(StyleVisitor_in v) {
     impl_.visit_aliases(v);
 }
-void WindowStyleImpl::visit_attributes(StyleVisitorRef v) {
+void WindowStyleImpl::visit_attributes(StyleVisitor_in v) {
     impl_.visit_attributes(v);
 }
-void WindowStyleImpl::visit_styles(StyleVisitorRef v) {
+void WindowStyleImpl::visit_styles(StyleVisitor_in v) {
     impl_.visit_styles(v);
 }
 void WindowStyleImpl::lock() {
@@ -1265,7 +1365,7 @@ Boolean WindowStyleImpl::double_buffered() {
 }
 
 //+ WindowStyleImpl(WindowStyle::default_cursor=c)
-void WindowStyleImpl::_c_default_cursor(CursorRef c) {
+void WindowStyleImpl::_c_default_cursor(Cursor_in c) {
     Fresco::unref(cursor_);
     cursor_ = Cursor::_duplicate(c);
     XWindow xw = window_->xwindow();
@@ -1287,7 +1387,7 @@ CursorRef WindowStyleImpl::_c_default_cursor() {
 }
 
 //+ WindowStyleImpl(WindowStyle::cursor_foreground=)
-void WindowStyleImpl::_c_cursor_foreground(ColorRef) {
+void WindowStyleImpl::_c_cursor_foreground(Color_in) {
 }
 
 //+ WindowStyleImpl(WindowStyle::cursor_foreground?)
@@ -1296,7 +1396,7 @@ ColorRef WindowStyleImpl::_c_cursor_foreground() {
 }
 
 //+ WindowStyleImpl(WindowStyle::cursor_background=)
-void WindowStyleImpl::_c_cursor_background(ColorRef) {
+void WindowStyleImpl::_c_cursor_background(Color_in) {
 }
 
 //+ WindowStyleImpl(WindowStyle::cursor_background?)
@@ -1305,7 +1405,7 @@ ColorRef WindowStyleImpl::_c_cursor_background() {
 }
 
 //+ WindowStyleImpl(WindowStyle::geometry=g)
-void WindowStyleImpl::_c_geometry(CharStringRef g) {
+void WindowStyleImpl::_c_geometry(CharString_in g) {
     set_attribute("geometry", g);
 }
 
@@ -1315,7 +1415,7 @@ CharStringRef WindowStyleImpl::_c_geometry() {
 }
 
 //+ WindowStyleImpl(WindowStyle::icon=w)
-void WindowStyleImpl::_c_icon(WindowRef w) {
+void WindowStyleImpl::_c_icon(Window_in w) {
     Fresco::unref(icon_);
     icon_ = Window::_duplicate(w);
 }
@@ -1326,7 +1426,7 @@ WindowRef WindowStyleImpl::_c_icon() {
 }
 
 //+ WindowStyleImpl(WindowStyle::icon_bitmap=b)
-void WindowStyleImpl::_c_icon_bitmap(RasterRef b) {
+void WindowStyleImpl::_c_icon_bitmap(Raster_in b) {
     Fresco::unref(icon_bitmap_);
     icon_bitmap_ = Raster::_duplicate(b);
 }
@@ -1337,7 +1437,7 @@ RasterRef WindowStyleImpl::_c_icon_bitmap() {
 }
 
 //+ WindowStyleImpl(WindowStyle::icon_mask=m)
-void WindowStyleImpl::_c_icon_mask(RasterRef m) {
+void WindowStyleImpl::_c_icon_mask(Raster_in m) {
     Fresco::unref(icon_mask_);
     icon_mask_ = Raster::_duplicate(m);
 }
@@ -1348,7 +1448,7 @@ RasterRef WindowStyleImpl::_c_icon_mask() {
 }
 
 //+ WindowStyleImpl(WindowStyle::icon_geometry=g)
-void WindowStyleImpl::_c_icon_geometry(CharStringRef g) {
+void WindowStyleImpl::_c_icon_geometry(CharString_in g) {
     set_attribute("iconGeometry", g);
 }
 
@@ -1358,7 +1458,7 @@ CharStringRef WindowStyleImpl::_c_icon_geometry() {
 }
 
 //+ WindowStyleImpl(WindowStyle::icon_name=name)
-void WindowStyleImpl::_c_icon_name(CharStringRef name) {
+void WindowStyleImpl::_c_icon_name(CharString_in name) {
     set_attribute("iconName", name);
 }
 
@@ -1378,7 +1478,7 @@ Boolean WindowStyleImpl::iconic() {
 }
 
 //+ WindowStyleImpl(WindowStyle::title=t)
-void WindowStyleImpl::_c_title(CharStringRef t) {
+void WindowStyleImpl::_c_title(CharString_in t) {
     set_attribute("title", t);
 }
 

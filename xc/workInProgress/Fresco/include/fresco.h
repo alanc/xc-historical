@@ -183,13 +183,15 @@ public:
     virtual WidgetKitType* _c_widget_kit() = 0;
 
     //- string_ref, string_copy
-    static CharStringRef string_ref(const char*);
-    static CharStringRef string_copy(const char*);
+    static CharString string_ref(const char*);
+    static CharString string_copy(const char*);
 	//. Create a string from a null-terminated array
 	//. of characters.  The string_ref operation simply
 	//. references the data; the string_copy operation
 	//. copies the data into its own storage that is freed
 	//. when the string is deallocated.
+    static CharStringRef _c_string_ref(const char*);
+    static CharStringRef _c_string_copy(const char*);
 
     //- ref, unref
     static void ref(BaseObjectRef);
@@ -251,5 +253,13 @@ inline void Fresco::figure_kit(FigureKitType* k) { _c_figure_kit(k); }
 inline void Fresco::layout_kit(LayoutKitType* k) { _c_layout_kit(k); }
 inline void Fresco::thread_kit(ThreadKitType* k) { _c_thread_kit(k); }
 inline void Fresco::widget_kit(WidgetKitType* k) { _c_widget_kit(k); }
+
+inline CharString Fresco::string_ref(const char* s) {
+    return _c_string_ref(s);
+}
+
+inline CharString Fresco::string_copy(const char* s) {
+    return _c_string_copy(s);
+}
 
 #endif

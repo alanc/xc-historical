@@ -28,29 +28,26 @@
 #include <X11/Fresco/drawing.h>
 #include <X11/Fresco/Impls/fobjects.h>
 #include <X11/Fresco/Impls/Xlib.h>
+#include <X11/Fresco/Impls/Xutil.h>
 #include <X11/Fresco/OS/list.h>
 
 class ClippingStack;
 class FontImpl;
 class MatrixStack;
 class RegionImpl;
+class ScreenImpl;
 class TransformImpl;
 class WindowImpl;
 
-//+ XPainterImpl : PainterObjType
-class XPainterImpl : public PainterObjType {
+class DefaultPainterImpl : public PainterObjType {
 public:
-    ~XPainterImpl();
-    TypeObjId _tid();
-    static XPainterImpl* _narrow(BaseObjectRef);
-//+
-public:
-    XPainterImpl(WindowImpl*, ScreenImpl*);
+    DefaultPainterImpl();
+    ~DefaultPainterImpl();
 
     //+ PainterObj::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -65,33 +62,89 @@ public:
     void curve_to(Coord x, Coord y, Coord x1, Coord y1, Coord x2, Coord y2);
     void close_path();
     BrushRef _c_brush_attr();
-    void _c_brush_attr(BrushRef _p);
+    void _c_brush_attr(Brush_in _p);
     ColorRef _c_color_attr();
-    void _c_color_attr(ColorRef _p);
+    void _c_color_attr(Color_in _p);
     FontRef _c_font_attr();
-    void _c_font_attr(FontRef _p);
+    void _c_font_attr(Font_in _p);
     void stroke();
     void fill();
     void line(Coord x0, Coord y0, Coord x1, Coord y1);
     void rect(Coord x0, Coord y0, Coord x1, Coord y1);
     void fill_rect(Coord x0, Coord y0, Coord x1, Coord y1);
     void character(CharCode ch, Coord width, Coord x, Coord y);
-    void image(RasterRef r, Coord x, Coord y);
-    void stencil(RasterRef r, Coord x, Coord y);
+    void image(Raster_in r, Coord x, Coord y);
+    void stencil(Raster_in r, Coord x, Coord y);
     TransformObjRef _c_matrix();
-    void _c_matrix(TransformObjRef _p);
+    void _c_matrix(TransformObj_in _p);
     void push_matrix();
     void pop_matrix();
-    void transform(TransformObjRef t);
+    void transform(TransformObj_in t);
     void clip();
     void clip_rect(Coord x0, Coord y0, Coord x1, Coord y1);
     void push_clipping();
     void pop_clipping();
-    Boolean is_visible(RegionRef r);
+    Boolean is_visible(Region_in r);
     RegionRef _c_visible();
-    void comment(CharStringRef s);
-    void page_number(CharStringRef s);
+    void comment(CharString_in s);
+    void page_number(CharString_in s);
     //+
+
+    virtual void set_clip();
+    virtual void reset_clip();
+    virtual void flush_text();
+protected:
+    SharedFrescoObjectImpl object_;
+    BrushRef brush_;
+    ColorRef color_;
+    FontRef font_;
+    Boolean transformed_;
+    TransformImpl* matrix_;
+    MatrixStack* transforms_;
+    RegionImpl* clipping_;
+    ClippingStack* clippers_;
+    RegionImpl* free_clippers_[10];
+    Long free_clipper_head_;
+    Long free_clipper_tail_;
+    XRectangle xclip_;
+
+    RegionImpl* new_clip();
+    void free_clip(RegionImpl*);
+    Long clip_index(Long);
+};
+
+//+ XPainterImpl : DefaultPainterImpl
+class XPainterImpl : public DefaultPainterImpl {
+public:
+    ~XPainterImpl();
+    TypeObjId _tid();
+    static XPainterImpl* _narrow(BaseObjectRef);
+//+
+public:
+    XPainterImpl(WindowImpl*, ScreenImpl*);
+
+    Coord to_coord(PixelCoord p); //+ PainterObj::to_coord
+    PixelCoord to_pixels(Coord c); //+ PainterObj::to_pixels
+    Coord to_pixels_coord(Coord c); //+ PainterObj::to_pixels_coord
+    void begin_path(); //+ PainterObj::begin_path
+    void move_to(Coord x, Coord y); //+ PainterObj::move_to
+    void line_to(Coord x, Coord y); //+ PainterObj::line_to
+    void curve_to(Coord x, Coord y, Coord x1, Coord y1, Coord x2, Coord y2); //+ PainterObj::curve_to
+    void close_path(); //+ PainterObj::close_path
+    void _c_brush_attr(Brush_in); //+ PainterObj::brush_attr=
+    BrushRef _c_brush_attr(); //+ PainterObj::brush_attr?
+    void _c_color_attr(Color_in); //+ PainterObj::color_attr=
+    ColorRef _c_color_attr(); //+ PainterObj::color_attr?
+    void _c_font_attr(Font_in); //+ PainterObj::font_attr=
+    FontRef _c_font_attr(); //+ PainterObj::font_attr?
+    void stroke(); //+ PainterObj::stroke
+    void fill(); //+ PainterObj::fill
+    void line(Coord x0, Coord y0, Coord x1, Coord y1); //+ PainterObj::line
+    void rect(Coord x0, Coord y0, Coord x1, Coord y1); //+ PainterObj::rect
+    void fill_rect(Coord x0, Coord y0, Coord x1, Coord y1); //+ PainterObj::fill_rect
+    void character(CharCode ch, Coord width, Coord x, Coord y); //+ PainterObj::character
+    void image(Raster_in r, Coord x, Coord y); //+ PainterObj::image
+    void stencil(Raster_in r, Coord x, Coord y); //+ PainterObj::stencil
 
     struct FontInfo {
 	FontImpl* font;
@@ -128,7 +181,6 @@ public:
     void smoothness(float s);
     float smoothness();
 protected:
-    SharedFrescoObjectImpl object_;
     WindowImpl* window_;
     ScreenImpl* screen_;
     XDisplay* xdisplay_;
@@ -138,15 +190,11 @@ protected:
     XDrawable xbackbuffer_;
     GC xgc_;
     GC xfrontgc_;
+    PixelCoord pwidth_;
     PixelCoord pheight_;
     Coord pixels_;
     Coord points_;
     float smoothness_;
-
-    BrushRef brush_;
-    ColorRef color_;
-    int op_;
-    Pixmap stipple_;
 
     FontInfo* fontinfo_;
     FontInfo fontinfos_[10];
@@ -156,16 +204,6 @@ protected:
     char chars_[200];
     XTextItem* item_;
     XTextItem items_[100];
-
-    Boolean transformed_;
-    TransformImpl* matrix_;
-    MatrixStack* transforms_;
-    RegionImpl* clipping_;
-    ClippingStack* clippers_;
-    RegionImpl* free_clippers_[10];
-    Long free_clipper_head_;
-    Long free_clipper_tail_;
-    XRectangle clip_;
 
     Coord path_cur_x_;
     Coord path_cur_y_;
@@ -199,9 +237,8 @@ protected:
     void add_char(CharCode);
     void flush_text();
 
-    RegionImpl* new_clip();
-    void free_clip(RegionImpl*);
-    Long clip_index(Long);
+    void set_clip();
+    void reset_clip();
 };
 
 inline PixelCoord XPainterImpl::inline_to_pixels(Coord c) {

@@ -47,7 +47,7 @@ public:
     //+ StyleValue::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -67,9 +67,9 @@ public:
     Boolean read_real(Double& d);
     void write_real(Double d);
     Boolean _c_read_string(CharStringRef& s);
-    void write_string(CharStringRef s);
+    void write_string(CharString_in s);
     Boolean _c_read_value(FrescoObjectRef& s);
-    void write_value(FrescoObjectRef s);
+    void write_value(FrescoObject_in s);
     void lock();
     void unlock();
     //+
@@ -103,23 +103,23 @@ public:
     //+ StyleObj::=
     StyleObjRef _c_new_style();
     StyleObjRef _c_parent_style();
-    void link_parent(StyleObjRef parent);
+    void link_parent(StyleObj_in parent);
     void unlink_parent();
-    Tag link_child(StyleObjRef child);
+    Tag link_child(StyleObj_in child);
     void unlink_child(Tag link_tag);
-    void merge(StyleObjRef s);
+    void merge(StyleObj_in s);
     CharStringRef _c_name();
-    void _c_name(CharStringRef _p);
-    void alias(CharStringRef s);
-    Boolean is_on(CharStringRef name);
-    StyleValueRef _c_bind(CharStringRef name);
-    void unbind(CharStringRef name);
-    StyleValueRef _c_resolve(CharStringRef name);
-    StyleValueRef _c_resolve_wildcard(CharStringRef name, StyleObjRef start);
-    Long match(CharStringRef name);
-    void visit_aliases(StyleVisitorRef v);
-    void visit_attributes(StyleVisitorRef v);
-    void visit_styles(StyleVisitorRef v);
+    void _c_name(CharString_in _p);
+    void alias(CharString_in s);
+    Boolean is_on(CharString_in name);
+    StyleValueRef _c_bind(CharString_in name);
+    void unbind(CharString_in name);
+    StyleValueRef _c_resolve(CharString_in name);
+    StyleValueRef _c_resolve_wildcard(CharString_in name, StyleObj_in start);
+    Long match(CharString_in name);
+    void visit_aliases(StyleVisitor_in v);
+    void visit_attributes(StyleVisitor_in v);
+    void visit_styles(StyleVisitor_in v);
     void lock();
     void unlock();
     //+
@@ -179,7 +179,7 @@ public:
     //+ StyleObj::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -187,23 +187,23 @@ public:
     /* StyleObj */
     StyleObjRef _c_new_style();
     StyleObjRef _c_parent_style();
-    void link_parent(StyleObjRef parent);
+    void link_parent(StyleObj_in parent);
     void unlink_parent();
-    Tag link_child(StyleObjRef child);
+    Tag link_child(StyleObj_in child);
     void unlink_child(Tag link_tag);
-    void merge(StyleObjRef s);
+    void merge(StyleObj_in s);
     CharStringRef _c_name();
-    void _c_name(CharStringRef _p);
-    void alias(CharStringRef s);
-    Boolean is_on(CharStringRef name);
-    StyleValueRef _c_bind(CharStringRef name);
-    void unbind(CharStringRef name);
-    StyleValueRef _c_resolve(CharStringRef name);
-    StyleValueRef _c_resolve_wildcard(CharStringRef name, StyleObjRef start);
-    Long match(CharStringRef name);
-    void visit_aliases(StyleVisitorRef v);
-    void visit_attributes(StyleVisitorRef v);
-    void visit_styles(StyleVisitorRef v);
+    void _c_name(CharString_in _p);
+    void alias(CharString_in s);
+    Boolean is_on(CharString_in name);
+    StyleValueRef _c_bind(CharString_in name);
+    void unbind(CharString_in name);
+    StyleValueRef _c_resolve(CharString_in name);
+    StyleValueRef _c_resolve_wildcard(CharString_in name, StyleObj_in start);
+    Long match(CharString_in name);
+    void visit_aliases(StyleVisitor_in v);
+    void visit_attributes(StyleVisitor_in v);
+    void visit_styles(StyleVisitor_in v);
     void lock();
     void unlock();
     //+
@@ -227,15 +227,15 @@ public:
     //+ StyleVisitor::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
     void update();
     /* StyleVisitor */
-    Boolean visit_alias(CharStringRef name);
-    Boolean visit_attribute(StyleValueRef a);
-    Boolean visit_style(StyleObjRef s);
+    Boolean visit_alias(CharString_in name);
+    Boolean visit_attribute(StyleValue_in a);
+    Boolean visit_style(StyleObj_in s);
     //+
 protected:
     SharedFrescoObjectImpl object_;

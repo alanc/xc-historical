@@ -1,4 +1,8 @@
 /*
+ * $XConsortium$
+ */
+
+/*
  * Copyright (c) 1992-93 Silicon Graphics, Inc.
  * Copyright (c) 1993 Fujitsu, Ltd.
  *
@@ -128,9 +132,6 @@ TypeObjId TypeIdVar(Raster) = 212;
 TypeObjId TypeIdVar(XfRaster_Element) = 213;
 TypeObjId TypeIdVar(XfRaster_Index) = 214;
 TypeObjId TypeIdVar(RasterImpl) = 215;
-TypeObjId TypeIdVar(RasterBitmap) = 216;
-TypeObjId TypeIdVar(RasterChannels) = 217;
-TypeObjId TypeIdVar(RasterLUT) = 218;
 
 /* FigureKit types */
 TypeObjId TypeIdVar(FigureKit) = 300;
@@ -185,7 +186,6 @@ extern TypeObj_Descriptor
     TypeVar(PainterObj), TypeVar(XPainterImpl),
     TypeVar(Region),
     TypeVar(Raster), TypeVar(RasterImpl),
-    TypeVar(RasterBitmap), TypeVar(RasterChannels), TypeVar(RasterLUT),
     TypeVar(ScreenObj), TypeVar(ScreenImpl),
     TypeVar(ScrollBox),
     TypeVar(StyleObj), TypeVar(StyleVisitor),
@@ -346,9 +346,6 @@ static TypeObj_Descriptor* fresco_schema[] = {
     &TypeVar(XfRaster_Element),
     &TypeVar(XfRaster_Index),
     &TypeVar(RasterImpl),
-    &TypeVar(RasterBitmap),
-    &TypeVar(RasterChannels),
-    &TypeVar(RasterLUT),
 
     /* FigureKit types */
     &TypeVar(FigureKit),
@@ -377,12 +374,15 @@ void FrescoImpl::init_types() {
     new VoidTypeObj;
     new BooleanTypeObj;
     new CharTypeObj;
-    new DoubleTypeObj;
-    new FloatTypeObj;
-    new LongTypeObj;
-    new ULongTypeObj;
+    new OctetTypeObj;
     new ShortTypeObj;
     new UShortTypeObj;
+    new LongTypeObj;
+    new ULongTypeObj;
+    new LongLongTypeObj;
+    new ULongLongTypeObj;
+    new FloatTypeObj;
+    new DoubleTypeObj;
     new StringTypeObj;
 
     /* Basic types */

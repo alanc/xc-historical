@@ -1,4 +1,8 @@
 /*
+ * $XConsortium$
+ */
+
+/*
  * Copyright (c) 1987-91 Stanford University
  * Copyright (c) 1991-93 Silicon Graphics, Inc.
  *
@@ -55,7 +59,7 @@ Long ButtonImpl::ref__(Long references) {
 }
 
 //+ ButtonImpl(FrescoObject::attach)
-Tag ButtonImpl::attach(FrescoObjectRef observer) {
+Tag ButtonImpl::attach(FrescoObject_in observer) {
     return ActiveViewer::attach(observer);
 }
 
@@ -80,7 +84,7 @@ GlyphRef ButtonImpl::_c_clone_glyph() {
 StyleObjRef ButtonImpl::_c_style() {
     return ActiveViewer::_c_style();
 }
-void ButtonImpl::_c_style(StyleObjRef _p) {
+void ButtonImpl::_c_style(StyleObj_in _p) {
     ActiveViewer::_c_style(_p);
 }
 TransformObjRef ButtonImpl::_c_transform() {
@@ -89,46 +93,46 @@ TransformObjRef ButtonImpl::_c_transform() {
 void ButtonImpl::request(Glyph::Requisition& r) {
     ActiveViewer::request(r);
 }
-void ButtonImpl::extension(const Glyph::AllocationInfo& a, RegionRef r) {
+void ButtonImpl::extension(const Glyph::AllocationInfo& a, Region_in r) {
     ActiveViewer::extension(a, r);
 }
-void ButtonImpl::shape(RegionRef r) {
-    ActiveViewer::shape(r);
+RegionRef ButtonImpl::_c_shape() {
+    return ActiveViewer::_c_shape();
 }
-void ButtonImpl::traverse(GlyphTraversalRef t) {
+void ButtonImpl::traverse(GlyphTraversal_in t) {
     ActiveViewer::traverse(t);
 }
-void ButtonImpl::draw(GlyphTraversalRef t) {
+void ButtonImpl::draw(GlyphTraversal_in t) {
     ActiveViewer::draw(t);
 }
-void ButtonImpl::pick(GlyphTraversalRef t) {
+void ButtonImpl::pick(GlyphTraversal_in t) {
     ActiveViewer::pick(t);
 }
 GlyphRef ButtonImpl::_c_body() {
     return ActiveViewer::_c_body();
 }
-void ButtonImpl::_c_body(GlyphRef _p) {
+void ButtonImpl::_c_body(Glyph_in _p) {
     ActiveViewer::_c_body(_p);
 }
-GlyphOffsetRef ButtonImpl::_c_append(GlyphRef g) {
+GlyphOffsetRef ButtonImpl::_c_append(Glyph_in g) {
     return ActiveViewer::_c_append(g);
 }
-GlyphOffsetRef ButtonImpl::_c_prepend(GlyphRef g) {
+GlyphOffsetRef ButtonImpl::_c_prepend(Glyph_in g) {
     return ActiveViewer::_c_prepend(g);
 }
-Tag ButtonImpl::add_parent(GlyphOffsetRef parent_offset) {
+Tag ButtonImpl::add_parent(GlyphOffset_in parent_offset) {
     return ActiveViewer::add_parent(parent_offset);
 }
 void ButtonImpl::remove_parent(Tag add_tag) {
     ActiveViewer::remove_parent(add_tag);
 }
-void ButtonImpl::visit_children(GlyphVisitorRef v) {
+void ButtonImpl::visit_children(GlyphVisitor_in v) {
     ActiveViewer::visit_children(v);
 }
-void ButtonImpl::visit_children_reversed(GlyphVisitorRef v) {
+void ButtonImpl::visit_children_reversed(GlyphVisitor_in v) {
     ActiveViewer::visit_children_reversed(v);
 }
-void ButtonImpl::visit_parents(GlyphVisitorRef v) {
+void ButtonImpl::visit_parents(GlyphVisitor_in v) {
     ActiveViewer::visit_parents(v);
 }
 void ButtonImpl::allocations(Glyph::AllocationInfoList& a) {
@@ -137,11 +141,14 @@ void ButtonImpl::allocations(Glyph::AllocationInfoList& a) {
 void ButtonImpl::need_redraw() {
     ActiveViewer::need_redraw();
 }
-void ButtonImpl::need_redraw_region(RegionRef r) {
+void ButtonImpl::need_redraw_region(Region_in r) {
     ActiveViewer::need_redraw_region(r);
 }
 void ButtonImpl::need_resize() {
     ActiveViewer::need_resize();
+}
+Boolean ButtonImpl::restore_trail(GlyphTraversal_in t) {
+    return ActiveViewer::restore_trail(t);
 }
 //+
 
@@ -161,34 +168,34 @@ ViewerRef ButtonImpl::_c_first_viewer() {
 ViewerRef ButtonImpl::_c_last_viewer() {
     return ActiveViewer::_c_last_viewer();
 }
-void ButtonImpl::append_viewer(ViewerRef v) {
+void ButtonImpl::append_viewer(Viewer_in v) {
     ActiveViewer::append_viewer(v);
 }
-void ButtonImpl::prepend_viewer(ViewerRef v) {
+void ButtonImpl::prepend_viewer(Viewer_in v) {
     ActiveViewer::prepend_viewer(v);
 }
-void ButtonImpl::insert_viewer(ViewerRef v) {
+void ButtonImpl::insert_viewer(Viewer_in v) {
     ActiveViewer::insert_viewer(v);
 }
-void ButtonImpl::replace_viewer(ViewerRef v) {
+void ButtonImpl::replace_viewer(Viewer_in v) {
     ActiveViewer::replace_viewer(v);
 }
 void ButtonImpl::remove_viewer() {
     ActiveViewer::remove_viewer();
 }
-void ButtonImpl::set_viewer_links(ViewerRef parent, ViewerRef prev, ViewerRef next) {
+void ButtonImpl::set_viewer_links(Viewer_in parent, Viewer_in prev, Viewer_in next) {
     ActiveViewer::set_viewer_links(parent, prev, next);
 }
-void ButtonImpl::set_first_viewer(ViewerRef v) {
+void ButtonImpl::set_first_viewer(Viewer_in v) {
     ActiveViewer::set_first_viewer(v);
 }
-void ButtonImpl::set_last_viewer(ViewerRef v) {
+void ButtonImpl::set_last_viewer(Viewer_in v) {
     ActiveViewer::set_last_viewer(v);
 }
-FocusRef ButtonImpl::_c_request_focus(ViewerRef requestor, Boolean temporary) {
+FocusRef ButtonImpl::_c_request_focus(Viewer_in requestor, Boolean temporary) {
     return ActiveViewer::_c_request_focus(requestor, temporary);
 }
-Boolean ButtonImpl::receive_focus(FocusRef f, Boolean primary) {
+Boolean ButtonImpl::receive_focus(Focus_in f, Boolean primary) {
     return ActiveViewer::receive_focus(f, primary);
 }
 void ButtonImpl::lose_focus(Boolean temporary) {
@@ -206,7 +213,7 @@ Boolean ButtonImpl::next_focus() {
 Boolean ButtonImpl::prev_focus() {
     return ActiveViewer::prev_focus();
 }
-Boolean ButtonImpl::handle(GlyphTraversalRef t, EventRef e) {
+Boolean ButtonImpl::handle(GlyphTraversal_in t, Event_in e) {
     return ActiveViewer::handle(t, e);
 }
 void ButtonImpl::close() {
@@ -215,7 +222,7 @@ void ButtonImpl::close() {
 //+
 
 //+ ButtonImpl(Button::state=t)
-void ButtonImpl::_c_state(TelltaleRef t) {
+void ButtonImpl::_c_state(Telltale_in t) {
     detach_state();
     state_ = Telltale::_duplicate(t);
     tag_ = state_->attach(ButtonRef(this));
@@ -227,7 +234,7 @@ TelltaleRef ButtonImpl::_c_state() {
 }
 
 //+ ButtonImpl(Button::click_action=a)
-void ButtonImpl::_c_click_action(ActionRef a) {
+void ButtonImpl::_c_click_action(Action_in a) {
     action_ = Action::_duplicate(a);
 }
 
@@ -318,7 +325,7 @@ TelltaleImpl::~TelltaleImpl() { }
 Long TelltaleImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag TelltaleImpl::attach(FrescoObjectRef observer) {
+Tag TelltaleImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void TelltaleImpl::detach(Tag attach_tag) {
@@ -347,7 +354,7 @@ Boolean TelltaleImpl::test(Telltale::Flag f) {
 }
 
 //+ TelltaleImpl(Telltale::current=g)
-void TelltaleImpl::_c_current(TelltaleRef g) {
+void TelltaleImpl::_c_current(Telltale_in g) {
     Fresco::unref(current_);
     current_ = g;
 }
@@ -437,8 +444,8 @@ public:
     );
     ~WKFrame();
 
-    void draw(GlyphTraversalRef t); //+ Glyph::draw
-    void pick(GlyphTraversalRef t); //+ Glyph::pick
+    void draw(GlyphTraversal_in t); //+ Glyph::draw
+    void pick(GlyphTraversal_in t); //+ Glyph::pick
     virtual void draw_frame(GlyphTraversalRef t);
 
     static void fill_rect(
@@ -497,7 +504,7 @@ public:
     ~WKCheckmark();
 
     void request(Glyph::Requisition& r); //+ Glyph::request
-    void draw(GlyphTraversalRef t); //+ Glyph::draw
+    void draw(GlyphTraversal_in t); //+ Glyph::draw
 protected:
     TelltaleImpl* state_;
 };
@@ -508,7 +515,7 @@ public:
     ~WKIndicator();
 
     void request(Glyph::Requisition& r); //+ Glyph::request
-    void draw(GlyphTraversalRef t); //+ Glyph::draw
+    void draw(GlyphTraversal_in t); //+ Glyph::draw
 protected:
     TelltaleImpl* state_;
 };
@@ -519,7 +526,7 @@ public:
     ~WKRadioFlag();
 
     void request(Glyph::Requisition& r); //+ Glyph::request
-    void draw(GlyphTraversalRef t); //+ Glyph::draw
+    void draw(GlyphTraversal_in t); //+ Glyph::draw
 protected:
     TelltaleImpl* state_;
     FontRef font_;
@@ -530,7 +537,7 @@ public:
     WKRadioItem(WidgetKitImpl::Info*, TelltaleImpl*, FontRef);
     ~WKRadioItem();
 
-    void draw(GlyphTraversalRef t); //+ Glyph::draw
+    void draw(GlyphTraversal_in t); //+ Glyph::draw
 };
 
 class WKDefaultArrow : public WKGlyph {
@@ -539,7 +546,7 @@ public:
     ~WKDefaultArrow();
 
     void request(Glyph::Requisition& r); //+ Glyph::request
-    void draw(GlyphTraversalRef t); //+ Glyph::draw
+    void draw(GlyphTraversal_in t); //+ Glyph::draw
 protected:
     Coord width_;
     Coord height_;
@@ -552,7 +559,7 @@ public:
     WKThumb(WidgetKitImpl::Info*, Axis, long ridges, TelltaleImpl*);
     ~WKThumb();
 
-    void draw(GlyphTraversalRef t); //+ Glyph::draw
+    void draw(GlyphTraversal_in t); //+ Glyph::draw
 protected:
     Axis axis_;
     long ridges_;
@@ -612,7 +619,7 @@ WidgetKitImpl::~WidgetKitImpl() {
 Long WidgetKitImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag WidgetKitImpl::attach(FrescoObjectRef observer) {
+Tag WidgetKitImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void WidgetKitImpl::detach(Tag attach_tag) {
@@ -630,7 +637,7 @@ void WidgetKitImpl::update() {
 //+
 
 //+ WidgetKitImpl(WidgetKit::outset_frame)
-GlyphRef WidgetKitImpl::_c_outset_frame(GlyphRef g) {
+GlyphRef WidgetKitImpl::_c_outset_frame(Glyph_in g) {
     return new WKFrame(
 	g,
 	new TelltaleImpl(TelltaleImpl::enabled_bit | TelltaleImpl::active_bit),
@@ -639,7 +646,7 @@ GlyphRef WidgetKitImpl::_c_outset_frame(GlyphRef g) {
 }
 
 //+ WidgetKitImpl(WidgetKit::inset_frame)
-GlyphRef WidgetKitImpl::_c_inset_frame(GlyphRef g) {
+GlyphRef WidgetKitImpl::_c_inset_frame(Glyph_in g) {
     return new WKFrame(
 	g,
 	new TelltaleImpl(TelltaleImpl::enabled_bit | TelltaleImpl::chosen_bit),
@@ -648,7 +655,7 @@ GlyphRef WidgetKitImpl::_c_inset_frame(GlyphRef g) {
 }
 
 //+ WidgetKitImpl(WidgetKit::bright_inset_frame)
-GlyphRef WidgetKitImpl::_c_bright_inset_frame(GlyphRef g) {
+GlyphRef WidgetKitImpl::_c_bright_inset_frame(Glyph_in g) {
     return new WKFrame(
 	g,
 	new TelltaleImpl(
@@ -660,7 +667,7 @@ GlyphRef WidgetKitImpl::_c_bright_inset_frame(GlyphRef g) {
 }
 
 //+ WidgetKitImpl(WidgetKit::label)
-ViewerRef WidgetKitImpl::_c_label(CharStringRef s) {
+ViewerRef WidgetKitImpl::_c_label(CharString_in s) {
     return nil;
 }
 
@@ -678,16 +685,16 @@ MenuRef WidgetKitImpl::_c_pulldown() {
 MenuRef WidgetKitImpl::_c_pullright() { return nil; }
 
 //+ WidgetKitImpl(WidgetKit::menubar_item)
-MenuItemRef WidgetKitImpl::_c_menubar_item(GlyphRef g) { return nil; }
+MenuItemRef WidgetKitImpl::_c_menubar_item(Glyph_in g) { return nil; }
 
 //+ WidgetKitImpl(WidgetKit::menu_item)
-MenuItemRef WidgetKitImpl::_c_menu_item(GlyphRef g) { return nil; }
+MenuItemRef WidgetKitImpl::_c_menu_item(Glyph_in g) { return nil; }
 
 //+ WidgetKitImpl(WidgetKit::check_menu_item)
-MenuItemRef WidgetKitImpl::_c_check_menu_item(GlyphRef g) { return nil; }
+MenuItemRef WidgetKitImpl::_c_check_menu_item(Glyph_in g) { return nil; }
 
 //+ WidgetKitImpl(WidgetKit::radio_menu_item)
-MenuItemRef WidgetKitImpl::_c_radio_menu_item(GlyphRef g, TelltaleRef group) { return nil; }
+MenuItemRef WidgetKitImpl::_c_radio_menu_item(Glyph_in g, Telltale_in group) { return nil; }
 
 //+ WidgetKitImpl(WidgetKit::menu_item_separator)
 MenuItemRef WidgetKitImpl::_c_menu_item_separator() { return nil; }
@@ -698,7 +705,7 @@ TelltaleRef WidgetKitImpl::_c_telltale_group() {
 }
 
 //+ WidgetKitImpl(WidgetKit::push_button)
-ButtonRef WidgetKitImpl::_c_push_button(GlyphRef g, ActionRef a) {
+ButtonRef WidgetKitImpl::_c_push_button(Glyph_in g, Action_in a) {
     TelltaleImpl* t = new TelltaleImpl(TelltaleImpl::enabled_bit);
     ButtonRef b = new ButtonImpl(fresco_, t, a);
     b->body(new WKPushButtonFrame(g, t, &info_));
@@ -706,7 +713,7 @@ ButtonRef WidgetKitImpl::_c_push_button(GlyphRef g, ActionRef a) {
 }
 
 //+ WidgetKitImpl(WidgetKit::default_button)
-ButtonRef WidgetKitImpl::_c_default_button(GlyphRef g, ActionRef a) {
+ButtonRef WidgetKitImpl::_c_default_button(Glyph_in g, Action_in a) {
     LayoutKit layouts = fresco_->layout_kit();
     FontRef f = info_.font;
     Glyph hbox = layouts->hbox();
@@ -717,7 +724,7 @@ ButtonRef WidgetKitImpl::_c_default_button(GlyphRef g, ActionRef a) {
 }
 
 //+ WidgetKitImpl(WidgetKit::check_box)
-ButtonRef WidgetKitImpl::_c_check_box(GlyphRef g, ActionRef a) {
+ButtonRef WidgetKitImpl::_c_check_box(Glyph_in g, Action_in a) {
     TelltaleImpl* t = new TelltaleImpl(
 	TelltaleImpl::enabled_bit | TelltaleImpl::toggle_bit
     );
@@ -740,7 +747,7 @@ ButtonRef WidgetKitImpl::_c_check_box(GlyphRef g, ActionRef a) {
 }
 
 //+ WidgetKitImpl(WidgetKit::palette_button)
-ButtonRef WidgetKitImpl::_c_palette_button(GlyphRef g, ActionRef a) {
+ButtonRef WidgetKitImpl::_c_palette_button(Glyph_in g, Action_in a) {
     TelltaleImpl* t = new TelltaleImpl(
 	TelltaleImpl::enabled_bit | TelltaleImpl::toggle_bit
     );
@@ -758,7 +765,7 @@ ButtonRef WidgetKitImpl::_c_palette_button(GlyphRef g, ActionRef a) {
 }
 
 //+ WidgetKitImpl(WidgetKit::radio_button)
-ButtonRef WidgetKitImpl::_c_radio_button(GlyphRef g, ActionRef a, TelltaleRef group) {
+ButtonRef WidgetKitImpl::_c_radio_button(Glyph_in g, Action_in a, Telltale_in group) {
     TelltaleImpl* t = new TelltaleImpl(
 	TelltaleImpl::enabled_bit | TelltaleImpl::choosable_bit
     );
@@ -775,30 +782,30 @@ ButtonRef WidgetKitImpl::_c_radio_button(GlyphRef g, ActionRef a, TelltaleRef gr
 }
 
 //+ WidgetKitImpl(WidgetKit::slider)
-ViewerRef WidgetKitImpl::_c_slider(Axis a, AdjustmentRef adj) {
+ViewerRef WidgetKitImpl::_c_slider(Axis a, Adjustment_in adj) {
     return nil;
 }
 
 //+ WidgetKitImpl(WidgetKit::scroll_bar)
-ViewerRef WidgetKitImpl::_c_scroll_bar(Axis a, AdjustmentRef adj) { return nil; }
+ViewerRef WidgetKitImpl::_c_scroll_bar(Axis a, Adjustment_in adj) { return nil; }
 
 //+ WidgetKitImpl(WidgetKit::panner)
-ViewerRef WidgetKitImpl::_c_panner(AdjustmentRef x, AdjustmentRef y) { return nil; }
+ViewerRef WidgetKitImpl::_c_panner(Adjustment_in x, Adjustment_in y) { return nil; }
 
 //+ WidgetKitImpl(WidgetKit::zoomer)
-ButtonRef WidgetKitImpl::_c_zoomer(Coord scale, AdjustmentRef x, AdjustmentRef y, AdjustmentRef z) { return nil; }
+ButtonRef WidgetKitImpl::_c_zoomer(Coord scale, Adjustment_in x, Adjustment_in y, Adjustment_in z) { return nil; }
 
 //+ WidgetKitImpl(WidgetKit::up_mover)
-ButtonRef WidgetKitImpl::_c_up_mover(AdjustmentRef a) { return nil; }
+ButtonRef WidgetKitImpl::_c_up_mover(Adjustment_in a) { return nil; }
 
 //+ WidgetKitImpl(WidgetKit::down_mover)
-ButtonRef WidgetKitImpl::_c_down_mover(AdjustmentRef a) { return nil; }
+ButtonRef WidgetKitImpl::_c_down_mover(Adjustment_in a) { return nil; }
 
 //+ WidgetKitImpl(WidgetKit::left_mover)
-ButtonRef WidgetKitImpl::_c_left_mover(AdjustmentRef a) { return nil; }
+ButtonRef WidgetKitImpl::_c_left_mover(Adjustment_in a) { return nil; }
 
 //+ WidgetKitImpl(WidgetKit::right_mover)
-ButtonRef WidgetKitImpl::_c_right_mover(AdjustmentRef a) { return nil; }
+ButtonRef WidgetKitImpl::_c_right_mover(Adjustment_in a) { return nil; }
 
 ColorRef WidgetKitImpl::brightness(ColorRef c, float adjust) {
     Color::Intensity r, g, b;
@@ -928,7 +935,7 @@ WKFrame::WKFrame(
 WKFrame::~WKFrame() { }
 
 //+ WKFrame(Glyph::draw)
-void WKFrame::draw(GlyphTraversalRef t) {
+void WKFrame::draw(GlyphTraversal_in t) {
     draw_frame(t);
     if (!state_->test(Telltale::enabled)) {
 	Coord th = info_->thickness;
@@ -943,7 +950,7 @@ void WKFrame::draw(GlyphTraversalRef t) {
 }
 
 //+ WKFrame(Glyph::pick)
-void WKFrame::pick(GlyphTraversalRef t) {
+void WKFrame::pick(GlyphTraversal_in t) {
     if (t->painter()->is_visible(t->allocation())) {
 	t->hit();
     }
@@ -1123,6 +1130,9 @@ void WKPushButtonFrame::request(Glyph::Requisition& r) {
     WKButtonFrame::request(r);
     if (r.x.natural < info_->min_button_width) {
 	r.x.natural = info_->min_button_width;
+	if (r.x.maximum < r.x.natural) {
+	    r.x.maximum = r.x.natural;
+	}
     }
     r.x.natural += button_border;
     r.x.maximum += button_border;
@@ -1187,7 +1197,7 @@ void WKCheckmark::request(Glyph::Requisition& r) {
 }
 
 //+ WKCheckmark(Glyph::draw)
-void WKCheckmark::draw(GlyphTraversalRef t) {
+void WKCheckmark::draw(GlyphTraversal_in t) {
     if (state_->test(Telltale::chosen)) {
 	WidgetKitImpl::Info* i = info_;
 	Vertex o;
@@ -1258,7 +1268,7 @@ static int* indicator_colors[] = {
 };
 
 //+ WKIndicator(Glyph::draw)
-void WKIndicator::draw(GlyphTraversalRef t) {
+void WKIndicator::draw(GlyphTraversal_in t) {
     WidgetKitImpl::Info* i = info_;
     PainterObj p = t->painter();
     int* c = indicator_colors[state_->flags()];
@@ -1331,7 +1341,7 @@ static int* radio_colors[] = {
 };
 
 //+ WKRadioFlag(Glyph::draw)
-void WKRadioFlag::draw(GlyphTraversalRef t) {
+void WKRadioFlag::draw(GlyphTraversal_in t) {
     WidgetKitImpl::Info* i = info_;
     PainterObj p = t->painter();
     int* colors = radio_colors[state_->flags()];
@@ -1353,7 +1363,7 @@ WKRadioItem::WKRadioItem(
 WKRadioItem::~WKRadioItem() { }
 
 //+ WKRadioItem(Glyph::draw)
-void WKRadioItem::draw(GlyphTraversalRef t) {
+void WKRadioItem::draw(GlyphTraversal_in t) {
     if (state_->test(Telltale::chosen)) {
 	WKRadioFlag::draw(t);
     }
@@ -1382,7 +1392,7 @@ static int visible_thumb_colors[] = {
 };
 
 //+ WKThumb(Glyph::draw)
-void WKThumb::draw(GlyphTraversalRef t) {
+void WKThumb::draw(GlyphTraversal_in t) {
     WidgetKitImpl::Info* i = info_;
     int* colors = (
 	state_->test(Telltale::visible) ? visible_thumb_colors : thumb_colors
@@ -1485,7 +1495,7 @@ void WKDefaultArrow::request(Glyph::Requisition& r) {
 }
 
 //+ WKDefaultArrow(Glyph::draw)
-void WKDefaultArrow::draw(GlyphTraversalRef t) {
+void WKDefaultArrow::draw(GlyphTraversal_in t) {
     WidgetKitImpl::Info* i = info_;
     Vertex v0, v1, v;
     t->bounds(v0, v1, v);
@@ -1547,8 +1557,31 @@ void Beveler::request(Glyph::Requisition& r) {
     }
 }
 
+/*
+ * To compute our extension quickly, we make two simplifying
+ * assumptions.  First, we assume that a beveler does not have
+ * a transform.  Second, we assume that the glyph inside a beveler
+ * does not draw outside the beveler.  This assumption is not checked,
+ * but for the kinds of objects we normally have in a beveler
+ * should be safe.
+ */
+
+//+ Beveler(Glyph::extension)
+void Beveler::extension(const Glyph::AllocationInfo& a, Region_in r) {
+    if (is_not_nil(a.allocation)) {
+	if (is_nil(a.transform)) {
+	    r->merge_union(a.allocation);
+	} else {
+	    RegionImpl tmp;
+	    tmp.copy(a.allocation);
+	    tmp.transform(a.transform);
+	    r->merge_union(&tmp);
+	}
+    }
+}
+
 //+ Beveler(Glyph::traverse)
-void Beveler::traverse(GlyphTraversalRef t) {
+void Beveler::traverse(GlyphTraversal_in t) {
     switch (t->op()) {
     case GlyphTraversal::draw:
 	draw(t);

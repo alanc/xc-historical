@@ -1,4 +1,8 @@
 /*
+ * $XConsortium$
+ */
+
+/*
  * Copyright (c) 1993 Silicon Graphics, Inc.
  * Copyright (c) 1993 Fujitsu, Ltd.
  *
@@ -43,10 +47,6 @@
 extern "C" void exit(int);
 #endif
 
-#ifdef sco
-extern "C" int strcasecmp(const char* s1, const char* s2);
-#endif
-
 /* class Exchange */
 
 Exchange::Exchange() { }
@@ -59,10 +59,10 @@ BaseObjectType::~BaseObjectType() { }
 
 TypeObj_Descriptor* _BaseObject_parents_[] = { nil };
 
-extern TypeObjId _BaseObject_tid_;
+extern TypeObjId _BaseObject_tid;
 
-TypeObj_Descriptor _BaseObject_type_ = {
-    /* type */ 0, /* id */ &_BaseObject_tid_, "BaseObject",
+TypeObj_Descriptor _BaseObject_type = {
+    /* type */ 0, /* id */ &_BaseObject_tid, "BaseObject",
     _BaseObject_parents_, /* excepts */ nil,
     /* methods */ nil, /* params */ nil, /* receive */ nil
 };
@@ -71,23 +71,30 @@ Long BaseObjectType::ref__(Long r) { return _exchange()->ref__(r); }
 
 Exchange* BaseObjectType::_exchange() { return nil; }
 
-void* _BaseObject_tnarrow_(BaseObjectRef obj, TypeObjId t, StubCreator f) {
-    return obj == nil ? nil : obj->_tnarrow(t, f);
-}
-
-void* BaseObjectType::_tnarrow(TypeObjId t, StubCreator f) {
-    void* v = nil;
-    Exchange* e = _exchange();
-    if (e != nil) {
-	v = e->narrow(t, f);
-    } else if (TypeSchemaImpl::schema()->compatible(t, _tid())) {
-	ref__(+1);
-	v = this;
+void* _BaseObject_tnarrow(BaseObjectRef obj, TypeObjId t, StubCreator f) {
+    void* v;
+    if (obj == nil) {
+	v = nil;
+    } else {
+	Exchange* e = obj->_exchange();
+	if (e != nil) {
+	    v = e->narrow(t, f);
+	} else {
+	    v = TypeSchemaImpl::schema()->cast(obj->_this(), t, obj->_tid());
+	    if (v != nil) {
+		obj->ref__(+1);
+	    }
+	}
     }
     return v;
 }
 
-TypeObjId BaseObjectType::_tid() { return _BaseObject_tid_; }
+void* _BaseObject_tcast(BaseObjectRef obj, TypeObjId t) {
+    return TypeSchemaImpl::schema()->cast(obj->_this(), t, obj->_tid());
+}
+
+void* BaseObjectType::_this() { return this; }
+TypeObjId BaseObjectType::_tid() { return _BaseObject_tid; }
 
 /*
  * Duplicate an object reference.  This implementation assumes
@@ -262,23 +269,41 @@ TypeObjRef TypeSchemaImpl::map(TypeObjId t) {
     return TypeImpl::make_type(descriptor(t));
 }
 
-Boolean TypeSchemaImpl::compatible(TypeObjId ancestor, TypeObjId descendant) {
-    return descendant == ancestor || match(descriptor(descendant), ancestor);
+void* TypeSchemaImpl::cast(
+    void* obj, TypeObjId ancestor, TypeObjId descendant
+) {
+    return (
+	descendant == ancestor ?
+	    obj : match(obj, descriptor(descendant), ancestor)
+    );
 }
 
-Boolean TypeSchemaImpl::match(TypeObj_Descriptor* d, TypeObjId t) {
+void* TypeSchemaImpl::match(void* obj, TypeObj_Descriptor* d, TypeObjId t) {
     if (d == nil) {
-	return false;
+	return nil;
     }
     if (*d->id == t) {
-	return true;
+	return obj;
     }
-    for (TypeObj_Descriptor** p = d->parents; *p != nil; p++) {
-	if (match(*p, t)) {
-	    return true;
+    TypeObj_Descriptor** p = d->parents;
+    if (p != nil) {
+	void* v = obj;
+	Long* o = d->offsets;
+	Long offset = 0;
+	for (;;) {
+	    v = match((void*)(Long(obj) + offset), *p, t);
+	    if (v != nil) {
+		return v;
+	    }
+	    ++p;
+	    if (*p == nil) {
+		break;
+	    }
+	    offset = *o;
+	    ++o;
 	}
     }
-    return false;
+    return nil;
 }
 
 void TypeSchemaImpl::receiver(TypeObjId t, TypeObj_CallFunc f) {
@@ -333,6 +358,7 @@ TypeObj::OpInfo::_ParamInfoSeq& TypeObj::OpInfo::_ParamInfoSeq::operator =(const
 
 TypeObjType::TypeObjType() { }
 TypeObjType::~TypeObjType() { }
+void* TypeObjType::_this() { return this; }
 
 //+
 
@@ -341,19 +367,19 @@ TypeObjType::~TypeObjType() { }
  */
 
 TypeObj_Descriptor* _TypeObj_parents_[] = { nil };
-extern TypeObjId _TypeObj_tid_;
-TypeObj_Descriptor _TypeObj_type_ = {
-    /* type */ 0, /* id */ &_TypeObj_tid_, "TypeObj",
+extern TypeObjId _TypeObj_tid;
+TypeObj_Descriptor _TypeObj_type = {
+    /* type */ 0, /* id */ &_TypeObj_tid, "TypeObj",
     _TypeObj_parents_, /* excepts */ nil,
     /* methods */ nil, /* params */ nil, /* receive */ nil
 };
 
 TypeObjRef TypeObj::_narrow(BaseObjectRef r) {
-    return (TypeObjRef)_BaseObject_tnarrow_(
-        r, _TypeObj_tid_, 0
+    return (TypeObjRef)_BaseObject_tnarrow(
+        r, _TypeObj_tid, 0
     );
 }
-TypeObjId TypeObjType::_tid() { return _TypeObj_tid_; }
+TypeObjId TypeObjType::_tid() { return _TypeObj_tid; }
 
 /* class TypeImpl */
 
@@ -461,28 +487,32 @@ TypeImpl* TypeImpl::make_type(TypeObj_Descriptor* d) {
     return t;
 }
 
+//+ RequestObj::%init
+RequestObjType::RequestObjType() { }
+RequestObjType::~RequestObjType() { }
+void* RequestObjType::_this() { return this; }
+
+//+
+
 /*
  * This has to be maintained manually to avoid generating
  * Xf names for the Ox basic types.
  */
 
-RequestObjType::RequestObjType() { }
-RequestObjType::~RequestObjType() { }
-
 TypeObj_Descriptor* _RequestObj_parents_[] = { nil };
-extern TypeObjId _RequestObj_tid_;
-TypeObj_Descriptor _RequestObj_type_ = {
-    /* type */ 0, /* id */ &_RequestObj_tid_, "RequestObj",
+extern TypeObjId _RequestObj_tid;
+TypeObj_Descriptor _RequestObj_type = {
+    /* type */ 0, /* id */ &_RequestObj_tid, "RequestObj",
     _RequestObj_parents_, /* excepts */ nil,
     /* methods */ nil, /* params */ nil, /* receive */ nil
 };
 
 RequestObjRef RequestObj::_narrow(BaseObjectRef o) {
-    return (RequestObjRef)_BaseObject_tnarrow_(
-        o, _RequestObj_tid_, 0
+    return (RequestObjRef)_BaseObject_tnarrow(
+        o, _RequestObj_tid, 0
     );
 }
-TypeObjId RequestObjType::_tid() { return _RequestObj_tid_; }
+TypeObjId RequestObjType::_tid() { return _RequestObj_tid; }
 
 RequestObjImpl::RequestObjImpl(BaseObjectRef o) {
     target_ = BaseObject::_duplicate(o);
@@ -662,12 +692,12 @@ string RequestObjImpl::get_string() {
 }
 
 //+ RequestObjImpl(RequestObj::put_object)
-void RequestObjImpl::put_object(BaseObjectRef obj) {
+void RequestObjImpl::put_object(BaseObject_in obj) {
     buffer_->put_object(obj);
     put();
 }
 
-_BaseObjectExpr RequestObjType::get_object() { return _c_get_object(); }
+BaseObject_tmp RequestObjType::get_object() { return _c_get_object(); }
 
 //+ RequestObjImpl(RequestObj::get_object)
 BaseObjectRef RequestObjImpl::_c_get_object() {
@@ -700,6 +730,7 @@ void RequestObjImpl::init() {
     status_ = RequestObj::initial;
     buffer_ = new MarshalBuffer;
     buffer_->reset();
+    buffer_->env(nil);
     argc_ = 0;
     nesting_ = 0;
 }
@@ -728,25 +759,28 @@ Boolean RequestObjImpl::find_op(TypeObjRef type, Long& index) {
 }
 
 void RequestObjImpl::resolve(TypeObj_Descriptor* d) {
-    for (TypeObj_Descriptor** p = d->parents; *p != nil; p++) {
-	TypeObjRef type = TypeImpl::make_type(*p);
-	Long index;
-	if (find_op(type, index)) {
-	    TypeObjId tid = *(*p)->id;
-	    if (resolved_ == 0 || resolved_ == tid) {
-		resolved_ = tid;
-		index_ = index;
-		status_ = RequestObj::ok;
-		/*
-		 * Found first occurrence.  Now continue search in siblings
-		 * for ambiguities.
-		 */
+    TypeObj_Descriptor** p = d->parents;
+    if (p != nil) {
+	for (; *p != nil; p++) {
+	    TypeObjRef type = TypeImpl::make_type(*p);
+	    Long index;
+	    if (find_op(type, index)) {
+		TypeObjId tid = *(*p)->id;
+		if (resolved_ == 0 || resolved_ == tid) {
+		    resolved_ = tid;
+		    index_ = index;
+		    status_ = RequestObj::ok;
+		    /*
+		     * Found first occurrence.  Now continue search in siblings
+		     * for ambiguities.
+		     */
+		} else {
+		    status_ = RequestObj::ambiguous_operation;
+		    return;
+		}
 	    } else {
-		status_ = RequestObj::ambiguous_operation;
-		return;
+		resolve(*p);
 	    }
-	} else {
-	    resolve(*p);
 	}
     }
 }
@@ -764,10 +798,12 @@ DefineType(V, TSize, TString) \
 T::T() : TypeImpl(TypeObj::K, &TypeVar(V)) { } \
 T::~T() { }
 
+ImplementBasicType(VoidTypeObj, void_type, Xfvoid, Long, "void")
 ImplementBasicType( \
-    BooleanTypeObj, boolean_type, XfBoolean, Boolean, "Boolean" \
+    BooleanTypeObj, boolean_type, XfBoolean, Boolean, "boolean" \
 )
 ImplementBasicType(CharTypeObj, char_type, XfChar, char, "char")
+ImplementBasicType(OctetTypeObj, octet_type, XfOctet, Octet, "octet")
 ImplementBasicType(ShortTypeObj, short_type, XfShort, short, "short")
 ImplementBasicType( \
     UShortTypeObj, unsigned_short_type, XfUShort, \
@@ -777,10 +813,16 @@ ImplementBasicType(LongTypeObj, long_type, XfLong, Long, "long")
 ImplementBasicType( \
     ULongTypeObj, unsigned_long_type, XfULong, ULong, "unsigned long" \
 )
+ImplementBasicType( \
+    LongLongTypeObj, longlong_type, XfLongLong, LongLong, "longlong" \
+)
+ImplementBasicType( \
+    ULongLongTypeObj, unsigned_longlong_type, XfULongLong, ULongLong, \
+    "unsigned longlong" \
+)
 ImplementBasicType(FloatTypeObj, float_type, XfFloat, float, "float")
 ImplementBasicType(DoubleTypeObj, double_type, XfDouble, double, "double")
 ImplementBasicType(StringTypeObj, string_type, Xfstring, char*, "string")
-ImplementBasicType(VoidTypeObj, void_type, Xfvoid, Long, "void")
 
 /* class EnumTypeObj */
 
@@ -908,7 +950,7 @@ void RemoteExchange::op(MarshalBuffer& b, TypeObjId t, Long op) {
     b.put_long(op);
 }
 
-Long RemoteExchange::invoke(MarshalBuffer& b) {
+Long RemoteExchange::invoke(MarshalBuffer& b, Boolean /* oneway */) {
     int r = oxCall(hostname_, port_, &b);
     if (r != 0) {
 	fprintf(stderr, "oxCall returns %d\n", r);
@@ -939,7 +981,7 @@ BaseObjectRef RemoteExchange::narrow(TypeObjId t, StubCreator f) {
     MarshalBuffer buf;
     buf.reset();
     op(buf, t, RemoteExchange_narrow_op);
-    Long r = invoke(buf);
+    Long r = invoke(buf, false);
     if (r != 0) {
 	fprintf(stderr, "Unexpected reply %d for _narrow\n", r);
 	exit(1);
@@ -1013,6 +1055,24 @@ void MarshalBuffer::put_unsigned_short(unsigned short s) {
 void MarshalBuffer::put_long(Long n) { put32(n); }
 void MarshalBuffer::put_unsigned_long(ULong n) { put32(Long(n)); }
 
+void MarshalBuffer::put_longlong(LongLong n) {
+    Long w = buf_words(sizeof(n));
+    if (cur_ + w >= end_) {
+	overflow();
+    }
+    *(LongLong*)cur_ = n;
+    move(w);
+}
+
+void MarshalBuffer::put_unsigned_longlong(ULongLong n) {
+    Long w = buf_words(sizeof(n));
+    if (cur_ + w >= end_) {
+	overflow();
+    }
+    *(ULongLong*)cur_ = n;
+    move(w);
+}
+
 void MarshalBuffer::put_float(float f) {
     Long w = buf_words(sizeof(f));
     if (cur_ + w >= end_) {
@@ -1078,7 +1138,7 @@ void MarshalBuffer::put_object(BaseObjectRef o) {
 	} else {
 	    /* Use library exchange if object doesn't otherwise have one */
 	    put_unsigned_long(_LibraryExchange_xid_);
-	    put_unsigned_long((ULong)o);
+	    put_unsigned_long((ULong)BaseObject::_duplicate(o));
 	}
     }
 }
@@ -1093,6 +1153,18 @@ unsigned short MarshalBuffer::get_unsigned_short() {
 Long MarshalBuffer::get_long() { return Long(get32()); }
 ULong MarshalBuffer::get_unsigned_long() {
     return (ULong)get32();
+}
+
+LongLong MarshalBuffer::get_longlong() {
+    LongLong n = *(LongLong*)cur_;
+    move(buf_words(sizeof(n)));
+    return n;
+}
+
+ULongLong MarshalBuffer::get_unsigned_longlong() {
+    ULongLong n = *(ULongLong*)cur_;
+    move(buf_words(sizeof(n)));
+    return n;
 }
 
 float MarshalBuffer::get_float() {
@@ -1157,7 +1229,9 @@ BaseObjectRef MarshalBuffer::get_object(StubCreator f) {
  * while those with type _t_object get one entry for the stub creator.
  * All other types do not have an entry.
  */
-static unsigned char func_delta[] = { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
+static unsigned char func_delta[] = {
+    2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+};
 
 /*
  * Perform a remote call using the object's exchange to setup the
@@ -1176,7 +1250,7 @@ void MarshalBuffer::invoke(
 	exch->op(*this, *info.id, info.method);
 	Long i;
 	Long argc = info.desc[0];
-	/* desc[1] describes return value */
+	ArgDesc rdesc = info.desc[1] >> 2;
 	ArgDesc* dp = &info.desc[2];
 	/* marshal functions are put/get pairs */
 	ArgMarshal* fp = &info.func[0];
@@ -1194,7 +1268,7 @@ void MarshalBuffer::invoke(
 	    }
 	    fp += func_delta[t];
 	}
-	Long r = exch->invoke(*this);
+	Long r = exch->invoke(*this, rdesc == _t_void_oneway);
 	if (r == 0) {
 	    /* normal return */
 	    dp = &info.desc[2];
@@ -1209,7 +1283,7 @@ void MarshalBuffer::invoke(
 		}
 		fp += func_delta[t];
 	    }
-	    get_result(info.desc[1] >> 2, fp, value);
+	    get_result(rdesc, fp, value);
 	} else {
 	    /* raised exception */
 	    TypeObj_Descriptor* t = TypeSchemaImpl::schema()->descriptor(r);
@@ -1234,6 +1308,7 @@ void MarshalBuffer::put_in_param(ArgDesc d, ArgMarshal* f, ArgValue* a) {
     switch (d) {
     case _t_addr: (*MarshalFunc(f[0]))(this, a->u_vaddr); break;
     case _t_void: /* shouldn't happen */ break;
+    case _t_void_oneway: /* shouldn't happen */ break;
     case _t_boolean: put_boolean(a->u_boolean); break;
     case _t_char: put_char(a->u_char); break;
     case _t_octet: put_octet(a->u_octet); break;
@@ -1241,6 +1316,10 @@ void MarshalBuffer::put_in_param(ArgDesc d, ArgMarshal* f, ArgValue* a) {
     case _t_unsigned_short: put_unsigned_short(a->u_unsigned_short); break;
     case _t_long: put_long(a->u_long); break;
     case _t_unsigned_long: put_unsigned_long(a->u_unsigned_long); break;
+    case _t_longlong: put_longlong(a->u_longlong); break;
+    case _t_unsigned_longlong:
+	put_unsigned_longlong(a->u_unsigned_longlong);
+	break;
     case _t_float: put_float(a->u_float); break;
     case _t_double: put_double(a->u_double); break;
     case _t_string: put_string(a->u_string); break;
@@ -1253,6 +1332,7 @@ void MarshalBuffer::put_inout_param(ArgDesc d, ArgMarshal* f, ArgValue* a) {
     switch (d) {
     case _t_addr: (*MarshalFunc(f[0]))(this, p); break;
     case _t_void: /* shouldn't happen */ break;
+    case _t_void_oneway: /* shouldn't happen */ break;
     case _t_boolean: put_boolean(*(Boolean*)p); break;
     case _t_char: put_char(*(char*)p); break;
     case _t_octet: put_octet(*(unsigned char*)p); break;
@@ -1260,6 +1340,8 @@ void MarshalBuffer::put_inout_param(ArgDesc d, ArgMarshal* f, ArgValue* a) {
     case _t_unsigned_short: put_unsigned_short(*(unsigned short*)p); break;
     case _t_long: put_long(*(Long*)p); break;
     case _t_unsigned_long: put_unsigned_long(*(ULong*)p); break;
+    case _t_longlong: put_longlong(*(LongLong*)p); break;
+    case _t_unsigned_longlong: put_unsigned_longlong(*(ULongLong*)p); break;
     case _t_float: put_float(*(float*)p); break;
     case _t_double: put_double(*(double*)p); break;
     case _t_string: put_string(*(char**)p); break;
@@ -1272,13 +1354,16 @@ void MarshalBuffer::get_param(ArgDesc d, ArgMarshal* f, ArgValue* a) {
     switch (d) {
     case _t_addr: (*MarshalFunc(f[1]))(this, p); break;
     case _t_void: /* shouldn't happen */ break;
+    case _t_void_oneway: /* shouldn't happen */ break;
     case _t_boolean: *(Boolean*)p = get_boolean(); break;
     case _t_char: *(char*)p = get_char(); break;
     case _t_octet: *(unsigned char*)p = get_octet(); break;
     case _t_short: *(short*)p = get_short(); break;
     case _t_unsigned_short: *(unsigned short*)p = get_unsigned_short(); break;
-    case _t_long: *(long*)p = get_long(); break;
-    case _t_unsigned_long: *(unsigned long*)p = get_unsigned_long(); break;
+    case _t_long: *(Long*)p = get_long(); break;
+    case _t_unsigned_long: *(ULong*)p = get_unsigned_long(); break;
+    case _t_longlong: *(LongLong*)p = get_longlong(); break;
+    case _t_unsigned_longlong: *(ULongLong*)p = get_unsigned_longlong(); break;
     case _t_float: *(float*)p = get_float(); break;
     case _t_double: *(double*)p = get_double(); break;
     case _t_string: *(char**)p = get_string(); break;
@@ -1290,6 +1375,7 @@ void MarshalBuffer::get_result(ArgDesc d, ArgMarshal* f, ArgValue* a) {
     switch (d) {
     case _t_addr: (*MarshalFunc(f[1]))(this, a->u_vaddr); break;
     case _t_void: /* function with no return value */ break;
+    case _t_void_oneway: /* shouldn't happen */ break;
     case _t_boolean: a->u_boolean = get_boolean(); break;
     case _t_char: a->u_char = get_char(); break;
     case _t_octet: a->u_octet = get_octet(); break;
@@ -1297,6 +1383,10 @@ void MarshalBuffer::get_result(ArgDesc d, ArgMarshal* f, ArgValue* a) {
     case _t_unsigned_short: a->u_unsigned_short = get_unsigned_short(); break;
     case _t_long: a->u_long = get_long(); break;
     case _t_unsigned_long: a->u_unsigned_long = get_unsigned_long(); break;
+    case _t_longlong: a->u_longlong = get_longlong(); break;
+    case _t_unsigned_longlong:
+	a->u_unsigned_longlong = get_unsigned_longlong();
+	break;
     case _t_float: a->u_float = get_float(); break;
     case _t_double: a->u_double = get_double(); break;
     case _t_string: a->u_string = get_string(); break;
@@ -1374,7 +1464,7 @@ void MarshalBuffer::dispatch(BaseObjectRef obj) {
     if (m == RemoteExchange_narrow_op) {
 	reset();
 	put_long(0);
-	put_long(s->match(d, obj->_tid()));
+	put_long(s->match(obj, d, obj->_tid()) != nil);
     } else {
 	(*d->receive)(obj, m, *this);
     }

@@ -40,7 +40,7 @@ public:
     //+ CharString::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -48,22 +48,25 @@ public:
     /* CharString */
     CharString::HashValue hash();
     Long count();
-    void copy(CharStringRef s);
-    Boolean equal(CharStringRef s);
-    Boolean case_insensitive_equal(CharStringRef s);
+    void copy(CharString_in s);
+    Boolean equal(CharString_in s);
+    Boolean case_insensitive_equal(CharString_in s);
     void get_data(CharString::Data& d);
     void get_char_data(CharString::CharData& d);
     void put_data(const CharString::Data& d);
     void put_char_data(const CharString::CharData& d);
     //+
 
+    static CharStringImpl* create_static(const char* s);
     static const char* index(const char* s, Long length, char c);
 protected:
     SharedFrescoObjectImpl object_;
     char* data_;
     Long length_;
+    Boolean dynamic_;
 
     void set(const char*, Long);
+    void free();
 };
 
 class CharStringBuffer {

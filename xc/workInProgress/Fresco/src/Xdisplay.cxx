@@ -56,7 +56,6 @@
 #include <stdio.h>
 #include <string.h>
 
-
 /*
  * AIX lacks prototypes for strcasecmp and strncasecmp, even though they
  * are in the standard C library.
@@ -64,11 +63,10 @@
 
 #if defined(AIXV3)
 extern "C" {
-    int strcasecmp(const char *, const char *);
-    int strncasecmp(const char *, const char *, int);
+    int strcasecmp(const char*, const char*);
+    int strncasecmp(const char*, const char*, int);
 }
 #endif /* AIXV3 */
-
 
 /*
  * Fresco operations to open an X display.
@@ -121,7 +119,7 @@ public:
     //+ Cursor::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -156,7 +154,7 @@ CursorImpl::~CursorImpl() { }
 Long CursorImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag CursorImpl::attach(FrescoObjectRef observer) {
+Tag CursorImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void CursorImpl::detach(Tag attach_tag) {
@@ -229,6 +227,11 @@ DisplayImpl::~DisplayImpl() {
 	Fresco::unref(screen_[i]);
     }
     delete [] screen_;
+    for (ListItr(DisplayImplFilters) f(*filters_); f.more(); f.next()) {
+	FilterInfo* info = f.cur();
+	Fresco::unref(info->traversal);
+	delete info;
+    }
     delete filters_;
     delete wtable_;
     delete damaged_;
@@ -238,7 +241,7 @@ DisplayImpl::~DisplayImpl() {
 Long DisplayImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag DisplayImpl::attach(FrescoObjectRef observer) {
+Tag DisplayImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void DisplayImpl::detach(Tag attach_tag) {
@@ -286,12 +289,12 @@ CursorRef DisplayImpl::_c_cursor_from_data(Short x, Short y, Long pattern[16], L
 }
 
 //+ DisplayImpl(DisplayObj::cursor_from_bitmap)
-CursorRef DisplayImpl::_c_cursor_from_bitmap(RasterRef b, RasterRef mask) {
+CursorRef DisplayImpl::_c_cursor_from_bitmap(Raster_in b, Raster_in mask) {
     return new CursorImpl(b, mask);
 }
 
 //+ DisplayImpl(DisplayObj::cursor_from_font)
-CursorRef DisplayImpl::_c_cursor_from_font(FontRef f, Long pattern, Long mask) {
+CursorRef DisplayImpl::_c_cursor_from_font(Font_in f, Long pattern, Long mask) {
     return new CursorImpl(f, pattern, mask);
 }
 
@@ -348,12 +351,13 @@ Boolean DisplayImpl::running() {
 }
 
 //+ DisplayImpl(DisplayObj::add_filter)
-Tag DisplayImpl::add_filter(ViewerRef v, GlyphTraversalRef t) {
+Tag DisplayImpl::add_filter(GlyphTraversal_in t) {
     lock_->acquire();
     FilterInfo* info = new FilterInfo;
     ++filter_tag_;
     info->tag = filter_tag_;
-    info->viewer = Viewer::_duplicate(v);
+    info->inverse.load(t->transform());
+    info->inverse.invert();
     info->traversal = GlyphTraversal::_duplicate(t);
     filters_->prepend(info);
     lock_->release();
@@ -371,7 +375,6 @@ void DisplayImpl::remove_filter(Tag add_tag) {
     for (ListUpdater(DisplayImplFilters) i(*filters_); i.more(); i.next()) {
 	FilterInfo* info = i.cur();
 	if (info->tag == add_tag) {
-	    Fresco::unref(info->viewer);
 	    Fresco::unref(info->traversal);
 	    i.remove_cur();
 	    delete info;
@@ -394,7 +397,7 @@ void DisplayImpl::remove_filter(Tag add_tag) {
  */
 
 //+ DisplayImpl(DisplayObj::need_repair)
-void DisplayImpl::need_repair(WindowRef w) {
+void DisplayImpl::need_repair(Window_in w) {
     lock_->acquire();
     damaged_->append(Window::_duplicate(w));
     if (reading_) {
@@ -454,13 +457,12 @@ void DisplayImpl::init_style() {
     DisplayStyleImpl* s = new DisplayStyleImpl(fresco_, this);
     style_ = s;
     s->merge(fresco_->style());
-    load_path(FRESCO_LIBALL, "/app-defaults/Fresco", priority);
+    load_path(X_LIBDIR, "/app-defaults/Fresco", priority);
     CharString name = fresco_->class_name();
     if (is_not_nil(name)) {
 	CharStringBuffer buf(name);
 	const char* p = buf.string();
 	load_path(X_LIBDIR, "/app-defaults/", p, priority);
-	load_path(FRESCO_LIBALL, "/app-defaults/", p, priority);
 	const char* xres = getenv("XAPPLRESDIR");
 	if (xres == nil) {
 	    xres = home();
@@ -556,7 +558,9 @@ void DisplayImpl::read_event(EventImpl* e) {
     XEvent next;
     for (;;) {
 	XNextEvent(xdisplay_, &xe);
-	if (xe.type != MotionNotify || QLength(xdisplay_) == 0) {
+	if (xe.type != MotionNotify ||
+	    XEventsQueued(xdisplay_, QueuedAfterReading) == 0
+	) {
 	    break;
 	}
 	XPeekEvent(xdisplay_, &next);
@@ -673,18 +677,19 @@ void DisplayImpl::dispatch(EventImpl* e) {
 Boolean DisplayImpl::filtered(EventImpl* e) {
     Boolean b = false;
     Coord x = e->pointer_x(), y = e->pointer_y();
-    for (ListItr(DisplayImplFilters) i(*filters_); i.more(); i.next()) {
+    Vertex ev;
+    for (ListItr(DisplayImplFilters) i(*filters_); i.more() && !b; i.next()) {
 	DisplayImpl::FilterInfo* info = i.cur();
-	GlyphTraversal t = GlyphTraversal::_duplicate(info->traversal);
-	t->clear();
-	PainterObj p = t->painter();
-	p->push_clipping();
-	p->clip_rect(x, y, x, y);
-	/* need to restore the transform here */
-	b = info->viewer->handle(t, e);
-	p->pop_clipping();
-	if (b) {
-	    break;
+	GlyphTraversalRef t = info->traversal;
+	Viewer v = t->current_viewer();
+	if (is_not_nil(v)) {
+	    PainterObj p = t->painter();
+	    p->push_clipping();
+	    ev.x = x; ev.y = y; ev.z = 0;
+	    info->inverse.transform(ev);
+	    p->clip_rect(ev.x, ev.y, ev.x, ev.y);
+	    b = v->handle(t, e);
+	    p->pop_clipping();
 	}
     }
     return b;
@@ -836,7 +841,7 @@ DisplayStyleImpl::~DisplayStyleImpl() { }
 Long DisplayStyleImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag DisplayStyleImpl::attach(FrescoObjectRef observer) {
+Tag DisplayStyleImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void DisplayStyleImpl::detach(Tag attach_tag) {
@@ -860,55 +865,55 @@ StyleObjRef DisplayStyleImpl::_c_new_style() {
 StyleObjRef DisplayStyleImpl::_c_parent_style() {
     return impl_._c_parent_style();
 }
-void DisplayStyleImpl::link_parent(StyleObjRef parent) {
+void DisplayStyleImpl::link_parent(StyleObj_in parent) {
     impl_.link_parent(parent);
 }
 void DisplayStyleImpl::unlink_parent() {
     impl_.unlink_parent();
 }
-Tag DisplayStyleImpl::link_child(StyleObjRef child) {
+Tag DisplayStyleImpl::link_child(StyleObj_in child) {
     return impl_.link_child(child);
 }
 void DisplayStyleImpl::unlink_child(Tag link_tag) {
     impl_.unlink_child(link_tag);
 }
-void DisplayStyleImpl::merge(StyleObjRef s) {
+void DisplayStyleImpl::merge(StyleObj_in s) {
     impl_.merge(s);
 }
 CharStringRef DisplayStyleImpl::_c_name() {
     return impl_._c_name();
 }
-void DisplayStyleImpl::_c_name(CharStringRef _p) {
+void DisplayStyleImpl::_c_name(CharString_in _p) {
     impl_._c_name(_p);
 }
-void DisplayStyleImpl::alias(CharStringRef s) {
+void DisplayStyleImpl::alias(CharString_in s) {
     impl_.alias(s);
 }
-Boolean DisplayStyleImpl::is_on(CharStringRef name) {
+Boolean DisplayStyleImpl::is_on(CharString_in name) {
     return impl_.is_on(name);
 }
-StyleValueRef DisplayStyleImpl::_c_bind(CharStringRef name) {
+StyleValueRef DisplayStyleImpl::_c_bind(CharString_in name) {
     return impl_._c_bind(name);
 }
-void DisplayStyleImpl::unbind(CharStringRef name) {
+void DisplayStyleImpl::unbind(CharString_in name) {
     impl_.unbind(name);
 }
-StyleValueRef DisplayStyleImpl::_c_resolve(CharStringRef name) {
+StyleValueRef DisplayStyleImpl::_c_resolve(CharString_in name) {
     return impl_._c_resolve(name);
 }
-StyleValueRef DisplayStyleImpl::_c_resolve_wildcard(CharStringRef name, StyleObjRef start) {
+StyleValueRef DisplayStyleImpl::_c_resolve_wildcard(CharString_in name, StyleObj_in start) {
     return impl_._c_resolve_wildcard(name, start);
 }
-Long DisplayStyleImpl::match(CharStringRef name) {
+Long DisplayStyleImpl::match(CharString_in name) {
     return impl_.match(name);
 }
-void DisplayStyleImpl::visit_aliases(StyleVisitorRef v) {
+void DisplayStyleImpl::visit_aliases(StyleVisitor_in v) {
     impl_.visit_aliases(v);
 }
-void DisplayStyleImpl::visit_attributes(StyleVisitorRef v) {
+void DisplayStyleImpl::visit_attributes(StyleVisitor_in v) {
     impl_.visit_attributes(v);
 }
-void DisplayStyleImpl::visit_styles(StyleVisitorRef v) {
+void DisplayStyleImpl::visit_styles(StyleVisitor_in v) {
     impl_.visit_styles(v);
 }
 void DisplayStyleImpl::lock() {
@@ -996,7 +1001,7 @@ EventImpl::~EventImpl() { }
 Long EventImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag EventImpl::attach(FrescoObjectRef observer) {
+Tag EventImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void EventImpl::detach(Tag attach_tag) {
@@ -1066,6 +1071,21 @@ Event::TimeStamp EventImpl::time() {
 	break;
     }
     return t;
+}
+
+//+ EventImpl(Event::positional)
+Boolean EventImpl::positional() {
+    Boolean b = false;
+    switch (xevent_.type) {
+    case MotionNotify:
+    case EnterNotify:
+    case LeaveNotify:
+    case ButtonPress:
+    case ButtonRelease:
+	b = true;
+	break;
+    }
+    return b;
 }
 
 //+ EventImpl(Event::pointer_x)
@@ -1318,7 +1338,7 @@ ScreenImpl::~ScreenImpl() {
 Long ScreenImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag ScreenImpl::attach(FrescoObjectRef observer) {
+Tag ScreenImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void ScreenImpl::detach(Tag attach_tag) {
@@ -1387,27 +1407,27 @@ void ScreenImpl::move_pointer(Coord x, Coord y) {
 }
 
 //+ ScreenImpl(ScreenObj::application)
-WindowRef ScreenImpl::_c_application(ViewerRef v) {
+WindowRef ScreenImpl::_c_application(Viewer_in v) {
     return new ApplicationWindow(display_, this, v);
 }
 
 //+ ScreenImpl(ScreenObj::top_level)
-WindowRef ScreenImpl::_c_top_level(ViewerRef v, WindowRef group_leader) {
+WindowRef ScreenImpl::_c_top_level(Viewer_in v, Window_in group_leader) {
     return new TopLevelWindow(display_, this, v, group_leader);
 }
 
 //+ ScreenImpl(ScreenObj::transient)
-WindowRef ScreenImpl::_c_transient(ViewerRef v, WindowRef transient_for) {
+WindowRef ScreenImpl::_c_transient(Viewer_in v, Window_in transient_for) {
     return new TransientWindow(display_, this, v, transient_for);
 }
 
 //+ ScreenImpl(ScreenObj::popup)
-WindowRef ScreenImpl::_c_popup(ViewerRef v) {
+WindowRef ScreenImpl::_c_popup(Viewer_in v) {
     return new PopupWindow(display_, this, v);
 }
 
 //+ ScreenImpl(ScreenObj::icon)
-WindowRef ScreenImpl::_c_icon(ViewerRef v) {
+WindowRef ScreenImpl::_c_icon(Viewer_in v) {
     return new IconWindow(display_, this, v);
 }
 

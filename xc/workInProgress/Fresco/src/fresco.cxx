@@ -163,7 +163,7 @@ SharedFrescoObjectImpl::~SharedFrescoObjectImpl() {
  */
 
 //+ SharedFrescoObjectImpl(FrescoObject::attach)
-Tag SharedFrescoObjectImpl::attach(FrescoObjectRef observer) {
+Tag SharedFrescoObjectImpl::attach(FrescoObject_in observer) {
     ObservableInfo i;
     if (observers_ == nil) {
 	observers_ = new ObserverList;
@@ -220,7 +220,7 @@ Long LockedFrescoObjectImpl::ref__(Long references) {
 }
 
 //+ LockedFrescoObjectImpl(FrescoObject::attach)
-Tag LockedFrescoObjectImpl::attach(FrescoObjectRef observer) {
+Tag LockedFrescoObjectImpl::attach(FrescoObject_in observer) {
     lock_->acquire();
     Tag t = SharedFrescoObjectImpl::attach(observer);
     lock_->release();
@@ -246,11 +246,11 @@ void LockedFrescoObjectImpl::notify_observers() {
 Fresco::Fresco() { }
 Fresco::~Fresco() { }
 
-CharStringRef Fresco::string_ref(const char* ptr) {
-    return new CharStringImpl(ptr);
+CharStringRef Fresco::_c_string_ref(const char* ptr) {
+    return CharStringImpl::create_static(ptr);
 }
 
-CharStringRef Fresco::string_copy(const char* ptr) {
+CharStringRef Fresco::_c_string_copy(const char* ptr) {
     return new CharStringImpl(ptr);
 }
 
@@ -312,7 +312,7 @@ FrescoImpl::~FrescoImpl() {
 Long FrescoImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag FrescoImpl::attach(FrescoObjectRef observer) {
+Tag FrescoImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void FrescoImpl::detach(Tag attach_tag) {
@@ -446,8 +446,8 @@ void FrescoImpl::create_root_style(
     find_name(argc, argv);
 
     for (char** attr = standard_attributes; *attr != nil; attr += 2) {
-	StyleValue a = style_->bind(new CharStringImpl(attr[0]));
-	a->write_string(new CharStringImpl(attr[1]));
+	StyleValue a = style_->bind(CharString(new CharStringImpl(attr[0])));
+	a->write_string(CharString(new CharStringImpl(attr[1])));
 	a->priority(-10);
     }
     if (options != nil) {
@@ -562,8 +562,10 @@ void FrescoImpl::extract(Option* o, int& i, int argc, char** argv) {
 	value_length = strlen(value);
 	break;
     }
-    StyleValue a = style_->bind(new CharStringImpl(name, name_length));
-    a->write_string(new CharStringImpl(value, value_length));
+    StyleValue a = style_->bind(
+	CharString(new CharStringImpl(name, name_length))
+    );
+    a->write_string(CharString(new CharStringImpl(value, value_length)));
     a->priority(0);
 }
 

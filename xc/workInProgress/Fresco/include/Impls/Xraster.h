@@ -37,6 +37,7 @@
  * RasterImpl -- implementation of rasters
  */
 
+class RasterBitmap;
 class WindowImpl;
 
 //- RasterImpl*
@@ -61,14 +62,14 @@ public:
     //+ FrescoObject::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
     void update();
     //+
 
-    Boolean equal(RasterRef r); //+ Raster::equal
+    Boolean equal(Raster_in r); //+ Raster::equal
     ULong hash(); //+ Raster::hash
     Raster::Index rows(); //+ Raster::rows
     Raster::Index columns(); //+ Raster::columns
@@ -101,7 +102,8 @@ public:
 
 	PerScreenData* next;
     };
-    
+
+    virtual RasterBitmap* bitmap();
     virtual void invalidate();
     virtual RasterImpl::PerScreenData* lookup(WindowImpl*, TransformObjRef);
     virtual RasterImpl::PerScreenData* create(
@@ -139,13 +141,7 @@ public:
 };
 
 //- RasterBitmap*
-//+ RasterBitmap : RasterImpl
 class RasterBitmap : public RasterImpl {
-public:
-    ~RasterBitmap();
-    TypeObjId _tid();
-    static RasterBitmap* _narrow(BaseObjectRef);
-//+
     //. RasterBitmap provides a raster implementation for bitmaps
     //. using X images.
 public:
@@ -155,12 +151,14 @@ public:
 	Raster::Index origin_row, Raster::Index origin_column,
 	Coord scale = 0
     );
+    ~RasterBitmap();
 
-    Boolean equal(RasterRef r);
-    unsigned long hash();
-    void peek(Raster::Index row, Raster::Index column, Raster::Element&);
-    void poke(Raster::Index row, Raster::Index column, const Raster::Element& e);
+    Boolean equal(Raster_in r); //+ Raster::equal
+    ULong hash(); //+ Raster::hash
+    void peek(Raster::Index row, Raster::Index column, Raster::Element& e); //+ Raster::peek
+    void poke(Raster::Index row, Raster::Index column, const Raster::Element& e); //+ Raster::poke
 
+    virtual RasterBitmap* bitmap();
     virtual void invalidate();
     virtual RasterImpl::PerScreenData* create(WindowImpl*, TransformObjRef);
     virtual void read_drawable(
@@ -181,13 +179,7 @@ public:
 };
 
 //- RasterChannels*
-//+ RasterChannels : RasterImpl
 class RasterChannels : public RasterImpl {
-public:
-    ~RasterChannels();
-    TypeObjId _tid();
-    static RasterChannels* _narrow(BaseObjectRef);
-//+
     //. RasterChannels is an implementation of Raster supporting
     //. different numbers of channels, where 1 channels means
     //. grey, 2 means grey with alpha, 3 means RGB, and 4 means
@@ -208,6 +200,7 @@ public:
 	Raster::Index origin_row, Raster::Index origin_column,
 	Coord scale = 0
     );
+    ~RasterChannels();
 
     void peek(Raster::Index row, Raster::Index column, Raster::Element&);
     void poke(Raster::Index row, Raster::Index column, const Raster::Element& e);
@@ -229,13 +222,7 @@ public:
 };
 
 //- RasterLUT*
-//+ RasterLUT : RasterImpl
 class RasterLUT : public RasterImpl {
-public:
-    ~RasterLUT();
-    TypeObjId _tid();
-    static RasterLUT* _narrow(BaseObjectRef);
-//+
     //. Raster implementation using a color lookup table.
 public:
     typedef ColorRef LUT[256];
@@ -246,6 +233,7 @@ public:
 	Raster::Index origin_row, Raster::Index origin_column,
 	Coord scale = 0
     );
+    ~RasterLUT();
 
     void peek(Raster::Index row, Raster::Index column, Raster::Element&);
     void poke(Raster::Index row, Raster::Index column, const Raster::Element& e);

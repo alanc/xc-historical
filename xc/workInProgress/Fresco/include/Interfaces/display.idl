@@ -60,8 +60,8 @@ interface DisplayObj : FrescoObject {
 
     //- ScreenNumber
     typedef long ScreenNumber;
-	//. The ScreenNumber type defines the range of allowable
-	//. integer values for screen numbers.
+	//. The ScreenNumber type defines the representation of
+	//. screen numbers.
 
     //- style
     DisplayStyle style();
@@ -110,10 +110,10 @@ interface DisplayObj : FrescoObject {
 	//. operation returns the current state of the loop.
 
     //- add_filter*, remove_filter*
-    Tag add_filter(in Viewer v, in GlyphTraversal t);
+    Tag add_filter(in GlyphTraversal t);
     void remove_filter(in Tag add_tag);
 	//. The add_filter operation requests that all events
-	//. be passed to the given viewer with the given traversal
+	//. be passed to the current viewer of the given traversal
 	//. before processing them further, even if the event
 	//. would normally be delivered to a different viewer.
 	//. If the viewer's handle operation returns true,
@@ -148,7 +148,7 @@ interface DisplayObj : FrescoObject {
 	//. Repair all damaged windows on the display and ensure that
 	//. any pending requests have been sent to the window system.
 	//. The flush_and_wait operation additionally waits for
-	//. an acknowledgment from the window system indicates
+	//. an acknowledgment from the window system indicating
 	//. that the request have been processed.
 
     //- ring_bell

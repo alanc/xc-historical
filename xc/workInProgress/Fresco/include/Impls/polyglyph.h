@@ -43,10 +43,10 @@ public:
     PolyGlyph();
     virtual ~PolyGlyph();
 
-    GlyphOffsetRef _c_append(GlyphRef g); //+ Glyph::append
-    GlyphOffsetRef _c_prepend(GlyphRef g); //+ Glyph::prepend
-    void visit_children(GlyphVisitorRef v); //+ Glyph::visit_children
-    void visit_children_reversed(GlyphVisitorRef v); //+ Glyph::visit_children_reversed
+    GlyphOffsetRef _c_append(Glyph_in g); //+ Glyph::append
+    GlyphOffsetRef _c_prepend(Glyph_in g); //+ Glyph::prepend
+    void visit_children(GlyphVisitor_in v); //+ Glyph::visit_children
+    void visit_children_reversed(GlyphVisitor_in v); //+ Glyph::visit_children_reversed
 
     PolyGlyphOffsetList children_;
 
@@ -58,8 +58,10 @@ public:
 	//. Otherwise, an array will be dynamically-allocated that
 	//. the caller should delete.
 
-    //- child_allocation
-    virtual void child_allocation(long index, Glyph::AllocationInfo& a);
+    void visit_trail(Long, GlyphTraversalRef t);
+
+    //- child_allocate
+    virtual void child_allocate(Long index, Glyph::AllocationInfo& a);
 	//. Determine the allocation for the given child given the
 	//. allocation information for the parent.
 
@@ -89,7 +91,7 @@ public:
     //+ GlyphOffset::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -98,10 +100,12 @@ public:
     GlyphRef _c_parent();
     GlyphRef _c_child();
     void allocations(Glyph::AllocationInfoList& a);
-    GlyphOffsetRef _c_insert(GlyphRef g);
-    void replace(GlyphRef g);
+    GlyphOffsetRef _c_insert(Glyph_in g);
+    void replace(Glyph_in g);
     void remove();
     void notify();
+    void visit_trail(GlyphTraversal_in t);
+    void child_allocate(Glyph::AllocationInfo& a);
     //+
 
     SharedFrescoObjectImpl object_;

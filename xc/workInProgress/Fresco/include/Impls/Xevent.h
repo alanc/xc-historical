@@ -29,6 +29,8 @@
 #include <X11/Fresco/Impls/fobjects.h>
 #include <X11/Fresco/Impls/Xlib.h>
 
+class DisplayImpl;
+
 //+ EventImpl : EventType
 class EventImpl : public EventType {
 public:
@@ -42,7 +44,7 @@ public:
     //+ Event::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -50,6 +52,7 @@ public:
     /* Event */
     Event::TypeId type();
     Event::TimeStamp time();
+    Boolean positional();
     Coord pointer_x();
     Coord pointer_y();
     Event::ButtonIndex pointer_button();

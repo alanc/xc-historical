@@ -139,6 +139,8 @@ interface CharString : FrescoObject {
     //- put_data, put_char_data
     void put_data(in Data d);
     void put_char_data(in CharData d);
+	//. Store the given 8-bit or character code data
+	//. into the string.
 };
 
 //- Coord
@@ -149,7 +151,7 @@ typedef float Coord;
     //. better be defined as an interface from the perspective
     //. of abstraction, but for practical reasons it is defined
     //. as a typedef.  For applications with simple graphics needs,
-    //. the user of floating point coordinates is typically
+    //. the use of floating point coordinates is typically
     //. not a problem.  Applications with more sophisticated text
     //. or graphics usually need to manipulate floating point
     //. coordinates anyway.
@@ -218,7 +220,9 @@ interface Action : FrescoObject {
     void unexecute();
 	//. Undo the previously done action.  If the action has not
 	//. been done or was most recently undone, then this operation
-	//. has no effect.
+	//. has no effect.  This operation is also likely to fail
+	//. if intermediate operations have been executed (and not unexecuted)
+	//. since the execute operation was most recently called.
 };
 
 interface TransformObj;
@@ -248,7 +252,10 @@ interface Region : FrescoObject {
 	Alignment align;
     };
 	//. A bounding span is a one-dimensional coordinate range with
-	//. an origin value as a reference.
+	//. an origin value as a reference.  The begin, end, and
+	//. align fields define a bounding span.  The length is always
+	//. equal to end minus begin, and the origin is always equal
+	//. to begin plus length times align.
 
     //- contains, contains_plane, intersects
     boolean contains(in Vertex v);
@@ -266,9 +273,9 @@ interface Region : FrescoObject {
     void copy(in Region r);
 	//. Copy the given region into this region.  This operation
 	//. is equivalent to setting this region to the empty region and
-	//. then calling merge_intersect on the given region.
+	//. then calling merge_union on the given region.
 
-    //- merge_intersect, merge_union, subtract
+    //- merge_intersect, merge_union
     void merge_intersect(in Region r);
     void merge_union(in Region r);
 	//. Modify a region to merge the values of another region.

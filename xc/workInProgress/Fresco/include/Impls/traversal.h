@@ -40,7 +40,7 @@ public:
     //+ GlyphTraversal::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -48,24 +48,25 @@ public:
     /* GlyphTraversal */
     GlyphTraversal::Operation op();
     GlyphTraversal::Operation swap_op(GlyphTraversal::Operation op);
-    void begin_trail(ViewerRef v);
+    void begin_trail(Viewer_in v);
     void end_trail();
-    void traverse_child(GlyphOffsetRef o, RegionRef allocation);
+    void traverse_child(GlyphOffset_in o, Region_in allocation);
     void visit();
     GlyphTraversalRef _c_trail();
-    ViewerRef _c_current_viewer();
     GlyphRef _c_current_glyph();
-    GlyphOffsetRef _c_offset();
-    void forward();
-    void backward();
+    GlyphOffsetRef _c_current_offset();
+    ViewerRef _c_current_viewer();
+    Boolean forward();
+    Boolean backward();
     PainterObjRef _c_painter();
-    void _c_painter(PainterObjRef _p);
+    void _c_painter(PainterObj_in _p);
     DisplayObjRef _c_display();
     ScreenObjRef _c_screen();
     RegionRef _c_allocation();
     Boolean bounds(Vertex& lower, Vertex& upper, Vertex& origin);
     Boolean origin(Vertex& origin);
     Boolean span(Axis a, Region::BoundingSpan& s);
+    TransformObjRef _c_transform();
     DamageObjRef _c_damage();
     void hit();
     Long hit_info();
@@ -79,9 +80,13 @@ public:
 	GlyphRef glyph;
 	GlyphOffsetRef offset;
 	RegionRef allocation;
+	TransformObjRef transform;
     };
 
-    void push(ViewerRef v, GlyphRef g, GlyphOffsetRef o, RegionRef allocation);
+    void push(
+	ViewerRef v, GlyphRef g, GlyphOffsetRef o,
+	RegionRef allocation, TransformObjRef transform
+    );
     void pop();
 protected:
     SharedFrescoObjectImpl object_;

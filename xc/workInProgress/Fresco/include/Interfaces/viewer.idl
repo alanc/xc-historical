@@ -28,10 +28,7 @@
 #include <X11/Fresco/Interfaces/display.idl>
 #include <X11/Fresco/Interfaces/glyph.idl>
 
-interface Event;
 interface Focus;
-interface Viewer;
-interface Window;
 
 //- Event*
 interface Event : FrescoObject {
@@ -81,6 +78,13 @@ interface Event : FrescoObject {
     //- time
     Event::TimeStamp time();
 	//. Return a time-stamp indicating when the event occurred.
+
+    //- positional
+    Boolean positional();
+	//. The event specifies a position, such as for a pointing device.
+	//. Focused (non-positional) events may also report the current
+	//. location of a pointing device, but will return false
+	//. to this operation.
 
     //- pointer_x, pointer_y
     Coord pointer_x();

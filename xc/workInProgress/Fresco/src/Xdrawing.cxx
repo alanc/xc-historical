@@ -1,4 +1,8 @@
 /*
+ * $XConsortium$
+ */
+
+/*
  * Copyright (c) 1987-91 Stanford University
  * Copyright (c) 1991-93 Silicon Graphics, Inc.
  *
@@ -45,6 +49,8 @@
 #include <X11/Xatom.h>
 #include <ctype.h>
 #include <limits.h>
+
+#include <stdio.h>
 
 /*
  * This rather disgusting macro encapsulates the tedium of testing whether
@@ -96,7 +102,7 @@ BrushImpl::~BrushImpl() {
 Long BrushImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag BrushImpl::attach(FrescoObjectRef observer) {
+Tag BrushImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void BrushImpl::detach(Tag attach_tag) {
@@ -119,7 +125,7 @@ ULong BrushImpl::hash() {
 }
 
 //+ BrushImpl(Brush::equal)
-Boolean BrushImpl::equal(BrushRef b) {
+Boolean BrushImpl::equal(Brush_in b) {
     if (is_nil(b) || hash() != b->hash()) {
 	return false;
     }
@@ -214,7 +220,7 @@ ColorImpl::~ColorImpl() { }
 Long ColorImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag ColorImpl::attach(FrescoObjectRef observer) {
+Tag ColorImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void ColorImpl::detach(Tag attach_tag) {
@@ -253,7 +259,7 @@ ULong ColorImpl::hash() {
 }
 
 //+ ColorImpl(Color::equal)
-Boolean ColorImpl::equal(ColorRef c) {
+Boolean ColorImpl::equal(Color_in c) {
     if (is_nil(c)) {
 	return false;
     }
@@ -271,18 +277,18 @@ Boolean ColorImpl::equal(ColorRef c) {
     return result;
 }
 
-static inline u_long_int num_chars(XFontStruct* fs) {
+static inline ULong num_chars(XFontStruct* fs) {
     return (
 	(fs->max_byte1 - fs->min_byte1 + 1) *
 	(fs->max_char_or_byte2 - fs->min_char_or_byte2 + 1)
     );
 }
 
-static u_long_int char_index(CharCode c, XFontStruct* fs) {
+static ULong char_index(CharCode c, XFontStruct* fs) {
     if (fs->min_byte1 == fs->max_byte1) {
-	return u_long_int(c - fs->min_char_or_byte2);
+	return ULong(c - fs->min_char_or_byte2);
     }
-    u_long_int width = fs->max_char_or_byte2 - fs->min_char_or_byte2 + 1;
+    ULong width = fs->max_char_or_byte2 - fs->min_char_or_byte2 + 1;
     return (
 	((c / width) - fs->min_byte1) * width +
 	(c % width) - fs->min_char_or_byte2
@@ -305,7 +311,7 @@ FontImpl::~FontImpl() {
     Fresco::unref(encoding_);
     delete [] widths_;
     if (rasters_ != nil) {
-	for (long_int i = num_chars(xfont_); i >= 0; i--) {
+	for (Long i = num_chars(xfont_); i >= 0; i--) {
 	    Fresco::unref(rasters_[i]);
 	}
     }
@@ -318,7 +324,7 @@ FontImpl::~FontImpl() {
 Long FontImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag FontImpl::attach(FrescoObjectRef observer) {
+Tag FontImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void FontImpl::detach(Tag attach_tag) {
@@ -341,18 +347,18 @@ ULong FontImpl::hash() {
 }
 
 //+ FontImpl(Font::equal)
-Boolean FontImpl::equal(FontRef f) {
+Boolean FontImpl::equal(Font_in f) {
     return f == this || name_->equal(f->name());
 }
 
 //+ FontImpl(Font::name)
 CharStringRef FontImpl::_c_name() {
-    return name_;
+    return CharString::_duplicate(name_);
 }
 
 //+ FontImpl(Font::encoding)
 CharStringRef FontImpl::_c_encoding() {
-    return encoding_;
+    return CharString::_duplicate(encoding_);
 }
 
 //+ FontImpl(Font::point_size)
@@ -399,7 +405,7 @@ void FontImpl::char_info(CharCode c, Font::Info& i) {
 }
 
 //+ FontImpl(Font::string_info)
-void FontImpl::string_info(CharStringRef s, Font::Info& i) {
+void FontImpl::string_info(CharString_in s, Font::Info& i) {
     load();
     CharStringBuffer buf(s);
     const char* cp = buf.string();
@@ -445,9 +451,9 @@ void FontImpl::load() {
 
 RasterRef FontImpl::bitmap(CharCode c) {
     load();
-    u_long_int index = char_index(c, xfont_);
+    ULong index = char_index(c, xfont_);
     if (rasters_ == nil) {
-	u_long_int size = num_chars(xfont_);
+	ULong size = num_chars(xfont_);
 	rasters_ = new RasterRef[size];
 	Memory::zero(rasters_, size * sizeof(RasterRef));
     } else {
@@ -512,6 +518,290 @@ implementList(MatrixStack,MatrixStackElement)
 declarePtrList(ClippingStack,RegionImpl)
 implementPtrList(ClippingStack,RegionImpl)
 
+DefaultPainterImpl::DefaultPainterImpl() {
+    brush_ = nil;
+    color_ = nil;
+    font_ = nil;
+    matrix_ = new TransformImpl;
+    transforms_ = new MatrixStack;
+    transformed_ = false;
+    clipping_ = nil;
+    clippers_ = new ClippingStack;
+    free_clipper_head_ = 0;
+    free_clipper_tail_ = 0;
+}
+
+DefaultPainterImpl::~DefaultPainterImpl() {
+    Fresco::unref(brush_);
+    Fresco::unref(color_);
+    Fresco::unref(font_);
+    delete transforms_;
+    Fresco::unref(clipping_);
+    for (ListItr(ClippingStack) j(*clippers_); j.more(); j.next()) {
+	Fresco::unref(j.cur());
+    }
+    delete clippers_;
+}
+
+//+ DefaultPainterImpl(FrescoObject::=object_.)
+Long DefaultPainterImpl::ref__(Long references) {
+    return object_.ref__(references);
+}
+Tag DefaultPainterImpl::attach(FrescoObject_in observer) {
+    return object_.attach(observer);
+}
+void DefaultPainterImpl::detach(Tag attach_tag) {
+    object_.detach(attach_tag);
+}
+void DefaultPainterImpl::disconnect() {
+    object_.disconnect();
+}
+void DefaultPainterImpl::notify_observers() {
+    object_.notify_observers();
+}
+void DefaultPainterImpl::update() {
+    object_.update();
+}
+//+
+
+//+ DefaultPainterImpl(PainterObj::to_coord)
+Coord DefaultPainterImpl::to_coord(PixelCoord p) { return Coord(p); }
+
+//+ DefaultPainterImpl(PainterObj::to_pixels)
+PixelCoord DefaultPainterImpl::to_pixels(Coord c) { return PixelCoord(c); }
+
+//+ DefaultPainterImpl(PainterObj::to_pixels_coord)
+Coord DefaultPainterImpl::to_pixels_coord(Coord c) { return c; }
+
+//+ DefaultPainterImpl(PainterObj::begin_path)
+void DefaultPainterImpl::begin_path() { }
+
+//+ DefaultPainterImpl(PainterObj::move_to)
+void DefaultPainterImpl::move_to(Coord, Coord) { }
+
+//+ DefaultPainterImpl(PainterObj::line_to)
+void DefaultPainterImpl::line_to(Coord, Coord) { }
+
+//+ DefaultPainterImpl(PainterObj::curve_to)
+void DefaultPainterImpl::curve_to(Coord, Coord, Coord, Coord, Coord, Coord) { }
+
+//+ DefaultPainterImpl(PainterObj::close_path)
+void DefaultPainterImpl::close_path() { }
+
+//+ DefaultPainterImpl(PainterObj::brush_attr=b)
+void DefaultPainterImpl::_c_brush_attr(Brush_in b) {
+    brush_ = Brush::_duplicate(b);
+}
+
+//+ DefaultPainterImpl(PainterObj::brush_attr?)
+BrushRef DefaultPainterImpl::_c_brush_attr() {
+    return Brush::_duplicate(brush_);
+}
+
+//+ DefaultPainterImpl(PainterObj::color_attr=c)
+void DefaultPainterImpl::_c_color_attr(Color_in c) {
+    color_ = Color::_duplicate(c);
+}
+
+//+ DefaultPainterImpl(PainterObj::color_attr?)
+ColorRef DefaultPainterImpl::_c_color_attr() {
+    return Color::_duplicate(color_);
+}
+
+//+ DefaultPainterImpl(PainterObj::font_attr=f)
+void DefaultPainterImpl::_c_font_attr(Font_in f) {
+    font_ = Font::_duplicate(f);
+}
+
+//+ DefaultPainterImpl(PainterObj::font_attr?)
+FontRef DefaultPainterImpl::_c_font_attr() {
+    return Font::_duplicate(font_);
+}
+
+//+ DefaultPainterImpl(PainterObj::stroke)
+void DefaultPainterImpl::stroke() { }
+
+//+ DefaultPainterImpl(PainterObj::fill)
+void DefaultPainterImpl::fill() { }
+
+//+ DefaultPainterImpl(PainterObj::line)
+void DefaultPainterImpl::line(Coord, Coord, Coord, Coord) { }
+
+//+ DefaultPainterImpl(PainterObj::rect)
+void DefaultPainterImpl::rect(Coord, Coord, Coord, Coord) { }
+
+//+ DefaultPainterImpl(PainterObj::fill_rect)
+void DefaultPainterImpl::fill_rect(Coord, Coord, Coord, Coord) { }
+
+//+ DefaultPainterImpl(PainterObj::character)
+void DefaultPainterImpl::character(CharCode, Coord, Coord, Coord) { }
+
+//+ DefaultPainterImpl(PainterObj::image)
+void DefaultPainterImpl::image(Raster_in, Coord, Coord) { }
+
+//+ DefaultPainterImpl(PainterObj::stencil)
+void DefaultPainterImpl::stencil(Raster_in, Coord, Coord) { }
+
+//+ DefaultPainterImpl(PainterObj::matrix=t)
+void DefaultPainterImpl::_c_matrix(TransformObj_in t) {
+    flush_text();
+    matrix_->load(t);
+    transformed_ = !matrix_->identity();
+}
+
+//+ DefaultPainterImpl(PainterObj::matrix?)
+TransformObjRef DefaultPainterImpl::_c_matrix() {
+    return TransformObj::_duplicate(matrix_);
+}
+
+//+ DefaultPainterImpl(PainterObj::push_matrix)
+void DefaultPainterImpl::push_matrix() {
+    transforms_->prepend(*((MatrixStackElement*)(matrix_->matrix())));
+}
+
+//+ DefaultPainterImpl(PainterObj::pop_matrix)
+void DefaultPainterImpl::pop_matrix() {
+    MatrixStack* s = transforms_;
+    if (s->count() == 0) {
+	/*
+	 * Underflow -- should raise an exception.
+	 */
+	return;
+    }
+    flush_text();
+    matrix_->load_matrix(s->item_ref(0).matrix);
+    transformed_ = !matrix_->identity();
+    s->remove(0);
+}
+
+//+ DefaultPainterImpl(PainterObj::transform)
+void DefaultPainterImpl::transform(TransformObj_in t) {
+    flush_text();
+    matrix_->premultiply(t);
+    transformed_ = !matrix_->identity();
+}
+
+//+ DefaultPainterImpl(PainterObj::clip)
+void DefaultPainterImpl::clip() {
+    /* not implemented */
+}
+
+//+ DefaultPainterImpl(PainterObj::clip_rect)
+void DefaultPainterImpl::clip_rect(Coord x0, Coord y0, Coord x1, Coord y1) {
+    RegionImpl region;
+    RegionImpl* r = (clipping_ == nil) ? new_clip() : &region;
+    r->lower_.x = x0; r->lower_.y = y0; r->lower_.z = 0.0;
+    r->upper_.x = x1; r->upper_.y = y1; r->upper_.z = 0.0;
+    if (transformed_) {
+	r->transform(matrix_);
+    }
+    if (clipping_ == nil) {
+	clipping_ = r;
+    } else {
+	clipping_->merge_intersect(r);
+    }
+    set_clip();
+}
+
+//+ DefaultPainterImpl(PainterObj::push_clipping)
+void DefaultPainterImpl::push_clipping() {
+//printf("push_clipping\n");
+    clippers_->prepend(clipping_);
+    if (is_not_nil(clipping_)) {
+	RegionImpl* r = new_clip();
+	r->lower_ = clipping_->lower_;
+	r->upper_ = clipping_->upper_;
+	clipping_ = r;
+    }
+}
+
+inline Long DefaultPainterImpl::clip_index(Long i) {
+    return i % (sizeof(free_clippers_) / sizeof(free_clippers_[0]));
+}
+
+RegionImpl* DefaultPainterImpl::new_clip() {
+    RegionImpl* r;
+    if (free_clipper_head_ != free_clipper_tail_) {
+	r = free_clippers_[free_clipper_head_];
+	free_clipper_head_ = clip_index(free_clipper_head_ + 1);
+    } else {
+	r = new RegionImpl;
+    }
+    return r;
+}
+
+//+ DefaultPainterImpl(PainterObj::pop_clipping)
+void DefaultPainterImpl::pop_clipping() {
+    ClippingStack* s = clippers_;
+    if (s->count() == 0) {
+	/*
+	 * Underflow -- should raise an exception.
+	 */
+	return;
+    }
+//printf("pop_clipping\n");
+    flush_text();
+    free_clip(clipping_);
+    clipping_ = s->item(0);
+    s->remove(0);
+    reset_clip();
+}
+
+void DefaultPainterImpl::free_clip(RegionImpl* r) {
+    Long new_tail = clip_index(free_clipper_tail_ + 1);
+    if (new_tail != free_clipper_head_) {
+	free_clippers_[free_clipper_tail_] = r;
+	free_clipper_tail_ = new_tail;
+    } else {
+	Fresco::unref(r);
+    }
+}
+
+/*
+ * Determine if the given region is (at least partially) visible
+ * given the current clipping region.
+ */
+
+//+ DefaultPainterImpl(PainterObj::is_visible)
+Boolean DefaultPainterImpl::is_visible(Region_in r) {
+    Boolean b = is_nil(clipping_);
+    if (!b) {
+	RegionRef rr;
+	RegionImpl bounds;
+	if (matrix_->identity()) {
+	    rr = r;
+	} else {
+	    rr = &bounds;
+	    rr->copy(r);
+	    rr->transform(matrix_);
+	}
+	b = clipping_->intersects(rr);
+    }
+    return b;
+}
+
+//+ DefaultPainterImpl(PainterObj::visible)
+RegionRef DefaultPainterImpl::_c_visible() {
+    return Region::_duplicate(clipping_);
+}
+
+/*
+ * The comment and page_number operations are typically
+ * only relevent for a printer.
+ */
+
+//+ DefaultPainterImpl(PainterObj::comment)
+void DefaultPainterImpl::comment(CharString_in) { }
+
+//+ DefaultPainterImpl(PainterObj::page_number)
+void DefaultPainterImpl::page_number(CharString_in) { }
+
+void DefaultPainterImpl::set_clip() { }
+void DefaultPainterImpl::reset_clip() { }
+void DefaultPainterImpl::flush_text() { }
+
+/* class XPainterImpl */
+
 XPainterImpl::XPainterImpl(WindowImpl* w, ScreenImpl* s) {
     window_ = w;
     screen_ = s;
@@ -531,22 +821,13 @@ XPainterImpl::XPainterImpl(WindowImpl* w, ScreenImpl* s) {
     subpath_ = new SubPathInfo[5];
     cur_subpath_ = subpath_;
     end_subpath_ = subpath_ + 5;
-    brush_ = nil;
-    color_ = nil;
-    stipple_ = 0;
     init_fonts();
     init_items();
     tx0_ = 0;
     ty0_ = 0;
     tx_ = 0.0;
     ty_ = 0.0;
-    matrix_ = new TransformImpl;
-    transforms_ = new MatrixStack;
-    transformed_ = false;
-    clipping_ = nil;
-    clippers_ = new ClippingStack;
-    free_clipper_head_ = 0;
-    free_clipper_tail_ = 0;
+    pwidth_ = 0;
     pheight_ = 0;
 }
 
@@ -561,34 +842,7 @@ XPainterImpl::~XPainterImpl() {
     xdisplay_ = window_->display()->xdisplay();
     cleanup();
     close_fonts();
-    delete transforms_;
-    Fresco::unref(clipping_);
-    for (ListItr(ClippingStack) j(*clippers_); j.more(); j.next()) {
-	Fresco::unref(j.cur());
-    }
-    delete clippers_;
 }
-
-//+ XPainterImpl(FrescoObject::=object_.)
-Long XPainterImpl::ref__(Long references) {
-    return object_.ref__(references);
-}
-Tag XPainterImpl::attach(FrescoObjectRef observer) {
-    return object_.attach(observer);
-}
-void XPainterImpl::detach(Tag attach_tag) {
-    object_.detach(attach_tag);
-}
-void XPainterImpl::disconnect() {
-    object_.disconnect();
-}
-void XPainterImpl::notify_observers() {
-    object_.notify_observers();
-}
-void XPainterImpl::update() {
-    object_.update();
-}
-//+
 
 //+ XPainterImpl(PainterObj::to_coord)
 Coord XPainterImpl::to_coord(PixelCoord p) {
@@ -779,7 +1033,7 @@ void XPainterImpl::fill_rect(Coord x0, Coord y0, Coord x1, Coord y1) {
 }
 
 //+ XPainterImpl(PainterObj::brush_attr=b)
-void XPainterImpl::_c_brush_attr(BrushRef b) {
+void XPainterImpl::_c_brush_attr(Brush_in b) {
     if (same(b, brush_)) {
 	return;
     }
@@ -810,7 +1064,7 @@ BrushRef XPainterImpl::_c_brush_attr() {
 }
 
 //+ XPainterImpl(PainterObj::color_attr=c)
-void XPainterImpl::_c_color_attr(ColorRef c) {
+void XPainterImpl::_c_color_attr(Color_in c) {
     if (same(c, color_)) {
 	return;
     }
@@ -834,7 +1088,7 @@ ColorRef XPainterImpl::_c_color_attr() {
 }
 
 //+ XPainterImpl(PainterObj::font_attr=f)
-void XPainterImpl::_c_font_attr(FontRef f) {
+void XPainterImpl::_c_font_attr(Font_in f) {
     if (same(f, fontinfo_->font)) {
 	return;
     }
@@ -903,7 +1157,7 @@ void XPainterImpl::stroke() {
 //+ XPainterImpl(PainterObj::character)
 void XPainterImpl::character(CharCode ch, Coord width, Coord x, Coord y) {
     if (transformed_) {
-	if (fontinfo_->scaled || !is_translation(matrix_)) {
+	if (!is_translation(matrix_)) {
 	    stencil(fontinfo_->font->bitmap(ch), x, y);
 	    return;
 	} else {
@@ -941,17 +1195,11 @@ void XPainterImpl::character(CharCode ch, Coord width, Coord x, Coord y) {
 }
 
 //+ XPainterImpl(PainterObj::image)
-void XPainterImpl::image(RasterRef r, Coord x, Coord y) {
-    if (RasterBitmap::_narrow(r) != nil) {
-	/* not sure I believe this is correct */
-	stencil(r, x, y);
-	return;
-    }
-
+void XPainterImpl::image(Raster_in r, Coord x, Coord y) {
     RasterImpl* raster = RasterImpl::_narrow(r);
     if (raster == nil) {
 	/*
-	 * Not a known kind of a image -- should extract colors
+	 * Not a known kind of image -- should extract colors
 	 * with peek and build a RasterImpl.
 	 */
 	return;
@@ -999,14 +1247,13 @@ void XPainterImpl::image(RasterRef r, Coord x, Coord y) {
 }
 
 //+ XPainterImpl(PainterObj::stencil)
-void XPainterImpl::stencil(RasterRef r, Coord x, Coord y) {
-    if (RasterBitmap::_narrow(r) == nil) {
-	image(r, x, y);
-	return;
-    }
-
+void XPainterImpl::stencil(Raster_in r, Coord x, Coord y) {
     RasterImpl* raster = RasterImpl::_narrow(r);
     if (raster == nil) {
+	/*
+	 * Not a known kind of image -- should extract colors
+	 * with peek and build a RasterImpl.
+	 */
 	return;
     }
 
@@ -1039,7 +1286,7 @@ void XPainterImpl::stencil(RasterRef r, Coord x, Coord y) {
 
     PixelCoord px = Math::round(inline_to_pixels(v.x) + psd->origin_x);
     PixelCoord py = Math::round(
-	pheight_ - inline_to_pixels(v.y) - psd->origin_y
+	pheight_ - inline_to_pixels(v.y) + psd->origin_y
     );
 
     XGCValues gcv;
@@ -1075,142 +1322,37 @@ void XPainterImpl::stencil(RasterRef r, Coord x, Coord y) {
     XFreeGC(dpy, xgc);
 }
 
-//+ XPainterImpl(PainterObj::matrix=t)
-void XPainterImpl::_c_matrix(TransformObjRef t) {
-    flush_text();
-    matrix_->load(t);
-    transformed_ = !matrix_->identity();
-}
-
-//+ XPainterImpl(PainterObj::matrix?)
-TransformObjRef XPainterImpl::_c_matrix() {
-    return TransformObj::_duplicate(matrix_);
-}
-
-//+ XPainterImpl(PainterObj::push_matrix)
-void XPainterImpl::push_matrix() {
-    transforms_->prepend(*((MatrixStackElement*)(matrix_->matrix())));
-}
-
-//+ XPainterImpl(PainterObj::pop_matrix)
-void XPainterImpl::pop_matrix() {
-    MatrixStack* s = transforms_;
-    if (s->count() == 0) {
-	/*
-	 * Underflow -- should raise an exception.
-	 */
-	return;
+static inline void restrict(PixelCoord& c, PixelCoord a, PixelCoord b) {
+    if (c < a) {
+	c = a;
+    } else if (c > b) {
+	c = b;
     }
-    flush_text();
-    matrix_->load_matrix(s->item_ref(0).matrix);
-    transformed_ = !matrix_->identity();
-    s->remove(0);
 }
 
-//+ XPainterImpl(PainterObj::transform)
-void XPainterImpl::transform(TransformObjRef t) {
-    flush_text();
-    matrix_->premultiply(t);
-    transformed_ = !matrix_->identity();
+void XPainterImpl::set_clip() {
+    PixelCoord left = inline_to_pixels(clipping_->lower_.x);
+    PixelCoord bottom = inline_to_pixels(clipping_->lower_.y);
+    PixelCoord right = inline_to_pixels(clipping_->upper_.x);
+    PixelCoord top = inline_to_pixels(clipping_->upper_.y);
+    restrict(left, 0, pwidth_);
+    restrict(bottom, 0, pheight_);
+    restrict(right, 0, pwidth_);
+    restrict(top, 0, pheight_);
+    xclip_.x = XCoord(left);
+    xclip_.y = XCoord(pheight_ - top);
+    xclip_.width = XCoord(right - left);
+    xclip_.height = XCoord(top - bottom);
+    XSetClipRectangles(xdisplay_, xgc_, 0, 0, &xclip_, 1, YXBanded);
 }
 
-//+ XPainterImpl(PainterObj::clip)
-void XPainterImpl::clip() { }
-
-//+ XPainterImpl(PainterObj::clip_rect)
-void XPainterImpl::clip_rect(Coord x0, Coord y0, Coord x1, Coord y1) {
-    Vertex v1, v2;
-    v1.x = x0; v1.y = y0; v1.z = 0.0;
-    v2.x = x1; v2.y = y1; v2.z = 0.0;
-    if (is_nil(clipping_)) {
-	clipping_ = new_clip();
-	clipping_->lower_ = v1;
-	clipping_->upper_ = v2;
+void XPainterImpl::reset_clip() {
+    if (clipping_ == nil) {
+	XSetClipMask(xdisplay_, xgc_, None);
     } else {
-	RegionImpl::merge_max(clipping_->lower_, v1);
-	RegionImpl::merge_min(clipping_->upper_, v2);
+	set_clip();
     }
 }
-
-//+ XPainterImpl(PainterObj::push_clipping)
-void XPainterImpl::push_clipping() {
-    clippers_->prepend(clipping_);
-    if (is_not_nil(clipping_)) {
-	RegionImpl* r = new_clip();
-	r->lower_ = clipping_->lower_;
-	r->upper_ = clipping_->upper_;
-	clipping_ = r;
-    }
-}
-
-inline Long XPainterImpl::clip_index(Long i) {
-    return i % (sizeof(free_clippers_) / sizeof(free_clippers_[0]));
-}
-
-RegionImpl* XPainterImpl::new_clip() {
-    RegionImpl* r;
-    if (free_clipper_head_ != free_clipper_tail_) {
-	r = free_clippers_[free_clipper_head_];
-	free_clipper_head_ = clip_index(free_clipper_head_ + 1);
-    } else {
-	r = new RegionImpl;
-    }
-    return r;
-}
-
-//+ XPainterImpl(PainterObj::pop_clipping)
-void XPainterImpl::pop_clipping() {
-    ClippingStack* s = clippers_;
-    if (s->count() == 0) {
-	/*
-	 * Underflow -- should raise an exception.
-	 */
-	return;
-    }
-    flush_text();
-    free_clip(clipping_);
-    clipping_ = s->item(0);
-    s->remove(0);
-}
-
-void XPainterImpl::free_clip(RegionImpl* r) {
-    Long new_tail = clip_index(free_clipper_tail_ + 1);
-    if (new_tail != free_clipper_head_) {
-	free_clippers_[free_clipper_tail_] = r;
-	free_clipper_tail_ = new_tail;
-    } else {
-	Fresco::unref(r);
-    }
-}
-
-/*
- * Determine if the given region is (at least partially) visible
- * given the current clipping region.
- */
-
-//+ XPainterImpl(PainterObj::is_visible)
-Boolean XPainterImpl::is_visible(RegionRef r) {
-    return is_nil(clipping_) || clipping_->intersects(r);
-}
-
-//+ XPainterImpl(PainterObj::visible)
-RegionRef XPainterImpl::_c_visible() {
-    return Region::_duplicate(clipping_);
-}
-
-/*
- * Comments are not relevant for X drawing.
- */
-
-//+ XPainterImpl(PainterObj::comment)
-void XPainterImpl::comment(CharStringRef) { }
-
-/*
- * The current page number is not meaningful for X drawing.
- */
-
-//+ XPainterImpl(PainterObj::page_number)
-void XPainterImpl::page_number(CharStringRef) { }
 
 /*
  * Prepare the painter for X drawing by allocating a graphics context.
@@ -1242,6 +1384,7 @@ void XPainterImpl::prepare(Boolean double_buffered) {
     xgc_ = XCreateGC(
 	xdisplay_, xdrawable_, GCGraphicsExposures | GCFillStyle, &gcv
     );
+    pwidth_ = window_->pwidth();
     pheight_ = window_->pheight();
     Fresco::unref(brush_);
     brush_ = nil;
@@ -1264,14 +1407,9 @@ void XPainterImpl::backbuffer() {
 void XPainterImpl::swapbuffers() {
     flush_text();
     if (double_buffered_) {
-	// hack for now
-	clip_.x = 0;
-	clip_.y = 0;
-	clip_.width = XCoord(window_->pwidth());
-	clip_.height = XCoord(window_->pheight());
 	XCopyArea(
 	    xdisplay_, xbackbuffer_, xfrontbuffer_, xfrontgc_,
-	    clip_.x, clip_.y, clip_.width, clip_.height, clip_.x, clip_.y
+	    xclip_.x, xclip_.y, xclip_.width, xclip_.height, xclip_.x, xclip_.y
 	);
     }
 }
@@ -1315,7 +1453,9 @@ XPainterImpl::FontInfo* XPainterImpl::open_font(FontRef f) {
 	i->xfont = xf->fid;
 	i->scaled = !Math::equal(fi->to_coord(1), to_coord(1), 0.001f);
     } else {
-	CharStringBuffer s(fi->name());
+	/* Use temporary variable to workaround DEC CXX bug */
+	CharString fname = fi->name();
+	CharStringBuffer s(fname);
 	i->xfont = XLoadFont(xdisplay_, s.string());
 	i->scaled = true;
     }
@@ -1549,6 +1689,12 @@ DrawingKitImpl::DrawingKitImpl(DisplayImpl* d) {
     display_ = d;
     colors_ = new DrawingKitColorTable(20);
     fonts_ = new DrawingKitFontTable(20);
+    foreground_str_ = Fresco::string_ref("foreground");
+    Foreground_str_ = Fresco::string_ref("Foreground");
+    background_str_ = Fresco::string_ref("background");
+    Background_str_ = Fresco::string_ref("Background");
+    font_str_ = Fresco::string_ref("font");
+    Font_str_ = Fresco::string_ref("Font");
 }
 
 DrawingKitImpl::~DrawingKitImpl() {
@@ -1561,7 +1707,7 @@ DrawingKitImpl::~DrawingKitImpl() {
 Long DrawingKitImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag DrawingKitImpl::attach(FrescoObjectRef observer) {
+Tag DrawingKitImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void DrawingKitImpl::detach(Tag attach_tag) {
@@ -1604,7 +1750,7 @@ ColorRef DrawingKitImpl::_c_color_rgb(Color::Intensity r, Color::Intensity g, Co
 }
 
 //+ DrawingKitImpl(DrawingKit::find_color)
-ColorRef DrawingKitImpl::_c_find_color(CharStringRef name) {
+ColorRef DrawingKitImpl::_c_find_color(CharString_in name) {
     ColorRef c = nil;
     if (!colors_->find(c, name)) {
 	XColor xc;
@@ -1625,7 +1771,7 @@ ColorRef DrawingKitImpl::_c_find_color(CharStringRef name) {
 }
 
 //+ DrawingKitImpl(DrawingKit::resolve_color)
-ColorRef DrawingKitImpl::_c_resolve_color(StyleObjRef s, CharStringRef name) {
+ColorRef DrawingKitImpl::_c_resolve_color(StyleObj_in s, CharString_in name) {
     ColorRef c = nil;
     StyleValue a = s->resolve(name);
     if (is_not_nil(a)) {
@@ -1638,27 +1784,27 @@ ColorRef DrawingKitImpl::_c_resolve_color(StyleObjRef s, CharStringRef name) {
 }
 
 //+ DrawingKitImpl(DrawingKit::foreground)
-ColorRef DrawingKitImpl::_c_foreground(StyleObjRef s) {
-    return resolve_colors(s, "foreground", "Foreground");
+ColorRef DrawingKitImpl::_c_foreground(StyleObj_in s) {
+    return resolve_colors(s, foreground_str_, Foreground_str_);
 }
 
 //+ DrawingKitImpl(DrawingKit::background)
-ColorRef DrawingKitImpl::_c_background(StyleObjRef s) {
-    return resolve_colors(s, "background", "Background");
+ColorRef DrawingKitImpl::_c_background(StyleObj_in s) {
+    return resolve_colors(s, background_str_, Background_str_);
 }
 
 ColorRef DrawingKitImpl::resolve_colors(
-    StyleObjRef s, const char* name1, const char* name2
+    StyleObjRef s, CharString_in name1, CharString_in name2
 ) {
-    ColorRef c = _c_resolve_color(s, Fresco::string_ref(name1));
+    ColorRef c = _c_resolve_color(s, name1);
     if (is_nil(c)) {
-	c = _c_resolve_color(s, Fresco::string_ref(name2));
+	c = _c_resolve_color(s, name2);
     }
     return c;
 }
 
 //+ DrawingKitImpl(DrawingKit::find_font)
-FontRef DrawingKitImpl::_c_find_font(CharStringRef fullname) {
+FontRef DrawingKitImpl::_c_find_font(CharString_in fullname) {
     FontRef f = nil;
     if (!fonts_->find(f, fullname)) {
 	CharStringBuffer cs(fullname);
@@ -1674,12 +1820,12 @@ FontRef DrawingKitImpl::_c_find_font(CharStringRef fullname) {
 }
 
 //+ DrawingKitImpl(DrawingKit::find_font_match)
-FontRef DrawingKitImpl::_c_find_font_match(CharStringRef family, CharStringRef style, Coord ptsize) {
+FontRef DrawingKitImpl::_c_find_font_match(CharString_in family, CharString_in style, Coord ptsize) {
     return nil;
 }
 
 //+ DrawingKitImpl(DrawingKit::resolve_font)
-FontRef DrawingKitImpl::_c_resolve_font(StyleObjRef s, CharStringRef name) {
+FontRef DrawingKitImpl::_c_resolve_font(StyleObj_in s, CharString_in name) {
     FontRef f = nil;
     StyleValue a = s->resolve(name);
     if (is_not_nil(a)) {
@@ -1692,16 +1838,16 @@ FontRef DrawingKitImpl::_c_resolve_font(StyleObjRef s, CharStringRef name) {
 }
 
 //+ DrawingKitImpl(DrawingKit::default_font)
-FontRef DrawingKitImpl::_c_default_font(StyleObjRef s) {
-    FontRef f = _c_resolve_font(s, Fresco::string_ref("font"));
+FontRef DrawingKitImpl::_c_default_font(StyleObj_in s) {
+    FontRef f = _c_resolve_font(s, font_str_);
     if (is_nil(f)) {
-	f = _c_resolve_font(s, Fresco::string_ref("Font"));
+	f = _c_resolve_font(s, Font_str_);
     }
     return f;
 }
 
 //+ DrawingKitImpl(DrawingKit::bitmap_file)
-RasterRef DrawingKitImpl::_c_bitmap_file(CharStringRef filename) {
+RasterRef DrawingKitImpl::_c_bitmap_file(CharString_in filename) {
     if (is_nil(filename)) {
 	return nil;
     }
@@ -1736,13 +1882,13 @@ RasterRef DrawingKitImpl::_c_bitmap_data(const DrawingKit::Data& data, Raster::I
 }
 
 //+ DrawingKitImpl(DrawingKit::bitmap_char)
-RasterRef DrawingKitImpl::_c_bitmap_char(FontRef f, CharCode c) {
+RasterRef DrawingKitImpl::_c_bitmap_char(Font_in f, CharCode c) {
     FontImpl* fi = (FontImpl*)f;
     return fi->bitmap(c);
 }
 
 //+ DrawingKitImpl(DrawingKit::raster_tiff)
-RasterRef DrawingKitImpl::_c_raster_tiff(CharStringRef filename) {
+RasterRef DrawingKitImpl::_c_raster_tiff(CharString_in filename) {
     return nil;
 }
 
@@ -1757,6 +1903,6 @@ TransformObjRef DrawingKitImpl::_c_transform(TransformObj::Matrix m) {
 }
 
 //+ DrawingKitImpl(DrawingKit::printer)
-PainterObjRef DrawingKitImpl::_c_printer(CharStringRef output) {
+PainterObjRef DrawingKitImpl::_c_printer(CharString_in output) {
     return nil;
 }

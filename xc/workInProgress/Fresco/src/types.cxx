@@ -1,5 +1,5 @@
 /*
- * $XConsortium: types.cxx,v 1.2 94/03/08 15:54:05 matt Exp $
+ * $XConsortium$
  */
 
 /*
@@ -38,28 +38,9 @@
 #include <X11/Fresco/OS/table.h>
 #include <X11/Fresco/OS/thread.h>
 #include <ctype.h>
-
-/*
- * Sony NEWS-OS 6.0 has conflicting prototypes for abs() in math.h
- * and stdlib.h, so you cannot include both headers in any C++ source
- * file.  Until that bug is fixed, we'll have to explicitly define 
- * the symbols we need from math.h on the Sony.  On other platforms,
- * we can just include math.h and be done with it.
- */
-
-#if defined(sony)
-#define M_PI 3.14159265358979323846
-extern "C" {
-    double cos(double);
-    double sin(double);
-}
-#else
 #include <math.h>
-#endif
-
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 /*
  * AIX lacks prototypes for strcasecmp and strncasecmp, even though they
@@ -73,10 +54,10 @@ extern "C" {
 }
 #endif /* AIXV3 */
 
-
 CharStringImpl::CharStringImpl() {
     data_ = nil;
     length_ = 0;
+    dynamic_ = false;
 }
 
 CharStringImpl::CharStringImpl(const char* s) {
@@ -89,6 +70,7 @@ CharStringImpl::CharStringImpl(const char* s, Long length) {
 
 CharStringImpl::CharStringImpl(CharStringRef s) {
     data_ = nil;
+    dynamic_ = false;
     copy(s);
 }
 
@@ -97,7 +79,15 @@ CharStringImpl::CharStringImpl(const CharStringImpl& s) {
 }
 
 CharStringImpl::~CharStringImpl() {
-    delete data_;
+    free();
+}
+
+CharStringImpl* CharStringImpl::create_static(const char* str) {
+    CharStringImpl* c = new CharStringImpl;
+    c->data_ = (char*)str;
+    c->length_ = strlen(str);
+    c->dynamic_ = false;
+    return c;
 }
 
 void CharStringImpl::set(const char* str, Long n) {
@@ -105,13 +95,20 @@ void CharStringImpl::set(const char* str, Long n) {
     data_ = new char[length_ + 1];
     strncpy(data_, str, int(length_));
     data_[length_] = '\0';
+    dynamic_ = true;
+}
+
+void CharStringImpl::free() {
+    if (dynamic_) {
+	delete data_;
+    }
 }
 
 //+ CharStringImpl(FrescoObject::=object_.)
 Long CharStringImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag CharStringImpl::attach(FrescoObjectRef observer) {
+Tag CharStringImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void CharStringImpl::detach(Tag attach_tag) {
@@ -146,19 +143,20 @@ Long CharStringImpl::count() {
 }
 
 //+ CharStringImpl(CharString::copy)
-void CharStringImpl::copy(CharStringRef s) {
-    delete data_;
+void CharStringImpl::copy(CharString_in s) {
+    free();
     length_ = s->count();
     data_ = new char[length_ + 1];
     CharString::CharData buf(length_ + 1, 0, data_);
     s->get_char_data(buf);
     data_[length_] = '\0';
+    dynamic_ = true;
     /* avoid deallocating the newly-copied data */
     buf._buffer = nil;
 }
 
 //+ CharStringImpl(CharString::equal)
-Boolean CharStringImpl::equal(CharStringRef s) {
+Boolean CharStringImpl::equal(CharString_in s) {
     if (length_ == s->count()) {
 	CharStringBuffer buf(s);
 	Boolean b = strncmp(data_, buf.string(), int(length_)) == 0;
@@ -168,7 +166,7 @@ Boolean CharStringImpl::equal(CharStringRef s) {
 }
 
 //+ CharStringImpl(CharString::case_insensitive_equal)
-Boolean CharStringImpl::case_insensitive_equal(CharStringRef s) {
+Boolean CharStringImpl::case_insensitive_equal(CharString_in s) {
     if (length_ == s->count()) {
 	CharStringBuffer buf(s);
 	Boolean b = strncasecmp(data_, buf.string(), int(length_)) == 0;
@@ -198,9 +196,10 @@ void CharStringImpl::get_char_data(CharString::CharData& d) {
 
 //+ CharStringImpl(CharString::put_data)
 void CharStringImpl::put_data(const CharString::Data& d) {
-    delete data_;
+    free();
     length_ = d._length;
     data_ = new char[length_];
+    dynamic_ = true;
     for (Long i = 0; i < length_; i++) {
 	data_[i] = (char)d._buffer[i];
     }
@@ -208,9 +207,10 @@ void CharStringImpl::put_data(const CharString::Data& d) {
 
 //+ CharStringImpl(CharString::put_char_data)
 void CharStringImpl::put_char_data(const CharString::CharData& d) {
-    delete data_;
+    free();
     length_ = d._length;
     data_ = new char[length_];
+    dynamic_ = true;
     for (Long i = 0; i < length_; i++) {
 	data_[i] = d._buffer[i];
     }
@@ -269,7 +269,7 @@ ActionImpl::~ActionImpl() { }
 Long ActionImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag ActionImpl::attach(FrescoObjectRef observer) {
+Tag ActionImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void ActionImpl::detach(Tag attach_tag) {
@@ -309,7 +309,7 @@ RegionImpl::~RegionImpl() { }
 Long RegionImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag RegionImpl::attach(FrescoObjectRef observer) {
+Tag RegionImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void RegionImpl::detach(Tag attach_tag) {
@@ -362,7 +362,7 @@ Boolean RegionImpl::contains_plane(const Vertex& v, Axis a) {
 }
 
 //+ RegionImpl(Region::intersects)
-Boolean RegionImpl::intersects(RegionRef r) {
+Boolean RegionImpl::intersects(Region_in r) {
     Vertex lower, upper;
     r->bounds(lower, upper);
     Boolean b = (
@@ -374,7 +374,7 @@ Boolean RegionImpl::intersects(RegionRef r) {
 }
 
 //+ RegionImpl(Region::copy)
-void RegionImpl::copy(RegionRef r) {
+void RegionImpl::copy(Region_in r) {
     Region::BoundingSpan x, y, z;
     r->span(X_axis, x);
     r->span(Y_axis, y);
@@ -391,7 +391,7 @@ void RegionImpl::copy(RegionRef r) {
 }
 
 //+ RegionImpl(Region::merge_intersect)
-void RegionImpl::merge_intersect(RegionRef r) {
+void RegionImpl::merge_intersect(Region_in r) {
     Vertex lower, upper;
     r->bounds(lower, upper);
     merge_max(lower_, lower);
@@ -400,7 +400,7 @@ void RegionImpl::merge_intersect(RegionRef r) {
 }
 
 //+ RegionImpl(Region::merge_union)
-void RegionImpl::merge_union(RegionRef r) {
+void RegionImpl::merge_union(Region_in r) {
     Vertex lower, upper;
     r->bounds(lower, upper);
     merge_min(lower_, lower);
@@ -409,13 +409,13 @@ void RegionImpl::merge_union(RegionRef r) {
 }
 
 //+ RegionImpl(Region::subtract)
-void RegionImpl::subtract(RegionRef r) {
+void RegionImpl::subtract(Region_in r) {
     /* not implemented */
     notify();
 }
 
 //+ RegionImpl(Region::transform)
-void RegionImpl::transform(TransformObjRef t) {
+void RegionImpl::transform(TransformObj_in t) {
     Vertex v[8];
     v[0] = lower_;
     v[1] = upper_;
@@ -517,7 +517,7 @@ StyleValueImpl::~StyleValueImpl() {
 Long StyleValueImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag StyleValueImpl::attach(FrescoObjectRef observer) {
+Tag StyleValueImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void StyleValueImpl::detach(Tag attach_tag) {
@@ -565,10 +565,9 @@ Boolean StyleValueImpl::is_on() {
 Boolean StyleValueImpl::read_boolean(Boolean& b) {
     CharString s;
     if (read_string(s)) {
-	b = (
-	    s->case_insensitive_equal(Fresco::string_ref("on")) ||
-	    s->case_insensitive_equal(Fresco::string_ref("true"))
-	);
+	CharString s1 = Fresco::string_ref("on");
+	CharString s2 = Fresco::string_ref("true");
+	b = s->case_insensitive_equal(s1) || s->case_insensitive_equal(s2);
 	return true;
     }
     return false;
@@ -576,7 +575,7 @@ Boolean StyleValueImpl::read_boolean(Boolean& b) {
 
 //+ StyleValueImpl(StyleValue::write_boolean)
 void StyleValueImpl::write_boolean(Boolean b) {
-    write_string(new CharStringImpl(b ? "on" : "off"));
+    write_string(CharString(new CharStringImpl(b ? "on" : "off")));
 }
 
 //+ StyleValueImpl(StyleValue::read_coord)
@@ -674,7 +673,7 @@ Boolean StyleValueImpl::_c_read_string(CharStringRef& s) {
 }
 
 //+ StyleValueImpl(StyleValue::write_string)
-void StyleValueImpl::write_string(CharStringRef s) {
+void StyleValueImpl::write_string(CharString_in s) {
     uninitialized_ = false;
     value_ = parse_value(s);
     modified();
@@ -691,7 +690,7 @@ Boolean StyleValueImpl::_c_read_value(FrescoObjectRef& s) {
 }
 
 //+ StyleValueImpl(StyleValue::write_value)
-void StyleValueImpl::write_value(FrescoObjectRef s) {
+void StyleValueImpl::write_value(FrescoObject_in s) {
     uninitialized_ = false;
     any_value_ = s;
     modified();
@@ -852,9 +851,9 @@ public:
     virtual ~StyleCloner();
 
     //+ StyleVisitor::=
-    Boolean visit_alias(CharStringRef name);
-    Boolean visit_attribute(StyleValueRef a);
-    Boolean visit_style(StyleObjRef s);
+    Boolean visit_alias(CharString_in name);
+    Boolean visit_attribute(StyleValue_in a);
+    Boolean visit_style(StyleObj_in s);
     //+
 private:
     SharedStyleImpl* style_impl_;
@@ -864,13 +863,13 @@ StyleCloner::StyleCloner(SharedStyleImpl* s) { style_impl_ = s; }
 StyleCloner::~StyleCloner() { }
 
 //+ StyleCloner(StyleVisitor::visit_alias)
-Boolean StyleCloner::visit_alias(CharStringRef name) {
-    style_impl_->alias(new CharStringImpl(name));
+Boolean StyleCloner::visit_alias(CharString_in name) {
+    style_impl_->alias(CharString(new CharStringImpl(name)));
     return true;
 }
 
 //+ StyleCloner(StyleVisitor::visit_attribute)
-Boolean StyleCloner::visit_attribute(StyleValueRef a) {
+Boolean StyleCloner::visit_attribute(StyleValue_in a) {
     StyleValue n = style_impl_->_c_bind(a->name());
     CharString s;
     if (a->read_string(s)) {
@@ -881,7 +880,7 @@ Boolean StyleCloner::visit_attribute(StyleValueRef a) {
 }
 
 //+ StyleCloner(StyleVisitor::visit_style)
-Boolean StyleCloner::visit_style(StyleObjRef s) {
+Boolean StyleCloner::visit_style(StyleObj_in s) {
     StyleObj ns = style_impl_->_c_new_style();
     ns->merge(s);
     ns->link_parent(style_impl_->style_);
@@ -905,7 +904,7 @@ StyleObjRef SharedStyleImpl::_c_parent_style() {
  */
 
 //+ SharedStyleImpl(StyleObj::link_parent)
-void SharedStyleImpl::link_parent(StyleObjRef parent) {
+void SharedStyleImpl::link_parent(StyleObj_in parent) {
     if (is_not_nil(parent_)) {
 	parent_->unlink_child(unlink_);
     }
@@ -925,7 +924,7 @@ void SharedStyleImpl::unlink_parent() {
 }
 
 //+ SharedStyleImpl(StyleObj::link_child)
-Tag SharedStyleImpl::link_child(StyleObjRef child) {
+Tag SharedStyleImpl::link_child(StyleObj_in child) {
     if (children_ == nil) {
 	children_ = new StyleList(5);
     }
@@ -951,22 +950,22 @@ void SharedStyleImpl::unlink_child(Tag link_tag) {
 }
 
 //+ SharedStyleImpl(StyleObj::merge)
-void SharedStyleImpl::merge(StyleObjRef s) {
+void SharedStyleImpl::merge(StyleObj_in s) {
     if (name_ == nil) {
 	CharString name = s->name();
 	if (is_not_nil(name)) {
 	    name_ = new CharStringImpl(name);
 	}
     }
-    StyleCloner* v = new StyleCloner(this);
+    StyleVisitor v = new StyleCloner(this);
     s->visit_aliases(v);
     s->visit_attributes(v);
     s->visit_styles(v);
 }
 
 //+ SharedStyleImpl(StyleObj::name=s)
-void SharedStyleImpl::_c_name(CharStringRef s) {
-    name_ = new CharStringImpl(s);
+void SharedStyleImpl::_c_name(CharString_in s) {
+    name_ = CharString::_duplicate(s->_obj());
 }
 
 //+ SharedStyleImpl(StyleObj::name?)
@@ -975,11 +974,11 @@ CharStringRef SharedStyleImpl::_c_name() {
 }
 
 //+ SharedStyleImpl(StyleObj::alias)
-void SharedStyleImpl::alias(CharStringRef s) {
+void SharedStyleImpl::alias(CharString_in s) {
     if (aliases_ == nil) {
 	aliases_ = new PathName(5);
     }
-    aliases_->prepend(s);
+    aliases_->prepend(CharString::_duplicate(s));
 }
 
 /*
@@ -988,7 +987,7 @@ void SharedStyleImpl::alias(CharStringRef s) {
  */
 
 //+ SharedStyleImpl(StyleObj::bind)
-StyleValueRef SharedStyleImpl::_c_bind(CharStringRef name) {
+StyleValueRef SharedStyleImpl::_c_bind(CharString_in name) {
     PathName* path = parse_name(name);
     if (path == nil) {
 	/* irrelevant attribute: A*B where A doesn't match */
@@ -1101,7 +1100,7 @@ Long SharedStyleImpl::find_separator(const char* start, const char* end) {
  */
 
 //+ SharedStyleImpl(StyleObj::match)
-Long SharedStyleImpl::match(CharStringRef name) {
+Long SharedStyleImpl::match(CharString_in name) {
     long match = 0;
     if (is_not_nil(name_) && name_->equal(name)) {
 	match = 1;
@@ -1190,11 +1189,15 @@ void SharedStyleImpl::load_property(
 	} else if (value_length == 0) {
 	    bad_property_value(p, length);
 	} else {
-	    StyleValue a = _c_bind(new CharStringImpl(name, name_length));
+	    StyleValue a = _c_bind(
+		CharString(new CharStringImpl(name, name_length))
+	    );
 	    if (is_not_nil(a)) {
 		long p = priority + match_priority_;
 		if (a->uninitialized() || p >= a->priority()) {
-		    a->write_string(new CharStringImpl(value, value_length));
+		    a->write_string(
+			CharString(new CharStringImpl(value, value_length))
+		    );
 		    a->priority(p);
 		}
 	    }
@@ -1224,7 +1227,7 @@ void SharedStyleImpl::bad_property_value(const char*, Long) { }
  */
 
 //+ SharedStyleImpl(StyleObj::is_on)
-Boolean SharedStyleImpl::is_on(CharStringRef name) {
+Boolean SharedStyleImpl::is_on(CharString_in name) {
     StyleValueRef a = _c_resolve(name);
     Boolean b;
     return is_not_nil(a) && a->read_boolean(b) && b;
@@ -1235,7 +1238,7 @@ Boolean SharedStyleImpl::is_on(CharStringRef name) {
  */
 
 //+ SharedStyleImpl(StyleObj::resolve)
-StyleValueRef SharedStyleImpl::_c_resolve(CharStringRef name) {
+StyleValueRef SharedStyleImpl::_c_resolve(CharString_in name) {
     StyleValueTableEntry* e = find_entry(name, false);
     if (e != nil) {
 	StyleValueImplList* list = e->entries[0];
@@ -1260,7 +1263,7 @@ StyleValueRef SharedStyleImpl::_c_resolve(CharStringRef name) {
  */
 
 //+ SharedStyleImpl(StyleObj::resolve_wildcard)
-StyleValueRef SharedStyleImpl::_c_resolve_wildcard(CharStringRef name, StyleObjRef start) {
+StyleValueRef SharedStyleImpl::_c_resolve_wildcard(CharString_in name, StyleObj_in start) {
     StyleValueTableEntry* e = find_entry(name, false);
     if (e != nil) {
 	if (e->used > 0) {
@@ -1338,7 +1341,7 @@ public:
 	StyleObjRef start, StyleObjRef cur
     );
 
-    Boolean visit_alias(CharStringRef name); //+ StyleVisitor::visit_alias
+    Boolean visit_alias(CharString_in name); //+ StyleVisitor::visit_alias
 
     SharedStyleImpl* style_;
     StyleValueTableEntry* entry_;
@@ -1368,7 +1371,7 @@ void StyleMatcher::setup(
 }
 
 //+ StyleMatcher(StyleVisitor::visit_alias)
-Boolean StyleMatcher::visit_alias(CharStringRef name) {
+Boolean StyleMatcher::visit_alias(CharString_in name) {
     StyleValueRef a = style_->wildcard_match_name(name, entry_, cur_);
     if (is_not_nil(a)) {
 	match_ = a;
@@ -1386,13 +1389,13 @@ StyleValueRef SharedStyleImpl::wildcard_match(
     while (is_not_nil(s)) {
 	CharString name = s->name();
 	if (is_not_nil(name)) {
-	    StyleValueRef a = wildcard_match_name(name, e, s);
+	    StyleValueRef a = wildcard_match_name(name->_obj(), e, s->_obj());
 	    if (is_not_nil(a)) {
 		found = a;
 		break;
 	    }
 	}
-	matcher.setup(this, e, start, s);
+	matcher.setup(this, e, start, s->_obj());
 	s->visit_aliases(&matcher);
 	if (is_not_nil(matcher.match_)) {
 	    found = matcher.match_;
@@ -1442,7 +1445,7 @@ long SharedStyleImpl::finish_wildcard_match(
     long matched = 0;
     StyleObj s = StyleObj::_duplicate(cur);
     long p_cur = p_index;
-    while (p_cur >= 0 && s != nil) {
+    while (p_cur >= 0 && is_not_nil(s)) {
 	long m = s->match(path->item(p_cur));
 	if (m != 0) {
 	    --p_cur;
@@ -1454,7 +1457,7 @@ long SharedStyleImpl::finish_wildcard_match(
 }
 
 //+ SharedStyleImpl(StyleObj::unbind)
-void SharedStyleImpl::unbind(CharStringRef name) {
+void SharedStyleImpl::unbind(CharString_in name) {
     if (table_ == nil) {
 	return;
     }
@@ -1485,7 +1488,7 @@ void SharedStyleImpl::unbind(CharStringRef name) {
 }
 
 //+ SharedStyleImpl(StyleObj::visit_aliases)
-void SharedStyleImpl::visit_aliases(StyleVisitorRef v) {
+void SharedStyleImpl::visit_aliases(StyleVisitor_in v) {
     if (aliases_ != nil) {
 	long n = aliases_->count();
 	for (long i = n - 1; i >= 0; i--) {
@@ -1497,7 +1500,7 @@ void SharedStyleImpl::visit_aliases(StyleVisitorRef v) {
 }
 
 //+ SharedStyleImpl(StyleObj::visit_attributes)
-void SharedStyleImpl::visit_attributes(StyleVisitorRef v) {
+void SharedStyleImpl::visit_attributes(StyleVisitor_in v) {
     if (table_ != nil) {
 	for (TableIterator(StyleValueTable) i(*table_); i.more(); i.next()) {
 	    StyleValueTableEntry* e = i.cur_value();
@@ -1518,7 +1521,7 @@ void SharedStyleImpl::visit_attributes(StyleVisitorRef v) {
 }
 
 //+ SharedStyleImpl(StyleObj::visit_styles)
-void SharedStyleImpl::visit_styles(StyleVisitorRef v) {
+void SharedStyleImpl::visit_styles(StyleVisitor_in v) {
     if (children_ != nil) {
 	for (ListItr(StyleList) i(*children_); i.more(); i.next()) {
 	    if (!v->visit_style(i.cur_ref().child)) {
@@ -1550,7 +1553,7 @@ StyleImpl::~StyleImpl() { }
 Long StyleImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag StyleImpl::attach(FrescoObjectRef observer) {
+Tag StyleImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void StyleImpl::detach(Tag attach_tag) {
@@ -1574,55 +1577,55 @@ StyleObjRef StyleImpl::_c_new_style() {
 StyleObjRef StyleImpl::_c_parent_style() {
     return impl_._c_parent_style();
 }
-void StyleImpl::link_parent(StyleObjRef parent) {
+void StyleImpl::link_parent(StyleObj_in parent) {
     impl_.link_parent(parent);
 }
 void StyleImpl::unlink_parent() {
     impl_.unlink_parent();
 }
-Tag StyleImpl::link_child(StyleObjRef child) {
+Tag StyleImpl::link_child(StyleObj_in child) {
     return impl_.link_child(child);
 }
 void StyleImpl::unlink_child(Tag link_tag) {
     impl_.unlink_child(link_tag);
 }
-void StyleImpl::merge(StyleObjRef s) {
+void StyleImpl::merge(StyleObj_in s) {
     impl_.merge(s);
 }
 CharStringRef StyleImpl::_c_name() {
     return impl_._c_name();
 }
-void StyleImpl::_c_name(CharStringRef _p) {
+void StyleImpl::_c_name(CharString_in _p) {
     impl_._c_name(_p);
 }
-void StyleImpl::alias(CharStringRef s) {
+void StyleImpl::alias(CharString_in s) {
     impl_.alias(s);
 }
-Boolean StyleImpl::is_on(CharStringRef name) {
+Boolean StyleImpl::is_on(CharString_in name) {
     return impl_.is_on(name);
 }
-StyleValueRef StyleImpl::_c_bind(CharStringRef name) {
+StyleValueRef StyleImpl::_c_bind(CharString_in name) {
     return impl_._c_bind(name);
 }
-void StyleImpl::unbind(CharStringRef name) {
+void StyleImpl::unbind(CharString_in name) {
     impl_.unbind(name);
 }
-StyleValueRef StyleImpl::_c_resolve(CharStringRef name) {
+StyleValueRef StyleImpl::_c_resolve(CharString_in name) {
     return impl_._c_resolve(name);
 }
-StyleValueRef StyleImpl::_c_resolve_wildcard(CharStringRef name, StyleObjRef start) {
+StyleValueRef StyleImpl::_c_resolve_wildcard(CharString_in name, StyleObj_in start) {
     return impl_._c_resolve_wildcard(name, start);
 }
-Long StyleImpl::match(CharStringRef name) {
+Long StyleImpl::match(CharString_in name) {
     return impl_.match(name);
 }
-void StyleImpl::visit_aliases(StyleVisitorRef v) {
+void StyleImpl::visit_aliases(StyleVisitor_in v) {
     impl_.visit_aliases(v);
 }
-void StyleImpl::visit_attributes(StyleVisitorRef v) {
+void StyleImpl::visit_attributes(StyleVisitor_in v) {
     impl_.visit_attributes(v);
 }
-void StyleImpl::visit_styles(StyleVisitorRef v) {
+void StyleImpl::visit_styles(StyleVisitor_in v) {
     impl_.visit_styles(v);
 }
 void StyleImpl::lock() {
@@ -1640,7 +1643,7 @@ StyleVisitorImpl::~StyleVisitorImpl() { }
 Long StyleVisitorImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag StyleVisitorImpl::attach(FrescoObjectRef observer) {
+Tag StyleVisitorImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void StyleVisitorImpl::detach(Tag attach_tag) {
@@ -1657,9 +1660,9 @@ void StyleVisitorImpl::update() {
 }
 //+
 
-Boolean StyleVisitorImpl::visit_alias(CharStringRef) { return false; }
-Boolean StyleVisitorImpl::visit_attribute(StyleValueRef) { return false; }
-Boolean StyleVisitorImpl::visit_style(StyleObjRef) { return false; }
+Boolean StyleVisitorImpl::visit_alias(CharString_in) { return false; }
+Boolean StyleVisitorImpl::visit_attribute(StyleValue_in) { return false; }
+Boolean StyleVisitorImpl::visit_style(StyleObj_in) { return false; }
 
 static const double radians_per_degree = M_PI / 180;
 static const float tolerance = 1e-4;
@@ -1680,7 +1683,7 @@ TransformImpl::~TransformImpl() { }
 Long TransformImpl::ref__(Long references) {
     return object_.ref__(references);
 }
-Tag TransformImpl::attach(FrescoObjectRef observer) {
+Tag TransformImpl::attach(FrescoObject_in observer) {
     return object_.attach(observer);
 }
 void TransformImpl::detach(Tag attach_tag) {
@@ -1742,7 +1745,7 @@ Coord TransformImpl::det() {
 }
 
 //+ TransformImpl(TransformObj::load)
-void TransformImpl::load(TransformObjRef t) {
+void TransformImpl::load(TransformObj_in t) {
     TransformObj::Matrix m;
     t->store_matrix(m);
     load_matrix(m);
@@ -1777,7 +1780,7 @@ void TransformImpl::store_matrix(TransformObj::Matrix m) {
 }
 
 //+ TransformImpl(TransformObj::equal)
-Boolean TransformImpl::equal(TransformObjRef t) {
+Boolean TransformImpl::equal(TransformObj_in t) {
     if (modified_) {
 	recompute();
     }
@@ -1867,7 +1870,7 @@ void TransformImpl::translate(const Vertex& v) {
 }
 
 //+ TransformImpl(TransformObj::premultiply)
-void TransformImpl::premultiply(TransformObjRef t) {
+void TransformImpl::premultiply(TransformObj_in t) {
     TransformObj::Matrix m;
     t->store_matrix(m);
 
@@ -1887,7 +1890,7 @@ void TransformImpl::premultiply(TransformObjRef t) {
 }    
 
 //+ TransformImpl(TransformObj::postmultiply)
-void TransformImpl::postmultiply(TransformObjRef t) {
+void TransformImpl::postmultiply(TransformObj_in t) {
     TransformObj::Matrix m;
     t->store_matrix(m);
 

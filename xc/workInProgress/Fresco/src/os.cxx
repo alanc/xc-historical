@@ -1,5 +1,5 @@
 /*
- * $XConsortium: os.cxx,v 1.4 94/03/08 15:54:06 matt Exp $
+ * $XConsortium: os.cxx,v 1.3 94/03/07 14:58:32 matt Exp $
  */
 
 /*
@@ -51,10 +51,7 @@
 #endif
 #include <pwd.h>
 
-#if !defined(sony)
-#include <assert.h>	/* Sony's CC can't compile its own assert.h file */
-#endif
-
+#include <assert.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -98,7 +95,7 @@ extern "C" {
  * using gethostname if you can
  */
 
-#if (defined(sun) && defined(SVR4)) || (defined(sony) && defined(SVR4))
+#if defined(sun) && defined(SVR4)
 #define NEED_UTSNAME	/* avoid UCB compatiblity package */
 #include <sys/utsname.h>
 #endif
@@ -538,9 +535,7 @@ FileInfo::FileInfo(const char* s, int fd) {
 }
 
 File::File(FileInfo* i) {
-#if !defined(sony)
     assert(i != nil);
-#endif
     rep_ = i;
 }
 
@@ -621,7 +616,7 @@ long InputFile::read(const char*& start) {
 	i->buf_ = new char[len];
     }
     start = i->buf_;
-    len = ::read(i->fd_, i->buf_, (size_t)len);
+    len = ::read(i->fd_, i->buf_, size_t(len));
 #endif
     i->pos_ += len;
     return len;
@@ -659,8 +654,9 @@ const char* Host::name() {
 	struct utsname name;
 	uname(&name);
 	int len = strlen(name.nodename);
-	if (len >= sizeof(name_))
+	if (len >= sizeof(name_)) {
 	    len = sizeof(name_) - 1;
+	}
 	strncpy(name_, name.nodename, len);
 	name_[len] = '\0';
 #else

@@ -1,4 +1,8 @@
 /*
+ * $XConsortium$
+ */
+
+/*
  * Copyright (c) 1993 Silicon Graphics, Inc.
  * Copyright (c) 1993 Fujitsu, Ltd.
  *
@@ -39,41 +43,46 @@ ExchangeId _maximum_known_xid_ = 3;
 
 /* Types */
 /* Keep 0 free to catch/avoid uninitialized ids */
-TypeObjId TypeIdVar(XfBoolean) = 1;
-TypeObjId TypeIdVar(XfChar) = 2;
-TypeObjId TypeIdVar(XfDouble) = 3;
-TypeObjId TypeIdVar(XfFloat) = 4;
-TypeObjId TypeIdVar(XfLong) = 5;
-TypeObjId TypeIdVar(XfShort) = 6;
-TypeObjId TypeIdVar(XfULong) = 7;
-TypeObjId TypeIdVar(XfUShort) = 8;
-TypeObjId TypeIdVar(Xfstring) = 9;
-TypeObjId TypeIdVar(Xfvoid) = 10;
+TypeObjId TypeIdVar(Xfvoid) = 1;
+TypeObjId TypeIdVar(XfBoolean) = 2;
+TypeObjId TypeIdVar(XfChar) = 3;
+TypeObjId TypeIdVar(XfOctet) = 4;
+TypeObjId TypeIdVar(XfShort) = 5;
+TypeObjId TypeIdVar(XfUShort) = 6;
+TypeObjId TypeIdVar(XfLong) = 7;
+TypeObjId TypeIdVar(XfULong) = 8;
+TypeObjId TypeIdVar(XfLongLong) = 9;
+TypeObjId TypeIdVar(XfULongLong) = 10;
+TypeObjId TypeIdVar(XfFloat) = 11;
+TypeObjId TypeIdVar(XfDouble) = 12;
+TypeObjId TypeIdVar(Xfstring) = 13;
 
 TypeObjId TypeIdVar(BaseObject) = 20;
 TypeObjId TypeIdVar(TypeObj) = 21;
 TypeObjId TypeIdVar(RequestObj) = 22;
 
 extern TypeObj_Descriptor
-    TypeVar(XfBoolean), TypeVar(XfChar),
-    TypeVar(XfDouble), TypeVar(XfFloat),
-    TypeVar(XfLong), TypeVar(XfShort),
-    TypeVar(XfULong), TypeVar(XfUShort),
-    TypeVar(Xfstring), TypeVar(Xfvoid),
+    TypeVar(Xfvoid), TypeVar(XfBoolean), TypeVar(XfChar), TypeVar(XfOctet),
+    TypeVar(XfShort), TypeVar(XfUShort), TypeVar(XfLong), TypeVar(XfULong),
+    TypeVar(XfLongLong), TypeVar(XfULongLong),
+    TypeVar(XfDouble), TypeVar(XfFloat), TypeVar(Xfstring),
     TypeVar(BaseObject), TypeVar(TypeObj), TypeVar(RequestObj);
 
 /* Builtin schema */
 TypeObj_Descriptor* _ox_initial_schema[] = {
+    &TypeVar(Xfvoid),
     &TypeVar(XfBoolean),
     &TypeVar(XfChar),
+    &TypeVar(XfOctet),
+    &TypeVar(XfShort),
+    &TypeVar(XfUShort),
+    &TypeVar(XfLong),
+    &TypeVar(XfULong),
+    &TypeVar(XfLongLong),
+    &TypeVar(XfULongLong),
     &TypeVar(XfDouble),
     &TypeVar(XfFloat),
-    &TypeVar(XfLong),
-    &TypeVar(XfShort),
-    &TypeVar(XfULong),
-    &TypeVar(XfUShort),
     &TypeVar(Xfstring),
-    &TypeVar(Xfvoid),
     &TypeVar(BaseObject),
     &TypeVar(TypeObj),
     &TypeVar(RequestObj),

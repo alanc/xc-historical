@@ -28,6 +28,7 @@
 #include <X11/Fresco/display.h>
 #include <X11/Fresco/Impls/fobjects.h>
 #include <X11/Fresco/Impls/styles.h>
+#include <X11/Fresco/Impls/transform.h>
 #include <X11/Fresco/Impls/Xlib.h>
 #include <X11/Fresco/OS/thread.h>
 
@@ -52,7 +53,7 @@ public:
     //+ DisplayObj::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -64,14 +65,14 @@ public:
     DisplayObj::ScreenNumber number_of_screens();
     ScreenObjRef _c_default_screen();
     CursorRef _c_cursor_from_data(Short x, Short y, Long pattern[16], Long mask[16]);
-    CursorRef _c_cursor_from_bitmap(RasterRef b, RasterRef mask);
-    CursorRef _c_cursor_from_font(FontRef f, Long pattern, Long mask);
+    CursorRef _c_cursor_from_bitmap(Raster_in b, Raster_in mask);
+    CursorRef _c_cursor_from_font(Font_in f, Long pattern, Long mask);
     CursorRef _c_cursor_from_index(Long index);
     void run(Boolean b);
     Boolean running();
-    Tag add_filter(ViewerRef v, GlyphTraversalRef t);
+    Tag add_filter(GlyphTraversal_in t);
     void remove_filter(Tag add_tag);
-    void need_repair(WindowRef w);
+    void need_repair(Window_in w);
     void repair();
     void flush();
     void flush_and_wait();
@@ -81,7 +82,7 @@ public:
 
     struct FilterInfo {
 	long tag;
-	ViewerRef viewer;
+	TransformImpl inverse;
 	GlyphTraversalRef traversal;
     };
 
@@ -151,7 +152,7 @@ public:
     //+ DisplayStyle::*
     /* FrescoObject */
     Long ref__(Long references);
-    Tag attach(FrescoObjectRef observer);
+    Tag attach(FrescoObject_in observer);
     void detach(Tag attach_tag);
     void disconnect();
     void notify_observers();
@@ -159,23 +160,23 @@ public:
     /* StyleObj */
     StyleObjRef _c_new_style();
     StyleObjRef _c_parent_style();
-    void link_parent(StyleObjRef parent);
+    void link_parent(StyleObj_in parent);
     void unlink_parent();
-    Tag link_child(StyleObjRef child);
+    Tag link_child(StyleObj_in child);
     void unlink_child(Tag link_tag);
-    void merge(StyleObjRef s);
+    void merge(StyleObj_in s);
     CharStringRef _c_name();
-    void _c_name(CharStringRef _p);
-    void alias(CharStringRef s);
-    Boolean is_on(CharStringRef name);
-    StyleValueRef _c_bind(CharStringRef name);
-    void unbind(CharStringRef name);
-    StyleValueRef _c_resolve(CharStringRef name);
-    StyleValueRef _c_resolve_wildcard(CharStringRef name, StyleObjRef start);
-    Long match(CharStringRef name);
-    void visit_aliases(StyleVisitorRef v);
-    void visit_attributes(StyleVisitorRef v);
-    void visit_styles(StyleVisitorRef v);
+    void _c_name(CharString_in _p);
+    void alias(CharString_in s);
+    Boolean is_on(CharString_in name);
+    StyleValueRef _c_bind(CharString_in name);
+    void unbind(CharString_in name);
+    StyleValueRef _c_resolve(CharString_in name);
+    StyleValueRef _c_resolve_wildcard(CharString_in name, StyleObj_in start);
+    Long match(CharString_in name);
+    void visit_aliases(StyleVisitor_in v);
+    void visit_attributes(StyleVisitor_in v);
+    void visit_styles(StyleVisitor_in v);
     void lock();
     void unlock();
     /* DisplayStyle */
