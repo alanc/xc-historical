@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.14 94/07/08 14:06:18 mor Exp $ */
+/* $XConsortium: xsm.h,v 1.15 94/07/15 10:01:28 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -138,7 +138,13 @@ extern Widget			    chooseSessionLabel;
 
 extern Widget			    chooseSessionListWidget;
 
-extern Widget			    chooseSessionOkButton;
+extern Widget			    chooseSessionMessageLabel;
+
+extern Widget			    chooseSessionLoadButton;
+
+extern Widget			    chooseSessionDeleteButton;
+
+extern Widget			    chooseSessionFailSafeButton;
 
 extern Widget			    chooseSessionCancelButton;
 
