@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.45 94/09/19 22:30:55 kaleb Exp matt $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.46 94/09/26 15:22:45 matt Exp gildea $
 /* only tested with Digital OSF/1 */
 
 #ifdef AlphaArchitecture
@@ -115,4 +115,10 @@ XCOMM operating system:  OSName
 	&& $(CC) -c options $(CFLAGS) $*.c \				@@\
 	&& $(LD) $(LDSTRIPFLAGS) -r $@ -o $*.os \			@@\
 	&& $(MV) $*.os $@
+#endif
+
+#ifndef ManKeywordsTarget
+#define ManKeywordsTarget(manpath)					@@\
+man_keywords::								@@\
+	catman -M $(DESTDIR)manpath -w
 #endif

@@ -1,6 +1,6 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.198 95/01/04 18:21:46 gildea Exp gildea $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.199 95/01/18 19:24:33 gildea Exp gildea $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -63,6 +63,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.198 95/01/04 18:21:46 gildea Exp gil
  * InstallManPageLong		(file,destdir,dest)
  * InstallManPage		(file,destdir)
  * InstallManPageAliases	(file,destdir,aliases)
+ * ManKeywordsTarget		(manpath)
  * InstallNamedNonExec		(srcname,dstname,dest)
  * InstallNonExecFile		(file,dest)
  * InstallNonExec		(file,dest)
@@ -867,6 +868,18 @@ install.man::								@@\
 	RemoveFile($${TMP}))
 #endif /* InstallManPageAliases */
 
+/*
+ * ManKeywordsTarget - generate the database used by "man -k".
+ * This rule updates the index in the directory "manpath", which
+ * indexes all the manual pages in the section subdirectories under
+ * it.  An update command is defined only on systems that have a
+ * per MANPATH element index.  If the OS supports only one system-wide
+ * database, we don't update it, because then we can't do cross
+ * installations or use a non-empty DESTDIR for testing.
+ */
+#ifndef ManKeywordsTarget
+#define ManKeywordsTarget(manpath) man_keywords::
+#endif
 
 /*
  * InstallNamedNonExec - generate rules to install a data file

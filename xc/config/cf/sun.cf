@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.138 95/01/12 14:59:54 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: sun.cf,v 1.139 95/01/12 15:30:26 kaleb Exp gildea $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -184,10 +184,10 @@ XCOMM operating system:  OSName
 #if HasSunCplusplus || HasCenterLineCplusplus
 #define PositionIndependentCplusplusFlags -pic
 #endif
-#else
+#else /* not OSMajorVersion > 4 */
 #define InstKmemFlags	  -g kmem -m 2755
 #include <sunLib.rules>
-#endif
+#endif /* OSMajorVersion > 4 (else) */
 
 #define HasNdbm		  YES
 #define HasShm		  YES
@@ -282,8 +282,14 @@ XCOMM operating system:  OSName
 #if OSMajorVersion < 5
 #define SharedAllocateLocalDefines -DINCLUDE_ALLOCA_H
 #define LibraryCCOptions /* don't want special floating point */
-#endif
+#endif /* OSMajorVersion < 5 */
 
 #if OSMajorVersion > 4
 #include <svr4.cf>
+#endif
+
+#ifndef ManKeywordsTarget
+#define ManKeywordsTarget(manpath)					@@\
+man_keywords::								@@\
+	catman -M $(DESTDIR)manpath -w
 #endif
