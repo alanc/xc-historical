@@ -1,4 +1,4 @@
-/* $XConsortium: dixfont.h,v 1.10 93/09/03 17:29:56 dpw Exp $ */
+/* $XConsortium: dixfont.h,v 1.11 93/09/18 13:46:01 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -74,7 +74,7 @@ extern void RemoveFontWakeup(
 extern void FontWakeup(
 #if NeedFunctionPrototypes
     pointer /*data*/,
-    unsigned long /*count*/,
+    int /*count*/,
     pointer /*LastSelectMask*/
 #endif
 );
