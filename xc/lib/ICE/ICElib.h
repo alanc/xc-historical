@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.29 94/03/15 13:31:20 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.30 94/03/17 12:23:23 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -361,6 +361,24 @@ extern char *IceAllocScratch (
 #if NeedFunctionPrototypes
    IceConn		/* iceConn */,
    unsigned long	/* size */
+#endif
+);
+
+extern IceFlush (
+#if NeedFunctionPrototypes
+   IceConn		/* iceConn */
+#endif
+);
+
+extern int IceGetOutBufSize (
+#if NeedFunctionPrototypes
+   IceConn		/* iceConn */
+#endif
+);
+
+extern int IceGetInBufSize (
+#if NeedFunctionPrototypes
+   IceConn		/* iceConn */
 #endif
 );
 

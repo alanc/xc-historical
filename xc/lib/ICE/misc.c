@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.17 94/02/07 18:07:27 mor Exp $ */
+/* $XConsortium: misc.c,v 1.18 94/03/15 13:35:15 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -57,6 +57,44 @@ unsigned long	size;
     }
 
     return (iceConn->scratch);
+}
+
+
+
+/*
+ * Output/Input buffer functions
+ */
+
+IceFlush (iceConn)
+
+IceConn iceConn;
+
+{
+    _IceWrite (iceConn,
+	(unsigned long) (iceConn->outbufptr - iceConn->outbuf),
+	iceConn->outbuf);
+
+    iceConn->outbufptr = iceConn->outbuf;
+}
+
+
+int
+IceGetOutBufSize (iceConn)
+
+IceConn iceConn;
+
+{
+    return (iceConn->outbufmax - iceConn->outbuf);
+}
+
+
+int
+IceGetInBufSize (iceConn)
+
+IceConn iceConn;
+
+{
+    return (iceConn->inbufmax - iceConn->inbuf);
 }
 
 

@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.33 94/03/15 13:31:52 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.34 94/03/16 15:44:56 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -364,16 +364,6 @@ typedef struct {
 /*
  * Macros for writing messages.
  */
-
-#define IceFlush(_iceConn) \
-{ \
-    _IceWrite (_iceConn, \
-	(unsigned long) (_iceConn->outbufptr - _iceConn->outbuf), \
-	_iceConn->outbuf); \
-    _iceConn->outbufptr = _iceConn->outbuf; \
-}
-
-#define IceGetOutBufSize(_iceConn) (_iceConn->outbufmax - _iceConn->outbuf)
 
 #define IceGetHeader(_iceConn, _major, _minor, _headerSize, _msgType, _pMsg) \
     if ((_iceConn->outbufptr + _headerSize) > _iceConn->outbufmax) \
