@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 11.21 91/01/06 11:48:26 rws Exp $ */
+/* $XConsortium: Text.c,v 11.22 93/09/07 21:32:44 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -83,7 +83,7 @@ XDrawString(dpy, d, gc, x, y, string, length)
             *(tbuf+1) = 0;
 /*       memcpy ((char *) (elt + 1), CharacterOffset, 254);
  */
-            memcpy (tbuf+2, CharacterOffset, 254);
+            memcpy ((char *)tbuf+2, CharacterOffset, 254);
 	    PartialNChars = PartialNChars - 254;
 	    CharacterOffset += 254;
 	}
@@ -99,7 +99,7 @@ XDrawString(dpy, d, gc, x, y, string, length)
             *(tbuf+1) = 0;
 /*     memcpy ((char *) (elt + 1), CharacterOffset, PartialNChars);
  */
-         memcpy (tbuf+2, CharacterOffset, PartialNChars);
+         memcpy ((char *)tbuf+2, CharacterOffset, PartialNChars);
 	 }
     }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIc.c,v 1.2 93/09/18 10:14:14 rws Exp $ */
+/* $XConsortium: imDefIc.c,v 1.3 93/09/18 11:00:44 rws Exp $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.
@@ -426,11 +426,11 @@ _XimCommitedMbString(im, ic, buf)
 
     if (ic->private.proto.xim_commit) {
 	memcpy(commit, preedit, commit_size);
-	memcpy(commit + commit_size, &buf_s[1], reset_size);
+	memcpy(commit + commit_size, (char *)&buf_s[1], reset_size);
 	Xfree(ic->private.proto.xim_commit);
 	ic->private.proto.xim_commit = NULL;
     } else
-	memcpy(commit, &buf_s[1], reset_size);
+	memcpy(commit, (char *)&buf_s[1], reset_size);
     commit[size] = '\0';
 
     len = _Xlcctstombs(im->core.lcd, new_commit, commit, size);
@@ -508,11 +508,11 @@ _XimCommitedWcString(im, ic, buf)
 
     if (ic->private.proto.xim_commit) {
 	memcpy(commit, preedit, commit_size);
-	memcpy(commit + commit_size, &buf_s[1], reset_size);
+	memcpy(commit + commit_size, (char *)&buf_s[1], reset_size);
 	Xfree(ic->private.proto.xim_commit);
 	ic->private.proto.xim_commit = NULL;
     } else
-	memcpy(commit, &buf_s[1], reset_size);
+	memcpy(commit, (char *)&buf_s[1], reset_size);
     commit[size] = '\0';
 
     len = _Xlcctstowcs(im->core.lcd, new_commit, commit, size);

@@ -1,4 +1,4 @@
-/* $XConsortium: imConv.c,v 1.1 93/09/17 13:25:32 rws Exp $ */
+/* $XConsortium: imConv.c,v 1.2 93/09/18 11:00:38 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by Fuji Xerox Co.,Ltd.
@@ -203,7 +203,7 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
 	    }
 	}
     } else if ((count != 1) || (buffer[0] >= 0x80)) { /* not ASCII Encoding */
-	memcpy(look, buffer,count);
+	memcpy((char *)look, (char *)buffer,count);
 	look[count] = '\0';
 	if ((count = _Xlcctstombs(ic->core.im->core.lcd, (char *)buffer,
 			  (char *)look, nbytes)) < 0) {
