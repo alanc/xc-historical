@@ -54,7 +54,8 @@ static XtResource resources[] = {
 };
 #undef offset
 
-static void Initialize(), Realize(), Resize(), ChangeManaged();
+static void ClassInitialize(), Initialize(), Realize(), Resize(),
+    ChangeManaged();
 static Boolean SetValues(), DoLayout();
 static XtGeometryResult GeometryManager();
 
@@ -63,7 +64,7 @@ ViewportClassRec viewportClassRec = {
     /* superclass	  */	(WidgetClass) &formClassRec,
     /* class_name	  */	"Viewport",
     /* widget_size	  */	sizeof(ViewportRec),
-    /* class_initialize	  */	NULL,
+    /* class_initialize	  */	ClassInitialize,
     /* class_inited	  */	FALSE,
     /* initialize	  */	Initialize,
     /* realize		  */	Realize,
@@ -77,7 +78,7 @@ ViewportClassRec viewportClassRec = {
     /* visible_interest	  */	FALSE,
     /* destroy		  */	NULL,
     /* resize		  */	Resize,
-    /* expose		  */	XtInheritExpose,
+    /* expose		  */	NULL, /* inherited */
     /* set_values	  */	SetValues,
     /* accept_focus	  */	NULL,
     /* callback_private	  */	NULL,
@@ -86,8 +87,8 @@ ViewportClassRec viewportClassRec = {
   { /* composite_class fields */
     /* geometry_manager	  */	GeometryManager,
     /* change_managed	  */	ChangeManaged,
-    /* insert_child	  */	XtInheritInsertChild,
-    /* delete_child	  */	XtInheritDeleteChild,
+    /* insert_child	  */	NULL, /* inherited */
+    /* delete_child	  */	NULL, /* inherited */
     /* move_focus_to_next */	NULL,
     /* move_focus_to_prev */	NULL
   },
@@ -109,6 +110,18 @@ ViewportClassRec viewportClassRec = {
 
 
 WidgetClass viewportWidgetClass = (WidgetClass)&viewportClassRec;
+
+static void ClassInitialize()
+{
+    register WidgetClass superclass = viewportClassRec.core_class.superclass;
+
+#define Inherit(class, method) \
+    viewportClassRec.method = ((class)superclass)->method
+
+    Inherit(WidgetClass, core_class.expose);
+    Inherit(CompositeWidgetClass, composite_class.insert_child);
+    Inherit(CompositeWidgetClass, composite_class.delete_child);
+}
 
 static Widget CreateScrollbar(w, horizontal)
     ViewportWidget w;
@@ -221,6 +234,8 @@ static void Realize(widget, value_mask, attributes)
     register Widget child = w->viewport.child;
     register Widget clip = w->viewport.clip;
 
+    *value_mask |= CWBitGravity;
+    attributes->bit_gravity = NorthWestGravity;
     (*w->core.widget_class->core_class.superclass
      ->core_class.realize)(widget, value_mask, attributes);
 
