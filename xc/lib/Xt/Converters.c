@@ -1,7 +1,8 @@
 #ifndef lint
-static char rcsid[] = "$Header: Converters.c,v 1.27 88/03/03 10:44:10 swick Exp $";
+static char rcsid[] = "$xHeader$";
+/* $oHeader: Converters.c,v 1.4 88/08/19 16:43:21 asente Exp $ */
 #endif lint
-
+/*LINTLIBRARY*/
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -29,80 +30,48 @@ SOFTWARE.
 
 /* Conversion.c - implementations of resource type conversion procs */
 
-#include	"IntrinsicI.h"
-#include	<X11/CoreP.h>
-#include	<X11/Xlib.h>
-#include	<X11/Xos.h>
-#include	<X11/Xutil.h>
-#include	<X11/StringDefs.h>
+#include	"StringDefs.h"
 #include	<stdio.h>
-#include	<X11/cursorfont.h>
-#include	<X11/Convert.h>
-#include	<X11/Quarks.h>
-#include	<sys/param.h>		/* just to get MAXPATHLEN */
+#include        <X11/cursorfont.h>
+#include	"IntrinsicI.h"
+#include	"Quarks.h"
 
 #define	done(address, type) \
 	{ (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
 
-static void CvtStringToBoolean();
-
 void XtStringConversionWarning(from, toType)
-    char *from, *toType;
+    String from, toType;
 {
-    char message[1000];
-    static enum {Check, Report, Ignore} report_it = Check;
-
-    if (report_it == Check) {
-	XrmName xrm_name[3];
-	XrmClass xrm_class[3];
-	XrmRepresentation rep_type;
-	XrmValue value;
-	xrm_name[0] = XtApplicationName;
-	xrm_name[1] = StringToQuark( "stringConversionWarnings" );
-	xrm_name[2] = NULL;
-	xrm_class[0] = XtApplicationClass;
-	xrm_class[1] = StringToQuark( "StringConversionWarnings" );
-	xrm_class[2] = NULL;
-	if (XrmQGetResource( XtDefaultDB, xrm_name, xrm_class,
-			     &rep_type, &value ))
-	{
-	    if (rep_type == StringToQuark(XtRBoolean) && value.addr)
-		report_it = Report;
-	    else if (rep_type == StringToQuark(XtRString)) {
-		XrmValue toVal;
-		XtDirectConvert( CvtStringToBoolean, NULL, 0, &value, &toVal );
-		if (toVal.addr && *(Boolean*)toVal.addr)
-		    report_it = Report;
-	    }
-	}
-    }
-
-    if (report_it == Report) {
-	(void) sprintf(message, "Cannot convert string \"%s\" to type %s",
-		       from, toType);
-	XtWarning(message);
-    }
+    String params[2];
+    Cardinal num_params = 2;
+    params[0] = from;
+    params[1] = toType;
+    XtWarningMsg("conversionError","string","XtToolkitError",
+               "Cannot convert string \"%s\" to type %s",
+                params,&num_params);
 }
 
 static void CvtXColorToPixel();
-static void CvtDefaultColorToPixel();
 static void CvtIntToBoolean();
-static void CvtIntToLongBoolean();
+static void CvtIntToBool();
 static void CvtIntToPixmap();
 static void CvtIntToFont();
 static void CvtIntOrPixelToXColor();
 static void CvtIntToPixel();
 
-static void CvtStringToLongBoolean();
-static void CvtStringToXColor();
+static void CvtStringToBoolean();
+static void CvtStringToBool();
 static void CvtStringToCursor();
 static void CvtStringToDisplay();
 static void CvtStringToFile();
 static void CvtStringToFont();
 static void CvtStringToFontStruct();
+static void CvtStringToGeometry();
 static void CvtStringToInt();
+static void CvtStringToShort();
+static void CvtStringToUnsignedChar();
 static void CvtStringToPixel();
-
+static void CvtStringToPixmap();
 
 /*ARGSUSED*/
 static void CvtIntToBoolean(args, num_args, fromVal, toVal)
@@ -114,9 +83,29 @@ static void CvtIntToBoolean(args, num_args, fromVal, toVal)
     static Boolean	b;
 
     if (*num_args != 0)
-	XtWarning("Integer to Boolean conversion needs no extra arguments");
+	XtWarningMsg("wrongParameters","cvtIntToBoolean","XtToolkitError",
+                  "Integer to Boolean conversion needs no extra arguments",
+                   (String *)NULL, (Cardinal *)NULL);
     b = (*(int *)fromVal->addr != 0);
     done(&b, Boolean);
+};
+
+
+/*ARGSUSED*/
+static void CvtIntToShort(args, num_args, fromVal, toVal)
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr	fromVal;
+    XrmValuePtr	toVal;
+{
+    static short    s;
+
+    if (*num_args != 0)
+	XtWarningMsg("wrongParameters","cvtIntToShort","XtToolkitError",
+                  "Integer to Short conversion needs no extra arguments",
+                   (String *)NULL, (Cardinal *)NULL);
+    s = (*(int *)fromVal->addr);
+    done(&s, short);
 };
 
 
@@ -132,7 +121,9 @@ static void CvtStringToBoolean(args, num_args, fromVal, toVal)
     char	lowerName[1000];
 
     if (*num_args != 0)
-	XtWarning("String to Boolean conversion needs no extra arguments");
+	XtWarningMsg("wrongParameters","cvtStringToBoolean","XtToolkitError",
+                  "String to Boolean conversion needs no extra arguments",
+                   (String *)NULL, (Cardinal *)NULL);
 
     LowerCase((char *) fromVal->addr, lowerName);
     q = XrmStringToQuark(lowerName);
@@ -153,7 +144,7 @@ static void CvtStringToBoolean(args, num_args, fromVal, toVal)
 
 
 /*ARGSUSED*/
-static void CvtIntToLongBoolean(args, num_args, fromVal, toVal)
+static void CvtIntToBool(args, num_args, fromVal, toVal)
     XrmValuePtr args;
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
@@ -162,14 +153,16 @@ static void CvtIntToLongBoolean(args, num_args, fromVal, toVal)
     static Bool	b;
 
     if (*num_args != 0)
-	XtWarning("Integer to LongBoolean conversion needs no extra arguments");
+	XtWarningMsg("wrongParameters","cvtIntToBool","XtToolkitError",
+                  "Integer to Bool conversion needs no extra arguments",
+                   (String *)NULL, (Cardinal *)NULL);
     b = (*(int *)fromVal->addr != 0);
     done(&b, Bool);
 };
 
 
 /*ARGSUSED*/
-static void CvtStringToLongBoolean(args, num_args, fromVal, toVal)
+static void CvtStringToBool(args, num_args, fromVal, toVal)
     XrmValuePtr args;
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
@@ -180,7 +173,10 @@ static void CvtStringToLongBoolean(args, num_args, fromVal, toVal)
     char	lowerName[1000];
 
     if (*num_args != 0)
-	XtWarning("String to LongBoolean conversion needs no extra arguments");
+	XtWarningMsg("wrongParameters","cvtStringToBool",
+		"XtToolkitError",
+                 "String to Bool conversion needs no extra arguments",
+                  (String *)NULL, (Cardinal *)NULL);
 
     LowerCase((char *) fromVal->addr, lowerName);
     q = XrmStringToQuark(lowerName);
@@ -196,14 +192,14 @@ static void CvtStringToLongBoolean(args, num_args, fromVal, toVal)
 	return;
     }
 
-    XtStringConversionWarning((char *) fromVal->addr, "LongBoolean");
+    XtStringConversionWarning((char *) fromVal->addr, "Bool");
 };
 
-
-static XtConvertArgRec colorConvertArgs[] = {
+XtConvertArgRec colorConvertArgs[] = {
     {XtBaseOffset, (caddr_t) XtOffset(Widget, core.screen),  sizeof(Screen *)},
     {XtBaseOffset, (caddr_t) XtOffset(Widget, core.colormap),sizeof(Colormap)}
 };
+
 
 static void CvtIntOrPixelToXColor(args, num_args, fromVal, toVal)
     XrmValuePtr args;
@@ -216,8 +212,9 @@ static void CvtIntOrPixelToXColor(args, num_args, fromVal, toVal)
     Colormap	    colormap;
 
     if (*num_args != 2)
-      XtError("Pixel to color conversion needs screen and colormap arguments");
-
+      XtErrorMsg("wrongParameters","cvtIntOrPixelToXColor","XtToolkitError",
+         "Pixel to color conversion needs screen and colormap arguments",
+          (String *)NULL, (Cardinal *)NULL);
     screen = *((Screen **) args[0].addr);
     colormap = *((Colormap *) args[1].addr);
     c.pixel = *(int *)fromVal->addr;
@@ -228,47 +225,74 @@ static void CvtIntOrPixelToXColor(args, num_args, fromVal, toVal)
 
 
 /*ARGSUSED*/
-static void CvtStringToXColor(args, num_args, fromVal, toVal)
+static void CvtStringToPixel(args, num_args, fromVal, toVal)
     XrmValuePtr args;
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
 {
-    static XColor   c;
+    static XColor   screenColor;
+    XColor	    exactColor;
     Screen	    *screen;
+    XtPerDisplay    perDpy;
+    XtAppContext    app;
     Colormap	    colormap;
-    Status	    s;
+    Status	    status;
     char	    message[1000];
+    XrmQuark	    q;
+    String          params[1];
+    Cardinal       num_params=1;
 
     if (*num_args != 2)
-     XtError("String to color conversion needs screen and colormap arguments");
+     XtErrorMsg("wrongParameters","cvtStringToPixel","XtToolkitError",
+       "String to pixel conversion needs screen and colormap arguments",
+        (String *)NULL, (Cardinal *)NULL);
 
     screen = *((Screen **) args[0].addr);
+    perDpy = _XtGetPerDisplay(DisplayOfScreen(screen));
+    app = perDpy->appContext;
     colormap = *((Colormap *) args[1].addr);
-    s = XParseColor(DisplayOfScreen(screen), colormap, (char *) fromVal->addr,
-	&c);
-    if (s == 0) {
-	XtStringConversionWarning((char *) fromVal->addr, "Color");
-	return;
+
+    LowerCase((char *) fromVal->addr, message);
+    q = XrmStringToQuark(message);
+
+    if (q == XtQExtdefaultbackground) {
+	if (app->rv) { done(&screen->black_pixel, Pixel); return; }
+	else { done(&screen->white_pixel, Pixel); return; }
     }
-    s = XAllocColor(DisplayOfScreen(screen), colormap, &c);
-    if (s == 0) {
-	(void) sprintf(message, "Cannot allocate colormap entry for %s",
-	    (char *) fromVal->addr);
-	XtWarning(message);
-	return;
+    if (q == XtQExtdefaultforeground) {
+	if (app->rv) { done(&screen->white_pixel, Pixel); return; }
+        else { done(&screen->black_pixel, Pixel); return; }
     }
-    done(&c, XColor);
+
+    if ((char) fromVal->addr[0] == '#') {  /* some color rgb definition */
+
+        status = XParseColor(DisplayOfScreen(screen), colormap,
+                 (String) fromVal->addr, &screenColor);
+
+        if (status != 0)
+           status = XAllocColor(DisplayOfScreen(screen), colormap,
+                                &screenColor);
+    } else  /* some color name */
+
+        status = XAllocNamedColor(DisplayOfScreen(screen), colormap,
+                                  (String) fromVal->addr, &screenColor,
+				  &exactColor);
+    if (status == 0) {
+       params[0]=(String)fromVal->addr;
+       XtWarningMsg("noColormap","cvtStringToPixel","XtToolkitError",
+                 "Cannot allocate colormap entry for \"%s\"",
+                  params,&num_params);
+    } else {
+        done(&(screenColor.pixel), Pixel)
+    }
+
 };
 
 
-static XtConvertArgRec screenConvertArg[] = {
+XtConvertArgRec screenConvertArg[] = {
     {XtBaseOffset, (caddr_t) XtOffset(Widget, core.screen), sizeof(Screen *)}
 };
-
-#ifndef BITMAPDIR
-#define BITMAPDIR "/usr/include/X11/bitmaps"
-#endif
 
 /*ARGSUSED*/
 static void CvtStringToCursor(args, num_args, fromVal, toVal)
@@ -276,155 +300,118 @@ static void CvtStringToCursor(args, num_args, fromVal, toVal)
     Cardinal    *num_args;
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
+
 {
     static struct _CursorName {
-	char	*name;
-	int	shape;
+	char		*name;
+	unsigned int	shape;
+	Cursor		cursor;
     } cursor_names[] = {
-			{"X_cursor",		XC_X_cursor},
-			{"arrow",		XC_arrow},
-			{"based_arrow_down",	XC_based_arrow_down},
-			{"based_arrow_up",	XC_based_arrow_up},
-			{"boat",		XC_boat},
-			{"bogosity",		XC_bogosity},
-			{"bottom_left_corner",	XC_bottom_left_corner},
-			{"bottom_right_corner",	XC_bottom_right_corner},
-			{"bottom_side",		XC_bottom_side},
-			{"bottom_tee",		XC_bottom_tee},
-			{"box_spiral",		XC_box_spiral},
-			{"center_ptr",		XC_center_ptr},
-			{"circle",		XC_circle},
-			{"clock",		XC_clock},
-			{"coffee_mug",		XC_coffee_mug},
-			{"cross",		XC_cross},
-			{"cross_reverse",	XC_cross_reverse},
-			{"crosshair",		XC_crosshair},
-			{"diamond_cross",	XC_diamond_cross},
-			{"dot",			XC_dot},
-			{"dotbox",		XC_dotbox},
-			{"double_arrow",	XC_double_arrow},
-			{"draft_large",		XC_draft_large},
-			{"draft_small",		XC_draft_small},
-			{"draped_box",		XC_draped_box},
-			{"exchange",		XC_exchange},
-			{"fleur",		XC_fleur},
-			{"gobbler",		XC_gobbler},
-			{"gumby",		XC_gumby},
-			{"hand1",		XC_hand1},
-			{"hand2",		XC_hand2},
-			{"heart",		XC_heart},
-			{"icon",		XC_icon},
-			{"iron_cross",		XC_iron_cross},
-			{"left_ptr",		XC_left_ptr},
-			{"left_side",		XC_left_side},
-			{"left_tee",		XC_left_tee},
-			{"leftbutton",		XC_leftbutton},
-			{"ll_angle",		XC_ll_angle},
-			{"lr_angle",		XC_lr_angle},
-			{"man",			XC_man},
-			{"middlebutton",	XC_middlebutton},
-			{"mouse",		XC_mouse},
-			{"pencil",		XC_pencil},
-			{"pirate",		XC_pirate},
-			{"plus",		XC_plus},
-			{"question_arrow",	XC_question_arrow},
-			{"right_ptr",		XC_right_ptr},
-			{"right_side",		XC_right_side},
-			{"right_tee",		XC_right_tee},
-			{"rightbutton",		XC_rightbutton},
-			{"rtl_logo",		XC_rtl_logo},
-			{"RTL_logo",		XC_rtl_logo},
-			{"sailboat",		XC_sailboat},
-			{"sb_down_arrow",	XC_sb_down_arrow},
-			{"sb_h_double_arrow",	XC_sb_h_double_arrow},
-			{"sb_left_arrow",	XC_sb_left_arrow},
-			{"sb_right_arrow",	XC_sb_right_arrow},
-			{"sb_up_arrow",		XC_sb_up_arrow},
-			{"sb_v_double_arrow",	XC_sb_v_double_arrow},
-			{"shuttle",		XC_shuttle},
-			{"sizing",		XC_sizing},
-			{"spider",		XC_spider},
-			{"spraycan",		XC_spraycan},
-			{"star",		XC_star},
-			{"target",		XC_target},
-			{"tcross",		XC_tcross},
-			{"top_left_arrow",	XC_top_left_arrow},
-			{"top_left_corner",	XC_top_left_corner},
-			{"top_right_corner",	XC_top_right_corner},
-			{"top_side",		XC_top_side},
-			{"top_tee",		XC_top_tee},
-			{"trek",		XC_trek},
-			{"ul_angle",		XC_ul_angle},
-			{"umbrella",		XC_umbrella},
-			{"ur_angle",		XC_ur_angle},
-			{"watch",		XC_watch},
-			{"xterm",		XC_xterm},
+			{"X_cursor",		XC_X_cursor,		NULL},
+			{"arrow",		XC_arrow,		NULL},
+			{"based_arrow_down",	XC_based_arrow_down,    NULL},
+			{"based_arrow_up",	XC_based_arrow_up,      NULL},
+			{"boat",		XC_boat,		NULL},
+			{"bogosity",		XC_bogosity,		NULL},
+			{"bottom_left_corner",	XC_bottom_left_corner,  NULL},
+			{"bottom_right_corner",	XC_bottom_right_corner, NULL},
+			{"bottom_side",		XC_bottom_side,		NULL},
+			{"bottom_tee",		XC_bottom_tee,		NULL},
+			{"box_spiral",		XC_box_spiral,		NULL},
+			{"center_ptr",		XC_center_ptr,		NULL},
+			{"circle",		XC_circle,		NULL},
+			{"clock",		XC_clock,		NULL},
+			{"coffee_mug",		XC_coffee_mug,		NULL},
+			{"cross",		XC_cross,		NULL},
+			{"cross_reverse",	XC_cross_reverse,       NULL},
+			{"crosshair",		XC_crosshair,		NULL},
+			{"diamond_cross",	XC_diamond_cross,       NULL},
+			{"dot",			XC_dot,			NULL},
+#ifdef XC_dotbox
+			{"dotbox",		XC_dotbox,		NULL},
+#endif
+			{"double_arrow",	XC_double_arrow,	NULL},
+			{"draft_large",		XC_draft_large,		NULL},
+			{"draft_small",		XC_draft_small,		NULL},
+			{"draped_box",		XC_draped_box,		NULL},
+			{"exchange",		XC_exchange,		NULL},
+			{"fleur",		XC_fleur,		NULL},
+			{"gobbler",		XC_gobbler,		NULL},
+			{"gumby",		XC_gumby,		NULL},
+#ifdef XC_hand1
+			{"hand1",		XC_hand1,		NULL},
+#endif
+#ifdef XC_hand2
+			{"hand2",		XC_hand2,		NULL},
+#endif
+			{"heart",		XC_heart,		NULL},
+			{"icon",		XC_icon,		NULL},
+			{"iron_cross",		XC_iron_cross,		NULL},
+			{"left_ptr",		XC_left_ptr,		NULL},
+			{"left_side",		XC_left_side,		NULL},
+			{"left_tee",		XC_left_tee,		NULL},
+			{"leftbutton",		XC_leftbutton,		NULL},
+			{"ll_angle",		XC_ll_angle,		NULL},
+			{"lr_angle",		XC_lr_angle,		NULL},
+			{"man",			XC_man,			NULL},
+			{"middlebutton",	XC_middlebutton,	NULL},
+			{"mouse",		XC_mouse,		NULL},
+			{"pencil",		XC_pencil,		NULL},
+			{"pirate",		XC_pirate,		NULL},
+			{"plus",		XC_plus,		NULL},
+			{"question_arrow",	XC_question_arrow,	NULL},
+			{"right_ptr",		XC_right_ptr,		NULL},
+			{"right_side",		XC_right_side,		NULL},
+			{"right_tee",		XC_right_tee,		NULL},
+			{"rightbutton",		XC_rightbutton,		NULL},
+			{"rtl_logo",		XC_rtl_logo,		NULL},
+			{"sailboat",		XC_sailboat,		NULL},
+			{"sb_down_arrow",	XC_sb_down_arrow,       NULL},
+			{"sb_h_double_arrow",	XC_sb_h_double_arrow,   NULL},
+			{"sb_left_arrow",	XC_sb_left_arrow,       NULL},
+			{"sb_right_arrow",	XC_sb_right_arrow,      NULL},
+			{"sb_up_arrow",		XC_sb_up_arrow,		NULL},
+			{"sb_v_double_arrow",	XC_sb_v_double_arrow,   NULL},
+			{"shuttle",		XC_shuttle,		NULL},
+			{"sizing",		XC_sizing,		NULL},
+			{"spider",		XC_spider,		NULL},
+			{"spraycan",		XC_spraycan,		NULL},
+			{"star",		XC_star,		NULL},
+			{"target",		XC_target,		NULL},
+			{"tcross",		XC_tcross,		NULL},
+			{"top_left_arrow",	XC_top_left_arrow,      NULL},
+			{"top_left_corner",	XC_top_left_corner,	NULL},
+			{"top_right_corner",	XC_top_right_corner,    NULL},
+			{"top_side",		XC_top_side,		NULL},
+			{"top_tee",		XC_top_tee,		NULL},
+			{"trek",		XC_trek,		NULL},
+			{"ul_angle",		XC_ul_angle,		NULL},
+			{"umbrella",		XC_umbrella,		NULL},
+			{"ur_angle",		XC_ur_angle,		NULL},
+			{"watch",		XC_watch,		NULL},
+			{"xterm",		XC_xterm,		NULL},
     };
     struct _CursorName *cache;
-    static Cursor cursor;
     char *name = (char *)fromVal->addr;
     register int i;
-    Screen *screen;
-    static char* bitmap_file_path = NULL;
-    char filename[MAXPATHLEN];
-    Pixmap source, mask;
-    static XColor bgColor = {0, 0, 0, 0};
-    static XColor fgColor = {0, ~0, ~0, ~0};
-    int width, height, xhot, yhot;
+    Screen	    *screen;
 
     if (*num_args != 1)
-     XtError("String to cursor conversion needs screen argument");
+     XtErrorMsg("wrongParameters","cvtStringToCursor","XtToolkitError",
+             "String to cursor conversion needs screen argument",
+              (String *)NULL, (Cardinal *)NULL);
 
     screen = *((Screen **) args[0].addr);
     for (i=0, cache=cursor_names; i < XtNumber(cursor_names); i++, cache++ ) {
-        /* cacheing is actually done by higher layers of Xrm */
 	if (strcmp(name, cache->name) == 0) {
-	    cursor = XtGetCursor(DisplayOfScreen(screen), cache->shape);
-	    done(&cursor, Cursor);
+	    if (!cache->cursor)
+		cache->cursor =
+		    XCreateFontCursor(DisplayOfScreen(screen), cache->shape );
+	    done(&(cache->cursor), Cursor);
 	    return;
 	}
     }
-    /* isn't a standard cursor in cursorfont; try to open a bitmap file */
-    if (bitmap_file_path == NULL) {
-	XrmName xrm_name[3];
-	XrmClass xrm_class[3];
-	XrmRepresentation rep_type;
-	XrmValue value;
-	xrm_name[0] = XtApplicationName;
-	xrm_name[1] = StringToQuark( "bitmapFilePath" );
-	xrm_name[2] = NULL;
-	xrm_class[0] = XtApplicationClass;
-	xrm_class[1] = StringToQuark( "BitmapFilePath" );
-	xrm_class[2] = NULL;
-	if (XrmQGetResource( XtDefaultDB, xrm_name, xrm_class,
-			     &rep_type, &value )
-	    && rep_type == StringToQuark(XtRString))
-	    bitmap_file_path = value.addr;
-	else
-	    bitmap_file_path = BITMAPDIR;
-    }
-
-    sprintf( filename, "%s/%s", bitmap_file_path, name );
-    if (XReadBitmapFile( DisplayOfScreen(screen), RootWindowOfScreen(screen),
-			 filename, &width, &height, &source, &xhot, &yhot )
-	!= BitmapSuccess) {
-	XtStringConversionWarning( name, "Cursor" );
-	cursor = None;		/* absolute fall-back for failed conversion */
-	done(&cursor, Cursor);
-	return;
-    }
-    (void) strcat( filename, "Mask" );
-    if (XReadBitmapFile( DisplayOfScreen(screen), RootWindowOfScreen(screen),
-			 filename, &width, &height, &mask, &width, &height )
-	!= BitmapSuccess) {
-	mask = None;
-    }
-    cursor = XCreatePixmapCursor( DisplayOfScreen(screen), source, mask,
-				  &fgColor, &bgColor, xhot, yhot );
-    XFreePixmap( DisplayOfScreen(screen), source );
-    XFreePixmap( DisplayOfScreen(screen), mask );
-
-    done(&cursor, Cursor);
+    XtStringConversionWarning(name, "Cursor");
 };
 
 
@@ -438,11 +425,13 @@ static void CvtStringToDisplay(args, num_args, fromVal, toVal)
     static Display	*d;
 
     if (*num_args != 0)
-	XtWarning("String to Display conversion needs no extra arguments");
+	XtWarningMsg("wrongParameters","cvtStringToDisplay","XtToolkitError",
+                  "String to Display conversion needs no extra arguments",
+                   (String *)NULL, (Cardinal *)NULL);
 
     d = XOpenDisplay((char *)fromVal->addr);
     if (d != NULL) {
-	done(d, Display);
+	done(&d, Display);
     } else {
 	XtStringConversionWarning((char *) fromVal->addr, "Display");
     }
@@ -459,11 +448,13 @@ static void CvtStringToFile(args, num_args, fromVal, toVal)
     static FILE	*f;
 
     if (*num_args != 0)
-	XtWarning("String to File conversion needs no extra arguments");
+	XtWarningMsg("wrongParameters","cvtStringToFile","XtToolkitError",
+                 "String to File conversion needs no extra arguments",
+                 (String *) NULL, (Cardinal *)NULL);
 
     f = fopen((char *)fromVal->addr, "r");
     if (f != NULL) {
-	done(f, FILE);
+	done(&f, FILE);
     } else {
 	XtStringConversionWarning((char *) fromVal->addr, "File");
     }
@@ -479,17 +470,38 @@ static void CvtStringToFont(args, num_args, fromVal, toVal)
 {
     static Font	f;
     Screen	    *screen;
+    Display         *display;
+    char	    lcfont[1000];
+    XrmQuark	    q;
 
     if (*num_args != 1)
-     XtError("String to font conversion needs screen argument");
+     XtErrorMsg("wrongParameters","cvtStringToFont","XtToolkitError",
+             "String to font conversion needs screen argument",
+              (String *) NULL, (Cardinal *)NULL);
 
     screen = *((Screen **) args[0].addr);
-    f = XLoadFont(DisplayOfScreen(screen), (char *)fromVal->addr);
-    if (f != 0) {
-	done(&f, Font);
-    } else {
+    LowerCase((char *) fromVal->addr, lcfont);
+    q = XrmStringToQuark(lcfont);
+
+    if (q != XtQExtdefaultfont) {
+	f = XLoadFont(DisplayOfScreen(screen), (char *)fromVal->addr);
+	if (f != 0) {
+	    done(&f, Font);
+	    return;
+	}
 	XtStringConversionWarning((char *) fromVal->addr, "Font");
     }
+    /* try and get the default font */
+
+    display   = DisplayOfScreen(screen);
+
+    f = XLoadFont(display,"fixed");
+
+/* this crashes the server for some reason.  I think that it is */
+/* supposed to work.  so for now we will use the above line     */
+/*  done(&f, DefaultGCOfScreen(screen)->values.font);        */
+
+    if (f != 0) done(&f, Font);
 }
 
 
@@ -501,7 +513,9 @@ static void CvtIntToFont(args, num_args, fromVal, toVal)
     XrmValuePtr	toVal;
 {
     if (*num_args != 0)
-	XtWarning("Integer to Font conversion needs no extra arguments");
+	XtWarningMsg("wrongParameters","cvtIntToFont","XtToolkitError",
+           "Integer to Font conversion needs no extra arguments",
+            (String *) NULL, (Cardinal *)NULL);
     done(fromVal->addr, int);
 };
 
@@ -515,17 +529,39 @@ static void CvtStringToFontStruct(args, num_args, fromVal, toVal)
 {
     static XFontStruct	*f;
     Screen	    *screen;
+    char	    lcfont[1000];
+    XrmQuark	    q;
 
     if (*num_args != 1)
-     XtError("String to cursor conversion needs screen argument");
+     XtErrorMsg("wrongParameters","cvtStringToFontStruct","XtToolkitError",
+             "String to cursor conversion needs screen argument",
+              (String *) NULL, (Cardinal *)NULL);
 
     screen = *((Screen **) args[0].addr);
-    f = XLoadQueryFont(DisplayOfScreen(screen), (char *)fromVal->addr);
-    if (f != NULL) {
-	done(&f, XFontStruct *);
-    } else {
+    LowerCase((char *) fromVal->addr, lcfont);
+    q = XrmStringToQuark(lcfont);
+
+    if (q != XtQExtdefaultfont) {
+	f = XLoadQueryFont(DisplayOfScreen(screen), (char *)fromVal->addr);
+	if (f != NULL) {
+	    done(&f, XFontStruct *);
+	    return;
+	}
 	XtStringConversionWarning((char *) fromVal->addr, "XFontStruct");
     }
+
+    /* try and get the default font */
+
+    /* This still crashes the server... */
+/*  
+    f = XQueryFont(DisplayOfScreen(screen),
+	           DefaultGCOfScreen(screen)->values.font);
+*/
+    /* ...so we do this instead */
+
+    f = XLoadQueryFont(DisplayOfScreen(screen), "fixed");
+
+    if (f != 0) done(&f, XFontStruct *);
 }
 
 /*ARGSUSED*/
@@ -538,7 +574,9 @@ static void CvtStringToInt(args, num_args, fromVal, toVal)
     static int	i;
 
     if (*num_args != 0)
-	XtWarning("String to Integer conversion needs no extra arguments");
+	XtWarningMsg("wrongParameters","cvtStringToInt","XtToolkitError",
+                  "String to Integer conversion needs no extra arguments",
+                  (String *) NULL, (Cardinal *)NULL);
     if (sscanf((char *)fromVal->addr, "%d", &i) == 1) {
 	done(&i, int);
     } else {
@@ -546,19 +584,49 @@ static void CvtStringToInt(args, num_args, fromVal, toVal)
     }
 }
 
-
 /*ARGSUSED*/
-static void CvtStringToPixel(args, num_args, fromVal, toVal)
+static void CvtStringToShort(args, num_args, fromVal, toVal)
     XrmValuePtr args;
     Cardinal    *num_args;
-    XrmValuePtr	fromVal;
-    XrmValuePtr	toVal;
+    XrmValuePtr fromVal;
+    XrmValuePtr toVal;
 {
-    XtDirectConvert((XtConverter) CvtStringToXColor, args, *num_args,
-	    fromVal, toVal);
-    if ((*toVal).addr == NULL) return;
-    done(&((XColor *)toVal->addr)->pixel, int);
-};
+    static short i;
+
+    if (*num_args != 0)
+        XtWarningMsg("wrongParameters","cvtStringToShort","XtToolkitError",
+          "String to Integer conversion needs no extra arguments",
+           (String *) NULL, (Cardinal *)NULL);
+    if (sscanf((char *)fromVal->addr, "%hd", &i) == 1) {
+        done(&i, short);
+    } else {
+        XtStringConversionWarning((char *) fromVal->addr, "Short");
+    }
+}
+/*ARGSUSED*/
+static void CvtStringToUnsignedChar(args, num_args, fromVal, toVal)
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr fromVal;
+    XrmValuePtr toVal;
+{
+    static int i;
+    static unsigned char uc;
+
+    if (*num_args != 0)
+        XtWarningMsg("wrongParameters","cvtStringToUnsignedChar","XtToolkitError",
+                  "String to Integer conversion needs no extra arguments",
+                   (String *) NULL, (Cardinal *)NULL);
+    if (sscanf((char *)fromVal->addr, "%d", &i) == 1) {
+
+        if ( i < 0 || i > 255 )
+            XtStringConversionWarning((char *) fromVal->addr, "Unsigned Char");
+        uc = (unsigned char)i;
+        done(&uc, unsigned char);
+    } else {
+        XtStringConversionWarning((char *) fromVal->addr, "Unsigned Char");
+    }
+}
 
 
 /*ARGSUSED*/
@@ -569,27 +637,10 @@ static void CvtXColorToPixel(args, num_args, fromVal, toVal)
     XrmValuePtr	toVal;
 {
     if (*num_args != 0)
-	XtWarning("Color to Pixel conversion needs no extra arguments");
+	XtWarningMsg("wrongParameters","cvtXColorToPixel","XtToolkitError",
+                  "Color to Pixel conversion needs no extra arguments",
+                   (String *) NULL, (Cardinal *)NULL);
     done(&((XColor *)fromVal->addr)->pixel, int);
-};
-
-/*ARGSUSED*/
-static void CvtDefaultColorToPixel(args, num_args, fromVal, toVal)
-    XrmValuePtr args;
-    Cardinal    *num_args;
-    XrmValuePtr fromVal;
-    XrmValuePtr toVal;
-{
-    Screen* screen;
-    if (*num_args != 1)
-        XtWarning("DefaultColor to Pixel conversion needs screen argument");
-    screen = *((Screen **) args[0].addr);
-    if (*(Pixel*)fromVal->addr == 0)
-        done(&screen->black_pixel, Pixel)
-    else if (*(Pixel*)fromVal->addr == 1)
-        done(&screen->white_pixel, Pixel)
-
-
 };
 
 /*ARGSUSED*/
@@ -600,7 +651,9 @@ static void CvtIntToPixel(args, num_args, fromVal, toVal)
     XrmValuePtr	toVal;
 {
     if (*num_args != 0)
-	XtWarning("Integer to Pixel conversion needs no extra arguments");
+	XtWarningMsg("wrongParameters","cvtIntToPixel","XtToolkitError",
+                  "Integer to Pixel conversion needs no extra arguments",
+                   (String *) NULL, (Cardinal *)NULL);
     done(fromVal->addr, int);
 };
 
@@ -612,43 +665,13 @@ static void CvtIntToPixmap(args, num_args, fromVal, toVal)
     XrmValuePtr toVal;
 {
     if (*num_args != 0)
-        XtWarning("Integer to Pixmap conversion needs no extra arguments");
+        XtWarningMsg("wrongParameters","cvtIntToPixmap","XtToolkitError",
+                  "Integer to Pixmap conversion needs no extra arguments",
+                   (String *) NULL, (Cardinal *)NULL);
     done(fromVal->addr, int);
 };
 
 
-/* ARGSUSED */
-static void CvtStringToBackingStore (args, num_args, fromVal, toVal)
-    XrmValue	*args;		/* unused */
-    Cardinal	*num_args;	/* unused */
-    XrmValuePtr fromVal;
-    XrmValuePtr toVal;
-{
-    char	lowerString[1024];
-    XrmQuark	q;
-    static int	backingStoreType;
-
-    if (*num_args != 0)
-        XtWarning("String to BackingStore conversion needs no extra arguments");
-    LowerCase ((char *) fromVal->addr, lowerString);
-    q = XrmStringToQuark (lowerString);
-    if ( q == XtQEnotUseful ) {
-	backingStoreType = NotUseful;
-	done (&backingStoreType, int);
-    } else if ( q == XtQEwhenMapped ) {
-    	backingStoreType = WhenMapped;
-	done (&backingStoreType, int);
-    } else if ( q == XtQEalways ) {
-	backingStoreType = Always;
-	done (&backingStoreType, int);
-    } else if ( q == XtQEdefault ) {
-    	backingStoreType = Always + WhenMapped + NotUseful;
-	done (&backingStoreType, int);
-    } else {
-    	backingStoreType = Always + WhenMapped + NotUseful;
-	done (&backingStoreType, int);
-    }
-}
 
 void LowerCase(source, dest)
     register char  *source, *dest;
@@ -665,24 +688,23 @@ void LowerCase(source, dest)
 }
 
 XrmQuark  XtQBoolean;
-XrmQuark  XtQLongBoolean;
+XrmQuark  XtQBool;
 XrmQuark  XtQColor;
 XrmQuark  XtQCursor;
-XrmQuark  XtQDims;
 XrmQuark  XtQDisplay;
+XrmQuark  XtQDimension;
 XrmQuark  XtQFile;
-XrmQuark  XtQFloat;
 XrmQuark  XtQFont;
 XrmQuark  XtQFontStruct;
-XrmQuark  XtQGeometry;
 XrmQuark  XtQInt;
 XrmQuark  XtQPixel;
 XrmQuark  XtQPixmap;
 XrmQuark  XtQPointer;
+XrmQuark  XtQPosition;
+XrmQuark  XtQShort;
 XrmQuark  XtQString;
+XrmQuark  XtQUnsignedChar;
 XrmQuark  XtQWindow;
-XrmQuark  XtQDefaultColor;
-XrmQuark  XtQBackingStore;
 
 XrmQuark  XtQEoff;
 XrmQuark  XtQEfalse;
@@ -690,10 +712,10 @@ XrmQuark  XtQEno;
 XrmQuark  XtQEon;
 XrmQuark  XtQEtrue;
 XrmQuark  XtQEyes;
-XrmQuark  XtQEnotUseful;
-XrmQuark  XtQEwhenMapped;
-XrmQuark  XtQEalways;
-XrmQuark  XtQEdefault;
+
+XrmQuark  XtQExtdefaultbackground;
+XrmQuark  XtQExtdefaultforeground;
+XrmQuark  XtQExtdefaultfont;
 
 static Boolean initialized = FALSE;
 
@@ -705,22 +727,23 @@ void _XtConvertInitialize()
 /* Representation types */
 
     XtQBoolean		= XrmStringToQuark(XtRBoolean);
-    XtQLongBoolean	= XrmStringToQuark(XtRLongBoolean);
     XtQColor		= XrmStringToQuark(XtRColor);
     XtQCursor		= XrmStringToQuark(XtRCursor);
+    XtQDimension	= XrmStringToQuark(XtRDimension);
     XtQDisplay		= XrmStringToQuark(XtRDisplay);
     XtQFile		= XrmStringToQuark(XtRFile);
     XtQFont		= XrmStringToQuark(XtRFont);
     XtQFontStruct	= XrmStringToQuark(XtRFontStruct);
-    XtQGeometry		= XrmStringToQuark(XtRGeometry);
     XtQInt		= XrmStringToQuark(XtRInt);
+    XtQBool		= XrmStringToQuark(XtRBool);
     XtQPixel		= XrmStringToQuark(XtRPixel);
     XtQPixmap		= XrmStringToQuark(XtRPixmap);
     XtQPointer		= XrmStringToQuark(XtRPointer);
+    XtQPosition		= XrmStringToQuark(XtRPosition);
+    XtQShort            = XrmStringToQuark(XtRShort);
     XtQString		= XrmStringToQuark(XtRString);
+    XtQUnsignedChar     = XrmStringToQuark(XtRUnsignedChar);
     XtQWindow		= XrmStringToQuark(XtRWindow);
-    XtQDefaultColor     = XrmStringToQuark(XtRDefaultColor);
-    XtQBackingStore	= XrmStringToQuark(XtRBackingStore);
 
 /* Boolean enumeration constants */
 
@@ -731,33 +754,32 @@ void _XtConvertInitialize()
     XtQEtrue		= XrmStringToQuark(XtEtrue);
     XtQEyes		= XrmStringToQuark(XtEyes);
 
-/* Backing store enumeration constants */
-    XtQEnotUseful  = XrmStringToQuark(XtEnotUseful);
-    XtQEwhenMapped = XrmStringToQuark(XtEwhenMapped);
-    XtQEalways     = XrmStringToQuark(XtEalways);
-    XtQEdefault	  = XrmStringToQuark(XtEdefault);
+/* Default color and font  enumeration constants */
+
+    XtQExtdefaultbackground = XrmStringToQuark(XtExtdefaultbackground);
+    XtQExtdefaultforeground = XrmStringToQuark(XtExtdefaultforeground);
+    XtQExtdefaultfont	    = XrmStringToQuark(XtExtdefaultfont);
 
 #define Add(from, to, proc, convert_args, num_args) \
     _XtAddConverter(from, to, (XtConverter) proc, \
 	    (XtConvertArgList) convert_args, num_args)
 
     Add(XtQColor,   XtQPixel,       CvtXColorToPixel,	    NULL, 0);
-    Add(XtQDefaultColor, XtQPixel,  CvtDefaultColorToPixel,
-       screenConvertArg, XtNumber(screenConvertArg));
     Add(XtQInt,     XtQBoolean,     CvtIntToBoolean,	    NULL, 0);
-    Add(XtQInt,     XtQLongBoolean, CvtIntToLongBoolean,    NULL, 0);
+    Add(XtQInt,     XtQBool,	     CvtIntToBool,	    NULL, 0);
+    Add(XtQInt,	    XtQDimension,   CvtIntToShort,	    NULL, 0);
     Add(XtQInt,     XtQPixel,       CvtIntToPixel,          NULL, 0);
+    Add(XtQInt,     XtQPosition,    CvtIntToShort,          NULL, 0);
     Add(XtQInt,     XtQPixmap,      CvtIntToPixmap,	    NULL, 0);
     Add(XtQInt,     XtQFont,	    CvtIntToFont,	    NULL, 0);
     Add(XtQInt,     XtQColor,       CvtIntOrPixelToXColor,  
 	colorConvertArgs, XtNumber(colorConvertArgs));
 
     Add(XtQString,  XtQBoolean,     CvtStringToBoolean,     NULL, 0);
-    Add(XtQString,  XtQLongBoolean, CvtStringToLongBoolean, NULL, 0);
-    Add(XtQString,  XtQColor,       CvtStringToXColor,      
-	colorConvertArgs, XtNumber(colorConvertArgs));
+    Add(XtQString,  XtQBool,	    CvtStringToBool,	    NULL, 0);
     Add(XtQString,  XtQCursor,      CvtStringToCursor,      
 	screenConvertArg, XtNumber(screenConvertArg));
+    Add(XtQString,  XtQDimension,   CvtStringToShort,       NULL, 0);
     Add(XtQString,  XtQDisplay,     CvtStringToDisplay,     NULL, 0);
     Add(XtQString,  XtQFile,	    CvtStringToFile,	    NULL, 0);
     Add(XtQString,  XtQFont,	    CvtStringToFont,	    
@@ -765,11 +787,13 @@ void _XtConvertInitialize()
     Add(XtQString,  XtQFontStruct,  CvtStringToFontStruct,  
 	screenConvertArg, XtNumber(screenConvertArg));
     Add(XtQString,  XtQInt,	    CvtStringToInt,	    NULL, 0);
+    Add(XtQString,  XtQPosition,    CvtStringToShort,       NULL, 0);
     Add(XtQString,  XtQPixel,       CvtStringToPixel,       
 	colorConvertArgs, XtNumber(colorConvertArgs));
+    Add(XtQString,  XtQShort,       CvtStringToShort,       NULL, 0);
+    Add(XtQString,  XtQUnsignedChar,CvtStringToUnsignedChar,NULL, 0);
 
     Add(XtQPixel,   XtQColor,       CvtIntOrPixelToXColor,  
 	colorConvertArgs, XtNumber(colorConvertArgs));
 
-    Add(XtQString,  XtQBackingStore,CvtStringToBackingStore,	NULL, 0);
 }
