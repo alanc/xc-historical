@@ -1,21 +1,21 @@
 /*
 ** interpret.c
 **
-** interprets and executes lines in the Xbench syntax.
+** interprets and executes lines in the Xgc syntax.
 */
 
 #include "stdio.h"
 #include <X11/IntrinsicP.h>
-#include "xbench.h"
+#include "xgc.h"
 
-extern XbenchStuff TestStuff;
-extern XbenchStuff FunctionStuff;
-extern XbenchStuff LinestyleStuff;
-extern XbenchStuff CapstyleStuff;
-extern XbenchStuff JoinstyleStuff;
-extern XbenchStuff FillstyleStuff;
-extern XbenchStuff FillruleStuff;
-extern XbenchStuff ArcmodeStuff;
+extern XgcStuff TestStuff;
+extern XgcStuff FunctionStuff;
+extern XgcStuff LinestyleStuff;
+extern XgcStuff CapstyleStuff;
+extern XgcStuff JoinstyleStuff;
+extern XgcStuff FillstyleStuff;
+extern XgcStuff FillruleStuff;
+extern XgcStuff ArcmodeStuff;
 
 extern XStuff X;
 extern Widget test;
@@ -23,7 +23,7 @@ extern Widget GCform;
 
 /* interpret(string)
 ** -----------------
-** Takes string, which is a line written in the xbench syntax, figures
+** Takes string, which is a line written in the xgc syntax, figures
 ** out what it means, and passes the buck to the right procedure.
 ** This is a _very_ primitive parser...
 */
@@ -47,29 +47,29 @@ void interpret(string,feedback)
 #define select_correct_button(x) \
 select_button(((CompositeWidget) \
 ((CompositeWidget)GCform)->composite.children[x])->composite.children[i+1], \
-NULL,NULL);
+(caddr_t) NULL, (caddr_t) NULL);
 
     if (!strcmp(word1,TestStuff.choice.text))  {
       for (i=0;i<NUM_TESTS;++i) {
-	if (!strcmp(word2,(*TestStuff.data)[i].text)) {
-	  change_test((*TestStuff.data)[i].code);
+	if (!strcmp(word2,(TestStuff.data)[i].text)) {
+	  change_test((TestStuff.data)[i].code);
 	  break;
 	}
       }
     }
     else if (!strcmp(word1,FunctionStuff.choice.text)) {
       for (i=0;i<NUM_FUNCTIONS;++i) {
-	if (!strcmp(word2,(*FunctionStuff.data)[i].text)) {
-	  GC_change_function((*FunctionStuff.data)[i].code);
+	if (!strcmp(word2,(FunctionStuff.data)[i].text)) {
+	  GC_change_function((FunctionStuff.data)[i].code);
 	  if (feedback) select_correct_button(CFunction);
 	  break;
 	}
       }
     }
     else if (!strcmp(word1,LinestyleStuff.choice.text)) {
-      for (i=0;i<NUM_FUNCTIONS;++i) {
-	if (!strcmp(word2,(*LinestyleStuff.data)[i].text)) {
-	  GC_change_linestyle((*LinestyleStuff.data)[i].code);
+      for (i=0;i<NUM_LINESTYLES;++i) {
+	if (!strcmp(word2,(LinestyleStuff.data)[i].text)) {
+	  GC_change_linestyle((LinestyleStuff.data)[i].code);
 	  if (feedback) select_correct_button(CLinestyle);
 	  break;
 	}
@@ -79,8 +79,8 @@ NULL,NULL);
       GC_change_linewidth(atoi(word2));
     else if (!strcmp(word1,CapstyleStuff.choice.text)) {
       for (i=0;i<NUM_CAPSTYLES;++i) {
-	if (!strcmp(word2,(*CapstyleStuff.data)[i].text)) {
-	  GC_change_capstyle((*CapstyleStuff.data)[i].code);
+	if (!strcmp(word2,(CapstyleStuff.data)[i].text)) {
+	  GC_change_capstyle((CapstyleStuff.data)[i].code);
 	  if (feedback) select_correct_button(CCapstyle);
 	  break;
 	}
@@ -88,8 +88,8 @@ NULL,NULL);
     }
     else if (!strcmp(word1,JoinstyleStuff.choice.text)) {
       for (i=0;i<NUM_JOINSTYLES;++i) {
-	if (!strcmp(word2,(*JoinstyleStuff.data)[i].text)) {
-	  GC_change_joinstyle((*JoinstyleStuff.data)[i].code);
+	if (!strcmp(word2,(JoinstyleStuff.data)[i].text)) {
+	  GC_change_joinstyle((JoinstyleStuff.data)[i].code);
 	  if (feedback) select_correct_button(CJoinstyle);
 	  break;
 	}
@@ -97,8 +97,8 @@ NULL,NULL);
     }
     else if (!strcmp(word1,FillstyleStuff.choice.text)) {
       for (i=0;i<NUM_FILLSTYLES;++i) {
-	if (!strcmp(word2,(*FillstyleStuff.data)[i].text)) {
-	  GC_change_fillstyle((*FillstyleStuff.data)[i].code);
+	if (!strcmp(word2,(FillstyleStuff.data)[i].text)) {
+	  GC_change_fillstyle((FillstyleStuff.data)[i].code);
 	  if (feedback) select_correct_button(CFillstyle);
 	  break;
 	}
@@ -106,8 +106,8 @@ NULL,NULL);
     }
     else if (!strcmp(word1,FillruleStuff.choice.text)) {
       for (i=0;i<NUM_FILLRULES;++i) {
-	if (!strcmp(word2,(*FillruleStuff.data)[i].text)) {
-	  GC_change_fillrule((*FillruleStuff.data)[i].code);
+	if (!strcmp(word2,(FillruleStuff.data)[i].text)) {
+	  GC_change_fillrule((FillruleStuff.data)[i].code);
 	  if (feedback) select_correct_button(CFillrule);
 	  break;
 	}
@@ -115,8 +115,8 @@ NULL,NULL);
     }
     else if (!strcmp(word1,ArcmodeStuff.choice.text)) {
       for (i=0;i<NUM_ARCMODES;++i) {
-	if (!strcmp(word2,(*ArcmodeStuff.data)[i].text)) {
-	  GC_change_arcmode((*ArcmodeStuff.data)[i].code);
+	if (!strcmp(word2,(ArcmodeStuff.data)[i].text)) {
+	  GC_change_arcmode((ArcmodeStuff.data)[i].code);
 	  if (feedback) select_correct_button(CArcmode);
 	  break;
 	}
