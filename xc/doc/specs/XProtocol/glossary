@@ -10,9 +10,6 @@ Glossary
 .sp 2
 .na
 .LP
-.XS
-Glossary
-.XE
 .KS
 \fBAccess control list\fP
 .IN "Access control list" "" "@DEF@"
