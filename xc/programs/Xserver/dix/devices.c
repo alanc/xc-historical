@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.39 94/02/03 18:58:24 rws Exp $ */
+/* $XConsortium: devices.c,v 5.40 94/02/04 10:42:59 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -837,6 +837,9 @@ ProcSetModifierMapping(client)
 	    return BadValue;
 	}
     }
+#ifdef LBX
+    LbxFlushModifierMapTag();
+#endif
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
@@ -962,6 +965,9 @@ ProcChangeKeyboardMapping(client)
 	return BadAlloc;
 #ifdef XKB
     inputInfo.keyboard->key->keymapSerial++;
+#endif
+#ifdef LBX
+    LbxFlushKeyboardMapTag();
 #endif
     SendMappingNotify(MappingKeyboard, stuff->firstKeyCode, stuff->keyCodes);
     return client->noClientException;

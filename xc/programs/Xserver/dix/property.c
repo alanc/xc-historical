@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 5.10 93/09/20 16:53:17 dpw Exp $ */
+/* $XConsortium: property.c,v 5.11 93/09/25 11:42:22 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -33,6 +33,16 @@ SOFTWARE.
 
 extern void (*ReplySwapVector[]) ();
 extern void CopySwap16Write(), CopySwap32Write(), Swap32Write();
+
+#ifdef LBX
+int fWriteToClient(client,buf, len)
+    ClientPtr   client;
+    char        *buf;
+    int         len;
+{
+    return WriteToClient(client, buf, len);
+}
+#endif
 
 /*****************************************************************
  * Property Stuff
@@ -488,7 +498,11 @@ ProcGetProperty(client)
 		    switch (reply.format) {
 		    case 32: client->pSwapReplyFunc = CopySwap32Write; break;
 		    case 16: client->pSwapReplyFunc = CopySwap16Write; break;
+#ifdef LBX
+		    default: client->pSwapReplyFunc = (void (*) ())fWriteToClient; break;
+#else
 		    default: client->pSwapReplyFunc = (void (*) ())WriteToClient; break;
+#endif
 		    }
 		    WriteSwappedDataToClient(client, len,
 					     (char *)pProp->data + ind);

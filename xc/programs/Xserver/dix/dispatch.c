@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.56 94/01/30 19:10:40 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.58 94/02/04 10:49:49 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -95,6 +95,10 @@ static void DeleteClientFromAnySelections(
     ClientPtr /*client*/
 #endif
 );
+
+#ifdef LBX
+extern unsigned long  StandardRequestLength();
+#endif
 
 static int nextFreeClientID; /* always MIN free client ID */
 
@@ -3385,6 +3389,9 @@ void InitClient(client, i, ospriv)
     int i;
     pointer ospriv;
 {
+#ifdef LBX
+    client->public.requestLength = StandardRequestLength;
+#endif
     client->index = i;
     client->sequence = 0; 
     client->clientAsMask = ((Mask)i) << CLIENTOFFSET;

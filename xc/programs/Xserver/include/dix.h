@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.72 94/01/11 23:17:45 rob Exp $ */
+/* $XConsortium: dix.h,v 1.74 94/02/04 10:41:02 rws Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -177,6 +177,19 @@ typedef struct _TimeStamp *TimeStampPtr;
 typedef struct _Client *ClientPtr; /* also in misc.h */
 #define _XTYPEDEF_CLIENTPTR
 #endif
+
+#ifdef LBX
+typedef struct _ClientPublic {
+    int             (*writeToClient) ();
+    unsigned long   (*requestLength) ();
+    int             (*readRequest)();
+} ClientPublicRec, *ClientPublicPtr;
+
+#define WriteToClient(client,buf,len)   ((((ClientPublicPtr) client)->writeToClient)(client,buf,len))
+#define ReadRequestFromClient(client)   (((ClientPublicPtr) client)->readRequest(client))
+#define RequestLength(r,client,g,p)           (*((ClientPublicPtr) client)->requestLength) (r,client,g,p)
+
+#endif /* LBX */
 
 typedef struct _WorkQueue	*WorkQueuePtr;
 
@@ -500,12 +513,6 @@ extern void DeleteCallbackList(
 );
 
 extern void InitCallbackManager(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
-
-extern void ShutdownCallbackManager(
 #if NeedFunctionPrototypes
     void
 #endif
