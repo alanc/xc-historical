@@ -14,7 +14,7 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.16 87/09/01 15:36:36 toddb Locked $
+ * $Header: imake.c,v 1.17 87/09/01 19:37:17 toddb Locked $
  * $Locker: toddb $
  *
  * Author:
@@ -114,9 +114,14 @@ int	InRule = FALSE;
 
 typedef	u_char	boolean;
 
+#ifndef apollo
+char	*cpp = "/lib/cpp";
+#else apollo
+char	*cpp = "/usr/lib/cpp";
+#endif apollo
+
 char	*tmpMakefile    = "/usr/tmp/tmp-make.XXXXXX";
 char	*tmpImakefile    = "/usr/tmp/tmp-imake.XXXXXX";
-char	*cpp = "/lib/cpp";
 char	*make_argv[ ARGUMENTS ] = { "make" };
 char	*cpp_argv[ ARGUMENTS ] = {
 	"cpp",
