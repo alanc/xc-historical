@@ -1,5 +1,5 @@
 /*
- * $XConsortium: LocBitmap.c,v 1.2 89/11/02 09:51:34 jim Exp $
+ * $XConsortium: LocBitmap.c,v 1.3 89/11/30 18:21:45 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -53,7 +53,8 @@ Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
     XmuCvtCache *cache = _XmuCCLookupDisplay (dpy);
     char **file_paths;
     char filename[MAXPATHLEN];
-    int width, height, xhot, yhot;
+    unsigned int width, height;
+    int xhot, yhot;
     int i;
     static char **split_path_string();
 
@@ -132,8 +133,8 @@ Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
 
 	if (XReadBitmapFile (dpy, root, fn, &width, &height, 
 			     &pixmap, &xhot, &yhot) == BitmapSuccess) {
-	    if (widthp) *widthp = width;
-	    if (heightp) *heightp = height;
+	    if (widthp) *widthp = (int)width;
+	    if (heightp) *heightp = (int)height;
 	    if (xhotp) *xhotp = xhot;
 	    if (yhotp) *yhotp = yhot;
 	    if (srcname && srcnamelen > 0) {

@@ -1,5 +1,5 @@
 static char rcsid[] =
-	"$XConsortium: StrToJust.c,v 1.0 88/09/05 19:00:58 rws Exp $";
+	"$XConsortium: StrToJust.c,v 1.1 89/12/07 10:53:03 rws Exp $";
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -35,7 +35,6 @@ XmuCvtStringToJustify(args, num_args, fromVal, toVal)
     XrmQuark    q;
     char	*s = (char *) fromVal->addr;
     char        lowerName[1000];
-    int		i;
 
     if (s == NULL) return;
 

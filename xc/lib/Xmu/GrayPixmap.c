@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: GrayPixmap.c,v 1.2 89/06/08 16:31:19 swick Exp $";
+static char Xrcsid[] = "$XConsortium: GrayPixmap.c,v 1.3 89/07/21 15:54:14 jim Exp $";
 #endif /* lint */
 
 
@@ -75,7 +75,7 @@ Pixmap XmuCreateStippledPixmap(screen, fore, back, depth)
     }
 
     stippled_pixmap = XCreatePixmapFromBitmapData (display,
-			RootWindowOfScreen(screen), pixmap_bits, 
+			RootWindowOfScreen(screen), (char *)pixmap_bits, 
 			pixmap_width, pixmap_height, fore, back, depth);
 
     /* and insert it at the head of the cache */

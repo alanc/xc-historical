@@ -1,5 +1,5 @@
 static char rcsid[] =
-	"$XConsortium: Lookup.c,v 1.7 89/05/06 11:27:37 rws Exp $";
+	"$XConsortium: Initer.c,v 1.1 89/05/08 14:19:04 kit Exp $";
 
 /* 
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -24,7 +24,7 @@ static char rcsid[] =
 #include <stdio.h>
 #include <X11/Intrinsic.h>
 
-static struct InitializerList {
+struct InitializerList {
   void (*function)();		/* The function to call. */
   caddr_t data;			/* Data to pass the function. */
   XtAppContext * app_con_list;	/* a null terminated list of app_contexts. */

@@ -1,4 +1,4 @@
-/* $XConsortium: ClientWin.c,v 1.1 89/02/02 19:41:39 rws Exp $ */
+/* $XConsortium: ClientWin.c,v 1.2 89/07/24 15:26:55 jim Exp $ */
 
 /* 
  * Copyright 1989 by the Massachusetts Institute of Technology
@@ -30,7 +30,7 @@ Window XmuClientWindow (dpy, win)
     Atom type = None;
     int format;
     unsigned long nitems, after;
-    char *data;
+    unsigned char *data;
     Window inf;
 
     WM_STATE = XInternAtom(dpy, "WM_STATE", True);
@@ -59,7 +59,7 @@ Window TryChildren (dpy, win, WM_STATE)
     Atom type = None;
     int format;
     unsigned long nitems, after;
-    char *data;
+    unsigned char *data;
     Window inf = 0;
 
     if (!XQueryTree(dpy, win, &root, &parent, &children, &nchildren))
