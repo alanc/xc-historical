@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.42 91/02/02 17:47:22 rws Exp $ */
+/* $XConsortium: xwud.c,v 1.43 91/02/09 16:53:46 rws Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 
 /*
@@ -707,6 +707,16 @@ Do_StdCol(dpy, stdmap, ncolors, colors, in_image, out_image)
     }
 }
 
+Colormap
+CopyColormapAndFree(dpy, colormap)
+    Display *dpy;
+    Colormap colormap;
+{
+    if (colormap == DefaultColormap(dpy, DefaultScreen(dpy)))
+	return XCopyColormapAndFree(dpy, colormap);
+    Error("Visual type is not large enough to hold all colors of the image.");
+}
+
 Do_Pseudo(dpy, colormap, ncolors, colors, in_image, out_image)
     Display *dpy;
     Colormap *colormap;
@@ -725,7 +735,7 @@ Do_Pseudo(dpy, colormap, ncolors, colors, in_image, out_image)
 	    if (!color->flags) {
 		color->flags = DoRed | DoGreen | DoBlue;
 		if (!XAllocColor(dpy, *colormap, color)) {
-		    *colormap = XCopyColormapAndFree(dpy, *colormap);
+		    *colormap = CopyColormapAndFree(dpy, *colormap);
 		    XAllocColor(dpy, *colormap, color);
 		}
 	    }
@@ -790,7 +800,7 @@ Do_Direct(dpy, header, colormap, ncolors, colors, in_image, out_image)
 		    color.blue = ((unsigned long)color.blue * 65535) / bmask;
 		}
 		if (!XAllocColor(dpy, *colormap, &color)) {
-		    *colormap = XCopyColormapAndFree(dpy, *colormap);
+		    *colormap = CopyColormapAndFree(dpy, *colormap);
 		    XAllocColor(dpy, *colormap, &color);
 		}
 		if (pixels)
