@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: daemon.c,v 1.11 94/02/02 08:42:17 gildea Exp $
+ * $XConsortium: daemon.c,v 1.12 94/02/04 11:35:58 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -73,16 +73,17 @@ BecomeOrphan ()
 
 #if defined(SVR4)
 	stat = setpgid(child_id, child_id);
+	/* This gets error EPERM.  Why? */
 #else
 #if defined(SYSV)
 	stat = 0;	/* don't know how to set child's process group */
 #else
 	stat = setpgrp(child_id, child_id);
-#endif
-#endif
 	if (stat != 0)
 	    LogError("setting process grp for daemon failed, errno = %d\n",
 		     errno);
+#endif
+#endif
 	exit (0);
     }
 }
