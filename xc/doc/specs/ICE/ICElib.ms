@@ -224,9 +224,9 @@ callback is invoked.
 .sM
 typedef Bool (*IcePOprocessMsgProc)();
 .FD 0
-Bool POprocessMsgProc\^(\^\fIiceConn\fP, \fIopcode\fP\^, \fIlength\fP\^, \fIswap\fP\^, \fIreplyWait\fP\^)
+Bool POprocessMsgProc\^(\^\fIice_conn\fP, \fIopcode\fP\^, \fIlength\fP\^, \fIswap\fP\^, \fIreply_wait\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .br
     int \fIopcode\fP\^;
 .br
@@ -234,26 +234,26 @@ Bool POprocessMsgProc\^(\^\fIiceConn\fP, \fIopcode\fP\^, \fIlength\fP\^, \fIswap
 .br
     Bool \fIswap\fP\^;
 .br
-    IceReplyWaitInfo \fIreplyWait\fP\^;
+    IceReplyWaitInfo \fIreply_wait\fP\^;
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 The ICE connection object.
-.IP \fIopCode\fP 1i
+.IP \fIopcode\fP 1i
 The minor opcode of the message.
 .IP \fIlength\fP 1i
 The length (in multiple of 8 bytes) of the message beyond the ICE header.
 .IP \fIswap\fP 1i
 A flag which indicates if byte swapping is necessary.
-.IP \fIreplyWait\fP 1i
+.IP \fIreply_wait\fP 1i
 Indicates if the client is waiting for a reply.
 .LP
 .eM
 .sM
 typedef void (*IcePAprocessMsgProc)();
 .FD 0
-void PAprocessMsgProc\^(\^\fIiceConn\fP, \fIopcode\fP\^, \fIlength\fP\^, \fIswap\fP\^)
+void PAprocessMsgProc\^(\^\fIice_conn\fP, \fIopcode\fP\^, \fIlength\fP\^, \fIswap\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .br
     int \fIopcode\fP\^;
 .br
@@ -261,9 +261,9 @@ void PAprocessMsgProc\^(\^\fIiceConn\fP, \fIopcode\fP\^, \fIlength\fP\^, \fIswap
 .br
     Bool \fIswap\fP\^;
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 The ICE connection object.
-.IP \fIopCode\fP 1i
+.IP \fIopcode\fP 1i
 The minor opcode of the message.
 .IP \fIlength\fP 1i
 The length (in multiple of 8 bytes) of the message beyond the ICE header.
@@ -273,18 +273,18 @@ A flag which indicates if byte swapping is necessary.
 .eM
 The
 .PN IcePOprocessMsgProc
-callback needs to check the \fIreplyWait\fP\^ argument.
-If \fIreplyWait\fP\^ is
+callback needs to check the \fIreply_wait\fP\^ argument.
+If \fIreply_wait\fP\^ is
 .PN NULL ,
 the ICE library expects the function to
 pass the message to the client via a callback.  For example, if
 this is a Session Management \fISave Yourself\fP\^ message, this function
 should notify the client of the \fISave Yourself\fP\^ via a callback.
 .LP
-However, if \fIreplyWait\fP\^ is not
+However, if \fIreply_wait\fP\^ is not
 .PN NULL ,
 then the client is waiting for
-a reply or an error for a message it previously sent.  \fIreplyWait\fP\^
+a reply or an error for a message it previously sent.  \fIreply_wait\fP\^
 is of type
 .PN IceReplyWaitInfo .
 .LP
@@ -342,7 +342,7 @@ client of the \fIInteract Request\fP\^ via a callback.
 .LP
 The reason the
 .PN IcePAprocessMsgProc
-callback does not have a \fIreplyWait\fP\^ like
+callback does not have a \fIreply_wait\fP\^ like
 .PN IcePOprocessMsgProc
 does, is because a process that is acting as
 a "server" should never block for a reply (infinite blocking can
@@ -414,57 +414,57 @@ the \fIProtocol Setup\fP\^ and needs to respond to an
 .sM
 typedef IcePOauthStatus (*IcePOauthProc)();
 .FD 0
-IcePOauthStatus POauthProc\^(\^\fIauthStatePtr\fP, \fIcleanUp\fP\^, \fIswap\fP\^,
+IcePOauthStatus POauthProc\^(\^\fIauth_state_ptr\fP, \fIclean_up\fP\^, \fIswap\fP\^,
 .br
-                    \fIauthDataLen\fP\^, \fIauthData\fP\^, \fIreplyDataLenRet\fP\^, \fIreplyDataRet\fP\^, \fIerrorStringRet\fP\^)
+                    \fIauth_datalen\fP\^, \fIauth_data\fP\^, \fIreply_datalen_ret\fP\^, \fIreply_data_ret\fP\^, \fIerror_string_ret\fP\^)
 .br
-     IcePointer *\fIauthStatePtr\fP\^;
+     IcePointer *\fIauth_state_ptr\fP\^;
 .br
-     Bool \fIcleanUp\fP\^;
+     Bool \fIclean_up\fP\^;
 .br
      Bool \fIswap\fP\^;
 .br
-     int \fIauthDataLen\fP\^;
+     int \fIauth_datalen\fP\^;
 .br
-     IcePointer \fIauthData\fP\^;
+     IcePointer \fIauth_data\fP\^;
 .br
-     int *\fIreplyDataLenRet\fP\^;
+     int *\fIreply_datalen_ret\fP\^;
 .br
-     IcePointer *\fIreplyDataRet\fP\^;
+     IcePointer *\fIreply_data_ret\fP\^;
 .br
-     char **\fIerrorStringRet\fP\^;
+     char **\fIerror_string_ret\fP\^;
 .FN
-.IP \fIauthStatePtr\fP 1i
+.IP \fIauth_state_ptr\fP 1.1i
 A pointer to state maintained by the
 authentication procedure.  The first time this
-function is invoked, *\fIauthStatePtr\fP\^ is
+function is invoked, *\fIauth_state_ptr\fP\^ is
 .PN NULL ,
 and the function should initialize it's state and set
 this pointer.
-.IP \fIcleanUp\fP 1i
+.IP \fIclean_up\fP 1.1i
 If
 .PN True ,
 authentication is over, and the function
 should clean up any state it was maintaining.  The
 last 6 arguments should be ignored.
-.IP \fIswap\fP 1i
+.IP \fIswap\fP 1.1i
 If
 .PN True ,
-the \fIauthData\fP\^ may have to be byte swapped
+the \fIauth_data\fP\^ may have to be byte swapped
 (depending on it's contents).
-.IP \fIauthDataLen\fP 1i
+.IP \fIauth_datalen\fP 1.1i
 The length (in bytes) of the authenticator data.
-.IP \fIauthData\fP 1i
+.IP \fIauth_data\fP 1.1i
 The data from the authenticator.  This pointer may
 point to a volatile block of memory.  So, if you need
 to keep the data beyond this function call, be sure
 to make a copy of it.
-.IP \fIreplyDataLenRet\fP 1i
+.IP \fIreply_datalen_ret\fP 1.1i
 The length (in bytes) of the reply data returned.
-.IP \fIreplyDataRet\fP 1i
+.IP \fIreply_data_ret\fP 1.1i
 The reply data returned.  ICElib will be
 responsible for freeing this data.
-.IP \fIerrorStringRet\fP 1i
+.IP \fIerror_string_ret\fP 1.1i
 If the authentication procedure encounters an error during
 authentication, it should allocate and return
 an error string.  ICElib will be
@@ -511,51 +511,51 @@ is the callback invoked for the client that received a
 .sM
 typedef IcePAauthStatus (*IcePAauthProc) ();
 .FD 0
-IcePAauthStatus PAauthProc\^(\^\fIauthStatePtr\fP, \fIswap\fP\^,
+IcePAauthStatus PAauthProc\^(\^\fIauth_state_ptr\fP, \fIswap\fP\^,
 .br
-                    \fIreplyDataLen\fP\^, \fIreplyData\fP\^, \fIauthDataLenRet\fP\^, \fIauthDataRet\fP\^, \fIerrorStringRet\fP\^)
+                    \fIreply_datalen\fP\^, \fIreply_data\fP\^, \fIauth_datalen_ret\fP\^, \fIauth_data_ret\fP\^, \fIerror_string_ret\fP\^)
 .br
-    IcePointer *\fIauthStatePtr\fP\^;
+    IcePointer *\fIauth_state_ptr\fP\^;
 .br
     Bool \fIswap\fP\^;
 .br
-    int \fIreplyDataLen\fP\^;
+    int \fIreply_datalen\fP\^;
 .br
-    IcePointer \fIreplyData\fP\^;
+    IcePointer \fIreply_data\fP\^;
 .br
-    int *\fIauthDataLenRet\fP\^;
+    int *\fIauth_datalen_ret\fP\^;
 .br
-    IcePointer *\fIauthDataRet\fP\^;
+    IcePointer *\fIauth_data_ret\fP\^;
 .br
-    char **\fIerrorStringRet\fP\^;
+    char **\fIerror_string_ret\fP\^;
 .FN
-.IP \fIauthStatePtr\fP 1i
+.IP \fIauth_state_ptr\fP 1.1i
 A pointer to state maintained by the
 authentication procedure.  The first time this
-function is invoked, *\fIauthStatePtr\fP\^ is
+function is invoked, *\fIauth_state_ptr\fP\^ is
 .PN NULL ,
 and the function should initialize it's state and set
 this pointer.  When authentication
 is accepted or rejected, the function should clean up
 the state it was maintaining.
-.IP \fIswap\fP 1i
+.IP \fIswap\fP 1.1i
 If
 .PN True ,
-the \fIreplyData\fP\^ may have to be byte swapped
+the \fIreply_data\fP\^ may have to be byte swapped
 (depending on it's contents).
-.IP \fIreplyDataLen\fP 1i
+.IP \fIreply_datalen\fP 1.1i
 The length (in bytes) of the authenticatee data.
-.IP \fIreplyData\fP 1i
+.IP \fIreply_data\fP 1.1i
 The data from the authenticatee.  This pointer may
 point to a volatile block of memory.  So, if you need
 to keep the data beyond this function call, be sure
 to make a copy of it.
-.IP \fIauthDataLenRet\fP 1i
+.IP \fIauth_datalen_ret\fP 1.1i
 The length of the authentication data returned.
-.IP \fIauthDataRet\fP 1i
+.IP \fIauth_data_ret\fP 1.1i
 The authentication data returned.  ICElib will be
 responsible for freeing this data.
-.IP \fIerrorStringRet\fP 1i
+.IP \fIerror_string_ret\fP 1.1i
 If authentication is rejected or fails, an error
 string is returned.  ICElib will be
 responsible for freeing this string.
@@ -604,45 +604,45 @@ to reserve a major opcode and to provide information about the protocol.
 .LP
 .sM
 .FD 0
-int IceRegisterForProtocolSetup\^(\^\fIprotocolName\fP, \fIvendor\fP\^, \fIrelease\fP\^,
+int IceRegisterForProtocolSetup\^(\^\fIprotocol_name\fP, \fIvendor\fP\^, \fIrelease\fP\^,
 .br
-                    \fIversionCount\fP\^, \fIversionRecs\fP\^, \fIauthCount\fP\^, \fIauthRecs\fP\^, \fIIOErrorProc\fP\^)
+                    \fIversion_count\fP\^, \fIversion_recs\fP\^, \fIauth_count\fP\^, \fIauth_recs\fP\^, \fIio_error_proc\fP\^)
 .br
-     char *\fIprotocolName\fP\^;
+     char *\fIprotocol_name\fP\^;
 .br
      char *\fIvendor\fP\^;
 .br
      char *\fIrelease\fP\^;
 .br
-     int \fIversionCount\fP\^;
+     int \fIversion_count\fP\^;
 .br
-     IcePOversionRec *\fIversionRecs\fP\^;
+     IcePOversionRec *\fIversion_recs\fP\^;
 .br
-     int \fIauthCount\fP\^;
+     int \fIauth_count\fP\^;
 .br
-     IcePOauthRec *\fIauthRecs\fP\^;
+     IcePOauthRec *\fIauth_recs\fP\^;
 .br
-     IceIOErrorProc \fIIOErrorProc\fP\^;
+     IceIOErrorProc \fIio_error_proc\fP\^;
 .FN
-.IP \fIprotocolName\fP 1i
+.IP \fIprotocol_name\fP 1i
 A string specifying the name of the protocol to register.
 .IP \fIvendor\fP 1i
 A string specifying the vendor implementing the protocol library.
 .IP \fIrelease\fP 1i
 A string specifying the release of the protocol library.
-.IP \fIversionCount\fP 1i
+.IP \fIversion_count\fP 1i
 The number of different versions of the protocol supported.
-.IP \fIversionRecs\fP 1i
+.IP \fIversion_recs\fP 1i
 Information about each version of the protocol supported (prioritized in
 decreasing order of preference).  See the previous section titled
 \fIVersion Records\fP\^.
-.IP \fIauthCount\fP 1i
+.IP \fIauth_count\fP 1i
 The number of authentication methods supported.
-.IP \fIauthRecs\fP 1i
+.IP \fIauth_recs\fP 1i
 Information about each authentication method (prioritized in decreasing
 order of preference).  See the previous section titled
 \fIAuthentication Records\fP\^.
-.IP \fIIOErrorProc\fP 1i
+.IP \fIio_error_proc\fP 1i
 Error handler to invoke if the ICE connection unexpectedly breaks.  Pass
 .PN NULL
 if not interested in being notified.
@@ -660,29 +660,29 @@ to reserve a major opcode and to provide information about the protocol.
 .LP
 .sM
 .FD 0
-int IceRegisterForProtocolReply\^(\^\fIprotocolName\fP, \fIvendor\fP\^, \fIrelease\fP\^,
+int IceRegisterForProtocolReply\^(\^\fIprotocol_name\fP, \fIvendor\fP\^, \fIrelease\fP\^,
 .br
-                    \fIversionCount\fP\^, \fIversionRecs\fP\^, \fIprotocolSetupNotifyProc\fP\^, \fIauthCount\fP\^, \fIauthRecs\fP\^, \fIIOErrorProc\fP\^)
+                    \fIversion_count\fP\^, \fIversion_recs\fP\^, \fIprotocol_setup_notify_proc\fP\^, \fIauth_count\fP\^, \fIauth_recs\fP\^, \fIio_error_proc\fP\^)
 .br
-     char *\fIprotocolName\fP\^;
+     char *\fIprotocol_name\fP\^;
 .br
      char *\fIvendor\fP\^;
 .br
      char *\fIrelease\fP\^;
 .br
-     int \fIversionCount\fP\^;
+     int \fIversion_count\fP\^;
 .br
-     IcePAversionRec *\fIversionRecs\fP\^;
+     IcePAversionRec *\fIversion_recs\fP\^;
 .br
-     IceProtocolSetupNotifyProc \fIprotocolSetupNotifyProc\fP\^;
+     IceProtocolSetupNotifyProc \fIprotocol_setup_notify_proc\fP\^;
 .br
-     int \fIauthCount\fP\^;
+     int \fIauth_count\fP\^;
 .br
-     IcePAauthRec *\fIauthRecs\fP\^;
+     IcePAauthRec *\fIauth_recs\fP\^;
 .br
-     IceIOErrorProc \fIIOErrorProc\fP\^;
+     IceIOErrorProc \fIio_error_proc\fP\^;
 .FN
-.IP \fIprotocolName\fP 1i
+.IP \fIprotocol_name\fP 1i
 A string specifying the name of the protocol to register.
 .IP \fIvendor\fP 1i
 A string specifying the vendor of the application using the protocol library.
@@ -691,22 +691,22 @@ For example, the vendor of a session manager.
 A string specifying the release of the application using
 the protocol library.  For example, the release of a
 session manager.
-.IP \fIversionCount\fP 1i
+.IP \fIversion_count\fP 1i
 The number of different versions of the protocol supported.
-.IP \fIversionRecs\fP 1i
+.IP \fIversion_recs\fP 1i
 Information about each version of the protocol supported (prioritized in
 decreasing order of preference).  See the previous section titled
 \fIVersion Records\fP\^.
-.IP \fIprotocolSetupNotifyProc\fP 1i
+.IP \fIprotocol_setup_notify_proc\fP 1i
 A callback to be invoked when the client on the other side of
 the ICE connection has successfully completed a \fIProtocol Setup\fP\^.
-.IP \fIauthCount\fP 1i
+.IP \fIauth_count\fP 1i
 The number of authentication methods supported.
-.IP \fIauthRecs\fP 1i
+.IP \fIauth_recs\fP 1i
 Information about each authentication method (prioritized in decreasing
 order of preference).  See the previous section titled
 \fIAuthentication Records\fP\^.
-.IP \fIIOErrorProc\fP 1i
+.IP \fIio_error_proc\fP 1i
 Error handler to invoke if the ICE connection unexpectedly breaks.  Pass
 .PN NULL
 if not interested in being notified.
@@ -725,23 +725,23 @@ callback serves this purpose.
 .sM
 typedef void (*IceProtocolSetupNotifyProc) ();
 .FD 0
-void ProtocolSetupNotifyProc\^(\^\fIiceConn\fP, \fImajorVersion\fP\^, \fIminorVersion\fP\^, \fIvendor\fP\^, \fIrelease\fP\^)
+void ProtocolSetupNotifyProc\^(\^\fIice_conn\fP, \fImajor_version\fP\^, \fIminor_version\fP\^, \fIvendor\fP\^, \fIrelease\fP\^)
 .br
-     IceConn \fIiceConn\fP\^;
+     IceConn \fIice_conn\fP\^;
 .br
-     int \fImajorVersion\fP\^;
+     int \fImajor_version\fP\^;
 .br
-     int \fIminorVersion\fP\^;
+     int \fIminor_version\fP\^;
 .br
      char *\fIvendor\fP\^;
 .br
      char *\fIrelease\fP\^;
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 The ICE connection object.
-.IP \fImajorVersion\fP 1i
+.IP \fImajor_version\fP 1i
 The major version of the protocol.
-.IP \fIminorVersion\fP 1i
+.IP \fIminor_version\fP 1i
 The minor version of the protocol.
 .IP \fIvendor\fP 1i
 The vendor of the library that sent the \fIProtocol Setup\fP\^.
@@ -775,21 +775,21 @@ function.
 .LP
 .sM
 .FD 0
-IceConn IceOpenConnection\^(\^\fInetworkIdsList\fP, \fIerrorLength\fP\^, \fIerrorStringRet\fP\^)
+IceConn IceOpenConnection\^(\^\fInetwork_ids_list\fP, \fIerror_length\fP\^, \fIerror_string_ret\fP\^)
 .br
-     char *\fInetworkIdsList\fP\^;
+     char *\fInetwork_ids_list\fP\^;
 .br
-     int  \fIerrorLength\fP\^;
+     int  \fIerror_length\fP\^;
 .br
-     char *\fIerrorStringRet\fP\^;
+     char *\fIerror_string_ret\fP\^;
 .FN
-.IP \fInetworkIdsList\fP 1i
+.IP \fInetwork_ids_list\fP 1i
 Specifies the network ID(s) of the other client.
-.IP \fIerrorLength\fP 1i
-Length of the \fIerrorStringRet\fP\^ argument passed in.
-.IP \fIerrorStringRet\fP 1i
-Returns a null terminated error message, if any.  \fIerrorStringRet\fP
-points to user supplied memory.  No more than \fIerrorLength\fP\^ bytes
+.IP \fIerror_length\fP 1i
+Length of the \fIerror_string_ret\fP\^ argument passed in.
+.IP \fIerror_string_ret\fP 1i
+Returns a null terminated error message, if any.  \fIerror_string_ret\fP
+points to user supplied memory.  No more than \fIerror_length\fP\^ bytes
 are used.
 .LP
 .eM
@@ -798,7 +798,7 @@ returns an opaque ICE connection object if it succeeds,
 .PN NULL
 otherwise.
 .LP
-\fInetworkIdsList\fP\^ contains a list of network IDs separated by commas.
+\fInetwork_ids_list\fP\^ contains a list of network IDs separated by commas.
 An attempt will be made to use the first network ID.  If that fails,
 an attempt will be made using the second network ID, and so on.
 Each network ID has the form...
@@ -842,33 +842,33 @@ to detect new connections.
 .LP
 .sM
 .FD 0
-Status IceListenForConnections\^(\^\fIcountRet\fP, \fIdescripsRet\fP\^, \fInetworkIdsRet\fP\^, \fIerrorLength\fP\^, \fIerrorStringRet\fP\^)
+Status IceListenForConnections\^(\^\fIcount_ret\fP, \fIdescrips_ret\fP\^, \fInetwork_ids_ret\fP\^, \fIerror_length\fP\^, \fIerror_string_ret\fP\^)
 .br
-     int  *\fIcountRet\fP\^;
+     int  *\fIcount_ret\fP\^;
 .br
-     int  **\fIdescripsRet\fP\^;
+     int  **\fIdescrips_ret\fP\^;
 .br
-     char **\fInetworkIdsRet\fP\^;
+     char **\fInetwork_ids_ret\fP\^;
 .br
-     int  \fIerrorLength\fP\^;
+     int  \fIerror_length\fP\^;
 .br
-     char *\fIerrorStringRet\fP\^;
+     char *\fIerror_string_ret\fP\^;
 .FN
-.IP \fIcountRet\fP 1i
+.IP \fIcount_ret\fP 1i
 The number of file descriptors returned.
-.IP \fIdescripsRet\fP 1i
+.IP \fIdescrips_ret\fP 1i
 Returns a list of file descriptors.
-.IP \fInetworkIdsRet\fP 1i
+.IP \fInetwork_ids_ret\fP 1i
 Returns a list of network IDs corresponding to the list of file descriptors.
-.IP \fIerrorLength\fP 1i
-The length of the \fIerrorStringRet\fP\^ argument passed in.
-.IP \fIerrorStringRet\fP 1i
-Returns a null terminated error message, if any.  \fIerrorStringRet\fP
-points to user supplied memory.  No more than \fIerrorLength\fP\^ bytes
+.IP \fIerror_length\fP 1i
+The length of the \fIerror_string_ret\fP\^ argument passed in.
+.IP \fIerror_string_ret\fP 1i
+Returns a null terminated error message, if any.  \fIerror_string_ret\fP
+points to user supplied memory.  No more than \fIerror_length\fP\^ bytes
 are used.
 .LP
 .eM
-\fInetworkIdsRet\fP\^ returns a list of network IDs separated by commas.
+\fInetwork_ids_ret\fP\^ returns a list of network IDs separated by commas.
 Each network ID has the form...
 .br
 .TS
@@ -878,7 +878,7 @@ lw(0.25i) lw(2.5i) lw(1i).
 	local/<hostname>:<path>	
 .TE
 .LP
-\fIdescripsRet\fP\^ and \fInetworkIdsRet\fP\^ should be freed with free() when no longer needed.
+\fIdescrips_ret\fP\^ and \fInetwork_ids_ret\fP\^ should be freed with free() when no longer needed.
 .LP
 .sp 0.5
 After a connection attempt is detected via select() on a file
@@ -913,10 +913,10 @@ the ICE connection is used to send and receive messages...
 	{
 		select() on {newIceConn, all open connections}
 
-		for each iceConn in the list of open connections
+		for each ice_conn in the list of open connections
 		{
-			if (data ready on iceConn)
-				IceProcessMessage (iceConn, NULL);
+			if (data ready on ice_conn)
+				IceProcessMessage (ice_conn, NULL);
 		}
 
 		if (data ready on newIceConn)
@@ -977,11 +977,11 @@ function.
 .LP
 .sM
 .FD 0
-Status IceCloseConnection\^(\^\fIiceConn\fP\^)
+Status IceCloseConnection\^(\^\fIice_conn\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 The ICE connection to close.
 .LP
 .eM
@@ -1034,13 +1034,13 @@ from writing to a broken connection.
 .LP
 .sM
 .FD 0
-void IceSetShutdownNegotiation\^(\^\fIiceConn\fP, \fInegotiate\fP\^)
+void IceSetShutdownNegotiation\^(\^\fIice_conn\fP, \fInegotiate\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .br
     Bool \fInegotiate\fP\^;
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
 .IP \fInegotiate\fP 1i
 If
@@ -1055,11 +1055,11 @@ function.
 .LP
 .sM
 .FD 0
-Bool IceCheckShutdownNegotiation\^(\^\fIiceConn\fP\^)
+Bool IceCheckShutdownNegotiation\^(\^\fIice_conn\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
 .LP
 .eM
@@ -1092,16 +1092,16 @@ function.
 .LP
 .sM
 .FD 0
-Status IceAddConnectionWatch\^(\^\fIwatchProc\fP, \fIclientData\fP\^)
+Status IceAddConnectionWatch\^(\^\fIwatch_proc\fP, \fIclient_data\fP\^)
 .br
-    IceWatchProc \fIwatchProc\fP\^;
+    IceWatchProc \fIwatch_proc\fP\^;
 .br
-    IcePointer \fIclientData\fP\^;
+    IcePointer \fIclient_data\fP\^;
 .FN
-.IP \fIwatchProc\fP 1i
+.IP \fIwatch_proc\fP 1i
 The watch procedure to invoke when ICElib physically opens or
 closes a connection.
-.IP \fIclientData\fP 1i
+.IP \fIclient_data\fP 1i
 This pointer will be passed to the watch procedure.
 .LP
 .eM
@@ -1129,21 +1129,21 @@ The watch procedure is of type
 typedef void (*IceWatchProc)();
 .LP
 .FD 0
-void WatchProc\^(\^\fIiceConn\fP, \fIclientData\fP\^, \fIopening\fP\^, \fIwatchData\fP\^)
+void WatchProc\^(\^\fIice_conn\fP, \fIclient_data\fP\^, \fIopening\fP\^, \fIwatch_data\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .br
-    IcePointer \fIclientData\fP\^;
+    IcePointer \fIclient_data\fP\^;
 .br
     Bool \fIopening\fP\^;
 .br
-    IcePointer *\fIwatchData\fP\^;
+    IcePointer *\fIwatch_data\fP\^;
 .FN
-.IP \fIiceConn\fP\^ 1i
+.IP \fIice_conn\fP\^ 1i
 The opened or closed ICE connection.  Call
 .PN IceConnectionNumber
 to get the file descriptor associated with this connection.
-.IP \fIclientData\fP\^ 1i
+.IP \fIclient_data\fP\^ 1i
 Client data specified in the call to
 .PN IceAddConnectionWatch .
 .IP \fIopening\fP\^ 1i
@@ -1152,13 +1152,13 @@ If
 the connection is being opened.  If
 .PN False ,
 the connection is being closed.
-.IP \fIwatchData\fP\^ 1i
+.IP \fIwatch_data\fP\^ 1i
 Can be used to save a pointer to client data.
 .LP
 .eM
 If opening is
 .PN True ,
-the client should set the *\fIwatchData\fP\^
+the client should set the *\fIwatch_data\fP\^
 pointer to any data it may need to save.  For example,
 .PN XtAppAddInput
 might be called, and you need to save the
@@ -1166,8 +1166,8 @@ might be called, and you need to save the
 .LP
 If opening is
 .PN False ,
-you can use the *\fIwatchData\fP\^ pointer.
-For example, *\fIwatchData\fP\^ might point to the
+you can use the *\fIwatch_data\fP\^ pointer.
+For example, *\fIwatch_data\fP\^ might point to the
 .PN XtInputId
 which you need to call
 .PN XtRemoveInput .
@@ -1179,18 +1179,18 @@ function.
 .LP
 .sM
 .FD 0
-void IceRemoveConnectionWatch\^(\^\fIwatchProc\fP, \fIclientData\fP\^)
+void IceRemoveConnectionWatch\^(\^\fIwatch_proc\fP, \fIclient_data\fP\^)
 .br
-    IceWatchProc \fIwatchProc\fP\^;
+    IceWatchProc \fIwatch_proc\fP\^;
 .br
-    IcePointer \fIclientData\fP\^;
+    IcePointer \fIclient_data\fP\^;
 .LP
 .FN
-.IP \fIwatchProc\fP 1i
+.IP \fIwatch_proc\fP 1i
 The watch procedure that was passed to
 .PN IceAddConnectionWatch .
-.IP \fIclientData\fP 1i
-The \fIclientData\fP\^ pointer that was passed to
+.IP \fIclient_data\fP 1i
+The \fIclient_data\fP\^ pointer that was passed to
 .PN IceAddConnectionWatch .
 .LP
 .eM
@@ -1207,58 +1207,58 @@ function.
 .LP
 .sM
 .FD 0
-IceProtocolSetupStatus IceProtocolSetup\^(\^\fIiceConn\fP, \fImyOpcode\fP\^, a\fIauthCount\fP\^, \fIauthIndices\fP\^,
+IceProtocolSetupStatus IceProtocolSetup\^(\^\fIice_conn\fP, \fImy_opcode\fP\^, a\fIauth_count\fP\^, \fIauth_indices\fP\^,
 .br
-                    \fImajorVersionRet\fP\^, \fIminorVersionRet\fP\^, \fIvendorRet\fP\^, \fIreleaseRet\fP\^, \fIerrorLength\fP\^, \fIerrorStringRet\fP\^)
+                    \fImajor_version_ret\fP\^, \fIminor_version_ret\fP\^, \fIvendor_ret\fP\^, \fIrelease_ret\fP\^, \fIerror_length\fP\^, \fIerror_string_ret\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .br
-    int \fImyOpcode\fP\^;
+    int \fImy_opcode\fP\^;
 .br
-    int \fIauthCount\fP\^;
+    int \fIauth_count\fP\^;
 .br
-    int *\fIauthIndices\fP\^;
+    int *\fIauth_indices\fP\^;
 .br
-    int *\fImajorVersionRet\fP\^;
+    int *\fImajor_version_ret\fP\^;
 .br
-    int *\fIminorVersionRet\fP\^;
+    int *\fIminor_version_ret\fP\^;
 .br
-    char **\fIvendorRet\fP\^;
+    char **\fIvendor_ret\fP\^;
 .br
-    char **\fIreleaseRet\fP\^;
+    char **\fIrelease_ret\fP\^;
 .br
-    int \fIerrorLength\fP\^;
+    int \fIerror_length\fP\^;
 .br
-    char *\fIerrorStringRet\fP\^;
+    char *\fIerror_string_ret\fP\^;
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1.1i
 A valid ICE connection object.
-.IP \fImyOpcode\fP 1i
+.IP \fImy_opcode\fP 1.1i
 The major opcode of the protocol to be set up.  This major opcode
 was returned by
 .PN IceRegisterForProtocolSetup .
-.IP \fIauthCount\fP 1i
-The number of elements in the \fIauthIndices\fP\^ array.
-.IP \fIauthIndices\fP 1i
+.IP \fIauth_count\fP 1.1i
+The number of elements in the \fIauth_indices\fP\^ array.
+.IP \fIauth_indices\fP 1.1i
 A list of indices into the authentication protocols specified
 in
 .PN IceRegisterForProtocolSetup .
 The indices are zero based.
-.IP \fImajorVersionRet\fP 1i
+.IP \fImajor_version_ret\fP 1.1i
 The major version of the protocol to be used is returned.
-.IP \fIminorVersionRet\fP 1i
+.IP \fIminor_version_ret\fP 1.1i
 The minor version of the protocol to be used is returned.
-.IP \fIvendorRet\fP 1i
+.IP \fIvendor_ret\fP 1.1i
 The vendor name of the protocol receiver is returned.  For example,
 this might be the vendor name of a session manager.
-.IP \fIreleaseRet\fP 1i  
+.IP \fIrelease_ret\fP 1.1i  
 The release of the protocol receiver is returned.  For example,
 this might be the release of a session manager.
-.IP \fIerrorLength\fP 1i
-Specifies the length of the \fIerrorStringRet\fP\^ argument passed in.
-.IP \fIerrorStringRet\fP 1i
-Returns a null terminated error message, if any.  \fIerrorStringRet\fP
-points to user supplied memory.  No more than \fIerrorLength\fP\^ bytes
+.IP \fIerror_length\fP 1.1i
+Specifies the length of the \fIerror_string_ret\fP\^ argument passed in.
+.IP \fIerror_string_ret\fP 1.1i
+Returns a null terminated error message, if any.  \fIerror_string_ret\fP
+points to user supplied memory.  No more than \fIerror_length\fP\^ bytes
 are used.
 .LP
 .eM
@@ -1273,13 +1273,13 @@ those protocols can be used for authentication.  So,
 takes a list of indices into the authentication protocols specified in
 .PN IceRegisterForProtocolSetup .
 .LP
-As a special case, if \fIauthCount\fP\^ > 0 and \fIauthIndices\fP\^ is
+As a special case, if \fIauth_count\fP\^ > 0 and \fIauth_indices\fP\^ is
 .PN NULL ,
-the first \fIauthCount\fP\^ authentication protocols specified in
+the first \fIauth_count\fP\^ authentication protocols specified in
 .PN IceRegisterForProtocolSetup
 will be used.
 .LP
-The \fIvendorRet\fP\^ and \fIreleaseRet\fP\^ strings should be freed
+The \fIvendor_ret\fP\^ and \fIrelease_ret\fP\^ strings should be freed
 with free() when no longer needed.
 .LP
 .sp 0.5
@@ -1291,19 +1291,19 @@ lw(2i) lw(4i).
 T{
 .PN IceProtocolSetupSuccess :
 T}	T{
-\fImajorVersionRet\fP\^, \fIminorVersionRet\fP\^, \fIvendorRet\fP\^, \fIreleaseRet\fP\^ are set.
+\fImajor_version_ret\fP\^, \fIminor_version_ret\fP\^, \fIvendor_ret\fP\^, \fIrelease_ret\fP\^ are set.
 T}
 .sp 4p
 T{
 .PN IceProtocolSetupFailure :
 T}	T{
-Check errorStringRet for failure reason.  \fImajorVersionRet\fP\^, \fIminorVersionRet\fP\^, \fIvendorRet\fP\^, \fIreleaseRet\fP\^ are NOT set.
+Check error_string_ret for failure reason.  \fImajor_version_ret\fP\^, \fIminor_version_ret\fP\^, \fIvendor_ret\fP\^, \fIrelease_ret\fP\^ are NOT set.
 T}
 .sp 4p
 T{
 .PN IceProtocolAlreadyActive :
 T}	T{
-This protocol is already active on this connection.  \fImajorVersionRet\fP\^, \fIminorVersionRet\fP\^, \fIvendorRet\fP\^, \fIreleaseRet\fP\^ are NOT set.
+This protocol is already active on this connection.  \fImajor_version_ret\fP\^, \fIminor_version_ret\fP\^, \fIvendor_ret\fP\^, \fIrelease_ret\fP\^ are NOT set.
 T}
 .TE
 .LP
@@ -1315,15 +1315,15 @@ function.
 .LP
 .sM
 .FD 0
-Status IceProtocolShutdown\^(\^\fIiceConn\fP, \fImajorOpcode\fP\^)
+Status IceProtocolShutdown\^(\^\fIice_conn\fP, \fImajor_opcode\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .br
-    int \fImajorOpcode\fP\^;
+    int \fImajor_opcode\fP\^;
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
-.IP \fImajorOpcode\fP 1i
+.IP \fImajor_opcode\fP 1i
 The major opcode of the protocol to shut down.
 .LP
 .eM
@@ -1348,25 +1348,25 @@ should be called to process the message.
 .LP
 .sM
 .FD 0
-Bool IceProcessMessage\^(\^\fIiceConn\fP, \fIreplyWait\fP\^)
+Bool IceProcessMessage\^(\^\fIice_conn\fP, \fIreply_wait\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .br
-    IceReplyWaitInfo *\fIreplyWait\fP\^;
+    IceReplyWaitInfo *\fIreply_wait\fP\^;
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
-.IP \fIreplyWait\fP 1i
+.IP \fIreply_wait\fP 1i
 Indicates if the client is waiting for a reply.
 .LP
 .eM
 If the client is not waiting for a reply or error to a message it previously
-sent, then \fIreplyWait\fP\^ should be set to
+sent, then \fIreply_wait\fP\^ should be set to
 .PN NULL
 and the message will be processed by invoking a callback.
-If \fIreplyWait\fP\^ is not
+If \fIreply_wait\fP\^ is not
 .PN NULL ,
-\fIreplyWait\fP\^ contains the major/minor opcodes and sequence #
+\fIreply_wait\fP\^ contains the major/minor opcodes and sequence #
 of the message for which a reply is being waited for.  It also contains
 a pointer to the reply message to be filled in (the protocol library
 should cast this
@@ -1420,19 +1420,19 @@ function.
 .LP
 .sM
 .FD 0
-void IcePing\^(\^\fIiceConn\fP, \fIpingReplyProc\fP\^, \fIclientData\fP\^)
+void IcePing\^(\^\fIice_conn\fP, \fIping_reply_proc\fP\^, \fIclient_data\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .br
-    IcePingReplyProc \fIpingReplyProc\fP\^;
+    IcePingReplyProc \fIping_reply_proc\fP\^;
 .br
-    IcePointer \fIclientData\fP\^;
+    IcePointer \fIclient_data\fP\^;
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
-.IP \fIpingReplyProc\fP 1i
+.IP \fIping_reply_proc\fP 1i
 The callback to invoke when the \fIPing\fP\^ reply arrives.
-.IP \fIclientData\fP 1i
+.IP \fIclient_data\fP 1i
 This pointer will be passed to the
 .PN IcePingReplyProc
 callback.
@@ -1448,15 +1448,15 @@ callback.
 typedef void (*IcePingReplyProc)();
 .LP
 .FD 0
-void PingReplyProc\^(\^\fIiceConn\fP, \fIclientData\fP\^)
+void PingReplyProc\^(\^\fIice_conn\fP, \fIclient_data\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .br
-    IcePointer \fIclientData\fP\^;
+    IcePointer \fIclient_data\fP\^;
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 The ICE connection object.
-.IP \fIclientData\fP 1i
+.IP \fIclient_data\fP 1i
 The client data specified in the call to
 .PN IcePing .
 .LP
@@ -1469,9 +1469,9 @@ Informational Functions
 .LP
 .sM
 .FD 0
-IceConnectStatus IceConnectionStatus\^(\^\fIiceConn\fP\^)
+IceConnectStatus IceConnectionStatus\^(\^\fIice_conn\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .FN
 .eM
 Returns the status of an ICE connection created by
@@ -1486,9 +1486,9 @@ or
 .sp 0.5
 .sM
 .FD 0
-char *IceVendor\^(\^\fIiceConn\fP\^)
+char *IceVendor\^(\^\fIice_conn\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .FN
 .eM
 Returns the ICE library vendor on the other side of the connection.
@@ -1497,9 +1497,9 @@ The string should be freed with a call to free() when no longer needed.
 .sp 0.5
 .sM
 .FD 0
-char *IceRelease\^(\^\fIiceConn\fP\^)
+char *IceRelease\^(\^\fIice_conn\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .FN
 .eM
 Returns the release of the ICE library on the other side of the connection.
@@ -1508,9 +1508,9 @@ The string should be freed with a call to free() when no longer needed.
 .sp 0.5
 .sM
 .FD 0
-int IceProtocolVersion\^(\^\fIiceConn\fP\^)
+int IceProtocolVersion\^(\^\fIice_conn\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .FN
 .eM
 Returns the major version of the ICE protocol on this connection.
@@ -1518,9 +1518,9 @@ Returns the major version of the ICE protocol on this connection.
 .sp 0.5
 .sM
 .FD 0
-int IceProtocolRevision\^(\^\fIiceConn\fP\^)
+int IceProtocolRevision\^(\^\fIice_conn\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .FN
 .eM
 Returns the minor version of the ICE protocol on this connection.
@@ -1528,9 +1528,9 @@ Returns the minor version of the ICE protocol on this connection.
 .sp 0.5
 .sM
 .FD 0
-int IceConnectionNumber\^(\^\fIiceConn\fP\^)
+int IceConnectionNumber\^(\^\fIice_conn\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .FN
 .eM
 Returns the file descriptor of this ICE connection.
@@ -1538,9 +1538,9 @@ Returns the file descriptor of this ICE connection.
 .sp 0.5
 .sM
 .FD 0
-char *IceConnectionString\^(\^\fIiceConn\fP\^)
+char *IceConnectionString\^(\^\fIice_conn\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .FN
 .eM
 For ICE connections created with
@@ -1558,9 +1558,9 @@ The string should be freed with a call to free() when no longer needed.
 .sp 0.5
 .sM
 .FD 0
-unsigned long IceLastSequenceNumber\^(\^\fIiceConn\fP\^)
+unsigned long IceLastSequenceNumber\^(\^\fIice_conn\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .FN
 .eM
 Returns the sequence number of the last message sent or received
@@ -1574,19 +1574,19 @@ Macros For Sending ICE Messages
 .LP
 .sM
 .FD 0
-IceGetHeader\^(\^\fIiceConn\fP, \fImajorOpcode\fP\^, \fIminorOpcode\fP\^, \fIheaderSize\fP\^, \fImsgType\fP\^, \fIpMsg\fP\^)
+IceGetHeader\^(\^\fIice_conn\fP, \fImajor_opcode\fP\^, \fIminor_opcode\fP\^, \fIheader_size\fP\^, \fImsg_type\fP\^, \fIpmsg\fP\^)
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
-.IP \fImajorOpcode\fP 1i
+.IP \fImajor_opcode\fP 1i
 The major opcode of the message.
-.IP \fIminorOpcode\fP 1i
+.IP \fIminor_opcode\fP 1i
 The minor opcode of the message.
-.IP \fIheaderSize\fP 1i
+.IP \fIheader_size\fP 1i
 The size of the message header (in bytes).
-.IP \fImsgType\fP 1i
+.IP \fImsg_type\fP 1i
 The actual C data type of the message header.
-.IP \fIpMsg\fP 1i
+.IP \fIpmsg\fP 1i
 The message header pointer.  After this macro is called, the
 library can store data in the message header.
 .LP
@@ -1600,16 +1600,16 @@ updated.
 .LP
 All messages must have the following ICE header:
 .LP
-	CARD8	majorOpcode;
+	CARD8	major_opcode;
 .br
-	CARD8	minorOpcode;
+	CARD8	minor_opcode;
 .br
 	CARD8	data[2];
 .br
 	CARD32	length B32;
 .LP
 The 3rd and 4th bytes of the message can be used as needed.
-The field names \fImajorOpcode\fP\^, \fIminorOpcode\fP\^, and
+The field names \fImajor_opcode\fP\^, \fIminor_opcode\fP\^, and
 \fIlength\fP\^ must be used in the message header (
 .PN IceGetHeader
 depends on this naming convention).
@@ -1617,28 +1617,28 @@ depends on this naming convention).
 .sp 0.5
 .sM
 .FD 0
-IceGetHeaderExtra\^(\^\fIiceConn\fP, \fImajorOpcode\fP\^, \fIminorOpcode\fP\^, \fIheaderSize\fP\^, \fIextra\fP\^, \fImsgType\fP\^, \fIpMsg\fP\^, \fIpData\fP\^)
+IceGetHeaderExtra\^(\^\fIice_conn\fP, \fImajor_opcode\fP\^, \fIminor_opcode\fP\^, \fIheader_size\fP\^, \fIextra\fP\^, \fImsg_type\fP\^, \fIpmsg\fP\^, \fIpdata\fP\^)
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
-.IP \fImajorOpcode\fP 1i
+.IP \fImajor_opcode\fP 1i
 The major opcode of the message.
-.IP \fIminorOpcode\fP 1i
+.IP \fIminor_opcode\fP 1i
 The minor opcode of the message.
-.IP \fIheaderSize\fP 1i
+.IP \fIheader_size\fP 1i
 The size of the message header (in bytes).
 .IP \fIextra\fP 1i
 The size of the extra data beyond the header (in multiple of 8 bytes).
-.IP \fImsgType\fP 1i
+.IP \fImsg_type\fP 1i
 The actual C data type of the message header.
-.IP \fIpMsg\fP 1i
+.IP \fIpmsg\fP 1i
 The message header pointer.  After this macro is called, the
 library can store data in the message header.
-.IP \fIpData\fP 1i
+.IP \fIpdata\fP 1i
 Returns a pointer to the ICE output buffer which points
 immediately after the message header.  The variable length
 data should be stored here.  If there was not enough room
-in the ICE output buffer, \fIpData\fP\^ is set to
+in the ICE output buffer, \fIpdata\fP\^ is set to
 .PN NULL .
 .LP
 .eM
@@ -1649,19 +1649,19 @@ buffer.
 .LP
 The
 .PN IceGetOutBufSize (
-\fIiceConn\fP\^) macro can be used to get the size of the ICE output buffer.
+\fIice_conn\fP\^) macro can be used to get the size of the ICE output buffer.
 .LP
 .sp 0.5
 .sM
 .FD 0
-IceSimpleMessage\^(\^\fIiceConn\fP, \fImajorOpcode\fP\^, \fIminorOpcode\fP\^)
+IceSimpleMessage\^(\^\fIice_conn\fP, \fImajor_opcode\fP\^, \fIminor_opcode\fP\^)
 .FN
 .br
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
-.IP \fImajorOpcode\fP 1i
+.IP \fImajor_opcode\fP 1i
 The major opcode of the message.
-.IP \fIminorOpcode\fP 1i
+.IP \fIminor_opcode\fP 1i
 The minor opcode of the message.
 .LP
 .eM
@@ -1672,26 +1672,26 @@ in size to the ICE header message, and has no additional data.
 .sp 0.5
 .sM
 .FD 0
-IceErrorHeader\^(\^\fIiceConn\fP, \fIoffendingMajorOpcode\fP\^, \fIoffendingMinorOpcode\fP\^, \fIoffendingSequenceNum\fP\^,
+IceErrorHeader\^(\^\fIice_conn\fP, \fIoffending_major_opcode\fP\^, \fIoffending_minor_opcode\fP\^, \fIoffending_sequence_num\fP\^,
 .br
-                    \fIseverity\fP\^, \fIerrorClass\fP\^, \fIdataLength\fP\^)
+                    \fIseverity\fP\^, \fIerror_class\fP\^, \fIdata_length\fP\^)
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
-.IP \fIoffendingMajorOpcode\fP 1i
+.IP \fIoffending_major_opcode\fP 1i
 The major opcode of the protocol in which an error was detected.
-.IP \fIoffendingMinorOpcode\fP 1i
+.IP \fIoffending_minor_opcode\fP 1i
 The minor opcode of the protocol in which an error was detected.
-.IP \fIoffendingSequenceNum\fP 1i
+.IP \fIoffending_sequence_num\fP 1i
 The sequence number of the message that caused the error.
 .IP \fIseverity\fP 1i
 .PN IceCanContinue ,
 .PN IceFatalToProtocol ,
 or
 .PN IceFatalToConnection .
-.IP \fIerrorClass\fP 1i
+.IP \fIerror_class\fP 1i
 The error class.  See below.
-.IP \fIdataLength\fP 1i
+.IP \fIdata_length\fP 1i
 Length of data (in multiple of 8 bytes) to be written after the header.
 .LP
 .eM
@@ -1699,7 +1699,7 @@ Length of data (in multiple of 8 bytes) to be written after the header.
 sets up an error message header.
 .LP
 Note that the two clients connected by ICE may be using different
-major opcodes for a given protocol.  The \fImajorOpcode\fP\^ passed
+major opcodes for a given protocol.  The \fImajor_opcode\fP\^ passed
 to this macro is the major opcode of the protocol for the client
 sending the error.
 .LP
@@ -1738,11 +1738,11 @@ Per-protocol errors have classes in the range 0x0000-0x7fff.
 .sp 0.5
 .sM
 .FD 0
-IceWriteData\^(\^\fIiceConn\fP, \fIbytes\fP\^, \fI(char *) data\fP\^)
-IceWriteData16\^(\^\fIiceConn\fP, \fIbytes\fP\^, \fI(short *) data\fP\^)
-IceWriteData32\^(\^\fIiceConn\fP, \fIbytes\fP\^, \fI(long *) data\fP\^)
+IceWriteData\^(\^\fIice_conn\fP, \fIbytes\fP\^, \fI(char *) data\fP\^)
+IceWriteData16\^(\^\fIice_conn\fP, \fIbytes\fP\^, \fI(short *) data\fP\^)
+IceWriteData32\^(\^\fIice_conn\fP, \fIbytes\fP\^, \fI(long *) data\fP\^)
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
 .IP \fIbytes\fP 1i
 The number of bytes to write.
@@ -1775,11 +1775,11 @@ if necessary (see below).
 .sp 0.5
 .sM
 .FD 0
-IceSendData\^(\^\fIiceConn\fP, \fIbytes\fP\^, \fI(char *) data\fP\^)
-IceSendData16\^(\^\fIiceConn\fP, \fIbytes\fP\^, \fI(short *) data\fP\^)
-IceSendData32\^(\^\fIiceConn\fP, \fIbytes\fP\^, \fI(long *) data\fP\^)
+IceSendData\^(\^\fIice_conn\fP, \fIbytes\fP\^, \fI(char *) data\fP\^)
+IceSendData16\^(\^\fIice_conn\fP, \fIbytes\fP\^, \fI(short *) data\fP\^)
+IceSendData32\^(\^\fIice_conn\fP, \fIbytes\fP\^, \fI(long *) data\fP\^)
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
 .IP \fIbytes\fP 1i
 The number of bytes to send.
@@ -1803,9 +1803,9 @@ is used, the data is a list of 32 bit quantities.
 .sp 0.5
 .sM
 .FD 0
-IceWritePad\^(\^\fIiceConn\fP, \fIbytes\fP\^)
+IceWritePad\^(\^\fIice_conn\fP, \fIbytes\fP\^)
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
 .IP \fIbytes\fP 1i
 The number of pad bytes.
@@ -1817,9 +1817,9 @@ A maximum of 7 pad bytes can be specified.
 .bp
 .sM
 .FD 0
-IceFlush\^(\^\fIiceConn\fP\^)
+IceFlush\^(\^\fIice_conn\fP\^)
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
 .LP
 .eM
@@ -1834,13 +1834,13 @@ Macros For Reading ICE Messages
 .LP
 .sM
 .FD 0
-IceReadSimpleMessage\^(\^\fIiceConn\fP, \fImsgType\fP\^, \fIpMsg\fP\^)
+IceReadSimpleMessage\^(\^\fIice_conn\fP, \fImsg_type\fP\^, \fIpmsg\fP\^)
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
-.IP \fImsgType\fP 1i
+.IP \fImsg_type\fP 1i
 The actual C data type of the message header.
-.IP \fIpMsg\fP 1i
+.IP \fIpmsg\fP 1i
 This pointer is set to the message header.
 .LP
 .eM
@@ -1862,17 +1862,17 @@ and
 .LP
 .sM
 .FD 0
-IceReadCompleteMessage\^(\^\fIiceConn\fP, \fIheaderSize\fP\^, \fImsgType\fP\^, \fIpMsg\fP\^, \fIpData\fP\^)
+IceReadCompleteMessage\^(\^\fIice_conn\fP, \fIheader_size\fP\^, \fImsg_type\fP\^, \fIpmsg\fP\^, \fIpdata\fP\^)
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
-.IP \fIheaderSize\fP 1i
+.IP \fIheader_size\fP 1i
 The size of the message header (in bytes).
-.IP \fImsgType\fP 1i
+.IP \fImsg_type\fP 1i
 The actual C data type of the message header.
-.IP \fIpMsg\fP 1i
+.IP \fIpmsg\fP 1i
 This pointer is set to the message header.
-.IP \fIpData\fP 1i
+.IP \fIpdata\fP 1i
 This pointer is set to the variable length data of the message.
 .LP
 .eM
@@ -1881,7 +1881,7 @@ permits,
 .PN IceReadCompleteMessage
 will read the complete message into the
 ICE input buffer.  Otherwise, a buffer will be allocated to hold the
-variable length data.  After the call, the \fIpData\fP\^ argument should
+variable length data.  After the call, the \fIpdata\fP\^ argument should
 be checked against
 .PN NULL
 to make sure that there was sufficient memory to allocate the buffer.
@@ -1895,11 +1895,11 @@ should be called.
 .LP
 .sM
 .FD 0
-IceDisposeCompleteMessage\^(\^\fIiceConn\fP, \fIpData\fP\^)
+IceDisposeCompleteMessage\^(\^\fIice_conn\fP, \fIpdata\fP\^)
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
-.IP \fIpData\fP 1i
+.IP \fIpdata\fP 1i
 The pointer to the variable length data returned in
 .PN IceReadCompleteMessage .
 .LP
@@ -1910,15 +1910,15 @@ it didn't fit in the ICE input buffer), it is freed here by ICElib.
 .sp 0.5
 .sM
 .FD 0
-IceReadMessageHeader\^(\^\fIiceConn\fP, \fIheaderSize\fP\^, \fImsgType\fP\^, \fIpMsg\fP\^)
+IceReadMessageHeader\^(\^\fIice_conn\fP, \fIheader_size\fP\^, \fImsg_type\fP\^, \fIpmsg\fP\^)
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
-.IP \fIheaderSize\fP 1i
+.IP \fIheader_size\fP 1i
 The size of the message header (in bytes).
-.IP \fImsgType\fP 1i
+.IP \fImsg_type\fP 1i
 The actual C data type of the message header.
-.IP \fIpMsg\fP 1i
+.IP \fIpmsg\fP 1i
 This pointer is set to the message header.
 .LP
 .eM
@@ -1932,15 +1932,15 @@ variable length data must be read in chunks.
 .sp 0.5
 .sM
 .FD 0
-IceReadData\^(\^\fIiceConn\fP, \fIbytes\fP\^, \fI(char *) pData\fP\^)
-IceReadData16\^(\^\fIiceConn\fP, \fIbytes\fP\^ \fI(short *) pData\fP\^)
-IceReadData32\^(\^\fIiceConn\fP, \fIbytes\fP\^, \fI(long *) pData\fP\^)
+IceReadData\^(\^\fIice_conn\fP, \fIbytes\fP\^, \fI(char *) pdata\fP\^)
+IceReadData16\^(\^\fIice_conn\fP, \fIbytes\fP\^ \fI(short *) pdata\fP\^)
+IceReadData32\^(\^\fIice_conn\fP, \fIbytes\fP\^, \fI(long *) pdata\fP\^)
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
 .IP \fIbytes\fP 1i
 The number of bytes to read.
-.IP \fIpData\fP 1i
+.IP \fIpdata\fP 1i
 The data is read into this user supplied buffer.
 .LP
 .eM
@@ -1955,9 +1955,9 @@ should be used to read the data as 32 bit quantities.
 .sp 0.5
 .sM
 .FD 0
-IceReadPad\^(\^\fIiceConn\fP, \fIbytes\fP\^)
+IceReadPad\^(\^\fIice_conn\fP, \fIbytes\fP\^)
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
 .IP \fIbytes\fP 1i
 The number of pad bytes.
@@ -2013,31 +2013,31 @@ An ICE error handler has the type of
 .sM
 typedef void (*IceErrorHandler)();
 .FD 0
-void ErrorHandler\^(\^\fIiceConn\fP, \fIswap\fP\^, \fIoffendingMinorOpcode\fP\^, \fIoffendingSequenceNum\fP\^, \fIerrorClass\fP\^, \fIseverity\fP\^, \fIvalues\fP\^)
+void ErrorHandler\^(\^\fIice_conn\fP, \fIswap\fP\^, \fIoffending_minor_opcode\fP\^, \fIoffending_sequence_num\fP\^, \fIerror_class\fP\^, \fIseverity\fP\^, \fIvalues\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .br
     Bool \fIswap\fP\^;
 .br
-    int \fIoffendingMinorOpcode\fP\^;
+    int \fIoffending_minor_opcode\fP\^;
 .br
-    unsigned long \fIoffendingSequenceNum\fP\^;
+    unsigned long \fIoffending_sequence_num\fP\^;
 .br
-    int \fIerrorClass\fP\^;
+    int \fIerror_class\fP\^;
 .br
     int \fIseverity\fP\^;
 .br
     IcePointer \fIvalues\fP\^;
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 The ICE connection object.
 .IP \fIswap\fP 1i
 A flag which indicates if the \fIvalues\fP\^ need byte swapping.
-.IP \fIoffendingMinorOpcode\fP 1i
+.IP \fIoffending_minor_opcode\fP 1i
 The ICE minor opcode of the offending message.
-.IP \fIoffendingSequenceNum\fP 1i
+.IP \fIoffending_sequence_num\fP 1i
 The sequence number of the offending message.
-.IP \fIerrorClass\fP 1i
+.IP \fIerror_class\fP 1i
 The error class of the offending message.
 .IP \fIseverity\fP 1i
 .PN IceCanContinue ,
@@ -2091,11 +2091,11 @@ An ICE I/O error handler has the type of
 typedef void (*IceIOErrorHandler)();
 .LP
 .FD 0
-void IOErrorHandler\^(\^\fIiceConn\fP\^)
+void IOErrorHandler\^(\^\fIice_conn\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 The ICE connection object.
 .LP
 .eM
@@ -2108,19 +2108,22 @@ Before the application I/O error handler is invoked, protocol libraries
 that were interested in being notified of I/O errors will have their
 .PN IceIOErrorProc
 handlers invoked.  This handler is set up in the protocol registration
-functions (see \fIIceRegisterForProtocolSetup\fP\^ and 
-\fIIceRegisterForProtocolReply\fP\^), and could be used to clean up
+functions (see
+.PN IceRegisterForProtocolSetup
+and 
+.PN IceRegisterForProtocolReply ,
+and could be used to clean up
 state specific to the protocol.
 .LP
 .sM
 typedef void (*IceIOErrorProc)();
 .LP
 .FD 0
-void IOErrorProc\^(\^\fIiceConn\fP\^)
+void IOErrorProc\^(\^\fIice_conn\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 The ICE connection object.
 .LP
 .eM
@@ -2142,13 +2145,13 @@ The client should \fInot\fP\^ free this memory!
 .LP
 .sM
 .FD 0
-char *IceAllocScratch\^(\^\fIiceConn\fP, \fIsize\fP\^)
+char *IceAllocScratch\^(\^\fIice_conn\fP, \fIsize\fP\^)
 .br
-    IceConn \fIiceConn\fP\^;
+    IceConn \fIice_conn\fP\^;
 .br
     unsigned long \fIsize\fP\^;
 .FN
-.IP \fIiceConn\fP 1i
+.IP \fIice_conn\fP 1i
 A valid ICE connection object.
 .IP \fIsize\fP 1i
 The number of bytes required.
@@ -2158,4 +2161,5 @@ The number of bytes required.
 .OH ''''
 .EF ''''
 .OF ''''
+.bp
 .TC
