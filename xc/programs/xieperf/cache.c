@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cache.c,v 1.1 93/10/26 10:08:51 rws Exp $ */
 
 /**** module cache.c ****/
 /******************************************************************************
@@ -68,6 +68,8 @@ typedef struct _cache
 
 static Cache *PrivIsImageInCache();
 static Cache *PrivIsPhotomapInCache();
+static int SetAndScootch();
+static int RemoveFromCacheLRU();
 
 static Cache *cHead = ( Cache * ) NULL;
 static int cSize;
