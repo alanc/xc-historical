@@ -1,6 +1,6 @@
 #ifndef XMD_H
 #define XMD_H 1
-/* $Header: Xmd.h,v 1.15 87/06/15 13:58:49 toddb Locked $ */
+/* $Header: Xmd.h,v 1.16 87/06/15 15:33:57 toddb Locked $ */
 /*
  *  MACHINE DEPENDENT DECLARATIONS.
  *
@@ -95,8 +95,15 @@ typedef unsigned char            BOOL;
     easier.
 */
 
+typedef struct _PaddingInfo {
+	int	scanlinePad;
+	int	bitmapPadLog2;
+} PaddingInfo;
+extern PaddingInfo PixmapWidthPaddingInfo;
+
 #define PixmapWidthInPadUnits(w, d) \
-    (((w) + BITMAP_SCANLINE_PAD-1) >> LOG2_BITMAP_PAD)
+    (((w) + PixmapWidthPaddingInfo[d].scanlinePad) >> \
+	PixmapWidthPaddingInfo[d].bitmapPadLog2)
 
 /*
 	Return the number of bytes to which a scanline of the given
