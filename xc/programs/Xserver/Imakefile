@@ -5,7 +5,7 @@
     CDEBUGFLAGS = ServerCDebugFlags
      EXTENSIONS = $(EXTENSIONSRC)/server/libext.a
          EXTDIR = $(EXTENSIONSRC)/server
-     ALLDDXDIRS = ddx/mi ddx/sun ddx/apollo ddx/cfb ddx/mfb ddx/lk201 \
+     ALLDDXDIRS = ddx/snf ddx/mi ddx/sun ddx/apollo ddx/cfb ddx/mfb ddx/lk201 \
                   ddx/qvss ddx/qdss ddx/ibm/apa16 ddx/ibm/rt ddx/ibm/aed \
                   ddx/hp/hp ddx/hp/mfb ddx/hp/cfb ddx/hp/gbx ddx/hp/mob \
 		  ddx/hp/topcat ddx/hp/catseye ddx/hp/ren
@@ -18,6 +18,7 @@
             CFB = ddx/cfb/libcfb.a
              MI = ddx/mi/libmi.a
             DIX = dix/libdix.a
+            SNF = ddx/snf/libsnf.a
             SUN = ddx/sun/libsun.a
              HP = ddx/hp/hp/libhp.a
         SYSLIBS = -lm -ldbm
@@ -66,9 +67,9 @@ all: $(ALL)
 #
 # qvss server
 #
-QVSSDIRS = dix ddx/mi ddx/mfb ddx/lk201 ddx/qvss os/4.2bsd
+QVSSDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/lk201 ddx/qvss os/4.2bsd
 QVSSOBJS = ddx/qvss/init.o ddx/qvss/qvss_io.o ddx/lk201/lk201.o
-QVSSLIBS = $(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+QVSSLIBS = $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 XqvssDIRS = $(QVSSDIRS)
 
 ServerTarget(Xqvss,$(EXTDIR) $(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
@@ -76,11 +77,11 @@ ServerTarget(Xqvss,$(EXTDIR) $(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
 #
 # qdss server
 #
-QDSSDIRS = dix ddx/mi ddx/mfb ddx/lk201 ddx/qdss os/4.2bsd
+QDSSDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/lk201 ddx/qdss os/4.2bsd
 QDSSOBJS = ddx/qdss/init.o ddx/qdss/qdss_io.o ddx/lk201/lk201.o
 QDSSLIBS = ddx/qdss/libqdss.a.save ddx/qdss/libtl.a.save \
 		ddx/qdss/libqdss.a.save \
-               $(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+               $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 XqdssDIRS = $(QDSSDIRS)
 
 ServerTarget(Xqdss,$(EXTDIR) $(QDSSDIRS),$(QDSSOBJS),$(QDSSLIBS),$(SYSLIBS))
@@ -92,9 +93,9 @@ ServerTarget(Xqdss,$(EXTDIR) $(QDSSDIRS),$(QDSSOBJS),$(QDSSLIBS),$(SYSLIBS))
 #ifdef UseSunWindowsInServer
 SUNWINDOWSLIBS = -lsunwindow -lpixrect
 #endif
-SUNDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/sun os/4.2bsd
+SUNDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/cfb ddx/sun os/4.2bsd
 SUNOBJS = ddx/sun/sunInit.o
-SUNLIBS = $(SUN) $(CFB) $(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+SUNLIBS = $(SUN) $(CFB) $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 SUNSYSLIBS = $(SYSLIBS) $(SUNWINDOWSLIBS)
 XsunDIRS = $(SUNDIRS)
 
@@ -103,8 +104,8 @@ ServerTarget(Xsun,$(EXTDIR) $(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 #
 # HP server
 #
-HPDIRS = dix ddx/mi ddx/hp/hp ddx/hp/mfb ddx/hp/cfb ddx/hp/gbx ddx/hp/mob \
-         ddx/hp/topcat ddx/hp/catseye ddx/hp/ren os/hpux
+HPDIRS = dix ddx/snf ddx/mi ddx/hp/hp ddx/hp/mfb ddx/hp/cfb ddx/hp/gbx \
+         ddx/hp/mob ddx/hp/topcat ddx/hp/catseye ddx/hp/ren os/hpux
 HPOBJS = ddx/hp/hp/init.o
 HPLIBS = $(HP) \
           ddx/hp/gbx/libgbx.a \
@@ -115,7 +116,7 @@ HPLIBS = $(HP) \
           ddx/hp/mfb/libmfb.a \
           ddx/hp/cfb/libcfb.a \
           $(HP) \
-          $(DIX) $(HPUX) $(MI) $(EXTENSIONS)
+          $(DIX) $(SNF) $(HPUX) $(MI) $(EXTENSIONS)
 HPSYSLIBS = $(SYSLIBS)
 XhpDIRS = $(HPDIRS)
 
@@ -125,10 +126,10 @@ ServerTarget(Xhp,$(EXTDIR) $(HPDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 #
 # apa16 server
 #
-APA16DIRS = dix ddx/mi ddx/mfb ddx/ibm/apa16 ddx/ibm/rt os/4.2bsd
+APA16DIRS = dix ddx/snf ddx/mi ddx/mfb ddx/ibm/apa16 ddx/ibm/rt os/4.2bsd
 APA16OBJS = ddx/ibm/rt/rtinit.o ddx/ibm/rt/rtio.o
 APA16LIBS = ddx/ibm/apa16/libapa16.a ddx/ibm/rt/librt.a \
-		$(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+		$(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 Xapa16DIRS = $(APA16DIRS)
 
 ServerTarget(Xapa16,$(EXTDIR) $(APA16DIRS),$(APA16OBJS),$(APA16LIBS),$(SYSLIBS))
@@ -136,10 +137,10 @@ ServerTarget(Xapa16,$(EXTDIR) $(APA16DIRS),$(APA16OBJS),$(APA16LIBS),$(SYSLIBS))
 #
 # aed server
 #
-AEDDIRS = dix ddx/mi ddx/mfb ddx/ibm/aed ddx/ibm/rt os/4.2bsd
+AEDDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/ibm/aed ddx/ibm/rt os/4.2bsd
 AEDOBJS = ddx/ibm/rt/rtinit.o ddx/ibm/rt/rtio.o
 AEDLIBS = ddx/ibm/aed/libaed.a ddx/ibm/rt/librt.a \
-		$(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+		$(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 XaedDIRS = $(AEDDIRS)
 
 ServerTarget(Xaed,$(EXTDIR) $(AEDDIRS),$(AEDOBJS),$(AEDLIBS),$(SYSLIBS))
@@ -148,11 +149,11 @@ ServerTarget(Xaed,$(EXTDIR) $(AEDDIRS),$(AEDOBJS),$(AEDLIBS),$(SYSLIBS))
 #
 # apollo server
 #
-APOLLODIRS = dix ddx/mi ddx/mfb ddx/apollo os/4.2bsd
+APOLLODIRS = dix ddx/snf ddx/mi ddx/mfb ddx/apollo os/4.2bsd
 APOLLOOBJS = ddx/apollo/init.o ddx/apollo/apollo_io.o \
 	        ddx/apollo/gpr_tmgr.o ddx/apollo/apolloGC.o \
 		/sys/traits/io_traits
-APOLLOLIBS = $(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+APOLLOLIBS = $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 XapolloDIRS = $(APOLLODIRS)
 
 ServerTarget(Xapollo,$(EXTDIR) $(APOLLODIRS),$(APOLLOOBJS),$(APOLLOLIBS),$(SYSLIBS))
