@@ -1,4 +1,4 @@
-/* $XConsortium: SMproto.h,v 1.5 93/12/28 11:46:25 mor Exp $ */
+/* $XConsortium: SMproto.h,v 1.6 94/03/18 10:26:52 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -145,25 +145,50 @@ typedef struct {
     /* a	LISTofPROPERTY	properties */
 } smPropertiesReplyMsg;
 
+typedef struct {
+    CARD8	majorOpcode;
+    CARD8	minorOpcode;
+    CARD8       success;
+    CARD8	unused;
+    CARD32	length B32;
+} smSaveYourselfPhase2RequestMsg;
+
+typedef struct {
+    CARD8	majorOpcode;
+    CARD8	minorOpcode;
+    CARD8	unused[2];
+    CARD32	length B32;
+} smSaveYourselfPhase2Msg;
+
+typedef struct {
+    CARD8	majorOpcode;
+    CARD8	minorOpcode;
+    CARD8	unused[2];
+    CARD32	length B32;
+} smSaveCompleteMsg;
+
 
 /*
  * SIZEOF values.  These better be multiples of 8.
  */
 
-#define sz_smRegisterClientMsg 		8
-#define sz_smRegisterClientReplyMsg 	8
-#define sz_smSaveYourselfMsg 		16
-#define sz_smSaveYourselfRequestMsg	16
-#define sz_smInteractRequestMsg 	8
-#define sz_smInteractMsg 		8
-#define sz_smInteractDoneMsg 		8
-#define sz_smSaveYourselfDoneMsg 	8
-#define sz_smDieMsg 			8
-#define sz_smShutdownCancelledMsg 	8
-#define sz_smCloseConnectionMsg 	8
-#define sz_smSetPropertiesMsg 		8
-#define sz_smDeletePropertiesMsg 	8
-#define sz_smGetPropertiesMsg 		8
-#define sz_smPropertiesReplyMsg 	8
+#define sz_smRegisterClientMsg 			8
+#define sz_smRegisterClientReplyMsg 		8
+#define sz_smSaveYourselfMsg 			16
+#define sz_smSaveYourselfRequestMsg		16
+#define sz_smInteractRequestMsg 		8
+#define sz_smInteractMsg 			8
+#define sz_smInteractDoneMsg 			8
+#define sz_smSaveYourselfDoneMsg 		8
+#define sz_smDieMsg 				8
+#define sz_smShutdownCancelledMsg 		8
+#define sz_smCloseConnectionMsg 		8
+#define sz_smSetPropertiesMsg 			8
+#define sz_smDeletePropertiesMsg 		8
+#define sz_smGetPropertiesMsg 			8
+#define sz_smPropertiesReplyMsg 		8
+#define sz_smSaveYourselfPhase2RequestMsg	8
+#define sz_smSaveYourselfPhase2Msg 		8
+#define sz_smSaveCompleteMsg 			8
 
 #endif /* _SMPROTO_H_ */
