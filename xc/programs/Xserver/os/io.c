@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: io.c,v 1.33 87/08/30 08:44:09 susan Exp $ */
+/* $Header: io.c,v 1.33 87/09/01 17:22:31 rws Locked $ */
 /*****************************************************************
  * i/o functions
  *
@@ -181,7 +181,6 @@ ReadRequestFromClient(who, status, oldbuf)
                /* don't have a full header */
     if (gotnow < sizeof(xReq))
     {
-	ErrorF(  "Don't have full header\n");
         while (pBuff->bufcnt + pBuff->buffer - pBuff->bufptr < sizeof(xReq))
 	{
 	    result = read(client, pBuff->buffer + pBuff->bufcnt, 
@@ -229,10 +228,7 @@ ReadRequestFromClient(who, status, oldbuf)
 	    if (result < 0) 
 	    {
 		if (errno == EWOULDBLOCK)
-		{
-		    ErrorF( "2 WOULD BLOCK == %d\n", client);
 		    *status = 0;
-                }
 		else
 		    *status = -1;
 		BITCLEAR(ClientsWithInput, client);
@@ -327,7 +323,9 @@ WriteToClient (who, remaining, buf)
 
     if (connection == -2) 
     {
+#ifdef notdef
 	ErrorF( "CONNECTION %d ON ITS WAY OUT\n", connection);
+#endif notdef
 	return(-1);
     }
 
@@ -355,6 +353,7 @@ WriteToClient (who, remaining, buf)
 	}
 	else if (errno != EWOULDBLOCK)
         {
+#ifdef notdef
 	    if (errno != EBADF)
 		ErrorF("Closing connection %d because write failed\n",
 			connection);
@@ -363,22 +362,27 @@ WriteToClient (who, remaining, buf)
 		   clean up after the client.  We can't clean up here,
 		   because the we're in the middle of doing something
 		   and will probably screw up some data strucutres */
+#endif notdef
 	    close(connection);
             MarkClientException(who);
 	    return(-1);
 	}
  /* blocked => be willing to try him once more */
+#ifdef notdef
         ErrorF("Connection %d blocked, be willing to try write once more:\n",
 		connection);
         ErrorF("need to write: %d, have written: %d, eerno: %d\n", 
 	       remaining, n, errno);
+#endif notdef
 	CLEARBITS(mask);
 	BITSET(mask, connection);
 	n = select (connection + 1, (int *) NULL, mask, (int *) NULL, 
 		&outtime);
 	if ((n != 1) && (secondTime == 3))
         {
+#ifdef notdef
 	    ErrorF("Connection %d write failed after partial\n", connection);
+#endif
 		/* this close will cause the select in WaitForSomething
 		   to return that the connection is dead, so we can actually
 		   clean up after the client.  We can't clean up here,
