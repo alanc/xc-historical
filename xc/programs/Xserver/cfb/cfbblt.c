@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbblt.c,v 1.8 91/12/11 21:57:39 eswu Exp $ */
+/* $XConsortium: cfbblt.c,v 1.9 91/12/19 18:36:53 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -223,8 +223,8 @@ MROP_NAME(cfbDoBitblt)(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	}
 	if ((pbox->x1 & PIM) + w <= PPW)
 	{
-	    maskpartialbits (pbox->x1, w, startmask);
-	    endmask = 0;
+	    maskpartialbits (pbox->x1, w, endmask);
+	    startmask = 0;
 	    nlMiddle = 0;
 	}
 	else
