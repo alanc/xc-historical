@@ -1,7 +1,7 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:32:50 dpw Exp kaleb $
 #include <Server.tmpl>
 
-#if defined(i386SVR4Architecture)
+#if defined(SVR4Architecture)
 BIOS_MOD = bios_V4mmap
 #else
 BIOS_MOD = bios_devmem
