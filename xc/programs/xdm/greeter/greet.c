@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.24 90/11/29 20:03:03 keith Exp $
+ * $XConsortium: greet.c,v 1.25 91/01/09 17:25:33 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -64,31 +64,31 @@ GreetDone (w, data, status)
     LoginData	*data;
     int		status;
 {
-	Debug ("GreetDone: %s, (password is %d long)\n",
-		data->name, strlen (data->passwd));
-	switch (status) {
-	case NOTIFY_OK:
-		strcpy (name, data->name);
-		strcpy (password, data->passwd);
-		code = 0;
-		done = 1;
-		break;
-	case NOTIFY_ABORT:
-		Debug ("RESERVER_DISPLAY\n");
-		code = RESERVER_DISPLAY;
-		done = 1;
-		break;
-	case NOTIFY_RESTART:
-		Debug ("REMANAGE_DISPLAY\n");
-		code = REMANAGE_DISPLAY;
-		done = 1;
-		break;
-	case NOTIFY_ABORT_DISPLAY:
-		Debug ("UNMANAGE_DISPLAY\n");
-		code = UNMANAGE_DISPLAY;
-		done = 1;
-		break;
-	}
+    Debug ("GreetDone: %s, (password is %d long)\n",
+	    data->name, strlen (data->passwd));
+    switch (status) {
+    case NOTIFY_OK:
+	strcpy (name, data->name);
+	strcpy (password, data->passwd);
+	code = 0;
+	done = 1;
+	break;
+    case NOTIFY_ABORT:
+	Debug ("RESERVER_DISPLAY\n");
+	code = RESERVER_DISPLAY;
+	done = 1;
+	break;
+    case NOTIFY_RESTART:
+	Debug ("REMANAGE_DISPLAY\n");
+	code = REMANAGE_DISPLAY;
+	done = 1;
+	break;
+    case NOTIFY_ABORT_DISPLAY:
+	Debug ("UNMANAGE_DISPLAY\n");
+	code = UNMANAGE_DISPLAY;
+	done = 1;
+	break;
+    }
 }
 
 Display *
@@ -112,6 +112,8 @@ struct display	*d;
     if (!dpy)
 	return 0;
 
+    RegisterCloseOnFork (ConnectionNumber (dpy));
+
     SecureDisplay (d, dpy);
 
     i = 0;
@@ -126,7 +128,7 @@ struct display	*d;
     i = 0;
     XtSetArg (arglist[i], XtNnotifyDone, GreetDone); i++;
     if (!d->authorize || d->authorizations || !d->authComplain)
-	    XtSetArg (arglist[i], XtNsecureSession, True); i++;
+	XtSetArg (arglist[i], XtNsecureSession, True); i++;
     login = XtCreateManagedWidget ("login", loginWidgetClass, toplevel,
 				    arglist, i);
     XtRealizeWidget (toplevel);
@@ -164,6 +166,7 @@ struct display	*d;
 	XSetAccessControl (XtDisplay (toplevel), DisableAccess);
     }
     XtDestroyWidget (toplevel);
+    ClearCloseOnFork (ConnectionNumber (XtDisplay (toplevel)));
     XCloseDisplay (XtDisplay (toplevel));
 }
 
@@ -171,29 +174,29 @@ Greet (d, greet)
 struct display		*d;
 struct greet_info	*greet;
 {
-	XEvent		event;
-	Arg		arglist[1];
+    XEvent		event;
+    Arg		arglist[1];
 
-	XtSetArg (arglist[0], XtNallowAccess, False);
-	XtSetValues (login, arglist, 1);
+    XtSetArg (arglist[0], XtNallowAccess, False);
+    XtSetValues (login, arglist, 1);
 
-	Debug ("dispatching %s\n", d->name);
-	done = 0;
-	while (!done) {
-		XtAppNextEvent (context, &event);
-		XtDispatchEvent (&event);
-	}
-	XFlush (XtDisplay (toplevel));
-	Debug ("Done dispatch %s\n", d->name);
-	if (code == 0)
-	{
-	    greet->name = name;
-	    greet->password = password;
-	    XtSetArg (arglist[0], XtNsessionArgument, (char *) &(greet->string));
-	    XtGetValues (login, arglist, 1);
-	    Debug ("sessionArgument: %s\n", greet->string ? greet->string : "<NULL>");
-	}
-	return code;
+    Debug ("dispatching %s\n", d->name);
+    done = 0;
+    while (!done) {
+	    XtAppNextEvent (context, &event);
+	    XtDispatchEvent (&event);
+    }
+    XFlush (XtDisplay (toplevel));
+    Debug ("Done dispatch %s\n", d->name);
+    if (code == 0)
+    {
+	greet->name = name;
+	greet->password = password;
+	XtSetArg (arglist[0], XtNsessionArgument, (char *) &(greet->string));
+	XtGetValues (login, arglist, 1);
+	Debug ("sessionArgument: %s\n", greet->string ? greet->string : "<NULL>");
+    }
+    return code;
 }
 
 
@@ -202,5 +205,5 @@ FailedLogin (d, greet)
 struct display	*d;
 struct greet_info	*greet;
 {
-	DrawFail (login);
+    DrawFail (login);
 }
