@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.27 91/07/26 18:30:47 dave Exp $
- * $Header: ScrollByL.c,v 1.27 91/07/26 18:30:47 dave Exp $
+ * $XConsortium: ScrollByL.c,v 1.28 91/10/21 14:32:32 eswu Exp $
+ * $Header: ScrollByL.c,v 1.28 91/10/21 14:32:32 eswu Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -477,9 +477,15 @@ int old_y, new_y, height;
 	    (unsigned int) w->core.width - from_left, (unsigned int) height,
 	    from_left, new_y);
 
-  height -= sblw->scroll.font_height/2;	/* clear 1/2 font of extra space,
-					   to make sure we don't lose or
-					   gain decenders. */
+  if (old_y > new_y)
+    height -= sblw->scroll.font_height/2;  /* clear 1/2 font of extra space,
+					      to make sure we don't lose or
+					      gain decenders. */
+  else
+    height -= sblw->scroll.font_height;  /* clear 1 font of extra space,
+					    to make sure we don't overwrite
+					    with a last line in buffer. */
+
   if (old_y > new_y)
     y_clear = height;
   else
