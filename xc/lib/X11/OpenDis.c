@@ -1,6 +1,6 @@
 #include "copyright.h"
 #ifndef lint
-static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.53 87/11/23 15:20:27 newman Exp $";
+static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.54 88/01/30 10:44:11 jim Locked $";
 #endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 
@@ -381,11 +381,11 @@ Display *XOpenDisplay (display)
 	    Atom actual_type;
 	    int actual_format;
 	    unsigned long nitems;
-	    long leftover;
+	    unsigned long leftover;
 	    if (XGetWindowProperty(dpy, RootWindow(dpy, 0), 
 		XA_RESOURCE_MANAGER, 0L, 100000000L, False, XA_STRING,
 		&actual_type, &actual_format, &nitems, &leftover, 
-		&dpy->xdefaults) != Success) {
+		(unsigned char **) &dpy->xdefaults) != Success) {
 			dpy->xdefaults = (char *) NULL;
 		}
 	    else {
