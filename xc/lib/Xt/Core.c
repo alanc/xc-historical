@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char rcsid[] = "$Header: Core.c,v 1.9 88/02/14 18:41:10 swick Exp $";
+static char rcsid[] = "$Header: Core.c,v 1.10 88/02/19 15:49:56 swick Exp $";
 #endif lint
 
 /*
@@ -74,7 +74,7 @@ static XtResource resources[] = {
          XtOffset(Widget,core.background_pixmap), XtRPixmap,(caddr_t)&defNone},
     {XtNborderWidth, XtCBorderWidth, XtRInt, sizeof(int),
          XtOffset(Widget,core.border_width), XtRInt, (caddr_t) &one},
-    {XtNborder, XtCBorderColor, XtRPixel,sizeof(Pixel),
+    {XtNborderColor, XtCBorderColor, XtRPixel,sizeof(Pixel),
          XtOffset(Widget,core.border_pixel), XtRDefaultColor,(caddr_t)&zero},
     {XtNborderPixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
          XtOffset(Widget,core.border_pixmap), XtRPixmap, (caddr_t)&defNone},
