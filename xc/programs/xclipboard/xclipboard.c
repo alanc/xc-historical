@@ -22,6 +22,7 @@
  *
  * Author:  Ralph Swick, DEC/Project Athena
  * Updated for R4:  Chris D. Peterson,  MIT X Consortium.
+ * Reauthored by: Keith Packard, MIT X Consortium.
  */
 
 /* $XConsortium: xclipboard.c,v 1.11 89/12/11 20:35:52 keith Exp $ */
@@ -130,7 +131,26 @@ DeleteClip (w, clip)
 }
 
 static ClipPtr	currentClip;
-static Widget	text;
+static Widget	text, nextButton, prevButton;
+
+static void set_button_state ()
+{
+    Boolean prevvalid, nextvalid;
+    Arg arg;
+
+    prevvalid = False;
+    nextvalid = False;
+    if (currentClip)
+    {
+	prevvalid = currentClip->prev != NULL;
+	nextvalid = currentClip->next != NULL;
+    }
+    arg.name = XtNsensitive;
+    arg.value = (XtArgVal) prevvalid;
+    XtSetValues (prevButton, &arg, ONE);
+    arg.value = (XtArgVal) nextvalid;
+    XtSetValues (nextButton, &arg, ONE);
+}
 
 static void
 NextCurrentClip ()
@@ -140,6 +160,7 @@ NextCurrentClip ()
 	SaveClip (text, currentClip);
 	currentClip = currentClip->next;
 	RestoreClip (text, currentClip);
+	set_button_state ();
     }
 }
 
@@ -151,6 +172,7 @@ PrevCurrentClip ()
 	SaveClip (text, currentClip);
 	currentClip = currentClip->prev;
 	RestoreClip (text, currentClip);
+	set_button_state ();
     }
 }
 
@@ -176,6 +198,7 @@ DeleteCurrentClip ()
 	{
 	    EraseCurrentClip ();
 	}
+	set_button_state ();
     }
 }
 
@@ -213,6 +236,7 @@ NewCurrentClipContents (data, len)
     textBlock.format = FMT8BIT;
     if (XawTextReplace(text, 0, TextLength (text), &textBlock))
 	XBell( XtDisplay(text), 0);
+    set_button_state ();
 }
 
 EraseCurrentClip()
@@ -227,6 +251,7 @@ EraseCurrentClip()
     XawTextReplace(text, 0, INFINITY, &block);
     /* If this fails, too bad. */
 }
+
 
 XtActionsRec xclipboard_actions[] = {
     "NewClip", NewCurrentClip,
@@ -396,7 +421,7 @@ int argc;
 char **argv;
 {
     Arg args[2];
-    Widget top, parent, quit, delete, new, next, prev;
+    Widget top, parent, quit, delete, new;
     Atom manager;
 
     top = XtInitialize( "xclipboard", "XClipboard", table, XtNumber(table),
@@ -412,12 +437,14 @@ char **argv;
     quit = XtCreateManagedWidget("quit", Command, parent, NULL, ZERO);
     delete = XtCreateManagedWidget("delete", Command, parent, NULL, ZERO);
     new = XtCreateManagedWidget("new", Command, parent, NULL, ZERO);
-    next = XtCreateManagedWidget("next", Command, parent, NULL, ZERO);
-    prev = XtCreateManagedWidget("prev", Command, parent, NULL, ZERO);
+    nextButton = XtCreateManagedWidget("next", Command, parent, NULL, ZERO);
+    prevButton = XtCreateManagedWidget("prev", Command, parent, NULL, ZERO);
 
     XtSetArg(args[0], XtNtype, XawAsciiString);
     XtSetArg(args[1], XtNeditType, XawtextEdit);
     text = XtCreateManagedWidget( "text", Text, parent, args, TWO);
+
+    set_button_state ();
 
     XtRealizeWidget(top);
 
