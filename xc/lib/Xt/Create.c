@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.88 92/05/11 16:38:19 converse Exp $ */
+/* $XConsortium: Create.c,v 1.89 92/08/26 14:09:28 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -323,6 +323,7 @@ Widget _XtCreateWidget(name, widget_class, parent, args, num_args,
 	XtInitializeWidgetClass(widget_class);
     if ((widget_class->core_class.class_inited & WidgetClassFlag) == 0) {
 	/* not a widget */
+	default_screen = NULL;
 	if (XtIsComposite(parent)) {
 	    CompositeClassExtension ext;
 	    for (ext = (CompositeClassExtension)
