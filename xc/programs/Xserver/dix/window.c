@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.220 88/10/22 13:27:56 keith Exp $ */
+/* $XConsortium: window.c,v 1.221 88/11/11 09:52:30 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1537,7 +1537,8 @@ GetWindowAttributes(pWin, client)
     wa.mapInstalled = (wa.colormap == None) ? xFalse
 					    : IsMapInstalled(wa.colormap, pWin);
 
-    wa.yourEventMask = EventMaskForClient(pWin, client, &wa.allEventMasks);
+    wa.yourEventMask = EventMaskForClient(pWin, client);
+    wa.allEventMasks = pWin->allEventMasks;
     wa.doNotPropagateMask = pWin->dontPropagateMask ;
     wa.class = pWin->class;
     wa.visualID = pWin->visual;
