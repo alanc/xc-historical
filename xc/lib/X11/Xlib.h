@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.170 89/12/10 10:13:00 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.171 89/12/10 21:08:38 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -352,7 +352,7 @@ typedef struct _XImage {
     struct funcs {		/* image manipulation routines */
 	struct _XImage *(*create_image)();
 #if NeedFunctionPrototypes
-	int (*destroy_image)        (struct _XImage *)();
+	int (*destroy_image)        (struct _XImage *);
 	unsigned long (*get_pixel)  (struct _XImage *, int, int);
 	int (*put_pixel)            (struct _XImage *, int, int, unsigned long);
 	struct _XImage *(*sub_image)(struct _XImage *, int, int, unsigned int, unsigned int);
@@ -1635,9 +1635,8 @@ extern int (*XSetErrorHandler(
 #endif
 ))(
 #if NeedFunctionPrototypes
-    int (*) ( Display*                  /* display */,
-              XErrorEvent*              /* error_event */
-            )           /* handler */
+    Display*                  /* display */,
+    XErrorEvent*              /* error_event */
 #endif
 );
 
@@ -1648,8 +1647,7 @@ extern int (*XSetIOErrorHandler(
 #endif
 ))(
 #if NeedFunctionPrototypes
-    int (*) ( Display*                  /* display */,
-            )           /* handler */
+    Display*            /* display */
 #endif
 );
 
