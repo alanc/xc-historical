@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.h,v 1.5 93/10/30 15:28:11 rws Exp $ */
+/* $XConsortium: xieperf.h,v 1.6 93/11/05 17:58:33 rws Exp $ */
 
 /**** module xieperf.h ****/
 /******************************************************************************
@@ -224,6 +224,7 @@ typedef struct _encodeParms {
 	int	encode;		/* encode technique */
 	char	*parms;		/* encode technique structs */
 	Bool	exportClient;	/* if True, ECP. Else, EP */
+	unsigned char scale;	/* For JPEG q_table scaling */
 } EncodeParms;
 
 typedef struct _eventParms {
