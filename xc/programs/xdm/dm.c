@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: $
+ * $XConsortium: dm.c,v 1.6 88/09/23 14:21:20 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -31,6 +31,8 @@ main (argc, argv)
 int	argc;
 char	**argv;
 {
+	int	CleanChildren (), TerminateAll ();
+
 	/*
 	 * Step 1 - load configuration parameters
 	 */
@@ -39,19 +41,27 @@ char	**argv;
 	if (debugLevel == 0)
 		BecomeDaemon ();
 	InitErrorLog ();
+	signal (SIGTERM, TerminateAll);
 	/*
 	 * Step 2 - Read /etc/Xservers and set up
-	 *	    the socket.  For now, this
-	 *	    is a TCP socket to make testing
-	 *	    easier with telnet
+	 *	    the socket.
 	 *
 	 *	    Keep a sub-daemon running
 	 *	    for each entry
 	 */
 	ScanServers ();
+#ifdef UDP_SOCKET
 	CreateWellKnownSockets ();
-	while (AnyWellKnownSockets () || AnyDisplaysLeft ())
+	signal (SIGCHLD, CleanChildren);
+
+	while (AnyWellKnownSockets () || AnyDisplaysLeft ()) {
+		Debug ("WaitForSomething\n");
 		WaitForSomething ();
+	}
+#else
+	while (AnyDisplaysLeft ())
+		WaitForChild ();
+#endif
 }
 
 
@@ -65,6 +75,7 @@ ScanServers ()
 		  { Local, Transient, Secure },
 		  { Local, Permanent, Insecure },
 		  { Local, Transient, Insecure },
+		  { Foreign, Permanent, Secure },
 		};
 
 	if (servers[0] == '/') {
@@ -91,20 +102,36 @@ ScanServers ()
 }
 
 /*
+ * catch a SIGTERM, kill all displays and exit
+ */
+
+TerminateAll ()
+{
+	void	TerminateDisplay ();
+
+	ForEachDisplay (TerminateDisplay);
+}
+
+CleanChildren ()
+{
+#ifdef SYSV
+	signal (SIGCHLD, CleanChildren);
+#endif
+	Debug ("CleanChildren\n");
+	WaitForChild ();
+}
+
+/*
  * notice that a child has died and may need another
  * sub-daemon started
  */
 
-CleanChildren ()
+WaitForChild ()
 {
 	int		pid;
 	struct display	*d;
 	waitType	status;
 
-#ifdef SYSV
-	signal (SIGCHLD, CleanChildren);
-#endif
-	Debug ("CleanChildren\n");
 	pid = wait (&status);
 	Debug ("pid: %d\n", pid);
 	d = FindDisplayByPid (pid);
@@ -112,16 +139,22 @@ CleanChildren ()
 		d->status = notRunning;
 		switch (waitVal (status)) {
 		case UNMANAGE_DISPLAY:
+			Debug ("Display exited with UNMANAGE_DISPLAY\n");
 			RemoveDisplay (d);
 			break;
 		case OBEYSESS_DISPLAY:
+			Debug ("Display exited with OBEYSESS_DISPLAY\n");
 			if (d->displayType.lifetime == Permanent)
 				StartDisplay (d);
 			else
 				RemoveDisplay (d);
 			break;
-		case REMANAGE_DISPLAY:
 		default:
+			Debug ("Display exited with unknown status %d\n", waitVal(status));
+			StartDisplay (d);
+			break;
+		case REMANAGE_DISPLAY:
+			Debug ("Display exited with REMANAGE_DISPLAY\n");
 			StartDisplay (d);
 			break;
 		}
@@ -136,6 +169,7 @@ struct display	*d;
 	Debug ("StartDisplay %s\n", d->name);
 	switch (pid = fork ()) {
 	case 0:
+		signal (SIGCHLD, SIG_DFL);
 		ManageDisplay (d);
 		exit (REMANAGE_DISPLAY);
 	case -1:
@@ -144,11 +178,11 @@ struct display	*d;
 		Debug ("pid: %d\n", pid);
 		d->pid = pid;
 		d->status = running;
-		signal (SIGCHLD, CleanChildren);
 		break;
 	}
 }
 
+void
 TerminateDisplay (d)
 struct display	*d;
 {
