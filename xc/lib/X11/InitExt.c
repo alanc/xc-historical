@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XInitExt.c,v 11.24 90/12/09 16:46:47 rws Exp $ */
+/* $XConsortium: XInitExt.c,v 11.25 90/12/12 09:18:20 rws Exp $ */
 /* Copyright  Massachusetts Institute of Technology 1987 */
 
 #include "Xlibint.h"
@@ -112,10 +112,28 @@ XExtData *XFindOnExtensionList(structure, number)
 /*
  * Routines to hang procs on the extension structure.
  */
+#if NeedFunctionPrototypes
+int (*XESetCreateGC(
+    Display*	dpy,
+    int		extension,
+    int (*proc) (
+#if NeedNestedPrototypes
+	      Display*		/* display */,
+	      GC		/* gc */,
+	      XExtCodes*	/* codes */
+#endif
+	    )
+    ))(
+#if NeedNestedPrototypes
+    Display*, GC, XExtCodes*
+#endif
+)
+#else
 int (*XESetCreateGC(dpy, extension, proc))()
 	Display *dpy;		/* display */
 	int extension;		/* extension number */
 	int (*proc)();		/* routine to call when GC created */
+#endif
 {
 	register _XExtension *e;	/* for lookup of extension */
 	register int (*oldproc)();
@@ -126,10 +144,29 @@ int (*XESetCreateGC(dpy, extension, proc))()
 	UnlockDisplay(dpy);
 	return (oldproc);
 }
+
+#if NeedFunctionPrototypes
+int (*XESetCopyGC(
+	Display * dpy,
+	int extension,
+	int (*proc)(
+#if NeedNestedPrototypes
+	      Display*			/* display */,
+              GC			/* gc */,
+              XExtCodes*		/* codes */
+#endif
+		    )
+))(
+#if NeedNestedPrototypes
+    Display*, GC, XExtCodes*
+#endif
+)
+#else
 int (*XESetCopyGC(dpy, extension, proc))()
 	Display *dpy;		/* display */
 	int extension;		/* extension number */
 	int (*proc)();		/* routine to call when GC copied */
+#endif
 {
 	register _XExtension *e;	/* for lookup of extension */
 	register int (*oldproc)();
@@ -140,10 +177,29 @@ int (*XESetCopyGC(dpy, extension, proc))()
 	UnlockDisplay(dpy);
 	return (oldproc);
 }
+
+#if NeedFunctionPrototypes
+int (*XESetFlushGC(
+    Display* dpy,
+    int extension,
+    int (*proc) (
+#if NeedNestedPrototypes
+	      Display*			/* display */,
+              GC			/* gc */,
+              XExtCodes*		/* codes */
+#endif
+            )
+))(
+#if NeedNestedPrototypes
+    Display*, GC, XExtCodes*
+#endif
+)
+#else
 int (*XESetFlushGC(dpy, extension, proc))()
 	Display *dpy;		/* display */
 	int extension;		/* extension number */
 	int (*proc)();		/* routine to call when GC copied */
+#endif
 {
 	register _XExtension *e;	/* for lookup of extension */
 	register int (*oldproc)();
@@ -155,10 +211,28 @@ int (*XESetFlushGC(dpy, extension, proc))()
 	return (oldproc);
 }
 
+#if NeedFunctionPrototypes
+int (*XESetFreeGC(
+    Display* dpy,
+    int extension,
+    int (*proc) (
+#if NeedNestedPrototypes
+	      Display*			/* display */,
+              GC			/* gc */,
+              XExtCodes*		/* codes */
+#endif
+            )
+))(
+#if NeedNestedPrototypes
+    Display*, GC, XExtCodes*
+#endif
+)
+#else
 int (*XESetFreeGC(dpy, extension, proc))()
 	Display *dpy;		/* display */
 	int extension;		/* extension number */
 	int (*proc)();		/* routine to call when GC freed */
+#endif
 {
 	register _XExtension *e;	/* for lookup of extension */
 	register int (*oldproc)();
@@ -170,10 +244,28 @@ int (*XESetFreeGC(dpy, extension, proc))()
 	return (oldproc);
 }
 
+#if NeedFunctionPrototypes
+int (*XESetCreateFont(
+    Display* dpy,
+    int extension,
+    int (*proc) (
+#if NeedNestedPrototypes
+	      Display*			/* display */,
+              XFontStruct*		/* fs */,
+              XExtCodes*		/* codes */
+#endif
+            )
+))(
+#if NeedNestedPrototypes
+    Display*, XFontStruct*, XExtCodes*
+#endif
+)
+#else
 int (*XESetCreateFont(dpy, extension, proc))()
 	Display *dpy;		/* display */
 	int extension;		/* extension number */
 	int (*proc)();		/* routine to call when font created */
+#endif
 {
 	register _XExtension *e;	/* for lookup of extension */
 	register int (*oldproc)();
@@ -185,10 +277,28 @@ int (*XESetCreateFont(dpy, extension, proc))()
 	return (oldproc);
 }
 
+#if NeedFunctionPrototypes
+int (*XESetFreeFont(
+    Display* dpy,
+    int	extension,
+    int (*proc) (
+#if NeedNestedPrototypes
+	      Display*			/* display */,
+              XFontStruct*		/* fs */,
+              XExtCodes*		/* codes */
+#endif
+            )
+))(
+#if NeedNestedPrototypes
+    Display*, XFontStruct*, XExtCodes*
+#endif
+)
+#else
 int (*XESetFreeFont(dpy, extension, proc))()
 	Display *dpy;		/* display */
 	int extension;		/* extension number */
 	int (*proc)();		/* routine to call when font freed */
+#endif
 {
 	register _XExtension *e;	/* for lookup of extension */
 	register int (*oldproc)();
@@ -200,10 +310,27 @@ int (*XESetFreeFont(dpy, extension, proc))()
 	return (oldproc);
 }
 
+#if NeedFunctionPrototypes
+int (*XESetCloseDisplay(
+    Display* dpy,
+    int	extension,
+    int (*proc) (
+#if NeedNestedPrototypes
+	      Display*			/* display */,
+              XExtCodes*		/* codes */
+#endif
+            )
+))(
+#if NeedNestedPrototypes
+    Display*, XExtCodes*
+#endif
+)
+#else
 int (*XESetCloseDisplay(dpy, extension, proc))()
 	Display *dpy;		/* display */
 	int extension;		/* extension number */
 	int (*proc)();		/* routine to call when display closed */
+#endif
 {
 	register _XExtension *e;	/* for lookup of extension */
 	register int (*oldproc)();
@@ -214,10 +341,29 @@ int (*XESetCloseDisplay(dpy, extension, proc))()
 	UnlockDisplay(dpy);
 	return (oldproc);
 }
+
+#if NeedFunctionPrototypes
+int (*XESetWireToEvent(
+    Display* dpy,
+    int event_number,
+    Bool (*proc) (
+#if NeedNestedPrototypes
+	       Display*			/* display */,
+               XEvent*			/* re */,
+               xEvent*			/* event */
+#endif
+             )
+))(
+#if NeedNestedPrototypes
+    Display*, XEvent*, xEvent*
+#endif
+)
+#else
 Bool (*XESetWireToEvent(dpy, event_number, proc))()
 	Display *dpy;		/* display */
 	Bool (*proc)();		/* routine to call when converting event */
 	int event_number;	/* event routine to replace */
+#endif
 {
 	register Bool (*oldproc)();
 	if (proc == NULL) proc = _XUnknownWireEvent;
@@ -227,10 +373,29 @@ Bool (*XESetWireToEvent(dpy, event_number, proc))()
 	UnlockDisplay (dpy);
 	return (oldproc);
 }
+
+#if NeedFunctionPrototypes
+Status (*XESetEventToWire(
+    Display* dpy,
+    int	event_number,
+    int (*proc) (
+#if NeedNestedPrototypes
+	      Display*			/* display */,
+              XEvent*			/* re */,
+              xEvent*			/* event */
+#endif
+            )
+))(
+#if NeedNestedPrototypes
+    Display*, XEvent*, xEvent*
+#endif
+)
+#else
 Status (*XESetEventToWire(dpy, event_number, proc))()
 	Display *dpy;		/* display */
 	Status (*proc)();	/* routine to call when converting event */
 	int event_number;	/* event routine to replace */
+#endif
 {
 	register Status (*oldproc)();
 	if (proc == NULL) proc = _XUnknownNativeEvent;
@@ -240,10 +405,29 @@ Status (*XESetEventToWire(dpy, event_number, proc))()
 	UnlockDisplay(dpy);
 	return (oldproc);
 }
+
+#if NeedFunctionPrototypes
+Status (*XESetWireToError(
+    Display* dpy,
+    int	error_number,
+    Bool (*proc) (
+#if NeedNestedPrototypes
+	       Display*			/* display */,
+	       XErrorEvent*		/* he */,
+	       xError*			/* we */
+#endif
+            )
+))(
+#if NeedNestedPrototypes
+    Display*, XErrorEvent*, xError*
+#endif
+)
+#else
 Bool (*XESetWireToError(dpy, error_number, proc))()
 	Display *dpy;		/* display */
 	Bool (*proc)();		/* routine to call when converting error */
 	int error_number;	/* error routine to replace */
+#endif
 {
 	register Bool (*oldproc)();
 	if (proc == NULL) proc = _XDefaultWireError;
@@ -261,10 +445,30 @@ Bool (*XESetWireToError(dpy, error_number, proc))()
 	UnlockDisplay (dpy);
 	return (oldproc);
 }
+
+#if NeedFunctionPrototypes
+int (*XESetError(
+    Display* dpy,
+    int	extension,
+    int (*proc) (
+#if NeedNestedPrototypes
+	      Display*			/* display */,
+              xError*			/* err */,
+              XExtCodes*		/* codes */,
+              int*			/* ret_code */
+#endif
+            )		/* proc */    
+))(
+#if NeedNestedPrototypes
+    Display*, xError*, XExtCodes*, int*
+#endif
+)
+#else
 int (*XESetError(dpy, extension, proc))()
 	Display *dpy;		/* display */
 	int extension;		/* extension number */
 	int (*proc)();		/* routine to call when X error happens */
+#endif
 {
 	register _XExtension *e;	/* for lookup of extension */
 	register int (*oldproc)();
@@ -275,10 +479,31 @@ int (*XESetError(dpy, extension, proc))()
 	UnlockDisplay(dpy);
 	return (oldproc);
 }
+
+#if NeedFunctionPrototypes
+char* (*XESetErrorString(
+    Display* dpy,
+    int extension,
+    char* (*proc) (
+#if NeedNestedPrototypes
+	        Display*		/* display */,
+                int			/* code */,
+                XExtCodes*		/* codes */,
+                char*			/* buffer */,
+                int			/* nbytes */
+#endif
+              )
+))(
+#if NeedNestedPrototypes
+    Display*, int, XExtCodes*, char*, int
+#endif
+)
+#else
 char *(*XESetErrorString(dpy, extension, proc))()
 	Display *dpy;		/* display */
 	int extension;		/* extension number */
 	char *(*proc)();	/* routine to call when I/O error happens */
+#endif
 {
 	register _XExtension *e;	/* for lookup of extension */
 	register char *(*oldproc)();
@@ -289,10 +514,29 @@ char *(*XESetErrorString(dpy, extension, proc))()
 	UnlockDisplay(dpy);
 	return (oldproc);
 }
+
+#if NeedFunctionPrototypes
+void (*XESetPrintErrorValues (
+    Display* dpy,
+    int extension,
+    void (*proc)(
+#if NeedNestedPrototypes
+	      Display*			/* display */,
+	      XErrorEvent*		/* ev */,
+	      void*			/* fp */
+#endif
+	     )
+))(
+#if NeedNestedPrototypes
+    Display*, XErrorEvent*, void*
+#endif
+)
+#else
 void (*XESetPrintErrorValues(dpy, extension, proc))()
 	Display *dpy;		/* display */
 	int extension;		/* extension number */
 	void (*proc)();		/* routine to call to print */
+#endif
 {
 	register _XExtension *e;	/* for lookup of extension */
 	register void (*oldproc)();
