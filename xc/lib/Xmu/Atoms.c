@@ -1,4 +1,4 @@
-/* $XConsortium: Atoms.c,v 1.1 88/09/29 18:53:08 swick Exp $
+/* $XConsortium: Atoms.c,v 1.2 88/10/04 16:18:38 swick Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -9,6 +9,7 @@
  *
  *	XmuMakeAtom		creates & initializes an opaque AtomRec
  *	XmuInternAtom		fetches an Atom from cache or Display
+ *	XmuInternStrings	fetches multiple Atoms as strings
  *	XmuGetAtomName		returns name of an Atom
  *	XmuNameOfAtom		returns name from an AtomPtr
  */
@@ -145,28 +146,27 @@ char* XmuNameOfAtom(atom_ptr)
 
 Atom XmuInternAtom(d, atom_ptr)
     Display *d;
-    AtomPtr *atom_ptr;
+    AtomPtr atom_ptr;
 {
-    register AtomPtr atom_recP;
     DisplayRec* display_rec;
     if (!inited) {
 	_DeclareAtoms();
 	inited = True;
     }
-    if ((atom_recP = *atom_ptr) == NULL)
+    if (atom_ptr == NULL)
 	XtErrorMsg( "uninitializedAtom", "xmuInternAtom", "XmuError",
 		    "AtomPtr was not initialized", NULL, 0 );
-    for (display_rec = atom_recP->head; display_rec != NULL;
+    for (display_rec = atom_ptr->head; display_rec != NULL;
 	 display_rec = display_rec->next) {
 	if (display_rec->dpy == d)
 	    return display_rec->atom;
     }
     display_rec = XtNew(DisplayRec);
-    display_rec->next = atom_recP->head;
-    atom_recP->head = display_rec;
+    display_rec->next = atom_ptr->head;
+    atom_ptr->head = display_rec;
     display_rec->dpy = d;
-    display_rec->atom = XInternAtom(d, atom_recP->name, False);
-    CacheEnter(d, display_rec->atom, atom_recP->name);
+    display_rec->atom = XInternAtom(d, atom_ptr->name, False);
+    CacheEnter(d, display_rec->atom, atom_ptr->name);
     return display_rec->atom;
 }
 
@@ -181,4 +181,37 @@ char *XmuGetAtomName(d, atom)
     if (entry == NULL)
 	entry = CacheEnter(d, atom, XGetAtomName(d, atom));
     return entry->name;
+}
+
+/* convert (names, count) to a list of atoms. Caller allocates list */
+void XmuInternStrings(d, names, count, atoms)
+    Display *d;
+    String *names;
+    Cardinal count;
+    Atom *atoms;		/* return */
+{
+    static AtomPtr* cache = NULL;
+    static Cardinal cache_size = 0, last = 0;
+    int i;
+
+    if (count > cache_size) {
+	cache_size += count;
+	cache = (AtomPtr*)XtRealloc(cache, cache_size*sizeof(AtomPtr));
+    }
+    for (i = 0; i < count; i++) {
+	register int p;
+	for (p = 0; p < last; p++) {
+	    if (strcmp(names[i], XmuNameOfAtom(cache[p])) == 0) {
+		break;
+	    }
+	}
+	if (p == last) {
+	    if (last == cache_size) {
+		cache = (AtomPtr*)XtRealloc(cache, (++cache_size)*sizeof(AtomPtr));
+	    }
+	    cache[last++] = XmuMakeAtom(names[i]);
+	}
+	atoms[i] = XmuInternAtom(d, cache[p]);
+    }
+    return;
 }
