@@ -1,7 +1,18 @@
-
-
-
 		  X Display Manager Control Protocol (XDMCP)
+
+Copyright 1988 by the Massachusetts Institute of Technology
+
+This document is for internal use by Member and Affiliate
+organizations of the MIT X Consortium.  It may be redistributed
+internally within such organizations, provided the above copyright
+notice and this permission notice appear in all copies, but it is not
+to be published and it is not to be redistributed externally.  MIT
+makes no representations about the suitability for any purpose of the
+information in this document.  It is provided "as is" without express
+or implied warranty.  The information in this document is a
+preliminary draft and therefore subject to change, and does not
+represent an approved specification of the MIT X Consortium.
+
 
 
 Abstract
@@ -84,8 +95,8 @@ are not padded.  The fields are as follows:
 	connection.  The interpretation of this information is determined
 	by the name of the protocol being used.  Secure protocols (such as
 	Kerberos) may use encryption to provide mutual verification between
-	the user and the Display Manager.  Unsecure protocol (such as
-	MIT-MAGIC-COOKIE-1) may simply rely on a pieces of shared information.
+	the user and the Display Manager.  Unsecure protocols (such as
+	MIT-MAGIC-COOKIE-1) may simply rely on a piece of shared information.
 	
 
 Packets should be checked to make sure that they satisfy the following
@@ -138,7 +149,15 @@ indicates the direction in which it is sent.
 	    should simply ignore BroadcastQuery requests.
 	Valid Responses:
 	    Willing, Unwilling
-
+	Problems/Solutions:
+		Problem:
+			Not all managers receive the BroadcastQuery.
+		Indication:
+			none if BroadcastQuery was broadcast,
+			else failure to receive Willing.
+		Solution:
+  			repeatedly send BroadcastQuery while waiting
+			for user to choose a host.
 
     Willing
 	Manager-to-Terminal
@@ -160,6 +179,15 @@ indicates the direction in which it is sent.
 	    a Query or a BroadcastQuery but does not imply a commitment to 
 	    provide service (it may later decide that it as accepted enough
 	    connections already).
+	Problems/Solutions:
+	    Problem:
+		    Willing not received by the terminal.
+	    Indication:
+		    none if Query was broadcast, else failure to
+		    receive Willing.
+	    Solution:  
+		    The terminal should continue to send Query
+		    messages until a response is received.
 
     Unwilling
 	Manager-to-Terminal
@@ -177,7 +205,14 @@ indicates the direction in which it is sent.
 	    management.  This is typically sent by Display Managers that wish
 	    to only service particular Terminals or which handle a limited 
 	    number of Terminals at once.
-
+	Problems/Solutions:
+	    Problem:
+		    Unwilling not received by the terminal.
+	    Indication:
+		    Terminal fails to receive Unwilling.
+	    Solution:
+		    The terminal should continue to
+		    send Query messages until a response is received.
 
     Request
 	Terminal-to-Manager
@@ -197,6 +232,27 @@ indicates the direction in which it is sent.
 	    Manage requests.  Otherwise, it should return a Decline packet.
 	Valid Responses:
 	    Accept, Decline
+	Problems/Solutions:
+	    Problem:
+		    Request not received by manager.
+	    Indication:
+		    Terminal timeout waiting for response.
+	    Solution:
+		    Terminal resends Request message.
+
+	    Problem:
+		    Message received out of order by manager.
+	    Indication:
+		    none
+	    Solution:
+		    Each time a Request is sent, the manager sends the
+		    session ID associated with the next session in the
+		    Acknowledge.  If that next session is not yet
+		    started, the manager will simply resend with the same
+		    session ID.  If the session is in progress, the
+		    manager will reply with a new session ID; in this
+		    case, the Acknowledge will be discarded by the
+		    terminal.
 
 
     Accept
@@ -216,6 +272,21 @@ indicates the direction in which it is sent.
 	    connection for the Terminal.  The session id is used to identify
 	    this connection from any preceeding ones and will be used by the
 	    Terminal in its subsequent Manage packet.
+	Problems/Solutions:
+	    Problem:
+		    Accept/Decline not received by terminal.
+	    Indication:
+		    Terminal timeout waiting for response to Request.
+	    Solution:
+		    Terminal resends Request message.
+    
+	    Problem:
+		    Message received out of order by terminal.
+	    Indication:
+		    Terminal receives Accept after Manage has been sent.
+	    Solution:
+		    Terminal discards Accept messages after
+		    it has sent a Manage message.
 
     Decline
 	Manager-to-Terminal
@@ -233,7 +304,8 @@ indicates the direction in which it is sent.
 	    Display Manager had responded Willing to a previous Query (as 
 	    might be the case if the Display Managers had a limit to the 
 	    number of Terminals it would serve).
-
+	Problems/Solutions:
+	    same as for Accept.
 
     Manage
 	Terminal-to-Manager
@@ -253,6 +325,24 @@ indicates the direction in which it is sent.
 	    should respond with a Refuse packet.
 	Valid Responses:
 	    X connection with correct auth info, Refuse
+	Problems/Solutions:
+	    Problem:
+		    Manage not received by manager.
+	    Indication:
+		    Terminal timeout waiting for XOpenDisplay.
+	    Solution:
+		    Terminal resends Manage message.
+
+	    Problem:
+		    Manage received out of order by manager.
+	    Indication:
+		    session already in progress.
+	    Solution:
+		    Refuse message is sent.
+	    Indication:
+		    Session ID doesn't match next session ID
+	    Solution:
+		    Refuse message is sent.
 
     Refuse
 	Manager-to-Terminal
@@ -269,7 +359,13 @@ indicates the direction in which it is sent.
 	    problems establishing a connection.  The Terminal should assume
 	    that it received an old Accept packet and should resend its
 	    Request packet.
-
+	Problems/Solutions:
+	    Problem:
+		    Error message is lost.
+	    Indication:
+		    terminal times out waiting for OpenDisplay/Error.
+	    Solution:
+		    terminal resends Manage message.
 
 
 When the session is over, the initial connection with the display (the
@@ -345,7 +441,6 @@ Terminal:
 	
 Manager:
 
-
 	[idle]:
 		receive BroadcaseQuery -> [broadcast-respond]
 		receive Query -> [query-respond]
@@ -400,412 +495,68 @@ Manager:
 		XCloseDisplay
 		-> [idle]
 	
-Examples
+Here are some sample problems and the method used in the protocol to
+overcome them.
 
-Here are some scenarios illustrating how the protocol works:
+Problem:
+	A Query packet is lost in the network.
+Recognised by:
+	Terminal doesn't receive response back from Manager
+Solution:
+	Terminal resends packet.  As the Manager doesn't care
+	how many Query packets it receives, and has no state
+	change associated with them this will cause no additional
+	problems.
 
-	X terminal			Display Manager
+Problem:
+	An Accept packet is delayed in the network.
+Recognised by:
+	Terminal times-out waiting for packet response,
+	sends another Request and finally receives the first
+	acknowledge.
+Solution:
+	Manager receives two request packets.  As no session is
+	currently in progress, the same session ID will be sent in
+	both cases.  Terminal receives at least one packet.
 
-	X terminal turns on, decides
-	to find out who on the network
-	is available to manage it, and
-	broadcasts a message:
-
-		Query
-
-			Message is lost in the
-			network by some managers.
-
-	Collects information on all
-	willing display managers,
-	presents the list to the user
-	who selects one.  Periodically
-	resends
-
-		Query
-
-					Recognizes Query broadcast and
-					responds with
-
-						Willing
-
-	Updates the list of available
-	Managers dynamically until the
-	user chooses one.  Now sends a
-	message to the desired server:
-
-		Request
-
-					Recognizes the Request message.
-					Creates a new session ID and
-					saves it as state, and
-					acknowledges the Request with
-
-						Acknowledge
-
-			Message is delayed in the network.
-
-	X terminal times out waiting
-	for Acknowledge message.
-	Sends another
-
-		Request
-
-					Recognizes the Request message as
-					originating from a client from which
-					a Request message has already been
-					received, and for which a session ID
-					exists as saved state.  As the
-					Acknowledge message may not have been
-					received because of network error,
-					sends another
-
-						Acknowledge
-
-					using the same session ID.
+Problem:
+	Manage packet is lost in the network.
+Recognised by:
+	Terminal times-out waiting for Refuse/XOpenDisplay.
+Solution:
+	Terminal resends Manage request using the same session ID.
+	This session ID will still match the expected value in
+	the Manager.
+	
+Problem:
+	Manager receives a delayed Manage packet
+Recognised by:
+	Session ID in packet does not match expected value, or
+	no Request has been seen from the Terminal
+Solution:
+	Manager sends a Refuse packet with the invalid
+	Session ID.  Terminal receives this packet and
+	discards it.
 					
-
-	Receives the Acknowledge
-	message and responds with
-
-		Manage
-
-			Message is delayed in the network.
-
-	Terminal times out and sends
-
-		Manage
-
-					Receives the Manage, and notices
-					that it is from the client that
-					sent the Request message and that
-					the session ID matches the one
-					in saved state.  Terminates any
-					existing session it thinks it has
-					in progress for this display, and
-					then initiates a new session with
-
-						XOpenDisplay
-
-					This will only fail in rare cases,
-					such as catastrophic network
-					failure, since XOpenDisplay uses
-					a reliable stream protocol.
-
-			A delayed Manage message is now
-			delivered.
-					
-					Receives Manage message, and notices
-					that the session ID corresponds to the
-					session which is now in
-					progress.  This message is discarded
-					with no response.
-
-	Receives OpenDisplay request
-	and services regular X
-	protocol.
-
-			A delayed Request message is now
-			delivered.
-					
-					Generates a new session ID and
-					saves it as state, and responds
-					with a new
-
-						Acknowledge
-
-					However, the existing session is
-					not affected.
-
-	Receives Acknowledge, notices
-	that a session is already
-	in progress.  Discards the
-	message.
-
-
-	Terminal is turned off and back
-	on.  This time, the user requests
-	a specific host instead asking for
-	a menu.  Sends that host a
-
-		Request
-
-					Generates a new session ID
-					(unless one already exists in
-					saved state), saves it as state,
-					and responds with an
-
-						Acknowledge
-
-	Receives Acknowledge and
-	responds using the new
-	session ID with
-
-		Manage
-
-					Receives the Manage message,
-					notices that the session ID
-					matches the session ID in saved
-					state.  Terminates any session
-					in progress for this display, and
-					starts a new session with
-
-						XOpenDisplay
-
-	Receives OpenDisplay request
-	and services regular X
-	protocol.
-
-
-					Session runs to termination.
-					Manager then finishes session with
-
-						XCloseDisplay
-
-	Receives CloseDisplay request,
-	Notices that it is for the
-	first connection ever established
-	in this session, and terminates
-	all other existing clients and
-	goes back to Query loop.  Thus,
-	the first connection has been given
-	special semantics.
-
-
-[XXX - need to keep the problems and solutions and strip out the rest - XXX]
-
-
-In more detail, the sematics of each message is as follows.
-In all cases, the DISPLAY value sent by the Terminal must be
-a "canonical" string that the display manager can use in
-XOpenDisplay.  For example, the hostname should be a fully
-qualified domain name.  In all cases, the DISPLAY value sent
-by a manager must match the DISPLAY value sent by the terminal.
-
-Query:	Terminal -> Manager
-
-	Requests the display manager to respond with a Willing
-	message if it is willing to manage the display.  The
-	Query might be broadcast on a local net, or might be
-	directed specifically at a set of managers.  A
-	broadcast might be used so that the terminal doesn't
-	have to know where it should connect; this information
-	can be stored in xdm resources instead.  A Query message
-	is not required; a terminal can send a Request message
-	directly to a desired manager.  The session ID and
-	authorization fields sent in this message can be chosen
-	arbitrarily by the terminal.
-
-	Possible troubles:
-
-		Not all managers receive the Query.
-
-		Indication:  none if Query was broadcast,
-			     else failure to receive Willing.
-
-		Solution:  repeatedly send Query while waiting
-		for user to choose a host.
-
-Willing: Manager -> Terminal
-
-	Sent in response to the Query message.  This message indicates
-	the willingness to manage the terminal.  No state change is
-	required in the Display Manager.  The session ID and
-	authorization fields in this message must match those in the
-	Query.
-
-	Possible troubles:
-
-		Willing not received by the terminal.
-
-		Indication:  none if Query was broadcast,
-			     else failure to receive Willing.
-		
-		Solution:  The terminal should continue to
-		send Query messages until a response is received.
-
-Negative: Manager -> Terminal
-
-	Sent when the manager refuses to manage the terminal.
-	This message indicates the unwillingness to manage the terminal.
-	No state change is required in the Display Manager.  The session ID
-	and authorization fields in this message must match those in the
-	Query.  This message should not be sent in response to a
-	broadcast Query, only in response to a Query sent specifically
-	to the manager.
-
-	Negative can also be used in response to Request.
-
-	Possible troubles:
-
-		Unwilling not received by the terminal.
-
-		Indication:  failure to receive Unwilling.
-		
-		Solution:  The terminal should continue to
-		send Query messages until a response is received.
-
-Request: Terminal -> Manager
-
-	Sent indicating desire for management.  The session ID
-	and authorization fields in this message can be chosen as needed
-	by the terminal.
-  	
-	Possible troubles:
-
-		Request not received by manager.
-
-		Indication:  Terminal timeout waiting for response.
-
-		Solution:  Terminal resends Request message.
-
-		Message received out of order by manager.
-
-		Indication: none
-
-		Solution:  Each time a Request is sent, the manager
-		sends the session ID associated with the next session
-		in the Acknowledge.  If that next session is not yet
-		started, the manager will simply resend with the same
-		session ID.  If the session is in progress, the manager
-		will reply with a new session ID; in this case, the
-		Acknowledge will be discarded by the terminal.
-
-Acknowledge: Manager -> Terminal
-
-	Sent to acknowledge a Request.  A session ID chosen by the
-	manager will be included in this message and must be sent
-	back by the terminal in an associated Manage message.  The
-	session ID is associated with the "next" session.  The
-	session ID should be unique over a reasonably long time
-	period.  The manager must remember this session ID, and
-	respond to any subsequent Request with the same session ID.
-	If no session ID is currently remembered, the manager should
-	create a new one.
-
-	The authorization fields in this message will vary according to
-	the authorization protocol being used.  In the simplest case,
-	the manager should simply send fields defining the initial
-	authorization to be used on all client connections.  In this
-	case, the authorization fields sent in the Request message are
-	ignored.  However, if the fields are actually being use to
-	authenticate the manager, then the Acknowledge fields may contain
-	some encrypted information based on the fields in the Request message.
-	For example, the Request message might contain a clear text
-	user name (supplied by the user at the terminal) plus a "magic
-	cookie" encrypted with the user's private key.  The manager
-	would respond with this same cookie plus some additional
-	data (known by the terminal) plus the initial authorization
-	data to be used on client connections, all encrypted under the
-	same key.
-
-	Possible troubles:
-
-		Acknowledge/Negative not received by terminal.
-
-		Indication: Terminal timeout waiting for response to Request.
-
-		Solution:  Terminal resends Request message.
-
-		Message received out of order by terminal.
-
-		Indication:  Terminal receives Acknowledge after
-		Manage has been sent.
-		
-		Solution:  Terminal discards Acknowledge messages after
-		it has sent a Manage message.
-
-Negative: Manager -> Terminal
-
-	Sent when the manager refuses to manage the terminal.  The
-	session ID should match the session ID sent in the Request.
-	The authorization fields should be sent just as for the
-	Acknowledge message.
-
-	Negative can also be used in response to Query.
-
-	Possible troubles:
-
-		Acknowledge/Negative not received by terminal.
-
-		Indication:  Terminal timeout waiting for response to Request.
-
-		Solution:  Terminal resends Request message.
-
-Manage: Terminal -> Manager
-
-	Directs the Display Manager to initiate a session on the terminal.
-	The session ID sent must match the session ID that was in the
-	Acknowledge message.
-
-	The authorization fields in this message will vary according to
-	the authorization protocol being used.  In the simplest case,
-	the fields in this message are arbitrary and will be ignored.
-	If the fields are actually being use to authenticate the terminal,
-	then the fields may contain some encrypted information based on
-	the fields in the Acknowledge message.
-
-	Possible troubles:
-
-		Manage not received by manager.
-
-		Indication:  Terminal timeout waiting for XOpenDisplay.
-
-		Solution:  Terminal resends Manage message.
-
-		Manage received out of order by manager.
-
-		Indication:  session already in progress.
-
-		Solution:  Manage message is discarded.
-
-		Indication: Session ID doesn't match next session ID
-
-		Solution:  Error message is sent to terminal.
-
-XOpenDisplay: Manager -> Terminal
-
-	Initiated to start a new session.  The connection should
-	be initiated using whatever authorization was agreed to
-	in the Acknowledge message.  This display connection
-	should be considered "magic".  When this first connection
-	is established, the terminal should execute an implicit
-	GrabServer on behalf of the manager.  This will allow the
-	manager (in case there is no real connection authorization
-	protocol being used) a secure environment for initial user
-	login.
-
-	Possible troubles:
-
-		XOpenDisplay fails.
-
-		Indication: XOpenDisplay returns NULL.
-
-		Solution:  Discontinue session and wait for another
-		Request message.
-
-XCloseDisplay: Manager -> Terminal
-
-	When the "magic" manager's connection is closed, the current session
-	is over; the terminal should close all X connections.  If the
-	terminal has requested permanent management, then it should act as
-	if a Manage request has been (reliably) sent, and wait for a new
-	XOpenDisplay
-
-Error: Manager -> Terminal
-
-	This message should be sent by the manager in response to
-	a Manage message containing an invalid session ID.  The
-	session ID and authorization fields in the Error message
-	should match those given in the Manage message.
-
-	Possible troubles:
-
-		Error message is lost.
-
-		Indication: terminal times out waiting for OpenDisplay/Error.
-
-		Solution: terminal resends Manage message.
+Problem:
+	Manager receives an old Request packet while a session
+	is in progress.
+Recognised by:
+	Terminal receives an Accept/Decline message while the session is
+	still in progress (i.e. while the priviledged connection
+	is still open).
+Solution:
+	Manager sends Accept/Decline message.  Terminal receives
+	it and discards it if the session is in progress.
+
+Problem:
+	Terminal is turned off and back on.
+Recognised by:
+	Terminal initiates management again.
+Solution:
+	Terminal negotiates for a new session, sending Request,
+	receiving Accept, sending Manage.  Manager kills any
+	existing session at this point, and starts a new session.
 
 This protocol is designed to satisfy the following constraints:
 
@@ -854,4 +605,3 @@ This protocol is designed to satisfy the following constraints:
 	Manager side, this means that any packet may be received
 	more than once (if the response was lost) and duplicates must
 	be ignored.
-	
