@@ -1,4 +1,4 @@
-/* $XConsortium: grabs.c,v 5.1 89/07/06 13:24:54 rws Exp $ */
+/* $XConsortium: grabs.c,v 5.2 89/07/16 17:24:53 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -40,7 +40,7 @@ SOFTWARE.
 GrabPtr
 CreateGrab(client, device, window, eventMask, ownerEvents, keyboardMode,
 	   pointerMode, modifiers, keybut, confineTo, cursor)
-    ClientPtr client;
+    int client;
     DeviceIntPtr device;
     WindowPtr window;
     Mask eventMask;
@@ -55,8 +55,7 @@ CreateGrab(client, device, window, eventMask, ownerEvents, keyboardMode,
     grab = (GrabPtr)xalloc(sizeof(GrabRec));
     if (!grab)
 	return (GrabPtr)NULL;
-    grab->client = client;
-    grab->resource = FakeClientID(client->index);
+    grab->resource = FakeClientID(client);
     grab->device = device;
     grab->window = window;
     grab->eventMask = eventMask;
@@ -246,7 +245,7 @@ AddPassiveGrabToList(pGrab)
     {
 	if (GrabMatchesSecond(pGrab, grab))
 	{
-	    if (pGrab->client != grab->client)
+	    if (CLIENT_BITS(pGrab->resource) != CLIENT_BITS(grab->resource))
 	    {
 		FreeGrab(pGrab);
 		return BadAccess;
@@ -307,7 +306,7 @@ DeletePassiveGrabFromList(pMinuendGrab)
 	 grab && ok;
 	 grab = grab->next)
     {
-	if ((grab->client != pMinuendGrab->client) ||
+	if ((CLIENT_BITS(grab->resource) != CLIENT_BITS(pMinuendGrab->resource)) ||
 	    !GrabMatchesSecond(grab, pMinuendGrab))
 	    continue;
 	if (GrabSupersedesSecond(pMinuendGrab, grab))
@@ -332,10 +331,11 @@ DeletePassiveGrabFromList(pMinuendGrab)
 
 	    UPDATE(grab->detail.pMask, pMinuendGrab->detail.exact);
 
-	    pNewGrab = CreateGrab(grab->client, grab->device,
-				  grab->window,
-				  grab->eventMask, grab->ownerEvents,
-				  grab->keyboardMode, grab->pointerMode,
+	    pNewGrab = CreateGrab(CLIENT_ID(grab->resource), grab->device,
+				  grab->window, (Mask)grab->eventMask,
+				  (Bool)grab->ownerEvents,
+				  (Bool)grab->keyboardMode,
+				  (Bool)grab->pointerMode,
 				  AnyModifier, pMinuendGrab->detail.exact,
 				  grab->confineTo, grab->cursor);
 	    if (!pNewGrab)
