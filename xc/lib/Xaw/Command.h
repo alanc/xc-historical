@@ -46,7 +46,6 @@ typedef enum {
     XtjustifyRight       /* justify text to right side of button  */
 } XtJustify;
 #endif _XtJustify_e
-typedef caddr_t XtCallbackType;
 
 #define XtRjustify		"Justify"
 #define XtNhighlightThickness    "hightlightThickness"
