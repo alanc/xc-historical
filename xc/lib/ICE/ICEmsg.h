@@ -1,4 +1,4 @@
-/* $XConsortium: ICEmsg.h,v 1.2 94/03/30 18:07:31 mor Exp $ */
+/* $XConsortium: ICEmsg.h,v 1.3 94/03/30 22:09:23 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -87,6 +87,13 @@ extern void _IceErrorBadValue (
     IcePointer		/* value */
 #endif
 );
+
+
+/*
+ * Macro to check if IO operations are valid on an ICE connection.
+ */
+
+#define IceValidIO(_iceConn) _iceConn->io_ok
 
 
 /*
