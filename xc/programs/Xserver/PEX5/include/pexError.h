@@ -1,4 +1,4 @@
-/* $XConsortium: pexError.h,v 5.1 91/02/16 09:57:55 rws Exp $ */
+/* $XConsortium: pexError.h,v 5.2 92/12/04 18:45:00 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -32,7 +32,7 @@ SOFTWARE.
 #include "dipex.h"
 
 extern unsigned short MinorOpcodeOfRequest();
-extern SendErrorToClient();
+extern void SendErrorToClient();
 extern WriteEventsToClient();
 
 #define PEX_ERROR_CODE(error_code) ((error_code) + PexErrorBase)
