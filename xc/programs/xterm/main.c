@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.200 92/03/11 17:36:12 gildea Exp $";
+static char *rid="$XConsortium: main.c,v 1.201 92/04/30 12:34:34 keith Exp $";
 #endif /* lint */
 
 /*
@@ -172,7 +172,7 @@ static Bool IsPts = False;
 #include <sys/utsname.h>
 #endif /* hpux */
 
-#ifdef apollo
+#if defined(apollo) && OSMAJORVERSION == 10 && OSMINORVERSION < 4
 #define ttyslot() 1
 #endif /* apollo */
 
