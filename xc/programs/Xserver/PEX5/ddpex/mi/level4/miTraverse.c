@@ -1,4 +1,4 @@
-/* $XConsortium: miTraverse.c,v 5.1 91/02/16 09:56:05 rws Exp $ */
+/* $XConsortium: miTraverse.c,v 5.2 92/08/12 15:24:14 hersh Exp $ */
 
 
 
@@ -54,9 +54,26 @@ ddpex4rtn traverser();
 #endif				/* DDTEST */
 
 static          ddBOOL
-pickES()
+pickES (pRend, p_trav_state, p_str, depth, curr_offset)
+    ddRendererPtr	    pRend;
+    miTraverserState    *p_trav_state;
+    diStructHandle	p_str;	        /* current structure */
+    ddSHORT		depth;		/* how far down in structures */
+    ddULONG		curr_offset;
 {
-/* use this to follow start_path in similar fashion that searchES is used */
+
+    if ((p_str->id == p_trav_state->p_curr_pick_el->structure->id) &&
+	    (curr_offset == p_trav_state->p_curr_pick_el->offset)) {
+
+	  if (depth < pRend->pickStartPath->numObj) 
+	      /* continue following start path */
+	      p_trav_state->p_curr_pick_el++;
+	  else 
+	      /* at end of start path; time to start traversal */
+	      p_trav_state->exec_str_flag = ES_YES;
+
+	  return(MI_TRUE);
+    }
     return (MI_FALSE);
 }
 
@@ -213,6 +230,14 @@ miTraverserState    *p_trav_state;
     	p_trav_state->exec_str_flag = ES_YES;
     }
 
+    /* do stuff for following pick start path */
+    if (pPM) {
+        if ( (p_trav_state->exec_str_flag == ES_FOLLOW_PICK) &&
+             (depth == pRend->pickStartPath->numObj) &&
+	     (currOffset > p_trav_state->p_curr_pick_el->offset) )
+	  p_trav_state->exec_str_flag = ES_YES;
+    }
+
     while (currOffset <= stopel) {
 	ddElement = (ddPointer) (&(p_element->element));
 	
@@ -228,7 +253,7 @@ miTraverserState    *p_trav_state;
 
 		p_next_str = ((diStructHandle) MISTR_GET_EXSTR_STR(p_element));
 		if (p_trav_state->exec_str_flag == ES_FOLLOW_PICK)
-		    go = pickES();
+		    go = pickES (pRend, p_trav_state, pStruct, depth, currOffset);
 		else if (p_trav_state->exec_str_flag == ES_FOLLOW_SEARCH)
 		    go = searchES(pSC, p_trav_state, pStruct, depth, currOffset);
 		else if (p_trav_state->exec_str_flag == ES_YES)
@@ -373,6 +398,17 @@ miTraverserState    *p_trav_state;
 		    if (pPM) {
 			InquirePickStatus(pRend, &pickStatus, p_trav_state);
 			if (pickStatus == PEXOk) {
+                          if (pRend->pickstr.state == DD_PICK_ALL) {
+			      myPickLevel.up = p_trav_state->p_pick_path;
+			      myPickLevel.pp.structure = pStruct;
+			      myPickLevel.pp.offset = currOffset;
+			      myPickLevel.pp.pickid = pickId;
+
+			      AddPickPathToList( pRend, depth, &myPickLevel);
+			      ppm->status = pickStatus;
+
+                          } else {
+
 
 			    pl = (ddPickPath *) ppm->path->pList;
 
@@ -425,6 +461,7 @@ miTraverserState    *p_trav_state;
 			    }
 			    ppm->status = pickStatus;
 
+			  }
 			}
 		    }
 		}
@@ -467,6 +504,19 @@ miTraverserState    *p_trav_state;
             	p_trav_state->exec_str_flag = ES_YES;
             }
         
+	}
+
+	/* do stuff for following search start path */
+	if (pPM) {
+	    /* if following start path, and its at the last pick_path 
+	     * in the start path, and its after the last element in
+	     * the pick_path, then its at the end of the start
+	     * path and searching should begin
+	     */
+	    if ( (p_trav_state->exec_str_flag == ES_FOLLOW_PICK) &&
+		 (depth == pRend->pickStartPath->numObj) &&
+		 (currOffset >= p_trav_state->p_curr_pick_el->offset) )
+	      p_trav_state->exec_str_flag = ES_YES;
 	}
 
 	/* go on to the next element */
