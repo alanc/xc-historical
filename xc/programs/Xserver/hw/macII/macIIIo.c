@@ -1,5 +1,5 @@
-/************************************************************ 
-Copyright 1988 by Apple Computer, Inc, Cupertino, California
+/*****************************************************************************
+Copyright 1988-1993 by Apple Computer, Inc, Cupertino, California
 			All Rights Reserved
 
 Permission to use, copy, modify, and distribute this software
@@ -19,7 +19,7 @@ THE WARRANTY AND REMEDIES SET FORTH ABOVE ARE EXCLUSIVE
 AND IN LIEU OF ALL OTHERS, ORAL OR WRITTEN, EXPRESS OR
 IMPLIED.
 
-************************************************************/
+*****************************************************************************/
 /*-
  * macIIIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -141,6 +141,9 @@ macIIEnqueueEvents ()
     DevicePtr		    pKeyboard;
     register PtrPrivPtr	    ptrPriv;
     register KbPrivPtr      kbdPriv;
+    enum {
+        NoneYet, Pntr, Kbd
+    }                       lastType = NoneYet; /* Type of last event */
 
     unsigned char macIIevents[INPBUFSIZE];
     register unsigned char *me, *meL;
@@ -188,12 +191,12 @@ macIIEnqueueEvents ()
 	    }
     
 	    /*
-	     * Patch up the event if the option key is down and an arrow key
-	     * is hit in order to generate arrow key codes.
+	     * Patch up the event if the option key is {up,down} and an arrow 
+	     * key is hit in order to generate arrow key codes.
 	     */
     
 	    if (((!optionKeyUp && !optionMouse) ||
-		    (optionKeyUp && optionMouse)) && IS_ARROW_KEY(*me)) {
+	    	(optionKeyUp && optionMouse)) && IS_ARROW_KEY(*me)) {
 	    	int keyUp = KEY_UP(*me);
     
 	    	if (IS_RIGHT_ARROW_KEY(*me))
@@ -211,19 +214,28 @@ macIIEnqueueEvents ()
 	    if (KEY_DETAIL(*me) == MOUSE_ESCAPE) { 
     	    	(* ptrPriv->EnqueueEvent) (pPointer,me);
 	    	me += 2;
+	    	lastType = Pntr;
 	    }
     
 	    else if (IS_MOUSE_KEY(*me))
             {
     	    	(* ptrPriv->EnqueueEvent) (pPointer,me);
+	    	lastType = Pntr;
 	    }
     
-	    else if (IS_OPTION_KEY(*me) || IS_POWER_KEY(*me)) {
+#ifndef PASS_OPTION
+	    else if (IS_OPTION_KEY(*me)) {
 	    	/* do nothing */
 	    }
+#endif /* ! PASS_OPTION */
     
+	    else if (IS_POWER_KEY(*me)) {
+	    	/* do nothing */
+	    }
+
 	    else {
     	    	(* kbdPriv->EnqueueEvent) (pKeyboard,me);
+	    	lastType = Kbd;
             }
 	}
     }

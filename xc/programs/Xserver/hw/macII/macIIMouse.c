@@ -1,5 +1,5 @@
-/************************************************************ 
-Copyright 1988 by Apple Computer, Inc, Cupertino, California
+/**************************************************************** 
+Copyright 1988,1993 by Apple Computer, Inc, Cupertino, California
 			All Rights Reserved
 
 Permission to use, copy, modify, and distribute this software
@@ -19,7 +19,7 @@ THE WARRANTY AND REMEDIES SET FORTH ABOVE ARE EXCLUSIVE
 AND IN LIEU OF ALL OTHERS, ORAL OR WRITTEN, EXPRESS OR
 IMPLIED.
 
-************************************************************/
+****************************************************************/
 /*-
  * macIIMouse.c --
  *	Functions for playing cat and mouse... sorry.
@@ -68,6 +68,14 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define NEED_EVENTS
 #include    "macII.h"
 #include	"mipointer.h"
+
+#ifdef XTESTEXT1
+extern short xtest_mousex;
+extern short xtest_mousey;
+extern int   on_steal_input;
+extern Bool  XTestStealKeyData();
+extern void  XTestStealMotionData();
+#endif
 
 Bool ActiveZaphod = TRUE;
 
@@ -131,7 +139,7 @@ macIIMouseProc (pMouse, what)
 	    map[2] = 2;
 	    map[3] = 3;
 	    InitPointerDeviceStruct(
-		pMouse, map, 3, miPointerGetMotionEvents, macIIMouseCtrl,
+		pMouse, map, 3, miPointerGetMotionEvents, macIIMouseCtrl, 
 				    miPointerGetMotionBufferSize());
 	    break;
 
@@ -215,6 +223,7 @@ macIIMouseEnqueueEvent(pMouse,me)
     short xpos, ypos; /* SIGNED shorts for valid comparisons */
     static short lastx, lasty;
     static unsigned char last_button = 0x80;
+    short dx, dy;
 
     pPriv = (PtrPrivPtr)pMouse->devicePrivate;
 
@@ -236,6 +245,11 @@ macIIMouseEnqueueEvent(pMouse,me)
 	    else pseudo_middle_state = xE.u.u.type;
 #endif OPTION_KEY_MOUSE
 
+#ifdef XTESTEXT1
+	    if (!on_steal_input || 
+		XTestStealKeyData(xE.u.u.detail, xE.u.u.type, XE_POINTER,
+				  xtest_mousex, xtest_mousey))
+#endif /* XTESTEXT1 */
 	    mieqEnqueue (&xE);
 	    return;
 	
@@ -243,6 +257,11 @@ macIIMouseEnqueueEvent(pMouse,me)
     if (IS_RIGHT_KEY(*me)) {
             xE.u.u.detail = MS_RIGHT - MS_LEFT + 1;
 	    xE.u.u.type = (KEY_UP(*me) ? ButtonRelease : ButtonPress);
+#ifdef XTESTEXT1
+	    if (!on_steal_input || 
+		XTestStealKeyData(xE.u.u.detail, xE.u.u.type, XE_POINTER,
+				  xtest_mousex, xtest_mousey))
+#endif /* XTESTEXT1 */
 	    mieqEnqueue (&xE);
 	    return;
 	
@@ -261,17 +280,26 @@ macIIMouseEnqueueEvent(pMouse,me)
     if (xpos & 0x0040) xpos = xpos - 0x0080; /* 2's complement */
     ypos = *(me + 1) & 0x7f;
     if (ypos & 0x0040) ypos = ypos - 0x0080;
-    miPointerDeltaCursor (MouseAccelerate(pMouse, xpos),
-			  MouseAccelerate(pMouse, ypos),
-			  time);
+    dx = MouseAccelerate(pMouse, xpos);
+    dy = MouseAccelerate(pMouse, ypos);
+#ifdef XTESTEXT1
+    if (on_steal_input)
+	XTestStealMotionData(dx, dy, XE_POINTER, xtest_mousex, xtest_mousey);
+#endif
+    miPointerDeltaCursor (dx, dy, time);
 
     if (KEY_UP(*(me + 1)) != last_button) {
-        xE.u.u.detail = (MS_LEFT - MS_LEFT) + 1;
-        xE.u.u.type = (KEY_UP(*(me + 1)) ? ButtonRelease : ButtonPress);
-        last_button = KEY_UP(*(me + 1));
+	xE.u.u.detail = (MS_LEFT - MS_LEFT) + 1;
+	xE.u.u.type = (KEY_UP(*(me + 1)) ? ButtonRelease : ButtonPress);
+	last_button = KEY_UP(*(me + 1));
+#ifdef XTESTEXT1
+	    if (!on_steal_input || 
+		XTestStealKeyData(xE.u.u.detail, xE.u.u.type, XE_POINTER,
+				  xtest_mousex, xtest_mousey))
+#endif /* XTESTEXT1 */
 	mieqEnqueue (&xE);
     }
-   }
+}
    
 /*ARGSUSED*/
 static Bool
@@ -320,9 +348,43 @@ macIIWarpCursor (pScreen, x, y)
     ScreenPtr	pScreen;
     int		x, y;
 {
-    int	    oldmask;
+    int		oldmask;
 
     oldmask = sigblock (sigmask(SIGIO));
     miPointerWarpCursor (pScreen, x, y);
     sigsetmask (oldmask);
+#ifdef XTESTEXT1
+    if (on_steal_input)
+	XTestStealMotionData(x-xtest_mousex,y-xtest_mousey,XE_POINTER,
+			     xtest_mousex,xtest_mousey);
+#endif
 }
+
+#ifdef XTESTEXT1
+void
+XTestGetPointerPos(fmousex, fmousey)
+    short *fmousex;
+    short *fmousey;
+{
+    int x,y;
+
+    miPointerPosition(&x, &y);
+    *fmousex = x;
+    *fmousey = y;
+}
+
+void
+XTestJumpPointer(jx, jy, dev_type)
+    int jx;
+    int jy;
+    int dev_type;
+{
+    int x, y;
+    struct timeval now;
+
+    gettimeofday (&now, (struct timezone *)0);
+    miPointerAbsoluteCursor(jx, jy, TVTOMILLI(now));
+    miPointerPosition (&x, &y);
+    ProcessInputEvents();
+}
+#endif

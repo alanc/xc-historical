@@ -1,5 +1,5 @@
-/************************************************************ 
-Copyright 1988 by Apple Computer, Inc, Cupertino, California
+/*****************************************************************************
+Copyright 1988-1992 by Apple Computer, Inc, Cupertino, California
 			All Rights Reserved
 
 Permission to use, copy, modify, and distribute this software
@@ -19,7 +19,7 @@ THE WARRANTY AND REMEDIES SET FORTH ABOVE ARE EXCLUSIVE
 AND IN LIEU OF ALL OTHERS, ORAL OR WRITTEN, EXPRESS OR
 IMPLIED.
 
-************************************************************/
+*****************************************************************************/
 /*-
  * macIIMono.c --
  *	Functions for handling the macII video board with 1 bit/pixel.
@@ -123,10 +123,17 @@ macIIMonoInit (index, pScreen, argc, argv)
 
     if (!mfbScreenInit(pScreen,
 			   macIIFbs[index].fb,
+#ifdef	SUPPORT_2_0
+			   macIIFbs[index].info.v_right -
+			   macIIFbs[index].info.v_left,
+			   macIIFbs[index].info.v_bottom -
+			   macIIFbs[index].info.v_top, 
+#else
 			   macIIFbs[index].info.vpBounds.right -
 			   macIIFbs[index].info.vpBounds.left,
 			   macIIFbs[index].info.vpBounds.bottom -
 			   macIIFbs[index].info.vpBounds.top, 
+#endif	SUPPORT_2_0
 			   macIIFbs[index].info.vpHRes >> 16, 
 			   macIIFbs[index].info.vpVRes >> 16,
     			   macIIFbs[index].info.vpRowBytes * 8))
@@ -136,80 +143,3 @@ macIIMonoInit (index, pScreen, argc, argv)
 
     return (macIIScreenInit(pScreen) && mfbCreateDefColormap(pScreen));
 }
-
-/*-
- *-----------------------------------------------------------------------
- * macIIMonoProbe --
- *	Attempt to find and initialize a macII framebuffer
- *
- * Results:
- *	None
- *
- * Side Effects:
- *	Memory is allocated for the frame buffer and the buffer is mapped. 
- *
- *-----------------------------------------------------------------------
- */
-
-Bool
-macIIMonoProbe(pScreenInfo, index, fbNum, argc, argv)
-    ScreenInfo	  *pScreenInfo;	/* The screenInfo struct */
-    int	    	  index;    	/* The index of pScreen in the ScreenInfo */
-    int	    	  fbNum;    	/* Index into the macIIFbData array */
-    int	    	  argc;	    	/* The number of the Server's arguments. */
-    char    	  **argv;   	/* The arguments themselves. Don't change! */
-{
-    int         i, oldNumScreens;
-
-    if (macIIFbData[fbNum].probeStatus == probedAndFailed) {
-	return FALSE;
-    }
-
-    if (macIIFbData[fbNum].probeStatus == neverProbed) {
-	int         fd;
-	fbtype fbType;
-
-	if ((fd = macIIOpenFrameBuffer(FBTYPE_MACII, &fbType, index, fbNum,
-				     argc, argv)) < 0) {
-	    macIIFbData[fbNum].probeStatus = probedAndFailed;
-	    return FALSE;
-	}
-
-	{
-		static char *video_virtaddr = (char *) (120 * 1024 * 1024);
-		struct video_map vmap;
-		struct strioctl ctl; /* Streams ioctl control structure */
-
-		/* map frame buffer to next 8MB segment boundary above 128M */
-		video_virtaddr = video_virtaddr + (8 * 1024 * 1024); 
-	        vmap.map_physnum = 0;
-        	vmap.map_virtaddr = video_virtaddr;
-
-		ctl.ic_cmd = VIDEO_MAP;
-		ctl.ic_timout = -1;
-		ctl.ic_len = sizeof(vmap);
-		ctl.ic_dp = (char *)&vmap;
-		if (ioctl(fd, I_STR, &ctl) == -1) {
-			FatalError ("ioctl I_STR VIDEO_MAP failed");
-			(void) close (fd);
-			return (FALSE);
-		}
-
-    		macIIFbs[index].fb = 
-		    (pointer)(video_virtaddr + fbType.vpBaseOffset); 
-		(void) close(fd);
-	}
-
-	macIIFbs[index].info = fbType;
-	macIIFbData[fbNum].probeStatus = probedAndSucceeded;
-
-    }
-
-    /*
-     * If we've ever successfully probed this device, do the following.
-     */
-    oldNumScreens = pScreenInfo->numScreens;
-    i = AddScreen(macIIMonoInit, argc, argv);
-    return (i >= oldNumScreens);
-}
-

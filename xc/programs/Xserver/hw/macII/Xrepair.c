@@ -1,5 +1,5 @@
-/************************************************************ 
-Copyright 1988 by Apple Computer, Inc, Cupertino, California
+/**************************************************************** 
+Copyright 1988-1992 by Apple Computer, Inc, Cupertino, California
 			All Rights Reserved
 
 Permission to use, copy, modify, and distribute this software
@@ -19,7 +19,7 @@ THE WARRANTY AND REMEDIES SET FORTH ABOVE ARE EXCLUSIVE
 AND IN LIEU OF ALL OTHERS, ORAL OR WRITTEN, EXPRESS OR
 IMPLIED.
 
-************************************************************/
+****************************************************************/
 
 /*
  * Under A/UX >=2.0 struct video has been "Macintized" and now incorporates
@@ -31,105 +31,104 @@ IMPLIED.
  * includes. Of course if this ever changes ...
  */
 
-#if !defined(__mac_types_h) && !defined(__TYPES__)
-#define __mac_types_h
-typedef unsigned char Boolean;
-typedef long (*ProcPtr)();
-typedef short OSErr;
-typedef char *Ptr;
+#include <mac/osutils.h>
+#include <mac/types.h>
 
-struct Rect {
-    short top;
-    short left;
-    short bottom;
-    short right;
+#ifndef __DEVICES__
+#ifndef __mac_devices_h
+#include <mac/files.h>
+
+struct DCtlEntry {
+	char **dCtlDriver;
+	short dCtlFlags;
+	struct QHdr dCtlQHdr;
+	long dCtlPosition;
+	char **dCtlStorage;
+	short dCtlRefNum;
+	long dCtlCurTicks;
+	char *dCtlWindow;
+	short dCtlDelay;
+	short dCtlEMask;
+	short dCtlMenu;
+	char dCtlSlot;
+	char dCtlSlotId;
+	long dCtlDevBase;
+	long reserved;
+	char dCtlExtDev;
+	char fillByte;
 };
 
-typedef struct Rect Rect;
-#endif /* __mac_types_h */
+struct AuxDCE {
+	char **dCtlDriver;
+	short dCtlFlags;
+	struct QHdr dCtlQHdr;
+	long dCtlPosition;
+	char **dCtlStorage;
+	short dCtlRefNum;
+	long dCtlCurTicks;
+	char *dCtlWindow;
+	short dCtlDelay;
+	short dCtlEMask;
+	short dCtlMenu;
+	char dCtlSlot;
+	char dCtlSlotId;
+	long dCtlDevBase;
+	long reserved;
+	char dCtlExtDev;
+	char fillByte;
+};
 
-#if !defined(__mac_quickdraw_h)
-#define __mac_quickdraw_h
+typedef struct AuxDCE AuxDCE;
+typedef AuxDCE *AuxDCEPtr;
+
+#define __mac_devices_h
+#endif  __mac_devices_h
+#define __DEVICES__
+#endif
+
+#ifndef __QUICKDRAW__
+#ifndef __mac_quickdraw_h
 struct RGBColor {
-    unsigned short red;
-    unsigned short green;
-    unsigned short blue;
+	unsigned short red;
+	unsigned short green;
+	unsigned short blue;
 };
 
 typedef struct RGBColor RGBColor;
 
 struct ColorSpec {
-    short value;
-    RGBColor rgb;
+	short value;
+	RGBColor color;
 };
 
 typedef struct ColorSpec ColorSpec;
-#endif /* __mac_quickdraw_h */
+#define __mac_quickdraw_h
+#endif
+#define __QUICKDRAW__
+#endif
 
-#if !defined(__mac_osutils_h)
-#define __mac_osutils_h
-struct QElem {
-    struct QElem *qLink;
-    short qType;
-    short qData[1];
+#ifndef __TYPES__
+#ifndef __mac_types_h
+struct Rect {
+	short top;
+	short left;
+	short bottom;
+	short right;
 };
 
-typedef struct QElem QElem;
+typedef struct Rect Rect;
+typedef char *Ptr;
+typedef char Boolean;
+#define __mac_types_h
+#endif
+#define __TYPES__
+#endif
 
-typedef QElem *QElemPtr;
-
-struct QHdr {
-    short qFlags;
-    QElemPtr qHead;
-    QElemPtr qTail;
-};
-
-typedef struct QHdr QHdr;
-#endif /* __mac_osutils_h */
-
-#if !defined(__mac_files_h)
-#define __mac_files_h
-struct CntrlParam {
-	QElem *qLink;
-	short qType;
-	short ioTrap;
-	Ptr ioCmdAddr;
-	ProcPtr ioCompletion;
-	OSErr ioResult;
-	unsigned char *ioNamePtr;
-	short ioVRefNum;
-	short ioCRefNum;
-	short csCode;
-	short csParam[11];
-};
-#endif /* __mac_files_h */
-
-#if !defined(__mac_devices_h)
-#define __mac_devices_h
-struct AuxDCE {
-    Ptr dCtlDriver;
-    short dCtlFlags;
-    QHdr dCtlQHdr;
-    long dCtlPosition;
-    Ptr *dCtlStorage;
-    short dCtlRefNum;
-    long dCtlCurTicks;
-    Ptr dCtlWindow;
-    short dCtlDelay;
-    short dCtlEMask;
-    short dCtlMenu;
-    char dCtlSlot;
-    char dCtlSlotId;
-    long dCtlDevBase;
-    Ptr dCtlOwner;
-    char dCtlExtDev;
-    char fillByte;
-};
-
-typedef struct AuxDCE AuxDCE;
-
-typedef AuxDCE *AuxDCEPtr;
-#endif /* __mac_devices_h */
+#ifndef SUPPORT_2_0
+#include <mac/video.h>
+#else
+#define VDSetEntryRecord VDEntryRecord
+#endif /* SUPPORT_2_0 */
 
 #include <sys/stropts.h>
 #include <sys/termio.h>
@@ -137,16 +136,20 @@ typedef AuxDCE *AuxDCEPtr;
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <errno.h>
+#include <sys/signal.h>
+#include <sys/ttychars.h>
 
 static struct termio d_tio = {
-	(BRKINT|IGNPAR|ISTRIP|ICRNL|IXON)&(~IGNBRK)&(~PARMRK)&(~INPCK)&(~INLCR)&
+	(BRKINT|IGNPAR|ICRNL|IXON)&(~ISTRIP)&(~IGNBRK)&(~PARMRK)&(~INPCK)&(~INLCR)&
 	(~IGNCR)&(~IUCLC)&(~IXANY)&(~IXOFF),
 	(OPOST|ONLCR)&(~OLCUC)&(~OCRNL)&(~ONOCR)&(~ONLRET)&(~OFILL)&(~OFDEL),
-	(B9600|CS7|CREAD)&(~CSTOPB)&(~PARENB)&(~PARODD)&(~HUPCL)&(~CLOCAL)&(~LOBLK),
+	(B9600|CS8|CREAD)&(~CSTOPB)&(~PARENB)&(~PARODD)&(~HUPCL)&(~CLOCAL)&(~LOBLK),
 	(ISIG|ICANON|ECHO|ECHOE|ECHOK)&(~XCASE)&(~ECHONL)&(~NOFLSH),
 	0,
 	{CINTR, CQUIT, CERASE, CKILL, CEOF, CNUL, CNUL, CNUL}
 };
+
+static struct ltchars tc = { CSUSP, CDSUSP, CNUL, CNUL, CNUL, CNUL };
 
 /*
  * Check to see that the server restored the "line" streams module
@@ -164,14 +167,12 @@ main()
 	if ((fd = open("/dev/console", O_RDWR)) < 0) {
 	    printf("Xrepair: can't open /dev/console\n");
 	} else if (ioctl(fd, I_FIND, "line") == 0) {
-#ifdef CONS_UNDIRECT
             ctl.ic_len = 0;
             ctl.ic_cmd = CONS_UNDIRECT;
             if (ioctl(fd, I_STR, &ctl) < 0) {
                 errors++;
                 printf("Failed to ioctl I_STR CONS_UNDIRECT.\r\n");
             }
-#endif
 	    iarg = 0;
 	    if (ioctl(fd, FIONBIO, &iarg) < 0) {
 		errors++;
@@ -196,9 +197,8 @@ main()
 		printf("Failed to ioctl I_STR VIDEO_NOMOUSE.\r\n");
 	    }
 	    
-#ifdef VIDEO_MAC
 	    ctl.ic_len = 0;
-	    ctl.ic_cmd = VIDEO_MAC; /* For A/UX 2.0 and later */
+	    ctl.ic_cmd = VIDEO_MAC;
 	    if (ioctl(fd, I_STR, &ctl) < 0) {
 	        ctl.ic_len = 0;
 	        ctl.ic_cmd = VIDEO_ASCII; /* A/UX 1.* */
@@ -207,23 +207,30 @@ main()
 		    printf("Failed to ioctl I_STR VIDEO_MAC VIDEO_ASCII.\r\n");
 	        }
 	    }
-#else
-	    ctl.ic_len = 0;
-	    ctl.ic_cmd = VIDEO_ASCII;
-	    if (ioctl(fd, I_STR, &ctl) < 0) {
-		errors++;
-		printf("Failed to ioctl I_STR VIDEO_ASCII.\r\n");
-	    }
-#endif
 
 	    if(ioctl(fd, I_PUSH, "line") < 0) {
 		errors++;
 		printf("Failed to ioctl I_PUSH.\r\n");
 	    }
 
+	    (void) signal(SIGTTOU, SIG_IGN);
 	    if (ioctl(fd, TCSETA, &d_tio) < 0) {
 		errors++;
 		printf("Failed to ioctl TCSETA.\r\n");
+	    }
+
+	    if (ioctl(fd, TIOCSLTC, &tc) < 0) {
+		errors++;
+		printf("Failed to ioctl TIOCSLTC.\r\n");
+	    }
+
+	    (void) signal(SIGTTOU, SIG_DFL);
+	} else {
+	    ctl.ic_len = 0;
+	    ctl.ic_cmd = VIDEO_MAC; /* For A/UX 2.0 and later */
+	    if (ioctl(fd, I_STR, &ctl) < 0) {
+		errors++;
+		printf("Failed to ioctl I_STR VIDEO_MAC.\r\n");
 	    }
 	}
     exit (errors);

@@ -3,8 +3,8 @@
  *	Functions to support the macII color board as a memory frame buffer.
  */
 
-/************************************************************ 
-Copyright 1988 by Apple Computer, Inc, Cupertino, California
+/*****************************************************************************
+Copyright 1988-1993 by Apple Computer, Inc, Cupertino, California
 			All Rights Reserved
 
 Permission to use, copy, modify, and distribute this software
@@ -24,7 +24,7 @@ THE WARRANTY AND REMEDIES SET FORTH ABOVE ARE EXCLUSIVE
 AND IN LIEU OF ALL OTHERS, ORAL OR WRITTEN, EXPRESS OR
 IMPLIED.
 
-************************************************************/
+*****************************************************************************/
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -60,70 +60,29 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include    "resource.h"
 
 extern int TellLostMap(), TellGainedMap();
+#ifdef STATIC_COLOR
+extern int cfbListInstalledColormaps();
+extern void cfbInstallColormap(), cfbUninstallColormap();
+#endif STATIC_COLOR
 
 extern int consoleFd;
 
+/* 
+ * Unfortunately we must slam the entire colormap into
+ * the video boards CLUT 'cause SuperMac (and others?)
+ * insist on swallowing the whole map at once. The MacOS
+ * does it this way. 
+ */
+
 static void
-macIIColorUpdateColormap(pScreen, cmap)
+SlamHardware(pScreen, Map)
     ScreenPtr	pScreen;
-    ColormapPtr	cmap;
-{
-    register int i;
-    register Entry *pent;
     struct ColorSpec Map[256];
-    register VisualPtr pVisual = cmap->pVisual;
+{
     int fd;
     struct strioctl ctl; /* Streams ioctl control structure */
     struct CntrlParam pb;
     struct VDSetEntryRecord vde;
-
-    if ((pVisual->class | DynamicClass) == DirectColor) {
-	for (i = 0; i < 256; i++) {
-	    Map[i].value = i;
-	    pent = &cmap->red[(i & pVisual->redMask) >>
-			      pVisual->offsetRed];
-	    if (pent->fShared)
-		Map[i].rgb.red = pent->co.shco.red->color;
-	    else
-		Map[i].rgb.red = pent->co.local.red;
-	    pent = &cmap->green[(i & pVisual->greenMask) >>
-				pVisual->offsetGreen];
-	    if (pent->fShared)
-		Map[i].rgb.green = pent->co.shco.green->color;
-	    else
-		Map[i].rgb.green = pent->co.local.green;
-	    pent = &cmap->blue[(i & pVisual->blueMask) >>
-			       pVisual->offsetBlue];
-	    if (pent->fShared)
-		Map[i].rgb.blue = pent->co.shco.blue->color;
-	    else
-		Map[i].rgb.blue = pent->co.local.blue;
-	}
-    } else {
-	for (i = 0, pent = cmap->red;
-	     i < pVisual->ColormapEntries;
-	     i++, pent++) {
-	    if (pent->fShared) {
-		Map[i].value = i;
-		Map[i].rgb.red = pent->co.shco.red->color;
-		Map[i].rgb.green = pent->co.shco.green->color;
-		Map[i].rgb.blue = pent->co.shco.blue->color;
-	    }
-	    else {
-		Map[i].value = i;
-		Map[i].rgb.red = pent->co.local.red;
-		Map[i].rgb.green = pent->co.local.green;
-		Map[i].rgb.blue = pent->co.local.blue;
-	    }
-	}
-    }
-
-    /* 
-     * Unfortunately we must slam the entire colormap into
-     * the video boards CLUT 'cause SuperMac (and others?)
-     * insist on swallowing the whole map at once. The MacOS
-     * does it this way. 
-     */
 
     if (consoleFd <= 0) {
 	    fd = open("/dev/console",O_RDWR);
@@ -137,25 +96,103 @@ macIIColorUpdateColormap(pScreen, cmap)
     ctl.ic_len = sizeof(pb);
     ctl.ic_dp = (char *)&pb;
 
-    vde.csTable = (ColorSpec *) Map;
+#ifdef        SUPPORT_2_0
+    vde.csTable = (char *)Map;
+#else
+    vde.csTable = Map;
+#endif
     vde.csStart = 0;
     vde.csCount = 255;	/* not actually count, but count-1 */
 
-#define noQueueBit 0x0200
-#define SetEntries 0x3
     pb.qType = macIIFbs[pScreen->myNum].slot;
     pb.ioTrap = noQueueBit;
     pb.ioCmdAddr = (char *) -1;
-    pb.csCode = SetEntries;
+    pb.csCode = CTB_SET_ENTRIES(macIIFbs[pScreen->myNum]);
     * (char **) pb.csParam = (char *) &vde;
 
     if (ioctl(fd, I_STR, &ctl) == -1) {
-	    FatalError ("ioctl I_STR VIDEO_CONTROL failed");
+	    FatalError ("ioctl I_STR SetEntries failed");
 	    (void) close (fd);
     }
 
     if (consoleFd <=0) close(fd);
 
+}
+
+static void
+macII24UpdateColormap(pScreen, cmap)
+    ScreenPtr	pScreen;
+    ColormapPtr	cmap;
+{
+    register int i;
+    register Entry *pent;
+    struct ColorSpec Map[256];
+    register VisualPtr pVisual = cmap->pVisual;
+
+    for (i = 0; i < 256; i++) {
+	Map[i].value = i;
+	pent = &cmap->red[i];
+	Map[i].color.red = pent->co.local.red;
+	pent = &cmap->green[i];
+	Map[i].color.green = pent->co.local.green;
+	pent = &cmap->blue[i];
+	Map[i].color.blue = pent->co.local.blue;
+    }
+    SlamHardware(pScreen, Map);
+}
+
+static void
+macIIColorUpdateColormap(pScreen, cmap)
+    ScreenPtr	pScreen;
+    ColormapPtr	cmap;
+{
+    register int i;
+    register Entry *pent;
+    struct ColorSpec Map[256];
+    register VisualPtr pVisual = cmap->pVisual;
+
+    if ((pVisual->class | DynamicClass) == DirectColor) {
+	/* 888 - This is an 8 bpp assumption */
+	for (i = 0; i < 256; i++) {
+	    Map[i].value = i;
+	    pent = &cmap->red[(i & pVisual->redMask) >>
+			      pVisual->offsetRed];
+	    if (pent->fShared)
+		Map[i].color.red = pent->co.shco.red->color;
+	    else
+		Map[i].color.red = pent->co.local.red;
+	    pent = &cmap->green[(i & pVisual->greenMask) >>
+				pVisual->offsetGreen];
+	    if (pent->fShared)
+		Map[i].color.green = pent->co.shco.green->color;
+	    else
+		Map[i].color.green = pent->co.local.green;
+	    pent = &cmap->blue[(i & pVisual->blueMask) >>
+			       pVisual->offsetBlue];
+	    if (pent->fShared)
+		Map[i].color.blue = pent->co.shco.blue->color;
+	    else
+		Map[i].color.blue = pent->co.local.blue;
+	}
+    } else {
+	for (i = 0, pent = cmap->red;
+	     i < pVisual->ColormapEntries;
+	     i++, pent++) {
+	    if (pent->fShared) {
+		Map[i].value = i;
+		Map[i].color.red = pent->co.shco.red->color;
+		Map[i].color.green = pent->co.shco.green->color;
+		Map[i].color.blue = pent->co.shco.blue->color;
+	    }
+	    else {
+		Map[i].value = i;
+		Map[i].color.red = pent->co.local.red;
+		Map[i].color.green = pent->co.local.green;
+		Map[i].color.blue = pent->co.local.blue;
+	    }
+	}
+    }
+    SlamHardware(pScreen, Map);
 }
 
 /*-
@@ -177,7 +214,7 @@ macIIColorSaveScreen (pScreen, on)
     int    	  on;
 {
     if (on == SCREEN_SAVER_FORCER)
-	SetTimeSinceLastInputEvent ();
+      SetTimeSinceLastInputEvent ();
     return FALSE;
 }
 
@@ -199,6 +236,7 @@ static void
 macIIColorInstallColormap(cmap)
     ColormapPtr	cmap;
 {
+#ifndef STATIC_COLOR
     register ColormapPtr installedMap = 
 			 macIIFbs[cmap->pScreen->myNum].installedMap;
 
@@ -207,9 +245,15 @@ macIIColorInstallColormap(cmap)
     if (installedMap)
 	WalkTree(installedMap->pScreen, TellLostMap,
 		 (char *) &(installedMap->mid));
-    macIIFbs[cmap->pScreen->myNum].installedMap = cmap;
-    macIIColorUpdateColormap(cmap->pScreen, cmap);
     WalkTree(cmap->pScreen, TellGainedMap, (char *) &(cmap->mid));
+#else
+    cfbInstallColormap(cmap);
+#endif /* STATIC_COLOR */
+    macIIFbs[cmap->pScreen->myNum].installedMap = cmap;
+    if (cmap->pVisual->nplanes > 8)
+	macII24UpdateColormap(cmap->pScreen, cmap);
+    else
+	macIIColorUpdateColormap(cmap->pScreen, cmap);
 }
 
 /*-
@@ -266,7 +310,6 @@ macIIColorListInstalledColormaps(pScreen, pCmapList)
     return (1);
 }
 
-
 /*-
  *-----------------------------------------------------------------------
  * macIIColorStoreColors --
@@ -287,7 +330,23 @@ macIIColorStoreColors(pmap, ndef, pdefs)
     xColorItem	*pdefs;
 {
     if (pmap == macIIFbs[pmap->pScreen->myNum].installedMap)
-	macIIColorUpdateColormap(pmap->pScreen, pmap);
+	if (pmap->pVisual->nplanes > 8)
+	    macII24UpdateColormap(pmap->pScreen, pmap);
+	else
+	    macIIColorUpdateColormap(pmap->pScreen, pmap);
+}
+
+Bool
+macIICreateColormap(pMap)
+    ColormapPtr pMap;
+{
+    if (pMap->pScreen->rootDepth == 24 && pMap->class == DirectColor) {
+	int i;
+
+	for (i = 0; i < 256 ; i++)
+	    pMap->red[i].co.local.red = pMap->green[i].co.local.green = pMap->blue[i].co.local.blue = (i << 8) | i;
+    }
+    return(cfbInitializeColormap(pMap));
 }
 
 /*-
@@ -313,26 +372,71 @@ macIIColorInit (index, pScreen, argc, argv)
     int	    	  argc;	    	/* The number of the Server's arguments. */
     char    	  **argv;   	/* The arguments themselves. Don't change! */
 {
+    Bool (*InitProc)();
+    int depth, bitsPerPixel;
+    extern Bool cfbScreenInit();
+    extern Bool cfb16ScreenInit(), cfb32ScreenInit();
+    extern Bool macII24ScreenInit(), macII32ScreenInit();
+    extern fbFd macIIFbs[];
+    extern int defaultColorVisualClass;
+
+    depth = macIIFbs[index].defaultDepth;
+    bitsPerPixel = depth;
     /* set up procs which aren't handled by cfb */
     /* save screen proc */
     pScreen->SaveScreen = macIIColorSaveScreen;
     /* colormap procs */
     pScreen->InstallColormap = macIIColorInstallColormap;
+#ifndef STATIC_COLOR
     pScreen->UninstallColormap = macIIColorUninstallColormap;
     pScreen->ListInstalledColormaps = macIIColorListInstalledColormaps;
+#endif /* STATIC_COLOR */
     pScreen->StoreColors = macIIColorStoreColors;
 
-    if (!cfbScreenInit (pScreen, macIIFbs[index].fb,
-			    macIIFbs[index].info.vpBounds.right -
-			    macIIFbs[index].info.vpBounds.left,
-			    macIIFbs[index].info.vpBounds.bottom -
-		            macIIFbs[index].info.vpBounds.top,
-			    macIIFbs[index].info.vpHRes >> 16,
-			    macIIFbs[index].info.vpVRes >> 16,
-			    macIIFbs[index].info.vpRowBytes))
+    switch (depth) {
+	case 8:
+	    InitProc = &cfbScreenInit;
+	    break;
+	case 16:
+	    InitProc = &cfb16ScreenInit;
+	    break;
+	case 24:
+	    InitProc = &macII24ScreenInit;
+	    bitsPerPixel = 32;
+/* 	    defaultColorVisualClass = TrueColor; */
+	    break;
+	case 32:
+#ifdef SEPARATE_24
+	    InitProc = &cfb32ScreenInit;
+#else
+	    InitProc = &macII24ScreenInit;
+#endif
+	    break;
+	default:
+	    FatalError("Encountered bogus depth: %d\n", pScreen->rootDepth);
+	    break;
+    }
+
+    if (!(*InitProc) (pScreen, macIIFbs[index].fb,
+#ifdef SUPPORT_2_0
+			macIIFbs[index].info.v_right -
+			macIIFbs[index].info.v_left,
+			macIIFbs[index].info.v_bottom -
+			macIIFbs[index].info.v_top,
+#else
+			macIIFbs[index].info.vpBounds.right -
+			macIIFbs[index].info.vpBounds.left,
+			macIIFbs[index].info.vpBounds.bottom -
+			macIIFbs[index].info.vpBounds.top,
+#endif
+			macIIFbs[index].info.vpHRes >> 16,
+			macIIFbs[index].info.vpVRes >> 16,
+			(macIIFbs[index].info.vpRowBytes*8)/bitsPerPixel))
     {
 	return (FALSE);
     }
+
+    pScreen->CreateColormap = macIICreateColormap;
 
     /* make sure the color map gets installed */
 
@@ -340,5 +444,5 @@ macIIColorInit (index, pScreen, argc, argv)
 
     (void) macIIColorSaveScreen( pScreen, SCREEN_SAVER_OFF );
 
-    return (macIIScreenInit(pScreen) && cfbCreateDefColormap(pScreen));
+    return(macIIScreenInit(pScreen) && cfbCreateDefColormap(pScreen));
 }

@@ -1,5 +1,5 @@
-/************************************************************ 
-Copyright 1988 by Apple Computer, Inc, Cupertino, California
+/*****************************************************************************
+Copyright 1988-1993 by Apple Computer, Inc, Cupertino, California
 			All Rights Reserved
 
 Permission to use, copy, modify, and distribute this software
@@ -19,7 +19,7 @@ THE WARRANTY AND REMEDIES SET FORTH ABOVE ARE EXCLUSIVE
 AND IN LIEU OF ALL OTHERS, ORAL OR WRITTEN, EXPRESS OR
 IMPLIED.
 
-************************************************************/
+*****************************************************************************/
 /*-
  * macIIKbd.c --
  *	Functions for retrieving data from a keyboard.
@@ -79,6 +79,7 @@ static void 	  macIIBell();
 static void 	  macIIKbdCtrl();
 void 	  	  macIIKbdEnqueueEvent();
 static int	  autoRepeatKeyDown = 0;
+static int  	  autoRepeatDebug = 0;
 static int	  autoRepeatReady;
 static int	  autoRepeatFirst;
 static struct timeval autoRepeatLastKeyDownTv;
@@ -95,6 +96,17 @@ static KbPrivRec  	sysKbPriv = {
 extern int consoleFd;
 int devosmFd = 0;
 int noOsm = FALSE;
+
+#ifdef XTESTEXT1
+#define XTestSERVER_SIDE
+#include "xtestext1.h"
+/*
+ * defined in xtestext1di.c
+ */
+extern int	on_steal_input;
+extern Bool	XTestStealKeyData();
+extern short	xtest_mousex, xtest_mousey;
+#endif /* XTESTEXT1 */
 
 /*-
  *-----------------------------------------------------------------------
@@ -213,6 +225,7 @@ macIIKbdSetUp(fd, openClose)
     struct strioctl ctl;
     struct termio tio;
     static struct termio save_tio;
+    static struct ltchars tc;
     char buff[FMNAMESZ+1];
     int iarg;
 
@@ -222,6 +235,10 @@ macIIKbdSetUp(fd, openClose)
 		FatalError("Failed to ioctl TCGETA.\r\n");
 		return (!Success);
 	}
+        if (ioctl(fd, TIOCGLTC, &tc) < 0) {
+		FatalError("Failed to ioctl TIOCGLTC.\r\n");
+		return (!Success);
+        }
 
 	/* 
 	 * Pop all streams modules off /dev/console. Someday we
@@ -326,9 +343,8 @@ macIIKbdSetUp(fd, openClose)
 		MessageF("Failed to ioctl I_STR VIDEO_NOMOUSE.\r\n");
 	}
 
-#ifdef VIDEO_MAC
         ctl.ic_len = 0;
-        ctl.ic_cmd = VIDEO_MAC; /* For A/UX 2.0 and later */
+        ctl.ic_cmd = VIDEO_MAC;
         if (ioctl(fd, I_STR, &ctl) < 0) {
             ctl.ic_len = 0;
             ctl.ic_cmd = VIDEO_ASCII; /* A/UX 1.* */
@@ -336,19 +352,6 @@ macIIKbdSetUp(fd, openClose)
 		MessageF("Failed to ioctl I_STR VIDEO_MAC VIDEO_ASCII.\r\n");
             }
         }
-#else
-        ctl.ic_len = 0;
-        ctl.ic_cmd = VIDEO_ASCII;
-        if (ioctl(fd, I_STR, &ctl) < 0) {
-	    MessageF("Failed to ioctl I_STR VIDEO_ASCII.\r\n");
-        }
-#endif
-
-	ctl.ic_len = 0;
-	ctl.ic_cmd = VIDEO_ASCII;
-	if (ioctl(fd, I_STR, &ctl) < 0) {
-		MessageF("Failed to ioctl I_STR VIDEO_ASCII.\r\n");
-	}
 
 	if(ioctl(fd, I_PUSH, "line") < 0) {
 		MessageF("Failed to ioctl I_PUSH.\r\n");
@@ -357,8 +360,15 @@ macIIKbdSetUp(fd, openClose)
 	if (ioctl(fd, TCSETA, &save_tio) < 0) {
 		MessageF("Failed to ioctl TCSETA.\r\n");
 	}
+        if (ioctl(fd, TIOCSLTC, &tc) < 0) {
+            	MessageF("Failed to ioctl TIOCSLTC.\r\n");
+        }
+
     }
 }
+
+#include <sys/utsname.h>
+#include <sys/sm_aux.h>
 
 /*-
  *-----------------------------------------------------------------------
@@ -380,19 +390,57 @@ macIIBell (loudness, pKeyboard)
     DevicePtr	  pKeyboard;	    /* Keyboard to ring */
 {
     KbPrivPtr   pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
-    struct strioctl ctl;
-    long countdown;
+    struct utsname name;
 
     if (loudness == 0) {
       return;
     }
 
-    countdown = (long)pPriv->ctrl->bell_duration * 100;
-    ctl.ic_len = sizeof(long);
-    ctl.ic_dp = (char *)&countdown;
-    ctl.ic_cmd = VIDEO_BELL;
-    if (ioctl(consoleFd, I_STR, &ctl) < 0) {
-	    MessageF("Failed to ioctl I_STR VIDEO_BELL.\r\n");
+    if (uname(&name) != 0)
+	MessageF("uname failed to ID machine type.\r\n");
+
+    if (strcmp(name.machine, "mc68040") == 0) {
+    /* This hack provides a beep on the Quadras, because the old ioctl doesn't
+       work with the new sound chip. It is a horrible sounding beep, but the
+       volume is adjustable. mjb */
+	char vol;
+	int sndFd;
+	int dev, sndFile;
+
+	vol = (char)((loudness*7)/100);
+	if ((sndFd = open(DEV_SAMP, O_RDWR)) < 0) {
+	    MessageF("Unable to change volume, failed to open /dev/snd/samp: %d\n", errno);
+	} else {
+	    ioctl(sndFd, SND_VOL, &vol);
+	    close(sndFd);
+	}
+
+	if ((dev = open("/dev/snd/raw", O_RDWR|O_NDELAY)) < 0)
+	    ErrorF("Failed to open raw sound device, errno = %d\r\n", errno);
+	else {
+	    if ((sndFile = open("/mac/lib/Resources/sampledBeep", O_RDONLY)) < 0)
+		ErrorF("Failed to open beep sound file, errno = %d\r\n", errno);
+	    else {
+		int cnt;
+		char buffer[1024];
+
+		while ((cnt = read(sndFile, buffer, 1024)) > 0)
+		    write(dev, buffer, cnt);
+		close(sndFile);
+	    }
+	    close(dev);
+	}
+    } else {	/* everybody else uses this age-old ioctl */
+	struct strioctl ctl;
+	long countdown;
+
+	countdown = (long)pPriv->ctrl->bell_duration * 100;
+	ctl.ic_len = sizeof(long);
+	ctl.ic_dp = (char *)&countdown;
+	ctl.ic_cmd = VIDEO_BELL;
+	if (ioctl(consoleFd, I_STR, &ctl) < 0) {
+		MessageF("Failed to ioctl I_STR VIDEO_BELL.\r\n");
+	}
     }
 }
 
@@ -453,6 +501,8 @@ macIIKbdEnqueueEvent(pKeyboard,me)
          * Kill AutoRepeater on any real Kbd event.
          */
         autoRepeatKeyDown = 0;
+	if (autoRepeatDebug)
+	    ErrorF("macIIKbdEnqueueEvent: autoRepeat off\r\n");
     }
 
     xE.u.keyButtonPointer.time = lastEventTime;
@@ -461,12 +511,19 @@ macIIKbdEnqueueEvent(pKeyboard,me)
 
     if ((xE.u.u.type == KeyPress) && (keyModifiers == 0)) {
 	  /* initialize new AutoRepeater event & mark AutoRepeater on */
+	if (autoRepeatDebug)
+	    ErrorF("macIIKbdEnqueueEvent: KEY_DOWN\r\n");
         autoRepeatEvent = xE;
         autoRepeatFirst = TRUE;
         autoRepeatKeyDown++;
         autoRepeatLastKeyDownTv = lastEventTimeTv;
     }
 
+#ifdef XTESTEXT1
+    if (!on_steal_input ||
+	XTestStealKeyData(xE.u.u.detail, xE.u.u.type, XE_KEYBOARD,
+			  xtest_mousex, xtest_mousey))
+#endif /* XTESTEXT1 */
     mieqEnqueue (&xE);
 }
 
@@ -484,6 +541,9 @@ macIIEnqueueAutoRepeat ()
      * Generate auto repeat event.	XXX one for now.
      * Update time & pointer location of saved KeyPress event.
      */
+    if (autoRepeatDebug)
+	ErrorF("macIIKbdProcessEvent: autoRepeatKeyDown = %d\r\n",
+		autoRepeatKeyDown);
 
     delta = TVTOMILLI(autoRepeatDeltaTv);
     autoRepeatFirst = FALSE;
@@ -495,14 +555,23 @@ macIIEnqueueAutoRepeat ()
     autoRepeatEvent.u.keyButtonPointer.time += delta;
     autoRepeatEvent.u.u.type = KeyRelease;
     oldmask = sigblock (sigmask(SIGIO));
+#ifdef XTESTEXT1
+    if (!on_steal_input ||
+	XTestStealKeyData(autoRepeatEvent.u.u.detail, autoRepeatEvent.u.u.type,
+			  XE_KEYBOARD, xtest_mousex, xtest_mousey))
+#endif /* XTESTEXT1 */
     mieqEnqueue (&autoRepeatEvent);
     autoRepeatEvent.u.u.type = KeyPress;
+#ifdef XTESTEXT1
+    if (!on_steal_input ||
+	XTestStealKeyData(autoRepeatEvent.u.u.detail, autoRepeatEvent.u.u.type,
+			  XE_KEYBOARD, xtest_mousex, xtest_mousey))
+#endif /* XTESTEXT1 */
     mieqEnqueue (&autoRepeatEvent);
     sigsetmask (oldmask);
     /* Update time of last key down */
-    tvplus(autoRepeatLastKeyDownTv, autoRepeatLastKeyDownTv, 
-		    autoRepeatDeltaTv);
-
+    tvplus(autoRepeatLastKeyDownTv, autoRepeatLastKeyDownTv,
+	   autoRepeatDeltaTv);
 }
 
 Bool
@@ -541,6 +610,9 @@ macIIBlockHandler(nscreen, pbdata, pptv, pReadmask)
         artv.tv_usec = 1000 * AUTOREPEAT_DELAY;
     *pptv = &artv;
 
+    if (autoRepeatDebug)
+        ErrorF("macIIBlockHandler(%d,%d): \r\n", artv.tv_sec, artv.tv_usec);
+
 }
 
 /*ARGSUSED*/
@@ -552,6 +624,9 @@ macIIWakeupHandler(nscreen, pbdata, err, pReadmask)
     pointer pReadmask;
 {
     long now;
+
+    if (autoRepeatDebug)
+        ErrorF("macIIWakeupHandler(ar=%d, err=%d):\r\n", autoRepeatKeyDown, err);
 
     if (pKbdCtrl == (KeybdCtrl *) 0)
       pKbdCtrl = ((KbPrivPtr) LookupKeyboardDevice()->devicePrivate)->ctrl;
@@ -569,7 +644,7 @@ macIIWakeupHandler(nscreen, pbdata, err, pReadmask)
 				(AUTOREPEAT_DELAY * 1000)) ||
 			(autoRepeatDeltaTv.tv_usec >
 				(AUTOREPEAT_INITIATE * 1000)))
-		autoRepeatReady++;
+                autoRepeatReady++;
     }
 
     if (autoRepeatReady)
@@ -579,3 +654,27 @@ macIIWakeupHandler(nscreen, pbdata, err, pReadmask)
     }
 
 }
+
+#ifdef XTESTEXT1
+void
+XTestGenerateEvent(dev_type, keycode, keystate, mousex, mousey)
+    int dev_type;
+    int keycode;
+    int keystate;
+    int mousex;
+    int mousey;
+{
+    xEvent tevent;
+
+    tevent.u.u.type = (dev_type == XE_POINTER) ?
+	(keystate == XTestKEY_UP) ? ButtonRelease : ButtonPress :
+	(keystate == XTestKEY_UP) ? KeyRelease : KeyPress;
+    tevent.u.u.detail = keycode;
+    tevent.u.keyButtonPointer.rootX = mousex;
+    tevent.u.keyButtonPointer.rootY = mousey;
+    SetTimeSinceLastInputEvent();
+    tevent.u.keyButtonPointer.time = lastEventTime;
+    mieqEnqueue(&tevent);
+    ProcessInputEvents();
+}
+#endif
