@@ -84,7 +84,6 @@ compile-CLX:	$(C_OBJS)
 
 compile-closified-CLX:	$(C_OBJS)
 	$(ECHO) " \
-		(set-case-mode :case-sensitive-lower) \
 		(proclaim '(optimize (speed $(SPEED)) (safety $(SAFETY)))) \
 		(setq excl::*print-nickname* t) \
 		(unless (or (find-package 'clos) (find-package 'pcl)) \
