@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.174 91/01/10 14:26:27 dave Exp $
+ * $XConsortium: events.c,v 1.175 91/03/12 14:14:24 dave Exp $
  *
  * twm event handling
  *
@@ -1595,7 +1595,7 @@ HandleButtonRelease()
 	    }
 	    ExecuteFunction(func, Action,
 		ButtonWindow ? ButtonWindow->frame : None,
-		ButtonWindow, &ButtonEvent, Context, TRUE);
+		ButtonWindow, &Event/*&ButtonEvent*/, Context, TRUE);
 	    Context = C_NO_CONTEXT;
 	    ButtonWindow = NULL;
 
