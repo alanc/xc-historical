@@ -1,4 +1,4 @@
-/* $XConsortium: uconvRep.c,v 5.5 91/07/01 16:39:44 hersh Exp $ */
+/* $XConsortium: uconvRep.c,v 5.6 91/10/01 02:40:50 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -405,7 +405,9 @@ pexFetchElementsReply	*reply;
 	 i++, curCmd += length)
     {
 	pe = (pexElementInfo *)curCmd;
-	cntxtPtr->pexSwapReplyOC[ pe->elementType ] (swapPtr, pe);
+	/* this check must match the one done in mipex.h MI_IS_PEX_OC macro */
+        if ((PEXOCAll < pe->elementType) && (pe->elementType <= PEXMaxOC))
+	    cntxtPtr->pexSwapReplyOC[ pe->elementType ] (swapPtr, pe);
 	length = pe->length;
 	SWAP_ELEMENT_INFO (*pe);
     }
