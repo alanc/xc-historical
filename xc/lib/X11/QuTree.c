@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XQuTree.c,v 11.15 87/06/10 18:26:14 jg Exp $ */
+/* $Header: XQuTree.c,v 11.15 87/09/11 08:06:20 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -30,9 +30,10 @@ Status XQueryTree (dpy, w, root, parent, children, nchildren)
     *nchildren = rep.nChildren;
     *children = (Window *) NULL;
     if (rep.nChildren != 0) {
-      *children = (Window *) Xmalloc (
-	    (unsigned)(nbytes = rep.nChildren * sizeof(Window)));
-      _XRead (dpy, (char *) *children, nbytes);
+	nbytes = rep.nChildren * sizeof(Window);
+	*children = (Window *) Xmalloc (nbytes);
+	nbytes = rep.nChildren * 4;
+	_XRead32 (dpy, (char *) *children, nbytes);
     }
        /* Note: won't work if sizeof(Window) is not 32 bits! */
     UnlockDisplay(dpy);
