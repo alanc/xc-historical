@@ -70,11 +70,7 @@ access.o: $(ICONFIGFILES)
 connection.o: $(ICONFIGFILES)
 
 # these depend on HASDES
-auth.o: $(ICONFIGFILES)
-xdmcp.o: $(ICONFIGFILES)
-#if HasDESLibrary
-xdmauth.o: $(ICONFIGFILES)
-#endif
+auth.o xdmcp.o: $(ICONFIGFILES)
 
 #ifdef HPArchitecture
 /**/#
