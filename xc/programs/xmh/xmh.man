@@ -1,4 +1,4 @@
-.\" $XConsortium: xmh.man,v 1.15 88/12/12 13:40:16 swick Exp $
+.\" $XConsortium: xmh.man,v 1.16 89/10/11 20:40:26 converse Exp $
 .TH XMH 1 "11 October 1989" "X Version 11"
 .SH NAME
 \fIxmh\fR \- X window interface to the MH message handling system.
@@ -134,11 +134,6 @@ If that folder has subfolders, a menu of the subfolders will pop up.
 The first command menu contains commands of a global nature:
 
 .TP 8
-.B Compose Message
-Composes a new message.  A new window will be brought up; for a
-description of it, see COMPOSITION WINDOWS, below.
-.PP
-.TP 8
 .B Open Folder
 Display the data in the selected folder.  Thus, the selected folder also
 becomes the viewed folder.
@@ -219,6 +214,11 @@ if you ever change things using straight mh commands without using \fIxmh\fR.)
 The third command menu contains commands which operate on the selected
 message(s), or if there are no selected messages, the current message.
 
+.TP 8
+.B Compose Message
+Composes a new message.  A new window will be brought up; for a
+description of it, see COMPOSITION WINDOWS, below.
+.PP
 .TP 8
 .B View Next Message
 View the first selected message.  If no messages are highlighted, view the

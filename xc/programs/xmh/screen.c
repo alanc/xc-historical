@@ -1,5 +1,5 @@
 /*
- * $XConsortium: screen.c,v 2.50 89/10/06 15:03:31 converse Exp $
+ * $XConsortium: screen.c,v 2.51 89/10/11 11:52:25 jim Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -30,13 +30,11 @@
 #include "xmh.h"
 
 XmhMenuEntryRec	folderMenu[] = {
-    {"compose",			DoComposeMessage},
-    {"line1",			(XtCallbackProc) NULL},
     {"open",			DoOpenFolder},
     {"openInNew", 		DoOpenFolderInNewWindow},
     {"create",			DoCreateFolder},
     {"delete",			DoDeleteFolder},
-    {"line2",			(XtCallbackProc) NULL},
+    {"line",			(XtCallbackProc) NULL},
     {"close",			DoClose},
 };
 
@@ -49,6 +47,7 @@ XmhMenuEntryRec	tocMenu[] = {
 };
 
 XmhMenuEntryRec	messageMenu[] = {
+    {"compose",			DoComposeMessage},
     {"next",			DoNextView},
     {"prev",			DoPrevView},
     {"delete",			DoDelete},
@@ -68,7 +67,7 @@ XmhMenuEntryRec	sequenceMenu[] = {
     {"addToSeq",		DoAddToSeq},
     {"removeFromSeq",		DoRemoveFromSeq},
     {"deleteSeq",		DoDeleteSeq},
-    {"line1",			(XtCallbackProc) NULL},
+    {"line",			(XtCallbackProc) NULL},
     {"all",			DoSelectSequence},
 };
 
