@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.10 89/11/13 15:16:26 jim Exp $
+ * $XConsortium: parse.c,v 1.11 89/11/13 15:21:42 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.10 89/11/13 15:16:26 jim Exp $";
+"$XConsortium: parse.c,v 1.11 89/11/13 15:21:42 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -295,6 +295,27 @@ typedef struct _TwmKeyword {
 #define kwn_IconBorderWidth		8
 #define kwn_TitleButtonBorderWidth	9
 
+#define kwcl_BorderColor		1
+#define kwcl_IconManagerHighlight	2
+#define kwcl_BorderTileForeground	3
+#define kwcl_BorderTileBackground	4
+#define kwcl_TitleForeground		5
+#define kwcl_TitleBackground		6
+#define kwcl_IconForeground		7
+#define kwcl_IconBackground		8
+#define kwcl_IconBorderColor		9
+#define kwcl_IconManagerForeground	10
+#define kwcl_IconManagerBackground	11
+
+#define kwc_DefaultForeground		1
+#define kwc_DefaultBackground		2
+#define kwc_MenuForeground		3
+#define kwc_MenuBackground		4
+#define kwc_MenuTitleForeground		5
+#define kwc_MenuTitleBackground		6
+#define kwc_MenuShadowColor		7
+
+
 /*
  * The following is sorted alphabetically according to name (which must be
  * in lowercase and only contain the letters a-z).  It is fed to a binary
@@ -304,9 +325,9 @@ static TwmKeyword keytable[] = {
     { "all",			ALL, 0 },
     { "autoraise",		AUTO_RAISE, 0 },
     { "autorelativeresize",	KEYWORD, kw0_AutoRelativeResize },
-    { "bordercolor",		BORDER_COLOR, 0 },
-    { "bordertilebackground",	BORDER_TILE_BACKGROUND, 0 },
-    { "bordertileforeground",	BORDER_TILE_FOREGROUND, 0 },
+    { "bordercolor",		CLKEYWORD, kwcl_BorderColor },
+    { "bordertilebackground",	CLKEYWORD, kwcl_BorderTileBackground },
+    { "bordertileforeground",	CLKEYWORD, kwcl_BorderTileForeground },
     { "borderwidth",		NKEYWORD, kwn_BorderWidth },
     { "button",			BUTTON, 0 },
     { "buttonindent",		NKEYWORD, kwn_ButtonIndent },
@@ -316,8 +337,8 @@ static TwmKeyword keytable[] = {
     { "constrainedmovetime",	NKEYWORD, kwn_ConstrainedMoveTime },
     { "cursors",		CURSORS, 0 },
     { "decoratetransients",	KEYWORD, kw0_DecorateTransients },
-    { "defaultbackground",	DEFAULT_BACKGROUND, 0 },
-    { "defaultforeground",	DEFAULT_FOREGROUND, 0 },
+    { "defaultbackground",	CKEYWORD, kwc_DefaultBackground },
+    { "defaultforeground",	CKEYWORD, kwc_DefaultForeground },
     { "defaultfunction",	DEFAULT_FUNCTION, 0 },
     { "destroy",		KILL, 0 },
     { "donticonifybyunmapping",	DONT_ICONIFY_BY_UNMAPPING, 0 },
@@ -389,19 +410,19 @@ static TwmKeyword keytable[] = {
     { "function",		FUNCTION, 0 },
     { "i",			ICON, 0 },
     { "icon",			ICON, 0 },
-    { "iconbackground",		ICON_BACKGROUND, 0 },
-    { "iconbordercolor",	ICON_BORDER_COLOR, 0 },
+    { "iconbackground",		CLKEYWORD, kwcl_IconBackground },
+    { "iconbordercolor",	CLKEYWORD, kwcl_IconBorderColor },
     { "iconborderwidth",	NKEYWORD, kwn_IconBorderWidth },
     { "icondirectory",		SKEYWORD, kws_IconDirectory },
     { "iconfont",		SKEYWORD, kws_IconFont },
-    { "iconforeground",		ICON_FOREGROUND, 0 },
+    { "iconforeground",		CLKEYWORD, kwcl_IconForeground },
     { "iconifybyunmapping",	ICONIFY_BY_UNMAPPING, 0 },
-    { "iconmanagerbackground",	ICONMGR_BACKGROUND, 0 },
+    { "iconmanagerbackground",	CLKEYWORD, kwcl_IconManagerBackground },
     { "iconmanagerdontshow",	ICONMGR_NOSHOW, 0 },
     { "iconmanagerfont",	SKEYWORD, kws_IconManagerFont },
-    { "iconmanagerforeground",	ICONMGR_FOREGROUND, 0 },
+    { "iconmanagerforeground",	CLKEYWORD, kwcl_IconManagerForeground },
     { "iconmanagergeometry",	ICONMGR_GEOMETRY, 0 },
-    { "iconmanagerhighlight",	ICONMGR_HIGHLIGHT, 0 },
+    { "iconmanagerhighlight",	CLKEYWORD, kwcl_IconManagerHighlight },
     { "iconmanagers",		ICONMGRS, 0 },
     { "iconmanagershow",	ICONMGR_SHOW, 0 },
     { "iconmgr",		ICONMGR, 0 },
@@ -412,12 +433,12 @@ static TwmKeyword keytable[] = {
     { "m",			META, 0 },
     { "maketitle",		MAKE_TITLE, 0 },
     { "menu",			MENU, 0 },
-    { "menubackground",		MENU_BACKGROUND, 0 },
+    { "menubackground",		CKEYWORD, kwc_MenuBackground },
     { "menufont",		SKEYWORD, kws_MenuFont },
-    { "menuforeground",		MENU_FOREGROUND, 0 },
-    { "menushadowcolor",	MENU_SHADOW_COLOR, 0 },
-    { "menutitlebackground",	MENU_TITLE_BACKGROUND, 0 },
-    { "menutitleforeground",	MENU_TITLE_FOREGROUND, 0 },
+    { "menuforeground",		CKEYWORD, kwc_MenuForeground },
+    { "menushadowcolor",	CKEYWORD, kwc_MenuShadowColor },
+    { "menutitlebackground",	CKEYWORD, kwc_MenuTitleBackground },
+    { "menutitleforeground",	CKEYWORD, kwc_MenuTitleForeground },
     { "monochrome",		MONOCHROME, 0 },
     { "move",			MOVE, 0 },
     { "movedelta",		NKEYWORD, kwn_MoveDelta },
@@ -458,10 +479,10 @@ static TwmKeyword keytable[] = {
     { "t.nop",			F_NOP, 0 },
     { "t.raise",		F_RAISE, 0 },
     { "title",			TITLE, 0 },
-    { "titlebackground",	TITLE_BACKGROUND, 0 },
+    { "titlebackground",	CLKEYWORD, kwcl_TitleBackground },
     { "titlebuttonborderwidth",	NKEYWORD, kwn_TitleButtonBorderWidth },
     { "titlefont",		SKEYWORD, kws_TitleFont },
-    { "titleforeground",	TITLE_FOREGROUND, 0 },
+    { "titleforeground",	CLKEYWORD, kwcl_TitleForeground },
     { "titlehighlight",		TITLE_HILITE, 0 },
     { "titlepadding",		NKEYWORD, kwn_TitlePadding },
     { "unknownicon",		SKEYWORD, kws_UnknownIcon },
@@ -493,13 +514,7 @@ int parse_keyword (s, nump)
         if (res < 0) {
             lower = middle + 1;
         } else if (res == 0) {
-	    switch (p->value) {
-	      case KEYWORD:
-	      case SKEYWORD:
-	      case NKEYWORD:
-		*nump = p->subnum;
-		break;
-	    }
+	    *nump = p->subnum;
             return p->value;
         } else {
             upper = middle - 1;
@@ -715,6 +730,100 @@ int do_number_keyword (keyword, num)
 
     return 0;
 }
+
+name_list **do_colorlist_keyword (keyword, colormode, s)
+    int keyword;
+    int colormode;
+    char *s;
+{
+    switch (keyword) {
+      case kwcl_BorderColor:
+	GetColor (colormode, &Scr->BorderColor, s);
+	return &Scr->BorderColorL;
+
+      case kwcl_IconManagerHighlight:
+	GetColor (colormode, &Scr->IconManagerHighlight, s);
+	return &Scr->IconManagerHighlightL;
+
+      case kwcl_BorderTileForeground:
+	GetColor (colormode, &Scr->BorderTileC.fore, s);
+	return &Scr->BorderTileForegroundL;
+
+      case kwcl_BorderTileBackground:
+	GetColor (colormode, &Scr->BorderTileC.back, s);
+	return &Scr->BorderTileBackgroundL;
+
+      case kwcl_TitleForeground:
+	GetColor (colormode, &Scr->TitleC.fore, s);
+	return &Scr->TitleForegroundL;
+
+      case kwcl_TitleBackground:
+	GetColor (colormode, &Scr->TitleC.back, s);
+	return &Scr->TitleBackgroundL;
+
+      case kwcl_IconForeground:
+	GetColor (colormode, &Scr->IconC.fore, s);
+	return &Scr->IconForegroundL;
+
+      case kwcl_IconBackground:
+	GetColor (colormode, &Scr->IconC.back, s);
+	return &Scr->IconBackgroundL;
+
+      case kwcl_IconBorderColor:
+	GetColor (colormode, &Scr->IconBorderColor, s);
+	return &Scr->IconBorderColorL;
+
+      case kwcl_IconManagerForeground:
+	GetColor (colormode, &Scr->IconManagerC.fore, s);
+	return &Scr->IconManagerFL;
+
+      case kwcl_IconManagerBackground:
+	GetColor (colormode, &Scr->IconManagerC.back, s);
+	return &Scr->IconManagerBL;
+    }
+
+    return NULL;
+}
+
+int do_color_keyword (keyword, colormode, s)
+    int keyword;
+    int colormode;
+    char *s;
+{
+    switch (keyword) {
+      case kwc_DefaultForeground:
+	GetColor (colormode, &Scr->DefaultC.fore, s);
+	return 1;
+
+      case kwc_DefaultBackground:
+	GetColor (colormode, &Scr->DefaultC.back, s);
+	return 1;
+
+      case kwc_MenuForeground:
+	GetColor (colormode, &Scr->MenuC.fore, s);
+	return 1;
+
+      case kwc_MenuBackground:
+	GetColor (colormode, &Scr->MenuC.fore, s);
+	return 1;
+
+      case kwc_MenuTitleForeground:
+	GetColor (colormode, &Scr->MenuTitleC.fore, s);
+	return 1;
+
+      case kwc_MenuTitleBackground:
+	GetColor (colormode, &Scr->MenuTitleC.fore, s);
+	return 1;
+
+      case kwc_MenuShadowColor:
+	GetColor (colormode, &Scr->MenuShadowColor, s);
+	return 1;
+
+    }
+
+    return 0;
+}
+
 
 static int ParseUsePPosition (s)
     register char *s;

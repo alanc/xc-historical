@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.67 89/11/13 10:52:50 jim Exp $
+ * $XConsortium: gram.y,v 1.68 89/11/13 15:16:18 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.67 89/11/13 10:52:50 jim Exp $";
+"$XConsortium: gram.y,v 1.68 89/11/13 15:16:18 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -64,6 +64,9 @@ static int color;
 int num[5], mult, indx = 0;
 int mods = 0;
 
+extern int do_single_keyword(), do_string_keyword(), do_number_keyword();
+extern name_list **do_colorlist_keyword();
+extern int do_color_keyword();
 extern int yylineno;
 %}
 
@@ -87,22 +90,16 @@ extern int yylineno;
 %token <num> F_LEFTICONMGR F_RIGHTICONMGR F_WARPTO F_DELTASTOP
 %token <num> F_WARPTOICONMGR F_WARPTOSCREEN F_RAISELOWER F_SORTICONMGR
 %token <num> F_FORWICONMGR F_BACKICONMGR F_NEXTICONMGR F_PREVICONMGR
-%token <num> ICONMGR_HIGHLIGHT ICONMGR_SHOW
-%token <num> ICONMGR_FOREGROUND ICONMGR_BACKGROUND ICONMGR
+%token <num> ICONMGR_SHOW ICONMGR
 %token <num> ICONMGR_GEOMETRY ICONMGR_NOSHOW MAKE_TITLE
 %token <num> ICONIFY_BY_UNMAPPING DONT_ICONIFY_BY_UNMAPPING 
 %token <num> NO_TITLE AUTO_RAISE NO_HILITE 
 %token <num> META SHIFT CONTROL WINDOW TITLE ICON ROOT FRAME 
-%token <num> COLON EQUALS BORDER_COLOR TITLE_FOREGROUND TITLE_BACKGROUND
-%token <num> DEFAULT_FOREGROUND DEFAULT_BACKGROUND 
-%token <num> MENU_FOREGROUND MENU_BACKGROUND MENU_SHADOW_COLOR
-%token <num> MENU_TITLE_FOREGROUND MENU_TITLE_BACKGROUND 
-%token <num> ICON_FOREGROUND ICON_BACKGROUND ICON_BORDER_COLOR 
-%token <num> BORDER_TILE_FOREGROUND BORDER_TILE_BACKGROUND 
+%token <num> COLON EQUALS 
 %token <num> START_ICONIFIED NO_TITLE_HILITE TITLE_HILITE
 %token <num> MOVE RESIZE WAIT SELECT KILL LEFT_TITLEBUTTON RIGHT_TITLEBUTTON 
 %token <num> NORTH SOUTH EAST WEST ICON_REGION 
-%token <num> NUMBER KEYWORD NKEYWORD
+%token <num> NUMBER KEYWORD NKEYWORD CKEYWORD CLKEYWORD
 %token <ptr> STRING SKEYWORD
 
 %type <ptr> string
@@ -413,87 +410,37 @@ color_entries	: /* Empty */
 		| color_entries color_entry
 		;
 
-color_entry	: BORDER_COLOR string	{ GetColor(color,
-						   &Scr->BorderColor, $2); }
-		| BORDER_COLOR string	{ GetColor(color,
-						   &Scr->BorderColor, $2);
-					    list = &Scr->BorderColorL; }
+color_entry	: CLKEYWORD string	{ if (!do_colorlist_keyword ($1, color,
+								     $2)) {
+					    twmrc_error_prefix();
+					    fprintf (stderr,
+			"unhandled list color keyword %d (string \"%s\")\n",
+						     $1, $2);
+					    ParseError = 1;
+					  }
+					}
+		| CLKEYWORD string	{ list = do_colorlist_keyword($1,color,
+								      $2);
+					  if (!list) {
+					    twmrc_error_prefix();
+					    fprintf (stderr,
+			"unhandled color list keyword %d (string \"%s\")\n",
+						     $1, $2);
+					    ParseError = 1;
+					  }
+					}
 		  win_color_list
-		| ICONMGR_HIGHLIGHT string { GetColor(color,
-						&Scr->IconManagerHighlight,$2);}
-		| ICONMGR_HIGHLIGHT string { GetColor(color,
-						&Scr->IconManagerHighlight,$2);
-					    list = &Scr->IconManagerHighlightL;}
-		  win_color_list
-		| BORDER_TILE_FOREGROUND string { GetColor(color,
-						&Scr->BorderTileC.fore, $2); }
-		| BORDER_TILE_FOREGROUND string { GetColor(color,
-						&Scr->BorderTileC.fore, $2);
-					    list = &Scr->BorderTileForegroundL;}
-		  win_color_list
-		| BORDER_TILE_BACKGROUND string { GetColor(color,
-						&Scr->BorderTileC.back, $2); }
-		| BORDER_TILE_BACKGROUND string { GetColor(color,
-						&Scr->BorderTileC.back, $2);
-					    list = &Scr->BorderTileBackgroundL;}
-		  win_color_list
-		| TITLE_FOREGROUND string { GetColor(color,
-						&Scr->TitleC.fore, $2); }
-		| TITLE_FOREGROUND string { GetColor(color,
-						&Scr->TitleC.fore, $2);
-					    list = &Scr->TitleForegroundL; }
-		  win_color_list
-		| TITLE_BACKGROUND string { GetColor(color,
-						&Scr->TitleC.back, $2); }
-		| TITLE_BACKGROUND string { GetColor(color,
-						&Scr->TitleC.back, $2);
-					    list = &Scr->TitleBackgroundL; }
-		  win_color_list
-		| DEFAULT_FOREGROUND string { GetColor(color,
-						&Scr->DefaultC.fore, $2); }
-		| DEFAULT_BACKGROUND string { GetColor(color,
-						&Scr->DefaultC.back, $2); }
-		| ICON_FOREGROUND string { GetColor(color,
-						&Scr->IconC.fore, $2); }
-		| ICON_FOREGROUND string { GetColor(color,
-						&Scr->IconC.fore, $2);
-					    list = &Scr->IconForegroundL; }
-		  win_color_list
-		| ICON_BACKGROUND string { GetColor(color,
-						&Scr->IconC.back, $2); }
-		| ICON_BACKGROUND string { GetColor(color,
-						&Scr->IconC.back, $2);
-					    list = &Scr->IconBackgroundL; }
-		  win_color_list
-		| ICON_BORDER_COLOR string { GetColor(color,
-						&Scr->IconBorderColor, $2); }
-		| ICON_BORDER_COLOR string { GetColor(color,
-						&Scr->IconBorderColor, $2);
-					    list = &Scr->IconBorderColorL; }
-		  win_color_list
-		| MENU_FOREGROUND string { GetColor(color,
-						&Scr->MenuC.fore, $2); }
-		| MENU_BACKGROUND string { GetColor(color,
-						&Scr->MenuC.back, $2); }
-		| MENU_TITLE_FOREGROUND string { GetColor(color,
-						&Scr->MenuTitleC.fore, $2); }
-		| MENU_TITLE_BACKGROUND string { GetColor(color,
-						&Scr->MenuTitleC.back, $2); }
-		| MENU_SHADOW_COLOR string { GetColor(color,
-						&Scr->MenuShadowColor, $2); }
-		| ICONMGR_FOREGROUND string { GetColor(color,
-						&Scr->IconManagerC.fore, $2);
-						list = &Scr->IconManagerFL; }
-		  win_color_list
-		| ICONMGR_FOREGROUND string { GetColor(color,
-						&Scr->IconManagerC.fore, $2);}
-		| ICONMGR_BACKGROUND string { GetColor(color,
-						&Scr->IconManagerC.back, $2);
-						list = &Scr->IconManagerBL; }
-		  win_color_list
-		| ICONMGR_BACKGROUND string { GetColor(color,
-						&Scr->IconManagerC.back, $2);}
+		| CKEYWORD string	{ if (!do_color_keyword ($1, color,
+								 $2)) {
+					    twmrc_error_prefix();
+					    fprintf (stderr,
+			"unhandled color keyword %d (string \"%s\")\n",
+						     $1, $2);
+					    ParseError = 1;
+					  }
+					}
 		;
+
 
 win_color_list	: LB win_color_entries RB
 		;
