@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.155 92/06/01 18:33:08 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.156 92/06/27 21:50:27 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -466,6 +466,13 @@ XCOMM the platform-specific parameters - edit site.def to change
 #else
 #ifndef AlternateUsrLibDir
 #define AlternateUsrLibDir YES
+#endif
+#endif
+#ifndef ShLibDir
+#ifdef OSF1Architecture
+#define ShLibDir /usr/shlib
+#else
+#define ShLibDir UsrLibDir
 #endif
 #endif
 #ifndef IncRoot
