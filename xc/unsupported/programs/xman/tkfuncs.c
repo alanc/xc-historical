@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: tkfuncs.c,v 1.3 89/01/06 18:42:30 kit Exp $
+ * $XConsortium: tkfuncs.c,v 1.4 89/04/28 15:05:55 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -18,10 +18,6 @@
  * Author:    Chris D. Peterson, MIT Project Athena
  * Created:   February 6, 1988
  */
-
-#if ( !defined(lint) && !defined(SABER))
-  static char rcs_version[] = "$Athena: tkfuncs.c,v 4.5 88/12/19 13:48:24 kit Exp $";
-#endif
 
 #include <X11/X.h>
 #include <X11/Xos.h>

@@ -1,8 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.13 90/01/11 20:09:00 keith Exp $
- * $Header: ScrollByL.c,v 1.13 90/01/11 20:09:00 keith Exp $
+ * $XConsortium: ScrollByL.c,v 1.14 90/04/25 17:18:57 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -19,10 +18,6 @@
  * Author:    Chris D. Peterson, MIT Project Athena
  * Created:   December 5, 1987
  */
-
-#if ( !defined(lint) && !defined(SABER))
-  static char rcs_version[] = "$Athena: ScrollByL.c,v 4.5 88/12/19 13:46:04 kit Exp $";
-#endif
 
 #include <stdio.h>
 #include <ctype.h>

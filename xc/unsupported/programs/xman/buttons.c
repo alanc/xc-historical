@@ -1,8 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.21 90/04/25 17:28:21 converse Exp $
- * $Header: buttons.c,v 1.21 90/04/25 17:28:21 converse Exp $
+ * $XConsortium: buttons.c,v 1.22 90/10/28 17:59:16 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -19,10 +18,6 @@
  * Author:    Chris D. Peterson, MIT Project Athena
  * Created:   October 27, 1987
  */
-
-#if ( !defined(lint) && !defined(SABER))
-  static char rcs_version[] = "$Athena: buttons.c,v 4.5 88/12/19 13:46:34 kit Exp $";
-#endif
 
 #include "globals.h"
 

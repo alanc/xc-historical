@@ -1,8 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.10 89/08/30 18:24:39 kit Exp $
- * $oHeader: search.c,v 4.0 88/08/31 22:13:19 kit Exp $
+ * $XConsortium: search.c,v 1.11 89/10/03 15:58:01 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -19,10 +18,6 @@
  * Author:    Chris D. Peterson, MIT Project Athena
  * Created:   November 3, 1987
  */
-
-#if ( !defined(lint) && !defined(SABER))
-  static char rcs_version[] = "$Athena: search.c,v 4.7 89/01/06 15:59:02 kit Exp $";
-#endif
 
 #include "globals.h"
 

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.19 89/12/10 17:19:10 rws Exp $
+ * $XConsortium: misc.c,v 1.20 90/02/26 12:03:04 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -18,10 +18,6 @@
  * Author:    Chris D. Peterson, MIT Project Athena
  * Created:   October 27, 1987
  */
-
-#if ( !defined(lint) && !defined(SABER))
-  static char rcs_version[] = "$Athena: misc.c,v 4.6 88/12/19 13:48:01 kit Exp $";
-#endif
 
 #include "globals.h"
 #include <X11/Xos.h> 		/* sys/types.h and unistd.h included in here */
