@@ -1,6 +1,5 @@
 /*
-* $XConsortium: StringDefs.h,v 1.48 89/09/13 13:12:32 swick Exp $
-* $oHeader: StringDefs.h,v 1.3 88/08/19 16:39:44 asente Exp $
+* $XConsortium: StringDefs.h,v 1.49 89/12/12 19:24:02 swick Exp $
 */
 
 /***********************************************************
@@ -27,11 +26,20 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifndef _XtAtom_h_
-#define _XtAtom_h_
+#ifndef _XtStringDefs_h_
+#define _XtStringDefs_h_
+
+#ifndef _Xconst
+#if __STDC__ || defined(__cplusplus) || defined(c_plusplus)
+#define _Xconst const
+#else
+#define _Xconst
+#endif
+#endif
 
 /* Resource names */
 
+#ifdef XTSTRINGDEFINES
 #define XtNaccelerators "accelerators"
 #define XtNallowHoriz "allowHoriz"
 #define XtNallowVert "allowVert"
@@ -118,8 +126,98 @@ SOFTWARE.
 #define XtNwindow "window"
 #define XtNx "x"
 #define XtNy "y"
+#else
+extern char XtNaccelerators[];
+extern char XtNallowHoriz[];
+extern char XtNallowVert[];
+extern char XtNancestorSensitive[];
+extern char XtNbackground[];
+extern char XtNbackgroundPixmap[];
+extern char XtNbitmap[];
+extern char XtNborderColor[];
+extern char XtNborder[];
+extern char XtNborderPixmap[];
+extern char XtNborderWidth[];
+extern char XtNcallback[];
+extern char XtNchildren[];
+extern char XtNcolormap[];
+extern char XtNdepth[];
+extern char XtNdestroyCallback[];
+extern char XtNeditType[];
+extern char XtNfile[];
+extern char XtNfont[];
+extern char XtNforceBars[];
+extern char XtNforeground[];
+extern char XtNfunction[];
+extern char XtNheight[];
+extern char XtNhighlight[];
+extern char XtNhSpace[];
+extern char XtNindex[];
+extern char XtNinitialResourcesPersistent[];
+extern char XtNinnerHeight[];
+extern char XtNinnerWidth[];
+extern char XtNinnerWindow[];
+extern char XtNinsertPosition[];
+extern char XtNinternalHeight[];
+extern char XtNinternalWidth[];
+extern char XtNjumpProc[];
+extern char XtNjustify[];
+extern char XtNknobHeight[];
+extern char XtNknobIndent[];
+extern char XtNknobPixel[];
+extern char XtNknobWidth[];
+extern char XtNlabel[];
+extern char XtNlength[];
+extern char XtNlowerRight[];
+extern char XtNmappedWhenManaged[];
+extern char XtNmenuEntry[];
+extern char XtNname[];
+extern char XtNnotify[];
+extern char XtNnumChildren[];
+extern char XtNorientation[];
+extern char XtNparameter[];
+extern char XtNpixmap[];
+extern char XtNpopupCallback[];
+extern char XtNpopdownCallback[];
+extern char XtNresize[];
+extern char XtNreverseVideo[];
+extern char XtNscreen[];
+extern char XtNscrollProc[];
+extern char XtNscrollDCursor[];
+extern char XtNscrollHCursor[];
+extern char XtNscrollLCursor[];
+extern char XtNscrollRCursor[];
+extern char XtNscrollUCursor[];
+extern char XtNscrollVCursor[];
+extern char XtNselection[];
+extern char XtNselectionArray[];
+extern char XtNsensitive[];
+extern char XtNshown[];
+extern char XtNspace[];
+extern char XtNstring[];
+extern char XtNtextOptions[];
+extern char XtNtextSink[];
+extern char XtNtextSource[];
+extern char XtNthickness[];
+extern char XtNthumb[];
+extern char XtNthumbProc[];
+extern char XtNtop[];
+extern char XtNtranslations[];
+extern char XtNunrealizeCallback[];
+extern char XtNupdate[];
+extern char XtNuseBottom[];
+extern char XtNuseRight[];
+extern char XtNvalue[];
+extern char XtNvSpace[];
+extern char XtNwidth[];
+extern char XtNwindow[];
+extern char XtNx[];
+extern char XtNy[];
+#endif
 
 /* Class types */ 
+
+#ifdef XTSTRINGDEFINES
 #define XtCAccelerators "Accelerators"
 #define XtCBackground "Background"
 #define XtCBitmap "Bitmap"
@@ -186,9 +284,78 @@ SOFTWARE.
 #define XtCWindow "Window"
 #define XtCX "X"
 #define XtCY "Y"
+#else
+extern char XtCAccelerators[];
+extern char XtCBackground[];
+extern char XtCBitmap[];
+extern char XtCBoolean[];
+extern char XtCBorderColor[];
+extern char XtCBorderWidth[];
+extern char XtCCallback[];
+extern char XtCColormap[];
+extern char XtCColor[];
+extern char XtCCursor[];
+extern char XtCDepth[];
+extern char XtCEditType[];
+extern char XtCEventBindings[];
+extern char XtCFile[];
+extern char XtCFont[];
+extern char XtCForeground[];
+extern char XtCFraction[];
+extern char XtCFunction[];
+extern char XtCHeight[];
+extern char XtCHSpace[];
+extern char XtCIndex[];
+extern char XtCInitialResourcesPersistent[];
+extern char XtCInsertPosition[];
+extern char XtCInterval[];
+extern char XtCJustify[];
+extern char XtCKnobIndent[];
+extern char XtCKnobPixel[];
+extern char XtCLabel[];
+extern char XtCLength[];
+extern char XtCMappedWhenManaged[];
+extern char XtCMargin[];
+extern char XtCMenuEntry[];
+extern char XtCNotify[];
+extern char XtCOrientation[];
+extern char XtCParameter[];
+extern char XtCPixmap[];
+extern char XtCPosition[];
+extern char XtCReadOnly[];
+extern char XtCResize[];
+extern char XtCReverseVideo[];
+extern char XtCScreen[];
+extern char XtCScrollProc[];
+extern char XtCScrollDCursor[];
+extern char XtCScrollHCursor[];
+extern char XtCScrollLCursor[];
+extern char XtCScrollRCursor[];
+extern char XtCScrollUCursor[];
+extern char XtCScrollVCursor[];
+extern char XtCSelection[];
+extern char XtCSensitive[];
+extern char XtCSelectionArray[];
+extern char XtCSpace[];
+extern char XtCString[];
+extern char XtCTextOptions[];
+extern char XtCTextPosition[];
+extern char XtCTextSink[];
+extern char XtCTextSource[];
+extern char XtCThickness[];
+extern char XtCThumb[];
+extern char XtCTranslations[];
+extern char XtCValue[];
+extern char XtCVSpace[];
+extern char XtCWidth[];
+extern char XtCWindow[];
+extern char XtCX[];
+extern char XtCY[];
+#endif
 
 /* Representation types */
 
+#ifdef XTSTRINGDEFINES
 #define XtRAcceleratorTable "AcceleratorTable"
 #define XtRAtom "Atom"
 #define XtRBitmap "Bitmap"
@@ -233,35 +400,109 @@ SOFTWARE.
 #define XtRWidgetClass "WidgetClass"
 #define XtRWidgetList "WidgetList"
 #define XtRWindow "Window"
-
+#else
+extern char XtRAcceleratorTable[];
+extern char XtRAtom[];
+extern char XtRBitmap[];
+extern char XtRBool[];
+extern char XtRBoolean[];
+extern char XtRCallback[];
+extern char XtRCallProc[];
+extern char XtRCardinal[];
+extern char XtRColor[];
+extern char XtRColormap[];
+extern char XtRCursor[];
+extern char XtRDimension[];
+extern char XtRDisplay[];
+extern char XtREditMode[];
+extern char XtREnum[];
+extern char XtRFile[];
+extern char XtRFloat[];
+extern char XtRFont[];
+extern char XtRFontStruct[];
+extern char XtRFunction[];
+extern char XtRGeometry[];
+extern char XtRImmediate[];
+extern char XtRInitialState[];
+extern char XtRInt[];
+extern char XtRJustify[];
+#define XtRLongBoolean XtRBool
+extern char XtRObject[];
+extern char XtROrientation[];
+extern char XtRPixel[];
+extern char XtRPixmap[];
+extern char XtRPointer[];
+extern char XtRPosition[];
+extern char XtRScreen[];
+extern char XtRShort[];
+extern char XtRString[];
+extern char XtRStringArray[];
+extern char XtRStringTable[];
+extern char XtRUnsignedChar[];
+extern char XtRTranslationTable[];
+extern char XtRVisual[];
+extern char XtRWidget[];
+extern char XtRWidgetClass[];
+extern char XtRWidgetList[];
+extern char XtRWindow[];
+#endif
 
 /* Boolean enumeration constants */
 
+#ifdef XTSTRINGDEFINES
 #define XtEoff "off"
 #define XtEfalse "false"
 #define XtEno "no"
 #define XtEon "on"
 #define XtEtrue "true"
 #define XtEyes "yes"
+#else
+extern char XtEoff[];
+extern char XtEfalse[];
+extern char XtEno[];
+extern char XtEon[];
+extern char XtEtrue[];
+extern char XtEyes[];
+#endif
 
 /* Orientation enumeration constants */
 
+#ifdef XTSTRINGDEFINES
 #define XtEvertical "vertical"
 #define XtEhorizontal "horizontal"
+#else
+extern char XtEvertical[];
+extern char XtEhorizontal[];
+#endif
 
 /* text edit enumeration constants */
 
+#ifdef XTSTRINGDEFINES
 #define XtEtextRead "read"
 #define XtEtextAppend "append"
 #define XtEtextEdit "edit"
+#else
+extern char XtEtextRead[];
+extern char XtEtextAppend[];
+extern char XtEtextEdit[];
+#endif
 
 /* color enumeration constants */
 
+#ifdef XTSTRINGDEFINES
 #define XtExtdefaultbackground "xtdefaultbackground"
 #define XtExtdefaultforeground "xtdefaultforeground"
+#else
+extern char XtExtdefaultbackground[];
+extern char XtExtdefaultforeground[];
+#endif
 
 /* font constant */
 
+#ifdef XTSTRINGDEFINES
 #define XtExtdefaultfont "xtdefaultfont"
+#else
+extern char XtExtdefaultfont[];
+#endif
 
-#endif /*_XtAtom_h_*/
+#endif /*_XtStringDefs_h_*/
