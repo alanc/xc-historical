@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.h,v 5.4 89/09/15 13:13:08 rws Exp $ */
+/* $XConsortium: mizerarc.h,v 5.5 89/09/18 16:52:15 rws Exp $ */
 
 #define FULLCIRCLE (360 * 64)
 #define OCTANT (45 * 64)
@@ -29,13 +29,19 @@ without any express or implied warranty.
 #define Dcos(d)	((d) == 0.0 ? 1.0 : ((d) == 90.0 ? 0.0 : cos(d*M_PI/180.0)))
 
 typedef struct {
+    int x;
+    int y;
+    int mask;
+} miZeroArcPtRec;
+
+typedef struct {
     int x, y, k1, k3, a, b, d, dx1, dy1;
     int alpha, beta;
     int xorg, yorg;
     int xorgo, yorgo;
     int w, h;
-    int initialMask, startMask, endMask;
-    int startx, starty, endx, endy;
+    int initialMask;
+    miZeroArcPtRec start, altstart, end, altend;
     int firstx, firsty;
     int startAngle, endAngle;
 } miZeroArcRec;
