@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: file.c,v 1.4 88/10/15 19:11:54 keith Exp $
+ * $XConsortium: file.c,v 1.5 88/10/20 17:36:54 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -134,6 +134,7 @@ static struct displayMatch {
 	char		*name;
 	DisplayType	type;
 } displayTypes[] = {
+	"local",		{ Local, Permanent, Secure },
 	"secure",		{ Local,  Permanent, Secure },
 	"insecure",		{ Local,  Permanent, Insecure },
 	"foreign",		{ Foreign, Permanent, Secure },

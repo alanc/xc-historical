@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.5 88/10/15 19:12:57 keith Exp $
+ * $XConsortium: session.c,v 1.6 88/10/20 17:37:24 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -57,12 +57,12 @@ struct display	*d;
 	Debug ("Greet loop finished\n");
 	/*
 	 * Step 8: Run system-wide initialization file
-	 *	   /etc/Xstartup
 	 */
-	source (&verify, d->startup);
+	if (source (&verify, d->startup) != 0)
+		exit (OBEYTERM_DISPLAY);
 	/*
 	 * Step 9: Start the clients, changing uid/groups
-	 *	   setting up environment and running /etc/Xsession
+	 *	   setting up environment and running the session
 	 */
 	if (StartClient (&verify, d, &clientPid)) {
 		Debug ("Client Started\n");
@@ -78,7 +78,7 @@ struct display	*d;
 		LogError ("session start failed\n");
 	}
 	/*
-	 * Step 15: run /etc/Xreset
+	 * Step 15: run system-wide reset file
 	 */
 	source (&verify, d->reset);
 	exit (OBEYTERM_DISPLAY);
@@ -142,6 +142,7 @@ int			*pidp;
 		exit (1);
 	case -1:
 		Debug ("StartSession, fork failed\n");
+		LogError ("can't start session for %d, fork failed\n", d->name);
 		return 0;
 	default:
 		Debug ("StartSession, fork suceeded %d\n", pid);
@@ -150,6 +151,7 @@ int			*pidp;
 	}
 }
 
+int
 source (verify, file)
 struct verify_info	*verify;
 char			*file;
@@ -157,6 +159,7 @@ char			*file;
 	char	*args[4];
 	int	pid, wpid;
 	extern int	errno;
+	waitType	result;
 
 	Debug ("source %s\n", file);
 	if (file[0] && access (file, 1) == 0) {
@@ -175,11 +178,15 @@ char			*file;
 			exit (1);
 		case -1:
 			Debug ("fork failed\n");
+			LogError ("can't fork to execute %s\n", file);
+			return 1;
 			break;
 		default:
-			while ((wpid = wait ((waitType *) 0)) != pid)
+			while ((wpid = wait (&result)) != pid)
 				;
 			break;
 		}
+		return waitVal (result);
 	}
+	return 0;
 }

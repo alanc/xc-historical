@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.6 88/10/15 19:09:33 keith Exp $
+ * $XConsortium: dm.h,v 1.7 88/10/20 17:36:49 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -105,6 +105,7 @@ struct display {
 	char		*failsafeClient;/* a client to start when the session fails */
 	int		openDelay;	/* open delay time */
 	int		openRepeat;	/* open attempts to make */
+	int		openTimeout;	/* abort open attempt timeout */
 	int		terminateServer;/* restart for each session */
 	DisplayType	displayType;	/* method to handle with */
 #ifdef UDP_SOCKET

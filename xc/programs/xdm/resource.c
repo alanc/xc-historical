@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.5 88/10/15 19:12:30 keith Exp $
+ * $XConsortium: resource.c,v 1.6 88/10/20 17:37:13 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -80,6 +80,8 @@ struct displayResources {
 				"5",
 "openRepeat",	"OpenRepeat",	DM_INT,		boffset(openRepeat),
 				"5",
+"openTimeout",	"OpenTimeout",	DM_INT,		boffset(openTimeout),
+				"30",
 "terminateServer","TerminateServer",DM_BOOL,	boffset(terminateServer),
 				"false",
 "userPath",	"Path",		DM_STRING,	boffset(userPath),

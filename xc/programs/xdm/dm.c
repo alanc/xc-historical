@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.7 88/10/15 19:08:58 keith Exp $
+ * $XConsortium: dm.c,v 1.8 88/10/20 17:36:43 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -79,6 +79,7 @@ ScanServers ()
 		  { Local, Permanent, Insecure },
 		  { Local, Transient, Insecure },
 		  { Foreign, Permanent, Secure },
+		  { Foreign, Transient, Secure },
 		};
 
 	if (servers[0] == '/') {
