@@ -15,7 +15,7 @@
 Chapter 9 \- Resource Management
 .XE
 A resource is a field in the widget record with a corresponding
-resource entry in the resource list of the widget or any of its
+resource entry in the \fIresources\fP list of the widget or any of its
 superclasses.
 This means that the field is
 settable by
@@ -27,7 +27,7 @@ In addition, it is readable by
 .PN XtGetValues .
 Not all fields in a widget record are resources.
 Some are for bookkeeping use by the
-generic routines (like managed and being_destroyed).
+generic routines (like \fImanaged\fP and \fIbeing_destroyed\fP).
 Others can be for local bookkeeping,
 and still others are derived from resources 
 (many graphics contexts and pixmaps).
@@ -41,7 +41,7 @@ and some from the internal defaults specified by the widget.
 Resources are obtained first from the argument list,
 then from the resource database for all resources not specified
 in the argument list,
-and lastly from the internal default, if needed.
+and last, from the internal default, if needed.
 .NH 2
 Resource Lists
 .XS
@@ -51,11 +51,11 @@ Resource Lists
 .IN "Resource Management"
 A resource entry specifies a field in the widget,
 the textual name and class of the field that argument lists
-and external resource files use to refer to the field
+and external resource files use to refer to the field,
 and a default value that the field should get if no value is specified.
 The declaration for the
 .PN XtResource
-structure is:
+structure is
 .LP
 .Ds 0
 .TA .5i 3i
@@ -72,12 +72,12 @@ typedef struct {
 .De
 .IN "XtResourceList"
 .LP
-The resource_name field contains the name used by clients to access the field
+The \fIresource_name\fP field contains the name used by clients to access the field
 in the widget.
-By convention, it starts with a lowercase letter
-and is spelled identically to the field name,
+By convention, it starts with a lower-case letter
+and is spelled exactly like the field name,
 except all underscores (_) are deleted and the next letter is replaced by its 
-uppercase counterpart.
+upper-case counterpart.
 For example, the resource name for background_pixel becomes backgroundPixel.
 Resource names beginning with the two-character
 sequence ``xt'' and resource classes beginning with the two-character
@@ -86,11 +86,13 @@ implementation-dependent uses.
 Widget header files typically contain a symbolic name for each resource name.
 All resource names, classes, and types used by the \*(xI are named in
 .Pn < X11/StringDefs.h >.
-The \*(xI symbolic resource names begin with
-.PN XtN
+The \*(xI's symbolic resource names begin with
+``XtN''
 and are followed by the string name (for example, XtNbackgroundPixel
 for backgroundPixel).
 .LP
+The \fIresource_class\fP field contains the class used by
+clients to access the field.
 A resource class provides two functions:
 .IP \(bu 5
 It isolates an application from different representations that widgets 
@@ -106,13 +108,13 @@ Typically, the background defaults to white
 and everything else to black.
 The resource class for each of these resources in the resource list
 should be chosen so that it takes the minimal number of entries
-in the resource database to make background offwhite
+in the resource database to make the background offwhite
 and everything else darkblue.
 .LP
 In this case, the background pixel should have a resource class of
-.PN Background
+``Background''
 and all the other pixel entries a resource class of
-.PN Foreground .
+``Foreground''.
 Then, the resource file needs only two lines to
 change all pixels to offwhite or darkblue:
 .LP
@@ -135,18 +137,23 @@ default resource file:
 .De
 .LP
 By convention,
-resource classes are always spelled starting with a capital letter.
+resource classes are always spelled starting with a capital letter
+to distinguish them from resource names.
 Their symbolic names are preceded with
-.PN XtC
+``XtC''
 (for example, XtCBackground).
 .LP
-The resource_type field gives the physical representation type of the resource
+The \fIresource_type\fP field gives the physical representation type of the resource
 and also encodes information about the specific usage of the field.
-By convention, it starts with an uppercase letter and is
+By convention, it starts with an upper-case letter and is
 spelled identically to the type name of the field.
 The resource type is used when resources are fetched to
-convert from the resource database format (usually String) or the default
-resource format (almost anything, but often String) to the desired
+convert from the resource database format (usually
+.PN String )
+or the default
+resource format (almost anything, but often
+.PN String )
+to the desired
 physical representation (see Section 9.6).
 The \*(xI define the following resource types:
 .TS H
@@ -195,7 +202,7 @@ T{
 T}	Dimension
 T{
 .PN XtRDisplay
-T}	Display *
+T}	Display*
 T{
 .PN XtREnum
 T}	XtEnum
@@ -210,7 +217,7 @@ T{
 T}	Font
 T{
 .PN XtRFontStruct
-T}	XFontStruct *
+T}	XFontStruct*
 T{
 .PN XtRFunction
 T}	(*)()
@@ -240,25 +247,25 @@ T{
 T}	Pixmap
 T{
 .PN XtRPointer
-T}	Pointer
+T}	XtPointer
 T{
 .PN XtRPosition
 T}	Position
 T{
 .PN XtRScreen
-T}	Screen *
+T}	Screen*
 T{
 .PN XtRShort
 T}	short
 T{
 .PN XtRString
-T}	char*
+T}	String
 T{
 .PN XtRStringArray
-T}	String *
+T}	String*
 T{
 .PN XtRStringTable
-T}	char**
+T}	String*
 T{
 .PN XtRTranslationTable
 T}	XtTranslations
@@ -267,7 +274,7 @@ T{
 T}	unsigned char
 T{
 .PN XtRVisual
-T}	Visual *
+T}	Visual*
 T{
 .PN XtRWidget
 T}	Widget
@@ -288,26 +295,28 @@ _
 .Pn < X11/StringDefs.h >
 also defines the following resource types as a
 convenience for widgets, although they do not have any corresponding
-datatype assigned:
+data type assigned:
 .PN XtREditMode ,
-.PN XtRJustify
+.PN XtRJustify ,
 and
 .PN XtROrientation .
 .LP
-The resource_size field is the size of the physical representation in bytes;
-you should specify it as ``sizeof(\fItype\fP)'' so that the
+The \fIresource_size\fP field is the size of the physical representation in bytes;
+you should specify it as
+.PN sizeof (\fItype\fP)
+so that the
 compiler fills in the value.
-The resource_offset field is the offset in bytes of the field 
+The \fIresource_offset\fP field is the offset in bytes of the field 
 within the widget.
 You should use the
 .PN XtOffsetOf
 macro to retrieve this value.
-The default_type field is the representation type of the default
+The \fIdefault_type\fP field is the representation type of the default
 resource value.
-If default_type is different from resource_type and the default value
+If \fIdefault_type\fP is different from \fIresource_type\fP and the default value
 is needed,
-the resource manager invokes a conversion procedure from default_type
-to resource_type.
+the resource manager invokes a conversion procedure from \fIdefault_type\fP
+to \fIresource_type\fP.
 Whenever possible,
 the default type should be identical to the resource type in order
 to minimize widget creation time.
@@ -317,41 +326,41 @@ In this case,
 it should be a value for which the converter is guaranteed to work (for example, 
 .PN XtDefaultForeground
 for a pixel resource).
-The default_addr field specifies the address of the default resource value.
-As a special case, if the default_type is
-.PN XtRString
-then the value in the default_addr field is the pointer to
+The \fIdefault_addr\fP field specifies the address of the default resource value.
+As a special case, if \fIdefault_type\fP is
+.PN XtRString ,
+then the value in the \fIdefault_addr\fP field is the pointer to
 the string rather than a pointer to the pointer.
 The default is used if a resource is not specified in the argument list
-or in the resource database or if the conversion from the representation
+or in the resource database, or if the conversion from the representation
 type stored in the resource database fails,
 which can happen for various reasons (for example, a misspelled entry in a
 resource file).
 .LP
 Two special representation types 
-.Pn ( XtRImmediate
+(XtRImmediate
 and
-.PN XtRCallProc )
+XtRCallProc)
 are usable only as default resource types.
-.PN XtRImmediate
-indicates that the value in the default_addr field is the actual value of
+XtRImmediate
+indicates that the value in the \fIdefault_addr\fP field is the actual value of
 the resource rather than the address of the value. 
 The value must be in the correct representation type for the resource,
 coerced to an
 .PN XtPointer .
-No conversion is possible since there is no source representation type.
-.PN XtRCallProc
-indicates that the value in the default_addr field is a procedure
+No conversion is possible, since there is no source representation type.
+XtRCallProc
+indicates that the value in the \fIdefault_addr\fP field is a procedure
 pointer.
 This procedure is automatically invoked with the widget,
-resource_offset, and a pointer to an
+\fIresource_offset\fP, and a pointer to an
 .PN XrmValue
 in which to store the result.
-.PN XtRCallProc
+XtRCallProc
 procedure pointers are of type
 .PN XtResourceDefaultProc .
 .FD 0
-typedef void (*XtResourceDefaultProc)(Widget, int, XrmValue*)
+typedef void (*XtResourceDefaultProc)(Widget, int, XrmValue*);
 .br
       Widget \fIw\fP;
 .br
@@ -368,12 +377,12 @@ Specifies the resource value descriptor to return.
 .LP
 The
 .PN XtResourceDefaultProc
-procedure should fill in the value->addr with a pointer 
+procedure should fill in the \fIvalue->addr\fP field with a pointer 
 to the resource value in its correct representation type.
 .sp
 .LP
 To get the resource list structure for a particular class, use
-.PN XtGetResourceList :
+.PN XtGetResourceList .
 .IN "XtGetResourceList" "" "@DEF@"
 .FD 0
 void XtGetResourceList(\fIclass\fP, \fIresources_return\fP, \fInum_resources_return\fP);
@@ -395,7 +404,7 @@ Returns the number of entries in the resource list.
 .LP
 If
 .PN XtGetResourceList
-is called before the class is initialized
+is called before the class is initialized,
 it returns the resource list as specified in the class record.
 If it is called after the class has been initialized,
 .PN XtGetResourceList
@@ -435,14 +444,15 @@ If
 .PN XtGetConstraintResourceList
 is called before the widget class is
 initialized, the resource list as specified in the widget
-class constraint part will be returned.  If
+class Constraint part is returned.  If
 .PN XtGetConstraintResourceList
 is called after the widget class has been initialized, the merged
-resource list for the class and all constraint superclasses is
+resource list for the class and all Constraint superclasses is
 returned.  If the
 specified class is not a subclass of
 .PN constraintWidgetClass ,
-*resources_return is set to NULL and *num_resources_return is set to 0.
+*\fIresources_return\fP is set to NULL
+and *\fInum_resources_return\fP is set to zero.
 The list returned by
 .PN XtGetConstraintResourceList
 should be freed using
@@ -454,8 +464,7 @@ The routines
 .PN XtSetValues
 and
 .PN XtGetValues
-also use the resource list to set and get widget state.
-For further information, 
+also use the resource list to set and get widget state;
 see Sections 9.7.1 and 9.7.2.
 .LP
 Here is an abbreviated version of a possible resource list for a Label widget:
@@ -467,9 +476,9 @@ Here is an abbreviated version of a possible resource list for a Label widget:
 static XtResource resources[] = {
 {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
    XtOffsetOf(LabelRec, label.foreground), XtRString, XtDefaultForeground},
-{XtNfont,  XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-   XtOffsetOf(LabelRec, label.font),XtRString, XtDefaultFont},
-{XtNlabel,  XtCLabel, XtRString, sizeof(String),
+{XtNfont, XtCFont, XtRFontStruct, sizeof(XFontStruct*),
+   XtOffsetOf(LabelRec, label.font), XtRString, XtDefaultFont},
+{XtNlabel, XtCLabel, XtRString, sizeof(String),
    XtOffsetOf(LabelRec, label.label), XtRString, NULL},
 	.
 	.
@@ -481,15 +490,15 @@ The complete resource name for a field of a widget instance is the
 concatenation of the application shell name (from 
 .PN XtAppCreateShell ),
 the instance names of all the widget's parents up to the 
-top of the widget hierarchy,
+top of the widget tree,
 the instance name of the widget itself,
 and the resource name of the specified field of the widget.
-Likewise,
+Similarly,
 the full resource class of a field of a widget instance is the
 concatenation of the application class (from
 .PN XtAppCreateShell ),
 the widget class names of all the widget's parents up to the 
-top of the widget hierarchy,
+top of the widget tree,
 the widget class name of the widget itself,
 and the resource class of the specified field of the widget.
 .NH 2
@@ -549,9 +558,9 @@ is less portable than
 .PN XtOffsetOf .
 
 .NH 2
-Superclass to Subclass Chaining of Resource Lists
+Superclass-to-Subclass Chaining of Resource Lists
 .XS
-\*(SN Superclass to Subclass Chaining of Resource Lists
+\*(SN Superclass-to-Subclass Chaining of Resource Lists
 .XE
 .LP
 .IN "Inheritance"
@@ -560,10 +569,12 @@ Superclass to Subclass Chaining of Resource Lists
 The 
 .PN XtCreateWidget
 function gets resources as a superclass-to-subclass chained operation.
-That is, the resources specified in 
-.PN Object
+That is, the resources specified in the
+.PN objectClass
 resource list are fetched,
-then those in the subclass, and so on down to the resources specified
+then those in
+.PN rectObjClass ,
+and so on down to the resources specified
 for this widget's class. Within a class, resources are fetched in the order
 they are declared.
 .LP
@@ -571,11 +582,11 @@ In general, if a widget resource field is declared in a superclass,
 that field is included in the superclass's resource list and need not be
 included in the subclass's resource list.
 For example, the
-.PN Core 
-class contains a resource entry for background_pixel.
+Core 
+class contains a resource entry for \fIbackground_pixel\fP.
 Consequently,
 the implementation of Label need not also have a resource entry
-for background_pixel.
+for \fIbackground_pixel\fP.
 However, a subclass,
 by specifying a resource entry for that field in its own resource list,
 can override the resource entry for any field declared in a superclass.
@@ -586,15 +597,15 @@ resource lists for that class are scanned from the superclass down
 to the class to look for resources with the same offset.
 A matching resource in a subclass will be reordered to override
 the superclass entry.
-(A copy of the superclass resource list is made to
-avoid affecting other subclasses of the superclass.)
+If reordering is necessary, a copy of the superclass resource list is made to
+avoid affecting other subclasses of the superclass.
 .LP
 .IN "class_initialize procedure"
 .IN "Widget" "class initialization"
 Also at class initialization time, the \*(xI produce an
 internal representation of the resource list to optimize access time
 when creating widgets.  In order to save memory, the \*(xI may
-over-write the storage allocated for the resource list in the class
+overwrite the storage allocated for the resource list in the class
 record; therefore, widgets must allocate resource lists in writable
 storage and must not access the list contents directly after the
 class_initialize procedure has returned.
@@ -657,26 +668,26 @@ Specifies the number of entries in the argument list.
 .LP
 The
 .PN XtGetSubresources
-function constructs a name/class list from the application name/class,
-the name/classes of all the object's ancestors, and the object itself.
-Then, it appends to this list the name/class pair passed in.
+function constructs a name and class list from the application name and class,
+the names and classes of all the object's ancestors, and the object itself.
+Then it appends to this list the \fIname\fP and \fIclass\fP pair passed in.
 The resources are fetched from the argument list, the resource database,
 or the default values in the resource list.
-Then, they are copied into the subpart record.
-If args is NULL,
-num_args must be zero.
-However, if num_args is zero,
+Then they are copied into the subpart record.
+If \fIargs\fP is NULL,
+\fInum_args\fP must be zero.
+However, if \fInum_args\fP is zero,
 the argument list is not referenced.
 .LP
 .PN XtGetSubresources
-may over-write the specified resource list with an
-equivalent representation in an internal format which optimizes access
+may overwrite the specified resource list with an
+equivalent representation in an internal format, which optimizes access
 time if the list is used repeatedly.  The resource list must be
-allocated in writable storage and the caller must not modify the list
+allocated in writable storage, and the caller must not modify the list
 contents after the call if the same list is to be used again.
 Resources fetched by
 .PN XtGetSubresources
-are reference counted as
+are reference-counted as
 if they were referenced by the specified object.  Subresources might
 therefore be freed from the conversion cache and destroyed
 when the object is destroyed, but not before then.
@@ -716,13 +727,13 @@ Specifies the resource list for the subpart.
 .IP \fInum_resources\fP 1i
 Specifies the number of entries in the resource list.
 .IP ... 1i
-Specifies the variable-length argument list to override any other
+Specifies the variable argument list to override any other
 resource specifications.
 .LP
 .PN XtVaGetSubresources
 is identical in function to
 .PN XtGetSubresources
-with the args and num_args parameters replaced by a varargs list as
+with the \fIargs\fP and \fInum_args\fP parameters replaced by a varargs list, as
 described in Section 2.4.1.
 
 .NH 2
@@ -753,7 +764,7 @@ void XtGetApplicationResources(\fIw\fP, \fIbase\fP, \fIresources\fP, \
 .FN
 .IP \fIw\fP 1i
 Specifies the object that identifies the resource database to search
-(The database is that associated with the display for this object).  \*(oI
+(the database is that associated with the display for this object).  \*(oI
 .IP \fIbase\fP 1i
 Specifies the base address into which
 the resource values will be written.
@@ -772,25 +783,27 @@ function first uses the passed object,
 which is usually an application shell widget,
 to construct a resource name and class list.
 The full name and class of the specified object (that is, including its
-ancestors, if any) is logically prepended to each resource name and class.
-Then, it retrieves the resources from the argument list,
+ancestors, if any) is logically added to the
+front of each resource name and class.
+Then it retrieves the resources from the argument list,
 the resource database, or the resource list default values.
 After adding base to each address,
 .PN XtGetApplicationResources
-copies the resources into the address given in the resource list.
-If args is NULL,
-num_args must be zero.
-However, if num_args is zero,
+copies the resources into the addresses
+obtained by adding \fIbase\fP to each \fIoffset\fP in the resource list.
+If \fIargs\fP is NULL,
+\fInum_args\fP must be zero.
+However, if \fInum_args\fP is zero,
 the argument list is not referenced.
 The portable way to specify application resources is to declare them
 as members of a structure and pass the address of the structure 
-as the base argument.
+as the \fIbase\fP argument.
 .LP
 .PN XtGetApplicationResources
-may over-write the specified resource list
-with an equivalent representation in an internal format which
+may overwrite the specified resource list
+with an equivalent representation in an internal format, which
 optimizes access time if the list is used repeatedly.  The resource
-list must be allocated in writable storage and the caller must not
+list must be allocated in writable storage, and the caller must not
 modify the list contents after the call if the same list is to be
 used again.  Any per-display resources fetched by
 .PN XtGetApplicationResources
@@ -814,7 +827,7 @@ void XtVaGetApplicationResources(\fIw\fP, \fIbase\fP, \fIresources\fP, \
 .FN
 .IP \fIw\fP 1i
 Specifies the object that identifies the resource database to search
-(The database is that associated with the display for this object).  \*(oI
+(the database is that associated with the display for this object).  \*(oI
 .IP \fIbase\fP 1i
 Specifies the base address into which
 the resource values will be written.
@@ -823,14 +836,14 @@ Specifies the resource list for the subpart.
 .IP \fInum_resources\fP 1i
 Specifies the number of entries in the resource list.
 .IP ... 1i
-Specifies the variable-length argument list to override any other
+Specifies the variable argument list to override any other
 resource specifications.
 .LP
 .PN XtVaGetApplicationResources
 is identical in function to
 .PN XtGetApplicationResources
-with the args and num_args parameters
-replaced by a varargs list as described in Section 2.4.1.
+with the \fIargs\fP and \fInum_args\fP parameters
+replaced by a varargs list, as described in Section 2.4.1.
 
 .NH 2
 Resource Conversions
@@ -839,22 +852,22 @@ Resource Conversions
 .XE
 .LP
 The \*(xI provide a mechanism for registering representation converters that
-are automatically invoked by the resource fetching routines.
+are automatically invoked by the resource-fetching routines.
 The \*(xI additionally provide and register several commonly used converters.
 This resource conversion mechanism serves several purposes:
 .IP \(bu 5
-It permits user and application resource files to contain ASCII
+It permits user and application resource files to contain textual
 representations of nontextual values.
 .IP \(bu 5
 It allows textual or other representations of default resource values that
-are dependent on the display, screen, or color map, and thus must be
-computed at run time.
+are dependent on the display, screen, or colormap, and thus must be
+computed at runtime.
 .IP \(bu 5
 It caches conversion source and result data.
 Conversions that require much computation or space
-(for example, string to translation table)
-or that require round trips to the server
-(for example, string to font or color) are performed only once.
+(for example, string-to-translation-table)
+or that require round-trips to the server
+(for example, string-to-font or string-to-color) are performed only once.
 .NH 3
 Predefined Resource Converters
 .XS
@@ -862,14 +875,14 @@ Predefined Resource Converters
 .XE
 .LP
 The \*(xI define all the representations used in the 
-.PN Object ,
-.PN RectObj ,
-.PN Core , 
-.PN Composite , 
-.PN Constraint , 
+Object,
+RectObj,
+Core, 
+Composite, 
+Constraint, 
 and 
-.PN Shell 
-widgets.
+Shell 
+widget classes.
 It registers the following resource converters:
 .LP
 From
@@ -924,8 +937,8 @@ From
 to
 .PN XtRColor .
 .LP
-The string to pixel conversion has two predefined constants that are
-guaranteed to work and contrast with each other;
+The String-to-Pixel conversion has two predefined constants that are
+guaranteed to work and contrast with each other:
 .PN XtDefaultForeground
 and
 .PN XtDefaultBackground .
@@ -938,7 +951,7 @@ If the application resource reverseVideo is
 .PN True ,
 they evaluate to the white and black pixel values of the widget's screen,
 respectively.
-Similarly, the string to font and font structure converters recognize
+Similarly, the String-to-Font and String-to-FontStruct converters recognize
 the constant
 .PN XtDefaultFont
 .IN "XtDefaultFont" "" "@DEF@"
@@ -968,21 +981,22 @@ for example, "-*-*-*-R-*-*-*-120-*-*-*-*-ISO8859-1".)
 .IP \(bu 5
 If no suitable ISO8859-1 font can be found, issue an error message.
 .LP
-The String to InitialState conversion accepts the values
+The String-to-InitialState conversion accepts the values
 .PN NormalState
 or
 .PN IconicState
 as defined by the \fI\*(xC\fP.
 .LP
-The String to Visual conversion calls
+The String-to-Visual conversion calls
 .PN XMatchVisualInfo
 using the
-screen and depth resources from the core part and returns the first
+\fIscreen\fP and \fIdepth\fP fields from the core part and returns the first
 matching Visual on the list.  The widget resource list must be certain
 to specify any resource of type
 .PN XtRVisual
 after the depth resource.
-The allowed string values are the visual class names defined in \fI\*(xP\fP:
+The allowed string values are the visual class names defined in \fI\*(xP\fP,
+Section 8;
 .PN StaticGray ,
 .PN StaticColor ,
 .PN TrueColor ,
@@ -1001,23 +1015,23 @@ Type converters use pointers to
 .PN XrmValue
 structures (defined in
 .Pn < X11/Xresource.h >;
-see \fI\*(xL\fP for details)
+see Section 10.11 in \fI\*(xL\fP)
 for input and output values.
 .LP
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
 typedef struct {
-	unsigned int \fIsize\fP;
-	caddr_t \fIaddr\fP;
+	unsigned int size;
+	caddr_t addr;
 } XrmValue, *XrmValuePtr;
 .De
 .LP
-The addr field specifies the address of the data and the size field
+The \fIaddr\fP field specifies the address of the data and the \fIsize\fP field
 gives the total number of significant bytes in the data.  For values
 of type
 .PN String ,
-addr is the address of the first character and size
+\fIaddr\fP is the address of the first character and \fIsize\fP
 includes the NULL terminating byte. 
 .LP
 A resource converter procedure pointer is of type
@@ -1040,80 +1054,84 @@ typedef Boolean (*XtTypeConverter)(Display*, XrmValue*, Cardinal*,
       XtPointer *\fIconverter_data\fP;
 .FN
 .IP \fIdisplay\fP 1i
-Specifies the Display connection with which this conversion is associated.
+Specifies the display connection with which this conversion is associated.
 .IP \fIargs\fP 1i
 Specifies a list of additional
 .PN XrmValue
 arguments to the converter if additional context is needed
-to perform the conversion or NULL.
-For example, the string-to-font converter needs the widget's screen,
-and the string to pixel converter needs the widget's screen and color map.
+to perform the conversion, or NULL.
+For example, the String-to-Font converter needs the widget's \fIscreen\fP,
+and the String-to-Pixel converter needs the widget's \fIscreen\fP and \fIcolormap\fP.
 .IP \fInum_args\fP 1i
-Specifies the number of entries in args.
+Specifies the number of entries in \fIargs\fP.
 .IP \fIfrom\fP 1i
 Specifies the value to convert.
 .IP \fIto\fP 1i
 Specifies a descriptor for a location into which to store the converted value.
 .IP \fIconverter_data\fP 1i
 Specifies a location into which the converter may
-store converter-specific data that is associated
+store converter-specific data associated
 with this conversion.
 .LP
-The display argument is normally used only when generating error
+The \fIdisplay\fP argument is normally used only when generating error
 messages, to identify the application context (with the function
 .PN XtDisplayToApplicationContext ).
 .LP
-The to argument specifies the size and location into which the
-converter should store the converted value.  If the location is NULL,
+The \fIto\fP argument specifies the size and location into which the
+converter should store the converted value.  If the \fIaddr\fP field is NULL,
 the converter should allocate appropriate storage and store the size
-and location into the to descriptor.  If the type converter allocates
+and location into the \fIto\fP descriptor.  If the type converter allocates
 the storage, it remains under the ownership of the converter and must
 not be modified by the caller.  The type converter is permitted to use
-static storage for this purpose and therefore the caller must
+static storage for this purpose, and therefore the caller must
 immediately copy the data upon return from the converter.  If the
-location is not NULL, the converter must check the size field to
-insure that sufficient space has been allocated before storing the
+\fIaddr\fP field is not NULL, the converter must check the \fIsize\fP field to
+ensure that sufficient space has been allocated before storing the
 converted value.  If insufficient space is specified, the converter
-should update the size field with the number of bytes required and
+should update the \fIsize\fP field with the number of bytes required and
 return
 .PN False
 without modifying the data at the specified location.
 If sufficient space was allocated by the caller, the converter should
-update the size field with the number of bytes actually occupied by the
+update the \fIsize\fP field with the number of bytes actually occupied by the
 converted value.  For converted values of type
 .PN XtRString ,
 the size should
 include the NULL terminating byte, if any.
-The converter may store any value it wishes in the location specified
-in converter_data; this data will be passed to the destructor, if any,
+The converter may store any value in the location specified
+in \fIconverter_data\fP; this data will be passed to the destructor, if any,
 when the resource is freed by the \*(xI.
 .LP
 The converter must return
 .PN True
 if the conversion was successful and
 .PN False
-otherwise.  If the conversion cannot be performed due to an
+otherwise.  If the conversion cannot be performed because of an
 improper source value, a warning message should also be issued with
 .PN XtAppWarningMsg .
 
 .LP
-Most type converters just take the data described by the specified from
+Most type converters just take the data described by the specified \fIfrom\fP
 argument and return data by writing into the location specified in
-the to argument.
-A few need other information, which is available in the specified 
-argument list.
+the \fIto\fP argument.
+A few need other information, which is available in \fIargs\fP.
 A type converter can invoke another type converter,
 which allows differing sources that may convert into a common intermediate
 result to make maximum use of the type converter cache.
 .LP
-Note that if an address is written into to->addr, it cannot be that
+Note that if an address is written into \fIto->addr\fP, it cannot be that
 of a local variable of the converter because the data will not be
 valid after the converter returns.  Static variables may be used,
 as in the following example.
 .LP
-The following is an example of a converter that takes a string
-and converts it to a Pixel.  Note that the display parameter is only
-used to generate error messages; the Screen conversion argument is
+The following is an example of a converter that takes a
+.PN string
+and converts it to a
+.PN Pixel .
+Note that the \fIdisplay\fP parameter is only
+used to generate error messages; the
+.PN Screen
+conversion argument is
 still required to inform the \*(xI that the converted value is
 a function of the particular display (and colormap).
 .LP
@@ -1139,7 +1157,7 @@ a function of the particular display (and colormap).
 		return True;			\\
 	}
 
-static Boolean CvtStringToPixel(display, args, num_args, fromVal, toVal, converter_data)
+static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, converter_data)
 	Display	*dpy;
 	XrmValue	*args;
 	Cardinal	*num_args;
@@ -1160,7 +1178,7 @@ static Boolean CvtStringToPixel(display, args, num_args, fromVal, toVal, convert
 			"String to pixel conversion needs screen and colormap arguments",
 			(String *)NULL, (Cardinal *)NULL);
 
-	screen = *((Screen **) args[0].addr); /* could also use dpy now */
+	screen = *((Screen**) args[0].addr);
 	colormap = *((Colormap *) args[1].addr);
 
 	LowerCase((char *) fromVal->addr, message);
@@ -1168,12 +1186,12 @@ static Boolean CvtStringToPixel(display, args, num_args, fromVal, toVal, convert
 	if (strcmp(message, "xtdefaultbackground") == 0) done(&WhitePixelOfScreen(screen), Pixel);
 	if (strcmp(message, "xtdefaultforeground") == 0) done(&BlackPixelOfScreen(screen), Pixel);
 
-	if ((char) fromVal->addr[0] == '#') {  /* some color rgb definition */
-		status = XParseColor(DisplayOfScreen(screen), colormap, (char*) fromVal->addr, 
+	if ((char) fromVal->addr[0] == '#') {  /* some rgb spec */
+		status = XParseColor(DisplayOfScreen(screen), colormap, (char*)fromVal->addr, 
 			&screenColor);
 		if (status != 0) status = XAllocColor(DisplayOfScreen(screen), colormap, &screenColor);
 	} else  /* some color name */
-		status = XAllocNamedColor(DisplayOfScreen(screen), colormap, (char*) fromVal->addr, 
+		status = XAllocNamedColor(DisplayOfScreen(screen), colormap, (char*)fromVal->addr, 
 			&screenColor, &exactColor);
 
 	if (status == 0) {
@@ -1197,11 +1215,12 @@ This issue arises only with conversions, such as fonts and colors,
 where there is no string representation that all server implementations
 will necessarily recognize.
 For resources like these,
-the converter should define a symbolic constant (for example,
+the converter should define a symbolic constant
+in the same manner as
 .PN XtDefaultForeground ,
 .PN XtDefaultBackground ,
-or
-.PN XtDefaultFont ).
+and
+.PN XtDefaultFont .
 .sp
 .LP
 To allow the \*(xI to deallocate resources produced by type
@@ -1212,7 +1231,7 @@ A resource destructor procedure pointer is of type
 .IN "XtDestructor" "" "@DEF@"
 .FD 0
 typedef void (*XtDestructor) (XtAppContext, XrmValue*, XtPointer, XrmValue*, \
-Cardinal*)
+Cardinal*);
 .br
       XtAppContext \fIapp\fP;
 .br
@@ -1229,18 +1248,18 @@ Specifies an application context in which the resource is being freed.
 .IP \fIto\fP 1i
 Specifies a descriptor for the resource produced by the type converter.
 .IP \fIconverter_data\fP 1i
-Specifies the converter_data returned by the type converter.
+Specifies the converter-specific data returned by the type converter.
 .IP \fIargs\fP 1i
 Specifies the additional converter arguments as passed
 to the type converter when the conversion was performed.
 .IP \fInum_args\fP 1i
-Specifies the number of entries in args.
+Specifies the number of entries in \fIargs\fP.
 .LP
 The destructor procedure is responsible for freeing the resource
-specified by the to argument, including any auxiliary storage
+specified by the \fIto\fP argument, including any auxiliary storage
 associated with that resource, but not the memory directly addressed
-by the size and location in the to argument nor the memory specified
-by the args.
+by the size and location in the \fIto\fP argument nor the memory specified
+by \fIargs\fP.
 
 .NH 3
 Issuing Conversion Warnings
@@ -1272,8 +1291,8 @@ The
 .PN XtDisplayStringConversionWarning
 procedure issues a warning message using
 .PN XtAppWarningMsg
-with name ``conversionError'',
-type ``string'', class ``XtToolkitError'' and the default message string
+with \fIname\fP ``conversionError'',
+\fItype\fP ``string'', \fIclass\fP ``XtToolkitError'', and the default message
 ``Cannot convert "\fIfrom_value\fP" to type \fIto_type\fP''.
 .LP
 To issue other types of warning or error messages, the type converter
@@ -1283,7 +1302,8 @@ or
 .PN XtAppErrorMsg .
 .sp
 .LP
-To retrieve the application context associated with a Display, use
+To retrieve the application context associated with a given
+display connection, use
 .PN XtDisplayToApplicationContext .
 .IN "XtDisplayToApplicationContext" "" "@DEF@"
 .FD 0
@@ -1292,12 +1312,12 @@ XtAppContext XtDisplayToApplicationContext( \fIdisplay\fP )
       Display *\fIdisplay\fP;
 .FN
 .IP \fIdisplay\fP 1i
-Specifies an open and initialized Display connection.
+Specifies an open and initialized display connection.
 .LP
 The
 .PN XtDisplayToApplicationContext
 function returns the application
-context in which the specified display was initialized.  If the
+context in which the specified \fIdisplay\fP was initialized.  If the
 display is not known to the \*(xI, an error message is issued.
 
 .NH 3
@@ -1312,7 +1332,7 @@ calls to the converter.  Conversion cache control is specified
 via an
 .PN XtCacheType
 .IN "XtCacheType" "" "@DEF@"
-argument:
+argument.
 .sp
 .Ds 0
 typedef int XtCacheType;
@@ -1352,13 +1372,13 @@ should be used as for
 but the destructor will be called, if specified, if
 .PN XtCloseDisplay
 is called
-for the Display associated with the converted value and
+for the display connection associated with the converted value, and
 the value will be removed from the conversion cache.
 .LP
 The qualifier
 .PN XtCacheRefCount
 .IN "XtCacheRefCount" "" "@DEF@"
-may be ORed with any of the values above.  If
+may be ORed with any of the above values.  If
 .PN XtCacheRefCount
 is specified, calls to
 .PN XtCreateWidget ,
@@ -1367,8 +1387,8 @@ is specified, calls to
 and
 .PN XtGetSubresources
 that use the converted value will be counted.  When a widget using the
-converted value is destroyed, the count is decremented and if the
-count reaches zero the destructor procedure will be called and the
+converted value is destroyed, the count is decremented, and if the
+count reaches zero, the destructor procedure will be called and the
 converted value will be removed from the conversion cache.
 
 .LP
@@ -1397,7 +1417,27 @@ void XtSetTypeConverter(\fIfrom_type\fP, \fIto_type\fP, \fIconverter\fP, \
 .br
       XtDestructor \fIdestructor\fP;
 .FN
+.IP \fIfrom_type\fP 1i
+Specifies the source type.
+.IP \fIto_type\fP 1i
+Specifies the destination type.
+.IP \fIconverter\fP 1i
+Specifies the resource type converter procedure.
+.IP \fIconvert_args\fP 1i
+Specifies additional conversion arguments, or NULL.
+.IP \fInum_args\fP 1i
+Specifies the number of entries in \fIconvert_args\fP.
+.IP \fIcache_type\fP 1i
+Specifies whether or not resources produced by this
+converter are sharable or display-specific and when
+they should be freed.
+.IP \fIdestructor\fP 1i
+Specifies a destroy procedure for resources produced by
+this conversion, or NULL if no additional action is
+required to deallocate resources produced by the converter.
 
+.sp
+.LP
 .IN "XtAppSetTypeConverter" "" "@DEF@"
 .FD 0
 void XtAppSetTypeConverter(\fIapp_context\fP, \fIfrom_type\fP, \fIto_type\fP, \
@@ -1431,7 +1471,7 @@ Specifies the resource type converter procedure.
 .IP \fIconvert_args\fP 1i
 Specifies additional conversion arguments, or NULL.
 .IP \fInum_args\fP 1i
-Specifies the number of entries in convert_args.
+Specifies the number of entries in \fIconvert_args\fP.
 .IP \fIcache_type\fP 1i
 Specifies whether or not resources produced by this
 converter are sharable or display-specific and when
@@ -1439,16 +1479,16 @@ they should be freed.
 .IP \fIdestructor\fP 1i
 Specifies a destroy procedure for resources produced by
 this conversion, or NULL if no additional action is
-required to deallocate resources produced by converter.
+required to deallocate resources produced by the converter.
 .LP
 .PN XtSetTypeConverter
 registers the specified type converter and
 destructor in all application contexts created by the calling process,
-including any future application contexts which may be created.
+including any future application contexts that may be created.
 .PN XtAppSetTypeConverter
 registers the specified type converter in the
-single application context specified.  If the same from_type and
-to_type are specified in multiple calls to either function, the most
+single application context specified.  If the same \fIfrom_type\fP and
+\fIto_type\fP are specified in multiple calls to either function, the most
 recent overrides the previous ones.
 .sp
 .LP
@@ -1461,7 +1501,7 @@ and the structure
 .PN XtConvertArgRec
 specify how each argument is derived.
 These are defined in
-.Pn < X11/Convert.h >.
+.Pn < X11/Intrinsic.h >.
 .LP
 .Ds 0
 .TA .5i 2.5i
@@ -1484,25 +1524,25 @@ typedef struct {
 } XtConvertArgRec, *XtConvertArgList;
 .De
 .LP
-The size field specifies the length of the data in bytes.
-The address_mode field specifies how the address_id field should be
+The \fIsize\fP field specifies the length of the data in bytes.
+The \fIaddress_mode\fP field specifies how the \fIaddress_id\fP field should be
 interpreted.
 .PN XtAddress
 .IN "XtAddress" "" "@DEF@"
-causes address_id to be interpreted as the address of the data.
+causes \fIaddress_id\fP to be interpreted as the address of the data.
 .PN XtBaseOffset
 .IN "XtBaseOffset" "" "@DEF@"
-causes address_id to be interpreted as the offset from the widget base.
+causes \fIaddress_id\fP to be interpreted as the offset from the widget base.
 .PN XtImmediate
 .IN "XtImmediate" "" "@DEF@"
-causes address_id to be interpreted as a constant.
+causes \fIaddress_id\fP to be interpreted as a constant.
 .PN XtResourceString
 .IN "XtResourceString" "" "@DEF@"
-causes address_id to be interpreted as the name of a resource
-that is to be converted into an offset from widget base.
+causes \fIaddress_id\fP to be interpreted as the name of a resource
+that is to be converted into an offset from the widget base.
 .PN XtResourceQuark
 .IN "XtResourceQuark" "" "@DEF@"
-causes address_id to be interpreted as the result of an
+causes \fIaddress_id\fP to be interpreted as the result of an
 .PN XrmStringToQuark
 conversion on the name of a resource,
 which is to be converted into an offset from the widget base.
@@ -1513,19 +1553,19 @@ is similar to
 except that it
 searches for the closest windowed ancestor if the object is not
 of a subclass of
-.PN Core
+Core
 (See Chapter 12).
 .PN XtProcedureArg
 .IN "XtProcedureArg" "" "@DEF@"
-specifies that address_id is a pointer to a procedure to
+specifies that \fIaddress_id\fP is a pointer to a procedure to
 be invoked to return the conversion argument.  If
 .PN XtProcedureArg
-is specified, address_id must contain
+is specified, \fIaddress_id\fP must contain
 the address of a function of type
 .PN XtConvertArgProc .
 .IN "XtConvertArgProc" "" "@DEF@"
 .FD 0
-typedef void (*XtConvertArgProc)(Widget, Cardinal*, XrmValue*)
+typedef void (*XtConvertArgProc)(Widget, Cardinal*, XrmValue*);
 .br
       Widget \fIobject\fP;
 .br
@@ -1535,12 +1575,12 @@ typedef void (*XtConvertArgProc)(Widget, Cardinal*, XrmValue*)
 .FN
 .IP \fIobject\fP 1i
 Passes the object for which the resource is being
-converted or NULL if the converter was invoked by
+converted, or NULL if the converter was invoked by
 .PN XtCallConverter
 or
 .PN XtDirectConvert .
 .IP \fIsize\fP 1i
-Passes a pointer to the size field from the
+Passes a pointer to the \fIsize\fP field from the
 .PN XtConvertArgRec .
 .IP \fIvalue\fP 1i
 Passes a pointer to a descriptor into which the procedure
@@ -1550,15 +1590,15 @@ When invoked, the
 .PN XtConvertArgProc
 procedure must derive a conversion
 argument and store the address and size of the argument in the location
-pointed to by the value field.
+pointed to by \fIvalue\fP.
 .LP
 In order to permit reentrancy, the
 .PN XtConvertArgProc
 should return the address of storage whose lifetime is no shorter than the
-lifetime of object.  If object is NULL, the lifetime of the conversion
+lifetime of \fIobject\fP.  If \fIobject\fP is NULL, the lifetime of the conversion
 argument must be no shorter than the lifetime of the resource with
 which the conversion argument is associated.  The \*(xI do not
-guarantee to copy this storage but do guarantee to not reference it if
+guarantee to copy this storage but do guarantee not to reference it if
 the resource is removed from the conversion cache.
 .LP
 The following example illustrates how to register the CvtStringToPixel 
@@ -1568,8 +1608,8 @@ routine given earlier:
 .TA .2i 3i
 .ta .2i 3i
 static XtConvertArgRec colorConvertArgs[] = {
-	{XtWidgetBaseOffset, (XtPointer) XtOffset(Widget, core.screen),  sizeof(Screen *)},
-	{XtWidgetBaseOffset, (XtPointer) XtOffset(Widget, core.colormap),sizeof(Colormap)}
+	{XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.screen),  sizeof(Screen*)},
+	{XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.colormap),sizeof(Colormap)}
 };
 
 XtSetTypeConverter(XtRString, XtRPixel, CvtStringToPixel,
@@ -1583,17 +1623,17 @@ and
 are predefined by the \*(xI.  Both take the
 values from the closest windowed ancestor if the object is not of a
 subclass of
-.PN Core .
+Core.
 The
 .PN screenConvertArg
-descriptor puts the widget's screen field into args[0].  The
+descriptor puts the widget's \fIscreen\fP field into \fIargs\fP[0].  The
 .PN colorConvertArgs
-descriptor puts the widget's screen field into args[0],
-and the widget's colormap field into args[1].
+descriptor puts the widget's \fIscreen\fP field into \fIargs\fP[0],
+and the widget's \fIcolormap\fP field into \fIargs\fP[1].
 .LP
 Conversion routines should not just put a descriptor for the address of the
-base of the widget into args[0], and use that in the routine.
-They should pass in the actual values that the conversion depends on.
+base of the widget into \fIargs\fP[0] and use that in the routine.
+They should pass in the actual values on which the conversion depends on.
 By keeping the dependencies of the conversion procedure specific,
 it is more likely that subsequent conversions will find what they need
 in the conversion cache.
@@ -1602,7 +1642,7 @@ This way the cache is smaller and has fewer and more widely applicable entries.
 If any conversion arguments of type
 .PN XtBaseOffset ,
 .PN XtResourceString ,
-.PN XtResourceQuark
+.PN XtResourceQuark ,
 and
 .PN XtWidgetBaseOffset
 are specified for conversions performed by
@@ -1625,8 +1665,8 @@ All resource-fetching routines (for example,
 .PN XtGetSubresources ,
 .PN XtGetApplicationResources ,
 and so on) call resource converters if the resource database or
-varargs list specifies a resource
-that is a different representation from the desired representation or if the
+varargs list specifies a value
+that has a different representation from the desired representation or if the
 widget's default resource value representation is different from the desired
 representation.
 .sp
@@ -1661,12 +1701,12 @@ Boolean XtCallConverter( \fIdisplay\fP, \fIconverter\fP, \fIargs\fP, \
 .IP \fIdisplay\fP 1i
 Specifies the display with which the conversion is to be associated.
 .IP \fIconverter\fP 1i
-Specifies the conversion procedure that is to be called.
+Specifies the conversion procedure to be called.
 .IP \fIargs\fP 1i
 Specifies the additional conversion arguments needed
 to perform the conversion, or NULL.
 .IP \fInum_args\fP 1i
-Specifies the number of entries in args.
+Specifies the number of entries in \fIargs\fP.
 .IP \fIfrom\fP 1i
 Specifies a descriptor for the source value.
 .IP \fIto_in_out\fP 1i
@@ -1678,48 +1718,49 @@ The
 .PN XtCallConverter
 function looks up the
 specified type converter in the application context associated with
-the display and if the converter was not registered or was registered
+the display and, if the converter was not registered or was registered
 with cache type
 .PN XtCacheAll
 or
 .PN XtCacheByDisplay
 looks in the conversion cache to see if this conversion procedure
 has been called with the specified arguments.  If so, it
-checks the success status of the prior call and if
+checks the success status of the prior call, and if
 the conversion failed,
 .PN XtCallConverter
 returns
 .PN False
 immediately;
-otherwise it checks the size specified in the to argument and if it is
+otherwise it checks the size specified in the \fIto\fP argument and, if it is
 greater than or equal to the size stored in the cache, copies the
-information stored in the cache into the location specified by the
-to argument, stores the cache size into to->size and returns
+information stored in the cache into the location specified by
+\fIto->addr\fP, stores the cache size into \fIto->size\fP, and returns
 .PN True .
-If the size specified in the to argument is smaller than the size stored
+If the size specified in the \fIto\fP argument is smaller than the size stored
 in the cache,
 .PN XtCallConverter
-copies the cache size into to->size and returns
+copies the cache size into \fIto->size\fP and returns
 .PN False .
 If the converter was registered with cache type
 .PN XtCacheNone
 or no value was found in the conversion cache,
 .PN XtCallConverter
-calls the converter and if it was not registered with cache type
-.PN XtCacheNone
+calls the converter and, if it was not registered with cache type
+.PN XtCacheNone ,
 enters the result in the cache.  
 .PN XtCallConverter
 then returns what the converter returned.
 .LP
-Cache_ref_return specifies storage allocated by the caller in which
+The \fIcache_ref_return\fP field specifies storage allocated by the caller in which
 an opaque value will be stored.  If the type converter has been
 registered with the
 .PN XtCacheRefCount
 modifier and if the value returned
-in cache_ref_return is non-NULL then the caller should store the
-cache_ref_return value in order to decrement the reference count when
-the converted value is no longer required.  Cache_ref_return should be
-specified as NULL if the caller is unwilling or unable to store the
+in \fIcache_ref_return\fP is non-NULL, then the caller should store the
+\fIcache_ref_return\fP value in order to decrement the reference count when
+the converted value is no longer required.  The \fIcache_ref_return\fP
+argument should be
+NULL if the caller is unwilling or unable to store the
 value.
 .sp
 .LP
@@ -1730,20 +1771,21 @@ use
 .PN XtAppReleaseCacheRefs .
 .IN "XtAppReleaseCacheRefs" "" "@DEF@"
 .FD 0
-void XtAppReleaseCacheRefs(\fIapp\fP, \fIrefs\fP)
+void XtAppReleaseCacheRefs(\fIapp_context\fP, \fIrefs\fP)
 .br
-      XtAppContext \fIapp\fP;
+      XtAppContext \fIapp_context\fP;
 .br
       XtCacheRef *\fIrefs\fP;
 .FN
-.IP \fIapp\fP 1i
+.IP \fIapp_context\fP 1i
 Specifies the application context.
 .IP \fIrefs\fP 1i
 Specifies the list of cache references to be released.
 .LP
 .PN XtAppReleaseCacheRefs
 decrements the reference count for the
-conversion entries identified by the refs argument.  Refs is a
+conversion entries identified by the \fIrefs\fP argument.
+This argument is a
 pointer to a NULL-terminated list of
 .PN XtCacheRef
 values.  If any reference
@@ -1753,7 +1795,7 @@ the resource removed from the conversion cache.
 .LP
 As a convenience to clients needing to explicitly decrement reference
 counts via a callback function, the \*(xI define two callback
-procedures
+procedures,
 .PN XtCallbackReleaseCacheRef
 and
 .PN XtCallbackReleaseCacheRefList .
@@ -1778,14 +1820,14 @@ This callback procedure may be added to a callback list to release a
 previously returned
 .PN XtCacheRef
 value.  When adding the callback, the
-callback client_data argument must be specified as the value of the
+callback \fIclient_data\fP argument must be specified as the value of the
 .PN XtCacheRef
 data cast to type
 .PN XtPointer .
 .sp
 .IN "XtCallbackReleaseCacheRefList" "" "@DEF@"
 .FD 0
-void XtCallbackReleaseCacheRefList(\fIobject\fP, \fIclosure\fP, \fIcall_data\fP)
+void XtCallbackReleaseCacheRefList(\fIobject\fP, \fIclient_data\fP, \fIcall_data\fP)
 .br
       Widget \fIobject\fP;
 .br
@@ -1804,7 +1846,7 @@ This callback procedure may be added to a callback list to release a
 list of previously returned
 .PN XtCacheRef
 values.  When adding the
-callback, the callback client_data argument must be specified as a
+callback, the callback \fIclient_data\fP argument must be specified as a
 pointer to a NULL-terminated list of
 .PN XtCacheRef
 values.
@@ -1844,7 +1886,7 @@ will be returned.
 The
 .PN XtConvertAndStore
 function looks up the type converter registered
-to convert from_type to to_type, computes any additional arguments
+to convert \fIfrom_type\fP to \fIto_type\fP, computes any additional arguments
 needed, and then calls
 .PN XtCallConverter
 (or
@@ -1853,8 +1895,8 @@ if an old-style converter was registered with
 .PN XtAddConverter
 or
 .PN XtAppAddConverter ;
-see Appendix C) with the from and to_in_out arguments.  The
-to_in_out argument specifies the size and location into which the
+see Appendix C) with the \fIfrom\fP and \fIto_in_out\fP arguments.  The
+\fIto_in_out\fP argument specifies the size and location into which the
 converted value will be stored and is passed directly to the
 converter.  If the location is specified as NULL, it will be replaced
 with a pointer to private storage and the size will be returned in the
@@ -1866,7 +1908,7 @@ descriptor.  If the conversion succeeds,
 .PN XtConvertAndStore
 returns
 .PN True ;
-otherwise it returns
+otherwise, it returns
 .PN False .
 .LP
 .PN XtConvertAndStore
@@ -1884,11 +1926,11 @@ performs processing equivalent to
 .PN XtConvertAndStore
 when initializing the object instance.  Because there is extra memory
 overhead required to implement reference counting, clients may
-distinguish those objects which are never destroyed before the
-application exits from those which may be destroyed and whose
+distinguish those objects that are never destroyed before the
+application exits from those that may be destroyed and whose
 resources should be deallocated.
 .LP
-To specify whether or not reference counting is to be enabled for the
+To specify whether reference counting is to be enabled for the
 resources of a particular object when the object is created, the
 client can specify a value for the
 .PN Boolean
@@ -1902,12 +1944,12 @@ When
 .PN XtCreateWidget
 is called, if this resource is not specified as
 .PN False
-in either the arg list or the resource database, then the
-resources referenced by this object are not reference counted, regardless of
+in either the arglist or the resource database, then the
+resources referenced by this object are not reference-counted, regardless of
 how the type converter may have been registered.  The effective
 default value is
 .PN True ;
-thus clients which expect to destroy one or
+thus clients that expect to destroy one or
 more objects and want resources deallocated must explicitly specify
 .PN False
 for
@@ -1962,19 +2004,19 @@ The
 .PN XtGetValues
 function starts with the resources specified for the Object class
 and proceeds down the subclass chain to the class of the object.
-The value field of a passed argument list must contain the
+The \fIvalue\fP field of a passed argument list must contain the
 address into which to store the corresponding resource value.
 It is the caller's responsibility
 to allocate and deallocate this storage according to the size of the
 resource representation type used within the object.
 .LP
-If the object's parent is a subclass of
+If the class of the object's parent is a subclass of
 .PN constraintWidgetClass ,
 .PN XtGetValues
 then fetches the values for any constraint resources requested.
 It starts with the constraint resources specified for
 .PN constraintWidgetClass
-and proceeds down to the subclass chain to the parent's constraint resources.
+and proceeds down the subclass chain to the parent's constraint resources.
 If the argument list contains a resource name that is not found in any of the
 resource lists searched, 
 the value at the corresponding address is not modified.
@@ -1986,18 +2028,18 @@ all the resource values have been fetched by
 .PN XtGetValues .
 Finally, if the object's parent is a
 subclass of
-.PN constraintWidgetClass
+.PN constraintWidgetClass ,
 and if any of the parent's class or
 superclass records have declared
 .PN ConstraintClassExtension
 records in
-the constraint class part extension field with a record type of
+the Constraint class part \fIextension\fP field with a record type of
 .PN \s-1NULLQUARK\s+1
-and if the get_values_hook field in the extension record is non-NULL,
+and if the \fIget_values_hook\fP field in the extension record is non-NULL,
 .PN XtGetValues
 calls the get_values_hook procedures in superclass-to-subclass order.
-This permits a subclass and constraint parent to provide
-non-resource data via
+This permits a Constraint parent to provide
+nonresource data via
 .PN XtGetValues .
 .sp
 .LP
@@ -2013,21 +2055,21 @@ void XtVaGetValues(\fIobject\fP, ...)
 .IP \fIobject\fP 1i
 Specifies the object whose resource values are to be returned.  \*(oI
 .IP ... 1i
-Specifies the variable-length argument list for the resources to
+Specifies the variable argument list for the resources to
 be returned.
 .LP
 .PN XtVaGetValues
 is identical in function to
 .PN XtGetValues
-with the args
-and num_args parameters replaced by a varargs list as described in
+with the \fIargs\fP
+and \fInum_args\fP parameters replaced by a varargs list, as described in
 Section 2.4.1.  All value entries in the list must specify pointers to
 storage allocated by the caller to which the resource value will be
 copied.  It is the caller's responsibility to ensure that sufficient
 storage is allocated.  If
 .PN XtVaTypedArg
-is specified, the type field
-specifies the representation desired by the caller and the size field
+is specified, the \fItype\fP argument
+specifies the representation desired by the caller and \fIthe\fP size argument
 specifies the number of bytes allocated to store the result of the
 conversion.  If the size is insufficient, a warning message is issued
 and the list entry is skipped.
@@ -2042,7 +2084,7 @@ Widgets that have subparts can return resource values from them through
 .PN XtGetValues
 by supplying a get_values_hook procedure.
 The get_values_hook procedure pointer is of type
-.PN XtArgsProc :
+.PN XtArgsProc .
 .IN "get_values_hook procedure" "" "@DEF@"
 .FD 0
 typedef void (*XtArgsProc)(Widget, ArgList, Cardinal*);
@@ -2065,7 +2107,8 @@ Specifies the number of entries in the argument list.
 .LP
 The widget with subpart resources should call
 .PN XtGetSubvalues
-and pass in its subresource list and the arg and num_args parameters.
+in the get_values_hook procedure
+and pass in its subresource list and the \fIargs\fP and \fInum_args\fP parameters.
 .NH 4
 Widget Subpart State
 .XS
@@ -2108,9 +2151,9 @@ Specifies the number of entries in the argument list.
 .LP
 The
 .PN XtGetSubvalues
-function obtains resource values from the structure identified by base.
-The value field in each argument entry must contain the address into
-which to store the corresponding resource value.  It is the callers
+function obtains resource values from the structure identified by \fIbase\fP.
+The \fIvalue\fP field in each argument entry must contain the address into
+which to store the corresponding resource value.  It is the caller's
 responsibility to allocate and deallocate this storage according to
 the size of the resource representation type used within the subpart.
 If the argument list contains a resource name that is not found in the
@@ -2139,7 +2182,7 @@ Specifies the subpart resource list.
 .IP \fInum_resources\fP 1i
 Specifies the number of entries in the resource list.
 .IP ... 1i
-Specifies a variable-length argument list of name/address pairs that
+Specifies a variable argument list of name/address pairs that
 contain the resource names and the addresses into which the resource
 values are to be stored.
 .LP
@@ -2147,14 +2190,14 @@ values are to be stored.
 is identical in function to
 .PN XtGetSubvalues
 with the
-args and num_args parameters replaced by a varargs list as described
+\fIargs\fP and \fInum_args\fP parameters replaced by a varargs list, as described
 in Section 2.4.1.
 .PN XtVaTypedArg
 is not supported for
 .PN XtVaGetSubvalues .
 If
 .PN XtVaTypedArg
-is specified in the list a warning message is issued
+is specified in the list, a warning message is issued
 and the entry is then ignored.
 
 .NH 3
@@ -2187,21 +2230,21 @@ Specifies the number of entries in the argument list.
 The
 .PN XtSetValues
 function starts with the resources specified for the 
-.PN Object
+Object
 class fields and proceeds down the subclass chain to the object.
-At each stage, it replaces the object resource fields with any values
+At each stage, it replaces the \fIobject\fP resource fields with any values
 specified in the argument list.
 .PN XtSetValues
 then calls the set_values procedures for the object in superclass-to-subclass 
 order.
 .IN "set_values_hook procedure"
-If the object has any non-NULL set_values_hook fields,
+If the object has any non-NULL \fIset_values_hook\fP fields,
 these are called immediately after the
 corresponding set_values procedure.
 This procedure permits subclasses to set subpart data via
 .PN XtSetValues .
 .LP
-If the object's parent is a subclass of
+If the class of the object's parent is a subclass of
 .PN constraintWidgetClass ,
 .PN XtSetValues
 also updates the object's constraints.
@@ -2214,18 +2257,18 @@ It then calls the constraint set_values procedures from
 .PN constraintWidgetClass
 down to the parent's class.
 The constraint set_values procedures are called with widget arguments,
-as for all set_values procedures, not just the constraint record arguments,
+as for all set_values procedures, not just the constraint records,
 so that they can make adjustments to the desired values based
-on full information about the widget.  Any arguments specified which
+on full information about the widget.  Any arguments specified that
 do not match a resource list entry are silently ignored.
 .LP
 If the object is of a subclass of
-.PN RectObj ,
+RectObj,
 .PN XtSetValues
 determines if a geometry request is needed by comparing the old object to
 the new object.
 If any geometry changes are required,
-it restores the original geometry then
+it restores the original geometry, then
 makes the request, and the geometry manager returns
 .PN XtGeometryYes ,
 .PN XtGeometryAlmost ,
@@ -2238,7 +2281,7 @@ calls the object's resize procedure.
 If
 .PN XtGeometryNo ,
 .PN XtSetValues
-ignores the geometry requst and continues.
+ignores the geometry request and continues.
 If
 .PN XtGeometryAlmost ,
 .PN XtSetValues
@@ -2250,10 +2293,11 @@ deciding once more whether the geometry manager should be called.
 .LP
 Finally, if any of the set_values procedures returned 
 .PN True ,
+and the widget is realized,
 .PN XtSetValues
-causes the widget's expose procedure to be invoked by calling the Xlib
+causes the widget's expose procedure to be invoked by calling
 .PN XClearArea
-function on the widget's window.
+on the widget's window.
 .sp
 .LP
 To modify the current values of resources associated with a widget
@@ -2268,13 +2312,13 @@ void XtVaSetValues(\fIobject\fP, ...)
 .IP \fIobject\fP 1i
 Specifies the object whose resources are to be modified.  \*(oI
 .IP ... 1i
-Specifies the variable-length argument list of name/value pairs that
+Specifies the variable argument list of name/value pairs that
 contain the resources to be modified and their new values.
 .LP
 .PN XtVaSetValues
 is identical in function to
 .PN XtSetValues
-with the args and num_args parameters replaced by a varargs list as
+with the \fIargs\fP and \fInum_args\fP parameters replaced by a varargs list, as
 described in Section 2.4.1.
 
 .NH 4
@@ -2284,7 +2328,7 @@ Widget State: the set_values Procedure
 .XE
 .LP
 The set_values procedure pointer in a widget class is of type
-.PN XtSetValuesFunc :
+.PN XtSetValuesFunc .
 .IN "XtSetValuesFunc" "" "@DEF@"
 .IN "set_values procedure" "" "@DEF@"
 .FD 0
@@ -2320,10 +2364,10 @@ Specifies the number of entries in the argument list.
 .LP
 The set_values procedure should recompute any field
 derived from resources that are changed
-(for example, many GCs depend on foreground and background).
+(for example, many GCs depend on foreground and background pixels).
 If no recomputation is necessary and if none of the resources specific to a
 subclass require the window to be redisplayed when their values are changed,
-you can specify NULL for the set_values field in the class record.
+you can specify NULL for the \fIset_values\fP field in the class record.
 .LP
 Like the initialize procedure,
 set_values mostly deals only with the fields defined in the subclass,
@@ -2333,7 +2377,7 @@ especially conflicts over width and height.
 Sometimes a subclass may want to overwrite values filled in by its
 superclass.
 In particular, size calculations of a superclass are often
-incorrect for a subclass and in this case,
+incorrect for a subclass and, in this case,
 the subclass must modify or recalculate fields declared
 and computed by its superclass.
 .LP
@@ -2348,38 +2392,39 @@ but they should compute a reasonable size if no size is requested.
 How does a subclass know the difference between a specified size
 and a size computed by a superclass?
 .LP
-The request and new parameters provide the necessary information.
-The request widget is a copy of the widget, updated as originally requested.
-The new widget starts with the values in the request,
+The \fIrequest\fP and \fInew\fP parameters provide the necessary information.
+The \fIrequest\fP widget is a copy of the widget, updated as originally requested.
+The \fInew\fP widget starts with the values in the request,
 but it has additionally been updated by all superclass set_values
 procedures called so far.
 A subclass set_values procedure can compare these two to resolve
 any potential conflicts.
-A widget need not refer to the request widget,
-unless it must resolve conflicts between the current and new widgets.
-Any changes that the widget needs to make, including geometry changes,
-should be made in the new widget.
+The set_values procedure need not refer to the \fIrequest\fP widget
+unless it must resolve conflicts between the \fIcurrent\fP and \fInew\fP widgets.
+Any changes the widget needs to make, including geometry changes,
+should be made in the \fInew\fP widget.
 .LP
 In the above example,
 the subclass with the visual surround can see
-if the width and height in the request widget are zero.
+if the \fIwidth\fP and \fIheight\fP in the \fIrequest\fP widget are zero.
 If so,
-it adds its surround size to the width and height fields in the new widget.
+it adds its surround size to the \fIwidth\fP and
+\fIheight\fP fields in the \fInew\fP widget.
 If not, it must make do with the size originally specified.
 In this case, zero is a special value defined by the class to permit
 the application to invoke this behavior.
 .LP
-The new widget is the actual widget instance record.
+The \fInew\fP widget is the actual widget instance record.
 Therefore,
-the set_values procedure should do all its work on the new widget;
-the request widget should never be modified.
+the set_values procedure should do all its work on the \fInew\fP widget;
+the \fIrequest\fP widget should never be modified.
 If the set_values procedure needs to call any routines that operate on
-a widget, it should specify new as the widget instance.
+a widget, it should specify \fInew\fP as the widget instance.
 .LP
 Before calling the set_values procedures, the \*(xI modify the
-resources of the request widget according to the contents of the arglist;
+resources of the \fIrequest\fP widget according to the contents of the arglist;
 if the widget names all its resources in the class resource list, it is
-never necessary to examine the contents of args.
+never necessary to examine the contents of \fIargs\fP.
 .LP
 Finally, the set_values procedure must return a Boolean that indicates whether
 the widget needs to be redisplayed.
@@ -2391,9 +2436,9 @@ the X server will eventually generate an
 event, if necessary.
 After calling all the set_values procedures,
 .PN XtSetValues
-forces a redisplay by calling the Xlib
+forces a redisplay by calling
 .PN XClearArea
-function if any of the set_values procedures returned 
+if any of the set_values procedures returned 
 .PN True .
 Therefore, a set_values procedure should not try to do its own redisplaying.
 .LP
@@ -2402,6 +2447,7 @@ geometry because
 .PN XtSetValues
 eventually will perform a geometry request, and that request might be denied.
 If the widget actually changes size in response to a
+call to
 .PN XtSetValues ,
 its resize procedure is called.
 Widgets should do any geometry-related work in their resize procedure.
@@ -2409,15 +2455,15 @@ Widgets should do any geometry-related work in their resize procedure.
 Note that it is permissible to call
 .PN XtSetValues
 before a widget is realized.
-Therefore, the set_values proc must not assume that the widget is realized.
+Therefore, the set_values procedure must not assume that the widget is realized.
 .NH 4
 Widget State: the set_values_almost Procedure
 .XS
 \*(SN Widget State: the set_values_almost Procedure
 .XE
 .LP
-The set_values_almost procedure pointer in a widget class is of type
-.PN XtAlmostProc :
+The set_values_almost procedure pointer in the widget class record is of type
+.PN XtAlmostProc .
 .IN "set_values_almost procedure" "" "@DEF@"
 .IN "XtAlmostProc" "" "@DEF@"
 .FD 0
@@ -2452,9 +2498,10 @@ Most classes inherit the set_values_almost procedure from their superclass by
 specifying 
 .PN XtInheritSetValuesAlmost 
 in the class initialization.
-The 
-.PN RectObj 
-set_values_almost procedure accepts the compromise suggested.
+The
+set_values_almost procedure in
+.PN rectObjClass
+accepts the compromise suggested.
 .LP
 The set_values_almost procedure is called when a client tries to set a widget's
 geometry by means of a call to
@@ -2465,34 +2512,35 @@ satisfy the request but instead returns
 or
 .PN XtGeometryAlmost
 and a compromise geometry.
-The new object is the actual instance record.  The x, y, width, height
-and border_width fields contain the original values as they were
+The \fInew\fP object is the actual instance record.  The \fIx\fP, \fIy\fP,
+\fIwidth\fP, \fIheight\fP,
+and \fIborder_width\fP fields contain the original values as they were
 before the
 .PN XtSetValues
 call and all other fields contain the new
-values.  The request parameter contains the new geometry request that
-was made to the parent.  The reply parameter contains
-reply->request_mode equal to zero if the parent returned
+values.  The \fIrequest\fP parameter contains the new geometry request that
+was made to the parent.  The \fIreply\fP parameter contains
+\fIreply->request_mode\fP equal to zero if the parent returned
 .PN XtGeometryNo
 and contains the parent's compromise geometry otherwise.  The
 set_values_almost procedure takes the original geometry and the 
-compromise geometry and determines whether the compromise is
-acceptable or
+compromise geometry and determines if the compromise is
+acceptable or whether
 to try a different compromise.
-It returns its results in the request parameter,
+It returns its results in the \fIrequest\fP parameter,
 which is then sent back to the geometry manager for another try.
 To accept the compromise, the procedure must copy the contents
-of the reply geometry into the request geometry; to attempt an
-alternate geometry, the procedure may modify any part of the request
+of the \fIreply\fP geometry into the \fIrequest\fP geometry; to attempt an
+alternative geometry, the procedure may modify any part of the \fIrequest\fP
 argument; to terminate the geometry negotiation and retain the
-original geometry, the procedure must set request->request_mode to
-zero.  The geometry fields of the old and new instances must not be modified
+original geometry, the procedure must set \fIrequest->request_mode\fP to
+zero.  The geometry fields of the \fIold\fP and \fInew\fP instances must not be modified
 directly.
 
 .NH 4
-Widget State: the constraint set_values Procedure
+Widget State: the ConstraintClassPart set_values Procedure
 .XS
-\*(SN Widget State: the constraint set_values Procedure
+\*(SN Widget State: the ConstraintClassPart set_values Procedure
 .XE
 .IN "set_values procedure"
 .LP
@@ -2501,21 +2549,21 @@ The constraint set_values procedure pointer is of type
 The values passed to the parent's constraint set_values procedure
 are the same as those passed to the child's class
 set_values procedure.
-A class can specify NULL for the set_values field of the
+A class can specify NULL for the \fIset_values\fP field of the
 .PN ConstraintPart
 if it need not compute anything.
 .LP
 The constraint set_values procedure should recompute any constraint fields
-derived from constraint resource that are changed.
+derived from constraint resources that are changed.
 Further, it may modify other widget fields as appropriate.
 For example, if a constraint for the maximum height of a widget is changed
 to a value smaller than the widget's current height,
-the constraint set_values procedure may reset the height field in the
+the constraint set_values procedure may reset the \fIheight\fP field in the
 widget.
 .NH 4
 Widget Subpart State
 .XS
-\*(SN Setting Widget Subpart State
+\*(SN Widget Subpart State
 .XE
 .LP
 To set the current values of subpart resources associated with a
@@ -2554,7 +2602,7 @@ Specifies the number of entries in the argument list.
 The
 .PN XtSetSubvalues
 function updates the resource fields of the structure identified by
-base.  Any arguments specified which do not match an entry in the
+\fIbase\fP.  Any specified arguments that do not match an entry in the
 resource list are silently ignored.
 .sp
 .LP
@@ -2579,21 +2627,21 @@ Specifies the subpart resource list.
 .IP \fInum_resources\fP 1i
 Specifies the number of entries in the resource list.
 .IP ... 1i
-Specifies the variable-length argument list of name/value pairs that
+Specifies the variable argument list of name/value pairs that
 contain the resources to be modified and their new values.
 .LP
 .PN XtVaSetSubvalues
 is identical in function to
 .PN XtSetSubvalues
-with the args and num_args parameters replaced by a varargs list as
+with the \fIargs\fP and \fInum_args\fP parameters replaced by a varargs list, as
 described in Section 2.4.1.
 .PN XtVaTypedArg
 is not supported for
 .PN XtVaSetSubvalues .
-If
+If an entry containing
 .PN XtVaTypedArg
-is specified in the list a warning message is issued
-and the entry is then ignored.
+is specified in the list, a warning message is issued
+and the entry is ignored.
 
 .NH 4
 Widget Subpart Resource Data: the set_values_hook Procedure
@@ -2604,14 +2652,14 @@ Widget Subpart Resource Data: the set_values_hook Procedure
 .NT
 The set_values_hook procedure is obsolete, as the same information
 is now available to the set_values procedure.  The procedure has been
-retained for those widgets which used it in versions prior to Release 4.
+retained for those widgets that used it in versions prior to Release 4.
 .NE
 .LP
 Widgets that have a subpart can set the subpart resource values through
 .PN XtSetValues
 by supplying a set_values_hook procedure.
 The set_values_hook procedure pointer in a widget class is of type
-.PN XtArgsFunc :
+.PN XtArgsFunc .
 .IN "set_values_hook procedure" "" "@DEF@"
 .IN "XtArgsFunc" "" "@DEF@"
 .FD 0
@@ -2632,4 +2680,10 @@ or the transformed varargs list passed to
 .PN XtVaSetValues .
 .IP \fInum_args\fP 1i
 Specifies the number of entries in the argument list.
+.LP
+The widget with subpart resources may call
+.PN XtSetValues
+from the set_values_hook procedure
+and pass in its subresource list and the
+\fIargs\fP and \fInum_args\fP parameters.
 .bp

@@ -14,252 +14,91 @@
 .XS
 \fBChapter 1 \- Intrinsics and Widgets\fP
 .XE
-The \*(xI and a widget set make up the \*(tk.
-The \*(xI provide the base mechanisms necessary to build 
-a wide variety of interoperating widget sets and application environments.
-Because the \*(xI mask implementation details from the widget 
-and application programmer,
-the widgets and the application environments built with them are
-fully extensible and support independently developed
-new or extended components.
-By following a small set of conventions,
-widget programmers can extend their widget sets in new ways
-and can have these extensions function smoothly with the existing facilities.
-.LP
-The \*(xI is a library package layered on top of Xlib.
-As such,
-the \*(xI provide mechanisms (functions and structures) for
-extending the basic programming abstractions provided by the X Window System.
-By providing mechanisms for intercomponent and intracomponent interactions,
-the \*(xI provide the next layer of functionality from which the
-widget sets are built.
-.LP
-Figure 1-1 illustrates this extended three-tiered X programming environment.
-.LP
-.ps 11
-.nr PS 11
-.DS 0
-.TA .5i 1i 2.25i 2.75i 3i
-.ta .5i 1i 2.25i 2.75i 3i
-	+-----------------------------------------------+
-	|				|
-	|	   Application			|
-	|				|
-	+-----------------------------------------------+
-	|		|	|	|
-	|	   Widget	|	|	|
-	|	   Set	|	|	|
-	|		|	|	|
-	|----------------------------------	|	|	|
-	|	|		|	|
-	|	|   Intrinsics		|	|
-	|	|		|	|
-	|	----------------------------------|		|
-	|				|
-	|	    Xlib			|
-	|				|
-	+-----------------------------------------------+
-.DE
-.LP
-A typical \*(tk application is most likely to be a client of 
-a given widget set, a subset of the \*(xI functions, 
-and a smaller set of Xlib functions.
-This is illustrated by a left-to-right viewing of Figure 1-1.
-At the same time, 
-a widget set is a client of both the \*(xI and Xlib,
-and the \*(xI are a client of Xlib only.
-This is illustrated by a top-to-bottom viewing of Figure 1-1.
-.LP
-For the application programmer, the \*(tk provides:
-.IP \(bu 5
-A consistent interface (widget set) for writing applications
-.IP \(bu 5
-A small set of \*(xI mechanisms that also are used in writing applications 
-.LP
-For the widget programmer, the \*(tk provides:
-.IP \(bu 5
-A set of \*(xI mechanisms for building widgets
-.IP \(bu 5
-An architectural model for constructing and composing widgets
-.IP \(bu 5
-A consistent interface (widget set) for programming
-.LP
-To the extent possible,
-the \*(tk is policy free.
-The application environment, not the \*(tk, defines, implements, and enforces:
-.IP \(bu 5
-Policy
-.IP \(bu 5
-Consistency
-.IP \(bu 5
-Style
-.LP
-Each individual widget implementation defines its own policy.
-The \*(tk design allows for the development of radically differing
-widget implementations.
+The \*(xI are a programming library tailored to the special requirements
+of user interface construction within a network window system,
+specifically the X Window System.
+The \*(xI and a widget set make up an \*(tk.
+
 .NH 2
-Terminology
-.XS
-\fB\*(SN Terminology\fP
-.XE
-.LP
-In addition to the terms already defined for X programming (see \fI\*(xL\fP),
-the following terms are specific to the \*(xI and used throughout this book.
-.LP
-\fBApplication programmer\fP
-.IN "Application programmer" "" "@DEF@"
-.IP
-A programmer who uses the \*(tk to produce an application user interface.
-.LP
-\fBClass\fP
-.IN "Class" "" "@DEF@"
-.IP
-The general group to which a specific object belongs.
-.LP
-\fBClient\fP
-.IN "Client" "" "@DEF@"
-.IP
-A function that uses a widget in an application or for composing
-other widgets.
-.LP
-\fBInstance\fP
-.IN "Instance" "" "@DEF@"
-.IP
-A specific widget object as opposed to a general widget class.
-.LP
-\fBMethod\fP
-.IN "Method" "" "@DEF@"
-.IP
-The functions or procedures that a widget class implements.
-.LP
-\fBName\fP
-.IN "Name" "" "@DEF@"
-.IP
-The name that is specific to an instance of a widget for a given client.
-.LP
-\fBObject\fP
-.IN "Object" "" "@DEF@"
-.IP
-A software data abstraction consisting of private data and private and public
-functions that operate on the private data.
-Users of the abstraction can interact with the object only through calls
-to the object's public functions.
-In the \*(tk,
-some of the object's public functions are called directly by the application,
-while others are called indirectly when the application calls the common
-\*(xI functions.
-In general, if a function is common to all widgets,
-an application uses a single Intrinsic function to invoke the function for all
-types of widgets.
-If a function is unique to a single widget type,
-the widget exports the function as another ``Xt'' function.
-.LP
-\fBResource\fP
-.IN "Resource" "" "@DEF@"
-.IP
-A named piece of data in a widget that can be set by a client,
-by an application, or by user defaults.
-.LP
-\fBUser\fP
-.IN "User" "" "@DEF@"
-.IP
-A person interacting with a workstation.
-.LP
-\fBWidget\fP
-.IN "Widget" "" "@DEF@"
-.IP
-An object providing a user-interface abstraction (for example, a Scrollbar
-widget).
-.LP
-\fBWidget class\fP
-.IN "Widget class" "" "@DEF@"
-.IP
-The general group to which a specific widget belongs,
-otherwise known as the type of the widget.
-.LP
-\fBWidget programmer\fP
-.IN "Widget programmer" "" "@DEF@"
-.IP
-A programmer who adds new widgets to the \*(tk.
-.NH 2
-Intrinsics 
+Intrinsics
 .XS
 \fB\*(SN Intrinsics\fP
 .XE
 .LP
-The \*(xI provide the base mechanisms (functions and structures)
-that simplify the design of application user interfaces.
-In addition,
-they assist widget and application programmers by providing a commonly used set
-of underlying user-interface functions to manage:
-.IP \(bu 5
-Toolkit initialization
-\.IP \(bu 5
-Widgets
-.IP \(bu 5
-Memory
-.IP \(bu 5
-Window, file, and timer events
-.IP \(bu 5
-Widget geometry
-.IP \(bu 5
-Input focus
-.IP \(bu 5
-Selections
-.IP \(bu 5
-Resources and resource conversion
-.IP \(bu 5
-Translation of events
-.IP \(bu 5
-Graphics contexts
-.IP \(bu 5
-Pixmaps
-.IP \(bu 5
-Errors and warnings
+The \*(xI provide the base mechanism necessary to build 
+a wide variety of interoperating widget sets and application environments.
+The Intrinsics are a layer on top of Xlib, the
+C Library X Interface.  They extend the
+fundamental abstractions provided by the X Window System while still
+remaining independent of any particular user interface policy or
+style.
 .LP
-Although all \*(xI mechanisms are primarily intended for use by
-widget programmers,
-some are also intended for use by application programmers.
-The architectural model for the \*(xI lets the widget programmer 
-create new widgets by using the supplied mechanisms and/or 
-by combining existing widgets.
-Therefore, an application interface layer built with the \*(xI will provide
-a coordinated set of widgets and composition policies.
-While some of the widgets that are built with the \*(xI 
-are common across a number of application domains,
-others are restricted to a specific application domain.
+The Intrinsics use object-oriented programming techniques to supply a
+consistent architecture for constructing and composing user interface
+components, known as widgets.  This
+allows programmers to extend a widget set in new ways, either by
+deriving new widgets from existing ones (subclassing), or by writing
+entirely new widgets following the established conventions.
 .LP
-The \*(xI are based on an architectural model that also is flexible enough to
-accommodate a variety of different application interface layers.
-In addition,
-the supplied set of \*(xI mechanisms are:
-.IP \(bu 5
-Functionally complete and policy free
-.IP \(bu 5
-Stylistically and functionally consistent with the X Window System primitives
-.IP \(bu 5
-Portable across languages, computer architectures, and operating systems
+When the \*(xI were first conceived, the root of the object
+hierarchy was a widget class named
+Core.
+.IN "Core"
+In release 4 of the
+\*(xI, three nonwidget superclasses were added above Core.
+These superclasses are described in Chapter 12.  The name of the class
+now at the root of the Intrinsics class hierarchy is
+Object.
+.IN "Object"
+The remainder of this
+specification refers uniformly to \fIwidgets\fP and \fICore\fP
+as if they were the
+base class for all \*(xI operations.  The argument descriptions
+for each Intrinsica procedure and Chapter 12 describe which operations
+are defined for the nonwidget superclasses of Core.  The reader may
+determine by context whether a specific reference to \fIwidget\fP
+actually means \fIwidget or object\fP.
+
+.NH 2
+Languages
+.XS
+\fB\*(SN Languages\fP
+.XE
+.LP
+The Intrinsics are intended to be used for two programming purposes.
+Programmers writing widgets will be using most of the facilities
+provided by the
+Intrinsics to construct user interface components from the simple, such
+as buttons and scrollbars, to the complex, such as control panels and
+property sheets.  Application programmers will use a much smaller subset of
+the Intrinsics procedures in combination with one or more sets of widgets to
+construct and present complete user interfaces on an X display.  The
+Intrinsics
+programming interfaces primarily
+intended for application use are designed to be callable from most
+procedural programming languages.  Therefore, most arguments are passed by
+reference rather than by value.  The interfaces primarily
+intended for widget programmers are expected to be used principally
+from the C language.  In these cases, the usual C programming
+conventions apply.  In this specification, the term \fIclient\fP refers to
+any module, widget, or application that calls an Intrinsics procedure.
 .LP
 Applications that use the \*(xI mechanisms
-must include the following header files:
-.IP \(bu 5
+must include the header files
 .Pn < X11/Intrinsic.h >
-.IP \(bu 5
-.Pn < X11/StringDefs.h >
-.LP
-In addition, they may also include:
-.IP \(bu 5
+and
+.Pn < X11/StringDefs.h >,
+or their equivalent,
+and they may also include
 .Pn < X11/Xatoms.h >
-.IP \(bu 5
-.Pn < X11/Shell.h >
-.LP
-Finally, widget implementations should include:
-.IP \(bu 5
+and
+.Pn < X11/Shell.h >.
+In addition, widget implementations should include
 .Pn < X11/IntrinsicP.h >
 instead of
 .Pn < X11/Intrinsic.h >.
 .LP
-The applications must also include the additional headers for
+The applications must also include the additional header files for
 each widget class that they are to use (for example,
 .Pn < X11/Xaw/Label.h >
 or
@@ -274,30 +113,24 @@ Procedures and Macros
 .XS
 \fB\*(SN Procedures and Macros\fP
 .XE
-All functions defined in this document except those specified below
+All functions defined in this specification except those specified below
 may be implemented as C macros with arguments.  C applications may use
 ``#undef'' to remove a macro definition and ensure that the actual function
 is referenced.  Any such macro will expand to a single expression which
-has the same precedence as a function call and which evaluates each
+has the same precedence as a function call and that evaluates each
 of its arguments exactly once, fully protected by parentheses, so that
 arbitrary expressions may be used as arguments.
 .LP
-The following symbols are macros which do not have function
-equivalents and which may expand their arguments in a manner other
-than that described above.
-.LP
-.IP \(bu 5
-XtCheckSubclass
-.IP \(bu 5
-XtNew
-.IP \(bu 5
-XtNumber
-.IP \(bu 5
-XtOffsetOf
-.IP \(bu 5
-XtOffset
-.IP \(bu 5
-XtSetArg
+The following symbols are macros that do not have function
+equivalents and that may expand their arguments in a manner other
+than that described above:
+.PN XtCheckSubclass ,
+.PN XtNew ,
+.PN XtNumber ,
+.PN XtOffsetOf ,
+.PN XtOffset ,
+and
+.PN XtSetArg .
 
 .NH 2
 Widgets
@@ -306,7 +139,7 @@ Widgets
 \fB\*(SN Widgets\fP
 .XE
 .LP
-The fundamental abstraction and data type of the \*(tk is the \fIwidget\fP,
+The fundamental abstraction and data type of the \*(tk is the widget,
 which is a combination of an X window and its associated
 input and display semantics
 and which is dynamically allocated and contains state information.
@@ -316,58 +149,42 @@ Some widgets are output-only and do not react to pointer or keyboard input,
 and others change their display in response to input
 and can invoke functions that an application has attached to them.
 .LP
-Every widget belongs to exactly one widget class that is statically
-allocated and initialized and that contains the operations allowable on
+Every widget belongs to exactly one widget class, which is statically
+allocated and initialized and which contains the operations allowable on
 widgets of that class.
-Logically, a widget class is the procedures and data that is associated
+Logically, a widget class is the procedures and data associated
 with all widgets belonging to that class.
 These procedures and data can be inherited by
 subclasses.
 Physically, a widget class is a pointer to a structure.
 The contents of this structure are constant for all widgets of the widget
 class but will vary from class to class.
-(Here, constant means the class structure is initialized at compile-time
+(Here, ``constant'' means the class structure is initialized at compile time
 and never changed, except for a one-time class initialization
 and in-place compilation of resource lists,
 which takes place when the first widget of the class or subclass is created.)
 For further information,
 see Section 2.4.
 .LP
-When the \*(xI were first conceived, the root of the object
-hierarchy was a widget class named Core.  In release 4 of the
-\*(xI, three non-widget superclasses were added above Core.
-These superclasses are described in Chapter 12.  The remainder of this
-document refers uniformly to "widgets" and "Core" as if they were the
-base class for all \*(xI operations.  The argument descriptions
-for each Intrinsic procedure and Chapter 12 describe which operations
-are defined for the non-widget superclasses of Core.  The reader may
-determine by context whether a specific reference to "widget" is
-actually an abbreviation for "widget or object".
-.LP
-The organization of the declarations and code for a new widget class
-between a public .h file, a private .h file,
+The distribution of the declarations and code for a new widget class
+among a public .h file for application programmer use, a private .h file
+for widget programmer use,
 and the implementation .c file is described in Section 1.6.
 The predefined widget classes adhere to these conventions.
 .LP
 A widget instance is composed of two parts:
 .IP \(bu 5
-A data structure that contains instance-specific values
+A data structure which contains instance-specific values.
 .IP \(bu 5
-A class structure that contains information that is applicable to
-all widgets of that class
+A class structure which contains information that is applicable to
+all widgets of that class.
 .LP
 Much of the input/output of a widget (for example, fonts, colors, sizes, 
 border widths, and so on) is customizable by users.
 .LP
-The next three sections discuss the base widget classes:
-.IP \(bu 5
-Core widgets
-.IP \(bu 5
-Composite widgets
-.IP \(bu 5
-Constraint widgets
-.LP
-The chapter ends with a discussion of widget classing.
+This chapter discusses the base widget classes,
+Core, Composite, and Constraint, and
+ends with a discussion of widget classing.
 .NH 3
 Core Widgets
 .XS
@@ -376,10 +193,10 @@ Core Widgets
 .LP
 .IN "Core" "" "@DEF"
 The 
-.PN Core 
-widget contains the definitions of fields common to all widgets.
-All widgets are subclasses of 
-.PN Core ,
+Core 
+widget class contains the definitions of fields common to all widgets.
+All widgets classes are subclasses of the
+Core class,
 which is defined by the 
 .PN CoreClassPart
 and 
@@ -391,9 +208,9 @@ CoreClassPart Structure
 \*(SN CoreClassPart Structure
 .XE
 .LP
-The common fields for all widget classes are defined in the
+All widget classes contain the fields defined in the
 .PN CoreClassPart
-structure:
+structure.
 .LP
 .IN "CoreClassPart" "" "@DEF@"
 .Ds 0
@@ -435,12 +252,12 @@ typedef struct {
 } CoreClassPart;
 .De
 .LP
-All widget classes have the core class fields as their first component.
+All widget classes have the Core class fields as their first component.
 The prototypical
 .PN WidgetClass
 and
 .PN CoreWidgetClass
-are defined with only this set of fields:
+are defined with only this set of fields.
 .LP
 .IN "Core" "" "@DEF@"
 .IN "WidgetClass" "" "@DEF@"
@@ -456,10 +273,12 @@ typedef struct {
 Various routines can cast widget class pointers, as needed,
 to specific widget class types.
 .LP
-The single occurrence of the class record and pointer for
-creating instances of Core are:
+The single occurrences of the class record and pointer for
+creating instances of Core are
 .LP
-In IntrinsicP.h:
+In
+.PN IntrinsicP.h :
+.LP
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -467,7 +286,9 @@ extern WidgetClassRec widgetClassRec;
 #define coreClassRec widgetClassRec
 .De
 .LP
-In Intrinsic.h:
+In
+.PN Intrinsic.h :
+.LP
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -481,9 +302,11 @@ and
 and the opaque variable
 .PN widgetClass
 are defined for generic actions on widgets.
-In order to make these datatypes opaque and ensure that the compiler
+In order to make these types opaque and ensure that the compiler
 does not allow applications to access private data, the \*(xI use
-incomplete structure definitions in Intrinsic.h:
+incomplete structure definitions in
+.PN Intrinsic.h :
+.LP
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -496,9 +319,9 @@ CorePart Structure
 \*(SN CorePart Structure
 .XE
 .LP
-The common fields for all widget instances are defined in the
+All widget instances contain the fields defined in the
 .PN CorePart
-structure:
+structure.
 .LP
 .IN "CorePart" "" "@DEF@"
 .Ds 0
@@ -539,7 +362,7 @@ typedef struct _CorePart {
 } CorePart;
 .De
 .LP
-All widget instances have the core fields as their first component.
+All widget instances have the Core fields as their first component.
 The prototypical type
 .PN Widget
 is defined with only this set of fields.
@@ -558,9 +381,11 @@ typedef struct {
 Various routines can cast widget pointers, as needed,
 to specific widget types.
 .LP
-In order to make these datatypes opaque and ensure that the compiler
+In order to make these types opaque and ensure that the compiler
 does not allow applications to access private data, the \*(xI use
-incomplete structure definitions in Intrinsic.h:
+incomplete structure definitions in
+.PN Intrinsic.h .
+.LP
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -575,9 +400,9 @@ Core Resources
 .XE
 .LP
 .IN "CoreWidget" "Resources"
-The resource names, classes and representation types specified in the
-.PN Core
-resource list are:
+The resource names, classes, and representation types specified in the
+.PN coreClassRec
+resource list are
 .LP
 .TS
 lw(1.5i) lw(1.5i) lw(2.5i) .
@@ -602,9 +427,9 @@ _
 .TE
 .LP
 Additional resources are defined for all widgets via the
-.PN Object
+.PN objectClassRec
 and
-.PN RectObj
+.PN rectObjClassRec
 resource lists; see Sections 12.2 and 12.3 for details.
 
 .NH 4
@@ -613,8 +438,8 @@ CorePart Default Values
 \*(SN CorePart Default Values
 .XE
 .LP
-The default values for the core fields, which are filled in from the
-resource lists and the initialize procedures, are:
+The default values for the Core fields, which are filled in from the
+resource lists and by the initialize procedures, are
 .LP
 .TS
 lw(1.5i) lw(4.25i) .
@@ -624,29 +449,29 @@ Field	Default Value
 .sp 6p
 _
 .sp 6p
-self	Address of the widget structure (may not be changed)
+self	Address of the widget structure (may not be changed).
 T{
 widget_class
 T}	T{
-widget_class argument to
+\fIwidget_class\fP argument to
 .PN XtCreateWidget
-(may not be changed)
+(may not be changed).
 T}
 T{
 parent
 T}	T{
-parent argument to
+\fIparent\fP argument to
 .PN XtCreateWidget
-(may not be changed)
+(may not be changed).
 T}
 T{
 xrm_name
 T}	T{
-Encoded name argument to
+Encoded \fIname\fP argument to
 .PN XtCreateWidget
-(may not be changed)
+(may not be changed).
 T}
-being_destroyed	Parent's being_destroyed value
+being_destroyed	Parent's \fIbeing_destroyed\fP value.
 destroy_callbacks	NULL
 constraints	NULL
 x	0
@@ -664,9 +489,10 @@ sensitive
 T}	T{
 .PN True
 T}
-ancestor_sensitive	logical AND of parent's sensitive and ancestor_sensitive
-event_table	Initialized by the event manager
-tm	Initialized by the translation manager
+ancestor_sensitive	logical AND of parent's \fIsensitive\fP and
+\fIancestor_sensitive\fP values.
+event_table	Initialized by the event manager.
+tm	Initialized by the translation manager.
 accelerators	NULL
 T{
 border_pixel	
@@ -681,20 +507,20 @@ num_popups	0
 T{
 name
 T}	T{
-name argument to
+\fIname\fP argument to
 .PN XtCreateWidget
-(may not be changed)
+(may not be changed).
 T}
 T{
 screen
 T}	T{
-Parent's screen, top-level widget gets it from display specifier
+Parent's \fIscreen\fP; top-level widget gets screen from display specifier
 .br
-(may not be changed)
+(may not be changed).
 T}
-colormap	Copied from parent during creation
+colormap	Parent's \fIcolormap\fP value.
 window	NULL
-depth	Parent's depth, top-level widget gets root window depth
+depth	Parent's \fIdepth\fP; top-level widget gets root window depth.
 T{
 background_pixel
 T}	T{
@@ -732,11 +558,12 @@ Composite Widgets
 .XE
 .LP
 .IN "Composite" "" "@DEF@"
-.PN Composite 
-widgets are a subclass of the 
-.PN Core 
-widget (see Chapter 3) which are intended to be containers for other widgets.
-The additional data used by Composite widgets is defined by the
+The Composite 
+widget class is a subclass of the 
+Core 
+widget class (see Chapter 3).
+Composite widgets are intended to be containers for other widgets.
+The additional data used by composite widgets are defined by the
 .PN CompositeClassPart
 and 
 .PN CompositePart
@@ -748,10 +575,9 @@ CompositeClassPart Structure
 .XE
 .LP
 In addition to the 
-.PN Core 
-widget class fields,
-.PN Composite 
-widgets have the following class fields:
+Core 
+class fields,
+widgets of the Composite class have the following class fields.
 .LP
 .IN "CompositeClassPart" "" "@DEF@"
 .Ds 0
@@ -766,7 +592,9 @@ typedef struct {
 } CompositeClassPart;
 .De
 .LP
-The extension record defined for CompositeClassPart with record_type
+The extension record defined for
+.PN CompositeClassPart
+with \fIrecord_type\fP
 equal to
 .PN \s-1NULLQUARK\s+1
 is
@@ -787,9 +615,9 @@ typedef struct {
 } CompositeClassExtensionRec, *CompositeClassExtension;
 .De
 .LP
-.PN Composite 
-widget classes have the composite class fields immediately following the
-core fields:
+Composite 
+classes have the Composite class fields immediately following the
+Core class fields.
 .LP
 .IN "CompositeWidgetClass" "" "@DEF@"
 .Ds 0
@@ -801,17 +629,21 @@ typedef struct {
 } CompositeClassRec, *CompositeWidgetClass;
 .De
 .LP
-The single occurrence of the class record and pointer for creating
-instances of Composite are:
+The single occurrences of the class record and pointer for creating
+instances of Composite are
 .LP
-In IntrinsicP.h:
+In
+.PN IntrinsicP.h :
+.LP
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
 extern CompositeClassRec compositeClassRec;
 .De
 .LP
-In Intrinsic.h:
+In
+.PN Intrinsic.h :
+.LP
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -824,15 +656,18 @@ and
 .PN CompositeWidgetClass
 and the opaque variable
 .PN compositeWidgetClass
-are defined for generic operations on widgets that are a subclass of
-.PN CompositeWidget .
+are defined for generic operations on widgets whose class
+is Composite or a subclass of Composite.
 The symbolic constant for the
 .PN CompositeClassExtension
-version id is
+version identifier is
 .PN XtCompositeExtensionVersion
-(see Section 1.6.12).  Intrinsic.h uses incomplete structure
-definitions to ensure that the compiler catches attempts to access
-private data:
+(see Section 1.6.12).
+.PN Intrinsic.h
+uses an incomplete structure
+definition to ensure that the compiler catches attempts to access
+private data.
+.LP
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -846,12 +681,12 @@ CompositePart Structure
 .XE
 .LP
 In addition to the
-.PN CorePart
+Core instance
 fields,
-.PN Composite 
-widgets have the following fields defined in the
+widgets of the Composite class have the following
+instance fields defined in the
 .PN CompositePart
-structure:
+structure.
 .LP
 .IN "CompositePart" "" "@DEF@"
 .Ds 0
@@ -865,8 +700,9 @@ typedef struct {
 } CompositePart;
 .De
 .LP
-.PN Composite 
-widgets have the composite fields immediately following the core fields:
+Composite 
+widgets have the Composite instance fields immediately following the Core
+instance fields.
 .LP
 .IN "CompositeWidget" "" "@DEF@"
 .Ds 0
@@ -878,8 +714,10 @@ typedef struct {
 } CompositeRec, *CompositeWidget;
 .De
 .LP
-Intrinsic.h uses an incomplete structure definition to ensure that the
-compiler catches attempts to access private data:
+.PN Intrinsic.h
+uses an incomplete structure definition to ensure that the
+compiler catches attempts to access private data.
+.LP
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -893,10 +731,11 @@ Composite Resources
 .XE
 .LP
 .IN "CompositeWidget" "Resources"
-The resource names, classes and representation types specified in
+The resource names, classes, and representation types
+that are specified in
 the
-.PN Composite
-resource list are:
+.PN compositeClassRec
+resource list are
 .LP
 .TS
 lw(1.5i) lw(1.5i) lw(2.5i) .
@@ -919,12 +758,12 @@ CompositePart Default Values
 \*(SN CompositePart Default Values
 .XE
 .LP
-The default values for the composite fields,
-which are filled in by the 
-.PN Composite 
-resource list and the 
-.PN Composite 
-initialize procedure, are:
+The default values for the Composite fields,
+which are filled in from the 
+Composite 
+resource list and by the
+Composite
+initialize procedure, are
 .LP
 .TS
 l l .
@@ -937,18 +776,22 @@ _
 children	NULL
 num_children	0
 num_slots	0
-insert_position	Internal function InsertAtEnd
+insert_position	Internal function to insert at end
 .sp 6p
 _
 .TE
 .LP
-The children, num_children, and insert_position fields are declared
+The \fIchildren\fP, \fInum_children\fP,
+and \fIinsert_position\fP fields are declared
 as resources;
-.PN XtNinsertPosition
+.IN XtNinsertPosition
+XtNinsertPosition
 is a settable resource,
-.PN XtNchildren
+.IN XtNchildren
+XtNchildren
 and
-.PN XtNnumChildren
+.IN XtNnumChildren
+XtNnumChildren
 may be read by any client but should only be modified by the composite
 widget class procedures.
 
@@ -959,13 +802,14 @@ Constraint Widgets
 .XE
 .LP
 .IN "Constraint" "" "@DEF@"
-.PN Constraint 
-widgets are a subclass of the 
-.PN Composite
-widget (see Section 3.6) that maintain additional state
-data for each child, for example, client-defined constraints on the child's
+The Constraint 
+widget class is a subclass of the 
+Composite
+widget class (see Section 3.6).  Constraint
+widgets maintain additional state
+data for each child; for example, client-defined constraints on the child's
 geometry.
-The additional data used by constraint widgets is defined by the
+The additional data used by constraint widgets are defined by the
 .PN ConstraintClassPart
 and
 .PN ConstraintPart
@@ -977,12 +821,12 @@ ConstraintClassPart Structure
 .XE
 .LP
 In addition to the
-.PN Core
+Core
 and
-.PN Composite 
+Composite 
 class fields,
-.PN Constraint 
-widgets have the following class fields:
+widgets of the Constraint class
+have the following class fields.
 .LP
 .IN "ConstraintClassPart" "" "@DEF@"
 .Ds 0
@@ -1001,7 +845,7 @@ typedef struct {
 .LP
 The extension record defined for
 .PN ConstraintClassPart
-with record_type equal to
+with \fIrecord_type\fP equal to
 .PN \s-1NULLQUARK\s+1
 is
 .PN ConstraintClassExtensionRec .
@@ -1019,32 +863,36 @@ typedef struct {
 } ConstraintClassExtensionRec, *ConstraintClassExtension;
 .De
 .LP
-.PN Constraint 
-widget classes have the constraint class fields immediately following the
-composite fields:
+Constraint 
+classes have the Constraint class fields immediately following the
+Composite class fields.
 .LP
 .IN "ConstraintWidgetClass" "" "@DEF@"
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
-typedef struct {
+typedef struct _ConstraintClassRec {
 	CoreClassPart core_class;
 	CompositeClassPart composite_class;
 	ConstraintClassPart constraint_class;
 } ConstraintClassRec, *ConstraintWidgetClass;
 .De
 .LP
-The single occurrence of the class record and pointer for creating
-instances of Constraint are:
+The single occurrences of the class record and pointer for creating
+instances of Constraint are
 .LP
-In IntrinsicP.h:
+In
+.PN IntrinsicP.h :
+.LP
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
 extern ConstraintClassRec constraintClassRec;
 .De
 .LP
-In Intrinsic.h:
+In
+.PN Intrinsic.h :
+.LP
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -1057,15 +905,18 @@ and
 .PN ConstraintWidgetClass
 and the opaque variable
 .PN constraintWidgetClass
-are defined for generic operations on widgets that are a subclass of
-.PN ConstraintWidgetClass .
+are defined for generic operations on widgets
+whose class is Constraint or a subclass
+of Constraint.
 The symbolic constant for the
 .PN ConstraintClassExtension
-version id is
+version identifier is
 .PN XtConstraintExtensionVersion
 (see Section 1.6.12).
-Intrinsic.h uses an incomplete structure definition to ensure that the
-compiler catches attempts to access private data:
+.PN Intrinsic.h
+uses an incomplete structure definition to ensure that the
+compiler catches attempts to access private data.
+.LP
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -1079,14 +930,14 @@ ConstraintPart Structure
 .XE
 .LP
 In addition to the
-.PN CorePart
+Core
 and
-.PN CompositePart
+Composite instance
 fields,
-.PN Constraint 
-widgets have the following fields defined in the
+widgets of the Constraint class have the following unused
+instance fields defined in the
 .PN ConstraintPart
-structure:
+structure
 .LP
 .IN "ConstraintPart" "" "@DEF@"
 .Ds 0
@@ -1095,9 +946,9 @@ structure:
 typedef struct { int empty; } ConstraintPart;
 .De
 .LP
-.PN Constraint 
-widgets have the constraint fields immediately following the
-composite fields:
+Constraint 
+widgets have the Constraint instance fields immediately following the
+Composite instance fields.
 .LP
 .IN "ConstraintWidget" "" "@DEF@"
 .Ds 0
@@ -1110,8 +961,10 @@ typedef struct {
 } ConstraintRec, *ConstraintWidget;
 .De
 .LP
-Intrinsic.h uses an incomplete structure definition to ensure that the
-compiler catches attempts to access private data:
+.PN Intrinsic.h
+uses an incomplete structure definition to ensure that the
+compiler catches attempts to access private data.
+.LP
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -1125,57 +978,67 @@ Constraint Resources
 .XE
 .LP
 The
-.PN Constraint
-core_class and constraint_class resource fields are NULL;
+.PN constraintClassRec
+\fIcore_class\fP and \fIconstraint_class resources\fP fields are NULL
+and the \fInum_resources\fP fields are zero;
 no additional resources beyond those declared by
 the superclasses
 are defined for
-.PN Constraint .
+Constraint.
 
 .NH 2
-Implementation-specific Datatypes
+Implementation-specific Types
 .XS
-\*(SN Implementation-specific Datatypes
+\*(SN Implementation-Specific Types
 .XE
 .LP
 To increase the portability of widget and application source code
 between different system environments, the \*(xI define several
-datatypes whose precise representation is explicitly dependent upon,
+types whose precise representation is explicitly dependent upon,
 and chosen by, each individual implementation of the \*(xI.
 .LP
-These implementation-defined datatypes are:
+These implementation-defined types are
 .IN "Boolean" "" "@DEF@"
 .IP \fBBoolean\fP 11
-a datum that contains a zero or non-zero value.
+A datum that contains a zero or nonzero value.
 Unless explicitly stated, clients should not assume
-that the non-zero value is equal to the symbolic
+that the nonzero value is equal to the symbolic
 value
 .PN True .
 .IN "Cardinal" "" "@DEF@"
 .IP \fBCardinal\fP 11
-an unsigned integer datum with a minimum range of [0..2^16-1]
+An unsigned integer datum with a minimum range of [0..2^16-1]
 .IN "Dimension" "" "@DEF@"
 .IP \fBDimension\fP 11
-an unsigned integer datum with a minimum range of [0..2^16-1]
+An unsigned integer datum with a minimum range of [0..2^16-1]
 .IN "Position" "" "@DEF@"
 .IP \fBPosition\fP 11
-a signed integer datum with a minimum range of [-2^15..2^15-1]
+A signed integer datum with a minimum range of [-2^15..2^15-1]
 .IN "XtPointer" "" "@DEF@"
 .IP \fBXtPointer\fP 11
-a datum large enough to contain the largest of a char*, int*, function
+A datum large enough to contain the largest of a char*, int*, function
 pointer, structure pointer, or long value.  A pointer
-to any type or function, or a long, may be converted
-to an XtPointer and back again and the result will
+to any type or function, or a long value may be converted
+to an
+.PN XtPointer
+and back again and the result will
 compare equal to the original value.  In ANSI C
-environments it is expected that XtPointer will be
+environments it is expected that
+.PN XtPointer
+will be
 defined as void*.
 .IN "XtArgVal" "" "@DEF@"
 .IP \fBXtArgVal\fP 11
-a datum large enough to contain an XtPointer, Cardinal,
-Dimension, or Position value.
+A datum large enough to contain an
+.PN XtPointer ,
+.PN Cardinal ,
+.PN Dimension ,
+or
+.PN Position
+value.
 .IN "XtEnum" "" "@DEF@"
 .IP \fBXtEnum\fP 11
-an integer datum large enough to encode at least 128 distinct
+An integer datum large enough to encode at least 128 distinct
 values, two of which are the symbolic values
 .PN True
 and
@@ -1191,7 +1054,7 @@ and
 .PN False ,
 respectively.
 .LP
-In addition to these specific datatypes, the precise order of the
+In addition to these specific types, the precise order of the
 fields within the structure declarations for any of the instance
 part records
 .PN ObjectPart ,
@@ -1200,12 +1063,12 @@ part records
 .PN CompositePart ,
 .PN ShellPart ,
 .PN WMShellPart ,
-.PN TopLevelShellPart
+.PN TopLevelShellPart ,
 and
 .PN ApplicationShellPart
 is implementation-defined.  The
 .PN ObjectPart ,
-.PN RectObjPart
+.PN RectObjPart ,
 and
 .PN CorePart
 structures must be defined so that any member with the same name
@@ -1216,7 +1079,7 @@ and
 .PN CoreRec
 (
 .PN WidgetRec ).
-No other relationship between the offsets of any two
+No other relations between the offsets of any two
 fields may be assumed.
 
 .NH 2
@@ -1226,44 +1089,46 @@ Widget Classing
 \fB\*(SN Widget Classing\fP
 .XE
 .IN "widget_class" "" "@DEF@"
-The widget_class field of a widget points to its widget class structure,
+The \fIwidget_class\fP field of a widget points to its widget class structure,
 which contains information that is constant across all widgets of that class.
 As a consequence, 
-widget classes usually do not implement directly callable procedures;
+widgets usually do not implement directly callable procedures;
 rather, they implement procedures, called methods, that are available through
 their widget class structure.
 These methods are invoked by generic procedures that envelop common actions 
 around the methods implemented by the widget class.
 Such procedures are applicable to all widgets
-of that class and also to widgets that are subclasses of that class.
+of that class and also to widgets whose classes are subclasses of that class.
 .LP
 All widget classes are a subclass of 
-.PN Core 
+Core 
 and can be subclassed further.
-Subclassing reduces the amount of code and declarations you write to make a
+Subclassing reduces the amount of code and declarations
+necessary to make a
 new widget class that is similar to an existing class.
 For example, you do not have to describe every resource your widget uses in an
 .PN XtResourceList .
 Instead, you describe only the resources your widget has
 that its superclass does not.
-Subclasses usually inherit many of their superclass's procedures
+Subclasses usually inherit many of their superclasses' procedures
 (for example, the expose procedure or geometry handler).
 .LP
 Subclassing, however, can be taken too far.
 If you create a subclass that inherits none of the procedures of its
 superclass,
-you should consider whether or not you have chosen the most
+you should consider whether you have chosen the most
 appropriate superclass.
 .LP
 To make good use of subclassing, 
 widget declarations and naming conventions are highly stylized.
 A widget consists of three files:
 .IP \(bu 5
-A public .h file that is used by client widgets or applications
+A public .h file, used by client widgets or applications.
 .IP \(bu 5
-A private .h file that is used by widgets that are subclasses of the widget
+A private .h file, used by widgets whose classes
+are subclasses of the widget class.
 .IP \(bu 5
-A .c file that implements the widget class
+A .c file, which implements the widget.
 .NH 3
 Widget Naming Conventions
 .XS
@@ -1277,9 +1142,9 @@ and spelling as the number of widget classes it uses,
 the following guidelines should be followed when writing new widgets:
 .IP \(bu 5
 Use the X library naming conventions that are applicable.
-For example, a record component name is all lowercase
+For example, a record component name is all lower case
 and uses underscores (_) for compound words (for example, background_pixmap).
-Type and procedure names start with uppercase and use capitalization for
+Type and procedure names start with upper case and use capitalization for
 compound words (for example,
 .PN ArgList
 or
@@ -1289,20 +1154,20 @@ A resource name is spelled identically to the field name
 except that compound names use capitalization rather than underscore.
 To let the compiler catch spelling errors,
 each resource name should have a symbolic identifier prefixed with
-.PN XtN .
+``XtN''.
 For example,
-the background_pixmap field has the corresponding identifier
+the \fIbackground_pixmap\fP field has the corresponding identifier
 XtNbackgroundPixmap,
 which is defined as the string ``backgroundPixmap''.
 Many predefined names are listed in 
 .Pn < X11/StringDefs.h >.
 Before you invent a new name,
-you should make sure that there is not already a name that you can use.
+you should make sure there is not already a name that you can use.
 .IP \(bu 5
 A resource class string starts with a capital letter 
 and uses capitalization for compound names (for example,``BorderWidth'').
 Each resource class string should have a symbolic identifier prefixed with
-.PN XtC
+``XtC''
 (for example, XtCBorderWidth).
 Many predefined classes are listed in
 .Pn < X11/StringDefs.h >.
@@ -1310,46 +1175,48 @@ Many predefined classes are listed in
 A resource representation string is spelled identically to the type name
 (for example, ``TranslationTable'').
 Each representation string should have a symbolic identifier prefixed with
-.PN XtR
+``XtR''
 (for example, XtRTranslationTable).
-Many predefined representation types are lined in
+Many predefined representation types are listed in
 .Pn < X11/StringDefs.h >.
 .IP \(bu 5
-New widget classes start with a capital and use uppercase for compound
+New widget classes start with a capital and use upper case for compound
 words.
-Given a new class name AbcXyz you should derive several names:
+Given a new class name AbcXyz, you should derive several names:
 .RS
 .IP \- 5
-Additional widget instance structure part name AbcXyzPart
+Additional widget instance structure part name AbcXyzPart.
 .IP \- 5
-Complete widget instance structure names AbcXyzRec and _AbcXyzRec
+Complete widget instance structure names AbcXyzRec and _AbcXyzRec.
 .IP \- 5
-Widget instance structure pointer type name AbcXyzWidget
+Widget instance structure pointer type name AbcXyzWidget.
 .IP \- 5
-Additional class structure part name AbcXyzClassPart
+Additional class structure part name AbcXyzClassPart.
 .IP \- 5
-Complete class structure names AbcXyzClassRec and _AbcXyzClassRec
+Complete class structure names AbcXyzClassRec and _AbcXyzClassRec.
 .IP \- 5
-Class structure pointer type name AbcXyzWidgetClass
+Class structure pointer type name AbcXyzWidgetClass.
 .IP \- 5
-Class structure variable abcXyzClassRec
+Class structure variable abcXyzClassRec.
 .IP \- 5
-Class structure pointer variable abcXyzWidgetClass
+Class structure pointer variable abcXyzWidgetClass.
 .RE
 .IP \(bu 5
 Action procedures available to translation specifications should follow the
 same naming conventions as procedures.
 That is,
-they start with a capital letter and compound names use uppercase
+they start with a capital letter, and compound names use upper case
 (for example, ``Highlight'' and ``NotifyClient'').
 .LP
-The symbolic identifiers \fBXtN\fP..., \fBXtC\fP... and \fBXtR\fP...
+The symbolic identifiers XtN..., XtC... and XtR...
 may be implemented
 as macros, as global symbols, or as a mixture of the two.  The
-(implicit) type of the identifier is \fBString\fP.  The pointer value itself
+(implicit) type of the identifier is
+.PN String .
+The pointer value itself
 is not significant; clients must not assume that inequality of two
 identifiers implies inequality of the resource name, class, or
-representation.  Clients are also cautioned that although global
+representation string.  Clients should also note that although global
 symbols permit savings in literal storage in some environments, they
 also introduce the possibility of multiple definition conflicts when
 applications attempt to use independently developed widgets
@@ -1362,9 +1229,9 @@ Widget Subclassing in Public .h Files
 .XE
 .LP
 The public .h file for a widget class is imported by clients
-and contains:
+and contains
 .IP \(bu 5
-A reference to the public .h file for the superclass
+A reference to the public .h file for the superclass.
 .IP \(bu 5
 Symbolic identifiers for
 the names and classes of the new resources that this widget adds
@@ -1374,13 +1241,13 @@ have a single space between the definition name and the value and no
 trailing space or comment in order to reduce the possibility of
 compiler warnings from similar declarations in multiple classes.
 .IP \(bu 5
-Datatype declarations for any new resource datatypes defined by the class
+Type declarations for any new resource data types defined by the class.
 .IP \(bu 5
-The class record pointer variable that you use to create widget instances
+The class record pointer variable used to create widget instances.
 .IP \(bu 5
-The C type that corresponds to widget instances of this class
+The C type that corresponds to widget instances of this class.
 .IP \(bu 5
-Entry points for new class methods
+Entry points for new class methods.
 .LP
 For example, the following is the public .h file for a possible
 implementation of a Label widget:
@@ -1406,11 +1273,11 @@ extern WidgetClass labelWidgetClass;
 typedef struct _LabelRec      *LabelWidget;
 
 /* New class method entry points */
-extern void Label SetText();
+extern void LabelSetText();
 	/* Widget w */
 	/* String text */
 
-extern String Label GetText();
+extern String LabelGetText();
 	/* Widget w */
 
 #endif LABEL_H
@@ -1425,8 +1292,8 @@ the name of the public .h file is the first ten characters of the
 widget class.
 For example,
 the public .h file for the 
-.PN Constraint 
-widget is 
+Constraint 
+widget class is 
 .PN Constraint.h .
 .NH 3
 Widget Subclassing in Private .h Files
@@ -1435,11 +1302,11 @@ Widget Subclassing in Private .h Files
 .XE
 .LP
 The private .h file for a widget is imported by widget classes that are
-subclasses of the widget and contains:
+subclasses of the widget and contains
 .IP \(bu 5
-A reference to the public .h file for the class
+A reference to the public .h file for the class.
 .IP \(bu 5
-A reference to the private .h file for the superclass
+A reference to the private .h file for the superclass.
 .IP \(bu 5
 Symbolic identifiers for any new resource representation types defined
 by the class.  The definitions should have a single space between the
@@ -1447,39 +1314,39 @@ definition name and the value and no trailing space or comment.
 .IP \(bu 5
 A structure part definition for
 the new fields that the widget instance adds to its superclass's
-widget structure
+widget structure.
 .IP \(bu 5
-The complete widget instance structure definition for this widget
+The complete widget instance structure definition for this widget.
 .IP \(bu 5
 A structure part definition for
 the new fields that this widget class adds to its superclass's
-.PN Constraint
-structure if the widget is a subclass of
-.PN Constraint 
+constraint
+structure if the widget class is a subclass of
+Constraint.
 .IP \(bu 5
 The complete
-.PN Constraint
-structure definition if the widget is a subclass of
-.PN Constraint 
+constraint
+structure definition if the widget class is a subclass of
+Constraint.
 .IP \(bu 5
 Type definitions for any new procedure types used by class methods
 declared in the widget class part
 .IP \(bu 5
 A structure part definition for
 the new fields that this widget class adds to its superclass's widget class
-structure
+structure.
 .IP \(bu 5
-The complete widget class structure definition for this widget
+The complete widget class structure definition for this widget.
 .IP \(bu 5
 The complete widget class extension structure definition
-for this widget, if any
+for this widget, if any.
 .IP \(bu 5
-The symbolic constant identifying the class extension version, if any
+The symbolic constant identifying the class extension version, if any.
 .IP \(bu 5
 The name of the global class structure variable containing the generic
-class structure for this class
+class structure for this class.
 .IP \(bu 5
-An inherit constant for each new procedure in the widget class part structure
+An inherit constant for each new procedure in the widget class part structure.
 .LP
 For example, the following is the private .h file for a possible Label widget:
 .LP
@@ -1501,8 +1368,8 @@ typedef struct {
 	XFontStruct *font;
 	String label;	/* text to display */
 	XtJustify justify;
-	Dimension internal_width;	/* # of pixels horizontal border */
-	Dimension internal_height;	/* # of pixels vertical border */
+	Dimension internal_width;	/* # pixels horizontal border */
+	Dimension internal_height;	/* # pixels vertical border */
 
 /* Data derived from resources */
 	GC normal_GC;
@@ -1526,7 +1393,7 @@ typedef struct _LabelRec {
 	LabelPart label;
 } LabelRec;
 
-/* Types for label class methods */
+/* Types for Label class methods */
 typedef void (*LabelSetTextProc)();
 	/* Widget w */
 	/* String text */
@@ -1560,8 +1427,8 @@ the name of the private .h file is the first nine characters of the
 widget class followed by a capital P.
 For example,
 the private .h file for the 
-.PN Constraint 
-widget is 
+Constraint 
+widget class is 
 .PN ConstrainP.h .
 .NH 3
 Widget Subclassing in .c Files
@@ -1573,44 +1440,48 @@ The .c file for a widget contains the structure initializer
 for the class record variable,
 which contains the following parts:
 .IP \(bu 5
-Class information (for example, superclass, class_name, widget_size,
-class_initialize, and class_inited)
+Class information (for example, \fIsuperclass\fP, \fIclass_name\fP,
+\fIwidget_size\fP,
+\fIclass_initialize\fP, and \fIclass_inited\fP).
 .IP \(bu 5
-Data constants (for example, resources and num_resources, 
-actions and num_actions, visible_interest, compress_motion, 
-compress_exposure, and version)
+Data constants (for example, \fIresources\fP and \fInum_resources\fP, 
+\fIactions\fP and \fInum_actions\fP, \fIvisible_interest\fP,
+\fIcompress_motion\fP, 
+\fIcompress_exposure\fP, and \fIversion\fP)
 .IP \(bu 5
-Widget operations (for example, initialize, realize, destroy, resize,
-expose, set_values, accept_focus, and any new operations specific to
-the widget)
+Widget operations (for example, \fIinitialize\fP, \fIrealize\fP, \fIdestroy\fP,
+\fIresize\fP, \fIexpose\fP, \fIset_values\fP, \fIaccept_focus\fP,
+and any new operations specific to
+the widget).
 .LP
 .IN "superclass" "" "@DEF@"
-The superclass field points to the superclass
-.PN WidgetClass
+The \fIsuperclass\fP field points to the superclass
+global class
 record, declared in the superclass private .h file.
 For direct subclasses of the generic core widget,
-superclass should be initialized to the address of the
+\fIsuperclass\fP should be initialized to the address of the
 .PN widgetClassRec
 structure.
 The superclass is used for class chaining operations and for
-inheriting or enveloping a superclass's operations.
-(See Sections 1.6.7, 1.6.9, and 1.6.10).
+inheriting or enveloping a superclass's operations
+(see Sections 1.6.7, 1.6.9, and 1.6.10).
 .LP
 .IN "class_name" "" "@DEF@"
-The class_name field contains the text name for this class which is used by
+The \fIclass_name\fP field contains the text name for this class,
+which is used by
 the resource manager.
 For example, the Label widget has the string ``Label''.
 More than one widget class can share the same text class name.
 .LP
 .IN "widget_size" "" "@DEF@"
-The widget_size field is the size of the corresponding widget
+The \fIwidget_size\fP field is the size of the corresponding widget
 instance structure
-(not the size of the Class structure).
+(not the size of the class structure).
 .LP
 .IN "version" "" "@DEF@"
-The version field indicates the toolkit
+The \fIversion\fP field indicates the toolkit
 implementation version number and is used for
-run-time consistency checking of the \*(tk and widgets in an application.
+runtime consistency checking of the \*(tk and widgets in an application.
 Widget writers must set it to the
 implementation-defined symbolic value
 .PN XtVersion
@@ -1618,7 +1489,7 @@ in the widget class structure initialization.
 Those widget writers who believe that their widget binaries are compatible 
 with other implementations of the \*(xI can put the special value
 .PN XtVersionDontCheck
-in the version field to disable version checking for those widgets.
+in the \fIversion\fP field to disable version checking for those widgets.
 If a widget needs to compile alternative code for different
 revisions of the \*(xI interface definition, it may use the symbol
 .PN XtSpecificationRelease ,
@@ -1626,10 +1497,10 @@ as described in Chapter 13.
 Use of
 .PN XtVersion
 allows the \*(xI implementation to recognize widget binaries
-which were compiled with older implementations.
+that were compiled with older implementations.
 .LP
-The extension field is for future upwards compatibility.
-If you add additional fields to class parts, 
+The \fIextension\fP field is for future upward compatibility.
+If the widget programmer adds fields to class parts, 
 all subclass structure layouts change,
 requiring complete recompilation. 
 To allow clients to avoid recompilation, 
@@ -1640,9 +1511,9 @@ All other fields are described in their respective sections.
 .LP
 The .c file also contains the declaration of the global class
 structure pointer variable used to create instances of the class.
-The following is an abbreviated version of the ``.c'' file
+The following is an abbreviated version of the .c file
 for a Label widget.
-The resources table is described in the Chapter 9.
+The resources table is described in Chapter 9.
 .LP
 .Ds
 .TA .5i 1.5i 3i
@@ -1651,10 +1522,12 @@ The resources table is described in the Chapter 9.
 /* Resources specific to Label */
 static XtResource resources[] = {
 	{XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-	   XtOffset(LabelWidget, label.foreground), XtRString, XtDefaultForeground},
-	{XtNfont,  XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-	   XtOffset(LabelWidget, label.font),XtRString, XtDefaultFont},
-	{XtNlabel,  XtCLabel, XtRString, sizeof(String),
+	   XtOffset(LabelWidget, label.foreground), XtRString,
+	   XtDefaultForeground},
+	{XtNfont, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
+	   XtOffset(LabelWidget, label.font),XtRString,
+	   XtDefaultFont},
+	{XtNlabel, XtCLabel, XtRString, sizeof(String),
 	   XtOffset(LabelWidget, label.label), XtRString, NULL},
 		.
 		.
@@ -1679,7 +1552,7 @@ static void GetText();
 LabelClassRec labelClassRec = {
   {
     /* core_class fields */
-	/* superclass	*/	(WidgetClass) &coreClassRec,
+	/* superclass	*/	(WidgetClass)&coreClassRec,
 	/* class_name	*/	"Label",
 	/* widget_size	*/	sizeof(LabelRec),
 	/* class_initialize	*/	ClassInitialize,
@@ -1724,7 +1597,7 @@ LabelClassRec labelClassRec = {
 WidgetClass labelWidgetClass = (WidgetClass) &labelClassRec;
 
 /* New method access routines */
-void Label SetText(w, text)
+void LabelSetText(w, text)
 	Widget w;
 	String text;
 {
@@ -1779,7 +1652,7 @@ Widget Subclass Verification
 \*(SN Widget Subclass Verification
 .XE
 .LP
-To check the subclass that a widget belongs to, use
+To check the subclass to which a widget belongs, use
 .PN XtIsSubclass .
 .IN "XtIsSubclass" "" "@DEF@"
 .FD 0
@@ -1800,7 +1673,7 @@ function returns
 .PN True 
 if the class of the specified widget is equal to
 or is a subclass of the specified class.
-The widget can be any number of subclasses down the chain
+The widget's class can be any number of subclasses down the chain
 and need not be an immediate subclass of the specified class.
 Composite widgets that need to restrict the class of the items they
 contain can use
@@ -1808,7 +1681,7 @@ contain can use
 to find out if a widget belongs to the desired class of objects.
 .sp
 .LP
-To test if a given widget is a subclass of an \*(xI-defined
+To test if a given widget belongs to a subclass of an \*(xI-defined
 class, the \*(xI define macros or functions equivalent to
 .PN XtIsSubclass
 for each of the built-in classes.  These procedures are
@@ -1838,7 +1711,7 @@ and
 .IN "XtIsTopLevelShell" "" "@DEF@"
 .IN "XtIsApplicationShell" "" "@DEF@"
 .LP
-All of these macros and functions have the same argument description:
+All these macros and functions have the same argument description.
 .FD 0
 Boolean XtIs\fI<class>\fP (\fIw\fP)
 .br
@@ -1852,10 +1725,11 @@ These procedures may be faster than calling
 directly for the built-in classes.
 .sp
 .LP
-To check the subclass that a widget belongs to
-and generate a debugging error message, use
+To check a widget's class
+and to generate a debugging error message, use
 .PN XtCheckSubclass ,
-defined in \fB<X11/IntrinsicP.h>\fP:
+defined in
+.Pn < X11/IntrinsicP.h >:
 .IN "XtCheckSubclass" "" "@DEF@"
 .FD 0
 void XtCheckSubclass(\fIw\fP, \fIwidget_class\fP, \fImessage\fP)
@@ -1869,18 +1743,18 @@ void XtCheckSubclass(\fIw\fP, \fIwidget_class\fP, \fImessage\fP)
 .IP \fIw\fP 1i
 Specifies the widget or object whose class is to be checked.  \*(oI
 .IP \fIwidget_class\fP 1i
-Specifies the widget class for which to test.
+Specifies the widget class for which to test.  \*(oC
 .ds Me used
 .IP \fImessage\fP 1i
-Specifies the message that is to be \*(Me.
+Specifies the message to be used.
 .LP
 The
 .PN XtCheckSubclass
 macro determines if the class of the specified widget is equal to
 or is a subclass of the specified class.
-The widget can be any number of subclasses down the chain
+The widget's class can be any number of subclasses down the chain
 and need not be an immediate subclass of the specified class.
-If the specified widget is not a subclass,
+If the specified widget's class is not a subclass,
 .PN XtCheckSubclass
 constructs an error message from the supplied message,
 the widget's actual class, and the expected class and calls
@@ -1905,135 +1779,105 @@ Superclass Chaining
 .IN "Subclass Chaining" "" "@DEF@
 .IN "Inheritance"
 While most fields in a widget class structure are self-contained,
-some fields are linked to their corresponding field in their superclass
+some fields are linked to their corresponding fields in their superclass
 structures.
 With a linked field,
 the \*(xI access the field's value only after accessing its corresponding
 superclass value (called downward superclass chaining) or 
 before accessing its corresponding superclass value (called upward superclass
 chaining).
-The self-contained fields in all widget classes are:
-.IP \(bu 5
-class_name
-.IP \(bu 5
-class_initialize
-.IP \(bu 5
-widget_size
-.IP \(bu 5
-realize
-.IP \(bu 5
-visible_interest
-.IP \(bu 5
-resize
-.IP \(bu 5
-expose
-.IP \(bu 5
-accept_focus
-.IP \(bu 5
-compress_motion
-.IP \(bu 5
-compress_exposure
-.IP \(bu 5
-compress_enterleave
-.IP \(bu 5
-set_values_almost
-.IP \(bu 5
-tm_table
-.IP \(bu 5
-version
-.LP
-The self-contained fields in
-.PN Composite
-widget classes are:
-.IP \(bu 5
-geometry_manager
-.IP \(bu 5
-change_managed
-.IP \(bu 5
-insert_child
-.IP \(bu 5
-delete_child
-.IP \(bu 5
-accepts_objects
-.LP
-The self-contained field in
-.PN Constraint
-widget classes is:
-.IP \(bu 5
-constraint_size
-.LP
-The self-contained field in
-.PN Shell
-widget classes is:
-.IP \(bu 5
-root_geometry_manager
+The self-contained fields are
+.ta 2i
+In all widget classes:	\fIclass_name\fP
+	\fIclass_initialize\fP
+	\fIwidget_size\fP
+	\fIrealize\fP
+	\fIvisible_interest\fP
+	\fIresize\fP
+	\fIexpose\fP
+	\fIaccept_focus\fP
+	\fIcompress_motion\fP
+	\fIcompress_exposure\fP
+	\fIcompress_enterleave\fP
+	\fIset_values_almost\fP
+	\fItm_table\fP
+	\fIversion\fP
+.sp
+In Composite widget classes:	\fIgeometry_manager\fP
+	\fIchange_managed\fP
+	\fIinsert_child\fP
+	\fIdelete_child\fP
+	\fIaccepts_objects\fP
+.sp
+In Constraint widget classes:	\fIconstraint_size\fP
+.sp
+In Shell widget classes:	\fIroot_geometry_manager\fP
 .LP
 With downward superclass chaining,
 the invocation of an operation first accesses the field from the
-.PN Object ,
-.PN RectObj
-or
-.PN Core 
-class structures, then the subclass structure, and so on down the class chain to
+Object,
+RectObj,
+and
+Core 
+class structures, then from the subclass structure, and so on down the class chain to
 that widget's class structure.
-These superclass-to-subclass fields are:
-.IP \(bu 5
-class_part_initialize
-.IP \(bu 5
-get_values_hook
-.IP \(bu 5
-initialize
-.IP \(bu 5
-initialize_hook
-.IP \(bu 5
-set_values
-.IP \(bu 5
-set_values_hook
-.IP \(bu 5
-resources
+These superclass-to-subclass fields are
+.IP
+\fIclass_part_initialize\fP
+.IP
+\fIget_values_hook\fP
+.IP
+\fIinitialize\fP
+.IP
+\fIinitialize_hook\fP
+.IP
+\fIset_values\fP
+.IP
+\fIset_values_hook\fP
+.IP
+\fIresources\fP
 .LP
 In addition, for subclasses of
-.PN Constraint ,
+Constraint,
 the following fields of the
 .PN ConstraintClassPart
 and
 .PN ConstraintClassExtensionRec
 structures are chained from the
-.PN Constraint
+Constraint
 class down to the subclass:
-.IP \(bu 5
-resources
-.IP \(bu 5
-initialize
-.IP \(bu 5
-set_values
-.IP \(bu 5
-get_values_hook
+.IP
+\fIresources\fP
+.IP
+\fIinitialize\fP
+.IP
+\fIset_values\fP
+.IP
+\fIget_values_hook\fP
 .LP
 With upward superclass chaining,
 the invocation of an operation first accesses the field from the widget 
-class structure, then the field from the superclass structure,
+class structure, then from the superclass structure,
 and so on up the class chain to the 
-.PN Core ,
-.PN RectObj
+Core,
+RectObj,
 and
-.PN Object
+Object
 class structures.
-The subclass-to-superclass fields are:
-.IP \(bu 5
-destroy
-.IP \(bu 5
-actions
+The subclass-to-superclass fields are
+.IP
+\fIdestroy\fP
+.IP
+\fIactions\fP
 .LP
 For subclasses of
-.PN Constraint ,
+Constraint,
 the following field of
 .PN ConstraintClassPart
 is chained from the subclass up to the
-.PN Constraint
-class structure:
-.IP \(bu 5
-destroy
+Constraint class:
+.IP
+\fIdestroy\fP
 
 .NH 3
 Class Initialization: class_initialize and class_part_initialize Procedures
@@ -2043,7 +1887,7 @@ Class Initialization: class_initialize and class_part_initialize Procedures
 .LP
 .IN "Class Initialization"
 .IN "Initialization"
-Many class records can be initialized completely at compile ro link time.
+Many class records can be initialized completely at compile or link time.
 In some cases, however,
 a class may need to register type converters or perform other sorts of
 once-only runtime initialization.
@@ -2062,26 +1906,28 @@ typedef void (*XtProc)(void);
 .FN
 .LP
 A widget class indicates that it has no class initialization procedure by
-specifying NULL in the class_initialize field.
+specifying NULL in the \fIclass_initialize\fP field.
 .LP
-In addition to having class initializations done exactly once,
-some classes need to perform additional initialization for fields in its part
+In addition to the class initialization that is done exactly once,
+some classes perform initialization for fields in their parts
 of the class record.
 These are performed not just for the particular class 
-but for subclasses as well.
-This is done in the class's class part initialization procedure,
-which is stored in the class_part_initialize field.
+but for subclasses as well, and are
+done in the class's class part initialization procedure,
+a pointer to which is stored in the \fIclass_part_initialize\fP field.
 The class_part_initialize procedure pointer is of type
-.PN XtWidgetClassProc :
+.PN XtWidgetClassProc .
 .IN "XtWidgetClassProc" "" "@DEF@"
 .FD 0
-typedef void (*XtWidgetClassProc)(WidgetClass \fIclass\fP);
+typedef void (*XtWidgetClassProc)(WidgetClass);
+.br
+      WidgetClass \fIwidget_class\fP;
 .FN
-.IP \fIclass\fP 1i
+.IP \fIwidget_class\fP 1i
 Points to the class structure for the class being initialized.
 .LP
 During class initialization,
-the class part initialization procedure for the class and all its superclasses
+the class part initialization procedures for the class and all its superclasses
 are called in superclass-to-subclass order on the class record.
 These procedures have the responsibility of doing any dynamic initializations
 necessary to their class's part of the record.
@@ -2089,17 +1935,16 @@ The most common is the resolution of any inherited methods defined in the
 class.
 For example,
 if a widget class C has superclasses 
-.PN Core , 
-.PN Composite , 
+Core, 
+Composite, 
 A, and B, the class record for C first is passed to 
-.PN Core 's 
-class_part_initialize record.
-This resolves any inherited core methods and compiles the textual
+Core 's 
+class_part_initialize procedure.
+This resolves any inherited Core methods and compiles the textual
 representations of the resource list and action table that are defined in the
 class record.
-Next, the 
-.PN Composite 's 
-class_part_initialize is called to initialize the
+Next, Composite's 
+class_part_initialize procedure is called to initialize the
 composite part of C's class record.
 Finally, the class_part_initialize procedures for A, B, and C, in that order,
 are called.
@@ -2107,33 +1952,33 @@ For further information,
 see Section 1.6.9.
 Classes that do not define any new class fields
 or that need no extra processing for them can specify NULL
-in the class_part_initialize field.
+in the \fIclass_part_initialize\fP field.
 .LP
 All widget classes, whether they have a class initialization procedure or not,
-must start with their class_inited field 
+must start with their \fIclass_inited\fP field 
 .PN False .
 .LP
 The first time a widget of a class is created,
 .PN XtCreateWidget
 ensures that the widget class and all superclasses are initialized, in
-superclass to subclass order, by checking each class_inited field and
+superclass-to-subclass order, by checking each \fIclass_inited\fP field and,
 if it is 
 .PN False , 
 by calling the class_initialize and the class_part_initialize procedures 
 for the class and all its superclasses.
-The \*(xI then set the class_inited field to a non-zero value.
+The \*(xI then set the \fIclass_inited\fP field to a nonzero value.
 After the one-time initialization,
 a class structure is constant.
 .LP
-The following provides the class initialization procedure for a Label class.
+The following example provides the class initialization procedure for a Label class.
 .LP
 .Ds
-.TA .5i 3i
-.ta .5i 3i
+.TA .5i 2i
+.ta .5i 2i
 static void ClassInitialize()
 {
-	XtSetTypeConverter(XtRString, XtRJustify, CvtStringToJustify, NULL, 0,
-		XtCacheNone, NULL);
+	XtSetTypeConverter(XtRString, XtRJustify, CvtStringToJustify,
+		NULL, 0, XtCacheNone, NULL);
 }
 .De
 .NH 3
@@ -2177,18 +2022,18 @@ Inheritance of Superclass Operations
 .LP
 A widget class is free to use any of its superclass's self-contained
 operations rather than implementing its own code.
-The most frequently inherited operations are:
-.IP \(bu 5
+The most frequently inherited operations are
+.IP
 expose
-.IP \(bu 5
+.IP
 realize
-.IP \(bu 5
+.IP
 insert_child
-.IP \(bu 5
+.IP
 delete_child
-.IP \(bu 5
+.IP
 geometry_manager
-.IP \(bu 5
+.IP
 set_values_almost
 .LP
 To inherit an operation \fIxyz\fP,
@@ -2199,11 +2044,9 @@ in your class record.
 Every class that declares a new procedure in its widget class part must
 provide for inheriting the procedure in its class_part_initialize
 procedure.
-The chained operations declared in the 
-.PN Core
-and
-.PN Constraint
-records do not have inherit procedures.
+The chained operations declared in Core
+and Constraint
+records are never inherited.
 Widget classes that do nothing beyond what their superclass does
 specify NULL for chained procedures
 in their class records.
@@ -2211,15 +2054,16 @@ in their class records.
 Inheriting works by comparing the value of the field with a known, special
 value and by copying in the superclass's value for that field if a match
 occurs.
-This special value is usually the \*(xI internal value
+This special value, called the inheritance constant,
+is usually the \*(xI internal value
 .PN _XtInherit
 cast to the appropriate type.
 .PN _XtInherit
 is a procedure that issues an error message if it is actually called.
 .LP
-For example, the 
-.PN Composite 
-class's private include file contains these definitions:
+For example,
+.PN CompositeP.h
+contains these definitions:
 .LP
 .Ds
 .TA .25i 1.5i 3i
@@ -2230,7 +2074,7 @@ class's private include file contains these definitions:
 #define XtInheritDeleteChild ((XtWidgetProc) _XtInherit)
 .De
 .LP
-The Composite's class_part_initialize procedure begins as follows:
+Composite's class_part_initialize procedure begins as follows:
 .LP
 .Ds
 .TA .2i 1.5i 3i
@@ -2238,8 +2082,8 @@ The Composite's class_part_initialize procedure begins as follows:
 static void CompositeClassPartInitialize(widgetClass)
 	WidgetClass widgetClass;
 {
-	register CompositeWidgetClass wc = (CompositeWidgetClass) widgetClass;
-	CompositeWidgetClass super = (CompositeWidgetClass) wc->core_class.superclass
+	CompositeWidgetClass wc = (CompositeWidgetClass)widgetClass;
+	CompositeWidgetClass super = (CompositeWidgetClass)wc->core_class.superclass;
 
 	if (wc->composite_class.geometry_manager == XtInheritGeometryManager) {
 	    wc->composite_class.geometry_manager = super->composite_class.geometry_manager;
@@ -2253,46 +2097,41 @@ static void CompositeClassPartInitialize(widgetClass)
 	.
 .De
 .LP
-Non-procedure fields may be inherited in the same manner as procedure
+Nonprocedure fields may be inherited in the same manner as procedure
 fields.  The class may declare any reserved value it wishes for
-the inherit constant for its new fields.
+the inheritance constant for its new fields.  The following inheritance
+constants are defined:
 .LP
-The inherit constants defined for 
-.PN Core 
-are:
-.IP \(bu 5
+For Core:
+.IP
 .PN XtInheritRealize
-.IP \(bu 5
+.IP
 .PN XtInheritResize
-.IP \(bu 5
+.IP
 .PN XtInheritExpose
-.IP \(bu 5
+.IP
 .PN XtInheritSetValuesAlmost
-.IP \(bu 5
+.IP
 .PN XtInheritAcceptFocus
-.IP \(bu 5
+.IP
 .PN XtInheritQueryGeometry
-.IP \(bu 5
+.IP
 .PN XtInheritTranslations
-.IP \(bu 5
+.IP
 .PN XtInheritDisplayAccelerator
 .LP
-The inherit constants defined for 
-.PN Composite
-are:
-.IP \(bu 5
+For Composite:
+.IP
 .PN XtInheritGeometryManager
-.IP \(bu 5
+.IP
 .PN XtInheritChangeManaged
-.IP \(bu 5
+.IP
 .PN XtInheritInsertChild
-.IP \(bu 5
+.IP
 .PN XtInheritDeleteChild
 .LP
-The inherit constant defined for
-.PN Shell
-is:
-.IP \(bu 5
+For Shell:
+.IP
 .PN XtInheritRootGeometryManager
 
 .NH 3
@@ -2301,25 +2140,24 @@ Invocation of Superclass Operations
 \*(SN Invocation of Superclass Operations
 .XE
 .LP
-A widget class sometimes needs to call a superclass operation
-that usually is not chained.
+A widget sometimes needs to call a superclass operation
+that is not chained.
 For example,
-a widget's expose procedure might call its superclass's expose
-and then perform a little more work of its own.
-For example,
-.PN Composite 
-classes with pre-defined children can implement insert_child
-by first calling their superclass's insert_child procedure
+a widget's expose procedure might call its superclass's \fIexpose\fP
+and then perform a little more work on its own.
+For example, a Composite 
+class with predefined managed children can implement insert_child
+by first calling its superclass's \fIinsert_child\fP
 .IN "insert_child procedure"
 and then calling
 .PN XtManageChild
-to add the child to the managed list.
+to add the child to the managed set.
 .LP
 .NT
 A class method should not use
 .PN XtSuperclass
 but should instead call the class method of its own specific superclass
-directly.
+directly through the superclass record.
 That is, it should use its own class pointers only,
 not the widget's class pointers,
 as the widget's class may be a subclass of the
@@ -2335,26 +2173,26 @@ Class Extension Records
 .LP
 It may be necessary at times to add new fields to already existing
 widget class structures.  To permit this to be done without requiring
-recompilation of all subclasses, the last field in a class part record
+recompilation of all subclasses, the last field in a class part structure
 should be an extension pointer.  If no extension fields for a class
 have yet been defined, subclasses should initialize the value of the
 extension pointer to NULL.
 .LP
 If extension fields exist, as is the case with the
-.PN Composite ,
-.PN Constraint
+Composite,
+Constraint
 and
-.PN Shell
+Shell
 classes, subclasses can provide values for these fields by setting the
-extension pointer for the appropriate part in their class structure to
+\fIextension\fP pointer for the appropriate part in their class structure to
 point to a statically declared extension record containing the
 additional fields.
-Setting the extension field is never mandatory; code that uses fields
-in the extension record must always check the extension field and take
+Setting the \fIextension\fP field is never mandatory; code that uses fields
+in the extension record must always check the \fIextension\fP field and take
 some appropriate default action if it is NULL.
 .LP
 In order to permit multiple subclasses and libraries to chain extension
-records from a single extension field, extension records should be
+records from a single \fIextension\fP field, extension records should be
 declared as a linked list and each extension record definition should
 contain the following four fields at the beginning of the structure
 declaration:
@@ -2381,9 +2219,10 @@ the definer of the structure.
 Specifies the total number of bytes allocated for the
 extension record.
 .LP
-The record_type field identifies the contents of the extension record
+The \fIrecord_type\fP field identifies the contents of the extension record
 and is used by the definer of the record to locate its particular
-extension record in the list.  Record_type is normally assigned the
+extension record in the list.  The
+\fIrecord_type\fP field is normally assigned the
 result of
 .PN XrmStringToQuark
 for a registered string constant.  The
@@ -2395,18 +2234,19 @@ by the class part owner in extension records attached to its own class
 part extension field to identify the extension record unique to that
 particular class.
 .LP
-The version field is an owner-defined constant which may be used to
-identify binary files which have been compiled with alternate
-definitions of the extension record data structure.  The private
+The \fIversion\fP field is an owner-defined constant that may be used to
+identify binary files that have been compiled with alternate
+definitions of the remainder of the extension record data structure.  The private
 header file for a widget class should provide a symbolic constant for
 subclasses to use to initialize this field.
 .LP
-The record_size field value includes the four common header fields and
-should normally be initialized with \fBsizeof()\fP.
+The \fIrecord_size\fP field value includes the four common header fields and
+should normally be initialized with
+.PN sizeof ().
 .LP
 Any value stored in the class part extension fields of
 .PN CompositeClassPart ,
-.PN ConstraintClassPart
+.PN ConstraintClassPart ,
 or
 .PN ShellClassPart
 must point to an extension record conforming to this definition.

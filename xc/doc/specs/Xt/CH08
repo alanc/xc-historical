@@ -16,25 +16,20 @@ Chapter 8 \- Callbacks
 .XE
 .IN "Destroy Callbacks"
 Applications and other widgets often need to register a procedure
-with a widget that gets called under certain pre-specified conditions.
+with a widget that gets called under certain prespecified conditions.
 For example,
 when a widget is destroyed,
-every procedure on the widget's destroy_callbacks
+every procedure on the widget's \fIdestroy_callbacks\fP
 list is called to notify clients of the widget's impending doom.
 .LP
-Every widget has a destroy_callbacks list.
+Every widget has an XtNdestroyCallbacks callback list resource.
 Widgets can define additional callback lists as they see fit.
 For example, the Pushbutton widget has a callback
 list to notify clients when the button has been activated.
 .LP
 Except where otherwise noted, it is the intent that all Intrinsics
 functions may be called at any time, including from within callback
-procedures, action routines and event handlers.
-.NT
-The words ``it is the intent that'' in the preceeding
-sentence indicate that there are known bugs that remain to
-be addressed in some implementations.
-.NE
+procedures, action routines, and event handlers.
 .NH 2
 Using Callback Procedure and Callback List Definitions
 .XS
@@ -44,7 +39,7 @@ Using Callback Procedure and Callback List Definitions
 .IN "XtCallbackProc"
 .LP
 Callback procedure pointers for use in callback lists are of type
-.PN XtCallbackProc :
+.PN XtCallbackProc .
 .IN "XtCallbackProc" "" "@DEF@"
 .FD 0
 typedef void (*XtCallbackProc)(Widget, XtPointer, XtPointer);
@@ -62,21 +57,21 @@ Specifies additional data supplied by the client when the procedure
 was registered.
 .IP \fIcall_data\fP 1i
 Specifies any callback-specific data the widget wants to pass to the client.
-For example,  when Scrollbar executes its thumbChanged callback list,
+For example,  when Scrollbar executes its XtNthumbChanged callback list,
 it passes the new position of the thumb.
 .LP
-The client_data argument provides a way for the
-client registering the callback also to register client-specific data;
+The \fIclient_data\fP argument provides a way for the
+client registering the callback procedure also to register client-specific data,
 for example, a pointer to additional information about the widget, 
 a reason for invoking the callback, and so on.
-The client_data value may be NULL
+The \fIclient_data\fP value may be NULL
 if all necessary information is in the widget.
-The call_data argument is a convenience to avoid having simple
-cases where the client could otherwise call
+The \fIcall_data\fP argument is a convenience to avoid having simple
+cases where the client could otherwise always call
 .PN XtGetValues
 or a widget-specific function to retrieve data from the widget.
 Widgets should generally avoid putting complex state information 
-in call_data.
+in \fIcall_data\fP.
 The client can use the more general data retrieval methods, if necessary.
 .LP
 Whenever a client wants to pass a callback list as an argument in an
@@ -85,8 +80,8 @@ Whenever a client wants to pass a callback list as an argument in an
 or
 .PN XtGetValues
 call, it should specify the address
-of a null-terminated array of type
-.PN XtCallbackList :
+of a NULL-terminated array of type
+.PN XtCallbackList .
 .IN "XtCallbackList" "" "@DEF@"
 .IN "XtCallbackRec" "" "@DEF@"
 .LP
@@ -100,7 +95,7 @@ typedef struct {
 .De
 .LP
 For example, the callback list for procedures A and B with client data
-clientDataA and clientDataB, respectively, is:
+clientDataA and clientDataB, respectively, is
 .LP
 .KS
 .Ds 5
@@ -114,12 +109,15 @@ static XtCallbackRec callbacks[] = {
 .De
 .KE
 .LP
-Although callback lists are passed by address in argument lists,
-the \*(xI know about callback lists and will copy the contents
+Although callback lists are passed by address in arglists
+and varargs lists,
+the \*(xI recognize callback lists
+throught the widget resource list and will copy the contents
 when necessary.
-Your widget initialize and set_values procedures
-should not allocate memory for the callback list.
-The \*(xI automatically do this for you by using a different structure for their
+Widget initialize and set_values procedures
+should not allocate memory for the callback list contents.
+The \*(xI automatically do this,
+potentially using a different structure for their
 internal representation.
 .NH 2
 Identifying Callback Lists
@@ -156,7 +154,7 @@ Adding Callback Procedures
 \fB\*(SN Adding Callback Procedures\fP
 .XE
 .LP
-To add a callback procedure to a given widget's callback list, use
+To add a callback procedure to a widget's callback list, use
 .PN XtAddCallback .
 .IN "XtAddCallback" "" "@DEF@"
 .FD 0
@@ -173,15 +171,13 @@ void XtAddCallback(\fIw\fP, \fIcallback_name, \fP\fIcallback\fP, \
 .FN
 .IP \fIw\fP 1i
 Specifies the widget.  \*(oI
-.ds Cn \ to which the procedure is to be appended
 .IP \fIcallback_name\fP 1i
-Specifies the callback list\*(Cn.
-.ds Cb
+Specifies the callback list to which the procedure is to be appended.
 .IP \fIcallback\fP 1i
-Specifies the callback procedure\*(Cb.
+Specifies the callback procedure.
 .IP \fIclient_data\fP 1i
-Specifies additional data that is to be passed to the specified procedure
-when it is invoked
+Specifies additional data to be passed to the specified procedure
+when it is invoked,
 or NULL.
 .LP
 A callback will be invoked as many times as it occurs in the callback list.
@@ -201,9 +197,8 @@ void XtAddCallbacks(\fIw\fP, \fIcallback_name, \fP\fIcallbacks\fP)
 .FN
 .IP \fIw\fP 1i
 Specifies the widget.  \*(oI
-.ds Cn \ to which the procedures are to be appended
 .IP \fIcallback_name\fP 1i
-Specifies the callback list\*(Cn.
+Specifies the callback list to which the procedures are to be appended.
 .IP \fIcallbacks\fP 1i
 Specifies the null-terminated list of callback procedures and corresponding
 client data.
@@ -213,7 +208,7 @@ Removing Callback Procedures
 \fB\*(SN Removing Callback Procedures\fP
 .XE
 .LP
-To delete a callback procedure from a given widget's callback list, use
+To delete a callback procedure from a widget's callback list, use
 .PN XtRemoveCallback .
 .IN "XtRemoveCallback" "" "@DEF@"
 .FD 0
@@ -230,11 +225,10 @@ void XtRemoveCallback(\fIw\fP, \fIcallback_name\fP, \fIcallback\fP, \
 .FN
 .IP \fIw\fP 1i
 Specifies the widget.  \*(oI
-.ds Cn \ from which the procedure is to be deleted
 .IP \fIcallback_name\fP 1i
-Specifies the callback list\*(Cn.
+Specifies the callback list from which the procedure is to be deleted.
 .IP \fIcallback\fP 1i
-Specifies the callback procedure\*(Cb.
+Specifies the callback procedure.
 .IP \fIclient_data\fP 1i
 Specifies the client data to match with the registered callback entry.
 .LP
@@ -258,9 +252,8 @@ void XtRemoveCallbacks(\fIw\fP, \fIcallback_name\fP, \fIcallbacks\fP)
 .FN
 .IP \fIw\fP 1i
 Specifies the widget.  \*(oI
-.ds Cn \ from which the procedures are to be deleted
 .IP \fIcallback_name\fP 1i
-Specifies the callback list\*(Cn.
+Specifies the callback list from which the procedures are to be deleted.
 .IP \fIcallbacks\fP 1i
 Specifies the null-terminated list of callback procedures and corresponding
 client data.
@@ -303,14 +296,17 @@ void XtCallCallbacks(\fIw\fP, \fIcallback_name\fP, \fIcall_data\fP)
 .FN
 .IP \fIw\fP 1i
 Specifies the widget.  \*(oI
-.ds Cn \ to be executed
 .IP \fIcallback_name\fP 1i
-Specifies the callback list\*(Cn.
+Specifies the callback list to be executed.
 .IP \fIcall_data\fP 1i
-Specifies a callback list-specific data value to pass to each of the callback
-procedure in the list.
+Specifies a callback-list-specific data value to pass to each of the callback
+procedure in the list, or NULL.
+.sp
 .LP
-If no data is needed the call_data argument can be NULL.
+.PN XtCallCallbacks
+calls each of the callback procedures in the list
+named by \fIcallback_name\fP in the specified widget, passing the client
+data registered with the procedure and \fIcall-data\fP.
 .sp
 .LP
 To execute the procedures in a callback list, specifying the callback
@@ -327,19 +323,20 @@ void XtCallCallbackList(\fIwidget\fP, \fIcallbacks\fP, \fIcall_data\fP)
       XtPointer \fIcall_data\fP;
 .FN
 .IP \fIwidget\fP 1i
-Specifies the widget instance which contains the callback list.  \*(oI
+Specifies the widget instance that contains the callback list.  \*(oI
 .IP \fIcallbacks\fP 1i
 Specifies the callback list to be executed.
 .IP \fIcall_data\fP 1i
-Specifies a callback-list specific data value to pass
-to each of the callback procedures in the list.
+Specifies a callback-list-specific data value to pass
+to each of the callback procedures in the list, or NULL.
 .LP
-The callbacks parameter must specify the contents of a widget or
+The \fIcallbacks\fP parameter must specify the contents of a widget or
 object resource declared with representation type
 .PN XtRCallback .
-If callbacks is NULL,
+If \fIcallbacks\fP is NULL,
 .PN XtCallCallbackList
-returns immediately.
+returns immediately; otherwiese it calls each of the callback
+procedures in the list, passing the client data and \fIcall_data\fP.
 
 .NH 2
 Checking the Status of a Callback List
@@ -363,14 +360,13 @@ XtCallbackStatus XtHasCallbacks(\fIw\fP, \fIcallback_name\fP)
 .FN
 .IP \fIw\fP 1i
 Specifies the widget.  \*(oI
-.ds Cn \ to be checked
 .IP \fIcallback_name\fP 1i
-Specifies the callback list\*(Cn.
+Specifies the callback list to be checked.
 .LP
 The
 .PN XtHasCallbacks
 function first checks to see if the widget has a callback list identified 
-by callback_name.
+by \fIcallback_name\fP.
 If the callback list does not exist,
 .PN XtHasCallbacks
 returns
@@ -381,24 +377,4 @@ it returns
 If the callback list exists and has at least one callback registered,
 it returns
 .PN XtCallbackHasSome .
-.\".NH 2
-.\"Overriding Callbacks
-.\".XS
-.\"\fB\*(SN Overriding Callbacks
-.\".XE
-.\".LP
-.\"To override all of the registered callbacks of a specific type 
-.\"for a given widget, use
-.\".PN XtOverrideCallback .
-.\".IN "XtOverrideCallback" "" "@DEF@"
-.\".FD 0
-.\".so ./Xtsrc/XtOCallbks.f
-.\".FN
-.\".so ./Xtsrc/widget.a
-.\".ds Cn \ to be overridden
-.\".so ./Xtsrc/call_name.a
-.\".ds Cb \ that is to override those registered in the the callback list
-.\".so ./Xtsrc/callback.a
-.\".LP
-.\".so ./Xtdescrip/XtOCallbks.d
 .bp

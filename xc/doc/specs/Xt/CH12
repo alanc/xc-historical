@@ -3,7 +3,7 @@
 .ce 3
 \s+1\fBChapter 12\fP\s-1
 
-\s+1\fBNon-widget Objects\fP\s-1
+\s+1\fBNonwidget Objects\fP\s-1
 .sp 2
 .nr H1 12
 .nr H2 0
@@ -12,27 +12,28 @@
 .nr H5 0
 .LP
 .XS
-Chapter 12 \- Non-widget Objects
+Chapter 12 \- Nonwidget Objects
 .XE
 .LP
 Although widget writers are free to treat
-.PN Core
+Core
 as the base class of
 the widget hierarchy, there are actually three classes above it.
 These classes are
-.PN Object ,
-.PN RectObj
-(Rectangle Object) and (unnamed)
-and are referred to generically as ``objects''.  By convention, the term
-``widget'' refers only to objects that are a subclass of
-.PN Core
-and the term ``non-widget'' refers to objects that are not a subclass of
-.PN Core .
+Object,
+RectObj,
+(Rectangle Object) and (\fIunnamed\fP)
+and members of these classes
+are referred to generically as \fIobjects\fP.  By convention, the term
+\fIwidget\fP refers only to objects that are a subclass of
+Core,
+and the term \fInonwidget\fP refers to objects that are not a subclass of
+Core.
 In the preceding portion of this specification, the interface
-descriptions indicate explicitly whether the generic "widget" argument
+descriptions indicate explicitly whether the generic \fIwidget\fP argument
 is restricted to particular subclasses of Object.  Sections 12.2.5,
-12.3.5 and 12.5 summarize the permissable classes of the arguments to and
-return values from each of the \*(xI routines.
+12.3.5, and 12.5 summarize the permissible classes of the arguments to, and
+return values from, each of the \*(xI routines.
 
 .NH 2
 Data Structures
@@ -41,10 +42,10 @@ Data Structures
 .XE
 .LP
 In order not to conflict with previous widget code, the data
-structures used by non-widget objects do not follow all the same
+structures used by nonwidget objects do not follow all the same
 conventions as those for widgets.  In particular, the class records
 are not composed of parts but instead are complete data structures
-with filler in them for the widget fields that they do not use.  This
+with filler for the widget fields they do not use.  This
 allows the static class initializers for existing widgets to remain
 unchanged.
 
@@ -56,11 +57,11 @@ Object Objects
 .LP
 .IN "Object" "" "@DEF@"
 The
-.PN Object
+Object
 object contains the definitions of fields common to all
 objects.  It encapsulates the mechanisms for resource management.
-All objects and widgets are subclasses of
-.PN Object ,
+All objects and widgets are members of subclasses of
+Object,
 which is defined by the
 .PN ObjectClassPart
 and
@@ -81,7 +82,7 @@ function as the corresponding fields in
 .PN CoreClassPart ;
 fields whose
 names are obj\fI\s+1n\s-1\fP for some integer \s+1\fIn\fP\s-1 are not
-used for Objects,
+used for Object,
 but exist to pad the data structure so that it matches Core's class
 record.  The class record initialization must fill all
 obj\fI\s+1n\s-1\fP fields with NULL or zero as appropriate to the type.
@@ -144,11 +145,17 @@ typedef struct _ObjectClassRec {
 
 The predefined class record and pointer for
 .PN ObjectClassRec
-are:
-
+are
 .LP
+In
+.PN IntrinsicP.h :
 .Ds 0
 extern ObjectClassRec objectClassRec;
+.De
+.LP
+In
+.PN Intrinsic.h :
+.Ds 0
 extern WidgetClass objectClass;
 .De
 .LP
@@ -159,6 +166,13 @@ and
 and the opaque variable
 .PN objectClass
 are defined for generic actions on objects.
+.PN Intrinsic.h
+uses an incomplete structure definition to ensure that the
+compiler catches attempts to access private data:
+.LP
+.Ds 0
+typedef struct _ObjectClassRec* ObjectClass;
+.De
 
 .NH 3
 ObjectPart Structure
@@ -190,7 +204,7 @@ typedef struct _ObjectPart {
 .De
 .LP
 All object instances have the
-.PN Object
+Object
 fields as their first component.  The prototypical type
 .PN Object
 is defined with only this set of fields.
@@ -198,6 +212,8 @@ Various routines can cast object pointers, as needed, to specific
 object types.
 
 .LP
+In
+.PN IntrinsicP.h :
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -206,6 +222,12 @@ typedef struct _ObjectRec {
 } ObjectRec, *Object;
 .De
 .IN "ObjectRec" "" "@DEF@"
+.LP
+In
+.PN Intrinsic.h :
+.Ds 0
+typedef struct _ObjectRec *Object;
+.De
 
 .NH 3
 Object Resources
@@ -213,9 +235,9 @@ Object Resources
 \fB\*(SN Object Resources\fP
 .XE
 .LP
-The resource names, classes and representation types specified in the
-.PN Object
-resource list are:
+The resource names, classes, and representation types specified in the
+.PN objectClassRec
+resource list are
 .LP
 .TS
 lw(1.5i) lw(1.5i) lw(2.5i) .
@@ -264,7 +286,7 @@ or any subclass:
 .sp
 .LP
 The Widget arguments to the following procedures may be of class
-.PN Object
+Object
 or any subclass:
 .sp
 .IP
@@ -303,13 +325,13 @@ or any subclass:
 (both will return
 .PN False
 if argument is not a subclass of
-.PN RectObj )
+RectObj)
 .IP
 .PN XtIsRealized
 .br
 (returns the state of the nearest windowed ancestor
-if argument is not of a subclass of
-.PN Core )
+if class of argument is not a subclass of
+Core)
 .IP
 .PN XtWidgetToApplicationContext
 .IP    
@@ -343,7 +365,7 @@ if argument is not of a subclass of
 .sp
 .LP
 The return value of the following procedures will be of class
-.PN Object
+Object
 or a subclass:
 .sp
 .IP
@@ -370,34 +392,34 @@ Use of Objects
 .XE
 .LP
 The
-.PN Object
+Object
 class exists to enable programmers to use the \*(xI'
-classing and resource handling mechanisms for things smaller
+classing and resource-handling mechanisms for things smaller
 and simpler than widgets.
-Objects obsolete many common uses of subresources as described in
-sections 9.4, 9.7.2.4 and 9.7.2.5.
+Objects make obsolete many common uses of subresources as described in
+sections 9.4, 9.7.2.4, and 9.7.2.5.
 .LP
-.PN Composite
-widget classes that wish to accept non-widget children must
-set the accepts_objects field in the
+Composite
+widget classes that wish to accept nonwidget children must
+set the \fIaccepts_objects\fP field in the
 .PN CompositeClassExtension
 structure to
 .PN True .
 .PN XtCreateWidget
 will otherwise generate an error message on an attempt to create a
-non-widget child.
+nonwidget child.
 .LP
 Of the classes defined by the \*(xI, only
-.PN ApplicationShell
-accepts non-widget children, and the class of any non-widget child
+ApplicationShell
+accepts nonwidget children, and the class of any nonwidget child
 must not be
 .PN rectObjClass
 or any subclass.  The intent of allowing
-.PN Object
+Object
 children of
-.PN ApplicationShell
+ApplicationShell
 is to provide clients a simple mechanism
-for establishing the resource naming root of an object hierarchy.
+for establishing the resource-naming root of an object hierarchy.
 
 .NH 2
 Rectangle Objects
@@ -405,11 +427,11 @@ Rectangle Objects
 \*(SN Rectangle Objects
 .XE
 .LP
-Rectangle objects are a subclass of
-.PN Object
-that represent
-rectangular areas.  They encapsulate the mechanisms for geometry
-management, and are called RectObjs
+The class of rectangle objects is a subclass of
+Object
+that represents
+rectangular areas.  It encapsulates the mechanisms for geometry
+management, and is called RectObj
 .IN "RectObj" "" "@DEF@"
 to avoid conflict with the Xlib
 .PN Rectangle
@@ -430,8 +452,8 @@ purpose and function as the corresponding fields in
 .PN CoreClassPart ;
 fields whose names are rect\fI\s+1n\s-1\fP for some integer
 \fI\s+1n\s-1\fP are not used for
-RectObjs but exist to pad the data structure so that it matches
-.PN Core 's
+RectObj but exist to pad the data structure so that it matches
+Core's
 class record.  The class record initialization must fill all
 rect\fI\s+1n\s-1\fP fields with NULL or zero as appropriate to the type.
 .LP
@@ -476,9 +498,9 @@ typedef struct _RectObjClassPart {
 .De
 .LP
 The
-.PN RectObj
+RectObj
 class record consists of just the
-.PN RectObjClassPart :
+.PN RectObjClassPart .
 .LP
 .Ds 0
 .TA .5i 3i
@@ -492,10 +514,17 @@ typedef struct _RectObjClassRec {
 .LP
 The predefined class record and pointer for
 .PN RectObjClassRec
-are:
+are
 .LP
+In
+.PN Intrinsic.h :
 .Ds 0
 extern RectObjClassRec rectObjClassRec;
+.De
+.LP
+In
+.PN Intrinsic.h :
+.Ds 0
 extern WidgetClass rectObjClass;
 .De
 .LP
@@ -505,8 +534,16 @@ and
 .PN RectObjClass
 and the opaque variable
 .PN rectObjClass
-are defined for generic actions on objects that are a subclass of
-.PN RectObj .
+are defined for generic actions on objects
+whose class is RectObj or a subclass of
+RectObj.
+.PN Intrinsic.h
+uses an incomplete structure definition to ensure that the compiler
+catches attempts to access private data:
+.LP
+.Ds 0
+typedef struct _RectObjClassRec* RectObjClass;
+.De
 
 .NH 3
 RectObjPart Structure
@@ -517,7 +554,7 @@ RectObjPart Structure
 In addition to the
 .PN ObjectPart
 fields,
-.PN RectObj
+RectObj
 objects have the following fields defined in the
 .PN RectObjPart
 structure.  All fields have the same meaning as the corresponding field in
@@ -537,8 +574,8 @@ typedef struct _RectObjPart {
 } RectObjPart;
 .De
 .LP
-.PN RectObj
-objects have the rectangle fields immediately following the object fields:
+RectObj
+objects have the RectObj fields immediately following the Object fields.
 .LP
 .Ds 0
 .TA .5i 3i
@@ -547,7 +584,13 @@ objects have the rectangle fields immediately following the object fields:
 typedef struct _RectObjRec {
 	ObjectPart object;
 	RectObjPart rectangle;
-} RectObjRec;
+} RectObjRec, *RectObj;
+.De
+.LP
+In
+.PN Intrinsic.h :
+.Ds 0
+typedef struct _RectObjRec* RectObj;
 .De
 
 .NH 3
@@ -556,9 +599,9 @@ RectObj Resources
 \fB\*(SN RectObj Resources\fP
 .XE
 .LP
-The resource names, classes and representation types specified in the
-.PN RectObj
-resource list are:
+The resource names, classes, and representation types that are specified in the
+.PN rectObjClassRec
+resource list are
 .TS
 lw(1.5i) lw(1.5i) lw(2.5i) .
 _
@@ -605,7 +648,7 @@ or any subclass:
 .sp
 .LP
 The Widget arguments to the following procedures may be of class
-.PN RectObj
+RectObj
 or any subclass:
 .sp
 .IP
@@ -629,7 +672,7 @@ or any subclass:
 .sp
 .LP
 The return value of the following procedures will be of class
-.PN RectObj
+RectObj
 or a subclass:
 .sp
 .IP
@@ -637,89 +680,91 @@ or a subclass:
 .PN XtVaCreateManagedWidget
 
 .NH 3
-Use of RectObjs
+Use of Rectangle Objects
 .XS
-\*(SN Use of RectObjs
+\*(SN Use of Rectangle Objects
 .XE
 .LP
-.PN RectObj
-can be subclassed to provide widget-like objects (sometimes
-called ``gadgets'') that do not use windows and which do not have
+RectObj
+can be subclassed to provide widgetlike objects (sometimes
+called gadgets) that do not use windows and do not have
 features often unused in simple widgets.  This can save memory
 resources both in the server and in applications
 but requires additional support code in the parent.
 In the following
-discussion, ``RectObj'' refers only to objects which are a subclass of
-.PN RectObj
-and are not a subclass of
-.PN Core . 
+discussion, \fIrectobj\fP refers only to objects
+whose class is RectObj or a subclass of
+RectObj
+but not Core or a subclass of
+Core. 
 .LP
-.PN Composite
-widget classes that wish to accept RectObj children must set
-the accepts_objects field in the
+Composite
+widget classes that wish to accept rectobj children must set
+the \fIaccepts_objects\fP field in the
 .PN CompositeClassExtension
 extension structure to
 .PN True .
 .PN XtCreateWidget
 or
 .PN XtCreateManagedWidget
-will otherwise generate an error if called to create a non-widget child.
-If the Composite widget supports only children of class
-.PN RectObj
-or a subclass (i.e. not general Objects), it
+will otherwise generate an error if called to create a nonwidget child.
+If the composite widget supports only children of class
+RectObj
+or a subclass (i.e., not of the general Object class), it
 must declare an insert_child procedure and check the subclass of each
 new child in that procedure.  None of the classes defined by the
-\*(xI accept RectObj children.
+\*(xI accept rectobj children.
 .LP
 If gadgets are defined in an object set, the parent is responsible for
 much more than the parent of a widget.  The parent must request and handle
 input events that occur for the gadget and is responsible for making
-sure that when it receives an expose event the gadget children get
-drawn correctly. Subclasses of
-.PN RectObj
-have expose procedures but the parent is free to
+sure that when it receives an exposure event the gadget children get
+drawn correctly.
+Rectobj children may
+have expose procedures
+specified in their class records, but the parent is free to
 ignore them, instead drawing the contents of the child itself.  This
 can potentially save graphics context switching.  The precise contents
-of the Expose event and Region arguments to the RectObj expose
+of the exposure event and region arguments to the RectObj expose
 procedure are not specified by the \*(xI; a particular rectangle object is
-free to define the coordinate system origin (self-relative or parent-
-relative) and whether or not the rectangle and/or Region is assumed to
+free to define the coordinate system origin (self-relative or
+parent-relative) and whether or not the rectangle or region is assumed to
 have been intersected with the visible region of the object.
 .LP
-In general, it is expected that a composite widget which accepts
-non-widget children will document those children it is able to handle,
-since a gadget can not be viewed as a completely self-contained entity
+In general, it is expected that a composite widget that accepts
+nonwidget children will document those children it is able to handle,
+since a gadget cannot be viewed as a completely self-contained entity,
 as can a widget.  Since a particular composite widget class is usually
-designed to handle gadgets of only a limited set of classes, it should
+designed to handle nonwidget children of only a limited set of classes, it should
 check the classes of newly added children in its insert_child
 procedure to make sure that it can deal with them.
 .LP
 The \*(xI will clear areas of a parent window obscured by
-RectObj children, causing Expose events, under the following
+rectobj children, causing exposure events, under the following
 circumstances:
 .IP \(bu 5
-A RectObj child is managed or unmanaged.
+A rectobj child is managed or unmanaged.
 .IP \(bu 5
 In a call to
 .PN XtSetValues
-on a RectObj child, one or more of the set_values procedures returns
+on a rectobj child, one or more of the set_values procedures returns
 .PN True .
 .IP \(bu 5
 In a call to
 .PN XtConfigureWidget
-on a RectObj child, areas will
+on a rectobj child, areas will
 be cleared corresponding to both the old and the new child
 geometries, including the border, if the geometry changes.
 .IP \(bu 5
 In a call to
 .PN XtMoveWidget
-on a RectObj child, areas will be
+on a rectobj child, areas will be
 cleared corresponding to both the old and the new child
 geometries, including the border, if the geometry changes.
 .IP \(bu 5
 In a call to
 .PN XtResizeWidget
-on a RectObj child, an single
+on a rectobj child, an single
 rectangle will be cleared corresponding to the larger of the
 old and the new child geometries if they are different.
 .IP \(bu 5
@@ -727,46 +772,45 @@ In a call to
 .PN XtMakeGeometryRequest
 (or
 .PN XtMakeResizeRequest )
-on a RectObj with
+on a rectobj child with
 .PN XtQueryOnly
 not set, if the manager returns
-.PN XtGeometryYes
+.PN XtGeometryYes ,
 two rectangles will be cleared corresponding to both the old and
 the new child geometries.
 .LP
-Stacking order is not supported for RectObjs.  Composite widgets with
-RectObj children are free to define any semantics desired if the child
+Stacking order is not supported for rectobj children.  Composite widgets with
+rectobj children are free to define any semantics desired if the child
 geometries overlap, including making this an error.
 .LP
-When a RectObj is playing the role of a widget, developers must be
+When a rectobj is playing the role of a widget, developers must be
 reminded to avoid making assumptions about the object passed in the
 Widget argument to a callback procedure.
 
 .NH 2
-Undeclared Class.
+Undeclared Class
 .XS
-\*(SN Undeclared Class.
+\*(SN Undeclared Class
 .XE
 .LP
 The \*(xI define an unnamed class between
-.PN RectObj
+RectObj
 and
-.PN Core
-for possible future use by the X Consortium. The only assumptions which
-may be made about the unnamed class are:
+Core
+for possible future use by the X Consortium. The only assumptions that
+may be made about the unnamed class are
 .IP \(bu 5
-the core_class.superclass field of the class record of
-.PN CoreWidget
+the \fIcore_class.superclass\fP field of
+.PN coreWidgetClassRec
 contains a pointer to the unnamed class record.
 .IP \(bu 5
-a pointer to the unnamed class record when de-referenced as an
+a pointer to the unnamed class record when dereferenced as an
 .PN ObjectClass
-will contain a pointer to the class record
-of
-.PN RectObj
-in its object_class.superclass field.
+will contain a pointer to
+.PN rectObjClassRec
+in its \fIobject_class.superclass\fP field.
 .LP
-Except for the above, the content of the class record for this class
+Except for the above, the contents of the class record for this class
 and the result of an attempt to subclass or to create a widget of this
 unnamed class are undefined.
 
@@ -777,7 +821,7 @@ Widget Arguments To \*(xI Routines
 .XE
 .LP
 The WidgetClass arguments to the following procedures must be of class
-.PN Shell
+Shell
 or a subclass:
 .sp
 .IP
@@ -788,7 +832,7 @@ or a subclass:
 .sp
 .LP
 The Widget arguments to the following procedures must be of class
-.PN Core
+Core
 or any subclass:
 .sp
 .IP
@@ -862,7 +906,7 @@ or any subclass:
 .sp
 .LP
 The Widget arguments to the following procedures must be of class
-.PN Composite
+Composite
 or any subclass:
 .sp
 .IP
@@ -871,7 +915,7 @@ or any subclass:
 .sp
 .LP
 The Widget arguments to the following procedures must be of a subclass of
-.PN Shell :
+Shell:
 .sp
 .IP
 .PN XtPopdown ,
@@ -884,7 +928,7 @@ The Widget arguments to the following procedures must be of a subclass of
 .sp
 .LP
 The return value of the following procedure will be of class
-.PN Core
+Core
 or a subclass:
 .sp
 .IP
@@ -892,7 +936,7 @@ or a subclass:
 .sp
 .LP
 The return value of the following procedures will be of a subclass of
-.PN Shell :
+Shell :
 .sp
 .IP
 .PN XtAppCreateShell ,
