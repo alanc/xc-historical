@@ -19,8 +19,8 @@
 #define RemoveTargetProgramByMoving YES
 
 /* This defines the server you want */
-/* #define XhpServer              Xhp */
-#define BuildServer NO
+#define XhpServer              Xhp
+#define BuildServer YES
 
 
 #define NeedBerklibInXlib      YES		/* snag Berklib for Xlib */
@@ -28,7 +28,7 @@
 #define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 
 
-/**/# platform:  $XConsortium: hp.cf,v 1.13 89/07/11 11:32:57 jim Exp $
+/**/# platform:  $XConsortium: hp.cf,v 1.14 89/07/18 15:39:44 jim Exp $
 /**/# operating system:  OSName
 
 /*
