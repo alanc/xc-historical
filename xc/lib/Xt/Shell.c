@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.1 94/02/04 16:03:52 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.147 94/02/04 21:48:49 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -587,9 +587,13 @@ static XtResource applicationResources[]=
 	 Offset(application.environment), XtRPointer, (XtPointer) NULL},
     {XtNcurrentDirectory, XtCCurrentDirectory, XtRString, sizeof(String),
 	 Offset(application.current_dir), XtRString, (XtPointer) NULL},
+    {XtNprogramPath, XtCProgramPath, XtRString, sizeof(String),
+	 Offset(application.program_path), XtRString, (XtPointer) NULL},
     {XtNrestartStyle, XtCRestartStyle, XtRRestartStyle, sizeof(unsigned char),
 	 Offset(application.restart_style),
 	 XtRImmediate, (XtPointer) SmRestartIfRunning},
+    {XtNjoinSession, XtCJoinSession, XtRBoolean, sizeof(Boolean),
+	 Offset(application.join_session), XtRImmediate, (XtPointer) True},
     {XtNsaveCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
          Offset(application.save_callbacks), XtRCallback, (XtPointer) NULL},
     {XtNinteractCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
@@ -932,15 +936,12 @@ static void TopLevelInitialize(req, new, args, num_args)
 
 extern char *getenv();
 
+static void JoinSession();
+static void SetSessionProperties();
+static void StopManagingSession();
 static String *NewStringArray();
 static void FreeStringArray();
-static void InitializeSessionProperties();
-static void GetIceEvent();
-static void SetSessionProperties();
-static void XtCallSaveCallbacks();
-static void XtCallCancelCallbacks();
-static void XtCallDieCallbacks();
-static void DieCallback();
+static String *HackParseArgv(); /* XXX */
 
 /* ARGSUSED */
 static void ApplicationInitialize(req, new, args, num_args)
@@ -949,67 +950,42 @@ static void ApplicationInitialize(req, new, args, num_args)
     Cardinal *num_args;		/* unused */
 {
     ApplicationShellWidget w = (ApplicationShellWidget)new;
-    IceConn ice_conn;
-    SmcCallbacks smcb;
 
-    /* copy the argv if passed */
-    if (w->application.argc > 0) {
-	int i = w->application.argc;
-	char **argv = (char**)XtMalloc(((unsigned)i + 1) * sizeof(char*));
-	char **argp = w->application.argv + i;
-	argv[i] = NULL;
-	while (--i >= 0) {
-	    argv[i] = *--argp;
-	}
-	w->application.argv = argv;
-    }
+    if (w->application.argv) w->application.argv =
+	NewStringArray(w->application.argv);
+    if (w->application.session_id) w->application.session_id =
+	XtNewString(w->application.session_id);
+    if (w->application.discard_command) w->application.discard_command =
+	NewStringArray(w->application.discard_command);
+    if (w->application.resign_command) w->application.resign_command =
+	NewStringArray(w->application.resign_command);
+    if (w->application.shutdown_command) w->application.shutdown_command =
+	NewStringArray(w->application.shutdown_command);
+    if (w->application.environment) w->application.environment =
+	NewStringArray(w->application.environment);
+    if (w->application.current_dir) w->application.current_dir =
+	XtNewString(w->application.current_dir);
+    if (w->application.program_path) w->application.program_path =
+	XtNewString(w->application.program_path);
 
     w->application.checkpointing = False;
     w->application.input_id = (XtInputId) NULL;
     w->application.extension = NULL;
-    w->application.user_id = NULL;
-    w->application.program_name = NULL;
 
-    if (! w->application.connection && ! getenv("SESSION_MANAGER"))
-	return;
+    if ((w->application.join_session) &&
+	(w->application.argv || w->application.restart_command))
+	JoinSession(w);
 
-#define XT_MSG_LENGTH 100
-    smcb.save_yourself.callback = XtCallSaveCallbacks;
-    smcb.die.callback = XtCallDieCallbacks;
-    smcb.shutdown_cancelled.callback = XtCallCancelCallbacks;
-    smcb.save_yourself.client_data =
-	smcb.die.client_data =
-	smcb.shutdown_cancelled.client_data = (SmPointer) new;
+    w->application.restart_command = w->application.restart_command
+	? NewStringArray(w->application.restart_command)
+	: HackParseArgv(w->application.session_id, w->application.argv, True);
 
-    if (w->application.connection == NULL) {
-	char *client_id;
-	char error_msg[XT_MSG_LENGTH];
-
-	error_msg[0] = '\0';
-	w->application.connection =
-	    SmcOpenConnection(NULL, &smcb, w->application.session_id,
-			      &client_id, XT_MSG_LENGTH, error_msg);
-	if (error_msg[0]) {
-	    XtAppWarning(XtWidgetToApplicationContext(new), error_msg);
-	    return;
-	}
-	w->application.session_id = client_id;
-    } else {
-	unsigned long mask = SmcSaveYourselfProcMask | SmcDieProcMask |
-	    SmcShutdownCancelledProcMask;
-	SmcModifyCallbacks(w->application.connection, mask, &smcb);
-	w->application.session_id = SmcClientID(w->application.connection);
-    }
-    ice_conn = SmcGetIceConnection(w->application.connection);
-    /* XXX should add only if first one to select on this fd */
-    w->application.input_id = XtAppAddInput(XtWidgetToApplicationContext(new),
-					    IceConnectionNumber(ice_conn),
-					    (XtPointer) XtInputReadMask,
-					    GetIceEvent, (XtPointer) ice_conn);
-    XtAddCallback(new, XtNdieCallback, DieCallback, (XtPointer) NULL);
-    InitializeSessionProperties(w);
-    SetSessionProperties(w);
-#undef XT_MSG_LENGTH
+    w->application.clone_command = w->application.clone_command
+	? NewStringArray(w->application.clone_command)
+	: HackParseArgv(w->application.session_id, w->application.argv, False);
+    
+    if (w->application.connection)
+	SetSessionProperties(w, True);
 }
 
 static void Resize(w)
@@ -1536,15 +1512,13 @@ static void ApplicationDestroy(wid)
 {
     ApplicationShellWidget w = (ApplicationShellWidget) wid;
 
-    if(w->application.argv != NULL) XtFree((char *) w->application.argv);
+    FreeStringArray(w->application.argv);
 
     if (w->application.connection) {
 	XtRemoveInput(w->application.input_id);
 	SmcCloseConnection(w->application.connection, 0, NULL);
     }
-    if (w->application.session_id)
-	free(w->application.session_id);
-
+    XtFree(w->application.session_id);
     FreeStringArray(w->application.restart_command);
     FreeStringArray(w->application.clone_command);
     FreeStringArray(w->application.discard_command);
@@ -1552,8 +1526,7 @@ static void ApplicationDestroy(wid)
     FreeStringArray(w->application.shutdown_command);
     FreeStringArray(w->application.environment);
     XtFree(w->application.current_dir);
-    XtFree(w->application.user_id);
-    XtFree(w->application.program_name);
+    XtFree(w->application.program_path);
 }
 
 /*
@@ -2234,26 +2207,17 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 {
     ApplicationShellWidget nw = (ApplicationShellWidget) new;
     ApplicationShellWidget cw = (ApplicationShellWidget) current;
-    char *prop_names[XT_NUM_SM_PROPS];
+    char *delete_props[XT_NUM_SM_PROPS];
     int num_props = 0;
-    Boolean flush = False;
+    Boolean set_props = False;
+
+    if (cw->application.argv != nw->application.argv) {
+	nw->application.argv = NewStringArray(nw->application.argv);
+	FreeStringArray(cw->application.argv);
+    }
 
     if (cw->application.argv != nw->application.argv ||
 	cw->application.argc != nw->application.argc) {
-
-	if (nw->application.argc > 0) {
-	    int i = nw->application.argc;
-	    char **argp = nw->application.argv + i;
-	    char **argv = (char **) XtMalloc(((unsigned)i+1) * sizeof(char *));
-	    argv[i] = NULL;
-	    while (--i >= 0)
-		argv[i] = *--argp;
-	    nw->application.argv = argv;
-	}
-	if (cw->application.argc > 0 &&
-	    cw->application.argv != nw->application.argv)
-	    XtFree((char *) cw->application.argv);
-
 	if (XtIsRealized(new) && !nw->shell.override_redirect) {
 	    if (nw->application.argc >= 0 && nw->application.argv)
 		XSetCommand(XtDisplay(new), XtWindow(new),
@@ -2263,43 +2227,39 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	}
     }
 
-    if (cw->application.connection != nw->application.connection) {
-	if (nw->application.connection != (SmcConn) NULL) {
-	    IceConn ice_conn = SmcGetIceConnection(nw->application.connection);
-	    nw->application.session_id =
-		SmcClientID(nw->application.connection);
-	    if (cw->application.connection != NULL)
-		XtRemoveInput(cw->application.input_id);
-	    nw->application.input_id =
-		XtAppAddInput(XtWidgetToApplicationContext(new),
-			      IceConnectionNumber(ice_conn),
-			      (XtPointer) XtInputReadMask,
-			      GetIceEvent, (XtPointer) ice_conn);
-	}
-	else {
-	    nw->application.session_id = NULL;
-	    XtRemoveInput(cw->application.input_id);
-	    cw->application.input_id = (XtInputId) NULL;
-	}
+    if (cw->application.session_id != nw->application.session_id) {
+	nw->application.session_id = XtNewString(nw->application.session_id);
+	XtFree(cw->application.session_id);
     }
 
-    if (cw->application.session_id != nw->application.session_id)
-	nw->application.session_id = cw->application.session_id;
+    if (cw->application.join_session == False &&
+	nw->application.join_session == True)
+	JoinSession(nw);
+    else if (cw->application.join_session == True &&
+	     nw->application.join_session == False)
+	StopManagingSession(nw);
+    else if (cw->application.connection == NULL &&
+	     nw->application.connection != NULL)
+	JoinSession(nw);
+    else if (cw->application.connection != NULL &&
+	     nw->application.connection == NULL)
+	StopManagingSession(nw);
 
     if (cw->application.clone_command != nw->application.clone_command) {
 	if (nw->application.clone_command) {
 	    nw->application.clone_command =
 		NewStringArray(nw->application.clone_command);
-	    flush = True;
-	} else prop_names[num_props++] = SmCloneCommand;
+	    set_props = True;
+	} else delete_props[num_props++] = SmCloneCommand;
 	FreeStringArray(cw->application.clone_command);
     }
 
     if (cw->application.current_dir != nw->application.current_dir) {
-	if (nw->application.current_dir)
-	    nw->application.current_dir =
+	if (nw->application.current_dir) {
+	    nw->application.current_dir = 
 		XtNewString(nw->application.current_dir);
-	else prop_names[num_props++] = SmCurrentDirectory;
+	    set_props = True;
+	} else delete_props[num_props++] = SmCurrentDirectory;
 	XtFree((char *) cw->application.current_dir);
     }
 
@@ -2307,8 +2267,8 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	if (nw->application.discard_command) {
 	    nw->application.discard_command =
 		NewStringArray(nw->application.discard_command);
-	    flush = True;
-	} else prop_names[num_props++] = SmDiscardCommand;
+	    set_props = True;
+	} else delete_props[num_props++] = SmDiscardCommand;
 	FreeStringArray(cw->application.discard_command);
     }
 
@@ -2316,25 +2276,26 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	if (nw->application.environment) {
 	    nw->application.environment = 
 		NewStringArray(nw->application.environment);
-	    flush = True;
-	} else prop_names[num_props++] = SmEnvironment;
+	    set_props = True;
+	} else delete_props[num_props++] = SmEnvironment;
 	FreeStringArray(cw->application.environment);
     }
 
-    if (cw->application.program_name != nw->application.program_name) {
-	if (nw->application.program_name)
-	    nw->application.program_name =
-		XtNewString(nw->application.program_name);
-	else prop_names[num_props++] = SmProgram;
-	XtFree((char *) cw->application.program_name);
+    if (cw->application.program_path != nw->application.program_path) {
+	if (nw->application.program_path) {
+	    nw->application.program_path = 
+		XtNewString(nw->application.program_path);
+	    set_props = True;
+	} else delete_props[num_props++] = SmProgram;
+	XtFree((char *) cw->application.program_path);
     }
 
     if (cw->application.resign_command != nw->application.resign_command) {
 	if (nw->application.resign_command) {
 	    nw->application.resign_command =
 		NewStringArray(nw->application.resign_command);
-	    flush = True;
-	} else prop_names[num_props++] = SmResignCommand;
+	    set_props = True;
+	} else delete_props[num_props++] = SmResignCommand;
 	FreeStringArray(cw->application.resign_command);
     }
 
@@ -2342,36 +2303,29 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	if (nw->application.restart_command) {
 	    nw->application.restart_command =
 		NewStringArray(nw->application.restart_command);
-	    flush = True;
-	} else prop_names[num_props++] = SmRestartCommand;
+	    set_props = True;
+	} else delete_props[num_props++] = SmRestartCommand;
 	FreeStringArray(cw->application.restart_command);
     }
 
     if (cw->application.restart_style != nw->application.restart_style)
-	flush = True;
+	set_props = True;
 
     if (cw->application.shutdown_command != nw->application.shutdown_command) {
 	if (nw->application.shutdown_command) {
 	    nw->application.shutdown_command =
 		NewStringArray(nw->application.shutdown_command);
-	    flush = True;
-	} else prop_names[num_props++] = SmShutdownCommand;
+	    set_props = True;
+	} else delete_props[num_props++] = SmShutdownCommand;
 	FreeStringArray(cw->application.shutdown_command);
-    }
-
-    if (cw->application.user_id != nw->application.user_id) {
-	if (nw->application.user_id)
-	    nw->application.user_id = XtNewString(nw->application.user_id);
-	else prop_names[num_props++] = SmUserID;
-	XtFree((char *) cw->application.user_id);
     }
 
     if (nw->application.connection) {
 	if (num_props) 
 	    SmcDeleteProperties(nw->application.connection, num_props,
-				prop_names);
-	if (flush)
-	    SetSessionProperties(new);
+				delete_props);
+	if (set_props)
+	    SetSessionProperties(new, False);
     }
     return False;
 }
@@ -2455,37 +2409,78 @@ static void ApplicationShellInsertChild(widget)
 #define XtSessionCheckpoint	0
 #define XtSessionInteract	1
 
-static XtCheckpointToken GetToken();
 extern String _XtGetUserName();
 
-static void InitializeSessionProperties(appshell)
-    ApplicationShellWidget appshell;
+static void XtCallSaveCallbacks();
+static void XtCallCancelCallbacks();
+static void XtCallDieCallbacks();
+static void DieCallback();
+static void GetIceEvent();
+static XtCheckpointToken GetToken();
+
+static void StopManagingSession(w)
+    ApplicationShellWidget w;
 {
-    Widget w = (Widget) appshell;
-    Cardinal argc;
-    String *argv;
-    String user_name;
-    Arg args[2];
-
-    user_name = _XtGetUserName();
-    if (user_name)
-	appshell->application.user_id = XtNewString(user_name);
-
-    XtSetArg(args[0], XtNargc, &argc);
-    XtSetArg(args[1], XtNargv, &argv);
-    XtGetValues((Widget)appshell, args, (Cardinal) 2);
-    if (! argc) return;
-
-    appshell->application.program_name = XtNewString(argv[0]);
-    
-    /* XXX supposed to insert session id */
-    if (! appshell->application.restart_command)
-	appshell->application.restart_command = NewStringArray(argv);
-
-    /* XXX supposed to remove session id */
-    if (! appshell->application.clone_command)
-	appshell->application.clone_command = NewStringArray(argv);
+    if (w->application.connection) {
+	XtRemoveInput(w->application.input_id);
+	w->application.input_id = (XtInputId) NULL;
+	w->application.connection = NULL;
+	XtRemoveCallback((Widget)w, XtNdieCallback,
+			 DieCallback, (XtPointer) NULL);
+    }
 }
+
+#define XT_MSG_LENGTH 256
+static void JoinSession(w)
+    ApplicationShellWidget w;
+{
+    IceConn ice_conn;
+    SmcCallbacks smcb;
+    char * sm_client_id;
+    unsigned long mask;
+
+    smcb.save_yourself.callback = XtCallSaveCallbacks;
+    smcb.die.callback = XtCallDieCallbacks;
+    smcb.shutdown_cancelled.callback = XtCallCancelCallbacks;
+    smcb.save_yourself.client_data =
+	smcb.die.client_data =
+	    smcb.shutdown_cancelled.client_data = (SmPointer) w;
+
+    if (w->application.connection) {
+	mask = SmcSaveYourselfProcMask | SmcDieProcMask |
+	    SmcShutdownCancelledProcMask;
+	SmcModifyCallbacks(w->application.connection, mask, &smcb);
+	sm_client_id = SmcClientID(w->application.connection);
+    } else if (getenv("SESSION_MANAGER")) {
+	char error_msg[XT_MSG_LENGTH];
+	error_msg[0] = '\0';
+	w->application.connection =
+	    SmcOpenConnection(NULL, &smcb, w->application.session_id,
+			      &sm_client_id, XT_MSG_LENGTH, error_msg);
+	if (error_msg[0]) {
+	    XtAppWarning(XtWidgetToApplicationContext((Widget) w),
+			 error_msg);
+	    return;
+	}
+    }
+    if (w->application.connection) {
+	if (w->application.session_id == NULL
+	    || (strcmp(w->application.session_id, sm_client_id) != 0)) {
+	    XtFree(w->application.session_id);
+	    w->application.session_id = XtNewString(sm_client_id);
+	}
+	free(sm_client_id);
+	ice_conn = SmcGetIceConnection(w->application.connection);
+	/* XXX should add only if first one to select on this fd */
+	w->application.input_id =
+	    XtAppAddInput(XtWidgetToApplicationContext((Widget)w),
+			  IceConnectionNumber(ice_conn),
+			  (XtPointer) XtInputReadMask,
+			  GetIceEvent, (XtPointer) ice_conn);
+	XtAddCallback((Widget)w, XtNdieCallback, DieCallback, (XtPointer)NULL);
+    }
+}
+#undef XT_MSG_LENGTH
 
 static String * NewStringArray(str)
     String *str;
@@ -2501,7 +2496,7 @@ static String * NewStringArray(str)
 	nbytes += strlen(str[num]);
 	nbytes++;
     }
-    num = (num + 1) * sizeof(String *);
+    num = (num + 1) * sizeof(String);
     vector = (String *) XtMalloc(num + nbytes);
     sptr = ((char *) vector) + num;
 
@@ -2530,8 +2525,8 @@ static SmProp * CardPack(name, closure)
     unsigned char *prop = (unsigned char *) closure;
     SmProp *p;
 
-    p = (SmProp *) XtMalloc(sizeof(SmProp));
-    p->vals = (SmPropValue *) XtMalloc(sizeof(SmPropValue));
+    p = (SmProp *) XtMalloc(sizeof(SmProp) + sizeof(SmPropValue));
+    p->vals = (SmPropValue *) (((char *) p) + sizeof(SmProp));
     p->num_vals = 1;
     p->type = SmCARD8;
     p->name = name;
@@ -2547,8 +2542,8 @@ static SmProp * ArrayPack(name, closure)
     String prop = *(String *) closure;
     SmProp *p;
 
-    p = (SmProp *) XtMalloc(sizeof(SmProp));
-    p->vals = (SmPropValue *) XtMalloc(sizeof(SmPropValue));
+    p = (SmProp *) XtMalloc(sizeof(SmProp) + sizeof(SmPropValue));
+    p->vals = (SmPropValue *) (((char *) p) + sizeof(SmProp));
     p->num_vals = 1;
     p->type = SmARRAY8;
     p->name = name;
@@ -2569,8 +2564,8 @@ static SmProp * ListPack(name, closure)
 
     for (ptr = prop; *ptr; ptr++)
 	n++;
-    p = (SmProp *) XtMalloc(sizeof(SmProp));
-    p->vals = (SmPropValue *) XtMalloc((Cardinal) (n * sizeof(SmPropValue)));
+    p = (SmProp*) XtMalloc(sizeof(SmProp) + (Cardinal)(n*sizeof(SmPropValue)));
+    p->vals = (SmPropValue *) (((char *) p) + sizeof(SmProp));
     p->num_vals = n;
     p->type = SmLISTofARRAY8;
     p->name = name;
@@ -2585,10 +2580,8 @@ static void FreePacks(props, num_props)
     SmProp **props;
     int num_props;
 {
-    while (--num_props >= 0) {
-	XtFree((char *) props[num_props]->vals);
+    while (--num_props >= 0)
 	XtFree((char *) props[num_props]);
-    }
 }
 
 typedef SmProp* (*PackProc)();
@@ -2605,31 +2598,40 @@ static PropertyRec propertyTable[] = {
   {SmCurrentDirectory, Offset(application.current_dir),      ArrayPack},
   {SmDiscardCommand,   Offset(application.discard_command),  ListPack},
   {SmEnvironment,      Offset(application.environment),	     ListPack},
-  {SmProgram,          Offset(application.program_name),     ArrayPack},
+  {SmProgram,          Offset(application.program_path),     ArrayPack},
   {SmRestartCommand,   Offset(application.restart_command),  ListPack},
   {SmResignCommand,    Offset(application.resign_command),   ListPack},
   {SmShutdownCommand,  Offset(application.shutdown_command), ListPack},
-  {SmUserID,           Offset(application.user_id),          ArrayPack}
 };
 #undef Offset
 
-static void SetSessionProperties(w)
+static void SetSessionProperties(w, initialize)
     ApplicationShellWidget w;
+    Boolean initialize;
 {
     PropertyTable p = propertyTable;
     int n;
     int num_props = 0;
     XtPointer *addr;
+    String user_name;
     SmProp *props[XT_NUM_SM_PROPS];
+
+    if (w->application.connection == NULL) 
+	return;
 
     for (n = XtNumber(propertyTable); n; n--, p++) {
 	addr = (XtPointer *) ((char *) w + p->offset);
 	if (* addr)
 	    props[num_props++] = (*(p->proc))(p->name, (XtPointer)addr);
     }
-    if (w->application.restart_style != SmRestartIfRunning)
-	props[num_props++] = CardPack(SmRestartStyleHint,
-				      &w->application.restart_style);
+    props[num_props++] = CardPack(SmRestartStyleHint, 
+				  &w->application.restart_style);
+    if (initialize) {
+	user_name = _XtGetUserName();
+	if (user_name)
+	    props[num_props++] = ArrayPack(SmUserID, &user_name);
+    }
+
     SmcSetProperties(w->application.connection, num_props, props);
     FreePacks(props, num_props);
 }
@@ -2684,10 +2686,11 @@ static void XtCallSaveCallbacks(connection, client_data, save_type, shutdown,
     }
 }
 
+/*ARGSUSED*/
 static void DieCallback(widget, client_data, call_data)
     Widget	widget;
     XtPointer	client_data;	/* unused */
-    XtPointer	call_data;	/* if abnormal termination, the reasons */
+    XtPointer	call_data;	/* XXX if abnormal termination, the reasons */
 {
     ApplicationShellWidget w = (ApplicationShellWidget) widget;
     String *reason_msgs = (String *) call_data;
@@ -2695,12 +2698,13 @@ static void DieCallback(widget, client_data, call_data)
 
     if (w->application.connection) {
 	if (reason_msgs) {
-	    while (reason_msgs[count]) /* should it be a struct ? XXX */
+	    while (reason_msgs[count])
 		count++;
 	}
 	XtRemoveInput(w->application.input_id);
 	SmcCloseConnection(w->application.connection, count, reason_msgs);
 	w->application.connection = (SmcConn) NULL;
+	w->application.input_id = NULL;
     }
 }
 
@@ -2719,21 +2723,17 @@ static void XtCallCancelCallbacks(connection, client_data)
 {
     ApplicationShellWidget w = (ApplicationShellWidget) client_data;
 
-    if (! w->application.checkpointing) 
-	return;
-    w->application.cancel_shutdown = True;
-    XtCallCallbackList((Widget)w, w->application.cancel_callbacks,
-		       (XtPointer) NULL);
+    if (w->application.checkpointing) 
+	w->application.cancel_shutdown = True;
 
     if (w->application.interact_state == XtInteractPending) {
 	XtRemoveAllCallbacks((Widget)w, XtNinteractCallback);
 	w->application.interact_state = XtInteractNone;
 	w->application.save_success = False;
     }
-    if (w->application.save_tokens == 0) {
-	w->application.checkpointing = False;
-	SmcSaveYourselfDone(connection, w->application.save_success);
-    }
+
+    XtCallCallbackList((Widget)w, w->application.cancel_callbacks,
+		       (XtPointer) NULL);
 }
 
 static void XtInteractPermission(connection, data)
@@ -2862,7 +2862,6 @@ void XtSessionReturnToken(token)
 		 w->application.interact_state == XtInteractNone);
 
     if (save_done) {
-	SetSessionProperties(w);
 	w->application.checkpointing = False;
 	SmcSaveYourselfDone(w->application.connection,
 			    w->application.save_success);
@@ -2870,3 +2869,67 @@ void XtSessionReturnToken(token)
 
     UNLOCK_APP(app);
 }
+
+/* begin parse hack */
+static Boolean IsInArray(str, sarray)
+    String str;
+    String *sarray;
+{
+    if (str == NULL || sarray == NULL)
+	return False;
+    for (; *sarray; sarray++) {
+	if (strcmp(*sarray, str) == 0)
+	    return True;
+    }
+    return False;
+}
+
+static String* HackParseArgv(str, sarray, want)
+    String str;		/* sm_client_id */
+    String* sarray;
+    Boolean want;
+{
+    Boolean have;
+    int count;
+    String *s;
+    String *new;
+
+    /* This code is temporary and buggy.  The massaging of the restart and
+     * clone command will have to take into account the application's 
+     * options table and will have re-employ Xt parsing of argv.
+     */
+    have = IsInArray("-xtsessionID", sarray);
+    if ((want && have) || (!want && !have) || !str)
+	return NewStringArray(sarray);
+	
+    count = 0;
+    for (s = sarray; *s; s++)
+	count++;
+
+    if (want) {
+	s = new = (String *) XtMalloc((Cardinal)(count+3) * sizeof(String*));
+	*s = *sarray;		s++; sarray++;
+	*s = "-xtsessionID";	s++;
+	*s = str;		s++;
+	for (; --count >= 0; s++, sarray++) 
+	    *s = *sarray;
+	*s = (String) NULL;
+    } else {
+	s = new = (String *) XtMalloc((Cardinal)(count-2) * sizeof(String*));
+	for (; --count >= 0; sarray++) {
+	    if (strcmp(*sarray, "-xtsessionID") == 0) {
+		sarray++;
+		count--;
+	    } else {
+		*s = *sarray;
+		s++;
+	    }
+	}
+	*s = (String) NULL;
+    }
+    s = new;
+    new = NewStringArray(new);
+    XtFree((char *)s);
+    return new;
+}
+/* end parse hack */
