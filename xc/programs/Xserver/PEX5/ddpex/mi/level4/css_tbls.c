@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: css_tbls.c,v 5.1 91/02/16 09:56:11 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -47,7 +47,7 @@ extern ddpex4rtn replaceCSS_Exec_Struct();
 extern ddpex4rtn inquireCSS_Exec_Struct();
 
 cssTableType    CreateCSSElementTable[] = {
-	createCSS_Plain,	/* 0 All */
+	createCSS_Plain,	/* 0 Propietary */
 	createCSS_Plain,	/* 1 MarkerType */
 	createCSS_Plain,	/* 2 MarkerScale */
 	createCSS_Plain,	/* 3 MarkerColourIndex */
@@ -154,7 +154,7 @@ cssTableType    CreateCSSElementTable[] = {
 };
 
 cssTableType    DestroyCSSElementTable[] = {
-	destroyCSS_Plain,	/* 0 All */
+	destroyCSS_Plain,	/* 0 Propietary */
 	destroyCSS_Plain,	/* 1 MarkerType */
 	destroyCSS_Plain,	/* 2 MarkerScale */
 	destroyCSS_Plain,	/* 3 MarkerColourIndex */
@@ -261,7 +261,7 @@ cssTableType    DestroyCSSElementTable[] = {
 };
 
 cssTableType    CopyCSSElementTable[] = {
-	copyCSS_Plain,		/* 0 All */
+	copyCSS_Plain,		/* 0 Propietary */
 	copyCSS_Plain,		/* 1 MarkerType */
 	copyCSS_Plain,		/* 2 MarkerScale */
 	copyCSS_Plain,		/* 3 MarkerColourIndex */
@@ -368,7 +368,7 @@ cssTableType    CopyCSSElementTable[] = {
 };
 
 cssTableType    ReplaceCSSElementTable[] = {
-	replaceCSS_Plain,	/* 0 All */
+	replaceCSS_Plain,	/* 0 Propietary */
 	replaceCSS_Plain,	/* 1 MarkerType */
 	replaceCSS_Plain,	/* 2 MarkerScale */
 	replaceCSS_Plain,	/* 3 MarkerColourIndex */
@@ -475,7 +475,7 @@ cssTableType    ReplaceCSSElementTable[] = {
 };
 
 cssTableType    InquireCSSElementTable[] = {
-	inquireCSS_Plain,	/* 0 All */
+	inquireCSS_Plain,	/* 0 Propietary */
 	inquireCSS_Plain,	/* 1 MarkerType */
 	inquireCSS_Plain,	/* 2 MarkerScale */
 	inquireCSS_Plain,	/* 3 MarkerColourIndex */

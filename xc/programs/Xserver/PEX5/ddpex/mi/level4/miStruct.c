@@ -1,4 +1,4 @@
-/* $XConsortium: miStruct.c,v 5.1 91/02/16 09:56:03 rws Exp $ */
+/* $XConsortium: miStruct.c,v 5.2 91/07/01 08:41:33 rws Exp $ */
 
 
 /***********************************************************
@@ -1253,12 +1253,19 @@ InquireElements(pStruct, pRange, pNumOCs, pBuffer)
 	MISTR_FIND_EL(pheader, offset1, pel);
 
 	for (i = offset1; i <= offset2; i++) {
-	    if (MI_IS_PEX_OC(MISTR_EL_TYPE(pel)))
-		err = (*InquireCSSElementTable[MISTR_EL_TYPE(pel)])
-						(pel, pBuffer, &(pBuffer->pBuf));
-	    else
-		err = (*InquireCSSElementTable[0])
-						(pel, pBuffer, &(pBuffer->pBuf));
+	    /* Propreitary calls (and OCNil) through 0th Table Entry */
+	    if (MI_HIGHBIT_ON(MISTR_EL_TYPE(pel)))
+		err = (*InquireCSSElementTable[MI_OC_PROP])
+				      (pel, pBuffer, &(pBuffer->pBuf));
+	    else {
+		/* not Proprietary see if valid PEX OC */
+		if (MI_IS_PEX_OC(MISTR_EL_TYPE(pel)))
+		    err = (*InquireCSSElementTable[MISTR_EL_TYPE(pel)])
+				      (pel, pBuffer, &(pBuffer->pBuf));
+		else
+		    err = !Success;
+	    }
+
 	    if (err != Success) {
 		*pNumOCs = i - offset1;
 		return (err);
@@ -1600,22 +1607,43 @@ StoreElements(pStruct, numOCs, pOCs, ppErr)
 
 		    && (preplel != MISTR_ZERO_EL(pstruct))) {
 
-			if (MI_IS_PEX_OC(poc->elementType))
-			    err = (*ReplaceCSSElementTable[poc->elementType])
-						(pStruct, preplel, poc);
-			else
-			    err = (*ReplaceCSSElementTable[0])
-						(pStruct, preplel, poc);
+		      /*
+		       * *  Replace calls Parse functions which now 
+		       * *  do size checking via Xrealloc
+		       */
+
+			/* Propreitary OC (and OCNil) through 0th Table Entry */
+			if (MI_HIGHBIT_ON(poc->elementType))
+			    err = (*ReplaceCSSElementTable[MI_OC_PROP])
+						(pStruct, preplel, poc );
+                        else {
+			    /* not Proprietary see if valid PEX OC */
+			    if (MI_IS_PEX_OC(poc->elementType))
+			      err = (*ReplaceCSSElementTable[poc->elementType])
+						    (pStruct, preplel, poc);
+			    else
+			      /* Bad Element Type Exit Now */
+			      err = !Success;
+			      break;
+			}
 		} else
+		    /* Bad Replace */
 		    err = !Success;
 
 		if (err != Success) {	/* create new el */
-		    if (MI_IS_PEX_OC(poc->elementType))
-			err = (*CreateCSSElementTable[poc->elementType])
+		    /* Propreitary OC (and OCNil) through 0th Table Entry */
+		    if (MI_HIGHBIT_ON(poc->elementType))
+			err = (*CreateCSSElementTable[MI_OC_PROP])
 						(pStruct, poc, &pnewel);
-		    else
-			err = (*CreateCSSElementTable[0])
-						(pStruct, poc, &pnewel);
+		    else {
+			/* not Proprietary see if valid PEX OC */
+			if (MI_IS_PEX_OC(poc->elementType))
+			    err = (*CreateCSSElementTable[poc->elementType])
+						    (pStruct, poc, &pnewel);
+			else
+			    /* Bad Element Type */
+			    err = !Success;
+		    }
 
 		if (err != Success) break;
 
@@ -1643,11 +1671,20 @@ StoreElements(pStruct, numOCs, pOCs, ppErr)
 	    for (   count = 0, poc = pOCs, pprevel = MISTR_CURR_EL_PTR(pstruct);
 		    numOCs > 0;
 		    numOCs--, pprevel = pnewel, poc += poc->length) {
-		if (MI_IS_PEX_OC(poc->elementType))
-		    err = (*CreateCSSElementTable[poc->elementType])
-					(pStruct, poc, &pnewel);
-		else
-		    err = (*CreateCSSElementTable[0]) (pStruct, poc, &pnewel);
+
+		/* Propreitary OC (and OCNil) through 0th Table Entry */
+		if (MI_HIGHBIT_ON(poc->elementType))
+		    err = (*CreateCSSElementTable[MI_OC_PROP]) 
+						 (pStruct, poc, &pnewel);
+		else {
+		    /* not Proprietary see if valid PEX OC */
+		    if (MI_IS_PEX_OC(poc->elementType))
+			err = (*CreateCSSElementTable[poc->elementType])
+					    (pStruct, poc, &pnewel);
+		    else
+			/* Bad Element Type */
+			err = !Success;
+		}
 
 		if (err != Success) break;
 
@@ -1915,12 +1952,20 @@ CopyElements(pSrcStruct, pSrcRange, pDestStruct, pDestPosition)
 	pdestprev = &pfirst;
 
 	for (i = src_low, count = 0; i <= src_high; i++) {
-		if (MI_IS_PEX_OC(MISTR_EL_TYPE(psrcel)))
+
+		/* Propreitary OC (and OCNil) through 0th Table Entry */
+		if (MI_HIGHBIT_ON(MISTR_EL_TYPE(psrcel)))
+			err4 = (*CopyCSSElementTable[MI_OC_PROP])
+				(psrcel, pDestStruct, &pdestel);
+		else {
+		    /* not Proprietary see if valid PEX OC */
+		    if (MI_IS_PEX_OC(MISTR_EL_TYPE(psrcel)))
 			err4 = (*CopyCSSElementTable[MISTR_EL_TYPE(psrcel)])
 				(psrcel, pDestStruct, &pdestel);
-		else
-			err4 = (*CopyCSSElementTable[0])
-				(psrcel, pDestStruct, &pdestel);
+		    else
+			/* Bad Element Type - Problem if you get here */
+			err4 = !Success;
+		}
 
 		if (err4 != Success)
 			break;

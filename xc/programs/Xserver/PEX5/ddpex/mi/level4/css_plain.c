@@ -1,4 +1,4 @@
-/* $XConsortium: css_plain.c,v 5.1 91/02/16 09:56:09 rws Exp $ */
+/* $XConsortium: css_plain.c,v 5.2 91/10/24 18:39:46 hersh Exp $ */
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 
@@ -30,7 +30,6 @@ SOFTWARE.
  */
 
 #include "ddpex.h"
-#include "miStruct.h"
 #include "miStrMacro.h"
 
 extern ocTableType ParseOCTable[];
@@ -44,7 +43,6 @@ extern ocTableType ReplaceOCTable[];
 
 #define PEX_EL_TYPE(POC) ((ddElementInfo *)(POC))->elementType
 
-#define OC_RANGE(ELTYPE) ((PEXOCAll < (ELTYPE) ) && ( PEXMaxOC >=(ELTYPE)))
 
 ddpex4rtn
 createCSS_Plain(pStruct, pPEXOC, ppCSSElement)
@@ -61,12 +59,14 @@ createCSS_Plain(pStruct, pPEXOC, ppCSSElement)
 
 	/*
 	 * Parse into server native format
+	 * If we make it here OC is either proprietary or valid PEXOC
+	 * still need to check proprietary to avoid Null Function Ptrs
 	 */
-	if (OC_RANGE(PEX_EL_TYPE(pPEXOC)))
+	if (MI_HIGHBIT_ON(PEX_EL_TYPE(pPEXOC)))
+		err = (*ParseOCTable[MI_OC_PROP]) (pPEXOC, ppCSSElement);
+	else
 		err = (*ParseOCTable[PEX_EL_TYPE(pPEXOC)])
 			(pPEXOC, ppCSSElement);
-	else
-		err = !Success;
 
 	if (err != Success)
 		return (PEXERR(PEXOutputCommandError));
@@ -99,8 +99,15 @@ destroyCSS_Plain(pStruct, pCSSElement)
 
 	/*
 	 * Free the parsed format
+	 * If we make it here OC is either proprietary or valid PEXOC
+	 * still need to check proprietary to avoid Null Function Ptrs
+	 * even though we use the same destroy routine
 	 */
-	(*DestroyOCTable[(int) (pCSSElement->element.elementType)])
+
+	if (MI_HIGHBIT_ON(pCSSElement->element.elementType))
+	    (*DestroyOCTable[MI_OC_PROP]) (pCSSElement);
+	else 
+	    (*DestroyOCTable[(int) (pCSSElement->element.elementType)])
 		(pCSSElement);
 
 	return (err);
@@ -119,8 +126,17 @@ copyCSS_Plain(pSrcCSSElement, pDestStruct, ppDestCSSElement)
 
 	*ppDestCSSElement = (miGenericElementPtr) NULL;
 
-	err = (*CopyOCTable[(int) (pSrcCSSElement->element.elementType)])
-		(pSrcCSSElement, ppDestCSSElement);
+	/*
+	 * If we make it here OC is either proprietary or valid PEXOC
+	 * still need to check proprietary to avoid Null Function Ptrs
+	*/
+	if (MI_HIGHBIT_ON(pSrcCSSElement->element.elementType))
+	    err = (*CopyOCTable[MI_OC_PROP])
+		    (pSrcCSSElement, ppDestCSSElement);
+	else 
+	    err = (*CopyOCTable[(int) (pSrcCSSElement->element.elementType)])
+		    (pSrcCSSElement, ppDestCSSElement);
+
 	if (err != Success)
 		return (err);
 
@@ -136,7 +152,6 @@ copyCSS_Plain(pSrcCSSElement, pDestStruct, ppDestCSSElement)
 	return (Success);
 }
 
-ddpex4rtn
 replaceCSS_Plain(pStruct, pCSSElement, pPEXOC)
 	diStructHandle  pStruct;
 	miGenericElementPtr pCSSElement;
@@ -144,8 +159,15 @@ replaceCSS_Plain(pStruct, pCSSElement, pPEXOC)
 {
 	ddpex4rtn       err = Success;
 
-	err = (*ReplaceOCTable[(int) (pCSSElement->element.elementType)])
-		(pPEXOC, &pCSSElement);
+	/*
+	 * If we make it here OC is either proprietary or valid PEXOC
+	 * still need to check proprietary to avoid Null Function Ptrs
+	*/
+	if (MI_HIGHBIT_ON(pCSSElement->element.elementType))
+	    err = (*ReplaceOCTable[MI_OC_PROP]) (pPEXOC, &pCSSElement);
+	else 
+	    err = (*ReplaceOCTable[(int) (pCSSElement->element.elementType)])
+		    (pPEXOC, &pCSSElement);
 
 	if (err == Success) {
 		pCSSElement->pStruct = pStruct;
@@ -163,7 +185,14 @@ inquireCSS_Plain(pCSSElement, pBuf, ppPEXOC)
 {
 	ddpex4rtn       err = Success;
 
-	err = (*InquireOCTable[(int) (pCSSElement->element.elementType)])
-		(pCSSElement, pBuf, ppPEXOC);
+	/*
+	 * If we make it here OC is either proprietary or valid PEXOC
+	 * still need to check proprietary to avoid Null Function Ptrs
+	*/
+	if (MI_HIGHBIT_ON(pCSSElement->element.elementType))
+	    err = (*InquireOCTable[MI_OC_PROP]) (pCSSElement, pBuf, ppPEXOC);
+	else 
+	    err = (*InquireOCTable[(int) (pCSSElement->element.elementType)])
+		    (pCSSElement, pBuf, ppPEXOC);
 	return (err);
 }
