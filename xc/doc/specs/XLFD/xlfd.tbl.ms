@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.22 93/12/30 18:12:45 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.23 94/01/07 08:48:02 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0\"	\" make tall enough to span paragraph skip
 ..
@@ -23,7 +23,7 @@
 
 \fBVersion 1.5\fP
 
-\fBPublic Review (draft 1)\fP
+\fBPublic Review (draft 2)\fP
 
 \fBX Version 11, Release 6\fP
 .sp 6
@@ -216,7 +216,12 @@ Support Transformations and Subsetting of Fonts
 .XE
 .sC
 .LP
-(Words still needed for this section.)
+Arbitrary two-dimensional linear transformations of fonts should be
+able to be requested by applications.  Since such transformed fonts
+may be used for special effects requiring a few characters from each
+of many differently-transformed fonts, it should be possible to
+request only a few characters from a font for efficiency.
+.br
 .eC
 .NH 2
 Be Independent of X Server and Operating or File System Implementations
@@ -641,7 +646,7 @@ ADD_STYLE_NAME is a string that identifies additional typographic
 style information that is not captured by other fields but is needed 
 to identify the particular font.
 .sC
-The string \*Q%0%\*U anywhere in the field is used to indicate a
+The character \*Q[\*U anywhere in the field is used to indicate a
 polymorphic font; see section \n(sP.
 .br
 .eC
@@ -881,8 +886,8 @@ CHARSET_REGISTRY-CHARSET_ENCODING value pair: \*QISO8859-1\*U.
 .br
 .sC
 .LP
-If the CHARSET_ENCODING contains an \*Q=\*U (ISO 8859-1 EQUALS SIGN,
-Column/Row 03/13), the \*Q=\*U and the characters after it are a
+If the CHARSET_ENCODING contains an \*Q[\*U,
+the \*Q[\*U and the characters after it up to a \*Q]\*U are a
 subsetting hint telling the rasterizer that the client is interested
 only in a subset of the characters of the font.
 .LP
@@ -890,9 +895,9 @@ The BNF for the subsetting hint is
 .SM
 .TS
 rw(1.5i) l.
-Subset ::=	\*Q=\*U RangeList
-RangeList ::=	Range | Range \*Q+\*U RangeList
-Range ::=	Number | Number \*Q:\*U Number
+Subset ::=	\*Q[\*U RangeList \*Q]\*U
+RangeList ::=	Range | Range \*Q \*U RangeList
+Range ::=	Number | Number \*Q_\*U Number
 Number ::=	\*Q0x\*U HexNumber | DecNumber
 HexNumber ::=	HexDigit | HexDigit HexNumber
 DecNumber ::=	DecDigit | DecDigit DecNumber
@@ -905,7 +910,7 @@ For example,
 .br
 .ft C
 .SM
-	-misc-fixed-medium-r-normal--0-0-0-0-c-0-iso8859-1=65+70+80:90
+	-misc-fixed-medium-r-normal--0-0-0-0-c-0-iso8859-1[65 70 80_90]
 .NL
 .ft P
 .br
@@ -1769,10 +1774,9 @@ CAP_HEIGHT
 .sC
 CAP_HEIGHT is an integer value (of type INT32)
 that gives the nominal height of the capital letters contained in the font, 
-.eC
 as specified by the FOUNDRY or typeface designer.
-Where applicable, 
-it is defined to be the height of the Latin uppercase letter \fIX\fP.
+.br
+.eC
 .LP
 Certain clients require CAP_HEIGHT to compute scale factors and 
 positioning offsets for synthesized glyphs where this 
@@ -2573,21 +2577,29 @@ defined for the following XLFD fields:
 The string \fC0\fP is the special polymorphic value.  In the
 WEIGHT_NAME, SLANT, SETWIDTH_NAME, or SPACING field, \fC0\fP must be the
 entire field.
-In the ADD_STYLE_NAME field 0 is the polymorphic value whenever it is
-surrounded by percent signs, as \fC%0%\fP.  \fC%0%\fP may coexist with
-other data in the field (including other polymorphic fields).
+There may be multiple polymorphic values
+in the ADD_STYLE_NAME field.
+They are surrounded by \*Q[\*U and \*Q]\*U and separated by a Space,
+as \fC[0 0]\fP.  \fC[...]\fP may coexist with
+other data in the field.
+It is recommened that the polymorphic values
+be at the end of the ADD_STYLE_NAME field.
 .LP
 The font matching algorithms for a font with polymorphic fields are
 identical to the matching algorithms for a font with scalable fields.
 .LP
 There are three new font properties to describe the axes of variation,
 AXIS_NAMES, AXIS_LIMITS, and AXIS_TYPES.  AXIS_NAMES is a list of all the
-names of the axes for the font, separated by 0 bytes, in the order that
-they occur in the font name.  These names are suitable for presentation in
+names of the axes for the font, separated by a null (0) byte.
+These names are suitable for presentation in
 a user interface.  AXIS_LIMITS is a list of integers, two for each axis,
-giving the minimum and maximum allowable values for that axis, also in the
-order that they occur in the font name.  AXIS_TYPES is like AXIS_NAMES,
+giving the minimum and maximum allowable values for that axis.
+AXIS_TYPES is like AXIS_NAMES,
 but can be registered as having specific semantics.
+.LP
+The axes properties are in the same order as the corresponding fields
+of the font name.  They are matched with font name fields by looking
+for the special polymorphic values (\fC0\fP) in the font name.
 .LP
 Examples:
 .LP
@@ -2615,7 +2627,7 @@ size axes.
 .nf
 Name:
 .ft C
-	-Adobe-Minion MM-0-I-0-%0%-0-0-0-0-P-0-ISO8859-1
+	-Adobe-Minion MM-0-I-0-[0]-0-0-0-0-P-0-ISO8859-1
 .ft P
 AXIS_NAMES:
 	Weight\0Width\0Optical size\0
@@ -2625,17 +2637,17 @@ AXIS_TYPES:
 	Adobe-Weight\0Adobe-Width\0Adobe-OpticalSize\0
 Sample derived instance:
 .ft C
-	-Adobe-Minion MM-550-I-480-%18%-*-180-100-100-P-*-ISO8859-1
+	-Adobe-Minion MM-550-I-480-[18]-*-180-100-100-P-*-ISO8859-1
 .ft P
 .fi
 .LP
 The Adobe Minion MM Swash Italic font program has the same axes and
-values.  This shows how \fC%0%\fP in the ADD_STYLE_NAME field can
+values.  This shows how \fC[0]\fP in the ADD_STYLE_NAME field can
 coexist with other words.
 .nf
 Name:
 .ft C
-	-Adobe-Minion MM-0-I-0-Swash %0%-0-0-0-0-P-0-ISO8859-1
+	-Adobe-Minion MM-0-I-0-Swash[0]-0-0-0-0-P-0-ISO8859-1
 .ft P
 AXIS_NAMES:
 	Weight\0Width\0Optical size\0
@@ -2646,18 +2658,18 @@ AXIS_TYPES:
 Sample derived instance:
 .ft C
 .SM
-	-Adobe-Minion MM-550-I-480-Swash %18%-*-180-100-100-P-*-ISO8859-1
+	-Adobe-Minion MM-550-I-480-Swash[18]-*-180-100-100-P-*-ISO8859-1
 .NL
 .ft P
 .fi
 .LP
 The XYZ Abc font, a hypothetical font, has optical size and x-height axes.
-This shows how there can be more than one \fC%0%\fP in the
+This shows how there can be more than one polymorphic value in the
 ADD_STYLE_NAME field.
 .nf
 Name:
 .ft C
-	-XYZ-Abc-Medium-R-Normal-%0% %0%-0-0-0-0-P-0-ISO8859-1
+	-XYZ-Abc-Medium-R-Normal-[0 0]-0-0-0-0-P-0-ISO8859-1
 .ft P
 AXIS_NAMES:
 	Optical size\0X-height\0
@@ -2668,7 +2680,7 @@ AXIS_TYPES:
 Sample derived instance:
 .ft C
 .SM
-	-XYZ-Abc-Medium-R-Normal-%14% %510%-*-140-100-100-P-*-ISO8859-1
+	-XYZ-Abc-Medium-R-Normal-[14 510]-*-140-100-100-P-*-ISO8859-1
 .NL
 .ft P
 .fi
