@@ -1,5 +1,5 @@
-# $XConsortium: Imakefile,v 1.7 89/07/16 19:25:15 jim Exp $
-     HEADERS = zoid.h bezier.h shape.h
+# $XConsortium: Imakefile,v 1.8 89/07/16 21:06:05 jim Exp $
+     HEADERS = zoid.h bezier.h shape.h plxvideo.h xtestext1.h
 INSTALLFLAGS = -m 0444
 
 all:
