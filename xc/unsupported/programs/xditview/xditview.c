@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xditview.c,v 1.17 89/12/10 17:05:08 rws Exp $";
+static char rcsid[] = "$XConsortium: xditview.c,v 1.18 90/04/30 16:54:54 converse Exp $";
 #endif /* lint */
 
 #include <X11/Xatom.h>
@@ -14,7 +14,8 @@ static char rcsid[] = "$XConsortium: xditview.c,v 1.17 89/12/10 17:05:08 rws Exp
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include <X11/Xaw/Paned.h>
-#include <X11/Xaw/Viewport.h>
+#include <X11/Xaw/Panner.h>
+#include <X11/Xaw/Porthole.h>
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Dialog.h>
@@ -59,7 +60,7 @@ Syntax(call)
 }
 
 static void	NewFile ();
-static Widget	toplevel, paned, viewport, dvi;
+static Widget	toplevel, paned, form, panner, porthole, dvi;
 static Widget	page;
 static Widget	simpleMenu;
 
@@ -90,6 +91,64 @@ XtActionsRec xditview_actions[] = {
     "Cancel",	    CancelAction,
 };
 
+static Atom wm_delete_window;
+
+/*	Function Name: PannerCallback
+ *	Description: called when the panner has moved.
+ *	Arguments: panner - the panner widget.
+ *                 closure - *** NOT USED ***.
+ *                 report_ptr - the panner record.
+ *	Returns: none.
+ */
+
+/* ARGSUSED */
+void 
+PannerCallback(w, closure, report_ptr)
+Widget w;
+XtPointer closure, report_ptr;
+{
+    Arg args[2];
+    XawPannerReport *report = (XawPannerReport *) report_ptr;
+
+    if (!dvi)
+	return;
+    XtSetArg (args[0], XtNx, -report->slider_x);
+    XtSetArg (args[1], XtNy, -report->slider_y);
+
+    XtSetValues(dvi, args, 2);
+}
+
+/*	Function Name: PortholeCallback
+ *	Description: called when the porthole or its child has
+ *                   changed 
+ *	Arguments: porthole - the porthole widget.
+ *                 panner_ptr - the panner widget.
+ *                 report_ptr - the porthole record.
+ *	Returns: none.
+ */
+
+/* ARGSUSED */
+void 
+PortholeCallback(w, panner_ptr, report_ptr)
+Widget w;
+XtPointer panner_ptr, report_ptr;
+{
+    Arg args[10];
+    Cardinal n = 0;
+    XawPannerReport *report = (XawPannerReport *) report_ptr;
+    Widget panner = (Widget) panner_ptr;
+
+    XtSetArg (args[n], XtNsliderX, report->slider_x); n++;
+    XtSetArg (args[n], XtNsliderY, report->slider_y); n++;
+    if (report->changed != (XawPRSliderX | XawPRSliderY)) {
+	XtSetArg (args[n], XtNsliderWidth, report->slider_width); n++;
+	XtSetArg (args[n], XtNsliderHeight, report->slider_height); n++;
+	XtSetArg (args[n], XtNcanvasWidth, report->canvas_width); n++;
+	XtSetArg (args[n], XtNcanvasHeight, report->canvas_height); n++;
+    }
+    XtSetValues (panner, args, n);
+}
+
 #define MenuNextPage		0
 #define MenuPreviousPage	1
 #define MenuSelectPage		2
@@ -118,6 +177,10 @@ void main(argc, argv)
 
     XtAppAddActions(XtWidgetToApplicationContext(toplevel),
 		    xditview_actions, XtNumber (xditview_actions));
+    XtAppAddActions(XtWidgetToApplicationContext(toplevel), 
+		    xditview_actions, XtNumber(xditview_actions));
+    XtOverrideTranslations
+	(toplevel, XtParseTranslationTable ("<Message>WM_PROTOCOLS: Quit()"));
 
     XtSetArg (topLevelArgs[0], XtNiconPixmap,
 	      XCreateBitmapFromData (XtDisplay (toplevel),
@@ -147,14 +210,27 @@ void main(argc, argv)
 
     paned = XtCreateManagedWidget("paned", panedWidgetClass, toplevel,
 				    NULL, (Cardinal) 0);
-    viewport = XtCreateManagedWidget("viewport", viewportWidgetClass, paned,
-				     NULL, (Cardinal) 0);
-    dvi = XtCreateManagedWidget ("dvi", dviWidgetClass, viewport, NULL, 0);
     page = XtCreateManagedWidget ("label", labelWidgetClass, paned,
 					labelArgs, XtNumber (labelArgs));
+    form = XtCreateManagedWidget ("form", formWidgetClass, paned,
+				    NULL, (Cardinal) 0);
+    panner = XtCreateManagedWidget ("panner", pannerWidgetClass,
+				    form, NULL, 0);
+    porthole = XtCreateManagedWidget ("porthole", portholeWidgetClass,
+				      form, NULL, 0);
+    XtAddCallback(porthole, 
+		  XtNreportCallback, PortholeCallback, (XtPointer) panner);
+    XtAddCallback(panner, 
+		  XtNreportCallback, PannerCallback, (XtPointer) porthole);
+
+    dvi = XtCreateManagedWidget ("dvi", dviWidgetClass, porthole, NULL, 0);
     if (file_name)
 	NewFile (file_name);
     XtRealizeWidget (toplevel);
+    wm_delete_window = XInternAtom(XtDisplay(toplevel), "WM_DELETE_WINDOW",
+				   False);
+    (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
+                            &wm_delete_window, 1);
     XtMainLoop();
 }
 
