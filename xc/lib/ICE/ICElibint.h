@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.10 93/09/22 17:57:12 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.11 93/09/23 11:52:28 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -545,6 +545,7 @@ extern void
 _IceErrorBadMinor (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
+    int			/* majorOpcode */,
     int			/* offendingMinor */,
     int			/* severity */
 #endif
@@ -554,6 +555,7 @@ extern void
 _IceErrorBadState (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
+    int			/* majorOpcode */,
     int			/* offendingMinor */,
     int			/* severity */
 #endif
@@ -563,6 +565,7 @@ extern void
 _IceErrorBadLength (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
+    int			/* majorOpcode */,
     int			/* offendingMinor */,
     int			/* severity */
 #endif
@@ -572,6 +575,7 @@ extern void
 _IceErrorBadValue (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
+    int			/* majorOpcode */,
     int			/* offendingMinor */,
     int			/* offset */,
     int			/* length */,
