@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.84 91/02/05 13:56:30 rws Exp $ */
+/* $XConsortium: Create.c,v 1.85 91/03/07 17:46:11 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -193,11 +193,11 @@ static Widget _XtCreate(
     csize = 0;
     if (parent_constraint_class) {
 	csize = parent_constraint_class->constraint_class.constraint_size;
-	if (sizeof(double) != sizeof(unsigned long) &&
-	    sizeof(struct _dt1 {char a; double b;}) ==
-	    sizeof(struct _dt2 {double a, b;})) {
+	if (sizeof(struct {char a; double b;}) !=
+	    (sizeof(struct {char a; unsigned long b;}) -
+	     sizeof(unsigned long) + sizeof(double))) {
 	    if (csize && !(csize & (sizeof(double) - 1)))
-		wsize = (wsize + sizeof(double) - 1) & ~sizeof(double);
+		wsize = (wsize + sizeof(double) - 1) & ~(sizeof(double)-1);
 	}
     }
     widget = (Widget) XtMalloc((unsigned)(wsize + csize));

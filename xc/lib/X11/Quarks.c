@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.32 91/03/07 18:51:30 rws Exp $
+ * $XConsortium: Quarks.c,v 1.33 91/03/08 10:07:54 rws Exp $
  */
 
 /***********************************************************
@@ -119,8 +119,9 @@ char *Xpermalloc(length)
 
     if (neverFreeTableSize && length < NEVERFREETABLESIZE) {
 #ifndef WORD64
-	if ((sizeof(struct _dt1 {char a; double b;}) ==
-	     sizeof(struct _dt2 {double a, b;})) &&
+	if ((sizeof(struct {char a; double b;}) !=
+	     (sizeof(struct {char a; unsigned long b;}) -
+	      sizeof(unsigned long) + sizeof(double))) &&
 	    !(length & (DALIGN-1)) &&
 	    (i = (NEVERFREETABLESIZE - neverFreeTableSize) & (DALIGN-1)))
 	    neverFreeTableSize -= DALIGN - i;
