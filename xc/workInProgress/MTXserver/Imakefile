@@ -11,16 +11,6 @@
          EXTDIR = $(EXTENSIONSRC)/server
     FONTUTILDIR = $(FONTSRC)/mkfontdir
        FONTUTIL = $(FONTUTILDIR)/fontdir.o
-     ALLDDXDIRS = ddx/snf ddx/mi ddx/cfb ddx/mfb \
-                  ddx/dec/lk201 ddx/dec/qvss ddx/dec/qdss ddx/dec/qdss/libtl \
-                  ddx/sun \
-                  ddx/apollo \
-                  ddx/ibm \
-                  ddx/hp/hp ddx/hp/cfb ddx/hp/mfb ddx/hp/topcat \
-                  ddx/ndx ddx/tek \
-                  ddx/macII ddx/plx
-      ALLOSDIRS = os/4.2bsd os/bsdemul
-     ALLSUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
             BSD = os/4.2bsd/libos.a $(XAULIB)
         BSDEMUL = os/bsdemul/libbsdemul.a
            SYSV = os/sysV/libos.a
@@ -538,6 +528,17 @@ HPDDX = dir_ddx_hp_cfb dir_ddx_hp_hp dir_ddx_hp_mfb dir_ddx_hp_topcat
 OTHERDDX = dir_ddx_apollo dir_ddx_ibm dir_ddx_macII dir_ddx_ndx dir_ddx_plx dir_ddx_sun
 
 SUBDIRS = $(OURDIX) $(OURDDX) $(OUROS) $(DECDDX) $(HPDDX) $(OTHERDDX)
+
+     ALLDDXDIRS = ddx/snf ddx/mi ddx/cfb ddx/mfb \
+                  ddx/dec/lk201 ddx/dec/qvss ddx/dec/qdss ddx/dec/qdss/libtl \
+                  ddx/sun \
+                  ddx/apollo \
+                  ddx/ibm \
+                  ddx/hp/hp ddx/hp/cfb ddx/hp/mfb ddx/hp/topcat \
+                  ddx/ndx ddx/tek \
+                  ddx/macII ddx/plx
+      ALLOSDIRS = os/4.2bsd os/bsdemul
+     ALLSUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
 
 
 MakeMakeSubdirs($(SERVERSUBDIRS),RealMakefiles)
