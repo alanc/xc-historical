@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.1 93/12/15 16:06:37 rob Exp $ */
+/* $XConsortium: resource.c,v 1.2 94/01/10 16:54:11 rob Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -226,6 +226,7 @@ extern WindowPtr *WindowTable;
 
 #ifdef LOOKUP_DRAWABLE
 #undef LOOKUP_DRAWABLE
+#endif
 #define LOOKUP_DRAWABLE(drawID, pDraw, pCache)                                \
 	{                                                                     \
 	    if (pCache->lastID == drawID)                                     \
