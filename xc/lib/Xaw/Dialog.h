@@ -1,5 +1,4 @@
-/* $XConsortium: Dialog.h,v 1.23 90/12/01 13:02:45 rws Exp $ */
-
+/* $XConsortium: Dialog.h,v 1.24 90/12/12 15:37:35 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -57,7 +56,6 @@ SOFTWARE.
 */
 
 #define XtCIcon "Icon"
-
 #define XtNicon "icon"
 
 typedef struct _DialogClassRec	*DialogWidgetClass;
@@ -65,9 +63,7 @@ typedef struct _DialogRec	*DialogWidget;
 
 extern WidgetClass dialogWidgetClass;
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 extern void XawDialogAddButton(
 #if NeedFunctionPrototypes
@@ -84,9 +80,7 @@ extern char *XawDialogGetValueString(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _Dialog_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

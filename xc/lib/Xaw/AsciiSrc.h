@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiSrc.h,v 1.10 91/01/21 12:38:52 swick Exp $
+ * $XConsortium: AsciiSrc.h,v 1.11 91/02/20 17:57:18 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -91,9 +91,7 @@ typedef enum {XawAsciiFile, XawAsciiString} XawAsciiType;
  *
  ************************************************************/
 
-#ifdef __cplusplus
-extern "C" {					/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 /*	Function Name: XawAsciiSourceFreeString
  *	Description: Frees the string returned by a get values call
@@ -146,9 +144,7 @@ extern Boolean XawAsciiSourceChanged(
 #endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #endif /* _XawAsciiSrc_h  - Don't add anything after this line. */
 
