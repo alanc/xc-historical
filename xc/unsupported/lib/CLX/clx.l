@@ -78,6 +78,8 @@
 
 (in-package 'xlib :use '(lisp))
 
+(pushnew :xlib *features*)
+
 (export '(
 	  card32
 	  card29
