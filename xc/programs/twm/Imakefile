@@ -5,14 +5,6 @@
 /**/#distribute this one.
 /**/#
 
-#ifndef HasSystem
-#ifdef HPArchitecture
-#define HasSystem NO
-#else
-#define HasSystem YES
-#endif
-#endif
-
          YFLAGS = -d
         DEPLIBS = $(DEPXMULIB) $(DEPEXTENSIONLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(EXTENSIONLIB) $(XLIB)
