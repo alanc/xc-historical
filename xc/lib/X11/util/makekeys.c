@@ -1,4 +1,4 @@
-/* $XConsortium: makekeys.C,v 11.3 90/07/28 10:54:32 rws Exp $ */
+/* $XConsortium: makekeys.C,v 11.4 91/04/08 17:11:16 rws Exp $ */
 /*
 Copyright 1990 by the Massachusetts Institute of Technology
 
@@ -16,11 +16,15 @@ without express or implied warranty.
 /* Constructs hash tables for XStringToKeysym and XKeysymToString. */
 
 #include <X11/X.h>
+#include <X11/Xos.h>
 #include <X11/keysymdef.h>
 #include <stdio.h>
 
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
 extern char *malloc();
-extern char *strcpy();
+#endif
 
 typedef unsigned long Signature;
 
