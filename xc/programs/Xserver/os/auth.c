@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: $
+ * $XConsortium: auth.c,v 1.1 88/12/08 16:39:46 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -53,7 +53,7 @@ static struct protocol   protocols[] = {
  * specified authorization file
  */
 
-static char *authorization_file;
+static char *authorization_file = (char *)NULL;
 
 static int  AuthorizationIndex = 0;
 
@@ -66,6 +66,8 @@ char	*file_name;
     int	    count = 0;
 
     authorization_file = file_name;
+    if (!file_name)
+	return 0;
     f = fopen (authorization_file, "r");
     if (!f)
 	return 0;
@@ -101,7 +103,7 @@ char	*data;
 	    return (*protocols[i].Check) (data_length, data);
     	}
     }
-    return (XID) -1;
+    return (XID) ~0L;
 }
 
 ResetAuthorization ()
@@ -129,7 +131,7 @@ AuthorizationToID (name_length, name, data_length, data)
 	    return (*protocols[i].ToID) (data_length, data);
     	}
     }
-    return (XID) -1;
+    return (XID) ~0L;
 }
 
 AuthorizationFromID (id, name_lenp, namep, data_lenp, datap)
