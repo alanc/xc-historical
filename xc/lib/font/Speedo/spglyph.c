@@ -26,7 +26,6 @@
  *
  */
 
-#include	<X11/X.h>	/* for bit order #defines */
 #include	"spint.h"
 
 #undef	CLIP_BBOX_NOISE
@@ -201,10 +200,22 @@ sp_open_bitmap(x_set_width, y_set_width, xorg, yorg, xsize, ysize)
     fix15       ysize;
 {
     CharInfoPtr ci = &cur_spf->encoding[cfv->char_id - cur_spf->master->first_char_id];
+    int	    off_horz;
+    int	    off_vert;
 
-    cfv->bit_width = ci->metrics.rightSideBearing -
-	ci->metrics.leftSideBearing;
-    cfv->bit_height = ci->metrics.ascent + ci->metrics.descent;
+    off_horz = (fix15) ((xorg + 32768L) / 65536);
+    off_vert = (fix15) ((yorg + 32768L) / 65536);
+    ci->metrics.leftSideBearing = off_horz;
+    ci->metrics.descent = -off_vert;
+    ci->metrics.rightSideBearing = xsize + off_horz;
+    ci->metrics.ascent = ysize + off_vert;
+    if (ci->metrics.ascent == -ci->metrics.descent)
+	ci->metrics.ascent = -ci->metrics.descent + 1;
+    if (ci->metrics.leftSideBearing == ci->metrics.rightSideBearing)
+	ci->metrics.rightSideBearing = ci->metrics.leftSideBearing + 1;
+
+    cfv->bit_width = xsize;
+    cfv->bit_height = ysize;
 
     assert(cfv->bp - cur_spf->bitmaps <= cur_spf->bitmap_size);
     ci->bits = (char *) cfv->bp;
@@ -295,12 +306,14 @@ build_all_sp_bitmaps(pfont, format, fmask)
     cfv->bp = bitmaps;
 
     for (i = 0; i < spmf->num_chars; i++) {
-	cfv->char_index = bics_map[i * 2 + 1];
-	cfv->char_id = bics_map[i * 2];
+	cfv->char_index = spmf->enc[i * 2 + 1];
+	cfv->char_id = spmf->enc[i * 2];
 	if (!cfv->char_id)
 	    continue;
 	if (!sp_make_char(cfv->char_index)) {
+#ifdef DEBUG
 	    SpeedoErr("Can't make char %x\n", cfv->char_index);
+#endif
 	}
     }
 

@@ -585,6 +585,8 @@ open_sp_font(fontname, filename, entry, format, fmask, flags, spfont)
 	spmf = spf->master;
     } else {
 	ret = open_master(filename, &spmf);
+	if (ret != Successful)
+	    return ret;
     }
 
     spf = (SpeedoFontPtr) xalloc(sizeof(SpeedoFontRec));
@@ -594,16 +596,18 @@ open_sp_font(fontname, filename, entry, format, fmask, flags, spfont)
 
     spf->master = spmf;
     spmf->refcount++;
+    sp_reset_master(spmf);
 
     /* set default values */
-    pointsize = GetDefaultPointSize();
     res = (fsResolution *) GetClientResolutions(&num_res);
     if (num_res) {
 	x_res = res->x_resolution;
 	y_res = res->y_resolution;
+	pointsize = res->point_size;
     } else {
-	x_res = 72;
-	y_res = 72;
+	x_res = 75;
+	y_res = 75;
+	pointsize = 12;
     }
 
     /* tear apart name to get sizes */

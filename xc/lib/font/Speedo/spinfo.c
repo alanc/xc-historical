@@ -65,7 +65,15 @@ static fontProp extraProps[] = {
     "COPYRIGHT", 0, atom,
 };
 
-#define NPROPS ((sizeof(fontNamePropTable) / sizeof(fontProp)) - 1)
+/* this is a bit kludgy */
+#define	FONTPROP	0
+#define	COPYRIGHTPROP	1
+
+#define NNAMEPROPS (sizeof(fontNamePropTable) / sizeof(fontProp))
+#define NEXTRAPROPS (sizeof(extraProps) / sizeof(fontProp))
+
+#define	NPROPS	(NNAMEPROPS + NEXTRAPROPS)
+
 
 void
 make_sp_standard_props()
@@ -75,6 +83,9 @@ make_sp_standard_props()
 
     i = sizeof(fontNamePropTable) / sizeof(fontProp);
     for (t = fontNamePropTable; i; i--, t++)
+	t->atom = MakeAtom(t->name, (unsigned) strlen(t->name), TRUE);
+    i = sizeof(extraProps) / sizeof(fontProp);
+    for (t = extraProps; i; i--, t++)
 	t->atom = MakeAtom(t->name, (unsigned) strlen(t->name), TRUE);
 }
 
@@ -158,7 +169,7 @@ compute_sp_bounds(spf, pinfo, flags)
     maxchar.attributes = 0;
 
     for (i = 0; i < spmf->num_chars; i++) {
-	index = bics_map[i * 2 + 1];
+	index = spmf->enc[i * 2 + 1];
 	width = sp_get_char_width(index);
 
 	/* convert to pixel coords */
@@ -190,7 +201,7 @@ compute_sp_bounds(spf, pinfo, flags)
 	total_width += pix_width;
 
 	if (flags & SaveMetrics) {
-	    id = bics_map[i * 2] - firstChar;
+	    id = spmf->enc[i * 2] - firstChar;
 	    assert(id <= spmf->max_id - firstChar);
 	    spf->encoding[id].metrics = tmpchar;
 	}
@@ -231,7 +242,7 @@ compute_sp_props(spf, fontname, pinfo)
     bzero(pinfo->isStringProp, (sizeof(char) * nprops));
 
     ptr2 = fontname;
-    for (i = NPROPS, pp = pinfo->props, fpt = fontNamePropTable,
+    for (i = NNAMEPROPS, pp = pinfo->props, fpt = fontNamePropTable,
 	    is_str = pinfo->isStringProp;
 	    i;
 	    i--, pp++, fpt++, is_str++) {
@@ -267,6 +278,21 @@ compute_sp_props(spf, fontname, pinfo)
 	    break;
 	}
     }
+
+    for (i = 0, fpt = extraProps; i < NEXTRAPROPS; i++, is_str++, pp++, fpt++) {
+	pp->name = fpt->atom;
+	switch (i) {
+	case FONTPROP:
+	    *is_str = TRUE;
+	    pp->value = MakeAtom(fontname, strlen(fontname), TRUE);
+	    break;
+	case COPYRIGHTPROP:
+	    *is_str = TRUE;
+	    pp->value = MakeAtom(spf->master->copyright,
+				 strlen(spf->master->copyright), TRUE);
+	    break;
+	}
+    }
 }
 
 #ifdef NOTYET
@@ -290,6 +316,7 @@ get_font_info(pinfo, fontname, filename, zname, spfont)
 	return err;
 
     cur_spf = spf;
+    sp_reset_master (spf->master);
 
     make_sp_header(spf, pinfo);
 
