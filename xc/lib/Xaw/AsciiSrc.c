@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.37 90/05/08 15:23:37 converse Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.38 90/06/07 12:09:36 bugs Exp $";
 #endif 
 
 /*
@@ -273,8 +273,6 @@ XawTextBlock *text;
 
   src->ascii_src.changes = TRUE; /* We have changed the buffer. */
 
-  XtCallCallbacks(w, XtNcallback, NULL);
-
 /* 
  * Remove Old Stuff. 
  */
@@ -367,6 +365,9 @@ XawTextBlock *text;
 
   if (src->ascii_src.use_string_in_place)
     start_piece->text[start_piece->used] = '\0';
+
+  XtCallCallbacks(w, XtNcallback, NULL); /* Call callbacks, we have changed 
+					    the buffer. */
 
   return(XawEditDone);
 }
