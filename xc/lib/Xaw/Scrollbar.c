@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.21 88/01/12 12:38:26 swick Locked $";
+static char rcsid[] = "$Header: Scroll.c,v 1.22 88/01/28 08:04:07 swick Locked $";
 #endif lint
 
 /*
@@ -28,50 +28,45 @@ static char rcsid[] = "$Header: Scroll.c,v 1.21 88/01/12 12:38:26 swick Locked $
 /* created by weissman, Mon Jul  7 13:20:03 1986 */
 /* converted by swick, Thu Aug 27 1987 */
 
-#include <X/Xlib.h>
+#include "IntrinsicP.h"
 #include <X/Xresource.h>
-#include <X/Intrinsic.h>
-#include <X/Scroll.h>
 #include <X/Atoms.h>
 #include "ScrollP.h"
 
 /* Private definitions. */
 
-static char *defaultTranslationTable[] = {
-    "<Btn1Down>:   StartScroll(Forward)",
-    "<Btn2Down>:   StartScroll(Continuous) MoveThumb() NotifyThumb()",
-    "<Btn3Down>:   StartScroll(Backward)",
-    "<Btn2Motion>: MoveThumb() NotifyThumb()",
-    "Any<BtnUp>:   NotifyScroll(Proportional) EndScroll()", /* ||| 'Any' should default */
+static char defaultTranslations[] =
+    "<Btn1Down>:   StartScroll(Forward) \n\
+     <Btn2Down>:   StartScroll(Continuous) MoveThumb() NotifyThumb() \n\
+     <Btn3Down>:   StartScroll(Backward) \n\
+     <Btn2Motion>: MoveThumb() NotifyThumb() \n\
+     <BtnUp>:      NotifyScroll(Proportional) EndScroll()";
+
 #ifdef bogusScrollKeys
     /* examples */
-    "<KeyPress>f:  StartScroll(Forward) NotifyScroll(FullLength) EndScroll()",
-    "<KeyPress>b:  StartScroll(Backward) NotifyScroll(FullLength) EndScroll()",
+    "<KeyPress>f:  StartScroll(Forward) NotifyScroll(FullLength) EndScroll()"
+    "<KeyPress>b:  StartScroll(Backward) NotifyScroll(FullLength) EndScroll()"
 #endif
-    NULL
-};
 
-/* grodyness needed because Xrm wants pointer to thing, not thing... */
-static caddr_t defaultTranslations = (caddr_t)defaultTranslationTable;
 static float floatZero = 0.0;
-static int DEFAULTVALUE = 99999;
+static int DEFAULTVALUE = ~0;
 
 #define Offset(field) XtOffset(ScrollbarWidget, field)
 
 static XtResource resources[] = {
-  {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
-	     Offset(core.width), XrmRInt, (caddr_t)&DEFAULTVALUE},
-  {XtNheight, XtCHeight, XrmRInt, sizeof(int),
-	     Offset(core.height), XrmRInt, (caddr_t)&DEFAULTVALUE},
-  {XtNlength, XtCLength, XrmRInt, sizeof(int),
+  {XtNwidth, XtCWidth, XtRInt, sizeof(int),
+	     Offset(core.width), XtRInt, (caddr_t)&DEFAULTVALUE},
+  {XtNheight, XtCHeight, XtRInt, sizeof(int),
+	     Offset(core.height), XtRInt, (caddr_t)&DEFAULTVALUE},
+  {XtNlength, XtCLength, XtRInt, sizeof(int),
 	     Offset(scrollbar.length), XtRString, "1"},
-  {XtNthickness, XtCThickness, XrmRInt, sizeof(int),
+  {XtNthickness, XtCThickness, XtRInt, sizeof(int),
 	     Offset(scrollbar.thickness), XtRString, "14"},
   {XtNorientation, XtCOrientation, XtROrientation, sizeof(XtOrientation),
 	     Offset(scrollbar.orientation), XtRString, "vertical"},
-  {XtNscrollProc, XtCCallback, XtRPointer, sizeof(caddr_t),
+  {XtNscrollProc, XtCCallback, XtRCallback, sizeof(caddr_t),
 	     Offset(scrollbar.scrollProc), XtRPointer, NULL},
-  {XtNthumbProc, XtCCallback, XtRPointer, sizeof(caddr_t),
+  {XtNthumbProc, XtCCallback, XtRCallback, sizeof(caddr_t),
 	     Offset(scrollbar.thumbProc), XtRPointer, NULL},
   {XtNthumb, XtCThumb, XtRPixmap, sizeof(Pixmap),
 	     Offset(scrollbar.thumb), XtRPixmap, NULL},
@@ -93,9 +88,6 @@ static XtResource resources[] = {
 	     Offset(scrollbar.leftCursor), XtRString, "sb_left_arrow"},
   {XtNscrollRCursor, XtCScrollRCursor, XtRCursor, sizeof(Cursor),
 	     Offset(scrollbar.rightCursor), XtRString, "sb_right_arrow"},
-  {XtNtranslations, XtCTranslations, XtRTranslationTable,
-	     sizeof(XtTranslations), Offset(core.translations),
-	     XtRTranslationTable, (caddr_t)&defaultTranslations},
 };
 
 static void ClassInitialize();
@@ -127,8 +119,10 @@ static ScrollbarClassRec scrollbarClassRec = {
     /* class_name       */      "Scroll",
     /* size             */      sizeof(ScrollbarRec),
     /* class_initialize	*/	ClassInitialize,
+    /* class_part_init  */	NULL,
     /* class_inited	*/	FALSE,
     /* initialize       */      Initialize,
+    /* initialize_hook  */	NULL,
     /* realize          */      Realize,
     /* actions          */      actions,
     /* num_actions	*/	XtNumber(actions),
@@ -137,14 +131,19 @@ static ScrollbarClassRec scrollbarClassRec = {
     /* xrm_class        */      NULLQUARK,
     /* compress_motion	*/	TRUE,
     /* compress_exposure*/	TRUE,
+    /* compress_enterleave*/	TRUE,
     /* visible_interest */      FALSE,
     /* destroy          */      NULL,
     /* resize           */      Resize,
     /* expose           */      Redisplay,
     /* set_values       */      SetValues,
+    /* set_values_hook  */	NULL,
+    /* set_values_almost */	XtInheritSetValuesAlmost,
+    /* get_values_hook  */	NULL,
     /* accept_focus     */      NULL,
+    /* version          */	XtVersion,
     /* callback_private */      NULL,
-    /* reserved_private */      NULL,
+    /* tm_table         */      defaultTranslations,
 };
 
 WidgetClass scrollbarWidgetClass = (WidgetClass)&scrollbarClassRec;
@@ -166,11 +165,12 @@ static	XrmQuark  XtQEvertical;
 #define	done(address, type) \
 	{ (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
 
-extern void _XLowerCase();
+extern void LowerCase();
 
 /* ARGSUSED */
-static void CvtStringToOrientation(screen, fromVal, toVal)
-    Screen	*screen;
+static void CvtStringToOrientation(args, num_args, fromVal, toVal)
+    XrmValuePtr *args;		/* unused */
+    Cardinal	*num_args;	/* unused */
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
 {
@@ -179,7 +179,7 @@ static void CvtStringToOrientation(screen, fromVal, toVal)
     char	lowerName[1000];
 
 /* ||| where to put LowerCase */
-    _XLowerCase((char *) fromVal->addr, lowerName);
+    LowerCase((char *) fromVal->addr, lowerName);
     q = XrmAtomToQuark(lowerName);
     if (q == XtQEhorizontal) {
     	orient = XtorientHorizontal;
@@ -198,7 +198,8 @@ static void ClassInitialize()
 {
     XtQEhorizontal = XrmAtomToQuark(XtEhorizontal);
     XtQEvertical   = XrmAtomToQuark(XtEvertical);
-    XrmRegisterTypeConverter(XrmRString, XtROrientation, CvtStringToOrientation);
+    XtAddConverter( XtRString, XtROrientation, CvtStringToOrientation,
+		    NULL, (Cardinal)0 );
 }
 
 
@@ -311,11 +312,9 @@ static void SetDimensions(w)
 
 
 /* ARGSUSED */
-static void Initialize( request, new, args, num_args )
+static void Initialize( request, new )
    Widget request;		/* what the client asked for */
    Widget new;			/* what we're going to give him */
-   ArgList args;
-   Cardinal *num_args;
 {
     ScrollbarWidget w = (ScrollbarWidget) new;
     XGCValues gcValues;
@@ -366,30 +365,15 @@ static void Realize( gw, valueMask, attributes )
 
 
 /* ARGSUSED */
-static Boolean SetValues( current, request, desired, last )
+static Boolean SetValues( current, request, desired )
    Widget current,		/* what I am */
           request,		/* what he wants me to be */
           desired;		/* what I will become */
-   Boolean last;		/* TRUE if not called by subclass */
 {
     ScrollbarWidget w = (ScrollbarWidget) current;
     ScrollbarWidget rw = (ScrollbarWidget) request;
     ScrollbarWidget dw = (ScrollbarWidget) desired;
-    Boolean redraw;
-
-    redraw = FALSE;
-
-    if (XtSetValuesGeometryRequest( current, desired, (XtWidgetGeometry*)NULL )
-		== XtGeometryYes)
-        /* no need to Resize() here, as ForgetGravity and Redisplay()
-	 * will take care of what needs to be done. */
-        redraw = TRUE;
-
-    /* Core make take care of the following... we'll have to see */
-    if (w->core.border_pixel != dw->core.border_pixel) {
-	if (w->core.border_width != 0)
-	    XSetWindowBorder(XtDisplay(w), XtWindow(w), w->core.border_pixel);
-    }
+    Boolean redraw = FALSE;
 
     if (w->scrollbar.foreground != rw->scrollbar.foreground ||
 	w->core.background_pixel != rw->core.background_pixel)
@@ -420,9 +404,10 @@ static void Resize( gw )
 
 
 /* ARGSUSED */
-static void Redisplay( gw, event )
+static void Redisplay( gw, event, region )
    Widget gw;
-   XEvent *event;		/* NULL if called from Resize() */
+   XEvent *event;		/* unused, NULL if called from Resize() */
+   Region region;		/* unused, NULL if called from Resize() */
 {
     ScrollbarWidget w = (ScrollbarWidget) gw;
 
@@ -436,15 +421,15 @@ static void StartScroll( gw, event, params, num_params )
   Widget gw;
   XEvent *event;
   String *params;		/* direction: Back|Forward|Smooth */
-  Cardinal num_params;		/* we only support 1 */
+  Cardinal *num_params;		/* we only support 1 */
 {
     ScrollbarWidget w = (ScrollbarWidget) gw;
     Cursor cursor;
     char direction;
 
     if (w->scrollbar.direction != 0) return; /* if we're already scrolling */
-    if (num_params > 0) direction = *params[0];
-    else		direction = 'C';
+    if (*num_params > 0) direction = *params[0];
+    else		 direction = 'C';
 
     w->scrollbar.direction = direction;
 
@@ -568,7 +553,7 @@ static void NotifyScroll( gw, event, params, num_params   )
    Widget gw;
    XEvent *event;
    String *params;		/* style: Proportional|FullLength */
-   Cardinal num_params;		/* we only support 1 */
+   Cardinal *num_params;	/* we only support 1 */
 {
     ScrollbarWidget w = (ScrollbarWidget) gw;
     int call_data;
@@ -579,8 +564,8 @@ static void NotifyScroll( gw, event, params, num_params   )
 
     if (LookAhead(gw, event)) return;
 
-    if (num_params > 0) style = *params[0];
-    else		style = 'P';
+    if (*num_params > 0) style = *params[0];
+    else		 style = 'P';
 
     switch( style ) {
         case 'P':    /* Proportional */
@@ -612,7 +597,7 @@ static void EndScroll(gw, event, params, num_params )
    Widget gw;
    XEvent *event;		/* unused */
    String *params;		/* unused */
-   Cardinal num_params;		/* unused */
+   Cardinal *num_params;	/* unused */
 {
     ScrollbarWidget w = (ScrollbarWidget) gw;
 
@@ -628,7 +613,7 @@ static void MoveThumb( gw, event, params, num_params )
    Widget gw;
    XEvent *event;
    String *params;		/* unused */
-   Cardinal num_params;		/* unused */
+   Cardinal *num_params;	/* unused */
 {
     ScrollbarWidget w = (ScrollbarWidget) gw;
     Position x, y;
@@ -649,7 +634,7 @@ static void NotifyThumb( gw, event, params, num_params )
    Widget gw;
    XEvent *event;
    String *params;		/* unused */
-   Cardinal num_params;		/* unused */
+   Cardinal *num_params;	/* unused */
 {
     register ScrollbarWidget w = (ScrollbarWidget) gw;
 
