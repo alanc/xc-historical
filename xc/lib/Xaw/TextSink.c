@@ -1,4 +1,4 @@
-/* $XConsortium: TextSink.c,v 1.13 91/01/06 16:08:41 rws Exp $ */
+/* $XConsortium: TextSink.c,v 1.14 91/02/17 16:25:32 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -198,8 +198,8 @@ Destroy(w)
 {
   TextSinkObject sink = (TextSinkObject) w;
 
-  if (sink->text_sink.tabs != NULL)
-    XtFree((char *) sink->text_sink.tabs);
+  XtFree((char *) sink->text_sink.tabs);
+  XtFree((char *) sink->text_sink.char_tabs);
 }
 
 /*	Function Name: SetValues
