@@ -81,7 +81,6 @@ SRCS = \
 	StrToBS.c \
 	StrToBmap.c \
 	StrToCurs.c \
-	StrToFont.c \
 	StrToGrav.c \
 	StrToJust.c \
 	StrToLong.c \
@@ -126,7 +125,6 @@ OBJS = \
 	StrToBS.o \
 	StrToBmap.o \
 	StrToCurs.o \
-	StrToFont.o \
 	StrToGrav.o \
 	StrToJust.o \
 	StrToLong.o \
