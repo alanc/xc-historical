@@ -1,4 +1,4 @@
-/* $XConsortium: xkbout.c,v 1.1 94/04/02 17:09:00 erik Exp $ */
+/* $XConsortium: xkbout.c,v 1.2 94/04/04 15:28:43 rws Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -741,7 +741,7 @@ XkbDescPtr	xkb;
 		    for (s=0;s<XkbKeyGroupWidth(xkb,i);s++) {
 			if (s!=0)
 			    fprintf(file,", ");
-			WriteXKBAction(file,result,acts++);
+			WriteXKBAction(file,result,(XkbAnyAction *)acts++);
 		    }
 		    fprintf(file," ]");
 		}

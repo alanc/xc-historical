@@ -1,4 +1,4 @@
-/* $XConsortium: symbols.c,v 1.1 94/04/02 17:07:36 erik Exp $ */
+/* $XConsortium: symbols.c,v 1.2 94/04/04 15:28:31 rws Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -218,14 +218,14 @@ ModMapEntry *mm,*next;
     info->name= NullStringToken;
     info->fileID= 0;
     for (i=0;i<info->nKeys;i++) {
-	FreeKeyInfo(&info->keys[i],xkb);
+	FreeKeyInfo(&info->keys[i]);
     }
     for (mm=info->modMap;mm!=NULL;mm=next) {
 	next= mm->next;
 	uFree(mm);
     }
     info->nKeys= 0;
-    FreeKeyInfo(&info->dflt,xkb);
+    FreeKeyInfo(&info->dflt);
     ClearVModInfo(&info->vmods,xkb);
     return;
 }
@@ -517,7 +517,7 @@ XkbFile	*	rtrn;
 	SymbolsInfo 	myInfo;
 
 	if (newMerge==MergeReplace) {
-	    ClearSymbolsInfo(info);
+	    ClearSymbolsInfo(info,xkb);
 	    newMerge= MergeAugment;
 	}
 	InitSymbolsInfo(&myInfo,xkb);

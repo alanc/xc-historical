@@ -1,4 +1,4 @@
-/* $XConsortium: keytypes.c,v 1.1 94/04/02 17:07:09 erik Exp $ */
+/* $XConsortium: keytypes.c,v 1.2 94/04/04 15:28:24 rws Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -228,7 +228,7 @@ register int i;
 	}
 	info->nTypes--;
     }
-    return;
+    return True;
 }
 
 static Bool
@@ -345,7 +345,7 @@ XkbFile	*	rtrn;
 	(*hndlr)(rtrn,xkb,MergeOverride,&myInfo);
 	
 	if (newMerge==MergeReplace) {
-	    ClearKeyTypesInfo(info);
+	    ClearKeyTypesInfo(info,xkb);
 	    newMerge= MergeAugment;
 	}
 	info->errorCount+= myInfo.errorCount;

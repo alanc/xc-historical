@@ -1,4 +1,4 @@
-/* $XConsortium: expr.c,v 1.1 94/04/02 17:05:44 erik Exp $ */
+/* $XConsortium: expr.c,v 1.2 94/04/04 15:28:15 rws Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -156,7 +156,7 @@ ExprResolveLhs(expr,elem_rtrn,field_rtrn,index_rtrn)
 
 Bool
 SimpleLookup(priv,elem,field,type,val_rtrn)
-    XPointer *		priv;
+    XPointer 		priv;
     StringToken		elem;
     StringToken		field;
     unsigned		type;
@@ -181,7 +181,7 @@ register char *	str;
 
 Bool
 TableLookup(priv,elem,field,type,val_rtrn)
-    XPointer *		priv;
+    XPointer 		priv;
     StringToken		elem;
     StringToken		field;
     unsigned		type;
@@ -204,7 +204,7 @@ register char *	str;
     }
     if (tbl==NULL)	/* didn't find a matching element */
 	return False;
-    priv= (XPointer *)tbl->entries;
+    priv= (XPointer)tbl->entries;
     return SimpleLookup(priv,NullStringToken,field,type,val_rtrn);
 }
 
@@ -224,18 +224,18 @@ static LookupEntry modIndexNames[] = {
 
 int
 LookupModIndex(priv,elem,field,type,val_rtrn)
-    XPointer *		priv;
+    XPointer 		priv;
     StringToken		elem;
     StringToken		field;
     unsigned		type;
     ExprResult *	val_rtrn;
 {
-    return SimpleLookup((XPointer *)modIndexNames,elem,field,type,val_rtrn);
+    return SimpleLookup((XPointer)modIndexNames,elem,field,type,val_rtrn);
 }
 
 int
 LookupModMask(priv,elem,field,type,val_rtrn)
-    XPointer *		priv;
+    XPointer 		priv;
     StringToken		elem;
     StringToken		field;
     unsigned		type;
@@ -343,7 +343,7 @@ LookupPriv	priv;
     priv.priv= NULL;
     priv.chain= lookup;
     priv.chainPriv= lookupPriv;
-    return ExprResolveMask(expr,val_rtrn,LookupModMask,&priv);
+    return ExprResolveMask(expr,val_rtrn,LookupModMask,(XPointer)&priv);
 }
 
 int
@@ -628,7 +628,7 @@ ExprResolveEnum(expr,val_rtrn,values)
 							exprOpText(expr->op));
 	return False;
     }
-    if (!SimpleLookup((XPointer *)values,NullStringToken,expr->value.str,
+    if (!SimpleLookup((XPointer)values,NullStringToken,expr->value.str,
 							TypeInt,val_rtrn)) {
 	int	nOut=0;
 	uError("Illegal identifier %s (expected one of: ",

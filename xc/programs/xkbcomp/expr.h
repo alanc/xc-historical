@@ -50,7 +50,7 @@ extern	int ExprResolveLhs(
 );
 
 typedef	struct _LookupPriv {
-    XPointer *		priv;
+    XPointer 		priv;
     IdentLookupFunc	chain;
     XPointer 		chainPriv;
 } LookupPriv;
@@ -68,7 +68,7 @@ typedef struct _LookupTable {
 
 extern int SimpleLookup(
 #if NeedFunctionProtoytypes
-    XPointer *		/* priv */,
+    XPointer 		/* priv */,
     StringToken		/* elem */,
     StringToken		/* field */,
     unsigned		/* type */,
@@ -78,7 +78,7 @@ extern int SimpleLookup(
 
 extern int TableLookup(
 #if NeedFunctionProtoytypes
-    XPointer *		/* priv */,
+    XPointer 		/* priv */,
     StringToken		/* elem */,
     StringToken		/* field */,
     unsigned		/* type */,
@@ -88,7 +88,7 @@ extern int TableLookup(
 
 extern int LookupModIndex(
 #if NeedFunctionProtoytypes
-    XPointer *		/* priv */,
+    XPointer 		/* priv */,
     StringToken		/* elem */,
     StringToken		/* field */,
     unsigned		/* type */,
@@ -98,7 +98,7 @@ extern int LookupModIndex(
 
 extern int LookupModMask(
 #if NeedFunctionProtoytypes
-    XPointer *		/* priv */,
+    XPointer 		/* priv */,
     StringToken		/* elem */,
     StringToken		/* field */,
     unsigned		/* type */,
