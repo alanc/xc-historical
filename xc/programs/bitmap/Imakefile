@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.16 91/07/17 00:51:15 gildea Exp $
 INSTALLFLAGS = $(INSTINCFLAGS)
 BUTTONPICTURES = \
 	Dashes \
@@ -18,7 +18,6 @@ BUTTONPICTURES = \
         DEFINES = $(IEEE_DEFS) $(SIGNAL_DEFINES)
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
-  SYS_LIBRARIES = -lm
           SRCS1 = BitEdit.c CutPaste.c Graphics.c ReqMach.c Bitmap.c \
                   Dialog.c Handlers.c 
           OBJS1 = BitEdit.o CutPaste.o Graphics.o ReqMach.o Bitmap.o \
