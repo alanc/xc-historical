@@ -1,5 +1,5 @@
 /*
-* $XConsortium: PassivGraI.h,v 1.1 89/12/14 14:58:01 swick Exp $
+* $XConsortium: PassivGraI.h,v 1.2 89/12/15 11:32:05 swick Exp $
 */
 
 /********************************************************
@@ -79,6 +79,7 @@ typedef enum {
 typedef struct {
     Widget		focusKid;
     XtServerGrabPtr	keyList, ptrList;
+    Widget		queryEventDescendant;
     Boolean		map_handler_added:1;
     Boolean		realize_handler_added:1;
     Boolean		active_handler_added:1;

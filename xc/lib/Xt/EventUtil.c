@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: EventUtil.c,v 1.1 89/12/14 14:57:29 swick Exp $";
+static char Xrcsid[] = "$XConsortium: EventUtil.c,v 1.2 89/12/15 11:00:27 swick Exp $";
 #endif
 
 /********************************************************
@@ -114,6 +114,7 @@ XtPerWidgetInput _XtGetPerWidgetInput(widget, create)
 	    XtMalloc((unsigned) sizeof(XtPerWidgetInputRec));
 	  
 	  pwi->focusKid = NULL;
+	  pwi->queryEventDescendant = NULL;
 	  pwi->focalPoint = XtUnrelated;
 	  pwi->keyList =
 	    pwi->ptrList = NULL;
