@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.51 91/04/02 12:02:57 rws Exp $
+ * $XConsortium: session.c,v 1.52 91/07/15 22:01:00 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -158,8 +158,6 @@ struct display	*d;
 	    XHostAddress	addr;
 	    char		netname[MAXNETNAMELEN+1];
 	    char		domainname[MAXNETNAMELEN+1];
-	    char		secretkey[HEXKEYBYTES+1];
-	    int			ret;
     
 	    getdomainname(domainname, sizeof domainname);
 	    user2netname (netname, verify.uid, domainname);
