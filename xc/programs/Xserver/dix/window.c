@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.196 88/02/03 10:07:46 rws Exp $ */
+/* $Header: window.c,v 1.197 88/02/04 11:23:59 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -263,9 +263,10 @@ SetWindowToDefaults(pWin, pScreen)
     pWin->backingStore = NotUseful;
     pWin->backStorage = (BackingStorePtr) NULL;
 
-    pWin->mapped = 0;           /* off */
-    pWin->realized = 0;         /* off */
-    pWin->viewable = 0;
+    pWin->mapped = FALSE;           /* off */
+    pWin->realized = FALSE;     /* off */
+    pWin->viewable = FALSE;
+    pWin->visibility = VisibilityNotViewable;
     pWin->overrideRedirect = FALSE;
     pWin->saveUnder = FALSE;
 
@@ -618,7 +619,6 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
             pParent->borderTile->refcnt++;
     }
     pWin->borderPixel = pParent->borderPixel;
-    pWin->visibility = VisibilityNotViewable;
 		
     pWin->clientWinSize.x = x + (int)bw;
     pWin->clientWinSize.y = y + (int)bw;
@@ -2430,7 +2430,6 @@ MapWindow(pWin, SendExposures, BitsAvailable, SendNotification, client)
     register ScreenPtr pScreen;
 
     WindowPtr pParent;
-    Bool anyMarked;
 
     if (pWin->mapped) 
         return(Success);
@@ -2452,7 +2451,7 @@ MapWindow(pWin, SendExposures, BitsAvailable, SendNotification, client)
     	        return(Success);            
 	}
 
-	pWin->mapped = 1;          
+	pWin->mapped = TRUE;          
         if (SendNotification)
 	{
 	    event.u.u.type = MapNotify;
@@ -2471,9 +2470,10 @@ MapWindow(pWin, SendExposures, BitsAvailable, SendNotification, client)
         if (pWin->firstChild)
             RealizeChildren(pWin->firstChild, client);    
         box = (* pScreen->RegionExtents)(pWin->borderSize);
-        anyMarked = MarkSiblingsBelowMe(pWin, box);
+        (void)MarkSiblingsBelowMe(pWin, box);
 
-	/* kludge; remove when miregion works! */
+#ifdef notdef
+	/* kludge to force full region reset */
         if (!pParent->parent && 
 	    (box->x1 == pParent->winSize->extents.x1) &&
 	    (box->y1 == pParent->winSize->extents.y1) &&
@@ -2483,9 +2483,10 @@ MapWindow(pWin, SendExposures, BitsAvailable, SendNotification, client)
 	  (*pWin->drawable.pScreen->RegionCopy)(pParent->clipList,
 						pParent->winSize);
 	}
-	/* end of kludge */
+#endif
 
-	(* pScreen->ValidateTree)(pParent, pWin, TRUE, anyMarked);
+	/* anyMarked must be TRUE to force visibility events on all windows */
+	(* pScreen->ValidateTree)(pParent, pWin, TRUE, TRUE);
         if (SendExposures) 
         {
 	    if (!BitsAvailable)
@@ -2509,7 +2510,7 @@ MapWindow(pWin, SendExposures, BitsAvailable, SendNotification, client)
     }
     else
     {
-	pWin->mapped = 1;
+	pWin->mapped = TRUE;
         pWin->realized = TRUE;     /* for roots */
         pWin->viewable = pWin->class == InputOutput;
     	/* We SHOULD check for an error value here XXX */
@@ -2561,6 +2562,7 @@ UnrealizeChildren(pWin)
     while (pSib)
     {
 	pSib->realized = pSib->viewable = FALSE;
+	pSib->visibility = VisibilityNotViewable;
         (* Unrealize)(pSib);
 	        /* to force exposures later */
         (* RegionEmpty)(pSib->clipList);    
@@ -2606,8 +2608,9 @@ UnmapWindow(pWin, SendExposures, SendNotification, fromConfigure)
         box = (* pWin->drawable.pScreen->RegionExtents)(pWin->borderSize);
         anyMarked = MarkSiblingsBelowMe(pWin, box);
     }
-    pWin->mapped = 0;
+    pWin->mapped = FALSE;
     pWin->realized = pWin->viewable = FALSE;
+    pWin->visibility = VisibilityNotViewable;
     if (wasMapped)
     {
     	/* We SHOULD check for an error value here XXX */
@@ -2658,10 +2661,11 @@ UnmapSubwindows(pWin, sendExposures)
 	    event.u.unmapNotify.window = pChild->wid;
 	    event.u.unmapNotify.fromConfigure = xFalse;
 	    DeliverEvents(pChild, &event, 1, NullWindow);
-	    pChild->mapped = 0;
+	    pChild->mapped = FALSE;
             if (wasMapped)
 	    {
     	        pChild->realized = pChild->viewable = FALSE;
+		pChild->visibility = VisibilityNotViewable;
     		/* We SHOULD check for an error value here XXX */
                 (* UnrealizeWindow)(pChild);
                 DeleteWindowFromAnyEvents(pChild, FALSE);
