@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.109 89/08/18 15:12:28 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.110 89/08/24 17:37:18 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -92,10 +92,11 @@ static XtResource resources[] = {
      offset(simple.cursor), XtRString, "xterm"},
   {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
      offset(core.height), XtRDimension, (caddr_t)&defHeight},
-  {XtNdisplayPosition, XtCTextPosition, XtRInt,
-     sizeof(XawTextPosition), offset(text.lt.top), XtRImmediate, (caddr_t)0},
-  {XtNinsertPosition, XtCTextPosition, XtRInt,
-     sizeof(XawTextPosition), offset(text.insertPos), XtRImmediate,(caddr_t)0},
+
+  {XtNdisplayPosition, XtCTextPosition, XtRInt, sizeof(XawTextPosition), 
+     offset(text.lt.top), XtRImmediate, (caddr_t)0},
+  {XtNinsertPosition, XtCTextPosition, XtRInt, sizeof(XawTextPosition),
+     offset(text.insertPos), XtRImmediate,(caddr_t)0},
   {XtNleftMargin, XtCMargin, XtRPosition, sizeof (Position),
      offset(text.r_margin.left), XtRImmediate, (caddr_t)2},
   {XtNrightMargin, XtCMargin, XtRPosition, sizeof (Position),
@@ -479,7 +480,8 @@ Widget request, new;
 /*******************************
  * For Compatability.          */
 
-  XawTextChangeOptions((Widget) ctx, ctx->text.options);
+  if (ctx->text.options != 0)
+    XawTextChangeOptions((Widget) ctx, ctx->text.options);
 /*******************************/
 
   if (ctx->core.height == DEFAULT_TEXT_HEIGHT) {
@@ -2268,7 +2270,7 @@ Widget w;
 
   if (ctx->text.file_insert != NULL)
     XtDestroyWidget(ctx->text.file_insert);
-  
+ 
   DestroyHScrollBar(ctx);
   DestroyVScrollBar(ctx);
 
@@ -2307,32 +2309,59 @@ Widget current, request, new;
   TextWidget newtw = (TextWidget) new;
   Boolean    redisplay = FALSE;
   Boolean    display_caret = newtw->text.display_caret;
+
+/*******************************
+ * For Compatability.          */
+
+  if (newtw->text.options != oldtw->text.options)
+    XawTextChangeOptions((Widget) newtw, newtw->text.options);
+/*******************************/
   
   newtw->text.display_caret = oldtw->text.display_caret;
   _XawTextPrepareToUpdate(newtw);
   newtw->text.display_caret = display_caret;
-  
-  if (oldtw->text.scroll_vert != newtw->text.scroll_vert) {
+
+  if (oldtw->text.r_margin.left != newtw->text.r_margin.left) {
     newtw->text.margin.left = newtw->text.r_margin.left;
-    if (newtw->text.scroll_vert == XawtextScrollNever) {
-      XtDestroyWidget(oldtw->text.vbar);
-      newtw->text.vbar = NULL;
-    }
-    else
-      CreateVScrollBar(newtw);
-  }
-  else if (oldtw->text.r_margin.left != newtw->text.r_margin.left) {
-    newtw->text.margin.left = newtw->text.r_margin.left;
-    if (newtw->text.scroll_vert != XawtextScrollNever) 
+    if (newtw->text.vbar != NULL)
       newtw->text.margin.left += newtw->text.vbar->core.width +
 	                         newtw->text.vbar->core.border_width;
+    redisplay = TRUE;
   }
   
-  if (oldtw->text.source != newtw->text.source ||
-      oldtw->text.sink != newtw->text.sink ||
-      oldtw->text.lt.top != newtw->text.lt.top ||
-      oldtw->text.margin.left != newtw->text.margin.left  ||
-      oldtw->text.wrap != newtw->text.wrap) {
+  if (oldtw->text.scroll_vert != newtw->text.scroll_vert) {
+    if (newtw->text.scroll_vert == XawtextScrollNever) 
+      DestroyVScrollBar(newtw);
+    else if (newtw->text.scroll_vert == XawtextScrollAlways)
+      CreateVScrollBar(newtw);
+    redisplay = TRUE;
+  }
+
+  if (oldtw->text.r_margin.bottom != newtw->text.r_margin.bottom) {
+    newtw->text.margin.bottom = newtw->text.r_margin.bottom;
+    if (newtw->text.hbar != NULL)
+      newtw->text.margin.bottom += newtw->text.hbar->core.height +
+	                           newtw->text.hbar->core.border_width;
+    redisplay = TRUE;
+  }
+  
+  if (oldtw->text.scroll_horiz != newtw->text.scroll_horiz) {
+    if (newtw->text.scroll_horiz == XawtextScrollNever) 
+      DestroyHScrollBar(newtw);
+    else if (newtw->text.scroll_horiz == XawtextScrollAlways)
+      CreateVScrollBar(newtw);
+    redisplay = TRUE;
+  }
+
+  if ( oldtw->text.source != newtw->text.source )
+    XawTextSetSource( (Widget) newtw, newtw->text.source, newtw->text.lt.top);
+
+  if ( oldtw->text.wrap != newtw->text.wrap ||
+       oldtw->text.lt.top != newtw->text.lt.top ||
+       oldtw->text.r_margin.right != newtw->text.r_margin.right ||
+       oldtw->text.r_margin.top != newtw->text.r_margin.top ||
+       oldtw->text.sink != newtw->text.sink) 
+  {
     _XawTextBuildLineTable(newtw, newtw->text.lt.top, TRUE);
     redisplay = TRUE;
   }
@@ -2595,9 +2624,13 @@ int options;
 
   if (ctx->text.options & scrollVertical)
     ctx->text.scroll_vert = XawtextScrollAlways;
+  else 
+    ctx->text.scroll_vert = XawtextScrollNever;
 
   if (ctx->text.options & scrollHorizontal)
     ctx->text.scroll_horiz = XawtextScrollAlways;
+  else 
+    ctx->text.scroll_horiz = XawtextScrollNever;
 
   if (ctx->text.options & resizeWidth) /* Set up resize options. */
     if (ctx->text.options & resizeHeight)
@@ -2606,9 +2639,13 @@ int options;
       ctx->text.resize = XawtextResizeWidth;
   else if (ctx->text.options & resizeHeight)
     ctx->text.resize = XawtextResizeHeight;
+  else
+    ctx->text.resize = XawtextResizeNever;
 
   if (ctx->text.options & wordBreak)
     ctx->text.wrap = XawtextWrapWord;
+  else
+    ctx->text.wrap = XawtextWrapNever;
 }
 
 int 
