@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miwindow.c,v 5.3 89/07/12 17:17:00 keith Exp $ */
+/* $XConsortium: miwindow.c,v 5.4 89/07/14 17:14:07 keith Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"
@@ -38,7 +38,7 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
     Bool generateExposures;
 {
     BoxRec box;
-    RegionPtr pReg;
+    RegionPtr pReg, pBSReg = NullRegion;
 
     box.x1 = pWin->drawable.x + x;
     box.y1 = pWin->drawable.y + y;
@@ -61,14 +61,16 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
 	 * an Expose event is to be generated for those areas in backing
 	 * store if generateExposures is TRUE).
 	 */
-	(* pWin->drawable.pScreen->ClearBackingStore)(pWin, x, y, w, h,
+	pBSReg = (* pWin->drawable.pScreen->ClearBackingStore)(pWin, x, y, w, h,
 						 generateExposures);
     }
 
     (* pWin->drawable.pScreen->Intersect)(pReg, pReg, &pWin->clipList);
     if (generateExposures)
-	(*pWin->drawable.pScreen->WindowExposures)(pWin, pReg);
+	(*pWin->drawable.pScreen->WindowExposures)(pWin, pReg, pBSReg);
     else if (pWin->backgroundState != None)
         (*pWin->drawable.pScreen->PaintWindowBackground)(pWin, pReg, PW_BACKGROUND);
     (* pWin->drawable.pScreen->RegionDestroy)(pReg);
+    if (pBSReg)
+	(* pWin->drawable.pScreen->RegionDestroy)(pBSReg);
 }

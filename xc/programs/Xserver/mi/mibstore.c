@@ -134,8 +134,9 @@ static Bool	    miBSDestroyWindow();
 
 static void	    miBSSaveDoomedAreas();
 static RegionPtr    miBSRestoreAreas();
-static void	    miBSExposeCopy(),		miBSTranslateBackingStore();
-static void	    miBSClearBackingStore(),	miBSDrawGuarantee();
+static void	    miBSExposeCopy();
+static RegionPtr    miBSTranslateBackingStore(), miBSClearBackingStore();
+static void	    miBSDrawGuarantee();
 
 /*
  * wrapper vectors for GC funcs and ops
@@ -2058,7 +2059,7 @@ miBSLineHelper(pDrawable, pGC, cap, npts, pts, xOrg, yOrg)
  *
  *-----------------------------------------------------------------------
  */
-static void
+static RegionPtr
 miBSClearBackingStore(pWin, x, y, w, h, generateExposures)
     WindowPtr	  	pWin;
     int	    	  	x;
@@ -2201,42 +2202,26 @@ miBSClearBackingStore(pWin, x, y, w, h, generateExposures)
 	    }
 	}	
 
-	if (generateExposures) {
-	    int	  offset;
-	    xEvent *events, *ev;
-
+	if (!generateExposures)
+ 	{
+	    (*pScreen->RegionDestroy) (pRgn);
+	    pRgn = NULL;
+	}
+	else
+	{
 	    /*
-	     * If there are exposed areas in the box the client wanted cleared,
-	     * make sure u.expose.count doesn't go to 0. Note that the count
-	     * is only a hint, the only guarantee being the last Expose event
-	     * from a single operation has a count of 0, so this numbering
-	     * scheme is ok.
+	     * result must be screen relative, but is currently
+	     * drawable relative.
 	     */
-	    offset = (((* pScreen->RectIn) (pRgn, &box) != rgnIN)?1:0);
-
-	    numRects = REGION_NUM_RECTS(pRgn);
-	    events = (xEvent *)ALLOCATE_LOCAL(numRects*sizeof(xEvent));
-	    if (events)
-	    {
-		for (i = numRects, pBox = REGION_RECTS(pRgn), ev = events;
-		     --i >= 0;
-		     pBox++, ev++)
-		{
-		    ev->u.u.type = Expose;
-		    ev->u.expose.window = pWin->drawable.id;
-		    ev->u.expose.x = pBox->x1;
-		    ev->u.expose.y = pBox->y1;
-		    ev->u.expose.width = pBox->x2 - pBox->x1;
-		    ev->u.expose.height = pBox->y2 - pBox->y1;
-		    ev->u.expose.count = i + offset;
-		}
-		DeliverEvents(pWin, events, numRects, NullWindow);
-		DEALLOCATE_LOCAL(events);
-	    }
+	    (*pScreen->TranslateRegion) (pRgn, pWin->drawable.x, pWin->drawable.y);
 	}
     }
-
-    (* pScreen->RegionDestroy) (pRgn);
+    else
+    {
+	(* pScreen->RegionDestroy) (pRgn);
+	pRgn = NULL;
+    }
+    return pRgn;
 }
 
 /*
@@ -2819,7 +2804,7 @@ miBSRestoreAreas(pWin, prgnExposed)
  *
  *-----------------------------------------------------------------------
  */
-static void
+static RegionPtr
 miBSTranslateBackingStore(pWin, dx, dy, oldClip)
     WindowPtr 	  pWin;
     int     	  dx;		/* translation distance */
@@ -2828,14 +2813,14 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
 {
     register miBSWindowPtr 	pBackingStore;
     register RegionPtr 	    	pSavedRegion;
-    register RegionPtr 	    	newSaved, obscured;
+    register RegionPtr 	    	newSaved, exposed;
     register ScreenPtr		pScreen;
     BoxRec			extents;
 
     pScreen = pWin->drawable.pScreen;
     pBackingStore = (miBSWindowPtr)(pWin->backStorage);
     if (pBackingStore->status == StatusNoPixmap)
-	return;
+	return NullRegion;
 
     /* bit gravity makes things virtually too hard, punt */
     if (((dx != 0) || (dy != 0)) && (pBackingStore->status != StatusContents))
@@ -2845,16 +2830,9 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
     if (!oldClip)
 	(* pScreen->RegionEmpty) (pSavedRegion);
     newSaved = (* pScreen->RegionCreate) (NullBox, 1);
-    obscured = (* pScreen->RegionCreate) (NullBox, 1);
+    exposed = (* pScreen->RegionCreate) (NullBox, 1);
     /* resize and translate backing pixmap and SavedRegion */
     miResizeBackingStore(pWin, dx, dy);
-    /* now find any already saved areas we should retain */
-    if (pWin->viewable)
-    {
-	(* pScreen->RegionCopy) (newSaved, &pWin->clipList);
-	(* pScreen->TranslateRegion)(newSaved, -dx, -dy);
-	(* pScreen->Intersect) (pSavedRegion, pSavedRegion, newSaved);
-    }
     /* compute what the new pSavedRegion will be */
     extents.x1 = pWin->drawable.x;
     extents.x2 = pWin->drawable.x + (int) pWin->drawable.width;
@@ -2880,12 +2858,12 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
     (* pScreen->TranslateRegion)(newSaved, -dx, -dy);
     if (oldClip)
     {
-	(* pScreen->Intersect) (obscured, oldClip, newSaved);
-	if ((* pScreen->RegionNotEmpty) (obscured))
+	(* pScreen->Intersect) (exposed, oldClip, newSaved);
+	if ((* pScreen->RegionNotEmpty) (exposed))
 	{
 	    /* save those visible areas */
-	    (* pScreen->TranslateRegion) (obscured, dx, dy);
-	    miBSSaveDoomedAreas(pWin, obscured, dx, dy);
+	    (* pScreen->TranslateRegion) (exposed, dx, dy);
+	    miBSSaveDoomedAreas(pWin, exposed, dx, dy);
 	}
     }
     /* translate newSaved to local coordinates */
@@ -2893,30 +2871,32 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
 				  dx-pWin->drawable.x,
 				  dy-pWin->drawable.y);
     /* subtract out what we already have saved */
-    (* pScreen->Subtract) (obscured, newSaved, pSavedRegion);
+    (* pScreen->Subtract) (exposed, newSaved, pSavedRegion);
     /* and expose whatever there is */
-    if ((* pScreen->RegionNotEmpty) (obscured))
+    if ((* pScreen->RegionNotEmpty) (exposed))
     {
 	RegionRec tmpRgn;
-	extents = *((* pScreen->RegionExtents) (obscured));
+	extents = *((* pScreen->RegionExtents) (exposed));
 	tmpRgn = pBackingStore->SavedRegion; /* don't look */
-	pBackingStore->SavedRegion = *obscured;
-	/* XXX there is a problem here.  The protocol requires that
-	 * only the last exposure event in a series can have a zero
-	 * count, but we might generate one here, and then another
-	 * one will be generated if there are unobscured areas that
-	 * are newly exposed.  Is it worth computing, or cheating?
-	 */
-	miBSClearBackingStore(pWin, extents.x1, extents.y1,
-			      extents.x2 - extents.x1,
-			      extents.y2 - extents.y1,
-			      TRUE);
+	pBackingStore->SavedRegion = *exposed;
+	(void) miBSClearBackingStore(pWin, extents.x1, extents.y1,
+					extents.x2 - extents.x1,
+					extents.y2 - extents.y1,
+					FALSE);
 	pBackingStore->SavedRegion = tmpRgn;
+	(*pScreen->TranslateRegion) (exposed,
+				     pWin->drawable.x,
+				     pWin->drawable.y);
+    }
+    else
+    {
+	(*pScreen->RegionDestroy) (exposed);
+	exposed = NullRegion;
     }
     /* finally install new SavedRegion */
-    (* pScreen->Union) (pSavedRegion, pSavedRegion, newSaved);
+    (* pScreen->RegionCopy) (pSavedRegion, newSaved);
     (* pScreen->RegionDestroy) (newSaved);
-    (* pScreen->RegionDestroy) (obscured);
+    return exposed;
 }
 
 /*

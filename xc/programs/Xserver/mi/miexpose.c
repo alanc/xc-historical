@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 5.8 89/07/17 10:39:24 rws Exp $ */
+/* $XConsortium: miexpose.c,v 5.9 89/07/19 19:00:02 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -248,7 +248,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	(*pscr->RegionReset)(&rgnExposed, &expBox);
 	/* need to clear out new areas of backing store */
 	if (pWin->backStorage)
-	    (* pWin->drawable.pScreen->ClearBackingStore)(
+	    (void) (* pWin->drawable.pScreen->ClearBackingStore)(
 					 pWin,
 					 expBox.x1,
 					 expBox.y1,
@@ -354,29 +354,12 @@ miSendGraphicsExpose (client, pRgn, drawable, major, minor)
     }
 }
 
-#ifdef notdef
-void
-miSendNoExpose(pGC)
-    GCPtr pGC;
-{
-    if (pGC->graphicsExposures)
-    {
-        xEvent event;
-	event.u.u.type = NoExpose;
-	event.u.noExposure.drawable = 
-		    requestingClient->lastDrawableID;
-        TryClientEvents(requestingClient, &event, 1,
-	        0, NoEventMask, NullGrab);
-    }
-}
-#endif
-
 void 
-miWindowExposures(pWin, prgn)
+miWindowExposures(pWin, prgn, other_exposed)
     WindowPtr pWin;
-    register RegionPtr prgn;
+    register RegionPtr prgn, other_exposed;
 {
-    if (!REGION_NIL(prgn))
+    if ((prgn && !REGION_NIL(prgn)) || other_exposed)
     {
 	xEvent *pEvent;
 	register xEvent *pe;
@@ -388,7 +371,7 @@ miWindowExposures(pWin, prgn)
 	/*
 	 * Restore from backing-store FIRST.
 	 */
- 	if (pWin->backStorage)
+ 	if (pWin->backStorage && prgn)
 	    /*
 	     * in some cases, backing store will cause a different
 	     * region to be exposed than needs to be repainted
@@ -400,6 +383,18 @@ miWindowExposures(pWin, prgn)
 	     * no areas will be repainted.
 	     */
 	    exposures = (*pWin->drawable.pScreen->RestoreAreas)(pWin, prgn);
+	if (other_exposed)
+	{
+	    if (exposures)
+	    {
+		(*pWin->drawable.pScreen->Union) (other_exposed,
+						  exposures,
+					          other_exposed);
+		if (exposures != prgn)
+		    (*pWin->drawable.pScreen->RegionDestroy) (exposures);
+	    }
+	    exposures = other_exposed;
+	}
 	if (exposures && (REGION_NUM_RECTS(exposures) > RECTLIMIT))
 	{
 	    /*
@@ -423,7 +418,7 @@ miWindowExposures(pWin, prgn)
 	    (* pWin->drawable.pScreen->Intersect)(prgn, prgn, &pWin->clipList);
 	    /* need to clear out new areas of backing store, too */
 	    if (pWin->backStorage)
-		(* pWin->drawable.pScreen->ClearBackingStore)(
+		(void) (* pWin->drawable.pScreen->ClearBackingStore)(
 					     pWin,
 					     box.x1 - pWin->drawable.x,
 					     box.y1 - pWin->drawable.y,
@@ -431,7 +426,7 @@ miWindowExposures(pWin, prgn)
 					     box.y2 - box.y1,
 					     FALSE);
 	}
-	if (!REGION_NIL(prgn))
+	if (prgn && !REGION_NIL(prgn))
 	    (*pWin->drawable.pScreen->PaintWindowBackground)(pWin, prgn, PW_BACKGROUND);
 	if (exposures && !REGION_NIL(exposures))
 	{
@@ -462,9 +457,10 @@ miWindowExposures(pWin, prgn)
 	}
 	if (exposures == &expRec)
 	    (* pWin->drawable.pScreen->RegionUninit) (exposures);
-	else if (exposures && exposures != prgn)
+	else if (exposures && exposures != prgn && exposures != other_exposed)
 	    (* pWin->drawable.pScreen->RegionDestroy) (exposures);
-	(* pWin->drawable.pScreen->RegionEmpty)(prgn);
+	if (prgn)
+	    (* pWin->drawable.pScreen->RegionEmpty)(prgn);
     }
 }
 
