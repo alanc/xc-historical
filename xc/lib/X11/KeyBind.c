@@ -1,4 +1,4 @@
-/* $XConsortium: KeyBind.c,v 11.75 94/03/26 19:09:48 rws Exp $ */
+/* $XConsortium: KeyBind.c,v 11.76 94/03/31 20:42:23 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -24,8 +24,14 @@ without express or implied warranty.
 #define XK_LATIN3
 #define XK_LATIN4
 #define XK_CYRILLIC
+#define XK_XKB_KEYS
 #include <X11/keysymdef.h>
 #include <stdio.h>
+
+#if defined(__sgi) && defined(USE_OWN_COMPOSE)
+#define	COMPOSE_NO_CONST_MEMBERS
+#include "Compose.h"
+#endif
 
 #ifdef XKB
 #define	XKeycodeToKeysym	_XKeycodeToKeysym
@@ -163,6 +169,12 @@ ResetModMap(dpy)
 	    } else if (sym == XK_Shift_Lock) {
 		dpy->lock_meaning = XK_Shift_Lock;
 	    }
+#ifdef	XK_ISO_Lock
+	    else if (sym == XK_ISO_Lock) {
+		dpy->lock_meaning = XK_Caps_Lock;
+		break;
+	    }
+#endif
 	}
     }
     /* Now find any Mod<n> modifier acting as the Group or Numlock modifier */
@@ -493,6 +505,73 @@ XLookupString (event, buffer, nbytes, keysym, status)
     if (! _XTranslateKey(event->display, event->keycode, event->state,
 		  &modifiers, &symbol))
 	return 0;
+
+#if defined(__sgi) && defined(USE_OWN_COMPOSE)
+    if ( status ) {
+	static int been_here= 0;
+	if ( !been_here ) {
+	    ComposeInitTables();
+	    been_here = 1;
+	}
+	if ( !ComposeLegalStatus(status) ) {
+	    status->compose_ptr = NULL;
+	    status->chars_matched = 0;
+	}
+	if ( ((status->chars_matched>0)&&(status->compose_ptr!=NULL)) || 
+		IsComposeKey(symbol,event->keycode,status) ) {
+	    ComposeRtrn rtrn;
+	    switch (ComposeProcessSym(status,symbol,&rtrn)) {
+		case COMPOSE_IGNORE:
+		    break;
+		case COMPOSE_IN_PROGRESS:
+		    if ( keysym!=NULL )
+			*keysym = NoSymbol;
+		    return 0;
+		case COMPOSE_FAIL:
+		{
+		    int n = 0, len= 0;
+		    for (n=len=0;rtrn.sym[n]!=XK_VoidSymbol;n++) {
+			if ( nbytes-len > 0 ) {
+			    len+= _XTranslateKeySym(event->display,rtrn.sym[n],
+							event->state,
+							buffer+len,nbytes-len);
+			}
+		    }
+		    if ( keysym!=NULL ) {
+			if ( n==1 )	*keysym = rtrn.sym[0];
+			else		*keysym = NoSymbol;
+		    }
+		    return len;
+		}
+		case COMPOSE_SUCCEED:
+		{
+		    int len,n = 0;
+
+		    symbol = rtrn.matchSym;
+		    if ( keysym!=NULL )	*keysym = symbol;
+		    if ( rtrn.str[0]!='\0' ) {
+			strncpy(buffer,rtrn.str,nbytes-1);
+			buffer[nbytes-1]= '\0';
+			len = strlen(buffer);
+		    }
+		    else {
+			len = _XTranslateKeySym(event->display,symbol,
+							event->state,
+							buffer,nbytes);
+		    }
+		    for (n=0;rtrn.sym[n]!=XK_VoidSymbol;n++) {
+			if ( nbytes-len > 0 ) {
+			    len+= _XTranslateKeySym(event->display,rtrn.sym[n],
+							event->state,
+							buffer+len,nbytes-len);
+			}
+		    }
+		    return len;
+		}
+	    }
+	}
+    }
+#endif
 
     if (keysym)
 	*keysym = symbol;
