@@ -1,5 +1,5 @@
 %{
-/* $XConsortium: lex.l,v 5.3 91/07/21 16:42:05 rws Exp $ */
+/* $XConsortium: lex.l,v 5.4 91/08/26 10:55:26 gildea Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -51,14 +51,14 @@ extern double atof(char *);
 [+-]?[0-9]+\.?[0-9]*[eE][+-]?[0-9]+ |
 [+-]?[0-9]+\.[0-9]*     |
 \.[0-9]+		{
-                                yylval.dval = atof(yytext);
+                                yylval.dval = atof((char *)yytext);
 				return REAL;
                         }
 [+-]?[0-9]+#[0-9]+	{
 				return INTEGER;
 			}
 [+-]?[0-9]+		{
-				yylval.ival = atoi(yytext);
+				yylval.ival = atoi((char *)yytext);
 				return INTEGER;
 			}
 [()]			;
