@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.12 89/07/13 18:17:15 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.13 89/07/13 19:23:13 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2011,9 +2011,9 @@ miBSClearBackingStore(pWin, x, y, w, h, generateExposures)
 	return;
     
     if (w == 0)
-	w = pWin->drawable.width - x;
+	w = (int) pWin->drawable.width - x;
     if (h == 0)
-	h = pWin->drawable.height - y;
+	h = (int) pWin->drawable.height - y;
 
     box.x1 = x;
     box.y1 = y;
@@ -2525,8 +2525,8 @@ miBSDoGetImage (pWin, pPixmap, pRgn, x, y, pGC, planeMask)
 	pBox = (*pScreen->RegionExtents) (pRgn);
 
 	if (pBox->x1 < 0 || pBox->y1 < 0 ||
-	    wBorderWidth (pWin) + pWin->clientWinSize.width < pBox->x2 ||
-	    wBorderWidth (pWin) + pWin->clientWinSize.height < pBox->y2)
+	    wBorderWidth (pWin) + (int) pWin->clientWinSize.width < pBox->x2 ||
+	    wBorderWidth (pWin) + (int) pWin->clientWinSize.height < pBox->y2)
 	{
 	    /*
 	     * compute areas of border to display
@@ -2642,9 +2642,9 @@ miBSAllocate(pWin)
 	    pSavedRegion = &pBackingStore->pSavedRegion;
 
 	    box.x1 = pWin->drawable.x;
-	    box.x2 = box.x1 + pWin->drawable.width;
+	    box.x2 = box.x1 + (int) pWin->drawable.width;
 	    box.y1 = pWin->drawable.y;
-	    box.y2 = pWin->drawable.y + pWin->drawable.height;
+	    box.y2 = pWin->drawable.y + (int) pWin->drawable.height;
 
 	    (* pScreen->Inverse)(pSavedRegion, &pWin->clipList,  &box);
 	    (* pScreen->TranslateRegion) (pSavedRegion,
@@ -3030,9 +3030,9 @@ miBSRestoreAreas(pWin, prgnExposed)
 	prgnSaved = &pBackingStore->pSavedRegion;
 
 	box.x1 = pWin->drawable.x;
-	box.x2 = box.x1 + pWin->drawable.width;
+	box.x2 = box.x1 + (int) pWin->drawable.width;
 	box.y1 = pWin->drawable.y;
-	box.y2 = pWin->drawable.y + pWin->drawable.height;
+	box.y2 = box.y1 + (int) pWin->drawable.height;
 	
 	(* pScreen->Inverse)(prgnSaved, &pWin->clipList,  &box);
 	(* pScreen->TranslateRegion) (prgnSaved,
@@ -3106,9 +3106,9 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
     }
     /* compute what the new pSavedRegion will be */
     extents.x1 = pWin->drawable.x;
-    extents.x2 = pWin->drawable.x + pWin->drawable.width;
+    extents.x2 = pWin->drawable.x + (int) pWin->drawable.width;
     extents.y1 = pWin->drawable.y;
-    extents.y2 = pWin->drawable.y + pWin->drawable.height;
+    extents.y2 = pWin->drawable.y + (int) pWin->drawable.height;
     (* pScreen->Inverse)(newSaved, &pWin->clipList, &extents);
 #ifdef SHAPE
     if (wBoundingShape (pWin) || wClipShape (pWin)) {

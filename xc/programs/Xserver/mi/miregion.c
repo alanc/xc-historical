@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.47 89/07/13 08:58:24 rws Exp $ */
+/* $XConsortium: miregion.c,v 1.48 89/07/14 09:16:13 rws Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -1522,8 +1522,8 @@ miRectsToRegion(nrects, prect, ctype)
     {
 	pRgn->extents.x1 = prect->x;
 	pRgn->extents.y1 = prect->y;
-	pRgn->extents.x2 = prect->x + prect->width;
-	pRgn->extents.y2 = prect->y + prect->height;
+	pRgn->extents.x2 = prect->x + (int) prect->width;
+	pRgn->extents.y2 = prect->y + (int) prect->height;
 	pRgn->data = (RegDataPtr)NULL;
 	return pRgn;
     }

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolyrect.c,v 1.12 88/09/06 14:50:28 jim Exp $ */
+/* $XConsortium: mipolyrect.c,v 5.0 89/06/09 15:08:38 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "miscstruct.h"
@@ -44,11 +44,11 @@ miPolyRectangle(pDraw, pGC, nrects, pRects)
 	rect[0].x = pR->x;
 	rect[0].y = pR->y;
 
-	rect[1].x = pR->x + pR->width;
+	rect[1].x = pR->x + (int) pR->width;
 	rect[1].y = rect[0].y;
 
 	rect[2].x = rect[1].x;
-	rect[2].y = pR->y + pR->height;
+	rect[2].y = pR->y + (int) pR->height;
 
 	rect[3].x = rect[0].x;
 	rect[3].y = rect[2].y;

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.2 89/07/09 15:47:09 rws Exp $ */
+/* $XConsortium: mibitblt.c,v 5.3 89/07/13 11:54:23 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -82,8 +82,8 @@ miCopyArea(pSrcDrawable, pDstDrawable,
 
 	box.x1 = pSrcDrawable->x;
 	box.y1 = pSrcDrawable->y;
-	box.x2 = pSrcDrawable->x + pSrcDrawable->width;
-	box.y2 = pSrcDrawable->y + pSrcDrawable->height;
+	box.x2 = pSrcDrawable->x + (int) pSrcDrawable->width;
+	box.y2 = pSrcDrawable->y + (int) pSrcDrawable->height;
 
 	prgnSrcClip = (*pGC->pScreen->RegionCreate)(&box, 1);
 	realSrcClip = 1;
@@ -551,10 +551,10 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
 	box.x1 = pSrcDrawable->x;
     if (box.y1 < pSrcDrawable->y)
 	box.y1 = pSrcDrawable->y;
-    if (box.x2 > pSrcDrawable->x + pSrcDrawable->width)
-	box.x2 = pSrcDrawable->x + pSrcDrawable->width;
-    if (box.y2 > pSrcDrawable->y + pSrcDrawable->height)
-	box.y2 = pSrcDrawable->y + pSrcDrawable->height;
+    if (box.x2 > pSrcDrawable->x + (int) pSrcDrawable->width)
+	box.x2 = pSrcDrawable->x + (int) pSrcDrawable->width;
+    if (box.y2 > pSrcDrawable->y + (int) pSrcDrawable->height)
+	box.y2 = pSrcDrawable->y + (int) pSrcDrawable->height;
     if (box.x1 > box.x2)
 	box.x2 = box.x1;
     if (box.y1 > box.y2)

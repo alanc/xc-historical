@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbsetsp.c,v 5.0 89/06/09 15:07:04 keith Exp $ */
+/* $XConsortium: mfbsetsp.c,v 5.1 89/07/09 15:59:51 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -166,7 +166,7 @@ mfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 
     pptLast = ppt + nspans;
 
-    yMax = pDrawable->y + pDrawable->height;
+    yMax = pDrawable->y + (int) pDrawable->height;
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
 	pdstBase = (int *)

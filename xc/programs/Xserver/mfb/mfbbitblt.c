@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 5.0 89/06/09 15:06:03 keith Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.1 89/07/09 15:59:33 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -127,8 +127,8 @@ int dstx, dsty;
 
 	    box.x1 = pSrcDrawable->x;
 	    box.y1 = pSrcDrawable->y;
-	    box.x2 = box.x1 + pSrcDrawable->width;
-	    box.y2 = box.y1 + pSrcDrawable->height;
+	    box.x2 = box.x1 + (int) pSrcDrawable->width;
+	    box.y2 = box.y1 + (int) pSrcDrawable->height;
 
 	    prgnSrcClip = (*pGC->pScreen->RegionCreate)(&box, 1);
 	    realSrcClip = 1;
@@ -148,10 +148,10 @@ int dstx, dsty;
 	    fastBox.y2 = srcy + height;
 	    
 	    /* Left and top are already clipped, so clip right and bottom */
-	    if (fastBox.x2 > pSrcDrawable->x + pSrcDrawable->width)
-	      fastBox.x2 = pSrcDrawable->x + pSrcDrawable->width;
-	    if (fastBox.y2 > pSrcDrawable->y + pSrcDrawable->height)
-	      fastBox.y2 = pSrcDrawable->y + pSrcDrawable->height;
+	    if (fastBox.x2 > pSrcDrawable->x + (int) pSrcDrawable->width)
+	      fastBox.x2 = pSrcDrawable->x + (int) pSrcDrawable->width;
+	    if (fastBox.y2 > pSrcDrawable->y + (int) pSrcDrawable->height)
+	      fastBox.y2 = pSrcDrawable->y + (int) pSrcDrawable->height;
 
 	    (*pGC->pScreen->RegionInit)(&fastRegion, &fastBox, 1);
 	}

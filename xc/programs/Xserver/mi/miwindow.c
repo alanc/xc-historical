@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miwindow.c,v 5.2 89/07/09 15:48:12 rws Exp $ */
+/* $XConsortium: miwindow.c,v 5.3 89/07/12 17:17:00 keith Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"
@@ -45,11 +45,11 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
     if (w)
         box.x2 = box.x1 + w;
     else
-        box.x2 = box.x1 + pWin->drawable.width - x;
+        box.x2 = box.x1 + (int) pWin->drawable.width - x;
     if (h)
         box.y2 = box.y1 + h;	
     else
-        box.y2 = box.y1 + pWin->drawable.height - y;
+        box.y2 = box.y1 + (int) pWin->drawable.height - y;
 
     pReg = (* pWin->drawable.pScreen->RegionCreate)(&box, 1);
     if (pWin->backStorage)

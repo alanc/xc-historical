@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.10 89/07/13 18:16:40 keith Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.11 89/07/14 13:45:32 rws Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    <stdio.h>
@@ -119,10 +119,10 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     {
 	case rgnIN:
 	    if (((borderSize->x2 - borderSize->x1) ==
-		 (pParent->drawable.width + (wBorderWidth (pParent) << 1)))
+		 ((int) pParent->drawable.width + (wBorderWidth (pParent) << 1)))
 		&&
 		((borderSize->y2 - borderSize->y1) ==
-		 (pParent->drawable.height + (wBorderWidth (pParent) << 1))))
+		 ((int) pParent->drawable.height + (wBorderWidth (pParent) << 1))))
 		pParent->visibility = VisibilityUnobscured;
 	    else
 		pParent->visibility = VisibilityPartiallyObscured;
