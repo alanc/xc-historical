@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibuf.h,v 1.2 89/09/22 15:56:41 jim Exp $
+ * $XConsortium: multibuf.h,v 1.3 89/09/25 15:45:34 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,15 +24,15 @@
 #ifndef _MULTIBUF_H_
 #define _MULTIBUF_H_
 
-#define X_GetBufferVersion		0
-#define X_CreateImageBuffers		1
-#define X_DestroyImageBuffers		2
-#define X_DisplayImageBuffers		3
-#define X_SetMultiBufferAttributes	4
-#define X_SetBufferAttributes		6
-#define X_GetBufferAttributes		7
-#define X_GetBufferInfo			8
-#define X_CreateStereoWindow		9
+#define X_MbufGetBufferVersion		0
+#define X_MbufCreateImageBuffers	1
+#define X_MbufDestroyImageBuffers	2
+#define X_MbufDisplayImageBuffers	3
+#define X_MbufSetMultiBufferAttributes	4
+#define X_MbufSetBufferAttributes	6
+#define X_MbufGetBufferAttributes	7
+#define X_MbufGetBufferInfo		8
+#define X_MbufCreateStereoWindow	9
 
 /*
  * update_action field
