@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.175 89/03/23 09:12:00 rws Exp $ */
+/* $XConsortium: events.c,v 1.175 89/03/24 07:40:59 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -55,6 +55,11 @@ extern void SetCriticalOutputPending();
 	Button5MotionMask | ButtonMotionMask )
 #define PropagateMask ( \
 	KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | \
+	MotionMask )
+#define PointerGrabMask ( \
+	ButtonPressMask | ButtonReleaseMask | \
+	EnterWindowMask | LeaveWindowMask | \
+	PointerMotionHintMask | KeymapStateMask | \
 	MotionMask )
 #define AllModifiersMask ( \
 	ShiftMask | LockMask | ControlMask | Mod1Mask | Mod2Mask | \
@@ -149,6 +154,8 @@ extern GrabPtr CreateGrab();		/* Defined in grabs.c */
 extern Bool GrabMatchesSecond();
 extern Bool DeletePassiveGrabFromList();
 extern int AddPassiveGrabToList();
+
+extern Bool permitOldBugs;
 
 static ScreenPtr currentScreen;
 
@@ -1688,6 +1695,11 @@ EventSelectForWindow(pWin, client, mask)
     Mask check;
     OtherClients * others;
 
+    if (mask & ~(lastEventMask - 1))
+    {
+	client->errorValue = mask;
+	return BadValue;
+    }
     check = (mask & AtMostOneClient);
     if (check & pWin->allEventMasks)
     {				       /* It is illegal for two different
@@ -1756,7 +1768,7 @@ EventSuppressForWindow(pWin, client, mask)
 	ClientPtr client;
 	Mask mask;
 {
-    if (mask & ~PropagateMask)
+    if ((mask & ~PropagateMask) && !permitOldBugs)
     {
 	client->errorValue = mask;
 	return BadValue;
@@ -2200,7 +2212,16 @@ ProcGrabPointer(client)
 	client->errorValue = stuff->keyboardMode;
         return BadValue;
     }
-
+    if ((stuff->ownerEvents != xFalse) && (stuff->ownerEvents != xTrue))
+    {
+	client->errorValue = stuff->ownerEvents;
+        return BadValue;
+    }
+    if ((stuff->eventMask & ~PointerGrabMask) && !permitOldBugs)
+    {
+	client->errorValue = stuff->eventMask;
+        return BadValue;
+    }
     pWin = LookupWindow(stuff->grabWindow, client);
     if (!pWin)
 	return BadWindow;
@@ -2278,10 +2299,11 @@ ProcChangeActivePointerGrab(client)
     TimeStamp time;
 
     REQUEST_SIZE_MATCH(xChangeActivePointerGrabReq);
-    if (!grab)
-	return Success;
-    if (grab->client != client)
-	return BadAccess;
+    if (stuff->eventMask & ~PointerGrabMask)
+    {
+	client->errorValue = stuff->eventMask;
+        return BadValue;
+    }
     if (stuff->cursor == None)
 	newCursor = NullCursor;
     else
@@ -2293,6 +2315,10 @@ ProcChangeActivePointerGrab(client)
 	    return BadCursor;
 	}
     }
+    if (!grab)
+	return Success;
+    if (grab->client != client)
+	return BadAccess;
     time = ClientTimeToServerTime(stuff->time);
     if ((CompareTimeStamps(time, currentTime) == LATER) ||
 	     (CompareTimeStamps(time, device->grabTime) == EARLIER))
@@ -2347,6 +2373,11 @@ ProcGrabKeyboard(client)
 	(stuff->keyboardMode != GrabModeAsync))
     {
 	client->errorValue = stuff->keyboardMode;
+        return BadValue;
+    }
+    if ((stuff->ownerEvents != xFalse) && (stuff->ownerEvents != xTrue))
+    {
+	client->errorValue = stuff->ownerEvents;
         return BadValue;
     }
     pWin = LookupWindow(stuff->grabWindow, client);
@@ -3653,6 +3684,11 @@ ProcSendEvent(client)
 	client->errorValue = stuff->event.u.u.type;
 	return BadValue;
     }
+    if (stuff->eventMask & ~(lastEventMask - 1))
+    {
+	client->errorValue = stuff->eventMask;
+	return BadValue;
+    }
 
     if (stuff->destination == PointerWindow)
 	pWin = sprite.win;
@@ -3680,6 +3716,11 @@ ProcSendEvent(client)
 	pWin = LookupWindow(stuff->destination, client);
     if (!pWin)
 	return BadWindow;
+    if ((stuff->propagate != xFalse) && (stuff->propagate != xTrue))
+    {
+	client->errorValue = stuff->propagate;
+	return BadValue;
+    }
     stuff->event.u.u.type |= 0x80;
     if (stuff->propagate)
     {
@@ -3711,6 +3752,12 @@ ProcUngrabKey(client)
     pWin = LookupWindow(stuff->grabWindow, client);
     if (!pWin)
 	return BadWindow;
+    if ((stuff->modifiers != AnyModifier) &&
+	(stuff->modifiers & ~AllModifiersMask))
+    {
+	client->errorValue = stuff->modifiers;
+	return BadValue;
+    }
 
     temporaryGrab.client = client;
     temporaryGrab.device = inputInfo.keyboard;
@@ -3734,11 +3781,29 @@ ProcGrabKey(client)
     GrabPtr grab;
 
     REQUEST_SIZE_MATCH(xGrabKeyReq);
+    if ((stuff->pointerMode != GrabModeSync) &&
+	(stuff->pointerMode != GrabModeAsync))
+    {
+	client->errorValue = stuff->pointerMode;
+        return BadValue;
+    }
+    if ((stuff->keyboardMode != GrabModeSync) &&
+	(stuff->keyboardMode != GrabModeAsync))
+    {
+	client->errorValue = stuff->keyboardMode;
+        return BadValue;
+    }
     if (((stuff->key > curKeySyms.maxKeyCode) || (stuff->key < curKeySyms.minKeyCode))
 	&& (stuff->key != AnyKey))
     {
 	client->errorValue = stuff->key;
         return BadValue;
+    }
+    if ((stuff->modifiers != AnyModifier) &&
+	(stuff->modifiers & ~AllModifiersMask))
+    {
+	client->errorValue = stuff->modifiers;
+	return BadValue;
     }
     pWin = LookupWindow(stuff->grabWindow, client);
     if (!pWin)
@@ -3775,7 +3840,22 @@ ProcGrabButton(client)
 	client->errorValue = stuff->keyboardMode;
         return BadValue;
     }
-
+    if ((stuff->modifiers != AnyModifier) &&
+	(stuff->modifiers & ~AllModifiersMask))
+    {
+	client->errorValue = stuff->modifiers;
+	return BadValue;
+    }
+    if ((stuff->ownerEvents != xFalse) && (stuff->ownerEvents != xTrue))
+    {
+	client->errorValue = stuff->ownerEvents;
+	return BadValue;
+    }
+    if (stuff->eventMask & ~PointerGrabMask)
+    {
+	client->errorValue = stuff->eventMask;
+        return BadValue;
+    }
     pWin = LookupWindow(stuff->grabWindow, client);
     if (!pWin)
 	return BadWindow;
@@ -3800,7 +3880,7 @@ ProcGrabButton(client)
     }
 
     grab = CreateGrab(client, inputInfo.pointer, pWin, 
-	(Mask)(stuff->eventMask | ButtonPressMask | ButtonReleaseMask),
+	(Mask)(stuff->eventMask),
 	(Bool)stuff->ownerEvents, (Bool) stuff->keyboardMode,
 	(Bool)stuff->pointerMode, stuff->modifiers, stuff->button,
 	confineTo, cursor);
@@ -3818,6 +3898,12 @@ ProcUngrabButton(client)
     GrabRec temporaryGrab;
 
     REQUEST_SIZE_MATCH(xUngrabButtonReq);
+    if ((stuff->modifiers != AnyModifier) &&
+	(stuff->modifiers & ~AllModifiersMask))
+    {
+	client->errorValue = stuff->modifiers;
+	return BadValue;
+    }
     pWin = LookupWindow(stuff->grabWindow, client);
     if (!pWin)
 	return BadWindow;
