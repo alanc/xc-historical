@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.89 87/09/01 17:04:25 newman Locked $ */
+/* $Header: gc.c,v 1.91 87/09/03 02:57:50 toddb Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -438,7 +438,9 @@ CreateGC(pDrawable, mask, pval, pStatus)
 	pTile = (PixmapPtr)
 		(*pGC->pScreen->CreatePixmap)(pDrawable->pScreen,
 					      w, h, pGC->depth);
+	tmpval[0] = GXcopy;
 	tmpval[1] = pGC->fgPixel;
+	tmpval[2] = FillSolid;
 	pgcScratch = GetScratchGC(pGC->depth, pGC->pScreen);
 	ChangeGC(pgcScratch, GCFunction | GCForeground | GCFillStyle, 
 		 tmpval);
