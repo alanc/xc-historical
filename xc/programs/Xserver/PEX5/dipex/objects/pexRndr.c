@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.20 92/11/20 16:46:26 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.21 92/12/01 17:18:06 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -113,16 +113,13 @@ SOFTWARE.
 
 
 
-/*
-    From mail from Sally C. Barry
-*/
-#define CO_(mask)   ((mask) \
-		    - (((mask)>>1)&0x77777777) \
-		    - (((mask)>>1)&0x33333333) \
-		    - (((mask)>>1)&0x11111111))
-
-#define CountOnes(mask, countReturn) \
-    countReturn = (((CO_(mask)+(CO_(mask)>>4)) & 0x0F0F0F0F) % 255)
+#define CountOnes(mask, countReturn)                            \
+  {                                                             \
+    register unsigned long y;                                   \
+    y = ((mask) >> 1) &033333333333;                            \
+    y = (mask) - y - ((y >>1) & 033333333333);                  \
+    countReturn = (((y + (y >> 3)) & 030707070707) % 077);      \
+  }
 
 
 extern ErrorCode UpdatePCRefs();
