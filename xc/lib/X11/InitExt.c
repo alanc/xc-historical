@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XInitExt.c,v 11.12 87/06/16 10:49:08 jg Exp $ */
+/* $Header: XInitExt.c,v 11.12 87/06/16 10:49:08 toddb Locked $ */
 /* Copyright  Massachusetts Institute of Technology 1987 */
 
 #include "Xlibint.h"
@@ -13,8 +13,6 @@ extern _XUnknownNativeEvent();
  * This routine is used to link a extension in so it will be called
  * at appropriate times.
  */
-
-extern char *malloc();
 
 XExtCodes *XInitExtension (dpy, name)
 	Display *dpy;
