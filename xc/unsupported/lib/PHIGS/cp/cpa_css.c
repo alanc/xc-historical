@@ -1,4 +1,4 @@
-/* $XConsortium: cpa_css.c,v 5.4 91/07/17 19:00:54 hersh Exp $ */
+/* $XConsortium: cpa_css.c,v 5.5 91/10/01 03:00:02 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -888,10 +888,10 @@ phg_cpa_change_struct_refs( cph, cp_args, css_srvr )
 		return;	/* can't create the new structure */
 	    }
 	}
-    }
-    (void)PEXChangeStructureRefs(  css_srvr->display,
+	(void)PEXChangeStructureRefs(  css_srvr->display,
 	    old->xid, new->xid );
-    CPA_FLUSH( css_srvr );
+	CPA_FLUSH( css_srvr );
+    }
 }
 
 
