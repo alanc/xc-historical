@@ -40,8 +40,6 @@ static char *sccsid = "@(#)ScrollBar.c	1.8	2/25/87";
 
 /* Private definitions. */
 
-#define XtRorientation		"Orientation"
-
 static char *defaultTranslationTable[] = {
 	"<Btn1Down>:		StartPageBack\n", /* should be generic... */
 	"<Btn2Down>:		StartScroll\n",
@@ -49,7 +47,7 @@ static char *defaultTranslationTable[] = {
 	"<Btn1Up>:		DoPageBack\n",
 	"<Btn2Up>:		DoScroll\n",
 	"<Btn3Up>:		DoPageForward\n",
-	"<Motion>2:		MoveThumb\n", /*bug in TM forces button spec here */
+	"<Motion>2:		MoveThumb\n", /* bug? in TM forces button spec here */
 	NULL
 };
 
@@ -81,10 +79,8 @@ static Resource resources[] = {
      Offset(ScrollbarWidget, scrollbar.leftCursor), XtRString, "sb_left_arrow"},
   {XtNscrollRCursor, XtCScrollRCursor, XtRCursor, sizeof(Cursor),
      Offset(ScrollbarWidget, scrollbar.rightCursor), XtRString, "sb_right_arrow"},
-  {XtNtranslations, XtCTranslations, XtRStringTable, sizeof(Translations),
+  {XtNeventBindings, XtCEventBindings, XtRStringTable, sizeof(Translations),
      Offset(ScrollbarWidget, core.translations), XtRStringTable, (caddr_t)&defaultTranslations},
-  {XtNwindow, XtCWindow, XtRWindow, sizeof(Window),
-     Offset(ScrollbarWidget, core.window), XtRWindow, 0},
 };
 
 static void ClassInitialize();
@@ -102,7 +98,7 @@ static void DoSmoothScroll();
 static void DoPageForward();
 static void MoveThumb();
 
-static XtActionsRec actionsList[] = {
+static XtActionsRec actions[] = {
 	{"StartPageBack",	(caddr_t)StartPageBack},
 	{"StartScroll",		(caddr_t)StartSmoothScroll},
 	{"StartPageForward",	(caddr_t)StartPageForward},
@@ -123,11 +119,13 @@ static ScrollbarClassRec scrollbarClassRec = {
     /* class_inited	*/	FALSE,
     /* initialize       */      Initialize,
     /* realize          */      Realize,
-    /* actions          */      actionsList,
+    /* actions          */      actions,
+    /* num_actions	*/	XtNumber(actions),
     /* resources        */      resources,
-    /* resource_count   */      XtNumber(resources),
-    /* xrm_extra        */      NULL,
+    /* num_resources    */      XtNumber(resources),
     /* xrm_class        */      NULLQUARK,
+    /* compress_motion	*/	FALSE,
+    /* compress_exposure*/	TRUE,
     /* visible_interest */      FALSE,
     /* destroy          */      NULL,
     /* resize           */      Resize,
@@ -300,7 +298,7 @@ static void Initialize( gw )
     gcValues.foreground = w->scrollbar.foreground;
     gcValues.fill_style = FillTiled;
     gcValues.tile = w->scrollbar.thumb;
-    w->scrollbar.gc = XtGetGC( XtDisplay(w), XtWindow(w),
+    w->scrollbar.gc = XtGetGC( w,
 			       GCForeground | GCFillStyle | GCTile,
 			       &gcValues);
 
@@ -327,27 +325,14 @@ static void Realize( gw, valueMask, attributes )
     winAttr.cursor = w->scrollbar.inactiveCursor;
     attrMask = valueMask | CWCursor;
     
-    if (XtWindow(w) == NULL) {
-	w->core.window =
-	  XCreateWindow(
-			XtDisplay( w ), XtWindow(w->core.parent),
-			w->core.x, w->core.y,
-			w->core.width, w->core.height,
-			w->core.border_width, w->core.depth,
-			InputOutput, (Visual *)CopyFromParent,
-			attrMask, &winAttr );
-    } else {
-	XWindowChanges wc;
-	Mask wcValueMask = CWX | CWY | CWWidth | CWHeight | CWBorderWidth;
-
-	wc.x = w->core.x;
-	wc.y = w->core.y;
-	wc.width = w->core.width;
-	wc.height=w->core.height;
-	wc.border_width = w->core.border_width;
-	XConfigureWindow( XtDisplay(w), XtWindow(w), wcValueMask, &wc);
-	XChangeWindowAttributes( XtDisplay(w), XtWindow(w), attrMask, &winAttr );
-    }
+    w->core.window =
+      XCreateWindow(
+		     XtDisplay( w ), XtWindow(w->core.parent),
+		     w->core.x, w->core.y,
+		     w->core.width, w->core.height,
+		     w->core.border_width, w->core.depth,
+		     InputOutput, (Visual *)CopyFromParent,
+		     attrMask, &winAttr );
 }
 
 
