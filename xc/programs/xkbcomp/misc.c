@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: misc.c,v 1.1 94/04/02 17:07:20 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -26,136 +26,11 @@
  ********************************************************/
 
 #include "xkbcomp.h"
-#include "xkbio.h"
+#include "xkbfile.h"
 #include "tokens.h"
 #include "misc.h"
 
 /***====================================================================***/
-
-char *
-configText(config)
-    unsigned config;
-{
-static char buf[32];
-
-    switch (config) {
-	case XkmSemanticsFile:
-	    strcpy(buf,"semantics");
-	    break;
-	case XkmLayoutFile:
-	    strcpy(buf,"layout");
-	    break;
-	case XkmKeymapFile:
-	    strcpy(buf,"keymap");
-	    break;
-	case XkmGeometryFile:
-	case XkmGeometryIndex:
-	    strcpy(buf,"geometry");
-	    break;
-	case XkmAlternateSymsFile:
-	    strcpy(buf,"alternate symbols");
-	    break;
-	case XkmTypesIndex:
-	    strcpy(buf,"types");
-	    break;
-	case XkmCompatMapIndex:
-	    strcpy(buf,"compatibility map");
-	    break;
-	case XkmSymbolsIndex:
-	    strcpy(buf,"symbols");
-	    break;
-	case XkmIndicatorsIndex:
-	    strcpy(buf,"indicators");
-	    break;
-	case XkmKeyNamesIndex:
-	    strcpy(buf,"key names");
-	    break;
-	case XkmVirtualModsIndex:
-	    strcpy(buf,"virtual modifiers");
-	    break;
-	default:
-	    sprintf(buf,"unknown(%d)",config);
-	    break;
-    }
-    return buf;
-}
-
-char *
-keysymText(sym,format)
-    KeySym	sym;
-    unsigned	format;
-{
-static char buf[32],*rtrn;
-
-    if (sym==NoSymbol)
-	strcpy(rtrn=buf,"NoSymbol");
-    else if ((rtrn=XKeysymToString(sym))==NULL)
-	sprintf(rtrn=buf,"0x%x",sym);
-    else if (format==XkbCHeaderFile) {
-	sprintf(buf,"XK_%s",rtrn);
-	rtrn= buf;
-    }
-    return rtrn;
-}
-
-static char *modNames[XkbNumModifiers] = {
-    "Shift", "Lock", "Control", "Mod1", "Mod2", "Mod3", "Mod4", "Mod5"
-};
-
-char *
-modIndexText(ndx,format)
-    unsigned	ndx;
-    unsigned	format;
-{
-static char buf[16];
-
-    if (ndx<XkbNumModifiers) {
-	if (format==XkbCHeaderFile) {
-	    sprintf(buf,"%sMapIndex",modNames[ndx]);
-	    return buf;
-	}
-	return modNames[ndx];
-    }
-    strcpy(buf,"ILLEGAL");
-    return buf;
-}
-
-char *
-modMaskText(mask,format)
-    unsigned	mask;
-    unsigned	format;
-{
-register int i,bit;
-static char buf[64];
-
-    if ((mask&0xff)==0xff) {
-	if (format==XkbCHeaderFile) 	strcpy(buf,"0xff");
-	else				strcpy(buf,"all");
-    }
-    else if ((mask&0xff)==0) {
-	if (format==XkbCHeaderFile)	strcpy(buf,"0");
-	else				strcpy(buf,"none");
-    }
-    else {
-	char *str= buf;
-	buf[0]= '\0';
-	for (i=0,bit=1;i<XkbNumModifiers;i++,bit<<=1) {
-	    if (mask&bit) {
-		if (str!=buf) {
-		    if (format==XkbCHeaderFile)	*str++= '|';
-		    else			*str++= '+';
-		}
-		strcpy(str,modNames[i]);
-		str= &str[strlen(str)];
-		if (format==XkbCHeaderFile) {
-		    strcpy(str,"Mask");
-		    str+= 4;
-		}
-	    }
-	}
-    }
-    return buf;
-}
 
 static char *siMatchText[5] = {
 	"NoneOf", "AnyOfOrNone", "AnyOf", "AllOf", "Exactly"
@@ -178,7 +53,7 @@ char *rtrn;
 	default:		sprintf(buf,"0x%x",type&XkbSI_OpMask);
 				return buf;
     }
-    if (format==XkbCHeaderFile) {
+    if (format==XkbCFile) {
 	if (type&XkbSI_LevelOneOnly)
 	     sprintf(buf,"XkbSI_LevelOneOnly|XkbSI_%s",rtrn);
 	else sprintf(buf,"XkbSI_%s",rtrn);
@@ -210,7 +85,7 @@ char *rtrn;
 
     if (type<=XkbSA_LastAction) {
 	rtrn= actionTypeNames[type];
-	if (format==XkbCHeaderFile) {
+	if (format==XkbCFile) {
 	    sprintf(buf,"XkbSA_%s",rtrn);
 	    return buf;
 	}
@@ -313,8 +188,9 @@ int	 oldLine;
     fclose(file);
     setScanState(oldFile,oldLine);
     if (rtrn->type!=file_type) {
-	uError("Include file wrong type (expected %s,",configText(file_type));
-	uInformation(" got %s)\n",configText(rtrn->type));
+	uError("Include file wrong type (expected %s, got %s)\n",
+						XkbConfigText(file_type),
+						XkbConfigText(rtrn->type));
 	uAction("Include file \"%s\" ignored\n",stmt->file);
 	return False;
     }
