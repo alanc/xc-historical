@@ -1,4 +1,4 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.17 89/01/03 08:22:00 rws Exp $
+.\" $XConsortium: ddx.tbl.ms,v 1.18 89/01/16 18:15:40 rws Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -704,7 +704,7 @@ DIX can insert data into the client stream, and can cause a "replay" of
 the current request.
 .nf
 
-	InsertFakeRequest(client, data, count)
+	Bool InsertFakeRequest(client, data, count)
 	    ClientPtr client;
 	    char *data;
 	    int count;
@@ -717,7 +717,8 @@ InsertFakeRequest() must insert the specified number of bytes of data
 into the head of the input buffer for the client.  This may be a
 complete request, or it might be a partial request.  For example,
 NextAvailableCient() will insert a partial request in order to read
-the initial connection data sent by the client.  ResetCurrentRequest()
+the initial connection data sent by the client.  The routine returns FALSE
+if memory could not be allocated.  ResetCurrentRequest()
 should "back up" the input buffer so that the currently executing request
 will be reexecuted.  DIX may have altered some values (e.g. the overall
 request length), so you must recheck to see if you still have a complete
@@ -904,17 +905,20 @@ You must supply them if you use the DDX SNF library.
 Refer to a C runtime library reference manual for more details.
 .nf
 
-	void SetFontPath( npaths, totalLength, countedStrings)
+	int SetFontPath( client, npaths, countedStrings)
+		ClientPtr client;
 		int npaths;
-		int totalLength;
 		char *countedStrings;
 .fi
 SetFontPath must set the entire path to the new path passed in.
-npaths is the number of paths in the list; totalLength is the total length in bytes.
+client is the client issuing the request;
+npaths is the number of paths in the list.
 countedStrings is a pointer to a buffer that contains counted strings
 for each directory name in the path; each counted string is a
 length byte followed by that many characters (not padded, not null-terminated).
-If npaths = 0, SetFontPath should reinstate the default font path.a
+If npaths = 0, SetFontPath should reinstate the default font path.
+The routine returns Success if the path is installed, else an error such
+as BadAlloc.
 .LP
 The default font path is set in DIX to the string that is a defined
 constant COMPILEDDEFAULTFONTPATH, in the file site.h.
@@ -930,12 +934,13 @@ Servers that choose to not implement these should return an
 empty path.
 .nf
 
-	void SetDefaultFontPath(dirname)
+	int SetDefaultFontPath(dirname)
 		char *dirname;
 .fi
 You should write this routine to set the default font path.
 DIX will pass you the value of COMPILEDDEFAULTFONTPATH when the 
 server starts up.
+Return Success on success, else an error such as BadAlloc.
 
 .NH 2
 Memory Management
@@ -1318,6 +1323,8 @@ AutoStart should be TRUE for devices that need to be turned on at
 initialization time with a special call, as opposed to waiting for some 
 client application to
 turn them on.
+This routine returns NULL if sufficient memory cannot be allocated to
+install the device.
 
 Note also that except for the main keyboard and pointing device, 
 an extension is needed to provide for a client interface to a device.
@@ -1657,7 +1664,8 @@ once for each screen to add it to the
 screenInfo database.
 The first argument is an initialization procedure for the screen that you supply.
 The second and third are the argc and argv from main().
-It returns the number of screens installed so far.
+It returns the number of screens installed so far,
+or -1 if there is insufficient memory to add the screen.
 
 The scrInitProc should be of the following form:
 .nf
@@ -2235,7 +2243,7 @@ since mfb does not do very much with color, many of these routines are
 set to no-op procedures.
 .nf
 
-	pScreen->CreateColormap(pColormap)
+	Bool pScreen->CreateColormap(pColormap)
 		ColormapPtr pColormap;
 .fi
 .LP
@@ -2244,6 +2252,8 @@ all the data for the new colormap and just before it returns to the dispatcher.
 It is the DDX layer's chance to initialize the colormap, particularly if it is
 a static map.  See the following
 section for more details on initializing colormaps.
+The routine returns FALSE if creation failed, such as due to memory
+limitations.
 Notice that the colormap has a devPriv field from which you can hang any
 colormap specific storage you need.  Since each colormap might need special
 information, we attached the field to the colormap and not the visual.
@@ -2609,13 +2619,14 @@ rules given in the protocol for QueryTextExtent) of the string
 represented by the list of charinfos.
 .nf
 
-void QueryTextExtents(font, count, chars, info)
+Bool QueryTextExtents(font, count, chars, info)
 		FontPtr font;
 		unsigned long count;
 		unsigned char *chars;
 		ExtentInfoRec *info;
 .fi
 QueryTextExtents is a composition of GetGlyphs and QueryGlyphExtents.
+It returns FALSE if memory could not be allocated to perform the computation.
 
 .NH 4
 Font Realization
@@ -2730,6 +2741,7 @@ a little while and don't want to pay a heavy cost to get it.
 	    int depth;
 
 .fi
+NULL is returned if the GC cannot be created.
 The GC returned can be freed with FreeScratchGC.
 .NH 2
 Drawables
@@ -4144,6 +4156,8 @@ at validate time, as with the other output functions.
 For each span, GetSpans gets bits from the drawable starting at pPoints
 and continuing for pWidths bits.
 Each scanline returned will be server-scanline padded.
+The routine can return NULL if memory cannot be allocated to hold the
+result.
 
 GetSpans never translates -- for a window, the coordinates are
 already screen-relative.
