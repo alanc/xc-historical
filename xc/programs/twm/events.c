@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.168 90/12/21 13:15:17 dave Exp $
+ * $XConsortium: events.c,v 1.169 91/01/05 13:19:50 dave Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.168 90/12/21 13:15:17 dave Exp $";
+"$XConsortium: events.c,v 1.169 91/01/05 13:19:50 dave Exp $";
 #endif
 
 #include <stdio.h>
@@ -1560,7 +1560,7 @@ HandleButtonRelease()
 		break;
 	    }
 	    ExecuteFunction(func, Action,
-		ButtonWindow ? ButtonWindow->frame : NULL,
+		ButtonWindow ? ButtonWindow->frame : None,
 		ButtonWindow, &ButtonEvent, Context, TRUE);
 	    Context = C_NO_CONTEXT;
 	    ButtonWindow = NULL;
