@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.5 88/09/23 14:20:08 keith Exp $
+ * $XConsortium: Login.c,v 1.6 88/09/26 17:29:57 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -52,13 +52,13 @@ static XtResource resources[] = {
     {XtNfailColor, XtCForeground, XtRPixel, sizeof (Pixel),
 	offset(failpixel), XtRString,	"Black"},
     {XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-    	offset (font), XtRString,	"*-times-bold-r-normal--18-*"},
+    	offset (font), XtRString,	"*-new century schoolbook-medium-r-normal-*-18-*"},
     {XtNpromptFont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-    	offset (promptFont), XtRString, "*-times-bold-r-normal--18-*"},
+    	offset (promptFont), XtRString, "*-new century schoolbook-bold-r-normal-*-18-*"},
     {XtNgreetFont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-    	offset (greetFont), XtRString,	"*-times-bold-i-normal--24-*"},
+    	offset (greetFont), XtRString,	"*-new century schoolbook-bold-i-normal-*-24-*"},
     {XtNfailFont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-	offset (failFont), XtRString,	"*-times-bold-i-normal--18-*"},
+	offset (failFont), XtRString,	"*-new century schoolbook-bold-r-normal-*-18-*"},
     {XtNgreeting, XtCGreeting, XtRString, sizeof (char *),
     	offset(greeting), XtRString, "Welcome to the X Window System"},
     {XtNnamePrompt, XtCNamePrompt, XtRString, sizeof (char *),
@@ -66,7 +66,7 @@ static XtResource resources[] = {
     {XtNpasswdPrompt, XtCNamePrompt, XtRString, sizeof (char *),
 	offset(passwdPrompt), XtRString, "Password:  "},
     {XtNfail, XtCFail, XtRString, sizeof (char *),
-	offset(fail), XtRString, "Login Failed"},
+	offset(fail), XtRString, "Login failed, please try again."},
     {XtNfailTimeout, XtCFailTimeout, XtRInt, sizeof (int),
 	offset(failTimeout), XtRString, "30"},
     {XtNnotifyDone, XtCCallback, XtRFunction, sizeof (caddr_t),
