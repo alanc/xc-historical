@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.28 91/07/17 16:11:36 gildea Exp $
 INSTALLFLAGS = $(INSTINCFLAGS)
 HEADERS = \
 	1x1 \
@@ -68,7 +68,8 @@ HEADERS = \
 	xlogo11 \
 	xlogo16 \
 	xlogo32 \
-	xlogo64 
+	xlogo64 \
+	xsnow
 
 
 all::
