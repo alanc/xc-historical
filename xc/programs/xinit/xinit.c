@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.25 88/09/05 15:05:56 jim Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.26 88/09/06 17:36:06 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -224,13 +224,16 @@ register char **argv;
 		(void) sprintf (xinitrcbuf, "%s/%s", cp, XINITRC);
 	    }
 	    if (xinitrcbuf[0]) {
-		if (access (xinitrcbuf, R_OK) == 0) {		/* read */
+		if (access (xinitrcbuf, X_OK) == 0) {		/* execute */
+		    client += start_of_client_args - 1;
+		    client[0] = xinitrcbuf;
+		} else if (access (xinitrcbuf, R_OK) == 0) {	/* read */
 		    client += start_of_client_args - 2;
 		    client[0] = SHELL;
 		    client[1] = xinitrcbuf;
 		} else if (access (xinitrcbuf, F_OK) == 0) {	/* exists */
 		    fprintf (stderr,
-		     "%s:  warning, can't read client init file \"%s\"\n",
+	     "%s:  warning, can't execute or read client init file \"%s\"\n",
 			     program, xinitrcbuf);
 		} else if (required) {			/* doesn't exist */
 		    fprintf (stderr, 
@@ -256,13 +259,16 @@ register char **argv;
 		(void) sprintf (xserverrcbuf, "%s/%s", cp, XSERVERRC);
 	    }
 	    if (xserverrcbuf[0]) {
-		if (access (xserverrcbuf, R_OK) == 0) {		/* read */
+		if (access (xserverrcbuf, X_OK) == 0) {		/* execute */
+		    server += start_of_server_args - 1;
+		    server[0] = xserverrcbuf;
+		} else if (access (xserverrcbuf, R_OK) == 0) {	/* read */
 		    server += start_of_server_args - 2;
 		    server[0] = SHELL;
 		    server[1] = xserverrcbuf;
 		} else if (access (xserverrcbuf, F_OK) == 0) {	/* exists */
 		    fprintf (stderr,
-		     "%s:  warning, can't read server init file \"%s\"\n",
+	     "%s:  warning, can't execute or read server init file \"%s\"\n",
 			     program, xserverrcbuf);
 		} else if (required) {			/* doesn't exist */
 		    fprintf (stderr, 
