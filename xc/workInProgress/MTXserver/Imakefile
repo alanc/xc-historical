@@ -56,6 +56,9 @@ ServerTarget(Xqvss,dix $(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
 #
 # sun server
 #
+#ifdef UseSunWindowsInServer
+SUNWINDOWSLIBS = -lsunwindow -lpixrect
+#endif
 SUNDIRS = ddx/mi ddx/mfb ddx/cfb ddx/sun os/4.2bsd
 SUNOBJS = ddx/sun/sunInit.o
 SUNLIBS = $(SUN) $(CFB) $(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
