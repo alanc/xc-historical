@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.9 91/07/19 16:59:53 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.10 91/07/20 15:01:39 rws Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
@@ -35,7 +35,7 @@ all:: fs config
 
 ServerTarget(fs,$(FSDIRS),NullParameter,$(FSLIBS),$(SYSLIBS))
 
-CppScriptTarget(config,config.cpp,$(SITE_CONFIG),NullParameter)
+CppFileTarget(config,config.cpp,$(SITE_CONFIG),NullParameter)
 
 InstallProgram(fs,$(BINDIR))
 
