@@ -19,4 +19,13 @@ NormalLibraryTarget(os,$(OBJS))
 LintLibraryTarget(os,$(SRCS))
 NormalLintTarget($(SRCS))
 
+# these depend on ConnectionFlags
+access.o: $(IRULESRC)/$(MACROFILE)
+connection.o: $(IRULESRC)/$(MACROFILE)
+
+# these depend on COMPRESSED_FONTS
+fileio.o: $(IRULESRC)/$(MACROFILE)
+filenames.o: $(IRULESRC)/$(MACROFILE)
+fileutils.o: $(IRULESRC)/$(MACROFILE)
+
 DependTarget()
