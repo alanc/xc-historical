@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.81 89/03/11 16:53:48 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.82 89/03/12 16:29:37 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2420,17 +2420,22 @@ ProcAllocColorCells           (client)
 	unsigned long		*ppixels, *pmasks;
 
 	npixels = stuff->colors;
+	if (!npixels)
+	{
+	    client->errorValue = npixels;
+	    return (BadValue);
+	}
 	nmasks = stuff->planes;
 	length = ((long)npixels + (long)nmasks) * sizeof(Pixel);
 	ppixels = (Pixel *)ALLOCATE_LOCAL(length);
-	if(!ppixels && length)
+	if(!ppixels)
             return(BadAlloc);
 	pmasks = ppixels + npixels;
 
 	if(retval = AllocColorCells(client->index, pcmp, npixels, nmasks, 
 				    (Bool)stuff->contiguous, ppixels, pmasks))
 	{
-	    if (ppixels) DEALLOCATE_LOCAL(ppixels);
+	    DEALLOCATE_LOCAL(ppixels);
             if (client->noClientException != Success)
                 return(client->noClientException);
 	    else
@@ -2442,12 +2447,9 @@ ProcAllocColorCells           (client)
 	accr.nPixels = npixels;
 	accr.nMasks = nmasks;
         WriteReplyToClient(client, sizeof (xAllocColorCellsReply), &accr);
-	if (length)
-	{
-	    client->pSwapReplyFunc = Swap32Write;
-	    WriteSwappedDataToClient(client, length, ppixels);
-	}
-	if (ppixels) DEALLOCATE_LOCAL(ppixels);
+	client->pSwapReplyFunc = Swap32Write;
+	WriteSwappedDataToClient(client, length, ppixels);
+	DEALLOCATE_LOCAL(ppixels);
         return (client->noClientException);        
     }
     else
@@ -2474,19 +2476,24 @@ ProcAllocColorPlanes(client)
 	unsigned long		*ppixels;
 
 	npixels = stuff->colors;
+	if (!npixels)
+	{
+	    client->errorValue = npixels;
+	    return (BadValue);
+	}
 	acpr.type = X_Reply;
 	acpr.sequenceNumber = client->sequence;
 	acpr.nPixels = npixels;
 	length = (long)npixels * sizeof(Pixel);
 	ppixels = (Pixel *)ALLOCATE_LOCAL(length);
-	if(!ppixels && length)
+	if(!ppixels)
             return(BadAlloc);
 	if(retval = AllocColorPlanes(client->index, pcmp, npixels,
 	    (int)stuff->red, (int)stuff->green, (int)stuff->blue,
 	    (int)stuff->contiguous, ppixels,
 	    &acpr.redMask, &acpr.greenMask, &acpr.blueMask))
 	{
-            if (ppixels) DEALLOCATE_LOCAL(ppixels);
+            DEALLOCATE_LOCAL(ppixels);
             if (client->noClientException != Success)
                 return(client->noClientException);
 	    else
@@ -2494,12 +2501,9 @@ ProcAllocColorPlanes(client)
 	}
 	acpr.length = length >> 2;
 	WriteReplyToClient(client, sizeof(xAllocColorPlanesReply), &acpr);
-	if (length)
-	{
-	    client->pSwapReplyFunc = Swap32Write;
-	    WriteSwappedDataToClient(client, length, ppixels);
-	}
-	if (ppixels) DEALLOCATE_LOCAL(ppixels);
+	client->pSwapReplyFunc = Swap32Write;
+	WriteSwappedDataToClient(client, length, ppixels);
+	DEALLOCATE_LOCAL(ppixels);
         return (client->noClientException);        
     }
     else
