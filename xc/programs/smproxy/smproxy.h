@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.h,v 1.3 94/07/27 16:05:47 mor Exp mor $ */
+/* $XConsortium: smproxy.h,v 1.4 94/08/10 19:46:13 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -66,4 +66,8 @@ typedef struct WinInfo {
 extern int WriteProxyFileEntry ();
 extern int ReadProxyFileEntry ();
 extern void ReadProxyFile ();
+extern char *WriteProxyFile ();
 extern char *LookupClientID ();
+
+
+#define SAVEFILE_VERSION 1
