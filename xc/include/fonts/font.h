@@ -22,6 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $NCDId: @(#)font.h,v 1.7 1991/06/24 17:00:23 lemke Exp $ */
 
 #ifndef FONT_H
 #define FONT_H
@@ -65,6 +66,7 @@ typedef int DrawDirection;
 #define	BadFontPath	86
 #define	BadCharRange	87
 #define	BadFontFormat	88
+#define	FPEResetFailed	89	/* for when an FPE reset won't work */
 
 /* OpenFont flags */
 #define FontLoadInfo	0x0001
@@ -77,6 +79,8 @@ typedef int DrawDirection;
 /* Query flags */
 #define	LoadAll		0x1
 #define	FinishRamge	0x2
+#define       EightBitFont    0x4
+#define       SixteenBitFont  0x8
 
 typedef char *closure;
 
