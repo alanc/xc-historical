@@ -8,7 +8,7 @@ SRCS = 5x8.bdf 6x9.bdf 6x10.bdf 6x12.bdf 6x13.bdf 6x13B.bdf \
 	clR6x13.bdf clR6x6.bdf clR6x8.bdf clR7x10.bdf clR7x12.bdf clR7x14.bdf \
 	clR7x8.bdf clR8x10.bdf clR8x12.bdf clR8x13.bdf clR8x14.bdf \
 	clR8x16.bdf clR8x8.bdf clR9x15.bdf k14.bdf 7x14.bdf 7x14rk.bdf \
-	12x24.bdf 12x24rk.bdf 8x16.bdf 8x16rk.bdf
+	12x24.bdf 12x24rk.bdf 8x16.bdf 8x16rk.bdf jiskan16.bdf jiskan24.bdf
 
 OBJS = 5x8.snf 6x9.snf 6x10.snf 6x12.snf 6x13.snf 6x13B.snf \
 	7x13.snf 7x13B.snf 8x13.snf 8x13B.snf 9x15.snf 9x15B.snf \
@@ -20,7 +20,7 @@ OBJS = 5x8.snf 6x9.snf 6x10.snf 6x12.snf 6x13.snf 6x13B.snf \
 	clR6x13.snf clR6x6.snf clR6x8.snf clR7x10.snf clR7x12.snf clR7x14.snf \
 	clR7x8.snf clR8x10.snf clR8x12.snf clR8x13.snf clR8x14.snf \
 	clR8x16.snf clR8x8.snf clR9x15.snf k14.snf 7x14.snf 7x14rk.snf \
-	12x24.snf 12x24rk.snf 8x16.snf 8x16rk.snf
+	12x24.snf 12x24rk.snf 8x16.snf 8x16rk.snf jiskan16.snf jiskan24.snf
 
 FONTINSTDIR = $(FONTDIR)/misc
 
@@ -86,6 +86,8 @@ FontTarget(12x24)
 FontTarget(12x24rk)
 FontTarget(8x16)
 FontTarget(8x16rk)
+FontTarget(jiskan16)
+FontTarget(jiskan24)
 
 InstallFonts($(FONTINSTDIR))
 InstallFontAliases($(FONTINSTDIR))
