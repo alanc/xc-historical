@@ -20,7 +20,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * $NCDId: @(#)swaprep.c,v 1.3 1994/03/24 17:55:13 lemke Exp $
- * $XConsortium: utils.c,v 1.5 94/03/17 19:46:39 dpw Exp $
+ * $XConsortium: swaprep.c,v 1.1 94/03/27 14:27:43 dpw Exp mor $
  */
 
 #include	<stdio.h>
@@ -225,6 +225,19 @@ SwapGetPropertyReply(rep)
     swapl(&rep->propertyType, n);
     swapl(&rep->bytesAfter, n);
     swapl(&rep->nItems, n);
+}
+
+void
+SwapGetImageReply (rep)
+
+xGetImageReply *rep;
+
+{
+    char n;
+
+    swaps (&rep->sequenceNumber, n);
+    swapl (&rep->length, n);
+    swapl (&rep->visual, n);
 }
 
 void
