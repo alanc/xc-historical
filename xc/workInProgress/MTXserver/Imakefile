@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 2.3 94/01/19 17:47:04 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 2.4 94/01/21 14:07:22 rob Exp $
 /*
  * Merged X Server Master Makefile
  */
@@ -103,9 +103,9 @@ XCOMM tree should result in each subdirectory being built only once,
 XCOMM even if multiple servers that share subdirectories are being built.
 XCOMM It was possible to get this result with the old SUBDIRSn scheme
 XCOMM (from which the current scheme is derived), but it became very
-XCOMM difficult to attain with the advent of the fake framebuffer server
-XCOMM (Xffb), which can be built on any platform and thus interacted strongly
-XCOMM with SUBDIRSn.  The current scheme made accomodating Xffb a snap,
+XCOMM difficult to attain with the advent of the Virtual framebuffer server
+XCOMM (Xvfb), which can be built on any platform and thus interacted strongly
+XCOMM with SUBDIRSn.  The current scheme made accomodating Xvfb a snap,
 XCOMM and should in general be easier to maintain.
 
 #if XdecServer
@@ -403,30 +403,30 @@ Xnon: $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DEPDIRS)
 #endif /* XnonServer */
 
 
-#if XFakeFramebufferServer
+#if XVirtualFramebufferServer
 XCOMM
-XCOMM server with fake (malloc'ed) framebuffer
+XCOMM server with Virtual (malloc'ed) framebuffer
 XCOMM
 MFBDIR   = mfb
 CFB8DIR  = cfb
 CFB16DIR = cfb16
 CFB32DIR = cfb32
-XFFBDDXDIR  = hw/ffb
-XFFBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(XFFBDDXDIR) $(DEPDIRS)
-XFFBOBJS = hw/ffb/stubs.o
-XFFB = hw/ffb/libffb.a
-XFFBLIBS = $(DIX) $(OS) $(FONT) $(XFFB) $(MFB) $(CFB) $(MI) $(EXTENSIONS) 
+XVFBDDXDIR  = hw/vfb
+XVFBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(XVFBDDXDIR) $(DEPDIRS)
+XVFBOBJS = hw/vfb/stubs.o
+XVFB = hw/vfb/libvfb.a
+XVFBLIBS = $(DIX) $(OS) $(FONT) $(XVFB) $(MFB) $(CFB) $(MI) $(EXTENSIONS) 
 #ifdef HPArchitecture
-XFFBSYSLIBS =  $(CBRT) $(SYSLIBS) /usr/lib/libdbm.a -ldld
+XVFBSYSLIBS =  $(CBRT) $(SYSLIBS) /usr/lib/libdbm.a -ldld
 #else
-XFFBSYSLIBS = $(SYSLIBS)
+XVFBSYSLIBS = $(SYSLIBS)
 #endif
-ServerTarget(Xffb,$(XFFBDIRS),$(XFFBOBJS),$(XFFBLIBS),$(XFFBSYSLIBS))
-#endif /* XFakeFramebufferServer */
+ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS),$(XVFBLIBS),$(XVFBSYSLIBS))
+#endif /* XVirtualFramebufferServer */
 
 
 CFBDIRS = $(CFB8DIR) $(CFB16DIR) $(CFB32DIR)
-DDXDIRS = $(DDXDIR1) $(DDXDIR2) $(DDXDIR3) $(XFFBDDXDIR) $(XNESTDDXDIR)
+DDXDIRS = $(DDXDIR1) $(DDXDIR2) $(DDXDIR3) $(XVFBDDXDIR) $(XNESTDDXDIR)
 SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFBDIRS) $(DDXDIRS)
 
 #ifdef ServerToInstall
