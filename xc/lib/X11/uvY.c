@@ -1,4 +1,4 @@
-/* $XConsortium: CIEuvY.c,v 1.5 91/02/12 16:09:30 dave Exp $" */
+/* $XConsortium: CIEuvY.c,v 1.6 91/05/13 22:25:31 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -37,7 +37,6 @@
  */
 
 #include <X11/Xos.h>
-#include <X11/Xfuncs.h>
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
@@ -54,8 +53,6 @@ extern char	XcmsCIEuvY_prefix[];
 
 static int CIEuvY_ParseString();
 Status XcmsCIEuvY_ValidSpec();
-Status XcmsCIEuvYToCIEXYZ();
-Status XcmsCIEXYZToCIEuvY();
 /*
  *	DEFINES
  *		Internal definitions that need NOT be exported to any package
@@ -75,7 +72,7 @@ Status XcmsCIEXYZToCIEuvY();
     /*
      * NULL terminated list of functions applied to get from CIEuvY to CIEXYZ
      */
-static XcmsFuncPtr Fl_CIEuvY_to_CIEXYZ[] = {
+static XcmsConversionProc Fl_CIEuvY_to_CIEXYZ[] = {
     XcmsCIEuvYToCIEXYZ,
     NULL
 };
@@ -83,7 +80,7 @@ static XcmsFuncPtr Fl_CIEuvY_to_CIEXYZ[] = {
     /*
      * NULL terminated list of functions applied to get from CIEXYZ to CIEuvY
      */
-static XcmsFuncPtr Fl_CIEXYZ_to_CIEuvY[] = {
+static XcmsConversionProc Fl_CIEXYZ_to_CIEuvY[] = {
     XcmsCIEXYZToCIEuvY,
     NULL
 };

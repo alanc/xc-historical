@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCMnV.c,v 1.4 91/02/12 16:10:08 dave Exp $" */
+/* $XConsortium: TekHVCMnV.c,v 1.5 91/05/13 22:46:09 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -122,7 +122,7 @@ XcmsTekHVCQueryMinV (ccc, hue, chroma, pColor_return)
     /* Use my own CCC */
     bcopy ((char *)ccc, (char *)&myCCC, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat;/* inherit screen white pt */
-    myCCC.gamutCompProc = (XcmsFuncPtr)NULL;	/* no gamut comp func */
+    myCCC.gamutCompProc = (XcmsCompressionProc)NULL;/* no gamut comp func */
 
     tmp.spec.TekHVC.H = hue;
     tmp.spec.TekHVC.V = 100.0;

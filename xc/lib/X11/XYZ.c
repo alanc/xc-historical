@@ -1,4 +1,4 @@
-/* $XConsortium: CIEXYZ.c,v 1.3 91/01/22 22:13:51 alt Exp $" */
+/* $XConsortium: CIEXYZ.c,v 1.5 91/05/13 22:24:16 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -69,7 +69,7 @@ Status XcmsCIEXYZ_ValidSpec();
  *      LOCALS VARIABLES
  */
 
-static XcmsFuncPtr Fl_CIEXYZ_to_CIEXYZ[] = {
+static XcmsConversionProc Fl_CIEXYZ_to_CIEXYZ[] = {
     NULL
 };
 

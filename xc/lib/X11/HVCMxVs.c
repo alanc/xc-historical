@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCMxVs.c,v 1.4 91/02/12 16:10:22 dave Exp $" */
+/* $XConsortium: TekHVCMxVs.c,v 1.5 91/05/13 22:48:15 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -74,7 +74,7 @@ XcmsTekHVCQueryMaxVSamples(ccc, hue, pColor_in_out, nSamples)
     XcmsCCC ccc;
     XcmsFloat hue;
     XcmsColor *pColor_in_out;
-    unsigned short nSamples;
+    unsigned int nSamples;
 
 /*
  *	DESCRIPTION
@@ -121,7 +121,7 @@ XcmsTekHVCQueryMaxVSamples(ccc, hue, pColor_in_out, nSamples)
     /* setup the CCC to use for the conversions. */
     bcopy ((char *) ccc, (char *) &myCCC, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat;
-    myCCC.gamutCompProc = (XcmsFuncPtr) NULL;
+    myCCC.gamutCompProc = (XcmsCompressionProc) NULL;
 
     /* Step 1: compute the maximum value and chroma for this hue. */
 

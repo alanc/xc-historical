@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCCC.c,v 1.8 91/05/13 23:04:18 rws Exp $" */
+/* $XConsortium: XcmsCCC.c,v 1.9 91/07/22 15:58:22 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -62,9 +62,9 @@ XcmsCreateCCC(dpy, screenNumber, visual, clientWhitePt, gamutCompProc,
     int	screenNumber;
     Visual *visual;
     XcmsColor *clientWhitePt;
-    XcmsFuncPtr gamutCompProc;
+    XcmsCompressionProc gamutCompProc;
     XPointer gamutCompClientData;
-    XcmsFuncPtr whitePtAdjProc;
+    XcmsWhiteAdjustProc whitePtAdjProc;
     XPointer whitePtAdjClientData;
 /*
  *	DESCRIPTION

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCmap.c,v 1.9 91/05/13 23:07:03 rws Exp $" */
+/* $XConsortium: XcmsCmap.c,v 1.10 91/05/26 19:55:01 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -469,9 +469,9 @@ XcmsCCCOfColormap(dpy, cmap)
 		    0,			/* screenNumber */
 		    pRec->visual,
 		    (XcmsColor *)NULL,	/* clientWhitePt */
-		    (XcmsFuncPtr)NULL,  /* gamutCompProc */
+		    (XcmsCompressionProc)NULL,  /* gamutCompProc */
 		    (XPointer)NULL,	/* gamutCompClientData */
-		    (XcmsFuncPtr)NULL,  /* whitePtAdjProc */
+		    (XcmsWhiteAdjustProc)NULL,  /* whitePtAdjProc */
 		    (XPointer)NULL	/* whitePtAdjClientData */
 		    ));
 	} else {
@@ -483,9 +483,9 @@ XcmsCCCOfColormap(dpy, cmap)
 				i,		   /* screenNumber */
 				pRec->visual,
 				(XcmsColor *)NULL, /* clientWhitePt */
-				(XcmsFuncPtr)NULL, /* gamutCompProc */
+				(XcmsCompressionProc)NULL, /* gamutCompProc */
 				(XPointer)NULL,	   /* gamutCompClientData */
-				(XcmsFuncPtr)NULL, /* whitePtAdjProc */
+				(XcmsWhiteAdjustProc)NULL, /* whitePtAdjProc */
 				(XPointer)NULL	   /* whitePtAdjClientData */
 				));
 		    }

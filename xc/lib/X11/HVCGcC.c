@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCGcC.c,v 1.5 91/05/13 22:44:20 rws Exp $" */
+/* $XConsortium: TekHVCGcC.c,v 1.6 91/06/27 10:52:16 dave Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -50,9 +50,8 @@
 /*
  *	EXTERNS
  */
-extern Status XcmsTekHVCQueryMaxC();
 extern XcmsColorSpace XcmsTekHVCColorSpace;
-extern XcmsSCCFuncSet	XcmsLinearRGBFunctionSet;
+extern XcmsFunctionSet	XcmsLinearRGBFunctionSet;
 
 
 

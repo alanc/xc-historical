@@ -1,4 +1,4 @@
-/* $XConsortium: CIELabMxVC.c,v 1.5 91/05/13 22:47:44 rws Exp $ */
+/* $XConsortium: CIELabMxLC.c,v 1.1 91/07/24 23:26:35 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -212,7 +212,7 @@ XcmsCIELabQueryMaxLC (ccc, hue_angle, pColor_return)
     /* Use my own CCC */
     bcopy ((char *)ccc, (char *)&myCCC, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat;
-    myCCC.gamutCompProc = (XcmsFuncPtr)NULL;
+    myCCC.gamutCompProc = (XcmsCompressionProc)NULL;
 
     while (hue_angle < 0.0) {
 	hue_angle += 360.0;
@@ -224,31 +224,3 @@ XcmsCIELabQueryMaxLC (ccc, hue_angle, pColor_return)
     return(_XcmsCIELabQueryMaxLCRGB (&myCCC, radians(hue_angle), pColor_return,
 	    (XcmsRGBi *)NULL));
 }
-
-#ifdef ROUTINE_INSTEAD_OF_MACRO
-XcmsFloat
-XcmsuStarofHueChroma(h, c) 
-XcmsFloat h, c;
-{
-    XcmsFloat result;
-
-    if (XCMS_COS(h) == 0.0) {
-	return (0.0);
-    }
-    result = c / (XcmsFloat)(XCMS_SQRT((XCMS_TAN(h) * XCMS_TAN(h)) + 1.0));
-    return(result);
-}
-
-XcmsFloat
-XcmsvStarofHueChroma(h, c) 
-XcmsFloat h, c;
-{
-    XcmsFloat result;
-
-    if (XCMS_COS(h) == 0.0) {
-	return (0.0);
-    }
-    result = c/(XcmsFloat)(XCMS_SQRT((1.0 / (XCMS_TAN(h) * XCMS_TAN(h))) + 1.0));
-    return(result);
-}
-#endif

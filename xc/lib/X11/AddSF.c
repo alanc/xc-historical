@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsAddSF.c,v 1.3 91/02/12 16:12:18 dave Exp $" */
+/* $XConsortium: XcmsAddSF.c,v 1.4 91/05/13 23:02:21 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -49,8 +49,8 @@
  */
 extern XPointer *_XcmsPushPointerArray();
 extern XcmsColorFormat _XcmsRegFormatOfPrefix();
-extern XcmsSCCFuncSet **_XcmsSCCFuncSets;
-extern XcmsSCCFuncSet **_XcmsSCCFuncSetsInit;
+extern XcmsFunctionSet **_XcmsSCCFuncSets;
+extern XcmsFunctionSet **_XcmsSCCFuncSetsInit;
 extern XcmsColorSpace **_XcmsDDColorSpaces;
 extern XcmsColorSpace **_XcmsDDColorSpacesInit;
 
@@ -65,7 +65,7 @@ extern XcmsColorSpace **_XcmsDDColorSpacesInit;
  */
 Status
 XcmsAddFunctionSett(pNewFS)
-    XcmsSCCFuncSet *pNewFS;
+    XcmsFunctionSet *pNewFS;
 /*
  *	DESCRIPTION
  *		Additional Screen Color Characterization Function Sets are
@@ -89,14 +89,14 @@ XcmsAddFunctionSett(pNewFS)
  *		Characterization Function Set.
  */
 {
-    XcmsSCCFuncSet **papSCCFuncSets = _XcmsSCCFuncSets;
+    XcmsFunctionSet **papSCCFuncSets = _XcmsSCCFuncSets;
     XcmsColorSpace **papNewCSs;
     XcmsColorSpace *pNewCS, **paptmpCS;
     XcmsColorFormat lastID = 0;
 
 
     if (papSCCFuncSets != NULL) {
-	if ((papNewCSs = pNewFS->papDDColorSpaces) == NULL) {
+	if ((papNewCSs = pNewFS->DDColorSpaces) == NULL) {
 	    /*
 	     * Error, new Screen Color Characterization Function Set
 	     *	missing color spaces
@@ -143,7 +143,7 @@ XcmsAddFunctionSett(pNewFS)
 	    }
 	}
     }
-    if ((papSCCFuncSets = (XcmsSCCFuncSet **)
+    if ((papSCCFuncSets = (XcmsFunctionSet **)
 	    _XcmsPushPointerArray((XPointer *) _XcmsSCCFuncSets,
 	    (XPointer) pNewFS,
 	    (XPointer *)_XcmsSCCFuncSetsInit)) == NULL) {

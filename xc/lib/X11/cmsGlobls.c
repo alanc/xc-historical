@@ -1,4 +1,4 @@
-/*$XConsortium: XcmsGlobls.c,v 1.6 91/05/13 23:22:09 rws Exp $ */
+/*$XConsortium: XcmsGlobls.c,v 1.7 91/06/27 10:52:29 dave Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -42,9 +42,9 @@
  *              that are not already declared in any of the included header
  *		files (external includes or internal includes).
  */
-extern XcmsSCCFuncSet	XcmsLinearRGBFunctionSet;
+extern XcmsFunctionSet	XcmsLinearRGBFunctionSet;
 #ifdef GRAY
-extern XcmsSCCFuncSet	XcmsGrayFunctionSet;
+extern XcmsFunctionSet	XcmsGrayFunctionSet;
 #endif /* GRAY */
 
 /* UNDEFINED Color Space */
@@ -65,10 +65,8 @@ extern XcmsColorSpace	XcmsCIELabColorSpace;
 /* CIE Luv Color Space */
 extern XcmsColorSpace	XcmsCIELuvColorSpace;
 
-#ifndef TekHVC_NOTIN_APILIB
 /* TekHVC Color Space */
 extern XcmsColorSpace	XcmsTekHVCColorSpace;
-#endif
 
 /* Device Dependent Color Space Structures */
 extern XcmsColorSpace	XcmsRGBiColorSpace;
@@ -119,7 +117,7 @@ XcmsColorSpace **_XcmsDDColorSpaces = &_XcmsDDColorSpacesInit[0];
     /*
      * Initial array of Screen Color Characterization Function Sets
      */
-XcmsSCCFuncSet	*_XcmsSCCFuncSetsInit[] = {
+XcmsFunctionSet	*_XcmsSCCFuncSetsInit[] = {
 	&XcmsLinearRGBFunctionSet,
 #ifdef GRAY
 	&XcmsGrayFunctionSet,
@@ -131,7 +129,7 @@ XcmsSCCFuncSet	*_XcmsSCCFuncSetsInit[] = {
      * accessible by the color management system.  End of list is
      * indicated by a NULL pointer.
      */
-XcmsSCCFuncSet **_XcmsSCCFuncSets = _XcmsSCCFuncSetsInit;
+XcmsFunctionSet **_XcmsSCCFuncSets = _XcmsSCCFuncSetsInit;
 
     /*
      * X Consortium Registered Device-Independent Color Spaces

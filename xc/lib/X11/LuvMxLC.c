@@ -1,4 +1,4 @@
-/* $XConsortium: CIELuvMxVC.c,v 1.5 91/05/13 22:47:44 rws Exp $ */
+/* $XConsortium: CIELuvMxLC.c,v 1.1 91/07/24 23:26:51 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -212,7 +212,7 @@ XcmsCIELuvQueryMaxLC (ccc, hue_angle, pColor_return)
     /* Use my own CCC */
     bcopy ((char *)ccc, (char *)&myCCC, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat;
-    myCCC.gamutCompProc = (XcmsFuncPtr)NULL;
+    myCCC.gamutCompProc = (XcmsCompressionProc)NULL;
 
     while (hue_angle < 0.0) {
 	hue_angle += 360.0;

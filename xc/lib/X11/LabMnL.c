@@ -1,4 +1,4 @@
-/* $XConsortium: CIELabMnL.c,v 1.6 91/05/13 22:47:13 rws Exp $ */
+/* $XConsortium: CIELabMnL.c,v 1.1 91/07/24 23:26:21 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -101,7 +101,7 @@ XcmsCIELabQueryMinL(ccc, hue_angle, chroma, pColor_return)
     /* setup the CCC to use for the conversions. */
     bcopy ((char *) ccc, (char *) &myCCC, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat;
-    myCCC.gamutCompProc = (XcmsFuncPtr) NULL;
+    myCCC.gamutCompProc = (XcmsCompressionProc) NULL;
 
     while (hue_angle < 0.0) {
 	hue_angle += 360.0;

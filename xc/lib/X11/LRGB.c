@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.18 91/07/23 19:33:55 rws Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.18 91/07/23 19:37:03 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -88,10 +88,6 @@ extern void _XcmsFreeIntensityMaps();
  *      FORWARD DECLARATIONS
  */
 static void LINEAR_RGB_FreeSCCData();
-Status XcmsRGBToRGBi();
-Status XcmsRGBiToCIEXYZ();
-Status XcmsCIEXYZToRGBi();
-Status XcmsRGBiToRGB();
 static int LINEAR_RGB_InitSCCData();
 int XcmsLRGB_RGB_ParseString();
 int XcmsLRGB_RGBi_ParseString();
@@ -131,7 +127,7 @@ static unsigned short Const MASK[17] = {
      * in series will convert an XcmsColor structure from XcmsRGBFormat
      * to XcmsCIEXYZFormat.
      */
-static XcmsFuncPtr Fl_RGB_to_CIEXYZ[] = {
+static XcmsConversionProc Fl_RGB_to_CIEXYZ[] = {
     XcmsRGBToRGBi,
     XcmsRGBiToCIEXYZ,
     NULL
@@ -142,7 +138,7 @@ static XcmsFuncPtr Fl_RGB_to_CIEXYZ[] = {
      * in series will convert an XcmsColor structure from XcmsCIEXYZFormat
      * to XcmsRGBFormat.
      */
-static XcmsFuncPtr Fl_CIEXYZ_to_RGB[] = {
+static XcmsConversionProc Fl_CIEXYZ_to_RGB[] = {
     XcmsCIEXYZToRGBi,
     XcmsRGBiToRGB,
     NULL
@@ -153,7 +149,7 @@ static XcmsFuncPtr Fl_CIEXYZ_to_RGB[] = {
      * in series will convert an XcmsColor structure from XcmsRGBiFormat
      * to XcmsCIEXYZFormat.
      */
-static XcmsFuncPtr Fl_RGBi_to_CIEXYZ[] = {
+static XcmsConversionProc Fl_RGBi_to_CIEXYZ[] = {
     XcmsRGBiToCIEXYZ,
     NULL
 };
@@ -163,7 +159,7 @@ static XcmsFuncPtr Fl_RGBi_to_CIEXYZ[] = {
      * in series will convert an XcmsColor structure from XcmsCIEXYZFormat
      * to XcmsRGBiFormat.
      */
-static XcmsFuncPtr Fl_CIEXYZ_to_RGBi[] = {
+static XcmsConversionProc Fl_CIEXYZ_to_RGBi[] = {
     XcmsCIEXYZToRGBi,
     NULL
 };
@@ -214,7 +210,7 @@ static XcmsColorSpace	*DDColorSpaces[] = {
     /*
      * LINEAR_RGB Screen Color Characteristics Function Set.
      */
-XcmsSCCFuncSet	XcmsLinearRGBFunctionSet =
+XcmsFunctionSet	XcmsLinearRGBFunctionSet =
     {
 	&DDColorSpaces[0],	/* pDDColorSpaces */
 	LINEAR_RGB_InitSCCData,	/* pInitScrnFunc */
@@ -1554,7 +1550,7 @@ XcmsRGBiToCIEXYZ(ccc, pXcmsColors_in_out, nColors, pCompressed)
     XcmsCCC ccc;
     XcmsColor *pXcmsColors_in_out;/* pointer to XcmsColors to convert 	*/
     unsigned int nColors;	/* Number of colors			*/
-    char *pCompressed;		/* pointer to a bit array		*/
+    Bool *pCompressed;		/* pointer to a bit array		*/
 /*
  *	DESCRIPTION
  *		Converts color specifications in an array of XcmsColor
@@ -1607,7 +1603,7 @@ XcmsRGBiToRGB(ccc, pXcmsColors_in_out, nColors, pCompressed)
     XcmsCCC ccc;
     XcmsColor *pXcmsColors_in_out;/* pointer to XcmsColors to convert 	*/
     unsigned int nColors;	/* Number of colors			*/
-    char *pCompressed;		/* pointer to a bit array		*/
+    Bool *pCompressed;		/* pointer to a bit array		*/
 /*
  *	DESCRIPTION
  *		Converts color specifications in an array of XcmsColor
@@ -1690,7 +1686,7 @@ XcmsRGBToRGBi(ccc, pXcmsColors_in_out, nColors, pCompressed)
     XcmsCCC ccc;
     XcmsColor *pXcmsColors_in_out;/* pointer to XcmsColors to convert 	*/
     unsigned int nColors;	/* Number of colors			*/
-    char *pCompressed;		/* pointer to a bit array		*/
+    Bool *pCompressed;		/* pointer to a bit array		*/
 /*
  *	DESCRIPTION
  *		Converts color specifications in an array of XcmsColor

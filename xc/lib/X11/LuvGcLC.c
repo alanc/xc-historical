@@ -1,4 +1,4 @@
-/* $XConsortium: CIELuvGcLC.c,v 1.6 91/05/13 22:45:19 rws Exp $ */
+/* $XConsortium: CIELuvGcLC.c,v 1.1 91/07/24 23:26:43 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -98,7 +98,7 @@ XcmsCIELuvClipLuv (ccc, pColors_in_out, nColors, i, pCompressed)
     /* Use my own CCC */
     bcopy ((char *)ccc, (char *)&myCCC, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat;/* inherit screen white */
-    myCCC.gamutCompProc = (XcmsFuncPtr)NULL;	/* no gamut compression func */
+    myCCC.gamutCompProc = (XcmsCompressionProc)NULL;/* no gamut compression func */
 
     /*
      * Color specification passed as input can be assumed to:

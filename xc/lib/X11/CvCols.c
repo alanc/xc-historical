@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCvCols.c,v 1.7 91/05/13 23:20:39 rws Exp $" */
+/* $XConsortium: XcmsCvCols.c,v 1.8 91/07/09 14:19:12 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -143,7 +143,7 @@ ColorSpaceOfID(ccc, id)
     /*
      * Next try Device-Dependent color spaces
      */
-    papColorSpaces = ((XcmsSCCFuncSet *)ccc->pPerScrnInfo->functionSet)->papDDColorSpaces;
+    papColorSpaces = ((XcmsFunctionSet *)ccc->pPerScrnInfo->functionSet)->DDColorSpaces;
     if (papColorSpaces != NULL) {
 	while (*papColorSpaces != NULL) {
 	    if ((*papColorSpaces)->id == id) {
@@ -214,7 +214,7 @@ ValidDDColorSpaceID(ccc, id)
 
     if (ccc->pPerScrnInfo->state == XcmsInitSuccess ||
 	    ccc->pPerScrnInfo->state == XcmsInitDefault) {
-	papRec = ((XcmsSCCFuncSet *)ccc->pPerScrnInfo->functionSet)->papDDColorSpaces;
+	papRec = ((XcmsFunctionSet *)ccc->pPerScrnInfo->functionSet)->DDColorSpaces;
 	while (*papRec != NULL) {
 	    if ((*papRec)->id == id) {
 		return(1);
@@ -446,10 +446,10 @@ _XcmsDIConvertColors(ccc, pColors_in_out, pWhitePt, nColors,
  */
 {
     XcmsColorSpace *pFrom, *pTo;
-    XcmsFuncPtr *src_to_CIEXYZ, *src_from_CIEXYZ;
-    XcmsFuncPtr *dest_to_CIEXYZ, *dest_from_CIEXYZ;
-    XcmsFuncPtr *to_CIEXYZ_stop, *from_CIEXYZ_start;
-    XcmsFuncPtr *tmp;
+    XcmsConversionProc *src_to_CIEXYZ, *src_from_CIEXYZ;
+    XcmsConversionProc *dest_to_CIEXYZ, *dest_from_CIEXYZ;
+    XcmsConversionProc *to_CIEXYZ_stop, *from_CIEXYZ_start;
+    XcmsConversionProc *tmp;
 
     /*
      * Allow pWhitePt to equal NULL.  This appropriate when converting
@@ -598,10 +598,10 @@ _XcmsDDConvertColors(ccc, pColors_in_out, nColors, newFormat,
  */
 {
     XcmsColorSpace *pFrom, *pTo;
-    XcmsFuncPtr *src_to_CIEXYZ, *src_from_CIEXYZ;
-    XcmsFuncPtr *dest_to_CIEXYZ, *dest_from_CIEXYZ;
-    XcmsFuncPtr *from_CIEXYZ_start, *to_CIEXYZ_stop;
-    XcmsFuncPtr *tmp;
+    XcmsConversionProc *src_to_CIEXYZ, *src_from_CIEXYZ;
+    XcmsConversionProc *dest_to_CIEXYZ, *dest_from_CIEXYZ;
+    XcmsConversionProc *from_CIEXYZ_start, *to_CIEXYZ_stop;
+    XcmsConversionProc *tmp;
     int	retval;
     int hasCompressed = 0;
 
@@ -614,7 +614,7 @@ _XcmsDDConvertColors(ccc, pColors_in_out, nColors, newFormat,
 	return(XcmsSuccess);
     }
 
-    if (((XcmsSCCFuncSet *)ccc->pPerScrnInfo->functionSet) == NULL) {
+    if (((XcmsFunctionSet *)ccc->pPerScrnInfo->functionSet) == NULL) {
 	return(XcmsFailure);	/* hmm, an internal error? */
     }
 
@@ -995,7 +995,7 @@ XcmsConvertColors(ccc, pColors_in_out, nColors, targetFormat, pCompressed)
 			targetFormat, pColors_tmp, nColors, pCompressed);
 	    } else {
 		retval = _XcmsDDConvertColors(ccc, pColors_tmp, nColors,
-			targetFormat, (Bool *)pCompressed);
+			targetFormat, pCompressed);
 	    }
 	}
     }

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsInt.c,v 1.6 91/05/13 23:23:03 rws Exp $" */
+/* $XConsortium: XcmsInt.c,v 1.7 91/07/22 15:47:03 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -49,8 +49,7 @@
  *      EXTERNS
  */
 extern XcmsColorSpace **_XcmsDIColorSpaces;
-extern XcmsSCCFuncSet **_XcmsSCCFuncSets;
-extern Status XCMSCOMPPROC();
+extern XcmsFunctionSet **_XcmsSCCFuncSets;
 
 static void _XcmsFreeDefaultCCCs();
 
@@ -266,7 +265,7 @@ _XcmsFreeDefaultCCCs(dpy)
 	    if ((ccc->pPerScrnInfo->state == XcmsInitSuccess ||
 		    ccc->pPerScrnInfo->state == XcmsInitDefault)
 		    && ccc->pPerScrnInfo->screenData) {
-		(*((XcmsSCCFuncSet *)ccc->pPerScrnInfo->functionSet)->pFreeSCCData)
+		(*((XcmsFunctionSet *)ccc->pPerScrnInfo->functionSet)->screenFreeProc)
 			(ccc->pPerScrnInfo->screenData);
 	    }
 	}
@@ -302,7 +301,7 @@ _XcmsInitScrnInfo(dpy, screenNumber)
  *		Returns zero if initialization failed; non-zero otherwise.
  */
 {
-    XcmsSCCFuncSet **papSCCFuncSet = _XcmsSCCFuncSets;
+    XcmsFunctionSet **papSCCFuncSet = _XcmsSCCFuncSets;
     XcmsCCC defaultccc;
 
     /*
@@ -340,7 +339,7 @@ _XcmsInitScrnInfo(dpy, screenNumber)
     }
 
     while (*papSCCFuncSet != NULL) {
-	if ((*(*papSCCFuncSet)->pInitScrnFunc)(dpy, screenNumber,
+	if ((*(*papSCCFuncSet)->screenInitProc)(dpy, screenNumber,
 		defaultccc->pPerScrnInfo)) {
 	    defaultccc->pPerScrnInfo->state = XcmsInitSuccess;
 	    return(1);

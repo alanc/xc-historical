@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCGcVC.c,v 1.6 91/05/13 22:45:19 rws Exp $" */
+/* $XConsortium: TekHVCGcVC.c,v 1.7 91/06/27 10:52:21 dave Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -61,7 +61,7 @@
 extern int _XcmsTekHVC_CheckModify();
 extern Status _XcmsTekHVCQueryMaxVCRGB();
 extern XcmsColorSpace XcmsTekHVCColorSpace;
-extern XcmsSCCFuncSet	XcmsLinearRGBFunctionSet;
+extern XcmsFunctionSet	XcmsLinearRGBFunctionSet;
 
 
 /************************************************************************
@@ -118,7 +118,7 @@ XcmsTekHVCClipVC (ccc, pColors_in_out, nColors, i, pCompressed)
     /* Use my own CCC */
     bcopy ((char *)ccc, (char *)&myCCC, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat;/* inherit screen white pt */
-    myCCC.gamutCompProc = (XcmsFuncPtr)NULL;	/* no gamut compression func */
+    myCCC.gamutCompProc = (XcmsCompressionProc)NULL;/* no gamut compression func */
 
     /*
      * Color specification passed as input can be assumed to:

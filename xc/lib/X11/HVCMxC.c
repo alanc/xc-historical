@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCMxC.c,v 1.6 91/05/13 22:46:41 rws Exp $" */
+/* $XConsortium: TekHVCMxC.c,v 1.7 91/07/12 08:51:44 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -126,7 +126,7 @@ XcmsTekHVCQueryMaxC(ccc, hue, value, pColor_return)
     /* Use my own CCC */
     bcopy ((char *)ccc, (char *)&myCCC, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat; /* inherit screen white Pt */
-    myCCC.gamutCompProc = (XcmsFuncPtr)NULL;	/* no gamut comp func */
+    myCCC.gamutCompProc = (XcmsCompressionProc)NULL;/* no gamut comp func */
 
     tmp.spec.TekHVC.H = hue;
     tmp.spec.TekHVC.V = value;

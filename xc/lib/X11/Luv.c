@@ -1,4 +1,4 @@
-/* $XConsortium: CIELuv.c,v 1.7 91/06/27 10:52:12 dave Exp $" */
+/* $XConsortium: CIELuv.c,v 1.8 91/07/24 22:32:06 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -40,7 +40,6 @@
  */
 
 #include <X11/Xos.h>
-#include <X11/Xfuncs.h>
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
@@ -49,8 +48,6 @@
  */
 
 extern char XcmsCIELuv_prefix[];
-extern int XcmsCIEuvYToCIEXYZ();
-extern int XcmsCIEXYZToCIEuvY();
 
 
 /*

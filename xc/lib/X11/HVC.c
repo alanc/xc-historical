@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVC.c,v 1.6 91/05/13 22:43:33 rws Exp $" */
+/* $XConsortium: TekHVC.c,v 1.7 91/06/27 10:52:14 dave Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -94,8 +94,6 @@
  */
 
 extern char XcmsTekHVC_prefix[];
-extern Status XcmsCIEuvYToCIEXYZ();
-extern Status XcmsCIEXYZToCIEuvY();
 
 /*
  *	FORWARD DECLARATIONS
@@ -103,9 +101,6 @@ extern Status XcmsCIEXYZToCIEuvY();
 
 static int TekHVC_ParseString();
 Status XcmsTekHVC_ValidSpec();
-Status XcmsTekHVCToCIEuvY();
-Status XcmsCIEuvYToTekHVC();
-
 
 
 /*
@@ -115,7 +110,7 @@ Status XcmsCIEuvYToTekHVC();
     /*
      * NULL terminated list of functions applied to get from TekHVC to CIEXYZ
      */
-static XcmsFuncPtr Fl_TekHVC_to_CIEXYZ[] = {
+static XcmsConversionProc Fl_TekHVC_to_CIEXYZ[] = {
     XcmsTekHVCToCIEuvY,
     XcmsCIEuvYToCIEXYZ,
     NULL
@@ -124,7 +119,7 @@ static XcmsFuncPtr Fl_TekHVC_to_CIEXYZ[] = {
     /*
      * NULL terminated list of functions applied to get from CIEXYZ to TekHVC
      */
-static XcmsFuncPtr Fl_CIEXYZ_to_TekHVC[] = {
+static XcmsConversionProc Fl_CIEXYZ_to_TekHVC[] = {
     XcmsCIEXYZToCIEuvY,
     XcmsCIEuvYToTekHVC,
     NULL

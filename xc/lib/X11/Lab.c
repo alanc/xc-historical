@@ -1,4 +1,4 @@
-/* $XConsortium: CIELab.c,v 1.6 91/05/13 22:19:59 rws Exp $ */
+/* $XConsortium: CIELab.c,v 1.7 91/07/24 22:29:54 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -39,7 +39,6 @@
 
 
 #include <X11/Xos.h>
-#include <X11/Xfuncs.h>
 #include "Xlibint.h"
 #include "Xcmsint.h"
 

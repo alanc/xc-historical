@@ -1,4 +1,4 @@
-/* $XConsortium: UNDEFINED.c,v 1.3 91/02/12 16:10:28 dave Exp $" */
+/* $XConsortium: UNDEFINED.c,v 1.4 91/05/13 22:49:15 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -47,7 +47,7 @@ static int ReturnZero();
  *      LOCALS VARIABLES
  */
 
-static XcmsFuncPtr Fl_ReturnZero[] = {
+static Status (*(Fl_ReturnZero[]))() = {
     ReturnZero,
     NULL
 };
@@ -88,10 +88,7 @@ XcmsColorSpace	XcmsUNDEFINEDColorSpace =
  */
 /* ARGSUSED */
 static int
-ReturnZero(pLab_WhitePt, pColors_in_out, nColors)
-    XcmsColor *pLab_WhitePt;
-    XcmsColor pColors_in_out;
-    unsigned int nColors;
+ReturnZero()
 /*
  *	DESCRIPTION
  *		Does nothing.

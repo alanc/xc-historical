@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.20 91/07/09 14:18:53 rws Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.21 91/07/23 12:11:21 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -161,7 +161,7 @@ _XcmsColorSpaceOfString(ccc, color_string)
     /*
      * Next try Device-Dependent color spaces
      */
-    papColorSpaces = ((XcmsSCCFuncSet *)ccc->pPerScrnInfo->functionSet)->papDDColorSpaces;
+    papColorSpaces = ((XcmsFunctionSet *)ccc->pPerScrnInfo->functionSet)->DDColorSpaces;
     if (papColorSpaces != NULL) {
 	while (*papColorSpaces != NULL) {
 	    if (strncmp((*papColorSpaces)->prefix, color_string, n) == 0) {
