@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.10 92/06/02 17:24:38 mor Exp $ */
+/* $XConsortium: pexRndr.c,v 5.11 92/06/05 15:37:40 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -139,7 +139,7 @@ pexCreateRendererReq    *strmPtr;
     ErrorCode freeRenderer();
     ddRendererStr *prend = 0;
     CARD8 *ptr = (CARD8 *)(strmPtr+1);
-    XID  fakepm;
+    XID  fakepm, fakestr;
 	
     if (prend = (ddRendererStr *) LookupIDByType (strmPtr->rdr, PEXRendType))
 	PEX_ERR_EXIT(BadIDChoice,strmPtr->rdr,cntxtPtr);
@@ -182,11 +182,11 @@ pexCreateRendererReq    *strmPtr;
     prend->ns[(unsigned)DD_PICK_INCL_NS] = 0;
     prend->ns[(unsigned)DD_PICK_EXCL_NS] = 0;
 
-    /* allocate a handle to the pseudo Pick Measure used for Renderer Picking 
-       the Pick measure itself is done with CreatePseudoPickMeasure
-       in the BeginPick...  routines 
+    /* Create the Psuedo Pick Measure. Real values are filled
+       in with ChangePsuedoPickMeasure called by BeginPickXXX routines
     */
     fakepm = FakeClientID(cntxtPtr->client->index);
+    prend->pickstr.client = cntxtPtr->client;
     prend->pickstr.pseudoPM = (diPMHandle) Xalloc ((unsigned long)sizeof(ddPMResource));
     if (!prend->pickstr.pseudoPM)  PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
     (prend->pickstr.pseudoPM)->id = fakepm;
@@ -197,6 +197,23 @@ pexCreateRendererReq    *strmPtr;
     }
 
     ADDRESOURCE(fakepm, PEXPickType, prend->pickstr.pseudoPM);
+
+
+    /* create a phony structure to pack OCs into 
+       for doing immediate mode renderer picking
+    */
+    fakestr = FakeClientID(cntxtPtr->client->index);
+    prend->pickstr.fakeStr = (diStructHandle)Xalloc((unsigned long)
+					  sizeof(ddStructResource));
+    if (!prend->pickstr.fakeStr) PEX_ERR_EXIT(BadAlloc,0,cntxtPtr);
+    (prend->pickstr.fakeStr)->id = fakestr;
+    err = CreateStructure(prend->pickstr.fakeStr);
+    if (err) {
+	Xfree((pointer)(prend->pickstr.fakeStr));
+	PEX_ERR_EXIT(err,0,cntxtPtr);
+    }
+
+    ADDRESOURCE(fakestr, PEXStructType, prend->pickstr.fakeStr);
 
     if (strmPtr->itemMask & PEXRDPipelineContext) {
 	ddPCStr *ppc = 0;
@@ -1068,7 +1085,9 @@ pexRenderOutputCommandsReq  *strmPtr;
 
     err = RenderOCs(prend, strmPtr->numCommands, (strmPtr+1));
 
+    /* this line is useless pErr never gets returned from anywhere
     if (err) PEX_OC_ERROR(pErr, cntxtPtr);
+    */
 
     return( err );
 
