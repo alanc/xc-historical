@@ -1,5 +1,5 @@
 /*
- *	$Header: button.c,v 1.3 88/04/06 15:59:50 jim Exp $
+ *	$Header: button.c,v 1.4 88/04/06 17:08:37 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$Header: button.c,v 1.3 88/04/06 15:59:50 jim Exp $";
+static char rcs_id[] = "$Header: button.c,v 1.4 88/04/06 17:08:37 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -1146,6 +1146,10 @@ register Menu **menu;
 		if(screen->inhibit & I_SIGNAL)
 			for(i = XMENU_SUSPEND ; i <= XMENU_KILL ; i++)
 				DisableItem(*menu, i);
+#if defined(SYSV) && !defined(JOBCONTROL)
+		DisableItem(*menu, XMENU_RESUME);
+		DisableItem(*menu, XMENU_SUSPEND);
+#endif	/* defined(SYSV) && !defined(JOBCONTROL) */
 		return(*menu);
 	}
 	/* if login window, check for completed login */
