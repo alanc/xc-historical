@@ -18,7 +18,7 @@
 #define XqdssServer Xqdss
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
 #define HasSaberC YES
-#define ServerDefines StandardDefines ExtensionDefines -DSERVER_XDMCP -DNOSTDHDRS
+#define ServerDefines StandardDefines ExtensionDefines -DXDMCP -DNOSTDHDRS
 #endif
 
 #ifdef MipsArchitecture
@@ -26,8 +26,8 @@
 #define XcfbpmaxServer Xcfbpmax
 #define StandardDefines
 #define DefaultCCOptions -Wf,-XNh2000 -Olimit 2000
-#define ServerDefines StandardDefines ExtensionDefines -DSERVER_XDMCP
+#define ServerDefines StandardDefines ExtensionDefines -DXDMCP
 #endif
 
-/**/# platform:  $XConsortium: ultrix.cf,v 1.13 89/08/18 17:48:28 keith Exp $
+/**/# platform:  $XConsortium: ultrix.cf,v 1.14 89/10/08 11:11:01 keith Exp $
 /**/# operating system:  OSName

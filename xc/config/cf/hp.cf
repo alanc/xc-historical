@@ -32,7 +32,7 @@
 #define NeedBerklibInXlib      YES		/* snag Berklib for Xlib */
 
 
-/**/# platform:  $XConsortium: hp.cf,v 1.18 89/10/08 19:09:08 jim Exp $
+/**/# platform:  $XConsortium: hp.cf,v 1.19 89/10/10 08:49:38 rws Exp $
 /**/# operating system:  OSName
 
 /*
@@ -66,12 +66,11 @@
 #define ConnectionFlags		-DTCPCONN	/* no unix sockets */
 #endif
 
-#undef ExtensionDefines
-#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITSHM -DXOS -DMERGE -DSERVER_XDMCP
+#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITSHM 
 
 /*
  * Xhp-specific parameters
  */
 #define WritableBlackWhite		/* want BlackPixel and WhitePixel rw */
 
-#define ServerDefines StandardDefines ExtensionDefines OsDefines HardwareDefines
+#define ServerDefines StandardDefines ExtensionDefines -DXDMCP -DXOS -DMERGE OsDefines HardwareDefines

@@ -29,20 +29,19 @@
 #define XtekServer Xtek
 
 
-/**/# platform:  $XConsortium: pegasus.cf,v 1.7 89/10/08 11:12:38 keith Exp $
+/**/# platform:  $XConsortium: pegasus.cf,v 1.8 89/10/08 19:09:09 jim Exp $
 /**/# operating system:  OSName
 
 /*
  * platform-specific definitions 
  */
 
-#undef ExtensionDefines
-#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DSERVER_XDMCP
+#define ExtensionDefines -DSHAPE -DMULTIBUFFER
 
 #define ServerCDebugFlags -O -g
 #define CcCmd gcc -DNOSTDHDRS -fstrength-reduce -fpcc-struct-return
 
-#define ServerDefines   StandardDefines -DM4310 -DM4317 ExtensionDefines
+#define ServerDefines   StandardDefines -DM4310 -DM4317 -DXDMCP ExtensionDefines
 #define FontDefines	-DFONT_SNF -DFONT_BDF
 
 .DIRECTORIES:		/* Turn off directory search for RCS */
