@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: stopwatch.c,v 5.1 91/02/16 10:07:51 rws Exp $ */
 /***********************************************************
 Copyright(c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -71,14 +71,22 @@ SOFTWARE.
 /*--------------------------------------------------------------------*\
 |	Includes, Defines, and Statics
 \*--------------------------------------------------------------------*/
+
+#include <X11/Xosdefs.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/time.h>
-#ifdef SYSV
-#include <time.h>
-#endif /* SYSV */
 
 #include "stopwatch.h"
+
+#ifndef X_NOT_STDC_ENV
+#include <time.h>
+#else /* X_NOT_STDC_ENV */
+#ifdef SYSV
+#include <time.h>		/* necessary? */
+#endif /* SYSV */
+struct tm *localtime();
+#endif /* X_NOT_STDC_ENV */
 
 #ifdef SGI4D
 #include <sys/param.h>
@@ -244,10 +252,11 @@ double bif_time()
 	System dependant changes or changes to the UNIX time functions
 	are all made here. */
      
+#ifndef sgi			/* SGI compiler complains about redef */
 	int gettimeofday();
+#endif
         static struct timeval tval, *tp;
         static struct timezone tzone, *tzp;
-        struct tm *localtime();
         struct tm *clock;
 
 	int status;

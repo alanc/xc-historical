@@ -1,4 +1,4 @@
-/* $XConsortium: brf_phead.c,v 5.1 91/02/16 10:07:15 rws Exp $ */
+/* $XConsortium: brf_phead.c,v 5.2 91/02/18 18:42:59 rws Exp $ */
 /***********************************************************
 Copyright(c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -70,13 +70,20 @@ SOFTWARE.
 |		:	Appends the end bar to the end of a string
 |
 \*--------------------------------------------------------------------*/
-#include <stdio.h>
+
 #include <X11/Xos.h>
-/* #include <time.h> */
+#include <stdio.h>
 #include "brf_prt.h"
 #include "biftypes.h"
 #include "globals.h"
 #include "brfexption.h"
+
+#ifndef X_NOT_STDC_ENV
+#include <time.h>
+#else
+struct tm *localtime();
+#endif
+
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
@@ -320,10 +327,11 @@ char *BRF_getDate()
 #endif
 
 
+#ifndef sgi		       /* SGI compiler complains about redeclaration */
 	int gettimeofday();
+#endif
         struct timeval tval, *tp;
         struct timezone tzone, *tzp;
-        struct tm *localtime();
 	struct tm	*calendar;
 	char *asctime_pt;
 	char *line_ret;
