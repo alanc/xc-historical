@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.42 91/08/23 12:16:08 gildea Exp $
+ * $XConsortium: miwideline.c,v 1.43 91/11/01 15:52:03 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -224,6 +224,11 @@ miFillRectPolyHelper (pDrawable, pGC, pixel, spanData, x, y, w, h)
 	ppt = spanRec.points;
 	pwidth = spanRec.widths;
 
+    	if (pGC->miTranslate)
+    	{
+	    y += pDrawable->y;
+	    x += pDrawable->x;
+    	}
 	while (h--)
 	{
 	    ppt->x = x;
