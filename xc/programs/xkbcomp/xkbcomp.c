@@ -1,4 +1,4 @@
-/* $XConsortium: xkbcomp.c,v 1.1 94/04/02 17:08:15 erik Exp $ */
+/* $XConsortium: xkbcomp.c,v 1.2 94/04/04 15:28:38 rws Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -39,7 +39,7 @@
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #endif
-#include "xkbio.h"
+#include "xkbfile.h"
 #include "tokens.h"
 
 #define	lowbit(x)	((x) & (-(x)))
@@ -63,6 +63,8 @@ static	char *		inputFile;
 static	char *		outputFile;
 static	char *		mapName;
 
+	unsigned	warningLevel= 5;
+
 /***====================================================================***/
 
 void
@@ -81,6 +83,7 @@ Usage(argc,argv)
     fprintf(stderr,"-C          Produce a C header file\n");
     fprintf(stderr,"-xkm        Produce an xkm (compiled X Key Map) file\n");
     fprintf(stderr,"-xkb        Produce an xkb (X KeyBoard map Source) file\n");
+    fprintf(stderr,"-w <lvl>    Set warning level (0=none, 10=all)\n");
 #ifdef DEBUG
     fprintf(stderr,"-d [flags]  Report debugging information\n");
 #endif
@@ -153,6 +156,14 @@ register int i;
 	    }
 	    else type= WANT_XKB_FILE;
 	}
+	else if (strcmp(argv[i],"-w")==0) {
+	    if ((i>=(argc-1))||(!isdigit(argv[i+1][0]))) {
+		warningLevel= 0;
+	    }
+	    else {
+		sscanf(argv[++i],"%i",&warningLevel);
+	    }
+	}
 #ifdef DEBUG
 	else if (strcmp(argv[i],"-d")==0) {
 	    if ((i>=(argc-1))||(!isdigit(argv[i+1][0]))) {
@@ -210,7 +221,7 @@ main(argc,argv)
 FILE 	*	file;
 XkbFile	*	rtrn;
 int		ok;
-XkbFileResult 	result;
+XkbFileInfo 	result;
 
     if (!parseArgs(argc,argv)) {
 	Usage(argc,argv);
@@ -236,6 +247,8 @@ XkbFileResult 	result;
 	if (XKBParseFile(file,&rtrn)&&(rtrn!=NULL)) {
 	    fclose(file);
 	    bzero((char *)&result,sizeof(result));
+	    result.dpy= NULL;	/* for now */
+	    result.type= rtrn->type;
 	    switch (rtrn->type) {
 		case XkmSemanticsFile:
 		case XkmLayoutFile:
@@ -273,13 +286,13 @@ XkbFileResult 	result;
 	    if (ok) {
 		switch (type) {
 		    case WANT_XKM_FILE:
-			ok= WriteCompiledKbdDesc(outputFile,rtrn->type,&result);
+			ok= XkbWriteXKMFile(outputFile,&result);
 			break;
 		    case WANT_XKB_FILE:
-			ok= WriteSourceKbdDesc(outputFile,rtrn->type,&result);
+			ok= XkbWriteXKBFile(outputFile,&result);
 			break;
 		    case WANT_C_HDR:
-			ok= WriteCKbdDesc(outputFile,rtrn->type,&result);
+			ok= XkbWriteCFile(outputFile,&result);
 			break;
 		    default:
 			uInternalError("Unknown output file type %d\n",type);
