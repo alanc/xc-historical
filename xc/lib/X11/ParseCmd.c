@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: ParseCmd.c,v 1.2 87/11/23 11:11:19 swick Locked $";
+static char rcsid[] = "$Header: ParseCmd.c,v 1.3 87/11/23 12:40:47 swick Locked $";
 #endif lint
 
 /*
@@ -27,7 +27,12 @@ static char rcsid[] = "$Header: ParseCmd.c,v 1.2 87/11/23 11:11:19 swick Locked 
 
 
 /* XrmParseCommand.c 
-   Parse command line and store argument values into resource database */
+   Parse command line and store argument values into resource database
+
+   Allows any un-ambiguous abbreviation for an option name, but requires
+   that the table be ordered with any options that are prefixes of
+   other options appearing before the longer version in the table. */
+
 
 #include "Xlibint.h"
 #include "Xresource.h"
@@ -54,12 +59,15 @@ void XrmParseCommand(rdb, table, tableCount, prependName, argc, argv)
     int			*argc;		/* address of argument count 	     */
     char		**argv;		/* argument list (command line)	     */
 {
-    Bool 		foundOption;
+    int 		foundOption;
     static XrmQuark 	fullName[100];
     XrmQuark		*resourceName;
     char		**argsave;
     XrmValue	 	resourceValue;
-    int 		i, j, myargc;
+    int 		i, myargc;
+    char		*optP, *argP, optchar, argchar;
+    int			matches;
+    enum {DontCare, Check, NotSorted, Sorted} table_is_sorted;
 
     myargc = (*argc); 
     argsave = ++argv;
@@ -70,21 +78,51 @@ void XrmParseCommand(rdb, table, tableCount, prependName, argc, argv)
 	resourceName = &fullName[1];
     }
 
+    table_is_sorted = (myargc > 2) ? Check : DontCare;
     for (--myargc; myargc>0;--myargc, ++argv) {
 	foundOption = False;
-	for (i=0; (!foundOption) && i < tableCount; ++i) {
-	    foundOption = True;
-	    for (j =0; table[i].option[j] != NULL; ++j) {
-		if (table[i].option[j] != (*argv)[j]) {
-		    foundOption = False;
+	matches = 0;
+	for (i=0; i < tableCount; ++i) {
+	    /* checking the sort order first insures we don't have to
+	       re-do the check if the arg hits on the last entry in
+	       the table.  Useful because usually '=' is the last entry
+	       and users frequently specify geometry early in the command */
+	    if (table_is_sorted == Check && i > 0 &&
+		strcmp(table[i].option, table[i-1].option) < 0) {
+		table_is_sorted = NotSorted;
+	    }
+	    for (argP=*argv, optP=table[i].option;
+		 (optchar = *optP++) != NULL &&
+		 (argchar = *argP++) != NULL &&
+		 argchar == optchar;);
+	    if (optchar == NULL) {
+		if (*argP == NULL ||
+		    table[i].argKind == XrmoptionStickyArg ||
+		    table[i].argKind == XrmoptionIsArg) {
+		    /* give preference to exact matches, StickyArg and IsArg */
+		    matches = 1;
+		    foundOption = i;
 		    break;
 		}
 	    }
+	    else if (argchar == NULL) {
+		/* may be an abbreviation for this option */
+		matches++;
+		foundOption = i;
+	    }
+	    else if (table_is_sorted == Sorted && optchar > argchar) {
+		break;
+	    }
+	    if (table_is_sorted == Check && i > 0 &&
+		strcmp(table[i].option, table[i-1].option) < 0) {
+		table_is_sorted = NotSorted;
+	    }
+	}
+	if (table_is_sorted == Check && i >= (tableCount-1))
+	    table_is_sorted = Sorted;
+	if (matches == 1) {
+		i = foundOption;
 
-	    if (foundOption
-	     && ((table[i].argKind == XrmoptionStickyArg)
-	         || (table[i].argKind == XrmoptionIsArg)
-		 || ((*argv)[j] == NULL))) {
 		switch (table[i].argKind){
 		case XrmoptionNoArg:
 		    resourceValue.addr = table[i].value;
@@ -103,7 +141,7 @@ void XrmParseCommand(rdb, table, tableCount, prependName, argc, argv)
 		    break;
 
 		case XrmoptionStickyArg:
-		    resourceValue.addr = (caddr_t)((*argv)+j);
+		    resourceValue.addr = (caddr_t)argP;
 		    --(*argc);
 		    resourceValue.size = strlen(resourceValue.addr)+1;
 		    XrmStringToQuarkList(table[i].resourceName, resourceName);
@@ -133,11 +171,8 @@ void XrmParseCommand(rdb, table, tableCount, prependName, argc, argv)
 		    _XReportParseError (&table[i], "unknown kind");
 		    break;
 		}
-	    } else foundOption = False;
-
 	}
-	
-	if (!foundOption) 
+	else
 	    (*argsave++) = (*argv);  /*compress arglist*/ 
     }
 
