@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Shell.c,v 1.28 88/09/02 12:47:04 swick Exp $";
+    "$XConsortium: Shell.c,v 1.29 88/09/02 20:28:21 swick Exp $";
 /* $oHeader: Shell.c,v 1.6 88/08/19 16:49:51 asente Exp $ */
 #endif lint
 
@@ -1016,10 +1016,16 @@ static void ChangeManaged(wid)
     Widget wid;
 {
     register ShellWidget w = (ShellWidget) wid;
-    Widget childwid;
+    Widget childwid = NULL;
     Boolean needresize = FALSE;
+    int i;
 
-    childwid = w->composite.children[0];
+    for (i = 0; i < w->composite.num_children; i++) {
+	if (XtIsManaged(w->composite.children[i])) {
+	    childwid = w->composite.children[i];
+	    break;
+	}
+    }
 
     if (!XtIsRealized ((Widget) wid)) {
 	int x, y, width, height, flag;
@@ -1041,7 +1047,7 @@ static void ChangeManaged(wid)
 		wmshell->wm.size_hints.flags |= USSize;
 	}
 
-	if (w->core.width == 0 && w->core.height == 0) {
+	if (w->core.width == 0 && w->core.height == 0 && childwid != NULL) {
 	    /* we inherit our child's attributes */
 	    w->core.width = childwid->core.width;
 	    w->core.height = childwid->core.height;
@@ -1058,18 +1064,20 @@ static void ChangeManaged(wid)
 	    w->core.y += HeightOfScreen(XtScreen(w))
 			 - w->core.height - (2*w->core.border_width);
 
-	if (childwid->core.border_width != 0) needresize = TRUE;
+	if (childwid != NULL && childwid->core.border_width != 0)
+	    needresize = TRUE;
 
-	if (needresize) {
+	if (childwid != NULL && needresize) {
 	    /* our child gets our attributes */
 	    XtResizeWidget (childwid, w->core.width,
 		    w->core.height, (Dimension) 0);
 	}
     }
 
-    XtMoveWidget (childwid,
-		  (int)(-childwid->core.border_width),
-		  (int)(-childwid->core.border_width));
+    if (childwid != NULL)
+	XtMoveWidget (childwid,
+		      (int)(-childwid->core.border_width),
+		      (int)(-childwid->core.border_width));
 }
 
 /*
