@@ -17,52 +17,9 @@
 #include    "cursorstr.h"
 
 #ifdef FBIOGCURMAX  /* has hardware cursor kernel support */
-#define CURSOR_PAD  8
 
 #define GetCursorPrivate(s) (&(GetScreenPrivate(s)->hardwareCursor))
 #define SetupCursor(s)	    sunCursorPtr pCurPriv = GetCursorPrivate(s)
-#define CursorByteWidth(w)  (((w) + CURSOR_PAD - 1) / CURSOR_PAD)
-
-static void
-Repad (in, out, sc, w, h)
-    char	    *in, *out;
-    sunCursorPtr    sc;
-    int		    w, h;
-{
-    int	    x, y;
-    char    *a, *b;
-    int	    inwidth, outwidth;
-    char    mask;
-
-    inwidth = (w + BITMAP_SCANLINE_PAD - 1) / 8;
-    mask = w & 7;
-#if BITMAP_BIT_ORDER == MSBFirst
-    if (mask == 0)
-	mask = 0xff;
-    else
-	mask = 0xff << (8-mask);
-#else
-    mask = 0xff >> mask;
-#endif
-    outwidth = CursorByteWidth(sc->width);
-    for (y = 0; y < h; y++) {
-	a = in;
-	b = out;
-	in += inwidth;
-	out += outwidth;
-	for (x = 0; x < inwidth; x++)
-	    *b++ = *a++;
-	if (inwidth)
-	    b[-1] &= mask;
-	for (; x < outwidth; x++)
-	    *b++ = '\0';
-    }
-    for (; y < sc->height; y++)
-    {
-	for (x = 0; x < outwidth; x++)
-	    *b++ = '\0';
-    }
-}
 
 static Bool
 sunRealizeCursor (pScreen, pCursor)
@@ -80,6 +37,52 @@ sunUnrealizeCursor (pScreen, pCursor)
     return TRUE;
 }
 
+sunInitFakePixmap (pScreen, p, w, h, bits)
+    ScreenPtr	    pScreen;
+    PixmapPtr	    p;
+    int		    w, h;
+    unsigned char   *bits;
+{
+    p->drawable.type = DRAWABLE_PIXMAP;
+    p->drawable.class = 0;
+    p->drawable.pScreen = pScreen;
+    p->drawable.depth = 1;
+    p->drawable.bitsPerPixel = 1;
+    p->drawable.id = 0;
+    p->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+    p->drawable.x = 0;
+    p->drawable.y = 0;
+    p->drawable.width = w;
+    p->drawable.height = h;
+    p->devKind = PixmapBytePad(w, 1);
+    p->refcnt = 1;
+    p->devPrivate.ptr = (pointer) bits;
+}
+
+static void
+sunCursorRepad (pScreen, bits, src_bits, dst_bits, ptSrc, w, h)
+    ScreenPtr	    pScreen;
+    CursorBitsPtr   bits;
+    unsigned char   *src_bits, *dst_bits;
+    DDXPointPtr	    ptSrc;
+    int		    w, h;
+{
+    SetupCursor(pScreen);
+    PixmapRec	src, dst;
+    BoxRec	box;
+    RegionRec	rgnDst;
+
+    sunInitFakePixmap (pScreen, &src, bits->width, bits->height, src_bits);
+    sunInitFakePixmap (pScreen, &dst, w, h, dst_bits);
+    box.x1 = 0;
+    box.y1 = 0;
+    box.x2 = w;
+    box.y2 = h;
+    (*pScreen->RegionInit)(&rgnDst, &box, 1);
+    mfbDoBitblt(&src, &dst, GXcopy, &rgnDst, ptSrc);
+    (*pScreen->RegionUninit)(&rgnDst);
+}
+
 static void
 sunLoadCursor (pScreen, pCursor, x, y)
     ScreenPtr	pScreen;
@@ -90,9 +93,9 @@ sunLoadCursor (pScreen, pCursor, x, y)
     struct fbcursor fbcursor;
     int	w, h;
     unsigned char   r[2], g[2], b[2];
+    DDXPointRec	ptSrc;
+    unsigned char   source_temp[1024], mask_temp[1024];
 
-    w = pCursor->bits->width;
-    h = pCursor->bits->height;
     fbcursor.set = FB_CUR_SETALL;
     fbcursor.enable = 1;
     fbcursor.pos.x = x;
@@ -112,29 +115,21 @@ sunLoadCursor (pScreen, pCursor, x, y)
     fbcursor.cmap.blue = b;
     fbcursor.image = (char *) pCursor->bits->source;
     fbcursor.mask = (char *) pCursor->bits->mask;
-    if (w > pCurPriv->width)
-    {
-	while (fbcursor.hot.x > pCurPriv->width && w >= 8)
-	{
-	    fbcursor.hot.x -= 8;
-	    fbcursor.image++;
-	    fbcursor.mask++;
-	    w -= 8;
-	}
+    w = pCursor->bits->width;
+    h = pCursor->bits->height;
+    if (w > pCurPriv->width || h > pCurPriv->height) {
+	ptSrc.x = 0;
+	ptSrc.y = 0;
 	if (w > pCurPriv->width)
 	    w = pCurPriv->width;
-    }
-    if (h > pCurPriv->height)
-    {
-	while (fbcursor.hot.y > pCurPriv->height && h >= 8)
-	{
-	    fbcursor.hot.y -= 8;
-	    fbcursor.image += PixmapBytePad (pCursor->bits->width, 1);
-	    fbcursor.mask +=  PixmapBytePad (pCursor->bits->width, 1);
-	    h -= 8;
-	}
 	if (h > pCurPriv->height)
 	    h = pCurPriv->height;
+	sunCursorRepad (pScreen, pCursor->bits, pCursor->bits->source,
+			source_temp, &ptSrc, w, h);
+	sunCursorRepad (pScreen, pCursor->bits, pCursor->bits->mask,
+			mask_temp, &ptSrc, w, h);
+	fbcursor.image = (char *) source_temp;
+	fbcursor.mask = (char *) mask_temp;
     }
     fbcursor.size.x = w;
     fbcursor.size.y = h;
@@ -230,6 +225,7 @@ sunCursorInitialize (pScreen)
 			 &sunPointerScreenFuncs,
 			 FALSE);
     pCurPriv->has_cursor = TRUE;
+    return TRUE;
 #else
     return FALSE;
 #endif
@@ -323,10 +319,3 @@ sunSetCursorPosition(pScreen, x, y, generateEvent)
     return TRUE;
 }
 #endif
-
-
-
-
-
-
-
