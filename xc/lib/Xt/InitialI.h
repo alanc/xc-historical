@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.35 90/08/31 08:13:11 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.36 90/10/08 09:15:15 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -207,12 +207,6 @@ extern int _XtwaitForSomething(
 #endif
 );
 
-typedef struct {		/* support for XtGetGC */
-    Screen* screen;		/* root to which drawables apply */
-    Drawable* drawables;	/* list of drawables, indexed by depth */
-    Cardinal drawable_count;	/* num entries in above list */
-} ScreenDrawablesRec, *ScreenDrawables;
-
 typedef struct _XtPerDisplayStruct {
     CallbackList destroy_callbacks;
     Region region;
@@ -233,7 +227,7 @@ typedef struct _XtPerDisplayStruct {
     XrmClass class;		       /* application class */
     Heap heap;
     struct _GCrec *GClist;	       /* support for XtGetGC */
-    ScreenDrawables drawable_tab;      /* ditto for XtGetGC */
+    Drawable **pixmap_tab;             /* ditto for XtGetGC */
     String language;		       /* XPG language string */
     Atom xa_wm_colormap_windows;       /* the WM_COLORMAP_WINDOWS atom.
 					  this is currently only used in 
