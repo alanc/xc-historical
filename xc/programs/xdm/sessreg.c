@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sessreg.c,v 1.10 94/01/17 19:15:02 rws Exp $
+ * $XConsortium: sessreg.c,v 1.11 94/04/17 20:03:46 rws Exp gildea $
  *
 Copyright (c) 1990  X Consortium
 
@@ -58,9 +58,6 @@ in this Software without prior written authorization from the X Consortium.
 # define UTMP_FILE	"/etc/utmp"
 #endif
 #ifndef SYSV
-# ifndef SERVERS_FILE
-#  define SERVERS_FILE	"/usr/lib/X11/xdm/Xservers"
-# endif
 # ifndef TTYS_FILE
 #  define TTYS_FILE	"/etc/ttys"
 # endif
