@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfutils.c,v 1.3 91/07/17 20:43:53 rws Exp $ */
+/* $XConsortium: bdfutils.c,v 1.4 92/03/16 20:58:35 keith Exp $ */
 
 #include <ctype.h>
 
@@ -142,13 +142,14 @@ bdfGetPropertyValue(s)
 {
     register char *p,
                *pp;
+    char *orig_s = s;
     Atom        atom;
 
     /* strip leading white space */
     while (*s && (*s == ' ' || *s == '\t'))
 	s++;
     if (*s == 0) {
-	return None;
+	return bdfForceMakeAtom(s, NULL);
     }
     if (*s != '"') {
 	pp = s;
@@ -167,11 +168,7 @@ bdfGetPropertyValue(s)
 	if (*s == '"') {
 	    if (*(s + 1) != '"') {
 		*p++ = 0;
-		if (strlen(pp)) {
-		    atom = bdfForceMakeAtom(pp, NULL);
-		} else {
-		    atom = None;
-		}
+		atom = bdfForceMakeAtom(pp, NULL);
 		xfree(pp);
 		return atom;
 	    } else {
@@ -181,6 +178,7 @@ bdfGetPropertyValue(s)
 	*p++ = *s++;
     }
     xfree (pp);
+    bdfError("unterminated quoted string property: %s\n", orig_s);
     return None;
 }
 
