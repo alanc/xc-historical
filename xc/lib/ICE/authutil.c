@@ -1,4 +1,4 @@
-/* $XConsortium: authutil.c,v 1.3 93/11/25 14:48:42 mor Exp $ */
+/* $XConsortium: authutil.c,v 1.4 93/11/25 15:05:01 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -33,7 +33,6 @@ static Status read_counted_string ();
 static Status write_short ();
 static Status write_string ();
 static Status write_counted_string ();
-static Bool binaryEqual ();
 static Bool address_valid ();
 static Bool auth_valid ();
 
@@ -604,21 +603,6 @@ char		*string;
 
     if (fwrite (string, (int) sizeof (char), (int) count, file) != count)
 	return (0);
-
-    return (1);
-}
-
-
-static Bool
-binaryEqual (a, b, len)
-
-char		*a, *b;
-unsigned	len;
-
-{
-    while (len--)
-	if (*a++ != *b++)
-	    return (0);
 
     return (1);
 }
