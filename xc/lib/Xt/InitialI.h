@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.17 89/09/18 17:59:08 kit Exp $ */
+/* $XConsortium: InitialI.h,v 1.18 89/09/21 09:06:15 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -156,6 +156,9 @@ typedef struct _XtPerDisplayStruct {
     Cardinal drawable_count;	       /* num entries in above list */
     String language;		       /* XPG language string */
     Boolean rv;			       /* reverse_video resource */
+    Atom xa_wm_colormap_windows;       /* the WM_COLORMAP_WINDOWS atom.
+					  this is currently only used in 
+					  XtSetColormapWindows. */
 } XtPerDisplayStruct, *XtPerDisplay;
 
 extern void _XtPerDisplayInitialize();
