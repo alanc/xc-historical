@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.88 90/04/18 13:37:27 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.89 90/06/25 14:27:52 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -1684,13 +1684,13 @@ static XtGeometryResult RootGeometryManager(gw, request, reply)
 
     if (!XtIsRealized((Widget)w)) return XtGeometryYes;
 
+    request_num = NextRequest(XtDisplay(w));
+    XConfigureWindow(XtDisplay((Widget)w), XtWindow((Widget)w), mask,&values);
+
     if (wm && !w->shell.override_redirect
 	&& mask & (CWX | CWY | CWWidth | CWHeight | CWBorderWidth)) {
 	_SetWMSizeHints((WMShellWidget)w);
     }
-
-    request_num = NextRequest(XtDisplay(w));
-    XConfigureWindow(XtDisplay((Widget)w), XtWindow((Widget)w), mask, &values);
 
     if (w->shell.override_redirect) return XtGeometryDone;
 
