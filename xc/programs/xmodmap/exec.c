@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: exec.c,v 1.9 88/10/08 15:16:10 jim Exp $
+ * $XConsortium: exec.c,v 1.10 88/10/08 16:21:16 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  * Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -244,16 +244,22 @@ PrintKeyTable (fp)
 
     keymap = origkeymap;
     for (i = min_keycode; i <= max_keycode; i++) {
-	int         j;
+	int  j, max;
 
 	printf("    %3d    \t", i);
-	for (j = 0; j < keysyms_per_keycode; j++) {
-	    register KeySym ks = *keymap++;
-	    if (ks != NoSymbol) {
-		char *s = XKeysymToString (ks);
-		fprintf (fp, "0x%04x (%s)\t", ks, s ? s : "no name");
-	    }
+	max = keysyms_per_keycode - 1;
+	while ((max >= 0) && (keymap[max] == NoSymbol))
+	    max--;
+	for (j = 0; j <= max; j++) {
+	    register KeySym ks = keymap[j];
+	    char *s;
+	    if (ks != NoSymbol)
+		s = XKeysymToString (ks);
+	    else
+		s = "NoSymbol";
+	    fprintf (fp, "0x%04x (%s)\t", ks, s ? s : "no name");
 	}
+	keymap += keysyms_per_keycode;
 	fprintf (fp, "\n");
     }
 
