@@ -1,4 +1,4 @@
-/* $XConsortium: miroi.c,v 1.1 93/10/26 09:44:43 rws Exp $ */
+/* $XConsortium: miroi.c,v 1.2 93/10/31 09:45:14 dpw Exp $ */
 /**** module miroi.c ****/
 /******************************************************************************
 				NOTICE
@@ -148,7 +148,7 @@ static int InitializeIROI(flo,ped)
      peDefPtr  ped;
 {
   roiPtr  roi = ((iROIDefPtr)ped->elemPvt)->roi;
-  miROIDefPtr  pvt = ped->peTex->private;
+  miROIDefPtr  pvt = (miROIDefPtr)ped->peTex->private;
   
   pvt->next_strip = roi->strips.flink;
   
@@ -164,7 +164,7 @@ static int ActivateIROI(flo,ped,pet)
      peDefPtr  ped;
      peTexPtr  pet;
 {
-  miROIDefPtr	pvt = pet->private;
+  miROIDefPtr	pvt = (miROIDefPtr)pet->private;
   bandPtr		bnd = &pet->emitter[0];
   
   /* pass a clone of the current/only strip to our recipients */
