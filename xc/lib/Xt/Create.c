@@ -257,24 +257,24 @@ static void RemovePopupFromParent(widget,closure,call_data)
     Boolean found = FALSE;
     register Widget parent;
     parent = widget->core.parent;
-    if (parent == NULL | parent->core.num_popups == 0)
+    if (parent == NULL || parent->core.num_popups == 0)
         XtErrorMsg("invalidParameter","removePopupFromParent","XtToolkitError",
                 "RemovePopupFromParent requires non-NULL popuplist",
                   (String *)NULL, (Cardinal *)NULL);
     if (parent->core.being_destroyed) return;
-    for (i=0;i<=parent->core.num_popups-1;i++)
+    for (i=0; i<parent->core.num_popups; i++)
         if (parent->core.popup_list[i] == widget){
             found = TRUE; break;
         }
     if (found == FALSE) {
         XtWarningMsg("invalidWidget","removePopupFromParent","XtToolkitError",
-                  "RemovePopupFromParent,widget not on parent list",
+                  "RemovePopupFromParent, widget not on parent list",
                    (String *)NULL, (Cardinal *)NULL);
         return;
     }
-    for (/*i=i*/;i<parent->core.num_popups-1;i++)
-        parent->core.popup_list[i]= parent->core.popup_list[i+1];
     parent->core.num_popups--;
+    for (/*i=i*/; i<parent->core.num_popups; i++)
+        parent->core.popup_list[i]= parent->core.popup_list[i+1];
 
 }
 
