@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.92 93/02/09 16:32:49 rws Exp $ */
+/* $XConsortium: window.c,v 5.93 93/03/29 19:06:25 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -386,24 +386,6 @@ PrintWindowTree()
     }
 }
 #endif
-
-/*
- * allocate an entry in the per-window private data structures
- */
-
-static int  windowPrivateCount;
-
-void
-ResetWindowPrivates()
-{
-    windowPrivateCount = 0;
-}
-
-int
-AllocateWindowPrivateIndex()
-{
-    return windowPrivateCount++;
-}
 
 int
 TraverseTree(pWin, func, data)

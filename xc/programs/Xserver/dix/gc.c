@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.18 92/04/13 17:38:16 rws Exp $ */
+/* $XConsortium: gc.c,v 5.19 92/12/24 12:44:20 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -426,20 +426,6 @@ BUG:
    should check for failure to create default tile
 
 */
-
-static int  gcPrivateCount;
-
-void
-ResetGCPrivates()
-{
-    gcPrivateCount = 0;
-}
-
-int
-AllocateGCPrivateIndex()
-{
-    return gcPrivateCount++;
-}
 
 static GCPtr
 AllocateGC(pScreen)
