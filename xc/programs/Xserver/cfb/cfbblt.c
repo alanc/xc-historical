@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.30 90/02/13 14:26:22 keith Exp $ */
+/* $XConsortium: cfbblt.c,v 1.2 90/03/01 16:38:40 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -593,5 +593,15 @@ bits1 = *--psrc; --pdst; \
 	}
 	pbox++;
 	pptSrc++;
+    }
+    if (pboxNew2)
+    {
+	DEALLOCATE_LOCAL(pptNew2);
+	DEALLOCATE_LOCAL(pboxNew2);
+    }
+    if (pboxNew1)
+    {
+	DEALLOCATE_LOCAL(pptNew1);
+	DEALLOCATE_LOCAL(pboxNew1);
     }
 }
