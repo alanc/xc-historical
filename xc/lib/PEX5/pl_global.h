@@ -1,4 +1,4 @@
-/* $XConsortium: pl_global_def.h,v 1.4 92/05/07 23:31:07 mor Exp $ */
+/* $XConsortium: pl_global_def.h,v 1.1 92/05/08 15:13:03 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -25,11 +25,15 @@ SOFTWARE.
 
 *************************************************************************/
 
-PEXDisplayInfo *PEXDisplayInfoHeader = NULL;
+PEXDisplayInfo 	*PEXDisplayInfoHeader = NULL;
+
+PEXPickPath	*PickCache = NULL;
+unsigned int	PickCacheSize = 0;
+int		PickCacheInUse = 0;
 
 char	*pexErrorList[(PEXMaxError + 1)] = {
-/* ColourType */
-    "PEXColourTypeError, specified colour type not supported",
+/* ColorType */
+    "PEXColorTypeError, specified color type not supported",
 /* RendererState */
     "PEXRendererStateError, renderer not in proper state for operation",
 /* FloatingPointFormat */
