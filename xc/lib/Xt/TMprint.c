@@ -1,4 +1,4 @@
-/* $XConsortium: TMprint.c,v 1.4 91/02/05 16:59:10 gildea Exp $ */
+/* $XConsortium: TMprint.c,v 1.5 91/03/28 15:42:31 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -34,7 +34,6 @@ typedef struct _TMStringBufRec{
     Cardinal	max;
 }TMStringBufRec, *TMStringBuf;
 
-static void PrintState();
 
 #define STR_THRESHOLD 25
 #define STR_INCAMOUNT 100
@@ -176,9 +175,11 @@ static void PrintKeysym(sb, keysym)
     keysymName = XKeysymToString(keysym);
     if (keysymName == NULL)
       PrintCode(sb,(unsigned long)~0L,(unsigned long)keysym);
-
-    strcpy(sb->current, keysymName);
-    sb->current += strlen(sb->current);
+    else {
+      ExpandToFit(sb, keysymName);
+      strcpy(sb->current, keysymName);
+      sb->current += strlen(sb->current);
+    }
 }
 
 static void PrintAtom(sb, dpy, atom)
@@ -190,17 +191,15 @@ static void PrintAtom(sb, dpy, atom)
 
     if (atom == 0) return;
 
-    if (dpy == NULL)
-	atomName = NULL;
-    else
-	atomName = XGetAtomName(dpy, atom);
+    atomName = (dpy ? XGetAtomName(dpy, atom) : NULL);
 
-    if (atomName == NULL)
+    if (! atomName)
       PrintCode(sb,(unsigned long)~0L,(unsigned long)atom);
     else {
       ExpandToFit( sb, atomName );
       strcpy(sb->current, atomName);
       sb->current += strlen(sb->current);
+      XFree(atomName);
     }
 }
 
