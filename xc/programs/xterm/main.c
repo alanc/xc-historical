@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.96 88/10/18 14:43:19 swick Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.97 88/11/07 11:16:34 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1704,10 +1704,14 @@ spawn ()
 			    (pw = getpwuid(screen->uid)) &&
 			    (i = open(etc_utmp, O_WRONLY)) >= 0) {
 				bzero((char *)&utmp, sizeof(struct utmp));
-				(void) strcpy(utmp.ut_line, ttydev + strlen("/dev/"));
-				(void) strcpy(utmp.ut_name, pw->pw_name);
-				(void) strcpy(utmp.ut_host, 
-					      XDisplayString (screen->display));
+				(void) strncpy(utmp.ut_line,
+					       ttydev + strlen("/dev/"),
+					       sizeof(utmp.ut_line));
+				(void) strncpy(utmp.ut_name, pw->pw_name,
+					       sizeof(utmp.ut_name));
+				(void) strncpy(utmp.ut_host, 
+					       XDisplayString (screen->display),
+					       sizeof(utmp.ut_host));
 				time(&utmp.ut_time);
 				lseek(i, (long)(tslot * sizeof(struct utmp)), 0);
 				write(i, (char *)&utmp, sizeof(struct utmp));
