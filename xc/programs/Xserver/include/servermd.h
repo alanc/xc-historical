@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.60 91/06/30 11:29:35 rws Exp $ */
+/* $XConsortium: servermd.h,v 1.61 91/11/09 16:32:37 keith Exp $ */
 
 /*
  * Machine dependent values:
@@ -328,5 +328,8 @@ extern PaddingInfo PixmapWidthPaddingInfo[];
  */
 #define PixmapBytePad(w, d) \
     (PixmapWidthInPadUnits(w, d) << PixmapWidthPaddingInfo[d].padBytesLog2)
+
+#define BitmapBytePad(w) \
+    ((((w) + BITMAP_SCANLINE_PAD - 1) >> LOG2_BITMAP_PAD) << LOG2_BYTES_PER_SCANLINE_PAD)
 
 #endif /* SERVERMD_H */
