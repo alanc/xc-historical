@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlcWrap.c,v 11.5 91/04/08 11:50:35 rws Exp $
+ * $XConsortium: XlcWrap.c,v 11.6 91/04/08 17:12:31 rws Exp $
  */
 
 /*
@@ -115,7 +115,7 @@ _XlcDefaultMapModifiers (lcd, user_mods, prog_mods)
     int i;
     char *mods;
 
-    if (!_XlcValidModSyntax(user_mods, (char **)im_valid))
+    if (!_XlcValidModSyntax(prog_mods, (char **)im_valid))
 	return (char *)NULL;
     if (user_mods && !_XlcValidModSyntax(user_mods, (char **)im_valid))
 	return (char *)NULL;
