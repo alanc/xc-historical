@@ -1,6 +1,4 @@
-#ifndef lint
-static char *rcsid_x2jet_c = "$XConsortium: x2jet.c,v 1.1 89/10/08 12:29:36 rws Exp $";
-#endif
+/* $XConsortium: x2jet.c,v 1.2 89/12/13 13:58:13 rws Exp $ */
 
 /* -*-C-*-
 ********************************************************************************
