@@ -1,0 +1,98 @@
+/* $Header$ */
+
+	Sun X11 Beta-1 drivers -  8 July 1987
+
+A joint production of:
+
+	Adam de Boor		University of California,  Berkeley
+
+	David Rosenthal &
+	Stuart Marks &
+	Robin Schaufler &
+	Mike Schwartz		Sun Microsystems
+
+This version of the Sun X.11 drivers uses ../mi,  ../mfb and ../cfb to support
+the following configurations:
+
+	Sun/2		bw2	cg2/3/5
+	Sun/3		bw2	cg2/3/4/5
+
+The drivers are completely untuned, and have inferior performance.  The code
+is lint-free.  It installs and runs on these configurations under SunOS 3.2
+and 3.4.  However, we must stress that it is completely unsupported, and if
+you have problems installing or using it you are on your own.
+
+As of July 8,
+-   This code works for both monochrome and color configurations.
+-   The server prints "CloseFont: couldn't find font to close 0" several
+    times, with apparently no ill effect
+-   wm will hang and not respond to events after some use
+
+
+Things to check before building:
+
+1)	server/include/site.h - replace the font path.
+
+2)	Make sure the fonts/Makefile uses the pad flag on the font
+	compiler to pad the glyphs to 4-byte boundaries.
+
+3)	Change the server makefile to build Xsun
+
+4)	Change the server/ddx makefile to build the subdirectories:
+
+	mfb mi sun
+
+all: Xsun
+
+
+Then build the system by:
+
+1)	Make the dependency generator:
+
+	cd makedepend ; make ; cd ..
+
+2)	Update the dependencies by:
+
+	find . -name Makefile -exec chmod u+w {} \;
+	make depend
+	find . -name Makefile -exec chmod u-w {} \;
+
+3)	Go for it.  In the top-level directory, type
+
+	    make
+
+	This takes about forty minutes on a 4/260, and somewhat longer
+	on other Suns.
+
+4)	Exit suntools or whatever other window system you use.
+
+5)	On the console, or from an rlogin connection,  start the server:
+
+	server/Xsun
+	
+	If its from the console,  you probably want to redirect the
+	output thus:
+
+	server/Xsun >& /tmp/x11.out
+
+6)	From an rlogin connection,  start an xterm by:
+
+	setenv DISPLAY unix:0
+	clients/xterm/xterm &
+
+7)	In general,  Xsun auto-configures to use all the available
+	framebuffers.  In some circumstances,  you may need to use a
+	-dev argument on the command line to prevent this:
+
+	3/110	If you want to use color,  use -dev /dev/cgfour0.  If
+		you want to use monochrome -dev /dev/bwtwo0.
+		
+	GP	If you have a GP installed,  use -dev /dev/cgtwo0.
+
+8)	To shut the server down,  hit  it with a Hangup or Terminate signal.
+
+9)	Xsun coexists with the SunWindows environment.  If you run Xsun
+	from a shell window under suntools, then Xsun will overlay that
+	desktop.  If you have two desktops, then 'adjacentscreens' will still
+	be in effect.  You may want to redirect the output of the server to a
+	window that is visible on another desktop.
