@@ -1,5 +1,5 @@
 /*
-* $Header: Intrinsic.h,v 1.68 88/02/02 20:09:14 swick Locked $
+* $Header: Intrinsic.h,v 1.69 88/02/03 22:38:15 swick Locked $
 */
 
 /*
@@ -95,6 +95,9 @@ extern Boolean XtIsSubclass ();
     /* WidgetClass  widgetClass;    */
 
 #define XtIsComposite(widget)	XtIsSubclass((widget), compositeWidgetClass)
+#define XtMapWidget(widget)	XMapWindow(XtDisplay(widget), XtWindow(widget))
+#define XtUnmapWidget(widget)	\
+		XUnmapWindow(XtDisplay(widget), XtWindow(widget))
 
 extern Widget XtCreateWidget ();
     /* String	    name;	    */
