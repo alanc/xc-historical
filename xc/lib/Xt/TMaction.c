@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.25 94/04/17 20:14:50 kaleb Exp gildea $ */
+/* $XConsortium: TMaction.c,v 1.26 95/06/08 23:20:39 gildea Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -838,7 +838,8 @@ void XtMenuPopupAction(widget, event, params, num_params)
 		"invalidPopup","unsupportedOperation",XtCXtToolkitError,
 "Pop-up menu creation is only supported on ButtonPress, KeyPress or EnterNotify events.",
                   (String *)NULL, (Cardinal *)NULL);
-	spring_loaded = False;
+	UNLOCK_APP(app);
+	return;
     }
 
     popup_shell = _XtFindPopup(widget, params[0]);
