@@ -312,6 +312,10 @@ Setup_Mapping()
 {
 	_default_mapping *dmap = _default_mappings;
 	Atom wm_state = XInternAtom (dpy, "WM_STATE", True);
+	Atom wm_colormap_windows = XInternAtom (dpy, "WM_COLORMAP_WINDOWS",
+						True);
+	Atom wm_protocols = XInternAtom (dpy, "WM_PROTOCOLS", True);
+
 
 	while (dmap->format) {
 		Add_Mapping( dmap->atom, dmap->format, dmap->dformat );
@@ -325,6 +329,14 @@ Setup_Mapping()
 	    Add_Mapping (wm_state, "32cx", ":\n\
 \t\twindow state: ?$0=0(Withdrawn)?$0=1(Normal)?$0=3(Iconic)\n\
 \t\ticon window: $1\n");
+	}
+
+	if (wm_colormap_windows != None) {
+	    Add_Mapping (wm_colormap_windows, "32x", ": window id #  $0+\n");
+	}
+
+	if (wm_protocols != None) {
+	    Add_Mapping (wm_protocols, "32a", ": protocols  $0+\n");
 	}
 }
 
