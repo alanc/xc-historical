@@ -88,10 +88,6 @@ typedef void (*WidgetChildrenProc)();
     /* WidgetList children; */
     /* Cardinal childCount; */
 
-typedef void (*WidgetGeometryProc) ();
-    /* Widget    widget; */
-    /* WidgetGeometry geometry; */
-
 typedef enum  {
     XtgeometryYes,        /* Request accepted. */
     XtgeometryNo,         /* Request denied. */
@@ -128,7 +124,7 @@ typedef char *XtArgVal;
 	Display		*display;	/* widget display connection */
 	Screen		screen;		/* widget screen */
 	Window		window;		/* window ID */
-	struct _WidgetData	*parent;/* parent widget */
+	struct _CompositeWidgetData	*parent;/* parent widget */
         String          name;
 	XrmName		xrm_name;
         Boolean         managed;        /* is this widget controlled by geometry manager */
@@ -177,11 +173,10 @@ typedef Widget *WidgetList;
         XrmExtra       xrm_extra;     /* private for resource manager */
         XrmClass       xrm_class;     /* resource class */
         Boolean        visible_interest; 
-	WidgetProc	destroy;	/* proc called to delete widget */
-	WidgetGeometryProc reconfigure;	/* proc called to inform widget of position/dimension change */
+	WidgetProc     destroy;	/* proc called to delete widget */
+	WidgetProc     resize;	/* proc called to inform widget of size change */
 	WidgetExposeProc expose;	/* proc to call when window is exposed */
 	SetValuesProc	set_values;	/* proc called to set widget values */
-	Boolean		accepts_focus;	/* does widget accept focus */
 	WidgetProc	accept_focus;	/* proc called to give widget the focus */
   } CoreClass;
 
@@ -199,9 +194,8 @@ WidgetClass widgetClass = &widgetClassData;
  ********************************************************************/
 
  typedef struct _CompositeClass { /* incremental additions to Core for composites */
-	XtGeometryHandler	geometryMgr; 	/* geometry manager for children of widget */
-	WidgetChildrenProc      add_children;   /* add widgets to managed status */
-	WidgetChildrenProc      remove_children; /* remove widgets from managed status */
+	XtGeometryHandler	geometry_manager; 	/* geometry manager for children of widget */
+	WidgetProc		change_managed; /* change managed status of children */
 	WidgetProc		move_focus_to_next; /* move Focus to next child */
 	WidgetProc		move_focus_to_prev; /* move Focus to previous child */
   } CompositeClass;
@@ -465,18 +459,23 @@ typedef struct {
 } WidgetGeometry;
 
 
-
-
 extern XtGeometryReturnCode XtMakeGeometryRequest();
-    /*  widget, requestBox, replyBox */
-    /* WidgetData	widget;			*/
-    /* WidgetGeometry    *request;		*/
-    /* WidgetGeometry	 *reply;   /* RETURN */
+    /*  widget, request, reply		    */
+    /* Widget	widget; 		    */
+    /* WidgetGeometry    *request;	    */
+    /* WidgetGeometry	 *reply;  /* RETURN */
 
 extern XtGeometryReturnCode XtMakeResizeRequest ();
-    /* Widget    widget; */
+    /* Widget    widget;	*/
     /* Dimension width, height; */
-    /* WidgetGeometry *reply; */
+    /* WidgetGeometry *reply;   */
+
+extern XtWidgetResize(); /* widget */
+    /* Widget  widget */
+
+extern XtWidgetMove(); /* widget, x, y */
+    /* Widget  widget */
+    /* Position x, y  */
 
 
 /****************************************************************

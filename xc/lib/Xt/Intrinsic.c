@@ -41,10 +41,9 @@ WidgetClassData widgetClassData = {
           NULLQUARK,		/*xrm_class*/
           FALSE,		/*visible_interest*/
           CoreDestroy,		/*destroy proc*/
-          (WidgetGeometryProc)NULL, /*reconfigure*/
+          (WidgetProc) NULL,	 /*resize*/
           (WidgetExposeProc)NULL, /*expose*/
           SetValues,		/*set_values*/
-          FALSE,		/*accept_focus*/
           (WidgetProc)NULL      /*accept_focus*/
 };
           
