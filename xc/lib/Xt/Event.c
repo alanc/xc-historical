@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.129 91/01/29 10:39:45 rws Exp $ */
+/* $XConsortium: Event.c,v 1.130 91/04/08 14:41:35 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -998,12 +998,12 @@ static Boolean DecideToDispatch(event)
 
     if (widget == NULL) {
 	if (grabType != remap)
-	    return XFilterEvent(event, NULL);
+	    return XFilterEvent(event, None);
 	/* event occurred in a non-widget window, but we've promised also
 	   to dispatch it to the nearest accessible spring_loaded widget */
 	else if ((widget = LookupSpringLoaded(grabList)) != NULL)
 	    return DispatchEvent(event, widget, mask, pd);
-	return XFilterEvent(event, NULL);
+	return XFilterEvent(event, None);
     }
 
     switch(grabType) {
