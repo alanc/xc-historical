@@ -1,14 +1,10 @@
-#define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)' 'CC=$(CC)'
 
-#ifdef UseSunWindowsInServer
-    CDEBUGFLAGS = -g -DSUN_WINDOWS
-#else
-    CDEBUGFLAGS = -g
-#endif
-
+    CDEBUGFLAGS = ServerCDebugFlags
+     EXTENSIONS = $(EXTENSIONSRC)/server/libext.a
+         EXTDIR = $(EXTENSIONSRC)/server
      ALLDDXDIRS = ddx/mi ddx/sun ddx/cfb ddx/apollo ddx/mfb ddx/lk201 \
-                    ddx/qvss ddx/ibm/apa16 ddx/ibm/rt
+                    ddx/qvss ddx/qdss ddx/ibm/apa16 ddx/ibm/rt
       ALLOSDIRS = os/sysV os/4.2bsd
         SUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
            UNIX = os/4.2bsd/libos.a
@@ -18,46 +14,61 @@
              MI = ddx/mi/libmi.a
             DIX = dix/libdix.a
             SUN = ddx/sun/libsun.a
-     EXTENSIONS =
         SYSLIBS = -lm -ldbm
-            ALL = Xqvss Xsun Xapa16 Xapollo
+    ALLPOSSIBLE = Xqvss Xqdss Xsun Xapa16 Xapollo
 
+#ifndef	XqvssServer
+#define	XqvssServer /* as nothing */
+#endif
 
-#ifdef XServerName
-SERVERDIRS = $(XServerName/**/DIRS)
+#ifndef	XqdssServer
+#define	XqdssServer /* as nothing */
+#endif
 
-all: XServerName
+#ifndef	XsunServer
+#define	XsunServer /* as nothing */
+#endif
 
-install:: XServerName
-	  $(INSTALL) -c $(INSTALLFLAGS) XServerName $(BINDIR)
-#else XServerName
-all: servertype
-	@(s=`cat servertype`; \
-	  set -x; \
-	  $(MAKE) $(MFLAGS) PassCDebugFlags \
-		'SERVERDIRS=$$('$${s}'DIRS)' \
-		$$s)
+#ifndef	XapolloServer
+#define	XapolloServer /* as nothing */
+#endif
 
-servertype:
-	@echo "For the server, you must either supply a specific"; \
-	echo "target ($(ALL)) or put the name of that target in"; \
-	echo "the file server/$@"
+#ifndef	Xapa16Server
+#define	Xapa16Server /* as nothing */
+#endif
 
-install:: servertype
-	@(s=`cat servertype`; \
-	  set -x; \
-	  $(INSTALL) -c $(INSTALLFLAGS) $$s $(BINDIR))
-#endif XServerName
+            ALL = XqvssServer XqdssServer XsunServer XapolloServer Xapa16Server
+
+#
+# This turns off the default rule for compiling .c files because
+# this makefile does not really know how to build it.  This is really
+# just a hack because of sun's version of make and nfs.
+#
+.c.o:
+
+all: $(ALL)
 
 #
 # qvss server
 #
-QVSSDIRS = ddx/mi ddx/mfb ddx/lk201 ddx/qvss os/4.2bsd
+QVSSDIRS = dix ddx/mi ddx/mfb ddx/lk201 ddx/qvss os/4.2bsd
 QVSSOBJS = ddx/qvss/init.o ddx/qvss/qvss_io.o ddx/lk201/lk201.o
 QVSSLIBS = $(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 XqvssDIRS = $(QVSSDIRS)
 
-ServerTarget(Xqvss,dix $(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
+ServerTarget(Xqvss,$(EXTDIR) $(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
+
+#
+# qdss server
+#
+QDSSDIRS = dix ddx/mi ddx/mfb ddx/lk201 ddx/qdss os/4.2bsd
+QDSSOBJS = ddx/qdss/init.o ddx/qdss/qdss_io.o ddx/lk201/lk201.o
+QDSSLIBS = ddx/qdss/libqdss.a.save ddx/qdss/libtl.a.save \
+		ddx/qdss/libqdss.a.save \
+               $(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+XqdssDIRS = $(QDSSDIRS)
+
+ServerTarget(Xqdss,$(EXTDIR) $(QDSSDIRS),$(QDSSOBJS),$(QDSSLIBS),$(SYSLIBS))
 
 
 #
@@ -66,47 +77,77 @@ ServerTarget(Xqvss,dix $(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
 #ifdef UseSunWindowsInServer
 SUNWINDOWSLIBS = -lsunwindow -lpixrect
 #endif
-SUNDIRS = ddx/mi ddx/mfb ddx/cfb ddx/sun os/4.2bsd
+SUNDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/sun os/4.2bsd
 SUNOBJS = ddx/sun/sunInit.o
 SUNLIBS = $(SUN) $(CFB) $(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 SUNSYSLIBS = $(SYSLIBS) $(SUNWINDOWSLIBS)
 XsunDIRS = $(SUNDIRS)
 
-ServerTarget(Xsun,dix $(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
+ServerTarget(Xsun,$(EXTDIR) $(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 
 
 #
 # apa16 server
 #
-APA16DIRS = ddx/mi ddx/mfb ddx/ibm/apa16 ddx/ibm/rt os/4.2bsd
+APA16DIRS = dix ddx/mi ddx/mfb ddx/ibm/apa16 ddx/ibm/rt os/4.2bsd
 APA16OBJS = ddx/ibm/rt/rtinit.o ddx/ibm/rt/rtio.o
 APA16LIBS = ddx/ibm/rt/librt.a ddx/ibm/apa16/libapa16.a \
 		$(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 Xapa16DIRS = $(APA16DIRS)
 
-ServerTarget(Xapa16,dix $(APA16DIRS),$(APA16OBJS),$(APA16LIBS),$(SYSLIBS))
+ServerTarget(Xapa16,$(EXTDIR) $(APA16DIRS),$(APA16OBJS),$(APA16LIBS),$(SYSLIBS))
 
 
 #
 # apollo server
 #
-APOLLODIRS = ddx/mi ddx/mfb ddx/apollo os/4.2bsd
+APOLLODIRS = dix ddx/mi ddx/mfb ddx/apollo os/4.2bsd
 APOLLOOBJS = ddx/apollo/init.o ddx/apollo/apollo_io.o \
 		ddx/apollo/gpr_tmgr.o ddx/apollo/apolloGC.o \
 		/sys/traits/io_traits
 APOLLOLIBS = $(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 XapolloDIRS = $(APOLLODIRS)
 
-ServerTarget(Xapollo,dix $(APOLLODIRS),$(APOLLOOBJS),$(APOLLOLIBS),$(SYSLIBS))
+ServerTarget(Xapollo,$(EXTDIR) $(APOLLODIRS),$(APOLLOOBJS),$(APOLLOLIBS),$(SYSLIBS))
 
 #
 # other, necessary targets
 #
-DependSubdirs($(SERVERDIRS))
+clean::
+	rm -f $(ALLPOSSIBLE)
 
-$(SUBDIRS): FRC
+CleanSubdirs($(SUBDIRS))
+TagSubdirs($(SUBDIRS))
+MakefileSubdirs($(SUBDIRS))
+
+#
+# Gad, but I wish this wasn't so complicated.  All this because
+# If we are making two servers, then there may be two lists of
+# directories to depend, most of which are duplicates
+#
+depend:
+	@for i in $(ALL); do \
+		dirs="$$dirs \$$($${i}DIRS)"; \
+	done; \
+	$(MAKE) $(MFLAGS) DependServerSubdirs \
+		"SERVERSUBDIRS=$$dirs"
+
+DependServerSubdirs:
+	@subdirs=`ls -d $(SERVERSUBDIRS) | sort -u`; \
+	for i in $$subdirs; do \
+		echo "depending $$i"; \
+		(cd $$i ; $(MAKE) $(MFLAGS) depend ); \
+	done
+
+$(EXTDIR) $(SUBDIRS): FRC
 	@cd $@ ; echo "making $@"; \
 	$(MAKE) $(MFLAGS) PassCDebugFlags all
+
+install:: $(ALL)
+	@for i in $?; do \
+		$(INSTALL) -c $(INSTALLFLAGS) $$i $(BINDIR)
+	done
+
 FRC:
 
 lint:
@@ -116,5 +157,5 @@ lintlibs:
 	echo "This will take a while"
 	for i in dix $(SERVERDIRS); do \
 		(cd $$i ; echo " -- making lintlib in $$i"; \
-		$(MAKE) $(MFLAGS) lint) \
+		$(MAKE) $(MFLAGS) lintlib) \
 	done
