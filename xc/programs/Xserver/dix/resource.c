@@ -22,13 +22,13 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.90 93/09/03 13:18:52 dpw Exp $ */
+/* $XConsortium: resource.c,v 1.91 93/09/20 17:38:37 dpw Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
  *	CreateNewResourceType, CreateNewResourceClass, InitClientResources,
  *	FakeClientID, AddResource, FreeResource, FreeClientResources,
- *	FreeAllResources, LookupIDByType, LookupIDByClass
+ *	FreeAllResources, LookupIDByType, LookupIDByClass, GetXIDRange
  */
 
 /* 
@@ -233,17 +233,11 @@ AvailableID(client, id, maxid, goodid)
     return 0;
 }
 
-/*
- * Return the next usable fake client ID.
- *
- * Normally this is just the next one in line, but if we've used the last
- * in the range, we need to find a new range of safe IDs to avoid
- * over-running another client.
- */
-
-XID
-FakeClientID(client)
-    register int client;
+void
+GetXIDRange(client, server, minp, maxp)
+    int client;
+    BOOL server;
+    XID *minp, *maxp;
 {
     register XID id, maxid;
     register ResourcePtr *resp;
@@ -251,10 +245,9 @@ FakeClientID(client)
     register int i;
     XID goodid;
 
-    id = clientTable[client].fakeID++;
-    if (id != clientTable[client].endFakeID)
-	return id;
-    id = ((Mask)client << CLIENTOFFSET) | (client ? SERVER_BIT : SERVER_MINID);
+    id = (Mask)client << CLIENTOFFSET;
+    if (server)
+	id |= client ? SERVER_BIT : SERVER_MINID;
     maxid = id | RESOURCE_ID_MASK;
     goodid = 0;
     for (resp = clientTable[client].resources, i = clientTable[client].buckets;
@@ -272,7 +265,31 @@ FakeClientID(client)
 		id = res->id + 1;
 	}
     }
-    if (id > maxid) {
+    if (id > maxid)
+	id = maxid = 0;
+    *minp = id;
+    *maxp = maxid;
+}
+
+/*
+ * Return the next usable fake client ID.
+ *
+ * Normally this is just the next one in line, but if we've used the last
+ * in the range, we need to find a new range of safe IDs to avoid
+ * over-running another client.
+ */
+
+XID
+FakeClientID(client)
+    register int client;
+{
+    XID id, maxid;
+
+    id = clientTable[client].fakeID++;
+    if (id != clientTable[client].endFakeID)
+	return id;
+    GetXIDRange(client, TRUE, &id, &maxid);
+    if (!id) {
 	if (!client)
 	    FatalError("FakeClientID: server internal ids exhausted\n");
 	MarkClientException(clients[client]);
