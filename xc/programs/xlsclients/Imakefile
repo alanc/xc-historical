@@ -2,4 +2,8 @@ LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
            SRCS = xlsclients.c 
            OBJS = xlsclients.o 
 
+#undef InstallManPage
+#define InstallManPage(file,dest)  /* as nothing */
+
 ComplexProgramTarget(xlsclients)
+InstallManPageLong(xlscli,$(MANDIR),xlsclients)
