@@ -1,4 +1,4 @@
-/* $XConsortium: mpgeomaa.c,v 1.2 93/10/26 09:47:34 rws Exp $ */
+/* $XConsortium: mpgeomaa.c,v 1.3 93/10/31 09:48:16 dpw Exp $ */
 /**** module mpgeomaa.c ****/
 /******************************************************************************
 				NOTICE
@@ -549,7 +549,7 @@ static int ActivateGeomAA(flo,ped)
   int    band, nbands = pet->receptor[SRCtag].inFlo->bands;
   int    	width = oband->format->width; /* consider use of pvtband */
   double	    d = pedpvt->coeffs[3];
-  register void *outp;
+  register pointer outp;
 
   for(band = 0; band < nbands; band++, iband++, oband++, pvtband++) {
 
@@ -569,7 +569,7 @@ static int ActivateGeomAA(flo,ped)
 	    pvtband->hi_src_avail = iband->maxGlobal-1;
 	}
 
-	outp = GetCurrentDst(void,flo,pet,oband);
+	outp = GetCurrentDst(pointer,flo,pet,oband);
 	while (outp) {
 
 	    if ((pvtband->first_ihigh < 0) ||
@@ -585,7 +585,7 @@ static int ActivateGeomAA(flo,ped)
 	    pvtband->first_ilow  = (int) pvtband->first_mlow ;
 	    pvtband->first_ihigh = (int) pvtband->first_mhigh;
 	    pvtband->yOut++;
-	    outp = GetNextDst(void,flo,pet,oband,TRUE);
+	    outp = GetNextDst(pointer,flo,pet,oband,TRUE);
 	}
 	if (oband->final)
 	    DisableSrc(flo,pet,iband,FLUSH);
@@ -599,7 +599,7 @@ static int ActivateGeomAA(flo,ped)
 	    int threshold;
 
 	    /* access current output line */
-	    outp = GetDst(void,flo,pet,oband,pvtband->yOut,FLUSH);
+	    outp = GetDst(pointer,flo,pet,oband,pvtband->yOut,FLUSH);
 	    if (!outp) {
 		if (oband->final)
 		    DisableSrc(flo, pet, iband, FLUSH);
@@ -654,7 +654,7 @@ static int ActivateGeomAA(flo,ped)
 	    if (pvtband->first_ilow > last_src_line) {
 		/* rest of output image is off the input image */
 		/* we will exit after filling output strip */
-		while(outp=GetDst(void,flo,pet,oband,pvtband->yOut,FLUSH)) {
+		while(outp=GetDst(pointer,flo,pet,oband,pvtband->yOut,FLUSH)) {
 		    (*pvtband->fillfunc)(outp,width,pvtband);
 		    pvtband->yOut++;
 		}
@@ -733,7 +733,7 @@ static int DestroyGeomAA(flo,ped)
 /**********************************************************************/
 /* fill routines */
 static void XXFL_b (OUTP,width,pvtband)
-	register void *OUTP;
+	register pointer OUTP;
 	register int width;
 	mpAABandPtr pvtband;
 {
@@ -756,7 +756,7 @@ static void XXFL_b (OUTP,width,pvtband)
 
 #define DO_FL(funcname, iotype, CONST)					\
 static void funcname (OUTP,width,pvtband)				\
-    register void *OUTP;						\
+    register pointer OUTP;						\
     register int width;							\
     mpAABandPtr pvtband;						\
 {									\
@@ -779,7 +779,7 @@ DO_FL	(XXFL_Q, QuadPixel, int_constant)
  * asking for antialias in the first place...
  */
 static void AASL_b (OUTP,srcimg,width,ped,pvtband)
-    register void *OUTP, **srcimg;
+    register pointer OUTP, *srcimg;
     register int width;
     peDefPtr  ped;
     mpAABandPtr pvtband;
@@ -948,8 +948,8 @@ next:
 #define DO_AASL(funcname, iotype, valtype, CONST)			\
 static void								\
 funcname (OUTP,srcimg,width,ped,pvtband)				\
-    register void *OUTP;						\
-    register void **srcimg;						\
+    register pointer OUTP;						\
+    register pointer *srcimg;						\
     register int width;							\
     peDefPtr  ped;							\
     mpAABandPtr pvtband;						\
@@ -1000,7 +1000,7 @@ DO_AASL	(AASL_Q, QuadPixel, QuadPixel, int_constant)
 
 static void
 AAGL_b (OUTP,srcimg,width,ped,pvtband)
-    register void *OUTP, **srcimg;
+    register pointer OUTP, *srcimg;
     register int width;
     peDefPtr  ped;
     mpAABandPtr pvtband;
@@ -1234,8 +1234,8 @@ next:
 #define DO_AAGL(funcname, iotype, valtype, CONST)			\
 static void								\
 funcname (OUTP,srcimg,width,ped,pvtband)				\
-    register void *OUTP;						\
-    register void **srcimg;						\
+    register pointer OUTP;						\
+    register pointer *srcimg;						\
     register int width;							\
     peDefPtr  ped;							\
     mpAABandPtr pvtband;						\
@@ -1354,8 +1354,8 @@ extern double exp(), pow();
 #define DO_GAGL(funcname, iotype, valtype, CONST)			\
 static void								\
 funcname (OUTP,srcimg,width,ped,pvtband)				\
-    register void *OUTP;						\
-    register void **srcimg;						\
+    register pointer OUTP;						\
+    register pointer *srcimg;						\
     register int width;							\
     peDefPtr  ped;							\
     mpAABandPtr pvtband;						\
