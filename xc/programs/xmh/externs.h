@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.29 89/11/25 21:07:25 converse Exp $
+ * $XConsortium: externs.h,v 2.30 89/11/30 20:07:16 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -136,9 +136,6 @@ extern void	RenameAndCheck		(/* char *, char * */);
 extern char *	CreateGeometry		(/* int, int, int, int, int */);
 extern int	FileExists		(/* char * */);
 extern Boolean	IsSubfolder		(/* char * */);
-extern char *	MakeParentFolderName	(/* char * */);
-extern char *	MakeSubfolderName	(/* char * */);
-extern char *	MakeSubfolderLabel	(/* char * */);
 extern void 	SetCurrentFolderName	(/* Scrn, char * */);
 extern void	ChangeLabel		(/* Widget, char * */);
 extern Widget	CreateTextSW	(/* Scrn, char *, ArgList, Cardinal */);

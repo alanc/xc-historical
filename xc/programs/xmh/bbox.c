@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bbox.c,v 2.31 89/10/06 14:59:17 converse Exp $
+ * $XConsortium: bbox.c,v 2.32 89/11/25 21:04:53 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -119,6 +119,12 @@ static void bboxAddButton(buttonbox, name, kind, enabled, radio)
 	else radio_group = NULL;
 	XtSetArg(args[i], XtNradioGroup, radio_group);		i++;
 	XtSetArg(args[i], XtNradioData, button->name);		i++;
+    }
+
+    /* Prevent the folder buttons from picking up labels from resources */
+
+    if (buttonbox == buttonbox->scrn->folderbuttons) {
+	XtSetArg(args[i], XtNlabel, button->name);	i++;
     }
 
     button->widget =

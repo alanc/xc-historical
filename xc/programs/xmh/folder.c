@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.26 89/11/25 21:05:55 converse Exp $
+ * $XConsortium: folder.c,v 2.27 89/11/30 20:05:25 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -425,7 +425,11 @@ void CheckAndDeleteFolder(widget, client_data, call_data)
 	if (scrnList[i]->folderbuttons) {
 	    
 	    if (IsSubfolder(foldername)) {
-		char	*parent_folder = MakeParentFolderName(foldername);
+		char parent_folder[300];
+		char *c;
+		strcpy(parent_folder, foldername);
+		c = index(parent_folder, '/');
+		*c = '/0';
 
 /* Since menus are built upon demand, and are a per-screen resource, 
  * resources, not all toc & view screens will have the same menus built.
@@ -439,7 +443,6 @@ void CheckAndDeleteFolder(widget, client_data, call_data)
 		    ( BBoxFindButtonNamed( scrnList[i]->folderbuttons,
 					  parent_folder), 
 		     foldername);
-		XtFree(parent_folder);
 	    }
 	    else {
 		BBoxDeleteButton
@@ -556,6 +559,13 @@ static void DoSelectFolder(w, closure, data)
     SetCurrentFolderName(scrn, (char *) closure);
 }
 
+/*ARGSUSED*/
+void FreeMenuData(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data, call_data;
+{
+    XtFree((char*) client_data);
+}
 
 /* Function name:	AddFolderMenuEntry
  * Description:	
@@ -568,11 +578,17 @@ static void AddFolderMenuEntry(button, entryname)
     Button	button;		/* the corresponding menu button */
     char	*entryname;	/* the new entry, relative to MailDir */
 {
-    Cardinal	n = 0;
-    Arg		args[3];
+    Arg		args[4];
     char *	name;
+    char *	c;
+    char        tmpname[300];
+    char *	label;
     static XtCallbackRec callbacks[] = {
-	{ DoSelectFolder,			(XtPointer) NULL },
+	{ DoSelectFolder,		(XtPointer) NULL },
+	{ (XtCallbackProc) NULL,	(XtPointer) NULL}
+    };
+    static XtCallbackRec destroyCallbacks[] = {
+	{ FreeMenuData,			(XtPointer) NULL },
 	{ (XtCallbackProc) NULL,	(XtPointer) NULL}
     };
 
@@ -582,28 +598,29 @@ static void AddFolderMenuEntry(button, entryname)
 	CreateFolderMenu(button);
 	return;
     }
-
     name = XtNewString(entryname);
     callbacks[0].closure = (XtPointer) name;
-    XtSetArg(args[n], XtNcallback, callbacks);			n++;
+    destroyCallbacks[0].closure = (XtPointer) name;
+    XtSetArg(args[0], XtNcallback, callbacks);			/* ONE */
+    XtSetArg(args[1], XtNdestroyCallback, destroyCallbacks);	/* TWO */
 
     /* When a subfolder and its parent folder have identical names,
-     * we create a label for the subfolder to distinguish it.
+     * the widget name of the subfolder's menu entry must be unique.
      */
-
-    if (IsSubfolder(entryname)) {
-	char	*parent = MakeParentFolderName(entryname);
-	char	*subfolder = MakeSubfolderName(entryname);
-
-	if (strcmp(parent, subfolder) == 0) {
-	    XtSetArg(args[n], XtNlabel, MakeSubfolderLabel(subfolder));	n++;
-	    XtFree(subfolder);
+    label = entryname;
+    strcpy(tmpname, entryname);
+    if (c = index(tmpname, '/')) {
+	*c = '\0';
+	label = ++c;
+	if (strcmp(tmpname, c) == 0) {
+	    c--;
+	    *c = '_';
 	}
-	else name = subfolder;
-	XtFree(parent);
+	name = c;
     }
+    XtSetArg(args[2], XtNlabel, label);				/* THREE */
     XtCreateManagedWidget(name, smeBSBObjectClass, button->menu, 
-			  args, n);
+			  args, THREE);
 }
 
 
@@ -674,39 +691,39 @@ static void CreateFolderMenu(button)
 
 static void DeleteFolderMenuEntry(button, foldername)
     Button	button;
-    char	*foldername;	/* guaranteed to be a subfolder */
+    char	*foldername;
 {
-    int		n;
+    char *	c;
     Arg		args[2];
-
+    char *	subfolder;
+    int		n;
+    char	tmpname[300];
+    Widget	entry;
+    
     if (button == NULL || button->menu == NULL) return;
-
     XtSetArg(args[0], XtNnumChildren, &n);
-    XtGetValues(button->menu, args, (Cardinal) 1);
+    XtSetArg(args[1], XtNlabel, &c);
+    XtGetValues(button->menu, args, TWO);
 
-    if (n <= 2 ) {    /*%%% If there's a label, this number ought to be 3 */
-		      /*%%% memory leak on the entry's callback closure */
+    if ((n <= 3 && c) || n <= 2) {
 	XtDestroyWidget(button->menu);	
 	button->menu = NoMenuForButton;
+	return;
     }
-    else {
-	char	*subfolder = MakeSubfolderName(foldername);
-	Widget	entry;
 
+    strcpy(tmpname, foldername);
+    if (c = index(tmpname, '/')) {
+	*c = '\0';
+	subfolder = ++c;
 	if (strcmp(button->name, subfolder) == 0) {
-	    char * label = MakeSubfolderLabel(subfolder);
-	    if ((entry = XtNameToWidget(button->menu, label)) != NULL)
-		XtDestroyWidget(entry);
-	    XtFree(label);
+	    c--;
+	    *c = '_';
+	    subfolder = c;
 	}
-	else {
-	    if ((entry = XtNameToWidget(button->menu, subfolder)) != NULL)
-		XtDestroyWidget(entry);
-	}
-	XtFree(subfolder);
+	if ((entry = XtNameToWidget(button->menu, subfolder)) != NULL)
+	    XtDestroyWidget(entry);
     }
 }
-
 
 /* Function Name:	PopupFolderMenu
  * Description:		This action should alwas be taken when the user

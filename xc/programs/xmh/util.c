@@ -1,5 +1,5 @@
 /*
- * $XConsortium: util.c,v 2.35 89/10/06 15:04:12 converse Exp $
+ * $XConsortium: util.c,v 2.36 89/11/15 11:03:27 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -314,47 +314,11 @@ char *file;
     return buf.st_size;
 }
 
-
-
 Boolean	IsSubfolder(foldername)
     char	*foldername;
 {
     return (index(foldername, '/')) ? True : False;
 }
-
-
-char *MakeParentFolderName(foldername)
-    char	*foldername;
-{
-    char	temp[500];
-    char	*c;
-
-    c = index(strcpy(temp, foldername), '/');
-    *c = '\0';
-    return XtNewString(temp);
-}
-
-
-char *MakeSubfolderName(foldername)
-    char	*foldername;
-{
-    char	temp[500];
-    char	*c;
-
-    c = index(strcpy(temp, foldername), '/');
-    c++;
-    return XtNewString(c);
-}
-
-
-char *MakeSubfolderLabel(subfolder)
-    char *	subfolder;
-{
-    char 	tmp[256];
-    tmp[0] = '_';
-    return XtNewString(strcpy(tmp+1, subfolder));
-}
-
 
 void SetCurrentFolderName(scrn, foldername)
     Scrn	scrn;
