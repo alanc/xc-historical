@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.7 93/09/22 11:23:50 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.8 93/09/23 11:54:51 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -149,6 +149,8 @@ char 		*errorStringRet;
 
     smcConn->interact_waits = NULL;
     smcConn->prop_reply_waits = NULL;
+
+    smcConn->shutdown_in_progress = False;
 
     _SmcConnectionObjs[_SmcConnectionCount++] = smcConn;
 
