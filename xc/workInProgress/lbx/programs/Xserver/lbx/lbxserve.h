@@ -1,4 +1,4 @@
-/* $XConsortium: lbxserve.h,v 1.2 94/02/20 10:50:30 dpw Exp $ */
+/* $XConsortium: lbxserve.h,v 1.3 94/03/27 13:12:41 dpw Exp mor $ */
 /*
  * $NCDId: @(#)lbxserve.h,v 1.11 1994/03/24 01:30:14 dct Exp $
  * $NCDOr: lbxserve.h,v 1.1 1993/12/06 18:47:18 keithp Exp $
@@ -45,6 +45,7 @@ typedef struct _LbxClient {
     int         reqs_pending;
     int         (*readRequest) ();
     int         (*writeToClient) ();
+    int         (*uncompressedWriteToClient) ();
 }           LbxClientRec;
 
 typedef struct _LbxProxy {
