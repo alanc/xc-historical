@@ -1,22 +1,16 @@
 #include <Server.tmpl>
 
 SRCS =	\
-	macIIInit.c \
 	macIIMono.c \
 	macIIIo.c \
 	macIIKbd.c \
 	macIIMouse.c \
 	macIIUtils.c \
-	macIIKMap.c \
-	Xrepair.c \
-	X11R3.script \
-	def.x11start
+	macIIKMap.c
 
 SLOTSRCS = \
 	macIIInitS.c \
 	macIIColor.c
-
-OFILES = macIIInit.o 
 
 SLOTOFILES = macIIInitS.o macIIColor.o
 
@@ -42,8 +36,8 @@ NormalLibraryTarget(macII,$(OBJS))
 NormalLintTarget($(SRCS))
 SingleProgramTarget(Xrepair, Xrepair.o,,)
 InstallProgram(Xrepair,$(BINDIR))
-InstallScript(X11R3,$(BINDIR))
-InstallProgram($(BINDIR)/X11R3,$(BINDIR)/X11)
+InstallScript(X11R4,$(BINDIR))
+InstallProgram($(BINDIR)/X11R4,$(BINDIR)/X11)
 InstallNonExec(def.x11start,$(LIBDIR)/.x11start)
 InstallNonExec(xterms.tic,$(USRLIBDIR)/terminfo/x/xterm)
 InstallNonExec(xterms.tic,$(USRLIBDIR)/terminfo/x/xterms)
