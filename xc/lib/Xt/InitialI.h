@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.31 90/06/22 16:47:34 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.32 90/07/15 21:40:45 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -42,7 +42,6 @@ SOFTWARE.
 #ifndef MIN
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
 #endif
-
 
 #include "fd.h"
 
@@ -122,28 +121,84 @@ typedef struct _XtAppStruct {
 #endif
 } XtAppStruct;
 
-extern char* _XtHeapAlloc( /* Heap*, Cardinal */ );
+extern char* _XtHeapAlloc(
+#if NeedFunctionPrototypes
+    Heap*	/* heap */,
+    Cardinal	/* size */
+#endif
+);
 
-extern void _XtSetDefaultErrorHandlers();
-extern void _XtSetDefaultSelectionTimeout();
-extern void _XtSetDefaultConverterTable();
-extern void _XtFreeConverterTable();
+extern void _XtSetDefaultErrorHandlers(
+#if NeedFunctionPrototypes
+    XtErrorMsgHandler*	/* errMsg */,
+    XtErrorMsgHandler*	/* warnMsg */,
+    XtErrorHandler*	/* err */,
+    XtErrorHandler*	/* warn */
+#endif
+);
 
-extern XtAppContext _XtDefaultAppContext();
-extern ProcessContext _XtGetProcessContext();
-extern void _XtDestroyAppContexts();
-extern void _XtCloseDisplays();
+extern void _XtSetDefaultSelectionTimeout(
+#if NeedFunctionPrototypes
+    unsigned long* /* timeout */
+#endif
+);
+
+extern void _XtSetDefaultConverterTable(
+#if NeedFunctionPrototypes
+    ConverterTable* /* table */
+#endif
+);
+
+extern void _XtFreeConverterTable(
+#if NeedFunctionPrototypes
+    ConverterTable /* table */
+#endif
+);
+
+extern XtAppContext _XtDefaultAppContext(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern ProcessContext _XtGetProcessContext(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void _XtDestroyAppContexts(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void _XtCloseDisplays(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
 extern int _XtAppDestroyCount;
 extern int _XtDpyDestroyCount;
 
-extern int _XtwaitForSomething(); /* ignoreTimers, ignoreInputs, ignoreEvents,
-				     block, howlong, appContext */
-    /* Boolean ignoreTimers; */
-    /* Boolean ignoreInputs; */
-    /* Boolean ignoreEvents; */
-    /* Boolean block; */
-    /* unsigned long *howlong; */
-    /* XtAppContext app */
+extern int _XtwaitForSomething(
+#if NeedFunctionPrototypes
+#if NeedWidePrototypes
+    /* Boolean */ int	/* ignoreTimers */,
+    /* Boolean */ int	/* ignoreInputs */,
+    /* Boolean */ int	/* ignoreEvents */,
+    /* Boolean */ int	/* block */,
+#else
+    Boolean 		/* ignoreTimers */,
+    Boolean 		/* ignoreInputs */,
+    Boolean 		/* ignoreEvents */,
+    Boolean 		/* block */,
+#endif /*NeedWidePrototypes*/
+    unsigned long*	/* howlong */,
+    XtAppContext 	/* app */
+#endif
+);
 
 typedef struct {		/* support for XtGetGC */
     Screen* screen;		/* root to which drawables apply */
@@ -180,9 +235,8 @@ typedef struct _XtPerDisplayStruct {
     int multi_click_time;	       /* for XtSetMultiClickTime */
     struct _TMContext* tm_context;     /* for XtGetActionKeysym */
     CallbackList mapping_callbacks;    /* special case for TM */
+    XtPerDisplayInputRec pdi;	       /* state for modal grabs & kbd focus */
 } XtPerDisplayStruct, *XtPerDisplay;
-
-extern void _XtPerDisplayInitialize();
 
 typedef struct _PerDisplayTable {
 	Display *dpy;
@@ -192,29 +246,59 @@ typedef struct _PerDisplayTable {
 
 extern PerDisplayTablePtr _XtperDisplayList;
 
-extern XtPerDisplay _XtSortPerDisplayList();
-    /* Display *dpy */
+extern XtPerDisplay _XtSortPerDisplayList(
+#if NeedFunctionPrototypes
+    Display* /* dpy */
+#endif
+);
+
+/*
+extern XtPerDisplay _XtGetPerDisplay( Display* );
+extern XtPerDisplayInputRec* _XtGetPerDisplayInput( Display* );
+*/
 
 #ifdef DEBUG
 #define _XtGetPerDisplay(display) \
     ((_XtperDisplayList != NULL && (_XtperDisplayList->dpy == (display))) \
      ? &_XtperDisplayList->perDpy \
      : _XtSortPerDisplayList(display))
+#define _XtGetPerDisplayInput(display) \
+    ((_XtperDisplayList != NULL && (_XtperDisplayList->dpy == (display))) \
+     ? &_XtperDisplayList->perDpy.pdi \
+     : &_XtSortPerDisplayList(display)->pdi)
 #else
 #define _XtGetPerDisplay(display) \
     ((_XtperDisplayList->dpy == (display)) \
      ? &_XtperDisplayList->perDpy \
      : _XtSortPerDisplayList(display))
+#define _XtGetPerDisplayInput(display) \
+    ((_XtperDisplayList->dpy == (display)) \
+     ? &_XtperDisplayList->perDpy.pdi \
+     : &_XtSortPerDisplayList(display)->pdi)
 #endif /*DEBUG*/
 
-extern void _XtDisplayInitialize();
-    /* 	Display *dpy; */
-    /* 	String name, classname; */
-    /* 	XrmOptionDescRec *urlist; */
-    /* 	Cardinal num_urs; */
-    /* 	Cardinal *argc; */
-    /* 	char *argv[];  */
+extern void _XtDisplayInitialize(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    XtPerDisplay	/* pd */,
+    String		/* name */,
+    String		/* classname */,
+    XrmOptionDescRec*	/* urlist */,
+    Cardinal 		/* num_urs */,
+    Cardinal*		/* argc */,
+    char** 		/* argv */
+#endif
+);
 
-extern void _XtCacheFlushTag();
-    /*  XtAppContext app; */
-    /*	XtPointer tag;	  */
+extern void _XtCacheFlushTag(
+#if NeedFunctionPrototypes
+    XtAppContext /* app */,
+    XtPointer	 /* tag */
+#endif
+);
+
+extern void _XtFreeActions(
+#if NeedFunctionPrototypes
+    struct _ActionListRec* /* action_table */
+#endif
+);

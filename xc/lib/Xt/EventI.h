@@ -1,4 +1,4 @@
-/* $XConsortium: EventI.h,v 1.11 89/12/15 11:31:27 swick Exp $ */
+/* $XConsortium: EventI.h,v 1.12 90/04/13 20:12:02 swick Exp $ */
 /* $oHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 
 /***********************************************************
@@ -39,7 +39,11 @@ SOFTWARE.
 
 typedef struct _XtGrabRec  *XtGrabList;
 
-extern void _XtEventInitialize();
+extern void _XtEventInitialize(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
 extern void _XtRegisterWindow(
 #if NeedFunctionPrototypes
@@ -77,6 +81,13 @@ typedef struct _XtGrabRec {
 extern void _XtFreeEventTable(
 #if NeedFunctionPrototypes
     XtEventTable*	/* event_table */
+#endif
+);
+
+extern Boolean _XtOnGrabList(
+#if NeedFunctionPrototypes
+    Widget	/* widget */,
+    XtGrabRec*	/* grabList */
 #endif
 );
 
