@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.31 87/09/11 21:19:17 newman Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.32 87/09/13 18:27:57 newman Locked $";
 #endif lint
 
 /*
@@ -64,7 +64,7 @@ static XtResource resources[] = {
          XtOffset(Widget,core.mapped_when_managed),XtRString,"TRUE"}
     };
 static void CoreDestroy();
-static void CoreSetValues ();
+static Boolean CoreSetValues ();
 
 CompositeWidgetClass compositeWidgetClass = &compositeClassRec;
 ConstraintWidgetClass constraintWidgetClass = &constraintClassRec;
@@ -821,7 +821,8 @@ static void CoreDestroy (widget)
      
 }
 
-static void CoreSetValues()
+static Boolean CoreSetValues()
 {
 /* ||| */
+return (FALSE);
 }
