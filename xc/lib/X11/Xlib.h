@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.164 89/12/08 18:28:13 converse Exp $ */
+/* $XConsortium: Xlib.h,v 11.165 89/12/09 13:45:08 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -1170,6 +1170,12 @@ extern Display *XOpenDisplay(
 #endif
 );
 
+extern void XrmInitialize(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
 extern char *XFetchBytes(
 #if NeedFunctionPrototypes
     Display*		/* display */,
@@ -1688,6 +1694,34 @@ extern Status XGetCommand(
     int*		/* argc_return */
 #endif
 );
+extern Status XGetWMColormapWindows(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    Window**		/* windows_return */,
+    int*		/* count_return */
+#endif
+);
+extern Status XSetWMColormapWindows(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    Window*		/* colormap_windows */,
+    int			/* count */
+#endif
+);
+extern void XFreeStringList(
+#if NeedFunctionPrototypes
+    char**		/* list */
+#endif
+);
+extern XSetTransientForHint(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* w */,
+    Window		/* prop_window */
+#endif
+);
 
 /* The following are given in alphabetical order */
 
@@ -1739,9 +1773,9 @@ extern Status XAllocColorCells(
     Display*		/* display */,
     Colormap		/* colormap */,
     Bool	        /* contig */,
-    unsigned long []	/* plane_masks_return */,
+    unsigned long*	/* plane_masks_return */,
     unsigned int	/* nplanes */,
-    unsigned long []	/* pixels_return */,
+    unsigned long*	/* pixels_return */,
     unsigned int 	/* npixels */
 #endif
 );
@@ -1751,7 +1785,7 @@ extern Status XAllocColorPlanes(
     Display*		/* display */,
     Colormap		/* colormap */,
     Bool		/* contig */,
-    unsigned long []	/* pixels_return */,
+    unsigned long*	/* pixels_return */,
     int			/* ncolors */,
     int			/* nreds */,
     int			/* ngreens */,
@@ -2286,7 +2320,7 @@ extern XDrawRectangles(
     Display*		/* display */,
     Drawable		/* d */,
     GC			/* gc */,
-    XRectangle []	/* rectangles */,
+    XRectangle*		/* rectangles */,
     int			/* nrectangles */
 #endif
 );
@@ -2458,7 +2492,7 @@ extern XFreeColors(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Colormap		/* colormap */,
-    unsigned long []	/* pixels */,
+    unsigned long*	/* pixels */,
     int			/* npixels */,
     unsigned long	/* planes */
 #endif
@@ -2628,7 +2662,7 @@ extern XGetPointerControl(
 extern int XGetPointerMapping(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    unsigned char []	/* map_return */,
+    unsigned char*	/* map_return */,
     int			/* nmap */
 #endif
 );
@@ -3031,7 +3065,7 @@ extern XQueryColors(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Colormap		/* colormap */,
-    XColor []		/* defs_in_out */,
+    XColor*		/* defs_in_out */,
     int			/* ncolors */
 #endif
 );
@@ -3111,11 +3145,24 @@ extern XRaiseWindow(
 #endif
 );
 
+extern int XReadBitmapFile(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Drawable 		/* d */,
+    char*		/* filename */,
+    unsigned int*	/* width_return */,
+    unsigned int*	/* height_return */,
+    Pixmap*		/* bitmap_return */,
+    int*		/* x_hot_return */,
+    int*		/* y_hot_return */
+#endif
+);
+
 extern XRebindKeysym(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     KeySym		/* keysym */,
-    KeySym []		/* list */,
+    KeySym*		/* list */,
     int			/* mod_count */,
     unsigned char*	/* string */,
     int			/* bytes_string */
@@ -3187,7 +3234,7 @@ extern XResizeWindow(
 extern XRestackWindows(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    Window []		/* windows */,
+    Window*		/* windows */,
     int			/* nwindows */
 #endif
 );
@@ -3203,7 +3250,7 @@ extern XRotateWindowProperties(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
-    Atom []		/* properties */,
+    Atom*		/* properties */,
     int			/* num_prop */,
     int			/* npositions */
 #endif
@@ -3279,7 +3326,7 @@ extern XSetClipRectangles(
     GC			/* gc */,
     int			/* clip_x_origin */,
     int			/* clip_y_origin */,
-    XRectangle []	/* rectangles */,
+    XRectangle*		/* rectangles */,
     int			/* n */,
     int			/* ordering */
 #endif
@@ -3306,7 +3353,7 @@ extern XSetDashes(
     Display*		/* display */,
     GC			/* gc */,
     int			/* dash_offset */,
-    char []		/* dash_list */,
+    char*		/* dash_list */,
     int			/* n */
 #endif
 );
@@ -3413,7 +3460,7 @@ extern XSetPlaneMask(
 extern int XSetPointerMapping(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    unsigned char []	/* map */,
+    unsigned char*	/* map */,
     int			/* nmap */
 #endif
 );
@@ -3558,7 +3605,7 @@ extern XStoreColors(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Colormap		/* colormap */,
-    XColor []		/* color */,
+    XColor*		/* color */,
     int			/* ncolors */
 #endif
 );
@@ -3752,6 +3799,18 @@ extern XWindowEvent(
     Window		/* w */,
     long		/* event_mask */,
     XEvent*		/* event_return */
+#endif
+);
+
+extern int XWriteBitmapFile(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    char*		/* filename */,
+    Pixmap		/* bitmap */,
+    unsigned int	/* width */,
+    unsigned int	/* height */,
+    int			/* x_hot */,
+    int			/* y_hot */		     
 #endif
 );
 
