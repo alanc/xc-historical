@@ -1,4 +1,4 @@
-/* $XConsortium: memory.c,v 1.1 93/10/26 09:58:20 rws Exp $ */
+/* $XConsortium: memory.c,v 1.2 93/10/26 14:28:02 rws Exp $ */
 /* Module memory.c */
 
 /****************************************************************************
@@ -58,7 +58,8 @@ terms and conditions:
 /*
  *  Core X Includes
  */
-#include <X.h>
+#include <X11/X.h>
+#include <X11/Xfuncs.h>
 
 int ALLOCS = 0; /* DEBUG */
 
