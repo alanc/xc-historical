@@ -1,5 +1,5 @@
 /*
- *	$Header: util.c,v 1.1 88/02/10 13:08:17 jim Exp $
+ *	$Header: util.c,v 1.2 88/02/12 08:51:02 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* util.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 1.1 88/02/10 13:08:17 jim Exp $";
+static char rcs_id[] = "$Header: util.c,v 1.2 88/02/12 08:51:02 jim Exp $";
 #endif	/* lint */
 
 #include <stdio.h>
@@ -905,10 +905,12 @@ ReverseVideo (term)
 	XFreeCursor(screen->display, screen->arrow);
 	{
 	    unsigned long fg, bg;
-	    fg = screen->mousecolor;
-	    bg = (screen->mousecolor == screen->foreground) ?
-		term->core.background_pixel : screen->foreground;
-
+	    bg = term->core.background_pixel;
+	    if (screen->mousecolor == term->core.background_pixel) {
+		fg = screen->foreground;
+	    } else {
+		fg = screen->mousecolor;
+	    }
 	    if (XStrCmp(term->misc.curs_shape, "arrow") == 0) {
 		screen->curs = make_arrow (fg, bg);
 	    } else {
