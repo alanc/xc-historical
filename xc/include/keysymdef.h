@@ -1,4 +1,4 @@
-/* $Header: keysymdef.h,v 1.3 87/09/03 10:04:32 toddb Locked $ */
+/* $Header: keysymdef.h,v 1.4 87/09/03 20:51:14 toddb Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,21 +31,21 @@ SOFTWARE.
  * tables in client code.
  */
 
-#define XK_BackSpace		0xFF08	/* back space, back char, ... */
+#define XK_BackSpace		0xFF08	/* back space, back char */
 #define XK_Tab			0xFF09
 #define XK_Clear		0xFF0B
 #define XK_Linefeed		0xFF0A	/* Linefeed, LF */
 #define XK_Return		0xFF0D	/* Return, enter */
-#define XK_Pause		0xFF13	/* Pause, hold, scroll lock, ... */
+#define XK_Pause		0xFF13	/* Pause, hold, scroll lock */
 #define XK_Escape		0xFF1B
-#define XK_Delete		0xFFFF	/* Delete <>, rubout (previous char)*/
+#define XK_Delete		0xFFFF	/* Delete, rubout */
 
 
 
 /* International & multi-key character composition */
 
 #define XK_Multi_key		0xFF20  /* Multi-key character compose */
-#define XK_Kanji		0xFF21	/* Kanji split-space, Kanji convert, ... */
+#define XK_Kanji		0xFF21	/* Kanji, Kanji convert */
 
 /* Cursor control & motion */
 
@@ -54,8 +54,8 @@ SOFTWARE.
 #define XK_Up			0xFF52	/* Move up, up arrow */
 #define XK_Right		0xFF53	/* Move right, right arrow */
 #define XK_Down			0xFF54	/* Move down, down arrow */
-#define XK_Prior		0xFF55	/* Prior, previous <> */
-#define XK_Next			0xFF56	/* Next <> */
+#define XK_Prior		0xFF55	/* Prior, previous */
+#define XK_Next			0xFF56	/* Next */
 #define XK_End			0xFF57	/* EOL */
 #define XK_Begin		0xFF58	/* BOL */
 
@@ -73,7 +73,7 @@ SOFTWARE.
 #define XK_Cancel		0xFF69	/* Cancel, stop, abort, exit */
 #define XK_Help			0xFF6A	/* Help, ? */
 #define XK_Break		0xFF6B
-#define XK_Mode_switch		0xFF7E	/* Kana switch, Hebrew switch ...*/
+#define XK_Mode_switch		0xFF7E	/* Character set switch */
 #define XK_script_switch        0xFF7E  /* Alias for mode_switch */
 #define XK_Num_Lock		0xFF7F
 
