@@ -934,11 +934,13 @@ if( (connect_spipe(fds, fd) < 0) ||
 
 #if !defined(UNIXCONN)
 /*
- * If the UNIX Domain socket transport is now being used, then link this
+ * If the UNIX Domain socket transport is not being used, then link this
  * device to the path /tmp/.X11-unix/X path.
  */
-mkdir(X_UNIX_DIR, 0777); /* "/tmp/.X11-unix/X" */
-chmod(X_UNIX_DIR, 0777);
+#define X_UNIX_DIR	"/tmp/.X11-unix"
+
+if (!mkdir(X_UNIX_DIR, 0777))
+    chmod(X_UNIX_DIR, 0777);
 
 unlink(server_unix_path);
 
