@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.13 89/11/13 18:11:28 jim Exp $
+ * $XConsortium: parse.c,v 1.14 89/11/13 18:23:00 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.13 89/11/13 18:11:28 jim Exp $";
+"$XConsortium: parse.c,v 1.14 89/11/13 18:23:00 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -807,7 +807,7 @@ int do_color_keyword (keyword, colormode, s)
 	return 1;
 
       case kwc_MenuBackground:
-	GetColor (colormode, &Scr->MenuC.fore, s);
+	GetColor (colormode, &Scr->MenuC.back, s);
 	return 1;
 
       case kwc_MenuTitleForeground:
@@ -815,7 +815,7 @@ int do_color_keyword (keyword, colormode, s)
 	return 1;
 
       case kwc_MenuTitleBackground:
-	GetColor (colormode, &Scr->MenuTitleC.fore, s);
+	GetColor (colormode, &Scr->MenuTitleC.back, s);
 	return 1;
 
       case kwc_MenuShadowColor:
