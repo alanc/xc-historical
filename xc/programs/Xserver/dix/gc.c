@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.121 89/04/05 10:57:59 rws Exp $ */
+/* $XConsortium: gc.c,v 1.122 89/04/11 09:58:24 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -856,6 +856,7 @@ FreeGCperDepth(screenNum)
 
     for (i = 0; i <= pScreen->numDepths; i++)
 	(void)FreeGC(ppGC[i], (GContext)0);
+    pScreen->rgf = ~0L;
 }
 
 
@@ -1094,10 +1095,10 @@ GetScratchGC(depth, pScreen)
 
     for (i=0; i<=pScreen->numDepths; i++)
         if ( pScreen->GCperDepth[i]->depth == depth &&
-	     !(pScreen->rgf & 1 << (i+1))
+	     !(pScreen->rgf & (1L << (i+1)))
 	   )
 	{
-	    pScreen->rgf |= 1 << (i+1);
+	    pScreen->rgf |= (1L << (i+1));
             pGC = (pScreen->GCperDepth[i]);
 
 	    pGC->alu = GXcopy;
@@ -1145,7 +1146,7 @@ FreeScratchGC(pGC)
     {
         if ( pScreen->GCperDepth[i] == pGC)
 	{
-	    pScreen->rgf &= ~(1<<i+1);
+	    pScreen->rgf &= ~(1L << (i+1));
 	    return;
 	}
     }
