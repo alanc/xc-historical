@@ -1,4 +1,4 @@
-/* $XConsortium: miStruct.c,v 5.4 92/01/30 15:33:14 mor Exp $ */
+/* $XConsortium: miStruct.c,v 5.5 92/02/03 16:45:10 mor Exp $ */
 
 
 /***********************************************************
@@ -636,6 +636,14 @@ InquireElementInfo(pStruct, pRange, pNumElements, pBuffer)
 		offset1 = offset2;
 		offset2 = i;
 	}
+
+	if (offset1 == 0)
+		if (offset2 == 0)
+			return(Success);
+		else
+			offset1 = 1;
+
+
 	/* make sure buffer is large enough */
 	needbytes = (offset2 - offset1 + 1) * peisize;
 	PU_CHECK_BUFFER_SIZE(pBuffer, needbytes);
@@ -1257,6 +1265,13 @@ InquireElements(pStruct, pRange, pNumOCs, pBuffer)
 		offset1 = offset2;
 		offset2 = i;
 	}
+
+	if (offset1 == 0)
+		if (offset2 == 0)
+			return(Success);
+		else
+			offset1 = 1;
+
 	MISTR_FIND_EL(pheader, offset1, pel);
 
 	for (i = offset1; i <= offset2; i++) {
