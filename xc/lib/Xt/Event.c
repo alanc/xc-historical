@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 6.12 88/01/29 17:05:35 asente Exp $";
+static char rcsid[] = "$Header: Event.c,v 1.47 88/02/02 17:34:06 swick Locked $";
 #endif lint
 
 /*
@@ -561,27 +561,33 @@ void XtAddGrab(widget, exclusive, spring_loaded)
 void XtRemoveGrab(widget)
     Widget  widget;
 {
-    register GrabList gl;
-    register Boolean done;
+    register GrabList gl, prev, next;
 
-    for (gl = grabList; gl != NULL; gl = gl->next) {
+    for (prev = NULL, gl = grabList; gl != NULL; prev = gl, gl = gl->next) {
 	if (gl->widget == widget) {
 	    break;
 	}
     }
 
     if (gl == NULL) {
-	XtWarning("XtRemoveGrab asked to remove a widget not on the grab list");
-	return;
+      XtWarning("XtRemoveGrab asked to remove a widget not on the grab list");
+      return;
     }
 
-    do {
-	gl = grabList;
-	done = (gl->widget == widget);
-	grabList = gl->next;
-	XtFree((char *)gl);
-    } while (! done);
-
+    while (gl) {
+	if (gl->widget == widget) {
+	    if (prev)
+		prev->next = next = gl->next;
+	    else
+		grabList = next = gl->next;
+	    XtFree(gl);
+	    gl = next;
+	}
+	else {
+	    prev = gl;
+	    gl = gl->next;
+	}
+    }
     XtRemoveCallback(
 	widget, XtNdestroyCallback, GrabDestroyCallback, (Opaque)NULL);
 }
