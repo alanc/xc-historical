@@ -170,7 +170,8 @@ XTestExtension1Init()
 				0,
 				ProcXTestDispatch,
 				SProcXTestDispatch,
-				XTestResetProc);
+				XTestResetProc,
+				StandardMinorOpcode);
 	if (extEntry)
 	{
 		/*
