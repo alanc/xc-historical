@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuWrite.c,v 1.1 88/11/22 15:27:22 jim Exp $
+ * $XConsortium: AuWrite.c,v 1.2 88/12/08 16:40:29 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,7 +26,7 @@ FILE		*file;
 {
     unsigned char   file_short[2];
 
-    file_short[0] = (s & 0xff00) >> 8;
+    file_short[0] = (s & (unsigned)0xff00) >> 8;
     file_short[1] = s & 0xff;
     if (fwrite ((char *) file_short, (int) sizeof (file_short), 1, file) != 1)
 	return 0;

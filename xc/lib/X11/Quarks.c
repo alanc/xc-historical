@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.27 90/12/12 09:16:49 rws Exp $
+ * $XConsortium: Quarks.c,v 1.28 90/12/13 23:34:26 rws Exp $
  */
 
 /***********************************************************
@@ -55,7 +55,7 @@ static XrmQuark nextUniq = -1;	/* next quark from XrmUniqueQuark */
 #define CHUNKPER	8
 #define CHUNKMASK	((CHUNKPER << QUANTUMSHIFT) - 1)
 
-#define LARGEQUARK	0x80000000L
+#define LARGEQUARK	((Entry)0x80000000L)
 #define QUARKSHIFT	18
 #define QUARKMASK	((LARGEQUARK - 1) >> QUARKSHIFT)
 #define SIGMASK		((1L << QUARKSHIFT) - 1)
