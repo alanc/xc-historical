@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.27 87/09/09 20:24:39 rws Exp $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.28 87/09/11 16:57:09 newman Locked $";
 #endif
 
 /*%
@@ -140,7 +140,7 @@ Window_Dump(window, out)
     int win_name_size;
     int header_size;
     int ncolors, i;
-    char win_name[100];
+    char *win_name;
     XWindowAttributes win_info;
     XImage *image;
 
@@ -159,9 +159,9 @@ Window_Dump(window, out)
     if(!XGetWindowAttributes(dpy, window, &win_info)) 
       Fatal_Error("Can't get target window attributes.");
 
-    XFetchName(dpy, window, win_name);
-    if (!win_name[0])
-      strcpy(win_name, "xwdump");
+    XFetchName(dpy, window, &win_name);
+    if (!win_name || !win_name[0])
+      win_name = "xwdump";
 
     /* sizeof(char) is included for the null string terminator. */
     win_name_size = strlen(win_name) + sizeof(char);
