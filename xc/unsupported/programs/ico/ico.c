@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.16 89/10/04 18:21:34 jim Exp $ */
+/* $XConsortium: ico.c,v 1.17 89/10/05 11:18:19 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -352,6 +352,8 @@ char **argv;
 #ifdef MULTIBUFFER
 	if (multibuf) {
 	    if (XmbufQueryExtension (dpy, &mbevbase, &mberrbase)) {
+		Window w;
+
 		if (useRoot || !moveico) 
 		  icowin = None;
 		else {
@@ -362,30 +364,15 @@ char **argv;
 					    CWBackPixel, &xswa);
 		    XMapWindow (dpy, icowin);
 		}
-		if (XmbufCreateBuffers (dpy, icowin ? icowin : draw_window, 2,
+		w = icowin ? icowin : draw_window;
+		if (XmbufCreateBuffers (dpy, w, 2,
 					MultibufferUpdateActionBackground,
 					MultibufferUpdateHintFrequent,
 					multibuffers) == 2) {
+		    XmbufDisplayBuffers (dpy, 1, &multibuffers[0], 0, 0);
+		    XmbufDisplayBuffers (dpy, 1, &multibuffers[1], 0, 0);
+		    XmbufDisplayBuffers (dpy, 1, &multibuffers[0], 0, 0);
 		    win = multibuffers[0];
-#ifdef notimplementedyet
-		    XmbufClearBuffer (dpy, multibuffers[0], 0, 0, 0, 0, False);
-		    XmbufClearBuffer (dpy, multibuffers[1], 0, 0, 0, 0, False);
-#else
-		    /* workaround for ClearBuffer */
-		    {
-			GC tmpgc;
-			int i;
-
-			xgcv.foreground = bg;
-			tmpgc = XCreateGC (dpy, draw_window, GCForeground,
-					   &xgcv);
-			for (i = 0; i < 2; i++)
-			  XFillRectangle (dpy, multibuffers[i], tmpgc,
-					  0, 0, winW, winH);
-			XFreeGC (dpy, tmpgc);
-		    }
-#endif
-
 		} else 
 		  icoFatal ("unable to obtain 2 buffers");
 	    } else
@@ -608,10 +595,12 @@ int prevX, prevY;
 	PartialNonHomTransform(NV, xform, xv[!buffer], xv[buffer]);
 
 
+#ifdef MULTIBUFFER
 	if (icowin) {
 	    XMoveWindow (dpy, icowin, icoX, icoY);
 	    icoX = icoY = 0;
 	}
+#endif
 
 	/* Convert 3D coordinates to 2D window coordinates: */
 
