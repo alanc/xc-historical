@@ -1,4 +1,4 @@
-/* $XConsortium: remote.c,v 1.5 94/05/02 11:30:58 mor Exp $ */
+/* $XConsortium: remote.c,v 1.6 94/07/08 14:06:18 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -39,10 +39,11 @@ extern void		fprintfhex ();
 
 
 void
-remote_start (client_host, program, args, cwd, env,
+remote_start (restart_protocol, restart_machine, program, args, cwd, env,
     non_local_display_env, non_local_session_env)
 
-char	*client_host;
+char	*restart_protocol;
+char	*restart_machine;
 char	*program;
 char	**args;
 char	*cwd;
@@ -52,20 +53,26 @@ char	*non_local_session_env;
 
 {
     FILE *fp;
-    char *hostname;
-    char *tmp;
     int	 pipefd[2];
     int  i;
 
-    if ((tmp = (char *) strchr (client_host, '/')) == NULL)
-	hostname = client_host;
-    else
-	hostname = tmp + 1;
+    if (strcmp (restart_protocol, "rstart-rsh") != 0)
+    {
+	if (verbose)
+	    printf ("Only rstart-rsh remote execution protocol supported.\n");
+	return;
+    }
+
+    if (!restart_machine)
+    {
+	if (verbose)
+	    printf ("Bad remote machine specified for remote execute.\n");
+	return;
+    }
 
     if (verbose)
-    {
-	printf ("Attempting to restart remote client on %s\n", hostname);
-    }
+	printf ("Attempting to restart remote client on %s\n",
+	    restart_machine);
 
     if (pipe (pipefd) < 0)
     {
@@ -87,7 +94,7 @@ char	*non_local_session_env;
 	    dup (pipefd[0]);
 	    close (pipefd[0]);
 
-	    execlp (RSHCMD, hostname, "rstartd", (char *) 0);
+	    execlp (RSHCMD, restart_machine, "rstartd", (char *) 0);
 
 	    perror("Failed to start remote client with rstart protocol");
 	    _exit(255);
