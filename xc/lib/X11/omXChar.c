@@ -1,4 +1,4 @@
-/* $XConsortium: omXChar.c,v 1.1 93/09/17 13:33:06 rws Exp $ */
+/* $XConsortium: omXChar.c,v 1.2 94/01/20 18:08:33 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -27,6 +27,7 @@
 #include "Xlibint.h"
 #include "XlcPublic.h"
 #include "XomGeneric.h"
+#include <stdio.h>
 
 static FontSet
 _XomGetFontSetFromCharSet(oc, charset)
