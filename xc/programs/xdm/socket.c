@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.20 90/09/14 17:51:44 keith Exp $
+ * $XConsortium: socket.c,v 1.21 90/12/03 16:03:52 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -43,10 +43,11 @@ extern int		Willing ();
 extern ARRAY8Ptr	Accept ();
 extern int		SelectConnectionTypeIndex ();
 
-int	socketFd = -1;
+static int	socketFd = -1;
+static int	chooserFd = -1;
 
-FD_TYPE	WellKnownSocketsMask;
-int	WellKnownSocketsMax;
+static FD_TYPE	WellKnownSocketsMask;
+static int	WellKnownSocketsMax;
 
 #define pS(s)	((s) ? ((char *) (s)) : "empty string")
 
@@ -76,11 +77,29 @@ CreateWellKnownSockets ()
 	LogError ("error binding socket address %d\n", request_port);
 	close (socketFd);
 	socketFd = -1;
+	return;
     }
-    else {
-	WellKnownSocketsMax = socketFd;
-	FD_SET (socketFd, &WellKnownSocketsMask);
+    WellKnownSocketsMax = socketFd;
+    FD_SET (socketFd, &WellKnownSocketsMask);
+
+    chooserFd = socket (AF_INET, SOCK_STREAM, 0);
+    Debug ("Created chooser socket %d\n", chooserFd);
+    if (chooserFd == -1)
+    {
+	LogError ("chooser socket creation failed\n");
+	return;
     }
+    listen (chooserFd, 5);
+    if (chooserFd > WellKnownSocketsMax)
+	WellKnownSocketsMax = chooserFd;
+    FD_SET (chooserFd, &WellKnownSocketsMask);
+}
+
+GetChooserAddr (addr, lenp)
+    struct sockaddr *addr;
+    int		    *lenp;
+{
+    return getsockname (chooserFd, addr, lenp);
 }
 
 DestroyWellKnownSockets ()
@@ -90,11 +109,16 @@ DestroyWellKnownSockets ()
 	close (socketFd);
 	socketFd = -1;
     }
+    if (chooserFd != -1)
+    {
+	close (chooserFd);
+	chooserFd = -1;
+    }
 }
 
 AnyWellKnownSockets ()
 {
-    return socketFd != -1;
+    return socketFd != -1 || chooserFd != -1;
 }
 
 WaitForSomething ()
@@ -104,13 +128,18 @@ WaitForSomething ()
     extern int Rescan, ChildReady;
 
     Debug ("WaitForSomething\n");
-    if (socketFd != -1 && !ChildReady) {
+    if (AnyWellKnownSockets () && !ChildReady) {
 	reads = WellKnownSocketsMask;
 	nready = select (WellKnownSocketsMax + 1, &reads, 0, 0, 0);
 	Debug ("select returns %d.  Rescan: %d  ChildReady: %d\n",
 		nready, Rescan, ChildReady);
-	if (nready > 0 && FD_ISSET (socketFd, &reads))
-	    ProcessRequestSocket ();
+	if (nready > 0)
+	{
+	    if (socketFd >= 0 && FD_ISSET (socketFd, &reads))
+		ProcessRequestSocket ();
+	    if (chooserFd >= 0 && FD_ISSET (chooserFd, &reads))
+		ProcessChooserSocket (chooserFd);
+	}
 	if (ChildReady)
 	{
 	    WaitForChild ();
@@ -146,6 +175,7 @@ ProcessRequestSocket ()
     int			addrlen = sizeof addr;
 
     Debug ("ProcessRequestSocket\n");
+    bzero ((char *) &addr, sizeof (addr));
     if (!XdmcpFill (socketFd, &buffer, &addr, &addrlen))
 	return;
     if (!XdmcpReadHeader (&buffer, &header))
@@ -254,6 +284,64 @@ sendForward (connectionType, address, closure)
     XdmcpFlush (socketFd, &buffer, addr, addrlen);
 }
 
+
+static
+ClientAddress (from, addr, port, type)
+    struct sockaddr *from;
+    ARRAY8Ptr	    addr, port;
+    CARD16	    *type;
+{
+    addr->length = 0;
+    addr->data = 0;
+    port->length = 0;
+    port->data = 0;
+    switch (from->sa_family) {
+#ifdef AF_UNIX
+    case AF_UNIX:
+	{
+	    struct sockaddr_un	*un_addr;
+	    int			length;
+	    int			i;
+    
+	    un_addr = (struct sockaddr_un *) from;
+	    length = strlen (un_addr->sun_path);
+	    if (XdmcpAllocARRAY8 (addr, length))
+	    {
+		for (i = 0; i < length; i++)
+		    addr->data[i] = un_addr->sun_path[i];
+	    }
+	    *type = FamilyLocal;
+	    break;
+	}
+#endif
+#ifdef AF_INET
+    case AF_INET:
+	{
+	    struct sockaddr_in	*in_addr;
+    
+	    in_addr = (struct sockaddr_in *) from;
+	    if (XdmcpAllocARRAY8 (addr, 4) &&
+		XdmcpAllocARRAY8 (port, 2))
+	    {
+		bcopy (&in_addr->sin_addr, addr->data, 4);
+		bcopy (&in_addr->sin_port, port->data, 2);
+	    }
+	    *type = FamilyInternet;
+	}
+	break;
+#endif
+#ifdef AF_CHAOS
+    case AF_CHAOS:
+	break;
+#endif
+#ifdef AF_DECnet
+    case AF_DECnet:
+	*type = FamilyDECnet;
+	break;
+#endif
+    }
+}
+
 indirect_respond (from, fromlen, length)
     struct sockaddr *from;
     int		    fromlen;
@@ -276,56 +364,7 @@ indirect_respond (from, fromlen, length)
 	expectedLen += 2 + queryAuthenticationNames.data[i].length;
     if (length == expectedLen)
     {
-    	clientAddress.length = 0;
-	clientAddress.data = 0;
-    	clientPort.length = 0;
-	clientPort.data = 0;
-    	switch (from->sa_family) {
-#ifdef AF_UNIX
-    	case AF_UNIX:
-    	    {
-	    	struct sockaddr_un	*un_addr;
-	    	int			length;
-	    	int			i;
-    	
-	    	un_addr = (struct sockaddr_un *) from;
-	    	length = strlen (un_addr->sun_path);
-	    	if (XdmcpAllocARRAY8 (&clientAddress, length))
-	    	{
-	    	    for (i = 0; i < length; i++)
-		    	clientAddress.data[i] = un_addr->sun_path[i];
-	    	}
-		connectionType = FamilyLocal;
-	    	break;
-    	    }
-#endif
-#ifdef AF_INET
-    	case AF_INET:
-    	    {
-	    	struct sockaddr_in	*in_addr;
-    	
-	    	in_addr = (struct sockaddr_in *) from;
-	    	if (XdmcpAllocARRAY8 (&clientAddress, 4) &&
-	    	    XdmcpAllocARRAY8 (&clientPort, 2))
-	    	{
-	    	    bcopy (&in_addr->sin_addr, clientAddress.data, 4);
-	    	    bcopy (&in_addr->sin_port, clientPort.data, 2);
-	    	}
-		connectionType = FamilyInternet;
-    	    }
-    	    break;
-#endif
-#ifdef AF_CHAOS
-    	case AF_CHAOS:
-    	    break;
-#endif
-#ifdef AF_DECnet
-    	case AF_DECnet:
-	    connectionType = FamilyDECnet;
-    	    break;
-#endif
-    	}
-
+	ClientAddress (from, &clientAddress, &clientPort, &connectionType);
 	/*
 	 * set up the forward query packet
 	 */
@@ -484,6 +523,11 @@ all_query_respond (from, fromlen, authenticationNames, type)
     default:
 	return;
     }
+    if (type == INDIRECT_QUERY)
+	RememberIndirectClient (&addr, connectionType);
+    else
+	ForgetIndirectClient (&addr, connectionType);
+
     authenticationName = ChooseAuthentication (authenticationNames);
     if (Willing (&addr, connectionType, authenticationName, &status, type))
 	send_willing (from, fromlen, authenticationName, &status);
@@ -610,7 +654,6 @@ request_respond (from, fromlen, length)
 	    pdpy = 0;
 	    goto decline;
 	}
-	/* SUPPRESS 560 */
 	if (pdpy = FindProtoDisplay (from, fromlen, displayNumber))
 	    goto accept;
 	reason = Accept (from, fromlen, displayNumber);
@@ -639,6 +682,7 @@ request_respond (from, fromlen, length)
 				connectionTypes.data[i],
 				connectionAddress,
 				NextSessionID());
+	Debug ("NewProtoDisplay 0x%x\n", pdpy);
 	if (!pdpy)
 	{
 	    reason = &outOfMemory;
@@ -706,7 +750,7 @@ send_accept (to, tolen, sessionID,
 {
     XdmcpHeader	header;
 
-    Debug ("Accept %d\n", sessionID);
+    Debug ("Accept Session ID %d\n", sessionID);
     header.version = XDM_PROTOCOL_VERSION;
     header.opcode = (CARD16) ACCEPT;
     header.length = 4;			    /* session ID */
@@ -759,6 +803,8 @@ manage (from, fromlen, length)
     char		*name;
     char		*class;
     struct sockaddr	*from_save;
+    ARRAY8		clientAddress, clientPort;
+    CARD16		connectionType;
 
     Debug ("Manage %d\n", length);
     displayClass.data = 0;
@@ -776,6 +822,7 @@ manage (from, fromlen, length)
 	    goto abort;
 	}
 	pdpy = FindProtoDisplay (from, fromlen, displayNumber);
+	Debug ("Manage Session ID %d, pdpy 0x%x\n", sessionID, pdpy);
 	if (!pdpy || pdpy->sessionID != sessionID)
 	{
 	    /*
@@ -792,6 +839,9 @@ manage (from, fromlen, length)
 		     Debug("manage: got duplicate pkt, ignoring\n");
 		     goto abort;
 	    }
+	    Debug ("Session ID %d refused\n", sessionID);
+	    if (pdpy)
+		Debug ("Existing Session ID %d\n", pdpy->sessionID);
 	    send_refuse (from, fromlen, sessionID);
 	}
 	else
@@ -849,6 +899,21 @@ manage (from, fromlen, length)
 	    d->from = from_save;
 	    d->fromlen = fromlen;
 	    d->displayNumber = pdpy->displayNumber;
+	    ClientAddress (from, &clientAddress, &clientPort, &connectionType);
+	    d->useChooser = 0;
+	    if (IsIndirectClient (&clientAddress, connectionType))
+	    {
+		Debug ("IsIndirectClient\n");
+		ForgetIndirectClient (&clientAddress, connectionType);
+		if (UseChooser (&clientAddress, connectionType))
+		{
+		    d->useChooser = 1;
+		    Debug ("Use chooser for %s\n", d->name);
+		}
+	    }
+	    d->clientAddr = clientAddress;
+	    d->connectionType = connectionType;
+	    XdmcpDisposeARRAY8 (&clientPort);
 	    if (pdpy->fileAuthorization)
 	    {
 		d->authorizations = (Xauth **) malloc (sizeof (Xauth *));

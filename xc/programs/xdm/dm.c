@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.44 90/12/03 17:46:26 keith Exp $
+ * $XConsortium: dm.c,v 1.45 90/12/10 15:44:53 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -497,7 +497,10 @@ struct display	*d;
 	SetAuthorization (d);
 	if (!WaitForServer (d))
 	    exit (OPENFAILED_DISPLAY);
-	ManageSession (d);
+	if (d->useChooser)
+	    RunChooser (d);
+	else
+	    ManageSession (d);
 	exit (REMANAGE_DISPLAY);
     case -1:
 	break;
