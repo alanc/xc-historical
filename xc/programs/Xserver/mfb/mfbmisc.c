@@ -21,25 +21,32 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbmisc.c,v 5.0 89/06/09 15:06:49 keith Exp $ */
+/* $XConsortium: mfbmisc.c,v 5.1 91/03/30 11:13:39 rws Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cursor.h"
-#include "screenint.h"
+#include "scrnintstr.h"
 
 #include "mfb.h"
 
 /*ARGSUSED*/
 void
-mfbQueryBestSize(class, pwidth, pheight)
+mfbQueryBestSize(class, pwidth, pheight, pScreen)
 int class;
 short *pwidth;
 short *pheight;
+ScreenPtr pScreen;
 {
     unsigned width, test;
 
     switch(class)
     {
+      case CursorShape:
+	  if (*pwidth > pScreen->width)
+	     *pwidth = pScreen->width;
+	  if (*pheight > pScreen->height)
+	     *pheight = pScreen->height;
+	  break;
       case TileShape:
       case StippleShape:
 	  width = *pwidth;
