@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: svgaSVPMI.c,v 1.1 93/09/18 16:09:03 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -786,7 +786,7 @@ svgaSVPMIOpen(
     return FALSE;
   }
 
-  if (sscanf(configstring, "%[0-9a-zA-Z.]:%dx%d", pmifile, &width, &height) != 3)
+  if (sscanf(configstring, "%[0-9a-zA-Z./]:%dx%d", pmifile, &width, &height) != 3)
     return FALSE;
 
   if ((memFd == -1) && (memFd = open("/dev/mem", O_RDONLY)) == -1) {
