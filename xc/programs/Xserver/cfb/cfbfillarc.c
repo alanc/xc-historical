@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbfillarc.c,v 5.2 89/10/27 17:15:57 rws Exp $ */
+/* $XConsortium: cfbfillarc.c,v 5.3 89/10/29 11:29:21 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -191,7 +191,7 @@ cfbFillArcSliceSolidCopy(pDraw, pGC, arc)
     }
     fill = PFILL(pGC->fgPixel);
     miFillArcSetup(arc, &info);
-    miFillArcSliceSetup(arc, &slice);
+    miFillArcSliceSetup(arc, &slice, pGC);
     MIFILLARCSETUP();
     iscircle = (arc->width == arc->height);
     xorg += pDraw->x;
@@ -256,10 +256,8 @@ cfbPolyFillArcSolidCopy(pDraw, pGC, narcs, parcs)
 		if ((arc->angle2 >= FULLCIRCLE) ||
 		    (arc->angle2 <= -FULLCIRCLE))
 		    cfbFillEllipseSolidCopy(pDraw, pGC, arc);
-		else if (pGC->arcMode == ArcPieSlice)
-		    cfbFillArcSliceSolidCopy(pDraw, pGC, arc);
 		else
-		    miPolyFillArc(pDraw, pGC, 1, arc);
+		    cfbFillArcSliceSolidCopy(pDraw, pGC, arc);
 		continue;
 	    }
 	}

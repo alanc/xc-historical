@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.c,v 5.6 89/10/28 17:15:09 rws Exp $ */
+/* $XConsortium: mifillarc.c,v 5.7 89/11/02 19:26:42 rws Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -142,14 +142,62 @@ miFillArcDSetup(arc, info)
 }
 
 static void
-miGetArcEdge(arc, angle, edge, top, left)
-    xArc *arc;
-    int angle;
-    miSliceEdgePtr edge;
+miGetArcEdge(arc, edge, k, top, left)
+    register xArc *arc;
+    register miSliceEdgePtr edge;
+    int k;
     Bool top, left;
 {
-    int y, x2dy, signdx, signdy, xorg;
-    double cx, sy, scale;
+    register int xady, y;
+
+    y = arc->height >> 1;
+    if (!(arc->width & 1))
+	y++;
+    if (!top)
+    {
+	y = -y;
+	if (arc->height & 1)
+	    y--;
+    }
+    xady = k + y * edge->dx;
+    if (xady <= 0)
+	edge->x = - ((-xady) / edge->dy + 1);
+    else
+	edge->x = (xady - 1) / edge->dy;
+    edge->e = xady - edge->x * edge->dy;
+    if ((top && (edge->dx < 0)) || (!top && (edge->dx > 0)))
+	edge->e = edge->dy - edge->e + 1;
+    if (left)
+	edge->x++;
+    edge->x += arc->x + (arc->width >> 1);
+    if (edge->dx > 0)
+    {
+	edge->deltax = 1;
+	edge->stepx = edge->dx / edge->dy;
+	edge->dx = edge->dx % edge->dy;
+    }
+    else
+    {
+	edge->deltax = -1;
+	edge->stepx = - ((-edge->dx) / edge->dy);
+	edge->dx = (-edge->dx) % edge->dy;
+    }
+    if (!top)
+    {
+	edge->deltax = -edge->deltax;
+	edge->stepx = -edge->stepx;
+    }
+}
+
+static void
+miGetPieEdge(arc, angle, edge, top, left)
+    register xArc *arc;
+    register int angle;
+    register miSliceEdgePtr edge;
+    Bool top, left;
+{
+    register int k, signdx, signdy;
+    double dx, dy, scale;
 
     if ((angle == 0) || (angle == HALFCIRCLE))
     {
@@ -159,10 +207,9 @@ miGetArcEdge(arc, angle, edge, top, left)
 	edge->dx = -1;
 	return;
     }
-    xorg = arc->x + (arc->width >> 1);
     if ((angle == QUADRANT) || (angle == QUADRANT3))
     {
-	edge->x = xorg;
+	edge->x = arc->x + (arc->width >> 1);
 	if (left && (arc->width & 1))
 	    edge->x++;
 	else if (!left && !(arc->width & 1))
@@ -172,79 +219,44 @@ miGetArcEdge(arc, angle, edge, top, left)
 	edge->dx = -1;
 	return;
     }
-    sy = Dsin(angle) * arc->height;
-    if (sy < 0.0)
+    dy = Dsin(angle) * arc->height;
+    if (dy < 0.0)
     {
-	sy = -sy;
+	dy = -dy;
 	signdy = -1;
     }
     else
 	signdy = 1;
-    cx = Dcos(angle) * arc->width;
-    if (cx < 0.0)
+    dx = Dcos(angle) * arc->width;
+    if (dx < 0.0)
     {
-	cx = -cx;
+	dx = -dx;
 	signdx = -1;
     }
     else
 	signdx = 1;
-    scale = (cx > sy) ? cx : sy;
-    edge->dx = floor((cx * 32768) / scale + .5);
-    edge->dy = floor((sy * 32768) / scale + .5);
+    scale = (dx > dy) ? dx : dy;
+    edge->dx = floor((dx * 32768) / scale + .5);
+    edge->dy = floor((dy * 32768) / scale + .5);
     if (signdx < 0)
 	edge->dx = -edge->dx;
     if (signdy < 0)
 	edge->dx = -edge->dx;
-    y = (arc->height & ~1);
-    if (!(arc->width & 1))
-	y += 2;
-    if (!top)
-    {
-	y = -y;
-	if (arc->height & 1)
-	    y -= 2;
-    }
-    x2dy = y * edge->dx;
-    if (arc->height & 1)
-	x2dy += edge->dx;
-    edge->dx <<= 1;
+    k = (arc->height & 1) ? edge->dx : 0;
     if (arc->width & 1)
-	x2dy += edge->dy;
+	k += edge->dy;
+    edge->dx <<= 1;
     edge->dy <<= 1;
-    if ((top && (edge->dx > 0)) || (!top && edge->dx < 0))
-	edge->x = (x2dy - 1) / edge->dy;
-    else
-	edge->x = - ((-x2dy) / edge->dy + 1);
-    edge->e = x2dy - edge->x * edge->dy;
-    if ((top && (edge->dx < 0)) || (!top && (edge->dx > 0)))
-	edge->e = edge->dy - edge->e + 1;
-    if (edge->dx < 0)
-    {
-	edge->dx = -edge->dx;
-	edge->deltax = -1;
-    }
-    else
-	edge->deltax = 1;
-    edge->stepx = edge->dx / edge->dy;
-    if (edge->deltax < 0)
-	edge->stepx = -edge->stepx;
-    edge->dx = edge->dx % edge->dy;
-    if (left)
-	edge->x++;
-    edge->x += xorg;
-    if (!top)
-    {
-	edge->stepx = -edge->stepx;
-	edge->deltax = -edge->deltax;
-    }
+    miGetArcEdge(arc, edge, k, top, left);
 }
 
 void
-miFillArcSliceSetup(arc, slice)
-    xArc *arc;
-    miArcSliceRec *slice;
+miFillArcSliceSetup(arc, slice, pGC)
+    register xArc *arc;
+    register miArcSliceRec *slice;
+    GCPtr pGC;
 {
-    int angle1, angle2;
+    register int angle1, angle2;
 
     angle1 = arc->angle1;
     if (arc->angle2 < 0)
@@ -268,46 +280,173 @@ miFillArcSliceSetup(arc, slice)
     slice->max_bot_y = slice->max_top_y - 1;
     slice->flip_top = FALSE;
     slice->flip_bot = FALSE;
-    slice->edge1_top = (angle1 < HALFCIRCLE);
-    slice->edge2_top = (angle2 <= HALFCIRCLE);
-    if ((angle2 == 0) || (angle1 == HALFCIRCLE))
+    if (pGC->arcMode == ArcPieSlice)
     {
-	if (angle2 ? slice->edge2_top : slice->edge1_top)
+	slice->edge1_top = (angle1 < HALFCIRCLE);
+	slice->edge2_top = (angle2 <= HALFCIRCLE);
+	if ((angle2 == 0) || (angle1 == HALFCIRCLE))
+	{
+	    if (angle2 ? slice->edge2_top : slice->edge1_top)
+		slice->min_top_y = slice->min_bot_y;
+	    else
+		slice->min_top_y = arc->height;
+	    slice->min_bot_y = 0;
+	}
+	else if ((angle1 == 0) || (angle2 == HALFCIRCLE))
+	{
 	    slice->min_top_y = slice->min_bot_y;
-	else
-	    slice->min_top_y = arc->height;
-	slice->min_bot_y = 0;
+	    if (angle1 ? slice->edge1_top : slice->edge2_top)
+		slice->min_bot_y = arc->height;
+	    else
+		slice->min_bot_y = 0;
+	}
+	else if (slice->edge1_top == slice->edge2_top)
+	{
+	    if (angle2 < angle1)
+	    {
+		slice->flip_top = slice->edge1_top;
+		slice->flip_bot = !slice->edge1_top;
+	    }
+	    else if (slice->edge1_top)
+	    {
+		slice->min_top_y = 1;
+		slice->min_bot_y = arc->height;
+	    }
+	    else
+	    {
+		slice->min_bot_y = 0;
+		slice->min_top_y = arc->height;
+	    }
+	}
+	miGetPieEdge(arc, angle1, &slice->edge1,
+		     slice->edge1_top, !slice->edge1_top);
+	miGetPieEdge(arc, angle2, &slice->edge2,
+		     slice->edge2_top, slice->edge2_top);
     }
-    else if ((angle1 == 0) || (angle2 == HALFCIRCLE))
+    else
     {
-	slice->min_top_y = slice->min_bot_y;
-	if (angle1 ? slice->edge1_top : slice->edge2_top)
-	    slice->min_bot_y = arc->height;
-	else
-	    slice->min_bot_y = 0;
-    }
-    else if (slice->edge1_top == slice->edge2_top)
-    {
-	if (angle2 < angle1)
+	double w2, h2, x1, y1, dx, dy, scale;
+	int signdx, signdy, y, k;
+
+	w2 = (double)arc->width / 2.0;
+	h2 = (double)arc->height / 2.0;
+	if ((angle1 == 0) || (angle1 == HALFCIRCLE))
 	{
-	    slice->flip_top = slice->edge1_top;
-	    slice->flip_bot = !slice->edge1_top;
+	    x1 = angle1 ? -w2 : w2;
+	    y1 = 0.0;
 	}
-	else if (slice->edge1_top)
+	else if ((angle1 == QUADRANT) || (angle1 == QUADRANT3))
 	{
-	    slice->min_top_y = 1;
-	    slice->min_bot_y = arc->height;
+	    x1 = 0.0;
+	    y1 = (angle1 == QUADRANT) ? h2 : -h2;
 	}
 	else
 	{
-	    slice->min_bot_y = 0;
-	    slice->min_top_y = arc->height;
+	    x1 = Dcos(angle1) * w2;
+	    y1 = Dsin(angle1) * h2;
+	}
+	if ((angle2 == 0) || (angle2 == HALFCIRCLE))
+	{
+	    dx = angle2 ? -w2 : w2;
+	    dy = 0.0;
+	}
+	else if ((angle2 == QUADRANT) || (angle2 == QUADRANT3))
+	{
+	    dx = 0.0;
+	    dy = (angle2 == QUADRANT) ? h2 : -h2;
+	}
+	else
+	{
+	    dx = Dcos(angle2) * w2;
+	    dy = Dsin(angle2) * h2;
+	}
+	dx -= x1;
+	dy -= y1;
+	if (arc->height & 1)
+	    y1 -= 0.5;
+	if (arc->width & 1)
+	    x1 += 0.5;
+	if (dy < 0.0)
+	{
+	    dy = -dy;
+	    signdy = -1;
+	}
+	else
+	    signdy = 1;
+	if (dx < 0.0)
+	{
+	    dx = -dx;
+	    signdx = -1;
+	}
+	else
+	    signdx = 1;
+	scale = (dx > dy) ? dx : dy;
+	slice->edge1.dx = floor((dx * 32768) / scale + .5);
+	slice->edge1.dy = floor((dy * 32768) / scale + .5);
+	if (!slice->edge1.dy)
+	{
+	    if (signdx < 0)
+	    {
+		y = floor(y1 + 1.0);
+		if (y >= 0)
+		{
+		    slice->min_top_y = y;
+		    slice->min_bot_y = arc->height;
+		}
+		else
+		{
+		    slice->max_bot_y = -y - (arc->height & 1);
+		}
+	    }
+	    else
+	    {
+		y = floor(y1);
+		if (y >= 0)
+		    slice->max_top_y = y;
+		else
+		{
+		    slice->min_top_y = arc->height;
+		    slice->min_bot_y = -y - (arc->height & 1);
+		}
+	    }
+	    slice->edge1_top = TRUE;
+	    slice->edge1.x = 65536;
+	    slice->edge1.stepx = 0;
+	    slice->edge1.e = 0;
+	    slice->edge1.dx = -1;
+	    slice->edge2 = slice->edge1;
+	    slice->edge2_top = FALSE;
+	}
+	else if (!slice->edge1.dx)
+	{
+	    if (signdy < 0)
+		x1 -= 1.0;
+	    slice->edge1.x = ceil(x1);
+	    slice->edge1_top = signdy < 0;
+	    slice->edge1.x += arc->x + (arc->width >> 1);
+	    slice->edge1.stepx = 0;
+	    slice->edge1.e = 0;
+	    slice->edge1.dx = -1;
+	    slice->edge2_top = !slice->edge1_top;
+	    slice->edge2 = slice->edge1;
+	}
+	else
+	{
+	    if (signdx < 0)
+		slice->edge1.dx = -slice->edge1.dx;
+	    if (signdy < 0)
+		slice->edge1.dx = -slice->edge1.dx;
+	    k = ceil(x1 * slice->edge1.dy - y1 * slice->edge1.dx);
+	    slice->edge2.dx = slice->edge1.dx;
+	    slice->edge2.dy = slice->edge1.dy;
+	    slice->edge1_top = signdy < 0;
+	    slice->edge2_top = !slice->edge1_top;
+	    miGetArcEdge(arc, &slice->edge1, k,
+			 slice->edge1_top, !slice->edge1_top);
+	    miGetArcEdge(arc, &slice->edge2, k,
+			 slice->edge2_top, slice->edge2_top);
 	}
     }
-    miGetArcEdge(arc, angle1, &slice->edge1,
-		 slice->edge1_top, !slice->edge1_top);
-    miGetArcEdge(arc, angle2, &slice->edge2,
-		 slice->edge2_top, slice->edge2_top);
 }
 
 #define ADDSPANS() \
@@ -461,7 +600,7 @@ miFillArcSliceI(pDraw, pGC, arc)
     register int *wids;
 
     miFillArcSetup(arc, &info);
-    miFillArcSliceSetup(arc, &slice);
+    miFillArcSliceSetup(arc, &slice, pGC);
     MIFILLARCSETUP();
     slw = arc->height;
     if (slice.flip_top || slice.flip_bot)
@@ -533,7 +672,7 @@ miFillArcSliceD(pDraw, pGC, arc)
     register int *wids;
 
     miFillArcDSetup(arc, &info);
-    miFillArcSliceSetup(arc, &slice);
+    miFillArcSliceSetup(arc, &slice, pGC);
     MIFILLARCSETUP();
     slw = arc->height;
     if (slice.flip_top || slice.flip_bot)
@@ -579,73 +718,9 @@ miFillArcSliceD(pDraw, pGC, arc)
     DEALLOCATE_LOCAL(points);
 }
 
-static void
-miFillArcOld(pDraw, pGC, arc)
-    DrawablePtr pDraw;
-    GCPtr pGC;
-    xArc *arc;
-{
-    SppPointPtr pPts;
-    SppArcRec	sppArc;
-    int		angle1, angle2, a, cpt;
-#define todeg(xAngle)	(((double) (xAngle)) / 64.0)
-
-    angle1 = arc->angle1;
-    if (angle1 >= FULLCIRCLE)
-	    angle1 = angle1 % FULLCIRCLE;
-    else if (angle1 <= -FULLCIRCLE)
-	    angle1 = - (-angle1 % FULLCIRCLE);
-    sppArc.x = arc->x;
-    sppArc.y = arc->y;
-    sppArc.width = arc->width;
-    sppArc.height = arc->height;
-    sppArc.angle1 = todeg (angle1);
-    sppArc.angle2 = todeg (angle2);
-    if(pGC->arcMode == ArcPieSlice)
-    {
-	/*
-	 * more than half a circle isn't convex anymore,
-	 * split the arc into two pieces.
-	 */
-	if (abs (angle2) > FULLCIRCLE / 2) {
-	    pPts = (SppPointPtr) NULL;
-	    a = angle2 > 0 ? FULLCIRCLE / 2 : - FULLCIRCLE / 2;
-	    sppArc.angle2 = todeg (a);
-	    if (cpt = miGetArcPts(&sppArc, 0, &pPts))
-		miFillSppPoly(pDraw, pGC, cpt, pPts, 0, 0, 0.0, 0.0);
-	    xfree (pPts);
-	    angle1 += a;
-	    if (angle1 >= FULLCIRCLE)
-		angle1 -= FULLCIRCLE;
-	    else if (angle1 <= -FULLCIRCLE)
-		angle1 += FULLCIRCLE;
-	    angle2 -= a;
-	    sppArc.angle1 = todeg(angle1);
-	    sppArc.angle2 = todeg(angle2);
-	}
-	if (!(pPts = (SppPointPtr)xalloc(sizeof(SppPointRec))))
-	    return;
-	if(cpt = miGetArcPts(&sppArc, 1, &pPts))
-	{
-	    pPts[0].x = sppArc.x + sppArc.width/2;
-	    pPts[0].y = sppArc.y + sppArc.height /2;
-	    miFillSppPoly(pDraw, pGC, cpt + 1, pPts, 0, 0, 0.0, 0.0);
-	}
-	xfree(pPts);
-    }
-    else /* Chord */
-    {
-	pPts = (SppPointPtr)NULL;
-	if(cpt = miGetArcPts(&sppArc, 0, &pPts))
-	    miFillSppPoly(pDraw, pGC, cpt, pPts, 0, 0, 0.0, 0.0);
-	xfree(pPts);
-    }
-}
-
 /* MIPOLYFILLARC -- The public entry for the PolyFillArc request.
  * Since we don't have to worry about overlapping segments, we can just
- * fill each arc as it comes.  As above, we convert the arc into a set of
- * line segments and then fill the resulting polygon.
+ * fill each arc as it comes.
  */
 void
 miPolyFillArc(pDraw, pGC, narcs, parcs)
@@ -668,16 +743,12 @@ miPolyFillArc(pDraw, pGC, narcs, parcs)
 	    else
 		miFillEllipseD(pDraw, pGC, arc);
 	}
-	else if (pGC->arcMode == ArcPieSlice)
+	else
 	{
 	    if (miCanFillArc(arc))
 		miFillArcSliceI(pDraw, pGC, arc);
 	    else
 		miFillArcSliceD(pDraw, pGC, arc);
-	}
-	else
-	{
-	    miFillArcOld(pDraw, pGC, arc);
 	}
     }
 }
