@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XCopyGC.c,v 11.8 87/05/26 16:58:20 jg Exp $ */
+/* $Header: XCopyGC.c,v 11.8 87/09/11 08:02:20 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -16,9 +16,8 @@ XCopyGC (dpy, srcGC, mask, destGC)
     register _XExtension *ext;
 
     LockDisplay(dpy);
-
-    /* preserve GC dirty bits in copy */
-    destGC->dirty |= srcGC->dirty & mask;
+    FlushGC(dpy, srcGC);
+    destGC->dirty &= ~mask;
 
     GetReq(CopyGC, req);
     req->srcGC = srcGC->gid;
