@@ -1,5 +1,5 @@
 #
-# $XConsortium: system.twmrc,v 1.4 89/11/02 18:43:33 jim Exp $
+# $XConsortium: system.twmrc,v 1.5 89/11/03 16:16:07 jim Exp $
 # 
 # Default twm configuration file; needs to be kept small to conserve string
 # space in systems whose compilers don't handle medium-sized strings.
@@ -17,6 +17,25 @@ ResizeFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 MenuFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 IconFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*-*-*-*"
 IconManagerFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*"
+#ClientBorderWidth
+
+Color
+{
+    BorderColor "slategrey"
+    DefaultBackground "maroon"
+    DefaultForeground "gray85"
+    TitleBackground "maroon"
+    TitleForeground "gray85"
+    MenuBackground "maroon"
+    MenuForeground "gray85"
+    MenuTitleBackground "gray70"
+    MenuTitleForeground "maroon"
+    IconBackground "maroon"
+    IconForeground "gray85"
+    IconBorderColor "gray85"
+    IconManagerBackground "maroon"
+    IconManagerForeground "gray85"
+}
 
 #
 # Define some useful functions for motion-based actions.
@@ -61,5 +80,6 @@ menu "defops"
 "Kill"		f.destroy
 "Delete"	f.delete
 ""		f.nop
+"Restart"	f.restart
 "Exit"		f.quit
 }
