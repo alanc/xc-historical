@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.14 92/04/03 13:23:43 converse Exp $ */
+/* $XConsortium: TMkey.c,v 1.15 92/04/22 16:51:17 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -553,9 +553,9 @@ static void _XtConvertCase(dpy, sym, lower, upper)
 	    *upper -= (XK_scaron - XK_Scaron);
 	else if (sym >= XK_zcaron && sym <= XK_zabovedot)
 	    *upper -= (XK_zcaron - XK_Zcaron);
-	else if (sym <= XK_Racute && sym <= XK_Tcedilla)
+	else if (sym >= XK_Racute && sym <= XK_Tcedilla)
 	    *lower += (XK_racute - XK_Racute);
-	else if (sym <= XK_racute && sym <= XK_tcedilla)
+	else if (sym >= XK_racute && sym <= XK_tcedilla)
 	    *upper -= (XK_racute - XK_Racute);
 	break;
 #endif
@@ -573,7 +573,7 @@ static void _XtConvertCase(dpy, sym, lower, upper)
 	else if (sym >= XK_Cabovedot && sym <= XK_Scircumflex)
 	    *lower += (XK_cabovedot - XK_Cabovedot);
 	else if (sym >= XK_cabovedot && sym <= XK_scircumflex)
-	    *lower += (XK_cabovedot - XK_Cabovedot);
+	    *upper -= (XK_cabovedot - XK_Cabovedot);
 	break;
 #endif
 #ifdef XK_LATIN4
