@@ -76,7 +76,7 @@ InstallManPage(X,$(MANDIR))
 /**/# don't name your log file make.log when you run this ...
 World::
 	@echo ""
-	@echo "Building Release 4alpha of the X Window System"
+	@echo "Building Release 4beta of the X Window System"
 	@echo ""
 	@echo "##############################################################"
 	@echo "# Did you remember to check the configuration parameters in  #"
@@ -101,7 +101,7 @@ World::
 
 Everything::
 	@echo ""
-	@echo "Rebuilding Release 4alpha of the X Window System"
+	@echo "Rebuilding Release 4beta of the X Window System"
 	@echo ""
 	@echo "##############################################################"
 	@echo "# Did you remember to check the configuration parameters in  #"
