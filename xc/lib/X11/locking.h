@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: locking.h,v 1.1 93/06/21 15:26:13 gildea Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -30,7 +30,37 @@
 #define _X_locking_H_
 
 #include <X11/Xfuncproto.h>
+#ifdef CTHREADS
 #include <cthreads.h>
+typedef struct mutex mutex_rep_t;
+typedef struct condition condition_rep_t;
+typedef cthread_t xthread_t;
+#define xthread_self() cthread_self()
+#define xthread_init() cthread_init()
+#define have_thread_id(id) id
+#define clear_thread_id(id) id = 0
+#define same_thread_id(id1,id2) id1 == id2
+#else
+#include <pthread.h>
+typedef pthread_mutex_t *mutex_t;
+typedef pthread_mutex_t mutex_rep_t;
+typedef pthread_cond_t *condition_t;
+typedef pthread_cond_t condition_rep_t;
+typedef pthread_t xthread_t;
+#define xthread_self() pthread_self()
+#define condition_init(c) pthread_cond_init(c, pthread_condattr_default)
+#define condition_clear(c) pthread_cond_destroy(c)
+#define condition_wait(c,m) pthread_cond_wait(c,m)
+#define condition_broadcast(c) pthread_cond_broadcast(c)
+#define mutex_init(m) pthread_mutex_init(m, pthread_mutexattr_default)
+#define mutex_clear(m) pthread_mutex_destroy(m)
+#define mutex_lock(m) pthread_mutex_lock(m)
+#define mutex_unlock(m) pthread_mutex_unlock(m)
+extern pthread_t _X_no_thread_id;
+#define have_thread_id(id) memcmp(&id, &_X_no_thread_id, sizeof(xthread_t))
+#define clear_thread_id(id) id = _X_no_thread_id
+#define same_thread_id(id1,id2) !memcmp(&id1, &id2, sizeof(xthread_t))
+#endif
 
 struct _XCVList {
     condition_t cv;
@@ -49,7 +79,7 @@ struct _XLockInfo {
 	struct _XCVList *event_awaiters; /* list of CVs for _XReadEvents */
 	struct _XCVList **event_awaiters_tail;
 	/* for XLockDisplay */
-	cthread_t locking_thread; /* thread that did XLockDisplay */
+	xthread_t locking_thread; /* thread that did XLockDisplay */
 	condition_t cv;		/* wait if another thread has XLockDisplay */
 };
 
@@ -58,33 +88,16 @@ struct _XLockInfo {
 #define ConditionSignal(d,c) if ((d)->lock_fns) \
 	(*(d)->lock_fns->condition_signal)((c)->cv,__FILE__,__LINE__)
 
-extern void _XLockDisplay();
+_XFUNCPROTOBEGIN
 
-extern struct _XCVList *_XPushReader(
+extern void _XLockDisplay(
 #if NeedFunctionPrototypes
-    struct _XCVList ***tail
+    Display*		/* dpy */,
+    char*		/* file */,
+    int			/* line */
 #endif
 );
 
-extern void _XPopReader(
-#if NeedFunctionPrototypes
-    Display *dpy;
-    struct _XCVList **list;
-    struct _XCVList ***tail;
-#endif
-);
-
-extern void _XConditionWait(
-#if NeedFunctionPrototypes
-    condition_t cv,
-    mutex_t mutex
-#endif			   
-);
-
-extern void _XConditionSignal(
-#if NeedFunctionPrototypes
-    condition_t cv
-#endif			   
-);
+_XFUNCPROTOEND
 
 #endif /* _X_locking_H_ */
