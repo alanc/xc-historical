@@ -1,4 +1,4 @@
-.\" $XConsortium: CH06,v 1.7 91/08/27 10:02:24 swick Exp $
+.\" $XConsortium: CH06,v 1.8 94/04/16 21:05:24 converse Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -537,7 +537,7 @@ A bit set to zero in the request's \fIrequest_mode\fP
 field means that the child widget
 does not care about the value of the corresponding field,
 so the geometry manager can change this field as it wishes.
-A bit set to 1 means that the child wants that geometry element changed
+A bit set to 1 means that the child wants that geometry element set
 to the value in the corresponding field.
 .LP
 If the geometry manager can satisfy all changes requested 
