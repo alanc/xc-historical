@@ -59,7 +59,7 @@
 #define TRUE  1
 #endif
 
-#define XtNumber(arr)			(sizeof(arr) / sizeof(arr[0]))
+#define XtNumber(arr)		((Cardinal) (sizeof(arr) / sizeof(arr[0])))
 #define XtOffset(type,field)    ((unsigned int)&(((type)NULL)->field))
 typedef char *String;
 typedef struct _WidgetRec *Widget;
