@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.h,v 5.1 89/09/04 19:10:08 rws Exp $ */
+/* $XConsortium: mizerarc.h,v 5.2 89/09/09 19:04:07 rws Exp $ */
 
 #define FULLCIRCLE (360 * 64)
 #define OCTANT (45 * 64)
@@ -38,5 +38,8 @@ typedef struct {
     int startx, endx, starty, endy;
     int startAngle, endAngle;
 } miZeroArcRec;
+
+#define miCanZeroArc(arc) (((arc)->width == (arc)->height) || \
+			   (((arc)->width <= 800) && ((arc)->height <= 800)))
 
 extern void miZeroArcSetup();
