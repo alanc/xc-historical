@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.24 94/02/04 22:57:52 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.25 94/02/17 15:21:25 dpw Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -18,10 +18,10 @@ FRESCODIRS = Fresco Xtf
 LBXDIR = lbxutil
 #endif
 
-LINTSUBDIRS = xtrans Xau Xdmcp X11 oldX ICE SM Xext Xt Xmu Xaw XIE Xi \
-	      Xtst font FS PEX5
+LINTSUBDIRS = Xau Xdmcp X11 oldX ICE SM Xext Xt Xmu Xaw XIE Xi \
+	      Xtst FS PEX5
 
-SUBDIRS = $(BERKDIR) $(LINTSUBDIRS) $(FRESCODIRS) $(LBXDIR)
+SUBDIRS = $(BERKDIR) xtrans $(LINTSUBDIRS) font $(FRESCODIRS) $(LBXDIR)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
