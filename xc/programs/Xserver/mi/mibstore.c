@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.46 91/05/10 17:39:22 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.47 91/06/11 11:39:41 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2422,10 +2422,11 @@ miBSAllocate(pWin)
     register miBSWindowPtr  pBackingStore;
     register ScreenPtr 	    pScreen;
 	
-    if (!pWin->backStorage &&
-	(pWin->drawable.pScreen->backingStoreSupport != NotUseful))
+    if (pWin->drawable.pScreen->backingStoreSupport == NotUseful)
+	return;
+    pScreen = pWin->drawable.pScreen;
+    if (!(pBackingStore = pWin->backStorage))
     {
-	pScreen = pWin->drawable.pScreen;
 
 	pBackingStore = (miBSWindowPtr)xalloc(sizeof(miBSWindowRec));
 	if (!pBackingStore)
@@ -2438,55 +2439,55 @@ miBSAllocate(pWin)
 	pBackingStore->viewable = (char)pWin->viewable;
 	pBackingStore->status = StatusNoPixmap;
 	pBackingStore->backgroundState = None;
-	
 	pWin->backStorage = (pointer) pBackingStore;
+    }
+	
+    /*
+     * Now want to initialize the backing pixmap and SavedRegion if
+     * necessary. The initialization consists of finding all the
+     * currently-obscured regions, by taking the inverse of the window's
+     * clip list, storing the result in SavedRegion, and exposing those
+     * areas of the window.
+     */
 
+    if (pBackingStore->status == StatusNoPixmap &&
+	((pWin->backingStore == WhenMapped && pWin->viewable) ||
+	 (pWin->backingStore == Always)))
+    {
+	BoxRec  	box;
+	RegionPtr	pSavedRegion;
+
+	pSavedRegion = &pBackingStore->SavedRegion;
+
+	box.x1 = pWin->drawable.x;
+	box.x2 = box.x1 + (int) pWin->drawable.width;
+	box.y1 = pWin->drawable.y;
+	box.y2 = pWin->drawable.y + (int) pWin->drawable.height;
+
+	(* pScreen->Inverse)(pSavedRegion, &pWin->clipList,  &box);
+	(* pScreen->TranslateRegion) (pSavedRegion,
+				      -pWin->drawable.x,
+				      -pWin->drawable.y);
+#ifdef SHAPE
+	if (wBoundingShape (pWin))
+	    (*pScreen->Intersect) (pSavedRegion, pSavedRegion, wBoundingShape (pWin));
+	if (wClipShape (pWin))
+	    (*pScreen->Intersect) (pSavedRegion, pSavedRegion, wClipShape (pWin));
+#endif
+	/* if window is already on-screen, assume it has been drawn to */
+	if (pWin->viewable)
+	    pBackingStore->status = StatusVDirty;
+	miTileVirtualBS (pWin);
+	
 	/*
-	 * Now want to initialize the backing pixmap and SavedRegion if
-	 * necessary. The initialization consists of finding all the
-	 * currently-obscured regions, by taking the inverse of the window's
-	 * clip list, storing the result in SavedRegion, and exposing those
-	 * areas of the window.
+	 * deliver all the newly available regions
+	 * as exposure events to the window, unless
+	 * miTileVirtualBS has already done it for us
 	 */
 
-	if ((pWin->backingStore == WhenMapped && pWin->viewable) ||
-	    (pWin->backingStore == Always))
- 	{
-	    BoxRec  	box;
-	    RegionPtr	pSavedRegion;
-
-	    pSavedRegion = &pBackingStore->SavedRegion;
-
-	    box.x1 = pWin->drawable.x;
-	    box.x2 = box.x1 + (int) pWin->drawable.width;
-	    box.y1 = pWin->drawable.y;
-	    box.y2 = pWin->drawable.y + (int) pWin->drawable.height;
-
-	    (* pScreen->Inverse)(pSavedRegion, &pWin->clipList,  &box);
-	    (* pScreen->TranslateRegion) (pSavedRegion,
-					  -pWin->drawable.x,
-					  -pWin->drawable.y);
-#ifdef SHAPE
-	    if (wBoundingShape (pWin))
-		(*pScreen->Intersect) (pSavedRegion, pSavedRegion, wBoundingShape (pWin));
-	    if (wClipShape (pWin))
-		(*pScreen->Intersect) (pSavedRegion, pSavedRegion, wClipShape (pWin));
-#endif
-	    /* if window is already on-screen, assume it has been drawn to */
-	    if (pWin->viewable)
-		pBackingStore->status = StatusVDirty;
-	    miTileVirtualBS (pWin);
-	    
-	    /*
-	     * deliver all the newly available regions
-	     * as exposure events to the window, unless
-	     * miTileVirtualBS has already done it for us
-	     */
-
-	    if ((pBackingStore->status == StatusVirtual) ||
-		(pBackingStore->status == StatusVDirty))
-		miSendExposures(pWin, pSavedRegion, 0, 0);
-	}
+	if ((pBackingStore->status == StatusVirtual) ||
+	    (pBackingStore->status == StatusVDirty))
+	    miSendExposures(pWin, pSavedRegion, 0, 0);
     }
 }
 
