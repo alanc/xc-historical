@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.5 89/06/05 17:30:29 jim Exp $
+ * $XConsortium: fontgrid.c,v 1.6 89/06/07 17:03:32 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -190,8 +190,7 @@ static void Initialize (request, new)
 
     if (newfg->fontgrid.start_char == -1L) {
 	newfg->fontgrid.start_char = 
-	  (long) ((newfg->fontgrid.text_font->min_byte1 << 8) | 
-		  newfg->fontgrid.text_font->min_char_or_byte2);
+	  (long) (newfg->fontgrid.text_font->min_byte1 << 8);
     }
 
     return;
