@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Graphics.c,v 1.12 91/03/19 12:11:03 gildea Exp $
+ * $XConsortium: Graphics.c,v 1.13 91/04/16 09:06:26 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -43,7 +43,7 @@
 #endif
 #define min(x, y)                     (((int)(x) < (int)(y)) ? (x) : (y))
 #define max(x, y)                     (((int)(x) > (int)(y)) ? (x) : (y))
-#ifdef SYSV 
+#ifndef rint
 #define rint(x)                       floor(x + 0.5)
 #endif
 
