@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: os.h,v 1.21 88/01/01 15:58:52 rws Exp $ */
+/* $Header: os.h,v 1.22 88/01/01 16:07:42 rws Locked $ */
 
 #ifndef OS_H
 #define OS_H
@@ -89,5 +89,10 @@ void ErrorF();
 unsigned long *Xalloc();
 unsigned long *Xrealloc();
 void Xfree();
+
+char *strcat();
+char *strncat();
+char *strcpy();
+char *strncpy();
 
 #endif /* OS_H */
