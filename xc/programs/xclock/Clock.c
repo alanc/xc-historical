@@ -180,7 +180,7 @@ static void Resize (gw)
 {
     ClockWidget w = (ClockWidget) gw;
     /* don't do this computation if window hasn't been realized yet. */
-    if (XtWidgetIsRealized(w) && w->clock.analog) {
+    if (XtIsRealized(w) && w->clock.analog) {
         w->clock.radius = (min(w->core.width, w->core.height)-(2 * w->clock.padding)) / 2;
         w->clock.second_hand_length = ((SECOND_HAND_FRACT * w->clock.radius) / 100);
         w->clock.minute_hand_length = ((MINUTE_HAND_FRACT * w->clock.radius) / 100);
