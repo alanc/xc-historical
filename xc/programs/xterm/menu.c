@@ -27,56 +27,59 @@ static void do_securekbd(), do_visualbell(), do_logging(), do_redraw(),
  * The order entries MUST match the values given in menu.h
  */
 MenuEntry mainMenuEntries[] = {
-    { "securekbd",	do_securekbd },		/*  0 */
-    { "logging",	do_logging },		/*  1 */
-    { "redraw",		do_redraw },		/*  2 */
-    { "line1",		NULL },			/*  3 */
-    { "suspend",	do_suspend },		/*  4 */
-    { "continue",	do_continue },		/*  5 */
-    { "interrupt",	do_interrupt },		/*  6 */
-    { "hangup",		do_hangup },		/*  7 */
-    { "terminate",	do_terminate },		/*  8 */
-    { "kill",		do_kill },		/*  9 */
-    { "line2",		NULL },			/* 10 */
-    { "quit",		do_quit }};		/* 11 */
+    { "line0",		NULL },			/*  0 */
+    { "securekbd",	do_securekbd },		/*  1 */
+    { "logging",	do_logging },		/*  2 */
+    { "redraw",		do_redraw },		/*  3 */
+    { "line1",		NULL },			/*  4 */
+    { "suspend",	do_suspend },		/*  5 */
+    { "continue",	do_continue },		/*  6 */
+    { "interrupt",	do_interrupt },		/*  7 */
+    { "hangup",		do_hangup },		/*  8 */
+    { "terminate",	do_terminate },		/*  9 */
+    { "kill",		do_kill },		/* 10 */
+    { "line2",		NULL },			/* 11 */
+    { "quit",		do_quit }};		/* 12 */
 
 MenuEntry vtMenuEntries[] = {
-    { "scrollbar",	do_scrollbar },		/*  0 */
-    { "jumpscroll",	do_jumpscroll },	/*  1 */
-    { "reversevideo",	do_reversevideo },	/*  2 */
-    { "autowrap",	do_autowrap },		/*  3 */
-    { "reversewrap",	do_reversewrap },	/*  4 */
-    { "autolinefeed",	do_autolinefeed },	/*  5 */
-    { "appcursor",	do_appcursor },		/*  6 */
-    { "appkeypad",	do_appkeypad },		/*  7 */
-    { "scrollkey",	do_scrollkey },		/*  8 */
-    { "scrollinput",	do_scrollinput },	/*  9 */
-    { "allow132",	do_allow132 },		/* 10 */
-    { "cursesemul",	do_cursesemul },	/* 11 */
-    { "visualbell",	do_visualbell },	/* 12 */
-    { "marginbell",	do_marginbell },	/* 13 */
-    { "altscreen",	do_altscreen },		/* 14 */
-    { "line1",		NULL },			/* 15 */
-    { "softreset",	do_softreset },		/* 16 */
-    { "hardreset",	do_hardreset },		/* 17 */
-    { "line2",		NULL },			/* 18 */
-    { "tekshow",	do_tekshow },		/* 19 */
-    { "tekmode",	do_tekmode },		/* 20 */
-    { "vthide",		do_vthide }};		/* 21 */
+    { "line0",		NULL },			/*  0 */
+    { "scrollbar",	do_scrollbar },		/*  1 */
+    { "jumpscroll",	do_jumpscroll },	/*  2 */
+    { "reversevideo",	do_reversevideo },	/*  3 */
+    { "autowrap",	do_autowrap },		/*  4 */
+    { "reversewrap",	do_reversewrap },	/*  5 */
+    { "autolinefeed",	do_autolinefeed },	/*  6 */
+    { "appcursor",	do_appcursor },		/*  7 */
+    { "appkeypad",	do_appkeypad },		/*  8 */
+    { "scrollkey",	do_scrollkey },		/*  9 */
+    { "scrollinput",	do_scrollinput },	/* 10 */
+    { "allow132",	do_allow132 },		/* 11 */
+    { "cursesemul",	do_cursesemul },	/* 12 */
+    { "visualbell",	do_visualbell },	/* 13 */
+    { "marginbell",	do_marginbell },	/* 14 */
+    { "altscreen",	do_altscreen },		/* 15 */
+    { "line1",		NULL },			/* 16 */
+    { "softreset",	do_softreset },		/* 17 */
+    { "hardreset",	do_hardreset },		/* 18 */
+    { "line2",		NULL },			/* 19 */
+    { "tekshow",	do_tekshow },		/* 20 */
+    { "tekmode",	do_tekmode },		/* 21 */
+    { "vthide",		do_vthide }};		/* 22 */
 
 MenuEntry tekMenuEntries[] = {
-    { "tektextlarge",	do_tektextlarge },		/* */
-    { "tektext2",	do_tektext2 },		/* */
-    { "tektext3",	do_tektext3 },		/* */
-    { "tektextsmall",	do_tektextsmall },		/* */
-    { "line1",		NULL },		/* */
-    { "tekpage",	do_tekpage },		/* */
-    { "tekreset",	do_tekreset },		/* */
-    { "tekcopy",	do_tekcopy },		/* */
-    { "line2",		NULL },		/* */
-    { "vtshow",		do_vtshow },		/* */
-    { "vtmode",		do_vtmode },		/* */
-    { "tekhide",	do_tekhide }};		/* */
+    { "line0",		NULL },			/*  0 */
+    { "tektextlarge",	do_tektextlarge },	/*  1 */
+    { "tektext2",	do_tektext2 },		/*  2 */
+    { "tektext3",	do_tektext3 },		/*  3 */
+    { "tektextsmall",	do_tektextsmall },	/*  4 */
+    { "line1",		NULL },			/*  5 */
+    { "tekpage",	do_tekpage },		/*  6 */
+    { "tekreset",	do_tekreset },		/*  7 */
+    { "tekcopy",	do_tekcopy },		/*  8 */
+    { "line2",		NULL },			/*  9 */
+    { "vtshow",		do_vtshow },		/* 10 */
+    { "vtmode",		do_vtmode },		/* 11 */
+    { "tekhide",	do_tekhide }};		/* 12 */
 
 static Widget create_menu();
 

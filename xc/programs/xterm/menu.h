@@ -17,60 +17,63 @@ extern Arg menuArgs[];
 /*
  * items in primary menu
  */
-#define mainMenu_securekbd 0
-#define mainMenu_logging 1
-#define mainMenu_redraw 2
-#define mainMenu_line1 3
-#define mainMenu_suspend 4
-#define mainMenu_continue 5
-#define mainMenu_interrupt 6
-#define mainMenu_hangup 7
-#define mainMenu_terminate 8
-#define mainMenu_kill 9
-#define mainMenu_line2 10
-#define mainMenu_quit 11
+#define mainMenu_line0 0
+#define mainMenu_securekbd 1
+#define mainMenu_logging 2
+#define mainMenu_redraw 3
+#define mainMenu_line1 4
+#define mainMenu_suspend 5
+#define mainMenu_continue 6
+#define mainMenu_interrupt 7
+#define mainMenu_hangup 8
+#define mainMenu_terminate 9
+#define mainMenu_kill 10
+#define mainMenu_line2 11
+#define mainMenu_quit 12
 
 /*
  * items in vt100 mode menu
  */
-#define vtMenu_scrollbar 0
-#define vtMenu_jumpscroll 1
-#define vtMenu_reversevideo 2
-#define vtMenu_autowrap 3
-#define vtMenu_reversewrap 4
-#define vtMenu_autolinefeed 5
-#define vtMenu_appcursor 6
-#define vtMenu_appkeypad 7
-#define vtMenu_scrollkey 8
-#define vtMenu_scrollinput 9
-#define vtMenu_allow132 10
-#define vtMenu_cursesemul 11
-#define vtMenu_visualbell 12
-#define vtMenu_marginbell 13
-#define vtMenu_altscreen 14
-#define vtMenu_line1 15
-#define vtMenu_softreset 16
-#define vtMenu_hardreset 17
-#define vtMenu_line2 18
-#define vtMenu_tekshow 19
-#define vtMenu_tekmode 20
-#define vtMenu_vthide 21
+#define vtMenu_line0 0
+#define vtMenu_scrollbar 1
+#define vtMenu_jumpscroll 2
+#define vtMenu_reversevideo 3
+#define vtMenu_autowrap 4
+#define vtMenu_reversewrap 5
+#define vtMenu_autolinefeed 6
+#define vtMenu_appcursor 7
+#define vtMenu_appkeypad 8
+#define vtMenu_scrollkey 9
+#define vtMenu_scrollinput 10
+#define vtMenu_allow132 11
+#define vtMenu_cursesemul 12
+#define vtMenu_visualbell 13
+#define vtMenu_marginbell 14
+#define vtMenu_altscreen 15
+#define vtMenu_line1 16
+#define vtMenu_softreset 17
+#define vtMenu_hardreset 18
+#define vtMenu_line2 19
+#define vtMenu_tekshow 20
+#define vtMenu_tekmode 21
+#define vtMenu_vthide 22
 
 /*
  * items in tek4014 mode menu
  */
-#define tekMenu_tektextlarge 0
-#define tekMenu_tektext2 1
-#define tekMenu_tektext3 2
-#define tekMenu_tektextsmall 3
-#define tekMenu_line1 4
-#define tekMenu_tekpage 5
-#define tekMenu_tekreset 6
-#define tekMenu_tekcopy 7
-#define tekMenu_line2 8
-#define tekMenu_vtshow 9
-#define tekMenu_vtmode 10
-#define tekMenu_tekhide 11
+#define tekMenu_line0 0
+#define tekMenu_tektextlarge 1
+#define tekMenu_tektext2 2
+#define tekMenu_tektext3 3
+#define tekMenu_tektextsmall 4
+#define tekMenu_line1 5
+#define tekMenu_tekpage 6
+#define tekMenu_tekreset 7
+#define tekMenu_tekcopy 8
+#define tekMenu_line2 9
+#define tekMenu_vtshow 10
+#define tekMenu_vtmode 11
+#define tekMenu_tekhide 12
 
 
 /*
