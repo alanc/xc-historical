@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.9 89/08/17 19:22:37 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.10 89/08/18 14:31:49 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -519,6 +519,7 @@ Boolean	   include, kill;
 
   _DeleteOrKill(ctx, from, to, kill);
   EndAction(ctx);
+  _XawTextSetScrollBars(ctx);
 }
 
 static void 
@@ -592,6 +593,7 @@ XEvent *event;
 
   _DeleteOrKill(ctx, ctx->text.insertPos, end_of_line, TRUE);
   EndAction(ctx);
+  _XawTextSetScrollBars(ctx);
 }
 
 static void 
@@ -611,6 +613,7 @@ Boolean kill;
    StartAction(ctx, event);
    _DeleteOrKill(ctx, ctx->text.s.left, ctx->text.s.right, kill);
    EndAction(ctx);
+  _XawTextSetScrollBars(ctx);
 }
 
 static void 
@@ -673,6 +676,7 @@ XEvent *event;
   StartAction( (TextWidget) w, event );
   (void) InsertNewLineAndBackupInternal( (TextWidget) w );
   EndAction( (TextWidget) w );
+  _XawTextSetScrollBars( (TextWidget) w);
 }
 
 static int
@@ -686,6 +690,7 @@ XEvent *event;
   ctx->text.insertPos = (*ctx->text.source->Scan)(ctx->text.source,
         ctx->text.insertPos, XawstPositions, XawsdRight, ctx->text.mult, TRUE);
   EndAction(ctx);
+  _XawTextSetScrollBars(ctx);
   return(XawEditDone);
 }
 
@@ -726,6 +731,7 @@ XEvent *event;
 	   ctx->text.insertPos, XawstPositions, XawsdRight, text.length, TRUE);
   XtFree(text.ptr);
   EndAction(ctx);
+  _XawTextSetScrollBars(ctx);
 }
 
 /************************************************************
