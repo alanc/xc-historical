@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.97 90/08/17 15:37:31 swick Exp $ */
+/* $XConsortium: TMparse.c,v 1.98 90/08/24 11:05:11 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -895,6 +895,9 @@ static String ParseKeySym(str, closure, event,error)
 	event->event.eventCode = StringToKeySym(keySymName, error);
 	event->event.eventCodeMask = ~0L;
     } else if (*str == ',' || *str == ':' ||
+	       /* allow leftparen to be single char symbol,
+		* for backwards compatibility
+		*/
 	       (*str == '(' && *(str+1) >= '0' && *(str+1) <= '9')) {
 	/* no detail */
 	event->event.eventCode = 0L;
