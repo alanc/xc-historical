@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.182 93/09/15 18:08:17 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.183 93/09/15 18:29:34 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1788,18 +1788,22 @@ XAddConnectionWatch(dpy, callback, client_data)
 }
 
 /* XRemoveConnectionWatch
- * Unregister a callback registered by XAddConnectionWatch
+ * Unregister a callback registered by XAddConnectionWatch.
+ * Both callback and client_data must match what was passed to
+ * XAddConnectionWatch.
  */ 
 #if NeedFunctionPrototypes
 void XRemoveConnectionWatch(
     Display* dpy,
-    XConnectionWatchProc callback
+    XConnectionWatchProc callback,
+    XPointer client_data
 )
 #else
 void
-XRemoveConnectionWatch(dpy, callback)
+XRemoveConnectionWatch(dpy, callback, client_data)
     Display *dpy;
     XConnectionWatchProc callback;
+    XPointer client_data;
 #endif
 {
     struct _XConnWatchInfo *watch;
@@ -1809,7 +1813,7 @@ XRemoveConnectionWatch(dpy, callback)
 
     LockDisplay(dpy);
     for (watch=dpy->conn_watchers; watch; watch=watch->next) {
-	if (watch->fn == callback) {
+	if (watch->fn == callback  &&  watch->client_data == client_data) {
 	    if (previous)
 		previous->next = watch->next;
 	    else
