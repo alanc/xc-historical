@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.207 93/09/20 17:42:05 hersh Exp $";
+static char *rid="$XConsortium: main.c,v 1.208 93/12/06 15:18:46 kaleb Exp $";
 #endif /* lint */
 
 /*
@@ -66,6 +66,12 @@ SOFTWARE.
 #define ATT
 #define USE_TERMIOS
 #endif
+
+#if defined(sgi) && OSMAJORVERSION >= 5
+#define SVR4			/* close enough for xterm */
+#define USE_SYSV_UTMP
+#define USE_TERMIOS
+#endif
   
 #ifdef SYSV386
 #define USE_SYSV_UTMP
@@ -109,6 +115,10 @@ static Bool IsPts = False;
 
 #ifdef SVR4
 #undef TIOCSLTC				/* defined, but not useable */
+#endif
+
+#if defined(sgi) && OSMAJORVERSION >= 5
+#undef TIOCLSET				/* defined, but not useable */
 #endif
 
 #ifdef SYSV
@@ -820,7 +830,9 @@ char **argv;
     	d_tio.c_cflag = B9600|CS8|CREAD|PARENB|HUPCL;
 #endif	/* !BAUD_0 */
     	d_tio.c_lflag = ISIG|ICANON|ECHO|ECHOE|ECHOK;
+#ifndef sgi
 	d_tio.c_line = 0;
+#endif
 	d_tio.c_cc[VINTR] = 0x7f;		/* DEL  */
 	d_tio.c_cc[VQUIT] = '\\' & 0x3f;	/* '^\'	*/
 	d_tio.c_cc[VERASE] = '#';		/* '#'	*/
