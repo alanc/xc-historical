@@ -30,8 +30,8 @@
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Label.h>
 #include <X11/Shell.h>
-#include <RootWindow.h>
-#include <Scale.h>
+#include "RootWindow.h"
+#include "Scale.h"
 #include <X11/cursorfont.h>
 
 
@@ -607,7 +607,7 @@ PopupNewScale(data)
     (data->scaleShell,
      XtParseTranslationTable ("<Message>WM_PROTOCOLS: close()"));
   XtSetArg(warg, XtNuserData, data);
-  XtSetValues(data->scaleInstance, warg, 1);
+  XtSetValues(data->scaleInstance, &warg, 1);
   data->pixShell = XtVaCreatePopupShell("pixShell", overrideShellWidgetClass, 
 					toplevel,
 					XtNborderWidth, (XtPointer)0,
