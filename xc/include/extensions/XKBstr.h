@@ -1,4 +1,4 @@
-/* $XConsortium: XKBstr.h,v 1.9 94/04/04 12:10:02 rws Exp $ */
+/* $XConsortium: XKBstr.h,v 1.9 94/04/04 12:21:58 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -443,8 +443,8 @@ typedef struct _XkbNameChanges {
 typedef struct _XkbCompatChanges {
 	unsigned char		changed_mods;
 	unsigned short		changed_vmods;
-	unsigned short		first_sym;
-	unsigned short		num_syms;
+	unsigned short		first_si;
+	unsigned short		num_si;
 } XkbCompatChangesRec,*XkbCompatChangesPtr;
 
 typedef struct _XkbAlternateSymChanges {
