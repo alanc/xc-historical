@@ -37,8 +37,8 @@ BUTTONPICTURES = \
 	Up
 
         DEFINES = $(IEEE_DEFS) $(SIGNAL_DEFINES)
-        DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
-LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+        DEPLIBS = XawClientDepLibs
+LOCAL_LIBRARIES = XawClientLibs
   SYS_LIBRARIES = -lm
           SRCS1 = BitEdit.c CutPaste.c Graphics.c ReqMach.c Bitmap.c \
                   Dialog.c Handlers.c 
@@ -50,7 +50,7 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
           OBJS3 = atobm.o
        PROGRAMS = bitmap bmtoa atobm
 
-ComplexProgramTarget_1(bitmap, $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB), -lm)
+ComplexProgramTarget_1(bitmap,$(LOCAL_LIBRARIES),-lm)
 SingleProgramTarget(bmtoa,$(OBJS2),$(XMULIB),NullParameter)
 SingleProgramTarget(atobm,$(OBJS3),NullParameter,NullParameter)
 

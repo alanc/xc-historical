@@ -1,5 +1,5 @@
-        DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
-LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+        DEPLIBS = XawClientDepLibs
+LOCAL_LIBRARIES = XawClientLibs
 
            SRCS = bbox.c command.c compfuncs.c folder.c icon.c init.c \
                   main.c menu.c mlist.c msg.c pick.c popup.c screen.c \

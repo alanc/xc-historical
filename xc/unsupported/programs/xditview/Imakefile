@@ -3,8 +3,8 @@
         XDVISRC = libXdvi
         XDVILIB = $(XDVISRC)/libXdvi.a
      DEPXDVILIB = $(XDVILIB)
-        DEPLIBS = $(DEPXDVILIB) $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
-LOCAL_LIBRARIES = $(XDVILIB) $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+        DEPLIBS = $(DEPXDVILIB) XawClientDepLibs
+LOCAL_LIBRARIES = $(XDVILIB) XawClientLibs
   SYS_LIBRARIES = -lm
           SRCS1 = xditview.c
           OBJS1 = xditview.o
