@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.1 89/09/22 17:00:16 jim Exp $
+ * $XConsortium: XMultibuf.c,v 1.2 89/09/22 18:12:52 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,11 +37,6 @@ typedef struct _XmbufDisplayInfo {
     struct _XmbufDisplayInfo *next;	/* keep a linked list */
     Display *display;			/* which display this is */
     XExtCodes *codes;			/* the extension protocol codes */
-    struct {
-	int count;			/* how many valid ids in cache */
-	int total;			/* max ids in cache */
-	XID *contents;			/* array of XID's */
-    } id_cache;
 } XmbufDisplayInfo;
 
 static XmbufDisplayInfo *mbuf_display_list;	/* starts out NULL */
@@ -94,9 +89,6 @@ static XmbufDisplayInfo *find_display (dpy)
 	if (dpyinfo->codes) {
 	    int i, j;
 
-	    dpyinfo->id_cache.count = 0;
-	    dpyinfo->id_cache.total = 0;
-	    dpyinfo->id_cache.contents = NULL;
 	    XESetCloseDisplay (dpy, dpyinfo->codes->extension,
 			       mbuf_close_display);
 	    for (i = 0, j = dpyinfo->codes->first_event;
@@ -154,8 +146,6 @@ static int mbuf_close_display (dpy, codes)
     if (dpyinfo == mbuf_cached_display)
 	mbuf_cached_display = (XmbufDisplayInfo *) NULL;
 
-    if (dpyinfo->id_cache.contents)
-      Xfree ((char *) dpyinfo->id_cache.contents);
     Xfree ((char *) dpyinfo);
     return 0;
 }
@@ -292,13 +282,11 @@ int XCreateImageBuffers (dpy, w, count, update_action, update_hint,
     /*
      * allocate the id; hopefully, it would be nice to be able to 
      * get rid of the ones we don't need, but this would require access
-     * various Xlib internals, so we do caching on this side
+     * various Xlib internals.  we could do caching on this side, but the
+     * chances of wasting enough resources to really matter makes it not
+     * worth the bother.
      */
-    for (i = 0; i < count; i++) {
-	buffers[i] = ((info->id_cache.count > 0)
-		      ? info->id_cache.contents[info->id_cache.count--]
-		      : XAllocID (dpy));
-    }
+    for (i = 0; i < count; i++) buffers[i] = XAllocID (dpy);
 
     LockDisplay (dpy);
     GetReq (CreateImageBuffers, req);
@@ -316,41 +304,6 @@ int XCreateImageBuffers (dpy, w, count, update_action, update_hint,
     }
     result = rep.numberBuffer;
     UnlockDisplay (dpy);
-
-    /*
-     * we need to add the ones that we already have to our id cache
-     */
-    if (result < count) {
-	int leftover = (count - result);
-	Multibuffer *extra;
-
-	/*
-	 * make sure that cache is big enough to hold new ids
-	 */
-	info->id_cache.count += leftover;
-	if (info->id_cache.count > info->id_cache.total) {  /* grow cache */
-	    info->id_cache.total += 16;			    /* a few extra */
-	    if (info->id_cache.contents) {
-		info->id_cache.contents = Xrealloc (info->id_cache.contents,
-						    (info->id_cache.total *
-						     sizeof(XID)));
-	    } else {
-		info->id_cache.contents = Xmalloc (info->id_cache.total *
-						   sizeof(XID));
-	    }
-	}
-	
-	if (info->id_cache.contents) {
-	    /*
-	     * copy extra ids into cache
-	     */
-	    for (extra = buffers + result; leftover > 0; leftover--, extra++) {
-		info->id_cache.contents[info->id_cache.count++] = *extra;
-	    }
-	} else {
-	    info->id_cache.count = info->id_cache.total = 0;
-	}
-    }
 
     SyncHandle ();
     return result;
