@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.127 93/11/19 09:20:45 kaleb Exp $ */
+/* $XConsortium: Xlibint.h,v 11.128 93/12/09 15:01:12 kaleb Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -126,7 +126,6 @@ struct _XDisplay
 	int im_fd_length;	/* number of im_fd_info */
 	struct _XConnWatchInfo *conn_watchers; /* XAddConnectionWatch */
 	int watcher_count;	/* number of conn_watchers */
-	Bool in_process_conni;	/* in XProcessInternalConnection */
 	XPointer filedes;	/* struct pollfd cache for _XWaitForReadable */
 	int (*savedsynchandler)(); /* user synchandler when Xlib usurps */
 	XID resource_max;	/* allocator max ID */
@@ -316,18 +315,20 @@ extern int errno;			/* Internal system error number. */
 #endif
 
 /*
- * display flags
+ * Display flags
  */
 #define XlibDisplayIOError	(1L << 0)
 #define XlibDisplayClosing	(1L << 1)
 #define XlibDisplayNoXkb	(1L << 2)
 #define XlibDisplayPrivSync	(1L << 3)
+#define XlibDisplayProcConni	(1L << 4) /* in _XProcessInternalConnection */
+#define XlibDisplayReadEvents	(1L << 5) /* in _XReadEvents */
 
 /*
  * X Protocol packetizing macros.
  */
 
-/*   Need to start requests on 64 bit word boundries
+/*   Need to start requests on 64 bit word boundaries
  *   on a CRAY computer so add a NoOp (127) if needed.
  *   A character pointer on a CRAY computer will be non-zero
  *   after shifting right 61 bits of it is not pointing to
@@ -349,7 +350,7 @@ extern int errno;			/* Internal system error number. */
 
 
 /*
- * GetReq - Get the next avilable X request packet in the buffer and
+ * GetReq - Get the next available X request packet in the buffer and
  * return it. 
  *
  * "name" is the name of the request, e.g. CreatePixmap, OpenFont, etc.
@@ -754,7 +755,7 @@ extern int (*XESetCopyGC(
 extern int (*XESetFlushGC(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    int			/* extenstion */,
+    int			/* extension */,
     int (*) (
 #if NeedNestedPrototypes
 	      Display*			/* display */,
