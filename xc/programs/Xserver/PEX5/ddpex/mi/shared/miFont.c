@@ -1,4 +1,4 @@
-/* $XConsortium: miFont.c,v 5.4 92/12/30 13:40:40 mor Exp $ */
+/* $XConsortium: miFont.c,v 5.5 93/09/03 15:08:11 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -57,7 +57,8 @@ char *after;			/* out */
     if (strncmp(suffix_ptr, ".phont", strlen(".phont")) != 0)
 	return 0;
 
-    CopyISOLatin1Lowered(after, before, strlen(before) - strlen(".phont"));
+    CopyISOLatin1Lowered((unsigned char *)after, (unsigned char *)before,
+			 strlen(before) - strlen(".phont"));
     
     return 1;
 }
