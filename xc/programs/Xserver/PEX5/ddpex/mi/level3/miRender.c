@@ -1,4 +1,4 @@
-/* $XConsortium: miRender.c,v 5.12 92/11/17 17:30:29 hersh Exp $ */
+/* $XConsortium: miRender.c,v 5.13 92/11/18 19:06:38 hersh Exp $ */
 
 
 /***********************************************************
@@ -624,7 +624,6 @@ RenderElements(pRend, pStr, range)
             return (err);
         }
         if (!AddResource( fakeStrID, PEXStructType, (pointer)REfakeStr)) {
-            Xfree((pointer)(REfakeStr));
             return (err);
         }
 
@@ -1259,7 +1258,6 @@ BeginStructure(pRend, sId)
 	    return (err);
 	}
 	if (!AddResource( fakeStrID, PEXStructType, (pointer)fakeStr)) {
-	    Xfree((pointer)(fakeStr));
 	    return (err);
 	}
 
