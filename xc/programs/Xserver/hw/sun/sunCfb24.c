@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunCfb24.c 1.0 94/02/17 00:00:00 kaleb Exp $ */
+/* $XConsortium: sunCfb24.c,v 1.2 94/02/21 10:21:05 kaleb Exp $ */
 
 /*
 
@@ -45,7 +45,7 @@ this Software without prior written authorization from the X Consortium.
 
 #define PSZ 32
 #include "sun.h"
-#include "cfb32/cfb.h"
+#include "cfb/cfb.h"
 
 #define PIXPG_24BIT_COLOR 5
 #define PIXPG_24BIT_COLOR_INDEX (PIXPG_24BIT_COLOR << 25)
