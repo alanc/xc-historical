@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: exps.m,v 1.8 92/06/11 17:20:54 rws Exp $
+ * $XConsortium: exps.m,v 1.9 92/12/21 09:27:40 rws Exp $
  */
 >>TITLE Expose CH08
 >>EXTERN
@@ -98,6 +98,7 @@ then an xname event is generated.
 When an xname events are generated,
 then they are contiguously delivered by the server.
 >>STRATEGY
+Create client.
 Build and create window hierarchy.
 Choose event window.
 Select for Visibility events on all windows.
@@ -105,13 +106,26 @@ Select for Expose events on event window.
 Unmap and remap event window to generate Expose events.
 Verify that Expose events are contiguously delivered.
 >>CODE
-Display	*display = Dsp;
+Display	*display;
 Winh	*eventw;
 Winh	*child;
 Winhe	*winhe;
 int	expected;
 int	lastcount;
 
+/* Create client. */
+	/*
+	 * Do not use Dsp because we are selecting on root window.
+	 * We could instead de-select on root window prior to returning,
+	 * but this is actually easier.
+	 */
+	display = opendisplay();
+	if (display == (Display *) NULL) {
+		delete("Could not open display.");
+		return;
+	}
+	else
+		CHECK;
 /* Build and create window hierarchy. */
 	if (winh(display, 2, WINH_MAP)) {
 		report("Could not build window hierarchy");
@@ -190,7 +204,7 @@ int	lastcount;
 	}
 	else
 		CHECK;
-	CHECKPASS(8);
+	CHECKPASS(9);
 >>ASSERTION Good A
 When an xname event is generated,
 then
