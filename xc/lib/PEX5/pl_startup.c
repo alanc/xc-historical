@@ -1,4 +1,4 @@
-/* $XConsortium: pl_startup.c,v 1.12 93/02/11 16:39:17 mor Exp $ */
+/* $XConsortium: pl_startup.c,v 1.11 93/02/23 14:41:06 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -857,7 +857,7 @@ _PEXPrintOCError (display, error, fp)
 
 INPUT Display		*display;
 INPUT XErrorEvent	*error;
-#ifdef __STDC__
+#if NeedFunctionPrototypes
 INPUT void		*fp;
 #else
 INPUT FILE		*fp;
