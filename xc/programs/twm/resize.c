@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.76 90/12/01 13:05:57 rws Exp $
+ * $XConsortium: resize.c,v 1.77 91/01/09 17:13:42 rws Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -804,10 +804,15 @@ int flag;
 {
     Window      junkRoot;
     unsigned int junkbw, junkDepth;
+    int basex, basey;
+    int frame_bw_times_2;
 
-    XGetGeometry(dpy, (Drawable) tmp_win->frame, &junkRoot,
-        &dragx, &dragy, (unsigned int *)&dragWidth, (unsigned int *)&dragHeight, &junkbw,
-        &junkDepth);
+	XGetGeometry(dpy, (Drawable) tmp_win->frame, &junkRoot,
+	        &dragx, &dragy, (unsigned int *)&dragWidth, (unsigned int *)&dragHeight, &junkbw,
+	        &junkDepth);
+
+	basex = 0;
+	basey = 0;
 
         if (tmp_win->zoomed == flag)
         {
@@ -819,131 +824,69 @@ int flag;
         }
         else
         {
-	    if (tmp_win->zoomed == ZOOM_NONE)
-	    {
-		    tmp_win->save_frame_x = dragx;
-		    tmp_win->save_frame_y = dragy;
-		    tmp_win->save_frame_width = dragWidth;
-		    tmp_win->save_frame_height = dragHeight;
-	    }
+                if (tmp_win->zoomed == ZOOM_NONE)
+                {
+                        tmp_win->save_frame_x = dragx;
+                        tmp_win->save_frame_y = dragy;
+                        tmp_win->save_frame_width = dragWidth;
+                        tmp_win->save_frame_height = dragHeight;
+                        tmp_win->zoomed = flag;
+                 }
+                  else
+                            tmp_win->zoomed = flag;
 
-	    tmp_win->zoomed = flag;
-	    switch (flag)
-	    {
-	    case ZOOM_NONE:
-		break;
-	    case F_ZOOM:
-		dragHeight = Scr->MyDisplayHeight;
-		break;
-	    case F_HORIZOOM:
-		dragWidth = Scr->MyDisplayWidth;
-		break;
-	    case F_FULLZOOM:
-		dragHeight = Scr->MyDisplayHeight;
-		dragWidth = Scr->MyDisplayWidth;
-		break;
-	    case F_LEFTZOOM:
-		dragHeight = Scr->MyDisplayHeight;
-		dragWidth = Scr->MyDisplayWidth/2;
-		break;
-	    case F_RIGHTZOOM:
-		dragHeight = Scr->MyDisplayHeight;
-		dragWidth = Scr->MyDisplayWidth/2;
-		break;
-	    case F_TOPZOOM:
-		dragHeight = Scr->MyDisplayHeight/2;
-		dragWidth = Scr->MyDisplayWidth;
-		break;
-	    case F_BOTTOMZOOM:
-		dragHeight = Scr->MyDisplayHeight/2;
-		dragWidth = Scr->MyDisplayWidth;
-		break;
-	     }
-	}
+
+	frame_bw_times_2 = 2*tmp_win->frame_bw;
+
+        switch (flag)
+        {
+        case ZOOM_NONE:
+            break;
+        case F_ZOOM:
+            dragHeight = Scr->MyDisplayHeight - frame_bw_times_2;
+            dragy=basey;
+            break;
+        case F_HORIZOOM:
+            dragx = basex;
+            dragWidth = Scr->MyDisplayWidth - frame_bw_times_2;
+            break;
+        case F_FULLZOOM:
+            dragx = basex;
+            dragy = basey;
+            dragHeight = Scr->MyDisplayHeight - frame_bw_times_2;
+            dragWidth = Scr->MyDisplayWidth - frame_bw_times_2;
+            break;
+        case F_LEFTZOOM:
+            dragx = basex;
+            dragy = basey;
+            dragHeight = Scr->MyDisplayHeight - frame_bw_times_2;
+            dragWidth = Scr->MyDisplayWidth/2 - frame_bw_times_2;
+            break;
+        case F_RIGHTZOOM:
+            dragx = basex + Scr->MyDisplayWidth/2;
+            dragy = basey;
+            dragHeight = Scr->MyDisplayHeight - frame_bw_times_2;
+            dragWidth = Scr->MyDisplayWidth/2 - frame_bw_times_2;
+            break;
+        case F_TOPZOOM:
+            dragx = basex;
+            dragy = basey;
+            dragHeight = Scr->MyDisplayHeight/2 - frame_bw_times_2;
+            dragWidth = Scr->MyDisplayWidth - frame_bw_times_2;
+            break;
+        case F_BOTTOMZOOM:
+            dragx = basex;
+            dragy = basey + Scr->MyDisplayHeight/2;
+            dragHeight = Scr->MyDisplayHeight/2 - frame_bw_times_2;
+            dragWidth = Scr->MyDisplayWidth - frame_bw_times_2;
+            break;
+         }
+      }
 
     if (!Scr->NoRaiseResize)
         XRaiseWindow(dpy, tmp_win->frame);
 
-    dragHeight -= tmp_win->title_height;
-
-    if (tmp_win->hints.flags&PMinSize && tmp_win->hints.flags & PResizeInc)
-    {
-        dragWidth -= tmp_win->hints.min_width;
-        dragHeight -= tmp_win->hints.min_height;
-    }
-
-    if (tmp_win->hints.flags & PResizeInc)
-    {
-        dragWidth /= tmp_win->hints.width_inc;
-        dragHeight /= tmp_win->hints.height_inc;
-
-        dragWidth *= tmp_win->hints.width_inc;
-        dragHeight *= tmp_win->hints.height_inc;
-    }
-
-    if (tmp_win->hints.flags&PMinSize && tmp_win->hints.flags & PResizeInc)
-    {
-        dragWidth += tmp_win->hints.min_width;
-        dragHeight += tmp_win->hints.min_height;
-    }
-
-    if (dragWidth > Scr->MaxWindowWidth)
-	dragWidth = Scr->MaxWindowWidth;
-    if (dragHeight > Scr->MaxWindowHeight)
-	dragHeight = Scr->MaxWindowHeight;
-    if (tmp_win->hints.flags&PMaxSize)
-    {
-	if (dragWidth > tmp_win->hints.max_width)
-	    dragWidth = tmp_win->hints.max_width;
-	if (dragHeight > tmp_win->hints.max_height)
-	    dragHeight = tmp_win->hints.max_height;
-    }
-
-    dragHeight += tmp_win->title_height;
-
-    switch (flag)
-    {
-    case ZOOM_NONE:
-	break;
-    case F_ZOOM:
-	if (dragy + dragHeight > Scr->MyDisplayHeight)
-	    dragy = Scr->MyDisplayHeight - dragHeight;
-	break;
-    case F_HORIZOOM:
-	if (dragx + dragWidth > Scr->MyDisplayWidth)
-	    dragx = Scr->MyDisplayWidth - dragWidth;
-	break;
-    case F_FULLZOOM:
-	if (dragx + dragWidth > Scr->MyDisplayWidth)
-	    dragx = Scr->MyDisplayWidth - dragWidth;
-	if (dragy + dragHeight > Scr->MyDisplayHeight)
-	    dragy = Scr->MyDisplayHeight - dragHeight;
-	break;
-    case F_LEFTZOOM:
-	dragx = 0;
-	if (dragy + dragHeight > Scr->MyDisplayHeight)
-	    dragy = Scr->MyDisplayHeight - dragHeight;
-	break;
-    case F_RIGHTZOOM:
-	dragx = Scr->MyDisplayWidth - dragWidth;
-	if (dragy + dragHeight > Scr->MyDisplayHeight)
-	    dragy = Scr->MyDisplayHeight - dragHeight;
-	break;
-    case F_TOPZOOM:
-	if (dragx + dragWidth > Scr->MyDisplayWidth)
-	    dragx = Scr->MyDisplayWidth - dragWidth;
-	dragy = 0;
-	break;
-    case F_BOTTOMZOOM:
-	if (dragx + dragWidth > Scr->MyDisplayWidth)
-	    dragx = Scr->MyDisplayWidth - dragWidth;
-	dragy = Scr->MyDisplayHeight - dragHeight;
-	break;
-    }
-    if (dragx < 0)
-	dragx = 0;
-    if (dragy < 0)
-	dragy = 0;
+    ConstrainSize(tmp_win, &dragWidth, &dragHeight);
 
     SetupWindow (tmp_win, dragx , dragy , dragWidth, dragHeight, -1);
     XUngrabPointer (dpy, CurrentTime);
