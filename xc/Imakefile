@@ -14,12 +14,13 @@
 		$(DEMOSRC)
         SUBDIRS = \
 		$(DIRSTOMAKE) \
-		$(UTILSRC)
+		$(UTILSRC) \
+		$(XMANSRC)
     LINTLIBDIRS = \
 		$(EXTENSIONSRC) \
 		$(LIBSRC)
 
-MakeSubdirs($(DIRSTOMAKE) $(RGBSRC))
+MakeSubdirs($(DIRSTOMAKE) $(RGBSRC) $(XMANSRC))
 NamedMakeSubdirs(hacks,$(HACKSRC))
 MakeLintLibSubdirs($(LINTLIBDIRS))
 
