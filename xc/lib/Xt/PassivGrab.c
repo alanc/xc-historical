@@ -1,4 +1,4 @@
-/* $XConsortium: PassivGrab.c,v 1.23 93/08/27 16:29:34 kaleb Exp $ */
+/* $XConsortium: PassivGrab.c,v 1.24 93/10/06 17:31:45 kaleb Exp $ */
 
 /********************************************************
 
@@ -481,12 +481,14 @@ void _XtDestroyServerGrabs(w, closure, call_data)
     
     /* Remove the active grab, if necessary */
     if ((pdi->keyboard.grabType != XtNoServerGrab) && 
-	(pdi->keyboard.grab.widget == w))
-	XtUngrabKeyboard(w, CurrentTime);
+	(pdi->keyboard.grab.widget == w)) {
+	pdi->keyboard.grabType = XtNoServerGrab;
+	pdi->activatingKey = (KeyCode)0;
+    }
     if ((pdi->pointer.grabType != XtNoServerGrab) && 
 	(pdi->pointer.grab.widget == w))
-	XtUngrabPointer(w, CurrentTime);
-    
+	pdi->pointer.grabType = XtNoServerGrab;
+
     DestroyPassiveList(&pwi->keyList);
     DestroyPassiveList(&pwi->ptrList);
 
@@ -945,21 +947,19 @@ static void   UngrabDevice(widget, time, isKeyboard)
     device = isKeyboard ? &pdi->keyboard : &pdi->pointer;
     XtCheckSubclass(widget, coreWidgetClass,
 		    "in XtUngrabKeyboard or XtUngrabPointer");
-    if (!XtIsRealized(widget))
-	return;
-     
-    if (device->grabType != XtNoServerGrab)
-      {
-	  if (device->grabType != XtPseudoPassiveServerGrab)
-	    {
-		if (isKeyboard)
-		  XUngrabKeyboard(XtDisplay(widget), time);
-		else
-		  XUngrabPointer(XtDisplay(widget), time);
-	    }
-	  device->grabType = XtNoServerGrab;
-	  pdi->activatingKey = (KeyCode)0;
-      }
+    
+    if (device->grabType != XtNoServerGrab) {
+
+	if (device->grabType != XtPseudoPassiveServerGrab
+	    && XtIsRealized(widget)) {
+	    if (isKeyboard)
+		XUngrabKeyboard(XtDisplay(widget), time);
+	    else
+		XUngrabPointer(XtDisplay(widget), time);
+	}
+	device->grabType = XtNoServerGrab;
+	pdi->activatingKey = (KeyCode)0;
+    }
 }
 
 
