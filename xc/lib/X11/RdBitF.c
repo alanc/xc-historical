@@ -11,6 +11,10 @@
  *	Modified for speedup by Jim Becker, changed image
  *	data parsing logic (removed some fscanf()s). 
  *	Aug 5, 1988
+ *
+ * Note that this file and ../Xmu/RdBitF.c look very similar....  Keep them
+ * that way (but don't use common source code so that people can have one 
+ * without the other).
  */
 
 #include <X11/Xos.h>
@@ -24,7 +28,6 @@
 #define MAX_SIZE 255
 
 /* shared data for the image read/parse logic */
-
 static short hexTable[255];		/* conversion value */
 static Bool initialized = False;	/* easier to fill in at run time */
 
@@ -36,8 +39,12 @@ static Bool initialized = False;	/* easier to fill in at run time */
 static void initHexTable()
 {
     /*
-     * this is easier and less prone to error than a static table, but it isn't
-     * reentrant.
+     * We build the table at run time for several reasons:
+     *
+     *     1.  portable to non-ASCII machines.
+     *     2.  still reentrant since we set the init flag after setting table.
+     *     3.  easier to extend.
+     *     4.  less prone to bugs.
      */
     hexTable['0'] = 0;	hexTable['1'] = 1;
     hexTable['2'] = 2;	hexTable['3'] = 3;
