@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.33 90/04/13 16:39:49 jim Exp $
+ * $XConsortium: Tree.c,v 1.34 90/04/13 17:16:46 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -272,6 +272,20 @@ static void delete_node (parent, node)
     pc->tree.children[pc->tree.n_children]=0;
 }
 
+static void check_gravity (tw, grav)
+    TreeWidget tw;
+    XtGravity grav;
+{
+    switch (tw->tree.gravity) {
+      case WestGravity: case NorthGravity: case EastGravity: case SouthGravity:
+	break;
+      default:
+	tw->tree.gravity = grav;
+	break;
+    }
+}
+
+
 /*****************************************************************************
  *                                                                           *
  * 			      tree class methods                             *
@@ -332,6 +346,11 @@ static void Initialize (grequest, gnew)
     new->tree.n_largest = 0;
     initialize_dimensions (&new->tree.largest, &new->tree.n_largest, 
 			   TREE_INITIAL_DEPTH);
+
+    /*
+     * make sure that our gravity is one of the acceptable values
+     */
+    check_gravity (new, WestGravity);
 } 
 
 
@@ -389,6 +408,10 @@ static Boolean SetValues (gcurrent, grequest, gnew)
      * tree layout. layout_tree() does a redraw, so we don't
      * need SetValues to do another one.
      */
+    if (new->tree.gravity != current->tree.gravity) {
+	check_gravity (new, current->tree.gravity);
+    }
+
     if (IsHorizontal(new) != IsHorizontal(current)) {
 	if (new->tree.vpad == current->tree.vpad &&
 	    new->tree.hpad == current->tree.hpad) {
