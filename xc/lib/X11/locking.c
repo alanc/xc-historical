@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.30 94/02/27 21:15:41 rws Exp $
+ * $XConsortium: locking.c,v 1.31 94/03/19 19:53:45 gildea Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -105,7 +105,10 @@ static void _XCreateMutex(lip)
     LockInfoPtr lip;
 {
     lip->lock = xmutex_malloc();
-    if (lip->lock) xmutex_init(lip->lock);
+    if (lip->lock) {
+	xmutex_init(lip->lock);
+	xmutex_set_name(lip->lock, "Xlib");
+    }
 }
 
 static void _XFreeMutex(lip)
@@ -255,6 +258,7 @@ static struct _XCVList *_XCreateCVL(dpy)
 	    return NULL;
 	}
 	xcondition_init(cvl->cv);
+	xcondition_set_name(cvl->cv, "Xlib read queue");
     }
     cvl->next = NULL;
     return cvl;
@@ -450,10 +454,12 @@ static void _XFreeDisplayLock(dpy)
 static void _XDisplayLockWait(dpy)
     Display *dpy;
 {
-    if (xthread_have_id(dpy->lock->locking_thread) &&
-	!xthread_equal(dpy->lock->locking_thread, xthread_self()))
-    {
-	ConditionWait(dpy, dpy->lock->cv);
+    xthread_t self;
+
+    if (xthread_have_id(dpy->lock->locking_thread)) {
+	self = xthread_self();
+	if (!xthread_equal(dpy->lock->locking_thread, self))
+	    ConditionWait(dpy, dpy->lock->cv);
     }
 }
 
@@ -582,8 +588,11 @@ static int _XInitDisplayLock(dpy)
     xthread_clear_id(dpy->lock->reading_thread);
     xthread_clear_id(dpy->lock->conni_thread);
     xmutex_init(dpy->lock->mutex);
+    xmutex_set_name(dpy->lock->mutex, "Xlib Display");
     xcondition_init(dpy->lock->cv);
+    xcondition_set_name(dpy->lock->cv, "XLockDisplay");
     xcondition_init(dpy->lock->writers);
+    xcondition_set_name(dpy->lock->writers, "Xlib wait for writable");
     dpy->lock_fns->lock_display = _XLockDisplay;
     dpy->lock->internal_lock_display = _XInternalLockDisplay;
     dpy->lock_fns->unlock_display = _XUnlockDisplay;
@@ -613,6 +622,7 @@ Status XInitThreads()
     if (!_Xglobal_lock->lock)
 	return 0;
     xmutex_init(_Xglobal_lock->lock);
+    xmutex_set_name(_Xglobal_lock->lock, "Xlib global");
     _XLockMutex_fn = _XLockMutex;
     _XUnlockMutex_fn = _XUnlockMutex;
     _XCreateMutex_fn = _XCreateMutex;
