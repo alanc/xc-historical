@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.h,v 1.7 90/02/08 13:28:49 jim Exp $
+ * $XConsortium: Tree.h,v 1.8 90/04/13 16:39:52 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -88,7 +88,7 @@ typedef struct _TreeRec      *TreeWidget;
 
 extern void XawTreeForceLayout (
 #if NeedFunctionPrototypes
-    TreeWidget /* tree */
+    Widget /* tree */
 #endif
 );
 
