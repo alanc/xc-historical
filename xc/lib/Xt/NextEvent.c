@@ -360,8 +360,8 @@ XEvent *event;
 	extern void perror(), exit();
 	
     if (DestroyList != NULL) {
-        XtCallCallbacks(DestroyList);
-        XtRemoveAllCallbacks(DestroyList);
+        CallCallbacks(&DestroyList);
+        RemoveAllCallbacks(&DestroyList);
     }
 
     for(;;) {
