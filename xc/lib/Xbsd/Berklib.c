@@ -1,4 +1,4 @@
-/* $XConsortium: Berklib.c,v 1.17 93/03/29 18:18:48 rws Exp $ */
+/* $XConsortium: Berklib.c,v 1.18 93/07/15 18:01:15 gildea Exp $ */
 
 /*
  * These are routines found in BSD but not on all other systems.  The core
@@ -49,7 +49,7 @@
 
 #include <X11/Xosdefs.h>
 
-#if (__STDC__ && defined(X_NOT_STDC_ENV)) || defined(SVR4) || defined(hpux)
+#if (__STDC__ && !defined(X_NOT_STDC_ENV)) || defined(SVR4) || defined(hpux)
 
 #include <string.h>
 
