@@ -1,4 +1,4 @@
-/* $Header: Xatomtype.h,v 11.8 88/06/29 09:19:30 rws Exp $ */
+/* $Header: Xatomtype.h,v 11.9 88/08/11 17:27:54 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -25,56 +25,62 @@ SOFTWARE.
 ******************************************************************/
 
 /*
- * This file defines the C wire structures that correspond to built in atoms.
- * see server/dix/BuiltInAtoms for the final word on these....
+ * This files defines crock C structures for calling XGetWindowProperty and
+ * XChangeProperty.  All fields must be longs as the semantics of property
+ * routines will handle conversion to and from actual 32 bit objects.  If your
+ * compiler doesn't treat &structoflongs the same as &arrayoflongs[0], you
+ * will have some work to do.
+ *
+ * See server/dix/BuiltInAtoms for additional information.
  */
+
 
 /* this structure may be extended, but do not change the order */
 typedef struct {
-    CARD32 flags B32;
-    INT32 x B32, y B32;
-    CARD32 width B32, height B32;
-    CARD32 minWidth B32, minHeight B32;
-    CARD32 maxWidth B32, maxHeight B32;
-    CARD32 widthInc B32, heightInc B32;
-    CARD32 minAspectX B32, minAspectY B32;
-    CARD32 maxAspectX B32, maxAspectY B32;
+    CARD32 flags;
+    INT32 x, y;			/* XXX - watch for sign extension problems */
+    CARD32 width, height;
+    CARD32 minWidth, minHeight;
+    CARD32 maxWidth, maxHeight;
+    CARD32 widthInc, heightInc;
+    CARD32 minAspectX, minAspectY;
+    CARD32 maxAspectX, maxAspectY;
     } xPropSizeHints;
 #define NumPropSizeElements 15	/* number of elements in this structure */
 
 /* this structure may be extended, but do not change the order */
 typedef struct {
-    CARD32 flags B32;
-    CARD32 input B32;
-    CARD32 initialState B32;
-    BITS32 iconPixmap B32;
-    BITS32 iconWindow B32;
-    INT32  iconX B32;
-    INT32  iconY B32;
-    BITS32 iconMask B32;
-    CARD32 windowGroup B32;
+    CARD32 flags;
+    CARD32 input;
+    CARD32 initialState;
+    BITS32 iconPixmap;
+    BITS32 iconWindow;
+    INT32  iconX;		/* XXX - watch for sign extension problems */
+    INT32  iconY;		/* XXX - watch for sign extension problems */
+    BITS32 iconMask;
+    CARD32 windowGroup;
   } xPropWMHints;
 #define NumPropWMHintsElements 9 /* number of elements in this structure */
 
 /* this structure defines the icon size hints information */
 typedef struct {
-    CARD32 minWidth B32, minHeight B32;
-    CARD32 maxWidth B32, maxHeight B32;
-    CARD32 widthInc B32, heightInc B32;
+    CARD32 minWidth, minHeight;
+    CARD32 maxWidth, maxHeight;
+    CARD32 widthInc, heightInc;
   } xPropIconSize;
 #define NumPropIconSizeElements 6 /* number of elements in this structure */
 
 /* this structure may be extended, but do not change the order */
 /* RGB properties */
 typedef struct {
-	BITS32 colormap B32;
-	CARD32 red_max B32;
-	CARD32 red_mult B32;
-	CARD32 green_max B32;
-	CARD32 green_mult B32;
-	CARD32 blue_max B32;
-	CARD32 blue_mult B32;
-	CARD32 base_pixel B32;
+	BITS32 colormap;
+	CARD32 red_max;
+	CARD32 red_mult;
+	CARD32 green_max;
+	CARD32 green_mult;
+	CARD32 blue_max;
+	CARD32 blue_mult;
+	CARD32 base_pixel;
 } xPropStandardColormap;
 #define NumPropStandardColormapElements 8
     
