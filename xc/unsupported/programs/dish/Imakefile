@@ -1,26 +1,23 @@
-XCOMM
-XCOMM DISH - Dynamic Invocation SHell
-XCOMM
-
-#ifdef InObjectCodeDir
+XCOMM $XConsortium$
 
 /*
- * You need to have Tcl installed on your system already to build Dish.
- * Tcl is available via anonymous ftp from sprite.berkeley.edu.
- * Install <tcl.h> in either a standard place or Fresco/installed/include.
+ * You must be able to find the tcl headers and libraries to build dish.
+ * If your compiler cannot find them by default, set TCL_INCLUDES to a
+ * string of the form "-I/path/to/tcl/headers" and set TCL_LIBRARIES to
+ * whatever your compiler needs to link in libtcl.
  */
 
-APP_CCINCLUDES = -I$(INCDIR)
-APP_CCLDFLAGS = -u main
-APP_CCLDLIBS = -L$(LIBDIR) -ltcl
+   TCL_INCLUDES =
+  TCL_LIBRARIES = -ltcl
 
-Use_libFresco()
-ComplexProgramTarget(dish)
+        DEPLIBS = FrescoClientDepLibs
+LOCAL_LIBRARIES = FrescoClientLibs $(TCL_LIBRARIES)
+       INCLUDES = $(TCL_INCLUDES)
+           SRCS = main.CCsuf
+           OBJS = main.Osuf
 
-MakeObjectFromSrc(main)
+#define CplusplusSource
 
-#else
+NormalCplusplusObjectRule()
 
-MakeInObjectCodeDir()
-
-#endif
+ComplexCplusplusProgramTarget(dish)
