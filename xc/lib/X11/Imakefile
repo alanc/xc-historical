@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.146 93/08/15 18:46:25 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.147 93/08/16 11:40:09 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -57,7 +57,7 @@ XBSDLIB = /**/
 #if NoRConst
  RCONST_DEFINES = -DNORCONST
 #endif
-    MTX_DEFINES = XlibMTDefines
+    MTX_DEFINES = XMTDefines
     MTT_DEFINES = ThreadTypeDefines
 
         DEFINES = $(MALLOC_DEFINES) $(MTX_DEFINES)
