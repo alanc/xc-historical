@@ -1,5 +1,5 @@
 /*
- * $XConsortium: OpenDis.c,v 11.137 93/09/14 17:25:02 gildea Exp $
+ * $XConsortium: OpenDis.c,v 11.138 93/09/15 18:08:43 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -344,8 +344,8 @@ Display *XOpenDisplay (display)
   	(void) strncpy(dpy->vendor, u.vendor, vendorlen);
 	dpy->vendor[vendorlen] = '\0';
  	vendorlen = (vendorlen + 3) & ~3;	/* round up */
-	memcpy (setup, u.vendor + vendorlen,
- 	       (int) setuplength - sz_xConnSetup - vendorlen);
+	memmove (setup, u.vendor + vendorlen,
+		 (int) setuplength - sz_xConnSetup - vendorlen);
  	u.vendor = setup;
 /*
  * Now iterate down setup information.....
