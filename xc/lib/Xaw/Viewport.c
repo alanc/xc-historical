@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.55 90/02/28 16:24:32 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.56 90/02/28 18:46:48 jim Exp $";
 #endif /* lint */
 
 
@@ -179,7 +179,7 @@ static void Initialize(request, new)
     Widget request, new;
 {
     ViewportWidget w = (ViewportWidget)new;
-    static Arg clip_args[6];
+    static Arg clip_args[8];
     Cardinal num_args;
     Widget h_bar, v_bar;
     Dimension clip_height, clip_width;
@@ -205,10 +205,11 @@ static void Initialize(request, new)
     XtSetArg(clip_args[num_args], XtNright, XtChainRight); num_args++;
     XtSetArg(clip_args[num_args], XtNtop, XtChainTop); num_args++;
     XtSetArg(clip_args[num_args], XtNbottom, XtChainBottom); num_args++;
+    XtSetArg(clip_args[num_args], XtNwidth, w->core.width); num_args++;
+    XtSetArg(clip_args[num_args], XtNheight, w->core.height); num_args++;
 
     w->viewport.clip = XtCreateManagedWidget("clip", widgetClass, new,
 					     clip_args, num_args);
-
 
     if (!w->viewport.forcebars) 
         return;		 /* If we are not forcing the bars then we are done. */
