@@ -92,6 +92,11 @@ sets key-click volume (allowable range: 0-8).
 .B \-f \fIvolume\fP
 sets feep (bell) volume (allowable range: 0-7).
 .TP 8
+.B limit
+prevents the server from attempting to unlimit it's stack and data spaces.
+The default is to unlimit these spaces, so that the server can grow as
+large as necessary.  Not available in all operating systems.
+.TP 8
 .B \-logo
 turns on the X Window System logo display in the screen-saver.
 There is currently no way to change this from a client.

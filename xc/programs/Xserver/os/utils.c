@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.73 89/03/23 18:37:13 rws Exp $ */
+/* $XConsortium: utils.c,v 1.74 89/03/27 18:27:36 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -39,6 +39,9 @@ extern Bool disableBackingStore;
 extern Bool disableSaveUnders;
 #ifndef NOLOGOHACK
 extern int logoScreenSaver;
+#endif
+#ifndef SYSV
+extern Bool LimitAddressSpace;
 #endif
 
 extern long ScreenSaverTime;		/* for forcing reset */
@@ -170,6 +173,9 @@ void UseMsg()
     ErrorF("-fc string             cursor font\n");
     ErrorF("-fn string             default font name\n");
     ErrorF("-fp string             default font path\n");
+#ifndef SYSV
+    ErrorF("limit                  retain stack and data space limits\n");
+#endif
 #ifndef NOLOGOHACK
     ErrorF("-logo                  enable logo in screen saver\n");
     ErrorF("nologo                 disable logo in screen saver\n");
@@ -319,6 +325,12 @@ char	*argv[];
 	    UseMsg();
 	    exit(0);
 	}
+#ifndef SYSV
+	else if ( strcmp( argv[i], "limit") == 0)
+	{
+	    LimitAddressSpace = TRUE;
+	}
+#endif
 #ifndef NOLOGOHACK
 	else if ( strcmp( argv[i], "-logo") == 0)
 	{
