@@ -1,3 +1,4 @@
+XCOMM $XConsortium: Imakefile,v 1.2 94/04/05 22:01:37 rws Exp $
             SRCS = xkbpath.c xkbtext.c xkbatom.c \
 		   cout.c xkbout.c xkmout.c \
 		   xkmread.c
