@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.67 90/01/23 11:29:41 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.68 90/01/24 16:04:57 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif /*lint*/
 
@@ -47,25 +47,41 @@ static void CallClassPartInit(ancestor, wc)
     }
 }
 
+static Boolean IsShellClass(wc)
+    WidgetClass wc;
+{
+    return False;
+}
+
 void XtInitializeWidgetClass(wc)
     WidgetClass wc;
 {
-    String param[3];
-    Cardinal num_params=3;
     if (wc->core_class.class_inited) return;
     if (wc->core_class.version != XtVersion &&
-	    wc->core_class.version != XtVersionDontCheck) {
-        param[0] =  wc->core_class.class_name;
-	param[1] =  (String)wc->core_class.version;
-        param[2] = (String)XtVersion;
-	XtWarningMsg("versionMismatch","widget","XtToolkitError",
-          "Widget class %s version mismatch:\n  widget %d vs. intrinsics %d.",
-          param,&num_params);
-	if (wc->core_class.version == (2 * 1000 + 2)) /* MIT R2 */ {
-	    Cardinal num_params=1;
-	    XtErrorMsg("versionMismatch","widget","XtToolkitError",
-		       "Widget class %s must be re-compiled.",
-		       param, &num_params);
+	wc->core_class.version != XtVersionDontCheck) {
+	String param[3];
+        param[0] = wc->core_class.class_name;
+	if (wc->core_class.version == (11 * 1000 + 3)) { /* MIT X11R3 */
+	    if (IsShellClass(wc)) {
+		Cardinal num_params=1;
+		XtWarningMsg("versionMismatch","widget","XtToolkitError",
+			     "Shell Widget class %s still compiled for R3",
+			     param,&num_params);
+	    }
+	}
+	else {
+	    Cardinal num_params=3;
+	    param[1] = (String)wc->core_class.version;
+	    param[2] = (String)XtVersion;
+	    XtWarningMsg("versionMismatch","widget","XtToolkitError",
+			 "Widget class %s version mismatch:\n  widget %d vs. intrinsics %d.",
+			 param,&num_params);
+	    if (wc->core_class.version == (2 * 1000 + 2)) /* MIT X11R2 */ {
+		Cardinal num_params=1;
+		XtErrorMsg("versionMismatch","widget","XtToolkitError",
+			   "Widget class %s must be re-compiled.",
+			   param, &num_params);
+	    }
 	}
     }
 
