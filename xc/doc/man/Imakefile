@@ -1,10 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.7 94/02/10 13:36:19 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 94/02/10 20:34:12 rws Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
 
 #if InstallLibManPages
-LIBMANDIRS = X11 Xt Xext Xi
+LIBMANDIRS = X11 Xt Xext Xi Xau
 #endif
 
 SUBDIRS = general $(LIBMANDIRS)
