@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.153 92/09/07 13:58:07 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.154 93/02/01 16:48:37 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -634,7 +634,7 @@ XCOMM X Window System make variables; this need to be coordinated with rules
  *           exists to avoid problems with some preprocessors
  */
 #ifndef _UseCat
-#if __STDC__ && !defined(UnixCpp)
+#if (__STDC__ && !defined(UnixCpp)) || defined(AnsiCpp)
 #ifdef UseInstalled
 #define _UseCat(a,b,c) a##c
 #else
