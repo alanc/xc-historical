@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.32 91/01/09 17:42:27 rws Exp $ */
+/* $XConsortium: ico.c,v 1.33 91/01/10 13:36:30 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -819,6 +819,7 @@ DBufInfo *b, *otherb;
 	if (!multibuf) {
 	    setDrawBuf(0);
 	    XSetBackground(dpy, gc, dbpair.bufs[0].pixels[0]);
+	    XSetWindowBackground(dpy, draw_window, dbpair.bufs[0].pixels[0]);
 	    XSetPlaneMask(dpy, gc, AllPlanes);
 	    icoClearArea(0, 0, winW, winH); /* clear entire window */
 	}
