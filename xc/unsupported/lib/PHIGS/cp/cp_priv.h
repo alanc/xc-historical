@@ -1,4 +1,4 @@
-/* $XConsortium: cp_priv.h,v 5.5 91/04/04 15:43:41 gildea Exp $ */
+/* $XConsortium: cp_priv.h,v 5.6 91/06/29 19:22:36 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -157,6 +157,9 @@ typedef struct {
 #endif
 #endif
 #ifndef OPEN_MAX
+#ifdef SVR4
+#define OPEN_MAX 256
+#else
 #ifdef MIN
 #undef MIN
 #endif
@@ -177,6 +180,7 @@ typedef struct {
 #endif
 #ifdef FLOAT
 #undef FLOAT	/* hp9000s300 defines FLOAT in <sys/param.h> */
+#endif
 #endif
 #endif
 
