@@ -69,11 +69,17 @@ Bool        AnyClientsWriteBlocked;
 int         ConnectionTranslation[MAXSOCKS];
 
 extern ClientPtr NextAvailableClient();
-extern int  AutoResetServer();
-extern int  GiveUp();
-extern int  ServerReconfig();
-extern int  ServerCacheFlush();
-extern int  CheckClientAge();
+
+#ifdef SIGNALRETURNSINT
+#define SIGVAL int
+#else
+#define SIGVAL void
+#endif
+
+extern SIGVAL  AutoResetServer();
+extern SIGVAL  GiveUp();
+extern SIGVAL  ServerReconfig();
+extern SIGVAL  ServerCacheFlush();
 
 extern void FreeOsBuffers();
 
