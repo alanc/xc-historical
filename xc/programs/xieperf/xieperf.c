@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.29 94/02/13 12:03:17 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.30 94/02/22 13:59:37 kaleb Exp $ */
 
 /**** module xieperf.c ****/
 /******************************************************************************
@@ -267,25 +267,32 @@ void ReportTimes(usecs, n, str, average)
 {
     double msecsperobj, objspersec;
 
-    if(usecs != 0.0)
+    if ( n != 0 )
     {
-        msecsperobj = usecs / (1000.0 * (double)n);
-        objspersec = (double) n * 1000000.0 / usecs;
+	if(usecs != 0.0)
+	{
+            msecsperobj = usecs / (1000.0 * (double)n);
+            objspersec = (double) n * 1000000.0 / usecs;
 
-        /* Round obj/sec to 3 significant digits.  Leave msec untouched, to
-	   allow averaging results from several repetitions. */
-        objspersec =  RoundTo3Digits(objspersec);
+            /* Round obj/sec to 3 significant digits.  Leave msec untouched, to
+	       allow averaging results from several repetitions. */
+            objspersec =  RoundTo3Digits(objspersec);
 
-        if (average) {
-	    printf("%6d trep @ %7.4f msec (%6.1f/sec): %s\n", 
-		    n, msecsperobj, objspersec, str);
+            if (average) {
+		printf("%6d trep @ %7.4f msec (%6.1f/sec): %s\n", 
+			n, msecsperobj, objspersec, str);
+	    } else {
+		printf("%6d reps @ %7.4f msec (%6.1f/sec): %s\n", 
+			n, msecsperobj, objspersec, str);
+	    }
 	} else {
-	    printf("%6d reps @ %7.4f msec (%6.1f/sec): %s\n", 
-	        n, msecsperobj, objspersec, str);
+	    printf("%6d %sreps @ 0.0 msec (unmeasurably fast): %s\n",
+		n, average ? "t" : "", str);
 	}
-    } else {
-	printf("%6d %sreps @ 0.0 msec (unmeasurably fast): %s\n",
-	    n, average ? "t" : "", str);
+    }
+    else
+    {
+	printf("0 reps @ 0.0 msec (test initialization failed): %s\n", str);
     }
 }
 
@@ -4457,8 +4464,8 @@ Atom	atom;
 			visualId,	
 			xp->vinfo.depth,
 			atom,
-			False,		/* Don't replace existing cmap */
-			False );
+			True,		/* Don't replace existing cmap */
+			True );
 		if ( status != 0 )
 		{
 			status = XGetRGBColormaps( xp->d,
