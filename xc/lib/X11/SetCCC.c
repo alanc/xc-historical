@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XcmsSetCCC.c,v 1.1 91/05/13 22:37:30 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -34,7 +34,7 @@
  *
  */
 
-#include "Xlib.h"
+#include "Xlibint.h"
 #include "Xcms.h"
 
 
