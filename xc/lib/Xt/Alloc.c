@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.45 91/05/12 13:23:34 rws Exp $ */
+/* $XConsortium: Alloc.c,v 1.46 91/07/30 11:04:41 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -205,14 +205,15 @@ void _XtHeapFree(heap)
 #undef XtCalloc
 #undef XtFree
 
-typedef struct stat {
-    struct stat *prev, *next;
+typedef struct _Stats *StatsPtr;
+typedef struct _Stats {
+    StatsPtr prev, next;
     char *file;
     int line;
     unsigned size;
     unsigned long seq;
     XtPointer heap;
-} Stats, *StatsPtr;
+} Stats;
 
 static StatsPtr XtMemory = (StatsPtr)NULL;
 static unsigned long ActiveXtMemory = 0;
