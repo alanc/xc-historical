@@ -1,4 +1,4 @@
-/* $XConsortium: client.c,v 1.1 93/09/03 13:25:08 mor Exp $ */
+/* $XConsortium: client.c,v 1.2 93/09/03 17:09:28 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -52,30 +52,27 @@ SmcCallbacks	*callbacks;
 
 
 SmcConn
-SmcOpenConnection (networkIdsList, callData, previousIdLen, previousId,
-    clientIdLenRet, clientIdRet, errorLength, errorStringRet)
+SmcOpenConnection (networkIdsList, clientData,
+    previousId, clientIdRet, errorLength, errorStringRet)
 
 char 		*networkIdsList;
-SmPointer	callData;
-int  		previousIdLen;
+SmPointer	clientData;
 char 		*previousId;
-int  		*clientIdLenRet;
 char 		**clientIdRet;
 int  		errorLength;
 char 		*errorStringRet;
 
 {
-    SmcConn		smcConn;
-    IceConn		iceConn;
-    char 		*ids;
-    smRegisterClientMsg *pMsg;
-    char 		*pData;
-    int			extra;
-    IceReplyWaitInfo	replyWait;
-    SmcReply		reply;
-    Bool		gotReply;
+    SmcConn			smcConn;
+    IceConn			iceConn;
+    char 			*ids;
+    smRegisterClientMsg 	*pMsg;
+    char 			*pData;
+    int				extra;
+    IceReplyWaitInfo		replyWait;
+    _SmcRegisterClientReply	reply;
+    Bool			gotReply;
 
-    *clientIdLenRet = 0;
     *clientIdRet = NULL;
 
     if (errorStringRet && errorLength > 0)
@@ -110,7 +107,8 @@ char 		*errorStringRet;
 	return (NULL);
     }
 
-    smcConn->call_data = callData;
+    smcConn->client_data = clientData;
+    smcConn->client_id = NULL;
     smcConn->interact_cb = NULL;
     smcConn->prop_reply_waits = NULL;
 
@@ -130,35 +128,35 @@ char 		*errorStringRet;
      * Now register the client
      */
 
-    extra = ARRAY8_BYTES (previousIdLen);
+    extra = ARRAY8_BYTES (strlen (previousId));
 
     IceGetHeaderExtra (iceConn, _SmcOpcode, SM_RegisterClient,
 	SIZEOF (smRegisterClientMsg), WORD64COUNT (extra),
 	smRegisterClientMsg, pMsg, pData);
 
-    STORE_ARRAY8 (pData, previousIdLen, previousId);
+    STORE_ARRAY8 (pData, strlen (previousId), previousId);
     IceFlush (iceConn);
 
     replyWait.sequence_of_request = IceLastSequenceNumber (iceConn);
     replyWait.major_opcode_of_request = _SmcOpcode;
     replyWait.minor_opcode_of_request = SM_RegisterClient;
-    replyWait.reply = (char *) &reply;
+    replyWait.reply = (IcePointer) &reply;
 
     gotReply = False;
 
     while (gotReply == False)
 	if ((gotReply = IceProcessMessage (iceConn, &replyWait)) == True)
 	{
-	    if (reply.type == SMC_REGISTER_CLIENT_REPLY)
+	    if (reply.status == 1)
 	    {
-		*clientIdLenRet = reply.register_client_reply.client_id_len;
-		*clientIdRet = reply.register_client_reply.client_id;
+		*clientIdRet = reply.client_id;
 
-		smcConn->client_id_len = *clientIdLenRet;
-		smcConn->client_id = (char *) malloc (*clientIdLenRet);
-		bcopy (*clientIdRet, smcConn->client_id, *clientIdLenRet);
+		smcConn->client_id = (char *) malloc (
+		    strlen (*clientIdRet) + 1);
+
+		strcpy (smcConn->client_id, *clientIdRet);
 	    }
-	    else /* reply.type == SMC_ERROR_REPLY */
+	    else
 	    {
 		free (smcConn->vendor);
 		free (smcConn->release);
@@ -226,8 +224,28 @@ char    **reasonMsgs;
 
 	_SmcConnectionCount--;
 
+	if (smcConn->vendor)
+	    free (smcConn->vendor);
+
+	if (smcConn->release)
+	    free (smcConn->release);
+
 	if (smcConn->client_id)
 	    free (smcConn->client_id);
+
+	if (smcConn->prop_reply_waits)
+	{
+	    _SmcPropReplyWait *ptr = smcConn->prop_reply_waits;
+	    _SmcPropReplyWait *next;
+
+	    while (ptr)
+	    {
+		next = ptr->next;
+		free ((char *) ptr);
+		ptr = next;
+	    }
+
+	}
 
 	free ((char *) smcConn);
     }
@@ -304,17 +322,24 @@ int		dialogType;
 SmcInteractCB	interactCB;
 
 {
-    if (smcConn->interact_cb == NULL)
+    IceConn			iceConn = smcConn->iceConn;
+    smInteractRequestMsg	*pMsg;
+
+    IceGetHeader (iceConn, _SmcOpcode, SM_InteractRequest,
+	SIZEOF (smInteractRequestMsg), smInteractRequestMsg, pMsg);
+
+    pMsg->dialogType = dialogType;
+
+    IceFlush (iceConn);
+
+    if (!smcConn->interact_cb)
     {
-	IceConn			iceConn = smcConn->iceConn;
-	smInteractRequestMsg	*pMsg;
-
-	IceGetHeader (iceConn, _SmcOpcode, SM_InteractRequest,
-	    SIZEOF (smInteractRequestMsg), smInteractRequestMsg, pMsg);
-
-	pMsg->dialogType = dialogType;
-
-	IceFlush (iceConn);
+	/*
+	 * There can only be one InteractRequest active for the client.
+	 * If InteractRequest was already called and the Interact message
+	 * has not arrived, then the client shouldn't have called this
+	 * function.  The session manager should send an error message.
+	 */
 
 	smcConn->interact_cb = interactCB;
     }
