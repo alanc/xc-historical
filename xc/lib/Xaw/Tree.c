@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.21 90/02/07 16:00:06 jim Exp $
+ * $XConsortium: Tree.c,v 1.22 90/02/08 10:04:43 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -693,14 +693,17 @@ static void arrange_subtree (tree, w, depth, x, y)
 
 	if (horiz) {
 	    tc->tree.x = x;
-	    tc->tree.y = (firstcc->tree.y +
-			  ((lastcc->tree.y - firstcc->tree.y) / 2));
+	    tc->tree.y = firstcc->tree.y + ((lastcc->tree.y + 
+					    child->core.height + 
+					    child->core.border_width*2 -
+					    firstcc->tree.y - w->core.height - 
+					    w->core.border_width*2 + 1) / 2);
 	} else {
 	    tc->tree.x = firstcc->tree.x + ((lastcc->tree.x +
-					     child->core.width -
-					     firstcc->tree.x -
-					     w->core.width + 1)
-					    / 2);
+					     child->core.width +
+					     child->core.border_width*2 -
+					     firstcc->tree.x - w->core.width -
+					     w->core.border_width*2 + 1) / 2);
 	    tc->tree.y = y;
 	}
     }
