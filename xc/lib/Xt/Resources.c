@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.65 89/09/14 15:03:30 swick Exp $";
+    "$XConsortium: Resources.c,v 1.66 89/09/18 08:00:32 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -1040,7 +1040,7 @@ void XtSetValues(w, args, num_args)
     char	    oldwCache[500], reqwCache[500];
     char	    oldcCache[100], reqcCache[100];
     Cardinal	    widgetSize, constraintSize;
-    Boolean	    redisplay, resize;
+    Boolean	    redisplay, reconfigured;
     XtGeometryResult result;
     XtWidgetGeometry geoReq, geoReply;
     WidgetClass     wc = XtClass(w);
@@ -1084,9 +1084,6 @@ void XtSetValues(w, args, num_args)
 	      (char *) reqw->core.constraints, (int) constraintSize);
     }
 
-    /* If the widget is a shell widget, we have to cache old dimensions
-       in order to tell whether to call the resize proc or not */
-
     /* Inform widget of changes, then inform parent of changes */
     redisplay = CallSetValues (wc, oldw, reqw, w, args, num_args);
     if (w->core.constraints != NULL) {
@@ -1126,7 +1123,7 @@ void XtSetValues(w, args, num_args)
 	    do {
 		result = XtMakeGeometryRequest(w, &geoReq, &geoReply);
 		if (result != XtGeometryAlmost) {
-		    resize = (result == XtGeometryYes);
+		    reconfigured = (result == XtGeometryYes);
 		    break;
 		}
 		/* An almost reply.  Call widget and let it munge
@@ -1144,7 +1141,9 @@ void XtSetValues(w, args, num_args)
 	    } while (geoReq.request_mode != 0);
 	}
 	/* call resize proc if we changed size */
-	if (resize && wc->core_class.resize != (XtWidgetProc) NULL) {
+	if (reconfigured
+	    && (geoReq.request_mode & (CWWidth | CWHeight))
+	    && wc->core_class.resize != (XtWidgetProc) NULL) {
 	    (*(wc->core_class.resize))(w);
 	}
 	/* Redisplay if needed */
@@ -1154,7 +1153,7 @@ void XtSetValues(w, args, num_args)
             if (redisplay && XtIsRealized(w))
                 XClearArea (XtDisplay(w), XtWindow(w), 0, 0, 0, 0, TRUE);
         }else { /*non-window object */
-        if ((redisplay || resize) && XtIsManaged (w)) {
+        if ((redisplay || reconfigured) && XtIsManaged (w)) {
             Widget pw = w;
             RectObj r = (RectObj) oldw;
             while ((pw!=NULL) && ( ! XtIsWidget(pw) ))
@@ -1164,7 +1163,7 @@ void XtSetValues(w, args, num_args)
                 XClearArea (XtDisplay (pw), XtWindow (pw),
                     r->rectangle.x,r->rectangle.y,
                     r->rectangle.width + bw2,r->rectangle.height + bw2,TRUE);
-                if (resize) {
+                if (reconfigured) {
                     r = (RectObj) w;
                     bw2 = r->rectangle.border_width << 1;
                     XClearArea (XtDisplay (pw), XtWindow (pw),
