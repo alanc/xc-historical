@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.17 92/11/18 19:53:22 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.18 92/11/19 15:18:26 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -217,7 +217,6 @@ pexCreateRendererReq    *strmPtr;
 	Xfree((pointer)(fakeStr));
 	PEX_ERR_EXIT(err,0,cntxtPtr);
     }
-    /* the fakeStr resource gets added at the end of this routine now */
 
     /* Now create 2 ddPickPaths, one for the fakeStrlist and the other
        for maintaining the correspondence between the user supplied 
