@@ -1,4 +1,4 @@
-/* $XConsortium: cfb.h,v 5.34 94/01/21 22:07:28 dpw Exp $ */
+/* $XConsortium: cfb.h,v 5.35 94/03/06 18:20:12 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -1474,7 +1474,7 @@ extern int cfbScreenPrivateIndex;
  * forcing as to use div instead of shift.  Let's be explicit.
  */
 
-#if defined(mips) || defined(sparc)
+#if defined(mips) || defined(sparc) || defined(__alpha)
 #define GetHighWord(x) (((int) (x)) >> 16)
 #else
 #define GetHighWord(x) (((int) (x)) / 65536)
