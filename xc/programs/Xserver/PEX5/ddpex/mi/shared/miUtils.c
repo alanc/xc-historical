@@ -1,5 +1,5 @@
 
-/* $XConsortium: miUtils.c,v 5.1 91/02/16 09:56:19 rws Exp $ */
+/* $XConsortium: miUtils.c,v 5.2 91/05/01 14:25:43 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -119,9 +119,9 @@ miMatTranspose(m)
 
 void
 miMatMult(m, a, b)
-ddFLOAT		m[][4];
-ddFLOAT		a[][4];
-ddFLOAT		b[][4];
+ddFLOAT		m[4][4];
+ddFLOAT		a[4][4];
+ddFLOAT		b[4][4];
 {
     register	int	i,j,k;
     register	float	*col_ptr;
