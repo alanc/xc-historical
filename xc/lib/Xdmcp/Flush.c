@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Flush.c,v 1.2 91/01/02 13:18:54 gildea Exp $
+ * $XConsortium: Flush.c,v 1.3 91/01/23 22:13:39 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,18 +28,37 @@
 #include <X11/Xmd.h>
 #include <X11/Xdmcp.h>
 
-/* keep SVR4 compiler from complaining about scope of arg declaration below */
-typedef  struct sockaddr *  netaddrbuf;
+#ifdef STREAMSCONN
+#include <tiuser.h>
+#else
+#include <sys/socket.h>
+#endif
 
 int
 XdmcpFlush (fd, buffer, to, tolen)
     int		    fd;
     XdmcpBufferPtr  buffer;
-    netaddrbuf      to;
+    XdmcpNetaddr    to;
     int		    tolen;
 {
-    if (sendto (fd, buffer->data, buffer->pointer, 0, to, tolen) !=
-			buffer->pointer)
+    int result;
+
+#ifdef STREAMSCONN
+    struct t_unitdata dataunit;
+
+    dataunit.addr.buf = to;
+    dataunit.addr.len = tolen;
+    dataunit.opt.len = 0;	/* default options */
+    dataunit.udata.buf = (char *)buffer->data;
+    dataunit.udata.len = buffer->pointer;
+    result = t_sndudata(fd, &dataunit);
+    if (result < 0)
 	return FALSE;
+#else
+    result = sendto (fd, buffer->data, buffer->pointer, 0,
+		     (struct sockaddr *)to, tolen);
+    if (result != buffer->pointer)
+	return FALSE;
+#endif
     return TRUE;
 }

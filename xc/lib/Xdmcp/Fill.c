@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Fill.c,v 1.2 91/01/02 13:17:05 gildea Exp $
+ * $XConsortium: Fill.c,v 1.3 91/01/23 22:13:36 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,17 +28,24 @@
 #include <X11/Xmd.h>
 #include <X11/Xdmcp.h>
 
-/* keep SVR4 compiler from complaining about scope of arg declaration below */
-typedef  struct sockaddr *  netaddrbuf;
+#ifdef STREAMSCONN
+#include <tiuser.h>
+#else
+#include <sys/socket.h>
+#endif
 
 int
 XdmcpFill (fd, buffer, from, fromlen)
     int		    fd;
     XdmcpBufferPtr  buffer;
-    netaddrbuf	    from;
-    int		    *fromlen;
+    XdmcpNetaddr    from;	/* return */
+    int		    *fromlen;	/* return */
 {
     BYTE    *newBuf;
+#ifdef STREAMSCONN
+    struct t_unitdata dataunit;
+    int gotallflag, result;
+#endif
 
     if (buffer->size < XDM_MAX_MSGLEN)
     {
@@ -51,9 +58,25 @@ XdmcpFill (fd, buffer, from, fromlen)
 	}
     }
     buffer->pointer = 0;
-    buffer->count = recvfrom (fd, buffer->data, buffer->size, 0, from, fromlen);
-    if (buffer->count >= 6)
-	return TRUE;
-    buffer->count = 0;
-    return FALSE;
+#ifdef STREAMSCONN
+    dataunit.addr.buf = from;
+    dataunit.addr.maxlen = *fromlen;
+    dataunit.opt.maxlen = 0;	/* don't care to know about options */
+    dataunit.udata.buf = (char *)buffer->data;
+    dataunit.udata.maxlen = buffer->size;
+    result = t_rcvudata (fd, &dataunit, &gotallflag);
+    if (result < 0) {
+	return FALSE;
+    }
+    buffer->count = dataunit.udata.len;
+    *fromlen = dataunit.addr.len;
+#else
+    buffer->count = recvfrom (fd, buffer->data, buffer->size, 0,
+			      (struct sockaddr *)from, fromlen);
+#endif
+    if (buffer->count < 6) {
+	buffer->count = 0;
+	return FALSE;
+    }
+    return TRUE;
 }
