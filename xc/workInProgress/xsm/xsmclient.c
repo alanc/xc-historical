@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.1 93/10/19 10:21:04 mor Exp $ */
+/* $XConsortium: xsmclient.c,v 1.2 93/11/02 11:13:11 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -202,10 +202,10 @@ SaveState()
  */
 
 void
-SaveYourselfProc (smcConn, clientData, saveType, shutdown, interactStyle, fast)
+SaveYourselfProc (smcConn, client_data, saveType, shutdown, interactStyle, fast)
 
 SmcConn   smcConn;
-SmPointer clientData;
+SmPointer client_data;
 int  	  saveType;
 Bool	  shutdown;
 int	  interactStyle;
@@ -294,10 +294,10 @@ Bool	  fast;
 
 
 void
-InteractProc (smcConn, clientData)
+InteractProc (smcConn, client_data)
 
 SmcConn	  smcConn;
-SmPointer clientData;
+SmPointer client_data;
 
 {
     Position	x, y, rootx, rooty;
@@ -342,8 +342,8 @@ SmPointer clientData;
 
 
 void
-DieProc (smcConn, clientData)
-SmPointer clientData;
+DieProc (smcConn, client_data)
+SmPointer client_data;
 
 SmcConn smcConn;
 
@@ -361,10 +361,10 @@ SmcConn smcConn;
 
 
 void
-ShutdownCancelledProc (smcConn, clientData)
+ShutdownCancelledProc (smcConn, client_data)
 
 SmcConn   smcConn;
-SmPointer clientData;
+SmPointer client_data;
 
 {
     printf ("Client Id = %s, received SHUTDOWN CANCELLED\n", clientId);
@@ -388,10 +388,10 @@ SmPointer clientData;
 
 
 void
-InitialPropReplyProc (smcConn, clientData, numProps, props)
+InitialPropReplyProc (smcConn, client_data, numProps, props)
 
 SmcConn   smcConn;
-SmPointer clientData;
+SmPointer client_data;
 int       numProps;
 SmProp    **props;
 
@@ -415,10 +415,10 @@ SmProp    **props;
 
 
 void
-PropReplyProc (smcConn, clientData, numProps, props)
+PropReplyProc (smcConn, client_data, numProps, props)
 
 SmcConn   smcConn;
-SmPointer clientData;
+SmPointer client_data;
 int       numProps;
 SmProp    **props;
 
@@ -455,10 +455,10 @@ SmProp    **props;
  */
 
 void
-GetPropXtProc (w, clientData, callData)
+GetPropXtProc (w, client_data, callData)
 
 Widget		w;
-XtPointer 	clientData;
+XtPointer 	client_data;
 XtPointer 	callData;
 
 {
@@ -468,10 +468,10 @@ XtPointer 	callData;
 
 
 void
-QuitXtProc (w, clientData, callData)
+QuitXtProc (w, client_data, callData)
 
 Widget		w;
-XtPointer 	clientData;
+XtPointer 	client_data;
 XtPointer 	callData;
 
 {
@@ -490,10 +490,10 @@ XtPointer 	callData;
 
 
 void
-DialogOkXtProc (w, clientData, callData)
+DialogOkXtProc (w, client_data, callData)
 
 Widget		w;
-XtPointer 	clientData;
+XtPointer 	client_data;
 XtPointer 	callData;
 
 {
@@ -521,10 +521,10 @@ XtPointer 	callData;
 
 
 void
-DialogCancelXtProc (w, clientData, callData)
+DialogCancelXtProc (w, client_data, callData)
 
 Widget		w;
-XtPointer 	clientData;
+XtPointer 	client_data;
 XtPointer 	callData;
 
 {
