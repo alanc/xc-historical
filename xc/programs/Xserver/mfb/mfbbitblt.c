@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 1.56 88/10/15 17:26:25 rws Exp $ */
+/* $XConsortium: mfbbitblt.c,v 1.57 89/03/16 14:47:07 jim Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -81,9 +81,6 @@ int srcx, srcy;
 int width, height;
 int dstx, dsty;
 {
-#ifndef PURDUE
-    BoxRec srcBox;
-#endif PURDUE
     RegionPtr prgnSrcClip;	/* may be a new region, or just a copy */
     int realSrcClip = 0;	/* non-0 if we've created a src clip */
 

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbline.c,v 1.38 88/09/06 14:53:23 jim Exp $ */
+/* $XConsortium: mfbline.c,v 1.39 89/03/16 14:47:23 jim Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -292,7 +292,7 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
 			y2 = min(pt2.y, pbox->y2);
 			if (y1 != y2)
 			{
-			    mfbVertS( ((mfbPrivGC *)(pGC->devPriv))->rop,
+			    mfbVertS( (int)((mfbPrivGC *)(pGC->devPriv))->rop,
 				      addrl, nlwidth, 
 				      pt1.x, y1, y2-y1);
 			}
@@ -355,7 +355,7 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
 		    x2 = min(pt2.x, pbox->x2);
 		    if (x1 != x2)
 		    {
-			mfbHorzS( ((mfbPrivGC *)(pGC->devPriv))->rop,
+			mfbHorzS( (int)((mfbPrivGC *)(pGC->devPriv))->rop,
 				  addrl, nlwidth, 
 				  x1, pt1.y, x2-x1);
 		    }
@@ -454,7 +454,7 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
 			}
 			else
 			    err = e;
-			mfbBresS( ((mfbPrivGC *)(pGC->devPriv))->rop,
+			mfbBresS( (int)((mfbPrivGC *)(pGC->devPriv))->rop,
 				  addrl, nlwidth,
 				  signdx, signdy, axis, pt1.x, pt1.y,
 				  err, e1, e2, len);
@@ -803,7 +803,7 @@ mfbDashLine( pDrawable, pGC, mode, npt, pptInit)
 	} /* while (nbox--) */
     } /* for */
 
-    Xfree(pdashInit);
+    xfree(pdashInit);
 }
 
 

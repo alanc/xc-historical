@@ -77,7 +77,7 @@ mfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
 
 
     mfbDoBitblt((DrawablePtr)pPixmap->drawable.pScreen->devPrivate,
-		pPixmap,
+		(DrawablePtr)pPixmap,
 		GXcopy,
 		prgnSave,
 		pPtsInit);
@@ -137,7 +137,7 @@ mfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg)
 #endif  /* PURDUE */
 
 
-    mfbDoBitblt(pPixmap,
+    mfbDoBitblt((DrawablePtr)pPixmap,
 		(DrawablePtr)pPixmap->drawable.pScreen->devPrivate,
 		GXcopy,
 		prgnRestore,

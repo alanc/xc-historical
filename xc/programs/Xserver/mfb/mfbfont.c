@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XConsortium: mfbfont.c,v 1.14 87/09/03 13:50:48 toddb Exp $ */
+/* $XConsortium: mfbfont.c,v 1.15 88/09/06 14:53:27 jim Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -81,6 +81,7 @@ mfbRealizeFont( pscr, pFont)
 /*
  * no storage allocated in mfbRealizeFont, so there is nothing to do
  */
+/*ARGSUSED*/
 Bool
 mfbUnrealizeFont( pscr, pFont)
     ScreenPtr	pscr;

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpntarea.c,v 1.6 88/09/06 14:53:40 jim Exp $ */
+/* $XConsortium: mfbpntarea.c,v 1.7 89/03/16 14:47:28 jim Exp $ */
 #include "X.h"
 
 #include "windowstr.h"
@@ -56,6 +56,7 @@ and *p++ = 0.
 
 */
 
+/*ARGSUSED*/
 void
 MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
     DrawablePtr pDraw;
@@ -199,6 +200,7 @@ XOR the destination with the stipple pattern.
 	mfbStippleInveryArea	^=
 */
 
+/*ARGSUSED*/
 void
 MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
     DrawablePtr pDraw;

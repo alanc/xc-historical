@@ -1,4 +1,4 @@
-/* $XConsortium: mfbpntwin.c,v 1.2 88/09/06 14:53:46 jim Exp $ */
+/* $XConsortium: mfbpntwin.c,v 1.3 89/03/16 14:46:54 jim Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -40,6 +40,7 @@ mfbPositionWIndow() and mfbChangeWIndowAttributes() do it.
 */
 
 /* Paint Window None -- just return */
+/*ARGSUSED*/
 void
 mfbPaintWindowNone(pWin, pRegion, what)
     WindowPtr pWin;

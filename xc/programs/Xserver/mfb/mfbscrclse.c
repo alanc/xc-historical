@@ -1,4 +1,4 @@
-/* $XConsortium: mfbscrclse.c,v 1.1 87/09/02 00:28:53 toddb Exp $ */
+/* $XConsortium: mfbscrclse.c,v 1.2 88/09/06 14:54:02 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -33,9 +33,9 @@ mfbScreenClose(pScreen)
     if (pScreen->allowedDepths)
     {
 	if (pScreen->allowedDepths->vids)
-		Xfree(pScreen->allowedDepths->vids);
+		xfree(pScreen->allowedDepths->vids);
  
-	Xfree(pScreen->allowedDepths);
+	xfree(pScreen->allowedDepths);
     }
 
     /*  pScreen->visuals does not need to be freed here, since it is added as
@@ -43,10 +43,7 @@ mfbScreenClose(pScreen)
 	resources. */
 
     if(pScreen->devPrivate)
-	Xfree(pScreen->devPrivate);
-
- /* Does pScreen->devPrivate->devPrivate have to be freed since it's a bitmap?
-	but I don't know where or how it is allocated. It may be static. */
+	xfree(pScreen->devPrivate);
 
     return;
 }
