@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.175 89/03/24 07:40:59 rws Exp $ */
+/* $XConsortium: events.c,v 1.176 89/03/27 18:26:29 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -64,6 +64,7 @@ extern void SetCriticalOutputPending();
 #define AllModifiersMask ( \
 	ShiftMask | LockMask | ControlMask | Mod1Mask | Mod2Mask | \
 	Mod3Mask | Mod4Mask | Mod5Mask )
+#define AllEventMasks (lastEventMask|(lastEventMask-1))
 /*
  * The following relies on the fact that the Button<n>MotionMasks are equal
  * to the corresponding Button<n>Masks from the current modifier/button state.
@@ -1695,7 +1696,7 @@ EventSelectForWindow(pWin, client, mask)
     Mask check;
     OtherClients * others;
 
-    if (mask & ~(lastEventMask - 1))
+    if (mask & ~AllEventMasks)
     {
 	client->errorValue = mask;
 	return BadValue;
@@ -3684,7 +3685,7 @@ ProcSendEvent(client)
 	client->errorValue = stuff->event.u.u.type;
 	return BadValue;
     }
-    if (stuff->eventMask & ~(lastEventMask - 1))
+    if (stuff->eventMask & ~AllEventMasks)
     {
 	client->errorValue = stuff->eventMask;
 	return BadValue;
