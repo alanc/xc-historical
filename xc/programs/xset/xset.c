@@ -1,5 +1,5 @@
 /* 
- * $Header: xset.c,v 1.6 87/05/12 16:01:14 dkk Locked $ 
+ * $Header: xset.c,v 1.7 87/05/12 16:05:33 dkk Locked $ 
  * $Locker: dkk $ 
  */
 #include <X11/copyright.h>
@@ -7,7 +7,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.6 87/05/12 16:01:14 dkk Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.7 87/05/12 16:05:33 dkk Locked $";
 #endif
 
 #include <X11/X.h>      /*  Should be transplanted to X11/Xlibwm.h     %*/
@@ -45,10 +45,10 @@ char **argv;
  */
 	int prefer_blank, allow_exp, timeout, interval;
 	int repeat = -1;
-	int dosaver = 0;
-	int blank, expose;
-	int dummy1, dummy2;
-	int discard = TRUE;
+	int dosaver = FALSE;
+/*	int blank, expose;    %%*/
+	int *dummy1, *dummy2;
+	int discard = FALSE;
 	int pixels[512];
 	caddr_t colors[512];
 /*
@@ -58,6 +58,7 @@ char **argv;
 	int acc_num, acc_denom, thresh;
 	int status = FALSE;
 	int numpixels = 0;
+	int newpixels = FALSE;
 	XColor def;  /* was Color, but only XColor, Colormap exist %%*/
 	value_mask = 0;          /*  initialize mask for LED changes */
 	do_acc = do_thresh = FALSE;
@@ -180,7 +181,7 @@ char **argv;
 					break;
 				arg = argv[i];
 				if (*arg >= '0' && *arg <= '9') {
-					thresh = atoi(arg);
+				        thresh = atoi(arg);
 				        do_thresh = TRUE;
 					i++;
 				}
@@ -191,14 +192,14 @@ char **argv;
 		    strcmp(arg, "v") == 0 || strcmp(arg, "video") == 0) {
 			timeout = 10;
 			interval = 60;
-			blank = (*arg == ('s' ? DontPreferBlanking :
+			prefer_blank = (*arg == ('s' ? DontPreferBlanking :
 				 PreferBlanking));
 			dosaver = TRUE;
 			if (i >= argc)
 				break;
 			arg = argv[i];
 			if (strcmp(arg, "default") == 0) {
-			        blank = DefaultBlanking;
+			        prefer_blank = DefaultBlanking;
 				i++;
 			} 
 			else if (*arg >= '0' && *arg <= '9') {
@@ -213,12 +214,12 @@ char **argv;
 				}
 			}
 		} 
-		else if (strcmp(arg, "-r") == 0 || strcmp(arg, "-repeat") == 0) {
+		else if(strcmp(arg, "-r") == 0 || strcmp(arg, "-repeat") == 0){
 			repeat = FALSE;
 		} 
 		else if (strcmp(arg, "r") == 0 || strcmp(arg, "repeat") == 0) {
 			repeat = TRUE;
-			if (i >= argc)
+			if (i > argc)
 				break;
 			arg = argv[i];
 			if (strcmp(arg, "on") == 0) {
@@ -231,6 +232,7 @@ char **argv;
 		} 
 
 		else if (strcmp(arg, "p") == 0 || strcmp(arg, "pixel") == 0) {
+		        newpixels = TRUE;
 			if (i + 1 >= argc)
 				usage(argv[0]);
 		       		arg = argv[i];
@@ -248,13 +250,14 @@ char **argv;
 		else if (index(arg, ':')) {
 			disp = arg;
 		} 
-		else if (strcmp(arg, "q") == 0 || strcmp(arg, "query") == 0) {
+		else if (*arg == 'q') {
 		        status = TRUE;
 		}
 		else
 			usage(argv[0]);
 	}
-	if (!value_mask && !repeat)
+	if (!value_mask && !status && !dosaver && !do_acc && !newpixels 
+	    && (repeat < 0))
 		usage(argv[0]);
 
 	dpy = XOpenDisplay(disp);
@@ -265,14 +268,16 @@ char **argv;
 		exit(1);
 	}
 
-	XChangeKeyboardControl(dpy, value_mask, &values);
+	if (value_mask) {
+	        XChangeKeyboardControl(dpy, value_mask, &values);
+	}
 
 	if (status){
 	XGetKeyboardControl(dpy, &values);
 	XGetPointerControl(dpy, &acc_num, &acc_denom, &thresh);
-	XGetScreenSaver(dpy, dummy1, dummy2, &prefer_blank, &allow_exp);
+	XGetScreenSaver(dpy, &dummy1, &dummy2, &prefer_blank, &allow_exp);
 
-	printf ("Keyboard Control Values:");
+	printf ("Keyboard Control Values:\n");
 	printf ("Display: %d \t", *dpy);
 	printf ("Key Click Percent: %d \n", values.key_click_percent);
 	printf ("Bell Percent: %d \t", values.bell_percent);
@@ -283,7 +288,7 @@ char **argv;
 	printf ("Key: %d \t", values.key);
 	printf ("Auto Repeat: %d \n", values.auto_repeat_mode);
 
-	printf ("Pointer (Mouse) Control Values:");
+	printf ("Pointer (Mouse) Control Values:\n");
 	printf ("Acceleration: %d \t", acc_num / acc_denom);
 	printf ("Threshold: %d \n", thresh);
 
@@ -299,16 +304,19 @@ char **argv;
 				acc_denom, thresh);
 	}
 
-	if (repeat == TRUE)
+	if (repeat == TRUE) {
 	        XAutoRepeatOn(dpy);
+		printf ("Auto Repeat On\n");  /* %%*/
+		XFlush(dpy);
+	}
 	else if (repeat == FALSE)
 		XAutoRepeatOff(dpy);
 
 	if (dosaver) XSetScreenSaver(dpy, timeout, interval, 
 				     prefer_blank, allow_exp);
 
-	screen = DefaultScreen(dpy);
-	if (DisplayCells(dpy, screen) >= 2) {
+/*	screen = DefaultScreen(dpy);  %%*/
+	if (newpixels && DisplayCells(dpy, screen = DefaultScreen(dpy)) >= 2) {
 		while (--numpixels >= 0) {
 			def.pixel = pixels[numpixels];
 			if (XParseColor(colors[numpixels], &def))
@@ -349,18 +357,18 @@ char *prog;
 	printf("    To set keyclick volume:\n");
 	printf("\t c [0-100]        c on\n");
 	printf("    To set LED states off or on:\n");
-	printf("\t-led [0-31]         led off\n");
-	printf("\t led [0-31]         led on\n");
+	printf("\t-led [1-32]         led off\n");
+	printf("\t led [1-32]         led on\n");
 	printf("    To set mouse acceleration and threshold:\n");
 	printf("\t m [acc [thr]]    m default\n");
 	printf("    To set pixel colors:\n");
 	printf("\t p pixel_value color_name\n");
 	printf("    To turn auto-repeat off or on:\n");
-	printf("\t-r                r off\n");
-	printf("\t r                r on\n");
-	printf("    To make the screen-saver display a pattern:\n");
+	printf("\t-r     r off        r    r on\n");
+	printf("    For screen-saver control:\n");
 	printf("\t s [timeout [cycle]]  s default\n");
 	printf("    To make the screen-saver blank the video:\n");
 	printf("\t v [timeout [cycle]]  v default\n");
+	printf("    For status information:  q   or  query\n");
 	exit(0);
 }
