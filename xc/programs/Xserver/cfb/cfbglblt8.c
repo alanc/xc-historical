@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.13 90/12/09 16:02:15 keith Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.15 91/01/27 13:02:57 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -75,7 +75,7 @@ static void cfbPolyGlyphBlt8Clipped();
 #define USE_STIPPLE_CODE
 #endif
 
-#if defined(__GNUC__) && !defined(GLYPHROP) && defined(mc68020) && !defined(USE_LEFTBITS)
+#if defined(__GNUC__) && !defined(GLYPHROP) && (defined(mc68020) || defined(mc68000) || defined(__mc68000__)) && !defined(USE_LEFTBITS)
 #include    <stip68kgnu.h>
 #endif
 
