@@ -31,37 +31,50 @@ is optionally passed through the C preprocessor with the
 following symbols defined, based on the capabilities of the server
 being used:
 .TP 8
-.B HOST=hostname
-the hostname portion of the display to which you are
-connected.
-.TP 8
-.B WIDTH=num
-the width of the screen in pixels.
-.TP 8
-.B HEIGHT=num
-the height of the screen in pixels.
-.TP 8
-.B X_RESOLUTION=num
-the x resolution of the screen in pixels per meter.
-.TP 8
-.B Y_RESOLUTION=num
-the y resolution of the screen in pixels per meter.
-.TP 8
-.B PLANES=num
-the number of bit planes for the default visual.
-.TP 8
 .B BITS_PER_RGB=num
 the number of significant bits in an RGB color specification.  This is the
 log base 2 of the number of distinct shades of each primary that the hardware
-can generate.  Note that it is not related to the number of planes, which the
-log base 2 of the size of the colormap.  
+can generate.  Note that it usually is not related to PLANES.
 .TP 8
 .B CLASS=visualclass
 one of StaticGray, GrayScale, StaticColor, PseudoColor, TrueColor,
-DirectColor.
+DirectColor.  This is the visual class of the root window of the
+default screen.
 .TP 8
 .B COLOR
-only defined if the default visual's type is one of the color options.
+defined only if CLASS is one of StaticColor, PseudoColor, TrueColor, or
+DirectColor.
+.TP 8
+.B HEIGHT=num
+the height of the default screen in pixels.
+.TP 8
+.B HOST=hostname
+the hostname portion of the display to which you are connected.
+.TP 8
+.B PLANES=num
+the number of bit planes (the depth) of the root window of the default screen.
+.TP 8
+.B RELEASE=num
+the vendor release number for the server.  The interpretation of this
+number will vary depending on VENDOR.
+.TP 8
+.B REVISION=num
+the X protocol minor version supported by this server (currently 0).
+.TP 8
+.B VERSION=num
+the X protocol major version supported by this server (should always be 11).
+.TP 8
+.B VENDOR=vendor
+a string specifying the vendor of the server.
+.TP 8
+.B WIDTH=num
+the width of the default screen in pixels.
+.TP 8
+.B X_RESOLUTION=num
+the x resolution of the default screen in pixels per meter.
+.TP 8
+.B Y_RESOLUTION=num
+the y resolution of the default screen in pixels per meter.
 .LP
 Lines that begin with an exclamation mark (!) are ignored and may
 be used as comments.

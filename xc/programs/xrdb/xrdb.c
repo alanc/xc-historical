@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: xrdb.c,v 11.25 89/03/24 10:13:17 jim Exp $";
+static char rcs_id[] = "$XConsortium: xrdb.c,v 11.26 89/03/24 11:09:16 jim Exp $";
 #endif
 
 /*
@@ -282,6 +282,18 @@ AddDef(buff, title, value)
     }
 }
 
+AddDefQ(buff, title, value)
+    char *buff, *title, *value;
+{
+    strcat(buff, " -D");
+    strcat(buff, title);
+    if (value && (value[0] != '\0')) {
+	strcat(buff, "=\"");
+	strcat(buff, value);
+	strcat(buff, "\"");
+    }
+}
+
 AddNum(buff, title, value)
     char *buff, *title;
     int value;
@@ -328,6 +340,10 @@ DoDefines(display, defs, prog, host)
     if (temp[0] == '\0')	/* must be connected to :0 */
 	gethostname(temp, MAXHOSTNAME);
     AddDef(defs, "HOST", temp);
+    AddNum(defs, "VERSION", ProtocolVersion(display));
+    AddNum(defs, "REVISION", ProtocolRevision(display));
+    AddDefQ(defs, "VENDOR", ServerVendor(display));
+    AddNum(defs, "RELEASE", VendorRelease(display));
     screen = DefaultScreenOfDisplay(display);
     visual = DefaultVisualOfScreen(screen);
     AddNum(defs, "WIDTH", screen->width);
