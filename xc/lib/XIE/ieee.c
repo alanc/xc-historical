@@ -1,4 +1,4 @@
-/* $XConsortium: ieee.c,v 1.2 93/07/26 19:09:28 mor Exp $ */
+/* $XConsortium: ieee.c,v 1.3 93/09/15 10:14:55 rws Exp $ */
 
 /***	ieee.c - internal type conversion routines	
 
@@ -79,7 +79,8 @@ xieTypFloat _XieConvertToIEEE(native)
 XieFloat native;
 {
 #ifndef NATIVE_FP_FORMAT
-    return *((xieTypFloat *)&native);
+    XieFloat really_float = native; /* stupid language */
+    return *((xieTypFloat *)&really_float);
 #else
 xieTypFloat	value;
 int sign;
