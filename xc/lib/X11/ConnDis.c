@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.115 94/02/07 18:33:33 mor Exp $
+ * $XConsortium: ConnDis.c,v 11.116 94/02/08 10:42:20 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -564,11 +564,13 @@ void XSetAuthorization (name, namelen, data, datalen)
 {
     char *tmpname, *tmpdata;
 
+    _XLockMutex(_Xglobal_lock);
     if (xauth_name) Xfree (xauth_name);	 /* free any existing data */
     if (xauth_data) Xfree (xauth_data);
 
     xauth_name = xauth_data = NULL;	/* mark it no longer valid */
     xauth_namelen = xauth_datalen = 0;
+    _XUnlockMutex(_Xglobal_lock);
 
     if (namelen < 0) namelen = 0;	/* check for bogus inputs */
     if (datalen < 0) datalen = 0;	/* maybe should return? */
@@ -592,6 +594,7 @@ void XSetAuthorization (name, namelen, data, datalen)
 	tmpdata = NULL;
     }
 
+    _XLockMutex(_Xglobal_lock);
     xauth_name = tmpname;		/* and store the suckers */
     xauth_namelen = namelen;
     if (tmpname)
@@ -608,6 +611,7 @@ void XSetAuthorization (name, namelen, data, datalen)
     }
     xauth_data = tmpdata;
     xauth_datalen = datalen;
+    _XUnlockMutex(_Xglobal_lock);
     return;
 }
 
@@ -1041,8 +1045,11 @@ GetAuthorization(trans_conn, family, saddr, saddrlen, idisplay,
 	xdmcp_data[j++] = (now >>  0) & 0xFF;
 	while (j < 192 / 8)
 	    xdmcp_data[j++] = 0;
+	_XLockMutex(_Xglobal_lock);
+	/* this function might use static data, hence the lock around it */
 	XdmcpWrap (xdmcp_data, auth_data + 8,
 		      xdmcp_data, j);
+	_XUnlockMutex(_Xglobal_lock);
 	auth_data = xdmcp_data;
 	auth_datalen = j;
     }
