@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.131 87/12/31 15:50:03 rws Locked $ */
+/* $Header: events.c,v 1.132 88/01/02 13:02:43 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -145,7 +145,7 @@ extern void WriteEventsToClient();
 
 extern GrabPtr CreateGrab();		/* Defined in grabs.c */
 extern void  DeleteGrab();
-extern BOOL GrabMatchesSecond();
+extern Bool GrabMatchesSecond();
 extern void DeletePassiveGrabFromList();
 extern void AddPassiveGrabToWindowList();
 
@@ -1555,7 +1555,7 @@ OtherClientGone(pWin, id)
     /*NOTREACHED*/
 }
 
-void
+int
 PassiveClientGone(pWin, id)
     WindowPtr pWin;
     XID   id;
@@ -1570,10 +1570,11 @@ PassiveClientGone(pWin, id)
 	{
 	    *next = grab->next;
 	    xfree(grab);
-	    return;
+	    return(Success);
 	}
     }
     FatalError("client not on passive grab list");
+    /*NOTREACHED*/
 }
 
 int
@@ -3505,8 +3506,9 @@ ProcGrabKey(client)
     }
 
     temporaryGrab = CreateGrab(client, inputInfo.keyboard, pWin, 
-	(KeyPressMask | KeyReleaseMask), stuff->ownerEvents,
-	stuff->keyboardMode, stuff->pointerMode, stuff->modifiers, stuff->key);
+	(KeyPressMask | KeyReleaseMask), (Bool)stuff->ownerEvents,
+	(Bool)stuff->keyboardMode, (Bool)stuff->pointerMode,
+	stuff->modifiers, stuff->key);
 
     for (grab = PASSIVEGRABS(pWin); grab; grab = grab->next)
     {
@@ -3575,8 +3577,9 @@ ProcGrabButton(client)
 
 
     temporaryGrab = CreateGrab(client, inputInfo.pointer, pWin, 
-	(stuff->eventMask | ButtonPressMask | ButtonReleaseMask), stuff->ownerEvents,
-	stuff->keyboardMode, stuff->pointerMode, stuff->modifiers, stuff->button);
+	(stuff->eventMask | ButtonPressMask | ButtonReleaseMask),
+	(Bool)stuff->ownerEvents, (Bool) stuff->keyboardMode,
+	(Bool)stuff->pointerMode, stuff->modifiers, stuff->button);
 
     temporaryGrab->u.ptr.confineTo = confineTo;
     temporaryGrab->u.ptr.cursor = cursor;

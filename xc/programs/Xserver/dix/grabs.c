@@ -1,4 +1,4 @@
-/* $Header: grabs.c,v 1.1 87/09/11 07:18:50 rws Locked $ */
+/* $Header: grabs.c,v 1.2 87/10/13 13:36:32 rws Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -42,7 +42,7 @@ CreateDetailMask()
     Mask *pTempMask;
     int i;
 
-    pTempMask = (Mask *)Xalloc(sizeof(Mask) * MasksPerDetailMask);
+    pTempMask = (Mask *)xalloc(sizeof(Mask) * MasksPerDetailMask);
 
     for ( i = 0; i < MasksPerDetailMask; i++)
 	pTempMask[i]= ~0;
@@ -72,7 +72,7 @@ Mask *pOriginalDetailMask;
     if (pOriginalDetailMask == NULL)
 	return NULL;
 
-    pTempMask = (Mask *)Xalloc(sizeof(Mask) * MasksPerDetailMask);
+    pTempMask = (Mask *)xalloc(sizeof(Mask) * MasksPerDetailMask);
 
     for ( i = 0; i < MasksPerDetailMask; i++)
 	pTempMask[i]= pOriginalDetailMask[i];
@@ -81,7 +81,7 @@ Mask *pOriginalDetailMask;
 
 }
 
-extern void PassiveClientGone();	/* This is defined in events.c */
+extern int PassiveClientGone();	/* This is defined in events.c */
 
 void
 AddPassiveGrabToWindowList(pGrab)
@@ -90,7 +90,8 @@ GrabPtr pGrab;
     pGrab->resource = FakeClientID(pGrab->client->index);
     pGrab->next = PASSIVEGRABS(pGrab->window);
     pGrab->window->passiveGrabs = (pointer)pGrab;
-    AddResource(pGrab->resource, RT_FAKE, pGrab->window, PassiveClientGone, RC_CORE);
+    AddResource(pGrab->resource, RT_FAKE, (pointer)pGrab->window,
+		PassiveClientGone, RC_CORE);
 }
 
 
@@ -101,12 +102,13 @@ ClientPtr client;
 DeviceIntPtr device;
 WindowPtr window;
 Mask eventMask;
-BOOL ownerEvents, keyboardMode, pointerMode;
-int modifiers, key;
+Bool ownerEvents, keyboardMode, pointerMode;
+unsigned short modifiers;
+KeyCode key;
 {
     GrabPtr grab;
 
-    grab = (GrabPtr)Xalloc(sizeof(GrabRec));
+    grab = (GrabPtr)xalloc(sizeof(GrabRec));
     grab->client = client;
     grab->device = device;
     grab->window = window;
@@ -129,12 +131,12 @@ DeleteGrab(pGrab)
 GrabPtr pGrab;
 {
     if (pGrab->modifiersDetail.pMask != NULL)
-	Xfree(pGrab->modifiersDetail.pMask);
+	xfree(pGrab->modifiersDetail.pMask);
 
     if (pGrab->u.keybd.keyDetail.pMask != NULL)
-	Xfree(pGrab->u.keybd.keyDetail.pMask);
+	xfree(pGrab->u.keybd.keyDetail.pMask);
 
-    Xfree(pGrab);
+    xfree(pGrab);
 
 }
 
@@ -198,7 +200,7 @@ GrabPtr pFirstGrab, pSecondGrab;
 	return FALSE;
 
     if (DetailSupersedesSecond(pFirstGrab->u.keybd.keyDetail,
-	pSecondGrab->u.keybd.keyDetail, AnyKey))
+	pSecondGrab->u.keybd.keyDetail, (int)AnyKey))
 	return TRUE;
  
     return FALSE;
@@ -218,14 +220,14 @@ GrabPtr pFirstGrab, pSecondGrab;
 	return TRUE;
  
     if (DetailSupersedesSecond(pSecondGrab->u.keybd.keyDetail, 
-	pFirstGrab->u.keybd.keyDetail, AnyKey) 
+	pFirstGrab->u.keybd.keyDetail, (int)AnyKey) 
 	&& 
 	DetailSupersedesSecond(pFirstGrab->modifiersDetail, 
 	pSecondGrab->modifiersDetail, AnyModifier))
 	return TRUE;
 
     if (DetailSupersedesSecond(pFirstGrab->u.keybd.keyDetail, 
-	pSecondGrab->u.keybd.keyDetail, AnyKey) 
+	pSecondGrab->u.keybd.keyDetail, (int)AnyKey) 
 	&& 
 	DetailSupersedesSecond(pSecondGrab->modifiersDetail, 
 	pFirstGrab->modifiersDetail, AnyModifier))
