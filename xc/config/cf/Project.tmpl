@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.94 91/02/15 21:11:06 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.95 91/02/16 14:51:31 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -341,6 +341,13 @@ XCOMM $XConsortium: Project.tmpl,v 1.94 91/02/15 21:11:06 rws Exp $
 #define SharedLibXext NO
 #endif
 #endif
+#ifndef SharedLibPhigs
+#if HasSharedLibraries
+#define SharedLibPhigs NO	/* XXX - haven't made it sharable yet */
+#else
+#define SharedLibPhigs NO
+#endif
+#endif
 
 
 #ifndef DoInstallExtensionsIntoXlib
@@ -356,7 +363,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.94 91/02/15 21:11:06 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.94 91/02/15 21:11:06 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.95 91/02/16 14:51:31 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -441,6 +448,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.94 91/02/15 21:11:06 rws Exp $
      MKFONTDIRSRC = $(FONTSRC)/tools/mkfontdir
     FONTSERVERSRC = $(FONTSRC)/tools/fontserver
      EXTENSIONSRC = $(TOP)/extensions
+      PHIGSLIBSRC = $(EXTENSIONSRC)/lib/PEX
 
 /*
  * _Use - makes a choice based on UseInstalled.
@@ -474,6 +482,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.94 91/02/15 21:11:06 rws Exp $
 #endif
 
 #ifndef ShLibIncludeFile
+/* need this to make ANSI-style proprocessors happy */
 #define ShLibIncludeFile <noop.rules>
 #endif
 
@@ -516,12 +525,17 @@ XCOMM $XConsortium: Project.tmpl,v 1.94 91/02/15 21:11:06 rws Exp $
         DEPXAWLIB = _UseCat($(USRLIBDIR),$(AWIDGETSRC),/libXaw.a)
            XAWLIB = LoaderLibPrefix _Use(-lXaw,$(DEPXAWLIB)) 
 #endif
+#if !SharedLibPhigs
+        DEPPHIGSLIB = _UseCat($(PHIGSLIBDIR),$(PHIGSLIBSRC),/libphigs.a)
+           PHIGSLIB = LoaderLibPrefix _Use(-lphigs,$(DEPPHIGSLIB)) 
+#endif
 
  LINTEXTENSIONLIB = _UseCat($(LINTLIBDIR),$(EXTENSIONSRC)/lib,/llib-lXext.ln)
          LINTXLIB = _UseCat($(LINTLIBDIR),$(XLIBSRC),/llib-lX11.ln)
           LINTXMU = _UseCat($(LINTLIBDIR),$(XMUSRC),/llib-lXmu.ln)
         LINTXTOOL = _UseCat($(LINTLIBDIR),$(TOOLKITSRC),/llib-lXt.ln)
           LINTXAW = _UseCat($(LINTLIBDIR),$(AWIDGETSRC),/llib-lXaw.ln)
+        LINTPHIGS = _UseCat($(LINTLIBDIR),$(PHIGSLIBSRC),/llib-lphigs.ln)
 
 #ifndef NeedDefaultDepLibs
 #define NeedDefaultDepLibs YES
