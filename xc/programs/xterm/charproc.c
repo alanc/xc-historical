@@ -1,5 +1,5 @@
 /*
- * $XHeader: charproc.c,v 1.38 88/07/12 16:43:01 jim Exp $
+ * $XHeader: charproc.c,v 1.39 88/07/13 10:47:41 jim Exp $
  */
 
 
@@ -122,7 +122,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XHeader: charproc.c,v 1.38 88/07/12 16:43:01 jim Exp $";
+static char rcs_id[] = "$XHeader: charproc.c,v 1.39 88/07/13 10:47:41 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2394,13 +2394,13 @@ static char *vtext[] = {
 	"Auto Wraparound",
 	"Reverse Wraparound",
 	"Auto Linefeed",
-	"Application Cursors",
-	"Application Pad",
+	"Application Cursor Mode",
+	"Application Keypad Mode",
 	"Auto Repeat",
 	"Scrollbar",
-	"Scroll to bottom on key",
-	"Scroll to bottom on input",
-	"80 <-> 132 Columns",
+	"Scroll to bottom on key press",
+	"Scroll to bottom on tty output",
+	"Allow 80/132 switching",
 	"Curses Emulation",
 	"Margin Bell",
 	"Tek Window Showing",
