@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.113 89/05/25 15:38:26 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.114 89/05/26 11:38:56 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1095,6 +1095,8 @@ spawn ()
 		setgid (screen->gid);
 		setuid (screen->uid);
 	} else {
+		Bool tty_got_hung = False;
+
  		/*
  		 * Sometimes /dev/tty hangs on open (as in the case of a pty
  		 * that has gone away).  Simply make up some reasonable
@@ -1106,14 +1108,18 @@ spawn ()
  			tty = open ("/dev/tty", O_RDWR, 0);
  			alarm(0);
  		} else {
+			tty_got_hung = True;
  			tty = -1;
  			errno = ENXIO;
  		}
  		signal(SIGALRM, SIG_DFL);
  
+		/*
+		 * check results and ignore current control terminal if
+		 * necessary.
+		 */
  		if (tty < 0) {
-			if (errno != ENXIO) SysError(ERROR_OPDEVTTY);
-			else {
+			if (tty_got_hung || errno == EIO) {
 				no_dev_tty = TRUE;
 #ifdef USE_SYSV_TERMIO
 				tio = d_tio;
@@ -1130,6 +1136,8 @@ spawn ()
 				ltc = d_ltc;
 				lmode = d_lmode;
 #endif	/* USE_SYSV_TERMIO */
+			} else {
+			    SysError(ERROR_OPDEVTTY);
 			}
 		} else {
 			/* get a copy of the current terminal's state */
