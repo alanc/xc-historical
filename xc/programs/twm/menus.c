@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.177 91/05/07 13:39:59 dave Exp $
+ * $XConsortium: menus.c,v 1.179 91/05/11 17:35:56 dave Exp $
  *
  * twm menu code
  *
@@ -2526,7 +2526,8 @@ int def_x, def_y;
     {
 	for (t = Scr->TwmRoot.next; t != NULL; t = t->next)
 	{
-	    if (tmp_win->group == t->group && tmp_win->group != t->w)
+	    if (tmp_win->group == t->group && tmp_win->group != t->w &&
+		t->transient)
 	    {
 		if (iconify)
 		{
