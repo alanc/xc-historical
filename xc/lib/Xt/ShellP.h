@@ -1,4 +1,4 @@
-/* $XConsortium: ShellP.h,v 1.34 94/02/04 21:36:55 converse Exp $ */
+/* $XConsortium: ShellP.h,v 1.35 94/02/08 20:26:12 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -295,6 +295,8 @@ typedef struct _ApplicationShellClassRec {
 
 externalref ApplicationShellClassRec applicationShellClassRec;
 
+typedef struct _XtSaveYourselfRec *XtSaveYourself;
+
 /* New fields for the application shell widget */
 
 typedef struct {
@@ -306,10 +308,8 @@ typedef struct {
     XrmClass xrm_class;
     int argc;
     char **argv;
-    /* session connection state resources */
     SmcConn         connection;
     String          session_id;
-    /* session property resources */
     String*         restart_command;
     String*         clone_command;
     String*         discard_command;
@@ -319,26 +319,14 @@ typedef struct {
     String          current_dir;
     String          program_path;
     unsigned char   restart_style;
-    /* session client resources */
+    unsigned char   checkpoint_state;
     Boolean         join_session;
     XtCallbackList  save_callbacks;
     XtCallbackList  interact_callbacks;
     XtCallbackList  cancel_callbacks;
     XtCallbackList  die_callbacks;
-    /* implementation dependent, private widget state */
-    int             interact_state;
-    int             save_tokens;
-    int             interact_tokens;
-    int             save_type;
-    int             interact_style;
-    Boolean         shutdown;
-    Boolean         fast;
-    Boolean         save_success;
-    Boolean         cancel_shutdown;
-    Boolean         interact_dialog_type;
-    Boolean         checkpointing;
+    XtSaveYourself  save;
     XtInputId       input_id;
-    XtPointer       extension;
 } ApplicationShellPart;
 
 typedef  struct {
