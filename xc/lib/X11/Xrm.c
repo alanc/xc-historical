@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.43 90/10/20 15:08:43 rws Exp $
+ * $XConsortium: Xrm.c,v 1.44 90/10/30 09:33:56 rws Exp $
  */
 
 /***********************************************************
@@ -1693,12 +1693,13 @@ Bool XrmQGetSearchList(db, names, classes, searchList, listLength)
 }
 
 Bool XrmQGetSearchResource(searchList, name, class, pType, pValue)
-    register XrmSearchList	searchList;
+	     XrmSearchList	searchList;
     register XrmName		name;
     register XrmClass		class;
     	     XrmRepresentation	*pType;  /* RETURN */
     	     XrmValue		*pValue; /* RETURN */
 {
+    register LTable *list;
     register LTable table;
     register VEntry entry;
     int flags;
@@ -1724,6 +1725,7 @@ Bool XrmQGetSearchResource(searchList, name, class, pType, pValue)
 	    break; \
     }
 
+    list = (LTable *)searchList;
     /* figure out which combination of name and class we need to search for */
     flags = 0;
     if (IsResourceQuark(name))
@@ -1735,12 +1737,12 @@ Bool XrmQGetSearchResource(searchList, name, class, pType, pValue)
 	table = (LTable)NULL;
     } else if (flags == 3) {
 	/* both name and class */
-	while (table = *((LTable *)searchList)++) {
+	while (table = *list++) {
 	    if (table != LOOSESEARCH) {
 		VTIGHTLOOSE(name);  /* do name, tight and loose */
 		VTIGHTLOOSE(class); /* do class, tight and loose */
 	    } else {
-		table = *((LTable *)searchList)++;
+		table = *list++;
 		VLOOSE(name);  /* do name, loose only */
 		VLOOSE(class); /* do class, loose only */
 	    }
@@ -1749,11 +1751,11 @@ Bool XrmQGetSearchResource(searchList, name, class, pType, pValue)
 	/* just one of name or class */
 	if (flags == 1)
 	    name = class;
-	while (table = *((LTable *)searchList)++) {
+	while (table = *list++) {
 	    if (table != LOOSESEARCH) {
 		VTIGHTLOOSE(name); /* tight and loose */
 	    } else {
-		table = *((LTable *)searchList)++;
+		table = *list++;
 		VLOOSE(name); /* loose only */
 	    }
 	}
