@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.79 91/12/09 18:46:44 keith Exp $ */
+/* $XConsortium: window.c,v 5.80 91/12/09 18:58:03 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -4020,6 +4020,11 @@ SaveScreens(on, mode)
 		if (savedScreenInfo[i].blanked == SCREEN_IS_TILED)
 	        {
 		    WindowPtr pWin = savedScreenInfo[i].pWindow;
+		    /* make it look like screen saver is off, so that
+		     * NotClippedByChildren will compute a clip list
+		     * for the root window, so miPaintWindow works
+		     */
+		    screenIsSaved = SCREEN_SAVER_OFF;
 #ifndef NOLOGOHACK
 		    if (logoScreenSaver)
 			(*pWin->drawable.pScreen->ClearToBackground)(pWin, 0, 0, 0, 0, FALSE);
@@ -4032,6 +4037,7 @@ SaveScreens(on, mode)
 		    if (logoScreenSaver)
 			DrawLogo(pWin);
 #endif
+		    screenIsSaved = SCREEN_SAVER_ON;
 		}
 		continue;
 	    }
