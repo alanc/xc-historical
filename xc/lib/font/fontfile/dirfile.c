@@ -1,6 +1,7 @@
+#ifndef lint
+static char *rid=
+    "$XConsortium: dirfile.c,v 1.9 94/02/04 07:26:05 gildea Exp $";
 #endif /* lint */
- * $XConsortium: dirfile.c,v 1.8 93/09/20 15:56:34 gildea Exp $
- *
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -178,7 +179,7 @@ AddFileNameAliases(dir)
     return TRUE;
 }
 
- * parse the font.aliases file.  Format is:
+/*
  * parse the font.alias file.  Format is:
  *
  * alias font-name
@@ -186,6 +187,8 @@ AddFileNameAliases(dir)
  * To imbed white-space in an alias name, enclose it like "font name"
  * in double quotes.  \ escapes and character, so
  * "font name \"With Double Quotes\" \\ and \\ back-slashes"
+ * works just fine.
+ *
  * A line beginning with a # denotes a newline-terminated comment.
  */
 
@@ -195,7 +198,7 @@ AddFileNameAliases(dir)
 
 static int  lexAlias(), lexc();
 
-#define NEWLINE	1
+#define NAME		0
 #define NEWLINE		1
 #define DONE		2
 #define EALLOC		3
@@ -287,6 +290,7 @@ ReadFontAlias(directory, isFile, pdir)
 #define WHITE		1
 #define NORMAL		2
 #define END		3
+#define NL		4
 #define BANG		5
 
 static int  charClass;
@@ -298,7 +302,7 @@ lexAlias(file, lexToken)
 {
     int         c;
     char       *t;
-	Begin, Normal, Quoted
+    enum state {
 	Begin, Normal, Quoted, Comment
     }           state;
     int         count;
@@ -333,10 +337,13 @@ lexAlias(file, lexToken)
 	    case Quoted:
 		state = Normal;
 		break;
+	    case Comment:
+		break;
 	    }
 	    break;
 	case WHITE:
 	    switch (state) {
+	    case Begin:
 	    case Comment:
 		continue;
 	    case Normal:
@@ -350,6 +357,9 @@ lexAlias(file, lexToken)
 	case NORMAL:
 	    switch (state) {
 	    case Begin:
+		state = Normal;
+		break;
+	    case Comment:
 		continue;
 	    }
 	    *t++ = c;
@@ -358,6 +368,7 @@ lexAlias(file, lexToken)
 	case END:
 	case NL:
 	    switch (state) {
+	    case Begin:
 	    case Comment:
 		*lexToken = (char *) NULL;
 		return charClass == END ? DONE : NEWLINE;
@@ -366,6 +377,19 @@ lexAlias(file, lexToken)
 		*lexToken = tokenBuf;
 		ungetc(c, file);
 		return NAME;
+	    }
+	    break;
+	case BANG:
+	    switch (state) {
+	    case Begin:
+		state = Comment;
+		break;
+            case Comment:
+		break;
+            default:
+		*t++ = c;
+		++count;
+	    }
 	    break;
 	}
     }
@@ -397,6 +421,9 @@ lexc(file)
 	charClass = WHITE;
 	break;
     case '\n':
+	charClass = NL;
+	break;
+    case '!':
 	charClass = BANG;
 	break;
     default:
