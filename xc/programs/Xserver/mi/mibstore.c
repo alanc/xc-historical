@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.17 89/07/19 21:25:00 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.18 89/07/19 22:26:53 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -229,6 +229,8 @@ miInitializeBackingStore (pScreen, funcs)
 	miBSGCIndex = AllocateGCPrivateIndex ();
 	miBSGeneration = serverGeneration;
     }
+    if (!AllocateGCPrivate(pScreen, miBSGCIndex, 0))
+	return;
     pScreenPriv = (miBSScreenPtr) xalloc (sizeof (miBSScreenRec));
     if (!pScreenPriv)
 	return;
