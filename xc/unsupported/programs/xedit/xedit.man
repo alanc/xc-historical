@@ -6,7 +6,7 @@ xedit - simple text editor for X
 .SH OPTIONS
 .I Xedit
 accepts all of the standard X Toolkit command line
-options (see \fIX(1)\fP).  The order of the command line options in
+options (see \fIX(1)\fP).  The order of the command line options is
 not important.
 .TP 8
 .I filename
@@ -35,7 +35,7 @@ the Text widget that the pointer cursor is currently over.  If the
 pointer cursor is not over a text widget then the keypresses will have
 no effect on the application.  This is also true for the special key
 sequences that popup dialog widgets, so typing Control-S in the filename
-widget will enable searching in that widget, not the edit window.
+widget will enable searching in that widget, not the edit widget.
 .PP
 Both the message window and the edit window will create a scrollbar if
 the text to display is too large to fit in that window.  Horizontal scrolling
@@ -46,11 +46,11 @@ resource definition.
 .IP "Quit" 8
 Quits the current editing session. If any changes have not been saved,
 .I xedit 
-displays a warning message and allowing the user to save the file.
+displays a warning message, allowing the user to save the file.
 .IP "Save" 
 If file backups are enabled (see RESOURCES) xedit stores a copy of the
-original, unedited file in <prefix>\fIfile\fP<suffix>
-Then, overwrites the \fIfile\fP with the contents of the edit window.  The
+original, unedited file in <prefix>\fIfile\fP<suffix>,
+then overwrites the \fIfile\fP with the contents of the edit window.  The
 filename is retrieved from the Text widget directly to the right of
 the \fILoad\fP button.
 .IP "Load"
@@ -78,7 +78,7 @@ default is to append the string ".BAK".
 .SH WIDGETS
 The widgets used by xedit are listed below.  Widgets are listed by
 name and class.  Consult the \fIX Toolkit Athena Widgets\fP or the \fPX Toolkit
-Intrinsics\fP for the each widget's list of settable resources.
+Intrinsics\fP for each widget's list of settable resources.
 .sp
 .nf
 .TA .5i 1.0i 1.5i 2.0i
