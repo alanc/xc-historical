@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.151 90/06/13 17:09:03 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.152 90/06/14 10:58:31 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -2509,13 +2509,12 @@ TextWidget ctx;
  * visable window. 
  */
 
-  x = ctx->text.margin.left;
+  x = ctx->core.width;
   y = ctx->core.height - ctx->text.margin.bottom;
   if (ctx->text.hbar != NULL)
     y -= ctx->text.hbar->core.height + 2 * ctx->text.hbar->core.border_width;
   
   max_pos = PositionForXY (ctx, x, y);
-  max_pos = SrcScan(ctx->text.source, max_pos, XawstEOL, XawsdRight, 1, FALSE);
   lines = LineForPosition(ctx, max_pos); /* number of visable lines. */
   
   if ( (ctx->text.insertPos >= ctx->text.lt.top) &&
@@ -2534,32 +2533,36 @@ TextWidget ctx;
       while (first > top) {
 	  first = SrcScan(ctx->text.source, first,
 			  XawstEOL, XawsdLeft, 1, TRUE);
+
+	  if ( - number > lines ) 
+	      break;
+
 	  number--;
       }
      
-      /* Back up to just before the last CR. */
+      if (first <= top) {	/* If we did not break out early. */
+	  /* Back up to just before the last CR. */
 
-      if (first > 0) 
-	  first = SrcScan(ctx->text.source, first,
-			  XawstPositions, XawsdRight, 1, TRUE);
+	  if (first > 0) 
+	      first = SrcScan(ctx->text.source, first,
+			      XawstPositions, XawsdRight, 1, TRUE);
+	  
+	  /* Check to make sure the cursor is visable. */
+	  
+	  if (first > top) {
+	      /*
+	       * Not visable, back out of previous backup. 
+	       */
+	      first = SrcScan(ctx->text.source, first,
+			      XawstPositions, XawsdLeft, 1, TRUE);
+	  }
+	  else			/* we are okay, back up line counter. */
+	      number++;
 
-      /* Check to make sure the cursor is visable. */
-
-      if (first > top) {
-	  /*
-	   * Not visable, back out of previous backup. 
-	   */
-	  first = SrcScan(ctx->text.source, first,
-			  XawstPositions, XawsdLeft, 1, TRUE);
-      }
-      else			/* we are okay, back up line counter. */
-	  number++;
-
-      if ( - number > lines)	/* Make sure we don't scroll more than 
-				   once screen. */
-	  lines = 0;
-      else
 	  lines = number;
+      }
+      else
+	  lines = 0;
   }
   else {			/* We need to Scroll down */
       top = SrcScan(ctx->text.source, ctx->text.insertPos,
@@ -2567,7 +2570,7 @@ TextWidget ctx;
 
       if (top < max_pos) 
 	  lines = LineForPosition(ctx, top);
-      else
+      else 
 	  lines = 0;
   }
 
