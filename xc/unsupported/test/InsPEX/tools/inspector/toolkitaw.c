@@ -1,5 +1,5 @@
 
-/* $XConsortium: toolkitaw.c,v 5.2 91/05/29 17:59:49 converse Exp $ */
+/* $XConsortium: toolkitaw.c,v 5.3 91/05/29 18:41:46 converse Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -65,6 +65,7 @@ static Widget lastleftwidget=NULL; 	/* last one beginning a row */
  */
 static char list_strings[1024] = {NULL};
 
+
 /*
  * tk_init(argc,argv) - initialize the toolkit.  The toolkit may
  * look for toolkit-specific arguments in the command-line input.
@@ -80,14 +81,15 @@ char *argv[];
      */
     toplevel = XtInitialize(NULL, "Inspector", NULL, 0, &argc, argv);
 }
+
+
 /*
  * TK_Main_Window
- * tk_create_main_window(label,height,width, display_return)
- *  Create a main application window with given label, height, and width,
+ * Create a main application window with given label, height, and width,
  * Returning the display in display_return and window as
  * the return value.
  */
-TK_Main_Window tk_create_main_window(label,height,width, display_return)
+TK_Main_Window tk_create_main_window(label, height, width, display_return)
     char *label; 
     int height,width;
     Display **display_return;
@@ -113,12 +115,12 @@ TK_Main_Window tk_create_main_window(label,height,width, display_return)
 
 /*
  * TK_Control_Window
- * tk_create_control_window(parent,x, y, height,width)
+ * tk_create_control_window(parent, x, y, height, width)
  * Create a subwindow suitable for buttons, etc. that is a child of
  * the given parent.  A -1 for any of x, y, height or width 
  * yields the default or toolkit-determined value.
  */
-TK_Control_Window tk_create_control_window(parent,x,y,height,width)
+TK_Control_Window tk_create_control_window(parent, x, y, height, width)
     TK_Main_Window parent;
     int x,y,height,width;
 {
@@ -178,6 +180,7 @@ Drawable tk_create_X_drawable_window(parent,height,width,
     
 }
 
+
 XID tk_get_xid(window)
     TK_Main_Window window;
 {
@@ -185,16 +188,17 @@ XID tk_get_xid(window)
     return (XID) XtWindow(window);
 }
 
+
 /*
  * tk_create_button(control_win,row, col,label,proc,active_status)
  * create a button in the given control window, at designated row & col.
  * proc identifies a procedure to be called when the button is pressed.
  */
-TK_Button tk_create_button(control_win,row,col,label,proc,active_status)
+TK_Button tk_create_button(control_win, row, col, label, proc, active_status)
     TK_Control_Window control_win;
     int row, col;
     char *label;
-    int (*proc)();
+    void (*proc)();
     int active_status;
 {
     Arg args[5];
@@ -206,24 +210,24 @@ TK_Button tk_create_button(control_win,row,col,label,proc,active_status)
      */
     if (row == 1 && col == 1) {
 	/* the first widget in the control window */
-	XtSetArg(args[i], XtNleft,  XtChainLeft); i++;
-	XtSetArg(args[i], XtNtop,  XtChainTop); i++;
+	XtSetArg(args[i], XtNleft, XtChainLeft); i++;
+	XtSetArg(args[i], XtNtop, XtChainTop); i++;
     } else if (col == 1) {
 	/* widget is in new row */
-	XtSetArg(args[i], XtNfromVert,  lastleftwidget); i++;
-	XtSetArg(args[i], XtNleft,  XtChainLeft); i++;
+	XtSetArg(args[i], XtNfromVert, lastleftwidget); i++;
+	XtSetArg(args[i], XtNleft, XtChainLeft); i++;
     } else {
 	/* widget is in same row as last widget */
-	XtSetArg(args[i], XtNfromHoriz,  lastwidget); i++;
+	XtSetArg(args[i], XtNfromHoriz, lastwidget); i++;
     }
 
     /* set up other button attributes */
-    XtSetArg(args[i], XtNlabel,  label); i++;
-    XtSetArg(args[i], XtNcallback,  proc); i++;
+    XtSetArg(args[i], XtNlabel, label); i++;
+    XtSetArg(args[i], XtNcallback, proc); i++;
     if (active_status == TK_BUTTON_ACTIVE) {
-	XtSetArg(args[i], XtNsensitive,  TRUE); i++;
+	XtSetArg(args[i], XtNsensitive, TRUE); i++;
     } else {
-	XtSetArg(args[i], XtNsensitive,  FALSE); i++;
+	XtSetArg(args[i], XtNsensitive, FALSE); i++;
     }
     buttonwidget = XtCreateManagedWidget(label, commandWidgetClass,
 					 control_win, args, i);
@@ -231,6 +235,7 @@ TK_Button tk_create_button(control_win,row,col,label,proc,active_status)
     if (col == 1) lastleftwidget = buttonwidget;
     return (buttonwidget);
 }
+
 
 /*
  * tk_activate_button(button) - sets the active status of the button
@@ -241,6 +246,8 @@ void tk_activate_button(button)
 {
     XtSetSensitive(button, TRUE);
 }
+
+
 /*
  * tk_deactivate_button(button) - sets the active status of the button
  * to TK_BUTTON_INACTIVE
@@ -250,6 +257,7 @@ void tk_deactivate_button(button)
 {
     XtSetSensitive(button, FALSE);
 }
+
 
 /*
  * tk_set_button_label(button,label) - sets the button label to
@@ -265,13 +273,14 @@ void tk_set_button_label(button,label)
     XtSetValues(button, &arg, 1);
 }
 
+
 /*
  * TK_Message_Item
  * tk_create_message_item(control_win,row, col,init_string)
  * create a text output item  in the given control window, 
  * at designated row & col, with the initial contents init_string.
  */
-TK_Message_Item tk_create_message_item(control_win,row,col,init_string)
+TK_Message_Item tk_create_message_item(control_win, row, col, init_string)
     TK_Control_Window control_win;
     int row, col;
     char *init_string;
@@ -305,6 +314,7 @@ TK_Message_Item tk_create_message_item(control_win,row,col,init_string)
     return (messagewidget);
 }
 
+
 /*
  * tk_set_message(msg_item, text) - sets the text tring displayed
  * in msg_item to "text".
@@ -321,7 +331,7 @@ void tk_set_message(msg_item, text)
 
 /* 
  * TK_List
- * tk_create_list(control_win,row,col,notify_proc)
+ * tk_create_list(control_win, row, col, notify_proc)
  */
 TK_List tk_create_list(control_win,row,col,notify_proc)
     TK_Control_Window control_win;
@@ -390,6 +400,7 @@ char * tk_get_selected_list_item(list,index_return)
     return ("selected");
 }
 
+
 /*
  * char *
  * tk_get_list_item(list,index) - return a pointer to the string of
@@ -406,6 +417,7 @@ char * tk_get_list_item(list,index)
     return("hello");
 }
 
+
 /*
  * int
  * tk_get_list_length(list) - return the number of rows in the list
@@ -419,6 +431,7 @@ int tk_get_list_length(list)
     printf("tk_get_list_length() called\n");
     return (1);
 }
+
 
 /*
  * tk_set_list_item(list,index,string): set the indexed list item to
@@ -451,6 +464,7 @@ void tk_insert_list_item(list,index,string)
     printf("tk_insert_list_item(list,%d,%s)\n", index, string);
 }
 
+
 /*
  * tk_delete_list_item: delete the list item indexed by index; if there
  * is an item after it, make that the selected item.
@@ -470,6 +484,7 @@ void tk_delete_list_item(list,index)
     printf("tk_delete_list_item(list,%d)\n", index);
 }
 
+
 /*
  * tk_main_loop() - start the main event-handling loop
  */
@@ -479,7 +494,8 @@ void tk_main_loop(main_win)
     XtMainLoop();
 }
 
-static fatal(s)
+
+static fatal(s)	/* this function is not used */
     char *s;
 {
     fprintf(stderr, "%s\n",s);
