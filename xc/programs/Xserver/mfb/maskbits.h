@@ -22,14 +22,20 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.27 92/12/23 17:33:39 rws Exp $ */
+/* $XConsortium: maskbits.h,v 1.28 92/12/24 09:26:39 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
 
 #ifndef PixelType
-#define PixelType unsigned int
-#endif
+#define PixelType unsigned long
+#ifdef LONG64
+#define sz_PixelType 8
+#else
+#define sz_PixelType 4
+#endif /* LONG64 */
+#endif /* PixelType */
+
 extern PixelType starttab[];
 extern PixelType endtab[];
 extern PixelType partmasks[32][32];
@@ -192,14 +198,34 @@ getshiftedleftbits(psrc, offset, w, dst)
 
 /* to match CFB and allow algorithm sharing ... */
 
-#define PPW	32
-#define PLST	31
-#define PIM	0x1f
-#define PWSH	5
+#define MFB_PSZ		1
+#define MFB_PGSZ	(sz_PixelType<<3)
+#define MFB_PPW		(MFB_PGSZ/MFB_PSZ)
+#define MFB_PLST	(MFB_PPW-1)
+#define MFB_PIM		MFB_PLST
+#define MFB_PMSK	(((PixelType)1 << MFB_PSZ) - 1)
+
+/*  set PWSH = log2(PPW) using brute force */
+
+#if MFB_PPW == 32
+#define MFB_PWSH 5
+#else
+#if MFB_PPW == 64
+#define MFB_PWSH 6
+#endif /* MFB_PPW == 64 */
+#endif /* MFB_PPW == 32 */
+
+#ifndef MFB_CONSTS_ONLY
+
+#define PGSZ	MFB_PGSZ
+#define PPW	MFB_PPW
+#define PLST	MFB_PLST
+#define PIM	MFB_PIM
+#define PWSH	MFB_PWSH
 #ifndef PSZ
-#define PSZ	1
+#define PSZ	MFB_PSZ
 #endif
-#define PMSK	0x01
+#define PMSK	MFB_PMSK
 #define BitLeft(b,s)	SCRLEFT(b,s)
 #define BitRight(b,s)	SCRRIGHT(b,s)
 
@@ -627,3 +653,5 @@ getshiftedleftbits(psrc, offset, w, dst)
 }
 
 #endif  /* FASTGETBITS && FASTPUTBITS */
+
+#endif /* MFB_CONSTS_ONLY */

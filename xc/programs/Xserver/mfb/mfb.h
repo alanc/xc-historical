@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.22 93/09/20 20:26:42 dpw Exp $ */
+/* $XConsortium: mfb.h,v 5.23 93/10/12 11:28:47 dpw Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -142,7 +142,7 @@ extern void mfbDoBitbltXor(
 extern int mfbBresS(
 #if NeedFunctionPrototypes
     int /*rop*/,
-    unsigned int * /*addrl*/,
+    unsigned long * /*addrl*/,
     int /*nlwidth*/,
     int /*signdx*/,
     int /*signdy*/,
@@ -166,7 +166,7 @@ extern int mfbBresD(
     int /*numInDashList*/,
     int * /*pdashOffset*/,
     int /*isDoubleDash*/,
-    unsigned int * /*addrl*/,
+    unsigned long * /*addrl*/,
     int /*nlwidth*/,
     int /*signdx*/,
     int /*signdy*/,
@@ -397,27 +397,6 @@ extern Bool mfbCreateGC(
 #endif
 );
 
-extern void mfbChangeGC(
-#if NeedFunctionPrototypes
-    GCPtr /*pGC*/,
-    BITS32 /*mask*/
-#endif
-);
-
-extern void mfbCopyGC(
-#if NeedFunctionPrototypes
-    GCPtr /*pGCSrc*/,
-    Mask /*changes*/,
-    GCPtr /*pGCDst*/
-#endif
-);
-
-extern void mfbDestroyGC(
-#if NeedFunctionPrototypes
-    GCPtr /*pGC*/
-#endif
-);
-
 extern void mfbValidateGC(
 #if NeedFunctionPrototypes
     GCPtr /*pGC*/,
@@ -433,27 +412,6 @@ extern int mfbReduceRop(
 #endif
 );
 
-extern void mfbDestroyClip(
-#if NeedFunctionPrototypes
-    GCPtr /*pGC*/
-#endif
-);
-
-extern void mfbChangeClip(
-#if NeedFunctionPrototypes
-    GCPtr /*pGC*/,
-    int /*type*/,
-    pointer /*pvalue*/,
-    int /*nrects*/
-#endif
-);
-
-extern void mfbCopyClip(
-#if NeedFunctionPrototypes
-    GCPtr /*pgcDst*/,
-    GCPtr /*pgcSrc*/
-#endif
-);
 /* mfbgetsp.c */
 
 extern void mfbGetSpans(
@@ -471,7 +429,7 @@ extern void mfbGetSpans(
 extern int mfbHorzS(
 #if NeedFunctionPrototypes
     int /*rop*/,
-    unsigned int * /*addrl*/,
+    unsigned long * /*addrl*/,
     int /*nlwidth*/,
     int /*x1*/,
     int /*y1*/,
@@ -482,7 +440,7 @@ extern int mfbHorzS(
 extern int mfbVertS(
 #if NeedFunctionPrototypes
     int /*rop*/,
-    unsigned int * /*addrl*/,
+    unsigned long * /*addrl*/,
     int /*nlwidth*/,
     int /*x1*/,
     int /*y1*/,
@@ -882,9 +840,9 @@ extern int mfbSetScanline(
     int /*xOrigin*/,
     int /*xStart*/,
     int /*xEnd*/,
-    unsigned int * /*psrc*/,
+    unsigned long * /*psrc*/,
     int /*alu*/,
-    unsigned int * /*pdstBase*/,
+    unsigned long * /*pdstBase*/,
     int /*widthDst*/
 #endif
 );
