@@ -81,6 +81,8 @@ SOFTWARE.
 #define sz_xQueryDeviceStateReply		32
 #define sz_xSendExtensionEventReq		16
 #define sz_xDeviceBellReq			8
+#define sz_xSetDeviceValuatorsReq		8
+#define sz_xSetDeviceValuatorsReply		32
 
 #define INAME 			"XInputExtension"
 
@@ -103,18 +105,22 @@ SOFTWARE.
 #define XI_CURSORKEYS	"CURSORKEYS"
 #define XI_FOOTMOUSE	"FOOTMOUSE"
 
-#define Dont_Check		0
-#define XInput_Initial_Release	1
-#define XInput_Add_XDeviceBell	2
+#define Dont_Check			0
+#define XInput_Initial_Release		1
+#define XInput_Add_XDeviceBell		2
+#define XInput_Add_XSetDeviceValuators	3
 
 #define XI_Absent		0
 #define XI_Present		1
 
-#define XI_Initial_Release_Major	1
-#define XI_Initial_Release_Minor	0
+#define XI_Initial_Release_Major		1
+#define XI_Initial_Release_Minor		0
 
-#define XI_Add_XDeviceBell_Major	1
-#define XI_Add_XDeviceBell_Minor	1
+#define XI_Add_XDeviceBell_Major		1
+#define XI_Add_XDeviceBell_Minor		1
+
+#define XI_Add_XSetDeviceValuators_Major	1
+#define XI_Add_XSetDeviceValuators_Minor	2
 
 #define NoSuchExtension		1
 

@@ -1,4 +1,4 @@
-/* $Header: XIproto.h,v 1.11 91/01/24 16:56:22 rws Exp $ */
+/* $Header: XIproto.h,v 1.19 90/09/26 16:32:32 gms ic1C-80 $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -125,6 +125,7 @@ struct tmask
 #define X_QueryDeviceState 		30
 #define X_SendExtensionEvent 		31
 #define X_DeviceBell			32
+#define X_SetDeviceValuators		33
 
 /*********************************************************
  *
@@ -1101,6 +1102,36 @@ typedef struct {
     CARD8	feedbackclass;
     INT8	percent;
 } xDeviceBellReq;
+
+/*********************************************************
+ *
+ * SetDeviceValuators.
+ *
+ */
+
+typedef struct {
+    CARD8 	reqType;	/* input extension major code	*/
+    CARD8 	ReqType;     	/* always X_SetDeviceValuators 	*/
+    CARD16 	length B16;
+    CARD8       deviceid;
+    CARD8       first_valuator;
+    CARD8       num_valuators;
+    BYTE 	pad1;
+} xSetDeviceValuatorsReq;
+
+typedef struct {
+    CARD8 	repType;  	/* X_Reply 			*/
+    CARD8 	RepType;     	/* always X_SetDeviceValuators 	*/
+    CARD16 	sequenceNumber B16;
+    CARD32 	length B32;
+    CARD8 	status;
+    BYTE	pad1, pad2, pad3;
+    CARD32 	pad01 B32;
+    CARD32 	pad02 B32;
+    CARD32 	pad03 B32;
+    CARD32 	pad04 B32;
+    CARD32 	pad05 B32;
+} xSetDeviceValuatorsReply;
 
 /**********************************************************
  *

@@ -1,4 +1,4 @@
-/* $Header: XExtInt.c,v 1.15 91/01/26 13:37:39 rws Exp $ */
+/* $Header: XExtInt.c,v 1.16 91/02/09 17:54:24 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -87,7 +87,9 @@ static XEXT_GENERATE_ERROR_STRING (XInputError, xinput_extension_name,
 
 XExtensionVersion versions[] = {{XI_Absent,0,0},
 	{XI_Present, XI_Initial_Release_Major, XI_Initial_Release_Minor},
-	{XI_Present, XI_Add_XDeviceBell_Major, XI_Add_XDeviceBell_Minor}};
+	{XI_Present, XI_Add_XDeviceBell_Major, XI_Add_XDeviceBell_Minor},
+	{XI_Present, XI_Add_XSetDeviceValuators_Major, 
+		     XI_Add_XSetDeviceValuators_Minor}};
 
 /***********************************************************************
  *
