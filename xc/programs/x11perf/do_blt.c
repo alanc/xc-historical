@@ -1,4 +1,4 @@
-/* $XConsortium: do_blt.c,v 2.13 92/11/11 17:00:37 rws Exp $ */
+/* $XConsortium: do_blt.c,v 2.14 93/09/09 10:09:35 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -421,7 +421,7 @@ int InitShmPutImage (xp, p, reps)
 	return False;
     }
     shm_image.data = shm_info.shmaddr;
-    bcopy (image->data, shm_image.data, image_size);
+    memmove( shm_image.data, image->data, image_size);
     shm_image.obdata = (char *) &shm_info;
     return reps;
 }
