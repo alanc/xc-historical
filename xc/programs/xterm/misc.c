@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.62 89/12/10 20:44:41 jim Exp $
+ *	$XConsortium: misc.c,v 1.63 90/01/19 16:41:45 jim Exp $
  */
 
 
@@ -58,7 +58,7 @@ static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.62 89/12/10 20:44:41 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.63 90/01/19 16:41:45 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -465,6 +465,7 @@ register TScreen *screen;
 #else
 		Bell();
 		Bell();
+		return;
 #endif
 	} else {
 		if(access(screen->logfile, F_OK) == 0) {
