@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.38 90/11/29 20:02:59 keith Exp $
+ * $XConsortium: session.c,v 1.39 90/12/10 15:45:38 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -407,7 +407,7 @@ AbortClient (pid)
 int	pid;
 {
     int	sig = SIGTERM;
-#ifdef __STDC__
+#if __STDC__
     volatile int	i;
 #else
     int	i;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbrrop.h,v 1.3 90/11/19 17:29:25 keith Exp $
+ * $XConsortium: cfbrrop.h,v 1.4 90/11/29 19:34:07 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -128,7 +128,7 @@
     }
 #endif
 
-#if defined(__STDC__) && !defined(UNIXCPP)
+#if __STDC__ && !defined(UNIXCPP)
 #define RROP_NAME_CAT(prefix,suffix)	prefix##suffix
 #else
 #define RROP_NAME_CAT(prefix,suffix)	prefix/**/suffix
