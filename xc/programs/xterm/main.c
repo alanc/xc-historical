@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.23 88/02/26 09:14:01 swick Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.24 88/03/19 15:23:02 rws Exp $";
 #endif	/* lint */
 
 /*
@@ -1163,8 +1163,9 @@ spawn ()
 		Setenv ("TERMCAP=", newtc);
 #endif	/* !SYSV */
 
-		sprintf(buf, "%d", screen->TekEmu ? (int)TWindow(screen) :
-		 (int)VWindow(screen));
+		sprintf (buf, "%lu", screen->TekEmu ? 
+			 ((unsigned long) XtWindow (tekWidget->core.parent)) :
+			 ((unsigned long) XtWindow (term->core.parent)));
 		Setenv ("WINDOWID=", buf);
 		/* put the display into the environment of the shell*/
 		Setenv ("DISPLAY=", XDisplayString (screen->display));
