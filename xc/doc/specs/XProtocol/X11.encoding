@@ -12,18 +12,14 @@
 \s+1\fBProtocol Encoding\fP\s-1
 .sp 2
 .LP
-.ps 9
-.nr PS 9
-.vs 10
-.nr VS 10
 .EH '\s+2\fBX Protocol\fP''\fBX11, Release 4\fP\s-2'
 .OH '\s+2\fBX Protocol\fP''\fBX11, Release 4\fP\s-2'
-.EF ''\s+2\fB % \fP\s-2''
-.OF ''\s+2\fB % \fP\s-2''
+.EF ''\fB % \fP''
+.OF ''\fB % \fP''
 .\"The sections in this appendix correspond to their number counterparts
 .\"in the protocol document.
 .SH
-\s+2Syntactic Conventions\s-2
+Syntactic Conventions
 .LP
 All numbers are in decimal, 
 unless prefixed with #x, in which case they are in hexadecimal (base 16).
@@ -31,6 +27,8 @@ unless prefixed with #x, in which case they are in hexadecimal (base 16).
 The general syntax used to describe requests, replies, errors, events, and
 compound types is:
 .LP
+.ps 9
+.nr PS 9
 .Ds
 .R
 .PN NameofThing
@@ -38,53 +36,83 @@ compound types is:
   ...
   encode-form
 .De
+.ps 11
+.nr PS 11
+.LP
 Each encode-form describes a single component.
 .LP
 For components described in the protocol as:
 .LP
+.ps 9
+.nr PS 9
 .Ds
 .R
 name: TYPE
 .De
+.ps 11
+.nr PS 11
+.LP
 the encode-form is:
 .LP
+.ps 9
+.nr PS 9
 .Ds 
 .TA 1i 1.5i 2.5i
 .ta 1i 1.5i 2.5i
 .R
 N	TYPE	name
 .De
+.ps 11
+.nr PS 11
+.LP
 N is the number of bytes occupied in the data stream, 
 and TYPE is the interpretation of those bytes.
 For example,
 .LP
+.ps 9
+.nr PS 9
 .Ds
 .TA 1i 1.5i
 .ta 1i 1.5i
 .R
 depth: CARD8
 .De
+.ps 11
+.nr PS 11
+.LP
 becomes:
 .LP
+.ps 9
+.nr PS 9
 .Ds
 .R
 .TA 1i 1.5i 2.5i 
 .ta 1i 1.5i 2.5i
 1	CARD8	depth
 .De
+.ps 11
+.nr PS 11
+.LP
 For components with a static numeric value the encode-form is:
 .LP
+.ps 9
+.nr PS 9
 .Ds
 .TA 1i 1.5i 2.5i
 .ta 1i 1.5i 2.5i
 .R
 N	value	name
 .De
+.ps 11
+.nr PS 11
+.LP
 The value is always interpreted as an N-byte unsigned integer.
 For example, 
 the first two bytes of a Window error are always zero (indicating an
 error in general) and three (indicating the Window error in particular):
 .LP
+.ps 9
+.nr PS 9
 .Ds
 .TA 1i 1.5i 2.5i
 .ta 1i 1.5i 2.5i
@@ -92,16 +120,25 @@ error in general) and three (indicating the Window error in particular):
 1	0	Error
 1	3	code
 .De
+.ps 11
+.nr PS 11
+.LP
 For components described in the protocol as:
 .RS
+.ps 9
+.nr PS 9
 .LP
 name: 
 .Pn { Name1 ,..., 
 .PN NameI }
 .RE
+.ps 11
+.nr PS 11
 .LP
 the encode-form is:
 .LP
+.ps 9
+.nr PS 9
 .Ds
 .TA 1i 1.5i 2.5i
 .ta 1i 1.5i 2.5i
@@ -111,20 +148,29 @@ N		name
 	...
 	valueI NameI
 .De
+.ps 11
+.nr PS 11
+.LP
 The value is always interpreted as an N-byte unsigned integer.
 Note that the size of N is sometimes larger than that strictly required 
 to encode the values.
 For example:
 .RS
+.ps 9
+.nr PS 9
 .LP
 class: 
 .Pn { InputOutput , 
 .PN InputOnly , 
 .PN CopyFromParent }
 .RE
+.ps 11
+.nr PS 11
 .LP
 becomes:
 .LP
+.ps 9
+.nr PS 9
 .Ds
 .TA 1i 1.5i 2.5i 3i
 .ta 1i 1.5i 2.5i 3i
@@ -134,16 +180,25 @@ becomes:
 	1	InputOutput
 	2	InputOnly
 .De
+.ps 11
+.nr PS 11
+.LP
 For components described in the protocol as:
 .RS
+.ps 9
+.nr PS 9
 .LP
 NAME: TYPE or 
 .PN Alternative1 ...or
 .PN AlternativeI
 .RE
+.ps 11
+.nr PS 11
 .LP
 the encode-form is:
 .LP
+.ps 9
+.nr PS 9
 .Ds
 .TA 1i 1.5i 2i 2.5i 3i
 .ta 1i 1.5i 2i 2.5i 3i
@@ -153,18 +208,27 @@ N	TYPE			NAME
 	...
 	valueI	AlternativeI
 .De
+.ps 11
+.nr PS 11
+.LP
 The alternative values are guaranteed not to conflict with the encoding
 of TYPE.  
 For example:
 .RS
+.ps 9
+.nr PS 9
 .LP
 destination: WINDOW or 
 .PN PointerWindow or 
 .PN InputFocus
 .RE
+.ps 11
+.nr PS 11
 .LP
 becomes:
 .LP
+.ps 9
+.nr PS 9
 .Ds
 .TA 1i 1.5i 2.5i
 .ta 1i 1.5i 2.5i
@@ -173,16 +237,26 @@ becomes:
 	0	PointerWindow
 	1	InputFocus
 .De
+.ps 11
+.nr PS 11
+.LP
 For components described in the protocol as:
 .LP
+.ps 9
+.nr PS 9
 .Ds
 .TA 1i 1.5i
 .ta 1i 1.5i
 .R
 value-mask: BITMASK
 .De
+.ps 11
+.nr PS 11
+.LP
 the encode-form is:
 .LP
+.ps 9
+.nr PS 9
 .Ds
 .TA 1i 1.5i 2i 2.5i 
 .ta 1i 1.5i 2i 2.5i
@@ -192,6 +266,9 @@ N	BITMASK			value-mask
 	...
 	maskI	mask-nameI
 .De
+.ps 11
+.nr PS 11
+.LP
 The individual bits in the mask are specified and named, 
 and N is 2 or 4.
 The most-significant bit in a BITMASK is reserved for use in defining
@@ -205,6 +282,8 @@ in individual N-byte units.
 .LP
 For LISTofVALUE encodings, the request is followed by a section of the form:
 .LP
+.ps 9
+.nr PS 9
 .Ds
 .TA 1i 1.5i
 .ta 1i 1.5i
@@ -214,6 +293,9 @@ VALUEs
  ...
  encode-form
 .De
+.ps 11
+.nr PS 11
+.LP
 listing an encode-form for each VALUE.
 The NAME in each encode-form keys to the corresponding BITMASK bit.
 The encoding of a VALUE always occupies four bytes, 
@@ -231,6 +313,8 @@ The scope of such variables is always just the enclosing request, reply,
 error, event, or compound type structure.
 For example:
 .LP
+.ps 9
+.nr PS 9
 .Ds
 .TA 1i 1.5i 2i 2.5i
 .ta 1i 1.5i 2i 2.5i
@@ -238,45 +322,72 @@ For example:
 2	3+n			request length
 4n	LISTofPOINT		points
 .De
+.ps 11
+.nr PS 11
+.LP
 For unused bytes (the values of the bytes are undefined and do no matter),
 the encode-form is:
 .LP
+.ps 9
+.nr PS 9
 .Ds
 .R
 .TA 1i 1.5i 2i 2.5i
 .ta 1i 1.5i 2i 2.5i
 N			unused
 .De
+.ps 11
+.nr PS 11
+.LP
 If the number of unused bytes is variable, the encode-form typically is:
 .LP
+.ps 9
+.nr PS 9
 .Ds
 .TA 1i 1.5i 2i 2.5i
 .ta 1i 1.5i 2i 2.5i
 .R
 p			unused, p=pad(E)
 .De
+.ps 11
+.nr PS 11
+.LP
 where E is some expression,
 and pad(E) is the number of bytes needed to round E up to a multiple of four.
 .LP
+.ps 9
+.nr PS 9
 .Ds
 .TA 1i 1.5i 2i 2.5i
 .ta 1i 1.5i 2i 2.5i
 .R
 pad(E) = (4 - (E mod 4)) mod 4
 .De
+.ps 11
+.nr PS 11
 .SH
-\s+2Common Types\s-2
+Common Types
+.ps 9
+.nr PS 9
 .LP
 LISTofFOO
+.ps 11
+.nr PS 11
 .IP
 In this document the LISTof notation strictly means some number of repetitions
 of the FOO encoding; 
 the actual length of the list is encoded elsewhere.
+.ps 9
+.nr PS 9
 .LP
 SETofFOO
+.ps 11
+.nr PS 11
 .IP
 A set is always represented by a bitmask, with a 1-bit indicating presence in
 the set.
+.ps 9
+.nr PS 9
 .LP
 BITMASK: CARD32
 .LP
@@ -516,9 +627,13 @@ STR
 	1	n		length of name in bytes
 	n	STRING8		name
 .De
+.ps 11
+.nr PS 11
 .SH
-\s+2Errors\s-2
+Errors
 .LP
+.ps 9
+.nr PS 9
 .Ds 0
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
@@ -756,23 +871,26 @@ STR
 	1	CARD8		major opcode
 	21			unused
 .De
+.ps 11
+.nr PS 11
 .SH
-\s+2Keyboards\s-2
+Keyboards
 .LP
 KEYCODE values are always greater than 7 (and less than 256).
 .LP
 KEYSYM values with the bit #x10000000 set are reserved as vendor-specific.
 .LP
 The names and encodings of the standard KEYSYM values are contained in 
-.\"Appendix B, Keysym Encoding.
-appendix F.
+Appendix B, Keysym Encoding.
 .SH
-\s+2Pointers\s-2
+Pointers
 .LP
 BUTTON values are numbered starting with one.
 .SH
-\s+2Predefined Atoms\s-2
+Predefined Atoms
 .LP
+.ps 9
+.nr PS 9
 .Ds 0
 .TA 1.75i 3i 4.75i
 .ta 1.75i 3i 4.75i
@@ -798,7 +916,7 @@ INTEGER	19	WEIGHT	58
 PIXMAP	20	POINT_SIZE	59
 POINT	21	RESOLUTION	60
 RECTANGLE	22	COPYRIGHT	61
-RESOURCE_MANGER	23	NOTICE	62
+RESOURCE_MANAGER	23	NOTICE	62
 RGB_COLOR_MAP	24	FONT_NAME	63
 RGB_BEST_MAP	25	FAMILY_NAME	64
 RGB_BLUE_MAP	26	FULL_NAME	65
@@ -816,8 +934,10 @@ WM_ICON_NAME	37
 WM_ICON_SIZE	38
 WM_NAME	39
 .De
+.ps 11
+.nr PS 11
 .SH
-\s+2Connection Setup\s-2
+Connection Setup
 .LP
 For TCP connections, 
 displays on a given host are numbered starting from 0,
@@ -830,6 +950,8 @@ for example, X$X0 and X$X1.
 .LP
 Information sent by the client at connection setup:
 .LP
+.ps 9
+.nr PS 9
 .Ds 0
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
@@ -848,6 +970,9 @@ Information sent by the client at connection setup:
 	d	STRING8		authorization-protocol-data
 	q			unused, q=pad(d)
 .De
+.ps 11
+.nr PS 11
+.LP
 Except where explicitly noted in the protocol, 
 all 16-bit and 32-bit quantities sent by the client must be transmitted 
 with the specified byte order, 
@@ -856,6 +981,8 @@ with this byte order.
 .LP
 Information received by the client if authorization fails:
 .LP
+.ps 9
+.nr PS 9
 .Ds 0
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
@@ -868,8 +995,13 @@ Information received by the client if authorization fails:
 	n	STRING8			reason
 	p			unused, p=pad(n)
 .De
+.ps 11
+.nr PS 11
+.LP
 Information received by the client if authorization is accepted:
 .LP
+.ps 9
+.nr PS 9
 .Ds 0
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
@@ -974,9 +1106,13 @@ VISUALTYPE
 	4	CARD32		blue-mask
 	4			unused
 .De
+.ps 11
+.nr PS 11
 .SH
-\s+2Requests\s-2
+Requests
 .LP
+.ps 9
+.nr PS 9
 .Ds 0
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
@@ -3639,9 +3775,13 @@ VISUALTYPE
 	1			unused
 	2	1		request length
 .De
+.ps 11
+.nr PS 11
 .SH
-\s+2Events\s-2
+Events
 .LP
+.ps 9
+.nr PS 9
 .Ds 0
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
@@ -4267,4 +4407,6 @@ VISUALTYPE
 	1	CARD8		count
 	25			unused
 .De
+.ps 11
+.nr PS 11
 .bp
