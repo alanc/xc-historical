@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.13 90/12/13 22:59:02 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.14 90/12/26 11:36:26 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -88,7 +88,6 @@
 #define DEFAULT_CPP "/usr/lib/cpp"
 #endif
 
-
 /*
  * Step 5:  cpp_argv
  *     The following table contains the cpp flags that should be passed to 
@@ -108,7 +107,12 @@
 
 #define	ARGUMENTS 50	/* number of arguments in various arrays */
 char *cpp_argv[ARGUMENTS] = {
+#ifdef USE_CC_E
+	"cc",		/* replaced by the actual cpp program to exec */
+	"-E",
+#else
 	"cpp",		/* replaced by the actual cpp program to exec */
+#endif
 	"-I.",		/* add current directory to include path */
 #ifdef unix
 	"-Uunix",	/* remove unix symbol so that filename unix.c okay */
