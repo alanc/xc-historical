@@ -1,7 +1,7 @@
 /*
  * xdm - X display manager
  *
- * $XConsortium: netaddr.c,v 1.2 91/07/16 22:19:54 gildea Exp $
+ * $XConsortium: netaddr.c,v 1.3 91/07/18 18:49:40 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -87,8 +87,8 @@ char * NetaddrAddress(netaddrp, lenp)
     *lenp = 4;
     return netaddrp+4;
 #else
-#ifdef UNIXCONN
     switch (NetaddrFamily(netaddrp)) {
+#ifdef UNIXCONN
     case AF_UNIX:
 	*lenp = strlen(((struct sockaddr_un *)netaddrp)->sun_path);
         return (char *) (((struct sockaddr_un *)netaddrp)->sun_path);
