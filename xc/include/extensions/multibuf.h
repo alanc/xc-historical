@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibuffer.txt,v 1.3 89/09/21 16:37:46 jim Exp $
+ * $XConsortium: multibuf.h,v 1.1 89/09/22 15:55:10 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -98,7 +98,7 @@ typedef struct {
     Display *display;	    /* Display the event was read from */
     Multibuffer buffer;	    /* buffer of event */
     int	state;		    /* see Clobbered constants above */
-} XMbufClobberNotifyEvent;
+} XmbufClobberNotifyEvent;
 
 typedef struct {
     int	type;		    /* of event */
@@ -106,7 +106,7 @@ typedef struct {
     int send_event;	    /* true if this came frome a SendEvent request */
     Display *display;	    /* Display the event was read from */
     Multibuffer buffer;	    /* buffer of event */
-} XMbufUpdateNotifyEvent;
+} XmbufUpdateNotifyEvent;
 
 
 /*
@@ -117,14 +117,14 @@ typedef struct {
     int update_action;		/* Undefined, Background, Untouched, Copied */
     int update_hint;		/* Frequent, Intermittent, Static */
     int window_mode;		/* Mono, Stereo */
-} XMbufWindowAttributes;
+} XmbufWindowAttributes;
 
 /*
  * per-window attributes that can be set
  */
 typedef struct {
     int update_hint;		/* Frequent, Intermittent, Static */
-} XMbufSetWindowAttributes;
+} XmbufSetWindowAttributes;
 
 
 /*
@@ -135,14 +135,14 @@ typedef struct {
     unsigned long event_mask;	/* events that have been selected */
     int buffer_index;		/* which buffer is this */
     int side;			/* Mono, Left, Right */
-} XMbufBufferAttributes;
+} XmbufBufferAttributes;
 
 /*
  * per-buffer attributes that can be set
  */
 typedef struct {
     unsigned long event_mask;	/* events that have been selected */
-} XMbufSetBufferAttributes;
+} XmbufSetBufferAttributes;
 
 
 /*
@@ -152,19 +152,19 @@ typedef struct {
     VisualID visualid;		/* visual usuable at this depth */
     int max_buffers;		/* most buffers for this visual */
     int depth;			/* depth of buffers to be created */
-} XMbufBufferInfo;
+} XmbufBufferInfo;
 
-extern Bool XMbufQueryExtension ();	/* is extension on server */
-extern Status XMbufGetVersion ();		/* what is extension rev */
-extern int XMbufCreateBuffers ();		/* create buffers for window */
-extern void XMbufDestroyBuffers ();	/* destroy buffers for window */
-extern void XMbufDisplayBuffers ();	/* make buffers current */
-extern Status XMbufGetWindowAttributes ();   /* get extension window attrs */
-extern void XMbufChangeWindowAttributes ();  /* set extension window attrs */
-extern Status XMbufGetBufferAttributes ();   /* get buffer attrs */
-extern void XMbufChangeBufferAttributes ();  /* set buffer attrs */
-extern Status XMbufGetScreenInfo ();	/* get mono and stereo parameters */
-extern void XMbufCreateStereoWindow ();	/* stereo version of XCreateWindow */
+extern Bool XmbufQueryExtension ();	/* is extension on server */
+extern Status XmbufGetVersion ();		/* what is extension rev */
+extern int XmbufCreateBuffers ();		/* create buffers for window */
+extern void XmbufDestroyBuffers ();	/* destroy buffers for window */
+extern void XmbufDisplayBuffers ();	/* make buffers current */
+extern Status XmbufGetWindowAttributes ();   /* get extension window attrs */
+extern void XmbufChangeWindowAttributes ();  /* set extension window attrs */
+extern Status XmbufGetBufferAttributes ();   /* get buffer attrs */
+extern void XmbufChangeBufferAttributes ();  /* set buffer attrs */
+extern Status XmbufGetScreenInfo ();	/* get mono and stereo parameters */
+extern void XmbufCreateStereoWindow ();	/* stereo version of XCreateWindow */
 
 #endif /* _MULTIBUF_SERVER_ */
 #endif /* _MULTIBUF_H_ */
