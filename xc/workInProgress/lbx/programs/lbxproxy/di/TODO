@@ -1,0 +1,19 @@
+$XConsortium: $
+
+what's left
+
+new work
+    finish tags
+	    ChangeProperty
+    protocol reencoding
+    large request splitting at OS layer
+    byte swapping
+    image compression
+
+tuning
+    motion compression (what's the proper number?  does it even work?)
+    properties (determining what's worth sending)
+
+Bugs
+    start twm; start xterm; kill xterm; finish placing -- boom
+    fix BIGREQS
