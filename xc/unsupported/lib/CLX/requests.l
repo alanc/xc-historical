@@ -1576,7 +1576,6 @@
   (with-buffer-request (display *x-killclient*)
     (resource-id 0)))
 
-#+comment ;; This is a protocol request, but its not very interesting...
 (defun no-operation (display)
   (declare (type display display))
   (with-buffer-request (display *x-nooperation*)))
