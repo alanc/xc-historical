@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.85 90/06/12 16:29:30 kit Exp $ */
+/* $XConsortium: Resources.c,v 1.86 90/07/27 11:34:54 swick Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -493,7 +493,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 	    if (argName == QinitialResourcesPersistent) {
 		persistent_resources = (Boolean)arg->value;
 		found_persistence = True;
-		break;
+		continue;
 	    }
 	    for (j = 0, res = table; j < num_resources; j++, res++) {
 		rx = *res;
