@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XIEprotost.h,v 1.1 93/07/19 11:43:48 mor Exp $ */
 
 /******************************************************************************
 
@@ -72,14 +72,14 @@ typedef CARD8	xieTypAlignment;
 typedef CARD8	xieTypArithmeticOp;
 
 typedef struct {
-    CARD32	byteCount;
+    CARD32	byteCount B32;
     /* LISTofCARD8 (byteCount) */
     /* pad (byteCount) */
 } xieTypByteStream;
 
 typedef CARD16  xieTypColorAllocTechnique;
 
-typedef	XID	xieTypColorList;
+typedef	CARD32	xieTypColorList;
 
 typedef CARD16	xieTypColorspace;
 
@@ -99,19 +99,19 @@ typedef CARD16  xieTypDitherTechnique;
 
 typedef CARD16  xieTypEncodeTechnique;
 
-typedef XID	xieTypPhotospace;
+typedef CARD32	xieTypPhotospace;
 
-typedef XID	xieTypPhotoflo;
+typedef CARD32	xieTypPhotoflo;
 
 typedef struct {
   union {
     struct {
-      xieTypPhotospace	nameSpace;
-      CARD32		floID;
+      xieTypPhotospace	nameSpace B32;
+      CARD32		floID B32;
     } immed;
     struct {
-      CARD32		nameSpace;
-      xieTypPhotoflo	floID;
+      CARD32		nameSpace B32;
+      xieTypPhotoflo	floID B32;
     } stored;
   } u;
 } xieTypExecutable;
@@ -125,8 +125,8 @@ typedef CARD16	xieTypeGamutTechnique;
 typedef CARD16	xieTypeGeometryTechnique;
 
 typedef struct {
-    CARD32	index;
-    CARD32	count;
+    CARD32	index B32;
+    CARD32	count B32;
 } xieTypHistogramData;
 
 typedef CARD16	xieTypHistogramShape;
@@ -135,7 +135,7 @@ typedef CARD8	xieTypInterleave;
 
 typedef CARD32	xieTypLevels[3];
 
-typedef	XID	xieTypLUT;
+typedef	CARD32	xieTypLUT;
 
 typedef CARD8	xieTypMathOp;
 
@@ -145,24 +145,24 @@ typedef CARD8	xieTypPhotofloOutcome;
 
 typedef CARD8	xieTypPhotofloState;
 
-typedef XID	xieTypPhotomap;
+typedef CARD32	xieTypPhotomap;
 
 typedef CARD16	xieTypPhototag;
 
 typedef struct {
-    INT32		offsetX;
-    INT32		offsetY;
-    xieTypPhototag	domain;		
+    INT32		offsetX B32;
+    INT32		offsetY B32;
+    xieTypPhototag	domain B16;
 } xieTypProcessDomain;
 
 typedef struct {
-    INT32	x;
-    INT32	y;
-    CARD32	width;
-    CARD32	height;
+    INT32	x B32;
+    INT32	y B32;
+    CARD32	width B32;
+    CARD32	height B32;
 } xieTypRectangle;
 
-typedef XID	xieTypROI;
+typedef CARD32	xieTypROI;
 
 typedef CARD8	xieTypServiceClass;
 
@@ -171,7 +171,7 @@ typedef CARD8	xieTypTechniqueGroup;
 typedef struct {
     BOOL			needsParam;
     xieTypTechniqueGroup	group;
-    CARD16			number;
+    CARD16			number B16;
     CARD8			speed;
     CARD8			nameLength;
     CARD8			pad[2];
@@ -181,9 +181,9 @@ typedef struct {
 
 typedef struct {
     xieTypPhototag 	src B16;
-    CARD16		pad;
-    INT32		dstX;
-    INT32		dstY;
+    CARD16		pad B16;
+    INT32		dstX B32;
+    INT32		dstY B32;
 } xieTypTile;
 
 typedef CARD8	xieTypTripleofCARD8[3];
