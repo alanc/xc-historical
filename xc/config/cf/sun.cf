@@ -1,11 +1,19 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.111 94/03/28 17:12:52 matt Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.112 94/03/28 21:04:18 matt Exp $
 
 #ifdef SVR4
+#ifdef i386Architecture
+#define OSName            SunOS 5.1 x86
+XCOMM operating system:  OSName
+#define OSMajorVersion    5
+#define OSMinorVersion    1
+#define OSTeenyVersion    0
+#else
 #define OSName            SunOS 5.3
 XCOMM operating system:  OSName
 #define OSMajorVersion    5
 #define OSMinorVersion    3
 #define OSTeenyVersion    0
+#endif
 #else
 #define OSName            SunOS 4.1.3
 XCOMM operating system:  OSName
@@ -46,6 +54,7 @@ XCOMM operating system:  OSName
 #endif
 #endif
 
+
 #if OSMajorVersion < 4 || (OSMajorVersion == 4 && OSMinorVersion < 1)
 /* We do not guarantee this will work */
 #define BootstrapCFlags   -DNOSTDHDRS
@@ -62,9 +71,16 @@ XCOMM operating system:  OSName
 #endif
 #endif
 
+#define ServerExtraDefines AllocateLocalDefines
+#define ServerOSDefines		-DDDXOSINIT
+
 #if OSMajorVersion > 4
 #define BootstrapCFlags	  -DSVR4
+#ifdef i386Architecture
+#define StandardDefines	  -Dsun -Di386 -DSVR4
+#else
 #define StandardDefines	  -Dsun -DSVR4
+#endif
 #if OSMinorVersion > 1
 #define ThreadedX	  YES
 #if defined(HasSunC) && CCompilerMajorVersion > 2
@@ -84,15 +100,6 @@ XCOMM operating system:  OSName
 /* over-ride for broken thread stubs in libc -- fixed in 2.4 ??? */
 #define ExtraLibraries    -lsocket -lnsl -L$(TOP)/util/misc -lthr_stubs
 #endif
-#define ArCmdBase	  /usr/ccs/bin/ar
-#define AsCmd		  /usr/ccs/bin/as
-#define CppCmd		  /usr/ccs/lib/cpp
-#define LdCmd		  /usr/ccs/bin/ld
-#define LexCmd		  /usr/ccs/bin/lex
-#define YaccCmd		  /usr/ccs/bin/yacc
-#define SystemV4	  YES
-#define HasPoll           YES
-#define HasLdRunPath      YES
 #define HasVFork          NO
 #define InstKmemFlags	  -g sys -m 2755
 #define ShLibIncludeFile <sunLib.tmpl>
@@ -106,7 +113,7 @@ XCOMM operating system:  OSName
 #if defined(HasSunCplusplus) || defined(HasCenterLineCplusplus)
 #define PositionIndependentCplusplusFlags -Kpic
 #endif
-#include <sv4Lib.rules>
+#include <svr4.cf>
 #else
 #define InstKmemFlags	  -g kmem -m 2755
 #include <sunLib.rules>
@@ -117,9 +124,11 @@ XCOMM operating system:  OSName
 #define HasSecureRPC	  YES
 #define SetTtyGroup	  YES
 #define HasPutenv	  YES
+#ifndef i386Architecture
 #define Xsun24Server	  YES
 #define XsunServer	  YES		/* has color and mono support */
 #define XsunMonoServer	  YES		/* monochrome only */
+#endif
 #ifndef BuildPexExt
 #define BuildPexExt	  XsunServer
 #endif
@@ -158,6 +167,3 @@ XCOMM operating system:  OSName
 #define SharedAllocateLocalDefines -DINCLUDE_ALLOCA_H
 #define LibraryCCOptions /* don't want special floating point */
 #endif
-
-#define ServerExtraDefines AllocateLocalDefines
-#define ServerOSDefines		-DDDXOSINIT
