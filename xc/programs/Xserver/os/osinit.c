@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.28 89/12/18 15:41:25 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.29 90/03/03 15:38:02 rws Exp $ */
 #include "os.h"
 #include "opaque.h"
 #undef NULL
@@ -44,6 +44,7 @@ SOFTWARE.
 #ifndef SYSV
 #include <sys/resource.h>
 #endif
+#include <time.h>
 
 #ifndef ADMPATH
 #define ADMPATH "/usr/adm/X%smsgs"
@@ -76,7 +77,6 @@ OsInit()
 	if (write (2, fname, 0)) 
 	{
 	    long t; 
-	    char *ctime();
 	    FILE *err;
 	    sprintf (fname, ADMPATH, display);
 	    /*
@@ -102,9 +102,10 @@ OsInit()
 	    fprintf (stderr, "start %s", ctime(&t));
 	}
 
+#ifndef SYSV
 	if (getpgrp (0) == 0)
 	    setpgrp (0, getpid ());
-
+#endif
 
 #ifndef SYSV
 #if !defined(AIXrt) && !defined(AIX386)
