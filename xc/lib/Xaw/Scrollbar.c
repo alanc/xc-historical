@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scrollbar.c,v 1.58 89/12/15 11:36:58 kit Exp $";
+    "$XConsortium: Scrollbar.c,v 1.59 90/03/16 18:56:08 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -118,8 +118,8 @@ static XtActionsRec actions[] = {
 
 
 ScrollbarClassRec scrollbarClassRec = {
-/* core fields */
-    /* superclass       */      (WidgetClass) &widgetClassRec,
+  { /* core fields */
+    /* superclass       */      (WidgetClass) &simpleClassRec,
     /* class_name       */      "Scrollbar",
     /* size             */      sizeof(ScrollbarRec),
     /* class_initialize	*/	ClassInitialize,
@@ -151,6 +151,14 @@ ScrollbarClassRec scrollbarClassRec = {
     /* query_geometry	*/	XtInheritQueryGeometry,
     /* display_accelerator*/	XtInheritDisplayAccelerator,
     /* extension        */	NULL
+  },
+  { /* simple fields */
+    /* change_sensitive         */      XtInheritChangeSensitive
+  },
+  { /* scrollbar fields */
+    /* ignore                   */      0
+  }
+
 };
 
 WidgetClass scrollbarWidgetClass = (WidgetClass)&scrollbarClassRec;
@@ -387,8 +395,7 @@ static void Realize( gw, valueMask, attributes )
     attributes->cursor = w->scrollbar.inactiveCursor;
     *valueMask |= CWCursor;
     
-    XtCreateWindow( gw, InputOutput, (Visual *)CopyFromParent,
-		    *valueMask, attributes );
+    (*XtSuperclass(gw)->core_class.realize) (gw, valueMask, attributes);
 }
 
 /* ARGSUSED */

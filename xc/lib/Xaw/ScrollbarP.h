@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ScrollP.h,v 1.20 89/08/24 16:37:46 kit Exp $
+ * $XConsortium: ScrollbarP.h,v 1.1 89/12/15 11:41:03 kit Exp $
  */
 
 
@@ -31,6 +31,7 @@ SOFTWARE.
 #define _ScrollbarP_h
 
 #include <X11/Xaw/Scrollbar.h>
+#include <X11/Xaw/SimpleP.h>
 
 typedef struct {
      /* public */
@@ -63,6 +64,7 @@ typedef struct {
 
 typedef struct _ScrollbarRec {
     CorePart		core;
+    SimplePart		simple;
     ScrollbarPart	scrollbar;
 } ScrollbarRec;
 
@@ -70,6 +72,7 @@ typedef struct {int empty;} ScrollbarClassPart;
 
 typedef struct _ScrollbarClassRec {
     CoreClassPart		core_class;
+    SimpleClassPart		simple_class;
     ScrollbarClassPart		scrollbar_class;
 } ScrollbarClassRec;
 
