@@ -105,7 +105,7 @@ servers, as shown in Figure 2.1.  Although the font protocol is geared towards
 the X Window System, it may be also used by other consumers of font data (such
 as printer drivers).
 .DS
-.ft CW
+.ft C
  +--------+              +---------------+
  |   X1   |--------------|               |
  | Server |              |  Font Server  |
@@ -142,7 +142,7 @@ transmitted to the client using the protocol described in Section 4.  New font
 formats are handled by adding new converters to a font server, as shown in
 Figure 2.2.
 .DS
-.ft CW
+.ft C
                 +------------+
                 |   client   |
                 | (X server) |
