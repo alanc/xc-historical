@@ -1,4 +1,4 @@
-! $XConsortium: XKeysymDB,v 1.12 93/10/18 20:51:43 rws Exp $
+! $XConsortium: XKeysymDB,v 1.13 94/04/13 18:07:58 gildea Exp $
 ! Copyright 1993 Massachusetts Institute of Technology
 !
 ! Permission to use, copy, modify, distribute, and sell this software and
@@ -194,6 +194,8 @@ XeroxPointerButton2	:10070002
 XeroxPointerButton3	:10070003
 XeroxPointerButton4	:10070004
 XeroxPointerButton5	:10070005
+
+XF86ModeLock		:1008FF01
 
 usldead_acute		:100000A8
 usldead_grave		:100000A9
