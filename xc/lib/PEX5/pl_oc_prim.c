@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_prim.c,v 1.12 93/02/23 14:40:54 mor Exp $ */
+/* $XConsortium: pl_oc_prim.c,v 1.13 93/06/09 15:54:45 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -1617,30 +1617,68 @@ INPUT PEXConnectivityData	*connectivity;
 
     /*
      * Now add the connectivity data.
+     *
+     * Unfortunately, the encoding for LISTofLISTofLISTofCARD16
+     * is broken - there is no padding within this entity, just
+     * at the end.  As a result, display->bufptr can be on a
+     * non word aligned boundary when _XSend or _XFlush is called!!!
+     *
+     * If the connectivity data fits in the X transport buffer,
+     * _XSend and _XFlush is not used, so we're safe.
+     *
+     * If the connectivity data doesn't fit in the X transport buffer,
+     * we fix the problem by putting the connectivity data in a scratch
+     * buffer, then using _XSend.
      */
 
     pConnectivity = connectivity;
 
-    for (i = 0 ; i < numFillAreaSets; i++)
+    if ((cbytes + PAD (cbytes)) <= BytesLeftInXBuffer (display))
     {
-	count = pConnectivity->count;
-	pData = (char *) PEXGetOCAddr (display, SIZEOF (CARD16));
-	PUT_CARD16 (count, pData);
-
-	for (j = 0, pList = pConnectivity->lists; j < count; j++, pList++)
+	for (i = 0; i < numFillAreaSets; i++)
 	{
-	    scount = pList->count;
+	    count = pConnectivity->count;
 	    pData = (char *) PEXGetOCAddr (display, SIZEOF (CARD16));
-	    PUT_CARD16 (scount, pData);
+	    PUT_CARD16 (count, pData);
 
-	    OC_LISTOF_CARD16 (scount, pList->shorts);
+	    for (j = 0, pList = pConnectivity->lists; j < count; j++, pList++)
+	    {
+		scount = pList->count;
+		pData = (char *) PEXGetOCAddr (display, SIZEOF (CARD16));
+		PUT_CARD16 (scount, pData);
+		
+		OC_LISTOF_CARD16 (scount, pList->shorts);
+	    }
+	    
+	    pConnectivity++;
 	}
 
-	pConnectivity++;
+	if (PAD (cbytes))
+	    PEXGetOCAddr (display, PAD (cbytes));
     }
+    else
+    {
+	char *pStart = _XAllocScratch (display, cbytes + PAD (cbytes));
+	pData = pStart;
 
-    if (PAD (cbytes))
-	PEXGetOCAddr (display, PAD (cbytes));
+	for (i = 0; i < numFillAreaSets; i++)
+	{
+	    count = pConnectivity->count;
+	    STORE_CARD16 (count, pData);
+
+	    for (j = 0, pList = pConnectivity->lists; j < count; j++, pList++)
+	    {
+		scount = pList->count;
+		STORE_CARD16 (scount, pData);
+
+		STORE_LISTOF_CARD16 (scount, pList->shorts, pData);
+	    }
+
+	    pConnectivity++;
+	}
+
+	_XSend (display, pStart, cbytes + PAD (cbytes));
+    }
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
