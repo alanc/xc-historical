@@ -2,7 +2,7 @@
  * Copyright 1988-1993 Network Computing Devices, Inc.  All rights reserved.
  * An unpublished work.
  *
- * $XConsortium: XRecord.c,v 1.4 94/01/30 23:47:25 rws Exp $
+ * $XConsortium: XRecord.c,v 1.5 94/02/04 14:48:10 rws Exp $
  */
 
 #include <stdio.h>
@@ -33,8 +33,6 @@ static /* const */ char *xrecord_extension_name = XRecordExtName;
  *****************************************************************************/
 
 static int close_display();
-static Bool wire_to_event();
-static Status event_to_wire();
 static char *error_string();
 static XExtensionHooks xrecord_extension_hooks = {
     NULL,                               /* create_gc */
