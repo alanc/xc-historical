@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.156 91/07/25 12:23:30 rws Exp $ */
+/* $XConsortium: TMstate.c,v 1.157 91/08/20 18:24:44 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1962,7 +1962,7 @@ XtTranslations _XtGetTranslationValue(w)
     TMComplexBindData	cBindData = (TMComplexBindData) tmRecPtr->proc_table;
     XtTranslations	xlations = tmRecPtr->translations;
 
-    if (! cBindData->isComplex)
+    if (!xlations || !cBindData->isComplex)
 	return xlations;
 
     /* Walk the list looking to see if we already have generated a
