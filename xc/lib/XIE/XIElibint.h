@@ -1,4 +1,4 @@
-/* $XConsortium: XIElibint.h,v 1.4 94/03/18 10:29:54 mor Exp $ */
+/* $XConsortium: XIElibint.h,v 1.5 94/03/30 16:42:39 rws Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -19,6 +19,7 @@ without express or implied warranty.
 #ifndef _XIELIBINT_H_
 #define _XIELIBINT_H_
 
+#define NEED_REPLIES
 #include <X11/Xlibint.h>
 #include <X11/Xfuncs.h>
 #include <X11/extensions/XIElib.h>
