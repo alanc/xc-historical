@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.111 89/11/05 17:47:08 jim Exp $
+ * $XConsortium: menus.c,v 1.112 89/11/05 18:08:23 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.111 89/11/05 17:47:08 jim Exp $";
+"$XConsortium: menus.c,v 1.112 89/11/05 18:08:23 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -85,7 +85,7 @@ int ConstMoveXR;
 int ConstMoveYT;
 int ConstMoveYB;
  
-int StartingX, StartingY, RestorePointer;
+int StartingX, StartingY;
 static Cursor LastCursor;
 
 extern char *Action;
@@ -449,13 +449,11 @@ UpdateMenu()
 	    first = FALSE;
 	}
 
-	/* if the mouse has moved we don't have to put it back */
-	if (save_x != x_root || save_y != y_root)
-	    RestorePointer = FALSE;
 
 	XFindContext(dpy, ActiveMenu->w, ScreenContext, &Scr);
 
-	if (x < 0 || y < 0 || x >= ActiveMenu->width || y >= ActiveMenu->height)
+	if (x < 0 || y < 0 ||
+	    x >= ActiveMenu->width || y >= ActiveMenu->height)
 	{
 	    if (ActiveItem && ActiveItem->func != F_TITLE)
 	    {
@@ -505,12 +503,18 @@ UpdateMenu()
 	}
 
 	/* now check to see if we were over the arrow of a pull right entry */
-	if (ActiveItem->func == F_MENU && ((ActiveMenu->width - x) < 20))
+	if (ActiveItem->func == F_MENU && 
+	    ((ActiveMenu->width - x) < (ActiveMenu->width >> 1)))
 	{
-	    MenuRoot *save;
+	    MenuRoot *save = ActiveMenu;
+	    int savex = StartingX, savey = StartingY;
 
-	    save = ActiveMenu;
-	    PopUpMenu(ActiveItem->sub, x_root, y_root);
+	    PopUpMenu (ActiveItem->sub, (savex + (ActiveMenu->width >> 1)),
+		       (savey + ActiveItem->item_num * Scr->EntryHeight +
+			(Scr->EntryHeight >> 1)), False);
+/*
+	    PopUpMenu(ActiveItem->sub, x_root, y_root, False);
+ */
 
 	    /* if the menu did get popped up, unhighlight the active item */
 	    if (save != ActiveMenu && ActiveItem->state)
@@ -902,16 +906,16 @@ MenuRoot *mr;
  *
  *  Inputs:
  *	menu	- the root pointer of the menu to pop up
- *	x	- the x location of the mouse
- *	y	- the y location of the mouse
+ *	x, y	- location of upper left of menu
+ *      center	- whether or not to center horizontally over position
  *
  ***********************************************************************
  */
 
-void
-PopUpMenu(menu, x, y)
+void PopUpMenu (menu, x, y, center)
     MenuRoot *menu;
     int x, y;
+    Bool center;
 {
     unsigned long valuemask;
     XSetWindowAttributes attributes;
@@ -965,20 +969,11 @@ PopUpMenu(menu, x, y)
     if (menu->mapped == MAPPED)
 	return;
 
-    if (ActiveMenu == NULL)
-    {
-	StartingX = x;
-	StartingY = y;
-	RestorePointer = TRUE;
-    }
     /*
      * Dynamically set the parent;  this allows pull-ups to also be main
      * menus, or to be brought up from more than one place.
      */
-    if (ActiveMenu != NULL)
-	menu->prev = ActiveMenu;
-    else
-	menu->prev = NULL;
+    menu->prev = ActiveMenu;
 
     XGrabPointer(dpy, Scr->Root, True,
 	ButtonPressMask | ButtonReleaseMask,
@@ -989,27 +984,32 @@ PopUpMenu(menu, x, y)
     menu->mapped = MAPPED;
     menu->entered = FALSE;
 
-    if ((x + 25) > Scr->MyDisplayWidth)
-	x = (Scr->MyDisplayWidth - 30);
+    if (center) {
+	x -= (menu->width / 2);
+	/* y ??? */
+    }
 
-    if ((y + menu->height + 25) > Scr->MyDisplayHeight)
-	y = (Scr->MyDisplayHeight - menu->height) - 15;
+    /*
+     * clip to screen
+     */
+    if (x + menu->width > Scr->MyDisplayWidth) {
+	x = Scr->MyDisplayWidth - menu->width;
+    }
+    if (x < 0) x = 0;
+    if (y + menu->height > Scr->MyDisplayHeight) {
+	y = Scr->MyDisplayHeight - menu->height;
+    }
+    if (y < 0) y = 0;
 
-    x -= menu->width - 10;
-    if (x < 0)
-	x = 0;
-    y -= ((Scr->MenuFont.height + 4) / 2);
-
-    x += 15;
-    y += 15;
+    if (!menu->prev) {
+	StartingX = x;
+	StartingY = y;
+    }
 
     XMoveWindow(dpy, menu->w, x, y);
     if (Scr->Shadow) {
 	XMoveWindow (dpy, menu->shadow, x + SHADOWWIDTH, y + SHADOWWIDTH);
     }
-    XWarpPointer(dpy, None, menu->w, 0, 0, 0, 0, 
-	menu->width - 30, (Scr->MenuFont.height + 4) / 2);
-	/* (menu->width - 10)/2, (Scr->MenuFont.height + 4) / 2);*/
     if (Scr->Shadow) {
 	XRaiseWindow (dpy, menu->shadow);
     }

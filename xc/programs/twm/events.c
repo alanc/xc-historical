@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.100 89/11/03 19:10:53 jim Exp $
+ * $XConsortium: events.c,v 1.101 89/11/05 17:46:56 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.100 89/11/03 19:10:53 jim Exp $";
+"$XConsortium: events.c,v 1.101 89/11/05 17:46:56 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1341,10 +1341,6 @@ HandleButtonRelease()
 	}
 	else
 	    PopDownMenu();
-
-	if (RestorePointer)
-	    XWarpPointer(dpy, None, Scr->Root, 0,0,0,0, StartingX, StartingY);
-
     }
 
     mask = (Button1Mask|Button2Mask|Button3Mask|Button4Mask|Button5Mask);
@@ -1382,6 +1378,31 @@ HandleButtonRelease()
     }
 }
 
+
+static do_menu (menu, w)
+    MenuRoot *menu;			/* menu to pop up */
+    Window w;				/* invoking window or None */
+{
+    int x = Event.xbutton.x_root;
+    int y = Event.xbutton.y_root;
+    Bool center;
+
+    if (!Scr->NoGrabServer)
+	XGrabServer(dpy);
+    if (w) {
+	int h = Scr->TBInfo.width - Scr->TBInfo.border;
+	Window child;
+
+	(void) XTranslateCoordinates (dpy, w, Scr->Root, 0, h, &x, &y, &child);
+	center = False;
+    } else {
+	center = True;
+    }
+    PopUpMenu (menu, x, y, center);
+    UpdateMenu();
+}
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -1389,17 +1410,6 @@ HandleButtonRelease()
  *
  ***********************************************************************
  */
-
-static do_menu (menu)
-    MenuRoot *menu;
-{
-    if (!Scr->NoGrabServer)
-	XGrabServer(dpy);
-    PopUpMenu (menu, Event.xbutton.x_root, Event.xbutton.y_root);
-    UpdateMenu();
-}
-
-
 void
 HandleButtonPress()
 {
@@ -1467,7 +1477,7 @@ HandleButtonPress()
 		if (tbw->info->func == F_MENU) {
 		    ButtonEvent = Event;
 		    ButtonWindow = Tmp_win;
-		    do_menu (tbw->info->menuroot);
+		    do_menu (tbw->info->menuroot, tbw->window);
 		} else {
 		    ExecuteFunction (tbw->info->func, tbw->info->action,
 				     Event.xany.window, Tmp_win, &Event,
@@ -1577,7 +1587,8 @@ HandleButtonPress()
     RootFunction = NULL;
     if (Scr->Mouse[Event.xbutton.button][Context][modifier].func == F_MENU)
     {
-	do_menu (Scr->Mouse[Event.xbutton.button][Context][modifier].menu);
+	do_menu (Scr->Mouse[Event.xbutton.button][Context][modifier].menu,
+		 None);
     }
     else if (Scr->Mouse[Event.xbutton.button][Context][modifier].func != NULL)
     {
@@ -1590,7 +1601,7 @@ HandleButtonPress()
     {
 	if (Scr->DefaultFunction.func == F_MENU)
 	{
-	    do_menu (Scr->DefaultFunction.menu);
+	    do_menu (Scr->DefaultFunction.menu, None);
 	}
 	else
 	{
