@@ -1,4 +1,4 @@
-/* $XConsortium: Form.c,v 1.45 91/03/26 12:26:32 converse Exp $ */
+/* $XConsortium: Form.c,v 1.46 91/04/01 15:16:31 dave Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -631,6 +631,7 @@ static XtGeometryResult GeometryManager(w, request, reply)
  *
  * The window will be updated when no_refigure is set back to False.
  */	
+		form->form.deferred_resize = True;
 		ret_val = XtGeometryDone;
 	    }
 	    else 
@@ -670,6 +671,8 @@ static void ConstraintInitialize(request, new)
 
     if (form->form.dy == default_value)
         form->form.dy = fw->form.default_spacing;
+
+    form->form.deferred_resize = False;
 }
 
 /*ARGSUSED*/
@@ -801,16 +804,24 @@ Boolean doit;
 	return;
 
     for (childP = children; childP - children < num_children; childP++) {
-	if (!XtIsManaged(*childP)) 
-	    continue;
+	register Widget w = *childP;
+	if (XtIsManaged(w)) {
+	    FormConstraints form = (FormConstraints)w->core.constraints;
 
-	/*
-	 * Xt Configure widget is too smart, and optomizes out
-	 * my changes.
-	 */
+	    /*
+	     * Xt Configure widget is too smart, and optimizes out
+	     * my changes.
+	     */
 
-	XMoveResizeWindow(XtDisplay(*childP), XtWindow(*childP),
-			  (*childP)->core.x, (*childP)->core.y, 
-			  (*childP)->core.width, (*childP)->core.height); 
+	    XMoveResizeWindow(XtDisplay(w), XtWindow(w),
+			      w->core.x, w->core.y, 
+			      w->core.width, w->core.height);
+
+	    if (form->form.deferred_resize &&
+		XtClass(w)->core_class.resize != (XtWidgetProc) NULL) {
+		(*(XtClass(w)->core_class.resize))(w);
+		form->form.deferred_resize = False;
+	    }
+	}
     }
 }

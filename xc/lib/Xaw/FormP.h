@@ -1,4 +1,4 @@
-/* $XConsortium: FormP.h,v 1.18 90/01/09 16:26:06 kit Exp $ */
+/* $XConsortium: FormP.h,v 1.19 90/01/24 18:14:08 kit Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 
@@ -103,7 +103,7 @@ typedef struct _FormConstraintsPart {
  * What the size of this child would be if we did not impose the 
  * constraint the width and height must be greater than zero (0).
  */
-    int         virtual_width, virtual_height; 
+    short	virtual_width, virtual_height;
 
 /*
  * Temporary Storage for children's new possible possition.
@@ -112,6 +112,7 @@ typedef struct _FormConstraintsPart {
     Position new_x, new_y;
 
     LayoutState	layout_state;	/* temporary layout state		*/
+    Boolean	deferred_resize; /* was resized while no_refigure is set */
 } FormConstraintsPart;
 
 typedef struct _FormConstraintsRec {
