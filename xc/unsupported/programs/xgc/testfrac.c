@@ -9,7 +9,7 @@
 #include <X11/Intrinsic.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>
-#include <X11/Xaw/Scroll.h>
+#include <X11/Xaw/Scrollbar.h>
 #include <X11/StringDefs.h>
 #include "xgc.h"
 

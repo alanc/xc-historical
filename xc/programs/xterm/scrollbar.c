@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.30 89/11/17 10:51:03 kit Exp $
+ *	$XConsortium: scrollbar.c,v 1.31 89/12/10 20:44:50 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -37,7 +37,7 @@
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 
-#include <X11/Xaw/Scroll.h>
+#include <X11/Xaw/Scrollbar.h>
 
 #include "data.h"
 #include "error.h"
@@ -46,7 +46,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.30 89/11/17 10:51:03 kit Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.31 89/12/10 20:44:50 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
