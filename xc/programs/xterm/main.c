@@ -162,6 +162,9 @@ static Bool IsPts = False;
 #ifdef sgi
 #include <sys/sysmacros.h>
 #endif /* sgi */
+#ifdef sun
+#include <sys/strredir.h>
+#endif
 #endif /* SYSV */
 
 #ifndef SYSV				/* BSD systems */
@@ -426,7 +429,7 @@ static char bin_login[] = LOGIN_FILENAME;
 static int inhibit;
 static char passedPty[2];	/* name if pty if slave */
 
-#ifdef TIOCCONS
+#if defined(TIOCCONS) || defined(SRIOCSREDIR)
 static int Console;
 #include <X11/Xmu/SysUtil.h>	/* XmuGetHostname */
 #define MIT_CONSOLE_LEN	12
@@ -632,7 +635,7 @@ static struct _options {
 { "#geom",                 "icon window geometry" },
 { "-T string",             "title name for window" },
 { "-n string",             "icon name for window" },
-#ifdef TIOCCONS
+#if defined(TIOCCONS) || defined(SRIOCSREDIR)
 { "-C",                    "intercept console messages" },
 #else
 { "-C",                    "intercept console messages (not supported)" },
@@ -697,7 +700,7 @@ static void Help ()
     exit (0);
 }
 
-#ifdef TIOCCONS
+#if defined(TIOCCONS) || defined(SRIOCSREDIR)
 /* ARGSUSED */
 static Boolean
 ConvertConsoleSelection(w, selection, target, type, value, length, format)
@@ -967,7 +970,7 @@ char **argv;
 		Help ();
 		/* NOTREACHED */
 	     case 'C':
-#ifdef TIOCCONS
+#if defined(TIOCCONS) || defined(SRIOCSREDIR)
 		{
 		    struct stat sbuf;
 
@@ -1717,7 +1720,7 @@ spawn ()
 				       False);
 	if (!screen->TekEmu)
 	    VTInit();		/* realize now so know window size for tty driver */
-#ifdef TIOCCONS
+#if defined(TIOCCONS) || defined(SRIOCSREDIR)
 	if (Console) {
 	    /*
 	     * Inform any running xconsole program
@@ -2132,12 +2135,21 @@ spawn ()
 			    HsSysError (cp_pipe[1], ERROR_TIOCKSETC);
 #endif /* sony */
 #endif	/* !USE_SYSV_TERMIO */
-#ifdef TIOCCONS
+#if defined(TIOCCONS) || defined(SRIOCSREDIR)
 		    if (Console) {
+#ifdef TIOCCONS
 			int on = 1;
 			if (ioctl (tty, TIOCCONS, (char *)&on) == -1)
 			    fprintf(stderr, "%s: cannot open console\n",
 				    xterm_name);
+#endif
+#ifdef SRIOCSREDIR
+			int fd = open("/dev/console",O_RDWR);
+			if (fd == -1 || ioctl (fd, SRIOCSREDIR, tty) == -1)
+			    fprintf(stderr, "%s: cannot open console\n",
+				    xterm_name);
+			(void) close (fd);
+#endif
 		    }
 #endif	/* TIOCCONS */
 		}
