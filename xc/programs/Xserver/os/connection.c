@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.85 88/09/19 12:21:28 jim Exp $ */
+/* $XConsortium: connection.c,v 1.86 88/09/19 12:42:11 jim Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -68,6 +68,7 @@ SOFTWARE.
  * sites should be careful to have separate /tmp directories for diskless nodes
  */
 #include <sys/un.h>
+#include <sys/stat.h>
 static int unixDomainConnection = -1;
 #endif
 
@@ -127,9 +128,11 @@ extern int AutoResetServer();
 extern int GiveUp();
 
 #ifdef UNIXCONN
+
+static struct sockaddr_un unsock;
+
 static int open_unix_socket ()
 {
-    struct sockaddr_un unsock;
     int oldUmask;
     int request;
 
@@ -311,13 +314,25 @@ void
 ResetWellKnownSockets ()
 {
 #ifdef UNIXCONN
-    if (unixDomainConnection != -1 &&
-	(WellKnownConnections & (1L << unixDomainConnection))) {
-	(void) close (unixDomainConnection);
-	WellKnownConnections &= ~(1L << unixDomainConnection);
-	unixDomainConnection = open_unix_socket ();
-	if (unixDomainConnection != -1)
-	  WellKnownConnections |= (1L << unixDomainConnection);
+    if (unixDomainConnection != -1)
+    {
+	/*
+	 * see if the unix domain socket has disappeared
+	 */
+	struct stat	mystatb, filestatb;
+
+	if (stat (unsock.sun_path, &filestatb) == -1 ||
+	    fstat (unixDomainConnection, &mystatb) == -1 ||
+	    mystatb.st_ino != filestatb.st_ino ||
+	    mystatb.st_dev != filestatb.st_dev)
+	{
+	    (void) unlink (unsock.sun_path);
+	    (void) close (unixDomainConnection);
+	    WellKnownConnections &= ~(1L << unixDomainConnection);
+	    unixDomainConnection = open_unix_socket ();
+	    if (unixDomainConnection != -1)
+		WellKnownConnections |= (1L << unixDomainConnection);
+	}
     }
 #endif /* UNIXCONN */
 }
