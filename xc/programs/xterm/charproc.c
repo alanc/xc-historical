@@ -1,5 +1,5 @@
 /*
- * $Header: charproc.c,v 1.15 88/02/17 11:27:48 jim Exp $
+ * $Header: charproc.c,v 1.16 88/02/17 12:18:31 jim Exp $
  */
 
 
@@ -48,6 +48,7 @@
 #endif	/* MODEMENU */
 
 extern void exit(), bcopy();
+static void VTallocbuf();
 
 #define	DEFAULT		-1
 #define	TEXT_BUF_SIZE	256
@@ -57,7 +58,7 @@ extern void exit(), bcopy();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.15 88/02/17 11:27:48 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.16 88/02/17 12:18:31 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1429,23 +1430,12 @@ VTRun()
 	register TScreen *screen = &term->screen;
 	register int i;
 	
-	/* allocate screen buffer now, if necessary. */
-
-	if (screen->allbuf == NULL) {
-		int nrows = screen->max_row + 1;
-		if (screen->scrollWidget)
-			nrows += screen->savelines;
-		screen->allbuf = (ScrnBuf) Allocate (nrows, screen->max_col + 1);
-		if (screen->scrollWidget)
-			screen->buf = &screen->allbuf[2 * screen->savelines];
-		else
-			screen->buf = screen->allbuf;
-	}
-
 	if (!screen->Vshow) {
-	    XtRealizeWidget (term);
+	    XtRealizeWidget (term->core.parent);
 	    set_vt_visibility (TRUE);
 	} 
+
+	if (screen->allbuf == NULL) VTallocbuf ();
 
 	screen->cursor_state = OFF;
 	screen->cursor_set = ON;
@@ -1472,7 +1462,6 @@ VTRun()
 	HideCursor();
 	screen->cursor_set = OFF;
 	VTUnselect();
-	reselectwindow (screen);
 }
 
 /*ARGSUSED*/
@@ -1540,9 +1529,36 @@ Widget w;
           ScreenResize (&term->screen, term->core.width, term->core.height, &term->flags);
 }
 
-/* VTInit:  called when XtermWidget is Realized */
+static Boolean failed = FALSE;
+
+int VTInit ()
+{
+    register TScreen *screen = &term->screen;
+
+    if (failed) return (0);
+    XtRealizeWidget (term->core.parent);
+    if (screen->allbuf == NULL) VTallocbuf ();
+    return (1);
+}
+
+static void VTallocbuf ()
+{
+    register TScreen *screen = &term->screen;
+    int nrows = screen->max_row + 1;
+
+    /* allocate screen buffer now, if necessary. */
+    if (screen->scrollWidget)
+      nrows += screen->savelines;
+    screen->allbuf = (ScrnBuf) Allocate (nrows, screen->max_col + 1);
+    if (screen->scrollWidget)
+      screen->buf = &screen->allbuf[2 * screen->savelines];
+    else
+      screen->buf = screen->allbuf;
+    return;
+}
+
 /*ARGSUSED*/
-void VTInit(w, valuemask, values)
+void VTRealize (w, valuemask, values)
 Widget w;
 XtValueMask *valuemask;
 XSetWindowAttributes *values;
@@ -1833,11 +1849,12 @@ XSetWindowAttributes *values;
 
 	screen->sc.row = screen->sc.col = screen->sc.flags = NULL;
 
-	/* Mark screen buffer as unallocated.  We wait until VTRun() so that
-	   child process is not fork(), exec()ed with all the dynamic
+	/* Mark screen buffer as unallocated.  We wait until the run loop so
+	   that the child process does not fork and exec with all the dynamic
 	   memory it will never use.  If we were to do it here, the
 	   swap space for new process would be huge for huge savelines. */
-	screen->buf = screen->allbuf = NULL;
+	if (!tekWidget)			/* if not called after fork */
+	  screen->buf = screen->allbuf = NULL;
 
 	screen->do_wrap = NULL;
 	screen->scrolls = screen->incopy = 0;
@@ -1850,6 +1867,7 @@ XSetWindowAttributes *values;
 	screen->box = VTbox;
 
 	screen->savedlines = 0;
+
 	if(screen->scrollbar) {
 		screen->scrollbar = 0;
 		ScrollBarOn(screen, TRUE);
