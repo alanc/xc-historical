@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.8 89/11/19 16:30:13 rws Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.9 89/11/21 15:31:14 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -35,15 +35,32 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #if (PPW == 4)
 
-#define glyphbits(bits,width,mask,dst)	getleftbits(bits,width,dst); \
-					dst &= mask;
+/*
+ * this code supports up to 5 characters at a time.  The performance
+ * differences between 4 and 5 is usually small (~7% on PMAX) and
+ * frequently negative (SPARC and Sun3), so this file is compiled
+ * only once for now.  If you want to use the other options, you'll
+ * need to hack cfbgc.c as well.
+ */
+
+#ifndef NGLYPHS
+#define NGLYPHS 4
+#endif
+
+#if NGLYPHS == 4
+#define DO_COMMON
+#endif
+
+#ifdef DO_COMMON
+#define CFBTEGBLT8 cfbTEGlyphBlt8
+#endif
 
 /*
  * On little-endian machines (or where fonts are padded to 32-bit
  * boundaries) we can use some magic to avoid the expense of getleftbits
  */
 
-#if (BITMAP_BIT_ORDER == LSBFirst || GLYPHPADBYTES == 4)
+#if ((BITMAP_BIT_ORDER == LSBFirst && NGLYPHS >= 4) || GLYPHPADBYTES == 4)
 
 #if GLYPHPADBYTES == 1
 typedef unsigned char	*glyphPointer;
@@ -59,67 +76,124 @@ typedef unsigned short	*glyphPointer;
 typedef unsigned int	*glyphPointer;
 #endif
 
-#define GetBits4S   c = BitRight (*char1++, xoff1) | \
-			BitRight (*char2++, xoff2) | \
-			BitRight (*char3++, xoff3) | \
-			BitRight (*char4++, xoff4);
-#define GetBits4L   c = BitLeft  (*leftChar++, lshift) | \
-			BitRight (*char1++, xoff1) | \
-			BitRight (*char2++, xoff2) | \
-			BitRight (*char3++, xoff3) | \
-			BitRight (*char4++, xoff4);
-#define GetBits4U   c = *char1++ | \
-			BitRight (*char2++, xoff2) | \
-			BitRight (*char3++, xoff3) | \
-			BitRight (*char4++, xoff4);
+#define GetBitsL    c = BitLeft (*leftChar++, lshift)
+
+#define GetBits1S   c = BitRight(*char1++, xoff1)
+#define GetBits1L   GetBitsL | BitRight(*char1++, xoff1)
+#define GetBits1U   c = *char1++
+#define GetBits2S   GetBits1S | BitRight(*char2++, xoff2)
+#define GetBits2L   GetBits1L | BitRight(*char2++, xoff2)
+#define GetBits2U   GetBits1U | BitRight(*char2++, xoff2)
+#define GetBits3S   GetBits2S | BitRight(*char3++, xoff3)
+#define GetBits3L   GetBits2L | BitRight(*char3++, xoff3)
+#define GetBits3U   GetBits2U | BitRight(*char3++, xoff3)
+#define GetBits4S   GetBits3S | BitRight(*char4++, xoff4)
+#define GetBits4L   GetBits3L | BitRight(*char4++, xoff4)
+#define GetBits4U   GetBits3U | BitRight(*char4++, xoff4)
+#define GetBits5S   GetBits4S | BitRight(*char5++, xoff5)
+#define GetBits5L   GetBits4L | BitRight(*char5++, xoff5)
+#define GetBits5U   GetBits4U | BitRight(*char5++, xoff5)
 
 #else
+
 typedef unsigned char	*glyphPointer;
+
 #define USE_LEFTBITS
 
-#define GetBits4S   glyphbits (char1, widthGlyph, glyphMask, tmpSrc); \
-		    c  = BitRight (tmpSrc, xoff1); \
-		    char1 += glyphBytes; \
-		    glyphbits (char2, widthGlyph, glyphMask, tmpSrc); \
-		    c |= BitRight (tmpSrc, xoff2); \
-		    char2 += glyphBytes; \
-		    glyphbits (char3, widthGlyph, glyphMask, tmpSrc); \
-		    c |= BitRight (tmpSrc, xoff3); \
-		    char3 += glyphBytes; \
-		    glyphbits (char4, widthGlyph, glyphMask, tmpSrc); \
-		    c |= BitRight (tmpSrc, xoff4); \
-		    char4 += glyphBytes; 
-#define GetBits4L   GetBits4S \
-		    glyphbits (leftChar, widthGlyph, glyphMask, tmpSrc); \
-		    c |= BitLeft (tmpSrc, lshift); \
-		    leftChar += glyphBytes; 
+#define GetBitsL    WGetBitsL
+#define GetBits1S   WGetBits1S
+#define GetBits1L   WGetBits1L
+#define GetBits1U   WGetBits1U
 
-#define GetBits4U   GetBits4S
+#define GetBits2S   GetBits1S Get1Bits (char2, tmpSrc) \
+		    c |= BitRight(tmpSrc, xoff2);
+#define GetBits2L   GetBits1L Get1Bits (char2, tmpSrc) \
+		    c |= BitRight(tmpSrc, xoff2);
+#define GetBits2U   GetBits1U Get1Bits (char2, tmpSrc) \
+		    c |= BitRight(tmpSrc, xoff2);
+
+#define GetBits3S   GetBits2S Get1Bits (char3, tmpSrc) \
+		    c |= BitRight(tmpSrc, xoff3);
+#define GetBits3L   GetBits2L Get1Bits (char3, tmpSrc) \
+		    c |= BitRight(tmpSrc, xoff3);
+#define GetBits3U   GetBits2U Get1Bits (char3, tmpSrc) \
+		    c |= BitRight(tmpSrc, xoff3);
+
+#define GetBits4S   GetBits3S Get1Bits (char4, tmpSrc) \
+		    c |= BitRight(tmpSrc, xoff4);
+#define GetBits4L   GetBits3L Get1Bits (char4, tmpSrc) \
+		    c |= BitRight(tmpSrc, xoff4);
+#define GetBits4U   GetBits3U Get1Bits (char4, tmpSrc) \
+		    c |= BitRight(tmpSrc, xoff4);
+
+#define GetBits5S   GetBits4S Get1Bits (char5, tmpSrc) \
+		    c |= BitRight(tmpSrc, xoff5);
+#define GetBits5L   GetBits4L Get1Bits (char5, tmpSrc) \
+		    c |= BitRight(tmpSrc, xoff5);
+#define GetBits5U   GetBits4U Get1Bits (char5, tmpSrc) \
+		    c |= BitRight(tmpSrc, xoff5);
 
 #endif
 
 #ifdef USE_LEFTBITS
-extern long endtab[];
-
 #define IncChar(c)  (c = (glyphPointer) (((char *) c) + glyphBytes))
-#define GetBits1S   glyphbits (char1, widthGlyph, glyphMask, c); \
+
+#define Get1Bits(ch,dst)    glyphbits (ch, widthGlyph, glyphMask, dst); \
+			    IncChar (ch);
+
+#define glyphbits(bits,width,mask,dst)	getleftbits(bits,width,dst); \
+					dst &= mask;
+
+#define WGetBitsL   Get1Bits(leftChar,c); \
+		    c = BitLeft (c, lshift);
+#define WGetBits1S  Get1Bits (char1, c) \
 		    c = BitRight (c, xoff1); \
-		    IncChar(char1);
-#define GetBits1L   GetBits1S \
-		    glyphbits (leftChar, widthGlyph, glyphMask, tmpSrc); \
-		    IncChar(leftChar); \
-		    c |= BitLeft (tmpSrc, lshift);
-#define GetBits1U   glyphbits (char1, widthGlyph, glyphMask, c); \
-		    IncChar(char1);
-#define GetBitsL    glyphbits (leftChar, widthGlyph, glyphMask, c); \
-		    c = BitLeft (c, lshift); \
-		    IncChar(leftChar);
+#define WGetBits1L  WGetBitsL Get1Bits (char1, tmpSrc) \
+		    c |= BitRight (tmpSrc, xoff1);
+#define WGetBits1U  Get1Bits (char1, c)
+
 #else
-#define GetBits1S   c = BitRight (*char1++, xoff1);
-#define GetBits1L   c = BitLeft (*leftChar++, lshift) | \
-			BitRight (*char1++, xoff1);
-#define GetBits1U   c = *char1++;
-#define GetBitsL    c = BitLeft (*leftChar++, lshift);
+#define WGetBitsL   GetBitsL
+#define WGetBits1S  GetBits1S
+#define WGetBits1L  GetBits1L
+#define WGetBits1U  GetBits1U
+#endif
+
+#if NGLYPHS == 2
+# define GetBitsNS GetBits2S
+# define GetBitsNL GetBits2L
+# define GetBitsNU GetBits2U
+# define LastChar char2
+#ifndef CFBTEGBLT8
+# define CFBTEGBLT8 cfbTEGlyphBlt8x2
+#endif
+#endif
+#if NGLYPHS == 3
+# define GetBitsNS GetBits3S
+# define GetBitsNL GetBits3L
+# define GetBitsNU GetBits3U
+# define LastChar char3
+#ifndef CFBTEGBLT8
+# define CFBTEGBLT8 cfbTEGlyphBlt8x3
+#endif
+#endif
+#if NGLYPHS == 4
+# define GetBitsNS GetBits4S
+# define GetBitsNL GetBits4L
+# define GetBitsNU GetBits4U
+# define LastChar char4
+#ifndef CFBTEGBLT8
+# define CFBTEGBLT8 cfbTEGlyphBlt8x4
+#endif
+#endif
+#if NGLYPHS == 5
+# define GetBitsNS GetBits5S
+# define GetBitsNL GetBits5L
+# define GetBitsNU GetBits5U
+# define LastChar char5
+#ifndef CFBTEGBLT8
+# define CFBTEGBLT8 cfbTEGlyphBlt8x5
+#endif
 #endif
 
 /* another ugly giant macro */
@@ -129,45 +203,45 @@ extern long endtab[];
 		    	break; \
 		    case 1: \
 		    	while (hTmp--) { \
-			    GetBits \
+			    GetBits; \
 			    StoreBits0 \
 			    Loop \
 		    	} \
 		    	break; \
 		    case 2: \
 		    	while (hTmp--) { \
-			    GetBits \
+			    GetBits; \
 			    StoreBits0 FirstStep StoreBits(1) \
 			    Loop \
 		    	} \
 		    	break; \
 		    case 3: \
 		    	while (hTmp--) { \
-			    GetBits \
+			    GetBits; \
 			    StoreBits0 FirstStep StoreBits(1) Step StoreBits(2) \
 			    Loop \
 		    	} \
 		    	break; \
 		    case 4: \
 		    	while (hTmp--) { \
-			    GetBits \
+			    GetBits; \
 			    StoreBits0 FirstStep StoreBits(1) Step \
- 			    StoreBits(2) Step StoreBits(3) \
+			    StoreBits(2) Step StoreBits(3) \
 			    Loop \
 		    	} \
 		    	break; \
 		    case 5: \
 		    	while (hTmp--) { \
-			    GetBits \
+			    GetBits; \
 			    StoreBits0 FirstStep StoreBits(1) Step \
- 			    StoreBits(2) Step StoreBits(3) Step \
+			    StoreBits(2) Step StoreBits(3) Step \
 			    StoreBits(4) \
 			    Loop \
 		    	} \
 		    	break; \
 		    case 6: \
 		    	while (hTmp--) { \
-			    GetBits \
+			    GetBits; \
 			    StoreBits0 FirstStep StoreBits(1) Step \
  			    StoreBits(2) Step StoreBits(3) Step \
 			    StoreBits(4) Step StoreBits(5) \
@@ -176,9 +250,9 @@ extern long endtab[];
 		    	break; \
 		    case 7: \
 		    	while (hTmp--) { \
-			    GetBits \
+			    GetBits; \
 			    StoreBits0 FirstStep StoreBits(1) Step \
- 			    StoreBits(2) Step StoreBits(3) Step \
+			    StoreBits(2) Step StoreBits(3) Step \
 			    StoreBits(4) Step StoreBits(5) Step \
 			    StoreBits(6) \
 			    Loop \
@@ -186,9 +260,9 @@ extern long endtab[];
 		    	break; \
 		    case 8: \
 		    	while (hTmp--) { \
-			    GetBits \
+			    GetBits; \
 			    StoreBits0 FirstStep StoreBits(1) Step \
- 			    StoreBits(2) Step StoreBits(3) Step \
+			    StoreBits(2) Step StoreBits(3) Step \
 			    StoreBits(4) Step StoreBits(5) Step \
 			    StoreBits(6) Step StoreBits(7) \
 			    Loop \
@@ -196,10 +270,28 @@ extern long endtab[];
 		    	break; \
 		    }
 
+#ifdef FAST_CONSTANT_OFFSET_MODE
+#define StorePixels(o,p)    dst[o] = p
+#define Loop		    dst += widthDst;
+#else
+#define StorePixels(o,p)    *dst++ = (p)
+#define Loop		    dst += widthLeft;
+#endif
+
+#define Step		    NextFourBits(c);
+
+#if (BITMAP_BIT_ORDER == MSBFirst)
+#define StoreBits(o)	StorePixels(o,GetFourPixels(c));
+#define FirstStep	Step
+#else
+#define StoreBits(o)	StorePixels(o,*((unsigned long *) (((char *) cfb8Pixels) + (c & 0x3c))));
+#define FirstStep	c = BitLeft (c, 2);
+#endif
+
 extern void miImageGlyphBlt();
 
 void
-cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
+CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     DrawablePtr pDrawable;
     GC 		*pGC;
     int 	xInit, yInit;
@@ -211,8 +303,28 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     register unsigned long  *dst;
     register unsigned long  leftMask, rightMask;
     register int	    hTmp;
-    register int	    xoff1, xoff2, xoff3, xoff4;
-    register glyphPointer   char1, char2, char3, char4;
+    register int	    xoff1;
+    register int	    xoff2;
+#if NGLYPHS >= 3
+    register int	    xoff3;
+#endif
+#if NGLYPHS >= 4
+    register int	    xoff4;
+#endif
+#if NGLYPHS >= 5
+    register int	    xoff5;
+#endif
+    register glyphPointer   char1;
+    register glyphPointer   char2;
+#if NGLYPHS >= 3
+    register glyphPointer   char3;
+#endif
+#if NGLYPHS >= 4
+    register glyphPointer   char4;
+#endif
+#if NGLYPHS >= 5
+    register glyphPointer   char5;
+#endif
 
     CharInfoPtr		pci;
     FontInfoPtr		pfi = pGC->font->pFI;
@@ -220,7 +332,7 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     glyphPointer	oldRightChar;
     unsigned long	*pdstBase;
     glyphPointer	leftChar;
-    int			widthDst;
+    int			widthDst, widthLeft;
     int			widthGlyph;
     int			h;
     int			ew;
@@ -271,7 +383,16 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
+
+#if NGLYPHS == 2
+    widthGlyphs = widthGlyph << 1;
+#else
+#if NGLYPHS == 4
     widthGlyphs = widthGlyph << 2;
+#else
+    widthGlyphs = widthGlyph * NGLYPHS;
+#endif
+#endif
 
 #ifdef USE_LEFTBITS
     glyphMask = endtab[widthGlyph];
@@ -279,44 +400,52 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 #endif
 
     pdstBase += y * widthDst;
-    if (nglyph >= 4 && widthGlyphs <= 32)
-    {
-	while (nglyph >= 4)
-	{
-	    nglyph -= 4;
+#ifdef DO_COMMON
+    if (widthGlyphs <= 32)
+#endif
+    	while (nglyph >= NGLYPHS)
+    	{
+	    nglyph -= NGLYPHS;
 	    hTmp = h;
 	    dstLine = pdstBase + (x >> 2);
 	    xoff1 = x & 0x3;
 	    xoff2 = xoff1 + widthGlyph;
+#if NGLYPHS >= 3
 	    xoff3 = xoff2 + widthGlyph;
+#endif
+#if NGLYPHS >= 4
 	    xoff4 = xoff3 + widthGlyph;
+#endif
+#if NGLYPHS >= 5
+	    xoff5 = xoff4 + widthGlyph;
+#endif
 	    char1 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
 	    char2 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+#if NGLYPHS >= 3
 	    char3 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+#endif
+#if NGLYPHS >= 4
 	    char4 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
-	    oldRightChar = char4;
+#endif
+#if NGLYPHS >= 5
+	    char5 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+#endif
+	    oldRightChar = LastChar;
 	    dst = dstLine;
 	    if (xoff1)
 	    {
 		ew = ((widthGlyphs - (4 - xoff1)) >> 2) + 1;
+#ifndef FAST_CONSTANT_OFFSET_MODE
+		widthLeft = widthDst - ew;
+#endif
 	    	if (!leftChar)
 	    	{
 		    leftMask = cfbendtab[xoff1];
 		    rightMask = cfbstarttab[xoff1];
 
-#define Step		NextFourBits(c);
-#define Loop		dst += widthDst;
-#define StoreBits0	dst[0] = dst[0] & leftMask | GetFourPixels(c) & rightMask;
-
-#if (BITMAP_BIT_ORDER == MSBFirst)
-#define StoreBits(o)	dst[o] = GetFourPixels(c);
-#define FirstStep	Step
-#else
-#define StoreBits(o)	dst[o] = *((unsigned long *) (((char *) cfb8Pixels) + (c & 0x3c)));
-#define FirstStep	c = BitLeft (c, 2);
-#endif
-
-#define GetBits GetBits4S
+#define StoreBits0	StorePixels (0,dst[0] & leftMask | \
+				       GetFourPixels(c) & rightMask);
+#define GetBits GetBitsNS
 
 		    SwitchEm
 
@@ -327,32 +456,40 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	    	else
 	    	{
 		    lshift = widthGlyph - xoff1;
-
-#define StoreBits0  dst[0] = GetFourPixels(c);
-
-#define GetBits GetBits4L
-
+    
+#define StoreBits0  StorePixels (0,GetFourPixels(c));
+#define GetBits GetBitsNL
+    
 		    SwitchEm
-
+    
 #undef GetBits
-
+#undef StoreBits0
+    
 	    	}
 	    }
 	    else
 	    {
+#if NGLYPHS == 4
 	    	ew = widthGlyph;    /* widthGlyphs >> 2 */
+#else
+	    	ew = widthGlyphs >> 2;
+#endif
+#ifndef FAST_CONSTANT_OFFSET_MODE
+		widthLeft = widthDst - ew;
+#endif
 
-#define GetBits	GetBits4U
+#define StoreBits0  StorePixels (0,GetFourPixels(c));
+#define GetBits	GetBitsNU
 
 	    	SwitchEm
 
 #undef GetBits
+#undef StoreBits0
 
 	    }
 	    x += widthGlyphs;
 	    leftChar = oldRightChar;
-	}
-    }
+    	}
     while (nglyph--)
     {
 	xoff1 = x & 0x3;
@@ -364,13 +501,16 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	if (xoff1)
 	{
 	    ew = ((widthGlyph - (4 - xoff1)) >> 2) + 1;
+#ifndef FAST_CONSTANT_OFFSET_MODE
+	    widthLeft = widthDst - ew;
+#endif
 	    if (!leftChar)
 	    {
 		leftMask = cfbendtab[xoff1];
 		rightMask = cfbstarttab[xoff1];
-#undef StoreBits0
-#define StoreBits0	dst[0] = dst[0] & leftMask | GetFourPixels(c) & rightMask;
-#define GetBits	GetBits1S
+
+#define StoreBits0	StorePixels (0,dst[0] & leftMask | GetFourPixels(c) & rightMask);
+#define GetBits	WGetBits1S
 
 		SwitchEm
 #undef GetBits
@@ -380,21 +520,31 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	    else
 	    {
 		lshift = widthGlyph - xoff1;
-#define GetBits GetBits1L
 
-#define StoreBits0  dst[0] = GetFourPixels(c);
+#define StoreBits0  StorePixels (0,GetFourPixels(c));
+#define GetBits WGetBits1L
 
 		SwitchEm
 #undef GetBits
+#undef StoreBits0
+
 	    }
 	}
 	else
 	{
 	    ew = widthGlyph >> 2;
-#define GetBits	GetBits1U
+
+#ifndef FAST_CONSTANT_OFFSET_MODE
+	    widthLeft = widthDst - ew;
+#endif
+
+#define StoreBits0  StorePixels (0,GetFourPixels(c));
+#define GetBits	WGetBits1U
 
 	    SwitchEm
+
 #undef GetBits
+#undef StoreBits0
 
 	}
 	x += widthGlyph;
@@ -413,7 +563,7 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	hTmp = h;
 	while (hTmp--)
 	{
-	    GetBitsL
+	    GetBitsL;
 	    *dst = (*dst & rightMask) | (GetFourPixels(c) & leftMask);
 	    dst += widthDst;
 	}
