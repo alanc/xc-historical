@@ -1,10 +1,10 @@
-/**/# site:  $XConsortium: site.def,v 1.4 89/05/16 19:14:40 jim Exp $
+/**/# site:  $XConsortium: site.def,v 1.5 89/05/26 11:26:27 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
  *			   SITE-SPECIFIC DEFINITIONS                         *
  *                                                                           *
- * Override any of the defaults in def.def here.  Use ifndef so that servers *
+ * Override any of the defaults in *.tmpl here.  Use ifndef so that servers  *
  * can override you if necessary:                                            *
  *                                                                           *
  *     #ifndef ABuildParameter                                               *
