@@ -1,4 +1,4 @@
-/* "$XConsortium: TMstate.c,v 1.107 90/07/05 16:01:39 swick Exp $"; */
+/* "$XConsortium: TMstate.c,v 1.108 90/07/06 12:30:35 swick Exp $"; */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -2016,6 +2016,7 @@ void XtOverrideTranslations(widget, new)
            widget->core.tm.translations = newTable;
            _XtBindActions(widget, &widget->core.tm);
            _XtInstallTranslations(widget,newTable);
+	   _XtRegisterGrabs(widget, False);
     }
     else {
 	if (widget->core.tm.translations &&
@@ -2139,9 +2140,11 @@ void XtInstallAccelerators(destination, source)
 
 	destination->core.tm.translations = new_table;
     }
-    if (XtIsRealized(destination))
-        _XtInstallTranslations(destination,
-             destination->core.tm.translations);
+    if (XtIsRealized(destination)) {
+	_XtInstallTranslations(destination, destination->core.tm.translations);
+	_XtRegisterGrabs(destination, True);
+    }
+
     XtAddCallback(source, XtNdestroyCallback,
         RemoveAccelerators,(XtPointer)destination->core.tm.translations);
     if (XtClass(source)->core_class.display_accelerator != NULL){
@@ -2203,6 +2206,7 @@ void XtAugmentTranslations(widget, new)
            widget->core.tm.translations = newTable;
            _XtBindActions(widget, &widget->core.tm);
            _XtInstallTranslations(widget,newTable);
+	   _XtRegisterGrabs(widget, False);
     }
     else {
 	if (widget->core.tm.translations &&
@@ -2589,13 +2593,71 @@ static void GrabAllCorrectKeys(widget, event, grabP)
     XtFree((XtPointer)keycodes);
 }
 
-void _XtRegisterGrabs(widget,tm)
+static void RegisterGrab(widget, stateTable, index, grabP)
     Widget widget;
-    XtTM  tm;
-{
-    XtTranslations translateData = tm->translations;
     StateTablePtr stateTable;
-    unsigned int count;
+    int index;
+    GrabActionRec* grabP;
+{
+    register StatePtr state;
+    /* we've found a "grabber" in the action table. Find the */
+    /* states that call this action. */
+    /* note that if there is more than one "grabber" in the action */
+    /* table, we end up searching all of the states multiple times. */
+    for (state=stateTable->head; state != NULL; state=state->forw) {
+	register ActionPtr action;
+	for (
+	    action = state->actions;
+	    action != NULL;
+	    action=action->next) {
+	    if (action->index == index) {
+		/* this action is a "grabber" */
+		register Event *event;
+		event = &stateTable->eventObjTbl[state->index].event;
+		switch (event->eventType) {
+		    case ButtonPress:
+		    case ButtonRelease:
+			XtGrabButton(
+			    widget,
+			    (unsigned) event->eventCode,
+			    (unsigned) event->modifiers,
+			    grabP->owner_events,
+			    grabP->event_mask,
+			    grabP->pointer_mode,
+			    grabP->keyboard_mode,
+			    None,
+			    None
+			);
+			break;
+
+		    case KeyPress:
+		    case KeyRelease:
+			GrabAllCorrectKeys(widget, event, grabP);
+			break;
+
+		    case EnterNotify:
+			break;
+
+		    default:
+      XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+	    "invalidPopup","unsupportedOperation",XtCXtToolkitError,
+"Pop-up menu creation is only supported on Button, Key or EnterNotify events.",
+	    (String *)NULL, (Cardinal *)NULL);
+		    break;
+		}
+	    }
+	}
+    }
+}
+
+
+void _XtRegisterGrabs(widget, acceleratorsOnly)
+    Widget widget;
+    Boolean acceleratorsOnly;
+{
+    XtTranslations translateData = widget->core.tm.translations;
+    StateTablePtr stateTable;
+    int count;
 
     if (! XtIsRealized(widget)) return;
 
@@ -2606,59 +2668,21 @@ void _XtRegisterGrabs(widget,tm)
     if (translateData == NULL) return;
     stateTable = translateData->stateTable;
     if (stateTable == NULL) return;
-    for (count=0; count < stateTable->numQuarks; count++) {
+    if (!acceleratorsOnly) {
+	for (count=0; count < stateTable->numQuarks; count++) {
+	  GrabActionRec* grabP;
+	  for (grabP = grabActionList; grabP != NULL; grabP = grabP->next) {
+	    if (grabP->action_proc == widget->core.tm.proc_table[count]) {
+		RegisterGrab(widget, stateTable, count, grabP);
+	    }
+	  }
+	}
+    }
+    for (count=0; count < stateTable->accNumQuarks; count++) {
       GrabActionRec* grabP;
       for (grabP = grabActionList; grabP != NULL; grabP = grabP->next) {
-        if (grabP->action_proc == tm->proc_table[count]) {
-	    register StatePtr state;
-	    /* we've found a "grabber" in the action table. Find the */
-	    /* states that call this action. */
-	    /* note that if there is more than one "grabber" in the action */
-	    /* table, we end up searching all of the states multiple times. */
-	    for (state=stateTable->head; state != NULL; state=state->forw) {
-		register ActionPtr action;
-	        for (
-		    action = state->actions;
-		    action != NULL;
-		    action=action->next) {
-		    if (action->index == count) {
-			/* this action is a "grabber" */
-			register Event *event;
-			event = &stateTable->eventObjTbl[state->index].event;
-			switch (event->eventType) {
-			    case ButtonPress:
-			    case ButtonRelease:
-				XtGrabButton(
-				    widget,
-				    (unsigned) event->eventCode,
-				    (unsigned) event->modifiers,
-				    grabP->owner_events,
-				    grabP->event_mask,
-				    grabP->pointer_mode,
-				    grabP->keyboard_mode,
-				    None,
-				    None
-				);
-				break;
-	    
-			    case KeyPress:
-			    case KeyRelease:
-				GrabAllCorrectKeys(widget, event, grabP);
-				break;
-	    
-			    case EnterNotify:
-				break;
-
-			    default:
-              XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		    "invalidPopup","unsupportedOperation",XtCXtToolkitError,
-"Pop-up menu creation is only supported on Button, Key or EnterNotify events.",
-                  (String *)NULL, (Cardinal *)NULL);
-			    break;
-			}
-		    }
-		}
-	    }
+        if (grabP->action_proc == translateData->accProcTbl[count].proc) {
+	    RegisterGrab(widget, stateTable, -(count+1), grabP);
 	}
       }
     }
