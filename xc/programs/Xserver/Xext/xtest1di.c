@@ -105,13 +105,9 @@ int			on_steal_input = FALSE;
  */
 int			exclusive_steal = FALSE;
 /*
- * holds the resource class assigned to this extension
- */
-static short		XTestClass;
-/*
  * holds the resource type assigned to this extension
  */
-static short		XTestType;
+static RESTYPE		XTestType;
 /*
  * holds the resource ID for the client currently using XTestGetInput
  */
@@ -204,23 +200,12 @@ XTestExtension1Init()
 		EventSwapVector[XTestInputActionType] = SEventXTestDispatch;
 		EventSwapVector[XTestFakeAckType] = SEventXTestDispatch;
 		/*
-		 * get the resource class for this extension
+		 * get the resource type for this extension
 		 */
-		XTestClass = CreateNewResourceClass();
-		if (XTestClass == -1)
+		XTestType = CreateNewResourceType(XTestCurrentClientGone);
+		if (XTestType == 0)
 		{
-			FatalError("XTestExtension1Init: CreateNewResourceClass failed\n");
-		}
-		else
-		{
-			/*
-			 * get the resource type for this extension
-			 */
-			XTestType = CreateNewResourceType();
-			if (XTestType == -1)
-			{
-				FatalError("XTestExtension1Init: CreateNewResourceType failed\n");
-			}
+			FatalError("XTestExtension1Init: CreateNewResourceType failed\n");
 		}
 	} 
 	else 
@@ -603,9 +588,7 @@ ProcTestGetInput(client)
 		current_client_id = FakeClientID(client->index);
 		AddResource(current_client_id,
 			    XTestType,
-			    0,
-			    XTestCurrentClientGone,
-			    XTestClass);
+			    0);
 		/*
 		 * indicate that a client is stealing input
 		 */
@@ -643,7 +626,7 @@ ProcTestStopInput(client)
 		/*
 		 * remove the resource associated with this client
 		 */
-		FreeResource(current_client_id, RC_NONE);
+		FreeResource(current_client_id, RT_NONE);
 		return(Success);
 	}
 	else
