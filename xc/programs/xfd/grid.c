@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.23 91/05/22 19:04:34 converse Exp $
+ * $XConsortium: fontgrid.c,v 1.24 91/07/18 14:13:52 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -172,6 +172,8 @@ static GC get_gc (fgw, fore)
     gcv.background = fgw->core.background_pixel;
     gcv.function = GXcopy;
     gcv.font = fgw->fontgrid.text_font->fid;
+    gcv.cap_style = CapProjecting;
+    mask |= GCCapStyle;
     if (fgw->fontgrid.grid_width > 0) {
 	mask |= GCLineWidth;
 	gcv.line_width = ((fgw->fontgrid.grid_width < 2) ? 0 : 
@@ -209,20 +211,22 @@ static void Initialize (request, new)
     }
 
     if (reqfg->fontgrid.cell_width <= 0)
-      newfg->fontgrid.cell_width = (fs ? DefaultCellWidth (newfg) : 0);
+      newfg->fontgrid.cell_width = (fs ? DefaultCellWidth (newfg) : 1);
     if (reqfg->fontgrid.cell_height <= 0)
-      newfg->fontgrid.cell_height = (fs ? DefaultCellHeight (newfg) : 0);
+      newfg->fontgrid.cell_height = (fs ? DefaultCellHeight (newfg) : 1);
 
     /* give a nice size that fits one screen full */
     if (newfg->core.width == 0)
-      newfg->core.width = (newfg->fontgrid.cell_width * 
+      newfg->core.width = (newfg->fontgrid.cell_width *
 			   newfg->fontgrid.cell_cols +
-			   newfg->fontgrid.grid_width);
+			   newfg->fontgrid.grid_width *
+			   (newfg->fontgrid.cell_cols + 1));
 
     if (newfg->core.height == 0) 
       newfg->core.height = (newfg->fontgrid.cell_height * 
 			    newfg->fontgrid.cell_rows +
-			    newfg->fontgrid.grid_width);
+			    newfg->fontgrid.grid_width *
+			    (newfg->fontgrid.cell_rows + 1));
 
     /*
      * select the first character
@@ -275,7 +279,11 @@ static void Resize (gw)
 
     /* recompute in case we've changed size */
     fgw->fontgrid.cell_width = CellWidth (fgw);
+    if (fgw->fontgrid.cell_width <= 0)
+	fgw->fontgrid.cell_width = 1;
     fgw->fontgrid.cell_height = CellHeight (fgw);
+    if (fgw->fontgrid.cell_height <= 0)
+	fgw->fontgrid.cell_height = 1;
     fgw->fontgrid.xoff = (fgw->fontgrid.cell_width -
 			    DefaultCellWidth (fgw)) / 2;
     fgw->fontgrid.yoff = (fgw->fontgrid.cell_height -
@@ -304,8 +312,8 @@ static void Redisplay (gw, event, region)
      * compute the left, right, top, and bottom cells that were damaged
      */
     XClipBox (region, &rect);
-    cw = fgw->fontgrid.cell_width;
-    ch = fgw->fontgrid.cell_height;
+    cw = fgw->fontgrid.cell_width + fgw->fontgrid.grid_width;
+    ch = fgw->fontgrid.cell_height + fgw->fontgrid.grid_width;
     if ((left = (((int) rect.x) / cw)) < 0) left = 0;
     right = (((int) (rect.x + rect.width - 1)) / cw);
     if ((top = (((int) rect.y) / ch)) < 0) top = 0;
@@ -324,8 +332,8 @@ static void paint_grid (fgw, col, row, ncols, nrows)
     int i, j;
     Display *dpy = XtDisplay(fgw);
     Window wind = XtWindow(fgw);
-    int cw = p->cell_width;
-    int ch = p->cell_height;
+    int cw = p->cell_width + p->grid_width;
+    int ch = p->cell_height + p->grid_width;
     int tcols = p->cell_cols;
     int trows = p->cell_rows;
     int x1, y1, x2, y2, x, y;
@@ -348,8 +356,9 @@ static void paint_grid (fgw, col, row, ncols, nrows)
      * paint the grid lines for the indicated rows 
      */
     if (p->grid_width > 0) {
-	x1 = col * cw;
-	y1 = row * ch;
+	int half_grid_width = p->grid_width >> 1;
+	x1 = col * cw + half_grid_width;
+	y1 = row * ch + half_grid_width;
 	x2 = x1 + ncols * cw;
 	y2 = y1 + nrows * ch;
 	for (i = 0, x = x1; i <= ncols; i++, x += cw) {
@@ -367,8 +376,9 @@ static void paint_grid (fgw, col, row, ncols, nrows)
      * byte2.
      */
     prevn = p->start_char + col + row * tcols;
-    startx = col * cw + p->internal_pad;
-    for (j = 0, y = row * ch + p->internal_pad + p->text_font->ascent;
+    startx = col * cw + p->internal_pad + p->grid_width;
+    for (j = 0,
+	 y = row * ch + p->internal_pad + p->grid_width + p->text_font->ascent;
 	 j < nrows; j++, y += ch) {
 	n = prevn;
 	for (i = 0, x = startx; i < ncols; i++, x += cw) {
