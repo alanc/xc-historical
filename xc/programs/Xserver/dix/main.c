@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.121 87/08/30 11:51:22 todd Exp $ */
+/* $Header: main.c,v 1.120 87/09/01 17:12:18 toddb Locked $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -369,7 +369,6 @@ FatalError (msg, v0, v1, v2, v3, v4, v5, v6, v7, v8)
     char *msg;
     int v0, v1, v2, v3, v4, v5, v6, v7, v8;
 {
-    char *foo;
     ErrorF("\nFatal server bug!\n");
     ErrorF(msg, v0, v1, v2, v3, v4, v5, v6, v7, v8);
     ErrorF("\n");
