@@ -1,4 +1,4 @@
-/* $XConsortium: ws_type.h,v 5.4 91/07/24 14:42:39 hersh Exp $ */
+/* $XConsortium: ws_type.h,v 5.5 91/09/30 16:46:38 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -482,7 +482,6 @@ extern caddr_t		phg_wst_set_attrs();
 extern caddr_t		phg_wst_get_attr();
 extern caddr_t 		phg_wst_init();
 extern void 		phg_wst_destroy();
-extern caddr_t		phg_wst_set();
 extern Wst		*phg_wst_create();
 extern int 		phg_wst_copy();
 extern void		phg_wst_copy_buf_pointers();
