@@ -1,4 +1,4 @@
-/* $XConsortium: XIElibint.h,v 1.1 93/07/19 11:39:09 mor Exp $ */
+/* $XConsortium: XIElibint.h,v 1.2 93/09/23 11:43:20 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -275,7 +275,7 @@ extern XieExtInfo	*_XieExtInfoHeader;
 extern void		(*(_XieElemFuncs[]))();
 extern XieTechFuncRec 	*_XieTechFuncs[];
 extern Bool 		_XieTechFuncsInitialized;
-
+extern xieTypFloat	_XieConvertToIEEE();
 
 /* for X-Window system protocol elements */
 #define sz_CARD32 				4
