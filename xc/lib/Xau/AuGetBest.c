@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuGetAddr.c,v 1.9 89/12/12 17:15:23 rws Exp $
+ * $XConsortium: AuGetBest.c,v 1.1 90/09/13 18:23:41 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -42,16 +42,16 @@ XauGetBestAuthByAddr (
     unsigned short	family,
     unsigned short	address_length,
 #endif
-    const char*	address,
+    _Xconst char*	address,
 #if NeedWidePrototypes
     unsigned int	number_length,
 #else
     unsigned short	number_length,
 #endif
-    const char*		number,
+    _Xconst char*	number,
     int			types_length,
-    const char**	types,
-    const int*		type_lengths)
+    _Xconst char**	types,
+    _Xconst int*	type_lengths)
 #else
 Xauth *
 XauGetBestAuthByAddr (family, address_length, address,

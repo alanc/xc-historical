@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuLock.c,v 1.3 88/12/12 14:46:04 keith Exp $
+ * $XConsortium: AuLock.c,v 1.4 89/12/12 17:15:20 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,7 +26,7 @@
 #if NeedFunctionPrototypes
 int
 XauLockAuth (
-const char *file_name,
+_Xconst char *file_name,
 int	retries,
 int	timeout,
 long	dead)

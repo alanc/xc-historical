@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: Xauth.h,v 1.6 90/09/14 17:53:06 keith Exp $
+ * $XConsortium: Xauth.h,v 1.7 90/12/11 13:20:24 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -29,6 +29,14 @@
 #endif /* __STDC__ */
 #endif /* NeedFunctionPrototypes */
 
+#if defined(NeedFunctionPrototypes) && !defined(_Xconst)
+#if __STDC__ || defined(__cplusplus) || defined(c_plusplus)
+#define _Xconst const
+#else
+#define _Xconst
+#endif
+#endif /* NeedFunctionPrototypes */
+
 #ifndef NeedWidePrototypes
 #if defined(NARROWPROTO)
 #define NeedWidePrototypes 0
@@ -46,13 +54,13 @@
 typedef struct xauth {
     unsigned short   family;
     unsigned short   address_length;
-    const char 	    *address;
+    _Xconst char    *address;
     unsigned short   number_length;
-    const char 	    *number;
+    _Xconst char    *number;
     unsigned short   name_length;
-    const char 	    *name;
+    _Xconst char    *name;
     unsigned short   data_length;
-    const char	    *data;
+    _Xconst char    *data;
 } Xauth;
 #else
 typedef struct xauth {
@@ -82,7 +90,7 @@ FILE*	/* auth_file */
 
 int XauLockAuth(
 #if NeedFunctionPrototypes
-const char*	/* file_name */,
+_Xconst char*	/* file_name */,
 int		/* retries */,
 int		/* timeout */,
 long		/* dead */
@@ -91,7 +99,7 @@ long		/* dead */
 
 int XauUnlockAuth(
 #if NeedFunctionPrototypes
-const char*	/* file_name */
+_Xconst char*	/* file_name */
 #endif
 );
 
@@ -104,7 +112,7 @@ Xauth*		/* auth */
 
 Xauth *XauGetAuthByName(
 #if NeedFunctionPrototypes
-const char*	/* display_name */
+_Xconst char*	/* display_name */
 #endif
 );
 
@@ -117,19 +125,19 @@ unsigned int	/* address_length */,
 unsigned short	/* family */,
 unsigned short	/* address_length */,
 #endif
-const char*	/* address */,
+_Xconst char*	/* address */,
 #if NeedWidePrototypes
 unsigned int	/* number_length */,
 #else
 unsigned short	/* number_length */,
 #endif
-const char*	/* number */,
+_Xconst char*	/* number */,
 #if NeedWidePrototypes
 unsigned int	/* name_length */,
 #else
 unsigned short	/* name_length */,
 #endif
-const char*	/* name */
+_Xconst char*	/* name */
 #endif
 );
 
@@ -142,16 +150,16 @@ unsigned int	/* address_length */,
 unsigned short	/* family */,
 unsigned short	/* address_length */,
 #endif
-const char*	/* address */,
+_Xconst char*	/* address */,
 #if NeedWidePrototypes
 unsigned int	/* number_length */,
 #else
 unsigned short	/* number_length */,
 #endif
-const char*	/* number */,
+_Xconst char*	/* number */,
 int		/* types_length */,
-const char**	/* type_names */,
-const int*	/* type_lengths */
+_Xconst char**	/* type_names */,
+_Xconst int*	/* type_lengths */
 #endif
 );
 
