@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: multibuf.c,v 1.5 89/10/08 19:25:13 keith Exp $ */
+/* $XConsortium: multibuf.c,v 1.6 89/10/11 11:38:11 keith Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -1316,7 +1316,8 @@ MultibufferUpdate (pMultibuffer, time)
     event.type = MultibufferEventBase + MultibufferUpdateNotify;
     event.buffer = pMultibuffer->pPixmap->drawable.id;
     event.timeStamp = time;
-    (void) DeliverEventsToMultibuffer (pMultibuffer, &event, 1, MultibufferUpdateNotifyMask);
+    (void) DeliverEventsToMultibuffer (pMultibuffer, (xEvent *)&event,
+				       1, MultibufferUpdateNotifyMask);
 }
 
 /*
@@ -1333,7 +1334,8 @@ MultibufferClobber (pMultibuffer)
     event.type = MultibufferEventBase + MultibufferClobberNotify;
     event.buffer = pMultibuffer->pPixmap->drawable.id;
     event.state = pMultibuffer->clobber;
-    (void) DeliverEventsToMultibuffer (pMultibuffer, &event, 1, MultibufferClobberNotifyMask);
+    (void) DeliverEventsToMultibuffer (pMultibuffer, (xEvent *)&event,
+				       1, MultibufferClobberNotifyMask);
 }
 
 /*
@@ -1397,8 +1399,6 @@ MultibufferPositionWindow (pWin, x, y)
     MultibufferPtr	    pMultibuffer;
     int		    width, height;
     int		    i;
-    int		    gravity;
-    int		    newx, newy;
     int		    dx, dy, dw, dh;
     int		    sourcex, sourcey;
     int		    destx, desty;
@@ -1412,10 +1412,10 @@ MultibufferPositionWindow (pWin, x, y)
     pMultibufferScreen = (MultibufferScreenPtr) pScreen->devPrivates[MultibufferScreenIndex].ptr;
     (*pMultibufferScreen->PositionWindow) (pWin, x, y);
     if (!(pMultibuffers = (MultibuffersPtr) pWin->devPrivates[MultibufferWindowIndex].ptr))
-	return;
+	return TRUE;
     if (pMultibuffers->width == pWin->drawable.width &&
         pMultibuffers->height == pWin->drawable.height)
-	return;
+	return TRUE;
     width = pWin->drawable.width;
     height = pWin->drawable.height;
     dx = pWin->drawable.x - pMultibuffers->x;
@@ -1496,6 +1496,7 @@ MultibufferPositionWindow (pWin, x, y)
 	}
     }
     FreeScratchGC (pGC);
+    return TRUE;
 }
 
 /* Resource delete func for MultibufferDrawableResType */

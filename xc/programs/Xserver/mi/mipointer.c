@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 5.7 89/09/24 15:42:22 rws Exp $ */
+/* $XConsortium: mipointer.c,v 5.8 89/10/03 19:58:02 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -155,6 +155,7 @@ miPointerDisplayCursor (pScreen, pCursor)
     pPointer->pCursor = pCursor;
     if (pCursor)
 	(*pPriv->funcs->DisplayCursor) (pScreen, pCursor, pPointer->x, pPointer->y);
+    return TRUE;
 }
 
 static void
