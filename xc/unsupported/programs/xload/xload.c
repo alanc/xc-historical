@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xload.c,v 1.17 89/05/11 18:43:37 kit Exp $";
+static char rcsid[] = "$XConsortium: xload.c,v 1.18 89/07/19 12:39:39 jim Exp $";
 #endif  lint
 
 #include <stdio.h> 
@@ -34,6 +34,10 @@ void usage()
 {
     fprintf (stderr, "usage:  %s [-options ...]\n\n", ProgramName);
     fprintf (stderr, "where options include:\n");
+    fprintf (stderr,
+	"    -display dpy            X server on which to display\n");
+    fprintf (stderr,
+	"    -geometry geom          size and location of window\n");
     fprintf (stderr, 
 	"    -fn font                font to use in label\n");
     fprintf (stderr, 
