@@ -1,5 +1,9 @@
 /*
- *	$Header: main.c,v 1.10 88/02/16 18:49:00 jim Exp $
+ *	$Header: main.c,v 1.11 88/02/17 13:02:23 jim Exp $
+ *
+ * WARNING:  This code (particularly, the tty setup code) is a historical
+ * relic and should not be confused with a real toolkit application or a
+ * an example of how to do anything.  It really needs a rewrite.  Badly.
  */
 
 #include <X11/copyright.h>
@@ -30,7 +34,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.10 88/02/16 18:49:00 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.11 88/02/17 13:02:23 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
