@@ -1,4 +1,4 @@
-.\" $XConsortium: xsm.man,v 1.4 94/07/25 13:26:47 mor Exp $
+.\" $XConsortium: xsm.man,v 1.5 1994/07/26 14:13:50 mor Exp mor $
 .\" Copyright (c) 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -35,6 +35,13 @@ xsm \- X session manager
 \fIxsm\fP is a session manager.  A session is a group of applications, each
 of which has a particular state.  The purpose of the session manager is to
 save and restore sessions.
+.SH OPTIONS
+.TP 8
+.B \-name \fIsessionName\fP
+Causes \fIxsm\fP to load the specified session, bypassing the session menu.
+.TP 8
+.B \-verbose
+Turns on debugging information.
 .SH SETUP
 .SS .xsession file
 Using \fIxsm\fP requires a few changes to your \fI.xsession\fP file:
@@ -52,7 +59,7 @@ applications that are not "session aware", and these applications should be
 started within the \fI.xsession\fP file.  Applications that are not session
 aware are ones that do not support the X Session Management Protocol, or
 they do not create any top level windows for the Session Management Proxy
-to detect.  An example of such an application is the \fIxmodmap\fP program.
+to detect (see the section titled \fITHE PROXY\fP).
 .PP
 .SS SM_SAVE_DIR environment variable
 If the \fISM_SAVE_DIR\fP environment variable is defined, \fIxsm\fP will
@@ -206,15 +213,37 @@ the user for any purpose.  Note that \fIxsm\fP will only allow one
 application to interact with the user at a time.
 .TP 18
 .B Shutdown
-A shutdown provides all the options found in a checkpoint, but in addition,
+A shutdown provides all of the options found in a checkpoint, but in addition,
 can cause the session to exit.  Note that if the interaction style is
 \fBErrors\fR or \fBAny\fR, the user may cancel the shutdown.
 .br
 .sp
 The user may choose to exit the session without performing a checkpoint
 (an additional save type \fBNone\fR is available).
+.PP
+.SH THE PROXY
+Since not all applications have been ported to support the X Session
+Management Protocol, a proxy service exists to allow "old" clients to
+work with the session manager.  In order for the proxy to detect an
+application joining a session, the application must create a top level
+window with the \fBWM_CLASS\fR, \fBWM_NAME\fR, \fBWM_COMMAND\fR, and
+\fBWM_CLIENT_MACHINE\fR properties.
+.PP
+An application that support the \fBWM_SAVE_YOURSELF\fR protocol will receive
+a \fBWM_SAVE_YOURSELF\fR client message each time the session manager issues
+a checkpoint or shutdown.  This allows the application to save state.  If
+an application does not support the \fBWM_SAVE_YOURSELF\fR protocol, then
+the proxy will provide enough information to the session manager to restart
+the application (using \fBWM_COMMAND\fR), but no state will be restored.
+.PP
+.SH REMOTE APPLICATIONS
+\fIxsm\fP requires a remote execution protocol in order to restart
+applications on remote machines.  Currently, \fIxsm\fP supports the
+\fIrstart\fP protocol.  In order to restart an application on remote
+machine \fBX\fR, machine \fBX\fR must have \fIrstart\fP installed.  In
+the future, additional remote execution protocols may be supported.
 .SH SEE ALSO
-smproxy(1)
+smproxy(1), rstart(1)
 .SH AUTHORS
 Ralph Mor, X Consortium
 .br
