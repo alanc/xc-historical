@@ -1,4 +1,4 @@
-/* $XConsortium: xopendev.c,v 1.9 89/12/12 17:36:25 rws Exp $ */
+/* $XConsortium: xopendev.c,v 1.10 90/05/18 10:54:00 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -106,13 +106,13 @@ ProcXOpenDevice(client)
 	}
 
     OpenInputDevice (dev, client, &status);
-    if (enableit && dev->inited && dev->startup)
-	(void)EnableDevice(dev);
     if (status != Success)
 	{
 	SendErrorToClient(client, IReqCode, X_OpenDevice, 0, status);
 	return Success;
 	}
+    if (enableit && dev->inited && dev->startup)
+	(void)EnableDevice(dev);
 
     rep.repType = X_Reply;
     rep.RepType = X_OpenDevice;
