@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char rcsid[] = "$Header: Core.c,v 6.38 88/01/29 16:45:34 asente Exp $";
+static char rcsid[] = "$Header: Core.c,v 6.39 88/02/01 17:19:14 swick Exp $";
 #endif lint
 
 /*
@@ -141,6 +141,7 @@ static void ConstructCallbackOffsets(widgetClass)
     register Cardinal i;
     register XrmResourceList resourceList;
     register _XtOffsetList newItem;
+    XrmQuark xtQCallback = XrmAtomToQuark(XtRCallback);
 
     if (widgetClass->core_class.superclass != NULL)
 	widgetClass->core_class.callback_private = 
@@ -148,7 +149,7 @@ static void ConstructCallbackOffsets(widgetClass)
     for (i = widgetClass->core_class.num_resources,
 	 resourceList = (XrmResourceList) widgetClass->core_class.resources;
          i != 0; i--)
-	if (resourceList[i-1].xrm_type == XrmAtomToQuark(XtRCallback)) {
+	if (resourceList[i-1].xrm_type == xtQCallback) {
 	    newItem = XtNew(XtOffsetRec);
 	    newItem->next   = widgetClass->core_class.callback_private;
 	    widgetClass->core_class.callback_private = newItem;
