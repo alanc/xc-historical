@@ -1,4 +1,4 @@
-/* $XConsortium: XWrBitF.c,v 1.8 91/01/06 11:48:51 rws Exp $ */
+/* $XConsortium: XWrBitF.c,v 1.9 91/02/01 16:34:58 gildea Exp $ */
 /* Copyright, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -102,6 +102,10 @@ int XWriteBitmapFile(display, filename, bitmap, width, height, x_hot, y_hot)
 
   /* Convert bitmap to an image */
   image = XGetImage(display, bitmap, 0,0,width, height, 1L, XYPixmap);
+  if (!image) {
+    fclose(stream);
+    return(4); /* XXX spec does not say what to return */
+  }
 
   /* Get standard format for data */
   data = Format_Image(image, &size);
