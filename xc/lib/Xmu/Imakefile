@@ -12,6 +12,7 @@
 #ifdef OsNameDefines
 OS_NAME_DEFINES = OsNameDefines
 #endif
+        CSSDEFS = $(OS_NAME_DEFINES) ConnectionFlags
 
 HEADERS = \
 	Xmu.h \
@@ -121,26 +122,26 @@ all::
 #if SharedLibXmu
 # if DebugLibXmu
 SharedAndDebuggedLibraryObjectRule()
-SpecialSharedAndDebuggedObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
+SpecialSharedAndDebuggedObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
 # else
 SharedLibraryObjectRule()
-SpecialSharedObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
+SpecialSharedObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
 # endif
 #else
 # if DebugLibXmu && ProfileLibXmu
 DebuggedAndProfiledLibraryObjectRule()
-SpecialDebuggedAndProfiledObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
+SpecialDebuggedAndProfiledObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
 # else
 #  if DebugLibXmu 
 DebuggedLibraryObjectRule()
-SpecialDebuggedObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
+SpecialDebuggedObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
 #  else
 #   if ProfileLibXmu
 ProfiledLibraryObjectRule()
-SpecialProfiledObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
+SpecialProfiledObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
 #   else
 NormalLibraryObjectRule()
-SpecialObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
+SpecialObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
 #   endif
 #  endif
 # endif
