@@ -1,4 +1,4 @@
-/* $XConsortium: watch.c,v 1.3 93/12/07 11:04:18 mor Exp $ */
+/* $XConsortium: watch.c,v 1.4 94/03/18 15:59:28 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -35,6 +35,7 @@ IcePointer	clientData;
 
     _IceWatchProc	*ptr = _IceWatchProcs;
     _IceWatchProc	*newWatchProc;
+    int			i;
 
     if ((newWatchProc = (_IceWatchProc *) malloc (
 	sizeof (_IceWatchProc))) == NULL)
@@ -54,6 +55,25 @@ IcePointer	clientData;
 	_IceWatchProcs = newWatchProc;
     else
 	ptr->next = newWatchProc;
+
+
+    /*
+     * Invoke the watch proc with any previously opened ICE connections.
+     */
+     
+    for (i = 0; i < _IceConnectionCount; i++)
+    {
+	_IceWatchedConnection *newWatchedConn = (_IceWatchedConnection *)
+	    malloc (sizeof (_IceWatchedConnection));
+
+	newWatchedConn->iceConn = _IceConnectionObjs[i];
+	newWatchedConn->next = NULL;
+
+	newWatchProc->watched_connections = newWatchedConn;
+
+	(*newWatchProc->watch_proc) (_IceConnectionObjs[i],
+	    newWatchProc->client_data, True, &newWatchedConn->watch_data);
+    }
 
     return (1);
 }
