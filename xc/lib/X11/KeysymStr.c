@@ -1,4 +1,4 @@
-/* $XConsortium: XKeysymStr.c,v 11.5 90/06/15 11:24:25 rws Exp $ */
+/* $XConsortium: XKeysymStr.c,v 11.0 90/07/26 18:33:14 rws Exp $ */
 /* Copyright 1990 Massachusetts Institute of Technology */
 
 #include "Xlibint.h"
@@ -16,9 +16,33 @@ typedef unsigned long Signature;
 #define NEEDVTABLE
 #include "ks_tables.h"
 
-extern char *_XrmGetResourceName();
 extern XrmDatabase _XInitKeysymDB();
 extern Const unsigned char __XkeyTable[];
+
+
+typedef struct _GRNData {
+    char *name;
+    XrmRepresentation type;
+    XrmValuePtr value;
+} GRNData;
+
+/*ARGSUSED*/
+static Bool SameValue(db, bindings, quarks, type, value, data)
+    XrmDatabase		*db;
+    XrmBindingList      bindings;
+    XrmQuarkList	quarks;
+    XrmRepresentation   *type;
+    XrmValuePtr		value;
+    GRNData		*data;
+{
+    if ((*type == data->type) && (value->size == data->value->size) &&
+	!strncmp((char *)value->addr, (char *)data->value->addr, value->size))
+    {
+	data->name = XrmQuarkToString(*quarks); /* XXX */
+	return True;
+    }
+    return False;
+}
 
 char *XKeysymToString(ks)
     KeySym ks;
@@ -58,11 +82,18 @@ char *XKeysymToString(ks)
     {
 	char buf[8];
 	XrmValue resval;
+	XrmQuark empty = NULLQUARK;
+	GRNData data;
 
 	sprintf(buf, "%lX", ks);
 	resval.addr = (caddr_t)buf;
 	resval.size = strlen(buf) + 1;
-	return _XrmGetResourceName(keysymdb, "String", &resval);
+	data.name = (char *)NULL;
+	data.type = XrmPermStringToQuark("String");
+	data.value = &resval;
+	(void)XrmEnumerateDatabase(keysymdb, &empty, &empty, XrmEnumAllLevels,
+				   SameValue, (caddr_t)&data);
+	return data.name;
     }
     return ((char *) NULL);
 }
