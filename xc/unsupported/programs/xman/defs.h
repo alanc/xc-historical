@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: defs.h,v 1.18 89/10/03 15:57:48 kit Exp $
+ * $XConsortium: defs.h,v 1.19 89/12/07 16:05:32 kit Exp $
  * $Athena: defs.h,v 4.8 89/01/06 15:56:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -142,7 +142,13 @@
 #  define LSEARCHDIR LMAN
 #endif
 
-#define COPY "cp"		/* The unix copy command.  */
+/*
+ * I set umask so that when the user copies a file into the main
+ * manual page tree s/he will not protect it so that other users cannot
+ * see it.
+ */
+
+#define COPY "umask 0; cp"		/* The unix copy command.  */
 
 #define MANDESC "mandesc"	/* Name of the mandesc files.  */
 
