@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XGetDflt.c,v 1.16 89/10/08 14:34:14 rws Exp $
+ * $XConsortium: XGetDflt.c,v 1.17 89/12/07 21:35:59 converse Exp $
  */
 
 /***********************************************************
@@ -118,13 +118,14 @@ char *XGetDefault(dpy, prog, name)
 	char *prog;			/* name of program for option	*/
 
 {					/* to get, for example, "font"  */
-	char temp[BUFSIZ];
-	XrmString type;
+	XrmName names[3];
+	XrmClass classes[3];
+	XrmRepresentation fromType;
 	XrmValue result;
 	char *progname;
 
 	/*
-	 * strip path off of program name
+	 * strip path off of program name (XXX - this is OS specific)
 	 */
 	progname = rindex (prog, '/');
 	if (progname)
@@ -142,9 +143,13 @@ char *XGetDefault(dpy, prog, name)
 		}
 	UnlockDisplay(dpy);
 
-	sprintf(temp, "%s.%s", progname, name);
-	XrmGetResource(dpy->db, temp, "Program.Name", &type, &result);
-
+	names[0] = XrmStringToName(progname);
+	names[1] = XrmStringToName(name);
+	names[2] = NULLQUARK;
+	classes[0] = XrmStringToClass("Program");
+	classes[1] = XrmStringToClass("Name");
+	classes[2] = NULLQUARK;
+	(void)XrmQGetResource(dpy->db, names, classes, &fromType, &result);
 	return (result.addr);
 }
 
