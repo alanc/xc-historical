@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.125 91/06/08 17:47:15 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.126 91/07/17 11:54:47 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -416,13 +416,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.125 91/06/08 17:47:15 rws Exp $
 #define DoInstallExtensionsIntoXlib NO	/* merge libXext.a into libX11.a */
 #endif
 
-#ifndef XawClientDepLibs
-#define XawClientDepLibs $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
-#endif
-#ifndef XawClientLibs
-#define XawClientLibs $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
-#endif
-
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
 
@@ -609,6 +602,13 @@ XCOMM X Window System make variables; this need to be coordinated with rules
           LINTXAW = _UseCat($(LINTLIBDIR),$(AWIDGETSRC),/llib-lXaw.ln)
            LINTXI = _UseCat($(LINTLIBDIR),$(XILIBSRC),/llib-lXi.ln)
         LINTPHIGS = _UseCat($(LINTLIBDIR),$(PHIGSLIBSRC),/llib-lphigs.ln)
+
+#ifndef XawClientDepLibs
+#define XawClientDepLibs $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
+#endif
+#ifndef XawClientLibs
+#define XawClientLibs $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+#endif
 
 #ifndef NeedDefaultDepLibs
 #define NeedDefaultDepLibs YES
