@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbscrinit.c,v 1.51 87/08/26 09:31:25 todd Exp $ */
+/* $Header: mfbscrinit.c,v 1.51 87/09/07 18:55:13 toddb Locked $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -33,6 +33,8 @@ SOFTWARE.
 #include "mfb.h"
 #include "mistruct.h"
 #include "dix.h"
+
+#include "servermd.h"
 
 static void
 mfbFreeVisual(p, id)

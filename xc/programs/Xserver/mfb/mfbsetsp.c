@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbsetsp.c,v 1.19 87/08/29 16:26:51 toddb Locked $ */
+/* $Header: mfbsetsp.c,v 1.20 87/09/03 16:08:48 toddb Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -35,6 +35,8 @@ SOFTWARE.
 
 #include "mfb.h"
 #include "maskbits.h"
+
+#include "servermd.h"
 
 
 /* mfbSetScanline -- copies the bits from psrc to the drawable starting at

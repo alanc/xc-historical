@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbgetsp.c,v 1.16 87/08/25 09:40:29 drewry Exp $ */
+/* $Header: mfbgetsp.c,v 1.16 87/09/07 18:55:05 toddb Locked $ */
 #include "X.h"
 #include "Xmd.h"
 
@@ -34,6 +34,8 @@ SOFTWARE.
 
 #include "mfb.h"
 #include "maskbits.h"
+
+#include "servermd.h"
 
 /* GetSpans -- for each span, gets bits from drawable starting at ppt[i]
  * and continuing for pwidth[i] bits

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbfillsp.c,v 1.28 87/08/26 15:28:48 todd Exp $ */
+/* $Header: mfbfillsp.c,v 1.28 87/08/31 16:34:28 toddb Locked $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -31,6 +31,8 @@ SOFTWARE.
 #include "windowstr.h"
 #include "mfb.h"
 #include "maskbits.h"
+
+#include "servermd.h"
 
 /* scanline filling for monochrome frame buffer
    written by drewry, oct 1986
