@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.5 91/02/18 11:41:18 rws Exp $
+# $XConsortium: Imakefile,v 5.6 91/02/19 11:20:26 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -57,8 +57,6 @@ LINTOPTS = -u
 LINT_LIBS = ../cp/llib-lcp.ln ../util/llib-lut.ln ../error/llib-lerr.ln \
 		../ws_type/llib-lwst.ln
 XLINT_LIBS = $(LINTXLIB)
-LINT_FILTER_FILE = ../include/lint_filter_strings
-LINT_FILTER = fgrep -v -f $(LINT_FILTER_FILE) | cat
 
 all:: DONE
 
@@ -68,22 +66,22 @@ DONE: ${OBJS}
 extract : $(SRCS)
 
 lint:   $(SRCS)
-	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) | $(LINT_FILTER)
+	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) 
 
 lint-x: $(SRCS)
-	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) | $(LINT_FILTER)
+	$(LINT) $(CSRCS) $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) 
 
 lintlib : llib-lcb.ln
 
 llib-lcb.ln : $(SRCS)
-	$(LINT) $(CSRCS) $(LINTFLAGS) -Ccb | $(LINT_FILTER)
+	$(LINT) $(CSRCS) $(LINTFLAGS) -Ccb 
 
 lint-library: llib-lphigs.ln
 llib-lphigs.ln : phigs_cb.c phigs.c_bind
 	$(LINT) $(LINTFLAGS) -Cphigs phigs_cb.c
 
 .c.lint:
-	$(LINT) $< $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) | $(LINT_FILTER)
+	$(LINT) $< $(LINTFLAGS) $(LINT_LIBS) $(XLINT_LIBS) 
 
 #ifdef HPArchitecture
 SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
