@@ -1,4 +1,4 @@
-/* $XConsortium: poly.h,v 1.1 87/09/11 08:15:38 toddb Exp $ */
+/* $XConsortium: poly.h,v 1.2 88/09/06 16:11:29 jim Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -22,8 +22,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ************************************************************************/
-#define NULL 0
-
 
 /*
  *     This file contains a few macros to help track
