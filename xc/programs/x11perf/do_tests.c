@@ -78,6 +78,9 @@ extern void InitComplexPoly();
 extern void DoComplexPoly();
 extern void EndComplexPoly();
 
+extern void InitTileWins();
+extern void DoTileWins();
+extern void EndTileWins();
 
 /*
  * some test must be done a certain multiple of times. That multiple is
@@ -193,6 +196,10 @@ Test test[] = {
 		InitComplexPoly, DoComplexPoly, NullProc, EndComplexPoly, 
                 False, False,
 		{5, 50, 0}},
+  {"-tile", 	"Fill 4x4 Tiled windows",
+		InitTileWins, DoTileWins, NullProc, EndTileWins, 
+                False, False,
+		{100, 0, 0}},
   { NULL, NULL,
 		NULL, NULL, NULL, NULL, False, False,
 		{0, 0, False, NULL, NULL}}
