@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.9 94/06/28 15:46:38 mor Exp $ */
+/* $XConsortium: xsm.h,v 1.10 94/07/06 15:49:09 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -104,6 +104,64 @@ typedef struct _AppResources {
 } AppResources;
 
 extern AppResources app_resources;
+
+extern XtAppContext	appContext;
+
+extern Widget		topLevel;
+
+extern Widget		    mainWindow;
+
+extern Widget		        clientInfoButton;
+extern Widget			checkPointButton;
+extern Widget			shutdownButton;
+extern Widget			nameSessionButton;
+
+extern Widget		    clientInfoPopup;
+
+extern Widget		    	clientInfoForm;
+
+extern Widget			    viewPropButton;
+extern Widget			    killClientButton;
+extern Widget			    clientInfoDoneButton;
+extern Widget			    clientListWidget;
+
+extern Widget		    clientPropPopup;
+
+extern Widget		    	clientPropForm;
+
+extern Widget			    clientPropDoneButton;
+extern Widget			    clientPropTextWidget;
+
+extern Widget		    savePopup;
+
+extern Widget			saveForm;
+
+extern Widget			    saveTypeLabel;
+extern Widget			    saveTypeGlobal;
+extern Widget			    saveTypeLocal;
+extern Widget			    saveTypeBoth;
+
+extern Widget			    interactStyleLabel;
+extern Widget			    interactStyleNone;
+extern Widget			    interactStyleErrors;
+extern Widget			    interactStyleAny;
+
+extern Widget			    saveOkButton;
+extern Widget			    saveCancelButton;
+
+extern Widget		    shutdownPopup;
+
+extern Widget			shutdownDialog;
+
+extern Widget			    shutdownOkButton;
+extern Widget			    shutdownCancelButton;
+
+extern Widget		    nameSessionPopup;
+
+extern Widget			nameSessionDialog;
+
+extern Widget			    nameSessionOkButton;
+extern Widget			    nameSessionCancelButton;
 
 extern void fprintfhex ();
 
