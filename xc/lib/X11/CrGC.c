@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XCrGC.c,v 11.19 87/07/16 10:29:07 ham Exp $ */
+/* $Header: XCrGC.c,v 11.19 87/09/08 12:52:17 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -304,3 +304,7 @@ _XFlushGCCache(dpy, gc)
 	}    
     }
 }
+
+GContext XGContextFromGC(gc)
+    GC gc;
+    { return (gc->gid); }
