@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.134 93/07/13 11:17:23 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.135 93/07/13 11:27:54 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -12,6 +12,11 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.134 93/07/13 11:17:23 rws Exp $
  * The following macros are defined for the various templates and Imakefiles
  * (for a list of the applicable make variables, see the template files):
  * 
+ * Concat			(a,b)
+ * Concat3			(a,b,c)
+ * Concat4			(a,b,c,d)
+ * _Use				(a,b)
+ * _UseCat			(a,b,c)
  * SaberLoadTarget		(target,srclist,libs,defines)
  * SaberProgramTarget		(program,srclist,objlist,locallibs,syslibs)
  * PurifyLinkTarget		(step,program,linklist)
@@ -49,8 +54,6 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.134 93/07/13 11:17:23 rws Exp $
  * InstallMultiple		(list,dest)
  * InstallMultipleFlags		(list,dest,flags)
  * InstallMultipleMan		(list,dest)
- * InstallAppDefaults		(class)
- * InstallAppDefaultsLong	(file,class)
  * DependDependency		()
  * DependTarget			()
  * DependTarget3		(srcs1,srcs2,srcs3)
@@ -61,6 +64,13 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.134 93/07/13 11:17:23 rws Exp $
  * MakefileTarget		()
  * LibMkdir			(dir)
  * LibCleanDir			(dir)
+ * LintLibReferences		(varname,libname,libsource)
+ * UnsharedLibReferences	(varname,libname,libsource)
+ * SharedLibDependencies	(libname,libsource,revname)
+ * SharedDSLibDependencies	(libname,libsource,revname)
+ * SharedLibInsideRef		(varname,libname,libsource,revname)
+ * SharedLibReferences		(varname,libname,libsource,revname,rev)
+ * SharedDSLibReferences	(varname,libname,libsource,revname,rev)
  * ObjectCompile		(options)
  * NormalLibObjCompile		(options)
  * NormalSharedLibObjCompile	(options)
@@ -111,27 +121,8 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.134 93/07/13 11:17:23 rws Exp $
  * MakeScriptFromCpp		(name,defs)
  * CppFileTarget		(dst,src,defs,deplist)
  * MakeDirectories		(step,dirs)
- * MakeFontsDir			(deplist)
- * MakeFonts			()
- * InstallFontObjs		(objs,dest)
- * InstallFonts			(dest)
- * InstallFontAliases		(dest)
- * FontSrc			(basename)
- * FontBaseObj			(basename)
- * InstallFontScale		(dest)
- * UncompressedFontTarget	(basename)
- * UncompressedFontTarget	(basename)
- * CompressedFontTarget		(basename)
- * FontTarget			(basename)
- * FontObj			(basename)
  * AllTarget			(depends)
  *
- *
- * The following are in Imake.tmpl:
- *
- * Concat			(a,b)
- * Concat3			(a,b,c)
- * 
  *
  * The following are in specific <os>Lib.rules:
  *
@@ -148,6 +139,70 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.134 93/07/13 11:17:23 rws Exp $
 #ifndef DirFailPrefix
 #define DirFailPrefix
 #endif
+
+/*
+ * Concat - concatenates two strings.
+ */
+#ifndef Concat
+#if (__STDC__ && !defined(UnixCpp)) || defined(AnsiCpp)
+#define Concat(a,b)a##b
+#else
+#define Concat(a,b)a/**/b
+#endif
+#endif
+
+/*
+ * Concat3 - concatenates three strings.
+ */
+#ifndef Concat3
+#if (__STDC__ && !defined(UnixCpp)) || defined(AnsiCpp)
+#define Concat3(a,b,c)a##b##c
+#else
+#define Concat3(a,b,c)a/**/b/**/c
+#endif
+#endif
+
+/*
+ * Concat4 - concatenates four strings.
+ */
+#ifndef Concat4
+#if (__STDC__ && !defined(UnixCpp)) || defined(AnsiCpp)
+#define Concat4(a,b,c,d)a##b##c##d
+#else
+#define Concat4(a,b,c,d)a/**/b/**/c/**/d
+#endif
+#endif
+
+/*
+ * _Use - makes a choice based on UseInstalled.
+ */
+#ifndef _Use
+#ifdef UseInstalled
+#define _Use(a,b) a
+#else
+#define _Use(a,b) b
+#endif
+#endif /* _Use */
+
+/*
+ * _UseCat - combination of _Use and Concat.
+ *           exists to avoid problems with some preprocessors
+ */
+#ifndef _UseCat
+#if (__STDC__ && !defined(UnixCpp)) || defined(AnsiCpp)
+#ifdef UseInstalled
+#define _UseCat(a,b,c) a##c
+#else
+#define _UseCat(a,b,c) b##c
+#endif
+#else
+#ifdef UseInstalled
+#define _UseCat(a,b,c) a/**/c
+#else
+#define _UseCat(a,b,c) b/**/c
+#endif
+#endif
+#endif /* _UseCat */
 
 /*
  * SaberLoadTarget - generate rules to load Saber-C files
@@ -630,39 +685,6 @@ InstallMultipleDestFlags(install.man,list,dest,$(INSTMANFLAGS))
 
 
 /*
- * InstallAppDefaults - generate rules to install appliation default files 
- * if the InstallAppDefFiles configuration parameter is set.
- */
-#ifndef InstallAppDefaults
-#if InstallAppDefFiles
-#define	InstallAppDefaults(class)					@@\
-install:: class.ad							@@\
-	MakeDir($(DESTDIR)$(XAPPLOADDIR))				@@\
-	$(INSTALL) -c $(INSTAPPFLAGS) class.ad $(DESTDIR)$(XAPPLOADDIR)/class
-#else
-#define	InstallAppDefaults(class)
-#endif /* InstallAppDefFiles */
-#endif /* InstallAppDefaults */
-
-/*
- * InstallAppDefaultsLong - generate rules to install appliation default files 
- * if the InstallAppDefFiles configuration parameter is set.
- */
-#ifndef InstallAppDefaultsLong
-#if InstallAppDefFiles
-#define	InstallAppDefaultsLong(file,class)				@@\
-install:: file.ad							@@\
-	MakeDir($(DESTDIR)$(XAPPLOADDIR))				@@\
-	$(INSTALL) -c $(INSTAPPFLAGS) file.ad $(DESTDIR)$(XAPPLOADDIR)/class
-#else
-#define	InstallAppDefaultsLong(file,class)
-#endif /* InstallAppDefFiles */
-#endif /* InstallAppDefaultsLong */
-
-
-
-
-/*
  * DependDependency - generate rules to build the makedepend program if 
  * this Imakefile is within the source tree.
  */
@@ -795,6 +817,67 @@ BuildMakefileTarget(Imakefile,NullParameter)
 #ifndef LibCleanDir
 #define LibCleanDir(dir) -@if [ -d dir ]; then \			@@\
 		(set -x; cd dir; $(RM) *.o); else exit 0; fi
+#endif
+
+/*
+ * LintLibReferences - variables for lint libraries
+ */
+#ifndef LintLibReferences
+#define LintLibReferences(varname,libname,libsource)			@@\
+Concat(LINT,varname) = _UseCat($(LINTLIBDIR)/llib-l,libsource/llib-,libname.ln)
+#endif
+
+/*
+ * UnsharedLibReferences - variables for unshared libraries
+ */
+#ifndef UnsharedLibReferences
+#define UnsharedLibReferences(varname,libname,libsource)		@@\
+Concat3(DEP,varname,LIB) = _UseCat($(USRLIBDIR)/lib,libsource/lib,libname.a)	@@\
+Concat(varname,LIB) = LoaderLibPrefix _Use(Concat(-l,libname),$(Concat3(DEP,varname,LIB))) @@\
+LintLibReferences(varname,libname,libsource)
+#endif
+
+/*
+ * SharedLibDependencies - shared library dependencies
+ */
+#ifndef SharedLibDependencies
+#define SharedLibDependencies(libname,libsource,revname) /**/
+#endif
+
+/*
+ * SharedDSLibDependencies - shared library dependencies with data separation
+ */
+#ifndef SharedDSLibDependencies
+#define SharedDSLibDependencies(libname,libsource,revname) /**/
+#endif
+
+/*
+ * SharedLibInsideRef - inside-the-tree shared library reference
+ */
+#ifndef SharedLibInsideRef
+#define SharedLibInsideRef(varname,libname,libsource,revname) Concat(-L,libsource) Concat(-l,libname)
+#endif
+
+/*
+ * SharedLibReferences - variables for shared libraries
+ */
+#ifndef SharedLibReferences
+#define SharedLibReferences(varname,libname,libsource,revname,rev)	@@\
+revname = rev								@@\
+Concat3(DEP,varname,LIB) = SharedLibDependencies(libname,libsource,revname) @@\
+Concat(varname,LIB) = LoaderLibPrefix _Use(Concat(-l,libname),SharedLibInsideRef(varname,libname,libsource,revname)) @@\
+LintLibReferences(varname,libname,libsource)
+#endif
+
+/*
+ * SharedDSLibReferences - variables for shared libraries
+ */
+#ifndef SharedDSLibReferences
+#define SharedDSLibReferences(varname,libname,libsource,revname,rev)	@@\
+revname = rev								@@\
+Concat3(DEP,varname,LIB) = SharedDSLibDependencies(libname,libsource,revname) @@\
+Concat(varname,LIB) = LoaderLibPrefix _Use(Concat(-l,libname),SharedLibInsideRef(varname,libname,libsource,revname)) @@\
+LintLibReferences(varname,libname,libsource)
 #endif
 
 /*
@@ -1402,121 +1485,6 @@ step::									@@\
 	done
 #endif /* MakeDirectories */
 
-
-/*
- * MakeFontsDir - generate rules to build fonts.dir database.
- */
-#ifndef MakeFontsDir
-#define MakeFontsDir(deplist)						@@\
-all:: fonts.dir								@@\
-									@@\
-fonts.dir:  deplist							@@\
-	$(MKFONTDIR) .							@@\
-									@@\
-clean::									@@\
-	$(RM) fonts.dir
-#endif /* MakeFontsDir */
-
-
-/*
- * MakeFonts - generate rules to build font database.
- */
-#ifndef MakeFonts
-#define MakeFonts()							@@\
-all::  $(OBJS)								@@\
-									@@\
-MakeFontsDir($(OBJS))							@@\
-									@@\
-clean::									@@\
-	$(RM) *.snf *.snf.Z *.pcf *.pcf.Z
-#endif /* MakeFonts */
-
-
-/*
- * InstallFontObjs - generate rules to install font files
- */
-#ifndef InstallFontObjs
-#define InstallFontObjs(objs,dest)					@@\
-InstallMultipleFlags(objs,dest,$(INSTDATFLAGS))				@@\
-									@@\
-install::  fonts.dir							@@\
-	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTDATFLAGS) fonts.dir $(DESTDIR)dest
-#endif /* InstallFontObjs */
-
-
-/*
- * InstallFonts - generate rules to install font files
- */
-#ifndef InstallFonts
-#define InstallFonts(dest)						@@\
-InstallFontObjs($(OBJS),dest)
-#endif /* InstallFonts */
-
-
-/*
- * InstallFontAliases - generate rules to install font aliases databases. 
- */
-#ifndef InstallFontAliases
-#define InstallFontAliases(dest)					@@\
-install::  fonts.alias							@@\
-	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTDATFLAGS) fonts.alias $(DESTDIR)dest
-#endif /* InstallFontAliases */
-
-#ifndef FontSrc
-#define FontSrc(basename) basename.bdf
-#endif
-
-#ifndef FontBaseObj
-#ifdef SnfFonts
-#define FontBaseObj(basename)basename.snf
-#else
-#define FontBaseObj(basename)basename.pcf
-#endif
-#endif
-
-/*
- * InstallFontScale - generate rules to install font scale database.
- */
-#ifndef InstallFontScale
-#define InstallFontScale(dest)						@@\
-install::  fonts.scale							@@\
-	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTDATFLAGS) fonts.scale $(DESTDIR)dest
-#endif /* InstallFontScale */
-
-/*
- * UncompressedFontTarget
- */
-#ifndef UncompressedFontTarget
-#ifdef SnfFonts
-#define UncompressedFontTarget(basename)				@@\
-FontBaseObj(basename):  FontSrc(basename)				@@\
-	$(FONTC) $(FONTCFLAGS) $? >$@
-#else
-#define UncompressedFontTarget(basename)				@@\
-FontBaseObj(basename):  FontSrc(basename)				@@\
-	$(FONTC) $(FONTCFLAGS) $? -o $@
-#endif
-#endif /* CompressedFontTarget */
-
-/*
- * CompressedFontTarget
- */
-#ifndef CompressedFontTarget
-#define CompressedFontTarget(basename)					@@\
-FontBaseObj(basename).Z:  FontSrc(basename)				@@\
-	$(FONTC) $(FONTCFLAGS) $? | $(COMPRESS) > $@
-#endif /* CompressedFontTarget */
-
-#ifdef CompressAllFonts
-#define FontTarget(basename) CompressedFontTarget(basename)
-#define FontObj(basename) FontBaseObj(basename).Z
-#else
-#define FontTarget(basename) UncompressedFontTarget(basename)
-#define FontObj(basename) FontBaseObj(basename)
-#endif /* CompressAllFonts */
 
 /*
  * AllTarget - generate rules to build necessary things during make all.
