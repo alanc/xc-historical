@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: xtest.ms,v 1.4 92/06/28 13:54:17 rws Exp $
+.\" $XConsortium: xtest.ms,v 1.5 92/12/17 13:40:21 rws Exp $
 .de lP
 .ne 8
 .LP
@@ -314,7 +314,7 @@ that is, it can continue executing requests even if another client
 grabs the server.
 If \fIimpervious\fP is
 .PN False ,
-the the executing client returns to the normal state of being
+then the executing client returns to the normal state of being
 pervious to server grabs.
 .lP
 .NH 1
@@ -640,7 +640,7 @@ If \fIimpervious\fP is
 then the executing client becomes impervious to server grabs.
 If \fIimpervious\fP is
 .PN False ,
-the the executing client returns to the normal state of being
+then the executing client returns to the normal state of being
 pervious to server grabs.
 .lP
 Bool
