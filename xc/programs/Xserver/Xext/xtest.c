@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.5 92/02/06 09:00:26 rws Exp $ */
+/* $XConsortium: xtest.c,v 1.6 92/02/24 18:54:58 keith Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -151,7 +151,17 @@ ProcXTestFakeInput(client)
 	ResetCurrentRequest (client);
 	client->sequence--;
 	if (!ClientSleepUntil(client, &activateTime, NULL, NULL))
+	{
+	    /* 
+	     * flush this request - must be in this order because
+	     * ResetCurrentRequest adds the client back to 
+	     * clientsWithInput which will cause the client to
+	     * keep going, instead of waiting for the timeout.
+	     */
+	    (void) ReadRequestFromClient (client);
+	    client->sequence++;
 	    return BadAlloc;
+	}
 	return Success;
     }
     switch (ev->u.u.type)
