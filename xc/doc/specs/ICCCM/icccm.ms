@@ -10,7 +10,7 @@
 .ce 5
 \s+2\fBInter-Client Communication Conventions Manual\fP\s-2
 
-\s-1\fBVersion 1.0\fP\s-1
+\s-1\fBVersion 1.1\fP\s-1
 
 \s+1\fBMIT X Consortium Standard\fP\s-1
 .sp 6
@@ -27,7 +27,7 @@
 X Window System is a trademark of M.I.T.
 .LP             
 .LP
-Copyright \(co 1988 
+Copyright \(co 1988, 1991
 Massachusetts Institute of Technology, 
 Cambridge, MA USA.
 .LP
@@ -308,9 +308,7 @@ Semantics
 The core protocol imposes no semantics on atoms except as they are used in
 FONTPROP structures.
 For further information on FONTPROP semantics,
-see the definition of 
-.PN QueryFont 
-in the \fIX Window System Protocol\fP.
+see the \fIX Logical Font Description Conventions\fP.
 .NH 3
 Name Spaces
 .XS
@@ -1155,6 +1153,7 @@ TIMESTAMP	INTEGER	T{
 The timestamp used to acquire the selection
 T}
 STRING	STRING	ISO Latin-1 (+TAB+NEWLINE) text
+COMPOUND_TEXT	COMPOUND_TEXT	Compound Text
 TEXT	TEXT	T{
 The text in the owner's choice of encoding
 T}
@@ -1209,9 +1208,9 @@ NAME	TEXT	(see section 4.1.2.1)
 CLIENT_WINDOW	WINDOW	T{
 A top-level window of the owner
 T}
-DELETE	NULL	(see section 2.6.3.1)
-INSERT_SELECTION	NULL	(see section 2.6.3.2)
-INSERT_PROPERTY	NULL	(see section 2.6.3.3)
+DELETE	\fIany\fP	(see section 2.6.3.1)
+INSERT_SELECTION	\fIany\fP	(see section 2.6.3.2)
+INSERT_PROPERTY	\fI\fP	(see section 2.6.3.3)
 .sp 6p
 _
 .TE
@@ -1293,7 +1292,7 @@ that they appear in the property.
 .LP
 In general,
 targets with side effects will return no information 
-(that is, they will return a zero-length property of type NULL).
+(that is, they will return a zero-length property of arbitrary type).
 In all cases,
 the requested side effect must be performed before the conversion is accepted.
 If the requested side effect cannot be performed,
@@ -1301,7 +1300,7 @@ the corresponding conversion request must be refused.
 .NT Conventions
 .IP 1. 5
 Targets with side effects should return no information
-(that is, they should have a zero-length property of type NULL).
+(that is, they should have a zero-length property of arbitrary type).
 .IP 2. 5
 The side effect of a target must be performed before the conversion is accepted.
 .IP 3. 5
@@ -1327,7 +1326,7 @@ DELETE
 When the owner of a selection receives a request to convert it to DELETE,
 it should delete the corresponding selection
 (whatever doing so means for its internal data structures)
-and return a zero-length property of type NULL if the deletion was successful.
+and return a zero-length property of arbitrary type if the deletion was successful.
 .NH 4
 INSERT_SELECTION
 .XS
@@ -1402,6 +1401,7 @@ _
 .TH
 .R
 STRING	8	Null
+COMPOUND_TEXT	32	Null
 ATOM	32	Fixed-size
 ATOM_PAIR	32	Fixed-size
 BITMAP	32	Fixed-size
@@ -1453,7 +1453,10 @@ The spacing interpretation of TAB is context dependent.
 Other ASCII control characters are explicitly not included in STRING 
 at the present time.
 .LP
-Type STRING properties will consist of a list of elements separated by NULL
+COMPOUND_TEXT as a type or a target specifies the Compound Text interchange
+format; see the \fICompound Text Encoding\fP.
+.LP
+Type STRING and COMPOUND_TEXT properties will consist of a list of elements separated by null
 characters;
 other encodings will need to specify an appropriate list format.
 .NH 3
@@ -1829,11 +1832,6 @@ and to provide the user with noncritical state information.
 Even window managers that support headline bars will place some limit 
 on the length of the WM_NAME string that can be visible;
 brevity here will pay dividends.
-.NT Problem
-A change is needed to 
-.PN XFetchName 
-and similar Xlib functions to allow for multiple encodings.
-.NE
 .NH 4
 WM_ICON_NAME Property
 .XS
@@ -1985,9 +1983,6 @@ the minimum size is to be used in its place and vice versa.
 The min_aspect and max_aspect fields are fractions
 with the numerator first and the denominator second,
 and they allow a client to specify the range of aspect ratios it prefers.
-.NT Problem
-The base and win_gravity arguments need a change to Xlib.
-.NE
 .NH 4
 WM_HINTS Property
 .XS
@@ -2504,19 +2499,26 @@ Type == the atom WM_CHANGE_STATE\s-2\u7\d\s0
 7.  The type field of the 
 .PN ClientMessage 
 event (called the message_type field by Xlib) should not be confused with
-the code field of the event itself,
+the ``code'' field of the event itself,
 which will have the value 33 
 .Pn ( ClientMessage ).
 .FE
 .IP \(bu 5
 Format == 32
 .IP \(bu 5
-Data[0] == IconicState
+Data[0] == IconicState\s-2\u8\d\s0
+.FS
+8.  We use the notation data[n] to indicate the nth element 
+of the LISTofINT8, LISTofINT16, or LISTofINT32 in the data field of the 
+.PN ClientMessage ,
+according to the format field.
+The list is indexed from zero.
+.FE
 .LP
 Other values of data[0] are reserved for future extensions to these
-conventions.\s-2\u8\d\s0
+conventions.\s-2\u9\d\s0
 .FS
-8.  The format of this 
+9.  The format of this 
 .PN ClientMessage 
 event does not match the format of 
 .PN ClientMessages
@@ -2997,9 +2999,9 @@ Colormaps
 .XE
 .LP
 The window manager is responsible for installing and uninstalling 
-colormaps.\s-2\u9\d\s0
+colormaps.\s-2\u10\d\s0
 .FS
-9.  The conventions described in earlier drafts by which clients 
+10.  The conventions described in earlier drafts by which clients 
 and window managers shared responsibility for installing colormaps 
 suffered from semantic problems.
 .FE
@@ -3401,9 +3403,9 @@ PolyLine A GC <point> <point> ....
 .LP
 The client must wait for an 
 .PN Expose
-event before drawing in the window.\s-2\u10\d\s0
+event before drawing in the window.\s-2\u11\d\s0
 .FS
-10.  This is true even if the client set the backing-store attribute to 
+11.  This is true even if the client set the backing-store attribute to 
 .PN Always .
 The backing-store attribute is a only a hint, 
 and the server may stop maintaining backing store contents at any time.
@@ -3661,26 +3663,11 @@ For all protocols, the
 .PN ClientMessage
 events have the following:
 .IP \(bu 5
-WM_PROTOCOLS as the type field\s-2\u11\d\s0
-.FS
-11.  The type field of the 
-.PN ClientMessage
-event (called the message_type member by Xlib) should not be confused 
-with the ``code'' field of the event itself,
-which will have the value 33 
-.Pn ( ClientMessage ).
-.FE
+WM_PROTOCOLS as the type field
 .IP \(bu 5
 Format 32
 .IP \(bu 5
-The atom that names their protocol in the data[0] field\s-2\u12\d\s0
-.FS
-12.  We use the notation data[n] to indicate the nth element 
-of the LISTofINT8, LISTofINT16, or LISTofINT32 in the data field of the 
-.PN ClientMessage ,
-according to the format field.
-The list is indexed from zero.
-.FE
+The atom that names their protocol in the data[0] field
 .IP \(bu 5
 A timestamp in their data[1] field
 .LP
@@ -4082,9 +4069,9 @@ the WM_SAVE_YOURSELF message if it was not updated in the first step
 .RE
 .LP
 Receiving WM_SAVE_YOURSELF on a window is, conceptually, a command 
-to save the entire client state.\s-2\u13\d\s0
+to save the entire client state.\s-2\u12\d\s0
 .FS
-13.  This convention has changed since earlier drafts because of the 
+12.  This convention has changed since earlier drafts because of the 
 introduction of the protocol in the next section.
 In the public review draft,
 there was ambiguity as to whether WM_SAVE_YOURSELF was a checkpoint 
@@ -4358,15 +4345,6 @@ for conventions connected with sharing standard colormaps.
 They should look for and create the properties described there on
 the root window of the appropriate screen.
 .LP
-However, the conventions described there are not adequate
-if the server supports multiple visuals or if standard colormaps need 
-to be deleted.
-To address this,
-two additional fields (visual_id and kill_id) are required in
-RGB_COLOR_MAP type properties, as shown in the following table.
-The colormap described by the property is one appropriate for the screen
-on whose root the property is found.
-.LP
 The contents of the RGB_COLOR_MAP type property are as follows:
 .TS H
 l l l.
@@ -4429,19 +4407,6 @@ the server informs the client of the default colormap for each screen.
 This is a colormap for the root visual,
 and clients can use it to improve the extent of colormap sharing
 if they use the root visual.
-.LP
-A similar capability is desirable for other visuals 
-and can be supported by changing the definition of the RGB_DEFAULT_MAP
-property in section 9.3.1 of \fIXlib \- C Language X Interface\fP 
-to read as follows:
-.QP
-This atom names a property.
-The value of the property is an array of 
-.PN XStandardColormap
-structures (as extended to include visual_id and kill_id fields).
-.QP
-Each entry in the array describes an RGB subset of the default colormap
-for the visual specified by visual_id.
 .NH 2
 The Keyboard Mapping
 .XS
@@ -4467,10 +4432,7 @@ The conversion between a sequence of keycodes received from the server
 and a string in a particular encoding is a private matter for each client
 (as it must be in a world where applications may be using different
 encodings to support different languages and fonts).
-This conversion for ISO Latin-1 is implemented by the Xlib
-.PN XLookupString
-function;
-there will presumably be equivalent functions for other encodings.
+See the Xlib reference manual for converting keyboard events to text.
 .LP
 The only valid reason for using a
 .PN ChangeKeyboardMapping
