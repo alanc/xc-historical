@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.35 89/04/13 10:00:55 jim Exp $
+ * $XConsortium: add_window.c,v 1.36 89/04/13 15:48:09 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.35 89/04/13 10:00:55 jim Exp $";
+"$XConsortium: add_window.c,v 1.36 89/04/13 15:48:09 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -917,7 +917,7 @@ TwmWindow *tmp_win;
 #endif
 	Scr->resizePm = XCreatePixmap(dpy, tmp_win->title_w,
 	    Scr->TitleHeight, Scr->TitleHeight, 1);
-	XFillRectangle(dpy, Scr->iconifyPm, gc, 0,0,
+	XFillRectangle(dpy, Scr->resizePm, gc, 0,0,
 	    Scr->TitleHeight, Scr->TitleHeight);
 
 	/* now draw the images in */
