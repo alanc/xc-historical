@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.44 88/03/09 10:41:11 rws Exp $ */
+/* $Header: dispatch.c,v 1.45 88/03/16 16:00:34 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1292,6 +1292,15 @@ ProcListFontsWithInfo(client)
     return(client->noClientException);
 }
 
+/*ARGSUSED*/
+static
+dixDestroyPixmap(pPixmap, pid)
+    PixmapPtr pPixmap;
+    Pixmap pid;
+{
+    (*pPixmap->drawable.pScreen->DestroyPixmap)(pPixmap);
+}
+
 int
 ProcCreatePixmap(client)
     register ClientPtr client;
@@ -1333,7 +1342,7 @@ CreatePmap:
     {
 	pMap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 	AddResource(
-	    stuff->pid, RT_PIXMAP, (pointer)pMap, pDraw->pScreen->DestroyPixmap,
+	    stuff->pid, RT_PIXMAP, (pointer)pMap, dixDestroyPixmap,
 	    RC_CORE);
 	return(client->noClientException);
     }
