@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.33 89/08/28 12:14:04 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.34 89/10/09 16:20:05 jim Exp $";
 #endif /* lint */
 
 
@@ -44,6 +44,14 @@ SOFTWARE.
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/DialogP.h>
 #include <X11/Xaw/Cardinals.h>
+
+/*
+ * After we have set the string in the value widget we set the
+ * string to a magic value.  So that when a SetValues request is made
+ * on the dialog value we will notice it, and reset the string.
+ */
+
+#define MAGIC_VALUE ((char *) 3)
 
 #define streq(a,b) (strcmp( (a), (b) ) == 0)
 
@@ -264,6 +272,7 @@ Widget current, request, new;
 	    Arg args[1];
 	    XtSetArg(args[0], XtNstring, w->dialog.value);
 	    XtSetValues(w->dialog.valueW, args, ONE);
+	    w->dialog.value = MAGIC_VALUE;
 	}
     }
     return False;
@@ -323,7 +332,8 @@ Widget w;
  * Value widget gets the keyboard focus.
  */
 
-   XtSetKeyboardFocus(w, dw->dialog.valueW);
+    XtSetKeyboardFocus(w, dw->dialog.valueW);
+    dw->dialog.value = MAGIC_VALUE;
 }
 
 
