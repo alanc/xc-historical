@@ -1,5 +1,14 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/12/02 17:29:05 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 93/12/13 17:38:58 dpw Exp $
 #include <Server.tmpl>
+
+#if HasShm
+SHMDEF = -DHAS_SHM
+#endif
+
+XCOMM add more architectures here as we discover them
+#if defined(HPArchitecture)
+MMAPDEF = -DHAS_MMAP
+#endif
 
 SRCS = 	InitInput.c InitOutput.c stubs.c
 
@@ -9,7 +18,7 @@ INCLUDES = -I. -I$(BUILDINCDIR) -I$(FONTINCSRC) \
 	   -I../../cfb -I../../mfb -I../../mi -I../../include -I../../os  \
            -I$(EXTINCSRC) -I$(INCLUDESRC)
 
-DEFINES = ServerOSDefines
+DEFINES = ServerOSDefines $(SHMDEF) $(MMAPDEF)
 
 all:: $(OBJS)
 
