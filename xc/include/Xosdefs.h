@@ -1,7 +1,7 @@
 /*
  * O/S-dependent (mis)feature macro definitions
  *
- * $XConsortium: Xosdefs.h,v 1.6 91/07/13 22:53:17 rws Exp $
+ * $XConsortium: Xosdefs.h,v 1.7 91/07/19 23:22:19 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -49,10 +49,6 @@
 #ifdef UTEK
 #define X_NOT_POSIX
 #define X_NOT_STDC_ENV
-#endif
-
-#ifdef CRAY
-#define X_NOT_POSIX
 #endif
 
 #ifdef vax
