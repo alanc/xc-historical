@@ -1,5 +1,5 @@
-*Background:	grey
-*BorderColor:	light blue
-*hour:		yellow
-*jewel:		yellow
-*minute:	yellow
+Clock*Background:	grey
+Clock*BorderColor:	light blue
+Clock*hour:		yellow
+Clock*jewel:		yellow
+Clock*minute:	yellow
