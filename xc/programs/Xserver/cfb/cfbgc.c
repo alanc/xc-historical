@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.17 89/09/02 15:14:58 rws Exp $ */
+/* $XConsortium: cfbgc.c,v 5.18 89/09/02 17:11:26 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -140,11 +140,11 @@ matchCommon (pGC)
 	return 0;
     if (pGC->fillStyle != FillSolid)
 	return 0;
+    if ((pGC->alu != GXcopy) || ((pGC->planemask & PMSK) != PMSK))
+	return 0;
     if (pGC->font &&
 	(pGC->font->pFI->maxbounds.metrics.rightSideBearing -
-         pGC->font->pFI->minbounds.metrics.leftSideBearing) <= 32 &&
-	 pGC->alu == GXcopy &&
-	 ((pGC->planemask & PMSK) == PMSK))
+         pGC->font->pFI->minbounds.metrics.leftSideBearing) <= 32)
     {
 	if (pGC->font->pFI->terminalFont)
 	    return &cfbTEOps;
