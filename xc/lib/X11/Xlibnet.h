@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.39 94/04/17 20:21:51 mor Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.40 94/07/20 10:37:26 mor Exp kaleb $ */
 /*
 
 Copyright (c) 1991  X Consortium
