@@ -81,6 +81,13 @@ XClipboard.geometry:		300x200
 			Ctrl<Key>M: no-op(ring-bell) \n\
 			Ctrl<Key>J: no-op(ring-bell) \n\
 			Meta<Key>I: no-op(ring-bell)
+*fileDialog*value.baseTranslations:	#override\
+			<Key>Return: AcceptSave() \n\
+			Ctrl<Key>S: no-op(ring-bell) \n\
+			Ctrl<Key>R: no-op(ring-bell) \n\
+			Ctrl<Key>M: no-op(ring-bell) \n\
+			Ctrl<Key>J: no-op(ring-bell) \n\
+			Meta<Key>I: no-op(ring-bell)
 
 *fileDialog*cancel.label:		Cancel
 *fileDialog*cancel.translations:	#override\
@@ -102,4 +109,3 @@ XClipboard.geometry:		300x200
 			Ctrl<Key>M: no-op(ring-bell) \n\
 			Ctrl<Key>J: no-op(ring-bell) \n\
 			Meta<Key>I: no-op(ring-bell)
-
