@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.23 90/03/16 17:17:26 keith Exp $ */
+/* $XConsortium: events.c,v 5.24 90/03/26 16:31:22 keith Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2613,7 +2613,7 @@ ProcGrabPointer(client)
 	     device->sync.other && !SameClient(device->sync.other, client))
 	rep.status = GrabFrozen;
     else if ((CompareTimeStamps(time, currentTime) == LATER) ||
-	     (grab && (CompareTimeStamps(time, device->grabTime) == EARLIER)))
+	     (CompareTimeStamps(time, device->grabTime) == EARLIER))
 	rep.status = GrabInvalidTime;
     else
     {
@@ -2745,7 +2745,7 @@ GrabDevice(client, dev, this_mode, other_mode, grabWindow, ownerEvents, ctime,
     else if (!pWin->realized)
 	*status = GrabNotViewable;
     else if ((CompareTimeStamps(time, currentTime) == LATER) ||
-	     (grab && (CompareTimeStamps(time, dev->grabTime) == EARLIER)))
+	     (CompareTimeStamps(time, dev->grabTime) == EARLIER))
 	*status = GrabInvalidTime;
     else if (dev->sync.frozen &&
 	     dev->sync.other && !SameClient(dev->sync.other, client))
