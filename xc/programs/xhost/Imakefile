@@ -3,6 +3,9 @@ RPC_DEFINES = -DSECURE_RPC
 #else
 RPC_DEFINES = 
 #endif
+#if !HasSockets
+INCLUDES = -I$(XLIBSRC)
+#endif
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
            SRCS = xhost.c 
