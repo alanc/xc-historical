@@ -1,4 +1,4 @@
-/* $XConsortium: XPutImage.c,v 11.63 91/12/29 16:18:18 rws Exp $ */
+/* $XConsortium: XPutImage.c,v 11.64 92/01/09 18:39:26 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -559,7 +559,7 @@ static int Const HalfOrderWord[12] = {
 
 /* Cancel a GetReq operation, before doing _XSend or Data */
 
-#if __STDC__ && !(defined(UNIXCPP))
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define UnGetReq(name)\
     dpy->bufptr -= SIZEOF(x##name##Req);\
     dpy->request--

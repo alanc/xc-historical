@@ -1,4 +1,4 @@
-/* $XConsortium: Atoms.c,v 1.14 90/12/20 15:04:30 converse Exp $
+/* $XConsortium: Atoms.c,v 1.15 91/06/30 17:49:57 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -54,7 +54,7 @@ struct _AtomRec {
 #define STATIC static
 #endif
 
-#if __STDC__ && !defined(UNIXCPP)
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define DeclareAtom(atom,text) \
 STATIC struct _AtomRec __##atom = { text, NULL }; \
 AtomPtr _##atom = &__##atom;

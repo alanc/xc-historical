@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sharedlib.c,v 1.0 91/06/29 12:40:18 rws Exp $
+ * $XConsortium: sharedlib.c,v 1.6 91/07/31 21:12:30 keith Exp $
  * 
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@ struct _AtomRec {
     struct _DisplayRec* head;
 };
 
-#if __STDC__ && !defined(UNIXCPP)
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define DeclareAtom(atom) \
 extern struct _AtomRec __##atom; \
 AtomPtr _##atom = &__##atom;

@@ -1,4 +1,4 @@
-/* $XConsortium: utx_conv.c,v 5.10 92/08/20 16:36:07 hersh Exp $ */
+/* $XConsortium: utx_conv.c,v 5.11 92/12/29 17:11:16 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1906,11 +1906,11 @@ phg_utx_map_update_state( def_mode, mod_mode )
 #undef MAX3
 
 
-#ifdef	__STDC__
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define VAR_LENGTH(_l,_n) (4 * (_l) - sizeof(pex##_n))
 #else
 #define VAR_LENGTH(_l,_n) (4 * (_l) - sizeof(pex/**/_n))
-#endif /* __STDC__ */
+#endif
 
 #define PEX_OPT_DATA_SIZE(_ct, _attr)					\
     ((((_attr) & PEXGAColour) ?						\
@@ -1938,11 +1938,11 @@ phg_utx_map_update_state( def_mode, mod_mode )
       ((_totSize - PEX_OPT_DATA_SIZE(_ct, _fa) - sizeof(CARD32) * _nLists)  \
 	    / PEX_VERTEX_SIZE(_ct, _va))
     
-#ifdef	__STDC__
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define RHEADER(_n) ((pex##_n *)oc)
 #else
 #define RHEADER(_n) ((pex/**/_n *)oc)
-#endif /* __STDC__ */
+#endif
 
 static int
 encoded_text_size( num_encodings, buf )
@@ -3122,17 +3122,17 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 }
 
 
-#ifdef	__STDC__
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define HEADER(_n) ((pex##_n *)pex_oc->oc)
 #else
 #define HEADER(_n) ((pex/**/_n *)pex_oc->oc)
-#endif /* __STDC__ */
+#endif
 
-#ifdef	__STDC__
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define TYPE_AND_SIZE(_n) oc_type = PEXOC##_n; hdr_size = sizeof(pex##_n);
 #else
 #define TYPE_AND_SIZE(_n) oc_type = PEXOC/**/_n; hdr_size = sizeof(pex/**/_n);
-#endif /* __STDC__ */
+#endif
 
 int
 phg_utx_encode_text( length, string, encoding )

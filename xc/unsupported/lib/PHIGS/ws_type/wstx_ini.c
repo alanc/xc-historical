@@ -1,4 +1,4 @@
-/* $XConsortium: wstx_ini.c,v 5.7 92/05/29 14:15:52 hersh Exp $ */
+/* $XConsortium: wstx_ini.c,v 5.8 92/05/29 14:29:22 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -852,7 +852,7 @@ phg_wst_destroy( wst )
 #undef CAT2
 #endif
 
-#if __STDC__
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 #define CAT2(a,b) a##b
 #else
 #define CAT2(a,b) a/**/b

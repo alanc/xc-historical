@@ -1,4 +1,4 @@
-/* $XConsortium: PEXlibint.h,v 1.7 92/07/16 11:06:41 mor Exp $ */
+/* $XConsortium: PEXlibint.h,v 1.8 92/08/26 13:05:15 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -291,7 +291,7 @@ extern PEXDisplayInfo *PEXDisplayInfoHeader;
  * SETUP_REQ is a macro containing common code for PEXGetReq and PEXGetFPReq.
  */
 
-#if __STDC__ && !defined(UNIXCPP)
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 
 #define SETUP_REQ(_name, _req) \
     PEXDisplayInfo *pexDisplayInfo; \
@@ -339,7 +339,7 @@ extern PEXDisplayInfo *PEXDisplayInfoHeader;
  * the request.  "n" will be padded to a word boundary.
  */
 
-#if __STDC__ && !defined(UNIXCPP)
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
 
 #define SETUP_REQ_EXTRA(_name, _n, _req) \
     PEXDisplayInfo *pexDisplayInfo; \
