@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: init.c,v 1.10 88/01/25 13:53:43 swick Locked $";
+static char rcs_id[] = "$Header: init.c,v 2.10 88/01/25 13:53:43 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -35,53 +35,53 @@ extern char* _XLowerCase();
 /* Xmh-specific resources. */
 
 static XtResource resources[] = {
-    {"debug", "Debug", XrmRBoolean, sizeof(Boolean),
-	 (Cardinal)&debug, XrmRString, "off"},
-    {"tempdir", "tempDir", XrmRString, sizeof(char *),
-	 (Cardinal)&tempDir, XrmRString, "/tmp"},
-    {"mhpath", "MhPath", XrmRString, sizeof(char *),
-	 (Cardinal)&defMhPath, XrmRString, "/usr/local/mh6"},
-    {"initialfolder", "InitialFolder", XrmRString, sizeof(char *),
-	 (Cardinal)&initialFolderName, XrmRString, "inbox"},
-    {"initialincfile", "InitialIncFile", XrmRString, sizeof(char *),
-         (Cardinal)&initialIncFile, XrmRString, NULL},
-    {"draftsfolder", "DraftsFolder", XrmRString, sizeof(char *),
-	 (Cardinal)&draftsFolderName, XrmRString, "drafts"},
-    {"sendwidth", "SendWidth", XrmRInt, sizeof(int),
-	 (Cardinal)&defSendLineWidth, XrmRString, "72"},
-    {"sendbreakwidth", "SendBreakWidth", XrmRInt, sizeof(int),
-	 (Cardinal)&defBreakSendLineWidth, XrmRString, "85"},
-    {"printcommand", "PrintCommand", XrmRString, sizeof(char *),
-	 (Cardinal)&defPrintCommand, XrmRString,
+    {"debug", "Debug", XtRBoolean, sizeof(Boolean),
+	 (Cardinal)&debug, XtRString, "off"},
+    {"tempdir", "tempDir", XtRString, sizeof(char *),
+	 (Cardinal)&tempDir, XtRString, "/tmp"},
+    {"mhpath", "MhPath", XtRString, sizeof(char *),
+	 (Cardinal)&defMhPath, XtRString, "/usr/local/mh6"},
+    {"initialfolder", "InitialFolder", XtRString, sizeof(char *),
+	 (Cardinal)&initialFolderName, XtRString, "inbox"},
+    {"initialincfile", "InitialIncFile", XtRString, sizeof(char *),
+         (Cardinal)&initialIncFile, XtRString, NULL},
+    {"draftsfolder", "DraftsFolder", XtRString, sizeof(char *),
+	 (Cardinal)&draftsFolderName, XtRString, "drafts"},
+    {"sendwidth", "SendWidth", XtRInt, sizeof(int),
+	 (Cardinal)&defSendLineWidth, XtRString, "72"},
+    {"sendbreakwidth", "SendBreakWidth", XtRInt, sizeof(int),
+	 (Cardinal)&defBreakSendLineWidth, XtRString, "85"},
+    {"printcommand", "PrintCommand", XtRString, sizeof(char *),
+	 (Cardinal)&defPrintCommand, XtRString,
 	 "enscript > /dev/null 2>/dev/null"},
-    {"tocwidth", "TocWidth", XrmRInt, sizeof(int),
-	 (Cardinal)&defTocWidth, XrmRString, "100"},
-    {"skipdeleted", "SkipDeleted", XrmRBoolean, sizeof(Boolean),
-	 (Cardinal)&SkipDeleted, XrmRString, "True"},
-    {"skipmoved", "SkipMoved", XrmRBoolean, sizeof(Boolean),
-	 (Cardinal)&SkipMoved, XrmRString, "True"},
-    {"skipCopied", "SkipCopied", XrmRBoolean, sizeof(Boolean),
-	 (Cardinal)&SkipCopied, XrmRString, "False"},
-    {"hideboringheaders", "HideBoringHeaders", XrmRBoolean, sizeof(Boolean),
-	 (Cardinal)&defHideBoringHeaders, XrmRString, "True"},
-    {"geometry", "Geometry", XrmRString, sizeof(char *),
-	 (Cardinal)&defGeometry, XrmRString, ""},
-    {"tocgeometry", "TocGeometry", XrmRString, sizeof(char *),
-	 (Cardinal)&defTocGeometry, XrmRString, NULL},
-    {"viewgeometry", "ViewGeometry", XrmRString, sizeof(char *),
-	 (Cardinal)&defViewGeometry, XrmRString, NULL},
-    {"compgeometry", "CompGeometry", XrmRString, sizeof(char *),
-	 (Cardinal)&defCompGeometry, XrmRString, NULL},
-    {"pickgeometry", "PickGeometry", XrmRString, sizeof(char *),
-	 (Cardinal)&defPickGeometry, XrmRString, NULL},
-    {"tocpercentage", "TocPercentage", XrmRInt, sizeof(int),
-	 (Cardinal)&defTocPercentage, XrmRString, "33"},
-    {"checknewmail", "CheckNewMail", XrmRBoolean, sizeof(Boolean),
-	 (Cardinal)&defNewMailCheck, XrmRString, "True"},
-    {"makecheckpoints", "MakeCheckPoints", XrmRBoolean, sizeof(Boolean),
-	 (Cardinal)&defMakeCheckpoints, XrmRString, "False"},
-    {"mailPath", "MailPath", XrmRString, sizeof(char *),
-	 (Cardinal)&mailDir, XrmRString, NULL},
+    {"tocwidth", "TocWidth", XtRInt, sizeof(int),
+	 (Cardinal)&defTocWidth, XtRString, "100"},
+    {"skipdeleted", "SkipDeleted", XtRBoolean, sizeof(Boolean),
+	 (Cardinal)&SkipDeleted, XtRString, "True"},
+    {"skipmoved", "SkipMoved", XtRBoolean, sizeof(Boolean),
+	 (Cardinal)&SkipMoved, XtRString, "True"},
+    {"skipCopied", "SkipCopied", XtRBoolean, sizeof(Boolean),
+	 (Cardinal)&SkipCopied, XtRString, "False"},
+    {"hideboringheaders", "HideBoringHeaders", XtRBoolean, sizeof(Boolean),
+	 (Cardinal)&defHideBoringHeaders, XtRString, "True"},
+    {"geometry", "Geometry", XtRString, sizeof(char *),
+	 (Cardinal)&defGeometry, XtRString, ""},
+    {"tocgeometry", "TocGeometry", XtRString, sizeof(char *),
+	 (Cardinal)&defTocGeometry, XtRString, NULL},
+    {"viewgeometry", "ViewGeometry", XtRString, sizeof(char *),
+	 (Cardinal)&defViewGeometry, XtRString, NULL},
+    {"compgeometry", "CompGeometry", XtRString, sizeof(char *),
+	 (Cardinal)&defCompGeometry, XtRString, NULL},
+    {"pickgeometry", "PickGeometry", XtRString, sizeof(char *),
+	 (Cardinal)&defPickGeometry, XtRString, NULL},
+    {"tocpercentage", "TocPercentage", XtRInt, sizeof(int),
+	 (Cardinal)&defTocPercentage, XtRString, "33"},
+    {"checknewmail", "CheckNewMail", XtRBoolean, sizeof(Boolean),
+	 (Cardinal)&defNewMailCheck, XtRString, "True"},
+    {"makecheckpoints", "MakeCheckPoints", XtRBoolean, sizeof(Boolean),
+	 (Cardinal)&defMakeCheckpoints, XtRString, "False"},
+    {"mailPath", "MailPath", XtRString, sizeof(char *),
+	 (Cardinal)&mailDir, XtRString, NULL},
 };
 
 static XrmOptionDescRec table[] = {
@@ -129,7 +129,6 @@ char **argv;
 {
     int l;
     FILEPTR fid;
-    XrmResourceDataBase db, db2;
     char str[500], str2[500], *ptr;
     Scrn scrn;
     static XtActionsRec actions[] = {
@@ -149,7 +148,7 @@ char **argv;
 
     homeDir = MallocACopy(getenv("HOME"));
 
-    XtGetSubresources((Widget) toplevel, (caddr_t) NULL, progName, "Xmh",
+    XtGetSubresources(toplevel, (caddr_t) NULL, progName, "Xmh",
 		      resources, XtNumber(resources), NULL, (Cardinal) 0);
 
     if (!mailDir) {
