@@ -252,8 +252,8 @@
        (let ((source-end (length ,sv)))
 	 (declare (type array-index source-end))
     
-	 (if* (and (eq ,tv ,sv)
-		   (> ,ts ,ss))
+	 (excl:if* (and (eq ,tv ,sv)
+			(> ,ts ,ss))
 	    then (let ((nelts (min (- ,te ,ts)
 				   (- source-end ,ss))))
 		   (do ((target-index (+ ,ts nelts -1) (1- target-index))
