@@ -14,7 +14,7 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $XConsortium: imake.c,v 1.32 88/09/06 17:51:36 jim Exp $
+ * $XConsortium: imake.c,v 1.33 88/09/15 15:08:33 jim Exp $
  * $Locker: jim $
  *
  * Author:
@@ -737,7 +737,8 @@ KludgeOutputLine(pline)
 	    	break;
 	    case ' ':	/*May need a tab*/
 	    default:
-		while (*p) if (*p++ == ':') {
+		for (; *p; p++) if (p[0] == ':' && 
+				    p > *pline && p[-1] != '\\') {
 		    if (**pline == ' ')
 			(*pline)++;
 		    InRule = TRUE;
