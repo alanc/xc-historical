@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbclip.c,v 5.3 92/05/05 13:42:11 keith Exp $ */
+/* $XConsortium: mfbclip.c,v 5.4 94/01/07 09:43:17 dpw Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "pixmapstr.h"
@@ -68,16 +68,16 @@ mfbPixmapToRegion(pPix)
     PixmapPtr	pPix;
 {
     register RegionPtr	pReg;
-    register unsigned	*pw, w;
+    register PixelType	*pw, w;
     register int	ib;
     int			width, h, base, rx1, crects;
-    unsigned int	*pwLineEnd;
+    PixelType		*pwLineEnd;
     int			irectPrevStart, irectLineStart;
     register BoxPtr	prectO, prectN;
     BoxPtr		FirstRect, rects, prectLineStart;
     Bool		fInBox, fSame;
-    register unsigned	mask0 = mask[0];
-    unsigned		*pwLine;
+    register PixelType	mask0 = mask[0];
+    PixelType		*pwLine;
     int			nWidth;
 
     pReg = REGION_CREATE(pPix->drawable.pScreen, NULL, 1);
@@ -86,8 +86,8 @@ mfbPixmapToRegion(pPix)
     FirstRect = REGION_BOXPTR(pReg);
     rects = FirstRect;
 
-    pwLine = (unsigned *) pPix->devPrivate.ptr;
-    nWidth = pPix->devKind / sizeof (unsigned);
+    pwLine = (PixelType *) pPix->devPrivate.ptr;
+    nWidth = pPix->devKind / PGSZB;
 
     width = pPix->drawable.width;
     pReg->extents.x1 = width - 1;
@@ -108,8 +108,8 @@ mfbPixmapToRegion(pPix)
 	else
 	    fInBox = FALSE;
 	/* Process all words which are fully in the pixmap */
-	pwLineEnd = pw + (width >> 5);
-	for (base = 0; pw < pwLineEnd; base += 32)
+	pwLineEnd = pw + (width >> PWSH);
+	for (base = 0; pw < pwLineEnd; base += PPW)
 	{
 	    w = *pw++;
 	    if (fInBox)
@@ -122,7 +122,7 @@ mfbPixmapToRegion(pPix)
 		if (!w)
 		    continue;
 	    }
-	    for(ib = 0; ib < 32; ib++)
+	    for(ib = 0; ib < PPW; ib++)
 	    {
 	        /* If the Screen left most bit of the word is set, we're
 		 * starting a box */
@@ -149,11 +149,11 @@ mfbPixmapToRegion(pPix)
 		w = SCRLEFT(w, 1);
 	    }
 	}
-	if(width & 0x1F)
+	if(width & PIM)
 	{
 	    /* Process final partial word on line */
 	    w = *pw++;
-	    for(ib = 0; ib < (width & 0x1F); ib++)
+	    for(ib = 0; ib < (width & PIM); ib++)
 	    {
 	        /* If the Screen left most bit of the word is set, we're
 		 * starting a box */
@@ -184,7 +184,7 @@ mfbPixmapToRegion(pPix)
 	if(fInBox)
 	{
 	    ADDRECT(pReg, rects, FirstRect,
-		    rx1, h, base + (width & 0x1f), h + 1);
+		    rx1, h, base + (width & PIM), h + 1);
 	}
 	/* if all rectangles on this line have the same x-coords as
 	 * those on the previous line, then add 1 to all the previous  y2s and 
@@ -243,4 +243,3 @@ mfbPixmapToRegion(pPix)
 #endif
     return(pReg);
 }
-

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.30 93/09/20 20:19:54 dpw Exp $ */
+/* $XConsortium: mfbgc.c,v 5.31 93/12/13 17:26:41 dpw Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -589,8 +589,8 @@ mfbValidateGC(pGC, changes, pDrawable)
 	{
 	case FillTiled:
 	    /* copy current tile and stipple */
-	    if (!pGC->tileIsPixel && (pGC->tile.pixmap->drawable.width <= 32) &&
-	    	!(pGC->tile.pixmap->drawable.width & (pGC->tile.pixmap->drawable.width - 1)))
+	    if (!pGC->tileIsPixel && (pGC->tile.pixmap->drawable.width <= PPW) &&
+		!(pGC->tile.pixmap->drawable.width & (pGC->tile.pixmap->drawable.width - 1)))
 	    {
 		mfbCopyRotatePixmap(pGC->tile.pixmap,
 				    &devPriv->pRotatedPixmap, xrot, yrot);
@@ -599,7 +599,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 	    break;
 	case FillStippled:
 	case FillOpaqueStippled:
-	    if (pGC->stipple && (pGC->stipple->drawable.width <= 32) &&
+	    if (pGC->stipple && (pGC->stipple->drawable.width <= PPW) &&
 	    	!(pGC->stipple->drawable.width & (pGC->stipple->drawable.width - 1)))
 	    {
 		mfbCopyRotatePixmap(pGC->stipple,
@@ -913,10 +913,10 @@ mfbValidateGC(pGC, changes, pDrawable)
 		switch (pGC->alu)
 		{
 		  case GXcopy:
-		    devPriv->FillArea = mfbTileArea32Copy;
+		    devPriv->FillArea = mfbTileAreaPPWCopy;
 		    break;
 		  default:
-		    devPriv->FillArea = mfbTileArea32General;
+		    devPriv->FillArea = mfbTileAreaPPWGeneral;
 		    break;
 		}
 	    }

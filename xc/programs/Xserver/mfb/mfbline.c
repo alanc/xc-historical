@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbline.c,v 5.12 91/08/13 18:49:01 keith Exp $ */
+/* $XConsortium: mfbline.c,v 5.13 92/12/23 17:45:56 rws Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -452,9 +452,9 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 	PixelType _mask;
 
 	if (alu == RROP_BLACK)
-		_mask = rmask[x2 & 0x1f];
+		_mask = rmask[x2 & PIM];
 	else
-		_mask = mask[x2 & 0x1f];
+		_mask = mask[x2 & PIM];
 
 	nbox = nboxInit;
 	pbox = pboxInit;
@@ -778,9 +778,9 @@ dontStep:	;
 		if (dashIndex & 1)
 		    rop = bgrop;
 		if (rop == RROP_BLACK)
-		    _mask = rmask[x2 & 0x1f];
+		    _mask = rmask[x2 & PIM];
 		else
-		    _mask = mask[x2 & 0x1f];
+		    _mask = mask[x2 & PIM];
 		addrl = mfbScanline(addrl, x2, y2, nlwidth);
 		if (rop == RROP_BLACK)
 		    *addrl &= _mask;
@@ -820,7 +820,7 @@ int *pclip1, *pclip2;
     DDXPointRec pt1Orig, pt1, pt2;
     register int swapped = 0;
     int clipDone = 0;
-    register unsigned long utmp;
+    register unsigned int utmp;
     register int oc1, oc2;
     int clip1, clip2;
 

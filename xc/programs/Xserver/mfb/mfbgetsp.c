@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgetsp.c,v 5.7 93/02/07 13:34:03 rws Exp $ */
+/* $XConsortium: mfbgetsp.c,v 5.8 93/09/20 20:21:13 dpw Exp $ */
 #include "X.h"
 #include "Xmd.h"
 
@@ -53,7 +53,7 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
     int			nspans;		/* number of scanlines to copy */
     char		*pchardstStart;	/* where to put the bits */
 {
-    unsigned int	*pdstStart = (unsigned int *)pchardstStart;
+    PixelType		*pdstStart = (PixelType *)pchardstStart;
     register PixelType	*pdst;	/* where to put the bits */
     register PixelType	*psrc;	/* where to get the bits */
     register PixelType	tmpSrc;	/* scratch buffer for bits */
@@ -65,7 +65,8 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
     int	 		nend; 
     int	 		srcStartOver; 
     PixelType 		startmask, endmask;
-    int	 		nlMiddle, nl, srcBit;
+    unsigned int	srcBit;
+    int	 		nlMiddle, nl;
     int			w;
   
     pptLast = ppt + nspans;
@@ -75,13 +76,14 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
 
     while(ppt < pptLast)
     {
-	xEnd = min(ppt->x + *pwidth, widthSrc << 5);
+	/* XXX should this really be << PWSH, or * 8, or * PGSZB? */
+	xEnd = min(ppt->x + *pwidth, widthSrc << PWSH);
 	pwidth++;
 	psrc = mfbScanline(psrcBase, ppt->x, ppt->y, widthSrc);
 	w = xEnd - ppt->x;
-	srcBit = ppt->x & 0x1f;
+	srcBit = ppt->x & PIM;
 
-	if (srcBit + w <= 32) 
+	if (srcBit + w <= PPW) 
 	{ 
 	    getandputbits0(psrc, srcBit, w, pdst);
 	    pdst++;
@@ -91,12 +93,12 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
 
 	    maskbits(ppt->x, w, startmask, endmask, nlMiddle);
 	    if (startmask) 
-		nstart = 32 - srcBit; 
+		nstart = PPW - srcBit; 
 	    else 
 		nstart = 0; 
 	    if (endmask) 
-		nend = xEnd & 0x1f; 
-	    srcStartOver = srcBit + nstart > 31;
+		nend = xEnd & PIM; 
+	    srcStartOver = srcBit + nstart > PLST;
 	    if (startmask) 
 	    { 
 		getandputbits0(psrc, srcBit, nstart, pdst);
@@ -105,12 +107,12 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
 	    } 
 	    nl = nlMiddle; 
 #ifdef FASTPUTBITS
-	    Duff(nl, putbits(*psrc, nstart, 32, pdst); psrc++; pdst++;);
+	    Duff(nl, putbits(*psrc, nstart, PPW, pdst); psrc++; pdst++;);
 #else
 	    while (nl--) 
 	    { 
 		tmpSrc = *psrc;
-		putbits(tmpSrc, nstart, 32, pdst);
+		putbits(tmpSrc, nstart, PPW, pdst);
 		psrc++;
 		pdst++;
 	    } 
@@ -118,7 +120,7 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
 	    if (endmask) 
 	    { 
 		putbits(*psrc, nstart, nend, pdst);
-		if(nstart + nend > 32)
+		if(nstart + nend > PPW)
 		    pdst++;
 	    } 
 	    if (startmask || endmask)
@@ -127,4 +129,3 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
         ppt++;
     }
 }
-

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbplygblt.c,v 5.9 93/09/20 20:22:11 dpw Exp $ */
+/* $XConsortium: mfbplygblt.c,v 5.10 94/01/07 09:43:31 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -140,7 +140,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	break;
       case rgnIN:
         pdstBase = mfbScanline(pdstBase, x, y, widthDst);
-        xchar = x & 0x1f;
+        xchar = x & PIM;
 
         while(nglyph--)
         {
@@ -157,18 +157,18 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	       for left edge of glyph
 	    */
 	    xoff = xchar + pci->metrics.leftSideBearing;
-	    if (xoff > 31)
+	    if (xoff > PLST)
 	    {
 	        pdst++;
-	        xoff &= 0x1f;
+	        xoff &= PIM;
 	    }
 	    else if (xoff < 0)
 	    {
-	        xoff += 32;
+	        xoff += PPW;
 	        pdst--;
 	    }
 
-	    if ((xoff + w) <= 32)
+	    if ((xoff + w) <= PPW)
 	    {
 	        /* glyph all in one longword */
 	        maskpartialbits(xoff, w, startmask);
@@ -183,8 +183,8 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    else
 	    {
 	        /* glyph crosses longword boundary */
-	        mask32bits(xoff, w, startmask, endmask);
-	        nFirst = 32 - xoff;
+	        maskPPWbits(xoff, w, startmask, endmask);
+	        nFirst = PPW - xoff;
 	        while (h--)
 	        {
 		    getleftbits(pglyph, w, tmpSrc);
@@ -198,14 +198,14 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    /* update character origin */
 	    x += pci->metrics.characterWidth;
 	    xchar += pci->metrics.characterWidth;
-	    if (xchar > 31)
+	    if (xchar > PLST)
 	    {
-	        xchar -= 32;
+	        xchar -= PPW;
 	        pdstBase++;
 	    }
 	    else if (xchar < 0)
 	    {
-	        xchar += 32;
+	        xchar += PPW;
 	        pdstBase--;
 	    }
 	    ppci++;
@@ -232,7 +232,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
         pdstBase = mfbScanline(pdstBase, x, y, widthDst);
         xpos = x;
-	xchar = xpos & 0x1f;
+	xchar = xpos & PIM;
 
 	for (i=0; i<nglyph; i++)
 	{
@@ -249,14 +249,14 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
 	    xpos += pci->metrics.characterWidth;
 	    xchar += pci->metrics.characterWidth;
-	    if (xchar > 31)
+	    if (xchar > PLST)
 	    {
-		xchar &= 0x1f;
+		xchar &= PIM;
 		pdstBase++;
 	    }
 	    else if (xchar < 0)
 	    {
-		xchar += 32;
+		xchar += PPW;
 		pdstBase--;
 	    }
 	}
@@ -320,18 +320,18 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 			   (pci->metrics.leftSideBearing);
 		getWidth = w + glyphCol;
 		xoff = xchar + (leftEdge - ppos[i].xpos);
-		if (xoff > 31)
+		if (xoff > PLST)
 		{
-		    xoff &= 0x1f;
+		    xoff &= PIM;
 		    pdst++;
 		}
 		else if (xoff < 0)
 		{
-		    xoff += 32;
+		    xoff += PPW;
 		    pdst--;
 		}
 
-		if ((xoff + w) <= 32)
+		if ((xoff + w) <= PPW)
 		{
 		    maskpartialbits(xoff, w, startmask);
 		    while (h--)
@@ -344,8 +344,8 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		}
 		else
 		{
-		    mask32bits(xoff, w, startmask, endmask);
-		    nFirst = 32 - xoff;
+		    maskPPWbits(xoff, w, startmask, endmask);
+		    nFirst = PPW - xoff;
 		    while (h--)
 		    {
 			getshiftedleftbits(pglyph, glyphCol, getWidth, tmpSrc);

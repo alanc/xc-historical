@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 5.9 92/03/31 17:54:35 keith Exp $ */
+/* $XConsortium: mfbwindow.c,v 5.10 94/01/07 09:43:39 dpw Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,6 +30,7 @@ SOFTWARE.
 #include "mfb.h"
 #include "mistruct.h"
 #include "regionstr.h"
+#include "maskbits.h"
 
 extern WindowPtr *WindowTable;
 
@@ -164,7 +165,8 @@ mfbCopyWindow(pWin, ptOldOrg, prgnSrc)
     dx = ptOldOrg.x - pWin->drawable.x;
     dy = ptOldOrg.y - pWin->drawable.y;
     REGION_TRANSLATE(pWin->drawable.pScreen, prgnSrc, -dx, -dy);
-    REGION_INTERSECT(pWin->drawable.pScreen, prgnDst, &pWin->borderClip, prgnSrc);
+    REGION_INTERSECT(pWin->drawable.pScreen, prgnDst, &pWin->borderClip,
+		     prgnSrc);
 
     pbox = REGION_RECTS(prgnDst);
     nbox = REGION_NUM_RECTS(prgnDst);
@@ -243,7 +245,7 @@ mfbChangeWindowAttributes(pWin, mask)
 				    pBgWin->drawable.y - pPrivWin->oldRotate.y);
 		  }
 	      }
-	      else if ((pWin->background.pixmap->drawable.width <= 32) &&
+	      else if ((pWin->background.pixmap->drawable.width <= PPW) &&
 		       !(pWin->background.pixmap->drawable.width &
 			 (pWin->background.pixmap->drawable.width - 1)))
 	      {
@@ -273,7 +275,7 @@ mfbChangeWindowAttributes(pWin, mask)
 	      break;
 
 	  case CWBorderPixmap:
-	      if ((pWin->border.pixmap->drawable.width <= 32) &&
+	      if ((pWin->border.pixmap->drawable.width <= PPW) &&
 		  !(pWin->border.pixmap->drawable.width &
 		    (pWin->border.pixmap->drawable.width - 1)))
 	      {

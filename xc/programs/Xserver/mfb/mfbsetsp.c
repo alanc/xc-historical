@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbsetsp.c,v 5.5 93/09/13 09:32:12 dpw Exp $ */
+/* $XConsortium: mfbsetsp.c,v 5.6 93/09/20 20:22:13 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -68,12 +68,12 @@ mfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst)
     int		nlMiddle, nl;
 
     pdst = mfbScanline(pdstBase, xStart, y, widthDst);
-    psrc += (xStart - xOrigin) >> 5;
-    offSrc = (xStart - xOrigin) & 0x1f;
+    psrc += (xStart - xOrigin) >> PWSH;
+    offSrc = (xStart - xOrigin) & PIM;
     w = xEnd - xStart;
-    dstBit = xStart & 0x1f;
+    dstBit = xStart & PIM;
 
-    if (dstBit + w <= 32) 
+    if (dstBit + w <= PPW) 
     { 
 	getandputrop(psrc, offSrc, dstBit, w, pdst, alu)
     } 
@@ -82,11 +82,11 @@ mfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst)
 
 	maskbits(xStart, w, startmask, endmask, nlMiddle);
 	if (startmask) 
-	    nstart = 32 - dstBit; 
+	    nstart = PPW - dstBit; 
 	else 
 	    nstart = 0; 
 	if (endmask) 
-	    nend = xEnd & 0x1f; 
+	    nend = xEnd & PIM; 
 	else 
 	    nend = 0; 
 	if (startmask) 
@@ -94,16 +94,16 @@ mfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst)
 	    getandputrop(psrc, offSrc, dstBit, nstart, pdst, alu)
 	    pdst++; 
 	    offSrc += nstart;
-	    if (offSrc > 31)
+	    if (offSrc > PLST)
 	    {
 		psrc++;
-		offSrc -= 32;
+		offSrc -= PPW;
 	    }
 	} 
 	nl = nlMiddle; 
 	while (nl--) 
 	{ 
-	    getbits(psrc, offSrc, 32, tmpSrc);
+	    getbits(psrc, offSrc, PPW, tmpSrc);
 	    DoRop(*pdst, alu, tmpSrc, *pdst); 
 	    pdst++; 
 	    psrc++; 
@@ -134,7 +134,7 @@ mfbSetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
     int			nspans;
     int			fSorted;
 {
-    unsigned int	*psrc = (unsigned int *)pcharsrc;
+    PixelType		*psrc = (PixelType *)pcharsrc;
     PixelType 		*pdstBase;	/* start of dst bitmap */
     int 		widthDst;	/* width of bitmap in words */
     register BoxPtr 	pbox, pboxLast, pboxTest;
@@ -252,4 +252,3 @@ mfbSetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
 	}
     }
 }
-

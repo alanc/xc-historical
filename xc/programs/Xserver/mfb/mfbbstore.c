@@ -14,7 +14,7 @@ supporting documentation, and that the names of Digital or MIT not be
 used in advertising or publicity pertaining to distribution of the
 software without specific, written prior permission.  
 ******************************************************************/
-/* $XConsortium$ */
+/* $XConsortium: mfbbstore.c,v 5.5 93/10/12 12:12:45 dpw Exp $ */
 
 #include    "mfb.h"
 #include    "X.h"

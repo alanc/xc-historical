@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: mfbblt.c,v 1.7 92/12/24 09:26:11 rws Exp $ */
+/* $XConsortium: mfbblt.c,v 1.8 93/09/13 09:32:19 dpw Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -307,13 +307,13 @@ psrc += UNROLL;
 	    {
 		if (xoffSrc > xoffDst)
 		{
-		    leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
-		    rightShift = 32 - leftShift;
+		    leftShift = (xoffSrc - xoffDst);
+		    rightShift = PPW - leftShift;
 		}
 		else
 		{
-		    rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
-		    leftShift = 32 - rightShift;
+		    rightShift = (xoffDst - xoffSrc);
+		    leftShift = PPW - rightShift;
 		}
 		while (h--)
 		{
@@ -471,13 +471,13 @@ psrc -= UNROLL;
 	    {
 		if (xoffDst > xoffSrc)
 		{
-		    rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
-		    leftShift = 32 - rightShift;
+		    rightShift = (xoffDst - xoffSrc);
+		    leftShift = PPW - rightShift;
 		}
 		else
 		{
-		    leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
-		    rightShift = 32 - leftShift;
+		    leftShift = (xoffSrc - xoffDst);
+		    rightShift = PPW - leftShift;
 		}
 		while (h--)
 		{

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.23 93/10/12 11:28:47 dpw Exp $ */
+/* $XConsortium: mfb.h,v 5.24 93/12/13 17:25:41 dpw Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -34,6 +34,11 @@ SOFTWARE.
 #include "mibstore.h"
 
 extern int InverseAlu[];
+
+/* warning: PixelType definition duplicated in maskbits.h */
+#ifndef PixelType
+#define PixelType unsigned long
+#endif /* PixelType */
 
 /* mfbbitblt.c */
 
@@ -139,10 +144,10 @@ extern void mfbDoBitbltXor(
 );
 /* mfbbres.c */
 
-extern int mfbBresS(
+extern void mfbBresS(
 #if NeedFunctionPrototypes
     int /*rop*/,
-    unsigned long * /*addrl*/,
+    PixelType * /*addrl*/,
     int /*nlwidth*/,
     int /*signdx*/,
     int /*signdy*/,
@@ -157,7 +162,7 @@ extern int mfbBresS(
 );
 /* mfbbresd.c */
 
-extern int mfbBresD(
+extern void mfbBresD(
 #if NeedFunctionPrototypes
     int /*fgrop*/,
     int /*bgrop*/,
@@ -166,7 +171,7 @@ extern int mfbBresD(
     int /*numInDashList*/,
     int * /*pdashOffset*/,
     int /*isDoubleDash*/,
-    unsigned long * /*addrl*/,
+    PixelType * /*addrl*/,
     int /*nlwidth*/,
     int /*signdx*/,
     int /*signdy*/,
@@ -429,7 +434,7 @@ extern void mfbGetSpans(
 extern int mfbHorzS(
 #if NeedFunctionPrototypes
     int /*rop*/,
-    unsigned long * /*addrl*/,
+    PixelType * /*addrl*/,
     int /*nlwidth*/,
     int /*x1*/,
     int /*y1*/,
@@ -440,7 +445,7 @@ extern int mfbHorzS(
 extern int mfbVertS(
 #if NeedFunctionPrototypes
     int /*rop*/,
-    unsigned long * /*addrl*/,
+    PixelType * /*addrl*/,
     int /*nlwidth*/,
     int /*x1*/,
     int /*y1*/,
@@ -840,9 +845,9 @@ extern int mfbSetScanline(
     int /*xOrigin*/,
     int /*xStart*/,
     int /*xEnd*/,
-    unsigned long * /*psrc*/,
+    PixelType * /*psrc*/,
     int /*alu*/,
-    unsigned long * /*pdstBase*/,
+    PixelType * /*pdstBase*/,
     int /*widthDst*/
 #endif
 );
@@ -886,7 +891,7 @@ extern void mfbTEGlyphBltWhite(
 );
 /* mfbtileC.c */
 
-extern void mfbTileArea32Copy(
+extern void mfbTileAreaPPWCopy(
 #if NeedFunctionPrototypes
     DrawablePtr /*pDraw*/,
     int /*nbox*/,
@@ -897,7 +902,7 @@ extern void mfbTileArea32Copy(
 );
 /* mfbtileG.c */
 
-extern void mfbTileArea32General(
+extern void mfbTileAreaPPWGeneral(
 #if NeedFunctionPrototypes
     DrawablePtr /*pDraw*/,
     int /*nbox*/,
@@ -907,7 +912,7 @@ extern void mfbTileArea32General(
 #endif
 );
 
-extern void mfbTileArea32(
+extern void mfbTileAreaPPW(
 #if NeedFunctionPrototypes
     DrawablePtr /*pDraw*/,
     int /*nbox*/,
@@ -977,7 +982,7 @@ extern void mfbZeroPolyArcSS(
 
 /*
    private filed of pixmap
-   pixmap.devPrivate = (unsigned int *)pointer_to_bits
+   pixmap.devPrivate = (PixelType *)pointer_to_bits
    pixmap.devKind = width_of_pixmap_in_bytes
 
    private field of screen
@@ -1069,7 +1074,7 @@ typedef struct {
     mfbScanlineOffset(pointer, (y) * (width))
 
 #define mfbScanline(pointer, x, y, width) \
-    mfbScanlineOffset(pointer, (y) * (width) + ((x) >> 5))
+    mfbScanlineOffset(pointer, (y) * (width) + ((x) >> MFB_PWSH))
 
 /* precomputed information about each glyph for GlyphBlt code.
    this saves recalculating the per glyph information for each
@@ -1082,7 +1087,7 @@ typedef struct _pos{
     int rightEdge;
     int topEdge;
     int bottomEdge;
-    unsigned int *pdstBase;	/* longword with character origin */
+    PixelType *pdstBase;	/* longword with character origin */
     int widthGlyph;	/* width in bytes of this glyph */
 } TEXTPOS;
 

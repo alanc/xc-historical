@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillsp.c,v 5.8 92/12/23 17:42:33 rws Exp $ */
+/* $XConsortium: mfbfillsp.c,v 5.9 92/12/24 13:08:58 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -57,12 +57,13 @@ fgPixel != bgPixel.  based on the fill style, it uses
 */
 
 
-void mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
+void
+mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DrawablePtr pDrawable;
     GCPtr	pGC;
-    int		nInit;			/* number of spans to fill */
-    DDXPointPtr pptInit;		/* pointer to list of start points */
-    int		*pwidthInit;		/* pointer to list of n widths */
+    int		nInit;		/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int		*pwidthInit;	/* pointer to list of n widths */
     int 	fSorted;
 {
 				/* next three parameters are post-clip */
@@ -104,7 +105,7 @@ void mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 	if (*pwidth)
 	{
-	    if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+	    if ( ((ppt->x & PIM) + *pwidth) < PPW)
 	    {
 		/* all bits inside same longword */
 		maskpartialbits(ppt->x, *pwidth, startmask);
@@ -129,12 +130,13 @@ void mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 
 
-void mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
+void
+mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DrawablePtr pDrawable;
     GCPtr	pGC;
-    int		nInit;			/* number of spans to fill */
-    DDXPointPtr pptInit;		/* pointer to list of start points */
-    int		*pwidthInit;		/* pointer to list of n widths */
+    int		nInit;		/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int		*pwidthInit;	/* pointer to list of n widths */
     int 	fSorted;
 {
 				/* next three parameters are post-clip */
@@ -176,7 +178,7 @@ void mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 	if (*pwidth)
 	{
-	    if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+	    if ( ((ppt->x & PIM) + *pwidth) < PPW)
 	    {
 		/* all bits inside same longword */
 		maskpartialbits(ppt->x, *pwidth, startmask);
@@ -187,7 +189,7 @@ void mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		maskbits(ppt->x, *pwidth, startmask, endmask, nlmiddle);
 		if (startmask)
 		    *addrl++ |= startmask;
-		Duff (nlmiddle, *addrl++ = 0xffffffff);
+		Duff (nlmiddle, *addrl++ = ~0);
 		if (endmask)
 		    *addrl |= endmask;
 	    }
@@ -201,12 +203,13 @@ void mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 
 
-void mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
+void
+mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DrawablePtr pDrawable;
     GCPtr	pGC;
-    int		nInit;			/* number of spans to fill */
-    DDXPointPtr pptInit;		/* pointer to list of start points */
-    int		*pwidthInit;		/* pointer to list of n widths */
+    int		nInit;		/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int		*pwidthInit;	/* pointer to list of n widths */
     int 	fSorted;
 {
 				/* next three parameters are post-clip */
@@ -248,7 +251,7 @@ void mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 	if (*pwidth)
 	{
-	    if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+	    if ( ((ppt->x & PIM) + *pwidth) < PPW)
 	    {
 		/* all bits inside same longword */
 		maskpartialbits(ppt->x, *pwidth, startmask);
@@ -259,7 +262,7 @@ void mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		maskbits(ppt->x, *pwidth, startmask, endmask, nlmiddle);
 		if (startmask)
 		    *addrl++ ^= startmask;
-		Duff (nlmiddle, *addrl++ ^= 0xffffffff);
+		Duff (nlmiddle, *addrl++ ^= ~0);
 		if (endmask)
 		    *addrl ^= endmask;
 	    }
@@ -274,12 +277,12 @@ void mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 void 
 mfbWhiteStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-DrawablePtr pDrawable;
-GC *pGC;
-int nInit;			/* number of spans to fill */
-DDXPointPtr pptInit;		/* pointer to list of start points */
-int *pwidthInit;		/* pointer to list of n widths */
-int fSorted;
+    DrawablePtr pDrawable;
+    GC *pGC;
+    int nInit;			/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int *pwidthInit;		/* pointer to list of n widths */
+    int fSorted;
 {
 				/* next three parameters are post-clip */
     int n;			/* number of spans to fill */
@@ -328,7 +331,7 @@ int fSorted;
 	src = psrc[ppt->y % tileHeight];
 
         /* all bits inside same longword */
-        if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+        if ( ((ppt->x & PIM) + *pwidth) < PPW)
         {
 	    maskpartialbits(ppt->x, *pwidth, startmask);
 	    *addrl |= (src & startmask);
@@ -352,12 +355,12 @@ int fSorted;
 
 void 
 mfbBlackStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-DrawablePtr pDrawable;
-GC *pGC;
-int nInit;			/* number of spans to fill */
-DDXPointPtr pptInit;		/* pointer to list of start points */
-int *pwidthInit;		/* pointer to list of n widths */
-int fSorted;
+    DrawablePtr pDrawable;
+    GC *pGC;
+    int nInit;			/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int *pwidthInit;		/* pointer to list of n widths */
+    int fSorted;
 {
 				/* next three parameters are post-clip */
     int n;			/* number of spans to fill */
@@ -406,7 +409,7 @@ int fSorted;
 	src = psrc[ppt->y % tileHeight];
 
         /* all bits inside same longword */
-        if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+        if ( ((ppt->x & PIM) + *pwidth) < PPW)
         {
 	    maskpartialbits(ppt->x, *pwidth, startmask);
 	    *addrl &= ~(src & startmask);
@@ -430,12 +433,12 @@ int fSorted;
 
 void 
 mfbInvertStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-DrawablePtr pDrawable;
-GC *pGC;
-int nInit;			/* number of spans to fill */
-DDXPointPtr pptInit;		/* pointer to list of start points */
-int *pwidthInit;		/* pointer to list of n widths */
-int fSorted;
+    DrawablePtr pDrawable;
+    GC *pGC;
+    int nInit;			/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int *pwidthInit;		/* pointer to list of n widths */
+    int fSorted;
 {
 				/* next three parameters are post-clip */
     int n;			/* number of spans to fill */
@@ -484,7 +487,7 @@ int fSorted;
 	src = psrc[ppt->y % tileHeight];
 
         /* all bits inside same longword */
-        if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+        if ( ((ppt->x & PIM) + *pwidth) < PPW)
         {
 	    maskpartialbits(ppt->x, *pwidth, startmask);
 	    *addrl ^= (src & startmask);
@@ -506,15 +509,15 @@ int fSorted;
 }
 
 
-/* this works with tiles of width == 32 */
-#define FILLSPAN32(ROP) \
+/* this works with tiles of width == PPW */
+#define FILLSPANPPW(ROP) \
     while (n--) \
     { \
 	if (*pwidth) \
 	{ \
             addrl = mfbScanline(addrlBase, ppt->x, ppt->y, nlwidth); \
 	    src = psrc[ppt->y % tileHeight]; \
-            if ( ((ppt->x & 0x1f) + *pwidth) < 32) \
+            if ( ((ppt->x & PIM) + *pwidth) < PPW) \
             { \
 	        maskpartialbits(ppt->x, *pwidth, startmask); \
 	        *addrl = (*addrl & ~startmask) | \
@@ -545,19 +548,20 @@ int fSorted;
 
 
 
-void mfbTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-DrawablePtr pDrawable;
-GC *pGC;
-int nInit;			/* number of spans to fill */
-DDXPointPtr pptInit;		/* pointer to list of start points */
-int *pwidthInit;		/* pointer to list of n widths */
-int fSorted;
+void
+mfbTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
+    DrawablePtr pDrawable;
+    GC *pGC;
+    int nInit;			/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int *pwidthInit;		/* pointer to list of n widths */
+    int fSorted;
 {
 				/* next three parameters are post-clip */
     int n;			/* number of spans to fill */
     register DDXPointPtr ppt;	/* pointer to list of start points */
     register int *pwidth;	/* pointer to list of n widths */
-    PixelType *addrlBase;		/* pointer to start of bitmap */
+    PixelType *addrlBase;	/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
     register PixelType *addrl;	/* pointer to current longword in bitmap */
     register PixelType src;
@@ -617,7 +621,7 @@ int fSorted;
 	    	{
             	    addrl = mfbScanline(addrlBase, ppt->x, ppt->y, nlwidth);
 	    	    src = psrc[ppt->y % tileHeight] ^ flip;
-            	    if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+            	    if ( ((ppt->x & PIM) + *pwidth) < PPW)
             	    {
 	            	maskpartialbits(ppt->x, *pwidth, startmask);
 			*addrl = DoMaskCopyRop (src, *addrl, startmask);
@@ -655,7 +659,7 @@ int fSorted;
 	    	{
             	    addrl = mfbScanline(addrlBase, ppt->x, ppt->y, nlwidth);
 	    	    src = psrc[ppt->y % tileHeight];
-            	    if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+            	    if ( ((ppt->x & PIM) + *pwidth) < PPW)
             	    {
 	            	maskpartialbits(ppt->x, *pwidth, startmask);
 			*addrl = DoMaskMergeRop (src, *addrl, startmask);
@@ -688,15 +692,15 @@ int fSorted;
 }
 
 
-/* Fill spans with tiles that aren't 32 bits wide */
+/* Fill spans with tiles that aren't PPW bits wide */
 void
 mfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-DrawablePtr pDrawable;
-GC		*pGC;
-int		nInit;		/* number of spans to fill */
-DDXPointPtr pptInit;		/* pointer to list of start points */
-int *pwidthInit;		/* pointer to list of n widths */
-int fSorted;
+    DrawablePtr pDrawable;
+    GC		*pGC;
+    int		nInit;		/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int *pwidthInit;		/* pointer to list of n widths */
+    int fSorted;
 {
     int		iline;		/* first line of tile to use */
 				/* next three parameters are post-clip */
@@ -738,13 +742,13 @@ int fSorted;
     if (pGC->fillStyle == FillTiled)
     {
 	pTile = pGC->tile.pixmap;
-	tlwidth = pTile->devKind >> 2;
+	tlwidth = pTile->devKind / PGSZB;
 	rop = pGC->alu;
     }
     else
     {
 	pTile = pGC->stipple;
-	tlwidth = pTile->devKind >> 2;
+	tlwidth = pTile->devKind / PGSZB;
 	rop = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->ropOpStip;
     }
 
@@ -788,14 +792,14 @@ int fSorted;
 		    */
 		    w = min(min(tileWidth - rem, width), BITMAP_SCANLINE_UNIT);
 		    endinc = rem / BITMAP_SCANLINE_UNIT;
-		    getandputrop((psrc+endinc), (rem&0x1f), (x & 0x1f), w, pdst, rop);
-		    if((x & 0x1f) + w >= 0x20)
+		    getandputrop((psrc+endinc), (rem&PIM), (x & PIM), w, pdst, rop);
+		    if((x & PIM) + w >= PPW)
 			pdst++;
 		}
-		else if(((x & 0x1f) + w) < 32)
+		else if(((x & PIM) + w) < PPW)
 		{
-		    /* doing < 32 bits is easy, and worth special-casing */
-		    putbitsrop(*psrc, x & 0x1f, w, pdst, rop);
+		    /* doing < PPW bits is easy, and worth special-casing */
+		    putbitsrop(*psrc, x & PIM, w, pdst, rop);
 		}
 		else
 		{
@@ -805,19 +809,19 @@ int fSorted;
 		    maskbits(x, w, startmask, endmask, nlMiddle);
 
 	            if (startmask)
-		        nstart = 32 - (x & 0x1f);
+		        nstart = PPW - (x & PIM);
 	            else
 		        nstart = 0;
 	            if (endmask)
-	                nend = (x + w)  & 0x1f;
+	                nend = (x + w)  & PIM;
 	            else
 		        nend = 0;
 
-	            srcStartOver = nstart > 31;
+	            srcStartOver = nstart > PLST;
 
 		    if(startmask)
 		    {
-			putbitsrop(*psrc, (x & 0x1f), nstart, pdst, rop);
+			putbitsrop(*psrc, (x & PIM), nstart, pdst, rop);
 			pdst++;
 			if(srcStartOver)
 			    psrc++;
@@ -825,7 +829,7 @@ int fSorted;
 		     
 		    while(nlMiddle--)
 		    {
-			    getandputrop0(psrc, nstart, 32, pdst, rop);
+			    getandputrop0(psrc, nstart, PPW, pdst, rop);
 			    pdst++;
 			    psrc++;
 		    }
@@ -846,15 +850,15 @@ int fSorted;
 }
 
 
-/* Fill spans with stipples that aren't 32 bits wide */
+/* Fill spans with stipples that aren't PPW bits wide */
 void
 mfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
-DrawablePtr pDrawable;
-GC		*pGC;
-int		nInit;		/* number of spans to fill */
-DDXPointPtr pptInit;		/* pointer to list of start points */
-int *pwidthInit;		/* pointer to list of n widths */
-int fSorted;
+    DrawablePtr pDrawable;
+    GC		*pGC;
+    int		nInit;		/* number of spans to fill */
+    DDXPointPtr pptInit;	/* pointer to list of start points */
+    int *pwidthInit;		/* pointer to list of n widths */
+    int fSorted;
 {
 				/* next three parameters are post-clip */
     int n;			/* number of spans to fill */
@@ -896,7 +900,7 @@ int fSorted;
 
     pTile = pGC->stipple;
     rop = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop;
-    tlwidth = pTile->devKind >> 2;
+    tlwidth = pTile->devKind / PGSZB;
     xSrc = pDrawable->x;
     ySrc = pDrawable->y;
     mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
@@ -935,16 +939,16 @@ int fSorted;
 		    */
 		    w = min(min(tileWidth - rem, width), BITMAP_SCANLINE_UNIT);
 		    endinc = rem / BITMAP_SCANLINE_UNIT;
-		    getandputrrop((psrc + endinc), (rem & 0x1f), (x & 0x1f),
+		    getandputrrop((psrc + endinc), (rem & PIM), (x & PIM),
 				 w, pdst, rop)
-		    if((x & 0x1f) + w >= 0x20)
+		    if((x & PIM) + w >= PPW)
 			pdst++;
 		}
 
-		else if(((x & 0x1f) + w) < 32)
+		else if(((x & PIM) + w) < PPW)
 		{
-		    /* doing < 32 bits is easy, and worth special-casing */
-		    putbitsrrop(*psrc, x & 0x1f, w, pdst, rop);
+		    /* doing < PPW bits is easy, and worth special-casing */
+		    putbitsrrop(*psrc, x & PIM, w, pdst, rop);
 		}
 		else
 		{
@@ -954,19 +958,19 @@ int fSorted;
 		    maskbits(x, w, startmask, endmask, nlMiddle);
 
 	            if (startmask)
-		        nstart = 32 - (x & 0x1f);
+		        nstart = PPW - (x & PIM);
 	            else
 		        nstart = 0;
 	            if (endmask)
-	                nend = (x + w)  & 0x1f;
+	                nend = (x + w)  & PIM;
 	            else
 		        nend = 0;
 
-	            srcStartOver = nstart > 31;
+	            srcStartOver = nstart > PLST;
 
 		    if(startmask)
 		    {
-			putbitsrrop(*psrc, (x & 0x1f), nstart, pdst, rop);
+			putbitsrrop(*psrc, (x & PIM), nstart, pdst, rop);
 			pdst++;
 			if(srcStartOver)
 			    psrc++;
@@ -974,7 +978,7 @@ int fSorted;
 		     
 		    while(nlMiddle--)
 		    {
-			    getandputrrop0(psrc, nstart, 32, pdst, rop);
+			    getandputrrop0(psrc, nstart, PPW, pdst, rop);
 			    pdst++;
 			    psrc++;
 		    }

@@ -22,25 +22,10 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.28 92/12/24 09:26:39 rws Exp $ */
+/* $XConsortium: maskbits.h,v 1.29 93/12/13 17:26:11 dpw Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
-
-#ifndef PixelType
-#define PixelType unsigned long
-#ifdef LONG64
-#define sz_PixelType 8
-#else
-#define sz_PixelType 4
-#endif /* LONG64 */
-#endif /* PixelType */
-
-extern PixelType starttab[];
-extern PixelType endtab[];
-extern PixelType partmasks[32][32];
-extern PixelType rmask[];
-extern PixelType mask[];
 
 
 /* the following notes use the following conventions:
@@ -49,9 +34,9 @@ in this file and maskbits.c, left and right refer to screen coordinates,
 NOT bit numbering in registers.
 
 starttab[n]
-	bits[0,n-1] = 0	bits[n,31] = 1
+	bits[0,n-1] = 0	bits[n,PLST] = 1
 endtab[n] =
-	bits[0,n-1] = 1	bits[n,31] = 0
+	bits[0,n-1] = 1	bits[n,PLST] = 0
 
 startpartial[], endpartial[]
 	these are used as accelerators for doing putbits and masking out
@@ -74,14 +59,14 @@ single destination longword, and to unpack a single
 source longword into multiple destinations.
 
 SCRLEFT(dst, x)
-	takes dst[x, 32] and moves them to dst[0, 32-x]
+	takes dst[x, PPW] and moves them to dst[0, PPW-x]
 	the contents of the rest of dst are 0.
 	this is a right shift on LSBFirst (forward-thinking)
 	machines like the VAX, and left shift on MSBFirst
 	(backwards) machines like the 680x0 and pc/rt.
 
 SCRRIGHT(dst, x)
-	takes dst[0,x] and moves them to dst[32-x, 32]
+	takes dst[0,x] and moves them to dst[PPW-x, PPW]
 	the contents of the rest of dst are 0.
 	this is a left shift on LSBFirst, right shift
 	on MSBFirst.
@@ -97,23 +82,27 @@ and the number of whole longwords between the ends.
 
 maskpartialbits(x, w, mask)
 	works like maskbits(), except all the bits are in the
-	same longword (i.e. (x&0x1f + w) <= 32)
+	same longword (i.e. (x&PIM + w) <= PPW)
 
-mask32bits(x, w, startmask, endmask, nlw)
+maskPPWbits(x, w, startmask, endmask, nlw)
 	as maskbits, but does not calculate nlw.  it is used by
-	mfbGlyphBlt to put down glyphs <= 32 bits wide.
+	mfbGlyphBlt to put down glyphs <= PPW bits wide.
 
 -------------------------------------------------------------------
 
 NOTE
-	any pointers passe to the following 4 macros are
-	guranteed to be 32-bit aligned.
-	The only non-32-bit-aligned references ever made are
+	any pointers passed to the following 4 macros are
+	guranteed to be PPW-bit aligned.
+	The only non-PPW-bit-aligned references ever made are
 	to font glyphs, and those are made with getleftbits()
 	and getshiftedleftbits (qq.v.)
 
+	For 64-bit server, it is assumed that we will never have font padding
+	of more than 4 bytes. The code uses int's to access the fonts
+	intead of longs.
+
 getbits(psrc, x, w, dst)
-	starting at position x in psrc (x < 32), collect w
+	starting at position x in psrc (x < PPW), collect w
 	bits and put them in the screen left portion of dst.
 	psrc is a longword pointer.  this may span longword boundaries.
 	it special-cases fetching all w bits from one longword.
@@ -123,7 +112,7 @@ getbits(psrc, x, w, dst)
 	+--------+--------+		+--------+
 	    x      x+w			0     w
 	psrc     psrc+1			dst
-			m = 32 - x
+			m = PPW - x
 			n = w - m
 
 	implementation:
@@ -143,14 +132,14 @@ putbits(src, x, w, pdst)
 	+--------+			+--------+--------+
 	0     w				     x     x+w
 	dst				pdst     pdst+1
-			m = 32 - x
+			m = PPW - x
 			n = w - m
 
 	implementation:
 	get m bits, shift screen-right by x, zero screen-leftmost x
 		bits; zero rightmost m bits of *pdst and OR in stuff
 		from before the semicolon.
-	shift src screen-left by m, zero bits n-32;
+	shift src screen-left by m, zero bits n-PPW;
 		zero leftmost n bits of *(pdst+1) and OR in the
 		stuff from before the semicolon.
 
@@ -173,10 +162,10 @@ NOTE
 getleftbits(psrc, w, dst)
 	get the leftmost w (w<=32) bits from *psrc and put them
 	in dst.  this is used by the mfbGlyphBlt code for glyphs
-	<=32 bits wide.
+	<=PPW bits wide.
 	psrc is declared (unsigned char *)
 
-	psrc is NOT guaranteed to be 32-bit aligned.  on  many
+	psrc is NOT guaranteed to be PPW-bit aligned.  on  many
 	machines this will cause problems, so there are several
 	versions of this macro.
 
@@ -196,16 +185,36 @@ getshiftedleftbits(psrc, offset, w, dst)
 	psrc is declared (unsigned char *).
 */
 
-/* to match CFB and allow algorithm sharing ... */
+/* to match CFB and allow algorithm sharing ...
+ * name	   mfb32  mfb64  explanation
+ * ----	   ------ -----  -----------
+ * PGSZ    32      64    pixel group size (in bits; same as PPW for mfb)
+ * PGSZB    4      8     pixel group size (in bytes)
+ * PPW	   32     64     pixels per word (pixels per pixel group)
+ * PLST	   31     63     index of last pixel in a word (should be PPW-1)
+ * PIM	   0x1f   0x3f   pixel index mask (index within a pixel group)
+ * PWSH	   5       6     pixel-to-word shift (should be log2(PPW))
+ *
+ * The MFB_ versions are here so that cfb can include maskbits.h to get
+ * the bitmap constants without conflicting with its own P* constants.
+ */	    
 
-#define MFB_PSZ		1
-#define MFB_PGSZ	(sz_PixelType<<3)
-#define MFB_PPW		(MFB_PGSZ/MFB_PSZ)
+/* warning: PixelType definition duplicated in mfb.h */
+#ifndef PixelType
+#define PixelType unsigned long
+#endif /* PixelType */
+
+#ifdef LONG64
+#define MFB_PGSZB 8
+#else
+#define MFB_PGSZB 4
+#endif /* LONG64 */
+#define MFB_PPW		(MFB_PGSZB<<3) /* assuming 8 bits per byte */
+#define MFB_PGSZ	MFB_PPW
 #define MFB_PLST	(MFB_PPW-1)
 #define MFB_PIM		MFB_PLST
-#define MFB_PMSK	(((PixelType)1 << MFB_PSZ) - 1)
 
-/*  set PWSH = log2(PPW) using brute force */
+/* set PWSH = log2(PPW) using brute force */
 
 #if MFB_PPW == 32
 #define MFB_PWSH 5
@@ -215,17 +224,21 @@ getshiftedleftbits(psrc, offset, w, dst)
 #endif /* MFB_PPW == 64 */
 #endif /* MFB_PPW == 32 */
 
+extern PixelType starttab[];
+extern PixelType endtab[];
+extern PixelType partmasks[MFB_PPW][MFB_PPW];
+extern PixelType rmask[];
+extern PixelType mask[];
+
 #ifndef MFB_CONSTS_ONLY
 
-#define PGSZ	MFB_PGSZ
+#define PGSZB	MFB_PGSZB
 #define PPW	MFB_PPW
+#define PGSZ	MFB_PGSZ
 #define PLST	MFB_PLST
 #define PIM	MFB_PIM
 #define PWSH	MFB_PWSH
-#ifndef PSZ
-#define PSZ	MFB_PSZ
-#endif
-#define PMSK	MFB_PMSK
+
 #define BitLeft(b,s)	SCRLEFT(b,s)
 #define BitRight(b,s)	SCRRIGHT(b,s)
 
@@ -236,15 +249,27 @@ getshiftedleftbits(psrc, offset, w, dst)
  *  the unsigned case below is for compilers like
  *  the Danbury C and i386cc
  */
+#if PPW == 32
 #define LONG2CHARS( x ) ( ( ( ( x ) & 0x000000FF ) << 0x18 ) \
                       | ( ( ( x ) & 0x0000FF00 ) << 0x08 ) \
                       | ( ( ( x ) & 0x00FF0000 ) >> 0x08 ) \
                       | ( ( ( x ) & (unsigned long)0xFF000000 ) >> 0x18 ) )
-#endif
+#else /* PPW == 64 */
+#define LONG2CHARS( x ) \
+      ( ( ( ( x ) & 0x000000FF) << 0x18 ) \
+      | ( ( ( x ) & 0x0000FF00) << 0x08 ) \
+      | ( ( ( x ) & 0x00FF0000) >> 0x08 ) \
+      | ( ( ( x ) & (unsigned long)0xFF000000) >> 0x18 ) \
+      | ( ( ( x ) & 0x000000FF00000000) << 0x18 ) \
+      | ( ( ( x ) & 0x0000FF0000000000) << 0x08 ) \
+      | ( ( ( x ) & 0x00FF000000000000) >> 0x08 ) \
+      | ( ( ( x ) & (unsigned long)0xFF00000000000000) >> 0x18 ) )
+#endif /* PPW */
+#endif /* BITMAP_BIT_ORDER */
 
 #ifdef STRICT_ANSI_SHIFT
-#define SHL(x,y)    ((y) >= 32 ? 0 : LONG2CHARS(LONG2CHARS(x) << (y)))
-#define SHR(x,y)    ((y) >= 32 ? 0 : LONG2CHARS(LONG2CHARS(x) >> (y)))
+#define SHL(x,y)    ((y) >= PPW ? 0 : LONG2CHARS(LONG2CHARS(x) << (y)))
+#define SHR(x,y)    ((y) >= PPW ? 0 : LONG2CHARS(LONG2CHARS(x) >> (y)))
 #else
 #define SHL(x,y)    LONG2CHARS(LONG2CHARS(x) << (y))
 #define SHR(x,y)    LONG2CHARS(LONG2CHARS(x) >> (y))
@@ -264,6 +289,7 @@ getshiftedleftbits(psrc, offset, w, dst)
  ((alu) == RROP_INVERT) ? ((dst) ^ (src)) : \
   (dst))
 
+#if PPW == 32
 /* A generalized form of a x4 Duff's Device */
 #define Duff(counter, block) { \
   while (counter >= 4) {\
@@ -281,22 +307,51 @@ getshiftedleftbits(psrc, offset, w, dst)
      counter = 0; \
    } \
 }
+#else /* PPW == 64 */
+/* A generalized form of a x8 Duff's Device */
+#define Duff(counter, block) { \
+  while (counter >= 8) {\
+     { block; } \
+     { block; } \
+     { block; } \
+     { block; } \
+     { block; } \
+     { block; } \
+     { block; } \
+     { block; } \
+     counter -= 8; \
+  } \
+     switch (counter & 7) { \
+     case 7:	{ block; } \
+     case 6:	{ block; } \
+     case 5:	{ block; } \
+     case 4:	{ block; } \
+     case 3:	{ block; } \
+     case 2:	{ block; } \
+     case 1:	{ block; } \
+     case 0: \
+     counter = 0; \
+   } \
+}
+#endif /* PPW */
+
+
 #define maskbits(x, w, startmask, endmask, nlw) \
-    startmask = starttab[(x)&0x1f]; \
-    endmask = endtab[((x)+(w)) & 0x1f]; \
+    startmask = starttab[(x) & PIM]; \
+    endmask = endtab[((x)+(w)) & PIM]; \
     if (startmask) \
-	nlw = (((w) - (32 - ((x)&0x1f))) >> 5); \
+	nlw = (((w) - (PPW - ((x) & PIM))) >> PWSH); \
     else \
-	nlw = (w) >> 5;
+	nlw = (w) >> PWSH;
 
 #define maskpartialbits(x, w, mask) \
-    mask = partmasks[(x)&0x1f][(w)&0x1f];
+    mask = partmasks[(x) & PIM][(w) & PIM];
 
-#define mask32bits(x, w, startmask, endmask) \
-    startmask = starttab[(x)&0x1f]; \
-    endmask = endtab[((x)+(w)) & 0x1f];
+#define maskPPWbits(x, w, startmask, endmask) \
+    startmask = starttab[(x) & PIM]; \
+    endmask = endtab[((x)+(w)) & PIM];
 
-#ifdef __GNUC__
+#ifdef __GNUC__ /* XXX don't want for Alpha? */
 #ifdef vax
 #define FASTGETBITS(psrc,x,w,dst) \
     __asm ("extzv %1,%2,%3,%0" \
@@ -355,7 +410,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 
 #define slo_putbits(src, x, w, pdst) \
 { \
-    register int n = (x)+(w)-32; \
+    register int n = (x)+(w)-PPW; \
     \
     if (n <= 0) \
     { \
@@ -368,7 +423,7 @@ getshiftedleftbits(psrc, offset, w, dst)
     { \
 	*(pdst) = (*(pdst) & endtab[x]) | (SCRRIGHT((src), x)); \
 	(pdst)[1] = ((pdst)[1] & starttab[n]) | \
-		(SCRLEFT(src, 32-(x)) & endtab[n]); \
+		(SCRLEFT(src, PPW-(x)) & endtab[n]); \
     } \
 }
 
@@ -391,8 +446,8 @@ getshiftedleftbits(psrc, offset, w, dst)
 #define getbits(psrc, x, w, dst) \
 { \
     dst = SCRLEFT(*(psrc), (x)); \
-    if ( ((x) + (w)) > 32) \
-	dst |= (SCRRIGHT(*((psrc)+1), 32-(x))); \
+    if ( ((x) + (w)) > PPW) \
+	dst |= (SCRRIGHT(*((psrc)+1), PPW-(x))); \
 }
 #endif
 
@@ -402,7 +457,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 #define u_putbitsrop(src, x, w, pdst, rop) \
 {\
 	register PixelType t1, t2; \
-	register int n = (x)+(w)-32; \
+	register int n = (x)+(w)-PPW; \
 	\
 	t1 = SCRRIGHT((src), (x)); \
 	DoRop(t2, rop, t1, *(pdst)); \
@@ -416,7 +471,7 @@ getshiftedleftbits(psrc, offset, w, dst)
     } \
     else \
     { \
-	int m = 32-(x); \
+	int m = PPW-(x); \
 	*(pdst) = (*(pdst) & endtab[x]) | (t2 & starttab[x]); \
 	t1 = SCRLEFT((src), m); \
 	DoRop(t2, rop, t1, (pdst)[1]); \
@@ -434,7 +489,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 { \
   register PixelType _tmp, _tmp2; \
   FASTGETBITS(pdst, x, w, _tmp); \
-  _tmp2 = SCRRIGHT(src, 32-(w)); \
+  _tmp2 = SCRRIGHT(src, PPW-(w)); \
   DoRop(_tmp, rop, _tmp2, _tmp) \
   FASTPUTBITS(_tmp, x, w, pdst); \
 }
@@ -443,7 +498,7 @@ getshiftedleftbits(psrc, offset, w, dst)
   register PixelType _tmp, _tmp2; \
  \
   FASTGETBITS(pdst, x, w, _tmp); \
-  _tmp2 = SCRRIGHT(src, 32-(w)); \
+  _tmp2 = SCRRIGHT(src, PPW-(w)); \
   _tmp= DoRRop(rop, _tmp2, _tmp); \
   FASTPUTBITS(_tmp, x, w, pdst); \
 }
@@ -476,7 +531,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 #define putbitsrrop(src, x, w, pdst, rop) \
 {\
 	register PixelType t1, t2; \
-	register int n = (x)+(w)-32; \
+	register int n = (x)+(w)-PPW; \
 	\
 	t1 = SCRRIGHT((src), (x)); \
 	t2 = DoRRop(rop, t1, *(pdst)); \
@@ -490,7 +545,7 @@ getshiftedleftbits(psrc, offset, w, dst)
     } \
     else \
     { \
-	int m = 32-(x); \
+	int m = PPW-(x); \
 	*(pdst) = (*(pdst) & endtab[x]) | (t2 & starttab[x]); \
 	t1 = SCRLEFT((src), m); \
 	t2 = DoRRop(rop, t1, (pdst)[1]); \
@@ -544,7 +599,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 #ifdef NO_3_60_CG4
 #define u_FASTPUT(aa, bb, cc, dd)  FASTPUTBITS(aa, bb, cc, dd)
 #else
-#define u_FASTPUT(aa, bb, cc, dd)  u_putbits(SCRLEFT(aa, 32-(cc)), bb, cc, dd)
+#define u_FASTPUT(aa, bb, cc, dd)  u_putbits(SCRLEFT(aa, PPW-(cc)), bb, cc, dd)
 #endif
 
 #define getandputbits(psrc, srcbit, dstbit, width, pdst) \
@@ -615,7 +670,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 
 #define getandputbits0(psrc, sbindex, width, pdst) \
 {			/* unroll the whole damn thing to see how it * behaves */ \
-    register int          _flag = 32 - (sbindex); \
+    register int          _flag = PPW - (sbindex); \
     register PixelType _src; \
  \
     _src = SCRLEFT (*(psrc), (sbindex)); \
@@ -628,7 +683,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 
 #define getandputrop0(psrc, sbindex, width, pdst, rop) \
 {			\
-    register int          _flag = 32 - (sbindex); \
+    register int          _flag = PPW - (sbindex); \
     register PixelType _src; \
  \
     _src = SCRLEFT (*(psrc), (sbindex)); \
@@ -641,7 +696,7 @@ getshiftedleftbits(psrc, offset, w, dst)
 
 #define getandputrrop0(psrc, sbindex, width, pdst, rop) \
 { \
-    int             _flag = 32 - (sbindex); \
+    int             _flag = PPW - (sbindex); \
     register PixelType _src; \
  \
     _src = SCRLEFT (*(psrc), (sbindex)); \

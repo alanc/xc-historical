@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbfillarc.c,v 5.10 93/10/12 11:28:50 dpw Exp $ */
+/* $XConsortium: mfbfillarc.c,v 5.11 94/01/07 09:43:20 dpw Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -43,7 +43,8 @@ mfbFillEllipseSolid(pDraw, arc, rop)
     register int n;
     int nlwidth;
     register int xpos;
-    int startmask, endmask, nlmiddle;
+    PixelType startmask, endmask;
+    int nlmiddle;
 
     mfbGetPixelWidthAndPointer(pDraw, nlwidth, addrlt);
     miFillArcSetup(arc, &info);
@@ -61,8 +62,8 @@ mfbFillEllipseSolid(pDraw, arc, rop)
 	if (!slw)
 	    continue;
 	xpos = xorg - x;
-	addrl = addrlt + (xpos >> 5);
-	if (((xpos & 0x1f) + slw) < 32)
+	addrl = addrlt + (xpos >> PWSH);
+	if (((xpos & PIM) + slw) < PPW)
 	{
 	    maskpartialbits(xpos, slw, startmask);
 	    if (rop == RROP_BLACK)
@@ -73,7 +74,7 @@ mfbFillEllipseSolid(pDraw, arc, rop)
 		*addrl ^= startmask;
 	    if (miFillArcLower(slw))
 	    {
-		addrl = addrlb + (xpos >> 5);
+		addrl = addrlb + (xpos >> PWSH);
 		if (rop == RROP_BLACK)
 		    *addrl &= ~startmask;
 		else if (rop == RROP_WHITE)
@@ -114,7 +115,7 @@ mfbFillEllipseSolid(pDraw, arc, rop)
 	}
 	if (!miFillArcLower(slw))
 	    continue;
-	addrl = addrlb + (xpos >> 5);
+	addrl = addrlb + (xpos >> PWSH);
 	if (startmask)
 	{
 	    if (rop == RROP_BLACK)
@@ -150,8 +151,8 @@ mfbFillEllipseSolid(pDraw, arc, rop)
     if (xr >= xl) \
     { \
 	width = xr - xl + 1; \
-	addrl = addr + (xl >> 5); \
-	if (((xl & 0x1f) + width) < 32) \
+	addrl = addr + (xl >> PWSH); \
+	if (((xl & PIM) + width) < PPW) \
 	{ \
 	    maskpartialbits(xl, width, startmask); \
 	    if (rop == RROP_BLACK) \
@@ -225,7 +226,8 @@ mfbFillArcSliceSolidCopy(pDraw, pGC, arc, rop)
     PixelType *addrlt, *addrlb;
     int nlwidth;
     int width;
-    int startmask, endmask, nlmiddle;
+    PixelType startmask, endmask;
+    int nlmiddle;
 
     mfbGetPixelWidthAndPointer(pDraw, nlwidth, addrlt);
     miFillArcSetup(arc, &info);

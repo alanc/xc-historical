@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpntarea.c,v 5.3 92/12/23 17:48:00 rws Exp $ */
+/* $XConsortium: mfbpntarea.c,v 5.4 92/12/24 09:26:36 rws Exp $ */
 #include "X.h"
 
 #include "windowstr.h"
@@ -85,7 +85,7 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
 	h = pbox->y2 - pbox->y1;
 	p = mfbScanline(pbits, pbox->x1, pbox->y1, nlwidth);
 
-	if ( ((pbox->x1 & 0x1f) + w) < 32)
+	if ( ((pbox->x1 & PIM) + w) < PPW)
 	{
 	    maskpartialbits(pbox->x1, w, startmask);
 	    nlwExtra = nlwidth;
@@ -179,14 +179,11 @@ MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
     register int nlw;	/* loop version of nlwMiddle */
     register PixelType *p;	/* pointer to bits we're writing */
     register int h;	/* height of current box */
-    int startmask;
-    int endmask;	/* masks for reggedy bits at either end of line */
+    PixelType startmask;
+    PixelType endmask;	/* masks for reggedy bits at either end of line */
     int nlwMiddle;	/* number of longwords between sides of boxes */
     int nlwExtra;	/* to get from right of box to left of next span */
-    
     register int iy;	/* index of current scanline in tile */
-
-
     PixelType *pbits;	/* pointer to start of drawable */
 
     mfbGetPixelWidthAndPointer(pDraw, nlwidth, pbits);
@@ -201,7 +198,7 @@ MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
 	iy = pbox->y1 % tileHeight;
 	p = mfbScanline(pbits, pbox->x1, pbox->y1, nlwidth);
 
-	if ( ((pbox->x1 & 0x1f) + w) < 32)
+	if ( ((pbox->x1 & PIM) + w) < PPW)
 	{
 	    maskpartialbits(pbox->x1, w, startmask);
 	    nlwExtra = nlwidth;
@@ -274,5 +271,3 @@ MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
         pbox++;
     }
 }
-
-

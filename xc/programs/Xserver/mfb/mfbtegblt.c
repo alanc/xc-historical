@@ -1,4 +1,4 @@
-/* $XConsortium: mfbtegblt.c,v 5.10 93/09/20 20:22:15 dpw Exp $ */
+/* $XConsortium: mfbtegblt.c,v 5.11 94/01/07 09:43:37 dpw Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -37,7 +37,7 @@ SOFTWARE.
 #include	"maskbits.h"
 
 /*
-    this works for fonts with glyphs <= 32 bits wide.
+    this works for fonts with glyphs <= PPW bits wide.
 
     This should be called only with a terminal-emulator font;
 this means that the FIXED_METRICS flag is set, and that
@@ -76,16 +76,41 @@ two times:
 #define ShiftAmnt   16
 #endif
 
+#if PPW == 32
 #define GetBits4    c = (*char1++ << ShiftAmnt) | \
 			SCRRIGHT (*char2++ << ShiftAmnt, xoff2) | \
 			SCRRIGHT (*char3++ << ShiftAmnt, xoff3) | \
 			SCRRIGHT (*char4++ << ShiftAmnt, xoff4);
-#else
+#else /* PPW */
+#define GetBits4    c = ((unsigned long)(*char1++ << ShiftAmnt) << 32 )  | \
+			(SCRRIGHT (*char2++ << ShiftAmnt, xoff2) << 32 ) | \
+			(SCRRIGHT (*char3++ << ShiftAmnt, xoff3) << 32 ) | \
+			(SCRRIGHT (*char4++ << ShiftAmnt, xoff4) << 32 ) | \
+			(*char5++ << ShiftAmnt) 			 | \
+			SCRRIGHT (*char6++ << ShiftAmnt, xoff6) 	 | \
+			SCRRIGHT (*char7++ << ShiftAmnt, xoff7) 	 | \
+			SCRRIGHT (*char8++ << ShiftAmnt, xoff8);
+#endif /* PPW */
+
+#else /* (BITMAP_BIT_ORDER != MSBFirst) || (GLYPHPADBYTES == 4) */
+
+#if PPW == 32
 #define GetBits4    c = *char1++ | \
 			SCRRIGHT (*char2++, xoff2) | \
 			SCRRIGHT (*char3++, xoff3) | \
 			SCRRIGHT (*char4++, xoff4);
-#endif
+#else /* PPW == 64 */
+#define GetBits4    c = (unsigned long)(((*char1++) << 64 ) | \
+                        (SCRRIGHT (*char2++, xoff2) << 64 ) | \
+                        (SCRRIGHT (*char3++, xoff3) << 64 ) | \
+                        (SCRRIGHT (*char4++, xoff4) << 64 ) | \
+                        SCRRIGHT (*char5++, xoff5)          | \
+                        SCRRIGHT (*char6++, xoff6)          | \
+                        SCRRIGHT (*char7++, xoff7)          | \
+                        SCRRIGHT (*char8++, xoff8));
+#endif /* PPW */
+
+#endif /* BITMAP_BIT_ORDER && GLYPHPADBYTES */
 
 
 #if GLYPHPADBYTES == 1
@@ -130,7 +155,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int widthGlyph;
 
     int hTmp;			/* counter for height */
-    register int startmask, endmask;
+    register PixelType startmask, endmask;
     int nfirst;			/* used if glyphs spans a longword boundary */
     BoxRec bbox;		/* for clipping */
     int	widthGlyphs;
@@ -138,9 +163,13 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     register PixelType  c;
     register int	    xoff1, xoff2, xoff3, xoff4;
     register glyphPointer   char1, char2, char3, char4;
+#if PPW == 64
+    register int	    xoff5, xoff6, xoff7, xoff8;
+    register glyphPointer   char5, char6, char7, char8;
+#endif /* PPW */
 
 #ifdef USE_LEFTBITS
-    register int	    glyphMask;
+    register PixelType  glyphMask;
     register PixelType  tmpSrc;
     register int	    glyphBytes;
 #endif
@@ -193,32 +222,44 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	return;
     }
     pdstBase = mfbScanlineDelta(pdstBase, ypos, widthDst);
-    widthGlyphs = widthGlyph << 2;
+    widthGlyphs = widthGlyph * PGSZB;
 
 #ifdef USE_LEFTBITS
     glyphMask = endtab[widthGlyph];
     glyphBytes = GLYPHWIDTHBYTESPADDED(*ppci);
 #endif
 
-    if (nglyph >= 4 && widthGlyphs <= 32)
+    if (nglyph >= PGSZB && widthGlyphs <= PPW)
     {
-	while (nglyph >= 4)
+	while (nglyph >= PGSZB)
 	{
-	    nglyph -= 4;
-	    xoff1 = xpos & 0x1f;
+	    nglyph -= PGSZB;
+	    xoff1 = xpos & PIM;
 	    xoff2 = widthGlyph;
 	    xoff3 = xoff2 + widthGlyph;
 	    xoff4 = xoff3 + widthGlyph;
+#if PPW == 64
+	    xoff5 = xoff4 + widthGlyph;
+	    xoff6 = xoff5 + widthGlyph;
+	    xoff7 = xoff6 + widthGlyph;
+	    xoff8 = xoff7 + widthGlyph;
+#endif /* PPW */
 	    char1 = (glyphPointer) FONTGLYPHBITS(pglyphBase,(*ppci++));
 	    char2 = (glyphPointer) FONTGLYPHBITS(pglyphBase,(*ppci++));
 	    char3 = (glyphPointer) FONTGLYPHBITS(pglyphBase,(*ppci++));
 	    char4 = (glyphPointer) FONTGLYPHBITS(pglyphBase,(*ppci++));
+#if PPW == 64
+	    char5 = (glyphPointer) FONTGLYPHBITS(pglyphBase,(*ppci++));
+	    char6 = (glyphPointer) FONTGLYPHBITS(pglyphBase,(*ppci++));
+	    char7 = (glyphPointer) FONTGLYPHBITS(pglyphBase,(*ppci++));
+	    char8 = (glyphPointer) FONTGLYPHBITS(pglyphBase,(*ppci++));
+#endif /* PPW */
 
 	    hTmp = h;
-	    dst = pdstBase + (xpos >> 5);
+	    dst = pdstBase + (xpos >> PWSH);
 
 #ifndef FASTCHARS
-	    if (xoff1 + widthGlyphs <= 32)
+	    if (xoff1 + widthGlyphs <= PPW)
 	    {
 		maskpartialbits (xoff1, widthGlyphs, startmask);
 #endif
@@ -227,7 +268,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    GetBits4
 #ifdef FASTCHARS
 # if BITMAP_BIT_ORDER == MSBFirst
-		    c >>= 32 - widthGlyphs;
+		    c >>= PPW - widthGlyphs;
 # endif
 		    FASTPUTBITS(OP(c), xoff1, widthGlyphs, dst);
 #else
@@ -239,8 +280,8 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    }
 	    else
 	    {
-		mask32bits (xoff1, widthGlyphs, startmask, endmask);
-		nfirst = 32 - xoff1;
+		maskPPWbits (xoff1, widthGlyphs, startmask, endmask);
+		nfirst = PPW - xoff1;
 		while (hTmp--)
 		{
 		    GetBits4
@@ -258,13 +299,13 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
     while(nglyph--)
     {
-	xoff1 = xpos & 0x1f;
+	xoff1 = xpos & PIM;
 	char1 = (glyphPointer) FONTGLYPHBITS(pglyphBase,(*ppci++));
 	hTmp = h;
-	dst = pdstBase + (xpos >> 5);
+	dst = pdstBase + (xpos >> PWSH);
 
 #ifndef FASTCHARS
-	if (xoff1 + widthGlyph <= 32)
+	if (xoff1 + widthGlyph <= PPW)
 	{
 	    maskpartialbits (xoff1, widthGlyph, startmask);
 #endif
@@ -277,7 +318,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 #else
 		c = *char1++;
 #if BITMAP_BIT_ORDER == MSBFirst
-		c >>= 32 - widthGlyph;
+		c >>= PPW - widthGlyph;
 #endif
 #endif
 		FASTPUTBITS (OP(c),xoff1,widthGlyph,dst);
@@ -291,8 +332,8 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	}
 	else
 	{
-	    mask32bits (xoff1, widthGlyph, startmask, endmask);
-	    nfirst = 32 - xoff1;
+	    maskPPWbits (xoff1, widthGlyph, startmask, endmask);
+	    nfirst = PPW - xoff1;
 	    while (hTmp--)
 	    {
 		GetBits1

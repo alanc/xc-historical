@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbres.c,v 1.16 92/12/23 17:38:27 rws Exp $ */
+/* $XConsortium: mfbbres.c,v 1.17 92/12/24 09:26:14 rws Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "mfb.h"
@@ -33,6 +33,7 @@ SOFTWARE.
    e2 is used less often than e1, so it's not in a register
 */
 
+void
 mfbBresS(rop, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2, len)
 int rop;		/* a reduced rasterop */
 PixelType *addrl;	/* pointer to base of bitmap */
@@ -50,16 +51,16 @@ int len;		/* length of line */
 						 * cast to char pointer */
     register PixelType bit;	/* current bit being set/cleared/etc.  */
     PixelType leftbit = mask[0]; /* leftmost bit to process in new word */
-    PixelType rightbit = mask[31]; /* rightmost bit to process in new word */
+    PixelType rightbit = mask[PPW-1]; /* rightmost bit to process in new word */
 
     register int e3 = e2-e1;
     PixelType	tmp;
 
     /* point to longword containing first point */
     addrb = (unsigned char *)mfbScanline(addrl, x1, y1, nlwidth);
-    yinc = signdy * nlwidth * 4;                /* 4 == sizeof(int) */
+    yinc = signdy * nlwidth * PGSZB;
     e = e-e1;			/* to make looping easier */
-    bit = mask[x1 & 31];
+    bit = mask[x1 & PIM];
 
     if (!len)
 	return;
@@ -85,7 +86,7 @@ int len;		/* length of line */
 			if (!bit)
 			{
 			    bit = leftbit;
-			    addrb += 4;
+			    addrb += PGSZB;
 			}
 			tmp = *(PixelType *) addrb;
 		    }
@@ -93,7 +94,7 @@ int len;		/* length of line */
  		    {
 			*(PixelType *) addrb = tmp;
 			bit = leftbit;
-			addrb += 4;
+			addrb += PGSZB;
 			tmp = *(PixelType *) addrb;
 		    }
 		}
@@ -117,7 +118,7 @@ int len;		/* length of line */
 			if (!bit)
 			{
 			    bit = rightbit;
-			    addrb -= 4;
+			    addrb -= PGSZB;
 			}
 			tmp = *(PixelType *) addrb;
 		    }
@@ -125,7 +126,7 @@ int len;		/* length of line */
  		    {
 			*(PixelType *) addrb = tmp;
 			bit = rightbit;
-			addrb -= 4;
+			addrb -= PGSZB;
 			tmp = *(PixelType *) addrb;
 		    }
 		}
@@ -143,7 +144,7 @@ int len;		/* length of line */
 		    if (e >= 0)
 		    {
 			bit = SCRRIGHT(bit,1);
-			if (!bit) { bit = leftbit;addrb += 4; }
+			if (!bit) { bit = leftbit;addrb += PGSZB; }
 			e += e3;
 		    }
 		    mfbScanlineInc(addrb, yinc);
@@ -158,7 +159,7 @@ int len;		/* length of line */
 		    if (e >= 0)
 		    {
 			bit = SCRLEFT(bit,1);
-			if (!bit) { bit = rightbit;addrb -= 4; }
+			if (!bit) { bit = rightbit;addrb -= PGSZB; }
 			e += e3;
 		    }
 		    mfbScanlineInc(addrb, yinc);
@@ -188,7 +189,7 @@ int len;		/* length of line */
 			if (!bit)
 			{
 			    bit = leftbit;
-			    addrb += 4;
+			    addrb += PGSZB;
 			}
 			tmp = *(PixelType *) addrb;
 		    }
@@ -196,7 +197,7 @@ int len;		/* length of line */
  		    {
 			*(PixelType *) addrb = tmp;
 			bit = leftbit;
-			addrb += 4;
+			addrb += PGSZB;
 			tmp = *(PixelType *) addrb;
 		    }
 		}
@@ -220,7 +221,7 @@ int len;		/* length of line */
 			if (!bit)
 			{
 			    bit = rightbit;
-			    addrb -= 4;
+			    addrb -= PGSZB;
 			}
 			tmp = *(PixelType *) addrb;
 		    }
@@ -228,7 +229,7 @@ int len;		/* length of line */
 		    {
 			*(PixelType *) addrb = tmp;
 			bit = rightbit;
-			addrb -= 4;
+			addrb -= PGSZB;
 			tmp = *(PixelType *) addrb;
 		    }
 		}
@@ -246,7 +247,7 @@ int len;		/* length of line */
 		    if (e >= 0)
 		    {
 			bit = SCRRIGHT(bit,1);
-			if (!bit) { bit = leftbit;addrb += 4; }
+			if (!bit) { bit = leftbit;addrb += PGSZB; }
 			e += e3;
 		    }
 		    mfbScanlineInc(addrb, yinc);
@@ -261,7 +262,7 @@ int len;		/* length of line */
 		    if (e >= 0)
 		    {
 			bit = SCRLEFT(bit,1);
-			if (!bit) { bit = rightbit;addrb -= 4; }
+			if (!bit) { bit = rightbit;addrb -= PGSZB; }
 			e += e3;
 		    }
 		    mfbScanlineInc(addrb, yinc);
@@ -285,7 +286,7 @@ int len;		/* length of line */
 			e += e3;
 		    }
 		    bit = SCRRIGHT(bit,1);
-		    if (!bit) { bit = leftbit;addrb += 4; }
+		    if (!bit) { bit = leftbit;addrb += PGSZB; }
 		}
 	    }
 	    else
@@ -300,7 +301,7 @@ int len;		/* length of line */
 			e += e3;
 		    }
 		    bit = SCRLEFT(bit,1);
-		    if (!bit) { bit = rightbit;addrb -= 4; }
+		    if (!bit) { bit = rightbit;addrb -= PGSZB; }
 		}
 	    }
         } /* if X_AXIS */
@@ -315,7 +316,7 @@ int len;		/* length of line */
 		    if (e >= 0)
 		    {
 			bit = SCRRIGHT(bit,1);
-			if (!bit) { bit = leftbit;addrb += 4; }
+			if (!bit) { bit = leftbit;addrb += PGSZB; }
 			e += e3;
 		    }
 		    mfbScanlineInc(addrb, yinc);
@@ -330,7 +331,7 @@ int len;		/* length of line */
 		    if (e >= 0)
 		    {
 			bit = SCRLEFT(bit,1);
-			if (!bit) { bit = rightbit; addrb -= 4; }
+			if (!bit) { bit = rightbit; addrb -= PGSZB; }
 			e += e3;
 		    }
 		    mfbScanlineInc(addrb, yinc);

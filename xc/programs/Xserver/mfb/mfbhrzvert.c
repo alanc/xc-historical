@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbhrzvert.c,v 1.12 92/12/23 17:44:16 rws Exp $ */
+/* $XConsortium: mfbhrzvert.c,v 1.13 92/12/24 09:26:22 rws Exp $ */
 #include "X.h"
 
 #include "gc.h"
@@ -62,7 +62,7 @@ int len;		/* length of line */
     addrl = mfbScanline(addrl, x1, y1, nlwidth);
 
     /* all bits inside same longword */
-    if ( ((x1 & 0x1f) + len) < 32)
+    if ( ((x1 & PIM) + len) < PPW)
     {
 	maskpartialbits(x1, len, startmask);
         if (rop == RROP_BLACK)
@@ -93,7 +93,7 @@ int len;		/* length of line */
         {
 	    if (startmask)
 		*addrl++ |= startmask;
-	    Duff (nlmiddle, *addrl++ = 0xffffffff);
+	    Duff (nlmiddle, *addrl++ = ~0);
 	    if (endmask)
 		*addrl |= endmask;
         }
@@ -101,7 +101,7 @@ int len;		/* length of line */
         {
 	    if (startmask)
 		*addrl++ ^= startmask;
-	    Duff (nlmiddle, *addrl++ ^= 0xffffffff);
+	    Duff (nlmiddle, *addrl++ ^= ~0);
 	    if (endmask)
 		*addrl ^= endmask;
         }
@@ -133,18 +133,17 @@ register int len;	/* length of line */
  
     if (rop == RROP_BLACK)
     {
-	bitmask = rmask[x1&0x1f];
+	bitmask = rmask[x1 & PIM];
         Duff(len, *addrl &= bitmask; mfbScanlineInc(addrl, nlwidth) );
     }
     else if (rop == RROP_WHITE)
     {
-	bitmask = mask[x1&0x1f];
+	bitmask = mask[x1 & PIM];
         Duff(len, *addrl |= bitmask; mfbScanlineInc(addrl, nlwidth) );
     }
     else if (rop == RROP_INVERT)
     {
-	bitmask = mask[x1&0x1f];
+	bitmask = mask[x1 & PIM];
         Duff(len, *addrl ^= bitmask; mfbScanlineInc(addrl, nlwidth) );
     }
 }
-

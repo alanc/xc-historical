@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpixmap.c,v 5.9 93/07/12 16:27:17 dpw Exp $ */
+/* $XConsortium: mfbpixmap.c,v 5.10 93/09/03 08:10:51 dpw Exp $ */
 
 /* pixmap management
    written by drewry, september 1986
@@ -126,17 +126,17 @@ mfbPadPixmap(pPixmap)
 {
     register int width = pPixmap->drawable.width;
     register int h;
-    register int mask;
-    register unsigned int *p;
-    register unsigned int bits;	/* real pattern bits */
+    register PixelType mask;
+    register PixelType *p;
+    register PixelType bits;	/* real pattern bits */
     register int i;
     int rep;			/* repeat count for pattern */
 
-    if (width >= 32)
+    if (width >= PPW)
 	return;
 
-    rep = 32/width;
-    if (rep*width != 32)
+    rep = PPW/width;
+    if (rep*width != PPW)
 	return;
 
     mask = endtab[width];
@@ -153,11 +153,11 @@ mfbPadPixmap(pPixmap)
 	}
 	p++;
     }
-    pPixmap->drawable.width = 32;
+    pPixmap->drawable.width = PPW;
 }
 
 /* Rotates pixmap pPix by w pixels to the right on the screen. Assumes that
- * words are 32 bits wide, and that the least significant bit appears on the
+ * words are PPW bits wide, and that the least significant bit appears on the
  * left.
  */
 void
@@ -175,14 +175,14 @@ mfbXRotatePixmap(pPix, rw)
     rw %= (int)pPix->drawable.width;
     if (rw < 0)
 	rw += (int)pPix->drawable.width;
-    if(pPix->drawable.width == 32)
+    if(pPix->drawable.width == PPW)
     {
         pwFinal = pw + pPix->drawable.height;
 	while(pw < pwFinal)
 	{
 	    t = *pw;
 	    *pw++ = SCRRIGHT(t, rw) | 
-		    (SCRLEFT(t, (32-rw)) & endtab[rw]);
+		    (SCRLEFT(t, (PPW-rw)) & endtab[rw]);
 	}
     }
     else

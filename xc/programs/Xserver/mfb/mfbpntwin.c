@@ -1,4 +1,4 @@
-/* $XConsortium: mfbpntwin.c,v 5.9 93/09/13 09:32:05 dpw Exp $ */
+/* $XConsortium: mfbpntwin.c,v 5.10 93/10/12 11:28:52 dpw Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -60,7 +60,7 @@ mfbPaintWindow(pWin, pRegion, what)
 	case BackgroundPixmap:
 	    if (pPrivWin->fastBackground)
 	    {
-		mfbTileArea32Copy((DrawablePtr)pWin, REGION_NUM_RECTS(pRegion),
+		mfbTileAreaPPWCopy((DrawablePtr)pWin, REGION_NUM_RECTS(pRegion),
 				  REGION_RECTS(pRegion), GXcopy,
 				  pPrivWin->pRotatedBackground);
 		return;
@@ -89,7 +89,7 @@ mfbPaintWindow(pWin, pRegion, what)
 	}
 	else if (pPrivWin->fastBorder)
 	{
-	    mfbTileArea32Copy((DrawablePtr)pWin, REGION_NUM_RECTS(pRegion),
+	    mfbTileAreaPPWCopy((DrawablePtr)pWin, REGION_NUM_RECTS(pRegion),
 				  REGION_RECTS(pRegion), GXcopy,
 				  pPrivWin->pRotatedBorder);
 	    return;

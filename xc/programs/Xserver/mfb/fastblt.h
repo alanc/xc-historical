@@ -48,6 +48,7 @@
     }
 #endif
 
+#if PPW == 32
 #define DuffL(counter,label,body) \
     switch (counter & 3) { \
     label: \
@@ -62,3 +63,27 @@
 	if ((counter -= 4) >= 0) \
 	    goto label; \
     }
+#else /* PPW == 64 */
+#define DuffL(counter,label,body) \
+    switch (counter & 7) { \
+    label: \
+        body \
+    case 7: \
+	body \
+    case 6: \
+	body \
+    case 5: \
+	body \
+    case 4: \
+	body \
+    case 3: \
+	body \
+    case 2: \
+	body \
+    case 1: \
+	body \
+    case 0: \
+	if ((counter -= 8) >= 0) \
+	    goto label; \
+    }
+#endif /* PPW */

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbtile.c,v 5.4 92/12/23 17:50:31 rws Exp $ */
+/* $XConsortium: mfbtile.c,v 5.5 92/12/24 09:26:41 rws Exp $ */
 #include "X.h"
 
 #include "windowstr.h"
@@ -44,10 +44,10 @@ is equivalent to iy%= tileheight, and saves a division.
 */
 
 /* 
-    tile area with a 32 bit wide pixmap 
+    tile area with a PPW bit wide pixmap 
 */
 void
-MROP_NAME(mfbTileArea32)(pDraw, nbox, pbox, alu, ptile)
+MROP_NAME(mfbTileAreaPPW)(pDraw, nbox, pbox, alu, ptile)
     DrawablePtr pDraw;
     int nbox;
     BoxPtr pbox;
@@ -58,7 +58,6 @@ MROP_NAME(mfbTileArea32)(pDraw, nbox, pbox, alu, ptile)
 			/* pointer to bits in tile, if needed */
     int tileHeight;	/* height of the tile */
     register PixelType srcpix;	
-
     int nlwidth;	/* width in longwords of the drawable */
     int w;		/* width of current box */
     MROP_DECLARE_REG ()
@@ -69,10 +68,7 @@ MROP_NAME(mfbTileArea32)(pDraw, nbox, pbox, alu, ptile)
     PixelType endmask;	/* masks for reggedy bits at either end of line */
     int nlwMiddle;	/* number of longwords between sides of boxes */
     int nlwExtra;	/* to get from right of box to left of next span */
-    
     register int iy;	/* index of current scanline in tile */
-
-
     PixelType *pbits;	/* pointer to start of drawable */
 
     mfbGetPixelWidthAndPointer(pDraw, nlwidth, pbits);
@@ -87,9 +83,9 @@ MROP_NAME(mfbTileArea32)(pDraw, nbox, pbox, alu, ptile)
 	w = pbox->x2 - pbox->x1;
 	h = pbox->y2 - pbox->y1;
 	iy = pbox->y1 % tileHeight;
-	p = pbits + (pbox->y1 * nlwidth) + (pbox->x1 >> 5);
+	p = pbits + (pbox->y1 * nlwidth) + (pbox->x1 >> PWSH);
 
-	if ( ((pbox->x1 & 0x1f) + w) < 32)
+	if ( ((pbox->x1 & PIM) + w) < PPW)
 	{
 	    maskpartialbits(pbox->x1, w, startmask);
 	    nlwExtra = nlwidth;
@@ -193,19 +189,19 @@ MROP_NAME(mfbTileArea32)(pDraw, nbox, pbox, alu, ptile)
 
 #if (MROP) == 0
 void
-mfbTileArea32 (pDraw, nbox, pbox, alu, ptile)
+mfbTileAreaPPW (pDraw, nbox, pbox, alu, ptile)
     DrawablePtr pDraw;
     int nbox;
     BoxPtr pbox;
     int alu;
     PixmapPtr ptile;
 {
-    void    (*f)(), mfbTileArea32Copy(), mfbTileArea32General();
+    void    (*f)(), mfbTileAreaPPWCopy(), mfbTileAreaPPWGeneral();
     
     if (alu == GXcopy)
-	f = mfbTileArea32Copy;
+	f = mfbTileAreaPPWCopy;
     else
-	f = mfbTileArea32General;
+	f = mfbTileAreaPPWGeneral;
     (*f) (pDraw, nbox, pbox, alu, ptile);
 }
 #endif

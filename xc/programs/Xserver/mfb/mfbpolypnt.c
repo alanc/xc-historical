@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpolypnt.c,v 5.3 89/09/11 10:12:05 rws Exp $ */
+/* $XConsortium: mfbpolypnt.c,v 5.4 92/12/23 17:48:17 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -88,7 +88,7 @@ mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 		y = ppt->y + pDrawable->y;
 		if ((x >= pbox->x1) && (x < pbox->x2) &&
 		    (y >= pbox->y1) && (y < pbox->y2))
-		    *mfbScanline(addrl, x, y, nlwidth) &= rmask[x & 0x1f];
+		    *mfbScanline(addrl, x, y, nlwidth) &= rmask[x & PIM];
 	    }
 	}
 	else if (rop == RROP_WHITE)
@@ -99,7 +99,7 @@ mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 		y = ppt->y + pDrawable->y;
 		if ((x >= pbox->x1) && (x < pbox->x2) &&
 		    (y >= pbox->y1) && (y < pbox->y2))
-		    *mfbScanline(addrl, x, y, nlwidth) |= mask[x & 0x1f];
+		    *mfbScanline(addrl, x, y, nlwidth) |= mask[x & PIM];
 	    }
 	}
 	else if (rop == RROP_INVERT)
@@ -110,7 +110,7 @@ mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 		y = ppt->y + pDrawable->y;
 		if ((x >= pbox->x1) && (x < pbox->x2) &&
 		    (y >= pbox->y1) && (y < pbox->y2))
-		    *mfbScanline(addrl, x, y, nlwidth) ^= mask[x & 0x1f];
+		    *mfbScanline(addrl, x, y, nlwidth) ^= mask[x & PIM];
 	    }
 	}
     }

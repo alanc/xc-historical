@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbzerarc.c,v 5.15 93/10/12 11:28:53 dpw Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.16 94/01/07 09:43:41 dpw Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -35,22 +35,22 @@ without any express or implied warranty.
 #include "mi.h"
 
 #if (BITMAP_BIT_ORDER == MSBFirst)
-#define LEFTMOST	((PixelType) 0x80000000)
+#define LEFTMOST	((PixelType) (1 << PLST))
 #else
 #define LEFTMOST	((PixelType) 1)
 #endif
 
 #define PixelateWhite(addr,yoff,xoff) \
-    *mfbScanlineOffset(addr, (yoff)+((xoff)>>5)) |= \
-	SCRRIGHT (LEFTMOST, ((xoff) & 0x1f))
+    *mfbScanlineOffset(addr, (yoff)+((xoff)>>PWSH)) |= \
+	SCRRIGHT (LEFTMOST, ((xoff) & PIM))
 #define PixelateBlack(addr,yoff,xoff) \
-    *mfbScanlineOffset(addr, (yoff)+((xoff)>>5)) &= \
-	~(SCRRIGHT (LEFTMOST, ((xoff) & 0x1f)))
+    *mfbScanlineOffset(addr, (yoff)+((xoff)>>PWSH)) &= \
+	~(SCRRIGHT (LEFTMOST, ((xoff) & PIM)))
 
 #define Pixelate(base,yoff,xoff) \
 { \
-    paddr = mfbScanlineOffset(base, (yoff) + ((xoff)>>5)); \
-    pmask = SCRRIGHT(LEFTMOST, (xoff) & 0x1f); \
+    paddr = mfbScanlineOffset(base, (yoff) + ((xoff)>>PWSH)); \
+    pmask = SCRRIGHT(LEFTMOST, (xoff) & PIM); \
     *paddr = (*paddr & ~pmask) | (pixel & pmask); \
 }
 
@@ -77,7 +77,7 @@ mfbZeroArcSS(pDraw, pGC, arc)
 	RROP_BLACK)
 	pixel = 0;
     else
-	pixel = ~0L;
+	pixel = ~0;
 
     mfbGetPixelWidthAndPointer(pDraw, nlwidth, addrl);
     do360 = miZeroArcSetup(arc, &info, TRUE);

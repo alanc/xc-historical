@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbresd.c,v 1.4 92/12/23 17:39:07 rws Exp $ */
+/* $XConsortium: mfbbresd.c,v 1.5 92/12/24 09:26:16 rws Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "mfb.h"
@@ -39,6 +39,7 @@ SOFTWARE.
 	    rop = bgrop; \
     }
 
+void
 mfbBresD(fgrop, bgrop,
 	 pdashIndex, pDash, numInDashList, pdashOffset, isDoubleDash,
 	 addrl, nlwidth,
@@ -64,7 +65,7 @@ int len;		/* length of line */
     register int e3 = e2-e1;
     register unsigned long bit;
     PixelType leftbit = mask[0]; /* leftmost bit to process in new word */
-    PixelType rightbit = mask[31]; /* rightmost bit to process in new word */
+    PixelType rightbit = mask[PPW-1]; /* rightmost bit to process in new word */
     int dashIndex;
     int dashOffset;
     int dashRemaining;
@@ -81,9 +82,9 @@ int len;		/* length of line */
 
     /* point to longword containing first point */
     addrb = (unsigned char *)mfbScanline(addrl, x1, y1, nlwidth);
-    yinc = signdy * nlwidth * 4;                /* 4 == sizeof(int) */
+    yinc = signdy * nlwidth * PGSZB;
     e = e-e1;			/* to make looping easier */
-    bit = mask[x1 & 31];
+    bit = mask[x1 & PIM];
     if (axis == X_AXIS)
     {
 	if (signdx > 0)
@@ -103,7 +104,7 @@ int len;		/* length of line */
 		    e += e3;
 		}
 		bit = SCRRIGHT(bit,1);
-		if (!bit) { bit = leftbit;addrb += 4; }
+		if (!bit) { bit = leftbit;addrb += PGSZB; }
 		StepDash
 	    }
 	}
@@ -124,7 +125,7 @@ int len;		/* length of line */
 		    e += e3;
 		}
 		bit = SCRLEFT(bit,1);
-		if (!bit) { bit = rightbit;addrb -= 4; }
+		if (!bit) { bit = rightbit;addrb -= PGSZB; }
 		StepDash
 	    }
 	}
@@ -145,7 +146,7 @@ int len;		/* length of line */
 		if (e >= 0)
 		{
 		    bit = SCRRIGHT(bit,1);
-		    if (!bit) { bit = leftbit;addrb += 4; }
+		    if (!bit) { bit = leftbit;addrb += PGSZB; }
 		    e += e3;
 		}
 		mfbScanlineInc(addrb, yinc);
@@ -166,7 +167,7 @@ int len;		/* length of line */
 		if (e >= 0)
 		{
 		    bit = SCRLEFT(bit,1);
-		    if (!bit) { bit = rightbit;addrb -= 4; }
+		    if (!bit) { bit = rightbit;addrb -= PGSZB; }
 		    e += e3;
 		}
 		mfbScanlineInc(addrb, yinc);
