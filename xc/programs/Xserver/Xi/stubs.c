@@ -53,6 +53,7 @@ ChangeKeyboardDevice (old_dev, new_dev)
  *
  */
 
+int
 ChangePointerDevice (old_dev, new_dev)
     DeviceIntPtr	old_dev;
     DeviceIntPtr	new_dev;
