@@ -115,14 +115,15 @@ extern void cfbResolveStaticColor();
 
 /* private field of GC */
 typedef struct {
-    short	rop;		/* reduction of rasterop to 1 of 3 */
-    short	ropOpStip;	/* rop for opaque stipple */
-    short	fExpose;	/* callexposure handling ? */
-    short	freeCompClip;
-    PixmapPtr	pRotatedTile;	/* tile/stipple  rotated to align with window */
-    PixmapPtr	pRotatedStipple;	/* and using offsets */
-    RegionPtr	pAbsClientRegion; /* client region in screen coords */
-    RegionPtr	pCompositeClip; /* FREE_CC or REPLACE_CC */
+    unsigned char       rop;            /* reduction of rasterop to 1 of 3 */
+    unsigned char       ropOpStip;      /* rop for opaque stipple */
+    unsigned char       ropFillArea;    /*  == alu, rop, or ropOpStip */
+    short		fExpose;	/* callexposure handling ? */
+    short		freeCompClip;
+    PixmapPtr		pRotatedTile;	/* tile/stipple  rotated to align with window */
+    PixmapPtr		pRotatedStipple;/* and using offsets */
+    RegionPtr		pAbsClientRegion;/* client region in screen coords */
+    RegionPtr		pCompositeClip; /* FREE_CC or REPLACE_CC */
     } cfbPrivGC;
 typedef cfbPrivGC	*cfbPrivGCPtr;
 
