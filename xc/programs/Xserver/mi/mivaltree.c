@@ -33,7 +33,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 1.40 88/02/13 16:11:11 rws Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 1.41 88/05/19 20:05:59 rws Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "X.h"
@@ -292,22 +292,18 @@ miComputeClips (pParent, pScreen, universe)
 	} 
         else 
         {
-	    pChild->marked = 0;
-	    if ((* pScreen->RegionNotEmpty) (pChild->borderClip)) 
-            {
-		/*
-		 * If the child isn't viewable, it has no business taking up
-		 * clipping space, so we nuke all its clipping regions. There
-		 * was a problem with UnmapGravity where the clipList wouldn't
-		 * get nuked, so drawing operations succeeded while the window
-		 * was unmapped...
-		 */
-		(* pScreen->RegionEmpty) (pChild->borderClip);
-		(* pScreen->RegionEmpty) (pChild->clipList);
-		(* pScreen->RegionEmpty) (pChild->exposed);
-		(* pScreen->RegionEmpty) (pChild->borderExposed);
-		pChild->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+	    /*
+	     * Create an empty universe for the child and recurse
+	     */
+	    if (childUniverse == NullRegion)
+	    {
+		childUniverse = (* pScreen->RegionCreate) (NULL, 1);
 	    }
+	    else
+	    {
+		(* pScreen->RegionEmpty) (childUniverse);
+	    }
+	    miComputeClips (pChild, pScreen, childUniverse);
 	}
     }
 
@@ -333,6 +329,8 @@ miComputeClips (pParent, pScreen, universe)
 	(* pScreen->Union) (pParent->backStorage->obscured,
 			    pParent->backStorage->obscured,
 			    exposed);
+	pParent->backStorage->oldAbsCorner.x = pParent->absCorner.x - dx;
+	pParent->backStorage->oldAbsCorner.y = pParent->absCorner.y - dy;
     }
     
     (* pScreen->RegionCopy) (pParent->clipList, universe);
@@ -340,6 +338,17 @@ miComputeClips (pParent, pScreen, universe)
     pParent->drawable.serialNumber = NEXT_SERIAL_NUMBER;
     pParent->marked = 0;
 
+    /*
+     * If the parent isn't viewable, there's nothing to be exposed....
+     * The clipList and borderClip regions are already empty since we were
+     * given an empty universe.
+     */
+    if (!pParent->viewable)
+    {
+	(* pScreen->RegionEmpty) (pParent->exposed);
+	(* pScreen->RegionEmpty) (pParent->borderExposed);
+    }
+    
     if (childUniverse) 
 	(* pScreen->RegionDestroy) (childUniverse);
 }
@@ -469,22 +478,8 @@ miValidateTree (pParent, pChild, top, anyMarked)
 	     * Make sure the child is no longer marked (Windows being unmapped
 	     * are marked but unviewable...)
 	     */
-	    pWin->marked = 0;
-	    if ((* pScreen->RegionNotEmpty) (pWin->borderClip)) 
-            {
-		/*
-		 * If the child isn't viewable, it has no business taking up
-		 * clipping space, so we nuke all its clipping regions. There
-		 * was a problem with UnmapGravity where the clipList wouldn't
-		 * get nuked, so drawing operations succeeded while the window
-		 * was unmapped...
-		 */
-		(* pScreen->RegionEmpty) (pWin->borderClip);
-		(* pScreen->RegionEmpty) (pWin->clipList);
-		(* pScreen->RegionEmpty) (pWin->exposed);
-		(* pScreen->RegionEmpty) (pWin->borderExposed);
-		pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-	    }
+	    (* pScreen->RegionEmpty) (childClip);
+	    miComputeClips (pWin, pScreen, childClip);
 	}
     }
 
