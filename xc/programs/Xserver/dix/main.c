@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.3 89/07/16 17:23:44 rws Exp $ */
+/* $XConsortium: main.c,v 5.4 89/07/18 18:17:25 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -457,7 +457,7 @@ AllocateWindowPrivate(pScreen, index, amount)
 	nsizes = (unsigned *)xrealloc(pScreen->WindowPrivateSizes,
 				      (index + 1) * sizeof(unsigned));
 	if (!nsizes)
-	    return -1;
+	    return FALSE;
 	while (pScreen->WindowPrivateLen <= index)
 	{
 	    nsizes[pScreen->WindowPrivateLen++] = 0;
@@ -471,6 +471,7 @@ AllocateWindowPrivate(pScreen, index, amount)
 	pScreen->WindowPrivateSizes[index] = amount;
 	pScreen->totalWindowSize += (amount - oldamount);
     }
+    return TRUE;
 }
 
 Bool
@@ -487,7 +488,7 @@ AllocateGCPrivate(pScreen, index, amount)
 	nsizes = (unsigned *)xrealloc(pScreen->GCPrivateSizes,
 				      (index + 1) * sizeof(unsigned));
 	if (!nsizes)
-	    return -1;
+	    return FALSE;
 	while (pScreen->GCPrivateLen <= index)
 	{
 	    nsizes[pScreen->GCPrivateLen++] = 0;
@@ -501,6 +502,7 @@ AllocateGCPrivate(pScreen, index, amount)
 	pScreen->GCPrivateSizes[index] = amount;
 	pScreen->totalGCSize += (amount - oldamount);
     }
+    return TRUE;
 }
 
 /*
