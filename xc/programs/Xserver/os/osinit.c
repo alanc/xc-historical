@@ -21,9 +21,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: osinit.c,v 1.9 87/09/05 12:24:13 toddb Exp $ */
+/* $Header: osinit.c,v 1.10 87/10/29 07:47:49 swick Exp $ */
 #include "os.h"
-#include "site.h"
 #include "opaque.h"
 #undef NULL
 #include <dbm.h>
