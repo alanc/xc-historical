@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.69 89/03/02 12:04:58 jim Exp $
+ * $XConsortium: charproc.c,v 1.70 89/03/06 11:02:01 jim Exp $
  */
 
 
@@ -138,7 +138,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.69 89/03/02 12:04:58 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.70 89/03/06 11:02:01 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -167,15 +167,15 @@ extern void HandleStringEvent();
 extern void HandleEnterWindow();
 extern void HandleLeaveWindow();
 extern void HandleFocusChange();
-       void HandleKeymapChange();
+static void HandleKeymapChange();
 extern void HandleModeMenu();
 extern void HandleInsertSelection();
 extern void HandleSelectStart();
 extern void HandleSelectExtend();
 extern void HandleSelectEnd();
 extern void HandleStartExtend();
-       void HandleBell();
-       void HandleIgnore();
+static void HandleBell();
+static void HandleIgnore();
 extern void HandleSecure();
 extern void HandleScrollForward();
 extern void HandleScrollBack();
