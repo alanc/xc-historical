@@ -244,7 +244,7 @@ cfbChangeWindowAttributes(pWin, mask)
 		  }
 		  else
 		  {
-		      pPrivWin->fastBorder = TRUE;
+		      pPrivWin->fastBorder = FALSE;
 		  }
 	      }
 	      else
