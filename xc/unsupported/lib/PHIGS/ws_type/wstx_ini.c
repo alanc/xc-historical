@@ -1,4 +1,4 @@
-/* $XConsortium: wstx_ini.c,v 5.4 91/07/19 14:22:05 hersh Exp $ */
+/* $XConsortium: wstx_ini.c,v 5.5 91/07/24 14:43:18 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -239,9 +239,9 @@ init_input_ws_dt( ws_dt )
     assure(in_ws_dt->num_devs.stroke <= WST_MAX_NUM_STROKE_DEVS);
     in_ws_dt->num_devs.pick = 1;
     assure(in_ws_dt->num_devs.pick <= WST_MAX_NUM_PICK_DEVS);
-    in_ws_dt->num_devs.val = 6;
+    in_ws_dt->num_devs.val = 12;
     assure(in_ws_dt->num_devs.val <= WST_MAX_NUM_VALUATOR_DEVS);
-    in_ws_dt->num_devs.choice = 1;
+    in_ws_dt->num_devs.choice = 3;
     assure(in_ws_dt->num_devs.choice <= WST_MAX_NUM_CHOICE_DEVS);
     in_ws_dt->num_devs.string = 1;
     assure(in_ws_dt->num_devs.string <= WST_MAX_NUM_STRING_DEVS);
@@ -357,6 +357,17 @@ init_input_ws_dt( ws_dt )
 	    switch ( i ) {
 		default:
 		case 1: val->type = WST_VAL_TYPE_SLIDER; break;
+		case 2: val->type = WST_VAL_TYPE_SLIDER; break;
+		case 3: val->type = WST_VAL_TYPE_SLIDER; break;
+		case 4: val->type = WST_VAL_TYPE_SLIDER; break;
+		case 5: val->type = WST_VAL_TYPE_SLIDER; break;
+		case 6: val->type = WST_VAL_TYPE_SLIDER; break;
+		case 7: val->type = WST_VAL_TYPE_SLIDER; break;
+		case 8: val->type = WST_VAL_TYPE_SLIDER; break;
+		case 9: val->type = WST_VAL_TYPE_SLIDER; break;
+		case 10: val->type = WST_VAL_TYPE_SLIDER; break;
+		case 11: val->type = WST_VAL_TYPE_SLIDER; break;
+		case 12: val->type = WST_VAL_TYPE_SLIDER; break;
 	    }
 	    switch ( val->type ) {
 		case WST_VAL_TYPE_SLIDER:
@@ -384,6 +395,8 @@ init_input_ws_dt( ws_dt )
 	    switch ( i ) {
 		default:
 		case 1: cho->type = WST_CHOICE_TYPE_LIST; break;
+		case 2: cho->type = WST_CHOICE_TYPE_LIST; break;
+		case 3: cho->type = WST_CHOICE_TYPE_LIST; break;
 	    }
 	    switch ( cho->type ) {
 		case WST_CHOICE_TYPE_LIST:
