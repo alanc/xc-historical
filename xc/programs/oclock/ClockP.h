@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ClockP.h,v 1.2 89/03/28 16:46:27 keith Exp $
+ * $XConsortium: ClockP.h,v 1.3 89/04/09 12:30:04 rws Exp $
  */
 
 #ifndef _ClockP_h
@@ -13,11 +13,9 @@
 
 /* New fields for the clock widget instance record */
 typedef struct {
-	Pixel		face;		/* face pixel */
 	Pixel		minute;		/* minute hand pixel */
 	Pixel		hour;		/* hour hand pixel */
 	Pixel		jewel;		/* jewel pixel */
-	GC		faceGC;		/* pointer to GraphicsContext */
 	GC		minuteGC;	/* pointer to GraphicsContext */
 	GC		hourGC;		/* pointer to GraphicsContext */
 	GC		jewelGC;	/* pointer to GraphicsContext */

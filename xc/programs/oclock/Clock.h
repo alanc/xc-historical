@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Clock.h,v 1.1 89/02/10 17:57:01 keith Exp $
+ * $XConsortium: Clock.h,v 1.2 89/04/09 12:30:02 rws Exp $
  */
 
 #ifndef _XtClock_h
@@ -18,7 +18,6 @@
  background	     Background		pixel		White
  border		     BorderColor	pixel		Black
  borderWidth	     BorderWidth	int		1
- face		     Foreground		Pixel		Black
  minute		     Foreground		Pixel		Black
  hour		     Foreground		Pixel		Black
  height		     Height		int		120
@@ -30,7 +29,6 @@
 
 */
 
-#define XtNface		"face"
 #define XtNminute	"minute"
 #define XtNhour		"hour"
 #define XtNjewel	"jewel"

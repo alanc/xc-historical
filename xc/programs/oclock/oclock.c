@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: oclock.c,v 1.3 89/03/31 14:40:02 keith Exp $";
+static char rcsid[] = "$XConsortium: oclock.c,v 1.4 89/04/09 12:30:07 rws Exp $";
 #endif  lint
 
 #include <X11/Intrinsic.h>
@@ -28,14 +28,17 @@ void usage()
     fprintf(stderr,
 "       [-fg {color}] [-bg {color}] [-bd {color}] [-bw {pixels}]\n");
     fprintf(stderr,
-"       [-face {color}] [-minute {color}] [-hour {color}] [-jewel {color}]\n");
+"       [-minute {color}] [-hour {color}] [-jewel {color}]\n");
     fprintf(stderr,
 "       [-backing {backing-store}]\n");
     exit(1);
 }
 
 static XrmOptionDescRec options[] = {
-{"-face",	"*clock.face",		XrmoptionSepArg,	NULL},
+{"-fg",		"*Foreground",		XrmoptionSepArg,	NULL},
+{"-bg",		"*Background",		XrmoptionSepArg,	NULL},
+{"-foreground",	"*Foreground",		XrmoptionSepArg,	NULL},
+{"-background",	"*Background",		XrmoptionSepArg,	NULL},
 {"-minute",	"*clock.minute",	XrmoptionSepArg,	NULL},
 {"-hour",	"*clock.hour",		XrmoptionSepArg,	NULL},
 {"-jewel",	"*clock.jewel",		XrmoptionSepArg,	NULL},

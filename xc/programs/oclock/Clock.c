@@ -23,14 +23,12 @@ static XtResource resources[] = {
 	goffset(width), XtRString, "120"},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
 	goffset(height), XtRString, "120"},
-    {XtNface, XtCForeground, XtRPixel, sizeof (Pixel),
-	offset(face), XtRString, "Black"},
     {XtNminute, XtCForeground, XtRPixel, sizeof (Pixel),
-	offset(minute), XtRString, "Black"},
+	offset(minute), XtRString, XtDefaultForeground},
     {XtNhour, XtCForeground, XtRPixel, sizeof (Pixel),
-	offset(hour), XtRString, "Black"},
+	offset(hour), XtRString, XtDefaultForeground},
     {XtNjewel, XtCForeground, XtRPixel, sizeof (Pixel),
-	offset(jewel), XtRString, "Black"},
+	offset(jewel), XtRString, XtDefaultForeground},
     {XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
 	offset (reverse_video), XtRString, "FALSE"},
     {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
@@ -112,37 +110,8 @@ static void Initialize (greq, gnew)
     XtGCMask	valuemask;
     XGCValues	myXGCV;
 
-    /*
-     * set the colors if reverse video; these are the colors used:
-     *
-     *     background - paper		white
-     *     foreground - hands, face	black
-     *     border - border		black (foreground)
-     *
-     * This doesn't completely work since the parent has already made up a 
-     * border.  Sigh.
-     */
-    if (w->clock.reverse_video) {
-	Pixel fg = w->clock.face;
-	Pixel bg = w->core.background_pixel;
-
-	if (w->core.border_pixel == fg)
- 	    w->core.border_pixel = bg;
-	if (w->clock.minute == fg)
-	    w->clock.minute = bg;
-	if (w->clock.hour == fg)
-	    w->clock.hour = bg;
-	if (w->clock.jewel == fg)
-	    w->clock.jewel = bg;
-	w->clock.face = bg;
-	w->core.background_pixel = fg;
-    }
-
     valuemask = GCForeground | GCBackground;
     myXGCV.background = w->core.background_pixel;
-
-    myXGCV.foreground = w->clock.face;
-    w->clock.faceGC = XtGetGC(gnew, valuemask, &myXGCV);
 
     myXGCV.foreground = w->clock.minute;
     w->clock.minuteGC = XtGetGC(gnew, valuemask, &myXGCV);
@@ -309,8 +278,6 @@ static void Realize (gw, valueMask, attrs)
      	attrs->backing_store = w->clock.backing_store;
 	*valueMask |= CWBackingStore;
     }
-    *valueMask |= CWBorderPixel;
-    attrs->border_pixel = w->clock.face;
     XtCreateWindow( gw, (unsigned)InputOutput, (Visual *)CopyFromParent,
 		     *valueMask, attrs );
     Resize (gw);
@@ -322,7 +289,6 @@ static void Destroy (gw)
 {
      ClockWidget w = (ClockWidget)gw;
      if (w->clock.interval_id) XtRemoveTimeOut (w->clock.interval_id);
-     XtDestroyGC (w->clock.faceGC);
      XtDestroyGC (w->clock.minuteGC);
      XtDestroyGC (w->clock.hourGC);
 #ifdef SHAPE

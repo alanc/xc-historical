@@ -10,13 +10,10 @@ simply displays the current time on an analog display
 .SH OPTIONS
 .TP 8
 .B \-fg \fIforeground color\fB
-choose a different color for the face/hands/jewel of the clock
+choose a different color for the both hands and the jewel of the clock
 .TP 8
 .B \-bg \fIbackground color\fB
 choose a different color for the background.
-.TP 8
-.B \-face \fIface color\fB
-choose a different color for the face of the clock.
 .TP 8
 .B \-jewel \fIjewel color\fB
 choose a different color for the jewel on the clock.
@@ -40,10 +37,11 @@ specify the display to use; see \fIX(1)\fP.
 choose a different color for the window border.
 .TP 8
 .B \-bw \fIborder width\fB
-choose a different width for the window border.
+choose a different width for the window border.  As the Clock widget changes
+its border around quite a bit, this is most usefully set to zero.
 .TP 8
-.B \-shape
-causes the clock to reshape itself and ancestors to exactly
+.B \-noshape
+causes the clock to not reshape itself and ancestors to exactly
 fit the outline of the clock.
 .SH "SEE ALSO"
 X(1), X Toolkit documentation
