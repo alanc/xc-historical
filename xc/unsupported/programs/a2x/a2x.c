@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.22 92/03/24 12:17:08 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.23 92/03/24 12:29:58 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -493,7 +493,8 @@ undo_backspaces()
 	c = history[history_end-1];
 	if (!in_control_seq &&
 	    ((c == control_end) ||
-	     (history_end && (history[history_end-2] == control_char)))) {
+	     ((history_end > 1) &&
+	      (history[history_end-2] == control_char)))) {
 	    in_control_seq = True;
 	    need_bs = False;
 	}
@@ -532,16 +533,18 @@ do_backspace(c)
     Bool partial = False;
 
     curbscount++;
-    for (u = undos; u->bscount; u++) {
-	if (history_end >= u->seq_len &&
-	    !bcmp(history+history_end-u->seq_len, u->seq, u->seq_len)) {
-	    if (curbscount < u->bscount)
-		partial = True;
-	    else {
-		history_end -= u->seq_len;
-		curbscount -= u->bscount;
-		process(u->undo, u->undo_len, 0);
-		return;
+    if (!in_control_seq) {
+	for (u = undos; u->bscount; u++) {
+	    if (history_end >= u->seq_len &&
+		!bcmp(history+history_end-u->seq_len, u->seq, u->seq_len)) {
+		if (curbscount < u->bscount)
+		    partial = True;
+		else {
+		    history_end -= u->seq_len;
+		    curbscount -= u->bscount;
+		    process(u->undo, u->undo_len, 0);
+		    return;
+		}
 	    }
 	}
     }
@@ -650,8 +653,18 @@ process(buf, n, len)
 	    if (buf[i] == '\b') {
 		do_backspace(buf[i]);
 		continue;
-	    } else if (curbscount)
+	    } else if (curbscount) {
 		undo_backspaces();
+		if (in_control_seq) {
+		    fprintf(stderr, "still in control seq: ");
+		    for (j = history_end - 10; j < history_end; j++) {
+			if (j >= 0)
+			    fprintf(stderr, "%d ", history[j]);
+		    }
+		    fprintf(stderr, "\n");
+		    in_control_seq = False;
+		}
+	    }
 	}
 	if (buf[i] != control_char) {
 	    if (len) {
