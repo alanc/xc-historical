@@ -27,56 +27,56 @@ static void do_securekbd(), do_visualbell(), do_logging(), do_redraw(),
  * The order entries MUST match the values given in menu.h
  */
 MenuEntry mainMenuEntries[] = {
-    { "securekbd",	do_securekbd },
-    { "visualbell",	do_visualbell },
-    { "logging",	do_logging },
-    { "redraw",		do_redraw },
-    { "line1",		NULL },
-    { "suspend",	do_suspend },
-    { "continue",	do_continue },
-    { "interrupt",	do_interrupt },
-    { "hangup",		do_hangup },
-    { "terminate",	do_terminate },
-    { "kill",		do_kill },
-    { "line2",		NULL },
-    { "quit",		do_quit }};
+    { "securekbd",	do_securekbd },		/*  0 */
+    { "logging",	do_logging },		/*  1 */
+    { "redraw",		do_redraw },		/*  2 */
+    { "line1",		NULL },			/*  3 */
+    { "suspend",	do_suspend },		/*  4 */
+    { "continue",	do_continue },		/*  5 */
+    { "interrupt",	do_interrupt },		/*  6 */
+    { "hangup",		do_hangup },		/*  7 */
+    { "terminate",	do_terminate },		/*  8 */
+    { "kill",		do_kill },		/*  9 */
+    { "line2",		NULL },			/* 10 */
+    { "quit",		do_quit }};		/* 11 */
 
 MenuEntry vtMenuEntries[] = {
-    { "scrollbar",	do_scrollbar },
-    { "jumpscroll",	do_jumpscroll },
-    { "reversevideo",	do_reversevideo },
-    { "autowrap",	do_autowrap },
-    { "reversewrap",	do_reversewrap },
-    { "autolinefeed",	do_autolinefeed },
-    { "appcursor",	do_appcursor },
-    { "appkeypad",	do_appkeypad },
-    { "scrollkey",	do_scrollkey },
-    { "scrollinput",	do_scrollinput },
-    { "allow132",	do_allow132 },
-    { "cursesemul",	do_cursesemul },
-    { "marginbell",	do_marginbell },
-    { "altscreen",	do_altscreen },
-    { "line1",		NULL },
-    { "softreset",	do_softreset },
-    { "hardreset",	do_hardreset },
-    { "line2",		NULL },
-    { "tekshow",	do_tekshow },
-    { "tekmode",	do_tekmode },
-    { "vthide",		do_vthide }};
+    { "scrollbar",	do_scrollbar },		/*  0 */
+    { "jumpscroll",	do_jumpscroll },	/*  1 */
+    { "reversevideo",	do_reversevideo },	/*  2 */
+    { "autowrap",	do_autowrap },		/*  3 */
+    { "reversewrap",	do_reversewrap },	/*  4 */
+    { "autolinefeed",	do_autolinefeed },	/*  5 */
+    { "appcursor",	do_appcursor },		/*  6 */
+    { "appkeypad",	do_appkeypad },		/*  7 */
+    { "scrollkey",	do_scrollkey },		/*  8 */
+    { "scrollinput",	do_scrollinput },	/*  9 */
+    { "allow132",	do_allow132 },		/* 10 */
+    { "cursesemul",	do_cursesemul },	/* 11 */
+    { "visualbell",	do_visualbell },	/* 12 */
+    { "marginbell",	do_marginbell },	/* 13 */
+    { "altscreen",	do_altscreen },		/* 14 */
+    { "line1",		NULL },			/* 15 */
+    { "softreset",	do_softreset },		/* 16 */
+    { "hardreset",	do_hardreset },		/* 17 */
+    { "line2",		NULL },			/* 18 */
+    { "tekshow",	do_tekshow },		/* 19 */
+    { "tekmode",	do_tekmode },		/* 20 */
+    { "vthide",		do_vthide }};		/* 21 */
 
 MenuEntry tekMenuEntries[] = {
-    { "tektextlarge",	do_tektextlarge },
-    { "tektext2",	do_tektext2 },
-    { "tektext3",	do_tektext3 },
-    { "tektextsmall",	do_tektextsmall },
-    { "line1",		NULL },
-    { "tekpage",	do_tekpage },
-    { "tekreset",	do_tekreset },
-    { "tekcopy",	do_tekcopy },
-    { "line2",		NULL },
-    { "vtshow",		do_vtshow },
-    { "vtmode",		do_vtmode },
-    { "tekhide",	do_tekhide }};
+    { "tektextlarge",	do_tektextlarge },		/* */
+    { "tektext2",	do_tektext2 },		/* */
+    { "tektext3",	do_tektext3 },		/* */
+    { "tektextsmall",	do_tektextsmall },		/* */
+    { "line1",		NULL },		/* */
+    { "tekpage",	do_tekpage },		/* */
+    { "tekreset",	do_tekreset },		/* */
+    { "tekcopy",	do_tekcopy },		/* */
+    { "line2",		NULL },		/* */
+    { "vtshow",		do_vtshow },		/* */
+    { "vtmode",		do_vtmode },		/* */
+    { "tekhide",	do_tekhide }};		/* */
 
 static Widget create_menu();
 

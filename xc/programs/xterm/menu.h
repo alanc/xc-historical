@@ -18,18 +18,17 @@ extern Arg menuArgs[];
  * items in primary menu
  */
 #define mainMenu_securekbd 0
-#define mainMenu_visualbell 1
-#define mainMenu_logging 2
-#define mainMenu_redraw 3
-#define mainMenu_line1 4
-#define mainMenu_suspend 5
-#define mainMenu_continue 6
-#define mainMenu_interrupt 7
-#define mainMenu_hangup 8
-#define mainMenu_terminate 9
-#define mainMenu_kill 10
-#define mainMenu_line2 11
-#define mainMenu_quit 12
+#define mainMenu_logging 1
+#define mainMenu_redraw 2
+#define mainMenu_line1 3
+#define mainMenu_suspend 4
+#define mainMenu_continue 5
+#define mainMenu_interrupt 6
+#define mainMenu_hangup 7
+#define mainMenu_terminate 8
+#define mainMenu_kill 9
+#define mainMenu_line2 10
+#define mainMenu_quit 11
 
 /*
  * items in vt100 mode menu
@@ -46,15 +45,16 @@ extern Arg menuArgs[];
 #define vtMenu_scrollinput 9
 #define vtMenu_allow132 10
 #define vtMenu_cursesemul 11
-#define vtMenu_marginbell 12
-#define vtMenu_altscreen 13
-#define vtMenu_line1 14
-#define vtMenu_softreset 15
-#define vtMenu_hardreset 16
-#define vtMenu_line2 17
-#define vtMenu_tekshow 18
-#define vtMenu_tekmode 19
-#define vtMenu_vthide 20
+#define vtMenu_visualbell 12
+#define vtMenu_marginbell 13
+#define vtMenu_altscreen 14
+#define vtMenu_line1 15
+#define vtMenu_softreset 16
+#define vtMenu_hardreset 17
+#define vtMenu_line2 18
+#define vtMenu_tekshow 19
+#define vtMenu_tekmode 20
+#define vtMenu_vthide 21
 
 /*
  * items in tek4014 mode menu
@@ -98,11 +98,6 @@ extern Arg menuArgs[];
   update_menu_item (term->screen.mainMenu, \
 		    mainMenuEntries[mainMenu_securekbd].name, \
 		    term->screen.grabbedKbd)
-
-#define update_visualbell() \
-  update_menu_item (term->screen.mainMenu, \
-		    mainMenuEntries[mainMenu_visualbell].name, \
-		    term->screen.visualbell)
 
 #define update_logging() \
   update_menu_item (term->screen.mainMenu, \
@@ -170,11 +165,15 @@ extern Arg menuArgs[];
 		    vtMenuEntries[vtMenu_cursesemul].name, \
 		    term->screen.curses)
 
+#define update_visualbell() \
+  update_menu_item (term->screen.vtMenu, \
+		    vtMenuEntries[vtMenu_visualbell].name, \
+		    term->screen.visualbell)
+
 #define update_marginbell() \
   update_menu_item (term->screen.vtMenu, \
 		    vtMenuEntries[vtMenu_marginbell].name, \
 		    term->screen.marginbell)
-
 
 #define update_altscreen() \
   update_menu_item (term->screen.vtMenu, \
