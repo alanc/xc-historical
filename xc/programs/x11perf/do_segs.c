@@ -4,9 +4,9 @@ static XSegment *segments;
 static GC bggc, fggc;
 static Window w[4];
 static XRectangle ws[3] = {
-    {100, 100, 200, 200},
-    {150, 150, 200, 200},
-    {200, 200, 200, 200}
+    {150, 150, 90, 90},
+    {300, 180, 90, 90},
+    {450, 210, 90, 90}
   };
 
 void InitSizedSegs(d, p, size)
@@ -83,7 +83,7 @@ void InitSizedSegs(d, p, size)
     
 }
    
-void InitSmallSegs(d, p)
+void InitSegs1(d, p)
     Display *d;
     Parms p;
 {
@@ -91,7 +91,7 @@ void InitSmallSegs(d, p)
 }
 
 
-void InitMedSegs(d, p)
+void InitSegs10(d, p)
     Display *d;
     Parms p;
 {
@@ -99,12 +99,21 @@ void InitMedSegs(d, p)
 }
 
 
-void InitSegs(d, p)
+void InitSegs100(d, p)
+    Display *d;
+    Parms p;
+{
+    InitSizedSegs(d, p, 100);
+}
+
+
+void InitSegs500(d, p)
     Display *d;
     Parms p;
 {
     InitSizedSegs(d, p, 500);
 }
+
 
 void DoSegs(d, p)
     Display *d;
