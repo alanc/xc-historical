@@ -1,4 +1,4 @@
-/* $XConsortium: imThaiFlt.c,v 1.1 93/09/17 13:28:07 rws Exp $ */
+/* $XConsortium: imThaiFlt.c,v 1.2 93/09/18 11:01:04 rws Exp $ */
 /***********************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -55,6 +55,7 @@ SOFTWARE.
 
 /* character classification table */
 #define TACTIS_CHARS 256
+Private
 char tactis_chtype[TACTIS_CHARS] = {
     CTRL, CTRL, CTRL, CTRL, CTRL, CTRL, CTRL, CTRL,  /*  0 -  7 */
     CTRL, CTRL, CTRL, CTRL, CTRL, CTRL, CTRL, CTRL,  /*  8 - 15 */
@@ -100,6 +101,7 @@ char tactis_chtype[TACTIS_CHARS] = {
 
 #define CH_CLASSES      17  /* 17 classes of chars */
 
+Private
 char write_rules_lookup[CH_CLASSES][CH_CLASSES] = {
         /* Table 0: writing/outputing rules */
         /* row: leading char,  column: following char */
@@ -123,6 +125,7 @@ char write_rules_lookup[CH_CLASSES][CH_CLASSES] = {
   ,{XC, NC, NC, NC, NC, NC, NC, NC, NC, NC, CP, NC, CP, NC, NC, NC, NC}/*AV3*/
 };
 
+Private
 char wtt_isc1_lookup[CH_CLASSES][CH_CLASSES] = {
       /* Table 1: WTT default input sequence check rules */
       /* row: leading char,  column: following char */
@@ -146,6 +149,7 @@ char wtt_isc1_lookup[CH_CLASSES][CH_CLASSES] = {
   ,{XC, AC, AC, AC, AC, AC, AC, RJ, RJ, RJ, CP, RJ, CP, RJ, RJ, RJ, RJ}/*AV3*/
 };
 
+Private
 char wtt_isc2_lookup[CH_CLASSES][CH_CLASSES] = {
       /* Table 2: WTT strict input sequence check rules */
       /* row: leading char,  column: following char */
@@ -169,6 +173,7 @@ char wtt_isc2_lookup[CH_CLASSES][CH_CLASSES] = {
   ,{XC, AC, AC, AC, RJ, RJ, AC, RJ, RJ, RJ, CP, RJ, CP, RJ, RJ, RJ, RJ}/*AV3*/
 };
 
+Private
 char thaicat_isc_lookup[CH_CLASSES][CH_CLASSES] = {
       /* Table 3: Thaicat input sequence check rules */
       /* row: leading char,  column: following char */
@@ -193,6 +198,7 @@ char thaicat_isc_lookup[CH_CLASSES][CH_CLASSES] = {
 };
 
 
+Private
 int THAI_chtype (  		/* returns classification of a char */
 #if NeedFunctionPrototypes
 	unsigned char	ch
@@ -208,6 +214,7 @@ int THAI_chtype (  		/* returns classification of a char */
 }
 
 
+Private
 int THAI_chlevel (  		/* returns the display level */
 #if NeedFunctionPrototypes
 	unsigned char	ch
@@ -256,6 +263,7 @@ int THAI_chlevel (  		/* returns the display level */
 }
 
 
+Private
 Bool THAI_isdead (		/* return True if char is non-spacing */
 #if NeedFunctionPrototypes
 	unsigned char	ch
@@ -275,6 +283,7 @@ Bool THAI_isdead (		/* return True if char is non-spacing */
             (tactis_chtype[ch] == AV3));
 }
 
+Private
 Bool THAI_iscons (	/* return True if char is consonant */
 #if NeedFunctionPrototypes
 	unsigned char	ch
@@ -290,6 +299,7 @@ Bool THAI_iscons (	/* return True if char is consonant */
 }
 
 
+Private
 Bool THAI_isvowel (		/* return True if char is vowel */
 #if NeedFunctionPrototypes
 	unsigned char	ch
@@ -309,6 +319,7 @@ Bool THAI_isvowel (		/* return True if char is vowel */
 }
 
 
+Private
 Bool THAI_istone (		/* return True if char is tonemark */
 #if NeedFunctionPrototypes
 	unsigned char	ch
@@ -323,6 +334,7 @@ Bool THAI_istone (		/* return True if char is tonemark */
     return (tactis_chtype[ch] == TONE);
 }
 
+Private
 Bool THAI_iscomposible (
 #if NeedFunctionPrototypes
 	unsigned char	follow_ch, 
@@ -342,6 +354,7 @@ Bool THAI_iscomposible (
             == CP);
 }
 
+Private
 Bool THAI_isaccepted (
 #if NeedFunctionPrototypes
 	unsigned char	follow_ch, 
@@ -383,6 +396,7 @@ Bool iskeyvalid; /*  means "Can follow_ch be keyed in after lead_ch?" */
     return (iskeyvalid);
 }
 
+Private
 void THAI_apply_write_rules(
 #if NeedFunctionPrototypes
 	unsigned char	*instr, 
@@ -442,6 +456,7 @@ Output parameters:
     }
 }
 
+Private
 int THAI_find_chtype (
 #if NeedFunctionPrototypes
 	unsigned char	*instr, 
@@ -480,6 +495,7 @@ Output parameters:
 }
 
 
+Private
 int THAI_apply_scm(
 #if NeedFunctionPrototypes
 	unsigned char	*instr, 
