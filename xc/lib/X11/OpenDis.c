@@ -1,5 +1,5 @@
 /*
- * $XConsortium: OpenDis.c,v 11.148 94/01/19 11:13:14 gildea Exp $
+ * $XConsortium: OpenDis.c,v 11.149 94/02/03 18:48:09 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -42,6 +42,9 @@ typedef struct {
 } _XBigReqState;
 
 extern int _Xdebug;
+#ifdef WIN32
+int *_Xdebug_p = &_Xdebug;
+#endif
 
 #ifdef XTHREADS
 int  (*_XInitDisplayLock_fn)() = NULL;
