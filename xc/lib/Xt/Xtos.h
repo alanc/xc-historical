@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Xtos.h,v 1.11 91/11/08 17:55:15 gildea Exp $
+* $XConsortium: Xtos.h,v 1.12 93/09/11 16:15:06 rws Exp $
 */
 
 /***********************************************************
@@ -65,7 +65,9 @@ pragma on(alloca);
 
 
 #ifdef __GNUC__
+#ifndef alloca
 #define alloca __builtin_alloca
+#endif /* !alloca */
 #define ALLOCATE_LOCAL(size) alloca((int)(size))
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 #else /* ! __GNUC__ */
