@@ -1,7 +1,8 @@
 STARTFONT 2.1
+COMMENT $XConsortium$
 COMMENT 
 COMMENT Characters #224--#250 designed, made, and are
-COMMENT copyrighted (c) 1991 by Joseph Friedman (yossi@CS.Stanford.EDU).
+COMMENT Copyright (c) 1991 by Joseph Friedman (yossi@CS.Stanford.EDU).
 COMMENT The rest of the font is taken from 8x13.bdf.
 COMMENT 
 COMMENT Permission to use, copy, modify, distribute, and sell this
@@ -27,7 +28,7 @@ RESOLUTION_Y 75
 SPACING "C"
 AVERAGE_WIDTH 80
 CHARSET_REGISTRY "ISO8859"
-CHARSET_ENCODING "1"
+CHARSET_ENCODING "8"
 DEFAULT_CHAR 0
 FONT_DESCENT 3
 FONT_ASCENT 10
