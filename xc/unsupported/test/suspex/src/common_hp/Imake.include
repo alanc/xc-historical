@@ -1,0 +1,34 @@
+SUSPEX_LIB_DIR  = ../../src/util
+COMMON_DIR      = ../../src/common_hp
+PEXUT_DIR      = ../../src/pexut_hp
+
+COMMON_OBJS = $(COMMON_DIR)/lut.o $(COMMON_DIR)/renderer.o \
+              $(COMMON_DIR)/workstation.o $(COMMON_DIR)/misc.o \
+              $(COMMON_DIR)/err_handler.o $(COMMON_DIR)/window.o \
+              $(COMMON_DIR)/main.o 
+
+SUSPEX_LIB = $(SUSPEX_LIB_DIR)/libSusPEX.a
+PEXUT_LIB = $(PEXUT_DIR)/libpexut.a
+
+CDEBUGFLAGS = -g
+INCLUDES = -I. -I$(COMMON_DIR) -I$(PEXUT_DIR)
+
+PEXLIB=-lPEX5
+LDLIBS = $(SUSPEX_LIB) $(PEXUT_LIB) $(PEXLIB) $(XMULIB) $(XLIB) -lm
+LDOPTIONS = -L$(LIBDIR)
+
+default: all
+
+$(SUSPEX_LIB):
+	(cd $(SUSPEX_LIB_DIR); make)
+
+$(PEXUT_LIB):
+	(cd $(PEXUT_DIR); make)
+
+$(COMMON_OBJS):
+	(cd $(COMMON_DIR); make)
+
+#define CommonTarget(prog) \
+  NormalProgramTarget(prog, prog.o $(COMMON_OBJS), $(PEXUT_LIB) $(SUSPEX_LIB),,)
+
+DependTarget()

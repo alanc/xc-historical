@@ -1,0 +1,74 @@
+# $XConsortium$
+#
+#       NOTICE TO USER: The source code in this file is copyrighted under
+#       U.S. and international laws.  SunSoft, Inc., a Sun Microsystems,
+#       Inc. business of Mountain View, California owns the copyright.
+#       Users and possessors of this source code are hereby granted a
+#       nonexclusive, royalty-free copyright and design patent license
+#       to use this code in individual and commercial software.
+#
+#       Any use of this source code must include, in the user documentation
+#       and internal comments to the code, notices to the end user as follows:
+#
+#(c) Copyright 1992, 1993 SunSoft, Inc., a Sun Microsystems, Inc. business.
+#
+#       SUNSOFT, INC. AND SUN MICROSYSTEMS, INC. MAKE NO REPRESENTATIONS
+#       ABOUT THE SUITABILITY OF THIS SOURCE CODE FOR ANY PURPOSE. IT IS
+#       PROVIDED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY OF ANY KIND.
+#       SUNSOFT, INC., AND SUN MICROSYSTEMS, INC., SEVERALLY AND
+#       INDIVIDUALLY, DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOURCE
+#       CODE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+#       FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SUNSOFT, INC.
+#       OR SUN MICROSYSTEMS, INC., BE LIABLE FOR ANY SPECIAL, INDIRECT,
+#       INCIDENTAL, OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER
+#       RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+#       OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+#       OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOURCE CODE.
+#
+
+
+# imake file for rndr
+
+SUSPEX_LIB_DIR  = ../../src/util
+COMMON_DIR      = ../../src/common_sun
+COMMON_OBJS = $(COMMON_DIR)/lut.o $(COMMON_DIR)/renderer.o
+SHARED_MAIN_OBJS = main.o $(COMMON_OBJS)
+SUSPEX_LIB = $(SUSPEX_LIB_DIR)/libSusPEX.a
+
+CDEBUGFLAGS = -g
+INCLUDES = -I. -I$(COMMON_DIR) 
+
+PEXLIB=-lPEX5
+LDLIBS = $(SUSPEX_LIB) $(PEXLIB) $(XMULIB) $(XLIB) -lm
+LDOPTIONS = -L$(LIBDIR)
+
+PROGS = accum_state clear_image clear_z clipList copy_nameset copy_plc \
+	echo_mode filters hlhsr hlhsr_z lut_dynamics render_elements \
+        rndr_targets shareDraw window_resize
+
+AllTarget($(PROGS))
+
+$(SUSPEX_LIB):
+	(cd $(SUSPEX_LIB_DIR); make)
+
+$(COMMON_OBJS):
+	(cd $(COMMON_DIR); make)
+
+NormalProgramTarget(accum_state, accum_state.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+NormalProgramTarget(clear_image, clear_image.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+NormalProgramTarget(clear_z, clear_z.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+NormalProgramTarget(clipList, clipList.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+NormalProgramTarget(copy_nameset, copy_nameset.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+NormalProgramTarget(copy_plc, copy_plc.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+NormalProgramTarget(echo_mode, echo_mode.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+NormalProgramTarget(filters, filters.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+NormalProgramTarget(hlhsr,hlhsr.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+NormalProgramTarget(hlhsr_z, hlhsr_z.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+NormalProgramTarget(lut_dynamics, lut_dynamics.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+NormalProgramTarget(render_elements,render_elements.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+NormalProgramTarget(rndr_targets, rndr_targets.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+NormalProgramTarget(shareDraw, shareDraw.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+NormalProgramTarget(window_resize, window_resize.o $(SHARED_MAIN_OBJS), $(SUSPEX_LIB),,)
+
+DependTarget()
+
