@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: oscolor.c,v 1.17 89/12/18 15:41:43 rws Exp $ */
+/* $XConsortium: oscolor.c,v 1.18 91/04/08 16:54:57 rws Exp $ */
 #ifdef NDBM
 #include <ndbm.h>
 #else
@@ -29,20 +29,36 @@ SOFTWARE.
 #endif
 #include "rgb.h"
 #include "os.h"
+#include "opaque.h"
 
-/* Looks up the color in the database.  Note that we are assuming there
- * is only one database for all the screens.  If you have multiple databases,
- * remove the dbminit() in OsInit(), and open the appropriate database each
- * time. Or implement a database package that allows you to have more than
- * one database open at a time.
- */
+/* Note that we are assuming there is only one database for all the screens. */
+
 #ifdef NDBM
-extern DBM *rgb_dbm;
+DBM *rgb_dbm = (DBM *)NULL;
 #else
-extern int rgb_dbm;
+int rgb_dbm = 0;
 #endif
 
 extern void CopyISOLatin1Lowered();
+
+int
+OsInitColors()
+{
+    if (!rgb_dbm)
+    {
+#ifdef NDBM
+	rgb_dbm = dbm_open(rgbPath, 0, 0);
+#else
+	if (dbminit(rgbPath) == 0)
+	    rgb_dbm = 1;
+#endif
+	if (!rgb_dbm) {
+	    ErrorF( "Couldn't open RGB_DB '%s'\n", rgbPath );
+	    return FALSE;
+	}
+    }
+    return TRUE;
+}
 
 /*ARGSUSED*/
 int
