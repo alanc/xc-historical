@@ -760,6 +760,8 @@ static void GetValues(base, res, num_resources, args, num_args)
     register int 		i;
     register XrmName		argName;
     register XrmResourceList*   xrmres;
+    register XrmQuark		QCallback = XrmStringToQuark(XtRCallback);
+    extern XtCallbackList	_XtGetCallbackList();
 
     /* Resource lists should be in compiled form already  */
 
@@ -767,10 +769,24 @@ static void GetValues(base, res, num_resources, args, num_args)
 	argName = StringToName(arg->name);
 	for (xrmres = res, i = 0; i < num_resources; i++, xrmres++) {
 	    if (argName == (*xrmres)->xrm_name) {
-		CopyToArg(
-		    (char*) base - (*xrmres)->xrm_offset - 1,
-		    &arg->value,
-		    (*xrmres)->xrm_size);
+		if ((*xrmres)->xrm_type == QCallback) {
+		    /* hack; do this here instead of a get_values_hook
+		     * because get_values_hook looses info as to
+		     * whether arg->value == NULL for CopyToArg.
+		     * It helps performance, too...
+		     */
+		    XtCallbackList callback = _XtGetCallbackList(
+			      (char*)base - (*xrmres)->xrm_offset - 1);
+		    CopyToArg(
+			      (char*)&callback, &arg->value,
+			      (*xrmres)->xrm_size);
+		}
+		else {
+		    CopyToArg(
+			      (char*) base - (*xrmres)->xrm_offset - 1,
+			      &arg->value,
+			      (*xrmres)->xrm_size);
+		}
 		break;
 	    }
 	}
