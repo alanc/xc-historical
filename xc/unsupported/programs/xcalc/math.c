@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.13 91/02/16 18:01:26 rws Exp $ 
+/* $XConsortium: math.c,v 1.14 91/02/16 19:36:41 converse Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -19,6 +19,9 @@
 #include <X11/Xos.h>
 #include <math.h>
 #include <signal.h>
+#if !defined(IEEE) && defined(SVR4)
+#include <siginfo.h>
+#endif
 #include <setjmp.h>
 #include "xcalc.h"
 
@@ -146,11 +149,37 @@ int pre_op(keynum)
 #ifndef IEEE
 
 /* cannot assign result of setjmp under ANSI C, use global instead */
+static int SignalKind;
 static int SignalCode;
 
 void fail_op()
 {
+    if (SignalKind == SIGFPE)
     switch (SignalCode) {
+#ifdef SVR4
+      case FPE_INTDIV:		/* integer divide by zero */
+      case FPE_FLTDIV:		/* floating point divide by zero */
+	strcpy(dispstr, "divide by 0");
+	break;
+      case FPE_INTOVF:		/* integer overflow */
+      case FPE_FLTOVF:		/* floating point overflow */
+	strcpy(dispstr, "overflow");
+	break;
+      case FPE_FLTUND:		/* floating point underflow */
+	strcpy(dispstr, "underflow");
+	break;
+      case FPE_FLTRES:		/* floating point inexact result */
+	strcpy(dispstr, "inexact result");
+	break;
+      case FPE_FLTINV:		/* invalid floating point operation */
+	strcpy(dispstr, "invalid op");
+	break;
+      case FPE_FLTSUB:		/* subscript out of range */
+	strcpy(dispstr, "out of range");
+	break;
+
+#endif /*SVR4*/
+
 #ifdef FPE_FLTDIV_TRAP
       case FPE_FLTDIV_TRAP:  strcpy(dispstr,"div by zero"); break;
 #endif
@@ -171,6 +200,10 @@ void fail_op()
 #endif
            default:               strcpy(dispstr,"error");
     }
+    else 
+	if (SignalKind == SIGILL)
+	    strcpy(dispstr, "illegal operand");
+
     entered=3;
     DrawDisplay();
     return;
@@ -187,18 +220,21 @@ signal_t fperr(sig,code,scp)
 #ifdef SYSV
     signal(SIGFPE,(signal_t (*)())fperr);
 #endif
+    SignalKind = sig;
     SignalCode = code;
     longjmp(env,1);
 }
 
+/* for VAX BSD4.3 */
 /*ARGSUSED*/
 signal_t illerr(sig,code,scp)
   int sig,code;
   sigcontextstructp scp;
 {
-#ifdef SYSV
+    /* not reset when caught? */
     signal(SIGILL,(signal_t (*)())illerr);
-#endif
+
+    SignalKind = sig;
     SignalCode = code;
     longjmp(env,1);
 }
