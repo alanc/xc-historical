@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.1 89/05/24 18:11:56 jim Exp $
+ *	$XConsortium: scrollbar.c,v 1.23 89/05/25 15:12:26 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -43,10 +43,10 @@
 #include "error.h"
 #include "menu.h"
 
-extern void Bcopy();
+extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.1 89/05/24 18:11:56 jim Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.23 89/05/25 15:12:26 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -336,7 +336,7 @@ ScrollBarOn (xw, init, doalloc)
 	       == NULL)
 	      Error (ERROR_SBRALLOC);
 	    screen->buf = &screen->allbuf[2 * screen->savelines];
-	    Bcopy ((char *)screen->allbuf, (char *)screen->buf,
+	    bcopy ((char *)screen->allbuf, (char *)screen->buf,
 		   2 * (screen->max_row + 2) * sizeof (char *));
 	    for(i = 2 * screen->savelines - 1 ; i >= 0 ; i--)
 	      if((screen->allbuf[i] =

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.11 89/03/01 20:00:41 jim Exp $
+ *	$XConsortium: screen.c,v 1.12 89/05/17 16:37:15 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* screen.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: screen.c,v 1.11 89/03/01 20:00:41 jim Exp $";
+static char rcs_id[] = "$XConsortium: screen.c,v 1.12 89/05/17 16:37:15 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -41,7 +41,7 @@ static char rcs_id[] = "$XConsortium: screen.c,v 1.11 89/03/01 20:00:41 jim Exp 
 #include "error.h"
 
 extern Char *calloc(), *malloc(), *realloc();
-extern void Bcopy();
+extern void bcopy();
 extern void free();
 
 ScrnBuf Allocate (nrow, ncol, addr)
@@ -121,7 +121,7 @@ int nrow, ncol, oldrow, oldcol;
 	minrows = (oldrow < nrow) ? oldrow : nrow;
 	mincols = (oldcol < ncol) ? oldcol : ncol;
 	for(i = 0; i < minrows; i++, tmp += ncol) {
-		Bcopy(base[i], tmp, mincols);
+		bcopy(base[i], tmp, mincols);
 		base[i] = tmp;
 	}
 	if (oldrow < nrow) {
@@ -154,7 +154,7 @@ register int length;		/* length of string */
 	col = screen->buf[avail = 2 * screen->cur_row] + screen->cur_col;
 	att = screen->buf[avail + 1] + screen->cur_col;
 	flags &= ATTRIBUTES;
-	Bcopy(str, col, length);
+	bcopy(str, col, length);
 	while(length-- > 0)
 		*att++ = flags;
 }
@@ -175,7 +175,7 @@ register int where, n, size;
 
 
 	/* save n lines at bottom */
-	Bcopy ((char *) &sb [2 * (last -= n - 1)], (char *) save,
+	bcopy ((char *) &sb [2 * (last -= n - 1)], (char *) save,
 		2 * sizeof (char *) * n);
 	
 	/* clear contents of old rows */
@@ -191,11 +191,11 @@ register int where, n, size;
 	 *
 	 *   +--------|---------|----+
 	 */
-	Bcopy ((char *) &sb [2 * where], (char *) &sb [2 * (where + n)],
+	bcopy ((char *) &sb [2 * where], (char *) &sb [2 * (where + n)],
 		2 * sizeof (char *) * (last - where));
 
 	/* reuse storage for new lines at where */
-	Bcopy ((char *)save, (char *) &sb[2 * where], 2 * sizeof(char *) * n);
+	bcopy ((char *)save, (char *) &sb[2 * where], 2 * sizeof(char *) * n);
 }
 
 
@@ -214,18 +214,18 @@ int where;
 	char *save [2 * MAX_ROWS];
 
 	/* save n lines at where */
-	Bcopy ((char *) &sb[2 * where], (char *)save, 2 * sizeof(char *) * n);
+	bcopy ((char *) &sb[2 * where], (char *)save, 2 * sizeof(char *) * n);
 
 	/* clear contents of old rows */
 	for (i = 2 * n - 1 ; i >= 0 ; i--)
 		bzero ((char *) save [i], size);
 
 	/* move up lines */
-	Bcopy ((char *) &sb[2 * (where + n)], (char *) &sb[2 * where],
+	bcopy ((char *) &sb[2 * (where + n)], (char *) &sb[2 * where],
 		2 * sizeof (char *) * ((last -= n - 1) - where));
 
 	/* reuse storage for new bottom lines */
-	Bcopy ((char *)save, (char *) &sb[2 * last],
+	bcopy ((char *)save, (char *) &sb[2 * last],
 		2 * sizeof(char *) * n);
 }
 
@@ -264,8 +264,8 @@ register int n, col;
 	register Char *att = sb[2 * row + 1];
 	register nbytes = (size - n - col);
 
-	Bcopy (ptr + col + n, ptr + col, nbytes);
-	Bcopy (att + col + n, att + col, nbytes);
+	bcopy (ptr + col + n, ptr + col, nbytes);
+	bcopy (att + col + n, att + col, nbytes);
 	bzero (ptr + size - n, n);
 	bzero (att + size - n, n);
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.112 89/05/25 15:12:04 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.113 89/05/25 15:38:26 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -129,7 +129,7 @@ extern char *realloc();
 extern char *ttyname();
 extern void exit();
 extern void sleep();
-extern void Bcopy();
+extern void bcopy();
 extern long lseek();
 
 int switchfb[] = {0, 2, 1, 3};
@@ -1517,7 +1517,7 @@ spawn ()
 #else
 		envnew = (char **) calloc ((unsigned) i + (4 + 1), sizeof(char *));
 #endif /* USE_SYSV_ENVVARS */
-		Bcopy((char *)environ, (char *)envnew, i * sizeof(char *));
+		bcopy((char *)environ, (char *)envnew, i * sizeof(char *));
 		environ = envnew;
 		Setenv ("TERM=", TermName);
 		if(!TermName)

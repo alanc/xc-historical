@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.2 89/05/25 14:13:54 jim Exp $
+ * $XConsortium: charproc.c,v 1.82 89/05/25 15:11:42 jim Exp $
  */
 
 
@@ -58,7 +58,7 @@
 #include "menu.h"
 
 extern Widget toplevel;
-extern void exit(), Bcopy();
+extern void exit(), bcopy();
 static void VTallocbuf();
 
 #define	DEFAULT		-1
@@ -139,7 +139,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.2 89/05/25 14:13:54 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.82 89/05/25 15:11:42 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -998,22 +998,22 @@ int l;
 	if (v_bufptr > v_bufstr) {
 		if (l) {
 			if (v_bufend > v_bufptr + l) {
-				Bcopy(d, v_bufptr, l);
+				bcopy(d, v_bufptr, l);
 				v_bufptr += l;
 			} else {
 				if (v_bufstr != v_buffer) {
-					Bcopy(v_bufstr, v_buffer,
+					bcopy(v_bufstr, v_buffer,
 					      v_bufptr - v_bufstr);
 					v_bufptr -= v_bufstr - v_buffer;
 					v_bufstr = v_buffer;
 				}
 				if (v_bufend > v_bufptr + l) {
-					Bcopy(d, v_bufptr, l);
+					bcopy(d, v_bufptr, l);
 					v_bufptr += l;
 				} else if (v_bufptr < v_bufend) {
 					fprintf(stderr, "Out of buffer space\n");
 					c = v_bufend - v_bufptr;
-					Bcopy(d, v_bufptr, c);
+					bcopy(d, v_bufptr, c);
 					v_bufptr = v_bufend;
 				} else {
 					fprintf(stderr, "Out of buffer space\n");
@@ -1042,7 +1042,7 @@ int l;
 						v_bufend - v_buffer);
 				l = (v_bufend - v_buffer) + r;
 			}
-			Bcopy(d + r, v_buffer, l - r);
+			bcopy(d + r, v_buffer, l - r);
 			v_bufstr = v_buffer;
 			v_bufptr = v_buffer + (l - r);
 		}
@@ -1746,10 +1746,10 @@ register TScreen *screen;
 	if(screen->cursor_state)
 		HideCursor();
 	rows = screen->max_row + 1;
-	Bcopy((char *)screen->buf, (char *)save, 2 * sizeof(char *) * rows);
-	Bcopy((char *)screen->altbuf, (char *)screen->buf, 2 * sizeof(char *) *
+	bcopy((char *)screen->buf, (char *)save, 2 * sizeof(char *) * rows);
+	bcopy((char *)screen->altbuf, (char *)screen->buf, 2 * sizeof(char *) *
 	 rows);
-	Bcopy((char *)save, (char *)screen->altbuf, 2 * sizeof(char *) * rows);
+	bcopy((char *)save, (char *)screen->altbuf, 2 * sizeof(char *) * rows);
 
 	if((top = -screen->topline) <= screen->max_row) {
 		if(screen->scroll_amt)
