@@ -1,5 +1,5 @@
 /*
- * $Header: charproc.c,v 1.31 88/04/12 16:57:10 jim Exp $
+ * $Header: charproc.c,v 1.32 88/05/11 16:10:51 jim Exp $
  */
 
 
@@ -120,7 +120,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.31 88/04/12 16:57:10 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.32 88/05/11 16:10:51 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2302,8 +2302,6 @@ int full;
 		screen->curss = 0;
 		ClearScreen(screen);
 		screen->cursor_state = OFF;
-		if(!(term->flags & AUTOREPEAT))
-			XAutoRepeatOn(screen->display);
 		if (term->flags & REVERSE_VIDEO)
 			ReverseVideo(term);
 

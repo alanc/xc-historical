@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.40 88/05/18 14:47:04 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.41 88/06/13 09:30:03 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -721,10 +721,6 @@ get_terminal ()
 
 	    screen->arrow = make_arrow (fg, bg);
 	}
-
-	XAutoRepeatOn(screen->display);
-
-
 }
 
 /*
