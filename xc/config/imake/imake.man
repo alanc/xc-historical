@@ -1,4 +1,4 @@
-.\" $XConsortium: imake.man,v 1.20 94/04/11 14:25:54 gildea Exp $
+.\" $XConsortium: imake.man,v 1.21 94/04/11 16:02:49 matt Exp $
 .TH IMAKE 1 "Release 6" "X Version 11"
 .SH NAME
 imake \- C preprocessor interface to the make utility
@@ -162,6 +162,7 @@ The indentation shows what files include what other files.
         Imakefile
             Library.tmpl	library rules
             Server.tmpl	server rules
+            Threads.tmpl	multi-threaded rules
 .fi
 .LP
 Note that \fIsite.def\fP gets included twice, once before the
