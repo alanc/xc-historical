@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.18 89/09/06 19:37:43 keith Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.19 89/09/20 15:01:19 keith Exp $ SPRITE (Berkeley)";
 #endif
 
 #include    "X.h"
@@ -424,7 +424,9 @@ miValidateTree (pParent, pChild, kind)
     RegionRec		exposed;    /* For intermediate calculations */
     register ScreenPtr	pScreen;
     register WindowPtr	pWin;
-    Bool		overlap;    /* result ignored */
+    Bool		overlap;
+    int			viewvals;
+    Bool		forward;
 
     pScreen = pParent->drawable.pScreen;
     if (pChild == NullWindow)
@@ -439,24 +441,35 @@ miValidateTree (pParent, pChild, kind)
      * is the area which can be divied up among the marked
      * children in their new configuration.
      */
-    (*pScreen->RegionInit) (&totalClip, NullBox, 200);
+    (*pScreen->RegionInit) (&totalClip, NullBox, (kind == VTUnmap) ? 0 : 200);
+    viewvals = 0;
     if ((pChild->drawable.y < pParent->lastChild->drawable.y) ||
 	((pChild->drawable.y == pParent->lastChild->drawable.y) &&
 	 (pChild->drawable.x < pParent->lastChild->drawable.x)))
     {
+	forward = TRUE;
 	for (pWin = pChild; pWin; pWin = pWin->nextSib)
 	{
 	    if (pWin->valdata)
+	    {
 		(* pScreen->RegionAppend) (&totalClip, &pWin->borderClip);
+		if (pWin->viewable)
+		    viewvals++;
+	    }
 	}
     }
     else
     {
+	forward = FALSE;
 	pWin = pParent->lastChild;
 	while (1)
 	{
 	    if (pWin->valdata)
+	    {
 		(* pScreen->RegionAppend) (&totalClip, &pWin->borderClip);
+		if (pWin->viewable)
+		    viewvals++;
+	    }
 	    if (pWin == pChild)
 		break;
 	    pWin = pWin->prevSib;
@@ -471,27 +484,44 @@ miValidateTree (pParent, pChild, kind)
      * from the totalClip to clip any siblings below it.
      */
 
-    if (kind == VTStack)
-    {
-	overlap = TRUE;
-    }
-    else
+    overlap = TRUE;
+    if (kind != VTStack)
     {
 	(* pScreen->Union) (&totalClip, &totalClip, &pParent->clipList);
-	/*
-	 * precompute childUnion to discover whether any of them
-	 * overlap.  This seems redundant, but performance studies
-	 * have demonstrated that the cost of this loop is
-	 * lower than the cost of multiple Subtracts in the
-	 * loop below.
-	 */
-	(*pScreen->RegionInit) (&childUnion, NullBox, 200);
-	for (pWin = pChild; pWin; pWin = pWin->nextSib)
-	    if (pWin->valdata && pWin->viewable)
-		(* pScreen->RegionAppend) (&childUnion, &pWin->borderSize);
-	(*pScreen->RegionValidate)(&childUnion, &overlap);
-	if (overlap)
-	    (*pScreen->RegionUninit) (&childUnion);
+	if (viewvals > 3)
+	{
+	    /*
+	     * precompute childUnion to discover whether any of them
+	     * overlap.  This seems redundant, but performance studies
+	     * have demonstrated that the cost of this loop is
+	     * lower than the cost of multiple Subtracts in the
+	     * loop below.
+	     */
+	    (*pScreen->RegionInit) (&childUnion, NullBox, 200);
+	    if (forward)
+	    {
+		for (pWin = pChild; pWin; pWin = pWin->nextSib)
+		    if (pWin->valdata && pWin->viewable)
+			(* pScreen->RegionAppend) (&childUnion,
+						   &pWin->borderSize);
+	    }
+	    else
+	    {
+		pWin = pParent->lastChild;
+		while (1)
+		{
+		    if (pWin->valdata && pWin->viewable)
+			(* pScreen->RegionAppend) (&childUnion,
+						   &pWin->borderSize);
+		    if (pWin == pChild)
+			break;
+		    pWin = pWin->prevSib;
+		}
+	    }
+	    (*pScreen->RegionValidate)(&childUnion, &overlap);
+	    if (overlap)
+		(*pScreen->RegionUninit) (&childUnion);
+	}
     }
 
     for (pWin = pChild;
