@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: gc.h,v 1.49 88/09/06 15:47:26 jim Exp $ */
+/* $XConsortium: gc.h,v 1.50 89/09/12 09:27:42 rws Exp $ */
 
 #ifndef GC_H
 #define GC_H 
@@ -42,7 +42,7 @@ SOFTWARE.
 #define GCQREASON_COPY_DST	4
 #define GCQREASON_DESTROY	5
 
-#define GC_CHANGE_SERIAL_BIT        (1L<<31)
+#define GC_CHANGE_SERIAL_BIT        (((unsigned long)1)<<31)
 #define GC_CALL_VALIDATE_BIT        (1L<<30)
 #define GCExtensionInterest   (1L<<29)
 
