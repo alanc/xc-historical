@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransint.h,v 1.15 94/03/15 13:19:21 mor Exp $ */
+/* $XConsortium: Xtransint.h,v 1.16 94/03/29 14:27:14 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -288,20 +288,6 @@ typedef struct _Xtransport {
     int	(*CloseForCloning)(
 #if NeedNestedPrototypes
 	XtransConnInfo		/* connection */
-#endif
-    );
-
-    int	(*NameToAddr)(
-#if NeedNestedPrototypes
-	XtransConnInfo		/* connection */
-	/* What else ??? */
-#endif
-    );
-
-    int	(*AddrToName)(
-#if NeedNestedPrototypes
-	XtransConnInfo		/* connection */
-	/* What else ??? */
 #endif
     );
 

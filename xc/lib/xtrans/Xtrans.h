@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.h,v 1.19 94/03/18 11:07:31 mor Exp $ */
+/* $XConsortium: Xtrans.h,v 1.20 94/03/18 11:29:00 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -324,18 +324,6 @@ int TRANS(Close)(
 );
 
 int TRANS(CloseForCloning)(
-#if NeedFunctionPrototypes
-    XtransConnInfo	/* ciptr */
-#endif
-);
-
-int TRANS(NameToAddr)(
-#if NeedFunctionPrototypes
-    XtransConnInfo	/* ciptr */
-#endif
-);
-
-int TRANS(AddrToName)(
 #if NeedFunctionPrototypes
     XtransConnInfo	/* ciptr */
 #endif
