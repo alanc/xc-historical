@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtApp-Create-Shell-Request wid-get
+.hw XtApp-Create-Shell XtVa-App-Create-Shell wid-get
 .na
 .de Ds
 .nf
@@ -99,7 +99,7 @@
 .ny0
 .TH XtAppCreateShell 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtAppCreateShell \- create top-level widget instance
+XtAppCreateShell, XtVaAppCreateShell \- create top-level widget instance
 .SH SYNTAX
 Widget XtAppCreateShell(\fIapplication_name\fP, \
 \fIapplication_class\fP, \fIwidget_class\fP, \fIdisplay\fP, \
@@ -116,11 +116,25 @@ Widget XtAppCreateShell(\fIapplication_name\fP, \
       ArgList \fIargs\fP;
 .br
       Cardinal \fInum_args\fP;
+.LP
+Widget XtVaAppCreateShell(\fIapplication_name\fP, \
+\fIapplication_class\fP, \fIwidget_class\fP, \fIdisplay\fP, ...)
+.br
+      String \fIapplication_name\fP;
+.br
+      String \fIapplication_class\fP;
+.br
+      WidgetClass \fIwidget_class\fP;
+.br
+      Display *\fIdisplay\fP;
 .SH ARGUMENTS
-.IP \fIapplication_class\fP 1i
-Specifies the class name of this application\*(Ac.
 .IP \fIapplication_name\fP 1i
 Specifies the name of the application instance.
+.IP \fIapplication_class\fP 1i
+Specifies the class name of this application\*(Ac.
+.ds Wc \ that the application top-level widget should be
+.IP \fIwidget_class\fP 1i
+Specifies the widget class\*(Wc.
 .ds Di \ from which to get the resources
 .IP \fIdisplay\fP 1i
 Specifies the display\*(Di.
@@ -128,9 +142,8 @@ Specifies the display\*(Di.
 Specifies the argument list\*(Di.
 .IP \fInum_args\fP 1i
 Specifies the number of arguments in the argument list.
-.ds Wc \ that the application top-level widget should be
-.IP \fIwidget_class\fP 1i
-Specifies the widget class\*(Wc.
+.IP \fI...\fP 1i
+Specifies the variable argument list\*(Di.
 .SH DESCRIPTION
 The
 .ZN XtAppCreateShell
