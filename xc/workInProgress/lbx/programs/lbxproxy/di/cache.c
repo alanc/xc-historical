@@ -1,4 +1,4 @@
-/* $XConsortium: cache.c,v 1.5 94/04/12 22:01:52 dpw Exp $ */
+/* $XConsortium: cache.c,v 1.6 94/04/17 21:17:16 dpw Exp $ */
 /*
 Copyright (c) 1994  X Consortium
 
@@ -92,11 +92,11 @@ CacheInit(maxsize)
 	return (Cache) 0;
     cache->entries = (CacheEntryPtr *)
 	xalloc(INITBUCKETS * sizeof(CacheEntryPtr));
-    bzero((char *) cache->entries, (INITBUCKETS * sizeof(CacheEntryPtr)));
     if (!cache->entries) {
 	xfree(cache);
 	return (Cache) 0;
     }
+    bzero((char *) cache->entries, (INITBUCKETS * sizeof(CacheEntryPtr)));
     caches[id] = cache;
     cache->elements = 0;
     cache->buckets = INITBUCKETS;
@@ -228,6 +228,19 @@ CacheReset(cid)
     }
     assert(cache->cursize == 0);
 }
+
+void
+CacheFreeAll()
+{
+    int         i;
+
+    for (i = 1; i < num_caches; i++) {
+	if (caches[i])
+	    CacheFreeCache(caches[i]);
+    }
+    num_caches = 1;
+}
+
 
 static void
 flush_cache(cache, needed)
