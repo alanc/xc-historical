@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.186 91/02/03 13:28:36 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.187 91/02/17 12:49:24 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -39,6 +39,14 @@
 #include <X11/X.h>
 
 #include <X11/Xfuncproto.h>
+
+#if __STDC__ && !defined(NOSTDHDRS)
+#include <stddef.h>
+#else
+#ifndef wchar_t
+#define wchar_t unsigned int
+#endif
+#endif
 
 #define Bool int
 #define Status int
@@ -510,6 +518,7 @@ typedef struct _XDisplay {
 	   caddr_t defaultCCCs;  /* pointer to an array of default XcmsCCC */
 	   caddr_t clientCmaps;  /* pointer to linked list of XcmsCmapRec */
 	} cms;
+	struct _XIMFilter *im_filters;
 } Display;
 
 #if NeedFunctionPrototypes	/* prototypes require event type definitions */
@@ -1027,6 +1036,163 @@ typedef union { Display *display;
 		Screen *screen;
 		ScreenFormat *pixmap_format;
 		XFontStruct *font; } XEDataObject;
+
+typedef struct {
+    XRectangle      max_ink_extent;
+    XRectangle      max_logical_extent;
+} XFontSetExtents;
+
+typedef struct _XFontSet *XFontSet;
+
+#define XBufferOverflow -4
+#define XNoContextDependencies 0
+#define XIsContextDependent -1
+
+typedef struct {
+    char           *chars;
+    int             nchars;
+    int             delta;
+    XFontSet        font_set;
+} XmbTextItem;
+
+typedef struct {
+    wchar_t        *chars;
+    int             nchars;
+    int             delta;
+    XFontSet        font_set;
+} XwcTextItem;
+
+typedef void (*XIMProc)();
+
+#if __STDC__
+typedef void *XIMValue;
+#else
+typedef char *XIMValue;
+#endif
+typedef struct _XIM *XIM;
+typedef struct _XIC *XIC;
+
+typedef unsigned short XIMStyle;
+
+typedef struct {
+    unsigned short count_styles;
+    XIMStyle *supported_styles;
+} XIMStyles;
+
+#define XIMPreEditArea		0x0001
+#define XIMPreEditCallbacks	0x0002
+#define XIMPreEditPosition	0x0004
+#define XIMPreEditNothing	0x0008
+#define XIMPreEditNone		0x0010
+#define XIMStatusArea		0x0100
+#define XIMStatusCallbacks	0x0200
+#define XIMStatusNothing	0x0400
+#define XIMStatusNone		0x0800
+
+#define XNVaNestedList "XNVaNestedList"
+#define XNQueryInputStyle "queryInputStyle"
+#define XNClientWindow "clientWindow"
+#define XNInputStyle "inputStyle"
+#define XNFocusWindow "focusWindow"
+#define XNResourceName "resourceName"
+#define XNResourceClass "resourceClass"
+#define XNGeometryCallback "geometryCallback"
+#define XNFilterEvents "filterEvents"
+#define XNPreeditStartCallback "preeditStartCallback"
+#define XNPreeditDoneCallback "preeditDoneCallback"
+#define XNPreeditDrawCallback "preeditDrawCallback"
+#define XNPreeditCaretCallback "preeditCaretCallback"
+#define XNPreeditAttributes "preeditAttributes"
+#define XNStatusAttributes "statusAttributes"
+#define XNArea "area"
+#define XNAreaNeeded "areaNeeded"
+#define XNSpotLocation "spotLocation"
+#define XNColormap "colorMap"
+#define XNStdColormap "stdColorMap"
+#define XNForeground "foreground"
+#define XNBackground "background"
+#define XNBackgroundPixmap "backgroundPixmap"
+#define XNFontSet "fontSet"
+#define XNLineSpace "lineSpace"
+#define XNCursor "cursor"
+
+#define XBufferOverFlow		1
+#define XLookupNone		2
+#define XLookupChars		3
+#define XLookupKeySym		4
+#define XLookupBoth		5
+
+#if __STDC__
+typedef void *XVaNestedList;
+#else
+typedef caddr_t XVaNestedList;
+#endif
+
+typedef struct {
+    XIMValue client_data;
+    XIMProc callback;
+} XIMCallback;
+
+typedef unsigned char XIMFeedback;
+
+#define XIMReverse	1
+#define XIMUnderline	(1<<1) 
+#define XIMHighlight	(1<<2)
+#define XIMPrimary 	(1<<5)
+#define XIMSecondary	(1<<6)
+#define XIMTertiary 	(1<<7)
+
+typedef struct _XIMText {
+    unsigned short length;
+    XIMFeedback *feedback;
+    Bool encoding_is_wchar; 
+    union {
+	char *multi_byte;
+	wchar_t *wide_char;
+    } string; 
+} XIMText;
+
+typedef struct _XIMPreEditDrawCallbackStruct {
+    int caret;		/* Cursor offset within pre-edit string */
+    int chg_first;	/* Starting change position */
+    int chg_length;	/* Length of the change in character count */
+    XIMText text;
+} XIMPreEditDrawCallbackStruct;
+
+typedef enum {
+    XIMForwardChar, XIMBackwardChar,
+    XIMForwardWord, XIMBackwardWord,
+    XIMCaretUp, XIMCaretDown,
+    XIMNextLine, XIMPreviousLine,
+    XIMLineStart, XIMLineEnd, 
+    XIMAbsolutePosition,
+    XIMDontChange
+} XIMCaretDirection;
+
+typedef enum {
+    XIMIsInvisible,	/* Disable caret feedback */ 
+    XIMIsPrimary,	/* UI defined caret feedback */
+    XIMIsSecondary	/* UI defined caret feedback */
+} XIMCaretStyle;
+
+typedef struct _XIMPreEditCaretCallbackStruct {
+    int position;		 /* Caret offset within pre-edit string */
+    XIMCaretDirection direction; /* Caret moves direction */
+    XIMCaretStyle style;	 /* Feedback of the caret */
+} XIMPreEditCaretCallbackStruct;
+
+typedef enum {
+    TextType,
+    Bitmaptype
+} XIMStatusDataType;
+	
+typedef struct _XIMStatusDrawCallbackStruct {
+    XIMStatusDataType type;
+    union {
+	XIMText text;
+	Pixmap  bitmap;
+    } data;
+} XIMStatusDrawCallbackStruct;
 
 _XFUNCPROTOBEGIN
 
@@ -3813,6 +3979,378 @@ extern int XWriteBitmapFile(
     unsigned int	/* height */,
     int			/* x_hot */,
     int			/* y_hot */		     
+#endif
+);
+
+extern XFontSet XCreateFontSet(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    _Xconst char*	/* base_font_name_list */,
+    char***		/* missing_charset_list */,
+    int*		/* missing_charset_count */,
+    char**		/* def_string */
+#endif
+);
+
+extern void XFreeFontSet(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    XFontSet		/* font_set */
+#endif
+);
+
+extern void XFreeStringList(
+#if NeedFunctionPrototypes
+    char**		/* list */
+#endif
+);
+
+extern int XFontsOfFontSet(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    XFontSet		/* font_set */,
+    XFontStruct***	/* font_struct_list */,
+    char***		/* font_name_list */
+#endif
+);
+
+extern char *XLocaleOfFontSet(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    XFontSet		/* font_set */
+#endif
+);
+
+extern XFontSetExtents *XExtentsOfFontSet(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    XFontSet		/* font_set */
+#endif
+);
+
+extern int XmbTextEscapement(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    XFontSet		/* font_set */,
+    _Xconst char*	/* text */,
+    int			/* bytes_text */
+#endif
+);
+
+extern int XwcTextEscapement(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    XFontSet		/* font_set */,
+    wchar_t*		/* text */,
+    int			/* num_wchars */
+#endif
+);
+
+extern int XmbTextExtents(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    XFontSet		/* font_set */,
+    _Xconst char*	/* text */,
+    int			/* bytes_text */,
+    XRectangle*		/* overall_ink_return */,
+    XRectangle*		/* overall_logical_return */
+#endif
+);
+
+extern int XwcTextExtents(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    XFontSet		/* font_set */,
+    wchar_t*		/* text */,
+    int			/* num_wchars */,
+    XRectangle*		/* overall_ink_return */,
+    XRectangle*		/* overall_logical_return */
+#endif
+);
+
+extern int XmbTextPerCharExtents(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    XFontSet		/* font_set */,
+    _Xconst char*	/* text */,
+    int			/* bytes_text */,
+    XRectangle*		/* ink_extents_buffer */,
+    XRectangle*		/* logical_extents_buffer */,
+    int			/* buffer_size */,
+    int*		/* num_chars */,
+    XRectangle*		/* overall_ink_return */,
+    XRectangle*		/* overall_logical_return */
+#endif
+);
+
+extern int XwcTextPerCharExtents(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    XFontSet		/* font_set */,
+    wchar_t*		/* text */,
+    int			/* num_wchars */,
+    XRectangle*		/* ink_extents_buffer */,
+    XRectangle*		/* logical_extents_buffer */,
+    int			/* buffer_size */,
+    int*		/* num_chars */,
+    XRectangle*		/* overall_ink_return */,
+    XRectangle*		/* overall_logical_return */
+#endif
+);
+
+extern int XmbComputeTextRedraw(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    XFontSet		/* font_set */,
+    _Xconst char*	/* text */,
+    int			/* bytes_text */,
+    int			/* del_start */,
+    int			/* bytes_del */,
+    _Xconst char*	/* rep_text */,
+    int			/* bytes_rep */,
+    int*		/* change_start_return */,
+    int*		/* change_len_return */
+#endif
+);
+
+extern int XwcComputeTextRedraw(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    XFontSet		/* font_set */,
+    wchar_t*		/* text */,
+    int			/* num_wchars */,
+    int			/* del_start */,
+    int			/* num_wchars_del */,
+    wchar_t*		/* rep_text */,
+    int			/* num_wchars_rep */,
+    int*		/* change_start_return */,
+    int*		/* change_len_return */
+#endif
+);
+
+extern void XmbDrawText(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Drawable		/* d */,
+    GC			/* gc */,
+    int			/* x */,
+    int			/* y */,
+    XmbTextItem*	/* text_items */,
+    int			/* nitems */
+#endif
+);
+
+extern void XwcDrawText(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Drawable		/* d */,
+    GC			/* gc */,
+    int			/* x */,
+    int			/* y */,
+    XwcTextItem*	/* text_items */,
+    int			/* nitems */
+#endif
+);
+
+extern void XmbDrawString(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Drawable		/* d */,
+    XFontSet		/* font_set */,
+    GC			/* gc */,
+    int			/* x */,
+    int			/* y */,
+    _Xconst char*	/* text */,
+    int			/* bytes_text */
+#endif
+);
+
+extern void XwcDrawString(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Drawable		/* d */,
+    XFontSet		/* font_set */,
+    GC			/* gc */,
+    int			/* x */,
+    int			/* y */,
+    wchar_t*		/* text */,
+    int			/* num_wchars */
+#endif
+);
+
+extern void XmbDrawImageString(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Drawable		/* d */,
+    XFontSet		/* font_set */,
+    GC			/* gc */,
+    int			/* x */,
+    int			/* y */,
+    _Xconst char*	/* text */,
+    int			/* bytes_text */
+#endif
+);
+
+extern void XwcDrawImageString(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Drawable		/* d */,
+    XFontSet		/* font_set */,
+    GC			/* gc */,
+    int			/* x */,
+    int			/* y */,
+    wchar_t*		/* text */,
+    int			/* num_wchars */
+#endif
+);
+
+extern XIM XOpenIM(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    struct _XrmHashBucketRec*	/* rdb */,
+    char*			/* res_name */,
+    char*			/* res_class */
+#endif
+);
+
+extern Status XCloseIM(
+#if NeedFunctionPrototypes
+    XIM /* im */
+#endif
+);
+
+extern XIC XCreateIC(
+#if NeedVarargsPrototypes
+    XIM /* im */, ...
+#endif
+);
+
+extern void XDestroyIC(
+#if NeedFunctionPrototypes
+    XIC /* ic */
+#endif
+);
+
+extern void XSetICFocus(
+#if NeedFunctionPrototypes
+    XIC /* ic */
+#endif
+);
+
+extern void XUnsetICFocus(
+#if NeedFunctionPrototypes
+    XIC /* ic */
+#endif
+);
+
+extern wchar_t *XwcResetIC(
+#if NeedFunctionPrototypes
+    XIC /* ic */
+#endif
+);
+
+extern char *XmbResetIC(
+#if NeedFunctionPrototypes
+    XIC /* ic */
+#endif
+);
+
+extern char *XSetICValues(
+#if NeedVarargsPrototypes
+    XIC /* ic */, ...
+#endif
+);
+
+extern char *XGetICValues(
+#if NeedVarargsPrototypes
+    XIC /* ic */, ...
+#endif
+);
+
+extern void XRegisterFilter(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    Window		/* window */,
+    unsigned long	/* event_mask */,
+    Bool		/* nonmaskable */,
+    Bool (*)(
+#if NeedNestedPrototypes
+	     Display*	/* display */,
+	     Window	/* window */,
+	     XEvent*	/* event */,
+	     XIMValue	/* client_data */
+#endif
+	     )		/* filter */,
+    XIMValue		/* client_data */
+#endif
+);
+
+extern void XUnregisterFilter(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    Window		/* window */,
+    Bool (*)(
+#if NeedNestedPrototypes
+	     Display*	/* display */,
+	     Window	/* window */,
+	     XEvent*	/* event */,
+	     XIMValue	/* client_data */
+#endif
+	     )		/* filter */,
+    XIMValue		/* client_data */
+#endif
+);
+
+extern Bool XFilterEvent(
+#if NeedFunctionPrototypes
+    XEvent*	/* event */,
+    Window	/* window */
+#endif
+);
+
+extern int XmbLookupString(
+#if NeedFunctionPrototypes
+    XIC			/* ic */,
+    XKeyPressedEvent*	/* event */,
+    char*		/* buffer_return */,
+    int			/* bytes_buffer */,
+    KeySym*		/* keysym_return */,
+    Status*		/* status_return */
+#endif
+);
+
+extern int XwcLookupString(
+#if NeedFunctionPrototypes
+    XIC			/* ic */,
+    XKeyPressedEvent*	/* event */,
+    wchar_t*		/* buffer_return */,
+    int			/* wchars_buffer */,
+    KeySym*		/* keysym_return */,
+    Status*		/* status_return */
+#endif
+);
+
+extern Display *XDisplayOfIM(
+#if NeedFunctionPrototypes
+    XIM /* im */
+#endif
+);
+
+extern XIM XIMOfIC(
+#if NeedFunctionPrototypes
+    XIC /* ic */
+#endif
+);
+
+extern char *XLocaleOfIM(
+#if NeedFunctionPrototypes
+    XIM /* im*/
+#endif
+);
+
+extern XVaNestedList XVaCreateNestedList(
+#if NeedVarargsPrototypes
+    int /*unused*/, ...
 #endif
 );
 
