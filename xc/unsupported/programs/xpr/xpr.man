@@ -30,6 +30,7 @@ xpr \- print an X window dump
 .B \-plane
 .I number
 ] [
+.B \-gray
 ] [
 .B \-portrait
 ] [
@@ -102,6 +103,10 @@ the paper.
 .IP "\fB\-plane\fP \fInumber\fP"
 Specifies which bit plane to use in an image.  The default is to use the
 entire image and map values into black and white based on color intensities.
+.IP "\fB\-gray\fP"
+Uses a simple 5-level gray scale conversion on a color image, rather than
+mapping to strictly black and white.  This essentially doubles the effective
+width and height of the image.
 .IP "\fB\-portrait\fP"
 Forces the window to be printed in portrait mode.  By default
 a window is printed such that its longest side follows the long side of
@@ -169,6 +174,8 @@ The \fB-compact\fP option is
 supported for PostScript output.
 It compresses white space but not black space, so it is not useful for
 reverse-video windows.
+
+For color images, should map directly to PostScript image support.
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
