@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.18 93/11/25 14:51:52 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.19 93/11/30 15:30:49 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -111,7 +111,7 @@ typedef struct {
 typedef IcePoAuthStatus (*IcePoAuthProc) (
 #if NeedFunctionPrototypes
     IcePointer *	/* authStatePtr */,
-    char *		/* connectionString */,
+    char *		/* address */,
     Bool		/* cleanUp */,
     Bool		/* swap */,
     int			/* authDataLen */,
@@ -125,7 +125,7 @@ typedef IcePoAuthStatus (*IcePoAuthProc) (
 typedef IcePaAuthStatus (*IcePaAuthProc) (
 #if NeedFunctionPrototypes
     IcePointer *	/* authStatePtr */,
-    IceListenObj	/* listenObj */,
+    char *		/* address */,
     Bool		/* swap */,
     int			/* replyDataLen */,
     IcePointer		/* replyData */,
@@ -191,7 +191,7 @@ typedef struct {
     char    	    *protocol_name;
     unsigned short  protocol_data_length;
     char   	    *protocol_data;
-    char    	    *address_list;
+    char    	    *address;
     char    	    *auth_name;
     unsigned short  auth_data_length;
     char   	    *auth_data;
@@ -199,11 +199,12 @@ typedef struct {
 
 
 /*
- * Authentication data maintained (in memory) per IceListenObj.
+ * Authentication data maintained in memory.
  */
 
 typedef struct {
     char    	    *protocol_name;
+    char	    *address;
     char    	    *auth_name;
     unsigned short  auth_data_length;
     char   	    *auth_data;
@@ -220,12 +221,14 @@ typedef struct {
 
 
 /*
- * Maxium number of ICE authentication methods allowed in .ICEauthority
+ * Maxium number of ICE authentication methods allowed, and maxiumum
+ * number of authentication data entries allowed in an .ICEauthority
  * file or in ICElib implementation.  This makes it easier to declare
  * local arrays.
  */
 
 #define MAX_ICE_AUTH_NAMES 32
+#define ICE_MAX_AUTH_DATA_ENTRIES 100
 
 
 /*
@@ -331,8 +334,6 @@ struct _IceListenObj {
     int				fd;
     Bool			unix_domain;
     char			*network_id;
-    int				auth_data_entry_count;
-    IceAuthDataEntry		*auth_data_entries;
     IceHostBasedAuthProc 	host_based_auth_proc;
 };
 
@@ -540,26 +541,37 @@ extern void IceFreeListenObj (
 #endif
 );
 
-extern void IceSetAuthenticationData (
+extern void IceSetHostBasedAuthProc (
 #if NeedFunctionPrototypes
-    IceListenObj	/* listenObj */,
+    IceListenObj		/* listenObj */,
+    IceHostBasedAuthProc   	/* hostBasedAuthProc */
+#endif
+);
+
+extern void IceSetPaAuthData (
+#if NeedFunctionPrototypes
     int			/* numEntries */,
     IceAuthDataEntry *	/* entries */
 #endif
 );
 
-extern IceAuthDataEntry *IceGetAuthenticationData (
+extern void IceGetPoAuthData (
 #if NeedFunctionPrototypes
-    IceListenObj	/* listenObj */,
     char *		/* protocol_name */,
-    char *		/* auth_name */
+    char *		/* address */,
+    char *		/* auth_name */,
+    unsigned short *	/* auth_data_length_ret */,
+    char **		/* auth_data_ret */
 #endif
 );
 
-extern void IceSetHostBasedAuthProc (
+extern void IceGetPaAuthData (
 #if NeedFunctionPrototypes
-    IceListenObj		/* listenObj */,
-    IceHostBasedAuthProc   	/* hostBasedAuthProc */
+    char *		/* protocol_name */,
+    char *		/* address */,
+    char *		/* auth_name */,
+    unsigned short *	/* auth_data_length_ret */,
+    char **		/* auth_data_ret */
 #endif
 );
 
@@ -606,8 +618,6 @@ extern IceProtocolSetupStatus IceProtocolSetup (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
     int 		/* myOpcode */,
-    int			/* authCount */,
-    int	*		/* authIndices */,
     Bool		/* mustAuthenticate */,
     int	*		/* majorVersionRet */,
     int	*		/* minorVersionRet */,
@@ -730,7 +740,7 @@ extern IceAuthFileEntry *IceReadAuthFileEntry (
 #endif
 );
 
-extern void IceDisposeAuthFileEntry (
+extern void IceFreeAuthFileEntry (
 #if NeedFunctionPrototypes
     IceAuthFileEntry *	/* auth */
 #endif
@@ -743,17 +753,6 @@ extern Status IceWriteAuthFileEntry (
 #endif
 );
 
-extern Status IceGetValidAuthIndicesFromAuthFile (
-#if NeedFunctionPrototypes
-    char *		/* protocol_name */,
-    char *		/* address */,
-    int			/* num_auth_names */,
-    char **		/* auth_names */,
-    int	*		/* num_indices_ret */,
-    int	*		/* indices_ret */
-#endif
-);
-
 extern IceAuthFileEntry *IceGetAuthFileEntry (
 #if NeedFunctionPrototypes
     char *		/* protocol_name */,
@@ -763,4 +762,3 @@ extern IceAuthFileEntry *IceGetAuthFileEntry (
 );
 
 #endif /* ICELIB_H */
-
