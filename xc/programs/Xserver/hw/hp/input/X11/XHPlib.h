@@ -1,3 +1,4 @@
+/* $XConsortium: XHPlib.h,v 1.2 95/01/24 02:33:14 dpw Exp gildea $ */
 /************************************************************
 Copyright (c) 1992 by Hewlett-Packard Company, Palo Alto, California.
 
@@ -23,7 +24,6 @@ SOFTWARE.
 
 #ifndef XHPLIB_H
 #define XHPLIB_H
-/* $Header: XHPlib.h,v 1.2 94/12/15 08:58:03 gms Exp $ */
 
 /* Definitions used by Xlib and the client */
 
