@@ -41,7 +41,7 @@ Xmh.notice.Dialog.confirm.label:Acknowledged
 Xmh.notice.BorderWidth:		2
 Xmh.confirm.Dialog.yes.label:	Yes
 Xmh.confirm.Dialog.no.label:	No
-Xmh.prompt.Dialog.goAhead.label:Go Ahead
+Xmh.prompt.Dialog.okay.label:	Okay
 Xmh.prompt.Dialog.cancel.label:	Cancel
 Xmh.error.Dialog.OK.label:	Acknowledged
 
