@@ -1,6 +1,6 @@
-XCOMM -------------------------------------------------------------------------
+XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.186 94/02/10 21:26:38 matt Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.187 94/03/03 16:46:52 matt Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1009,7 +1009,7 @@ tags::									@@\
 target:: ProgramTargetName($(IMAKE))					@@\
 									@@\
 ProgramTargetName($(IMAKE)):						@@\
-	@(cd $(IMAKESRC); if [ -f Makefile ]; then \			@@\
+	-@(cd $(IMAKESRC); if [ -f Makefile ]; then \			@@\
 	echo "checking $@ in $(IMAKESRC) first..."; $(MAKE) all; else \	@@\
 	echo "bootstrapping $@ from Makefile.ini in $(IMAKESRC) first..."; \	@@\
 	$(MAKE) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"; fi; \	@@\
@@ -1770,7 +1770,7 @@ MakeLintSubdirs(dirs,lintlib,lintlib)
 #ifndef MakeMakeSubdirs
 #define MakeMakeSubdirs(dirs,target)					@@\
 target::								@@\
-	@case '${MFLAGS}' in *[ik]*) set +e;; esac; \			@@\
+	-@case '${MFLAGS}' in *[ik]*) set +e;; esac; \			@@\
 	case '${MFLAGS}' in *n*) executeit="no";; esac; \		@@\
 	for i in dirs ;\						@@\
 	do \								@@\
