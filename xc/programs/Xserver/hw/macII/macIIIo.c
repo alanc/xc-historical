@@ -145,6 +145,16 @@ ProcessInputEvents ()
     register unsigned char *me = macIIevents, *meL;
     int         n;
 
+    static int optionKeyUp = 1;
+#define IS_OPTION_KEY(x)	(KEY_DETAIL(x) == 0x3a)
+#define IS_LEFT_ARROW_KEY(x)	(KEY_DETAIL(x) == 0x3b)
+#define IS_RIGHT_ARROW_KEY(x)	(KEY_DETAIL(x) == 0x3c)
+#define IS_DOWN_ARROW_KEY(x)	(KEY_DETAIL(x) == 0x3d)
+#define IS_UP_ARROW_KEY(x)	(KEY_DETAIL(x) == 0x3e)
+#define IS_ARROW_KEY(x)						\
+	(IS_LEFT_ARROW_KEY(x) || IS_RIGHT_ARROW_KEY(x) || 	\
+	 IS_DOWN_ARROW_KEY(x) || IS_UP_ARROW_KEY(x))
+
     /*
      *  Defensive programming - only reset macIIIOPending (preventing
      *  further calls to ProcessInputEvents() until a future SIGIO)
@@ -199,6 +209,26 @@ ProcessInputEvents ()
         /*
          * Figure out the X device this event should be reported on.
          */
+
+	if (IS_OPTION_KEY(*me)) {
+	    optionKeyUp = KEY_UP(*me);
+	}
+
+	/*
+	 * Patch up the event if the option key is down and an arrow key is hit
+	 * in order to generate arrow key codes.
+	 */
+
+	if (!optionKeyUp && IS_ARROW_KEY(*me)) {
+	    int keyUp = KEY_UP(*me);
+
+	    if (IS_RIGHT_ARROW_KEY(*me)) 	*me = 0x7b;
+	    else if (IS_LEFT_ARROW_KEY(*me)) 	*me = 0x7c;
+	    else if (IS_DOWN_ARROW_KEY(*me))	*me = 0x7d;
+	    else  				*me = 0x70; 	/* code for UP arrow */
+	    if (keyUp) *me |= 0x80;
+	}
+
 	if (KEY_DETAIL(*me) == MOUSE_ESCAPE) { 
 	    if (lastType == Kbd) {
     		(* kbdPriv->DoneEvents) (pKeyboard);
@@ -207,13 +237,20 @@ ProcessInputEvents ()
 	    me += 2;
 	    lastType = Ptr;
 	}
-	else if (KEY_DETAIL(*me) == PSEUDO_MIDDLE || KEY_DETAIL(*me) == PSEUDO_RIGHT) {
+
+	else if (IS_MOUSE_KEY(*me))
+        {
 	    if (lastType == Kbd) {
     		(* kbdPriv->DoneEvents) (pKeyboard);
 	    }
     	    (* ptrPriv->ProcessEvent) (pPointer,me);
 	    lastType = Ptr;
 	}
+
+	else if (IS_OPTION_KEY(*me)) {
+	    /* do nothing */
+	}
+
 	else {
 	    if (lastType == Ptr) {
     		(* ptrPriv->DoneEvents) (pPointer, FALSE);

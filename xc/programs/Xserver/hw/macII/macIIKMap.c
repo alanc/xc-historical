@@ -113,8 +113,8 @@ static KeySym macIIMap[] = {
 	NoSymbol,	NoSymbol,		/* 0x3a */ /* option */
 	XK_Left,	NoSymbol,		/* 0x3b */
 	XK_Right,	NoSymbol,		/* 0x3c */
-	XK_Down,	NoSymbol,		/* 0x3d */
-	XK_Up,		NoSymbol,		/* 0x3e */
+	XK_Control_R,	NoSymbol,		/* 0x3d */ /* down arrow key */
+	XK_Meta_R,	NoSymbol,		/* 0x3e */ /* up arrow key */
 	NoSymbol,	NoSymbol,		/* 0x3f */
 	NoSymbol,	NoSymbol,		/* 0x40 */
 	XK_KP_Decimal,	NoSymbol,		/* 0x41 */
@@ -164,7 +164,8 @@ static KeySym macIIMap[] = {
 	XK_F10,		NoSymbol,		/* 0x6d */
 	NoSymbol,	NoSymbol,		/* 0x6e */
 	XK_F12,		NoSymbol,		/* 0x6f */
-	NoSymbol,	NoSymbol,		/* 0x70 */
+	/* I assume you can't generate 0x70 code from any keyboard.  MGC. */
+	XK_Up,		NoSymbol,		/* 0x70 */ 
 	XK_F15,		XK_Pause,		/* 0x71 */
 	XK_Help,	XK_Insert,		/* 0x72 */
 	XK_Home,	NoSymbol,		/* 0x73 */
@@ -178,7 +179,7 @@ static KeySym macIIMap[] = {
 	XK_Right,	NoSymbol,		/* 0x7b */
 	XK_Left,	NoSymbol,		/* 0x7c */
 	XK_Down,	NoSymbol,		/* 0x7d */
-	XK_Up,		NoSymbol,		/* 0x7e */
+	NoSymbol,	NoSymbol,		/* 0x7e */
 	NoSymbol,	NoSymbol,		/* 0x7f */ /* Soft Power */
 };
 
@@ -196,7 +197,7 @@ static CARD8 macIImodmap[MAP_LENGTH] = {
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 10-1f */
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 20-2f */
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  cT, mT,/* 30-3f */
-    sH, lK, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 40-4f */
+    sH, lK, 0,  0,  0, cT, mT,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 40-4f */
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 50-5f */
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 60-6f */
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 70-7f */
