@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.127 93/09/02 11:11:48 dpw Exp $
+ * $XConsortium: twm.c,v 1.128 93/09/29 17:51:55 kaleb Exp $
  *
  * twm - "Tom's Window Manager"
  *

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.192 93/09/10 08:36:58 kaleb Exp $
+ * $XConsortium: menus.c,v 1.193 93/09/20 18:04:09 hersh Exp $
  *
  * twm menu code
  *
@@ -37,7 +37,6 @@
  ***********************************************************************/
 
 #include <stdio.h>
-#include <signal.h>
 #include <X11/Xos.h>
 #include "twm.h"
 #include "gc.h"

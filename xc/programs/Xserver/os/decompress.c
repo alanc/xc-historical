@@ -10,10 +10,9 @@
 
 typedef char	*FID;
 
-#include <ctype.h>
-#include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <ctype.h>
 
 #else
 #include    "Xos.h"
