@@ -110,9 +110,14 @@
 
 #+symbolics-3600
 (defun card32->int32 (x)
-  (if (minusp x)
-	 (sys:%logdpb (ldb (byte 8 24) x) (byte 24 8) (ldb (byte 24 0) x))
-       x))
+  (macrolet ((signify (x)
+	       ;; 7.1 is defective
+	       (if (= (sys:%logldb (byte 32 0) #x80000000) #x80000000)
+		   `(if (logbitp 31 ,x)
+			(sys:%logdpb (ldb (byte 8 24) ,x) (byte 8 24) (ldb (byte 24 0) ,x))
+			,x)
+		   `(sys:%logldb (byte 32 0) ,x))))
+    (signify x)))
 
 (defun int32->card32 (x)
   (declare (type int32 x))
@@ -839,7 +844,7 @@
   (declare (ignore timeout))
   (let ((stream (display-input-stream display)))
     (declare (type stream stream))
-    (if (and (zerop timeout) (null (listen stream)))
+    (if (and timeout (zerop timeout) (null (listen stream)))
 	:timeout
 	(do* ((i start (index+ i 1))
 	      (c nil))
