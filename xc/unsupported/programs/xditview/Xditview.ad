@@ -19,9 +19,6 @@ Xditview.geometry: 600x800
 *fileMenu.setResolution.label:	Set Screen Resolution
 *fileMenu.quit.label:		Quit
 
-*pageLabel.label:		Page:
-*pageLabel.borderWidth:		0
-
 *prevButton.bitmap:		ldblarrow
 *prevButton.internalHeight:	0
 *prevButton.Translations: 	#override <BtnUp>: PreviousPage() unset()

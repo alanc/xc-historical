@@ -1,4 +1,4 @@
-/* $XConsortium: xditview.c,v 1.26 91/07/26 00:40:00 keith Exp $ */
+/* $XConsortium: xditview.c,v 1.28 91/07/26 17:45:16 keith Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -93,7 +93,7 @@ static Widget	toplevel, paned, form, panner, porthole, dvi;
 static Widget	popupMenu;
 static Widget	menuBar;
 static Widget	fileMenuButton, fileMenu;
-static Widget	pageLabel, prevButton, pageNumber, nextButton;
+static Widget	prevButton, pageNumber, nextButton;
 
 static void	NextPage(), PreviousPage(), SetResolution ();
 static void	OpenFile(), RevisitFile (), Quit();
@@ -256,9 +256,6 @@ void main(argc, argv)
 	XtAddCallback (entry, XtNcallback, fileMenuEntries[i].function, NULL);
     }
 
-    pageLabel = XtCreateManagedWidget("pageLabel", labelWidgetClass,
-					menuBar, NULL, (Cardinal) 0);
-    
     prevButton = XtCreateManagedWidget ("prevButton", commandWidgetClass,
 					menuBar, NULL, (Cardinal) 0);
 
