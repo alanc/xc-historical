@@ -4,13 +4,13 @@
  * If you change either of the following numbers, you will need to do a 
  * full build (make World) at the top of the sources....
  */
-#define OSName             UTek 3.0
-#define OSMajorVersion     3
+#define OSName             UTek 4.0
+#define OSMajorVersion     4
 #define OSMinorVersion     0
 #define HasSaberC	   YES		/* a useful program to buy... */
 #define HasBsearch	   YES
 
-#define BuildServer NO
+#define BuildServer YES
 
 /************************************************************
  *                                                          *
@@ -24,18 +24,23 @@
 #define BootstrapCFlags    -DM4310 -DUTEK
 #define StandardDefines    -DM4310 -DUTEK -Dpegasus 
 #define StandardCppDefines -DM4310 -DUTEK -Dpegasus
-#define RanlibCmd          /bin/true
 #define SystemV           NO
 
-#define XpegServer Xpeg
+#define XtekServer Xtek
 
 
-/**/# platform:  $XConsortium: pegasus.cf,v 1.5 89/07/22 19:46:55 kit Exp $
+/**/# platform:  $XConsortium: pegasus.cf,v 1.6 89/07/23 15:40:59 rws Exp $
 /**/# operating system:  OSName
 
 /*
  * platform-specific definitions 
  */
+
+#undef ExtensionDefines
+#define ExtensionDefines -DSHAPE -DBUFFER -DSERVER_XDMCP
+
+#define ServerCDebugFlags -O -g
+#define CcCmd gcc -DNOSTDHDRS -fstrength-reduce -fpcc-struct-return
 
 #define ServerDefines   StandardDefines -DM4310 -DM4317 ExtensionDefines
 #define FontDefines	-DFONT_SNF -DFONT_BDF
