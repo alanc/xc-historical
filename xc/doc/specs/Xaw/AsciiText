@@ -2,7 +2,7 @@
 Ascii Text Widget
 .LP
 .XS
-\*(SN AsciiText Widget
+	AsciiText Widget
 .XE
 .IN "AsciiText widget" "" "@DEF@"
 .LP

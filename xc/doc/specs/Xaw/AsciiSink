@@ -3,7 +3,7 @@
 Ascii Sink Object
 .LP
 .XS
-\*(SN AsciiSink Object
+	AsciiSink Object
 .XE
 .IN "AsciiSink object" "" "@DEF@"
 .LP
