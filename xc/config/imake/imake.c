@@ -14,7 +14,7 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $XConsortium: imake.c,v 1.31 88/08/21 12:31:47 rws Exp $
+ * $XConsortium: imake.c,v 1.32 88/09/06 17:51:36 jim Exp $
  * $Locker: jim $
  *
  * Author:
@@ -105,7 +105,7 @@
 #define	FALSE		0
 #define	ARGUMENTS	50
 
-#if defined(sun) || defined(hpux) || defined(macII)
+#if defined(sun) || defined(hpux) || defined(macII) || defined(CRAY)
 #define REDUCED_TO_ASCII_SPACE
 #endif
 #ifdef REDUCED_TO_ASCII_SPACE
