@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.24 91/01/05 14:46:07 rws Exp $
+ * $XConsortium: XMultibuf.c,v 1.24 91/01/05 14:48:13 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -396,16 +396,16 @@ Status XmbufGetWindowAttributes (dpy, w, attr)
     XmbufWindowAttributes *attr;
 {
     XExtDisplayInfo *info = find_display (dpy);
-    register xMbufGetMultiBufferAttributesReq *req;
-    xMbufGetMultiBufferAttributesReply rep;
+    register xMbufGetMBufferAttributesReq *req;
+    xMbufGetMBufferAttributesReply rep;
 
     MbufCheckExtension (dpy, info, 0);
 
     LockDisplay (dpy);
-    MbufGetReq (MbufGetMultiBufferAttributes, req, info);
+    MbufGetReq (MbufGetMBufferAttributes, req, info);
     req->window = w;
     if (!_XReply (dpy, (xReply *) &rep, 
-		  (SIZEOF(xMbufGetMultiBufferAttributesReply) -
+		  (SIZEOF(xMbufGetMBufferAttributesReply) -
 		   SIZEOF(xReply)) >> 2, xTrue)) {
 	UnlockDisplay (dpy);
 	SyncHandle ();
@@ -434,12 +434,12 @@ void XmbufChangeWindowAttributes (dpy, w, valuemask, attr)
     XmbufSetWindowAttributes *attr;
 {
     XExtDisplayInfo *info = find_display (dpy);
-    register xMbufSetMultiBufferAttributesReq *req;
+    register xMbufSetMBufferAttributesReq *req;
 
     MbufSimpleCheckExtension (dpy, info);
 
     LockDisplay (dpy);
-    MbufGetReq (MbufSetMultiBufferAttributes, req, info);
+    MbufGetReq (MbufSetMBufferAttributes, req, info);
     req->window = w;
     if (req->valueMask = valuemask) {	/* stolen from lib/X/XWindow.c */
 	unsigned long values[1];	/* one per element in if stmts below */

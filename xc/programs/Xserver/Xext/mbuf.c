@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: multibuf.c,v 1.7 89/12/10 11:03:48 rws Exp $ */
+/* $XConsortium: multibuf.c,v 1.8 90/07/31 09:48:31 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -487,10 +487,10 @@ ProcDestroyImageBuffers (client)
 }
 
 static int
-ProcSetMultiBufferAttributes (client)
+ProcSetMBufferAttributes (client)
     register ClientPtr	client;
 {
-    REQUEST (xMbufSetMultiBufferAttributesReq);
+    REQUEST (xMbufSetMBufferAttributesReq);
     WindowPtr	pWin;
     MultibuffersPtr	pMultibuffers;
     int		len;
@@ -499,14 +499,14 @@ ProcSetMultiBufferAttributes (client)
     CARD32	updateHint;
     XID		*vlist;
 
-    REQUEST_AT_LEAST_SIZE (xMbufSetMultiBufferAttributesReq);
+    REQUEST_AT_LEAST_SIZE (xMbufSetMBufferAttributesReq);
     pWin = LookupWindow (stuff->window, client);
     if (!pWin)
 	return BadWindow;
     pMultibuffers = (MultibuffersPtr)LookupIDByType (pWin->drawable.id, MultibuffersResType);
     if (!pMultibuffers)
 	return BadMatch;
-    len = stuff->length - (sizeof (xMbufSetMultiBufferAttributesReq) >> 2);
+    len = stuff->length - (sizeof (xMbufSetMBufferAttributesReq) >> 2);
     vmask = stuff->valueMask;
     if (len != Ones (vmask))
 	return BadLength;
@@ -541,17 +541,17 @@ ProcSetMultiBufferAttributes (client)
 }
 
 static int
-ProcGetMultiBufferAttributes (client)
+ProcGetMBufferAttributes (client)
     ClientPtr	client;
 {
-    REQUEST (xMbufGetMultiBufferAttributesReq);
+    REQUEST (xMbufGetMBufferAttributesReq);
     WindowPtr	pWin;
     MultibuffersPtr	pMultibuffers;
     XID		*ids;
-    xMbufGetMultiBufferAttributesReply  rep;
+    xMbufGetMBufferAttributesReply  rep;
     int		i, n;
 
-    REQUEST_SIZE_MATCH (xMbufGetMultiBufferAttributesReq);
+    REQUEST_SIZE_MATCH (xMbufGetMBufferAttributesReq);
     pWin = LookupWindow (stuff->window, client);
     if (!pWin)
 	return BadWindow;
@@ -577,7 +577,7 @@ ProcGetMultiBufferAttributes (client)
 	swaps(&rep.displayedBuffer, n);
 	SwapLongs (ids, pMultibuffers->numMultibuffer);
     }
-    WriteToClient (client, sizeof (xMbufGetMultiBufferAttributesReply), &rep);
+    WriteToClient (client, sizeof (xMbufGetMBufferAttributesReply), &rep);
     WriteToClient (client, (int) (pMultibuffers->numMultibuffer * sizeof (XID)), ids);
     DEALLOCATE_LOCAL((pointer) ids);
     return client->noClientException;
@@ -747,10 +747,10 @@ ProcMultibufferDispatch (client)
 	return ProcDisplayImageBuffers (client);
     case X_MbufDestroyImageBuffers:
 	return ProcDestroyImageBuffers (client);
-    case X_MbufSetMultiBufferAttributes:
-	return ProcSetMultiBufferAttributes (client);
-    case X_MbufGetMultiBufferAttributes:
-	return ProcGetMultiBufferAttributes (client);
+    case X_MbufSetMBufferAttributes:
+	return ProcSetMBufferAttributes (client);
+    case X_MbufGetMBufferAttributes:
+	return ProcGetMBufferAttributes (client);
     case X_MbufSetBufferAttributes:
 	return ProcSetBufferAttributes (client);
     case X_MbufGetBufferAttributes:
@@ -816,31 +816,31 @@ SProcDestroyImageBuffers (client)
 }
 
 static int
-SProcSetMultiBufferAttributes (client)
+SProcSetMBufferAttributes (client)
     register ClientPtr	client;
 {
     register int    n;
-    REQUEST (xMbufSetMultiBufferAttributesReq);
+    REQUEST (xMbufSetMBufferAttributesReq);
 
     swaps (&stuff->length, n);
-    REQUEST_AT_LEAST_SIZE(xMbufSetMultiBufferAttributesReq);
+    REQUEST_AT_LEAST_SIZE(xMbufSetMBufferAttributesReq);
     swapl (&stuff->window, n);
     swapl (&stuff->valueMask, n);
     SwapRestL(stuff);
-    return ProcSetMultiBufferAttributes (client);
+    return ProcSetMBufferAttributes (client);
 }
 
 static int
-SProcGetMultiBufferAttributes (client)
+SProcGetMBufferAttributes (client)
     register ClientPtr	client;
 {
     register int    n;
-    REQUEST (xMbufGetMultiBufferAttributesReq);
+    REQUEST (xMbufGetMBufferAttributesReq);
 
     swaps (&stuff->length, n);
-    REQUEST_AT_LEAST_SIZE(xMbufGetMultiBufferAttributesReq);
+    REQUEST_AT_LEAST_SIZE(xMbufGetMBufferAttributesReq);
     swapl (&stuff->window, n);
-    return ProcGetMultiBufferAttributes (client);
+    return ProcGetMBufferAttributes (client);
 }
 
 static int
@@ -898,10 +898,10 @@ SProcMultibufferDispatch (client)
 	return SProcDisplayImageBuffers (client);
     case X_MbufDestroyImageBuffers:
 	return SProcDestroyImageBuffers (client);
-    case X_MbufSetMultiBufferAttributes:
-	return SProcSetMultiBufferAttributes (client);
-    case X_MbufGetMultiBufferAttributes:
-	return SProcGetMultiBufferAttributes (client);
+    case X_MbufSetMBufferAttributes:
+	return SProcSetMBufferAttributes (client);
+    case X_MbufGetMBufferAttributes:
+	return SProcGetMBufferAttributes (client);
     case X_MbufSetBufferAttributes:
 	return SProcSetBufferAttributes (client);
     case X_MbufGetBufferAttributes:
