@@ -1,4 +1,4 @@
-/* $XConsortium: imThaiFlt.c,v 1.4 93/09/27 17:59:44 rws Exp $ */
+/* $XConsortium: imThaiFlt.c,v 1.5 93/09/29 15:11:57 rws Exp $ */
 /***********************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -552,7 +552,6 @@ Private CARD8 FindKeyCode();
 
 /* The following functions are specific to this module */ 
 
-Private void XConvertCase();
 Private int XThaiTranslateKey();
 Private int XThaiTranslateKeySym();
 
@@ -674,27 +673,6 @@ struct _XKeytrans {
 	int mlen;		/* length of modifier list */
 };
 
-/* Convert case for ASCII characters only */
-/*ARGSUSED*/
-Private void
-XConvertCase(dpy, sym, lower, upper)
-    Display *dpy;
-    register KeySym sym;
-    KeySym *lower;
-    KeySym *upper;
-{
-    *lower = sym;
-    *upper = sym;
-    switch(sym >> 8) {
-    case 0:
-	if ((sym >= XK_A) && (sym <= XK_Z))
-	    *lower += (XK_a - XK_A);
-	else if ((sym >= XK_a) && (sym <= XK_z))
-	    *upper -= (XK_a - XK_A);
-	break;
-    }
-}
-
 /* Convert keysym to 'Thai Compose' keysym */
 /* The current implementation use latin-1 keysyms */
 Private Bool
@@ -749,23 +727,23 @@ XThaiTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return,
     if (!(modifiers & ShiftMask) &&
 	(!(modifiers & LockMask) || (dpy->lock_meaning == NoSymbol))) {
 	if ((per == 1) || (syms[1] == NoSymbol))
-	    XConvertCase(dpy, syms[0], keysym_return, &usym);
+	    XConvertCase(syms[0], keysym_return, &usym);
 	else {
-	    XConvertCase(dpy, syms[0], &lsym, &usym);
+	    XConvertCase(syms[0], &lsym, &usym);
 	    *keysym_return = syms[0];
 	}
     } else if (!(modifiers & LockMask) ||
 	       (dpy->lock_meaning != XK_Caps_Lock)) {
 	if ((per == 1) || ((usym = syms[1]) == NoSymbol))
-	    XConvertCase(dpy, syms[0], &lsym, &usym);
+	    XConvertCase(syms[0], &lsym, &usym);
 	*keysym_return = usym;
     } else {
 	if ((per == 1) || ((sym = syms[1]) == NoSymbol))
 	    sym = syms[0];
-	XConvertCase(dpy, sym, &lsym, &usym);
+	XConvertCase(sym, &lsym, &usym);
 	if (!(modifiers & ShiftMask) && (sym != syms[0]) &&
 	    ((sym != usym) || (lsym == usym)))
-	    XConvertCase(dpy, syms[0], &lsym, &usym);
+	    XConvertCase(syms[0], &lsym, &usym);
 	*keysym_return = usym;
     }
     /*
