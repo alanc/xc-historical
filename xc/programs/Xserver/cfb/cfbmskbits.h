@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $Header: cfbmskbits.h,v 4.3 88/02/01 20:36:10 rws Exp $ */
+/* $Header: cfbmskbits.h,v 4.4 88/05/21 17:55:58 rws Exp $ */
 
 extern int cfbstarttab[];
 extern int cfbendtab[];
@@ -347,6 +347,12 @@ static unsigned int QuartetPixelMaskTable[16] = {
 };
 
 
+#if (PPW*PSZ==32)
+#define GET_VALID_BITS_FROM_LONG(l) (l)
+#else
+#define GET_VALID_BITS_FROM_LONG(l) ((l)&((1L<<(PPW*PSZ))-1))
+#endif
+
 /*
  * getstipplepixels( psrcstip, x, w, ones, psrcpix, destpix )
  *
@@ -373,15 +379,14 @@ static unsigned int QuartetPixelMaskTable[16] = {
 #define getstipplepixels( psrcstip, x, w, ones, psrcpix, destpix ) \
 { \
     unsigned int q; \
-    int m,temp; \
-    if ((m = ((x) - 28)) > 0) { \
-        temp = (1 << (32 - (x))) - 1; \
-        q = ((*(psrcstip)) & temp) << m; \
+    int m; \
+    if ((m = ((x) - ((PPW*PSZ)-4))) > 0) { \
+        q = (*(psrcstip)) << m; \
+	if ( (x)+(w) > (PPW*PSZ) ) \
+	    q |= GET_VALID_BITS_FROM_LONG(*((psrcstip)+1)) >> ((PPW*PSZ)-m); \
     } \
     else \
-        q = ((*(psrcstip)) >> (28-(x))) & 0x0F; \
-    if ( (x)+(w) > 32 ) \
-        q |= (*((psrcstip)+1)) >> (64-(x)-(w)); \
+        q = (*(psrcstip)) >> -m; \
     q = QuartetBitsTable[(w)] & ((ones) ? q : ~q); \
     *(destpix) = (*(psrcpix)) & QuartetPixelMaskTable[q]; \
 }
@@ -389,10 +394,9 @@ static unsigned int QuartetPixelMaskTable[16] = {
 #define getstipplepixels( psrcstip, xt, w, ones, psrcpix, destpix ) \
 { \
     unsigned int q; \
-    q = (*(psrcstip)) >> (xt); \
-    if ( ((xt)+(w)) > 32 ) \
-        q |= (*((psrcstip)+1)) << (32-(xt)); \
-    q &= 0xf; \
+    q = GET_VALID_BITS_FROM_LONG(*(psrcstip)) >> (xt); \
+    if ( ((xt)+(w)) > (PPW*PSZ) ) \
+        q |= (*((psrcstip)+1)) << ((PPW*PSZ)-(xt)); \
     q = QuartetBitsTable[(w)] & ((ones) ? q : ~q); \
     *(destpix) = (*(psrcpix)) & QuartetPixelMaskTable[q]; \
 }
