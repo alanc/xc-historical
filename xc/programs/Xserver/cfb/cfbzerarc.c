@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbzerarc.c,v 5.13 89/09/20 10:14:41 rws Exp $ */
+/* $XConsortium: cfbzerarc.c,v 5.14 89/09/20 18:55:05 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -45,12 +45,14 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
 {
     miZeroArcRec info;
     Bool do360;
-    register int x, y, a, b, d, mask;
-    register int k1, k3, dx, dy;
+    register int x;
+    int y, a, b, d, mask;
+    int k1, k3, dx, dy;
     char *addrb;
     register char *yorgb, *yorgob;
-    unsigned long pixel = pGC->fgPixel;
-    int nlwidth, yoffset, dyoffset;
+    register unsigned long pixel = pGC->fgPixel;
+    register int yoffset;
+    int nlwidth, dyoffset;
 
     if (pDraw->type == DRAWABLE_WINDOW)
     {
@@ -87,7 +89,7 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
     }
     if (do360 && (arc->width == arc->height) && !(arc->width & 1))
     {
-	int xoffset = nlwidth;
+	register int xoffset = nlwidth;
 	char *yorghb = yorgb + (info.h * nlwidth) + info.xorg;
 	char *yorgohb = yorghb - info.h;
 
@@ -169,7 +171,7 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
 
 void
 cfbZeroPolyArcSS8Copy(pDraw, pGC, narcs, parcs)
-    DrawablePtr	pDraw;
+    register DrawablePtr	pDraw;
     GCPtr	pGC;
     int		narcs;
     xArc	*parcs;
