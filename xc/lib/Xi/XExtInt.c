@@ -1,4 +1,4 @@
-/* $XConsortium: XExtInt.c,v 1.7 89/11/21 11:54:53 rws Exp $ */
+/* $XConsortium: XExtInt.c,v 1.8 89/12/06 20:31:36 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -44,7 +44,8 @@ SOFTWARE.
 
 static	XExtensionInfo *xinput_info;
 static	/* const */ char *xinput_extension_name = INAME;
-static	int XInputClose(), XInputError();
+static	int XInputClose();
+static  char *XInputError();
 Bool	XInputWireToEvent();
 Status	XInputEventToWire();
 static	/* const */ XEvent	emptyevent;
