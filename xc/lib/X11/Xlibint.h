@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.121 93/10/20 19:10:41 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.122 93/10/21 09:55:54 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -619,7 +619,7 @@ extern int errno;			/* Internal system error number. */
 
 /* srcvar must be a variable for large architecture version */
 #define OneDataCard32(dpy,dstaddr,srcvar) \
-  { *(unsigned long *)(dstaddr) = (srcvar); }
+  { *(CARD32 *)(dstaddr) = (srcvar); }
 
 #endif /* MUSTCOPY */
 
