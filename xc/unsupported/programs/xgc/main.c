@@ -12,6 +12,7 @@
 #include <X11/Core.h>
 #include <X11/Xaw/AsciiText.h>
 #include <X11/StringDefs.h>
+#include <X11/Shell.h>
 #include <stdio.h>
 
 #include "xgc.h"
@@ -23,6 +24,8 @@ XStuff X;
 char resultstring[80] = "";
 Boolean recording = FALSE;
 FILE *recordfile;
+
+XtAppContext appcontext;
 
 static Widget bigdaddy;		/* the top level widget */
        Widget topform;		/* form surrounding the whole thing */
@@ -87,9 +90,13 @@ void main(argc,argv)
 
   int i;
 
-  bigdaddy = XtInitialize(NULL,"Xgc",NULL,0,&argc,argv);
-  
-  X.dpy = XtDisplay(bigdaddy);
+  XtToolkitInitialize();
+  appcontext = XtCreateApplicationContext();
+  X.dpy = XtOpenDisplay(appcontext, NULL, "xgc", "Xgc", NULL, 0,
+			&argc, argv);
+  bigdaddy = XtAppCreateShell(NULL, "Xgc", applicationShellWidgetClass,
+			      X.dpy, NULL, 0);
+
   X.scr = DefaultScreenOfDisplay(X.dpy);
   X.gc = XCreateGC(X.dpy,RootWindowOfScreen(X.scr),0,(XGCValues *) NULL);
   X.miscgc = XCreateGC(X.dpy,RootWindowOfScreen(X.scr),0,(XGCValues *) NULL);
@@ -141,7 +148,7 @@ void main(argc,argv)
   fontchoice = XtCreateManagedWidget("Choice",formWidgetClass,GCform,
 				     gcchoiceargs,XtNumber(gcchoiceargs));
   /* fill it up */
-  create_text_choice(fontchoice,TFont,30,200);
+  create_text_choice(fontchoice,TFont,80,300);
 
   gcchoiceargs[0].value = (XtArgVal) fontchoice;
   foregroundchoice = XtCreateManagedWidget("Choice",formWidgetClass,GCform,
@@ -211,7 +218,7 @@ void main(argc,argv)
   choose_defaults(GCform,NUMCHOICES);
   choose_defaults(Testform,1);
   
-  XtMainLoop();
+  XtAppMainLoop(appcontext);
 }
 
 void fill_up_commandform(w)
@@ -349,7 +356,9 @@ void set_foreground_and_background()
   XtGetApplicationResources(bigdaddy, (caddr_t) &X, resources,
 			    XtNumber(resources), NULL, (Cardinal) 0);
 
-  
   X.gcv.foreground = X.foreground;
   X.gcv.background = X.background;
+
+  X.fontname = "6x10";
+  GC_change_font(X.fontname);
 }
