@@ -1,4 +1,4 @@
-/* $XConsortium: cpx_clnt.c,v 5.2 91/04/04 21:04:54 hersh Exp $ */
+/* $XConsortium: cpx_clnt.c,v 5.3 91/04/04 21:51:50 gildea Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -477,7 +477,7 @@ cpxc_get_css_srvr( cph, args )
 		phg_cpx_instance_connection( cph, display, 0 );
 
 	} else if ( args->conn_info.display &&
-		phg_utx_pex_supported( display, &pex_info ) ) {
+		phg_utx_pex_supported( args->conn_info.display, &pex_info ) ) {
 	    display = args->conn_info.display;
 	    phg_cpx_instance_connection( cph, display, 0 );
 
