@@ -1,4 +1,4 @@
-/* $XConsortium: DviChar.c,v 1.5 91/07/25 21:33:56 keith Exp $ */
+/* $XConsortium: DviChar.c,v 1.6 91/07/26 00:40:10 keith Exp $ */
 
 /*
  * DviChar.c
@@ -394,8 +394,8 @@ static DviCharNameMap ISO8859_1_map = {
 {   "fi",	    "fi",   },
 {   "fl",	    "fl",   },
 {   "ff",	    "ff",   },
-{   "Fi",	    "Fi",   },
-{   "Fl",	    "Fl",   },
+{   "Fi",	    "ffi",   },
+{   "Fl",	    "ffl",   },
 {   0,		    0,	    },
 }
 };
