@@ -26,9 +26,6 @@ SOFTWARE.
 
 static unsigned char bitmap8x8[] = {
     0xCC, 0x66, 0x33, 0x99, 0xCC, 0x66, 0x33, 0x99
-/*
-    0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA
-*/
 };
 
 static unsigned char bitmap4x4[] = {
@@ -39,7 +36,7 @@ static unsigned char bitmap4x4[] = {
 #define mensetmanus_width 161
 #define mensetmanus_height 145
 
-static char mensetmanus_bits[] = {
+static unsigned char mensetmanus_bits[] = {
  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
  0x00, 0xc0, 0x7f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -298,7 +295,7 @@ static char mensetmanus_bits[] = {
 #define escherknot_width 216
 #define escherknot_height 208
 
-static char escherknot_bits[] = {
+static unsigned char escherknot_bits[] = {
  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -783,16 +780,16 @@ void SetFillStyle(xp, p)
 
 	if (!p->font) {
 	    /* Little 8x8 stipple */
-	    stipple = XCreateBitmapFromData(xp->d, xp->w, bitmap8x8, 8, 8);
+	    stipple = XCreateBitmapFromData(xp->d, xp->w, (char *)bitmap8x8, 8, 8);
 	} else if (!strcmp (p->font, "escherknot")) {
 	    /* Enormous stipple which is x4 bits wide */
 	    stipple = XCreateBitmapFromData(xp->d, xp->w,
-		    escherknot_bits, escherknot_width, escherknot_height);
+		    (char *)escherknot_bits, escherknot_width, escherknot_height);
 	    xorg = -3;
 	} else {
 	    /* Enormous stipple.  Well, pretty big. */
 	    stipple = XCreateBitmapFromData(xp->d, xp->w,
-		    mensetmanus_bits, mensetmanus_width, mensetmanus_height);
+		    (char *)mensetmanus_bits, mensetmanus_width, mensetmanus_height);
 	}
 	gcv.stipple = stipple;
 	gcv.fill_style = p->fillStyle;
@@ -809,13 +806,13 @@ void SetFillStyle(xp, p)
 	gcv.fill_style = FillTiled;
 	if (!p->font) {
 	    /* Little 4x4 tile */
-	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w, bitmap4x4, 4, 4,
+	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w, (char *)bitmap4x4, 4, 4,
 		    xp->foreground, xp->background,
 		    DefaultDepth(xp->d, DefaultScreen(xp->d)));
 	} else if (!strcmp (p->font, "escherknot")) {
 	    /* Enormous stipple which is x4 bits wide */
 	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w,
-		    escherknot_bits, escherknot_width, escherknot_height,
+		    (char *)escherknot_bits, escherknot_width, escherknot_height,
 		    xp->foreground, xp->background,
 		    DefaultDepth(xp->d, DefaultScreen(xp->d)));
 	    /* align tile with screen */
@@ -823,7 +820,7 @@ void SetFillStyle(xp, p)
 	} else {
 	    /* Enormous tile.  Well, pretty big. */
 	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w,
-		    mensetmanus_bits, mensetmanus_width, mensetmanus_height,
+		    (char *)mensetmanus_bits, mensetmanus_width, mensetmanus_height,
 		    xp->foreground, xp->background,
 		    DefaultDepth(xp->d, DefaultScreen(xp->d)));
 	}
@@ -833,18 +830,18 @@ void SetFillStyle(xp, p)
 	XChangeGC(xp->d, xp->fggc, GCBits | GCTile, &gcv);
 	XFreePixmap(xp->d, tile);
 	if (!p->font) {
-	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w, bitmap4x4, 4, 4,
+	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w, (char *)bitmap4x4, 4, 4,
 		    xp->background, xp->foreground,
 		    DefaultDepth(xp->d, DefaultScreen(xp->d)));
 	} else if (!strcmp (p->font, "escherknot")) {
 	    /* Enormous stipple which is x4 bits wide */
 	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w,
-		    escherknot_bits, escherknot_width, escherknot_height,
+		    (char *)escherknot_bits, escherknot_width, escherknot_height,
 		    xp->background, xp->foreground,
 		    DefaultDepth(xp->d, DefaultScreen(xp->d)));
 	} else {
 	    tile = XCreatePixmapFromBitmapData(xp->d, xp->w,
-		    mensetmanus_bits, mensetmanus_width, mensetmanus_height,
+		    (char *)mensetmanus_bits, mensetmanus_width, mensetmanus_height,
 		    xp->background, xp->foreground,
 		    DefaultDepth(xp->d, DefaultScreen(xp->d)));
 	}

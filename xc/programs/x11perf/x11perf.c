@@ -71,7 +71,7 @@ static char **saveargv;
 static int  numRops = 1;
 static int  rops[16] = { GXcopy };
 static int  numPlanemasks = 1;
-static unsigned long planemasks[256] = { ~0 };
+static unsigned long planemasks[256] = { (unsigned long)~0 };
 
 static char *foreground;
 static char *background;
