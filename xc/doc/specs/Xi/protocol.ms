@@ -11,16 +11,16 @@
 .ps 20
 \fBX11 Input Extension Protocol Specification
 .ps 12
-.sp 16
-Defining personnel:
 .sp 2
+MIT X Consortium Standard
+.sp 1
+X Version 11, Release 5
+.sp 16
 .ps 15
 \fBMark Patrick\0\0\0\0Ardent Computer
 .sp 1
 \fBGeorge Sachs\0\0\0\0Hewlett-Packard
 .ps 12
-.sp 2
-X Version 11, Release 5
 .ce 0
 .bp
 \0
