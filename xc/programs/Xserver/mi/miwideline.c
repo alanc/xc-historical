@@ -1769,7 +1769,7 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
     SpanDataPtr	    spanData;
     Bool	    somethingDrawn = FALSE;
     Bool	    selfJoin;
-    Bool	    endIsFg, startIsFg, firstIsFg;
+    Bool	    endIsFg, startIsFg, firstIsFg, prevIsFg;
 
     if (pGC->lineStyle == LineDoubleDash && 
 	(pGC->fillStyle == FillOpaqueStippled || pGC->fillStyle == FillTiled))
@@ -1844,9 +1844,9 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
 	    if (pGC->lineStyle == LineDoubleDash || startIsFg)
 	    {
 	    	pixel = startIsFg ? pGC->fgPixel : pGC->bgPixel;
-	    	if (first)
+	    	if (first || !prevIsFg)
 	    	{
-	    	    if (selfJoin)
+	    	    if (first && selfJoin)
 		    {
 		    	firstFace = leftFace;
 			firstIsFg = startIsFg;
@@ -1863,21 +1863,22 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
 	    	}
 	    }
 	    prevRightFace = rightFace;
+	    prevIsFg = endIsFg;
 	    first = FALSE;
 	    projectLeft = FALSE;
-	    if (pGC->lineStyle == LineDoubleDash || endIsFg)
+	}
+	if (pGC->lineStyle == LineDoubleDash || endIsFg)
+	{
+	    if (npt == 1 && somethingDrawn)
 	    {
-	    	if (npt == 1 && somethingDrawn)
-	    	{
-		    pixel = endIsFg ? pGC->fgPixel : pGC->bgPixel;
-		    if (selfJoin && (pGC->lineStyle == LineDoubleDash || firstIsFg))
-			miLineJoin (pDrawable, pGC, pixel, spanData, &firstFace,
-				    &rightFace);
-		    else if (pGC->capStyle == CapRound)
-			miLineArc (pDrawable, pGC, pixel, spanData,
-				   (LineFacePtr) NULL, &rightFace,
-				   (double)0.0, (double)0.0, TRUE);
-	    	}
+		pixel = endIsFg ? pGC->fgPixel : pGC->bgPixel;
+		if (selfJoin && (pGC->lineStyle == LineDoubleDash || firstIsFg))
+		    miLineJoin (pDrawable, pGC, pixel, spanData, &firstFace,
+				&rightFace);
+		else if (pGC->capStyle == CapRound)
+		    miLineArc (pDrawable, pGC, pixel, spanData,
+			       (LineFacePtr) NULL, &rightFace,
+			       (double)0.0, (double)0.0, TRUE);
 	    }
 	}
     }
