@@ -51,6 +51,9 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 #include <stdio.h>
 #include "Xproto.h"
 #include "keysym.h"
+#include "inputstr.h"
+
+extern CARD16 keyModifiersList[];
 
 typedef struct {
     int	    	  trans;          	/* Original translation form */
@@ -365,6 +368,7 @@ sunKbdProcessEvent (pKeyboard, fe)
     PtrPrivPtr	  	ptrPriv;
     int			delta;
     static xEvent	autoRepeatEvent;
+    BYTE		key;
 
     ptrPriv = (PtrPrivPtr) LookupPointerDevice()->devicePrivate;
 
@@ -402,20 +406,33 @@ sunKbdProcessEvent (pKeyboard, fe)
 	return;
     }
 
-    /*
-     * Kill AutoRepeater on any real Kbd event.
-     */
-    autoRepeatKeyDown = 0;
-    if (autoRepeatDebug)
-	ErrorF("sunKbdProcessEvent: autoRepeat off\n");
+    key = (fe->id & 0x7F) + sysKbPriv.offset;
+    if (!keyModifiersList[key])
+    {
+	/*
+	 * Kill AutoRepeater on any real non-modifier Kbd event.
+	 */
+	autoRepeatKeyDown = 0;
+	if (autoRepeatDebug)
+	    ErrorF("sunKbdProcessEvent: autoRepeat off\n");
+    }
 
     xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
     xE.u.keyButtonPointer.rootX = ptrPriv->x;
     xE.u.keyButtonPointer.rootY = ptrPriv->y;
     xE.u.u.type = ((fe->value == VKEY_UP) ? KeyRelease : KeyPress);
-    xE.u.u.detail = (fe->id & 0x7F) + sysKbPriv.offset;
+    xE.u.u.detail = key;
 
-    if (fe->value == VKEY_DOWN) {	/* turn on AutoRepeater */
+    if (keyModifiersList[key] & LockMask)
+    {
+	if (xE.u.u.type == KeyRelease)
+	    return; /* this assumes autorepeat is not desired */
+	if (((DeviceIntPtr)pKeyboard)->down[key >> 3] & (1 << (key & 7)))
+	    xE.u.u.type = KeyRelease;
+    }
+
+    if ((fe->value == VKEY_DOWN) && !autoRepeatKeyDown)
+    {	/* turn on AutoRepeater */
 	if (autoRepeatDebug)
             ErrorF("sunKbdProcessEvent: VKEY_DOWN\n");
 	autoRepeatEvent = xE;
