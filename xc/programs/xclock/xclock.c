@@ -2,7 +2,7 @@
  *  Hacked from Tony Della Fera's much hacked clock program.
  */
 #ifndef lint
-static char *rcsid_xclock_c = "$Header: xclock.c,v 1.4 87/08/31 09:01:16 newman Exp $";
+static char *rcsid_xclock_c = "$Header: xclock.c,v 1.5 87/09/13 03:17:53 swick Locked $";
 #endif  lint
 
 #include "Xatom.h"
@@ -63,7 +63,7 @@ void main(argc, argv)
          XtScreen(toplevel)->root, clock_bits, clock_width, clock_height);
     XtSetValues (toplevel, &arg, 1); 
 
-    w = XtCreateWidget (argv[0], clockWidgetClass, toplevel, NULL, 0);
+    w = XtCreateManagedWidget (argv[0], clockWidgetClass, toplevel, NULL, 0);
     XtRealizeWidget (toplevel);
     XtMainLoop();
 }
