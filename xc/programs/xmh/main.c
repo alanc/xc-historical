@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 2.15 89/08/14 15:43:31 converse Exp $
+ * $XConsortium: main.c,v 2.16 89/10/06 15:02:44 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -83,21 +83,23 @@ main(argc, argv)
 unsigned int argc;
 char **argv;
 {
+    XtAppContext appCtx;
+
     InitializeWorld(argc, argv);
     if (app_resources.new_mail_check)
 	TocCheckForNewMail();
     subProcessRunning = False;
 
+    appCtx = XtWidgetToApplicationContext(toplevel);
     if (app_resources.check_frequency > 0) {
 	interval = app_resources.check_frequency * 60000;
-	timerid = XtAppAddTimeOut( XtWidgetToApplicationContext( toplevel ),
-				  interval, CheckMail, (XtPointer) NULL);
+	timerid = XtAppAddTimeOut(appCtx,interval,CheckMail,(XtPointer)NULL);
     }
 
     lastInput.win = -1;		/* nothing mapped yet */
     for (;;) {
 	XEvent ev;
-	XtNextEvent( &ev );
+	XtAppNextEvent( appCtx, &ev );
 	if (ev.type == KeyPress) {
 	    lastInput.win = ev.xany.window;
 	    lastInput.x = ev.xkey.x_root;

@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: command.c,v 2.31 89/11/13 11:01:46 converse Exp $";
+    "$XConsortium: command.c,v 2.32 89/12/16 21:54:01 rws Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987, 1989
@@ -140,6 +140,7 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
   char **bufP;			/* output buffer ptr if outputfd == -2 */
   int *lenP;			/* output length ptr if outputfd == -2 */
 {
+    XtAppContext appCtx = XtWidgetToApplicationContext(toplevel);
     int return_status;
     int old_stdin, old_stdout, old_stderr;
     int pid;
@@ -174,9 +175,10 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 	    (void) dup2(status->output_pipe[1], fileno(stdout));
 	    FD_SET(status->output_pipe[0], &fds);
 	    status->output_inputId =
-		XtAddInput( status->output_pipe[0], (XtPointer)XtInputReadMask,
-			    ReadStdout, (XtPointer)status
-			   );
+		XtAppAddInput( appCtx,
+			   status->output_pipe[0], (XtPointer)XtInputReadMask,
+			   ReadStdout, (XtPointer)status
+			     );
 	    status->output_buffer = NULL;
 	    status->output_buf_size = 0;
 	    output_to_pipe = True;
@@ -196,9 +198,10 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 	(void) dup2(status->error_pipe[1], fileno(stderr));
 	FD_SET(status->error_pipe[0], &fds);
 	status->error_inputId =
-	    XtAddInput( status->error_pipe[0], (XtPointer)XtInputReadMask,
-		        ReadStderr, (XtPointer)status
-		       );
+	    XtAppAddInput( appCtx,
+			   status->error_pipe[0], (XtPointer)XtInputReadMask,
+			   ReadStderr, (XtPointer)status
+			  );
     }
 
     childdone = FALSE;
@@ -250,7 +253,7 @@ DEBUG1("unblocked; child%s done.\n", childdone ? "" : " not")
 		if (childdone) break;
 		if (!FD_ISSET(ConnectionNumber(theDisplay), &readfds))
 {DEBUG("reading alternate input...")
-		    XtProcessEvent((unsigned) XtIMAlternateInput);
+		    XtAppProcessEvent(appCtx, (unsigned)XtIMAlternateInput);
 DEBUG("read.\n")}
 	    }
 	    if (childdone) break;
