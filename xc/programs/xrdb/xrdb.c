@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.49 91/07/25 17:57:39 rws Exp $
+ * $XConsortium: xrdb.c,v 11.50 91/09/06 15:03:35 rws Exp $
  */
 
 /*
@@ -970,16 +970,20 @@ ShuffleEntries(db, dbs, num)
     int *hits;
     register int i, j, k;
     Entries cur, cmp;
-    char *curtag;
+    char *curtag, *curvalue;
 
     hits = (int *)malloc(num * sizeof(int));
     cur = dbs[0];
     for (i = 0; i < cur.used; i++) {
 	curtag = cur.entry[i].tag;
+	curvalue = cur.entry[i].value;
 	for (j = 1; j < num; j++) {
 	    cmp = dbs[j];
 	    for (k = 0; k < cmp.used; k++) {
-		if (cmp.entry[k].usable && !strcmp(curtag, cmp.entry[k].tag)) {
+		if (cmp.entry[k].usable &&
+		    !strcmp(curtag, cmp.entry[k].tag) &&
+		    !strcmp(curvalue, cmp.entry[k].value))
+		{
 		    hits[j] = k;
 		    break;
 		}
