@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.53 91/04/26 18:50:09 converse Exp $ */
+/* $XConsortium: InitialI.h,v 1.54 91/04/28 14:04:24 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -239,7 +239,6 @@ typedef struct _XtPerDisplayStruct {
     InternalCallbackList destroy_callbacks;
     Region region;
     CaseConverterPtr case_cvt;		/* user-registered case converters */
-    XtCaseProc defaultCaseConverter;	/* Xt default case converter */
     XtKeyProc defaultKeycodeTranslator;
     XtAppContext appContext;
     KeySym *keysyms;                   /* keycode to keysym table */
