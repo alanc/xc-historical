@@ -1,5 +1,5 @@
 /*
- * $XConsortium: stipplesparc.s,v 1.1 90/12/01 15:24:53 keith Exp $
+ * $XConsortium: stipplesparc.s,v 1.2 90/12/01 19:37:18 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -72,7 +72,7 @@
 #define sbase	%l3
 #define stemp	%l4
 
-#define CASE_SIZE	4	/* case blocks are 2^4 bytes each */
+#define CASE_SIZE	5	/* case blocks are 2^5 bytes each */
 
 #define ForEachLine	LY1
 #define NextLine	LY2
@@ -109,103 +109,160 @@ ForEachLine:
 #endif
 	add	addr, stride, addr		/* step for the loop */
 	BitsR	bits, shift, stemp		/* get first bits */
-	and	stemp, 0xf0, stemp		/* compute first jump */
-	jmp	sbase+stemp			/*  ... */
+	and	stemp, 0x1e0, stemp		/* compute first jump */
 	BitsL	bits, lshift, bits		/* set remaining bits */
+	jmp	sbase+stemp			/*  ... */
+	tst	bits
 
 ForEachBits:
+	inc	4, atemp
+ForEachBits1:
 	FourBits(stemp, bits)			/* compute jump for */
 	sll	stemp, CASE_SIZE, stemp		/*  these four bits */
-	jmp	sbase+stemp			/*  ... */
 	BitsL	bits, 4, bits			/* step for remaining bits */
-CaseBegin:
-	ba	NextBits			/* 0 */
-	nop
-	nop
- 	nop
-
-	ba	NextBits			/* 1 */
-	stb	value, [atemp+BO(0)]
-	nop
- 	nop
-					
-	ba	NextBits			/* 2 */
-	stb	value, [atemp+BO(1)]
-	nop
- 	nop
-					
-	ba	NextBits			/* 3 */
-	sth	value, [atemp+HO(0)]
-	nop
- 	nop
-					
-	ba	NextBits			/* 4 */
-	stb	value, [atemp+BO(2)]
-	nop
- 	nop
-					
-	stb	value, [atemp+BO(0)]		/* 5 */
-	ba	NextBits
-	stb	value, [atemp+BO(2)]
-	nop
-					
-	stb	value, [atemp+BO(1)]		/* 6 */
-	ba	NextBits
-	stb	value, [atemp+BO(2)]
-	nop
-					
-	sth	value, [atemp+HO(0)]		/* 7 */
-	ba	NextBits
-	stb	value, [atemp+BO(2)]
-	nop
-					
-	ba	NextBits			/* 8 */
-	stb	value, [atemp+BO(3)]
-	nop
-	nop
-					
-	stb	value, [atemp+BO(0)]		/* 9 */
-	ba	NextBits
-	stb	value, [atemp+BO(3)]
-	nop
-					
-	stb	value, [atemp+BO(1)]		/* a */
-	ba	NextBits
-	stb	value, [atemp+BO(3)]
-	nop
-					
-	sth	value, [atemp+HO(0)]		/* b */
-	ba	NextBits
-	stb	value, [atemp+BO(3)]
-	nop
-					
-	ba	NextBits			/* c */
-	sth	value, [atemp+HO(2)]
-	nop
-	nop
-					
-	stb	value, [atemp+BO(0)]		/* d */
-	ba	NextBits
-	sth	value, [atemp+HO(2)]
-	nop
-					
-	stb	value, [atemp+BO(1)]		/* e */
-	ba	NextBits
-	sth	value, [atemp+HO(2)]
-	nop
-					
-	st	value, [atemp+WO(0)]		/* f */
-	/* fall through */
-
-NextBits:
+	jmp	sbase+stemp			/* jump */
 	tst	bits
-	bnz,a	ForEachBits
+CaseBegin:
+	bnz,a	ForEachBits1			/* 0 */
 	inc	4, atemp
 NextLine:
 	deccc	1, count
-	bnz,a	ForEachLine			/* test for next line */
-	inc	4, stipple			/* step stipple */
-
+	bnz,a	ForEachLine
+	inc	4, stipple
 	ret
 	restore
+	nop
 
+	bnz	ForEachBits			/* 1 */
+	stb	value, [atemp+BO(0)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+	nop
+					
+	bnz	ForEachBits			/* 2 */
+	stb	value, [atemp+BO(1)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+	nop
+					
+	bnz	ForEachBits			/* 3 */
+	sth	value, [atemp+HO(0)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+	nop
+					
+	bnz	ForEachBits			/* 4 */
+	stb	value, [atemp+BO(2)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+	nop
+					
+	stb	value, [atemp+BO(0)]		/* 5 */
+	bnz	ForEachBits
+	stb	value, [atemp+BO(2)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+					
+	stb	value, [atemp+BO(1)]		/* 6 */
+	bnz	ForEachBits
+	stb	value, [atemp+BO(2)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+					
+	sth	value, [atemp+HO(0)]		/* 7 */
+	bnz	ForEachBits
+	stb	value, [atemp+BO(2)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+					
+	bnz	ForEachBits			/* 8 */
+	stb	value, [atemp+BO(3)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+	nop
+					
+	stb	value, [atemp+BO(0)]		/* 9 */
+	bnz	ForEachBits
+	stb	value, [atemp+BO(3)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+					
+	stb	value, [atemp+BO(1)]		/* a */
+	bnz	ForEachBits
+	stb	value, [atemp+BO(3)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+					
+	sth	value, [atemp+HO(0)]		/* b */
+	bnz	ForEachBits
+	stb	value, [atemp+BO(3)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+					
+	bnz	ForEachBits			/* c */
+	sth	value, [atemp+HO(2)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+	nop
+					
+	stb	value, [atemp+BO(0)]		/* d */
+	bnz	ForEachBits
+	sth	value, [atemp+HO(2)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+					
+	stb	value, [atemp+BO(1)]		/* e */
+	bnz	ForEachBits
+	sth	value, [atemp+HO(2)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
+					
+	bnz	ForEachBits			/* f */
+	st	value, [atemp+WO(0)]
+	deccc	1, count
+	bnz,a	ForEachLine
+	inc	4, stipple
+	ret
+	restore
