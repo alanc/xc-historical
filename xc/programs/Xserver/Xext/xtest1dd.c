@@ -350,7 +350,7 @@ CARD32		mode;
 	/*
 	 * set up the new input action packing mode
 	 */
-	packed_mode = mode;
+	packed_mode = mode & ~(XTestEXCLUSIVE);
 	/*
 	 * keep track of where the mouse is
 	 */
@@ -874,7 +874,7 @@ short	locy;
 	/* return TRUE if the event should be passed on to DIX */
 	if (exclusive_steal)
 		return ((keystate == KeyRelease) &&
-			(keycode = xtest_command_key));
+			(keycode == xtest_command_key));
 	else
 		return ((keystate != KeyRelease) ||
 			(keycode != xtest_command_key));
