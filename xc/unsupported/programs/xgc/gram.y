@@ -3,7 +3,6 @@
 */
 
 %{
-#define YYSTYPE int
 #define YYDEBUG
 
 #include <stdio.h>
@@ -30,18 +29,26 @@ extern void change_test();
 extern void run_test();
 %}
 
-%token NUMBER
-%token RUN
-%token FUNCTION FUNCTIONTYPE
-%token TEST TESTTYPE
-%token LINESTYLE LINESTYLETYPE
-%token CAPSTYLE CAPSTYLETYPE
-%token JOINSTYLE JOINSTYLETYPE
-%token ROUND SOLID
-%token FILLSTYLE FILLSTYLETYPE
-%token FILLRULE FILLRULETYPE
-%token ARCMODE ARCMODETYPE
-%token FOREGROUND BACKGROUND LINEWIDTH PLANEMASK DASHLIST
+%union
+{
+  int num;
+  char *ptr;
+};
+
+%token <ptr> STRING
+%token <num> NUMBER
+%token <num> RUN
+%token <num> FUNCTION FUNCTIONTYPE
+%token <num> TEST TESTTYPE
+%token <num> LINESTYLE LINESTYLETYPE
+%token <num> CAPSTYLE CAPSTYLETYPE
+%token <num> JOINSTYLE JOINSTYLETYPE
+%token <num> ROUND SOLID
+%token <num> FILLSTYLE FILLSTYLETYPE
+%token <num> FILLRULE FILLRULETYPE
+%token <num> ARCMODE ARCMODETYPE
+%token <num> FOREGROUND BACKGROUND LINEWIDTH PLANEMASK DASHLIST
+%token <num> FONT
 
 %%
 
@@ -90,6 +97,8 @@ stmt		: error
 	{ GC_change_planemask ($2, TRUE); }
 		| DASHLIST NUMBER
 	{ GC_change_dashlist ($2, TRUE); }
+		| FONT STRING
+	{ GC_change_font ($2); }
 		;
 
 %%
