@@ -1,4 +1,4 @@
-/* $XConsortium: objects.c,v 1.9 94/02/03 19:45:22 gildea Exp $ */
+/* $XConsortium: objects.c,v 1.10 94/03/22 19:08:56 gildea Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -772,7 +772,7 @@ void Pragmatics(username, value)
 #define    NAMESIZE   40
        char name[NAMESIZE];  /* buffer to store my copy of 'username'        */
  
-       if (strlen(username) >= NAMESIZE)
+       if (strlen(username) >= (unsigned)NAMESIZE)
                abort("Pragmatics name too large");
        strcpy(name, username);
        for (p = name; *p != '\0'; p++)
@@ -1113,7 +1113,7 @@ void TermImager()
 /*
 :h4.reportusage() - A Stub to Get a Clean Link with Portable PMP
 */
-reportusage()
+void reportusage()
 {
        return;
 }
