@@ -319,18 +319,18 @@ HPDIRS = dix ddx/snf ddx/mi ddx/hp os/4.2bsd os/bsdemul
 
 /* set up .o load */
 #ifdef hp9000s300
-#ifdef __hp9000s300 /* 7.0 and later */
+# if OSMajorVersion >= 7
 HPOBJS = ddx/hp/hp.300.70.o $(FONTUTIL)
-#else
+# else
 HPOBJS = ddx/hp/hp.300.65.o $(FONTUTIL)
-#endif /* __hp9000s300 */
-#else /* 9000s800 */
-#ifdef __hp9000s800  /* 7.0 and later */
-HPOBJS = ddx/hp/hp.800.70.o $(FONTUTIL)
+# endif
 #else
+# if OSMajorVersion >= 7
+HPOBJS = ddx/hp/hp.800.70.o $(FONTUTIL)
+# else
 HPOBJS = ddx/hp/hp.800.31.o $(FONTUTIL)
-#endif /* __hp9000s800 */
-#endif /* hp9000s300 */
+# endif
+#endif
 
 HPLIBS = $(DIX) $(BSD) $(MI) $(EXTENSIONS) $(BSDEMUL)
 #if ServerMallocLib
