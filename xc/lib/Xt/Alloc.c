@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.33 90/11/10 13:43:12 rws Exp $ */
+/* $XConsortium: Alloc.c,v 1.34 90/11/14 20:00:44 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -268,7 +268,7 @@ void _XtHeapFree(heap)
 
 #include <stdio.h>
 
-static void _XtPrintMemory(filename)
+void _XtPrintMemory(filename)
 char * filename;
 {
     register StatsPtr mem;
