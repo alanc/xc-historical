@@ -1,0 +1,12 @@
+XCOMM $XConsortium: Imakefile,v 2.31 93/09/04 19:58:26 rws Exp $
+
+#    CDEBUGFLAGS = -g -DVERBOSE
+	DEFINES = 
+       INCLUDES = -I$(INCLUDESRC) -I$(EXTINCSRC)
+           SRCS = xrecord.c XRecordTk.c 
+           OBJS = xrecord.o XRecordTk.o
+       PROGRAMS = xrecord 
+LOCAL_LIBRARIES = $(XLIB) -L$(BUILDLIBDIR)/Xext -lXext 
+        DEPLIBS = $(DEPXLIB) $(BUILDLIBDIR)
+
+ComplexProgramTarget(xrecord)
