@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.207 88/08/14 17:29:25 rws Exp $ */
+/* $Header: window.c,v 1.208 88/08/25 10:43:38 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2030,7 +2030,8 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	     */
 	    for (g = pWin->bitGravity + 1; g <= StaticGravity; g++)
 	    {
-		(*pScreen->Subtract) (oldWinClip, oldWinClip, gravitate[g]);
+		if (gravitate[g])
+		    (*pScreen->Subtract) (oldWinClip, oldWinClip, gravitate[g]);
 	    }
 	    (*pScreen->TranslateRegion) (oldWinClip, oldx - nx, oldy - ny);
 	    g = pWin->bitGravity;
