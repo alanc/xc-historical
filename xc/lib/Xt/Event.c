@@ -59,6 +59,7 @@ void ConvertWindowToWidget(window,widget)
     Widget *widget;
 {
 }
+
 extern void ConvertTypeToMask();
 extern Boolean onGrabList();
 extern void DispatchEvent();
@@ -176,3 +177,19 @@ void DispatchEvent(event, widget, mask)
 }
 
 
+
+void XtMainLoop()
+{
+    XEvent event;
+
+    for (;;) {
+    	XtNextEvent(&event);
+	XtDispatchEvent(&event);
+    }
+}
+
+
+void EventInitialize()
+{
+    grabList = NULL;
+}

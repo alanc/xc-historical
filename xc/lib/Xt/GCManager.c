@@ -35,7 +35,7 @@ typedef struct _GCrec {
 } GCrec, *GCptr;
 
 
-static GCrec *GClist;
+static GCrec *GClist = NULL;
 
 static int Matches(ptr,widget, valueMask, v)
     GCptr		ptr;

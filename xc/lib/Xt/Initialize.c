@@ -167,13 +167,6 @@ TopLevelWidgetClassData topLevelWidgetClassData = {
 /* This needs to be updated to reflect the new world. */
 static void
 DO_Initialize() {
-    /* 
-     * For Error handling.
-     */
-/*
-    XtErrorFunction = _XtError;
-    XtreferenceCount = 1;
-XXX */
 
     /* Resource management initialization */
     QuarkInitialize();
@@ -182,10 +175,8 @@ XXX */
 
     /* Other intrinsic intialization */
     EventInitialize();
-    ActionsInitialize();
+    TranslateInitialize();
     CursorsInitialize();
-    GCManagerInitialize();
-    GeometryInitialize();
 
 
 }
@@ -193,7 +184,7 @@ Atom XtHasInput;
 Atom XtTimerExpired;
 
 static void
-init_atom(dpy)
+init_atoms(dpy)
 Display *dpy;
 {
 	XtHasInput = XInternAtom(dpy, "XtHasInput", False);
@@ -290,7 +281,7 @@ Widget wid;
 		  |(flag & (WidthValue & HeightValue))? USSize : 0;
 	}
 
-	XtRegisterEventHandler(wid, EventHandler, StructureNotifyMask,
+	XtSetEventHandler(wid, EventHandler, StructureNotifyMask,
 			       FALSE, NULL);
 }
 
@@ -340,8 +331,10 @@ XSetWindowAttributes *attr;
 		wmhints.icon_window = w->top.icon_window;
 	}
 	XSetWMHints( dpy, win, &wmhints);
+/* |||
 	XSetHostName(dpy, win, hostname);
 	XSetClass(dpy, win, w->top.classname);/* And w->core.name XXX*/
+
 	w->top.hints.x - w->core.x;
 	w->top.hints.y - w->core.y;
 	w->top.hints.width = w->core.width;
@@ -380,7 +373,7 @@ caddr_t closure;
 			      childwid->core.height = w->core.height;
 			      childwid->core.border_width = 
 				w->core.border_width;
-			      XtWidgetResize(childwid);
+			      XtResizeWidget(childwid);
 			      break;
 		        }
 		}
@@ -417,7 +410,7 @@ CompositeWidget wid;
 			childwid->core.width = w->core.width;
 			childwid->core.height = w->core.height;
 			childwid->core.border_width = w->core.border_width;
-			XtWidgetResize(childwid);
+			XtResizeWidget(childwid);
 		}
 	}
 

@@ -170,7 +170,7 @@ void XrmGetResources(
     register 	XrmResourceList	res;
     		XrmValue	val, defaultVal;
     register 	int		j;
-    		int		length, i;
+    		int		i;
 		Boolean		reverseVideo, getReverseVideo;
     		XrmHashTable	searchList[100];
     static	Boolean		found[1000];

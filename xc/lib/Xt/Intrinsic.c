@@ -28,11 +28,17 @@ static Resource resources[] = {
     };
 extern void CoreDestroy();
 extern void SetValues ();
+
+CompositeWidgetClass compositeWidgetClass = &compositeWidgetClassData;
+ConstraintWidgetClass constraintWidgetClass = &constraintWidgetClassData;
+
 WidgetClassData widgetClassData = {
          (WidgetClass)NULL,	/*superclass pointer*/
          "Core",		/*class_name*/
           sizeof(WidgetData),   /*size of core data record*/
-          (WidgetProc)NULL,	/*Initialize*/
+	  (WidgetProc)NULL,     /* class initializer routine */
+	  FALSE,		/* not init'ed */
+          (WidgetProc)NULL,	/* Instance Initializer routine*/
           (WidgetProc)NULL,	/*Realize*/
           NULL,			/*actions*/
           resources,		/*resource list*/
@@ -46,6 +52,18 @@ WidgetClassData widgetClassData = {
           SetValues,		/*set_values*/
           (WidgetProc)NULL      /*accept_focus*/
 };
+
+void ClassInit(widgetClass)
+    WidgetClass widgetClass;
+{
+    if ((widgetClass->coreClass.superclass != NULL) && (!(widgetClass->coreClass.superclass->
+                         coreClass.class_inited))) ClassInit(widgetClass->coreClass.superclass);
+    if (widgetClass->coreClass.class_initialize !=NULL)
+       widgetClass->coreClass.class_initialize;
+    widgetClass->coreClass.class_inited = TRUE;
+    return;
+}
+
 Widget TopLevelCreate(name,widgetClass,screen,args,argCount)
     char *name;
     WidgetClass widgetClass;
@@ -60,6 +78,8 @@ Widget TopLevelCreate(name,widgetClass,screen,args,argCount)
     widget->core.parent = NULL;
     widget->core.screen = screen;
     widget->core.visible = TRUE;
+    if(!(widget->core.widget_class->coreClass.class_inited))
+	 ClassInit(widgetClass);
    if (XtIsSubClass (widget,compositeWidgetClass)) {
                 ((CompositeWidget)widget)->composite.num_children = 0;
                ((CompositeWidget)widget)->composite.num_managed_children = 0;
@@ -94,7 +114,7 @@ void CompositeInsertChild(w)
     cw->composite.num_children++;
 }
 
-Widget XtWidgetCreate(name,widgetClass,parent,args,argCount)
+Widget XtCreateWidget(name,widgetClass,parent,args,argCount)
     char *name;	
     WidgetClass   widgetClass;
     CompositeWidget   parent;
@@ -144,7 +164,7 @@ void RegisterWindow(widget,window)
     Window    window;
 {
 }
-Boolean XtWidgetIsRealized (widget)
+Boolean XtIsRealized (widget)
     Widget   widget;
 {
    return (widget->core.window != NULL);
@@ -160,7 +180,7 @@ Boolean XtIsSubClass(widget, widgetClass)
   return (FALSE);
 }
 
-void XtWidgetRealize (widget)
+void XtRealizeWidget (widget)
     
     Widget    widget;
 {
@@ -168,14 +188,14 @@ void XtWidgetRealize (widget)
     ValueMask valuemask;
     XSetWindowAttributes values;
     Cardinal i;
-   if (XtWidgetIsRealized(widget)) return;
+   if (XtIsRealized(widget)) return;
    FillInParameters (widget,&valuemask,&values);
    widget->core.widget_class->coreClass.realize(widget,valuemask,&values);
    RegisterWindow(widget,widget->core.window);
    if (XtIsSubClass (widget, compositeWidgetClass)) {
         cwidget = (CompositeWidget)widget;
 	for (i= cwidget->composite.num_children;i!=0;--i) 
-		XtWidgetRealize(cwidget->composite.children[i-1]);
+		XtRealizeWidget(cwidget->composite.children[i-1]);
         if (cwidget->composite.num_children == cwidget->composite.num_managed_children)
 		XMapSubwindows(widget);
 	else while (i= cwidget->composite.num_managed_children > 0) {
@@ -189,7 +209,7 @@ void XtWidgetRealize (widget)
 }
 			
 		
-void XtWidgetSetSensitive(widget,sensitive)
+void XtSetSensitive(widget,sensitive)
     Widget    widget;
     Boolean   sensitive;
 {
@@ -198,7 +218,7 @@ void XtWidgetSetSensitive(widget,sensitive)
     if ((widget->core.sensitive == widget->core.ancestor_sensitive) 
                                  && XtIsSubClass (widget,compositeWidgetClass))
       for (i= ((CompositeWidget)widget)->composite.num_children;i != 0; --i)
-        XtWidgetSetSensitive (((CompositeWidget)widget)->composite.children[i-1],sensitive);
+        XtSetSensitive (((CompositeWidget)widget)->composite.children[i-1],sensitive);
       
 }
 
@@ -324,7 +344,7 @@ void XtPhase2Destroy (widget)
 }
 
 
-void XtWidgetDestroy (widget)
+void XtDestroyWidget (widget)
     Widget    widget;
 
 {

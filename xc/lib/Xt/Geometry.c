@@ -70,12 +70,13 @@ XtGeometryReturnCode XtMakeResizeRequest
     return r;
 } /* XtMakeResizeRequest */
 
-extern void XtResizeWidget(w)
+void 
+XtResizeWidget(w)
     Widget w;
 {
     w->core.widget_class->coreClass.resize(w);
 
-    if (XtWidgetIsRealized(w)) {
+    if (XtIsRealized(w)) {
 	XWindowChanges changes;
 	changes.width = w->core.width;
 	changes.height = w->core.height;
@@ -85,16 +86,17 @@ extern void XtResizeWidget(w)
     }
 } /* XtResizeWidget */
 
-extern void XtMoveWidget(w, x, y)
+void 
+XtMoveWidget(w, x, y)
     Widget w;
     Position x, y;
 {
     if ((w->core.x != x) || (w->core.y != y)) {
 	w->core.x = x;
 	w->core.y = y;
-	if (XtWidgetIsRealized(w)) {
+	if (XtIsRealized(w)) {
 	    XMoveWindow(XtDisplay(w), XtWindow(w), w->core.x, w->core.y);
         }
     }
-} /* XtWidgetMove */
+} /* XtMoveWidget */
 

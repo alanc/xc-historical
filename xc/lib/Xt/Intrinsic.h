@@ -183,6 +183,8 @@ typedef Widget *WidgetList;
         struct _WidgetClassData   *superclass;    /* pointer to superclass Class struct */
         String         class_name;    
         Cardinal       size;          /* size for pickling */
+        WidgetProc     class_initialize;    /* widget class initialization proc */
+        Boolean        class_inited;  /* has this class been initialized*/
         WidgetProc     initialize;    /* create a widget of this class */
         RealizeProc     realize;       /* realize a widget of this class */
 	struct _XtActionsRec *actions;       /* tokens to widget semantics bindings */
@@ -225,7 +227,7 @@ extern WidgetClass widgetClass;
  } CompositeWidgetClassData, *CompositeWidgetClass;
 
 CompositeWidgetClassData compositeWidgetClassData;
-CompositeWidgetClass compositeWidgetClass = &compositeWidgetClassData;
+extern CompositeWidgetClass compositeWidgetClass;
 
 
 typedef struct _ConstraintClass { /*incremental addditions to Composite for constrained */
@@ -240,7 +242,7 @@ typedef struct _ConstraintWidgetClassData {
 } ConstraintWidgetClassData, *ConstraintWidgetClass;
 
 ConstraintWidgetClassData constraintWidgetClassData;
-ConstraintWidgetClass constraintWidgetClass = &constraintWidgetClassData;
+extern ConstraintWidgetClass constraintWidgetClass;
 
 /************************************************************************
  *
@@ -292,7 +294,7 @@ extern Boolean XtIsSubclass ();
     /* Widget widget; */
     /* WidgetClass widgetClass; */
 
-extern Widget XtWidgetCreate ();
+extern Widget XtCreateWidget ();
     /* char	   *name; */
     /* WidgetClass widgetClass; */
     /* Widget      parent; */
@@ -308,18 +310,18 @@ extern Widget TopLevelCreate (); /*hack for now*/
 
 
 
-extern void XtWidgetRealize ();
+extern void XtRealizeWidget ();
     /* Widget widget */
     /* ValueMask valuemask; */
     /* XSetWindowAttributes *values; */
 
-extern Boolean XtWidgetIsRealized ();
+extern Boolean XtIsRealized ();
     /* Widget    widget; */
 
-extern void XtWidgetDestroy ();
+extern void XtDestroyWidget ();
     /* Widget widget */
 
-extern void XtWidgetSetSensitive ();
+extern void XtSetSensitive ();
     /* Widget    widget; */
     /* Boolean   sensitive; */
 /**********************************************************
@@ -571,10 +573,10 @@ extern XtGeometryReturnCode XtMakeResizeRequest ();
     /* Dimension width, height; */
     /* WidgetGeometry *reply;   */
 
-extern XtWidgetResize(); /* widget */
+extern void XtResizeWidget(); /* widget */
     /* Widget  widget */
 
-extern XtWidgetMove(); /* widget, x, y */
+extern void XtMoveWidget(); /* widget, x, y */
     /* Widget  widget */
     /* Position x, y  */
 
@@ -620,12 +622,12 @@ extern void XtReadBinaryDatabase ();
     /* FILE    *f; */
     /* ResourceDatabase *db; */
 
-extern void XtWidgetSetValues(); 
+extern void XtSetWidgetValues(); 
     /* Widget           widget;         */
     /* ArgList		args;		*/
     /* int		argCount;       */
 
-extern void XtWidgetGetValues();
+extern void XtGetWidgetValues();
     /* Widget           widget;         */
     /* ArgList		args;		*/
     /* Cardinal 	argCount;       */
@@ -656,15 +658,8 @@ extern void XtDefineTranslation ();
  ************************************************************/
 
 
-extern char* XtErrorDescrip (); /* errorNumber */
-  /* int errorNumber */
-
-extern void XtErrorHandler(); /* errorProc */
-  /* int (*handler)(int); */
-
-extern void XtErrorFunction (); /* errorNumber */
-  /* int errorNumber */
-
+extern void XtSetErrorHandler(); /* errorProc */
+  /* (*handler)(String); */
 
 #endif _Xtintrinsic_h
 /* DON'T ADD STUFF AFTER THIS #endif */
