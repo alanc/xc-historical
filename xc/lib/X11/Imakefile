@@ -2,7 +2,8 @@
 
        INCLUDES = -I. -I$(TOP) -I$(INCLUDESRC)
    CONN_DEFINES = ConnectionFlags
-     DB_DEFINES = -DERRORDB=\"$(LIBDIR)/XErrorDB\"
+     EDB_DEFINES = -DERRORDB=\"$(LIBDIR)/XErrorDB\"
+     KDB_DEFINES = -DKEYSYMDB=\"$(LIBDIR)/XKeysymDB\"
    INSTALLFLAGS = $(INSTINCFLAGS)
 #if BandAidLibraryNeeded
         AIDSRCS = BandAidLibrarySources
@@ -274,14 +275,16 @@ all::
 #if SharedLibX
 # if DebugLibX
 SharedAndDebuggedLibraryObjectRule()
-SpecialSharedAndDebuggedObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialSharedAndDebuggedObjectRule(XErrDes.o,$(ICONFIGFILES),$(EDB_DEFINES))
+SpecialSharedAndDebuggedObjectRule(XStrKeysym.o,$(ICONFIGFILES),$(KDB_DEFINES))
 SpecialSharedAndDebuggedObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialSharedAndDebuggedObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialSharedAndDebuggedObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialSharedAndDebuggedObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
 # else
 SharedLibraryObjectRule()
-SpecialSharedObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialSharedObjectRule(XErrDes.o,$(ICONFIGFILES),$(EDB_DEFINES))
+SpecialSharedObjectRule(XStrKeysym.o,$(ICONFIGFILES),$(KDB_DEFINES))
 SpecialSharedObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialSharedObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialSharedObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
@@ -290,7 +293,8 @@ SpecialSharedObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
 #else
 # if DebugLibX && ProfileLibX
 DebuggedAndProfiledLibraryObjectRule()
-SpecialDebuggedAndProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialDebuggedAndProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(EDB_DEFINES))
+SpecialDebuggedAndProfiledObjectRule(XStrKeysym.o,$(ICONFIGFILES),$(KDB_DEFINES))
 SpecialDebuggedAndProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialDebuggedAndProfiledObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialDebuggedAndProfiledObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
@@ -298,7 +302,8 @@ SpecialDebuggedAndProfiledObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
 # else
 #  if DebugLibX
 DebuggedLibraryObjectRule()
-SpecialDebuggedObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialDebuggedObjectRule(XErrDes.o,$(ICONFIGFILES),$(EDB_DEFINES))
+SpecialDebuggedObjectRule(XStrKeysym.o,$(ICONFIGFILES),$(KDB_DEFINES))
 SpecialDebuggedObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialDebuggedObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialDebuggedObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
@@ -306,14 +311,16 @@ SpecialDebuggedObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
 #  else
 #   if ProfileLibX
 ProfiledLibraryObjectRule()
-SpecialProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(EDB_DEFINES))
+SpecialProfiledObjectRule(XStrKeysym.o,$(ICONFIGFILES),$(KDB_DEFINES))
 SpecialProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialProfiledObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialProfiledObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialProfiledObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
 #   else
 NormalLibraryObjectRule()
-SpecialObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
+SpecialObjectRule(XErrDes.o,$(ICONFIGFILES),$(EDB_DEFINES))
+SpecialObjectRule(XStrKeysym.o,$(ICONFIGFILES),$(KDB_DEFINES))
 SpecialObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
