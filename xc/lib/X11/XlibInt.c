@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.138 91/02/17 15:00:40 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.139 91/03/28 10:21:55 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -34,7 +34,7 @@ static void _EatData32();
 int _XReadV(), _XWriteV();
 #endif 
 
-#ifndef X_NOT_POSIX
+#ifdef O_NONBLOCK
 #define E_BLOCKED EAGAIN
 #else
 #if defined(LACHMAN) || (defined(STREAMSCONN) && (!defined(EWOULDBLOCK)) && defined(EAGAIN))
