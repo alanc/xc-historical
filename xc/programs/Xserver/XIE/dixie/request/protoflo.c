@@ -1,4 +1,4 @@
-/* $XConsortium: protoflo.c,v 1.1 93/07/19 10:10:33 rws Exp $ */
+/* $XConsortium: protoflo.c,v 1.2 93/07/19 11:26:31 rws Exp $ */
 /**** module protoflo.c ****/
 /****************************************************************************
 				NOTICE
@@ -401,7 +401,6 @@ int ProcGetClientData(client)
 {
   CARD8   *data;
   CARD32  bytes;
-  BOOL    freeit;
   floDefPtr flo;
   peDefPtr  ped;
   xieGetClientDataReply rep;
@@ -428,7 +427,7 @@ int ProcGetClientData(client)
    */
   memset(&rep, 0, sz_xieGetClientDataReply);
   rep.newState    = ddOutput(flo, ped, stuff->bandNumber, &data, &bytes,
-			     stuff->maxBytes, stuff->terminate, &freeit);
+			     stuff->maxBytes, stuff->terminate);
   rep.type        = X_Reply;
   rep.sequenceNum = client->sequence;
   rep.length      = bytes+3>>2;
