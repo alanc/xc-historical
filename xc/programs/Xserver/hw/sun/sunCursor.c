@@ -75,6 +75,8 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 #include    <dixstruct.h>
 #include    <opaque.h>
 
+#include    <servermd.h>
+
 static CursorPtr  currentCursor = NullCursor;	/* Cursor being displayed */
 static BoxRec  	  currentLimits;		/* Box w/in which the hot spot
 						 * must stay. */
