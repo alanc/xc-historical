@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xconsole.c,v 1.9 91/07/25 14:23:46 rws Exp $
+ * $XConsortium: xconsole.c,v 1.10 91/10/28 18:40:12 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -658,6 +658,14 @@ get_pty (pty, tty, ttydev, ptydev)
 		close (*pty);
 	}
 #else /* !CRAY */
+#ifdef sgi
+	{ 
+	    char *slave;
+	    slave = _getpty (pty, O_RDWR, 0622, 0);
+	    if ((*tty = open (slave, O_RDWR)) != -1)
+		return 0;
+	}
+#else
 	strcpy (ttydev, "/dev/ttyxx");
 	strcpy (ptydev, "/dev/ptyxx");
 	while (PTYCHAR1[letter]) {
@@ -683,6 +691,7 @@ get_pty (pty, tty, ttydev, ptydev)
 	    devindex = 0;
 	    (void) letter++;
 	}
+#endif /* sgi else not sgi */
 #endif /* CRAY else not CRAY */
 #endif /* umips && SYSTYPE_SYSV */
 #endif /* USE_GET_PSEUDOTTY */
