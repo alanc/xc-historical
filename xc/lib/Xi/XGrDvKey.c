@@ -1,4 +1,4 @@
-/* $XConsortium: XGrDvKey.c,v 1.5 91/01/24 16:06:51 rws Exp $ */
+/* $XConsortium: XGrDvKey.c,v 1.6 92/11/14 12:55:17 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -81,8 +81,11 @@ XGrabDeviceKey (dpy, dev, key, modifiers, modifier_device,
        times, so "nvalues" is changed in a separate assignment
        statement */
 
-    event_count <<= 2;
-    Data (dpy, (char *) event_list, event_count);
+    if (event_count)
+	{
+	event_count <<= 2;
+	Data (dpy, (char *) event_list, event_count);
+	}
 
     UnlockDisplay(dpy);
     SyncHandle();
