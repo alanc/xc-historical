@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.44 90/11/29 19:32:50 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.45 91/01/27 13:02:48 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -53,6 +53,8 @@ extern void cfb8LineSS1Rect(), cfb8SegmentSS1Rect ();
 extern void cfbImageGlyphBlt8();
 #endif
 
+extern void cfbFillPoly1RectCopy(), cfbFillPoly1RectGeneral();
+
 extern void cfbSolidSpansCopy(), cfbSolidSpansXor (), cfbSolidSpansGeneral();
 
 static GCFuncs cfbFuncs = {
@@ -65,7 +67,6 @@ static GCFuncs cfbFuncs = {
     cfbCopyClip,
 };
 
-#if PPW == 4
 static GCOps	cfbTEOps1Rect = {
     cfbSolidSpansCopy,
     cfbSetSpans,
@@ -73,23 +74,37 @@ static GCOps	cfbTEOps1Rect = {
     cfbCopyArea,
     cfbCopyPlane,
     cfbPolyPoint,
+#if PPW == 4
     cfb8LineSS1Rect,
     cfb8SegmentSS1Rect,
+#else
+    cfbLineSS,
+    cfbSegmentSS,
+#endif
     miPolyRectangle,
+#if PPW == 4
     cfbZeroPolyArcSS8Copy,
-    miFillPolygon,
+#else
+    miZeroPolyArc,
+#endif
+    cfbFillPoly1RectCopy,
     cfbPolyFillRect,
     cfbPolyFillArcSolidCopy,
     miPolyText8,
     miPolyText16,
     miImageText8,
     miImageText16,
+#if PPW == 4
     cfbTEGlyphBlt8,
     cfbPolyGlyphBlt8,
     cfbPushPixels8,
+#else
+    cfbTEGlyphBlt,
+    miPolyGlyphBlt,
+    mfbPushPixels,
+#endif
     NULL,
 };
-#endif
 
 static GCOps	cfbTEOps = {
     cfbSolidSpansCopy,
@@ -125,7 +140,6 @@ static GCOps	cfbTEOps = {
     NULL,
 };
 
-#if PPW == 4
 static GCOps	cfbNonTEOps1Rect = {
     cfbSolidSpansCopy,
     cfbSetSpans,
@@ -133,11 +147,20 @@ static GCOps	cfbNonTEOps1Rect = {
     cfbCopyArea,
     cfbCopyPlane,
     cfbPolyPoint,
+#if PPW == 4
+    cfbLineSS,
+    cfbSegmentSS,
+#else
     cfb8LineSS1Rect,
     cfb8SegmentSS1Rect,
+#endif
     miPolyRectangle,
+#if PPW == 4
     cfbZeroPolyArcSS8Copy,
-    miFillPolygon,
+#else
+    miZeroPolyArc,
+#endif
+    cfbFillPoly1RectCopy,
     cfbPolyFillRect,
     cfbPolyFillArcSolidCopy,
     miPolyText8,
@@ -149,7 +172,6 @@ static GCOps	cfbNonTEOps1Rect = {
     cfbPushPixels8,
     NULL,
 };
-#endif
 
 static GCOps	cfbNonTEOps = {
     cfbSolidSpansCopy,
@@ -207,18 +229,14 @@ matchCommon (pGC, devPriv)
 	    && FONTMAXBOUNDS(pGC->font,characterWidth) >= 4
 #endif
 	)
-#if PPW == 4
-	    if (REGION_NUM_RECTS (devPriv->pCompositeClip) == 1)
+	    if (devPriv->oneRect)
 		return &cfbTEOps1Rect;
 	    else
-#endif
 		return &cfbTEOps;
 	else
-#if PPW == 4
-	    if (REGION_NUM_RECTS (devPriv->pCompositeClip) == 1)
+	    if (devPriv->oneRect)
 		return &cfbNonTEOps1Rect;
 	    else
-#endif
 		return &cfbNonTEOps;
     }
     return 0;
@@ -257,6 +275,7 @@ cfbCreateGC(pGC)
 
     pPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
     pPriv->rop = pGC->alu;
+    pPriv->oneRect = FALSE;
     pPriv->fExpose = TRUE;
     pPriv->freeCompClip = FALSE;
     pPriv->pRotatedPixmap = (PixmapPtr) NULL;
@@ -340,6 +359,7 @@ cfbValidateGC(pGC, changes, pDrawable)
     int		xrot, yrot;
     /* flags for changing the proc vector */
     cfbPrivGCPtr devPriv;
+    int		oneRect;
 
     new_rotate = pGC->lastWinOrg.x != pDrawable->x ||
 		 pGC->lastWinOrg.y != pDrawable->y;
@@ -356,6 +376,12 @@ cfbValidateGC(pGC, changes, pDrawable)
     }
 
     devPriv = ((cfbPrivGCPtr) (pGC->devPrivates[cfbGCPrivateIndex].ptr));
+
+    new_rrop = FALSE;
+    new_line = FALSE;
+    new_text = FALSE;
+    new_fillspans = FALSE;
+    new_fillrct = FALSE;
 
     /*
      * if the client clip is different or moved OR the subwindowMode has
@@ -465,13 +491,11 @@ cfbValidateGC(pGC, changes, pDrawable)
 					    pGC->clipOrg.x, pGC->clipOrg.y);
 	    }
 	}			/* end of composute clip for pixmap */
+	oneRect = REGION_NUM_RECTS(devPriv->pCompositeClip) == 1;
+	if (pGC->lineWidth == 0 && oneRect != devPriv->oneRect)
+	    new_line = TRUE;
+	devPriv->oneRect = oneRect;
     }
-
-    new_rrop = FALSE;
-    new_line = FALSE;
-    new_text = FALSE;
-    new_fillspans = FALSE;
-    new_fillrct = FALSE;
 
     mask = changes;
     while (mask) {
@@ -667,10 +691,21 @@ cfbValidateGC(pGC, changes, pDrawable)
     }
 
     /* deal with the changes we've collected */
-
     if (new_line)
     {
 	pGC->ops->PolySegment = miPolySegment;
+	pGC->ops->FillPolygon = miFillPolygon;
+	if (devPriv->oneRect && pGC->fillStyle == FillSolid)
+	{
+	    switch (devPriv->rop) {
+	    case GXcopy:
+		pGC->ops->FillPolygon = cfbFillPoly1RectCopy;
+		break;
+	    default:
+		pGC->ops->FillPolygon = cfbFillPoly1RectGeneral;
+		break;
+	    }
+	}
 	if (pGC->lineWidth == 0)
 	{
 #if PPW == 4
@@ -703,7 +738,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 		if (pGC->fillStyle == FillSolid)
 		{
 #if PPW == 4
-		    if (REGION_NUM_RECTS (devPriv->pCompositeClip) == 1)
+		    if (devPriv->oneRect)
 		    {
 			pGC->ops->Polylines = cfb8LineSS1Rect;
 			pGC->ops->PolySegment = cfb8SegmentSS1Rect;

@@ -138,7 +138,8 @@ typedef struct {
     unsigned char       rop;            /* special case rop values */
     /* next two values unused in cfb, included for compatibility with mfb */
     unsigned char       ropOpStip;      /* rop for opaque stipple */
-    unsigned char       ropFillArea;    /*  == alu, rop, or ropOpStip */
+    /* this value is ropFillArea in mfb, usurped for cfb */
+    unsigned char       oneRect;	/*  drawable has one clip rect */
     unsigned		fExpose:1;	/* callexposure handling ? */
     unsigned		freeCompClip:1;
     PixmapPtr		pRotatedPixmap;

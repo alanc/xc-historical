@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbresd.c,v 1.6 89/11/08 17:12:51 keith Exp $ */
+/* $XConsortium: cfbbresd.c,v 1.7 90/01/31 12:31:17 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -29,18 +29,6 @@ SOFTWARE.
 
 /* Dashed bresenham line */
 
-#define StepDash\
-    if (!--dashRemaining) { \
-	if (++ dashIndex == numInDashList) \
-	    dashIndex = 0; \
-	dashRemaining = pDash[dashIndex]; \
-	if (isDoubleDash) { \
-	    xor = rrops[dashIndex & 1].xor; \
-	    and = rrops[dashIndex & 1].and; \
-	} \
-	else \
-	    dontdraw = (dashIndex & 1); \
-    }
 cfbBresD(rrops,
 	 pdashIndex, pDash, numInDashList, pdashOffset, isDoubleDash,
 	 addrl, nlwidth,
@@ -61,110 +49,99 @@ register int e1;	/* bresenham increments */
 int e2;
 int len;		/* length of line */
 {
-    register int yinc;	/* increment to next scanline, in bytes */
     register unsigned char *addrb;
     register int e3 = e2-e1;
     int dashIndex;
     int dashOffset;
     int dashRemaining;
-    unsigned long   xor, and;
-    int dontdraw;
+    unsigned long   xorFg, andFg, xorBg, andBg;
     Bool isCopy;
+    int thisDash;
 
     dashOffset = *pdashOffset;
     dashIndex = *pdashIndex;
     dashRemaining = pDash[dashIndex] - dashOffset;
     isCopy = (rrops[0].rop == GXcopy && rrops[1].rop == GXcopy);
-    xor = rrops[0].xor;
-    and = rrops[0].and;
-    if (isDoubleDash)
+    xorFg = rrops[0].xor;
+    andFg = rrops[0].and;
+    xorBg = rrops[1].xor;
+    andBg = rrops[1].and;
+    if ((thisDash = dashRemaining) > len)
     {
-	if (dashIndex & 1)
-	{
-	    xor = rrops[1].xor;
-	    and = rrops[1].and;
-	}
-	dontdraw = 0;
+	thisDash = len;
+	dashRemaining -= len;
     }
-    else
-	dontdraw = (dashIndex & 1);
 #if (PPW == 4)
     /* point to first point */
     nlwidth <<= 2;
     addrb = (unsigned char *)(addrl) + (y1 * nlwidth) + x1;
-    yinc = signdy * nlwidth;
+    signdy *= nlwidth;
+    if (axis == Y_AXIS)
+    {
+	int t;
+
+	t = signdx;
+	signdx = signdy;
+	signdy = t;
+    }
     e = e-e1;			/* to make looping easier */
 
-    if (axis == X_AXIS)
+#define BresStep(minor,major) {if ((e += e1) >= 0) { e += e3; minor; } major;}
+#define Loop(store) while (thisDash--) {\
+			store; \
+ 			BresStep(addrb+=signdy,addrb+=signdx) \
+		    }
+
+#define NextDash {\
+    dashIndex++; \
+    if (dashIndex == numInDashList) \
+	dashIndex = 0; \
+    dashRemaining = pDash[dashIndex]; \
+    if ((thisDash = dashRemaining) > len) \
+    { \
+	dashRemaining -= len; \
+	thisDash = len; \
+    } \
+}
+
+    if (isCopy)
     {
-	if (isCopy)
-	{
-	    while(len--)
-	    { 
-		if (!dontdraw)
-		    *addrb = xor;
-		e += e1;
-		if (e >= 0)
-		{
-		    addrb += yinc;
-		    e += e3;
+	for (;;)
+	{ 
+	    len -= thisDash;
+	    if (dashIndex & 1) {
+		if (isDoubleDash) {
+		    Loop(*addrb = xorBg)
+		} else {
+		    Loop()
 		}
-		addrb += signdx;
-		StepDash
+	    } else {
+		Loop(*addrb = xorFg)
 	    }
+	    if (!len)
+		break;
+	    NextDash
 	}
-	else
-	{
-	    while(len--)
-	    { 
-		if (!dontdraw)
-		    *addrb = DoRRop (*addrb, and, xor);
-		e += e1;
-		if (e >= 0)
-		{
-		    addrb += yinc;
-		    e += e3;
-		}
-		addrb += signdx;
-		StepDash
-	    }
-	}
-    } /* if X_AXIS */
+    }
     else
     {
-	if (isCopy)
-	{
-	    while(len--)
-	    {
-		if (!dontdraw)
-		    *addrb = xor;
-		e += e1;
-		if (e >= 0)
-		{
-		    addrb += signdx;
-		    e += e3;
+	for (;;)
+	{ 
+	    len -= thisDash;
+	    if (dashIndex & 1) {
+		if (isDoubleDash) {
+		    Loop(*addrb = DoRRop(*addrb,andBg, xorBg))
+		} else {
+		    Loop()
 		}
-		addrb += yinc;
-		StepDash
+	    } else {
+		Loop(*addrb = DoRRop(*addrb,andFg, xorFg))
 	    }
+	    if (!len)
+		break;
+	    NextDash
 	}
-	else
-	{
-	    while(len--)
-	    {
-		if (!dontdraw)
-		    *addrb = DoRRop (*addrb, and, xor);
-		e += e1;
-		if (e >= 0)
-		{
-		    addrb += signdx;
-		    e += e3;
-		}
-		addrb += yinc;
-		StepDash
-	    }
-	}
-    } /* else Y_AXIS */
+    }
 #else
     {
     	register unsigned long   tmp;
