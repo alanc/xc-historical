@@ -1,4 +1,4 @@
-/* $XConsortium: save.h,v 1.2 94/07/28 13:30:26 mor Exp mor $ */
+/* $XConsortium: save.h,v 1.3 94/08/11 18:56:59 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -26,7 +26,11 @@ in this Software without prior written authorization from the X Consortium.
 ******************************************************************************/
 
 extern void create_save_popup ();
+extern void SetSaveSensitivity ();
 extern void PopupSaveDialog ();
 extern void CheckPointXtProc ();
 extern void ShutdownSaveXtProc ();
 extern void ShutdownDontSaveXtProc ();
+extern void LetClientInteract ();
+extern void StartPhase2 ();
+extern void FinishUpSave ();
