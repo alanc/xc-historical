@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: setdvfocus.m,v 1.4 94/01/29 15:20:43 rws Exp $
+ * $XConsortium: setdvfocus.m,v 1.5 94/01/30 12:11:19 rws Exp $
  */
 >>TITLE XSetDeviceFocus XINPUT
 void
@@ -1043,7 +1043,8 @@ Check focus is now root.
 Time	t1,t2;
 Window	win;
 Window	focus_return;
-int	junk, junk2;
+int	junk;
+Time	junk2;
 
 	if (!Setup_Extension_DeviceInfo(FocusMask))
 	    {

@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtdvmtnev.m,v 1.10 94/01/29 15:19:22 rws Exp $
+ * $XConsortium: gtdvmtnev.m,v 1.11 94/01/30 12:10:36 rws Exp $
  */
 >>TITLE XGetDeviceMotionEvents XINPUT
 XDeviceTimeCoord *
@@ -131,7 +131,7 @@ XDeviceTimeCoord *tc;
 /* Verify that no events were returned. */
 	if (tc != (XDeviceTimeCoord *) NULL) {
 		report("Returned 0x%x, expected NULL", tc);
-		XFreeDeviceMotionEvents((char*)tc);
+		XFreeDeviceMotionEvents(tc);
 		FAIL;
 	}
 	else
@@ -174,7 +174,7 @@ XDeviceTimeCoord *tc;
 /* Verify that no events were returned. */
 	if (tc != (XDeviceTimeCoord *) NULL) {
 		report("Returned 0x%x, expected NULL", tc);
-		XFreeDeviceMotionEvents((char*)tc);
+		XFreeDeviceMotionEvents(tc);
 		FAIL;
 	}
 	else
@@ -198,7 +198,7 @@ XDeviceTimeCoord *tc;
 /* Verify that no events were returned. */
 	if (tc != (XDeviceTimeCoord *) NULL) {
 		report("Returned 0x%x, expected NULL", tc);
-		XFreeDeviceMotionEvents((char*)tc);
+		XFreeDeviceMotionEvents(tc);
 		FAIL;
 	}
 	else
