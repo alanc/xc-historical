@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.12 89/09/05 20:12:20 keith Exp $ */
+/* $XConsortium: mfbgc.c,v 5.13 89/09/10 18:04:34 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -37,6 +37,8 @@ SOFTWARE.
 #include "mistruct.h"
 
 #include "maskbits.h"
+
+extern void mfbPolyFillArcSolid();
 
 static void mfbDestroyOps();
 
@@ -67,7 +69,7 @@ static GCOps	whiteTECopyOps = {
 	mfbZeroPolyArcSS,
 	miFillPolygon,
 	mfbPolyFillRect,
-	miPolyFillArc,
+	mfbPolyFillArcSolid,
 	miPolyText8,
 	miPolyText16,
 	miImageText8,
@@ -91,7 +93,7 @@ static GCOps	blackTECopyOps = {
 	mfbZeroPolyArcSS,
 	miFillPolygon,
 	mfbPolyFillRect,
-	miPolyFillArc,
+	mfbPolyFillArcSolid,
 	miPolyText8,
 	miPolyText16,
 	miImageText8,
@@ -115,7 +117,7 @@ static GCOps	whiteTEInvertOps = {
 	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
-	miPolyFillArc,
+	mfbPolyFillArcSolid,
 	miPolyText8,
 	miPolyText16,
 	miImageText8,
@@ -139,7 +141,7 @@ static GCOps	blackTEInvertOps = {
 	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
-	miPolyFillArc,
+	mfbPolyFillArcSolid,
 	miPolyText8,
 	miPolyText16,
 	miImageText8,
@@ -163,7 +165,7 @@ static GCOps	whiteCopyOps = {
 	mfbZeroPolyArcSS,
 	miFillPolygon,
 	mfbPolyFillRect,
-	miPolyFillArc,
+	mfbPolyFillArcSolid,
 	miPolyText8,
 	miPolyText16,
 	miImageText8,
@@ -187,7 +189,7 @@ static GCOps	blackCopyOps = {
 	mfbZeroPolyArcSS,
 	miFillPolygon,
 	mfbPolyFillRect,
-	miPolyFillArc,
+	mfbPolyFillArcSolid,
 	miPolyText8,
 	miPolyText16,
 	miImageText8,
@@ -211,7 +213,7 @@ static GCOps	whiteInvertOps = {
 	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
-	miPolyFillArc,
+	mfbPolyFillArcSolid,
 	miPolyText8,
 	miPolyText16,
 	miImageText8,
@@ -235,7 +237,7 @@ static GCOps	blackInvertOps = {
 	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
-	miPolyFillArc,
+	mfbPolyFillArcSolid,
 	miPolyText8,
 	miPolyText16,
 	miImageText8,
@@ -259,7 +261,7 @@ static GCOps	whiteWhiteCopyOps = {
 	mfbZeroPolyArcSS,
 	miFillPolygon,
 	mfbPolyFillRect,
-	miPolyFillArc,
+	mfbPolyFillArcSolid,
 	miPolyText8,
 	miPolyText16,
 	miImageText8,
@@ -283,7 +285,7 @@ static GCOps	blackBlackCopyOps = {
 	mfbZeroPolyArcSS,
 	miFillPolygon,
 	mfbPolyFillRect,
-	miPolyFillArc,
+	mfbPolyFillArcSolid,
 	miPolyText8,
 	miPolyText16,
 	miImageText8,
@@ -307,7 +309,7 @@ static GCOps	fgEqBgInvertOps = {
 	miZeroPolyArc,
 	miFillPolygon,
 	mfbPolyFillRect,
-	miPolyFillArc,
+	mfbPolyFillArcSolid,
 	miPolyText8,
 	miPolyText16,
 	miImageText8,
@@ -1033,7 +1035,10 @@ mfbValidateGC(pGC, changes, pDrawable)
 	{
 	    pGC->ops->FillSpans = mfbTileFS;
 	}
-
+	if (pGC->fillStyle == FillSolid)
+	    pGC->ops->PolyFillArc = mfbPolyFillArcSolid;
+	else
+	    pGC->ops->PolyFillArc = miPolyFillArc;
 	/* the rectangle code doesn't deal with opaque stipples that
 	   are two colors -- we can fool it for fg==bg, though
 	 */
