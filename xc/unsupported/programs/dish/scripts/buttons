@@ -1,3 +1,4 @@
+# $XConsortium$
 # This dish script draws a simple push button
 
 proc push_me {message} {

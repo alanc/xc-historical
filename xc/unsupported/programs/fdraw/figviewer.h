@@ -19,33 +19,34 @@ typedef FigViewer* FigViewerRef;
 
 class FigViewer : public ViewerImpl {
 public:
-    FigViewer(Fresco*);
+    FigViewer(Fresco*, Boolean* editing);
     ~FigViewer();
     
-    void allocations(Glyph::AllocationInfoList& a); //+ Glyph::allocations
+    void allocations(Glyph::AllocationInfoSeq& a); //+ Glyph::allocations
     void traverse(GlyphTraversal_in t); //+ Glyph::traverse
     void request(Glyph::Requisition& r); //+ Glyph::request
-    TransformObjRef _c_transform(); //+ Glyph::transform
+    Transform_return transformation(); //+ Glyph::transformation
     void need_resize(); //+ Glyph::need_resize
 
     Tool* current_tool();
     void current_tool(Tool*);
 
-    Boolean press(GlyphTraversalRef, EventRef);
-    Boolean drag(GlyphTraversalRef, EventRef);
-    Boolean move(GlyphTraversalRef, EventRef);
-    Boolean release(GlyphTraversalRef, EventRef);
+    Boolean press(GlyphTraversal_in, EventRef);
+    Boolean drag(GlyphTraversal_in, EventRef);
+    Boolean move(GlyphTraversal_in, EventRef);
+    Boolean release(GlyphTraversal_in, EventRef);
     
     Manipulator* root();
     Selection* selection();
 
 protected:
+    Boolean* editing_;
     Tool* curtool_;
-    Manipulator* root_;
     Selection* sel_;
+    Manipulator* root_;
     Manipulator* active_;
     RegionImpl* allocation_;
-    DamageObjRef damage_;
+    DamageRef damage_;
     TransformImpl* transform_;
 };
 

@@ -126,6 +126,7 @@ Command::~Command () {
         Data*& data = ti->cur_value();
         delete data;
     }
+    delete data_;
     delete ti;
 }
 
@@ -457,4 +458,5 @@ SelectInfoCmd::SelectInfoCmd (FigViewer* fv) : Command (fv) {
 }
 
 SelectInfoCmd::~SelectInfoCmd () {}
+
 

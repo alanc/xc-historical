@@ -14,12 +14,15 @@
 #include <X11/Fresco/Impls/transform.h>
 #include <X11/Fresco/OS/memory.h>
 
-FigViewer::FigViewer(Fresco* f) : ViewerImpl(f) {
+FigViewer::FigViewer(Fresco* f, Boolean* editing) : ViewerImpl(f, true) {
     curtool_ = nil;
     active_ = nil;
+    editing_ = editing;
 
     sel_ = new Selection(10);
-    root_ = new PolyManip(new PolyFigure);
+    PolyFigure* pf = new PolyFigure;
+    root_ = new PolyManip(pf);
+    Fresco::unref(pf);
 
     allocation_ = new RegionImpl;
     damage_ = nil;
@@ -32,51 +35,40 @@ FigViewer::~FigViewer() {
 }
 
 //+ FigViewer(Glyph::allocations)
-void FigViewer::allocations(Glyph::AllocationInfoList& a) {
-    if (a._length >= a._maximum) {
-	long n = a._maximum == 0 ? 10 : a._maximum + a._maximum;
-	Glyph::AllocationInfo* buffer = new Glyph::AllocationInfo[n];
-	if (a._maximum > 0) {
-            Memory::copy(
-                a._buffer, buffer, a._maximum * sizeof(Glyph::AllocationInfo)
-            );
-	}
-	/* should free elems? */
-	a._buffer = buffer;
-	a._maximum = n;
-    }
-    Glyph::AllocationInfo& i = a._buffer[a._length];
+void FigViewer::allocations(Glyph::AllocationInfoSeq& a) {
+    a._maximum = 1;
+    a._length = 1;
+    a._buffer = new Glyph::AllocationInfo[1];
+
+    Glyph::AllocationInfo& i = a._buffer[0];
     i.allocation = new RegionImpl;
     i.allocation->copy(allocation_);
-    i.transform = new TransformImpl;
-    i.transform->load(transform_);
-    i.damage = DamageObj::_duplicate(damage_);
-    ++a._length;
+    i.transformation = new TransformImpl;
+    i.transformation->load(transform_);
+    i.damaged = Damage::_duplicate(damage_);
 }
 
 //+ FigViewer(Glyph::traverse)
 void FigViewer::traverse(GlyphTraversal_in t) {
-    switch(t->op()) {
+    switch (t->op()) {
     case GlyphTraversal::pick_top:
     case GlyphTraversal::pick_all:
     case GlyphTraversal::pick_any:
 
 // This is inefficient for motion events
         ViewerImpl::traverse(t);
-        if (
-            is_nil(t->picked()) && t->painter()->is_visible(t->allocation())
-        ) {
-            t->begin_trail(ViewerRef(this));
+        if (is_nil(_tmp(t->picked())) && t->allocation_is_visible()) {
+            t->begin_viewer(this);
             t->hit();
-            t->end_trail();
+            t->end_viewer();
         }
         break;
     case GlyphTraversal::draw:
         {
-            allocation_->copy(t->allocation());
-            PainterObjRef po = t->painter();
-            transform_->load(po->matrix());
-            damage_ = t->damage();
+            allocation_->copy(_tmp(t->allocation()));
+            Painter_var po = t->current_painter();
+            transform_->load(_tmp(po->current_matrix()));
+            damage_ = Damage::_return_ref(t->damaged());
             ViewerImpl::traverse(t);
         }
         break;
@@ -96,7 +88,7 @@ Selection* FigViewer::selection() {
 
 //+ FigViewer(Glyph::request)
 void FigViewer::request(Glyph::Requisition& r) {
-    LayoutKit layouts = fresco_instance()->layout_kit();
+    LayoutKit_var layouts = fresco_instance()->layout_kit();
     Coord fil = layouts->fil();
     r.x.natural = 0; r.x.maximum = fil, r.x.minimum = 0, r.x.align = 0.5;
     r.y.natural = 0; r.y.maximum = fil, r.y.minimum = 0, r.y.align = 0.5;
@@ -105,8 +97,8 @@ void FigViewer::request(Glyph::Requisition& r) {
 Tool* FigViewer::current_tool() { return curtool_; }
 void FigViewer::current_tool(Tool* t) { curtool_ = t; }
 
-//+ FigViewer(Glyph::transform)
-TransformObjRef FigViewer::_c_transform() {
+//+ FigViewer(Glyph::transformation)
+Transform_return FigViewer::transformation() {
     Fresco::ref(transform_);
     return transform_;
 }
@@ -119,7 +111,10 @@ void FigViewer::need_resize() {
      */
 }
 
-Boolean FigViewer::press(GlyphTraversalRef t, EventRef e) {
+Boolean FigViewer::press(GlyphTraversal_in t, EventRef e) {
+    if (!*editing_) {
+        return false;
+    }
     Boolean ok = false;
     if (is_nil(active_)) {
         SelectInfo* si = curtool_->create_manipulator(t, e, this);
@@ -145,11 +140,17 @@ Boolean FigViewer::press(GlyphTraversalRef t, EventRef e) {
     return true;
 }
 
-Boolean FigViewer::move(GlyphTraversalRef t, EventRef e) {
+Boolean FigViewer::move(GlyphTraversal_in t, EventRef e) {
+    if (!*editing_) {
+        return false;
+    }
     return drag(t, e);
 }
 
-Boolean FigViewer::drag(GlyphTraversalRef, EventRef e) {
+Boolean FigViewer::drag(GlyphTraversal_in, EventRef e) {
+    if (!*editing_) {
+        return false;
+    }
     Boolean ok = false;
     if (is_not_nil(active_)) {
         ok = active_->manipulate(e);
@@ -165,7 +166,10 @@ Boolean FigViewer::drag(GlyphTraversalRef, EventRef e) {
     return true;
 }
 
-Boolean FigViewer::release(GlyphTraversalRef, EventRef e) {
+Boolean FigViewer::release(GlyphTraversal_in, EventRef e) {
+    if (!*editing_) {
+        return false;
+    }
     Boolean ok = false;
     if (is_not_nil(active_)) {
         ok = active_->manipulate(e);

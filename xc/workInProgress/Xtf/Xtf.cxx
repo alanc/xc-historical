@@ -57,8 +57,8 @@ typedef int argc_t;
 typedef Cardinal argc_t;
 #endif
 
-DisplayObjRef XtfFresco::_c_open_display(CharStringRef name) {
-    DisplayObjRef d = nil;
+DisplayRef XtfFresco::open_display(CharStringRef name) {
+    DisplayRef d = nil;
     CharStringBuffer ns(name);
     CharStringBuffer app_class(class_name());
     argc_t args = argc_t(argc_);
@@ -76,13 +76,13 @@ DisplayObjRef XtfFresco::_c_open_display(CharStringRef name) {
     return d;
 }
 
-DisplayObjRef XtfFresco::_c_open_default_display() {
-    DisplayObjRef d = nil;
-    StyleValue a = style_->resolve(Fresco::string_ref("display"));
+DisplayRef XtfFresco::open_default_display() {
+    DisplayRef d = nil;
+    StyleValue_var a = style_->resolve(Fresco::tmp_string_ref("display"));
     if (is_not_nil(a)) {
-	CharString v;
-	if (a->read_string(v)) {
-	    d = _c_open_display(v);
+	CharString_var v;
+	if (a->read_string(v._out())) {
+	    d = open_display(v);
 	}
     }
     if (is_nil(d)) {
@@ -112,7 +112,7 @@ void XtfFresco::init_widget(Widget widget, ViewerRef v) {
 }
 
 void XtfFresco::init_widget_glyph(Widget widget, GlyphRef g) {
-    MainViewer* mv = new MainViewer(this);
+    ViewerImpl* mv = new ViewerImpl(this);
     mv->body(g);
     init_widget(widget, mv);
 }
@@ -257,7 +257,7 @@ XtfBoolean XtfWindowImpl::xt_set_values(
 
 void XtfWindowImpl::xt_expose(XEvent* event, XRegion) {
     XExposeEvent& xe = event->xexpose;
-    ScreenObjRef s = screen_;
+    ScreenRef s = screen_;
     Coord left = s->to_coord(xe.x);
     Coord top = s->to_coord(pheight_ - xe.y);
     Coord h = s->to_coord(xe.height);
@@ -325,7 +325,7 @@ static XtResource resources[] = {
 	offset(viewer.fresco), XtRImmediate, NULL},
     {XtNglyph, XtCGlyph, XtRGlyph, sizeof(Glyph*),
 	offset(viewer.glyph), XtRImmediate, NULL},
-    {XtNviewer, XtCViewer, XtRViewer, sizeof(ViewerType*),
+    {XtNviewer, XtCViewer, XtRViewer, sizeof(Viewer*),
 	offset(viewer.viewer), XtRImmediate, NULL},
     {XtNfrescoWindow, XtCFrescoWindow, XtRFrescoWindow, sizeof(XtfWindowImpl*),
 	offset(viewer.window), XtRImmediate, NULL},

@@ -1,3 +1,4 @@
+# $XConsortium$
 # This dish script draws a resizeable glyph
 
 set style [figure_kit default_style]

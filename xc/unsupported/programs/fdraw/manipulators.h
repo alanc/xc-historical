@@ -12,40 +12,21 @@
 
 class FigViewer;
 class Manipulator;
+class ManipList;
 
-declarePtrList(ManipList, Manipulator);
-
-class ButtonType;
-typedef ButtonType* ButtonRef;
+class Button;
+typedef Button* ButtonRef;
 
 class Command;
 class SelectInfo;
 class Tool;
+class Transformer;
 
 enum ToolType {
-    create, magnify, move, alter, rotate, scale, choose, stretch, undefined
+    create, move, alter, rotate, scale, choose, stretch, resize, undefined
 };
 
-//- Transformer*
-//+ Transformer : MonoGlyph
-class Transformer : public MonoGlyph {
-public:
-    ~Transformer();
-    TypeObjId _tid();
-    static Transformer* _narrow(BaseObjectRef);
-//+
-public:
-    Transformer(TransformObjRef);
-    Transformer();
-    void request(Glyph::Requisition& r); //+ Glyph::request
-    void extension(const Glyph::AllocationInfo& a, Region_in r); //+ Glyph::extension
-    void traverse(GlyphTraversal_in t); //+ Glyph::traverse
-    TransformObjRef _c_transform(); //+ Glyph::transform
-
-    void child_allocate(Glyph::AllocationInfo& a);
-protected:
-    TransformImpl tx_;
-};
+declarePtrList(ManipList, Manipulator);
 
 class ManipInfo {
 public:
@@ -64,8 +45,8 @@ public:
 };
 
 //- Manipulator*
-//+ Manipulator : Transformer
-class Manipulator : public Transformer {
+//+ Manipulator : MonoGlyph
+class Manipulator : public MonoGlyph {
 public:
     ~Manipulator();
     TypeObjId _tid();
@@ -73,8 +54,8 @@ public:
 //+
 public:
     virtual Boolean grasp(Tool&, FigViewer&, SelectInfo*, EventRef);
-    virtual Boolean manipulate(EventRef);
-    virtual Command* effect(EventRef);
+    virtual Boolean manipulate(Event_in);
+    virtual Command* effect(Event_in);
 
     virtual void execute(Command*);
     virtual void unexecute(Command*);
@@ -82,16 +63,21 @@ public:
     virtual Manipulator* shallow_copy() = 0;
     virtual Manipulator* deep_copy() = 0;
 
-    virtual void draw_handles(GlyphTraversalRef);
+    virtual void draw_handles(GlyphTraversal_in);
 
+    void draw(GlyphTraversal_in t); //+ Glyph::draw
+    void request(Glyph::Requisition& r); //+ Glyph::request
+    void extension(const Glyph::AllocationInfo& a, Region_in r); //+ Glyph::extension
     void traverse(GlyphTraversal_in t); //+ Glyph::traverse
+    Transform_return transformation(); //+ Glyph::transformation
+    void child_allocate(Glyph::AllocationInfo& a);
 protected:
     Manipulator(Manipulator* = nil);
     void info(Manipulator*, ManipInfo*);
     ManipInfo* info(Manipulator*);
 protected:
     Boolean selected_ : 1;
-protected: 
+    TransformImpl tx_;
     ManipInfo* info_;  // cache information for manipulation
 };
 
@@ -125,6 +111,7 @@ public:
 protected:
     VertexManip(VertexManip* m = nil);
 
+    void extension(const Glyph::AllocationInfo& a, Region_in r); //+ Glyph::extension
     virtual Boolean grasp(Tool&, FigViewer&, SelectInfo*, EventRef);
     virtual Boolean manipulate(EventRef);
 
@@ -132,9 +119,11 @@ protected:
     virtual Manipulator* deep_copy() = 0;
     virtual void recompute_shape();
 
-    virtual void draw_handles(GlyphTraversalRef);
+    virtual void draw_handles(GlyphTraversal_in);
 protected:
     VertexList* vlist_;
+    Vertex vmin_;
+    Vertex vmax_;
 };
 
 //- LineManip*
@@ -180,10 +169,11 @@ public:
 public:
     EllipseManip(EllipseManip* m = nil);
 
+    void extension(const Glyph::AllocationInfo& a, Region_in r); //+ Glyph::extension
     virtual Boolean manipulate(EventRef);
     virtual Manipulator* shallow_copy();
     virtual Manipulator* deep_copy();
-    virtual void draw_handles(GlyphTraversalRef);
+    virtual void draw_handles(GlyphTraversal_in);
     virtual void recompute_shape();
 };
 
@@ -270,9 +260,50 @@ protected:
     PolyFigure* polyfigure_;
 };
 
+struct ResizeInfo {
+    Coord width, height;
+};
+
+//- LayoutManip*
+//+ LayoutManip : Manipulator
+class LayoutManip : public Manipulator {
+public:
+    ~LayoutManip();
+    TypeObjId _tid();
+    static LayoutManip* _narrow(BaseObjectRef);
+//+
+public:
+    LayoutManip(
+        Transformer* t = nil, LayoutManip* m = nil
+    );
+
+    virtual Boolean grasp(Tool&, FigViewer&, SelectInfo*, EventRef);
+    virtual Boolean manipulate(EventRef);
+    virtual void execute(Command*);
+    virtual void unexecute(Command*);
+    virtual void draw_handles(GlyphTraversal_in);
+
+    void request(Glyph::Requisition& r); //+ Glyph::request
+    void extension(const Glyph::AllocationInfo& a, Region_in r); //+ Glyph::extension
+    void traverse(GlyphTraversal_in t); //+ Glyph::traverse
+
+    virtual Manipulator* shallow_copy() = 0;
+    virtual Manipulator* deep_copy() = 0;
+    void need_resize(); //+ Glyph::need_resize
+    void child_allocate(Glyph::AllocationInfo& a);
+    void allocations(Glyph::AllocationInfoSeq& a); //+ Glyph::allocations
+protected:
+    Transformer* transformer_;
+    ResizeInfo* resize_info_;
+    Boolean requested_;
+    Glyph::Requisition req_;
+
+    void update_requisition();
+};
+
 //- ButtonManip*
-//+ ButtonManip : Manipulator
-class ButtonManip : public Manipulator {
+//+ ButtonManip : LayoutManip
+class ButtonManip : public LayoutManip {
 public:
     ~ButtonManip();
     TypeObjId _tid();
@@ -280,7 +311,7 @@ public:
 //+
 public:
     ButtonManip(
-        ViewerRef, Boolean*, Transformer* t = nil, ButtonManip* m = nil
+        Boolean*, Transformer* t = nil, ButtonManip* m = nil
     );
 
     virtual void execute(Command*);
@@ -290,14 +321,12 @@ public:
     virtual Manipulator* deep_copy();
     void traverse(GlyphTraversal_in t); //+ Glyph::traverse
 protected:
-    Transformer* transformer_;
-    ViewerRef button_;
     Boolean* editing_;
 };
 
 //- BoxManip*
-//+ BoxManip : Manipulator
-class BoxManip : public Manipulator {
+//+ BoxManip : LayoutManip
+class BoxManip : public LayoutManip {
 public:
     ~BoxManip();
     TypeObjId _tid();
@@ -310,8 +339,6 @@ public:
     virtual Manipulator* deep_copy() = 0;
 protected:
     BoxManip(Transformer*, BoxManip* m = nil);
-protected:
-    Transformer* transformer_;
 };
 
 //- HBoxManip*

@@ -35,45 +35,8 @@
 #include <string.h>
 #include <tcl.h>
 
-#ifdef sgi
-
-extern "C" {
-    int sginap(long);
-};
-
-static Boolean delay(float seconds) {
-    long n = long(100.0 * seconds + 0.5);
-    if (n <= 2) {
-	n = 3;
-    }
-    return sginap(n) == 0;
-}
-
-#else
-
-#include <X11/Fresco/OS/types.h>
-#include <sys/time.h>
-
-#if defined(AIXV3) 
-#include <sys/select.h>
-extern "C" int strcasecmp(const char *, const char *);
-#endif
-
-#if defined(sony)
-#include <sys/select.h>
-extern "C" {
-    /* Sony has select in libsocket, but no prototype in /usr/include */
-    int select(int, fd_set*, fd_set*, fd_set*, struct timeval*);
-}
-#endif
-
-static Boolean delay(float seconds) {
-    struct timeval tv;
-    tv.tv_sec = time_t(seconds);
-    tv.tv_usec = time_t(1000000.0 * (seconds - float(tv.tv_sec)) + 0.5);
-    return select(0, nil, nil, nil, &tv) == 0;
-}
-
+#if defined(AIXV3)
+extern "C" int strcasecmp(const char*, const char*);
 #endif
 
 static char* err_argument_number = "Wrong number of arguments.";
@@ -89,6 +52,7 @@ public:
     Fresco* fresco();
     
     static Dish& instance();
+    static void cleanup();
 private:
     Fresco* fresco_;
     Boolean interactive_;
@@ -188,7 +152,6 @@ Dish::Dish(Tcl_Interp* interp) {
     char** argv;
     restore_args(interp, argc, argv);
     fresco_ = Fresco_open("Dish", argc, argv);
-    delete [] argv;
     default_unknown_ = nil;
 }
 
@@ -197,6 +160,8 @@ Dish::~Dish() {
 }
 
 Fresco* Dish::fresco() { return fresco_; }
+
+void Dish::cleanup() { delete instance_; }
 
 void Dish::restore_args(Tcl_Interp* interp, int& argc, char**& argv) {
     int tcl_argc;
@@ -236,10 +201,10 @@ void Dish::add_commands(Tcl_Interp* interp) {
 void Dish::add_variables(Tcl_Interp* interp) {
     Dish& d = *instance_;
     Fresco* f = fresco_;
-    d.add_var(interp, "drawing_kit", f->_c_drawing_kit());
-    d.add_var(interp, "figure_kit", f->_c_figure_kit());
-    d.add_var(interp, "layout_kit", f->_c_layout_kit());
-    d.add_var(interp, "widget_kit", f->_c_widget_kit());
+    d.add_var(interp, "drawing_kit", f->drawing_kit());
+    d.add_var(interp, "figure_kit", f->figure_kit());
+    d.add_var(interp, "layout_kit", f->layout_kit());
+    d.add_var(interp, "widget_kit", f->widget_kit());
 }
 
 void Dish::add_var(Tcl_Interp* interp, char* name, BaseObjectRef value) {
@@ -305,7 +270,7 @@ Boolean Dish::dispatch(
 ) {
     Boolean b = false;
     if (argc > 1) {
-	RequestObj req = fresco_->create_request(obj);
+	RequestObj_var req = fresco_->create_request(obj);
 	char* op = argv[1];
 	req->set_operation(op);
 	TypeObj::OpInfo op_info;
@@ -371,14 +336,14 @@ Boolean Dish::parse_args(
     Tcl_Interp* interp
 ) {
     Boolean b = false;
-    if (op_info.params._length == argc) {
+    if (op_info.op_params._length == argc) {
 	for (int i = 0; i < argc; i++) {
-	    TypeObj::ParamInfo& p = op_info.params._buffer[i];
-	    char* arg = (p.mode != TypeObj::param_out) ? argv[i] : nil;
-	    if (!add_arg(p.type, arg, req, interp)) {
+	    TypeObj::ParamInfo& p = op_info.op_params._buffer[i];
+	    char* arg = (p.param_mode != TypeObj::param_out) ? argv[i] : nil;
+	    if (!add_arg(p.param_type, arg, req, interp)) {
 		Tcl_AppendResult(
 		    interp, err_argument_type,
-		    "\nExpecting: ", p.type->name(),
+		    "\nExpecting: ", p.param_type->name(),
 		    ", got `", argv[i], "'", 0
 		);
 		break;
@@ -592,8 +557,8 @@ Boolean Dish::add_array(
 ) {
     Boolean b = false;
     long element_count;
-    TypeObj element_type;
-    array->array_info(element_type, element_count);
+    TypeObj_var element_type;
+    array->array_info(element_type._out(), element_count);
     if (arg != nil) {
 	int argc;
 	char** argv;
@@ -696,8 +661,8 @@ Boolean Dish::add_sequence(
 ) {
     Boolean b = false;
     long length;
-    TypeObj element_type;
-    sequence->sequence_info(element_type, length);
+    TypeObj_var element_type;
+    sequence->sequence_info(element_type._out(), length);
     if (arg != nil) {
 	int argc;
 	char** argv;
@@ -762,9 +727,9 @@ void Dish::get_results(
     Tcl_Interp* interp
 ) {
     for (int i = 0; i < argc; i++) {
-	TypeObj::ParamInfo& p = op.params._buffer[i];
-	if (p.mode != TypeObj::param_in) {
-	    get_result(p.type, req, interp);
+	TypeObj::ParamInfo& p = op.op_params._buffer[i];
+	if (p.param_mode != TypeObj::param_in) {
+	    get_result(p.param_type, req, interp);
 	    char* arg = argv[i];
 	    if (arg != nil) {
 		Tcl_SetVar(interp, arg, interp->result, TCL_LIST_ELEMENT);
@@ -772,7 +737,7 @@ void Dish::get_results(
 	    }
 	}
     }
-    TypeObjRef return_type = op.result;
+    TypeObjRef return_type = op.op_result;
     if (return_type->kind() != TypeObj::void_type) {
 	get_result(return_type, req, interp);
     }
@@ -851,8 +816,8 @@ void Dish::get_concrete(
 void Dish::get_interface(
     TypeObjRef, RequestObjRef req, Tcl_Interp* interp
 ) {
-    BaseObjectRef object = req->_c_get_object();
-    CharString s = CharString::_narrow(object);
+    BaseObjectRef object = req->get_object();
+    CharString_var s = CharString::_narrow(object);
     if (is_not_nil(s)) {
 	CharStringBuffer cs(s);
 	Tcl_AppendResult(interp, cs.string(), 0);
@@ -868,8 +833,8 @@ void Dish::get_array(
     Tcl_DString result;
     Tcl_DStringInit(&result);
     long element_count;
-    TypeObj element_type;
-    array->array_info(element_type, element_count);
+    TypeObj_var element_type;
+    array->array_info(element_type._out(), element_count);
     for (int i = 0; i < element_count; i++) {
 	get_result(element_type, req, interp);
 	result.string = Tcl_DStringAppendElement(&result, interp->result);
@@ -915,8 +880,8 @@ void Dish::get_sequence(
     Tcl_DString result;
     Tcl_DStringInit(&result);
     long size;
-    TypeObj element_type;
-    sequence->sequence_info(element_type, size);
+    TypeObj_var element_type;
+    sequence->sequence_info(element_type._out(), size);
     size = req->get_long();
     long length = req->get_long();
     for (int i = 0; i < length; i++) {
@@ -950,17 +915,17 @@ int Dish::main(ClientData, Tcl_Interp* interp, int argc, char* argv[]) {
 		} else {
 		    Fresco* fresco = dish.fresco();
 		    if (dish.interactive_) {
-			ThreadKit threads = fresco->thread_kit();
-			ThreadObj thread = threads->thread(
+			ThreadKit_var threads = fresco->thread_kit();
+			ThreadObj_var thread = threads->thread(
 			    new FrescoMain(viewer, glyph)
 			);
 			if (is_not_nil(thread)) {
 			    thread->run();
 			} else {
-			    fresco->main(viewer, glyph);
+			    fresco->run(viewer, glyph);
 			}
 		    } else {
-			fresco->main(viewer, glyph);
+			fresco->run(viewer, glyph);
 		    }
 		    status = TCL_OK;
 		}
@@ -982,8 +947,8 @@ int Dish::spawn(ClientData, Tcl_Interp* interp, int argc, char* argv[]) {
 	    ActionRef a = Action::_narrow(obj);
 	    if (is_not_nil(a)) {
 		Fresco* fresco = dish.fresco_;
-		ThreadKit threads = fresco->thread_kit();
-		ThreadObj t = threads->thread(a);
+		ThreadKit_var threads = fresco->thread_kit();
+		ThreadObj_var t = threads->thread(a);
 		if (is_not_nil(t)) {
 		    t->run();
 		    sprintf(interp->result, "%p", ThreadObjRef(t));
@@ -1024,10 +989,8 @@ int Dish::delay(ClientData, Tcl_Interp* interp, int argc, char* argv[]) {
     if (argc == 2) {
 	Dish& d = Dish::instance();
 	double n;
-	if (Tcl_GetDouble(
-	    interp, d.try_expand(argv[1], interp), &n) == TCL_OK
-	) {
-	    if (::delay((float)n)) {
+	if (Tcl_GetDouble(interp, d.try_expand(argv[1], interp), &n) == TCL_OK) {
+	    if (Fresco::delay(Float(n))) {
 		status = TCL_OK;
 	    } else {
 		Tcl_AppendResult(interp, "Failed in delay", 0);
@@ -1070,7 +1033,7 @@ int Dish::debug(ClientData, Tcl_Interp* interp, int argc, char* argv[]) {
     }
 
     if (status == TCL_ERROR) {
-	Tcl_AppendResult(interp, "  Expected: debug <glyph> label.");
+	Tcl_AppendResult(interp, "  Expected: debug <glyph> label.", 0);
     }
     return status;
 }
@@ -1088,8 +1051,8 @@ void FrescoMain::execute() {
     ViewerRef v = viewer_;
     GlyphRef g = glyph_;
     Fresco* fresco = Dish::instance().fresco();
-    DisplayObj display = fresco->open_default_display();
-    ScreenObj s = display->default_screen();
+    Display_var display = fresco->open_default_display();
+    Screen_var s = display->default_screen();
     ViewerRef nv;
     if (is_nil(g)) {
 	nv = v;
@@ -1100,7 +1063,7 @@ void FrescoMain::execute() {
 	    nv->append_viewer(v);
 	}
     }
-    Window w = s->application(nv);
+    Window_var w = s->application(nv);
     w->map();
     display->run(true);
     delete this;
@@ -1128,6 +1091,7 @@ void DishAction::execute() {
  *  Called by main() defined in tcl lib.
  */
 int Tcl_AppInit(Tcl_Interp* interp) {
+    atexit(&Dish::cleanup);
     Dish* dish = new Dish(interp);
     dish->add_commands(interp);
     dish->add_variables(interp);

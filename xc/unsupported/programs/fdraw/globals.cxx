@@ -27,6 +27,8 @@ TypeObjId TypeIdVar(XfCreateTool) = 702;
 TypeObjId TypeIdVar(XfMoveTool) = 703;
 TypeObjId TypeIdVar(XfScaleTool) = 704;
 TypeObjId TypeIdVar(XfRotateTool) = 705;
+TypeObjId TypeIdVar(XfAlterTool) = 706;
+TypeObjId TypeIdVar(XfResizeTool) = 707;
 
 TypeObjId TypeIdVar(XfManipulator) = 800;
 TypeObjId TypeIdVar(XfFigureManip) = 801;
@@ -46,6 +48,7 @@ TypeObjId TypeIdVar(XfPolygonManip) = 812;
 TypeObjId TypeIdVar(XfBoxManip) = 813;
 TypeObjId TypeIdVar(XfHBoxManip) = 814;
 TypeObjId TypeIdVar(XfVBoxManip) = 815;
+TypeObjId TypeIdVar(XfLayoutManip) = 817;
 
 TypeObjId TypeIdVar(XfData) = 900;
 TypeObjId TypeIdVar(XfTransformer) = 901;
@@ -58,6 +61,7 @@ extern TypeObj_Descriptor
 
     TypeVar(XfTool), TypeVar(XfSelectTool), TypeVar(XfCreateTool),
     TypeVar(XfMoveTool), TypeVar(XfScaleTool), TypeVar(XfRotateTool),
+    TypeVar(XfRotateTool), TypeVar(XfAlterTool), TypeVar(XfResizeTool),
 
     TypeVar(XfManipulator), TypeVar(XfFigureManip), TypeVar(XfPolyManip),
     TypeVar(XfMacroManip), TypeVar(XfButtonManip), TypeVar(XfLineManip),
@@ -65,6 +69,7 @@ extern TypeObj_Descriptor
     TypeVar(XfOpen_BSplineManip), TypeVar(XfClosed_BSplineManip),
     TypeVar(XfMultiLineManip), TypeVar(XfPolygonManip),
     TypeVar(XfBoxManip), TypeVar(XfHBoxManip), TypeVar(XfVBoxManip),
+    TypeVar(XfLayoutManip), 
 
     TypeVar(XfData), TypeVar(XfTransformer);
 
@@ -87,6 +92,8 @@ static TypeObj_Descriptor* fdraw_schema[] = {
     &TypeVar(XfMoveTool),
     &TypeVar(XfScaleTool),
     &TypeVar(XfRotateTool),
+    &TypeVar(XfAlterTool),
+    &TypeVar(XfResizeTool),
 
     &TypeVar(XfManipulator),
     &TypeVar(XfFigureManip),
@@ -106,6 +113,7 @@ static TypeObj_Descriptor* fdraw_schema[] = {
     &TypeVar(XfBoxManip),
     &TypeVar(XfHBoxManip),
     &TypeVar(XfVBoxManip),
+    &TypeVar(XfLayoutManip),
 
     &TypeVar(XfData),
     &TypeVar(XfTransformer),

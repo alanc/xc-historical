@@ -1,3 +1,4 @@
+# $XConsortium$
 #  This dish script draws a circle that changes its size
 #
 #  Bugs:    1) Doesn't redraw when the mouse is not moving in the window

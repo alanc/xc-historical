@@ -12,15 +12,49 @@
 #include <X11/Fresco/Impls/transform.h>
 #include <stdlib.h> 
 
+GlyphVisitor::GlyphVisitor() { }
+GlyphVisitor::~GlyphVisitor() { }
+
+Boolean GlyphVisitor::visit(GlyphRef, GlyphOffsetRef) { return false; }
+
+void GlyphVisitor::visit_children(GlyphRef parent) {
+    GlyphOffset_var g = parent->first_child_offset();
+    for (; is_not_nil(g); g = g->next_child()) {
+	if (!visit(g->child(), g)) {
+	    break;
+	}
+    }
+}
+
+void GlyphVisitor::visit_parents(GlyphRef parent) {
+    GlyphOffsetRef static_parents[5];
+    Glyph::OffsetSeq parents(5, 0, static_parents);
+    parent->parent_offsets(parents);
+    for (Long i = 0; i < parents._length; i++) {
+	GlyphOffsetRef g = parents._buffer[i];
+	if (!visit(g->parent(), g)) {
+	    break;
+	}
+    }
+    if (parents._buffer == static_parents) {
+	/* don't deallocate the static buffer */
+	parents._buffer = nil;
+    }
+}
+
 implementPtrList(AllocationList, RegionImpl);
 implementPtrList(TransformList, TransformImpl);
 
-Appender::Appender(GlyphRef glyph) {
+Appender::Appender(GlyphRef glyph, Boolean resize) {
     glyph_ = glyph;
+    resize_ = resize;
 }
 
 Boolean Appender::visit(GlyphRef parent, GlyphOffsetRef) {
     parent->append(glyph_);
+    if (resize_) {
+        parent->need_resize();
+    }
     return true;
 }
 
@@ -31,8 +65,12 @@ Remover::Remover() {}
 Remover::~Remover() {
     for (ListItr(GlyphOffsetList) i(list_); i.more(); i.next()) {
 	GlyphOffsetRef offset = i.cur();
+        Glyph_var parent = offset->parent();
+        Glyph_var child = offset->child();
+        child->need_redraw();
 	offset->notify_observers();
 	offset->remove();
+        parent->need_resize();
     }
 }
 
@@ -75,6 +113,9 @@ ManipCopier::ManipCopier (Boolean s) {
 }
 
 ManipCopier::~ManipCopier () {
+    for (Long i = 0; i < maniplist_->count(); i++) {
+        Fresco::unref(maniplist_->item(i));
+    }
     delete maniplist_;
 }
 
@@ -90,7 +131,7 @@ Boolean ManipCopier::visit (GlyphRef g, GlyphOffsetRef) {
     return true;
 }
 
-TAManipCopier::TAManipCopier (RegionRef a, Boolean s) {
+TAManipCopier::TAManipCopier (Region_in a, Boolean s) {
     alist_ = new AllocationList;
     tlist_ = new TransformList;
     a_ = a;
@@ -115,8 +156,8 @@ Boolean TAManipCopier::visit (GlyphRef g, GlyphOffsetRef go) {
 
     Glyph::AllocationInfo a;
     a.allocation = r;
-    a.transform = t;
-    a.damage = nil;
+    a.transformation = t;
+    a.damaged = nil;
     
     go->child_allocate(a);
     
@@ -131,11 +172,14 @@ OffsetVisitor::OffsetVisitor () {
 }
 
 OffsetVisitor::~OffsetVisitor () {
+    for (long i = 0; i < glist_->count(); i++) {
+        Fresco::unref(glist_->item(i));
+    }
     delete glist_;
 }
 
 Boolean OffsetVisitor::visit (GlyphRef, GlyphOffsetRef go) {
-    glist_->append(go);
+    glist_->append(GlyphOffset::_duplicate(go));
     return true;
 }
 
@@ -145,4 +189,8 @@ GlyphOffsetRef OffsetVisitor::offset (long i) {
         go = glist_->item(i);
     }
     return go;
+}
+
+long OffsetVisitor::offset_count () {
+    return glist_->count();
 }

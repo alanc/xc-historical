@@ -16,15 +16,24 @@
 
 SelectInfo::SelectInfo () {
     m_ = nil;
+    a_ = nil;
 }
 
-SelectInfo::~SelectInfo () {}
+SelectInfo::~SelectInfo () {
+    Fresco::unref(a_);
+}
 
 SelectInfo* SelectInfo::copy () {
     SelectInfo* scopy = new SelectInfo;
     scopy->t_.load(&t_);
     scopy->level_ = level_;
     scopy->m_ = m_;
+    if (is_not_nil(a_)) {
+        scopy->a_ = new RegionImpl;
+        scopy->a_->copy(a_);
+    } else {        
+        scopy->a_ = nil;
+    }
     return scopy;
 }
 
@@ -36,11 +45,17 @@ static void get_manipulators(
 ) {
     if (gt->forward()) {
         GlyphOffsetRef go = gt->current_offset();
-        Glyph g = go->child();
+        Glyph_var g = go->child();
         Manipulator* m = Manipulator::_narrow(g);
         if (is_not_nil(m)) {
             SelectInfo* sinfo = new SelectInfo;
-            sinfo->m_ = m; sinfo->t_.load(gt->transform()); sinfo->level_ = l;
+            sinfo->m_ = m; 
+            sinfo->t_.load(_tmp(gt->current_transform())); 
+            sinfo->level_ = l;
+            if (is_not_nil(_tmp(gt->allocation()))) { 
+                sinfo->a_ = new RegionImpl;
+                sinfo->a_->copy(_tmp(gt->allocation()));
+            }
             slist->append(sinfo);
         }
         get_manipulators(gt, slist, ++l);
@@ -214,15 +229,16 @@ SelectInfo* SelectTool::create_manipulator (
         Glyph::AllocationInfo a;
         RegionImpl r;
 
-        a.allocation = new RegionImpl;
-        a.transform = new TransformImpl;
-        a.transform->load(&target->t_);
-        a.damage = nil;
+        a.allocation = nil;
+        a.transformation = new TransformImpl;
+        a.transformation->load(&target->t_);
+        a.damaged = nil;
         target->m_->extension(a, &r);
         r.bounds(lower, upper);
-        ax_ = (lower.x + upper.x)/2.0;
-        ay_ = (lower.y + upper.y)/2.0;
-        target->d_ = gt->damage();
+        ax_ = (lower.x + upper.x) * 0.5;
+        ay_ = (lower.y + upper.y) * 0.5;
+        Fresco::unref(a.allocation);
+        Fresco::unref(a.transformation);
     }
     return target;
 }
@@ -270,7 +286,7 @@ SelectInfo* CreateTool::create_manipulator(
     CopyCmd::glyphmap_->clear();
     Manipulator* fm = manip_->deep_copy();
     Manipulator* m = fv->root();
-    Glyph b = m->body();
+    Glyph_var b = m->body();
     b->append(fm);
 
     SelectCmd selectcmd(fv);
@@ -279,8 +295,7 @@ SelectInfo* CreateTool::create_manipulator(
     SelectInfo* sinfo = new SelectInfo;
     sinfo->level_ = 2; // you just know you start from level 2
     sinfo->m_ = fm;
-    sinfo->t_.load(gt->transform());
-    sinfo->d_ = gt->damage();
+    sinfo->t_.load(gt->current_transform());
 
     return sinfo;
 }
@@ -359,3 +374,53 @@ TypeObjId RotateTool::_tid() { return _XfRotateTool_tid; }
 RotateTool::RotateTool () {}
 
 RotateTool::~RotateTool () {}
+
+//+ AlterTool(Tool)
+extern TypeObj_Descriptor _XfTool_type;
+TypeObj_Descriptor* _XfAlterTool_parents[] = { &_XfTool_type, nil };
+extern TypeObjId _XfAlterTool_tid;
+TypeObj_Descriptor _XfAlterTool_type = {
+    /* type */ 0,
+    /* id */ &_XfAlterTool_tid,
+    "AlterTool",
+    _XfAlterTool_parents, /* offsets */ nil, /* excepts */ nil,
+    /* methods */ nil, /* params */ nil,
+    /* receive */ nil
+};
+
+AlterTool* AlterTool::_narrow(BaseObjectRef o) {
+    return (AlterTool*)_BaseObject_tnarrow(
+        o, _XfAlterTool_tid, 0
+    );
+}
+TypeObjId AlterTool::_tid() { return _XfAlterTool_tid; }
+//+
+
+AlterTool::AlterTool () {}
+
+AlterTool::~AlterTool () {}
+
+//+ ResizeTool(Tool)
+extern TypeObj_Descriptor _XfTool_type;
+TypeObj_Descriptor* _XfResizeTool_parents[] = { &_XfTool_type, nil };
+extern TypeObjId _XfResizeTool_tid;
+TypeObj_Descriptor _XfResizeTool_type = {
+    /* type */ 0,
+    /* id */ &_XfResizeTool_tid,
+    "ResizeTool",
+    _XfResizeTool_parents, /* offsets */ nil, /* excepts */ nil,
+    /* methods */ nil, /* params */ nil,
+    /* receive */ nil
+};
+
+ResizeTool* ResizeTool::_narrow(BaseObjectRef o) {
+    return (ResizeTool*)_BaseObject_tnarrow(
+        o, _XfResizeTool_tid, 0
+    );
+}
+TypeObjId ResizeTool::_tid() { return _XfResizeTool_tid; }
+//+
+
+ResizeTool::ResizeTool () {}
+
+ResizeTool::~ResizeTool () {}

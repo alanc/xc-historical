@@ -53,12 +53,14 @@ Expr* yyparse_root;
  * It would be better if yylex and yyerror were inline functions,
  * but some versions of yacc will generate prototypes or other
  * potentially confusing information unless they are macros.
+ *
+ * On the other hand, IBM AIXV3 requires that they be functions ...
  */
 
 #if defined(AIXV3)
 extern "C" {
-  int yylex()		     { return yyparse_scanner->get_token(); }
-  void yyerror(char *msg)    { yyparse_scanner->error(msg); }
+    int yylex() { return yyparse_scanner->get_token(); }
+    void yyerror(char* msg) { yyparse_scanner->error(msg); }
 }
 #else
 #define yylex() (yyparse_scanner->get_token())

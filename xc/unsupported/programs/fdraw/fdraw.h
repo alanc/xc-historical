@@ -10,11 +10,6 @@
 
 class Command;
 class FigViewer;
-
-class TelltaleType;
-typedef TelltaleType* TelltaleRef;
-
-class Flipper;
 class Fresco;
 class Patch;
 class Tool;
@@ -24,21 +19,21 @@ public:
     FDraw(Fresco*);
     ~FDraw();
 
-    virtual void traverse(GlyphTraversalRef);
+    virtual void traverse(GlyphTraversalRef); //+ Glyph::traverse
     virtual Boolean key_press(GlyphTraversalRef, EventRef);
 private:
     FigViewer* viewer_;
-    ViewerImpl* subviews_;
 private:
-    Glyph_tmp interior();
-    Glyph_tmp tools();
-    Glyph_tmp commands();
+    Glyph_return interior();
+    Glyph_return tools();
+    Glyph_return commands();
    
-    Button_tmp tool_button(GlyphRef, Tool*, TelltaleRef);
-    Glyph_tmp command_button(const char*, Command*);
+    Button_return tool_button(GlyphRef, Tool*, TelltaleRef);
+    Glyph_return command_button(const char*, Command*);
+    void flip_to(long card);
 private:
     Patch* patch_;
-    Flipper* flipper_;
+    GlyphRef deck_;
     Boolean editing_;
 };
 

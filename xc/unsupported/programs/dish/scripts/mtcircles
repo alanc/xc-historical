@@ -1,3 +1,4 @@
+# $XConsortium$
 #  This dish script draws two circles that change their sizes
 #
 #  Bugs:    1) Can't make tcl share one procedure (zoomer).

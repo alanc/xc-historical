@@ -6,19 +6,17 @@
 #define _tools_h
 
 #include <X11/Fresco/types.h>
+#include <X11/Fresco/Impls/region.h>
 #include <X11/Fresco/Impls/transform.h>
 
-class EventType;
-typedef EventType* EventRef;
+class Event;
+typedef Event* EventRef;
 
-class DamageObjType;
-typedef DamageObjType* DamageObjRef;
+class DamageObj;
+typedef DamageObj* DamageObjRef;
 
 class FigViewer;
-class GlyphTraversalType;
 class Manipulator;
-
-typedef GlyphTraversalType* GlyphTraversalRef;
 
 class SelectInfo {
 public:
@@ -26,15 +24,15 @@ public:
     virtual ~SelectInfo();
     SelectInfo* copy();
 public:
-    TransformImpl t_; // traversal transform
-    Manipulator* m_; // selected manipulator;
+    RegionImpl* a_; // traversal allocation for manipulator
+    TransformImpl t_; // traversal transform for manipulator
+    Manipulator* m_; // selected manipulator
     long level_; // depth of a selected manipulator
-    DamageObjRef d_;
 };
 
 //- Tool*
-//+ Tool : FrescoObjectType
-class Tool : public FrescoObjectType {
+//+ Tool : FrescoObject
+class Tool : public FrescoObject {
 public:
     ~Tool();
     TypeObjId _tid();
@@ -119,6 +117,30 @@ public:
 //+
 public:
     RotateTool();
+};
+
+//- AlterTool*
+//+ AlterTool : Tool
+class AlterTool : public Tool {
+public:
+    ~AlterTool();
+    TypeObjId _tid();
+    static AlterTool* _narrow(BaseObjectRef);
+//+
+public:
+    AlterTool();
+};
+
+//- ResizeTool*
+//+ ResizeTool : Tool
+class ResizeTool : public Tool {
+public:
+    ~ResizeTool();
+    TypeObjId _tid();
+    static ResizeTool* _narrow(BaseObjectRef);
+//+
+public:
+    ResizeTool();
 };
 
 #endif

@@ -32,8 +32,8 @@ private:
 declarePtrList(CmdList, Command);
 
 //- Data*
-//+ Data : FrescoObjectType
-class Data : public FrescoObjectType {
+//+ Data : FrescoObject
+class Data : public FrescoObject {
 public:
     ~Data();
     TypeObjId _tid();

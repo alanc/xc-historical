@@ -1,3 +1,4 @@
+# $XConsortium$
 # This dish script draws a window containing 'hello world'
 
 main 0 [figure_kit label [figure_kit default_style] "hello world"]
