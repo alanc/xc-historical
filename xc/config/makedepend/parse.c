@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.20 91/05/12 21:35:42 rws Exp $
+ * $XConsortium: parse.c,v 1.21 91/05/13 10:23:47 rws Exp $
  */
 #include "def.h"
 
@@ -390,14 +390,10 @@ zero_value(exp, filep, file_red)
 	register struct filepointer *filep;
 	register struct inclist *file_red;
 {
-#ifdef	CPP
 	if (cppsetup(exp, filep, file_red))
 	    return(IFFALSE);
 	else
 	    return(IF);
-#else
-	return(IFGUESSFALSE);
-#endif /* CPP */
 }
 
 define(def, file)
