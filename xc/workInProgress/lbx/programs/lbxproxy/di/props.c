@@ -1,4 +1,4 @@
-/* $XConsortium: props.c,v 1.5 94/03/27 14:05:19 dpw Exp mor $ */
+/* $XConsortium: props.c,v 1.6 94/12/01 20:42:57 mor Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -389,23 +389,34 @@ GetLbxGetPropertyReply(client, data)
 	    ptd.data = (pointer) &rep[1];
 	    if (!propTagStoreData(tag, len, client->swapped, &ptd)) {
 		/* tell server we lost it */
-		SendInvalidateTag(client, rep->tag);
+		SendInvalidateTag(client, tag);
 	    }
 	} else {
 
 	    ptdp = (PropertyTagDataPtr) TagGetData(prop_cache, tag);
+
 	    if (!ptdp) {
 		/* lost data -- ask again for tag value */
 
 		qt.tag = tag;
 		qt.tagtype = LbxTagTypeProperty;
-		qt.typedata.getprop.offset = nr->request_info.lbxgetprop.offset;
-		qt.typedata.getprop.length = nr->request_info.lbxgetprop.length;
+		qt.typedata.getprop.offset =
+		    nr->request_info.lbxgetprop.offset;
+		qt.typedata.getprop.length =
+		    nr->request_info.lbxgetprop.length;
 		qt.typedata.getprop.ptd = ptd;
 		QueryTag(client, &qt);
 
 		/* XXX what is the right way to stack Queries? */
 		return TRUE;
+
+	    } else if (client->swapped) {
+		/*
+		 * Make a copy, because we will need to swap the property data
+		 * and we don't want to alter the tag database.
+		 */
+		pdata = (pointer) ALLOCATE_LOCAL(ptdp->length);
+		bcopy((char *) ptdp->data, (char *) pdata, ptdp->length);
 	    }
 
 #ifdef LBX_STATS
