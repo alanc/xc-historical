@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.59 87/12/29 18:26:24 rws Exp $ */
+/* $Header: colormap.c,v 1.60 87/12/29 18:33:12 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -692,7 +692,7 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
 {
     EntryPtr	pent;
     Bool	foundFree;
-    Pixel	pixel, free;
+    Pixel	pixel, Free;
     int		npix, count, *nump;
     Pixel	**pixp, *ppix;
     xColorItem	def;
@@ -728,7 +728,7 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
         }
 	else if (!foundFree && pent->refcnt == 0)
 	{
-	    free = pixel;
+	    Free = pixel;
 	    foundFree = TRUE;
 	    /* If we're initializing the colormap, then we are looking for
 	     * the first free cell we can find, not to minimize the number
@@ -753,7 +753,7 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
     {
 	return (-1);
     }
-    pent = pentFirst + free;
+    pent = pentFirst + Free;
     pent->fShared = FALSE;
     pent->refcnt = 1;
 
@@ -776,8 +776,8 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
         def.red = prgb->red;
 	def.flags |= DoRed;
 	pmap->freeRed--;
-	def.pixel = (channel == PSEUDOMAP) ? free
-					   : free << pmap->pVisual->offsetRed;
+	def.pixel = (channel == PSEUDOMAP) ? Free
+					   : Free << pmap->pVisual->offsetRed;
 	break;
 
       case GREENMAP:
@@ -785,7 +785,7 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
         def.green = prgb->green;
 	def.flags |= DoGreen;
 	pmap->freeGreen--;
-	def.pixel = free << pmap->pVisual->offsetGreen;
+	def.pixel = Free << pmap->pVisual->offsetGreen;
 	break;
 
       case BLUEMAP:
@@ -793,11 +793,11 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
 	def.blue = prgb->blue;
 	def.flags |= DoBlue;
 	pmap->freeBlue--;
-	def.pixel = free << pmap->pVisual->offsetBlue;
+	def.pixel = Free << pmap->pVisual->offsetBlue;
 	break;
     }
     (*pmap->pScreen->StoreColors) (pmap, 1, &def);
-    pixel = free;	
+    pixel = Free;	
     *pPixel = def.pixel;
 
 gotit:
@@ -890,7 +890,7 @@ QueryColors (pmap, count, ppixIn, prgbList)
     xrgb	*prgb;
     VisualPtr	pVisual;
     EntryPtr	pent;
-    unsigned	i;
+    Pixel	i;
     int		errVal = Success;
 
     pVisual = pmap->pVisual;
@@ -1329,17 +1329,17 @@ AllocPseudo (client, pmap, c, r, contig, pixels, pmask, pppixFirst)
  * (see AllocShared for why we care)
  */
 static int
-AllocCP (pmap, pentFirst, count, free, planes, contig, pixels, pMask)
+AllocCP (pmap, pentFirst, count, Free, planes, contig, pixels, pMask)
     ColormapPtr	pmap;
     EntryPtr	pentFirst;
-    int		count, free, planes;
+    int		count, Free, planes;
     Bool	contig;
     Pixel	*pixels, *pMask;
     
 {
     EntryPtr	ent;
-    long	pixel;
-    int		dplanes, base, found, entries, maxp, save;
+    Pixel	pixel, base, entries, maxp, save;
+    int		dplanes, found;
     Pixel	*ppix;
     Pixel	mask;
     Pixel	finalmask;
@@ -1349,7 +1349,7 @@ AllocCP (pmap, pentFirst, count, free, planes, contig, pixels, pMask)
     /* Easy case.  Allocate pixels only */
     if (planes == 0)
     {
-        if (count == 0 || count > free)
+        if (count == 0 || count > Free)
     	    return (FALSE);
 
         /* allocate writable entries */
@@ -1372,7 +1372,7 @@ AllocCP (pmap, pentFirst, count, free, planes, contig, pixels, pMask)
         return (TRUE);
     }
     else if ( count <= 0  || planes >= dplanes ||
-      (count << planes) > free)
+      (count << planes) > Free)
     {
 	return (FALSE);
     }
@@ -1765,7 +1765,7 @@ StoreColors (pmap, count, defs)
     int		count;
     xColorItem	*defs;
 {
-    register int 	pix;
+    register Pixel 	pix;
     register xColorItem *pdef;
     register EntryPtr 	pent, pentT, pentLast;
     register VisualPtr	pVisual;
