@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XmbWrap.c,v 11.2 91/04/07 16:09:42 rws Exp $
+ * $XConsortium: XmbWrap.c,v 11.3 91/05/01 09:20:41 rws Exp $
  */
 
 /*
@@ -58,7 +58,7 @@ XmbDrawText(dpy, d, gc, x, y, text_items, nitems)
 	esc = (*fs->methods->mb_draw_string) (dpy, d, fs, gc, x, y,
 					      p->chars, p->nchars);
 	if (!esc)
-	    esc = fs->methods->mb_escapement (dpy, fs, p->chars, p->nchars);
+	    esc = fs->methods->mb_escapement (fs, p->chars, p->nchars);
 	x += esc;
     }
 }

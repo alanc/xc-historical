@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XwcWrap.c,v 11.2 91/04/07 16:09:27 rws Exp $
+ * $XConsortium: XwcWrap.c,v 11.3 91/05/01 09:20:55 rws Exp $
  */
 
 /*
@@ -58,7 +58,7 @@ XwcDrawText(dpy, d, gc, x, y, text_items, nitems)
 	esc = (*fs->methods->wc_draw_string) (dpy, d, fs, gc, x, y,
 					      p->chars, p->nchars);
 	if (!esc)
-	    esc = fs->methods->wc_escapement (dpy, fs, p->chars, p->nchars);
+	    esc = fs->methods->wc_escapement (fs, p->chars, p->nchars);
 	x += esc;
     }
 }
