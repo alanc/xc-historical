@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xlogo.c,v 1.7 89/05/11 18:50:40 kit Exp $";
+static char rcsid[] = "$XConsortium: xlogo.c,v 1.8 89/06/19 13:55:53 jim Exp $";
 #endif /* lint */
 
 #include <X11/Intrinsic.h>
@@ -8,7 +8,7 @@ static char rcsid[] = "$XConsortium: xlogo.c,v 1.7 89/05/11 18:50:40 kit Exp $";
 
 #include <X11/Xaw/Logo.h>
 #include <X11/Xaw/Cardinals.h>
-#include <X11/Xmu/Xmu.h>
+#include <X11/Xmu/Drawing.h>
 
 extern void exit();
 
