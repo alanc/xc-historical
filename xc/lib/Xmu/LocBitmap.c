@@ -1,5 +1,5 @@
 /*
- * $XConsortium: LocBitmap.c,v 1.10 91/01/05 11:55:26 rws Exp $
+ * $XConsortium: LocBitmap.c,v 1.11 91/01/05 11:57:50 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -117,14 +117,11 @@ Pixmap XmuLocatePixmapFile (screen, name, fore, back, depth,
 	    xrm_name[1] = NULL;
 	    xrm_class[0] = XrmPermStringToQuark ("BitmapFilePath");
 	    xrm_class[1] = NULL;
-	    /*
-	     * XXX - warning, derefing Display * until XDisplayDatabase
-	     */
-	    if (!dpy->db) {
-		/* what a hack; need to initialize dpy->db */
+	    if (!XrmGetDatabase(dpy)) {
+		/* what a hack; need to initialize it */
 		(void) XGetDefault (dpy, "", "");
 	    }
-	    if (XrmQGetResource (dpy->db, xrm_name, xrm_class, 
+	    if (XrmQGetResource (XrmGetDatabase(dpy), xrm_name, xrm_class, 
 				 &rep_type, &value) &&
 		rep_type == XrmPermStringToQuark("String")) {
 		cache->string_to_bitmap.bitmapFilePath = 
