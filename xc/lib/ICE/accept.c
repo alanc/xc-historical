@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.5 93/09/03 16:31:01 mor Exp $ */
+/* $XConsortium: accept.c,v 1.6 93/09/08 20:01:46 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -276,6 +276,13 @@ int fd;
     iceConn->scratch = NULL;
     iceConn->scratch_size = 0;
 
+    iceConn->iceConn_type = 2;
+
+    iceConn->open_ref_count = 1;
+    iceConn->proto_ref_count = 0;
+
+    iceConn->want_to_close = 0;
+
     iceConn->saved_reply_waits = NULL;
     iceConn->ping_waits = NULL;
 
@@ -303,18 +310,24 @@ int fd;
 
     IceFlush (iceConn);
 
+
+    /*
+     * Notify the watch procedures that an iceConn was opened.
+     */
+
+    if (_IceWatchProcs)
+    {
+	_IceWatchProc *watchProc = _IceWatchProcs;
+
+	while (watchProc)
+	{
+	    (*watchProc->watch_proc) (iceConn,
+		watchProc->client_data, True, &iceConn->watch_data);
+	    watchProc = watchProc->next;
+	}
+    }
+
     return (iceConn);
-}
-
-
-
-void
-IceDestroyConnection (iceConn)
-
-IceConn iceConn;
-
-{
-    _IceFreeConnection (iceConn);
 }
 
 
