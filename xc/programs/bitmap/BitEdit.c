@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.13 90/12/02 22:46:25 dmatic Exp $
+ * $XConsortium: BitEdit.c,v 1.14 90/12/08 17:29:06 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -31,6 +31,7 @@
 #include <X11/StringDefs.h>
 #include <X11/Xaw/Paned.h>
 #include <X11/Xaw/Form.h>
+#include <X11/Xaw/Box.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xaw/MenuButton.h>
@@ -45,7 +46,8 @@ static char *usage = "[-options ...] filename basename\n\
 \n\
 where options include all standard toolkit options plus:\n\
      -size WIDTHxHEIGHT\n\
-     -squares dimension\n\
+     -sw dimension\n\
+     -sh dimension\n\
      -gt dimension\n\
      -grid, +grid\n\
      -axes, +axes\n\
@@ -61,83 +63,93 @@ The default WIDTHxHEIGHT is 16x16.\n";
 
 static XrmOptionDescRec options[] = {
   {
-    "-squares",
-    "*squareSize",
+    "-size",
+    "*bitmap.size",
+    XrmoptionSepArg,
+    NULL},
+  {
+    "-sw",
+    "*bitmap.squareWidth",
+    XrmoptionSepArg,
+    NULL},
+  {
+    "-sh",
+    "*bitmap.squareHeight",
     XrmoptionSepArg,
     NULL},
   {
     "-gt",
-    "*gridTolerance",
+    "*bitmap.gridTolerance",
     XrmoptionSepArg,
     NULL},
   {
     "-grid",
-    "*grid",
+    "*bitmap.grid",
     XrmoptionNoArg,
     "True"},
   {
     "+grid",
-    "*grid",
+    "*bitmap.grid",
     XrmoptionNoArg,
     "False"},
   {
     "-axes",
-    "*axes",
+    "*bitmap.axes",
     XrmoptionNoArg,
     "True"},
   {
     "+axes",
-    "*axes",
+    "*bitmap.axes",
     XrmoptionNoArg,
     "False"},
   {
     "-dashed",
-    "*dashed",
+    "*bitmap.dashed",
     XrmoptionNoArg,
     "True"},
   {
     "+dashed",
-    "*dashed",
+    "*bitmap.dashed",
     XrmoptionNoArg,
     "False"},
   {
     "-dashes",
-    "*dashes",
+    "*bitmap.dashes",
     XrmoptionSepArg,
     NULL},
   {
     "-stippled",
-    "*stippled",
+    "*bitmap.stippled",
     XrmoptionNoArg,
     "True"},
   {
     "+stippled",
-    "*stippled",
+    "*bitmap.stippled",
     XrmoptionNoArg,
     "False"},
   {
     "-stipple",
-    "*stipple",
+    "*bitmap.stipple",
     XrmoptionSepArg,
     NULL},
   {
     "-proportional",
-    "*proportional",
+    "*bitmap.proportional",
     XrmoptionNoArg,
     "True"},
   {
     "+proportional",
-    "*proportional",
+    "*bitmap.proportional",
     XrmoptionNoArg,
     "False"},
   {
     "-hl", 
-    "*highlight", 
+    "*bitmap.highlight", 
     XrmoptionSepArg, 
     NULL},
   {
     "-fr", 
-    "*frame", 
+    "*bitmap.frame", 
     XrmoptionSepArg, 
     NULL}
 };
@@ -269,7 +281,9 @@ Widget
     form_widget,
     bitmap_widget,
     image_shell,
-    image_widget;
+    box_widget,
+    normal_image_widget,
+    inverted_image_widget;
 Boolean image_visible = False;
 Pixmap check_mark;
 Dialog input_dialog, error_dialog, qsave_dialog;
@@ -328,24 +342,26 @@ static Atom wm_delete_window;
 
 void FixImage()
 {
-    Pixmap image;
+    Pixmap old_image, image;
     int n;
     Arg wargs[2];
 
     if (!image_visible) return;
     
     n=0;
-    XtSetArg(wargs[n], XtNbitmap, &image); n++;
-    XtGetValues(image_widget, wargs, n);
+    XtSetArg(wargs[n], XtNbitmap, &old_image); n++;
+    XtGetValues(normal_image_widget, wargs, n);
     
-    if (image != XtUnspecifiedPixmap)
-	XFreePixmap(XtDisplay(bitmap_widget), image);
     
     image = BWGetUnzoomedPixmap(bitmap_widget);
     
     n=0;
     XtSetArg(wargs[n], XtNbitmap, image); n++;
-    XtSetValues(image_widget, wargs, n);
+    XtSetValues(normal_image_widget, wargs, n);
+    XtSetValues(inverted_image_widget, wargs, n);
+
+    if (old_image != XtUnspecifiedPixmap)
+	XFreePixmap(XtDisplay(bitmap_widget), old_image);
 }
 
 void FixEntry(w, id)
@@ -438,7 +454,7 @@ FixStatus()
 }
 
 static int zero = 0;
-#define Plain  &zero,sizeof(int)
+#define Plain  (char *)&zero,sizeof(int)
 /* ARGSUSED */
 void TheCallback(w, id)
      Widget w;           /* not used */
@@ -874,7 +890,10 @@ void DoInsert()
 
 void DoSave()
 {
-  if (BWWriteFile(bitmap_widget, NULL, NULL) != BitmapSuccess) {
+  BWGetFilename(bitmap_widget, &filename);
+  if (!strcmp(filename, "")) 
+    DoSaveAs();
+  else if (BWWriteFile(bitmap_widget, NULL, NULL) != BitmapSuccess) {
     sprintf(message, "Can't write file: %s", filename);
     if (PopupDialog(error_dialog, message,
 		    NULL, NULL, XtGrabExclusive) == Retry) 
@@ -907,15 +926,14 @@ void DoSaveAs()
 void DoResize()
 {
   char x;
-  int width, height;
+  Dimension width, height;
 
   format = "";
  RetryResize:
   if (PopupDialog(input_dialog, "Resize to WIDTHxHEIGHT:",
 		  format, &format, XtGrabExclusive) == Okay) {
-    sscanf(format, "%d%c%d", &width, &x, &height);
-    if ((width >0) && (height > 0) && (x == 'x')) {
-      BWResize(bitmap_widget, (Dimension)width, (Dimension)height);
+    if (BWParseSize(format, &width, &height)) {
+      BWResize(bitmap_widget, width, height);
       BWChangeNotify(bitmap_widget, NULL, NULL);
       BWSetChanged(bitmap_widget);
       FixStatus();
@@ -932,15 +950,14 @@ void DoResize()
 void DoRescale()
 {
   char x;
-  int width, height;
+  Dimension width, height;
 
   format = "";
  RetryRescale:
   if (PopupDialog(input_dialog, "Rescale to WIDTHxHEIGHT:",
 		  format, &format, XtGrabExclusive) == Okay) {
-    sscanf(format, "%d%c%d", &width, &x, &height);
-    if ((width >0) && (height > 0) && (x == 'x')) {
-      BWRescale(bitmap_widget, (Dimension)width, (Dimension)height);
+    if (BWParseSize(format, &width, &height)) {
+      BWRescale(bitmap_widget, width, height);
       BWChangeNotify(bitmap_widget, NULL, NULL);
       BWSetChanged(bitmap_widget);
       FixStatus();
@@ -1051,7 +1068,7 @@ void main(argc, argv)
 	XtAddCallback(w,
 		      XtNcallback,
 		      TheCallback,
-		      &file_menu[i].id);
+		      (XtPointer)&file_menu[i].id);
 	
 	file_menu[i].widget = w;
     }
@@ -1072,7 +1089,7 @@ void main(argc, argv)
 	XtAddCallback(w,
 		      XtNcallback,
 		      TheCallback,
-		      &edit_menu[i].id);
+		      (XtPointer)&edit_menu[i].id);
 	
 	edit_menu[i].widget = w;
     }
@@ -1095,7 +1112,7 @@ void main(argc, argv)
 	XtAddCallback(w,
 		      XtNcallback,
 		      TheCallback,
-		      &buttons[i].id);
+		      (XtPointer)&buttons[i].id);
 
 	buttons[i].widget = w;
 
@@ -1111,12 +1128,9 @@ void main(argc, argv)
     XtRealizeWidget(top_widget);
 
     if (argc > 1)
-      if (BWReadFile(bitmap_widget, argv[1], NULL)) {
-	BWChangeFilename(bitmap_widget, argv[1]);
-	BWChangeBasename(bitmap_widget, argv[1]);
-      }
-    if (argc > 2)
-      BWChangeBasename(bitmap_widget, argv[2]);
+      if (BWReadFile(bitmap_widget, argv[1], NULL)) 
+	if (argc > 2)
+	  BWChangeBasename(bitmap_widget, argv[2]);
 
     wm_delete_window = XInternAtom(XtDisplay(top_widget), "WM_DELETE_WINDOW",
 				   False);
@@ -1127,12 +1141,21 @@ void main(argc, argv)
     image_shell = XtCreatePopupShell("image", transientShellWidgetClass,
 				     top_widget, NULL, 0);
 
-    image_widget = XtCreateManagedWidget("label", labelWidgetClass,
-					 image_shell, NULL, 0);
+    box_widget = XtCreateManagedWidget("box", boxWidgetClass,
+				       image_shell, NULL, 0);
+
+    normal_image_widget = XtCreateManagedWidget("normalImage", 
+						labelWidgetClass,
+						box_widget, NULL, 0);
+
+    inverted_image_widget = XtCreateManagedWidget("invertedImage", 
+						  labelWidgetClass,
+						  box_widget, NULL, 0);
     
     n=0;
     XtSetArg(wargs[n], XtNbitmap, BWGetUnzoomedPixmap(bitmap_widget)); n++;
-    XtSetValues(image_widget, wargs, n);
+    XtSetValues(normal_image_widget, wargs, n);
+    XtSetValues(inverted_image_widget, wargs, n);
     
     XtRealizeWidget(image_shell);
 

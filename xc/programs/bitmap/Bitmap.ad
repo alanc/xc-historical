@@ -2,22 +2,6 @@
 
 ! The App-defaults file for Bitmap.
 
-#if (COLOR)
-*background: medium blue
-*foreground: cyan
-*borderColor: plum
-*frame: deep sky blue
-*highlight: magenta
-*Command.background: purple
-*Toggle.background: purple
-*MenuButton.background: purple
-*Command.foreground: white
-*Toggle.foreground: white
-*MenuButton.foreground: white
-*status.foreground: green
-*Dialog.icon.foreground: pale green
-#endif
-
 *TransientShell.allowShellResize:	True
 *font:					variable
 *shapeStyle:				oval
@@ -45,16 +29,16 @@
 			Ctrl<Key>x:	do-rescale()\n\
 			Ctrl<Key>e:	do-filename()\n\
 			Ctrl<Key>b:	do-basename()\n\
-			Alt<Key>i:	switch-image()\n\
-			Alt<Key>g:	switch-grid()\n\
-			Alt<Key>d:	switch-dashed()\n\
-			Alt<Key>a:	switch-axes()\n\
-			Alt<Key>s:	switch-stippled()\n\
-			Alt<Key>p:	switch-proportional()\n\
-			Alt<Key>z:	switch-zoom()\n\
-			Alt<Key>c:	do-cut()\n\
-			Alt<Key>w:	do-copy()\n\
-			Alt<Key>y:	do-paste()
+			Meta<Key>i:	switch-image()\n\
+			Meta<Key>g:	switch-grid()\n\
+			Meta<Key>d:	switch-dashed()\n\
+			Meta<Key>a:	switch-axes()\n\
+			Meta<Key>s:	switch-stippled()\n\
+			Meta<Key>p:	switch-proportional()\n\
+			Meta<Key>z:	switch-zoom()\n\
+			Meta<Key>c:	do-cut()\n\
+			Meta<Key>w:	do-copy()\n\
+			Meta<Key>y:	do-paste()
 
 
 *Toggle.translations:	<EnterWindow>:		highlight(WhenUnset)\n\
@@ -68,21 +52,21 @@
 *Dialog*translations:#override\
 			<Key>Return:	set-dialog-button(okay, yes, retry)\n\
 			Ctrl<Key>g:	set-dialog-button(cancel, abort)
-*image.label.translations:#override	<Btn1Down>,<Btn1Up>:	switch-image()
+*image*translations:#override\
+			<Btn1Down>,<Btn1Up>:	switch-image()
+*image*width: 0
+*image*height: 0
+*image*Label.internalWidth: 0
+*image*Label.internalHeight: 0
+*image*normalImage.foreground: white
+*image*normalImage.background: black
+*image*invertedImage.foreground: black
+*image*invertedImage.background: white
 
-*bitmap.distance:			16
-*bitmap.bitmapWidth:			32
-*bitmap.bitmapHeight:			32
-*bitmap.squareSize:			16
-*bitmap.dashes:				Dashes
-*bitmap.dashed:				on
 *bitmap.cursor:           		tcross
+*bitmap.dashes:				Dashes
 *bitmap.stipple:			Stipple
-#if (COLOR)
-*bitmap.stippled:                 	off
-#else
-*bitmap.stippled:                 	on
-#endif
+*bitmap.stippled:			on
 
 *TransientShell.width:			300
 
@@ -130,16 +114,16 @@
 *fileMenu.basename.label:		Basename (Ctrl-B)...
 *fileMenu.quit.label:			Quit (Ctrl-C, Q)
 
-*editMenu.image.label:			Image (Alt-I)
-*editMenu.grid.label:			Grid (Alt-G)
-*editMenu.dashed.label:			Dashed (Alt-D)
-*editMenu.axes.label:			Axes (Alt-A)
-*editMenu.stippled.label:		Stippled (Alt-S)
-*editMenu.proportional.label:		Proportional (Alt-P)
-*editMenu.zoom.label:			Zoom (Alt-Z)
-*editMenu.cut.label:			Cut (Alt-C)
-*editMenu.copy.label:			Copy (Alt-W)
-*editMenu.paste.label:			Paste (Alt-Y, Ctrl-mb)
+*editMenu.image.label:			Image (Meta-I)
+*editMenu.grid.label:			Grid (Meta-G)
+*editMenu.dashed.label:			Dashed (Meta-D)
+*editMenu.axes.label:			Axes (Meta-A)
+*editMenu.stippled.label:		Stippled (Meta-S)
+*editMenu.proportional.label:		Proportional (Meta-P)
+*editMenu.zoom.label:			Zoom (Meta-Z)
+*editMenu.cut.label:			Cut (Meta-C)
+*editMenu.copy.label:			Copy (Meta-W)
+*editMenu.paste.label:			Paste (Meta-Y, Ctrl-mb)
 
 *form.clear.label:			Clear
 *form.set.fromVert: 			clear

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.17 90/12/02 22:46:37 dmatic Exp $
+ * $XConsortium: Bitmap.c,v 1.18 90/12/08 17:29:16 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -44,16 +44,19 @@
 
 Boolean DEBUG;
 
-#define DefaultGridTolerance 5
-#define DefaultBitmapWidth   16
-#define DefaultBitmapHeight  16
+#define DefaultGridTolerance 8
+#define DefaultBitmapSize    "32x32"
+#define FallbackBitmapWidth  16
+#define FallbackBitmapHeight 16
 #define DefaultGrid          TRUE
 #define DefaultDashed        TRUE
 #define DefaultStippled      TRUE
 #define DefaultProportional  TRUE
 #define DefaultAxes          FALSE
-#define DefaultDistance      10
-#define DefaultSquareSize    20
+#define DefaultDistance      16
+#define DefaultSquareWidth   16
+#define DefaultSquareHeight  16
+#define DefaultFilename      ""
 
 static XtResource resources[] = {
 #define offset(field) XtOffset(BitmapWidget, bitmap.field)
@@ -65,10 +68,8 @@ static XtResource resources[] = {
      offset(frame_pixel), XtRString, XtDefaultForeground},
 {XtNgridTolerance, XtCGridTolerance, XtRDimension, sizeof(Dimension),
      offset(grid_tolerance), XtRImmediate, (XtPointer) DefaultGridTolerance},
-{XtNbitmapWidth, XtCBitmapWidth, XtRDimension, sizeof(Dimension),
-     offset(width), XtRImmediate, (XtPointer) DefaultBitmapWidth},
-{XtNbitmapHeight, XtCBitmapHeight, XtRDimension, sizeof(Dimension),
-     offset(height), XtRImmediate, (XtPointer) DefaultBitmapHeight},
+{XtNsize, XtCSize, XtRString, sizeof(String),
+     offset(size), XtRImmediate, (XtPointer) DefaultBitmapSize},
 {XtNdashed, XtCDashed, XtRBoolean, sizeof(Boolean),
      offset(dashed), XtRImmediate, (XtPointer) DefaultDashed},
 {XtNgrid, XtCGrid, XtRBoolean, sizeof(Boolean),
@@ -79,10 +80,10 @@ static XtResource resources[] = {
      offset(proportional), XtRImmediate, (XtPointer) DefaultProportional},
 {XtNaxes, XtCAxes, XtRBoolean, sizeof(Boolean),
      offset(axes), XtRImmediate, (XtPointer) DefaultAxes},
-{XtNsquareSize, XtCSquareSize, XtRDimension, sizeof(Dimension),
-     offset(squareW), XtRImmediate, (XtPointer) DefaultSquareSize},
-{XtNsquareSize, XtCSquareSize, XtRDimension, sizeof(Dimension),
-     offset(squareH), XtRImmediate, (XtPointer) DefaultSquareSize},
+{XtNsquareWidth, XtCSquareWidth, XtRDimension, sizeof(Dimension),
+     offset(squareW), XtRImmediate, (XtPointer) DefaultSquareWidth},
+{XtNsquareHeight, XtCSquareHeight, XtRDimension, sizeof(Dimension),
+     offset(squareH), XtRImmediate, (XtPointer) DefaultSquareHeight},
 {XtNdistance, XtCDistance, XtRDimension, sizeof(Dimension),
      offset(distance), XtRImmediate, (XtPointer) DefaultDistance},
 {XtNxHot, XtCXHot, XtRPosition, sizeof(Position),
@@ -100,9 +101,9 @@ static XtResource resources[] = {
 {XtNbutton5Function, XtCButton5Function, XtRButtonFunction, sizeof(int),
      offset(button_function[4]), XtRImmediate, (XtPointer) Clear},
 {XtNfilename, XtCFilename, XtRString, sizeof(String),
-     offset(filename), XtRImmediate, (XtPointer) XtNscratch},
+     offset(filename), XtRImmediate, (XtPointer) DefaultFilename},
 {XtNbasename, XtCBasename, XtRString, sizeof(String),
-     offset(basename), XtRImmediate, (XtPointer) ""},
+     offset(basename), XtRImmediate, (XtPointer) DefaultFilename},
 {XtNdashes, XtCDashes, XtRBitmap, sizeof(Pixmap),
      offset(dashes), XtRImmediate, (XtPointer) XtUnspecifiedPixmap},
 {XtNstipple, XtCStipple, XtRBitmap, sizeof(Pixmap),
@@ -498,13 +499,13 @@ void BWSwitchStippled(w)
     
     BW->bitmap.stipple_change_expose_event = True; 
 
-    XtDispatchEvent(&event);
+    XtDispatchEvent((XEvent *)&event);
 
     BW->bitmap.stippled ^= True;
     XSetFillStyle(XtDisplay(BW), BW->bitmap.highlighting_gc,
 		  (BW->bitmap.stippled ? FillStippled : FillSolid));
 
-    XtDispatchEvent(&event);
+    XtDispatchEvent((XEvent *)&event);
 
     BW->bitmap.stipple_change_expose_event = False;
 
@@ -581,7 +582,7 @@ String StripFilename(filename)
     
     if (filename) {
 	begin = (begin ? begin + 1 : filename);
-	end = index (begin, '.');     /* change to rindex to allow longer names */
+	end = index (begin, '.'); /* change to rindex to allow longer names */
 	length = (end ? (end - begin) : strlen (begin));
 	result = (char *) XtMalloc (length + 1);
 	strncpy (result, begin, length);
@@ -589,7 +590,7 @@ String StripFilename(filename)
 	return (result);
     }
     else
-	return (XtNdummy);
+	return (NULL);
 }
 
 int XmuWriteBitmapDataToFile (filename, basename, 
@@ -728,6 +729,16 @@ static void Initialize(request, new, argv, argc)
     new->bitmap.request_stack[0].call_data = NULL;
     new->bitmap.request_stack[0].trap = False;
 
+    if (BWParseSize(new->bitmap.size, 
+		    &new->bitmap.width,
+		    &new->bitmap.height)
+	==
+	False) {
+      new->bitmap.width = FallbackBitmapWidth;
+      new->bitmap.height = FallbackBitmapHeight;
+      XtWarning("Cannot parse the size resource.  BitmapWidget");
+    }
+
     new->core.width = new->bitmap.width * new->bitmap.squareW + 
 	2 * new->bitmap.distance;
     new->core.height = new->bitmap.height * new->bitmap.squareH + 
@@ -850,6 +861,35 @@ static void Initialize(request, new, argv, argc)
     Resize(new);
 }
 
+
+/* returns False if the format is wrong */
+Boolean BWParseSize(size, width, height)
+     String size;
+     Dimension *width, *height;
+{
+  char c,  unparsed_size[80];
+  int w, h;
+
+
+  sscanf(size, "%d%c%d", &w, &c, &h);
+  sprintf(unparsed_size, "%d%c%d", w, c, h);
+
+  if (w > 0 
+      && 
+      h > 0 
+      &&
+      c == 'x'
+      &&
+      !strcmp(size, unparsed_size)) {
+    *width = (Dimension)w;
+    *height = (Dimension)h;
+    return True;
+  }
+  else
+    return False;
+}
+
+
 Boolean BWQueryMarked(w)
     Widget w;
 {
@@ -913,8 +953,9 @@ String BWUnparseStatus(w)
     BitmapWidget BW = (BitmapWidget) w;
     
     sprintf(BW->bitmap.status, 
-	    "Filename: %s Basename:%s Size:%dx%d",
-	    BW->bitmap.filename, BW->bitmap.basename, 
+	    "Filename: %s  Basename: %s  Size: %dx%d",
+	    (strcmp(BW->bitmap.filename, "") ? BW->bitmap.filename : "<none>"),
+	    (strcmp(BW->bitmap.basename, "") ? BW->bitmap.basename : "<none>"),
 	    BW->bitmap.width, BW->bitmap.height);
 
     return BW->bitmap.status;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.h,v 1.7 90/12/02 22:46:43 dmatic Exp $
+ * $XConsortium: Bitmap.h,v 1.8 90/12/08 17:29:24 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -50,18 +50,20 @@
  sensitive	     Sensitive		Boolean		True
  width		     Width		Dimension	0
  height		     Height		Dimension	0
- bitmapWidth         BitmapWidth        Dimension       16
- bitmapHeight        BitmapHeight       Dimension       16
- squareSize          SquareSize         Dimension       20
+ size                Size               String          32x32
+ squareWidht         SquareWidht        Dimension       16
+ squareHeight        SquareHeight       Dimension       16
  x		     Position		Position	320
  y		     Position		Position	320
  xHot                XHot               Position        NotSet
  yHot                YHot               Position        NotSet
- distance            Distance           Dimension       10
+ distance            Distance           Dimension       16
  grid                Grid               Boolean         True
- gridTolerance       GridTolerance      Dimension       5
+ gridTolerance       GridTolerance      Dimension       8
  dashed              Dashed             Boolean         True
+ dashes              Dashes             Bitmap          XtUnspecifiedPixmap
  stippled            Stippled           Boolean         True
+ stipple             Sripple            Bitmap          XtUnspecifiedPixmap
  proportional        Proportional       Boolean         True
  axes                Axes               Boolean         True
  button1Function     Button1Function    ButtonFunction  Set  
@@ -69,14 +71,12 @@
  button3Function     Button3Function    ButtonFunction  Clear
  button4Function     Button4Function    ButtonFunction  Invert
  button5Function     Button5Function    ButtonFunction  Invert
- filename            Filename           String          "scratch"
- basename            Basename           String          "dummy"
+ filename            Filename           String          None
+ basename            Basename           String          None
 */
 
 /* define any special resource names here that are not in <X11/StringDefs.h> */
 
-#define XtNdummy "dummy"
-#define XtNscratch "scratch"
 #define XtNbitmapResource "bitmapResource"
 #define XtNstipple "stipple"
 #define XtNstippled "stippled"
@@ -86,9 +86,9 @@
 #define XtNgridTolerance "gridTolerance"
 #define XtNaxes "axes"
 #define XtNbitmapSize "bitmapSize"
-#define XtNbitmapWidth "bitmapWidth"
-#define XtNbitmapHeight "bitmapHeight"
-#define XtNsquareSize "squareSize"
+#define XtNsize "size"
+#define XtNsquareWidth "squareWidth"
+#define XtNsquareHeight "squareHeight"
 #define XtNxHot "xHot"
 #define XtNyHot "yHot"
 #define XtNbutton1Function "button1Function"
@@ -114,9 +114,9 @@
 #define XtCGridTolerance "GridTolerance"
 #define XtCAxes "Axes"
 #define XtBitmapSize "BitmapSize"
-#define XtCBitmapWidth "BitmapWidth"
-#define XtCBitmapHeight "BitmapHeight"
-#define XtCSquareSize "SquareSize"
+#define XtCSize "Size"
+#define XtCSquareWidth "SquareWidth"
+#define XtCSquareHeight "SquareHeight"
 #define XtCXHot "XHot"
 #define XtCYHot "YHot"
 #define XtCButton1Function "Button1Function"
@@ -248,6 +248,7 @@ extern Boolean BWQueryProportional();
 extern void BWSwitchProportional();
 extern void BWDrawGrid();
 extern void BWChangeFilename();
+extern Boolean BWParseSize();
 
 typedef struct _BWRequestRec BWRequestRec;
 typedef char *BWRequest;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitmapP.h,v 1.8 90/12/02 22:46:46 dmatic Exp $
+ * $XConsortium: BitmapP.h,v 1.9 90/12/08 17:29:28 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -107,6 +107,7 @@ typedef struct {
   int              button_function[5];
   String           filename, basename;
   /* private state */
+  String           size;
   Position         horizOffset, vertOffset;
   void           (*notify)();
   BWRequestStack  *request_stack;
