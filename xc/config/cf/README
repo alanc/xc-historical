@@ -1,4 +1,4 @@
-$XConsortium: README,v 1.27 92/08/22 11:56:36 rws Exp $
+$XConsortium: README,v 1.28 92/12/23 16:56:50 gildea Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -121,8 +121,7 @@ Project.tmpl provides defaults for the following variables:
 	ConnectionFlags		-D's for supported transports
 	ContribDir		location of user-contributed sources
 	DebugLibPex		boolean for building libPEX5_g.a
-	DebugLibX		boolean for compiling libX11_g.a .o's
-	DebugLibXArchive	boolean for building libX11_g.a
+	DebugLibX		boolean for building libX11_g.a
 	DebugLibXau		boolean for building libXau_g
 	DebugLibXaw		boolean for building libXaw_g
 	DebugLibXdmcp		boolean for building libXdmcp_g
@@ -189,8 +188,7 @@ Project.tmpl provides defaults for the following variables:
 	PhigsInclude		include directory for phigs clients
 	PrimaryScreenResolution	resolution of default server screen
 	ProfileLibPex		boolean for building libPEX5_p
-	ProfileLibX		boolean for compiling -p Xlib
-	ProfileLibXArchive	boolean for building libX11_p
+	ProfileLibX		boolean for building libX11_p
 	ProfileLibXau		boolean for buidling libXau_p
 	ProfileLibXaw		boolean for building libXaw_p
 	ProfileLibXdmcp		boolean for building libXdmcp_p

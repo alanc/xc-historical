@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.139 93/07/09 15:23:57 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.140 93/07/22 13:45:34 gildea Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -1051,11 +1051,11 @@ InstallSharedLibrary(X11,$(SOXLIBREV),$(SHLIBDIR))
 NormalLibraryTarget3(X11,$(OBJS1),$(OBJS2),$(OBJS3))
 InstallLibrary(X11,$(USRLIBDIR))
 #endif
-#if DoProfileLib && ProfileLibXArchive
+#if DoProfileLib
 ProfiledLibraryTarget(X11,$(OBJS))
 InstallLibrary(X11_p,$(USRLIBDIR))
 #endif
-#if DoDebugLib && DebugLibXArchive
+#if DoDebugLib
 DebuggedLibraryTarget(X11,$(OBJS))
 InstallLibrary(X11_d,$(USRLIBDIR))
 #endif
