@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.97 89/11/29 19:35:23 jim Exp $
+ * $XConsortium: twm.c,v 1.98 89/12/01 12:16:08 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.97 89/11/29 19:35:23 jim Exp $";
+"$XConsortium: twm.c,v 1.98 89/12/01 12:16:08 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -327,6 +327,8 @@ main(argc, argv, environ)
 
 	Scr->MyDisplayWidth = DisplayWidth(dpy, scrnum);
 	Scr->MyDisplayHeight = DisplayHeight(dpy, scrnum);
+	Scr->MaxWindowWidth = 32767 - Scr->MyDisplayWidth;
+	Scr->MaxWindowWidth = 32767 - Scr->MyDisplayHeight;
 
 	Scr->XORvalue = (((unsigned long) 1) << Scr->d_depth) - 1;
 

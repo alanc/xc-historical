@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.31 89/12/02 16:48:09 jim Exp $
+ * $XConsortium: parse.c,v 1.32 89/12/03 10:55:15 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.31 89/12/02 16:48:09 jim Exp $";
+"$XConsortium: parse.c,v 1.32 89/12/03 10:55:15 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -319,6 +319,7 @@ typedef struct _TwmKeyword {
 #define kws_IconManagerFont		6
 #define kws_UnknownIcon			7
 #define kws_IconDirectory		8
+#define kws_MaxWindowSize		9
 
 #define kwn_ConstrainedMoveTime		1
 #define kwn_MoveDelta			2
@@ -474,6 +475,7 @@ static TwmKeyword keytable[] = {
     { "lefttitlebutton",	LEFT_TITLEBUTTON, 0 },
     { "m",			META, 0 },
     { "maketitle",		MAKE_TITLE, 0 },
+    { "maxwindowsize",		SKEYWORD, kws_MaxWindowSize },
     { "menu",			MENU, 0 },
     { "menubackground",		CKEYWORD, kwc_MenuBackground },
     { "menufont",		SKEYWORD, kws_MenuFont },
@@ -726,6 +728,18 @@ int do_string_keyword (keyword, s)
 
       case kws_IconDirectory:
 	if (Scr->FirstTime) Scr->IconDirectory = ExpandFilename (s);
+	return 1;
+
+      case kws_MaxWindowSize:
+	JunkMask = XParseGeometry (s, &JunkX, &JunkY, &JunkWidth, &JunkHeight);
+	if ((JunkMask & (WidthValue | HeightValue)) != 
+	    (WidthValue | HeightValue)) {
+	    twmrc_error_prefix();
+	    fprintf (stderr, "bad MaxWindowSize \"%s\"\n", s);
+	    return 0;
+	}
+	Scr->MaxWindowWidth = JunkWidth;
+	Scr->MaxWindowHeight = JunkHeight;
 	return 1;
     }
 

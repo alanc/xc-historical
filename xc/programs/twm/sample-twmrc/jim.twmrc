@@ -5,6 +5,7 @@
 #**********************************************************************
 
 #IconDirectory "/users/jim/icons"	# use *bitmapFilePath instead.
+MaxWindowSize "2000x2000"		# let me get a handle on it
 
 #
 # Use the SHAPE extension to make titles use as little space as possible.  The
@@ -43,6 +44,7 @@ NoGrabServer			# don't grab server during menus, etc.
 NoRaiseOnMove			# allow moving under other windows
 NoRaiseOnResize			# allow resizing under other windows
 NoRaiseOnWarp			# prevent flashing
+NoTitleFocus			# avoid keystrokes in wrong window cause of lag
 DecorateTransients		# put titlebars on transients
 TitleFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 MenuFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
@@ -50,7 +52,6 @@ IconFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*-*-*-*"
 IconManagerFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*"
 ResizeFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*"
 NoSaveUnders			# faster to just repaint then save
-NoTitleFocus			# work around bug in Xt
 XORvalue 1			# tend to use visually distinct adjacent colors
 ConstrainedMoveTime 0		# turn off horizontal/vertical only moving
 NoCaseSensitive			# turn off case-sensitivity in sorting icons

@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.121 89/11/30 18:57:51 jim Exp $
+ * $XConsortium: add_window.c,v 1.122 89/12/04 21:58:42 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.121 89/11/30 18:57:51 jim Exp $";
+"$XConsortium: add_window.c,v 1.122 89/12/04 21:58:42 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -170,9 +170,14 @@ IconMgr *iconp;
     FetchWmProtocols (tmp_win);
     FetchWmColormapWindows (tmp_win);
 
-#ifdef DEBUG
-    fprintf(stderr, "  name = \"%s\"\n", tmp_win->name);
-#endif
+    /*
+     * do initial clip; should look at window gravity
+     */
+    if (tmp_win->attr.width > Scr->MaxWindowWidth)
+      tmp_win->attr.width = Scr->MaxWindowWidth;
+    if (tmp_win->attr.height > Scr->MaxWindowHeight)
+      tmp_win->attr.height = Scr->MaxWindowHeight;
+
     tmp_win->wmhints = XGetWMHints(dpy, tmp_win->w);
     if (tmp_win->wmhints && (tmp_win->wmhints->flags & WindowGroupHint))
 	tmp_win->group = tmp_win->wmhints->window_group;

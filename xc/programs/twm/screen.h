@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.55 89/11/28 11:33:08 jim Exp $
+ * $XConsortium: screen.h,v 1.56 89/11/29 14:48:21 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -64,6 +64,8 @@ typedef struct ScreenInfo
     int Monochrome;		/* is the display monochrome ? */
     int MyDisplayWidth;		/* my copy of DisplayWidth(dpy, screen) */
     int MyDisplayHeight;	/* my copy of DisplayHeight(dpy, screen) */
+    int MaxWindowWidth;		/* largest window to allow */
+    int MaxWindowHeight;	/* ditto */
 
     TwmWindow TwmRoot;		/* the head of the twm window list */
 

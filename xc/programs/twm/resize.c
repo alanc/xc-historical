@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.58 89/11/27 14:20:09 jim Exp $
+ * $XConsortium: resize.c,v 1.59 89/11/27 17:12:30 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.58 89/11/27 14:20:09 jim Exp $";
+"$XConsortium: resize.c,v 1.59 89/11/27 17:12:30 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -486,8 +486,8 @@ ConstrainSize (tmp_win, widthp, heightp)
     TwmWindow *tmp_win;
     int *widthp, *heightp;
 {
-#define MAXSIZE 32767
 #define makemult(a,b) ((b==1) ? (a) : (((int)((a)/(b))) * (b)) )
+#define _min(a,b) (((a) < (b)) ? (a) : (b))
 
     int minWidth, minHeight, maxWidth, maxHeight, xinc, yinc, delta;
     int baseWidth, baseHeight;
@@ -516,10 +516,12 @@ ConstrainSize (tmp_win, widthp, heightp)
 
 
     if (tmp_win->hints.flags & PMaxSize) {
-        maxWidth = tmp_win->hints.max_width;
-        maxHeight = tmp_win->hints.max_height;
-    } else
-        maxWidth = maxHeight = MAXSIZE;
+        maxWidth = _min (Scr->MaxWindowWidth, tmp_win->hints.max_width);
+        maxHeight = _min (Scr->MaxWindowHeight, tmp_win->hints.max_height);
+    } else {
+        maxWidth = Scr->MaxWindowWidth;
+	maxHeight = Scr->MaxWindowHeight;
+    }
 
     if (tmp_win->hints.flags & PResizeInc) {
         xinc = tmp_win->hints.width_inc;
