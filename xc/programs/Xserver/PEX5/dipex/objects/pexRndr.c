@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.9 92/05/01 17:42:47 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.10 92/06/02 17:24:38 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -361,18 +361,29 @@ pexCreateRendererReq    *strmPtr;
     if (strmPtr->itemMask & PEXRDBackgroundColour) {
 	EXTRACT_COLOUR_SPECIFIER(prend->backgroundColour,ptr);
     }
+    else						/* default */
+    {
+      prend->backgroundColour.colourType = PEXIndexedColour;
+      prend->backgroundColour.colour.indexed.index = 0;
+    }
 
     if (strmPtr->itemMask & PEXRDClearI) {
 	EXTRACT_CARD8_FROM_4B(prend->clearI,ptr);
     }
+    else						/* default */
+      prend->clearI = xFalse;
 
     if (strmPtr->itemMask & PEXRDClearZ) {
 	EXTRACT_CARD8_FROM_4B(prend->clearZ,ptr);
     }
+    else						/* default */
+      prend->clearZ = xTrue;
 
     if (strmPtr->itemMask & PEXRDEchoMode) {
 	EXTRACT_CARD16_FROM_4B(prend->echoMode,ptr);
     }
+    else						/* default */
+      prend->echoMode = PEXNoEcho;
 
     err = InitRenderer(prend);
     if (err) {
