@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TreeP.h,v 1.11 90/02/07 16:00:09 jim Exp $
+ * $XConsortium: TreeP.h,v 1.12 90/02/08 13:18:34 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -52,7 +52,7 @@ typedef struct {
     Dimension vpad;			/* vSpace/VSpace */
     Dimension line_width;		/* lineWidth/LineWidth */
     Pixel foreground;			/* foreground/Foreground */
-    XtOrientation orientation;		/* orientation/Orientation */
+    XtGravity gravity;			/* gravity/Gravity */
     Boolean auto_reconfigure;		/* autoReconfigure/AutoReconfigure */
     /* private fields */
     GC gc;				/* used to draw lines */

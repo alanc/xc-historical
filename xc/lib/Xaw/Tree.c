@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.31 90/03/15 11:22:12 jim Exp $
+ * $XConsortium: Tree.c,v 1.32 90/03/15 12:16:34 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -37,7 +37,9 @@
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/TreeP.h>
 
-#define IsHorizontal(tw) ((tw)->tree.orientation == XtorientHorizontal)
+#define IsHorizontal(tw) ((tw)->tree.gravity == WestGravity || \
+			  (tw)->tree.gravity == EastGravity)
+
 
 					/* widget class method */
 static void             ClassInitialize();
@@ -74,9 +76,9 @@ static XtResource resources[] = {
 	"XtDefaultForeground"},
     { XtNlineWidth, XtCLineWidth, XtRDimension, sizeof (Dimension),
 	XtOffset(TreeWidget, tree.line_width), XtRString, "0" },
-    { XtNorientation, XtCOrientation, XtROrientation, sizeof (XtOrientation),
-	XtOffset(TreeWidget, tree.orientation), XtRImmediate,
-	(caddr_t) XtorientHorizontal },
+    { XtNgravity, XtCGravity, XtRGravity, sizeof (XtGravity),
+	XtOffset(TreeWidget, tree.gravity), XtRImmediate,
+	(XtPointer) WestGravity },
 };
 
 
@@ -279,7 +281,7 @@ static void delete_node (parent, node)
 static void ClassInitialize ()
 {
     XawInitializeWidgetSet();
-    XtAddConverter (XtRString, XtROrientation, XmuCvtStringToOrientation,
+    XtAddConverter (XtRString, XtRGravity, XmuCvtStringToGravity,
 		    (XtConvertArgList) NULL, (Cardinal) 0);
 }
 
@@ -387,7 +389,7 @@ static Boolean SetValues (gcurrent, grequest, gnew)
      * tree layout. layout_tree() does a redraw, so we don't
      * need SetValues to do another one.
      */
-    if (new->tree.orientation != current->tree.orientation) {
+    if (IsHorizontal(new) != IsHorizontal(current)) {
 	if (new->tree.vpad == current->tree.vpad &&
 	    new->tree.hpad == current->tree.hpad) {
 	    new->tree.vpad = current->tree.hpad;
@@ -397,7 +399,7 @@ static Boolean SetValues (gcurrent, grequest, gnew)
 
     if (new->tree.vpad != current->tree.vpad ||
 	new->tree.hpad != current->tree.hpad ||
-	new->tree.orientation != current->tree.orientation) {
+	new->tree.gravity != current->tree.gravity) {
 	layout_tree (new, TRUE);
 	redraw = FALSE;
     }

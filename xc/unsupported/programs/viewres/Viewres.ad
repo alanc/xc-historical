@@ -60,8 +60,8 @@ Ctrl<Key>n: Resources(off) \n\
 *Porthole.Translations: #override \n\
 <Btn1Down>,<Btn1Up>:	Select(nothing) \n\
 <Key>q: Quit() \n\
-Ctrl<Key>h: SetOrientation(horizontal) \n\
-Ctrl<Key>v: SetOrientation(vertical) \n\
+Ctrl<Key>h: SetOrientation(west) \n\
+Ctrl<Key>v: SetOrientation(north) \n\
 Ctrl<Key>r: Resources(on) \n\
 Ctrl<Key>n: Resources(off) \n\
 Shift<Key>c: SetLabelType(class) \n\
@@ -76,10 +76,13 @@ Shift<Key>v: SetLabelType(variable) \n\
 <Key>s: Select(shown) \n\
 
 *buttonbox.view.Label: View
+*buttonbox.view.viewMenu.layoutWest.Label: Layout from Left
+*buttonbox.view.viewMenu.layoutNorth.Label: Layout from Top
+*buttonbox.view.viewMenu.layoutEast.Label: Layout from Right
+*buttonbox.view.viewMenu.layoutSouth.Label: Layout from Bottom
+*buttonbox.view.viewMenu.layoutVertical.Label: Layout Vertical
 *buttonbox.view.viewMenu.namesVariable.Label: Show Variable Names
 *buttonbox.view.viewMenu.namesClass.Label: Show Class Names
-*buttonbox.view.viewMenu.layoutHorizontal.Label: Layout Horizontal
-*buttonbox.view.viewMenu.layoutVertical.Label: Layout Vertical
 *buttonbox.view.viewMenu.viewResources.Label: Show Resource Boxes
 *buttonbox.view.viewMenu.viewNoResources.Label: Hide Resource Boxes
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.59 90/03/15 12:15:57 jim Exp $
+ * $XConsortium: viewres.c,v 1.60 90/03/26 15:57:03 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -86,6 +86,9 @@ struct {
 char *ProgramName;
 static int NumberShowing = 0;
 
+static Arg sensitiveargs[2] = {{ XtNsensitive, (XtArgVal) FALSE },
+			       { XtNsensitive, (XtArgVal) TRUE }};
+
 static char *help_message[] = {
     "-top name        object to be top of tree",
     "-variable        show variable name instead of class name",
@@ -154,13 +157,15 @@ static XtActionsRec viewres_actions[] = {
 #define BOOL_ON 1
 #define BOOL_TOGGLE 2
 
-#define VIEW_VARIABLES 0
-#define VIEW_CLASSES 1
-#define VIEW_HORIZONTAL 2
-#define VIEW_VERTICAL 3
-#define VIEW_SHOW_RESOURCES 4
-#define VIEW_HIDE_RESOURCES 5
-#define VIEW_number 6
+#define VIEW_WEST 0
+#define VIEW_NORTH 1
+#define VIEW_EAST 2
+#define VIEW_SOUTH 3
+#define VIEW_VARIABLES 4
+#define VIEW_CLASSES 5
+#define VIEW_SHOW_RESOURCES 6
+#define VIEW_HIDE_RESOURCES 7
+#define VIEW_number 8
 
 #define SELECT_NOTHING 0
 #define SELECT_ALL 1
@@ -429,12 +434,12 @@ static void variable_labeltype_callback (gw, closure, data)
 }
 
 /* ARGSUSED */
-static void horizontal_orientation_callback (gw, closure, data)
+static void gravity_callback (gw, closure, data)
     Widget gw;
     caddr_t closure;			/* TRUE or FALSE */
     caddr_t data;
 {
-    set_orientation_menu ((Boolean) closure, True);
+    set_orientation_menu ((XtGravity) closure, True);
 }
 
 
@@ -825,17 +830,21 @@ static void set_labeltype_menu (isvar, doall)
     }
 }
 
-static void set_orientation_menu (horiz, dosetvalues)
-    Boolean horiz, dosetvalues;
+static void set_orientation_menu (grav, dosetvalues)
+    XtGravity grav;
+    Boolean dosetvalues;
 {
-    oneof_sensitive (horiz, view_widgets[VIEW_VERTICAL],
-		     view_widgets[VIEW_HORIZONTAL]);
+#define CHOOSE(val) (sensitiveargs + (grav != (val)))
+    XtSetValues (view_widgets[VIEW_WEST], CHOOSE(WestGravity), ONE);
+    XtSetValues (view_widgets[VIEW_NORTH], CHOOSE(NorthGravity), ONE);
+    XtSetValues (view_widgets[VIEW_EAST], CHOOSE(EastGravity), ONE);
+    XtSetValues (view_widgets[VIEW_SOUTH], CHOOSE(SouthGravity), ONE);
+#undef CHOOSE
 
     if (dosetvalues) {
 	Arg args[1];
 
-	XtSetArg (args[0], XtNorientation,
-		  horiz ? XtorientHorizontal : XtorientVertical);
+	XtSetArg (args[0], XtNgravity, grav);
 	XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
  	XtSetValues (treeWidget, args, ONE);
 	XMapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
@@ -858,7 +867,7 @@ main (argc, argv)
     Arg args[6];
     Dimension width, height;
     static XtCallbackRec callback_rec[2] = {{ NULL, NULL }, { NULL, NULL }};
-    XtOrientation orient;
+    XtGravity grav;
     int i;
 
     ProgramName = argv[0];
@@ -909,23 +918,27 @@ main (argc, argv)
     viewMenu = XtCreatePopupShell ("viewMenu", simpleMenuWidgetClass, 
 				   viewButton, (ArgList) NULL, ZERO);
     XtSetArg (args[0], XtNcallback, callback_rec);
-    callback_rec[0].callback = (XtCallbackProc) variable_labeltype_callback;
+
 #define MAKE_VIEW(n,v,name) \
     callback_rec[0].closure = (caddr_t) v; \
     view_widgets[n] = XtCreateManagedWidget (name, smeBSBObjectClass, \
 					     viewMenu, args, ONE)
-
-    MAKE_VIEW (VIEW_VARIABLES, TRUE, "namesVariable");
-    MAKE_VIEW (VIEW_CLASSES, FALSE, "namesClass");
+    callback_rec[0].callback = (XtCallbackProc) gravity_callback;
+    MAKE_VIEW (VIEW_WEST, WestGravity, "layoutWest");
+    MAKE_VIEW (VIEW_NORTH, NorthGravity, "layoutNorth");
+    MAKE_VIEW (VIEW_EAST, EastGravity, "layoutEast");
+    MAKE_VIEW (VIEW_SOUTH, SouthGravity, "layoutSouth");
 
     (void) XtCreateManagedWidget ("line1", smeLineObjectClass, viewMenu,
 				  (ArgList) NULL, ZERO);
-    callback_rec[0].callback = (XtCallbackProc)horizontal_orientation_callback;
-    MAKE_VIEW (VIEW_HORIZONTAL, TRUE, "layoutHorizontal");
-    MAKE_VIEW (VIEW_VERTICAL, FALSE, "layoutVertical");
+
+    callback_rec[0].callback = (XtCallbackProc) variable_labeltype_callback;
+    MAKE_VIEW (VIEW_VARIABLES, TRUE, "namesVariable");
+    MAKE_VIEW (VIEW_CLASSES, FALSE, "namesClass");
 
     (void) XtCreateManagedWidget ("line2", smeLineObjectClass, viewMenu,
 				  (ArgList) NULL, ZERO);
+
     callback_rec[0].callback = (XtCallbackProc) show_resources_callback;
     MAKE_VIEW (VIEW_SHOW_RESOURCES, BOOL_ON, "viewResources");
     MAKE_VIEW (VIEW_HIDE_RESOURCES, BOOL_OFF, "viewNoResources");
@@ -989,9 +1002,9 @@ main (argc, argv)
 					porthole, (ArgList) NULL, ZERO);
 
     set_labeltype_menu (Appresources.show_variable, FALSE);
-    XtSetArg (args[0], XtNorientation, &orient);
+    XtSetArg (args[0], XtNgravity, &grav);
     XtGetValues (treeWidget, args, ONE);
-    set_orientation_menu ((Boolean)(orient == XtorientHorizontal), FALSE);
+    set_orientation_menu (grav, FALSE);
     update_selection_items ();
     build_tree (topnode, treeWidget, (Widget) NULL);
 
@@ -1076,39 +1089,42 @@ static void ActionSetOrientation (w, event, params, num_params)
     String *params;
     Cardinal *num_params;
 {
-    char *cmd;
-    Arg args[1];
-    Boolean oldhoriz, horiz;
-    XtOrientation orient;
+    XtGravity newgrav = ForgetGravity;
 
-    switch (*num_params) {
-      case 0:
-	cmd = "toggle";
-	break;
-      case 1:
-	cmd = params[0];
+    if (*num_params < 1) {
+	Arg arg;
+	XtGravity oldgrav = ForgetGravity;
+
+	XtSetArg (arg, XtNgravity, &oldgrav);
+	XtGetValues (treeWidget, &arg, ONE);
+	switch (oldgrav) {
+	  case WestGravity:  newgrav = NorthGravity; break;
+	  case NorthGravity:  newgrav = WestGravity; break;
+	  case EastGravity:  newgrav = SouthGravity; break;
+	  case SouthGravity:  newgrav = EastGravity; break;
+	  default:
+	    return;
+	}
+    } else {
+	XrmValue fromval, toval;
+
+	fromval.size = sizeof (String);
+	fromval.addr = (XtPointer) params[0];
+	toval.size = sizeof (XtGravity);
+	toval.addr = (XtPointer) &newgrav;
+	XtConvertAndStore (treeWidget, XtRString, &fromval,
+			   XtRGravity, &toval);
+    }
+
+    switch (newgrav) {
+      case WestGravity: case NorthGravity: case EastGravity: case SouthGravity:
 	break;
       default:
 	XBell (XtDisplay(w), 0);
 	return;
     }
 
-    XtSetArg (args[0], XtNorientation, &orient);
-    XtGetValues (treeWidget, args, ONE);
-    oldhoriz = (Boolean) (orient == XtorientHorizontal);
-
-    if (XmuCompareISOLatin1 (cmd, "toggle") == 0) {
-	horiz = !oldhoriz;
-    } else if (XmuCompareISOLatin1 (cmd, "horizontal") == 0) {
-	horiz = TRUE;
-    } else if (XmuCompareISOLatin1 (cmd, "vertical") == 0) {
-	horiz = FALSE;
-    } else {
-	XBell (XtDisplay(w), 0);
-	return;
-    }
-
-    if (horiz != oldhoriz) set_orientation_menu (horiz, TRUE);
+    set_orientation_menu (newgrav, TRUE);
     return;
 }
 

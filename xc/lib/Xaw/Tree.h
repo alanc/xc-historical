@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.h,v 1.6 90/02/07 11:09:51 jim Exp $
+ * $XConsortium: Tree.h,v 1.7 90/02/08 13:28:49 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -47,9 +47,9 @@
  *  autoReconfigure     AutoReconfigure    Boolean         FALSE
  *  background          Background         Pixel           XtDefaultBackground
  *  foreground          Foreground         Pixel           XtDefaultForeground
+ *  gravity             Gravity            XtGravity       West
  *  hSpace              HSpace             Dimension       20
  *  lineWidth           LineWidth          Dimension       0
- *  orientation         Orientation        XtOrientation   XtorientHorizontal
  *  vSpace              VSpace             Dimension       6
  * 
  * 
@@ -68,6 +68,7 @@
 #define XtNtreeGC "treeGC"
 #define XtNtreeParent "treeParent"
 #define XtNvSpace "vSpace"
+#define XtNgravity "gravity"
 
                                         /* new class field names */
 #define XtCAutoReconfigure "AutoReconfigure"
@@ -76,6 +77,7 @@
 #define XtCTreeGC "TreeGC"
 #define XtCTreeParent "TreeParent"
 #define XtCVSpace "VSpace"
+#define XtCGravity "Gravity"
 
 #define XtRGC "GC"
                                         /* external declarations */
