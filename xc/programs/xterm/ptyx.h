@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.23 89/03/02 12:05:12 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.24 89/03/22 15:23:06 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -428,9 +428,6 @@ typedef struct _TekWidgetRec {
 #define ORIGIN		0x20	/* true if in origin mode */
 #define INSERT		0x40	/* true if in insert mode */
 #define SMOOTHSCROLL	0x80	/* true if in smooth scroll mode */
-#ifdef DO_AUTOREPEAT
-#define AUTOREPEAT	0x100	/* true if in autorepeat mode */
-#endif /* DO_AUTOREPEAT */
 #define IN132COLUMNS	0x200	/* true if in 132 column mode */
 #define LINEFEED	0x400
 #define	REVERSEWRAP	0x800	/* true if reverse wraparound mode */

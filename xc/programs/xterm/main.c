@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.108 89/03/23 07:55:12 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.109 89/03/23 09:09:12 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -698,13 +698,6 @@ char **argv;
         screen = &term->screen;
 
 	term->flags = WRAPAROUND;
-#ifdef DO_AUTOREPEAT
-	/*
-	 * This whole autorepeat crud is bogus as it is really global state,
-	 * not per window state.  Use "xset r" instead.
-	 */
-	term->flags |= AUTOREPEAT;
-#endif /* DO_AUTOREPEAT */
 	if (!screen->jumpscroll)	term->flags |= SMOOTHSCROLL;
 	if (term->misc.reverseWrap)		term->flags |= REVERSEWRAP;
 
