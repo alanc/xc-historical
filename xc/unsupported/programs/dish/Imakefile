@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.2 94/02/10 19:32:24 matt Exp $
 
 /*
  * You must be able to find the tcl headers and libraries to build dish.
@@ -15,6 +15,11 @@ LOCAL_LIBRARIES = FrescoClientLibs $(TCL_LIBRARIES)
        INCLUDES = $(TCL_INCLUDES)
            SRCS = main.CCsuf
            OBJS = main.Osuf
+
+#if ThreadedX
+  LOCAL_LDFLAGS = ThreadsLoadFlags
+  SYS_LIBRARIES = ThreadsLibraries
+#endif
 
 #define CplusplusSource
 
