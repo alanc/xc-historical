@@ -1,7 +1,7 @@
 /*
  * xkill - simple program for destroying unwanted clients
  *
- * $XConsortium: xkill.c,v 1.10 89/03/17 16:29:41 jim Exp $
+ * $XConsortium: xkill.c,v 1.11 89/03/22 13:39:58 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -23,12 +23,14 @@
  */
 
 #include <stdio.h>
+#include <ctype.h>
+
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
-#include <ctype.h>
-#include <X11/Xmu.h>
 #include <X11/Xproto.h>
+
+#include <X11/Xmu/Xmu.h>
 
 Display *dpy = NULL;
 char *ProgramName;
