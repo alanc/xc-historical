@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.c,v 1.7 89/11/11 15:14:49 rws Exp $
+ * $XConsortium: extutil.c,v 1.8 89/12/10 22:54:38 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -218,11 +218,7 @@ static int _default_exterror (dpy, ext_name, reason)
 {
     fprintf (stderr, "Xlib:  extension \"%s\" %s on display \"%s\".\n",
 	     ext_name, reason, DisplayString(dpy));
-    exit (1);
-    /* NOTREACHED */
-#ifdef ibm
     return 0;
-#endif
 }
 
 
