@@ -1,4 +1,4 @@
-/* $XConsortium: Form.h,v 1.21 89/06/19 11:26:40 jim Exp $ */
+/* $XConsortium: Form.h,v 1.22 89/07/21 01:51:26 kit Exp $ */
 
 
 /***********************************************************
@@ -91,18 +91,34 @@ SOFTWARE.
 #ifndef _XawEdgeType_e
 #define _XawEdgeType_e
 typedef enum {
-    XtChainTop,			/* Keep this edge a constant distance from
+    XawChainTop,		/* Keep this edge a constant distance from
 				   the top of the form */
-    XtChainBottom,		/* Keep this edge a constant distance from
+    XawChainBottom,		/* Keep this edge a constant distance from
 				   the bottom of the form */
-    XtChainLeft,		/* Keep this edge a constant distance from
+    XawChainLeft,		/* Keep this edge a constant distance from
 				   the left of the form */
-    XtChainRight,		/* Keep this edge a constant distance from
+    XawChainRight,		/* Keep this edge a constant distance from
 				   the right of the form */
-    XtRubber			/* Keep this edge a proportional distance
+    XawRubber			/* Keep this edge a proportional distance
 				   from the edges of the form*/
-} XtEdgeType;
+} XawEdgeType;
 #endif /* _XawEdgeType_e */
+
+/*
+ * Unfortunatly I missed this definition for R4, so I cannot
+ * protect it with XAW_BC, it looks like this particular problem is
+ * one that we will have to live with for a while.
+ *
+ * Chris D. Peterson - 3/23/90.
+ */
+
+#define XtEdgeType XawEdgeType
+
+#define XtChainTop XawChainTop
+#define XtChainBottom XawChainBottom
+#define XtChainLeft XawChainLeft
+#define XtChainRight XawChainRight
+#define XtRubber XawRubber
 
 typedef struct _FormClassRec	*FormWidgetClass;
 typedef struct _FormRec		*FormWidget;
