@@ -1,4 +1,4 @@
-/* $XConsortium: fsfuncs.c,v 1.6 91/07/31 01:08:36 keith Exp $ */
+/* $XConsortium: fsfuncs.c,v 1.1 91/10/18 11:23:03 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -94,13 +94,13 @@ getCharInfos (pfont, num_ranges, range, nump, retp)
 	    {
 		if (rp->min_char.low > rp->max_char.low)
 		    return BadCharRange;
-		nchars += rp->max_char.low - rp->min_char.low;
+		nchars += rp->max_char.low - rp->min_char.low + 1;
 	    }
 	    else
 	    {
-		nchars += lastRow - rp->min_char.low;
+		nchars += lastRow - rp->min_char.low + 1;
 		nchars += (rp->max_char.high - rp->min_char.high - 1) * num_cols;
-		nchars += rp->max_char.low - firstRow;
+		nchars += rp->max_char.low - firstRow + 1;
 	    }
 	}
     }
