@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.56 89/06/30 19:03:18 jim Exp $
+ * $XConsortium: add_window.c,v 1.57 89/06/30 19:33:10 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.56 89/06/30 19:03:18 jim Exp $";
+"$XConsortium: add_window.c,v 1.57 89/06/30 19:33:10 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -1041,24 +1041,24 @@ TwmWindow *tmp_win;
 	XFreeGC (dpy, gcBack);
 
 	/* now the resize button */
-	XDrawRectangle(dpy, Scr->resizePm, gc, 1, 1,
-	    Scr->TitleHeight - 3, Scr->TitleHeight - 3);
+	XDrawRectangle(dpy, Scr->resizePm, gc, 2, 2,
+	    Scr->TitleHeight - 5, Scr->TitleHeight - 5);
 	w = (Scr->TitleHeight - 4) / 3;
 	x1 = 2;
-	y1 = 1+w;
-	x2 = Scr->TitleHeight - 2 - w;
+	y1 = 2+w;
+	x2 = Scr->TitleHeight - 3 - w;
 	y2 = y1;
 	XDrawLine(dpy, Scr->resizePm, gc, x1, y1, x2, y2);
 	x1 = x2;
-	y2 = Scr->TitleHeight - 2;
+	y2 = Scr->TitleHeight - 3;
 	XDrawLine(dpy, Scr->resizePm, gc, x1, y1, x2, y2);
 	x1 = 2;
-	y1 = 1+(2*w);
-	x2 = Scr->TitleHeight - 2 - (2*w);
+	y1 = 2+(2*w);
+	x2 = Scr->TitleHeight - 3 - (2*w);
 	y2 = y1;
 	XDrawLine(dpy, Scr->resizePm, gc, x1, y1, x2, y2);
 	x1 = x2;
-	y2 = Scr->TitleHeight - 2;
+	y2 = Scr->TitleHeight - 3;
 	XDrawLine(dpy, Scr->resizePm, gc, x1, y1, x2, y2);
 
 	XFreeGC(dpy, gc);
