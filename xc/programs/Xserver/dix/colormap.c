@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.62 88/01/01 17:04:10 rws Exp $ */
+/* $Header: colormap.c,v 1.63 88/01/02 18:37:34 rws Locked $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1596,7 +1596,7 @@ FreeColors (pmap, client, count, pixels, mask)
 
 
     class = pmap->class;
-    if((pmap->flags & AllocAll) || !(class & DynamicClass))
+    if((pmap->flags & AllAllocated) || !(class & DynamicClass))
     {
 	return(BadAccess);
     }
