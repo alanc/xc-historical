@@ -651,7 +651,7 @@ resizing windows.  The default is "fixed".
 This variable indicates that 
 \fItwm\fP should attempt to use the WM_STATE property on client windows
 to tell which windows should be iconified and which should be left visible.
-This is typically used to make try to regenerate the state that the screen
+This is typically used to try to regenerate the state that the screen
 was in before the previous window manager was shutdown.
 .IP "\fBShowIconManager\fP" 8
 This variable indicates that the icon manager window should be displayed when
