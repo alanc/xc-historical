@@ -1,6 +1,6 @@
-/* $Header: Converters.c,v 1.9 88/02/03 23:02:08 swick Locked $ */
+/* $Header: Converters.c,v 1.10 88/02/03 23:04:22 swick Locked $ */
 #ifndef lint
-static char rcsid[] = "$Header: Converters.c,v 1.9 88/02/03 23:02:08 swick Locked $";
+static char rcsid[] = "$Header: Converters.c,v 1.10 88/02/03 23:04:22 swick Locked $";
 #endif lint
 
 /*
@@ -29,10 +29,13 @@ static char rcsid[] = "$Header: Converters.c,v 1.9 88/02/03 23:02:08 swick Locke
 
 /* Conversion.c - implementations of resource type conversion procs */
 
-#include	"IntrinsicP.h"
+#include	"IntrinsicI.h"
 #include	"CoreP.h"
+#include	<X/Xlib.h>
+#include	<X/Xutil.h>
 #include	<X/Atoms.h>
 #include	<stdio.h>
+#include	<sys/dir.h>
 #include	<sys/file.h>
 #include	<X/cursorfont.h>
 #include	<X/Convert.h>
@@ -68,7 +71,6 @@ static void CvtStringToDisplay();
 static void CvtStringToFile();
 static void CvtStringToFont();
 static void CvtStringToFontStruct();
-static void CvtStringToGeometry();
 static void CvtStringToInt();
 static void CvtStringToPixel();
 
@@ -234,6 +236,12 @@ static XtConvertArgRec screenConvertArg[] = {
     {XtBaseOffset, (caddr_t) XtOffset(Widget, core.screen), sizeof(Screen *)}
 };
 
+static XtConvertArgRec applicationConvertArgs[] = {
+    {XtBaseOffset, (caddr_t) XtOffset(Widget, core.screen), sizeof(Screen *)},
+    {XtAddress, (caddr_t) &XtApplicationName, sizeof(XrmName)},
+    {XtAddress, (caddr_t) &XtApplicationClass, sizeof(XrmClass)}
+};
+
 /*ARGSUSED*/
 static void CvtStringToCursor(args, num_args, fromVal, toVal)
     XrmValuePtr args;
@@ -244,111 +252,151 @@ static void CvtStringToCursor(args, num_args, fromVal, toVal)
     static struct _CursorName {
 	char		*name;
 	unsigned int	shape;
-	Cursor		cursor;
     } cursor_names[] = {
-			{"X_cursor",		XC_X_cursor,		NULL},
-			{"arrow",		XC_arrow,		NULL},
-			{"based_arrow_down",	XC_based_arrow_down,    NULL},
-			{"based_arrow_up",	XC_based_arrow_up,      NULL},
-			{"boat",		XC_boat,		NULL},
-			{"bogosity",		XC_bogosity,		NULL},
-			{"bottom_left_corner",	XC_bottom_left_corner,  NULL},
-			{"bottom_right_corner",	XC_bottom_right_corner, NULL},
-			{"bottom_side",		XC_bottom_side,		NULL},
-			{"bottom_tee",		XC_bottom_tee,		NULL},
-			{"box_spiral",		XC_box_spiral,		NULL},
-			{"center_ptr",		XC_center_ptr,		NULL},
-			{"circle",		XC_circle,		NULL},
-			{"clock",		XC_clock,		NULL},
-			{"coffee_mug",		XC_coffee_mug,		NULL},
-			{"cross",		XC_cross,		NULL},
-			{"cross_reverse",	XC_cross_reverse,       NULL},
-			{"crosshair",		XC_crosshair,		NULL},
-			{"diamond_cross",	XC_diamond_cross,       NULL},
-			{"dot",			XC_dot,			NULL},
-#ifdef XC_dotbox
-			{"dotbox",		XC_dotbox,		NULL},
-#endif
-			{"double_arrow",	XC_double_arrow,	NULL},
-			{"draft_large",		XC_draft_large,		NULL},
-			{"draft_small",		XC_draft_small,		NULL},
-			{"draped_box",		XC_draped_box,		NULL},
-			{"exchange",		XC_exchange,		NULL},
-			{"fleur",		XC_fleur,		NULL},
-			{"gobbler",		XC_gobbler,		NULL},
-			{"gumby",		XC_gumby,		NULL},
-#ifdef XC_hand1
-			{"hand1",		XC_hand1,		NULL},
-#endif
-#ifdef XC_hand2
-			{"hand2",		XC_hand2,		NULL},
-#endif
-			{"heart",		XC_heart,		NULL},
-			{"icon",		XC_icon,		NULL},
-			{"iron_cross",		XC_iron_cross,		NULL},
-			{"left_ptr",		XC_left_ptr,		NULL},
-			{"left_side",		XC_left_side,		NULL},
-			{"left_tee",		XC_left_tee,		NULL},
-			{"leftbutton",		XC_leftbutton,		NULL},
-			{"ll_angle",		XC_ll_angle,		NULL},
-			{"lr_angle",		XC_lr_angle,		NULL},
-			{"man",			XC_man,			NULL},
-			{"middlebutton",	XC_middlebutton,	NULL},
-			{"mouse",		XC_mouse,		NULL},
-			{"pencil",		XC_pencil,		NULL},
-			{"pirate",		XC_pirate,		NULL},
-			{"plus",		XC_plus,		NULL},
-			{"question_arrow",	XC_question_arrow,	NULL},
-			{"right_ptr",		XC_right_ptr,		NULL},
-			{"right_side",		XC_right_side,		NULL},
-			{"right_tee",		XC_right_tee,		NULL},
-			{"rightbutton",		XC_rightbutton,		NULL},
-			{"rtl_logo",		XC_rtl_logo,		NULL},
-			{"sailboat",		XC_sailboat,		NULL},
-			{"sb_down_arrow",	XC_sb_down_arrow,       NULL},
-			{"sb_h_double_arrow",	XC_sb_h_double_arrow,   NULL},
-			{"sb_left_arrow",	XC_sb_left_arrow,       NULL},
-			{"sb_right_arrow",	XC_sb_right_arrow,      NULL},
-			{"sb_up_arrow",		XC_sb_up_arrow,		NULL},
-			{"sb_v_double_arrow",	XC_sb_v_double_arrow,   NULL},
-			{"shuttle",		XC_shuttle,		NULL},
-			{"sizing",		XC_sizing,		NULL},
-			{"spider",		XC_spider,		NULL},
-			{"spraycan",		XC_spraycan,		NULL},
-			{"star",		XC_star,		NULL},
-			{"target",		XC_target,		NULL},
-			{"tcross",		XC_tcross,		NULL},
-			{"top_left_arrow",	XC_top_left_arrow,      NULL},
-			{"top_left_corner",	XC_top_left_corner,	NULL},
-			{"top_right_corner",	XC_top_right_corner,    NULL},
-			{"top_side",		XC_top_side,		NULL},
-			{"top_tee",		XC_top_tee,		NULL},
-			{"trek",		XC_trek,		NULL},
-			{"ul_angle",		XC_ul_angle,		NULL},
-			{"umbrella",		XC_umbrella,		NULL},
-			{"ur_angle",		XC_ur_angle,		NULL},
-			{"watch",		XC_watch,		NULL},
-			{"xterm",		XC_xterm,		NULL},
+			{"X_cursor",		XC_X_cursor},
+			{"arrow",		XC_arrow},
+			{"based_arrow_down",	XC_based_arrow_down},
+			{"based_arrow_up",	XC_based_arrow_up},
+			{"boat",		XC_boat},
+			{"bogosity",		XC_bogosity},
+			{"bottom_left_corner",	XC_bottom_left_corner},
+			{"bottom_right_corner",	XC_bottom_right_corner},
+			{"bottom_side",		XC_bottom_side},
+			{"bottom_tee",		XC_bottom_tee},
+			{"box_spiral",		XC_box_spiral},
+			{"center_ptr",		XC_center_ptr},
+			{"circle",		XC_circle},
+			{"clock",		XC_clock},
+			{"coffee_mug",		XC_coffee_mug},
+			{"cross",		XC_cross},
+			{"cross_reverse",	XC_cross_reverse},
+			{"crosshair",		XC_crosshair},
+			{"diamond_cross",	XC_diamond_cross},
+			{"dot",			XC_dot},
+			{"dotbox",		XC_dotbox},
+			{"double_arrow",	XC_double_arrow},
+			{"draft_large",		XC_draft_large},
+			{"draft_small",		XC_draft_small},
+			{"draped_box",		XC_draped_box},
+			{"exchange",		XC_exchange},
+			{"fleur",		XC_fleur},
+			{"gobbler",		XC_gobbler},
+			{"gumby",		XC_gumby},
+			{"hand1",		XC_hand1},
+			{"hand2",		XC_hand2},
+			{"heart",		XC_heart},
+			{"icon",		XC_icon},
+			{"iron_cross",		XC_iron_cross},
+			{"left_ptr",		XC_left_ptr},
+			{"left_side",		XC_left_side},
+			{"left_tee",		XC_left_tee},
+			{"leftbutton",		XC_leftbutton},
+			{"ll_angle",		XC_ll_angle},
+			{"lr_angle",		XC_lr_angle},
+			{"man",			XC_man},
+			{"middlebutton",	XC_middlebutton},
+			{"mouse",		XC_mouse},
+			{"pencil",		XC_pencil},
+			{"pirate",		XC_pirate},
+			{"plus",		XC_plus},
+			{"question_arrow",	XC_question_arrow},
+			{"right_ptr",		XC_right_ptr},
+			{"right_side",		XC_right_side},
+			{"right_tee",		XC_right_tee},
+			{"rightbutton",		XC_rightbutton},
+			{"rtl_logo",		XC_rtl_logo},
+			{"RTL_logo",		XC_rtl_logo},
+			{"sailboat",		XC_sailboat},
+			{"sb_down_arrow",	XC_sb_down_arrow},
+			{"sb_h_double_arrow",	XC_sb_h_double_arrow},
+			{"sb_left_arrow",	XC_sb_left_arrow},
+			{"sb_right_arrow",	XC_sb_right_arrow},
+			{"sb_up_arrow",		XC_sb_up_arrow},
+			{"sb_v_double_arrow",	XC_sb_v_double_arrow},
+			{"shuttle",		XC_shuttle},
+			{"sizing",		XC_sizing},
+			{"spider",		XC_spider},
+			{"spraycan",		XC_spraycan},
+			{"star",		XC_star},
+			{"target",		XC_target},
+			{"tcross",		XC_tcross},
+			{"top_left_arrow",	XC_top_left_arrow},
+			{"top_left_corner",	XC_top_left_corner},
+			{"top_right_corner",	XC_top_right_corner},
+			{"top_side",		XC_top_side},
+			{"top_tee",		XC_top_tee},
+			{"trek",		XC_trek},
+			{"ul_angle",		XC_ul_angle},
+			{"umbrella",		XC_umbrella},
+			{"ur_angle",		XC_ur_angle},
+			{"watch",		XC_watch},
+			{"xterm",		XC_xterm},
     };
     struct _CursorName *cache;
+    static Cursor cursor;
     char *name = (char *)fromVal->addr;
     register int i;
     Screen	    *screen;
+    static char* bitmap_file_path = NULL;
+    char filename[MAXNAMLEN+5];
+    Pixmap source, mask;
+    static XColor bgColor = {0, 0, 0, 0};
+    static XColor fgColor = {0, ~0, ~0, ~0};
+    int width, height, xhot, yhot;
 
-    if (*num_args != 1)
+    if (*num_args != 3)
      XtError("String to cursor conversion needs screen argument");
 
     screen = *((Screen **) args[0].addr);
     for (i=0, cache=cursor_names; i < XtNumber(cursor_names); i++, cache++ ) {
+        /* cacheing is actually done by higher layers of Xrm */
 	if (strcmp(name, cache->name) == 0) {
-	    if (!cache->cursor)
-		cache->cursor =
-		    XCreateFontCursor(DisplayOfScreen(screen), cache->shape );
-	    done(&(cache->cursor), Cursor);
+	    cursor = XtGetCursor(DisplayOfScreen(screen), cache->shape);
+	    done(&cursor, Cursor);
 	    return;
 	}
     }
-    XtStringConversionWarning(name, "Cursor");
+
+    /* isn't a standard cursor in cursorfont; try to open a bitmap file */
+    if (bitmap_file_path == NULL) {
+	XrmName xrm_name[3];
+	XrmClass xrm_class[3];
+	XrmRepresentation rep_type;
+	XrmValue value;
+	xrm_name[0] = *((XrmName *) args[1].addr);
+	xrm_name[1] = StringToQuark( "bitmapFilePath" );
+	xrm_name[2] = NULL;
+	xrm_class[0] = *((XrmClass *) args[2].addr);
+	xrm_class[1] = StringToQuark( "BitmapFilePath" );
+	xrm_class[2] = NULL;
+	rep_type = StringToQuark( XtRString );
+	XrmGetResource( XtDefaultDB, xrm_name, xrm_class, rep_type, &value );
+	if (value.addr != NULL)
+	    bitmap_file_path = value.addr;
+	else
+	    bitmap_file_path = "/usr/include/X/bitmaps";
+    }
+
+    sprintf( filename, "%s/%s", bitmap_file_path, name );
+    if (XReadBitmapFile( DisplayOfScreen(screen), RootWindowOfScreen(screen),
+			 filename, &width, &height, &source, &xhot, &yhot )
+	!= BitmapSuccess) {
+	_XtStringConversionWarning(name, "Cursor");
+	cursor = None;		/* absolute fall-back for failed conversion */
+	done(&cursor, Cursor);
+    }
+    strcat( filename, "Mask" );
+    if (XReadBitmapFile( DisplayOfScreen(screen), RootWindowOfScreen(screen),
+			 filename, &width, &height, &mask, &width, &height )
+	!= BitmapSuccess) {
+	mask = None;
+    }
+    cursor = XCreatePixmapCursor( DisplayOfScreen(screen), source, mask,
+				  &fgColor, &bgColor, xhot, yhot );
+    XFreePixmap( DisplayOfScreen(screen), source );
+    XFreePixmap( DisplayOfScreen(screen), mask );
+
+    done(&cursor, Cursor);
 };
 
 
@@ -637,7 +685,7 @@ void _XtConvertInitialize()
     Add(XtQString,  XtQColor,       CvtStringToXColor,      
 	colorConvertArgs, XtNumber(colorConvertArgs));
     Add(XtQString,  XtQCursor,      CvtStringToCursor,      
-	screenConvertArg, XtNumber(screenConvertArg));
+	applicationConvertArgs, XtNumber(applicationConvertArgs));
     Add(XtQString,  XtQDisplay,     CvtStringToDisplay,     NULL, 0);
     Add(XtQString,  XtQFile,	    CvtStringToFile,	    NULL, 0);
     Add(XtQString,  XtQFont,	    CvtStringToFont,	    
