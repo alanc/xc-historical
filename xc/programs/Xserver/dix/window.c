@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.90 92/12/20 20:56:58 rws Exp $ */
+/* $XConsortium: window.c,v 5.91 92/12/24 12:43:54 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -208,6 +208,7 @@ CheckSubSaveUnder(pParent, pFirst, pRegion)
 
     if (pParent->viewable && 
 	((pParent->eventMask | wOtherEventMasks(pParent)) & ExposureMask) &&
+	(*pScreen->RegionNotEmpty) (&pParent->borderSize) &&
 	(*pScreen->RectIn) (pRegion, (*pScreen->RegionExtents)
 					(&pParent->borderSize)) != rgnOUT)
     {
