@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.67 92/04/15 18:52:09 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.68 92/09/02 13:44:54 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -269,6 +269,7 @@ Name						Reference
 "ARDENT-XDoubleBuffer"				[2], [3]
 "ARDENT-XTitan"					[2], [4]
 "bezier"					[34]
+"BIG-REQUESTS"					[97]
 "DEC-XTRAP"					[51]
 "ESMultiScreenExtension"			[75]
 "ESSetBitsExtension"				[75]
@@ -288,6 +289,7 @@ Name						Reference
 "ORL-SYNC"					[65]
 "PanasonicDosEmulatorExtension"			[52]
 "PFU-GAOpAttr"					[32]
+"SCREEN-SAVER"					[96]
 "SGI-GLX"					[6]
 "SGI-XGL"					[6]
 "SGI-MISCELLANEOUS"				[6]
@@ -1241,3 +1243,13 @@ REFERENCES
 	Kubota Pacific
 	2630 Walsh Avenue
 	Santa Clara, CA 95051-0905
+
+[96]	X11 Screen Saver Extension, proposed standard
+	MIT X Consortium
+	545 Technology Square
+	Cambridge, MA 02139
+
+[97]	Big Requests Extension, proposed standard
+	MIT X Consortium
+	545 Technology Square
+	Cambridge, MA 02139
