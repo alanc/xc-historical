@@ -1,5 +1,5 @@
 /*
- * $Header: charproc.c,v 1.22 88/02/27 09:37:15 rws Exp $
+ * $Header: charproc.c,v 1.23 88/02/27 15:27:38 rws Exp $
  */
 
 
@@ -83,6 +83,7 @@ static void VTallocbuf();
 #define	XtNsignalInhibit	"signalInhibit"
 #define	XtNtekInhibit		"tekInhibit"
 #define	XtNtekStartup		"tekStartup"
+#define XtNthumbWidth		"thumbWidth"
 #define	XtNvisualBell		"visualBell"
 
 #define	XtCC132			"C132"
@@ -105,12 +106,13 @@ static void VTallocbuf();
 #define	XtCSignalInhibit	"SignalInhibit"
 #define	XtCTekInhibit		"TekInhibit"
 #define	XtCTekStartup		"TekStartup"
+#define XtCThumbWidth		"ThumbWidth"
 #define	XtCVisualBell		"VisualBell"
 
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.22 88/02/27 09:37:15 rws Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.23 88/02/27 15:27:38 rws Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -156,6 +158,7 @@ static  int	defaultBorderWidth = DEFBORDERWIDTH;
 static  int	defaultIntBorder   = DEFBORDER;
 static  int	defaultSaveLines   = SAVELINES;
 static  int	defaultNMarginBell = N_MARGINBELL;
+static	int	defaultThumbWidth  = SCROLLBARWIDTH;
 
 static XtResource resources[] = {
 {XtNfont, XtCFont, XtRString, sizeof(char *),
@@ -245,6 +248,9 @@ static XtResource resources[] = {
 {XtNtekStartup, XtCTekStartup, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.TekEmu),
 	XtRBoolean, (caddr_t) &defaultFALSE},
+{XtNthumbWidth, XtCThumbWidth, XtRInt, sizeof(int),
+	XtOffset(XtermWidget, screen.thumb_width),
+	XtRInt, (caddr_t) &defaultThumbWidth},
 {XtNvisualBell, XtCVisualBell, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.visualbell),
 	XtRBoolean, (caddr_t) &defaultFALSE}
@@ -1782,6 +1788,8 @@ static void VTInitialize (request, new)
    new->screen.visualbell = request->screen.visualbell;
    new->screen.TekEmu = request->screen.TekEmu;
    new->misc.re_verse = request->misc.re_verse;
+   new->screen.thumb_width = request->screen.thumb_width;
+
 
     /*
      * set the colors if reverse video; this is somewhat tricky since
@@ -1859,6 +1867,8 @@ XSetWindowAttributes *values;
 		return;
 	
 	TabReset (term->tabs);
+
+	if (screen->thumb_width < 2) screen->thumb_width = 2;
 
 	screen->fnt_norm = screen->fnt_bold = NULL;
 	

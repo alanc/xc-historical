@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.24 88/03/19 15:23:02 rws Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.25 88/03/28 17:11:25 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -460,7 +460,9 @@ char **argv;
 	if (term->misc.signalInhibit)		inhibit |= I_SIGNAL;
 	if (term->misc.tekInhibit)			inhibit |= I_TEK;
 
-	if (term->misc.scrollbar)			screen->scrollbar = SCROLLBARWIDTH;
+	if (term->misc.scrollbar) {
+	    screen->scrollbar = screen->thumb_width;
+	}
 
 	term->initflags = term->flags;
 

@@ -1,5 +1,5 @@
 /*
- *	$Header: scrollbar.c,v 1.2 88/02/12 18:06:39 jim Exp $
+ *	$Header: scrollbar.c,v 1.3 88/02/20 15:31:26 swick Exp $
  */
 
 #include <X11/copyright.h>
@@ -41,7 +41,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$Header: scrollbar.c,v 1.2 88/02/12 18:06:39 jim Exp $";
+static char rcs_id[] = "$Header: scrollbar.c,v 1.3 88/02/20 15:31:26 swick Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -135,14 +135,14 @@ static Widget CreateScrollBar(xw, x, y, height)
 	   {XtNreverseVideo,	(XtArgVal) 0},
 	   {XtNorientation,	(XtArgVal) XtorientVertical},
 	   {XtNborderWidth,	(XtArgVal) 1},
-	   {XtNwidth,		(XtArgVal) SCROLLBARWIDTH-1},
+	   {XtNwidth,		(XtArgVal) 0},
 	};   
 
 	argList[0].value = (XtArgVal) x;
 	argList[1].value = (XtArgVal) y;
 	argList[2].value = (XtArgVal) height;
 	argList[3].value = (XtArgVal) xw->misc.re_verse;
-
+	argList[6].value = (XtArgVal) screen->thumb_width - 1;
 
 	scrollWidget = XtCreateWidget("scrollbar", scrollbarWidgetClass, 
 	  xw, argList, XtNumber(argList));
@@ -191,8 +191,8 @@ ResizeScrollBar(scrollWidget, x, y, height)
 	int x, y;
 	unsigned height;
 {
-	XtConfigureWidget(scrollWidget, x, y, (SCROLLBARWIDTH - 1), height,
-	    scrollWidget->core.border_width);
+	XtConfigureWidget(scrollWidget, x, y, scrollWidget->core.width - 1,
+	    height, scrollWidget->core.border_width);
 	ScrollBarDrawThumb(scrollWidget);
 }
 
@@ -296,9 +296,9 @@ ScrollBarOn(screen, init)
 				Error (ERROR_SBRALLOC2);
 		    }
 	}
-	screen->scrollbar = SCROLLBARWIDTH;
+	screen->scrollbar = screen->thumb_width;
 	ScrollBarDrawThumb(screen->scrollWidget);
-	if (!init) ResizeScreen(term, border + SCROLLBARWIDTH, border );
+	if (!init) ResizeScreen(term, border + screen->thumb_width, border );
 	/* map afterwards so BitGravity can be used profitably */
 	XMapWindow(screen->display, XtWindow(screen->scrollWidget));
 }
