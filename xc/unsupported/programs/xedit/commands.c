@@ -1,6 +1,4 @@
-#if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: commands.c,v 1.28 90/01/12 13:56:54 kit Exp $";
-#endif /* lint && SABER */
+/* $XConsortium: commands.c,v 1.29 90/10/26 12:01:13 dave Exp $ */
 
 /*
  *			  COPYRIGHT 1987
@@ -30,12 +28,14 @@ static char Xrcsid[] = "$XConsortium: commands.c,v 1.28 90/01/12 13:56:54 kit Ex
 #include <stdio.h>
 #include "xedit.h"
 #ifdef CRAY
-#include <sys/unistd.h>		/* Cray folks say they need this... */
+#include <unistd.h>
 #endif
 
 extern Widget textwindow, labelwindow, filenamewindow;
 
 void ResetSourceChanged();
+
+static void ResetDC();
 
 static Boolean double_click = FALSE, source_changed = FALSE;
 
@@ -51,7 +51,6 @@ AddDoubleClickCallback(w, state)
 Widget w;
 Boolean state;
 {
-  static void ResetDC();
   Arg args[1];
   static XtCallbackRec cb[] = { {NULL, NULL}, {NULL, NULL} };
  
@@ -177,7 +176,7 @@ DoLoad()
     }
     double_click = FALSE;
     
-    if ( (filename != NULL) &&  (strlen(filename) > 0) ) {
+    if ( (filename != NULL)  &&  ((int) strlen(filename) > 0) ) {
 	Boolean exists;
 
 	switch( CheckFilePermissions(filename, &exists) ) {
