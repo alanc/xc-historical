@@ -1,7 +1,7 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Display.c,v 1.7 88/08/29 16:41:15 asente Exp $";
-/* $oHeader: Display.c,v 1.7 88/08/29 16:41:15 asente Exp $ */
+    "$XConsortium: Display.c,v 1.10 88/09/03 17:01:38 swick Exp $";
+/* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -217,11 +217,12 @@ XtAppContext XtCreateApplicationContext()
 	app->workQueue = NULL;
 	app->outstandingQueue = NULL;
 	app->errorDB = NULL;
-	_SetDefaultErrorHandlers(&app->errorMsgHandler, 
+	_XtSetDefaultErrorHandlers(&app->errorMsgHandler, 
 		&app->warningMsgHandler, &app->errorHandler, 
 		&app->warningHandler);
 	app->action_table = NULL;
-	_SetDefaultSelectionTimeout(&app->selectionTimeout);
+	_XtSetDefaultSelectionTimeout(&app->selectionTimeout);
+	_XtSetDefaultConverterTable(&app->converterTable);
 	app->sync = app->rv = app->being_destroyed = app->error_inited = FALSE;
 	app->fds.nfds = app->fds.count = 0;
 	FD_ZERO(&app->fds.rmask);
@@ -238,6 +239,7 @@ static void DestroyAppContext(app)
 {
 	while (app->count-- > 0) XCloseDisplay(app->list[app->count]);
 	if (app->list != NULL) XtFree((char *)app->list);
+	_XtFreeConverterTable(app->converterTable);
 	XtFree((char *)app);
 }
 
@@ -311,6 +313,13 @@ XtPerDisplay _XtGetPerDisplay(dpy)
 	}
 
 	return &(pd->perDpy);
+}
+
+XtAppContext _XtDisplayToApplicationContext(dpy)
+	Display *dpy;
+{
+	XtPerDisplay pd = _XtGetPerDisplay(dpy);
+	return pd->appContext;
 }
 
 static XtPerDisplay NewPerDisplay(dpy)
