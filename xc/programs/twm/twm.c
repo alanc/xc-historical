@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.111 90/03/23 13:23:34 jim Exp $
+ * $XConsortium: twm.c,v 1.112 90/04/13 13:29:12 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.111 90/03/23 13:23:34 jim Exp $";
+"$XConsortium: twm.c,v 1.112 90/04/13 13:29:12 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -754,11 +754,12 @@ void Reborder ()
     SetFocus ((TwmWindow*)NULL);
 }
 
-void Done()
+SIGNAL_T Done()
 {
     Reborder ();
     XCloseDisplay(dpy);
     exit(0);
+    SIGNAL_RETURN;
 }
 
 

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.62 90/03/22 09:39:08 jim Exp $
+ * $XConsortium: twm.h,v 1.63 90/04/13 13:38:30 jim Exp $
  *
  * twm include file
  *
@@ -53,11 +53,14 @@
 typedef unsigned long Pixel;
 
 #ifdef SIGNALRETURNSINT
-typedef int (*SigProc)();	/* type of function returned by signal() */
+#define SIGNAL_T int
+#define SIGNAL_RETURN return 0
 #else
-typedef void (*SigProc)();	/* type of function returned by signal() */
+#define SIGNAL_T void
+#define SIGNAL_RETURN return
 #endif
 
+typedef SIGNAL_T (*SigProc)();	/* type of function returned by signal() */
 
 #define BW 2			/* border width */
 #define BW2 4			/* border width  * 2 */
@@ -290,7 +293,8 @@ typedef struct TwmWindow
 
 extern char *malloc(), *calloc(), *realloc(), *getenv();
 extern void free();
-extern void Reborder(), Done();
+extern void Reborder();
+extern SIGNAL_T Done();
 void ComputeCommonTitleOffsets();
 void ComputeWindowTitleOffsets(), ComputeTitleLocation();
 extern char *ProgramName;
