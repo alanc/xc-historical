@@ -79,11 +79,14 @@
 /* see below for ServerDefines */
 
 
-XCOMM platform:  $XConsortium: sun.cf,v 1.43 91/02/12 22:21:32 keith Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.44 91/02/13 10:25:34 rws Exp $
 XCOMM operating system:  OSName
 
 #if HasGcc
-#define ServerCDebugFlags -O -g
+#define ServerCDebugFlags -O -g		/* XXX remove this in R5 */
+#endif
+#ifdef SparcArchitecture		/* XXX change this in R5 */
+#define BuildPex YES
 #endif
 
 #define UseSunWindowsInServer	NO	/* link in SunWindows support? */
