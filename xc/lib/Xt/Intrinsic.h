@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.100 89/09/21 09:15:46 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.101 89/09/21 16:18:54 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -459,6 +459,9 @@ extern void XtMakeToolkitAsync();
 
 extern void XtSetKeyboardFocus();
     /* Widget subtree, descendent; */
+
+extern Time XtLastTimestampProcessed();
+    /* Display *dpy; */
 
 /****************************************************************
  *
