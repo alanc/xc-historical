@@ -1,5 +1,5 @@
 /*
- * $XConsortium: protodpy.c,v 1.11 93/09/20 18:02:59 hersh Exp $
+ * $XConsortium: protodpy.c,v 1.12 94/01/17 16:35:32 kaleb Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -36,6 +36,13 @@
 #ifdef XDMCP
 
 #include <sys/types.h>
+#ifdef X_NOT_STDC_ENV
+#define Time_t long
+extern Time_t time ();
+#else
+#include <time.h>
+#define Time_t time_t
+#endif
 
 static struct protoDisplay	*protoDisplays;
 
@@ -75,7 +82,7 @@ FindProtoDisplay (address, addrlen, displayNumber)
 
 static
 TimeoutProtoDisplays (now)
-    long    now;
+    Time_t    now;
 {
     struct protoDisplay	*pdpy, *next;
 
@@ -98,11 +105,7 @@ NewProtoDisplay (address, addrlen, displayNumber,
     CARD32	    sessionID;
 {
     struct protoDisplay	*pdpy;
-#if defined(sony) || defined(luna)
-    long    date;
-#else
-    time_t date;
-#endif
+    Time_t date;
 
     Debug ("NewProtoDisplay\n");
     time (&date);
