@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.84 91/05/10 16:57:32 gildea Exp $
+ *	$XConsortium: misc.c,v 1.85 91/05/11 23:26:59 gildea Exp $
  */
 
 /*
@@ -66,6 +66,7 @@ xevents()
 {
 	XEvent event;
 	register TScreen *screen = &term->screen;
+	extern XtAppContext app_con;
 
 	if(screen->scroll_amt)
 		FlushScroll(screen);
@@ -73,7 +74,13 @@ xevents()
 	do {
 		if (waitingForTrackInfo)
 			return;
-		XNextEvent (screen->display, &event);
+		/*
+		 * For efficiency, we would like to call XNextEvent here,
+		 * since we've already done the select, and XtAppNextEvent
+		 * will do another (unnecessary) one.  However, MappingNotify
+		 * is dispatched by XtAppNextEvent, and we need that.
+		 */
+		XtAppNextEvent (app_con, &event);
 		/*
 		 * Hack to get around problems with the toolkit throwing away
 		 * eventing during the exclusive grab of the menu popup.  By
