@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.76 89/12/09 21:11:29 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.77 89/12/18 17:01:37 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -631,13 +631,14 @@
  * TOP_INCLUDES specifies how to get to /usr/include or its build substitute
  * EXTRA_INCLUDES contains project-specific includes set in project incfiles
  * INCLUDES contains client-specific includes set in Imakefile
+ * LOCAL_LDFLAGS contains client-specific ld flags flags set in Imakefile
  */
       ALLINCLUDES = $(STD_INCLUDES) $(TOP_INCLUDES) $(INCLUDES) $(EXTRA_INCLUDES) 
        ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(PROTO_DEFINES) $(DEFINES) $(COMPATFLAGS)
            CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(ALLDEFINES)
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES)
            LDLIBS = $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
-        LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS) 
+        LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS) $(LOCAL_LDFLAGS)
    LDCOMBINEFLAGS = LdCombineFlags
 
         MACROFILE = MacroFile
