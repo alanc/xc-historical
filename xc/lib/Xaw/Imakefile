@@ -33,6 +33,8 @@ HEADERS = \
 	LogoP.h \
 	Mailbox.h \
 	MailboxP.h \
+	Paned.h \
+	PanedP.h \
 	Scroll.h \
 	ScrollP.h \
 	Simple.h \
@@ -45,8 +47,6 @@ HEADERS = \
 	TextSrcP.h \
 	Toggle.h \
 	ToggleP.h \
-	VPaned.h \
-	VPanedP.h \
 	Viewport.h \
 	ViewportP.h \
 	XawMisc.h
@@ -67,6 +67,7 @@ SRCS = \
 	Load.c \
 	Logo.c \
 	Mailbox.c \
+	Paned.c \
 	Scroll.c \
 	Simple.c \
 	StringSrc.c \
@@ -75,7 +76,6 @@ SRCS = \
 	Toggle.c \
 	Vendor.c \
 	Viewport.c \
-	VPaned.c \
 	XDrawLogo.c
 
 OBJS = \
@@ -94,6 +94,7 @@ OBJS = \
 	Load.o \
 	Logo.o \
 	Mailbox.o \
+	Paned.o \
 	Scroll.o \
 	Simple.o \
 	StringSrc.o \
@@ -102,7 +103,6 @@ OBJS = \
 	Toggle.o \
 	Vendor.o \
 	Viewport.o \
-	VPaned.o \
 	XDrawLogo.o
 
 #if DebugLibXaw && ProfileLibXaw
