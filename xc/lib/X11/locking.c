@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.17 93/11/15 11:18:16 kaleb Exp $
+ * $XConsortium: locking.c,v 1.18 93/11/19 09:21:14 kaleb Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -351,46 +351,6 @@ static void _XConditionSignal(cv)
 }
     
 
-/* returns 0 if initialized ok, -1 if unable to allocate
-   a mutex or other memory */
-
-static int _XInitDisplayLock(dpy)
-    Display *dpy;
-{
-    dpy->lock = (struct _XLockInfo *)Xmalloc(sizeof(struct _XLockInfo));
-    if (dpy->lock == NULL)
-	return -1;
-    dpy->lock_fns = (struct _XLockPtrs*)Xmalloc(sizeof(struct _XLockPtrs));
-    if (dpy->lock_fns == NULL)
-	return -1;
-
-    dpy->lock->reply_bytes_left = 0;
-    dpy->lock->reply_was_read = False;
-    dpy->lock->reply_awaiters = NULL;
-    dpy->lock->reply_awaiters_tail = &dpy->lock->reply_awaiters;
-    dpy->lock->event_awaiters = NULL;
-    dpy->lock->event_awaiters_tail = &dpy->lock->event_awaiters;
-    xthread_clear_id(dpy->lock->locking_thread);
-    xthread_clear_id(dpy->lock->reading_thread);
-    xthread_clear_id(dpy->lock->conni_thread);
-    dpy->lock->cv = NULL;
-
-    dpy->lock->mutex = xmutex_malloc();
-    if (dpy->lock->mutex==NULL)
-	return -1;
-    xmutex_init(dpy->lock->mutex);
-
-    dpy->lock_fns->lock_display = _XLockDisplay;
-    dpy->lock_fns->unlock_display = _XUnlockDisplay;
-    dpy->lock_fns->pop_reader = _XPopReader;
-    dpy->lock_fns->push_reader = _XPushReader;
-    dpy->lock_fns->condition_wait = _XConditionWait;
-    dpy->lock_fns->condition_signal = _XConditionSignal;
-    dpy->lock_fns->lock_wait = NULL; /* filled in by XLockDisplay() */
-
-    return 0;
-}
-
 static void _XFreeDisplayLock(dpy)
     Display *dpy;
 {
@@ -486,8 +446,52 @@ void _XUserUnlockDisplay(dpy)
     xcondition_broadcast(dpy->lock->cv);
     /* substitute function back */
     dpy->lock_fns->lock_display = _XLockDisplay;
+    dpy->lock_fns->lock_wait = NULL;
     xthread_clear_id(dpy->lock->locking_thread);
 }
+
+/* returns 0 if initialized ok, -1 if unable to allocate
+   a mutex or other memory */
+
+static int _XInitDisplayLock(dpy)
+    Display *dpy;
+{
+    dpy->lock = (struct _XLockInfo *)Xmalloc(sizeof(struct _XLockInfo));
+    if (dpy->lock == NULL)
+	return -1;
+    dpy->lock_fns = (struct _XLockPtrs*)Xmalloc(sizeof(struct _XLockPtrs));
+    if (dpy->lock_fns == NULL)
+	return -1;
+
+    dpy->lock->reply_bytes_left = 0;
+    dpy->lock->reply_was_read = False;
+    dpy->lock->reply_awaiters = NULL;
+    dpy->lock->reply_awaiters_tail = &dpy->lock->reply_awaiters;
+    dpy->lock->event_awaiters = NULL;
+    dpy->lock->event_awaiters_tail = &dpy->lock->event_awaiters;
+    xthread_clear_id(dpy->lock->locking_thread);
+    xthread_clear_id(dpy->lock->reading_thread);
+    xthread_clear_id(dpy->lock->conni_thread);
+    dpy->lock->cv = NULL;
+
+    dpy->lock->mutex = xmutex_malloc();
+    if (dpy->lock->mutex==NULL)
+	return -1;
+    xmutex_init(dpy->lock->mutex);
+
+    dpy->lock_fns->lock_display = _XLockDisplay;
+    dpy->lock_fns->unlock_display = _XUnlockDisplay;
+    dpy->lock_fns->user_lock_display = _XUserLockDisplay;
+    dpy->lock_fns->user_unlock_display = _XUserUnlockDisplay;
+    dpy->lock_fns->pop_reader = _XPopReader;
+    dpy->lock_fns->push_reader = _XPushReader;
+    dpy->lock_fns->condition_wait = _XConditionWait;
+    dpy->lock_fns->condition_signal = _XConditionSignal;
+    dpy->lock_fns->lock_wait = NULL; /* filled in by XLockDisplay() */
+
+    return 0;
+}
+
 
 Status XInitThreads()
 {
