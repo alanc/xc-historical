@@ -51,24 +51,21 @@ the console while the server is running.
 The sample server supports connections made using the following reliable
 byte-streams:
 .TP 4
-.B TCP\/IP
+.I TCP\/IP
 .br
-The server listens on port htons(6000+n), where n is the display number.
+The server listens on port htons(6000+\fIn\fP), where \fIn\fP is the 
+display number.
 .TP 4
-.B "Unix Domain"
-The file name for the socket is X_UNIX_PATHn where X_UNIX_PATH
-is a configuration parameter (/tmp/.X11-unix/X in the standard release) and
-"n" is the display number.
+.I "Unix Domain"
+The sample server uses \fI/tmp/.X11-unix/X\fBn\fR as the filename for 
+the socket, where \fIn\fP is the display number.
 .TP 4
-.B "DECnet"
+.I "DECnet"
 .br
-The server responds to connections to object ``X$Xn'', where "n''
+The server responds to connections to object \fIX$X\fBn\fR, where \fIn\fP
 is the display number.
 .SH OPTIONS
-The following options can be given on the command line to any X server, usually
-when it is
-started by \fIinit(1)\fP using information stored in the file \fI/etc/ttys\fP.
-(see \fIttys(5)\fP for details):
+All of the sample servers accept the following command line options:
 .TP 8
 .B \-a \fInumber\fP
 sets pointer acceleration (i.e. the ratio of how much is reported to how much
@@ -135,44 +132,103 @@ sets the default font
 forces the default backing-store of all windows to be WhenMapped;
 a cheap trick way of getting backing-store to apply to all windows.
 .PP
-Specific servers may have additional command line options.
+Many servers also have device-specific command line options.  See the
+manual pages for the individual servers for more details.
 .SH "SECURITY"
-.I X
-uses an access control list for deciding whether or not to accept a
-connection from a given cleint.  This list
-initially consists of the machine on which the server is running, and any
-hosts listed in the file
-\fI/etc/Xn.hosts\fP
-(where \fIn\fP is the display number).  This file should contain one line
-per host name, with no white space.  If a name ends in ``::'', it is assumed
-to be a DECnet host, otherwise it is interpreted as an Internet host.
 .PP
-The user can manipulate a dynamic form of this list in the server
-using the \fIxhost(1)\fP program from
-the same machine as the server.
+The sample server uses an access control list for deciding whether or not
+to accept connections from clients on a particular machine.  This list
+initially consists of the host on which the server is running as well as
+any machines listed in the file \fI/etc/X\fBn\fI.hosts\fR, where \fBn\fP
+is the display number of the server.  Each line of the file should contain
+either an Internet hostname (e.g. expo.lcs.mit.edu) or a DECnet hostname
+in double colon format (e.g. hydra::).  There should be no leading or
+trailing spaces on any lines.  For example:
+.sp
+.in +8
+.nf 
+joesworkstation
+corporate.company.com
+star::
+bigcpu::
+.fi
+.in -8
 .PP
-Unlike some window systems, \fIX\fP does not have any notion of 
-window operation permissions or
-place any restrictions on what a client can do; if
-a program can connect to a display, it has full run of the screen.  There
-is support for using 
-authentication services on connection startup beyond the simple host name
-check, but it is not used in the standard distribution.
+Users can add or remove hosts from this list and enable or disable access
+control using the \fIxhost\fP command from the same machine as the server.
+For example:
+.sp
+.in +8
+.nf
+%  xhost +janesworkstation
+janesworkstation being added to access control list
+%  xhost -star::
+public:: being removed from access control list
+%  xhost +
+all hosts being allowed (access control disabled)
+%  xhost -
+all hosts being restricted (access control enabled)
+%  xhost
+access control enabled (only the following hosts are allowed)
+joesworkstation
+janesworkstation
+corporate.company.com
+bigcpu::
+.fi
+.in -8
+.PP
+Unlike some window systems, X does not have any notion of window operation
+permissions or place any restrictions on what a client can do; if a program can
+connect to a display, it has full run of the screen.  The core protocol does
+has support for providing authentication information when establishing
+connections, but is not used in the sample implementation.  Sites that have
+authentication and authorization systems (such as Kerberos) might wish to make
+use of the hooks in the libraries and the server to provide additional
+security. 
 .SH "SIGNALS"
-.I X
-will catch the SIGHUP signal sent by the display manager when the user's main
-program exits.
-This signal causes all connections to be closed,
-all resources to be freed, and all defaults restored.
+The sample server attaches special meaning to the following signals:
+.TP 8
+.I SIGHUP
+This signal causes the server to close all existing connections, free all
+resources, and restore all defaults.  It is sent by the display manager
+whenever the main user's main application (usually an \fIxterm\fP or window
+manager) exits to force the server to clean up and prepare for the next
+user.
+.TP 8
+.I SIGTERM
+This signal causes the server to exit cleanly.
 .SH "FONTS"
-Fonts are stored in individual files in the directories named by
-the font search path.  These files are created from Bitmap Description Format
-(BDF) textual descriptions using the \fIbdftosnf\fP and \fImkfontdir\fP
-utilities.  Font names are
-translated into file names using the \fIfonts.dir\fP file created by
-\fImkfontdir\fP.  \fBUnlike previous releases, if a directory in the font path
-doesn't have a \fIfonts.dir\fP, the server will not be able to find any fonts
-in that directory.\fP
+Fonts are usually stored as individual files in directories.  The list of
+directories in which the server looks when trying to open a font is controlled
+by the \fIfont path\fP.  Although most sites will choose to have the server
+start up with the appropriate font path (using the \fI-fp\fP option mentioned
+above), it can be overridden using the \fIxset\fP program.
+.PP
+The default font path for
+the sample server contains three directories:
+.TP 8
+.I /usr/lib/X11/fonts/misc
+This directory contains several miscellaneous fonts that are useful on all
+systems.  It contains a very small family of fixed-width fonts (\fB6x10\fP, 
+\fB6x12\fP, \fB6x13\fP, \fB8x13\fP, \fB8x13bold\fP, and \fB9x15\fP) and the
+cursor font.  It also has font name aliases for the commonly used fonts
+\fBfixed\fP and \fBvariable\fP.
+.TP 8
+.I /usr/lib/X11/fonts/75dpi
+This directory contains fonts contributed by Adobe Systems, Digital Equipment
+Corporation, and Bitstream for 75 dots per inch displays.  It contains
+the following font families:  Times, Helvetica, Courier, Symbol, New Century
+Schoolbook, Terminal, Dutch, Swiss, and Charter.
+.TP 8
+.I /usr/lib/X11/fonts/100dpi
+This directory contains versions of the fonts in the \fI75dpi\fP directory
+for 100 dots per inch displays.
+.PP
+Font databases are created by running the \fImkfontdir\fP program in the
+directory containing the compiled versions of the fonts (the \fI.snf\fP files).
+Whenever fonts are added to a directory, \fImkfontdir\fP should be rerun
+so that the server can find the new fonts.  \fBIf \fImkfontdir\fP is not
+run, the server will not be able to find any fonts in the directory.\fR
 .SH DIAGNOSTICS
 Too numerous to list them all.
 If run from \fIinit(8)\fP, errors are logged in the file \fI/usr/adm/X*msgs\fP,
@@ -181,8 +237,8 @@ If run from \fIinit(8)\fP, errors are logged in the file \fI/usr/adm/X*msgs\fP,
 /etc/X*.hosts
 Initial access control list
 .TP 30
-/usr/lib/X11/fonts
-Font directory
+/usr/lib/X11/fonts/misc, /usr/lib/X11/fonts/75dpi, /usr/lib/X11/fonts/100dpi 
+Font directories
 .TP 30
 /usr/lib/X11/rgb.txt
 Color database
@@ -212,17 +268,18 @@ dies before its clients, new clients won't be able to connect until all
 existing connections have their TCP TIME_WAIT timers expire.
 .PP
 The color database is missing a large number of colors.  However, there
-doesn't seem to be a better one available that can generate RGB values.
+doesn't seem to be a better one available that can generate RGB values
+tailorable to particular displays.
 .PP
 The \fIxterm -L\fP method for starting an initial window from \fI/etc/ttys\fP
 is completely inadequate and should be removed.  People should use \fIxdm\fP
 instead.
 .SH COPYRIGHT
-Copyright 1988, Massachusetts Institute of Technology.
+Copyright 1984, 1985, 1986, 1987, 1988, Massachusetts Institute of Technology.
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS
 The sample server was originally written by
 Susan Angebranndt, Raymond Drewry, Philip Karlton, and Todd Newman,
-with support from a cast of thouands.  See also the \fIdoc/contributors\fP
-file.
+with support from a cast of thouands.  See also the file \fIdoc/contributors\fP
+in the sample distribution for a more complete list.
