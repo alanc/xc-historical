@@ -216,6 +216,7 @@ Project.tmpl provides defaults for the following variables:
 	IncRoot			parent directory of installed header files
 	InstallAppDefFiles	boolean for installing new app defaults files
 	InstallXdmConfig	boolean for installing xdm config files
+	XdmServersType		type of xdm Xservers file to install
 	InstallXinitConfig	boolean for installing xinit files
 	LibDir			directory in which to install X11 data files
 	LibManSuffix		man suffix for library pages
