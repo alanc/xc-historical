@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xconsole.c,v 1.4 91/02/17 12:26:25 dave Exp $
+ * $XConsortium: xconsole.c,v 1.5 91/02/22 10:49:43 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -104,7 +104,7 @@ static XrmOptionDescRec options[] = {
 #ifndef USE_FILE
 #include    <sys/ioctl.h>
 #ifdef SVR4
-#include    <sys/termios.h>
+#include    <termios.h>
 #endif
 
 #ifdef TIOCCONS
