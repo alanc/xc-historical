@@ -64,13 +64,32 @@ typedef struct {
 typedef struct {
     XawTextPosition	 top;	/* Top of the displayed text.		*/
     int			 lines;	/* How many lines in this table.	*/
-    XawTextLineTableEntry *info;	/* A dynamic array, one entry per line  */
-    } XawTextLineTable, *XawTextLineTablePtr;
+    XawTextLineTableEntry *info;/* A dynamic array, one entry per line  */
+} XawTextLineTable, *XawTextLineTablePtr;
 
 #define IsPositionVisible(ctx, pos) \
 		(pos >= ctx->text.lt.info[0].position && \
 		 pos < ctx->text.lt.info[ctx->text.lt.lines].position)
 
+/*
+ * Search & Replace data structure.
+ */
+
+struct SearchAndReplace {
+  Boolean selection_changed;	/* flag so that the selection cannot be
+				   changed out from underneath query-replace.*/
+  Widget search_popup;		/* The poppup widget that allows searches.*/
+  Widget label1;		/* The label widgets for the search window. */
+  Widget label2;
+  Widget left_toggle;		/* The left search toggle radioGroup. */
+  Widget right_toggle;		/* The right search toggle radioGroup. */
+  Widget rep_label;		/* The Replace label string. */
+  Widget rep_text;		/* The Replace text field. */
+  Widget search_text;		/* The Search text field. */
+  Widget rep_one;		/* The Replace one button. */
+  Widget rep_all;		/* The Replace all button. */
+};
+    
 /* Private Text Definitions */
 
 typedef int (*ActionProc)();
@@ -111,17 +130,19 @@ typedef struct _TextPart {
     Position	    ev_x, ev_y;	    /* x, y coords for key or button action */
     Widget	    sbar;	    /* The vertical scroll bar (none = 0).  */
     Widget	    outer;	    /* Parent of scrollbar & text (if any) */
-    XawTextPosition  *updateFrom;    /* Array of start positions for update. */
+    struct SearchAndReplace * search;/* Search and replace structure. */
+    Widget          file_insert;    /* The file insert popup widget. */
+    XawTextPosition  *updateFrom;   /* Array of start positions for update. */
     XawTextPosition  *updateTo;	    /* Array of end positions for update. */
     int		    numranges;	    /* How many update ranges there are. */
     int		    maxranges;	    /* How many ranges we have space for */
     Boolean	    showposition;   /* True if we need to show the position. */
     XawTextPosition  lastPos;	    /* Last position of source. */
-    Widget          file_insert;    /* The file insert popup widget. */
     GC              gc;
     Boolean         hasfocus;       /* TRUE if we currently have input focus.*/
     Boolean	    update_disabled; /* TRUE if display updating turned off */
     XawTextPosition  old_insert;      /* Last insertPos for batched updates */
+    short           mult;	      /* Multiplier. */
 } TextPart;
 
 /****************************************************************
