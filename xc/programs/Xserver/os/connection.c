@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.157 93/09/18 14:51:12 dpw Exp $ */
+/* $XConsortium: connection.c,v 1.158 93/09/22 20:00:42 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -42,8 +42,11 @@ SOFTWARE.
 #include "X.h"
 #include "Xproto.h"
 #include <sys/param.h>
-#include <errno.h>
 #include "Xos.h"			/* for strings, file, time */
+#include <errno.h>
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
 #include <sys/socket.h>
 
 #include <signal.h>

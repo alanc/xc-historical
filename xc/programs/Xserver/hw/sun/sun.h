@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.21 93/08/13 14:33:41 kaleb Exp $ */
+/* $XConsortium: sun.h,v 5.22 93/08/31 18:16:07 kaleb Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -52,7 +52,11 @@ extern char *getenv();
 #endif
 #include <errno.h>
 #include <memory.h>
+
+#ifdef X_NOT_STDC_ENV
 extern int errno;
+#endif
+
 extern int gettimeofday();
 
 /* 

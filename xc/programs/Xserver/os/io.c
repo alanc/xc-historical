@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.74 93/09/03 08:17:17 dpw Exp $ */
+/* $XConsortium: io.c,v 1.75 93/09/22 20:01:02 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -32,6 +32,9 @@ SOFTWARE.
 
 #include <stdio.h>
 #include "Xos.h"
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
 #include "Xmd.h"
 #include <errno.h>
 #include <sys/param.h>
@@ -80,8 +83,6 @@ static ConnectionOutputPtr AllocateOutputBuffer(
     void
 #endif
 );
-
-extern int errno;
 
 #define get_req_len(req,cli) ((cli)->swapped ? \
 			      lswaps((req)->length) : (req)->length)

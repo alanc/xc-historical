@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.61 93/09/05 10:52:35 rws Exp $ */
+/* $XConsortium: WaitFor.c,v 1.62 93/09/22 19:43:26 rws Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -34,6 +34,10 @@ SOFTWARE.
 #include "Xos.h"			/* for strings, fcntl, time */
 
 #include <errno.h>
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+
 #include <stdio.h>
 #include "X.h"
 #include "misc.h"
@@ -64,8 +68,6 @@ extern void SaveScreens();
 extern void ProcessInputEvents();
 extern void BlockHandler();
 extern void WakeupHandler();
-
-extern int errno;
 
 #ifdef apollo
 extern FdSet apInputMask;
