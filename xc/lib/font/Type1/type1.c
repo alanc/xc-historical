@@ -1,4 +1,4 @@
-/* $XConsortium: type1.c,v 1.5 91/10/10 11:20:06 rws Exp $ */
+/* $XConsortium: type1.c,v 1.6 92/07/07 17:14:52 gildea Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -120,8 +120,10 @@ static long tmpi;    /* Store converted value in tmpi to avoid re-evaluation */
 #define ODD(x) (((int)(x)) & 01)
  
 #define Error {errflag = TRUE; return;}
+#define ErrorRet(ret) {errflag = TRUE; return (ret);}
  
 #define Error0(errmsg) {IfTrace0(TRUE, errmsg); Error;}
+#define Error0Ret(errmsg, ret) {IfTrace0(TRUE, errmsg); ErrorRet(ret);}
  
 #define Error1(errmsg,arg) {IfTrace1(TRUE, errmsg, arg); Error;}
  
@@ -750,7 +752,7 @@ static PSFakePush(Num)
 static double PSFakePop ()
 {
   if (PSFakeTop >= 0) return(PSFakeStack[PSFakeTop--]);
-  else Error0("PSFakePop : Stack empty\n");
+  else Error0Ret("PSFakePop : Stack empty\n", 0.0);
   /*NOTREACHED*/
 }
  
