@@ -1,3 +1,5 @@
+/* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
+
 #include "assyntax.h"
 
 /*
