@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.143 94/05/11 16:01:26 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.144 94/06/14 10:11:06 kaleb Exp mumble $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -613,6 +613,16 @@ WaitLoop:
 		    }
 		}
 
+		if (!ignoreEvents)
+		    /* get Xlib to detect a bad connection */
+		    for (dd = 0; dd < app->count; dd++)
+			if (XEventsQueued(app->list[dd], QueuedAfterReading)) {
+#if USE_POLL
+			    XtStackFree ((XtPointer) wf.fdlist, fdlist);
+#endif
+			    return dd;
+			}
+
 		if (block) {
 #ifndef USE_POLL
 		    if (wt.wait_time_ptr == NULL)
@@ -642,16 +652,6 @@ WaitLoop:
 		char Errno[12];
 		String param = Errno;
 		Cardinal param_count = 1;
-
-		if (!ignoreEvents)
-		    /* get Xlib to detect a bad connection */
-		    for (dd = 0; dd < app->count; dd++)
-			if (XEventsQueued(app->list[dd], QueuedAfterReading)) {
-#if USE_POLL
-			    XtStackFree ((XtPointer) wf.fdlist, fdlist);
-#endif
-			    return dd;
-			}
 
 		sprintf( Errno, "%d", errno);
 		XtAppWarningMsg(app, "communicationError","select",
