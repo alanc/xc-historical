@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.1 91/07/30 12:12:11 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.1 91/10/28 18:59:12 rws Exp $
 
 #define OSName			OSF1
 XCOMM operating system:  OSName
@@ -9,12 +9,12 @@ XCOMM operating system:  OSName
 #define Malloc0ReturnsNull	YES
 #define HasNdbm			YES
 #define HasShm			YES
-#define NeedFunctionPrototypes	YES
 #define AvoidNullMakeCommand	YES
 #define InstPgmFlags -S
 #define InstallCmd installbsd
 
 #ifdef MipsArchitecture
+#define NeedFunctionPrototypes	YES
 #define XdecServer YES
 #define PexCCOptions -Wf,-XNp15000,-XNd15000
 #endif
