@@ -12,11 +12,6 @@ A joint production of:
 	Geoff Lee
 	Mark Opperman		Sun Microsystems
 
-Special thanks to:
-
-	MIT's Statistics Center,  for generously allowing us to monopolize
-	their Suns while we integrated the Sun code into the releases.
-
 This version of the Sun X.11 drivers uses ../mi,  ../mfb and ../cfb to support
 the following configurations:
 
@@ -39,14 +34,18 @@ if you have problems installing or using it you are on your own.
 
 Things to check before building:
 
-1)	util/imake.includes/Imake.tmpl - check LIBDIR, FONTDIR, etc.
+1)	util/imake.includes/Sun.macros - set the SunOSMajorVersion and
+	SunOSMinorVersion parameters to the right values.
 
-2)	Make sure the fonts/Makefile uses the pad flag on the font
+2)	util/imake.includes/Imake.tmpl - check LIBDIR, FONTDIR, etc.
+
+3)	Make sure the fonts/Makefile uses the pad flag on the font
 	compiler to pad the glyphs to 4-byte boundaries.
 
-3)	If you want the non-portable zoids extension, add -DZOIDS to CFLAGS.
+4)	If you want the non-portable zoids extension, add -DZOIDS to CFLAGS.
 	The non-portable zoids have worse performance than portable zoids
 	but prove that the extension mechanism works for output.
+
 
 Then build the system by:
 
