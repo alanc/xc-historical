@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 2.16 88/02/14 21:15:33 swick Exp $";
+static char rcs_id[] = "$Header: screen.c,v 2.17 88/02/15 16:02:59 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -254,11 +254,19 @@ Scrn scrn;
     XtSetValues(scrn->parent, arglist, XtNumber(arglist));
     XtRealizeWidget(scrn->parent);
 
+    /* crock, because we want requested height reductions to succeed
+       but VPaned thinks total height is way too big until we shrink
+       all boxes */
+
+    XtPanedSetRefigureMode(scrn->widget, FALSE);
+
     BBoxLockSize(scrn->folderbuttons);
     BBoxLockSize(scrn->mainbuttons);
     BBoxLockSize(scrn->seqbuttons);
     BBoxLockSize(scrn->tocbuttons);
     BBoxLockSize(scrn->viewbuttons);
+
+    XtPanedSetRefigureMode(scrn->widget, TRUE);
 
 /* %%%  XtPanedAllowResizing(scrn->widget, FALSE); */
     theight = GetHeight((Widget)scrn->tocwidget) +
@@ -341,8 +349,9 @@ ScrnKind kind;
 	case STcomp:		MakeComp(scrn);	break;
     }
 
-    DEBUG("Mapping...")
+    DEBUG("Realizing...")
     XtSetMappedWhenManaged(scrn->widget, TRUE);
+    XtRealizeWidget(scrn->widget);
     DEBUG(" done.\n")
     XDefineCursor( theDisplay, XtWindow(scrn->parent),
 		   XtGetCursor( theDisplay, XC_left_ptr ) );
