@@ -1,4 +1,4 @@
-/* $XConsortium: xstubs.c,v 1.2 89/11/10 11:58:20 rws Exp $ */
+/* $XConsortium: xstubs.c,v 1.3 89/12/02 15:21:42 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -115,4 +115,18 @@ OpenInputDevice (dev, client, status)
     ClientPtr client;
     int *status;
     {
+    }
+
+/****************************************************************************
+ *
+ * Change the mode of an extension device.
+ *
+ */
+
+SetDeviceMode (client, id, mode)
+    register	ClientPtr	client;
+    int		id;
+    int		mode;
+    {
+    return BadDevice;
     }
