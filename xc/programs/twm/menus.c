@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.72 89/06/22 17:27:56 jim Exp $
+ * $XConsortium: menus.c,v 1.73 89/06/30 19:33:19 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.72 89/06/22 17:27:56 jim Exp $";
+"$XConsortium: menus.c,v 1.73 89/06/30 19:33:19 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1873,36 +1873,6 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	    ParseTwmrc(ptr);
 	    MakeMenus();
 
-#ifdef TOM
-	    /* I started to write code to redo colors and stuff, but I 
-	     * didn't get it all done, that's why it is ifdef'ed out
-	     */
-	    for (tmp_win = Scr->TwmRoot.next;
-		 tmp_win != NULL;
-		 tmp_win = tmp_win->next)
-	    {
-		if (tmp_win->title_w)
-		{
-		    XUnmapWindow(dpy, tmp_win->title_w);
-		    XSetWindowBackground(dpy, tmp_win->title_w,
-			Scr->TitleC.back);
-		}
-		XDestroyWindow(dpy, tmp_win->iconify_w, Scr->TitleC.back);
-		XDestroyWindow(dpy, tmp_win->resize_w, Scr->TitleC.back);
-		XDestroyWindow(dpy, tmp_win->hilite_w, Scr->TitleC.back);
-		CreateTitleButtons(tmp_win);
-		XMapWindow(dpy, tmp_win->title_w);
-		SetupWindow(tmp_win, tmp_win->frame_x, tmp_win->frame_y,
-			    tmp_win->frame_width, tmp_win->frame_height);
-		if (tmp_win == Scr->Focus || !tmp_win->highlight)
-		{
-		    XSetWindowBorder(dpy, tmp_win->frame, tmp_win->border);
-		    XSetWindowBorder(dpy, tmp_win->title_w, tmp_win->border);
-		}
-		if (tmp_win == Scr->Focus)
-		    XMapWindow(tmp_win->hilite_w);
-	    }
-#endif /* TOM */
 	    GrabAllButtons();
 	    GrabAllKeys();
 	    FirstScreen = FALSE;
