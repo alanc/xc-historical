@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.1 89/09/02 17:09:25 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.2 89/09/04 11:05:23 rws Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -101,8 +101,8 @@ miZeroCircleSetup(arc, info)
     for (i = 0; i < 8; i++)
     {
 	if ((endAngle < startAngle) ?
-	    ((i * EIGHTH < endAngle) || ((i + 1) * EIGHTH >= startAngle)) :
-	    ((i * EIGHTH < endAngle) && ((i + 1) * EIGHTH >= startAngle)))
+	    ((i * EIGHTH <= endAngle) || ((i + 1) * EIGHTH > startAngle)) :
+	    ((i * EIGHTH <= endAngle) && ((i + 1) * EIGHTH > startAngle)))
 	    info->initialMask |= (1 << i);
     }
     info->startMask = info->initialMask;
@@ -134,8 +134,14 @@ miZeroCircleSetup(arc, info)
 	if ((info->startx > info->endx) && !overlap)
 	    info->startMask &= ~(1 << endseg);
     }
+    if (info->startx == info->endx)
+	info->startMask = info->endMask;
     if ((arc->width & 1) && !info->startx)
+    {
 	info->startx = 1;
+	if (info->endx == 1)
+	    info->startMask = info->endMask;
+    }
 }
 
 static DDXPointPtr
