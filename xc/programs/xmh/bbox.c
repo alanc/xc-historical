@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: bbox.c,v 1.12 88/01/12 14:54:25 swick Exp $";
+static char rcs_id[] = "$Header: bbox.c,v 1.13 88/01/19 14:20:56 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -46,35 +46,6 @@ Button button;
 }
 
 
-
-#ifdef NOTDEF			/* %%% */
-/* Handle a buttonbox getting resized.  In particular, tell the Pane widget
-   the new range of legal sizes for this buttonbox. */
-
-static void HandleBBoxResize(event, buttonbox)
-XEvent *event;
-ButtonBox buttonbox;
-{
-    switch (event->type) {
-      case ConfigureNotify:
-	if (event->xconfigure.height != buttonbox->maxheight) {
-	    buttonbox->maxheight = event->xconfigure.height;
-	    XtPanedSetMinMax(buttonbox->scrn->widget,
-			      buttonbox->outer,
-			      buttonbox->fullsized ? buttonbox->maxheight : 5,
-			      buttonbox->maxheight);
-	}
-	return XteventHandled;
-      case DestroyNotify:
-	XtFree((char *) buttonbox->button);
-	XtFree((char *) buttonbox);
-	return XteventHandled;
-    }
-    return XteventNotHandled;
-}
-#endif
-
-
 /* Create a new button box.  The widget for it will be a child of the given
    scrn's widget, and it will be added to the scrn's pane. */
 
@@ -86,37 +57,28 @@ ButtonBox BBoxRadioCreate(scrn, position, name, radio)
 				   button is active. */
 {
     static Arg arglist[] = {
-	{XtNwidth, NULL},
-	{XtNinnerWidth, NULL},
-	{XtNallowVert, (XtArgVal)TRUE},
-    };
-    static Arg bbox_args[] = {
+/*	{XtNallowVert, True}, */ /* is set by BBoxLockSize() */
 	{XtNskipAdjust, True},
     };
     int width;
     ButtonBox buttonbox;
 
     width = GetWidth(scrn->widget);
-    arglist[0].value = arglist[1].value = (XtArgVal) width;
     buttonbox = XtNew(ButtonBoxRec);
     bzero((char *)buttonbox, sizeof(ButtonBoxRec));
     buttonbox->updatemode = TRUE;
     buttonbox->scrn = scrn;
-/*    buttonbox->outer = XtScrolledWindowCreate(theDis, scrn->widget, arglist,
-					      XtNumber(arglist)); %%% */
-    buttonbox->outer = buttonbox->inner =
-	XtCreateManagedWidget(name, buttonBoxWidgetClass, scrn->widget,
-			      bbox_args, XtNumber(bbox_args));
-/*    XtScrolledWindowSetChild(theDis, buttonbox->outer, buttonbox->inner);
-*/
+    buttonbox->outer =
+	XtCreateManagedWidget(name, viewportWidgetClass, scrn->widget,
+			      arglist, XtNumber(arglist));
+    buttonbox->inner =
+	XtCreateManagedWidget(name, buttonBoxWidgetClass, buttonbox->outer,
+			      NULL, (Cardinal)0);
     buttonbox->numbuttons = 0;
     buttonbox->button = (Button *) XtMalloc((unsigned) 1);
     buttonbox->maxheight = 5;
     buttonbox->radio = radio;
     if (radio) *radio = NULL;
-/*    XtSetEventHandler(theDisp, buttonbox->inner, HandleBBoxResize,
-		      StructureNotifyMask, (caddr_t) buttonbox);
-*/
     return buttonbox;
 }
 
@@ -372,9 +334,13 @@ ButtonBox buttonbox;
 void BBoxLockSize(buttonbox)
 ButtonBox buttonbox;
 {
+    static Arg args[] = {
+	{XtNallowVert, True}
+    };
+
+    XtSetValues(buttonbox->outer, args, XtNumber(args));
     buttonbox->maxheight = GetHeight(buttonbox->inner);
     XtPanedSetMinMax(buttonbox->outer, 5, buttonbox->maxheight);
-    buttonbox->fullsized = FALSE;
 }
 
 
