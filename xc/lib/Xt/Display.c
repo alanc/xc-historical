@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.75 91/05/20 12:03:09 converse Exp $ */
+/* $XConsortium: Display.c,v 1.76 91/05/29 15:38:55 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -140,6 +140,7 @@ static XtPerDisplay InitPerDisplay(dpy, app, name, classname)
     pd->per_screen_db = (XrmDatabase *)XtCalloc(ScreenCount(dpy),
 						sizeof(XrmDatabase));
     pd->cmd_db = (XrmDatabase)NULL;
+    pd->server_db = (XrmDatabase)NULL;
     return pd;
 }
 
@@ -171,8 +172,8 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 	XtPerDisplay pd;
 	String language = NULL;
 
-	/* parse the command line for name, display, and language */
-	if (! displayName || !applName)
+	/* parse the command line for name, display, and/or language */
+	if (!applName || !displayName || app->process->globalLangProcRec.proc)
 	    db = _XtPreparseCommandLine(urlist, num_urs, *argc, argv,
 					&applName, &displayName, &language);
 	d = XOpenDisplay(displayName);
@@ -188,7 +189,7 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 
 	if (d) {
 	    pd = InitPerDisplay(d, app, applName, className);
-	    if (language) pd->language = XtNewString(language);
+	    pd->language = language;
 	    _XtDisplayInitialize(d, pd, applName, urlist, num_urs, argc, argv);
 	}
 	if (db) XrmDestroyDatabase(db);
@@ -220,16 +221,15 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 #endif
 {
     XtPerDisplay pd;
-    XrmDatabase db;
-    String language = NULL;
+    XrmDatabase db = 0;
 
     pd = InitPerDisplay(dpy, app, name, classname);
-    /* pre-parse the command line for the language resource */
-    db = _XtPreparseCommandLine(urlist, num_urs, *argc, argv, NULL, NULL,
-				&language);
-    if (language) pd->language = XtNewString(language);
-    XrmDestroyDatabase(db);
+    if (app->process->globalLangProcRec.proc)
+	/* pre-parse the command line for the language resource */
+	db = _XtPreparseCommandLine(urlist, num_urs, *argc, argv, NULL, NULL,
+				    &pd->language);
     _XtDisplayInitialize(dpy, pd, name, urlist, num_urs, argc, argv);
+    if (db) XrmDestroyDatabase(db);
 }
 
 XtAppContext XtCreateApplicationContext()
@@ -458,6 +458,8 @@ static void CloseDisplay(dpy)
 	    XrmDestroyDatabase(def_db);
 	    if (xtpd->cmd_db)
 		XrmDestroyDatabase(xtpd->cmd_db);
+	    if (xtpd->server_db)
+		XrmDestroyDatabase(xtpd->server_db);
 	    XtFree(xtpd->language);
         }
 	XtFree((char*)pd);
