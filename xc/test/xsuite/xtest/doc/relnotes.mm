@@ -1,4 +1,4 @@
-.\" $XConsortium: relnotes.mm,v 1.3 92/07/01 13:46:52 rws Exp $
+.\" $XConsortium: relnotes.mm,v 1.4 92/07/03 19:43:05 rws Exp $
 .ds dD Release Notes for the X Test Suite
 .so 00.header
 '\"
@@ -68,6 +68,13 @@ cat xtest.?? | uncompress | (cd \fIsourcedir\fP; tar xfp -)
 .P
 The \fIsourcedir\fP directory you choose can be anywhere in any of your
 filesystems that is convenient to you.
+.P
+The \*(xT requires about 10Mb of disk space to 
+unpack the sources, and perhaps 50-100Mb of disk space to build
+space-saving executable files (dependent on machine architecture).
+If you choose to build standard executable files
+you will require perhaps 100-250Mb of disk space.
+See the User Guide for build instructions.
 .H 1 "Documentation"
 The following documentation is provided for the \*(xT.
 To format the .mm files, you need the utilities \fCsoelim\fP, \fCtbl\fP, 
