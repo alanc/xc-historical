@@ -63,6 +63,7 @@ typedef struct _XParms {
     GC		    bggc;
     unsigned long   foreground;
     unsigned long   background;
+    Bool	    pack;
 } XParmRec, *XParms;
 
 typedef enum {
