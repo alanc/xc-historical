@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: sun.h,v 5.13 92/03/19 18:37:57 rws Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: sun.h,v 5.14 92/05/06 17:59:08 keith Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -25,10 +25,17 @@ extern int  errno;
 #include    <sys/file.h>
 #include    <sys/fcntl.h>
 #include    <sys/signal.h>
+#ifdef SVR4
+#include    <sys/kbd.h>
+#include    <sys/kbio.h>
+#include    <sys/msio.h>
+#include    <sys/fbio.h>
+#else
 #include    <sundev/kbd.h>
 #include    <sundev/kbio.h>
 #include    <sundev/msio.h>
 #include    <sun/fbio.h>
+#endif
 
 /*
  * SUN_WINDOWS is now defined (or not) by the Makefile
@@ -39,6 +46,16 @@ extern int  errno;
 #include    <varargs.h>
 #include    <sys/ioctl.h>
 #include    <stdio.h>
+#ifdef SVR4
+#include    <sys/pixrect_hs.h>
+#include    <sys/rect.h>
+#include    <sys/rectlist.h>
+#include    <sys/pixwin.h>
+#include    <sys/win_screen.h>
+#include    <sys/win_input.h>
+#include    <sys/cms.h>
+#include    <sys/win_struct.h>
+#else
 #include    <pixrect/pixrect_hs.h>
 #include    <sunwindow/rect.h>
 #include    <sunwindow/rectlist.h>
@@ -47,9 +64,14 @@ extern int  errno;
 #include    <sunwindow/win_input.h>
 #include    <sunwindow/cms.h>
 #include    <sunwindow/win_struct.h>
+#endif
 #else 
 /* already included by sunwindow/win_input.h */
+#ifdef SVR4
+#include    <sys/vuid_event.h>
+#else
 #include    <sundev/vuid_event.h>
+#endif
 #endif /* SUN_WINDOWS */
 
 #include    "X.h"

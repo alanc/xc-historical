@@ -1,5 +1,5 @@
 /*
- * $XConsortium: constype.c,v 1.3 88/09/06 14:25:05 jim Exp $
+ * $XConsortium: constype.c,v 1.4 89/09/26 19:57:08 jim Exp $
  * 
  * consoletype - utility to print out string identifying Sun console type
  *
@@ -38,7 +38,11 @@ library, accounting for what otherwise might appear to be a strange coding
 style.
 */
 #include <stdio.h>
+#ifdef SVR4
+#include <string.h>
+#else
 #include <strings.h>
+#endif
 
 main (argc, argv)
     int argc;
@@ -60,7 +64,12 @@ main (argc, argv)
 }
 #include <sys/ioctl.h>
 #include <sys/file.h>
+#ifdef SVR4
+#include <fcntl.h>
+#include <sys/fbio.h>
+#else
 #include <sun/fbio.h>
+#endif
 
 /* decoding as of Release 3.4 : fbio.h 1.3 87/01/09 SMI */
 	/* the convention for entries in this table is to translate the

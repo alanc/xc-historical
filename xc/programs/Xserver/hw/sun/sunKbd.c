@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.14 91/11/15 18:28:39 gildea Exp $ */
+/* $XConsortium: sunKbd.c,v 5.15 92/06/04 10:16:23 rws Exp $ */
 /*-
  * sunKbd.c --
  *	Functions for retrieving data from a keyboard.
@@ -51,6 +51,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "inputstr.h"
 #include <signal.h>
 #include <sys/ioctl.h>
+#ifdef SVR4
+#include <sys/filio.h>
+#endif
 
 typedef struct {
     int	    	  trans;          	/* Original translation form */

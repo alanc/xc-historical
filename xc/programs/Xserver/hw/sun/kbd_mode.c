@@ -39,8 +39,14 @@ static  char sccsid[] = "@(#)kbd_mode.c 7.1 87/04/13";
 #include <sys/types.h>
 #include <sys/file.h>
 #include <sys/ioctl.h>
+#ifdef SVR4
+#include <fcntl.h>
+#include <sys/kbio.h>
+#include <sys/kbd.h>
+#else
 #include <sundev/kbio.h>
 #include <sundev/kbd.h>
+#endif
 #include <stdio.h>
 
 static void         die(), usage();
