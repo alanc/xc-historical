@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.157 93/09/08 08:25:18 kaleb Exp $ */
+/* $XConsortium: Event.c,v 1.158 93/10/06 17:20:17 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1353,7 +1353,7 @@ static Boolean DefaultDispatcher(event)
 Boolean XtDispatchEvent (event)
     XEvent  *event;
 {
-    Boolean was_dispatched;
+    Boolean was_dispatched, safe;
     int dispatch_level;
     int starting_count;
     XtPerDisplay pd;
@@ -1400,12 +1400,14 @@ Boolean XtDispatchEvent (event)
 
     app->dispatch_level = dispatch_level - 1;
 
-    if (_XtSafeToDestroy(app)) {
-	if (_XtAppDestroyCount != 0) _XtDestroyAppContexts();
+    if ((safe = _XtSafeToDestroy(app))) {
 	if (app->dpy_destroy_count != 0) _XtCloseDisplays(app);
 	if (app->free_bindings) _XtDoFreeBindings(app);
     }
     UNLOCK_APP(app);
+    LOCK_PROCESS;
+    if (_XtAppDestroyCount != 0 && safe) _XtDestroyAppContexts();
+    UNLOCK_PROCESS;
     return was_dispatched;
 }
 
