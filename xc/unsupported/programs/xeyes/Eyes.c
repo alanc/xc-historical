@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Eyes.c,v 1.21 91/02/19 15:34:54 converse Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -105,7 +105,7 @@ EyesClassRec eyesClassRec = {
     /* num_actions		*/	0,
     /* resources		*/	resources,
     /* num_resources		*/	XtNumber(resources),
-    /* xrm_class		*/	NULL,
+    /* xrm_class		*/	NULLQUARK,
     /* compress_motion		*/	TRUE,
     /* compress_exposure	*/	TRUE,
     /* compress_enterleave	*/	TRUE,
