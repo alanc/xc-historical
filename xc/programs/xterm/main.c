@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.114 89/05/26 11:38:56 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.115 89/05/26 14:25:47 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1115,11 +1115,13 @@ spawn ()
  		signal(SIGALRM, SIG_DFL);
  
 		/*
-		 * check results and ignore current control terminal if
-		 * necessary.
+		 * Check results and ignore current control terminal if
+		 * necessary.  ENXIO is what is normally returned if there is
+		 * no controlling terminal, but some systems (e.g. SunOS 4.0)
+		 * seem to return EIO.
 		 */
  		if (tty < 0) {
-			if (tty_got_hung || errno == EIO) {
+			if (tty_got_hung || errno == ENXIO || errno == EIO) {
 				no_dev_tty = TRUE;
 #ifdef USE_SYSV_TERMIO
 				tio = d_tio;
