@@ -50,6 +50,7 @@ XCalc*Command.internalWidth:			1
 
 XCalc.ti.geometry:				171x252
 XCalc.ti.bevel.screen.LCD.width:		100
+XCalc.ti.bevel.screen.LCD.ShapeStyle:		rectangle
 
 XCalc.ti.bevel.screen.LCD.translations:	#replace\n\
 				Ctrl<Key>c:quit()\n\
