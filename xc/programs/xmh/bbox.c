@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: bbox.c,v 2.15 88/02/14 20:52:11 swick Exp $";
+static char rcs_id[] = "$Header: bbox.c,v 2.16 88/02/15 15:58:33 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -57,9 +57,8 @@ ButtonBox BBoxRadioCreate(scrn, position, name, radio)
 				   button is active. */
 {
     static Arg arglist[] = {
-/*	{XtNallowVert, True}, */ /* is set by BBoxLockSize() */
+	{XtNallowVert, True},
 	{XtNskipAdjust, True},
-	{XtNallowResize, True},	/* is disabled by BBoxLockSize() */
     };
     int width;
     ButtonBox buttonbox;
@@ -335,17 +334,16 @@ ButtonBox buttonbox;
 void BBoxLockSize(buttonbox)
 ButtonBox buttonbox;
 {
+#ifdef notyet
     static Arg args[] = {
-	{XtNmax, NULL},		/* first 2 are for VPaned */
-	{XtNallowResize, False},
+	{XtNmax, NULL},		/* first is for VPaned */
 /*	{XtNmin, 5}, */		/* let user select this */
-	{XtNallowVert, True},	/* for Viewport */
     };
 
-    XtBoxDoLayout(buttonbox->inner);
     buttonbox->maxheight = GetHeight(buttonbox->inner);
     args[0].value = (XtArgVal)buttonbox->maxheight;
     XtSetValues(buttonbox->outer, args, XtNumber(args));
+#endif
 }
 
 
