@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.66 89/10/03 12:41:09 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.67 89/10/27 12:18:26 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -58,6 +58,12 @@
 #include "error.h"
 #include "menu.h"
 
+#ifdef CRAY
+#include <sys/ioctl.h>
+#include <sys/unistd.h>
+#include <time.h>
+#endif
+
 #ifdef macII
 #undef FIOCLEX					/* redefined from sgtty.h */
 #undef FIONCLEX					/* redefined from sgtty.h */
@@ -110,7 +116,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.66 89/10/03 12:41:09 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.67 89/10/27 12:18:26 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.56 89/11/15 10:57:07 jim Exp $
+ *	$XConsortium: misc.c,v 1.57 89/11/15 11:54:18 jim Exp $
  */
 
 
@@ -35,6 +35,9 @@
 #include <signal.h>
 #include <ctype.h>
 #include <pwd.h>
+#ifdef USG
+#include <unistd.h>
+#endif
 
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
@@ -58,7 +61,7 @@ static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.56 89/11/15 10:57:07 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.57 89/11/15 11:54:18 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -391,7 +394,7 @@ register TScreen *screen;
 	register int i;
 	static char *log_default;
 	char *malloc(), *rindex();
-	extern logpipe();
+	void logpipe();
 #ifdef SYSV
 	/* SYSV has another pointer which should be part of the
 	** FILE structure but is actually a separate array.
@@ -503,7 +506,7 @@ register TScreen *screen;
 	screen->logstart = screen->TekEmu ? Tbuffer : buffer;
 }
 
-logpipe()
+void logpipe()
 {
 	register TScreen *screen = &term->screen;
 
