@@ -331,3 +331,23 @@ void
 AbortDDX()
 {
 }
+
+/* Called by GiveUp(). */
+void
+ddxGiveUp()
+{
+}
+
+int
+ddxProcessArgument (argc, argv, i)
+    int	argc;
+    char *argv[];
+    int	i;
+{
+    return 0;
+}
+
+void
+ddxUseMsg()
+{
+}
