@@ -1,4 +1,19 @@
-XgcData FunctionData[MAXCHOICES] = {
+/*
+** xgc
+**
+** xgc.h
+**
+** Initialization of structures, etc.
+*/
+
+/* The three columns in the XgcData arrays are:
+**   name: the name of the toggle button
+**   text: the corresponding text in the xgc syntax
+**   code: the integer that the text corresponds to, for sending stuff
+**         to X calls, etc.
+*/
+
+XgcData FunctionData[NUM_FUNCTIONS] = {
   {"clear",        "clear",        GXclear},
   {"and",          "and",          GXand},
   {"andReverse",   "andReverse",   GXandReverse},
@@ -6,7 +21,7 @@ XgcData FunctionData[MAXCHOICES] = {
   {"andInverted",  "andInverted",  GXandInverted},
   {"noop",         "noop",         GXnoop},
   {"xor",          "xor",          GXxor},
-  {"or",           "or",            GXor},
+  {"or",           "or",           GXor},
   {"nor",          "nor",          GXnor},
   {"equiv",        "equiv",        GXequiv},
   {"invert",       "invert",       GXinvert},
@@ -17,12 +32,18 @@ XgcData FunctionData[MAXCHOICES] = {
   {"set",          "set",          GXset}
 }; 
 
+/* The two rows in the XgcStuff structure are:
+**   name of label, xgc syntax text, # of toggles, # of columns of toggles
+**     (0 columns means 1 row, as many columns as necessary)
+**   appropriate XgcData
+*/
+
 XgcStuff FunctionStuff = {
-  {"Function","function",16,4},
+  {"Function","function",NUM_FUNCTIONS,4},
   FunctionData
 };
 
-XgcData TestData[MAXCHOICES] = {
+XgcData TestData[NUM_TESTS] = {
   {"Copy Area",          "CopyArea",      CopyArea},
   {"Copy Plane",         "CopyPlane",     CopyPlane},
   {"Points",             "PolyPoint",     PolyPoint},
@@ -42,22 +63,22 @@ XgcData TestData[MAXCHOICES] = {
 };
 
 XgcStuff TestStuff = {
-  {"Test","test",16,2},
+  {"Test","test",NUM_TESTS,2},
   TestData
 };
 
-XgcData LinestyleData[MAXCHOICES] = {
+XgcData LinestyleData[NUM_LINESTYLES] = {
   {"Solid",      "Solid",       LineSolid},
   {"OnOffDash",  "OnOffDash",   LineOnOffDash},
   {"DoubleDash", "DoubleDash",  LineDoubleDash}
 };
 
 XgcStuff LinestyleStuff = {
-  {"LineStyle","linestyle",3,0},
+  {"LineStyle","linestyle",NUM_LINESTYLES,0},
   LinestyleData
 };
 
-XgcData CapstyleData[MAXCHOICES] = {
+XgcData CapstyleData[NUM_CAPSTYLES] = {
   {"NotLast",    "NotLast",     CapNotLast},
   {"Butt",       "Butt",        CapButt},
   {"Round",      "Round",       CapRound},
@@ -65,22 +86,22 @@ XgcData CapstyleData[MAXCHOICES] = {
 };
 
 XgcStuff CapstyleStuff = {
-  {"CapStyle","capstyle",4,2},
+  {"CapStyle","capstyle",NUM_CAPSTYLES,2},
   CapstyleData
 };
 
-XgcData JoinstyleData[MAXCHOICES] = {
+XgcData JoinstyleData[NUM_JOINSTYLES] = {
   {"Miter",   "Miter",   JoinMiter},
   {"Round",   "Round",   JoinRound},
   {"Bevel",   "Bevel",   JoinBevel}
 };
 
 XgcStuff JoinstyleStuff = {
-  {"JoinStyle","joinstyle",3,0},
+  {"JoinStyle","joinstyle",NUM_JOINSTYLES,0},
   JoinstyleData
 };
 
-XgcData FillstyleData[MAXCHOICES] = {
+XgcData FillstyleData[NUM_FILLSTYLES] = {
   {"Solid",          "Solid",          FillSolid},
   {"Tiled",          "Tiled",          FillTiled},
   {"Stippled",       "Stippled",       FillStippled},
@@ -88,29 +109,31 @@ XgcData FillstyleData[MAXCHOICES] = {
 };
 
 XgcStuff FillstyleStuff = {
-  {"FillStyle","fillstyle",4,2},
+  {"FillStyle","fillstyle",NUM_FILLSTYLES,2},
   FillstyleData
 };
 
-XgcData FillruleData[MAXCHOICES] = {
+XgcData FillruleData[NUM_FILLRULES] = {
   {"EvenOdd",  "EvenOdd",  EvenOddRule},
   {"Winding",  "Winding",  WindingRule}
 };
 
 XgcStuff FillruleStuff = {
-  {"FillRule","fillrule",2,0},
+  {"FillRule","fillrule",NUM_FILLRULES,0},
   FillruleData
 };
 
-XgcData ArcmodeData[MAXCHOICES] = {
+XgcData ArcmodeData[NUM_ARCMODES] = {
   {"Chord",    "Chord",    ArcChord},
  {"PieSlice", "PieSlice", ArcPieSlice}
 };
 
 XgcStuff ArcmodeStuff = {
-  {"ArcMode","arcmode",2,0},
+  {"ArcMode","arcmode",NUM_ARCMODES,0},
   ArcmodeData
 };
+
+/* Pointers to all the Xgcstuffs so we can run them through a loop */
 
 static XgcStuff *Everything[8] = {
   &FunctionStuff,
