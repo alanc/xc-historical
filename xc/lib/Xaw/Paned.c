@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Paned.c,v 1.12 89/10/09 16:20:50 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Paned.c,v 1.13 90/03/01 10:48:51 jim Exp $";
 #endif /* lint */
 
 
@@ -1363,7 +1363,7 @@ PanedWidget pw;
   if (stack == NULL) return(FALSE);
 
   pw->paned.stack = stack->next;
-  XtFree(stack);
+  XtFree((char*)stack);
 
   if (pw->paned.stack == NULL) return(FALSE);
   return(TRUE);
@@ -1570,16 +1570,14 @@ Widget w;
     XtReleaseGC( w, pw->paned.flipgc );
 } 
 
-static void InsertChild(w, args, argcount)
+static void InsertChild(w)
 register Widget w;
-ArgList args;
-Cardinal *argcount;
 {
    Pane pane = PaneInfo(w);
 
    /* insert the child widget in the composite children list with the */
    /* superclass insert_child routine.                                */
-   (*SuperClass->composite_class.insert_child)(w, args, argcount);
+   (*SuperClass->composite_class.insert_child)(w);
 
    if (!IsPane(w)) return;
 
