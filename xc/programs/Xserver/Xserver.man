@@ -130,19 +130,6 @@ manual page, the real entries have to occupy just one line):
 		secure window="/etc/X :0 -c -l"
 .fi
 .sp
-However, if you want the xterm to run on a different machine, you might have:
-.sp
-.nf
-	remote "/etc/X :0 -l -c" xterm on secure
-.fi
-.sp
-on the server machine and
-.sp
-.nf
-	ttyv0 "/exe/xterm -L -geometry -1+1 -display server:0" \\
-		xterm on secure
-.fi
-.sp
 on the client machine.  
 .PP
 Important note:  some versions of \fIinit\fP have relatively small
@@ -205,8 +192,8 @@ Unix domain socket
 /usr/adm/X*msgs
 Error log file
 .SH "SEE ALSO"
-X(1), xinit(1), xterm(1), xwm(1), xhost(1), xset(1), xsetroot(1), init(8),
-Xqdss(1), Xqvss(1), Xsun(1), Xapollo(1),
+X(1), xinit(1), xterm(1), xwm(1), xhost(1), xset(1), xsetroot(1), ttys(5),
+init(8), Xqdss(1), Xqvss(1), Xsun(1), Xapollo(1),
 .I "X Window System Protocol,"
 .I "Definition of the Porting Layer for the X v11 Sample Server,"
 .I "Strategies for Porting the X v11 Sample Server,"
