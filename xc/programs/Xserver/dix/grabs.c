@@ -1,4 +1,4 @@
-/* $XConsortium: grabs.c,v 5.7 89/12/11 15:43:47 keith Exp $ */
+/* $XConsortium: grabs.c,v 5.8 93/07/12 09:24:11 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -125,6 +125,7 @@ DeletePassiveGrab(value, id)
 	prev = g;
     }
     FreeGrab(pGrab);
+    return Success;
 }
 
 static Mask *
