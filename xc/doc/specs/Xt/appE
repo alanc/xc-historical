@@ -1,4 +1,4 @@
-.\" $XConsortium: appE,v 1.6 94/01/07 19:37:09 converse Exp $
+.\" $XConsortium: appE,v 1.7 94/04/17 14:14:13 kaleb Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -53,23 +53,15 @@ XtNborder	"borderColor"
 XtNborderPixmap	"borderPixmap"
 XtNborderWidth	"borderWidth"
 XtNcallback	"callback"
-XtNcancelCallback	"cancelCallback"
 XtNchangeHook	"changeHook"
 XtNchildren	"children"
-XtNclientLeader	"clientLeader"
-XtNcloneCommand	"cloneCommand"
 XtNcolormap	"colormap"
 XtNconfigureHook	"configureHook"
-XtNconnection	"connection"
 XtNcreateHook	"createHook"
-XtNcurrentDirectory	"currentDirectory"
 XtNdepth	"depth"
 XtNdestroyCallback	"destroyCallback"
 XtNdestroyHook	"destroyHook"
-XtNdieCallback	"dieCallback"
-XtNdiscardCommand	"discardCommand"
 XtNeditType	"editType"
-XtNenvironment	"environment"
 XtNfile	"file"
 XtNfont	"font"
 XtNfontSet	"fontSet"
@@ -88,7 +80,6 @@ XtNinnerWindow	"innerWindow"
 XtNinsertPosition	"insertPosition"
 XtNinternalHeight	"internalHeight"
 XtNinternalWidth	"internalWidth"
-XtNjoinSession	"joinSession"
 XtNjumpProc	"jumpProc"
 XtNjustify	"justify"
 XtNknobHeight	"knobHeight"
@@ -109,13 +100,8 @@ XtNparameter	"parameter"
 XtNpixmap	"pixmap"
 XtNpopupCallback	"popupCallback"
 XtNpopdownCallback	"popdownCallback"
-XtNprogramPath	"programPath"
-XtNresignCommand	"resignCommand"
 XtNresize	"resize"
-XtNrestartCommand	"restartCommand"
-XtNrestartStyle	"restartStyle"
 XtNreverseVideo	"reverseVideo"
-XtNsaveCallback	"saveCallback"
 XtNscreen	"screen"
 XtNscrollProc	"scrollProc"
 XtNscrollDCursor	"scrollDCursor"
@@ -128,10 +114,8 @@ XtNselection	"selection"
 XtNselectionArray	"selectionArray"
 XtNsensitive	"sensitive"
 XtNsession	"session"
-XtNsessionID	"sessionID"
 XtNshells	"shells"
 XtNshown	"shown"
-XtNshutdownCommand	"shutdownCommand"
 XtNspace	"space"
 XtNstring	"string"
 XtNtextOptions	"textOptions"
@@ -150,13 +134,12 @@ XtNvalue	"value"
 XtNvSpace	"vSpace"
 XtNwidth	"width"
 XtNwindow	"window"
-XtNwindowRole	"windowRole"
-XtNurgency	"urgency"
 XtNx	"x"
 XtNy	"y"
 .sp 6p
 _
 .TE
+.sp 6p
 .IN "String Constants" "resource classes"
 .LP
 Resource classes:
@@ -175,17 +158,11 @@ XtCBoolean	"Boolean"
 XtCBorderColor	"BorderColor"
 XtCBorderWidth	"BorderWidth"
 XtCCallback	"Callback"
-XtCClientLeader	"ClientLeader"
-XtCCloneCommand	"CloneCommand"
 XtCColormap	"Colormap"
 XtCColor	"Color"
-XtCConnection	"Connection"
-XtCCurrentDirectory	"CurrentDirectory"
 XtCCursor	"Cursor"
 XtCDepth	"Depth"
-XtCDiscardCommand	"DiscardCommand"
 XtCEditType	"EditType"
-XtCEnvironment	"Environment"
 XtCEventBindings	"EventBindings"
 XtCFile	"File"
 XtCFont	"Font"
@@ -199,7 +176,6 @@ XtCIndex	"Index"
 XtCInitialResourcesPersistent	"InitialResourcesPersistent"
 XtCInsertPosition	"InsertPosition"
 XtCInterval	"Interval"
-XtCJoinSession	"JoinSession"
 XtCJustify	"Justify"
 XtCKnobIndent	"KnobIndent"
 XtCKnobPixel	"KnobPixel"
@@ -213,12 +189,8 @@ XtCOrientation	"Orientation"
 XtCParameter	"Parameter"
 XtCPixmap	"Pixmap"
 XtCPosition	"Position"
-XtCProgramPath	"ProgramPath"
 XtCReadOnly	"ReadOnly"
-XtCResignCommand	"ResignCommand"
 XtCResize	"Resize"
-XtCRestartCommand	"RestartCommand"
-XtCRestartStyle	"RestartStyle"
 XtCReverseVideo	"ReverseVideo"
 XtCScreen	"Screen"
 XtCScrollProc	"ScrollProc"
@@ -232,8 +204,6 @@ XtCSelection	"Selection"
 XtCSensitive	"Sensitive"
 XtCSelectionArray	"SelectionArray"
 XtCSession	"Session"
-XtCSessionID	"SessionID"
-XtCShutdownCommand	"ShutdownCommand"
 XtCSpace	"Space"
 XtCString	"String"
 XtCTextOptions	"TextOptions"
@@ -247,13 +217,12 @@ XtCValue	"Value"
 XtCVSpace	"VSpace"
 XtCWidth	"Width"
 XtCWindow	"Window"
-XtCWindowRole	"WindowRole"
-XtCUrgency	"Urgency"
 XtCX	"X"
 XtCY	"Y"
 .sp 6p
 _
 .TE
+.sp 6p
 .IN "String Constants" "representation types"
 .LP
 Resource representation types:
@@ -275,11 +244,14 @@ XtRCallProc	"CallProc"
 XtRCardinal	"Cardinal"
 XtRColor	"Color"
 XtRColormap	"Colormap"
+XtRCommandArgArray	"CommandArgArray"
 XtRCursor	"Cursor"
 XtRDimension	"Dimension"
+XtRDirectoryString	"DirectoryString"
 XtRDisplay	"Display"
 XtREditMode	"EditMode"
 XtREnum	"Enum"
+XtREnvironmentArray	"EnvironmentArray"
 XtRFile	"File"
 XtRFloat	"Float"
 XtRFont	"Font"
@@ -316,6 +288,7 @@ XtRWindow	"Window"
 .sp 6p
 _
 .TE
+.sp 6p
 .LP
 Boolean enumeration constants:
 .TS
@@ -335,6 +308,7 @@ XtEyes	"yes"
 .sp 6p
 _
 .TE
+.sp 6p
 .LP
 Orientation enumeration constants:
 .TS
@@ -350,6 +324,7 @@ XtEhorizontal	"horizontal"
 .sp 6p
 _
 .TE
+.sp 6p
 .LP
 Text edit enumeration constants:
 .TS
@@ -366,6 +341,7 @@ XtEtextEdit	"edit"
 .sp 6p
 _
 .TE
+.sp 6p
 .LP
 Color enumeration constants:
 .TS
@@ -381,6 +357,7 @@ XtExtdefaultforeground	"xtdefaultforeground"
 .sp 6p
 _
 .TE
+.sp 6p
 .LP
 Font constant:
 .TS
@@ -395,6 +372,7 @@ XtExtdefaultfont	"xtdefaultfont"
 .sp 6p
 _
 .TE
+.sp 6p
 .LP
 Hooks for External Agents constants:
 .TS
@@ -435,4 +413,168 @@ XtHdestroy	"Xtdestroy"
 .sp 6p
 _
 .TE
-.IN "String Constants" "miscellaneous"
+.sp 6p
+.LP
+The 
+.PN Shell.h
+header file contains definitions for the following resource name,
+class, and representation type symbolic constants.
+.IN "String Constants" "resource names"
+.LP
+Resource names:
+.TS
+lw(2i) lw(2.5i).
+_
+.sp 6p
+Symbol	Definition
+.sp 6p
+_
+.sp 6p
+XtNallowShellResize	"allowShellResize"
+XtNargc	"argc"
+XtNargv	"argv"
+XtNbaseHeight	"baseHeight"
+XtNbaseWidth	"baseWidth"
+XtNcancelCallback	"cancelCallback"
+XtNclientLeader	"clientLeader"
+XtNcloneCommand	"cloneCommand"
+XtNconnection	"connection"
+XtNcreatePopupChildProc	"createPopupChildProc"
+XtNcurrentDirectory	"currentDirectory"
+XtNdieCallback	"dieCallback"
+XtNdiscardCommand	"discardCommand"
+XtNenvironment	"environment"
+XtNerrorCallback	"errorCallback"
+XtNgeometry	"geometry"
+XtNheightInc	"heightInc"
+XtNiconMask	"iconMask"
+XtNiconName	"iconName"
+XtNiconNameEncoding	"iconNameEncoding"
+XtNiconPixmap	"iconPixmap"
+XtNiconWindow	"iconWindow"
+XtNiconX	"iconX"
+XtNiconY	"iconY"
+XtNiconic	"iconic"
+XtNinitialState	"initialState"
+XtNinput	"input"
+XtNinteractCallback	"interactCallback"
+XtNjoinSession	"joinSession"
+XtNmaxAspectX	"maxAspectX"
+XtNmaxAspectY	"maxAspectY"
+XtNmaxHeight	"maxHeight"
+XtNmaxWidth	"maxWidth"
+XtNminAspectX	"minAspectX"
+XtNminAspectY	"minAspectY"
+XtNminHeight	"minHeight"
+XtNminWidth	"minWidth"
+XtNoverrideRedirect	"overrideRedirect"
+XtNprogramPath	"programPath"
+XtNresignCommand	"resignCommand"
+XtNrestartCommand	"restartCommand"
+XtNrestartStyle	"restartStyle"
+XtNsaveCallback	"saveCallback"
+XtNsaveCompleteCallback	"saveCompleteCallback"
+XtNsaveUnder	"saveUnder"
+XtNsessionID	"sessionID"
+XtNshutdownCommand	"shutdownCommand"
+XtNtitle	"title"
+XtNtitleEncoding	"titleEncoding"
+XtNtransient	"transient"
+XtNtransientFor	"transientFor"
+XtNurgency	"urgency"
+XtNvisual	"visual"
+XtNwaitForWm	"waitforwm"
+XtNwaitforwm	"waitforwm"
+XtNwidthInc	"widthInc"
+XtNwindowGroup	"windowGroup"
+XtNwindowRole	"windowRole"
+XtNwinGravity	"winGravity"
+XtNwmTimeout	"wmTimeout"
+.sp 6p
+_
+.TE
+.sp 6p
+.IN "String Constants" "resource classes"
+.LP
+Resource classes:
+.TS
+lw(2i) lw(2.5i).
+_
+.sp 6p
+Symbol	Definition
+.sp 6p
+_
+.sp 6p
+XtCAllowShellResize	"allowShellResize"
+XtCArgc	"Argc"
+XtCArgv	"Argv"
+XtCBaseHeight	"BaseHeight"
+XtCBaseWidth	"BaseWidth"
+XtCClientLeader	"ClientLeader"
+XtCCloneCommand	"CloneCommand"
+XtCConnection	"Connection"
+XtCCreatePopupChildProc	"CreatePopupChildProc"
+XtCCurrentDirectory	"CurrentDirectory"
+XtCDiscardCommand	"DiscardCommand"
+XtCEnvironment	"Environment"
+XtCGeometry	"Geometry"
+XtCHeightInc	"HeightInc"
+XtCIconMask	"IconMask"
+XtCIconName	"IconName"
+XtCIconNameEncoding	"IconNameEncoding"
+XtCIconPixmap	"IconPixmap"
+XtCIconWindow	"IconWindow"
+XtCIconX	"IconX"
+XtCIconY	"IconY"
+XtCIconic	"Iconic"
+XtCInitialState	"InitialState"
+XtCInput	"Input"
+XtCJoinSession	"JoinSession"
+XtCMaxAspectX	"MaxAspectX"
+XtCMaxAspectY	"MaxAspectY"
+XtCMaxHeight	"MaxHeight"
+XtCMaxWidth	"MaxWidth"
+XtCMinAspectX	"MinAspectX"
+XtCMinAspectY	"MinAspectY"
+XtCMinHeight	"MinHeight"
+XtCMinWidth	"MinWidth"
+XtCOverrideRedirect	"OverrideRedirect"
+XtCProgramPath	"ProgramPath"
+XtCResignCommand	"ResignCommand"
+XtCRestartCommand	"RestartCommand"
+XtCRestartStyle	"RestartStyle"
+XtCSaveUnder	"SaveUnder"
+XtCSessionID	"SessionID"
+XtCShutdownCommand	"ShutdownCommand"
+XtCTitle	"Title"
+XtCTitleEncoding	"TitleEncoding"
+XtCTransient	"Transient"
+XtCTransientFor	"TransientFor"
+XtCUrgency	"Urgency"
+XtCVisual	"Visual"
+XtCWaitForWm	"Waitforwm"
+XtCWaitforwm	"Waitforwm"
+XtCWidthInc	"WidthInc"
+XtCWindowGroup	"WindowGroup"
+XtCWindowRole	"WindowRole"
+XtCWinGravity	"WinGravity"
+XtCWmTimeout	"WmTimeout"
+.sp 6p
+_
+.TE
+.sp 6p
+.IN "String Constants" "representation types"
+.LP
+Resource representation types:
+.TS
+lw(2i) lw(2.5i).
+_
+.sp 6p
+Symbol	Definition
+.sp 6p
+_
+.sp 6p
+XtRAtom	"Atom"
+.sp 6p
+_
+.TE
