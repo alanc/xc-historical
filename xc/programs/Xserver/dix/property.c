@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: property.c,v 1.60 88/02/02 12:03:38 rws Exp $ */
+/* $Header: property.c,v 1.61 88/03/15 18:06:42 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -346,6 +346,11 @@ ProcGetProperty(client)
 	{
 	    client->errorValue = stuff->property;
 	    return(BadAtom);
+	}
+	if ((stuff->delete != xTrue) && (stuff->delete != xFalse))
+	{
+	    client->errorValue = stuff->delete;
+	    return(BadValue);
 	}
 	if ((stuff->type == AnyPropertyType) || ValidAtom(stuff->type))
 	{
