@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.158 93/09/22 20:00:42 rws Exp $ */
+/* $XConsortium: connection.c,v 1.159 93/09/23 10:51:47 dpw Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -121,7 +121,7 @@ FdSet LastSelectMask;		/* mask returned from last select call */
 FdSet ClientsWithInput;		/* clients with FULL requests in buffer */
 FdSet ClientsWriteBlocked;	/* clients who cannot receive output */
 FdSet OutputPending;		/* clients with reply/event data ready to go */
-long MaxClients = MAXSOCKS;
+int MaxClients = MAXSOCKS;
 long NConnBitArrays = mskcnt;
 Bool NewOutputPending;		/* not yet attempted to write some new output */
 Bool AnyClientsWriteBlocked;	/* true if some client blocked on write */
