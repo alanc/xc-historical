@@ -1,5 +1,5 @@
 /*
- * $XConsortium: def.h,v 1.16 91/04/25 15:57:08 gildea Exp $
+ * $XConsortium: def.h,v 1.16 91/04/25 15:58:44 gildea Exp $
  */
 #include <X11/Xosdefs.h>
 #include <stdio.h>
@@ -39,6 +39,8 @@
 #define IFFALSE         15     /* pseudo value --- never matched */
 #define ELIFFALSE       16     /* pseudo value --- never matched */
 #define INCLUDEDOT      17     /* pseudo value --- never matched */
+#define IFGUESSFALSE    18     /* pseudo value --- never matched */
+#define ELIFGUESSFALSE  19     /* pseudo value --- never matched */
 
 #ifdef DEBUG
 extern int	_debugmask;
