@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.211 91/06/11 19:10:59 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.212 91/06/27 16:36:56 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -57,7 +57,8 @@
 #ifndef X_WCHAR
 #include <stddef.h>
 #else
-typedef unsigned int wchar_t;
+/* replace this with #include or typedef appropriate for your system */
+typedef unsigned long wchar_t;
 #endif
 
 typedef char *XPointer;
