@@ -45,7 +45,7 @@ Miscellaneous	New Line
 	multiply		kill-selection
 	form-paragraph		kill-to-end-of-line
 	transpose-characters		kill-paragraph
-			kill-to-end-of-paragraph
+	no-op		kill-to-end-of-paragraph
 .De
 .sp
 .LP
@@ -297,6 +297,11 @@ that use ASCII text.
 This action will swap the position of the character to the left of the
 cursor with the character to the right of the cursor.  The cursor will then
 be advanced one character.  
+.IP no-op([\fIaction\fP]) 2.0i
+The no-op action makes no change to the text widget, and is mainly useful
+when used when overriding translations to remove a specific translation from
+the Text widget.  This action takes one optional argument.  If this argument 
+is \fIRingBell\fP then a beep is sent to the display.
 .NH 3
 Text Selections for Application Programmers
 .IN "text widgets" "Text Selections for Application Programmers"
