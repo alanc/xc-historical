@@ -160,6 +160,15 @@ typedef struct _XtransConnInfo *XtransConnInfo;
 
 
 /*
+ * ResetListener return values
+ */
+
+#define TRANS_RESET_NOOP	1
+#define TRANS_RESET_NEW_FD	2
+#define TRANS_RESET_FAILURE	3
+
+
+/*
  * Function prototypes for the exposed interface
  */
 XtransConnInfo TRANS(OpenCOTSClient)(
@@ -198,6 +207,12 @@ int TRANS(CreateListener)(
 #if NeedFunctionPrototypes
     XtransConnInfo,	/* ciptr */
     char *		/* port */
+#endif
+);
+
+int TRANS(ResetListener)(
+#if NeedFunctionPrototypes
+    XtransConnInfo	/* ciptr */
 #endif
 );
 
@@ -272,6 +287,12 @@ int TRANS(NameToAddr)(
 );
 
 int TRANS(AddrToName)(
+#if NeedFunctionPrototypes
+    XtransConnInfo	/* ciptr */
+#endif
+);
+
+int TRANS(IsLocal)(
 #if NeedFunctionPrototypes
     XtransConnInfo	/* ciptr */
 #endif
