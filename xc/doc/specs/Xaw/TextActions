@@ -148,7 +148,9 @@ If the insert point is between words then it will select the previous word.
 .IP select-all(\|) 2.0i
 This action selects the entire text buffer.
 .IP select-start(\|) 2.0i
-This action sets the insert point to the current pointer location.  It
+This action sets the insert point to the current pointer location (if
+triggered by a button event) or text cursor location (if triggered by
+a key event).  It
 will then begin a selection at this location.  If many of these
 selection actions occur quickly in succession then the selection count
 mechanism will be invoked (see the section titled \fBText Selections for
@@ -164,7 +166,8 @@ A \fIname\fP can be a selection (e.g. \fBPRIMARY\fP) or a cut buffer
 \fInames\fP are specified, \fBPRIMARY\fP is asserted. 
 .IP extend-start(\|) 2.0i
 This action finds the nearest end of the current selection, and moves it
-to the current pointer location.
+to the current pointer location (if triggered by a button event) or text
+cursor location (if triggered by a key event).
 .IP extend-adjust(\|) 2.0i
 This action allows a selection started with an \fIextend-start\fP action
 to be modified.
