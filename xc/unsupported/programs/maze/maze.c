@@ -132,6 +132,8 @@ main(argc,argv)                                               /* main module */
   Pixmap	backmap, bdrmap;
   XSizeHints size_hints;
   XWindowAttributes	wind_info;
+  int bw = 2;
+  int flags;
 
   cmd = argv[0];
   while ((c = getopt(argc, argv, "rSd:g:")) != EOF)
@@ -165,18 +167,12 @@ main(argc,argv)                                               /* main module */
     width = DisplayWidth(dpy, screen) - 2 * BORDERWIDTH;
     height = DisplayHeight(dpy, screen) - 2 * BORDERWIDTH;
     x = 0; y = 0;
+    flags = (USPosition | USSize);
+  } else {
+    flags = XGeometry (dpy, DefaultScreen(dpy), geo, defgeo, bw, 1, 1, 0, 0,
+		       &x, &y, &width, &height);
   }
-  else	{
-    int flags;
-    
-    if (geo == NULL)
-      geo = defgeo;
-    flags = XParseGeometry(geo, &x, &y, &width, &height); 
-    if ((flags & XValue) && (flags & XNegative))
-      x += DisplayWidth(dpy, screen) - width;
-    if ((flags & YValue) && (flags & YNegative))
-      y += DisplayHeight(dpy, screen) - height;
-  }
+
 
   if (reverse)
     background = BlackPixel(dpy, screen) ;
@@ -213,7 +209,7 @@ main(argc,argv)                                               /* main module */
     fprintf(stderr, "Can't create logo pixmap\n");
     exit (1);
   }
-  size_hints.flags =  USPosition | USSize | PMinSize ;
+  size_hints.flags =  flags | PMinSize ;
   size_hints.x = x;
   size_hints.y = y;
   size_hints.width = width;
@@ -274,7 +270,7 @@ check_events()                                  /* X event handler [ rhess ] */
 {
   XEvent	e;
 
-  while (XPending(dpy))	{
+  if (XPending(dpy)) {
     XNextEvent(dpy, &e);
     switch (e.type) {
     case ButtonPress:
