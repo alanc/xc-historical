@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.26 89/12/12 12:12:12 jim Exp $ */
+/* $XConsortium: Xresource.h,v 1.27 90/11/30 11:46:51 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -295,6 +295,14 @@ extern XrmDatabase XrmGetFileDatabase(
 #endif
 );
 
+void XrmCombineFileDatabase(
+#if NeedFunctionPrototypes
+    const char* 	/* filename */,
+    XrmDatabase*	/* target */,
+    Bool		/* override */
+#endif
+);
+
 extern XrmDatabase XrmGetStringDatabase(
 #if NeedFunctionPrototypes
     const char*		/* data */  /*  null terminated string */
@@ -312,6 +320,14 @@ extern void XrmMergeDatabases(
 #if NeedFunctionPrototypes
     XrmDatabase		/* source_db */,
     XrmDatabase*	/* target_db */
+#endif
+);
+
+extern void XrmCombineDatabase(
+#if NeedFunctionPrototypes
+    XrmDatabase		/* source_db */,
+    XrmDatabase*	/* target_db */,
+    Bool		/* override */
 #endif
 );
 
