@@ -1,44 +1,33 @@
 STARTFONT 2.1
-COMMENT $XConsortium$
-COMMENT 
-COMMENT  Copyright 1984, 1987 Adobe Systems, Inc.
-COMMENT  Portions Copyright 1988 Digital Equipment Corporation
-COMMENT 
-COMMENT  Times is a registered trademark of Linotype.  Adobe is a 
-COMMENT  registered trademark of Adobe Systems, Inc.  Permission to use
-COMMENT  these trademarks is hereby granted only in association with the
-COMMENT  images described in this file.
-COMMENT 
-COMMENT  Permission to use, copy, modify, and distribute this software and
-COMMENT  its documentation for any purpose and without fee is hereby granted,
-COMMENT  provided that the above copyright notices appear in all copies and
-COMMENT  that both those copyright notices and this permission notice appear
-COMMENT  in supporting documentation, and that the names of Adobe Systems and
-COMMENT  Digital Equipment Corporation not be used in advertising or
-COMMENT  publicity pertaining to distribution of the software without
-COMMENT  specific, written prior permission.  Adobe Systems and Digital
-COMMENT  Equipment Corporation make no representations about the suitability
-COMMENT  of this software for any purpose.  It is provided "as is" without
-COMMENT  express or implied warranty.
-COMMENT 
-COMMENT  ADOBE SYSTEMS AND DIGITAL EQUIPMENT CORPORATION DISCLAIM ALL
-COMMENT  WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
-COMMENT  WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL ADOBE
-COMMENT  SYSTEMS AND DIGITAL EQUIPMENT CORPORATION BE LIABLE FOR ANY SPECIAL,
-COMMENT  INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
-COMMENT  RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
-COMMENT  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
-COMMENT  CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-COMMENT 
-COMMENT 
 FONT -Adobe-Times-Medium-I-Normal--17-120-100-100-P-84-ISO8859-1
 SIZE 12 100 100
 FONTBOUNDINGBOX 20 19 -3 -4
-STARTPROPERTIES 22
-COMMENT Begin LogicalFontDescription
-FONTNAME_REGISTRY ""
-FAMILY_NAME "Times"
+COMMENT $XConsortium$
+COMMENT 
+COMMENT +
+COMMENT  Copyright 1984-1989, 1994 Adobe Systems Incorporated.
+COMMENT  Copyright 1988, 1994 Digital Equipment Corporation.
+COMMENT
+COMMENT  Adobe is a trademark of Adobe Systems Incorporated which may be
+COMMENT  registered in certain jurisdictions.
+COMMENT  Permission to use these trademarks is hereby granted only in
+COMMENT  association with the images described in this file.
+COMMENT
+COMMENT  Permission to use, copy, modify, distribute and sell this software
+COMMENT  and its documentation for any purpose and without fee is hereby
+COMMENT  granted, provided that the above copyright notices appear in all
+COMMENT  copies and that both those copyright notices and this permission
+COMMENT  notice appear in supporting documentation, and that the names of
+COMMENT  Adobe Systems and Digital Equipment Corporation not be used in
+COMMENT  advertising or publicity pertaining to distribution of the software
+COMMENT  without specific, written prior permission.  Adobe Systems and
+COMMENT  Digital Equipment Corporation make no representations about the
+COMMENT  suitability of this software for any purpose.  It is provided "as
+COMMENT  is" without express or implied warranty.
+COMMENT -
+STARTPROPERTIES 28
 FOUNDRY "Adobe"
+FAMILY_NAME "Times"
 WEIGHT_NAME "Medium"
 SLANT "I"
 SETWIDTH_NAME "Normal"
@@ -51,17 +40,22 @@ SPACING "P"
 AVERAGE_WIDTH 84
 CHARSET_REGISTRY "ISO8859"
 CHARSET_ENCODING "1"
-COMMENT END LogicalFontDescription
-CHARSET_COLLECTIONS "ASCII ISO8859-1 ADOBE-STANDARD"
-FACE_NAME "Times Italic"
-COPYRIGHT "Copyright (c) 1987 Adobe Systems, Inc., Portions Copyright 1988 Digital Equipment Corp."
-COMMENT ***** end of inserted font properties
-FONT_ASCENT 13
-FONT_DESCENT 4
 CAP_HEIGHT 11
 X_HEIGHT 8
+FONT_ASCENT 13
+FONT_DESCENT 4
+FACE_NAME "Times Italic"
+COPYRIGHT "Copyright (c) 1984, 1987 Adobe Systems Incorporated. All Rights Reserved. Copyright (c) 1988, 1991 Digital Equipment Corporation. All Rights Reserved."
+NOTICE "Times is a trademark of Linotype-Hell AG and/or its subsidiaries."
+_DEC_DEVICE_FONTNAMES "PS=Times-Italic"
+_DEC_PRODUCTINFO "DECwindows Fonts V2.2, 07-Nov-1991"
+DEFAULT_CHAR 32
+RELATIVE_SETWIDTH 50
+RELATIVE_WEIGHT 50
+CHARSET_COLLECTIONS "ASCII ISO8859-1 ADOBE-STANDARD"
+FULL_NAME "Times Italic"
 ENDPROPERTIES
-CHARS 228
+CHARS 229
 STARTCHAR space
 ENCODING 32
 SWIDTH 250 0
@@ -1669,6 +1663,14 @@ BITMAP
 70
 99
 0E
+ENDCHAR
+STARTCHAR space
+ENCODING 160
+SWIDTH 250 0
+DWIDTH 4 0
+BBX 1 1 0 0
+BITMAP
+00
 ENDCHAR
 STARTCHAR exclamdown
 ENCODING 161
@@ -3409,24 +3411,6 @@ BITMAP
 A0
 C0
 ENDCHAR
-STARTCHAR OE
-ENCODING -1
-SWIDTH 944 0
-DWIDTH 16 0
-BBX 15 11 0 0
-BITMAP
-07FE
-18C2
-20C0
-4080
-4088
-81F0
-8110
-C100
-4304
-620C
-1FF8
-ENDCHAR
 STARTCHAR Lslash
 ENCODING -1
 SWIDTH 556 0
@@ -3444,6 +3428,24 @@ A000
 6080
 4180
 FF00
+ENDCHAR
+STARTCHAR OE
+ENCODING -1
+SWIDTH 944 0
+DWIDTH 16 0
+BBX 15 11 0 0
+BITMAP
+07FE
+18C2
+20C0
+4080
+4088
+81F0
+8110
+C100
+4304
+620C
+1FF8
 ENDCHAR
 STARTCHAR Scaron
 ENCODING -1
@@ -3504,48 +3506,6 @@ BITMAP
 6100
 FE00
 ENDCHAR
-STARTCHAR dotlessi
-ENCODING -1
-SWIDTH 278 0
-DWIDTH 5 0
-BBX 3 8 1 0
-BITMAP
-20
-60
-20
-60
-40
-C0
-A0
-C0
-ENDCHAR
-STARTCHAR caron
-ENCODING -1
-SWIDTH 333 0
-DWIDTH 6 0
-BBX 5 3 1 9
-BITMAP
-88
-70
-20
-ENDCHAR
-STARTCHAR emdash
-ENCODING -1
-SWIDTH 889 0
-DWIDTH 14 0
-BBX 14 1 0 3
-BITMAP
-FFFC
-ENDCHAR
-STARTCHAR dotaccent
-ENCODING -1
-SWIDTH 333 0
-DWIDTH 6 0
-BBX 1 2 2 9
-BITMAP
-80
-80
-ENDCHAR
 STARTCHAR breve
 ENCODING -1
 SWIDTH 333 0
@@ -3554,63 +3514,6 @@ BBX 5 2 0 9
 BITMAP
 88
 70
-ENDCHAR
-STARTCHAR circumflex
-ENCODING -1
-SWIDTH 333 0
-DWIDTH 6 0
-BBX 5 3 0 9
-BITMAP
-20
-70
-88
-ENDCHAR
-STARTCHAR grave
-ENCODING -1
-SWIDTH 333 0
-DWIDTH 6 0
-BBX 3 3 1 9
-BITMAP
-C0
-40
-20
-ENDCHAR
-STARTCHAR hungarumlaut
-ENCODING -1
-SWIDTH 333 0
-DWIDTH 6 0
-BBX 6 3 0 9
-BITMAP
-6C
-48
-90
-ENDCHAR
-STARTCHAR ellipsis
-ENCODING -1
-SWIDTH 889 0
-DWIDTH 11 0
-BBX 9 2 1 0
-BITMAP
-8880
-8880
-ENDCHAR
-STARTCHAR lslash
-ENCODING -1
-SWIDTH 278 0
-DWIDTH 5 0
-BBX 4 11 1 0
-BITMAP
-30
-10
-30
-20
-20
-70
-C0
-40
-C0
-A0
-C0
 ENDCHAR
 STARTCHAR bullet
 ENCODING -1
@@ -3623,25 +3526,25 @@ F0
 F0
 60
 ENDCHAR
-STARTCHAR daggerdbl
+STARTCHAR caron
 ENCODING -1
-SWIDTH 500 0
-DWIDTH 8 0
-BBX 8 13 0 -1
+SWIDTH 333 0
+DWIDTH 6 0
+BBX 5 3 1 9
 BITMAP
-04
-04
-08
-7F
-08
-08
-18
-10
-10
-FE
+88
+70
 20
+ENDCHAR
+STARTCHAR circumflex
+ENCODING -1
+SWIDTH 333 0
+DWIDTH 6 0
+BBX 5 3 0 9
+BITMAP
 20
-20
+70
+88
 ENDCHAR
 STARTCHAR dagger
 ENCODING -1
@@ -3663,6 +3566,67 @@ FC
 80
 80
 ENDCHAR
+STARTCHAR daggerdbl
+ENCODING -1
+SWIDTH 500 0
+DWIDTH 8 0
+BBX 8 13 0 -1
+BITMAP
+04
+04
+08
+7F
+08
+08
+18
+10
+10
+FE
+20
+20
+20
+ENDCHAR
+STARTCHAR dotaccent
+ENCODING -1
+SWIDTH 333 0
+DWIDTH 6 0
+BBX 1 2 2 9
+BITMAP
+80
+80
+ENDCHAR
+STARTCHAR dotlessi
+ENCODING -1
+SWIDTH 278 0
+DWIDTH 5 0
+BBX 3 8 1 0
+BITMAP
+20
+60
+20
+60
+40
+C0
+A0
+C0
+ENDCHAR
+STARTCHAR ellipsis
+ENCODING -1
+SWIDTH 889 0
+DWIDTH 11 0
+BBX 9 2 1 0
+BITMAP
+8880
+8880
+ENDCHAR
+STARTCHAR emdash
+ENCODING -1
+SWIDTH 889 0
+DWIDTH 14 0
+BBX 14 1 0 3
+BITMAP
+FFFC
+ENDCHAR
 STARTCHAR endash
 ENCODING -1
 SWIDTH 500 0
@@ -3670,28 +3634,6 @@ DWIDTH 8 0
 BBX 8 1 0 3
 BITMAP
 FF
-ENDCHAR
-STARTCHAR fl
-ENCODING -1
-SWIDTH 500 0
-DWIDTH 8 0
-BBX 10 15 -2 -4
-BITMAP
-03C0
-0640
-04C0
-0480
-3F80
-0980
-0900
-1900
-1300
-1280
-3300
-2000
-2000
-A000
-C000
 ENDCHAR
 STARTCHAR fi
 ENCODING -1
@@ -3715,31 +3657,27 @@ BITMAP
 A000
 C000
 ENDCHAR
-STARTCHAR guilsinglright
+STARTCHAR fl
 ENCODING -1
-SWIDTH 333 0
-DWIDTH 6 0
-BBX 4 6 1 0
+SWIDTH 500 0
+DWIDTH 8 0
+BBX 10 15 -2 -4
 BITMAP
-40
-20
-10
-20
-40
-80
-ENDCHAR
-STARTCHAR guilsinglleft
-ENCODING -1
-SWIDTH 333 0
-DWIDTH 6 0
-BBX 4 6 0 0
-BITMAP
-10
-20
-40
-80
-40
-20
+03C0
+0640
+04C0
+0480
+3F80
+0980
+0900
+1900
+1300
+1280
+3300
+2000
+2000
+A000
+C000
 ENDCHAR
 STARTCHAR florin
 ENCODING -1
@@ -3780,6 +3718,70 @@ BITMAP
 40
 40
 80
+ENDCHAR
+STARTCHAR grave
+ENCODING -1
+SWIDTH 333 0
+DWIDTH 6 0
+BBX 3 3 1 9
+BITMAP
+C0
+40
+20
+ENDCHAR
+STARTCHAR guilsinglleft
+ENCODING -1
+SWIDTH 333 0
+DWIDTH 6 0
+BBX 4 6 0 0
+BITMAP
+10
+20
+40
+80
+40
+20
+ENDCHAR
+STARTCHAR guilsinglright
+ENCODING -1
+SWIDTH 333 0
+DWIDTH 6 0
+BBX 4 6 1 0
+BITMAP
+40
+20
+10
+20
+40
+80
+ENDCHAR
+STARTCHAR hungarumlaut
+ENCODING -1
+SWIDTH 333 0
+DWIDTH 6 0
+BBX 6 3 0 9
+BITMAP
+6C
+48
+90
+ENDCHAR
+STARTCHAR lslash
+ENCODING -1
+SWIDTH 278 0
+DWIDTH 5 0
+BBX 4 11 1 0
+BITMAP
+30
+10
+30
+20
+20
+70
+C0
+40
+C0
+A0
+C0
 ENDCHAR
 STARTCHAR oe
 ENCODING -1

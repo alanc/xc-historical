@@ -1,47 +1,36 @@
 STARTFONT 2.1
-COMMENT $XConsortium$
-COMMENT 
-COMMENT  Copyright 1984, 1987 Adobe Systems, Inc.
-COMMENT  Portions Copyright 1988 Digital Equipment Corporation
-COMMENT 
-COMMENT  Helvetica is a registered trademark of Linotype.  Adobe is a 
-COMMENT  registered trademark of Adobe Systems, Inc.  Permission to use
-COMMENT  these trademarks is hereby granted only in association with the
-COMMENT  images described in this file.
-COMMENT 
-COMMENT  Permission to use, copy, modify, and distribute this software and
-COMMENT  its documentation for any purpose and without fee is hereby granted,
-COMMENT  provided that the above copyright notices appear in all copies and
-COMMENT  that both those copyright notices and this permission notice appear
-COMMENT  in supporting documentation, and that the names of Adobe Systems and
-COMMENT  Digital Equipment Corporation not be used in advertising or
-COMMENT  publicity pertaining to distribution of the software without
-COMMENT  specific, written prior permission.  Adobe Systems and Digital
-COMMENT  Equipment Corporation make no representations about the suitability
-COMMENT  of this software for any purpose.  It is provided "as is" without
-COMMENT  express or implied warranty.
-COMMENT 
-COMMENT  ADOBE SYSTEMS AND DIGITAL EQUIPMENT CORPORATION DISCLAIM ALL
-COMMENT  WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
-COMMENT  WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL ADOBE
-COMMENT  SYSTEMS AND DIGITAL EQUIPMENT CORPORATION BE LIABLE FOR ANY SPECIAL,
-COMMENT  INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
-COMMENT  RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
-COMMENT  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
-COMMENT  CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-COMMENT 
-COMMENT 
 FONT -Adobe-Helvetica-Medium-O-Normal--18-180-75-75-P-98-ISO8859-1
 SIZE 18 75 75
 FONTBOUNDINGBOX 23 22 -2 -5
-STARTPROPERTIES 22
-COMMENT Begin LogicalFontDescription
-FONTNAME_REGISTRY ""
-FAMILY_NAME "Helvetica"
+COMMENT $XConsortium$
+COMMENT 
+COMMENT +
+COMMENT  Copyright 1984-1989, 1994 Adobe Systems Incorporated.
+COMMENT  Copyright 1988, 1994 Digital Equipment Corporation.
+COMMENT
+COMMENT  Adobe is a trademark of Adobe Systems Incorporated which may be
+COMMENT  registered in certain jurisdictions.
+COMMENT  Permission to use these trademarks is hereby granted only in
+COMMENT  association with the images described in this file.
+COMMENT
+COMMENT  Permission to use, copy, modify, distribute and sell this software
+COMMENT  and its documentation for any purpose and without fee is hereby
+COMMENT  granted, provided that the above copyright notices appear in all
+COMMENT  copies and that both those copyright notices and this permission
+COMMENT  notice appear in supporting documentation, and that the names of
+COMMENT  Adobe Systems and Digital Equipment Corporation not be used in
+COMMENT  advertising or publicity pertaining to distribution of the software
+COMMENT  without specific, written prior permission.  Adobe Systems and
+COMMENT  Digital Equipment Corporation make no representations about the
+COMMENT  suitability of this software for any purpose.  It is provided "as
+COMMENT  is" without express or implied warranty.
+COMMENT -
+STARTPROPERTIES 28
 FOUNDRY "Adobe"
+FAMILY_NAME "Helvetica"
 WEIGHT_NAME "Medium"
-SETWIDTH_NAME "Normal"
 SLANT "O"
+SETWIDTH_NAME "Normal"
 ADD_STYLE_NAME ""
 PIXEL_SIZE 18
 POINT_SIZE 180
@@ -51,17 +40,22 @@ SPACING "P"
 AVERAGE_WIDTH 98
 CHARSET_REGISTRY "ISO8859"
 CHARSET_ENCODING "1"
-COMMENT END LogicalFontDescription
-CHARSET_COLLECTIONS "ASCII ISO8859-1 ADOBE-STANDARD"
-FACE_NAME "Helvetica Oblique"
-COPYRIGHT "Copyright (c) 1985, 1987 Adobe Systems, Inc., Portions Copyright 1988 Digital Equipment Corp."
-COMMENT ***** end of inserted font properties
-FONT_ASCENT 16
-FONT_DESCENT 5
 CAP_HEIGHT 14
 X_HEIGHT 10
+FONT_ASCENT 16
+FONT_DESCENT 5
+FACE_NAME "Helvetica Oblique"
+COPYRIGHT "Copyright (c) 1984, 1987 Adobe Systems Incorporated. All Rights Reserved. Copyright (c) 1988, 1991 Digital Equipment Corporation. All Rights Reserved."
+NOTICE "Helvetica is a trademark of Linotype-Hell AG and/or its subsidiaries.  "
+_DEC_DEVICE_FONTNAMES "PS=Helvetica-Oblique"
+_DEC_PRODUCTINFO "DECwindows Fonts V2.2, 07-Nov-1991"
+DEFAULT_CHAR 32
+RELATIVE_SETWIDTH 50
+RELATIVE_WEIGHT 50
+CHARSET_COLLECTIONS "ASCII ISO8859-1 ADOBE-STANDARD"
+FULL_NAME "Helvetica Oblique"
 ENDPROPERTIES
-CHARS 228
+CHARS 229
 STARTCHAR space
 ENCODING 32
 SWIDTH 278 0
@@ -1882,6 +1876,14 @@ BITMAP
 73
 FF
 CE
+ENDCHAR
+STARTCHAR space
+ENCODING 160
+SWIDTH 278 0
+DWIDTH 5 0
+BBX 1 1 0 0
+BITMAP
+00
 ENDCHAR
 STARTCHAR exclamdown
 ENCODING 161
@@ -3811,6 +3813,27 @@ BITMAP
 C000
 8000
 ENDCHAR
+STARTCHAR Lslash
+ENCODING -1
+SWIDTH 556 0
+DWIDTH 10 0
+BBX 7 14 2 0
+BITMAP
+18
+18
+18
+30
+3C
+38
+30
+60
+E0
+60
+60
+C0
+FE
+FE
+ENDCHAR
 STARTCHAR OE
 ENCODING -1
 SWIDTH 1000 0
@@ -3831,6 +3854,30 @@ E0C000
 638000
 7FFF00
 1EFF00
+ENDCHAR
+STARTCHAR Scaron
+ENCODING -1
+SWIDTH 667 0
+DWIDTH 12 0
+BBX 10 17 2 0
+BITMAP
+0D80
+0700
+0000
+0F80
+3FC0
+70C0
+60C0
+6000
+7C00
+3F00
+0780
+01C0
+00C0
+C0C0
+C180
+FF80
+7E00
 ENDCHAR
 STARTCHAR Ydieresis
 ENCODING -1
@@ -3855,6 +3902,30 @@ C300
 6000
 6000
 6000
+ENDCHAR
+STARTCHAR Zcaron
+ENCODING -1
+SWIDTH 611 0
+DWIDTH 11 0
+BBX 13 17 0 0
+BITMAP
+0360
+01C0
+0000
+0FF8
+0FF8
+0030
+0060
+00C0
+0180
+0300
+0600
+0C00
+1800
+3000
+6000
+FFC0
+FFC0
 ENDCHAR
 STARTCHAR breve
 ENCODING -1
@@ -3898,31 +3969,6 @@ BITMAP
 78
 CC
 ENDCHAR
-STARTCHAR daggerdbl
-ENCODING -1
-SWIDTH 556 0
-DWIDTH 10 0
-BBX 10 18 1 -4
-BITMAP
-0300
-0300
-0600
-0600
-3FC0
-3FC0
-0600
-0C00
-0C00
-0C00
-1800
-1800
-FF00
-FF00
-1800
-3000
-3000
-3000
-ENDCHAR
 STARTCHAR dagger
 ENCODING -1
 SWIDTH 556 0
@@ -3948,12 +3994,54 @@ C0
 C0
 C0
 ENDCHAR
+STARTCHAR daggerdbl
+ENCODING -1
+SWIDTH 556 0
+DWIDTH 10 0
+BBX 10 18 1 -4
+BITMAP
+0300
+0300
+0600
+0600
+3FC0
+3FC0
+0600
+0C00
+0C00
+0C00
+1800
+1800
+FF00
+FF00
+1800
+3000
+3000
+3000
+ENDCHAR
 STARTCHAR dotaccent
 ENCODING -1
 SWIDTH 333 0
 DWIDTH 6 0
 BBX 2 2 5 11
 BITMAP
+C0
+C0
+ENDCHAR
+STARTCHAR dotlessi
+ENCODING -1
+SWIDTH 278 0
+DWIDTH 4 0
+BBX 4 10 1 0
+BITMAP
+30
+30
+30
+60
+60
+60
+60
+C0
 C0
 C0
 ENDCHAR
@@ -3984,6 +4072,27 @@ BITMAP
 FFC0
 FFC0
 ENDCHAR
+STARTCHAR fi
+ENCODING -1
+SWIDTH 500 0
+DWIDTH 9 0
+BBX 10 14 1 0
+BITMAP
+0EC0
+1EC0
+1800
+3000
+FD80
+FD80
+3180
+6300
+6300
+6300
+6300
+C600
+C600
+C600
+ENDCHAR
 STARTCHAR fl
 ENCODING -1
 SWIDTH 500 0
@@ -4004,6 +4113,30 @@ FD80
 C600
 C600
 C600
+ENDCHAR
+STARTCHAR florin
+ENCODING -1
+SWIDTH 556 0
+DWIDTH 9 0
+BBX 11 17 0 -4
+BITMAP
+01E0
+03E0
+0600
+0600
+1F80
+1F80
+0C00
+0C00
+0C00
+0C00
+1800
+1800
+1800
+1800
+3000
+F000
+E000
 ENDCHAR
 STARTCHAR fraction
 ENCODING -1
@@ -4035,6 +4168,19 @@ C0
 60
 30
 ENDCHAR
+STARTCHAR guilsinglleft
+ENCODING -1
+SWIDTH 333 0
+DWIDTH 7 0
+BBX 5 6 2 3
+BITMAP
+18
+30
+60
+C0
+60
+30
+ENDCHAR
 STARTCHAR guilsinglright
 ENCODING -1
 SWIDTH 333 0
@@ -4057,6 +4203,27 @@ BITMAP
 36
 6C
 D8
+ENDCHAR
+STARTCHAR lslash
+ENCODING -1
+SWIDTH 222 0
+DWIDTH 4 0
+BBX 5 14 1 0
+BITMAP
+18
+18
+18
+30
+30
+38
+70
+E0
+60
+60
+60
+C0
+C0
+C0
 ENDCHAR
 STARTCHAR oe
 ENCODING -1
@@ -4173,6 +4340,27 @@ BITMAP
 90
 E0
 ENDCHAR
+STARTCHAR scaron
+ENCODING -1
+SWIDTH 500 0
+DWIDTH 9 0
+BBX 9 14 1 0
+BITMAP
+1980
+0F00
+0600
+0000
+0F00
+3F80
+7180
+6000
+3C00
+1F00
+0300
+C300
+FE00
+7C00
+ENDCHAR
 STARTCHAR tilde
 ENCODING -1
 SWIDTH 333 0
@@ -4197,105 +4385,6 @@ FD86
 636C
 636C
 ENDCHAR
-STARTCHAR dotlessi
-ENCODING -1
-SWIDTH 278 0
-DWIDTH 4 0
-BBX 4 10 1 0
-BITMAP
-30
-30
-30
-60
-60
-60
-60
-C0
-C0
-C0
-ENDCHAR
-STARTCHAR florin
-ENCODING -1
-SWIDTH 556 0
-DWIDTH 9 0
-BBX 11 17 0 -4
-BITMAP
-01E0
-03E0
-0600
-0600
-1F80
-1F80
-0C00
-0C00
-0C00
-0C00
-1800
-1800
-1800
-1800
-3000
-F000
-E000
-ENDCHAR
-STARTCHAR guilsinglleft
-ENCODING -1
-SWIDTH 333 0
-DWIDTH 7 0
-BBX 5 6 2 3
-BITMAP
-18
-30
-60
-C0
-60
-30
-ENDCHAR
-STARTCHAR fi
-ENCODING -1
-SWIDTH 500 0
-DWIDTH 9 0
-BBX 10 14 1 0
-BITMAP
-0EC0
-1EC0
-1800
-3000
-FD80
-FD80
-3180
-6300
-6300
-6300
-6300
-C600
-C600
-C600
-ENDCHAR
-STARTCHAR Zcaron
-ENCODING -1
-SWIDTH 611 0
-DWIDTH 11 0
-BBX 13 17 0 0
-BITMAP
-0360
-01C0
-0000
-0FF8
-0FF8
-0030
-0060
-00C0
-0180
-0300
-0600
-0C00
-1800
-3000
-6000
-FFC0
-FFC0
-ENDCHAR
 STARTCHAR zcaron
 ENCODING -1
 SWIDTH 500 0
@@ -4316,92 +4405,5 @@ BITMAP
 6000
 FE00
 FE00
-ENDCHAR
-STARTCHAR scaron
-ENCODING -1
-SWIDTH 500 0
-DWIDTH 9 0
-BBX 9 14 1 0
-BITMAP
-1980
-0F00
-0600
-0000
-0F00
-3F80
-7180
-6000
-3C00
-1F00
-0300
-C300
-FE00
-7C00
-ENDCHAR
-STARTCHAR Scaron
-ENCODING -1
-SWIDTH 667 0
-DWIDTH 12 0
-BBX 10 17 2 0
-BITMAP
-0D80
-0700
-0000
-0F80
-3FC0
-70C0
-60C0
-6000
-7C00
-3F00
-0780
-01C0
-00C0
-C0C0
-C180
-FF80
-7E00
-ENDCHAR
-STARTCHAR Lslash
-ENCODING -1
-SWIDTH 556 0
-DWIDTH 10 0
-BBX 7 14 2 0
-BITMAP
-18
-18
-18
-30
-3C
-38
-30
-60
-E0
-60
-60
-C0
-FE
-FE
-ENDCHAR
-STARTCHAR lslash
-ENCODING -1
-SWIDTH 222 0
-DWIDTH 4 0
-BBX 5 14 1 0
-BITMAP
-18
-18
-18
-30
-30
-38
-70
-E0
-60
-60
-60
-C0
-C0
-C0
 ENDCHAR
 ENDFONT

@@ -1,44 +1,33 @@
 STARTFONT 2.1
-COMMENT $XConsortium$
-COMMENT 
-COMMENT  Copyright 1984, 1987 Adobe Systems, Inc.
-COMMENT  Portions Copyright 1988 Digital Equipment Corporation
-COMMENT 
-COMMENT  New Century Schoolbook is a registered trademark of Linotype.  Adobe
-COMMENT  is a registered trademark of Adobe Systems, Inc.  Permission to use
-COMMENT  these trademarks is hereby granted only in association with the
-COMMENT  images described in this file.
-COMMENT 
-COMMENT  Permission to use, copy, modify, and distribute this software and
-COMMENT  its documentation for any purpose and without fee is hereby granted,
-COMMENT  provided that the above copyright notices appear in all copies and
-COMMENT  that both those copyright notices and this permission notice appear
-COMMENT  in supporting documentation, and that the names of Adobe Systems and
-COMMENT  Digital Equipment Corporation not be used in advertising or
-COMMENT  publicity pertaining to distribution of the software without
-COMMENT  specific, written prior permission.  Adobe Systems and Digital
-COMMENT  Equipment Corporation make no representations about the suitability
-COMMENT  of this software for any purpose.  It is provided "as is" without
-COMMENT  express or implied warranty.
-COMMENT 
-COMMENT  ADOBE SYSTEMS AND DIGITAL EQUIPMENT CORPORATION DISCLAIM ALL
-COMMENT  WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
-COMMENT  WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL ADOBE
-COMMENT  SYSTEMS AND DIGITAL EQUIPMENT CORPORATION BE LIABLE FOR ANY SPECIAL,
-COMMENT  INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
-COMMENT  RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
-COMMENT  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
-COMMENT  CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-COMMENT 
-COMMENT 
 FONT -Adobe-New Century Schoolbook-Bold-R-Normal--12-120-75-75-P-77-ISO8859-1
 SIZE 12 75 75
 FONTBOUNDINGBOX 20 15 -2 -3
-STARTPROPERTIES 22
-COMMENT Begin LogicalFontDescription
-FONTNAME_REGISTRY ""
-FAMILY_NAME "New Century Schoolbook"
+COMMENT $XConsortium$
+COMMENT 
+COMMENT +
+COMMENT  Copyright 1984-1989, 1994 Adobe Systems Incorporated.
+COMMENT  Copyright 1988, 1994 Digital Equipment Corporation.
+COMMENT
+COMMENT  Adobe is a trademark of Adobe Systems Incorporated which may be
+COMMENT  registered in certain jurisdictions.
+COMMENT  Permission to use these trademarks is hereby granted only in
+COMMENT  association with the images described in this file.
+COMMENT
+COMMENT  Permission to use, copy, modify, distribute and sell this software
+COMMENT  and its documentation for any purpose and without fee is hereby
+COMMENT  granted, provided that the above copyright notices appear in all
+COMMENT  copies and that both those copyright notices and this permission
+COMMENT  notice appear in supporting documentation, and that the names of
+COMMENT  Adobe Systems and Digital Equipment Corporation not be used in
+COMMENT  advertising or publicity pertaining to distribution of the software
+COMMENT  without specific, written prior permission.  Adobe Systems and
+COMMENT  Digital Equipment Corporation make no representations about the
+COMMENT  suitability of this software for any purpose.  It is provided "as
+COMMENT  is" without express or implied warranty.
+COMMENT -
+STARTPROPERTIES 28
 FOUNDRY "Adobe"
+FAMILY_NAME "New Century Schoolbook"
 WEIGHT_NAME "Bold"
 SLANT "R"
 SETWIDTH_NAME "Normal"
@@ -51,17 +40,22 @@ SPACING "P"
 AVERAGE_WIDTH 77
 CHARSET_REGISTRY "ISO8859"
 CHARSET_ENCODING "1"
-COMMENT END LogicalFontDescription
-CHARSET_COLLECTIONS "ASCII ISO8859-1 ADOBE-STANDARD"
-FACE_NAME "New Century Schoolbook Bold"
-COPYRIGHT "Copyright (c) 1984,1987 Adobe Systems, Inc., Portions Copyright 1988 Digital Equipment Corp."
-COMMENT ***** end of inserted font properties
-FONT_ASCENT 11
-FONT_DESCENT 3
 CAP_HEIGHT 9
 X_HEIGHT 6
+FONT_ASCENT 11
+FONT_DESCENT 3
+FACE_NAME "New Century Schoolbook Bold"
+COPYRIGHT "Copyright (c) 1984, 1987 Adobe Systems Incorporated. All Rights Reserved. Copyright (c) 1988, 1991 Digital Equipment Corporation. All Rights Reserved."
+NOTICE "New Century Schoolbook is a trademark of Linotype-Hell AG and/or its subsidiaries."
+_DEC_DEVICE_FONTNAMES "PS=NewCenturySchlbk-Bold"
+_DEC_PRODUCTINFO "DECwindows Fonts V2.2-1, 18-Nov-1991"
+DEFAULT_CHAR 32
+RELATIVE_SETWIDTH 50
+RELATIVE_WEIGHT 70
+CHARSET_COLLECTIONS "ASCII ISO8859-1 ADOBE-STANDARD"
+FULL_NAME "New Centuy Schoolbook Bold"
 ENDPROPERTIES
-CHARS 228
+CHARS 229
 STARTCHAR space
 ENCODING 32
 SWIDTH 287 0
@@ -298,8 +292,8 @@ ENDCHAR
 STARTCHAR one
 ENCODING 49
 SWIDTH 574 0
-DWIDTH 5 0
-BBX 4 9 0 0
+DWIDTH 7 0
+BBX 4 9 1 0
 BITMAP
 20
 E0
@@ -1019,10 +1013,10 @@ ENDCHAR
 STARTCHAR underscore
 ENCODING 95
 SWIDTH 500 0
-DWIDTH 7 0
-BBX 7 1 0 -2
+DWIDTH 6 0
+BBX 6 1 0 -2
 BITMAP
-FE
+FC
 ENDCHAR
 STARTCHAR quoteleft
 ENCODING 96
@@ -1478,6 +1472,14 @@ BITMAP
 FC
 98
 ENDCHAR
+STARTCHAR space
+ENCODING 160
+SWIDTH 287 0
+DWIDTH 4 0
+BBX 1 1 0 0
+BITMAP
+00
+ENDCHAR
 STARTCHAR exclamdown
 ENCODING 161
 SWIDTH 296 0
@@ -1652,8 +1654,9 @@ STARTCHAR hyphen
 ENCODING 173
 SWIDTH 333 0
 DWIDTH 4 0
-BBX 3 1 0 3
+BBX 3 2 0 2
 BITMAP
+E0
 E0
 ENDCHAR
 STARTCHAR registered
@@ -2158,10 +2161,10 @@ STARTCHAR Icircumflex
 ENCODING 206
 SWIDTH 444 0
 DWIDTH 5 0
-BBX 4 12 0 0
+BBX 5 12 0 0
 BITMAP
-60
-90
+70
+D8
 00
 F0
 60
@@ -2415,8 +2418,8 @@ SWIDTH 833 0
 DWIDTH 10 0
 BBX 9 12 0 0
 BITMAP
-2200
-2200
+1200
+1200
 0000
 F380
 6100
@@ -2994,6 +2997,22 @@ F7
 E0
 C0
 ENDCHAR
+STARTCHAR Lslash
+ENCODING -1
+SWIDTH 722 0
+DWIDTH 9 0
+BBX 8 9 0 0
+BITMAP
+F0
+60
+68
+70
+E0
+60
+61
+63
+FF
+ENDCHAR
 STARTCHAR OE
 ENCODING -1
 SWIDTH 1000 0
@@ -3009,6 +3028,25 @@ C320
 C308
 6318
 3FF8
+ENDCHAR
+STARTCHAR Scaron
+ENCODING -1
+SWIDTH 667 0
+DWIDTH 8 0
+BBX 7 12 0 0
+BITMAP
+6C
+38
+00
+7A
+C6
+C2
+F0
+7C
+1E
+86
+C6
+BC
 ENDCHAR
 STARTCHAR Ydieresis
 ENCODING -1
@@ -3028,6 +3066,25 @@ F7
 18
 18
 3C
+ENDCHAR
+STARTCHAR Zcaron
+ENCODING -1
+SWIDTH 667 0
+DWIDTH 9 0
+BBX 8 12 0 0
+BITMAP
+36
+1C
+00
+FF
+C7
+8E
+1C
+18
+38
+71
+E3
+FF
 ENDCHAR
 STARTCHAR breve
 ENCODING -1
@@ -3068,23 +3125,6 @@ BITMAP
 70
 D8
 ENDCHAR
-STARTCHAR daggerdbl
-ENCODING -1
-SWIDTH 500 0
-DWIDTH 6 0
-BBX 5 10 0 -1
-BITMAP
-20
-20
-F8
-20
-20
-20
-20
-F8
-20
-20
-ENDCHAR
 STARTCHAR dagger
 ENCODING -1
 SWIDTH 500 0
@@ -3102,6 +3142,23 @@ F8
 20
 20
 ENDCHAR
+STARTCHAR daggerdbl
+ENCODING -1
+SWIDTH 500 0
+DWIDTH 6 0
+BBX 5 10 0 -1
+BITMAP
+20
+20
+F8
+20
+20
+20
+20
+F8
+20
+20
+ENDCHAR
 STARTCHAR dotaccent
 ENCODING -1
 SWIDTH 333 0
@@ -3110,6 +3167,19 @@ BBX 1 2 1 7
 BITMAP
 80
 80
+ENDCHAR
+STARTCHAR dotlessi
+ENCODING -1
+SWIDTH 370 0
+DWIDTH 5 0
+BBX 4 6 0 0
+BITMAP
+E0
+60
+60
+60
+60
+F0
 ENDCHAR
 STARTCHAR ellipsis
 ENCODING -1
@@ -3136,6 +3206,22 @@ BBX 6 1 0 3
 BITMAP
 FC
 ENDCHAR
+STARTCHAR fi
+ENCODING -1
+SWIDTH 685 0
+DWIDTH 9 0
+BBX 8 9 0 0
+BITMAP
+3E
+66
+60
+FE
+66
+66
+66
+66
+FF
+ENDCHAR
 STARTCHAR fl
 ENCODING -1
 SWIDTH 685 0
@@ -3151,6 +3237,25 @@ FE
 66
 66
 FF
+ENDCHAR
+STARTCHAR florin
+ENCODING -1
+SWIDTH 574 0
+DWIDTH 8 0
+BBX 8 12 -1 -3
+BITMAP
+06
+0B
+18
+18
+3E
+18
+18
+18
+18
+18
+D0
+60
 ENDCHAR
 STARTCHAR fraction
 ENCODING -1
@@ -3178,6 +3283,18 @@ BITMAP
 C0
 60
 ENDCHAR
+STARTCHAR guilsinglleft
+ENCODING -1
+SWIDTH 333 0
+DWIDTH 5 0
+BBX 4 5 0 1
+BITMAP
+30
+60
+C0
+60
+30
+ENDCHAR
 STARTCHAR guilsinglright
 ENCODING -1
 SWIDTH 333 0
@@ -3198,6 +3315,22 @@ BBX 7 2 1 7
 BITMAP
 66
 CC
+ENDCHAR
+STARTCHAR lslash
+ENCODING -1
+SWIDTH 352 0
+DWIDTH 5 0
+BBX 4 9 0 0
+BITMAP
+E0
+60
+60
+70
+E0
+60
+60
+60
+F0
 ENDCHAR
 STARTCHAR oe
 ENCODING -1
@@ -3304,6 +3437,22 @@ BITMAP
 90
 60
 ENDCHAR
+STARTCHAR scaron
+ENCODING -1
+SWIDTH 500 0
+DWIDTH 6 0
+BBX 5 9 0 0
+BITMAP
+D8
+70
+00
+78
+88
+F0
+78
+88
+F0
+ENDCHAR
 STARTCHAR tilde
 ENCODING -1
 SWIDTH 333 0
@@ -3325,85 +3474,6 @@ A9B0
 2150
 7358
 ENDCHAR
-STARTCHAR dotlessi
-ENCODING -1
-SWIDTH 370 0
-DWIDTH 5 0
-BBX 4 6 0 0
-BITMAP
-E0
-60
-60
-60
-60
-F0
-ENDCHAR
-STARTCHAR florin
-ENCODING -1
-SWIDTH 574 0
-DWIDTH 8 0
-BBX 8 12 -1 -3
-BITMAP
-06
-0B
-18
-18
-3E
-18
-18
-18
-18
-18
-D0
-60
-ENDCHAR
-STARTCHAR guilsinglleft
-ENCODING -1
-SWIDTH 333 0
-DWIDTH 5 0
-BBX 4 5 0 1
-BITMAP
-30
-60
-C0
-60
-30
-ENDCHAR
-STARTCHAR fi
-ENCODING -1
-SWIDTH 685 0
-DWIDTH 9 0
-BBX 8 9 0 0
-BITMAP
-3E
-66
-60
-FE
-66
-66
-66
-66
-FF
-ENDCHAR
-STARTCHAR Zcaron
-ENCODING -1
-SWIDTH 667 0
-DWIDTH 9 0
-BBX 8 12 0 0
-BITMAP
-36
-1C
-00
-FF
-C7
-8E
-1C
-18
-38
-71
-E3
-FF
-ENDCHAR
 STARTCHAR zcaron
 ENCODING -1
 SWIDTH 537 0
@@ -3419,72 +3489,5 @@ FC
 70
 E4
 FC
-ENDCHAR
-STARTCHAR scaron
-ENCODING -1
-SWIDTH 500 0
-DWIDTH 6 0
-BBX 5 9 0 0
-BITMAP
-D8
-70
-00
-78
-88
-F0
-78
-88
-F0
-ENDCHAR
-STARTCHAR Scaron
-ENCODING -1
-SWIDTH 667 0
-DWIDTH 8 0
-BBX 7 12 0 0
-BITMAP
-6C
-38
-00
-7A
-C6
-C2
-F0
-7C
-1E
-86
-C6
-BC
-ENDCHAR
-STARTCHAR Lslash
-ENCODING -1
-SWIDTH 722 0
-DWIDTH 9 0
-BBX 8 9 0 0
-BITMAP
-F0
-60
-68
-70
-E0
-60
-61
-63
-FF
-ENDCHAR
-STARTCHAR lslash
-ENCODING -1
-SWIDTH 352 0
-DWIDTH 5 0
-BBX 4 9 0 0
-BITMAP
-E0
-60
-60
-70
-E0
-60
-60
-60
-F0
 ENDCHAR
 ENDFONT

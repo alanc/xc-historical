@@ -1,43 +1,33 @@
 STARTFONT 2.1
-COMMENT $XConsortium$
-COMMENT 
-COMMENT  Copyright 1984, 1987 Adobe Systems, Inc.
-COMMENT  Portions Copyright 1988 Digital Equipment Corporation
-COMMENT 
-COMMENT  Adobe is a registered trademark of Adobe Systems, Inc.  Permission 
-COMMENT  to use these trademarks is hereby granted only in association with the
-COMMENT  images described in this file.
-COMMENT 
-COMMENT  Permission to use, copy, modify, and distribute this software and
-COMMENT  its documentation for any purpose and without fee is hereby granted,
-COMMENT  provided that the above copyright notices appear in all copies and
-COMMENT  that both those copyright notices and this permission notice appear
-COMMENT  in supporting documentation, and that the names of Adobe Systems and
-COMMENT  Digital Equipment Corporation not be used in advertising or
-COMMENT  publicity pertaining to distribution of the software without
-COMMENT  specific, written prior permission.  Adobe Systems and Digital
-COMMENT  Equipment Corporation make no representations about the suitability
-COMMENT  of this software for any purpose.  It is provided "as is" without
-COMMENT  express or implied warranty.
-COMMENT 
-COMMENT  ADOBE SYSTEMS AND DIGITAL EQUIPMENT CORPORATION DISCLAIM ALL
-COMMENT  WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
-COMMENT  WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL ADOBE
-COMMENT  SYSTEMS AND DIGITAL EQUIPMENT CORPORATION BE LIABLE FOR ANY SPECIAL,
-COMMENT  INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
-COMMENT  RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
-COMMENT  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
-COMMENT  CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-COMMENT 
-COMMENT 
 FONT -Adobe-Courier-Bold-R-Normal--10-100-75-75-M-60-ISO8859-1
 SIZE 10 75 75
 FONTBOUNDINGBOX 8 11 -1 -2
-STARTPROPERTIES 22
-COMMENT Begin LogicalFontDescription
-FONTNAME_REGISTRY ""
-FAMILY_NAME "Courier"
+COMMENT $XConsortium$
+COMMENT 
+COMMENT +
+COMMENT  Copyright 1984-1989, 1994 Adobe Systems Incorporated.
+COMMENT  Copyright 1988, 1994 Digital Equipment Corporation.
+COMMENT
+COMMENT  Adobe is a trademark of Adobe Systems Incorporated which may be
+COMMENT  registered in certain jurisdictions.
+COMMENT  Permission to use these trademarks is hereby granted only in
+COMMENT  association with the images described in this file.
+COMMENT
+COMMENT  Permission to use, copy, modify, distribute and sell this software
+COMMENT  and its documentation for any purpose and without fee is hereby
+COMMENT  granted, provided that the above copyright notices appear in all
+COMMENT  copies and that both those copyright notices and this permission
+COMMENT  notice appear in supporting documentation, and that the names of
+COMMENT  Adobe Systems and Digital Equipment Corporation not be used in
+COMMENT  advertising or publicity pertaining to distribution of the software
+COMMENT  without specific, written prior permission.  Adobe Systems and
+COMMENT  Digital Equipment Corporation make no representations about the
+COMMENT  suitability of this software for any purpose.  It is provided "as
+COMMENT  is" without express or implied warranty.
+COMMENT -
+STARTPROPERTIES 28
 FOUNDRY "Adobe"
+FAMILY_NAME "Courier"
 WEIGHT_NAME "Bold"
 SLANT "R"
 SETWIDTH_NAME "Normal"
@@ -50,17 +40,22 @@ SPACING "M"
 AVERAGE_WIDTH 60
 CHARSET_REGISTRY "ISO8859"
 CHARSET_ENCODING "1"
-COMMENT END LogicalFontDescription
-CHARSET_COLLECTIONS "ASCII ISO8859-1 ADOBE-STANDARD"
-FACE_NAME "Courier Bold"
-COPYRIGHT "Copyright (c) 1985,1987 Adobe Systems, Inc., Portions copyright 1988 Digital Equipment Corp."
-COMMENT ***** end of inserted font properties
-FONT_ASCENT 8
-FONT_DESCENT 2
 CAP_HEIGHT 6
 X_HEIGHT 5
+FONT_ASCENT 8
+FONT_DESCENT 2
+FACE_NAME "Courier Bold"
+COPYRIGHT "Copyright (c) 1984, 1987 Adobe Systems Incorporated. All Rights Reserved. Copyright (c) 1988, 1991 Digital Equipment Corporation. All Rights Reserved."
+NOTICE "No mark"
+_DEC_DEVICE_FONTNAMES "PS=Courier-Bold"
+_DEC_PRODUCTINFO "DECwindows Fonts V2.2, 07-Nov-1991"
+DEFAULT_CHAR 32
+RELATIVE_SETWIDTH 50
+RELATIVE_WEIGHT 70
+CHARSET_COLLECTIONS "ASCII ISO8859-1 ADOBE-STANDARD"
+FULL_NAME "Courier Bold"
 ENDPROPERTIES
-CHARS 228
+CHARS 229
 STARTCHAR space
 ENCODING 32
 SWIDTH 600 0
@@ -1284,6 +1279,14 @@ BBX 5 2 0 3
 BITMAP
 68
 B0
+ENDCHAR
+STARTCHAR space
+ENCODING 160
+SWIDTH 600 0
+DWIDTH 6 0
+BBX 1 1 0 0
+BITMAP
+00
 ENDCHAR
 STARTCHAR exclamdown
 ENCODING 161
@@ -2653,6 +2656,66 @@ E0
 6C
 FC
 ENDCHAR
+STARTCHAR OE
+ENCODING -1
+SWIDTH 600 0
+DWIDTH 6 0
+BBX 6 6 0 0
+BITMAP
+7C
+B4
+B8
+B0
+B4
+7C
+ENDCHAR
+STARTCHAR Scaron
+ENCODING -1
+SWIDTH 600 0
+DWIDTH 6 0
+BBX 5 9 0 0
+BITMAP
+90
+60
+00
+78
+C8
+F0
+38
+98
+F0
+ENDCHAR
+STARTCHAR Ydieresis
+ENCODING -1
+SWIDTH 600 0
+DWIDTH 6 0
+BBX 7 8 -1 0
+BITMAP
+28
+00
+E6
+66
+3C
+18
+18
+3C
+ENDCHAR
+STARTCHAR Zcaron
+ENCODING -1
+SWIDTH 600 0
+DWIDTH 6 0
+BBX 5 9 0 0
+BITMAP
+90
+60
+00
+F8
+D8
+30
+60
+D8
+F8
+ENDCHAR
 STARTCHAR breve
 ENCODING -1
 SWIDTH 600 0
@@ -2765,6 +2828,34 @@ BBX 5 1 0 3
 BITMAP
 F8
 ENDCHAR
+STARTCHAR fi
+ENCODING -1
+SWIDTH 600 0
+DWIDTH 6 0
+BBX 7 7 -1 0
+BITMAP
+3C
+60
+FC
+6C
+6C
+6C
+FE
+ENDCHAR
+STARTCHAR fl
+ENCODING -1
+SWIDTH 600 0
+DWIDTH 6 0
+BBX 7 7 -1 0
+BITMAP
+3C
+6C
+FC
+6C
+6C
+6C
+FE
+ENDCHAR
 STARTCHAR florin
 ENCODING -1
 SWIDTH 600 0
@@ -2847,6 +2938,18 @@ BITMAP
 30
 FC
 ENDCHAR
+STARTCHAR oe
+ENCODING -1
+SWIDTH 600 0
+DWIDTH 6 0
+BBX 6 5 0 0
+BITMAP
+6C
+B4
+BC
+B0
+6C
+ENDCHAR
 STARTCHAR ogonek
 ENCODING -1
 SWIDTH 600 0
@@ -2856,6 +2959,20 @@ BITMAP
 40
 80
 60
+ENDCHAR
+STARTCHAR perthousand
+ENCODING -1
+SWIDTH 600 0
+DWIDTH 6 0
+BBX 6 7 0 0
+BITMAP
+60
+A8
+D0
+60
+6C
+B4
+D8
 ENDCHAR
 STARTCHAR quotedblbase
 ENCODING -1
@@ -2917,62 +3034,6 @@ BITMAP
 90
 60
 ENDCHAR
-STARTCHAR tilde
-ENCODING -1
-SWIDTH 600 0
-DWIDTH 6 0
-BBX 5 2 0 6
-BITMAP
-68
-90
-ENDCHAR
-STARTCHAR Zcaron
-ENCODING -1
-SWIDTH 600 0
-DWIDTH 6 0
-BBX 5 9 0 0
-BITMAP
-90
-60
-00
-F8
-D8
-30
-60
-D8
-F8
-ENDCHAR
-STARTCHAR zcaron
-ENCODING -1
-SWIDTH 600 0
-DWIDTH 6 0
-BBX 6 8 -1 0
-BITMAP
-48
-30
-00
-7C
-18
-30
-6C
-FC
-ENDCHAR
-STARTCHAR Scaron
-ENCODING -1
-SWIDTH 600 0
-DWIDTH 6 0
-BBX 5 9 0 0
-BITMAP
-90
-60
-00
-78
-C8
-F0
-38
-98
-F0
-ENDCHAR
 STARTCHAR scaron
 ENCODING -1
 SWIDTH 600 0
@@ -2988,87 +3049,14 @@ F0
 38
 F0
 ENDCHAR
-STARTCHAR Ydieresis
+STARTCHAR tilde
 ENCODING -1
 SWIDTH 600 0
 DWIDTH 6 0
-BBX 7 8 -1 0
+BBX 5 2 0 6
 BITMAP
-28
-00
-E6
-66
-3C
-18
-18
-3C
-ENDCHAR
-STARTCHAR OE
-ENCODING -1
-SWIDTH 600 0
-DWIDTH 6 0
-BBX 6 6 0 0
-BITMAP
-7C
-B4
-B8
-B0
-B4
-7C
-ENDCHAR
-STARTCHAR fi
-ENCODING -1
-SWIDTH 600 0
-DWIDTH 6 0
-BBX 7 7 -1 0
-BITMAP
-3C
-60
-FC
-6C
-6C
-6C
-FE
-ENDCHAR
-STARTCHAR fl
-ENCODING -1
-SWIDTH 600 0
-DWIDTH 6 0
-BBX 7 7 -1 0
-BITMAP
-3C
-6C
-FC
-6C
-6C
-6C
-FE
-ENDCHAR
-STARTCHAR oe
-ENCODING -1
-SWIDTH 600 0
-DWIDTH 6 0
-BBX 6 5 0 0
-BITMAP
-6C
-B4
-BC
-B0
-6C
-ENDCHAR
-STARTCHAR perthousand
-ENCODING -1
-SWIDTH 600 0
-DWIDTH 6 0
-BBX 6 7 0 0
-BITMAP
-60
-A8
-D0
-60
-6C
-B4
-D8
+68
+90
 ENDCHAR
 STARTCHAR trademark
 ENCODING -1
@@ -3080,5 +3068,20 @@ F6
 5E
 5A
 5A
+ENDCHAR
+STARTCHAR zcaron
+ENCODING -1
+SWIDTH 600 0
+DWIDTH 6 0
+BBX 6 8 -1 0
+BITMAP
+48
+30
+00
+7C
+18
+30
+6C
+FC
 ENDCHAR
 ENDFONT
