@@ -1,5 +1,5 @@
         DEPLIBS = XawClientDepLibs
-LOCAL_LIBRARIES = XawClientLibs $(SMLIB) $(ICELIB)
+LOCAL_LIBRARIES = XawClientLibs
 
            SRCS1 = xsm.c xtwatch.c list.c
            OBJS1 = xsm.o xtwatch.o list.o
