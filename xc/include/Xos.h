@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.20 89/11/27 14:56:36 jim Exp $
+ * $XConsortium: Xos.h,v 1.21 89/12/02 14:59:50 jim Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -28,14 +28,14 @@
  * Get major data types (esp. caddr_t)
  */
 
-#if defined(CRAY) || defined(USG)
+#ifdef USG
 #ifndef __TYPES__
-#define __TYPES__
 #include <sys/types.h>			/* forgot to protect it... */
+#define __TYPES__
 #endif /* __TYPES__ */
 #else
 #include <sys/types.h>
-#endif /* CRAY or USG */
+#endif /* USG */
 
 
 /*
