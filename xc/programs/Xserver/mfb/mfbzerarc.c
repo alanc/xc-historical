@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbzerarc.c,v 5.0 89/09/03 17:12:01 keith Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.0 89/09/05 20:14:45 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -33,145 +33,242 @@ without any express or implied warranty.
 #define LEFTMOST	((unsigned int) 1)
 #endif
 
-#define PixelateBlack(addr,off) \
-    (addr)[(off)>>5] |= SCRRIGHT (LEFTMOST, ((off) & 0x1f))
 #define PixelateWhite(addr,off) \
+    (addr)[(off)>>5] |= SCRRIGHT (LEFTMOST, ((off) & 0x1f))
+#define PixelateBlack(addr,off) \
     (addr)[(off)>>5] &= ~(SCRRIGHT (LEFTMOST, ((off) & 0x1f)))
-#define PixelateInvert(addr,off) \
-    (addr)[(off)>>5] ^= SCRRIGHT (LEFTMOST, ((off) & 0x1f))
 
-#define PixelateAll \
-    if ((info.initialMask == 0xff) && (info.startx < 0)) \
-    { \
-	PixelateAllCircle \
-    } \
-    else \
-    { \
-	for (x = info.x, xoffset = nlwidth * x; x <= y; x++, xoffset += nlwidth) \
-	{ \
-	    if (x == info.startx) \
-		mask = info.startMask; \
-	    if (mask & 1) \
-		Pixelate (yorgol - xoffset, info.xorg + y); \
-	    if (mask & 4) \
-		Pixelate (yorgol - yoffset, info.xorgo - x); \
-	    if (mask & 16) \
-		Pixelate (yorgl + xoffset, info.xorgo - y); \
-	    if (mask & 64) \
-		Pixelate (yorgl + yoffset, info.xorg + x); \
-	    if (x == y) \
-		break; \
-	    if (x) \
-	    { \
-		if (mask & 2) \
-		    Pixelate (yorgol - yoffset, info.xorg + x); \
-		if (mask & 8) \
-		    Pixelate (yorgol - xoffset, info.xorgo - y); \
-		if (mask & 32) \
-		    Pixelate (yorgl + yoffset, info.xorgo - x); \
-		if (mask & 128) \
-		    Pixelate (yorgl + xoffset, info.xorg + y); \
-	    } \
-	    if (x == info.endx) \
-		mask = info.endMask; \
-	    if (d < 0) \
-	    { \
-		d += (x << 2) + dn; \
-	    } \
-	    else \
-	    { \
-		d += ((x - y) << 2) + dp; \
-		y--; \
-		yoffset -= nlwidth; \
-	    } \
-	} \
-    }
+#define Pixelate(base,off) \
+{ \
+    paddr = base + ((off)>>5); \
+    pmask = SCRRIGHT(LEFTMOST, (off) & 0x1f); \
+    *paddr = (*paddr & ~pmask) | (pixel & pmask); \
+}
 
-#define PixelateAllCircle \
-    for (x = info.x, xoffset = nlwidth * x; x <= y; x++, xoffset += nlwidth) \
-    { \
-	Pixelate (yorgol - xoffset, info.xorg + y); \
-	Pixelate (yorgol - yoffset, info.xorgo - x); \
-	Pixelate (yorgl + xoffset, info.xorgo - y); \
-	Pixelate (yorgl + yoffset, info.xorg + x); \
-    	if (x == y) \
-	    break; \
-	if (x) \
-	{ \
-	    Pixelate (yorgol - yoffset, info.xorg + x); \
-	    Pixelate (yorgol - xoffset, info.xorgo - y); \
-	    Pixelate (yorgl + yoffset, info.xorgo - x); \
-	    Pixelate (yorgl + xoffset, info.xorg + y); \
-	} \
-	if (d < 0) \
-	{ \
-	    d += (x << 2) + dn; \
-	} \
-	else \
-	{ \
-	    d += ((x - y) << 2) + dp; \
-	    y--; \
-	    yoffset -= nlwidth; \
-	} \
-    }
+#define DoPix(bit,base,off) if (mask & bit) Pixelate(base,off);
 
 static void
-mfbZeroCircleSS(pDraw, pGC, arc)
+mfbZeroArcSS(pDraw, pGC, arc)
     DrawablePtr pDraw;
     GCPtr pGC;
     xArc *arc;
 {
-    register int x, y, d, dn, dp;
-    register int mask;
-    miZeroCircleRec info;
-    register unsigned *addrl;
-    unsigned *xorgl, *yorgl, *xorgol, *yorgol;
-    int rop = ((mfbPrivGC *) (pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop;
-    int nlwidth, xoffset, yoffset;
+    miZeroArcRec info;
+    register int x, y, a, b, d, mask;
+    register int k1, k3, dx1, dy1;
+    int *addrl;
+    int *yorgl, *yorgol;
+    unsigned long pixel;
+    int nlwidth, yoffset, dyoffset;
+    int pmask;
+    register int *paddr;
+
+    if (!pGC->planemask & 1)
+	return;
+    if (((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop ==
+	RROP_BLACK)
+	pixel = 0;
+    else
+	pixel = ~0L;
 
     if (pDraw->type == DRAWABLE_WINDOW)
     {
-	addrl = (unsigned *)
+	addrl = (int *)
 		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devPrivate.ptr);
 	nlwidth = (int)
 		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devKind) >> 2;
     }
     else
     {
-	addrl = (unsigned *)(((PixmapPtr)pDraw)->devPrivate.ptr);
+	addrl = (int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
     }
-    miZeroCircleSetup(arc, &info);
-    xorgl = addrl + ((info.xorg + pDraw->y) * nlwidth);
+    miZeroArcSetup(arc, &info);
     yorgl = addrl + ((info.yorg + pDraw->y) * nlwidth);
-    xorgol = addrl + ((info.xorgo + pDraw->y) * nlwidth);
     yorgol = addrl + ((info.yorgo + pDraw->y) * nlwidth);
     info.xorg += pDraw->x;
     info.xorgo += pDraw->x;
+    x = info.x;
     y = info.y;
-    yoffset = nlwidth * y;
+    yoffset = 0;
+    k1 = info.k1;
+    k3 = info.k3;
+    a = info.a;
+    b = info.b;
     d = info.d;
-    dn = info.dn;
-    dp = info.dp;
+    dx1 = info.dx1;
+    dy1 = info.dy1;
+    dyoffset = 0;
     mask = info.initialMask;
-
-    if (rop == RROP_BLACK)
+    if (!(arc->width & 1))
     {
-#define Pixelate(addr,off) PixelateBlack(addr,off)
-	PixelateAll
-#undef Pixelate
+	DoPix(1, yorgl, info.xorg);
+	DoPix(4, yorgol, info.xorg);
     }
-    else if (rop == RROP_WHITE)
+    if (!info.endx)
+	mask = info.endMask;
+    if ((mask == 0xf) && (info.startx < 0) &&
+	(arc->width == arc->height) && !(arc->width & 1))
     {
-#define Pixelate(addr,off) PixelateWhite(addr,off)
-	PixelateAll
-#undef Pixelate
+	int xoffset = nlwidth;
+	int *yorghl = yorgl + (info.h * nlwidth);
+	int xorghp = info.xorg + info.h;
+	int xorghn = info.xorg - info.h;
+
+	if (pixel)
+	{
+	    while (1)
+	    {
+		PixelateWhite(yorgl + yoffset, info.xorg + x);
+		PixelateWhite(yorgl + yoffset, info.xorg - x);
+		PixelateWhite(yorgol- yoffset, info.xorg - x);
+		PixelateWhite(yorgol - yoffset, info.xorg + x);
+		if (a < 0)
+		    break;
+		PixelateWhite(yorghl - xoffset, xorghp - y);
+		PixelateWhite(yorghl - xoffset, xorghn + y);
+		PixelateWhite(yorghl + xoffset, xorghn + y);
+		PixelateWhite(yorghl + xoffset, xorghp - y);
+		b -= k1;
+		x++;
+		xoffset += nlwidth;
+		if (d < 0)
+		{
+		    a += k1;
+		    d += b;
+		}
+		else
+		{
+		    y++;
+		    yoffset += nlwidth;
+		    a += k3;
+		    d -= a;
+		}
+	    }
+	}
+	else
+	{
+	    while (1)
+	    {
+		PixelateBlack(yorgl + yoffset, info.xorg + x);
+		PixelateBlack(yorgl + yoffset, info.xorg - x);
+		PixelateBlack(yorgol- yoffset, info.xorg - x);
+		PixelateBlack(yorgol - yoffset, info.xorg + x);
+		if (a < 0)
+		    break;
+		PixelateBlack(yorghl - xoffset, xorghp - y);
+		PixelateBlack(yorghl - xoffset, xorghn + y);
+		PixelateBlack(yorghl + xoffset, xorghn + y);
+		PixelateBlack(yorghl + xoffset, xorghp - y);
+		b -= k1;
+		x++;
+		xoffset += nlwidth;
+		if (d < 0)
+		{
+		    a += k1;
+		    d += b;
+		}
+		else
+		{
+		    y++;
+		    yoffset += nlwidth;
+		    a += k3;
+		    d -= a;
+		}
+	    }
+	}
+	x = info.w;
+	yoffset = info.h * nlwidth;
+    }
+    else if ((mask == 0xf) && (info.startx < 0))
+    {
+	while (y < info.h)
+	{
+	    if (a < 0)
+	    {
+		dx1 = 0;
+		dy1 = 1;
+		dyoffset = nlwidth;
+		k1 = info.alpha << 1;
+		k3 = -k3;
+		b = b + a - info.alpha;
+		d = b - (a >> 1) - d + (k3 >> 3);
+		a = (info.alpha - info.beta) - a;
+	    }
+	    Pixelate(yorgl + yoffset, info.xorg + x);
+	    Pixelate(yorgl + yoffset, info.xorgo - x);
+	    Pixelate(yorgol - yoffset, info.xorgo - x);
+	    Pixelate(yorgol - yoffset, info.xorg + x);
+	    b -= k1;
+	    if (d < 0)
+	    {
+		x += dx1;
+		y += dy1;
+		yoffset += dyoffset;
+		a += k1;
+		d += b;
+	    }
+	    else
+	    {
+		x++;
+		y++;
+		yoffset += nlwidth;
+		a += k3;
+		d -= a;
+	    }
+	}
     }
     else
     {
-#define Pixelate(addr,off) PixelateInvert(addr,off)
-	PixelateAll
-#undef Pixelate
+	while (y < info.h)
+	{
+	    if (a < 0)
+	    {
+		dx1 = 0;
+		dy1 = 1;
+		dyoffset = nlwidth;
+		k1 = info.alpha << 1;
+		k3 = -k3;
+		b = b + a - info.alpha;
+		d = b - (a >> 1) - d + (k3 >> 3);
+		a = (info.alpha - info.beta) - a;
+	    }
+	    if ((x == info.startx) || (y == info.starty))
+		mask = info.startMask;
+	    DoPix(1, yorgl + yoffset, info.xorg + x);
+	    DoPix(2, yorgl + yoffset, info.xorgo - x);
+	    DoPix(4, yorgol - yoffset, info.xorgo - x);
+	    DoPix(8, yorgol - yoffset, info.xorg + x);
+	    if ((x == info.endx) || (y == info.endy))
+		mask = info.endMask;
+	    b -= k1;
+	    if (d < 0)
+	    {
+		x += dx1;
+		y += dy1;
+		yoffset += dyoffset;
+		a += k1;
+		d += b;
+	    }
+	    else
+	    {
+		x++;
+		y++;
+		yoffset += nlwidth;
+		a += k3;
+		d -= a;
+	    }
+	}
+    }
+    for (; x <= info.w; x++)
+    {
+	DoPix(1, yorgl + yoffset, info.xorg + x);
+	DoPix(2, yorgl + yoffset, info.xorgo - x);
+	if (!arc->height || (arc->height & 1))
+	{
+	    DoPix(4, yorgol - yoffset, info.xorgo - x);
+	    DoPix(8, yorgol - yoffset, info.xorg + x);
+	}
     }
 }
 
@@ -190,14 +287,14 @@ mfbZeroPolyArcSS(pDraw, pGC, narcs, parcs)
     cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
-	if (arc->width == arc->height)
+	if (miCanZeroArc(arc))
 	{
 	    box.x1 = arc->x + pDraw->x;
 	    box.y1 = arc->y + pDraw->y;
 	    box.x2 = box.x1 + (int)arc->width + 1;
-	    box.y2 = box.y1 + (int)arc->width + 1;
+	    box.y2 = box.y1 + (int)arc->height + 1;
 	    if ((*pDraw->pScreen->RectIn)(cclip, &box) == rgnIN)
-		mfbZeroCircleSS(pDraw, pGC, arc);
+		mfbZeroArcSS(pDraw, pGC, arc);
 	    else
 		miZeroPolyArc(pDraw, pGC, 1, arc);
 	}
