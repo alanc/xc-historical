@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.10 89/09/08 14:34:24 keith Exp $
+ * $XConsortium: auth.c,v 1.11 89/09/09 13:01:07 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -596,18 +596,26 @@ writeRemoteAuth (file, auth, peer, peerlen, name)
     setAuthNumber (auth, name);
     switch (ConvertAddr (peer, &peerlen, &addr))
     {
+#ifdef AF_UNIX
     case AF_UNIX:
 	family = FamilyLocal;
 	break;
+#endif
+#ifdef AF_INET
     case AF_INET:
 	family = FamilyInternet;
 	break;
+#endif
+#ifdef AF_DECnet
     case AF_DECnet:
 	family = FamilyDECnet;
 	break;
+#endif
+#ifdef AF_CHAOS
     case AF_CHAOS:
 	family = FamilyChaos;
 	break;
+#endif
     }
     Debug ("writeRemoteAuth: family %d\n", family);
     if (family != FamilyLocal)
@@ -615,6 +623,10 @@ writeRemoteAuth (file, auth, peer, peerlen, name)
 	Debug ("writeRemoteAuth: %d, %d, %x\n",
 		family, peerlen, *(int *)addr);
 	writeAddr (family, peerlen, addr, file, auth);
+    }
+    else
+    {
+	writeLocalAuth (file, auth, name);
     }
 }
 
