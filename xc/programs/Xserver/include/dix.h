@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: dix.h,v 1.48 87/06/17 16:34:08 todd Exp $ */
+/* $Header: dix.h,v 1.4 87/08/14 21:29:32 newman Locked $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -46,35 +46,17 @@ SOFTWARE.
     if ((sizeof(req) >> 2) > stuff->length )\
          return(BadLength)
 
-#define WriteReplyToClient(pClient, size, pbuf) \
-{ \
-    if(pClient->swapped) \
-    { \
-	if(pClient->pSwapReplyFunc) \
-	    (*pClient->pSwapReplyFunc)(pClient, size, pbuf); \
-	else \
-	    (*ReplySwapVector[((xReq *)pClient->requestBuffer)->reqType]) \
-	        (pClient, size, pbuf); \
-    } \
-    else \
-    { \
-	WriteToClient(pClient, size, pbuf); \
-    } \
-}
-#define WriteConnToClient(pClient, size, pbuf) \
-{ \
-    if(pClient->swapped) \
-    { \
-	if(pClient->pSwapReplyFunc) \
-	    (*pClient->pSwapReplyFunc)(pClient, size, pbuf); \
-	else \
-	    WriteSConnSetupPrefix (pClient, size, pbuf); \
-    } \
-    else \
-    { \
-	WriteToClient(pClient, size, pbuf); \
-    } \
-}
+#define WriteReplyToClient(pClient, size, pReply) \
+   if (pClient->swapped) \
+      (*ReplySwapVector[((xReq *)pClient->requestBuffer)->reqType]) \
+           (pClient, size, pReply); \
+      else WriteToClient(pClient, size, (char *) pReply);
+
+#define WriteSwappedDataToClient(pClient, size, pbuf) \
+   if (pClient->swapped) \
+      (*pClient->pSwapReplyFunc)(pClient, size, pbuf); \
+   else WriteToClient (pClient, size, (char *) pbuf);
+
 typedef struct _TimeStamp *TimeStampPtr;
 typedef struct _Client *ClientPtr;
 extern ClientPtr requestingClient;
