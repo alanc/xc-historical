@@ -1,5 +1,5 @@
 /*
-* $Header: TextP.h,v 1.7 88/01/06 09:10:55 swick Locked $
+* $Header: TextP.h,v 1.8 88/01/08 07:42:33 swick Locked $
 */
 
 /*
@@ -139,17 +139,21 @@ extern TextClassRec textClassRec;
 
 /* New fields for the Text widget record */
 typedef struct _TextPart {
+    /* resources */
     XtTextSource	source;
     XtTextSink		sink;
-    XtTextLineTable	lt;
     XtTextPosition	insertPos;
     XtTextSelection	s;
+    XtTextSelectType	*sarray;	   /* Array to cycle for selections. */
+    Dimension		client_leftmargin;   /* client-visible resource */
+    int			options;	     /* wordbreak, scroll, etc. */
+    int			dialog_horiz_offset; /* position for popup dialog */
+    int			dialog_vert_offset;  /* position for popup dialog */
+    /* private state */
+    XtTextLineTable	lt;
     XtTextScanDirection extendDir;
     XtTextSelection	origSel;    /* the selection being modified */
-    XtTextSelectType	*sarray;    /* Array to cycle for selections. */
-    Dimension	    client_leftmargin; /* client-visible resource */
     Dimension	    leftmargin;	    /* Width of left margin. */
-    int		    options;	    /* wordbreak, scroll, etc. */
     Time	    lasttime;	    /* timestamp of last processed action */
     Time	    time;	    /* time of last key or button action */ 
     Position	    ev_x, ev_y;	    /* x, y coords for key or button action */
@@ -161,7 +165,14 @@ typedef struct _TextPart {
     int		    maxranges;	    /* How many ranges we have space for */
     Boolean	    showposition;   /* True if we need to show the position. */
     XtTextPosition  lastPos;	    /* Last position of source. */
-    Widget	    dialog;	    /* Window containing dialog, if any. */
+    struct _dialog {
+	TextWidget  text;	    /* the dialog's parent */
+	Widget      widget;	    /* the dialog widget */
+	Widget	    doit;	    /* the confirm button */
+	Widget	    message;	    /* the (occasional) error message */
+	Boolean	    mapped;	    /* True if this dialog is in-use */
+	struct _dialog *next;	    /* a list of dialogs */
+    } *dialog;			    /* InsertFile pop-up widget */
     GC              gc;
     Boolean         hasfocus;       /* TRUE if we currently have input focus.*/
 } TextPart;
