@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.141 93/08/09 17:12:31 kaleb Exp $ */
+/* $XConsortium: Event.c,v 1.142 93/08/11 14:06:39 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -232,7 +232,7 @@ AddEventHandler(widget, select_data, type, has_type_specifier, other, proc,
 	eventMask = *(EventMask*)select_data & ~NonMaskableMask;
 	if (other) eventMask |= NonMaskableMask;
 	if (!eventMask) return;
-    }
+    } else if (!type) return;
     
     if (XtIsRealized(widget) && !raw) oldMask = XtBuildEventMask(widget);
     
@@ -323,6 +323,7 @@ AddEventHandler(widget, select_data, type, has_type_specifier, other, proc,
 		    CallExtensionSelector(widget, pd->ext_select_list+i, FALSE);
 		    break;
 		}
+		if (type < pd->ext_select_list[i].min) break;
 	    }
 	}
     }
@@ -1215,7 +1216,6 @@ static Boolean DecideToDispatch(event)
 
     pdi = _XtGetPerDisplayInput(event->xany.display);
     grabList = *_XtGetGrabList(pdi);
-    mask = _XtConvertTypeToMask(event->xany.type);
     widget = XtWindowToWidget (event->xany.display, event->xany.window);
 
     if (widget == NULL) {
@@ -1255,7 +1255,7 @@ static Boolean DecideToDispatch(event)
 						       mask, pd);
 		    if (was_dispatched & XtDidFilter)
 			return was_dispatched;
-		}
+		} 
 		else _XtUngrabBadGrabs(event, widget, mask, pdi);
 		
 		/* Also dispatch to nearest accessible spring_loaded. */
