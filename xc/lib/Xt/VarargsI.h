@@ -1,4 +1,4 @@
-/* $XConsortium: VarargsI.h,v 1.10 90/12/12 14:54:01 rws Exp $ */
+/* $XConsortium: VarargsI.h,v 1.11 90/12/27 14:08:16 rws Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
@@ -53,6 +53,10 @@ typedef char *va_list;
 #  define _XSTDVAR
 # endif
 # endif
+#else
+#ifdef sgi
+#define _XSTDVAR
+#endif
 #endif
 
 #ifdef _XSTDVAR
