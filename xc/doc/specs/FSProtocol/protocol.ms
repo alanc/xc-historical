@@ -2328,7 +2328,7 @@ Data Types
 .XS
 \*(SN Data Types
 .XE
-.ft P
+.LP
 .sp 6p
 .TS
 tab (@) ;
@@ -2660,7 +2660,7 @@ Requests
 .XS
 \*(SN Requests
 .XE
-.ft P
+.LP
 .TS
 tab (@) ;
 lfB s s
@@ -3196,7 +3196,6 @@ Errors
 \*(SN Errors
 .XE
 .LP
-.ft P
 .TS
 tab (@) ;
 lfB s s
@@ -3401,7 +3400,6 @@ Events
 \*(SN Events
 .XE
 .LP
-.ft P
 .TS
 tab (@) ;
 lfB s s
@@ -3474,6 +3472,9 @@ All of the following documents are X Consortium standards available from MIT:
 .LP
 [3]  MIT X Consortium.  ``X Logical Font Description Conventions, Version 1.4''
 .bp
+.XS
+Appendix A \- Suggested Licensing Policies
+.XE
 .ce 10
 .sp 5
 \s+2\fBAppendix A\fP\s-2
@@ -3521,6 +3522,9 @@ return an AccessContext error.
 It should be noted that chaining of font servers (obtaining font data from
 other font servers) may conflict with certain license policies.
 .bp
+.XS
+Appendix B \- Implementation Suggestions
+.XE
 .sp 5
 .ce 10
 \s+2\fBAppendix B\fP\s-2
@@ -3553,3 +3557,5 @@ If a font client is unable to connect to a server (as opposed
 to having the connection terminated), it should retry for an
 implementation-dependent length of time (see Xlib's 
 handling of ECONNREFUSED in XConnDis.c).
+.bp
+.PX
