@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.34 94/03/30 19:46:43 mor Exp $ */
+/* $XConsortium: process.c,v 1.35 94/04/07 14:42:06 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -151,6 +151,7 @@ Bool		 *replyReadyRet;
 	 */
 
 	iceConn->dispatch_level--;
+	iceConn->connection_status = IceConnectIOError;
 	return (IceProcessMessagesIOError);
     }
 
