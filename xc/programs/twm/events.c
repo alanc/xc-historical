@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.159 90/04/24 09:28:48 jim Exp $
+ * $XConsortium: events.c,v 1.160 90/05/03 09:24:04 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.159 90/04/24 09:28:48 jim Exp $";
+"$XConsortium: events.c,v 1.160 90/05/03 09:24:04 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -76,6 +76,10 @@ int DragWidth;
 int DragHeight;
 int CurrentDragX;
 int CurrentDragY;
+
+/* Vars to tell if the resize has moved. */
+extern int ResizeOrigX;
+extern int ResizeOrigY;
 
 static int enter_flag;
 static int ColortableThrashing;
@@ -1386,6 +1390,13 @@ HandleMotionNotify()
 	    &(Event.xmotion.x_root), &(Event.xmotion.y_root),
 	    &(Event.xmotion.x), &(Event.xmotion.y),
 	    &JunkMask);
+
+	/* Set WindowMoved appropriately so that f.deltastop will
+	   work with resize as well as move. */
+	if (abs (Event.xmotion.x - ResizeOrigX) >= Scr->MoveDelta
+	    || abs (Event.xmotion.y - ResizeOrigY) >= Scr->MoveDelta)
+	  WindowMoved = TRUE;
+
 	XFindContext(dpy, ResizeWindow, TwmContext, (caddr_t *)&Tmp_win);
 	DoResize(Event.xmotion.x_root, Event.xmotion.y_root, Tmp_win);
     }

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.160 90/04/24 09:28:53 jim Exp $
+ * $XConsortium: menus.c,v 1.161 90/06/04 17:53:58 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.160 90/04/24 09:28:53 jim Exp $";
+"$XConsortium: menus.c,v 1.161 90/06/04 17:53:58 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -73,6 +73,11 @@ int ConstMoveXR;
 int ConstMoveYT;
 int ConstMoveYB;
  
+/* Globals used to keep track of whether the mouse has moved during
+   a resize function. */
+int ResizeOrigX;
+int ResizeOrigY;
+
 int MenuDepth = 0;		/* number of menus up */
 static struct {
     int x;
@@ -1303,6 +1308,11 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		    }
 		}
 	    }
+
+	    /* Save pointer position so we can tell if it was moved or
+	       not during the resize. */
+	    ResizeOrigX = eventp->xbutton.x_root;
+	    ResizeOrigY = eventp->xbutton.y_root;
 
 	    StartResize (eventp, tmp_win, fromtitlebar);
 
