@@ -25,13 +25,10 @@
 
 /* This defines the server you want */
 #define XhpServer              Xhp
-#define BuildServer YES
+#define BuildServer            YES
+#define NeedBerklib            BuildServer
 
-
-#define NeedBerklibInXlib      YES		/* snag Berklib for Xlib */
-
-
-XCOMM platform:  $XConsortium: hp.cf,v 1.27 90/12/26 11:40:07 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.28 91/01/08 09:30:56 rws Exp $
 XCOMM operating system:  OSName
 
 /*
