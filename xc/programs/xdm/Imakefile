@@ -1,9 +1,9 @@
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
            SRCS = buf.c display.c displaylist.c dm.c error.c\
-		  file.c greet.c programs.c resource.c\
+		  file.c greet.c resource.c\
 		  session.c socket.c verify.c Login.c
            OBJS = buf.o display.o displaylist.o dm.o error.o\
-		  file.o greet.o programs.o resource.o\
+		  file.o greet.o resource.o\
 		  session.o socket.o verify.o Login.o
 
 ComplexProgramTarget(xdm)
