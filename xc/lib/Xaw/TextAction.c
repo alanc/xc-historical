@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.26 90/04/17 15:38:04 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.27 90/04/17 15:56:42 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -984,7 +984,7 @@ TextWidget ctx;
   text.format = FMT8BIT;
 
   if (_XawTextReplace(ctx, ret_pos - 1, ret_pos, &text))
-    XBell(XtDisplay(w), 0);	/* Unable to edit, complain. */
+    XBell(XtDisplay((Widget) ctx), 0);	/* Unable to edit, complain. */
 
 }
 
