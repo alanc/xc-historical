@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.154 90/04/13 13:36:08 jim Exp $
+ * $XConsortium: events.c,v 1.155 90/04/13 13:37:19 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.154 90/04/13 13:36:08 jim Exp $";
+"$XConsortium: events.c,v 1.155 90/04/13 13:37:19 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1417,10 +1417,10 @@ HandleButtonRelease()
 	}
 	else
 	{
-	    xl = Event.xbutton.x_root - DragX - BW;
-	    yt = Event.xbutton.y_root - DragY - BW;
-	    w = DragWidth + 2 * BW;
-	    h = DragHeight + 2 * BW;
+	    xl = Event.xbutton.x_root - DragX - Scr->IconBorderWidth;
+	    yt = Event.xbutton.y_root - DragY - Scr->IconBorderWidth;
+	    w = DragWidth + 2 * Scr->IconBorderWidth;
+	    h = DragHeight + 2 * Scr->IconBorderWidth;
 	}
 
 	if (ConstMove)
