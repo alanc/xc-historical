@@ -1,4 +1,4 @@
-/* $XConsortium: XIntAtom.c,v 11.17 90/12/13 23:34:40 rws Exp $ */
+/* $XConsortium: XIntAtom.c,v 11.18 91/02/04 10:06:11 rws Exp $ */
 /*
 
 Copyright 1986, 1990 by the Massachusetts Institute of Technology
@@ -73,6 +73,8 @@ Atom XInternAtom (dpy, name, onlyIfExists)
     xInternAtomReply rep;
     xInternAtomReq *req;
 
+    if (!name)
+	name = "";
     LockDisplay(dpy);
     /* look in the cache first */
     if (!(atoms = dpy->atoms)) {
