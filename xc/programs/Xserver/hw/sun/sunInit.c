@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.42 93/11/14 13:37:09 kaleb Exp $ */
+/* $XConsortium: sunInit.c,v 5.45 93/12/13 12:10:34 kaleb Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -130,31 +130,40 @@ Bool FbInfo = FALSE;
 int sunKbdFd = -1, sunPtrFd = -1;
 
 /*
- * The name member in the following table correspond to the 
- * FBTYPE_??? macros defined in /usr/include/sun/fbio.h file
+ * The name member in the following table corresponds to the 
+ * FBTYPE_* macros defined in /usr/include/sun/fbio.h file
  */
 sunFbDataRec sunFbData[FBTYPE_LASTPLUSONE] = {
-  { NULL, "SUN1BW        (bwone)" },
-  { NULL, "SUN1COLOR     (cgone)" },
-  { BW2I, "SUN2BW        (bwtwo)" },	
-  { CG2I, "SUN2COLOR     (cgtwo)" },
-  { NULL, "SUN2GP        (gpone/gptwo)" },
-  { NULL, "SUN5COLOR     (RR accel)" },
-  { CG3I, "SUN3COLOR     (cgthree)" },
-  { NULL, "MEMCOLOR      (cgeight)" },
-  { CG4I, "SUN4COLOR     (cgfour)" },
+  { NULL, "SUN1BW        (bw1)" },
+  { NULL, "SUN1COLOR     (cg1)" },
+  { BW2I, "SUN2BW        (bw2)" },	
+  { CG2I, "SUN2COLOR     (cg2)" },
+  { NULL, "SUN2GP        (gp1/gp2)" },
+  { NULL, "SUN5COLOR     (cg5/386i accel)" },
+  { CG3I, "SUN3COLOR     (cg3)" },
+  { NULL, "MEMCOLOR      (cg8)" },
+  { CG4I, "SUN4COLOR     (cg4)" },
   { NULL, "NOTSUN1" },
   { NULL, "NOTSUN2" },
   { NULL, "NOTSUN3" }	
 #ifndef i386 /* { */
- ,{ CG6I, "SUNFAST_COLOR (cgsix/GX)" },
-  { NULL, "SUNROP_COLOR  (cgnine)" },
+ ,{ CG6I, "SUNFAST_COLOR (cg6/gx)" },
+  { NULL, "SUNROP_COLOR  (cg9)" },
   { NULL, "SUNFB_VIDEO" },
   { NULL, "SUNGIFB" },
   { NULL, "SUNPLAS" },
-  { NULL, "SUNGP3        (cgtwelve/GS)" },
+#ifdef FBTYPE_SUNGP3
+  { NULL, "SUNGP3        (cg12/gs)" },
+#endif
+#ifdef FBTYPE_SUNGT
   { NULL, "SUNGT         (gt)" },
-  { NULL, "RESERVED1" }
+#endif
+#ifdef FBTYPE_SUNLEO
+  { NULL, "SUNLEO        (zx)" },
+#endif
+#ifdef FBTYPE_MDICOLOR
+  { NULL, "MDICOLOR      (cgfourteen)" },
+#endif
 #endif /* } */
 };
 
@@ -164,22 +173,34 @@ sunFbDataRec sunFbData[FBTYPE_LASTPLUSONE] = {
  */
 #if SUNMAXDEPTH == 1 /* { */
 static char *fallbackList[] = {
-    BWTWO0DEV, BWTWO1DEV
+    BWTWO0DEV, BWTWO1DEV, BWTWO2DEV
 };
 #else /* }{ */
 static char *fallbackList[] = {
 #ifndef i386 /* { */
     CGTWO0DEV, CGTWO1DEV, CGTWO2DEV,
+#if (MAXSCREENS == 4)
+    CGTWO3DEV,
+#endif
 #endif /* } */
     CGTHREE0DEV,
 #ifndef i386 /* { */
     CGTHREE1DEV, CGTHREE2DEV,
+#if (MAXSCREENS == 4)
+    CGTHREE3DEV,
+#endif
 #endif /* } */
 #ifdef FBTYPE_SUNFAST_COLOR /* { */
     CGSIX0DEV, CGSIX1DEV, CGSIX2DEV,
+#if (MAXSCREENS == 4)
+    CGSIX3DEV,
+#endif
 #endif /* } */
 #ifndef i386 /* { */
-    CGFOUR0DEV, BWTWO0DEV, BWTWO1DEV,
+    CGFOUR0DEV, BWTWO0DEV, BWTWO1DEV, BWTWO2DEV,
+#if (MAXSCREENS == 4)
+    BWTWO3DEV,
+#endif
 #endif /* } */
     "/dev/fb"
 };

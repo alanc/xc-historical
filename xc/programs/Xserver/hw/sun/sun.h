@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.32 93/12/13 11:12:50 dpw Exp $ */
+/* $XConsortium: sun.h,v 5.33 93/12/13 11:40:15 kaleb Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -128,30 +128,38 @@ extern int monitorResolution;
 # define CGTWO0DEV	"/dev/fbs/cgtwo0"
 # define CGTWO1DEV	"/dev/fbs/cgtwo1"
 # define CGTWO2DEV	"/dev/fbs/cgtwo2"
+# define CGTWO3DEV	"/dev/fbs/cgtwo3"
 # define CGTHREE0DEV	"/dev/fbs/cgthree0"
 # define CGTHREE1DEV	"/dev/fbs/cgthree1"
 # define CGTHREE2DEV	"/dev/fbs/cgthree2"
+# define CGTHREE3DEV	"/dev/fbs/cgthree3"
 # define CGFOUR0DEV	"/dev/fbs/cgfour0"
 # define CGSIX0DEV	"/dev/fbs/cgsix0"
 # define CGSIX1DEV	"/dev/fbs/cgsix1"
 # define CGSIX2DEV	"/dev/fbs/cgsix2"
+# define CGSIX3DEV	"/dev/fbs/cgsix3"
 # define BWTWO0DEV	"/dev/fbs/bwtwo0"
 # define BWTWO1DEV	"/dev/fbs/bwtwo1"
 # define BWTWO2DEV	"/dev/fbs/bwtwo2"
+# define BWTWO3DEV	"/dev/fbs/bwtwo3"
 #else
 # define CGTWO0DEV	"/dev/cgtwo0"
 # define CGTWO1DEV	"/dev/cgtwo1"
 # define CGTWO2DEV	"/dev/cgtwo2"
+# define CGTWO3DEV	"/dev/cgtwo3"
 # define CGTHREE0DEV	"/dev/cgthree0"
 # define CGTHREE1DEV	"/dev/cgthree1"
 # define CGTHREE2DEV	"/dev/cgthree2"
+# define CGTHREE3DEV	"/dev/cgthree3"
 # define CGFOUR0DEV	"/dev/cgfour0"
 # define CGSIX0DEV	"/dev/cgsix0"
 # define CGSIX1DEV	"/dev/cgsix1"
 # define CGSIX2DEV	"/dev/cgsix2"
+# define CGSIX3DEV	"/dev/cgsix3"
 # define BWTWO0DEV	"/dev/bwtwo0"
 # define BWTWO1DEV	"/dev/bwtwo1"
 # define BWTWO2DEV	"/dev/bwtwo2"
+# define BWTWO3DEV	"/dev/bwtwo3"
 #endif
 
 /*
