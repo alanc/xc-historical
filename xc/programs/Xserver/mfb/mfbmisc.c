@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbmisc.c,v 1.10 88/09/06 14:53:32 jim Exp $ */
+/* $XConsortium: mfbmisc.c,v 5.0 89/06/09 15:06:49 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cursor.h"
@@ -43,6 +43,7 @@ short *pheight;
       case TileShape:
       case StippleShape:
 	  width = *pwidth;
+	  if (!width) break;
 	  /* Return the closes power of two not less than what they gave me */
 	  test = 0x80000000;
 	  /* Find the highest 1 bit in the width given */
