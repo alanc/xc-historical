@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.35 94/04/07 15:58:15 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.36 94/04/07 18:06:35 rws Exp $
 #include <Server.tmpl>
 
 #if HasShm
@@ -7,9 +7,9 @@ XCOMM $XConsortium: Imakefile,v 5.35 94/04/07 15:58:15 rws Exp $
 #endif
 #if BuildXKB
   XKBSRCS = xkb.c xkbUtils.c xkbEvents.c xkbAccessX.c xkbStubs.c xkbSwap.c \
-            xkbInit.c xkbPrKeyEv.c
+            xkbInit.c xkbPrKeyEv.c xkbReadXkm.c
   XKBOBJS = xkb.o xkbUtils.o xkbEvents.o xkbAccessX.o xkbStubs.o xkbSwap.o \
-            xkbInit.o xkbPrKeyEv.o
+            xkbInit.o xkbPrKeyEv.o xkbReadXkm.o
 #endif
        SRCS = shape.c $(SHMSRCS) mbuf.c mbufpx.c mbufbf.c	\
               mitmisc.c xtest.c xtest1di.c xtest1dd.c sleepuntil.c	\
