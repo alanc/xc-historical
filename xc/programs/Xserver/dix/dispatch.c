@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.31 88/01/18 17:29:45 rws Exp $ */
+/* $Header: dispatch.c,v 1.32 88/01/24 15:24:59 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1732,9 +1732,10 @@ ProcGetImage(client)
     register ClientPtr	client;
 {
     register DrawablePtr pDraw;
-    int			nlines, linesPerBuf, widthBytesLine;
+    int			nlines, linesPerBuf;
     register int	height, linesDone;
-    int plane;
+    long		widthBytesLine, length;
+    Mask		plane;
     char		*pBuf;
     xGetImageReply	xgi;
 
@@ -1784,22 +1785,43 @@ ProcGetImage(client)
     if(stuff->format == ZPixmap)
     {
 	widthBytesLine = PixmapBytePad(stuff->width, pDraw->depth);
-	xgi.length = (widthBytesLine >> 2) * height;
+	length = widthBytesLine * height;
     }
     else 
     {
 	widthBytesLine = PixmapBytePad(stuff->width, 1);
-	xgi.length = (widthBytesLine >> 2) * height *
-		     /* only planes asked for */
-		     Ones(stuff->planeMask & ((1 << pDraw->depth) - 1));
+	plane = ((Mask)1) << (pDraw->depth - 1);
+	/* only planes asked for */
+	length = widthBytesLine * height *
+		 Ones(stuff->planeMask & (plane | (plane - 1)));
     }
+    xgi.length = (length + 3) >> 2;
     if (widthBytesLine == 0 || height == 0)
 	linesPerBuf = 0;
     else if (widthBytesLine >= IMAGE_BUFSIZE)
 	linesPerBuf = 1;
     else
+    {
 	linesPerBuf = IMAGE_BUFSIZE / widthBytesLine;
-    if(!(pBuf = (char *) ALLOCATE_LOCAL(linesPerBuf * widthBytesLine)))
+	if (linesPerBuf > height)
+	    linesPerBuf = height;
+    }
+    length = linesPerBuf * widthBytesLine;
+    if (linesPerBuf < height)
+    {
+	/* we have to make sure intermediate buffers don't need padding */
+	while ((linesPerBuf > 1) && (length & 3))
+	{
+	    linesPerBuf--;
+	    length -= widthBytesLine;
+	}
+	while (length & 3)
+	{
+	    linesPerBuf++;
+	    length += widthBytesLine;
+	}
+    }
+    if(!(pBuf = (char *) ALLOCATE_LOCAL(length)))
         return (BadAlloc);
 
     WriteReplyToClient(client, sizeof (xGetImageReply), &xgi);
@@ -1830,7 +1852,7 @@ ProcGetImage(client)
     }
     else
     {
-        for (plane = 1 << (pDraw->depth - 1); plane; plane >>= 1)
+        for (; plane; plane >>= 1)
 	{
 	    if (stuff->planeMask & plane)
 	    {
@@ -3099,7 +3121,7 @@ NextAvailableClient()
     clients[i] = client =  (ClientPtr)xalloc(sizeof(ClientRec));
     client->index = i;
     client->sequence = 0; 
-    client->clientAsMask = i << CLIENTOFFSET;
+    client->clientAsMask = ((Mask)i) << CLIENTOFFSET;
     client->closeDownMode = DestroyAll;
     client->clientGone = FALSE;
     client->lastDrawable = (DrawablePtr) NULL;
