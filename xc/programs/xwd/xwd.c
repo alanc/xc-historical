@@ -1,4 +1,4 @@
-#include <X/mit-copyright.h>
+#include <X11/copyright.h>
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
 
@@ -29,7 +29,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.7 87/05/27 09:54:15 dkk Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.8 87/05/29 08:44:41 dkk Locked $";
 #endif
 
 #include <X11/X.h>
@@ -79,7 +79,6 @@ main(argc, argv)
     unsigned int shape;
     int virt_x, virt_y;
     int virt_width, virt_height;
-    int pixmap_format = -1;
     int win_name_size;
     int header_size;
     int ncolors = 0;
@@ -150,7 +149,7 @@ main(argc, argv)
 	    continue;
 	}
 	if(strncmp(argv[i], "-xy", 3) == 0) {
-	    pixmap_format = XYPixmap;
+	    format = XYPixmap;
 	    continue;
 	}
 	Syntax(argv[0]);
@@ -183,7 +182,7 @@ main(argc, argv)
     source = BlackPixel(dpy, screen); /* *target_bits; %%*/
     mask = WhitePixel(dpy, screen);   /* *target_mask_bits; %%*/
     if (debug) fprintf(stderr,"xwd: Storing target cursor.\n");
-    if(!(cursor = XCursor(dpy, shape)))
+    if(!(cursor = XCreateFontCursor(dpy, shape)))
 
 	Error("Error occured while trying to store target cursor.\n");
 
@@ -191,15 +190,10 @@ main(argc, argv)
      * Set the right pixmap format for the display type.
      */
     if(DisplayPlanes(dpy, screen) == 1) {
-        pixmap_format = XYPixmap;
 	format = XYBitmap;
     }
-    else {
-            format = XYPixmap;
-	if(pixmap_format != XYPixmap) {
-	    pixmap_format = ZPixmap;
+    else if(format != XYPixmap) {
 	    format = ZPixmap;
-	  }
     }
 
     /*
@@ -270,7 +264,7 @@ main(argc, argv)
     /*
      * Determine the pixmap size.
      */
-    if (pixmap_format == XYPixmap) {
+    if (format == XYPixmap) {
 	buffer_size = XYPixmapSize(virt_width, virt_height,
 				   DisplayPlanes(dpy, screen));
 	if (debug) {
@@ -380,7 +374,7 @@ if(DisplayPlanes(dpy, screen) > 16)
 	  Error("Unable to handle more than 16 planes at this time");
 
 	/* reread in XY format if necessary */
-/*	if(pixmap_format == XYPixmap) {
+/*	if(format == XYPixmap) {
 	    (void) XPixmapGetXY(image_win,
 				virt_x, virt_y,
 				virt_width, virt_height,
@@ -414,7 +408,7 @@ if(DisplayPlanes(dpy, screen) > 16)
     header.file_version = XWD_FILE_VERSION;
     header.display_type = DisplayType(dpy, screen);
     header.display_planes = DisplayPlanes(dpy, screen);
-    header.pixmap_format = pixmap_format;
+    header.pixmap_format = format;
     header.pixmap_width = virt_width;
     header.pixmap_height = virt_height;
     header.window_width = win_info.width;
@@ -430,9 +424,10 @@ if(DisplayPlanes(dpy, screen) > 16)
     /*
      * Write out the color maps, if any
      */
+/*
     if (debug) fprintf(stderr,"xwd: Dumping %d colors.\n",ncolors);
     (void) fwrite(pixcolors, sizeof(XColor), ncolors, out_file);
-
+ %*/
     /*
      * Write out the buffer.
      */
