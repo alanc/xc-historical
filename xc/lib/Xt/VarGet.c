@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: VarGet.c,v 1.1 89/11/08 17:47:10 swick Exp $";
+    "$XConsortium: VarGet.c,v 1.2 89/11/09 11:11:20 swick Exp $";
 #endif
 /*
 
@@ -23,11 +23,10 @@ without express or implied warranty.
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
-#include <X11/Quarks.h>
 #include "VarargsI.h"
 #include "ResourceI.h"
 
-#ifdef _STDC_
+#if IncludePrototypes
 void
 XtVaGetSubresources(Widget widget, XtPointer base, String name, String class, XtResourceList resources, Cardinal num_resources, ...)
 #else
@@ -62,7 +61,7 @@ XtVaGetSubresources(widget, base, name, class, resources, num_resources, va_alis
 }
 
 
-#ifdef _STDC_
+#if IncludePrototypes
 void
 XtVaGetApplicationResources(Widget widget, XtPointer base, XtResourceList resources, Cardinal num_resources, ...)
 #else
@@ -169,7 +168,7 @@ _XtGetNestedArg(widget, avlist, args, resources, num_resources)
     for (; avlist->name != NULL; avlist++) {
         if (avlist->type != NULL) {
 	    _XtGetTypedArg(widget, avlist, resources, num_resources);
-        } else if(StringToQuark(avlist->name) == XtQVaNestedList) {
+        } else if(strcmp(avlist->name, XtVaNestedList) == 0) {
             count += _XtGetNestedArg(widget, (XtTypedArgList)avlist->value,
 				     args, resources, num_resources);
         } else {
@@ -182,7 +181,7 @@ _XtGetNestedArg(widget, avlist, args, resources, num_resources)
     return(count);
 }
 
-#ifdef _STDC_
+#if IncludePrototypes
 void
 XtVaGetValues(Widget widget, ...)
 #else
@@ -212,7 +211,7 @@ XtVaGetValues(widget, va_alist)
 
     for(attr = va_arg(var, String), count = 0 ; attr != NULL;
 			attr = va_arg(var, String)) {
-	if (StringToQuark(attr) == XtQVaTypedArg) {
+	if (strcmp(attr, XtVaTypedArg) == 0) {
 	    typed_arg.name = va_arg(var, String);
 	    typed_arg.type = va_arg(var, String);
 	    typed_arg.value = va_arg(var, XtArgVal);
@@ -221,7 +220,7 @@ XtVaGetValues(widget, va_alist)
 	    XtGetResourceList(XtClass(widget), &resources, &num_resources);
 
 	    _XtGetTypedArg(widget, &typed_arg, resources, num_resources);
-	} else if (StringToQuark(attr) == XtQVaNestedList) {
+	} else if (strcmp(attr, XtVaNestedList) == 0) {
 	    XtGetResourceList(XtClass(widget), &resources, &num_resources);
 
 	    count += _XtGetNestedArg(widget, va_arg(var, XtTypedArgList),
@@ -245,7 +244,7 @@ XtVaGetValues(widget, va_alist)
     va_end(var);
 }
 
-#ifdef _STDC_
+#if IncludePrototypes
 void
 XtVaGetSubvalues(XtPointer base,XtResourceList  resources, Cardinal num_resources, ...)
 #else
