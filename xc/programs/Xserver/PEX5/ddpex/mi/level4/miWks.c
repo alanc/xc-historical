@@ -1,4 +1,4 @@
-/* $XConsortium: miWks.c,v 5.3 91/05/01 14:23:02 hersh Exp $ */
+/* $XConsortium: miWks.c,v 5.4 91/07/10 08:52:28 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -30,6 +30,8 @@ SOFTWARE.
 #include "miLUT.h"
 #include "pexUtils.h"
 #include "PEXErr.h"
+#include "PEXprotost.h"
+#include "pexExtract.h"
 #include "Xprotostr.h"
 #include "gcstruct.h"
 
@@ -665,192 +667,145 @@ InquireWksInfo(pWKS, mask, pNumValues, pBuffer)
 
 	/* return the info in the format encoded for the reply */
 
-	/*
-	 * mibcopy copies the correct size of the info into the buffer then any
-	 * unused bytes are skipped
+	/*  
+	  Took out the micopy usage cause it was a real brain dead way 
+	  to do this. Note that this stuff NEVER checks the buffer size, 
+	  maybe I'll add this someday  - JSH
 	 */
 	WKS_CHECK_BITMASK(PEXPWDisplayUpdate) {
-		mibcopy(&(pwks->displayUpdate), pbyte, sshort);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32(pwks->displayUpdate, pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWVisualState) {
-		mibcopy(&(pwks->visualState), pbyte, sbyte);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32(pwks->visualState, pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWDisplaySurface) {
-		mibcopy(&(pwks->displaySurface), pbyte, sbyte);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32(pwks->displaySurface, pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWViewUpdate) {
-		mibcopy(&(pwks->viewUpdate), pbyte, sbyte);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32(pwks->viewUpdate, pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWDefinedViews) {
 		/* returns in order, highest priority view first */
 		ddOrdView      *indexer;
 
-		mibcopy(&(pwks->views.defined_views), pbyte, sulong);
 		(*pNumValues) += pwks->views.defined_views;
-		pbyte += 4;
+		PACK_CARD32(pwks->views.defined_views, pbyte);
 		indexer = pwks->views.highest;
 		do {
 			if (indexer->defined) {
-				mibcopy(&indexer->first_view, pbyte, sushort);
-				pbyte += 4;
+			      PACK_CARD32(indexer->first_view, pbyte);
 			}
 			indexer = indexer->lower;
 		} while (indexer != NULL);
 	}
 	WKS_CHECK_BITMASK(PEXPWWksUpdate) {
-		mibcopy(&(pwks->wksUpdate), pbyte, sbyte);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32(pwks->wksUpdate, pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWReqNpcSubvolume) {
-		mibcopy(&(pwks->reqNpcSubvolume), pbyte, spexNpcSubvolume);
-		pbyte += 24;
-		(*pNumValues)++;
+	      PACK_STRUCT(ddNpcSubvolume, &(pwks->reqNpcSubvolume), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWCurNpcSubvolume) {
-		mibcopy(&(pwks->pRend->npcSubvolume), pbyte, spexNpcSubvolume);
-		pbyte += 24;
-		(*pNumValues)++;
+	      PACK_STRUCT(ddNpcSubvolume, &(pwks->pRend->npcSubvolume), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWReqWksViewport) {
-		mibcopy(&(pwks->reqviewport), pbyte, spexViewport);
-		pbyte += 20;
-		(*pNumValues)++;
+	      PACK_STRUCT(ddViewport, &(pwks->reqviewport), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWCurWksViewport) {
-		mibcopy(&(pwks->pRend->viewport), pbyte, spexViewport);
-		pbyte += 20;
-		(*pNumValues)++;
+	      PACK_STRUCT(ddViewport, &(pwks->pRend->viewport), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWHlhsrUpdate) {
-		mibcopy(&(pwks->hlhsrUpdate), pbyte, sbyte);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32(pwks->hlhsrUpdate, pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWReqHlhsrMode) {
-		mibcopy(&(pwks->reqhlhsrMode), pbyte, sshort);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32(pwks->reqhlhsrMode, pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWCurHlhsrMode) {
-		mibcopy(&(pwks->pRend->hlhsrMode), pbyte, sshort);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32(pwks->pRend->hlhsrMode, pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWDrawable) {
-		mibcopy(&(pwks->pRend->drawableId), pbyte, sulong);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32(pwks->pRend->drawableId, pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWMarkerBundle) {
-		mibcopy((PLUTID(pwks->pRend->lut[PEXMarkerBundleLUT])),
-		      pbyte, sulong);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXMarkerBundleLUT])), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWTextBundle) {
-		mibcopy((PLUTID(pwks->pRend->lut[PEXTextBundleLUT])),
-		      pbyte, sulong);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXTextBundleLUT])), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWLineBundle) {
-		mibcopy((PLUTID(pwks->pRend->lut[PEXLineBundleLUT])),
-		      pbyte, sulong);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXLineBundleLUT])), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWInteriorBundle) {
-		mibcopy((PLUTID(pwks->pRend->lut[PEXInteriorBundleLUT])),
-		      pbyte, sulong);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXInteriorBundleLUT])), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWEdgeBundle) {
-		mibcopy((PLUTID(pwks->pRend->lut[PEXEdgeBundleLUT])),
-		      pbyte, sulong);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXEdgeBundleLUT])), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWColourTable) {
-		mibcopy((PLUTID(pwks->pRend->lut[PEXColourLUT])),
-		      pbyte, sulong);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXColourLUT])), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWDepthCueTable) {
-		mibcopy((PLUTID(pwks->pRend->lut[PEXDepthCueLUT])),
-		      pbyte, sulong);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXDepthCueLUT])), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWLightTable) {
-		mibcopy((PLUTID(pwks->pRend->lut[PEXLightLUT])),
-		      pbyte, sulong);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXLightLUT])), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWColourApproxTable) {
-		mibcopy((PLUTID(pwks->pRend->lut[PEXColourApproxLUT])),
-		      pbyte, sulong);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXColourApproxLUT])), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWPatternTable) {
-		mibcopy((PLUTID(pwks->pRend->lut[PEXPatternLUT])),
-		      pbyte, sulong);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXPatternLUT])), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWTextFontTable) {
-		mibcopy((PLUTID(pwks->pRend->lut[PEXTextFontLUT])),
-		      pbyte, sulong);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32((PLUTID(pwks->pRend->lut[PEXTextFontLUT])), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWHighlightIncl) {
-		mibcopy((PNSID(pwks->pRend->ns[(int) DD_HIGH_INCL_NS])),
-		      pbyte, sulong);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32((PNSID(pwks->pRend->ns[(int) DD_HIGH_INCL_NS])), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWHighlightExcl) {
-		mibcopy((PNSID(pwks->pRend->ns[(int) DD_HIGH_EXCL_NS])),
-		      pbyte, sulong);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32((PNSID(pwks->pRend->ns[(int) DD_HIGH_EXCL_NS])), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWInvisibilityIncl) {
-		mibcopy((PNSID(pwks->pRend->ns[(int) DD_INVIS_INCL_NS])),
-		      pbyte, sulong);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32((PNSID(pwks->pRend->ns[(int) DD_INVIS_INCL_NS])), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWInvisibilityExcl) {
-		mibcopy((PNSID(pwks->pRend->ns[(int) DD_INVIS_EXCL_NS])),
-		      pbyte, sulong);
-		pbyte += 4;
-		(*pNumValues)++;
+	      PACK_CARD32((PNSID(pwks->pRend->ns[(int) DD_INVIS_EXCL_NS])), pbyte);
+	      (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWPostedStructures) {
 		register ddOrdStruct *pos;
 
-		mibcopy(&(pwks->postedStructs.numStructs), pbyte, sulong);
-		pbyte += 4;
+		PACK_CARD32(pwks->postedStructs.numStructs, pbyte);
 		pos = pwks->postedStructs.postruct;
 		while (pos->next) {
-			mibcopy(&(pos->next->pstruct->id), pbyte, sulong);
-			pbyte += 4;
-			mibcopy(&(pos->next->priority), pbyte, sfloat);
-			pbyte += 4;
+			PACK_CARD32(pos->next->pstruct->id, pbyte);
+			PACK_FLOAT(pos->next->priority, pbyte);
 			pos = pos->next;
 		}
 		(*pNumValues)++;
@@ -861,29 +816,23 @@ InquireWksInfo(pWKS, mask, pNumValues, pBuffer)
 		 * return 0 for now - should implement num_priorities as part
 		 * of the wks
 		 */
-		*pbyte++ = 0;
-		*pbyte++ = 0;
-		*pbyte++ = 0;
-		*pbyte++ = 0;
+		PACK_CARD32( 0, pbyte);
 		(*pNumValues)++;
 	}
 
         WKS_CHECK_BITMASK( PEXPWBufferUpdate )
         {
-	    mibcopy(&(pwks->bufferUpdate), pbyte, sbyte);
-	    pbyte += 4;
+	    PACK_CARD32( pwks->bufferUpdate, pbyte);
 	    (*pNumValues)++;
         }
 
 	WKS_CHECK_BITMASK(PEXPWReqBufferMode) {
-		mibcopy(&(pwks->reqBufferMode), pbyte, sshort);
-		pbyte += 4;
-		(*pNumValues)++;
+	    PACK_CARD32( pwks->reqBufferMode, pbyte);
+	    (*pNumValues)++;
 	}
 	WKS_CHECK_BITMASK(PEXPWCurBufferMode) {
-		mibcopy(&(pwks->curBufferMode), pbyte, sshort);
-		pbyte += 4;
-		(*pNumValues)++;
+	    PACK_CARD32( pwks->curBufferMode, pbyte);
+	    (*pNumValues)++;
 	}
 	pBuffer->dataSize = needbytes;
 	ASSURE(needbytes == (pbyte - pBuffer->pBuf));
@@ -2012,8 +1961,8 @@ PostStructure(pWKS, pStruct, priority)
 	ErrorF("\nPostStructure %d\n", pStruct->id);
 #endif
 
-	if (err = miAddStructToOrdList(pStruct, &(pwks->postedStructs), priority)
-	    == MI_ALLOCERR)
+	if ((err = miAddStructToOrdList(pStruct, &(pwks->postedStructs), 
+			                           priority)) == MI_ALLOCERR)
 		return (BadAlloc);
 
 	if (err == MI_SUCCESS) {/* the structure was added */

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miPick.c,v 5.1 91/02/16 09:56:00 rws Exp $ */
 
 
 /***********************************************************
@@ -121,8 +121,7 @@ InquirePickDevice(pWKS, devType, mask, pNumItems, pBuffer)
     pbuf = pBuffer->pBuf;
 
     if (mask & PEXPDPickStatus) {
-	PACK_CARD16(pPickDevice->status, pbuf);
-	SKIP_PADDING(pbuf,2);
+	PACK_CARD32(pPickDevice->status, pbuf);
     }
 
     if (mask & PEXPDPickPath) {
@@ -131,8 +130,7 @@ InquirePickDevice(pWKS, devType, mask, pNumItems, pBuffer)
     }
 
     if (mask & PEXPDPickPathOrder) {
-	PACK_CARD16(pPickDevice->pathOrder, pbuf);
-	SKIP_PADDING(pbuf,2);
+	PACK_CARD32(pPickDevice->pathOrder, pbuf);
     }
 
     if (mask & PEXPDPickIncl) {
@@ -155,14 +153,27 @@ InquirePickDevice(pWKS, devType, mask, pNumItems, pBuffer)
 
     /*
      * no data recs are defined, so skip this - noone should expect to
-     * get data for this if (mask & PEXPDPickDataRec) switch (dev_index)
-     * { case 0: bcopy((char *) &(MIWKS_PICK_DATA_REC_1(pPickDevice)),
-     * (char *) pbuf, MIWKS_SIZE_DATA_REC_1); pbuf +=
-     * MIWKS_SIZE_DATA_REC_1; break; case 1: bcopy((char *)
-     * &(MIWKS_PICK_DATA_REC_2(pPickDevice)), (char *) pbuf,
-     * MIWKS_SIZE_DATA_REC_2); pbuf += MIWKS_SIZE_DATA_REC_2; break; }
-     * 
-     */
+     * get data for this 
+    */
+     if (mask & PEXPDPickDataRec) {
+	/* Sun says no data records defined, this is dummy code
+	* switch (dev_index) { 
+	*    case 0: bcopy((char *) &(MIWKS_PICK_DATA_REC_1(pPickDevice)),
+	*		   (char *) pbuf, MIWKS_SIZE_DATA_REC_1); 
+	*	     pbuf += MIWKS_SIZE_DATA_REC_1; 
+	*	     break; 
+	*    case 1: bcopy((char *) &(MIWKS_PICK_DATA_REC_2(pPickDevice)), 
+	*		   (char *) pbuf, MIWKS_SIZE_DATA_REC_2); 
+	*	     pbuf += MIWKS_SIZE_DATA_REC_2; 
+	*	     break; 
+	* }
+	*/
+	/* if for some reason this bitflag is set return length
+	   of zero bytes
+	*/
+	PACK_CARD32(0,pbuf);
+     }
+       
     if (mask & PEXPDPickPromptEchoType) {
 	PACK_CARD32(pPickDevice->pet, pbuf);
     }
@@ -170,8 +181,7 @@ InquirePickDevice(pWKS, devType, mask, pNumItems, pBuffer)
 	PACK_STRUCT(ddViewport,&(pPickDevice->echoVolume),pbuf);
     }
     if (mask & PEXPDPickEchoSwitch) {
-	PACK_CARD16(pPickDevice->echoSwitch,pbuf);
-	SKIP_PADDING(pbuf,2);
+	PACK_CARD32(pPickDevice->echoSwitch,pbuf);
     }
     return (Success);
 }				/* InquirePickDevice */
@@ -199,9 +209,10 @@ ChangePickDevice(pWKS, devType, mask, pItems)
     register ddPointer	pbuf;
     int			dev_index;
     miPickDevice	*pPickDevice;
-    ddUSHORT		pickStatus;
-    ddUSHORT		pickPathOrder;
-    ddUSHORT		pickEchoSwitch;
+    CARD16              pickStatus;
+    CARD16              pickPathOrder;
+    CARD16              pickEchoSwitch;
+    INT16               pickPromptEchoType;
     ddULONG		numPickPath;
     ddpex4rtn		err;
     extern ddpex4rtn	ValidateStructurePath();
@@ -219,10 +230,9 @@ ChangePickDevice(pWKS, devType, mask, pItems)
 
     /* go through and check for errors first */
     if (mask & PEXPDPickStatus) {
-	EXTRACT_CARD16(pickStatus,pbuf);
+	EXTRACT_CARD16_FROM_4B(pickStatus,pbuf);
 	if (!((pickStatus == PEXNoPick) || (pickStatus == PEXOk)))
 	    return (BadValue);
-	SKIP_PADDING(pbuf,2);
     }
 
     if (mask & PEXPDPickPath) {
@@ -232,10 +242,9 @@ ChangePickDevice(pWKS, devType, mask, pItems)
     }
 
     if (mask & PEXPDPickPathOrder) {
-	EXTRACT_CARD16(pickPathOrder,pbuf);
+	EXTRACT_CARD16_FROM_4B(pickPathOrder,pbuf);
 	if (!((pickPathOrder == PEXTopFirst)||(pickPathOrder == PEXBottomFirst)))
 	    return (BadValue);
-	SKIP_PADDING(pbuf,2);
     }
     if (mask & PEXPDPickIncl)
 	SKIP_PADDING(pbuf,4);
@@ -244,12 +253,18 @@ ChangePickDevice(pWKS, devType, mask, pItems)
 	SKIP_PADDING(pbuf,4);
 
     /*
-     * no data recs are defined, so skip this - there'd better not be any
-     * data there for these if (mask & PEXPDPickDataRec)
+     * no data recs are defined, so skip the bytes if they're there  
      */
+     if (mask & PEXPDPickDataRec) {
+	CARD32 i, skip;
+	EXTRACT_CARD32(i,pbuf);
+	skip = (i+3)/4;
+	SKIP_PADDING(pbuf,skip);
+     }
 
     if (mask & PEXPDPickPromptEchoType) {
-	switch (*(ddSHORT *) pbuf) {
+	EXTRACT_INT16_FROM_4B(pickPromptEchoType,pbuf);
+	switch (pickPromptEchoType) {
 	    case PEXEchoPrimitive:
 	    case PEXEchoStructure:
 	    case PEXEchoNetwork:
@@ -257,14 +272,13 @@ ChangePickDevice(pWKS, devType, mask, pItems)
 	    default:
 		return (BadValue);
 	}
-	SKIP_PADDING(pbuf,4);
     }
 
     if (mask & PEXPDPickEchoVolume)
 	SKIP_PADDING(pbuf,sizeof(ddViewport));
 
     if (mask & PEXPDPickEchoSwitch) {
-	EXTRACT_CARD16(pickEchoSwitch,pbuf);
+	EXTRACT_CARD16_FROM_4B(pickEchoSwitch,pbuf);
 	if (!((pickEchoSwitch == PEXOff) || (pickEchoSwitch == PEXOn)))
 	    return (BadValue);
     }
@@ -343,17 +357,27 @@ ChangePickDevice(pWKS, devType, mask, pItems)
 
     /*
      * no data recs are defined, so skip this - there'd better not be any
-     * data there for these if (mask & PEXPDPickDataRec) { switch
-     * (dev_index) { case 0: bcopy((char *) pbuf, (char *)
-     * &(MIWKS_PICK_DATA_REC_1(pPickDevice)), MIWKS_SIZE_DATA_REC_1);
-     * pbuf += MIWKS_SIZE_DATA_REC_1; break; case 1: bcopy((char *) pbuf,
-     * (char *) &(MIWKS_PICK_DATA_REC_2(pPickDevice)),
-     * MIWKS_SIZE_DATA_REC_2); pbuf += MIWKS_SIZE_DATA_REC_2; break; } }
-     */
+     * data there for these 
+    */
+     if (mask & PEXPDPickDataRec) { 
+	/* This is dummy code from Sun, 
+	 * I am adding code to skip bytes if present - JSH 
+	 * switch (dev_index) { case 0: bcopy((char *) pbuf, (char *)
+	 * &(MIWKS_PICK_DATA_REC_1(pPickDevice)), MIWKS_SIZE_DATA_REC_1);
+	 * pbuf += MIWKS_SIZE_DATA_REC_1; break; case 1: bcopy((char *) pbuf,
+	 * (char *) &(MIWKS_PICK_DATA_REC_2(pPickDevice)),
+	 * MIWKS_SIZE_DATA_REC_2); pbuf += MIWKS_SIZE_DATA_REC_2; break; } 
+	*/
+
+	CARD32 i, skip;
+	EXTRACT_CARD32(i,pbuf);
+	skip = (i+3)/4;
+	SKIP_PADDING(pbuf,skip);
+    }
 
     if (mask & PEXPDPickPromptEchoType) {
-	EXTRACT_CARD16(pPickDevice->pet,pbuf);
-	SKIP_PADDING(pbuf,2);
+	pPickDevice->pet = pickPromptEchoType;
+	SKIP_PADDING(pbuf,4);
     }
 
     if (mask & PEXPDPickEchoVolume) {
@@ -660,8 +684,7 @@ InquirePickMeasure(pPM, itemMask, pNumItems, pBuffer)
     pbuf = pBuffer->pBuf;
 
     if (itemMask & PEXPMStatus) {
-	PACK_CARD16(ppm->status,pbuf);
-	SKIP_PADDING(pbuf,2);
+	PACK_CARD32(ppm->status,pbuf);
     }
     if (itemMask & PEXPMPath) {
 	PACK_CARD32(ppm->path->numObj,pbuf);
