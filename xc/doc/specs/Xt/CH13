@@ -1,4 +1,4 @@
-.\" $XConsortium: CH13,v 1.10 94/04/18 20:21:02 rws Exp $
+.\" $XConsortium: CH13,v 1.11 94/04/19 18:18:26 converse Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -631,7 +631,7 @@ the session manager in restarting applications based on the \*(xI.
 .LP
 The resource name and class strings defined by the \*(xI shell
 widgets in 
-.PN < X11/Shell.h >
+.Pn < Shell.h > 
 are now listed in appendix E.  The addition of a new symbol
 for the 
 .PN WMShell
