@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XParseCol.c,v 11.13 87/06/03 13:19:58 jg Exp $ */
+/* $Header: XParseCol.c,v 11.13 87/09/11 08:05:21 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #define NEED_REPLIES
@@ -34,6 +34,7 @@ Status XParseColor (dpy, cmap, spec, def)
 	    def->red = reply.exactRed;
 	    def->green = reply.exactGreen;
 	    def->blue = reply.exactBlue;
+	    def->flags = DoRed | DoGreen | DoBlue;
 	    UnlockDisplay(dpy);
 	    SyncHandle();
 	    return (1);
@@ -65,5 +66,6 @@ Status XParseColor (dpy, cmap, spec, def)
 	def->red = r << n;
 	def->green = g << n;
 	def->blue = b << n;
+	def->flags = DoRed | DoGreen | DoBlue;
 	return (1);
 }
