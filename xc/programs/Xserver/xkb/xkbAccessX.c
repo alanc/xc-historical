@@ -1,4 +1,4 @@
-/* $XConsortium: xkbAccessX.c,v 1.3 93/09/28 19:47:32 rws Exp $ */
+/* $XConsortium: xkbAccessX.c,v 1.4 93/09/28 22:09:12 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -280,25 +280,6 @@ xkbControlsNotify	cn;
 }
 
 static CARD32
-AccessXSlowKeyExpire(timer,now,arg)
-    OsTimerPtr	 timer;
-    CARD32	 now;
-    pointer	 arg;
-{
-XkbSrvInfoRec	*xkbInfo= ((DeviceIntPtr)arg)->key->xkbInfo;
-
-    if (xkbInfo->slowKey!=0) {
-	xkbSlowKeyNotify ev;
-	ev.slowKeyType= XkbSKAccept;
-	ev.keycode= xkbInfo->slowKey;
-	ev.delay= xkbInfo->desc.controls->slowKeysDelay;
-	XkbSendSlowKeyNotify((DeviceIntPtr)arg,&ev);
-	AccessXKeyboardEvent((DeviceIntPtr)arg,KeyPress,xkbInfo->slowKey);
-    }
-    return 0;
-}
-
-static CARD32
 AccessXRepeatKeyExpire(timer,now,arg)
     OsTimerPtr	 timer;
     CARD32	 now;
@@ -309,6 +290,53 @@ XkbSrvInfoRec	*xkbInfo= ((DeviceIntPtr)arg)->key->xkbInfo;
 	AccessXKeyboardEvent((DeviceIntPtr)arg,KeyRelease,xkbInfo->repeatKey);
 	AccessXKeyboardEvent((DeviceIntPtr)arg,KeyPress,xkbInfo->repeatKey);
 	return xkbInfo->desc.controls->repeatInterval;
+    }
+    return 0;
+}
+
+void
+AccessXCancelRepeatKey(xkbInfo,key)
+    XkbSrvInfoPtr	xkbInfo;
+    KeyCode		key;
+{
+    if (xkbInfo->repeatKey==key) {
+	xkbInfo->repeatKey= 0;
+    }
+    return;
+}
+
+static CARD32
+AccessXSlowKeyExpire(timer,now,arg)
+    OsTimerPtr	 timer;
+    CARD32	 now;
+    pointer	 arg;
+{
+DeviceIntPtr	 keybd= (DeviceIntPtr)arg;
+XkbSrvInfoPtr	 xkbInfo= keybd->key->xkbInfo;
+
+    if (xkbInfo->slowKey!=0) {
+	xkbSlowKeyNotify ev;
+	ev.slowKeyType= XkbSKAccept;
+	ev.keycode= xkbInfo->slowKey;
+	ev.delay= xkbInfo->desc.controls->slowKeysDelay;
+	XkbSendSlowKeyNotify(keybd,&ev);
+	AccessXKeyboardEvent(keybd,KeyPress,xkbInfo->slowKey);
+
+	/* Start repeating if necessary.  Stop autorepeating if the user
+	 * presses a non-modifier key that doesn't autorepeat.
+	 */
+	if (keybd->kbdfeed->ctrl.autoRepeat && 
+	    (xkbInfo->desc.controls->enabledControls&XkbRepeatKeysMask)) {
+#ifndef AIXV3
+	    if (BitIsOn(keybd->kbdfeed->ctrl.autoRepeats,xkbInfo->slowKey))
+#endif
+	    {
+		xkbInfo->repeatKey = xkbInfo->slowKey;
+		xkbInfo->repeatKeyTimer= TimerSet(xkbInfo->repeatKeyTimer,
+					0, xkbInfo->desc.controls->repeatDelay,
+					AccessXRepeatKeyExpire, (pointer)keybd);
+	    }
+	}
     }
     return 0;
 }
@@ -390,7 +418,7 @@ Bool AccessXFilterPressEvent(xE,keybd,count)
 
     if (ctrls->enabledControls&XkbAccessXKeysMask) {
 	/* check for magic sequences */
-	if (sym[0]==XK_Shift_R) {
+	if ((sym[0]==XK_Shift_R)||(sym[0]==XK_Shift_L)) {
 	    xkbInfo->krgTimerActive = _KRG_TIMER;
 	    xkbInfo->krgTimer= TimerSet(xkbInfo->krgTimer, 0,4000,
 					AccessXKRGExpire, (pointer)keybd);
@@ -401,8 +429,6 @@ Bool AccessXFilterPressEvent(xE,keybd,count)
 		xkbInfo->krgTimer= TimerSet(xkbInfo->krgTimer,0, 0, NULL, NULL);
 		xkbInfo->krgTimerActive= _OFF_TIMER;
 	    }
-	    if (sym[0]==XK_Shift_L)
-		xkbInfo->shiftKeyCount++;
 	}
     }
 	
@@ -616,17 +642,47 @@ void ProcessPointerEvent(xE,mouse,count)
 				AccessXTimeoutExpire, (pointer)keybd);
 	xkbInfo->krgTimerActive== _OFF_TIMER;
     }
-    else xkbInfo->lastPtrEventTime= GetTimeInMillis();
+    xkbInfo->lastPtrEventTime= xE->u.keyButtonPointer.time;
     if (xE->u.u.type==ButtonPress) {
+#ifdef XTEST_BOGOSITY
 	if (ptr->button->down[xE->u.u.detail>>3]&(1<<(xE->u.u.detail&0x7)))
 	    return;
+#endif
     }
     else if (xE->u.u.type==ButtonRelease) {
+#ifdef XTEST_BOGOSITY
 	if ((ptr->button->down[xE->u.u.detail>>3]&(1<<(xE->u.u.detail&0x7)))==0)
 	    return;
+#endif
+
 	xkbInfo->lockedPtrButtons&= ~(1<<(xE->u.u.detail&0x7));
     }
     CoreProcessPointerEvent(xE,mouse,count);
 
+    /* clear any latched modifiers */
+    if ( xkbInfo->state.latchedMods && (xE->u.u.type==ButtonRelease) ) {
+	unsigned changed;
+	XkbStateRec oldState;
+
+	oldState= xkbInfo->state;
+	xkbInfo->state.latchedMods= 0;
+
+	XkbComputeDerivedState(xkbInfo);
+	changed = XkbStateChangedFlags(&oldState,&xkbInfo->state);
+	if (changed) {
+	    xkbStateNotify	sn;
+	    sn.keycode= xE->u.u.detail;
+	    sn.eventType= xE->u.u.type;
+	    sn.requestMajor = sn.requestMinor = 0;
+	    sn.changed= changed;
+	    XkbSendStateNotify(keybd,&sn);
+	}
+	if (changed&xkbInfo->iAccel.usedComponents) {
+	    changed= XkbIndicatorsToUpdate(keybd,changed);
+	    if (changed)
+		    XkbUpdateIndicators(keybd,changed,NULL);
+	}
+	keybd->key->state= xkbInfo->lookupState&0xE0FF;
+    }
 } /* ProcessPointerEvent */
 

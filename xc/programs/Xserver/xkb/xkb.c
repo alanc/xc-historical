@@ -1,4 +1,4 @@
-/* $XConsortium: xkb.c,v 1.4 93/09/28 21:11:59 rws Exp $ */
+/* $XConsortium: xkb.c,v 1.5 93/09/28 22:06:21 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -54,25 +54,26 @@ static DeviceIntPtr
 XkbLookupDevice(id)
     int id;
 {
+DeviceIntPtr coreKbd = (DeviceIntPtr)LookupKeyboardDevice();
 DeviceIntPtr dev = NULL;
 
-   if ( id == XkbUseCoreKbd )
-	dev= (DeviceIntPtr)LookupKeyboardDevice();
+   if (( id == XkbUseCoreKbd ) || (coreKbd->id==id))
+	dev= coreKbd;
 #ifdef XINPUT
    else {
 	dev = LookupDeviceIntRec(id);
-	if (dev) {
-	    if ((!dev->key)||(!dev->key->xkbInfo))
-		dev= NULL;
-	}
    }
 #endif
+   if (dev) {
+	if ((!dev->key)||(!dev->key->xkbInfo))
+	    dev= NULL;
+   }
    return dev;
 }
 
 /***====================================================================***/
 
-static int
+int
 ProcXkbUseExtension(client)
     ClientPtr client;
 {
@@ -90,14 +91,12 @@ ProcXkbUseExtension(client)
 #endif
     else supported = 1;
 
-#ifndef _XKB_SWAPPING_FIXED
     if (client->swapped)
 	supported= 0;
-#endif
 
     if ((supported) && (!(client->xkbClientFlags&XKB_INITIALIZED))) {
 	client->xkbClientFlags= XKB_INITIALIZED;
-	client->mapNotifyMask= XkbKeyTypesMask|XkbKeySymsMask;
+	client->mapNotifyMask= XkbKeyTypesMask;
     }
 #if XkbMajorVersion==0
     else if (xkbDebugFlags) {
@@ -115,7 +114,6 @@ ProcXkbUseExtension(client)
     rep.serverMinor = XkbMinorVersion;
     if ( client->swapped ) {
 	swaps(&rep.sequenceNumber, n);
-	swapl(&rep.length, n);
 	swaps(&rep.serverMajor, n);
 	swaps(&rep.serverMinor, n);
     }
@@ -125,7 +123,7 @@ ProcXkbUseExtension(client)
 
 /***====================================================================***/
 
-static int
+int
 ProcXkbSelectEvents(client)
     ClientPtr client;
 {
@@ -195,7 +193,7 @@ ProcXkbSelectEvents(client)
 
 /***====================================================================***/
 
-static int
+int
 ProcXkbSendEvent(client)
     ClientPtr client;
 {
@@ -208,7 +206,7 @@ ProcXkbSendEvent(client)
 
 /***====================================================================***/
 
-static int
+int
 ProcXkbBell(client)
     ClientPtr client;
 {
@@ -272,7 +270,7 @@ ProcXkbBell(client)
 
 /***====================================================================***/
 
-static int
+int
 ProcXkbGetState(client)
     ClientPtr client;
 {
@@ -305,13 +303,17 @@ ProcXkbGetState(client)
     rep.compatState = xkb->compatState;
     rep.unlockedMods = xkb->unlockedMods;
     rep.groupsUnlocked = xkb->groupsUnlocked;
+    if (client->swapped) {
+	register int n;
+	swaps(&rep.sequenceNumber,n);
+    }
     WriteToClient(client, sizeof(xkbGetStateReply), (char *)&rep);
     return client->noClientException;
 }
 
 /***====================================================================***/
 
-static int
+int
 ProcXkbLatchLockState(client)
     ClientPtr client;
 {
@@ -365,7 +367,7 @@ ProcXkbLatchLockState(client)
 
 /***====================================================================***/
 
-static int
+int
 ProcXkbGetControls(client)
     ClientPtr client;
 {
@@ -406,6 +408,7 @@ ProcXkbGetControls(client)
     rep.accessXTimeoutMask = xkb->accessXTimeoutMask;
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
+	swapl(&rep.length,n);
 	swaps(&rep.internalMods, n);
 	swaps(&rep.ignoreLockMods, n);
 	swapl(&rep.enabledControls, n);
@@ -416,6 +419,8 @@ ProcXkbGetControls(client)
 	swaps(&rep.mouseKeysDelay, n);
 	swaps(&rep.mouseKeysInterval, n);
 	swaps(&rep.mouseKeysTimeToMax, n);
+	swaps(&rep.mouseKeysMaxSpeed, n);
+	swaps(&rep.mouseKeysCurve, n);
 	swaps(&rep.accessXTimeout, n);
 	swapl(&rep.accessXTimeoutMask, n);
     }
@@ -423,7 +428,7 @@ ProcXkbGetControls(client)
     return(client->noClientException);
 }
 
-static int
+int
 ProcXkbSetControls(client)
     ClientPtr client;
 {
@@ -484,6 +489,59 @@ ProcXkbSetControls(client)
 	XkbSendControlsNotify(dev,&cn);
     }
     return client->noClientException;
+}
+
+int
+XkbSetRepeatRate(dev,timeout,interval,major,minor)
+    DeviceIntPtr	dev;
+    int			timeout;
+    int			interval;
+    int			major;
+    int			minor;
+{
+int	changed= 0;
+XkbControlsRec old,*xkb;
+
+    if ((!dev)||(!dev->key)||(!dev->key->xkbInfo))
+	return 0;
+    xkb= dev->key->xkbInfo->desc.controls;
+    old= *xkb;
+    if ((timeout!=0) && (xkb->repeatDelay!=timeout)) {
+	xkb->repeatDelay= timeout;
+	changed++;
+    }
+    if ((interval!=0) && (xkb->repeatInterval!=interval)) {
+	xkb->repeatInterval= interval;
+	changed++;
+    }
+    if (changed) {
+	xkbControlsNotify	cn;
+	DDXChangeXkbControls(dev,&old,xkb);
+	if (XkbComputeControlsNotify(dev,&old,xkb,&cn)) {
+	    cn.keycode= 0;
+	    cn.eventType = 0;
+	    cn.requestMajor = major;
+	    cn.requestMinor = minor;
+	    XkbSendControlsNotify(dev,&cn);
+	}
+    }
+    return 1;
+}
+
+int
+XkbGetRepeatRate(dev,timeout,interval)
+    DeviceIntPtr	dev;
+    int	*		timeout;
+    int	*		interval;
+{
+XkbControlsRec *xkb;
+
+    if ((!dev)||(!dev->key)||(!dev->key->xkbInfo))
+	return 0;
+    xkb= dev->key->xkbInfo->desc.controls;
+    if (timeout)	*timeout= xkb->repeatDelay;
+    if (interval)	*interval= xkb->repeatInterval;
+    return 1;
 }
 
 /***====================================================================***/
@@ -580,13 +638,6 @@ register int		 i;
 	outMap->ktIndex = symMap->ktIndex;
 	outMap->groupInfo = symMap->groupInfo;
 	outMap->nSyms = XkbNumGroups(symMap->groupInfo)*keyType->groupWidth;
-if (xkbDebugFlags) {
-    ErrorF("key %d has %d symbols\n",rep->firstKeySym+i,outMap->nSyms);
-    if (outMap->nSyms>4) {
-	ErrorF("    ktIndex= %d, groupWidth= %d, nGroups= %d\n",symMap->ktIndex,
-			keyType->groupWidth,XkbNumGroups(symMap->groupInfo));
-    }
-}
 	buf= (char *)&outMap[1];
 	pSym = &xkb->map->syms[symMap->offset];
 	memcpy(buf,pSym,outMap->nSyms*sizeof(KeySym));
@@ -616,7 +667,7 @@ XkbSizeKeyActions(xkb,firstKey,nKeys,nActsRtrn)
 	if (xkb->server->keyActions[i+firstKey]!=0)
 	    nActs+= XkbKeyNumActions(xkb,i+firstKey);
     }
-    len= (((nKeys+3)/4)*4)+(nActs*sizeof(XkbAction));
+    len= (((nKeys+3)/4)*4)+(nActs*sizeof(XkbAnyAction));
     *nActsRtrn = nActs;
     return len;
 }
@@ -628,9 +679,9 @@ XkbWriteKeyActions(xkb,rep,buf,client)
     char		*buf;
     ClientPtr		client;
 {
-    int			i,ndx,n;
+    int			i,ndx;
     CARD8		*numDesc;
-    XkbAction		*actDesc;
+    XkbAnyAction	*actDesc;
 
     numDesc = (CARD8 *)buf;
     for (i=0;i<rep->nKeyActions;i++) {
@@ -640,19 +691,20 @@ XkbWriteKeyActions(xkb,rep,buf,client)
     }
     buf+= ((rep->nKeyActions+3)/4)*4;
 
-    actDesc = (XkbAction *)buf;
+    actDesc = (XkbAnyAction *)buf;
     for (i=0;i<rep->nKeyActions;i++) {
 	if (xkb->server->keyActions[i+rep->firstKeyAction]!=0) {
-	    n = XkbKeyNumActions(xkb,(i+rep->firstKeyAction));
+	    register int num;
+	    num = XkbKeyNumActions(xkb,(i+rep->firstKeyAction));
 	    memcpy(actDesc,XkbKeyActionsPtr(xkb,(i+rep->firstKeyAction)),
-							n*sizeof(XkbAction));
+						num*sizeof(XkbAnyAction));
 	    if (client->swapped) {
-		register int j;
-		for (j=0;j<n;j++) {
+		register int j,n;
+		for (j=0;j<num;j++) {
 		    swapl(&actDesc[j],n);
 		}
 	    }
-	    actDesc+= n;
+	    actDesc+= num;
 	}
     }
     buf = (char *)actDesc;
@@ -666,17 +718,17 @@ XkbSendMap(client,keybd,rep)
     xkbGetMapReply	*rep;
 {
 XkbDescRec	*xkb;
-int		i,n;
+int		i,len;
 char		*desc,*start;
 
     xkb= &keybd->key->xkbInfo->desc;
-    rep->length= XkbSizeKeyTypes(xkb,rep->firstKeyType,rep->nKeyTypes)/4;
-    rep->length+= XkbSizeKeySyms(xkb,rep->firstKeySym,rep->nKeySyms,
+    len= XkbSizeKeyTypes(xkb,rep->firstKeyType,rep->nKeyTypes)/4;
+    len+= XkbSizeKeySyms(xkb,rep->firstKeySym,rep->nKeySyms,
 						    &rep->totalSyms)/4;
-    rep->length+= XkbSizeKeyActions(xkb,rep->firstKeyAction,rep->nKeyActions,
+    len+= XkbSizeKeyActions(xkb,rep->firstKeyAction,rep->nKeyActions,
 						    &rep->totalActions)/4;
-    rep->length+= ((rep->nKeyBehaviors*sizeof(XkbAction))+3)/4;
-    start= desc= (char *)ALLOCATE_LOCAL(rep->length*4);
+    len+= ((rep->nKeyBehaviors*sizeof(XkbBehavior))+3)/4;
+    start= desc= (char *)ALLOCATE_LOCAL(len*4);
     if (!start)
 	return BadAlloc;
     if ( rep->nKeyTypes>0 )
@@ -686,29 +738,31 @@ char		*desc,*start;
     if ( rep->nKeyActions>0 )
 	desc = XkbWriteKeyActions(xkb,rep,desc,client);
     if ( rep->nKeyBehaviors>0 ) {
-	XkbAction	*from;
-	XkbAction	*to= (XkbAction *)desc;
-	n = rep->firstKeyBehavior;
-	from= &xkb->server->keyBehaviors[n];
-	for (i=0;i<rep->nKeyBehaviors;i++,to++,from++) {
-	    *to = *from;
-	    if ( client->swapped ) {
-		swaps(&to->type,n);
-	    }
-	}
-	desc= (char *)to;
+	register int sz= rep->nKeyBehaviors*sizeof(XkbBehavior);
+	memcpy(desc,(char *)&xkb->server->keyBehaviors[rep->firstKeyBehavior],
+									sz);
+	desc += ((sz+3)/4)*4;
     }
-    if ((desc-start)!=(rep->length*4)) {
+    if ((desc-start)!=(len*4)) {
 	ErrorF("BOGUS LENGTH in write keyboard desc, expected %d, got %d\n",
-					rep->length*4, desc-start);
+					len*4, desc-start);
+    }
+    rep->length= len;
+    if (client->swapped) {
+	register int n;
+	swaps(&rep->sequenceNumber,n);
+	swapl(&rep->length,n);
+	swaps(&rep->present,n);
+	swaps(&rep->totalSyms,n);
+	swaps(&rep->totalActions,n);
     }
     WriteToClient(client, sizeof(*rep), (char *)rep);
-    WriteToClient(client, rep->length*4, start);
+    WriteToClient(client, len*4, start);
     DEALLOCATE_LOCAL((char *)start);
     return client->noClientException;
 }
 
-static int
+int
 ProcXkbGetMap(client)
     ClientPtr client;
 {
@@ -883,14 +937,15 @@ register xkbKeyTypeWireDesc	*wire = *wireRtrn;
 }
 
 static int
-CheckKeySyms(xkb,req,nKeyTypes,mapWidths,symsPerKey,wireRtrn,errorRtrn)
-XkbDescRec		 *xkb;
-xkbSetMapReq	 *req;
-int			  nKeyTypes;
-CARD8			 *mapWidths;
-CARD16			 *symsPerKey;
-xkbSymMapWireDesc	**wireRtrn;
-int			 *errorRtrn;
+CheckKeySyms(client,xkb,req,nKeyTypes,mapWidths,symsPerKey,wireRtrn,errorRtrn)
+    ClientPtr		client;
+    XkbDescPtr		xkb;
+    xkbSetMapReq *	req;
+    int			nKeyTypes;
+    CARD8 *	 	mapWidths;
+    CARD16 *	 	symsPerKey;
+    xkbSymMapWireDesc **wireRtrn;
+    int *		errorRtrn;
 {
 register int		 i,tmp;
 XkbSymMapRec		*map;
@@ -922,6 +977,9 @@ xkbSymMapWireDesc	*wire = *wireRtrn;
     for (i=0;i<req->nKeySyms;i++) {
 	KeySym *pSyms;
 	register int nG;
+	if (client->swapped) {
+	    swaps(&wire->nSyms,nG);
+	}
 	if (wire->ktIndex>=nKeyTypes) {
 	    *errorRtrn= XkbError3(0x14,i+req->firstKeySym,wire->ktIndex);
 	    return 0;
@@ -965,7 +1023,6 @@ CheckKeyActions(xkb,req,nKeyTypes,mapWidths,symsPerKey,wireRtrn,nActsRtrn)
 {
 int			 nActs;
 CARD8	 		*wire = *wireRtrn;
-XkbAction		*acts;
 register int		 i,tmp;
 
     if (!(XkbKeyActionsMask&req->present))
@@ -997,7 +1054,7 @@ register int		 i,tmp;
     if (req->nKeyActions%4)
 	wire+= 4-(req->nKeyActions%4);
     /* 8/4/93 (ef) -- XXX! check for legal actions here */
-    *wireRtrn = (CARD8 *)(((XkbAction *)wire)+nActs);
+    *wireRtrn = (CARD8 *)(((XkbAnyAction *)wire)+nActs);
     *nActsRtrn = nActs;
     return 1;
 }
@@ -1006,16 +1063,16 @@ static int
 CheckKeyBehaviors(xkb,req,newBehaviors,wireRtrn,errorRtrn)
     XkbDescRec	 	 *xkb;
     xkbSetMapReq	 *req;
-    XkbAction		 *newBehaviors;
-    XkbAction		**wireRtrn;
+    XkbBehavior		 *newBehaviors;
+    XkbBehavior		**wireRtrn;
     int			 *errorRtrn;
 {
-register XkbAction	*wire = *wireRtrn;
+register XkbBehavior	*wire = *wireRtrn;
 register int	 	 i;
 
     if (!(XkbKeyBehaviorsMask&req->present)) {
 	i = XkbNumKeys(xkb);
-	memcpy(newBehaviors,xkb->server->keyBehaviors,(i*sizeof(XkbAction)));
+	memcpy(newBehaviors,xkb->server->keyBehaviors,(i*sizeof(XkbBehavior)));
 	return 1;
     }
     if (XkbKeyBehaviorsMask&req->resize) {
@@ -1032,15 +1089,15 @@ register int	 	 i;
 	return 0;
     }
     i = req->firstKeyBehavior;
-    memcpy(newBehaviors,xkb->server->keyBehaviors,i*sizeof(XkbAction));
+    memcpy(newBehaviors,xkb->server->keyBehaviors,i*sizeof(XkbBehavior));
     /* 8/4/93 (ef) -- XXX! swap here. check for legal behaviors here */
     memcpy(&newBehaviors[req->firstKeyBehavior],wire,
-					req->nKeyBehaviors*sizeof(XkbAction));
+					req->nKeyBehaviors*sizeof(XkbBehavior));
     i=XkbNumKeys(xkb)-req->nKeyBehaviors;
     if (i>0)
 	memcpy(&newBehaviors[xkb->maxKeyCode-i+1],
 				&xkb->server->keyBehaviors[xkb->maxKeyCode-i+1],
-				i*sizeof(XkbAction));
+				i*sizeof(XkbBehavior));
     *wireRtrn = &wire[req->nKeyBehaviors];
     return 1;
 }
@@ -1139,8 +1196,9 @@ CARD8		*map,*preserve;
 }
 
 static char *
-SetKeySyms(xkb,req,wire,pChanges)
-    XkbDescRec		*xkb;
+SetKeySyms(client,xkb,req,wire,pChanges)
+    ClientPtr		 client;
+    XkbDescPtr		 xkb;
     xkbSetMapReq	*req;
     xkbSymMapWireDesc	*wire;
     xkbMapNotify	*pChanges;
@@ -1154,6 +1212,12 @@ KeySym *newSyms,*pSyms;
 	newSyms = _XkbNewSymsForKey(xkb,i+req->firstKeySym,wire->nSyms);
 	pSyms = (KeySym *)&wire[1];
 	memcpy(newSyms,pSyms,wire->nSyms*sizeof(KeySym));
+	if (client->swapped) {
+	    register int n;
+	    for (i=0;i<wire->nSyms;i++) {
+		swapl(&newSyms[i],n);
+	    }
+	}
 	oldMap->ktIndex = wire->ktIndex;
 	oldMap->groupInfo = wire->groupInfo;
 	wire= (xkbSymMapWireDesc *)&pSyms[wire->nSyms];
@@ -1188,7 +1252,7 @@ XkbAction	*newActs;
 	else {
 	    newActs= _XkbNewActionsForKey(xkb,i+req->firstKeyAction,nActs[i]);
 	    memcpy((char *)newActs,(char *)wire,nActs[i]*sizeof(XkbAction));
-	    wire+= nActs[i]*sizeof(XkbAction);
+	    wire+= nActs[i]*sizeof(XkbAnyAction);
 	}
     }
     if (pChanges->changed&XkbKeyActionsMask) {
@@ -1204,29 +1268,67 @@ XkbAction	*newActs;
 }
 
 static char *
-SetKeyBehaviors(xkb,req,wire,pChanges)
-    XkbDescRec		*xkb;
+SetKeyBehaviors(xkbSI,req,wire,pChanges)
+    XkbSrvInfoRec	*xkbSI;
     xkbSetMapReq	*req;
-    XkbAction		*wire;
+    XkbBehavior		*wire;
     xkbMapNotify	*pChanges;
 {
-    memcpy((char*)&xkb->server->keyBehaviors[req->firstKeyBehavior],
-		(char *)wire, req->nKeyBehaviors*sizeof(XkbAction));
-    wire+= req->nKeyBehaviors;
+register int i;
+int maxRG = -1;
+XkbDescRec      *xkb = &xkbSI->desc;
+XkbBehavior     *old = &xkb->server->keyBehaviors[req->firstKeyBehavior];
+
+
+    memcpy(old,wire,req->nKeyBehaviors*sizeof(XkbBehavior));
+    for (i=0;i<req->nKeyBehaviors;i++) {
+	if ((wire->type==XkbRadioGroupKB)&&(wire->data>maxRG))
+	    maxRG= wire->data;
+	wire++;
+    }
+    i= req->nKeyBehaviors*sizeof(XkbBehavior);
+    i= (((i+3)/4)*4)-1;
+    if (i) {
+	register char *tmp= (char *)wire;
+	tmp+= i;
+	wire= (XkbBehavior*)tmp;
+    }
+
+    if (maxRG>xkbSI->nRadioGroups) {
+        int sz = (maxRG+1)*sizeof(XkbRadioGroupRec);
+        if (xkbSI->radioGroups)
+            xkbSI->radioGroups=(XkbRadioGroupRec *)Xrealloc(xkbSI->radioGroups,
+                                                                        sz);
+        else xkbSI->radioGroups= (XkbRadioGroupRec *)Xcalloc(sz);
+        if (xkbSI->radioGroups) {
+             if (xkbSI->nRadioGroups)
+                memset(&xkbSI->radioGroups[xkbSI->nRadioGroups],0,
+                        (maxRG-xkbSI->nRadioGroups)*sizeof(XkbRadioGroupRec));
+             xkbSI->nRadioGroups= maxRG+1;
+        }
+        else xkbSI->nRadioGroups= 0;
+        /* should compute members here */
+    }
     if (pChanges->changed&XkbKeyBehaviorsMask) {
-	pChanges->firstKeyBehavior = xkb->minKeyCode;
-	pChanges->nKeyBehaviors = XkbNumKeys(xkb);
+        int first= pChanges->firstKeyBehavior;
+        int oldLast= first+pChanges->nKeyBehaviors-1;
+        int newLast= req->firstKeyBehavior+req->nKeyBehaviors-1;
+        if (req->firstKeyBehavior<first)
+            first= req->firstKeyBehavior;
+        if (oldLast>newLast)
+            newLast= oldLast;
+        pChanges->firstKeyBehavior = first;
+        pChanges->nKeyBehaviors = newLast-first+1;
     }
     else {
-	pChanges->changed|= XkbKeyBehaviorsMask;
-	pChanges->firstKeyBehavior = req->firstKeyBehavior;
-	pChanges->nKeyBehaviors = req->nKeyBehaviors;
+        pChanges->changed|= XkbKeyBehaviorsMask;
+        pChanges->firstKeyBehavior = req->firstKeyBehavior;
+        pChanges->nKeyBehaviors = req->nKeyBehaviors;
     }
-    return (char *)wire;
+    return (pointer)wire;
 }
 
-
-static int
+int
 ProcXkbSetMap(client)
     ClientPtr client;
 {
@@ -1238,7 +1340,7 @@ ProcXkbSetMap(client)
     char	*tmp;
     CARD8	 mapWidths[256];
     CARD16	 symsPerKey[256];
-    XkbAction	 newBehaviors[256];
+    XkbBehavior	 newBehaviors[256];
 
     REQUEST_AT_LEAST_SIZE(xkbSetMapReq);
     dev = XkbLookupDevice(stuff->deviceSpec);
@@ -1254,7 +1356,7 @@ ProcXkbSetMap(client)
 	client->errorValue = nKeyTypes;
 	return BadValue;
     }
-    if (!CheckKeySyms(xkb,stuff,nKeyTypes,mapWidths,symsPerKey,
+    if (!CheckKeySyms(client,xkb,stuff,nKeyTypes,mapWidths,symsPerKey,
 						(XkbSymMapRec **)&tmp,&error)) {
 	client->errorValue = error;
 	return BadValue;
@@ -1266,7 +1368,7 @@ ProcXkbSetMap(client)
 	return BadValue;
     }
 
-    if (!CheckKeyBehaviors(xkb,stuff,newBehaviors,(XkbAction **)&tmp,&error)) {
+    if (!CheckKeyBehaviors(xkb,stuff,newBehaviors,(XkbBehavior**)&tmp,&error)) {
 	client->errorValue = error;
 	return BadValue;
     }
@@ -1283,7 +1385,7 @@ ProcXkbSetMap(client)
 	if (!tmp)	goto allocFailure;
     }
     if (stuff->present&XkbKeySymsMask) {
-	tmp = SetKeySyms(xkb,stuff,(xkbSymMapWireDesc *)tmp,&changes);
+	tmp = SetKeySyms(client,xkb,stuff,(xkbSymMapWireDesc *)tmp,&changes);
 	if (!tmp)	goto allocFailure;
     }
     if (stuff->present&XkbKeyActionsMask) {
@@ -1291,7 +1393,8 @@ ProcXkbSetMap(client)
 	if (!tmp)	goto allocFailure;
     }
     if (stuff->present&XkbKeyBehaviorsMask) {
-	tmp = SetKeyBehaviors(xkb,stuff,(XkbAction *)tmp,&changes);
+	tmp= SetKeyBehaviors(dev->key->xkbInfo,stuff,
+				(XkbBehavior *)tmp,&changes);
 	if (!tmp)	goto allocFailure;
     }
     if (((tmp-((char *)stuff))/4)!=stuff->length) {
@@ -1310,7 +1413,7 @@ allocFailure:
 
 /***====================================================================***/
 
-static int
+int
 ProcXkbGetCompatMap(client)
     ClientPtr client;
 {
@@ -1320,6 +1423,7 @@ ProcXkbGetCompatMap(client)
     XkbDescRec *xkb;
     XkbCompatRec *compat;
     int		 size,nMods;
+    char	*data;
 
     REQUEST_SIZE_MATCH(xkbGetCompatMapReq);
     dev = (DeviceIntPtr)XkbLookupDevice(stuff->deviceSpec);
@@ -1361,7 +1465,6 @@ ProcXkbGetCompatMap(client)
     size+= (rep.nSyms*sizeof(XkbSymInterpretRec));
     rep.length= size;
     if (size) {
-	char	*data;
 	data = (char *)ALLOCATE_LOCAL(size);
 	if (data) {
 	    register int i,bit;
@@ -1370,6 +1473,10 @@ ProcXkbGetCompatMap(client)
 	    XkbSymInterpretRec *wire = (XkbSymInterpretRec *)data;
 	    for (i=0;i<rep.nSyms;i++,sym++,wire++) {
 		*wire= *sym;
+		if (client->swapped) {
+		    register int n;
+		    swapl(&wire->sym,n);
+		}
 	    }
 	    mod = (XkbModCompatRec *)wire;
 	    for (i=0,bit=1;i<8;i++,bit<<=1) {
@@ -1378,21 +1485,29 @@ ProcXkbGetCompatMap(client)
 		    mod++;
 		}
 	    }
-	    /* 8/4/93 (ef) -- XXX! deal with swapping */
-	    WriteToClient(client, sizeof(xkbGetCompatMapReply), (char *)&rep);
-	    WriteToClient(client, size, data);
-	    DEALLOCATE_LOCAL((char *)data);
 	}
 	else return BadAlloc;
     }
-    else {
-	/* 8/4/93 (ef) -- XXX! deal with swapping */
-	WriteToClient(client, sizeof(xkbGetCompatMapReply), (char *)&rep);
+    else data= NULL;
+
+    if (client->swapped) {
+	register int n;
+	swaps(&rep.sequenceNumber,n);
+	swapl(&rep.length,n);
+	swaps(&rep.firstSym,n);
+	swaps(&rep.nSyms,n);
+	swaps(&rep.nTotalSyms,n);
+    }
+
+    WriteToClient(client, sizeof(xkbGetCompatMapReply), (char *)&rep);
+    if (data) {
+	WriteToClient(client, size, data);
+	DEALLOCATE_LOCAL((char *)data);
     }
     return client->noClientException;
 }
 
-static int
+int
 ProcXkbSetCompatMap(client)
     ClientPtr client;
 {
@@ -1415,11 +1530,15 @@ ProcXkbSetCompatMap(client)
     if ((stuff->nSyms>0)||(stuff->truncateSyms)) {
 	register int i;
 	XkbSymInterpretRec *wire = (XkbSymInterpretRec *)data;
+	if (client->swapped) {
+	    register int n;
+	    swapl(&wire->sym,n);
+	}
 	if (stuff->firstSym>compat->nSymInterpret) {
 	    client->errorValue = XkbError2(0x02,compat->nSymInterpret);
 	    return BadValue;
 	}
-	for (i=0;i<stuff->nSyms;wire++) {
+	for (i=0;i<stuff->nSyms;i++,wire++) {
 	    /* 8/4/93 (ef) -- XXX! verify action and behavior here */
 	}
 	data = (char *)wire;
@@ -1433,7 +1552,7 @@ ProcXkbSetCompatMap(client)
 	}
 	data+= (((nMods*sizeof(XkbModCompatRec))+3)/4)*4;
     }
-    if ((data-((char *)stuff))!=stuff->length) {
+    if (((data-((char *)stuff))/4)!=stuff->length) {
 	return BadLength;
     }
     data = (char *)&stuff[1];
@@ -1482,7 +1601,7 @@ ProcXkbSetCompatMap(client)
 	ev.firstSym = stuff->firstSym;
 	ev.nSyms = stuff->nSyms;
 	ev.nTotalSyms = compat->nSymInterpret;
-	XkbSendCompatMapNotify(xkb,&ev);
+	XkbSendCompatMapNotify(dev,&ev);
     }
 
     if (stuff->recomputeActions) {
@@ -1497,7 +1616,7 @@ ProcXkbSetCompatMap(client)
 
 /***====================================================================***/
 
-static int
+int
 ProcXkbGetIndicatorState(client)
     ClientPtr client;
 {
@@ -1519,11 +1638,15 @@ ProcXkbGetIndicatorState(client)
     rep.length = 0;
     rep.deviceID = dev->id;
     rep.state = dev->key->xkbInfo->iState;
+    if (client->swapped) {
+	swaps(&rep.sequenceNumber,i);
+	swapl(&rep.state,i);
+    }
     WriteToClient(client, sizeof(xkbGetIndicatorStateReply), (char *)&rep);
     return client->noClientException;
 }
 
-static int
+int
 ProcXkbGetIndicatorMap(client)
     ClientPtr client;
 {
@@ -1534,7 +1657,7 @@ ProcXkbGetIndicatorMap(client)
     XkbIndicatorRec *leds;
     CARD8 *map;
     register int i,bit;
-    int nIndicators;
+    int nIndicators,length;
 
     REQUEST_SIZE_MATCH(xkbGetIndicatorMapReq);
     dev = (DeviceIntPtr)XkbLookupDevice(stuff->deviceSpec);
@@ -1551,16 +1674,17 @@ ProcXkbGetIndicatorMap(client)
 	    nIndicators++;
     }
 
+    length = nIndicators*sz_xkbIndicatorMapWireDesc;
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
-    rep.length = nIndicators*sz_xkbIndicatorMapWireDesc;
+    rep.length = length/4;
     rep.deviceID = dev->id;
     rep.nRealIndicators = leds->nRealIndicators;
     rep.which = stuff->which;
 
     if (nIndicators>0) {
 	CARD8 *to;
-	to= map= (CARD8 *)ALLOCATE_LOCAL(rep.length);
+	to= map= (CARD8 *)ALLOCATE_LOCAL(length);
 	if (map) {
 	    xkbIndicatorMapWireDesc  *wire = (xkbIndicatorMapWireDesc *)to;
 	    for (i=0,bit=1;i<XkbNumIndicators;i++,bit<<=1) {
@@ -1578,23 +1702,28 @@ ProcXkbGetIndicatorMap(client)
 		}
 	    }
 	    to = (CARD8 *)wire;
-	    if ((to-map)!=rep.length) {
-		client->errorValue = XkbError2(0xff,rep.length);
+	    if ((to-map)!=length) {
+		client->errorValue = XkbError2(0xff,length);
 		return BadLength;
 	    }
 	}
 	else return BadAlloc;
     }
     else map = NULL;
+    if (client->swapped) {
+	swaps(&rep.sequenceNumber,i);
+	swapl(&rep.length,i);
+	swapl(&rep.which,i);
+    }
     WriteToClient(client, sizeof(xkbGetIndicatorMapReply), (char *)&rep);
     if (map) {
-	WriteToClient(client, rep.length, (char *)map);
+	WriteToClient(client, length, (char *)map);
 	DEALLOCATE_LOCAL((char *)map);
     }
     return(client->noClientException);
 }
 
-static int
+int
 ProcXkbSetIndicatorMap(client)
     ClientPtr client;
 {
@@ -1633,6 +1762,10 @@ ProcXkbSetIndicatorMap(client)
     for (i=0,bit=1;i<XkbNumIndicators;i++,bit<<=1) {
 	if (stuff->which&bit) {
 	    CARD8 which= (from->whichMods|from->whichGroups);
+	    if (client->swapped) {
+		register int n;
+		swapl(&from->controls,n);
+	    }
 
 	    leds->maps[i].whichMods = from->whichMods;
 	    leds->maps[i].mods = from->mods;
@@ -1684,14 +1817,14 @@ ProcXkbSetIndicatorMap(client)
 
 /***====================================================================***/
 
-static int
+int
 ProcXkbGetNames(client)
     ClientPtr client;
 {
     DeviceIntPtr dev;
     XkbDescRec *xkb;
     xkbGetNamesReply rep;
-    register int i;
+    register int i,length;
     char *start,*desc;
     REQUEST(xkbGetNamesReq);
 
@@ -1704,7 +1837,7 @@ ProcXkbGetNames(client)
     xkb = &dev->key->xkbInfo->desc;
     rep.type= X_Reply;
     rep.sequenceNumber= client->sequence;
-    rep.length = 0;
+    rep.length = length= 0;
     rep.deviceID = dev->id;
     rep.which = stuff->which;
     if (stuff->which&XkbKeycodesNameMask)
@@ -1721,23 +1854,24 @@ ProcXkbGetNames(client)
     rep.nCharSets =xkb->names->nCharSets;
 
     if (stuff->which&XkbKeyTypeNamesMask)
-	 rep.length+= xkb->map->nKeyTypes;
+	 length+= xkb->map->nKeyTypes;
     if (stuff->which&XkbKTLevelNamesMask) {
 	XkbKeyTypeRec *pType = xkb->map->keyTypes;
-	rep.length+= (xkb->map->nKeyTypes+3)/4;
+	length+= (xkb->map->nKeyTypes+3)/4;
 	for (i=0;i<xkb->map->nKeyTypes;i++,pType++) {
-	    rep.length+= pType->groupWidth;
+	    length+= pType->groupWidth;
 	}
     }
     if (stuff->which&XkbRGNamesMask)
-	 rep.length+= xkb->names->nRadioGroups;
+	 length+= xkb->names->nRadioGroups;
     if (stuff->which&XkbIndicatorNamesMask)
-	rep.length+= XkbNumIndicators;
+	length+= XkbNumIndicators;
     if (stuff->which&XkbCharSetsMask)
-	 rep.length+= xkb->names->nCharSets;
+	length+= xkb->names->nCharSets;
     if (stuff->which&XkbModifierNamesMask)
-	rep.length+= (8*sizeof(Atom))/4;
+	length+= (8*sizeof(Atom))/4;
 
+    rep.length= length;
     if (client->swapped) {
 	register int n;
 	swaps(&rep.sequenceNumber,n);
@@ -1748,7 +1882,7 @@ ProcXkbGetNames(client)
 	swapl(&rep.symbols,n);
     }
 
-    start = desc = (char *)ALLOCATE_LOCAL(rep.length*4);
+    start = desc = (char *)ALLOCATE_LOCAL(length*4);
     if ( !start )
 	return BadAlloc;
     if (stuff->which&XkbKeyTypeNamesMask) {
@@ -1774,9 +1908,9 @@ ProcXkbGetNames(client)
 	    if (xkb->names->levels[i]) {
 	      memcpy(desc,xkb->names->levels[i],pType->groupWidth*sizeof(Atom));
 		if (client->swapped) {
-		    register int n;
+		    register int n,t;
 		    register Atom *atm = (Atom *)desc;
-		    for (i=0;i<pType->groupWidth;i++,atm++) {
+		    for (t=0;t<pType->groupWidth;t++,atm++) {
 			swapl(atm,n);
 		    }
 		}
@@ -1829,17 +1963,17 @@ ProcXkbGetNames(client)
 	}
 	desc+= rep.nCharSets*sizeof(Atom);
     }
-    if ((desc-start)!=(rep.length*4)) {
+    if ((desc-start)!=(length*4)) {
 	ErrorF("BOGUS LENGTH in write names, expected %d, got %d\n",
-					rep.length*4, desc-start);
+					length*4, desc-start);
     }
     WriteToClient(client, sizeof(rep), (char *)&rep);
-    WriteToClient(client, rep.length*4, start);
+    WriteToClient(client, length*4, start);
     DEALLOCATE_LOCAL((char *)start);
     return client->noClientException;
 }
 
-static int
+int
 ProcXkbSetNames(client)
     ClientPtr client;
 {
@@ -1883,6 +2017,10 @@ ProcXkbSetNames(client)
 	    return BadValue;
 	}
 	for (i=0;i<stuff->nKeyTypes;i++,tmp++) {
+	    if (client->swapped) {
+		register int n;
+		swapl(tmp,n);
+	    }
 	    if ((*tmp!=None)&&(!ValidAtom(*tmp))) {
 		client->errorValue = *tmp;
 		return BadValue;
@@ -1912,6 +2050,10 @@ ProcXkbSetNames(client)
 		return BadMatch;
 	    }
 	    for (l=0;l<width[i];l++,tmp++) {
+		if (client->swapped) {
+		    register int n;
+		    swapl(tmp,n);
+		}
 		if ((*tmp!=None)&&(!ValidAtom(*tmp))) {
 		    client->errorValue = *tmp;
 		    return BadAtom;
@@ -1926,6 +2068,10 @@ ProcXkbSetNames(client)
 	    return BadValue;
 	}
 	for (i=0;i<stuff->nRadioGroups;i++,tmp++) {
+	    if (client->swapped) {
+		register int n;
+		swapl(tmp,n);
+	    }
 	    if ((*tmp!=None)&&(!ValidAtom(*tmp))) {
 		client->errorValue = *tmp;
 		return BadAtom;
@@ -1940,6 +2086,10 @@ ProcXkbSetNames(client)
 	}
 	for (i=0,bit=1;i<32;i++,bit<<=1) {
 	    if (stuff->indicators&bit) {
+		if (client->swapped) {
+		    register int n;
+		    swapl(tmp,n);
+		}
 		if ((*tmp!=None)&&(!ValidAtom(*tmp))) {
 		   client->errorValue = *tmp;
 		   return BadAtom;
@@ -1956,6 +2106,10 @@ ProcXkbSetNames(client)
 	}
 	for (i=0,bit=1;i<8;i++,bit<<=1) {
 	    if (stuff->modifiers&bit) {
+		if (client->swapped) {
+		    register int n;
+		    swapl(tmp,n);
+		}
 		if ((*tmp!=None)&&(!ValidAtom(*tmp))) {
 		   client->errorValue = *tmp;
 		   return BadAtom;
@@ -1967,6 +2121,10 @@ ProcXkbSetNames(client)
     if (stuff->which&XkbCharSetsMask) {
 	register int i;
 	for (i=0;i<stuff->nCharSets;i++,tmp++) {
+	    if (client->swapped) {
+		register int n;
+		swapl(tmp,n);
+	    }
 	    if ((*tmp!=None)&&(!ValidAtom(*tmp))) {
 		client->errorValue = *tmp;
 		return BadAtom;
@@ -2077,7 +2235,7 @@ ProcXkbSetNames(client)
 
 /***====================================================================***/
 
-static int
+int
 ProcXkbListAlternateSyms(client)
     ClientPtr client;
 {
@@ -2085,7 +2243,7 @@ ProcXkbListAlternateSyms(client)
     XkbDescRec	*xkb;
     XkbAlternateSymsRec *syms;
     xkbListAlternateSymsReply rep;
-    int		nMatch,szMatch;
+    int		nMatch,szMatch,length;
     char	*data;
     REQUEST(xkbListAlternateSymsReq);
 
@@ -2127,9 +2285,11 @@ ProcXkbListAlternateSyms(client)
 	}
 	syms= syms->next;
     }
+    length= szMatch;
+
     rep.type= X_Reply;
     rep.sequenceNumber= client->sequence;
-    rep.length = szMatch/4;
+    rep.length = length/4;
     rep.deviceID = dev->id;
     rep.nAlternateSyms = nMatch;
     if (nMatch!=0) {
@@ -2154,12 +2314,21 @@ ProcXkbListAlternateSyms(client)
 		if (match) {
 		    CARD8 *tmp= (CARD8 *)out;
 		    register int i;
-		    *out++= syms->name;
 		    *tmp++= syms->index;
 		    *tmp++= syms->nCharSets;
 		    out++;
-		    for (i=0;i<syms->nCharSets;i++) {
-			*out++= syms->charSets[i];
+		    *out= syms->name;
+		    if (client->swapped) {
+			register int n;
+			swapl(out,n);
+		    }
+		    out++;
+		    for (i=0;i<syms->nCharSets;i++,out++) {
+			*out= syms->charSets[i];
+			if (client->swapped) {
+			    register int n;
+			    swapl(out,n);
+			}
 		    }
 		}
 		syms= syms->next;
@@ -2170,15 +2339,20 @@ ProcXkbListAlternateSyms(client)
 	}
     }
     else data = NULL;
+    if (client->swapped) {
+	register int n;
+	swaps(&rep.sequenceNumber,n);
+	swapl(&rep.length,n);
+    }
     WriteToClient(client, sz_xkbListAlternateSymsReply, (char *)&rep);
     if (data) {
-	WriteToClient(client, rep.length*4, data);
+	WriteToClient(client, length, data);
 	DEALLOCATE_LOCAL((char *)data);
     }
     return client->noClientException;
 }
 
-static int
+int
 ProcXkbGetAlternateSyms(client)
     ClientPtr client;
 {
@@ -2186,7 +2360,7 @@ ProcXkbGetAlternateSyms(client)
     XkbDescRec	*xkb;
     XkbAlternateSymsRec *syms;
     xkbGetAlternateSymsReply rep;
-    int		  i,totalSyms;
+    int		  i,totalSyms,length;
     XkbSymMapRec *sMap;
     char	 *data,*to;
     REQUEST(xkbGetAlternateSymsReq);
@@ -2249,12 +2423,12 @@ ProcXkbGetAlternateSyms(client)
 				xkb->map->keyTypes[sMap->ktIndex].groupWidth;
 	}
     }
-    rep.length= ((totalSyms*sizeof(Atom))+
-				(rep.nKeys*sizeof(xkbSymMapWireDesc)))/4;
+    length= (totalSyms*sizeof(Atom))+(rep.nKeys*sizeof(xkbSymMapWireDesc));
+    rep.length= length/4;
     if (rep.length) {
 	xkbSymMapWireDesc *out;
 	KeySym *symOut;
-	data= (char *)ALLOCATE_LOCAL(rep.length*4);
+	data= (char *)ALLOCATE_LOCAL(length);
 	if (!data)
 	    return BadAlloc;
 	sMap= &syms->maps[rep.firstKey-syms->firstKey];
@@ -2273,17 +2447,31 @@ ProcXkbGetAlternateSyms(client)
 	    out->ktIndex= sMap->ktIndex;
 	    out->groupInfo= sMap->groupInfo;
 	    out->nSyms= n;
+	    if (client->swapped) {
+		swaps(&out->nSyms,n);
+	    }
 	    symOut= (KeySym *)&out[1];
-	    for (n=0;n<out->nSyms;n++) {
-		*symOut++= syms->syms[sMap->offset+n];
+	    for (n=0;n<out->nSyms;n++,symOut++) {
+		*symOut= syms->syms[sMap->offset+n];
+		if (client->swapped) {
+		    register int s;
+		    swapl(symOut,s);
+		}
 	    }
 	    out= (xkbSymMapWireDesc *)symOut;
 	}
     }
     else data= NULL;
+    if (client->swapped) {
+	register int n;
+	swaps(&rep.sequenceNumber,n);
+	swapl(&rep.length,n);
+	swapl(&rep.name,n);
+	swaps(&rep.totalSyms,n);
+    }
     WriteToClient(client, sz_xkbGetAlternateSymsReply, (char *)&rep);
     if (data) {
-	WriteToClient(client, rep.length*4, data);
+	WriteToClient(client, length, data);
 	DEALLOCATE_LOCAL((char *)data);
     }
     return client->noClientException;
@@ -2291,18 +2479,58 @@ ProcXkbGetAlternateSyms(client)
 
 /***====================================================================***/
 
-static int
+int
 ProcXkbSetDebuggingFlags(client)
     ClientPtr client;
 {
+    extern int XkbDisableLockActions;
+    CARD16 newFlags,extraLength;
     int status;
     DeviceIntPtr dev;
+    xkbSetDebuggingFlagsReply rep;
     REQUEST(xkbSetDebuggingFlagsReq);
 
-    REQUEST_SIZE_MATCH(xkbSetDebuggingFlagsReq);
-    if ((xkbDebugFlags>0) || (stuff->flags>0))
-	ErrorF("Setting debug flags to %d\n",stuff->flags);
-    xkbDebugFlags = stuff->flags;
+    REQUEST_AT_LEAST_SIZE(xkbSetDebuggingFlagsReq);
+    newFlags= (xkbDebugFlags&(~stuff->mask))|(stuff->flags&stuff->mask);
+    if (xkbDebugFlags || newFlags || stuff->msgLength) {
+	ErrorF("XkbDebug: Setting debug flags to %d\n",newFlags);
+    }
+    extraLength= (stuff->length<<2)-sz_xkbSetDebuggingFlagsReq;
+    if (stuff->msgLength>0) {
+	register int i;
+	char *msg;
+	if (extraLength!=(((stuff->msgLength+3)/4)*4)) {
+	    ErrorF("XkbDebug: msgLength= %d, length= %d (should be %d)\n",
+			stuff->msgLength,extraLength,
+			((stuff->msgLength+3)/4)*4);
+	    return BadLength;
+	}
+	msg= (char *)&stuff[1];
+	if (msg[stuff->msgLength-1]!='\0') {
+	    ErrorF("XkbDebug: message not null-terminated\n");
+	    return BadValue;
+	}
+	ErrorF("XkbDebug: %s\n",msg);
+    }
+    else if (extraLength!=0) {
+	ErrorF("XkbDebug: msgLength==0, length=%d (should be 0)\n",
+					extraLength);
+	return BadLength;
+    }
+    xkbDebugFlags = newFlags;
+    if (stuff->disableLocks!=XkbLeaveLocks)
+	XkbDisableLockActions = stuff->disableLocks;
+    rep.type= X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    rep.currentFlags = newFlags;
+    rep.disableLocks = XkbDisableLockActions;
+    if ( client->swapped ) {
+	register int n;
+	swaps(&rep.sequenceNumber, n);
+	swaps(&rep.currentFlags, n);
+    }
+    WriteToClient(client,sizeof(xkbSetDebuggingFlagsReply), (char *)&rep);
     return client->noClientException;
 }
 
@@ -2310,66 +2538,6 @@ ProcXkbSetDebuggingFlags(client)
 
 static int
 ProcXkbDispatch (client)
-    ClientPtr client;
-{
-    REQUEST(xReq);
-    switch (stuff->data)
-    {
-    case X_kbUseExtension:
-	return ProcXkbUseExtension(client);
-    case X_kbSelectEvents:
-	return ProcXkbSelectEvents(client);
-    case X_kbSendEvent:
-	return ProcXkbSendEvent(client);
-    case X_kbBell:
-	return ProcXkbBell(client);
-    case X_kbGetState:
-	return ProcXkbGetState(client);
-    case X_kbLatchLockState:
-	return ProcXkbLatchLockState(client);
-    case X_kbGetControls:
-	return ProcXkbGetControls(client);
-    case X_kbSetControls:
-	return ProcXkbSetControls(client);
-    case X_kbGetMap:
-	return ProcXkbGetMap(client);
-    case X_kbSetMap:
-	return ProcXkbSetMap(client);
-    case X_kbGetCompatMap:
-	return ProcXkbGetCompatMap(client);
-    case X_kbSetCompatMap:
-	return ProcXkbSetCompatMap(client);
-    case X_kbGetIndicatorState:
-	return ProcXkbGetIndicatorState(client);
-    case X_kbGetIndicatorMap:
-	return ProcXkbGetIndicatorMap(client);
-    case X_kbSetIndicatorMap:
-	return ProcXkbSetIndicatorMap(client);
-    case X_kbGetNames:
-	return ProcXkbGetNames(client);
-    case X_kbSetNames:
-	return ProcXkbSetNames(client);
-    case X_kbListAlternateSyms:
-	return ProcXkbListAlternateSyms(client);
-    case X_kbGetAlternateSyms:
-	return ProcXkbGetAlternateSyms(client);
-#ifdef NOTYET
-    case X_kbSetAlternateSyms:
-	return ProcXkbSetAlternateSyms(client);
-    case X_kbGetGeometry:
-	return ProcXkbGetGeometry(client);
-    case X_kbSetGeometry:
-	return ProcXkbSetGeometry(client);
-#endif
-    case X_kbSetDebuggingFlags:
-	return ProcXkbSetDebuggingFlags(client);
-    default:
-	return BadRequest;
-    }
-}
-
-static int
-SProcXkbDispatch (client)
     ClientPtr client;
 {
     REQUEST(xReq);

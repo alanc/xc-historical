@@ -1,4 +1,4 @@
-/* $XConsortium: xkbUtils.c,v 1.6 93/09/28 22:11:51 rws Exp $ */
+/* $XConsortium: xkbUtils.c,v 1.7 93/09/29 20:53:34 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -37,10 +37,22 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <ctype.h>
 
 static	int	XkbComputeAutoRepeat = 1;
+	int	XkbDisableLockActions = 0;
+
 #define	CREATE_ATOM(s)	MakeAtom(s,sizeof(s)-1,1)
 
 #define IsKeypadKey(keysym) \
   (((unsigned)(keysym) >= XK_KP_Space) && ((unsigned)(keysym) <= XK_KP_Equal))
+
+#ifdef sgi
+#define LED_CAPS	5
+#define	LED_NUM		6
+#define	LED_SCROLL	7
+#else
+#define	LED_CAPS	1
+#define	LED_NUM		2
+#define	LED_SCROLL	3
+#endif
 
 /***====================================================================***/
 
@@ -335,113 +347,95 @@ XkbRadioGroupRec	*grp;
 }
 
 #define	SI_LF	(XkbSAClearLocks|XkbSALatchToLock)
+#define	INIT_MOVE_PTR(x,y)	{ XkbSAMovePtr, 0, (((x)>>8)&0xff), (x)&0xff,\
+					(((y)>>8)&0xff), (y)&0xff }
+#define	INIT_CTRLS(c)		{ XkbSALockControls,0,(((c)>>24)&0xff),\
+					(((c)>>16)&0xff), (((c)>>8)&0xff),\
+					(c)&0xff }
+
 static	XkbSymInterpretRec	dfltSI[] = {
-    { XK_Caps_Lock,    0, XkbSI_Exactly, LockMask, 4,
-					{ XkbSALockMods, SI_LF, LockMask },
-					{ XkbDefaultKB, 0, 0 } },
-    { XK_Shift_Lock,   0, XkbSI_AnyOf,   0xff, XkbSI_NoIndicator,
-					{ XkbSALockMods, SI_LF, ShiftMask },
-					{ XkbDefaultKB, 0, 0 } },
-    { XK_ISO_Lock,     0, XkbSI_Exactly, LockMask, 4,
-					{ XkbSAISOLock, SI_LF, LockMask },
-					{ XkbDefaultKB, 0, 0 } },
+    { XK_Caps_Lock,    0, XkbSI_Exactly, LockMask, LED_CAPS,
+					{ XkbSALockMods, SI_LF, LockMask } },
+    { XK_Shift_Lock,   0, XkbSI_AnyOf,   LockMask|ShiftMask, XkbSI_NoIndicator,
+					{ XkbSALockMods, SI_LF, ShiftMask } },
+    { XK_ISO_Lock,     0, XkbSI_Exactly, LockMask, LED_CAPS,
+					{ XkbSAISOLock, SI_LF, LockMask } },
     { XK_ISO_Level2_Latch, 0, XkbSI_Exactly, ShiftMask, XkbSI_NoIndicator,
-					{ XkbSALatchMods, SI_LF, ShiftMask },
-					{ XkbDefaultKB, 0, 0 } },
+					{ XkbSALatchMods, SI_LF, ShiftMask } },
     { XK_ISO_Level3_Latch, XkbSI_UseModMapMods, XkbSI_AnyOf, 0xff, 
 					XkbSI_NoIndicator,
-					{ XkbSALatchMods, SI_LF, 0 },
-					{ XkbDefaultKB, 0, 0 } },
+					{ XkbSALatchMods, SI_LF, 0 } },
     { XK_Num_Lock, XkbSI_UseModMapMods|XkbSI_UpdateKeypad, 
-					XkbSI_AnyOf, 0xff, 5,
-					{ XkbSALockMods, SI_LF, 0 },
-					{ XkbDefaultKB, 0, 0 } },
-    { XK_Scroll_Lock, XkbSI_UseModMapMods, XkbSI_AnyOf, 0xff, 6, 
-					{ XkbSALockMods, SI_LF, 0 },
-					{ XkbDefaultKB, 0, 0 } },
+					XkbSI_AnyOf, 0xff, LED_NUM,
+					{ XkbSALockMods, SI_LF, 0 } },
+    { XK_Scroll_Lock, XkbSI_UseModMapMods, XkbSI_AnyOf, 0xff, LED_SCROLL, 
+					{ XkbSALockMods, SI_LF, 0 } },
 #ifdef SHIFT_CANCELS_LOCKS 
     { XK_Mode_switch, XkbSI_UpdateGroup, XkbSI_AnyOf, 0xff,XkbSI_NoIndicator,
-			{ XkbSASetGroup, SI_LF|XkbSASuppressLocks, 1 },
-			{ XkbDefaultKB, 0, 0 } },
+			{ XkbSASetGroup, SI_LF, 1, 0xff } },
 #else
     { XK_Mode_switch, XkbSI_UpdateGroup, XkbSI_AnyOf, 0xff,XkbSI_NoIndicator,
-					{ XkbSASetGroup, SI_LF, 1 },
-					{ XkbDefaultKB, 0, 0 } },
+					{ XkbSASetGroup, SI_LF, 1 } },
 #endif
     { XK_ISO_Group_Latch, XkbSI_UpdateGroup, XkbSI_AnyOfOrNone, 0xff,
 					XkbSI_NoIndicator,
-					{ XkbSALatchGroup, SI_LF, 1 },
-					{ XkbDefaultKB, 0, 0 } },
+					{ XkbSALatchGroup, SI_LF, 1 } },
     { XK_ISO_Next_Group, XkbSI_UpdateGroup, XkbSI_AnyOfOrNone, 0xff,
 					XkbSI_NoIndicator,
-					{ XkbSALockGroup, SI_LF, 1 },
-					{ XkbDefaultKB, 0, 0 } },
+					{ XkbSALockGroup, SI_LF, 1 } },
     { XK_ISO_Prev_Group, XkbSI_UpdateGroup, XkbSI_AnyOfOrNone, 0xff, 
 					XkbSI_NoIndicator,
-					{ XkbSALockGroup, SI_LF, (CARD8)-1 },
-					{ XkbDefaultKB, 0, 0 } },
-    { XK_KP_Left, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
-					{ XkbSAMovePtrBtn, (CARD8)-1, 0 },
-					{ XkbDefaultKB, 0, 0 } },
-    { XK_KP_Right, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
-					{ XkbSAMovePtrBtn, 1, 0 },
-					{ XkbDefaultKB, 0, 0 } },
-    { XK_KP_Up, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
-					{ XkbSAMovePtrBtn, 0, (CARD8)-1 },
-					{ XkbDefaultKB, 0, 0 } },
-    { XK_KP_Down, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
-					{ XkbSAMovePtrBtn, 0, 1 },
-					{ XkbDefaultKB, 0, 0 } },
-    { XK_Left, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
-					{ XkbSAMovePtrBtn, (CARD8)-1, 0 },
-					{ XkbDefaultKB, 0, 0 } },
-    { XK_Right, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
-					{ XkbSAMovePtrBtn, 1, 0 },
-					{ XkbDefaultKB, 0, 0 } },
-    { XK_Up, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
-					{ XkbSAMovePtrBtn, 0, (CARD8)-1 },
-					{ XkbDefaultKB, 0, 0 } },
-    { XK_Down, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
-					{ XkbSAMovePtrBtn, 0, 1 },
-					{ XkbDefaultKB, 0, 0 } },
+					{ XkbSALockGroup, SI_LF, (CARD8)-1 } },
+    { XK_KP_Left, XkbSI_Autorepeat, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
+					INIT_MOVE_PTR(-1,0) },
+    { XK_KP_Right, XkbSI_Autorepeat, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
+					INIT_MOVE_PTR(1,0) },
+    { XK_KP_Up, XkbSI_Autorepeat, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
+					INIT_MOVE_PTR(0,-1) },
+    { XK_KP_Down, XkbSI_Autorepeat, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
+					INIT_MOVE_PTR(0,1) },
+    { XK_Left, XkbSI_Autorepeat, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
+					INIT_MOVE_PTR(-1,0) },
+    { XK_Right, XkbSI_Autorepeat, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
+					INIT_MOVE_PTR(1,0) },
+    { XK_Up, XkbSI_Autorepeat, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
+					INIT_MOVE_PTR(0,-1) },
+    { XK_Down, XkbSI_Autorepeat, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
+					INIT_MOVE_PTR(0,1) },
     { XK_KP_Begin, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
-			{ XkbSAPtrBtn, 1, XkbSAUseDfltButton },
-			{ XkbDefaultKB, 0, 0 } },
+			{ XkbSAPtrBtn, 0, XkbSAUseDfltButton, 1 } },
     { XK_Pointer_Button_Dflt, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
-			{ XkbSAPtrBtn, 1, XkbSAUseDfltButton },
-			{ XkbDefaultKB, 0, 0 } },
+			{ XkbSAPtrBtn, 0, XkbSAUseDfltButton, 1 } },
     { XK_Pointer_Button1, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
-			{ XkbSAPtrBtn, 1, 1 },
-			{ XkbDefaultKB, 0, 0 } },
+			{ XkbSAPtrBtn, 0, 1, 1 } },
     { XK_Pointer_Button2, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
-			{ XkbSAPtrBtn, 1, 2 },
-			{ XkbDefaultKB, 0, 0 } },
+			{ XkbSAPtrBtn, 0, 1, 2 } },
     { XK_Pointer_Button3, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
-			{ XkbSAPtrBtn, 1, 3 },
-			{ XkbDefaultKB, 0, 0 } },
+			{ XkbSAPtrBtn, 0, 1, 3 } },
     { XK_Pointer_Button4, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
-			{ XkbSAPtrBtn, 1, 4 },
-			{ XkbDefaultKB, 0, 0 } },
+			{ XkbSAPtrBtn, 0, 1, 4 } },
     { XK_Pointer_Button5, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
-			{ XkbSAPtrBtn, 1, 5 },
-			{ XkbDefaultKB, 0, 0 } },
+			{ XkbSAPtrBtn, 0, 1, 5 } },
     { XK_Pointer_EnableKeys, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
-			{ XkbSALockControls, 0, XkbMouseKeysMask },
-			{ XkbDefaultKB, 0, 0 } },
+			INIT_CTRLS( XkbMouseKeysMask ) },
     { XK_Pointer_Accelerate, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
-			{ XkbSALockControls, 0, XkbMouseKeysAccelMask },
-			{ XkbDefaultKB, 0, 0 } },
+			INIT_CTRLS( XkbMouseKeysAccelMask ) },
 #ifdef SHIFT_CANCELS_LOCKS
     { XK_Shift_L, 0, XkbSI_AnyOf, ShiftMask, XkbSI_NoIndicator,
-		{ XkbSASetMods, SI_LF|XkbSASuppressLocks, ShiftMask },
-		{ XkbDefaultKB, 0, 0 } },
+		{ XkbSASetMods, SI_LF, ShiftMask, 0xff } },
     { XK_Shift_R, 0, XkbSI_AnyOf, ShiftMask, XkbSI_NoIndicator,
-		{ XkbSASetMods, SI_LF|XkbSASuppressLocks, ShiftMask },
-		{ XkbDefaultKB, 0, 0 } },
+		{ XkbSASetMods, SI_LF, ShiftMask, 0xff } },
 #endif
+    { XK_Terminate_Server, 0, XkbSI_AnyOfOrNone, 0xff, XkbSI_NoIndicator,
+					{ XkbSATerminate } },
+    { XK_Meta_L, XkbSI_UseModMapMods, XkbSI_AnyOf|XkbSI_AnyLevel, 0xff, 						XkbSI_NoIndicator,
+					{ XkbSASetMods, SI_LF, 0 } },
+    { XK_Meta_R, XkbSI_UseModMapMods, XkbSI_AnyOf|XkbSI_AnyLevel, 0xff, 						XkbSI_NoIndicator,
+					{ XkbSASetMods, SI_LF, 0 } },
+    { NoSymbol, 0, XkbSI_Exactly, LockMask, LED_CAPS,
+					{ XkbSALockMods, SI_LF, LockMask } },
     { NoSymbol, XkbSI_UseModMapMods, XkbSI_AnyOf, 0xff, XkbSI_NoIndicator,
-					{ XkbSASetMods, SI_LF, 0 },
-					{ XkbDefaultKB, 0, 0 } }
+					{ XkbSASetMods, SI_LF, 0 } }
 };
 
 static void
@@ -755,7 +749,7 @@ KeySym	core[4];
 /* 8/10/93 (ef) -- XXX! Look up correct index here */
 	if (nLevels==1)
 	     map->ktIndex= KT_1LEVEL_KEY;
-	else if (IsKeypadKey(newSyms[0])&&IsKeypadKey(newSyms[1]))
+	else if (IsKeypadKey(newSyms[0])||IsKeypadKey(newSyms[1]))
 	     map->ktIndex= KT_KEYPAD_KEY;
 	else map->ktIndex= KT_2LEVEL_KEY;
 	map->groupInfo = XkbSetNumGroups(map->groupInfo,nGroups);
@@ -799,18 +793,20 @@ register int	 i,r,n;
 int		 nSyms,found;
 KeySym		*pSym;
 XkbSymInterpretRec  *interps[8];
-CARD8		 mods,repeat[32];
+CARD8		 realMods,level,mods,*repeat;
 
     xkb= &pXDev->key->xkbInfo->desc;
+    repeat= pXDev->key->xkbInfo->repeat;
     if (XkbComputeAutoRepeat && pXDev->kbdfeed)
 	memcpy(repeat,pXDev->kbdfeed->ctrl.autoRepeats,32);
 
     for (r=0; r<num; r++) {
-	mods= pXDev->key->modifierMap[r+first];
+	realMods= pXDev->key->modifierMap[r+first];
 	pSym= XkbKeySymsPtr(xkb,r+first);
 	nSyms= XkbKeyNumSyms(xkb,r+first);
 	found= 0;
 	for (n=0;n<nSyms;n++,pSym++) {
+	    level= (n%XkbKeyGroupWidth(xkb,r+first));
 	    interps[n]= NULL;
 	    if (*pSym!=NoSymbol) {
 		XkbSymInterpretRec *interp;
@@ -818,7 +814,10 @@ CARD8		 mods,repeat[32];
 		for (i=0;i<xkb->compat->nSymInterpret;i++,interp++) {
 		    if ((interp->sym==NoSymbol)||(*pSym==interp->sym)) {
 			int match;
-			switch (interp->match) {
+			if ((level==0)||(interp->match&XkbSI_AnyLevel))
+			     mods= realMods;
+			else mods= 0;
+			switch (interp->match&XkbSI_OpMask) {
 			    case XkbSI_NoneOf:
 				match= ((interp->mods&mods)==0);
 				break;
@@ -858,16 +857,20 @@ CARD8		 mods,repeat[32];
 	    xkb->server->keyActions[r+first]= 0;
 	else {
 	    XkbAction *pActs= _XkbNewActionsForKey(xkb,r+first,nSyms);
+	    mods= realMods;
 	    for (i=0;i<nSyms;i++) {
 		if (interps[i]) {
-		    pActs[i]= interps[i]->action;
-		    if (interps[i]->flags&XkbSI_UseModMapMods)
-			pActs[i].data= mods;
+		    pActs[i]= *((XkbAction *)&interps[i]->action);
+		    if (interps[i]->flags&XkbSI_UseModMapMods) {
+			pActs[i].mods.mods= mods;
+		    }
 		}
 		else pActs[i].type= XkbSANoAction;
 	    }
 	    if (interps[0]) {
-		xkb->server->keyBehaviors[r+first]= interps[0]->behavior;
+		if (interps[0]->flags&XkbSI_LockingKey) {
+		    xkb->server->keyBehaviors[r+first].type= XkbLockKB;
+		}
 		if (XkbComputeAutoRepeat) {
 		    if (interps[0]->flags&XkbSI_Autorepeat)
 			repeat[(r+first)/8]|= (1<<((r+first)%8));
@@ -916,8 +919,8 @@ CARD8		 mods,repeat[32];
 		}
 		if (interps[0]->indicator!=XkbSI_NoIndicator) {
 		    XkbIndicatorMapRec *map;
-		    unsigned long mask = (1<<interps[0]->indicator);
-		    map= &xkb->indicators->maps[interps[0]->indicator];
+		    unsigned long mask = (1<<interps[0]->indicator-1);
+		    map= &xkb->indicators->maps[interps[0]->indicator-1];
 		    if (interps[0]->flags&XkbSI_UpdateGroup) {
 			map->whichGroups|= XkbIMUseLocked;
 			map->mods= 0xff;
@@ -942,9 +945,11 @@ CARD8		 mods,repeat[32];
     }
 
     if (XkbComputeAutoRepeat && pXDev->kbdfeed) {
+	int realRepeat= pXDev->kbdfeed->ctrl.autoRepeat;
+	pXDev->kbdfeed->ctrl.autoRepeat= FALSE;
         memcpy(pXDev->kbdfeed->ctrl.autoRepeats,repeat, 32);
-        if (pXDev->kbdfeed->ctrl.autoRepeat)
-            (*pXDev->kbdfeed->CtrlProc)(pXDev, &pXDev->kbdfeed->ctrl);
+	(*pXDev->kbdfeed->CtrlProc)(pXDev, &pXDev->kbdfeed->ctrl);
+	pXDev->kbdfeed->ctrl.autoRepeat= realRepeat;
     }
     if (pMN->changed&XkbKeyActionsMask) {
 	CARD8 oldLast,newLast;
@@ -982,11 +987,11 @@ register int i;
     map->nRealIndicators = 7;
     xkb->iState= 0;
     bzero(map->maps,XkbNumIndicators*sizeof(XkbIndicatorMapRec));
-    map->maps[4].whichMods= XkbIMUseLocked;
-    map->maps[4].mods= LockMask;
-    xkb->iAccel.usesLocked= (1<<4);
+    map->maps[LED_CAPS-1].whichMods= XkbIMUseLocked;
+    map->maps[LED_CAPS-1].mods= LockMask;
+    xkb->iAccel.usesLocked= (1<<(LED_CAPS-1));
     xkb->iAccel.usedComponents= XkbModifierLockMask;
-    xkb->iAccel.haveMap= (1<<4);
+    xkb->iAccel.haveMap= (1<<(LED_CAPS-1));
     return;
 }
 
@@ -999,7 +1004,7 @@ XkbSrvInfoRec *xkb;
 xkbMapNotify	mn;
 
     /* determine size of fixed-length arrays */
-    i= sizeof(XkbAction)+sizeof(XkbSymMapRec)+sizeof(CARD16);
+    i= sizeof(XkbBehavior)+sizeof(XkbSymMapRec)+sizeof(CARD16);
     i*= pXDev->key->curKeySyms.maxKeyCode+1;
 
     pXDev->key->xkbInfo= xkb=(XkbSrvInfoRec *)Xcalloc(sizeof(XkbSrvInfoRec)+i);
@@ -1017,7 +1022,7 @@ xkbMapNotify	mn;
 
 	nKeys = xkb->desc.maxKeyCode+1;	/* size of fixed arrays */
 	xkb->Map.keySymMap= (XkbSymMapRec *)&xkb[1];
-	xkb->Server.keyBehaviors = (XkbAction *)&xkb->Map.keySymMap[nKeys];
+	xkb->Server.keyBehaviors = (XkbBehavior *)&xkb->Map.keySymMap[nKeys];
 	xkb->Server.keyActions=(CARD16*)&xkb->Server.keyBehaviors[nKeys];
 
 	xkb->dfltNumLockMod = Mod4Mask;
@@ -1047,6 +1052,12 @@ xkbMapNotify	mn;
 	xkb->desc.controls->numGroups = 1;
 	xkb->desc.controls->internalMods = 0x00;
 	xkb->desc.controls->ignoreLockMods = 0xe040;
+	/*
+	 * 11/18/93 (ef) -- XXX Don't enable AccessXKeys until we
+	 *    have a watchdog program and an easy way to turn it
+	 *    off.
+	 */
+#ifdef NOTYET
 	xkb->desc.controls->enabledControls = XkbAccessXKeysMask|
 					 	XkbAccessXTimeoutMask|
 						XkbRepeatKeysMask|
@@ -1054,12 +1065,47 @@ xkbMapNotify	mn;
 						XkbMouseKeysAccelMask|
 						XkbAudibleBellMask|
 						XkbAutoAutorepeatMask;
+#else
+	xkb->desc.controls->enabledControls = XkbAccessXTimeoutMask|
+						XkbRepeatKeysMask|
+						XkbGroupsWrapMask|
+						XkbMouseKeysAccelMask|
+						XkbAudibleBellMask|
+						XkbAutoAutorepeatMask;
+#endif
 	AccessXInit(pXDev);
+	DDXInitXkbDevice(pXDev);
 
 	XkbUpdateKeyTypesFromCore(pXDev,xkb->desc.minKeyCode,
 						XkbNumKeys(&xkb->desc),&mn);
 	XkbUpdateActions(pXDev,xkb->desc.minKeyCode,XkbNumKeys(&xkb->desc),&mn);
     }
+}
+
+	/*
+	 * InitKeyClassDeviceStruct initializes the key class before it
+	 * initializes the keyboard feedback class for a device. UpdateActions
+	 * can't set up the correct autorepeat for keyboard initialization
+	 * because the keyboard feedback isn't created yet.   Instead, 
+	 * UpdateActions notes the "correct" autorepeat in the SrvInfo
+	 * structure and InitKbdFeedbackClass calls UpdateAutorepeat to
+	 * apply the computed autorepeat once the feedback class exists.
+	 * DIX will apply the changed autorepeat, so there's no need to
+	 * do so here.
+	 */
+void
+XkbUpdateAutorepeat(pXDev)
+    DeviceIntPtr pXDev;
+{
+XkbSrvInfoRec *xkb;
+
+    if (pXDev && pXDev->key && pXDev->key->xkbInfo) {
+	xkb= pXDev->key->xkbInfo;
+	if (XkbComputeAutoRepeat && pXDev->kbdfeed) {
+	    memcpy(pXDev->kbdfeed->ctrl.autoRepeats,xkb->repeat, 32);
+	}
+    }
+    return;
 }
 
 	/*
@@ -1293,26 +1339,56 @@ static XkbAction fake;
 	    col+= (effectiveGroup*map->groupWidth);
 	}
     }
-    if (xkb->controls->enabledControls&XkbStickyKeysMask) {
-	if (pActs[col].type==XkbSASetMods) {
-	    fake.type = XkbSALatchMods;
-	    fake.flags= XkbSAClearLocks|XkbSALatchToLock;
-	    fake.data= pActs[col].data;
-	    return fake;
-	}
-	if (pActs[col].type==XkbSASetGroup) {
-	    fake.type = XkbSALatchGroup;
-	    fake.flags= XkbSAClearLocks|XkbSALatchToLock;
-	    fake.data= pActs[col].data;
-	    return fake;
-	}
-    }
-    else if (XkbPtrAction(&pActs[col])&&
+    if (XkbIsPtrAction(&pActs[col])&&
 	     ((xkb->controls->enabledControls&XkbMouseKeysMask)==0)) {
 	fake.type = XkbSANoAction;
-	fake.flags= 0;
-	fake.data= 0;
 	return fake;
+    }
+    if (XkbDisableLockActions) {
+	switch (pActs[col].type) {
+	    case XkbSALockMods:
+		fake.mods.type  = XkbSASetMods;
+		fake.mods.flags = 0;
+		fake.mods.mods  = pActs[col].mods.mods;
+		return fake;
+	    case XkbSALatchMods:
+		fake.mods.type  = XkbSASetMods;
+		fake.mods.flags = 0;
+		fake.mods.mods  = pActs[col].mods.mods;
+		return fake;
+	    case XkbSAISOLock:
+		if (pActs[col].iso.flags&XkbSAISODfltIsGroup) {
+		     fake.group.type = XkbSASetGroup;
+		     fake.group.flags = pActs[col].iso.flags&XkbSAGroupAbsolute;
+		     fake.group.group = pActs[col].iso.group;
+		}
+		else {
+		     fake.mods.type  = XkbSASetMods;
+		     fake.mods.flags = 0;
+		     fake.mods.mods  = pActs[col].iso.mods;
+		}
+		return fake;
+	    case XkbSALockGroup:
+	    case XkbSALatchGroup:
+		fake.group = pActs[col].group;
+		fake.group.type = XkbSASetGroup;
+		return fake;
+	}
+    }
+    else 
+    if (xkb->controls->enabledControls&XkbStickyKeysMask) {
+	if (pActs[col].any.type==XkbSASetMods) {
+	    fake.mods.type = XkbSALatchMods;
+	    fake.mods.flags= XkbSAClearLocks|XkbSALatchToLock;
+	    fake.mods.mods = pActs[col].mods.mods;
+	    return fake;
+	}
+	if (pActs[col].any.type==XkbSASetGroup) {
+	    fake.group.type = XkbSALatchGroup;
+	    fake.group.flags= XkbSAClearLocks|XkbSALatchToLock;
+	    fake.group.group= pActs[col].group.group;
+	    return fake;
+	}
     }
     return pActs[col];
 }
@@ -1406,6 +1482,7 @@ Bool		wrap= ((controls->enabledControls&XkbGroupsWrapMask)!=0);
 #define	SYNTHETIC_KEYCODE	1
 
 typedef struct _XkbFilter {
+	CARD8			  what;
 	CARD8			  keycode;
 	CARD8			  active;
 	CARD8			  filterOthers;
@@ -1426,62 +1503,62 @@ _XkbFilterSetState(xkb,filter,keycode,pAction)
     if (filter->keycode==0) {		/* initial press */
 	filter->keycode = keycode;
 	filter->active = 1;
-	filter->filterOthers = ((pAction->flags&XkbSAClearLocks)!=0);
+	filter->filterOthers = ((pAction->mods.mods&XkbSAClearLocks)!=0);
 	filter->priv = 0;
 	filter->filter = _XkbFilterSetState;
-	if (XkbActionType(*pAction)==XkbSASetMods) {
-	    if ((pAction->flags&XkbSASuppressLocks)&&
-						(xkb->state.lockedMods!=0)) {
-		xkb->state.unlockedMods= 0xff;
+	if (pAction->type==XkbSASetMods) {
+	    if (pAction->mods.suppressLocks&xkb->state.lockedMods) {
+		xkb->state.unlockedMods|= 
+			(pAction->mods.suppressLocks&xkb->state.lockedMods);
 		filter->upAction = *pAction;
-		filter->upAction.data = 0;
+		filter->upAction.mods.mods = 0;
 	    }
 	    else {
 		filter->upAction = *pAction;
-		xkb->setMods= XkbActionDataLow(*pAction);
+		filter->upAction.mods.suppressLocks= 0;
+		xkb->setMods= pAction->mods.mods;
 	    }
 	}
 	else {
-	    if (pAction->flags&XkbSASuppressLocks) {
+	    if (pAction->group.suppressLocks) {
 		xkb->state.groupsUnlocked= 1;
 		filter->upAction= *pAction;
-		filter->upAction.data = 0;
+		filter->upAction.group.group = 0;
 	    }
 	    else {
-		xkb->groupChange = XkbActionDataLow(*pAction);
-		if (pAction->flags&XkbSAGroupAbsolute)
+		xkb->groupChange = pAction->group.group;
+		if (pAction->group.flags&XkbSAGroupAbsolute)
 		    xkb->groupChange-= xkb->state.baseGroup;
 		filter->upAction= *pAction;
-		XkbActionSetDataLow(filter->upAction,xkb->groupChange);
+		filter->upAction.group.suppressLocks= 0;
+		filter->upAction.group.group= xkb->groupChange;
 	    }
 	}
     }
     else if (filter->keycode==keycode) {
-	if (XkbActionType(filter->upAction)==XkbSASetMods) {
-	    if ((filter->upAction.flags&XkbSASuppressLocks)&&
-		(filter->upAction.data==0)) {
-		xkb->state.unlockedMods= 0;
+	if (filter->upAction.type==XkbSASetMods) {
+	    if (filter->upAction.mods.suppressLocks) {
+		xkb->state.unlockedMods&= ~filter->upAction.mods.suppressLocks;
 	    }
 	    else {
-		xkb->clearMods = XkbActionDataLow(filter->upAction);
+		xkb->clearMods = filter->upAction.mods.mods;
 	    }
-	    if (filter->upAction.flags&XkbSAClearLocks) {
-		xkb->state.lockedMods&= ~XkbActionDataLow(filter->upAction);
+	    if (filter->upAction.mods.flags&XkbSAClearLocks) {
+		xkb->state.lockedMods&= ~filter->upAction.mods.mods;
 	    }
 	}
 	else {
-	    if (filter->upAction.flags&XkbSAClearLocks) {
+	    if (filter->upAction.group.flags&XkbSAClearLocks) {
 		xkb->state.lockedGroup = 0;
 	    }
-	    if ((filter->upAction.flags&XkbSASuppressLocks)&&
-		(filter->upAction.data==0))
+	    if (filter->upAction.group.suppressLocks)
 		 xkb->state.groupsUnlocked= 0;
-	    else xkb->groupChange = -XkbActionDataLow(filter->upAction);
+	    else xkb->groupChange = -filter->upAction.group.group;
 	}
 	filter->active = 0;
     }
     else {
-	filter->upAction.flags&= ~XkbSAClearLocks;
+	filter->upAction.mods.flags&= ~XkbSAClearLocks;
 	filter->filterOthers = 0;
     }
     return 1;
@@ -1505,62 +1582,65 @@ _XkbFilterLatchState(xkb,filter,keycode,pAction)
 	filter->filterOthers = 1;
 	filter->priv = LATCH_KEY_DOWN;
 	filter->filter = _XkbFilterLatchState;
-	if (XkbActionType(*pAction)==XkbSALatchMods) {
+	if (pAction->type==XkbSALatchMods) {
 	    filter->upAction = *pAction;
-	    xkb->setMods = XkbActionDataLow(*pAction);
-	    if (pAction->flags&XkbSASuppressLocks)
-		xkb->state.unlockedMods= 0xff;
+	    xkb->setMods = pAction->mods.mods;
+	    if (pAction->mods.suppressLocks&xkb->state.lockedMods)
+		 xkb->state.unlockedMods|= pAction->mods.suppressLocks&
+						xkb->state.lockedMods;
+	    else filter->upAction.mods.suppressLocks= 0;
 	}
 	else {
-	    xkb->groupChange = XkbActionDataLow(*pAction);
-	    if (pAction->flags&XkbSAGroupAbsolute)
+	    xkb->groupChange = pAction->group.group;
+	    if (pAction->group.flags&XkbSAGroupAbsolute)
 		 xkb->groupChange-= xkb->state.baseGroup;
 	    filter->upAction= *pAction;
-	    XkbActionSetDataLow(filter->upAction,xkb->groupChange);
-	    if (pAction->flags&XkbSASuppressLocks)
-		xkb->state.groupsUnlocked= 1;
+	    filter->upAction.group.group= xkb->groupChange;
+	    if (pAction->group.suppressLocks)
+		 xkb->state.groupsUnlocked= 1;
+	    else filter->upAction.group.suppressLocks= 0;
 	}
     }
     else if ( pAction && (filter->priv==LATCH_PENDING) ) {
 	if (pAction->type==XkbSANoAction) {
 	    filter->active = 0;
-	    if (XkbActionType(filter->upAction)==XkbSALatchMods)
-		 xkb->state.latchedMods&= ~XkbActionDataLow(filter->upAction);
-	    else xkb->state.latchedGroup-= XkbActionDataLow(filter->upAction);
+	    if (filter->upAction.type==XkbSALatchMods)
+		 xkb->state.latchedMods&= ~filter->upAction.mods.mods;
+	    else xkb->state.latchedGroup-= filter->upAction.group.group;
 	}
 	else if ((pAction->type==filter->upAction.type)&&
-		 (pAction->data==filter->upAction.data)&&
-		 (pAction->flags==filter->upAction.flags)) {
-	    if (filter->upAction.flags&XkbSALatchToLock) {
-		if (XkbActionType(filter->upAction)==XkbSALatchMods)
-		     XkbActionSetType(*pAction,XkbSALockMods);
-		else XkbActionSetType(*pAction,XkbSALockGroup);
+		 (pAction->mods.flags==filter->upAction.mods.flags)&&
+		 (pAction->mods.mods==filter->upAction.mods.mods)) {
+	    if (filter->upAction.mods.flags&XkbSALatchToLock) {
+		if (filter->upAction.type==XkbSALatchMods)
+		     pAction->mods.type= XkbSALockMods;
+		else pAction->group.type= XkbSALockGroup;
 	    }
 	    else {
-		if (XkbActionType(filter->upAction)==XkbSALatchMods)
-		     XkbActionSetType(*pAction,XkbSASetMods);
-		else XkbActionSetType(*pAction,XkbSASetGroup);
+		if (filter->upAction.type==XkbSALatchMods)
+		     pAction->mods.type= XkbSASetMods;
+		else pAction->group.type= XkbSASetGroup;
 	    }
-	    if (XkbActionType(filter->upAction)==XkbSALatchMods)
-		 xkb->state.latchedMods&= ~XkbActionDataLow(filter->upAction);
-	    else xkb->state.latchedGroup-= XkbActionDataLow(filter->upAction);
+	    if (filter->upAction.type==XkbSALatchMods)
+		 xkb->state.latchedMods&= ~filter->upAction.mods.mods;
+	    else xkb->state.latchedGroup-= filter->upAction.group.group;
 	    filter->active = 0;
 	}
     }
     else if (filter->keycode==keycode) {	/* release */
-	if (XkbActionType(filter->upAction)==XkbSALatchMods) {
-	    xkb->clearMods = XkbActionDataLow(filter->upAction);
-	    if ((filter->upAction.flags&XkbSAClearLocks)&&
+	if (filter->upAction.type==XkbSALatchMods) {
+	    xkb->clearMods = filter->upAction.mods.mods;
+	    if ((filter->upAction.mods.flags&XkbSAClearLocks)&&
 		 (xkb->clearMods&xkb->state.lockedMods)==xkb->clearMods) {
 		xkb->state.lockedMods&= ~xkb->clearMods;
 		filter->priv= NO_LATCH;
 	    }
-	    if (filter->upAction.flags&XkbSASuppressLocks)
-		xkb->state.unlockedMods= 0;
+	    if (filter->upAction.mods.suppressLocks)
+		xkb->state.unlockedMods&= ~filter->upAction.mods.suppressLocks;
 	}
 	else {
-	    xkb->groupChange = -XkbActionDataLow(filter->upAction);
-	    if ((filter->upAction.flags&XkbSAClearLocks)&&
+	    xkb->groupChange = -filter->upAction.group.group;
+	    if ((filter->upAction.group.flags&XkbSAClearLocks)&&
 						(xkb->state.lockedGroup)) {
 		xkb->state.lockedGroup = 0;
 		filter->priv = NO_LATCH;
@@ -1571,9 +1651,9 @@ _XkbFilterLatchState(xkb,filter,keycode,pAction)
 	}
 	else {
 	    filter->priv= LATCH_PENDING;
-	    if (XkbActionType(filter->upAction)==XkbSALatchMods)
-		 xkb->state.latchedMods |= XkbActionDataLow(filter->upAction);
-	    else xkb->state.latchedGroup+= XkbActionDataLow(filter->upAction);
+	    if (filter->upAction.type==XkbSALatchMods)
+		 xkb->state.latchedMods |= filter->upAction.mods.mods;
+	    else xkb->state.latchedGroup+= filter->upAction.group.group;
 	}
     }
     else if (filter->priv==LATCH_KEY_DOWN) {
@@ -1591,10 +1671,10 @@ _XkbFilterLockState(xkb,filter,keycode,pAction)
     XkbAction		*pAction;
 {
 
-    if (pAction&&(XkbActionType(*pAction)==XkbSALockGroup)) {
-	if (pAction->flags&XkbSAGroupAbsolute)
-	     xkb->state.lockedGroup= XkbActionDataLow(*pAction);
-	else xkb->state.lockedGroup+= XkbActionDataLow(*pAction);
+    if (pAction&&(pAction->type==XkbSALockGroup)) {
+	if (pAction->group.flags&XkbSAGroupAbsolute)
+	     xkb->state.lockedGroup= pAction->group.group;
+	else xkb->state.lockedGroup+= pAction->group.group;
 	return 1;
     }
     if (filter->keycode==0) {		/* initial press */
@@ -1604,12 +1684,12 @@ _XkbFilterLockState(xkb,filter,keycode,pAction)
 	filter->priv = 0;
 	filter->filter = _XkbFilterLockState;
 	filter->upAction = *pAction;
-	xkb->state.lockedMods^= XkbActionDataLow(*pAction);
-	xkb->setMods = XkbActionDataLow(*pAction);
+	xkb->state.lockedMods^= pAction->mods.mods;
+	xkb->setMods = pAction->mods.mods;
     }
     else if (filter->keycode==keycode) {
 	filter->active = 0;
-	xkb->clearMods = XkbActionDataLow(filter->upAction);
+	xkb->clearMods = filter->upAction.mods.mods;
     }
     return 1;
 }
@@ -1626,7 +1706,7 @@ _XkbFilterISOLock(xkb,filter,keycode,pAction)
 {
 
     if (filter->keycode==0) {		/* initial press */
-	CARD8	flags = XkbActionDataHigh(*pAction);
+	CARD8	flags = pAction->iso.flags;
 	filter->keycode = keycode;
 	filter->active = 1;
 	filter->filterOthers = 1;
@@ -1634,11 +1714,11 @@ _XkbFilterISOLock(xkb,filter,keycode,pAction)
 	filter->upAction = *pAction;
 	filter->filter = _XkbFilterISOLock;
 	if (flags&XkbSAISODfltIsGroup) {
-	    xkb->groupChange = XkbActionDataLow(*pAction);
+	    xkb->groupChange = pAction->iso.group;
 	    xkb->setMods = 0;
 	}
 	else {
-	    xkb->setMods = XkbActionDataLow(*pAction);
+	    xkb->setMods = pAction->iso.group;
 	    xkb->groupChange = 0;
 	}
 	if ((!(flags&XkbSAISONoAffectMods))&&(xkb->state.baseMods)) {
@@ -1653,45 +1733,45 @@ _XkbFilterISOLock(xkb,filter,keycode,pAction)
 	}
     }
     else if (filter->keycode==keycode) {
-	CARD8	flags = XkbActionDataHigh(filter->upAction);
+	CARD8	flags = filter->upAction.iso.flags;
 	if (flags&XkbSAISODfltIsGroup) {
-	    xkb->groupChange = -XkbActionDataHigh(filter->upAction);
+	    xkb->groupChange = -filter->upAction.iso.group;
 	    xkb->clearMods = 0;
 	    if (filter->priv==ISO_KEY_DOWN)
-		xkb->state.lockedGroup+= XkbActionDataHigh(filter->upAction);
+		xkb->state.lockedGroup+= filter->upAction.iso.group;
 	}
 	else {
-	    xkb->clearMods= XkbActionDataLow(filter->upAction);
+	    xkb->clearMods= filter->upAction.iso.mods;
 	    xkb->groupChange= 0;
 	    if (filter->priv==ISO_KEY_DOWN)
-		xkb->state.lockedMods^= XkbActionDataLow(filter->upAction);
+		xkb->state.lockedMods^= filter->upAction.iso.mods;
 	}
 	filter->active = 0;
     }
     else if (pAction) {
-	CARD8	flags = XkbActionDataHigh(filter->upAction);
-	switch (XkbActionType(*pAction)) {
+	CARD8	flags = filter->upAction.iso.flags;
+	switch (pAction->type) {
 	    case XkbSASetMods: case XkbSALatchMods:
 		if (!(flags&XkbSAISONoAffectMods)) {
-		    XkbActionSetType(*pAction,XkbSALockMods);
+		    pAction->type= XkbSALockMods;
 		    filter->priv= NO_ISO_LOCK;
 		}
 		break;
 	    case XkbSASetGroup: case XkbSALatchGroup:
 		if (!(flags&XkbSAISONoAffectGroup)) {
-		    XkbActionSetType(*pAction,XkbSALockGroup);
+		    pAction->type= XkbSALockGroup;
 		    filter->priv= NO_ISO_LOCK;
 		}
 		break;
 	    case XkbSAPtrBtn:
 		if (!(flags&XkbSAISONoAffectPtr)) {
-		     XkbActionSetType(*pAction,XkbSALockPtrBtn);
+		     pAction->type= XkbSALockPtrBtn;
 		     filter->priv= NO_ISO_LOCK;
 		}
 		break;
 	    case XkbSASetControls:
 		if (!(flags&XkbSAISONoAffectCtrls)) {
-		    XkbActionSetType(*pAction,XkbSALockControls);
+		    pAction->type= XkbSALockControls;
 		    filter->priv= NO_ISO_LOCK;
 		}
 		break;
@@ -1752,17 +1832,20 @@ _XkbFilterPointerMove(xkb,filter,keycode,pAction)
 	filter->upAction= *pAction;
 	xkb->mouseKeysCounter= 0;
 	xkb->mouseKey= keycode;
-	DDXFakePointerMotion((INT8)XkbActionDataHigh(*pAction),
-					  (INT8)XkbActionDataLow(*pAction));
+	DDXFakePointerMotion(XkbPtrActionX(&pAction->ptr),
+					XkbPtrActionY(&pAction->ptr));
 	xkb->mouseKeysAccel= 
-		((XkbActionType(*pAction)==XkbSAAccelPtr)||
-		((XkbActionType(*pAction)==XkbSAMovePtrBtn)&&
-		 (xkb->desc.controls->enabledControls&XkbMouseKeysAccelMask)));
-	xkb->mouseKeysDX= (INT8)XkbActionDataHigh(*pAction);
-	xkb->mouseKeysDY= (INT8)XkbActionDataLow(*pAction);
-	xkb->mouseKeyTimer= TimerSet(xkb->mouseKeyTimer, 0,
+		((pAction->type==XkbSAAccelPtr)||
+		 ((pAction->type==XkbSAMovePtr)&&
+		  (xkb->desc.controls->enabledControls&XkbMouseKeysAccelMask)));
+	if (xkb->mouseKeysAccel) {
+	    AccessXCancelRepeatKey(xkb,keycode);
+	    xkb->mouseKeysDX= XkbPtrActionX(&pAction->ptr);
+	    xkb->mouseKeysDY= XkbPtrActionY(&pAction->ptr);
+	    xkb->mouseKeyTimer= TimerSet(xkb->mouseKeyTimer, 0,
 				xkb->desc.controls->mouseKeysDelay,
 				_XkbPtrAccelExpire,(pointer)xkb);
+	}
     }
     else if (filter->keycode==keycode) {
 	filter->active = 0;
@@ -1783,7 +1866,7 @@ _XkbFilterPointerBtn(xkb,filter,keycode,pAction)
     XkbAction		*pAction;
 {
     if (filter->keycode==0) {		/* initial press */
-	int button = XkbActionDataLow(*pAction);
+	int button = pAction->btn.button;
 	if (button==XkbSAUseDfltButton)
 	    button = xkb->desc.controls->mouseKeysDfltBtn;
 
@@ -1793,8 +1876,8 @@ _XkbFilterPointerBtn(xkb,filter,keycode,pAction)
 	filter->priv=0;
 	filter->filter = _XkbFilterPointerBtn;
 	filter->upAction= *pAction;
-	XkbActionSetDataLow(filter->upAction,button);
-	switch (XkbActionType(*pAction)) {
+	filter->upAction.btn.button= button;
+	switch (pAction->type) {
 	    case XkbSALockPtrBtn:
 		if ((xkb->lockedPtrButtons&(1<<button))==0) {
 		    xkb->lockedPtrButtons|= (1<<button);
@@ -1808,7 +1891,7 @@ _XkbFilterPointerBtn(xkb,filter,keycode,pAction)
 	    case XkbSAClickPtrBtn:
 		{
 		    register int i,nClicks;
-		    nClicks= (INT8)XkbActionDataHigh(*pAction);
+		    nClicks= pAction->btn.count;
 		    for (i=0;i<nClicks;i++) {
 			DDXFakePointerButton(ButtonPress,button);
 			DDXFakePointerButton(ButtonRelease,button);
@@ -1822,12 +1905,12 @@ _XkbFilterPointerBtn(xkb,filter,keycode,pAction)
 		    XkbControlsRec	old;
 		    xkbControlsNotify	cn;
 		    old= *ctrls;
-		    switch (XkbActionDataHigh(*pAction)) {
+		    switch (pAction->dflt.flags) {
 			case XkbSASetDfltBtn:
-			    ctrls->mouseKeysDfltBtn= XkbActionDataLow(*pAction);
+			    ctrls->mouseKeysDfltBtn= pAction->dflt.value;
 			    break;
 			case XkbSAIncrDfltBtn:
-			    ctrls->mouseKeysDfltBtn+=XkbActionDataLow(*pAction);
+			    ctrls->mouseKeysDfltBtn+= pAction->dflt.value;
 			    if (ctrls->mouseKeysDfltBtn>5)
 				ctrls->mouseKeysDfltBtn= 5;
 			    else if (ctrls->mouseKeysDfltBtn<1)
@@ -1848,8 +1931,8 @@ _XkbFilterPointerBtn(xkb,filter,keycode,pAction)
 	}
     }
     else if (filter->keycode==keycode) {
-	int button= (INT16)XkbActionDataLow(filter->upAction);
-	switch (XkbActionType(filter->upAction)) {
+	int button= filter->upAction.btn.button;
+	switch (filter->upAction.type) {
 	    case XkbSALockPtrBtn:
 		xkb->lockedPtrButtons&= ~(1<<button);
 	    case XkbSAPtrBtn:
@@ -1876,11 +1959,11 @@ CARD16		change;
 	filter->keycode = keycode;
 	filter->active = 1;
 	filter->filterOthers = 0;
-	filter->priv = change= XkbActionData(*pAction);
+	filter->priv = change= XkbActionCtrls(&pAction->ctrls);
 	filter->filter = _XkbFilterControls;
 	filter->upAction = *pAction;
 
-	if (XkbActionType(*pAction)==XkbSALockControls) {
+	if (pAction->type==XkbSALockControls) {
 	    filter->priv= (xkb->desc.controls->enabledControls&change);
 	    change&= ~xkb->desc.controls->enabledControls;
 	}
@@ -1995,9 +2078,7 @@ XkbFilter	*filter;
 	action = XkbKeyAction(&xkb->desc,&xkb->state,key);
 	sendEvent = _XkbApplyFilters(xkb,key,&action);
 	if (sendEvent) {
-	    data = XkbActionData(action);
-
-	    switch (XkbActionType(action)) {
+	    switch (action.type) {
 		case XkbSASetMods:
 		case XkbSASetGroup:
 		    filter = _XkbNextFreeFilter();
@@ -2018,7 +2099,7 @@ XkbFilter	*filter;
 		    sendEvent=_XkbFilterISOLock(xkb,filter,key,&action);
 		    break;
 		case XkbSAAccelPtr:
-		case XkbSAMovePtrBtn:
+		case XkbSAMovePtr:
 		    filter = _XkbNextFreeFilter();
 		    sendEvent= _XkbFilterPointerMove(xkb,filter,key,&action);
 		    break;
@@ -2104,13 +2185,13 @@ XkbProcessKeyboardEvent(xE,keybd,count)
 KeyClassRec	*keyc = keybd->key;
 XkbSrvInfoRec	*xkb;
 int		 key;
-XkbAction	 action;
+XkbBehavior	 behavior;
 
     xkb= keyc->xkbInfo;
     key= xE->u.u.detail;
 
-    action= xkb->desc.server->keyBehaviors[key];
-    switch (XkbActionType(action)) {
+    behavior= xkb->desc.server->keyBehaviors[key];
+    switch (behavior.type) {
 	case XkbDefaultKB:
 	    if (( xE->u.u.type == KeyPress ) && 
 		(keyc->down[key>>3] & (1<<(key&7)))) {
@@ -2142,7 +2223,7 @@ XkbAction	 action;
 	    if ( xE->u.u.type == KeyRelease )
 		return;
 	    else {
-		int		ndx = XkbActionDataLow(action);
+		int		ndx = behavior.data;
 		if ( ndx<xkb->nRadioGroups ) {
 		    XkbRadioGroupRec	*rg;
 		    register int i;
@@ -2167,7 +2248,7 @@ XkbAction	 action;
 	    }
 	    break;
 	default:
-	    ErrorF("unknown key behavior 0x%04x\n",action);
+	    ErrorF("unknown key behavior 0x%04x\n",behavior.type);
 	    break;
     }
     XkbHandleActions(xE,keybd,count);
@@ -2215,8 +2296,8 @@ unsigned	 clear;
 	clear= (mask&(~latches));
 	xkb->state.latchedMods&= ~clear;
 	action.type = XkbSALatchMods;
-	action.flags = 0;
-	action.data = mask&latches;
+	action.mods.flags = 0;
+	action.mods.mods  = mask&latches;
 	filter = _XkbNextFreeFilter();
 	_XkbFilterLatchState(xkb,filter,SYNTHETIC_KEYCODE,&action);
 	_XkbFilterLatchState(xkb,filter,SYNTHETIC_KEYCODE,NULL);
@@ -2237,8 +2318,8 @@ XkbAction	 action;
     if ( pXDev && pXDev->key && pXDev->key->xkbInfo ) {
 	xkb = pXDev->key->xkbInfo;
 	action.type = XkbSALatchGroup;
-	action.flags = 0;
-	action.data = group;
+	action.group.flags = 0;
+	action.group.group = group;
 	filter = _XkbNextFreeFilter();
 	_XkbFilterLatchState(xkb,filter,SYNTHETIC_KEYCODE,&action);
 	_XkbFilterLatchState(xkb,filter,SYNTHETIC_KEYCODE,NULL);

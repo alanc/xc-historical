@@ -32,7 +32,6 @@
 #include "XKBlibint.h"
 #include <X11/Xlocale.h>
 #include <ctype.h>
-#include <X11/Xos.h>
 
 #ifdef X_NOT_STDC_ENV
 extern char *getenv();
@@ -188,11 +187,8 @@ int _XkbKSToKnownSet (priv, keysym, buffer, nbytes, status)
     keysymSet = *((unsigned long *)priv);
     kset = keysymSet&0xffffff;
 
-    isLatin1 = ((keysym&0xffffff00)==0);
-    count = 0;
-
     /* convert "dead" diacriticals for dumb applications */
-    if ( (keysym&0xffff0000)== 0x10000 ) {
+    if ( (keysym&0xffffff00)== 0xfe00 ) {
 	switch ( keysym ) {
 	    case XK_dead_grave:		keysym = XK_grave; break;
 	    case XK_dead_acute:		keysym = XK_acute; break;
@@ -214,6 +210,9 @@ int _XkbKSToKnownSet (priv, keysym, buffer, nbytes, status)
 #endif
 	}
     }
+
+    isLatin1 = ((keysym&0xffffff00)==0);
+    count = 0;
 
     if ((keysym&0xffffff00)==0xff00) {
 	return _XkbHandleSpecialSym(keysym, buffer, nbytes, status);
@@ -270,6 +269,8 @@ int _XkbKSToKnownSet (priv, keysym, buffer, nbytes, status)
         buffer[0] = keysym - (XK_leftsinglequotemark - 0xa1);
         count = 1;
     }
+    if (count<nbytes)
+	buffer[count]= '\0';
     return count;
 }
 
@@ -296,6 +297,45 @@ _XkbKnownSetToKS(priv,buffer,nbytes,status)
 	    else		return map->prefix|buffer[0];
 	}
 	return buffer[0];
+    }
+    return NoSymbol;
+}
+
+int _XkbKSToThai (priv, keysym, buffer, nbytes, status)
+    XPointer priv;
+    KeySym keysym;
+    char *buffer;
+    int nbytes;
+    Status *status;
+{
+
+    if ((keysym&0xffffff00)==0xff00) {
+        return _XkbHandleSpecialSym(keysym, buffer, nbytes, status);
+    }
+    else if (((keysym&0xffffff80)==0xd80)||((keysym&0xffffff80)==0)) {
+        if (nbytes>0) {
+            buffer[0]= keysym&0xff;
+            if (nbytes>1)
+                buffer[1]= '\0';
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static KeySym
+_XkbThaiToKS(priv,buffer,nbytes,status)
+    XPointer priv;
+    char *buffer;
+    int nbytes;
+    Status *status;
+{
+    if (nbytes!=1)
+        return NoSymbol;
+    if (((buffer[0]&0x80)==0)&&(buffer[0]>=32))
+        return buffer[0];
+    else if ((buffer[0]&0x7f)>=32) {
+        return 0xd00|buffer[0];
     }
     return NoSymbol;
 }
@@ -361,6 +401,10 @@ static XkbConverters RConst cvt_Hebrew = {
 	_XkbKSToKnownSet,(XPointer)&WantHebrew,_XkbKnownSetToKS,NULL,NULL
 };
 
+static XkbConverters    cvt_Thai = {
+        _XkbKSToThai, NULL, _XkbThaiToKS, NULL, NULL
+};
+
 static int
 Strcmp(str1, str2)
     char *str1, *str2;
@@ -407,6 +451,8 @@ _XkbGetConverters(charset, cvt_rtrn)
 	     *cvt_rtrn = cvt_X0201;
 	else if (Strcmp(charset, "kana")==0)
 	     *cvt_rtrn = cvt_kana;
+	else if (Strcmp(charset, "tis620.2533-1")==0)
+	     *cvt_rtrn = cvt_Thai;
 	/* other codesets go here */
 	else *cvt_rtrn = cvt_latin1;
 	return 1;
@@ -417,7 +463,7 @@ _XkbGetConverters(charset, cvt_rtrn)
 /***====================================================================***/
 
 #define	CHARSET_FILE	"/usr/lib/X11/input/charsets"
-static char *_XkbKnownLanguages = "c=ascii:da,de,en,es,fi,fr,is,it,nl,no,pt,sv=iso8859-1:pl=iso8859-2:ru=iso8859-5";
+static char *_XkbKnownLanguages = "c=ascii:da,de,en,es,fi,fr,is,it,nl,no,pt,sv=iso8859-1:pl=iso8859-2:ru=iso8859-5:el=iso8859-7:th,th_TH,th_TH.TACTIS:tis620.2533-1";
 
 char	*
 _XkbGetCharset(locale)
@@ -430,7 +476,7 @@ _XkbGetCharset(locale)
     int	 len;
 
     if ( locale == NULL ) {
-	tmp = getenv( "_XKB_COMPOSE_CHARSETS" );
+	tmp = getenv( "_XKB_CHARSET" );
 	if ( tmp )
 	    return tmp;
 	else locale = setlocale(LC_CTYPE,NULL);

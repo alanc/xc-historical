@@ -31,9 +31,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/extensions/XKB.h>
 #include <X11/Xmd.h>
 
-#define	XkbModAction(a)	(((a)->type>=XkbSASetMods)&&((a)->type<=XkbSALockMods))
-#define	XkbGroupAction(a)	(((a)->type>=XkbSASetGroup)&&((a)->type<=XkbSALockGroup))
-#define	XkbPtrAction(a)	(((a)->type>=XkbSAMovePtrBtn)&&((a)->type<=XkbSASetPtrDflt))
+#define	XkbIsModAction(a)	(((a)->type>=XkbSASetMods)&&((a)->type<=XkbSALockMods))
+#define	XkbIsGroupAction(a)	(((a)->type>=XkbSASetGroup)&&((a)->type<=XkbSALockGroup))
+#define	XkbIsPtrAction(a)	(((a)->type>=XkbSAMovePtr)&&((a)->type<=XkbSASetPtrDflt))
 
 #define	XkbError2(a,b)		((((unsigned)(a))<<24)|(b))
 #define	XkbError3(a,b,c)	XkbError2(a,(((unsigned)(b))<<16)|(c))
@@ -326,7 +326,7 @@ typedef struct _GetCompatMap {
     CARD16	firstSym B16;
     CARD16	nSyms B16;
 } xkbGetCompatMapReq;
-#define	sz_xkbGetCompatMapReq	16
+#define	sz_xkbGetCompatMapReq	12
 
 typedef struct _GetCompatMapReply {
     CARD8	type;		/* always X_Reply */
@@ -338,7 +338,7 @@ typedef struct _GetCompatMapReply {
     CARD16	firstSym B16;
     CARD16	nSyms B16;
     CARD16	nTotalSyms B16;
-    CARD32	pad2[3] B32;
+    CARD32	pad2[4] B32;
 } xkbGetCompatMapReply;
 #define	sz_xkbGetCompatMapReply		32
 
@@ -616,13 +616,35 @@ typedef struct _SetGeometry {
 } xkbSetGeometryReq;
 #define	sz_xkbSetGeometryReq	16
 
+#define	XkbNormalLocks	0
+#define	XkbDisableLocks	1
+#define	XkbLeaveLocks	2
 typedef struct _SetDebuggingFlags {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBSetDebuggingFlags */
     CARD16	length B16;
-    CARD32	flags B32;
+    CARD16	mask B16;
+    CARD16	flags B16;
+    CARD16	msgLength B16;
+    CARD8	disableLocks;
+    CARD8	pad;
 } xkbSetDebuggingFlagsReq;
-#define	sz_xkbSetDebuggingFlagsReq	8
+#define	sz_xkbSetDebuggingFlagsReq	12
+
+typedef struct _SetDebuggingFlagsReply {
+    BYTE	type;		/* X_Reply */
+    CARD8	disableLocks;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD16	currentFlags B16;
+    CARD16	pad1 B16;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
+} xkbSetDebuggingFlagsReply;
+#define	sz_xkbSetDebuggingFlagsReply	32
 
 	/*
 	 * X KEYBOARD EXTENSION EVENT STRUCTURES
@@ -632,14 +654,13 @@ typedef struct _xkbAnyEvent {
     BYTE	type;
     BYTE	xkbType;
     CARD16	sequenceNumber B16;
-    CARD32	length B32;
     Time	time;
     CARD8	deviceID;
     CARD8	pad1;
     CARD16	pad2 B16;
     CARD32	pad3[4] B32;
 } xkbAnyEvent;
-#define	sz_xkbAnyEvent	32
+#define	sz_xkbAnyEvent;
 
 typedef	struct _xkbStateNotify {
     BYTE	type;

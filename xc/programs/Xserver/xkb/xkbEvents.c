@@ -1,4 +1,4 @@
-/* $XConsortium: xkbEvents.c,v 1.4 93/09/28 19:47:37 rws Exp $ */
+/* $XConsortium: xkbEvents.c,v 1.5 93/09/29 16:04:47 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -124,6 +124,7 @@ XkbSendMapNotify(kbd,pMN)
 	    if ( clients[i]->swapped ) {
 		register int n;
 		swaps(&pMN->sequenceNumber,n);
+		swapl(&pMN->time,n);
 		swaps(&pMN->changed,n);
 	    }
 	    WriteToClient(clients[i],sizeof(xEvent),(char *)pMN);
@@ -397,7 +398,7 @@ XkbSendSlowKeyNotify(kbd,pEv)
 	if ((!interest->client->clientGone) &&
 	    (interest->client->requestVector != InitialVector) &&
 	    (interest->client->xkbClientFlags&XKB_INITIALIZED) &&
-	    (interest->slowKeyNotifyMask&pEv->slowKeyType)) {
+	    (interest->slowKeyNotifyMask&(1<<pEv->slowKeyType))) {
 	    if (!initialized) {
 		pEv->type = XkbEventCode + XkbEventBase;
 		pEv->xkbType = XkbSlowKeyNotify;

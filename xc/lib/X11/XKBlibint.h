@@ -1,4 +1,4 @@
-/* $XConsortium: XKBlibint.h,v 1.3 93/09/28 19:32:53 rws Exp $ */
+/* $XConsortium: XKBlibint.h,v 1.4 93/09/28 19:48:51 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -78,6 +78,11 @@ typedef struct _XkbInfoRec {
 	char		*charset;
 	XkbConverters	 cvt;
 } XkbInfoRec, *XkbInfoPtr;
+
+	/*
+	 * mask of the events that the "invisible" XKB support in Xlib needs
+	 */
+#define XKB_XLIB_MAP_MASK (XkbFullClientInfoMask)
 
 _XFUNCPROTOBEGIN
 

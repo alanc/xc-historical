@@ -1,4 +1,4 @@
-/* $XConsortium: xkbStubs.c,v 1.3 93/09/28 00:00:28 rws Exp $ */
+/* $XConsortium: xkbStubs.c,v 1.4 93/09/28 19:47:41 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -37,6 +37,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #ifdef sgi
 #define	NEED_UPDATE_INDICATORS		0
+#define	NEED_INIT_DEVICE		0
 #endif
 
 #ifndef NEED_UPDATE_INDICATORS
@@ -57,6 +58,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef NEED_SWITCH_VIRTUAL_SCREEN
 #define NEED_SWITCH_VIRTUAL_SCREEN	1
 #endif
+#ifndef NEED_INIT_DEVICE
+#define NEED_INIT_DEVICE		1
+#endif
 
 #if NEED_UPDATE_INDICATORS
 void
@@ -66,9 +70,12 @@ DDXUpdateIndicators(pXDev,old,new)
     CARD32 new;
 {
     if (pXDev->kbdfeed) {
+	int realRepeat= pXDev->kbdfeed->ctrl.autoRepeat;
+	pXDev->kbdfeed->ctrl.autoRepeat= FALSE;
 	pXDev->kbdfeed->ctrl.leds= new;
 	if (pXDev->kbdfeed->CtrlProc)
 	    (*pXDev->kbdfeed->CtrlProc)(pXDev,&pXDev->kbdfeed->ctrl);
+	pXDev->kbdfeed->ctrl.autoRepeat= realRepeat;
     }
     return;
 }
@@ -152,6 +159,15 @@ DDXSwitchScreen(dev,key,action)
     DeviceIntPtr  dev;
     KeyCode	  key;
     XkbAction	 *action;
+{
+    return 1;
+}
+#endif
+
+#if NEED_INIT_DEVICE
+int
+DDXInitXkbDevice(pXDev)
+    DeviceIntPtr    pXDev;
 {
     return 1;
 }

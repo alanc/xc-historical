@@ -1,4 +1,4 @@
-/* $XConsortium: XKBstr.h,v 1.3 93/09/28 19:48:12 rws Exp $ */
+/* $XConsortium: XKBstr.h,v 1.4 93/09/28 20:16:45 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -81,21 +81,105 @@ typedef struct _XkbKeyType {
 	 * Structures and access macros used primarily by the server
 	 */
 
-typedef	struct _XkbAction {
-	CARD16	type;
-	CARD8	flags;
+typedef struct _XkbBehavior {
+	CARD8	type;
 	CARD8	data;
+} XkbBehavior;
+
+typedef	struct _XkbAnyAction {
+	CARD8	type;
+	CARD8	data[7];
+} XkbAnyAction;
+
+typedef struct _XkbModAction {
+	CARD8		type;
+	CARD8		flags;
+	CARD8		mods;
+	CARD8		suppressLocks;
+	CARD8		pad[4];
+} XkbModAction;
+
+typedef struct _XkbGroupAction {
+	CARD8		type;
+	CARD8		flags;
+	INT8		group;
+	CARD8		suppressLocks;
+	CARD8		pad[4];
+} XkbGroupAction;
+
+typedef struct _XkbISOAction {
+	CARD8		type;
+	CARD8		flags;
+	CARD8		mods;
+	INT8		group;
+	CARD8		affect;
+	CARD8		pad[3];
+} XkbISOAction;
+
+typedef struct _XkbPtrAction {
+	CARD8		type;
+	CARD8		flags;
+	CARD8		highX;
+	CARD8		lowX;
+	CARD8		highY;
+	CARD8		lowY;
+	CARD8		pad[2];
+} XkbPtrAction;
+#define	XkbPtrActionX(a)      ((INT16)(((a)->highX<<8)|((a)->lowX)))
+#define	XkbPtrActionY(a)      ((INT16)(((a)->highY<<8)|((a)->lowY)))
+#define	XkbSetPtrActionX(a,x) (((a)->highX=(((x)>>8)&0xff)),(a)->lowX=((x)&0xff))
+#define	XkbSetPtrActionY(a,y) (((a)->highY=(((y)>>8)&0xff)),(y)->lowX=((y)&0xff))
+
+typedef struct _XkbPtrBtnAction {
+	CARD8		type;
+	CARD8		flags;
+	CARD8		count;
+	CARD8		button;
+	CARD8		pad[4];
+} XkbPtrBtnAction;
+
+typedef struct _XkbPtrDfltAction {
+	CARD8		type;
+	CARD8		flags;
+	CARD8		value;
+	CARD8		pad[5];
+} XkbPtrDfltAction;
+
+typedef struct _XkbSwitchScreenAction {
+	CARD8		type;
+	CARD8		flags;
+	CARD8		screen;
+	CARD8		pad[5];
+} XkbSwitchScreenAction;
+
+typedef struct _XkbCtrlsAction {
+	CARD8		type;
+	CARD8		flags;
+	CARD8		ctrls3;
+	CARD8		ctrls2;
+	CARD8		ctrls1;
+	CARD8		ctrls0;
+	CARD8		pad[2];
+} XkbCtrlsAction;
+#define	XkbActionSetCtrls(a,c)	(((a)->ctrls3=(((c)>>24)&0xff)),\
+					((a)->ctrls2=(((c)>>16)&0xff)),\
+					((a)->ctrls1=(((c)>>8)&0xff)),\
+					((a)->ctrls0=((c)&0xff)))
+#define	XkbActionCtrls(a)	((CARD32)(((a)->ctrls3<<24)|((a)->ctrls2<<16)|\
+					  ((a)->ctrls1<<8)|((a)->ctrls0)))
+
+typedef	union _XkbAction {
+	XkbAnyAction		any;
+	XkbModAction		mods;
+	XkbGroupAction		group;
+	XkbISOAction		iso;
+	XkbPtrAction		ptr;
+	XkbPtrBtnAction		btn;
+	XkbPtrDfltAction	dflt;
+	XkbSwitchScreenAction	screen;
+	XkbCtrlsAction		ctrls;
+	CARD8	 		type;
 } XkbAction;
-#define	XkbActionType(a)		((a).type)
-#define	XkbActionData(a)		((((a).flags)<<8)|((a).data))
-#define	XkbActionDataLow(a)		((a).data)
-#define	XkbActionDataHigh(a)		((a).flags)
-#define	XkbActionSetType(a,t)		((a).type=(t))
-#define	XkbActionSetData(a,d)		(((a).flags=(((d)>>8)&0xff)),(a).data=((d)&0xff))
-#define	XkbActionSetDataLow(a,d)	((a).data=(d))
-#define	XkbActionSetDataHigh(a,d)	((a).flags=(d))
-#define	XkbNewAction(a,t,d)		(((a).type=(t)),XkbActionSetData(a,d))
-#define	XkbNewAction2(a,t,d1,d2)	(((a).type=(t)),((a).flags=(d1)),((a).data=(d2)))
 
 typedef	struct _XkbControls {
 	CARD8		mouseKeysDfltBtn;
@@ -121,7 +205,7 @@ typedef struct _XkbServerMapRec {
 	CARD16			 szActions;
 	XkbAction		*actions;
 
-	XkbAction		*keyBehaviors;
+	XkbBehavior		*keyBehaviors;
 	CARD16			*keyActions;
 } XkbServerMapRec, *XkbServerMapPtr;
 
@@ -172,7 +256,6 @@ typedef struct _XkbSymInterpretRec {
 	CARD8		mods;
 	CARD8		indicator;
 	XkbAction	action;
-	XkbAction	behavior;
 } XkbSymInterpretRec,*XkbSymInterpretPtr;
 
 typedef struct _XkbCompatRec {

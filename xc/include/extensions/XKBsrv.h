@@ -1,4 +1,4 @@
-/* $XConsortium: XKBsrv.h,v 1.6 93/09/28 19:48:09 rws Exp $ */
+/* $XConsortium: XKBsrv.h,v 1.7 93/09/28 20:14:46 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -31,7 +31,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/extensions/XKBstr.h>
 
 typedef struct _XkbInterestRec {
-	struct _XkbSrvInfoRec	*kbd;
+	struct _XkbSrvInfo	*kbd;
 	ClientRec		*client;
 	CARD16			 stateNotifyMask;
 	CARD16			 namesNotifyMask;
@@ -58,7 +58,7 @@ typedef struct _XkbRadioGroup {
 #define	_KRG_TIMER	1
 #define	_TIMEOUT_TIMER	2
 
-typedef struct _XkbSrvInfoRec {
+typedef struct _XkbSrvInfo {
 	XkbStateRec	 state;
 	XkbControlsRec	 Controls;
 	XkbServerMapRec	 Server;
@@ -120,6 +120,8 @@ typedef struct _XkbSrvInfoRec {
 	    CARD32		 haveMap;
 	} iAccel;
 	CARD32		 iState;
+
+	CARD8		 repeat[32];
 
 	XkbInterestRec	*interest;
 } XkbSrvInfoRec, *XkbSrvInfoPtr;
@@ -369,6 +371,12 @@ extern	void DDXUpdateIndicators(
 	DeviceIntPtr	/* keybd */,
 	CARD32		/* oldState */,
 	CARD32		/* newState */
+#endif
+);
+
+extern	int SProcXkbDispatch(
+#if NeedFunctionPrototypes
+	ClientPtr	/* client */
 #endif
 );
 

@@ -1,4 +1,4 @@
-/* $XConsortium: XKB.h,v 1.4 93/09/28 19:47:58 rws Exp $ */
+/* $XConsortium: XKB.h,v 1.5 93/09/28 20:12:59 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -129,7 +129,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XkbSAClearLocks		(1L << 0)
 #define	XkbSALatchToLock	(1L << 1)
 #define	XkbSAGroupAbsolute	(1L << 2)
-#define XkbSASuppressLocks	(1L << 3)
 #define	XkbSAUseDfltButton	0
 
 #define	XkbSAISODfltIsGroup 	(1L << 7)
@@ -142,28 +141,28 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XkbSASetDfltBtn			1
 #define	XkbSAIncrDfltBtn		2
 
-#define	XkbSANoAction		0x0000
-#define	XkbSASetMods		0x0001
-#define	XkbSALatchMods		0x0002
-#define	XkbSALockMods		0x0003
-#define	XkbSASetGroup		0x0004
-#define	XkbSALatchGroup		0x0005
-#define	XkbSALockGroup		0x0006
-#define	XkbSAMovePtrBtn		0x0007
-#define	XkbSAAccelPtr		0x0008
-#define	XkbSAPtrBtn		0x0009
-#define	XkbSAClickPtrBtn	0x000a
-#define	XkbSALockPtrBtn		0x000b
-#define	XkbSASetPtrDflt		0x000c
-#define	XkbSAISOLock		0x000d
-#define	XkbSATerminate		0x000e
-#define	XkbSASwitchScreen	0x000f
-#define	XkbSASetControls	0x0010
-#define	XkbSALockControls	0x0011
+#define	XkbSANoAction		0x00
+#define	XkbSASetMods		0x01
+#define	XkbSALatchMods		0x02
+#define	XkbSALockMods		0x03
+#define	XkbSASetGroup		0x04
+#define	XkbSALatchGroup		0x05
+#define	XkbSALockGroup		0x06
+#define	XkbSAMovePtr		0x07
+#define	XkbSAAccelPtr		0x08
+#define	XkbSAPtrBtn		0x09
+#define	XkbSAClickPtrBtn	0x0a
+#define	XkbSALockPtrBtn		0x0b
+#define	XkbSASetPtrDflt		0x0c
+#define	XkbSAISOLock		0x0d
+#define	XkbSATerminate		0x0e
+#define	XkbSASwitchScreen	0x0f
+#define	XkbSASetControls	0x10
+#define	XkbSALockControls	0x11
 
-#define	XkbDefaultKB		0x0000
-#define	XkbLockKB		0x0001
-#define	XkbRadioGroupKB		0x0002
+#define	XkbDefaultKB		0x00
+#define	XkbLockKB		0x01
+#define	XkbRadioGroupKB		0x02
 
 #define	XkbNumIndicators	32
 #define	XkbNumKbdGroups	8
@@ -171,7 +170,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #define	XkbName "XKEYBOARD"
 #define	XkbMajorVersion	0
-#define	XkbMinorVersion	21
+#define	XkbMinorVersion	23
 
 #define	XkbKeyTypesMask		(1<<0)
 #define	XkbKeySymsMask		(1<<1)
@@ -190,7 +189,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XkbSI_UseModMapMods	(1<<3)
 #define	XkbSI_UpdateInternal	(1<<4)
 #define	XkbSI_UpdateIgnoreLocks (1<<5)
+#define	XkbSI_LockingKey	(1<<6)
 
+#define	XkbSI_AnyLevel		(0x80)
+#define	XkbSI_OpMask		(0x7f)
 #define	XkbSI_NoneOf		(0)
 #define	XkbSI_AnyOfOrNone	(1)
 #define	XkbSI_AnyOf		(2)

@@ -1,4 +1,4 @@
-/* $XConsortium: XKBlib.h,v 1.3 93/09/28 19:48:47 rws Exp $ */
+/* $XConsortium: XKBlib.h,v 1.4 93/09/28 21:34:12 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -32,21 +32,21 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 typedef struct _XkbAnyEvent {
 	int type;		/* XkbAnyEvent */
-	int xkbType;		/* XkbStateNotify ... XkbCompatMapNotify */
 	unsigned long serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
+	int xkbType;		/* XkbStateNotify ... XkbCompatMapNotify */
 	unsigned int device;	/* device ID */
 } XkbAnyEvent;
 
 typedef struct _XkbStateNotifyEvent {
 	int type;		/* XkbAnyEvent */
-	int xkbType;		/* XkbStateNotify */
 	unsigned long serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
+	int xkbType;		/* XkbStateNotify */
 	unsigned int device;	/* device ID */
 	unsigned int keycode;	/* keycode that caused the change */
 	unsigned int eventType;	/* KeyPress or KeyRelease */
@@ -68,11 +68,11 @@ typedef struct _XkbStateNotifyEvent {
 
 typedef struct _XkbMapNotifyEvent {
 	int type;		/* XkbAnyEvent */
-	int xkbType;		/* XkbMapNotify */
 	unsigned long serial;	/* of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
+	int xkbType;		/* XkbMapNotify */
 	unsigned int device;	/* device ID */
 	unsigned int changed;		/* fields which have been changed */
 	unsigned int resized;		/* fields which have been resized */
@@ -84,17 +84,15 @@ typedef struct _XkbMapNotifyEvent {
 	unsigned int nKeyActions;	/* number of changed key actions */
 	unsigned int firstKeyBehavior;	/* first changed key behavior */
 	unsigned int nKeyBehaviors;	/* number of changed key behaviors */
-	unsigned int firstRadioGroup;	/* first changed radio group */
-	unsigned int nRadioGroups;	/* number of changed radio groups */
 } XkbMapNotifyEvent;
 
 typedef struct _XkbControlsNotify {
 	int type;		/* XkbAnyEvent */
-	int xkbType;		/* XkbControlsNotify */
 	unsigned long serial;	/* of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
+	int xkbType;		/* XkbControlsNotify */
 	unsigned int device;	/* device ID */
 	unsigned long int changedControls;
 	unsigned long int enabledControls;
@@ -107,11 +105,11 @@ typedef struct _XkbControlsNotify {
 
 typedef struct _XkbIndicatorNotify {
 	int type;		/* XkbAnyEvent */
-	int xkbType;		/* XkbIndicatorNotify */
 	unsigned long serial;	/* of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
+	int xkbType;		/* XkbIndicatorNotify */
 	unsigned int device;	/* device ID */
 	unsigned int stateChanged;/* indicators that have changed state */
 	unsigned int state;	/* current state of all indicators */
@@ -120,11 +118,11 @@ typedef struct _XkbIndicatorNotify {
 
 typedef struct _XkbBellNotify {
 	int type;		/* XkbAnyEvent */
-	int xkbType;		/* XkbBellNotify */
 	unsigned long serial;	/* of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
+	int xkbType;		/* XkbBellNotify */
 	unsigned int device;	/* device ID */
 	unsigned int percent;	/* requested volume as a percent of maximum */
 	unsigned int pitch;	/* requested pitch in Hz */
@@ -136,11 +134,11 @@ typedef struct _XkbBellNotify {
 
 typedef struct _XkbSlowKeyNotify {
 	int type;		/* XkbAnyEvent */
-	int xkbType;		/* XkbSlowKeyNotify */
 	unsigned long serial;	/* of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
+	int xkbType;		/* XkbSlowKeyNotify */
 	unsigned int device;	/* device ID */
 	unsigned int slowKeyType;/* press, release, accept, reject */
 	unsigned int keycode;	/* key of event */
@@ -149,11 +147,11 @@ typedef struct _XkbSlowKeyNotify {
 
 typedef struct _XkbNamesNotify {
 	int type;		/* XkbAnyEvent */
-	int xkbType;		/* XkbNamesNotify */
 	unsigned long serial;	/* of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
+	int xkbType;		/* XkbNamesNotify */
 	unsigned int device;	/* device ID */
 	unsigned int changed;	/* names that have changed */
 	unsigned int firstKeyType;	/* first key type with new name */
@@ -169,11 +167,11 @@ typedef struct _XkbNamesNotify {
 
 typedef struct _XkbCompatMapNotify {
 	int type;		/* XkbAnyEvent */
-	int xkbType;		/* XkbCompatMapNotify */
 	unsigned long serial;	/* of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
+	int xkbType;		/* XkbCompatMapNotify */
 	unsigned int device;	/* device ID */
 	unsigned int changedMods;	/* modifiers with new compat maps */
 	unsigned int firstSym;		/* first new symbol interp */
@@ -183,11 +181,11 @@ typedef struct _XkbCompatMapNotify {
 
 typedef struct _XkbAlternateSymsNotify {
 	int type;		/* XkbAnyEvent */
-	int xkbType;		/* XkbAlternateSymsNotify */
 	unsigned long serial;	/* of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Time time;		/* milliseconds */
+	int xkbType;		/* XkbAlternateSymsNotify */
 	unsigned int device;	/* device ID */
 	unsigned int altSymsID;	/* identifier of changed alt symbol set */
 	unsigned int firstKey;	/* first key with new alternate syms */
@@ -195,10 +193,7 @@ typedef struct _XkbAlternateSymsNotify {
 } XkbAlternateSymsNotifyEvent;
 
 typedef union _XkbEvent {
-	struct {
-	    int type;
-	    int xkbType;
-	} u;
+	XkbAnyEvent		u;
 	XkbAnyEvent		any;
 	XkbStateNotifyEvent	state;
 	XkbMapNotifyEvent	map;
@@ -486,6 +481,23 @@ extern	Status	XkbSetControls(
 #endif
 );
 
+extern Status XkbGetCompatMap(
+#if NeedFunctionPrototypes
+	Display *		/* dpy */,
+	unsigned 		/* which */,
+	XkbDescPtr 		/* xkb */
+#endif
+);
+
+extern Status XkbSetCompatMap(
+#if NeedFunctionPrototypes
+	Display *		/* dpy */,
+	unsigned 		/* which */,
+	XkbDescPtr 		/* xkb */,
+	Bool			/* updateActions */
+#endif
+);
+
 extern	Status	XkbGetNames(
 #if NeedFunctionPrototypes
 	Display *		/* display */,
@@ -579,6 +591,17 @@ extern	XkbKbdKeyRec		*XkbKbdNextKey(
     XkbKbdDpyStatePtr pState,
     int *left,int *top,
     int *right,int *bottom
+#endif
+);
+
+extern	Status			 XkbSetDebuggingFlags(
+#if NeedFunctionPrototypes
+    Display *		/* dpy */,
+    unsigned int	/* mask */,
+    unsigned int	/* flags */,
+    char *		/* msg */,
+    unsigned int *	/* rtrnFlags */,
+    Bool *		/* disableLocks */
 #endif
 );
 
