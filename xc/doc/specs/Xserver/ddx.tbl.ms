@@ -1,4 +1,4 @@
-.\" $Header: ddx.doc.tbl.ms,v 1.3 87/09/09 18:01:37 sun Locked $
+.\" $Header: ddx.doc.tbl.ms,v 1.4 87/09/12 23:34:52 swick Locked $
 .EF 'Porting Layer Definition'- % -'September 12, 1987'
 .OF 'Porting Layer Definition'- % -'September 12, 1987'
 .EH '''
@@ -89,8 +89,6 @@ The tape also includes source for a sample implementation of a display server on
 Digital Equipment Corporation QVSS workstation.  Although it has a monochrome
 display, the sample server demonstrates many techniques that you will find useful
 for implementing any type of X server.
-The example source is a reference standard for other server 
-implementations.
 
 
 .NH 1
