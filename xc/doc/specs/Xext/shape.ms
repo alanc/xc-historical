@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: shape.ms,v 1.0 89/09/06 13:25:41 keith Exp $
+.\" $XConsortium: shape.ms,v 1.9 89/09/12 13:31:50 rws Exp $
 .\" The following is a copy of macros.t from the Protocol
 .na
 .de Ds
@@ -847,25 +847,23 @@ and perform no magic.
 .LP
 Bool
 .br
-XShapeQueryExtension (display)
+XShapeQueryExtension (display, event_base, error_base)
 .RS
 Display	*display;
+.br
+int *event_base; /* RETURN */
+.br
+int *error_base; /* RETURN */
 .RE
 .IP
 Returns True if the specified display supports the SHAPE extension, False
-otherwise.
+otherwise.  *event_base contains the event number for
+.PN Shape Notiy
+events.  *error_base would contain the error number for the first error for
+this extension.  As no errors are defined for this extension, the value
+returned here is not defined (nor useful).
 .LP
-int
-.br
-XShapeGetEventBase (display)
-.RS
-Display *display;
-.RE
-.IP
-Returns the first event number that this extension will generate from
-the specified display.  Use this to gather events from the display.
-.LP
-Bool
+Status
 .br
 XShapeQueryVersion (display, major_version, minor_version)
 .RS
@@ -874,18 +872,9 @@ Display *display;
 int *major_version, *minor_version;  /* RETURN */
 .RE
 .IP
-Returns the major and minor version numbers for the specified display.
-.LP
-XShapeCombineRectangles (display, dest, dest_kind, x_off, y_off, rectangles, n_rects, op, ordering)
-.RS
-Display *display;
-.br
-Window dest;
-.br
-int dest_kind, n_rects, op, x_off, y_off, ordering;
-.br
-XRectangle *rectangles;
-.RE
+Stores the major and minor version numbers for the specified display.  This
+function returns 1 if the shape extension is installed in the server, 0
+otherwise.
 .LP
 XShapeCombineRegion (display, dest, dest_kind, x_off, y_off, region, op)
 .RS
@@ -899,6 +888,17 @@ REGION *region;
 .RE
 .IP
 Converts the region into a list of rectangles and calls XShapeRectangles.
+.LP
+XShapeCombineRectangles (display, dest, dest_kind, x_off, y_off, rectangles, n_rects, op, ordering)
+.RS
+Display *display;
+.br
+Window dest;
+.br
+int dest_kind, n_rects, op, x_off, y_off, ordering;
+.br
+XRectangle *rectangles;
+.RE
 .LP
 XShapeCombineMask (display, dest, dest_kind, x_off, y_off, src, op)
 .RS
@@ -931,33 +931,39 @@ int dest_kind, x_off, y_off;
 .LP
 XShapeQueryExtents
 'in +1i
-(display, window, w_shaped, xws, yws, wws, hws, b_shaped, xbs, ybs, wbs, hbs)    
+(display, window, bShaped, xbs, ybs, wbs, hbs, cShaped, xcs, ycs, wcs, hcs)    
 'in 0
 .RS
 Display *display;
 .br
 Window window;
 .br
-Bool *w_shaped, *b_shaped; /* RETURN */
+Bool *bShaped, *cShaped; /* RETURN */
 .br
-int *xws, *yws, *xbs, *ybs; /* RETURN */
+int *xbs, *ybs, *xcs, *ycs; /* RETURN */
 .br
-unsigned int *wws, *hws, *wbs, *hbs; /* RETURN */
+unsigned int *wbs, *hbs, *wcs, *hcs; /* RETURN */
 .RE
 .IP
-xws, yws, wws, hws are the extents of the window shape.
-xbs, ybs, wbs, hbs are the extents of the border shape.
+xbs, ybs, wbs, hbs are the extents of the bounding shape.
+xcs, ycs, wcs, hcs are the extents of the clip shape.
 .LP
-XShapeSelectInput (display, window, enable)
+XShapeSelectInput (display, window, mask)
 .RS
 Display *display;
 .br
 Window window;
 .br
-Bool enable;
+unsigned long mask;
 .RE
+.IP
+To make this extension more compatible with other interfaces, although
+only one event type can be selected via the extension, this C interface
+provides a general mechanism similar to the standard Xlib binding for
+window events.  A mask value has been defined, ShapeNotifyMask, which
+is the only valid bit in mask which can be used.
 .LP
-Bool
+unsigned long
 .br
 XShapeInputSelected (display, window)
 .RS
@@ -965,6 +971,10 @@ Display *display
 .br
 Window window;
 .RE
+.IP
+This returns the current input mask for extension events on the specified
+window; the value returned if ShapeNotify is selected for is
+ShapeNotifyMask, otherwise it returns zero.
 .LP
 XRectangle *
 .br
