@@ -75,8 +75,8 @@ connection.o: $(ICONFIGFILES)
 /**/# routine named "bcopy" that is implemented in a silly way.  So, we have to 
 /**/# extract the objects from the library, force the bcopy routine to be 
 /**/# local to the one file, put the result into a temporary file, rename the 
-/**/# temporary file to its proper name, and link it together with everything
-/**/# else to form the object file that we link into the server.
+/**/# temporary file to its proper name, and link it together with
+/**/# everything else to form the object file that we link into the server.
 /**/#
 #ifdef hp9000s300
 dbm.o:  $(DBMLIB)
