@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.21 87/11/17 11:20:06 rws Locked $ */
+/* $Header: dispatch.c,v 1.22 87/11/18 09:24:47 rws Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1984,8 +1984,9 @@ ProcFreeColormap(client)
     pmap = (ColormapPtr )LookupID(stuff->id, RT_COLORMAP, RC_CORE);
     if (pmap) 
     {
-	FreeColormap(pmap, (client->index << CLIENTOFFSET));
-	FreeResource(stuff->id, RC_NONE);
+	/* Freeing a default colormap is a no-op */
+	if (!(pmap->flags & IsDefault))
+	    FreeResource(stuff->id, RC_NONE);
 	return (client->noClientException);
     }
     else 
