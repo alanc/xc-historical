@@ -53,25 +53,28 @@ backgroundPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderColor	BorderColor	Pixel		XtDefaultForeground
 borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
-colormap	Colormap	Pointer		Parent's Colormap
+colormap	Colormap	Colormap		Parent's Colormap
 cursor	Cursor	Cursor		None
+cursorName	Cursor	String		NULL
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 foreground	Foreground	Pixel		XtDefaultForeground
 getValue	Callback	XtCallbackList		NULL
-height	Height	Dimension		0
+height	Height	Dimension		120
 highlight	Foreground	Pixel		XtDefaultForeground
 insensitiveBorder	Insensitive	Pixmap		GreyPixmap
 jumpScroll	JumpScroll	int	A	half the width of the widget
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 minScale	Scale	int		1
+pointerColor	Foreground	Pixel		XtDefaultForeground
+pointerColorBackground	Background	Pixel		XtDefaultBackground
 screen	Screen	Pointer	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 translations	Translations	TranslationTable		NULL
 update	Interval	int		10
-width	Width	Dimension		0
-x	X	Position		0
-y	Y	Position		0
+width	Width	Dimension		120
+x	Position	Position		0
+y	Position	Position		0
 .sp 3p
 _
 .TE
@@ -88,6 +91,7 @@ _
 .Bw
 .Cm
 .Cu
+.Pn
 .Dp
 .Dc
 .IP \fBforeground\fP 1.5i
@@ -102,18 +106,20 @@ function.  If this callback list contains more than one function, the
 behavior is undefined.
 .Hw
 .IP \fBhighlight\fP 1.5i
-A pixel value which indexs the widget's colormap to derive the color
+A pixel value which indexes the widget's colormap to derive the color
 that will be used to draw the scale lines on the graph.
 .Ib
 .IP \fBjumpScroll\fP 1.5i
 When the graph reaches the right edge of the window it must be
-scrolled to the left.  This resources specifies the number of pixels
+scrolled to the left.  This resource specifies the number of pixels
 it will jump.  Smooth scrolling can be achieved by setting this resource
 to 1.
 .Mm
 .IP \fBminScale\fP 1.5i
 The minimum scale for the graph.  The number of divisions on the graph
 will always be greater than or equal to this value.
+.Pf
+.Pb
 .Sc
 .Se
 .Tr
