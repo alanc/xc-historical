@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.14 91/12/28 10:49:51 keith Exp $
+XCOMM $XConsortium: Imakefile,v 5.15 92/12/03 10:37:37 rws Exp $
 #include <Server.tmpl>
 
 #ifdef SparcArchitecture
@@ -57,8 +57,8 @@ sunInitExtMono.o: $(ICONFIGFILES)
 ObjectFromSpecialSource(sunInitExtMono,../mi/miinitext,-DNOPEXEXT)
 ObjectFromSpecialSource(sunInitMono,sunInit,-DMONO_ONLY)
 
-SingleProgramTarget(kbd_mode, kbd_mode.o,,)
-SingleProgramTarget(constype, constype.o,,)
+SingleProgramTarget(kbd_mode,kbd_mode.o,NullParameter,NullParameter)
+SingleProgramTarget(constype,constype.o,NullParameter,NullParameter)
 InstallProgram(kbd_mode,$(BINDIR))
 InstallProgram(constype,$(BINDIR))
 InstallManPage(kbd_mode,$(MANDIR))
