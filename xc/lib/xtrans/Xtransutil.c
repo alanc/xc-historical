@@ -38,7 +38,7 @@ Xtransaddr	*addrp;
 
     switch( *familyp )
     {
-#if defined(AF_INET)
+#if defined(TCPCONN) || defined(STREAMSCONN)
     case AF_INET:
     {
 	/*
@@ -78,7 +78,8 @@ Xtransaddr	*addrp;
 	}
 	break;
     }
-#endif /* AF_INET */
+#endif /* defined(TCPCONN) || defined(STREAMSCONN) */
+
 #if defined(DNETCONN)
     case AF_DECnet:
     {
@@ -92,14 +93,16 @@ Xtransaddr	*addrp;
 
 	break;
     }
-#endif /* DNETCONN */
-#if defined(AF_UNIX)
+#endif /* defined(DNETCONN) */
+
+#if defined(UNIXCONN) || defined(LOCALCONN)
     case AF_UNIX:
     {
 	*familyp=FamilyLocal;
 	break;
     }
-#endif /* AF_UNIX */
+#endif /* defined(UNIXCONN) || defined(LOCALCONN) */
+
     default:
 	PRMSG(1,"TRANS(ConvertFamily) Unknown family type %d\n",
 	      *familyp, 0,0 );
@@ -169,7 +172,7 @@ Xtransaddr	*addr;
 
     switch (family)
     {
-#ifdef UNIXCONN
+#if defined(UNIXCONN) || defined(LOCALCONN)
     case AF_UNIX:
     {
 	struct sockaddr_un *saddr = (struct sockaddr_un *) addr;
@@ -178,8 +181,9 @@ Xtransaddr	*addr;
 	sprintf (networkId, "local/%s:%s", hostnamebuf, saddr->sun_path);
 	break;
     }
-#endif
-#ifdef TCPCONN
+#endif /* defined(UNIXCONN) || defined(LOCALCONN) */
+
+#if defined(TCPCONN) || defined(STREAMSCONN)
     case AF_INET:
     {
 	struct sockaddr_in *saddr = (struct sockaddr_in *) addr;
@@ -191,8 +195,9 @@ Xtransaddr	*addr;
 	sprintf (networkId, "tcp/%s:%s", hostnamebuf, portnumbuf);
 	break;
     }
-#endif
-#ifdef DNETCONN
+#endif /* defined(TCPCONN) || defined(STREAMSCONN) */
+
+#if defined(DNETCONN)
     case AF_DECnet:
     {
 	struct sockaddr_dn *saddr = (struct sockaddr_dn *) addr;
@@ -203,7 +208,8 @@ Xtransaddr	*addr;
 	    hostnamebuf, saddr->sdn_objname);
 	break;
     }
-#endif
+#endif /* defined(DNETCONN) */
+
     default:
 	break;
     }
@@ -251,7 +257,7 @@ Xtransaddr	*peer_addr;
     switch (family)
     {
     case AF_UNSPEC:
-#ifdef AF_UNIX
+#if defined(UNIXCONN) || defined(LOCALCONN)
     case AF_UNIX:
     {
 	strcpy (prefix, "local/");
@@ -259,9 +265,9 @@ Xtransaddr	*peer_addr;
 	    addr = addrbuf;
 	break;
     }
-#endif /* AF_UNIX */
+#endif /* defined(UNIXCONN) || defined(LOCALCONN) */
 
-#ifdef AF_INET
+#if defined(TCPCONN) || defined(STREAMSCONN)
     case AF_INET:
     {
 	struct sockaddr_in *saddr = (struct sockaddr_in *) peer_addr;
@@ -298,9 +304,10 @@ Xtransaddr	*peer_addr;
 	  addr = inet_ntoa (saddr->sin_addr);
 	break;
     }
-#endif /* AF_INET */
 
-#ifdef DNETCONN
+#endif /* defined(TCPCONN) || defined(STREAMSCONN) */
+
+#if defined(DNETCONN)
     case AF_DECnet:
     {
 	struct sockaddr_dn *saddr = (struct sockaddr_dn *) peer_addr;
@@ -317,7 +324,8 @@ Xtransaddr	*peer_addr;
 	addr = addrbuf;
 	break;
     }
-#endif
+#endif /* defined(DNETCONN) */
+
     default:
 	return (NULL);
     }
