@@ -835,7 +835,7 @@ they were loaded onto.
 .IN "app-defaults"
 .IN "/usr/lib/X11/app-defaults"
 .IP "\fBApplication Defaults\fP" 1.5i
-The \fIApplication Defaults\fP (app-defaults) file (normally in
+The application defaults (app-defaults) file (normally in
 /usr/lib/X11/app-defaults/\fIclassname\fP) for an application is loaded
 whenever the application is started.
 .LP
