@@ -1,4 +1,4 @@
-/* $XConsortium $ */
+/* $XConsortium$ */
 /*-
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
