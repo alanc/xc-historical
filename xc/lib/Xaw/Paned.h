@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Paned.h,v 1.5 89/05/11 01:06:10 kit Exp $
+* $XConsortium: Paned.h,v 1.6 89/05/11 14:20:27 kit Exp $
 */
 
 
@@ -104,34 +104,34 @@ CONSTRAINT RESOURCES:
 #define PANED_GRIP_SIZE 0
 
 /* New Fields */
-#define XtNallowResize			"allowResize"
-#define XtNbetweenCursor	 	"betweenCursor"
-#define XtNverticalBetweenCursor	"verticalBetweenCursor"
-#define XtNhorizontalBetweenCursor	"horizontalBetweenCursor"
-#define XtNgripCursor			"gripCursor"
-#define XtNgripIndent			"gripIndent"
-#define XtNhorizontalGripCursor		"horizontalGripCursor"
-#define XtNinternalBorderColor		"internalBorderColor"
-#define XtNinternalBorderWidth		"internalBorderWidth"
-#define XtNleftCursor			"leftCursor"
-#define XtNlowerCursor			"lowerCursor"
-#define XtNrefigureMode			"refigureMode"
-#define XtNposition			"position"
-#define XtNmin				"min"
-#define XtNmax				"max"
-#define XtNpreferredPaneSize		"preferredPaneSize"
-#define XtNresizeToPreferred		"resizeToPreferred"
-#define XtNrightCursor			"rightCursor"
-#define XtNshowGrip			"showGrip"
-#define XtNskipAdjust			"skipAdjust"
-#define XtNupperCursor			"upperCursor"
-#define XtNverticalGripCursor		"verticalGripCursor"
+#define XtNallowResize "allowResize"
+#define XtNbetweenCursor "betweenCursor"
+#define XtNverticalBetweenCursor "verticalBetweenCursor"
+#define XtNhorizontalBetweenCursor "horizontalBetweenCursor"
+#define XtNgripCursor "gripCursor"
+#define XtNgripIndent "gripIndent"
+#define XtNhorizontalGripCursor "horizontalGripCursor"
+#define XtNinternalBorderColor "internalBorderColor"
+#define XtNinternalBorderWidth "internalBorderWidth"
+#define XtNleftCursor "leftCursor"
+#define XtNlowerCursor "lowerCursor"
+#define XtNrefigureMode "refigureMode"
+#define XtNposition "position"
+#define XtNmin "min"
+#define XtNmax "max"
+#define XtNpreferredPaneSize "preferredPaneSize"
+#define XtNresizeToPreferred "resizeToPreferred"
+#define XtNrightCursor "rightCursor"
+#define XtNshowGrip "showGrip"
+#define XtNskipAdjust "skipAdjust"
+#define XtNupperCursor "upperCursor"
+#define XtNverticalGripCursor "verticalGripCursor"
 
-#define XtCGripIndent			"GripIndent"
-#define XtCMin				"Min"
-#define XtCMax				"Max"
-#define XtCPreferredPaneSize		"PreferredPaneSize"
-#define XtCShowGrip			"ShowGrip"
+#define XtCGripIndent "GripIndent"
+#define XtCMin "Min"
+#define XtCMax "Max"
+#define XtCPreferredPaneSize "PreferredPaneSize"
+#define XtCShowGrip "ShowGrip"
 
 /* Class record constant */
 extern WidgetClass panedWidgetClass;

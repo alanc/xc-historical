@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Toggle.h,v 1.4 89/05/11 01:07:02 kit Exp $
+ * $XConsortium: Toggle.h,v 1.5 89/05/11 14:20:40 kit Exp $
  */
 
 /***********************************************************
@@ -92,16 +92,16 @@ SOFTWARE.
  */
 
 
-#define XtCWidget		"Widget"
-#define XtCState                 "State"
-#define XtCRadioGroup            "RadioGroup"
-#define XtCRadioData             "RadioData"
+#define XtCWidget "Widget"
+#define XtCState "State"
+#define XtCRadioGroup "RadioGroup"
+#define XtCRadioData "RadioData"
 
-#define XtRWidget		"Widget"
+#define XtRWidget "Widget"
 
-#define XtNstate                 "state"
-#define XtNradioGroup            "radioGroup"
-#define XtNradioData             "radioData"
+#define XtNstate "state"
+#define XtNradioGroup "radioGroup"
+#define XtNradioData "radioData"
 
 extern WidgetClass               toggleWidgetClass;
 

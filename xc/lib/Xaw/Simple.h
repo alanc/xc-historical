@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Label.h,v 1.21 89/03/30 16:05:34 jim Exp $
+ * $XConsortium: Simple.h,v 1.8 89/05/11 01:06:23 kit Exp $
  */
 
 /***********************************************************
@@ -54,10 +54,10 @@ SOFTWARE.
 
 */
 
-#define XtNcursor               "cursor"
-#define XtNinsensitiveBorder	"insensitiveBorder"
+#define XtNcursor "cursor"
+#define XtNinsensitiveBorder "insensitiveBorder"
 
-#define XtCInsensitive		"Insensitive"
+#define XtCInsensitive "Insensitive"
 
 typedef struct _SimpleClassRec	*SimpleWidgetClass;
 typedef struct _SimpleRec	*SimpleWidget;

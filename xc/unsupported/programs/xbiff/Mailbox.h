@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.h,v 1.16 89/04/12 15:49:20 jim Exp $
+ * $XConsortium: Mailbox.h,v 1.17 89/05/11 01:05:55 kit Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,22 +25,26 @@
 
 /* resource names used by mailbox widget that aren't defined in StringDefs.h */
 
-#define XtNupdate		"update"
-#define XtNcheckCommand		"checkCommand"	/* command to exec */
-#define XtNonceOnly		"onceOnly"
-#define XtNvolume		"volume"	/* Int: volume for bell */
-#define XtNfullPixmap		"fullPixmap"
-#define XtNfullPixmapMask	"fullPixmapMask"
-#define XtNemptyPixmap		"emptyPixmap"
-#define XtNemptyPixmapMask	"emptyPixmapMask"
-#define XtNflip			"flip"
-#define XtNshapeWindow		"shapeWindow"
+#define XtNupdate "update"
 
-#define XtCCheckCommand		"CheckCommand"
-#define XtCVolume		"Volume"
-#define XtCPixmapMask		"PixmapMask"
-#define XtCFlip			"Flip"
-#define XtCShapeWindow		"ShapeWindow"
+/* command to exec */
+#define XtNcheckCommand "checkCommand"	
+#define XtNonceOnly "onceOnly"
+
+/* Int: volume for bell */
+#define XtNvolume "volume"
+#define XtNfullPixmap "fullPixmap"
+#define XtNfullPixmapMask "fullPixmapMask"
+#define XtNemptyPixmap "emptyPixmap"
+#define XtNemptyPixmapMask "emptyPixmapMask"
+#define XtNflip "flip"
+#define XtNshapeWindow "shapeWindow"
+
+#define XtCCheckCommand "CheckCommand"
+#define XtCVolume "Volume"
+#define XtCPixmapMask "PixmapMask"
+#define XtCFlip "Flip"
+#define XtCShapeWindow "ShapeWindow"
 
 
 /* structures */

@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: SimpleMenu.h,v 1.7 89/07/12 13:50:17 kit Exp $";
+ "$XConsortium: SimpleMenu.h,v 1.8 89/07/16 14:36:30 jim Exp $";
 
                         All Rights Reserved
 
@@ -126,42 +126,42 @@ typedef struct _SimpleMenuRec*		SimpleMenuWidget;
 
 extern WidgetClass simpleMenuWidgetClass;
 
-#define XtNcursor               "cursor"
-#define XtNbottomMargin         "bottomMargin"
-#define XtNcolumnWidth          "columnWidth"
+#define XtNcursor "cursor"
+#define XtNbottomMargin "bottomMargin"
+#define XtNcolumnWidth "columnWidth"
 #define XtNlabelFont "labelFont"
 #define XtNlabelSeparatorType "labelSeparatorType"
-#define XtNleftBitmap           "leftBitmap"
-#define XtNleftMargin		"leftMargin"
+#define XtNleftBitmap "leftBitmap"
+#define XtNleftMargin "leftMargin"
 #define XtNmenuOnScreen "menuOnScreen"
-#define XtNpopupOnEntry         "popupOnEntry"
-#define XtNresize		"resize"
-#define XtNrightBitmap          "rightBitmap"
-#define XtNrightMargin          "rightMargin"
-#define XtNrowHeight            "rowHeight"
-#define XtNtopMargin            "topMargin"
+#define XtNpopupOnEntry "popupOnEntry"
+#define XtNresize "resize"
+#define XtNrightBitmap "rightBitmap"
+#define XtNrightMargin "rightMargin"
+#define XtNrowHeight "rowHeight"
+#define XtNtopMargin "topMargin"
 #define XtNtype "type"
 #define XtNverticalSpacePercent "verticalSpacePercent"
 
-#define XtEblank                "blank"
-#define XtEnone                 "none"
-#define XtEseparator            "separator"
-#define XtEtext                 "text"
+#define XtEblank "blank"
+#define XtEnone "none"
+#define XtEseparator "separator"
+#define XtEtext "text"
 
-#define XtCColumnWidth          "ColumnWidth"
-#define XtCHorizontalMargins    "HorizontalMargins"
+#define XtCColumnWidth "ColumnWidth"
+#define XtCHorizontalMargins "HorizontalMargins"
 #define XtCLabelSeparatorType "LabelSeparatorType"
-#define XtCLeftBitmap           "LeftBitmap"
+#define XtCLeftBitmap "LeftBitmap"
 #define XtCMenuOnScreen "MenuOnScreen"
-#define XtCPopupOnEntry         "PopupOnEntry"
-#define XtCResize		"Resize"
-#define XtCRightBitmap          "RightBitmap"
-#define XtCRowHeight            "RowHeight"
+#define XtCPopupOnEntry "PopupOnEntry"
+#define XtCResize "Resize"
+#define XtCRightBitmap "RightBitmap"
+#define XtCRowHeight "RowHeight"
 #define XtCType "Type"
-#define XtCVerticalMargins      "VerticalMargins"
+#define XtCVerticalMargins "VerticalMargins"
 #define XtCVerticalSpacePercent "VerticalSpacePercent"
 
-#define XtRSimpleMenuType       "SimpleMenuType"
+#define XtRSimpleMenuType "SimpleMenuType"
 
 /************************************************************
  *

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.25 89/07/18 15:35:34 kit Exp $
+* $XConsortium: Text.h,v 1.26 89/07/20 14:01:01 kit Exp $
 */
 
 
@@ -67,20 +67,20 @@ SOFTWARE.
 
 */
 
-#define XtNtextOptions		"textOptions"
-#define XtNdialogHOffset	"dialogHOffset"
-#define XtNdialogVOffset	"dialogVOffset"
-#define XtNdisplayCaret		"displayCaret"
-#define XtNdisplayNonPrinting	"displayNonPrinting"
-#define XtNdisplayPosition      "displayPosition"
-#define XtNecho			"echo"
-#define XtNinsertPosition	"insertPosition"
-#define XtNleftMargin		"leftMargin"
-#define XtNselectTypes		"selectTypes"
-#define XtNselection		"selection"
+#define XtNtextOptions "textOptions"
+#define XtNdialogHOffset "dialogHOffset"
+#define XtNdialogVOffset "dialogVOffset"
+#define XtNdisplayCaret "displayCaret"
+#define XtNdisplayNonPrinting "displayNonPrinting"
+#define XtNdisplayPosition "displayPosition"
+#define XtNecho "echo"
+#define XtNinsertPosition "insertPosition"
+#define XtNleftMargin "leftMargin"
+#define XtNselectTypes "selectTypes"
+#define XtNselection "selection"
 
-#define XtCOutput		"Output"
-#define XtCSelectTypes		"SelectTypes"
+#define XtCOutput "Output"
+#define XtCSelectTypes "SelectTypes"
 
 /* Return Error code for XawTextSearch */
 
@@ -119,6 +119,7 @@ typedef enum {XawselectNull, XawselectPosition, XawselectChar, XawselectWord,
 #define resizeHeight		0x20
 #define editable		0x40
 #define lineWrap                0x80
+#define autoFill               0x100
 
 typedef struct {
     int  firstPos;

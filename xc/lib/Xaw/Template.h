@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: Template.h,v 1.2 88/10/25 17:22:09 swick Exp $ */
+/* $XConsortium: Template.h,v 1.3 89/03/30 16:05:58 jim Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987, 1988 */
 
 #ifndef _Template_h
@@ -31,9 +31,9 @@
 
 /* define any special resource names here that are not in <X11/StringDefs.h> */
 
-#define XtNtemplateResource		"templateResource"
+#define XtNtemplateResource "templateResource"
 
-#define XtCTemplateResource		"TemplateResource"
+#define XtCTemplateResource "TemplateResource"
 
 /* declare specific TemplateWidget class and instance datatypes */
 
