@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.96 87/10/03 14:33:48 rws Locked $ */
+/* $Header: gc.c,v 1.97 87/10/13 19:19:39 rws Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -573,7 +573,7 @@ CopyGC(pgcSrc, pgcDst, mask)
 	    case GCDashList:
 		Xfree(pgcDst->dash);
 		pgcDst->dash = (unsigned char *)
-				Xalloc(2 * sizeof(unsigned char));
+				Xalloc(pgcSrc->numInDashList * sizeof(unsigned char));
 		pgcDst->numInDashList = pgcSrc->numInDashList;
 		for (i=0; i<pgcSrc->numInDashList; i++)
 		    pgcDst->dash[i] = pgcSrc->dash[i];
@@ -815,7 +815,7 @@ register unsigned char *pdash;
     register int i;
     register unsigned char *p;
     GCInterestPtr	pQ, pQInit;
-    int maskQ = 0;
+    BITS32 maskQ = 0;
 
     i = ndash;
     p = pdash;
@@ -828,6 +828,7 @@ register unsigned char *pdash;
 	}
     }
 
+    pGC->serialNumber |= GC_CHANGE_SERIAL_BIT;
     if (offset != pGC->dashOffset)
     {
 	pGC->dashOffset = offset;
@@ -836,10 +837,6 @@ register unsigned char *pdash;
     }
 
     p = (unsigned char *)Xalloc(ndash * sizeof(unsigned char));
-    if (!p)
-    {
-	return BadAlloc;
-    }
     Xfree(pGC->dash);
     pGC->dash = p;
     pGC->numInDashList = ndash;
