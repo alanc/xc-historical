@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Form.c,v 1.3 87/12/23 07:44:01 swick Locked $";
+static char rcsid[] = "$Header: Form.c,v 1.4 87/12/23 15:10:23 swick Locked $";
 #endif lint
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -259,8 +259,8 @@ static XtGeometryResult GeometryManager(w, request, reply)
     FormConstraints form = (FormConstraints)w->core.constraints;
     XtWidgetGeometry allowed;
 
-    if (request->request_mode & ~(CWWidth || CWHeight)
-	|| !form->form.allow_resize)
+    if ((request->request_mode & ~(CWWidth || CWHeight)) ||
+	!form->form.allow_resize)
 	return XtGeometryNo;
 
     if (request->request_mode & CWWidth)
