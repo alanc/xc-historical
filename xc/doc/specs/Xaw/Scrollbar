@@ -17,7 +17,7 @@ Superclass	Core
 .sp
 .De
 .LP
-The Scrollbar widget is a rectangular area that contains a slide region
+The Scrollbar widget is a rectangular area containing a slide region
 and a thumb (also known as a slide bar).  A Scrollbar can be used alone,
 as a value generator, or it can be used within a composite widget (for
 example, a Viewport).  A Scrollbar can be oriented either vertically or
@@ -36,17 +36,17 @@ pointer button 2 is clicked, the thumb moves to the current pointer
 position.  When pointer button 2 is held down and the pointer is moved,
 the thumb follows the pointer.
 .LP
-The cursor in the scroll region changes depending on the current action.
-When no pointer button is pressed, the cursor appears as a double-headed
-arrow that points in the direction that scrolling can occur.  When
-pointer button 1 or 3 is pressed, the cursor appears as a single-headed
-arrow that points in the logical direction that the client will move the
-data.  When pointer button 2 is pressed, the cursor appears as an arrow
-that points to the thumb.
+The pointer cursor in the scroll region changes depending on the current
+action.  When no pointer button is pressed, the cursor appears as a
+double-headed arrow that points in the direction that scrolling can
+occur.  When pointer button 1 or 3 is pressed, the cursor appears as a
+single-headed arrow that points in the logical direction that the client
+will move the data.  When pointer button 2 is pressed, the cursor
+appears as an arrow that points to the thumb.
 .LP
 While scrolling is in progress, the application receives notification
 through callback procedures.  For both discrete scrolling actions, the
-callback returns the Scrollbar widget ID, the client_data, and the pixel
+callback returns the Scrollbar widget, the client_data, and the pixel
 position of the pointer when the button was released.  For continuous
 scrolling, the callback routine returns the scroll bar widget, the
 client data, and the current relative position of the thumb.  When the
@@ -87,7 +87,7 @@ foreground	Foreground	Pixel		XtDefaultForeground
 height	Height	Dimension	A	depends on orientation
 jumpProc	Callback	Callback		NULL
 length	Length	Dimension		1
-mappedWhenManaged	MappedWhenManaged		Boolean	True
+mappedWhenManaged	MappedWhenManaged	Boolean		True
 minimumThumb	MinimumThumb	Dimension		7
 orientation	Orientation	Orientation		XtOrientVertical (vertical)
 screen	Screen	Pointer	R	Parent's Screen
@@ -103,7 +103,7 @@ shown	Shown	Float		0.0
 thickness	Thickness	Dimension		14
 thumb	Thumb	Pixmap		GreyPixmap
 topOfThumb	TopOfThumb	Float		0.0
-translations	Translations	TranslationTable		See above
+translations	Translations	TranslationTable		See below
 width	Width	Dimension	A	depends on orientation
 x	X	Position		0
 y	Y	Position		0
@@ -126,7 +126,7 @@ _
 .De
 .Dc
 .IP \fBforeground\fP 1.5i
-An index into this widget's colormap specifying the color that will be
+A pixel value which indexes the widget's colormap to derive the color
 used to draw the thumb.
 .Hw
 .IP \fBjumpProc\fP 1.5i
@@ -173,8 +173,8 @@ This pixmap is used to tile (or stipple) the thumb of the scrollbar.  If
 no tiling is desired, then set this resource to \fBNone\fP.  This
 resource will accept either a bitmap or a pixmap that is the same depth
 as the window.  The resource converter for this resource constructs
-bitmaps from the contents of files, given a file name.  See
-\fBConverting Bitmaps\fP for details on the string to bitmap conversion.
+bitmaps from the contents of files.  (See \fBConverting Bitmaps\fP for
+details.)
 .IP \fBtopOfThumb\fP 1.5i
 The location of the top of the thumb, as a percentage (0.0 - 1.0)
 of the length of the scrollbar.  This resource was called \fBtop\fP in 
@@ -187,22 +187,21 @@ Scrollbar Actions
 .LP
 The actions supported by the Scrollbar widget are:
 .IP \fBStartScroll\fP(\fIvalue\fP) 1.5i
-The possible values are Forward, Backward, or Continuous.
+The possible \fIvalues\fP are Forward, Backward, or Continuous.
 This must be the first action to begin a new movement.
 .IP \fBNotifyScroll\fP(\fIvalue\fP) 1.5i
-The possible values are Proportional or FullLength.
-If the argument to StartScroll was Forward or Backward,
-NotifyScroll executes the
+The possible \fIvalues\fP are Proportional or FullLength.  If the
+argument to StartScroll was Forward or Backward, NotifyScroll executes
+the
 .PN scrollProc
-callbacks 
-and passes either the position of the pointer, if its argument is Proportional
-or the full length of the scroll bar, if its argument is FullLength.
-If the argument to StartScroll was Continuous,
-NotifyScroll returns without executing any callbacks.
+callbacks and passes either; the position of the pointer, if \fIvalue\fP
+is Proportional, or the full length of the scroll bar, if \fIvalue\fP is
+FullLength.  If the argument to StartScroll was Continuous, NotifyScroll
+returns without executing any callbacks.
 .IP \fBEndScroll\fP(\^) 1.5i
 This must be the last action after a movement is complete.
 .IP \fBMoveThumb\fP(\^) 1.5i
-Repositions the scroll bar thumb to the current pointer location.
+Repositions the Scrollbar's thumb to the current pointer location.
 .IP \fBNotifyThumb\fP(\^)\ \ \  1.5i
 Calls the
 .PN jumpProc
@@ -238,7 +237,7 @@ resource file are:
 Scrollbar Callbacks
 .LP
 There are two callback lists provided by the Scrollbar widget.
-The procedural interface for this functions is described here.
+The procedural interface for these functions is described here.
 .LP
 The calling interface to the \fBscrollProc\fP callback procedure is:
 .IN "ScrollProc" "" "@DEF@"
@@ -298,7 +297,10 @@ to a pointer to float before use; i.e.
 .LP
 With the default button bindings, button 2 moves the thumb interactively,
 and the \fBjumpProc\fP is called on each new position of the pointer,
-while the mouse button remains down.
+while the pointer button remains down.  The value specified by
+\fIpercent_ptr\fP is the current location of the thumb (from the top or
+left of the Scrollbar) expressed as a percentage of the length of the
+Scrollbar.
 .NH 3
 Convenience Routines
 .LP
