@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.92 94/03/15 11:23:11 kaleb Exp $ */
+/* $XConsortium: Selection.c,v 1.93 94/03/16 17:46:16 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -643,8 +643,6 @@ XtPointer value;
 unsigned long length;
 int format;
 {
-    unsigned long size;
-
 	req->requestor = window;
 	req->type = targetType;
 	req->property = property;
@@ -665,11 +663,10 @@ int format;
 	AddHandler(req, (EventMask)PropertyChangeMask, 
 		   HandlePropertyGone, (XtPointer)req);
 /* now send client INCR property */
-	size = BYTELENGTH(length,format);
-	value = ((char*)&size) + sizeof(long) - 4;
 	XChangeProperty(req->ctx->dpy, window, req->property,
 			req->ctx->prop_list->incr_atom,
-			32, PropModeReplace, (unsigned char *)value, 1);
+			32, PropModeReplace, 
+			(unsigned char *)&req->bytelength, 1);
 }
 
 static Boolean GetConversion(ctx, event, target, property, widget, incremental)
@@ -1228,14 +1225,7 @@ static long IncrPropSize(widget, value, format, length)
 {
     unsigned long size;
     if (format == 32) {
-	if (sizeof(long) == 4)
-	    size = ((long*)value)[length-1]; /* %%% what order for longs? */
-	else {
-	    /* NOTREACHED */ /* sizeof(long)!=4 */
-	    size = 0;
-	    (void) memmove(((char*)&size)+sizeof(long)-4, 
-			   value+4*(length-1), 4);
-	}
+	size = ((long*)value)[length-1]; /* %%% what order for longs? */
 	return size;
     }
     else {
