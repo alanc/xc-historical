@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranslcl.c,v 1.18 94/04/17 20:23:03 mor Exp $ */
+/* $XConsortium: Xtranslcl.c,v 1.19 94/07/20 10:07:45 mor Exp mor $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -636,10 +636,6 @@ char		*port;
 	PRMSG(1,"Cannot open %s for NAMED connection\n", server_path, 0,0 );
 	return -1;
     }
-
-#if defined(I_BIGPIPE)
-    ioctl( fd, I_BIGPIPE, &str );
-#endif /* I_BIGPIPE */
 
     if (isastream(fd) <= 0) {
 	PRMSG(1,"%s is not a streams device\n", server_path, 0,0 );
