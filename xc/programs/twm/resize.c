@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.44 89/11/03 16:15:27 jim Exp $
+ * $XConsortium: resize.c,v 1.45 89/11/03 19:03:44 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.44 89/11/03 16:15:27 jim Exp $";
+"$XConsortium: resize.c,v 1.45 89/11/03 19:03:44 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -669,18 +669,41 @@ int x, y, w, h;
         sendEvent = FALSE;
 
     xwcm = CWWidth;
-    if (tmp_win->title_x < 0)
-        xwc.width = w;
-    else
-        xwc.width = w - 2 * tmp_win->title_bw;
 
 #ifdef SHAPE
-    reShape = FALSE;
-    if (w != tmp_win->frame_width)
-	reShape = TRUE;
-#endif
+    if (!HasShape)
+	Scr->SqueezeTitle = FALSE;
 
-    title_width = xwc.width;
+    if (Scr->SqueezeTitle)
+    {
+    	title_width =   Scr->FramePadding +	    /* frame pad */
+		    	Scr->TBInfo.border +    /* border of iconify box */
+		    	Scr->TBInfo.width +	    /* iconify box */
+		    	Scr->TBInfo.border +    /* other border of iconify box */
+		    	Scr->TitlePadding +	    /* pad to title */
+		    	tmp_win->name_width +   /* string name width */
+		    	Scr->TitlePadding +	    /* pad after title */
+		    	Scr->TBInfo.totalwidth +/* RHS title widgets */
+		    	Scr->FramePadding;	    /* RHS frame pad */
+		    	
+    	reShape = FALSE;
+    	if (w != tmp_win->frame_width ||
+ 	    h != tmp_win->frame_height ||
+	    title_width != tmp_win->title_width)
+	    reShape = TRUE;
+    	xwc.width = title_width;
+    }
+    else
+#endif
+    {
+    	if (tmp_win->title_x < 0)
+            xwc.width = w;
+    	else
+            xwc.width = w - 2 * tmp_win->title_bw;
+    	title_width = xwc.width;
+    }
+
+    tmp_win->title_width = title_width;
     if (tmp_win->title_w)
 	XConfigureWindow(dpy, tmp_win->title_w, xwcm, &xwc);
 
@@ -698,7 +721,7 @@ int x, y, w, h;
 
     XMoveResizeWindow(dpy, tmp_win->frame, x, y, w, h);
 
-    if (tmp_win->title_height)
+    if (!Scr->SqueezeTitle && tmp_win->title_height && tmp_win->hilite_w)
     {
 	int boxwidth = (Scr->FramePadding + Scr->TBInfo.width + 
 			Scr->TBInfo.border * 2);
@@ -900,12 +923,46 @@ TwmWindow   *tmp_win;
 			    tmp_win->title_height,
 			    tmp_win->w, ShapeBounding,
 			    op);
+	if (tmp_win->fShaped == 2)
+	    XShapeCombineMask (dpy, dest, ShapeClip, 0, 0,
+			       None, ShapeSet);
 	tmp_win->fShaped = 1;
     } else {
-	if (tmp_win->fShaped) {
-	    XShapeCombineMask (dpy, dest, ShapeBounding,
-			    	0, 0, None, ShapeSet);
-	    tmp_win->fShaped = 0;
+	if (Scr->SqueezeTitle)
+	{
+	    XRectangle  newBounding[2];
+	    XRectangle  newClip[2];
+    
+	    newBounding[0].x = -tmp_win->frame_bw;
+	    newBounding[0].y = -tmp_win->frame_bw;
+	    newBounding[0].width = tmp_win->title_width + tmp_win->frame_bw + tmp_win->title_bw;
+	    newBounding[0].height = tmp_win->title_height;
+	    newBounding[1].x = newBounding[0].x;
+	    newBounding[1].y = newBounding[0].y + newBounding[0].height;
+	    newBounding[1].width = tmp_win->frame_bw * 2 + tmp_win->frame_width;
+	    newBounding[1].height = tmp_win->frame_height - newBounding[1].y + tmp_win->frame_bw;
+	    XShapeCombineRectangles (dpy, dest, ShapeBounding, 0, 0,
+				     newBounding, 2, ShapeSet, YXBanded);
+	    newClip[0].x = 0;
+	    newClip[0].y = 0;
+	    newClip[0].width = tmp_win->title_width;
+	    newClip[0].height = tmp_win->title_height;
+	    newClip[1].x = 0;
+	    newClip[1].y = newClip[0].y + newClip[0].height;
+	    newClip[1].width = tmp_win->frame_width;
+	    newClip[1].height = tmp_win->frame_height - newClip[1].y;
+	    XShapeCombineRectangles (dpy, dest, ShapeClip, 0, 0,
+				     newClip, 2, ShapeSet, YXBanded);
+	    tmp_win->fShaped = 2;
+	}
+	else
+	{
+	    if (tmp_win->fShaped)
+	    {
+		XShapeCombineMask (dpy, dest, ShapeBounding, 0, 0,
+				   None, ShapeSet);
+		tmp_win->fShaped = 0;
+	    }
 	}
     }
 }
