@@ -413,7 +413,7 @@ QueryFontMap (dw, position)
 	    return 0;
 }
 
-char *
+unsigned char *
 DviCharIsLigature (map, name)
     DviCharNameMap  *map;
     char	    *name;
@@ -424,7 +424,7 @@ DviCharIsLigature (map, name)
 	if (!map->ligatures[i][0])
 	    break;
 	if (!strcmp (name, map->ligatures[i][0]))
-	    return map->ligatures[i][1];
+	    return (unsigned char *) map->ligatures[i][1];
     }
     return 0;
 }

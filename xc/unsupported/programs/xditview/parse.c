@@ -1,4 +1,4 @@
-/* $XConsortium: parse.c,v 1.8 91/07/26 12:30:55 keith Exp $ */
+/* $XConsortium: parse.c,v 1.9 91/07/26 15:21:59 keith Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -58,6 +58,7 @@ ParseInput(dw)
 	int		NextPage;
 	int		prevFont;
 	int		otherc;
+	unsigned char	tc;
 
 	StopSeen = 0;
 
@@ -92,7 +93,8 @@ ParseInput(dw)
 			(void) DviGetC(dw,&c);
 		    	if (c == ' ')
 			    break;
-			PutCharacter (dw, c);
+			tc = c;
+			PutCharacters (dw, &tc, 1);
 			break;
 		case 'C':
 			GetWord(dw, Buffer, BUFSIZ);
@@ -100,10 +102,9 @@ ParseInput(dw)
 	    	    	    DviCharNameMap	*map;
 			    int			i;
 			    int			savex;
-			    char		*ligature;
+			    unsigned char	*ligature;
     	    	    
 			    c = -1;
-			    prevFont = -1;
 	    	    	    map = QueryFontMap (dw, dw->dvi.state->font_number);
 	    	    	    if (map)
 			    {
@@ -112,18 +113,12 @@ ParseInput(dw)
 				{
 				    ligature = DviCharIsLigature (map, Buffer);
 				    if (ligature) {
-					savex = dw->dvi.state->x;
-					while (c = *ligature++) {
-					    if (PutCharacter (dw, c))
-						dw->dvi.state->x = ToDevice (dw, dw->dvi.cache.x);
-					    else
-						dw->dvi.state->x += CharacterWidth (dw, c);
-					}
-					dw->dvi.state->x = savex;
+					PutCharacters (dw, ligature, strlen(ligature));
 					break;
    				    }
 				}
 			    }
+			    prevFont = -1;
 	    	    	    if (c == -1) {
 			    	for (i = 1; map = QueryFontMap (dw, i); i++)
 				    if (map->special)
@@ -134,7 +129,10 @@ ParseInput(dw)
 				    	}
 			    }
 			    if (c != -1)
-				PutCharacter (dw, c);
+			    {
+				tc = c;
+				PutCharacters (dw, &tc, 1);
+			    }
 			    if (prevFont != -1)
 				dw->dvi.state->font_number = prevFont;
 			}
@@ -251,35 +249,25 @@ SetFont (dw)
 			  dw->dvi.cache.font_size);
 }
 
-CharacterWidth (dw, c)
-    DviWidget	dw;
+PutCharacters (dw, src, len)
+    DviWidget	    dw;
+    unsigned char   *src;
+    int		    len;
 {
-    if (!dw->dvi.display_enable)
-	return 0;
-    if (!dw->dvi.font ||
-	dw->dvi.cache.font_size != dw->dvi.state->font_size ||
-	dw->dvi.cache.font_number != dw->dvi.state->font_number)
-    {
-	SetFont (dw);
-    }
-    return ToDevice (dw, charWidth(dw->dvi.font, c));
-}
-
-PutCharacter (dw, c)
-    DviWidget	dw;
-    int		c;
-{
-    int	xx, yx;
-    int	fx;
+    int	    xx, yx;
+    int	    fx, fy;
+    char    *dst;
+    int	    c;
 
     xx = ToX(dw, dw->dvi.state->x);
     yx = ToX(dw, dw->dvi.state->y);
-    fx = FontSizeInPixels (dw, dw->dvi.state->font_size);
+    fy = FontSizeInPixels (dw, dw->dvi.state->font_size);
+    fx = fy * len;
     /*
      * quick and dirty extents calculation:
      */
-    if (yx + fx >= dw->dvi.extents.y1 &&
-	yx - fx <= dw->dvi.extents.y2 &&
+    if (yx + fy >= dw->dvi.extents.y1 &&
+	yx - fy <= dw->dvi.extents.y2 &&
 	xx + fx >= dw->dvi.extents.x1 &&
 	xx - fx <= dw->dvi.extents.x2)
     {
@@ -290,7 +278,7 @@ PutCharacter (dw, c)
 	    return FALSE;
 
 	if (yx != dw->dvi.cache.y ||
-	    dw->dvi.cache.char_index >= DVI_CHAR_CACHE_SIZE)
+	    dw->dvi.cache.char_index + len > DVI_CHAR_CACHE_SIZE)
 	    FlushCharCache (dw);
 	/*
 	 * load a new font, if the current block is not empty,
@@ -315,10 +303,11 @@ PutCharacter (dw, c)
 		dw->dvi.cache.cache[dw->dvi.cache.index].nchars = 0;
 	    }
 	}
-	font = dw->dvi.cache.font;
 	text = &dw->dvi.cache.cache[dw->dvi.cache.index];
+	font = dw->dvi.cache.font;
+	dst = &dw->dvi.cache.char_cache[dw->dvi.cache.char_index];
 	if (text->nchars == 0) {
-	    text->chars = &dw->dvi.cache.char_cache[dw->dvi.cache.char_index];
+	    text->chars = dst;
 	    text->delta = xx - dw->dvi.cache.x;
 	    if (font != dw->dvi.font) {
 		text->font = font->fid;
@@ -327,9 +316,14 @@ PutCharacter (dw, c)
 		text->font = None;
 	    dw->dvi.cache.x += text->delta;
 	}
-	dw->dvi.cache.char_cache[dw->dvi.cache.char_index++] = (char) c;
-	++text->nchars;
-	dw->dvi.cache.x += charWidth(font,c);
+	dw->dvi.cache.char_index += len;
+	text->nchars += len;
+	while (len--)
+	{
+	    c = *src++;
+	    *dst++ = c;
+	    dw->dvi.cache.x += charWidth(font,c);
+	}
 	return TRUE;
     }
     return FALSE;

@@ -37,4 +37,4 @@ extern char		*DviCharName ( /* DviCharNameMap *map, int index, int synonym */ );
 #define DviCharName(map,index,synonym)	((map)->dvi_names[index][synonym])
 #endif
 extern int		DviCharIndex ( /* DviCharNameMap *map, char *name */ );
-extern char		*DviCharIsLigature ( /* DviCharNameMap *map, char *name */ );
+extern unsigned char	*DviCharIsLigature ( /* DviCharNameMap *map, char *name */ );
