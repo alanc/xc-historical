@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.90 91/05/26 16:06:02 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.91 91/07/22 15:43:08 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -147,8 +147,10 @@ extern int errno;			/* Internal system error number. */
 /*
  * display flags
  */
-#define XlibDisplayIOError	(1L << 0)
-#define XlibDisplayClosing	(1L << 1)
+#define XlibDisplayIOError	(1L << 0) /* IO error handler called */
+#define XlibDisplayClosing	(1L << 1) /* XCloseDisplay called */
+#define XlibDisplayIgnoreFont	(1L << 2) /* ignore BadName on OpenFont */
+#define XlibDisplayAddNoOp	(1L << 3) /* subtract 2 to get seq num */
 
 /*
  * X Protocol packetizing macros.
