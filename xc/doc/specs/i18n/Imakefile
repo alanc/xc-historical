@@ -1,0 +1,7 @@
+XCOMM $XConsortium: Imakefile,v 1.4 94/02/10 17:12:22 rws Exp $
+
+MakeTblDoc(Framework,Framework.ms)
+
+MakeTblDoc(LocaleDB,LocaleDB.ms)
+
+MakeTblDoc(Trans,Trans.ms)
