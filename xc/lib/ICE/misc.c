@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.8 93/11/02 11:03:46 mor Exp $ */
+/* $XConsortium: misc.c,v 1.9 93/11/22 16:33:40 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -496,7 +496,8 @@ IceConn iceConn;
 #ifdef UNIXCONN
     if (iceConn->iceConn_type == ICE_CONN_FROM_LOCAL_ACCEPT)
     {
-	name = "local";
+	name = (char *) malloc (6);
+	strcpy (name, "local");
     }
     else
 #endif
