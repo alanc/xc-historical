@@ -14,7 +14,7 @@ program displays a periodically updating histogram of the system load average.
 .PP
 .I Xload
 accepts all of the standard X Toolkit command line options (see \fIX(1)\fP).
-The order of the options in unimportant.  \fIxload also acctepts the
+The order of the options in unimportant.  \fIxload also accepts the
 following additional options:
 .PP
 .TP 8
@@ -24,7 +24,7 @@ This option specifies the color of the scale lines.
 .B \-jumpscroll \FPnumber of pixels\fP
 The number of pixels to shift the graph to the left when the graph
 reaches the right edge of the window.  The default value is 1/2 the width
-of the current window.  Smooth scrolling can be acheived by setting it to 1.
+of the current window.  Smooth scrolling can be achieved by setting it to 1.
 .TP 8
 .B \-label \fIstring\fP
 The string to put into the label above the load average.
@@ -45,7 +45,7 @@ This option specifies the frequency in seconds at which \fIxload\fP
 updates its display.  The minimum amount of time allowed between updates
 is 1 second (the default is 5 seconds).
 .SH RESOURCES
-In addition to the resources avaliable to each of the widgets used by 
+In addition to the resources available to each of the widgets used by 
 \fIxload\fP there is one resource defined by the application itself.
 .TP 8
 .B showLabel (\fPclass\fB Boolean)

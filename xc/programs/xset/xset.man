@@ -88,7 +88,7 @@ It accepts an optional integer, a preceding dash(-) or an 'on/off' flag.
 If no parameter or the 'on' flag is given, all LEDs are turned on.
 If a preceding dash or the flag 'off' is given, all LEDs are turned off.
 If a value between 1 and 32 is given, that LED will be turned on or off
-depending on the existance of a preceding dash.
+depending on the existence of a preceding dash.
 A common LED which can be controlled is the ``Caps Lock'' LED.  ``xset
 led 3'' would turn led #3 on.  ``xset -led 3'' would turn it off.
 The particular LED values may refer to different LEDs on different

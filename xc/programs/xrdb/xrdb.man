@@ -16,7 +16,7 @@ color, fonts, and so on for applications.  Having this information in
 the server (where it is available to all clients) instead of on disk,
 solves the problem in previous versions of X that required you to 
 maintain \fIdefaults\fP files on every machine that you might use.  It also allows
-for dynamic changing of defaults without editting files.
+for dynamic changing of defaults without editing files.
 .LP
 For compatibility, if there is no RESOURCE_MANAGER property defined (either 
 because xrdb was not run or if the property was removed), the resource manager

@@ -53,7 +53,7 @@ X(1), Xserver(1), xset(1), xfd(1)
 to get the default host and display to use.
 .SH BUGS
 Doing ``xlsfonts -l'' can tie up your server for a very long time.
-This is really a bug with single-threaded non-preemptible servers, not with
+This is really a bug with single-threaded non-preemptable servers, not with
 this program.
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.

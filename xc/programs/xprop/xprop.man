@@ -119,7 +119,7 @@ of a font as opposed to a window, the -font argument must be used.
 .PP
 Other than the above four arguments and the -help argument for obtaining help,
 and the -grammar argument for listing the full grammar for the command line,
-all the other command line arguments are used in specifing both the format
+all the other command line arguments are used in specifying both the format
 of the properties to be displayed and how to display them.  The -len \fIn\fP 
 argument specifies that at most \fIn\fP bytes of any given property will be
 read and displayed.  This is useful for example when displaying the cut buffer
@@ -157,7 +157,7 @@ that the property is a sequence of bytes while a value of 16 would mean that
 the property is a sequence of words.  The difference between these two lies in
 the fact that the sequence of words will be byte swapped while the sequence of
 bytes will not be when read by a machine of the opposite byte order of the
-machine that orginally wrote the property.  For more information on how
+machine that originally wrote the property.  For more information on how
 properties are formatted and stored, consult the Xlib manual.
 .PP
 Once the size of the fields has been specified, it is necessary to specify
@@ -197,7 +197,7 @@ unsigned integer, and the third an atom.
 .PP
 The format of a \fIdformat\fP unlike that of a \fIformat\fP is not so rigid.
 The only limitations on a \fIdformat\fP is that one may not start with a letter
-or a dash.  This is so that it can be distingished from a property name or
+or a dash.  This is so that it can be distinguished from a property name or
 an argument.  A \fIdformat\fP is a text string containing special characters
 instructing that various fields be printed at various points in a manner similar
 to the formatting string used by printf.  For example, the \fIdformat\fP
@@ -205,7 +205,7 @@ to the formatting string used by printf.  For example, the \fIdformat\fP
 32ii as " is ( 3, -4 )\\n".
 .PP
 Any character other than a $, ?, \\, or a ( in a \fIdformat\fP prints as
-itself.  To print out one of $, ?, \\, or ( preceed it by a \\.  For example,
+itself.  To print out one of $, ?, \\, or ( precede it by a \\.  For example,
 to print out a $, use \\$.  Several special backslash sequences are provided
 as shortcuts.  \\n will cause a newline to be displayed while \\t will
 cause a tab to be displayed.  \\\fIo\fP where \fIo\fP is an octal number
@@ -245,7 +245,7 @@ are equal and 0 if not.
 \fIn\fP represents the constant value \fIn\fP while $\fIn\fP represents the
 value of field number \fIn\fP.
 m\fIn\fP is 1 if flag number \fIn\fP in the first field having format
-character 'm' in the corrsponding \fIformat\fP is 1, 0 otherwise.
+character 'm' in the corresponding \fIformat\fP is 1, 0 otherwise.
 .PP
 Examples: ?m3(count: $3\\n) displays field 3 with a label of count if and only if flag
 number 3 (count starts at 0!) is on.  ?$2=0(True)?!$2=0(False) displays the
@@ -267,7 +267,7 @@ first order, the contents of the file specified by the -fs option if any,
 the contents of the file specified by the environmental variable XPROPFORMATS
 if any, and finally \fIxprop\fP's built in file of formats.
 .PP
-The format of the files refered to by the -fs argument and the XPROPFORMATS
+The format of the files referred to by the -fs argument and the XPROPFORMATS
 variable is one or more lines of the following form:
 .PP
 \fIname\fP \fIformat\fP [\fIdformat\fP]

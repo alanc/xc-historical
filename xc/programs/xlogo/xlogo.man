@@ -55,6 +55,6 @@ Copyright 1988, Massachusetts Institute of Technology.
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS
-Ollie Jones of Apollo Computer and Jim Fulton of the MIT X Constium
+Ollie Jones of Apollo Computer and Jim Fulton of the MIT X Consortium
 wrote the logo graphics routine, based on a graphic design by Danny
 Chong and Ross Chapman of Apollo Computer.

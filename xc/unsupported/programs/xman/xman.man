@@ -168,7 +168,7 @@ xman - Xman (This widget is never used)
 				cancel - Command
 		pleaseStandBy - TransientShell
 			label - Label
-	manualBroser - TopLevelShell
+	manualBrowser - TopLevelShell
 		Manpage_Vpane - Paned
 			horizPane - Paned
 				options - MenuButton

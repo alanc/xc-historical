@@ -46,7 +46,7 @@ An alternate client and/or server may be specified on the
 command line.  The desired client program and its arguments should be given
 as the first command line arguments to \fIxinit\fP.  To specify a particular
 server command line, append a double dash (--) to the \fIxinit\fP command
-line (after any client and arguments) followed by the desired server comand.
+line (after any client and arguments) followed by the desired server command.
 .PP
 Both the client program name and the server program name must begin with a
 slash (/) or a period (.).  Otherwise, they are treated as an arguments to be
@@ -98,7 +98,7 @@ xclock -g 50x50-0+0 -bw 0 &
 xload -g 50x50-50+0 -bw 0 &
 xterm -g 80x24+0+0 &
 xterm -g 80x24+0-0 &
-uwm
+twm
 .fi
 .in -8
 .sp
