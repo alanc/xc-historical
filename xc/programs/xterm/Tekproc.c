@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.88 91/03/04 14:50:37 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.89 91/03/13 14:05:32 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -53,8 +53,13 @@
 
 extern jmp_buf Tekend;
 
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+extern char *malloc();
 extern void exit();
-extern long time();
+extern long time();		/* included in <time.h> by Xos.h */
+#endif
 
 #define TekColormap DefaultColormap( screen->display, \
 				    DefaultScreen(screen->display) )
@@ -622,7 +627,6 @@ Tinput()
 	register TScreen *screen = &term->screen;
 	register int i;
 	register TekLink *tek;
-	extern char *malloc();
 
 	if(Tpushback > Tpushb)
 		return(*--Tpushback);
@@ -1150,7 +1154,6 @@ static void TekRealize (gw, valuemaskp, values)
     int winX, winY, width, height;
     XSizeHints sizehints;
     char Tdefault[32];
-    extern char *malloc();
 
     tw->core.border_pixel = term->core.border_pixel;
 

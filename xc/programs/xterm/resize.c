@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.18 91/02/01 13:27:33 gildea Exp $
+ *	$XConsortium: resize.c,v 1.19 91/03/28 16:26:26 gildea Exp $
  */
 
 /*
@@ -82,13 +82,16 @@
 #define SIGNAL_T void
 #endif
 
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *getenv();
+#endif
+
 #ifdef USE_SYSV_TERMIO
-extern struct passwd *getpwent();
+#ifdef X_NOT_POSIX
 extern struct passwd *getpwuid();
-extern struct passwd *getpwnam();
-extern void setpwent();
-extern void endpwent();
-extern struct passwd *fgetpwent();
+#endif /* X_NOT_POSIX */
 #define	bzero(s, n)	memset(s, 0, n)
 #endif	/* USE_SYSV_TERMIO */
 
@@ -197,7 +200,6 @@ char **argv;
 	struct winsize ws;
 #endif	/* TIOCSWINSZ */
 #endif	/* sun */
-	char *getenv();
 	char *name_of_tty;
 #ifdef CANT_OPEN_DEV_TTY
 	extern char *ttyname();

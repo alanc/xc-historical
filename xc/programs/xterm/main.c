@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.173 91/03/27 21:19:16 gildea Exp $ */
+/* $XConsortium: main.c,v 1.174 91/04/01 09:28:40 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -203,18 +203,24 @@ extern void sleep();
 #endif
 #endif
 
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
 extern char *malloc();
 extern char *calloc();
 extern char *realloc();
-extern char *ttyname();
 extern char *getenv();
-extern char *strindex ();
 extern void exit();
+#endif
+#ifdef X_NOT_POSIX
+extern char *ttyname();
+#endif
 
 #ifdef SYSV
 extern char *ptsname();
 #endif
 
+extern char *strindex ();
 extern void HandlePopupMenu();
 
 int switchfb[] = {0, 2, 1, 3};
@@ -1953,7 +1959,7 @@ spawn ()
 		setpgrp(0,0);
 		close(open(ttydev, O_WRONLY, 0));
 		setpgrp (0, pgrp);
-#endif /* USE_SYSV_PGRP */
+#endif /* !USE_SYSV_PGRP */
 
 #ifdef UTMP
 		pw = getpwuid(screen->uid);
