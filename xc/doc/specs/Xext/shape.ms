@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: shape.ms,v 1.12 91/06/17 14:45:08 rws Exp $
+.\" $XConsortium: shape.ms,v 1.13 91/07/28 15:49:51 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -811,7 +811,7 @@ REGION *region;
 .RE
 .IP
 Converts the specified region into a list of rectangles and calls
-.PN XShapeRectangles .
+.PN XShapeCombineRectangles .
 .LP
 XShapeCombineRectangles (display, dest, dest_kind, x_off, y_off, rectangles, n_rects, op, ordering)
 .RS
