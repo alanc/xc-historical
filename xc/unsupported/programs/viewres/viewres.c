@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.22 89/12/10 15:55:50 jim Exp $
+ * $XConsortium: viewres.c,v 1.1 90/01/31 17:35:08 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -55,6 +55,13 @@ static XtResource Resources[] = {
 
 char *ProgramName;
 
+static char *fallback_resources[] = {
+    "Viewres*Viewport.allowHoriz: true",
+    "Viewres*Viewport.allowVert: true",
+    "Viewres*allowShellResize: true",
+    NULL
+};
+
 usage ()
 {
     fprintf(stderr, "usage:  %s [-options...]\n", ProgramName);
@@ -90,11 +97,14 @@ main (argc, argv)
     int i;
     WidgetNode *topnode;
     Widget toplevel, viewport, tree;
+    XtAppContext app_con;
 
     ProgramName = argv[0];
 
-    toplevel = XtInitialize (NULL, "Viewres", Options, XtNumber (Options),
-			     &argc, argv);
+    toplevel = XtAppInitialize (&app_con, "Viewres", 
+				Options, XtNumber (Options),
+				&argc, argv, fallback_resources,
+				NULL, ZERO);
 
     XtGetApplicationResources (toplevel, (caddr_t) &Appresources,
 			       Resources, XtNumber(Resources), NULL, ZERO);
@@ -110,6 +120,6 @@ main (argc, argv)
 
     build_tree (topnode, tree, NULL);
     XtRealizeWidget (toplevel);
-    XtMainLoop ();
+    XtAppMainLoop (app_con);
 }
 
