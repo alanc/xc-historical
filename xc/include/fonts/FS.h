@@ -31,14 +31,14 @@
 #define	FS_PROTOCOL		1
 #define	FS_PROTOCOL_MINOR	0
 
+typedef unsigned long FSID;
+
+#ifndef X_PROTOCOL
 /* protocol familes */
 #define FamilyInternet          0
 #define FamilyDECnet            1
 #define FamilyChaos             2
 
-typedef unsigned long FSID;
-
-#ifndef X_H
 typedef unsigned long Mask;
 
 typedef FSID	Font;
