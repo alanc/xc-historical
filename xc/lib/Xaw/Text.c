@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.24 88/01/28 09:46:45 swick Locked $";
+static char rcsid[] = "$Header: Text.c,v 1.25 88/02/05 23:16:06 swick Locked $";
 #endif lint
 
 /*
@@ -220,6 +220,8 @@ static void Initialize(request, new)
     }
 }
 
+void ForceBuildLineTable();
+
 static void Realize( w, valueMask, attributes )
    Widget w;
    Mask *valueMask;
@@ -237,6 +239,7 @@ static void Realize( w, valueMask, attributes )
        XtRealizeWidget(ctx->text.sbar);
        XtMapWidget(ctx->text.sbar);
    }
+   ForceBuildLineTable(ctx);
 }
 
 /* Utility routines for support of Text */
