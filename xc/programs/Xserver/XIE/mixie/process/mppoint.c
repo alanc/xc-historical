@@ -1,4 +1,4 @@
-/* $XConsortium: mppoint.c,v 1.1 93/10/26 09:46:41 rws Exp $ */
+/* $XConsortium: mppoint.c,v 1.2 93/10/31 09:48:23 dpw Exp $ */
 /**** module mppoint.c ****/
 /******************************************************************************
 				NOTICE
@@ -125,8 +125,8 @@ typedef struct _mppointdef {
 	void	(*action) ();
 #if XIE_FULL
 				/* below here for crazy pixels only */
-	void	*(*convert) ();
-	void	*buffer;
+	pointer (*convert) ();
+	pointer buffer;
 	CARD32	constant;
 	CARD8   shiftok;
 	CARD8   shiftamt;
@@ -168,11 +168,11 @@ static void (*action_merge[3])() = {	/* [intclass - 2] */
 	CPMRG_B, CPMRG_P, CPMRG_Q	/* [byte,pair,quad] */
 };
 
-static void *CPCNV_bB(), *CPCNV_BB();
-static void *CPCNV_bP(), *CPCNV_BP(), *CPCNV_PP();
-static void *CPCNV_bQ(), *CPCNV_BQ(), *CPCNV_PQ();
+static pointer CPCNV_bB(), CPCNV_BB();
+static pointer CPCNV_bP(), CPCNV_BP(), CPCNV_PP();
+static pointer CPCNV_bQ(), CPCNV_BQ(), CPCNV_PQ();
 
-static void * (*action_convert[3][3])() = { /* [intclass-2][ii-1] */
+static pointer  (*action_convert[3][3])() = { /* [intclass-2][ii-1] */
 	CPCNV_bB, CPCNV_BB, 0,		/* [out=Byte] [inp=bits,byte,pair] */
 	CPCNV_bP, CPCNV_BP, CPCNV_PP,	/* [out=Pair] [inp=bits,byte,pair] */
 	CPCNV_bQ, CPCNV_BQ, CPCNV_PQ	/* [out=Quad] [inp=bits,byte,pair] */
@@ -301,7 +301,7 @@ static int InitializePoint(flo,ped)
 	pvt->width = iband->format->width;
 	/* might allocate extra space and use lut instead of multiply */
 	pvt->convert = action_convert[intclass-2][ii-1];
-	if (!(pvt->buffer = (void *)
+	if (!(pvt->buffer = (pointer)
 	      XieMalloc(pvt->width << (intclass - BYTE_PIXEL))))
 	  AllocError(flo,ped,return(FALSE));
       }
@@ -408,33 +408,33 @@ static int ActivatePointExplode(flo,ped,pet)
     bandPtr iband = &(pet->receptor[SRCtag].band[0]);
     bandPtr lband = &(pet->receptor[LUTtag].band[0]);
     bandPtr oband = &(pet->emitter[0]);
-    void    *lvoid0, *lvoid1, *lvoid2;
-    void    *ovoid0, *ovoid1, *ovoid2;
-    void    *ivoid;
+    pointer lvoid0, lvoid1, lvoid2;
+    pointer ovoid0, ovoid1, ovoid2;
+    pointer ivoid;
     int     bw = iband->format->width;
 
     /* asking for 1 should fetch entire lut strip */
-    lvoid0 = GetSrcBytes(void,flo,pet,lband,0,1,FALSE); lband++;
-    lvoid1 = GetSrcBytes(void,flo,pet,lband,0,1,FALSE); lband++;
-    lvoid2 = GetSrcBytes(void,flo,pet,lband,0,1,FALSE);
+    lvoid0 = GetSrcBytes(pointer,flo,pet,lband,0,1,FALSE); lband++;
+    lvoid1 = GetSrcBytes(pointer,flo,pet,lband,0,1,FALSE); lband++;
+    lvoid2 = GetSrcBytes(pointer,flo,pet,lband,0,1,FALSE);
 
     if (!lvoid0 || !lvoid1 || !lvoid2)
 	ImplementationError(flo,ped, return(FALSE));
 
-    ivoid  = GetCurrentSrc(void,flo,pet,iband);
-    ovoid0 = GetCurrentDst(void,flo,pet,oband); oband++;
-    ovoid1 = GetCurrentDst(void,flo,pet,oband); oband++;
-    ovoid2 = GetCurrentDst(void,flo,pet,oband); oband -= 2;
+    ivoid  = GetCurrentSrc(pointer,flo,pet,iband);
+    ovoid0 = GetCurrentDst(pointer,flo,pet,oband); oband++;
+    ovoid1 = GetCurrentDst(pointer,flo,pet,oband); oband++;
+    ovoid2 = GetCurrentDst(pointer,flo,pet,oband); oband -= 2;
     while (!ferrCode(flo) && ivoid && ovoid0 && ovoid1 && ovoid2) {
 
         (*((pvt+0)->action)) (ivoid, ovoid0, lvoid0, bw);
         (*((pvt+1)->action)) (ivoid, ovoid1, lvoid1, bw);
         (*((pvt+2)->action)) (ivoid, ovoid2, lvoid2, bw);
 
-	ivoid  = GetNextSrc(void,flo,pet,iband,TRUE);
-	ovoid0 = GetNextDst(void,flo,pet,oband,TRUE); oband++;
-	ovoid1 = GetNextDst(void,flo,pet,oband,TRUE); oband++;
-	ovoid2 = GetNextDst(void,flo,pet,oband,TRUE); oband -= 2;
+	ivoid  = GetNextSrc(pointer,flo,pet,iband,TRUE);
+	ovoid0 = GetNextDst(pointer,flo,pet,oband,TRUE); oband++;
+	ovoid1 = GetNextDst(pointer,flo,pet,oband,TRUE); oband++;
+	ovoid2 = GetNextDst(pointer,flo,pet,oband,TRUE); oband -= 2;
     }
     FreeData(flo, pet, iband, iband->current);
     if (iband->final) {
@@ -458,33 +458,33 @@ static int ActivatePointExplodeMsk(flo,ped,pet)
     bandPtr lband = &(pet->receptor[LUTtag].band[0]);
     bandPtr oband = &(pet->emitter[0]);
     CARD8     msk = raw->bandMask;
-    void * lvoid;
+    pointer  lvoid;
 
     for(band = 0; band < nbands; band++, pvt++, iband++, oband++, lband++) {
 	register int bw = iband->format->width;
-	void *ivoid, *ovoid;
+	pointer ivoid, ovoid;
 
 	if ((msk & (1<<band)) == 0) { 
 	    /* Pass source band similar to BandSelect code */
-	    if(GetCurrentSrc(void,flo,pet,iband)) {
+	    if(GetCurrentSrc(pointer,flo,pet,iband)) {
 		do {
 		    if(!PassStrip(flo,pet,oband,iband->strip))
 			return(FALSE);
-		} while(GetSrc(void,flo,pet,iband,iband->maxLocal,FLUSH));
+		} while(GetSrc(pointer,flo,pet,iband,iband->maxLocal,FLUSH));
 		FreeData(flo,pet,iband,iband->maxLocal);
 	    }
 	    continue;
 	}
 
 	/* Or process similar to ordinary Point code. */
-    	if (!(lvoid = GetSrcBytes(void,flo,pet,lband,0,1,FALSE)) ||
-	    !(ivoid = GetCurrentSrc(void,flo,pet,iband)) ||
-	    !(ovoid = GetCurrentDst(void,flo,pet,oband))) continue;
+    	if (!(lvoid = GetSrcBytes(pointer,flo,pet,lband,0,1,FALSE)) ||
+	    !(ivoid = GetCurrentSrc(pointer,flo,pet,iband)) ||
+	    !(ovoid = GetCurrentDst(pointer,flo,pet,oband))) continue;
 
 	do {
 	    (*(pvt->action)) (ivoid, ovoid, lvoid, bw);
-	    ivoid = GetNextSrc(void,flo,pet,iband,TRUE);
-	    ovoid = GetNextDst(void,flo,pet,oband,TRUE);
+	    ivoid = GetNextSrc(pointer,flo,pet,iband,TRUE);
+	    ovoid = GetNextDst(pointer,flo,pet,oband,TRUE);
 	} while (!ferrCode(flo) && ivoid && ovoid) ;
 
 	FreeData(flo, pet, iband, iband->current);
@@ -505,25 +505,25 @@ static int ActivatePointCombine(flo,ped,pet)
     bandPtr iband = &(pet->receptor[SRCtag].band[0]);
     bandPtr lband = &(pet->receptor[LUTtag].band[0]);
     bandPtr oband = &(pet->emitter[0]);
-    void    *ivoid0, *ivoid1, *ivoid2, *lvoid, *ovoid;
+    pointer ivoid0, ivoid1, ivoid2, lvoid, ovoid;
 
     /* asking for 1 should fetch entire lut strip */
-    if (!(lvoid = GetSrcBytes(void,flo,pet,lband,0,1,FALSE)))
+    if (!(lvoid = GetSrcBytes(pointer,flo,pet,lband,0,1,FALSE)))
 	return FALSE;
 
-    ovoid  = GetCurrentDst(void,flo,pet,oband);
-    ivoid0 = GetCurrentSrc(void,flo,pet,iband); iband++;
-    ivoid1 = GetCurrentSrc(void,flo,pet,iband); iband++;
-    ivoid2 = GetCurrentSrc(void,flo,pet,iband); iband -= 2;
+    ovoid  = GetCurrentDst(pointer,flo,pet,oband);
+    ivoid0 = GetCurrentSrc(pointer,flo,pet,iband); iband++;
+    ivoid1 = GetCurrentSrc(pointer,flo,pet,iband); iband++;
+    ivoid2 = GetCurrentSrc(pointer,flo,pet,iband); iband -= 2;
 
     while (!ferrCode(flo) && ovoid && ivoid0 && ivoid1 && ivoid2) {
 
         (*(pvt->action)) (ivoid0, ivoid1, ivoid2, lvoid, ovoid, pvt);
 
-	ovoid  = GetNextDst(void,flo,pet,oband,TRUE);
-	ivoid0 = GetNextSrc(void,flo,pet,iband,TRUE); iband++;
-	ivoid1 = GetNextSrc(void,flo,pet,iband,TRUE); iband++;
-	ivoid2 = GetNextSrc(void,flo,pet,iband,TRUE); iband -= 2;
+	ovoid  = GetNextDst(pointer,flo,pet,oband,TRUE);
+	ivoid0 = GetNextSrc(pointer,flo,pet,iband,TRUE); iband++;
+	ivoid1 = GetNextSrc(pointer,flo,pet,iband,TRUE); iband++;
+	ivoid2 = GetNextSrc(pointer,flo,pet,iband,TRUE); iband -= 2;
     }
 
     FreeData(flo, pet, iband, iband->current); iband++;
@@ -551,15 +551,15 @@ static int ActivatePointROI(flo,ped,pet)
     bandPtr lband     = &(pet->receptor[LUTtag].band[0]);
     bandPtr rband     = &(pet->receptor[ped->inCnt-1].band[0]);
     bandPtr oband     = &(pet->emitter[0]);
-    void * lvoid;
+    pointer  lvoid;
 
     for(band=0; band < nbands; band++,pvt++,iband++,oband++,lband++,rband++) {
-	void *ivoid, *ovoid;
+	pointer ivoid, ovoid;
 
 	/* 1 should fetch entire lut strip */
-    	if (!(lvoid = GetSrcBytes(void,flo,pet,lband,0,1,FALSE)) ||
-	    !(ivoid = GetCurrentSrc(void,flo,pet,iband)) ||
-	    !(ovoid = GetCurrentDst(void,flo,pet,oband))) continue;
+    	if (!(lvoid = GetSrcBytes(pointer,flo,pet,lband,0,1,FALSE)) ||
+	    !(ivoid = GetCurrentSrc(pointer,flo,pet,iband)) ||
+	    !(ovoid = GetCurrentDst(pointer,flo,pet,oband))) continue;
 
 	while (!ferrCode(flo) && ivoid && ovoid && 
 				SyncDomain(flo,ped,oband,FLUSH)) {
@@ -575,8 +575,8 @@ static int ActivatePointROI(flo,ped,pet)
 		    currentx -= run;
 	    }
 
-	    ivoid = GetNextSrc(void,flo,pet,iband,TRUE);
-	    ovoid = GetNextDst(void,flo,pet,oband,TRUE);
+	    ivoid = GetNextSrc(pointer,flo,pet,iband,TRUE);
+	    ovoid = GetNextDst(pointer,flo,pet,oband,TRUE);
 	}
 
 	FreeData(flo, pet, iband, iband->current);
@@ -600,21 +600,21 @@ static int ActivatePoint(flo,ped,pet)
     bandPtr iband = &(pet->receptor[SRCtag].band[0]);
     bandPtr lband = &(pet->receptor[LUTtag].band[0]);
     bandPtr oband = &(pet->emitter[0]);
-    void * lvoid;
+    pointer lvoid;
 
     for(band = 0; band < nbands; band++, pvt++, iband++, oband++, lband++) {
 	register int bw = iband->format->width;
-	void *ivoid, *ovoid;
+	pointer ivoid, ovoid;
 
 	/* 1 should fetch entire lut strip */
-    	if (!(lvoid = GetSrcBytes(void,flo,pet,lband,0,1,FALSE)) ||
-	    !(ivoid = GetCurrentSrc(void,flo,pet,iband)) ||
-	    !(ovoid = GetCurrentDst(void,flo,pet,oband))) continue;
+    	if (!(lvoid = GetSrcBytes(pointer,flo,pet,lband,0,1,FALSE)) ||
+	    !(ivoid = GetCurrentSrc(pointer,flo,pet,iband)) ||
+	    !(ovoid = GetCurrentDst(pointer,flo,pet,oband))) continue;
 
 	do {
 	    (*(pvt->action)) (ivoid, ovoid, lvoid, bw);
-	    ivoid = GetNextSrc(void,flo,pet,iband,TRUE);
-	    ovoid = GetNextDst(void,flo,pet,oband,TRUE);
+	    ivoid = GetNextSrc(pointer,flo,pet,iband,TRUE);
+	    ovoid = GetNextDst(pointer,flo,pet,oband,TRUE);
 	} while (!ferrCode(flo) && ivoid && ovoid) ;
 
 	FreeData(flo, pet, iband, iband->current);
@@ -639,7 +639,7 @@ static int ResetPoint(flo,ped)
     if (pvt)
 	for (band = 0 ; band < xieValMaxBands ; band++, pvt++)
 	    if (pvt->buffer)
-		pvt->buffer = (CARD32 *) XieFree(pvt->buffer);
+		pvt->buffer = (pointer) XieFree(pvt->buffer);
 #endif
     ResetReceptors(ped);
     ResetProcDomain(ped);
@@ -678,7 +678,7 @@ static int DestroyPoint(flo,ped)
 
 static void
 P11_bb(INP,OUTP,LUTP,bw)
-	void *INP; void *OUTP; void *LUTP; int bw;
+	pointer INP; pointer OUTP; pointer LUTP; int bw;
 {
 	unsigned char *lutp = (unsigned char *) LUTP;
 
@@ -700,7 +700,7 @@ P11_bb(INP,OUTP,LUTP,bw)
 
 static void
 P11_bb1(INP,OUTP,LUTP,bw)
-	void *INP; void *OUTP; void *LUTP; int bw;
+	pointer INP; pointer OUTP; pointer LUTP; int bw;
 {
 	CARD8 *lutp = (CARD8 *) LUTP;
 
@@ -714,7 +714,7 @@ P11_bb1(INP,OUTP,LUTP,bw)
 
 static void
 P11_bb0(INP,OUTP,LUTP,bw)
-	void *INP; void *OUTP; void *LUTP; int bw;
+	pointer INP; pointer OUTP; pointer LUTP; int bw;
 {
 	action_clear(OUTP, bw, 0);
 }
@@ -732,7 +732,7 @@ P11_bb0(INP,OUTP,LUTP,bw)
 #define DO_P11c(fn_do,itype,otype)					\
 static void								\
 fn_do(INP,OUTP,LUTP,bw)							\
-	void *INP; void *OUTP; void *LUTP; int bw;			\
+	pointer INP; pointer OUTP; pointer LUTP; int bw;			\
 {									\
 	LogInt *inp = (LogInt *) INP;					\
 	otype *outp = (otype *) OUTP;					\
@@ -749,7 +749,7 @@ fn_do(INP,OUTP,LUTP,bw)							\
 #define DO_P11p(fn_do,itype,otype)					\
 static void								\
 fn_do(INP,OUTP,LUTP,bw)							\
-	void *INP; void *OUTP; void *LUTP; int bw;			\
+	pointer INP; pointer OUTP; pointer LUTP; int bw;			\
 {									\
 	itype *inp = (itype *) INP;					\
 	LogInt *outp = (LogInt *) OUTP, M, outval;			\
@@ -769,7 +769,7 @@ fn_do(INP,OUTP,LUTP,bw)							\
 #define DO_P11x(fn_do,itype,otype)					\
 static void								\
 fn_do(INP,OUTP,LUTP,bw)							\
-	void *INP; void *OUTP; void *LUTP; int bw;			\
+	pointer INP; pointer OUTP; pointer LUTP; int bw;			\
 { 									\
 	otype *lutp = (otype *) LUTP;					\
 	bitexpand(INP,OUTP,bw, lutp[0], lutp[1]);			\
@@ -778,7 +778,7 @@ fn_do(INP,OUTP,LUTP,bw)							\
 #define DO_P11(fn_do,itype,otype)					\
 static void								\
 fn_do(INP,OUTP,LUTP,bw)							\
-	void *INP; void *OUTP; void *LUTP; int bw;			\
+	pointer INP; pointer OUTP; pointer LUTP; int bw;			\
 {									\
 	itype *inp = (itype *) INP;					\
 	otype *outp = (otype *) OUTP;					\
@@ -827,14 +827,14 @@ DO_P11	(P11_QQ, QuadPixel, QuadPixel)
 
 static void
 Proi11_bb0(INP,LUTP,run,ix)
-	void *INP; void *LUTP; int run; int ix;
+	pointer INP; pointer LUTP; int run; int ix;
 {
 	action_clear  (INP, run, ix);	
 }
 
 static void
 Proi11_bb(INP,LUTP,run,ix)
-	void *INP; void *LUTP; int run; int ix;
+	pointer INP; pointer LUTP; int run; int ix;
 {
 	CARD8 *lutp = (CARD8 *) LUTP;
 
@@ -847,7 +847,7 @@ Proi11_bb(INP,LUTP,run,ix)
 #define ROI_P11(fn_do,iotype)					\
 static void 							\
 fn_do(INP,LUTP,run,ix) 						\
-	void *INP; void *LUTP; INT32 run; INT32 ix;		\
+	pointer INP; pointer LUTP; INT32 run; INT32 ix;		\
 { 								\
 	iotype *inp  = ((iotype *) INP) + ix;			\
 	iotype *lutp = (iotype *) LUTP; 			\
@@ -872,7 +872,7 @@ ROI_P11		(Proi11_QQ, QuadPixel)
 
 static void
 crazy_horse(ivoid0, ivoid1, ivoid2, lvoid, ovoid, pvt)
-    void  *ivoid0, *ivoid1, *ivoid2, *lvoid, *ovoid;
+    pointer ivoid0, ivoid1, ivoid2, lvoid, ovoid;
     mpPointPvtPtr pvt;
 {
 	ivoid0 = (*(pvt->convert)) (ivoid0, pvt); pvt++;
@@ -892,7 +892,7 @@ crazy_horse(ivoid0, ivoid1, ivoid2, lvoid, ovoid, pvt)
 #define MakeCrazyPix(name, itype, otype, OP, field)			\
 static void								\
 name(ivoid0, ivoid1, ivoid2, lvoid, ovoid, pvt)				\
-    void  *ivoid0, *ivoid1, *ivoid2, *lvoid, *ovoid;			\
+    pointer ivoid0, ivoid1, ivoid2, lvoid, ovoid;			\
     mpPointPvtPtr pvt;							\
 {									\
     itype *i0 = (itype *) ivoid0;					\
@@ -913,7 +913,7 @@ name(ivoid0, ivoid1, ivoid2, lvoid, ovoid, pvt)				\
 #define MakeCrazyMergeLut(name, itype, otype)				\
 static void								\
 name(ivoid0, ivoid1, ivoid2, lvoid, ovoid, pvt)				\
-    void  *ivoid0, *ivoid1, *ivoid2, *lvoid, *ovoid;			\
+    pointer ivoid0, ivoid1, ivoid2, lvoid, ovoid;			\
     mpPointPvtPtr pvt;							\
 {									\
     itype *i0 = (itype *) ivoid0;					\
@@ -931,7 +931,7 @@ name(ivoid0, ivoid1, ivoid2, lvoid, ovoid, pvt)				\
 #define MakeCrazyMerge(name, iotype)					\
 static void								\
 name(ivoid0, ivoid1, ivoid2, lvoid, ovoid, pvt)				\
-    void  *ivoid0, *ivoid1, *ivoid2, *lvoid, *ovoid;			\
+    pointer ivoid0, ivoid1, ivoid2, lvoid, ovoid;			\
     mpPointPvtPtr pvt;							\
 {									\
     iotype *i0 = (iotype *) ivoid0;					\
@@ -946,9 +946,9 @@ name(ivoid0, ivoid1, ivoid2, lvoid, ovoid, pvt)				\
 }
 
 #define MakeCrazyConvert(name, itype, otype)				\
-static void *								\
+static pointer								\
 name(ivoid,pvt)								\
-    void  *ivoid;							\
+    pointer ivoid;							\
     mpPointPvtPtr pvt;							\
 {									\
     itype *i = (itype *) ivoid;						\
@@ -964,9 +964,9 @@ name(ivoid,pvt)								\
     return pvt->buffer;							\
 }
 
-static void *
+static pointer
 CPCNV_bB(ivoid,pvt)
-    void  *ivoid;
+    pointer ivoid;
     mpPointPvtPtr pvt;
 {
     bitexpand(ivoid, pvt->buffer, pvt->width, 0, pvt->constant);
@@ -974,9 +974,9 @@ CPCNV_bB(ivoid,pvt)
 }
 
 #define MakeCrazyConvertBit(name, otype)				\
-static void *								\
+static pointer								\
 name(ivoid,pvt)								\
-    void  *ivoid;							\
+    pointer ivoid;							\
     mpPointPvtPtr pvt;							\
 {									\
     LogInt *i = (LogInt *) ivoid, ival, M;				\
