@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cb_lite.c,v 5.2 91/02/16 09:47:52 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -150,6 +150,7 @@ Plight_src_bundle	*rep;	/* light source representation */
     if (CB_ENTRY_CHECK(phg_cur_cph, ERR3, Pfn_set_light_src_rep)) {
     	if (PSL_WS_STATE(phg_cur_cph->psl) != PWS_ST_WSOP) {
 	    ERR_REPORT(phg_cur_cph->erh, ERR3);
+	    return;
 
 	} else if (!(wsinfo = phg_psl_get_ws_info( phg_cur_cph->psl, ws))) {
 	    ERR_REPORT(phg_cur_cph->erh, ERR54);
