@@ -1,5 +1,5 @@
 *TransientShell.allowShellResize:	True
-*font:					variable
+*font:					-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso*-*
 *shapeStyle:				oval
 *cursor:				left_ptr
 !*highlight:				magenta
@@ -12,7 +12,8 @@
 *form*left:				ChainLeft
 *form*right:				ChainLeft
 
-*form*width:              		120
+*MenuButton.leftBitmap:			menu12
+*form*width:              		144
 *form*height:             		15
 
 *Toggle.translations:	<EnterWindow>:	highlight(WhenUnset)\n\
@@ -51,13 +52,13 @@
 *Dialog.cancel.label:			Cancel
 *Dialog.retry.label:			Retry
 
-*form.infoButton.width:			36
+*form.infoButton.width:			48
 *form.infoButton.label:			Info
 
 *infoPopup.width:			300
 *infoPopup.height:			100
 
-*form.MenuButton.width:			36
+*form.MenuButton.width:			48
 
 *form.SimpleMenu.width:			0
 *form.SimpleMenu.height:		0
@@ -81,7 +82,7 @@
 *fileMenu.resize.label:			Resize...
 *fileMenu.filename.label:		Filename...
 *fileMenu.basename.label:		Basename...
-*fileMenu.quit.label:			Quit...
+*fileMenu.quit.label:			Quit
 
 *editMenu.image.label:			Image
 *editMenu.grid.label:			Grid
