@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.20 91/01/09 17:30:53 rws Exp $
+ * $XConsortium: man.h,v 1.21 91/02/08 11:31:08 gildea Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -101,6 +101,7 @@ typedef struct tManual {
   char ** entries; 		/* The individual man page file names. */
   int nentries;			/* how many (TOTAL)*/
   int nalloc;			/* how much space allocated */
+  int flags;			/* suffix, fold */
 } Manual;
    
 /* psuedo Globals that are specific to each manpage created. */
