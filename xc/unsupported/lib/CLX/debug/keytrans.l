@@ -161,7 +161,8 @@
     ;; Handle events
     (unwind-protect
 	(dotimes (state 64)
-	  (loop for code from (display-min-keycode display) to (display-max-keycode display) doing
+	  (do ((code (display-min-keycode display) (1+ code)))
+	      ((> code (display-max-keycode display)))
 	    (send-event win :key-press '(:key-press) :code code :state state
 			:window win :root (screen-root screen) :time 0
 			:x 1 :y 2 :root-x 10 :root-y 20 :same-screen-p t)
