@@ -1,23 +1,10 @@
 LIBRARY XEXT
 VERSION LIBRARY_VERSION
 EXPORTS
- XLbxGetEventBase
- XLbxQueryExtension
- XLbxQueryVersion
  XMITMiscGetBugMode
  XMITMiscQueryExtension
  XMITMiscSetBugMode
  XMissingExtension
- XScreenSaverAllocInfo
- XScreenSaverGetRegistered
- XScreenSaverQueryExtension
- XScreenSaverQueryInfo
- XScreenSaverQueryVersion
- XScreenSaverRegister
- XScreenSaverSelectInput
- XScreenSaverSetAttributes
- XScreenSaverUnregister
- XScreenSaverUnsetAttributes
  XSetExtensionErrorHandler
  XShapeCombineMask
  XShapeCombineRectangles
