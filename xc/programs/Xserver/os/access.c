@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.56 93/07/12 09:33:53 dpw Exp $ */
+/* $XConsortium: access.c,v 1.57 93/09/03 08:15:33 dpw Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -227,7 +227,7 @@ DefineSelf (fd)
     {    
 	addr = (unsigned char *) dnaddr;
 	len = dnaddr->a_len + sizeof(dnaddr->a_len);
-	family = AF_DECnet;
+	family = FamilyDECnet;
 	for (host = selfhosts;
 	     host && !addrEqual (family, addr, len, host);
 	     host = host->next)
