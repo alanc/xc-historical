@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: iso8859-1,v 1.2 93/09/17 16:02:48 rws Exp $
 #
 # ISO 8859-1 (Latin1) Compose Sequence
 #
@@ -101,7 +101,7 @@
 # Accented Alphabet
 <Multi_key> <A> <grave>			: "\300"	# A Grave
 <Multi_key> <A> <acute>			: "\301"	# A Acute
-<Multi_key> <A> <asciicircumflex>	: "\302"	# A Circumflex
+<Multi_key> <A> <asciicircum>		: "\302"	# A Circumflex
 <Multi_key> <A> <greater>		: "\302"	# A Circumflex
 <Multi_key> <A> <asciitilde>		: "\303"	# A Tilde
 <Multi_key> <A> <minus>			: "\303"	# A Tilde
@@ -110,7 +110,7 @@
 <Multi_key> <A> <E>			: "\306"	# A E Diphthong
 <Multi_key> <a> <grave>			: "\340"	# a Grave
 <Multi_key> <a> <acute>			: "\341"	# a Acute
-<Multi_key> <a> <asciicircumflex>	: "\342"	# a Circumflex
+<Multi_key> <a> <asciicircum>		: "\342"	# a Circumflex
 <Multi_key> <a> <greater>		: "\342"	# a Circumflex
 <Multi_key> <a> <asciitilde>		: "\343"	# a Tilde
 <Multi_key> <a> <minus>			: "\343"	# a Tilde
@@ -123,22 +123,22 @@
 <Multi_key> <minus> <d>			: "\360"	# Small Icelandic Eth
 <Multi_key> <E> <grave>			: "\310"	# E Grave
 <Multi_key> <E> <acute>			: "\311"	# E Acute
-<Multi_key> <E> <asciicircumflex>	: "\312"	# E Circumflex
+<Multi_key> <E> <asciicircum>		: "\312"	# E Circumflex
 <Multi_key> <E> <greater>		: "\312"	# E Circumflex
 <Multi_key> <E> <quotedbl>		: "\313"	# E Umlaut
 <Multi_key> <e> <grave>			: "\350"	# e Grave
 <Multi_key> <e> <acute>			: "\351"	# e Acute
-<Multi_key> <e> <asciicircumflex>	: "\352"	# e Circumflex
+<Multi_key> <e> <asciicircum>		: "\352"	# e Circumflex
 <Multi_key> <e> <greater>		: "\352"	# e Circumflex
 <Multi_key> <e> <quotedbl>		: "\353"	# e Umlaut
 <Multi_key> <I> <grave>			: "\314"	# I Grave
 <Multi_key> <I> <acute>			: "\315"	# I Acute
-<Multi_key> <I> <asciicircumflex>	: "\316"	# I Circumflex
+<Multi_key> <I> <asciicircum>		: "\316"	# I Circumflex
 <Multi_key> <I> <greater>		: "\316"	# I Circumflex
 <Multi_key> <I> <quotedbl>		: "\317"	# I Umlaut
 <Multi_key> <i> <grave>			: "\354"	# i Grave
 <Multi_key> <i> <acute>			: "\355"	# i Acute
-<Multi_key> <i> <asciicircumflex>	: "\356"	# i Circumflex
+<Multi_key> <i> <asciicircum>		: "\356"	# i Circumflex
 <Multi_key> <i> <greater>		: "\356"	# i Circumflex
 <Multi_key> <i> <quotedbl>		: "\357"	# i Umlaut
 <Multi_key> <N> <asciitilde>		: "\321"	# N Tilde
@@ -147,7 +147,7 @@
 <Multi_key> <n> <minus>			: "\361"	# n Tilde
 <Multi_key> <O> <grave>			: "\322"	# O Grave
 <Multi_key> <O> <acute>			: "\323"	# O Acute
-<Multi_key> <O> <asciicircumflex>	: "\324"	# O Circumflex
+<Multi_key> <O> <asciicircum>		: "\324"	# O Circumflex
 <Multi_key> <O> <greater>		: "\324"	# O Circumflex
 <Multi_key> <O> <asciitilde>		: "\325"	# O Tilde
 <Multi_key> <O> <minus>			: "\325"	# O Tilde
@@ -155,7 +155,7 @@
 <Multi_key> <O> <slash>			: "\330"	# O Slash
 <Multi_key> <o> <grave>			: "\362"	# o Grave
 <Multi_key> <o> <acute>			: "\363"	# o Acute
-<Multi_key> <o> <asciicircumflex>	: "\364"	# o Circumflex
+<Multi_key> <o> <asciicircum>		: "\364"	# o Circumflex
 <Multi_key> <o> <greater>		: "\364"	# o Circumflex
 <Multi_key> <o> <asciitilde>		: "\365"	# o Tilde
 <Multi_key> <o> <minus>			: "\365"	# o Tilde
@@ -163,12 +163,12 @@
 <Multi_key> <o> <slash>			: "\370"	# o Slash
 <Multi_key> <U> <grave>			: "\331"	# U Grave
 <Multi_key> <U> <acute>			: "\332"	# U Acute
-<Multi_key> <U> <asciicircumflex>	: "\333"	# U Circumflex
+<Multi_key> <U> <asciicircum>		: "\333"	# U Circumflex
 <Multi_key> <U> <greater>		: "\333"	# U Circumflex
 <Multi_key> <U> <quotedbl>		: "\334"	# U Umlaut
 <Multi_key> <u> <grave>			: "\371"	# u Grave
 <Multi_key> <u> <acute>			: "\372"	# u Acute
-<Multi_key> <u> <asciicircumflex>	: "\373"	# u Circumflex
+<Multi_key> <u> <asciicircum>		: "\373"	# u Circumflex
 <Multi_key> <u> <greater>		: "\373"	# u Circumflex
 <Multi_key> <u> <quotedbl>		: "\374"	# u Umlaut
 <Multi_key> <s> <s>			: "\337"	# German Small Sharp s
@@ -275,7 +275,7 @@ Ctrl<T> <quotedbl> <quotedbl>		: "\250"	# Diaeresis
 
 Ctrl<T> <A> <grave>			: "\300"	# A Grave
 Ctrl<T> <A> <acute>			: "\301"	# A Acute
-Ctrl<T> <A> <asciicircumflex>		: "\302"	# A Circumflex
+Ctrl<T> <A> <asciicircum>		: "\302"	# A Circumflex
 Ctrl<T> <A> <greater>			: "\302"	# A Circumflex
 Ctrl<T> <A> <asciitilde>		: "\303"	# A Tilde
 Ctrl<T> <A> <minus>			: "\303"	# A Tilde
@@ -284,7 +284,7 @@ Ctrl<T> <A> <asterisk>			: "\305"	# A Ring
 Ctrl<T> <A> <E>				: "\306"	# A E Diphthong
 Ctrl<T> <a> <grave>			: "\340"	# a Grave
 Ctrl<T> <a> <acute>			: "\341"	# a Acute
-Ctrl<T> <a> <asciicircumflex>		: "\342"	# a Circumflex
+Ctrl<T> <a> <asciicircum>		: "\342"	# a Circumflex
 Ctrl<T> <a> <greater>			: "\342"	# a Circumflex
 Ctrl<T> <a> <asciitilde>		: "\343"	# a Tilde
 Ctrl<T> <a> <minus>			: "\343"	# a Tilde
@@ -297,22 +297,22 @@ Ctrl<T> <minus> <D>			: "\320"	# Capital Icelandic Eth
 Ctrl<T> <minus> <d>			: "\360"	# Small Icelandic Eth
 Ctrl<T> <E> <grave>			: "\310"	# E Grave
 Ctrl<T> <E> <acute>			: "\311"	# E Acute
-Ctrl<T> <E> <asciicircumflex>		: "\312"	# E Circumflex
+Ctrl<T> <E> <asciicircum>		: "\312"	# E Circumflex
 Ctrl<T> <E> <greater>			: "\312"	# E Circumflex
 Ctrl<T> <E> <quotedbl>			: "\313"	# E Umlaut
 Ctrl<T> <e> <grave>			: "\350"	# e Grave
 Ctrl<T> <e> <acute>			: "\351"	# e Acute
-Ctrl<T> <e> <asciicircumflex>		: "\352"	# e Circumflex
+Ctrl<T> <e> <asciicircum>		: "\352"	# e Circumflex
 Ctrl<T> <e> <greater>			: "\352"	# e Circumflex
 Ctrl<T> <e> <quotedbl>			: "\353"	# e Umlaut
 Ctrl<T> <I> <grave>			: "\314"	# I Grave
 Ctrl<T> <I> <acute>			: "\315"	# I Acute
-Ctrl<T> <I> <asciicircumflex>		: "\316"	# I Circumflex
+Ctrl<T> <I> <asciicircum>		: "\316"	# I Circumflex
 Ctrl<T> <I> <greater>			: "\316"	# I Circumflex
 Ctrl<T> <I> <quotedbl>			: "\317"	# I Umlaut
 Ctrl<T> <i> <grave>			: "\354"	# i Grave
 Ctrl<T> <i> <acute>			: "\355"	# i Acute
-Ctrl<T> <i> <asciicircumflex>		: "\356"	# i Circumflex
+Ctrl<T> <i> <asciicircum>		: "\356"	# i Circumflex
 Ctrl<T> <i> <greater>			: "\356"	# i Circumflex
 Ctrl<T> <i> <quotedbl>			: "\357"	# i Umlaut
 Ctrl<T> <N> <asciitilde>		: "\321"	# N Tilde
@@ -321,7 +321,7 @@ Ctrl<T> <n> <asciitilde>		: "\361"	# n Tilde
 Ctrl<T> <n> <minus>			: "\361"	# n Tilde
 Ctrl<T> <O> <grave>			: "\322"	# O Grave
 Ctrl<T> <O> <acute>			: "\323"	# O Acute
-Ctrl<T> <O> <asciicircumflex>		: "\324"	# O Circumflex
+Ctrl<T> <O> <asciicircum>		: "\324"	# O Circumflex
 Ctrl<T> <O> <greater>			: "\324"	# O Circumflex
 Ctrl<T> <O> <asciitilde>		: "\325"	# O Tilde
 Ctrl<T> <O> <minus>			: "\325"	# O Tilde
@@ -329,7 +329,7 @@ Ctrl<T> <O> <quotedbl>			: "\326"	# O Umlaut
 Ctrl<T> <O> <slash>			: "\330"	# O Slash
 Ctrl<T> <o> <grave>			: "\362"	# o Grave
 Ctrl<T> <o> <acute>			: "\363"	# o Acute
-Ctrl<T> <o> <asciicircumflex>		: "\364"	# o Circumflex
+Ctrl<T> <o> <asciicircum>		: "\364"	# o Circumflex
 Ctrl<T> <o> <greater>			: "\364"	# o Circumflex
 Ctrl<T> <o> <asciitilde>		: "\365"	# o Tilde
 Ctrl<T> <o> <minus>			: "\365"	# o Tilde
@@ -337,12 +337,12 @@ Ctrl<T> <o> <quotedbl>			: "\366"	# o Umlaut
 Ctrl<T> <o> <slash>			: "\370"	# o Slash
 Ctrl<T> <U> <grave>			: "\331"	# U Grave
 Ctrl<T> <U> <acute>			: "\332"	# U Acute
-Ctrl<T> <U> <asciicircumflex>		: "\333"	# U Circumflex
+Ctrl<T> <U> <asciicircum>		: "\333"	# U Circumflex
 Ctrl<T> <U> <greater>			: "\333"	# U Circumflex
 Ctrl<T> <U> <quotedbl>			: "\334"	# U Umlaut
 Ctrl<T> <u> <grave>			: "\371"	# u Grave
 Ctrl<T> <u> <acute>			: "\372"	# u Acute
-Ctrl<T> <u> <asciicircumflex>		: "\373"	# u Circumflex
+Ctrl<T> <u> <asciicircum>		: "\373"	# u Circumflex
 Ctrl<T> <u> <greater>			: "\373"	# u Circumflex
 Ctrl<T> <u> <quotedbl>			: "\374"	# u Umlaut
 Ctrl<T> <s> <s>				: "\337"	# German Small Sharp s
