@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.87 87/11/01 16:42:47 haynes BL5 $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.88 87/12/01 09:10:14 swick Locked $";
 #endif lint
 
 /*
@@ -1447,30 +1447,6 @@ void XtCallbackPopdown(widget, closure, call_data)
  */
 
 
-void XtInheritInitialize(w, args, num_args)
-    register Widget w;
-    ArgList	args;
-    Cardinal	*num_args;
-{
-    WidgetClass class;
-
-    if (! XtIsSubclass(w, widgetClass)) {
-	XtError("Must be a subclass of Core to inherit initialize");
-    }
-    if ((XtSuperclass(w))->core_class.initialize) {
-  	/* Here we fake runtime casting by changing the class field in  */
-	/* the current class record and resetting it when we return.    */
-	class = XtClass(w);
-	XtClass(w) = XtSuperclass(w);
-
-	(*((XtClass(w))->core_class.initialize)) (w, args, num_args);
-	XtClass(w) = class;
-    }
-
-    XtClass(w)->core_class.initialize =
-	(XtSuperclass(w))->core_class.initialize;
-}
-
 void XtInheritRealize(w, mask, attr)
     register Widget w;
     Mask	    *mask;
@@ -1535,29 +1511,6 @@ void XtInheritExpose(w, event)
     }
 
     XtClass(w)->core_class.expose = (XtSuperclass(w))->core_class.expose;
-}
-
-void XtInheritSetValues(old, new)
-    register Widget old;
-    Widget	    new;
-{
-    WidgetClass class;
-
-    if (! XtIsSubclass(old, widgetClass)) {
-	  XtError("Must be a subclass of Core to inherit set_values");
-    }
-    if((XtSuperclass(old))->core_class.set_values) {
-  	/* Here we fake runtime casting by changing the class field in  */
-	/* the current class record and resetting it when we return.    */
-	class = XtClass(old);
-	XtClass(old) = XtSuperclass(old);
-
-	(*((XtClass(old))->core_class.set_values)) (old, new);
-	XtClass(old) = class;
-    }
-
-    XtClass(old)->core_class.set_values =
-	(XtSuperclass(old))->core_class.set_values;
 }
 
 void XtInheritAcceptFocus(w)
