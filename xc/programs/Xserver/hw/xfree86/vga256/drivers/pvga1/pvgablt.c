@@ -1,4 +1,4 @@
-/* $XConsortium: pvgablt.c,v 1.1 94/10/05 13:54:47 kaleb Exp $ */
+/* $XConsortium: pvgablt.c,v 1.3 94/10/13 13:26:38 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgablt.c,v 3.0 1994/07/24 11:57:05 dawes Exp $ */
 /*
  * cfb copy area
@@ -36,7 +36,6 @@ Author: Keith Packard
 /* WD90C31 code: Mike Tierney <floyd@eng.umd.edu> */
 /* WD90C33 accel code: Bill Morgart <wsm@morticia.ssw.com> */
 
-/* $XConsortium: pvgablt.c,v 1.1 94/10/05 13:54:47 kaleb Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
