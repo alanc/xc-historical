@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiSink.h,v 1.1 89/09/06 17:29:51 kit Exp $
+ * $XConsortium: AsciiSink.h,v 1.2 89/10/04 13:56:29 kit Exp $
  */
 
 /***********************************************************
@@ -42,13 +42,13 @@ SOFTWARE.
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
  echo                Output             Boolean         True
- displayNonPrinting  Output             Boolean         True
+ displayNonprinting  Output             Boolean         True
 
 */
 
 #define XtCOutput "Output"
 
-#define XtNdisplayNonPrinting "displayNonPrinting"
+#define XtNdisplayNonprinting "displayNonprinting"
 #define XtNecho "echo"
 
 /* Class record constants */

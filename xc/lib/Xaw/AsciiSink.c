@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.45 89/10/04 13:56:19 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.46 89/10/09 16:19:51 jim Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -55,7 +55,7 @@ static void FindDistance(), Resolve(), GetCursorBounds();
 static XtResource resources[] = {
     {XtNecho, XtCOutput, XtRBoolean, sizeof(Boolean),
 	offset(echo), XtRImmediate, (caddr_t) True},
-    {XtNdisplayNonPrinting, XtCOutput, XtRBoolean, sizeof(Boolean),
+    {XtNdisplayNonprinting, XtCOutput, XtRBoolean, sizeof(Boolean),
 	offset(display_nonprinting), XtRImmediate, (caddr_t) True},
 };
 #undef offset
