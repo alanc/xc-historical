@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.11 89/07/17 18:05:50 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.12 89/07/17 19:38:41 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -317,7 +317,7 @@ Boolean	              include;
   AsciiSourcePtr data = (AsciiSourcePtr) src->data;
   register int inc;
   Piece * piece;
-  XawTextPosition first;
+  XawTextPosition first, first_eol_position;
   register char * ptr;
 
   if (type == XawstAll) {	/* Optomize this common case. */
@@ -352,10 +352,11 @@ Boolean	              include;
   ptr = (position - first) + piece->text;
 
   switch (type) {
-  case XawstWhiteSpace: 
   case XawstEOL: 
+  case XawstParagraph: 
+  case XawstWhiteSpace: 
     for ( ; count > 0 ; count-- ) {
-      Boolean non_space = FALSE;
+      Boolean non_space = FALSE, first_eol = TRUE;
       while (TRUE) {
 	register char c = *ptr;
 
@@ -370,8 +371,23 @@ Boolean	              include;
 	  else
 	    non_space = TRUE;
 	}
-	else			/* type == XawstEOL */
+	else if (type == XawstEOL) {
 	  if (c == '\n') break;
+	}
+	else { /* XawstParagraph */
+	  if (first_eol) {
+	    if (c == '\n') {
+	      first_eol_position = position;
+	      first_eol = FALSE;
+	    }
+	  }
+	  else
+	    if ( c == '\n') 
+	      break;
+	    else if ( !isspace(c) )
+	      first_eol = TRUE;
+	}
+	      
 
 	if ( ptr < piece->text ) {
 	  piece = piece->prev;
@@ -387,8 +403,11 @@ Boolean	              include;
 	}
       }
     }
-    if (!include)
+    if (!include) {
+      if ( type == XawstParagraph)
+	position = first_eol_position;
       position -= inc;
+    }
     break;
   case XawstPositions: 
     position += count * inc;
