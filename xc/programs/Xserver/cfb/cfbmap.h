@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbmap.h,v 1.3 91/12/19 18:37:02 keith Exp $
+ * $XConsortium: cfbmap.h,v 1.4 93/02/08 09:53:10 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -78,6 +78,7 @@ cfb can not hack PSZ yet
 #define cfbCreateOps NAME(CreateOps)
 #define cfbCreatePixmap NAME(CreatePixmap)
 #define cfbCreateWindow NAME(CreateWindow)
+#define cfbCreateScreenResources NAME(CreateScreenResoures)
 #define cfbDestroyClip NAME(DestroyClip)
 #define cfbDestroyGC NAME(DestroyGC)
 #define cfbDestroyOps NAME(DestroyOps)
