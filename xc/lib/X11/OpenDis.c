@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.115 91/04/01 18:13:55 gildea Exp $
+ * $XConsortium: XOpenDis.c,v 11.116 91/04/16 16:32:10 keith Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -22,6 +22,9 @@ without express or implied warranty.
 #include <X11/Xos.h>
 #ifdef HASDES
 #include "Xlibnet.h"
+#if TCPCONN
+#include <sys/socket.h>
+#endif
 #endif
 #include <X11/Xauth.h>
 #include <X11/Xatom.h>
@@ -359,17 +362,22 @@ Display *XOpenDisplay (display)
 	    {
 	    	unsigned long	addr;
 	    	unsigned short	port;
+#ifdef TCPCONN
 	    	int	    addrlen;
 	    	struct sockaddr_in	in_addr;
     
 	    	addrlen = sizeof (in_addr);
-	    	getsockname (dpy->fd, (struct sockaddr *) &in_addr, &addrlen);
-	    	if (in_addr.sin_family == 2)
+	    	if (getsockname (dpy->fd,
+				 (struct sockaddr *) &in_addr,
+ 				 &addrlen) != -1 &&
+		    addrlen >= sizeof in_addr &&
+		    in_addr.sin_family == AF_INET)
 	    	{
 		    addr = ntohl (in_addr.sin_addr.s_addr);
 		    port = ntohs (in_addr.sin_port);
 	    	}
 	    	else
+#endif
 	    	{
 		    static unsigned long	unix_addr = 0xFFFFFFFF;
 		    addr = unix_addr--;
