@@ -1,4 +1,4 @@
-/* $XConsortium: os.h,v 1.3 91/05/13 16:49:03 gildea Exp $ */
+/* $XConsortium: os.h,v 1.4 91/07/16 20:21:49 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -28,17 +28,11 @@
 #ifndef	_OS_H_
 #define	_OS_H_
 
-#include	"FSproto.h"
-#include	"misc.h"
-
-/* XXX -- this needs to be in the config stuff */
-
-#ifdef sun
-#define	INCLUDE_ALLOCA_H
-#endif
+#include "FSproto.h"
+#include "misc.h"
 
 #ifdef INCLUDE_ALLOCA_H
-#include	<alloca.h>
+#include <alloca.h>
 #else
 extern char *alloca();
 
