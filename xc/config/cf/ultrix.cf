@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.58 93/09/21 11:17:15 rws Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.59 93/09/21 18:11:38 rws Exp $
 
 #define OSName            Ultrix-32 4.3
 XCOMM operating system:  OSName
@@ -21,9 +21,7 @@ XCOMM operating system:  OSName
 #define PexNativeFPFormat PEXDEC_F_Floating
 #define NativeFPFormat DEC_F_Float
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
-#if HasGcc
 #define BuildPexExt XqdssServer
-#endif
 #endif
 
 #ifdef MipsArchitecture
@@ -62,7 +60,7 @@ XCOMM operating system:  OSName
 #define AllocateLocalDefines /* */
 #endif
 
-#ifdef VaxArchitecture
+#if defined(VaxArchitecture) && XqdssServer
 #define ServerExtraDefines AllocateLocalDefines -DNEED_LINEHELPER
 #else
 #define ServerExtraDefines AllocateLocalDefines
