@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.17 91/01/31 15:24:42 gildea Exp $
+ *	$XConsortium: resize.c,v 1.18 91/02/01 13:27:33 gildea Exp $
  */
 
 /*
@@ -162,7 +162,7 @@ char *wsize[EMULATIONS] = {
 #endif	/* TIOCSWINSZ */
 #endif	/* sun */
 
-char *strindex (), *index (), *rindex();
+char *strindex ();
 
 SIGNAL_T onintr();
 
