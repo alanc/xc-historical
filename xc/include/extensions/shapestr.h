@@ -1,0 +1,123 @@
+/************************************************************
+Copyright 1989 by The Massachusetts Institute of Technology
+
+                    All Rights Reserved
+
+Permission to use, copy, modify, and distribute this
+software and its documentation for any purpose and without
+fee is hereby granted, provided that the above copyright
+no- tice appear in all copies and that both that copyright
+no- tice and this permission notice appear in supporting
+docu- mentation, and that the name of MIT not be used in
+advertising or publicity pertaining to distribution of the
+software without specific prior written permission.
+M.I.T. makes no representation about the suitability of
+this software for any purpose. It is provided "as is"
+without any express or implied warranty.
+
+MIT DISCLAIMS ALL WARRANTIES WITH REGARD TO  THIS  SOFTWARE,
+INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FIT-
+NESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SUN BE  LI-
+ABLE  FOR  ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,  DATA  OR
+PROFITS,  WHETHER  IN  AN  ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
+THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+********************************************************/
+
+/* $XConsortium: Exp $ */
+
+/*
+ * Protocol requests constants and alignment values
+ * These would really be in SHAPE's X.h and Xproto.h equivalents
+ */
+
+#include "Xmd.h"
+#include "shape.h"
+
+#define SHAPENAME "SHAPE-1"
+
+typedef struct _ShapeRectangles {
+	CARD8	reqType;	/* always ShapeReqCode */
+	CARD8	shapeReqType;	/* always X_ShapeRectangles */
+	CARD16	length B16;
+	CARD8	op;		/* Set, ... */
+	CARD8	destKind;	/* Window or Border */
+	CARD16	junk B16;	/* not used */
+	CARD32	dest B32;	/* Window */
+	INT16	xOff B16;
+	INT16	yOff B16;
+} xShapeRectanglesReq;		/* followed by xRects */
+#define sz_xShapeRectanglesReq	16
+
+typedef struct _ShapeMask {
+	CARD8	reqType;	/* always ShapeReqCode */
+	CARD8	shapeReqType;	/* always X_ShapeMask */
+	CARD16	length B16;
+
+	CARD8	op;		/* Set, ... */
+	CARD8	destKind;	/* Window or Border */
+	CARD16	junk B16;	/* not used */
+
+	CARD32	dest B32;	/* Window */
+	INT16	xOff B16;
+	INT16	yOff B16;
+	CARD32	src B32;	/* 1 bit pixmap */
+} xShapeMaskReq;
+#define sz_xShapeMaskReq	20
+	
+typedef struct _ShapeCombine {
+	CARD8	reqType;	/* always ShapeReqCode */
+	CARD8	shapeReqType;	/* always X_ShapeCombine */
+	CARD16	length B16;
+	CARD8	op;		/* Set, ... */
+	CARD8	destKind;	/* Window or Border */
+	CARD8	srcKind;	/* Window or Border */
+	CARD8	junk;		/* not used */
+	CARD32	dest B32;	/* Window */
+	INT16	xOff B16;
+	INT16	yOff B16;
+	CARD32	src B32;	/* Window */
+} xShapeCombineReq;
+#define sz_xShapeCombineReq	20
+	
+typedef struct _ShapeOffset {
+	CARD8	reqType;	/* always ShapeReqCode */
+	CARD8	shapeReqType;	/* always X_ShapeOffset */
+	CARD16	length B16;
+	CARD8	destKind;	/* Window or Border */
+	CARD8	junk1;		/* not used */
+	CARD16	junk2 B16;	/* not used */
+	CARD32	dest B32;	/* Window */
+	INT16	xOff B16;
+	INT16	yOff B16;
+} xShapeOffsetReq;
+#define sz_xShapeOffsetReq	16
+
+typedef struct _ShapeQuery {
+	CARD8	reqType;	/* always ShapeReqCode */
+	CARD8	shapeReqType;	/* always X_ShapeQuery */
+	CARD16	length B16;
+	CARD32	window;		/* request destination id */
+} xShapeQueryReq;
+#define sz_xShapeQueryReq	8
+
+typedef struct {
+	BYTE	type;			/* X_Reply */
+	CARD8	unused;			/* not used */
+	CARD16	sequenceNumber B16;
+	CARD32	length B32;		/* 0 */
+	CARD8	windowShaped B16;	/* window has window shape */
+	CARD8	borderShaped B16;	/* window has border shape */
+	CARD16	unused1 B16;
+	INT16	xWindowShape B16;	/* extents of window shape */
+	INT16	yWindowShape B16;
+	CARD16	widthWindowShape B16;
+	CARD16	heightWindowShape B16;
+	INT16	xBorderShape B16;	/* extents of border shape */
+	INT16	yBorderShape B16;
+	CARD16	widthBorderShape B16;
+	CARD16	heightBorderShape B16;
+	CARD32	pad1;
+} xShapeQueryReply;
