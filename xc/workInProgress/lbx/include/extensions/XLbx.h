@@ -1,4 +1,4 @@
-/* $XConsortium: XLbx.h,v 1.4 94/03/08 20:27:58 dpw Exp $ */
+/* $XConsortium: XLbx.h,v 1.5 94/03/27 11:43:37 dpw Exp mor $ */
 /*
  * $NCDId: @(#)XLbx.h,v 1.17 1994/03/24 01:26:07 dct Exp $
  *
@@ -55,6 +55,7 @@
 #define	X_LbxChangeProperty		23
 #define	X_LbxGetProperty		24
 #define	X_LbxTagData			25
+#define X_LbxPutImage			26
 
 #define LbxEvent			0
 #define LbxNumberEvents			(LbxEvent + 1)
@@ -74,6 +75,10 @@
 /* Lbx compression schemes */
 #define LbxCompressNone			0
 #define LbxCompressLZW			1
+
+/* Lbx image compression methods */
+#define LbxImageCompressPackBits	0
+#define LbxImageCompressFaxG42D		1
 
 #define BadLbxClient			0
 #define LbxNumberErrors			(BadLbxClient + 1)
