@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 5.1 89/06/09 16:27:24 keith Exp $ */
+/* $XConsortium: mibitblt.c,v 5.2 89/07/09 15:47:09 rws Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -36,8 +36,6 @@ SOFTWARE.
 #include "regionstr.h"
 #include "Xmd.h"
 #include "servermd.h"
-
-static int GetBitsPerPixel();
 
 /* MICOPYAREA -- public entry for the CopyArea request 
  * For each rectangle in the source region
@@ -270,7 +268,7 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
         result = (unsigned long *)xalloc(h * widthInBytes);
     if (!result)
 	return (unsigned long *)NULL;
-    bitsPerPixel = GetBitsPerPixel(depth);
+    bitsPerPixel = pDraw->bitsPerPixel;
     bzero((char *)result, h * widthInBytes);
     if(BITMAP_SCANLINE_UNIT == 8)
 	pCharsOut = (unsigned char *) result;
@@ -368,27 +366,6 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
     return(result);    
 
 }
-
-/* GETBITSPERPIXEL -- Find out how many bits per pixel are supported at
- * this depth -- another helper function 
- */
-static
-int
-GetBitsPerPixel(depth)
-    int		depth;
-{
-    int 	i;
-
-    for(i = 0; i < screenInfo.numPixmapFormats; i++)
-    {
-        if(screenInfo.formats[i].depth == depth)
-	{
-	    return (screenInfo.formats[i].bitsPerPixel);
-	}
-    }
-    return(1);
-}
-
 
 /* MIOPQSTIPDRAWABLE -- use pbits as an opaque stipple for pDraw.
  * Drawing through the clip mask we SetSpans() the bits into a 
