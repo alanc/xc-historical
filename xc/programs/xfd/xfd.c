@@ -1,471 +1,205 @@
-/* Copyright 1987, Massachusetts Institute of Technology */
-
 /*
- * xfd: program to display a font for perusal by the user.
+ * $XConsortium$
  *
- * Written by Mark Lillibridge
+ * Copyright 1989 Massachusetts Institute of Technology
  *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Author:  Jim Fulton, MIT X Consortium
+ *          rewritten from an Xlib version by Mark Lillibridge
  */
 
-#include <X11/Xos.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-#include <X11/cursorfont.h>
 #include <stdio.h>
+#include <X11/Xos.h>
+#include <X11/Intrinsic.h>
+#include <X11/StringDefs.h>
+#include <X11/Xatom.h>
+#include <X11/Shell.h>
+#include <X11/Xaw/Cardinals.h>
+#include <X11/Xaw/Paned.h>
+#include <X11/Xaw/Box.h>
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/Command.h>
+#include "fontgrid.h"
 
-#define BUFFERSIZE 10
-#define VERBOSE_LINES 4         /* Number of lines in verbose display */
-#define	GRAY_PAD	2	/* padding for gray mode		*/
+char *ProgramName;
+
+static XrmOptionDescRec xfd_options[] = {
+{"-bf",		"bottomFont",	XrmoptionSepArg,	(caddr_t) NULL },
+{"-start",	"*startChar",	XrmoptionSepArg, 	(caddr_t) NULL },
+{"-verbose",	"verbose",	XrmoptionNoArg,		(caddr_t) "on" },
+};
+
+static struct resources {
+  XFontStruct *bottom_font;
+  Boolean verbose;
+} xfd_resources;
+
+static XtResource Resources[] = {
+#define offset(field) XtOffset(struct resources *, field)
+{ "bottomFont", "Font", XtRFontStruct, sizeof(XFontStruct *),
+    offset(bottom_font), XtRString, (caddr_t) "XtDefaultFont" },
+{ "verbose", "Verbose", XtRBoolean, sizeof(Boolean),
+    offset(verbose), XtRString, (caddr_t) "FALSE" },
+#undef offset
+};
+
+static void do_quit(), do_next(), do_prev();
+
+static XtActionsRec xfd_actions[] = {
+  { "Quit", do_quit },
+  { "Next", do_next },
+  { "Prev", do_prev },
+};
+
+static char *button_list[] = { "quit", "next", "prev", NULL };
 
 
-    /* Global variables */
-
-int space_per_line;             /* How much space to reserve per line */
-int line_offset;                /* Where to start writting (base line) */
-int number_of_lines=1;          /* number of lines in bottom area display */
-int verbose = 0;                /* verbose mode? */
-int box_x = 0;                  /* The size of one box in grid */
-int box_y = 0;
-int x_offset = 0;               /* Point in box to display character from */
-int y_offset = 0;
-int x_boxes = 0;                /* Current size of window in # of boxes */
-int y_boxes = 0;
-int bottom = 0;                 /* Size of grid in pixels */
-int right = 0;
-int first_char = 0;             /* Character # of first character displayed on
-				   the grid */
-int max_char;			/* Maximum character number */
-int gray = 0;                   /* use gray background ? */
-GC body_gc, real_gc;            /* Graphics contexts */
-XFontStruct *real_font;         /* The font we are to display */
-
-/* Gray pattern for use as background */
-#include "X11/bitmaps/light_gray"
-
-/* Include routines to handle parsing defaults */
-#define TITLE_DEFAULT "xfd"     /* Our name... */
-#define DEFX_DEFAULT 300        /* Default window pop-up location */
-#define DEFY_DEFAULT 300
-#define RESIZE_X_INC 1          /* We will specify a resize inc later ... */
-#define RESIZE_Y_INC 1
-#define MIN_X_SIZE 1            /* Ditto for minimum window size */
-#define MIN_Y_SIZE 1
-
-#include "wsimple.h"
-
-/*
- * usage: routine to show usage then exit.
- */
 usage()
 {
-	fprintf(stderr, 
-	        "%s: usage: %s %s [-v[erbose]] [-gray] [-start <char number>] -fn fontname\n", program_name,
-		program_name, X_USAGE);
-	exit(1);
+    fprintf (stderr, "usage:  %s [-v] [-s num] -fn font\n",
+	     ProgramName);
+    exit (1);
 }
 
 
-/*
- * The main program:
- */
-main(argc, argv) 
-
-     int argc;
-     char **argv;
+main (argc, argv) 
+    int argc;
+    char **argv;
 {
-	register int i;
-	GC gc;
-	XGCValues gc_init;
-	XEvent event;
-	char *fontname = NULL;		        /* Display default body font */
-	char buffer[BUFFERSIZE];                /* buffer for XLookupString */
-	Cursor cursor;
+    Widget toplevel, pane, toplabel, box, form, grid, bottomlabel;
+    Arg av[10];
+    Cardinal i;
+    char **cpp;
+    static void GotCharacter();
+    static XtCallbackRec cb[2] = { { GotCharacter, NULL }, { NULL, NULL } };
 
-	INIT_NAME;
+    ProgramName = argv[0];
 
-	/* Handle command line arguments, open the display */
-	Get_X_Options(&argc, argv);
-	for (i = 1; i < argc; i++) {
-		if (!strcmp("-help", argv[i])) usage ();
-		if (!strcmp("-", argv[i]))
-		  continue;
-		if (!strcmp("-gray", argv[i]) || !strcmp("-grey", argv[i])) {
-		  gray = 1;
-		  continue;
-		}		  
-		if (!strcmp("-start", argv[i])) {
-			if (++i >= argc) usage();
-			first_char = atoi(argv[i]);
-			if (first_char < 0) usage ();
-			continue;
-		}
-		if (!strcmp("-verbose", argv[i]) || !strcmp("-v", argv[i])) {
-			verbose = 1;
-			number_of_lines = VERBOSE_LINES;
-			continue;
-		}
-		if (!strcmp("-fn", argv[i]) || !strcmp("-font", argv[i])) {
-		    if (++i >= argc) usage ();
-		    fontname = argv[i];
-		    continue;
-		}
-		if (argv[i][0] == '-') usage();
-		if (fontname) usage();
-		fontname = argv[i];
-	} 
+    toplevel = XtInitialize (NULL, "Xfd", xfd_options, XtNumber(xfd_options),
+			     &argc, argv);
+    if (argc != 1) usage ();
+    XtAppAddActions (XtWidgetToApplicationContext (toplevel),
+                     xfd_actions, XtNumber (xfd_actions));
 
-	if (!fontname) usage ();
+    XtGetApplicationResources (toplevel, (caddr_t)&xfd_resources, Resources,
+			       XtNumber(Resources), NULL, 0);
 
-	/* Load in the font to display */
-	real_font = Open_Font(fontname);
-	max_char = (real_font->max_byte1<<8) + real_font->max_char_or_byte2;
 
-	/* Resolve the X options */
-	Resolve_X_Options();
+    /*
+     * In the application shell, create a pane that separates the various
+     * parts.  Put buttons in a box on top, a core within a form in the middle,
+     * and text widgets at the bottom.
+     */
 
-	line_offset = 2 + body_font->ascent;
-	space_per_line = body_font->descent + line_offset + 2;
+    /* pane wrapping everything */
+    pane = XtCreateManagedWidget ("pane", panedWidgetClass, toplevel,
+				  NULL, ZERO);
 
-	/* Get minimun perfered size */
-	Calc_Default_Size();
+    /* font name */
+    toplabel = XtCreateManagedWidget ("title", labelWidgetClass, pane, 
+				      NULL, ZERO);
 
-	/* Create the window */
-	Create_Default_Window();
-	cursor = XCreateFontCursor (dpy, XC_top_left_arrow);
-	if (cursor != None) {
-	    XDefineCursor (dpy, wind, cursor);
-	}
+    /* button box */
+    box = XtCreateManagedWidget ("box", boxWidgetClass, pane, NULL, ZERO);
+    for (cpp = button_list; *cpp; cpp++) {
+        (void) XtCreateManagedWidget (*cpp, commandWidgetClass, box,
+                                      NULL, ZERO);
+    }
 
-	if (gray)
-	  XSetWindowBackgroundPixmap(
-		dpy,
-		wind,
-		XCreatePixmapFromBitmapData(
-			dpy,
-			wind,
-			light_gray_bits,
-			light_gray_width,
-			light_gray_height,
-			foreground,
-			background,
-			DefaultDepth(dpy, screen)));
+    /* form in which to draw */
+    form = XtCreateManagedWidget ("form", formWidgetClass, pane, NULL, ZERO);
 
-	/* Setup graphics contexts */
-	body_gc = Get_Default_GC();   /* This one has body font */
-	real_gc = Get_Default_GC();   /* This one has font to display */
+    
+    /*
+     * set the sucker to expand; really ought to compute this according to 
+     * the font being displayed...
+     */
 
-	gc_init.font = real_font->fid;
-	XChangeGC(dpy, real_gc, GCFont, &gc_init);
+#define DEFAULT_DRAWING_WIDTH 200
+#define DEFAULT_DRAWING_HEIGHT 200
 
-	/* Start main loop by selecting events then mapping window */
-	XSelectInput(dpy, wind, ButtonPressMask|ExposureMask|KeyPressMask);
-	XMapWindow(dpy, wind);
+    i = 0;
+    XtSetArg (av[i], XtNtop, XtChainTop); i++;
+    XtSetArg (av[i], XtNbottom, XtChainBottom); i++;
+    XtSetArg (av[i], XtNleft, XtChainLeft); i++;
+    XtSetArg (av[i], XtNright, XtChainRight); i++;
+    XtSetArg (av[i], XtNwidth, DEFAULT_DRAWING_WIDTH); i++;
+    XtSetArg (av[i], XtNheight, DEFAULT_DRAWING_HEIGHT); i++;
+    XtSetArg (av[i], XtNcallback, cb); i++;
+    grid = XtCreateManagedWidget ("grid", fontgridWidgetClass, form, av, i);
 
-	/* Main event loop */
-	for (;;) {
-		XNextEvent(dpy, &event);
-		if (event.type == ButtonPress) {
-			if (event.xbutton.button == 1)
-			  Go_Back();
-			else if (event.xbutton.button == 2)
-			  Identify_character(event.xbutton.x, event.xbutton.y);
-			else if (event.xbutton.button == 3)
-			  Go_Forward();
-		} else if (event.type == KeyPress) {
-			i = XLookupString(&event, buffer, BUFFERSIZE,
-					  NULL, NULL);
-			if (i==1 && (buffer[0]=='q' || buffer[0]=='Q' ||
-				     buffer[0]==' ' || buffer[0]=='\03'))
-			  exit(0);
-			if (i==1 && buffer[0]=='<' && verbose) {
-				minimum_bounds();
-				continue;
-			}
-			if (i==1 && buffer[0]=='>' && verbose) {
-				maximum_bounds();
-				continue;
-			}
-			if (i && buffer[0])
-			  Beep();
-		}
-		else if (event.type== GraphicsExpose || event.type == Expose) {
-                /* Only redisplay if this is the last exposure in a series */
-			if (!event.xexpose.count)
-			  Display_Contents();
-                }
-	}
+    /* and a label in which to put information */
+    bottomlabel = XtCreateManagedWidget ("label", labelWidgetClass, pane,
+					 NULL, ZERO);
+
+
+    XtRealizeWidget (toplevel);
+    XtMainLoop ();
 }
 
-char short_format[] = "%d (0x%x)";
-char line1_alt[] = "%s bounds:";
-char line1_format[] = "character # = %d (0x%x):";
-char line2_format[] = "left bearing = %d, right bearing = %d";
-char line3_format[] = "ascent = %d, descent = %d";
-char line4_format[] = "width = %d";
-char buf[80*2];
 
-/*
- * Calc_Default_Size: This routine calculates the size of a box in the grid
- * and where to write a character from so that every character will fit
- * in a box.  The size of an ideal window (16 boxes by 16 boxes with room
- * for the bottom text) is then calculated.
- */
-Calc_Default_Size()
+static void GotCharacter (w, closure, data)
+    Widget w;
+    caddr_t closure, data;
 {
-	XCharStruct min_bounds;
-	XCharStruct max_bounds;
+    FontGridCharRec *p = (FontGridCharRec *) data;
+    XFontStruct *fs = p->thefont;
+    unsigned n = ((((unsigned) p->thechar.byte1) << 8) |
+		  ((unsigned) p->thechar.byte2));
+    XCharStruct *pc;
 
-	min_bounds = real_font->min_bounds;
-	max_bounds = real_font->max_bounds;
+    /*
+     * XXX - display in a text widget, along with perchar info
+     */
+    if (fs->per_char) {
+	pc = fs->per_char + ((p->thechar.byte2 - fs->min_char_or_byte2) *
+			     (p->thechar.byte1 - fs->min_byte1));
+    } else {
+	pc = &fs->max_bounds;
+    }
 
-	/*
-	 * Calculate size of box which will hold 1 character as well
-	 * as were to draw it from in the box.
-	 */
-	x_offset = y_offset = 0;
-	if (min_bounds.lbearing<0)
-	  x_offset = -min_bounds.lbearing;
-	if (max_bounds.ascent>0)
-	  y_offset = max_bounds.ascent;
-	if (real_font->ascent > y_offset)
-	  y_offset = real_font->ascent;
+    printf ("Got character %u, 0x%02x%02x (%d, %d)\n", n,
+	    (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2,
+	    (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2);
+    printf ("width %d, left %d, right %d, ascent %d, descent %d\n",
+	    pc->width, pc->lbearing, pc->rbearing, pc->ascent, pc->descent);
 
-	box_x = x_offset;
-	box_y = y_offset;
-
-	if (max_bounds.rbearing + x_offset > box_x)
-	  box_x = max_bounds.rbearing + x_offset;
-	if (x_offset + max_bounds.width > box_x)
-	  box_x = x_offset + max_bounds.width;
-
-	if (max_bounds.descent + y_offset > box_y)
-	  box_y = max_bounds.descent + y_offset;
-	if (real_font->descent + y_offset > box_y)
-	  box_y = real_font->descent + y_offset;
-
-	/* Leave room for grid lines & a little space */
-	x_offset += 2; y_offset += 2;
-	box_x += 3 + gray * GRAY_PAD * 2;
-	box_y += 3 + gray * GRAY_PAD * 2;
-
-        /* if user didn't override, use ideal size */
-	if (!(size_hints.flags & USSize)) {
-		int tmp;
-		int max_line_length = 12;
-		int body_width = (body_font->max_bounds.rbearing
-				- body_font->min_bounds.lbearing);
-		if (verbose) {
-		/* calculate the largest line that can/will be shown */
-			sprintf(buf, line2_format,
-				body_font->max_bounds.lbearing,
-				body_font->max_bounds.rbearing);
-			max_line_length = strlen(buf);
-		}
-		tmp = body_width * max_line_length;
-
-		size_hints.width = box_x*16+1;
-		if (tmp > size_hints.width)
-		/* make the size an even multiple of our box width */
-			size_hints.width = (tmp/box_x + (tmp % box_x ? 1 : 0))
-						* box_x + 1;
-		size_hints.height = box_y*16 + space_per_line *number_of_lines;
-	}
-
-	if ((geom_status & XValue) && (geom_status & XNegative))
-		size_hints.x += DisplayWidth(dpy, screen) - size_hints.width - border_width * 2;
-	if ((geom_status & YValue) && (geom_status & YNegative))
-		size_hints.y += DisplayHeight(dpy, screen) - size_hints.height - border_width * 2;
-	size_hints.width_inc = box_x;
-	size_hints.height_inc = box_y;
-
-	size_hints.min_width = box_x+1;
-	size_hints.min_height = box_y + space_per_line*number_of_lines;
-
-	if (size_hints.width < size_hints.min_width)
-		size_hints.width = size_hints.min_width;
-	if (size_hints.height < size_hints.min_height)
-		size_hints.height = size_hints.min_height;
-}
-
-char s[4] = { 0, 0, 0, 0 };
-
-/*
- * Display_Contents: Routine to (re)display the contents of the window.
- */
-Display_Contents()
-{
-	int i, x, y;
-	XWindowAttributes wind_info;
-
-	/* Get the size of the window */
-	if (!XGetWindowAttributes(dpy, wind, &wind_info))
-	  Fatal_Error("Can't get window atrributes!");
-	size_hints.width = wind_info.width;
-	size_hints.height = wind_info.height;
-
-	/* Erase previous contents if any */
-	XClearWindow(dpy, wind);
-
-	/* Calculate the size of the grid */
-	x_boxes = (size_hints.width-1) / box_x;
-	y_boxes = (size_hints.height - space_per_line * number_of_lines)
-	  / box_y;
-	right = x_boxes * box_x;
-	bottom = y_boxes * box_y;
-
-	/* Draw the grid */
-	for (i = 0; i<=x_boxes; i++)
-	  XDrawLine(dpy, wind, body_gc, i*box_x, 0, i*box_x, bottom);
- 	for (i = 0; i<=y_boxes; i++)
-	  XDrawLine(dpy, wind, body_gc, 0, i*box_y, right, i*box_y);
-
-	/* Draw one character in every box */
-	for (y=0; y<y_boxes; y++) {
-		for (x=0; x<x_boxes; x++) {
-			s[0] = (first_char + x + y*x_boxes) / 256;
-			s[1] = (first_char + x + y*x_boxes) % 256;
-			XDrawImageString16(dpy, wind, real_gc,
-					x*box_x+x_offset + gray * GRAY_PAD,
-					y*box_y+y_offset + gray * GRAY_PAD,
-					(XChar2b *) s, 1);
-		}
-	}
-}
-
-/*
- * Identify_character: Routine to print the number of the character that was
- * clicked on by the mouse on the bottom line or beep if no character was
- * clicked on.
- */
-Identify_character(x, y)
-int x,y;
-{
-	int xbox, ybox;
-	int char_number;
-	XCharStruct char_info;
-	int index, byte1, byte2;
-	char *msg;
-
-	/* If not in grid, beep */
-	if (x>=right | y>=bottom) {
-		Beep();
-		return;
-	}
-
-	/* Find out which box clicked in */
-	xbox = x / box_x;
-	ybox = y / box_y;
-
-	/* Convert that to the character number */
-	char_number = first_char + xbox + ybox * x_boxes;
-
-	char_info = real_font->max_bounds;
-	index = char_number;
-	if (real_font->per_char) {
-		if (!real_font->min_byte1 && !real_font->max_byte1) {
-			if (char_number < real_font->min_char_or_byte2 ||
-			    char_number > real_font->max_char_or_byte2)
-			  index = real_font->default_char;
-			index -= real_font->min_char_or_byte2;
-		} else {
-			byte2 = index & 0xff;
-			byte1 = (index>>8) & 0xff;
-			if (byte1 < real_font->min_byte1 ||
-			    byte1 > real_font->max_byte1 ||
-			    byte2 < real_font->min_char_or_byte2 ||
-			    byte2 > real_font->max_char_or_byte2) {
-				    byte2 = real_font->default_char & 0xff;
-				    byte1 = (real_font->default_char>>8)&0xff;
-			    }
-			byte1 -= real_font->min_byte1;
-			byte2 -= real_font->min_char_or_byte2;
-			index = byte1 * (real_font->max_char_or_byte2 -
-					 real_font->min_char_or_byte2 + 1) +
-					   byte2;
-		}
-		char_info = real_font->per_char[index];
-	}
-
-	if (!verbose) {
-		sprintf(buf, short_format, char_number, char_number);
-		put_line(buf, 0);
-	} else {
-		sprintf(buf, line1_format, char_number, char_number);
-		put_line(buf, 0);
-
-		display_char_info(char_info);
-	}
-}
-
-/*
- * maximum_bounds: display info for maximum bounds
- */
-maximum_bounds()
-{
-	sprintf(buf, line1_alt, "maximum");
-	put_line(buf, 0);
-
-	display_char_info(real_font->max_bounds);
+    return;
 }
 
 
-/*
- * minimum_bounds: display info for minimum bounds
- */
-minimum_bounds()
-{
-	sprintf(buf, line1_alt, "minimum");
-	put_line(buf, 0);
 
-	display_char_info(real_font->min_bounds);
-}
-
-/*
- * display_char_info: routine to display char info on bottom 3 lines
- */
-display_char_info(char_info)
-XCharStruct char_info;
-{
-	sprintf(buf, line2_format, char_info.lbearing,
-		char_info.rbearing);
-	put_line(buf, 1);
-	
-	sprintf(buf, line3_format, char_info.ascent,
-		char_info.descent);
-	put_line(buf, 2);
-
-	sprintf(buf, line4_format, char_info.width);
-	put_line(buf, 3);
-}
-
-/*
- * Put_line: print a line in bottom area at a given line #
- */
-put_line(line, n)
-     char *line;
-     int n;
-{
-	strcat(line,"                                                                              ");
-	XDrawImageString(dpy, wind, body_gc, 5, bottom + line_offset +
-			 space_per_line*n, line, 80);
-}
-
-
+#ifdef comment
 /*
  * Go_Back: Routine to page back a gridful of characters.
  */
 Go_Back()
 {
 	/* If try and page back past first 0th character, beep */
-	if (first_char == 0) {
+	if (xfd_resources.start_char == 0) {
 		Beep();
 		return;
 	}
 
-	first_char -= x_boxes*y_boxes;
-	if (first_char<0)
-	  first_char = 0;
+	xfd_resources.start_char -= x_boxes*y_boxes;
+	if (xfd_resources.start_char<0)
+	  xfd_resources.start_char = 0;
 
 	Display_Contents();
 }
@@ -477,12 +211,41 @@ Go_Forward()
 {
 	int delta = x_boxes*y_boxes;
 
-	if (first_char + delta > max_char) {
+	if (xfd_resources.start_char + delta > max_char) {
 		Beep ();
 		return;
 	}
 
-	first_char += delta;
+	xfd_resources.start_char += delta;
 
 	Display_Contents();
+}
+#endif /* comment */
+
+
+static void do_quit (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    exit (0);
+}
+
+static void do_next (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    /* goto next page */
+}
+
+static void do_prev (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    /* goto prev page */
 }
