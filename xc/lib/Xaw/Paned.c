@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Paned.c,v 1.1 89/03/06 18:11:08 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Paned.c,v 1.2 89/03/07 14:26:39 kit Exp $";
 #endif lint
 
 
@@ -1268,8 +1268,10 @@ PanedWidget pw;
 	    else
 	        cursor = pw->paned.h_grip_cursor;
 
-	XtSetArg(arglist[0], XtNcursor, cursor);
-	XtSetValues(PaneInfo(*childP)->grip, arglist, (Cardinal) 1);
+	if (HasGrip (*childP)) {
+	    XtSetArg(arglist[0], XtNcursor, cursor);
+	    XtSetValues(PaneInfo(*childP)->grip, arglist, (Cardinal) 1);
+	}
     }
 }
       
@@ -1526,7 +1528,8 @@ XSetWindowAttributes *attributes;
 
     ForAllPanes(pw, childP) {
         XtRealizeWidget( *childP );
-        XtRealizeWidget( PaneInfo(*childP)->grip );
+	if (HasGrip (*childP))
+	    XtRealizeWidget( PaneInfo(*childP)->grip );
     }
 
     RefigureLocationsAndCommit(w);
