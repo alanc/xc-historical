@@ -16,6 +16,7 @@
 #endif
 #define HasSaberC	  YES		/* for machines that have it */
 #define HasNdbm		  YES
+#define HasShm		  YES
 #define XsunServer Xsun
 
 /* #define HasGcc YES */	/* VERY USEFUL for server on Sun3 */
@@ -68,7 +69,7 @@
 /* see below for ServerDefines */
 
 
-XCOMM platform:  $XConsortium: sun.cf,v 1.40 90/11/30 11:14:35 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.41 90/12/26 11:38:26 rws Exp $
 XCOMM operating system:  OSName
 
 #if OSMajorVersion == 3 && OSMinorVersion <= 2
@@ -94,9 +95,7 @@ XCOMM operating system:  OSName
 #define AllocateLocalDefines /**/
 #endif
 
-#define ExtensionDefines -DSHAPE -DMITSHM -DMULTIBUFFER -DMITMISC
-
-#define ServerDefines -DXDMCP SunWindowsDefines ExtensionDefines AllocateLocalDefines
+#define ServerOSDefines SunWindowsDefines AllocateLocalDefines
 
 #if OSMajorVersion >= 4 && OSMinorVersion >= 0
 #define SetTtyGroup YES
