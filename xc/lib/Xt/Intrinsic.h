@@ -117,8 +117,8 @@ typedef char *XtArgVal;
  **************************************************************/
 
  typedef struct _Core {
-        struct _Class    *widget_class;   /* pointer to Core Class data */
-	Display		*dpy;		/* widget display connection */
+        struct _WidgetClassData    *widget_class;   /* pointer to Core Class data */
+	Display		*display;	/* widget display connection */
 	Screen		screen;		/* widget screen */
 	Window		window;		/* window ID */
 	struct _WidgetData	*parent;/* parent widget */
@@ -159,7 +159,7 @@ typedef Widget *WidgetList;
  ********************************************************************/
 
  typedef struct _Class {
-        struct _Class   *superclass;    /* pointer to superclass Class struct */
+        struct _WidgetClassData   *superclass;    /* pointer to superclass Class struct */
         String         class_name;    
         Cardinal       size;          /* size for pickling */
         WidgetProc     initialize;    /* create a widget of this class */
@@ -176,7 +176,14 @@ typedef Widget *WidgetList;
 	SetValuesProc	set_values;	/* proc called to set widget values */
 	Boolean		accepts_focus;	/* does widget accept focus */
 	WidgetProc	accept_focus;	/* proc called to give widget the focus */
-  } CoreClass, *WidgetClass;
+  } CoreClass;
+
+typedef struct _WidgetClassData {
+      CoreClass coreClass;
+ } WidgetClassData, *WidgetClass;
+
+WidgetClassData widgetClassData;
+WidgetClass widgetClass = &widgetClassData;
 
 /*********************************************************************
  *
@@ -184,13 +191,21 @@ typedef Widget *WidgetList;
  *
  ********************************************************************/
 
- typedef struct _compositeClass { /* incremental additions to Core for composites */
+ typedef struct _CompositeClass { /* incremental additions to Core for composites */
 	XtGeometryHandler	geometryMgr; 	/* geometry manager for children of widget */
 	WidgetChildrenProc      add_children;   /* add widgets to managed status */
 	WidgetChildrenProc      remove_children; /* remove widgets from managed status */
 	WidgetProc		move_focus_to_next; /* move Focus to next child */
 	WidgetProc		move_focus_to_prev; /* move Focus to previous child */
-  } compositeClass;
+  } CompositeClass;
+
+ typedef struct _CompositeWidgetClassData {
+     CoreClass coreClass;
+     CompositeClass compositeClass;
+ } CompositeWidgetClassData, *CompositeWidgetClass;
+
+CompositeWidgetClassData compositeWidgetClassData;
+CompositeWidgetClass compositeWidgetClass = &compositeWidgetClassData;
 
 /************************************************************************
  *
@@ -202,8 +217,13 @@ typedef struct _composite {
       WidgetList   children;  /* list of widget children (managed and unmanaged) */
       Cardinal     num_children; /* total number of widget children */
       Cardinal     num_managed_children; /* number of geometry managed children */
-} Composite;      
-	
+} Composite;
+
+typedef struct _CompositeWidgetData {
+      Core core;
+      Composite composite;
+} CompositeWidgetData, *CompositeWidget;
+
 
 /*************************************************************************
  *
@@ -359,7 +379,7 @@ extern ArgList XtMergeArgLists(); /* args1, argCount1, args2, argCount2 */
  * Event Management
  *
  ****************************************************************/
-
+CallbackList DestroyList;
 
 typedef void (*XtEventHandler)(); /* widget,event, closure */
     /* Widget  widget   */
