@@ -1,4 +1,4 @@
-/* $XConsortium: Label.c,v 1.82 90/12/12 15:37:06 rws Exp $ */
+/* $XConsortium: Label.c,v 1.83 90/12/31 11:08:29 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -53,9 +53,9 @@ SOFTWARE.
 #define offset(field) XtOffset(LabelWidget, field)
 static XtResource resources[] = {
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-	offset(label.foreground), XtRString, "XtDefaultForeground"},
+	offset(label.foreground), XtRString, XtDefaultForeground},
     {XtNfont,  XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-	offset(label.font),XtRString, "XtDefaultFont"},
+	offset(label.font),XtRString, XtDefaultFont},
     {XtNlabel,  XtCLabel, XtRString, sizeof(String),
 	offset(label.label), XtRString, NULL},
     {XtNjustify, XtCJustify, XtRJustify, sizeof(XtJustify),
@@ -131,15 +131,9 @@ WidgetClass labelWidgetClass = (WidgetClass)&labelClassRec;
 
 static void ClassInitialize()
 {
-    static XtConvertArgRec screenConvertArg[] = {
-        {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
-	     sizeof(Screen *)}
-    };
     XawInitializeWidgetSet();
     XtAddConverter( XtRString, XtRJustify, XmuCvtStringToJustify, NULL, 0 );
-    XtAddConverter("String", "Bitmap", XmuCvtStringToBitmap,
-		   screenConvertArg, XtNumber(screenConvertArg));
-} /* ClassInitialize */
+}
 
 /*
  * Calculate width and height of displayed text in pixels
