@@ -117,7 +117,7 @@ ProcXChangeDeviceDontPropagateList (client)
 	    return Success;
 
     for (i=0; i<EMASKSIZE; i++)
-	EventSuppressForWindow(pWin, client, tmp[i].mask, i);
+	DeviceEventSuppressForWindow(pWin, client, tmp[i].mask, i);
 
     return Success;
     }
