@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.8 91/02/19 08:52:45 rws Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.10 91/05/13 23:18:47 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -49,9 +49,11 @@
  *              that are not already declared in any of the included header
  *		files (external includes or internal includes).
  */
+#ifdef X_NOT_STDC_ENV
 extern char *getenv();
 extern void qsort();
 extern char *bsearch();
+#endif
 extern XcmsColorSpace **_XcmsDIColorSpaces;
 
 
