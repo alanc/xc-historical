@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranstli.c,v 1.15 94/04/11 12:15:31 mor Exp $ */
+/* $XConsortium: Xtranstli.c,v 1.16 94/04/17 20:23:06 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -738,8 +738,7 @@ struct t_bind	*req;
     if( t_bind(ciptr->fd, req, ret) < 0 )
     {
 	PRMSG(1, "TRANS(TLICreateListener): t_bind failed\n", 0,0,0 );
-	if(req)
-	    t_free((char *)req,T_BIND);
+	t_free((char *)req,T_BIND);
 	t_free((char *)ret,T_BIND);
 	return -1;
     }
@@ -748,8 +747,7 @@ struct t_bind	*req;
     {
 	PRMSG(1, "TRANS(TLICreateListener): unable to bind to %x\n",
 	      req, 0,0 );
-	if(req)
-	    t_free((char *)req,T_BIND);
+	t_free((char *)req,T_BIND);
 	t_free((char *)ret,T_BIND);
 	return -1;
     }
@@ -763,8 +761,7 @@ struct t_bind	*req;
 	PRMSG(1,
 	      "TRANS(TLICreateListener): Unable to allocate space for the address\n",
 	      0,0,0 );
-	if(req)
-	    t_free((char *)req,T_BIND);
+	t_free((char *)req,T_BIND);
 	t_free((char *)ret, T_BIND);
 	return -1;
     }
@@ -772,8 +769,7 @@ struct t_bind	*req;
     ciptr->addrlen=ret->addr.len;
     memcpy(ciptr->addr,ret->addr.buf,ret->addr.len);
     
-    if(req)
-	t_free((char *)req,T_BIND);
+    t_free((char *)req,T_BIND);
     t_free((char *)ret, T_BIND);
     
     return 0;
@@ -790,8 +786,10 @@ char		*port;
 #define PORTBUFSIZE     64      /* what is a real size for this? */
     char    portbuf[PORTBUFSIZE];
     struct t_bind	*req;
+    struct sockaddr_in	*sinaddr;
     
-    PRMSG(2,"TRANS(TLICreateListener)(%x->%d,%s)\n", ciptr, ciptr->fd, port );
+    PRMSG(2,"TRANS(TLIINETCreateListener)(%x->%d,%s)\n", ciptr,
+	ciptr->fd, port ? port : "NULL" );
     
 #ifdef X11_t
     /*
@@ -814,31 +812,33 @@ char		*port;
     port=portbuf;
 #endif
     
+    if( (req=(struct t_bind *)t_alloc(ciptr->fd,T_BIND,T_ALL)) == NULL )
+    {
+	PRMSG(1,
+	    "TRANS(TLIINETCreateListener): failed to allocate a t_bind\n",
+	    0,0,0 );
+	return -1;
+    }
+
     if( port && *port ) {
-	if( (req=(struct t_bind *)t_alloc(ciptr->fd,T_BIND,T_ALL)) == NULL )
-	{
-	    PRMSG(1,
-		  "TRANS(TLICreateListener): failed to allocate a t_bind\n",
-		  0,0,0 );
-	    return -1;
-	}
-	
 	if(TRANS(TLIAddrToNetbuf)(ciptr->index,HOST_SELF,port,&(req->addr)) < 0)
 	{
 	    PRMSG(1,
-		  "TRANS(TLICreateListener): can't resolve name:HOST_SELF.%s\n",
+		  "TRANS(TLIINETCreateListener): can't resolve name:HOST_SELF.%s\n",
 		  port, 0,0 );
 	    t_free((char *)req,T_BIND);
 	    return -1;
 	}
-	
-	/* Set the qlen */
-	
-	req->qlen=1;
-	
     } else {
-	req=NULL;
+	sinaddr=(struct sockaddr_in *)req->addr.buf;
+	sinaddr->sin_family=AF_INET;
+	sinaddr->sin_port=0;
+	sinaddr->sin_addr.s_addr=0;
     }
+
+    /* Set the qlen */
+
+    req->qlen=1;
     
     return TRANS(TLICreateListener)(ciptr, req);
 }
@@ -854,12 +854,13 @@ char		*port;
     struct t_bind	*req;
     struct sockaddr_un	*sunaddr;
     
-    PRMSG(2,"TRANS(TLICreateListener)(%x->%d,%s)\n", ciptr, ciptr->fd, port );
+    PRMSG(2,"TRANS(TLITLICreateListener)(%x->%d,%s)\n", ciptr, ciptr->fd,
+	port ? port : "NULL");
     
     if( (req=(struct t_bind *)t_alloc(ciptr->fd,T_BIND,T_OPT|T_UDATA)) == NULL )
     {
 	PRMSG(1,
-	      "TRANS(TLICreateListener): failed to allocate a t_bind\n",
+	      "TRANS(TLITLICreateListener): failed to allocate a t_bind\n",
 	      0,0,0 );
 	return -1;
     }
@@ -868,7 +869,7 @@ char		*port;
 	 malloc(sizeof(struct sockaddr_un))) == NULL )
     {
 	PRMSG(1,
-	      "TRANS(TLICreateListener): failed to allocate a sockaddr_un\n",
+	      "TRANS(TLITLICreateListener): failed to allocate a sockaddr_un\n",
 	      0,0,0 );
 	t_free((char *)req,T_BIND);
 	return -1;
@@ -1165,12 +1166,14 @@ char		*port;
     }
     
     sunaddr->sun_family=AF_UNIX;
-    if( *port == '/' ) { /* A full pathname */
+    if( *port == '/' ||
+	strncmp (port, TLINODENAME, strlen (TLINODENAME)) == 0) {
+	/* Use the port as is */
 	(void) strcpy(sunaddr->sun_path, port);
     } else {
 	(void) sprintf(sunaddr->sun_path,"%s%s", TLINODENAME, port );
     }
-    
+
     sndcall->addr.buf=(char *)sunaddr;
     sndcall->addr.len=sizeof(*sunaddr);
     sndcall->addr.maxlen=sizeof(*sunaddr);
@@ -1294,10 +1297,10 @@ XtransConnInfo	ciptr;
 }
 
 
-Xtransport	TRANS(TLIINETFuncs) = {
+Xtransport	TRANS(TLITCPFuncs) = {
 	/* TLI Interface */
-	"inet",
-	0,
+	"tcp",
+        0,
 #ifdef TRANS_CLIENT
 	TRANS(TLIOpenCOTSClient),
 #endif /* TRANS_CLIENT */
@@ -1333,9 +1336,9 @@ Xtransport	TRANS(TLIINETFuncs) = {
 	TRANS(TLICloseForCloning),
 };
 
-Xtransport	TRANS(TLITCPFuncs) = {
+Xtransport	TRANS(TLIINETFuncs) = {
 	/* TLI Interface */
-	"tcp",
+	"inet",
 	TRANS_ALIAS,
 #ifdef TRANS_CLIENT
 	TRANS(TLIOpenCOTSClient),
