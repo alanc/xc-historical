@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: DefErrMsg.c,v 1.2 88/10/10 14:34:48 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -15,14 +15,14 @@
  *
  */
 
-#include <X11/Xlib.h>
 #include <stdio.h>
+#include <X11/Xlib.h>
+#include <X11/Xproto.h>
 
 /*
  * XmuPrintDefaultErrorMessage - print a nice error that looks like the usual 
  * message.  Returns 1 if the caller should consider exitting else 0.
  */
-
 int XmuPrintDefaultErrorMessage (dpy, event, fp)
     Display *dpy;
     XErrorEvent *event;
@@ -62,3 +62,22 @@ int XmuPrintDefaultErrorMessage (dpy, event, fp)
     return 1;
 }
 
+
+/*
+ * XmuSimpleErrorHandler - ignore errors for XQueryTree, XGetWindowAttributes,
+ * and XGetGeometry; print a message for everything else.  In all case, do
+ * not exit.
+ */
+int XmuSimpleErrorHandler (dpy, errorp)
+    Display *dpy;
+    XErrorEvent *errorp;
+{
+    switch (errorp->request_code) {
+      case X_QueryTree:
+      case X_GetWindowAttributes:
+      case X_GetGeometry:
+        if (errorp->error_code == BadWindow) return 0;
+    }
+    /* got a "real" X error */
+    return XmuPrintDefaultErrorMessage (dpy, errorp, stderr);
+}	
