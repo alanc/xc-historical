@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.47 91/04/03 17:22:11 gildea Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.48 91/05/14 13:33:54 gildea Exp $";
 #endif /* lint */
 
 /* Copyright    Massachusetts Institute of Technology    1986	*/
@@ -319,8 +319,10 @@ register char **argv;
 
 	shutdown(serverpid, clientpid);
 
-	if (serverpid < 0 || clientpid < 0)
-		exit(ERR_EXIT);
+	if (serverpid < 0 )
+		Fatal("Server error.\n");
+	if (clientpid < 0)
+		Fatal("Client error.\n");
 	exit(OK_EXIT);
 }
 
