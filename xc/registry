@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.66 92/04/03 17:51:46 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.67 92/04/15 18:52:09 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -794,6 +794,7 @@ Value	Name					Reference
 14	Tektronix, Inc.				[86]
 15	FUJITSU LIMITED				[87]
 16	International Business Machines		[33]
+17	Kubota Pacific				[95]
 
 
 REFERENCES
@@ -1235,3 +1236,8 @@ REFERENCES
 	MIT X Consortium
 	545 Technology Square
 	Cambridge, MA 02139
+
+[95]	Greg Stiehl
+	Kubota Pacific
+	2630 Walsh Avenue
+	Santa Clara, CA 95051-0905
