@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: oscolor.c,v 1.16 89/05/21 13:54:37 rws Exp $ */
+/* $XConsortium: oscolor.c,v 1.17 89/12/18 15:41:43 rws Exp $ */
 #ifdef NDBM
 #include <ndbm.h>
 #else
@@ -55,14 +55,17 @@ OsLookupColor(screen, name, len, pred, pgreen, pblue)
 {
     datum		dbent;
     RGB			rgb;
-    char	*lowername;
+    char		buf[64];
+    char		*lowername;
 
     if(!rgb_dbm)
 	return(0);
 
-    /* convert name to lower case */
-    lowername = (char *)ALLOCATE_LOCAL(len + 1);
-    if (!lowername)
+    /* we use Xalloc here so that we can compile with cc without alloca
+     * when otherwise using gcc */
+    if (len < sizeof(buf))
+	lowername = buf;
+    else if (!(lowername = (char *)Xalloc(len + 1)))
 	return(0);
     CopyISOLatin1Lowered ((unsigned char *) lowername, (unsigned char *) name,
 			  (int)len);
@@ -75,7 +78,8 @@ OsLookupColor(screen, name, len, pred, pgreen, pblue)
     dbent = fetch (dbent);
 #endif
 
-    DEALLOCATE_LOCAL(lowername);
+    if (len >= sizeof(buf))
+	Xfree(lowername);
 
     if(dbent.dptr)
     {
