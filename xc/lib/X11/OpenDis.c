@@ -1,6 +1,6 @@
 #include "copyright.h"
 #ifndef lint
-static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.54 88/01/30 10:44:11 jim Locked $";
+static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.55 88/02/07 12:03:00 jim Exp $";
 #endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 
@@ -195,7 +195,7 @@ Display *XOpenDisplay (display)
 	}
 	dpy->resource_id	= 0;
 	dpy->resource_shift	= ffs(dpy->resource_mask) - 1;
-	dpy->db 		= (struct _XrmResourceDataBase *)NULL;
+	dpy->db 		= (struct _XrmHashBucketRec *)NULL;
 /* 
  * Initialize pointers to NULL so that XFreeDisplayStructure will
  * work if we run out of memory
