@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Handlers.c,v 1.6 91/01/06 12:12:49 rws Exp $
+ * $XConsortium: Handlers.c,v 1.7 91/01/25 11:04:38 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -163,11 +163,8 @@ void OnePointHandler(w, client_data, event, cont) /* ARGSUSED */
 	
     case Expose:
 	if (QuerySet(status->at_x, status->at_y)) {
-	    BWClip(w, 
-		   InBitmapX(BW, event->xexpose.x), 
-		   InBitmapY(BW, event->xexpose.y),
-		   InBitmapX(BW, event->xexpose.x + event->xexpose.width),
-		   InBitmapY(BW, event->xexpose.y + event->xexpose.height));
+	    BWClip(w, event->xexpose.x, event->xexpose.y,
+		   event->xexpose.width, event->xexpose.height);
 	    if (status->draw)
 		(*status->draw)(w,
 				status->at_x, status->at_y, Highlight);
@@ -329,11 +326,8 @@ void TwoPointsHandler(w, client_data, event, cont) /* ARGSUSED */
     case Expose:
 	if (QuerySet(status->from_x, status->from_y) && 
 	    QuerySet(status->to_x, status->to_y)) {
-	    BWClip(w, 
-		   InBitmapX(BW, event->xexpose.x), 
-		   InBitmapY(BW, event->xexpose.y),
-		   InBitmapX(BW, event->xexpose.x + event->xexpose.width),
-		   InBitmapY(BW, event->xexpose.y + event->xexpose.height));
+	    BWClip(w, event->xexpose.x, event->xexpose.y,
+		   event->xexpose.width, event->xexpose.height);
 	    if (status->draw)
 		(*status->draw)(w,
 				status->from_x, status->from_y, 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Graphics.c,v 1.9 91/01/25 11:04:49 dave Exp $
+ * $XConsortium: Graphics.c,v 1.10 91/01/26 18:10:25 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -228,13 +228,16 @@ void BWSetHotSpot(w, x, y)
 
 /* high level procedures */
 
-void BWRedrawSquares(w, from_x, from_y, to_x, to_y)
+void BWRedrawSquares(w, x, y, width, height)
     Widget  w;
-    Position      from_x, from_y,
-                  to_x, to_y;
+    register Position x, y;
+    Dimension width, height;
 {
     BitmapWidget BW = (BitmapWidget) w;
-    register int x, y;
+    Position from_x = InBitmapX(BW, x);
+    Position from_y = InBitmapY(BW, y);
+    Position to_x = InBitmapX(BW, x + width);
+    Position to_y = InBitmapY(BW, y + height);
 
     QuerySwap(from_x, to_x);
     QuerySwap(from_y, to_y);
@@ -277,12 +280,16 @@ void BWDrawGrid(w, from_x, from_y, to_x, to_y)
 }
 
 
-void BWRedrawGrid(w, from_x, from_y, to_x, to_y)
+void BWRedrawGrid(w, x, y, width, height)
     Widget w;
-    Position from_x, from_y,
-	to_x, to_y;
+    Position x, y;
+    Dimension width, height;
 {
     BitmapWidget BW = (BitmapWidget) w;
+    Position from_x = InBitmapX(BW, x);
+    Position from_y = InBitmapY(BW, y);
+    Position to_x = InBitmapX(BW, x + width);
+    Position to_y = InBitmapY(BW, y + height);
 
     if (BW->bitmap.grid)
 	BWDrawGrid(w, from_x, from_y, to_x, to_y);
