@@ -1,4 +1,4 @@
-/* $XConsortium: protosetup.c,v 1.14 93/12/28 11:42:11 mor Exp $ */
+/* $XConsortium: protosetup.c,v 1.15 94/03/07 15:22:33 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -135,7 +135,7 @@ char 	   *errorStringRet;
 	SIZEOF (iceProtocolSetupMsg), WORD64COUNT (extra),
 	iceProtocolSetupMsg, pMsg, pData);
 
-    setup_sequence = iceConn->sequence;
+    setup_sequence = iceConn->send_sequence;
 
     pMsg->protocolOpcode = myOpcode;
     pMsg->versionCount = myProtocol->orig_client->version_count;
@@ -183,7 +183,7 @@ char 	   *errorStringRet;
     accepted = 0;
 
     while (gotReply == False)
-	if ((gotReply = IceProcessMessage (iceConn, &replyWait)) == True)
+	if ((gotReply = IceProcessMessages (iceConn, &replyWait)) == True)
 	{
 	    if (reply.type == ICE_PROTOCOL_REPLY)
 	    {

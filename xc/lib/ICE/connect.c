@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.22 94/01/31 10:26:03 mor Exp $ */
+/* $XConsortium: connect.c,v 1.23 94/02/05 01:46:13 rws Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -151,7 +151,8 @@ char *errorStringRet;
 
     iceConn->connection_status = IceConnectPending;
     iceConn->my_ice_version_index = 0;
-    iceConn->sequence = 0;
+    iceConn->send_sequence = 0;
+    iceConn->receive_sequence = 0;
 
     if ((iceConn->inbuf = iceConn->inbufptr =
 	(char *) malloc (ICE_INBUFSIZE)) == NULL)
@@ -217,12 +218,13 @@ char *errorStringRet;
     /*
      * Now read the ByteOrder message from the other client.
      * iceConn->swap should be set to the appropriate boolean
-     * value after the call to IceProcessMessage.
+     * value after the call to IceProcessMessages.
      */
 
     iceConn->waiting_for_byteorder = True;
 
-    IceProcessMessage (iceConn, NULL);
+    while (iceConn->waiting_for_byteorder == True)
+	IceProcessMessages (iceConn, NULL);
 
     if (iceConn->connection_status == IceConnectRejected)
     {
@@ -273,7 +275,7 @@ char *errorStringRet;
 	SIZEOF (iceConnectionSetupMsg), WORD64COUNT (extra),
 	iceConnectionSetupMsg, pSetupMsg, pData);
 
-    setup_sequence = iceConn->sequence;
+    setup_sequence = iceConn->send_sequence;
 
     pSetupMsg->versionCount = _IceVersionCount;
     pSetupMsg->authCount = authUsableCount;
@@ -310,7 +312,7 @@ char *errorStringRet;
     gotReply = False;
 
     while (gotReply == False)
-	if ((gotReply = IceProcessMessage (iceConn, &replyWait)) == True)
+	if ((gotReply = IceProcessMessages (iceConn, &replyWait)) == True)
 	{
 	    if (reply.type == ICE_CONNECTION_REPLY)
 	    {

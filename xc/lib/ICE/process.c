@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.27 94/02/08 13:44:00 mor Exp $ */
+/* $XConsortium: process.c,v 1.28 94/03/07 15:21:50 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -52,7 +52,7 @@ Author: Ralph Mor, X Consortium
  *	free up any memory allocated on it's behalf.
  *
  * We might be waiting for several different replies (a function can wait
- * for a reply, and while calling IceProcessMessage, a callback can be
+ * for a reply, and while calling IceProcessMessages, a callback can be
  * invoked which will wait for another reply).  We take advantage of the
  * fact that for a given protocol, we are guaranteed that messages are
  * processed in the order we sent them.  So, everytime we have a new
@@ -62,11 +62,11 @@ Author: Ralph Mor, X Consortium
  * reply is ready, we remove that replyWait from the list.
  *
  * If the reply/error is ready for the replyWait passed in to
- * IceProcessMessage, True is returned.  Otherwise, False is returned.
+ * IceProcessMessages, True is returned.  Otherwise, False is returned.
  */
 
 Bool
-IceProcessMessage (iceConn, replyWait)
+IceProcessMessages (iceConn, replyWait)
 
 IceConn		 iceConn;
 IceReplyWaitInfo *replyWait;
@@ -130,7 +130,7 @@ IceReplyWaitInfo *replyWait;
 	header->length = lswapl (header->length);
     }
 
-    iceConn->sequence++;
+    iceConn->receive_sequence++;
 
     if (replyWait)
     {
@@ -144,10 +144,10 @@ IceReplyWaitInfo *replyWait;
 
 	/*
 	 * Note that there are two different replyWaits.  The first is
-	 * the one passed into IceProcessMessage, and is the replyWait
+	 * the one passed into IceProcessMessages, and is the replyWait
 	 * for the message the client is blocking on.  The second is
 	 * the replyWait for the message currently being processed
-	 * by IceProcessMessage.  We call it "useThisReplyWait".
+	 * by IceProcessMessages.  We call it "useThisReplyWait".
 	 */
 
 	useThisReplyWait = _IceSearchReplyWaits (iceConn, header->majorOpcode);
@@ -218,7 +218,7 @@ IceReplyWaitInfo *replyWait;
 
     /*
      * Now we check if the reply is ready for the replyWait passed
-     * into IceProcessMessage.  The replyWait is removed from the
+     * into IceProcessMessages.  The replyWait is removed from the
      * replyWait list if it is ready.
      */
 
@@ -948,7 +948,7 @@ IceReplyWaitInfo	*replyWait;
     {
 	AuthReply (iceConn, replyDataLen, replyData);
 
-	replyWait->sequence_of_request = iceConn->sequence;
+	replyWait->sequence_of_request = iceConn->send_sequence;
 	replyWait->minor_opcode_of_request = ICE_AuthReply;
 
 	if (iceConn->connect_to_you)
@@ -1314,7 +1314,7 @@ IceReplyWaitInfo	*replyWait;
     {
 	AuthReply (iceConn, replyDataLen, replyData);
 
-	replyWait->sequence_of_request = iceConn->sequence;
+	replyWait->sequence_of_request = iceConn->send_sequence;
     }
     else if (status == IcePoAuthRejected || status == IcePoAuthFailed)
     {
