@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.96 93/10/25 15:35:10 kaleb Exp $ */
+/* $XConsortium: Create.c,v 1.97 94/01/08 18:50:10 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -215,26 +215,42 @@ Widget _XtCreate(
     Widget                  req_widget;
     XtPointer               req_constraints;
     Cardinal                wsize, csize;
-    register Widget	    widget;
+    Widget	    	    widget;
     XtCacheRef		    *cache_refs;
     register int	    i;
+    ObjectClassExtension    ext;
 
     LOCK_PROCESS;
     if (! (widget_class->core_class.class_inited))
 	XtInitializeWidgetClass(widget_class);
-    wsize = widget_class->core_class.widget_size;
-    csize = 0;
-    if (parent_constraint_class) {
-	csize = parent_constraint_class->constraint_class.constraint_size;
-	if (sizeof(struct {char a; double b;}) !=
-	    (sizeof(struct {char a; unsigned long b;}) -
-	     sizeof(unsigned long) + sizeof(double))) {
-	    if (csize && !(csize & (sizeof(double) - 1)))
-		wsize = (wsize + sizeof(double) - 1) & ~(sizeof(double)-1);
+    ext = (ObjectClassExtension)
+	XtGetClassExtension(widget_class, XtOffsetOf(CoreClassPart, extension),
+			    NULLQUARK, XtObjectExtensionVersion, 
+			    sizeof(ObjectClassExtensionRec));
+    if (ext && ext->allocate) {
+	XtAllocateProc allocate;
+	allocate = ext->allocate;
+	UNLOCK_PROCESS;
+	(*allocate)(widget_class, (WidgetClass) parent_constraint_class,
+		    (Cardinal) 0, parent, args, num_args,
+		    typed_args, num_typed_args, &widget, NULL);
+    } else {
+	wsize = widget_class->core_class.widget_size;
+	csize = 0;
+	if (parent_constraint_class) {
+	    csize = parent_constraint_class->constraint_class.constraint_size;
+	    if (sizeof(struct {char a; double b;}) !=
+		(sizeof(struct {char a; unsigned long b;}) -
+		 sizeof(unsigned long) + sizeof(double))) {
+		if (csize && !(csize & (sizeof(double) - 1)))
+		    wsize = (wsize + sizeof(double) - 1) & ~(sizeof(double)-1);
+	    }
 	}
+	UNLOCK_PROCESS;
+	widget = (Widget) XtMalloc((unsigned)(wsize + csize));
+	widget->core.constraints =
+	    (csize ? (XtPointer)((char *)widget + wsize) : NULL);
     }
-    UNLOCK_PROCESS;
-    widget = (Widget) XtMalloc((unsigned)(wsize + csize));
     widget->core.self = widget;
     widget->core.parent = parent;
     LOCK_PROCESS;
@@ -243,10 +259,6 @@ Widget _XtCreate(
     widget->core.xrm_name = StringToName((name != NULL) ? name : "");
     widget->core.being_destroyed =
 	(parent != NULL ? parent->core.being_destroyed : FALSE);
-    if (csize)
-	widget->core.constraints = (XtPointer)((char *)widget + wsize);
-    else
-	widget->core.constraints = NULL;
     if (XtIsRectObj(widget)) {
 	widget->core.managed = FALSE;
     }
