@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.70 92/05/04 09:35:13 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.71 92/05/04 10:26:10 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -295,10 +295,6 @@ generate_warp(screen, x, y)
     int screen, x, y;
 {
 #ifdef XTEST
-#ifdef __OSF1__
-    XTestFakeMotionEvent(dpy, screen, x, y - 1, time_delay);
-    time_delay = 0;
-#endif
     XTestFakeMotionEvent(dpy, screen, x, y, time_delay);
 #endif
 #ifdef XTRAP
