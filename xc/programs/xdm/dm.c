@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.14 89/03/28 16:51:58 keith Exp $
+ * $XConsortium: dm.c,v 1.15 89/06/21 10:45:25 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -24,6 +24,7 @@
 
 # include	<stdio.h>
 # include	<sys/signal.h>
+# include	<varargs.h>
 # include	"dm.h"
 # include	"buf.h"
 
@@ -333,35 +334,31 @@ StorePid ()
 	}
 }
 
-SetTitle (name, class)
-	char *name;
-	char *class;
+SetTitle (va_alist)
+va_dcl
 {
 #ifndef NOXDMTITLE
-	char *p = Title;
-	int left = TitleLen;
-	int len;
+	char	*p = Title;
+	int	left = TitleLen;
+	int	len;
+	char	*s;
+	va_list	args;
 
+	va_start(args);
 	*p++ = '-';
-	left--;
-	len = strlen(name);
-	if (len >= left)
-		len = left - 1;
-	bcopy(name, p, len);
-	p += len;
-	left -= len;
-	if (left)
-	{
-		*p++ = ' ';
+	--left;
+	while (s = va_arg (args, char *)) {
+	    while (*s && left > 0)
+	    {
+		*p++ = *s++;
 		left--;
-		len = strlen(class);
-		if (len >= left)
-			len = left - 1;
-		bcopy(class, p, len);
-		p += len;
-		left -= len;
+	    }
 	}
-	while (--left >= 0)
-		*p++ = ' ';
+	while (left > 0)
+	{
+	    *p++ = ' ';
+	    --left;
+	}
+	va_end(args);
 #endif	
 }
