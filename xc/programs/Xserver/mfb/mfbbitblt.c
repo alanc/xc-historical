@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 5.15 90/02/22 18:52:03 keith Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.16 90/03/01 16:33:54 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -76,14 +76,25 @@ extern int  mfbDoBitbltCopyInverted();
 extern int  mfbDoBitbltOr();
 extern int  mfbDoBitbltGeneral();
 
-mfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc, planemask)
+mfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc)
     DrawablePtr	    pSrc, pDst;
     int		    alu;
     RegionPtr	    prgnDst;
     DDXPointPtr	    pptSrc;
-    unsigned long   planemask;
 {
-    return mfbDoBitbltCopy (pSrc, pDst, alu, prgnDst, pptSrc, planemask);
+    switch (alu)
+    {
+    case GXcopy:
+	return mfbDoBitbltCopy (pSrc, pDst, alu, prgnDst, pptSrc);
+    case GXxor:
+	return mfbDoBitbltXor (pSrc, pDst, alu, prgnDst, pptSrc);
+    case GXcopyInverted:
+	return mfbDoBitbltCopyInverted (pSrc, pDst, alu, prgnDst, pptSrc);
+    case GXor:
+	return mfbDoBitbltOr (pSrc, pDst, alu, prgnDst, pptSrc);
+    default:
+	return mfbDoBitbltGeneral (pSrc, pDst, alu, prgnDst, pptSrc);
+    }
 }
 
 RegionPtr
