@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.61 89/05/15 13:40:46 jim Exp $
+ * $XConsortium: events.c,v 1.62 89/05/15 17:21:33 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.61 89/05/15 13:40:46 jim Exp $";
+"$XConsortium: events.c,v 1.62 89/05/15 17:21:33 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -884,12 +884,6 @@ HandleMapRequest()
     /* If the window has never been mapped before ... */
     if (Tmp_win == NULL)
     {
-	if (Transient(Event.xany.window) && !Scr->DecorateTransients)
-	{
-	    XMapRaised(dpy, Event.xany.window);
-	    return;
-	}
-
 	/* Add decorations. */
 	Tmp_win = AddWindow(Event.xany.window, FALSE, 0);
 	if (Tmp_win == NULL)
