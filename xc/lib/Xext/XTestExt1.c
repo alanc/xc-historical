@@ -37,7 +37,7 @@ University of California.
 
 #include "Xproto.h"
 #include "Xlibint.h"
-#include "extensions/xtestext1.h"
+#include "xtestext1.h"
 
 /******************************************************************************
  * variables
