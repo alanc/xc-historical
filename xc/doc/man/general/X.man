@@ -1,21 +1,24 @@
-.TH X 1 "26 October 1988"  "X Version 11"
+.TH X 1 "31 December 1989"  "X Version 11"
 .SH NAME
-X - a portable, network transparent window system
+X - a portable, network-transparent window system
 .SH SYNOPSIS
 .PP
-X is a network transparent window system developed at MIT which runs on a wide
+The X Window System
+is a network transparent window system developed at MIT which runs on a wide
 range of computing and graphics machines.  The core distribution from MIT
-has both client and server support for the following operating systems:
+has support for the following operating systems:
 .sp
-.ce 8
-Ultrix 3.0
-SunOS 4.0.3
-HP-UX 6.5
-Domain/OS 10.2
-A/UX 1.1
-AOS-4.3
-NEWS-OS 3.2
-UTEK 4.0
+.ce 10
+Digital Ultrix 3.1
+Sun SunOS 4.0.3
+Hewlett-Packard HP-UX 6.5
+Apollo Domain/OS 10.2
+Apple A/UX 1.1
+IBM AOS-4.3
+Tektronix UTEK 4.0
+Sony NEWS-OS 3.2 (client only)
+Cray UNICOS 5.0.1 (client only)
+AT&T UNIX System V, Release 3.2 (client only)
 .sp
 Commercial implementations are also available for a much wider range
 of platforms.
@@ -37,7 +40,7 @@ X11
 .I "X Window System"
 is a trademark of the Massachusetts Institute of Technology.
 .SH DESCRIPTION
-X window system servers run on computers with bitmap displays.
+X Window System servers run on computers with bitmap displays.
 The server distributes user input to and accepts output requests from various
 client programs through a variety of different interprocess
 communication channels.  Although the most common case is for the client
