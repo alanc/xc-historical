@@ -1,4 +1,4 @@
-/* $XConsortium: mainwin.c,v 1.6 94/12/12 19:55:19 mor Exp mor $ */
+/* $XConsortium: mainwin.c,v 1.7 94/12/16 17:30:12 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -48,6 +48,20 @@ Widget       shutdownDontSave;
 
 
 
+static void
+DelMainWinAction (w, event, params, num_params)
+
+Widget w;
+XEvent *event;
+String *params;
+Cardinal *num_params;
+
+{
+    XtCallCallbacks (shutdownSave, XtNcallback, NULL);
+}
+
+
+
 void
 create_main_window ()
 
@@ -55,6 +69,10 @@ create_main_window ()
     /*
      * Main window
      */
+
+    static XtActionsRec actions[] = {
+        {"DelMainWinAction", DelMainWinAction}
+    };
 
     mainWindow = XtVaCreateManagedWidget (
 	"mainWindow", formWidgetClass, topLevel,
@@ -113,4 +131,6 @@ create_main_window ()
 
     XtAddCallback (shutdownSave, XtNcallback, ShutdownSaveXtProc, 0);
     XtAddCallback (shutdownDontSave, XtNcallback, ShutdownDontSaveXtProc, 0);
+
+    XtAppAddActions (appContext, actions, XtNumber (actions));
 }
