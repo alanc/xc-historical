@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.8 94/07/13 10:40:03 mor Exp $ */
+/* $XConsortium: restart.c,v 1.9 94/07/15 10:06:20 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -298,15 +298,29 @@ StartDefaultApps ()
 
 {
     FILE *f;
-    char *buf, *p;
+    char *buf, *p, *home, filename[128];
     int buflen, len;
 
-    f = fopen (SYSTEM_INIT_FILE, "r");
+    /*
+     * First try ~/.xsmstartup, then system.xsm
+     */
+
+    home = (char *) getenv ("HOME");
+    if (!home)
+	home = ".";
+    sprintf (filename, "%s/.xsmstartup", home);
+
+    f = fopen (filename, "r");
+
     if (!f)
     {
-	printf ("Could not find default apps file.  Make sure you did\n");
-	printf ("a 'make install' in the xsm build directory.\n");
-	exit (1);
+	f = fopen (SYSTEM_INIT_FILE, "r");
+	if (!f)
+	{
+	    printf ("Could not find default apps file.  Make sure you did\n");
+	    printf ("a 'make install' in the xsm build directory.\n");
+	    exit (1);
+	}
     }
 
     buf = NULL;
