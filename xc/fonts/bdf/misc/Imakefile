@@ -11,3 +11,5 @@ FontTarget(8x13)
 FontTarget(8x13bold)
 FontTarget(9x15)
 FontTarget(cursor)
+
+InstallFonts ($(FONTDIR)/misc)

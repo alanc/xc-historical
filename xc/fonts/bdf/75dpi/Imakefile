@@ -139,3 +139,5 @@ FontTarget(timR14)
 FontTarget(timR18)
 FontTarget(timR24)
 FontTarget(timR8)
+
+InstallFonts($(FONTDIR)/75dpi)

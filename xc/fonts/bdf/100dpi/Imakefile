@@ -3,3 +3,4 @@ OBJS =
 
 MakeFonts()
 
+InstallFonts($(FONTDIR)/100dpi)
