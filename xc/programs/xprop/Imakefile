@@ -1,0 +1,8 @@
+       INCLUDES = -I$(TOP) -Isimple-lib
+LOCAL_LIBRARIES = $(SLB) $(XLIB)
+            SLB = simple-lib/libslb.a
+
+SimpleProgramTarget(xprop, $(BINDIR))
+
+$(SLB):
+	cd simple-lib; $(MAKE)
