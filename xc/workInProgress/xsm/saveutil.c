@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.7 94/06/17 10:13:52 mor Exp $ */
+/* $XConsortium: save.c,v 1.8 94/06/27 14:17:22 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -53,8 +53,14 @@ char **sm_id;
     PendingList = ListInit();
     if(!PendingList) nomem();
 
-    p = (char *) getenv("HOME");
-    if(!p) p = ".";
+    p = (char *) getenv ("SM_SAVE_DIR");
+    if (!p)
+    {
+	p = (char *) getenv ("HOME");
+	if (!p)
+	    p = ".";
+    }
+
     strcpy(session_save_file, p);
     strcat(session_save_file, "/.SM-save");
 

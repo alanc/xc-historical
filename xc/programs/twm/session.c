@@ -477,18 +477,22 @@ Bool fast;
     TwmWindow *theWindow;
     char *clientId;
     FILE *configFile;
-    char *home, *filename;
+    char *path, *filename;
     Bool success = True;
     SmProp prop1, prop2, prop3, prop4, prop5, *props[5];
     SmPropValue prop3val, prop4val, prop5val;
     char discardCommand[80], userId[20];
     int numVals, i;
 
-    home = getenv ("HOME");
-    if (!home)
-	home = ".";
+    path = getenv ("SM_SAVE_DIR");
+    if (!path)
+    {
+	path = getenv ("HOME");
+	if (!path)
+	    path = ".";
+    }
 
-    filename = tempnam (home, ".twm");
+    filename = tempnam (path, ".twm");
     configFile = fopen (filename, "wb");
 
     for (scrnum = 0; scrnum < NumScreens && success; scrnum++)
