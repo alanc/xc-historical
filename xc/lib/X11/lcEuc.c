@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lcEuc.c,v 1.6 94/01/20 18:06:38 rws Exp $ */
 /******************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -1100,7 +1100,7 @@ close_converter(conv)
 }
 
 enum { MBSTOCS, WCSTOCS, MBTOCS, CSTOMBS, CSTOWCS, MBSTOWCS, WCSTOMBS,
-       CTSTOWCS, CTSTOMBS, WCSTOCTS, MBSTOCTS } convs;
+       CTSTOWCS, CTSTOMBS, WCSTOCTS, MBSTOCTS };
 
 static XlcConvMethodsRec conv_methods[] = {
     {close_converter, euc_mbstocs,  NULL },
