@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 2.23 91/07/13 22:55:27 converse Exp $
+/* $XConsortium: main.c,v 2.24 91/07/14 13:34:45 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -33,9 +33,6 @@ static void NeedToCheckScans(client_data, id)
     XtIntervalId *id;		/* unused */
 {
     int i;
-    (void) XtAppAddTimeOut((XtAppContext)client_data,
-			   (unsigned long) app_resources.rescan_interval,
-			   NeedToCheckScans, client_data);
     if (!subProcessRunning) {
         DEBUG("[magic toc check ...")
 	for (i = 0; i < numScrns; i++) {
@@ -46,6 +43,9 @@ static void NeedToCheckScans(client_data, id)
 	}
         DEBUG(" done]\n")
     }
+    (void) XtAppAddTimeOut((XtAppContext)client_data,
+			   (unsigned long) app_resources.rescan_interval,
+			   NeedToCheckScans, client_data);
 }
 
 /*ARGSUSED*/
@@ -54,9 +54,6 @@ static void Checkpoint(client_data, id)
     XtIntervalId *id;		/* unused */
 {
     register int i;
-    (void) XtAppAddTimeOut((XtAppContext)client_data,
-			   (unsigned long) app_resources.checkpoint_interval,
-			   Checkpoint, client_data);
     if (!subProcessRunning) {
 	DEBUG("(Checkpointing...")
    	for (i=0; i<numScrns; i++)
@@ -64,6 +61,9 @@ static void Checkpoint(client_data, id)
 		MsgCheckPoint(scrnList[i]->msg);
         DEBUG(" done)\n")
     }
+    (void) XtAppAddTimeOut((XtAppContext)client_data,
+			   (unsigned long) app_resources.checkpoint_interval,
+			   Checkpoint, client_data);
 }
 
 /*ARGSUSED*/
@@ -73,14 +73,14 @@ static void CheckMail(client_data, id)
 {
     extern void XmhCheckForNewMail();
 
-    (void) XtAppAddTimeOut((XtAppContext)client_data,
-			   (unsigned long) app_resources.mail_interval,
-			   CheckMail, client_data);
     if (!subProcessRunning) {
         DEBUG("(Checking for new mail...")
         XmhCheckForNewMail(NULL, NULL, NULL, NULL);
         DEBUG(" done)\n")
     }
+    (void) XtAppAddTimeOut((XtAppContext)client_data,
+			   (unsigned long) app_resources.mail_interval,
+			   CheckMail, client_data);
 }
 
 /* Main loop. */
