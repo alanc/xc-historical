@@ -464,10 +464,12 @@
 	  (funcall (gcontext-extension-set-function (car extension)) gcontext local)))
 
       ;; Update clipping rectangles
-      (let ((local-clip (gcontext-internal-clip local-state)))
-	(unless (equalp local-clip 
-			(gcontext-internal-clip server-state))
-	  (setf (gcontext-internal-clip server-state) local-clip)
+      (multiple-value-bind (local-clip server-clip)
+	  (without-interrupts 
+	    (values (gcontext-internal-clip local-state)
+		    (gcontext-internal-clip server-state)))
+	(unless (equalp local-clip server-clip)
+	  (setf (gcontext-internal-clip server-state) nil)
 	  (unless (null local-clip)
 	    (with-buffer-request (display *x-setcliprectangles*)
 	      (data (first local-clip))
@@ -476,20 +478,24 @@
 	      (card16 (or (gcontext-internal-clip-x local-state) 0)
 		      (or (gcontext-internal-clip-y local-state) 0))
 	      ;; XXX this has both int16 and card16 values
-	      ((sequence :format int16) (second local-clip))))))
+	      ((sequence :format int16) (second local-clip)))
+	    (setf (gcontext-internal-clip server-state) local-clip))))
 
       ;; Update dashes
-      (let ((local-dash (gcontext-internal-dash local-state)))
-	(unless (equalp local-dash
-			(gcontext-internal-dash server-state))
-	  (setf (gcontext-internal-dash server-state) local-dash)
+      (multiple-value-bind (local-dash server-dash)
+	  (without-interrupts 
+	    (values (gcontext-internal-dash local-state)
+		    (gcontext-internal-dash server-state)))
+	(unless (equalp local-dash server-dash)
+	  (setf (gcontext-internal-dash server-state) nil)
 	  (unless (null local-dash)
 	    (with-buffer-request (display *x-setdashes*)
 	      (gcontext gcontext)
 	      ;; XXX treat nil correctly
 	      (card16 (or (gcontext-internal-dash-offset local-state) 0)
 		      (length local-dash))
-	      ((sequence :format card8) local-dash)))))))) 
+	      ((sequence :format card8) local-dash))
+	    (setf (gcontext-internal-dash server-state) local-dash)))))))
 
 (defun force-gcontext-changes (gcontext)
   ;; Force any delayed changes.
