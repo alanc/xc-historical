@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: init.c,v 1.19 87/07/31 09:35:49 weissman Exp $";
+static char rcs_id[] = "$Header: init.c,v 1.19 87/08/06 13:21:50 toddb Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -41,6 +41,8 @@ static Resource resourcelist[] = {
 	 (XtArgVal)&defMhPath, NULL},
     {"initialfolder", "InitialFolder", XrmRString, sizeof(char *),
 	 (XtArgVal)&initialFolderName, NULL},
+    {"initialincfile", "InitialIncFile", XrmRString, sizeof(char *),
+         (XtArgVal)&initialIncFile, NULL},
     {"draftsfolder", "DraftsFolder", XrmRString, sizeof(char *),
 	 (XtArgVal)&draftsFolderName, NULL},
     {"sendwidth", "SendWidth", XrmRInt, sizeof(int),
