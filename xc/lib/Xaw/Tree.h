@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.h,v 1.5 90/02/05 11:51:15 jim Exp $
+ * $XConsortium: Tree.h,v 1.6 90/02/07 11:09:51 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -30,6 +30,8 @@
 
 #ifndef _XawTree_h
 #define _XawTree_h
+
+#include <X11/Xmu/Converters.h>
 
 /******************************************************************************
  * 
