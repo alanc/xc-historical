@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.124 87/08/26 20:55:42 toddb Locked $ */
+/* $Header: Xlib.h,v 11.126 87/08/29 21:40:33 jg Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -34,54 +34,50 @@
 #define True 1
 #define False 0
 
-#define ConnectionNumber(dpy) ((dpy)->fd)
-#define RootWindow(dpy, scr) (((dpy)->screens[(scr)]).root)
-#define DefaultScreen(dpy) ((dpy)->default_screen)
-#define DefaultRootWindow(dpy) (((dpy)->screens[(dpy)->default_screen]).root)
+#define ConnectionNumber(dpy) 	((dpy)->fd)
+#define RootWindow(dpy, scr) 	(((dpy)->screens[(scr)]).root)
+#define DefaultScreen(dpy) 	((dpy)->default_screen)
+#define DefaultRootWindow(dpy) 	(((dpy)->screens[(dpy)->default_screen]).root)
 #define DefaultVisual(dpy, scr) (((dpy)->screens[(scr)]).root_visual)
-#define DefaultGC(dpy, scr) (((dpy)->screens[(scr)]).default_gc)
-#define BlackPixel(dpy, scr) (((dpy)->screens[(scr)]).black_pixel)
-#define WhitePixel(dpy, scr) (((dpy)->screens[(scr)]).white_pixel)
-#define AllPlanes (~0)
-#define QLength(dpy) ((dpy)->qlen)
-#define DisplayWidth(dpy, scr) (((dpy)->screens[(scr)]).width)
+#define DefaultGC(dpy, scr) 	(((dpy)->screens[(scr)]).default_gc)
+#define BlackPixel(dpy, scr) 	(((dpy)->screens[(scr)]).black_pixel)
+#define WhitePixel(dpy, scr) 	(((dpy)->screens[(scr)]).white_pixel)
+#define AllPlanes 		(~0)
+#define QLength(dpy) 		((dpy)->qlen)
+#define DisplayWidth(dpy, scr) 	(((dpy)->screens[(scr)]).width)
 #define DisplayHeight(dpy, scr) (((dpy)->screens[(scr)]).height)
-#define DisplayWidthMM(dpy, scr) (((dpy)->screens[(scr)]).mwidth)
-#define DisplayHeightMM(dpy, scr) (((dpy)->screens[(scr)]).mheight)
+#define DisplayWidthMM(dpy, scr)(((dpy)->screens[(scr)]).mwidth)
+#define DisplayHeightMM(dpy, scr)(((dpy)->screens[(scr)]).mheight)
 #define DisplayPlanes(dpy, scr) (((dpy)->screens[(scr)]).root_depth)
-#define DisplayCells(dpy, scr) (DefaultVisual((dpy), (scr))->map_entries)
-#define ScreenCount(dpy) ((dpy)->nscreens)
-#define ServerVendor(dpy) ((dpy)->vendor)
-#define ProtocolVersion(dpy) ((dpy)->proto_major_version)
-#define ProtocolRevision(dpy) ((dpy)->proto_minor_version)
-#define VendorRelease(dpy) ((dpy)->vnumber)
-#define DisplayString(dpy) ((dpy)->display_name)
-#define DefaultDepth(dpy, scr) (((dpy)->screens[(scr)]).root_depth)
-#define DefaultColormap(dpy, scr) (((dpy)->screens[(scr)]).cmap)
-#define BitmapUnit(dpy) ((dpy)->bitmap_unit)
-#define BitmapBitOrder(dpy) ((dpy)->bitmap_bit_order)
-#define BitmapPad(dpy) ((dpy)->bitmap_pad)
-#define ImageByteOrder(dpy) ((dpy)->byte_order)
+#define DisplayCells(dpy, scr) 	(DefaultVisual((dpy), (scr))->map_entries)
+#define ScreenCount(dpy) 	((dpy)->nscreens)
+#define ServerVendor(dpy) 	((dpy)->vendor)
+#define ProtocolVersion(dpy) 	((dpy)->proto_major_version)
+#define ProtocolRevision(dpy) 	((dpy)->proto_minor_version)
+#define VendorRelease(dpy) 	((dpy)->vnumber)
+#define DisplayString(dpy) 	((dpy)->display_name)
+#define DefaultDepth(dpy, scr) 	(((dpy)->screens[(scr)]).root_depth)
+#define DefaultColormap(dpy, scr)(((dpy)->screens[(scr)]).cmap)
+#define BitmapUnit(dpy) 	((dpy)->bitmap_unit)
+#define BitmapBitOrder(dpy) 	((dpy)->bitmap_bit_order)
+#define BitmapPad(dpy) 		((dpy)->bitmap_pad)
+#define ImageByteOrder(dpy) 	((dpy)->byte_order)
 
-/*
- * ...for libraries (such as the toolkit) that decide to use screen pointers
- * everywhere rather than display pointers.
- */
-
-#define ScreenRoot(screen)	      ((screen)->root)
-#define ScreenBlackPixel(screen)      ((screen)->black_pixel)
-#define ScreenWhitePixel(screen)      ((screen)->white_pixel)
-#define ScreenDefaultColormap(screen) ((screen)->cmap)
-#define ScreenDefaultDepth(screen)    ((screen)->root_depth)
-#define ScreenDefaultGC(screen)	      ((screen)->default_gc)
-#define ScreenDefaultVisual(screen)   ((screen)->root_visual)
-#define ScreenWidth(screen)	      ((screen)->width)
-#define ScreenHeight(screen)	      ((screen)->height)
-#define ScreenWidthMM(screen)	      ((screen)->mwidth)
-#define ScreenHeightMM(screen)	      ((screen)->mheight)
-#define ScreenPlanes(screen)	      ((screen)->root_depth)
-#define ScreenCells(screen)	      (ScreenDefaultVisual((scr))->map_entries)
-
+/* macros for screen oriented applications (toolkit) */
+#define DisplayOfScreen(s)	((s)->display)
+#define RootWindowOfScreen(s)	((s)->root)
+#define BlackPixelOfScreen(s)	((s)->black_pixel)
+#define WhitePixelOfScreen(s)	((s)->white_pixel)
+#define DefaultColormapOfScreen(s)((s)->cmap)
+#define DefaultDepthOfScreen(s)	((s)->root_depth)
+#define DefaultGCOfScreen(s)	((s)->default_gc)
+#define DefaultVisualOfScreen(s)((s)->root_visual)
+#define WidthOfScreen(s)	((s)->width)
+#define HeightOfScreen(s)	((s)->height)
+#define WidthMMOfScreen(s)	((s)->mwidth)
+#define HeightMMOfScreen(s)	((s)->mheight)
+#define PlanesOfScreen(s)	((s)->root_depth)
+#define CellsOfScreen(s)	(DefaultVisualofScreen((s))->map_entries)
 /*
  * Extensions need a way to hang private data on some structures.
  */
@@ -395,8 +391,8 @@ XModifierKeymap *XNewModifiermap(),
 		*XGetModifierMapping(),
 		*XDeleteModifiermapEntry(),
 		*XInsertModifiermapEntry();
-
 #endif /* _XSTRUCT_ */
+
 /*
  * Display datatype maintaining display specific data.
  */
@@ -429,7 +425,7 @@ typedef struct _XDisplay {
 	char *bufptr;		/* Output buffer index pointer. */
 	char *bufmax;		/* Output buffer maximum+1 address. */
 	unsigned max_request_size; /* maximum number 32 bit words in request*/
-	Bool dummy;		/* no longer used */
+	struct _XrmResourceDataBase *db;
 	int (*synchandler)();	/* Synchronization handler */
 	char *display_name;	/* "host:display" string used on this connect*/
 	int default_screen;	/* default screen for operations */
