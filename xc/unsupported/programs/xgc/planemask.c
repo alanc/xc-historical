@@ -3,17 +3,15 @@
 **
 ** How to make a widget to choose a planemask.
 **
-** This should really be combined with dashlist.c - they have a lot of code
-** in common.
-**
-** All of these functions and variables have analogous ones in dashlist.c,
-** which are commented.
+** NOTE: This file uses static variables.  Therefore, trying to use these
+**       functions to create more than one of these planemask choice things
+**       will fail in a big way.
 */
 
-#include <X11/IntrinsicP.h>
+#include <X11/Intrinsic.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>
-#include <X11/Xaw/Command.h>
+#include <X11/Xaw/Toggle.h>
 #include <X11/StringDefs.h>
 #include "xgc.h"
 
@@ -22,22 +20,34 @@ extern void interpret();
 
 extern XStuff X;
 
-static unsigned long planemask;
+static unsigned long planemask;	
+static Widget *pm;
 
-void create_planemask_choice(w)
+/* create_planemask_choice(w)
+** -------------------------
+** Inside w (a form widget), creates a bunch of little toggle buttons
+** in a row, representing the planemask.  There's also a label so
+** the user knows what it is.
+*/
+
+void
+create_planemask_choice(w)
      Widget w;
 {
+  /* callback list for the toggle widgets */
   static XtCallbackRec callbacklist[] = {
     {(XtCallbackProc) choose_plane, NULL},
     {NULL,                          NULL}
   };
 
+  /* ArgList for the label */
   static Arg labelargs[] = {
     {XtNborderWidth,     (XtArgVal) 0},
     {XtNjustify,         (XtArgVal) XtJustifyRight},
     {XtNvertDistance,    (XtArgVal) 4}
   };
 
+  /* ArgList for the toggles */
   static Arg pmargs[] = {
     {XtNcallback,          (XtArgVal) NULL},
     {XtNhorizDistance,     (XtArgVal) NULL},
@@ -45,13 +55,14 @@ void create_planemask_choice(w)
     {XtNwidth,             (XtArgVal) 10},
     {XtNheight,            (XtArgVal) 10},
     {XtNhighlightThickness,(XtArgVal) 1},
-    {XtNforeground,        (XtArgVal) NULL},
-    {XtNbackground,        (XtArgVal) NULL}
+    {XtNstate,             (XtArgVal) True}
   };
 
-  static Widget label;
-  static Widget *pm;
-  static int *pminfo;
+  static Widget label;		/* the label, of course */
+  static int *pminfo;		/* contains integers saying which bit
+				   a particular button is; sent to
+				   choose_plane to tell it which
+				   bit got changed */
 
   int i, num_planes;
 
@@ -63,98 +74,113 @@ void create_planemask_choice(w)
   sprintf(buf,"planemask %d",planemask);
   interpret(buf);
 
+  /* Allocate space for stuff that we don't know the size of yet */
+
   pm = (Widget *) malloc(num_planes * sizeof(Widget));
   pminfo = (int *) malloc(num_planes * sizeof(int));
+
+  /* Make the label widget */
 
   label = XtCreateManagedWidget("planemask",labelWidgetClass,w,
 				labelargs,XtNumber(labelargs));
 
   pmargs[0].value = (XtArgVal) callbacklist;
-  pmargs[6].value = (XtArgVal) X.background;
-  pmargs[7].value = (XtArgVal) X.foreground;
-  
-  for (i=0;i<num_planes;++i) {
-    if (i==0) {
+
+  for (i=0;i<num_planes;++i) {	/* go through all the buttons */
+    if (i==0) {			/* offset the first one from the label */
       pmargs[1].value = (XtArgVal) 10;
       pmargs[2].value = (XtArgVal) label;
     }
-    else {
+    else {			/* put it directly to the right of the
+				   last one, no space in between */
       pmargs[1].value = (XtArgVal) -1;
       pmargs[2].value = (XtArgVal) pm[i-1];
     }
 
-    pminfo[i] = i;
+    /* set its original state depending on the state of that bit
+    ** of the planemask */
+
+    if (planemask & 1<<i)
+      pmargs[6].value = True;
+    else
+      pmargs[6].value = False;
+
+    pminfo[i] = i;		/* which bit we're on; this is needed in
+				   choose_plane (the callback) */
     callbacklist[0].closure = (caddr_t) &pminfo[i];
 
-    pm[i] = XtCreateManagedWidget(NULL,commandWidgetClass,w,
+    pm[i] = XtCreateManagedWidget(NULL,toggleWidgetClass,w,
 				  pmargs,XtNumber(pmargs));
   }
 }
 
+/* choose_plane(w,closure,call_data)
+** ------------------------------------
+** This function is called when the user toggles a toggle widget.  It
+** makes the appropriate change to the planemask and sends it off
+** to interpret().
+** Funny args are because it's a callback.
+*/
+
 /*ARGSUSED*/
-static void choose_plane(w,closure,call_data)
+static void
+choose_plane(w,closure,call_data)
      Widget w;
      caddr_t closure;
      caddr_t call_data;
 {
-  Boolean on;
-  int num;
-  char buf[80];
+  int num;			/* what number button it is */
+  Boolean on;			/* is it currently on or off? */
+
+  char buf[80];			/* string to send to interpret() */
 
   static Arg args[] = {
-    {XtNforeground,  (XtArgVal) NULL},
-    {XtNbackground,  (XtArgVal) NULL},
+    {XtNstate,    (XtArgVal) NULL}
   };
 
-  num = * (int *) closure;
-  if (planemask & 1<<num) on = FALSE;
-  else on = TRUE;
+  /* set up ArgList so that 'on' will contain the state */
+  args[0].value = (XtArgVal) &on;
 
-  if (on) {
+  num = * (int *) closure;	/* we put it here back in the last function */
+  XtGetValues(w,args,XtNumber(args));
+
+  /* Modify the planemask appropriately */
+
+  if (on)
     planemask |= 1<<num;
-    args[0].value = (XtArgVal) X.background;
-    args[1].value = (XtArgVal) X.foreground;
-  }
-  else {
+  else
     planemask &= ~(1<<num);
-    args[0].value = (XtArgVal) X.foreground;
-    args[1].value = (XtArgVal) X.background;
-  }
-
-  XtSetValues(w,args,XtNumber(args));
 
   (void) sprintf(buf,"planemask %d\n",planemask);
   interpret(buf);
 }
 
-void update_planemask(w, mask)
-     Widget w;
+/* update_planemask(mask)
+** ----------------------
+** Updates the display of the planemask so that it corresponds to mask.
+*/
+
+void
+update_planemask(mask)
      long mask;
 {
-  int i;
-  Widget maskwidget;
-  CompositeWidget cw;
-  static Arg maskargs[] = {
-    {XtNforeground, (XtArgVal) NULL},
-    {XtNbackground, (XtArgVal) NULL}
+  int i;			/* counter */
+  static Arg maskargs[] = {	/* ArgList for setting toggle state */
+    {XtNstate,     (XtArgVal) NULL}
   };
+
+  /* First set the internal representation */
 
   planemask = mask;
 
   for (i = 0; i < PlanesOfScreen(X.scr); ++i) {
-    cw = (CompositeWidget) w;
-    maskwidget = cw->composite.children[i+1]; /* the zeroth child
-                                                 is the label */
-
     if (planemask & 1<<i) {        /* if it's set, make it look that way */
-      maskargs[0].value = (XtArgVal) X.background;
-      maskargs[1].value = (XtArgVal) X.foreground;
+      maskargs[0].value = True;
     }
     else {
-      maskargs[0].value = (XtArgVal) X.foreground;
-      maskargs[1].value = (XtArgVal) X.background;
+      maskargs[0].value = False;
     }
 
-    XtSetValues(maskwidget,maskargs,XtNumber(maskargs));
+    XtSetValues(pm[i],maskargs,XtNumber(maskargs));
   }
 }
