@@ -60,5 +60,5 @@ Give the session a name...
 *nameSessionOkButton.Accelerators: #override\n\
 	<Key>Return:	set() notify() unset()\n
 
-*chooseSessionOkButton.Accelerators: #override\n\
+*chooseSessionLoadButton.Accelerators: #override\n\
 	<Btn1Down>(2+):	set() notify() unset()\n
