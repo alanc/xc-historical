@@ -9,7 +9,8 @@ SRCS =	 	skyInfo.c	\
 		skySave.c       \
 		skyScrInit.c    \
 		skyCmap.c       \
-		skyProbe.c
+		skyProbe.c	\
+		skySGC.c
 
 OBJS =	 	skyInfo.o       \
 		skyIO.o	        \
@@ -19,7 +20,8 @@ OBJS =	 	skyInfo.o       \
 		skySave.o       \
 		skyScrInit.o    \
 		skyCmap.o       \
-		skyProbe.o
+		skyProbe.o	\
+		skySGC.o
 
 INCLUDES = -I../ -I../OPERATING_SYSTEM -I../../mfb -I../../cfb -I../ppc -I../../../include -I$(INCLUDESRC) -I../common -I../../mi -I../../../../fonts/include
 STD_DEFINES = ServerDefines
