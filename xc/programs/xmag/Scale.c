@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Scale.c,v 1.12 91/05/08 18:13:45 dave Exp $
+ * $XConsortium: Scale.c,v 1.13 91/07/19 18:29:31 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -600,11 +600,13 @@ void TryResize(sw)
 void Precision(sw)
     ScaleWidget sw;
 {
-    sw->scale.scale_x = (sw->scale.scale_x == 1.0) ? sw->scale.scale_x :
-	floor(sw->scale.scale_x / sw->scale.precision) * sw->scale.precision;
+    if (sw->scale.scale_x != 1.0)
+	sw->scale.scale_x = floor(sw->scale.scale_x / sw->scale.precision)
+	    		    * sw->scale.precision;
 
-    sw->scale.scale_y = (sw->scale.scale_y == 1.0) ? sw->scale.scale_y :
-	floor(sw->scale.scale_y / sw->scale.precision) * sw->scale.precision;
+    if (sw->scale.scale_y != 1.0)
+	sw->scale.scale_y = floor(sw->scale.scale_y / sw->scale.precision)
+			    * sw->scale.precision;
 }
 
 
