@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.15 89/07/17 19:18:22 rws Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.16 89/07/21 13:54:22 keith Exp $ SPRITE (Berkeley)";
 #endif
 
 #include    "X.h"
@@ -134,16 +134,11 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 	    pParent->visibility = VisibilityFullyObscured;
 	    break;
     }
-    if (oldVis != pParent->visibility && pParent->realized)
+    if (oldVis != pParent->visibility)
 	SendVisibilityNotify(pParent);
 
     dx = pParent->drawable.x - pParent->valdata->before.oldAbsCorner.x;
     dy = pParent->drawable.y - pParent->valdata->before.oldAbsCorner.y;
-    borderVisible = pParent->valdata->before.borderVisible;
-    shrunk = pParent->valdata->before.shrunk;
-    
-    (* pScreen->RegionInit) (&pParent->valdata->after.borderExposed, NullBox, 0);
-    (* pScreen->RegionInit) (&pParent->valdata->after.exposed, NullBox, 0);
 
     /*
      * avoid computations when dealing with simple operations
@@ -155,6 +150,47 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     case VTUnmap:
 	break;
     case VTMove:
+	if ((oldVis == pParent->visibility) &&
+	    ((oldVis == VisibilityFullyObscured) ||
+	     (oldVis == VisibilityUnobscured)))
+	{
+	    pChild = pParent;
+	    while (1)
+	    {
+		if (pChild->viewable)
+		{
+		    if (pChild->visibility != VisibilityFullyObscured)
+		    {
+			(* pScreen->TranslateRegion) (&pChild->borderClip,
+						      dx, dy);
+			(* pScreen->TranslateRegion) (&pChild->clipList,
+						      dx, dy);
+		    }
+		    if (pChild->valdata)
+		    {
+			(* pScreen->RegionInit) (&pChild->valdata->after.borderExposed,
+						 NullBox, 0);
+			(* pScreen->RegionInit) (&pChild->valdata->after.exposed,
+						 NullBox, 0);
+		    }
+		    if (pChild->firstChild)
+		    {
+			pChild = pChild->firstChild;
+			continue;
+		    }
+		}
+		while (!pChild->nextSib && (pChild != pParent))
+		    pChild = pChild->parent;
+		if (pChild == pParent)
+		    break;
+		pChild = pChild->nextSib;
+	    }
+	    pParent->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+	    if (clipNotify)
+		(* clipNotify) (pParent, dx, dy);
+	    return;
+	}
+	/* fall through */
     default:
     	/*
      	 * To calculate exposures correctly, we have to translate the old
@@ -172,6 +208,11 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     	} 
 	break;
     }
+
+    borderVisible = pParent->valdata->before.borderVisible;
+    shrunk = pParent->valdata->before.shrunk;
+    (* pScreen->RegionInit) (&pParent->valdata->after.borderExposed, NullBox, 0);
+    (* pScreen->RegionInit) (&pParent->valdata->after.exposed, NullBox, 0);
 
     /*
      * Since the borderClip must not be clipped by the children, we do
