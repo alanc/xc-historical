@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.75 88/10/19 19:00:10 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.76 88/10/21 09:43:29 swick Exp $";
 #endif
 
 
@@ -2202,7 +2202,7 @@ int *format;
     EndAction(ctx);
 
     XtFree(client_data);
-    XtFree(*value);
+    XtFree(value);
 }
 
 
