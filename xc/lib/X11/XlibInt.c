@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.146 91/05/11 15:01:28 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.147 91/05/11 23:29:51 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -707,14 +707,16 @@ Status _XReply (dpy, rep, extra, discard)
 		 * we better see if there is an extension who may
 		 * want to suppress the error.
 		 */
-		for (ext = dpy->ext_procs; ext; ext = ext->next) {
+		for (ext = dpy->ext_procs; !ret && ext; ext = ext->next) {
 		    if (ext->error) 
 		       ret = (*ext->error)(dpy, err, &ext->codes, &ret_code);
 		}
-		if (ret) return (ret_code);
-		_XError(dpy, err);
+		if (!ret) {
+		    _XError(dpy, err);
+		    ret_code = 0;
+		}
 		if (serial == cur_request)
-		    return(0);
+		    return(ret_code);
 		}
 		break;
 	    default:
