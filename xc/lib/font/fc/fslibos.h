@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibos.h,v 1.6 91/07/19 16:39:04 rws Exp $ */
+/* $XConsortium: FSlibos.h,v 1.7 93/09/12 17:39:23 rws Exp $ */
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -74,6 +74,7 @@
 #define MSKCNT ((OPEN_MAX + 31) / 32)
 
 typedef unsigned long FdSet[MSKCNT];
+typedef FdSet FdSetPtr;
 
 #if (MSKCNT==1)
 #define BITMASK(i) (1 << (i))
@@ -191,6 +192,7 @@ typedef unsigned long FdSet[MSKCNT];
 #define BytesReadable(fd,ptr) ioctlsocket((SOCKET)fd, FIONREAD, (u_long *)ptr)
 
 typedef fd_set FdSet;
+typedef FdSet *FdSetPtr;
 
 #define CLEARBITS(set) FD_ZERO(&set)
 #define BITSET(set,s) FD_SET(s,&set)
