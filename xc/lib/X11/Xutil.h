@@ -1,4 +1,4 @@
-/* $Header: Xutil.h,v 11.36 87/08/31 01:53:19 hania Exp $ */
+/* $Header: Xutil.h,v 11.36 87/09/01 15:11:13 newman Locked $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -164,6 +164,13 @@ typedef struct _XComposeStatus {
  * opaque reference to Region data type 
  */
 typedef struct _XRegion *Region; 
+
+/* Return values from XRectInRegion() */
+ 
+#define RectangleOut 0
+#define RectangleIn  1
+#define RectanglePart 2
+ 
 
 /*
  * Information used by the visual utility routines to find desired visual
