@@ -1,4 +1,4 @@
-.\" $XConsortium: Xdec.man,v 1.1 91/07/29 15:32:34 rws Exp $
+.\" $XConsortium: Xdec.man,v 1.2 91/07/29 15:33:48 rws Exp $
 .TH XDEC 1 "Release 5" "X Version 11"
 .SH Name
 Xdec \- X server for Digital RISC machines
@@ -181,7 +181,7 @@ for a mouse device and four for a tablet device.
 Sets the color of black pixels for the screen.
 The \fIcolor\fP argument can be a named color from the
 .PN rgb
-database or a number sign (\f(CW#\fP) followed by a hexidecimal number.
+database or a number sign (\fC#\fP) followed by a hexidecimal number.
 .IP "\fB\-class\fP[\fIscreen\fP]  \fIvisual class\fP" 20
 Sets the visual class for the root window of the screen.  Possible values
 are
@@ -288,7 +288,7 @@ each screen.
 The following example specifies that black pixels on screen
 .PN 1
 have the hexadecimal value 3a009e005c0 prefixed with a
-number sign (\f(CW#\fP) and white pixels on screen
+number sign (\fC#\fP) and white pixels on screen
 .PN 1
 are color "wheat" from the X rgb color database.
 .EX
@@ -299,7 +299,7 @@ are the only valid pixel colors.
 .PP
 To specify the default visual class
 of a root window on a particular screen, append the screen
-number (\f(CW0\fP, \f(CW1\fP, or \f(CW2\fP) to the
+number (\fC0\fP, \fC1\fP, or \fC2\fP) to the
 .PN \-class
 command line option.  Possible visual classes are:
 StaticGray, StaticColor, PseudoColor, GrayScale, and TrueColor.
