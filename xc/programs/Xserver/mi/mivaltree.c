@@ -37,7 +37,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.1 89/07/04 16:15:19 rws Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.2 89/07/05 20:22:03 rws Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    <stdio.h>
@@ -302,15 +302,12 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
      * exposures accumulate until they're taken care of.
      */
 
-    if (pParent->viewable) {
-    	(* pScreen->Subtract) (exposed, universe, pParent->borderClip);
-    	(* pScreen->Subtract) (exposed, exposed, pParent->winSize);
-    
-    	(* pScreen->Union) (pParent->valdata->borderExposed,
-			    pParent->valdata->borderExposed,
-			    exposed);
-    } else
-	(* pScreen->RegionEmpty) (pParent->valdata->borderExposed);
+    (* pScreen->Subtract) (exposed, universe, pParent->borderClip);
+    (* pScreen->Subtract) (exposed, exposed, pParent->winSize);
+
+    (* pScreen->Union) (pParent->valdata->borderExposed,
+			pParent->valdata->borderExposed,
+			exposed);
 
     (* pScreen->RegionCopy) (pParent->borderClip, universe);
 
@@ -363,15 +360,6 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 		if (overlap)
 		    (* pScreen->Subtract)
 			(universe, universe, pChild->borderSize);
-	    } else {
-		if (pChild->valdata) {
-		    /*
-		     * Create an empty universe for the child and recurse
-		     */
-		    (* pScreen->RegionEmpty) (childUniverse);
-		    miComputeClips (pChild, pScreen, childUniverse, kind,
-				    exposed);
-		}
 	    }
 	}
 	if (!overlap)
@@ -387,12 +375,9 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
      * new, just as for the border. Again, exposures accumulate.
      */
 
-    if (pParent->viewable) {
-    	(* pScreen->Subtract) (exposed, universe, pParent->clipList);
-    	(* pScreen->Union) (pParent->valdata->exposed,
-			    pParent->valdata->exposed, exposed);
-    } else
-	(*pScreen->RegionEmpty) (pParent->valdata->exposed);
+    (* pScreen->Subtract) (exposed, universe, pParent->clipList);
+    (* pScreen->Union) (pParent->valdata->exposed,
+			pParent->valdata->exposed, exposed);
 
     /*
      * One last thing: backing storage. We have to try to save what parts of
@@ -540,12 +525,8 @@ miValidateTree (pParent, pChild, kind)
 	    }
 	} else {
 	    if (pWin->valdata) {
-	    	/*
-	     	 * Make sure the child is no longer marked (Windows being
-	     	 * unmapped are marked but unviewable...)
-	     	 */
-	    	(* pScreen->RegionEmpty) (childClip);
-	    	miComputeClips (pWin, pScreen, childClip, kind, exposed);
+		(* pScreen->RegionEmpty)(pWin->clipList);
+		(* pScreen->RegionEmpty)(pWin->borderClip);
 	    }
 	}
     }
