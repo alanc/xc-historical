@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Ixx.tmpl,v 1.4 94/03/28 11:33:55 matt Exp $
 XCOMM
 XCOMM Definitions for using interface translator
 XCOMM
@@ -30,7 +30,7 @@ headers:: name_h							@@\
 name_h: name_idl							@@\
 	@$(RM) name_h ix-name_h						@@\
 	@echo "Generating name_h from name_idl"				@@\
-	@$(CPP) $(CCDEFINES) $(CCINCLUDES) name_idl | \			@@\
+	@$(CPP) $(CXXDEFINES) $(CXXINCLUDES) name_idl | \		@@\
 	    $(IX) $(IXFLAGS) $(IXINCLUDES) flags > ix-name_h		@@\
 	@$(MV) ix-name_h name_h						@@\
 	@chmod a-w name_h						@@\
@@ -55,7 +55,7 @@ all.sed:: dep								@@\
 dep:: interfaces							@@\
 	@$(RM) tmp							@@\
 	@echo "Editing" name						@@\
-	@cat interfaces | $(CPP) $(CCDEFINES) $(CCINCLUDES) | \		@@\
+	@cat interfaces | $(CPP) $(CXXDEFINES) $(CXXINCLUDES) | \	@@\
 	$(IX) $(IXFLAGS) -filter name > tmp				@@\
 	@$(MV) tmp name
 #endif
@@ -78,6 +78,6 @@ INTERFACES = Interfaces$(INTERFACES_SLASH)*.idl
 #ifndef DependHeaders
 #define DependHeaders()                                                 @@\
 depend::                                                                @@\
-	$(DEPEND) -o.h -s "# DO NOT DELETE" -- $(CCINCLUDES) -- \
+	$(DEPEND) -o.h -s "# DO NOT DELETE" -- $(CXXINCLUDES) -- \
 	    $(INTERFACES)
 #endif

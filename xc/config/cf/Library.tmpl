@@ -9,7 +9,7 @@
  * LibName, SoRev, HasSharedData, and optionally HugeLibrary and IncSubdir
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.27 93/12/31 14:57:45 kaleb Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.28 94/01/16 16:21:33 gildea Exp $
 
 #ifndef LibraryCplusplusOptions
 #if DoSharedLib && defined(SharedLibraryCplusplusOptions)
@@ -67,10 +67,10 @@ CDEBUGFLAGS = LibraryCDebugFlags
 #endif
 #endif
 
-        CCC = LibraryCplusplusCmd
- CCCOPTIONS = LibraryCplusplusOptions
-STD_DEFINES = LibraryDefines
-CCDEBUGFLAGS = LibraryCplusplusDebugFlags
+          CXX = LibraryCplusplusCmd
+   CXXOPTIONS = LibraryCplusplusOptions
+  STD_DEFINES = LibraryDefines
+CXXDEBUGFLAGS = LibraryCplusplusDebugFlags
 #endif
 
 #if DoDebugLib
