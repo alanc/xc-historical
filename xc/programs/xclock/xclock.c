@@ -8,7 +8,7 @@ static char rcsid[] = "$XHeader: xclock.c,v 1.16 88/05/18 16:03:58 keith Exp $";
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
-#include <X11/Atoms.h>
+#include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include <X11/Clock.h>
 #include <X11/Cardinals.h>
