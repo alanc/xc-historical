@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: elemcon9.c,v 5.1 91/02/16 10:00:42 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -192,6 +192,7 @@ main(argc,argv)
     			pintlist2 = {6, sixpints};
     static Ptext_align	ptxalign = { PHOR_LEFT, PVERT_HALF };
     static Pvec		pvector = { 19.5, 6.25 } ;
+    static Pfloat_size	pfloat_s = { 19.5, 6.25 } ;
     static Pvec3	pvector3a = {0.0, 1.0, 0.0},
     			ref_vectors[2] = {{0.0, 0.9, 0.1}, {0.2, 0.5, 0.5}};
     static Pvec3	pvector3_array[] = {{0.0, 1.0, 0.0},
@@ -230,8 +231,10 @@ main(argc,argv)
 					 {0.5, 0.4, 0.2}};
     static Ppoint_list   two_ppoints[] = { {3, ppoints},
 					 {4, ppoints_b} };
+    static Ppoint_list_list   ppoints_list;
     static Ppoint_list3  two_ppoint3s[] = { {3, ppoint3s},
 					  {4, ppoint3s_b} };
+    static Ppoint_list_list3  ppoints_list3;
     static Pmatrix	pmatrix = { {1.0, 0.0, 0.0},
 				    {0.0, 1.0, 0.0},
 				    {3.2, 1.5, 1.0}};
@@ -448,8 +451,8 @@ main(argc,argv)
 		 */
 		  pcell_array(&prect, &patrep);
 		  peldata.cell_array.rect = prect;
-		  peldata.cell_array.dim = pdim;
-		  peldata.cell_array.colr = color_array[0];
+		  peldata.cell_array.colr_array.dims = pdim;
+		  peldata.cell_array.colr_array.colr_array = color_array[0];
 		  element_test(testcase, STR1, ++curr_element, PELEM_CELL_ARRAY,
 		  &peldata, "PELEM_CELL_ARRAY");
 		break;
@@ -460,8 +463,8 @@ main(argc,argv)
 		 */
 		  pcell_array3(&pgram, &patrep);
 		  peldata.cell_array3.paral = pgram;
-		  peldata.cell_array3.dim = pdim;
-		  peldata.cell_array3.colr = color_array[0];
+		  peldata.cell_array3.colr_array.dims = pdim;
+		  peldata.cell_array3.colr_array.colr_array = color_array[0];
 		  element_test(testcase, STR1, ++curr_element, PELEM_CELL_ARRAY3,
 		  &peldata, "PELEM_CELL_ARRAY3");
 		break;
@@ -540,8 +543,8 @@ main(argc,argv)
 		/*
 		 *## PELEM_EDGETYPE
 		 */
-		pset_edgetype(PLINE_DOT_DASH);
-		peldata.int_data = PLINE_DOT_DASH;
+		pset_edgetype(PLINE_DASH_DOT);
+		peldata.int_data = PLINE_DASH_DOT;
 		element_test(testcase, STR1, ++curr_element, PELEM_EDGETYPE,
 				&peldata, "PELEM_EDGETYPE");
 		break;
@@ -580,9 +583,11 @@ main(argc,argv)
 		/*
 		 *## PELEM_FILL_AREA_SET
 		 */
-		pfill_area_set(2, two_ppoints);
-		peldata.fill_area_set.num_point_lists = 2;
-		peldata.fill_area_set.point_lists = two_ppoints;
+                ppoints_list.num_point_lists = 2;
+                ppoints_list.point_lists = two_ppoints;
+		pfill_area_set(&ppoints_list);
+		peldata.point_list_list.num_point_lists = 2;
+		peldata.point_list_list.point_lists = two_ppoints;
 		element_test(testcase, STR1, ++curr_element, PELEM_FILL_AREA_SET,
 				&peldata, "PELEM_FILL_AREA_SET");
 		break;
@@ -591,9 +596,11 @@ main(argc,argv)
 		/*
 		 *## PELEM_FILL_AREA_SET3
 		 */
-		pfill_area_set3(2, two_ppoint3s);
-		peldata.fill_area_set3.num_point_lists = 2;
-		peldata.fill_area_set3.point_lists = two_ppoint3s;
+                ppoints_list3.num_point_lists = 2;
+                ppoints_list3.point_lists = two_ppoint3s;
+		pfill_area_set3(&ppoints_list3);
+		peldata.point_list_list3.num_point_lists = 2;
+		peldata.point_list_list3.point_lists = two_ppoint3s;
 		element_test(testcase, STR1, ++curr_element, PELEM_FILL_AREA_SET3,
 				&peldata, "PELEM_FILL_AREA_SET3");
 		break;
@@ -646,8 +653,8 @@ main(argc,argv)
 		/*
 		 *## PELEM_INDIV_ASF
 		 */
-		pset_indiv_asf(PASPECT_MARKERTYPE, PASF_BUNDLED);
-		peldata.asf.id = PASPECT_MARKERTYPE;
+		pset_indiv_asf(PASPECT_MARKER_TYPE, PASF_BUNDLED);
+		peldata.asf.id = PASPECT_MARKER_TYPE;
 		peldata.asf.source = PASF_BUNDLED;
 		element_test(testcase, STR1, ++curr_element, PELEM_INDIV_ASF,
 				&peldata, "PELEM_INDIV_ASF");
@@ -707,8 +714,8 @@ main(argc,argv)
 		/*
 		 *## PELEM_LINETYPE
 		 */
-		pset_linetype(PLINE_DOT_DASH);
-		peldata.int_data = PLINE_DOT_DASH;
+		pset_linetype(PLINE_DASH_DOT);
+		peldata.int_data = PLINE_DASH_DOT;
 		element_test(testcase, STR1, ++curr_element, PELEM_LINETYPE,
 				&peldata, "PELEM_LINETYPE");
 		break;
@@ -730,8 +737,8 @@ main(argc,argv)
 		pset_local_tran(pmatrix, PTYPE_REPLACE);
 		for (i=0; i<3; i++)
 		    for (j=0; j<3; j++)
-			peldata.local_tran.tran[i][j] = pmatrix[i][j];
-		peldata.local_tran.comp = PTYPE_REPLACE;
+			peldata.local_tran.matrix[i][j] = pmatrix[i][j];
+		peldata.local_tran.compose_type = PTYPE_REPLACE;
 		element_test(testcase, STR1, ++curr_element, PELEM_LOCAL_MODEL_TRAN,
 				&peldata, "PELEM_LOCAL_MODEL_TRAN");
 		break;
@@ -743,8 +750,8 @@ main(argc,argv)
 		pset_local_tran3(pmatrix3, PTYPE_POSTCONCAT);
 		for (i=0; i<4; i++)
 		    for (j=0; j<4; j++)
-			peldata.local_tran3.tran[i][j] = pmatrix3[i][j];
-		peldata.local_tran3.comp = PTYPE_POSTCONCAT;
+			peldata.local_tran3.matrix[i][j] = pmatrix3[i][j];
+		peldata.local_tran3.compose_type = PTYPE_POSTCONCAT;
 		element_test(testcase, STR1, ++curr_element, PELEM_LOCAL_MODEL_TRAN3,
 				&peldata, "PELEM_LOCAL_MODEL_TRAN3");
 		break;
@@ -816,7 +823,7 @@ main(argc,argv)
 		 *## PELEM_PAT_REF_POINT
 		 */
 		pset_pat_ref_point(&ppoint);
-		peldata.point = ppoint;
+		peldata.pat_ref_point = ppoint;
 		element_test(testcase, STR1, ++curr_element, PELEM_PAT_REF_POINT,
 				&peldata, "PELEM_PAT_REF_POINT");
 		break;
@@ -837,8 +844,8 @@ main(argc,argv)
 		/*
 		 *## PELEM_PAT_SIZE
 		 */
-		pset_pat_size(pvector.delta_x, pvector.delta_y);
-		peldata.pat_size = pvector;
+		pset_pat_size(pfloat_s.size_x, pfloat_s.size_y);
+		peldata.pat_size = pfloat_s;
 		element_test(testcase, STR1, ++curr_element, PELEM_PAT_SIZE,
 				&peldata, "PELEM_PAT_SIZE");
 		break;
