@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XGetDflt.c,v 1.15 89/03/29 15:26:03 jim Exp $
+ * $XConsortium: XGetDflt.c,v 1.16 89/10/08 14:34:14 rws Exp $
  */
 
 /***********************************************************
@@ -31,7 +31,7 @@ SOFTWARE.
 #include <ctype.h>
 #include <X11/Xos.h>
 #include "Xlibint.h"
-#include <Xresource.h>
+#include <X11/Xresource.h>
 
 static char *GetHomeDir (dest)
 	char *dest;
