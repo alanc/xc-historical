@@ -1,4 +1,4 @@
-/* $xHeader: InitializeI.h,v 1.1 88/08/31 10:51:44 swick Exp $ */
+/* $XConsortium: InitializeI.h,v 1.1 88/08/31 10:51:44 swick Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -92,7 +92,6 @@ typedef struct _XtAppStruct {
     FdStruct fds;
     short count, max, last;
     Boolean sync, rv, being_destroyed, error_inited;
-    XrmQuark name, class;	/* for R2 compatibility only */
 } XtAppStruct;
 
 extern void _SetDefaultErrorHandlers();
@@ -122,6 +121,8 @@ typedef struct _XtPerDisplayStruct {
     KeySym *modKeysyms;                /* keysym values for modToKeysysm */
     ModToKeysymTable *modsToKeysyms;   /* modifiers to Keysysms index table*/
     Boolean being_destroyed;
+    XrmName name;		       /* resolved app name */
+    XrmClass class;		       /* R2 compatibility only */
 } XtPerDisplayStruct, *XtPerDisplay;
 
 extern void _XtPerDisplayInitialize();
