@@ -19,9 +19,9 @@ Superclass	Sme
 .LP
 The SmeBSB object is used to create
 a menu entry that contains a string, and optional bitmaps in its
-margins.  Since each menu entry is an independant object, the
-pplication is able to change the font, color, height, and other
-attributes of the menu entries, on an individual basis.
+left and right margins.  Since each menu entry is an independant object, the
+application is able to change the font, color, height, and other
+attributes of the menu entries, on an entry by entry basis.
 .NH 3
 Resources
 .IN "SmeBSB object" "resources"
@@ -73,9 +73,9 @@ All callback functions on this list are called when the SimpleMenu
 .IP \fBfont\fP 1.5i
 The font used to display the text label.
 .IP \fBforeground\fP 1.5i
-An index into SimpleMenu's colormap specifing the color that will be
-used to draw the \fBlabel\fP.  This color is also used to render all
-1's in the left and right bitmaps.
+A pixel value which indexes the SimpleMenu's colormap to derive the
+foreground color of the menu entries's window.  This color is also 
+used to render all 1's in the left and right \fBbitmaps\fP.
 .Hw
 Keep in mind that the SimpleMenu widget will force the width of all
 menu entries to be the width of the longest entry.
@@ -111,9 +111,9 @@ This is the amount of space (in pixels) that will be left between the
 edge of the menu entry and the label string.
 .Se
 .IP \fBvertSpace\fP 1.5i
-This is the amount of extra space, as a percentage of the font height,
-that is to be added to the font height to determine the default height
-of the menu entry. The label and bitmaps are always vertically
-rendered in the center of the menu.  The default value for this
+This is the amount of vertical padding, expressed as a percentage of
+the height of the font, that is to be placed around the label of a
+menu entry.. The label and bitmaps are always centered vertically
+within the menu.  The default value for this
 resource (25) causes the default height to be 125% of the height of the
-font.  Negative numbers may be specified. 
+font.

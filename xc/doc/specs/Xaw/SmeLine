@@ -20,9 +20,9 @@ Superclass	Sme
 The SmeLine object is used to add a
 horizontal line or menu seperator to a menu.  Since each menu entry is
 an independant object, the application is able to change the color,
-height, and other attributes of the menu entries, on an individual
+height, and other attributes of the menu entries, on an entry by entry
 basis.  This entry is not selectable, and will not highlight when the
-mouse pointer is over it.
+pointer cursor is over it.
 .NH 3
 Resources
 .IN "SmeLine object" "resources"
@@ -59,8 +59,8 @@ _
 .nr VS 13
 .De
 .IP \fBforeground\fP 1.5i
-An index into SimpleMenu's colormap specifing the color that will be
-used to draw the line.
+A pixel value which indexes the SimpleMenu's colormap to derive the
+foreground color used to draw the seperator line.
 .Hw
 Keep in mind that the SimpleMenu widget will force all menu items to
 be the width of the widest entry.  Thus the width is generally not
@@ -68,9 +68,8 @@ very important.
 .IP \fBlineWidth\fP 1.5i
 The width of the horizontal line that is to be displayed.
 .IP \fBstipple\fP 1.5i
-If a bitmap is specifed for this resource the line will be stippled
-through this pixmap.  This allows the menu separator to be rendered
+If a bitmap is specifed for this resource the line will be stippled 
+through it.  This allows the menu separator to be rendered
 as something more exciting than just a line.  For instance if you
 define a stipple that is a chain link then your menu serperators will
-be look like chains.  The upper left corner of the stipple will be set
-to the upper left corner of the line.
+be look like chains.

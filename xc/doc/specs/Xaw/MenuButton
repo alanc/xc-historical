@@ -17,11 +17,11 @@ Superclass	Command
 .LP
 .sp
 The MenuButton widget is an area, often rectangular, that contains a
-text label or bitmap image.  When the mouse pointer is on the button,
+text label or bitmap image.  When the pointer cursor is on the button,
 the button becomes highlighted by drawing a rectangle around its
 perimeter.  This highlighting indicates that the button is ready for
-selection.  When a mouse button is pressed, the menu button widget will
-pop up the menu that has been named in its \fBmenuName\fP resource.
+selection.  When a pointer button is pressed, the MenuButton widget will
+pop up the menu that has been named in the \fBmenuName\fP resource.
 .LP
 When creating a MenuButton widget instance, 
 the following resources are retrieved from the argument list
@@ -50,7 +50,7 @@ borderColor	BorderColor	Pixel		XtDefaultForeground
 borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
 callback	Callback	XtCallbackList		NULL
-colormap	Colormap	Pointer	Parent's 	Colormap
+colormap	Colormap	Pointer		Parent's Colormap
 cornerRoundPercent	CornerRoundPercent	Dimension		25
 cursor	Cursor	Cursor		None
 depth	Depth	int	C	Parent's Depth
@@ -65,7 +65,7 @@ internalWidth	Width	Dimension		4
 justify	Justify	Justify		XtJustifyCenter (center)
 label	Label	String		name of widget
 mappedWhenManaged	MappedWhenManaged	Boolean		True
-menuName	MenuName	String	"menu"		
+menuName	MenuName	String		"menu"		
 resize	Resize	Boolean		True
 screen	Screen	Pointer	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
@@ -105,12 +105,12 @@ _
 .La
 .Mm
 .IP \fBmenuName\fP 1.5i
-Specifies the name of a popup shell to popup as a menu.  The MenuButton
+The name of a popup shell to popup as a menu.  The MenuButton
 will search for this name using \fBXtNameToWidget\fP starting with itself
-as the reference widget.  If it is unsuccessful it will run up the widget
+as the reference widget.  If it is unsuccessful it will continue up the widget
 tree using each of its ancestors as the reference widget.  If it is still
-unsuccessful it will print a warning message and give up.  Once the
-menu is found it will pop it up exclusive and spring_loaded.
+unsuccessful it will print a warning message and give up.  When the
+menu is found it will be popped up exclusive and spring_loaded.
 .Re
 .Sc
 .Se
@@ -150,9 +150,9 @@ The full list of actions supported by MenuButton is:
 .IP \fBhighlight\fP(\fIcondition\fP) 1.5i
 Displays the internal highlight border in the color (\fBforeground\fP
 or \fBbackground\fP ) that contrasts with the interior color of the
-MenuButton widget.  The conditions \fBWhenUnset\fP or \fBAlways\fP are
-understood by this action procedure.  If no argument is passed then
-\fBWhenUnset\fP is assumed, maintaining backwards compatibility.
+Command widget.  The conditions \fBWhenUnset\fP and \fBAlways\fP are
+understood by this action procedure.  If no argument is passed,
+\fBWhenUnset\fP is assumed.
 .IP \fBunhighlight\fP(\|) 1.5i
 Displays the internal highlight border in the color (\fBXtNforeground\fP
 or \fBbackground\fP ) that matches the interior color of the
