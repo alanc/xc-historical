@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbzerarc.c,v 5.10 89/09/20 18:55:33 rws Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.11 92/12/23 17:51:05 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -41,19 +41,21 @@ extern void miPolyArc(), miZeroPolyArc();
 #define LEFTMOST	((PixelType) 1)
 #endif
 
-#define PixelateWhite(addr,off) \
-    (addr)[(off)>>5] |= SCRRIGHT (LEFTMOST, ((off) & 0x1f))
-#define PixelateBlack(addr,off) \
-    (addr)[(off)>>5] &= ~(SCRRIGHT (LEFTMOST, ((off) & 0x1f)))
+#define PixelateWhite(addr,yoff,xoff) \
+    *mfbScanlineOffset(addr, (yoff)+((xoff)>>5), nlwidth) |= \
+	SCRRIGHT (LEFTMOST, ((xoff) & 0x1f))
+#define PixelateBlack(addr,yoff,xoff) \
+    *mfbScanlineOffset(addr, (yoff)+((xoff)>>5), nlwidth) &= \
+	~(SCRRIGHT (LEFTMOST, ((xoff) & 0x1f)))
 
-#define Pixelate(base,off) \
+#define Pixelate(base,yoff,xoff) \
 { \
-    paddr = base + ((off)>>5); \
-    pmask = SCRRIGHT(LEFTMOST, (off) & 0x1f); \
+    paddr = mfbScanlineOffset(base, (yoff) + ((xoff)>>5), nlwidth); \
+    pmask = SCRRIGHT(LEFTMOST, (xoff) & 0x1f); \
     *paddr = (*paddr & ~pmask) | (pixel & pmask); \
 }
 
-#define DoPix(bit,base,off) if (mask & bit) Pixelate(base,off);
+#define DoPix(bit,base,yoff,xoff) if (mask & bit) Pixelate(base,yoff,xoff);
 
 static void
 mfbZeroArcSS(pDraw, pGC, arc)
@@ -90,8 +92,8 @@ mfbZeroArcSS(pDraw, pGC, arc)
     mask = info.initialMask;
     if (!(arc->width & 1))
     {
-	DoPix(2, yorgl, info.xorgo);
-	DoPix(8, yorgol, info.xorgo);
+	DoPix(2, yorgl, 0, info.xorgo);
+	DoPix(8, yorgol, 0, info.xorgo);
     }
     if (!info.end.x || !info.end.y)
     {
@@ -109,16 +111,16 @@ mfbZeroArcSS(pDraw, pGC, arc)
 	{
 	    while (1)
 	    {
-		PixelateWhite(yorgl + yoffset, info.xorg + x);
-		PixelateWhite(yorgl + yoffset, info.xorg - x);
-		PixelateWhite(yorgol- yoffset, info.xorg - x);
-		PixelateWhite(yorgol - yoffset, info.xorg + x);
+		PixelateWhite(yorgl, yoffset, info.xorg + x);
+		PixelateWhite(yorgl, yoffset, info.xorg - x);
+		PixelateWhite(yorgol, -yoffset, info.xorg - x);
+		PixelateWhite(yorgol, -yoffset, info.xorg + x);
 		if (a < 0)
 		    break;
-		PixelateWhite(yorghl - xoffset, xorghp - y);
-		PixelateWhite(yorghl - xoffset, xorghn + y);
-		PixelateWhite(yorghl + xoffset, xorghn + y);
-		PixelateWhite(yorghl + xoffset, xorghp - y);
+		PixelateWhite(yorghl, -xoffset, xorghp - y);
+		PixelateWhite(yorghl, -xoffset, xorghn + y);
+		PixelateWhite(yorghl, xoffset, xorghn + y);
+		PixelateWhite(yorghl, xoffset, xorghp - y);
 		xoffset += nlwidth;
 		MIARCCIRCLESTEP(yoffset += nlwidth;);
 	    }
@@ -127,16 +129,16 @@ mfbZeroArcSS(pDraw, pGC, arc)
 	{
 	    while (1)
 	    {
-		PixelateBlack(yorgl + yoffset, info.xorg + x);
-		PixelateBlack(yorgl + yoffset, info.xorg - x);
-		PixelateBlack(yorgol- yoffset, info.xorg - x);
-		PixelateBlack(yorgol - yoffset, info.xorg + x);
+		PixelateBlack(yorgl, yoffset, info.xorg + x);
+		PixelateBlack(yorgl, yoffset, info.xorg - x);
+		PixelateBlack(yorgol, -yoffset, info.xorg - x);
+		PixelateBlack(yorgol, -yoffset, info.xorg + x);
 		if (a < 0)
 		    break;
-		PixelateBlack(yorghl - xoffset, xorghp - y);
-		PixelateBlack(yorghl - xoffset, xorghn + y);
-		PixelateBlack(yorghl + xoffset, xorghn + y);
-		PixelateBlack(yorghl + xoffset, xorghp - y);
+		PixelateBlack(yorghl, -xoffset, xorghp - y);
+		PixelateBlack(yorghl, -xoffset, xorghn + y);
+		PixelateBlack(yorghl, xoffset, xorghn + y);
+		PixelateBlack(yorghl, xoffset, xorghp - y);
 		xoffset += nlwidth;
 		MIARCCIRCLESTEP(yoffset += nlwidth;);
 	    }
@@ -149,10 +151,10 @@ mfbZeroArcSS(pDraw, pGC, arc)
 	while (y < info.h || x < info.w)
 	{
 	    MIARCOCTANTSHIFT(dyoffset = nlwidth;);
-	    Pixelate(yorgl + yoffset, info.xorg + x);
-	    Pixelate(yorgl + yoffset, info.xorgo - x);
-	    Pixelate(yorgol - yoffset, info.xorgo - x);
-	    Pixelate(yorgol - yoffset, info.xorg + x);
+	    Pixelate(yorgl, yoffset, info.xorg + x);
+	    Pixelate(yorgl, yoffset, info.xorgo - x);
+	    Pixelate(yorgol, -yoffset, info.xorgo - x);
+	    Pixelate(yorgol, -yoffset, info.xorg + x);
 	    MIARCSTEP(yoffset += dyoffset;, yoffset += nlwidth;);
 	}
     }
@@ -166,10 +168,10 @@ mfbZeroArcSS(pDraw, pGC, arc)
 		mask = info.start.mask;
 		info.start = info.altstart;
 	    }
-	    DoPix(1, yorgl + yoffset, info.xorg + x);
-	    DoPix(2, yorgl + yoffset, info.xorgo - x);
-	    DoPix(4, yorgol - yoffset, info.xorgo - x);
-	    DoPix(8, yorgol - yoffset, info.xorg + x);
+	    DoPix(1, yorgl, yoffset, info.xorg + x);
+	    DoPix(2, yorgl, yoffset, info.xorgo - x);
+	    DoPix(4, yorgol, -yoffset, info.xorgo - x);
+	    DoPix(8, yorgol, -yoffset, info.xorg + x);
 	    if ((x == info.end.x) || (y == info.end.y))
 	    {
 		mask = info.end.mask;
@@ -180,12 +182,12 @@ mfbZeroArcSS(pDraw, pGC, arc)
     }
     if ((x == info.start.x) || (y == info.start.y))
 	mask = info.start.mask;
-    DoPix(1, yorgl + yoffset, info.xorg + x);
-    DoPix(4, yorgol - yoffset, info.xorgo - x);
+    DoPix(1, yorgl, yoffset, info.xorg + x);
+    DoPix(4, yorgol, -yoffset, info.xorgo - x);
     if (arc->height & 1)
     {
-	DoPix(2, yorgl + yoffset, info.xorgo - x);
-	DoPix(8, yorgol - yoffset, info.xorg + x);
+	DoPix(2, yorgl, yoffset, info.xorgo - x);
+	DoPix(8, yorgol, -yoffset, info.xorg + x);
     }
 }
 

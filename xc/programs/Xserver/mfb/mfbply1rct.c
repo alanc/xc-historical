@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mfbply1rct.c,v 1.2 92/10/01 12:23:56 rws Exp $
+ * $XConsortium: mfbply1rct.c,v 1.3 92/12/23 17:47:04 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -61,7 +61,7 @@ MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
     DDXPointPtr	ptsIn;
 {
     mfbPrivGCPtr    devPriv;
-    int		    nwidth;
+    int		    nlwidth;
     PixelType	    *addrl, *addr;
     int		    maxy;
     int		    origin;
@@ -123,10 +123,8 @@ MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
 	return;
     }
 
-#define AddrYPlus(a,y)  (PixelType *) (((unsigned char *) (a)) + (y) * nwidth)
-
-    mfbGetTypedWidthAndPointer(pDrawable, nwidth, addrl, unsigned char, unsigned long);
-    addrl = AddrYPlus(addrl,y + pDrawable->y);
+    mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrl);
+    addrl = mfbScanlineDelta(addrl, y + pDrawable->y, nlwidth);
     origin = intToX(origin);
     vertex2p = vertex1p;
     vertex2 = vertex1 = *vertex2p++;
@@ -221,7 +219,7 @@ MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
 	    c = l & PIM;
 	    l -= c;
 	    l = l >> (PWSH - 2);
-	    addr = (unsigned long *) (((char *) addrl) + l);
+	    addr = (PixelType *) (((char *) addrl) + l);
 	    if (c + nmiddle < PPW)
 	    {
 	    	mask = SCRRIGHT (bits,c) ^ SCRRIGHT (bits,c+nmiddle);
@@ -243,12 +241,12 @@ MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
 	    }
 	    if (!--h)
 		break;
-	    addrl = AddrYPlus (addrl, 1);
+	    mfbScanlineInc(addrl, nlwidth, nlwidth);
 	    Step(x1,dx1,dy1,e1,sign1,step1)
 	    Step(x2,dx2,dy2,e2,sign2,step2)
 	}
 	if (y == maxy)
 	    break;
-	addrl = AddrYPlus (addrl, 1);
+	mfbScanlineInc(addrl, nlwidth, nlwidth);
     }
 }
