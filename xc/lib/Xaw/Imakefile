@@ -37,6 +37,9 @@ HEADERS = \
 	ScrollP.h \
 	Simple.h \
 	SimpleP.h \
+	Template.c \
+	Template.h \
+	TemplateP.h \
 	Text.h \
 	TextP.h \
 	TextSrcP.h \
