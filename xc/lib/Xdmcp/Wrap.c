@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Encrypt.c,v 1.1 89/12/13 14:32:54 keith Exp $
+ * $XConsortium: Encrypt.c,v 1.2 90/09/13 18:25:44 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -54,7 +54,7 @@ XdmcpEncrypt (plain, key, crypto, bytes)
     des_key_schedule	schedule;
 
     XdmcpKeyToOddParityKey (key, expand_key);
-    des_set_key ((des_cblock *) key, schedule);
+    des_set_key (key, schedule);
     for (j = 0; j < bytes; j += 8)
     {
 	len = 8;
@@ -75,7 +75,7 @@ XdmcpEncrypt (plain, key, crypto, bytes)
 	    else
 		tmp[i] = 0 ^ crypto[j - 8 + i];
 	}
-	des_ecb_encrypt ((des_cblock *) tmp, (des_cblock *) (crypto + j), schedule, 1);
+	des_ecb_encrypt (tmp, (crypto + j), schedule, 1);
     }
 }
 

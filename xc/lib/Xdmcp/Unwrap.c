@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Decrypt.c,v 1.1 89/12/13 14:32:07 keith Exp $
+ * $XConsortium: Decrypt.c,v 1.2 90/09/13 18:25:33 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -54,14 +54,13 @@ XdmcpDecrypt (crypto, key, plain, bytes)
     int			bytes;
 {
     int			i, j, k;
-    int			len;
     unsigned char	tmp[8];
     unsigned char	blocks[2][8];
     unsigned char	expand_key[8];
     des_key_schedule	schedule;
 
     XdmcpKeyToOddParityKey (key, expand_key);
-    des_set_key ((des_cblock *) key, schedule);
+    des_set_key ((unsigned char *) key, schedule);
 
     k = 0;
     for (j = 0; j < bytes; j += 8)
@@ -70,7 +69,7 @@ XdmcpDecrypt (crypto, key, plain, bytes)
 	    return; /* bad crypto length */
 	for (i = 0; i < 8; i++)
 	    blocks[k][i] = crypto[j + i];
-	des_ecb_encrypt ((des_cblock *) (crypto + j), (des_cblock *) tmp, schedule, 0);
+	des_ecb_encrypt ((unsigned char *) (crypto + j), (unsigned char *) tmp, schedule, 0);
 	/* block chaining */
 	k = (k == 0) ? 1 : 0;
 	for (i = 0; i < 8; i++)
