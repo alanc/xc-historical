@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.149 91/01/09 17:12:49 rws Exp $
+ * $XConsortium: add_window.c,v 1.150 91/03/14 11:55:14 dave Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -180,10 +180,10 @@ IconMgr *iconp;
       tmp_win->attr.height = Scr->MaxWindowHeight;
 
     tmp_win->wmhints = XGetWMHints(dpy, tmp_win->w);
-    if (tmp_win->wmhints && (tmp_win->wmhints->flags & WindowGroupHint))
-	tmp_win->group = tmp_win->wmhints->window_group;
+    if (tmp_win->wmhints && (tmp_win->wmhints->flags & WindowGroupHint)) 
+      tmp_win->group = tmp_win->wmhints->window_group;
     else
-	tmp_win->group = NULL;
+	tmp_win->group = tmp_win->w/* NULL */;
 
     /*
      * The July 27, 1988 draft of the ICCCM ignores the size and position
@@ -449,7 +449,7 @@ IconMgr *iconp;
 		XDrawImageString (dpy, Scr->SizeWindow, Scr->NormalGC, width,
 				  SIZE_VINDENT + Scr->SizeFont.font->ascent,
 				  ": ", 2);
-		if (Scr->AutoRelativeResize) {
+		if (0/*Scr->AutoRelativeResize*/) {
 		    int dx = (tmp_win->attr.width / 4);
 		    int dy = (tmp_win->attr.height / 4);
 		    
