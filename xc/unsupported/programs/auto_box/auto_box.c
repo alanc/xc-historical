@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: auto_box.c,v 5.1 91/02/16 09:32:45 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -26,6 +26,12 @@ SOFTWARE.
 
 #include <stdio.h>
 #include <errno.h>
+#include <math.h>
+
+#ifndef M_PI
+#define M_PI  4 * atan( 1.0);
+#endif /* M_PI */
+
 
 #ifdef USE_X_DRAWABLE
 #include <X11/Xlib.h>
@@ -103,11 +109,10 @@ float mat[4][4];
 static void
 rotate_views()
 {
-    float   theta, pi, atan(); 
+    float   theta;
 
     Pint err;
 
-    pi = 4 * atan( 1.0);
 /*
  * ... enable editing in the replace mode -- this will be used to update
  *        rotation angles in 4 views
@@ -136,7 +141,7 @@ rotate_views()
  * ... increment the angle in a postive angle
  */
 
-    for (theta = 0; theta < 4*pi; theta +=.4) {
+    for (theta = 0; theta < 4 * M_PI; theta +=.4) {
 /*
  * ...  set the pointer and the angles, 
  * ...	find the label, 
