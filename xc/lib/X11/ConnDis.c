@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $XConsortium: XConnDis.c,v 11.35 88/09/06 16:05:06 jim Exp $ */
+/* $XConsortium: XConnDis.c,v 11.36 88/09/16 11:09:34 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <X11/Xos.h>
 #include "Xlibint.h"
+#include <X11/Xauth.h>
 #include <sys/socket.h>
 #ifndef hpux
 #include <netinet/tcp.h>
@@ -31,12 +32,18 @@ void bcopy();
  * of the form hostname:number.screen ("::" if DECnet) is returned in a result
  * parameter. The screen number to use is also returned.
  */
-int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num)
+int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num,
+		      dpy_numlen, dpy_num, conn_family,
+		      server_addrlen, server_addr)
     char *display_name;
     char *expanded_name;	/* return */
     char *prop_name;		/* return */
     int *screen_num;		/* return */
-
+    int *dpy_numlen;		/* return */
+    char **dpy_num;		/* return */
+    int *conn_family;		/* return */
+    int *server_addrlen;	/* return */
+    char **server_addr;		/* return */ /* caller frees when done */
 {
 	char displaybuf[256];		/* Display string buffer */	
 	register char *display_ptr;	/* Display string buffer pointer */
@@ -61,6 +68,11 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num)
 	char objname[20];
 	extern int dnet_conn();
 #endif
+	int tmp_dpy_numlen = 0;
+	char *tmp_dpy_num = NULL;
+	int tmp_server_addrlen = 0;
+	char *tmp_server_addr = NULL;
+	int tmpfamily = -1;		/* since protocol families >= 0 */
 
 	/* 
 	 * Find the ':' seperator and extract the hostname and the
@@ -83,6 +95,9 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num)
 	 * If the display number is missing there is an error. */
 
 	if (*display_ptr == '\0') return(-1);
+
+	tmp_server_addrlen = 0;
+	tmp_server_addr = NULL;
 
 	/*
 	 * Build a string of the form <display-number>.<screen-number> in
@@ -128,6 +143,12 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num)
 	 * Convert the server number string to an integer.
 	 */
 	display_num = atoi(display_ptr);
+	tmp_dpy_numlen = strlen (display_ptr);
+	tmp_dpy_num = Xmalloc (tmp_dpy_numlen + 1);
+	if (!tmp_dpy_num) {
+	    return(-1);
+	}
+	strcpy (tmp_dpy_num, display_ptr);
 
 	/*
 	 * If the display name is missing, use current host.
@@ -158,6 +179,9 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num)
 
 #ifdef DNETCONN
 	if (dnet) {
+	    struct dn_naddr *dnaddrp, dnaddr;
+	    struct nodeent *np;
+
 	    /*
 	     * build the target object name.
 	     */
@@ -166,8 +190,31 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num)
 	     * Attempt to open the DECnet connection, return -1 if fails.
 	     */
 	    if ((fd = dnet_conn(displaybuf, 
-		   objname, SOCK_STREAM, 0, 0, 0, 0)) < 0)
+		   objname, SOCK_STREAM, 0, 0, 0, 0)) < 0) {
+		if (tmp_dpy_num) Xfree (tmp_dpy_num);
 		return(-1);	    /* errno set by dnet_conn. */
+	    }
+
+	    tmpfamily = FamilyDECnet;
+	    if (dnaddrp = dnet_addr(displaybuf)) {  /* stolen from xhost */
+		dnaddr = *dnaddrp;
+	    } else {
+		if ((np = getnodebyname (name)) == NULL) {
+		    (void) close (fd);
+		    if (tmp_dpy_num) Xfree (tmp_dpy_num);
+		    return(-1);
+		}
+		dnaddr.a_len = np->n_length;
+		bcopy (np->n_addr, dnaddr.a_addr, np->n_length);
+	    }
+	    tmp_server_addrlen = sizeof(struct dn_anaddr);
+	    tmp_server_addr = Xmalloc(tmp_server_addrlen);
+	    if (!tmp_server_addr) {
+		(void) close (fd);
+		if (tmp_dpy_num) Xfree (tmp_dpy_num);
+		return(-1);
+	    }
+	    bcopy ((char *)&dnaddr, tmp_server_addr, tmp_server_addrlen);
 	} else
 #endif
 	{
@@ -183,8 +230,17 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num)
 		/*
 		 * Open the network connection.
 	 	 */
-	        if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0)
+	        if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0) {
+		    if (tmp_dpy_num) Xfree (tmp_dpy_num);
 		    return(-1);	    /* errno set by system call. */
+		}
+
+		/*
+		 * This is a hack and is not part of the protocol
+		 */
+		tmpfamily = FamilyLocal;  /* 255 */
+		tmp_server_addrlen = 0;
+		tmp_server_addr = NULL;
 	    } else
 #endif
 	    {
@@ -194,12 +250,14 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num)
 			if ((host_ptr = gethostbyname(displaybuf)) == NULL) {
 				/* No such host! */
 				errno = EINVAL;
+				if (tmp_dpy_num) Xfree (tmp_dpy_num);
 				return(-1);
 			}
 			/* Check the address type for an internet host. */
 			if (host_ptr->h_addrtype != AF_INET) {
 				/* Not an Internet host! */
 				errno = EPROTOTYPE;
+				if (tmp_dpy_num) Xfree (tmp_dpy_num);
 				return(-1);
 			}
  
@@ -228,6 +286,7 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num)
 #endif /* CRAY and OLDTCP */
 			inaddr.sin_family = AF_INET;
 		}
+		tmpfamily = FamilyInternet;
 		addr = (struct sockaddr *) &inaddr;
 		addrlen = sizeof (struct sockaddr_in);
 		inaddr.sin_port = display_num;
@@ -237,8 +296,30 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num)
 		 * Open the network connection.
 		 */
 
-		if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0)
+		if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0) {
+		    if (tmp_dpy_num) Xfree (tmp_dpy_num);
 		    return(-1);	    /* errno set by system call. */
+		}
+
+		/* save address information */
+		{
+		    char *cp;
+#if defined(CRAY) && defined(OLDTCP)
+		    tmp_server_addrlen = sizeof(inaddr.sin_addr);
+		    cp = (char *) &inaddr.sin_addr;
+#else
+		    tmp_server_addrlen = sizeof(inaddr.sin_addr.s_addr);
+		    cp = (char *) &inaddr.sin_addr.s_addr;
+#endif /* CRAY and OLDTCP */
+		    tmp_server_addr = Xmalloc (tmp_server_addrlen);
+		    if (!tmp_server_addr) {
+			(void) close (fd);
+			if (tmp_dpy_num) Xfree (tmp_dpy_num);
+			return(-1);
+		    }
+		    bcopy (cp, tmp_server_addr, tmp_server_addrlen);
+		}
+
 		/* make sure to turn off TCP coalescence */
 #ifdef TCP_NODELAY
 		{
@@ -251,6 +332,8 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num)
 
 	    if (connect(fd, addr, addrlen) == -1) {
 		(void) close (fd);
+		if (tmp_dpy_num) Xfree (tmp_dpy_num);
+		if (tmp_server_addr) Xfree (tmp_server_addr);
 		return(-1); 	    /* errno set by system call. */
 	    }
         }
@@ -266,6 +349,7 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num)
 #else
 	(void) fcntl(fd, F_SETFL, FNDELAY);
 #endif /* FIOSNBIO */
+
 	/*
 	 * Return the id if the connection succeeded. Rebuild the expanded
 	 * spec and return it in the result parameter.
@@ -289,6 +373,11 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num)
 	}
 	*display_ptr = '\0';
 	(void) strcpy(expanded_name, displaybuf);
+	*conn_family = tmpfamily;
+	*server_addrlen = tmp_server_addrlen;
+	*server_addr = tmp_server_addr;
+	*dpy_numlen = tmp_dpy_numlen;
+	*dpy_num = tmp_dpy_num;
 	return(fd);
 
 }
@@ -386,58 +475,42 @@ _XWaitForReadable(dpy)
     } while (result <= 0);
 }
 
-static int padlength[4] = {0, 3, 2, 1};
 
-_XSendClientPrefix (dpy, client)
+static int padlength[4] = {0, 3, 2, 1};	 /* make sure auth is multiple of 4 */
+
+_XSendClientPrefix (dpy, client, auth_proto, auth_string)
      Display *dpy;
-     xConnClientPrefix *client;
+     xConnClientPrefix *client;		/* contains count for auth_* */
+     char *auth_proto, *auth_string;	/* NOT null-terminated */
 {
-	/*
-	 * Authorization string stuff....  Must always transmit multiple of 4
-	 * bytes.
-	 */
+    int auth_length = client->nbytesAuthProto;
+    int auth_strlen = client->nbytesAuthString;
+    char padbuf[3];			/* for padding to 4x bytes */
+    int pad;
+    struct iovec iovarray[5], *iov = iovarray;
+    int niov = 0;
 
-        char *auth_proto = ""; 
-	int auth_length;
-	char *auth_string = "";
-	int auth_strlen;
-	char pad[3];
-	char buffer[BUFSIZ], *bptr;
+#define add_to_iov(b,l) \
+	  { iov->iov_base = (b); iov->iov_len = (l); iov++, niov++; }
 
-        int bytes=0;
+    add_to_iov ((caddr_t) client, SIZEOF(xConnClientPrefix));
 
-        auth_length = strlen(auth_proto);
-        auth_strlen = strlen(auth_string);
-        client->nbytesAuthProto = auth_length;
-	client->nbytesAuthString = auth_strlen;
+    /*
+     * write authorization protocol name and data
+     */
+    if (auth_length > 0) {
+	add_to_iov (auth_proto, auth_length);
+	pad = padlength [auth_length & 3];
+	if (pad) add_to_iov (padbuf, pad);
+    }
+    if (auth_strlen > 0) {
+	add_to_iov (auth_string, auth_strlen);
+	pad = padlength [auth_strlen & 3];
+	if (pad) add_to_iov (padbuf, pad);
+    }
 
-	bytes = (SIZEOF(xConnClientPrefix) + 
-                       auth_length + padlength[auth_length & 3] +
-                       auth_strlen + padlength[auth_strlen & 3]);
+#undef add_to_iov
 
-	bcopy(client, buffer, SIZEOF(xConnClientPrefix));
-        bptr = buffer + SIZEOF(xConnClientPrefix);
-        if (auth_length)
-	{
-	    bcopy(auth_proto, bptr, auth_length);
-            bptr += auth_length;
-            if (padlength[auth_length & 3])
-	    {
-		bcopy(pad, bptr, padlength[auth_length & 3]);
-	        bptr += padlength[auth_length & 3];
-	    }
-	}
-        if (auth_strlen)
-	{
-	    bcopy(auth_string, bptr, auth_strlen);
-            bptr += auth_strlen;
-            if (padlength[auth_strlen & 3])
-	    {
-		bcopy(pad, bptr, padlength[auth_strlen & 3]);
-	        bptr += padlength[auth_strlen & 3];
-	    }
-	}
-	(void) WriteToServer(dpy->fd, buffer, bytes);
-	return;
+    (void) WritevToServer (dpy->fd, iovarray, niov);
+    return;
 }
-

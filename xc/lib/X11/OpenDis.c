@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.68 88/09/19 13:55:56 jim Exp $
+ * $XConsortium: XOpenDis.c,v 11.69 88/09/30 14:03:15 jim Exp $
  */
 
 #include "copyright.h"
@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include "Xlibint.h"
 #include <X11/Xos.h>
+#include <X11/Xauth.h>
 #include "Xatom.h"
 
 #ifndef lint
@@ -20,6 +21,62 @@ int _Xdebug = 0;
 static xReq _dummy_request = {
 	0, 0, 0
 };
+
+/*
+ * support for MIT simple (read: hack) authorization protocol
+ */
+static char *mit_magic_cookie_auth = "MIT-MAGIC-COOKIE-1";
+
+/*
+ * First, a routine for setting authorization data
+ */
+static int xauth_namelen = 0;
+static char *xauth_name = NULL;	 /* NULL means use default mechanism */
+static int xauth_datalen = 0;
+static char *xauth_data = NULL;	 /* NULL means get default data */
+
+void XSetAuthorization (name, namelen, data, datalen)
+    int namelen, datalen;		/* lengths of name and data */
+    char *name, *data;			/* NULL or arbitrary array of bytes */
+{
+    char *tmpname, *tmpdata;
+
+    if (xauth_name) Xfree (xauth_name);	 /* free any existing data */
+    if (xauth_data) Xfree (xauth_data);
+
+    xauth_name = xauth_data = NULL;	/* mark it no longer valid */
+    xauth_namelen = xauth_datalen = 0;
+
+    if (namelen < 0) namelen = 0;	/* check for bogus inputs */
+    if (datalen < 0) datalen = 0;	/* maybe should return? */
+
+    if (namelen > 0)  {			/* try to allocate space */
+	tmpname = Xmalloc (namelen);
+	if (!tmpname) return;
+	bcopy (name, tmpname, namelen);
+    } else {
+	tmpname = NULL;
+    }
+
+    if (datalen > 0)  {
+	tmpdata = Xmalloc (datalen);
+	if (!tmpdata) {
+	    if (tmpname) (void) Xfree (tmpname);
+	    return;
+	}
+	bcopy (data, tmpdata, datalen);
+    } else {
+	tmpdata = NULL;
+    }
+
+    xauth_name = tmpname;		/* and store the suckers */
+    xauth_namelen = namelen;
+    xauth_data = tmpdata;
+    xauth_datalen = datalen;
+    return;
+}
+
+
 
 /* head of the linked list of open displays */
 Display *_XHeadOfDisplayList = NULL;
@@ -56,7 +113,14 @@ Display *XOpenDisplay (display)
 		xVisualType *vp;
 	} u;
 	long setuplength;	/* number of bytes in setup message */
-
+	Xauth *authptr;
+	char *server_addr = NULL;
+	int server_addrlen = 0;
+	char *conn_auth_name, *conn_auth_data;
+	int conn_auth_namelen, conn_auth_datalen;
+	int conn_family;
+	int dpy_numlen;
+	char *dpy_num;
 	extern int _XSendClientPrefix();
 	extern int _XConnectDisplay();
 	extern char *getenv();
@@ -94,18 +158,50 @@ Display *XOpenDisplay (display)
  */
 
 	displaybuf[0] = prop_name[0] = '\0';
-	if ((dpy->fd = _XConnectDisplay(display_name, displaybuf, 
-					prop_name, &screen_num))
-	     < 0) {
+	if ((dpy->fd = _XConnectDisplay(display_name, displaybuf, prop_name, 
+					&screen_num, &dpy_numlen, &dpy_num,
+					&conn_family,
+					&server_addrlen, &server_addr)) < 0) {
 		Xfree ((char *) dpy);
 		UnlockMutex(&lock);
 		return(NULL);		/* errno set by XConnectDisplay */
 	}
 
 /*
- * First byte is the byte order byte.
- * Authentication key is normally sent right after the connection.
- * This (in MIT's case) will be kerberos.
+ * Look up the authorization protocol name and data if necessary.
+ */
+	if (xauth_name && xauth_data) {
+	    conn_auth_namelen = xauth_namelen;
+	    conn_auth_name = xauth_name;
+	    conn_auth_datalen = xauth_datalen;
+	    conn_auth_data = xauth_data;
+	} else {
+	    authptr = XauGetAuthByAddr ((char) conn_family,
+					(unsigned short) server_addrlen,
+					server_addr,
+					(unsigned short) dpy_numlen,
+					dpy_num, 
+					(unsigned short) xauth_namelen,
+					xauth_name);
+	    if (authptr) {
+		conn_auth_namelen = authptr->name_length;
+		conn_auth_name = authptr->name;
+		conn_auth_datalen = authptr->data_length;
+		conn_auth_data = authptr->data;
+	    } else {
+		conn_auth_namelen = 0;
+		conn_auth_name = NULL;
+		conn_auth_datalen = 0;
+		conn_auth_data = NULL;
+	    }
+	}
+	if (server_addr) (void) Xfree (server_addr);
+	if (dpy_num) (void) Xfree (dpy_num);
+/*
+ * The xConnClientPrefix describes the initial connection setup information
+ * and is followed by the authorization information.  Sites that are interested
+ * in security are strongly encouraged to use an authentication and 
+ * authorization system such as Kerberos.
  */
 	indian = 1;
 	if (*(char *) &indian)
@@ -114,19 +210,24 @@ Display *XOpenDisplay (display)
 	    client.byteOrder = 'B';
 	client.majorVersion = X_PROTOCOL;
 	client.minorVersion = X_PROTOCOL_REVISION;
-	_XSendClientPrefix (dpy, &client);
+	client.nbytesAuthProto = conn_auth_namelen;
+	client.nbytesAuthString = conn_auth_datalen;
+	_XSendClientPrefix (dpy, &client, conn_auth_name, conn_auth_data);
+	if (authptr) XauDisposeAuth (authptr);
 /*
  * Now see if connection was accepted...
  */
 	_XRead (dpy, (char *)&prefix,(long)SIZEOF(xConnSetupPrefix));
 
 	if (prefix.majorVersion < X_PROTOCOL) {
-		(void) fputs ("Warning: Client built for newer server!\n", stderr);
+	    fprintf (stderr,
+       "Xlib:  warning, client built for newer rev (%d) than server (%d)!\r\n",
+		     X_PROTOCOL, prefix.majorVersion);
 	}
 	if (prefix.minorVersion != X_PROTOCOL_REVISION) {
-		(void) fputs (
-		 "Warning: Protocol rev. of client does not match server!\n",
-		  stderr);
+	    fprintf (stderr,
+     "Xlib:  warning, client is protocol rev %d, server is rev %d!\r\n",
+		     X_PROTOCOL_REVISION, prefix.minorVersion);
 	}
 
 	setuplength = prefix.length << 2;
@@ -538,3 +639,4 @@ _XFreeDisplayStructure(dpy)
         
 	Xfree ((char *)dpy);
 }
+
