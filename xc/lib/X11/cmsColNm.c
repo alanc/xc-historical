@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.24 91/11/06 17:55:19 rws Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.25 92/03/03 12:16:07 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -762,39 +762,6 @@ LoadColornameDB()
     XcmsColorDbState = XcmsDbInitSuccess;
     return(XcmsSuccess);
 }
-
-
-/*
- *	NAME
- *		XcmsFreeColorDB - Free Color Name Database
- *
- *	SYNOPSIS
- */
-void
-XcmsFreeColorDB()
-/*
- *	DESCRIPTION
- *		Creates
- *
- *	RETURNS
- *		XcmsSuccess if succeeded, otherwise XcmsFailure.
- *
- */
-{
-    /*
-     * Check if XcmsColorDB has been intialized
-     */
-    if (XcmsColorDbState != XcmsDbInitSuccess) {
-	return;
-    }
-
-    /*
-     * Free memory
-     */
-    free(strings);
-    free(pairs);
-}
-
 
 
 /************************************************************************
