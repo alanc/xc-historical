@@ -1,4 +1,4 @@
-/* $XConsortium: Dvi.c,v 1.12 91/01/10 17:00:00 gildea Exp $ */
+/* $XConsortium: Dvi.c,v 1.13 91/02/19 19:29:33 converse Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -45,8 +45,11 @@
  ****************************************************************/
 
 /* Private Data */
-
-static char default_font_map[] =  "\
+/* Note: default_font_map was too long a token for some machines...
+ *       therefor it has been split in to and assigned to resources
+ *       in the ClassInitialize routine.
+ */
+static char default_font_map_1[] =  "\
 R	-*-times-medium-r-normal--*-*-*-*-*-*-iso8859-1\n\
 I	-*-times-medium-i-normal--*-*-*-*-*-*-iso8859-1\n\
 B	-*-times-bold-r-normal--*-*-*-*-*-*-iso8859-1\n\
@@ -60,6 +63,8 @@ H	-*-helvetica-medium-r-normal--*-*-*-*-*-*-iso8859-1\n\
 HO	-*-helvetica-medium-o-normal--*-*-*-*-*-*-iso8859-1\n\
 HB	-*-helvetica-bold-r-normal--*-*-*-*-*-*-iso8859-1\n\
 HF	-*-helvetica-bold-o-normal--*-*-*-*-*-*-iso8859-1\n\
+";
+static char default_font_map_2[] =  "\
 N	-*-new century schoolbook-medium-r-normal--*-*-*-*-*-*-iso8859-1\n\
 NI	-*-new century schoolbook-medium-i-normal--*-*-*-*-*-*-iso8859-1\n\
 NB	-*-new century schoolbook-bold-r-normal--*-*-*-*-*-*-iso8859-1\n\
@@ -79,7 +84,7 @@ S2	-*-symbol-medium-r-normal--*-*-*-*-*-*-adobe-fontspecific\n\
 
 static XtResource resources[] = { 
 	{XtNfontMap, XtCFontMap, XtRString, sizeof (char *),
-	 offset(dvi.font_map_string), XtRString, default_font_map},
+	 offset(dvi.font_map_string), XtRString, NULL /* set in code */},
 	{XtNforeground, XtCForeground, XtRPixel, sizeof (unsigned long),
 	 offset(dvi.foreground), XtRString, XtDefaultForeground},
 	{XtNpageNumber, XtCPageNumber, XtRInt, sizeof (int),
@@ -150,8 +155,16 @@ WidgetClass dviWidgetClass = (WidgetClass) &dviClassRec;
 
 static void ClassInitialize ()
 {
-	XtAddConverter( XtRString, XtRBackingStore, XmuCvtStringToBackingStore,
-			NULL, 0 );
+  int len1 = strlen(default_font_map_1);
+  int len2 = strlen(default_font_map_2);
+  char *dfm = XtMalloc(len1 + len2 + 1);
+  char *ptr = dfm;
+  strcpy(ptr, default_font_map_1); ptr += len1;
+  strcpy(ptr, default_font_map_2); 
+  resources[0].default_addr = dfm;
+
+  XtAddConverter( XtRString, XtRBackingStore, XmuCvtStringToBackingStore,
+		 NULL, 0 );
 }
 
 /****************************************************************
@@ -378,15 +391,8 @@ ShowDvi (dw)
 	int	i;
 	long	file_position;
 
-	if (!dw->dvi.file) {
-		static char Error[] = "No file selected";
-
-		XSetFont (XtDisplay(dw), dw->dvi.normal_GC,
-			  dw->dvi.default_font->fid);
-		XDrawString (XtDisplay (dw), XtWindow (dw), dw->dvi.normal_GC,
-			     20, 20, Error, strlen (Error));
-		return;
-	}
+	if (!dw->dvi.file) 
+	  return;
 
 	if (dw->dvi.requested_page < 1)
 		dw->dvi.requested_page = 1;
