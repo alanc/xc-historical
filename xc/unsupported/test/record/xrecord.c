@@ -1,4 +1,4 @@
-/* $XConsortium: xrecord.c,v 1.2 94/01/30 14:16:34 rws Exp $ */
+/* $XConsortium: xrecord.c,v 1.3 94/01/30 23:48:25 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices; 
  * Portions Copyright 1988 by Digital Equipment Corporation
@@ -190,7 +190,6 @@ main(argc,argv)
    for errors and replies. */
 
     rec_flags1 = (XRecordFlags* )malloc(sizeof(XRecordFlags)); 
-    bzero((char *)rec_flags1, sizeof(XRecordFlags)); 
     rec_config1 = XRecordCreateCG(dpy1);
 
     rec_flags1->events.first = X_Error; 
