@@ -1,5 +1,5 @@
 %{
-/* $XConsortium: lex.l,v 5.7 94/06/04 17:03:52 rws Exp kaleb $ */
+/* $XConsortium: lex.l,v 5.8 94/12/01 16:22:54 kaleb Exp kaleb $ */
 
 /*****************************************************************
 
@@ -57,7 +57,7 @@ SOFTWARE.
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #else
-#if defined(ISC) && __STDC__
+#if defined(ISC) && __STDC__ && !defined(ISC30)
 extern double atof(char *);
 #endif
 #endif
