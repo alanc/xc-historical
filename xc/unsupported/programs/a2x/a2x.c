@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.59 92/04/16 20:01:15 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.60 92/04/16 20:34:32 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -56,7 +56,8 @@ Syntax of magic values in the input stream:
 ^T^M			set Meta key for next character
 ^T^P			print debugging info
 ^T^Q			quit moving (mouse or key)
-^T^R<display>^T		switch to a new display
+^T^RD<display>^T	switch to a new display
+			:0 added if <display> contains no colon
 ^T^S			set Shift key for next character
 ^T^T			^T
 ^T^U			re-read undo file
@@ -1798,12 +1799,14 @@ init_display()
 }
 
 void
-switch_display(buf)
+do_display(buf)
     char *buf;
 {
     Display *ndpy;
     char name[1024];
 
+    if (*buf++ != 'D')
+	return;
     if (!index(buf, ':')) {
 	strcpy(name, buf);
 	strcat(name, ":0");
@@ -1926,7 +1929,7 @@ process(buf, n, len)
 	    	do_jump(buf + i + 1);
 		break;
 	    case '\022': /* control r */
-		switch_display(buf + i + 1);
+		do_display(buf + i + 1);
 		break;
 	    case '\027': /* control w */
 		do_warp(buf + i + 1);
