@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.134 91/05/11 17:35:19 rws Exp $ */
+/* $XConsortium: connection.c,v 1.135 91/05/14 16:06:01 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -124,7 +124,7 @@ long NConnBitArrays = mskcnt;
 Bool NewOutputPending;		/* not yet attempted to write some new output */
 Bool AnyClientsWriteBlocked;	/* true if some client blocked on write */
 
-static Bool SendSignal;		/* send SIGUSR1 to parent process */
+Bool RunFromSmartParent;	/* send SIGUSR1 to parent process */
 static int ParentProcess;
 
 static Bool debug_conns = FALSE;
@@ -423,9 +423,9 @@ CreateWellKnownSockets()
      * useful
      */
     if (signal (SIGUSR1, SIG_IGN) == SIG_IGN)
-	SendSignal = TRUE;
+	RunFromSmartParent = TRUE;
     ParentProcess = getppid ();
-    if (SendSignal) {
+    if (RunFromSmartParent) {
 	if (ParentProcess > 0) {
 	    kill (ParentProcess, SIGUSR1);
 	}
@@ -466,7 +466,7 @@ ResetWellKnownSockets ()
     /*
      * See above in CreateWellKnownSockets about SIGUSR1
      */
-    if (SendSignal) {
+    if (RunFromSmartParent) {
 	if (ParentProcess > 0) {
 	    kill (ParentProcess, SIGUSR1);
 	}
