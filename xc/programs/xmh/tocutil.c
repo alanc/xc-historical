@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.33 89/10/06 15:04:03 converse Exp $
+ * $XConsortium: tocutil.c,v 2.34 89/10/11 11:52:30 jim Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -155,15 +155,8 @@ void TUScanFileForToc(toc)
 	if (toc->num_scrns) scrn = toc->scrn[0];
 	else scrn = scrnList[0];
 
-	/* Do not alert the user of rescanning if the screen is unmapped. */
- 
-	if (scrn->mapped) {
-	    Position x, y;
-	    Widget parent = (Widget) scrn->tocwidget;
-	    (void) sprintf(str, "Rescanning %s", toc->foldername);
-	    XtTranslateCoords(parent, 30, 15, &x, &y);
-	    PopupAlert(str, parent, x, y);
-	}
+	(void) sprintf(str, "Rescanning %s", toc->foldername);
+	ChangeLabel(scrn->toclabel, str);
 
 	argv = MakeArgv(4);
 	argv[0] = "scan";
@@ -175,8 +168,7 @@ void TUScanFileForToc(toc)
 	XtFree(argv[1]);
 	XtFree((char *) argv);
 
-	if (scrn->mapped)
-	    PopdownAlert();
+	TUResetTocLabel(scrn);
 	toc->validity = valid;
 	toc->curmsg = NULL;	/* Get cur msg somehow! %%% */
     }

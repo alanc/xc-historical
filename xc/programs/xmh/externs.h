@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.23 89/09/27 19:11:39 converse Exp $
+ * $XConsortium: externs.h,v 2.24 89/10/06 14:48:42 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -74,8 +74,6 @@ extern void	PopupPrompt	(/* String, XtCallbackProc */);
 extern void	PopupConfirm	(/* Widget, String, XtCallbackList, ... */);
 extern void	PopupNotice	(/* char *, XtCallbackProc, XtPointer */);
 extern void 	PopupError	(/* String */);
-extern void 	PopdownAlert	(/* void */);
-extern void	PopupAlert	(/* String, Widget, Position, Position */);
 
 	/* from screen.c */
 

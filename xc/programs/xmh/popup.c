@@ -1,5 +1,5 @@
 /*
- * $XConsortium: popup.c,v 2.21 89/10/06 15:03:22 converse Exp $
+ * $XConsortium: popup.c,v 2.22 89/10/27 16:43:18 swick Exp $
  *
  *
  *			  COPYRIGHT 1989
@@ -417,36 +417,3 @@ void PopupError(message)
 		  app_resources.cursor);
     XtPopup(error_popup, XtGrabNone);
 }
- 
-static Widget alert = NULL;
-	
-void PopdownAlert()
-{
-    if (alert != NULL) 	XtPopdown(alert);
-}
-
-void PopupAlert(message, parent, x, y)
-    String	message;
-    Widget	parent;
-    Position	x, y;
-{
-    Arg		args[2];
-
-    if (alert == NULL) {
-	XtSetArg(args[0], XtNallowShellResize, True);
-	alert = XtCreatePopupShell("alert", transientShellWidgetClass,
-				   parent, args, ONE);
-	XtSetArg(args[0], XtNlabel, message);
-	XtCreateManagedWidget("rescanning", labelWidgetClass, alert, args,
-			      ONE);
-	PositionThePopup(alert, x, y);
-	XtRealizeWidget(alert);
-	XtInstallAllAccelerators(alert, alert);
-    }
-    else {
-	XtSetArg(args[0], XtNlabel, message);
-	XtSetValues(XtNameToWidget(alert, "rescanning"), args, ONE);
-    }
-    XtPopup(alert, XtGrabNone);
-}
-
