@@ -17,8 +17,9 @@
        AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c 
            SRCS = *.c
         HEADERS = Xlib.h Xresource.h Xutil.h cursorfont.h Xlibint.h Xlibos.h \
-			Xlibnet.h Xstreams.h
+			Xlibnet.h Xstreams.h 
        LINTLIBS =
+    XCMS_DBFILE = Xcms.txt
 
 OBJS1 =\
 	Context.o \
@@ -415,6 +416,7 @@ LintLibraryTarget(X11,*.c)
 
 BuildIncludes($(HEADERS),.,.)
 InstallMultiple($(HEADERS),$(INCDIR))
+InstallMultiple($(XCMS_DBFILE, $(LIBDIR))
 InstallNonExec(XErrorDB,$(LIBDIR))
 InstallLintLibrary(X11,$(LINTLIBDIR))
 
