@@ -1,4 +1,4 @@
-/* $XConsortium: xchgptr.c,v 1.9 90/05/18 14:15:22 rws Exp $ */
+/* $XConsortium: xchgptr.c,v 1.10 90/05/18 15:22:41 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -103,8 +103,8 @@ ProcXChangePointerDevice (client)
 
     v = dev->valuator;
     if (v == NULL || v->numAxes < 2 ||
-	stuff->xaxis < 0 ||  stuff->xaxis > v->numAxes ||
-	stuff->yaxis < 0 ||  stuff->yaxis > v->numAxes)
+	stuff->xaxis < 0 ||  stuff->xaxis >= v->numAxes ||
+	stuff->yaxis < 0 ||  stuff->yaxis >= v->numAxes)
 	{
 	rep.status = -1;
 	SendErrorToClient(client, IReqCode, X_ChangePointerDevice, 0, BadMatch);
