@@ -1,4 +1,4 @@
-/* $XConsortium: svgaIo.c,v 1.3 93/09/20 12:07:17 rws Exp $ */
+/* $XConsortium: svgaIo.c,v 1.4 93/09/23 18:47:48 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -178,7 +178,7 @@ XqueRequest(
 	  default:
 	    break;
 	  }
-
+#ifndef XKB
 	  if ((!XqueNumLock && !ModifierDown(ShiftMask)) ||
 	      (XqueNumLock && ModifierDown(ShiftMask))) {
 	    /*
@@ -199,6 +199,7 @@ XqueRequest(
 	    case KEY_KP_Decimal: scanCode = KEY_Delete; break;
 	    }
 	  }
+#endif
 	}
         
 	else if (XqueScanPrefix == KEY_Prefix0) {
@@ -259,7 +260,7 @@ XqueRequest(
 	keysym = (keyc->curKeySyms.map +
 		  keyc->curKeySyms.mapWidth * 
 		  (keycode - keyc->curKeySyms.minKeyCode));
-  
+#ifndef XKB
 	/*
 	 * LockKey special handling:
 	 * ignore releases, toggle on & off on presses.
@@ -271,7 +272,7 @@ XqueRequest(
 	    if (KeyPressed(keycode)) down = !down;
 	    if (keysym[0] == XK_Num_Lock) XqueNumLock  = down;
 	  }
-
+#endif
 	/*
 	 * check for an autorepeat-event
 	 */
@@ -499,7 +500,7 @@ XqueKeyboardProc(
      * Get also the initial led settings
      */
     (void)ioctl(svgaConsoleFd, KDGETLED, &leds);
-
+#ifndef XKB
     for (i = keyc->curKeySyms.minKeyCode;
 	 i < keyc->curKeySyms.maxKeyCode;
 	 i++, map += keyc->curKeySyms.mapWidth)
@@ -527,6 +528,7 @@ XqueKeyboardProc(
 	  break;
 	}
       }
+#endif
     return(XqueEnable());
     
   case DEVICE_CLOSE:
