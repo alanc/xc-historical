@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.2 89/08/24 11:51:57 kit Exp $";
+static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.3 89/08/24 12:00:45 kit Exp $";
 #endif
 
 /***********************************************************
@@ -356,7 +356,6 @@ Boolean blit;
 
     if ( ((int) old_max) != ( (int) w->strip_chart.max_value) ) {
       XClearWindow(XtDisplay(w), XtWindow(w));
-      w->strip_chart.max_value = old_max;
       repaint_window(w, 0, (int) w->core.width);
       return;
     }
