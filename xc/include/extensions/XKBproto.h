@@ -1,4 +1,4 @@
-/* $XConsortium: XKBproto.h,v 1.7 94/02/03 18:43:50 rws Exp $ */
+/* $XConsortium: XKBproto.h,v 1.8 94/02/05 17:44:53 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -192,12 +192,14 @@ typedef struct _KeyTypeWireDesc {
     CARD8	groupWidth;
     CARD8	mapWidth;
 } xkbKeyTypeWireDesc;
+#define	sz_xkbKeyTypeWireDesc	4
 
 typedef struct _SymMapWireDesc {
     CARD8	ktIndex;
     CARD8	groupInfo;
     CARD16	nSyms B16;
 } xkbSymMapWireDesc;
+#define	sz_xkbSymMapWireDesc	4
 
 typedef struct _GetControlsReply {
     BYTE	type;		/* X_Reply */
