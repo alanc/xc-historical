@@ -21,20 +21,24 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.21 88/11/14 18:12:26 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.22 89/02/09 15:05:08 jim Exp $ */
 #include "os.h"
 #include "opaque.h"
 #undef NULL
 #include <dbm.h>
 #undef NULL
 #include <stdio.h>
+#include "Xos.h"
 #ifndef MAXPATHLEN
 /*
  * just to get MAXPATHLEN.  Define it elsewhere if you need to
  * avoid these files.
  */
-#include <sys/types.h>
 #include <sys/param.h>
+#endif
+
+#ifndef SYSV
+#include <sys/resource.h>
 #endif
 
 #ifndef ADMPATH
@@ -43,6 +47,9 @@ SOFTWARE.
 
 int	havergb = 0;
 extern char *display;
+#ifndef SYSV
+Bool LimitAddressSpace = FALSE;
+#endif
 
 OsInit()
 {
@@ -85,6 +92,24 @@ OsInit()
 #endif
 	    time (&t);
 	    fprintf (stderr, "start %s", ctime(&t));
+
+#ifndef SYSV
+	    if (!LimitAddressSpace)
+	    {
+		struct rlimit	rlim;
+
+		if (!getrlimit(RLIMIT_DATA, &rlim))
+		{
+		    rlim.rlim_cur = rlim.rlim_max;
+		    (void)setrlimit(RLIMIT_DATA, &rlim);
+		}
+		if (!getrlimit(RLIMIT_STACK, &rlim))
+		{
+		    rlim.rlim_cur = rlim.rlim_max;
+		    (void)setrlimit(RLIMIT_STACK, &rlim);
+		}
+	    }
+#endif
 	}
 
 	if (getpgrp (0) == 0)
