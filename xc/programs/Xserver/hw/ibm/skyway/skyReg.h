@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyReg.h,v 1.3 91/12/11 21:25:42 eswu Exp $
+ * $XConsortium: skyReg.h,v 1.4 92/01/27 18:01:20 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -86,8 +86,9 @@ typedef volatile struct	_skyCopReg
     long   pat_yx;	      /* Pattern Y,X start in Pixmap  */
     long   dst_yx;	      /* Destination Y,X start in Pix */
     ulong  pixel_op_reg;      /* Pixel Operation: starts cmds */
-} skyCopRegRec, *skyCopRegPtr;
+} skyCopRegRec;
 
+typedef skyCopRegRec *skyCopRegPtr;
 
 /*****************************************************************************
 *                                                                            *
