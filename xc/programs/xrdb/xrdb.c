@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: xrdb.c,v 11.30 89/07/12 12:37:03 jim Exp $";
+static char rcs_id[] = "$XConsortium: xrdb.c,v 11.31 89/07/12 12:40:07 jim Exp $";
 #endif
 
 /*
@@ -45,18 +45,6 @@ static char rcs_id[] = "$XConsortium: xrdb.c,v 11.30 89/07/12 12:37:03 jim Exp $
 #define CPP "/usr/lib/cpp"
 #endif /* CPP */
 
-#ifdef hpux
-#define USE_UNAME
-#endif
-#ifdef USG
-#define USE_UNAME
-#endif
-
-#ifdef USE_UNAME
-#include <sys/utsname.h>
-#endif
-
-
 char *ProgramName;
 static Bool quiet = False;
 
@@ -82,29 +70,6 @@ typedef struct _Entries {
 
 #define INIT_BUFFER_SIZE 10000
 #define INIT_ENTRY_SIZE 500
-
-int _GetHostname (buf, maxlen)
-    char *buf;
-    int maxlen;
-{
-    int len;
-
-#ifdef USE_UNAME
-    struct utsname name;
-
-    uname (&name);
-    len = strlen (name.nodename);
-    if (len >= maxlen) len = maxlen - 1;
-    (void) strncpy (buf, name.nodename, len);
-    buf[len] = '\0';
-#else
-    buf[0] = '\0';
-    (void) gethostname (buf, maxlen);
-    buf [maxlen - 1] = '\0';
-    len = strlen(buf);
-#endif
-    return len;
-}
 
 #ifdef USG
 int rename (from, to)
@@ -222,9 +187,10 @@ char *FindFirst(string, dest)
     }
 }
 
-void GetEntries(entries, buff)
+void GetEntries(entries, buff, dosort)
     register Entries *entries;
     Buffer *buff;
+    int dosort;
 {
     register char *line, *colon, *temp, *str;
     Entry entry;
@@ -284,7 +250,7 @@ void GetEntries(entries, buff)
 
 	AddEntry(entries, entry);
     }
-    if (entries->used > 0)
+    if (dosort && (entries->used > 0))
       qsort(entries->entry, entries->used, sizeof(Entry), CompareEntries);
 }
 
@@ -387,15 +353,18 @@ DoDefines(display, defs, prog, host)
 #define MAXHOSTNAME 255
     Screen *screen;
     Visual *visual;
-    char temp[MAXHOSTNAME], *colon;
+    char client[MAXHOSTNAME], server[MAXHOSTNAME], *colon;
     
-    strcpy(temp, XDisplayName(host));
-    colon = index(temp, ':');
+    XmuGetHostname(client, MAXHOSTNAME);
+    strcpy(server, XDisplayName(host));
+    colon = index(server, ':');
     if (colon != NULL)
 	*colon = '\0';
-    if (temp[0] == '\0')	/* must be connected to :0 */
-	_GetHostname(temp, MAXHOSTNAME);
-    AddDef(defs, "HOST", temp);
+    if (server[0] == '\0')	/* must be connected to :0 */
+	strcpy(server, client);
+    AddDef(defs, "HOST", server); /* R3 compatibility */
+    AddDef(defs, "SERVERHOST", server);
+    AddDef(defs, "CLIENTHOST", client);
     AddNum(defs, "VERSION", ProtocolVersion(display));
     AddNum(defs, "REVISION", ProtocolRevision(display));
     AddDefQ(defs, "VENDOR", ServerVendor(display));
@@ -440,8 +409,7 @@ Entry *FindEntry(db, b)
     register Entries *db;
     Buffer *b;
 {
-    register char *colon;
-    int i, length;
+    int i;
     register Entry *e;
     Entries phoney;
     Entry entry;
@@ -452,7 +420,7 @@ Entry *FindEntry(db, b)
     phoney.used = 0;
     phoney.room = 1;
     phoney.entry = &entry;
-    GetEntries(&phoney, b);
+    GetEntries(&phoney, b, 0);
     if (phoney.used < 1)
 	return (NULL);
     for (i = 0; i < db->used; i++) {
@@ -742,7 +710,7 @@ main (argc, argv)
 	buffer.used = (xdefs ? strlen(xdefs) : 0);
 	buffer.buff = xdefs;		/* drop it on the floor */
 	buffer.room = buffer.used;
-	GetEntries(&newDB, &buffer);
+	GetEntries(&newDB, &buffer, 0);
 	EditFile(&newDB, input, output);
 	fclose(input);
 	fclose(output);
@@ -778,12 +746,12 @@ main (argc, argv)
 	    input = stdin;
 	}
 	ReadFile(&buffer, input);
-	GetEntries(&newDB, &buffer);
+	GetEntries(&newDB, &buffer, merge);
 	if (merge && xdefs) {
 	    char *saveBuff = buffer.buff;
 	    buffer.used = strlen(xdefs);
 	    buffer.buff = xdefs;
-	    GetEntries(&oldDB, &buffer);
+	    GetEntries(&oldDB, &buffer, 1);
 	    buffer.buff = saveBuff;
 	} else
 	    oldDB.used = 0;
