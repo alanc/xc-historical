@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: WaitFor.c,v 1.21 87/08/26 23:46:40 toddb Exp $ */
+/* $Header: WaitFor.c,v 1.22 87/09/07 13:14:07 sun Locked $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -90,6 +90,7 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
     long timeout;
     long readyClients[mskcnt];
     long curclient;
+    int selecterr;
 
     *nready = 0;
     *nnew = 0;
@@ -133,15 +134,16 @@ WaitForSomething(pClientsReady, nready, pNewClients, nnew)
 	    BlockHandler();
 	    i = select (MAXSOCKS, LastSelectMask, 
 			(int *) NULL, (int *) NULL, wt);
+	    selecterr = errno;
 	    WakeupHandler();
 	    if (i <= 0) /* An error or timeout occurred */
             {
 		if (i < 0) 
-		    if (errno == EBADF)    /* Some client disconnected */
+		    if (selecterr == EBADF)    /* Some client disconnected */
 	            	CheckConnections ();
-		    else if (errno != EINTR)
-			ErrorF("WaitForSomething(): select: errrno=%d\n",
-			    errno);
+		    else if (selecterr != EINTR)
+			ErrorF("WaitForSomething(): select: errno=%d\n",
+			    selecterr);
     	    }
 	    else
 	    {
