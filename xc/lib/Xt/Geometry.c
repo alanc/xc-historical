@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.38 89/09/19 11:27:05 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Geometry.c,v 1.39 89/10/04 15:42:19 swick Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
 #endif /* lint */
 
@@ -30,6 +30,26 @@ SOFTWARE.
 #include "IntrinsicI.h"
 #include "ShellP.h"
 
+static void ClearRectObjAreas(r, old)
+    RectObj r;
+    XWindowChanges* old;
+{
+    Widget pw = _XtWindowedAncestor((Widget)r);
+    int bw2;
+
+    bw2 = old->border_width << 1;
+    XClearArea( XtDisplay(pw), XtWindow(pw),
+		old->x, old->y,
+		old->width + bw2, old->height + bw2,
+		TRUE );
+
+    bw2 = r->rectangle.border_width << 1;
+    XClearArea( XtDisplay(pw), XtWindow(pw),
+		r->rectangle.x, r->rectangle.y,
+		r->rectangle.width + bw2, r->rectangle.height + bw2,
+		TRUE );
+}
+
 /* Public routines */
 
 XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
@@ -41,7 +61,7 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
     XtGeometryResult returnCode;
     Widget parent = widget->core.parent;
     XtGeometryMask	changeMask;
-    Boolean managed, parentRealized,widgetRealized;
+    Boolean managed, parentRealized;
     XWindowChanges changes;
 
     if (XtIsShell(widget)) {
@@ -112,12 +132,6 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
 
     if (widget->core.being_destroyed) return XtGeometryNo;
 
-    if (XtIsWidget(widget)) {
-        widgetRealized = XtIsRealized(widget);
-    } else {
-        widgetRealized = FALSE;
-    };
-
     /* see if requesting anything to change */
     changeMask = 0;
     if (request->request_mode & CWStackMode
@@ -143,7 +157,7 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
     if (changeMask == NULL) return XtGeometryYes;
     changeMask |= (request->request_mode & XtCWQueryOnly);
 
-    if ( !(changeMask & XtCWQueryOnly) && widgetRealized ) {
+    if ( !(changeMask & XtCWQueryOnly) && XtIsRealized(widget) ) {
 	/* keep record of the current geometry so we know what's changed */
 	changes.x = widget->core.x ;
 	changes.y = widget->core.y ;
@@ -186,7 +200,8 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
 	return returnCode;
     }
 
-    if (returnCode == XtGeometryYes && widgetRealized) {
+    if (returnCode == XtGeometryYes
+	&& XtIsWidget(widget) && XtIsRealized(widget)) {
 	/* reconfigure the window (if needed) */
 
 	if (changes.x != widget->core.x) {
@@ -217,7 +232,12 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
 
 	XConfigureWindow(XtDisplay(widget), XtWindow(widget),
 		changeMask, &changes);
-    } else if (returnCode == XtGeometryDone) returnCode = XtGeometryYes;
+    }
+    else if (returnCode == XtGeometryYes && XtIsRealized(widget)) {
+	/* RectObj child of realized Widget */
+	ClearRectObjAreas((RectObj)widget, &changes);
+    }
+    else if (returnCode == XtGeometryDone) returnCode = XtGeometryYes;
 
     return returnCode;
 } /* XtMakeGeometryRequest */
@@ -267,28 +287,45 @@ void XtResizeWidget(w, width, height, borderWidth)
     Dimension height, width, borderWidth;
 {
     XWindowChanges changes;
+    Dimension old_width, old_height, old_borderWidth;
     Cardinal mask = 0;
 
     if (w->core.width != width) {
+	old_width = w->core.width;
 	changes.width = w->core.width = width;
 	mask |= CWWidth;
     }
 
     if (w->core.height != height) {
+	old_height = w->core.height;
 	changes.height = w->core.height = height;
 	mask |= CWHeight;
     }
 
     if (w->core.border_width != borderWidth) {
+	old_borderWidth = w->core.border_width;
 	changes.border_width = w->core.border_width = borderWidth;
 	mask |= CWBorderWidth;
     }
 
     if (mask != 0) {
-	if (XtIsRealized(w))
-	    XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &changes);
-    if ((mask & (CWWidth | CWHeight)) &&
-	XtClass(w)->core_class.resize != (XtWidgetProc) NULL)
+	if (XtIsRealized(w)) {
+	    if (XtIsWidget(w))
+		XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &changes);
+	    else {
+		Widget pw = _XtWindowedAncestor(w);
+		Dimension big_width = old_width + (old_borderWidth << 1);
+		Dimension big_height = old_height + (old_borderWidth << 1);
+		if ((width + (borderWidth << 1)) > big_width)
+		    big_width = width + (borderWidth << 1);
+		if ((height + (borderWidth << 1)) > big_height)
+		    big_height = height + (borderWidth << 1);
+		XClearArea( XtDisplay(pw), XtWindow(pw),
+			    w->core.x, w->core.y, big_width, big_height );
+	    }
+	}
+	if ((mask & (CWWidth | CWHeight)) &&
+	      XtClass(w)->core_class.resize != (XtWidgetProc) NULL)
 	    (*(w->core.widget_class->core_class.resize))(w);
     }
 } /* XtResizeWidget */
@@ -298,39 +335,48 @@ void XtConfigureWidget(w, x, y, width, height, borderWidth)
     Position x, y;
     Dimension height, width, borderWidth;
 {
-    XWindowChanges changes;
+    XWindowChanges changes, old;
     Cardinal mask = 0;
 
     if (w->core.x != x) {
+	old.x = w->core.x;
 	changes.x = w->core.x = x;
 	mask |= CWX;
     }
 
     if (w->core.y != y) {
+	old.y = w->core.y;
 	changes.y = w->core.y = y;
 	mask |= CWY;
     }
 
     if (w->core.width != width) {
+	old.width = w->core.width;
 	changes.width = w->core.width = width;
 	mask |= CWWidth;
     }
 
     if (w->core.height != height) {
+	old.height = w->core.height;
 	changes.height = w->core.height = height;
 	mask |= CWHeight;
     }
 
     if (w->core.border_width != borderWidth) {
+	old.border_width = w->core.border_width;
 	changes.border_width = w->core.border_width = borderWidth;
 	mask |= CWBorderWidth;
     }
 
     if (mask != 0) {
-	if (XtIsRealized(w))
-	    XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &changes);
-    if ((mask & (CWWidth | CWHeight)) &&
-	XtClass(w)->core_class.resize != (XtWidgetProc) NULL)
+	if (XtIsRealized(w)) {
+	    if (XtIsWidget(w))
+		XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &changes);
+	    else
+		ClearRectObjAreas((RectObj)w, &old);
+	}
+	if ((mask & (CWWidth | CWHeight)) &&
+	      XtClass(w)->core_class.resize != (XtWidgetProc) NULL)
 	    (*(w->core.widget_class->core_class.resize))(w);
     }
 } /* XtConfigureWidget */
@@ -340,10 +386,20 @@ void XtMoveWidget(w, x, y)
     Position x, y;
 {
     if ((w->core.x != x) || (w->core.y != y)) {
+	XWindowChanges old;
+	old.x = w->core.x;
+	old.y = w->core.y;
 	w->core.x = x;
 	w->core.y = y;
 	if (XtIsRealized(w)) {
-	    XMoveWindow(XtDisplay(w), XtWindow(w), w->core.x, w->core.y);
+	    if (XtIsWidget(w))
+		XMoveWindow(XtDisplay(w), XtWindow(w), w->core.x, w->core.y);
+	    else {
+		old.width = w->core.width;
+		old.height = w->core.height;
+		old.border_width = w->core.border_width;
+		ClearRectObjAreas((RectObj)w, &old);
+	    }
         }
     }
 } /* XtMoveWidget */
