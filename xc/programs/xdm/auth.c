@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.10 88/11/17 17:04:50 keith Exp $
+ * $XConsortium: auth.c,v 1.1 88/11/23 16:59:05 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -56,6 +56,8 @@ InitAuthorization ()
     char    **argv, **parseArgs ();
 
     Debug ("InitAuthorization\n");
+    if (authGen == 0 || authGen[0] == '\0')
+	return;
     if (pipe (pipein) == -1)
 	return;
     if (pipe (pipeout) == -1) {
@@ -150,7 +152,7 @@ struct display	*d;
 		XauDisposeAuth (d->authorization);
 		d->authorization = 0;
 	}
-	if (!d->authFile || !d->authFile[0])
+	if (!d->authorize || !d->authFile || !d->authFile[0])
 		return 0;
 	auth = GenerateAuthorization (d->openTimeout);
 	if (!auth) {
