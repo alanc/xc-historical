@@ -1,4 +1,4 @@
-/* $XConsortium: extnsionst.h,v 1.7 89/06/21 16:24:03 rws Exp $ */
+/* $XConsortium: extnsionst.h,v 1.8 89/07/03 19:48:53 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -53,39 +53,6 @@ typedef struct _ScreenProcEntry {
     int num;
     ProcEntryPtr procList;
 } ScreenProcEntry;
-
-#define    InsertGCI(pGC, pGCI, order, pPrevGCI)    \
-	   order(pGC,pGCI,pPrevGCI)
-
-#define GCI_FIRST(pGC,pGCI,dummy)\
-    {					    \
-    pGCI->pNextGCInterest = pGC->pNextGCInterest;\
-    pGCI->pLastGCInterest = (GCInterestPtr)&pGC->pNextGCInterest; \
-    pGC->pNextGCInterest->pLastGCInterest = pGCI; \
-    pGC->pNextGCInterest=pGCI;		    \
-    }					    
-
-#define GCI_MIDDLE(pGC,pGCI,pPrevGCI)\
-    {					    \
-    pGCI->pNextGCInterest = pPrevGCI->pNextGCInterest;\
-    pGCI->pLastGCInterest = (GCInterestPtr)&pPrevGCI->pNextGCInterest; \
-    pPrevGCI->pNextGCInterest->pLastGCInterest = pGCI; \
-    pPrevGCI->pNextGCInterest=pGCI;		    \
-    }
-
-#define GCI_LAST(pGC,pGCI,dummy)\
-    {					    \
-    pGCI->pNextGCInterest = (GCInterestPtr)&pGC->pNextGCInterest;\
-    pGCI->pLastGCInterest = pGC->pLastGCInterest;\
-    pGC->pLastGCInterest->pNextGCInterest = pGCI;\
-    pGC->pLastGCInterest=pGCI;		     \
-    }
-
-#define RemoveGCI(pGCI) \
-	pGCI->pNextGCInterest->pLastGCInterest = pGCI->pLastGCInterest;\
-	pGCI->pLastGCInterest->pNextGCInterest = pGCI->pNextGCInterest;\
-	pGCI->pNextGCInterest = 0;\
-	pGCI->pLastGCInterest = 0;
 
 #define    SetGCVector(pGC, VectorElement, NewRoutineAddress, Atom)    \
     pGC->VectorElement = NewRoutineAddress;
