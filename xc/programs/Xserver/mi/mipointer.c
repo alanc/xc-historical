@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 5.19 92/04/06 18:16:20 keith Exp $ */
+/* $XConsortium: mipointer.c,v 5.20 93/10/12 11:41:26 dpw Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -263,7 +263,7 @@ miPointerGetMotionBufferSize ()
 
 int
 miPointerGetMotionEvents (pPtr, coords, start, stop, pScreen)
-    DevicePtr	    pPtr;
+    DeviceIntPtr    pPtr;
     xTimecoord	    *coords;
     unsigned long   start, stop;
     ScreenPtr	    pScreen;

@@ -3,7 +3,7 @@
  *
  */
 
-/* $XConsortium: mipointer.h,v 5.4 91/07/19 23:20:09 keith Exp $ */
+/* $XConsortium: mipointer.h,v 5.5 93/10/12 11:41:57 dpw Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -66,7 +66,7 @@ extern int miPointerGetMotionBufferSize(
 
 extern int miPointerGetMotionEvents(
 #if NeedFunctionPrototypes
-    DevicePtr /*pPtr*/,
+    DeviceIntPtr /*pPtr*/,
     xTimecoord * /*coords*/,
     unsigned long /*start*/,
     unsigned long /*stop*/,
