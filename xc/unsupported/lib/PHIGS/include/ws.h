@@ -1,4 +1,4 @@
-/* $XConsortium: ws.h,v 5.1 91/02/16 09:49:21 rws Exp $ */
+/* $XConsortium: ws.h,v 5.2 91/03/29 10:45:38 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -27,6 +27,7 @@ SOFTWARE.
 #define PHG_WS_H_INCLUDED
 
 #include "ws_inp.h"
+#include <X11/extensions/multibuf.h>
 
 /* The maximum number of views for client-side workstations. */
 #define WS_MAX_VIEWS	20
@@ -243,6 +244,11 @@ typedef struct {
     Pupd_st		hlhsr_mode_pending;	/* new hlhsr mode is pending */
     int			req_hlhsr_mode;		/* requested hlhsr mode */
     int			cur_hlhsr_mode;		/* current hlhsr mode */
+    /* Double Buffer Stuff */
+    int                 front;                  /* index of front drawable */
+    int                 back;                  /* index of back drawable */
+    int                 has_double_buffer;     /* Boolean for buffer presence */
+    Multibuffer         double_drawable[2];    /* the two buffers */
 } Wsb_output_ws;
 
 typedef struct {
