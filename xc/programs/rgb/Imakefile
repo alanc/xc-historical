@@ -10,6 +10,7 @@
          OBJS = $(OBJS1) $(OBJS2)
      PROGRAMS = rgb showrgb
     DATAFILES = rgb.pag rgb.dir
+      DATADEP = rgb.dir		/* just want one run of rgb */
 
 all:: $(PROGRAMS) $(DATAFILES)
 
@@ -18,11 +19,11 @@ SingleProgramTarget(showrgb,$(OBJS2),/**/,-ldbm)
 InstallMultiple($(DATAFILES) rgb.txt,$(LIBDIR))
 InstallProgramWithFlags(showrgb,$(BINDIR),)
 
-rgb.pag rgb.dir: rgb rgb.txt
-	$(RM) rgb.pag rgb.dir
+$(DATADEP):  rgb rgb.txt
+	$(RM) $(DATAFILES)
 	./rgb rgb < rgb.txt
 
 clean::
-	$(RM) rgb.pag rgb.dir
+	$(RM) $(DATAFILES)
 
 DependTarget()
