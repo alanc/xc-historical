@@ -139,7 +139,27 @@ for (i = 1; i < argc; ) {
   }
   else if (strcmp(arg, "fp") == 0) {	       /* set font path */
     arg = nextarg(i, argv);
-    set_font_path(dpy, arg);
+    set_font_path(dpy, arg, 0, 0);
+    i++;
+  }
+  else if (strcmp(arg, "+fp") == 0) {	       /* set font path */
+    arg = nextarg(i, argv);
+    set_font_path(dpy, arg, 1, 0);
+    i++;
+  }
+  else if (strcmp(arg, "fp+") == 0) {	       /* set font path */
+    arg = nextarg(i, argv);
+    set_font_path(dpy, arg, 0, 1);
+    i++;
+  }
+  else if (strcmp(arg, "-fp") == 0) {	       /* set font path */
+    arg = nextarg(i, argv);
+    set_font_path(dpy, arg, -1, 0);
+    i++;
+  }
+  else if (strcmp(arg, "fp-") == 0) {	       /* set font path */
+    arg = nextarg(i, argv);
+    set_font_path(dpy, arg, 0, -1);
     i++;
   }
   else if (strcmp(arg, "-led") == 0) {         /* Turn off one or all LEDs */
@@ -421,33 +441,143 @@ XChangeKeyboardControl(dpy, KBBellDuration, &values);
 return;
 }
 
-set_font_path(dpy, path)
+/*
+ * Set, add, or subtract the path according to before and after flags:
+ *
+ *	before	after	action
+ *
+ *	   0      0	FontPath := path
+ *	  -1      0	FontPath := current - path
+ *	   0     -1	FontPath := current - path
+ *	   1      0	FontPath := path + current
+ *	   0      1	FontPath := current + path
+ */
+
+set_font_path(dpy, path, before, after)
     Display *dpy;
     char *path;
 {
     char **directoryList = NULL; int ndirs = 0;
-    char *directories;
-    char *pDir;
+    char **currentList = NULL; int ncurrent = 0;
+    char **newList = NULL; int nnew = 0;
 
-    if (strcmp(path, "default")!=0) {
-        if (((directories = (char *)malloc( strlen(path) )) == NULL) ||
-	    ((directoryList = (char **)malloc(sizeof(char *))) == NULL))
-	    error( "out of memory" );
+    if (strcmp (path, "default") == 0) {
+	if (before != 0 || after != 0) {
+	    fprintf (stderr,
+		     "%s:  may only use \"default\" for option \"fp\".\n",
+		     progName);
+	    return;
+	}
+	XSetFontPath (dpy, NULL, 0);
+	return;
+    }
 
-	strcpy( directories, path );
-	*directoryList = pDir = directories;
-	ndirs++;
-	while( (pDir = index(pDir, ',')) != NULL) {
-	    *pDir++ = '\0';
-	    directoryList = (char **)realloc(directoryList, 
-					     (ndirs+1)*sizeof(char *));
-	    if (directoryList == NULL) error( "out of memory" );
-	    directoryList[ndirs++] = pDir;
+    /*
+     * parse the path list.  If before or after is non-zero, we'll need 
+     * the current value.
+     */
+
+    if (before != 0 || after != 0) {
+	currentList = XGetFontPath (dpy, &ncurrent);
+	if (!currentList) {
+	    fprintf (stderr, "%s:  unable to get old font path.\n",
+		     progName);
+	    before = after = 0;
 	}
     }
 
-    XSetFontPath( dpy, directoryList, ndirs );
+    {
+	/* count the number of directories in path */
+	register char *cp = path;
+
+	ndirs = 1;
+	while ((cp = index (cp, ',')) != NULL) {
+	    ndirs++;
+	    cp++;
+	}
+    }
+
+    directoryList = (char **) malloc (ndirs*sizeof (char *));
+    if (!directoryList) error ("out of memory for font path directory list");
+
+    {
+	/* mung the path and set directoryList pointers */
+	int i = 0;
+	char *cp = path;
+
+	directoryList[i++] = cp;
+	while ((cp = index (cp, ',')) != NULL) {
+	    directoryList[i++] = cp + 1;
+	    *cp++ = '\0';
+	}
+	if (i != ndirs) {
+	    fprintf (stderr, 
+		     "%s: internal error, only parsed %d of %d directories.\n",
+		     progName, i, ndirs);
+	    exit (1);
+	}
+    }
+	    
+    /*
+     * now we have have parsed the input path, so we can set it
+     */
+
+    if (before == 0 && after == 0) {
+	XSetFontPath (dpy, directoryList, ndirs);
+    }
+
+    /* if adding to list, build a superset */
+    if (before > 0 || after > 0) {
+	int nnew = ndirs + ncurrent;
+	char **newList = (char **) malloc (nnew * sizeof (char *));
+	
+	if (!newList) error ("out of memory");
+	if (before > 0) {		/* new + current */
+	    bcopy ((char *) directoryList, (char *) newList, 
+		   (unsigned) (ndirs*sizeof (char *)));
+	    bcopy ((char *) currentList, (char *) (newList + ndirs),
+			(unsigned) (ncurrent*sizeof (char *)));
+	    XSetFontPath (dpy, newList, nnew);
+	} else if (after > 0) {
+	    bcopy ((char *) currentList, (char *) newList,
+		   (unsigned) (ncurrent*sizeof (char *)));
+	    bcopy ((char *) directoryList, (char *) (newList + ncurrent),
+		   (unsigned) (ndirs*sizeof (char *)));
+	    XSetFontPath (dpy, newList, nnew);
+	} 
+	free ((char *) newList);
+    }
+
+    /* if deleting from list, build one the same size */
+    if (before < 0 || after < 0) {
+	int i, j;
+	int nnew = 0;
+	char **newList = (char **) malloc (ncurrent * sizeof (char *));
+	
+	if (!newList) error ("out of memory");
+	for (i = 0; i < ncurrent; i++) {
+	    for (j = 0; j < ndirs; j++) {
+		if (strcmp (currentList[i], directoryList[j]) == 0)
+		  break;
+	    }
+	    /* if we ran out, then insert into new list */
+	    if (j == ndirs) newList[nnew++] = currentList[i];
+	}
+	if (nnew == ncurrent) {
+	    fprintf (stderr,
+		     "%s:  warning, no entries deleted from font path.\n",
+		     progName);
+	}
+	XSetFontPath (dpy, newList, nnew);
+	free ((char *) newList);
+    }
+
+    if (directoryList) free ((char *) directoryList);
+    if (currentList) free ((char *) currentList);
+
+    return;
 }
+
 
 set_led(dpy, led, led_mode)
 Display *dpy;
@@ -693,6 +823,10 @@ usage (fmt, arg)
     fprintf (stderr, "\t fp path[,path...]\n" );
     fprintf (stderr, "    To restore the default font path:\n" );
     fprintf (stderr, "\t fp default\n" );
+    fprintf (stderr, "    To remove elements from font path:\n");
+    fprintf (stderr, "\t-fp path[,path...]  fp- path[,path...]\n");
+    fprintf (stderr, "    To prepend or append elements to font path:\n");
+    fprintf (stderr, "\t+fp path[,path...]  fp+ path[,path...]\n");
     fprintf (stderr, "    To set LED states off or on:\n");
     fprintf (stderr, "\t-led [1-32]         led off\n");
     fprintf (stderr, "\t led [1-32]         led on\n");

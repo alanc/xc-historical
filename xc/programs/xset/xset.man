@@ -6,7 +6,7 @@ xset - user preference utility for X
 [-display \fIdisplay\fP]
 [-b] [b on/off] [b [\fIvolume\fP [\fIpitch\fP [\fIduration\fP]]]
 [-c] [c on/off] [c [\fIvolume\fP]]
-[fp \fIpath\fP[,\fIpath\fP[,...]]] [fp default]
+[[-+]fp[-+] \fIpath\fP[,\fIpath\fP[,...]]] [fp default]
 [[-]led [\fIinteger\fP]] [led on/off]
 [m[ouse] [\fIacceleration\fP [\fIthreshold\fP]]] [m[ouse] default]
 [p \fIpixel\fP \fIcolor\fP]
@@ -61,6 +61,17 @@ directories or the flag 'default'.
 The indicated path will be used to find fonts for clients.
 To restore the default
 font path, use \fBfp default\fP.
+.PP
+.TP 8
+.B "\-fp \fRor\fP fp\-"
+This \fB\-fp\fP and \fBfp\-\fP options remove elements from the current
+font path.  They must be followed by a comma-separated list of directories.
+.PP
+.TP 8
+.B "\+fp \fRor\fP fp\+"
+This \fB\+fp\fP and \fBfp\+\fP options prepend and append elements to the 
+current font path, respectively.  They must be followed by a comma-separated 
+list of directories.
 .PP
 .TP 8
 .B led
