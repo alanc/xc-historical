@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.57 93/08/09 14:53:25 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.58 93/08/14 13:10:11 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -107,6 +107,8 @@
 #endif
 #ifdef WIN32
 #define REMOVE_CPP_LEADSPACE
+#define INLINE_SYNTAX
+#define MAGIC_MAKE_VARS
 #endif
 
 /*
