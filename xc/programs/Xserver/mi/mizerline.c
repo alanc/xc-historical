@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mizerline.c,v 5.7 94/04/17 20:28:05 dpw Exp $ */
+/* $XConsortium: mizerline.c,v 5.8 94/07/28 14:11:16 dpw Exp dpw $ */
 #include "X.h"
 
 #include "misc.h"
@@ -55,6 +55,307 @@ SOFTWARE.
 #include "pixmap.h"
 #include "mi.h"
 #include "miline.h"
+
+/*
+
+The bresenham error equation used in the mi/mfb/cfb line routines is:
+
+	e = error
+	dx = difference in raw X coordinates
+	dy = difference in raw Y coordinates
+	M = # of steps in X direction
+	N = # of steps in Y direction
+	B = 0 to prefer diagonal steps in a given octant,
+	    1 to prefer axial steps in a given octant
+
+	For X major lines:
+		e = 2Mdy - 2Ndx - dx - B
+		-2dx <= e < 0
+
+	For Y major lines:
+		e = 2Ndx - 2Mdy - dy - B
+		-2dy <= e < 0
+
+At the start of the line, we have taken 0 X steps and 0 Y steps,
+so M = 0 and N = 0:
+
+	X major	e = 2Mdy - 2Ndx - dx - B
+		  = -dx - B
+
+	Y major	e = 2Ndx - 2Mdy - dy - B
+		  = -dy - B
+
+At the end of the line, we have taken dx X steps and dy Y steps,
+so M = dx and N = dy:
+
+	X major	e = 2Mdy - 2Ndx - dx - B
+		  = 2dxdy - 2dydx - dx - B
+		  = -dx - B
+	Y major e = 2Ndx - 2Mdy - dy - B
+		  = 2dydx - 2dxdy - dy - B
+		  = -dy - B
+
+Thus, the error term is the same at the start and end of the line.
+
+Let us consider clipping an X coordinate.  There are 4 cases which
+represent the two independent cases of clipping the start vs. the
+end of the line and an X major vs. a Y major line.  In any of these
+cases, we know the number of X steps (M) and we wish to find the
+number of Y steps (N).  Thus, we will solve our error term equation.
+If we are clipping the start of the line, we will find the smallest
+N that satisfies our error term inequality.  If we are clipping the
+end of the line, we will find the largest number of Y steps that
+satisfies the inequality.  In that case, since we are representing
+the Y steps as (dy - N), we will actually want to solve for the
+smallest N in that equation.
+
+Case 1:  X major, starting X coordinate moved by M steps
+
+		-2dx <= 2Mdy - 2Ndx - dx - B < 0
+	2Ndx <= 2Mdy - dx - B + 2dx	2Ndx > 2Mdy - dx - B
+	2Ndx <= 2Mdy + dx - B		N > (2Mdy - dx - B) / 2dx
+	N <= (2Mdy + dx - B) / 2dx
+
+Since we are trying to find the smallest N that satisfies these
+equations, we should use the > inequality to find the smallest:
+
+	N = floor((2Mdy - dx - B) / 2dx) + 1
+	  = floor((2Mdy - dx - B + 2dx) / 2dx)
+	  = floor((2Mdy + dx - B) / 2dx)
+
+Case 1b: X major, ending X coordinate moved to M steps
+
+Same derivations as Case 1, but we want the largest N that satisfies
+the equations, so we use the <= inequality:
+
+	N = floor((2Mdy + dx - B) / 2dx)
+
+Case 2: X major, ending X coordinate moved by M steps
+
+		-2dx <= 2(dx - M)dy - 2(dy - N)dx - dx - B < 0
+		-2dx <= 2dxdy - 2Mdy - 2dxdy + 2Ndx - dx - B < 0
+		-2dx <= 2Ndx - 2Mdy - dx - B < 0
+	2Ndx >= 2Mdy + dx + B - 2dx	2Ndx < 2Mdy + dx + B
+	2Ndx >= 2Mdy - dx + B		N < (2Mdy + dx + B) / 2dx
+	N >= (2Mdy - dx + B) / 2dx
+
+Since we are trying to find the highest number of Y steps that
+satisfies these equations, we need to find the smallest N, so
+we should use the >= inequality to find the smallest:
+
+	N = ceiling((2Mdy - dx + B) / 2dx)
+	  = floor((2Mdy - dx + B + 2dx - 1) / 2dx)
+	  = floor((2Mdy + dx + B - 1) / 2dx)
+
+Case 2b: X major, starting X coordinate moved to M steps from end
+
+Same derivations as Case 2, but we want the smallest number of Y
+steps, so we want the highest N, so we use the < inequality:
+
+	N = ceiling((2Mdy + dx + B) / 2dx) - 1
+	  = floor((2Mdy + dx + B + 2dx - 1) / 2dx) - 1
+	  = floor((2Mdy + dx + B + 2dx - 1 - 2dx) / 2dx)
+	  = floor((2Mdy + dx + B - 1) / 2dx)
+
+Case 3: Y major, starting X coordinate moved by M steps
+
+		-2dy <= 2Ndx - 2Mdy - dy - B < 0
+	2Ndx >= 2Mdy + dy + B - 2dy	2Ndx < 2Mdy + dy + B
+	2Ndx >= 2Mdy - dy + B		N < (2Mdy + dy + B) / 2dx
+	N >= (2Mdy - dy + B) / 2dx
+
+Since we are trying to find the smallest N that satisfies these
+equations, we should use the >= inequality to find the smallest:
+
+	N = ceiling((2Mdy - dy + B) / 2dx)
+	  = floor((2Mdy - dy + B + 2dx - 1) / 2dx)
+	  = floor((2Mdy - dy + B - 1) / 2dx) + 1
+
+Case 3b: Y major, ending X coordinate moved to M steps
+
+Same derivations as Case 3, but we want the largest N that satisfies
+the equations, so we use the < inequality:
+
+	N = ceiling((2Mdy + dy + B) / 2dx) - 1
+	  = floor((2Mdy + dy + B + 2dx - 1) / 2dx) - 1
+	  = floor((2Mdy + dy + B + 2dx - 1 - 2dx) / 2dx)
+	  = floor((2Mdy + dy + B - 1) / 2dx)
+
+Case 4: Y major, ending X coordinate moved by M steps
+
+		-2dy <= 2(dy - N)dx - 2(dx - M)dy - dy - B < 0
+		-2dy <= 2dxdy - 2Ndx - 2dxdy + 2Mdy - dy - B < 0
+		-2dy <= 2Mdy - 2Ndx - dy - B < 0
+	2Ndx <= 2Mdy - dy - B + 2dy	2Ndx > 2Mdy - dy - B
+	2Ndx <= 2Mdy + dy - B		N > (2Mdy - dy - B) / 2dx
+	N <= (2Mdy + dy - B) / 2dx
+
+Since we are trying to find the highest number of Y steps that
+satisfies these equations, we need to find the smallest N, so
+we should use the > inequality to find the smallest:
+
+	N = floor((2Mdy - dy - B) / 2dx) + 1
+
+Case 4b: Y major, starting X coordinate moved to M steps from end
+
+Same analysis as Case 4, but we want the smallest number of Y steps
+which means the largest N, so we use the <= inequality:
+
+	N = floor((2Mdy + dy - B) / 2dx)
+
+Now let's try the Y coordinates, we have the same 4 cases.
+
+Case 5: X major, starting Y coordinate moved by N steps
+
+		-2dx <= 2Mdy - 2Ndx - dx - B < 0
+	2Mdy >= 2Ndx + dx + B - 2dx	2Mdy < 2Ndx + dx + B
+	2Mdy >= 2Ndx - dx + B		M < (2Ndx + dx + B) / 2dy
+	M >= (2Ndx - dx + B) / 2dy
+
+Since we are trying to find the smallest M, we use the >= inequality:
+
+	M = ceiling((2Ndx - dx + B) / 2dy)
+	  = floor((2Ndx - dx + B + 2dy - 1) / 2dy)
+	  = floor((2Ndx - dx + B - 1) / 2dy) + 1
+
+Case 5b: X major, ending Y coordinate moved to N steps
+
+Same derivations as Case 5, but we want the largest M that satisfies
+the equations, so we use the < inequality:
+
+	M = ceiling((2Ndx + dx + B) / 2dy) - 1
+	  = floor((2Ndx + dx + B + 2dy - 1) / 2dy) - 1
+	  = floor((2Ndx + dx + B + 2dy - 1 - 2dy) / 2dy)
+	  = floor((2Ndx + dx + B - 1) / 2dy)
+
+Case 6: X major, ending Y coordinate moved by N steps
+
+		-2dx <= 2(dx - M)dy - 2(dy - N)dx - dx - B < 0
+		-2dx <= 2dxdy - 2Mdy - 2dxdy + 2Ndx - dx - B < 0
+		-2dx <= 2Ndx - 2Mdy - dx - B < 0
+	2Mdy <= 2Ndx - dx - B + 2dx	2Mdy > 2Ndx - dx - B
+	2Mdy <= 2Ndx + dx - B		M > (2Ndx - dx - B) / 2dy
+	M <= (2Ndx + dx - B) / 2dy
+
+Largest # of X steps means smallest M, so use the > inequality:
+
+	M = floor((2Ndx - dx - B) / 2dy) + 1
+
+Case 6b: X major, starting Y coordinate moved to N steps from end
+
+Same derivations as Case 6, but we want the smallest # of X steps
+which means the largest M, so use the <= inequality:
+
+	M = floor((2Ndx + dx - B) / 2dy)
+
+Case 7: Y major, starting Y coordinate moved by N steps
+
+		-2dy <= 2Ndx - 2Mdy - dy - B < 0
+	2Mdy <= 2Ndx - dy - B + 2dy	2Mdy > 2Ndx - dy - B
+	2Mdy <= 2Ndx + dy - B		M > (2Ndx - dy - B) / 2dy
+	M <= (2Ndx + dy - B) / 2dy
+
+To find the smallest M, use the > inequality:
+
+	M = floor((2Ndx - dy - B) / 2dy) + 1
+	  = floor((2Ndx - dy - B + 2dy) / 2dy)
+	  = floor((2Ndx + dy - B) / 2dy)
+
+Case 7b: Y major, ending Y coordinate moved to N steps
+
+Same derivations as Case 7, but we want the largest M that satisfies
+the equations, so use the <= inequality:
+
+	M = floor((2Ndx + dy - B) / 2dy)
+
+Case 8: Y major, ending Y coordinate moved by N steps
+
+		-2dy <= 2(dy - N)dx - 2(dx - M)dy - dy - B < 0
+		-2dy <= 2dxdy - 2Ndx - 2dxdy + 2Mdy - dy - B < 0
+		-2dy <= 2Mdy - 2Ndx - dy - B < 0
+	2Mdy >= 2Ndx + dy + B - 2dy	2Mdy < 2Ndx + dy + B
+	2Mdy >= 2Ndx - dy + B		M < (2Ndx + dy + B) / 2dy
+	M >= (2Ndx - dy + B) / 2dy
+
+To find the highest X steps, find the smallest M, use the >= inequality:
+
+	M = ceiling((2Ndx - dy + B) / 2dy)
+	  = floor((2Ndx - dy + B + 2dy - 1) / 2dy)
+	  = floor((2Ndx + dy + B - 1) / 2dy)
+
+Case 8b: Y major, starting Y coordinate moved to N steps from the end
+
+Same derivations as Case 8, but we want to find the smallest # of X
+steps which means the largest M, so we use the < inequality:
+
+	M = ceiling((2Ndx + dy + B) / 2dy) - 1
+	  = floor((2Ndx + dy + B + 2dy - 1) / 2dy) - 1
+	  = floor((2Ndx + dy + B + 2dy - 1 - 2dy) / 2dy)
+	  = floor((2Ndx + dy + B - 1) / 2dy)
+
+So, our equations are:
+
+	1:  X major move x1 to x1+M	floor((2Mdy + dx - B) / 2dx)
+	1b: X major move x2 to x1+M	floor((2Mdy + dx - B) / 2dx)
+	2:  X major move x2 to x2-M	floor((2Mdy + dx + B - 1) / 2dx)
+	2b: X major move x1 to x2-M	floor((2Mdy + dx + B - 1) / 2dx)
+
+	3:  Y major move x1 to x1+M	floor((2Mdy - dy + B - 1) / 2dx) + 1
+	3b: Y major move x2 to x1+M	floor((2Mdy + dy + B - 1) / 2dx)
+	4:  Y major move x2 to x2-M	floor((2Mdy - dy - B) / 2dx) + 1
+	4b: Y major move x1 to x2-M	floor((2Mdy + dy - B) / 2dx)
+
+	5:  X major move y1 to y1+N	floor((2Ndx - dx + B - 1) / 2dy) + 1
+	5b: X major move y2 to y1+N	floor((2Ndx + dx + B - 1) / 2dy)
+	6:  X major move y2 to y2-N	floor((2Ndx - dx - B) / 2dy) + 1
+	6b: X major move y1 to y2-N	floor((2Ndx + dx - B) / 2dy)
+
+	7:  Y major move y1 to y1+N	floor((2Ndx + dy - B) / 2dy)
+	7b: Y major move y2 to y1+N	floor((2Ndx + dy - B) / 2dy)
+	8:  Y major move y2 to y2-N	floor((2Ndx + dy + B - 1) / 2dy)
+	8b: Y major move y1 to y2-N	floor((2Ndx + dy + B - 1) / 2dy)
+
+We have the following constraints on all of the above terms:
+
+	0 < M,N <= 2^15		 2^15 can be imposed by miZeroClipLine
+	0 <= dx/dy <= 2^16 - 1
+	0 <= B <= 1
+
+The floor in all of the above equations can be accomplished with a
+simple C divide operation provided that both numerator and denominator
+are positive.
+
+Since dx,dy >= 0 and since moving an X coordinate implies that dx != 0
+and moving a Y coordinate implies dy != 0, we know that the denominators
+are all > 0.
+
+For all lines, (-B) and (B-1) are both either 0 or -1, depending on the
+bias.  Thus, we have to show that the 2MNdxy +/- dxy terms are all >= 1
+or > 0 to prove that the numerators are positive (or zero).
+
+For X Major lines we know that dx > 0 and since 2Mdy is >= 0 due to the
+constraints, the first four equations all have numerators >= 0.
+
+For the second four equations, M > 0, so 2Mdy >= 2dy so (2Mdy - dy) >= dy
+So (2Mdy - dy) > 0, since they are Y major lines.  Also, (2Mdy + dy) >= 3dy
+or (2Mdy + dy) > 0.  So all of their numerators are >= 0.
+
+For the third set of four equations, N > 0, so 2Ndx >= 2dx so (2Ndx - dx)
+>= dx > 0.  Similarly (2Ndx + dx) >= 3dx > 0.  So all numerators >= 0.
+
+For the fourth set of equations, dy > 0 and 2Ndx >= 0, so all numerators
+are > 0.
+
+To consider overflow, consider the case of 2 * M,N * dx,dy + dx,dy.  This
+is bounded <= 2 * 2^15 * (2^16 - 1) + (2^16 - 1)
+	   <= 2^16 * (2^16 - 1) + (2^16 - 1)
+	   <= 2^32 - 2^16 + 2^16 - 1
+	   <= 2^32 - 1
+Since the (-B) and (B-1) terms are all 0 or -1, the maximum value of
+the numerator is therefore (2^32 - 1), which does not overflow an unsigned
+32 bit variable.
+
+*/
 
 #define MIOUTCODES(outcode, x, y, xmin, ymin, xmax, ymax) \
 {\
