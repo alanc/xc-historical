@@ -1,11 +1,22 @@
 #include "copyright.h"
 
-/* $XConsortium: XQuTextE16.c,v 11.11 89/01/11 18:04:45 converse Exp $ */
+/* $XConsortium: XQuTextE16.c,v 11.12 89/11/08 17:07:46 converse Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986, 1987	*/
 
 #define NEED_REPLIES
 #include "Xlibint.h"
 
+#if NeedFunctionPrototypes
+XQueryTextExtents16 (
+    register Display *dpy,
+    Font fid,
+    const XChar2b *string,
+    register int nchars,
+    int *dir,
+    int *font_ascent,
+    int *font_descent,
+    register XCharStruct *overall)
+#else
 XQueryTextExtents16 (dpy, fid, string, nchars, dir, font_ascent, font_descent,
                      overall)
     register Display *dpy;
@@ -15,6 +26,7 @@ XQueryTextExtents16 (dpy, fid, string, nchars, dir, font_ascent, font_descent,
     int *dir;
     int *font_ascent, *font_descent;
     register XCharStruct *overall;
+#endif
 {
     register long i;
     register unsigned char *ptr;
