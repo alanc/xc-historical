@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: init.c,v 2.10 88/01/25 13:53:43 swick Locked $";
+static char rcs_id[] = "$Header: init.c,v 2.11 88/02/06 09:52:47 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -148,8 +148,9 @@ char **argv;
 
     homeDir = MallocACopy(getenv("HOME"));
 
-    XtGetSubresources(toplevel, (caddr_t) NULL, progName, "Xmh",
-		      resources, XtNumber(resources), NULL, (Cardinal) 0);
+    XtGetApplicationResources( toplevel, (caddr_t) NULL,
+			       resources, XtNumber(resources),
+			       NULL, (Cardinal)0 );
 
     if (!mailDir) {
 	(void) sprintf(str, "%s/.mh_profile", homeDir);
