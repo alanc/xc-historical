@@ -57,9 +57,11 @@ EXPORTS
  XClipBox
  XCloseDisplay
  XCloseIM
+ XCloseOM
  XConfigureWindow
  XConnectionNumber
  XContextDependentDrawing
+ XContextualDrawing
  XConvertCase
  XConvertSelection
  XCopyArea
@@ -74,6 +76,7 @@ EXPORTS
  XCreateGlyphCursor
  XCreateIC
  XCreateImage
+ XCreateOC
  XCreatePixmap
  XCreatePixmapCursor
  XCreatePixmapFromBitmapData
@@ -98,9 +101,11 @@ EXPORTS
  XDeleteProperty
  XDestroyIC
  XDestroyImage
+ XDestroyOC
  XDestroyRegion
  XDestroySubwindows
  XDestroyWindow
+ XDirectionalDependentDrawing
  XDisableAccessControl
  XDisplayCells
  XDisplayHeight
@@ -109,6 +114,7 @@ EXPORTS
  XDisplayMotionBufferSize
  XDisplayName
  XDisplayOfIM
+ XDisplayOfOM
  XDisplayOfScreen
  XDisplayPlanes
  XDisplayString
@@ -206,6 +212,8 @@ EXPORTS
  XGetModifierMapping
  XGetMotionEvents
  XGetNormalHints
+ XGetOCValues
+ XGetOMValues
  XGetPixel
  XGetPointerControl
  XGetPointerMapping
@@ -266,6 +274,7 @@ EXPORTS
  XLoadQueryFont
  XLocaleOfFontSet
  XLocaleOfIM
+ XLocaleOfOM
  XLockDisplay
  XLookupColor
  XLookupKeysym
@@ -285,9 +294,11 @@ EXPORTS
  XNextEvent
  XNextRequest
  XNoOp
+ XOMOfOC
  XOffsetRegion
  XOpenDisplay
  XOpenIM
+ XOpenOM
  XParseColor
  XParseGeometry
  XPeekEvent
@@ -368,6 +379,7 @@ EXPORTS
  XSetGraphicsExposures
  XSetICFocus
  XSetICValues
+ XSetIMValues
  XSetIOErrorHandler
  XSetIconName
  XSetIconSizes
@@ -376,6 +388,8 @@ EXPORTS
  XSetLocaleModifiers
  XSetModifierMapping
  XSetNormalHints
+ XSetOCValues
+ XSetOMValues
  XSetPlaneMask
  XSetPointerMapping
  XSetRGBColormaps
@@ -428,8 +442,6 @@ EXPORTS
  XTextWidth
  XTextWidth16
  XTranslateCoordinates
- XTranslateKey
- XTranslateKeySym
  XUndefineCursor
  XUngrabButton
  XUngrabKey
@@ -535,6 +547,7 @@ EXPORTS
  XkbEnlargeKeyActions
  XkbEnlargeKeySymbols
  XkbGetAutoRepeatRate
+ XkbGetCompatMap
  XkbGetControls
  XkbGetIndicatorMap
  XkbGetIndicatorState
@@ -554,11 +567,15 @@ EXPORTS
  XkbLatchModifiers
  XkbLibraryVersion
  XkbLockModifiers
+ XkbLookupKeyBinding
+ XkbNoteCoreMapChanges
+ XkbNoteMapChanges
  XkbQueryExtension
  XkbRefreshMap
  XkbSelectEventDetails
  XkbSelectEvents
  XkbSetAutoRepeatRate
+ XkbSetCompatMap
  XkbSetControls
  XkbSetDebuggingFlags
  XkbSetIndicatorMap
@@ -566,6 +583,9 @@ EXPORTS
  XkbSetMap
  XkbSetNames
  XkbSetServerInternalMods
+ XkbToControl
+ XkbTranslateKey
+ XkbTranslateKeySym
  XkbUseExtension
  XmbDrawImageString
  XmbDrawString
