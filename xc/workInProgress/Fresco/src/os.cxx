@@ -1,5 +1,5 @@
 /*
- * $XConsortium: os.cxx,v 1.9 94/04/01 16:48:03 matt Exp $
+ * $XConsortium: os.cxx,v 1.10 94/06/03 21:38:55 matt Exp matt $
  */
 
 /*
@@ -57,8 +57,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#if !defined(__DECCXX) && !defined(__hpux)
-#include <sysent.h>		/* DEC and HP don't ahve sysent.h */
+#if !defined(__osf__) && !defined(__hpux) && !defined(__GNUC__)
+#include <sysent.h>		/* DEC, HP and g++ don't have sysent.h */
 #endif
 #include <unistd.h>
 
@@ -82,10 +82,12 @@
 #include <sys/utsname.h>
 #endif
 
-#if !defined(NEED_UTSNAME) && (defined(AIXV3) || defined(__alpha))
+#if !defined(NEED_UTSNAME) 
+#if defined(AIXV3) || defined(__osf__) || defined(__GNUC__)
 extern "C" {
     int gethostname(char *, int);
 }
+#endif
 #endif
 
 /*
