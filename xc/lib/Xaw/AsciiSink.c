@@ -1,7 +1,6 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.30 89/05/11 01:04:36 kit Exp $";
-#endif /* lint */
-
+#if (!defined(lint) && !defined(SABER))
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.100 89/07/27 17:50:48 kit Exp $";
+#endif /* lint && SABER */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -83,6 +82,8 @@ static int CharWidth (w, x, c)
     AsciiSinkData *data = (AsciiSinkData*) ((TextWidget)w)->text.sink->data;
     int     width, nonPrinting;
     XFontStruct *font = data->font;
+
+    x -= ((TextWidget) w)->text.margin.left; /* Compensate for left margin. */
 
     if (c == '\t') {
 	int i;
@@ -189,14 +190,12 @@ static /*void*/ AsciiDisplayText (w, x, y, pos1, pos2, highlight)
 #define insertCursor_height 3
 static char insertCursor_bits[] = {0x0c, 0x1e, 0x33};
 
-#ifdef SERVERNOTBROKEN
 static Pixmap CreateInsertCursor(s)
 Screen *s;
 {
     return (XCreateBitmapFromData (DisplayOfScreen(s), RootWindowOfScreen(s),
         insertCursor_bits, insertCursor_width, insertCursor_height));
 }
-#endif
 
 /*
  * The following procedure manages the "insert" cursor.
@@ -218,20 +217,10 @@ static AsciiInsertCursor (w, x, y, state)
 */
 
     if (state != data->laststate && XtIsRealized(w)) {
-#ifdef SERVERNOTBROKEN
 	XCopyPlane(XtDisplay(w),
 		  data->insertCursorOn, XtWindow(w),
 		  data->xorgc, 0, 0, insertCursor_width, insertCursor_height,
 		  x - (insertCursor_width >> 1), y - (insertCursor_height), 1);
-#else /* SERVER is BROKEN */
-	/*
-	 * See the comment down at the bottom where the pixmap gets built
-	 * for why we are doing this this way.
-	 */
-	XCopyArea (XtDisplay(w), data->insertCursorOn, XtWindow (w),
-		   data->xorgc, 0, 0, insertCursor_width, insertCursor_height,
-		   x - (insertCursor_width >> 1), y - (insertCursor_height));
-#endif /* SERVERNOTBROKEN */
     }
     data->laststate = state;
 }
@@ -245,13 +234,7 @@ static AsciiClearToBackground (w, x, y, width, height)
   Position x, y;
   Dimension width, height;
 {
-#ifndef USE_CLEAR_AREA
-    XFillRectangle(XtDisplay(w), XtWindow(w),
-		   ((AsciiSinkData*)((TextWidget)w)->text.sink->data)->invgc,
-		   x, y, width, height);
-#else
     XClearArea(XtDisplay(w), XtWindow(w), x, y, width, height, False);
-#endif /*USE_CLEAR_AREA*/
 }
 
 /*
@@ -301,7 +284,7 @@ static AsciiFindPosition(w, fromPos, fromx, width, stopAtWordBreak,
 			 resPos, resWidth, resHeight)
   Widget w;
   XawTextPosition fromPos; 	/* Starting position. */
-  int fromx;			/* Horizontal location of starting position. */
+  int fromx;			/* Horizontal location of starting position.*/
   int width;			/* Desired width. */
   int stopAtWordBreak;		/* Whether the resulting position should be at
 				   a word break. */
@@ -354,22 +337,29 @@ static AsciiFindPosition(w, fromPos, fromx, width, stopAtWordBreak,
     *resHeight = data->font->ascent + data->font->descent;
 }
 
+/*	Function Name: AsciiResolveToPosition
+ *	Description: Resolves an x location into a position.
+ *	Arguments: w - The text widget.
+ *                 pos - The position at the reference location.
+ *                 ref_x - A reference location for the position "pos".
+ *                 x - The x location that we need the position for.
+ *	Returns: The position corrosponding to the X location.
+ */
 
-static int AsciiResolveToPosition (w, pos, fromx, width,
-				   leftPos, rightPos)
-  Widget w;
-  XawTextPosition pos;
-  int fromx,width;
-  XawTextPosition *leftPos, *rightPos;
+static XawTextPosition
+AsciiResolveToPosition (w, pos, ref_x, x)
+Widget w;
+XawTextPosition pos;
+Position ref_x, x;
 {
-    int     resWidth, resHeight;
-    XawTextSource source = ((TextWidget)w)->text.source;
+  int resWidth, resHeight, width = x - ref_x;
+  XawTextSource src = ((TextWidget)w)->text.source;
+  XawTextPosition ret_pos;
 
-    AsciiFindPosition(w, pos, fromx, width, FALSE,
-	    leftPos, &resWidth, &resHeight);
-    if (*leftPos > GETLASTPOS)
-	*leftPos = GETLASTPOS;
-    *rightPos = *leftPos;
+  AsciiFindPosition(w, pos, ref_x, width,
+		    FALSE, &ret_pos, &resWidth, &resHeight);
+
+  return (ret_pos);
 }
 
 
@@ -396,10 +386,10 @@ static int AsciiMaxHeightForLines (w, lines)
     return(lines * (data->font->ascent + data->font->descent));
 }
 
-
+/* ARGSUSED */
 static void AsciiSetTabs (w, offset, tab_count, tabs)
   Widget w;			/* for context */
-  Position offset;		/* from left, for margin */
+  Position offset;		/* UNUSED.*/
   int tab_count;		/* count of entries in tabs */
   Position *tabs;		/* list of character positions */
 {
@@ -408,12 +398,10 @@ static void AsciiSetTabs (w, offset, tab_count, tabs)
 
     if (tab_count > data->tab_count) {
 	data->tabs = (Position*)XtRealloc(data->tabs,
-				    (unsigned)tab_count * sizeof(Position*));
+				    (unsigned)tab_count * sizeof(Position));
     }
     
-    for (i=0; i < tab_count; i++) {
-	data->tabs[i] = offset + tabs[i] * data->em;
-    }
+    for (i=0; i < tab_count; i++) data->tabs[i] = tabs[i] * data->em;
     data->tab_count = tab_count;
 }
 
@@ -431,6 +419,7 @@ XawTextSink XawAsciiSinkCreate (parent, args, num_args)
     XGCValues values;
     long wid;
     XFontStruct *font;
+    Atom XA_FIGURE_WIDTH;
 
     if (!buf) buf = XtMalloc(bufferSize);
 
@@ -466,12 +455,13 @@ XawTextSink XawAsciiSinkCreate (parent, args, num_args)
     values.background = 0;
     data->xorgc = XtGetGC(parent, valuemask, &values);
 
-
+    XA_FIGURE_WIDTH = XInternAtom(XtDisplay(parent), "FIGURE_WIDTH", FALSE);
     wid = -1;
-    if ((!XGetFontProperty(font, XA_QUAD_WIDTH, &wid)) || wid <= 0) {
-	if (font->per_char && font->min_char_or_byte2 <= '0' &&
-	    		      font->max_char_or_byte2 >= '0')
-	    wid = font->per_char['0' - font->min_char_or_byte2].width;
+    if ( (XA_FIGURE_WIDTH != NULL) && 
+	((!XGetFontProperty(font, XA_FIGURE_WIDTH, &wid)) || wid <= 0) ) {
+        if (font->per_char && font->min_char_or_byte2 <= '$' &&
+	    		      font->max_char_or_byte2 >= '$')
+	    wid = font->per_char['$' - font->min_char_or_byte2].width;
 	else
 	    wid = font->max_bounds.width;
     }
@@ -481,50 +471,7 @@ XawTextSink XawAsciiSinkCreate (parent, args, num_args)
 	data->em = wid;
 
     data->font = font;
-#ifdef SERVERNOTBROKEN
     data->insertCursorOn = CreateInsertCursor(XtScreen(parent));
-#else
-    /*
-     * This is the work around for not being able to do CopyPlane with XOR.
-     * However, there is another bug which doesn't let us use the new
-     * CreatePixmapFromBitmapData routine to build the pixmap that we will
-     * use CopyArea with.
-     */
-#ifdef SERVERNOTBROKEN2
-    data->insertCursorOn =
-      XCreatePixmapFromBitmapData (XtDisplay (parent), 
-				   RootWindowOfScreen(XtScreen(parent)),
-				   insertCursor_bits, insertCursor_width,
-				   insertCursor_height, data->foreground,
-				   parent->core.background_pixel,
-				   parent->core.depth);
-#else /* SERVER is BROKEN the second way */
-    {
-	Screen *screen = XtScreen (parent);
-	Display *dpy = XtDisplay (parent);
-	Window root = RootWindowOfScreen(screen);
-	Pixmap bitmap = XCreateBitmapFromData (dpy, root, insertCursor_bits,
-					       insertCursor_width,
-					       insertCursor_height);
-	Pixmap pixmap = XCreatePixmap (dpy, root, insertCursor_width,
-				       insertCursor_height,
-				       DefaultDepthOfScreen (screen));
-	XGCValues gcv;
-	GC gc;
-
-	gcv.function = GXcopy;
-	gcv.foreground = data->foreground ^ parent->core.background_pixel;
-	gcv.background = 0;
-	gcv.graphics_exposures = False;
-	gc = XtGetGC (parent, (GCFunction | GCForeground | GCBackground |
-			       GCGraphicsExposures), &gcv);
-	XCopyPlane (dpy, bitmap, pixmap, gc, 0, 0, insertCursor_width,
-		    insertCursor_height, 0, 0, 1);
-	XtDestroyGC (gc);
-	data->insertCursorOn = pixmap;
-    }
-#endif /* SERVERNOTBROKEN2 */
-#endif /* SERVERNOTBROKEN */
     data->laststate = XawisOff;
     data->tab_count = 0;
     data->tabs = NULL;

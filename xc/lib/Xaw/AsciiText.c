@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.24 89/07/17 18:09:14 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.25 89/07/21 19:55:38 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -133,8 +133,9 @@ Cardinal *num_args;
     (*w->text.source->Scan) ( w->text.source, 0, XawstAll,
 			     XawsdRight, 1, TRUE );
 
+
   if (w->core.height == DEFAULT_TEXT_HEIGHT)
-    w->core.height = (2*yMargin) + 2 + (*w->text.sink->MaxHeight)(widget, 1);
+    w->core.height = VMargins(w) + (*w->text.sink->MaxHeight)(widget, 1);
 
     if (w->text.sink->SetTabs != NullProc) {
 #define TAB_COUNT 32
@@ -144,7 +145,7 @@ Cardinal *num_args;
 	for (i=0, tab=0; i<TAB_COUNT;i++) {
 	    tabs[i] = (tab += 8);
 	}
-	(w->text.sink->SetTabs)(widget, w->text.leftmargin, TAB_COUNT, tabs);
+	(w->text.sink->SetTabs)(widget, 0, TAB_COUNT, tabs);
 #undef TAB_COUNT
     }
 

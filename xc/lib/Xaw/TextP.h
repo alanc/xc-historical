@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.36 89/07/21 19:57:32 kit Exp $
+* $XConsortium: TextP.h,v 1.37 89/07/27 17:50:38 kit Exp $
 */
 
 
@@ -60,21 +60,29 @@ extern Cardinal textActionsTableCount;
 
 /* constants that subclasses may want to know */
 #define DEFAULT_TEXT_HEIGHT ((Dimension)~0)
-#define  yMargin 2
 
 /* displayable text management data structures */
 
 typedef struct {
-    XawTextPosition position;
-    Position x, y, endX;
-    } XawTextLineTableEntry, *XawTextLineTableEntryPtr;
+  XawTextPosition position;
+  Position y;
+  Dimension textWidth;
+} XawTextLineTableEntry, *XawTextLineTableEntryPtr;
 
 /* Line Tables are n+1 long - last position displayed is in last lt entry */
 typedef struct {
-    XawTextPosition	 top;	/* Top of the displayed text.		*/
-    int			 lines;	/* How many lines in this table.	*/
-    XawTextLineTableEntry *info;/* A dynamic array, one entry per line  */
+  XawTextPosition	 top;	/* Top of the displayed text.		*/
+  int			 lines;	/* How many lines in this table.	*/
+  XawTextLineTableEntry *info;  /* A dynamic array, one entry per line  */
 } XawTextLineTable, *XawTextLineTablePtr;
+
+
+typedef struct _XawTextMargin {
+  Position left, right, top, bottom;
+} XawTextMargin;
+
+#define VMargins(ctx) ( (ctx)->text.margin.top + (ctx)->text.margin.bottom )
+#define HMargins(ctx) ( (ctx)->text.margin.left + (ctx)->text.margin.right )
 
 #define IsPositionVisible(ctx, pos) \
 		(pos >= ctx->text.lt.info[0].position && \
@@ -125,7 +133,6 @@ typedef struct _TextPart {
     XawTextPosition	insertPos;
     XawTextSelection	s;
     XawTextSelectType	*sarray;	   /* Array to cycle for selections. */
-    Dimension		client_leftmargin;   /* client-visible resource */
     int			options;	     /* wordbreak, scroll, etc. */
     int			dialog_horiz_offset; /* position for popup dialog */
     int			dialog_vert_offset;  /* position for popup dialog */
@@ -134,18 +141,18 @@ typedef struct _TextPart {
     XawTextScrollMode   scroll_vert, scroll_horiz; /*what type of scrollbars.*/
     XawTextWrapMode     wrap;            /* The type of wrapping. */
     XawTextResizeMode   resize;	             /* what to resize */
-
+    XawTextMargin       r_margin;            /* The real margins. */
+    
     /* private state */
 
+    XawTextMargin       margin;            /* The current margins. */
     XawTextLineTable	lt;
     XawTextScanDirection extendDir;
     XawTextSelection	origSel;    /* the selection being modified */
-    Dimension	    leftmargin;	    /* Width of left margin. */
     Time	    lasttime;	    /* timestamp of last processed action */
     Time	    time;	    /* time of last key or button action */ 
     Position	    ev_x, ev_y;	    /* x, y coords for key or button action */
-    Widget	    sbar;	    /* The vertical scroll bar (none = 0).  */
-    Widget	    outer;	    /* Parent of scrollbar & text (if any) */
+    Widget	    vbar, hbar;	    /* The scroll bars (none = NULL). */
     struct SearchAndReplace * search;/* Search and replace structure. */
     Widget          file_insert;    /* The file insert popup widget. */
     XawTextPosition  *updateFrom;   /* Array of start positions for update. */

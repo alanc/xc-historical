@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.27 89/07/21 01:39:41 kit Exp $
+* $XConsortium: Text.h,v 1.28 89/07/27 17:50:43 kit Exp $
 */
 
 
@@ -81,6 +81,7 @@ SOFTWARE.
 #define XtEtextResizeBoth "both"
 
 #define XtNautoFill "autoFill"
+#define XtNbottomMargin "bottomMargin"
 #define XtNdialogHOffset "dialogHOffset"
 #define XtNdialogVOffset "dialogVOffset"
 #define XtNdisplayCaret "displayCaret"
@@ -90,10 +91,12 @@ SOFTWARE.
 #define XtNinsertPosition "insertPosition"
 #define XtNleftMargin "leftMargin"
 #define XtNresize "resize"
+#define XtNrightMargin "rightMargin"
 #define XtNscrollVertical "scrollVertical"
 #define XtNscrollHorizontal "scrollHorizontal"
 #define XtNselectTypes "selectTypes"
 #define XtNselection "selection"
+#define XtNtopMargin "topMargin"
 #define XtNwrap "wrap"
 
 /* preserved for Back Compatability only. */

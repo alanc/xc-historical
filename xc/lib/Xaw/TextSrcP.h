@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSrcP.h,v 1.9 89/07/10 17:38:13 kit Exp $
+* $XConsortium: TextSrcP.h,v 1.10 89/07/24 14:52:13 kit Exp $
 */
 
 
@@ -61,7 +61,7 @@ typedef struct _XawTextSink {
     int (*ClearToBackground)();
     int (*FindPosition)();
     int (*FindDistance)();
-    int (*Resolve)();
+    XawTextPosition (*Resolve)(); /* ||| INTERFACE CHANGE FOR R4. */
     int (*MaxLines)();
     int (*MaxHeight)();
     void (*SetTabs)();		/* widget, offset, tab_count, *tabs */
