@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.177 89/12/12 11:50:10 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.178 89/12/12 12:13:33 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -1639,29 +1639,29 @@ extern int XScreenNumberOfScreen(
 #endif
 );
 
-typedef int XErrorHandler (	/* WARNING, this type not part of Xlib spec */
+typedef int (*XErrorHandler) (	    /* WARNING, this type not in Xlib spec */
 #if NeedFunctionPrototypes
     Display*		/* display */,
     XErrorEvent*	/* error_event */
 #endif
 );
 
-extern XErrorHandler *XSetErrorHandler (
+extern XErrorHandler XSetErrorHandler (
 #if NeedFunctionPrototypes
-    XErrorHandler*	/* handler */
+    XErrorHandler	/* handler */
 #endif
 );
 
 
-typedef int XIOErrorHandler (	/* WARNING, this type not part of Xlib spec */
+typedef int (*XIOErrorHandler) (    /* WARNING, this type not in Xlib spec */
 #if NeedFunctionPrototypes
     Display*		/* display */
 #endif
 );
 
-extern XIOErrorHandler *XSetIOErrorHandler (
+extern XIOErrorHandler XSetIOErrorHandler (
 #if NeedFunctionPrototypes
-    XIOErrorHandler*	/* handler */
+    XIOErrorHandler	/* handler */
 #endif
 );
 
