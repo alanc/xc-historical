@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.87 92/08/15 14:22:26 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.88 92/08/18 19:04:43 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -2101,7 +2101,6 @@ void
 do_display(buf)
     char *buf;
 {
-    Display *ndpy;
     char name[1024];
 
     if (*buf++ != 'D')
