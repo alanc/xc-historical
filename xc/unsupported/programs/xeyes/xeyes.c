@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xeyes.c,v 1.6 89/04/09 12:23:15 rws Exp $";
+static char rcsid[] = "$XConsortium: xeyes.c,v 1.7 89/07/21 13:49:01 jim Exp $";
 #endif /* lint */
 
 #include <X11/Intrinsic.h>
@@ -9,7 +9,7 @@ static char rcsid[] = "$XConsortium: xeyes.c,v 1.6 89/04/09 12:23:15 rws Exp $";
 #include "Eyes.h"
 #include <stdio.h> 
 #include "eyes.bit"
-#include "eyes_mask.bit"
+#include "eyesmask.bit"
 
 extern void exit();
 
@@ -68,7 +68,7 @@ void main(argc, argv)
     XtSetArg (arg[i], XtNiconMask, 
 	      XCreateBitmapFromData (XtDisplay(toplevel),
 				     XtScreen(toplevel)->root,
-				     eyes_mask_bits, eyes_mask_width, eyes_mask_height));
+				     eyesmask_bits, eyesmask_width, eyesmask_height));
     i++;
     XtSetValues (toplevel, arg, i);
 
