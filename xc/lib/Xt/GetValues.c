@@ -1,4 +1,4 @@
-/* $XConsortium: GetValues.c,v 1.6 90/12/03 17:52:15 converse Exp $ */
+/* $XConsortium: GetValues.c,v 1.7 90/12/04 10:04:03 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -62,7 +62,7 @@ static void GetValues(base, res, num_resources, args, num_args)
 		 */
 		if ((*xrmres)->xrm_type == QCallback) {
 		    XtCallbackList callback = _XtGetCallbackList(
-			      *(InternalCallbackList *)
+			      (InternalCallbackList *)
 			      (base - (*xrmres)->xrm_offset - 1));
 		    _XtCopyToArg(
 			      (char*)&callback, &arg->value,
@@ -148,7 +148,6 @@ void XtGetValues(w, args, num_args)
     register Cardinal num_args;
 {
     WidgetClass wc = XtClass(w);
-    XtPointer garbage;
 
     if (num_args == 0) return;
     if ((args == NULL) && (num_args != 0)) {
@@ -156,14 +155,6 @@ void XtGetValues(w, args, num_args)
 		"invalidArgCount","xtGetValues",XtCXtToolkitError,
             "Argument count > 0 on NULL argument list in XtGetValues",
               (String *)NULL, (Cardinal *)NULL);
-    }
-
-    /* Do garbage collection of previous GetValues on callbacks */
-    garbage = XtGarbageCollection;
-    while (garbage != NULL) {
-      XtGarbageCollection = * (XtPointer *) garbage;
-      XtFree((char *) garbage);
-      garbage = XtGarbageCollection;
     }
 
     /* Get widget values */
