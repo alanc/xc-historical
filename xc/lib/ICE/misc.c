@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.14 94/01/31 11:01:35 mor Exp $ */
+/* $XConsortium: misc.c,v 1.15 94/02/06 14:26:10 rws Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -354,7 +354,21 @@ register char	 *ptr;
     }
 }
 
+#ifdef WORD64
+IceWriteData16(iceConn, nbytes, data)
+    IceConn iceConn;
+    unsigned long nbytes;
+    short  *data;
+{
+}
 
+IceWriteData32(iceConn, nbytes, data)
+    IceConn iceConn;
+    unsigned long  nbytes;
+    int	 *data;
+{
+}
+#endif WORD64
 
 void
 _IceAddOpcodeMapping (iceConn, hisOpcode, myOpcode)
