@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scroll.c,v 1.53 89/11/09 16:15:12 kit Exp $";
+    "$XConsortium: Scroll.c,v 1.54 89/11/09 16:31:25 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -369,7 +369,7 @@ static void Initialize( request, new )
     SetDimensions( w );
     w->scrollbar.direction = 0;
     w->scrollbar.topLoc = 0;
-    w->scrollbar.shownLength = 0;
+    w->scrollbar.shownLength = w->scrollbar.min_thumb;
 }
 
 static void Realize( gw, valueMask, attributes )
@@ -714,9 +714,10 @@ static void NotifyThumb( gw, event, params, num_params )
 
 /* Set the scroll bar to the given location. */
 
-extern void XawScrollBarSetThumb( gw, top, shown )
-  Widget gw;
-  float top, shown;
+extern void 
+XawScrollbarSetThumb( gw, top, shown )
+Widget gw;
+float top, shown;
 {
     ScrollbarWidget w = (ScrollbarWidget)gw;
 
