@@ -1,22 +1,23 @@
 #include "x11perf.h"
 
 static Window w;
-static char **charBuf = NULL;
+static char **charBuf;
 static GC fggc, bggc;
 static XFontStruct *font, *bfont;
 static int height, ypos;
 static XTextItem *items;
+static int charsPerLine, totalLines;
 
 #define XPOS 20
 #define SEGMENTS 3
-#define STARTBOLD 20
-#define NUMBOLD 20
+
 
 Bool InitText(d, p)
     Display *d;
     Parms p;
 {
     int     i, j;
+    char    ch;
     XGCValues gcv;
 
     font = XLoadQueryFont (d, p->font);
@@ -41,36 +42,42 @@ Bool InitText(d, p)
 	if (h > height)
 	    height = h;
     }
-    CreatePerfStuff (d, 1, 800, HEIGHT, &w, &bggc, &fggc);
+    CreatePerfStuff (d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
     gcv.font = font->fid;
     XChangeGC (d, fggc, GCFont, &gcv);
     XChangeGC (d, bggc, GCFont, &gcv);
 
-    if (charBuf == NULL) {
-	charBuf = (char **) malloc(p->reps*sizeof (char *));
-	if (p->special)
-	    items = (XTextItem *) malloc(p->reps*SEGMENTS*sizeof (XTextItem));
-	else
-	    items = NULL;
-	for (i = 0; i < p->reps; i++) {
-	    charBuf[i] = (char *) malloc (sizeof (char)*CHARS);
-	    for (j = 0; j < CHARS; j++) {
-		charBuf[i][j] = ' ' + (rand () % ('\177' - ' '));
-		if (p->special) {
-		    items[i*SEGMENTS+0].chars = &(charBuf[i][0]);
-		    items[i*SEGMENTS+0].nchars = STARTBOLD;
-		    items[i*SEGMENTS+0].delta = 0;
-		    items[i*SEGMENTS+0].font = font->fid;
-		    items[i*SEGMENTS+1].chars = &(charBuf[i][STARTBOLD]);
-		    items[i*SEGMENTS+1].nchars = NUMBOLD;
-		    items[i*SEGMENTS+1].delta = 3;
-		    items[i*SEGMENTS+1].font = bfont->fid;
-		    items[i*SEGMENTS+2].chars = &(charBuf[i][STARTBOLD + NUMBOLD]);
-		    items[i*SEGMENTS+2].nchars = CHARS - (STARTBOLD + NUMBOLD);
-		    items[i*SEGMENTS+2].delta = 3;
-		    items[i*SEGMENTS+2].font = font->fid;
-		}
-	    }
+    charsPerLine = p->objects;
+    charsPerLine = (charsPerLine + 3) & ~3;
+    p->objects = charsPerLine;
+
+    totalLines = '\177' - ' ' + 1;
+    if (totalLines > p->reps) totalLines = p->reps;
+
+    charBuf = (char **) malloc(totalLines*sizeof (char *));
+    if (p->special)
+	items = (XTextItem *) malloc(totalLines*SEGMENTS*sizeof (XTextItem));
+
+    for (i = 0; i < totalLines; i++) {
+	charBuf[i] = (char *) malloc (sizeof (char)*charsPerLine);
+	ch = i + ' ';
+	for (j = 0; j < charsPerLine; j++) {
+	    charBuf[i][j] = ch;
+	    if (ch == '\177') ch = ' '; else ch++;
+	}
+	if (p->special) {
+	    items[i*SEGMENTS+0].chars = &(charBuf[i][0]);
+	    items[i*SEGMENTS+0].nchars = charsPerLine/4;
+	    items[i*SEGMENTS+0].delta = 0;
+	    items[i*SEGMENTS+0].font = font->fid;
+	    items[i*SEGMENTS+1].chars = &(charBuf[i][charsPerLine/4]);
+	    items[i*SEGMENTS+1].nchars = charsPerLine/2;
+	    items[i*SEGMENTS+1].delta = 3;
+	    items[i*SEGMENTS+1].font = bfont->fid;
+	    items[i*SEGMENTS+2].chars = &(charBuf[i][3*charsPerLine/4]);
+	    items[i*SEGMENTS+2].nchars = charsPerLine/4;
+	    items[i*SEGMENTS+2].delta = 3;
+	    items[i*SEGMENTS+2].font = font->fid;
 	}
     }
     return True;
@@ -80,11 +87,20 @@ void DoText(d, p)
     Display *d;
     Parms p;
 {
-    int     i;
+    int     i, line, startLine;
 
+    startLine = 0;
+    line = 0;
     for (i = 0; i < p->reps; i++) {
-	XDrawString(d, w, fggc, XPOS, ypos, charBuf[i], CHARS);
-	ypos = (ypos + height) % (HEIGHT - height);
+	XDrawString(d, w, fggc, XPOS, ypos, charBuf[line], charsPerLine);
+	ypos += height;
+	if (ypos > HEIGHT - height) {
+	    /* Wraparound to top of window */
+	    ypos = XPOS;
+	    line = startLine;
+	    startLine = (startLine + 1) % totalLines;
+	}
+	line = (line + 1) % totalLines;
     }
 }
 
@@ -92,11 +108,20 @@ void DoPolyText(d, p)
     Display *d;
     Parms p;
 {
-    int     i;
+    int     i, line, startLine;
 
+    startLine = 0;
+    line = 0;
     for (i = 0; i < p->reps; i++) {
-	XDrawText(d, w, fggc, XPOS, ypos, &items[i*SEGMENTS], SEGMENTS);
-	ypos = (ypos + height) % (HEIGHT - height);
+	XDrawText(d, w, fggc, XPOS, ypos, &items[line*SEGMENTS], SEGMENTS);
+	ypos += height;
+	if (ypos > HEIGHT - height) {
+	    /* Wraparound to top of window */
+	    ypos = XPOS;
+	    line = startLine;
+	    startLine = (startLine + 1) % totalLines;
+	}
+	line = (line + 1) % totalLines;
     }
 }
 
@@ -104,12 +129,21 @@ void DoImageText(d, p)
     Display *d;
     Parms p;
 {
-    int     i;
+    int     i, line, startLine;
 
+    startLine = 0;
+    line = 0;
     for (i = 0; i < p->reps; i++) {
 	XDrawImageString(
-	    d, w, (i & 1) ? fggc : bggc, XPOS, ypos, charBuf[i], CHARS);
-	ypos = (ypos + height) % (HEIGHT - height);
+	    d, w, fggc, XPOS, ypos, charBuf[line], charsPerLine);
+	ypos += height;
+	if (ypos > HEIGHT - height) {
+	    /* Wraparound to top of window */
+	    ypos = XPOS;
+	    startLine = (startLine + 17) % totalLines;
+	    line = startLine;
+	}
+	line = (line + 1) % totalLines;
     }
 }
 
@@ -127,12 +161,11 @@ void EndText(d, p)
     XDestroyWindow(d, w);
     XFreeGC(d, fggc);
     XFreeGC(d, bggc);
-    for (i = 0; i < p->reps; i++)
+    for (i = 0; i < totalLines; i++)
 	free(charBuf[i]);
     free(charBuf);
-    if (items != NULL)
+    if (p->special)
 	free(items);
-    charBuf = NULL;
     XFreeFont(d, font);
     if (bfont != NULL)
 	XFreeFont(d, bfont);
