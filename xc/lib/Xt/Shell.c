@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Shell.c,v 1.17 88/02/14 20:44:07 swick Exp $";
+static char rcsid[] = "$Header: Shell.c,v 1.19 88/02/19 15:59:38 swick Exp $";
 #endif lint
 
 /*
@@ -52,7 +52,7 @@ static char rcsid[] = "$Header: Shell.c,v 1.17 88/02/14 20:44:07 swick Exp $";
  ***************************************************************************/
 
 static Boolean false = FALSE;
-static Bool longFalse = FALSE;
+static Bool longTrue = TRUE;
 static Boolean true = TRUE;
 static int minusOne = -1;
 static int one = 1;
@@ -236,7 +236,7 @@ static XtResource wmResources[]=
 	    Offset(wm.size_hints.max_aspect.y), XtRInt, (caddr_t) &minusOne},
 /* wm_hints */
 	{ XtNinput, XtCInput, XtRLongBoolean, sizeof(Bool),
-	    Offset(wm.wm_hints.input), XtRLongBoolean, (caddr_t) &longFalse},
+	    Offset(wm.wm_hints.input), XtRLongBoolean, (caddr_t) &longTrue},
 	{ XtNinitialState, XtCInitialState, XtRInt, sizeof(int),
 	    Offset(wm.wm_hints.initial_state), XtRInt, (caddr_t) &one},
 	{ XtNiconPixmap, XtCIconPixmap, XtRPixmap, sizeof(caddr_t),
@@ -431,7 +431,7 @@ static void ApplicationDestroy();
 globaldef ApplicationShellClassRec applicationShellClassRec = {
   {
     /* superclass         */    (WidgetClass) &topLevelShellClassRec,
-    /* class_name         */    "No Name",
+    /* class_name         */    "TopLevelShell",
 				/* shell doesn't have a name it is pass
        				 * to XtInitialize
 				 */
@@ -527,9 +527,8 @@ static void WMInitialize(req, new)
 				(unsigned)strlen(tls->topLevel.icon_name) + 1),
 			tls->topLevel.icon_name);
 	    } else {
-		w->wm.title = strcpy(
-			XtMalloc((unsigned)strlen(w->core.name)+1),
-				w->core.name);
+		String name = XrmQuarkToString(XtApplicationName);
+		w->wm.title = strcpy(XtMalloc((unsigned)strlen(name)+1), name);
 	    }
 	}
 	w->wm.size_hints.flags = 0;
@@ -546,10 +545,10 @@ static void TopLevelInitialize(req, new)
 {
 	TopLevelShellWidget w = (TopLevelShellWidget) new;
 
-
 	if(w->topLevel.icon_name == NULL) {
-	    w->topLevel.icon_name = strcpy(
-		    XtMalloc((unsigned)strlen(w->core.name)+1), w->core.name);
+	    String name = XrmQuarkToString(XtApplicationName);
+	    w->topLevel.icon_name =
+		strcpy(XtMalloc((unsigned)strlen(name)+1), name);
 	}
 }
 
@@ -772,8 +771,8 @@ static void _popup_set_prop(w)
 	    }
 	}
 
-	classhint.res_name = w->core.name;
-	classhint.res_class = XtClass(w)->core_class.class_name;
+	classhint.res_name = XrmQuarkToString(XtApplicationName);
+	classhint.res_class = XrmQuarkToString(XtApplicationClass);
 	XSetClassHint(dpy, win, &classhint);
 	SetHostName(dpy, win, hostname);
 }
