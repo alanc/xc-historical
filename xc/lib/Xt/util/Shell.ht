@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Shell.h,v 1.15 88/09/06 09:42:24 swick Exp $
+* $XConsortium: Shell.h,v 1.16 88/09/06 16:29:08 jim Exp $
 * $oHeader: Shell.h,v 1.2 88/08/18 15:56:14 asente Exp $
 */
 /***********************************************************
@@ -84,6 +84,12 @@ SOFTWARE.
 #define XtCInitialState	"InitialState"
 #define XtNgeometry	"geometry"
 #define XtCGeometry	"Geometry"
+#define XtNbaseWidth	"baseWidth"
+#define XtCBaseWidth	"BaseWidth"
+#define XtNbaseHeight	"baseHeight"
+#define XtCBaseHeight	"BaseHeight"
+#define XtNwinGravity	"winGravity"
+#define XtCWinGravity	"WinGravity"
 #define XtNminWidth	"minWidth"
 #define XtCMinWidth	"MinWidth"
 #define XtNminHeight	"minHeight"
