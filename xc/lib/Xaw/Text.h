@@ -1,5 +1,5 @@
 /*
-* $Header: Text.h,v 1.4 87/12/23 16:29:04 swick Locked $
+* $Header: Text.h,v 1.5 88/01/06 08:50:41 swick Locked $
 */
 
 /*
@@ -37,7 +37,7 @@
 #define XtNdisplayPosition      "displayPosition"
 #define XtNinsertPosition	"insertPosition"
 #define XtNleftMargin		"leftMargin"
-#define XtNselectionArray	"selectionArray"
+#define XtNselectTypes		"selectTypes"
 #define XtNtextSource		"textSource"
 #define XtNtextSink		"textSink"
 #define XtNselection		"selection"
@@ -89,7 +89,7 @@ extern void XtTextGetSelectionPos(); /* dpy, w, left, right */
     /* Widget        w;		*/
     /* XtTextPosition *left, *right;    */
 
-extern void XtTextNewSource(); /* dpy, w, source, startPos */
+extern void XtTextSetSource(); /* dpy, w, source, startPos */
     /* Widget         w;	    */
     /* XtTextSource   source;       */
     /* XtTextPosition startPos;     */
@@ -119,16 +119,13 @@ extern void XtTextChangeOptions(); /* w, options */
 extern int XtTextGetOptions(); /* w */
     /* Widget        w;		*/
 
-extern void XtTextSetNewSelection(); /* w, left, right */
+extern void XtTextSetSelection(); /* w, left, right */
     /* Widget        w;		*/
     /* XtTextPosition left, right; */
 
 extern void XtTextInvalidate(); /* w, from, to */
     /* Widget        w;		*/
     /* XtTextPosition from, to; */
-
-extern Window XtTextGetInnerWindow(); /* w */
-    /* Widget        w;		*/
 
 extern XtTextSource XtTextGetSource() ; /* w */
     /* Widget        w;		*/
