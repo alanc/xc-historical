@@ -1,4 +1,4 @@
-XCOMM $XConsortium: xfree86.cf,v 1.7 95/01/16 20:22:02 kaleb Exp kaleb $
+XCOMM $XConsortium: xfree86.cf,v 1.8 95/01/23 15:46:04 kaleb Exp kaleb $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -210,10 +210,6 @@ XCOMM $XConsortium: xfree86.cf,v 1.7 95/01/16 20:22:02 kaleb Exp kaleb $
 #endif
 #endif
 
-#ifndef ServerOSDefines
-#define ServerOSDefines		XFree86ServerOSDefines
-#endif
-
 #ifndef UseServerLock
 #define UseServerLock	YES
 #endif
@@ -299,7 +295,7 @@ XF86MLIBS  = $(XF86MINIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86HWLIB) $(XF86OSLIB)
 XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 
 /*
- * Other stuff used in the Server source.
+ * Other stuff used in the X Server source.
  */
 
 #ifndef AsmDefines
@@ -311,11 +307,11 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 #endif
 
 #ifndef XVendorString
-#define XVendorString "The XFree86 Project, Inc"
+#define XVendorString	"The XFree86 Project, Inc"
 #endif
 
 #ifndef XVendorRelease
-#define XVendorRelease        XFree86Version
+#define XVendorRelease	XFree86Version
 #endif
 
 #ifndef UseRgbTxt
