@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbtile32.c,v 1.4 91/04/26 22:01:18 keith Exp $ */
+/* $XConsortium: cfbtile32.c,v 1.5 91/07/14 13:49:46 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -42,8 +42,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #if (MROP == Mcopy) && defined(FAST_CONSTANT_OFFSET_MODE) && defined(SHARED_IDCACHE)
 # define Expand(left,right) {\
-    int part = nlwMiddle & 7; \
-    nlwMiddle >>= 3; \
+    int part = nlwMiddle & ((PGSZB*2)-1); \
+    nlwMiddle >>= PWSH + 1; \
     while (h--) { \
 	srcpix = psrc[srcy]; \
 	MROP_PREBUILD(srcpix); \
@@ -134,7 +134,7 @@ MROP_NAME(cfbFillRectTile32) (pDrawable, pGC, nBox, pBox)
     MROP_DECLARE_REG()
     MROP_PREBUILT_DECLARE()
 
-    tile = ((cfbPrivGCPtr) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pRotatedPixmap;
+    tile = cfbGetGCPrivate(pGC)->pRotatedPixmap;
     tileHeight = tile->drawable.height;
     psrc = (unsigned long *)tile->devPrivate.ptr;
 
@@ -233,7 +233,7 @@ MROP_NAME(cfbTile32FS)(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     MROP_DECLARE_REG ()
     MROP_PREBUILT_DECLARE()
 
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    n = nInit * miFindMaxBand( cfbGetCompositeClip(pGC) );
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -244,11 +244,11 @@ MROP_NAME(cfbTile32FS)(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
+    n = miClipSpans( cfbGetCompositeClip(pGC),
 		     pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
-    tile = ((cfbPrivGCPtr) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pRotatedPixmap;
+    tile = cfbGetGCPrivate(pGC)->pRotatedPixmap;
     tileHeight = tile->drawable.height;
     psrc = (unsigned long *)tile->devPrivate.ptr;
 

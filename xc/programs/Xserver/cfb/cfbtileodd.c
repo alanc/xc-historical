@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbtileodd.c,v 1.13 91/07/10 17:26:10 keith Exp $ */
+/* $XConsortium: cfbtileodd.c,v 1.14 93/09/13 09:35:10 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -33,6 +33,12 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include "cfb8bit.h"
 
 #include "mergerop.h"
+
+#if PGSZ == 32
+#define LEFTSHIFT_AMT (5 - PWSH)
+#else /* PGSZ == 64 */
+#define LEFTSHIFT_AMT (6 - PWSH)
+#endif /* PGSZ */
 
 #define LastTileBits {\
     tmp = bits; \
@@ -53,8 +59,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 	    bits = BitLeft(tmp, tileEndLeftShift) | \
 		   BitRight(bits, tileEndRightShift); \
 	xoff = (xoff + xoffStep) & PIM; \
-	leftShift = xoff << (5-PWSH); \
-	rightShift = 32 - leftShift; \
+	leftShift = xoff << LEFTSHIFT_AMT; \
+	rightShift = PGSZ - leftShift; \
     }\
 }
 
@@ -89,11 +95,11 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
     int tileHeight;	/* height of the tile */
     int widthSrc;
 
-    int widthDst;		/* width in longwords of the dest pixmap */
+    int widthDst;	/* width in longwords of the dest pixmap */
     int w;		/* width of current box */
     int h;		/* height of current box */
     unsigned long startmask;
-    unsigned long endmask;	/* masks for reggedy bits at either end of line */
+    unsigned long endmask;/* masks for reggedy bits at either end of line */
     int nlwMiddle;	/* number of longwords between sides of boxes */
     int nlwSrc;		/* number of whole longwords in source */
     
@@ -129,7 +135,7 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 
     tileHeight = tile->drawable.height;
     tileWidth = tile->drawable.width;
-    widthSrc = tile->devKind >> 2;
+    widthSrc = tile->devKind / PGSZB;
     narrowTile = FALSE;
     if (widthSrc == 1)
     {
@@ -145,8 +151,8 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 
     tileEndPart = tileWidth & PIM;
     tileEndMask = cfbendpartial[tileEndPart];
-    tileEndLeftShift = (tileEndPart) << (5-PWSH);
-    tileEndRightShift = 32 - tileEndLeftShift;
+    tileEndLeftShift = (tileEndPart) << LEFTSHIFT_AMT;
+    tileEndRightShift = PGSZ - tileEndLeftShift;
     xoffStep = PPW - tileEndPart;
     /*
      * current assumptions: tile > 32 bits wide.
@@ -181,8 +187,8 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 	    xoffStart = PPW - (xoffDst - xoffSrc);
 	    needFirst = 0;
 	}
-	leftShiftStart = (xoffStart) << (5-PWSH);
-	rightShiftStart = 32 - leftShiftStart;
+	leftShiftStart = (xoffStart) << LEFTSHIFT_AMT;
+	rightShiftStart = PGSZ - leftShiftStart;
 	nlwSrcStart = widthSrc - (srcx >> PWSH);
 	while (h--)
 	{
@@ -210,7 +216,7 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 	    {
 		NextTileBits
 		tmp = BitLeft(tmp, leftShift);
- 		if (rightShift != 32)
+ 		if (rightShift != PGSZ)
 		    tmp |= BitRight(bits,rightShift);
 		*pDst = MROP_MASK (tmp, *pDst, startmask);
 		++pDst;
@@ -226,7 +232,7 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 			nlwPart = nlwSrc - 1;
 		    nlw -= nlwPart;
 		    nlwSrc -= nlwPart;
-		    if (rightShift != 32)
+		    if (rightShift != PGSZ)
 		    {
 			while (nlwPart--)
 			{
@@ -258,7 +264,7 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 #endif
 		{
 		    NextTileBits
-		    if (rightShift != 32)
+		    if (rightShift != PGSZ)
 		    {
 			*pDst = MROP_SOLID(BitLeft(tmp, leftShift) |
 					   BitRight(bits, rightShift),
@@ -275,7 +281,7 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 	    if (endmask)
 	    {
 		NextTileBits
-		if (rightShift == 32)
+		if (rightShift == PGSZ)
 		    bits = 0;
 		*pDst = MROP_MASK (BitLeft(tmp, leftShift) |
 				   BitRight(bits,rightShift),
@@ -346,7 +352,7 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 
     tileHeight = tile->drawable.height;
     tileWidth = tile->drawable.width;
-    widthSrc = tile->devKind >> 2;
+    widthSrc = tile->devKind / PGSZB;
     narrowTile = FALSE;
     if (widthSrc == 1)
     {
@@ -362,8 +368,8 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 
     tileEndPart = tileWidth & PIM;
     tileEndMask = cfbendpartial[tileEndPart];
-    tileEndLeftShift = (tileEndPart) << (5-PWSH);
-    tileEndRightShift = 32 - tileEndLeftShift;
+    tileEndLeftShift = (tileEndPart) << LEFTSHIFT_AMT;
+    tileEndRightShift = PGSZ - tileEndLeftShift;
     xoffStep = PPW - tileEndPart;
     while (n--)
     {
@@ -394,8 +400,8 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 	    xoffStart = PPW - (xoffDst - xoffSrc);
 	    needFirst = 0;
 	}
-	leftShiftStart = (xoffStart) << (5-PWSH);
-	rightShiftStart = 32 - leftShiftStart;
+	leftShiftStart = (xoffStart) << LEFTSHIFT_AMT;
+	rightShiftStart = PGSZ - leftShiftStart;
 	nlwSrcStart = widthSrc - (srcx >> PWSH);
 	/* XXX only works when narrowShift >= PPW/2 */
 	if (narrowTile)
@@ -421,7 +427,7 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 	{
 	    NextTileBits
 	    tmp = BitLeft(tmp, leftShift);
-	    if (rightShift != 32)
+	    if (rightShift != PGSZ)
 		tmp |= BitRight(bits,rightShift);
 	    *pDst = MROP_MASK (tmp, *pDst, startmask);
 	    ++pDst;
@@ -436,7 +442,7 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 		    nlwPart = nlwSrc - 1;
 		nlw -= nlwPart;
 		nlwSrc -= nlwPart;
-		if (rightShift != 32)
+		if (rightShift != PGSZ)
 		{
 		    while (nlwPart--)
 		    {
@@ -468,7 +474,7 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 #endif
 	    {
 		NextTileBits
-		if (rightShift != 32)
+		if (rightShift != PGSZ)
 		{
 		    *pDst = MROP_SOLID(BitLeft(tmp, leftShift) |
 				       BitRight(bits, rightShift),
@@ -486,7 +492,7 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 	if (endmask)
 	{
 	    NextTileBits
-	    if (rightShift == 32)
+	    if (rightShift == PGSZ)
 		bits = 0;
 	    *pDst = MROP_MASK (BitLeft(tmp, leftShift) |
 			       BitRight(bits,rightShift),
@@ -518,7 +524,7 @@ MROP_NAME(cfbFillBoxTile32s) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
     int w;		/* width of current box */
     int h;		/* height of current box */
     unsigned long startmask;
-    unsigned long endmask;	/* masks for reggedy bits at either end of line */
+    unsigned long endmask;/* masks for reggedy bits at either end of line */
     int nlMiddle;	/* number of longwords between sides of boxes */
     
     register int nl;	/* loop version of nlMiddle */
@@ -577,7 +583,6 @@ MROP_NAME(cfbFillBoxTile32s) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 	{
 	    maskbits (pBox->x1, w, startmask, endmask, nlMiddle)
 	}
-
 	if (xoffSrc == xoffDst)
 	{
 	    while (h--)
@@ -665,13 +670,13 @@ psrc += UNROLL;
 	{
 	    if (xoffSrc > xoffDst)
 	    {
-		leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
-		rightShift = 32 - leftShift;
+		leftShift = (xoffSrc - xoffDst) << LEFTSHIFT_AMT;
+		rightShift = PGSZ - leftShift;
 	    }
 	    else
 	    {
-		rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
-		leftShift = 32 - rightShift;
+		rightShift = (xoffDst - xoffSrc) << LEFTSHIFT_AMT;
+		leftShift = PGSZ - rightShift;
 	    }
 	    while (h--)
 	    {
@@ -812,7 +817,7 @@ MROP_NAME(cfbFillSpanTile32s) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
     int widthDst;	/* width in longwords of the dest pixmap */
     int w;		/* width of current box */
     unsigned long startmask;
-    unsigned long endmask;	/* masks for reggedy bits at either end of line */
+    unsigned long endmask;/* masks for reggedy bits at either end of line */
     int nlMiddle;	/* number of longwords between sides of boxes */
     
     register int nl;	/* loop version of nlMiddle */
@@ -946,13 +951,13 @@ psrc += UNROLL;
 	{
 	    if (xoffSrc > xoffDst)
 	    {
-		leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
-		rightShift = 32 - leftShift;
+		leftShift = (xoffSrc - xoffDst) << LEFTSHIFT_AMT;
+		rightShift = PGSZ - leftShift;
 	    }
 	    else
 	    {
-		rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
-		leftShift = 32 - rightShift;
+		rightShift = (xoffDst - xoffSrc) << LEFTSHIFT_AMT;
+		leftShift = PGSZ - rightShift;
 	    }
 	    psrc = psrcLine;
 	    pdst = pdstLine;

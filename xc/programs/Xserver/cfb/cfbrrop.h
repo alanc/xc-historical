@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbrrop.h,v 1.6 91/04/10 11:42:06 keith Exp $
+ * $XConsortium: cfbrrop.h,v 1.7 93/02/08 09:54:03 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -40,7 +40,7 @@
 #define RROP_SOLID(dst)	    (*(dst) = (rrop_xor))
 #define RROP_SOLID_MASK(dst,mask) (*(dst) = (*(dst) & ~(mask)) | ((rrop_xor) & (mask)))
 #define RROP_NAME(prefix)   RROP_NAME_CAT(prefix,Copy)
-#endif
+#endif /* GXcopy */
 
 #if RROP == GXxor
 #define RROP_DECLARE	register unsigned long	rrop_xor;
@@ -48,7 +48,7 @@
 #define RROP_SOLID(dst)	    (*(dst) ^= (rrop_xor))
 #define RROP_SOLID_MASK(dst,mask) (*(dst) ^= ((rrop_xor) & (mask)))
 #define RROP_NAME(prefix)   RROP_NAME_CAT(prefix,Xor)
-#endif
+#endif /* GXxor */
 
 #if RROP == GXand
 #define RROP_DECLARE	register unsigned long	rrop_and;
@@ -56,7 +56,7 @@
 #define RROP_SOLID(dst)	    (*(dst) &= (rrop_and))
 #define RROP_SOLID_MASK(dst,mask) (*(dst) &= ((rrop_and) | ~(mask)))
 #define RROP_NAME(prefix)   RROP_NAME_CAT(prefix,And)
-#endif
+#endif /* GXand */
 
 #if RROP == GXor
 #define RROP_DECLARE	register unsigned long	rrop_or;
@@ -64,7 +64,7 @@
 #define RROP_SOLID(dst)	    (*(dst) |= (rrop_or))
 #define RROP_SOLID_MASK(dst,mask) (*(dst) |= ((rrop_or) & (mask)))
 #define RROP_NAME(prefix)   RROP_NAME_CAT(prefix,Or)
-#endif
+#endif /* GXor */
 
 #if RROP == GXnoop
 #define RROP_DECLARE
@@ -72,7 +72,7 @@
 #define RROP_SOLID(dst)
 #define RROP_SOLID_MASK(dst,mask)
 #define RROP_NAME(prefix)   RROP_NAME_CAT(prefix,Noop)
-#endif
+#endif /* GXnoop */
 
 #if RROP ==  GXset
 #define RROP_DECLARE	    register unsigned long	rrop_and, rrop_xor;
@@ -81,7 +81,7 @@
 #define RROP_SOLID(dst)	    (*(dst) = DoRRop (*(dst), rrop_and, rrop_xor))
 #define RROP_SOLID_MASK(dst,mask)   (*(dst) = DoMaskRRop (*(dst), rrop_and, rrop_xor, (mask)))
 #define RROP_NAME(prefix)   RROP_NAME_CAT(prefix,General)
-#endif
+#endif /* GXset */
 
 #define RROP_UNROLL_CASE1(p,i)    case (i): RROP_SOLID((p) - (i));
 #define RROP_UNROLL_CASE2(p,i)    RROP_UNROLL_CASE1(p,(i)+1) RROP_UNROLL_CASE1(p,i)
@@ -92,6 +92,9 @@
 #define RROP_UNROLL_CASE7(p)	RROP_UNROLL_CASE4(p,4) RROP_UNROLL_CASE3(p)
 #define RROP_UNROLL_CASE15(p)	RROP_UNROLL_CASE8(p,8) RROP_UNROLL_CASE7(p)
 #define RROP_UNROLL_CASE31(p)	RROP_UNROLL_CASE16(p,16) RROP_UNROLL_CASE15(p)
+#ifdef LONG64
+#define RROP_UNROLL_CASE63(p)	RROP_UNROLL_CASE32(p,32) RROP_UNROLL_CASE31(p)
+#endif /* LONG64 */
 
 #define RROP_UNROLL_LOOP1(p,i) RROP_SOLID((p) + (i));
 #define RROP_UNROLL_LOOP2(p,i) RROP_UNROLL_LOOP1(p,(i)) RROP_UNROLL_LOOP1(p,(i)+1)
@@ -99,14 +102,23 @@
 #define RROP_UNROLL_LOOP8(p,i) RROP_UNROLL_LOOP4(p,(i)) RROP_UNROLL_LOOP4(p,(i)+4)
 #define RROP_UNROLL_LOOP16(p,i) RROP_UNROLL_LOOP8(p,(i)) RROP_UNROLL_LOOP8(p,(i)+8)
 #define RROP_UNROLL_LOOP32(p,i) RROP_UNROLL_LOOP16(p,(i)) RROP_UNROLL_LOOP16(p,(i)+16)
+#ifdef LONG64
+#define RROP_UNROLL_LOOP64(p,i) RROP_UNROLL_LOOP32(p,(i)) RROP_UNROLL_LOOP32(p,(i)+32)
+#endif /* LONG64 */
 
 #if defined (FAST_CONSTANT_OFFSET_MODE) && defined (SHARED_IDCACHE) && (RROP == GXcopy)
 
+#ifdef LONG64
+#define RROP_UNROLL_SHIFT	6
+#define RROP_UNROLL_CASE(p)	RROP_UNROLL_CASE63(p)
+#define RROP_UNROLL_LOOP(p)	RROP_UNROLL_LOOP64(p,-64)
+#else /* not LONG64 */
 #define RROP_UNROLL_SHIFT	5
-#define RROP_UNROLL		(1<<RROP_UNROLL_SHIFT)
-#define RROP_UNROLL_MASK	(RROP_UNROLL-1)
 #define RROP_UNROLL_CASE(p)	RROP_UNROLL_CASE31(p)
 #define RROP_UNROLL_LOOP(p)	RROP_UNROLL_LOOP32(p,-32)
+#endif /* LONG64 */
+#define RROP_UNROLL		(1<<RROP_UNROLL_SHIFT)
+#define RROP_UNROLL_MASK	(RROP_UNROLL-1)
 
 #define RROP_SPAN(pdst,nmiddle) {\
     int part = (nmiddle) & RROP_UNROLL_MASK; \

@@ -146,7 +146,7 @@ cfbSetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
     int			yMax;
 
     alu = pGC->alu;
-    prgnDst = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+    prgnDst = cfbGetCompositeClip(pGC);
 
     pptLast = ppt + nspans;
 

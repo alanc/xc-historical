@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.24 93/09/13 09:35:19 dpw Exp $
+ * $XConsortium: cfb8line.c,v 1.25 93/09/18 14:38:02 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -164,13 +164,13 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
     DDXPointPtr pptInit;
 #endif
 {
-    register int    e;
+    register long   e;
     register int    y1_or_e1;
     register PixelType   *addrp;
     register int    stepmajor;
     register int    stepminor;
 #ifndef REARRANGE
-    register int    e3;
+    register long   e3;
 #endif
 #ifdef mc68000
     register short  x1_or_len;
@@ -206,14 +206,14 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 # define X2  intToX(c2)
 # define Y2  intToY(c2)
 #endif
-    unsigned long    ClipMask = 0x80008000;
+    CARD32	ClipMask = 0x80008000;
     PixelType   *addr;
     int		    nwidth;
     cfbPrivGCPtr    devPriv;
     BoxPtr	    extents;
     int		    *ppt;
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
+    devPriv = cfbGetGCPrivate(pGC);
     cfbGetPixelWidthAndPointer (pDrawable, nwidth, addr);
 #ifndef REARRANGE
     RROP_FETCH_GCPRIV(devPriv);
@@ -228,7 +228,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
     capStyle = pGC->capStyle - CapNotLast;
     ppt = (int *) pSegInit;
     while (nseg--)
-#else
+#else /* POLYSEGMENT */
 
 #ifdef EITHER_MODE
     mode -= CoordModePrevious;
@@ -253,7 +253,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 #endif
     addrp = addr + WIDTH_MUL(Y2, nwidth) + X2;
     while (--npt)
-#endif
+#endif /* POLYSEGMENT */
     {
 #ifdef POLYSEGMENT
 	y1_or_e1 = ppt[0];
@@ -455,9 +455,15 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 	    }
 	    y1_or_e1 = ((int) addrp) & (sizeof (long) - 1);
 	    addrp = (PixelType *) (((unsigned char *) addrp) - y1_or_e1);
-#if PWSH != 2
+#if PGSZ == 32
+#  if PWSH != 2
 	    y1_or_e1 >>= (2 - PWSH);
-#endif
+#  endif
+#else /* PGSZ == 64 */
+#  if PWSH != 3
+	    y1_or_e1 >>= (3 - PWSH);
+#  endif
+#endif /* PGSZ */
 	    if (y1_or_e1 + x1_or_len <= PPW)
 	    {
 		if (x1_or_len)
@@ -530,7 +536,7 @@ cfb8SegmentSS1Rect (pDrawable, pGC, nseg, pSegInit)
     int	    drawn;
     cfbPrivGCPtr    devPriv;
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
+    devPriv = cfbGetGCPrivate(pGC);
 #ifdef NO_ONE_RECT
     if (REGION_NUM_RECTS(devPriv->pCompositeClip) != 1)
     {
@@ -587,7 +593,7 @@ cfb8LineSS1Rect (pDrawable, pGC, mode, npt, pptInit)
     int	    drawn;
     cfbPrivGCPtr    devPriv;
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
+    devPriv = cfbGetGCPrivate(pGC);
 #ifdef NO_ONE_RECT
     if (REGION_NUM_RECTS(devPriv->pCompositeClip) != 1)
     {
@@ -630,9 +636,11 @@ cfb8LineSS1Rect (pDrawable, pGC, mode, npt, pptInit)
 #define round(m,n)	    ((((m)<<1) + (n)) / ((n)<<1))
 #define SignTimes(sign,n)   (((sign) < 0) ? -(n) : (n))
 
+int
 cfbClipPoint (oc, xp, yp, dx, dy, boxp, first)
     int	oc;
     int	*xp, *yp;
+    int dx, dy;
     BoxPtr  boxp;
     Bool    first;
 {
@@ -732,11 +740,10 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
     int		    signdx, signdy, axis, e, e1, e3, len;
     int		    adx, ady;
 
-    PixelType   *addr;
+    PixelType	    *addr;
     int		    nwidth;
     int		    stepx, stepy;
     int		    xorg, yorg;
-
 
     cfbGetPixelWidthAndPointer(pDrawable, nwidth, addr);
 
@@ -846,13 +853,19 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
     if (!ady)
     {
 #define body	{ RROP_SOLID(addrp); addrp += stepx; }
-	while (len >= 4)
+	while (len >= PGSZB)
 	{
 	    body body body body
-	    len -= 4;
+#if PGSZ == 64
+	    body body body body
+#endif
+	    len -= PGSZB;
 	}
 	switch (len)
 	{
+#if PGSZ == 64
+	case  7: body case 6: body case 5: body case 4: body
+#endif
 	case  3: body case 2: body case 1: body
 	}
 #undef body
@@ -872,13 +885,19 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
 	}
 
 #ifdef LARGE_INSTRUCTION_CACHE
-	while ((len -= 4) >= 0)
+	while ((len -= PGSZB) >= 0)
 	{
 	    body body body body
+#if PGSZ == 64
+	    body body body body
+#endif
 	}
 	switch (len)
 	{
 	case  -1: body case -2: body case -3: body
+#if PGSZ == 64
+	case  -4: body case -5: body case -6: body case -7: body
+#endif
 	}
 #else
 	IMPORTANT_START

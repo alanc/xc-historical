@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbmap.h,v 1.5 93/08/08 13:23:19 rws Exp $
+ * $XConsortium: cfbmap.h,v 1.6 93/08/08 13:42:34 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -65,8 +65,6 @@ cfb can not hack PSZ yet
 #endif
 
 #define cfbScreenPrivateIndex NAME(ScreenPrivateIndex)
-#define cfbWindowPrivateIndex NAME(WindowPrivateIndex)
-#define cfbGCPrivateIndex NAME(GCPrivateIndex)
 #define QuartetBitsTable NAME(QuartetBitsTable)
 #define QuartetPixelMaskTable NAME(QuartetPixelMaskTable)
 #define cfbAllocatePrivates NAME(AllocatePrivates)
@@ -74,27 +72,19 @@ cfb can not hack PSZ yet
 #define cfbBitBlt NAME(BitBlt)
 #define cfbBresD NAME(BresD)
 #define cfbBresS NAME(BresS)
-#define cfbChangeClip NAME(ChangeClip)
-#define cfbChangeGC NAME(ChangeGC)
 #define cfbChangeWindowAttributes NAME(ChangeWindowAttributes)
 #define cfbClipPoint NAME(ClipPoint)
 #define cfbCloseScreen NAME(CloseScreen)
 #define cfbCopyArea NAME(CopyArea)
-#define cfbCopyClip NAME(CopyClip)
-#define cfbCopyGC NAME(CopyGC)
 #define cfbCopyImagePlane NAME(CopyImagePlane)
 #define cfbCopyPixmap NAME(CopyPixmap)
 #define cfbCopyPlane NAME(CopyPlane)
 #define cfbCopyRotatePixmap NAME(CopyRotatePixmap)
 #define cfbCopyWindow NAME(CopyWindow)
 #define cfbCreateGC NAME(CreateGC)
-#define cfbCreateOps NAME(CreateOps)
 #define cfbCreatePixmap NAME(CreatePixmap)
 #define cfbCreateWindow NAME(CreateWindow)
 #define cfbCreateScreenResources NAME(CreateScreenResoures)
-#define cfbDestroyClip NAME(DestroyClip)
-#define cfbDestroyGC NAME(DestroyGC)
-#define cfbDestroyOps NAME(DestroyOps)
 #define cfbDestroyPixmap NAME(DestroyPixmap)
 #define cfbDestroyWindow NAME(DestroyWindow)
 #define cfbDoBitblt NAME(DoBitblt)

@@ -1,4 +1,4 @@
-/* $XConsortium: cfb.h,v 5.30 93/09/21 08:55:31 dpw Exp $ */
+/* $XConsortium: cfb.h,v 5.31 93/10/12 11:22:48 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -67,6 +67,9 @@ typedef cfbPrivGC	*cfbPrivGCPtr;
 #define cfbGetGCPrivate(pGC)	((cfbPrivGCPtr)\
 	(pGC)->devPrivates[cfbGCPrivateIndex].ptr)
 
+#define cfbGetCompositeClip(pGC) (((cfbPrivGCPtr)\
+	(pGC)->devPrivates[cfbGCPrivateIndex].ptr)->pCompositeClip)
+
 /* way to carry RROP info around */
 typedef struct {
     unsigned char	rop;
@@ -82,6 +85,10 @@ typedef struct {
     PixmapPtr	pRotatedBackground;
     PixmapPtr	pRotatedBorder;
     } cfbPrivWin;
+
+#define cfbGetWindowPrivate(_pWin) ((cfbPrivWin *)\
+	(_pWin)->devPrivates[cfbWindowPrivateIndex].ptr)
+
 
 /* cfb8bit.c */
 
@@ -110,7 +117,7 @@ extern int cfbComputeClipMasks32(
     int /*y*/,
     int /*w*/,
     int /*h*/,
-    unsigned long * /*clips*/
+    CARD32 * /*clips*/
 #endif
 );
 /* cfb8cppl.c */
@@ -662,31 +669,6 @@ extern Bool cfbCreateGC(
 #endif
 );
 
-extern void cfbChangeGC(
-#if NeedFunctionPrototypes
-    GCPtr/*pGC*/,
-    BITS32 /*mask*/
-#endif
-);
-
-extern void cfbDestroyGC(
-#if NeedFunctionPrototypes
-    GCPtr/*pGC*/
-#endif
-);
-
-extern GCOpsPtr cfbCreateOps(
-#if NeedFunctionPrototypes
-    GCOpsPtr /*prototype*/
-#endif
-);
-
-extern int cfbDestroyOps(
-#if NeedFunctionPrototypes
-    GCOpsPtr /*ops*/
-#endif
-);
-
 extern void cfbValidateGC(
 #if NeedFunctionPrototypes
     GCPtr /*pGC*/,
@@ -695,35 +677,6 @@ extern void cfbValidateGC(
 #endif
 );
 
-extern void cfbDestroyClip(
-#if NeedFunctionPrototypes
-    GCPtr /*pGC*/
-#endif
-);
-
-extern void cfbChangeClip(
-#if NeedFunctionPrototypes
-    GCPtr /*pGC*/,
-    int /*type*/,
-    pointer /*pvalue*/,
-    int /*nrects*/
-#endif
-);
-
-extern void cfbCopyClip(
-#if NeedFunctionPrototypes
-    GCPtr /*pgcDst*/,
-    GCPtr /*pgcSrc*/
-#endif
-);
-
-extern void cfbCopyGC(
-#if NeedFunctionPrototypes
-    GCPtr /*pGCSrc*/,
-    Mask /*changes*/,
-    GCPtr /*pGCDst*/
-#endif
-);
 /* cfbgetsp.c */
 
 extern void cfbGetSpans(
@@ -769,7 +722,7 @@ extern int cfbHorzS(
     int /*rop*/,
     unsigned long /*and*/,
     unsigned long /*xor*/,
-    int * /*addrl*/,
+    unsigned long * /*addrl*/,
     int /*nlwidth*/,
     int /*x1*/,
     int /*y1*/,
@@ -782,7 +735,7 @@ extern int cfbVertS(
     int /*rop*/,
     unsigned long /*and*/,
     unsigned long /*xor*/,
-    int * /*addrl*/,
+    unsigned long * /*addrl*/,
     int /*nlwidth*/,
     int /*x1*/,
     int /*y1*/,

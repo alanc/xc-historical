@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbhrzvert.c,v 1.5 90/01/31 12:31:37 keith Exp $ */
+/* $XConsortium: cfbhrzvert.c,v 1.6 91/12/19 18:36:41 keith Exp $ */
 #include "X.h"
 
 #include "gc.h"
@@ -39,15 +39,15 @@ cfbHorzS(rop, and, xor, addrl, nlwidth, x1, y1, len)
 register int rop;
 register unsigned long and;
 register unsigned long xor;
-register int *addrl;	/* pointer to base of bitmap */
+register unsigned long *addrl;	/* pointer to base of bitmap */
 int nlwidth;		/* width in longwords of bitmap */
 int x1;			/* initial point */ 
 int y1;
 int len;		/* length of line */
 {
     register int nlmiddle;
-    register int startmask;
-    register int endmask;
+    register unsigned long startmask;
+    register unsigned long endmask;
 
     addrl = addrl + (y1 * nlwidth) + (x1 >> PWSH);
 
@@ -103,7 +103,7 @@ int len;		/* length of line */
 cfbVertS(rop, and, xor, addrl, nlwidth, x1, y1, len)
 int rop;
 register unsigned long and, xor;
-register int *addrl;	/* pointer to base of bitmap */
+register unsigned long *addrl;	/* pointer to base of bitmap */
 register int nlwidth;	/* width in longwords of bitmap */
 int x1, y1;		/* initial point */
 register int len;	/* length of line */
@@ -141,7 +141,7 @@ register int len;	/* length of line */
 	    bits += nlwidth;
 	}
     }
-#else
+#else /* !PIXEL_ADDR */
     addrl = addrl + (y1 * nlwidth) + (x1 >> PWSH);
 
     and |= ~cfbmask[x1 & PIM];

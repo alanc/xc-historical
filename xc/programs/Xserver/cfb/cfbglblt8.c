@@ -1,4 +1,4 @@
-/* $XConsortium: cfbglblt8.c,v 5.27 93/09/18 15:42:36 rws Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.28 93/09/20 20:10:30 dpw Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 
@@ -44,7 +44,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 	 (box1)->y1 <= ((int) (box2)->y1 + (yoffset)) && \
  	 ((int) (box2)->y2 + (yoffset)) <= (box1)->y2)
 
-#if defined(FOUR_BIT_CODE) || defined(WriteFourBits) && !defined(GLYPHROP)
+#if defined(FOUR_BIT_CODE) || defined(WriteBitGroup) && !defined(GLYPHROP)
 
 #if GLYPHPADBYTES != 4
 #define USE_LEFTBITS
@@ -52,7 +52,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #ifdef USE_LEFTBITS
 typedef	unsigned char	*glyphPointer;
-extern long endtab[];
+extern unsigned long endtab[];
 
 #define GlyphBits(bits,width,dst)	getleftbits(bits,width,dst); \
 					(dst) &= widthMask; \
@@ -60,7 +60,7 @@ extern long endtab[];
 #define GlyphBitsS(bits,width,dst,off)	GlyphBits(bits,width,dst); \
 					dst = BitRight (dst, off);
 #else
-typedef unsigned long	*glyphPointer;
+typedef CARD32	*glyphPointer;
 
 #define GlyphBits(bits,width,dst)	dst = *bits++;
 #define GlyphBitsS(bits,width,dst,off)	dst = BitRight(*bits++, off);
@@ -70,8 +70,8 @@ typedef unsigned long	*glyphPointer;
 #define cfbPolyGlyphBlt8	cfbPolyGlyphRop8
 #define cfbPolyGlyphBlt8Clipped	cfbPolyGlyphRop8Clipped
 
-#undef WriteFourBits
-#define WriteFourBits(dst,pixel,bits)	RRopFourBits(dst,bits)
+#undef WriteBitGroup
+#define WriteBitGroup(dst,pixel,bits)	RRopBitGroup(dst,bits)
 
 #endif
 
@@ -87,9 +87,14 @@ static void cfbPolyGlyphBlt8Clipped();
 #endif
 #endif
 
-#define DST_INC	    (4 >> PWSH)
+#define DST_INC	    (PGSZB >> PWSH)
 
+/*  cfbStippleStack/cfbStippleStackTE are coded in assembly language.
+ *  They are only provided on some architecures.
+ */
+#ifdef USE_STIPPLE_CODE
 extern void		cfbStippleStack (), cfbStippleStackTE ();
+#endif
 
 void
 cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
@@ -107,7 +112,6 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     register unsigned long  *dst;
     register glyphPointer   glyphBits;
     register int	    xoff;
-    register int	    ewTmp;
 
     FontPtr		pfont = pGC->font;
     CharInfoPtr		pci;
@@ -152,7 +156,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     bbox.y1 = -FONTMAXBOUNDS(pfont,ascent);
     bbox.y2 = FONTMAXBOUNDS(pfont,descent);
 
-    clip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+    clip = cfbGetCompositeClip(pGC);
     extents = &clip->extents;
 
     if (!clip->data) 
@@ -160,7 +164,8 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	if (!BOX_CONTAINS(extents, &bbox, x, y))
 	{
 	    if (BOX_OVERLAP (extents, &bbox, x, y))
-		cfbPolyGlyphBlt8Clipped(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+		cfbPolyGlyphBlt8Clipped(pDrawable, pGC, x, y,
+					nglyph, ppci, pglyphBase);
 	    return;
 	}
     }
@@ -178,7 +183,8 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     	switch ((*pGC->pScreen->RectIn)(clip, &bbox))
     	{
       	  case rgnPART:
-	    cfbPolyGlyphBlt8Clipped(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+	    cfbPolyGlyphBlt8Clipped(pDrawable, pGC, x, y,
+				    nglyph, ppci, pglyphBase);
       	  case rgnOUT:
 	    return;
     	}
@@ -187,12 +193,12 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 #ifdef GLYPHROP
     cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
 #else
-    pixel = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->xor;
+    pixel = cfbGetGCPrivate(pGC)->xor;
 #endif
 
     cfbGetTypedWidthAndPointer (pDrawable, bwidthDst, pdstBase, char, unsigned long)
 
-    widthDst = bwidthDst >> 2;
+    widthDst = bwidthDst / PGSZB;
     while (nglyph--)
     {
 	pci = *ppci++;
@@ -219,13 +225,13 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    	dst = dstLine;
 	    	dstLine = (unsigned long *) (((char *) dstLine) + bwidthDst);
 	    	GlyphBits(glyphBits, w, c)
-	    	WriteFourBits(dst, pixel, GetFourBits(BitRight(c,xoff)));
+	    	WriteBitGroup(dst, pixel, GetBitGroup(BitRight(c,xoff)));
 	    	dst += DST_INC;
-	    	c = BitLeft(c,4-xoff);
+	    	c = BitLeft(c,PGSZB - xoff);
 	    	while (c)
 	    	{
-		    WriteFourBits(dst, pixel, GetFourBits(c));
-		    NextFourBits(c);
+		    WriteBitGroup(dst, pixel, GetBitGroup(c));
+		    NextBitGroup(c);
 		    dst += DST_INC;
 	    	}
 	    } while (--hTmp);
@@ -251,14 +257,13 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     register unsigned long  *dst;
     register glyphPointer   glyphBits;
     register int	    xoff;
-    register int	    ewTmp;
     unsigned long	    c1;
 
     CharInfoPtr		pci;
     FontPtr		pfont = pGC->font;
     unsigned long	*dstLine;
     unsigned long	*pdstBase;
-    unsigned long	*cTmp, *clips;
+    CARD32		*cTmp, *clips;
     int			maxAscent, maxDescent;
     int			minLeftBearing;
     int			hTmp;
@@ -283,17 +288,17 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 #ifdef GLYPHROP
     cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
 #else
-    pixel = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->xor;
+    pixel = cfbGetGCPrivate(pGC)->xor;
 #endif
     
     cfbGetTypedWidthAndPointer (pDrawable, bwidthDst, pdstBase, char, unsigned long)
 
-    widthDst = bwidthDst >> 2;
+    widthDst = bwidthDst / PGSZB;
     maxAscent = FONTMAXBOUNDS(pfont,ascent);
     maxDescent = FONTMAXBOUNDS(pfont,descent);
     minLeftBearing = FONTMINBOUNDS(pfont,leftSideBearing);
 
-    pRegion = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+    pRegion = cfbGetCompositeClip(pGC);
 
     pBox = REGION_RECTS(pRegion);
     numRects = REGION_NUM_RECTS (pRegion);
@@ -312,8 +317,8 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     }
     if (!numRects)
 	return;
-    clips = (unsigned long *)ALLOCATE_LOCAL ((maxAscent + maxDescent) *
-					     sizeof (unsigned long));
+    clips = (CARD32 *)ALLOCATE_LOCAL ((maxAscent + maxDescent) *
+						sizeof (CARD32));
     while (nglyph--)
     {
 	pci = *ppci++;
@@ -343,19 +348,19 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    c &= *cTmp++;
 		    if (c)
 		    {
-	    	    	WriteFourBits(dst, pixel, GetFourBits(BitRight(c,xoff)));
-	    	    	c = BitLeft(c,4 - xoff);
+	    	    	WriteBitGroup(dst, pixel, GetBitGroup(BitRight(c,xoff)));
+	    	    	c = BitLeft(c,PGSZB - xoff); 
 	    	    	dst += DST_INC;
 	    	    	while (c)
 	    	    	{
-		    	    WriteFourBits(dst, pixel, GetFourBits(c));
-		    	    NextFourBits(c);
+		    	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+		    	    NextBitGroup(c);
 		    	    dst += DST_INC;
 	    	    	}
 		    }
 	    	} while (--hTmp);
 	    	break;
-#else
+#else /* !USE_LEFT_BITS */
 	    	{
 		    int h;
     
@@ -368,7 +373,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    	}
 	    	glyphBits = clips;
 	    	/* fall through */
-#endif
+#endif /* USE_LEFT_BITS */
 	    case rgnIN:
 #ifdef STIPPLE
 	    	STIPPLE(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
@@ -390,25 +395,25 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 			 * are non-zero are written ...
 			 */
 #ifndef GLYPHROP
-	    	    	WriteFourBits(dst, pixel, GetFourBits(BitRight(c,xoff)));
-	    	    	c = BitLeft(c,4-xoff);
+	    	    	WriteBitGroup(dst, pixel, GetBitGroup(BitRight(c,xoff)));
+	    	    	c = BitLeft(c,PGSZB - xoff);
 	    	    	dst += DST_INC;
-#else
-                        if (bits = GetFourBits(BitRight(c,xoff)))
-	    	    	  WriteFourBits(dst, pixel, bits);
-	    	    	c = BitLeft(c,4-xoff);
+#else /* GLYPHROP */
+                        if (bits = GetBitGroup(BitRight(c,xoff)))
+	    	    	  WriteBitGroup(dst, pixel, bits);
+	    	    	c = BitLeft(c,PGSZB - xoff);
 	    	    	dst += DST_INC;
 
-			while (c && ((bits = GetFourBits(c)) == 0))
+			while (c && ((bits = GetBitGroup(c)) == 0))
 		        {
-		    	    NextFourBits(c);
+		    	    NextBitGroup(c);
 		    	    dst += DST_INC;
                         } 
-#endif
+#endif /* GLYPHROP */
 	    	    	while (c)
 	    	    	{
-		    	    WriteFourBits(dst, pixel, GetFourBits(c));
-		    	    NextFourBits(c);
+		    	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+		    	    NextBitGroup(c);
 		    	    dst += DST_INC;
 	    	    	}
 		    }

@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbblt.c,v 1.10 93/07/17 09:54:08 dpw Exp $ */
+/* $XConsortium: cfbblt.c,v 1.11 93/09/13 09:35:17 dpw Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -336,13 +336,21 @@ psrc += UNROLL;
 	    {
 		if (xoffSrc > xoffDst)
 		{
+#if PGSZ == 32
 		    leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
-		    rightShift = 32 - leftShift;
+#else /* PGSZ == 64 */
+		    leftShift = (xoffSrc - xoffDst) << (6 - PWSH);
+#endif /* PGSZ */
+		    rightShift = PGSZ - leftShift;
 		}
 		else
 		{
+#if PGSZ == 32
 		    rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
-		    leftShift = 32 - rightShift;
+#else /* PGSZ == 64 */
+		    rightShift = (xoffDst - xoffSrc) << (6 - PWSH);
+#endif /* PGSZ */
+		    leftShift = PGSZ - rightShift;
 		}
 		while (h--)
 		{
@@ -501,13 +509,21 @@ psrc -= UNROLL;
 	    {
 		if (xoffDst > xoffSrc)
 		{
+#if PGSZ == 32
 		    rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
-		    leftShift = 32 - rightShift;
+#else /* PGSZ == 64 */
+		    rightShift = (xoffDst - xoffSrc) << (6 - PWSH);
+#endif /* PGSZ */
+		    leftShift = PGSZ - rightShift;
 		}
 		else
 		{
+#if PGSZ == 32
 		    leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
-		    rightShift = 32 - leftShift;
+#else /* PGSZ == 64 */
+		    leftShift = (xoffSrc - xoffDst) << (6 - PWSH);
+#endif /* PGSZ */
+		    rightShift = PGSZ - leftShift;
 		}
 		while (h--)
 		{

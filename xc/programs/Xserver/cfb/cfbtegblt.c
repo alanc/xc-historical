@@ -1,4 +1,4 @@
-/* $XConsortium: cfbtegblt.c,v 5.5 93/09/13 09:35:01 dpw Exp $ */
+/* $XConsortium: cfbtegblt.c,v 5.6 93/09/20 20:10:23 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -34,8 +34,9 @@ SOFTWARE.
 #include	"pixmapstr.h"
 #include	"regionstr.h"
 #include	"cfbmskbits.h"
-
-extern void miImageGlyphBlt();
+#include	"mi.h"
+#define MFB_CONSTS_ONLY
+#include	"maskbits.h"
 
 /*
     this works for fonts with glyphs <= 32 bits wide, on an
@@ -105,8 +106,7 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     fgfill = PFILL(pGC->fgPixel);
     bgfill = PFILL(pGC->bgPixel);
 
-    switch ((*pGC->pScreen->RectIn)(
-                ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
+    switch ((*pGC->pScreen->RectIn)( cfbGetCompositeClip(pGC), &bbox))
     {
       case rgnOUT:
 	break;
@@ -153,9 +153,9 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		{
 		    tmpx = x & PIM;
 		    w = min(width, PPW - tmpx);
-		    w = min(w, (32 - xtemp));
+		    w = min(w, (PGSZ - xtemp));
 
-		    ptemp = (unsigned long *)(pglyph + (xtemp >> 5));
+		    ptemp = (unsigned long *)(pglyph + (xtemp >> MFB_PWSH));
 		    getstipplepixels(ptemp,xtemp,w,0,&bgfill,&tmpDst1);
 		    getstipplepixels(ptemp,xtemp,w,1,&fgfill,&tmpDst2);
 

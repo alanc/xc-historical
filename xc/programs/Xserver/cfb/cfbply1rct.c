@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbply1rct.c,v 1.11 92/05/18 14:37:44 keith Exp $
+ * $XConsortium: cfbply1rct.c,v 1.12 93/09/18 15:00:14 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -73,7 +73,7 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	return;
     }
     
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
+    devPriv = cfbGetGCPrivate(pGC);
 #ifdef NO_ONE_RECT
     if (REGION_NUM_RECTS(devPriv->pCompositeClip) != 1)
     {
@@ -261,11 +261,18 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	    c = l & PIM;
 	    l -= c;
 #endif
-#if PWSH > 2
-	    l = l >> (PWSH - 2);
+
+#if PGSZ == 32
+#define LWRD_SHIFT 2
+#else /* PGSZ == 64 */
+#define LWRD_SHIFT 3
+#endif /* PGSZ */
+
+#if PWSH > LWRD_SHIFT
+	    l = l >> (PWSH - LWRD_SHIFT);
 #endif
-#if PWSH < 2
-	    l = l << (2 - PWSH);
+#if PWSH < LWRD_SHIFT
+	    l = l << (LWRD_SHIFT - PWSH);
 #endif
 	    addr = (unsigned long *) (((char *) addrl) + l);
 #if PPW > 1

@@ -26,18 +26,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.h,v 4.21 91/12/19 14:41:39 keith Exp $ */
+/* $XConsortium: cfbmskbits.h,v 4.22 93/02/07 13:36:15 rws Exp $ */
 /* Optimizations for PSZ == 32 added by Kyle Marvin (marvin@vitec.com) */
 
-extern unsigned int cfbstarttab[];
-extern unsigned int cfbendtab[];
-extern unsigned int cfbstartpartial[];
-extern unsigned int cfbendpartial[];
-extern unsigned int cfbrmask[];
-extern unsigned int cfbmask[];
-extern unsigned int QuartetBitsTable[];
-extern unsigned int QuartetPixelMaskTable[];
-
+#include	"X.h"
+#include	"Xmd.h"
+#include	"servermd.h"
 
 /*
  * ==========================================================================
@@ -55,18 +49,37 @@ extern unsigned int QuartetPixelMaskTable[];
  * going on in the pixel calculations, and that make it easier to change the 
  * pixel size.
  *
- * name	    mfb	    cfb	    explanation
- * ----	    ---	    ---	    -----------
- * PPW	    32	    4	    pixels per word
- * PLST	    31	    3	    last pixel in a word (should be PPW-1)
- * PIM	    0x1f    0x03    pixel index mask (index within a word)
- * PWSH	    5	    2	    pixel-to-word shift
- * PSZ	    1	    8	    pixel size (bits)
- * PMSK	    0x01    0xFF    single-pixel mask
+ * name	    explanation
+ * ----	    -----------
+ * PSZ	    pixel size (in bits)
+ * PGSZ     pixel group size (in bits)
+ * PGSZB    pixel group size (in bytes)
+ * PGSZBMSK mask with lowest PGSZB bits set to 1
+ * PPW	    pixels per word (pixels per pixel group)
+ * PPWMSK   mask with lowest PPW bits set to 1
+ * PLST	    index of last pixel in a word (should be PPW-1)
+ * PIM	    pixel index mask (index within a pixel group)
+ * PWSH	    pixel-to-word shift (should be log2(PPW))
+ * PMSK	    mask with lowest PSZ bits set to 1
  *
- * Note that even with these new macros, there are still many dependencies 
- * in the code on the fact that there are 32 bits (not necessarily pixels) 
- * in each word.  These macros remove the dependency that 1 pixel == 1 bit.
+ *
+ * Here are some sample values.  In the notation cfbA,B: A is PSZ, and
+ * B is PGSZB.  All the other values are derived from these
+ * two.  This table does not show all combinations!
+ *
+ * name	    mfb1,4 cfb8,4    cfb32,4      cfb8,8    cfb32,8
+ * ----	    ------ ------    -------      ------    -------
+ * PSZ	     1	    8	      32	    8         32
+ * PGSZ	    32     32         32           64        64
+ * PGSZB     4      4          4            8         8
+ * PGSZBMSK 0xF    0xF       0xF          0xFF      0xFF
+ * PPW	    32	    4	       1	     8         2
+ * PPWMSK	   0xF       0x1          0xFF      0x3    
+ * PLST	    31	    3	       0	     7         1
+ * PIM	    0x1f   0x03      0x0	  0x7       0x1
+ * PWSH	    5	    2	       0	    3         1
+ * PMSK	    0x01   0xFF      0xFFFFFFFF   0xFF      0xFFFFFFFF
+ *
  *
  * I have also added a new macro, PFILL, that takes one pixel and
  * replicates it throughout a word.  This macro definition is dependent
@@ -83,38 +96,87 @@ extern unsigned int QuartetPixelMaskTable[];
  * ==========================================================================
  */
 
+/*
+ *  PSZ needs to be defined before we get here.  Usually it comes from a
+ *  -DPSZ=foo on the compilation command line.
+ */
+
+/*
+ *  PixelGroup is the data type used to operate on groups of pixels.
+ *  We typedef it here to unsigned long with the assumption that you
+ *  want to manipulate as many pixels at a time as you can.  If unsigned
+ *  long is not appropriate for your server, define it to something else
+ *  before including this file.  In this case you will also have to define
+ *  PGSZB to the size in bytes of PixelGroup.
+ */
+#ifndef PixelGroup
+typedef unsigned long PixelGroup;
+#ifdef LONG64
+#define PGSZB 8
+#else
+#define PGSZB 4
+#endif /* LONG64 */
+#endif /* PixelGroup */
+
+#define PGSZ	(PGSZB << 3)
+#define PPW	(PGSZ/PSZ)
 #define PLST	(PPW-1)
 #define PIM	PLST
-#define PMSK	((1 << PSZ) - 1)
+#define PMSK	(((PixelGroup)1 << PSZ) - 1)
+#define PPWMSK  (((PixelGroup)1 << PPW) - 1) /* instead of BITMSK */
+#define PGSZBMSK (((PixelGroup)1 << PGSZB) - 1)
 
-#if PSZ == 4
-#define PPW	8
-#define PWSH	3
-#endif
+/*  set PWSH = log2(PPW) using brute force */
+
+#if PPW == 1
+#define PWSH 0
+#else
+#if PPW == 2
+#define PWSH 1
+#else
+#if PPW == 4
+#define PWSH 2
+#else
+#if PPW == 8
+#define PWSH 3
+#else
+#if PPW == 16
+#define PWSH 4
+#endif /* PPW == 16 */
+#endif /* PPW == 8 */
+#endif /* PPW == 4 */
+#endif /* PPW == 2 */
+#endif /* PPW == 1 */
+
+/*  Defining PIXEL_ADDR means that individual pixels are addressable by this
+ *  machine (as type PixelType).  A possible CFB architecture which supported
+ *  8-bits-per-pixel on a non byte-addressable machine would not have this
+ *  defined.
+ *
+ *  Defining FOUR_BIT_CODE means that cfb knows how to stipple on this machine;
+ *  eventually, stippling code for 16 and 32 bit devices should be written
+ *  which would allow them to also use FOUR_BIT_CODE.  There isn't that
+ *  much to do in those cases, but it would make them quite a bit faster.
+ */
 
 #if PSZ == 8
-#define PPW	4
-#define PWSH	2
 #define PIXEL_ADDR
+typedef CARD8 PixelType;
 #define FOUR_BIT_CODE
-#define PixelType   unsigned char
 #endif
 
 #if PSZ == 16
-#define PPW	2
-#define PWSH	1
 #define PIXEL_ADDR
-#define PixelType   unsigned short
+typedef CARD16 PixelType;
 #endif
 
 #if PSZ == 32
-#define PPW	1
-#define PWSH	0
 #undef PMSK
 #define PMSK	0xFFFFFFFF
 #define PIXEL_ADDR
-#define PixelType   unsigned long
+typedef CARD32 PixelType;
 #endif
+
 
 /* the following notes use the following conventions:
 SCREEN LEFT				SCREEN RIGHT
@@ -230,9 +292,6 @@ getleftbits(psrc, w, dst)
 	<=PPW bits wide.
 */
 
-#include	"X.h"
-#include	"Xmd.h"
-#include	"servermd.h"
 #if	(BITMAP_BIT_ORDER == MSBFirst)
 #define BitRight(lw,n)	((lw) >> (n))
 #define BitLeft(lw,n)	((lw) << (n))
@@ -248,6 +307,31 @@ getleftbits(psrc, w, dst)
  * Note that the shift direction is independent of the byte ordering of the 
  * machine.  The following is portable code.
  */
+#if PPW == 16
+#define PFILL(p) ( ((p)&PMSK)          | \
+		   ((p)&PMSK) <<   PSZ | \
+		   ((p)&PMSK) << 2*PSZ | \
+		   ((p)&PMSK) << 3*PSZ | \
+		   ((p)&PMSK) << 4*PSZ | \
+		   ((p)&PMSK) << 5*PSZ | \
+		   ((p)&PMSK) << 6*PSZ | \
+		   ((p)&PMSK) << 7*PSZ | \
+		   ((p)&PMSK) << 8*PSZ | \
+		   ((p)&PMSK) << 9*PSZ | \
+		   ((p)&PMSK) << 10*PSZ | \
+		   ((p)&PMSK) << 11*PSZ | \
+		   ((p)&PMSK) << 12*PSZ | \
+		   ((p)&PMSK) << 13*PSZ | \
+		   ((p)&PMSK) << 14*PSZ | \
+		   ((p)&PMSK) << 15*PSZ ) 
+#define PFILL2(p, pf) { \
+    pf = (p) & PMSK; \
+    pf |= (pf << PSZ); \
+    pf |= (pf << 2*PSZ); \
+    pf |= (pf << 4*PSZ); \
+    pf |= (pf << 8*PSZ); \
+}
+#endif /* PPW == 16 */
 #if PPW == 8
 #define PFILL(p) ( ((p)&PMSK)          | \
 		   ((p)&PMSK) <<   PSZ | \
@@ -298,7 +382,7 @@ getleftbits(psrc, w, dst)
 #define DoMaskRRop(dst, and, xor, mask) \
     (((dst) & ((and) | ~(mask))) ^ (xor & mask))
 
-#if PSZ != 32
+#if PSZ != 32 || PPW != 1
 
 #define maskbits(x, w, startmask, endmask, nlw) \
     startmask = cfbstarttab[(x)&PIM]; \
@@ -333,7 +417,7 @@ else \
 #define putbits(src, x, w, pdst, planemask) \
 if ( ((x)+(w)) <= PPW) \
 { \
-    unsigned long tmpmask; \
+    PixelGroup tmpmask; \
     maskpartialbits((x), (w), tmpmask); \
     tmpmask &= PFILL(planemask); \
     *(pdst) = (*(pdst) & ~tmpmask) | (SCRRIGHT(src, x) & tmpmask); \
@@ -342,7 +426,7 @@ else \
 { \
     unsigned long m; \
     unsigned long n; \
-    unsigned long pm = PFILL(planemask); \
+    PixelGroup pm = PFILL(planemask); \
     m = PPW-(x); \
     n = (w) - m; \
     *(pdst) = (*(pdst) & (cfbendtab[x] | ~pm)) | \
@@ -371,7 +455,7 @@ else \
 #define putbits(src, x, w, pdst, planemask) \
 { \
     if (planemask != PMSK) { \
-        unsigned long _m, _pm; \
+        PixelGroup _m, _pm; \
         FASTGETBITS(pdst, (x) * PSZ , (w) * PSZ, _m); \
         PFILL2(planemask, _pm); \
         _m &= (~_pm); \
@@ -388,8 +472,8 @@ else \
 #define putbitsrop(src, x, w, pdst, planemask, rop) \
 if ( ((x)+(w)) <= PPW) \
 { \
-    unsigned long tmpmask; \
-    unsigned long t1, t2; \
+    PixelGroup tmpmask; \
+    PixelGroup t1, t2; \
     maskpartialbits((x), (w), tmpmask); \
     PFILL2(planemask, t1); \
     tmpmask &= t1; \
@@ -401,8 +485,8 @@ else \
 { \
     unsigned long m; \
     unsigned long n; \
-    unsigned long t1, t2; \
-    unsigned long pm; \
+    PixelGroup t1, t2; \
+    PixelGroup pm; \
     PFILL2(planemask, pm); \
     m = PPW-(x); \
     n = (w) - m; \
@@ -415,7 +499,7 @@ else \
 	(t2 & (cfbendtab[n] & pm)); \
 }
 
-#else /* PSZ == 32 */
+#else /* PSZ == 32 && PPW == 1*/
 
 /*
  * These macros can be optimized for 32-bit pixels since there is no
@@ -454,7 +538,7 @@ else \
 
 #define putbitsrop(src, x, w, pdst, planemask, rop) \
 { \
-    unsigned long t1; \
+    PixelGroup t1; \
     DoRop(t1, rop, (src), *(pdst)); \
     *(pdst) = (*(pdst) & ~planemask) | (t1 & planemask); \
 }
@@ -468,8 +552,8 @@ else \
 
 /* useful only when not spanning destination longwords */
 #define putbitsmropshort(src,x,w,pdst) {\
-    unsigned long   _tmpmask; \
-    unsigned long   _t1; \
+    PixelGroup   _tmpmask; \
+    PixelGroup   _t1; \
     maskpartialbits ((x), (w), _tmpmask); \
     _t1 = SCRRIGHT((src), (x)); \
     *pdst = DoMaskMergeRop(_t1, *pdst, _tmpmask); \
@@ -477,9 +561,9 @@ else \
 
 /* useful only when spanning destination longwords */
 #define putbitsmroplong(src,x,w,pdst) { \
-    unsigned long   _startmask, _endmask; \
+    PixelGroup   _startmask, _endmask; \
     int		    _m; \
-    unsigned long   _t1; \
+    PixelGroup   _t1; \
     _m = PPW - (x); \
     _startmask = cfbstarttab[x]; \
     _endmask = cfbendtab[(w) - _m]; \
@@ -553,7 +637,7 @@ if ((x) + (w) <= PPW) {\
 #if (BITMAP_BIT_ORDER == MSBFirst)
 #define getstipplepixels( psrcstip, x, w, ones, psrcpix, destpix ) \
 { \
-    unsigned int q; \
+    PixelGroup q; \
     int m; \
     if ((m = ((x) - ((PPW*PSZ)-PPW))) > 0) { \
         q = (*(psrcstip)) << m; \
@@ -568,7 +652,7 @@ if ((x) + (w) <= PPW) {\
 #else /* BITMAP_BIT_ORDER == LSB */
 #define getstipplepixels( psrcstip, xt, w, ones, psrcpix, destpix ) \
 { \
-    unsigned int q; \
+    PixelGroup q; \
     q = *(psrcstip) >> (xt); \
     if ( ((xt)+(w)) > (PPW*PSZ) ) \
         q |= (*((psrcstip)+1)) << ((PPW*PSZ)-(xt)); \
@@ -576,3 +660,12 @@ if ((x) + (w) <= PPW) {\
     *(destpix) = (*(psrcpix)) & QuartetPixelMaskTable[q]; \
 }
 #endif
+
+extern PixelGroup cfbstarttab[];
+extern PixelGroup cfbendtab[];
+extern PixelGroup cfbstartpartial[];
+extern PixelGroup cfbendpartial[];
+extern PixelGroup cfbrmask[];
+extern PixelGroup cfbmask[];
+extern PixelGroup QuartetBitsTable[];
+extern PixelGroup QuartetPixelMaskTable[];

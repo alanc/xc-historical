@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.46 93/08/30 07:49:51 dpw Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.47 93/09/13 09:35:09 dpw Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -32,6 +32,8 @@ Author: Keith Packard
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
 #include	"fastblt.h"
+#define MFB_CONSTS_ONLY
+#include	"maskbits.h"
 
 RegionPtr
 cfbBitBlt (pSrcDrawable, pDstDrawable,
@@ -86,7 +88,7 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
 	if ((pSrcDrawable == pDstDrawable) &&
 	    (pGC->clientClipType == CT_NONE))
 	{
-	    prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	    prgnSrcClip = cfbGetCompositeClip(pGC);
 	}
 	else
 	{
@@ -108,7 +110,7 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
 	    else if ((pSrcDrawable == pDstDrawable) &&
 		(pGC->clientClipType == CT_NONE))
 	    {
-		prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+		prgnSrcClip = cfbGetCompositeClip(pGC);
 	    }
 	    else
 	    {
@@ -200,7 +202,7 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
 	 * composite clip from an mfb gc
 	 */
 
-	cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	cclip = cfbGetCompositeClip(pGC);
         if (REGION_NUM_RECTS(cclip) == 1)
         {
 	    BoxPtr pBox = REGION_RECTS(cclip);
@@ -234,7 +236,7 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
     {
 	(*pGC->pScreen->Intersect)(&rgnDst,
 				   &rgnDst,
-				 ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+				   cfbGetCompositeClip(pGC));
     }
 
     /* Do bit blitting */
@@ -262,7 +264,7 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
     }
 
     prgnExposed = NULL;
-    if (((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose)
+    if ( cfbGetGCPrivate(pGC)->fExpose)
     {
 	extern RegionPtr    miHandleExposures();
 
@@ -336,7 +338,7 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 	}
     }
     return cfbBitBlt (pSrcDrawable, pDstDrawable,
-            pGC, srcx, srcy, width, height, dstx, dsty, doBitBlt, 0);
+            pGC, srcx, srcy, width, height, dstx, dsty, doBitBlt, 0L);
 }
 
 #if PSZ == 8
@@ -381,7 +383,6 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 				     * the main "middle" loop */
 
     cfbGetLongWidthAndPointer (pSrcDrawable, widthSrc, psrcBase)
-
     cfbGetLongWidthAndPointer (pDstDrawable, widthDst, pdstBase)
 
     nbox = REGION_NUM_RECTS(prgnDst);
@@ -397,20 +398,14 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	pbox++;
 	pptSrc++;
 
-	/* (srcx >> 5) divides by 32 to get the number of words.  (32 pixels
-	 * per word in the source since it is a bitmap.) */
-	psrcLine = psrcBase + srcy * widthSrc + (srcx >> 5);
-
-	/* (dstx >> 2) divides by 4 to get the number of words.  (4 pixels
-	 * per word in the destination since it is an 8bpp drawable.) */
-	pdstLine = pdstBase + dsty * widthDst + (dstx >> 2);
-
-	xoffSrc = srcx & 0x1f; /* mod 32 finds starting bit in src */
-	xoffDst = dstx & 0x3;  /* mod 4 finds starting byte in dst */
+	psrcLine = psrcBase + srcy * widthSrc + (srcx >> MFB_PWSH);
+	pdstLine = pdstBase + dsty * widthDst + (dstx >> PWSH);
+	xoffSrc = srcx & MFB_PIM; /* finds starting bit in src */
+	xoffDst = dstx & PIM;  /* finds starting byte in dst */
 
 	/* compute startmask, endmask, nlMiddle */
 
-	if (xoffDst + width < 4) /* XXX should this be '<= 4' ? */
+	if (xoffDst + width < PPW) /* XXX should this be '<= PPW' ? */
 	{ /* the copy only affects one word per row in destination */
 	    maskpartialbits(dstx, width, startmask);
 	    endmask = 0;  /* nothing on right edge */
@@ -429,23 +424,24 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	if (startmask)
 	{
 	    firstoff = xoffSrc - xoffDst;
-	    if (firstoff > 28)
-		secondoff = 32 - firstoff;
+	    if (firstoff > (MFB_PPW-PPW))
+		secondoff = MFB_PPW - firstoff;
 	    if (xoffDst)
 	    {
-	    	srcx += (4-xoffDst);
-	    	xoffSrc = srcx & 0x1f;
+	    	srcx += (PPW-xoffDst);
+	    	xoffSrc = srcx & MFB_PIM;
 	    }
 	}
 	leftShift = xoffSrc;
-	rightShift = 32 - leftShift;
+	rightShift = MFB_PPW - leftShift;
 
-	pixelsRemainingOnRightEdge = (nlMiddle & 7) + ((dstx + width) & 3);
+	pixelsRemainingOnRightEdge = (nlMiddle & 7) + ((dstx + width) & PIM);
 
 	/* setup is done; now let's move some bits */
 
 	/* caller must call cfb8CheckOpaqueStipple before this function
-	 * to set cfb8StippleRRop! */
+	 * to set cfb8StippleRRop!
+	 */
 
 	if (cfb8StippleRRop == GXcopy)
 	{
@@ -467,14 +463,14 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 			 * need a more cautious test for partialmask
 			 * case...
 			 */
-		    	if (firstoff >= 28)
+		    	if (firstoff >= (MFB_PPW-PPW))
 		    	{
 			    bits = *psrc++;
-			    if (firstoff != 28)
+			    if (firstoff != (MFB_PPW-PPW))
 				tmp |= BitRight (bits, secondoff);
 		    	}
 		    }
-		    *pdst = (*pdst & ~startmask) | (GetFourPixels(tmp) & startmask);
+		    *pdst = (*pdst & ~startmask) | (GetPixelGroup(tmp) & startmask);
 		    pdst++;
 	    	}
 	    	nl = nlMiddle;
@@ -483,7 +479,7 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 		    nl -= 8;
 		    tmp = BitLeft(bits, leftShift);
 		    bits = *psrc++;
-		    if (rightShift != 32)
+		    if (rightShift != MFB_PPW)
 		    	tmp |= BitRight(bits, rightShift);
 
 #ifdef FAST_CONSTANT_OFFSET_MODE
@@ -496,11 +492,11 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 # define StoreRopPixels(pdst,o,and,xor)	*(pdst) = DoRRop(*(pdst),and,xor); (pdst)++;
 #endif
 
-#define Step(c)			NextFourBits(c);
-#define StoreBitsPlain(o,c)	StorePixels(pdst,o,GetFourPixels(c))
+#define Step(c)			NextBitGroup(c);
+#define StoreBitsPlain(o,c)	StorePixels(pdst,o,GetPixelGroup(c))
 #define StoreRopBitsPlain(o,c)	StoreRopPixels(pdst,o,\
-					cfb8StippleAnd[GetFourBits(c)], \
-					cfb8StippleXor[GetFourBits(c)])
+					cfb8StippleAnd[GetBitGroup(c)], \
+					cfb8StippleXor[GetBitGroup(c)])
 #define StoreBits0(c)		StoreBitsPlain(0,c)
 #define StoreRopBits0(c)	StoreRopBitsPlain(0,c)
 
@@ -508,14 +504,23 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 # define StoreBits(o,c)	StoreBitsPlain(o,c)
 # define StoreRopBits(o,c)  StoreRopBitsPlain(o,c)
 # define FirstStep(c)	Step(c)
+#else /* BITMAP_BIT_ORDER == LSBFirst */
+#if PGSZ == 64
+# define StoreBits(o,c)	StorePixels(pdst,o, (cfb8Pixels[c & 0xff]))
+# define StoreRopBits(o,c)  StoreRopPixels(pdst,o, \
+    (cfb8StippleAnd[c & 0xff]), \
+    (cfb8StippleXor[c & 0xff]))
+# define FirstStep(c)	c = BitLeft (c, 8);
 #else
+/* 0x3c is 0xf << 2 (4 bits, long word) */
 # define StoreBits(o,c)	StorePixels(pdst,o,*((unsigned long *)\
 			    (((char *) cfb8Pixels) + (c & 0x3c))))
 # define StoreRopBits(o,c)  StoreRopPixels(pdst,o, \
-	    *((unsigned long *) (((char *) cfb8StippleAnd) + (c & 0x3c))), \
-	    *((unsigned long *) (((char *) cfb8StippleXor) + (c & 0x3c))))
+    *((unsigned long *) (((char *) cfb8StippleAnd) + (c & 0x3c))), \
+    *((unsigned long *) (((char *) cfb8StippleXor) + (c & 0x3c))))
 # define FirstStep(c)	c = BitLeft (c, 2);
-#endif
+#endif /* PGSZ */
+#endif /* BITMAP_BIT_ORDER */
 
 		    StoreBits0(tmp);	FirstStep(tmp);
 		    StoreBits(1,tmp);	Step(tmp);
@@ -557,7 +562,7 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 			StoreBitsPlain(-1,tmp);	Step(tmp);
 		    }
 		    if (endmask)
-		    	*pdst = (*pdst & ~endmask) | (GetFourPixels(tmp) & endmask);
+		    	*pdst = (*pdst & ~endmask) | (GetPixelGroup(tmp) & endmask);
 	    	}
 	    }
 	}
@@ -580,14 +585,14 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 		    else
 		    {
 		    	tmp = BitLeft (bits, firstoff);
-		    	if (firstoff >= 28)
+		    	if (firstoff >= (MFB_PPW-PPW))
 		    	{
 			    bits = *psrc++;
-			    if (firstoff != 28)
+			    if (firstoff != (MFB_PPW-PPW))
 				tmp |= BitRight (bits, secondoff);
 		    	}
 		    }
-		    src = GetFourBits(tmp);
+		    src = GetBitGroup(tmp);
 		    *pdst = MaskRRopPixels (*pdst, src, startmask);
 		    pdst++;
 	    	}
@@ -600,9 +605,9 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 		    nl -= 8;
 		    tmp = BitLeft(bits, leftShift);
 		    bits = *psrc++;
-		    if (rightShift != 32)
+		    if (rightShift != MFB_PPW)
 			tmp |= BitRight(bits, rightShift);
-		    StoreRopBits0(tmp);	FirstStep(tmp);
+		    StoreRopBits0(tmp);		FirstStep(tmp);
 		    StoreRopBits(1,tmp);	Step(tmp);
 		    StoreRopBits(2,tmp);	Step(tmp);
 		    StoreRopBits(3,tmp);	Step(tmp);
@@ -625,14 +630,14 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 		    }
 		    while (nl--)
 		    {
-			src = GetFourBits (tmp);
+			src = GetBitGroup (tmp);
 			*pdst = RRopPixels (*pdst, src);
 		    	pdst++;
-			NextFourBits(tmp);
+			NextBitGroup(tmp);
 		    }
 		    if (endmask)
 		    {
-			src = GetFourBits (tmp);
+			src = GetBitGroup (tmp);
 			*pdst = MaskRRopPixels (*pdst, src, endmask);
 		    }
 	    	}
@@ -688,7 +693,8 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
     	else if ((pGC->fgPixel & 1) == (pGC->bgPixel & 1))
 	    pGC->alu = mfbReduceRop(pGC->alu, pGC->fgPixel);
 	ret = cfbBitBlt (pSrcDrawable, pDstDrawable,
-		    pGC, srcx, srcy, width, height, dstx, dsty, cfbCopyPlane8to1, bitPlane);
+			 pGC, srcx, srcy, width, height, dstx, dsty, 
+			 cfbCopyPlane8to1, bitPlane);
 	pGC->alu = oldalu;
     }
     else if (pSrcDrawable->bitsPerPixel == 8 && pDstDrawable->bitsPerPixel == 8)
@@ -714,7 +720,8 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	ValidateGC ((DrawablePtr) pBitmap, pGC1);
 	/* no exposures here, scratch GC's don't get graphics expose */
 	(void) cfbBitBlt (pSrcDrawable, (DrawablePtr) pBitmap,
-			    pGC1, srcx, srcy, width, height, 0, 0, cfbCopyPlane8to1, bitPlane);
+			  pGC1, srcx, srcy, width, height, 0, 0, 
+			  cfbCopyPlane8to1, bitPlane);
 	cfb8CheckOpaqueStipple (pGC->alu,
 				pGC->fgPixel, pGC->bgPixel,
 				pGC->planemask);

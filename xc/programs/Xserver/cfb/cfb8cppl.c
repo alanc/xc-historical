@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8cppl.c,v 1.10 92/12/24 13:31:20 rws Exp $
+ * $XConsortium: cfb8cppl.c,v 1.11 93/09/13 09:35:18 dpw Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -38,7 +38,7 @@
 #include "mergerop.h"
 
 #if BITMAP_BIT_ORDER == MSBFirst
-#define LeftMost    31
+#define LeftMost    (PGSZ-1)
 #define StepBit(bit, inc)  ((bit) -= (inc))
 #else
 #define LeftMost    0
@@ -123,8 +123,8 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	pptSrc++;
 	psrcLine = psrcBase + srcy * widthSrc + srcx;
 	pdstLine = mfbScanline(pdstBase, dstx, dsty, widthDst);
-	dstx &= 0x1f;
-	if (dstx + width <= 32)
+	dstx &= MFB_PIM;
+	if (dstx + width <= MFB_PPW)
 	{
 	    maskpartialbits(dstx, width, startmask);
 	    nlMiddle = 0;
@@ -136,13 +136,13 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	}
 	if (startmask)
 	{
-	    niStart = 32 - dstx;
+	    niStart = MFB_PPW - dstx; /* XXX Dec has min(,width) */
 	    bitStart = LeftMost;
 	    StepBit (bitStart, dstx);
 	}
 	if (endmask)
 	{
-	    niEnd = (dstx + width) & 0x1f;
+	    niEnd = (dstx + width) & MFB_PIM;
 	    bitEnd = LeftMost;
 	}
 	if (rop == GXcopy)
@@ -164,7 +164,7 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	    	nl = nlMiddle;
 	    	while (nl--)
 	    	{
-		    i = 32;
+		    i = MFB_PPW;
 		    curBit = LeftMost;
 		    GetBits (psrc, i, curBit, bitPos, bits);
 		    *pdst++ = bits;
@@ -197,7 +197,7 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	    	nl = nlMiddle;
 	    	while (nl--)
 	    	{
-		    i = 32;
+		    i = MFB_PPW;
 		    curBit = LeftMost;
 		    GetBits (psrc, i, curBit, bitPos, bits);
 		    *pdst = MROP_SOLID(bits, *pdst);

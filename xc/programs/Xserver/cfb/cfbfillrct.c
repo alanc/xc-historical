@@ -16,7 +16,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbfillrct.c,v 5.14 91/12/19 18:36:18 keith Exp $ */
+/* $XConsortium: cfbfillrct.c,v 5.15 93/09/13 09:34:59 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -41,9 +41,9 @@ cfbFillBoxTileOdd (pDrawable, n, rects, tile, xrot, yrot)
     int		xrot, yrot;
 {
     if (tile->drawable.width & PIM)
-	cfbFillBoxTileOddCopy (pDrawable, n, rects, tile, xrot, yrot, GXcopy, ~0);
+	cfbFillBoxTileOddCopy (pDrawable, n, rects, tile, xrot, yrot, GXcopy, ~0L);
     else
-	cfbFillBoxTile32sCopy (pDrawable, n, rects, tile, xrot, yrot, GXcopy, ~0);
+	cfbFillBoxTile32sCopy (pDrawable, n, rects, tile, xrot, yrot, GXcopy, ~0L);
 }
 
 void
@@ -101,7 +101,7 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     int		    n;
     int		    xorg, yorg;
 
-    priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
+    priv = cfbGetGCPrivate(pGC);
     prgnClip = priv->pCompositeClip;
 
     BoxFill = 0;
@@ -121,8 +121,7 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	}
 	break;
     case FillTiled:
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-							pRotatedPixmap)
+	if (!cfbGetGCPrivate(pGC)->pRotatedPixmap)
 	    BoxFill = cfbFillRectTileOdd;
 	else
 	{
@@ -134,15 +133,13 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	break;
 #if PSZ == 8
     case FillStippled:
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-							pRotatedPixmap)
+	if (!cfbGetGCPrivate(pGC)->pRotatedPixmap)
 	    BoxFill = cfb8FillRectStippledUnnatural;
 	else
 	    BoxFill = cfb8FillRectTransparentStippled32;
 	break;
     case FillOpaqueStippled:
-	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-							pRotatedPixmap)
+	if (!cfbGetGCPrivate(pGC)->pRotatedPixmap)
 	    BoxFill = cfb8FillRectStippledUnnatural;
 	else
 	    BoxFill = cfb8FillRectOpaqueStippled32;

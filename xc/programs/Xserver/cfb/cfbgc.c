@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.57 93/09/18 15:08:25 rws Exp $ */
+/* $XConsortium: cfbgc.c,v 5.58 93/09/20 20:06:38 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -38,24 +38,24 @@ SOFTWARE.
 
 #include "mistruct.h"
 #include "mibstore.h"
+#include "migc.h"
 
 #include "cfbmskbits.h"
 #include "cfb8bit.h"
 
-void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
-void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
+void cfbValidateGC();
 
 #if PSZ == 8
 # define useTEGlyphBlt  cfbTEGlyphBlt8
 #else
-# ifdef WriteFourBits
+# ifdef WriteBitGroup
 #  define useTEGlyphBlt	cfbImageGlyphBlt8
 # else
 #  define useTEGlyphBlt	cfbTEGlyphBlt
 # endif
 #endif
 
-#ifdef WriteFourBits
+#ifdef WriteBitGroup
 # define useImageGlyphBlt	cfbImageGlyphBlt8
 # define usePolyGlyphBlt	cfbPolyGlyphBlt8
 #else
@@ -77,12 +77,12 @@ void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
 
 GCFuncs cfbGCFuncs = {
     cfbValidateGC,
-    cfbChangeGC,
-    cfbCopyGC,
-    cfbDestroyGC,
-    cfbChangeClip,
-    cfbDestroyClip,
-    cfbCopyClip,
+    miChangeGC,
+    miCopyGC,
+    miDestroyGC,
+    miChangeClip,
+    miDestroyClip,
+    miCopyClip,
 };
 
 GCOps	cfbTEOps1Rect = {
@@ -110,9 +110,9 @@ GCOps	cfbTEOps1Rect = {
     miImageText16,
     useTEGlyphBlt,
     usePolyGlyphBlt,
-    usePushPixels,
+    usePushPixels
 #ifdef NEED_LINEHELPER
-    NULL
+    ,NULL
 #endif
 };
 
@@ -141,9 +141,9 @@ GCOps	cfbNonTEOps1Rect = {
     miImageText16,
     useImageGlyphBlt,
     usePolyGlyphBlt,
-    usePushPixels,
+    usePushPixels
 #ifdef NEED_LINEHELPER
-    NULL
+    ,NULL
 #endif
 };
 
@@ -167,9 +167,9 @@ GCOps	cfbTEOps = {
     miImageText16,
     useTEGlyphBlt,
     usePolyGlyphBlt,
-    usePushPixels,
+    usePushPixels
 #ifdef NEED_LINEHELPER
-    NULL
+    ,NULL
 #endif
 };
 
@@ -197,9 +197,9 @@ GCOps	cfbNonTEOps = {
     miImageText16,
     useImageGlyphBlt,
     usePolyGlyphBlt,
-    usePushPixels,
+    usePushPixels
 #ifdef NEED_LINEHELPER
-    NULL
+    ,NULL
 #endif
 };
 
@@ -223,7 +223,7 @@ cfbMatchCommon (pGC, devPriv)
     {
 	if (TERMINALFONT(pGC->font)
 #ifdef FOUR_BIT_CODE
-	    && FONTMAXBOUNDS(pGC->font,characterWidth) >= 4
+	    && FONTMAXBOUNDS(pGC->font,characterWidth) >= PGSZB
 #endif
 	)
 #ifdef NO_ONE_RECT
@@ -271,64 +271,13 @@ cfbCreateGC(pGC)
     /* cfb wants to translate before scan conversion */
     pGC->miTranslate = 1;
 
-    pPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
+    pPriv = cfbGetGCPrivate(pGC);
     pPriv->rop = pGC->alu;
     pPriv->oneRect = FALSE;
     pPriv->fExpose = TRUE;
     pPriv->freeCompClip = FALSE;
     pPriv->pRotatedPixmap = (PixmapPtr) NULL;
     return TRUE;
-}
-
-/*ARGSUSED*/
-void
-cfbChangeGC(pGC, mask)
-    GC		    *pGC;
-    BITS32	    mask;
-{
-    return;
-}
-
-void
-cfbDestroyGC(pGC)
-    GC 			*pGC;
-{
-    cfbPrivGC *pPriv;
-
-    pPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
-    if (pPriv->pRotatedPixmap)
-	cfbDestroyPixmap(pPriv->pRotatedPixmap);
-    if (pPriv->freeCompClip)
-	(*pGC->pScreen->RegionDestroy)(pPriv->pCompositeClip);
-    cfbDestroyOps (pGC->ops);
-}
-
-/*
- * create a private op array for a gc
- */
-
-GCOps *
-cfbCreateOps (prototype)
-    GCOps	*prototype;
-{
-    GCOps	*ret;
-    extern Bool	Must_have_memory;
-
-    /* XXX */ Must_have_memory = TRUE;
-    ret = (GCOps *) xalloc (sizeof(GCOps));
-    /* XXX */ Must_have_memory = FALSE;
-    if (!ret)
-	return 0;
-    *ret = *prototype;
-    ret->devPrivate.val = 1;
-    return ret;
-}
-
-cfbDestroyOps (ops)
-    GCOps   *ops;
-{
-    if (ops->devPrivate.val)
-	xfree (ops);
 }
 
 /* Clipping conventions
@@ -347,7 +296,6 @@ cfbValidateGC(pGC, changes, pDrawable)
     Mask	    changes;
     DrawablePtr	    pDrawable;
 {
-    WindowPtr   pWin;
     int         mask;		/* stateChanges */
     int         index;		/* used for stepping through bitfields */
     int		new_rrop;
@@ -363,16 +311,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 
     pGC->lastWinOrg.x = pDrawable->x;
     pGC->lastWinOrg.y = pDrawable->y;
-    if (pDrawable->type != DRAWABLE_PIXMAP)
-    {
-	pWin = (WindowPtr) pDrawable;
-    }
-    else
-    {
-	pWin = (WindowPtr) NULL;
-    }
-
-    devPriv = ((cfbPrivGCPtr) (pGC->devPrivates[cfbGCPrivateIndex].ptr));
+    devPriv = cfbGetGCPrivate(pGC);
 
     new_rrop = FALSE;
     new_line = FALSE;
@@ -390,104 +329,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	(pDrawable->serialNumber != (pGC->serialNumber & DRAWABLE_SERIAL_BITS))
 	)
     {
-	ScreenPtr pScreen = pGC->pScreen;
-
-	if (pWin) {
-	    RegionPtr   pregWin;
-	    Bool        freeTmpClip, freeCompClip;
-
-	    if (pGC->subWindowMode == IncludeInferiors) {
-		pregWin = NotClippedByChildren(pWin);
-		freeTmpClip = TRUE;
-	    }
-	    else {
-		pregWin = &pWin->clipList;
-		freeTmpClip = FALSE;
-	    }
-	    freeCompClip = devPriv->freeCompClip;
-
-	    /*
-	     * if there is no client clip, we can get by with just keeping
-	     * the pointer we got, and remembering whether or not should
-	     * destroy (or maybe re-use) it later.  this way, we avoid
-	     * unnecessary copying of regions.  (this wins especially if
-	     * many clients clip by children and have no client clip.) 
-	     */
-	    if (pGC->clientClipType == CT_NONE) {
-		if (freeCompClip)
-		    (*pScreen->RegionDestroy) (devPriv->pCompositeClip);
-		devPriv->pCompositeClip = pregWin;
-		devPriv->freeCompClip = freeTmpClip;
-	    }
-	    else {
-		/*
-		 * we need one 'real' region to put into the composite
-		 * clip. if pregWin the current composite clip are real,
-		 * we can get rid of one. if pregWin is real and the
-		 * current composite clip isn't, use pregWin for the
-		 * composite clip. if the current composite clip is real
-		 * and pregWin isn't, use the current composite clip. if
-		 * neither is real, create a new region. 
-		 */
-
-		(*pScreen->TranslateRegion)(pGC->clientClip,
-					    pDrawable->x + pGC->clipOrg.x,
-					    pDrawable->y + pGC->clipOrg.y);
-						  
-		if (freeCompClip)
-		{
-		    (*pGC->pScreen->Intersect)(devPriv->pCompositeClip,
-					       pregWin, pGC->clientClip);
-		    if (freeTmpClip)
-			(*pScreen->RegionDestroy)(pregWin);
-		}
-		else if (freeTmpClip)
-		{
-		    (*pScreen->Intersect)(pregWin, pregWin, pGC->clientClip);
-		    devPriv->pCompositeClip = pregWin;
-		}
-		else
-		{
-		    devPriv->pCompositeClip = (*pScreen->RegionCreate)(NullBox,
-								       0);
-		    (*pScreen->Intersect)(devPriv->pCompositeClip,
-					  pregWin, pGC->clientClip);
-		}
-		devPriv->freeCompClip = TRUE;
-		(*pScreen->TranslateRegion)(pGC->clientClip,
-					    -(pDrawable->x + pGC->clipOrg.x),
-					    -(pDrawable->y + pGC->clipOrg.y));
-						  
-	    }
-	}			/* end of composite clip for a window */
-	else {
-	    BoxRec      pixbounds;
-
-	    /* XXX should we translate by drawable.x/y here ? */
-	    pixbounds.x1 = 0;
-	    pixbounds.y1 = 0;
-	    pixbounds.x2 = pDrawable->width;
-	    pixbounds.y2 = pDrawable->height;
-
-	    if (devPriv->freeCompClip)
-		(*pScreen->RegionReset)(devPriv->pCompositeClip, &pixbounds);
-	    else {
-		devPriv->freeCompClip = TRUE;
-		devPriv->pCompositeClip = (*pScreen->RegionCreate)(&pixbounds,
-								   1);
-	    }
-
-	    if (pGC->clientClipType == CT_REGION)
-	    {
-		(*pScreen->TranslateRegion)(devPriv->pCompositeClip,
-					    -pGC->clipOrg.x, -pGC->clipOrg.y);
-		(*pScreen->Intersect)(devPriv->pCompositeClip,
-				      devPriv->pCompositeClip,
-				      pGC->clientClip);
-		(*pScreen->TranslateRegion)(devPriv->pCompositeClip,
-					    pGC->clipOrg.x, pGC->clipOrg.y);
-	    }
-	}			/* end of composute clip for pixmap */
+	miComputeCompositeClip (pGC, pDrawable);
 #ifdef NO_ONE_RECT
 	devPriv->oneRect = FALSE;
 #else
@@ -548,11 +390,11 @@ cfbValidateGC(pGC, changes, pDrawable)
 		int width = pGC->stipple->drawable.width;
 		PixmapPtr nstipple;
 
-		if ((width <= 32) && !(width & (width - 1)) &&
+		if ((width <= PGSZ) && !(width & (width - 1)) &&
 		    (nstipple = cfbCopyPixmap(pGC->stipple)))
 		{
 		    cfbPadPixmap(nstipple);
-		    cfbDestroyPixmap(pGC->stipple);
+		    (*pGC->pScreen->DestroyPixmap)(pGC->stipple);
 		    pGC->stipple = nstipple;
 		}
 	    }
@@ -614,7 +456,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    {
 		int width = pGC->tile.pixmap->drawable.width * PSZ;
 
-		if ((width <= 32) && !(width & (width - 1)))
+		if ((width <= PGSZ) && !(width & (width - 1)))
 		{
 		    cfbCopyRotatePixmap(pGC->tile.pixmap,
 					&devPriv->pRotatedPixmap,
@@ -629,7 +471,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    {
 		int width = pGC->stipple->drawable.width;
 
-		if ((width <= 32) && !(width & (width - 1)))
+		if ((width <= PGSZ) && !(width & (width - 1)))
 		{
 		    mfbCopyRotatePixmap(pGC->stipple,
 					&devPriv->pRotatedPixmap, xrot, yrot);
@@ -641,7 +483,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	}
 	if (!new_pix && devPriv->pRotatedPixmap)
 	{
-	    cfbDestroyPixmap(devPriv->pRotatedPixmap);
+	    (*pGC->pScreen->DestroyPixmap)(devPriv->pRotatedPixmap);
 	    devPriv->pRotatedPixmap = (PixmapPtr) NULL;
 	}
     }
@@ -661,7 +503,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 #ifdef PIXEL_ADDR
 	    new_line = TRUE;
 #endif
-#ifdef WriteFourBits
+#ifdef WriteBitGroup
 	    new_text = TRUE;
 #endif
 	    new_fillspans = TRUE;
@@ -676,7 +518,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	if (newops = cfbMatchCommon (pGC, devPriv))
  	{
 	    if (pGC->ops->devPrivate.val)
-		cfbDestroyOps (pGC->ops);
+		miDestroyGCOps (pGC->ops);
 	    pGC->ops = newops;
 	    new_rrop = new_line = new_fillspans = new_text = new_fillarea = 0;
 	}
@@ -684,7 +526,7 @@ cfbValidateGC(pGC, changes, pDrawable)
  	{
 	    if (!pGC->ops->devPrivate.val)
 	    {
-		pGC->ops = cfbCreateOps (pGC->ops);
+		pGC->ops = miCreateGCOps (pGC->ops);
 		pGC->ops->devPrivate.val = 1;
 	    }
 	}
@@ -799,7 +641,7 @@ cfbValidateGC(pGC, changes, pDrawable)
         }
         else
         {
-#ifdef WriteFourBits
+#ifdef WriteBitGroup
 	    if (pGC->fillStyle == FillSolid)
 	    {
 		if (devPriv->rop == GXcopy)
@@ -815,11 +657,11 @@ cfbValidateGC(pGC, changes, pDrawable)
 #endif
 		pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
             /* special case ImageGlyphBlt for terminal emulator fonts */
-#if !defined(WriteFourBits) || PSZ == 8
+#if !defined(WriteBitGroup) || PSZ == 8
 	    if (TERMINALFONT(pGC->font) &&
 		(pGC->planemask & PMSK) == PMSK
 #ifdef FOUR_BIT_CODE
-		&& FONTMAXBOUNDS(pGC->font,characterWidth) >= 4
+		&& FONTMAXBOUNDS(pGC->font,characterWidth) >= PGSZB
 #endif
 		)
 	    {
@@ -828,7 +670,7 @@ cfbValidateGC(pGC, changes, pDrawable)
             else
 #endif
 	    {
-#ifdef WriteFourBits
+#ifdef WriteBitGroup
 		if (devPriv->rop == GXcopy &&
 		    pGC->fillStyle == FillSolid &&
 		    (pGC->planemask & PMSK) == PMSK)
@@ -915,88 +757,4 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    }
 	}
     }
-}
-
-void
-cfbDestroyClip(pGC)
-    GCPtr	pGC;
-{
-    if(pGC->clientClipType == CT_NONE)
-	return;
-    else if (pGC->clientClipType == CT_PIXMAP)
-    {
-	cfbDestroyPixmap((PixmapPtr)(pGC->clientClip));
-    }
-    else
-    {
-	/* we know we'll never have a list of rectangles, since
-	   ChangeClip immediately turns them into a region 
-	*/
-        (*pGC->pScreen->RegionDestroy)(pGC->clientClip);
-    }
-    pGC->clientClip = NULL;
-    pGC->clientClipType = CT_NONE;
-}
-
-void
-cfbChangeClip(pGC, type, pvalue, nrects)
-    GCPtr	pGC;
-    int		type;
-    pointer	pvalue;
-    int		nrects;
-{
-    cfbDestroyClip(pGC);
-    if(type == CT_PIXMAP)
-    {
-	pGC->clientClip = (pointer) (*pGC->pScreen->BitmapToRegion)((PixmapPtr)pvalue);
-	(*pGC->pScreen->DestroyPixmap)(pvalue);
-    }
-    else if (type == CT_REGION) {
-	/* stuff the region in the GC */
-	pGC->clientClip = pvalue;
-    }
-    else if (type != CT_NONE)
-    {
-	pGC->clientClip = (pointer) (*pGC->pScreen->RectsToRegion)(nrects,
-						    (xRectangle *)pvalue,
-						    type);
-	xfree(pvalue);
-    }
-    pGC->clientClipType = (type != CT_NONE && pGC->clientClip) ? CT_REGION :
-								 CT_NONE;
-    pGC->stateChanges |= GCClipMask;
-}
-
-void
-cfbCopyClip (pgcDst, pgcSrc)
-    GCPtr pgcDst, pgcSrc;
-{
-    RegionPtr prgnNew;
-
-    switch(pgcSrc->clientClipType)
-    {
-      case CT_PIXMAP:
-	((PixmapPtr) pgcSrc->clientClip)->refcnt++;
-	/* Fall through !! */
-      case CT_NONE:
-        cfbChangeClip(pgcDst, (int)pgcSrc->clientClipType, pgcSrc->clientClip,
-		      0);
-        break;
-      case CT_REGION:
-        prgnNew = (*pgcSrc->pScreen->RegionCreate)(NULL, 1);
-        (*pgcSrc->pScreen->RegionCopy)(prgnNew,
-                                       (RegionPtr)(pgcSrc->clientClip));
-        cfbChangeClip(pgcDst, CT_REGION, (pointer)prgnNew, 0);
-        break;
-    }
-}
-
-/*ARGSUSED*/
-void
-cfbCopyGC (pGCSrc, changes, pGCDst)
-    GCPtr	pGCSrc;
-    Mask 	changes;
-    GCPtr	pGCDst;
-{
-    return;
 }

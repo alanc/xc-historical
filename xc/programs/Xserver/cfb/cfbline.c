@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.19 91/08/13 18:48:42 keith Exp $ */
+/* $XConsortium: cfbline.c,v 1.20 93/09/13 09:35:12 dpw Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -120,7 +120,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     unsigned int oc1;		/* outcode of point 1 */
     unsigned int oc2;		/* outcode of point 2 */
 
-    unsigned long *addrl;		/* address of destination pixmap */
+    unsigned long *addrl;	/* address of destination pixmap */
     int nlwidth;		/* width in longwords of destination pixmap */
     int xorg, yorg;		/* origin of window */
 
@@ -141,7 +141,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     unsigned long   xor, and;
     int		    alu;
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
+    devPriv = cfbGetGCPrivate(pGC);
     cclip = devPriv->pCompositeClip;
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
@@ -226,7 +226,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 			if (y1t != y2t)
 			{
 			    cfbVertS (alu, and, xor,
-				      (int *)addrl, nlwidth, 
+				      addrl, nlwidth, 
 				      x1, y1t, y2t-y1t);
 			}
 		    }
@@ -296,7 +296,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 		    if (x1t != x2t)
 		    {
 			cfbHorzS (alu, and, xor,
-				  (int *)addrl, nlwidth, 
+				  addrl, nlwidth, 
 				  x1t, y1, x2t-x1t);
 		    }
 		    nbox--;
@@ -530,7 +530,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     int		    unclippedlen;
     cfbPrivGCPtr    devPriv;
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
+    devPriv = cfbGetGCPrivate(pGC);
     cclip = devPriv->pCompositeClip;
     rrops[0].rop = devPriv->rop;
     rrops[0].and = devPriv->and;

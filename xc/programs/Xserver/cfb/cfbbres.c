@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbres.c,v 1.11 91/12/19 14:16:00 keith Exp $ */
+/* $XConsortium: cfbbres.c,v 1.12 93/09/21 08:55:25 dpw Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: stip68kgnu.h,v 1.1 91/02/23 12:43:35 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *

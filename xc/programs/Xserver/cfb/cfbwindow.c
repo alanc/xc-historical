@@ -1,4 +1,4 @@
-/* $XConsortium: cfbwindow.c,v 5.15 92/03/31 17:52:18 keith Exp $ */
+/* $XConsortium: cfbwindow.c,v 5.16 93/07/17 09:53:51 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -39,7 +39,7 @@ cfbCreateWindow(pWin)
 {
     cfbPrivWin *pPrivWin;
 
-    pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
+    pPrivWin = cfbGetWindowPrivate(pWin);
     pPrivWin->pRotatedBorder = NullPixmap;
     pPrivWin->pRotatedBackground = NullPixmap;
     pPrivWin->fastBackground = FALSE;
@@ -62,7 +62,7 @@ cfbDestroyWindow(pWin)
 {
     cfbPrivWin *pPrivWin;
 
-    pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
+    pPrivWin = cfbGetWindowPrivate(pWin);
 
     if (pPrivWin->pRotatedBorder)
 	cfbDestroyPixmap(pPrivWin->pRotatedBorder);
@@ -95,7 +95,7 @@ cfbPositionWindow(pWin, x, y)
     cfbPrivWin *pPrivWin;
     int setxy = 0;
 
-    pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
+    pPrivWin = cfbGetWindowPrivate(pWin);
     if (pWin->backgroundState == BackgroundPixmap && pPrivWin->fastBackground)
     {
 	cfbXRotatePixmap(pPrivWin->pRotatedBackground,
@@ -199,7 +199,7 @@ cfbChangeWindowAttributes(pWin, mask)
     int width;
     WindowPtr	pBgWin;
 
-    pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
+    pPrivWin = cfbGetWindowPrivate(pWin);
 
     /*
      * When background state changes from ParentRelative and
@@ -244,8 +244,8 @@ cfbChangeWindowAttributes(pWin, mask)
 				  pBgWin->drawable.y - pPrivWin->oldRotate.y);
 		}
 	    }
-	    else if (((width = (pWin->background.pixmap->drawable.width * PSZ)) <= 32) &&
-		     !(width & (width - 1)))
+	    else if (((width = (pWin->background.pixmap->drawable.width * PSZ))
+		      <= PGSZ) && !(width & (width - 1)))
 	    {
 		cfbCopyRotatePixmap(pWin->background.pixmap,
 				    &pPrivWin->pRotatedBackground,
@@ -273,7 +273,7 @@ cfbChangeWindowAttributes(pWin, mask)
 	    break;
 
 	case CWBorderPixmap:
-	    if (((width = (pWin->border.pixmap->drawable.width * PSZ)) <= 32) &&
+	    if (((width = (pWin->border.pixmap->drawable.width * PSZ)) <= PGSZ) &&
 		!(width & (width - 1)))
 	    {
 		for (pBgWin = pWin;

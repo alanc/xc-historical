@@ -18,7 +18,7 @@ Author: Keith Packard, MIT X Consortium
 
 */
 
-/* $XConsortium: cfbrctstp8.c,v 1.14 91/12/19 18:36:29 keith Exp $ */
+/* $XConsortium: cfbrctstp8.c,v 1.15 93/09/13 09:35:02 dpw Exp $ */
 
 #if PSZ == 8
 
@@ -34,6 +34,9 @@ Author: Keith Packard, MIT X Consortium
 #include "cfb.h"
 #include "cfbmskbits.h"
 #include "cfb8bit.h"
+
+#define MFB_CONSTS_ONLY
+#include "maskbits.h"
 
 void
 cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
@@ -65,7 +68,7 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
     PixmapPtr		    stipple;
     int	    wEnd;
 
-    devPriv = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr);
+    devPriv = cfbGetGCPrivate(pGC);
     stipple = devPriv->pRotatedPixmap;
 
     cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel, pGC->planemask);
@@ -80,7 +83,7 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
 	w = pBox->x2 - pBox->x1;
 	h = pBox->y2 - pBox->y1;
 	y = pBox->y1;
-	dstLine = pbits + (pBox->y1 * nlwDst) + ((pBox->x1 & ~3) >> PWSH);
+	dstLine = pbits + (pBox->y1 * nlwDst) + ((pBox->x1 & ~PIM) >> PWSH);
 	if (((pBox->x1 & PIM) + w) <= PPW)
 	{
 	    maskpartialbits(pBox->x1, w, startmask);
@@ -91,12 +94,12 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
 	{
 	    maskbits (pBox->x1, w, startmask, endmask, nlwMiddle);
 	}
-	rot = (pBox->x1 & (31 & ~3));
+	rot = (pBox->x1 & ((PGSZ-1) & ~PIM));
 	pBox++;
 	y = y % stippleHeight;
 	if (cfb8StippleRRop == GXcopy)
 	{
-	    if (w < 64)
+	    if (w < PGSZ*2)
 	    {
 	    	while (h--)
 	    	{
@@ -111,20 +114,20 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
 	    	    if (startmask)
 	    	    {
 		    	*dst = *dst & ~startmask |
-				GetFourPixels (bits) & startmask;
+				GetPixelGroup (bits) & startmask;
 		    	dst++;
-		    	RotBitsLeft (bits, 4);
+		    	RotBitsLeft (bits, PGSZB);
 	    	    }
 		    nlw = nlwMiddle;
 	    	    while (nlw--)
 	    	    {
-			*dst++ = GetFourPixels(bits);
-		    	RotBitsLeft (bits, 4);
+			*dst++ = GetPixelGroup(bits);
+		    	RotBitsLeft (bits, PGSZB);
 	    	    }
 	    	    if (endmask)
 	    	    {
 			*dst = *dst & ~endmask |
-			      GetFourPixels (bits) & endmask;
+			      GetPixelGroup (bits) & endmask;
 	    	    }
 	    	}
 	    }
@@ -145,9 +148,9 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
 		    if (startmask)
 		    {
 			*dstTmp = *dstTmp & ~startmask |
-			       GetFourPixels (bits) & startmask;
+			       GetPixelGroup (bits) & startmask;
 			dstTmp++;
-			RotBitsLeft (bits, 4);
+			RotBitsLeft (bits, PGSZB);
 		    }
 		    w = 7 - wEnd;
 		    while (w--)
@@ -155,13 +158,13 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
 			nlw = nlwMiddle;
 			dst = dstTmp;
 			dstTmp++;
-			xor = GetFourPixels (bits);
+			xor = GetPixelGroup (bits);
 			while (nlw--)
 			{
 			    *dst = xor;
 			    dst += 8;
 			}
-			NextFourBits (bits);
+			NextBitGroup (bits);
 		    }
 		    nlwMiddle--;
 		    w = wEnd + 1;
@@ -169,20 +172,20 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
 		    {
 			dst = dstTmp + (nlwMiddle << 3);
 			*dst = (*dst & ~endmask) |
-			       GetFourPixels (bits) & endmask;
+			       GetPixelGroup (bits) & endmask;
 		    }
 		    while (w--)
 		    {
 			nlw = nlwMiddle;
 			dst = dstTmp;
 			dstTmp++;
-			xor = GetFourPixels (bits);
+			xor = GetPixelGroup (bits);
 			while (nlw--)
 			{
 			    *dst = xor;
 			    dst += 8;
 			}
-			NextFourBits (bits);
+			NextBitGroup (bits);
 		    }
 		    nlwMiddle++;
 		}
@@ -202,21 +205,21 @@ cfb8FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
 	    	dstLine += nlwDst;
 	    	if (startmask)
 	    	{
-		    xor = GetFourBits(bits);
+		    xor = GetBitGroup(bits);
 		    *dst = MaskRRopPixels(*dst, xor, startmask);
 		    dst++;
-		    RotBitsLeft (bits, 4);
+		    RotBitsLeft (bits, PGSZB);
 	    	}
 		nlw = nlwMiddle;
 	    	while (nlw--)
 	    	{
-		    RRopFourBits(dst, GetFourBits(bits));
+		    RRopBitGroup(dst, GetBitGroup(bits));
 		    dst++;
-		    RotBitsLeft (bits, 4);
+		    RotBitsLeft (bits, PGSZB);
 	    	}
 	    	if (endmask)
 	    	{
-		    xor = GetFourBits(bits);
+		    xor = GetBitGroup(bits);
 		    *dst = MaskRRopPixels(*dst, xor, endmask);
 	    	}
 	    }
@@ -246,7 +249,7 @@ cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
     int		    stippleHeight;
     register int    nlw;
     
-    devPriv = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr);
+    devPriv = cfbGetGCPrivate(pGC);
     stipple = devPriv->pRotatedPixmap;
     src = (unsigned long *)stipple->devPrivate.ptr;
     stippleHeight = stipple->drawable.height;
@@ -269,7 +272,7 @@ cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
 	{
 	    maskbits (x, w, startmask, endmask, nlwMiddle);
 	}
-	rot = (x & (31 & ~3));
+	rot = (x & ((PGSZ-1) & ~PIM));
     	y = pBox->y1;
     	dstLine = pbits + (y * nlwDst) + (x >> PWSH);
     	h = pBox->y2 - y;
@@ -278,7 +281,7 @@ cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
 	if (cfb8StippleRRop == GXcopy)
 	{
 	    xor = devPriv->xor;
-	    if (w < 64)
+	    if (w < PGSZ*2)
 	    {
 	    	while (h--)
 	    	{
@@ -292,22 +295,22 @@ cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
 	    	    dstLine += nlwDst;
 	    	    if (startmask)
 	    	    {
-		    	mask = cfb8PixelMasks[GetFourBits(bits)];
+		    	mask = cfb8PixelMasks[GetBitGroup(bits)];
 		    	*dst = (*dst & ~(mask & startmask)) |
 		       	       (xor & (mask & startmask));
 		    	dst++;
-		    	RotBitsLeft (bits, 4);
+		    	RotBitsLeft (bits, PGSZB);
 	    	    }
 		    nlw = nlwMiddle;
 	    	    while (nlw--)
 	    	    {
-		    	WriteFourBits (dst,xor,GetFourBits(bits))
+		    	WriteBitGroup (dst,xor,GetBitGroup(bits))
 		    	dst++;
-		    	RotBitsLeft (bits, 4);
+		    	RotBitsLeft (bits, PGSZB);
 	    	    }
 	    	    if (endmask)
 	    	    {
-		    	mask = cfb8PixelMasks[GetFourBits(bits)];
+		    	mask = cfb8PixelMasks[GetBitGroup(bits)];
 		    	*dst = (*dst & ~(mask & endmask)) |
 		       	       (xor & (mask & endmask));
 	    	    }
@@ -329,11 +332,11 @@ cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
 	    	    dstLine += nlwDst;
 		    if (startmask)
 		    {
-		    	mask = cfb8PixelMasks[GetFourBits(bits)];
+		    	mask = cfb8PixelMasks[GetBitGroup(bits)];
 		    	*dstTmp = (*dstTmp & ~(mask & startmask)) |
 		       	       (xor & (mask & startmask));
 		    	dstTmp++;
-		    	RotBitsLeft (bits, 4);
+		    	RotBitsLeft (bits, PGSZB);
 		    }
 		    w = 7 - wEnd;
 		    while (w--)
@@ -342,7 +345,7 @@ cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
 			dst = dstTmp;
 			dstTmp++;
 #if defined(__GNUC__) && defined(mc68020)
-			mask = cfb8PixelMasks[GetFourBits(bits)];
+			mask = cfb8PixelMasks[GetBitGroup(bits)];
 			xor = xor & mask;
 			mask = ~mask;
 			while (nlw--)
@@ -358,16 +361,16 @@ cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
 	    body	\
 	    dst += 8;	\
 	}
-			SwitchFourBits(dst, xor, GetFourBits(bits));
+			SwitchBitGroup(dst, xor, GetBitGroup(bits));
 #undef SwitchBitsLoop
 #endif
-			NextFourBits (bits);
+			NextBitGroup (bits);
 		    }
 		    nlwMiddle--;
 		    w = wEnd + 1;
 		    if (endmask)
 		    {
-			mask = cfb8PixelMasks[GetFourBits(bits)];
+			mask = cfb8PixelMasks[GetBitGroup(bits)];
 			dst = dstTmp + (nlwMiddle << 3);
 			*dst = (*dst & ~(mask & endmask)) |
 			       (xor &  (mask & endmask));
@@ -378,7 +381,7 @@ cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
 			dst = dstTmp;
 			dstTmp++;
 #if defined(__GNUC__) && defined(mc68020)
-			mask = cfb8PixelMasks[GetFourBits(bits)];
+			mask = cfb8PixelMasks[GetBitGroup(bits)];
 			xor = xor & mask;
 			mask = ~mask;
 			while (nlw--)
@@ -394,10 +397,10 @@ cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
 	    body	\
 	    dst += 8;	\
 	}
-			SwitchFourBits(dst, xor, GetFourBits(bits));
+			SwitchBitGroup(dst, xor, GetBitGroup(bits));
 #undef SwitchBitsLoop
 #endif
-			NextFourBits (bits);
+			NextBitGroup (bits);
 		    }
 		    nlwMiddle++;
 		}
@@ -417,21 +420,21 @@ cfb8FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
 	    	dstLine += nlwDst;
 	    	if (startmask)
 	    	{
-		    xor = GetFourBits(bits);
+		    xor = GetBitGroup(bits);
 		    *dst = MaskRRopPixels(*dst, xor, startmask);
 		    dst++;
-		    RotBitsLeft (bits, 4);
+		    RotBitsLeft (bits, PGSZB);
 	    	}
 		nlw = nlwMiddle;
 	    	while (nlw--)
 	    	{
-		    RRopFourBits(dst, GetFourBits(bits));
+		    RRopBitGroup(dst, GetBitGroup(bits));
 		    dst++;
-		    RotBitsLeft (bits, 4);
+		    RotBitsLeft (bits, PGSZB);
 	    	}
 	    	if (endmask)
 	    	{
-		    xor = GetFourBits(bits);
+		    xor = GetBitGroup(bits);
 		    *dst = MaskRRopPixels(*dst, xor, endmask);
 	    	}
 	    }
@@ -485,7 +488,7 @@ cfb8FillRectStippledUnnatural (pDrawable, pGC, nBox, pBox)
 
     pStipple = pGC->stipple;
 
-    stwidth = pStipple->devKind >> 2;
+    stwidth = pStipple->devKind >> PWSH;
     stippleWidth = pStipple->drawable.width;
     stippleHeight = pStipple->drawable.height;
     psrcBase = (unsigned long *) pStipple->devPrivate.ptr;
@@ -524,7 +527,7 @@ cfb8FillRectStippledUnnatural (pDrawable, pGC, nBox, pBox)
 	pdstLine = pdstBase + y * nlwDst + (x >> PWSH);
 	y = (y - ySrc) % stippleHeight;
 	srcStart = psrcBase + y * stwidth;
-	xrem = ((x & ~3) - xSrc) % stippleWidth;
+	xrem = ((x & ~PIM) - xSrc) % stippleWidth;
 	if (((x & PIM) + w) < PPW)
 	{
 	    maskpartialbits (x, w, startmask);
@@ -537,11 +540,11 @@ cfb8FillRectStippledUnnatural (pDrawable, pGC, nBox, pBox)
 	}
 	while (h--)
 	{
-    	    srcTemp = srcStart + (xrem >> 5);
-    	    bitsLeft = stippleWidth - (xrem & ~0x1f);
+    	    srcTemp = srcStart + (xrem >> MFB_PWSH);
+    	    bitsLeft = stippleWidth - (xrem & ~MFB_PIM);
 	    NextUnnaturalStippleWord
-	    NextSomeBits (inputBits, (xrem & 0x1f));
-	    partBitsLeft -= (xrem & 0x1f);
+	    NextSomeBits (inputBits, (xrem & MFB_PIM));
+	    partBitsLeft -= (xrem & MFB_PIM);
 	    NextUnnaturalStippleBits
 	    nlw = nlwMiddle;
 	    pdst = pdstLine;
@@ -571,4 +574,4 @@ cfb8FillRectStippledUnnatural (pDrawable, pGC, nBox, pBox)
     }
 }
 
-#endif
+#endif /* PSZ == 8 */

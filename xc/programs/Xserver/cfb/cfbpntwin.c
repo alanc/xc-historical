@@ -1,4 +1,4 @@
-/* $XConsortium: cfbpntwin.c,v 5.15 92/02/11 15:04:23 keith Exp $ */
+/* $XConsortium: cfbpntwin.c,v 5.16 92/07/04 17:26:50 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -32,10 +32,7 @@ SOFTWARE.
 
 #include "cfb.h"
 #include "cfbmskbits.h"
-
-static void cfbPaintArea32(), cfbPaintAreaSolid();
-
-extern void miPaintWindow();
+#include "mi.h"
 
 void
 cfbPaintWindow(pWin, pRegion, what)
@@ -46,7 +43,7 @@ cfbPaintWindow(pWin, pRegion, what)
     register cfbPrivWin	*pPrivWin;
     WindowPtr	pBgWin;
 
-    pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
+    pPrivWin = cfbGetWindowPrivate(pWin);
 
     switch (what) {
     case PW_BACKGROUND:
@@ -193,7 +190,7 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel)
 	if (w == 1)
 	{
 	    register char    *pdstb = ((char *) pdst) + pBox->x1;
-	    int	    incr = widthDst << 2;
+	    int	    incr = widthDst * PGSZB;
 
 	    while (h--)
 	    {
@@ -263,7 +260,7 @@ cfbFillBoxTile32 (pDrawable, nBox, pBox, tile)
     register unsigned long  rrop_xor;	
     register unsigned long  *pdst;
     register int	    m;
-    int			    *psrc;
+    unsigned long	    *psrc;
     int			    tileHeight;
 
     int			    widthDst;
@@ -278,7 +275,7 @@ cfbFillBoxTile32 (pDrawable, nBox, pBox, tile)
     unsigned long	    *pdstBase;
 
     tileHeight = tile->drawable.height;
-    psrc = (int *)tile->devPrivate.ptr;
+    psrc = (unsigned long *)tile->devPrivate.ptr;
 
     cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase);
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbsolid.c,v 1.5 91/07/11 21:48:24 keith Exp $
+ * $XConsortium: cfbsolid.c,v 1.6 91/12/19 18:36:58 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -121,7 +121,7 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
     int		    widthDst;
     cfbPrivGCPtr    devPriv;
 
-    devPriv = ((cfbPrivGCPtr) (pGC->devPrivates[cfbGCPrivateIndex].ptr));
+    devPriv = cfbGetGCPrivate(pGC);
 
     cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
 
@@ -136,7 +136,7 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
 	if (w == 1)
 	{
 	    register char    *pdstb = ((char *) pdstRect) + pBox->x1;
-	    int	    incr = widthDst << 2;
+	    int	    incr = widthDst * PGSZB;
 
 	    while (h--)
 	    {
@@ -221,7 +221,7 @@ RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int		    *pwidth;
     cfbPrivGCPtr    devPriv;
 
-    devPriv = (cfbPrivGCPtr)pGC->devPrivates[cfbGCPrivateIndex].ptr;
+    devPriv = cfbGetGCPrivate(pGC);
     RROP_FETCH_GCPRIV(devPriv)
     n = nInit * miFindMaxBand(devPriv->pCompositeClip);
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
@@ -249,7 +249,7 @@ RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	if (!w)
 	    continue;
 #if PSZ == 8
-	if (w <= 4)
+	if (w <= PGSZB)
 	{
 	    register char   *addrb;
 

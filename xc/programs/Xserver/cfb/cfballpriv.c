@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfballpriv.c,v 1.2 91/12/19 18:37:00 keith Exp $
+ * $XConsortium: cfballpriv.c,v 1.3 93/07/12 16:28:41 dpw Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -71,9 +71,7 @@ cfbAllocatePrivates(pScreen, window_index, gc_index)
 			       sizeof(cfbPrivWin)) ||
 	!AllocateGCPrivate(pScreen, cfbGCPrivateIndex, sizeof(cfbPrivGC)))
 	return FALSE;
-#if PSZ != 8
     cfbPuntCopyPlane = miCopyPlane;
-#endif
 #ifdef CFB_NEED_SCREEN_PRIVATE
     cfbScreenPrivateIndex = AllocateScreenPrivateIndex ();
     if (cfbScreenPrivateIndex == -1)

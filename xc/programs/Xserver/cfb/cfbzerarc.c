@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbzerarc.c,v 5.18 91/04/10 11:41:47 keith Exp $ */
+/* $XConsortium: cfbzerarc.c,v 5.19 91/12/19 14:17:28 keith Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -33,10 +33,9 @@ without any express or implied warranty.
 #include "cfbmskbits.h"
 #include "mizerarc.h"
 #include "cfbrrop.h"
+#include "mi.h"
 
 #ifdef PIXEL_ADDR
-
-extern void miPolyArc(), miZeroPolyArc();
 
 static void
 RROP_NAME(cfbZeroArcSS8) (pDraw, pGC, arc)
@@ -173,7 +172,7 @@ RROP_NAME (cfbZeroPolyArcSS8) (pDraw, pGC, narcs, parcs)
     BoxRec box;
     RegionPtr cclip;
 
-    cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+    cclip = cfbGetCompositeClip(pGC);
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
 	if (miCanZeroArc(arc))

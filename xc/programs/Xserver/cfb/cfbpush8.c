@@ -15,7 +15,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbpush8.c,v 5.10 91/12/19 18:36:46 keith Exp $ */
+/* $XConsortium: cfbpush8.c,v 5.11 93/07/12 16:28:34 dpw Exp $ */
 
 #if PSZ == 8
 
@@ -30,6 +30,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include	"cfb.h"
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
+#define MFB_CONSTS_ONLY
+#include	"maskbits.h"
 
 void
 cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
@@ -56,7 +58,7 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     bbox.y1 = yOrg;
     bbox.x2 = bbox.x1 + dx;
     bbox.y2 = bbox.y1 + dy;
-    devPriv = (cfbPrivGC *)pGC->devPrivates[cfbGCPrivateIndex].ptr;
+    devPriv = cfbGetGCPrivate(pGC);
     
     switch ((*pGC->pScreen->RectIn)(devPriv->pCompositeClip, &bbox))
     {
@@ -69,16 +71,16 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     cfbGetLongWidthAndPointer (pDrawable, dstWidth, pdstBase)
 
     psrcLine = (unsigned long *) pBitmap->devPrivate.ptr;
-    srcWidth = (int) pBitmap->devKind >> 2;
+    srcWidth = (int) pBitmap->devKind >> PWSH;
     
     pixel = devPriv->xor;
-    xoff = xOrg & 03;
-    nBitmapLongs = (dx + xoff) >> 5;
-    nPixmapLongs = (dx + 3 + xoff) >> 2;
+    xoff = xOrg & PIM;
+    nBitmapLongs = (dx + xoff) >> MFB_PWSH;
+    nPixmapLongs = (dx + PGSZB + xoff) >> PWSH;
 
-    rightMask = ~cfb8BitLenMasks[((dx + xoff) & 0x1f)];
+    rightMask = ~cfb8BitLenMasks[((dx + xoff) & MFB_PIM)];
 
-    pdstLine = pdstBase + (yOrg * dstWidth) + (xOrg >> 2);
+    pdstLine = pdstBase + (yOrg * dstWidth) + (xOrg >> PWSH);
 
     while (dy--)
     {
@@ -91,70 +93,70 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
 	{
 	    bits = *src++;
 	    c |= BitRight (bits, xoff);
-	    WriteFourBits(dst, pixel, GetFourBits(c));
-	    NextFourBits(c);
+	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+	    NextBitGroup(c);
 	    dst++;
-	    WriteFourBits(dst, pixel, GetFourBits(c));
-	    NextFourBits(c);
+	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+	    NextBitGroup(c);
 	    dst++;
-	    WriteFourBits(dst, pixel, GetFourBits(c));
-	    NextFourBits(c);
+	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+	    NextBitGroup(c);
 	    dst++;
-	    WriteFourBits(dst, pixel, GetFourBits(c));
-	    NextFourBits(c);
+	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+	    NextBitGroup(c);
 	    dst++;
-	    WriteFourBits(dst, pixel, GetFourBits(c));
-	    NextFourBits(c);
+	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+	    NextBitGroup(c);
 	    dst++;
-	    WriteFourBits(dst, pixel, GetFourBits(c));
-	    NextFourBits(c);
+	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+	    NextBitGroup(c);
 	    dst++;
-	    WriteFourBits(dst, pixel, GetFourBits(c));
-	    NextFourBits(c);
+	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+	    NextBitGroup(c);
 	    dst++;
-	    WriteFourBits(dst, pixel, GetFourBits(c));
-	    NextFourBits(c);
+	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+	    NextBitGroup(c);
 	    dst++;
 	    nPixmapTmp -= 8;
 	    c = 0;
 	    if (xoff)
-		c = BitLeft (bits, 32 - xoff);
+		c = BitLeft (bits, PGSZ - xoff);
 	}
 	if (BitLeft (rightMask, xoff))
 	    c |= BitRight (*src, xoff);
 	c &= rightMask;
 	switch (nPixmapTmp) {
 	case 8:
-	    WriteFourBits(dst, pixel, GetFourBits(c));
-	    NextFourBits(c);
+	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+	    NextBitGroup(c);
 	    dst++;
 	case 7:
-	    WriteFourBits(dst, pixel, GetFourBits(c));
-	    NextFourBits(c);
+	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+	    NextBitGroup(c);
 	    dst++;
 	case 6:
-	    WriteFourBits(dst, pixel, GetFourBits(c));
-	    NextFourBits(c);
+	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+	    NextBitGroup(c);
 	    dst++;
 	case 5:
-	    WriteFourBits(dst, pixel, GetFourBits(c));
-	    NextFourBits(c);
+	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+	    NextBitGroup(c);
 	    dst++;
 	case 4:
-	    WriteFourBits(dst, pixel, GetFourBits(c));
-	    NextFourBits(c);
+	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+	    NextBitGroup(c);
 	    dst++;
 	case 3:
-	    WriteFourBits(dst, pixel, GetFourBits(c));
-	    NextFourBits(c);
+	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+	    NextBitGroup(c);
 	    dst++;
 	case 2:
-	    WriteFourBits(dst, pixel, GetFourBits(c));
-	    NextFourBits(c);
+	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+	    NextBitGroup(c);
 	    dst++;
 	case 1:
-	    WriteFourBits(dst, pixel, GetFourBits(c));
-	    NextFourBits(c);
+	    WriteBitGroup(dst, pixel, GetBitGroup(c));
+	    NextBitGroup(c);
 	    dst++;
 	case 0:
 	    break;

@@ -1,4 +1,4 @@
-/* $XConsortium: cfbgetsp.c,v 5.11 93/09/13 09:34:44 dpw Exp $ */
+/* $XConsortium: cfbgetsp.c,v 5.12 93/09/20 20:09:50 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -51,20 +51,20 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
     int			nspans;		/* number of scanlines to copy */
     char		*pchardstStart; /* where to put the bits */
 {
-    unsigned int	*pdstStart = (unsigned int *)pchardstStart;	
-    register unsigned long	*pdst;		/* where to put the bits */
-    register unsigned long	*psrc;		/* where to get the bits */
-    register unsigned long	tmpSrc;		/* scratch buffer for bits */
-    unsigned long		*psrcBase;	/* start of src bitmap */
+    PixelGroup	*pdstStart = (PixelGroup *)pchardstStart;
+    register PixelGroup	*pdst;		/* where to put the bits */
+    register PixelGroup	*psrc;		/* where to get the bits */
+    register PixelGroup	tmpSrc;		/* scratch buffer for bits */
+    PixelGroup		*psrcBase;	/* start of src bitmap */
     int			widthSrc;	/* width of pixmap in bytes */
     register DDXPointPtr pptLast;	/* one past last point to get */
     int         	xEnd;		/* last pixel to copy from */
     register int	nstart; 
     int	 		nend; 
-    unsigned long	startmask, endmask;
+    PixelGroup		startmask, endmask;
     int			nlMiddle, nl, srcBit;
     int			w;
-    unsigned long	*pdstNext;
+    PixelGroup		*pdstNext;
 
     switch (pDrawable->bitsPerPixel) {
 	case 1:
@@ -91,7 +91,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
 	return;
     }
 #endif
-    pdst = (unsigned long *)pdstStart;
+    pdst = pdstStart;
     pptLast = ppt + nspans;
     while(ppt < pptLast)
     {

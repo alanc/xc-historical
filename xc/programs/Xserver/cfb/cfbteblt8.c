@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.19 93/09/13 09:35:06 dpw Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.20 93/09/20 20:10:26 dpw Exp $ */
 
 #if PSZ == 8
 
@@ -148,7 +148,7 @@ typedef unsigned int	*glyphPointer;
 #endif
 
 #ifdef USE_LEFTBITS
-extern long endtab[];
+extern unsigned long endtab[];
 
 #define IncChar(c)  (c = (glyphPointer) (((char *) c) + glyphBytes))
 
@@ -292,15 +292,20 @@ extern long endtab[];
 #define Loop		    dst += widthLeft;
 #endif
 
-#define Step		    NextFourBits(c);
+#define Step		    NextBitGroup(c);
 
 #if (BITMAP_BIT_ORDER == MSBFirst)
-#define StoreBits(o)	StorePixels(o,GetFourPixels(c));
+#define StoreBits(o)	StorePixels(o,GetPixelGroup(c));
 #define FirstStep	Step
 #else
+#if PGSZ == 64
+#define StoreBits(o)	StorePixels(o,*((unsigned long *) (((char *) cfb8Pixels) + (c & 0x7f8))));
+#define FirstStep	c = BitLeft (c, 5);
+#else /* PGSZ == 32 */
 #define StoreBits(o)	StorePixels(o,*((unsigned long *) (((char *) cfb8Pixels) + (c & 0x3c))));
 #define FirstStep	c = BitLeft (c, 2);
-#endif
+#endif /* PGSZ */
+#endif /* BITMAP_BIT_ORDER */
 
 
 void
@@ -346,8 +351,8 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     int			lshift;
     int			widthGlyphs;
 #ifdef USE_LEFTBITS
-    register int	    glyphMask;
-    register unsigned int   tmpSrc;
+    register unsigned long  glyphMask;
+    register unsigned long  tmpSrc;
     register int	    glyphBytes;
 #endif
 
@@ -362,8 +367,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     bbox.y1 = y;
     bbox.y2 = y + h;
 
-    switch ((*pGC->pScreen->RectIn)(
-                ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
+    switch ((*pGC->pScreen->RectIn)( cfbGetCompositeClip(pGC), &bbox))
     {
       case rgnPART:
 	cfbImageGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase);
@@ -401,8 +405,8 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     	{
 	    nglyph -= NGLYPHS;
 	    hTmp = h;
-	    dstLine = pdstBase + (x >> 2);
-	    xoff1 = x & 0x3;
+	    dstLine = pdstBase + (x >> PWSH);
+	    xoff1 = x & PIM;
 	    char1 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
 	    char2 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
 #ifdef ALL_LEFTBITS
@@ -430,7 +434,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	    dst = dstLine;
 	    if (xoff1)
 	    {
-		ew = ((widthGlyphs - (4 - xoff1)) >> 2) + 1;
+		ew = ((widthGlyphs - (PGSZB - xoff1)) >> PWSH) + 1;
 #ifndef FAST_CONSTANT_OFFSET_MODE
 		widthLeft = widthDst - ew;
 #endif
@@ -440,7 +444,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		    rightMask = cfbstarttab[xoff1];
 
 #define StoreBits0	StorePixels (0,dst[0] & leftMask | \
-				       GetFourPixels(c) & rightMask);
+				       GetPixelGroup(c) & rightMask);
 #define GetBits GetBitsNS
 
 		    SwitchEm
@@ -453,7 +457,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	    	{
 		    lshift = widthGlyph - xoff1;
     
-#define StoreBits0  StorePixels (0,GetFourPixels(c));
+#define StoreBits0  StorePixels (0,GetPixelGroup(c));
 #define GetBits GetBitsNL
     
 		    SwitchEm
@@ -468,13 +472,13 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 #if NGLYPHS == 4
 	    	ew = widthGlyph;    /* widthGlyphs >> 2 */
 #else
-	    	ew = widthGlyphs >> 2;
+	    	ew = widthGlyphs >> PWSH;
 #endif
 #ifndef FAST_CONSTANT_OFFSET_MODE
 		widthLeft = widthDst - ew;
 #endif
 
-#define StoreBits0  StorePixels (0,GetFourPixels(c));
+#define StoreBits0  StorePixels (0,GetPixelGroup(c));
 #define GetBits	GetBitsNU
 
 	    	SwitchEm
@@ -488,15 +492,15 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     	}
     while (nglyph--)
     {
-	xoff1 = x & 0x3;
+	xoff1 = x & PIM;
 	char1 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
 	hTmp = h;
-	dstLine = pdstBase + (x >> 2);
+	dstLine = pdstBase + (x >> PWSH);
 	oldRightChar = char1;
 	dst = dstLine;
 	if (xoff1)
 	{
-	    ew = ((widthGlyph - (4 - xoff1)) >> 2) + 1;
+	    ew = ((widthGlyph - (PGSZB - xoff1)) >> PWSH) + 1;
 #ifndef FAST_CONSTANT_OFFSET_MODE
 	    widthLeft = widthDst - ew;
 #endif
@@ -505,7 +509,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		leftMask = cfbendtab[xoff1];
 		rightMask = cfbstarttab[xoff1];
 
-#define StoreBits0	StorePixels (0,dst[0] & leftMask | GetFourPixels(c) & rightMask);
+#define StoreBits0	StorePixels (0,dst[0] & leftMask | GetPixelGroup(c) & rightMask);
 #define GetBits	WGetBits1S
 
 		SwitchEm
@@ -517,7 +521,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	    {
 		lshift = widthGlyph - xoff1;
 
-#define StoreBits0  StorePixels (0,GetFourPixels(c));
+#define StoreBits0  StorePixels (0,GetPixelGroup(c));
 #define GetBits WGetBits1L
 
 		SwitchEm
@@ -528,13 +532,13 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	}
 	else
 	{
-	    ew = widthGlyph >> 2;
+	    ew = widthGlyph >> PWSH;
 
 #ifndef FAST_CONSTANT_OFFSET_MODE
 	    widthLeft = widthDst - ew;
 #endif
 
-#define StoreBits0  StorePixels (0,GetFourPixels(c));
+#define StoreBits0  StorePixels (0,GetPixelGroup(c));
 #define GetBits	WGetBits1U
 
 	    SwitchEm
@@ -549,18 +553,18 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     /*
      * draw the tail of the last character
      */
-    xoff1 = x & 3;
+    xoff1 = x & PIM;
     if (xoff1)
     {
 	rightMask = cfbstarttab[xoff1];
 	leftMask = cfbendtab[xoff1];
 	lshift = widthGlyph - xoff1;
-	dst = pdstBase + (x >> 2);
+	dst = pdstBase + (x >> PWSH);
 	hTmp = h;
 	while (hTmp--)
 	{
 	    GetBitsL;
-	    *dst = (*dst & rightMask) | (GetFourPixels(c) & leftMask);
+	    *dst = (*dst & rightMask) | (GetPixelGroup(c) & leftMask);
 	    dst += widthDst;
 	}
     }

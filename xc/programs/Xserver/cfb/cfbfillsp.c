@@ -50,7 +50,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 5.20 93/07/12 16:28:29 dpw Exp $ */
+/* $XConsortium: cfbfillsp.c,v 5.21 93/09/13 09:35:03 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -69,6 +69,9 @@ SOFTWARE.
 #if PSZ == 8
 #include "cfb8bit.h"
 #endif
+
+#define MFB_CONSTS_ONLY
+#include "maskbits.h"
 
 /* scanline filling for color frame buffer
    written by drewry, oct 1986 modified by smarks
@@ -146,7 +149,9 @@ int fSorted;
 		fill = cfbFillSpanTile32sCopy;
 	}
     }
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    n = nInit * miFindMaxBand( cfbGetCompositeClip(pGC) );
+    if ( n == 0 )
+	return;
     pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
@@ -155,7 +160,7 @@ int fSorted;
 	if (pwidth) DEALLOCATE_LOCAL(pwidth);
 	return;
     }
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
+    n = miClipSpans( cfbGetCompositeClip(pGC),
 		     pptInit, pwidthInit, nInit, 
 		     ppt, pwidth, fSorted);
 
@@ -209,7 +214,9 @@ int fSorted;
     if (cfb8StippleRRop == GXnoop)
 	return;
 
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    n = nInit * miFindMaxBand( cfbGetCompositeClip(pGC) );
+    if ( n == 0 )
+	return;
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -221,7 +228,7 @@ int fSorted;
 
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
+    n = miClipSpans( cfbGetCompositeClip(pGC),
 		     pptInit, pwidthInit, nInit, 
 		     ppt, pwidth, fSorted);
 
@@ -237,7 +244,7 @@ int fSorted;
 
     pStipple = pGC->stipple;
 
-    stwidth = pStipple->devKind >> 2;
+    stwidth = pStipple->devKind >> PWSH;
     stippleWidth = pStipple->drawable.width;
     stippleHeight = pStipple->drawable.height;
     psrcBase = (unsigned long *) pStipple->devPrivate.ptr;
@@ -274,10 +281,10 @@ int fSorted;
 	pdst = pdstBase + y * nlwDst + (x >> PWSH);
 	y = (y - ySrc) % stippleHeight;
 	srcStart = psrcBase + y * stwidth;
-	xrem = ((x & ~3) - xSrc) % stippleWidth;
-	srcTemp = srcStart + (xrem >> 5);
-	bitsLeft = stippleWidth - (xrem & ~0x1f);
-	xrem &= 0x1f;
+	xrem = ((x & ~(PGSZB-1)) - xSrc) % stippleWidth;
+	srcTemp = srcStart + (xrem >> MFB_PWSH);
+	bitsLeft = stippleWidth - (xrem & ~MFB_PIM);
+	xrem &= MFB_PIM;
 	NextUnnaturalStippleWord
 	if (partBitsLeft < xrem)
 	    FatalError ("cfbUnnaturalStippleFS bad partBitsLeft %d xrem %d",
@@ -293,24 +300,24 @@ int fSorted;
 	else
 	{
 	    maskbits (x, w, startmask, endmask, nlw);
-	    nextPartBits = (x & 0x3) + w;
+	    nextPartBits = (x & (PGSZB-1)) + w;
 	    if (nextPartBits < partBitsLeft)
 	    {
 		if (startmask)
 		{
-		    MaskRRopFourBits(pdst,GetFourBits(inputBits),startmask)
+		    MaskRRopBitGroup(pdst,GetBitGroup(inputBits),startmask)
 		    pdst++;
-		    NextFourBits (inputBits);
+		    NextBitGroup (inputBits);
 		}
 		while (nlw--)
 		{
-		    RRopFourBits (pdst, GetFourBits (inputBits));
+		    RRopBitGroup (pdst, GetBitGroup (inputBits));
 		    pdst++;
-		    NextFourBits (inputBits);
+		    NextBitGroup (inputBits);
 		}
 		if (endmask)
 		{
-		    MaskRRopFourBits(pdst,GetFourBits(inputBits),endmask)
+		    MaskRRopBitGroup(pdst,GetBitGroup(inputBits),endmask)
 		}
 	    }
 	    else if (bitsLeft != bitsWhole && nextPartBits < partBitsLeft + bitsLeft)
@@ -355,7 +362,7 @@ int fSorted;
     DEALLOCATE_LOCAL(pwidthFree);
 }
 
-#else
+#else /* PSZ != 8 */
 
 /* Fill spans with stipples that aren't 32 bits wide */
 void
@@ -390,7 +397,9 @@ int fSorted;
     if (!(pGC->planemask))
 	return;
 
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    n = nInit * miFindMaxBand( cfbGetCompositeClip(pGC) );
+    if ( n == 0 )
+	return;
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -401,7 +410,7 @@ int fSorted;
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
+    n = miClipSpans( cfbGetCompositeClip(pGC),
 		     pptInit, pwidthInit, nInit, 
 		     ppt, pwidth, fSorted);
     rop = pGC->alu;
@@ -432,7 +441,7 @@ int fSorted;
      */
     pStipple = pGC->stipple;
 
-    stwidth = pStipple->devKind >> 2;
+    stwidth = pStipple->devKind / PGSZB;
     stippleWidth = pStipple->drawable.width;
     stippleHeight = pStipple->drawable.height;
 
@@ -488,10 +497,10 @@ int fSorted;
 		/* dist to word bound in dest */
 		w = min(w, PPW - (x & PIM));
 		/* dist to word bound in stip */
-		w = min(w, 32 - (x & 0x1f));
+		w = min(w, MFB_PPW - (x & MFB_PIM));
 
-	        xtemp = (xrem & 0x1f);
-	        ptemp = (unsigned long *)(psrcS + (xrem >> 5));
+	        xtemp = (xrem & MFB_PIM);
+	        ptemp = (unsigned long *)(psrcS + (xrem >> MFB_PWSH));
 		tmpx = x & PIM;
 		pdsttmp = pdst + (x>>PWSH);
 		switch ( pGC->fillStyle ) {
@@ -564,9 +573,11 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DDXPointPtr	    pptFree;
     cfbPrivGCPtr    devPriv;
 
-    devPriv = (cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr;
+    devPriv = cfbGetGCPrivate(pGC);
     cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
     n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+    if ( n == 0 )
+	return;
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -605,46 +616,46 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	    maskbits (x, w, startmask, endmask, nlw);
 	}
 	bits = src[y % stippleHeight];
-	RotBitsLeft (bits, (x & (31 & ~3)));
+	RotBitsLeft (bits, (x & ((PGSZ-1) & ~PIM)));
 	if (cfb8StippleRRop == GXcopy)
 	{
 	    xor = devPriv->xor;
-	    if (w < 64)
+	    if (w < (PGSZ*2))
 	    {
 		if (startmask)
 		{
-		    mask = cfb8PixelMasks[GetFourBits(bits)];
+		    mask = cfb8PixelMasks[GetBitGroup(bits)];
 		    *dst = (*dst & ~(mask & startmask)) |
 			   (xor & (mask & startmask));
 		    dst++;
-		    RotBitsLeft (bits, 4);
+		    RotBitsLeft (bits, PGSZB);
 		}
 		while (nlw--)
 		{
-		    WriteFourBits (dst,xor,GetFourBits(bits))
+		    WriteBitGroup (dst,xor,GetBitGroup(bits))
 		    dst++;
-		    RotBitsLeft (bits, 4);
+		    RotBitsLeft (bits, PGSZB);
 		}
 		if (endmask)
 		{
-		    mask = cfb8PixelMasks[GetFourBits(bits)];
+		    mask = cfb8PixelMasks[GetBitGroup(bits)];
 		    *dst = (*dst & ~(mask & endmask)) |
 			   (xor & (mask & endmask));
 		}
 	    }
 	    else
-	    {
+	    { /* XXX constants probably not OK here */
 		wEnd = 7 - (nlw & 7);
 		nlw = (nlw >> 3) + 1;
 		dstTmp = dst;
 		nlwTmp = nlw;
 		if (startmask)
 		{
-		    mask = cfb8PixelMasks[GetFourBits(bits)];
+		    mask = cfb8PixelMasks[GetBitGroup(bits)];
 		    *dstTmp = (*dstTmp & ~(mask & startmask)) |
 			   (xor & (mask & startmask));
 		    dstTmp++;
-		    RotBitsLeft (bits, 4);
+		    RotBitsLeft (bits, PGSZB);
 		}
 		w = 7 - wEnd;
 		while (w--)
@@ -653,7 +664,7 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		    dstTmp++;
 		    nlw = nlwTmp;
 #if defined(__GNUC__) && defined(mc68020)
-		    mask = cfb8PixelMasks[GetFourBits(bits)];
+		    mask = cfb8PixelMasks[GetBitGroup(bits)];
 		    xor = xor & mask;
 		    mask = ~mask;
 		    while (nlw--)
@@ -669,16 +680,16 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	body	\
 	dst += 8;	\
     }
-		    SwitchFourBits(dst, xor, GetFourBits(bits));
+		    SwitchBitGroup(dst, xor, GetBitGroup(bits));
 #undef SwitchBitsLoop
 #endif
-		    NextFourBits (bits);
+		    NextBitGroup (bits);
 		}
 		nlwTmp--;
 		w = wEnd + 1;
 		if (endmask)
 		{
-		    mask = cfb8PixelMasks[GetFourBits(bits)];
+		    mask = cfb8PixelMasks[GetBitGroup(bits)];
 		    dst = dstTmp + (nlwTmp << 3);
 		    *dst = (*dst & ~(mask & endmask)) |
 			   (xor &  (mask & endmask));
@@ -689,7 +700,7 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		    dst = dstTmp;
 		    dstTmp++;
 #if defined(__GNUC__) && defined(mc68020)
-		    mask = cfb8PixelMasks[GetFourBits(bits)];
+		    mask = cfb8PixelMasks[GetBitGroup(bits)];
 		    xor = xor & mask;
 		    mask = ~mask;
 		    while (nlw--)
@@ -705,10 +716,10 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	    body	\
 	    dst += 8;	\
 	}
-		    SwitchFourBits(dst, xor, GetFourBits(bits));
+		    SwitchBitGroup(dst, xor, GetBitGroup(bits));
 #undef SwitchBitsLoop
 #endif
-		    NextFourBits (bits);
+		    NextBitGroup (bits);
 		}
 	    }
 	}
@@ -716,20 +727,20 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	{
 	    if (startmask)
 	    {
-		xor = GetFourBits(bits);
+		xor = GetBitGroup(bits);
 		*dst = MaskRRopPixels(*dst, xor, startmask);
 		dst++;
-		RotBitsLeft (bits, 4);
+		RotBitsLeft (bits, PGSZB);
 	    }
 	    while (nlw--)
 	    {
-		RRopFourBits(dst, GetFourBits(bits));
+		RRopBitGroup(dst, GetBitGroup(bits));
 		dst++;
-		RotBitsLeft (bits, 4);
+		RotBitsLeft (bits, PGSZB);
 	    }
 	    if (endmask)
 	    {
-		xor = GetFourBits(bits);
+		xor = GetBitGroup(bits);
 		*dst = MaskRRopPixels(*dst, xor, endmask);
 	    }
 	}
@@ -774,11 +785,13 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DDXPointPtr	    pptFree;
     cfbPrivGCPtr    devPriv;
 
-    devPriv = (cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr;
+    devPriv = cfbGetGCPrivate(pGC);
 
     cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel, pGC->planemask);
 
     n = nInit * miFindMaxBand(devPriv->pCompositeClip);
+    if ( n == 0 )
+	return;
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -817,32 +830,32 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	    maskbits (x, w, startmask, endmask, nlw);
 	}
 	bits = src[y % stippleHeight];
-	RotBitsLeft (bits, (x & (31 & ~3)));
+	RotBitsLeft (bits, (x & ((PGSZ-1) & ~PIM)));
 	if (cfb8StippleRRop == GXcopy)
 	{
 	    xor = devPriv->xor;
-	    if (w < 64)
+	    if (w < PGSZ*2)
 	    {
 		if (startmask)
 		{
 		    *dst = *dst & ~startmask |
-			    GetFourPixels (bits) & startmask;
+			   GetPixelGroup (bits) & startmask;
 		    dst++;
-		    RotBitsLeft (bits, 4);
+		    RotBitsLeft (bits, PGSZB);
 		}
 		while (nlw--)
 		{
-		    *dst++ = GetFourPixels(bits);
-		    RotBitsLeft (bits, 4);
+		    *dst++ = GetPixelGroup(bits);
+		    RotBitsLeft (bits, PGSZB);
 		}
 		if (endmask)
 		{
 		    *dst = *dst & ~endmask |
-			  GetFourPixels (bits) & endmask;
+			   GetPixelGroup (bits) & endmask;
 		}
 	    }
 	    else
-	    {
+	    { /* XXX consts probably not OK here */
 		wEnd = 7 - (nlw & 7);
 		nlw = (nlw >> 3) + 1;
 		dstTmp = dst;
@@ -850,9 +863,9 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		if (startmask)
 		{
 		    *dstTmp = *dstTmp & ~startmask |
-			   GetFourPixels (bits) & startmask;
+			   GetPixelGroup (bits) & startmask;
 		    dstTmp++;
-		    RotBitsLeft (bits, 4);
+		    RotBitsLeft (bits, PGSZB);
 		}
 		w = 7 - wEnd;
 		while (w--)
@@ -860,13 +873,13 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		    nlw = nlwTmp;
 		    dst = dstTmp;
 		    dstTmp++;
-		    xor = GetFourPixels (bits);
+		    xor = GetPixelGroup (bits);
 		    while (nlw--)
 		    {
 			*dst = xor;
 			dst += 8;
 		    }
-		    NextFourBits (bits);
+		    NextBitGroup (bits);
 		}
 		nlwTmp--;
 		w = wEnd + 1;
@@ -874,20 +887,20 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		{
 		    dst = dstTmp + (nlwTmp << 3);
 		    *dst = (*dst & ~endmask) |
-			   GetFourPixels (bits) & endmask;
+			   GetPixelGroup (bits) & endmask;
 		}
 		while (w--)
 		{
 		    nlw = nlwTmp;
 		    dst = dstTmp;
 		    dstTmp++;
-		    xor = GetFourPixels (bits);
+		    xor = GetPixelGroup (bits);
 		    while (nlw--)
 		    {
 			*dst = xor;
 			dst += 8;
 		    }
-		    NextFourBits (bits);
+		    NextBitGroup (bits);
 		}
 	    }
 	}
@@ -895,20 +908,20 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	{
 	    if (startmask)
 	    {
-		xor = GetFourBits(bits);
+		xor = GetBitGroup(bits);
 		*dst = MaskRRopPixels(*dst, xor, startmask);
 		dst++;
-		RotBitsLeft (bits, 4);
+		RotBitsLeft (bits, PGSZB);
 	    }
 	    while (nlw--)
 	    {
-		RRopFourBits(dst, GetFourBits(bits));
+		RRopBitGroup(dst, GetBitGroup(bits));
 		dst++;
-		RotBitsLeft (bits, 4);
+		RotBitsLeft (bits, PGSZB);
 	    }
 	    if (endmask)
 	    {
-		xor = GetFourBits(bits);
+		xor = GetBitGroup(bits);
 		*dst = MaskRRopPixels(*dst, xor, endmask);
 	    }
 	}
@@ -917,4 +930,4 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DEALLOCATE_LOCAL(pwidthFree);
 }
 
-#endif
+#endif /* PSZ == 8 */

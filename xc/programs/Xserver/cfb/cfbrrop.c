@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbrrop.c,v 1.4 91/01/27 13:03:00 keith Exp $
+ * $XConsortium: cfbrrop.c,v 1.5 91/12/11 14:03:14 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *

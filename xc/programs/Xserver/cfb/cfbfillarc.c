@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbfillarc.c,v 5.11 90/11/19 17:29:23 keith Exp $ */
+/* $XConsortium: cfbfillarc.c,v 5.12 91/04/10 11:41:49 keith Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -27,8 +27,7 @@ without any express or implied warranty.
 #include "cfbmskbits.h"
 #include "mifillarc.h"
 #include "cfbrrop.h"
-
-extern void miPolyFillArc();
+#include "mi.h"
 
 /* gcc 1.35 is stupid */
 #if defined(__GNUC__) && defined(mc68020)
@@ -216,7 +215,7 @@ RROP_NAME(cfbPolyFillArcSolid) (pDraw, pGC, narcs, parcs)
     BoxRec box;
     RegionPtr cclip;
 
-    cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+    cclip = cfbGetCompositeClip(pGC);
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
 	if (miFillArcEmpty(arc))

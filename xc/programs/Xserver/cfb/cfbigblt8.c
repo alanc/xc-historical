@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbigblt8.c,v 1.6 93/07/12 09:31:52 dpw Exp $
+ * $XConsortium: cfbigblt8.c,v 1.7 93/09/20 20:10:32 dpw Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -72,7 +72,7 @@ cfbImageGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     backrect.y = y - FONTASCENT(pGC->font);
     backrect.height = FONTASCENT(pGC->font) + FONTDESCENT(pGC->font);
 
-    priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
+    priv = cfbGetGCPrivate(pGC);
 
     /* this code cheats by knowing that ValidateGC isn't
      * necessary for PolyFillRect

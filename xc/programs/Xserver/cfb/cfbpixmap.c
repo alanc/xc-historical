@@ -1,4 +1,4 @@
-/* $XConsortium: cfbpixmap.c,v 5.10 93/07/12 16:28:09 dpw Exp $ */
+/* $XConsortium: cfbpixmap.c,v 5.11 93/09/03 08:11:39 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -36,7 +36,7 @@ SOFTWARE.
 #include "cfb.h"
 #include "cfbmskbits.h"
 
-extern unsigned int endtab[];
+extern unsigned long endtab[];
 
 PixmapPtr
 cfbCreatePixmap (pScreen, width, height, depth)
@@ -123,22 +123,22 @@ cfbPadPixmap(pPixmap)
 {
     register int width = (pPixmap->drawable.width) * (pPixmap->drawable.bitsPerPixel);
     register int h;
-    register int mask;
-    register unsigned int *p;
-    register unsigned int bits; /* real pattern bits */
+    register unsigned long mask;
+    register unsigned long *p;
+    register unsigned long bits; /* real pattern bits */
     register int i;
     int rep;                    /* repeat count for pattern */
  
-    if (width >= 32)
+    if (width >= PGSZ)
         return;
 
-    rep = 32/width;
-    if (rep*width != 32)
+    rep = PGSZ/width;
+    if (rep*width != PGSZ)
         return;
  
     mask = endtab[width];
  
-    p = (unsigned int *)(pPixmap->devPrivate.ptr);
+    p = (unsigned long *)(pPixmap->devPrivate.ptr);
     for (h=0; h < pPixmap->drawable.height; h++)
     {
         *p &= mask;
@@ -154,7 +154,7 @@ cfbPadPixmap(pPixmap)
         }
         p++;
     }    
-    pPixmap->drawable.width = 32/(pPixmap->drawable.bitsPerPixel);
+    pPixmap->drawable.width = PGSZ/(pPixmap->drawable.bitsPerPixel);
 }
 
 
@@ -199,7 +199,7 @@ static cfbdumppixmap(pPix)
 #endif /* notdef */
 
 /* Rotates pixmap pPix by w pixels to the right on the screen. Assumes that
- * words are 32 bits wide, and that the least significant bit appears on the
+ * words are PGSZ bits wide, and that the least significant bit appears on the
  * left.
  */
 void
@@ -207,8 +207,8 @@ cfbXRotatePixmap(pPix, rw)
     PixmapPtr	pPix;
     register int rw;
 {
-    register unsigned int	*pw, *pwFinal;
-    register unsigned int	t;
+    register unsigned long	*pw, *pwFinal;
+    register unsigned long	t;
     int				rot;
 
     if (pPix == NullPixmap)
@@ -224,7 +224,7 @@ cfbXRotatePixmap(pPix, rw)
 	    ErrorF("cfbXRotatePixmap: unsupported bitsPerPixel %d\n", ((DrawablePtr) pPix)->bitsPerPixel);
 	    return;
     }
-    pw = (unsigned int *)pPix->devPrivate.ptr;
+    pw = (unsigned long *)pPix->devPrivate.ptr;
     modulus (rw, (int) pPix->drawable.width, rot);
     if(pPix->drawable.width == PPW)
     {
@@ -240,25 +240,25 @@ cfbXRotatePixmap(pPix, rw)
     {
         ErrorF("cfb internal error: trying to rotate odd-sized pixmap.\n");
 #ifdef notdef
-	register unsigned int *pwTmp;
+	register unsigned long *pwTmp;
 	int size, tsize;
 
 	tsize = PixmapBytePad(pPix->drawable.width - rot, pPix->drawable.depth);
-	pwTmp = (unsigned int *) ALLOCATE_LOCAL(pPix->drawable.height * tsize);
+	pwTmp = (unsigned long *) ALLOCATE_LOCAL(pPix->drawable.height * tsize);
 	if (!pwTmp)
 	    return;
 	/* divide pw (the pixmap) in two vertically at (w - rot) and swap */
 	tsize >>= 2;
-	size = pPix->devKind >> 2;
-	cfbQuickBlt((int *)pw, (int *)pwTmp,
+	size = pPix->devKind >> SIZE0F(PixelGroup);
+	cfbQuickBlt((long *)pw, (long *)pwTmp,
 		    0, 0, 0, 0,
 		    (int)pPix->drawable.width - rot, (int)pPix->drawable.height,
 		    size, tsize);
-	cfbQuickBlt((int *)pw, (int *)pw,
+	cfbQuickBlt((long *)pw, (long *)pw,
 		    (int)pPix->drawable.width - rot, 0, 0, 0,
 		    rot, (int)pPix->drawable.height,
 		    size, size);
-	cfbQuickBlt((int *)pwTmp, (int *)pw,
+	cfbQuickBlt((long *)pwTmp, (long *)pw,
 		    0, 0, rot, 0,
 		    (int)pPix->drawable.width - rot, (int)pPix->drawable.height,
 		    tsize, size);

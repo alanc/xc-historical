@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbpolypnt.c,v 5.13 91/07/14 13:51:14 keith Exp $ */
+/* $XConsortium: cfbpolypnt.c,v 5.14 91/12/19 14:17:12 keith Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -28,14 +28,18 @@ without any express or implied warranty.
 
 #define isClipped(c,ul,lr)  ((((c) - (ul)) | ((lr) - (c))) & ClipMask)
 
+/* WARNING: pbox contains two shorts. This code assumes they are packed
+ * and can be referenced together as an INT32.
+ */
+
 #define PointLoop(fill) { \
     for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip); \
 	 --nbox >= 0; \
 	 pbox++) \
     { \
-	c1 = *((long *) &pbox->x1) - off; \
-	c2 = *((long *) &pbox->x2) - off - 0x00010001; \
-	for (ppt = (long *) pptInit, i = npt; --i >= 0;) \
+	c1 = *((INT32 *) &pbox->x1) - off; \
+	c2 = *((INT32 *) &pbox->x2) - off - 0x00010001; \
+	for (ppt = (INT32 *) pptInit, i = npt; --i >= 0;) \
 	{ \
 	    pt = *ppt++; \
 	    if (!isClipped(pt,c1,c2)) { \
@@ -53,8 +57,8 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     int npt;
     xPoint *pptInit;
 {
-    register long   pt;
-    register long   c1, c2;
+    register INT32   pt;
+    register INT32   c1, c2;
     register unsigned long   ClipMask = 0x80008000;
     register unsigned long   xor;
 #ifdef PIXEL_ADDR
@@ -66,18 +70,18 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     register int    nlwidth;
     unsigned long   *addrlt;
 #endif
-    register long   *ppt;
+    register INT32  *ppt;
     RegionPtr	    cclip;
     int		    nbox;
     register int    i;
     register BoxPtr pbox;
-    long	    and;
+    unsigned long   and;
     int		    rop = pGC->alu;
     int		    off;
     cfbPrivGCPtr    devPriv;
     xPoint	    *pptPrev;
 
-    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
+    devPriv =cfbGetGCPrivate(pGC);
     rop = devPriv->rop;
     if (rop == GXnoop)
 	return;
