@@ -1,5 +1,5 @@
 /*
- * $XConsortium: WidgetNode.c,v 1.2 90/03/06 18:29:29 jim Exp $
+ * $XConsortium: WidgetNode.c,v 1.3 90/03/06 18:55:07 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -266,10 +266,15 @@ int XmuWnCountOwnedResources (node, ownernode, cons)
 }
 
 
+#if NeedFunctionPrototypes
+XmuWidgetNode *XmuWnNameToNode (XmuWidgetNode *nodelist, int nnodes, 
+				_Xconst char *name)
+#else
 XmuWidgetNode *XmuWnNameToNode (nodelist, nnodes, name)
     XmuWidgetNode *nodelist;
     int nnodes;
     char *name;
+#endif
 {
     int i;
     XmuWidgetNode *wn;
