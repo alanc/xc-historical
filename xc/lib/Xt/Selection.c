@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.67 91/05/09 12:50:55 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.69 91/05/10 20:28:17 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -295,6 +295,7 @@ typedef int (*xErrorHandler)(
 			   );
 
 static xErrorHandler oldErrorHandler = NULL;
+static unsigned long firstProtectRequest;
 static Window errorWindow;
 
 static int LocalErrorHandler (dpy, error)
@@ -304,7 +305,8 @@ XErrorEvent *error;
     /* If BadWindow error on selection requestor, nothing to do but let
      * the transfer timeout.  Otherwise, invoke saved error handler. */
 
-    if (error->error_code == BadWindow && error->resourceid == errorWindow)
+    if (error->error_code == BadWindow && error->resourceid == errorWindow &&
+	error->serial >= firstProtectRequest)
 	return 0;
 
     if (oldErrorHandler == NULL) return 0;  /* should never happen */
@@ -312,13 +314,15 @@ XErrorEvent *error;
     return (*oldErrorHandler)(dpy, error);
 }
 
-static void StartProtectedSection(window)
+static void StartProtectedSection(dpy, window)
+    Display *dpy;
     Window window;
 {
     /* protect ourselves against request window being destroyed
      * before completion of transfer */
 
     oldErrorHandler = XSetErrorHandler(LocalErrorHandler);
+    firstProtectRequest = NextRequest(dpy);
     errorWindow = window;
 }
 
@@ -386,7 +390,7 @@ XtPointer closure;
 			   (caddr_t *)&requestWindowRec);
 	if (--requestWindowRec->active_transfer_count == 0) {
 	    _XtUnregisterWindow(window, widget);
-	    StartProtectedSection(window);
+	    StartProtectedSection(dpy, window);
 	    XSelectInput(dpy, window, 0L);
 	    EndProtectedSection(dpy);
 
@@ -441,7 +445,7 @@ static void SendIncrement(incr)
     int incrSize = MAX_SELECTION_INCR(dpy);
     if (incrSize >  incr->bytelength - incr->offset)
         incrSize = incr->bytelength - incr->offset;
-    StartProtectedSection(incr->requestor);
+    StartProtectedSection(dpy, incr->requestor);
     XChangeProperty(dpy, incr->requestor, incr->property, 
     	    incr->type, incr->format, PropModeReplace, 
 	    (unsigned char *)incr->value + incr->offset,
@@ -454,7 +458,7 @@ static AllSent(req)
 Request req;
 {
     Select ctx = req->ctx;
-    StartProtectedSection(req->requestor);
+    StartProtectedSection(ctx->dpy, req->requestor);
     XChangeProperty(ctx->dpy, req->requestor, 
 		    req->property, req->type,  req->format, 
 		    PropModeReplace, (unsigned char *) NULL, 0);
@@ -611,7 +615,7 @@ Boolean *incremental;
 		 ctx->ref_count--;
 		 return(FALSE);
 	     }
-	     StartProtectedSection(event->requestor);
+	     StartProtectedSection(ctx->dpy, event->requestor);
 	     PrepareIncremental(req, widget, event->requestor, property,
 				target, targetType, value, length, format);
 	     *incremental = True;
@@ -627,7 +631,7 @@ Boolean *incremental;
 	}
 	ctx->req = NULL;
     }
-    StartProtectedSection(event->requestor);
+    StartProtectedSection(ctx->dpy, event->requestor);
     if (BYTELENGTH(length,format) <= MAX_SELECTION_INCR(ctx->dpy)) {
 	if (! timestamp_target) {
 	    if (ctx->notify != NULL) {
@@ -713,7 +717,7 @@ Boolean *cont;
 	      unsigned long bytesafter, length;
 	      unsigned char *value;
 	      ev.property = event->xselectionrequest.property;
-	      StartProtectedSection(ev.requestor);
+	      StartProtectedSection(ev.display, ev.requestor);
 	      (void) XGetWindowProperty(ev.display, ev.requestor,
 			event->xselectionrequest.property, 0L, 1000000,
 			False,(Atom)AnyPropertyType, &target, &format, &length,
@@ -727,7 +731,7 @@ Boolean *cont;
 
 			p->property = None;
 			writeback = TRUE;
-			StartProtectedSection(ev.requestor);
+			StartProtectedSection(ctx->dpy, ev.requestor);
 		  }
 	      }
 	      if (writeback)
@@ -743,7 +747,7 @@ Boolean *cont;
 		   ev.property = event->xselectionrequest.property;
 	       else {
 		   ev.property = None;
-		   StartProtectedSection(ev.requestor);
+		   StartProtectedSection(ctx->dpy, ev.requestor);
 	       }
 	   }
       }
