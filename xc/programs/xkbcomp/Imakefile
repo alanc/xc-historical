@@ -6,27 +6,36 @@
           SRCS = xkbcomp.c xkbio.c xkbscan.c expr.c vmod.c misc.c \
 		 keymap.c keycodes.c keytypes.c compat.c action.c \
 		 symbols.c \
-		 xkmout.c xkbout.c cout.c
+		 xkmout.c xkbout.c cout.c xkbparse.c
           OBJS = xkbcomp.o xkbio.o xkbscan.o expr.o vmod.o misc.o \
 		 keymap.o keycodes.o keytypes.o compat.o action.o \
 		 symbols.o \
 		 xkmout.o xkbout.o cout.o \
 		 xkbparse.o
-      PROGRAMS = xkbcomp
-EXTRA_INCLUDES = -Iutils -I$(EXTINCSRC)
+        DEPLIBS = $(DEPXLIBONLY) utils/libutils.a
+LOCAL_LIBRARIES = $(XLIB) utils/libutils.a
 
-       XKBCOMP = xkbcomp
+ROOT_DEFINES = -DDFLT_XKB_CONFIG_ROOT=\"$(LIBDIR)/xkb\"
+
+EXTRA_INCLUDES = -Iutils -I$(EXTINCSRC)
 
 MakeSubdirs($(SUBDIRS))
 
-all::	$(XKBCOMP)
-NormalProgramTarget($(XKBCOMP),$(OBJS),$(DEPXLIBONLY),$(XLIBONLY),utils/libutils.a)
+depend:: xkbparse.c
 
+ComplexProgramTarget(xkbcomp)
 
-DependTarget()
+SpecialCObjectRule(xkbio,$(ICONFIGFILES),$(ROOT_DEFINES))
+
+xkbparse.c: xkbparse.y
+	$(YACC) xkbparse.y
+	$(MV) y.tab.c xkbparse.c
+
+clean::
+	RemoveFiles(y.tab.c xkbparse.c)
 
 DependSubdirs($(SUBDIRS))
 
 clean::
-	$(RM) -f y.output test.h *.xkm
+	RemoveFiles(test.h *.xkm)
 
