@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.50 89/04/12 07:02:26 toml Exp $
+ * $XConsortium: events.c,v 1.50 89/04/12 18:55:33 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.50 89/04/12 07:02:26 toml Exp $";
+"$XConsortium: events.c,v 1.50 89/04/12 18:55:33 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1771,24 +1771,10 @@ HandleShapeNotify ()
     sev = (XShapeEvent *) &Event;
     if (Tmp_win == NULL)
 	return;
-    if (sev->kind == ShapeWindow)
-	Tmp_win->wShaped = sev->shaped;
-    else
-	Tmp_win->bShaped = sev->shaped;
-    /*
-     * if the border width of the client window is zero, both
-     * the windowShape and borderShape will affect the outer
-     * appearance of the window, otherwise only the borderShape
-     * will.
-     */
-    if (Tmp_win->attr.border_width == 0 || sev->kind == ShapeBorder) {
-	if (sev->shaped)
-	    reshape = 1;
-	else if (Tmp_win->fShaped)
-	    reshape = 1;
-    }
-    if (reshape)
-	SetFrameShape (Tmp_win);
+    if (sev->kind != ShapeBounding)
+	return;
+    Tmp_win->wShaped = sev->shaped;
+    SetFrameShape (Tmp_win);
 }
 #endif
 

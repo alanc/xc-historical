@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.33 89/04/12 11:22:59 toml Exp $
+ * $XConsortium: add_window.c,v 1.33 89/04/12 18:55:30 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.33 89/04/12 11:22:59 toml Exp $";
+"$XConsortium: add_window.c,v 1.33 89/04/12 18:55:30 jim Exp $";
 #endif lint
 
 #include <stdio.h>
@@ -537,11 +537,13 @@ IconMgr *iconp;
     if (HasShape) {
 	int xws, yws, xbs, ybs;
 	unsigned wws, hws, wbs, hbs;
+	int boundingShaped, clipShaped;
 
 	XShapeSelectInput (dpy, tmp_win->w, True);
 	XShapeQueryExtents (dpy, tmp_win->w,
-			    &tmp_win->wShaped, &xws, &yws, &wws, &hws,
-			    &tmp_win->bShaped, &xbs, &ybs, &wbs, &hbs);
+			    &boundingShaped, &xws, &yws, &wws, &hws,
+			    &clipShaped, &xbs, &ybs, &wbs, &hbs);
+	tmp_win->wShaped = boundingShaped;
 	tmp_win->fShaped = -1;
     }
 #endif

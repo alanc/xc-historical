@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.21 89/04/05 08:03:22 toml Exp $
+ * $XConsortium: twm.h,v 1.21 89/04/12 18:56:06 jim Exp $
  *
  * twm include file
  *
@@ -213,8 +213,8 @@ typedef struct TwmWindow
     int save_frame_height;	/* height of frame */
     short zoomed;		/* is the window zoomed? */
 #ifdef SHAPE
-    int wShaped, bShaped;	/* regions of the window which have shape */
-    int fShaped;		/* regions of the frame have been shaped */
+    short wShaped;		/* this window has a bounding shape */
+    short fShaped;		/* regions of the frame have been shaped */
 #endif
 } TwmWindow;
 

@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.14 89/04/10 11:43:57 toml Exp $
+ * $XConsortium: resize.c,v 1.14 89/04/12 18:56:03 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.14 89/04/10 11:43:57 toml Exp $";
+"$XConsortium: resize.c,v 1.14 89/04/12 18:56:03 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -845,39 +845,26 @@ SetFrameShape (tmp_win)
 TwmWindow   *tmp_win;
 {
     Window  dest = tmp_win->frame;
-    int	    x, y;
-
-    x = 0;
-    y = tmp_win->title_height;
-    if (tmp_win->attr.border_width == 0 && tmp_win->wShaped) {
-	XShapeCombineShape (dpy, dest, ShapeBorder,
-			    tmp_win->w, ShapeWindow,
-			    ShapeSet,
-			    x,
-			    y);
-	if (tmp_win->title_height)
-	    XShapeCombineShape (dpy, dest, ShapeBorder,
-			    	tmp_win->title_w, ShapeBorder,
-			    	ShapeUnion,
+    int	    op;
+    if (tmp_win->wShaped) {
+	op = ShapeSet;
+	if (tmp_win->title_height) {
+	    XShapeCombineShape (dpy, dest, ShapeBounding,
+			    	tmp_win->title_w, ShapeBounding,
+			    	ShapeSet,
 			    	tmp_win->title_x + tmp_win->title_bw,
 			    	tmp_win->title_y + tmp_win->title_bw);
-	tmp_win->fShaped = 1;
-    } else if (tmp_win->attr.border_width != 0 && tmp_win->bShaped) {
-	XShapeCombineShape (dpy, dest, ShapeBorder,
-			    tmp_win->w, ShapeBorder,
-			    ShapeSet,
-			    x,
-			    y);
-	if (tmp_win->title_height)
-	    XShapeCombineShape (dpy, dest, ShapeBorder,
-			    	tmp_win->title_w, ShapeBorder,
-			    	ShapeUnion,
-			    	tmp_win->title_x + tmp_win->title_bw,
-			    	tmp_win->title_y + tmp_win->title_bw);
+	    op = ShapeUnion;
+	}
+	XShapeCombineShape (dpy, dest, ShapeBounding,
+			    tmp_win->w, ShapeBounding,
+			    op,
+			    0,
+			    tmp_win->title_height);
 	tmp_win->fShaped = 1;
     } else {
 	if (tmp_win->fShaped) {
-	    XShapeCombineMask (dpy, dest, ShapeBorder,
+	    XShapeCombineMask (dpy, dest, ShapeBounding,
 			    	None, ShapeSet, 0, 0);
 	    tmp_win->fShaped = 0;
 	}
