@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.17 93/08/17 19:41:15 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.18 93/08/17 20:51:07 rws Exp $
 
 #define OSName			Microsoft Windows NT 3.1
 XCOMM operating system:  OSName
@@ -31,6 +31,7 @@ XCOMM operating system:  OSName
 #define ConnectionFlags		-DTCPCONN
 #ifndef UseInstalled
 #define ImakeCmd $(IMAKESRC:/=\)\imake
+#define DependCmd $(DEPENDSRC:/=\)\makedepend
 #endif
 #define FilesToClean *.bak *.obj *.lib make.log
 
