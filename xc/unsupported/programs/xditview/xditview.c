@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xditview.c,v 1.15 89/10/11 11:38:43 jim Exp $";
+static char rcsid[] = "$XConsortium: xditview.c,v 1.16 89/12/07 10:45:12 rws Exp $";
 #endif /* lint */
 
 #include <X11/Xatom.h>
@@ -102,15 +102,12 @@ void main(argc, argv)
     int argc;
     char **argv;
 {
-    Arg		    arg;
-    Pixmap	    icon_pixmap = None;
     char	    *file_name = 0;
     int		    i;
     static Arg	    labelArgs[] = {
 			{XtNlabel, (XtArgVal) pageLabel},
     };
     Arg		    topLevelArgs[2];
-    int		    height;
     Widget          entry;
 
     toplevel = XtInitialize("main", "Xditview",
@@ -197,7 +194,6 @@ char	*name;
     char    *n, *rindex ();
     FILE    *new_file;
     Boolean seek = 0;
-    int	    c;
 
     if (current_file) {
 	if (!strcmp (current_file_name, "-"))

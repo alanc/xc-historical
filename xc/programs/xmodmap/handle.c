@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.17 89/07/07 10:56:38 jim Exp $
+ * $XConsortium: handle.c,v 1.18 89/07/07 13:26:26 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1127,7 +1127,7 @@ int execute_work_queue ()
 		if (event.type == MappingNotify) {
 		    /* read all MappingNotify events */
 		    while (XCheckTypedEvent (dpy, MappingNotify, &event)) ;
-		    XRefreshKeyboardMapping (&event);
+		    XRefreshKeyboardMapping (&event.xmapping);
 		} else {
 		    fprintf (stderr, "%s:  unknown event %ld\n", 
 		    	     ProgramName, (long) event.type);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.15 89/10/17 14:38:52 jim Exp $
+ * $XConsortium: xdpyinfo.c,v 1.16 89/11/17 16:09:24 jim Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -182,7 +182,6 @@ print_screen_info (dpy, scr, multibuf)
     XVisualInfo viproto;		/* fill in for getting info */
     XVisualInfo *vip;			/* retured info */
     int nvi;				/* number of elements returned */
-    int nscr;				/* number of screens */
     int i;				/* temp variable: iterator */
     char eventbuf[80];			/* want 79 chars per line + nul */
     static char *yes = "YES", *no = "NO";

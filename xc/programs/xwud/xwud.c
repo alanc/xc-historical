@@ -4,7 +4,7 @@
 /* xwud - marginally useful raster image undumper */
 
 #ifndef lint
-static char *rcsid = "$XConsortium: xwud.c,v 1.31 89/06/02 17:21:55 rws Exp $";
+static char *rcsid = "$XConsortium: xwud.c,v 1.32 89/08/20 18:01:44 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -471,7 +471,8 @@ main(argc, argv)
     hints.height = out_image->height;
     if (geom)
 	gbits = XParseGeometry(geom, &hints.x, &hints.y,
-			       &hints.width, &hints.height);
+			       (unsigned int *)&hints.width,
+			       (unsigned int *)&hints.height);
     hints.max_width = (hints.width > out_image->width) ? hints.width :
 							 out_image->width;
     hints.max_height = (hints.height > out_image->height) ? hints.height :
@@ -516,7 +517,7 @@ main(argc, argv)
 	    }
 	    break;
 	case KeyPress:
-	    i = XLookupString(&event, &c, 1, NULL, NULL);
+	    i = XLookupString(&event.xkey, &c, 1, NULL, NULL);
 	    if ((i == 1) && ((c == 'q') || (c == 'Q') || (c == '\03'))) {
 		XCloseDisplay(dpy);
 		return;

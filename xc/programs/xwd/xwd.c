@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.49 89/07/16 15:33:01 jim Exp $";
+static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.50 89/07/16 15:35:15 jim Exp $";
 #endif
 
 /*%
@@ -143,9 +143,10 @@ main(argc, argv)
 	target_win = Select_Window(dpy);
 	if (target_win != None && !frame_only) {
 	    Window root;
-	    int dummy;
+	    int dummyi;
+	    unsigned int dummy;
 
-	    if (XGetGeometry (dpy, target_win, &root, &dummy, &dummy,
+	    if (XGetGeometry (dpy, target_win, &root, &dummyi, &dummyi,
 			      &dummy, &dummy, &dummy, &dummy) &&
 		target_win != root)
 	      target_win = XmuClientWindow (dpy, target_win);

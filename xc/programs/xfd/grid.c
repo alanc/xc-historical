@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.15 89/08/07 19:18:51 jim Exp $
+ * $XConsortium: fontgrid.c,v 1.16 89/08/07 19:38:59 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -186,7 +186,6 @@ static void Initialize (request, new)
 {
     FontGridWidget reqfg = (FontGridWidget) request;
     FontGridWidget newfg = (FontGridWidget) new;
-    int tcols = 0, nrows = 16;
     XFontStruct *fs = newfg->fontgrid.text_font;
 
     if (reqfg->fontgrid.cell_cols <= 0)
@@ -413,7 +412,6 @@ static Boolean SetValues (current, request, new)
     Widget current, request, new;
 {
     FontGridWidget curfg = (FontGridWidget) current;
-    FontGridWidget reqfg = (FontGridWidget) request;
     FontGridWidget newfg = (FontGridWidget) new;
     Boolean redisplay = FALSE;
 

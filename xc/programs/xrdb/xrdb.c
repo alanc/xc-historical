@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: xrdb.c,v 11.31 89/07/12 12:40:07 jim Exp $";
+static char rcs_id[] = "$XConsortium: xrdb.c,v 11.32 89/12/07 17:41:22 rws Exp $";
 #endif
 
 /*
@@ -764,8 +764,8 @@ main (argc, argv)
 	    }
 	} else {
 	    XChangeProperty (dpy, RootWindow(dpy, 0), XA_RESOURCE_MANAGER,
-			     XA_STRING, 8, PropModeReplace, buffer.buff, 
-			     buffer.used);
+			     XA_STRING, 8, PropModeReplace,
+			     (unsigned char *)buffer.buff, buffer.used);
 	    if (retainProp)
 	      XSetCloseDownMode(dpy, RetainPermanent);
 	}

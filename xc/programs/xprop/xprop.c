@@ -1134,9 +1134,10 @@ char **argv;
       target_win = Select_Window(dpy);
       if (target_win != None && !frame_only) {
 	Window root;
-	int dummy;
+	int dummyi;
+	unsigned int dummy;
 
-	if (XGetGeometry (dpy, target_win, &root, &dummy, &dummy,
+	if (XGetGeometry (dpy, target_win, &root, &dummyi, &dummyi,
 			  &dummy, &dummy, &dummy, &dummy) &&
 	    target_win != root)
 	  target_win = XmuClientWindow (dpy, target_win);
@@ -1297,9 +1298,9 @@ char *Get_Window_Property_Data_And_Type(atom, length, type, size)
 {
 	Atom actual_type;
 	int actual_format;
-	long nitems;
-	long bytes_after;
-	char *prop;
+	unsigned long nitems;
+	unsigned long bytes_after;
+	unsigned char *prop;
 	int status;
 	
 	status = XGetWindowProperty(dpy, target_win, atom, 0, (max_len+3)/4,
@@ -1314,7 +1315,7 @@ char *Get_Window_Property_Data_And_Type(atom, length, type, size)
 	*length = min(nitems * actual_format/8, max_len);
 	*type = actual_type;
 	*size = actual_format;
-	return(prop);
+	return((char *)prop);
 }
 
 char *Get_Property_Data_And_Type(atom, length, type, size)

@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: commands.c,v 1.25 89/12/02 15:14:44 jim Exp $";
+static char Xrcsid[] = "$XConsortium: commands.c,v 1.26 89/12/07 19:20:02 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -259,8 +259,6 @@ void
 ResetSourceChanged(widget)
 Widget widget;
 {
-    Arg args[1];
-
     XtAddCallback(XawTextGetSource(widget), XtNcallback, SourceChanged, NULL);
     source_changed = FALSE;
 }

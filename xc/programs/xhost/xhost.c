@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.33 89/12/07 15:51:30 jim Exp $";
+static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.34 89/12/07 16:22:57 jim Exp $";
 #endif
  
 #ifdef TCPCONN
@@ -128,9 +128,8 @@ main(argc, argv)
 	int argc;
 	char **argv;
 {
-	char host[256];
 	register char *arg;
-	int display, i, w, nhosts;
+	int i, nhosts;
 	char *hostname;
 	XHostAddress *list;
 	Bool enabled = False;

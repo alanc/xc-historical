@@ -1,4 +1,4 @@
-/* $XConsortium: dsimple.c,v 1.7 88/09/06 17:38:13 jim Exp $ */
+/* $XConsortium: dsimple.c,v 1.8 89/04/10 14:01:06 jim Exp $ */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -209,8 +209,9 @@ Pixmap ReadBitmapFile(d, filename, width, height, x_hot, y_hot)
   Pixmap bitmap;
   int status;
 
-  status = XReadBitmapFile(dpy, RootWindow(dpy, screen), filename, width,
-			   height, &bitmap, x_hot, y_hot);
+  status = XReadBitmapFile(dpy, RootWindow(dpy, screen), filename,
+			   (unsigned int *)width, (unsigned int *)height,
+			   &bitmap, x_hot, y_hot);
   if (status != BitmapSuccess)
     _bitmap_error(status, filename);
 
@@ -377,13 +378,14 @@ Pixmap Bitmap_To_Pixmap(dpy, d, gc, bitmap, width, height)
      int width, height;
 {
   Pixmap pix;
-  int x, depth;
+  int x;
+  unsigned int i, depth;
   Drawable root;
 
-  if (!XGetGeometry(dpy, d, &root, &x, &x, &x, &x, &x, &depth))
+  if (!XGetGeometry(dpy, d, &root, &x, &x, &i, &i, &i, &depth))
     return(0);
 
-  pix = XCreatePixmap(dpy, d, width, height, depth);
+  pix = XCreatePixmap(dpy, d, width, height, (int)depth);
 
   XCopyPlane(dpy, bitmap, pix, gc, 0, 0, width, height, 0, 0, 1);
 
@@ -478,7 +480,8 @@ Window Window_With_Name(dpy, top, name)
      char *name;
 {
 	Window *children, dummy;
-	int nchildren, i;
+	unsigned int nchildren;
+	int i;
 	Window w=0;
 	char *window_name;
 
@@ -493,6 +496,6 @@ Window Window_With_Name(dpy, top, name)
 		if (w)
 		  break;
 	}
-	if (children) XFree (children);
+	if (children) XFree ((char *)children);
 	return(w);
 }

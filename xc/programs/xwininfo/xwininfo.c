@@ -262,9 +262,10 @@ main(argc, argv)
 	  window = Select_Window(dpy);
 	  if (window && !frame) {
 	      Window root;
-	      int dummy;
+	      int dummyi;
+	      unsigned int dummy;
 
-	      if (XGetGeometry (dpy, window, &root, &dummy, &dummy, 
+	      if (XGetGeometry (dpy, window, &root, &dummyi, &dummyi,
 				&dummy, &dummy, &dummy, &dummy) &&
 		  window != root)
 	        window = XmuClientWindow (dpy, window);
@@ -596,7 +597,7 @@ Display_Tree_Info(window)
 {
   int i;
   Window root_win, parent_win;
-  int num_children;
+  unsigned int num_children;
   Window *child_list;
   
   if (!XQueryTree(dpy, window, &root_win, &parent_win, &child_list,
@@ -610,12 +611,12 @@ Display_Tree_Info(window)
 
   printf("         ==> Number of children: %d\n", num_children);
 
-  for (i = num_children - 1; i >= 0; i--) {
+  for (i = (int)num_children - 1; i >= 0; i--) {
     printf("             ==> Child window id:"); 
     Display_Window_Id(child_list[i]);
   }
 
-  if (child_list) XFree(child_list);
+  if (child_list) XFree((char *)child_list);
 }
 
 

@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 /*
- * $XConsortium: xrefresh.c,v 1.10 88/09/27 11:38:39 jim Exp $
+ * $XConsortium: xrefresh.c,v 1.11 89/06/21 12:04:01 jim Exp $
  *
  * Kitchen sink version, useful for clearing small areas and flashing the 
  * screen.
@@ -255,7 +255,9 @@ char	*argv[];
     }
 
     if (geom) 
-        geom_result = XParseGeometry (geom, &x, &y, &width, &height);
+        geom_result = XParseGeometry (geom, &x, &y,
+				      (unsigned int *)&width,
+				      (unsigned int *)&height);
     else
 	geom_result = NoValue;
 

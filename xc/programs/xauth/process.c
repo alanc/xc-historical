@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.27 89/12/06 20:39:06 jim Exp $
+ * $XConsortium: process.c,v 1.28 89/12/07 10:36:39 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -185,24 +185,6 @@ static void badcommandline (cmd)
     char *cmd;
 {
     fprintf (stderr, "bad \"%s\" command line\n", cmd);
-}
-
-static int parse_boolean (s)
-    char *s;
-{
-    static char *true_names[] = { "on", "t", "true", "yes", "y", NULL };
-    static char *false_names[] = { "off", "f", "false", "no", "n", NULL };
-    register char **cpp;
-
-    if (s) {
-	for (cpp = false_names; *cpp; cpp++) {
-	    if (strcmp (s, *cpp) == 0) return 0;
-	}
-	for (cpp = true_names; *cpp; cpp++) {
-	    if (strcmp (s, *cpp) == 0) return 1;
-	}
-    }
-    return -1;
 }
 
 static char *skip_space (s)
@@ -818,8 +800,7 @@ int process_command (inputfilename, lineno, argc, argv)
     int argc;
     char **argv;
 {
-    CommandTable *ct;
-    int n, status;
+    int status;
 
     if (argc < 1 || !argv || !argv[0]) return 1;
 
@@ -882,7 +863,6 @@ static int dump_entry (inputfilename, lineno, auth, data)
 	dump_numeric (fp, auth);
     } else {
 	char *dpyname = NULL;
-	char numbuf[10];
 
 	switch (auth->family) {
 	  case FamilyLocal:

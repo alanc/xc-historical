@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.16 89/08/07 19:45:50 jim Exp $
+ * $XConsortium: xfd.c,v 1.17 89/08/07 19:46:31 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -125,12 +125,10 @@ main (argc, argv)
     char buf[256];
     Arg av[10];
     Cardinal i;
-    char **cpp;
     static void SelectChar();
     static XtCallbackRec cb[2] = { { SelectChar, NULL }, { NULL, NULL } };
     XFontStruct *fs;
     char *fontname;
-    long start;
 
     ProgramName = argv[0];
 

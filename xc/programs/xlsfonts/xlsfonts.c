@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlsfonts.c,v 1.27 89/09/25 14:17:13 keith Exp $
+ * $XConsortium: xlsfonts.c,v 1.28 89/12/05 18:22:09 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -257,7 +257,6 @@ show_fonts()
 					max[ BUFSIZ ];
 				char	*pmax = max,
 					*pmin = min;
-				int	w;
 
 				strcpy(pmin, "     min(l,r,w,a,d) = (");
 				strcpy(pmax, "     max(l,r,w,a,d) = (");

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parsedpy.c,v 1.5 89/01/03 11:39:53 jim Exp $
+ * $XConsortium: parsedpy.c,v 1.6 89/12/07 08:59:56 jim Exp $
  *
  * parse_displayname - utility routine for splitting up display name strings
  *
@@ -72,6 +72,7 @@ char *get_local_hostname (buf, maxlen)
     return (buf[0] ? buf : NULL);
 }
 
+#ifndef UNIXCONN
 static char *copyhostname ()
 {
     char buf[256];
@@ -79,7 +80,7 @@ static char *copyhostname ()
     return (get_local_hostname (buf, sizeof buf) ? 
 	    copystring (buf, strlen (buf)) : NULL);
 }
-
+#endif
 
 /*
  * parse_displayname - display a display string up into its component parts
