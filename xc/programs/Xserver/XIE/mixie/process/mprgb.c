@@ -1,4 +1,4 @@
-/* $XConsortium: mprgb.c,v 1.3 93/11/01 09:46:42 rws Exp $ */
+/* $XConsortium: mprgb.c,v 1.4 94/01/12 20:23:19 rws Exp $ */
 /**** module mprgb.c ****/
 /******************************************************************************
 				NOTICE
@@ -654,7 +654,7 @@ act_preCIELab(dvoid, svoid, pvt, npix)
 static void
 scale_mtrx(mtx,imtx,iscl)
     RGBFloat    *mtx;
-    CARD32	*imtx;
+    INT32	*imtx;
     CARD32	iscl;
 {
     RGBFloat	fscl = iscl;
