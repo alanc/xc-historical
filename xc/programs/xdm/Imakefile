@@ -70,6 +70,7 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 secure $(DEF_SERVER) :0"' \
 		  '-DDEF_FAILSAFE_CLIENT="$(BINDIR)/xterm"' \
 		  '-DDEF_XDM_CONFIG="$(XDMDIR)/xdm-config"' \
 		  '-DDEF_AUTH_FILE="$(XDMDIR)/auth-server"' \
+		  '-DDEF_AUTH_DIR="$(XDMDIR)"' \
 		  '-DCPP_PROGRAM="$(CPP_PROGRAM)"'
 
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES), /**/)

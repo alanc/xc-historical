@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.29 89/12/15 20:12:26 keith Exp $
+ * $XConsortium: resource.c,v 1.30 90/02/12 17:56:40 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -88,8 +88,8 @@ char	*keyFile;
 #ifndef DEF_AUTH_DIR
 #define DEF_AUTH_DIR "/usr/lib/X11/xdm"
 #endif
-#ifndef DEF_AUTH_DIR
-#define DEF_AUTH_DIR	"/tmp"
+#ifndef DEF_USER_AUTH_DIR
+#define DEF_USER_AUTH_DIR	"/tmp"
 #endif
 #ifndef DEF_KEY_FILE
 #define DEF_KEY_FILE	"/usr/lib/X11/xdm/Xkeys"
@@ -148,6 +148,8 @@ struct displayResources {
 				"",
 "session",	"Session",	DM_STRING,	boffset(session),
 				DEF_SESSION,
+"serverAttempts","ServerAttempts",DM_INT,	boffset(serverAttempts),
+				"1",
 "openDelay",	"OpenDelay",	DM_INT,		boffset(openDelay),
 				"15",
 "openRepeat",	"OpenRepeat",	DM_INT,		boffset(openRepeat),
@@ -178,6 +180,10 @@ struct displayResources {
 				"true",
 "authName",	"AuthName",	DM_STRING,	boffset(authName),
 				DEF_AUTH_NAME,
+"authFile",	"AuthFile",	DM_STRING,	boffset(clientAuthFile),
+				"",
+"dontHUPServer","DontHUPServer",DM_BOOL,	boffset(dontHUPServer),
+				"false",
 "resetForAuth",	"ResetForAuth",	DM_BOOL,	boffset(resetForAuth),
 				"false",
 "userAuthDir",	"UserAuthDir",	DM_STRING,	boffset(userAuthDir),

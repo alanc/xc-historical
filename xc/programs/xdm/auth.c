@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.18 90/02/12 17:56:36 keith Exp $
+ * $XConsortium: auth.c,v 1.19 90/03/05 11:49:18 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -207,15 +207,25 @@ MakeServerAuthFile (d)
 #endif
     char    cleanname[NAMELEN];
 
-    CleanUpFileName (d->name, cleanname, NAMELEN - 8);
-    len = strlen (authDir) + strlen (cleanname) + 12;
+    if (d->clientAuthFile && *d->clientAuthFile)
+	len = strlen (d->clientAuthFile) + 1;
+    else
+    {
+    	CleanUpFileName (d->name, cleanname, NAMELEN - 8);
+    	len = strlen (authDir) + strlen (cleanname) + 12;
+    }
     if (d->authFile)
 	free (d->authFile);
     d->authFile = malloc ((unsigned) len);
     if (!d->authFile)
 	return FALSE;
-    sprintf (d->authFile, "%s/A%s-XXXXXX", authDir, cleanname);
-    (void) mktemp (d->authFile);
+    if (d->clientAuthFile && *d->clientAuthFile)
+	strcpy (d->authFile, d->clientAuthFile);
+    else
+    {
+    	sprintf (d->authFile, "%s/A%s-XXXXXX", authDir, cleanname);
+    	(void) mktemp (d->authFile);
+    }
     return TRUE;
 }
 

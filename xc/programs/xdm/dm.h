@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.28 90/02/12 17:56:30 keith Exp $
+ * $XConsortium: dm.h,v 1.29 90/03/05 11:50:18 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -115,6 +115,7 @@ struct display {
 	char		*failsafeClient;/* a client to start when the session fails */
 	int		authorize;	/* enable authorization */
 	Xauth		*authorization;	/* authorization data */
+	char		*clientAuthFile;/* client specified auth file */
 	char		*authFile;	/* file to store authorization in */
 	char		*userAuthDir;	/* backup directory for tickets */
 	char		*authName;	/* authorization protocol name */
