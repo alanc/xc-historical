@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditresCom.c,v 1.15 90/06/28 18:41:41 kit Exp $
+ * $XConsortium: EditresCom.c,v 1.16 90/06/29 15:53:45 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -113,6 +113,17 @@ static Globals globals;
 static void SendFailure(), SendCommand(), InsertWidget(), ExecuteCommand();
 static void FreeEvent(), ExecuteSetValues(), ExecuteGetGeometry();
 static void ExecuteGetResources();
+
+#if defined(SUNSHLIB) && defined(SHAREDCODE)
+/*
+ * hack to avoid undefined symbol errors at runtime
+ */
+extern WidgetClass get_applicationShellWidgetClass();
+extern WidgetClass get_wmShellWidgetClass();
+#else
+#define get_applicationShellWidgetClass() applicationShellWidgetClass
+#define get_wmShellWidgetClass() wmShellWidgetClass
+#endif
 
 /************************************************************
  *
