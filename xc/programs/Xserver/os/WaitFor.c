@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.60 93/09/03 13:22:34 dpw Exp $ */
+/* $XConsortium: WaitFor.c,v 1.61 93/09/05 10:52:35 rws Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -44,14 +44,14 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "opaque.h"
 
-extern long AllSockets[];
-extern long AllClients[];
-extern long LastSelectMask[];
-extern long WellKnownConnections;
-extern long EnabledDevices[];
-extern long ClientsWithInput[];
-extern long ClientsWriteBlocked[];
-extern long OutputPending[];
+extern FdSet AllSockets;
+extern FdSet AllClients;
+extern FdSet LastSelectMask;
+extern FdMask WellKnownConnections;
+extern FdSet EnabledDevices;
+extern FdSet ClientsWithInput;
+extern FdSet ClientsWriteBlocked;
+extern FdSet OutputPending;
 
 extern int ConnectionTranslation[];
 
@@ -68,9 +68,9 @@ extern void WakeupHandler();
 extern int errno;
 
 #ifdef apollo
-extern long apInputMask[];
+extern FdSet apInputMask;
 
-static long LastWriteMask[mskcnt];
+static FdSet LastWriteMask;
 #endif
 
 #ifdef XTESTEXT1
@@ -106,12 +106,12 @@ WaitForSomething(pClientsReady)
     int i;
     struct timeval waittime, *wt;
     long timeout;
-    long clientsReadable[mskcnt];
-    long clientsWritable[mskcnt];
+    FdSet clientsReadable;
+    FdSet clientsWritable;
     long curclient;
     int selecterr;
     int nready;
-    long devicesReadable[mskcnt];
+    FdSet devicesReadable;
 
     CLEARBITS(clientsReadable);
 
@@ -203,7 +203,7 @@ WaitForSomething(pClientsReady)
 			(int *) NULL, (int *) NULL, wt);
 #endif
 	selecterr = errno;
-	WakeupHandler((unsigned long)i, (pointer)LastSelectMask);
+	WakeupHandler(i, (pointer)LastSelectMask);
 #ifdef XTESTEXT1
 	if (playback_on) {
 	    i = XTestProcessInputAction (i, &waittime);
@@ -305,7 +305,7 @@ WaitForSomething(pClientsReady)
  * This is not always a macro.
  */
 ANYSET(src)
-    long	*src;
+    FdMask	*src;
 {
     int i;
 
