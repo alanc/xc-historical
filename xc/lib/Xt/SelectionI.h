@@ -1,5 +1,5 @@
-/* $XConsortium: SelectionI.h,v 1.29 90/11/10 12:18:56 rws Exp $ */
-/* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
+/* $XConsortium: SelectionI.h,v 1.31 91/05/02 20:06:52 converse Exp $ */
+
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -58,7 +58,10 @@ typedef struct {
 
 typedef struct {
   Display *dpy;
-  Atom incremental_atom, indirect_atom, timestamp_atom;
+  Atom incr_atom, indirect_atom, timestamp_atom;
+#ifdef DRAFT_ICCCM_COMPATIBILITY
+  Atom incremental_atom;	/* X11R2 ICCCM Draft 25 February 1988 */
+#endif
   int propCount;
   SelectionProp list;
 } PropListRec, *PropList;
@@ -113,13 +116,23 @@ typedef struct {
 #define MAX_SELECTION_INCR(dpy) (((65536 < XMaxRequestSize(dpy)) ? \
 	(65536 << 2)  : (XMaxRequestSize(dpy) << 2))-100)
 
+#ifdef DRAFT_ICCCM_COMPATIBILITY
 #define MATCH_SELECT(event, info) ((event->time == info->time) && \
 	    (event->requestor == XtWindow(info->widget)) && \
 	    (event->selection == info->ctx->selection) && \
 	    ((event->target == *info->target) || \
+	     ((event->target == info->ctx->prop_list->incr_atom) && \
+	      (event->property == info->property)) || \
 	     ((event->target == info->ctx->prop_list->incremental_atom) && \
 	      (event->property == info->property))))
-
+#else
+#define MATCH_SELECT(event, info) ((event->time == info->time) && \
+	    (event->requestor == XtWindow(info->widget)) && \
+	    (event->selection == info->ctx->selection) && \
+	    ((event->target == *info->target) || \
+	     ((event->target == info->ctx->prop_list->incr_atom) && \
+	      (event->property == info->property))))
+#endif
 
 #endif /* _XtselectionI_h */
 /* DON'T ADD STUFF AFTER THIS #endif */
