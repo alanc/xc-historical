@@ -9,7 +9,7 @@
 *Foreground:			Azure
 *BorderColor:			LightCyan1
 
-*Tree.Background: 		AntiqueWhite4
+*Tree.Background: 		Grey
 *Tree.Foreground: 		White
 
 *Tree.Toggle.Background: 	RoyalBlue4
@@ -23,8 +23,8 @@
 *SimpleMenu.Background:		RoyalBlue4
 *SmeBSB.Foreground: 		Gold
 
-*Panner*Foreground:		DimGrey
-*Panner*Background:		SeaGreen
-*Panner*BorderColor:		SeaGreen
+*Panner*Foreground:		LightCyan
+*Panner*Background:		Grey
+*Panner*BorderColor:		Grey
 *Panner*ShadowColor:		Black
 *Panner*BackgroundStipple:	None
