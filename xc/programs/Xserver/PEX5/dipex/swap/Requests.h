@@ -1,5 +1,5 @@
-/* Automatically generated Request table
- */
+/* $XConsortium$ */
+
 /******************************************************************
 Copyright 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 
