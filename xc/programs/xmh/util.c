@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 1.14 87/07/31 09:36:08 weissman Exp $";
+static char rcs_id[] = "$Header: util.c,v 1.14 87/09/11 08:18:35 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -64,7 +64,7 @@ char *path, *mode;
 {
     FILE *result;
     result = fopen(path, mode);
-    if (debug && result)  fprintf(stderr, "# %d : %s\n", result->_file, path);
+    if (debug && result)  fprintf(stderr, "# %d : %s\n", fileno(result), path);
     return result;
 }
 
@@ -80,7 +80,7 @@ int myclose(fid)
 int myfclose(file)
 FILE *file;
 {
-    int fid = file->_file;
+    int fid = fileno(file);
     if (fclose(file) < 0) Punt("Error in myfclose!");
     if (debug) fprintf(stderr, "# %d : <Closed>\n", fid);
 }
