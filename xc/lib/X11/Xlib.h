@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.167 89/12/09 20:24:38 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.168 89/12/09 20:53:41 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -45,10 +45,10 @@
 #endif /* NeedFunctionPrototypes */
 
 #ifndef NeedWidePrototypes
-#if defined(WIDEPROTO)
-#define NeedWidePrototypes 1
-#else
+#if defined(NARROWPROTO)
 #define NeedWidePrototypes 0
+#else
+#define NeedWidePrototypes 1		/* default to make interropt. easier */
 #endif
 #endif
 
