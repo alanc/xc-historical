@@ -4,7 +4,7 @@
  * xwininfo.c	- MIT Project Athena, X Window system window
  *		  information utility.
  *
- * $XConsortium: xwininfo.c,v 1.50 91/01/12 11:35:23 rws Exp $
+ * $XConsortium: xwininfo.c,v 1.51 91/05/11 21:48:09 gildea Exp $
  *
  *	This program will report all relevant information
  *	about a specific window.
@@ -24,12 +24,6 @@
 /* Include routines to handle parsing defaults */
 #include "dsimple.h"
 
-#define TRUE 1
-#define FALSE 0
-
-#define FAILURE 0
-
-Window window;
 static char *window_id_format = "0x%lx";
 
 /*
@@ -210,6 +204,7 @@ main(argc, argv)
   register int i;
   int tree = 0, stats = 0, bits = 0, events = 0, wm = 0, size  = 0, shape = 0;
   int frame = 0, children = 0;
+  Window window;
 
   INIT_NAME;
 
