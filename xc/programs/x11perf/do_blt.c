@@ -22,6 +22,7 @@ SOFTWARE.
 ******************************************************************************/
 
 #include "x11perf.h"
+#include <stdio.h>
 
 #define NUMPOINTS 100
 
@@ -198,11 +199,15 @@ int InitCopyPix(xp, p, reps)
     Parms   p;
     int     reps;
 {
+    GC		pixgc;
     (void) InitCopyWin(xp, p, reps);
 
     /* Create pixmap to write stuff into, and initialize it */
     pix = XCreatePixmap(xp->d, xp->w, WIDTH, HEIGHT, xp->vinfo.depth);
-    XCopyArea(xp->d, xp->w, pix, xp->fggc, 0, 0, WIDTH, HEIGHT, 0, 0);
+    pixgc = XCreateGC(xp->d, pix, 0, 0);
+    /* need a gc with GXcopy cos pixmaps contain junk on creation. mmm */
+    XCopyArea(xp->d, xp->w, pix, pixgc, 0, 0, WIDTH, HEIGHT, 0, 0);
+    XFreeGC(xp->d, pixgc);
     return reps;
 }
 
@@ -214,7 +219,12 @@ Bool InitGetImage(xp, p, reps)
     (void) InitCopyWin(xp, p, reps);
 
     /* Create image to stuff bits into */
-    image = XGetImage(xp->d, xp->w, 0, 0, WIDTH, HEIGHT, ~0, ZPixmap);
+    image = XGetImage(xp->d, xp->w, 0, 0, WIDTH, HEIGHT, ~0,
+		      p->font==0?ZPixmap:XYPixmap);
+    if(image==0){
+	printf("XGetImage failed\n");
+	return False;
+    }	
     return reps;
 }
 
@@ -223,7 +233,7 @@ Bool InitPutImage(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    (void) InitGetImage(xp, p, reps);
+    if(!InitGetImage(xp, p, reps))return False;
     XClearWindow(xp->d, xp->w);
     return reps;
 }
@@ -272,6 +282,7 @@ void DoCopyWinPix(xp, p, reps)
     int     reps;
 {
     CopyArea(xp, p, reps, xp->w, pix);
+    xp->p = pix;	/* HardwareSync will now sync on pixmap */
 }
 
 void DoCopyPixPix(xp, p, reps)
@@ -280,6 +291,7 @@ void DoCopyPixPix(xp, p, reps)
     int     reps;
 {
     CopyArea(xp, p, reps, pix, pix);
+    xp->p = pix;	/* HardwareSync will now sync on pixmap */
 }
 
 void DoGetImage(xp, p, reps)
@@ -289,21 +301,23 @@ void DoGetImage(xp, p, reps)
 {
     int i, size;
     XSegment *sa, *sb;
+    int format;
 
     size = p->special;
+    format = (p->font == 0) ? ZPixmap : XYPixmap;
     for (sa = segsa, sb = segsb, i = 0; i != reps; i++, sa++, sb++) {
 	XDestroyImage(image);
 	image = XGetImage(xp->d, xp->w, sa->x1, sa->y1, size, size,
-	    ~0, ZPixmap);
-	XDestroyImage(image);
+	    ~0, format);
+	if (image) XDestroyImage(image);
 	image = XGetImage(xp->d, xp->w, sa->x2, sa->y2, size, size,
-	    ~0, ZPixmap);
-	XDestroyImage(image);
+	    ~0, format);
+	if (image) XDestroyImage(image);
 	image = XGetImage(xp->d, xp->w, sb->x2, sb->y2, size, size,
-	    ~0, ZPixmap);
-	XDestroyImage(image);
+	    ~0, format);
+	if (image) XDestroyImage(image);
 	image = XGetImage(xp->d, xp->w, sb->x1, sb->y1, size, size,
-	    ~0, ZPixmap);
+	    ~0, format);
 /*
 
 One might expect XGetSubImage to be slightly faster than XGetImage.  Go look
@@ -353,6 +367,16 @@ void DoPutImage(xp, p, reps)
 static XImage		shm_image;
 static XShmSegmentInfo	shminfo;
 
+static int haderror;
+static int (*origerrorhandler)();
+shmerrorhandler(d,e)
+Display *d;
+XErrorEvent *e;
+{
+    haderror++;
+    if(e->error_code==BadAccess)fprintf(stderr,"failed to attach shared memory\n");
+    else (*origerrorhandler)(d,e);
+}
 int InitShmPutImage (xp, p, reps)
     XParms  xp;
     Parms   p;
@@ -360,12 +384,14 @@ int InitShmPutImage (xp, p, reps)
 {
     int	image_size;
 
+    if(!InitGetImage(xp, p, reps))return False;
     if (!XShmQueryExtension(xp->d))
 	return False;
-    (void) InitGetImage(xp, p, reps);
     XClearWindow(xp->d, xp->w);
     shm_image = *image;
     image_size = image->bytes_per_line * image->height;
+    /* allow XYPixmap choice: */
+    if(p->font)image_size *= xp->vinfo.depth;
     shminfo.shmid = shmget(IPC_PRIVATE, image_size, IPC_CREAT|0777);
     if (shminfo.shmid < 0)
     {
@@ -376,10 +402,23 @@ int InitShmPutImage (xp, p, reps)
     if (shminfo.shmaddr == ((char *) -1))
     {
 	perror ("shmat");
+	shmctl (shminfo.shmid, IPC_RMID, 0);
 	return False;
     }
     shminfo.readOnly = True;
+    XSync(xp->d,True);
+    haderror = False;
+    origerrorhandler = XSetErrorHandler(shmerrorhandler);
     XShmAttach (xp->d, &shminfo);
+    XSync(xp->d,True);	/* wait for error or ok */
+    XSetErrorHandler(origerrorhandler);
+    if(haderror){
+	if(shmdt (shminfo.shmaddr)==-1)
+	    perror("shmdt:");
+	if(shmctl (shminfo.shmid, IPC_RMID, 0)==-1)
+	    perror("shmctl rmid:");
+	return False;
+    }
     shm_image.data = shminfo.shmaddr;
     bcopy (image->data, shm_image.data, image_size);
     shm_image.obdata = (char *) &shminfo;
@@ -415,8 +454,11 @@ void EndShmPutImage(xp, p)
 
     EndGetImage (xp, p);
     XShmDetach (xp->d, &shminfo);
-    shmdt (shminfo.shmaddr);
-    shmctl (shminfo.shmid, IPC_RMID, 0);
+    XSync(xp->d, False);	/* need server to detach so can remove id */
+    if(shmdt (shminfo.shmaddr)==-1)
+	perror("shmdt:");
+    if(shmctl (shminfo.shmid, IPC_RMID, 0)==-1)
+	perror("shmctl rmid:");
 }
 
 #endif
@@ -444,6 +486,10 @@ void EndCopyPix(xp, p)
 {
     EndCopyWin(xp, p);
     XFreePixmap(xp->d, pix);
+    /*
+     * Ensure that the next test doesn't try and sync on the pixmap
+     */
+    xp->p = (Pixmap)0;
 }
 
 void EndGetImage(xp, p)
@@ -451,7 +497,7 @@ void EndGetImage(xp, p)
     Parms   p;
 {
     EndCopyWin(xp, p);
-    XDestroyImage(image);
+    if (image) XDestroyImage(image);
 }
 
 Bool InitCopyPlane(xp, p, reps)
