@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.6 94/02/10 17:19:20 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.7 94/02/11 13:51:39 rws Exp $
 
 MakeSimpleDoc(shape,shape.ms)
 
@@ -9,3 +9,33 @@ MakeSimpleDoc(mit-shm,mit-shm.ms)
 MakeSimpleDoc(bigreq,bigreq.ms)
 
 MakeTblDoc(record,record.ms)
+
+#if HasLatex
+
+#ifndef LatexCmd
+#define LatexCmd latex
+#endif
+#ifndef DvipsCmd
+#define DvipsCmd dvips
+#endif
+
+LATEX = LatexCmd
+DVIPS = DvipsCmd
+
+#ifndef MakeLatexDoc
+#define MakeLatexDoc(file,srcs)						@@\
+all:: file.PS								@@\
+									@@\
+file.dvi: srcs								@@\
+	$(LATEX) srcs							@@\
+									@@\
+file.PS: file.dvi							@@\
+	$(DVIPS) -o file.nPS file && $(MV) file.nPS $@			@@\
+									@@\
+clean::									@@\
+	RemoveFiles(file.nPS file.PS file.dvi file.aux file.log)
+#endif /* MakeLatexDoc */
+
+MakeLatexDoc(sync,sync.tex)
+
+#endif
