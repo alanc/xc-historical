@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XFillArcs.c,v 11.12 88/09/06 16:07:08 jim Exp $ */
+/* $XConsortium: XFillArcs.c,v 11.13 89/05/26 18:27:59 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -20,8 +20,8 @@ int n_arcs;
 
     LockDisplay(dpy);
     FlushGC(dpy, gc);
-    GetReq(PolyFillArc, req);
     while (n_arcs) {
+	GetReq(PolyFillArc, req);
 	req->drawable = d;
 	req->gc = gc->gid;
 	n = n_arcs;
