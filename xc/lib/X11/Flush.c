@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XFlush.c,v 11.5 87/09/11 08:03:18 toddb Exp $ */
+/* $XConsortium: XFlush.c,v 11.6 88/09/06 16:07:16 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -11,5 +11,7 @@
 XFlush (dpy)
     register Display *dpy;
     {
+    LockDisplay(dpy);
     _XFlush (dpy);
+    UnlockDisplay(dpy);
     }
