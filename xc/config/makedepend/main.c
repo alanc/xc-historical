@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.63 92/08/22 13:42:26 rws Exp $
+ * $XConsortium: main.c,v 1.64 92/08/22 14:36:58 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -68,7 +68,7 @@ catch (sig)
     int sig;
 {
 	fflush (stdout);
-	fatal ("got signal %d\n", sig);
+	fatalerr ("got signal %d\n", sig);
 }
 
 #if defined(USG) || (defined(SYSV386) && defined(SYSV))
@@ -138,7 +138,7 @@ main(argc, argv)
 			break;
 		case 'I':
 			if (incp >= includedirs + MAXDIRS)
-			    fatal("Too many -I flags.\n");
+			    fatalerr("Too many -I flags.\n");
 			*incp++ = argv[0]+2;
 			if (**(incp-1) == '\0') {
 				*(incp-1) = *(++argv);
@@ -196,7 +196,7 @@ main(argc, argv)
 				argc--;
 			}
 			if (*startat != '#')
-				fatal("-s flag's value should start %s\n",
+				fatalerr("-s flag's value should start %s\n",
 					"with '#'.");
 			break;
 		case 'f':
@@ -216,27 +216,27 @@ main(argc, argv)
 			break;
 		default:
 			if (endmarker) break;
-	/*		fatal("unknown opt = %s\n", argv[0]); */
+	/*		fatalerr("unknown opt = %s\n", argv[0]); */
 			warning("ignoring option %s\n", argv[0]);
 		}
 	}
 	if (!defincdir) {
 #ifdef PREINCDIR
 	    if (incp >= includedirs + MAXDIRS)
-		fatal("Too many -I flags.\n");
+		fatalerr("Too many -I flags.\n");
 	    *incp++ = PREINCDIR;
 #endif
 	    if (incp >= includedirs + MAXDIRS)
-		fatal("Too many -I flags.\n");
+		fatalerr("Too many -I flags.\n");
 	    *incp++ = INCLUDEDIR;
 #ifdef POSTINCDIR
 	    if (incp >= includedirs + MAXDIRS)
-		fatal("Too many -I flags.\n");
+		fatalerr("Too many -I flags.\n");
 	    *incp++ = POSTINCDIR;
 #endif
 	} else if (*defincdir) {
 	    if (incp >= includedirs + MAXDIRS)
-		fatal("Too many -I flags.\n");
+		fatalerr("Too many -I flags.\n");
 	    *incp++ = defincdir;
 	}
 
@@ -334,9 +334,9 @@ struct filepointer *getfile(file)
 	content->f_len = st.st_size+1;
 	content->f_base = malloc(content->f_len);
 	if (content->f_base == NULL)
-		fatal("cannot allocate mem\n");
+		fatalerr("cannot allocate mem\n");
 	if (read(fd, content->f_base, st.st_size) != st.st_size)
-		fatal("cannot read all of %s\n", file);
+		fatalerr("cannot read all of %s\n", file);
 	close(fd);
 	content->f_p = content->f_base;
 	content->f_end = content->f_base + st.st_size;
@@ -491,18 +491,18 @@ redirect(line, makefile)
 		else if (stat("Makefile", &st) == 0)
 			makefile = "Makefile";
 		else
-			fatal("[mM]akefile is not present\n");
+			fatalerr("[mM]akefile is not present\n");
 	}
 	else
 	    stat(makefile, &st);
 	if ((fdin = fopen(makefile, "r")) == NULL)
-		fatal("cannot open \"%s\"\n", makefile);
+		fatalerr("cannot open \"%s\"\n", makefile);
 	sprintf(backup, "%s.bak", makefile);
 	unlink(backup);
 	if (rename(makefile, backup) < 0)
-		fatal("cannot rename %s to %s\n", makefile, backup);
+		fatalerr("cannot rename %s to %s\n", makefile, backup);
 	if ((fdout = freopen(makefile, "w", stdout)) == NULL)
-		fatal("cannot open \"%s\"\n", backup);
+		fatalerr("cannot open \"%s\"\n", backup);
 	len = strlen(line);
 	while (!found && fgets(buf, BUFSIZ, fdin)) {
 		if (*buf == '#' && strncmp(line, buf, len) == 0)
@@ -528,7 +528,7 @@ redirect(line, makefile)
 }
 
 /*VARARGS*/
-fatal(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
+fatalerr(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
     char *x0;
 {
 	fprintf(stderr, "%s: error:  ", ProgramName);

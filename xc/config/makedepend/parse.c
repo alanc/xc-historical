@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.22 92/08/22 13:05:05 rws Exp $
+ * $XConsortium: parse.c,v 1.23 92/08/22 14:37:04 rws Exp $
  */
 #include "def.h"
 
@@ -422,7 +422,7 @@ define2(name, val, file)
 			    sizeof(struct symtab)*(file->i_deflen+=SYMTABINC));
 
     if (file->i_defs == NULL)
-	fatal("malloc()/realloc() failure in insert_defn()\n");
+	fatalerr("malloc()/realloc() failure in insert_defn()\n");
 
     below = first = 0;
     last = file->i_ndefs - 1;

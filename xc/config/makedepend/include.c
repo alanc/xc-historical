@@ -1,5 +1,5 @@
 /*
- * $XConsortium: include.c,v 1.10 91/04/05 17:15:12 rws Exp $
+ * $XConsortium: include.c,v 1.11 91/04/05 17:33:48 rws Exp $
  */
 #include "def.h"
 
@@ -182,7 +182,7 @@ issymbolic(dir, component)
 	&& (st.st_mode & S_IFMT) == S_IFLNK) {
 		*pp++ = copy(buf);
 		if (pp >= &notdotdot[ MAXDIRS ])
-			fatal("out of .. dirs, increase MAXDIRS\n");
+			fatalerr("out of .. dirs, increase MAXDIRS\n");
 		return(TRUE);
 	}
 #endif
@@ -202,7 +202,7 @@ struct inclist *newinclude(newfile, incstring)
 	 */
 	ip = inclistp++;
 	if (inclistp == inclist + MAXFILES - 1)
-		fatal("out of space: increase MAXFILES\n");
+		fatalerr("out of space: increase MAXFILES\n");
 	ip->i_file = copy(newfile);
 	ip->i_included_sym = FALSE;
 	if (incstring == NULL)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cppsetup.c,v 1.8 92/08/22 13:04:44 rws Exp $
+ * $XConsortium: cppsetup.c,v 1.9 92/08/22 14:37:02 rws Exp $
  */
 #include "def.h"
 
@@ -95,7 +95,7 @@ pperror(tag, x0,x1,x2,x3,x4)
 yyerror(s)
 	register char	*s;
 {
-	fatal("Fatal error: %s\n", s);
+	fatalerr("Fatal error: %s\n", s);
 }
 #else /* not CPP */
 
