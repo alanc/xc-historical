@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.179 89/12/12 13:57:19 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.180 90/09/11 08:44:04 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -24,6 +24,8 @@
  */
 #ifndef _XLIB_H_
 #define _XLIB_H_
+
+#define XlibSpecificationRelease 5
 
 #ifdef USG
 #ifndef __TYPES__
@@ -138,24 +140,6 @@ typedef struct {		/* public to extension, cannot be changed */
 	int first_event;	/* first event number for the extension */
 	int first_error;	/* first error number for the extension */
 } XExtCodes;
-
-/*
- * This structure is private to the library.
- */
-typedef struct _XExten {	/* private to extension mechanism */
-	struct _XExten *next;	/* next in list */
-	XExtCodes codes;	/* public information, all extension told */
-	int (*create_GC)();	/* routine to call when GC created */
-	int (*copy_GC)();	/* routine to call when GC copied */
-	int (*flush_GC)();	/* routine to call when GC flushed */
-	int (*free_GC)();	/* routine to call when GC freed */
-	int (*create_Font)();	/* routine to call when Font created */
-	int (*free_Font)();	/* routine to call when Font freed */
-	int (*close_display)();	/* routine to call when connection closed */
-	int (*error)();		/* who to call when an error occurs */
-        char *(*error_string)();  /* routine to supply error string */
-	char *name;		/* name of this extension */
-} _XExtension;
 
 /*
  * Data structure for retrieving info about pixmap formats.
@@ -461,29 +445,12 @@ typedef struct {
 
 #endif /* _XSTRUCT_ */
 
-
-
-/*
- * internal atoms used for ICCCM things; not to be used by client
- */
-
-struct _DisplayAtoms {
-    Atom text;
-    Atom wm_state;
-    Atom wm_protocols;
-    Atom wm_save_yourself;
-    Atom wm_change_state;
-    Atom wm_colormap_windows;
-    /* add new atoms to end of list */
-};
-
-
 /*
  * Display datatype maintaining display specific data.
  */
 typedef struct _XDisplay {
 	XExtData *ext_data;	/* hook for extension to hang data */
-	struct _XDisplay *next; /* next open Display on list */
+	struct _XFreeFuncs *free_funcs; /* internal free functions */
 	int fd;			/* Network socket. */
 	int lock;		/* is someone in critical section? */
 	int proto_major_version;/* maj. version of server's X protocol */
@@ -528,7 +495,7 @@ typedef struct _XDisplay {
 	char *scratch_buffer;	/* place to hang scratch buffer */
 	unsigned long scratch_length;	/* length of scratch buffer */
 	int ext_number;		/* extension number on this display */
-	_XExtension *ext_procs;	/* extensions initialized on this display */
+	struct _XExten *ext_procs; /* extensions initialized on this display */
 	/*
 	 * the following can be fixed size, as the protocol defines how
 	 * much address space is available. 
@@ -540,22 +507,18 @@ typedef struct _XDisplay {
 	Bool (*event_vec[128])();  /* vector for wire to event */
 	Status (*wire_vec[128])(); /* vector for event to wire */
 	KeySym lock_meaning;	   /* for XLookupString */
-	struct XKeytrans *key_bindings; /* for XLookupString */
+	struct _XKeytrans *key_bindings; /* for XLookupString */
 	Font cursor_font;	   /* for XCreateFontCursor */
-	/*
-	 * ICCCM information, version 1
-	 */
-	struct _DisplayAtoms *atoms;
+	struct _XDisplayAtoms *atoms; /* for XInternAtom */
 	struct {		   /* for XReconfigureWMWindow */
 	    long sequence_number;
 	    int (*old_handler)();
 	    Bool succeeded;
 	} reconfigure_wm_window;
-	/*
-	 * additional connection info
-	 */
 	unsigned long flags;	   /* internal connection flags */
 	unsigned int mode_switch;  /* keyboard group modifiers */
+	struct _XContextDB *context_db; /* context database */
+	Bool (**error_vec)();      /* vector for wire to error */
 } Display;
 
 #if NeedFunctionPrototypes	/* prototypes require event type definitions */
@@ -1000,13 +963,6 @@ typedef union _XEvent {
 	XKeymapEvent xkeymap;
 	long pad[24];
 } XEvent;
-/*
- * _QEvent datatype for use in input queueing.
- */
-typedef struct _XSQEvent {
-    struct _XSQEvent *next;
-    XEvent event;
-} _XQEvent;
 #endif
 #define XAllocID(dpy) ((*(dpy)->resource_alloc)((dpy)))
 #ifndef _XSTRUCT_
