@@ -22,13 +22,6 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(cfb,$(OBJS))
 LintLibraryTarget(cfb,$(SRCS))
 
-lint:
-	@echo 'Expect the following warnings from lint:'
-	@echo '  cfbpntwin.c: srcStartOver set but not used'
-	@echo '  cfbfillsp.c: srcStartOver set but not used'
-	@echo '  cfbbitblt.c: tmpDst set but not used (4 of these)'
-	@echo '-------'
-
 NormalLintTarget($(SRCS))
 
 DependTarget()
