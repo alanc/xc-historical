@@ -1,4 +1,4 @@
-/* $XConsortium: Callback.c,v 1.39 93/10/06 16:56:53 kaleb Exp $ */
+/* $XConsortium: Callback.c,v 1.40 94/01/14 17:55:42 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -646,3 +646,44 @@ void XtCallCallbackList(widget, callbacks, call_data)
 	icl->call_state = 0;
     UNLOCK_APP(app);
 } /* XtCallCallbackList */
+
+void _XtCallConditionalCallbackList(widget, callbacks, call_data, cond_proc)
+    Widget widget;
+    XtCallbackList callbacks;
+    XtPointer call_data;
+    _XtConditionProc cond_proc;
+{
+    register InternalCallbackList icl;
+    register XtCallbackList cl;
+    register int i;
+    char ostate;
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
+    if (!callbacks) {
+	UNLOCK_APP(app);
+	return;
+    }
+    icl = (InternalCallbackList)callbacks;
+    cl = ToList(icl);
+    if (icl->count == 1) {
+	(*cl->callback) (widget, cl->closure, call_data);
+	(void) (*cond_proc)(call_data);
+	UNLOCK_APP(app);
+	return;
+    }
+    ostate = icl->call_state;
+    icl->call_state = _XtCBCalling;
+    for (i = icl->count; --i >= 0; cl++) {
+	(*cl->callback) (widget, cl->closure, call_data);
+	if (! (*cond_proc)(call_data))
+	    break;
+    }
+    if (ostate)
+	icl->call_state |= ostate;
+    else if (icl->call_state & _XtCBFreeAfterCalling)
+	XtFree((char *)icl);
+    else
+	icl->call_state = 0;
+    UNLOCK_APP(app);
+}
