@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miregion.c,v 1.32 88/03/15 17:09:12 rws Exp $ */
+/* $Header: miregion.c,v 1.33 88/07/20 16:10:46 keith Exp $ */
 
 #include "miscstruct.h"
 #include "regionstr.h"
@@ -1641,18 +1641,19 @@ miRegionToSpans(pRgn, nSpans, ppPts, ppWidths, pwMax)
 	 * First count the number of rectangles in the current band, leaving
 	 * the result in nBand.
 	 */
-	for (pTempBox = pBox+1, nBand = 1;
-	     (pTempBox->y1 == pBox->y1) && (nBand <= n);
-	     pTempBox++, nBand++)
+	nBand = 1;
+	for (pTempBox = pBox + 1;
+ 	     nBand < n && (pTempBox->y1 == pBox->y1);
+	     pTempBox++)
 	{
-	    /* void */ ;
+	    nBand++;
 	}
 	
 	/*
 	 * For each scanline in the band, and each box enclosing that
 	 * scanline, enter a point and a width in the table.
 	 */
-	for (y = pBox->y1; y != pBox->y2; y++)
+	for (y = pBox->y1; y < pBox->y2; y++)
 	{
 	    for (i = 0, pTempBox = pBox; i < nBand; pTempBox++, i++)
 	    {
