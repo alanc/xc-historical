@@ -1807,6 +1807,62 @@
   ;; being processed.
   )
 
+(defmacro event-cond ((display &key timeout peek-p discard-p (force-output-p t))
+		      &body clauses)
+  ;; The clauses of event-cond are of the form:
+  ;; (event-or-events binding-list test-form . body-forms)
+  ;;
+  ;; EVENT-OR-EVENTS	event-key or a list of event-keys (but they
+  ;;			need not be typed as keywords) or the symbol t
+  ;;			or otherwise (but only in the last clause).  If
+  ;;			no t/otherwise clause appears, it is equivalent
+  ;;			to having one that returns nil.  The keys are
+  ;;			not evaluated, and it is an error for the same
+  ;;			key to appear in more than one clause.
+  ;;
+  ;; BINDING-LIST	The list of event components of interest.
+  ;;			corresponding values (if any) are bound to
+  ;;			variables with these names (i.e., the binding-list
+  ;;			has variable names, not keywords, the keywords are
+  ;;			derived from the variable names).  An arg can also
+  ;;			be a (keyword var) form, as for keyword args in a
+  ;;			lambda list.
+  ;;
+  ;; The matching TEST-FORM for each queued event is executed until a
+  ;; clause's test-form returns non-nil.  Then the BODY-FORMS are
+  ;; evaluated, returning the (possibly multiple) values of the last
+  ;; form from event-cond.  If there are no body-forms then, if the
+  ;; test-form is non-nil, the value of the test-form is returned as a
+  ;; single value.
+  ;;
+  ;; Options:
+  ;; FORCE-OUTPUT-P	When true, first invoke display-force-output if no
+  ;;		  	input is pending.
+  ;;
+  ;; PEEK-P		When true, then the event is not removed from the queue.
+  ;;
+  ;; DISCARD-P		When true, then events for which the clause returns nil
+  ;; 			are removed from the queue, otherwise they are left in place.
+  ;;
+  ;; TIMEOUT		If NIL, hang until non-nil is generated for some event's
+  ;;			test-form. Otherwise return NIL after TIMEOUT seconds have
+  ;;			elapsed.
+  ;;
+  (declare (arglist (display &key timeout peek-p discard-p force-output-p)
+		   (event-or-events (&rest args) test-form &body body) |...|))
+  )
+
+(defun discard-current-event (display)
+  (declare (type display display)
+	   (values boolean))
+  ;; Discard the current event for DISPLAY.
+  ;; Returns NIL when the event queue is empty, else T.
+  ;; To ensure events aren't ignored, application code should only call
+  ;; this when throwing out of event-case or process-next-event, or from
+  ;; inside even-case, event-cond or process-event when :peek-p is T and
+  ;; :discard-p is NIL.
+ )
+
 (defmacro declare-event (event-codes &rest declares)
   ;; Used to indicate the keyword arguments for handler functions in process-event
   ;; and event-case.  In the declares, an argument listed as (name1 name2) indicates
@@ -2266,6 +2322,13 @@
 	   (type (or null card8) keysym-index)
 	   (values keysym)))
 
+(defun keysym->keycodes (display keysym)
+  ;; Return keycodes for keysym, as multiple values
+  (declare (type display display)
+	   (type keysym keysym)
+	   (values (or null keycode) (or null keycode) (or null keycode)))
+  )
+
 (defun keysym->character (display keysym &optional state)
   ;; Find the character associated with a keysym.
   ;; STATE is used for adding char-bits to character as follows:
@@ -2304,39 +2367,7 @@
 (defun default-keysym-index (display keycode state)
   ;; Returns a keysym-index for use with keycode->character
   (declare-values card8)
-  (macrolet ((keystate-p (state keyword)
-	       `(the boolean
-		     (logbitp ,(position keyword xlib::*state-mask-vector*)
-			      ,state))))
-    (let* ((shift-lock-xors nil) ;;; If T, both SHIFT-LOCK and SHIFT is the same
-	                         ;;; as neither if the character is alphabetic.
-	   (controlp (or (keystate-p state :control)
-			 (state-keysymp display state left-meta-keysym)
-			 (state-keysymp display state left-super-keysym)
-			 (state-keysymp display state left-hyper-keysym)))
-	   (shiftp (keystate-p state :shift))
-	   (lockp  (keystate-p state :lock))
-	   (keysyms-per-keycode (array-dimension (display-keyboard-mapping display) 1))
-	   (symbolp (and (> keysyms-per-keycode 2)
-			 (state-keysymp display state character-set-switch-keysym)))
-	   (char0 (keycode->character display keycode 0 :keysym-index (if symbolp 2 0)))
-	   (alphap (or (and (characterp char0) (both-case-p char0))
-		       (not (state-keysymp display #.(make-state-mask :lock)
-					   caps-lock-keysym)))))
-      (declare (type boolean shift-lock-xors controlp shiftp lockp alphap symbolp)
-	       (type card8 keysyms-per-keycode))
-      ;; Control keys aren't affected by lock
-      (if controlp
-	  ;; An alphabetic control character defaults to uppercase
-	  (when alphap (setq shiftp (not shiftp)))
-	;; Not a control character - check state of lock modifier
-	(when (and lockp
-		   alphap
-		   (or (not shiftp) shift-lock-xors))	; Lock doesn't unshift unless shift-lock-xors
-	  (setq shiftp (not shiftp))))
-      (let ((index (if shiftp 1 0)))
-	(when symbolp (incf index 2))
-	(min index keysyms-per-keycode)))))
+)
 
 ;;; default-keysym-index implements the following tables:
 ;;;
@@ -2962,7 +2993,7 @@ CreateWindow            CREATE-WINDOW
 DeleteProperty          DELETE-PROPERTY
 DestroySubwindows       DESTROY-SUBWINDOWS
 DestroyWindow           DESTROY-WINDOW
-FillPoly                FILL-POLYGON
+FillPoly                DRAW-LINES
 ForceScreenSaver        RESET-SCREEN-SAVER
 ForceScreenSaver        ACTIVATE-SCREEN-SAVER
 FreeColormap            FREE-COLORMAP
