@@ -6,10 +6,11 @@
 .nr PS 11
 \&
 .sp 8
-.ce 3
+.ce 4
 \s+2\fBX Window System Protocol\fP\s-2
 
-\s+1\fBX Version 11, Release 3\fP\s-1
+\s+1\fBMIT X Consortium Standard\fP\s-1
+\s+1\fBX Version 11, Release 4 Draft\fP\s-1
 .sp 6
 .ce 5
 \s-1Robert W. Scheifler
@@ -835,6 +836,7 @@ color.
 .LP
 \fBString Equivalence\fP
 .IN "String Equivalence" "" "@DEF@"
+.IP
 Two ISO Latin-1 STRING8 values are considered equal if they are the same
 length and if corresponding bytes are either equal or are equivalent as
 follows:  decimal values 65 to 90 inclusive (characters ``A'' to ``Z'') are
@@ -1722,10 +1724,10 @@ environments, but they will eliminate many
 requests in most applications.
 Note that they are predefined only in the sense of having numeric values, 
 not in the sense of having required semantics.
-The core protocol imposes no semantics on these names, 
-except as they are used in FONTPROP structures (see 
-.PN QueryFont 
-request).
+The core protocol imposes no semantics on these names,
+but semantics are specified in other X Consortium standards,
+such as the ``Inter-Client Communication Conventions Manual''
+and the ``X Logical Font Description Conventions''.
 .LP
 The following names have predefined atom values.
 Note that uppercase and lowercase matter.
@@ -3237,9 +3239,10 @@ even if backing-store or save-under has been requested.
 The window is tiled with its background (except, if no background is defined, 
 the existing screen contents are not altered)
 and zero or more exposure events are generated.
-A server may preserve the contents and borders of inferiors.
 .IP
-A server may also ignore the specified bit-gravity and use 
+The contents and borders of inferiors are not affected by their parent's
+bit-gravity.
+A server is permitted to ignore the specified bit-gravity and use 
 .PN Forget 
 instead.
 .IP
@@ -4834,6 +4837,8 @@ and uppercase and lowercase do not matter.
 The interpretation of characters ``?'' (octal value 77) and ``*''
 (octal value 52) in the name is not defined by the core protocol,
 but is reserved for future definition.
+A structured format for font names is specified in the
+X Consortium standard ``X Logical Font Description Conventions''.
 .IP
 Fonts are not associated with a particular screen 
 and can be stored as a component of any graphics context.
@@ -4987,187 +4992,8 @@ between the Y-coordinate values (y \- font-ascent) and (y + font-descent \- 1).
 A font is not guaranteed to have any properties.
 The interpretation of the property value (for example, INT32, CARD32) 
 must be derived from a priori knowledge of the property.
-When possible, 
-fonts should have at least the following properties 
-(note that uppercase and lowercase matter).
-.TS H
-lw(1.6i) lw(.4i) lw(3.25i).
-_
-.sp 6p
-.TB
-Property	Type	Description
-.sp 6p
-_
-.TH
-.R
-.sp 6p
-T{
-MIN_SPACE
-T}	T{
-CARD32
-T}	T{
-The minimum interword spacing, in pixels.
-T}
-.sp 6p
-T{
-NORM_SPACE
-T}	T{
-CARD32
-T}	T{
-The normal interword spacing, in pixels.
-T}
-.sp 6p
-T{
-MAX_SPACE
-T}	T{
-CARD32
-T}	T{
-The maximum interword spacing, in pixels.
-T}
-.sp 6p
-T{
-END_SPACE
-T}	T{
-CARD32
-T}	T{
-The additional spacing at the end of sentences, in pixels.
-T}
-.sp 6p
-T{
-SUPERSCRIPT_X
-.br
-SUPERSCRIPT_Y
-T}	T{
-INT32
-T}	T{
-Offsets from the character origin where superscripts should begin,
-in pixels.
-If the origin is at [x,y], then superscripts should begin at 
-.br
-\s-2[x + SUPERSCRIPT_X, y \- SUPERSCRIPT_Y]\s+2.
-T}
-.sp 6p
-T{
-SUBSCRIPT_X
-.br
-SUBSCRIPT_Y
-T}	T{
-INT32
-T}	T{
-Offsets from the character origin where subscripts should begin, in
-pixels.
-If the origin is at [x,y], then subscripts should begin at 
-.br
-\s-2[x + SUBSCRIPT_X, y + SUBSCRIPT_Y]\s+2.
-T}
-.sp 6p
-T{
-UNDERLINE_POSITION
-T}	T{
-INT32
-T}	T{
-Y offset from the baseline to the top of an underline, in pixels.
-If the baseline is Y-coordinate y, then the top of the underline is
-at 
-.br
-\s-2(y + UNDERLINE_POSITION)\s+2.
-T}
-.sp 6p
-T{
-UNDERLINE_THICKNESS
-T}	T{
-CARD32
-T}	T{
-Thickness of the underline, in pixels.
-T}
-.sp 6p
-T{
-STRIKEOUT_ASCENT
-.br
-STRIKEOUT_DESCENT
-T}	T{
-INT32
-T}	T{
-Vertical extents for boxing or voiding characters, in pixels.
-If the baseline is at Y-coordinate y, 
-then the top of the strikeout box is at 
-.br
-\s-2(y \- STRIKEOUT_ASCENT)\s+2
-.br
-and the height of the box is 
-.br
-\s-2(STRIKEOUT_ASCENT + STRIKEOUT_DESCENT)\s+2.
-T}
-.sp 6p
-T{
-ITALIC_ANGLE
-T}	T{
-INT32
-T}	T{
-The angle of the dominant staffs of characters in the font, in
-degrees scaled by 64, relative to the three-o'clock position from
-the character origin, with positive indicating counterclockwise
-motion (as in Arc requests).
-T}
-.sp 6p
-T{
-X_HEIGHT
-T}	T{
-INT32
-T}	T{
-1 ex as in TeX, but expressed in units of pixels.
-Often the height of lowercase x.
-T}
-.sp 6p
-T{
-QUAD_WIDTH
-T}	T{
-INT32
-T}	T{
-1 em as in TeX, but expressed in units of pixels.
-Often the width of the digits 0-9.
-T}
-.sp 6p
-T{
-CAP_HEIGHT
-T}	T{
-INT32
-T}	T{
-Y offset from the baseline to the top of the capital letters,
-ignoring accents, in pixels.
-If the baseline is at Y-coordinate y,
-then the top of the capitals is at \s-2(y \- CAP_HEIGHT)\s+2.
-T}
-.sp 6p
-T{
-WEIGHT
-T}	T{
-CARD32
-T}	T{
-The weight or boldness of the font, expressed as a value between 0
-and 1000.
-T}
-.sp 6p
-T{
-POINT_SIZE
-T}	T{
-CARD32
-T}	T{
-The point size, expressed in 1/10, of this font at the ideal
-resolution.
-T}
-.sp 6p
-T{
-RESOLUTION
-T}	T{
-CARD32
-T}	T{
-The number of pixels per point, expressed in 1/100, at which
-this font was created.
-T}
-.sp 6p
-_
-.TE
+A basic set of font properties is specified in the X Consortium
+standard ``X Logical Font Description Conventions''.
 .IP
 For a character origin at [x,y], 
 the bounding box of a character (that is,
@@ -10268,28 +10094,12 @@ The remaining arguments are as in the
 .PN ConvertSelection 
 request.
 .IP
-The owner should convert the selection based on the specified target type.
-If a property is specified, 
-the owner should store the result as that property on the requestor window 
-and then send a 
-.PN SelectionNotify 
-event to the requestor using 
-.PN SendEvent 
-with an empty event-mask (that is, 
-the event should be sent to the creator of the requestor window).
-If 
-.PN None
-is specified as the property,
-the owner should choose a property name,
-store the result as that property on the requestor window,
-and then send a
-.PN SelectionNotify 
-giving that actual property name.
-If the selection cannot be converted as requested,
-the owner should send a
+The owner should convert the selection based on the specified target type
+and send a
 .PN SelectionNotify
-with the property set to
-.PN None .
+back to the requestor.
+A complete specification for using selections is given in the X Consortium
+standard ``Inter-Client Communication Conventions Manual''.
 .LP
 .IN "SelectionNotify" "" "@DEF@"
 .PN SelectionNotify
