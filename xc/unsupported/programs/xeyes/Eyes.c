@@ -1,3 +1,26 @@
+/* $XConsortium$ */
+/*
+ * Copyright 1991 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
 /*
  * Eyes.c
  *
@@ -13,26 +36,26 @@
 # include <math.h>
 # include <X11/extensions/shape.h>
 
-#define offset(field) XtOffset(EyesWidget,eyes.field)
-#define goffset(field) XtOffset(Widget,core.field)
+#define offset(field) XtOffsetOf(EyesRec, eyes.field)
+#define goffset(field) XtOffsetOf(WidgetRec, core.field)
 
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-	goffset(width), XtRString, "150"},
+	goffset(width), XtRImmediate, (XtPointer) 150},
     {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-	goffset(height), XtRString, "100"},
+	goffset(height), XtRImmediate, (XtPointer) 100},
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(puppixel), XtRString, "Black"},
+        offset(puppixel), XtRString, XtDefaultForeground},
     {XtNoutline, XtCForeground, XtRPixel, sizeof(Pixel),
-        offset(outline), XtRString, "Black"},
+        offset(outline), XtRString, XtDefaultForeground},
     {XtNcenterColor, XtCBackground, XtRPixel, sizeof (Pixel),
-    	offset(center), XtRString, "White"},
+    	offset(center), XtRString, XtDefaultBackground},
     {XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
-	offset (reverse_video), XtRString, "FALSE"},
+	offset (reverse_video), XtRImmediate, (XtPointer) FALSE},
     {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
     	offset (backing_store), XtRString, "default"},
     {XtNshapeWindow, XtCShapeWindow, XtRBoolean, sizeof (Boolean),
-	offset (shape_window), XtRString, "TRUE"},
+	offset (shape_window), XtRImmediate, (XtPointer) TRUE},
 };
 
 #undef offset
@@ -226,7 +249,7 @@ static void Realize (gw, valueMask, attrs)
 		     *valueMask, attrs );
     Resize (gw);
     w->eyes.interval_id =
-	    XtAddTimeOut(delays[w->eyes.update], draw_it, (caddr_t)gw);
+	    XtAddTimeOut(delays[w->eyes.update], draw_it, (XtPointer)gw);
 }
 
 static void Destroy (gw)
@@ -355,7 +378,7 @@ static void draw_it(client_data, id)
 		}
 	}
 	w->eyes.interval_id =
-		XtAddTimeOut(delays[w->eyes.update], draw_it, (caddr_t)w);
+		XtAddTimeOut(delays[w->eyes.update], draw_it, (XtPointer)w);
 } /* draw_it */
 
 static
