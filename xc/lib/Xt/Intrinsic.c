@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.96 87/12/21 10:50:01 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.97 87/12/22 12:11:17 swick Locked $";
 #endif lint
 
 /*
@@ -1652,7 +1652,7 @@ void XtInheritChangeManaged(w)
 void XtInheritInsertChild(child, args, num_args)
     Widget      child;
     ArgList	args;
-    Cardinal	num_args;
+    Cardinal	*num_args;
 {
     WidgetClass     class;
     register Widget parent;
