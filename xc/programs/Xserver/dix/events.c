@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.40 91/06/01 10:48:29 rws Exp $ */
+/* $XConsortium: events.c,v 5.41 91/07/11 20:50:09 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2676,7 +2676,7 @@ ProcChangeActivePointerGrab(client)
 {
     DeviceIntPtr device = inputInfo.pointer;
     register GrabPtr grab = device->grab;
-    CursorPtr newCursor;
+    CursorPtr newCursor, oldCursor;
     REQUEST(xChangeActivePointerGrabReq);
     TimeStamp time;
 
@@ -2705,12 +2705,13 @@ ProcChangeActivePointerGrab(client)
     if ((CompareTimeStamps(time, currentTime) == LATER) ||
 	     (CompareTimeStamps(time, device->grabTime) == EARLIER))
 	return Success;
-    if (grab->cursor)
-	FreeCursor(grab->cursor, (Cursor)0);
+    oldCursor = grab->cursor;
     grab->cursor = newCursor;
     if (newCursor)
 	newCursor->refcnt++;
     PostNewCursor();
+    if (oldCursor)
+	FreeCursor(oldCursor, (Cursor)0);
     grab->eventMask = stuff->eventMask;
     return Success;
 }
