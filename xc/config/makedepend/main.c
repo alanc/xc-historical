@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.51 91/04/15 18:16:29 rws Exp $
+ * $XConsortium: main.c,v 1.52 91/04/17 10:08:52 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -219,6 +219,13 @@ main(argc, argv)
 	if (incp >= includedirs + MAXDIRS)
 	    fatal("Too many -I flags.\n");
 	*incp++ = "/usr/include/stdc";
+#endif
+#ifdef Mips
+# ifdef BSD43
+	if (incp >= includedirs + MAXDIRS)
+	    fatal("Too many -I flags.\n");
+	*incp++ = "/usr/include/bsd43";
+# endif
 #endif
 
 	redirect(startat, makefile);
