@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Object.c,v 1.6 88/09/21 11:18:06 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Object.c,v 1.7 89/06/16 19:35:03 jim Exp $";
 /* $oHeader: Object.c,v 1.2 88/08/18 15:51:09 asente Exp $ */
 #endif /* lint */
 
@@ -107,8 +107,8 @@ static void ConstructCallbackOffsets(widgetClass)
          i != 0; i--)
 	if (resourceList[i-1].xrm_type == QCallback) {
 	    newItem = XtNew(XtOffsetRec);
-	    newItem->next   = objectClass->object_class.callback_private;
-	    objectClass->object_class.callback_private = newItem;
+	    newItem->next   = (_XtOffsetList)objectClass->object_class.callback_private;
+	    objectClass->object_class.callback_private = (XtPointer)newItem;
 	    newItem->offset = resourceList[i-1].xrm_offset;
 	    newItem->name   = resourceList[i-1].xrm_name;
      }
@@ -142,7 +142,7 @@ static Boolean ObjectSetValues(old, request, widget)
     extern void _XtFreeCallbackList();
 
     /* Compile any callback lists into internal form */
-    offset = XtClass(widget)->core_class.callback_private;
+    offset = (_XtOffsetList)XtClass(widget)->core_class.callback_private;
     while (offset != NULL) {
 	oldCallbacks = *(CallbackStruct**)((char*)old - offset->offset - 1);
 	newCallbacksP = (CallbackStruct**)((char*)widget - offset->offset - 1);
@@ -170,7 +170,7 @@ static void ObjectDestroy (widget)
 	    XtFree((char *) ((Object)widget)->object.constraints);
 
     /* Remove all callbacks associated with widget */
-    offset = widget->core.widget_class->core_class.callback_private;
+    offset = (_XtOffsetList)widget->core.widget_class->core_class.callback_private;
     while (offset != NULL) {
 	register CallbackStruct *callbacks =
 	    *(CallbackStruct**)(((char *) widget) - offset->offset - 1);
