@@ -1,4 +1,4 @@
-/* $XConsortium: lbxutil.c,v 1.5 94/11/29 19:18:54 mor Exp mor $ */
+/* $XConsortium: lbxutil.c,v 1.6 94/12/01 20:52:12 mor Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -356,7 +356,7 @@ GetQueryTagReply(client, data)
 	    SwapLongs((CARD32 *) tdata, len / 4);
 	    break;
 	case LbxTagTypeFont:
-	    SwapFont((xQueryFontReply *) tdata, FALSE);
+	    LbxSwapFontInfo((xQueryFontReply *) tdata, FALSE);
 	    break;
 	case LbxTagTypeConnInfo:
 	    SwapConnectionInfo((xConnSetup *) tdata);
@@ -391,9 +391,16 @@ GetQueryTagReply(client, data)
 			  qtp->typedata.keymap.count,
 			  tdata);
 	break;
-    case LbxTagTypeFont:
+    case LbxTagTypeFont: {
+	int	sqlen = len;
+	pointer	sqdata = tdata;
+
+	len =  UnsquishFontInfo(qtp->typedata.query_font.compression,
+				sqdata, sqlen, &tdata);
+	/* XXX may have nasty problem if unsquish fails */
 	FinishQueryFontReply(client, rep->sequenceNumber, len, tdata);
 	break;
+	}
     case LbxTagTypeConnInfo:
 	FinishSetupReply(client, len, tdata,
 			 qtp->typedata.setup.changes,
