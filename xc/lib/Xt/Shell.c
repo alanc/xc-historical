@@ -32,6 +32,9 @@ static char rcsid[] = "$Header: Shell.c,v 1.17 88/02/14 20:44:07 swick Exp $";
 #include <X11/Xos.h>
 #include <sys/param.h>
 #include <X11/Xatom.h>
+#ifdef hpux
+#include <sys/utsname.h>
+#endif
 
  /* Xlib definitions  */
  /* things like Window, Display, XEvent are defined herein */
@@ -674,7 +677,19 @@ static void _popup_set_prop(w)
 	win = XtWindow(w);
 
 	if (!gothost) {
+#ifdef hpux
+	    /* Why not use gethostname()?  Well, at least on my system, I've had to
+	     * make an ugly kernel patch to get a name longer than 8 characters, and
+	     * uname() lets me access to the whole string (it smashes release, you
+	     * see), whereas gethostname() kindly truncates it for me.
+	     */
+	    struct utsname name;
+    
+	    uname(&name);
+	    strcpy(hostname, name.nodename);
+#else
 	    (void) gethostname(hostname, sizeof(hostname));
+#endif
 	    gothost = TRUE;
 	}
 
