@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 1.54 88/09/30 14:43:11 jim Exp $ */
+/* $XConsortium: mfbbitblt.c,v 1.55 88/10/15 10:47:28 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -799,6 +799,10 @@ unsigned int plane;
     int alu;
     RegionPtr	prgnExposed;
 
+    /* XXX a deeper screen ought to wrap ValidateGC to get around this */
+    if (pSrcDrawable->depth != 1)
+	return miCopyPlane(pSrcDrawable, pDstDrawable,
+			   pGC, srcx, srcy, width, height, dstx, dsty, plane);
     if (plane != 1)
 	return NULL;
 
