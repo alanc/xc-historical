@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.15 88/01/07 14:21:20 swick Locked $";
+static char rcsid[] = "$Header: Scroll.c,v 1.21 88/01/12 12:38:26 swick Locked $";
 #endif lint
 
 /*
@@ -671,8 +671,15 @@ extern void XtScrollBarSetThumb( gw, top, shown )
 {
     ScrollbarWidget w = (ScrollbarWidget)gw;
 
-    if (!(top < 0.0 || top > 1.0))	w->scrollbar.top = top;
-    if (!(shown < 0.0 || shown > 1.0))	w->scrollbar.shown = shown;
+    if (w->scrollbar.direction == 'c') return; /* if still thumbing */
+
+    w->scrollbar.top = (top > 1.0) ? 1.0 :
+		       (top >= 0.0) ? top :
+			   w->scrollbar.top;
+
+    w->scrollbar.shown = (shown > 1.0) ? 1.0 :
+			 (shown >= 0.0) ? shown :
+			     w->scrollbar.shown;
 
     PaintThumb( w );
 }
