@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.32 90/02/08 09:39:29 jim Exp $
+ * $XConsortium: viewres.c,v 1.33 90/02/08 10:04:07 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -101,18 +101,22 @@ static char *fallback_resources[] = {
     NULL
 };
 
-static void HandleQuit(), HandleSetLableType(), HandleSetOrientation();
-static void HandleSelect(), HandleShowResources();
+static void ActionQuit(), ActionSetLableType(), ActionSetOrientation();
+static void ActionSelect(), ActionResources();
 static void set_labeltype_menu(), set_orientation_menu();
 static void build_tree(), set_node_labels();
 
 static XtActionsRec viewres_actions[] = {
-    { "Quit", HandleQuit },
-    { "SetLabelType", HandleSetLableType },
-    { "SetOrientation", HandleSetOrientation },
-    { "Select", HandleSelect },
-    { "ShowResources", HandleShowResources },
+    { "Quit", ActionQuit },
+    { "SetLabelType", ActionSetLableType },
+    { "SetOrientation", ActionSetOrientation },
+    { "Select", ActionSelect },
+    { "Resources", ActionResources },
 };
+
+#define BOOL_OFF 0
+#define BOOL_ON 1
+#define BOOL_TOGGLE 2
 
 #define VIEW_VARIABLES 0
 #define VIEW_CLASSES 1
@@ -147,12 +151,13 @@ static struct _nametable {
     { "shown", SELECT_SHOWN_RESOURCES },
     { "hidden", SELECT_HIDDEN_RESOURCES },
 }, boolean_nametable[] = {
-    { "off", 0 },
-    { "false", 0 },
-    { "no", 0 },
-    { "on", 1 },
-    { "true", 1 },
-    { "yes", 1 },
+    { "off", BOOL_OFF },
+    { "false", BOOL_OFF },
+    { "no", BOOL_OFF },
+    { "on", BOOL_ON },
+    { "true", BOOL_ON },
+    { "yes", BOOL_ON },
+    { "toggle", BOOL_TOGGLE },
 }, scroll_nametable[] = {
     { "backward", 0 },
     { "forward", 1 },
@@ -187,6 +192,19 @@ static void usage ()
     }
     fprintf(stderr, "\n");
     exit (1);
+}
+
+
+static WidgetNode *widget_to_node (w)
+    Widget w;
+{
+    int i;
+    WidgetNode *node;
+
+    for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
+	if (node->instance == w) return node;
+    }
+    return NULL;
 }
 
 
@@ -273,39 +291,53 @@ static void update_selection_items ()
 }
 
 
+static void do_resources (node, op)
+    WidgetNode *node;
+    Boolean op;
+{
+    if (op == BOOL_TOGGLE) op = (IsShowing(node) ? BOOL_OFF : BOOL_ON);
+
+    if (op == BOOL_ON) {
+	if (node->resource_lw) {		/* if already created */
+	    if (!XtIsManaged(node->resource_lw)) {
+		NumberShowing++;
+		XtManageChild (node->resource_lw);
+	    }				/* else ignore it */
+	} else if (create_resource_lw (node))	/* create it */
+	  NumberShowing++;
+    } else if (node->resource_lw) {		/* if already created */
+	if (XtIsManaged (node->resource_lw)) {
+	    NumberShowing--;
+	    XtUnmanageChild (node->resource_lw);
+	}				/* else ignore it */
+    }
+}
+
+
 /* ARGSUSED */
 static void show_resources_callback (gw, closure, data)
-    Widget gw;
-    caddr_t closure;			/* TRUE or FALSE */
-    caddr_t data;
+    Widget gw;				/* menu or toggle button */
+    caddr_t closure;			/* BOOL_OFF, BOOL_ON, BOOL_TOGGLE */
+    caddr_t data;			/* undefined */
 {
-    int i;
-    Boolean show = (Boolean) closure;
-    Arg args[1];
+    int op = (int) closure;
 
-    if (selected_list.n_elements <= 0) return;
+    if (XtIsSubclass (gw, toggleWidgetClass)) {	 /* do single item op */
+	WidgetNode *node = widget_to_node (gw);
 
-    XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
-    for (i = 0; i < selected_list.n_elements; i++) {
-	WidgetNode *node = selected_list.elements[i];
+	if (node) {
+	    XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
+	    do_resources (node, op);
+	} else
+	  return;
+    } else if (selected_list.n_elements <= 0) {
+	return;
+    } else {
+	int i;
 
-	if (show) {
-	    if (node->resource_lw) {		/* if already created */
-		if (!XtIsManaged(node->resource_lw)) {
-		    NumberShowing++;
-		    XtManageChild (node->resource_lw);
-		}				/* else ignore it */
-	    } else if (create_resource_lw (node))	/* create it */
-	      NumberShowing++;
-	    else
-	      continue;				/* error, ignore it */
-	} else {
-	    if (node->resource_lw) {		/* if already created */
-		if (XtIsManaged (node->resource_lw)) {
-		    NumberShowing--;
-		    XtUnmanageChild (node->resource_lw);
-		}				/* else ignore it */
-	    }
+	XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
+	for (i = 0; i < selected_list.n_elements; i++) {
+	    do_resources (selected_list.elements[i], op);
 	}
     }
     XawTreeForceLayout (treeWidget);
@@ -614,8 +646,8 @@ main (argc, argv)
     (void) XtCreateManagedWidget ("line2", smeLineObjectClass, viewMenu,
 				  NULL, ZERO);
     callback_rec[0].callback = (XtCallbackProc) show_resources_callback;
-    MAKE_VIEW (VIEW_SHOW_RESOURCES, TRUE, "viewResources");
-    MAKE_VIEW (VIEW_HIDE_RESOURCES, FALSE, "viewNoResources");
+    MAKE_VIEW (VIEW_SHOW_RESOURCES, BOOL_ON, "viewResources");
+    MAKE_VIEW (VIEW_HIDE_RESOURCES, BOOL_OFF, "viewNoResources");
 #undef MAKE_VIEW
 
     /*
@@ -665,7 +697,7 @@ main (argc, argv)
 
 
 /* ARGSUSED */
-static void HandleQuit (w, event, params, num_params)
+static void ActionQuit (w, event, params, num_params)
     Widget w;
     XEvent *event;
     String *params;
@@ -676,7 +708,7 @@ static void HandleQuit (w, event, params, num_params)
 
 
 /* ARGSUSED */
-static void HandleSetLableType (w, event, params, num_params)
+static void ActionSetLableType (w, event, params, num_params)
     Widget w;
     XEvent *event;
     String *params;
@@ -713,7 +745,7 @@ static void HandleSetLableType (w, event, params, num_params)
 }
 
 /* ARGSUSED */
-static void HandleSetOrientation (w, event, params, num_params)
+static void ActionSetOrientation (w, event, params, num_params)
     Widget w;
     XEvent *event;
     String *params;
@@ -791,7 +823,7 @@ static void do_single_arg (w, params, nparams, table, nentries, proc)
 
 
 /* ARGSUSED */
-static void HandleSelect (w, event, params, num_params)
+static void ActionSelect (w, event, params, num_params)
     Widget w;
     XEvent *event;
     String *params;
@@ -803,14 +835,14 @@ static void HandleSelect (w, event, params, num_params)
 
 
 /* ARGSUSED */
-static void HandleShowResources (w, event, params, num_params)
+static void ActionResources (w, event, params, num_params)
     Widget w;
     XEvent *event;
     String *params;
     Cardinal *num_params;
 {
     if (*num_params == 0) {
-	show_resources_callback (w, (caddr_t) TRUE, NULL);
+	show_resources_callback (w, (caddr_t) BOOL_TOGGLE, NULL);
     } else {
 	do_single_arg (w, params, *num_params, boolean_nametable,
 		       XtNumber(boolean_nametable), show_resources_callback);
@@ -871,7 +903,7 @@ static void set_node_labels (node, depth)
 }
 
 
-static void set_oneof_sensitive (choosea, a, b)
+static void oneof_sensitive (choosea, a, b)
     Boolean choosea;
     Widget a, b;
 {
@@ -888,8 +920,8 @@ static void set_labeltype_menu (isvar, doall)
     Boolean doall;
 {
     Appresources.show_variable = isvar;
-    set_oneof_sensitive (isvar, view_widgets[VIEW_CLASSES],
-			 view_widgets[VIEW_VARIABLES]);
+    oneof_sensitive (isvar, view_widgets[VIEW_CLASSES],
+		     view_widgets[VIEW_VARIABLES]);
 
     if (doall) {
 	XUnmapWindow (XtDisplay(treeWidget), XtWindow(treeWidget));
@@ -902,7 +934,7 @@ static void set_labeltype_menu (isvar, doall)
 static void set_orientation_menu (horiz, dosetvalues)
     Boolean horiz, dosetvalues;
 {
-    set_oneof_sensitive (horiz, view_widgets[VIEW_VERTICAL],
+    oneof_sensitive (horiz, view_widgets[VIEW_VERTICAL],
 			 view_widgets[VIEW_HORIZONTAL]);
 
     if (dosetvalues) {
