@@ -1,4 +1,4 @@
-/* $XConsortium: XInitExt.c,v 11.29 92/12/31 15:46:45 rws Exp $ */
+/* $XConsortium: InitExt.c,v 11.30 93/08/14 18:22:45 rws Exp $ */
 /* Copyright  Massachusetts Institute of Technology 1987 */
 
 /*
@@ -424,4 +424,35 @@ PrintErrorType XESetPrintErrorValues(dpy, extension, proc)
 	e->error_values = proc;
 	UnlockDisplay(dpy);
 	return (PrintErrorType)oldproc;
+}
+
+typedef void (*BeforeFlushType)(
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    XExtCodes*	/* codes */,
+    char*	/* data */,
+    long	/* len */
+#endif
+);
+
+BeforeFlushType XESetBeforeFlush(dpy, extension, proc)
+	Display *dpy;		/* display */
+	int extension;		/* extension number */
+	BeforeFlushType proc;	/* routine to call on flush */
+{
+	register _XExtension *e;	/* for lookup of extension */
+	register void (*oldproc)();
+	register _XExtension *ext;
+	if ((e = XLookupExtension (dpy, extension)) == NULL) return (NULL);
+	LockDisplay(dpy);
+	oldproc = e->before_flush;
+	e->before_flush = proc;
+	for (ext = dpy->flushes; ext && ext != e; ext = ext->next)
+	    ;
+	if (!ext) {
+	    e->next_flush = dpy->flushes;
+	    dpy->flushes = e;
+	}	    
+	UnlockDisplay(dpy);
+	return (BeforeFlushType)oldproc;
 }
