@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.62 92/02/26 14:23:59 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.63 92/02/26 15:32:59 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -467,6 +467,7 @@ Name						Reference
 "fujitsu"					[87]
 "FujiXerox"					[64]
 "IBM"						[33]
+"IPSYS"						[59]
 "MISC"						[8]
 "NCD"						[66]
 "omron"						[45]
@@ -518,6 +519,9 @@ Name						Reference
 	support of Traditional Chinese
 "HP-Turkish8"					[36]
 	HPTURKISH8 8-bit character set
+"IPSYS"						[59]
+	registry prefix
+"IPSYS.IE-1"					[59]
 "ISO2022"<REG>"-"<ENC>				[44]
 "ISO8859-1"					[15],[12]
 	ISO Latin alphabet No. 1
@@ -684,6 +688,7 @@ Name						Reference
 "UnsignedChar"					[26]
 "Widget"					[26]
 "Window"					[26]
+"Xai" (prefix)					[59]
 
 17. APPLICATION CLASSES
 
@@ -748,6 +753,8 @@ Name						Reference
 	DEC Taiwan Supplemental Character Set
 "fujitsu.u90x03"				[87]
 "ILA"						[62]
+	registry prefix
+"IPSYS"						[59]
 	registry prefix
 "omron_UDC"					[45]
         omron User Defined Charset
