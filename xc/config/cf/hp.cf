@@ -5,9 +5,9 @@
 
 #define SystemV                YES
 
-#define OSName                 HP-UX 6.01
+#define OSName                 HP-UX 6.5
 #define OSMajorVersion         6
-#define OSMinorVersion         0
+#define OSMinorVersion         5
 #ifdef hp9000s800
 #define StandardDefines        -DSYSV
 #define LintOpts               -ax -DSYSV
@@ -31,10 +31,8 @@
 
 #define NeedBerklibInXlib      YES		/* snag Berklib for Xlib */
 
-#define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 
-
-/**/# platform:  $XConsortium: hp.cf,v 1.15 89/08/02 21:58:40 keith Exp $
+/**/# platform:  $XConsortium: hp.cf,v 1.16 89/08/16 15:48:41 jim Exp $
 /**/# operating system:  OSName
 
 /*
@@ -52,13 +50,28 @@
 
 #define UNCOMPRESSPATH          /usr/bin/uncompress
 
+#ifdef hp9000s300
+#define HardwareDefines -Dhp9000s300
+#else
+#define HardwareDefines
+#endif
+
+#if OSMajorVersion >= 7 || (OSMajorVersion == 6 && OSMinorVersion >= 2)
+#define OsDefines -DHAS_IFREQ
+#else
+#define OsDefines
+#endif
+
 #if OSMajorVersion < 6 || (OSMajorVersion == 6 && OSMinorVersion < 2)
 #define ConnectionFlags		-DTCPCONN	/* no unix sockets */
 #endif
 
+#undef ExtensionDefines
+#define ExtensionDefines -DSHAPE -DBUFFER -DMITSHM -DXOS -DMERGE -DSERVER_XDMCP
 
 /*
  * Xhp-specific parameters
  */
 #define WritableBlackWhite		/* want BlackPixel and WhitePixel rw */
 
+#define ServerDefines StandardDefines ExtensionDefines OsDefines HardwareDefines
