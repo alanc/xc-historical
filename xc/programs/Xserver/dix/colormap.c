@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 1.77 89/03/11 16:52:26 rws Exp $ */
+/* $XConsortium: colormap.c,v 1.78 89/03/12 17:27:16 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -40,7 +40,8 @@ extern XID clientErrorValue;
 static Pixel FindBestPixel();
 static void  CopyFree(), FreeCell(), AllocShared();
 static int   AllComp(), RedComp(), GreenComp(), BlueComp(), FreeClientPixels();
-static int   AllocDirect(), AllocPseudo(), AllocCP(), FreeCo();
+static int   AllocDirect(), AllocPseudo(), FreeCo();
+static Bool  AllocCP();
 static int   TellNoMap();
 
 /* GetNextBitsOrBreak(bits, mask, base)  -- 
@@ -1369,21 +1370,27 @@ AllocPseudo (client, pmap, c, r, contig, pixels, pmask, pppixFirst)
 {
     Pixel	*ppix, *p, *pDst, *ppixTemp;
     int		npix;
-    int	result;
+    Bool	ok;
 
     npix = c << r;
     if(!(ppixTemp = (Pixel *)ALLOCATE_LOCAL(npix * sizeof(Pixel))))
 	return(BadAlloc);
-    result = AllocCP(pmap, pmap->red, c, pmap->freeRed, r, contig,
-		     ppixTemp, pmask);
+    ok = AllocCP(pmap, pmap->red, c, pmap->freeRed, r, contig,
+		 ppixTemp, pmask);
 
-    if (result)
+    if (ok)
     {
 
 	/* all the allocated pixels are added to the client pixel list,
 	 * but only the unique ones are returned to the client */
 	ppix = (Pixel *)xrealloc(pmap->clientPixelsRed[client],
 			 (pmap->numPixelsRed[client] + npix) * sizeof(Pixel));
+	if (!ppix)
+	{
+	    for (p = ppixTemp; p < ppixTemp + npix; p++)
+		pmap->red[*p].refcnt = 0;
+	    return (BadAlloc);
+	}
 	pmap->clientPixelsRed[client] = ppix;
 	ppix += pmap->numPixelsRed[client];
 	*pppixFirst = ppix;
@@ -1398,7 +1405,7 @@ AllocPseudo (client, pmap, c, r, contig, pixels, pmask, pppixFirst)
 	pmap->freeRed -= npix;
     }
     DEALLOCATE_LOCAL(ppixTemp);
-    return (result ? Success : BadAlloc);
+    return (ok ? Success : BadAlloc);
 }
 
 /* Allocates count << planes pixels from colormap pmap for client. If
@@ -1411,7 +1418,7 @@ AllocPseudo (client, pmap, c, r, contig, pixels, pmask, pppixFirst)
  * All cells allocated will have refcnt set to AllocPrivate and shared to FALSE
  * (see AllocShared for why we care)
  */
-static int
+static Bool
 AllocCP (pmap, pentFirst, count, Free, planes, contig, pixels, pMask)
     ColormapPtr	pmap;
     EntryPtr	pentFirst;
