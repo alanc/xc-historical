@@ -134,6 +134,14 @@ sunKbdProc (pKeyboard, what)
 	    /*
 	     * First open and find the current state of the keyboard.
 	     */
+/*
+ * The Sun 386i has system include files that preclude this pre SunOS 4.1
+ * test for the presence of a type 4 keyboard however it really doesn't
+ * matter since no 386i has ever been shipped with a type 3 keyboard.
+ */
+#ifndef i386
+#define TYPE4KEYBOARDOVERRIDE
+#endif
 	    if (sysKbPriv.fd >= 0) {
 		kbdFd = sysKbPriv.fd;
 	    } else {
@@ -145,11 +153,26 @@ sunKbdProc (pKeyboard, what)
 		sysKbPriv.fd = kbdFd;
 		(void) ioctl (kbdFd, KIOCTYPE, &sysKbPriv.type);
 		(void) ioctl (kbdFd, KIOCGTRANS, &sunKbPriv.trans);
-#ifdef KB_SUN4
-		if (sysKbPriv.type < 0 || sysKbPriv.type > KB_SUN4
-#else
-		if (sysKbPriv.type < 0 || sysKbPriv.type > KB_SUN3
+#ifdef TYPE4KEYBOARDOVERRIDE
+                /*
+                 * Magic. Look for a key which is non-existent on a real type
+                 * 3 keyboard but does exist on a type 4 keyboard.
+                 */
+                if (sysKbPriv.type == KB_SUN3) {
+                    struct kiockey key;
+
+                    key.kio_tablemask = 0;
+                    key.kio_station = 118;
+                    if (ioctl(kbdFd, KIOCGETKEY, &key)) {
+                        perror( "ioctl KIOCGETKEY" );
+			FatalError("Can't KIOCGETKEY on fd %d\n", kbdFd);
+                    }
+                    if (key.kio_entry != HOLE)
+                        sysKbPriv.type = KB_SUN4;
+                }
 #endif
+
+		if (sysKbPriv.type < 0 || sysKbPriv.type > KB_SUN4
 		    || sunKeySyms[sysKbPriv.type].map == NULL)
 		    FatalError("Unsupported keyboard type %d\n", 
 			sysKbPriv.type);
@@ -596,6 +619,33 @@ sunChangeKbdTranslation(pKeyboard,makeTranslated)
     int 	kbdFd;
     int 	tmp;
     int		kbdOpenedHere;
+
+    static struct timeval lastChngKbdTransTv;
+    struct timeval tv;
+    struct timeval lastChngKbdDeltaTv;
+    int lastChngKbdDelta;
+
+    /*
+     * Workaround for SS1 serial driver kernel bug when KIOCTRANS ioctl()s
+     * occur too closely together in time.
+     */
+    gettimeofday(&tv, (struct timezone *) NULL);
+    tvminus(lastChngKbdDeltaTv, tv, lastChngKbdTransTv);
+    lastChngKbdDelta = TVTOMILLI(lastChngKbdDeltaTv);
+    if (lastChngKbdDelta < 750) {
+	struct timeval wait;
+
+	/*
+         * We need to guarantee at least 750 milliseconds between
+	 * calls to KIOCTRANS. YUCK!
+	 */
+	wait.tv_sec = 0;
+	wait.tv_usec = (750L - lastChngKbdDelta) * 1000L;
+        (void) select(0, (int *)0, (int *)0, (int *)0, &wait);
+        gettimeofday(&tv, (struct timezone *) NULL);
+    }
+    lastChngKbdTransTv = tv;
+    
 
     pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
     kbdFd = pPriv->fd;
