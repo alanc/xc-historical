@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: snfread.c,v 1.5 91/05/29 18:45:10 keith Exp $ */
+/* $XConsortium: snfread.c,v 1.6 91/05/30 19:06:43 keith Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -47,7 +47,7 @@ snfReadCharInfo(file, charInfo, base)
 	return BadFontName;
     }
     charInfo->metrics = snfCharInfo.metrics;
-    if (snfCharInfo.exists && Width(charInfo->metrics) > 0 && Height(charInfo->metrics) > 0)
+    if (snfCharInfo.exists)
 	charInfo->bits = base + snfCharInfo.byteOffset;
     else
 	charInfo->bits = 0;
