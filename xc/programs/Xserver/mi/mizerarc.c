@@ -17,7 +17,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.28 91/08/23 18:39:59 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.29 91/08/25 14:11:45 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -51,6 +51,8 @@ Author:  Bob Scheifler, MIT X Consortium
 #define Dcos(d)	((d) == 0 ? 1.0 : ((d) == QUADRANT ? 0.0 : \
 		 ((d) == HALFCIRCLE ? -1.0 : \
 		 ((d) == QUADRANT3 ? 0.0 : cos((double)d*(M_PI/11520.0))))))
+
+#define EPSILON45 64
 
 typedef struct {
     DDXPointRec startPt;
@@ -293,6 +295,36 @@ miZeroArcSetup(arc, info, ok360)
 		start.mask &= ~(1 << endseg);
 	}
     }
+    /* take care of case when start and stop are both near 45 */
+    /* handle here rather than adding extra code to pixelization loops */
+    if (startAngle &&
+	((start.y < 0 && end.y >= 0) || (start.y >= 0 && end.y < 0)))
+    {
+	i = (startAngle + OCTANT) % OCTANT;
+	if (i < EPSILON45 || i > OCTANT - EPSILON45)
+	{
+	    i = (endAngle + OCTANT) % OCTANT;
+	    if (i < EPSILON45 || i > OCTANT - EPSILON45)
+	    {
+		if (start.y < 0)
+		{
+		    i = Dsin(startAngle) * (arc->height / 2.0);
+		    if (i < 0)
+			i = -i;
+		    if (info->h - i == end.y)
+			start.mask = end.mask;
+		}
+		else
+		{
+		    i = Dsin(endAngle) * (arc->height / 2.0);
+		    if (i < 0)
+			i = -i;
+		    if (info->h - i == start.y)
+			end.mask = start.mask;
+		}
+	    }
+	}
+    }
     if (startseg & 1)
     {
 	info->start = start;
@@ -313,16 +345,6 @@ miZeroArcSetup(arc, info, ok360)
 	    info->altend = info->end;
 	    info->end = tmp;
 	}
-	else if (!info->altend.mask && info->end.mask &&
-		 info->end.y < 0 && info->altend.y >= 0)
-	{
-	    i = Dsin(startAngle) * (arc->height / 2.0);
-	    if (i < 0)
-		i = -i;
-	    if (info->h - i == info->altend.y)
-		/* handle 90 degree angle starting on a 45 degree mark */
-		info->end.mask = 0;
-	}
 	info->altstart = oob;
     }
     else
@@ -335,16 +357,6 @@ miZeroArcSetup(arc, info, ok360)
 	    tmp = info->altstart;
 	    info->altstart = info->start;
 	    info->start = tmp;
-	    if (info->altstart.mask && info->start.mask &&
-		info->start.y < 0 && info->altstart.y >= 0)
-	    {
-		i = Dsin(endAngle) * (arc->height / 2.0);
-		if (i < 0)
-		    i = -i;
-		if (info->h - i == info->altstart.y)
-		    /* handle 90 degree angle starting on a 45 degree mark */
-		    info->start.mask = info->altstart.mask;
-	    }
 	}
 	info->altend = oob;
     }
