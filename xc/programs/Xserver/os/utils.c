@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.59 88/08/21 09:52:05 rws Exp $ */
+/* $Header: utils.c,v 1.60 88/08/21 10:34:00 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -50,6 +50,7 @@ extern char *sbrk();
 pointer minfree = NULL;
 
 int ErrorfOn = 1;
+int MessagefOn = 0;
 
 /* Force connections to close on SIGHUP from init */
 
@@ -82,6 +83,16 @@ ErrorF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
 {
     if (ErrorfOn)
+	fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+}
+
+/*VARARGS1*/
+void
+MessageF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
+    char *f;
+    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
+{
+    if (MessagefOn)
 	fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
 }
 
@@ -225,6 +236,14 @@ char	*argv[];
 	else if ( strcmp( argv[i], "+debug") == 0)
 	{
 	    ErrorfOn = 0;
+	}
+	else if ( strcmp( argv[i], "-messages") == 0)
+	{
+	    MessagefOn++;
+	}
+	else if ( strcmp( argv[i], "+messages") == 0)
+	{
+	    MessagefOn = 0;
 	}
 	else if ( strcmp( argv[i], "-f") == 0)
 	{
