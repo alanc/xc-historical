@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: StrToBmap.c,v 1.5 89/04/13 17:12:26 jim Exp $";
+static char rcsid[] = "$XConsortium: StrToBmap.c,v 1.6 89/08/17 15:33:07 jim Exp $";
 #endif /* lint */
 
 
@@ -117,23 +117,20 @@ Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
 {
     Display *dpy = DisplayOfScreen (screen);
     Window root = RootWindowOfScreen (screen);
+    Bool try_plain_name = True;
     XmuCvtCache *cache = XmuCCLookupDisplay (dpy);
-    char *bitmap_file_path;
-    Bool try_default_path, try_plain_name = True;
+    char **file_paths;
     char filename[MAXPATHLEN];
     int width, height, xhot, yhot;
     int i;
+    static char **split_path_string();
 
-
-#ifndef BITMAPDIR
-#define BITMAPDIR "/usr/include/X11/bitmaps"
-#endif
 
     /*
      * look in cache for bitmap path
      */
     if (cache) {
-	if (!cache->string_to_bitmap.file_path) {
+	if (!cache->string_to_bitmap.bitmapFilePath) {
 	    XrmName xrm_name[2];
 	    XrmClass xrm_class[2];
 	    XrmRepresentation rep_type;
@@ -146,28 +143,25 @@ Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
 	    if (XrmQGetResource (XtDatabase(dpy), xrm_name, xrm_class, 
 				 &rep_type, &value) &&
 		rep_type == XrmStringToQuark(XtRString)) {
-		cache->string_to_bitmap.file_path = value.addr;
-		cache->string_to_bitmap.try_default_path = True;
-	    } else {
-		cache->string_to_bitmap.file_path = BITMAPDIR;
-		cache->string_to_bitmap.try_default_path = False;
+		cache->string_to_bitmap.bitmapFilePath = 
+		  split_path_string (value.addr);
 	    }
 	}
-	bitmap_file_path = cache->string_to_bitmap.file_path;
-	try_default_path = cache->string_to_bitmap.try_default_path;
-    } else {
-	bitmap_file_path = BITMAPDIR;
-	try_default_path = False;
+	file_paths = cache->string_to_bitmap.bitmapFilePath;
     }
 
 
     /*
      * Search order:
      *    1.  name if it begins with / or ./
-     *    2.  prefix/name
+     *    2.  "each prefix in file_paths"/name
      *    3.  BITMAPDIR/name
      *    4.  name if didn't begin with / or .
      */
+
+#ifndef BITMAPDIR
+#define BITMAPDIR "/usr/include/X11/bitmaps"
+#endif
 
     for (i = 1; i <= 4; i++) {
 	char *fn = filename;
@@ -181,10 +175,14 @@ Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
 	    try_plain_name = False;
 	    break;
 	  case 2:
-	    sprintf (filename, "%s/%s", bitmap_file_path, name);
-	    break;
+	    if (file_paths && *file_paths) {
+		sprintf (filename, "%s/%s", *file_paths, name);
+		file_paths++;
+		i--;
+		break;
+	    }
+	    continue;
 	  case 3:
-	    if (!try_default_path) continue;
 	    sprintf (filename, "%s/%s", BITMAPDIR, name);
 	    break;
 	  case 4:
@@ -208,4 +206,59 @@ Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
     }
 
     return None;
+}
+
+
+/*
+ * split_path_string - split a colon-separated list into its constituent
+ * parts; to release, free list[0] and list.
+ */
+static char **split_path_string (src)
+    register char *src;
+{
+    int nelems = 1;
+    register char *dst;
+    char **elemlist, **elem;
+
+    /* count the number of elements */
+    for (dst = src; *dst; dst++) if (*dst == ':') nelems++;
+
+    /* get memory for everything */
+    dst = (char *) malloc (dst - src + 1);
+    if (!dst) return NULL;
+    elemlist = (char **) calloc ((nelems + 1), sizeof (char *));
+    if (!elemlist) {
+	free (dst);
+	return NULL;
+    }
+
+    /* copy to new list and walk up nulling colons and setting list pointers */
+    strcpy (dst, src);
+    for (elem = elemlist, src = dst; *src; src++) {
+	if (*src == ':') {
+	    *elem++ = dst;
+	    *src = '\0';
+	    dst = src + 1;
+	}
+    }
+    *elem = dst;
+
+    return elemlist;
+}
+
+
+void _XmuStringToBitmapInitCache (c)
+    register XmuCvtCache *c;
+{
+    c->string_to_bitmap.bitmapFilePath = NULL;
+}
+
+void _XmuStringToBitmapFreeCache (c)
+    register XmuCvtCache *c;
+{
+    if (c->string_to_bitmap.bitmapFilePath) {
+	if (c->string_to_bitmap.bitmapFilePath[0]) 
+	  free (c->string_to_bitmap.bitmapFilePath[0]);
+	free ((char *) (c->string_to_bitmap.bitmapFilePath));
+    }
 }

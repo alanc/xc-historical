@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CvtCache.c,v 1.1 89/08/17 14:06:55 jim Exp $
+ * $XConsortium: CvtCache.c,v 1.2 89/08/17 14:13:32 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -32,14 +32,41 @@ static XmuDisplayQueue *dq = NULL;
 static int _CloseDisplay(), _FreeCCDQ();
 
 
+
 /*
- * InitializeCvtCache - fill in the appropriate fields
+ * internal utility callbacks
  */
-static void InitializeCvtCache (c)
+
+static int _FreeCCDQ (q)
+    XmuDisplayQueue *q;
+{
+    XmuDQDestroy (dq);
+    dq = NULL;
+}
+
+
+static int _CloseDisplay (q, e)
+    XmuDisplayQueue *q;
+    XmuDisplayQueueEntry *e;
+{
+    XmuCvtCache *c;
+    extern void _XmuStringToBitmapFreeCache();
+
+    if (e && (c = (XmuCvtCache *)(e->data))) {
+	_XmuStringToBitmapFreeCache (c);
+	/* insert calls to free any cached memory */
+
+    }
+    return 0;
+}
+
+static void _InitializeCvtCache (c)
     register XmuCvtCache *c;
 {
-    c->string_to_bitmap.file_path = NULL;
-    c->string_to_bitmap.try_default_path = True;
+    extern void _XmuStringToBitmapInitCache();
+
+    _XmuStringToBitmapInitCache (c);
+    /* insert calls to init any cached memory */
 }
 
 
@@ -80,7 +107,7 @@ XmuCvtCache *XmuCCLookupDisplay (dpy)
 	/*
 	 * initialize fields in cache
 	 */
-	InitializeCvtCache (c);
+	_InitializeCvtCache (c);
     }
 
     /*
@@ -90,24 +117,3 @@ XmuCvtCache *XmuCCLookupDisplay (dpy)
 }
 
 
-
-/*
- * internal utility callbacks
- */
-
-/* ARGSUSED */
-static int _CloseDisplay (q, e)
-    XmuDisplayQueue *q;
-    XmuDisplayQueueEntry *e;
-{
-    /* insert code to free any cached memory */
-    return 0;
-}
-
-
-static int _FreeCCDQ (q)
-    XmuDisplayQueue *q;
-{
-    XmuDQDestroy (dq);
-    dq = NULL;
-}

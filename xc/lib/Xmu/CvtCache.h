@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: CvtCache.h,v 1.1 89/08/17 14:06:56 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -31,8 +31,7 @@
 
 typedef struct _XmuCvtCache {
     struct {
-	char *file_path;
-	Bool try_default_path;
+	char **bitmapFilePath;
     } string_to_bitmap;
     /* add other per-display data that needs to be cached */
 } XmuCvtCache;
