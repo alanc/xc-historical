@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.6 91/03/28 15:42:16 rws Exp $ */
+/* $XConsortium: TMkey.c,v 1.7 91/04/26 18:57:28 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -233,14 +233,17 @@ void XtConvertCase(dpy,keysym,lower_return,upper_return)
     KeySym keysym;
     KeySym *lower_return, *upper_return;
 {
-    register CaseConverterPtr ptr = _XtGetPerDisplay(dpy)->case_cvt;
+    XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    register CaseConverterPtr ptr;
 
     *lower_return = *upper_return = keysym;
-    for (;  ptr; ptr = ptr->next)
+    for (ptr=pd->case_cvt;  ptr; ptr = ptr->next)
 	if (ptr->start <= keysym && keysym <= ptr->stop) {
 	    (*ptr->proc)(dpy, keysym, lower_return, upper_return);
 	    return;
 	}
+    if (keysym <= 0x3ff)	/* Latin-1 start = 0, Latin-4 stop = 0x3ff */
+	(*pd->defaultCaseConverter)(dpy, keysym, lower_return, upper_return);
 }
     
 Boolean _XtMatchUsingStandardMods (typeMatch, modMatch, eventSeq)
