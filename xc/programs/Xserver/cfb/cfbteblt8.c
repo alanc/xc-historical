@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.15 91/12/19 14:17:20 keith Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.16 91/12/19 18:36:38 keith Exp $ */
 
 #if PSZ == 8
 
@@ -74,21 +74,36 @@ typedef unsigned int	*glyphPointer;
 #endif
 
 #define GetBitsL       c = BitLeft (*leftChar++, lshift)
-#define GetBits1S(r)   c = BitRight(*char1++ r, xoff1)
-#define GetBits1L(r)   GetBitsL | BitRight(*char1++ r, xoff1)
-#define GetBits1U(r)   c = *char1++ r
-#define GetBits2S(r)   GetBits1S(| BitRight(*char2++ r, widthGlyph))
-#define GetBits2L(r)   GetBits1L(| BitRight(*char2++ r, widthGlyph))
-#define GetBits2U(r)   GetBits1U(| BitRight(*char2++ r, widthGlyph))
-#define GetBits3S(r)   GetBits2S(| BitRight(*char3++ r, widthGlyph))
-#define GetBits3L(r)   GetBits2L(| BitRight(*char3++ r, widthGlyph))
-#define GetBits3U(r)   GetBits2U(| BitRight(*char3++ r, widthGlyph))
-#define GetBits4S(r)   GetBits3S(| BitRight(*char4++ r, widthGlyph))
-#define GetBits4L(r)   GetBits3L(| BitRight(*char4++ r, widthGlyph))
-#define GetBits4U(r)   GetBits3U(| BitRight(*char4++ r, widthGlyph))
-#define GetBits5S(r)   GetBits4S(| BitRight(*char5++ r, widthGlyph))
-#define GetBits5L(r)   GetBits4L(| BitRight(*char5++ r, widthGlyph))
-#define GetBits5U(r)   GetBits4U(| BitRight(*char5++ r, widthGlyph))
+#define NGetBits1S(r)   c = BitRight(*char1++ r, xoff1)
+#define NGetBits1L(r)   GetBitsL | BitRight(*char1++ r, xoff1)
+#define NGetBits1U(r)   c = *char1++ r
+#define NGetBits2S(r)   NGetBits1S(| BitRight(*char2++ r, widthGlyph))
+#define NGetBits2L(r)   NGetBits1L(| BitRight(*char2++ r, widthGlyph))
+#define NGetBits2U(r)   NGetBits1U(| BitRight(*char2++ r, widthGlyph))
+#define NGetBits3S(r)   NGetBits2S(| BitRight(*char3++ r, widthGlyph))
+#define NGetBits3L(r)   NGetBits2L(| BitRight(*char3++ r, widthGlyph))
+#define NGetBits3U(r)   NGetBits2U(| BitRight(*char3++ r, widthGlyph))
+#define NGetBits4S(r)   NGetBits3S(| BitRight(*char4++ r, widthGlyph))
+#define NGetBits4L(r)   NGetBits3L(| BitRight(*char4++ r, widthGlyph))
+#define NGetBits4U(r)   NGetBits3U(| BitRight(*char4++ r, widthGlyph))
+#define NGetBits5S(r)   NGetBits4S(| BitRight(*char5++ r, widthGlyph))
+#define NGetBits5L(r)   NGetBits4L(| BitRight(*char5++ r, widthGlyph))
+#define NGetBits5U(r)   NGetBits4U(| BitRight(*char5++ r, widthGlyph))
+#define GetBits1S   c = BitRight(*char1++, xoff1)
+#define GetBits1L   GetBitsL | BitRight(*char1++, xoff1)
+#define GetBits1U   c = *char1++
+#define GetBits2S   NGetBits1S(| BitRight(*char2++, widthGlyph))
+#define GetBits2L   NGetBits1L(| BitRight(*char2++, widthGlyph))
+#define GetBits2U   NGetBits1U(| BitRight(*char2++, widthGlyph))
+#define GetBits3S   NGetBits2S(| BitRight(*char3++, widthGlyph))
+#define GetBits3L   NGetBits2L(| BitRight(*char3++, widthGlyph))
+#define GetBits3U   NGetBits2U(| BitRight(*char3++, widthGlyph))
+#define GetBits4S   NGetBits3S(| BitRight(*char4++, widthGlyph))
+#define GetBits4L   NGetBits3L(| BitRight(*char4++, widthGlyph))
+#define GetBits4U   NGetBits3U(| BitRight(*char4++, widthGlyph))
+#define GetBits5S   NGetBits4S(| BitRight(*char5++, widthGlyph))
+#define GetBits5L   NGetBits4L(| BitRight(*char5++, widthGlyph))
+#define GetBits5U   NGetBits4U(| BitRight(*char5++, widthGlyph))
 
 #else
 
@@ -130,8 +145,6 @@ typedef unsigned int	*glyphPointer;
 
 #endif
 
-#define EMPTYPARAM
-
 #ifdef USE_LEFTBITS
 extern long endtab[];
 
@@ -152,43 +165,43 @@ extern long endtab[];
 #define WGetBits1U  Get1Bits (char1, c)
 
 #else
-#define WGetBitsL   GetBitsL(EMPTYPARAM)
-#define WGetBits1S  GetBits1S(EMPTYPARAM)
-#define WGetBits1L  GetBits1L(EMPTYPARAM)
-#define WGetBits1U  GetBits1U(EMPTYPARAM)
+#define WGetBitsL   GetBitsL
+#define WGetBits1S  GetBits1S
+#define WGetBits1L  GetBits1L
+#define WGetBits1U  GetBits1U
 #endif
 
 #if NGLYPHS == 2
-# define GetBitsNS GetBits2S(EMPTYPARAM)
-# define GetBitsNL GetBits2L(EMPTYPARAM)
-# define GetBitsNU GetBits2U(EMPTYPARAM)
+# define GetBitsNS GetBits2S
+# define GetBitsNL GetBits2L
+# define GetBitsNU GetBits2U
 # define LastChar char2
 #ifndef CFBTEGBLT8
 # define CFBTEGBLT8 cfbTEGlyphBlt8x2
 #endif
 #endif
 #if NGLYPHS == 3
-# define GetBitsNS GetBits3S(EMPTYPARAM)
-# define GetBitsNL GetBits3L(EMPTYPARAM)
-# define GetBitsNU GetBits3U(EMPTYPARAM)
+# define GetBitsNS GetBits3S
+# define GetBitsNL GetBits3L
+# define GetBitsNU GetBits3U
 # define LastChar char3
 #ifndef CFBTEGBLT8
 # define CFBTEGBLT8 cfbTEGlyphBlt8x3
 #endif
 #endif
 #if NGLYPHS == 4
-# define GetBitsNS GetBits4S(EMPTYPARAM)
-# define GetBitsNL GetBits4L(EMPTYPARAM)
-# define GetBitsNU GetBits4U(EMPTYPARAM)
+# define GetBitsNS GetBits4S
+# define GetBitsNL GetBits4L
+# define GetBitsNU GetBits4U
 # define LastChar char4
 #ifndef CFBTEGBLT8
 # define CFBTEGBLT8 cfbTEGlyphBlt8x4
 #endif
 #endif
 #if NGLYPHS == 5
-# define GetBitsNS GetBits5S(EMPTYPARAM)
-# define GetBitsNL GetBits5L(EMPTYPARAM)
-# define GetBitsNU GetBits5U(EMPTYPARAM)
+# define GetBitsNS GetBits5S
+# define GetBitsNL GetBits5L
+# define GetBitsNU GetBits5U
 # define LastChar char5
 #ifndef CFBTEGBLT8
 # define CFBTEGBLT8 cfbTEGlyphBlt8x5
