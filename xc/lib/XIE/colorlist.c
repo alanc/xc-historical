@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: colorlist.c,v 1.1 93/07/19 11:39:14 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -141,7 +141,8 @@ unsigned long  	**colors_ret;
     *colormap_ret = rep.colormap;
     *ncolors_ret = rep.length;
 
-    if (*ncolors_ret) {
+    if (*ncolors_ret)
+    {
       *colors_ret = (unsigned long *) Xmalloc (
 	rep.length * sizeof (unsigned long));
 
