@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.18 88/09/06 15:50:51 jim Exp $ */
+/* $XConsortium: osinit.c,v 1.19 88/10/12 11:12:37 jim Exp $ */
 #include "os.h"
 #include "opaque.h"
 #undef NULL
@@ -60,11 +60,21 @@ OsInit()
 	{
 	    long t; 
 	    char *ctime();
+	    FILE *err;
 	    fclose(stdin);
 	    fclose(stdout);
 	    sprintf (fname, ADMPATH, display);
-	    if (!freopen (fname, "a+", stderr))
-		freopen ("/dev/null", "w", stderr);
+	    /*
+	     * uses stdio to avoid os dependencies here,
+	     * a real os would use
+ 	     *  open (fname, O_WRONLY|O_APPEND|O_CREAT, 0666)
+	     */
+	    if (!(err = fopen (fname, "a+")))
+		err = fopen ("/dev/null", "w");
+	    if (err) {
+		dup2 (fileno (err), 2);
+		fclose (err);
+	    }
 #if defined(macII) || defined(hpux)
 	    {
 	    static char buf[BUFSIZ];
