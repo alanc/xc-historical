@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AIXV3.c,v 1.1 91/05/10 07:41:20 jap Exp $
+ * $XConsortium: AIXV3.c,v 1.2 91/05/10 07:43:11 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -27,7 +27,7 @@
 #include <sys/select.h>
 #endif
 #include <ctype.h>
-#include "trace.h"
+#include "ibmTrace.h"
 #include "hftUtils.h"
 
 #ifdef AIXV3
