@@ -1,4 +1,4 @@
-/* $XConsortium: cvttoindex.c,v 1.2 93/10/26 10:05:52 rws Exp $ */
+/* $XConsortium: cvttoindex.c,v 1.3 93/10/27 21:52:05 rws Exp $ */
 
 /**** module cvttoindex.c ****/
 /******************************************************************************
@@ -74,7 +74,7 @@ Parms   p;
 int     reps;
 {
 	XieLTriplet levels;
-	double cube;
+	int cube;
 	int cclass;
 
 #if     defined(__cplusplus) || defined(c_plusplus)
@@ -84,10 +84,10 @@ int     reps;
 #endif
 	if ( !IsColorVisual( cclass ) || IsStaticVisual( cclass ) )
 		return( 0 );
-	cube = floor( cbrt( ( double ) ( 1 << xp->vinfo.depth ) ) );
-	levels[ 0 ] = ( long ) cube;
-	levels[ 1 ] = ( long ) cube;
-	levels[ 2 ] = ( long ) cube;
+	cube = icbrt( 1 << xp->vinfo.depth );
+	levels[ 0 ] = cube;
+	levels[ 1 ] = cube;
+	levels[ 2 ] = cube;
 	clist1 = ( XieColorList ) NULL;
 	clist2 = ( XieColorList ) NULL;
 	ditheredPhotomap = ( XiePhotomap ) NULL;
