@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.5 88/02/12 10:56:35 jim Exp $
+ *	$Header: main.c,v 1.6 88/02/12 12:21:31 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.5 88/02/12 10:56:35 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.6 88/02/12 12:21:31 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -973,23 +973,6 @@ spawn ()
 	if(screen->TekEmu && !TekInit())
 		exit(ERROR_INIT);
 
-	if(screen->TekEmu) {
-		envnew = tekterm;
-		ptr = newtc;
-	} else {
-		envnew = vtterm;
-		ptr = termcap;
-	}
-	while(*envnew) {
-		if(tgetent(ptr, *envnew) == 1) {
-			TermName = *envnew;
-			if(!screen->TekEmu)
-			    resize(screen, TermName, termcap, newtc);
-			break;
-		}
-		envnew++;
-	}
-
 	if (get_ty) {
 		screen->respond = loginpty;
 #ifndef SYSV
@@ -1251,6 +1234,24 @@ spawn ()
         /* Realize the Tek or VT widget, depending on which mode we're in.
            If VT mode, this calls VTInit (the widget's Realize proc) */
         XtRealizeWidget ((screen->TekEmu ? tekWidget : (Widget) term)->core.parent);
+
+	if(screen->TekEmu) {
+		envnew = tekterm;
+		ptr = newtc;
+	} else {
+		envnew = vtterm;
+		ptr = termcap;
+	}
+	while(*envnew) {
+		if(tgetent(ptr, *envnew) == 1) {
+			TermName = *envnew;
+			if(!screen->TekEmu)
+			    resize(screen, TermName, termcap, newtc);
+			break;
+		}
+		envnew++;
+	}
+
 
 #ifdef sun
 #ifdef TIOCSSIZE
