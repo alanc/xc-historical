@@ -1,4 +1,5 @@
-/* $XConsortium: pexExtract.h,v 5.4 91/07/01 16:25:41 hersh Exp $ */
+/* $XConsortium: pexExtract.h,v 5.5 91/09/12 15:11:31 hersh Exp $ */
+
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -113,9 +114,24 @@ SOFTWARE.
 #define EXTRACT_LISTOF_COORD2D(num, dstPtr, srcPtr) \
     EXTRACT_STRUCT(num, ddCoord2D, dstPtr, srcPtr)
 
+/* Takes a CARD8 from a 4 byte Protocol Field  */
+#define EXTRACT_CARD8_FROM_4B(dst, srcPtr)	{   \
+    (dst) = (CARD8) (*((CARD32 *)(srcPtr)));	    \
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD32); }
+
 #define EXTRACT_CARD8(dst, srcPtr)	{   \
     (dst) = *((CARD8 *)(srcPtr));	    \
     (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD8); }
+
+/* Takes a CARD16 from a 4 byte Protocol Field  */
+#define EXTRACT_CARD16_FROM_4B(dst, srcPtr)	{   \
+    (dst) = (CARD16) (*((CARD32 *)(srcPtr)));	    \
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD32); }
+
+/* Takes a INT16 from a 4 byte Protocol Field  */
+#define EXTRACT_INT16_FROM_4B(dst, srcPtr)	{   \
+    (dst) = (INT16) (*((CARD32 *)(srcPtr)));	    \
+    (srcPtr) = ((CARD8 *) (srcPtr)) + sizeof(CARD32); }
 
 #define EXTRACT_CARD16(dst, srcPtr)	{   \
     (dst) = *((CARD16 *)(srcPtr));	    \
