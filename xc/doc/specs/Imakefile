@@ -1,10 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.5 94/02/10 18:14:25 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 94/02/10 18:19:06 rws Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
 
 SUBDIRS = BDF CTEXT FSProtocol ICCCM XProtocol Xserver X11 XDMCP XLFD \
-          Xaw Xmu Xt Xext Xi xfs PEX5 ICE SM xtrans XIM
+          Xaw Xmu Xt Xext Xi xfs PEX5 ICE SM xtrans XIM xterm
 
 all::
 
