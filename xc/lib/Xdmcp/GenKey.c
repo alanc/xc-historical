@@ -1,5 +1,5 @@
 /*
- * $XConsortium: A8Eq.c,v 1.1 89/09/14 17:10:59 keith Exp $
+ * $XConsortium: GenKey.c,v 1.1 89/12/13 14:32:59 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,6 +37,13 @@ static getbits (data, dst)
     dst[2] = (data >> 16) & 0xff;
     dst[3] = (data >> 24) & 0xff;
 }
+
+#if defined(SYSV) || defined(SVR4)
+#define srandom srand48
+#define random lrand48
+#endif
+
+long random();
 
 void
 XdmcpGenerateKey (key)
