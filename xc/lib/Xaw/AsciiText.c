@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.37 90/04/26 15:22:47 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.38 90/08/30 16:46:53 swick Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -65,16 +65,16 @@ AsciiTextClassRec asciiTextClassRec = {
     /* superclass       */      (WidgetClass) &textClassRec,
     /* class_name       */      "Text",
     /* widget_size      */      sizeof(AsciiRec),
-    /* class_initialize */      ClassInitialize,
+    /* class_initialize */      XawInitializeWidgetSet,
     /* class_part_init  */	NULL,
     /* class_inited     */      FALSE,
     /* initialize       */      Initialize,
     /* initialize_hook  */	CreateSourceSink,
     /* realize          */      XtInheritRealize,
-    /* actions          */      textActionsTable,
+    /* actions          */      NULL,
     /* num_actions      */      0,
     /* resources        */      NULL,
-    /* num_ resource    */      0,
+    /* num_resource     */      0,
     /* xrm_class        */      NULLQUARK,
     /* compress_motion  */      TRUE,
     /* compress_exposure*/      XtExposeGraphicsExpose | XtExposeNoExpose,
@@ -105,13 +105,6 @@ AsciiTextClassRec asciiTextClassRec = {
 };
 
 WidgetClass asciiTextWidgetClass = (WidgetClass)&asciiTextClassRec;
-
-static void 
-ClassInitialize()
-{
-  XawInitializeWidgetSet();
-  asciiTextClassRec.core_class.num_actions = textActionsTableCount;
-}
 
 /* ARGSUSED */
 static void
@@ -182,7 +175,7 @@ AsciiStringClassRec asciiStringClassRec = {
     /* initialize       */      NULL,
     /* initialize_hook  */	NULL,
     /* realize          */      XtInheritRealize,
-    /* actions          */      textActionsTable,
+    /* actions          */      NULL,
     /* num_actions      */      0,
     /* resources        */      NULL,
     /* num_ resource    */      0,
@@ -238,7 +231,7 @@ AsciiDiskClassRec asciiDiskClassRec = {
     /* initialize       */      NULL,
     /* initialize_hook  */	NULL,
     /* realize          */      XtInheritRealize,
-    /* actions          */      textActionsTable,
+    /* actions          */      NULL,
     /* num_actions      */      0,
     /* resources        */      NULL,
     /* num_ resource    */      0,
