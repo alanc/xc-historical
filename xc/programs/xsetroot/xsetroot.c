@@ -365,7 +365,6 @@ CreateCursorFromName (name)
     XColor fg, bg, temp;
     int	    i;
     Font    fid;
-    char    *font_name;
 
     fg = NameToXColor(fore_color, BlackPixel(dpy, screen));
     bg = NameToXColor(back_color, WhitePixel(dpy, screen));

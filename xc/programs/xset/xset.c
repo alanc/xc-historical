@@ -1,12 +1,12 @@
 /* 
- * $XConsortium: xset.c,v 1.52 89/07/17 17:55:00 jim Exp $ 
+ * $XConsortium: xset.c,v 1.53 89/10/08 19:47:20 rws Exp $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.52 89/07/17 17:55:00 jim Exp $";
+static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.53 89/10/08 19:47:20 rws Exp $";
 #endif
 
 #include <stdio.h>
@@ -56,7 +56,6 @@ int key, auto_repeat_mode;
 XKeyboardControl values;
 unsigned long pixels[512];
 caddr_t colors[512];
-XColor def;
 int numpixels = 0;
 char *disp = NULL;
 Display *dpy;
@@ -456,7 +455,6 @@ set_font_path(dpy, path, special, before, after)
 {
     char **directoryList = NULL; int ndirs = 0;
     char **currentList = NULL; int ncurrent = 0;
-    char **newList = NULL; int nnew = 0;
 
     if (special) {
 	if (strcmp (path, "default") == 0) {
@@ -909,7 +907,6 @@ int local_xerror (dpy, rep)
     Display *dpy;
     XErrorEvent *rep;
 {
-    char dummy[10];
     char *errname = NULL;
 
     if (rep->request_code == X_StoreColors) {
