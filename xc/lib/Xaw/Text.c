@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.178 91/05/04 10:06:53 rws Exp $ */
+/* $XConsortium: Text.c,v 1.179 91/05/14 15:20:38 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1190,7 +1190,7 @@ XtPointer callData;		/* #pixels */
   }
 
 /*  
- * Put in the text that just became visable.
+ * Put in the text that just became visible.
  */
 
   if ( pixels != 0 ) {
@@ -1218,7 +1218,7 @@ XtPointer closure, callData; /* closure = TextWidget, callData = percent. */
   move = old_left - new_left;
 
   if (abs(move) < (int)ctx->core.width) {
-    HScroll(w, (XtPointer) ctx, *((XtPointer *) &move));
+    HScroll(w, (XtPointer) ctx, (XtPointer) move);
     return;
   }
   _XawTextPrepareToUpdate(ctx);
