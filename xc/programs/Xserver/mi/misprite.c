@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.28 90/01/13 17:33:32 rws Exp $ */
+/* $XConsortium: misprite.c,v 5.29 90/02/02 19:07:38 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -751,7 +751,7 @@ miSpriteClearToBackground (pWin, x, y, w, h, generateExposures)
     SCREEN_PROLOGUE (pScreen, ClearToBackground);
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
-    if (pScreenPriv->isUp)
+    if (GC_CHECK(pWin))
     {
 	if (!(realw = w))
 	    realw = (int) pWin->drawable.width - x;
@@ -1555,7 +1555,7 @@ miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, textType, cursorBox)
     CharInfoPtr *charinfo;
     register CharInfoPtr *info;
     unsigned long n, i;
-    unsigned int w;
+    int		  w;
     void    	  (*drawFunc)();
 
     Bool imageblt;
