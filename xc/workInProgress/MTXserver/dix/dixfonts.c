@@ -20,6 +20,24 @@ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that the
+above copyright notice appear in all copies and that both that copyright
+notice and this permission notice appear in supporting documentation, and that
+neither the name OMRON or DATA GENERAL be used in advertising or publicity
+pertaining to distribution of the software without specific, written prior
+permission of the party whose name is to be used.  Neither OMRON or
+DATA GENERAL make any representation about the suitability of this software
+for any purpose.  It is provided "as is" without express or implied warranty.
+
+OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+OF THIS SOFTWARE.
+
 ************************************************************************/
 
 /* $XConsortium: dixfonts.c,v 1.43 93/09/20 18:03:12 dpw Exp $ */
@@ -36,6 +54,8 @@ SOFTWARE.
 #include "opaque.h"
 #include "dixfontstr.h"
 #include "closestr.h"
+#include "mtxlock.h"
+#include "message.h"
 
 #ifdef DEBUG
 #include	<stdio.h>
@@ -93,6 +113,11 @@ static int  size_slept_fpes = 0;
 static FontPathElementPtr *slept_fpes = (FontPathElementPtr *) 0;
 static FontPatternCachePtr patternCache;
 
+#ifdef XTHREADS
+extern X_MUTEX_TYPE FontLockMutex;
+extern X_MUTEX_TYPE FPEFuncLockMutex;
+#endif /*XTHREADS*/
+
 int
 FontToXError(err)
     int         err;
@@ -137,6 +162,8 @@ SetDefaultFont(defaultfontname)
     return TRUE;
 }
 
+
+#ifndef XTHREADS /*XXX:SM Originally removed from MTX, will do same for now.*/
 /*
  * note that the font wakeup queue is not refcounted.  this is because
  * an fpe needs to be added when its inited, and removed when its finally
@@ -212,6 +239,7 @@ FontWakeup(data, count, LastSelectMask)
 	(void) (*fpe_functions[fpe->type].wakeup_fpe) (fpe, LastSelectMask);
     }
 }
+#endif /*!XTHREADS*/
 
 static Bool
 doOpenFont(client, c)
@@ -232,13 +260,16 @@ doOpenFont(client, c)
 	if (c->current_fpe < c->num_fpes)
 	{
 	    fpe = c->fpe_list[c->current_fpe];
+	    MTX_MUTEX_LOCK(&FPEFuncLockMutex);
 	    (*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
+	    MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
 	}
 	err = Successful;
 	goto bail;
     }
     while (c->current_fpe < c->num_fpes) {
 	fpe = c->fpe_list[c->current_fpe];
+	MTX_MUTEX_LOCK(&FPEFuncLockMutex);
 	err = (*fpe_functions[fpe->type].open_font)
 	    ((pointer) client, fpe, c->flags,
 	     c->fontname, c->fnamelen, FontFormat,
@@ -248,6 +279,7 @@ doOpenFont(client, c)
 	     BitmapFormatMaskScanLinePad |
 	     BitmapFormatMaskScanLineUnit,
 	     c->fontid, &pfont, &alias);
+	MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
 
 	if (err == FontNameAlias && alias) {
 	    newlen = strlen(alias);
@@ -266,6 +298,7 @@ doOpenFont(client, c)
 	    c->current_fpe++;
 	    continue;
 	}
+#ifndef XTHREADS
 	if (err == Suspended) {
 	    if (!c->slept) {
 		c->slept = TRUE;
@@ -273,6 +306,7 @@ doOpenFont(client, c)
 	    }
 	    return TRUE;
 	}
+#endif /* XTHREADS */
 	break;
     }
 
@@ -283,9 +317,11 @@ doOpenFont(client, c)
 	goto bail;
     }
     pfont->fpe = fpe;
+    MTX_MUTEX_LOCK(&FontLockMutex);
     pfont->refcnt++;
     if (pfont->refcnt == 1) {
 	UseFPE(pfont->fpe);
+	MTX_MUTEX_UNLOCK(&FontLockMutex);
 	for (i = 0; i < screenInfo.numScreens; i++) {
 	    pScr = screenInfo.screens[i];
 	    if (pScr->RealizeFont)
@@ -299,23 +335,33 @@ doOpenFont(client, c)
 	    }
 	}
     }
+    else {
+	MTX_MUTEX_UNLOCK(&FontLockMutex);
+    }
     if (!AddResource(c->fontid, RT_FONT, (pointer) pfont)) {
 	err = AllocError;
 	goto bail;
     }
-    if (patternCache && pfont->info.cachable)
+    if (patternCache && pfont->info.cachable){
+	MTX_MUTEX_LOCK(&FontLockMutex);
 	CacheFontPattern(patternCache, c->origFontName, c->origFontNameLen,
 			 pfont);
+	MTX_MUTEX_UNLOCK(&FontLockMutex);
+    }
 bail:
     if (err != Successful && c->client != serverClient) {
 	SendErrorToClient(c->client, X_OpenFont, 0,
 			  c->fontid, FontToXError(err));
     }
+    MTX_MUTEX_LOCK(&FontLockMutex);
+#ifndef XTHREADS
     if (c->slept)
 	ClientWakeup(c->client);
+#endif /* XTHREADS */
     for (i = 0; i < c->num_fpes; i++) {
 	FreeFPE(c->fpe_list[i], FALSE);
     }
+    MTX_MUTEX_UNLOCK(&FontLockMutex);
     xfree(c->fpe_list);
     xfree(c->fontname);
     xfree(c);
@@ -338,14 +384,19 @@ OpenFont(client, fid, flags, lenfname, pfontname)
 	return BadName;
     if (patternCache)
     {
+	MTX_MUTEX_LOCK(&FontLockMutex);
 	cached = FindCachedFontPattern(patternCache, pfontname, lenfname);
 	if (cached)
 	{
-	    if (!AddResource(fid, RT_FONT, (pointer) cached))
+	    if (!AddResource(fid, RT_FONT, (pointer) cached)) {
+		MTX_MUTEX_UNLOCK(&FontLockMutex);
 		return BadAlloc;
+	    }
 	    cached->refcnt++;
+	    MTX_MUTEX_UNLOCK(&FontLockMutex);
 	    return Success;
 	}
+	MTX_MUTEX_UNLOCK(&FontLockMutex);
     }
     c = (OFclosurePtr) xalloc(sizeof(OFclosureRec));
     if (!c)
@@ -369,10 +420,12 @@ OpenFont(client, fid, flags, lenfname, pfontname)
 	return BadAlloc;
     }
     memmove(c->fontname, pfontname, lenfname);
+    MTX_MUTEX_LOCK(&FontLockMutex);
     for (i = 0; i < num_fpes; i++) {
 	c->fpe_list[i] = font_path_elements[i];
 	UseFPE(c->fpe_list[i]);
     }
+    MTX_MUTEX_UNLOCK(&FontLockMutex);
     c->client = client;
     c->fontid = fid;
     c->current_fpe = 0;
@@ -401,9 +454,11 @@ CloseFont(value, fid)
 
     if (pfont == NullFont)
 	return (Success);
+    MTX_MUTEX_LOCK(&FontLockMutex);
     if (--pfont->refcnt == 0) {
 	if (patternCache && pfont->info.cachable)
 	    RemoveCachedFontPattern (patternCache, pfont);
+	MTX_MUTEX_UNLOCK(&FontLockMutex);
 	/*
 	 * since the last reference is gone, ask each screen to free any
 	 * storage it may have allocated locally for it.
@@ -416,9 +471,13 @@ CloseFont(value, fid)
 	if (pfont == defaultFont)
 	    defaultFont = NULL;
 	fpe = pfont->fpe;
+	MTX_MUTEX_LOCK(&FPEFuncLockMutex);
 	(*fpe_functions[fpe->type].close_font) (fpe, pfont);
+	MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
+	MTX_MUTEX_LOCK(&FontLockMutex);
 	FreeFPE(fpe, FALSE);
     }
+    MTX_MUTEX_UNLOCK(&FontLockMutex);
     return (Success);
 }
 
@@ -483,8 +542,10 @@ QueryFont(pFont, pReply, nProtoCCIStructs)
 	    chars[i++] = r;
 	    chars[i++] = c;
 	}
+	MTX_MUTEX_LOCK(&FPEFuncLockMutex);
 	(*pFont->get_metrics) (pFont, ncols, chars, TwoD16Bit,
 			       &count, charInfos);
+	MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
 	i = 0;
 	for (i = 0; i < count && ninfos < nProtoCCIStructs; i++) {
 	    *prCI = *charInfos[i];
@@ -502,7 +563,7 @@ doListFonts(client, c)
 {
     int         err;
     FontPathElementPtr fpe;
-    xListFontsReply reply;
+    REPLY_DECL(xListFontsReply, reply);
     FontNamesPtr names;
     int         stringLens,
                 i,
@@ -515,7 +576,9 @@ doListFonts(client, c)
 	if (c->current_fpe < c->num_fpes)
 	{
 	    fpe = c->fpe_list[c->current_fpe];
+	    MTX_MUTEX_LOCK(&FPEFuncLockMutex);
 	    (*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
+	    MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
 	}
 	err = Successful;
 	goto bail;
@@ -529,10 +592,13 @@ doListFonts(client, c)
 
 	fpe = c->fpe_list[c->current_fpe];
 
+	MTX_MUTEX_LOCK(&FPEFuncLockMutex);
 	err = (*fpe_functions[fpe->type].list_fonts)
 	    (c->client, fpe, c->pattern, c->patlen,
 	     c->max_names - c->names->nnames, c->names);
+	MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
 
+#ifndef XTHREADS
 	if (err == Suspended) {
 	    if (!c->slept) {
 		c->slept = TRUE;
@@ -540,11 +606,21 @@ doListFonts(client, c)
 	    }
 	    return TRUE;
 	}
+#endif /* !XTHREADS */
+
+#ifdef XTHREADS
+	if ((err != Successful) && (err != StillWorking))
+#else
 	if (err != Successful)
+#endif /* XTHREADS */
 	    break;
 	c->current_fpe++;
     }
+#ifdef XTHREADS
+    if ((err != Successful) && (err != StillWorking)) {
+#else
     if (err != Successful) {
+#endif /* XTHREADS */
 	SendErrorToClient(client, X_ListFonts, 0, 0, FontToXError(err));
 	goto bail;
     }
@@ -556,14 +632,28 @@ finish:
     for (i = 0; i < nnames; i++)
 	stringLens += names->length[i] <= 255 ? names->length[i]: 0;
 
-    reply.type = X_Reply;
-    reply.length = (stringLens + nnames + 3) >> 2;
-    reply.nFonts = nnames;
-    reply.sequenceNumber = client->sequence;
+#ifdef XTHREADS
+    if (!reply) {
+	SendErrorToClient(client, X_ListFonts, 0, 0, BadAlloc);
+	goto bail;
+    }
+#endif /* XTHREADS */
 
-    bufptr = bufferStart = (char *) ALLOCATE_LOCAL(reply.length << 2);
+    reply->type = X_Reply;
+    reply->length = (stringLens + nnames + 3) >> 2;
+    reply->nFonts = nnames;
+    reply->sequenceNumber = client->sequence;
 
-    if (!bufptr && reply.length) {
+#ifdef XTHREADS
+    bufptr = bufferStart = (char *) xalloc(reply->length << 2);
+#else
+    bufptr = bufferStart = (char *) ALLOCATE_LOCAL(reply->length << 2);
+#endif
+
+    if (!bufptr && reply->length) {
+#ifdef XTHREADS
+	ReturnPooledMessage(msg);
+#endif /* XTHREADS */
 	SendErrorToClient(client, X_ListFonts, 0, 0, BadAlloc);
 	goto bail;
     }
@@ -573,7 +663,7 @@ finish:
      */
     for (i = 0; i < nnames; i++) {
 	if (names->length[i] > 255)
-	    reply.nFonts--;
+	    reply->nFonts--;
 	else
 	{
 	    *bufptr++ = names->length[i];
@@ -581,17 +671,29 @@ finish:
 	    bufptr += names->length[i];
 	}
     }
-    reply.length = (stringLens + reply.nFonts + 3) >> 2;
-    nnames = reply.nFonts;
+    reply->length = (stringLens + reply->nFonts + 3) >> 2;
+    nnames = reply->nFonts;
+#ifdef XTHREADS
+    msg->pReplyData = bufferStart;
+    msg->freeReplyData = TRUE;
+    msg->lenReplyData = stringLens + nnames;
+    SendReplyToClient(client, msg);
+#else
     client->pSwapReplyFunc = ReplySwapVector[X_ListFonts];
     WriteSwappedDataToClient(client, sizeof(xListFontsReply), &reply);
     (void) WriteToClient(client, stringLens + nnames, bufferStart);
     DEALLOCATE_LOCAL(bufferStart);
+#endif /* XTHREADS */
+
 bail:
+    MTX_MUTEX_LOCK(&FontLockMutex);
+#ifndef XTHREADS
     if (c->slept)
 	ClientWakeup(client);
+#endif /* XTHREADS */
     for (i = 0; i < c->num_fpes; i++)
 	FreeFPE(c->fpe_list[i], FALSE);
+    MTX_MUTEX_UNLOCK(&FontLockMutex);
     xfree(c->fpe_list);
     FreeFontNames (c->names);
     xfree(c->pattern);
@@ -633,10 +735,12 @@ MakeListFontsClosure(client, pattern, length, max_names)
 	return 0;
     }
     memmove(c->pattern, pattern, length);
+    MTX_MUTEX_LOCK(&FontLockMutex);
     for (i = 0; i < num_fpes; i++) {
 	c->fpe_list[i] = font_path_elements[i];
 	UseFPE(c->fpe_list[i]);
     }
+    MTX_MUTEX_UNLOCK(&FontLockMutex);
     c->patlen = length;
     c->client = client;
     c->max_names = max_names;
@@ -676,17 +780,20 @@ doListFontsWithInfo(client, c)
     FontInfoRec fontInfo,
                *pFontInfo;
     xListFontsWithInfoReply *reply;
+
     int         length;
     xFontProp  *pFP;
     int         i;
-    xListFontsWithInfoReply finalReply;
+    REPLY_DECL (xListFontsWithInfoReply, finalReply);
 
     if (client->clientGone)
     {
 	if (c->current.current_fpe < c->num_fpes)
  	{
 	    fpe = c->fpe_list[c->current.current_fpe];
+	    MTX_MUTEX_LOCK(&FPEFuncLockMutex);
 	    (*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
+	    MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
 	}
 	err = Successful;
 	goto bail;
@@ -694,6 +801,8 @@ doListFontsWithInfo(client, c)
     client->pSwapReplyFunc = ReplySwapVector[X_ListFontsWithInfo];
     if (!c->current.patlen)
 	goto finish;
+
+    MTX_MUTEX_LOCK(&FPEFuncLockMutex);
     while (c->current.current_fpe < c->num_fpes)
     {
 	fpe = c->fpe_list[c->current.current_fpe];
@@ -703,6 +812,7 @@ doListFontsWithInfo(client, c)
 	    err = (*fpe_functions[fpe->type].start_list_fonts_with_info)
 		(client, fpe, c->current.pattern, c->current.patlen,
 		 c->current.max_names, &c->current.private);
+#ifndef XTHREADS
 	    if (err == Suspended)
  	    {
 		if (!c->slept)
@@ -712,6 +822,7 @@ doListFontsWithInfo(client, c)
 		}
 		return TRUE;
 	    }
+#endif /* !XTHREADS */
 	    if (err == Successful)
 		c->current.list_started = TRUE;
 	}
@@ -722,6 +833,7 @@ doListFontsWithInfo(client, c)
 	    err = (*fpe_functions[fpe->type].list_next_font_with_info)
 		(client, fpe, &name, &namelen, &pFontInfo,
 		 &numFonts, c->current.private);
+#ifdef XTHREADS
 	    if (err == Suspended)
  	    {
 		if (!c->slept)
@@ -731,6 +843,7 @@ doListFontsWithInfo(client, c)
 		}
 		return TRUE;
 	    }
+#endif /* !XTHREADS */
 	}
 	/*
 	 * When we get an alias back, save our state and reset back to the
@@ -843,8 +956,49 @@ doListFontsWithInfo(client, c)
 		pFP->value = pFontInfo->props[i].value;
 		pFP++;
 	    }
+#ifdef XTHREADS
+            /*-----------------------------------------------------
+             * TBD -- This routine seems to have some problems.  For
+             * instance, the variable err is set but never used for
+             * anything.  Also, it's very messy.  Clean it up??
+             *-----------------------------------------------------*/
+
+            {
+                xListFontsWithInfoReply *msg_reply;
+                PooledMessagePtr msg;
+                char *replyData;
+
+                msg_reply = (xListFontsWithInfoReply *)
+                            GetPooledReplyMessage(length, &msg);
+                if (!msg_reply)
+                {
+                    err = BadAlloc;
+		    X_MUTEX_UNLOCK(&FPEFuncLockMutex);
+                    goto bail;
+                }
+
+                replyData = (char *) xalloc(namelen);
+                if (!replyData)
+                {
+                    ReturnPooledMessage(msg);
+                    err = BadAlloc;
+		    X_MUTEX_UNLOCK(&FPEFuncLockMutex);
+                    goto bail;
+                }
+
+                bcopy(reply, msg_reply, length);
+                bcopy(name, replyData, namelen);
+                msg->pReplyData = replyData;
+                msg->freeReplyData = TRUE;
+                msg->lenReplyData = namelen;
+                SendReplyToClient(client, msg);
+            }
+#else
 	    WriteSwappedDataToClient(client, length, reply);
 	    (void) WriteToClient(client, namelen, name);
+
+#endif /* XTHREADS */
+
 	    if (pFontInfo == &fontInfo)
  	    {
 		xfree(fontInfo.props);
@@ -853,19 +1007,40 @@ doListFontsWithInfo(client, c)
 	    --c->current.max_names;
 	}
     }
+    X_MUTEX_UNLOCK(&FPEFuncLockMutex);
+
+#ifdef XTHREADS
+    if (!finalReply)
+    {
+	err = BadAlloc;
+	goto bail;
+    }
+#endif /* XTHREADS */
+
+    
+
+
 finish:
     length = sizeof(xListFontsWithInfoReply);
     bzero((char *) &finalReply, sizeof(xListFontsWithInfoReply));
-    finalReply.type = X_Reply;
-    finalReply.sequenceNumber = client->sequence;
-    finalReply.length = (sizeof(xListFontsWithInfoReply)
+    finalReply->type = X_Reply;
+    finalReply->sequenceNumber = client->sequence;
+    finalReply->length = (sizeof(xListFontsWithInfoReply)
 		     - sizeof(xGenericReply)) >> 2;
+#ifdef XTHREADS
+    SendReplyToClient(client, msg);
+#else
     WriteSwappedDataToClient(client, length, &finalReply);
+#endif /* XTHREADS */
 bail:
+    MTX_MUTEX_LOCK(&FontLockMutex);
+#ifndef XTHREADS
     if (c->slept)
 	ClientWakeup(client);
+#endif /* XTHREADS */
     for (i = 0; i < c->num_fpes; i++)
 	FreeFPE(c->fpe_list[i], FALSE);
+    MTX_MUTEX_UNLOCK(&FontLockMutex);
     xfree(c->reply);
     xfree(c->fpe_list);
     xfree(c->current.pattern);
@@ -899,11 +1074,13 @@ StartListFontsWithInfo(client, length, pattern, max_names)
 	goto badAlloc;
     }
     memmove(c->current.pattern, pattern, length);
+    MTX_MUTEX_LOCK(&FontLockMutex);
     for (i = 0; i < num_fpes; i++)
     {
 	c->fpe_list[i] = font_path_elements[i];
 	UseFPE(c->fpe_list[i]);
     }
+    MTX_MUTEX_UNLOCK(&FontLockMutex);
     c->client = client;
     c->num_fpes = num_fpes;
     c->reply = 0;
@@ -1413,10 +1590,28 @@ FreeFontPath(list, n, force)
     int         n;
 {
     int         i;
+#ifdef XTHREADS
+    int		j;
+    FontPathElementPtr  s;
+#endif /* XTHREADS */
 
+#ifdef XTHREADS
+    if(force) {
+	for (i = 0; i < (n-1); i++) {
+	    s = list[i];
+	    for (j = i+1; j < n; j++) {
+		if(list[j] == s)
+			list[j] = (FontPathElementPtr)NULL;
+	    }
+	}
+    }
+#endif /* XTHREADS */
+
+    MTX_MUTEX_LOCK(&FontLockMutex);
     for (i = 0; i < n; i++) {
 	FreeFPE(list[i], force);
     }
+    MTX_MUTEX_UNLOCK(&FontLockMutex);
     xfree((char *) list);
 }
 
@@ -1470,10 +1665,14 @@ SetFontPathElements(npaths, paths, bad)
 	     */
 	    fpe = find_existing_fpe(font_path_elements, num_fpes, cp, len);
 	    if (fpe) {
+		MTX_MUTEX_LOCK(&FPEFuncLockMutex);
 		err = (*fpe_functions[fpe->type].reset_fpe) (fpe);
+		MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
 		if (err == Successful) {
+		    MTX_MUTEX_LOCK(&FontLockMutex);
 		    UseFPE(fpe);/* since it'll be decref'd later when freed
 				 * from the old list */
+		    MTX_MUTEX_UNLOCK(&FontLockMutex);
 		    fplist[valid_paths++] = fpe;
 		    cp += len;
 		    continue;
@@ -1504,7 +1703,9 @@ SetFontPathElements(npaths, paths, bad)
 		err = BadValue;
 		goto bail;
 	    }
+	    MTX_MUTEX_LOCK(&FPEFuncLockMutex);
 	    err = (*fpe_functions[fpe->type].init_fpe) (fpe, FontFormat);
+	    MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
 	    if (err != Successful) {
 		xfree(fpe->name);
 		xfree(fpe);
@@ -1520,15 +1721,19 @@ SetFontPathElements(npaths, paths, bad)
 
     FreeFontPath(font_path_elements, num_fpes, FALSE);
     font_path_elements = fplist;
+    MTX_MUTEX_LOCK(&FontLockMutex);
     if (patternCache)
 	EmptyFontPatternCache(patternCache);
+    MTX_MUTEX_UNLOCK(&FontLockMutex);
     num_fpes = valid_paths;
 
     return Success;
 bail:
     *bad = i;
+    MTX_MUTEX_LOCK(&FontLockMutex);
     while (--i >= 0)
 	FreeFPE(fplist[i], FALSE);
+    MTX_MUTEX_UNLOCK(&FontLockMutex);
     xfree(fplist);
     return err;
 }
@@ -1634,11 +1839,29 @@ LoadGlyphs(client, pfont, nchars, item_size, data)
     int         item_size;
     unsigned char *data;
 {
+#ifdef XTHREADS
+    int ret;
+#endif /* XTHREADS */
+
+    MTX_MUTEX_LOCK(&FPEFuncLockMutex);
     if (fpe_functions[pfont->fpe->type].load_glyphs)
+#ifdef XTHREADS
+	ret = (*fpe_functions[pfont->fpe->type].load_glyphs)
+	    (client, pfont, 0, nchars, item_size, data);
+#else
 	return (*fpe_functions[pfont->fpe->type].load_glyphs)
 	    (client, pfont, 0, nchars, item_size, data);
+#endif /* XTHREADS */
     else
+#ifdef XTHREADS
+	ret = Successful;
+#else
 	return Successful;
+#endif /* XTHREADS */
+    MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
+#ifdef XTHREADS
+    return ret;
+#endif /* XTHREADS */
 }
 
 /* XXX -- these two funcs may want to be broken into macros */
@@ -1656,7 +1879,10 @@ FreeFPE (fpe, force)
 {
     fpe->refcount--;
     if (force || fpe->refcount == 0) {
+	/* CAUTION: FPEFuncLockMutex is nesting with FontLock_mutex */
+	MTX_MUTEX_LOCK(&FPEFuncLockMutex);
 	(*fpe_functions[fpe->type].free_fpe) (fpe);
+	MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
 	xfree(fpe->name);
 	xfree(fpe);
     }
@@ -1673,7 +1899,11 @@ DeleteClientFontStuff(client)
     {
 	fpe = font_path_elements[i];
 	if (fpe_functions[fpe->type].client_died)
+	{
+	    MTX_MUTEX_LOCK(&FPEFuncLockMutex);
 	    (*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
+	    MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
+	}
     }
 }
 
@@ -1733,7 +1963,10 @@ GetClientResolutions (num)
 int
 RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
 	   open_func, close_func, list_func, start_lfwi_func, next_lfwi_func,
-		     wakeup_func, client_died, load_glyphs)
+#ifndef XTHREADS
+		     wakeup_func, 
+#endif /* XTHREADS */
+		     client_died, load_glyphs)
     Bool        (*name_func) ();
     int         (*init_func) ();
     int         (*free_func) ();
@@ -1743,7 +1976,9 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     int         (*list_func) ();
     int         (*start_lfwi_func) ();
     int         (*next_lfwi_func) ();
+#ifndef XTHREADS
     int         (*wakeup_func) ();
+#endif /* XTHREADS */
     int		(*client_died) ();
     int		(*load_glyphs) ();
 {
@@ -1759,7 +1994,9 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     fpe_functions[num_fpe_types].name_check = name_func;
     fpe_functions[num_fpe_types].open_font = open_func;
     fpe_functions[num_fpe_types].close_font = close_func;
+#ifndef XTHREADS
     fpe_functions[num_fpe_types].wakeup_fpe = wakeup_func;
+#endif /* XTHREADS */
     fpe_functions[num_fpe_types].list_fonts = list_func;
     fpe_functions[num_fpe_types].start_list_fonts_with_info =
 	start_lfwi_func;
@@ -1826,6 +2063,7 @@ client_auth_generation(client)
     return 0;
 }
 
+#ifndef XTHREADS
 static int  fs_handlers_installed = 0;
 static unsigned int last_server_gen;
 
@@ -1874,6 +2112,7 @@ remove_fs_handlers(fpe, block_handler, all)
     }
     RemoveFontWakeup(fpe);
 }
+#endif /* XTHREADS */
 
 #ifdef DEBUG
 #define GLWIDTHBYTESPADDED(bits,nbytes) \
@@ -1915,3 +2154,4 @@ dump_char_ascii(cip)
 }
 
 #endif
+
