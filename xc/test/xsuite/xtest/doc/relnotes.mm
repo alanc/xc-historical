@@ -1,4 +1,4 @@
-.\" $XConsortium: relnotes.mm,v 1.4 92/07/03 19:43:05 rws Exp $
+.\" $XConsortium: relnotes.mm,v 1.5 92/07/04 17:06:03 rws Exp $
 .ds dD Release Notes for the X Test Suite
 .so 00.header
 '\"
@@ -47,9 +47,10 @@ It also tests parts of the
 (MIT\ X\ Consortium\ Standard - X\ Version\ 11)\fR
 where these cannot be inferred from tests at the Xlib level.
 .P
-The \*(xT may be used to test later versions of X11
-which are compatible with the X11R4 standards. The 
+The \*(xT may be used to test later versions of X11. The 
 test suite is known to build correctly using the X11R5 Xlib distributed by MIT.
+However, only R4 functionality is tested; new interfaces and functionality
+introduced in later releases are not tested.
 .H 1 "Installation"
 The distribution normally comes a single tar file, either on
 tape or across a network.  Create a directory to hold the distribution,
@@ -258,10 +259,12 @@ few weeks.
 This test suite will report numerous bugs in the public R4 and R5
 distributions from MIT, and in some cases will cause the X server to crash.
 In general, it is not necessary to report bugs in the MIT Xlib and X server
-software found by running this test suite.  The test suite is used
+software found by running this test suite to MIT.  The test suite is used
 extensively at the X Consortium, and at the time of this release nearly all
 bugs reported by this test suite when running on monochrome and 8-bit color
-systems have been corrected in the sources maintained at MIT.
+systems (as well as some 12-bit and 24-bit systems) have been corrected in
+the sources maintained at MIT.  However, if you discover bugs that you think
+will not show up on systems tested at MIT, feel free to report them.
 .P
 Bugs in TET/tcc software and documentation should not be reported to MIT.
 Send TET/tcc bug reports to tet_support@xopen.co.
