@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.43 94/02/06 13:54:41 rws Exp $
+XCOMM platform:  $XConsortium: cray.cf,v 1.44 94/02/06 15:01:52 rws Exp $
 
 #define OSName			UNICOS 8.0
 XCOMM operating system:  OSName
@@ -38,3 +38,6 @@ XCOMM operating system:  OSName
 #  define ExtraLoadFlags        -lnet
 #  endif
 #endif
+
+/* XKB library code is not 64-bit ready yet */
+#define BuildXKBlib NO
