@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.60 91/02/03 17:52:35 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.61 91/02/03 18:21:32 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -48,12 +48,12 @@ void XtAppSetSelectionTimeout(app, timeout)
 	app->selectionTimeout = timeout;
 }
 
-unsigned int XtGetSelectionTimeout()
+unsigned long XtGetSelectionTimeout()
 {
 	return XtAppGetSelectionTimeout(_XtDefaultAppContext());
 }
 
-unsigned int XtAppGetSelectionTimeout(app)
+unsigned long XtAppGetSelectionTimeout(app)
 	XtAppContext app;
 {
 	return app->selectionTimeout;

@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.158 91/04/09 13:50:51 gildea Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.159 91/05/01 11:15:43 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2414,13 +2414,13 @@ extern void XtSetSelectionTimeout(
 
  /* Return the selection timeout value, in units of milliseconds */
 
-extern unsigned int XtAppGetSelectionTimeout(
+extern unsigned long XtAppGetSelectionTimeout(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app */
 #endif
 );
 
-extern unsigned int XtGetSelectionTimeout(
+extern unsigned long XtGetSelectionTimeout(
 #if NeedFunctionPrototypes
     void
 #endif
