@@ -51,15 +51,19 @@
        DEPLIBS2 = 
        PROGRAMS = xterm resize
 
+#ifndef TermcapLibrary
 #if SystemV
-#if defined(MacIIArchitecture) || defined(ATTArchitecture)
-     TERMCAPLIB = -ltermcap
+#ifdef CrayArchitecture
+#define TermcapLibrary -lcurses		/* cray is special case of system v */
 #else
-     TERMCAPLIB = -lcurses
+#define TermcapLibrary -ltermlib	/* usually in here */
 #endif
 #else
-     TERMCAPLIB = -ltermcap
+#define TermcapLibrary -ltermcap	/* bsd puts it here */
 #endif
+#endif
+
+     TERMCAPLIB = TermcapLibrary
 
 AllTarget($(PROGRAMS))
 
