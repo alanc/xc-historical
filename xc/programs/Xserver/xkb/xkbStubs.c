@@ -1,4 +1,4 @@
-/* $XConsortium: xkbStubs.c,v 1.1 93/09/26 21:12:52 rws Exp $ */
+/* $XConsortium: xkbStubs.c,v 1.2 93/09/26 23:49:53 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -118,17 +118,17 @@ DevicePtr ptr;
     ev.u.keyButtonPointer.time = GetTimeInMillis();
     ev.u.keyButtonPointer.rootX = x;
     ev.u.keyButtonPointer.rootY = y;
-    (*ptr->processInputProc)( &ev, ptr, 1 );
+    (*ptr->processInputProc)( &ev, (DeviceIntPtr)ptr, 1 );
     return;
 }
 #endif
 
 #if NEED_CHANGE_XKB_CONTROLS
 void
-DDXChangeXKBControls(dev,old,new)
+DDXChangeXkbControls(dev,old,new)
     DeviceIntPtr    dev;
-    XKBControlsRec *old;
-    XKBControlsRec *new;
+    XkbControlsRec *old;
+    XkbControlsRec *new;
 {
     /* 8/11/93 (ef) -- XXX! IMPLEMENT THIS */
 }
@@ -139,7 +139,7 @@ int
 DDXTerminateServer(dev,key,action)
     DeviceIntPtr  dev;
     KeyCode	  key;
-    XKBAction	 *action;
+    XkbAction	 *action;
 {
     GiveUp(1);
     return 0;
@@ -151,7 +151,7 @@ int
 DDXSwitchScreen(dev,key,action)
     DeviceIntPtr  dev;
     KeyCode	  key;
-    XKBAction	 *action;
+    XkbAction	 *action;
 {
     return 1;
 }

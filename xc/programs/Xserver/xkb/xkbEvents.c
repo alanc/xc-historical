@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xkbEvents.c,v 1.1 93/09/26 21:12:50 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -40,14 +40,14 @@ extern int (*InitialVector[3])();
 /***====================================================================***/
 
 void
-XKBSendStateNotify(kbd,pSN)
+XkbSendStateNotify(kbd,pSN)
     DeviceIntPtr	 kbd;
-    xKBStateNotify	*pSN;
+    xkbStateNotify	*pSN;
 {
     int i;
-    xKBStateNotify	sn;
-    XKBSrvInfoRec	*xkb;
-    XKBInterestRec	*interest;
+    xkbStateNotify	sn;
+    XkbSrvInfoRec	*xkb;
+    XkbInterestRec	*interest;
     Time 		time;
     register CARD16	changed;
 
@@ -55,8 +55,8 @@ XKBSendStateNotify(kbd,pSN)
     if (!xkb->interest)
 	return;
 
-    pSN->type = XKBEventCode + XKBEventBase;
-    pSN->minor = XKBStateNotify;
+    pSN->type = XkbEventCode + XkbEventBase;
+    pSN->minor = XkbStateNotify;
     pSN->deviceID = kbd->id;
     pSN->time = time = GetTimeInMillis();
     pSN->mods = xkb->state.mods;
@@ -98,17 +98,17 @@ XKBSendStateNotify(kbd,pSN)
 /***====================================================================***/
 
 void
-XKBSendMapNotify(kbd,pMN)
+XkbSendMapNotify(kbd,pMN)
     DeviceIntPtr kbd;
-    xKBMapNotify *pMN;
+    xkbMapNotify *pMN;
 {
     int i;
-    XKBSrvInfoRec	*xkb;
+    XkbSrvInfoRec	*xkb;
     CARD16		 changed;
 
     xkb = kbd->key->xkbInfo;
-    pMN->type = XKBEventCode + XKBEventBase;
-    pMN->minor = XKBMapNotify;
+    pMN->type = XkbEventCode + XkbEventBase;
+    pMN->minor = XkbMapNotify;
     pMN->deviceID = kbd->id;
 
     changed = pMN->changed;
@@ -126,24 +126,24 @@ XKBSendMapNotify(kbd,pMN)
 		swaps(&pMN->sequenceNumber,n);
 		swaps(&pMN->changed,n);
 	    }
-	    WriteToClient(clients[i],sizeof(xEvent),pMN);
+	    WriteToClient(clients[i],sizeof(xEvent),(char *)pMN);
 	}
     }
     return;
 }
 
 int
-XKBComputeControlsNotify(kbd,old,new,pCN)
+XkbComputeControlsNotify(kbd,old,new,pCN)
     DeviceIntPtr	 kbd;
-    XKBControlsRec	*old;
-    XKBControlsRec	*new;
-    xKBControlsNotify	*pCN;
+    XkbControlsRec	*old;
+    XkbControlsRec	*new;
+    xkbControlsNotify	*pCN;
 {
     int			 i,initialized;
     CARD32 		 changedControls;
     CARD32		 enableChanges;
-    XKBSrvInfoRec	*xkb;
-    XKBInterestRec	*interest;
+    XkbSrvInfoRec	*xkb;
+    XkbInterestRec	*interest;
     Time 		 time;
 
     xkb = kbd->key->xkbInfo;
@@ -152,31 +152,31 @@ XKBComputeControlsNotify(kbd,old,new,pCN)
  
     changedControls= 0;
     if (old->enabledControls!=new->enabledControls)
-	changedControls|= XKBControlsEnabledMask;
+	changedControls|= XkbControlsEnabledMask;
     if ((old->repeatDelay!=new->repeatDelay)||
 	(old->repeatInterval!=new->repeatInterval))
-	changedControls|= XKBRepeatKeysMask;
+	changedControls|= XkbRepeatKeysMask;
     if (old->slowKeysDelay!=new->slowKeysDelay)
-	changedControls|= XKBSlowKeysMask;
+	changedControls|= XkbSlowKeysMask;
     if (old->debounceDelay!=new->debounceDelay)
-	changedControls|= XKBBounceKeysMask;
+	changedControls|= XkbBounceKeysMask;
     if ((old->mouseKeysDelay!=new->mouseKeysDelay)||
 	(old->mouseKeysInterval!=new->mouseKeysInterval)||
 	(old->mouseKeysDfltBtn!=new->mouseKeysDfltBtn))
-	changedControls|= XKBMouseKeysMask;
+	changedControls|= XkbMouseKeysMask;
     if ((old->mouseKeysTimeToMax!=new->mouseKeysTimeToMax)||
 	(old->mouseKeysCurve!=new->mouseKeysCurve)||
 	(old->mouseKeysMaxSpeed!=new->mouseKeysMaxSpeed))
-	changedControls|= XKBMouseKeysAccelMask;
+	changedControls|= XkbMouseKeysAccelMask;
     if ((old->accessXTimeout!=new->accessXTimeout)||
 	(old->accessXTimeoutMask!=new->accessXTimeoutMask))
-	changedControls|= XKBAccessXKeysMask;
+	changedControls|= XkbAccessXKeysMask;
     if (old->numGroups!=new->numGroups)
-	changedControls|= XKBKeyboardGroupsMask;
+	changedControls|= XkbKeyboardGroupsMask;
     if (old->internalMods!=new->internalMods)
-	changedControls|= XKBInternalModsMask;
+	changedControls|= XkbInternalModsMask;
     if (old->ignoreLockMods!=new->ignoreLockMods)
-	changedControls|= XKBIgnoreLockModsMask;
+	changedControls|= XkbIgnoreLockModsMask;
     if (!changedControls)
 	return 0;
     pCN->changedControls = changedControls;
@@ -186,15 +186,15 @@ XKBComputeControlsNotify(kbd,old,new,pCN)
 }
 
 void
-XKBSendControlsNotify(kbd,pCN)
+XkbSendControlsNotify(kbd,pCN)
     DeviceIntPtr	 kbd;
-    xKBControlsNotify	*pCN;
+    xkbControlsNotify	*pCN;
 {
     int			 i,initialized;
     CARD32 		 changedControls,enabledControls,enabledChanges;
-    xKBControlsNotify	 cn;
-    XKBSrvInfoRec	*xkb;
-    XKBInterestRec	*interest;
+    xkbControlsNotify	 cn;
+    XkbSrvInfoRec	*xkb;
+    XkbInterestRec	*interest;
     Time 		 time;
 
     xkb = kbd->key->xkbInfo;
@@ -210,8 +210,8 @@ XKBSendControlsNotify(kbd,pCN)
 	    (interest->client->xkbClientFlags&XKB_INITIALIZED) &&
 	    (interest->controlsNotifyMask&changedControls)) {
 	    if (!initialized) {
-		pCN->type = XKBEventCode + XKBEventBase;
-		pCN->minor = XKBControlsNotify;
+		pCN->type = XkbEventCode + XkbEventBase;
+		pCN->minor = XkbControlsNotify;
 		pCN->deviceID = kbd->id;
 		pCN->time = time = GetTimeInMillis();
 		enabledControls = pCN->enabledControls;
@@ -239,13 +239,13 @@ XKBSendControlsNotify(kbd,pCN)
 }
 
 void
-XKBSendIndicatorNotify(kbd,pEv)
+XkbSendIndicatorNotify(kbd,pEv)
     DeviceIntPtr	 kbd;
-    xKBIndicatorNotify	*pEv;
+    xkbIndicatorNotify	*pEv;
 {
     int			 i,initialized;
-    XKBSrvInfoRec	*xkb;
-    XKBInterestRec	*interest;
+    XkbSrvInfoRec	*xkb;
+    XkbInterestRec	*interest;
     Time 		 time;
     CARD32		 state,stateChanged,mapChanged;
 
@@ -265,8 +265,8 @@ XKBSendIndicatorNotify(kbd,pEv)
 	    ((interest->iStateNotifyMask&stateChanged)||
 	     (interest->iMapNotifyMask&mapChanged))) {
 	    if (!initialized) {
-		pEv->type = XKBEventCode + XKBEventBase;
-		pEv->minor = XKBIndicatorNotify;
+		pEv->type = XkbEventCode + XkbEventBase;
+		pEv->minor = XkbIndicatorNotify;
 		pEv->deviceID = kbd->id;
 		pEv->time = time = GetTimeInMillis();
 		initialized= 1;
@@ -294,14 +294,14 @@ XKBSendIndicatorNotify(kbd,pEv)
 
 #if NeedFunctionPrototypes
 void
-XKBHandleBell(	DeviceIntPtr	 kbd,
+XkbHandleBell(	DeviceIntPtr	 kbd,
 		CARD8		 percent,
 		pointer		 pCtrl,
 		CARD8		 class,
 		Atom		 name)
 #else
 void
-XKBHandleBell(kbd,percent,pCtrl,class,name)
+XkbHandleBell(kbd,percent,pCtrl,class,name)
     DeviceIntPtr	 kbd;
     CARD8		 percent;
     pointer		*pCtrl;
@@ -309,17 +309,17 @@ XKBHandleBell(kbd,percent,pCtrl,class,name)
     Atom		 name;
 #endif
 {
-    xKBBellNotify	 bn;
+    xkbBellNotify	 bn;
     int			 i,initialized;
-    XKBSrvInfoRec	*xkb;
-    XKBInterestRec	*interest;
+    XkbSrvInfoRec	*xkb;
+    XkbInterestRec	*interest;
     CARD8		 id;
     CARD16		 pitch,duration;
     Time 		 time;
 
     xkb = kbd->key->xkbInfo;
 
-    if (xkb->desc.controls->enabledControls&XKBAudibleBellMask)
+    if (xkb->desc.controls->enabledControls&XkbAudibleBellMask)
 	(*kbd->kbdfeed->BellProc)(percent,kbd,(pointer)pCtrl,class);
     if (!xkb->interest)
 	return;
@@ -347,8 +347,8 @@ XKBHandleBell(kbd,percent,pCtrl,class,name)
 	    (interest->bellNotifyWanted)) {
 	    if (!initialized) {
 		time = GetTimeInMillis();
-		bn.type = XKBEventCode + XKBEventBase;
-		bn.minor = XKBBellNotify;
+		bn.type = XkbEventCode + XkbEventBase;
+		bn.minor = XkbBellNotify;
 		bn.deviceID = kbd->id;
 		bn.bellClass = class;
 		bn.bellID = id;
@@ -376,13 +376,13 @@ XKBHandleBell(kbd,percent,pCtrl,class,name)
 }
 
 void
-XKBSendSlowKeyNotify(kbd,pEv)
+XkbSendSlowKeyNotify(kbd,pEv)
     DeviceIntPtr	 kbd;
-    xKBSlowKeyNotify	*pEv;
+    xkbSlowKeyNotify	*pEv;
 {
     int			 i,initialized;
-    XKBSrvInfoRec	*xkb;
-    XKBInterestRec	*interest;
+    XkbSrvInfoRec	*xkb;
+    XkbInterestRec	*interest;
     Time 		 time;
     CARD16		 delay;
 
@@ -399,8 +399,8 @@ XKBSendSlowKeyNotify(kbd,pEv)
 	    (interest->client->xkbClientFlags&XKB_INITIALIZED) &&
 	    (interest->slowKeyNotifyMask&pEv->slowKeyType)) {
 	    if (!initialized) {
-		pEv->type = XKBEventCode + XKBEventBase;
-		pEv->minor = XKBSlowKeyNotify;
+		pEv->type = XkbEventCode + XkbEventBase;
+		pEv->minor = XkbSlowKeyNotify;
 		pEv->deviceID = kbd->id;
 		pEv->time = time = GetTimeInMillis();
 		initialized= 1;
@@ -422,13 +422,13 @@ XKBSendSlowKeyNotify(kbd,pEv)
 }
 
 void
-XKBSendNamesNotify(kbd,pEv)
+XkbSendNamesNotify(kbd,pEv)
     DeviceIntPtr	 kbd;
-    xKBNamesNotify	*pEv;
+    xkbNamesNotify	*pEv;
 {
     int			 i,initialized;
-    XKBSrvInfoRec	*xkb;
-    XKBInterestRec	*interest;
+    XkbSrvInfoRec	*xkb;
+    XkbInterestRec	*interest;
     Time 		 time;
     CARD16		 changed;
     CARD32		 changedIndicators;
@@ -447,8 +447,8 @@ XKBSendNamesNotify(kbd,pEv)
 	    (interest->client->xkbClientFlags&XKB_INITIALIZED) &&
 	    (interest->namesNotifyMask&pEv->changed)) {
 	    if (!initialized) {
-		pEv->type = XKBEventCode + XKBEventBase;
-		pEv->minor = XKBNamesNotify;
+		pEv->type = XkbEventCode + XkbEventBase;
+		pEv->minor = XkbNamesNotify;
 		pEv->deviceID = kbd->id;
 		pEv->time = time = GetTimeInMillis();
 		initialized= 1;
@@ -472,13 +472,13 @@ XKBSendNamesNotify(kbd,pEv)
 }
 
 void
-XKBSendCompatMapNotify(kbd,pEv)
+XkbSendCompatMapNotify(kbd,pEv)
     DeviceIntPtr	 kbd;
-    xKBCompatMapNotify	*pEv;
+    xkbCompatMapNotify	*pEv;
 {
     int			 i,initialized;
-    XKBSrvInfoRec	*xkb;
-    XKBInterestRec	*interest;
+    XkbSrvInfoRec	*xkb;
+    XkbInterestRec	*interest;
     Time 		 time;
     CARD16		 firstSym,nSyms,nTotalSyms;
 
@@ -494,8 +494,8 @@ XKBSendCompatMapNotify(kbd,pEv)
 	    (interest->client->xkbClientFlags&XKB_INITIALIZED) &&
 	    (interest->compatNotifyMask)) {
 	    if (!initialized) {
-		pEv->type = XKBEventCode + XKBEventBase;
-		pEv->minor = XKBCompatMapNotify;
+		pEv->type = XkbEventCode + XkbEventBase;
+		pEv->minor = XkbCompatMapNotify;
 		pEv->deviceID = kbd->id;
 		pEv->time = time = GetTimeInMillis();
 		firstSym= pEv->firstSym;
@@ -524,17 +524,17 @@ XKBSendCompatMapNotify(kbd,pEv)
 }
 
 void
-XKBSendNotification(kbd,pChanges)
+XkbSendNotification(kbd,pChanges)
     DeviceIntPtr	 kbd;
-    XKBChangesRec	*pChanges;
+    XkbChangesRec	*pChanges;
 {
     if (pChanges->stateChanges) {
-	xKBStateNotify sn;
+	xkbStateNotify sn;
 	sn.changed= pChanges->stateChanges;
-	XKBSendStateNotify(kbd,&sn);
+	XkbSendStateNotify(kbd,&sn);
     }
     if (pChanges->map.changed) {
-	xKBMapNotify mn;
+	xkbMapNotify mn;
 	mn.changed= pChanges->map.changed;
 	mn.firstKeyType= pChanges->map.firstKeyType;
 	mn.nKeyTypes= pChanges->map.nKeyTypes;
@@ -542,23 +542,23 @@ XKBSendNotification(kbd,pChanges)
 	mn.nKeyActions= pChanges->map.nKeyActions;
 	mn.firstKeyBehavior= pChanges->map.firstKeyBehavior;
 	mn.nKeyBehaviors= pChanges->map.nKeyBehaviors;
-	XKBSendMapNotify(kbd,&mn);
+	XkbSendMapNotify(kbd,&mn);
     }
     if ((pChanges->controls.changedControls)||
 	(pChanges->controls.enabledControlsChanges)) {
 #ifdef NOTYET
-	XKBSendControlsNotify(kbd,&cn);
+	XkbSendControlsNotify(kbd,&cn);
 #endif
     }
     if ((pChanges->indicators.stateChanges)||(pChanges->indicators.mapChanges)){
-	xKBIndicatorNotify in;
+	xkbIndicatorNotify in;
 	in.stateChanged= pChanges->indicators.stateChanges;
 	in.state= kbd->key->xkbInfo->iState;
 	in.mapChanged= pChanges->indicators.mapChanges;
-	XKBSendIndicatorNotify(kbd,&in);
+	XkbSendIndicatorNotify(kbd,&in);
     }
     if (pChanges->names.changed) {
-	xKBNamesNotify nn;
+	xkbNamesNotify nn;
 	nn.changed= pChanges->names.changed;
 	nn.firstKeyType= pChanges->names.firstKeyType;
 	nn.nKeyTypes= pChanges->names.nKeyTypes;
@@ -568,15 +568,15 @@ XKBSendNotification(kbd,pChanges)
 	nn.nCharSets= kbd->key->xkbInfo->desc.names->nCharSets;
 	nn.changedMods= pChanges->names.changedMods;
 	nn.changedIndicators= pChanges->names.changedIndicators;
-	XKBSendNamesNotify(kbd,&nn);
+	XkbSendNamesNotify(kbd,&nn);
     }
     if ((pChanges->compat.changedMods)||(pChanges->compat.nSyms>0)) {
-	xKBCompatMapNotify cmn;
+	xkbCompatMapNotify cmn;
 	cmn.changedMods= pChanges->compat.changedMods;
 	cmn.firstSym= pChanges->compat.firstSym;
 	cmn.nSyms= pChanges->compat.nSyms;
 	cmn.nTotalSyms= kbd->key->xkbInfo->desc.compat->nSymInterpret;
-	XKBSendCompatMapNotify(kbd,&cmn);
+	XkbSendCompatMapNotify(kbd,&cmn);
     }
     return;
 }
@@ -584,7 +584,7 @@ XKBSendNotification(kbd,pChanges)
 /***====================================================================***/
 
 void
-XKBFilterWriteEvents(pClient,nEvents,xE)
+XkbFilterWriteEvents(pClient,nEvents,xE)
     ClientPtr	 pClient;
     int		 nEvents;
     xEvent	*xE;
@@ -596,7 +596,7 @@ DeviceIntPtr pXDev = (DeviceIntPtr)LookupKeyboardDevice();
 	(void)WriteToClient(pClient,nEvents*sizeof(xEvent),(char *)xE);
     }
     else {
-	XKBSrvInfoRec *xkb= pXDev->key->xkbInfo;
+	XkbSrvInfoRec *xkb= pXDev->key->xkbInfo;
 	register CARD8 type;
 	for (i=0;i<nEvents;i++) {
 	    type= xE[i].u.u.type;
@@ -626,13 +626,13 @@ DeviceIntPtr pXDev = (DeviceIntPtr)LookupKeyboardDevice();
 
 /***====================================================================***/
 
-XKBInterestRec *
-XKBFindClientResource(inDev,client)
+XkbInterestRec *
+XkbFindClientResource(inDev,client)
     DevicePtr	 inDev;
     ClientRec	*client;
 {
 DeviceIntPtr	 dev = (DeviceIntPtr)inDev;
-XKBInterestRec	*interest;
+XkbInterestRec	*interest;
 
     if ( dev->key && dev->key->xkbInfo ) {
 	interest = dev->key->xkbInfo->interest;
@@ -646,14 +646,14 @@ XKBInterestRec	*interest;
     return NULL;
 }
 
-XKBInterestRec *
-XKBAddClientResource(inDev,client,id)
+XkbInterestRec *
+XkbAddClientResource(inDev,client,id)
     DevicePtr	 inDev;
     ClientRec	*client;
     XID		 id;
 {
 DeviceIntPtr	 dev = (DeviceIntPtr)inDev;
-XKBInterestRec	*interest;
+XkbInterestRec	*interest;
 
     if ( dev->key && dev->key->xkbInfo ) {
 	interest = dev->key->xkbInfo->interest;
@@ -662,7 +662,7 @@ XKBInterestRec	*interest;
 		return ((interest->resource==id)?interest:NULL);
 	    interest = interest->next;
 	}
-	interest = (XKBInterestRec *)xalloc(sizeof(XKBInterestRec));
+	interest = (XkbInterestRec *)xalloc(sizeof(XkbInterestRec));
 	if (interest) {
 	    interest->kbd = dev->key->xkbInfo;
 	    interest->client = client;
@@ -685,12 +685,12 @@ XKBInterestRec	*interest;
 }
 
 int
-XKBRemoveClient(inDev,client)
+XkbRemoveClient(inDev,client)
 DevicePtr	 inDev;
 ClientRec	*client;
 {
 DeviceIntPtr	 dev = (DeviceIntPtr)inDev;
-XKBInterestRec	*interest;
+XkbInterestRec	*interest;
 
     if ( dev->key && dev->key->xkbInfo ) {
 	interest = dev->key->xkbInfo->interest;
@@ -701,7 +701,7 @@ XKBInterestRec	*interest;
 	}
 	while (interest->next) {
 	    if (interest->next->client==client) {
-		XKBInterestRec *victim = interest->next;
+		XkbInterestRec *victim = interest->next;
 		interest->next = victim->next;
 		xfree(victim);
 		return 1;
@@ -713,12 +713,12 @@ XKBInterestRec	*interest;
 }
 
 int
-XKBRemoveResourceClient(inDev,id) 
+XkbRemoveResourceClient(inDev,id) 
     DevicePtr	 inDev;
     XID		 id;
 {
 DeviceIntPtr	 dev = (DeviceIntPtr)inDev;
-XKBInterestRec	*interest;
+XkbInterestRec	*interest;
 
     if ( dev->key && dev->key->xkbInfo ) {
 	interest = dev->key->xkbInfo->interest;
@@ -729,7 +729,7 @@ XKBInterestRec	*interest;
 	}
 	while (interest->next) {
 	    if (interest->next->resource==id) {
-		XKBInterestRec *victim = interest->next;
+		XkbInterestRec *victim = interest->next;
 		interest->next = victim->next;
 		xfree(victim);
 		return 1;

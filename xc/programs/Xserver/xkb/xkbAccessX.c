@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xkbAccessX.c,v 1.1 93/09/26 21:12:49 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -40,8 +40,8 @@ void
 AccessXInit(keybd)
     DeviceIntPtr keybd;
 {
-    XKBSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
-    XKBControlsRec	*ctrls = xkbInfo->desc.controls;
+    XkbSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
+    XkbControlsRec	*ctrls = xkbInfo->desc.controls;
     xkbInfo->shiftKeyCount= 0;
     xkbInfo->mouseKeysCounter= 0;
     xkbInfo->inactiveKey= 0;
@@ -66,7 +66,7 @@ AccessXInit(keybd)
     ctrls->mouseKeysCurve = 500;
     ctrls->mouseKeysDfltBtn = 1;
     ctrls->accessXTimeout = 120;
-    ctrls->accessXTimeoutMask = KRG_MASK|XKBStickyKeysMask ;
+    ctrls->accessXTimeoutMask = KRG_MASK|XkbStickyKeysMask ;
     xkbInfo->mouseKeysCurve= 1.0+(((double)ctrls->mouseKeysCurve)*0.001);
     xkbInfo->mouseKeysCurveFactor= ( ((double)ctrls->mouseKeysMaxSpeed)/
 		pow((double)ctrls->mouseKeysTimeToMax,xkbInfo->mouseKeysCurve));
@@ -97,7 +97,7 @@ static void AccessXKeyboardEvent(keybd,type,keyCode)
     xE.u.u.detail = keyCode;
     xE.u.keyButtonPointer.time = GetTimeInMillis();	    
 
-    XKBProcessKeyboardEvent(&xE,keybd,1L);
+    XkbProcessKeyboardEvent(&xE,keybd,1L);
 
     return;
     
@@ -113,23 +113,23 @@ static void AccessXKeyboardEvent(keybd,type,keyCode)
 #if NeedFunctionPrototypes
 static void AccessXKRGTurnOn(DeviceIntPtr	 keybd,
 			     CARD16 	  	 KRGControl,
-			     xKBControlsNotify	*pCN)
+			     xkbControlsNotify	*pCN)
 #else
 static void AccessXKRGTurnOn(keybd,KRGControl,pCN)
     DeviceIntPtr	keybd;
     CARD16 		KRGControl;
-    xKBControlsNotify	*pCN;
+    xkbControlsNotify	*pCN;
 #endif
 {
-    XKBSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
-    XKBControlsRec	*ctrls = xkbInfo->desc.controls;
-    XKBControlsRec	old= *ctrls;
+    XkbSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
+    XkbControlsRec	*ctrls = xkbInfo->desc.controls;
+    XkbControlsRec	old= *ctrls;
 
     ctrls->enabledControls |= (KRGControl&KRG_MASK);
-    if (XKBComputeControlsNotify(keybd,&old,ctrls,pCN))
-	XKBSendControlsNotify(keybd,pCN);
+    if (XkbComputeControlsNotify(keybd,&old,ctrls,pCN))
+	XkbSendControlsNotify(keybd,pCN);
     if (xkbInfo->iAccel.usesControls)
-	XKBUpdateIndicators(keybd,xkbInfo->iAccel.usesControls,NULL);
+	XkbUpdateIndicators(keybd,xkbInfo->iAccel.usesControls,NULL);
     return;
     
 } /* AccessXKRGTurnOn */
@@ -142,22 +142,22 @@ static void AccessXKRGTurnOn(keybd,KRGControl,pCN)
 /*									*/
 /************************************************************************/
 #if NeedFunctionPrototypes
-static void AccessXKRGTurnOff(DeviceIntPtr keybd,xKBControlsNotify *pCN)
+static void AccessXKRGTurnOff(DeviceIntPtr keybd,xkbControlsNotify *pCN)
 #else
 static void AccessXKRGTurnOff(keybd,pCN)
     DeviceIntPtr keybd;
-    xKBControlsNotify *pCN;
+    xkbControlsNotify *pCN;
 #endif
 {
-    XKBSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
-    XKBControlsRec	*ctrls = xkbInfo->desc.controls;
-    XKBControlsRec	 old = *ctrls;
+    XkbSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
+    XkbControlsRec	*ctrls = xkbInfo->desc.controls;
+    XkbControlsRec	 old = *ctrls;
 
     ctrls->enabledControls &= ~KRG_MASK;
-    if (XKBComputeControlsNotify(keybd,&old,ctrls,pCN))
-	XKBSendControlsNotify(keybd,pCN);
+    if (XkbComputeControlsNotify(keybd,&old,ctrls,pCN))
+	XkbSendControlsNotify(keybd,pCN);
     if (xkbInfo->iAccel.usesControls)
-	XKBUpdateIndicators(keybd,xkbInfo->iAccel.usesControls,NULL);
+	XkbUpdateIndicators(keybd,xkbInfo->iAccel.usesControls,NULL);
     return;
     
 } /* AccessXKRGTurnOff */
@@ -170,23 +170,23 @@ static void AccessXKRGTurnOff(keybd,pCN)
 /*									*/
 /************************************************************************/
 #if NeedFunctionPrototypes
-static void AccessXStickyKeysTurnOn(DeviceIntPtr keybd,xKBControlsNotify *pCN)
+static void AccessXStickyKeysTurnOn(DeviceIntPtr keybd,xkbControlsNotify *pCN)
 #else
 static void AccessXStickyKeysTurnOn(keybd,pCN)
     DeviceIntPtr	 keybd;
-    xKBControlsNotify	*pCN;
+    xkbControlsNotify	*pCN;
 #endif
 {
-    XKBSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
-    XKBControlsRec	*ctrls = xkbInfo->desc.controls;
-    XKBControlsRec	 old = *ctrls;
+    XkbSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
+    XkbControlsRec	*ctrls = xkbInfo->desc.controls;
+    XkbControlsRec	 old = *ctrls;
     
-    ctrls->enabledControls |= XKBStickyKeysMask;
+    ctrls->enabledControls |= XkbStickyKeysMask;
     xkbInfo->shiftKeyCount = 0;
-    if (XKBComputeControlsNotify(keybd,&old,ctrls,pCN)) 
-	XKBSendControlsNotify(keybd,pCN);
+    if (XkbComputeControlsNotify(keybd,&old,ctrls,pCN)) 
+	XkbSendControlsNotify(keybd,pCN);
     if (xkbInfo->iAccel.usesControls)
-	XKBUpdateIndicators(keybd,xkbInfo->iAccel.usesControls,NULL);
+	XkbUpdateIndicators(keybd,xkbInfo->iAccel.usesControls,NULL);
     return;
     
 } /* AccessXStickyKeysTurnOn */
@@ -199,33 +199,33 @@ static void AccessXStickyKeysTurnOn(keybd,pCN)
 /*									*/
 /************************************************************************/
 #if NeedFunctionPrototypes
-static void AccessXStickyKeysTurnOff(DeviceIntPtr keybd,xKBControlsNotify *pCN)
+static void AccessXStickyKeysTurnOff(DeviceIntPtr keybd,xkbControlsNotify *pCN)
 #else
 static void AccessXStickyKeysTurnOff(keybd,pCN)
     DeviceIntPtr	 keybd;
-    xKBControlsNotify	*pCN;
+    xkbControlsNotify	*pCN;
 #endif
 {
-    XKBSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
-    XKBControlsRec	*ctrls = xkbInfo->desc.controls;
-    XKBControlsRec	 old = *ctrls;
+    XkbSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
+    XkbControlsRec	*ctrls = xkbInfo->desc.controls;
+    XkbControlsRec	 old = *ctrls;
     unsigned ledUpdate;
 
-    ctrls->enabledControls &= ~XKBStickyKeysMask;
+    ctrls->enabledControls &= ~XkbStickyKeysMask;
     xkbInfo->shiftKeyCount = 0;
-    if (XKBComputeControlsNotify(keybd,&old,ctrls,pCN))
-	XKBSendControlsNotify(keybd,pCN);
+    if (XkbComputeControlsNotify(keybd,&old,ctrls,pCN))
+	XkbSendControlsNotify(keybd,pCN);
 
     if (xkbInfo->state.lockedMods || xkbInfo->state.lockedGroup) {
 	xkbInfo->state.lockedMods= 0;
 	xkbInfo->state.lockedGroup= 0;
-	ledUpdate= XKBIndicatorsToUpdate(keybd,
-					(XKBModifierLockMask|XKBGroupLockMask));
+	ledUpdate= XkbIndicatorsToUpdate(keybd,
+					(XkbModifierLockMask|XkbGroupLockMask));
 	ledUpdate|= xkbInfo->iAccel.usesControls;
     }
     else ledUpdate= xkbInfo->iAccel.usesControls;
     if (ledUpdate)
-	XKBUpdateIndicators(keybd,ledUpdate,NULL);
+	XkbUpdateIndicators(keybd,ledUpdate,NULL);
     return;
     
 } /* AccessXStickyKeysTurnOff */
@@ -239,14 +239,14 @@ static void AccessXStickyKeysTurnOff(keybd,pCN)
 /*									*/
 /************************************************************************/
 #if NeedFunctionPrototypes
-void AccessXTwoKeysDown(DeviceIntPtr keybd,xKBControlsNotify *pCN)
+void AccessXTwoKeysDown(DeviceIntPtr keybd,xkbControlsNotify *pCN)
 #else
 void AccessXTwoKeysDown(keybd,pCN)
     DeviceIntPtr	 keybd;
-    xKBControlsNotify	*pCN;
+    xkbControlsNotify	*pCN;
 #endif
 {
-    XKBSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
+    XkbSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
     
     if (xkbInfo->accessXFlags & TWO_KEYS_MASK) {
 	/* unlatch and unlock locked modifiers if this option is called. */
@@ -261,16 +261,16 @@ AccessXKRGExpire(timer,now,arg)
     CARD32	 now;
     pointer	 arg;
 {
-XKBSrvInfoRec	*xkbInfo= ((DeviceIntPtr)arg)->key->xkbInfo;
-xKBControlsNotify	cn;
+XkbSrvInfoRec	*xkbInfo= ((DeviceIntPtr)arg)->key->xkbInfo;
+xkbControlsNotify	cn;
 
     cn.keycode = 0;
     cn.eventType = 0;
     cn.requestMajor = 0;
     cn.requestMinor = 0;
-    if (xkbInfo->desc.controls->enabledControls&XKBSlowKeysMask)
+    if (xkbInfo->desc.controls->enabledControls&XkbSlowKeysMask)
 	 AccessXKRGTurnOff((DeviceIntPtr)arg,&cn);
-    else AccessXKRGTurnOn((DeviceIntPtr)arg,XKBSlowKeysMask,&cn);
+    else AccessXKRGTurnOn((DeviceIntPtr)arg,XkbSlowKeysMask,&cn);
     xkbInfo->krgTimerActive= _OFF_TIMER;
     return 0;
 }
@@ -281,14 +281,14 @@ AccessXSlowKeyExpire(timer,now,arg)
     CARD32	 now;
     pointer	 arg;
 {
-XKBSrvInfoRec	*xkbInfo= ((DeviceIntPtr)arg)->key->xkbInfo;
+XkbSrvInfoRec	*xkbInfo= ((DeviceIntPtr)arg)->key->xkbInfo;
 
     if (xkbInfo->slowKey!=0) {
-	xKBSlowKeyNotify ev;
-	ev.slowKeyType= XKBSKAccept;
+	xkbSlowKeyNotify ev;
+	ev.slowKeyType= XkbSKAccept;
 	ev.keycode= xkbInfo->slowKey;
 	ev.delay= xkbInfo->desc.controls->slowKeysDelay;
-	XKBSendSlowKeyNotify((DeviceIntPtr)arg,&ev);
+	XkbSendSlowKeyNotify((DeviceIntPtr)arg,&ev);
 	AccessXKeyboardEvent((DeviceIntPtr)arg,KeyPress,xkbInfo->slowKey);
     }
     return 0;
@@ -300,7 +300,7 @@ AccessXRepeatKeyExpire(timer,now,arg)
     CARD32	 now;
     pointer	 arg;
 {
-XKBSrvInfoRec	*xkbInfo= ((DeviceIntPtr)arg)->key->xkbInfo;
+XkbSrvInfoRec	*xkbInfo= ((DeviceIntPtr)arg)->key->xkbInfo;
     if (xkbInfo->repeatKey!=0) {
 	AccessXKeyboardEvent((DeviceIntPtr)arg,KeyRelease,xkbInfo->repeatKey);
 	AccessXKeyboardEvent((DeviceIntPtr)arg,KeyPress,xkbInfo->repeatKey);
@@ -315,7 +315,7 @@ AccessXBounceKeyExpire(timer,now,arg)
     CARD32	 now;
     pointer	 arg;
 {
-XKBSrvInfoRec	*xkbInfo= ((DeviceIntPtr)arg)->key->xkbInfo;
+XkbSrvInfoRec	*xkbInfo= ((DeviceIntPtr)arg)->key->xkbInfo;
 
     xkbInfo->inactiveKey= 0;
     return 0;
@@ -328,10 +328,10 @@ AccessXTimeoutExpire(timer,now,arg)
     pointer	 arg;
 {
 DeviceIntPtr	 keybd = (DeviceIntPtr)arg;
-XKBSrvInfoRec	*xkbInfo= keybd->key->xkbInfo;
-XKBControlsRec	*ctrls= xkbInfo->desc.controls;
-XKBControlsRec	 old= *ctrls;
-xKBControlsNotify	cn;
+XkbSrvInfoRec	*xkbInfo= keybd->key->xkbInfo;
+XkbControlsRec	*ctrls= xkbInfo->desc.controls;
+XkbControlsRec	 old= *ctrls;
+xkbControlsNotify	cn;
 
     if (xkbInfo->lastPtrEventTime) {
 	unsigned timeLeft;
@@ -340,15 +340,15 @@ xKBControlsNotify	cn;
 	return timeLeft;
     }
     ctrls->enabledControls&= ~(xkbInfo->desc.controls->accessXTimeoutMask);
-    if (XKBComputeControlsNotify(keybd,&old,ctrls,&cn)) {
+    if (XkbComputeControlsNotify(keybd,&old,ctrls,&cn)) {
 	cn.keycode = 0;
 	cn.eventType = 0;
 	cn.requestMajor = 0;
 	cn.requestMinor = 0;
-	XKBSendControlsNotify(keybd,&cn);
+	XkbSendControlsNotify(keybd,&cn);
     }
     if (xkbInfo->iAccel.usesControls)
-	XKBUpdateIndicators(keybd,xkbInfo->iAccel.usesControls,NULL);
+	XkbUpdateIndicators(keybd,xkbInfo->iAccel.usesControls,NULL);
     xkbInfo->krgTimerActive= _OFF_TIMER;
     return 0;
 }
@@ -377,13 +377,13 @@ Bool AccessXFilterPressEvent(xE,keybd,count)
     int				count;    
 #endif
 {
-    XKBSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
-    XKBControlsRec	*ctrls = xkbInfo->desc.controls;
+    XkbSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
+    XkbControlsRec	*ctrls = xkbInfo->desc.controls;
     Bool		 ignoreKeyEvent = FALSE;
     KeyCode		 key = xE->u.u.detail;
-    KeySym		*sym = XKBKeySymsPtr(&xkbInfo->desc,key);
+    KeySym		*sym = XkbKeySymsPtr(&xkbInfo->desc,key);
 
-    if (ctrls->enabledControls&XKBAccessXKeysMask) {
+    if (ctrls->enabledControls&XkbAccessXKeysMask) {
 	/* check for magic sequences */
 	if (sym[0]==XK_Shift_R) {
 	    xkbInfo->krgTimerActive = _KRG_TIMER;
@@ -405,12 +405,12 @@ Bool AccessXFilterPressEvent(xE,keybd,count)
      * The wakeup handler will synthesize one for us if the user
      * has held the key long enough.
      */
-    if (ctrls->enabledControls & XKBSlowKeysMask) {
-	xKBSlowKeyNotify	ev;
-	ev.slowKeyType= XKBSKPress;
+    if (ctrls->enabledControls & XkbSlowKeysMask) {
+	xkbSlowKeyNotify	ev;
+	ev.slowKeyType= XkbSKPress;
 	ev.keycode= key;
 	ev.delay= xkbInfo->desc.controls->slowKeysDelay;
-	XKBSendSlowKeyNotify(keybd,&ev);
+	XkbSendSlowKeyNotify(keybd,&ev);
 	xkbInfo->slowKey= key;
 	xkbInfo->slowKeysTimer = TimerSet(xkbInfo->slowKeysTimer,
 				 0, xkbInfo->desc.controls->slowKeysDelay,
@@ -422,7 +422,7 @@ Bool AccessXFilterPressEvent(xE,keybd,count)
      * and the user pressed the same key within a given time period
      * from the last release.
      */
-    else if ((ctrls->enabledControls & XKBBounceKeysMask) && 
+    else if ((ctrls->enabledControls & XkbBounceKeysMask) && 
 					(key == xkbInfo->inactiveKey)) {
 	ignoreKeyEvent = TRUE;
     }
@@ -431,8 +431,8 @@ Bool AccessXFilterPressEvent(xE,keybd,count)
      * presses a non-modifier key that doesn't autorepeat.
      */
     if ((keybd->kbdfeed->ctrl.autoRepeat) &&
-	((ctrls->enabledControls&(XKBSlowKeysMask|XKBRepeatKeysMask))==
-							XKBRepeatKeysMask)) 
+	((ctrls->enabledControls&(XkbSlowKeysMask|XkbRepeatKeysMask))==
+							XkbRepeatKeysMask)) 
     {
 #ifndef AIXV3
 	if (BitIsOn(keybd->kbdfeed->ctrl.autoRepeats,key))
@@ -453,9 +453,9 @@ Bool AccessXFilterPressEvent(xE,keybd,count)
      *  or the currentKey is a modifier, but not the only modifier being
      *  held down, turn StickyKeys off if the TwoKeys off control is set.
      */
-    if ((ctrls->enabledControls & XKBStickyKeysMask) && 
+    if ((ctrls->enabledControls & XkbStickyKeysMask) && 
 	(xkbInfo->state.baseMods!=0)) {
-	xKBControlsNotify cn;
+	xkbControlsNotify cn;
 	cn.keycode = key;
 	cn.eventType = KeyPress;
 	cn.requestMajor = 0;
@@ -464,7 +464,7 @@ Bool AccessXFilterPressEvent(xE,keybd,count)
     }
     
     if (!ignoreKeyEvent)
-	XKBProcessKeyboardEvent(xE,keybd,count);
+	XkbProcessKeyboardEvent(xE,keybd,count);
     return ignoreKeyEvent;
 } /* AccessXFilterPressEvent */
 
@@ -491,8 +491,8 @@ Bool AccessXFilterReleaseEvent(xE,keybd,count)
     int				count;    
 #endif
 {
-    XKBSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
-    XKBControlsRec	*ctrls = xkbInfo->desc.controls;
+    XkbSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
+    XkbControlsRec	*ctrls = xkbInfo->desc.controls;
     KeyCode		 key = xE->u.u.detail;
     Bool		 ignoreKeyEvent = FALSE;
     
@@ -500,7 +500,7 @@ Bool AccessXFilterReleaseEvent(xE,keybd,count)
      * this is the release of a key that was ignored due to 
      * BounceKeys.
      */
-    if (ctrls->enabledControls & XKBBounceKeysMask) {
+    if (ctrls->enabledControls & XkbBounceKeysMask) {
 	if (!BitIsOn(keybd->key->down,key))
 	    ignoreKeyEvent = TRUE;
 	xkbInfo->inactiveKey= key;
@@ -513,18 +513,18 @@ Bool AccessXFilterReleaseEvent(xE,keybd,count)
      * the user didn't hold the key long enough.  We know we passed
      * the key if the down bit was set by CoreProcessKeyboadEvent.
      */
-    if (ctrls->enabledControls & XKBSlowKeysMask) {
-	xKBSlowKeyNotify	ev;
+    if (ctrls->enabledControls & XkbSlowKeysMask) {
+	xkbSlowKeyNotify	ev;
 	ev.keycode= key;
 	ev.delay= xkbInfo->desc.controls->slowKeysDelay;
 	if (BitIsOn(keybd->key->down,key)) {
-	    ev.slowKeyType= XKBSKRelease;
+	    ev.slowKeyType= XkbSKRelease;
 	}
 	else {
-	    ev.slowKeyType= XKBSKReject;
+	    ev.slowKeyType= XkbSKReject;
 	    ignoreKeyEvent = TRUE;
 	}
-	XKBSendSlowKeyNotify(keybd,&ev);
+	XkbSendSlowKeyNotify(keybd,&ev);
 	if (xkbInfo->slowKey==key)
 	    xkbInfo->slowKey= 0;
     }
@@ -532,11 +532,11 @@ Bool AccessXFilterReleaseEvent(xE,keybd,count)
     /* Stop Repeating if the user releases the key that is currently
      * repeating.
      */
-    if ((ctrls->enabledControls&XKBRepeatKeysMask)&&(xkbInfo->repeatKey==key)) {
+    if ((ctrls->enabledControls&XkbRepeatKeysMask)&&(xkbInfo->repeatKey==key)) {
 	xkbInfo->repeatKey= 0;
     }
 
-    if ((ctrls->enabledControls&XKBAccessXTimeoutMask)&&
+    if ((ctrls->enabledControls&XkbAccessXTimeoutMask)&&
 		(ctrls->accessXTimeout>0)&&
 		(ctrls->enabledControls&ctrls->accessXTimeoutMask)) {
 	xkbInfo->lastPtrEventTime= 0;
@@ -555,17 +555,17 @@ Bool AccessXFilterReleaseEvent(xE,keybd,count)
      * the state of StickyKeys.
      */
     if ((!ignoreKeyEvent)&&(xkbInfo->shiftKeyCount)) {
-	KeySym *pSym= XKBKeySymsPtr(&xkbInfo->desc,key);
+	KeySym *pSym= XkbKeySymsPtr(&xkbInfo->desc,key);
 	if ((pSym[0]!=XK_Shift_L)&&(pSym[0]!=XK_Shift_R)) {
 	    xkbInfo->shiftKeyCount= 0;
 	}
 	else if (xkbInfo->shiftKeyCount>=5) {
-	     xKBControlsNotify cn;
+	     xkbControlsNotify cn;
 	     cn.keycode = key;
 	     cn.eventType = KeyPress;
 	     cn.requestMajor = 0;
 	     cn.requestMinor = 0;
-	     if (ctrls->enabledControls & XKBStickyKeysMask)
+	     if (ctrls->enabledControls & XkbStickyKeysMask)
 		AccessXStickyKeysTurnOff(keybd,&cn);
 	     else
 		AccessXStickyKeysTurnOn(keybd,&cn);
@@ -574,7 +574,7 @@ Bool AccessXFilterReleaseEvent(xE,keybd,count)
     }
     
     if (!ignoreKeyEvent)
-	XKBProcessKeyboardEvent(xE,keybd,count);
+	XkbProcessKeyboardEvent(xE,keybd,count);
     return ignoreKeyEvent;
     
 } /* AccessXFilterReleaseEvent */
@@ -602,7 +602,7 @@ void ProcessPointerEvent(xE,mouse,count)
 {
     DeviceIntPtr ptr = (DeviceIntPtr)LookupPointerDevice();
     DeviceIntPtr keybd = (DeviceIntPtr)LookupKeyboardDevice();
-    XKBSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
+    XkbSrvInfoRec	*xkbInfo = keybd->key->xkbInfo;
 
     xkbInfo->shiftKeyCount = 0;
     if (xkbInfo->krgTimerActive==_KRG_TIMER) {
