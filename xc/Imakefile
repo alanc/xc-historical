@@ -93,6 +93,7 @@ World::
 	@echo "##############################################################"
 	@echo ""
 	@date
+	@echo ""
 	cd $(IMAKESRC); $(MAKE) clean; $(MAKE) BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
 	-$(MV) Makefile Makefile.bak
 	$(MAKE) -f Makefile.bak Makefile
@@ -101,8 +102,10 @@ World::
 	$(MAKE) depend
 	$(MAKE) $(WORLDOPTS)
 	@echo ""
-	@echo "Build of the X Window System complete."
 	@date
+	@echo ""
+	@echo "Build of the X Window System complete."
+	@echo ""
 
 Everything::
 	cd $(IMAKESRC); $(MAKE) BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
