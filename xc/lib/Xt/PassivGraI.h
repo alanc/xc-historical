@@ -1,5 +1,5 @@
 /*
-* $XConsortium: PassivGraI.h,v 1.7 90/12/30 12:53:33 rws Exp $
+* $XConsortium: PassivGraI.h,v 1.8 90/12/30 16:28:16 rws Exp $
 */
 
 /********************************************************
@@ -43,23 +43,26 @@ typedef enum {
     XtPseudoActiveServerGrab
 }XtServerGrabType;
 
-typedef struct _DetailRec {
-    unsigned short 	exact;
-    Mask  		*pMask;
-} DetailRec;
-
 typedef struct _XtServerGrabRec {
     struct _XtServerGrabRec 	*next;
     Widget			widget;
     unsigned int		ownerEvents:1;
     unsigned int		pointerMode:1;
     unsigned int		keyboardMode:1;
-    DetailRec 			modifiersDetail;
-    Mask			eventMask;
-    DetailRec			detail;		/* key or button */
-    Window			confineTo;	/* always NULL for keyboards */
-    Cursor			cursor;		/* always NULL for keyboards */
+    unsigned int		hasExt:1;
+    KeyCode			keybut;
+    unsigned short		modifiers;
+    unsigned short		eventMask;
 } XtServerGrabRec, *XtServerGrabPtr;
+
+typedef struct _XtGrabExtRec {
+    Mask			*pKeyButMask;
+    Mask			*pModifiersMask;
+    Window			confineTo;
+    Cursor			cursor;
+} XtServerGrabExtRec, *XtServerGrabExtPtr;
+
+#define GRABEXT(p) ((XtServerGrabExtPtr)((p)+1))
 
 typedef struct _XtDeviceRec{
     XtServerGrabRec	grab; 	/* need copy in order to protect
