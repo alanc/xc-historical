@@ -1,4 +1,4 @@
-/* $XConsortium: LoadSCCData.c,v 1.2 91/02/17 14:21:02 dave Exp $ */
+/* $XConsortium: loadData.c,v 1.3 91/02/17 14:48:54 dave Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -36,14 +36,14 @@
  *      INCLUDES
  */
 
-#include <X11/Xos.h>
-#include <sys/stat.h>
-#include <stdio.h>
-
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include "Xcmsint.h"
 #include "SCCDFile.h"
+
+#include <X11/Xos.h>
+#include <sys/stat.h>
+#include <stdio.h>
 
 
 /*
@@ -53,9 +53,12 @@
  *		files (external includes or internal includes).
  */
 
+#ifdef X_NOT_STDC_ENV
 extern char *strtok();
 extern char *strchr();
 extern char *calloc();	/* use calloc since it initializes bytes to zero */
+#endif
+
 extern int LINEAR_RGB_FreeSCCData();
 
 /*
