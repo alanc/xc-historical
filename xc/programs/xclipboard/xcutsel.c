@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcutsel.c,v 1.8 89/07/24 10:30:35 jim Exp $
+ * $XConsortium: xcutsel.c,v 1.9 89/07/24 10:47:05 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xcutsel.c,v 1.8 89/07/24 10:30:35 jim Exp $";
+static char rcsid[] = "$XConsortium: xcutsel.c,v 1.9 89/07/24 10:47:05 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -88,7 +88,7 @@ static void StoreBuffer(w, client_data, selection, type, value, length, format)
     int *format;
 {
 
-    if (*type == 0 /*XT_CONVERT_FAIL*/ || *length == 0) {
+    if (*type == 0 || *type == XT_CONVERT_FAIL || *length == 0) {
 	XBell( XtDisplay(w), 0 );
 	return;
     }
