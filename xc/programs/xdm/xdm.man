@@ -1,4 +1,4 @@
-.\" $XConsortium: xdm.man,v 1.31 94/04/13 21:08:30 gildea Exp $
+.\" $XConsortium: xdm.man,v 1.32 94/04/13 21:27:58 gildea Exp $
 .\" Copyright 1988 Massachusetts Institute of Technology
 .\"
 .\" Permission to use, copy, modify, distribute, and sell this software and
@@ -711,11 +711,12 @@ foreign		remote display: \fIxdm\fP opens an X connection to a running server
 The display name must be something that can be passed in the \fB\-display\fP
 option to an X program.  This string is used to generate the display-specific
 resource names, so be careful to match the
-names (e.g. use ``:0 local /usr/X11R6/bin/X :0'' instead of ``localhost:0 local
-/usr/X11R6/bin/X :0'' if your other resources are specified as
+names (e.g., use ``:0 Sun-CG3 local /usr/X11R6/bin/X :0'' instead of
+``localhost:0 Sun-CG3 local /usr/X11R6/bin/X :0''
+if your other resources are specified as
 ``DisplayManager._0.session'').  The display class portion is also used in the
 display-specific resources, as the class of the resource.  This is
-useful if you have a large collection of similar displays (like a corral of
+useful if you have a large collection of similar displays (such as a corral of
 X terminals) and would like to set resources for groups of them.  When using
 XDMCP, the display is required to specify the display class, so the manual
 for your particular X terminal should document the display class
