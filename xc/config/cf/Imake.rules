@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.27 89/05/10 15:05:44 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.28 89/05/10 15:39:24 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -380,7 +380,7 @@ install:: program.script						@@\
 #define LinkFileList(step,list,dir,sub)					@@\
 step:: list								@@\
 	@case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
-	for i in list; do (set -x; $(LN) sub/$$i dir/); done
+	echo cd dir; cd dir; for i in list; do (set -x; $(LN) sub/$$i .); done
 #endif
 
 
