@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.110 88/09/05 14:46:13 rws Exp $ */
+/* $XConsortium: gc.c,v 1.111 88/09/06 15:41:05 jim Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -358,11 +358,19 @@ DoChangeGC(pGC, mask, pval, fPointer)
 	    case GCDashList:
 		if ((CARD8) (*pval) != 0)
  		{
-		    xfree(pGC->dash);
-		    pGC->numInDashList = 2;
-		    pGC->dash = (unsigned char *)xalloc(2 * sizeof(unsigned char));
-		    pGC->dash[0] = (CARD8)(*pval);
-		    pGC->dash[1] = (CARD8)(*pval);
+		    unsigned char *dash;
+
+		    dash = (unsigned char *)xalloc(2 * sizeof(unsigned char));
+		    if (dash)
+		    {
+			xfree(pGC->dash);
+			pGC->numInDashList = 2;
+			pGC->dash = dash;
+			dash[0] = (CARD8)(*pval);
+			dash[1] = (CARD8)(*pval);
+		    }
+		    else
+			error = BadAlloc;
 		}
  		else
 		{
@@ -413,22 +421,32 @@ BUG:
 
 */
 
-GC *
+GCPtr
 CreateGC(pDrawable, mask, pval, pStatus)
     DrawablePtr	pDrawable;
     BITS32	mask;
     XID		*pval;
     int		*pStatus;
 {
-    register GC *pGC;
+    register GCPtr pGC;
     extern FontPtr defaultFont;
 #ifdef DEBUG
     void 	(**j)();
 #endif /* DEBUG */
 
-    pGC = (GC *)xalloc(sizeof(GC));
+    pGC = (GCPtr)xalloc(sizeof(GC));
     if (!pGC)
-	return (GC *)NULL;
+    {
+	*pStatus = BadAlloc;
+	return (GCPtr)NULL;
+    }
+    pGC->dash = (unsigned char *)xalloc(2 * sizeof(unsigned char));
+    if (!pGC->dash)
+    {
+	xfree(pGC);
+	*pStatus = BadAlloc;
+	return (GCPtr)NULL;
+    }
 
 #ifdef DEBUG
     for(j = &pGC->FillSpans;
@@ -469,7 +487,6 @@ CreateGC(pDrawable, mask, pval, pStatus)
     pGC->clientClipType = CT_NONE;
     pGC->clientClip = (pointer)NULL;
     pGC->numInDashList = 2;
-    pGC->dash = (unsigned char *)xalloc(2 * sizeof(unsigned char));
     pGC->dash[0] = 4;
     pGC->dash[1] = 4;
     pGC->dashOffset = 0;
@@ -514,7 +531,14 @@ CreateGC(pDrawable, mask, pval, pStatus)
     pGC->stateChanges = (1 << GCLastBit+1) - 1;
     (*pGC->pScreen->CreateGC)(pGC);
     if(mask)
+    {
         *pStatus = ChangeGC(pGC, mask, pval);
+	if (*pStatus != Success)
+	{
+	    FreeGC(pGC, 0);
+	    pGC = (GCPtr)NULL;
+	}
+    }
     else
 	*pStatus = Success;
 
@@ -626,13 +650,23 @@ CopyGC(pgcSrc, pgcDst, mask)
 		pgcDst->dashOffset = pgcSrc->dashOffset;
 		break;
 	    case GCDashList:
-		xfree(pgcDst->dash);
-		pgcDst->dash = (unsigned char *)
-				xalloc(pgcSrc->numInDashList * sizeof(unsigned char));
-		pgcDst->numInDashList = pgcSrc->numInDashList;
-		for (i=0; i<pgcSrc->numInDashList; i++)
-		    pgcDst->dash[i] = pgcSrc->dash[i];
+		{
+		unsigned char *dash;
+
+		dash = (unsigned char *)xalloc(pgcSrc->numInDashList *
+					       sizeof(unsigned char));
+		if (dash)
+		{
+		    xfree(pgcDst->dash);
+		    pgcDst->dash = dash;
+		    pgcDst->numInDashList = pgcSrc->numInDashList;
+		    for (i=0; i<pgcSrc->numInDashList; i++)
+			dash[i] = pgcSrc->dash[i];
+		}
+		else
+		    error = BadAlloc;
 		break;
+		}
 	    case GCArcMode:
 		pgcDst->arcMode = pgcSrc->arcMode;
 		break;
@@ -671,7 +705,7 @@ CopyGC(pgcSrc, pgcDst, mask)
 /*ARGSUSED*/
 int
 FreeGC(pGC, gid)
-    GC *pGC;
+    GCPtr pGC;
     GContext gid;
 {
     GCInterestPtr	pQ, pQInit, pQnext;
@@ -692,7 +726,8 @@ FreeGC(pGC, gid)
 	pQ = pQnext;
     }
     while(pQ != pQInit);
-    xfree(pGC->dash);
+    if (pGC->dash)
+	xfree(pGC->dash);
     xfree(pGC);
     return(Success);
 }
@@ -724,20 +759,26 @@ is what fills the default tile.  (maybe this comment should
 go with CreateGC() or ChangeGC().)
 */
 
-GC *
+GCPtr
 CreateScratchGC(pScreen, depth)
     ScreenPtr pScreen;
     int depth;
 {
-    register GC *pGC;
+    register GCPtr pGC;
     extern FontPtr defaultFont;
 #ifdef DEBUG
     void 	(**j)();
 #endif /* DEBUG */
 
-    pGC = (GC *)xalloc(sizeof(GC));
+    pGC = (GCPtr)xalloc(sizeof(GC));
     if (!pGC)
-	return (GC *)NULL;
+	return (GCPtr)NULL;
+    pGC->dash = (unsigned char *)xalloc(2 * sizeof(unsigned char));
+    if (!pGC->dash)
+    {
+	xfree(pGC);
+	return (GCPtr)NULL;
+    }
 
 #ifdef DEBUG
     for(j = &pGC->FillSpans;
@@ -773,11 +814,10 @@ CreateScratchGC(pScreen, depth)
     pGC->clipOrg.x = 0;
     pGC->clipOrg.y = 0;
     pGC->clientClipType = CT_NONE;
+    pGC->dashOffset = 0;
     pGC->numInDashList = 2;
-    pGC->dash = (unsigned char *)xalloc(2 * sizeof(unsigned char));
     pGC->dash[0] = 4;
     pGC->dash[1] = 4;
-    pGC->dashOffset = 0;
 
     pGC->stateChanges = (1 << GCLastBit+1) - 1;
     (*pScreen->CreateGC)(pGC);
@@ -889,6 +929,10 @@ register unsigned char *pdash;
 	}
     }
 
+    p = (unsigned char *)xalloc(ndash * sizeof(unsigned char));
+    if (!p)
+	return BadAlloc;
+
     pGC->serialNumber |= GC_CHANGE_SERIAL_BIT;
     if (offset != pGC->dashOffset)
     {
@@ -897,7 +941,6 @@ register unsigned char *pdash;
 	maskQ |= GCDashOffset;
     }
 
-    p = (unsigned char *)xalloc(ndash * sizeof(unsigned char));
     xfree(pGC->dash);
     pGC->dash = p;
     pGC->numInDashList = ndash;
@@ -978,6 +1021,10 @@ SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
 	  break;
     }
 
+    prectsNew = (xRectangle *) xalloc(size);
+    if (!prects)
+	return BadAlloc;
+
     pGC->serialNumber |= GC_CHANGE_SERIAL_BIT;
     pGC->clipOrg.x = xOrigin;
     pGC->stateChanges |= GCClipXOrigin;
@@ -986,7 +1033,6 @@ SetClipRects(pGC, xOrigin, yOrigin, nrects, prects, ordering)
     pGC->stateChanges |= GCClipYOrigin;
 
     size = nrects * sizeof(xRectangle);
-    prectsNew = (xRectangle *) xalloc(size);
     bcopy((char *)prects, (char *)prectsNew, size);
     (*pGC->ChangeClip)(pGC, newct, prectsNew, nrects);
     pQ = pGC->pNextGCInterest;
