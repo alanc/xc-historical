@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.185 91/05/11 14:55:00 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.186 91/05/17 16:57:21 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -398,7 +398,8 @@ XrmDatabase XtScreenDatabase(screen)
 	    (dpy, pd->language, pd->appContext->langProcRec.closure);
     else if (! pd->language || pd->language[0] == '\0') /* R4 compatibility */
 	pd->language = getenv("LANG");
-    pd->language = XtNewString(pd->language);
+    if (pd->language) 
+	pd->language = XtNewString(pd->language);
 
     if (ScreenCount(dpy) == 1) {
 	db = pd->cmd_db;
@@ -576,6 +577,43 @@ static Boolean _GetResource(dpy, list, name, class, type, value)
     }
     return False;
 }
+
+XrmDatabase _XtParseNameAndDisplay(displayName, applName, urlist, num_urs,
+				   argc, argv)
+    String *displayName, *applName;
+    XrmOptionDescRec *urlist;
+    Cardinal num_urs;
+    int *argc;
+    String *argv;
+{
+    XrmDatabase db = 0;
+    XrmOptionDescRec *options;
+    Cardinal num_options;
+    XrmName name_list[3];
+    XrmRepresentation type;
+    XrmValue val;
+
+    _MergeOptionTables(opTable, XtNumber(opTable), urlist, num_urs,
+		       &options, &num_options);
+    name_list[0] = XrmPermStringToQuark(".");
+    name_list[2] = NULLQUARK;
+    XrmParseCommand(&db, options, num_options, ".", argc, argv);
+    if (! *applName) {
+	name_list[1] = XrmPermStringToQuark("name");
+	if (XrmQGetResource(db, name_list, name_list, &type, &val) &&
+	    type == _XtQString)
+	    *applName = val.addr;
+    }
+    if (! *displayName) {
+	name_list[1] = XrmPermStringToQuark("display");
+	if (XrmQGetResource(db, name_list, name_list, &type, &val) &&
+	    type == _XtQString)
+	    *displayName = val.addr;
+    }
+    XtFree((char *)options);
+    return db;
+}
+
 
 /*ARGSUSED*/
 void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
