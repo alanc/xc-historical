@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.9 93/09/22 11:17:02 mor Exp $ */
+/* $XConsortium: process.c,v 1.10 93/09/22 17:56:13 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -110,7 +110,7 @@ IceReplyWaitInfo *replyWait;
 	    }
 	    else
 	    {
-		_IceErrorBadState (iceConn,
+		_IceErrorBadState (iceConn, 0,
 		    header->minorOpcode, IceFatalToConnection);
 	    }
 
@@ -849,7 +849,7 @@ IceReplyWaitInfo	*replyWait;
 	 * Unexpected message
 	 */
 
-	_IceErrorBadState (iceConn, ICE_AuthRequired, IceCanContinue);
+	_IceErrorBadState (iceConn, 0, ICE_AuthRequired, IceCanContinue);
 	return (0);
     }
 
@@ -1088,7 +1088,7 @@ Bool		swap;
 	 * Unexpected message
 	 */
 
-	_IceErrorBadState (iceConn, ICE_AuthReply, IceCanContinue);
+	_IceErrorBadState (iceConn, 0, ICE_AuthReply, IceCanContinue);
     }
 
     if (authData && authDataLen > 0)
@@ -1144,7 +1144,7 @@ IceReplyWaitInfo	*replyWait;
 	 * Unexpected message
 	 */
 
-	_IceErrorBadState (iceConn, ICE_AuthNextPhase, IceCanContinue);
+	_IceErrorBadState (iceConn, 0, ICE_AuthNextPhase, IceCanContinue);
 	return (0);
     }
 
@@ -1261,7 +1261,7 @@ IceReplyWaitInfo 	*replyWait;
 	 * Unexpected message
 	 */
 
-	_IceErrorBadState (iceConn, ICE_ConnectionReply, IceCanContinue);
+	_IceErrorBadState (iceConn, 0, ICE_ConnectionReply, IceCanContinue);
 	return (0);
     }
 }
@@ -1586,7 +1586,7 @@ IceReplyWaitInfo 	*replyWait;
     }
     else
     {
-	_IceErrorBadState (iceConn, ICE_ProtocolReply, IceCanContinue);
+	_IceErrorBadState (iceConn, 0, ICE_ProtocolReply, IceCanContinue);
 	return (0);
     }
 }
@@ -1611,7 +1611,7 @@ IceConn iceConn;
     }
     else
     {
-	_IceErrorBadState (iceConn, ICE_PingReply, IceCanContinue);
+	_IceErrorBadState (iceConn, 0, ICE_PingReply, IceCanContinue);
     }
 }
 
@@ -1683,7 +1683,7 @@ IceConn iceConn;
     }
     else
     {
-	_IceErrorBadState (iceConn, ICE_NoClose, IceCanContinue);
+	_IceErrorBadState (iceConn, 0, ICE_NoClose, IceCanContinue);
     }
 }
 
@@ -1765,7 +1765,7 @@ IceReplyWaitInfo *replyWait;
 
     default:
 
-	_IceErrorBadMinor (iceConn, opcode, IceCanContinue);
+	_IceErrorBadMinor (iceConn, 0, opcode, IceCanContinue);
 	_IceReadSkip (iceConn, length << 3);
 	break;
     }
