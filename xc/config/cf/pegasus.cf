@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: pegasus.cf,v 1.22 91/03/26 13:02:43 rws Exp $
+XCOMM platform:  $XConsortium: pegasus.cf,v 1.23 91/03/27 09:13:18 rws Exp $
 
 #define OSName             UTek 4.0
 XCOMM operating system:  OSName
@@ -12,7 +12,6 @@ XCOMM operating system:  OSName
 
 #define BuildServer YES
 #define BuildBdfFonts NO		/* XXX remove in R5 */
-#define BuildPex NO			/* XXX remove in R5 */
 
 #define BootstrapCFlags    -DM4310 -DUTEK
 #define StandardDefines    -DM4310 -DUTEK -Dpegasus 
