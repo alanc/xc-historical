@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: sun.h,v 4.2 87/09/11 19:17:58 sun Locked $ SPRITE (Berkeley)"
+ *	"$Header: sun.h,v 4.3 87/09/12 02:29:58 sun Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -101,6 +101,9 @@ typedef struct kbPrivate {
     pointer 	  devPrivate;	    	/* Private to keyboard device */
     Bool	  map_q;		/* TRUE if fd has a mapped event queue */
     int		  offset;		/* to be added to device keycodes */
+    KeybdCtrl	  *ctrl;    	    	/* Current control structure (for
+ 					 * keyclick, bell duration, auto-
+ 					 * repeat, etc.) */
 } KbPrivRec, *KbPrivPtr;
 
 #define	MIN_KEYCODE	8	/* necessary to avoid the mouse buttons */
@@ -247,6 +250,7 @@ extern void 	  sunRecolorCursor();
 extern Bool	  sunCursorLoc();
 extern void 	  sunRemoveCursor();
 extern void	  sunRestoreCursor();
+extern void 	  sunMoveCursor();
 
 /*
  * Initialization
@@ -273,10 +277,9 @@ extern Bool	  screenSaved;		/* True is screen is being saved */
 
 extern int  	  lastEventTime;    /* Time (in ms.) of last event */
 extern void 	  SetTimeSinceLastInputEvent();
-extern void	ErrorF();
 
-#define AUTOREPEAT_INITIATE     (300)           /* milliseconds */
-#define AUTOREPEAT_DELAY        (100)           /* milliseconds */
+#define AUTOREPEAT_INITIATE	(200)		/* milliseconds */
+#define AUTOREPEAT_DELAY	(50)		/* milliseconds */
 /*
  * We signal autorepeat events with the unique Firm_event
  * id AUTOREPEAT_EVENTID.
@@ -289,6 +292,24 @@ extern void	ErrorF();
 extern int	autoRepeatKeyDown;		/* TRUE if key down */
 extern int	autoRepeatReady;		/* TRUE if time out */
 extern int	autoRepeatDebug;		/* TRUE if debugging */
+extern struct timeval autoRepeatLastKeyDownTv;
+extern struct timeval autoRepeatDeltaTv;
+
+#define tvminus(tv, tv1, tv2)	/* tv = tv1 - tv2 */ \
+		if ((tv1).tv_usec < (tv2).tv_usec) { \
+			(tv1).tv_usec += 1000000; \
+			(tv1).tv_sec -= 1; \
+		} \
+		(tv).tv_usec = (tv1).tv_usec - (tv2).tv_usec; \
+		(tv).tv_sec = (tv1).tv_sec - (tv2).tv_sec;
+
+#define tvplus(tv, tv1, tv2)	/* tv = tv1 + tv2 */ \
+		(tv).tv_sec = (tv1).tv_sec + (tv2).tv_sec; \
+		(tv).tv_usec = (tv1).tv_usec + (tv2).tv_usec; \
+		if ((tv).tv_usec > 1000000) { \
+			(tv).tv_usec -= 1000000; \
+			(tv).tv_sec += 1; \
+		}
 
 /*
  * Sun specific extensions:
