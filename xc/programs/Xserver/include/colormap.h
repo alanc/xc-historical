@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XConsortium: colormap.h,v 1.24 93/07/12 16:33:27 dpw Exp $ */
+/* $XConsortium: colormap.h,v 1.25 93/09/20 16:16:42 dpw Exp $ */
 #ifndef CMAP_H
 #define CMAP_H 1
 
@@ -58,7 +58,7 @@ extern int CreateColormap(
     Colormap /*mid*/,
     ScreenPtr /*pScreen*/,
     VisualPtr /*pVisual*/,
-    ColormapPtr */*ppcmap*/,
+    ColormapPtr* /*ppcmap*/,
     int /*alloc*/,
     int /*client*/
 #endif
@@ -96,10 +96,10 @@ extern int CopyColormapAndFree(
 extern int AllocColor(
 #if NeedFunctionPrototypes
     ColormapPtr /*pmap*/,
-    unsigned short */*pred*/,
-    unsigned short */*pgreen*/,
-    unsigned short */*pblue*/,
-    Pixel */*pPix*/,
+    unsigned short* /*pred*/,
+    unsigned short* /*pgreen*/,
+    unsigned short* /*pblue*/,
+    Pixel* /*pPix*/,
     int /*client*/
 #endif
 );
@@ -130,8 +130,8 @@ extern int FindColor(
     ColormapPtr /*pmap*/,
     EntryPtr /*pentFirst*/,
     int /*size*/,
-    xrgb */*prgb*/,
-    Pixel */*pPixel*/,
+    xrgb* /*prgb*/,
+    Pixel* /*pPixel*/,
     int /*channel*/,
     int /*client*/,
     ColorCompareProcPtr /*comp*/
@@ -142,8 +142,8 @@ extern int QueryColors(
 #if NeedFunctionPrototypes
     ColormapPtr /*pmap*/,
     int /*count*/,
-    Pixel */*ppixIn*/,
-    xrgb */*prgbList*/
+    Pixel* /*ppixIn*/,
+    xrgb* /*prgbList*/
 #endif
 );
 
@@ -161,8 +161,8 @@ extern int AllocColorCells(
     int /*colors*/,
     int /*planes*/,
     Bool /*contig*/,
-    Pixel */*ppix*/,
-    Pixel */*masks*/
+    Pixel* /*ppix*/,
+    Pixel* /*masks*/
 #endif
 );
 
@@ -175,10 +175,10 @@ extern int AllocColorPlanes(
     int /*g*/,
     int /*b*/,
     Bool /*contig*/,
-    Pixel */*pixels*/,
-    Pixel */*prmask*/,
-    Pixel */*pgmask*/,
-    Pixel */*pbmask*/
+    Pixel* /*pixels*/,
+    Pixel* /*prmask*/,
+    Pixel* /*pgmask*/,
+    Pixel* /*pbmask*/
 #endif
 );
 
@@ -187,7 +187,7 @@ extern int FreeColors(
     ColormapPtr /*pmap*/,
     int /*client*/,
     int /*count*/,
-    Pixel */*pixels*/,
+    Pixel* /*pixels*/,
     Pixel /*mask*/
 #endif
 );
@@ -196,7 +196,7 @@ extern int StoreColors(
 #if NeedFunctionPrototypes
     ColormapPtr /*pmap*/,
     int /*count*/,
-    xColorItem * /*defs*/
+    xColorItem* /*defs*/
 #endif
 );
 

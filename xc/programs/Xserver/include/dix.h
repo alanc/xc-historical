@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.66 93/09/20 18:07:20 dpw Exp $ */
+/* $XConsortium: dix.h,v 1.67 93/09/22 22:52:25 rws Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -160,8 +160,8 @@ extern long *checkForInput[2];
 
 extern void SetInputCheck(
 #if NeedFunctionPrototypes
-    long */*c0*/,
-    long */*c1*/
+    long* /*c0*/,
+    long* /*c1*/
 #endif
 );
 

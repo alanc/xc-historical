@@ -1,4 +1,4 @@
-/* $XConsortium: input.h,v 1.13 93/07/12 09:45:06 dpw Exp $ */
+/* $XConsortium: input.h,v 1.14 93/09/20 16:22:00 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -192,8 +192,8 @@ extern DevicePtr LookupPointerDevice(
 
 extern void QueryMinMaxKeyCodes(
 #if NeedFunctionPrototypes
-    KeyCode */*minCode*/,
-    KeyCode */*maxCode*/
+    KeyCode* /*minCode*/,
+    KeyCode* /*maxCode*/
 #endif
 );
 
@@ -216,7 +216,7 @@ extern Bool InitButtonClassDeviceStruct(
 #if NeedFunctionPrototypes
     DeviceIntPtr /*device*/,
     int /*numButtons*/,
-    CARD8 */*map*/
+    CARD8* /*map*/
 #endif
 );
 
@@ -297,7 +297,7 @@ extern Bool InitStringFeedbackClassDeviceStruct(
     StringCtrlProcPtr /*controlProc*/,
     int /*max_symbols*/,
     int /*num_symbols_supported*/,
-    KeySym */*symbols*/
+    KeySym* /*symbols*/
 #endif
 );
 
@@ -348,7 +348,7 @@ extern Bool InitIntegerFeedbackClassDeviceStruct(
 extern Bool InitPointerDeviceStruct(
 #if NeedFunctionPrototypes
     DevicePtr /*device*/,
-    CARD8 */*map*/,
+    CARD8* /*map*/,
     int /*numButtons*/,
     ValuatorMotionProcPtr /*motionProc*/,
     PtrCtrlProcPtr /*controlProc*/,
@@ -376,20 +376,20 @@ extern void SendMappingNotify(
 
 extern Bool BadDeviceMap(
 #if NeedFunctionPrototypes
-    BYTE */*buff*/,
+    BYTE* /*buff*/,
     int /*length*/,
     unsigned /*low*/,
     unsigned /*high*/,
-    XID */*errval*/
+    XID* /*errval*/
 #endif
 );
 
 extern Bool AllModifierKeysAreUp(
 #if NeedFunctionPrototypes
     DeviceIntPtr /*device*/,
-    CARD8 */*map1*/,
+    CARD8* /*map1*/,
     int /*per1*/,
-    CARD8 */*map2*/,
+    CARD8* /*map2*/,
     int /*per2*/
 #endif
 );

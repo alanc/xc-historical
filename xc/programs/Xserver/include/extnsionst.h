@@ -1,4 +1,4 @@
-/* $XConsortium: extnsionst.h,v 1.10 93/07/12 09:44:40 dpw Exp $ */
+/* $XConsortium: extnsionst.h,v 1.11 93/09/20 16:37:18 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -81,25 +81,25 @@ typedef struct _ScreenProcEntry {
 
 extern ExtensionEntry *AddExtension(
 #if NeedFunctionPrototypes
-    char */*name*/,
+    char* /*name*/,
     int /*NumEvents*/,
     int /*NumErrors*/,
-    int (*/*MainProc*/)(
+    int (* /*MainProc*/)(
 #if NeedNestedPrototypes
 	ClientPtr /*client*/
 #endif
 ),
-    int (*/*SwappedMainProc*/)(
+    int (* /*SwappedMainProc*/)(
 #if NeedNestedPrototypes
 	ClientPtr /*client*/
 #endif
 ),
-    void (*/*CloseDownProc*/)(
+    void (* /*CloseDownProc*/)(
 #if NeedNestedPrototypes
 	ExtensionEntry * /*extension*/
 #endif
 ),
-    unsigned short (*/*MinorOpcodeProc*/)(
+    unsigned short (* /*MinorOpcodeProc*/)(
 #if NeedNestedPrototypes
 	ClientPtr /*client*/
 #endif
@@ -109,7 +109,7 @@ extern ExtensionEntry *AddExtension(
 
 extern Bool AddExtensionAlias(
 #if NeedFunctionPrototypes
-    char */*alias*/,
+    char* /*alias*/,
     ExtensionEntry * /*extension*/
 #endif
 );
@@ -134,14 +134,14 @@ extern void CloseDownExtensions(
 
 extern ExtensionLookupProc LookupProc(
 #if NeedFunctionPrototypes
-    char */*name*/,
+    char* /*name*/,
     GCPtr /*pGC*/
 #endif
 );
 
 extern Bool RegisterProc(
 #if NeedFunctionPrototypes
-    char */*name*/,
+    char* /*name*/,
     GCPtr /*pGC*/,
     ExtensionLookupProc /*proc*/
 #endif
@@ -149,7 +149,7 @@ extern Bool RegisterProc(
 
 extern Bool RegisterScreenProc(
 #if NeedFunctionPrototypes
-    char */*name*/,
+    char* /*name*/,
     ScreenPtr /*pScreen*/,
     ExtensionLookupProc /*proc*/
 #endif

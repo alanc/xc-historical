@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.16 93/09/06 14:50:58 rws Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.17 93/09/20 18:05:31 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -106,8 +106,8 @@ typedef struct _Screen {
     void (* QueryBestSize)(
 #if NeedNestedPrototypes
 	int /*class*/,
-	unsigned short */*pwidth*/,
-	unsigned short */*pheight*/,
+	unsigned short* /*pwidth*/,
+	unsigned short* /*pheight*/,
 	ScreenPtr /*pScreen*/
 #endif
 );
@@ -137,7 +137,7 @@ typedef struct _Screen {
 	DrawablePtr /*pDrawable*/,
 	int /*wMax*/,
 	DDXPointPtr /*ppt*/,
-	int */*pwidth*/,
+	int* /*pwidth*/,
 	int /*nspans*/,
 	char * /*pdstStart*/
 #endif
@@ -455,7 +455,7 @@ typedef struct _Screen {
     int (* ListInstalledColormaps) (
 #if NeedNestedPrototypes
 	ScreenPtr /*pScreen*/,
-	XID */*pmaps */
+	XID* /*pmaps */
 #endif
 );
 
@@ -469,9 +469,9 @@ typedef struct _Screen {
 
     void (* ResolveColor)(
 #if NeedNestedPrototypes
-	unsigned short */*pred*/,
-	unsigned short */*pgreen*/,
-	unsigned short */*pblue*/,
+	unsigned short* /*pred*/,
+	unsigned short* /*pgreen*/,
+	unsigned short* /*pblue*/,
 	VisualPtr /*pVisual*/
 #endif
 );
@@ -603,7 +603,7 @@ typedef struct _Screen {
     Bool (* RegionValidate)(
 #if NeedNestedPrototypes
 	RegionPtr /*badreg*/,
-	Bool */*pOverlap*/
+	Bool* /*pOverlap*/
 #endif
 );
 
@@ -616,7 +616,7 @@ typedef struct _Screen {
     RegionPtr (* RectsToRegion)(
 #if NeedNestedPrototypes
 	int /*nrects*/,
-	xRectangle */*prect*/,
+	xRectangle* /*prect*/,
 	int /*ctype*/
 #endif
 );

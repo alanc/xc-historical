@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: gc.h,v 1.53 93/09/13 09:36:58 dpw Exp $ */
+/* $XConsortium: gc.h,v 1.54 93/09/20 16:46:46 dpw Exp $ */
 
 #ifndef GC_H
 #define GC_H 
@@ -72,7 +72,7 @@ extern int ChangeGC(
 #if NeedFunctionPrototypes
     GCPtr/*pGC*/,
     BITS32 /*mask*/,
-    XID */*pval*/
+    XID* /*pval*/
 #endif
 );
 
@@ -80,7 +80,7 @@ extern int DoChangeGC(
 #if NeedFunctionPrototypes
     GCPtr/*pGC*/,
     BITS32 /*mask*/,
-    XID */*pval*/,
+    XID* /*pval*/,
     int /*fPointer*/
 #endif
 );
@@ -89,8 +89,8 @@ extern GCPtr CreateGC(
 #if NeedFunctionPrototypes
     DrawablePtr /*pDrawable*/,
     BITS32 /*mask*/,
-    XID */*pval*/,
-    int */*pStatus*/
+    XID* /*pval*/,
+    int* /*pStatus*/
 #endif
 );
 
@@ -153,14 +153,14 @@ extern int SetDashes(
     GCPtr /*pGC*/,
     unsigned /*offset*/,
     unsigned /*ndash*/,
-    unsigned char */*pdash*/
+    unsigned char* /*pdash*/
 #endif
 );
 
 extern int VerifyRectOrder(
 #if NeedFunctionPrototypes
     int /*nrects*/,
-    xRectangle */*prects*/,
+    xRectangle* /*prects*/,
     int /*ordering*/
 #endif
 );
@@ -171,7 +171,7 @@ extern int SetClipRects(
     int /*xOrigin*/,
     int /*yOrigin*/,
     int /*nrects*/,
-    xRectangle */*prects*/,
+    xRectangle* /*prects*/,
     int /*ordering*/
 #endif
 );

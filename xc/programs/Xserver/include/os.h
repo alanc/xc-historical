@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.49 93/07/12 10:44:58 dpw Exp $ */
+/* $XConsortium: os.h,v 1.50 93/09/23 16:46:49 rws Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -125,7 +125,7 @@ char *alloca();
 
 extern int WaitForSomething(
 #if NeedFunctionPrototypes
-    int */*pClientsReady*/
+    int* /*pClientsReady*/
 #endif
 );
 
@@ -138,7 +138,7 @@ extern int ReadRequestFromClient(
 extern Bool InsertFakeRequest(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/,
-    char */*data*/,
+    char* /*data*/,
     int /*count*/
 #endif
 );
@@ -171,7 +171,7 @@ extern int WriteToClient(
 #if NeedFunctionPrototypes
     ClientPtr /*who*/,
     int /*count*/,
-    char */*buf*/
+    char* /*buf*/
 #endif
 );
 
@@ -197,9 +197,9 @@ extern char *ClientAuthorized(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/,
     unsigned int /*proto_n*/,
-    char */*auth_proto*/,
+    char* /*auth_proto*/,
     unsigned int /*string_n*/,
-    char */*auth_string*/
+    char* /*auth_string*/
 #endif
 );
 
@@ -272,7 +272,7 @@ extern int MakeClientGrabPervious(
 
 extern void Error(
 #if NeedFunctionPrototypes
-    char */*str*/
+    char* /*str*/
 #endif
 );
 
@@ -310,7 +310,7 @@ extern void UseMsg(
 extern void ProcessCommandLine(
 #if NeedFunctionPrototypes
     int /*argc*/,
-    char */*argv*/[]
+    char* /*argv*/[]
 #endif
 );
 
@@ -347,21 +347,21 @@ extern int OsInitAllocator(
 
 extern void AuditF(
 #if NeedVarargsPrototypes
-    char */*f*/,
+    char* /*f*/,
     ...
 #endif
 );
 
 extern void FatalError(
 #if NeedVarargsPrototypes
-    char */*f*/,
+    char* /*f*/,
     ...
 #endif
 );
 
 extern void ErrorF(
 #if NeedVarargsPrototypes
-    char */*f*/,
+    char* /*f*/,
     ...
 #endif
 );

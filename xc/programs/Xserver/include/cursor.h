@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cursor.h,v 1.18 93/07/12 09:44:56 dpw Exp $ */
+/* $XConsortium: cursor.h,v 1.19 93/07/12 16:32:50 dpw Exp $ */
 #ifndef CURSOR_H
 #define CURSOR_H 
 
@@ -43,8 +43,8 @@ extern int FreeCursor(
 
 extern CursorPtr AllocCursor(
 #if NeedFunctionPrototypes
-    unsigned char */*psrcbits*/,
-    unsigned char */*pmaskbits*/,
+    unsigned char* /*psrcbits*/,
+    unsigned char* /*pmaskbits*/,
     CursorMetricPtr /*cm*/,
     unsigned /*foreRed*/,
     unsigned /*foreGreen*/,
@@ -67,14 +67,14 @@ extern int AllocGlyphCursor(
     unsigned /*backRed*/,
     unsigned /*backGreen*/,
     unsigned /*backBlue*/,
-    CursorPtr */*ppCurs*/,
+    CursorPtr* /*ppCurs*/,
     ClientPtr /*client*/
 #endif
 );
 
 extern CursorPtr CreateRootCursor(
 #if NeedFunctionPrototypes
-    char */*pfilename*/,
+    char* /*pfilename*/,
     unsigned int /*glyph*/
 #endif
 );

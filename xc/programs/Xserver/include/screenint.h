@@ -1,4 +1,4 @@
-/* $XConsortium: screenint.h,v 1.2 88/09/06 15:48:21 jim Exp $ */
+/* $XConsortium: screenint.h,v 1.3 93/07/12 09:44:38 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -86,7 +86,7 @@ extern Bool AllocateGCPrivate(
 
 extern int AddScreen(
 #if NeedFunctionPrototypes
-    Bool (*/*pfnInit*/)(
+    Bool (* /*pfnInit*/)(
 #if NeedNestedPrototypes
 	int /*index*/,
 	ScreenPtr /*pScreen*/,
@@ -95,7 +95,7 @@ extern int AddScreen(
 #endif
     ),
     int /*argc*/,
-    char **/*argv*/
+    char** /*argv*/
 #endif
 );
 

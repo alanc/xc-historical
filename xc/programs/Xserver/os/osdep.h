@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.33 93/09/22 19:42:45 rws Exp $ */
+/* $XConsortium: osdep.h,v 1.34 93/09/23 16:55:37 rws Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
@@ -205,7 +205,7 @@ extern int FlushClient(
 #if NeedFunctionPrototypes
     ClientPtr /*who*/,
     OsCommPtr /*oc*/,
-    char */*extraBuf*/,
+    char* /*extraBuf*/,
     int /*extraCount*/
 #endif
 );
