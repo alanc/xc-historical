@@ -1,4 +1,4 @@
-/* $XConsortium: nameaddr.c,v 1.3 91/07/18 12:14:56 gildea Exp $ */
+/* $XConsortium: nameaddr.c,v 1.4 91/07/23 11:49:54 rws Exp $ */
 /*	nameaddr.c - included by Xstreams.c			*/
 /*	Used for System V Release 4.0 networking code		*/
 
@@ -772,7 +772,7 @@ ConvertAddress(pktptr, n, entry, len)
     return(n+rl);
 }
 
-char *
+static char *
 getnextentry(plen)
     int	*plen;
 {
@@ -800,7 +800,7 @@ getnextentry(plen)
     return(ptr);
 }
 
-char *
+static char *
 makePacket(plen)
     int *plen;
 {
@@ -857,7 +857,7 @@ addentry(pktptr, n, entry, len)
     return(-1);
 }
 
-char *
+static char *
 staticalloc(ptr, size)
     char *ptr;
     int	size;
