@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.16 89/01/27 11:08:55 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.17 89/01/27 16:11:24 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -41,23 +41,21 @@
 #endif /* ibm032 */
 
 #ifdef ultrix
+#define MacroIncludeFile "ultrix.cf"
+#define MacroFile ultrix.cf
 #ifdef vax
-#define MacroIncludeFile "vaxultrix.cf"
-#define MacroFile vaxultrix.cf
 #undef vax
 #define VaxArchitecture
 #endif
 #ifdef mips
-#define MacroIncludeFile "pmax.cf"
-#define MacroFile pmax.cf
 #undef mips
-#define PMaxArchitecture
+#define MipsArchitecture
 #endif
 #undef ultrix
 #define UltrixArchitecture
 #endif
 
-#if defined(vax) && !defined(ultrix)
+#if defined(vax) && !defined(UltrixArchitecture)
 #define MacroIncludeFile "vaxbsd.cf"
 #define MacroFile vaxbsd.cf
 #undef vax
@@ -110,8 +108,8 @@
 #ifdef CRAY
 #define MacroIncludeFile "cray.cf"
 #define MacroFile cray.cf
-#undef CRAY
 #undef cray
+#undef CRAY
 #define CrayArchitecture
 #endif /* CRAY */
 
@@ -120,14 +118,17 @@
 #define MacroFile sgi.cf
 #undef sgi
 #define SGIArchitecture
+#undef mips
+#define MipsArchitecture
 #endif
 
-#if defined(mips) && !defined(ultrix) && !defined(sgi)
+#if defined(mips) && !defined(UltrixArchitecture) && !defined(SGIArchitecture)
 #define MacroIncludeFile "umips.cf"
 #define MacroFile umips.cf
 #undef mips
 #undef umips
 #define MipsArchitecture
+#define UMipsArchitecture
 #endif
 
 #ifndef MacroIncludeFile
