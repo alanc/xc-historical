@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: FSproto.h,v 1.3 91/05/13 16:45:36 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -21,7 +21,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * %W%	%E%
+ * $NCDId: @(#)FSproto.h,v 4.3 1991/06/27 16:30:07 lemke Exp $
  *
  */
 
@@ -46,7 +46,7 @@
 #define	sz_fsNoopReq			4
 #define	sz_fsListExtensionReq		4
 #define	sz_fsQueryExtensionReq		4
-#define	sz_fsListCataloguesReq		4
+#define	sz_fsListCataloguesReq		12
 #define	sz_fsSetCataloguesReq		4
 #define	sz_fsGetCataloguesReq		4
 #define	sz_fsSetEventMaskReq		8
@@ -74,7 +74,7 @@
 #define	sz_fsQueryExtensionReply	16
 #define	sz_fsListFontsReply		12
 #define	sz_fsListFontsWithXInfoReply	(12 + sz_fsFontHeader)
-#define	sz_fsOpenBitmapFontReply	12
+#define	sz_fsOpenBitmapFontReply	16
 #define	sz_fsQueryXInfoReply		(8 + sz_fsFontHeader)
 #define	sz_fsQueryXExtents8Reply	12
 #define	sz_fsQueryXExtents16Reply	12
@@ -222,7 +222,14 @@ typedef struct {
     /* name */
 }           fsQueryExtensionReq;
 
-typedef fsReq	fsListCataloguesReq;
+typedef struct {
+    CARD8       reqType;
+    CARD8       data;
+    CARD16 	length B16;
+    CARD32 	maxNames B32;
+    CARD16 	nbytes B16;
+    CARD16 	pad2 B16;
+}	    fsListCataloguesReq;
 
 typedef struct {
     CARD8       reqType;
@@ -346,13 +353,21 @@ typedef struct {
 
 typedef struct {
     BYTE        type;
-    BYTE        num_catalogues;
+    BYTE        pad;
     CARD16 	sequenceNumber B16;
     CARD32 	length B32;
+    CARD32	num_replies B32;
+    CARD32	num_catalogues B32;
     /* catalog names */
 }	    fsListCataloguesReply;
 
-typedef fsListCataloguesReply	fsGetCataloguesReply;
+typedef struct {
+    BYTE        type;
+    CARD8       num_catalogues;
+    CARD16 	sequenceNumber B16;
+    CARD32 	length B32;
+    /* catalogue names */
+}           fsGetCataloguesReply;
 
 typedef struct {
     BYTE        type;
@@ -414,10 +429,13 @@ typedef struct {
 
 typedef struct {
     BYTE        type;
-    CARD8       success;
+    CARD8       otherid_valid;
     CARD16 	sequenceNumber B16;
     CARD32 	length B32;
-    CARD32	originalid B32;
+    CARD32	otherid B32;
+    BYTE	cachable;
+    BYTE	pad1;
+    CARD16	pad2 B16;
 }           fsOpenBitmapFontReply;
 
 typedef struct {
@@ -451,7 +469,6 @@ typedef fsQueryXBitmaps8Reply	fsQueryXBitmaps16Reply;
 typedef union {
     fsGenericReply generic;
     fsListExtensionsReply extensions;
-    fsListCataloguesReply listcat;
     fsGetResolutionReply getres;
 }           fsReply;
 
