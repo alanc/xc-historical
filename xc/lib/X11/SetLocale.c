@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.8 91/02/14 16:29:34 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.9 91/02/19 19:38:44 rws Exp $
  */
 
 /*
@@ -35,7 +35,7 @@
 #include <stdio.h>
 #include <X11/Xos.h>
 #include "Xlibint.h"
-#include "Xlocale.h"
+#include "Xlocaleint.h"
 
 #define MAXLOCALE       64      /* buffer size of locale name */
 
