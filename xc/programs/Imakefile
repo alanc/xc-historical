@@ -6,12 +6,12 @@ OTHERSUBDIRS = xdm xhost
 #endif
 
 SUBDIRS = \
-	appres bitmap editres listres oclock twm viewres \
+	appres bitmap cmsdb editres listres oclock twm viewres \
 	xauth xbiff xcalc xclipboard xclock xconsole \
 	xditview xdpyinfo xedit xfd xinit xkill xload xlogo \
 	xlsatoms xlsclients xlsfonts xmag xman xmh \
 	xmodmap xpr xprop xrdb xrefresh xfontsel $(OTHERSUBDIRS) \
- 	xsccd xset xsetroot xstdcmap xterm xwd xwininfo xwud
+ 	xset xsetroot xstdcmap xterm xwd xwininfo xwud
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
