@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.134 90/03/13 15:52:28 jim Exp $
+ * $XConsortium: events.c,v 1.135 90/03/14 16:50:00 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.134 90/03/13 15:52:28 jim Exp $";
+"$XConsortium: events.c,v 1.135 90/03/14 16:50:00 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2114,7 +2114,7 @@ HandleConfigureRequest()
 	return;
     }
 
-    if (cre->value_mask & CWStackMode) {
+    if ((cre->value_mask & CWStackMode) && Tmp_win->stackmode) {
 	TwmWindow *otherwin;
 
 	xwc.sibling = (((cre->value_mask & CWSibling) &&

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.85 90/03/08 15:44:49 jim Exp $
+ * $XConsortium: gram.y,v 1.86 90/03/08 16:14:18 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -88,6 +88,7 @@ extern int yylineno;
 %token <num> MOVE RESIZE WAIT SELECT KILL LEFT_TITLEBUTTON RIGHT_TITLEBUTTON 
 %token <num> NUMBER KEYWORD NKEYWORD CKEYWORD CLKEYWORD FKEYWORD FSKEYWORD 
 %token <num> SKEYWORD DKEYWORD JKEYWORD WINDOW_RING WARP_CURSOR ERRORTOKEN
+%token <num> NO_STACKMODE
 %token <ptr> STRING 
 
 %type <ptr> string
@@ -178,6 +179,10 @@ stmt		: error
 		  win_list
 		| NO_HILITE		{ if (Scr->FirstTime)
 						Scr->Highlight = FALSE; }
+		| NO_STACKMODE		{ list = &Scr->NoStackModeL; }
+		  win_list
+		| NO_STACKMODE		{ if (Scr->FirstTime)
+						Scr->StackMode = FALSE; }
 		| NO_TITLE		{ list = &Scr->NoTitle; }
 		  win_list
 		| NO_TITLE		{ if (Scr->FirstTime)

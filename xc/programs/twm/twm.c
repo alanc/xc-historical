@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.105 90/03/13 12:32:19 jim Exp $
+ * $XConsortium: twm.c,v 1.106 90/03/13 15:28:53 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.145 90/03/13 11:46:56 jim Exp $";
+"$XConsortium: twm.c,v 1.106 90/03/13 15:28:53 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -300,6 +300,7 @@ main(argc, argv, environ)
 	Scr->AutoRaise = NULL;
 	Scr->IconNames = NULL;
 	Scr->NoHighlight = NULL;
+	Scr->NoStackModeL = NULL;
 	Scr->NoTitleHighlight = NULL;
 	Scr->DontIconify = NULL;
 	Scr->IconMgrNoShow = NULL;
@@ -549,6 +550,7 @@ InitVariables()
     FreeList(&Scr->AutoRaise);
     FreeList(&Scr->IconNames);
     FreeList(&Scr->NoHighlight);
+    FreeList(&Scr->NoStackModeL);
     FreeList(&Scr->NoTitleHighlight);
     FreeList(&Scr->DontIconify);
     FreeList(&Scr->IconMgrNoShow);
@@ -628,6 +630,7 @@ InitVariables()
     Scr->RandomPlacement = FALSE;
     Scr->OpaqueMove = FALSE;
     Scr->Highlight = TRUE;
+    Scr->StackMode = TRUE;
     Scr->TitleHighlight = TRUE;
     Scr->MoveDelta = 0;
     Scr->ZoomCount = 8;

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.58 90/03/08 15:19:50 jim Exp $
+ * $XConsortium: twm.h,v 1.59 90/03/13 11:46:48 jim Exp $
  *
  * twm include file
  *
@@ -254,6 +254,7 @@ typedef struct TwmWindow
     short icon_not_ours;	/* icon pixmap or window supplied to us */
     short icon_moved;		/* user explicitly moved the icon */
     short highlight;		/* should highlight this window */
+    short stackmode;		/* honor stackmode requests */
     short iconify_by_unmapping;	/* unmap window to iconify it */
     short iconmgr;		/* this is an icon manager window */
     short transient;		/* this is a transient window */

@@ -597,6 +597,11 @@ with \fBf.warpring\fP).
 This variable indicates that menus should not request save-unders to minimize
 window repainting following menu selection.  It is typically used with displays
 that can repaint faster than they can handle save-unders.
+.IP "\fBNoStackMode\fP [{ \fIwin-list\fP }]" 8
+This variable indicates that client window requests to change stacking order 
+should be ignored.  If the optional \fIwin-list\fP is given, only requests on 
+those windows will be ignored.  This is typically used to prevent applications
+from relentlessly popping themselves to the front of the window stack.
 .IP "\fBNoTitle\fP [{ \fIwin-list\fP }] " 8
 This variable indicates that windows should not have titlebars.  If the 
 optional \fIwin-list\fP is given, only those windows will not have titlebars.
