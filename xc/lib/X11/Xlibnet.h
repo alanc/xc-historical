@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.18 91/07/23 19:01:27 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.19 92/10/21 10:22:55 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -56,8 +56,10 @@ without express or implied warranty.
 #include <sys/filio.h>
 #endif
 
-#if defined(SYSV386) && defined(SYSV)
+#if (defined(SYSV386) && defined(SYSV)) || defined(_SEQUENT_)
+#ifndef _SEQUENT_
 #include <net/errno.h>
+#endif /* _SEQUENT_ */
 #include <sys/stropts.h>
 #define BytesReadable(fd,ptr) ioctl((fd), I_NREAD, (ptr))
 #else
