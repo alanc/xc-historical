@@ -246,13 +246,6 @@ This option indicates that a visual bell should not be used.
 This option indicates that this window should be receive console output.  This
 is not supported on all systems.
 .TP 8
-.B \-L
-This option indicates that \fIxterm\fP was started by \fIinit\fP.  In this
-mode, \fIxterm\fP does not try to allocate a new pseudoterminal as \fIinit\fP
-has already done so.  In addition, the system program \fIgetty\fP is run 
-instead of the user's shell.  \fBThis option should never be used by users when
-starting terminal windows.\fP
-.TP 8
 .B \-S\fIccn\fP
 This option specifies the last two letters of the name of a pseudoterminal
 to use in slave mode.  This allows \fIxterm\fP to be used as an input and
@@ -287,7 +280,15 @@ the foreground and background colors.  It is equivalent to
 .BI \-w " number"
 This option specifies the width in pixels of the border surrounding the window.
 It is equivalent to \fB-borderwidth\fP or \fB-bw\fP.
-.PP
+.TP 8
+.B \-L
+This option indicates that \fIxterm\fP was started by \fIinit\fP.  In this
+mode, \fIxterm\fP does not try to allocate a new pseudoterminal as \fIinit\fP
+has already done so.  In addition, the system program \fIgetty\fP is run 
+instead of the user's shell.  \fBThis option has been superceeded by the new
+\fIxdm\fP program; furthermore, this option should never be used by users when
+starting terminal windows.\fP
+n.PP
 The following standard X Toolkit command line arguments are commonly used 
 with \fIxterm\fP:
 .TP 8
@@ -845,6 +846,12 @@ resize(1), X(1), pty(4), tty(4)
 .br
 .I ``Xterm Control Sequences''
 .SH BUGS
+.PP
+The \fB\-L\fP option is no longer needed as the new \fIxdm\fP display manager
+system handling logging in in a much cleaner way.  No more messing around with
+trying to match colors in \fI/etc/ttys\fP or worrying about an unwanted login
+window.
+.PP
 \fBXterm will hang forever if you try to paste too much text at one time.\fP
 It is both producer and consumer for the pty and can deadlock.
 .PP
