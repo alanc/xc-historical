@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: Dialog.c,v 1.1 87/09/11 07:57:23 rws Locked $ */
 #ifndef lint
 static char *sccsid = "@(#)Dialog.c	1.26	5/18/87";
 #endif lint
@@ -30,7 +30,7 @@ static char *sccsid = "@(#)Dialog.c	1.26	5/18/87";
    than just directly making your own form. */
 
 
-#include <strings.h>
+#include <X11/Xos.h>
 #include "Xlib.h"
 #include "Intrinsic.h"
 #include "Form.h"
