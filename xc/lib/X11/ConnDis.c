@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $XConsortium: XConnDis.c,v 11.40 88/11/29 14:24:17 jim Exp $ */
+/* $XConsortium: XConnDis.c,v 11.41 89/03/28 17:20:25 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -30,7 +30,7 @@
 #endif /* UNIXCONN */
 void bcopy();
 
-static int get_host_name (buf, maxlen)
+int _XGetHostname (buf, maxlen)
     char *buf;
     int maxlen;
 {
@@ -193,7 +193,7 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num,
 #ifdef UNIXCONN
 		;	/* Do nothing if UNIX DOMAIN. Will be handled below. */
 #else
-	        (void) get_host_name (displaybuf, sizeof displaybuf);
+	        (void) _XGetHostname (displaybuf, sizeof displaybuf);
 #endif /* UNIXCONN else TCPCONN (assumed) */
 
 #ifdef DNETCONN
@@ -261,7 +261,7 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num,
 		{
 		    char tmpbuf[1024];
 
-		    tmp_server_addrlen = get_host_name (tmpbuf, sizeof tmpbuf);
+		    tmp_server_addrlen = _XGetHostname (tmpbuf, sizeof tmpbuf);
 		    tmp_server_addr = Xmalloc (tmp_server_addrlen + 1);
 		    if (!tmp_server_addr) {
 			if (tmp_dpy_num) Xfree (tmp_dpy_num);
@@ -352,7 +352,7 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num,
 			 * This is a hack and is not part of the protocol
 			 */
 			tmpfamily = FamilyLocal;
-			tmp_server_addrlen = get_host_name (tmpbuf, sizeof tmpbuf);
+			tmp_server_addrlen = _XGetHostname (tmpbuf, sizeof tmpbuf);
 			cp = tmpbuf;
 		    }
 		    tmp_server_addr = Xmalloc (tmp_server_addrlen);

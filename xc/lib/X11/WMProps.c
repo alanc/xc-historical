@@ -54,7 +54,7 @@ void XSetWMProperties (dpy, w, windowName, iconName, argv, argc, sizeHints,
 {
     XTextProperty textprop;
     char hostName[256];
-    int len = _GetHostname (hostName, sizeof hostName);
+    int len = _XGetHostname (hostName, sizeof hostName);
 
     /* set names of window and icon */
     if (windowName) XSetWMName (dpy, w, windowName);
