@@ -2,12 +2,7 @@
 static char *sccsid = "@(#)Clock.c	1.0	2/25/87";
 #endif lint
 
-#include <stdio.h>
-#include <string.h>
 #include <sys/time.h>
-#include <sys/file.h>
-#include <sys/param.h>
-#include <math.h>
 
 #include "Xlib.h"
 #include "Xutil.h"
