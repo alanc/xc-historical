@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.8 89/10/03 19:54:20 rws Exp $ */
+/* $XConsortium: events.c,v 5.9 89/10/03 20:20:23 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -78,7 +78,14 @@ extern void SetCriticalOutputPending();
 
 #define rClient(obj) (clients[CLIENT_ID((obj)->resource)])
 
+#define DNPMCOUNT 8
+
+Mask DontPropagateMasks[DNPMCOUNT];
+static int DontPropagateRefCnts[DNPMCOUNT];
+
+#ifdef DEBUG
 static debug_events = 0;
+#endif
 InputInfo inputInfo;
 
 static struct {
@@ -914,9 +921,11 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
     int i;
     int type;
 
+#ifdef DEBUG
     if (debug_events) ErrorF(
 	"Event([%d, %d], mask=0x%x), client=%d",
 	pEvents->u.u.type, pEvents->u.u.detail, mask, client->index);
+#endif
     if ((client) && (client != serverClient) && (!client->clientGone) &&
 	((filter == CantBeFiltered) || (mask & filter)))
     {
@@ -930,7 +939,9 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 		if (WID(inputInfo.pointer->valuator->motionHintWindow) ==
 		    pEvents->u.keyButtonPointer.event)
 		{
+#ifdef DEBUG
 		    if (debug_events) ErrorF("\n");
+#endif
 		    return 1; /* don't send, but pretend we did */
 		}
 		pEvents->u.u.detail = NotifyHint;
@@ -952,12 +963,16 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 	    SetCriticalOutputPending();
 
 	WriteEventsToClient(client, count, pEvents);
+#ifdef DEBUG
 	if (debug_events) ErrorF(  " delivered\n");
+#endif
 	return 1;
     }
     else
     {
+#ifdef DEBUG
 	if (debug_events) ErrorF("\n");
+#endif
 	return 0;
     }
 }
@@ -1985,24 +2000,58 @@ maskSet:
 
 /*ARGSUSED*/
 int
-EventSuppressForWindow(pWin, client, mask)
+EventSuppressForWindow(pWin, client, mask, checkOptional)
     register WindowPtr pWin;
     register ClientPtr client;
     Mask mask;
+    Bool *checkOptional;
 {
+    register int i, free;
+
     if ((mask & ~PropagateMask) && !permitOldBugs)
     {
 	client->errorValue = mask;
 	return BadValue;
     }
-    if (mask == 0) {
-	if (pWin->optional) {
-	    pWin->optional->dontPropagateMask = mask;
-	    CheckWindowOptionalNeed (pWin);
+    if (pWin->dontPropagate)
+	DontPropagateRefCnts[pWin->dontPropagate]--;
+    if (!mask)
+	i = 0;
+    else
+    {
+	for (i = DNPMCOUNT, free = 0; --i > 0; )
+	{
+	    if (!DontPropagateRefCnts[i])
+		free = i;
+	    else if (mask == DontPropagateMasks[i])
+		break;
 	}
-    } else {
+	if (!i && free)
+	{
+	    i = free;
+	    DontPropagateMasks[i] = mask;
+	}
+    }
+    if (i || !mask)
+    {
+	pWin->dontPropagate = i;
+	if (i)
+	    DontPropagateRefCnts[i]++;
+	if (pWin->optional)
+	{
+	    pWin->optional->dontPropagateMask = mask;
+	    *checkOptional = TRUE;
+	}
+    }
+    else
+    {
 	if (!pWin->optional && !MakeWindowOptional (pWin))
+	{
+	    if (pWin->dontPropagate)
+		DontPropagateRefCnts[pWin->dontPropagate]++;
 	    return BadAlloc;
+	}
+	pWin->dontPropagate = 0;
         pWin->optional->dontPropagateMask = mask;
     }
     RecalculateDeliverableEvents(pWin);
@@ -2771,6 +2820,8 @@ ProcQueryPointer(client)
 void
 InitEvents()
 {
+    int i;
+
     sprite.hot.pScreen = sprite.hotPhys.pScreen = (ScreenPtr)NULL;
     inputInfo.numDevices = 0;
     inputInfo.devices = (DeviceIntPtr)NULL;
@@ -2804,6 +2855,11 @@ InitEvents()
     syncEvents.playingEvents = FALSE;
     currentTime.months = 0;
     currentTime.milliseconds = GetTimeInMillis();
+    for (i = 0; i < DNPMCOUNT; i++)
+    {
+	DontPropagateMasks[i] = 0;
+	DontPropagateRefCnts[i] = 0;
+    }
 }
 
 int
@@ -3140,6 +3196,8 @@ DeleteWindowFromAnyEvents(pWin, freeResources)
 
     if (freeResources)
     {
+	if (pWin->dontPropagate)
+	    DontPropagateRefCnts[pWin->dontPropagate]--;
 	while (oc = wOtherClients(pWin))
 	    FreeResource(oc->resource, RT_NONE);
 	while (passive = wPassiveGrabs(pWin))
