@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.21 91/11/22 12:12:01 rws Exp $ */
+/* $XConsortium: devices.c,v 5.22 91/12/10 11:19:22 keith Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1423,10 +1423,12 @@ int
 ProcQueryKeymap(client)
     ClientPtr client;
 {
+    REQUEST(xReq);
     xQueryKeymapReply rep;
     int i;
     CARD8 *down = inputInfo.keyboard->key->down;
 
+    REQUEST_SIZE_MATCH(xReq);
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
     rep.length = 2;
