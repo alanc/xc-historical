@@ -1,9 +1,9 @@
 #! /bin/sh
-#$XConsortium$
-# Header: Xmark,v 1.13 93/03/15 15:20:43 hmgr Exp 
+#$XConsortium: Xmark.sh,v 1.1 93/03/15 18:36:10 rws Exp $
+#$Header: Xmark,v 1.14 93/03/16 09:45:57 hmgr Exp $
 #
 ############################################################
-# Xmark version $Revision: 1.13 $
+# Xmark version $Revision: 1.14 $
 #
 # Usage: Xmark datafile
 #
@@ -28,6 +28,7 @@
 # 3/10/93  Changed to produce THREE output numbers and added bounds
 #	   checking of input data.
 # 3/15/93  Removed usage of '-F' in grep for compatibility reasons
+# 3/16/93  Corrected usage of substr() and used two greps versus fgrep
 #
 ############################################################
 # Copyright (c) 1993 by Hewlett-Packard Company
@@ -68,6 +69,12 @@
 #	    - Weighted x11perf number of the server under test
 #	    - Weighted x11perf number of the SparcStation 1
 #	    - Xmark = the ratio of the above two numbers
+#
+# Note the SparcStation 1 number comes from a:
+#   X11R5 Xsun
+#   Standard with SunOS 4.1.2
+#   SunOs 4.1.2
+#   CG3 dumb color frame buffer
 #
 ############################################################
 ############################################################
@@ -536,8 +543,8 @@ stdform()
 	{
 	    split($0,parts,":");		# get rate and name
 	    start = index(parts[1],"(") + 1;	# find left parentheses
-	    end = index(parts[1],"/") - 1;
-	    rate = substr(parts[1],start,end);	# get ops/sec
+	    end = index(parts[1],"/");		# find terminating '/'
+	    rate = substr(parts[1],start,end-start);# get ops/sec
 
 	    name = parts[2];
 	    while (substr(name,1,1) == " ") {	# remove leading spaces
@@ -569,8 +576,8 @@ calculate()
     sumofweights=`grep sumof $INPUT | awk -F: ' { print($2) }' - `
     if [ "$sumofweights" -ne "4566" ]
     then
-	echo "ERROR: sum of weights =$sumofweights, not equal to 4566.0; ABORTING!"
-	rm -f rates.$$
+	echo "ERROR: sum of weights =$sumofweights, not equal to 4566.0;\nABORTING!"
+	rm -f rates.$$ temp.$$
 	exit 1
     fi
 
@@ -605,7 +612,7 @@ calculate()
 deletetmp()
 {
 #   ll rates.$$ awkfile.$$				# cleanup
-    rm -f rates.$$ awkfile.$$				# cleanup
+    rm -f temp.$$ rates.$$ awkfile.$$			# cleanup
 }
 
 ############################################################
@@ -632,11 +639,12 @@ fi
 
 # See if the date file has the correct number of results.
 LC1=`grep trep "$1" | wc -l`
-LC2=447
+LC2=441		# Number of test without Shared Memory Transport
+LC3=447		# Number of test with Shared Memory Transport
 
-if [ "$LC1" -ne "$LC2" ]
+if [ "$LC1" -ne "$LC2" -a "$LC1" -ne "$LC3" ]
 then
-    echo "WARNING: datafile contains $LC1, not "$LC2" 'trep' results;" >& 2
+    echo "WARNING: datafile contains $LC1, not "$LC2" or "$LC3" 'trep' results;" >& 2
     if [ "$LC1" -gt "$LC2" ]
     then
 	echo "extra results are probably OK.\n" >& 2
@@ -645,9 +653,9 @@ fi
  
 DATA=$1
 
-grep 'trep
-server' $DATA		|		# extract the rates
-stdform -		> rates.$$	# convert to standard form
+grep trep $DATA		> temp.$$
+grep server $DATA	>> temp.$$
+stdform temp.$$ 	> rates.$$	# convert to standard form
 calculate rates.$$			# do weight calculations
 deletetmp				# cleanup
 
