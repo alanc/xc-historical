@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.18 88/09/06 16:41:13 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.19 89/01/13 19:44:18 kit Exp $";
 #endif lint
 
 
@@ -52,7 +52,7 @@ static XtResource resources[] = {
      XtOffset(DialogWidget, dialog.max_length), XtRString, "256"}
 };
 
-static void Initialize(), ConstraintInitialize();
+static void Initialize(), ConstraintInitialize(), CreateDialogValueWidget();
 static Boolean SetValues();
 
 DialogClassRec dialogClassRec = {
@@ -122,60 +122,19 @@ static void Initialize(request, new)
 Widget request, new;
 {
     DialogWidget dw = (DialogWidget)new;
-    static Arg label_args[] = {
-	{XtNlabel, (XtArgVal)NULL},
-	{XtNborderWidth, (XtArgVal) 0}
-    };
-    static Arg text_args[] = {
-	{XtNwidth, (XtArgVal)NULL},
-	{XtNstring, (XtArgVal)NULL},
-	{XtNlength, (XtArgVal)0},
-	{XtNfromVert, (XtArgVal)NULL},
-	{XtNresizable, (XtArgVal)TRUE},
-	{XtNtextOptions, (XtArgVal)(resizeWidth | resizeHeight)},
-	{XtNeditType, (XtArgVal)XttextEdit},
-	{XtNright, (XtArgVal)XtChainRight}
-    };
-    Widget children[2], *childP = children;
+    static Arg arglist[5];
+    Cardinal num_args = 0;
 
-    label_args[0].value = (XtArgVal)dw->dialog.label;
-    dw->dialog.labelW = XtCreateWidget( "label", labelWidgetClass, new,
-				        label_args, XtNumber(label_args) );
-    *childP++ = dw->dialog.labelW;
+    XtSetArg(arglist[num_args], XtNlabel, dw->dialog.label); num_args++;
+    XtSetArg(arglist[num_args], XtNborderWidth, 0); num_args++;
 
-    if (dw->dialog.value) {
-        String initial_value = dw->dialog.value;
-	Cardinal length = Max( dw->dialog.max_length, strlen(initial_value) );
-	dw->dialog.value = XtMalloc( length );
-	strcpy( dw->dialog.value, initial_value );
-	text_args[0].value = (XtArgVal)dw->dialog.labelW->core.width; /*|||hack*/
-	text_args[1].value = (XtArgVal)dw->dialog.value;
-	text_args[2].value = (XtArgVal)length;
-	text_args[3].value = (XtArgVal)dw->dialog.labelW;
-	dw->dialog.valueW = XtCreateWidget("value",asciiStringWidgetClass,new,
-					   text_args, XtNumber(text_args) );
-	*childP++ = dw->dialog.valueW;
-#ifdef notdef
-	static int grabfocus;
-	static Resource resources[] = {
-	    {XtNgrabFocus, XtCGrabFocus, XtRBoolean, sizeof(int),
-		 (caddr_t)&grabfocus, (caddr_t)NULL}
-	};
-	XrmNameList names;
-	XrmClassList classes;
-	grabfocus = FALSE;
-	XtGetResources(dpy, resources, XtNumber(resources), args, argCount,
-		       parent, "dialog", "Dialog", &names, &classes);
-	XrmFreeNameList(names);
-	XrmFreeClassList(classes);
-	if (grabfocus) XSetInputFocus(dpy, data->value, RevertToParent,
-				      CurrentTime); /* !!! Hackish. |||*/
-#endif notdef
-    } else {
+    dw->dialog.labelW = XtCreateManagedWidget( "label", labelWidgetClass,
+					      new, arglist, num_args);
+
+    if (dw->dialog.value != NULL) 
+        CreateDialogValueWidget( (Widget) dw);
+    else
         dw->dialog.valueW = NULL;
-    }
-
-    XtManageChildren( children, (Cardinal)(childP - children) );
 }
 
 
@@ -218,21 +177,97 @@ Widget current, request, new;
 {
     DialogWidget w = (DialogWidget)new;
     DialogWidget old = (DialogWidget)current;
+    Arg args[5];
+    Cardinal num_args;
 
-    if (w->dialog.label != old->dialog.label
-	|| (w->dialog.label != NULL
-	    && old->dialog.label != NULL
-	    && strcmp(w->dialog.label, old->dialog.label))
-	)
-    {
-	Arg args[1];
-	XtSetArg( args[0], XtNlabel, w->dialog.label );
-	XtSetValues( w->dialog.labelW, args, XtNumber(args) );
+    if (w->dialog.max_length != old->dialog.max_length) {
+        XtWarning(
+		"Dialog Widget does not support changes in XtNmaximumLength.");
+        w->dialog.max_length = old->dialog.max_length;
     }
 
+    if ( (w->dialog.label != old->dialog.label) ||
+	 (w->dialog.label != NULL && old->dialog.label != NULL &&
+	  strcmp(w->dialog.label, old->dialog.label)) ) {
+        num_args = 0;
+        XtSetArg( args[num_args], XtNlabel, w->dialog.label ); num_args++;
+	XtSetValues( w->dialog.labelW, args, num_args );
+    }
+
+    if ( (w->dialog.value != old->dialog.value) ) {
+        if (w->dialog.value == NULL) { /* only get here if it
+					  wasn't NULL before. */
+	    XtDestroyWidget(old->dialog.valueW);
+	    XtFree(old->dialog.value);
+	}
+	else if (old->dialog.value == NULL) { /* create a new value widget. */
+	    CreateDialogValueWidget( (Widget) w);
+	}
+	else {			/* Widget ok, just change string. */
+	    XtTextBlock t_block;
+
+	    t_block.firstPos = 0;
+	    t_block.length = strlen(w->dialog.value);
+	    t_block.ptr = w->dialog.value;
+	    t_block.format = FMT8BIT;
+
+	    if (XtTextReplace(w->dialog.valueW, 
+			      0, strlen(old->dialog.value), &t_block) !=
+		XawEditDone) 
+	        XtWarning("Error while changing value in Dialog Widget.");
+
+	    w->dialog.value = old->dialog.value;
+	}
+    }
     return False;
 }
 
+/*	Function Name: CreateDialogValueWidget
+ *	Description: Creates the dialog widgets value widget.
+ *	Arguments: w - the dialog widget.
+ *	Returns: none.
+ */
+
+static void
+CreateDialogValueWidget(w)
+Widget w;
+{
+    DialogWidget dw = (DialogWidget) w;    
+    String initial_value = dw->dialog.value;
+    Cardinal length = Max( dw->dialog.max_length, strlen(initial_value) );
+    static Arg arglist[10];
+    Cardinal num_args = 0;
+
+    dw->dialog.value = XtMalloc( length );
+    strcpy( dw->dialog.value, initial_value );
+    XtSetArg(arglist[num_args], XtNwidth,
+	     dw->dialog.labelW->core.width); num_args++; /* ||| hack */
+    XtSetArg(arglist[num_args], XtNstring, dw->dialog.value); num_args++;
+    XtSetArg(arglist[num_args], XtNlength, length); num_args++;
+    XtSetArg(arglist[num_args], XtNfromVert, dw->dialog.labelW); num_args++;
+    XtSetArg(arglist[num_args], XtNtextOptions, (resizeWidth | resizeHeight));
+    num_args++;
+    XtSetArg(arglist[num_args], XtNeditType, XttextEdit); num_args++;
+    
+    dw->dialog.valueW = XtCreateManagedWidget("value",asciiStringWidgetClass,
+					      w, arglist, num_args);
+#ifdef notdef
+    static int grabfocus;
+    static Resource resources[] = {
+        {XtNgrabFocus, XtCGrabFocus, XtRBoolean, sizeof(int),
+	   (caddr_t)&grabfocus, (caddr_t)NULL}
+    };
+    XrmNameList names;
+    XrmClassList classes;
+    grabfocus = FALSE;
+    XtGetResources(dpy, resources, XtNumber(resources), args, argCount,
+		   parent, "dialog", "Dialog", &names, &classes);
+    XrmFreeNameList(names);
+    XrmFreeClassList(classes);
+    if (grabfocus) XSetInputFocus(dpy, data->value, RevertToParent,
+				  CurrentTime); /* !!! Hackish. |||*/
+#endif notdef
+}
 
 void XtDialogAddButton(dialog, name, function, param)
 Widget dialog;
@@ -247,7 +282,9 @@ caddr_t param;
 
     button = XtCreateManagedWidget( name, commandWidgetClass, dialog, 
 				    NULL, (Cardinal) 0 );
-    XtAddCallback(button, XtNcallback, function, param);
+
+    if (function != NULL)	/* don't add NULL callback func. */
+        XtAddCallback(button, XtNcallback, function, param);
 }
 
 
