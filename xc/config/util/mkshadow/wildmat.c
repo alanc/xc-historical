@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: wildmat.c,v 1.1 94/04/13 18:26:56 rws Exp $ */
+/*
 **
 **  Do shell-style pattern matching for ?, \, [], and * characters.
 **  Might not be robust in face of malformed patterns; e.g., "foo[a-"
