@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.17 89/10/10 15:11:08 kit Exp $
- * $Header: buttons.c,v 1.17 89/10/10 15:11:08 kit Exp $
+ * $XConsortium: buttons.c,v 1.18 89/10/11 11:40:26 jim Exp $
+ * $Header: buttons.c,v 1.18 89/10/11 11:40:26 jim Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -197,7 +197,6 @@ Boolean full_instance;
   top = XtCreatePopupShell(name, topLevelShellWidgetClass, initial_widget,
 			   arglist, num_args);
 
-  MakeSearchWidget(man_globals, top);
   man_globals->This_Manpage = top; /* pointer to root widget of Manualpage. */
   num_args = 0;
   if (full_instance)
@@ -236,6 +235,7 @@ Boolean full_instance;
   XtSetValues(man_globals->both_screens_entry, arglist, (Cardinal) 1);
 
   if (full_instance) {
+    MakeSearchWidget(man_globals, top);
     CreateSectionMenu(man_globals, top);
     MakeSaveWidgets(man_globals, top);
   } else {
