@@ -130,3 +130,8 @@ CHANGES.ALL::
 checkfilenames::  $(CHECKFN)/checkfn
 	@find . -type d -exec $(CHECKFN)/find.sh $(CHECKFN)/checkfn {} \;
 
+/**/# clean out link tree looking for stuff that should get checked in
+flushlinks::
+	make clean
+	find . -type l -exec rm {} \;
+	find . \( \! \( -type d -o -name Makefile \) \) -print
