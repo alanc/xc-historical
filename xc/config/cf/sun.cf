@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.51 91/03/26 13:04:09 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.52 91/03/27 09:13:28 rws Exp $
 
 #define OSName            SunOS 4.1.1
 XCOMM operating system:  OSName
@@ -33,7 +33,7 @@ XCOMM operating system:  OSName
 #endif
 
 #if HasGcc
-#define ServerCcCmd gcc -DNOSTDHDRS -fstrength-reduce -fpcc-struct-return 
+#define ServerCcCmd gcc -fstrength-reduce -fpcc-struct-return 
 #define CcCmd cc
 #define ServerCCOptions /* */
 #endif

@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.108 91/03/25 10:50:20 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.109 91/03/30 09:42:56 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -449,7 +449,7 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #endif
 #ifndef CcCmd
 #if HasGcc
-#define CcCmd gcc -DNOSTDHDRS -fstrength-reduce -fpcc-struct-return 
+#define CcCmd gcc -fstrength-reduce -fpcc-struct-return 
 #else
 #define CcCmd cc
 #endif
