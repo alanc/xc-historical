@@ -57,11 +57,27 @@ DependSubdirs($(SUBDIRS))
 /**/# 
 
 #ifndef ClientSideOnly
-SERVER_DIRS = $(FONTDIR)
+  DIRS_SERVER = $(FONTDIR) /* $(ADMDIR) */
+#endif
+#if InstallxinitConfig
+   DIRS_XINIT = $(XINITDIR)
+#endif
+#if InstallxdmConfig
+     DIRS_XDM = $(XDMDIR)
+#endif
+#if InstallManPages
+     DIRS_MAN = $(MANPATH) $(MANDIR) $(LIBMANDIR)
+#endif
+#if InstallAppDefFiles
+  DIRS_APPDEF = $(XAPPLOADDIR)
 #endif
 
-DIRS_TO_BUILD = $(SERVER_DIRS) $(USRLIBDIR) $(BINDIR) $(LIBDIR) \
-	$(XAPPLOADDIR) $(INCDIR) $(UWMDIR) $(MANPATH) $(MANDIR) $(LIBMANDIR)
+ DIRS_CONTRIB = /* $(AWMDIR) $(TWMDIR) */
+
+DIRS_TO_BUILD = $(DIRS_SERVER) \
+	$(USRLIBDIR) $(BINDIR) $(INCDIR) $(LIBDIR) /* $(LINTLIBDIR) */ \
+	$(DIRS_XINIT) $(DIRS_XDM) $(DIRS_MAN) $(DIRS_APPDEF) \
+	$(UWMDIR) $(DIRS_CONTRIB)
 
 MakeDirectories(install, $(DIRS_TO_BUILD))
 
