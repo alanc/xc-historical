@@ -14,8 +14,8 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.20 87/09/14 00:00:47 rws Locked $
- * $Locker: rws $
+ * $Header: imake.c,v 1.22 88/02/11 16:46:09 rws Exp $
+ * $Locker:  $
  *
  * Author:
  *	Todd Brunhoff
@@ -126,7 +126,7 @@ typedef	u_char	boolean;
 char	*cpp = "/lib/cpp";
 #else apollo
 char	*cpp = "/usr/lib/cpp";
-#endif apollo
+#endif /* apollo */
 
 char	*tmpMakefile    = "/usr/tmp/tmp-make.XXXXXX";
 char	*tmpImakefile    = "/usr/tmp/tmp-imake.XXXXXX";
@@ -136,10 +136,13 @@ char	*cpp_argv[ ARGUMENTS ] = {
 	"-I.",
 #ifdef unix
 	"-Uunix",
-#endif unix
+#endif /* unix */
+#ifdef pegasus
+	"-Dpegasus",
+#endif /* pegasus */
 };
-int	make_argindex = 1;
-int	cpp_argindex = 3;
+int	make_argindex;
+int	cpp_argindex;
 char	*make = NULL;
 char	*Imakefile = NULL;
 char	*Makefile = NULL;
@@ -148,6 +151,8 @@ char	*program;
 char	*FindImakefile();
 char	*ReadLine();
 char	*CleanCppInput();
+char	*strdup();
+
 boolean	verbose = FALSE;
 boolean	show = FALSE;
 extern int	errno;
@@ -173,7 +178,7 @@ main(argc, argv)
 	if (Makefile)
 		tmpMakefile = Makefile;
 	else
-		tmpMakefile = mktemp(tmpMakefile);
+		tmpMakefile = mktemp(strdup(tmpMakefile));
 	AddMakeArg("-f");
 	AddMakeArg( tmpMakefile );
 	sprintf(makeMacro, "MAKE=%s", program);
@@ -228,6 +233,14 @@ catch(sig)
 init()
 {
 	char	*p;
+	int	i;
+
+	make_argindex=0;
+	while (make_argv[ make_argindex ] != NULL)
+		make_argindex++;
+	cpp_argindex = 0;
+	while (cpp_argv[ cpp_argindex ] != NULL)
+		cpp_argindex++;
 
 	/*
 	 * See if the standard include directory is different than
@@ -527,7 +540,7 @@ char *CleanCppInput(Imakefile)
 		 && strcmp(ptoken, "endif")
 		 && strcmp(ptoken, "if")) {
 		    if (outFile == NULL) {
-			tmpImakefile = mktemp(tmpImakefile);
+			tmpImakefile = mktemp(strdup(tmpImakefile));
 			cleanedImakefile = tmpImakefile;
 			outFile = fopen(tmpImakefile, "w");
 			if (outFile == NULL)
@@ -645,7 +658,7 @@ char *ReadLine(tmpfd)
 	fprintf(tmpfd, "# compensate for this, but is not always\n");
 	fprintf(tmpfd, "# successful.\n");
 	fprintf(tmpfd, "#\n");
-#endif REDUCED_TO_ASCII_SPACE
+#endif /* REDUCED_TO_ASCII_SPACE */
 	}
 
 	for (p1 = pline; p1 < end; p1++) {
@@ -717,4 +730,14 @@ KludgeResetRule()
 {
 	InRule = FALSE;
 }
-#endif REDUCED_TO_ASCII_SPACE
+#endif /* REDUCED_TO_ASCII_SPACE */
+
+char *strdup(cp)
+	register char *cp;
+{
+	register int len = strlen(cp) + 1;
+	register char *new = Emalloc(len);
+
+	bcopy(cp, new, len);
+	return new;
+}
