@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.61 93/09/04 16:06:40 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.62 93/09/06 11:57:55 rws Exp $
 
 #define OSName                 HP-UX 9.1
 XCOMM operating system:  OSName
@@ -43,7 +43,6 @@ XCOMM operating system:  OSName
 #define XhpServer              YES
 #define BuildXInputExt         YES
 #define HPFastScrolling        YES
-#define ServerExtraDefines -DXDMCP
 #define BuildServer            __hp9000s700
 #define NeedBerklib            (BuildServer|BuildFontServer)
 
