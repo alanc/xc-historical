@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: xmodmap.c,v 1.1 87/08/29 22:03:05 toddb Exp $ */
 /*
  * xmodmap is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -228,7 +228,7 @@ PrintModifierMapping(map, fout)
 	fprintf(fout, "%s:", modType[i]);
 	for (j = 0; j < map->max_keypermod; j++) {
 	    if (map->modifiermap[k]) {
-		KeySym ks = XKeycodeToKeysym(dpy, map->modifiermap[k]);
+		KeySym ks = XKeycodeToKeysym(dpy, map->modifiermap[k], 0);
 		char *nm = XKeysymToString(ks);
 
 		if (nm) {
