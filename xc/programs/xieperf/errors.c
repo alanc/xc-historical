@@ -1,4 +1,4 @@
-/* $XConsortium: errors.c,v 1.3 93/10/29 17:20:28 rws Exp $ */
+/* $XConsortium: errors.c,v 1.4 93/10/30 11:48:50 rws Exp $ */
 /**** module errors.c ****/
 /******************************************************************************
 				NOTICE
@@ -1062,7 +1062,7 @@ int     reps;
                 rect.width = 100;
                 rect.height = 100;
 
-                if ( ( XIERoi = GetXIERoi( xp, p, rect, 1 ) ) ==
+                if ( ( XIERoi = GetXIERoi( xp, p, &rect, 1 ) ) ==
                         ( XieRoi ) NULL )
                 {
                         reps = 0;
