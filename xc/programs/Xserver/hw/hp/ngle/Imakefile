@@ -1,9 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: Imakefile,v 1.1 93/08/08 12:58:19 rws Exp $ */
 #include <Server.tmpl>
-ANSI_DEFINES=-Aa -D_HPUX_SOURCE -DANSI_CPP
-SCROLLING_SRC=
-SCROLLING_OBJ=
-FAST_SCROLLING_DEFINES=
 
 ORIG_SRCS =	nglescreen.c	\
 		nglecolormap.c	\
@@ -30,7 +26,7 @@ SRCS = $(ORIG_SRCS) $(SCROLLING_SRC)
 
 OBJS = $(ORIG_OBJS) $(SCROLLING_OBJ)
 
-DEFINES = $(ANSI_DEFINES) $(FAST_SCROLLING_DEFINES)
+DEFINES = $(FAST_SCROLLING_DEFINES)
 
 INCLUDES = -I. -I.. -I../include -I../../mfb -I../../cfb -I../../mi \
 	-I../../../include -I$(INCLUDESRC) -I../../../../extensions/include \

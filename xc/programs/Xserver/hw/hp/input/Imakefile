@@ -1,10 +1,5 @@
-XCOMM $XConsortium$
-/* #define IHaveSubdirs */
-#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
-
-/* SUBDIRS=drivers */
-/* LINTSUBDIRS=drivers */
-ANSI_DEFINES=-Aa -D_HPUX_SOURCE -DANSI_CPP
+XCOMM $XConsortium: Imakefile,v 1.1 93/08/08 12:58:22 rws Exp $
+#include <Server.tmpl>
 
 #if defined(HPArchitecture) || defined(HPOSFArchitecture)
 
@@ -76,9 +71,6 @@ OBJS800 = $(NONHILOBJS) $(HILOBJS800)
 
 OBJS = $(NONHILOBJS) $(NONHILOBJS2) $(HILOBJS)
 
-
-
-
 LOBJS = \
 	hpKeyMap.ln	\
 	x_hil.ln	\
@@ -88,16 +80,10 @@ LOBJS = \
 	xtest1imp.ln	\
 	getkeysym.ln
 
-DEFINES = $(ANSI_DEFINES)
-STD_DEFINES = ServerDefines
-CDEBUGFLAGS = OptimizedCDebugFlags
    INCLUDES = -I. -I.. -I../include -I../../../include -I./X11 \
 	      -I../../cfb -I../../mfb -I../../mi \
 	      -I$(INCLUDESRC) -I../../../../extensions/include
-EXT_DEFINES = ExtensionDefines
    LINTLIBS = ../../../dix/llib-ldix.ln ../../../os/hpux/llib-los.ln
-
-all:: 
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(hp,$(OBJS))
