@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: Sme.c,v 1.3 89/10/09 16:21:16 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Sme.c,v 1.4 89/10/11 11:55:32 jim Exp $";
 #endif 
 
 /***********************************************************
@@ -56,6 +56,7 @@ static XtResource resources[] = {
  */
 
 static void Unhighlight(), Highlight(), Notify(), ClassPartInitialize();
+static void Initialize();
 static XtGeometryResult QueryGeometry();
 
 #define SUPERCLASS (&rectObjClassRec)
@@ -68,7 +69,7 @@ SmeClassRec smeClassRec = {
     /* class_initialize   */	XawInitializeWidgetSet,
     /* class_part_initialize*/	ClassPartInitialize,
     /* Class init'ed      */	FALSE,
-    /* initialize         */    NULL,
+    /* initialize         */    Initialize,
     /* initialize_hook    */	NULL,
     /* realize            */    NULL,
     /* actions            */    NULL,
@@ -140,6 +141,26 @@ WidgetClass class;
 
     if (m_ent->sme_class.notify == XtInheritNotify) 
 	m_ent->sme_class.notify = superC->sme_class.notify;
+}
+
+/*      Function Name: Initialize
+ *      Description: Initializes the simple menu widget
+ *      Arguments: request - the widget requested by the argument list.
+ *                 new     - the new widget with both resource and non
+ *                           resource values.
+ *      Returns: none.
+ * 
+ * MENU ENTRIES CANNOT HAVE BORDERS.
+ */
+
+/* ARGSUSED */
+static void
+Initialize(request, new)
+Widget request, new;
+{
+    SmeObject entry = (SmeObject) new;
+
+    entry->rectangle.border_width = 0;
 }
 
 /*	Function Name: Highlight
