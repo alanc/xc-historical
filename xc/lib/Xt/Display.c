@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.16 89/03/10 17:49:13 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.17 89/03/14 12:03:58 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif lint
 
@@ -27,8 +27,13 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include <X11/Xlib.h>
 #include <sys/param.h>
+
+#ifdef pegasus
+#undef dirty			/* some bozo put this in sys/param.h */
+#endif /* pegasus */
+
+#include <X11/Xlib.h>
 #include "IntrinsicI.h"
 
 ProcessContext _XtGetProcessContext()

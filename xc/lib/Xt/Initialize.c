@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.127 89/03/10 17:53:31 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.128 89/04/18 11:31:42 swick Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif lint
 
@@ -31,6 +31,11 @@ SOFTWARE.
 
 #include <pwd.h>
 #include <sys/param.h>
+
+#ifdef pegasus
+#undef dirty			/* some bozo put this in sys/param.h */
+#endif /* pegasus */
+
 #include <stdio.h>
 #include "IntrinsicI.h"
 #include "StringDefs.h"
