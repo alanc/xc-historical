@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: midash.c,v 5.1 89/07/16 14:17:07 keith Exp $ */
+/* $XConsortium: midash.c,v 5.2 89/09/04 16:31:24 rws Exp $ */
 #include "miscstruct.h"
 #include "mistruct.h"
 #include "mifpoly.h"
@@ -96,7 +96,10 @@ int *pnseg;
     while(--npt)
     {
 	if (PtEqual(ppt[0], ppt[1]))
+	{
+	    ppt++;
 	    continue;		/* no duplicated points in polyline */
+	}
 	pt1 = *ppt++;
 	pt2 = *ppt;
 
