@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.120 91/05/14 22:40:05 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.121 91/06/14 16:28:09 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1909,21 +1909,6 @@ static String CheckForPoundSign(str, defaultOp, actualOpRtn)
     return str;
 }
 
-static void _XtSetTMOperation(xlations, op)
-    XtTranslations	xlations;
-    _XtTranslateOp	op;
-{
-    switch(op) {
-      case XtTableReplace:
-      case XtTableAugment:
-      case XtTableOverride:
-	xlations->operation = op;
-	break;
-      default:
-	XtWarning("invalid tm operation");
-    }
-}
-
 static XtTranslations ParseTranslationTable(source, isAccelerator, defaultOp)
     String 	source;
     Boolean	isAccelerator;
@@ -1973,9 +1958,9 @@ static XtTranslations ParseTranslationTable(source, isAccelerator, defaultOp)
     if (!parseTree->isStackComplexBranchHeads)
       XtFree((char *)parseTree->complexBranchHeadTbl);
 
-
     xlations = _XtCreateXlations(stateTrees, 1, NULL, NULL);
-    _XtSetTMOperation(xlations, actualOp);
+    xlations->operation = actualOp;
+
 #ifdef notdef
     XtFree(stateTrees);
 #endif /* notdef */
