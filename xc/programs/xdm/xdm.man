@@ -23,7 +23,7 @@ It is designed to provide services similar to that provided by init, getty
 and login on character terminals:  prompting for login/password,
 authenticating the user and running a ``session''.
 .PP
-A ``session'' is defined by the lifetime of a particular unix process; in the
+A ``session'' is defined by the lifetime of a particular process; in the
 traditional character-based terminal world, it is the user's login shell
 process.  In the
 .I xdm
@@ -155,7 +155,7 @@ foreign		a remote display, i.e. one which has no server program to run
 The display name must be something that can be passed in the \fB-display\fP
 option to any X program.  This string is used in the display-specific
 resources to specify the particular display, so be careful to match the
-names (e.g. use ":0 local /usr/bin/X11/X :0" instead of "unix:0 local
+names (e.g. use ":0 local /usr/bin/X11/X :0" instead of "localhost:0 local
 /usr/bin/X11/X :0" if your other resources are specified as
 "DisplayManager._0.session").  The display class portion is also used in the
 display-specific resources, as the class portion of the resource.  This is
@@ -391,7 +391,7 @@ it creates a unique file name in this directory and points the environment
 variable XAUTHORITY at the created file.  By default it uses "/tmp".
 .SH "CONTROLING THE SERVER"
 .I Xdm
-controls local servers using Unix signals.  SIGHUP is expected to reset the
+controls local servers using POSIX signals.  SIGHUP is expected to reset the
 server, closing all client connections and performing other clean up
 duties.  SIGTERM is expected to terminate the server.  If these signals do
 not perform the expected actions,
