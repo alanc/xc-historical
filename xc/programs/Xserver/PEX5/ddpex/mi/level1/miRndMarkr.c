@@ -1,4 +1,4 @@
-/* $XConsortium: miRndMarkr.c,v 5.2 91/04/09 19:44:44 rws Exp $ */
+/* $XConsortium: miRndMarkr.c,v 5.3 91/04/23 17:13:09 hersh Exp $ */
 
 
 /***********************************************************
@@ -139,7 +139,7 @@ miRenderMarker(pRend, pddc, input_list)
 	       */
 	      if (parcs)
 	        pcurarcs = parcs = 
-			(xArc *)Xrealloc(sizeof(xArc)*pddlist1->numPoints);
+			(xArc *)Xrealloc(parcs,sizeof(xArc)*pddlist1->numPoints);
 	      else pcurarcs = parcs = 
 			(xArc *)Xalloc(sizeof(xArc)*pddlist1->numPoints);
 
