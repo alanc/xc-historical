@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.8 88/01/19 14:37:21 swick Locked $";
+static char rcs_id[] = "$Header: main.c,v 2.8 88/01/19 14:37:21 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -53,30 +53,26 @@ static void NeedToCheckScans()
 
 
 /*ARGSUSED*/
-static void CheckMail(widget, closure, event)
-Widget widget;
-Opaque closure;
-XEvent *event;
+static void CheckMail(client_data, id)
+    caddr_t client_data;	/* unused */
+    XtIntervalId *id;		/* unused */
 {
     static int count = 0;
     int i;
-    if (event->type == ClientMessage &&
-	    ((int)event->xclient.message_type) == XtTimerExpired) {
-	timerid = XtAddTimeOut(toplevel, (int)60000);
-	if (defNewMailCheck) {
-	    DEBUG("(Checking for new mail...")
-	    TocCheckForNewMail();
+    timerid = XtAddTimeOut((int)60000, CheckMail, NULL);
+    if (defNewMailCheck) {
+	DEBUG("(Checking for new mail...")
+	TocCheckForNewMail();
+	DEBUG(" done)\n")
+    }
+    if (count++ % 5 == 0) {
+	NeedToCheckScans();
+	if (defMakeCheckpoints) {
+	    DEBUG("(Checkpointing...")
+	    for (i=0 ; i<numScrns ; i++)
+		if (scrnList[i]->msg) 
+		    MsgCheckPoint(scrnList[i]->msg);
 	    DEBUG(" done)\n")
-	}
-	if (count++ % 5 == 0) {
-	    NeedToCheckScans();
-	    if (defMakeCheckpoints) {
-	        DEBUG("(Checkpointing...")
-		for (i=0 ; i<numScrns ; i++)
-		    if (scrnList[i]->msg) 
-			MsgCheckPoint(scrnList[i]->msg);
-		DEBUG(" done)\n")
-	    }
 	}
     }
 }
@@ -90,7 +86,6 @@ char **argv;
     InitializeWorld(argc, argv);
     if (defNewMailCheck)
 	TocCheckForNewMail();
-    XtAddEventHandler(toplevel, (EventMask) 0, TRUE, CheckMail, (Opaque) NULL);
-    timerid = XtAddTimeOut(toplevel, (int)60000);
+    timerid = XtAddTimeOut((int)60000, CheckMail, NULL);
     XtMainLoop();
 }
