@@ -1,15 +1,18 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: SimpleP.h,v 1.7 88/09/06 16:42:24 jim Exp $ */
+/* $XConsortium: TemplateP.h,v 1.1 88/10/23 14:32:59 swick Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987, 1988 */
 
 #ifndef _TemplateP_h
 #define _TemplateP_h
 
 #include "Template.h"
+/* include superclass private header file */
 #include <X11/CoreP.h>
 
-#define XtRTemplate		"Template"
+/* define unique representation types not found in <X11/StringDefs.h> */
+
+#define XtRTemplateResource		"TemplateResource"
 
 typedef struct {
     int empty;
@@ -24,7 +27,7 @@ extern TemplateClassRec templateClassRec;
 
 typedef struct {
     /* resources */
-    char* template;
+    char* resource;
     /* private state */
 } TemplatePart;
 
