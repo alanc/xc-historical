@@ -1,4 +1,4 @@
-/* $XConsortium: ws_type.h,v 5.2 91/03/29 10:44:27 rws Exp $ */
+/* $XConsortium: ws_type.h,v 5.3 91/07/15 15:44:58 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -41,7 +41,7 @@ SOFTWARE.
 #define WST_MAX_NUM_LOCATOR_DEVS	3
 #define WST_MAX_NUM_STROKE_DEVS		3
 #define WST_MAX_NUM_PICK_DEVS		3
-#define WST_MAX_NUM_VALUATOR_DEVS	3
+#define WST_MAX_NUM_VALUATOR_DEVS	6
 #define WST_MAX_NUM_CHOICE_DEVS		1
 #define WST_MAX_NUM_STRING_DEVS		1
 
