@@ -1,4 +1,4 @@
-/* $XConsortium: tsource.c,v 2.20 91/01/06 21:08:53 rws Exp $ */
+/* $XConsortium: tsource.c,v 2.21 91/02/17 16:49:31 dave Exp $ */
 
 /*
  *			  COPYRIGHT 1987
@@ -207,16 +207,16 @@ XawTextBlock *block;
 }
 
 
-#define Look(index, c)\
+#define Look(ti, c)\
 {									\
-    if ((dir == XawsdLeft && index <= 0) ||				\
-	    (dir == XawsdRight && index >= toc->lastPos))		\
+    if ((dir == XawsdLeft && ti <= 0) ||				\
+	    (dir == XawsdRight && ti >= toc->lastPos))		\
 	c = 0;								\
     else {								\
-	if (index + doff < msg->position ||				\
-		index + doff >= msg->position + msg->length)		\
-	    msg = MsgFromPosition(toc, index, dir);			\
-	c = msg->buf[index + doff - msg->position];			\
+	if (ti + doff < msg->position ||				\
+		ti + doff >= msg->position + msg->length)		\
+	    msg = MsgFromPosition(toc, ti, dir);			\
+	c = msg->buf[ti + doff - msg->position];			\
     }									\
 }
 
@@ -233,7 +233,7 @@ Boolean include;
 {
     TocSourceWidget source = (TocSourceWidget) w;
     Toc toc = source->toc_source.toc;
-    XawTextPosition index;
+    XawTextPosition textindex;
     Msg msg;
     char    c;
     int     ddir, doff, i, whiteSpace;
@@ -241,59 +241,59 @@ Boolean include;
     doff = (dir == XawsdRight) ? 0 : -1;
 
     if (toc->lastPos == 0) return 0;
-    index = position;
-    if (index + doff < 0) return 0;
-    if (dir == XawsdRight && index >= toc->lastPos) return toc->lastPos;
-    msg = MsgFromPosition(toc, index, dir);
+    textindex = position;
+    if (textindex + doff < 0) return 0;
+    if (dir == XawsdRight && textindex >= toc->lastPos) return toc->lastPos;
+    msg = MsgFromPosition(toc, textindex, dir);
     switch (sType) {
 	case XawstPositions:
 	    if (!include && count > 0)
 		count--;
-	    index = CoerceToLegalPosition(toc, index + count * ddir);
+	    textindex = CoerceToLegalPosition(toc, textindex + count * ddir);
 	    break;
 	case XawstWhiteSpace:
 	    for (i = 0; i < count; i++) {
 		whiteSpace = -1;
-		while (index >= 0 && index <= toc->lastPos) {
-		    Look(index, c);
+		while (textindex >= 0 && textindex <= toc->lastPos) {
+		    Look(textindex, c);
 		    if ((c == ' ') || (c == '\t') || (c == '\n')) {
-			if (whiteSpace < 0) whiteSpace = index;
+			if (whiteSpace < 0) whiteSpace = textindex;
 		    } else if (whiteSpace >= 0)
 			break;
-		    index += ddir;
+		    textindex += ddir;
 		}
 	    }
 	    if (!include) {
 		if (whiteSpace < 0 && dir == XawsdRight)
 		    whiteSpace = toc->lastPos;
-		index = whiteSpace;
+		textindex = whiteSpace;
 	    }
-	    index = CoerceToLegalPosition(toc, index);
+	    textindex = CoerceToLegalPosition(toc, textindex);
 	    break;
 	case XawstEOL:
 	case XawstParagraph:
 	    for (i = 0; i < count; i++) {
-		while (index >= 0 && index <= toc->lastPos) {
-		    Look(index, c);
+		while (textindex >= 0 && textindex <= toc->lastPos) {
+		    Look(textindex, c);
 		    if (c == '\n')
 			break;
-		    index += ddir;
+		    textindex += ddir;
 		}
 		if (i < count - 1)
-		    index += ddir;
+		    textindex += ddir;
 	    }
 	    if (include)
-		index += ddir;
-	    index = CoerceToLegalPosition(toc, index);
+		textindex += ddir;
+	    textindex = CoerceToLegalPosition(toc, textindex);
 	    break;
 	case XawstAll:
 	    if (dir == XawsdLeft)
-		index = 0;
+		textindex = 0;
 	    else
-		index = toc->lastPos;
+		textindex = toc->lastPos;
 	    break;
     }
-    return index;
+    return textindex;
 }
 /*ARGSUSED*/
 static XawTextPosition Search(w, position, direction, block)
