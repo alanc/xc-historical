@@ -1,16 +1,19 @@
-/* $XConsortium$ */
+/* $XConsortium: unistd.h,v 1.1 92/06/11 15:30:04 rws Exp $ */
 
 /* We want to see if we have to define ENOSYS.. */
 #include <errno.h>
 #ifndef ENOSYS
 #define ENOSYS -2
+#endif
 
 #ifndef _PID_T
 #define _PID_T
 	typedef	int 	pid_t;
+#endif
 #ifndef _MODE_T
 #define _MODE_T
 typedef int 	mode_t;
+#endif
 
 /* For F_OK etc */
 /*#include	<sys/file.h>*/

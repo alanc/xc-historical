@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: types.h,v 1.1 92/06/11 15:30:25 rws Exp $ */
 
 #ifndef _SYS_TYPES_H
 #define _SYS_TYPES_H
@@ -6,6 +6,7 @@
 #ifndef _CLOCK_T
 #define _CLOCK_T
 typedef	long         	clock_t; 
+#endif
 typedef	long	daddr_t;
 typedef	char *	caddr_t;
 typedef	long	swblk_t;

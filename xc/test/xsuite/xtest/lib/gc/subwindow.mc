@@ -12,11 +12,12 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: subwindow.mc,v 1.10 92/06/11 18:04:25 rws Exp $
  */
 >>EXTERN
 #ifdef A_WINDOW2
 #include "window2 in subwindow-mode"
+#endif
 >>#CHANGED	peterc
 >>#>>ASSERTION Good A
 >>#When
