@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.41 91/02/12 13:54:19 converse Exp $ */
+/* $XConsortium: Destroy.c,v 1.42 91/02/13 10:19:49 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -241,11 +241,11 @@ void _XtDoPhase2Destroy(app, dispatch_level)
 }
 
 
-
 void XtDestroyWidget (widget)
     Widget    widget;
 {
     XtAppContext app = XtWidgetToApplicationContext(widget);
+    register DestroyRec *dr, *dr2;
 
     if (widget->core.being_destroyed) return;
 
@@ -265,20 +265,22 @@ void XtDestroyWidget (widget)
 		       (unsigned)sizeof(DestroyRec)*app->destroy_list_size
 		      );
     }
-    app->destroy_list[app->destroy_count].dispatch_level = app->dispatch_level;
-    app->destroy_list[app->destroy_count++].widget = widget;
+    dr = app->destroy_list + app->destroy_count++;
+    dr->dispatch_level = app->dispatch_level;
+    dr->widget = widget;
 
     if (app->dispatch_level > 1) {
 	int i;
 	for (i = app->destroy_count - 1; i;) {
 	    /* this handles only one case of nesting difficulties */
-	    if (app->destroy_list[--i].dispatch_level < app->dispatch_level &&
-		IsDescendant(app->destroy_list[i].widget, widget)) {
-		app->destroy_list[app->destroy_count-1].dispatch_level =
-		    app->destroy_list[i].dispatch_level;
-		break;
-	    }
-	}
+ 	    dr = app->destroy_list + (--i);
+ 	    if (dr->dispatch_level < app->dispatch_level &&
+ 		IsDescendant(dr->widget, widget)) {
+ 	        dr2 = app->destroy_list + (app->destroy_count-1);
+ 		dr2->dispatch_level = dr->dispatch_level;
+  		break;
+  	    }
+  	}
     }
 
     if (_XtSafeToDestroy(app)) {
