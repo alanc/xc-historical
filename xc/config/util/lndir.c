@@ -1,4 +1,4 @@
-/* $XConsortium: lndir.c,v 1.9 93/09/29 14:01:48 rws Exp $ */
+/* $XConsortium: lndir.c,v 1.10 93/12/06 15:16:53 kaleb Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -31,6 +31,7 @@
 */
 
 #include <X11/Xos.h>
+#include <X11/Xfuncproto.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/param.h>
@@ -56,16 +57,32 @@
 #define MAXPATHLEN 2048
 #endif
 
+#if NeedVarargsPrototypes
+#include <stdarg.h>
+#endif
+
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
 int silent;
 
 void
-quit (code, fmt, a1, a2, a3)
-char *fmt;
+quit (
+#if NeedVarargsPrototypes
+    int code, char * fmt, ...)
+#else
+    code, fmt, a1, a2, a3)
+    char *fmt;
+#endif
 {
+#if NeedVarargsPrototypes
+    va_list args;
+    va_start(args, fmt);
+    vfprintf (stderr, fmt, args);
+    va_end(args);
+#else
     fprintf (stderr, fmt, a1, a2, a3);
+#endif
     putc ('\n', stderr);
     exit (code);
 }
@@ -79,10 +96,22 @@ char *s;
 }
 
 void
-msg (fmt, a1, a2, a3)
-char *fmt;
+msg (
+#if NeedVarargsPrototypes
+    char * fmt, ...)
+#else
+    fmt, a1, a2, a3)
+    char *fmt;
+#endif
 {
+#if NeedVarargsPrototypes
+    va_list args;
+    va_start(args, fmt);
+    vfprintf (stderr, fmt, args);
+    va_end(args);
+#else
     fprintf (stderr, fmt, a1, a2, a3);
+#endif
     putc ('\n', stderr);
 }
 
