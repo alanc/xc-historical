@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.1 89/10/13 17:08:28 jim Exp $ */
+/* $XConsortium: xexevents.c,v 1.2 89/11/07 19:40:48 rws Exp $ */
 #ifdef XINPUT
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -131,7 +131,7 @@ ProcessOtherEvent (xE, other, count)
 		modifiers &= ~mask;
 		}
 	    }
-	if (!grab && CheckDeviceGrabs(other, xE, 0, TRUE, count))
+	if (!grab && CheckDeviceGrabs(other, xE, 0, count))
 	    return;
 	}
     else if (xE->u.u.type == DeviceKeyRelease)
@@ -173,7 +173,7 @@ ProcessOtherEvent (xE, other, count)
 	    b->state |= k->modifierMap[xE->u.u.detail];
 	SetMaskForEvent(DMotion_Filter(b->state, other->id),DeviceMotionNotify);
 	if (!grab)
-	    if (CheckDeviceGrabs(other, xE, 0, FALSE, count))
+	    if (CheckDeviceGrabs(other, xE, 0, count))
 		return;
 	}
     else if (xE->u.u.type == DeviceButtonRelease)
