@@ -1,7 +1,7 @@
 # 
 #  xman - X window system manual page display program.
 # 
-#  $Header: Imakefile,v 1.1 88/08/31 22:52:19 jim Exp $
+#  $Header: Imakefile,v 1.2 88/08/31 23:01:01 jim Exp $
 #  $Athena: Imakefile,v 1.1 88/08/31 21:11:32 kit Locked $
 # 
 #  Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -19,7 +19,7 @@
 #  Author:    Chris D. Peterson, MIT Project Athena
 #  Created:   August 31, 1988
         DEFINES = -DHELPFILE=\"$(LIBDIR)$(PATHSEP)xman.help\"
-LOCAL_LIBRARIES = $(XAWLIB) $(XTOOLLIB) $(XLIB)
+LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
            SRCS = ScrollByL.c handler.c man.c pages.c buttons.c help.c menu.c \
                   search.c globals.c main.c misc.c tkfuncs.c
            OBJS = ScrollByL.o handler.o man.o pages.o buttons.o help.o menu.o \
