@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.16 93/12/07 11:04:03 mor Exp $ */
+/* $XConsortium: accept.c,v 1.17 93/12/28 11:41:54 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -19,6 +19,7 @@ Author: Ralph Mor, X Consortium
 
 #include <X11/ICE/ICElib.h>
 #include <X11/ICE/ICElibint.h>
+#include <X11/Xtrans.h>
 
 
 IceConn
@@ -28,7 +29,7 @@ IceListenObj listenObj;
 
 {
     IceConn    		iceConn;
-    int        		newconn;
+    XtransConnInfo	newconn;
     iceByteOrderMsg 	*pMsg;
     int   		endian;
 
@@ -36,8 +37,7 @@ IceListenObj listenObj;
      * Accept the connection.
      */
 
-    if ((newconn = accept (listenObj->fd,
-	(struct sockaddr *) NULL, (int *) NULL)) < 0)
+    if ((newconn = _ICETransAccept (listenObj->trans_conn)) == 0)
     {
 	return (NULL);
     }
@@ -49,7 +49,7 @@ IceListenObj listenObj;
 
     if ((iceConn = (IceConn) malloc (sizeof (struct _IceConn))) == NULL)
     {
-	close (newconn);
+	_ICETransClose (newconn);
 	return (NULL);
     }
 
@@ -59,7 +59,7 @@ IceListenObj listenObj;
     iceConn->connection_status = IceConnectPending;
     iceConn->my_ice_version_index = 0;
 
-    iceConn->fd = newconn;
+    iceConn->trans_conn = newconn;
     iceConn->sequence = 0;
 
     iceConn->connection_string = (char *) malloc (
@@ -67,7 +67,7 @@ IceListenObj listenObj;
 
     if (iceConn->connection_string == NULL)
     {
-	close (newconn);
+	_ICETransClose (newconn);
 	free ((char *) iceConn);
 	return (NULL);
     }
@@ -84,7 +84,7 @@ IceListenObj listenObj;
     }
     else
     {
-	close (newconn);
+	_ICETransClose (newconn);
 	free ((char *) iceConn);
 	return (NULL);
     }
@@ -96,7 +96,7 @@ IceListenObj listenObj;
     }
     else
     {
-	close (newconn);
+	_ICETransClose (newconn);
 	free (iceConn->inbuf);
 	free ((char *) iceConn);
 	return (NULL);
