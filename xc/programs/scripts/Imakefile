@@ -1,12 +1,19 @@
+         PROGRAMS = xmkmf makedepend
 
-all:: xmkmf
+all:: $(PROGRAMS)
 
 CppScriptTarget(xmkmf, -DCONFIGDIRSPEC=-I$(CONFIGDIR), $(ICONFIGFILES))
+CppScriptTarget(mdepend, -DPREPROC='"'"$(PREPROCESSCMD)"'"', $(ICONFIGFILES))
+
+makedepend:  mdepend
+	$(RM) makedepend
+	$(MV) mdepend makedepend 
 
 InstallProgram(xmkmf,$(BINDIR))
+InstallProgram(makedepend,$(BINDIR))
 
 clean::
-	$(RM) xmkmf
+	$(RM) $(PROGRAMS)
 
 depend::
 
