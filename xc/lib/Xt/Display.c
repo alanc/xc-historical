@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.33 89/09/28 11:37:57 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.34 89/09/28 17:10:20 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -275,6 +275,9 @@ XtAppContext XtCreateApplicationContext()
 	app->fallback_resources = NULL;
 	_XtPopupInitialize(app);
 	app->action_hook_list = NULL;
+#ifndef NO_IDENTIFY_WINDOWS
+	app->identify_windows = False;
+#endif
 	return app;
 }
 
