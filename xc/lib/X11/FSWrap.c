@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XFSWrap.c,v 11.1 91/04/01 18:13:55 gildea Exp $
+ * $XConsortium: XFSWrap.c,v 11.1 91/04/06 13:18:42 rws Exp $
  */
 
 /*
@@ -30,6 +30,65 @@
 
 #include "Xlibint.h"
 #include "Xlcint.h"
+#include <ctype.h>
+#include <X11/Xos.h>
+
+
+#define	MAXLIST	256
+
+char **
+_XParseBaseFontNameList(str, num)
+    char           *str;
+    int            *num;
+{
+    char           *plist[MAXLIST];
+    char          **list;
+    char           *ptr;
+
+    *num = 0;
+    if (!str || !*str) {
+	return (char **)NULL;
+    }
+    while (*str && isspace(*str))
+	str++;
+    if (!*str)
+	return (char **)NULL;
+
+    if (!(ptr = Xmalloc((unsigned)strlen(str) + 1))) {
+	return (char **)NULL;
+    }
+    strcpy(ptr, str);
+
+    while (1) {
+	char	*back;
+
+	plist[*num] = ptr;
+	if ((ptr = index(ptr, ','))) {
+	    back = ptr;
+	} else {
+	    back = plist[*num] + strlen(plist[*num]);
+	}
+	while (isspace(*(back - 1)))
+	    back--;
+	*back = '\0';
+	(*num)++;
+	if (!ptr)
+	    break;
+	ptr++;
+	while (*ptr && isspace(*ptr))
+	    ptr++;
+	if (!*ptr)
+	    break;
+    }
+    if (!(list = (char **) Xmalloc((unsigned)sizeof(char *) * (*num + 1)))) {
+	Xfree(ptr);
+	return (char **)NULL;
+    }
+    bcopy((char *)plist, (char *)list, sizeof(char *) * (*num));
+    *(list + *num) = NULL;
+
+    return list;
+}
 
 #if NeedFunctionPrototypes
 XFontSet
@@ -51,13 +110,37 @@ XCreateFontSet (dpy, base_font_name_list, missing_charset_list,
 #endif
 {
     XLCd lcd = _XlcCurrentLC();
+    char *base_name;
+    char **name_list;
+    int count;
+    XFontSet font_set;
 
+    *missing_charset_list = NULL;
+    *missing_charset_count = 0;
     if (!lcd)
-	return (XFontSet) NULL;
-    return (*lcd->methods->create_fontset)
-			(lcd, dpy, (char *)base_font_name_list,
-			 missing_charset_list, missing_charset_count,
-			 def_string);
+	return NULL;
+    name_list = _XParseBaseFontNameList(base_font_name_list, &count);
+    if (!name_list)
+        return NULL;
+    base_name = (char *)Xmalloc(strlen(base_font_name_list) + 1);
+    if (!base_name) {
+	XFreeStringList(name_list);
+	return NULL;
+    }
+    strcpy(base_name, base_font_name_list);
+    font_set = (*lcd->methods->create_fontset) (lcd, dpy, base_name,
+						name_list, count,
+						missing_charset_list,
+						missing_charset_count);
+    if (!font_set) {
+	XFreeStringList(name_list);
+	Xfree(base_name);
+    } else if (def_string) {
+	*def_string = font_set->core.default_string;
+	if (!*def_string)
+	    *def_string = "";
+    }
+    return font_set;
 }
 
 /*ARGSUSED*/
@@ -105,6 +188,19 @@ XFreeFontSet(dpy, font_set)
     Display        *dpy;
     XFontSet        font_set;
 {
+    int i;
+
     (*font_set->methods->free) (font_set);
+    for (i = 0; i < font_set->core.num_of_fonts; i++) {
+	if (font_set->core.font_struct_list[i]) {
+	    if (font_set->core.font_struct_list[i]->fid)
+		XFreeFont(dpy, font_set->core.font_struct_list[i]);
+	    else
+		Xfree((char *)font_set->core.font_struct_list[i]);
+	}
+    }
+    Xfree((char *) font_set->core.font_struct_list);
+    Xfree(font_set->core.base_name_list);
+    XFreeStringList(font_set->core.font_name_list);
     Xfree ((char *) font_set);
 }
