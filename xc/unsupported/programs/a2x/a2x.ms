@@ -1,4 +1,4 @@
-$XConsortium: a2x.doc,v 1.6 92/08/06 19:20:32 rws Exp $
+$XConsortium: a2x.doc,v 1.7 92/08/11 20:03:56 rws Exp $
 
 				Using a2x
 
@@ -708,7 +708,8 @@ stop recording and save the macro with the control sequence:
 
 	{c-t}{c-f}s<digit>{c-t}
 
-where <digit> is a decimal digit (0-9).  For example:
+where <digit> is a decimal digit (0-9), permitting you to save up to 10
+different recorded macros.  For example:
 
 	add-word /t "[save macro]" "{c-t}{c-f}s0{c-t}" invisible
 
@@ -716,7 +717,7 @@ To execute a recorded macro, use the control sequence:
 
 	{c-t}{c-f}e<digit>{c-t}
 
-For example:
+where <digit> is the number of the macro you want to execute.  For example:
 
 	add-word /t "[execute macro]" "{c-t}{c-f}e0{c-t}" invisible
 
