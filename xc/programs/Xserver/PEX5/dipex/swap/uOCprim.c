@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: uOCprim.c,v 5.1 91/02/16 09:57:06 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -182,7 +182,7 @@ pexAddToNameSet	*strmPtr;
     int i, num;
     pexName *pn;
 
-    num = (int)((strmPtr->head.length - sizeof(pexAddToNameSet))
+    num = (int)(((sizeof (CARD32) * strmPtr->head.length) - sizeof(pexAddToNameSet))
 	/sizeof(pexName));
 
     for (i=0, pn=(pexName *)(strmPtr+1); i<num; i++, pn++)
@@ -203,7 +203,7 @@ pexMarker	*strmPtr;
     CARD32 num;
     pexCoord3D *pc = (pexCoord3D *)(strmPtr+1);
 
-    num = (CARD32)((strmPtr->head.length - sizeof(pexMarker))
+    num = (CARD32)(((sizeof (CARD32) * strmPtr->head.length) - sizeof(pexMarker))
 	/sizeof(pexCoord3D));
 
     SWAP_ELEMENT_INFO (strmPtr->head);
@@ -219,7 +219,7 @@ pexMarker2D	*strmPtr;
     CARD32 num;
     pexCoord2D *pc = (pexCoord2D *)(strmPtr+1);
 
-    num = (CARD32)((strmPtr->head.length - sizeof(pexMarker2D))
+    num = (CARD32)(((sizeof (CARD32) * strmPtr->head.length) - sizeof(pexMarker2D))
 	/sizeof(pexCoord2D));
 
     SwapCoord2DList(swapPtr, pc, num);
@@ -236,7 +236,7 @@ pexPolyline	*strmPtr;
     CARD32 num;
     pexCoord3D *pc = (pexCoord3D *)(strmPtr+1);
 
-    num = (CARD32)((strmPtr->head.length - sizeof(pexPolyline))
+    num = (CARD32)(((sizeof (CARD32) * strmPtr->head.length) - sizeof(pexPolyline))
 	/sizeof(pexCoord3D));
 
     SwapCoord3DList(swapPtr, pc, num);
@@ -252,7 +252,7 @@ pexPolyline2D	*strmPtr;
     CARD32 num;
     pexCoord2D *pc = (pexCoord2D *)(strmPtr+1);
 
-    num = (CARD32)((strmPtr->head.length - sizeof(pexPolyline2D))
+    num = (CARD32)(((sizeof (CARD32) * strmPtr->head.length) - sizeof(pexPolyline2D))
 	/sizeof(pexCoord2D));
 
     SwapCoord2DList(swapPtr, pc, num);
@@ -320,7 +320,7 @@ pexFillArea	*strmPtr;
 {
     CARD32 num;
 
-    num = (CARD32)((strmPtr->head.length - sizeof(pexFillArea))
+    num = (CARD32)(((sizeof (CARD32) * strmPtr->head.length) - sizeof(pexFillArea))
 	/sizeof(pexCoord3D));
 
     SWAP_CARD16 (strmPtr->shape);
@@ -338,7 +338,7 @@ pexFillArea2D	*strmPtr;
 {
     CARD32 num;
 
-    num = (CARD32)((strmPtr->head.length - sizeof(pexFillArea2D))
+    num = (CARD32)(((sizeof (CARD32) * strmPtr->head.length) - sizeof(pexFillArea2D))
 	    /sizeof(pexCoord2D));
 
     SWAP_CARD16 (strmPtr->shape);
@@ -529,14 +529,17 @@ pexSOFAS	*strmPtr;
 
     ptr += ((int)(((strmPtr->numEdges * strmPtr->edgeAttributes) + 3) / 4)) * 4;
 
-    for (i=0; i < strmPtr->numContours; i++){
+    for (i=0; i < strmPtr->numFAS; i++){
 	numList = *((CARD16 *)ptr);
 	SWAP_CARD16((*ptr));
+	ptr += sizeof (CARD16);
 	for (j=0; j < numList; j++) {
 	    numSubList = *((CARD16 *)ptr);
 	    SWAP_CARD16((*ptr));
+	    ptr += sizeof (CARD16);
 	    for (k=0; k < numSubList; k++) {
 		SWAP_CARD16((*ptr));
+		ptr += sizeof (CARD16);
 	    }
 	}
     }
