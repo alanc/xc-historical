@@ -14,8 +14,7 @@ This option specifies the font to be displayed.
 .TP 8
 .B \-box
 This option indicates that a box outlining the area that would be filled
-with background color by an ImageText request.  This option is not very
-useful if \fI-center\fP is given as well.
+with background color by an ImageText request.
 .TP 8
 .B \-center
 This option indicates that each glyph should be centered in its grid.
