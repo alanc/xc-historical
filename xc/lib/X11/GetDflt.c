@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XGetDflt.c,v 1.20 90/01/22 09:08:17 rws Exp $
+ * $XConsortium: XGetDflt.c,v 1.21 90/12/12 09:18:00 rws Exp $
  */
 
 /***********************************************************
@@ -36,10 +36,14 @@ SOFTWARE.
 static char *GetHomeDir (dest)
 	char *dest;
 {
+#ifdef _POSIX_SOURCE
+        uid_t uid;
+#else
 	int uid;
-	extern char *getenv();
 	extern int getuid();
 	extern struct passwd *getpwuid(), *getpwnam();
+#endif
+	extern char *getenv();
 	struct passwd *pw;
 	register char *ptr;
 
