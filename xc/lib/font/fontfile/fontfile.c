@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.22 94/02/10 19:18:02 gildea Exp $
+ * $XConsortium: fontfile.c,v 1.23 94/02/10 19:27:20 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -87,7 +87,7 @@ FontFileFreeFPE (fpe)
     return Successful;
 }
 
-int
+static int
 transfer_values_to_alias(entryname, entrynamelength, resolvedname,
 			 aliasName, vals)
     char		*entryname;
