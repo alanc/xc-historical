@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.111 92/11/22 11:33:34 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.112 93/02/25 17:17:40 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -1568,9 +1568,14 @@ void TekSimulatePageButton (reset)
 
 TekCopy()
 {
+#if defined(sony) || defined(luna)
+#define TIME_T long
+#else
+#define TIME_T time_t
+#endif
 	register TScreen *screen = &term->screen;
 	register struct tm *tp;
-	long l;
+	TIME_T l;
 	char buf[32];
 	int waited;
 	int pid;

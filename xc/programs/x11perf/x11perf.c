@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.44 93/08/22 11:18:04 rws Exp $ */
+/* $XConsortium: x11perf.c,v 2.45 93/09/19 13:02:39 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -162,9 +162,14 @@ static struct  timeval start;
 
 void PrintTime()
 {
-    time_t t;
+#if defined(sony) || defined(luna)
+#define TIME_T long
+#else
+#define TIME_T time_t
+#endif
+    TIME_T t;
 
-    t = time((long *)NULL);
+    t = time((TIME_T *)NULL);
     printf("%s\n", ctime(&t));
 }
 
