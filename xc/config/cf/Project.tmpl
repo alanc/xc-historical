@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.177 93/08/25 15:27:08 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.178 93/08/26 09:03:06 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -182,7 +182,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.177 93/08/25 15:27:08 rws Exp $
 #endif
 #endif
 #ifndef BaseExtensionDefines
-#define BaseExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC -DXTEST -DBIGREQS PexDefines ShmDefines XInputDefines ScreenSaverDefines XIEdefines
+#define BaseExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC -DXTEST -DBIGREQS -DSYNC PexDefines ShmDefines XInputDefines ScreenSaverDefines XIEdefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif
