@@ -2,7 +2,7 @@
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
 #ifndef CrayArchitecture
-RUNDIRS = xdm xhost
+RUNDIRS = xdm xhost xinit
 #endif
 
 #if BuildPexClients
@@ -12,7 +12,7 @@ PEXDIRS = pexscope
 SUBDIRS = \
 	appres bitmap cmsdb editres listres oclock twm viewres \
 	xauth xbiff xcalc xclipboard xclock xconsole \
-	xditview xdpyinfo xedit xfd xinit xkill xload xlogo \
+	xditview xdpyinfo xedit xfd xkill xload xlogo \
 	xlsatoms xlsclients xlsfonts xmag xman xmh \
 	xmodmap xpr xprop xrdb xrefresh xfontsel $(RUNDIRS) \
  	xset xsetroot xstdcmap xterm xwd xwininfo xwud $(PEXDIRS)
