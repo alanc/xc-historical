@@ -1,4 +1,4 @@
-.\" $XConsortium: RELNOTES.ms,v 1.2 94/04/19 20:39:41 gildea Exp $
+.\" $XConsortium: RELNOTES.ms,v 1.3 94/04/21 17:33:07 rws Exp $
 .\" X11R6 Release Notes.  Use troff -ms macros
 .\"
 .ie t \{
@@ -37,7 +37,7 @@
 
 X Consortium
 .sp 6
-April 1994
+April 21, 1994
 .LP
 .bp
 .sp 8
@@ -2207,6 +2207,7 @@ this list is surely incomplete.
 .br
 Mark Linton (Silicon Graphics);
 Chuck Price (SunSoft);
+Charles Brauer (Fujitsu);
 Steve Churchill (Fujitsu);
 Steve Tang (Stanford University);
 Douglas Pan (Fujitsu);
