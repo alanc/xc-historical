@@ -1,8 +1,9 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 1.1 91/07/24 16:35:30 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 91/07/25 19:51:27 hersh Exp $
 XCOMM
 XCOMM 
-XCOMM Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
+$XCCOPY
+XCOMM Copyright (c) 1990, 1991 by Sun Microsystems, Inc. 
 XCOMM 
 XCOMM			 All Rights Reserved
 XCOMM 
@@ -10,8 +11,8 @@ XCOMM Permission to use, copy, modify, and distribute this software and its
 XCOMM documentation for any purpose and without fee is hereby granted, 
 XCOMM provided that the above copyright notice appear in all copies and that
 XCOMM both that copyright notice and this permission notice appear in 
-XCOMM supporting documentation, and that the names of Sun Microsystems,
-XCOMM the X Consortium, and MIT not be used in advertising or publicity 
+XCOMM supporting documentation, and that the name of Sun Microsystems,
+XCOMM not be used in advertising or publicity 
 XCOMM pertaining to distribution of the software without specific, written 
 XCOMM prior permission.  
 XCOMM 
