@@ -13,5 +13,5 @@ enum orientation {
     PORTRAIT = 0,
     LANDSCAPE = 1,
     UPSIDE_DOWN = 2,
-    LANDSCAPE_LEFT = 3,
+    LANDSCAPE_LEFT = 3
   };
