@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Logo.c,v 1.10 89/05/11 13:35:14 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Logo.c,v 1.11 89/10/09 16:20:39 jim Exp $";
 #endif
 
 /*
@@ -43,7 +43,7 @@ static Boolean SetValues();
 
 LogoClassRec logoClassRec = {
     { /* core fields */
-    /* superclass		*/	&widgetClassRec,
+    /* superclass		*/	(WidgetClass) &simpleClassRec,
     /* class_name		*/	"Logo",
     /* widget_size		*/	sizeof(LogoRec),
     /* class_initialize		*/	XawInitializeWidgetSet,
@@ -75,6 +75,12 @@ LogoClassRec logoClassRec = {
     /* query_geometry		*/	XtInheritQueryGeometry,
     /* display_accelerator	*/	XtInheritDisplayAccelerator,
     /* extension		*/	NULL
+    },
+    { /* simple fields */
+    /* change_sensitive         */      XtInheritChangeSensitive
+    },
+    { /* logo fields */
+    /* ignore                   */      0
     }
 };
 

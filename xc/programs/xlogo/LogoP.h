@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LogoP.h,v 1.5 89/03/30 16:05:43 jim Exp $
+* $XConsortium: LogoP.h,v 1.6 89/05/11 01:05:52 kit Exp $
 */
 
 /*
@@ -22,6 +22,7 @@ without express or implied warranty.
 #define _XawLogoP_h
 
 #include <X11/Xaw/Logo.h>
+#include <X11/Xaw/SimpleP.h>
 
 typedef struct {
 	 Pixel	 fgpixel;
@@ -32,6 +33,7 @@ typedef struct {
 
 typedef struct _LogoRec {
    CorePart core;
+   SimplePart simple;
    LogoPart logo;
    } LogoRec;
 
@@ -39,6 +41,7 @@ typedef struct {int dummy;} LogoClassPart;
 
 typedef struct _LogoClassRec {
    CoreClassPart core_class;
+   SimpleClassPart simple_class;
    LogoClassPart logo_class;
    } LogoClassRec;
 
