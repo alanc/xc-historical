@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.11 91/05/10 17:39:47 keith Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.12 91/05/13 23:44:14 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -89,6 +89,11 @@ typedef struct _Screen {
     int			GCPrivateLen;
     unsigned		*GCPrivateSizes;
     unsigned		totalGCSize;
+#ifdef PIXPRIV
+    int			PixmapPrivateLen;
+    unsigned		*PixmapPrivateSizes;
+    unsigned		totalPixmapSize;
+#endif
 
     /* Random screen procedures */
 
@@ -113,7 +118,7 @@ typedef struct _Screen {
     Bool (* UnrealizeWindow)();		/* pWin */
     int  (* ValidateTree)();		/* pParent, pChild, kind */
     void (* PostValidateTree)();	/* pParent, pChild, kind */
-    void (* WindowExposures)();       /* pWin: WindowPtr, pRegion: RegionPtr */
+    void (* WindowExposures)();         /* pWin, pRegion, pBSRegion */
     void (* PaintWindowBackground)();	/* pWin, pRgn, which */
     void (* PaintWindowBorder)();	/* pWin, pRgn, which */
     void (* CopyWindow)();		/* pWin, oldPt, pOldRegion */
@@ -195,6 +200,10 @@ typedef struct _Screen {
 
     /* anybody can get a piece of this array */
     DevUnion	*devPrivates;
+
+    Bool (* CreateScreenResources)();   /* pScreen */
+    Bool (* ModifyPixmapHeader)(); /* pPixmap, w, h, depth, bpp, devKind, pixdata */
+    PixmapPtr pScratchPixmap;		/* scratch pixmap "pool" */
 } ScreenRec;
 
 typedef struct _ScreenInfo {
