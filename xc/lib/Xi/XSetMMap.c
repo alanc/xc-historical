@@ -1,4 +1,4 @@
-/* $XConsortium: XSetMMap.c,v 1.3 89/09/25 16:21:14 gms Exp $ */
+/* $XConsortium: XSetMMap.c,v 1.4 89/12/06 20:38:53 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -59,7 +59,7 @@ XSetDeviceModifierMapping (dpy, dev, modmap)
     bcopy(modmap->modifiermap, (char *)&req[1], mapSize);
 
     (void) _XReply(dpy, (xReply *) &rep,
-	(sizeof(xSetModifierMappingReply) - sizeof(xReply)) >> 2, xTrue);
+	(sizeof(xSetDeviceModifierMappingReply) - sizeof(xReply)) >> 2, xTrue);
 
     UnlockDisplay(dpy);
     SyncHandle();
