@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.15 93/08/24 18:49:58 gildea Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.16 93/09/06 14:50:58 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -128,7 +128,7 @@ typedef struct _Screen {
 	int /*h*/,
 	unsigned int /*format*/,
 	unsigned long /*planeMask*/,
-	pointer /*pdstLine*/
+	char * /*pdstLine*/
 #endif
 );
 
@@ -139,7 +139,7 @@ typedef struct _Screen {
 	DDXPointPtr /*ppt*/,
 	int */*pwidth*/,
 	int /*nspans*/,
-	unsigned int */*pdstStart*/
+	char * /*pdstStart*/
 #endif
 );
 
@@ -634,9 +634,9 @@ typedef struct _Screen {
     /* os layer procedures */
     void (* BlockHandler)(
 #if NeedNestedPrototypes
-	int /*i*/,
+	int /*screenNum*/,
 	pointer /*blockData*/,
-	pointer /*pTimeout*/,
+	struct timeval ** /*pTimeout*/,
 	pointer /*pReadmask*/
 #endif
 );
