@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Viewport.c,v 1.19 88/02/26 10:15:15 swick Exp $";
+static char rcsid[] = "$Header: Viewport.c,v 1.24 88/08/25 15:57:02 swick Exp $";
 #endif lint
 
 
@@ -53,7 +53,7 @@ static XtResource resources[] = {
 };
 #undef offset
 
-static void ClassInitialize(), Initialize(), ConstraintInitialize(),
+static void Initialize(), ConstraintInitialize(),
     Realize(), Resize(), ChangeManaged();
 static Boolean SetValues(), DoLayout();
 static XtGeometryResult GeometryManager(), PreferredGeometry();
@@ -64,7 +64,7 @@ ViewportClassRec viewportClassRec = {
     /* superclass	  */	(WidgetClass) superclass,
     /* class_name	  */	"Viewport",
     /* widget_size	  */	sizeof(ViewportRec),
-    /* class_initialize	  */	ClassInitialize,
+    /* class_initialize	  */	NULL,
     /* class_part_init    */    NULL,
     /* class_inited	  */	FALSE,
     /* initialize	  */	Initialize,
@@ -81,7 +81,7 @@ ViewportClassRec viewportClassRec = {
     /* visible_interest	  */	FALSE,
     /* destroy		  */	NULL,
     /* resize		  */	Resize,
-    /* expose		  */	NULL, /* inherited */
+    /* expose		  */	XtInheritExpose,
     /* set_values	  */	SetValues,
     /* set_values_hook    */    NULL,
     /* set_values_almost  */    XtInheritSetValuesAlmost,
@@ -91,14 +91,15 @@ ViewportClassRec viewportClassRec = {
     /* callback_private	  */	NULL,
     /* tm_table    	  */	NULL,
     /* query_geometry     */    PreferredGeometry,
+    /* display_accelerator*/	XtInheritDisplayAccelerator,
+    /* extension          */	NULL
   },
   { /* composite_class fields */
     /* geometry_manager	  */	GeometryManager,
     /* change_managed	  */	ChangeManaged,
-    /* insert_child	  */	NULL, /* inherited */
-    /* delete_child	  */	NULL, /* inherited */
-    /* move_focus_to_next */	NULL,
-    /* move_focus_to_prev */	NULL
+    /* insert_child	  */	XtInheritInsertChild,
+    /* delete_child	  */	XtInheritDeleteChild,
+    /* extension          */	NULL
   },
   { /* constraint_class fields */
     /* subresourses	  */	NULL,
@@ -106,7 +107,8 @@ ViewportClassRec viewportClassRec = {
     /* constraint_size	  */	sizeof(ViewportConstraintsRec),
     /* initialize	  */	ConstraintInitialize,
     /* destroy		  */	NULL,
-    /* set_values	  */	NULL
+    /* set_values	  */	NULL,
+    /* extension          */	NULL
   },
   { /* form_class fields */
     /* empty		  */	0
@@ -118,16 +120,6 @@ ViewportClassRec viewportClassRec = {
 
 
 WidgetClass viewportWidgetClass = (WidgetClass)&viewportClassRec;
-
-static void ClassInitialize()
-{
-#define Inherit(method) \
-    viewportClassRec.method = superclass->method;
-
-    Inherit(core_class.expose);
-    Inherit(composite_class.insert_child);
-    Inherit(composite_class.delete_child);
-}
 
 static Widget CreateScrollbar(w, horizontal)
     ViewportWidget w;
@@ -484,7 +476,8 @@ static void Resize(widget)
 		  needshoriz ? (w->viewport.usebottom ? 0 :
 				w->viewport.horiz_bar->core.height +
 			        w->viewport.horiz_bar->core.border_width) : 0);
-    XtResizeWidget( clip, clip_width, clip_height, 0 );
+    XtResizeWidget( clip, (Dimension)clip_width,
+		    (Dimension)clip_height, (Dimension)0 );
 	
     if (w->viewport.horiz_bar) {
 	register Widget bar = w->viewport.horiz_bar;
@@ -530,7 +523,7 @@ static void Resize(widget)
 
     if (child) {
 	XtResizeWidget( child, (Dimension)child_width,
-		        (Dimension)child_height, 0 );
+		        (Dimension)child_height, (Dimension)0 );
 	MoveChild(w, child->core.x, child->core.y);
     }
 }
@@ -673,6 +666,9 @@ static Boolean DoLayout(w, width, height)
 {
     XtWidgetGeometry geometry;
     XtGeometryResult result;
+
+    if (width == w->core.width && height == w->core.height)
+	return False;
 
     geometry.request_mode = CWWidth | CWHeight;
     geometry.width = width;
