@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: util.c,v 2.23 89/06/13 10:36:30 converse Exp $";
+    "$XConsortium: util.c,v 2.24 89/06/28 15:19:10 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -34,16 +34,29 @@ static char rcs_id[] =
 #include <errno.h>
 #include <ctype.h>
 
+char *SysErrorMsg (n)
+    int n;
+{
+    extern char *sys_errlist[];
+    extern int sys_nerr;
+    char *s = ((n >= 0 && n < sys_nerr) ? sys_errlist[n] : "unknown error");
+
+    return (s ? s : "no such error");
+}
+
 /* Something went wrong; panic and quit. */
 
 Punt(str)
   char *str;
 {
     extern void abort();
-    (void) fprintf(stderr, "%s\nerrno = %d\007\n", str, errno);
-    (void) fflush(stderr);
-    if (app_resources.debug)
+    (void) fprintf( stderr, "%s: %s\nerrno = %d; %s\007\n",
+		    progName, str, errno, SysErrorMsg(errno) );
+    if (app_resources.debug) {
+	(void)fprintf(stderr, "forcing core dump.\n");
+	(void) fflush(stderr);
 	abort();
+    }
     else {
 	(void)fprintf(stderr, "exiting.\n");
 	(void)fflush(stderr);
