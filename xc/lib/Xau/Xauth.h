@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: Xauth.h,v 1.1 88/11/22 15:27:19 jim Exp $
+ * $XConsortium: Xauth.h,v 1.2 88/12/08 16:40:36 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -43,10 +43,17 @@ int	    XauLockAuth		(char   *file_name,	int	retries,
 int	    XauUnlockAuth	(char   *file_name);
 int	    XauWriteAuth	(FILE   *auth_file,	Xauth	*auth);
 Xauth	    *XauGetAuthByName	(char	*display_name);
-Xauth	    *XauGetAuthByAddr	(unsigned short	family, 
-			         unsigned short	address_length,	char	*address, 
-			         unsigned short	number_length,	char	*number,
-				 unsigned short name_length,	char	*name);
+/*
+ * the function is not declared ANSI style, so the old-style
+ * default promotion rules must be used in these prototypes
+ */
+Xauth	    *XauGetAuthByAddr	(/*unsigned short*/ int	    family, 
+			         /*unsigned short*/ int	    address_length,
+				 char	*address, 
+			         /*unsigned short*/ int	    number_length,
+				 char	*number,
+				 /*unsigned short*/ int name_length,
+				 char	*name);
 void	    XauDisposeAuth	(Xauth	*auth);
 #else
 extern char *XauFileName	();
