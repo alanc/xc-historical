@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.6 87/12/11 09:41:44 swick Locked $";
+static char rcsid[] = "$Header: Text.c,v 1.7 87/12/14 09:20:41 swick Locked $";
 #endif lint
 
 /*
@@ -26,14 +26,15 @@ static char rcsid[] = "$Header: Text.c,v 1.6 87/12/11 09:41:44 swick Locked $";
  */
 /* File: Text.c */
 
-#include "Intrinsic.h"
-#include "Text.h"
+#include <X/Intrinsic.h>
+#include <X/Text.h>
+#include <X/Scroll.h>
+#include <X/Atoms.h>
+#include <X/Xutil.h>
+#include <X/Xos.h>
 #include "TextP.h"
-#include "Scroll.h"
-#include "Atoms.h"
-#include <sys/file.h>
-#include <X11/Xutil.h>
-#include <strings.h>
+
+Atom FMT8BIT;
 
 extern void bcopy();
 
@@ -43,6 +44,7 @@ extern void bcopy();
 #define max(x,y)	((x) > (y) ? (x) : (y))
 #define GETLASTPOS  (*(ctx->text.source->scan)) (ctx->text.source, 0, XtstFile, XtsdRight, 1, TRUE)
 #define BUTTONMASK 0x143d
+#define DEFAULTVALUE -9999
 
 #define  yMargin 2
 #define zeroPosition ((XtTextPosition) 0)
@@ -58,6 +60,10 @@ extern void BuildLineTable ();
 extern caddr_t defaultTextTranslations;
 
 static XtResource resources[] = {
+    {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
+        XtOffset(TextWidget, core.width), XrmRString, "100"},
+    {XtNheight, XtCHeight, XrmRInt, sizeof(int),
+        XtOffset(TextWidget,core.height),XrmRString, "-9999" /*DEFAULTVALUE*/},
     {XtNtextOptions, XtCTextOptions, XrmRInt, sizeof (int),
         XtOffset(TextWidget, text.options), XrmRString, "0"},
     {XtNdisplayPosition, XtCTextPosition, XrmRInt,
@@ -83,6 +89,13 @@ static XtResource resources[] = {
 };
 
   
+static void ClassInitialize()
+{
+    FMT8BIT = XrmAtomToQuark("FMT8BIT");
+}
+
+
+/* ARGSUSED */
 static void Initialize(request, new, args, num_args)
  Widget request, new;
  ArgList args;
@@ -90,11 +103,9 @@ static void Initialize(request, new, args, num_args)
 {
     TextWidget ctx = (TextWidget) new;
 
-    if (ctx->core.width == 0)
-	ctx->core.width = 200;
-    if (ctx->core.height == 0)
-	ctx->core.height = 200;
-
+    if (ctx->core.height == DEFAULTVALUE)
+	ctx->core.height = (*ctx->text.sink->maxHeight)(new, 1)
+			   + (2*yMargin) + 2;
     ctx->text.lt.lines = 0;
     ctx->text.lt.info = NULL;
     ctx->text.s.left = ctx->text.s.right = 0;
@@ -111,8 +122,8 @@ static void Initialize(request, new, args, num_args)
     ctx->text.showposition = TRUE;
     ctx->text.lastPos = GETLASTPOS;
     ctx->text.dialog = NULL;
-    ctx->text.updateFrom = (XtTextPosition *) XtMalloc(1);
-    ctx->text.updateTo = (XtTextPosition *) XtMalloc(1);
+    ctx->text.updateFrom = (XtTextPosition *) XtMalloc((unsigned)1);
+    ctx->text.updateTo = (XtTextPosition *) XtMalloc((unsigned)1);
     ctx->text.numranges = ctx->text.maxranges = 0;
     ctx->text.gc = DefaultGCOfScreen(XtScreen(ctx));
     ctx->text.hasfocus = FALSE;
@@ -350,14 +361,14 @@ static void BuildLineTable (ctx, position)
     Boolean     rebuild;
 
     rebuild = (Boolean) (position != ctx->text.lt.top);
-    lines = (*(ctx->text.sink->maxLines))(ctx, ctx->core.height);
+    lines = (*(ctx->text.sink->maxLines))((Widget)ctx, ctx->core.height);
     if (ctx->text.lt.info != NULL && lines != ctx->text.lt.lines) {
 	XtFree((char *) ctx->text.lt.info);
 	ctx->text.lt.info = NULL;
     }
     if (ctx->text.lt.info == NULL) {
 	ctx->text.lt.info = (LineTableEntry *)
-	    XtCalloc(lines + 1, (unsigned)sizeof(LineTableEntry));
+	    XtCalloc((unsigned)lines + 1, (unsigned)sizeof(LineTableEntry));
 	for (line = 0; line < lines; line++) {
 	    ctx->text.lt.info[line].position = 0;
 	    ctx->text.lt.info[line].y = 0;
@@ -378,7 +389,7 @@ static void BuildLineTable (ctx, position)
 	    ctx->text.lt.info[line].position = startPos;
 	    if (startPos <= ctx->text.lastPos) {
 		width = (ctx->text.options & resizeWidth) ? 9999 : ctx->core.width - x;
-		(*(ctx->text.sink->findPosition))(ctx, 
+		(*(ctx->text.sink->findPosition))((Widget)ctx, 
                         startPos, x,
 			width, (ctx->text.options & wordBreak),
 			&endPos, &realW, &realH);
@@ -1140,7 +1151,7 @@ _XtTextShowPosition(ctx)
 	    } else {
 		ctx->text.numranges = 0;
 		if (ctx->text.lt.top != first)
-		    DisplayTextWindow(ctx);
+		    DisplayTextWindow((Widget)ctx);
 	    }
 	}
     }
@@ -1234,7 +1245,7 @@ Boolean last;
      *     call our expose proc.
      */
     if (redisplay) 
-	DisplayTextWindow(newtw);
+	DisplayTextWindow(new);
 
     _XtTextExecuteUpdate(newtw);
 
@@ -1246,10 +1257,10 @@ Boolean last;
 void XtTextDisplay (w)
     Widget w;
 {
-    TextWidget ctx = (TextWidget) w;;
+    TextWidget ctx = (TextWidget) w;
 
 	_XtTextPrepareToUpdate(ctx);
-	DisplayTextWindow(ctx);
+	DisplayTextWindow(w);
 	_XtTextExecuteUpdate(ctx);
 }
 
@@ -1284,7 +1295,7 @@ void XtTextSetLastPos (w, lastPos)
 	(*(ctx->text.source->setLastPos))(ctx->text.source, lastPos);
 	ctx->text.lastPos = GETLASTPOS;
 	ForceBuildLineTable(ctx);
-	DisplayTextWindow(ctx);
+	DisplayTextWindow(w);
 	_XtTextExecuteUpdate(ctx);
 }
 
@@ -1301,7 +1312,7 @@ void XtTextGetSelectionPos(w, left, right)
 
 void XtTextNewSource(w, source, startPos)
     Widget w;
-    XtTextSource   *source;
+    XtTextSource   source;
     XtTextPosition startPos;
 {
     TextWidget ctx = (TextWidget) w;
@@ -1313,7 +1324,7 @@ void XtTextNewSource(w, source, startPos)
 	ctx->text.lastPos = GETLASTPOS;
 	ForceBuildLineTable(ctx);
 	_XtTextPrepareToUpdate(ctx);
-	DisplayTextWindow(ctx);
+	DisplayTextWindow(w);
 	_XtTextExecuteUpdate(ctx);
 }
 
@@ -1452,7 +1463,7 @@ static StartAction(ctx, event)
    XEvent *event;
 {
     _XtTextPrepareToUpdate(ctx);
-    if (event->type == ButtonPress) TextAcceptFocus(ctx);
+    if (event->type == ButtonPress) TextAcceptFocus((Widget)ctx);
 /* this code is wrong if actions bound to non-button events! */
     ctx->text.time = event->xbutton.time;
     ctx->text.ev_x = event->xbutton.x;
@@ -2092,7 +2103,7 @@ static void RedrawDisplay(ctx, event)
 {
    StartAction(ctx, event);
     ForceBuildLineTable(ctx);
-    DisplayTextWindow(ctx);
+    DisplayTextWindow((Widget)ctx);
    EndAction(ctx);
 }
 
@@ -2360,7 +2371,7 @@ TextClassRec textClassRec = {
     /* superclass       */      (WidgetClass) &widgetClassRec,
     /* class_name       */      "Text",
     /* widget_size      */      sizeof(TextRec),
-    /* class_initialize */      NULL,
+    /* class_initialize */      ClassInitialize,
     /* class_inited     */      FALSE,
     /* initialize       */      Initialize,
     /* realize          */      Realize,
@@ -2380,5 +2391,3 @@ TextClassRec textClassRec = {
 };
 
 WidgetClass textWidgetClass = (WidgetClass)&textClassRec;
-
- 
