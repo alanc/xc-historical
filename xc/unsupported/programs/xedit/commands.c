@@ -1,4 +1,4 @@
-/* $XConsortium: commands.c,v 1.30 91/01/10 21:32:40 gildea Exp $ */
+/* $XConsortium: commands.c,v 1.31 91/05/11 15:43:07 gildea Exp $ */
 
 /*
  *			  COPYRIGHT 1987
@@ -101,7 +101,7 @@ String buf, filename;
   return (buf);
 }
   
-#if defined(USG) && !defined(CRAY) && !defined(ISC22)
+#if defined(USG) && !defined(CRAY)
 int rename (from, to)
     char *from, *to;
 {
