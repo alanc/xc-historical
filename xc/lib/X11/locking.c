@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.24 94/01/17 11:21:40 kaleb Exp $
+ * $XConsortium: locking.c,v 1.25 94/01/20 16:04:01 gildea Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -235,6 +235,27 @@ static void _XUnlockDisplay(dpy)
 }
 
 
+static struct _XCVList *_XCreateCVL(
+#if NeedFunctionPrototypes
+    void
+#endif
+    )
+{
+    struct _XCVList *cvl;
+
+    cvl = (struct _XCVList *)Xmalloc(sizeof(struct _XCVList));
+    if (!cvl)
+	return NULL;
+    cvl->cv = xcondition_malloc();
+    if (!cvl->cv) {
+	Xfree(cvl);
+	return NULL;
+    }
+    xcondition_init(cvl->cv);
+    cvl->next = NULL;
+    return cvl;
+}
+
 /* Put ourselves on the queue to read the connection.
    Allocates and returns a queue element. */
 
@@ -244,10 +265,7 @@ _XPushReader(tail)
 {
     struct _XCVList *cvl;
 
-    cvl = (struct _XCVList *)Xmalloc(sizeof(struct _XCVList));
-    cvl->cv = xcondition_malloc();
-    xcondition_init(cvl->cv);
-    cvl->next = NULL;
+    cvl = _XCreateCVL();
 #ifdef XTHREADS_DEBUG
     printf("_XPushReader called in thread %x, pushing %x\n",
 	   xthread_self(), cvl);
@@ -259,8 +277,9 @@ _XPushReader(tail)
 
 /* signal the next thread waiting to read the connection */
 
-static void _XPopReader(dpy, list, tail)
+static void _XPopReader(dpy, cvl, list, tail)
     Display *dpy;
+    struct _XCVList *cvl;
     struct _XCVList **list;
     struct _XCVList ***tail;
 {
@@ -275,6 +294,14 @@ static void _XPopReader(dpy, list, tail)
 	/* we never added ourself in the first place */
 	return;
 
+    /* with XLockDisplay, which puts itself on the front of the event
+       awaiters list, we the reader may not be at the front of the
+       list.  So we have to look for ourselves.
+       */
+    while (cvl && cvl != front) {
+	list = &front->next;
+	front = *list;
+    }
     *list = front->next;
     if (*tail == &front->next)	/* did we free the last elt? */
 	*tail = list;
@@ -422,6 +449,29 @@ static void _XFancyLockDisplay(dpy)
     _XDisplayLockWait(dpy);
 }
 
+/*
+ * _XReply is allowed to exit from select/poll and clean up even if a
+ * user-level lock is in force, so it uses this instead of _XFancyLockDisplay.
+ */
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
+static void _XInternalLockDisplay(dpy, file, line)
+    Display *dpy;
+    char *file;			/* source file, from macro */
+    int line;
+#else
+static void _XInternalLockDisplay(dpy)
+    Display *dpy;
+#endif
+{
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
+    _XLockDisplay(dpy, file, line);
+#else
+    _XLockDisplay(dpy);
+#endif
+    if (!(dpy->flags & XlibDisplayReply))
+	_XDisplayLockWait(dpy);
+}
+
 #if NeedFunctionPrototypes
 static void _XUserLockDisplay(
     register Display* dpy)
@@ -430,14 +480,17 @@ static void _XUserLockDisplay(dpy)
     register Display* dpy;
 #endif
 {
-    /* substitute fancier, slower lock function */
-    dpy->lock_fns->lock_display = _XFancyLockDisplay;
-    /* really only needs to be done once */
-    dpy->lock_fns->lock_wait = _XDisplayLockWait;
-    if (xthread_have_id(dpy->lock->locking_thread)) {
-	/* XXX - we are in XLockDisplay, error.  Print message? */
+    if (++dpy->lock->locking_level == 1) {
+	/* substitute fancier, slower lock function */
+	dpy->lock_fns->lock_display = _XFancyLockDisplay;
+	dpy->lock_fns->internal_lock_display = _XInternalLockDisplay;
+	/* really only needs to be done once */
+	dpy->lock_fns->lock_wait = _XDisplayLockWait;
+	if (xthread_have_id(dpy->lock->locking_thread)) {
+	    /* XXX - we are in XLockDisplay, error.  Print message? */
+	}
+	dpy->lock->locking_thread = xthread_self();
     }
-    dpy->lock->locking_thread = xthread_self();
 }
 
 #if NeedFunctionPrototypes
@@ -451,13 +504,17 @@ void _XUserUnlockDisplay(dpy)
     if (!xthread_have_id(dpy->lock->locking_thread)) {
 	/* XXX - we are not in XLockDisplay, error.  Print message? */
     }
-    /* signal other threads that might be waiting in XLockDisplay */
-    if (dpy->lock->cv)
-	xcondition_broadcast(dpy->lock->cv);
-    /* substitute function back */
-    dpy->lock_fns->lock_display = _XLockDisplay;
-    dpy->lock_fns->lock_wait = NULL;
-    xthread_clear_id(dpy->lock->locking_thread);
+    if (--dpy->lock->locking_level <= 0) {
+	/* signal other threads that might be waiting in XLockDisplay */
+	if (dpy->lock->cv)
+	    xcondition_broadcast(dpy->lock->cv);
+	/* substitute function back */
+	dpy->lock_fns->lock_display = _XLockDisplay;
+	dpy->lock_fns->internal_lock_display = _XLockDisplay;
+	dpy->lock_fns->lock_wait = NULL;
+	xthread_clear_id(dpy->lock->locking_thread);
+	dpy->lock->locking_level = 0; /* paranoia */
+    }
 }
 
 /* returns 0 if initialized ok, -1 if unable to allocate
@@ -479,10 +536,11 @@ static int _XInitDisplayLock(dpy)
     dpy->lock->reply_awaiters_tail = &dpy->lock->reply_awaiters;
     dpy->lock->event_awaiters = NULL;
     dpy->lock->event_awaiters_tail = &dpy->lock->event_awaiters;
+    dpy->lock->locking_level = 0;
     xthread_clear_id(dpy->lock->locking_thread);
+    dpy->lock->cv = NULL;
     xthread_clear_id(dpy->lock->reading_thread);
     xthread_clear_id(dpy->lock->conni_thread);
-    dpy->lock->cv = NULL;
 
     dpy->lock->mutex = xmutex_malloc();
     if (dpy->lock->mutex==NULL)
@@ -490,6 +548,7 @@ static int _XInitDisplayLock(dpy)
     xmutex_init(dpy->lock->mutex);
 
     dpy->lock_fns->lock_display = _XLockDisplay;
+    dpy->lock_fns->internal_lock_display = _XLockDisplay;
     dpy->lock_fns->unlock_display = _XUnlockDisplay;
     dpy->lock_fns->user_lock_display = _XUserLockDisplay;
     dpy->lock_fns->user_unlock_display = _XUserUnlockDisplay;
@@ -518,6 +577,7 @@ Status XInitThreads()
     _XLockMutex_fn = _XLockMutex;
     _XUnlockMutex_fn = _XUnlockMutex;
     _XCreateMutex_fn = _XCreateMutex;
+    _XCreateCVL_fn = _XCreateCVL;
     _XFreeMutex_fn = _XFreeMutex;
     _XInitDisplayLock_fn = _XInitDisplayLock;
     _XFreeDisplayLock_fn = _XFreeDisplayLock;
