@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.4 92/04/08 17:19:48 keith Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 92/05/15 14:04:19 keith Exp $
 #define DoNormalLib YES
 #define DoSharedLib NO
 #define DoDebugLib NO
@@ -47,24 +47,11 @@ LibraryObjectRule()
 NormalLibraryTarget(memleak,$(OBJS))
 InstallLibrary(memleak,$(USRLIBDIR))
 #endif
-#if DoProfileLib
-ProfiledLibraryTarget(memleak,$(OBJS))
-InstallLibrary(memleak_p,$(USRLIBDIR))
-#endif
-#if DoDebugLib
-DebuggedLibraryTarget(memleak,$(OBJS))
-InstallLibrary(memleak_d,$(USRLIBDIR))
-#endif
 
-InstallNamedProg(find-routines.sh,find-routines,$(BINDIR))
+InstallNamedProg(find-rtns.sh,find-routines,$(BINDIR))
 
 LintLibraryTarget(memleak,$(SRCS))
 InstallLintLibrary(memleak,$(LINTLIBDIR))
-
-#ifdef HasSaberC
-saber_src:
-	XCOMM load $(CFLAGS) $(SRCS)
-#endif
 
 DependTarget()
 
