@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.8 90/05/03 16:25:02 keith Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.9 90/11/29 19:32:10 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -71,7 +71,7 @@ typedef unsigned long	*glyphPointer;
 
 static void cfbPolyGlyphBlt8Clipped();
 
-#if defined(HAS_STIPPLE_CODE) && !defined(GLYPHROP)
+#if defined(HAS_STIPPLE_CODE) && !defined(GLYPHROP) && !defined(USE_LEFTBITS)
 #define USE_STIPPLE_CODE
 #endif
 
@@ -111,9 +111,6 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int			widthGlyph;
     unsigned long	widthMask;
 #endif
-#ifdef USE_STIPPLE_CODE
-    Bool		isWide;
-#endif
 
     
     /* compute an approximate (but covering) bounding box */
@@ -128,11 +125,6 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     bbox.x2 += ppci[nglyph-1]->metrics.rightSideBearing;
     bbox.y1 = -pfi->maxbounds.metrics.ascent;
     bbox.y2 = pfi->maxbounds.metrics.descent;
-
-#ifdef USE_STIPPLE_CODE
-    isWide = (pfi->maxbounds.metrics.rightSideBearing -
-	     pfi->minbounds.metrics.leftSideBearing) > 28;
-#endif
 
     clip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
     extents = &clip->extents;
@@ -191,7 +183,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	widthMask = endtab[w];
 #endif
 #ifdef USE_STIPPLE_CODE
-	if (isWide)
+	if (w + xoff > 32)
 	    stipplestackwide(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
 	else
 	    stipplestack(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
@@ -332,9 +324,6 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int			widthGlyph;
     unsigned long	widthMask;
 #endif
-#ifdef USE_STIPPLE_CODE
-    Bool		isWide;
-#endif
 
 #ifdef GLYPHROP
     cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
@@ -357,11 +346,6 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     widthDst = bwidthDst >> 2;
     maxAscent = pfi->maxbounds.metrics.ascent;
     maxDescent = pfi->maxbounds.metrics.descent;
-
-#ifdef USE_STIPPLE_CODE
-    isWide = (pfi->maxbounds.metrics.rightSideBearing -
-	     pfi->minbounds.metrics.leftSideBearing) > 28;
-#endif
 
     pRegion = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
 
@@ -392,11 +376,13 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	xG = x + pci->metrics.leftSideBearing;
 	yG = y - pci->metrics.ascent;
 	dstLine = pdstBase + yG * widthDst + (xG >> 2);
-	xoff = xG & 0x3;
-	ew = (w + xoff + 3) >> 2;
 	hTmp = pci->metrics.descent + pci->metrics.ascent;
+	xoff = xG & 0x3;
+#ifndef USE_STIPPLE_CODE
+	ew = (w + xoff + 3) >> 2;
 	widthDiff = widthDst - ew;
 	dst = dstLine - widthDiff;
+#endif
 #ifdef USE_LEFTBITS
 	widthGlyph = GLYPHWIDTHBYTESPADDED (pci);
 	widthMask = endtab[w];
@@ -415,7 +401,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    glyphBits = clips;
 	    /* fall through */
 	case rgnIN:
-	    if (isWide)
+	    if (w + xoff > 32)
 	    	stipplestackwide(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
 	    else
 	    	stipplestack(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
