@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.154 92/05/29 18:37:41 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.155 92/06/01 18:33:08 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -502,6 +502,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef DefaultCCOptions
 #define DefaultCCOptions /* as nothing: this is for floating point, etc. */
+#endif
+#ifndef NoRConst
+#define NoRConst NO /* YES if const for structs of funcs is bad */
 #endif
 #ifndef InstPgmFlags
 #define InstPgmFlags -s

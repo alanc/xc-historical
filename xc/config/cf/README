@@ -1,4 +1,4 @@
-$XConsortium$
+$XConsortium: README,v 1.24 92/06/01 19:40:32 rws Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -74,6 +74,7 @@ Imake.tmpl provides defaults for the following variables:
 	NeedVarargsPrototypes	whether varargs prototypes are supported
 	NeedWidePrototypes	whether or not to widen function prototypes
 	NoOpCDebugFlags		C compiler flags to not debug or optimize
+	NoRConst		YES if const for structs of funcs is bad
 	OSMajorVersion		major version number of operating system
 	OSMinorVersion		minor version number of operating system
 	OptimizedCDebugFlags	C compiler flags to turn on optimization
