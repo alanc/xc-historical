@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.108 91/05/11 10:11:01 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.109 91/05/11 10:17:38 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -648,7 +648,7 @@ $(IMAKE):								@@\
 	@(cd $(IMAKESRC); if [ -f Makefile ]; then \			@@\
 	echo "checking $@ in $(IMAKESRC) first..."; $(MAKE) all; else \	@@\
 	echo "bootstrapping $@ from Makefile.ini in $(IMAKESRC) first..."; \	@@\
-	$(MAKE) -f Makefile.ini BOOTSTRAPCFLAGS=$(BOOTSTRAPCFLAGS); fi; \	@@\
+	$(MAKE) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"; fi; \	@@\
 	echo "okay, continuing in $(CURRENT_DIR)")
 #endif /* UseInstalled */
 #endif /* ImakeDependency */
