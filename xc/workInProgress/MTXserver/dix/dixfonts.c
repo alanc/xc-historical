@@ -40,7 +40,7 @@ OF THIS SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.2 94/01/17 23:58:17 rob Exp $ */
+/* $XConsortium: dixfonts.c,v 1.43 93/09/20 18:03:12 dpw Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -833,7 +833,7 @@ doListFontsWithInfo(client, c)
 	    err = (*fpe_functions[fpe->type].list_next_font_with_info)
 		(client, fpe, &name, &namelen, &pFontInfo,
 		 &numFonts, c->current.private);
-#ifdef XTHREADS
+#ifndef XTHREADS
 	    if (err == Suspended)
  	    {
 		if (!c->slept)
@@ -973,7 +973,7 @@ doListFontsWithInfo(client, c)
                 if (!msg_reply)
                 {
                     err = BadAlloc;
-		    MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
+		    X_MUTEX_UNLOCK(&FPEFuncLockMutex);
                     goto bail;
                 }
 
@@ -982,7 +982,7 @@ doListFontsWithInfo(client, c)
                 {
                     ReturnPooledMessage(msg);
                     err = BadAlloc;
-		    MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
+		    X_MUTEX_UNLOCK(&FPEFuncLockMutex);
                     goto bail;
                 }
 
@@ -1115,10 +1115,14 @@ doPolyText(client, c)
     enum { NEVER_SLEPT, START_SLEEP, SLEEPING } client_state;
     FontPathElementPtr fpe;
 
+    client->pSwapReplyFunc = ReplySwapVector[X_ListFontsWithInfo];
+
     if (client->clientGone)
     {
 	fpe = c->pGC->font->fpe;
+	MTX_MUTEX_LOCK(&FPEFuncLockMutex);
 	(*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
+	MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
 
 	if (c->slept)
 	{
@@ -1145,11 +1149,22 @@ doPolyText(client, c)
 	   the FPE code to clean up after client and avoid further
 	   rendering while we clean up after ourself.  */
 	fpe = c->pGC->font->fpe;
+	MTX_MUTEX_LOCK(&FPEFuncLockMutex);
 	(*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
+	MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
 	c->pDraw = (DrawablePtr)0;
     }
 
+/*
+ * XXX:SM  Hmmmm, During MT operation I don't think that the client ever
+ *         is SLEEPING, or ever wants to START_SLEEPing.  This need further
+ *         investigation.
+ */
+#ifdef XTHREADS
+    client_state = NEVER_SLEPT;
+#else
     client_state = c->slept ? SLEEPING : NEVER_SLEPT;
+#endif /* XTHREADS */
 
     while (c->endReq - c->pElt > TextEltHeader)
     {
@@ -1232,6 +1247,7 @@ doPolyText(client, c)
 
 	    if (lgerr == Suspended)
 	    {
+#ifndef XTHREADS
 		if (!c->slept) {
 		    int len;
 		    GC *pGC;
@@ -1312,6 +1328,7 @@ doPolyText(client, c)
 		    continue;	/* on to steps 3 and 4 */
 		}
 		return TRUE;
+#endif /*!XTHREADS*/
 	    }
 	    else if (lgerr != Successful)
 	    {
@@ -1330,6 +1347,11 @@ doPolyText(client, c)
 
 bail:
 
+/*
+ * XXX:SM client_state==START_SLEEP should never be true during MT operation 
+ * but just to be safe.
+ */
+#ifdef XTHREADS
     if (client_state == START_SLEEP)
     {
 	/* Step 4 */
@@ -1343,11 +1365,13 @@ bail:
 	c->pElt = c->data;
 	return TRUE;
     }
+#endif /* !XTHREADS */
 
     if (c->err != Success) err = c->err;
     if (err != Success && c->client != serverClient) {
 	SendErrorToClient(c->client, c->reqType, 0, 0, err);
     }
+#ifndef XTHREADS
     if (c->slept)
     {
 	ClientWakeup(c->client);
@@ -1361,6 +1385,7 @@ bail:
 	xfree(c->data);
 	xfree(c);
     }
+#endif /* !XTHREADS */
     return TRUE;
 }
 
@@ -1418,7 +1443,9 @@ doImageText(client, c)
     if (client->clientGone)
     {
 	fpe = c->pGC->font->fpe;
+	MTX_MUTEX_LOCK(&FPEFuncLockMutex);
 	(*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
+	MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
 	err = Success;
 	goto bail;
     }
@@ -1431,14 +1458,22 @@ doImageText(client, c)
 	/* Our drawable has disappeared.  Treat like client died... ask
 	   the FPE code to clean up after client. */
 	fpe = c->pGC->font->fpe;
+	MTX_MUTEX_LOCK(&FPEFuncLockMutex);
 	(*fpe_functions[fpe->type].client_died) ((pointer) client, fpe);
+	MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
 	err = Success;
 	goto bail;
     }
 
     lgerr = LoadGlyphs(client, c->pGC->font, c->nChars, c->itemSize, c->data);
+
     if (lgerr == Suspended)
     {
+/*
+ * XXX:SM This is my guess: LoadGlyphs() should never be suspended in a MT
+ * environment.
+ */
+#ifndef XTHREADS
         if (!c->slept) {
 	    GC *pGC;
 	    unsigned char *data;
@@ -1496,6 +1531,7 @@ doImageText(client, c)
             ClientSleep(client, doImageText, (pointer) c);
         }
         return TRUE;
+#endif /* !XTHREADS */
     }
     else if (lgerr != Successful)
     {
@@ -1513,6 +1549,7 @@ bail:
     if (err != Success && c->client != serverClient) {
 	SendErrorToClient(c->client, c->reqType, 0, 0, err);
     }
+#ifndef XTHREADS
     if (c->slept)
     {
 	ClientWakeup(c->client);
@@ -1526,6 +1563,7 @@ bail:
 	xfree(c->data);
 	xfree(c);
     }
+#endif /* XTHREADS */
     return TRUE;
 }
 
