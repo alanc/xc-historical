@@ -1,4 +1,4 @@
-/* $XConsortium: ICEconn.h,v 1.1 94/03/18 16:02:00 mor Exp $ */
+/* $XConsortium: ICEconn.h,v 1.2 94/03/30 18:59:50 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -119,10 +119,17 @@ typedef struct {
 
 struct _IceConn {
 
+    unsigned int io_ok : 1;		     /* did an IO error occur? */
+    unsigned int swap : 1;  		     /* do we need to swap on reads? */
+    unsigned int waiting_for_byteorder : 1;  /* waiting for a ByteOrder msg? */
+    unsigned int skip_want_to_close : 1;     /* avoid shutdown negotiation? */
+    unsigned int want_to_close : 1;	     /* did we send a WantToClose? */
+    unsigned int free_asap : 1;		     /* free as soon as possible */
+    unsigned int unused1 : 2;		     /* future use */
+    unsigned int unused2 : 8;		     /* future use */
+
     IceConnectStatus connection_status; /* pending, accepted, rejected */
 
-    char waiting_for_byteorder; 	/* waiting for a ByteOrder message? */
-    char swap;  		        /* do we need to swap on reads? */
     unsigned char my_ice_version_index; /* which version are we using? */
 
     struct _XtransConnInfo *trans_conn; /* transport connection object */
@@ -144,6 +151,10 @@ struct _IceConn {
     char *scratch;			/* scratch buffer */
     unsigned long scratch_size;		/* scratch size */
 
+    int dispatch_level;			/* IceProcessMessages dispatch level */
+
+    IcePointer context;			/* context associated with caller
+					   of IceOpenConnection */
 
     /*
      * Before we read a message, the major opcode of the message must be
@@ -190,21 +201,6 @@ struct _IceConn {
     IceListenObj		listen_obj;
 
 
-    /*
-     * If we know the connection was terminated by the other side, we
-     * want to skip sending a WantToClose in IceCloseConnection.
-     */
-
-    char			skip_want_to_close;
-
-
-    /*
-     * Did we send a WantToClose message?  This will get cancelled if we
-     * receive a NoClose or a ProtocolSetup.  If this is the case, the
-     * other side will be responsible for sending a WantToClose.
-     */
-
-    char			want_to_close;
 
 
     /*
