@@ -17,6 +17,10 @@
 #define FAST_CONSTANT_OFFSET_MODE
 #endif
 
+#ifdef sparc
+#define FAST_CONSTANT_OFFSET_MODE
+#endif
+
 #ifdef FAST_CONSTANT_OFFSET_MODE
 
 #define UNROLL 8
