@@ -18,7 +18,9 @@
 		  do_dots.o do_windows.o do_movewin.o do_text.o \
 		  do_copyarea.o do_arcs.o \
 		  do_triangles.o do_complex.o do_traps.o
- SYS_LIBRARIES	= -lX11 -lm
+LOCAL_LIBRARIES = $(XLIB)
+        DEPLIBS = $(DEPXLIB)
+  SYS_LIBRARIES = -lm
 
 ComplexProgramTarget(x11perf)
 
