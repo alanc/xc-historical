@@ -14,8 +14,8 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.29 88/07/19 15:02:18 xguest Exp $
- * $Locker: jim $
+ * $Header: imake.c,v 1.30 88/07/19 18:29:53 jim Exp $
+ * $Locker: rws $
  *
  * Author:
  *	Todd Brunhoff
@@ -88,12 +88,12 @@
 #include	<stdio.h>
 #include	<ctype.h>
 #include	<sys/types.h>
-#include	<sys/file.h>
 #ifdef SYSV
 #include	<fcntl.h>
 #else	/* !SYSV */
 #include	<sys/wait.h>
 #endif	/* !SYSV */
+#include	<sys/file.h>
 #include	<signal.h>
 #include	<sys/stat.h>
 
@@ -122,7 +122,7 @@ int	InRule = FALSE;
 #define KludgeResetRule()
 #endif
 
-typedef	u_char	boolean;
+typedef	unsigned char	boolean;
 
 #ifndef apollo
 char	*cpp = "/lib/cpp";
@@ -197,7 +197,7 @@ main(argc, argv)
 	if ((tmpfd = fopen(tmpMakefile, "w+")) == NULL)
 		LogFatal("Cannot create temporary file %s.", tmpMakefile);
 
-	cppit(Imakefile, Template, tmpfd);
+	cppit(Imakefile, Template, tmpfd, tmpMakefile);
 
 	if (show) {
 		if (Makefile == NULL)
@@ -403,10 +403,11 @@ showargs(argv)
 	fprintf(stderr, "\n");
 }
 
-cppit(Imakefile, template, outfd)
+cppit(Imakefile, template, outfd, outfname)
 	char	*Imakefile;
 	char	*template;
 	FILE	*outfd;
+	char	*outfname;
 {
 	FILE	*pipeFile;
 	int	pid, pipefd[2];
@@ -454,7 +455,7 @@ cppit(Imakefile, template, outfd)
 				LogFatalI("Exit code %d.", status.w_retcode);
 #endif	/* !SYSV */
 		}
-		CleanCppOutput(outfd);
+		CleanCppOutput(outfd, outfname);
 	} else {	/* child... dup and exec cpp */
 		if (verbose)
 			showargs(cpp_argv);
@@ -578,13 +579,14 @@ char *CleanCppInput(Imakefile)
 	return(cleanedImakefile);
 }
 
-CleanCppOutput(tmpfd)
+CleanCppOutput(tmpfd, tmpfname)
 	FILE	*tmpfd;
+	char	*tmpfname;
 {
 	char	*input;
 	int	blankline = 0;
 
-	while(input = ReadLine(tmpfd)) {
+	while(input = ReadLine(tmpfd, tmpfname)) {
 		if (isempty(input)) {
 			if (blankline++)
 				continue;
@@ -640,8 +642,10 @@ isempty(line)
 	return (*line == '\0');
 }
 
-char *ReadLine(tmpfd)
+/*ARGSUSED*/
+char *ReadLine(tmpfd, tmpfname)
 	FILE	*tmpfd;
+	char	*tmpfname;
 {
 	static boolean	initialized = FALSE;
 	static char	*buf, *pline, *end;
@@ -663,7 +667,11 @@ char *ReadLine(tmpfd)
 		end = buf + st.st_size;
 		*end = '\0';
 		lseek(fileno(tmpfd), 0, 0);
+#ifdef SYSV
+		freopen(tmpfname, "w+", tmpfd);
+#else	/* !SYSV */
 		ftruncate(fileno(tmpfd), 0);
+#endif	/* !SYSV */
 		initialized = TRUE;
 #ifdef REDUCED_TO_ASCII_SPACE
 	fprintf(tmpfd, "#\n");
