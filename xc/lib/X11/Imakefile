@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.151 93/09/04 20:35:43 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.152 93/09/04 20:46:11 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -615,22 +615,22 @@ SRCS3 = \
 	UNDEFINED.c \
 	AddDIC.c \
 	AddSF.c \
-	XcmsAlNCol.c \
-	XcmsAllCol.c \
+	cmsAllNCol.c \
+	cmsAllCol.c \
 	CCC.c \
-	XcmsCmap.c \
-	XcmsColNm.c \
+	cmsCmap.c \
+	cmsColNm.c \
 	CvColW.c \
 	CvCols.c \
-	XcmsGlobls.c \
+	cmsGlobls.c \
 	IdOfPr.c \
-	XcmsInt.c \
+	cmsInt.c \
 	LRGB.c \
-	XcmsLkCol.c \
-	XcmsMath.c \
+	cmsLkCol.c \
+	cmsMath.c \
 	OfCCC.c \
 	PrOfId.c \
-	XcmsProp.c \
+	cmsProp.c \
 	QBlack.c \
 	QBlue.c \
 	QGreen.c \
@@ -642,7 +642,7 @@ SRCS3 = \
 	SetGetCols.c \
 	StCol.c \
 	StCols.c \
-	XcmsTrig.c \
+	cmsTrig.c \
 	XRGB.c \
 	FSWrap.c \
 	ICWrap.c \
@@ -692,22 +692,22 @@ OBJS3 = \
 	UNDEFINED.o \
 	AddDIC.o \
 	AddSF.o \
-	XcmsAlNCol.o \
-	XcmsAllCol.o \
+	cmsAllNCol.o \
+	cmsAllCol.o \
 	CCC.o \
-	XcmsCmap.o \
-	XcmsColNm.o \
+	cmsCmap.o \
+	cmsColNm.o \
 	CvColW.o \
 	CvCols.o \
-	XcmsGlobls.o \
+	cmsGlobls.o \
 	IdOfPr.o \
-	XcmsInt.o \
+	cmsInt.o \
 	LRGB.o \
-	XcmsLkCol.o \
-	XcmsMath.o \
+	cmsLkCol.o \
+	cmsMath.o \
 	OfCCC.o \
 	PrOfId.o \
-	XcmsProp.o \
+	cmsProp.o \
 	QBlack.o \
 	QBlue.o \
 	QGreen.o \
@@ -719,7 +719,7 @@ OBJS3 = \
 	SetGetCols.o \
 	StCol.o \
 	StCols.o \
-	XcmsTrig.o \
+	cmsTrig.o \
 	XRGB.o \
 	FSWrap.o \
 	ICWrap.o \
@@ -1022,7 +1022,7 @@ SpecialCLibObjectRule(OpenDis,$(ICONFIGFILES),$(BC_DEFINES) $(DEPEND_DEFINES))
 SpecialCLibObjectRule(Wrap,$(ICONFIGFILES),$(XDMAUTHDEFS))
 SpecialCLibObjectRule(Xstreams,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(XlibInt,$(ICONFIGFILES),$(CONN_DEFINES) $(MTT_DEFINES) $(POLL_DEFINES))
-SpecialCLibObjectRule(XcmsColNm,$(ICONFIGFILES),$(CMS_DEFINES))
+SpecialCLibObjectRule(cmsColNm,$(ICONFIGFILES),$(CMS_DEFINES))
 SpecialCLibObjectRule(globals,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(Context,$(ICONFIGFILES),$(BC_DEFINES))
 SpecialCLibObjectRule(Xrm,$(_NOOP_),$(RCONST_DEFINES))
