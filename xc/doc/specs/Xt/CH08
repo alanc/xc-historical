@@ -47,8 +47,13 @@ Callback procedure pointers for use in callback lists are of type
 .PN XtCallbackProc :
 .IN "XtCallbackProc" "" "@DEF@"
 .FD 0
-typedef void (*XtCallbackProc)(Widget \fIw\fP, XtPointer \fIclient_data\fP, \
-XtPointer \fIcall_data\fP);
+typedef void (*XtCallbackProc)(Widget, XtPointer, XtPointer);
+.br
+      Widget \fIw\fP;
+.br
+      XtPointer \fIclient_data\fP;
+.br
+      XtPointer \fIcall_data\fP;
 .FN
 .IP \fIw\fP 1i
 Specifies the widget owning the list in which the callback is registered.

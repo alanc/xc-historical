@@ -130,7 +130,9 @@ The insert_child procedure pointer in a composite widget is of type
 .PN XtWidgetProc :
 .IN "insert_child procedure" "" "@DEF@"
 .FD 0
-typedef void (*XtWidgetProc)(Widget \fIw\fP);
+typedef void (*XtWidgetProc)(Widget);
+.br
+      Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
 Passes the newly created child.
@@ -179,13 +181,16 @@ buttons are created.
 .LP
 An application controls the presentation order of a set of children by
 supplying an
-.PN XtNinsertPosition
+.IN XtNinsertPosition
+XtNinsertPosition
 resource.
 The insert_position procedure pointer in a composite widget instance is of type
 .PN XtOrderProc :
 .IN "XtOrderProc" "" "@DEF@"
 .FD 0
-typedef Cardinal (*XtOrderProc)(Widget \fIw\fP);
+typedef Cardinal (*XtOrderProc)(Widget);
+.br
+      Widget \fIw\fP;
 .FN
 .IP \fIw\fP 1i
 Passes the newly created widget.
@@ -220,7 +225,9 @@ procedure.
 The delete_child procedure pointer is of type
 .PN XtWidgetProc :
 .FD 0
-typedef void (*XtWidgetProc)(Widget \fIw\fP);
+typedef void (*XtWidgetProc)(Widget);
+.br
+      Widget \fIw\fP;
 .FN
 .IP \fIw\fP
 Passes the child being deleted.

@@ -135,8 +135,13 @@ type
 .PN XtInputCallbackProc :
 .IN "XtInputCallbackProc" "" "@DEF@"
 .FD 0
-typedef void (*XtInputCallbackProc)(XtPointer \fIclient_data\fP, \
-int* \fIsource\fP, XtInputId* \fIid\fP);
+typedef void (*XtInputCallbackProc)(XtPointer, int*, XtInputId*);
+.br
+      XtPointer \fIclient_data\fP;
+.br
+      int *\fIsource\fP;
+.br
+      XtInputId *\fIid\fP;
 .FN
 .IP \fIclient_data\fP 1i
 Passes the client data that was registered for this procedure in
@@ -221,8 +226,11 @@ type
 .PN XtTimerCallbackProc :
 .IN "XtTimerCallbackProc" "" "@DEF@"
 .FD 0
-typedef void (*XtTimerCallbackProc)(XtPointer \fIclient_data\fP, \
-XtIntervalId* \fIid\fP);
+typedef void (*XtTimerCallbackProc)(XtPointer, XtIntervalId*);
+.br
+      XtPointer \fIclient_data\fP;
+.br
+      XtIntervalId *\fIid\fP;
 .FN
 .IP \fIclient_data\fP 1i
 Specifies the client data that was registered for this procedure in
@@ -922,7 +930,11 @@ The accept_focus procedure pointer is of type
 .PN XtAcceptFocusProc :
 .IN "XtAcceptFocusProc" ""@DEF@"
 .FD 0
-typedef Boolean (*XtAcceptFocusProc)(Widget \fIw\fP, Time* \fItime\fP);
+typedef Boolean (*XtAcceptFocusProc)(Widget, Time*);
+.br
+      Widget \fIw\fP;
+.br
+      Time *\fItime\fP;
 .FN
 .IP \fIw\fP 1i
 Specifies the widget.
@@ -1376,7 +1388,9 @@ Work procedure pointers are of type
 .PN XtWorkProc :
 .IN "XtWorkProc" "" "@DEF@"
 .FD 0
-typedef Boolean (*XtWorkProc)(XtPointer \fIclient_data\fP);
+typedef Boolean (*XtWorkProc)(XtPointer);
+.br
+      XtPointer \fIclient_data\fP;
 .FN
 .IP \fIclient_data\fP 1i
 Passes the client data specified when the work proc was registered.
@@ -1655,7 +1669,7 @@ The expose procedure pointer in a widget class is of type
 .PN XtExposeProc :
 .IN "XtExposeProc" "" "@DEF@"
 .FD 0
-typedef void (*XtExposeProc)(Widget, XEvent *, Region);
+typedef void (*XtExposeProc)(Widget, XEvent*, Region);
 .br
       Widget \fIw\fP;
 .br

@@ -351,8 +351,13 @@ in which to store the result.
 procedure pointers are of type
 .PN XtResourceDefaultProc .
 .FD 0
-typedef void (*XtResourceDefaultProc)(Widget \fIw\fP, int \fIoffset\fP, \
-XrmValue* \fIvalue\fP)
+typedef void (*XtResourceDefaultProc)(Widget, int, XrmValue*)
+.br
+      Widget \fIw\fP;
+.br
+      int \fIoffset\fP;
+.br
+      XrmValue *\fIvalue\fP;
 .FN
 .IP \fIw\fP 1i
 Specifies the widget whose resource value is to be obtained.
@@ -1019,10 +1024,20 @@ A resource converter procedure pointer is of type
 .PN XtTypeConverter .
 .IN "XtTypeConverter" "" "@DEF@"
 .FD 0
-typedef Boolean (*XtTypeConverter)(Display* \fIdisplay\fP, \
-XrmValue* \fIargs\fP, Cardinal* \fInum_args\fP,
-                              XrmValue* \fIfrom\fP, XrmValue* \fIto\fP, \
-XtPointer* \fIconverter_data\fP);
+typedef Boolean (*XtTypeConverter)(Display*, XrmValue*, Cardinal*,
+                              XrmValue*, XrmValue*, XtPointer*);
+.br
+      Display *\fIdisplay\fP;
+.br
+      XrmValue *\fIargs\fP;
+.br
+      Cardinal *\fInum_args\fP;
+.br
+      XrmValue *\fIfrom\fP;
+.br
+      XrmValue *\fIto\fP;
+.br
+      XtPointer *\fIconverter_data\fP;
 .FN
 .IP \fIdisplay\fP 1i
 Specifies the Display connection with which this conversion is associated.
@@ -1196,9 +1211,18 @@ A resource destructor procedure pointer is of type
 .PN XtDestructor .
 .IN "XtDestructor" "" "@DEF@"
 .FD 0
-typedef void (*XtDestructor) (XtAppContext \fIapp\fP, XrmValue* \fIto\fP, \
-XtPointer \fIconverter_data\fP,
-                              XrmValue* \fIargs\fP, Cardinal* \fInum_args\fP)
+typedef void (*XtDestructor) (XtAppContext, XrmValue*, XtPointer, XrmValue*, \
+Cardinal*)
+.br
+      XtAppContext \fIapp\fP;
+.br
+      XrmValue *\fIto\fP;
+.br
+      XtPointer \fIconverter_data\fP;
+.br
+      XrmValue *\fIargs\fP;
+.br
+      Cardinal *\fInum_args\fP;
 .FN
 .IP \fIapp\fP 1i
 Specifies an application context in which the resource is being freed.
@@ -1501,8 +1525,13 @@ the address of a function of type
 .PN XtConvertArgProc .
 .IN "XtConvertArgProc" "" "@DEF@"
 .FD 0
-typedef void (*XtConvertArgProc)(Widget \fIobject\fP, Cardinal* \fIsize\fP, \
-XrmValue* \fIvalue\fP)
+typedef void (*XtConvertArgProc)(Widget, Cardinal*, XrmValue*)
+.br
+      Widget \fIobject\fP;
+.br
+      Cardinal *\fIsize\fP;
+.br
+      XrmValue *\fIvalue\fP;
 .FN
 .IP \fIobject\fP 1i
 Passes the object for which the resource is being
@@ -1864,10 +1893,10 @@ resources of a particular object when the object is created, the
 client can specify a value for the
 .PN Boolean
 resource
-.PN XtNinitialResourcesPersistent ,
+XtNinitialResourcesPersistent,
 .IN "XtNinitialResourcesPersistent" "" "@DEF@"
 class
-.PN XtCInitialResourcesPersistent .
+XtCInitialResourcesPersistent.
 .LP
 When
 .PN XtCreateWidget
@@ -1882,7 +1911,8 @@ thus clients which expect to destroy one or
 more objects and want resources deallocated must explicitly specify
 .PN False
 for
-.PN XtNinitialResourcesPersistent .
+.IN XtNinitialResourcesPersistent
+XtNinitialResourcesPersistent.
 .LP
 The resources are still freed and destructors called when
 .PN XtCloseDisplay
@@ -2015,8 +2045,13 @@ The get_values_hook procedure pointer is of type
 .PN XtArgsProc :
 .IN "get_values_hook procedure" "" "@DEF@"
 .FD 0
-typedef void (*XtArgsProc)(Widget \fIw\fP, ArgList \fIargs\fP, \
-Cardinal* \fInum_args\fP);
+typedef void (*XtArgsProc)(Widget, ArgList, Cardinal*);
+.br
+      Widget \fIw\fP;
+.br
+      ArgList \fIargs\fP;
+.br
+      Cardinal *\fInum_args\fP;
 .FN
 .IP \fIw\fP 1i
 Specifies the widget whose subpart resource values are to be retrieved.
@@ -2253,10 +2288,17 @@ The set_values procedure pointer in a widget class is of type
 .IN "XtSetValuesFunc" "" "@DEF@"
 .IN "set_values procedure" "" "@DEF@"
 .FD 0
-typedef Boolean (*XtSetValuesFunc)(Widget \fIcurrent\fP, \
-Widget \fIrequest\fP, Widget \fInew\fP,
-                                   ArgList \fIargs\fP, \
-Cardinal* \fInum_args\fP);
+typedef Boolean (*XtSetValuesFunc)(Widget, Widget, Widget, ArgList, Cardinal*);
+.br
+      Widget \fIcurrent\fP;
+.br
+      Widget \fIrequest\fP;
+.br
+      Widget \fInew\fP;
+.br
+      ArgList \fIargs\fP;
+.br
+      Cardinal *\fInum_args\fP;
 .FN
 .IP \fIcurrent\fP 1i
 Specifies a copy of the widget as it was before the
@@ -2379,9 +2421,16 @@ The set_values_almost procedure pointer in a widget class is of type
 .IN "set_values_almost procedure" "" "@DEF@"
 .IN "XtAlmostProc" "" "@DEF@"
 .FD 0
-typedef void (*XtAlmostProc)(Widget \fIold\fP, Widget \fInew\fP, \
-XtWidgetGeometry* \fIrequest\fP,
-                             XtWidgetGeometry* \fIreply\fP);
+typedef void (*XtAlmostProc)(Widget, Widget, XtWidgetGeometry*, \
+XtWidgetGeometry*);
+.br
+      Widget \fIold\fP;
+.br
+      Widget \fInew\fP;
+.br
+      XtWidgetGeometry *\fIrequest\fP;
+.br
+      XtWidgetGeometry *\fIreply\fP;
 .FN
 .IP \fIold\fP 1i
 Specifies a copy of the object as it was before the
@@ -2566,8 +2615,13 @@ The set_values_hook procedure pointer in a widget class is of type
 .IN "set_values_hook procedure" "" "@DEF@"
 .IN "XtArgsFunc" "" "@DEF@"
 .FD 0
-typedef Boolean (*XtArgsFunc)(Widget \fIw\fP, Arglist \fIargs\fP, \
-Cardinal* \fInum_args\fP);
+typedef Boolean (*XtArgsFunc)(Widget, Arglist, Cardinal*);
+.br
+      Widget \fIw\fP;
+.br
+      Arglist \fIargs\fP;
+.br
+      Cardinal *\fInum_args\fP;
 .FN
 .IP \fIw\fP 1i
 Specifies the widget whose subpart resource values are to be changed.

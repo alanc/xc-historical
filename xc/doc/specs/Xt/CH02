@@ -1463,7 +1463,15 @@ The initialize procedure pointer in a widget class is of type
 .IN "XtInitProc" "" "@DEF@"
 .IN "initialize procedure" "" "@DEF@"
 .FD 0
-typedef void (*XtInitProc)(Widget \fIrequest\fP, Widget \fInew\fP, ArgList \fIargs\fP, Cardinal* \fInum_args\fP);
+typedef void (*XtInitProc)(Widget, Widget, ArgList, Cardinal*);
+.br
+      Widget \fIrequest\fP;
+.br
+      Widget \fInew\fP;
+.br
+      ArgList \fIargs\fP;
+.br
+      Cardinal *\fInum_args\fP;
 .FN
 .IP \fIrequest\fP 1i
 Specifies a copy of the widget with resource values as requested by the
@@ -1623,7 +1631,13 @@ The initialize_hook procedure pointer is of type
 .IN "initialize_hook procedure" "" "@DEF@"
 .IN "XtArgsProc" "" "@DEF@"
 .FD 0
-typedef void (*XtArgsProc)(Widget \fIw\fP, ArgList \fIargs\fP, Cardinal* \fInum_args\fP);
+typedef void (*XtArgsProc)(Widget, ArgList, Cardinal*);
+.br
+      Widget \fIw\fP;
+.br
+      ArgList \fIargs\fP;
+.br
+      Cardinal *\fInum_args\fP;
 .FN
 .IP \fIw\fP 1i
 Specifies the widget.
@@ -1771,7 +1785,7 @@ The realize procedure pointer in a widget class is of type
 .PN XtRealizeProc :
 .IN "XtRealizeProc" "" "@DEF@"
 .FD 0
-typedef void (*XtRealizeProc)(Widget, XtValueMask *, XSetWindowAttributes *);
+typedef void (*XtRealizeProc)(Widget, XtValueMask*, XSetWindowAttributes*);
 .br
       Widget \fIw\fP;
 .br
@@ -2146,7 +2160,8 @@ Makes a post-order (child to parent) traversal of the widget tree
 rooted at the specified widget and, for each widget that has
 declared a callback list named ``unrealizeCallback'', executes the
 procedures on the
-.PN XtNunrealizeCallback
+.IN XtNunrealizeCallback
+XtNunrealizeCallback
 list.
 .IN "unrealizeCallback" "" "@DEF@"
 .IP \(bu 5
@@ -2323,7 +2338,9 @@ structures are of type
 .PN XtWidgetProc :
 .IN "XtWidgetProc" "" "@DEF@"
 .FD 0
-typedef void (*XtWidgetProc)(Widget \fIw\fP);
+typedef void (*XtWidgetProc)(Widget);
+.br
+      Widget \fIw\fP;
 .FN
 .IP \fIw\fP i1
 Specifies the widget being destroyed.
