@@ -149,7 +149,7 @@ Specifies the internal vertical padding (spacing between text and button
 border) for command buttons.
 .SH KEY BINDINGS
 .LP
-Each specification included in the \f(TR.XtActions\fP file
+Each specification included in the \fI.XtActions\fP file
 modifies a key setting
 for the editor that
 .I xedit
