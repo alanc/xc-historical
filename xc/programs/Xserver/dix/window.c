@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.33 89/08/25 12:02:41 rws Exp $ */
+/* $XConsortium: window.c,v 5.34 89/09/19 11:40:55 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1341,14 +1341,14 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    pWin->backingStore = val;
 	    break;
 	  case CWBackingPlanes:
-	    if (pWin->optional || (CARD32) *pVlist) {
+	    if (pWin->optional || ((CARD32)*pVlist != ~0L)) {
 		if (!pWin->optional && !MakeWindowOptional (pWin))
 		{
 		    error = BadAlloc;
 		    goto PatchUp;
 		}
 		pWin->optional->backingBitPlanes = (CARD32) *pVlist;
-		if (!*pVlist)
+		if ((CARD32)*pVlist == ~0L)
 		    checkOptional = 1;
 	    }
 	    pVlist++;
