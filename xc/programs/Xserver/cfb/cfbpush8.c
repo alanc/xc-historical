@@ -15,7 +15,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbpush8.c,v 5.5 89/11/19 17:57:28 rws Exp $ */
+/* $XConsortium: cfbpush8.c,v 5.6 90/02/09 12:02:11 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -54,14 +54,15 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     int		    nBitmapTmp, nPixmapTmp;
     unsigned long   rightMask;
     BoxRec	    bbox;
+    cfbPrivGCPtr    devPriv;
 
     bbox.x1 = xOrg;
     bbox.y1 = yOrg;
     bbox.x2 = bbox.x1 + dx;
     bbox.y2 = bbox.y1 + dy;
+    devPriv = (cfbPrivGC *)pGC->devPrivates[cfbGCPrivateIndex].ptr;
     
-    switch ((*pGC->pScreen->RectIn)(
-                ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
+    switch ((*pGC->pScreen->RectIn)(devPriv->pCompositeClip, &bbox))
     {
       case rgnPART:
 	mfbPushPixels(pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg);
@@ -85,7 +86,7 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     psrcLine = (unsigned long *) pBitmap->devPrivate.ptr;
     srcWidth = (int) pBitmap->devKind >> 2;
     
-    pixel = PFILL (pGC->fgPixel);
+    pixel = devPriv->xor;
     xoff = xOrg & 03;
     nBitmapLongs = (dx + xoff) >> 5;
     nPixmapLongs = (dx + 3 + xoff) >> 2;
