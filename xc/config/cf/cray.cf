@@ -1,4 +1,4 @@
-/**/# platform:  $XConsortium: cray.cf,v 1.6 89/07/12 11:38:48 jim Exp $
+/**/# platform:  $XConsortium: cray.cf,v 1.7 89/07/18 15:39:43 jim Exp $
 
 
 /*
@@ -20,9 +20,20 @@
 
 #define HasVoidSignalReturn	YES
 
+/* #define UNICOS4		YES */
+
 #define NeedBerklibInXlib	YES
 #if UNICOS4
 #define ConnectionFlags -DTCPCONN -DOLDTCP
 #else
 #define ConnectionFlags -DTCPCONN 
 #endif
+
+#ifdef CRAY1
+#define DefaultCDebugFlags    -halign -Wl,-Ddupentry=ignore
+#define Cray1Architecture
+#else /* CRAY 2 */
+#define DefaultCDebugFlags    -hnocache -hsharelm
+#define Cray2Architecture
+#endif
+
