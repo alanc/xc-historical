@@ -2073,3 +2073,71 @@
 ;;; more compact.
 
 (defconstant *use-closures-for-requests* #+lispm t #-lispm nil)
+
+;;;; Resource stuff
+
+;;; STRINGABLE-EQUAL - compare two stringables.  Ignore case whan comparing a
+;;; string to a symbol.
+
+;; This is in the inner-loop of the resource search.
+;; Try to be as fast as possible.
+#+explorer
+(proclaim '(inline stringable-equal))
+
+#+explorer
+(defun stringable-equal (a b)
+  ;; Compare two stringables.
+  ;; Ignore case when comparing to a symbol.
+  (declare (type stringable a b))
+  (declare (values boolean))
+  (if (symbolp a)
+      (if (symbolp b)
+	  (equal (the string (symbol-name a)) (the string (symbol-name b)))
+	(si:%string-equal (the string (symbol-name a)) 0 (the string b) 0 nil))
+    (if (symbolp b)
+	(si:%string-equal (the string a) 0 (the string (symbol-name b)) 0 nil)
+      (equal a b))))
+
+#-explorer
+(defun stringable-equal (a b)
+  ;; Compare two stringables.
+  ;; Ignore case when comparing to a symbol.
+  (declare (type stringable a b))
+  (declare (values boolean))
+  (if (symbolp a)
+      (if (symbolp b)
+	  (string= (the string (symbol-name a)) (the string (symbol-name b)))
+	(string-equal (the string (symbol-name a)) (the string b)))
+    (if (symbolp b)
+	(string-equal (the string a) (the string (symbol-name b)))
+      (string= (the string a) (the string b)))))
+
+
+
+;;; DEFAULT-RESOURCE-PATHNAME - The pathname of the resources file to load if
+;;; a resource manager isn't running.
+
+(defun default-resources-pathname ()
+  (when (search "Unix" (software-type) :test #'char-equal)
+    (merge-pathnames (user-homedir-pathname) (pathname ".Xdefaults"))))
+
+
+
+;;; RESOURCES-PATHNAME - The pathname of the resources file to load after the
+;;; defaults have been loaded.
+
+(defun resources-pathname ()
+  (when (search "Unix" (software-type) :test #'char-equal)
+    (or #+(or excl lcl3.0)
+	(let ((string (#+excl sys:getenv
+		       #+lcl3.0 lcl:environment-variable
+		       "XENVIRONMENT")))
+	  (when string
+	    (pathname string)))
+	(merge-pathnames
+	  (user-homedir-pathname)
+	  (pathname 
+	    (concatenate 'simple-string ".Xdefaults-"
+			 #+excl (short-site-name)
+			 #-excl (machine-instance)))))))
+
