@@ -331,7 +331,6 @@ static KeySym Sun3Map[] = {
 	NoSymbol,	NoSymbol,		/* 0x7f */
 };
 
-#ifdef KB_SUN4
 static KeySym Sun4Map[] = {
         XK_L1,          NoSymbol,               /* 0x01 */
         NoSymbol,       NoSymbol,               /* 0x02 */
@@ -461,7 +460,6 @@ static KeySym Sun4Map[] = {
         NoSymbol,       NoSymbol,               /* 0x7e */
         NoSymbol,       NoSymbol,               /* 0x7f */
 };
-#endif
 
 
 KeySymsRec sunKeySyms[] = {
@@ -475,9 +473,7 @@ KeySymsRec sunKeySyms[] = {
 #endif
     Sun2Map,		1,	0x7a,	2,
     Sun3Map,		1,	0x7a,	2,
-#ifdef KB_SUN4
     Sun4Map,		1,	0x7d,	2,
-#endif
 };
 
 #define	cT	(ControlMask)
@@ -522,7 +518,6 @@ static CARD8 type3modmap[MAP_LENGTH] = {
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* f0-ff */
 };
 
-#ifdef KB_SUN4
 static CARD8 type4modmap[MAP_LENGTH] = {
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 00-0f */
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* 10-1f */
@@ -541,14 +536,11 @@ static CARD8 type4modmap[MAP_LENGTH] = {
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* e0-ef */
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /* f0-ff */
 };
-#endif
 
 CARD8 *sunModMap[] = {
 	NULL,
 	NULL,
 	type2modmap,
 	type3modmap,
-#ifdef KB_SUN4
 	type4modmap,
-#endif
 };
