@@ -19,11 +19,11 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
- * $NCDId: @(#)compress_lzw.c,v 1.3 1994/03/08 01:37:21 dct Exp $
+ * $NCDId: @(#)compress_lzw.c,v 1.5 1994/03/24 17:55:03 lemke Exp $
  */
 /* Copyright 1988, 1989, 1990 Network Computing Devices, Inc.  All rights reserved. */
 
-/* $XConsortium: compress_lzw.c,v 1.4 94/03/08 16:58:36 dpw Exp $ */
+/* $XConsortium: compress_lzw.c,v 1.5 94/03/08 20:29:42 dpw Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
@@ -869,7 +869,6 @@ NewPacketAvail(comp)
     register struct compress_private *priv = &comp->decompress_state;
     char 			     *pkt;
     int				     len;
-    int				     result;
 
     if (packet)	{	/* Free up previous packet in input buffer */
 	FreeInput(&comp->inbuf, inputbufend - packet);

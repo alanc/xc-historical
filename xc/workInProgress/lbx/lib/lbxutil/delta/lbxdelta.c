@@ -108,7 +108,6 @@ LBXDeltaMinDiffs(pcache, inmsg, inmsglen, maxdiff, pindex)
     int			*pindex;
 {
     int			i, j, k, l = maxdiff + 1;
-    int			deltabytes;
     int		   	m;
     LBXDeltaElemPtr	dm;
 
