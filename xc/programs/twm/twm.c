@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.109 90/03/15 17:26:47 jim Exp $
+ * $XConsortium: twm.c,v 1.110 90/03/22 18:52:55 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.109 90/03/15 17:26:47 jim Exp $";
+"$XConsortium: twm.c,v 1.110 90/03/22 18:52:55 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -56,23 +56,6 @@ static char RCSinfo[] =
 #include "screen.h"
 #include "iconmgr.h"
 #include <X11/Xproto.h>
-
-#ifdef SIGTSTP
-#include <sys/wait.h>
-#define SIGNALSTATUS_T union wait
-#else
-#define SIGNALSTATUS_T int
-#endif
-
-#ifdef SIGNALRETURNSINT
-#define SIGNAL_T int
-#define SIGNAL_RETURN return 0
-#else
-#define SIGNAL_T void
-#define SIGNAL_RETURN return
-#endif
-
-static SIGNAL_T reapchild();		/* clean up pids */
 
 Display *dpy;			/* which display are we talking to */
 Window ResizeWindow;		/* the window we are resizing */
@@ -158,8 +141,6 @@ main(argc, argv, environ)
     Argc = argc;
     Argv = argv;
     Environ = environ;
-
-    signal (SIGCHLD, reapchild);	/* catch child deaths */
 
     for (i = 1; i < argc; i++) {
 	if (argv[i][0] == '-') {
@@ -835,19 +816,4 @@ InternUsefulAtoms ()
     _XA_WM_TAKE_FOCUS = XInternAtom (dpy, "WM_TAKE_FOCUS", False);
     _XA_WM_SAVE_YOURSELF = XInternAtom (dpy, "WM_SAVE_YOURSELF", False);
     _XA_WM_DELETE_WINDOW = XInternAtom (dpy, "WM_DELETE_WINDOW", False);
-}
-
-static SIGNAL_T reapchild ()
-{
-    SIGNALSTATUS_T status;
-
-    (void) signal (SIGCHLD, reapchild);
-
-#if defined(SYSV) && !defined(SIGTSTP)
-    (void) wait (&status);
-#else
-    while (wait3 (&status, WNOHANG, (struct rusage *) NULL) > 0) ;
-#endif
-
-    SIGNAL_RETURN;
 }
