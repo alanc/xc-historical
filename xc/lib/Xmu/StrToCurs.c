@@ -1,4 +1,4 @@
-/* $XConsortium: StrToCurs.c,v 1.17 91/12/09 15:47:51 converse Exp $ */
+/* $XConsortium: StrToCurs.c,v 1.18 92/03/06 14:09:58 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -48,6 +48,15 @@ SOFTWARE.
 #endif
 #endif
 #endif /* PATH_MAX */
+
+/* Kludge source to avoid encountering broken shared library linkers
+   which insist on resolving references unused by the application,
+   and broken object file formats that don't correctly distinguish
+   references to procedures from references to data.
+ */
+#if defined(SUNSHLIB) || defined(SVR4)
+#define XMU_KLUDGE
+#endif
 
 /*
  * XmuConvertStringToCursor:
@@ -113,6 +122,9 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
 	XrmValue cvtArg;
 	Boolean success;
 	Display *dpy = DisplayOfScreen(screen);
+#ifdef XMU_KLUDGE
+	Cardinal num;
+#endif
 
 	fields = sscanf(name, "FONT %s %d %s %d",
 			source_name, &source_char,
@@ -123,14 +135,21 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
 	}
 
 	fromString.addr = source_name;
-	fromString.size = strlen(source_name);
+	fromString.size = strlen(source_name) + 1;
 	toFont.addr = (XPointer) &source_font;
 	toFont.size = sizeof(Font);
 	cvtArg.addr = (XPointer) &dpy;
 	cvtArg.size = sizeof(Display *);
 	/* XXX using display of screen argument as message display */
+#ifdef XMU_KLUDGE
+	/* XXX Sacrifice caching */
+	num = 1;
+	success = XtCvtStringToFont(dpy, &cvtArg, &num, &fromString, &toFont,
+				    NULL);
+#else
 	success = XtCallConverter(dpy, XtCvtStringToFont, &cvtArg,
 				  (Cardinal)1, &fromString, &toFont, NULL);
+#endif
 	if (!success) {
 	    XtStringConversionWarning(name, XtRCursor);
 	    return;
@@ -149,12 +168,19 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
 
 	  case 4:		/* specified mask font & char */
 	    fromString.addr = mask_name;
-	    fromString.size = strlen(mask_name);
+	    fromString.size = strlen(mask_name) + 1;
 	    toFont.addr = (XPointer) &mask_font;
 	    toFont.size = sizeof(Font);
 	    /* XXX using display of screen argument as message display */
+#ifdef XMU_KLUDGE
+	    /* XXX Sacrifice caching */
+	    num = 1;
+	    success = XtCvtStringToFont(dpy, &cvtArg, &num, &fromString,
+					&toFont, NULL);
+#else
 	    success = XtCallConverter(dpy, XtCvtStringToFont, &cvtArg,
 				      (Cardinal)1, &fromString, &toFont, NULL);
+#endif
 	    if (!success) {
 		XtStringConversionWarning(name, XtRCursor);
 		return;
