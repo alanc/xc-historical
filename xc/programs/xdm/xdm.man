@@ -17,8 +17,8 @@ xdm \- X Display Manager
 .I Xdm
 manages a collection of X displays, both local and possibly remote \(em the
 emergence of X terminals guided the design of several parts of this system,
-along with the development of the X Display Manager Control Protocol (see
-the XDMCP X Consortium standard).
+along with the development of the X Consortium standard XDMCP, the
+\fIX Display Manager Control Protocol\fP).
 It is designed to provide services similar to that provided by init, getty
 and login on character terminals:  prompting for login/password,
 authenticating the user and running a ``session''.
@@ -79,7 +79,7 @@ resource.  A non-zero value causes
 to print piles of debugging statements to the terminal; it also disables the
 \fBDisplayManager.daemonMode\fP resource, forcing
 .I xdm
-to run syncronously.  To interpret these debugging messages, a copy
+to run synchronously.  To interpret these debugging messages, a copy
 of the source code for xdm is almost a necessity.  No attempt has been
 made to rationalize or standardize the output.
 .IP "\fB-error\fP \fIerror_log_file\fP"
@@ -178,7 +178,7 @@ implementation.  This file also contains any output directed to stderr
 by \fIXstartup, Xsession and Xreset\fP, so it will contain descriptions
 of problems in those scripts as well.
 .IP "\fBDisplayManager.debugLevel\fP"
-A non-zero value specified for this intger resource will enable reams of
+A non-zero value specified for this integer resource will enable reams of
 debugging information to be printed.  It also disables daemon mode which
 would redirect the information into the bit-bucket.  Specifying a non-zero
 debug level also allows non-root users to run
@@ -363,7 +363,7 @@ xdm supports only MIT-MAGIC-COOKIE-1 authorization, XDM-AUTHORIZATION-1
 could be supported as well, but DES is not generally distributable.  XDMCP
 connections specify which authorization types are supported dynamically, so
 \fBauthName\fP is ignored in this case.  When \fBauthorize\fP is set for a
-display and authorization is not availible, the user is informed by having a
+display and authorization is not available, the user is informed by having a
 different message displayed in the login widget.  By default, \fBauthorize\fP
 is "true"; \fBauthName\fP is "MIT-MAGIC-COOKIE-1".
 .IP \fBDisplayManager.DISPLAY.authFile\fP"
@@ -389,7 +389,7 @@ When
 is unable to write to the usual user authorization file ($HOME/.Xauthority),
 it creates a unique file name in this directory and points the environment
 variable XAUTHORITY at the created file.  By default it uses "/tmp".
-.SH "CONTROLING THE SERVER"
+.SH "CONTROLLING THE SERVER"
 .I Xdm
 controls local servers using POSIX signals.  SIGHUP is expected to reset the
 server, closing all client connections and performing other clean up
@@ -400,7 +400,7 @@ will not perform properly.
 .PP
 To control remote servers not using XDMCP,
 .I xdm
-searches the window heirarchy on the display and uses the protocol request
+searches the window hierarchy on the display and uses the protocol request
 KillClient in an attempt to clean up the terminal for the next session.  This
 may not actually kill all of the clients, as only those which have created
 windows will be noticed.  XDMCP provides a more sure mechanism; when xdm
@@ -513,6 +513,7 @@ Moves the cursor backward.
 .IP "move-forward-character"
 Moves the cursor forward.
 .IP "move-to-begining"
+(Apologies about the spelling error.)
 Moves the cursor to the beginning of the editable text.
 .IP "move-to-end"
 Moves the cursor to the end of the editable text.
@@ -650,7 +651,7 @@ As you can see, this file simply contains references to other files.  Note
 that some of the resources are specified with ``*'' separating the
 components.  These resources can be made unique for each different display,
 by replacing the ``*'' with the display-name, but normally this is not very
-useful.  See the \fBReources\fP section for a complete discussion.
+useful.  See the \fBResources\fP section for a complete discussion.
 .PP
 The first file \fI/usr/lib/X11/xdm/Xservers\fP contains the list of displays to
 manage.  Most workstations have only one display, numbered 0, so the file
@@ -809,7 +810,7 @@ This would direct
 .I xdm
 to manage sessions on all three of these terminals.  See the section
 "Controlling Xdm" above for a description of using signals to enable
-and disable these terminals in a manner reminisent of init(8).
+and disable these terminals in a manner reminiscent of init(8).
 .PP
 One thing that
 .I xdm
