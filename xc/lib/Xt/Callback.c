@@ -1,4 +1,4 @@
-/* $XConsortium: Callback.c,v 1.33 91/01/25 15:29:47 rws Exp $ */
+/* $XConsortium: Callback.c,v 1.34 91/10/30 14:16:58 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -432,6 +432,7 @@ XtCallbackList _XtGetCallbackList(callbacks)
     icl->is_padded = 1;
     cl->callback = (XtCallbackProc) NULL;
     cl->closure = NULL;
+    *callbacks = icl;
     return ToList(icl);
 }
 
