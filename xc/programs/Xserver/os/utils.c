@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.67 88/12/08 16:39:12 keith Exp $ */
+/* $XConsortium: utils.c,v 1.68 89/01/04 08:45:16 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -45,7 +45,6 @@ extern long ScreenSaverTime;		/* for forcing reset */
 
 Bool clientsDoomed = FALSE;
 Bool GivingUp = FALSE;
-extern void KillServerResources();
 void ddxUseMsg();
 
 extern char *sbrk();
