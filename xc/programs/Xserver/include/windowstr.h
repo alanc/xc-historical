@@ -1,4 +1,4 @@
-/* $Header: windowstr.h,v 1.4 88/01/02 16:07:25 rws Exp $ */
+/* $Header: windowstr.h,v 1.5 88/01/03 16:55:12 rws Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -92,7 +92,7 @@ typedef struct _Window {
 
 	PropertyPtr userProps;            /* client's property list */
 
-	XID nolongerused /* XXX still here for ddx binary compatibility */
+	XID nolongerused; /* XXX still here for ddx binary compatibility */
 	PixmapPtr backgroundTile;
 	unsigned long backgroundPixel;
 	PixmapPtr borderTile;
