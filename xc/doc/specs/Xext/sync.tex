@@ -234,7 +234,8 @@ equal to the test value and FALSE otherwise.  If the \param{test-type} is
 equal to the test value and FALSE otherwise. If the \param{test-type}
 is not one of the named TESTTYPE constants, the request which
 initialized the trigger will return a \error{Value} error.  A trigger
-with a \param{counter} value of \enum{None} is always TRUE.
+with a \param{counter} value of \enum{None} and a valid \param{test-type}
+is always TRUE.
 
 The WAITCONDITION type is simply a trigger with an associated
 \param{event-threshold}.  The event threshold is used by the \request{Await}
