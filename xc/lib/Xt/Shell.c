@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.122 92/02/12 17:25:53 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.122 92/02/13 10:55:01 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1948,9 +1948,11 @@ static Boolean WMSetValues(old, ref, new, args, num_args)
 	}
 #undef NEQ
 
- 	if (set_prop && nwmshell->wm.transient != owmshell->wm.transient) {
+ 	if (XtIsRealized(new) &&
+	    nwmshell->wm.transient != owmshell->wm.transient) {
  	    if (nwmshell->wm.transient) {
 		if (!XtIsTransientShell(new) &&
+		    !nwmshell->shell.override_redirect &&
 		    nwmshell->wm.wm_hints.window_group != 
 		       XtUnspecifiedWindowGroup)
 		    XSetTransientForHint(XtDisplay(new), XtWindow(new),
