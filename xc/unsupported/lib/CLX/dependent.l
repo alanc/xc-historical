@@ -1836,7 +1836,7 @@
   (x-error 'x-type-error
 	   :datum object
 	   :expected-type type
-	   :error-string error-string))
+	   :type-string error-string))
 
 
 ;;-----------------------------------------------------------------------------
