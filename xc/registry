@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.21 91/03/11 10:22:28 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.22 91/03/19 10:53:51 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -182,6 +182,8 @@ SunXK_FA_Circum		0x1005FF01		[58]
 SunXK_FA_Tilde		0x1005FF02		[58]
 SunXK_F36		0x1005FF10		[58]
 SunXK_F37		0x1005FF11		[58]
+
+WYXK_Setup		0x1006FF00		[68]
 
 
 3. AUTHORIZATION PROTOCOL NAMES
@@ -621,6 +623,7 @@ Name						Reference
 "TD"						[63]
 "MIT"						[8]
 "NCD"						[66]
+"WYSE"						[68]
 
 
 20. NON-STANDARD CHARACTER SET ENCODINGS
