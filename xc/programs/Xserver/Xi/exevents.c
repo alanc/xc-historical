@@ -918,7 +918,7 @@ SetModifierMapping(client, dev, len, rlen, numKeyPerModifier, inputMap, k)
 	    && (inputMap[i] < (*k)->curKeySyms.minKeyCode
 		|| inputMap[i] > (*k)->curKeySyms.maxKeyCode)) {
 		client->errorValue = inputMap[i];
-		return BadValue;
+		return -1; /* BadValue collides with MappingFailed */
 		}
     }
 

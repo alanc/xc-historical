@@ -1,4 +1,4 @@
-/* $XConsortium: xsetmmap.c,v 1.5 89/11/07 19:40:57 rws Exp $ */
+/* $XConsortium: xsetmmap.c,v 1.6 89/12/02 15:21:38 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -96,21 +96,20 @@ ProcXSetDeviceModifierMapping(client)
 	(sizeof (xSetDeviceModifierMappingReq)>>2), stuff->numKeyPerModifier, 
 	&stuff[1], &kp);
 
-    if (ret == MappingSuccess || ret == MappingBusy || ret == MappingFailed)
-	{
+    if (ret==MappingSuccess || ret==MappingBusy || ret==MappingFailed)
+        {
 	rep.success = ret;
+	if (ret == MappingSuccess)
+            SendDeviceMappingNotify(MappingModifier, 0, 0, dev);
         WriteReplyToClient(client, sizeof(xSetDeviceModifierMappingReply),&rep);
-	}
+        }
     else
 	{
+	if (ret==-1)
+	    ret=BadValue;
 	SendErrorToClient (client, IReqCode, X_SetDeviceModifierMapping, 0,ret);
-	return Success;
 	}
 
-    if (ret == MappingSuccess)
-        {
-        SendDeviceMappingNotify(MappingModifier, 0, 0, dev);
-        }
 
     return Success;
     }
