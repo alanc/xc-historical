@@ -1,5 +1,5 @@
 /*
- * $XConsortium: popup.c,v 2.25 89/11/25 20:55:09 converse Exp $
+ * $XConsortium: popup.c,v 2.26 89/12/10 17:38:59 converse Exp $
  *
  *
  *			  COPYRIGHT 1989
@@ -189,7 +189,7 @@ void XmhPromptOkayAction(w, event, params, num_params)
     Cardinal	*num_params;	/* unused */
 {
     XtCallCallbacks(XtNameToWidget(XtParent(w), OKAY_NAME), XtNcallback,
-		    XtParent(w));
+		    (XtPointer)XtParent(w));
 }
 
 
