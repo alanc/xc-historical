@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: $
+ * $XConsortium: resource.c,v 1.4 88/09/23 14:21:29 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -139,28 +139,41 @@ XrmOptionDescRec optionTable [] = {
 {"-error",	".errorLogFile",	XrmoptionSepArg,	(caddr_t) NULL },
 {"-resources",	"*resources",		XrmoptionSepArg,	(caddr_t) NULL },
 {"-session",	"*session",		XrmoptionSepArg,	(caddr_t) NULL },
+{"-debug",	"*debugLevel",		XrmoptionSepArg,	(caddr_t) NULL },
 {"-config",	NULL,			XrmoptionSkipArg,	(caddr_t) NULL },
 {"-xrm",	NULL,			XrmoptionResArg,	(caddr_t) NULL },
 };
+
+#ifndef DEFAULT_XDM_CONFIG
+# define DEFAULT_XDM_CONFIG "/usr/lib/X11/xdm/xdm-config"
+#endif
 
 InitResources (argc, argv)
 int	argc;
 char	**argv;
 {
 	char	**a;
+	char	*config = 0;
 
 	XrmInitialize ();
 	for (a = argv+1; *a; a++) {
 		if (!strcmp (*a, "-config")) {
 			if (!a[1])
 				LogError ("missing config file argument\n");
-			else {
-				DmResourceDB = XrmGetFileDatabase ( a[1] );
-				if (!DmResourceDB)
-					LogError ("Can't open resource file %s\n", a[1]);
-			}
+			else
+				config = a[1];
 			break;
 		}
+	}
+	if (!config) {
+		config = DEFAULT_XDM_CONFIG;
+		if (access (config, 1) == -1)
+			config = 0;
+	}
+	if (config) {
+		DmResourceDB = XrmGetFileDatabase ( config );
+		if (!DmResourceDB)
+			LogError ("Can't open resource file %s\n", config );
 	}
 	XrmParseCommand (&DmResourceDB, optionTable,
  			 sizeof (optionTable) / sizeof (optionTable[0]),
