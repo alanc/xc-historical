@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.62 88/08/08 13:22:08 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.63 88/08/08 13:43:06 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -192,6 +192,7 @@ Boolean sunFunctionKeys = FALSE;
 #endif /* GETTY_EXE */
 
 static char *getty_program = GETTY_EXE;
+Boolean bash_title_icon_strings = TRUE;	 /* default for -e; override with -E */
 
 /* used by VT (charproc.c) */
 
@@ -206,6 +207,8 @@ static XtResource application_resources[] = {
 	(Cardinal)&utmpInhibit, XtRString, "false"},
     {"sunFunctionKeys", "SunFunctionKeys", XtRBoolean, sizeof (Boolean),
 	(Cardinal)&sunFunctionKeys, XtRString, "false"},
+    {"forceTitleStrings", "ForceTitleStrings", XtRBoolean, sizeof (Boolean),
+       (Cardinal)&bash_title_icon_strings, XtRString, "true"},
 };
 
 /* Command line options table.  Only resources are entered here...there is a
@@ -368,7 +371,6 @@ Arg ourTopLevelShellArgs[] = {
 int number_ourTopLevelShellArgs = 2;
 	
 Widget toplevel;
-Boolean bash_title_icon_strings = TRUE;	 /* default for -e */
 
 main (argc, argv)
 int argc;
