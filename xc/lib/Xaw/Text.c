@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.48 88/09/06 16:42:26 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.49 88/09/12 16:57:23 swick Exp $";
 #endif
 
 
@@ -51,6 +51,7 @@ extern char* sys_errlist[];
 #define GETLASTPOS  (*ctx->text.source->Scan) (ctx->text.source, 0, XtstAll, XtsdRight, 1, TRUE)
 
 #define zeroPosition ((XtTextPosition) 0)
+#define BIGNUM ((Dimension)32023)
 
 static void BuildLineTable ();
 static void ScrollUpDownProc();
@@ -227,7 +228,8 @@ static void Realize( w, valueMask, attributes )
    TextWidget ctx = (TextWidget)w;
 
    *valueMask |= CWBitGravity;
-   attributes->bit_gravity = NorthWestGravity;
+   attributes->bit_gravity =
+       (ctx->text.options & wordBreak) ? ForgetGravity : NorthWestGravity;
 
    (*textClassRec.core_class.superclass->core_class.realize)
        (w, valueMask, attributes);
@@ -454,42 +456,38 @@ static void BuildLineTable (ctx, position)
     if (ctx->text.lt.info == NULL) {
 	ctx->text.lt.info = (XtTextLineTableEntry *)
 	    XtCalloc((unsigned)lines + 1, (unsigned)sizeof(XtTextLineTableEntry));
-#ifdef notdef
-	for (line = 0; line < lines; line++) {
-	    ctx->text.lt.info[line].position = 0;
-	    ctx->text.lt.info[line].y = 0;
-	}
-#endif
 	rebuild = TRUE;
     }
-    else
-	lines = ctx->text.lt.lines;
     if (rebuild) {
+	XtTextLineTableEntry *lt;
+	int options = ctx->text.options;
+	int (*FindPosition)() = ctx->text.sink->FindPosition;
+	int (*Scan)() = ctx->text.source->Scan;
 	ctx->text.lt.top = position;
 	ctx->text.lt.lines = lines;
 	startPos = position;
+	x = ctx->text.leftmargin;
 	y = yMargin;
-	for (line = 0; line <= ctx->text.lt.lines; line++) {
-	    x = ctx->text.leftmargin;
-	    ctx->text.lt.info[line].x = x;
-	    ctx->text.lt.info[line].y = y;
-	    ctx->text.lt.info[line].position = startPos;
+	for (line = 0, lt = ctx->text.lt.info; line <= ctx->text.lt.lines;
+	     line++, lt++) {
+	    lt->x = x;
+	    lt->y = y;
+	    lt->position = startPos;
 	    if (startPos <= ctx->text.lastPos) {
-		width = (ctx->text.options & resizeWidth) ? 9999 : ctx->core.width - x;
-		(*ctx->text.sink->FindPosition)((Widget)ctx, 
-                        startPos, x,
-			width, (ctx->text.options & wordBreak),
-			&endPos, &realW, &realH);
-		if (!(ctx->text.options & wordBreak) && endPos < ctx->text.lastPos) {
-		    endPos = (*ctx->text.source->Scan)(ctx->text.source, startPos,
-			    XtstEOL, XtsdRight, 1, TRUE);
+		width = (options & resizeWidth) ? BIGNUM : ctx->core.width - x;
+		(*FindPosition)((Widget)ctx, startPos, x,
+				width, (options & wordBreak),
+				&endPos, &realW, &realH);
+		if (!(options & wordBreak) && endPos < ctx->text.lastPos) {
+		    endPos = (*Scan)(ctx->text.source, startPos,
+				     XtstEOL, XtsdRight, 1, TRUE);
 		    if (endPos == startPos)
 			endPos = ctx->text.lastPos + 1;
 		}
-		ctx->text.lt.info[line].endX = realW + x;
+		lt->endX = realW + x;
 		startPos = endPos;
 	    }
-	    else ctx->text.lt.info[line].endX = x;
+	    else lt->endX = x;
 	    y = y + realH;
 	}
     }
@@ -754,29 +752,34 @@ int ReplaceText (ctx, pos1, pos2, text)
      * this code checks for moving words to and from lines.
     */
     if (visible) {
+	XtTextLineTableEntry *thisLine, *nextLine = ctx->text.lt.info + line1;
+	Boolean resizeable = ctx->text.options & resizeWidth;
+	Boolean wordwrap = ctx->text.options & wordBreak;
+	int (*FindPosition)() = ctx->text.sink->FindPosition;
+	int (*Scan)() = ctx->text.source->Scan;
 	for (i = line1; i < ctx->text.lt.lines; i++) {/* fixup line table */
-	    width = (ctx->text.options & resizeWidth) ? 9999 : ctx->core.width - x;
+	    thisLine = nextLine++;
+	    width = resizeable ? BIGNUM : ctx->core.width - x;
 	    if (startPos <= ctx->text.lastPos) {
-		(*ctx->text.sink->FindPosition)(ctx, startPos, x,
-			width, (ctx->text.options & wordBreak),
-			&endPos, &realW, &realH);
-		if (!(ctx->text.options & wordBreak) && endPos < ctx->text.lastPos) {
-		    endPos = (*ctx->text.source->Scan)(ctx->text.source, startPos,
-			    XtstEOL, XtsdRight, 1, TRUE);
+		(*FindPosition)(ctx, startPos, x, width, wordwrap,
+				&endPos, &realW, &realH);
+		if (!wordwrap && endPos < ctx->text.lastPos) {
+		    /* if not wordBreak, skip remainder of this line */
+		    endPos = (*Scan)(ctx->text.source, startPos,
+				     XtstEOL, XtsdRight, 1, TRUE);
 		    if (endPos == startPos)
 			endPos = ctx->text.lastPos + 1;
 		}
-		ctx->text.lt.info[i].endX = realW + x;
-		ctx->text.lt.info[i + 1].y = realH + ctx->text.lt.info[i].y;
-		if ((endPos > pos1) &&
-			(endPos == ctx->text.lt.info[i + 1].position))
-		    break;
+		thisLine->endX = x + realW;
+		nextLine->y = thisLine->y + realH;
+		if ((endPos > pos1) && (endPos == nextLine->position))
+		    break;	/* %%% why not update remaining y's? */
 		startPos = endPos;
 	    }
 	    if (startPos > ctx->text.lastPos)
-		ctx->text.lt.info[i + 1].endX = ctx->text.leftmargin;
-	    ctx->text.lt.info[i + 1].position = startPos;
-	    x = ctx->text.lt.info[i + 1].x;
+		nextLine->endX = ctx->text.leftmargin;
+	    nextLine->position = startPos;
+	    x = nextLine->x;
 	}
     }
     if (delta >= ctx->text.lastPos)
@@ -836,7 +839,7 @@ static void DisplayText(w, pos1, pos2)
 	startPos = endPos;
 	height = ctx->text.lt.info[i + 1].y - ctx->text.lt.info[i].y;
         (*ctx->text.sink->ClearToBackground)(ctx,
-	    ctx->text.lt.info[i].endX, y, 999, height);
+	    ctx->text.lt.info[i].endX, y, (int)ctx->core.width, height);
 	x = ctx->text.leftmargin;
 	y = ctx->text.lt.info[i + 1].y;
 	if ((endPos == pos2) && (endPos != ctx->text.lastPos))
@@ -1036,25 +1039,26 @@ static CheckResizeOrOverflow(ctx)
     int     visible, line, width;
     XtWidgetGeometry rbox;
     XtGeometryResult reply;
+    register int options = ctx->text.options;
 
-    if (ctx->text.options & resizeWidth) {
+    if (options & resizeWidth) {
+	XtTextLineTableEntry *lt;
 	width = 0;
-	for (line=0 ; line<ctx->text.lt.lines ; line++)
-	    if (width < ctx->text.lt.info[line].endX)
-		width = ctx->text.lt.info[line].endX;
-	width += ctx->text.leftmargin;
+	for (line=0, lt=ctx->text.lt.info; line<ctx->text.lt.lines; line++) {
+	    if (width < lt->endX)
+		width = lt->endX;
+	    lt++;
+	}
 	if (width > ctx->core.width) {
 	    rbox.request_mode = CWWidth;
 	    rbox.width = width;
-	    reply = XtMakeGeometryRequest(ctx, &rbox, &rbox);
+	    reply = XtMakeGeometryRequest((Widget)ctx, &rbox, &rbox);
 	    if (reply == XtGeometryAlmost)
 	        reply = XtMakeGeometryRequest((Widget)ctx, &rbox, NULL);
-	    if (reply == XtGeometryYes)
-	        ctx->core.width = rbox.width;
 	}
     }
-    if ((ctx->text.options & resizeHeight) || (ctx->text.options & scrollOnOverflow)) {
-	if (ctx->text.options & scrollOnOverflow)
+    if ((options & resizeHeight) || (options & scrollOnOverflow)) {
+	if (options & scrollOnOverflow)
 	    posToCheck = ctx->text.insertPos;
 	else
 	    posToCheck = ctx->text.lastPos;
@@ -1063,23 +1067,22 @@ static CheckResizeOrOverflow(ctx)
 	    line = LineForPosition(ctx, posToCheck);
 	else
 	    line = ctx->text.lt.lines;
-	if ((ctx->text.options & scrollOnOverflow) && (line + 1 > ctx->text.lt.lines)) {
+	if ((options & scrollOnOverflow) && (line + 1 > ctx->text.lt.lines)) {
 	    BuildLineTable(ctx, ctx->text.lt.info[1].position);
-	    XCopyArea(XtDisplay(ctx), XtWindow(ctx), XtWindow(ctx), 
-	    	      ctx->text.gc, (Position)ctx->text.leftmargin, 
-		      ctx->text.lt.info[1].y, 9999, 9999,
-		      (Position)ctx->text.leftmargin, ctx->text.lt.info[0].y);
+	    XCopyArea(XtDisplay(ctx), XtWindow(ctx), XtWindow(ctx),
+		      ctx->text.gc, (int)ctx->text.leftmargin, 
+		      (int)ctx->text.lt.info[1].y,
+		      (int)ctx->core.width, (int)ctx->core.height,
+		      (int)ctx->text.leftmargin, ctx->text.lt.info[0].y);
 	}
 	else
-	    if ((ctx->text.options & resizeHeight) && (line + 1 != ctx->text.lt.lines)) {
+	    if ((options & resizeHeight) && (line + 1 != ctx->text.lt.lines)) {
 		rbox.request_mode = CWHeight;
 		rbox.height = (*ctx->text.sink->MaxHeight)
 				(ctx, line + 1) + (2*yMargin)+2;
 		reply = XtMakeGeometryRequest(ctx, &rbox, &rbox);
 		if (reply == XtGeometryAlmost)
 		    reply = XtMakeGeometryRequest((Widget)ctx, &rbox, NULL);
-		if (reply == XtGeometryYes)
-		    ctx->core.height = rbox.height;
 	    }
     }
 }
@@ -1356,6 +1359,19 @@ Widget current, request, new;
 
     if (oldtw->text.leftmargin != newtw->text.leftmargin)
 	redisplay = TRUE;
+
+    if (XtIsRealized(newtw)
+	&& ((oldtw->text.options & wordBreak)
+	    != (newtw->text.options & wordBreak))) {
+	XSetWindowAttributes attributes;
+	Mask valueMask;
+	valueMask = CWBitGravity;
+	attributes.bit_gravity =
+	  (newtw->text.options & wordBreak) ? ForgetGravity : NorthWestGravity;
+	XChangeWindowAttributes(XtDisplay(newtw), XtWindow(newtw),
+				valueMask, &attributes);
+	redisplay = TRUE;
+    }
 
     /* ||| This may be the best way to do this, as some optimizations
      *     can occur here that may be harder if we let XtSetValues
@@ -2371,7 +2387,7 @@ static void InsertChar(ctx, event)
                 &keycode, &compose_status);
    if (text.length==0) return;
    StartAction(ctx, event);
-   text.ptr = &strbuf[0];;
+   text.ptr = &strbuf[0];
    text.firstPos = 0;
    if (ReplaceText(ctx, ctx->text.insertPos, ctx->text.insertPos, &text)) {
 	XBell(XtDisplay(ctx), 50);
