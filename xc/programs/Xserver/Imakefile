@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.183 94/05/04 10:11:09 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 1.184 94/05/09 13:16:03 dpw Exp $
 /*
  * Server Master Makefile
  */
@@ -71,7 +71,7 @@ XCOMM $XConsortium: Imakefile,v 1.183 94/05/04 10:11:09 dpw Exp $
 #ifdef ServerExtraSysLibs
    EXTRASYSLIBS = ServerExtraSysLibs
 #endif
-#if XirisServer || XhpServer || SystemV4 || defined(BSD386Architecture) || defined(i386BsdArchitecture) || defined(NetBSDArchitecture) || defined(FreeBSDArchitecture)
+#if SystemV4 || defined(SGIArchitecture) || defined(BSD386Architecture) || defined(i386BsdArchitecture) || defined(NetBSDArchitecture) || defined(FreeBSDArchitecture)
         SYSLIBS = MathLibrary Krb5Libraries $(EXTRASYSLIBS)
 #else
         SYSLIBS = MathLibrary Krb5Libraries DBMLibrary $(EXTRASYSLIBS)
@@ -380,7 +380,7 @@ DDXDIR1 = hw/hp
 HPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 HPOBJS = hw/hp/hp.o
 HPLIBS = CFB32Libs
-HPSYSLIBS = $(CBRT) $(SYSLIBS) /usr/lib/libdbm.a -ldld
+HPSYSLIBS = $(CBRT) $(SYSLIBS)
 ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 #ifndef ServerToInstall
 #define ServerToInstall Xhp
@@ -559,7 +559,7 @@ XNESTDDXDIR = hw/xnest
 XNESTDIRS = $(STDDIRS) $(XNESTDDXDIR) $(DEPDIRS)
 XNESTOBJS = 
 XNEST = hw/xnest/libxnest.a
-XNESTLIBS = $(DIX) $(OS) $(FONT) $(XNEST) $(MI) $(EXTENSIONS)
+XNESTLIBS = $(DIX) $(OS) $(FONT) $(XNEST) $(MI) $(EXTENSIONS) $(XNEST)
 XNESTSYSLIBS = $(LDPRELIB) $(XLIB) $(SYSLIBS)
 ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS),$(XNESTLIBS),$(XNESTSYSLIBS))
 #endif /* XnestServer */
@@ -590,11 +590,7 @@ XVFBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(XVFBDDXDIR)
 XVFBOBJS = hw/vfb/stubs.o
 XVFB = hw/vfb/libvfb.a
 XVFBLIBS = $(DIX) $(OS) $(FONT) $(XVFB) $(MFB) $(CFB) $(MI) $(EXTENSIONS) 
-#ifdef HPArchitecture
-XVFBSYSLIBS =  $(CBRT) $(SYSLIBS) /usr/lib/libdbm.a -ldld
-#else
 XVFBSYSLIBS = $(SYSLIBS)
-#endif
 ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS),$(XVFBLIBS),$(XVFBSYSLIBS))
 #endif /* XVirtualFramebufferServer */
 
