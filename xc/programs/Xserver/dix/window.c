@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.179 87/11/17 11:47:23 rws Exp $ */
+/* $Header: window.c,v 1.180 87/11/19 14:42:46 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2230,6 +2230,11 @@ ReparentWindow(pWin, pParent, x, y, client)
     if (TraverseTree(pWin, CompareWIDs, &pParent->wid) == WT_STOPWALKING)
         return(BadWindow);		
 
+    oldx = pWin->absCorner.x;
+    oldy = pWin->absCorner.y;
+    if (WasMapped) 
+       UnmapWindow(pWin, HANDLE_EXPOSURES, SEND_NOTIFICATION, FALSE);
+
     pScreen = pWin->drawable.pScreen;
     event.u.u.type = ReparentNotify;
     event.u.reparent.window = pWin->wid;
@@ -2238,11 +2243,6 @@ ReparentWindow(pWin, pParent, x, y, client)
     event.u.reparent.y = y;
     event.u.reparent.override = pWin->overrideRedirect;
     DeliverEvents(pWin, &event, 1, pParent);
-
-    oldx = pWin->absCorner.x;
-    oldy = pWin->absCorner.y;
-    if (WasMapped) 
-       UnmapWindow(pWin, HANDLE_EXPOSURES, SEND_NOTIFICATION, FALSE);
 
     /* take out of sibling chain */
 
