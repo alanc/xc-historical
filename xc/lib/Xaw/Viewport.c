@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Viewport.c,v 1.24 88/08/25 15:57:02 swick Exp $";
+static char rcsid[] = "$Header: Viewport.c,v 1.21 88/08/30 10:39:15 swick Exp $";
 #endif lint
 
 
@@ -28,7 +28,7 @@ SOFTWARE.
 ******************************************************************/
 
 #include <X11/IntrinsicP.h>
-#include <X11/Misc.h>
+#include <X11/XawMisc.h>
 #include <X11/Scroll.h>
 #include <X11/StringDefs.h>
 #include <X11/ViewportP.h>

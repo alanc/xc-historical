@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Command.c,v 1.39 88/08/25 15:27:34 swick Exp $";
+static char rcsid[] = "$Header: Command.c,v 1.36 88/08/30 09:55:51 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -43,7 +43,7 @@ SOFTWARE.
 #include <ctype.h>
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
-#include <X11/Misc.h>
+#include <X11/XawMisc.h>
 #include <X11/CommandP.h>
 #include "CommandI.h"
 

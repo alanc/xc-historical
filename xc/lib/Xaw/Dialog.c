@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Dialog.c,v 1.15 88/08/12 13:10:23 swick Exp $";
+static char rcsid[] = "$Header: Dialog.c,v 1.13 88/08/30 09:57:35 swick Exp $";
 #endif lint
 
 
@@ -35,7 +35,7 @@ SOFTWARE.
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
 #include <X11/IntrinsicP.h>
-#include <X11/Misc.h>
+#include <X11/XawMisc.h>
 #include <X11/StringDefs.h>
 #include <X11/AsciiText.h>
 #include <X11/Command.h>

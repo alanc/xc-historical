@@ -76,7 +76,8 @@ IMPORTS2 = \
 	$(AWIDGETSRC)/VPaned.h \
 	$(AWIDGETSRC)/VPanedP.h \
 	$(AWIDGETSRC)/Viewport.h \
-	$(AWIDGETSRC)/ViewportP.h
+	$(AWIDGETSRC)/ViewportP.h \
+	$(AWIDGETSRC)/XawMisc.h
 
 IMPORTS = $(IMPORTS1) $(IMPORTS2)
 
