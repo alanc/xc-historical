@@ -1,4 +1,4 @@
-/* $XConsortium: RectObjP.h,v 1.5 88/09/06 16:28:36 jim Exp $ */
+/* $XConsortium: RectObjP.h,v 1.6 88/09/26 11:43:50 swick Exp $ */
 /* $oHeader: RectObjP.h,v 1.2 88/08/18 15:55:52 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -67,34 +67,34 @@ typedef struct _RectObjClassPart {
     Cardinal        widget_size;        /* size in bytes of widget record   */
     XtProc          class_initialize;   /* class initialization proc        */
     XtWidgetClassProc class_part_initialize; /* dynamic initialization      */
-    Boolean         class_inited;       /* has class been initialized?      */
+    XtEnum          class_inited;       /* has class been initialized?      */
     XtInitProc      initialize;         /* initialize subclass fields       */
     XtArgsProc      initialize_hook;    /* notify that initialize called    */
     XtProc          rect1;		/* NULL                             */
-    XtProc          rect2;               /* NULL                             */
-    Cardinal        rect3;               /* NULL                             */
+    XtProc          rect2;              /* NULL                             */
+    Cardinal        rect3;              /* NULL                             */
     XtResourceList  resources;          /* resources for subclass fields    */
     Cardinal        num_resources;      /* number of entries in resources   */
     XrmClass        xrm_class;          /* resource class quarkified        */
-    Boolean         rect4;               /* NULL                             */
-    Boolean         rect5;               /* NULL                             */
-    Boolean         rect6;               /* NULL			    */
-    Boolean         rect7;               /* NULL                             */
+    Boolean         rect4;              /* NULL                             */
+    Boolean         rect5;              /* NULL                             */
+    Boolean         rect6;              /* NULL				    */
+    Boolean         rect7;              /* NULL                             */
     XtWidgetProc    destroy;            /* free data for subclass pointers  */
     XtWidgetProc    resize;             /* geom manager changed widget size */
-    XtExposeProc    expose;             /* rediplay rectangle                  */
+    XtExposeProc    expose;             /* rediplay rectangle               */
     XtSetValuesFunc set_values;         /* set subclass resource values     */
     XtArgsFunc      set_values_hook;    /* notify that set_values called    */
     XtAlmostProc    set_values_almost;  /* set values almost for geometry   */
     XtArgsProc      get_values_hook;    /* notify that get_values called    */
     XtProc          rect9;              /* NULL                             */
     XtVersionType   version;            /* version of intrinsics used       */
-    struct _XtOffsetRec *callback_private;/* list of callback offsets       */
-    String          rect10;              /* NULL                             */
+    XtPointer       callback_private;   /* list of callback offsets         */
+    String          rect10;             /* NULL                             */
     XtGeometryHandler query_geometry;   /* return preferred geometry        */
-    XtProc          rect11;              /* NULL                             */
+    XtProc          rect11;             /* NULL                             */
     caddr_t         extension;          /* pointer to extension record      */
-}RectObjClassPart;
+} RectObjClassPart;
 
 typedef struct _RectObjClassRec {
     RectObjClassPart rect_class;

@@ -1,4 +1,4 @@
-/* $XConsortium: ObjectP.h,v 1.5 88/09/06 16:28:25 jim Exp $ */
+/* $XConsortium: ObjectP.h,v 1.6 88/09/26 11:43:41 swick Exp $ */
 /* $oHeader: ObjectP.h,v 1.2 88/08/18 15:55:35 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -63,7 +63,7 @@ typedef struct _ObjectClassPart {
     Cardinal        widget_size;        /* size in bytes of widget record   */
     XtProc          class_initialize;   /* class initialization proc        */
     XtWidgetClassProc class_part_initialize; /* dynamic initialization      */
-    Boolean         class_inited;       /* has class been initialized?      */
+    XtEnum          class_inited;       /* has class been initialized?      */
     XtInitProc      initialize;         /* initialize subclass fields       */
     XtArgsProc      initialize_hook;    /* notify that initialize called    */
     XtProc          obj1;		/* NULL                             */
@@ -85,7 +85,7 @@ typedef struct _ObjectClassPart {
     XtArgsProc      get_values_hook;    /* notify that get_values called    */
     XtProc          obj11;              /* NULL                             */
     XtVersionType   version;            /* version of intrinsics used       */
-    struct _XtOffsetRec *callback_private;/* list of callback offsets       */
+    XtPointer       callback_private;   /* list of callback offsets       */
     String          obj12;              /* NULL                             */
     XtProc          obj13;              /* NULL                             */
     XtProc          obj14;              /* NULL                             */
