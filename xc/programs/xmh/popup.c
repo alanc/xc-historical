@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[]=
-    "$XConsortium: popup.c,v 2.12 89/07/20 21:15:24 converse Exp $";
+    "$XConsortium: popup.c,v 2.13 89/08/03 17:20:23 converse Exp $";
 #endif
 
 /*
@@ -112,7 +112,7 @@ static void InsureVisibility(popup, popup_child, x, y)
     XtGetValues( popup, args, THREE );
 
     border <<= 1;
-    XtTranslateCoords( popup_child, (Position)0, (Position)0, &root_x, &root_y);
+    XtTranslateCoords(popup_child, (Position)0, (Position)0, &root_x, &root_y);
     if ((root_x + width + border) > WidthOfScreen(XtScreen(toplevel))) {
 	root_x = WidthOfScreen(XtScreen(toplevel)) - width - border;
     } else root_x = x;
@@ -156,6 +156,20 @@ static void TellPrompt(goAheadButton, client_data, call_data)
 }
 
 
+#define GOAHEAD "goAhead"
+
+/*ARGSUSED*/
+void PromptOkayAction(w, event, params, num_params)
+    Widget	w;		/* unused */
+    XEvent	*event;
+    String	*params;	/* unused */
+    Cardinal	*num_params;	/* unused */
+{
+    XtCallCallbacks(XtNameToWidget(XtParent(w), GOAHEAD), XtNcallback,
+		    (caddr_t) NULL);
+}
+
+
 void PopupPrompt(question, goAheadCallback)
     char		*question;		/* the prompting string */
     XtCallbackProc	goAheadCallback;	/* CreateNewFolder() */
@@ -173,6 +187,8 @@ void PopupPrompt(question, goAheadCallback)
 	{(XtCallbackProc) NULL,			(caddr_t) NULL},
 	{(XtCallbackProc) NULL,			(caddr_t) NULL}
     };
+    static String text_translations = "<Key>Return: PromptOkayAction()\n";
+
 
     DeterminePopupPosition(&x, &y);
     XtSetArg(args[0], XtNallowShellResize, True);
@@ -185,12 +201,15 @@ void PopupPrompt(question, goAheadCallback)
     XtSetArg(args[1], XtNvalue, "");
     dialog = XtCreateManagedWidget("dialog", dialogWidgetClass, popup, args,
 				   TWO);
+    XtOverrideTranslations(XtNameToWidget(dialog, "value"), 
+			   XtParseTranslationTable(text_translations));
+
     tell_prompt_closure[0].callback = goAheadCallback;
     tell_prompt_closure[0].closure = (caddr_t) dialog;
     go_callbacks[0].closure = (caddr_t) tell_prompt_closure;
     go_callbacks[1].closure = (caddr_t) popup;
     XtSetArg(args[0], XtNcallback, go_callbacks);
-    XtCreateManagedWidget("goAhead", commandWidgetClass, dialog, args, ONE);
+    XtCreateManagedWidget(GOAHEAD, commandWidgetClass, dialog, args, ONE);
     XawDialogAddButton(dialog, "cancel", DestroyPopupPrompt, (caddr_t)popup);
 
     XtRealizeWidget(popup);
@@ -220,7 +239,7 @@ void PopupNotice( message, callback, closure )
 {
     PopupStatus popup_status = (PopupStatus)closure;
     Arg args[5];
-    Widget dialog, dialog_child;
+    Widget dialog;
     Position x, y;
     char command[65], label[128];
 
@@ -247,13 +266,12 @@ void PopupNotice( message, callback, closure )
     XtSetArg( args[0], XtNlabel, label );
     XtSetArg( args[1], XtNvalue, message );
     dialog = XtCreateManagedWidget( "dialog", dialogWidgetClass,
-				   popup_status->popup, args, TWO );
+				   popup_status->popup, args, TWO);
 
-    /* we don't want the text area of the dialog box to be edited */
-    if ((dialog_child = XtNameToWidget( dialog, "value")) != NULL) {
-	XtSetArg( args[0], XtNeditType, XawtextRead);
-	XtSetValues( dialog_child, args, ONE);
-    }
+    /* The text area of the dialog box will not be editable. */
+
+    XtSetArg( args[0], XtNeditType, XawtextRead);
+    XtSetValues( XtNameToWidget(dialog, "value"), args, ONE);
 
     XawDialogAddButton( dialog, "confirm",
 		       (callback != (XtCallbackProc)NULL)
@@ -380,31 +398,33 @@ void PopupError(message)
     XtPopup(error_popup, XtGrabNone);
 }
  
+static Widget alert = NULL;
 	
-void DestroyPopupAlert(popup)
-    Widget	popup;
+void PopdownAlert()
 {
-    if (popup != NULL) {
-	XtPopdown(popup);
-	XtDestroyWidget(popup);
-    }
+    if (alert != NULL) 	XtPopdown(alert);
 }
 
-Widget PopupAlert(message, parent, x, y)
+void PopupAlert(message, parent, x, y)
     String	message;
+    Widget	parent;
     Position	x, y;
 {
     Arg		args[2];
-    Widget	popup, child;
 
-    popup = XtCreatePopupShell("alert", transientShellWidgetClass, parent,
-			       args, ZERO);
-    XtSetArg(args[0], XtNlabel, message);
-    child = XtCreateManagedWidget("rescanning", labelWidgetClass, popup, args,
-				  ONE);
-    PositionThePopup(popup, x, y);
-    XtRealizeWidget(popup);
-    XtPopup(popup, XtGrabNone);
-    return popup;
+    if (alert == NULL) {
+	alert = XtCreatePopupShell("alert", transientShellWidgetClass,
+				   parent, args, ZERO);
+	XtSetArg(args[0], XtNlabel, message);
+	XtCreateManagedWidget("rescanning", labelWidgetClass, alert, args,
+			      ONE);
+	PositionThePopup(alert, x, y);
+	XtRealizeWidget(alert);
+    }
+    else {
+	XtSetArg(args[0], XtNlabel, message);
+	XtSetValues(XtNameToWidget(alert, "rescanning"), args, ONE);
+    }
+    XtPopup(alert, XtGrabNone);
 }
 

@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: init.c,v 2.30 89/07/21 18:55:54 converse Exp $";
+    "$XConsortium: init.c,v 2.31 89/08/14 15:42:17 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -176,6 +176,9 @@ CompReset(),SaveDraft(),SendDraft(),MsgInsertAssoc();
 extern void PopupFolderMenu(), SetCurrentFolder(), LeaveFolderButton(),
 OpenFolderFromMenu();
 
+/* actions associated with popup windows */
+extern void PromptOkayAction();
+
 
 /* All the start-up initialization goes here. */
 
@@ -246,7 +249,11 @@ char **argv;
         {"PopupFolderMenu",		PopupFolderMenu},
         {"SetCurrentFolder",		SetCurrentFolder},
         {"LeaveFolderButton",		LeaveFolderButton},
-	{"OpenFolderFromMenu",		OpenFolderFromMenu}
+	{"OpenFolderFromMenu",		OpenFolderFromMenu},
+
+			/* popup dialog box button action procedures */
+
+	{"PromptOkayAction",		PromptOkayAction}
     };
 
     static Arg shell_args[] = {
