@@ -82,11 +82,11 @@
  93  71 139		MediumOrchid4
 138  43 226		blue violet
 138  43 226		BlueViolet
-138  43 226		purple
 155  48 255		BlueViolet1
 145  44 238		BlueViolet2
 125  38 205		BlueViolet3
  85  26 139		BlueViolet4
+160  32 240		purple
   0   0 255		blue
   0   0 205		medium blue
   0   0 205		MediumBlue
