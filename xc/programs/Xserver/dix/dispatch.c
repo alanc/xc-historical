@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.9 89/07/16 17:23:51 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.10 89/07/28 18:46:21 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1358,7 +1358,7 @@ ProcCreatePixmap(client)
     DepthPtr pDepth;
     register int i;
 
-    REQUEST_AT_LEAST_SIZE(xCreatePixmapReq);
+    REQUEST_SIZE_MATCH(xCreatePixmapReq);
     client->errorValue = stuff->pid;
     LEGAL_NEW_RESOURCE(stuff->pid, client);
     if (!(pDraw = LOOKUP_DRAWABLE(stuff->drawable, client)))
