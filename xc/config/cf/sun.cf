@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.137 95/01/05 19:27:08 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: sun.cf,v 1.138 95/01/12 14:59:54 kaleb Exp kaleb $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -184,7 +184,6 @@ XCOMM operating system:  OSName
 #if HasSunCplusplus || HasCenterLineCplusplus
 #define PositionIndependentCplusplusFlags -pic
 #endif
-#include <svr4.cf>
 #else
 #define InstKmemFlags	  -g kmem -m 2755
 #include <sunLib.rules>
@@ -283,4 +282,8 @@ XCOMM operating system:  OSName
 #if OSMajorVersion < 5
 #define SharedAllocateLocalDefines -DINCLUDE_ALLOCA_H
 #define LibraryCCOptions /* don't want special floating point */
+#endif
+
+#if OSMajorVersion > 4
+#include <svr4.cf>
 #endif
