@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.190 91/06/24 19:10:02 gildea Exp $";
+static char *rid="$XConsortium: main.c,v 1.191 91/07/02 19:38:04 gildea Exp $";
 #endif /* lint */
 
 /*
@@ -65,6 +65,12 @@ SOFTWARE.
 #define USE_SYSV_UTMP
 #define ATT
 #define USE_TERMIOS
+#endif
+  
+#ifdef SYSV386
+#define USE_SYSV_UTMP
+#define ATT
+#define USE_HANDSHAKE
 #endif
 
 #ifdef ATT
@@ -196,6 +202,11 @@ int	Ptyfd;
 #endif
 
 #include <signal.h>
+
+#if defined(SCO) || defined(ISC)
+#undef SIGTSTP			/* defined, but not the BSD way */
+#endif
+
 #ifdef SIGTSTP
 #include <sys/wait.h>
 #ifdef hpux
@@ -342,11 +353,14 @@ extern void endutent();
 extern void utmpname();
 #endif /* !SVR4 */
 
+#ifndef SYSV386			/* could remove paragraph unconditionally? */
 extern struct passwd *getpwent();
 extern struct passwd *getpwuid();
 extern struct passwd *getpwnam();
 extern void setpwent();
 extern void endpwent();
+#endif
+
 extern struct passwd *fgetpwent();
 #else	/* not USE_SYSV_UTMP */
 static char etc_utmp[] = UTMP_FILENAME;
@@ -1071,7 +1085,11 @@ char **argv;
 #ifdef USE_SYSV_TERMIO
 	if (0 > (mode = fcntl(pty, F_GETFL, 0)))
 		Error();
+#ifdef O_NDELAY
 	mode |= O_NDELAY;
+#else
+	mode |= O_NONBLOCK;
+#endif /* O_NDELAY */
 	if (fcntl(pty, F_SETFL, mode))
 		Error();
 #else	/* USE_SYSV_TERMIO */
@@ -1643,7 +1661,7 @@ spawn ()
 #endif
 #endif	/* USE_SYSV_TERMIO */
 
-#ifndef USE_HANDSHAKE
+#ifdef USE_USG_PTYS
 		int ptyfd;
 
 		setpgrp();
@@ -1655,7 +1673,7 @@ spawn ()
 		if (ioctl (ptyfd, I_PUSH, "ptem") < 0) {
 		    SysError (2);
 		}
-#ifndef SVR4			/* from Sony */
+#if !defined(SVR4) && !defined(SYSV386)
 		if (!getenv("CONSEM") && ioctl (ptyfd, I_PUSH, "consem") < 0) {
 		    SysError (3);
 		}
@@ -1686,7 +1704,8 @@ spawn ()
 #endif
 
 
-#else /* USE_HANDSHAKE:  warning, goes for a long ways */
+#endif /* USE_USG_PTYS */
+#ifdef USE_HANDSHAKE		/* warning, goes for a long ways */
 		/* close parent's sides of the pipes */
 		close (cp_pipe[0]);
 		close (pc_pipe[1]);
@@ -1790,7 +1809,7 @@ spawn ()
 			(void) strcpy(ttydev, ptr);
 		}
 
-#endif /* !USE_HANDSHAKE else USE_HANDSHAKE - from near fork */
+#endif /* USE_HANDSHAKE -- from near fork */
 
 #ifdef USE_TTY_GROUP
 	{ 
@@ -1840,6 +1859,9 @@ spawn ()
 		    tio.c_oflag &=
 		     ~(OCRNL|ONLRET|NLDLY|CRDLY|TABDLY|BSDLY|VTDLY|FFDLY);
 		    tio.c_oflag |= ONLCR;
+#ifdef OPOST
+		    tio.c_oflag |= OPOST;
+#endif /* OPOST */		    
 #ifdef BAUD_0
 		    /* baud rate is 0 (don't care) */
 		    tio.c_cflag &= ~(CBAUD);
