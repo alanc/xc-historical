@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Resources.c,v 1.42 88/03/16 10:56:01 swick Exp $";
+static char rcsid[] = "$Header: Resources.c,v 1.43 88/05/02 15:22:59 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -59,24 +59,23 @@ static void CopyFromArg(src, dst, size)
 }
 
 static void CopyToArg(src, dst, size)
-    XtArgVal src, *dst;
+    XtArgVal src, dst;
     register unsigned int size;
 {
-    /* ||| Old semantics are yucky, but keep as long as NULL value */
-    if (*dst != NULL) 
-	dst = *(XtArgVal **)dst;
+    /* Note: once-upon-a-time, the semantics of GetValue were to
+       store into the arglist.  Backward compatibility was supported
+       for a while, but is not supported any longer. */
 
     if (size == sizeof(XtArgVal))
-	*dst = *(XtArgVal *)src;
+	*((XtArgVal *) dst) = *(XtArgVal *)src;
     else if (size == sizeof(short)) 
-	*dst = (XtArgVal) *((short *) src);
+	*((short *) dst) = *((short *) src);
     else if (size == sizeof(char))
-        *dst = (XtArgVal) *((char *) src);
+	*((char *) dst) = *((char *) src);
     else if (size < sizeof(XtArgVal))
 	bcopy((char *) src, (char *) dst, (int) size);
     else
-	bcopy((char *) src, (char *) *dst, (int) size);
-
+	bcopy((char *) src, *(char **) dst, (int) size);
 }
 
 #ifndef lint
@@ -518,7 +517,7 @@ void XtGetSubvalues(base, resources, num_resources, args, num_args)
 	    if (argName == xrmres->xrm_name) {
 		CopyToArg(
 		    (XtArgVal) base - xrmres->xrm_offset - 1,
-		    &arg->value,
+		    arg->value,
 		    xrmres->xrm_size);
 		break;
 	    }
