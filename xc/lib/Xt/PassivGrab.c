@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium";
+static char Xrcsid[] = "$XConsortium$";
 #endif
 
 /********************************************************
