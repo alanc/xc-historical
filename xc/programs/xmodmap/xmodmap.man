@@ -21,8 +21,7 @@ xmodmap - utility for modifying keymaps in X
 .PP
 The \fIxmodmap\fP program is used to edit and display the 
 keyboard \fImodifier map\fP and \fIkeymap table\fP that are used by client 
-applications to convert event keycodes into keysyms (see Sections 12.7 and
-16.1 in the \fIXlib\fP manual).  It is usually run from 
+applications to convert event keycodes into keysyms.  It is usually run from 
 the user's session startup script to configure the keyboard according to 
 personal tastes.
 .SH OPTIONS
