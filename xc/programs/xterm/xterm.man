@@ -466,7 +466,7 @@ Specifies whether or not eight-bit characters sent from the host should be
 accepted as is or stripped when printed.  The default is ``true.''
 .TP 8
 .B "font (\fPclass\fB Font)"
-Specifies the name of the normal font.  The default is ``vtsingle.''
+Specifies the name of the normal font.  The default is ``fixed.''
 .TP 8
 .B "font1 (\fPclass\fB Font1)"
 Specifies the name of the first alternate font.
