@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.173 93/07/15 17:13:26 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.174 93/07/15 17:28:13 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -86,12 +86,12 @@ XCOMM
 #define HPArchitecture
 #endif /* hpux */
 
-#ifdef att
-#define MacroIncludeFile <att.cf>
-#define MacroFile att.cf
-#undef att
-#define ATTArchitecture
-#endif /* att */
+#ifdef USL
+#define MacroIncludeFile <usl.cf>
+#define MacroFile usl.cf
+#undef USL
+#define SVR4Architecture
+#endif /* USL */
 
 #ifdef apollo
 #define MacroIncludeFile <apollo.cf>

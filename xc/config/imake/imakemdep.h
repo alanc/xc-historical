@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.49 93/05/27 16:03:21 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.50 93/07/13 17:57:22 gildea Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -29,7 +29,7 @@
 #define imake_ccflags "-DSYSV"
 #endif
 
-#if defined(att) || defined(Oki)
+#if defined(USL) || defined(Oki)
 #define imake_ccflags "-Xc -DSVR4"
 #endif
 
@@ -161,8 +161,8 @@ char *cpp_argv[ARGUMENTS] = {
 #if defined(macII) || defined(_AUX_SOURCE)
 	"-DmacII",	/* Apple A/UX */
 #endif
-#ifdef att
-	"-Datt",	/* AT&T products */
+#ifdef USL
+	"-DUSL",	/* USL */
 #endif
 #ifdef sony
 	"-Dsony",	/* Sony */
@@ -318,8 +318,8 @@ struct symtab	predefs[] = {
 #ifdef CRAY
 	{"CRAY", "1"},
 #endif
-#ifdef att
-	{"att", "1"},
+#ifdef USL
+	{"USL", "1"},
 #endif
 #ifdef mips
 	{"mips", "1"},
