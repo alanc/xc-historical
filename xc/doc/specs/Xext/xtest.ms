@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: xtest.ms,v 1.5 92/12/17 13:40:21 rws Exp $
+.\" $XConsortium: xtest.ms,v 1.6 92/12/17 14:07:12 rws Exp $
 .de lP
 .ne 8
 .LP
@@ -315,7 +315,7 @@ grabs the server.
 If \fIimpervious\fP is
 .PN False ,
 then the executing client returns to the normal state of being
-pervious to server grabs.
+susceptible to server grabs.
 .lP
 .NH 1
 Encoding
@@ -641,7 +641,7 @@ then the executing client becomes impervious to server grabs.
 If \fIimpervious\fP is
 .PN False ,
 then the executing client returns to the normal state of being
-pervious to server grabs.
+susceptible to server grabs.
 .lP
 Bool
 .lP
