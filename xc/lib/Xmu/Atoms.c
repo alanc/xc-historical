@@ -1,4 +1,4 @@
-/* $XConsortium$
+/* $XConsortium: Atoms.c,v 1.1 88/09/29 18:53:08 swick Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -7,9 +7,10 @@
  *
  * Public entry points:
  *
- *	XmuDeclareAtom		initializes an opaque AtomRec
+ *	XmuMakeAtom		creates & initializes an opaque AtomRec
  *	XmuInternAtom		fetches an Atom from cache or Display
  *	XmuGetAtomName		returns name of an Atom
+ *	XmuNameOfAtom		returns name from an AtomPtr
  */
 
 #include <X11/copyright.h>
@@ -126,12 +127,19 @@ static void _DeclareAtoms()
  ******************************************************************/
 
 
-void XmuDeclareAtom(atom_ptr, name)
-    AtomPtr *atom_ptr;
+AtomPtr XmuMakeAtom(name)
     char* name;
 {
-    (*atom_ptr)->name = name;
-    (*atom_ptr)->head = NULL;
+    AtomPtr ptr = XtNew(struct _AtomRec);
+    ptr->name = name;
+    ptr->head = NULL;
+    return ptr;
+}
+
+char* XmuNameOfAtom(atom_ptr)
+    AtomPtr atom_ptr;
+{
+    return atom_ptr->name;
 }
 
 
