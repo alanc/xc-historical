@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.72 89/09/29 13:55:40 swick Exp $";
+    "$XConsortium: Resources.c,v 1.73 89/10/03 17:22:51 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -37,6 +37,12 @@ SOFTWARE.
 
 static XrmClass	QBoolean, QString, QCallProc, QImmediate;
 static XrmName QinitialResourcesPersistent, QInitialResourcesPersistent;
+
+#ifdef CRAY
+void Cjump();
+char *Cjumpp = (char *) Cjump;
+void Cjump() {}
+#endif
 
 void XtCopyFromParent(widget, offset, value)
     Widget      widget;
@@ -266,7 +272,7 @@ void  XrmCompileResourceList(resources, num_resources)
     	xrmres->xrm_class	 = StringToClass(resources->resource_class);
     	xrmres->xrm_type	 = StringToQuark(resources->resource_type);
 /*	xrmres->xrm_size	 = resources->resource_size; */
-#ifdef CRAY
+#ifdef CRAY1
 	xrmres->xrm_offset = -(resources->resource_offset * sizeof(long) + 1);
 #else
         xrmres->xrm_offset	 = -resources->resource_offset - 1;
@@ -546,7 +552,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		if (rawType != QBoolean) {
 		    rawValue = value;
 		    value.size = sizeof(Boolean);
-		    value.addr = &persistent_resources;
+		    value.addr = (XtPointer)&persistent_resources;
 		    if (!_XtConvert(widget, rawType, &rawValue, QBoolean,
 				    &value, NULL))
 			persistent_resources = *(Boolean*)value.addr;
@@ -585,12 +591,14 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		    xrm_default_type = rx->xrm_default_type;
 		    if (xrm_default_type == QCallProc) {
 #ifdef CRAY
- 			(*(XtProc)(((int)(rx->xrm_default_addr))<<2))(
- 			      widget,-(rx->xrm_offset+1), pv);
-#else
+ 			if ( (int) Cjumpp != (int) Cjump)
+ 			    (*(XtProc)(((int)(rx->xrm_default_addr))<<2))(
+ 				 widget,-(rx->xrm_offset+1), pv);
+			else
+#endif
 			(*(XtProc)(rx->xrm_default_addr))(
 			      widget,-(rx->xrm_offset+1), pv);
-#endif
+
 		    } else if (xrm_default_type == QImmediate) {
 			if (rx->xrm_size == sizeof(int)) {
 			    int_val = (int)rx->xrm_default_addr;
@@ -802,6 +810,15 @@ void XtGetApplicationResources
     CacheArgs(args, num_args, quark_cache, XtNumber(quark_cache), &quark_args);
     /* Compile resource list if needed */
     if (((int) resources->resource_offset) >= 0) {
+#ifdef	CRAY2
+ 	if (base == 0) {	/* this client is non-portable, but... */
+ 	    int count;
+	    XtResourceList  res = resources;
+	    for (count = 0; count < num_resources; res++, count++) {
+ 		res->resource_offset *= sizeof(long);
+ 	    }
+ 	}
+#endif	/* CRAY2 */
 	XrmCompileResourceList(resources, num_resources);
     }
     table = _XtCreateIndirectionTable(resources,num_resources);
