@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: inputstr.h,v 1.23 89/10/03 19:50:03 rws Exp $ */
+/* $XConsortium: inputstr.h,v 1.25 91/01/24 17:06:21 rws Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -159,28 +159,24 @@ typedef struct _KbdFeedbackClassRec {
     void		(*CtrlProc) ();
     KeybdCtrl	 	ctrl;
     KbdFeedbackPtr	next;
-    CARD8		id;
 } KbdFeedbackClassRec;
 
 typedef struct _PtrFeedbackClassRec {
     void		(*CtrlProc) ();
     PtrCtrl		ctrl;
     PtrFeedbackPtr	next;
-    CARD8		id;
 } PtrFeedbackClassRec;
 
 typedef struct _IntegerFeedbackClassRec {
     void		(*CtrlProc) ();
     IntegerCtrl	 	ctrl;
     IntegerFeedbackPtr	next;
-    CARD8		id;
 } IntegerFeedbackClassRec;
 
 typedef struct _StringFeedbackClassRec {
     void		(*CtrlProc) ();
     StringCtrl	 	ctrl;
     StringFeedbackPtr	next;
-    CARD8		id;
 } StringFeedbackClassRec;
 
 typedef struct _BellFeedbackClassRec {
@@ -188,14 +184,12 @@ typedef struct _BellFeedbackClassRec {
     void		(*CtrlProc) ();
     BellCtrl	 	ctrl;
     BellFeedbackPtr	next;
-    CARD8		id;
 } BellFeedbackClassRec;
 
 typedef struct _LedFeedbackClassRec {
     void		(*CtrlProc) ();
     LedCtrl	 	ctrl;
     LedFeedbackPtr	next;
-    CARD8		id;
 } LedFeedbackClassRec;
 
 /* states for devices */
