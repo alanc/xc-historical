@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.177 89/03/27 19:02:14 rws Exp $ */
+/* $XConsortium: events.c,v 1.178 89/03/31 13:18:17 keith Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -211,7 +211,8 @@ static Mask filters[128] =
 	CantBeFiltered,		       /* SelectionRequest */
 	CantBeFiltered,		       /* SelectionNotify */
 	ColormapChangeMask,	       /* ColormapNotify */
-	CantBeFiltered		       /* InterpretNotify */
+	CantBeFiltered,		       /* ClientMessage */
+	CantBeFiltered		       /* MappingNotify */
 };
 
 Mask
@@ -782,7 +783,7 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 		pEvents[i].u.u.sequenceNumber = client->sequence;
 	}
 
-	if (filters[pEvents->u.u.type] &
+	if (filters[pEvents->u.u.type & 0177] &
 	    (ButtonPressMask | ButtonReleaseMask
              | KeyPressMask | KeyReleaseMask))
 		SetCriticalOutputPending();
