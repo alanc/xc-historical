@@ -1,4 +1,4 @@
-.\" $XConsortium: Xsun.man,v 1.8 89/06/21 11:53:32 rws Exp $
+.\" $XConsortium: Xsun.man,v 1.9 89/07/03 15:53:14 rws Exp $
 .TH XSUN 1 "26 October 1988" "X Version 11"
 .SH NAME
 Xsun \- Sun server for X Version 11
@@ -96,9 +96,10 @@ takes the following argument as the keyboard autorepeat interval time
 in milliseconds.
 .TP
 \fB-mono\fP
-means use a \fBcgtwo\fP,  if present,  as a monochrome device.  Default is use it as
+For a \fBcgtwo\fP, means use as a monochrome device.  Default is use it as
 a color device.
-Using it as a monochrome device is,  for the present,  mush faster.
+For a \fBcgfour\fP, means make the mono screen number zero.  Default is to
+make the color screen number zero.
 .TP
 \fB-zaphod\fP
 disables active zaphod mode, in which sliding the mouse off the left and right
@@ -151,10 +152,6 @@ command (found in the
 directory) to repair the damage.
 .TP
 2
-The server code is completely untuned,  and has inferior performance.
-In particular,  the color code is very slow (but it is very portable).
-.TP
-3
 The auto-configuration depends on there being appropriate
 special files in the
 .I /dev
@@ -174,26 +171,18 @@ cursor is on the monochrome frame buffer.  The solution is to remove the
 .I /dev
 entries for any device you don't have a monitor for.
 .TP
-4
+3
 There is a bug in pre-FCS operating systems for the Sun/4
 which causes the server to crash driving a \fBcgtwo\fP.
 .TP
-5
+4
 There is a race condition that sometimes happens when running
 ``on top of'' NeWS.  The symptom is that parts of NeWS show through,
 and that the keyboard is in a non-useful state.  There is no
 simple work-around.
 .TP
-6
-Autorepeat for the keyboard cannot be turned off.
-.TP
-7
-Use of the pattern (as opposed to the blanking) screensaver
-may cause the server to loop forever.
-.TP
-8
-The cursor colors are correct.  If you are skeptical,  try running
-.IR hacks/cursorcolor/cursorcolor.
+5
+Colon separated devices names do not work.
 .SH AUTHORS
 .TP
 U. C. Berkeley
