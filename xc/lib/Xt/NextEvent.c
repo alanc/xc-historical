@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.57 89/01/18 10:56:04 swick Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.58 89/01/18 15:19:56 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif lint
 
@@ -82,11 +82,14 @@ static void QueueTimerEvent(app, ptr)
  * has not already been enqueued.
  *
  *
- * _XtWaitForSomething( ignoreTimers, ignoreInputs, block, howlong, appContext)
+ * _XtWaitForSomething( ignoreTimers, ignoreInputs, ignoreEvents,
+ *			block, howlong, appContext)
  * Boolean ignoreTimers;     (Don't return if a timer would fire
  *				Also implies forget timers exist)
  *
  * Boolean ignoreInputs;     (Ditto for input callbacks )
+ *
+ * Boolean ignoreEvents;     (Ditto for X events)
  *
  * Boolean block;	     (Okay to block)
  * TimeVal howlong;	     (howlong to wait for if blocking and not
@@ -94,10 +97,18 @@ static void QueueTimerEvent(app, ptr)
  *				Maybe should mean shortest of both)
  * XtAppContext app;	     (Displays to check wait on)
  * Returns display for which input is available, if any
+ * and if ignoreEvents==False, else returns -1
+ *
+ * if ignoring everything && block=True && howlong=NULL, you'll have
+ * lots of time for coffee; better not try it!  In fact, it probably
+ * makes little sense to do this regardless of the value of howlong
+ * (bottom line is, we don't bother checking here).
  */
-int _XtwaitForSomething(ignoreTimers, ignoreInputs, block, howlong, app)
+int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
+			block, howlong, app)
 	Boolean ignoreTimers;
 	Boolean ignoreInputs;
+	Boolean ignoreEvents;
 	Boolean block;
 	unsigned long *howlong;
 	XtAppContext app;
@@ -151,8 +162,10 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, block, howlong, app)
 			wmaskfd = zero;
 			emaskfd = zero;
 		}
-		for (d = 0; d < app->count; d++) {
-		    FD_SET (ConnectionNumber(app->list[d]), &rmaskfd);
+		if (!ignoreEvents) {
+		    for (d = 0; d < app->count; d++) {
+			FD_SET (ConnectionNumber(app->list[d]), &rmaskfd);
+		    }
 		}
 		nfound = select (app->fds.nfds, (int *) &rmaskfd,
 			(int *) &wmaskfd, (int *) &emaskfd, wait_time_ptr);
@@ -202,6 +215,7 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, block, howlong, app)
 	        }
 	}
 	if(ignoreInputs) {
+	    if (ignoreEvents) return -1; /* then only doing timers */
 	    for (d = 0; d < app->count; d++) {
 		if (FD_ISSET(ConnectionNumber(app->list[d]), &rmaskfd)) {
 		    return d;
@@ -212,10 +226,12 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, block, howlong, app)
 	for (i = 0; i < app->fds.nfds && nfound > 0; i++) {
 	    if (FD_ISSET (i, &rmaskfd)) {
 		nfound--;
-		for (d = 0; d < app->count; d++) {
-		    if (i == ConnectionNumber(app->list[d])) {
-			if (ret == -1) ret = d;
-			goto ENDILOOP;
+		if (!ignoreEvents) {
+		    for (d = 0; d < app->count; d++) {
+			if (i == ConnectionNumber(app->list[d])) {
+			    if (ret == -1) ret = d;
+			    goto ENDILOOP;
+			}
 		    }
 		}
 
@@ -489,7 +505,7 @@ static void DoOtherSources(app)
 	DrainQueue();
 	if (app->fds.count > 0) {
 	    /* Call _XtwaitForSomething to get input queued up */
-	    (void) _XtwaitForSomething(TRUE, FALSE, FALSE,
+	    (void) _XtwaitForSomething(TRUE, FALSE, TRUE, FALSE,
 		(unsigned long *)NULL, app);
 	    DrainQueue();
 	}
@@ -581,7 +597,7 @@ void XtAppNextEvent(app, event)
 	/* We're ready to wait...if there is a work proc, call it */
 	if (CallWorkProc(app)) continue;
 
-	d = _XtwaitForSomething(FALSE, FALSE, TRUE,
+	d = _XtwaitForSomething(FALSE, FALSE, FALSE, TRUE,
 				(unsigned long *) NULL, app);
 
 	if (d != -1) {
@@ -632,7 +648,7 @@ void XtAppProcessEvent(app, mask)
 	    if (mask & XtIMAlternateInput) {
 		if (app->fds.count > 0 && app->outstandingQueue == NULL) {
 		    /* Call _XtwaitForSomething to get input queued up */
-		    (void) _XtwaitForSomething(TRUE, FALSE, FALSE,
+		    (void) _XtwaitForSomething(TRUE, FALSE, TRUE, FALSE,
 			    (unsigned long *)NULL, app);
 		}
 		if (app->outstandingQueue != NULL) {
@@ -665,6 +681,7 @@ void XtAppProcessEvent(app, mask)
 	    d = _XtwaitForSomething(
 				    (mask & XtIMTimer ? FALSE : TRUE),
 				    (mask & XtIMAlternateInput ? FALSE : TRUE),
+				    (mask & XtIMXEvent ? FALSE : TRUE),
 				    TRUE,
 				    (unsigned long *) NULL, app);
 	    
@@ -719,7 +736,7 @@ XtInputMask XtAppPending(app)
 	else {
 	    /* This won't cause a wait, but will enqueue any input */
 
-	    if(_XtwaitForSomething(TRUE, FALSE, FALSE, (unsigned long *) NULL,
+	    if(_XtwaitForSomething(TRUE, FALSE, FALSE, FALSE, (unsigned long *) NULL,
 		    app) != -1) ret |= XtIMXEvent;
 	    if (app->outstandingQueue != NULL) ret |= XtIMAlternateInput;
 	}
@@ -738,7 +755,7 @@ Boolean PeekOtherSources(app)
 
 	if (app->fds.count > 0) {
 	    /* Call _XtwaitForSomething to get input queued up */
-	    (void) _XtwaitForSomething(TRUE, FALSE, FALSE,
+	    (void) _XtwaitForSomething(TRUE, FALSE, TRUE, FALSE,
 		    (unsigned long *)NULL, app);
 	    if (app->outstandingQueue != NULL) return TRUE;
 	}
@@ -782,7 +799,7 @@ Boolean XtAppPeekEvent(app, event)
 		return FALSE;
 	    }
 
-	    d = _XtwaitForSomething(FALSE, FALSE, TRUE,
+	    d = _XtwaitForSomething(FALSE, FALSE, FALSE, TRUE,
 		    (unsigned long *) NULL, app);
 
 	    if (d != -1) {
