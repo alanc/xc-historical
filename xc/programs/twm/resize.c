@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.26 89/06/23 14:22:41 jim Exp $
+ * $XConsortium: resize.c,v 1.27 89/06/23 15:54:04 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.26 89/06/23 14:22:41 jim Exp $";
+"$XConsortium: resize.c,v 1.27 89/06/23 15:54:04 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -469,8 +469,7 @@ TwmWindow *tmp_win;
     AddingX = dragx;
     AddingY = dragy;
     AddingW = dragWidth + (2 * (tmp_win->bw + tmp_win->frame_bw));
-    AddingH = dragHeight + tmp_win->title_height +
-        (2 * (tmp_win->bw + tmp_win->frame_bw));
+    AddingH = dragHeight + (2 * (tmp_win->bw + tmp_win->frame_bw));
 }
 
 /***********************************************************************

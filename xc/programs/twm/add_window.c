@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.51 89/06/12 15:32:23 jim Exp $
+ * $XConsortium: add_window.c,v 1.52 89/06/23 15:54:22 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.51 89/06/12 15:32:23 jim Exp $";
+"$XConsortium: add_window.c,v 1.52 89/06/23 15:54:22 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -377,8 +377,8 @@ IconMgr *iconp;
 	    if (event.xbutton.button == Button2)
 	    {
 		if (Scr->AutoRelativeResize) {
-		    int dx = (AddingW / 5);  /* get away from left edge */
-		    int dy = (AddingH / 5);  /* get away from top edge */
+		    int dx = (tmp_win->attr.width / 4);
+		    int dy = (tmp_win->attr.height / 4);
 		    
 #define HALF_AVE_CURSOR_SIZE 8		/* so that it is visible */
 		    if (dx < HALF_AVE_CURSOR_SIZE) dx = HALF_AVE_CURSOR_SIZE;
