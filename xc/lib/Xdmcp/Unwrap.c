@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Decrypt.c,v 1.4 91/01/02 16:28:10 gildea Exp $
+ * $XConsortium: Decrypt.c,v 1.5 91/01/23 22:13:31 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -60,7 +60,7 @@ XdmcpDecrypt (crypto, key, plain, bytes)
     des_key_schedule	schedule;
 
     XdmcpKeyToOddParityKey (key, expand_key);
-    des_set_key ((unsigned char *) key, schedule);
+    _Xdes_set_key ((unsigned char *) key, schedule);
 
     k = 0;
     for (j = 0; j < bytes; j += 8)
@@ -69,7 +69,7 @@ XdmcpDecrypt (crypto, key, plain, bytes)
 	    return; /* bad crypto length */
 	for (i = 0; i < 8; i++)
 	    blocks[k][i] = crypto[j + i];
-	des_ecb_encrypt ((unsigned char *) (crypto + j), (unsigned char *) tmp, schedule, 0);
+	_Xdes_ecb_encrypt ((unsigned char *) (crypto + j), (unsigned char *) tmp, schedule, 0);
 	/* block chaining */
 	k = (k == 0) ? 1 : 0;
 	for (i = 0; i < 8; i++)
