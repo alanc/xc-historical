@@ -1,4 +1,4 @@
-/* $XConsortium: uconvRep.c,v 5.10 92/06/02 18:28:26 hersh Exp $ */
+/* $XConsortium: uconvRep.c,v 5.11 92/08/12 15:14:14 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -2103,6 +2103,7 @@ CARD8	*p_data;
 	SWAP_CARD32 ((*((CARD32 *)ptr)));
 	ptr += sizeof(CARD32);
 	SwapDeviceRects (swapPtr, num, (pexDeviceRect *)ptr);
+        ptr += sizeof(pexDeviceRect) * num;
     }
 
     if (im & PEXRDPickInclusion) {
