@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.46 91/03/12 17:02:47 converse Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.47 91/03/18 11:21:57 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -209,9 +209,6 @@ Widget request, new;
   LoadPieces(src, file, NULL);
 
   if (file != NULL) fclose(file);
-
-  if ( src->ascii_src.type == XawAsciiString )
-      src->ascii_src.string = NULL;
 }
 
 /*	Function Name: ReadText
@@ -619,7 +616,7 @@ Cardinal * num_args;
   if ( old_src->ascii_src.use_string_in_place != 
        src->ascii_src.use_string_in_place ) {
       XtAppWarning( XtWidgetToApplicationContext(new),
-	   "AsciiSrc: The XtNuseStrinInPlace resources may not be changed.");
+	   "AsciiSrc: The XtNuseStringInPlace resource may not be changed.");
        src->ascii_src.use_string_in_place = 
 	   old_src->ascii_src.use_string_in_place;
   }
@@ -637,9 +634,6 @@ Cardinal * num_args;
     if (file != NULL) fclose(file);
     XawTextSetSource( XtParent(new), new, 0);   /* Tell text widget
 						   what happened. */
-    if ( src->ascii_src.type == XawAsciiString )
-	src->ascii_src.string = NULL;
-
     total_reset = TRUE;
   }
 
@@ -921,8 +915,10 @@ Boolean newString;
     char fileName[TMPSIZ];
 
     if (src->ascii_src.type == XawAsciiString) {
+
 	if (src->ascii_src.string == NULL)
 	    src->ascii_src.length = 0;
+
 	else if (! src->ascii_src.use_string_in_place) {
 	    src->ascii_src.string = XtNewString(src->ascii_src.string);
 	    src->ascii_src.allocated_string = True;
@@ -930,6 +926,11 @@ Boolean newString;
 	}
 
 	if (src->ascii_src.use_string_in_place) {
+	    src->ascii_src.length = strlen(src->ascii_src.string);
+	    /* In case the length resource is incorrectly set */
+	    if (src->ascii_src.length > src->ascii_src.ascii_length)
+		src->ascii_src.ascii_length = src->ascii_src.length;
+
 	    if (src->ascii_src.ascii_length == MAGIC_VALUE) 
 		src->ascii_src.piece_size = src->ascii_src.length;
 	    else
