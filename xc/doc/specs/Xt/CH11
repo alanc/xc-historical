@@ -1,4 +1,4 @@
-.\" $XConsortium: CH11,v 1.13 94/04/18 15:34:18 converse Exp $
+.\" $XConsortium: CH11,v 1.14 94/04/18 15:36:56 converse Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -2822,10 +2822,11 @@ Specifies the desired display.
 The class of this object is a private, implementation-dependent,
 subclass of
 .PN Object .
-The hook object has no parent.
-The resources of this object are the callback lists for hooks,
-and the read-only resources for getting a list of parentless shells.
-All of the callback lists are initially empty.
+The hook object has no parent.  The resources of this object are 
+the callback lists for hooks, and the read-only resources for getting 
+a list of parentless shells.  All of the callback lists are initially 
+empty.  When a display is closed the hook object associated with it 
+is destroyed. 
 .LP
 The following procedures can be used on this object:
 .sp
@@ -3198,6 +3199,8 @@ without employing the \*(xI library should invoke the change hook
 itself.  This is done by:
 .sp
 .Ds 0
+.TA .5i 2i
+.ta .5i 2i
 XtCallCallbacks(XtHooksOfDisplay(dpy), XtNchangeHook, call_data);
 .De
 .sp
@@ -3262,8 +3265,8 @@ are called after geometry negotiation, \fItype\fP is
 is the requested geometry, \fIreply\fP is the resulting geometry granted, 
 and \fIresult\fP is the value returned from the geometry negotiation.
 .LP
-The XtNdestroyHook callback list will be called when phase one destroy
-is complete.  The \fIcall_data parameter\fP may be cast to type
+The XtNdestroyHook callback list will be called when a widget is destroyed.
+The \fIcall_data parameter\fP may be cast to type
 .PN XtDestroyHookData .
 .IN "XtDestroyHookData" "" "@DFEF@"
 .sp
@@ -3282,8 +3285,7 @@ When the DestroyHook callbacks are called as a result of a call to
 \fItype\fP is
 .PN XtHdestroy
 and \fIwidget\fP is the widget being destroyed. The callbacks are
-called after the being_destroyed field in the widget instance record 
-has been set to \fBTrue\fP.
+called upon completion of phase one destroy for a widget.
 .LP
 The XtNshells and XtnumShells are read-only resources which report a
 list of all parentless shell widgets associated with a display.
