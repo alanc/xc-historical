@@ -267,6 +267,16 @@ window will be flashed.
 .B \+vb
 This option indicates that a visual bell should not be used.
 .TP 8
+.B \-wf
+This option indicates that \fIxterm\fP should wait for the window to be mapped
+the first time before starting the subprocess so that the initial terminal
+size settings and environment variables are correct.  It the application's
+responsibility to catch subsequent terminal size changes.
+.TP 8
+.B \+wf
+This option indicates that \fIxterm\fP show not wait before starting the
+subprocess.
+.TP 8
 .B \-C
 This option indicates that this window should receive console output.  This
 is not supported on all systems.
@@ -528,6 +538,11 @@ signals to \fIxterm\fP should be disallowed.  The default is ``false.''
 Specifies whether or not Tektronix mode should be disallowed.  The default is
 ``false.''
 .TP 8
+.B "tekSmall (\fPclass\fB TekSmall)"
+Specifies whether or not the Tektronix mode window should start in its smallest
+size if no explicit geometry is given.  This is useful when running \fIxterm\fP
+on displays with small screens.  The default is ``false.''
+.TP 8
 .B "tekStartup (\fPclass\fB TekStartup)"
 Specifies whether or not \fIxterm\fP should start up in Tektronix mode.
 The default is ``false.''
@@ -544,6 +559,10 @@ strings'', etc.  See \fBKEY/BUTTON BINDINGS\fP below.
 .B "visualBell (\fPclass\fB VisualBell)"
 Specifies whether or not a visible bell (i.e. flashing) should be used instead
 of an audible bell when Control-G is received.  The default is ``false.''
+.TP 8
+.B "waitForMap (\fPclass\fB WaitForMap)"
+Specifies whether or not \fIxterm\fP should wait for the initial window map
+before starting the subprocess.  The default is ``false.''
 .sp
 .PP
 The following resources are specified as part of the ``tek4014'' widget
