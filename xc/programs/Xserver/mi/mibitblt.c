@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.54 87/12/08 17:23:21 rws Locked $ */
+/* $Header: mibitblt.c,v 1.55 87/12/09 20:05:03 rws Locked $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -278,7 +278,7 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 {
     int			i, j, k, depth, width, bitsPerPixel, widthInBytes;
     DDXPointRec 	pt;
-    unsigned int 	*pline;
+    unsigned int 	*pline, shifted_pline;
     unsigned int	bit;
     unsigned char	*pCharsOut;
     CARD16		*pShortsOut;
@@ -326,12 +326,24 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 		/* Fetch the next pixel */
 		pline = (*pDraw->pScreen->GetSpans)(pDraw, width, &pt,
 		                                   &width, 1);
-		bit = (unsigned int) ((*pline >> planeNum) & 1);
-		/* Now insert that bit into a bitmap in XY format */
-	        if(BITMAP_BIT_ORDER == LSBFirst)
+		/*
+		 * Now get the bit and insert into a bitmap in XY format.
+		 * XXX - note that this code implies BITMAP_BIT_ORDER
+		 * == BYTE_ORDER
+		 */
+	        if(BITMAP_BIT_ORDER == LSBFirst) {
+		    bit = (unsigned int) ((*pline >> planeNum) & 1);
 		    bit <<= k;
-		else
+		}
+		else {
+		    shifted_pline = (
+			((*pline&0xff) << 24) +
+			((*pline&0xff00) << 8) +
+			((*pline&0xff0000) >> 8) +
+			((*pline&0xff000000) >> 24));
+		    bit = (unsigned int) ((shifted_pline >> planeNum) & 1);
 		    bit <<= ((BITMAP_SCANLINE_UNIT - 1) - k);
+		}
 		if(BITMAP_SCANLINE_UNIT == 8)
 		{
 		    *pCharsOut |= (unsigned char) bit;
