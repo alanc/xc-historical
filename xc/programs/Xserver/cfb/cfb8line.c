@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.17 91/05/24 17:31:40 keith Exp $
+ * $XConsortium: cfb8line.c,v 1.18 91/05/28 18:19:07 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -204,7 +204,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 # define X2  intToX(c2)
 # define Y2  intToY(c2)
 #endif
-    int		    ClipMask = 0x80008000;
+    unsigned long    ClipMask = 0x80008000;
     unsigned char   *addr;
     int		    nwidth;
     cfbPrivGCPtr    devPriv;
