@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: closdev.m,v 1.7 94/01/30 12:09:22 rws Exp $
+ * $XConsortium: closdev.m,v 1.8 94/02/21 12:13:12 rws Exp $
  */
 
 >>TITLE XCloseDevice XINPUT
@@ -44,6 +44,7 @@ int ret;
 	    PASS;
 	else
 	    FAIL;
+	Close_Extension_Display();
 
 >>ASSERTION Good B 3
 If a device is actively grabbed by a client, a successful call to
@@ -102,6 +103,7 @@ XDevice *dev2;
 	else
 		CHECK;
 	CHECKPASS(3);
+	Close_Extension_Display();
 
 >>ASSERTION Good B 3
 If a passive grab is specified by a client for a device a successful 
@@ -157,6 +159,7 @@ int Min_KeyCode, Max_KeyCode, numkeys;
 	else
 		CHECK;
 	CHECKPASS(3);
+	Close_Extension_Display();
 
 >>ASSERTION Good B 3
 If a device is frozen and events have been enqueued, a successful call 
@@ -238,6 +241,7 @@ int Min_KeyCode, Max_KeyCode, numkeys;
 	    }
 	devicerelkeys(dev2);
 	CHECKPASS(count+4);
+	Close_Extension_Display();
 
 
 >>ASSERTION Good B 3
@@ -258,7 +262,7 @@ int Min_KeyCode, Max_KeyCode, numkeys;
 	    untested("%s: No input extension key device.\n", TestName);
 	    return;
 	    }
-	if (noext(0))
+	if (noext(1))
 	    return;
 	device = Devs.Key;
 	client1 = opendisplay();
@@ -301,6 +305,7 @@ int Min_KeyCode, Max_KeyCode, numkeys;
 	    }
 	devicerelkeys(dev2);
 	CHECKPASS(6);
+	Close_Extension_Display();
 
 >>ASSERTION Bad B 3
 A call to xname closes the requested device, causing any subsequent request
@@ -336,6 +341,8 @@ XAnyClassPtr any;
 		for (j=0; j<list->num_classes; j++) {
 		    if (any->class == KeyClass) {
 			device = XOpenDevice (display, list->id);
+			min = ((XKeyInfo *) any)->min_keycode;
+			max = ((XKeyInfo *) any)->max_keycode;
 			break;
 		    }
 	    	    any = (XAnyClassPtr) ((char *) any + any->length);
@@ -367,7 +374,6 @@ XAnyClassPtr any;
 		report("XSetDeviceMode did not return BadDevice\n");
 		FAIL;
 		}
-
 	XGetDeviceMotionEvents(display, device, CurrentTime, CurrentTime,
 	    &nevents, &mode, &evcount);
 	XSync (display,0);
@@ -540,7 +546,7 @@ XAnyClassPtr any;
 	feedctl.class = KbdFeedbackClass;
 	feedctl.percent = 0;
 	mask = DvPercent;
-	XChangeFeedbackControl(display, device, mask, (XFeedbackControl *)&feedctl);
+	XChangeFeedbackControl(display, device, mask, (XFeedbackControl*) &feedctl);
 	XSync (display,0);
 	if (geterr() == baddevice)
 		{
@@ -553,7 +559,6 @@ XAnyClassPtr any;
 		FAIL;
 		}
 
-	XDisplayKeycodes(display, &min, &max);
 	XGetDeviceKeyMapping(display, device, min, 1, &ksyms_per);
 	if (geterr() == baddevice)
 		{
@@ -654,7 +659,7 @@ XAnyClassPtr any;
 		FAIL;
 		}
 
-	XDeviceBell(display, device, KbdFeedbackClass, 0, 100);
+	XDeviceBell(display, device, 0, 0, 100);
 	XSync (display,0);
 	if (geterr() == baddevice)
 		{
@@ -684,7 +689,7 @@ XAnyClassPtr any;
 	dctl.num_valuators=1;
 	dctl.first_valuator=0;
 	dctl.resolutions = &valuators;
-	XChangeDeviceControl(display, device, DEVICE_RESOLUTION, (XDeviceControl *)&dctl);
+	XChangeDeviceControl(display, device, DEVICE_RESOLUTION, (XDeviceControl *) &dctl);
 	XSync (display,0);
 	if (geterr() == baddevice)
 		{

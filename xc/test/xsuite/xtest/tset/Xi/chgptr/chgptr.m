@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chgptr.m,v 1.6 94/01/30 12:09:09 rws Exp $
+ * $XConsortium: chgptr.m,v 1.7 94/02/21 12:11:33 rws Exp $
  */
 >>TITLE XChangePointerDevice XINPUT
 void
@@ -25,7 +25,7 @@ int 	xaxis = 1;
 int 	yaxis = 0;
 >>EXTERN
 extern ExtDeviceInfo Devs;
-extern int NumValuators;
+extern int NumValuators, MinKeyCode;
 
 >>ASSERTION Good B 3
 A call to xname changes the X pointer.
@@ -95,6 +95,96 @@ int i, ndevices, savid;
 	CHECKPASS(2);
 
 >>ASSERTION Good B 3
+If a button is pressed on the pointer device, then the pointer device is
+changed to a new device, then the button is released, the state of the
+old pointer device will show all buttons up.
+>>STRATEGY
+Press a button on the pointer device.
+Change the pointer to a new device.
+Release the button on the old pointer device.
+Verify that the old X pointer device shows all buttons up.
+>>CODE
+#define BUTTONMAPLEN 32
+XDevice *dev;
+XDeviceInfo *list;
+XDeviceState *state;
+XButtonState *bs;
+XEventClass dmnc;
+XEvent ev;
+int n, dmn, i, j, ndevices, savid, ax=0;
+char *buttons;
+
+	if (!Setup_Extension_DeviceInfo(ValMask) || NumValuators < 2)
+	    {
+	    untested("%s: Required input extension device not present.\n", TestName);
+	    return;
+	    }
+
+	if (noext(1))
+	    return;
+
+	list = XListInputDevices (display, &ndevices);
+	for (i=0; i<ndevices; i++,list++)
+	    if (list->use==IsXPointer)
+		savid = list->id;
+
+	device = Devs.Valuator;
+	buttonpress (display, Button1);
+	XSync(display, 0);
+	XCALL;
+	XSync(display, 0);
+	dev = XOpenDevice (display, savid);
+	DeviceMotionNotify(dev, dmn, dmnc);
+	XSelectExtensionEvent (display, DRW(display), &dmnc, 1);
+	XSync(display, 0);
+	devicebuttonrel(display, dev, Button1);
+	SimulateDeviceMotionEvent(display, dev, 0, 1, &ax, 0);
+	XSync(display, 0);
+
+	state = XQueryDeviceState (display, dev);
+	bs = (XButtonState *) state->data;
+	for (i=0; i<state->num_classes; i++)
+	    {
+	    if (bs->class == ButtonClass)
+		{
+		for (j=0,buttons=bs->buttons; j<BUTTONMAPLEN; j++,buttons++)
+		    if (j != Button1 >> 3 && *buttons != 0)
+			{
+			report("%s: byte %d of buttons was %x, should be 0\n",
+			    TestName,j,*buttons);
+			FAIL;
+			}
+		    else
+			CHECK;
+		}
+	    bs = (XButtonState *) ((char *) bs + bs->length);
+	    }
+	if (((n = getevent(display, &ev)) != 2) || ev.type != MappingNotify) {
+		report("Expected one MappingNotify event");
+		report("Got %d events, first was type %d",n,ev.type);
+		FAIL;
+		return;
+	} else
+		CHECK;
+	if (((n = getevent(display, &ev)) != 1) || ev.type != dmn) {
+		report("Expected one DeviceMotion event");
+		report("Got %d events, first was type %d",n,ev.type);
+		FAIL;
+		return;
+	} else
+		CHECK;
+
+	if (((XDeviceMotionEvent *) &ev)->device_state != 0) {
+	    report ("Device motion state was %x, not 0 after press/release\n",
+		((XDeviceMotionEvent *) &ev)->device_state);
+	    FAIL;
+	    }
+	else
+		CHECK;
+	CHECKPASS(BUTTONMAPLEN + 3);
+
+
+>>ASSERTION Good B 3
 Termination of the client that changed the pointer does not affect
 which input device is the X pointer.
 >>STRATEGY
@@ -117,8 +207,21 @@ int i, ndevices, savid;
 		savid = list->id;
 
 	device = Devs.Valuator;
-	if ((client1 = XOpenDisplay("")) == NULL)
+/* Create client1, without causing resource registration. */
+	if (config.display == (char *) NULL) {
+		delete("config.display not set");
 		return;
+	}
+	else
+		CHECK;
+	client1 = XOpenDisplay(config.display);
+	if (client1 == (Display *) NULL) {
+		delete("Couldn't create client1.");
+		return;
+	}
+	else
+		CHECK;
+		
 	display = client1;
 	XCALL;
 	XCloseDisplay(display);
@@ -143,7 +246,7 @@ int i, ndevices, savid;
 	    report("%s: Couldn't restore X pointer\n",TestName);
 	    FAIL;
 	    }
-	CHECKPASS(2);
+	CHECKPASS(4);
 
 >>ASSERTION Bad B 3
 If the specified device has no valuators, a call to 
@@ -182,7 +285,7 @@ fail with a BadDevice error, when the new pointer is specified.
 XID baddevice, devicemotionnotify;
 XDeviceInfo *list;
 int i, ndevices, revert, nfeed, mask, ksyms_per, savid;
-int nevents, mode, evcount, valuators, min, max, count=0;
+int nevents, mode, evcount, valuators, count=0;
 Window focus, w;
 Time time;
 XKbdFeedbackControl feedctl;
@@ -195,7 +298,7 @@ XEvent ev;
 XDevice bogus;
 
 
-	if (!Setup_Extension_DeviceInfo(ValMask) < NumValuators < 2)
+	if (!Setup_Extension_DeviceInfo(ValMask) || NumValuators < 2)
 	    {
 	    untested("%s: Required input extension device not present.\n", TestName);
 	    return;
@@ -388,7 +491,7 @@ XDevice bogus;
 	feedctl.class = KbdFeedbackClass;
 	feedctl.percent = 0;
 	mask = DvPercent;
-	XChangeFeedbackControl(display, device, mask, (XFeedbackControl *)&feedctl);
+	XChangeFeedbackControl(display, device, mask, (XFeedbackControl*) &feedctl);
 	XSync(display,0);
 	if (geterr() == baddevice)
 		{
@@ -398,8 +501,7 @@ XDevice bogus;
 	else
 		FAIL;
 
-	XDisplayKeycodes(display, &min, &max);
-	XGetDeviceKeyMapping(display, device, min, 1, &ksyms_per);
+	XGetDeviceKeyMapping(display, device, MinKeyCode, 1, &ksyms_per);
 	if (geterr() == baddevice)
 		{
 		CHECK;
@@ -408,7 +510,7 @@ XDevice bogus;
 	else
 		FAIL;
 
-	XChangeDeviceKeyMapping(display, device, min, 1, &ksyms, 1);
+	XChangeDeviceKeyMapping(display, device, MinKeyCode, 1, &ksyms, 1);
 	XSync(display,0);
 	if (geterr() == baddevice)
 		{
@@ -475,7 +577,7 @@ XDevice bogus;
 	else
 		FAIL;
 
-	XDeviceBell(display, device, KbdFeedbackClass, 0, 100);
+	XDeviceBell(display, device, 0, 0, 100);
 	XSync(display,0);
 	if (geterr() == baddevice)
 		{
@@ -499,7 +601,7 @@ XDevice bogus;
 	dctl.num_valuators=1;
 	dctl.first_valuator=0;
 	dctl.resolutions = &valuators;
-	XChangeDeviceControl(display, device, DEVICE_RESOLUTION, (XDeviceControl *)&dctl);
+	XChangeDeviceControl(display, device, DEVICE_RESOLUTION, (XDeviceControl*) &dctl);
 	XSync(display,0);
 	if (geterr() == baddevice)
 		{
@@ -670,8 +772,8 @@ Window grab_window;
 	device = Devs.Valuator;
         grab_window = defwin (display);
 
-	XGrabDevice (Dsp, device, grab_window, True, 0, 
-		NULL, GrabModeSync, GrabModeSync, CurrentTime);
+	XGrabKeyboard (Dsp, grab_window, True,
+		GrabModeSync, GrabModeSync, CurrentTime);
 	XSync(Dsp,0);
 	if (isdeleted()) {
 		delete("Could not set up initial grab");
