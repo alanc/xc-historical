@@ -35,6 +35,9 @@
 #include "Scale.h"
 #include <X11/cursorfont.h>
 
+#define SRCWIDTH  64
+#define SRCHEIGHT 64
+
 #define min(a, b) a < b ? a : b
 
 
@@ -124,7 +127,7 @@ static OptionsRec options;
 #define Offset(field) XtOffsetOf(OptionsRec, field)
 static XtResource resources[] = {
   {"source", "Source", XtRString, sizeof(String),
-     Offset(source), XtRString, (XtPointer)"64x64"},
+     Offset(source), XtRString, (XtPointer)"SRCWIDTHxSRCHEIGHT"},
   {"mag", "Mag", XtRString, sizeof(String),
      Offset(mag), XtRString, (XtPointer)"5.0"},
 };
@@ -984,8 +987,10 @@ ParseSourceGeom()
 				/* source */
   srcStat = 
     XParseGeometry(options.source, &srcX, &srcY, &srcWidth, &srcHeight);
-  if (XNegative & srcStat) srcX = DisplayWidth(dpy, scr) - srcX;
-  if (YNegative & srcStat) srcY = DisplayHeight(dpy, scr) - srcY;
+  if (!srcWidth) srcWidth = SRCWIDTH;
+  if (!srcHeight) srcHeight = SRCHEIGHT;
+  if (XNegative & srcStat) srcX = DisplayWidth(dpy, scr) + srcX - srcWidth;
+  if (YNegative & srcStat) srcY = DisplayHeight(dpy, scr) + srcY - srcHeight;
 				/* mag */
 }
 
@@ -998,8 +1003,15 @@ main(argc, argv)
      int argc;
      char **argv;
 {
+  if (argc > 1) 
+    if (!strcmp(argv[1], "-help")) {
+      fprintf (stderr,
+	    "usage:  xmag [-source geom] [-mag magfactor] [-toolkitoption]\n");
+      exit(1);
+    }
+  
   XSetErrorHandler(Error);
-
+    
 				/* SUPPRESS 594 */
   toplevel = XtAppInitialize(&app, "Xmag", optionDesc, XtNumber(optionDesc),
 			     &argc, argv, NULL,
@@ -1014,7 +1026,7 @@ main(argc, argv)
   InitCursors();
   SetupGC();
   CreateRoot();
-  if (!(XValue& srcStat && YValue & srcStat))
+  if (!(XValue & srcStat && YValue & srcStat))
     StartRootPtrGrab(True, NULL);
   wm_delete_window = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
   XtAppMainLoop(app);
