@@ -138,16 +138,15 @@ miComputeClips (pParent, pScreen, universe)
     if (dx || dy) 
     {
 	/*
-	 * If the window has moved, the border will *not* be copied, so we
-	 * empty the old border clip to force exposure of the whole thing.
-	 * We translate the old clipList because that will be exposed or copied
-	 * if gravity is right.
+	 * If the window has moved, translate borderClip and clipList
+	 * as the bits have already been moved.
+	 * XXX parent relative border tiling is now broken XXX
 	 */
-	(* pScreen->RegionEmpty) (pParent->borderClip);
+	(* pScreen->TranslateRegion) (pParent->borderClip, dx, dy);
 	(* pScreen->TranslateRegion) (pParent->clipList, dx, dy);
 	pParent->oldAbsCorner = pParent->absCorner;
     } 
-    else if (pParent->borderWidth) 
+    if (pParent->borderWidth) 
     {
 	/*
 	 * If the window has shrunk, we have to be careful about figuring the
