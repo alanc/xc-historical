@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.8 94/01/18 18:32:49 converse Exp $ */
+/* $XConsortium: xsm.c,v 1.9 94/01/19 21:05:46 converse Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -71,7 +71,7 @@ typedef struct _PendingValue {
 void		FreeClientInfo ();
 
 struct _resources {
-    Boolean	verbose;	/* whether to write to stdout */
+    Boolean	verbose; /* whether to report protocol activity to stdout */
 } app_resources;
 
 #define Offset(field) XtOffsetOf(struct _resources, field)
@@ -517,10 +517,7 @@ IcePointer	client_data;
 
 {
     ClientRec *client = (ClientRec *) client_data;
-
-    if (app_resources.verbose) {
-	printf ("Client Id = %s, received PING REPLY\n", client->clientId);
-    }
+    printf ("Client Id = %s, received PING REPLY\n", client->clientId);
     pingCount--;
 }
 
@@ -595,20 +592,18 @@ ListClientsXtProc (w, client_data, callData)
 {
     ClientRec *client = ClientList;
 
-    if (app_resources.verbose) {
-	printf ("\n");
-	if (client == NULL) {
-	    printf ("There are no clients registered with the SM\n");
-	} else {
-	    printf ("The following client IDs are registered with the SM:\n");
-	    printf ("\n");
-	}
-	while (client) {
-	    printf ("  %s\n", client->clientId);
-	    client = client->next;
-	}
+    printf ("\n");
+    if (client == NULL) {
+	printf ("There are no clients registered with the SM\n");
+    } else {
+	printf ("The following client IDs are registered with the SM:\n");
 	printf ("\n");
     }
+    while (client) {
+	printf ("  %s\n", client->clientId);
+	client = client->next;
+    }
+    printf ("\n");
 }
 
 
@@ -924,32 +919,22 @@ XtPointer 	callData;
     ClientRec *client = ClientList;
 
     pingCount = 0;
-
-    if (app_resources.verbose) printf ("\n");
-
+    printf ("\n");
     if (client == NULL ) {
-	if (app_resources.verbose) {
-	    printf ("There are no clients registered with the SM\n");
-	    printf ("\n");
-	}
+	printf ("There are no clients registered with the SM\n");
+	printf ("\n");
 	return;
     }
-
     while (client) {
 	IcePing (client->ice_conn, PingReplyProc, (IcePointer) client);
 	pingCount++;
-	if (app_resources.verbose)
-	    printf ("Client Id = %s, sent PING\n", client->clientId);
+	printf ("Client Id = %s, sent PING\n", client->clientId);
 	client = client->next;
     }
-    if (app_resources.verbose)
-	printf ("\n");
-
+    printf ("\n");
     while (pingCount > 0)
 	XtAppProcessEvent(appContext, XtIMAll);
-
-    if (app_resources.verbose) 
-	printf ("\n");
+    printf ("\n");
 }
 
 
@@ -970,7 +955,7 @@ XtInputId	*id;
     char	*connstr;
 
     ice_conn = IceAcceptConnection((IceListenObj) client_data);
-    if (ice_conn) {
+    if (! ice_conn) {
 	if (app_resources.verbose)
 	    printf ("IceAcceptConnection failed\n");
     } else {
