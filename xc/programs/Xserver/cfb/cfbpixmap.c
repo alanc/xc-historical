@@ -1,4 +1,4 @@
-/* $XConsortium: cfbpixmap.c,v 5.7 91/07/18 23:36:46 keith Exp $ */
+/* $XConsortium: cfbpixmap.c,v 5.8 91/12/19 14:17:05 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -30,6 +30,7 @@ SOFTWARE.
 
 #include "Xmd.h"
 #include "servermd.h"
+#include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "mi.h"
 #include "cfb.h"
@@ -38,6 +39,7 @@ SOFTWARE.
 extern unsigned int endtab[];
 
 extern void mfbXRotatePixmap(), mfbYRotatePixmap();
+extern PixmapPtr AllocatePixmap();
 
 PixmapPtr
 cfbCreatePixmap (pScreen, width, height, depth)
@@ -46,29 +48,34 @@ cfbCreatePixmap (pScreen, width, height, depth)
     int		height;
     int		depth;
 {
-    register PixmapPtr pPixmap;
-    int size;
-    int bitsPerPixel;
+    PixmapPtr pPixmap;
+    int datasize;
+    int paddedWidth;
 
-    bitsPerPixel = BitsPerPixel(depth);
-    size = PixmapBytePad(width, depth);
-    pPixmap = (PixmapPtr)xalloc(sizeof(PixmapRec) + (height * size));
+    paddedWidth = PixmapBytePad(width, depth);
+    datasize = height * paddedWidth;
+    pPixmap = AllocatePixmap(pScreen, datasize);
     if (!pPixmap)
 	return NullPixmap;
     pPixmap->drawable.type = DRAWABLE_PIXMAP;
     pPixmap->drawable.class = 0;
     pPixmap->drawable.pScreen = pScreen;
     pPixmap->drawable.depth = depth;
-    pPixmap->drawable.bitsPerPixel = bitsPerPixel;
+    pPixmap->drawable.bitsPerPixel = BitsPerPixel(depth);
     pPixmap->drawable.id = 0;
     pPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
     pPixmap->drawable.x = 0;
     pPixmap->drawable.y = 0;
     pPixmap->drawable.width = width;
     pPixmap->drawable.height = height;
-    pPixmap->devKind = size;
+    pPixmap->devKind = paddedWidth;
     pPixmap->refcnt = 1;
+#ifdef PIXPRIV
+    pPixmap->devPrivate.ptr = datasize ?
+		(pointer)((char *)pPixmap + pScreen->totalPixmapSize) : NULL;
+#else
     pPixmap->devPrivate.ptr = (pointer)(pPixmap + 1);
+#endif
     return pPixmap;
 }
 
@@ -88,17 +95,14 @@ cfbCopyPixmap(pSrc)
 {
     register PixmapPtr	pDst;
     int		size;
+    ScreenPtr pScreen;
 
     size = pSrc->drawable.height * pSrc->devKind;
-    pDst = (PixmapPtr) xalloc(sizeof(PixmapRec) + size);
+    pScreen = pSrc->drawable.pScreen;
+    pDst = (*pScreen->CreatePixmap) (pScreen, pSrc->drawable.width, 
+				pSrc->drawable.height, pSrc->drawable.depth);
     if (!pDst)
 	return NullPixmap;
-    pDst->drawable = pSrc->drawable;
-    pDst->drawable.id = 0;
-    pDst->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-    pDst->devKind = pSrc->devKind;
-    pDst->refcnt = 1;
-    pDst->devPrivate.ptr = (pointer)(pDst + 1);
     bcopy((char *)pSrc->devPrivate.ptr, (char *)pDst->devPrivate.ptr, size);
     return pDst;
 }
