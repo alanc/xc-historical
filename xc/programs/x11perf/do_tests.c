@@ -64,7 +64,11 @@ extern void DoWideLines();
 extern void EndWideLines();
 
 extern Bool InitCircles();
+extern Bool InitDashedCircles();
+extern Bool InitDoubleDashedCircles();
 extern Bool InitEllipses();
+extern Bool InitDashedEllipses();
+extern Bool InitDoubleDashedEllipses();
 extern void DoArcs();
 extern void DoFilledArcs();
 extern void EndArcs();
@@ -131,6 +135,12 @@ extern void EndGetImage();
 
 extern Bool InitPutImage();
 extern void DoPutImage();
+
+#ifdef MITSHM
+extern Bool InitShmPutImage();
+extern void DoShmPutImage();
+extern void EndShmPutImage();
+#endif
 
 extern Bool InitTriangles();
 extern void DoTriangles();
@@ -283,6 +293,12 @@ Test test[] = {
   {"-circle500", "500-pixel diameter circle",
 		InitCircles, DoArcs, NullProc, EndArcs, False, 0,
 		{20, 25, 500}},
+  {"-dcircle100", "100-pixel diameter dashed circle",
+		InitDashedCircles, DoArcs, NullProc, EndArcs, False, 0,
+		{40, 100, 100}},
+  {"-ddcircle100", "100-pixel diameter double-dashed circle",
+		InitDoubleDashedCircles, DoArcs, NullProc, EndArcs, False, 0,
+		{40, 100, 100}},
   {"-fcircle1",  "1-pixel diameter solid circle",
 		InitCircles, DoFilledArcs, NullProc, EndArcs, False, 0,
 		{20, POLY, 1}},
@@ -304,6 +320,12 @@ Test test[] = {
   {"-ellipse500", "500-pixel diameter ellipse",
 		InitEllipses, DoArcs, NullProc, EndArcs, False, 0,
 		{10, 20, 500}},
+  {"-dellipse100", "100-pixel diameter dashed ellipse",
+		InitDashedEllipses, DoArcs, NullProc, EndArcs, False, 0,
+		{20, 25, 100}},
+  {"-ddellipse100", "100-pixel diameter double-dashed ellipse",
+		InitDoubleDashedEllipses, DoArcs, NullProc, EndArcs, False, 0,
+		{20, 25, 100}},
   {"-fellipse10", "10-pixel diameter filled ellipse",
 		InitEllipses, DoFilledArcs, NullProc, EndArcs, False, 0,
 		{20, 200, 10}},
@@ -416,6 +438,20 @@ Test test[] = {
   {"-putimage500", "PutImage 500x500 square",
 		InitPutImage, DoPutImage, MidCopyPix, EndGetImage, False, 0,
 		{25, 4, 500}},
+#ifdef MITSHM
+  {"-shmput10", "ShmPutImage 10x10 square",
+		InitShmPutImage, DoShmPutImage, MidCopyPix, EndGetImage,
+		False, 0,
+		{2500, 4, 10}},
+  {"-shmput100", "ShmPutImage 100x100 square",
+		InitShmPutImage, DoShmPutImage, MidCopyPix, EndGetImage,
+		False, 0,
+		{500, 4, 100}},
+  {"-shmput500", "ShmPutImage 500x500 square",
+		InitShmPutImage, DoShmPutImage, MidCopyPix, EndGetImage,
+		False, 0,
+		{25, 4, 500}},
+#endif
   {"-getimage10", "GetImage 10x10 square",
 		InitGetImage, DoGetImage, NullProc, EndGetImage, False, 0,
 		{2500, 4, 10}},
