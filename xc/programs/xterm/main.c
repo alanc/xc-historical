@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.79 88/09/03 12:33:48 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.80 88/09/03 14:48:19 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -286,55 +286,59 @@ static XrmOptionDescRec optionDescList[] = {
 {"-w",		".borderWidth", XrmoptionSepArg,	(caddr_t) NULL},
 };
 
-static char *options[] = {
-"-display displayname        X server to contact",
-"-geometry geom              size (in characters) and position",
-"-/+rv                       turn on/off reverse video",
-"-bg color                   background color",
-"-fg color                   foreground color",
-"-bd color                   border color",
-"-bw number                  border width in pixels",
-"-fn fontname                normal text font",
-"-iconic                     start iconic",
-"-name string                client instance, icon, and title strings",
-"-title string               title string",
-"-xrm resourcestring         additional resource specifications",
-"-/+132                      turn on/off column switch inhibiting",
-"-/+ah                       turn on/off always highlight",
-"-b number                   internal border in pixels",
-"-/+cb                       turn on/off cut-to-beginning-of-line inhibit",
-"-cc classrange              specify additional character classes",
-"-/+cn                       turn on/off cut newline inhibit",
-"-cr color                   text cursor color",
-"-/+cu                       turn on/off curses emulation",
-"-fb fontname                bold text font",
-"-/+j                        turn on/off jump scroll",
-"-/+l                        turn on/off logging",
-"-lf filename                logging filename",
-"-/+ls                       turn on/off login shell",
-"-/+mb                       turn on/off margin bell",
-"-mc milliseconds            multiclick time in milliseconds",
-"-ms color                   pointer color",
-"-nb number                  margin bell in characters from right end",
-"-/+rw                       turn on/off reverse wraparound",
-"-/+s                        turn on/off multiscroll",
-"-/+sb                       turn on/off scrollbar",
-"-/+sf                       turn on/off Sun Function Key escape codes",
-"-/+si                       turn on/off scroll-on-input inhibit",
-"-/+sk                       turn on/off scroll-on-keypress",
-"-sl number                  number of scrolled lines to save",
-"-/+t                        turn on/off Tek emulation window",
-"-/+ut                       turn on/off utmp inhibit",
-"-/+vb                       turn on/off visual bell",
-"-e command args             command to execute",
-"%geom                       Tek window geometry",
-"#geom                       icon window geometry",
-"-T string                   title name for window",
-"-n string                   icon name for window",
-"-C                          console mode",
-"-L                          getty mode started from init",
-"-Sxxd                       slave mode on \"ttyxx\", file descriptor \"d\"",
-NULL };
+static struct _options {
+  char *opt;
+  char *desc;
+} options[] = {
+{ "-help",                 "print out this message" },
+{ "-display displayname",  "X server to contact" },
+{ "-geometry geom",        "size (in characters) and position" },
+{ "-/+rv",                 "turn on/off reverse video" },
+{ "-bg color",             "background color" },
+{ "-fg color",             "foreground color" },
+{ "-bd color",             "border color" },
+{ "-bw number",            "border width in pixels" },
+{ "-fn fontname",          "normal text font" },
+{ "-iconic",               "start iconic" },
+{ "-name string",          "client instance, icon, and title strings" },
+{ "-title string",         "title string" },
+{ "-xrm resourcestring",   "additional resource specifications" },
+{ "-/+132",                "turn on/off column switch inhibiting" },
+{ "-/+ah",                 "turn on/off always highlight" },
+{ "-b number",             "internal border in pixels" },
+{ "-/+cb",                 "turn on/off cut-to-beginning-of-line inhibit" },
+{ "-cc classrange",        "specify additional character classes" },
+{ "-/+cn",                 "turn on/off cut newline inhibit" },
+{ "-cr color",             "text cursor color" },
+{ "-/+cu",                 "turn on/off curses emulation" },
+{ "-fb fontname",          "bold text font" },
+{ "-/+j",                  "turn on/off jump scroll" },
+{ "-/+l",                  "turn on/off logging" },
+{ "-lf filename",          "logging filename" },
+{ "-/+ls",                 "turn on/off login shell" },
+{ "-/+mb",                 "turn on/off margin bell" },
+{ "-mc milliseconds",      "multiclick time in milliseconds" },
+{ "-ms color",             "pointer color" },
+{ "-nb number",            "margin bell in characters from right end" },
+{ "-/+rw",                 "turn on/off reverse wraparound" },
+{ "-/+s",                  "turn on/off multiscroll" },
+{ "-/+sb",                 "turn on/off scrollbar" },
+{ "-/+sf",                 "turn on/off Sun Function Key escape codes" },
+{ "-/+si",                 "turn on/off scroll-on-input inhibit" },
+{ "-/+sk",                 "turn on/off scroll-on-keypress" },
+{ "-sl number",            "number of scrolled lines to save" },
+{ "-/+t",                  "turn on/off Tek emulation window" },
+{ "-/+ut",                 "turn on/off utmp inhibit" },
+{ "-/+vb",                 "turn on/off visual bell" },
+{ "-e command args",       "command to execute" },
+{ "%geom",                 "Tek window geometry" },
+{ "#geom",                 "icon window geometry" },
+{ "-T string",             "title name for window" },
+{ "-n string",             "icon name for window" },
+{ "-C",                    "console mode" },
+{ "-L",                    "getty mode started from init" },
+{ "-Sxxd",                 "slave mode on \"ttyxx\", file descriptor \"d\"" },
+{ NULL, NULL }};
 
 static char *message[] = {
 "Fonts must be fixed width and, if both normal and bold are specified, must",
@@ -345,19 +349,43 @@ static char *message[] = {
 "default.",
 NULL};
 
-Syntax (badOption)
+static void Syntax (badOption)
     char *badOption;
 {
+    struct _options *opt;
+    int col;
     char **cpp;
 
-    fprintf (stderr, "%s:  bad option \"%s\" given\n\n",
+    fprintf (stderr, "%s:  bad command line option \"%s\"\r\n\n",
 	     ProgramName, badOption);
+
+    fprintf (stderr, "usage:  %s", ProgramName);
+    col = 8 + strlen(ProgramName);
+    for (opt = options; opt->opt; opt++) {
+	int len = 3 + strlen(opt->opt);	 /* space [ string ] */
+	if (col + len > 79) {
+	    fprintf (stderr, "\r\n   ");  /* 3 spaces */
+	    col = 3;
+	}
+	fprintf (stderr, " [%s]", opt->opt);
+	col += len;
+    }
+
+    fprintf (stderr, "\r\n\nType %s -help for a full description.\r\n\n",
+	     ProgramName);
+    exit (1);
+}
+
+static void Help ()
+{
+    struct _options *opt;
+    char **cpp;
 
     fprintf (stderr, "usage:\n        %s [-options ...] [-e command args]\n\n",
 	     ProgramName);
     fprintf (stderr, "where options include:\n");
-    for (cpp = options; *cpp; cpp++) {
-	fprintf (stderr, "    %s\n", *cpp);
+    for (opt = options; opt->opt; opt++) {
+	fprintf (stderr, "    %-28s %s\n", opt->opt, opt->desc);
     }
 
     putc ('\n', stderr);
@@ -367,7 +395,7 @@ Syntax (badOption)
     }
     putc ('\n', stderr);
 
-    exit (1);
+    exit (0);
 }
 
 
@@ -545,6 +573,9 @@ char **argv;
 	    if(**argv != '-') Syntax (*argv);
 
 	    switch(argv[0][1]) {
+	     case 'h':
+		Help ();
+		/* NOTREACHED */
 #ifdef TIOCCONS
 	     case 'C':
 		Console = TRUE;
