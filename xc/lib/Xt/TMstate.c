@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.118 90/11/05 15:49:29 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.119 90/12/03 16:30:51 converse Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -1146,9 +1146,7 @@ static void RemoveFromMappingCallbacks(widget, closure, call_data)
     XtPointer closure;		/* XtTM */
     XtPointer call_data;
 {
-    _XtRemoveCallback( widget,
-		       &_XtGetPerDisplay(XtDisplay(widget))
-		          ->mapping_callbacks,
+    _XtRemoveCallback( &_XtGetPerDisplay(XtDisplay(widget))->mapping_callbacks,
 		       DispatchMappingNotify,
 		       closure
 		      );
