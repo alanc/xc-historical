@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.188 94/07/06 16:16:32 mor Exp $
+ * $XConsortium: events.c,v 1.189 94/07/21 16:04:41 mor Exp $
  *
  * twm event handling
  *
@@ -813,6 +813,8 @@ HandlePropertyNotify()
 
 	Tmp_win->full_name = prop;
 	Tmp_win->name = prop;
+
+	Tmp_win->nameChanged = 1;
 
 	Tmp_win->name_width = XTextWidth (Scr->TitleBarFont.font,
 					  Tmp_win->name,
