@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.8 88/09/06 18:14:31 jim Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.9 88/10/18 12:31:25 swick Exp $";
   static char rcsid_module_c[] = "$oHeader: List.c,v 1.4 88/08/30 16:36:03 kit Exp $";
 #endif
 
@@ -12,7 +12,7 @@
  *	By:		Chris D. Peterson
  *                      MIT - Project Athena
  *
- *      $Author: jim $
+ *      $Author: swick $
  *	
  */
 
@@ -257,9 +257,9 @@ int width, height;
     case XtGeometryNo:
         break;
     case XtGeometryAlmost:
-        if (Layout(w, FALSE, FALSE, width, height)) {
+        if (Layout(w, FALSE, FALSE, &width, &height)) {
             XtWarning("Size Changed when it shouldn't have...");
-	    XtWarning("when initilizing the List Widget");
+	    XtWarning("when initializing the List Widget");
 	}
 	(void) XtMakeResizeRequest(w, w_ret, h_ret, NULL, NULL);
 	break;
@@ -521,6 +521,7 @@ Region junk;
     if (event == NULL) {	/* repaint all. */
         ul_item = 0;
 	lr_item = lw->list.nrows * lw->list.ncols - 1;
+	XClearWindow(XtDisplay(w), XtWindow(w));
     }
     else
         FindCornerItems(w, event, &ul_item, &lr_item);
