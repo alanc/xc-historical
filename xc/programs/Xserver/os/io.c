@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.76 93/09/23 10:51:17 dpw Exp $ */
+/* $XConsortium: io.c,v 1.77 94/02/02 21:34:58 mor Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -600,7 +600,8 @@ FlushClient(who, oc, extraBuf, extraCount)
 						 notWritten + BUFSIZE);
 		if (!obuf)
 		{
-		    _X11TransClose(trans_conn);
+		    _X11TransClose(oc->trans_conn);
+		    oc->trans_conn = NULL;
 		    MarkClientException(who);
 		    oco->count = 0;
 		    return(-1);
@@ -628,7 +629,8 @@ FlushClient(who, oc, extraBuf, extraCount)
 #endif
 	else
 	{
-	    _X11TransClose(trans_conn);
+	    _X11TransClose(oc->trans_conn);
+	    oc->trans_conn = NULL;
 	    MarkClientException(who);
 	    oco->count = 0;
 	    return(-1);
@@ -758,6 +760,7 @@ WriteToClient (who, count, buf)
 	else if (!(oco = AllocateOutputBuffer()))
 	{
 	    _X11TransClose(oc->trans_conn);
+	    oc->trans_conn = NULL;
 	    MarkClientException(who);
 	    return -1;
 	}
