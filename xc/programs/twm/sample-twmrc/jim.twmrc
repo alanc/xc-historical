@@ -9,16 +9,16 @@ NoHighlight
 AutoRelativeResize
 RestartPreviousState
 ClientBorderWidth
-BorderWidth	2
+BorderWidth 2
 NoGrabServer
 NoRaiseOnMove
 NoRaiseOnResize
 DecorateTransients
-#OpaqueMove
-TitleFont	"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
-MenuFont	"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
-IconFont	"-adobe-helvetica-bold-r-normal--*-80-*-*-*-*-*-*"
-ResizeFont	"fixed"
+TitleFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
+MenuFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
+IconFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*-*-*-*"
+IconManagerFont "-adobe-helvetica-bold-r-normal--*-100-*-*-*"
+ResizeFont "fixed"
 NoSaveUnders
 XORvalue 1
 
@@ -83,6 +83,7 @@ Button2 =      : root                     : f.menu "windowops"
 Button2 = m    : window                   : f.resize
 Button2 =      : icon                     : f.iconify
 Button2 = m    : icon                     : f.iconify
+Button3 =      : iconmgr                  : f.hideiconmgr
 Button3 =      : root                     : f.menu "apps"
 Button3 =      : title                    : f.zoom
 Button3 = m    : window|icon|frame|title  : f.function "move-or-raiselower"
@@ -107,9 +108,9 @@ Button3 = m    : window|icon|frame|title  : f.function "move-or-raiselower"
 #                                                                             #
 ###############################################################################
 
+SortIconManager
 ShowIconManager
-IconManagerGeometry	"360x50+500+1" 6
-IconManagerFont		"-adobe-helvetica-bold-r-normal--*-100-*-*-*"
+IconManagerGeometry	"370x50+494+1" 6
 IconifyByUnmapping
 DontIconifyByUnmapping
 {
@@ -155,32 +156,27 @@ Icons
 
 menu "twmops"
 {
-"Twm Operations"	f.title
+"System"		f.title
 "Restart"		f.restart
-""			f.nop
-"Show Iconmgr"		f.showiconmgr
-"Hide Iconmgr"		f.hideiconmgr
-""			f.nop
 "Exit"			f.quit
 }
 
 menu "windowops"
 {
-"Window Operations"	f.title
-"Kill Window"		f.destroy
+"Windows"		f.title
+"Kill"			f.destroy
 ""			f.nop
 "Refresh"		f.refresh
-"Identify Window"	f.identify
 ""			f.nop
-"Iconify Window"	f.iconify
-"Lower Window"		f.lower
-"Raise Window"		f.raise
-"Circulate Window"	f.raiselower
-"Resize Window"		f.resize
-"Move Window"		f.move
-"Zoom Window"		f.zoom
+"Iconify"		f.iconify
+"Resize"		f.resize
+"Zoom"			f.zoom
+"Move"			f.move
+"Raise"			f.raise
+"Lower"			f.lower
+"Info"			f.identify
 ""			f.nop
-"Focus on Window"	f.focus
+"Focus"			f.focus
 "Unfocus"		f.unfocus
 }
 
@@ -189,7 +185,9 @@ menu "apps"
 "Applications"		f.title
 "xterm"			!"xterm &"
 "xterm -e /bin/sh"	!"xterm -e /bin/sh &"
-"xcalc"			!"xcalc &"
 "xhost +"		!"xhost + >/dev/null"
 "xhost -"		!"xhost - >/dev/null"
+"Show Iconmgr"		f.showiconmgr
+"Hide Iconmgr"		f.hideiconmgr
+"Sort Iconmgr"		f.sorticonmgr
 }
