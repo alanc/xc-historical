@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cp.h,v 5.1 91/02/16 09:49:26 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -149,6 +149,18 @@ typedef struct {
 	Pfloat			buf[CP_SHM_RET_BUF_SIZE];
     }		ret;			/* returned data buffers */
 } Cp_shm_buf;
+
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#define MSKCNT ((OPEN_MAX + 31) / 32)
+#else
+#include <sys/param.h>
+#ifdef NOFILE
+#define MSKCNT ((NOFILE + 31) / 32)
+#else
+#define MSKCNT ((NOFILES_MAX + 31) / 32)
+#endif
+#endif
 
 typedef struct _Cp_struct {
     Cp_func		funcs[NUM_CP_FUNCS];
