@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfread.c,v 1.12 93/08/24 18:49:04 gildea Exp $
+ * $XConsortium: pcfread.c,v 1.13 93/09/17 18:26:52 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -468,6 +468,7 @@ pcfReadFont(pFont, file, bit, byte, glyph, scan)
 	metrics[i].bits = bitmaps + offsets[i];
 
     xfree(offsets);
+    offsets = NULL;
 
     /* ink metrics ? */
 
