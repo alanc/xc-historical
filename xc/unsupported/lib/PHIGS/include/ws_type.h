@@ -1,4 +1,4 @@
-/* $XConsortium: ws_type.h,v 5.3 91/07/15 15:44:58 hersh Exp $ */
+/* $XConsortium: ws_type.h,v 5.4 91/07/24 14:42:39 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -41,8 +41,8 @@ SOFTWARE.
 #define WST_MAX_NUM_LOCATOR_DEVS	3
 #define WST_MAX_NUM_STROKE_DEVS		3
 #define WST_MAX_NUM_PICK_DEVS		3
-#define WST_MAX_NUM_VALUATOR_DEVS	6
-#define WST_MAX_NUM_CHOICE_DEVS		1
+#define WST_MAX_NUM_VALUATOR_DEVS	12
+#define WST_MAX_NUM_CHOICE_DEVS		3
 #define WST_MAX_NUM_STRING_DEVS		1
 
 /* The below constant is the maximum number of prompt/echo types any one
