@@ -9,7 +9,6 @@
 SUBDIRS = X \
 	Xrm \
 	oldX \
-	oldXMenu \
 	oldXrm \
 	oldXtk \
 	Xtk
