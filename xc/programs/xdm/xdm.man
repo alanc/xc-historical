@@ -1,4 +1,4 @@
-.\" $XConsortium: xdm.man,v 1.33 94/04/14 14:02:06 gildea Exp $
+.\" $XConsortium: xdm.man,v 1.34 94/04/17 20:03:49 gildea Exp $
 .\" Copyright (c) 1988, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -1013,7 +1013,7 @@ the following environment variables are passed:
 	PATH	the value of \fBDisplayManager.\fP\fIDISPLAY\fP\fB.userPath\fP
 	SHELL	the user's default shell (from \fIgetpwnam\fP)
 	XAUTHORITY	may be set to a non-standard authority file
-	KRB5CCNAME	may be set to a Kerberos credentials cache file
+	KRB5CCNAME	may be set to a Kerberos credentials cache name
 
 .fi
 .PP
