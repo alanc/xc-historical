@@ -1,8 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 1.123 94/04/07 15:56:23 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.124 94/04/07 17:12:38 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
-RELEASE = "Release 6beta"
+RELEASE = "Release 6"
 #ifndef OSName
 #define OSName Unknown Operating System!
 #endif
