@@ -1,5 +1,5 @@
 /*
- * $Header: charproc.c,v 1.30 88/04/12 16:43:10 jim Exp $
+ * $Header: charproc.c,v 1.31 88/04/12 16:57:10 jim Exp $
  */
 
 
@@ -87,6 +87,7 @@ static void VTallocbuf();
 #define	XtNsignalInhibit	"signalInhibit"
 #define	XtNtekInhibit		"tekInhibit"
 #define	XtNtekStartup		"tekStartup"
+#define XtNtiteInhibit		"titeInhibit"
 #define	XtNvisualBell		"visualBell"
 
 #define	XtCC132			"C132"
@@ -113,12 +114,13 @@ static void VTallocbuf();
 #define	XtCSignalInhibit	"SignalInhibit"
 #define	XtCTekInhibit		"TekInhibit"
 #define	XtCTekStartup		"TekStartup"
+#define XtCTiteInhibit		"TiteInhibit"
 #define	XtCVisualBell		"VisualBell"
 
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.30 88/04/12 16:43:10 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.31 88/04/12 16:57:10 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -265,6 +267,9 @@ static XtResource resources[] = {
 	XtRBoolean, (caddr_t) &defaultFALSE},
 {XtNtekStartup, XtCTekStartup, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.TekEmu),
+	XtRBoolean, (caddr_t) &defaultFALSE},
+{XtNtiteInhibit, XtCTiteInhibit, XtRBoolean, sizeof(Boolean),
+	XtOffset(XtermWidget, misc.titeInhibit),
 	XtRBoolean, (caddr_t) &defaultFALSE},
 {XtNvisualBell, XtCVisualBell, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.visualbell),
@@ -1807,6 +1812,7 @@ static void VTInitialize (request, new)
    new->screen.charClass = request->screen.charClass;
    new->screen.cutNewline = request->screen.cutNewline;
    new->screen.cutToBeginningOfLine = request->screen.cutToBeginningOfLine;
+   new->misc.titeInhibit = request->misc.titeInhibit;
 
     /*
      * set the colors if reverse video; this is somewhat tricky since

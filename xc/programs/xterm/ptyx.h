@@ -1,5 +1,5 @@
 /*
- *	$Header: ptyx.h,v 1.7 88/04/06 16:00:10 jim Exp $
+ *	$Header: ptyx.h,v 1.8 88/04/06 17:08:51 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -356,6 +356,7 @@ typedef struct _Misc {
     Boolean signalInhibit;
     Boolean tekInhibit;
     Boolean scrollbar;
+    Boolean titeInhibit;
 } Misc;
 
 typedef struct {int foo;} XtermClassPart, TekClassPart;

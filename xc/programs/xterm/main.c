@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.32 88/04/06 17:08:47 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.33 88/05/11 13:51:18 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1176,6 +1176,10 @@ spawn ()
 		sprintf (numbuf, "%d", screen->max_row + 1);
 		Setenv("LINES=", numbuf);
 #else	/* !SYSV */
+		if (term->misc.titeInhibit) {
+		    remove_termcap_entry (newtc, ":ti=");
+		    remove_termcap_entry (newtc, ":te=");
+		}
 		Setenv ("TERMCAP=", newtc);
 #endif	/* !SYSV */
 
@@ -1489,4 +1493,28 @@ checklogin()
 	setuid(pw->pw_uid);
 	L_flag = 0;
 	return(TRUE);
+}
+
+
+remove_termcap_entry (buf, str)
+    char *buf;
+    char *str;
+{
+    register char *strinbuf;
+
+    strinbuf = strindex (buf, str);
+    if (strinbuf) {
+        register char *colonPtr = index (strinbuf+1, ':');
+        if (colonPtr) {
+            register char *cp;
+
+            while (*colonPtr) {
+                *strinbuf++ = *colonPtr++;      /* copy down */
+            }
+            *strinbuf = '\0';
+        } else {
+            strinbuf[1] = '\0';
+        }
+    }
+    return;
 }
