@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.80 89/02/22 12:07:00 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.81 89/02/22 13:49:58 swick Exp $";
 #endif
 
 
@@ -57,6 +57,8 @@ extern char* sys_errlist[];
 static void BuildLineTable ();
 static void ScrollUpDownProc();
 static void ThumbProc();
+static int LineAndXYForPosition(), _XtTextSetNewSelection();
+static ClearWindow();
 
 /****************************************************************
  *
@@ -789,7 +791,7 @@ static Boolean ConvertSelection(w, selection, target,
 	return True;
     }
     if (*target == XA_DELETE(d)) {
-	void KillCurrentSelection();
+	static void KillCurrentSelection();
 	KillCurrentSelection(ctx, (XEvent*)NULL);
 	*value = NULL;
 	*type = XA_NULL(d);
@@ -2124,7 +2126,7 @@ Time time;
 String *params;			/* selections in precedence order */
 Cardinal num_params;
 {
-    void _SelectionReceived();
+    static void _SelectionReceived();
     Atom selection;
     int buffer;
 
@@ -2605,6 +2607,7 @@ static void InsertNewLineAndBackup(ctx, event)
   TextWidget ctx;
    XEvent *event;
 {
+   static int InsertNewLineAndBackupInternal();
    StartAction(ctx, event);
    InsertNewLineAndBackupInternal(ctx);
    EndAction(ctx);
