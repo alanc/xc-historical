@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Clock.c,v 1.22 91/03/08 13:31:29 converse Exp $
+ * $XConsortium: Clock.c,v 1.24 91/05/22 17:07:44 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -362,10 +362,14 @@ static void Destroy (gw)
 {
      ClockWidget w = (ClockWidget)gw;
      if (w->clock.interval_id) XtRemoveTimeOut (w->clock.interval_id);
-     XtDestroyGC (w->clock.minuteGC);
-     XtDestroyGC (w->clock.hourGC);
+     if (! w->clock.transparent) {
+	 XtReleaseGC(gw, w->clock.minuteGC);
+	 XtReleaseGC(gw, w->clock.hourGC);
+	 XtReleaseGC(gw, w->clock.jewelGC);
+	 XtReleaseGC(gw, w->clock.eraseGC);
+     }
      if (w->clock.shapeGC)
-	XtDestroyGC (w->clock.shapeGC);
+	XFreeGC(XtDisplay(gw), w->clock.shapeGC);
     if (w->clock.shape_mask)
 	XFreePixmap (XtDisplay (w), w->clock.shape_mask);
 }
