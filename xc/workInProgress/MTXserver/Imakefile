@@ -244,7 +244,7 @@ IBMALLOCLIB =
 #endif
 SUBDIRS0 = CFBSubdirs ddx/ibm
 IBMDIRS = $(SUBDIRS0) $(DEPDIRS)
-IBMOBJS = ddx/ibm/common/ibmcomm.o ddx/ibm/common/ibmDate.o
+IBMOBJS = ddx/ibm/common/ibmcomm.o ddx/ibm/common/ibmDate.o ddx/ibm/pgc/pgc.o
 IBMLIBS = ddx/ibm/AIX/hft.o ddx/ibm/libibm.a $(IBMALLOCLIB) CFBLibs
 
 ServerTarget(Xibm,$(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(SYSLIBS))
