@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 5.1 91/02/16 09:57:05 rws Exp $ */
+/* $XConsortium: Convert.c,v 5.2 91/03/15 18:29:22 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -28,13 +28,13 @@ SOFTWARE.
 #include "Xproto.h"
 #include "misc.h"
 #include "pex_site.h"
-#include "floatdef.h"
+#include "dipex.h"
 
 
-extern FLOAT SwapIEEEToVax();
-extern FLOAT SwapVaxToIEEE();
-extern FLOAT ConvertIEEEToVax();
-extern FLOAT ConvertVaxToIEEE();
+extern PEXFLOAT SwapIEEEToVax();
+extern PEXFLOAT SwapVaxToIEEE();
+extern PEXFLOAT ConvertIEEEToVax();
+extern PEXFLOAT ConvertVaxToIEEE();
 
 unsigned char temp;	/* only used for conversions */
 
@@ -76,40 +76,40 @@ CARD16 *i;
 
 
 /* Byte swap and convert a float */
-FLOAT
+PEXFLOAT
 SwapIEEEToVax(f)
-FLOAT *f;
+PEXFLOAT *f;
 {
-    FLOAT x;
+    PEXFLOAT x;
     CARD32 i;
 
     i = SwapCARD32((CARD32 *) f);
 
-    x = ConvertIEEEToVax((FLOAT *)(&i));
+    x = ConvertIEEEToVax((PEXFLOAT *)(&i));
 
     return (x);
 }
 
 
-FLOAT
+PEXFLOAT
 SwapVaxToIEEE(f)
-FLOAT *f;
+PEXFLOAT *f;
 {
-    FLOAT x;
+    PEXFLOAT x;
     CARD32 i;
 
     i = SwapCARD32((CARD32 *) f);
 
-    x = ConvertVaxToIEEE((FLOAT *)(&i));
+    x = ConvertVaxToIEEE((PEXFLOAT *)(&i));
 
     return (x);
 }
 
 
 /* Byte swap a float */
-FLOAT
+PEXFLOAT
 SwapFLOAT (f)
-FLOAT *f;
+PEXFLOAT *f;
 {
     CARD8  n;
     CARD8  *x = (CARD8 *)f;
