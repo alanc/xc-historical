@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.h,v 1.12 93/11/06 15:11:39 rws Exp $ */
+/* $XConsortium: xieperf.h,v 1.13 94/01/12 20:48:45 rws Exp $ */
 
 /**** module xieperf.h ****/
 /******************************************************************************
@@ -76,6 +76,7 @@ terms and conditions:
 #include <stdlib.h>
 #else
 char *malloc();
+char *realloc();
 #endif
 #include <fcntl.h>
 
