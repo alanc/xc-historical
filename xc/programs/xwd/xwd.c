@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.35 88/08/09 15:15:45 keith Exp $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.36 88/08/18 15:45:08 jim Exp $";
 #endif
 
 /*%
@@ -190,23 +190,6 @@ Window_Dump(window, out)
     x = absx - win_info.x - bw;
     y = absy - win_info.y - bw;
     image = XGetImage (dpy, window, x, y, width, height, ~0, format);
-
-#ifdef obsolete
-    if (nobdrs) {
-      	if (debug) outl("xwd: Image without borders selected.\n");
-	image = XGetImage ( dpy, window, 0, 0, win_info.width,
-			   win_info.height, ~0, format); 
-      }
-    else {
-	if (debug) outl("xwd: Image with borders selected.\n");
-	image = XGetImage ( dpy, window,
-			   -win_info.border_width, -win_info.border_width, 
-			   win_info.width + (win_info.border_width << 1),
-			   win_info.height + (win_info.border_width << 1),
-			   ~0, format); 
-      }
-    if (debug) outl("xwd: Getting pixmap.\n");
-#endif /* obsolete */
 
     /*
      * Determine the pixmap size.
