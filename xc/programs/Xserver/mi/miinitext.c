@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miinitext.c,v 1.22 92/12/03 10:23:37 rws Exp $ */
+/* $XConsortium: miinitext.c,v 1.23 93/04/27 16:33:45 rws Exp $ */
 
 #include "misc.h"
 
@@ -76,6 +76,9 @@ extern void XvExtensionInit();
 #ifdef XIE
 extern void XieInit();
 #endif
+#ifdef SYNC
+extern void SyncExtensionInit();
+#endif
 
 /*ARGSUSED*/
 void
@@ -127,5 +130,8 @@ InitExtensions(argc, argv)
 #endif
 #ifdef XIE
     XieInit();
+#endif
+#ifdef SYNC
+    SyncExtensionInit();
 #endif
 }
