@@ -14,6 +14,7 @@ SRCS1 =	\
 	sunCG3C.c \
 	sunCG4C.c \
 	sunCG6C.c \
+	sunGX.c \
 	sunKeyMap.c
 
 SRCS =	$(SRCS1) kbd_mode.c constype.c 
@@ -33,9 +34,11 @@ OBJS = \
 	sunCG3C.o \
 	sunCG4C.o \
 	sunCG6C.o \
+	sunGX.o \
 	sunKeyMap.o
 
-   INCLUDES = -I. -I../mfb -I../mi -I../../include -I$(INCLUDESRC)
+   INCLUDES = -I. -I../mfb -I../mi -I../cfb -I../../include\
+   		-I$(INCLUDESRC) -I$(FONTSRC)/include
    LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln \
 	      ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln ../cfb/llib-lcfb.ln
 
