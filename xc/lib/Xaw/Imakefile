@@ -25,6 +25,8 @@ HEADERS = \
 	LabelP.h \
 	Load.h \
 	LoadP.h \
+	Logo.h \
+	LogoP.h \
 	Scroll.h \
 	ScrollP.h \
 	Simple.h \
@@ -49,12 +51,14 @@ SRCS = \
 	Grip.c \
 	Label.c \
 	Load.c \
+	Logo.c \
 	Scroll.c \
 	Simple.c \
 	StringSrc.c \
 	Text.c \
 	Viewport.c \
-	VPaned.c
+	VPaned.c \
+	XDrawLogo.c
 
 OBJS = \
 	AsciiSink.o \
@@ -69,12 +73,14 @@ OBJS = \
 	Grip.o \
 	Label.o \
 	Load.o \
+	Logo.o \
 	Scroll.o \
 	Simple.o \
 	StringSrc.o \
 	Text.o \
 	Viewport.o \
-	VPaned.o
+	VPaned.o \
+	XDrawLogo.o
 
 #if DebugLibXaw && ProfileLibXaw
 DebuggedAndProfiledLibraryObjectRule()
