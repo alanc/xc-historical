@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcmap.c,v 1.4 89/05/24 11:17:24 converse Exp $
+ * $XConsortium: xstdcmap.c,v 1.5 89/07/18 17:54:55 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -78,8 +78,8 @@ static char	*usage_message[]=
 "    -best              make the RGB_BEST_MAP",
 "    -blue              make the RGB_BLUE_MAP",
 "    -default           make the RGB_DEFAULT_MAP",
-"    -delete map        remove a standard colormap",
-"    -display host:n.n  X server to use",
+"    -delete name       remove a standard colormap",
+"    -display dpy       X server to use",
 "    -gray              make the RGB_GRAY_MAP",
 "    -green             make the RGB_GREEN_MAP",
 "    -red               make the RGB_RED_MAP",
@@ -185,8 +185,8 @@ usage(status)
     Status		status;
 {
     register char	**i;
-    (void) fprintf(stderr,
-		   "%s accepts the following options:\n\n", program_name);
+    (void) fprintf(stderr, "usage:  %s [-options]\n\n", program_name);
+    (void) fprintf(stderr, "where options include:\n");
     for (i = usage_message; *i != NULL; i++)
 	(void) fprintf(stderr, "%s\n", *i);
     Exit(status);
