@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.11 94/02/08 14:56:03 mor Exp $ */
+/* $XConsortium: xsmclient.c,v 1.12 94/02/18 20:03:40 converse Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -253,10 +253,15 @@ void PropReplyProc(smcConn, client_data, numProps, props)
 	printf ("Name:		%s\n", props[i]->name);
 	printf ("Type:		%s\n", props[i]->type);
 	printf ("Num values:	%d\n", props[i]->num_vals);
-	for (j = 0; j < props[i]->num_vals; j++)
-	{
-	    printf ("Value %d:	%s\n", j + 1,
+	if (strcmp(props[i]->type, SmCARD8) == 0) {
+	    char *card8 = props[i]->vals->value;
+	    int value = *card8;
+	    printf ("Value 1:	%d\n", value);
+	} else {
+	    for (j = 0; j < props[i]->num_vals; j++) {
+		printf ("Value %d:	%s\n", j + 1,
 		    (char *) props[i]->vals[j].value);
+	    }
 	}
 	printf ("\n");
 
