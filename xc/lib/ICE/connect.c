@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.21 93/12/28 11:44:58 mor Exp $ */
+/* $XConsortium: connect.c,v 1.22 94/01/31 10:26:03 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -24,6 +24,23 @@ Author: Ralph Mor, X Consortium
 
 static XtransConnInfo ConnectToPeer();
 
+#ifndef X_NOT_STDC_ENV
+#define Strstr strstr
+#else
+static char *Strstr(s1, s2)
+    char *s1, *s2;
+{
+    int n1, n2;
+
+    n1 = strlen(s1);
+    n2 = strlen(s2);
+    for ( ; n1 >= n2; s1++, n1--) {
+	if (!strncmp(s1, s2, n2))
+	    return s1;
+    }	
+    return NULL;
+}
+#endif
 
 IceConn
 IceOpenConnection (networkIdsList, mustAuthenticate, majorOpcodeCheck,
@@ -71,7 +88,7 @@ char *errorStringRet;
     for (i = 0; i < _IceConnectionCount; i++)
     {
 	char *strptr;
-	if ((strptr = (char *) strstr (
+	if ((strptr = (char *) Strstr (
 	    networkIdsList, _IceConnectionStrings[i])) != NULL)
 	{
 	    char ch = *(strptr + strlen (_IceConnectionStrings[i]));
