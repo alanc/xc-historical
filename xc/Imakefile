@@ -65,9 +65,6 @@ DependSubdirs($(SUBDIRS))
 #if InstallxdmConfig
      DIRS_XDM = $(XDMDIR)
 #endif
-#if InstallManPages
-     DIRS_MAN = $(MANPATH) $(MANDIR) $(LIBMANDIR)
-#endif
 #if InstallAppDefFiles
   DIRS_APPDEF = $(XAPPLOADDIR)
 #endif
@@ -76,11 +73,12 @@ DependSubdirs($(SUBDIRS))
 
 DIRS_TO_BUILD = $(DIRS_SERVER) \
 	$(USRLIBDIR) $(BINDIR) $(INCDIR) $(LIBDIR) /* $(LINTLIBDIR) */ \
-	$(DIRS_XINIT) $(DIRS_XDM) $(DIRS_MAN) $(DIRS_APPDEF) \
+	$(DIRS_XINIT) $(DIRS_XDM) $(DIRS_APPDEF) \
 	$(UWMDIR) $(DIRS_CONTRIB)
 
 MakeDirectories(install, $(DIRS_TO_BUILD))
 
+MakeDirectories(install.man, $(MANPATH) $(MANDIR) $(LIBMANDIR))
 InstallManPage(X,$(MANDIR))
 
 
