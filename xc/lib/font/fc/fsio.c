@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.21 91/07/19 20:55:30 rws Exp $ */
+/* $XConsortium: fsio.c,v 1.22 92/05/12 18:07:34 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -396,6 +396,7 @@ _fs_read(conn, data, size)
 		errno = EPIPE;
 		return -1;
 	    }
+	    errno = 0;
 	} else if (errno == EINTR) {
 	    continue;
 	} else {		/* something bad happened */
