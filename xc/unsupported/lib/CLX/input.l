@@ -32,6 +32,8 @@
 	  queue-event
 	  process-event
 	  event-case
+	  event-cond
+	  discard-current-event
 	  request-error
 	  value-error
 	  window-error
@@ -472,24 +474,22 @@
 		  (enqueue-event event display)
 		  (return nil))))))))))
 
-(proclaim '(special *recursive-event-queue*))
+;; The cons before the current event.
+;; NIL outside EVENT-LOOP [used by event-case, event-cond, process-event]
+(defvar *recursive-event-queue* nil)
 
 (defun event-listen (display &optional (timeout 0))
   (declare (type display display)
 	   (type (or null number) timeout))
   ;; Returns the number of events queued locally, if any, else nil.  Hangs waiting
   ;; for events, forever if timeout is nil, else for the specified number of seconds.
-  (let ((queue (display-event-queue display)))
-    (when (boundp '*recursive-event-queue*)
-      (setq queue (cdr *recursive-event-queue*)))
-    (if queue
-	(length queue)
+  (let ((queue (or *recursive-event-queue*
+		   (display-event-queue display))))
+    (if (cdr queue)
+	(length (cdr queue))
       (progn
 	(wait-for-event display timeout nil)
-	(if (boundp '*recursive-event-queue*)
-	    (setq queue (cdr *recursive-event-queue*))
-	  (setq queue (display-event-queue display)))
-	(and queue (length queue))))))
+	(and (cdr queue) (length (cdr queue)))))))
 
 (defun queue-event (display event-key &rest args &key append-p send-event-p &allow-other-keys)
   ;; The event is put at the head of the queue if append-p is nil, else the tail.
@@ -519,8 +519,9 @@
     (with-event-queue (display)
       (if append-p
 	  (enqueue-event event display)
-	  (with-event-queue-internal (display)
-	    (push event (display-event-queue display)))))))
+	(with-event-queue-internal (display)
+	  (let ((queue (display-event-queue display)))
+	    (setf (cdr queue) (cons event (cdr queue)))))))))
 
 (defun enqueue-event (new-event display)
   ;; Place EVENT at the end of the event queue for DISPLAY
@@ -539,9 +540,7 @@
 	      (progn
 		(setf (display-new-events display) event)
 		(let ((old (display-event-queue display)))
-		  (if old
-		      (setf (display-event-queue display) (nconc old event))
-		    (setf (display-event-queue display) event)))))))))))
+		  (setf (display-event-queue display) (nconc old event)))))))))))
 
 
 (defmacro define-event (name code)
@@ -859,50 +858,85 @@
 ;;
 ;; EVENT-LOOP
 ;;
+;;; (display-event-queue display) contains a cons whose CDR is the first event.
+;;; CLX always passes around a cons BEFORE the next event to make it easy to
+;;; remove events from the queue.  This is much easier than keeping track of
+;;; the previous cons, and faster than using DELETE.
 
-(defmacro event-loop ((display event timeout peek-p discard-p force-output-p) &body body)
+(defmacro event-loop ((display event timeout force-output-p discard-p) &body body)
   ;; Bind EVENT to the events for DISPLAY.
   ;; This is the "GUTS" of process-event and event-case.
-  (let ((previous (gensym))
-	(events (gensym))
-	(result (gensym))
-	(new (gensym)))
+  (let ((events (gensym)))
     `(with-event-queue (,display)
-       (let ((,previous nil)
-	     (,events (display-event-queue ,display)))
-	 (when (boundp '*recursive-event-queue*)
-	   (setq ,previous *recursive-event-queue*
-		 ,events (cdr *recursive-event-queue*)))
-	 (do ((,result nil))
-	     (,result ,result)
+       (let ((,events (or *recursive-event-queue*	; The cons before the current event
+			  (display-event-queue ,display))))
+	 (declare (type cons ,events))
+	 (loop
 						; Read events when queue empty
-	   (unless ,events
+	   (unless (cdr ,events)
 	     (when (wait-for-event ,display ,timeout ,force-output-p)
-	       (return nil)) ;; return when timeout exceeded
-	     ;; Look at the new events just read. The value of Previous is still good.
-	     (setq ,events (display-new-events ,display)))
-						; Keep the new-event list updated
-	   (with-event-queue-internal (,display)
-	     ;; When event is new, Pop the new-event list
-	     (let ((,new (display-new-events ,display)))
-	       (when (eq ,events ,new)
-		 (setf (display-new-events ,display) (cdr ,new)))))
-						; Execute the body
-	   (let ((,event (car ,events))
-		 (*recursive-event-queue* ,events))
-	     (setq ,result (progn ,@body))
-						; Delete entry when ,result was NIL
-	     (if (if ,result
-		     (not ,peek-p)
-		   ,discard-p)
-		 (progn				;Delete event
-		   (if ,previous		; When Event in middle of queue,
-		       (setf (cdr ,previous) (cdr ,events)) ;; Destructively splice it out.
-		     (pop (display-event-queue ,display)))
-		   (deallocate-event ,event))
-	       (setq ,previous ,events)))	; Don't delete event - update previous
-	   (pop ,events)
-	   )))))
+	       (return nil)))			; return when timeout exceeded
+	   
+	   (new-event-update ,display ,events)	; Keep the new-event list updated
+	   
+	   (let ((,event (cadr ,events))	; Bind *recursive-event-queue* to
+		 (*recursive-event-queue* (cdr ,events)))   ;; the cons before the next event.
+	     (progn ,@body)			; Execute the body
+	     (when (eq ,event (cadr ,events))	; Pop event if not discarded
+	       (if ,discard-p
+		   (discard-current-event ,display)
+		 (pop ,events)))
+	     ))))))
+
+(defun discard-current-event (display)
+  ;; Discard the current event for DISPLAY.
+  ;; Returns NIL when the event queue is empty, else T.
+  ;; To ensure events aren't ignored, application code should only call
+  ;; this when throwing out of event-case or process-next-event, or from
+  ;; inside even-case, event-cond or process-event when :peek-p is T and
+  ;; :discard-p is NIL.
+  (declare (type display display))
+  (declare-values boolean)
+  (if *recursive-event-queue*
+      (do* ((previous (display-event-queue display) queue)
+	    (queue (cdr previous) (cdr queue))
+	    (current-event (car *recursive-event-queue*)))
+	   ((eq current-event (car queue))
+	    (when queue ;; return NIL when queue is empty
+	      (when (eq queue (display-new-events display))
+		;; Deleting a new (unseen) event.
+		;;   Should this signal an error?
+		;;   Should we return NIL here?
+		;; Assume caller knows what he's doing and
+		;; update the new-event pointer.
+		(new-event-update display previous))
+
+	      ;; Remove event from the queue
+	      (setf (cdr previous) (cdr queue)) 
+	      (deallocate-event current-event)
+	      (setq *recursive-event-queue* previous)
+	      t))
+	(declare (type cons previous)
+		 (type list queue)))
+    
+    ;; Called outside event-loop - call ourselves with the lock grabbed.
+    (with-event-queue (display)
+      (let ((*recursive-event-queue* (cdr (display-event-queue display))))
+	(when *recursive-event-queue*
+	  (discard-current-event display))))))
+
+(defun new-event-update (display event-list)
+  ;; Internal function called in EVENT-LOOP to keep the new-event list updated.
+  (declare (inline new-event-update))
+  ;; This isn't proclaimed in-line because the with-event-queue-internal
+  ;; expansion is long.  Declare inline here so compiler saves
+  ;; definition and this can be proclaimed inline later by users.
+  (with-event-queue-internal (display)
+    ;; When event is new, Pop the new-event list
+    (let ((new (display-new-events display)))
+      (when (eq (cdr event-list) new)
+	(setf (display-new-events display) (cdr new))))))
+
 ;;
 ;; PROCESS-EVENT
 ;;
@@ -928,7 +962,7 @@
 	   ;;	   (function (display event-key &rest key-vals) t))
 	   (type (or null number) timeout)
 	   (type boolean peek-p))
-  (event-loop (display event timeout peek-p discard-p force-output-p)
+  (event-loop (display event timeout force-output-p discard-p)
     (let* ((event-code (event-code event)) ;; Event decoder defined by DECLARE-EVENT
 	   (event-decoder (and (< event-code (length *event-handler-vector*))
 			       (aref *event-handler-vector* event-code))))
@@ -938,7 +972,11 @@
 					(elt handler event-code))
 				 handler)))
 	    (if event-handler
-		(funcall event-decoder display event event-handler)
+		(let ((result (funcall event-decoder display event event-handler)))
+		  (when result
+		    (unless peek-p
+		      (discard-current-event display))
+		    (return result)))
 	      (cerror "Ignore this event"
 		      "No handler for ~s event"
 		      (aref *event-key-vector* event-code))))
@@ -949,17 +987,8 @@
 ;;
 ;; EVENT-CASE
 ;; 
-;; This version sets-up a vector of event functions at run time, which
-;; is passed into PROCESS-EVENT.  Would it be better to somehow construct
-;; (a constant) event-vector at compile-time?  Would it be even better
-;; to construct code that would pull parameters directly out of the event
-;; and pass them into a lambda expression, rather than using lexical closures?
-;; (i.e. expand the code generated for the declare-event get-function inside
-;; the event-case call)
-(defmacro event-case ((display &key timeout peek-p discard-p (force-output-p t))
-		      &body clauses)
-  (declare-arglist (display &key timeout peek-p discard-p force-output-p)
-		   (event-or-events ((&rest args) |...|) &body body) |...|)
+
+(defmacro event-case ((&rest args) &body clauses)
   ;; If force-output-p is true, first invokes display-force-output.  Executes the
   ;; matching clause for each queued event until a clause returns non-nil, and that
   ;; returned object is then returned by event-case.  If peek-p is true, then the
@@ -977,11 +1006,73 @@
   ;; are derived from the variable names).  An arg can also be a (keyword var) form,
   ;; as for keyword args in a lambda lists.  If no t/otherwise clause appears, it is
   ;; equivalent to having one that returns nil.
+  (declare-arglist (display &key timeout peek-p discard-p force-output-p)
+		   (event-or-events ((&rest args) |...|) &body body) |...|)
+  ;; Event-case is just event-cond with the whole body in the test-form
+  `(event-cond ,args
+	       ,@(mapcar
+		   #'(lambda (clause)
+		       `(,(car clause) ,(cadr clause) (progn ,@(cddr clause))))
+		   clauses)))
+
+;;
+;; EVENT-COND
+;; 
+
+(defmacro event-cond ((display &key timeout peek-p discard-p (force-output-p t))
+		      &body clauses)
+  ;; The clauses of event-cond are of the form:
+  ;; (event-or-events binding-list test-form . body-forms)
+  ;;
+  ;; EVENT-OR-EVENTS	event-key or a list of event-keys (but they
+  ;;			need not be typed as keywords) or the symbol t
+  ;;			or otherwise (but only in the last clause).  If
+  ;;			no t/otherwise clause appears, it is equivalent
+  ;;			to having one that returns nil.  The keys are
+  ;;			not evaluated, and it is an error for the same
+  ;;			key to appear in more than one clause.
+  ;;
+  ;; BINDING-LIST	The list of event components of interest.
+  ;;			corresponding values (if any) are bound to
+  ;;			variables with these names (i.e., the binding-list
+  ;;			has variable names, not keywords, the keywords are
+  ;;			derived from the variable names).  An arg can also
+  ;;			be a (keyword var) form, as for keyword args in a
+  ;;			lambda list.
+  ;;
+  ;; The matching TEST-FORM for each queued event is executed until a
+  ;; clause's test-form returns non-nil.  Then the BODY-FORMS are
+  ;; evaluated, returning the (possibly multiple) values of the last
+  ;; form from event-cond.  If there are no body-forms then, if the
+  ;; test-form is non-nil, the value of the test-form is returned as a
+  ;; single value.
+  ;;
+  ;; Options:
+  ;; FORCE-OUTPUT-P	When true, first invoke display-force-output if no
+  ;;		  	input is pending.
+  ;;
+  ;; PEEK-P		When true, then the event is not removed from the queue.
+  ;;
+  ;; DISCARD-P		When true, then events for which the clause returns nil
+  ;; 			are removed from the queue, otherwise they are left in place.
+  ;;
+  ;; TIMEOUT		If NIL, hang until non-nil is generated for some event's
+  ;;			test-form. Otherwise return NIL after TIMEOUT seconds have
+  ;;			elapsed.
+  ;;
+  (declare-arglist (display &key timeout peek-p discard-p force-output-p)
+		   (event-or-events (&rest args) test-form &body body) |...|)
   (let ((event (gensym))
 	(disp (gensym)))
-    `(let ((,disp ,display))
-       (event-loop (,disp ,event ,timeout ,peek-p ,discard-p ,force-output-p)
-	 (event-dispatch (,disp ,event) ,@clauses)))))
+    `(let ((,disp ,display)
+	   ,@(when (consp peek-p)
+	       ;; If Peek-p is a function, only evaluate it once.
+	       (let ((temp (gensym)))
+		 (prog1
+		   `((,temp ,peek-p))
+		   (setq peek-p temp)))))
+       (event-loop (,disp ,event ,timeout ,force-output-p ,discard-p)
+	 (event-dispatch (,disp ,event ,peek-p) ,@clauses)))))
 
 (defun get-event-code (event)
   ;; Returns the event code given an event-key
@@ -990,31 +1081,54 @@
   (or (get event 'event-code)
       (x-type-error event 'event-key)))
 
-(defmacro event-dispatch ((display event) &body clauses)
+(defun universal-event-get-macro (display event-key variable)
+  (getf
+    `(:display (the display ,display) :event-key (the keyword ,event-key) :event-code
+	       (the card8 (logand 127 (read-card8 0))) :send-event-p
+	       (the boolean (logbitp 7 (read-card8 0))))
+    variable))
+
+(defmacro event-dispatch ((display event peek-p) &body clauses)
   ;; Helper macro for event-case
+  ;; CLAUSES are of the form:
+  ;; (event-or-events binding-list test-form . body-forms)
   (let ((event-key (gensym))
 	(all-events (make-array *max-events* :element-type 'bit :initial-element 0)))
     `(reading-event (,event)
        (let ((,event-key (aref *event-key-vector* (event-code ,event))))
 	 (case ,event-key
 	   ,@(mapcar
-	       #'(lambda (clause)
-		   (let* ((events (car clause))
-			  (arglist (cadr clause))
-			  (body (cddr clause)))
-		     (if (member events '(otherwise t))
-			 ;; code for OTHERWISE clause.  Find all events NOT
-			 ;; used by other clauses
-			 (let ((keys (do ((i 0 (1+ i))
-					  (key nil)
-					  (result nil))
-					 ((>= i *max-events*) result)
-				       (setq key (aref *event-key-vector* i))
-				       (when (and key (zerop (aref all-events i)))
-					 (push key result)))))
-			   `(otherwise (binding-event-values
-					 (,display ,event-key ,keys ,@arglist)
-					 ,@body)))
+	       #'(lambda (clause)		; Translate event-cond clause to case clause
+		   (let* ((events (first clause))
+			  (arglist (second clause))
+			  (test-form (third clause))
+			  (body-forms (cdddr clause)))
+		     (flet ((event-clause (display peek-p first-form rest-of-forms)
+			      (if rest-of-forms
+				  `(when ,first-form
+				     (unless ,peek-p (discard-current-event ,display))
+				     (return (progn ,@rest-of-forms)))
+				;; No body forms, return the result of the test form
+				(let ((result (gensym)))
+				  `(let ((,result ,first-form))
+				     (when ,result
+				       (unless ,peek-p (discard-current-event ,display))
+				       (return ,result)))))))
+
+		       (if (member events '(otherwise t))
+			   ;; code for OTHERWISE clause.
+			   ;; Find all events NOT used by other clauses
+			   (let ((keys (do ((i 0 (1+ i))
+					    (key nil)
+					    (result nil))
+					   ((>= i *max-events*) result)
+					 (setq key (aref *event-key-vector* i))
+					 (when (and key (zerop (aref all-events i)))
+					   (push key result)))))
+			     `(otherwise (binding-event-values
+					   (,display ,event-key ,(or keys :universal) ,@arglist)
+					   ,(event-clause display peek-p test-form body-forms))))
+
 			 ;; Code for normal clauses
 			 (let (true-events) ;; canonicalize event-names
 			   (if (consp events)
@@ -1022,11 +1136,11 @@
 				 (setq true-events (mapcar #'canonicalize-event-name events))
 				 (dolist (event true-events)
 				   (setf (aref all-events (get-event-code event)) 1)))
-			       (setf true-events (canonicalize-event-name events)
-				     (aref all-events (get-event-code true-events)) 1))
+			     (setf true-events (canonicalize-event-name events)
+				   (aref all-events (get-event-code true-events)) 1))
 			   `(,true-events (binding-event-values
 					    (,display ,event-key ,true-events ,@arglist)
-					    ,@body))))))
+					    ,(event-clause display peek-p test-form body-forms))))))))
 	       clauses))))))
 
 (defmacro binding-event-values ((display event-key event-keys &rest value-list) &body body)
@@ -1046,7 +1160,9 @@
 	   (temp nil))
 	  ((endp keys))
 	(let* ((key (car keys))
-	       (binder (aref *event-macro-vector* (get-event-code key))))
+	       (binder (case key
+			 (:universal #'universal-event-get-macro)
+			 (otherwise (aref *event-macro-vector* (get-event-code key))))))
 	  (dolist (var vars)
 	    (let ((code (funcall binder display event-key (var-key (car var)))))
 	      (unless code (format t "~%Warning: ~a isn't a component of the ~s event"
