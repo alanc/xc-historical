@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: handler.c,v 1.16 91/01/10 22:23:13 gildea Exp $
+ * $XConsortium: handler.c,v 1.17 91/02/11 18:52:15 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -20,6 +20,7 @@
  */
 
 #include "globals.h"
+#include "vendor.h"
 
 static void PutUpManpage();
 static void ToggleBothShownState();
