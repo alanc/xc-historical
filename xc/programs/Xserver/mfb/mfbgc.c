@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.28 93/07/12 09:29:58 dpw Exp $ */
+/* $XConsortium: mfbgc.c,v 5.29 93/09/13 09:32:17 dpw Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -71,7 +71,9 @@ static GCOps	whiteTECopyOps = {
 	mfbTEGlyphBltWhite,
 	mfbPolyGlyphBltWhite,
 	mfbSolidPP,
-	NULL,
+#ifdef NEED_LINEHELPER
+	NULL
+#endif
 };
 
 static GCOps	blackTECopyOps = {
@@ -95,7 +97,9 @@ static GCOps	blackTECopyOps = {
 	mfbTEGlyphBltBlack,
 	mfbPolyGlyphBltBlack,
 	mfbSolidPP,
-	NULL,
+#ifdef NEED_LINEHELPER
+	NULL
+#endif
 };
 
 static GCOps	whiteTEInvertOps = {
@@ -119,7 +123,9 @@ static GCOps	whiteTEInvertOps = {
 	mfbTEGlyphBltWhite,
 	mfbPolyGlyphBltInvert,
 	mfbSolidPP,
-	NULL,
+#ifdef NEED_LINEHELPER
+	NULL
+#endif
 };
 
 static GCOps	blackTEInvertOps = {
@@ -143,7 +149,9 @@ static GCOps	blackTEInvertOps = {
 	mfbTEGlyphBltBlack,
 	mfbPolyGlyphBltInvert,
 	mfbSolidPP,
-	NULL,
+#ifdef NEED_LINEHELPER
+	NULL
+#endif
 };
 
 static GCOps	whiteCopyOps = {
@@ -167,7 +175,9 @@ static GCOps	whiteCopyOps = {
 	mfbImageGlyphBltWhite,
 	mfbPolyGlyphBltWhite,
 	mfbSolidPP,
-	NULL,
+#ifdef NEED_LINEHELPER
+	NULL
+#endif
 };
 
 static GCOps	blackCopyOps = {
@@ -191,7 +201,9 @@ static GCOps	blackCopyOps = {
 	mfbImageGlyphBltBlack,
 	mfbPolyGlyphBltBlack,
 	mfbSolidPP,
-	NULL,
+#ifdef NEED_LINEHELPER
+	NULL
+#endif
 };
 
 static GCOps	whiteInvertOps = {
@@ -215,7 +227,9 @@ static GCOps	whiteInvertOps = {
 	mfbImageGlyphBltWhite,
 	mfbPolyGlyphBltInvert,
 	mfbSolidPP,
-	NULL,
+#ifdef NEED_LINEHELPER
+	NULL
+#endif
 };
 
 static GCOps	blackInvertOps = {
@@ -239,7 +253,9 @@ static GCOps	blackInvertOps = {
 	mfbImageGlyphBltBlack,
 	mfbPolyGlyphBltInvert,
 	mfbSolidPP,
-	NULL,
+#ifdef NEED_LINEHELPER
+	NULL
+#endif
 };
 
 static GCOps	whiteWhiteCopyOps = {
@@ -263,7 +279,9 @@ static GCOps	whiteWhiteCopyOps = {
 	miImageGlyphBlt,
 	mfbPolyGlyphBltWhite,
 	mfbSolidPP,
-	NULL,
+#ifdef NEED_LINEHELPER
+	NULL
+#endif
 };
 
 static GCOps	blackBlackCopyOps = {
@@ -287,7 +305,9 @@ static GCOps	blackBlackCopyOps = {
 	miImageGlyphBlt,
 	mfbPolyGlyphBltBlack,
 	mfbSolidPP,
-	NULL,
+#ifdef NEED_LINEHELPER
+	NULL
+#endif
 };
 
 static GCOps	fgEqBgInvertOps = {
@@ -311,7 +331,9 @@ static GCOps	fgEqBgInvertOps = {
 	miImageGlyphBlt,
 	mfbPolyGlyphBltInvert,
 	mfbSolidPP,
-	NULL,
+#ifdef NEED_LINEHELPER
+	NULL
+#endif
 };
 
 struct commonOps {
