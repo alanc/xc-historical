@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.17 89/12/01 12:37:50 swick Exp $ */
+/* $XConsortium: SelectionI.h,v 1.18 89/12/02 17:44:26 swick Exp $ */
 /* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -52,6 +52,18 @@ typedef struct _RequestRec {
    Boolean anySent;
 } RequestRec;
 
+typedef struct {
+  Atom prop;
+  Boolean avail;
+} SelectionPropRec, *SelectionProp;
+
+typedef struct {
+  Display *dpy;
+  Atom incremental_atom, indirect_atom, timestamp_atom;
+  int propCount;
+  SelectionProp list;
+} PropListRec, *PropList;
+
 typedef struct _SelectRec {
     Atom selection; 			/* constant */
     Display *dpy; 			/* constant */
@@ -63,8 +75,7 @@ typedef struct _SelectRec {
     XtSelectionDoneProc notify;
     XtCancelConvertSelectionProc owner_cancel;
     XtPointer owner_closure;
-    Atom incremental_atom; 		/* constant */
-    Atom indirect_atom; 		/* constant */
+    PropList prop_list;
     Request req;			/* state for local non-incr xfer */
     Boolean incremental;
 } SelectRec;
@@ -96,18 +107,6 @@ typedef struct {
 #define IndirectPairWordSize 2
 
 typedef struct {
-  Atom prop;
-  Boolean avail;
-} SelectionPropRec, *SelectionProp;
-
-typedef struct {
-  Display *dpy;
-  Atom incremental_atom, indirect_atom;
-  int propCount;
-  SelectionProp list;
-} PropListRec, *PropList;
-
-typedef struct {
   int active_transfer_count;
 } RequestWindowRec;
 
@@ -117,7 +116,7 @@ typedef struct {
 #define MATCH_SELECT(event, info) ((event->time == info->time) && \
 	    (event->requestor == XtWindow(info->widget)) && \
 	    ((event->target == *info->target) || \
-	     ((event->target == info->ctx->incremental_atom) && \
+	     ((event->target == info->ctx->prop_list->incremental_atom) && \
 	      (event->property == info->property))))
 
 

@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Selection.c,v 1.39 89/12/03 15:41:29 swick Exp $";
+    "$XConsortium: Selection.c,v 1.40 89/12/09 23:15:27 rws Exp $";
 #endif
 
 /***********************************************************
@@ -30,6 +30,7 @@ SOFTWARE.
 #include "IntrinsicI.h"
 #include "StringDefs.h"
 #include "SelectionI.h"
+#include <X11/Xatom.h>
 
 extern void bcopy();
 
@@ -95,6 +96,7 @@ static PropList GetPropList(dpy)
 	sarray->dpy = dpy;
 	sarray->incremental_atom = XInternAtom(dpy, "INCR", FALSE);
 	sarray->indirect_atom = XInternAtom(dpy, "MULTIPLE", FALSE);
+	sarray->timestamp_atom = XInternAtom(dpy, "TIMESTAMP", FALSE);
 	sarray->propCount = 1;
 	sarray->list = (SelectionProp)XtMalloc((unsigned) sizeof(SelectionPropRec));
 	sarray->list[0].prop = XInternAtom(dpy, "_XT_SELECTION_0", FALSE);
@@ -217,8 +219,7 @@ Atom selection;
 	ctx->selection = selection;
 	ctx->widget = NULL;
  	ctx->refcount = 0;
-	ctx->incremental_atom = sarray->incremental_atom;
-	ctx->indirect_atom = sarray->indirect_atom;
+	ctx->prop_list = sarray;
 	(void)XSaveContext(dpy, (Window)selection, selectContext, (caddr_t)ctx);
     }
     return ctx;
@@ -491,7 +492,7 @@ int format;
 	size = BYTELENGTH(length,format);
 	value = ((char*)&size) + sizeof(long) - 4;
 	XChangeProperty(req->ctx->dpy, window, req->property,
-			req->ctx->incremental_atom,
+			req->ctx->prop_list->incremental_atom,
 			32, PropModeReplace, (unsigned char *)value, 1);
 }
 
@@ -508,33 +509,50 @@ Boolean *incremental;
     int format;
     Atom targetType;
     Request req = XtNew(RequestRec);
+    Boolean timestamp_target = (target == ctx->prop_list->timestamp_atom);
 
     req->ctx = ctx;
     req->event = *event;
-    if (ctx->incremental == TRUE) {
-	 unsigned long size = MAX_SELECTION_INCR(ctx->dpy);
-         if ((*ctx->convert)(ctx->widget, &event->selection, &target,
-			    &targetType, &value, &length, &format,
-			    &size, ctx->owner_closure, (XtRequestId*)&req)
-	         == FALSE) {
-	     XtFree((XtPointer)req);
-	     return(FALSE);
-	 }
-	 PrepareIncremental(req, widget, event->requestor, property,
-			    target, targetType, value, length, format);
-	 *incremental = True;
-	 return(TRUE);
+
+    if (timestamp_target) {
+	value = XtMalloc(4);
+	if (sizeof(long) == 4)
+	    *(long*)value = ctx->time;
+	else {
+	    /* NOTREACHED */ /* sizeof(long)!=4 */
+	    long temp = ctx->time;
+	    bcopy( ((char*)&temp)+sizeof(long)-4, value, 4);
+	}
+	targetType = XA_INTEGER;
+	length = 1;
+	format = 32;
     }
-    ctx->req = req;
-    if ((*ctx->convert)(ctx->widget, &event->selection, &target,
+    else {
+	if (ctx->incremental == TRUE) {
+	     unsigned long size = MAX_SELECTION_INCR(ctx->dpy);
+	     if ((*ctx->convert)(ctx->widget, &event->selection, &target,
+				&targetType, &value, &length, &format,
+				&size, ctx->owner_closure, (XtRequestId*)&req)
+		     == FALSE) {
+		 XtFree((XtPointer)req);
+		 return(FALSE);
+	     }
+	     PrepareIncremental(req, widget, event->requestor, property,
+				target, targetType, value, length, format);
+	     *incremental = True;
+	     return(TRUE);
+	}
+	ctx->req = req;
+	if ((*ctx->convert)(ctx->widget, &event->selection, &target,
 			    &targetType, &value, &length, &format) == FALSE) {
-	XtFree((XtPointer)req);
+	    XtFree((XtPointer)req);
+	    ctx->req = NULL;
+	    return(FALSE);
+	}
 	ctx->req = NULL;
-	return(FALSE);
     }
-    ctx->req = NULL;
     if (BYTELENGTH(length,format) <= MAX_SELECTION_INCR(ctx->dpy)) {
-	if (ctx->notify != NULL) {
+	if (! timestamp_target && ctx->notify != NULL) {
 		  req->target = target;
 		  req->property = property;
 		  req->widget = widget;
@@ -555,7 +573,7 @@ Boolean *incremental;
 			targetType, format, PropModeReplace,
 			(unsigned char *)value, (int)length);
 	/* free storage for client if no notify proc */
-	if (ctx->notify == NULL) {
+	if (timestamp_target || ctx->notify == NULL) {
 	    XtFree((XtPointer)value);
 	    XtFree((XtPointer)req);
 	}
@@ -604,7 +622,7 @@ XEvent *event;
 	        && (event->xselectionrequest.time < ctx->time)))
 	    ev.property = None;
          else {
-	   if (ev.target == ctx->indirect_atom) {
+	   if (ev.target == ctx->prop_list->indirect_atom) {
 	      IndirectPair *p;
 	      int format;
 	      unsigned long bytesafter, length;
@@ -742,10 +760,10 @@ static Boolean IsINCRtype(info, window, prop)
     unsigned char *value;
 
     (void)XGetWindowProperty(XtDisplay(info->widget), window, prop, 0L, 0L,
-			     False, info->ctx->incremental_atom,
+			     False, info->ctx->prop_list->incremental_atom,
 			     &type, &format, &length, &bytesafter, &value);
 
-    return (type == info->ctx->incremental_atom);
+    return (type == info->ctx->prop_list->incremental_atom);
 }
 
 static void ReqCleanup(widget, closure, ev)
@@ -767,7 +785,7 @@ XEvent *ev;
 			   ReqCleanup, (XtPointer) info );
 	if (IsINCRtype(info, XtWindow(widget), event->property)
 #ifndef NO_DRAFT_ICCCM_COMPATIBILITY
-	    || event->target == info->ctx->incremental_atom
+	    || event->target == info->ctx->prop_list->incremental_atom
 #endif
 	    ) {
 	    info->proc = HandleGetIncrement;
@@ -822,7 +840,7 @@ XtIntervalId   *id;
     if ((info->incremental) && (info->req_cancel != NULL))
 	(*info->req_cancel)(info->widget, &info->ctx->selection, 
 		*info->req_closure);
-    if (*info->target == info->ctx->indirect_atom) {
+    if (*info->target == info->ctx->prop_list->indirect_atom) {
         (void) XGetWindowProperty(XtDisplay(info->widget), 
 			   XtWindow(info->widget), info->property, 0L,
 			   10000000, True, AnyPropertyType, &type, &format,
@@ -985,7 +1003,7 @@ Atom selection;
 			      10000000, False, AnyPropertyType,
 			      &type, &format, &length, &bytesafter, &value);
 
-    if (type == info->ctx->incremental_atom) {
+    if (type == info->ctx->prop_list->incremental_atom) {
 	unsigned long size = IncrPropSize(widget, value, format, length);
 	XFree((char *)value);
 	HandleIncremental(dpy, widget, property, info, size);
@@ -1049,7 +1067,7 @@ static unsigned long GetSizeOfIncr(widget, ctx, property)
     unsigned long size;
 
     (void)XGetWindowProperty( XtDisplay(widget), XtWindow(widget), property,
-			      0L, 10000000, False, ctx->incremental_atom,
+			      0L, 10000000, False, ctx->prop_list->incremental_atom,
 			      &type, &format, &length, &bytesafter, &value);
 
     size = IncrPropSize(widget, value, format, length);
@@ -1082,7 +1100,7 @@ XEvent *ev;
 #endif 
     XtRemoveEventHandler(widget, (EventMask) NULL, TRUE,
 		HandleSelectionReplies, (XtPointer) info );
-    if (event->target == ctx->indirect_atom) {
+    if (event->target == ctx->prop_list->indirect_atom) {
         (void) XGetWindowProperty(dpy, XtWindow(widget), info->property, 0L,
 			   10000000, True, AnyPropertyType, &type, &format,
 			   &length, &bytesafter, (unsigned char **) &pairs);
@@ -1095,7 +1113,7 @@ XEvent *ev;
 		if (p->property != None)
                     FreeSelectionProperty(XtDisplay(widget), p->property);
 #ifndef NO_DRAFT_ICCCM_COMPATIBILITY
-	    } else if (p->target == ctx->incremental_atom) {
+	    } else if (p->target == ctx->prop_list->incremental_atom) {
 		CallBackInfo newinfo = (CallBackInfo) XtNew(CallBackInfoRec);
 		newinfo->callback = info->callback;
 		newinfo->req_closure = (XtPointer *)XtNew(XtPointer);
@@ -1131,7 +1149,7 @@ XEvent *ev;
         XtFree((XtPointer)info->target); 
         XtFree((XtPointer) info);
 #ifndef NO_DRAFT_ICCCM_COMPATIBILITY
-    } else if (event->target == ctx->incremental_atom) {
+    } else if (event->target == ctx->prop_list->incremental_atom) {
 	HandleIncremental(dpy, widget, event->property, info, 0);
 #endif
     } else {
@@ -1344,7 +1362,7 @@ Boolean incremental;
 	info = MakeInfo(ctx, callback, cancel, closures, count, widget,
 			time, incremental);
 	info->target = (Atom *)XtMalloc((unsigned) ((count+1) * sizeof(Atom)));
-        (*info->target) = ctx->indirect_atom;
+        (*info->target) = ctx->prop_list->indirect_atom;
 	bcopy((char *) targets, (char *) info->target+sizeof(Atom),
 	      count * sizeof(Atom));
 	pairs = (IndirectPair*)XtMalloc((unsigned)(count*sizeof(IndirectPair)));
@@ -1358,7 +1376,7 @@ Boolean incremental;
 			32, PropModeReplace, (unsigned char *) pairs, 
 			count * IndirectPairWordSize);
 	XtFree((XtPointer)pairs);
-	RequestSelectionValue(info, selection, ctx->indirect_atom);
+	RequestSelectionValue(info, selection, ctx->prop_list->indirect_atom);
     }
 }
 
