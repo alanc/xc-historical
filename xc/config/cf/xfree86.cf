@@ -1,4 +1,4 @@
-XCOMM $XConsortium: xfree86.cf,v 1.5 95/01/11 16:18:33 kaleb Exp kaleb $
+XCOMM $XConsortium: xfree86.cf,v 1.6 95/01/12 16:09:37 kaleb Exp kaleb $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -181,8 +181,16 @@ XCOMM $XConsortium: xfree86.cf,v 1.5 95/01/11 16:18:33 kaleb Exp kaleb $
 #define CompressAllFonts	YES
 #endif
 
+#ifndef InstallXcmsTxt
+#define InstallXcmsTxt		YES
+#endif
+
 #ifndef HasLinuxDoc
 #define HasLinuxDoc		NO
+#endif
+
+#ifndef InstallJapaneseDocs
+#define InstallJapaneseDocs	NO
 #endif
 
 /* Server defines required for all OSs */
@@ -191,7 +199,7 @@ XCOMM $XConsortium: xfree86.cf,v 1.5 95/01/11 16:18:33 kaleb Exp kaleb $
 #endif
 
 #ifndef XFree86ServerOSDefines
-#define XFree86ServerOSDefines	-DDDXOSINIT -DXFREE86 -DSERVER_LOCK
+#define XFree86ServerOSDefines	-DDDXOSINIT -DSERVER_LOCK
 #endif
 
 #ifndef XFree86ConsoleDefines
@@ -285,9 +293,10 @@ XF86HWLIB  = $(XF86HWSRC)/libxf86_hw.a
 XF86LIBS   = $(XF86INIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86HWLIB) $(XF86OSLIB)
 XF86MLIBS  = $(XF86MINIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86HWLIB) $(XF86OSLIB)
 
-    XFREE86DOCDIR = $(LIBDIR)/doc
-  XFREE86PSDOCDIR = $(XFREE86DOCDIR)/PostScript
-XFREE86HTMLDOCDIR = $(XFREE86DOCDIR)/html
+        XFREE86DOCDIR = $(LIBDIR)/doc
+      XFREE86PSDOCDIR = $(XFREE86DOCDIR)/PostScript
+    XFREE86HTMLDOCDIR = $(XFREE86DOCDIR)/html
+XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 
 /*
  * Other stuff used in the Server source.
@@ -298,7 +307,15 @@ XFREE86HTMLDOCDIR = $(XFREE86DOCDIR)/html
 #endif
 
 #ifndef XFree86Version
-#define XFree86Version	3102
+#define XFree86Version	3103
+#endif
+
+#ifndef XVendorString
+#define XVendorString "The XFree86 Project, Inc"
+#endif
+
+#ifndef XVendorRelease
+#define XVendorRelease        XFree86Version
 #endif
 
 #ifndef UseRgbTxt
@@ -326,6 +343,20 @@ XFREE86HTMLDOCDIR = $(XFREE86DOCDIR)/html
 #else
 #define DefaultCCOptions -ansi  -DNO_ASM
 #endif
+#endif
+#endif
+
+#ifndef BuildLBXCompatible
+#define BuildLBXCompatible NO
+#endif
+
+#ifndef BuildLBX
+#define BuildLBX NO
+#endif
+
+#if BuildLBXCompatible
+#if !BuildLBX
+#define LbxDefines -DLBX_COMPAT
 #endif
 #endif
 
