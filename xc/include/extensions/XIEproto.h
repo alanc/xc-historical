@@ -1,4 +1,4 @@
-/* $XConsortium: XIEproto.h,v 1.1 93/10/26 09:41:05 rws Exp $ */
+/* $XConsortium: XIEproto.h,v 1.3 93/10/28 15:29:31 mor Exp $ */
 /******************************************************************************
 
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -177,10 +177,10 @@ typedef struct {
 
 typedef struct {
     CARD8                       type;
-    CARD8                       data;
+    BOOL                        populated;
     CARD16                      sequenceNum B16;
     CARD32                      length B32;
-    BOOL                        populated;
+    xieTypDataClass             dataClass;
     xieTypDataType		dataType;
     xieTypDecodeTechnique       decodeTechnique B16;
     CARD32                      width0 B32;
@@ -457,9 +457,9 @@ typedef struct {
     CARD32		instanceFloID B32;
     xieTypPhototag	src B16;
     CARD16		type B16;
+    CARD32		data0 B32;
     CARD32		data1 B32;
     CARD32		data2 B32;
-    CARD32		data3 B32;
 } xieExportAvailableEvn;
 
 typedef struct {

@@ -1,4 +1,4 @@
-/* $XConsortium: XIE.h,v 1.1 93/10/26 09:40:58 rws Exp $ */
+/* $XConsortium: XIE.h,v 1.2 93/10/28 15:29:26 mor Exp $ */
 /******************************************************************************
 
 				NOTICE
@@ -16,7 +16,7 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993 by AGE Logic, Inc. and the Massachusetts
+     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
      Institute of Technology"
      
      THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
@@ -51,21 +51,22 @@ terms and conditions:
 
 #define xieExtName		"XIE"
 
-#define xieMajorVersion		4
-#define xieMinorVersion		14
-#define xieEarliestMinorVersion	14
-#define xieLatestMinorVersion	14
+#define xieMajorVersion		5
+#define xieMinorVersion		0
+#define xieEarliestMinorVersion	0
+#define xieLatestMinorVersion	0
 
 
 /* ServiceClass */
+
 #ifdef  XIE_DIS
 #define XIE_FULL 0
 #else
 #define XIE_FULL 1
 #endif
 
-#define xieValFull	1
-#define xieValDIS	2
+#define xieValFull		1
+#define xieValDIS		2
 
 
 /* Limits */
@@ -100,12 +101,17 @@ terms and conditions:
 #define xieValColorAllocRequantize	6
 
 
-/* Colorspace */
+/* Colorspace conversions */
 
-#define xieValCIELab	2
-#define xieValCIEXYZ	4
-#define xieValYCbCr	6
-#define xieValYCC	8
+#define xieValRGBToCIELab	2
+#define xieValRGBToCIEXYZ	4
+#define xieValRGBToYCbCr	6
+#define xieValRGBToYCC		8
+
+#define xieValCIELabToRGB	2
+#define xieValCIEXYZToRGB	4
+#define xieValYCbCrToRGB	6
+#define xieValYCCToRGB		8
 
 
 /* CompareOp */
@@ -175,6 +181,11 @@ terms and conditions:
 #define xieValEncodeTIFF2		14     	/* TIFF modified G31D */
 #define xieValEncodeTIFFPackBits	16     	/* TIFF APPLE FORMAT */
 
+/* ServerChoice preference hints */
+
+#define xieValPreferDefault		0
+#define xieValPreferSpace		1
+#define xieValPreferTime		2
 
 /* JPEG-Lossless predictor */
 
