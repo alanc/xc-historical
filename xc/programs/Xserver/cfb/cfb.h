@@ -58,6 +58,7 @@ extern void miPolyFillRect();
 extern void cfbPolyFillRect();
 extern void miPolyFillArc();
 
+extern void cfbLineSS(), cfbDashLine();
 extern RegionPtr cfbCopyArea();
 
 extern void cfbSetSpans();
@@ -91,8 +92,8 @@ extern void  cfbConvertRects();
 extern void  miPolyArc();
 extern void  miFillPolyArc();
 
-extern void miPutImage();
-extern void miGetImage();
+extern void cfbPutImage();
+extern void cfbGetImage();
 extern RegionPtr miCopyArea();
 extern RegionPtr miCopyPlane();
 extern void miPolyPoint();
