@@ -65,8 +65,10 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
     int			w;
     unsigned int	*pdstStart;
     unsigned int	*pdstNext;
+#ifdef NOTDEF
     DDXPointPtr	  	pptInit;
     int	    	  	*pwidthInit;
+#endif
     int	    	  	*pwidthPadded;
     int	    	  	i;
 
@@ -79,9 +81,10 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 	    FatalError("cfbGetSpans: invalid depth\n");
     }
     pptLast = ppt + nspans;
+#ifdef NOTDEF
     pptInit = ppt;
     pwidthInit = pwidth;
-
+#endif
     pwidthPadded = (int *)ALLOCATE_LOCAL(nspans * sizeof(int));
     if (!pwidthPadded)
 	return (unsigned int *)NULL;

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.80 89/07/03 15:16:20 rws Exp $ */
+/* $XConsortium: utils.c,v 1.81 89/07/03 18:46:07 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -513,7 +513,6 @@ Xrealloc (ptr, amount)
     register pointer ptr;
     unsigned long amount;
 {
-    register pointer	oldptr = ptr;
     char *malloc();
     char *realloc();
 
@@ -545,7 +544,7 @@ Xrealloc (ptr, amount)
     }
     amount = (amount + 3) & ~3;
     if (ptr)
-        ptr = (pointer)realloc(ptr, amount);
+        ptr = (pointer)realloc((char *)ptr, amount);
     else
 	ptr = (pointer)malloc(amount);
     if (ptr)
@@ -577,7 +576,7 @@ Xfree(ptr)
     }
 #else
     if (ptr)
-	free(ptr); 
+	free((char *)ptr); 
 #endif
 }
 

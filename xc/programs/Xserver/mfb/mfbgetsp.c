@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgetsp.c,v 1.22 89/03/18 12:30:55 rws Exp $ */
+/* $XConsortium: mfbgetsp.c,v 5.0 89/06/09 15:06:36 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 
@@ -68,8 +68,8 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
     DDXPointPtr	  	pptInit;
     int	    	  	*pwidthInit;
     int	    	  	*pwidthPadded;
-#endif
     int	    	  	i;
+#endif
   
     pptLast = ppt + nspans;
 #ifdef NOTDEF

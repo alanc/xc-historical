@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbcmap.c,v 1.16 89/03/23 19:02:14 rws Exp $ */
+/* $XConsortium: mfbcmap.c,v 5.0 89/06/09 15:06:19 keith Exp $ */
 #include "X.h"
 #include "scrnintstr.h"
 #include "colormapst.h"
@@ -95,6 +95,7 @@ mfbUninstallColormap(pmap)
 	
 }
 
+/*ARGSUSED*/
 void
 mfbResolveColor (pred, pgreen, pblue, pVisual)
     unsigned short	*pred;

@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 5.2 89/06/21 11:16:15 rws Exp $ */
+/* $XConsortium: mipointer.c,v 5.3 89/06/21 11:23:16 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -50,6 +50,7 @@ static Bool miPointerCloseScreen();
 
 extern void miRecolorCursor ();
 extern void ProcessInputEvents ();
+extern void NewCurrentScreen ();
 
 Bool
 miPointerInitialize (pScreen, spriteFuncs, cursorFuncs)
@@ -191,9 +192,9 @@ miPointerCursorLimits(pScreen, pCursor, pHotBox, pTopLeftBox)
 
 static Bool
 miPointerSetCursorPosition(pScreen, newx, newy, generateEvent)
-    ScreenPtr	    pScreen;
-    unsigned int    newx, newy;
-    Bool	    generateEvent;
+    ScreenPtr pScreen;
+    int       newx, newy;
+    Bool      generateEvent;
 {
     miPointerSetCursor (pScreen, newx, newy, generateEvent, TRUE);
     return TRUE;
@@ -255,7 +256,8 @@ miPointerDeltaCursor (pScreen, dx, dy, generateEvent)
 
     pPriv = (miPointerScreenPtr) pScreen->devPrivates[miPointerScreenIndex].ptr;
     pPointer = pPriv->pPointer;
-    miPointerSetCursor (pPointer->pScreen, pPointer->x + dx, pPointer->y + dy, generateEvent, FALSE);
+    miPointerSetCursor (pPointer->pScreen, pPointer->x + dx, pPointer->y + dy,
+			generateEvent, FALSE);
 }
 
 /*
@@ -290,7 +292,6 @@ miPointerSetCursor (pScreen, x, y, generateEvent, afterEvents)
     miPointerScreenPtr  pPriv;
     miPointerPtr	pPointer;
     ScreenPtr		newScreen;
-    int			newx, newy;
 
     pPriv = (miPointerScreenPtr) pScreen->devPrivates[miPointerScreenIndex].ptr;
     pPointer = pPriv->pPointer;

@@ -340,7 +340,6 @@ sunMouseProcessEvent (pMouse, fe)
     DevicePtr	  pMouse;   	/* Mouse from which the event came */
     Firm_event	  *fe;	    	/* Event to process */
 {
-    int      index;		/* screen index */
     xEvent		xE;
     register PtrPrivPtr	pPriv;	/* Private data for pointer */
     register SunMsPrivPtr pSunPriv; /* Private data for mouse */
@@ -436,6 +435,7 @@ sunMouseProcessEvent (pMouse, fe)
     }
 }
 
+/*ARGSUSED*/
 static Bool
 sunCursorOffScreen (pScreen, x, y)
     ScreenPtr	*pScreen;
@@ -470,6 +470,7 @@ sunCursorOffScreen (pScreen, x, y)
     return FALSE;
 }
 
+/*ARGSUSED*/
 static long
 sunEventTime (pScreen)
     ScreenPtr	pScreen;
@@ -515,7 +516,6 @@ sunMouseDoneEvents (pMouse,final)
 {
     PtrPrivPtr	  pPriv;
     SunMsPrivPtr  pSunPriv;
-    xEvent	  xE;
     int		  dx, dy;
 
     pPriv = (PtrPrivPtr) pMouse->devicePrivate;

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.59 89/05/16 18:17:05 rws Exp $ */
+/* $XConsortium: io.c,v 1.60 89/07/03 18:47:06 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -546,7 +546,7 @@ WriteToClient (who, count, buf)
     int padBytes;
 
     if (!count)
-	return;
+	return(0);
 
     padBytes =  padlength[count & 3];
 

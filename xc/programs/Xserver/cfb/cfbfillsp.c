@@ -124,7 +124,7 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int rop;			/* reduced rasterop */
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
-    int fill, rrop;
+    int fill;
 
     if (!(pGC->planemask))
 	return;

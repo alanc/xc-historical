@@ -472,14 +472,11 @@ sunKbdProcessEvent (pKeyboard, fe)
     Firm_event	  *fe;
 {
     xEvent		xE;
-    PtrPrivPtr	  	ptrPriv;
     KbPrivPtr		pPriv;
     int			delta;
     static xEvent	autoRepeatEvent;
     BYTE		key;
     CARD16		keyModifiers;
-
-    ptrPriv = (PtrPrivPtr) LookupPointerDevice()->devicePrivate;
 
     if (autoRepeatKeyDown && fe->id == AUTOREPEAT_EVENTID) {
 	pPriv = (KbPrivPtr) pKeyboard->devicePrivate;

@@ -4,7 +4,7 @@
  * machine independent cursor display routines
  */
 
-/* $XConsortium: midispcur.c,v 5.2 89/06/21 11:23:39 rws Exp $ */
+/* $XConsortium: midispcur.c,v 5.3 89/07/03 13:29:20 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -183,7 +183,7 @@ miDCRealizeCursor (pScreen, pCursor)
  			   0, XYPixmap, pCursor->bits->source);
     gcvals[0] = GXand;
     ChangeGC (pGC, GCFunction, gcvals);
-    ValidateGC (pPriv->sourceBits, pGC);
+    ValidateGC ((DrawablePtr)pPriv->sourceBits, pGC);
     (*pGC->ops->PutImage) (pPriv->sourceBits, pGC, 1,
 			   0, 0, pCursor->bits->width, pCursor->bits->height,
  			   0, XYPixmap, pCursor->bits->mask);
@@ -191,13 +191,13 @@ miDCRealizeCursor (pScreen, pCursor)
     /* mask bits -- pCursor->mask & ~pCursor->source */
     gcvals[0] = GXcopy;
     ChangeGC (pGC, GCFunction, gcvals);
-    ValidateGC (pPriv->maskBits, pGC);
+    ValidateGC ((DrawablePtr)pPriv->maskBits, pGC);
     (*pGC->ops->PutImage) (pPriv->maskBits, pGC, 1,
 			   0, 0, pCursor->bits->width, pCursor->bits->height,
  			   0, XYPixmap, pCursor->bits->mask);
     gcvals[0] = GXandInverted;
     ChangeGC (pGC, GCFunction, gcvals);
-    ValidateGC (pPriv->maskBits, pGC);
+    ValidateGC ((DrawablePtr)pPriv->maskBits, pGC);
     (*pGC->ops->PutImage) (pPriv->maskBits, pGC, 1,
 			   0, 0, pCursor->bits->width, pCursor->bits->height,
  			   0, XYPixmap, pCursor->bits->source);
@@ -223,6 +223,8 @@ static void
 miDCPutBits (pDrawable, pPriv, sourceGC, maskGC, x, y, w, h, source, mask)
     DrawablePtr	    pDrawable;
     GCPtr	    sourceGC, maskGC;
+    int             x, y;
+    unsigned        w, h;
     miDCCursorPtr   pPriv;
     unsigned long   source, mask;
 {
@@ -265,11 +267,11 @@ miDCPutUpCursor (pScreen, pCursor, x, y, source, mask)
     {
 	gcvals[0] = IncludeInferiors;
 	gcvals[1] = FALSE;
-	pScreenPriv->pSourceGC = CreateGC(pWin,
+	pScreenPriv->pSourceGC = CreateGC((DrawablePtr)pWin,
 	    GCSubwindowMode|GCGraphicsExposures, gcvals, &status);
 	if (!pScreenPriv->pSourceGC)
 	    return FALSE;
-	pScreenPriv->pMaskGC = CreateGC(pWin,
+	pScreenPriv->pMaskGC = CreateGC((DrawablePtr)pWin,
 	    GCSubwindowMode|GCGraphicsExposures, gcvals, &status);
 	if (!pScreenPriv->pMaskGC)
 	{
@@ -278,8 +280,10 @@ miDCPutUpCursor (pScreen, pCursor, x, y, source, mask)
 	    return FALSE;
 	}
     }
-    miDCPutBits (pWin, pPriv, pScreenPriv->pSourceGC, pScreenPriv->pMaskGC,
-		 x, y, pCursor->bits->width, pCursor->bits->height, source, mask);
+    miDCPutBits ((DrawablePtr)pWin, pPriv,
+		 pScreenPriv->pSourceGC, pScreenPriv->pMaskGC,
+		 x, y, pCursor->bits->width, pCursor->bits->height,
+		 source, mask);
     return TRUE;
 }
 
@@ -311,7 +315,7 @@ miDCSaveUnderCursor (pScreen, x, y, w, h)
     {
 	gcvals[0] = IncludeInferiors;
 	gcvals[1] = FALSE;
-	pScreenPriv->pSaveGC = CreateGC (pWin,
+	pScreenPriv->pSaveGC = CreateGC ((DrawablePtr)pWin,
 	    GCSubwindowMode|GCGraphicsExposures, gcvals, &status);
 	if (!pScreenPriv->pSaveGC)
 	    return FALSE;
@@ -345,7 +349,7 @@ miDCRestoreUnderCursor (pScreen, x, y, w, h)
     {
 	gcvals[0] = IncludeInferiors;
 	gcvals[1] = FALSE;
-	pScreenPriv->pRestoreGC = CreateGC (pWin,
+	pScreenPriv->pRestoreGC = CreateGC ((DrawablePtr)pWin,
 	    GCSubwindowMode|GCGraphicsExposures, gcvals, &status);
 	if (!pScreenPriv->pRestoreGC)
 	    return FALSE;
@@ -391,7 +395,7 @@ miDCMoveCursor (pScreen, pCursor, x, y, w, h, dx, dy, source, mask)
     {
 	gcvals[0] = IncludeInferiors;
 	gcvals[1] = FALSE;
-	pScreenPriv->pMoveGC = CreateGC (pTemp,
+	pScreenPriv->pMoveGC = CreateGC ((DrawablePtr)pTemp,
 	    GCSubwindowMode|GCGraphicsExposures, gcvals, &status);
 	if (!pScreenPriv->pMoveGC)
 	    return FALSE;
@@ -412,7 +416,7 @@ miDCMoveCursor (pScreen, pCursor, x, y, w, h, dx, dy, source, mask)
     {
 	gcvals[0] = IncludeInferiors;
 	gcvals[1] = FALSE;
-	pScreenPriv->pPixSourceGC = CreateGC (pTemp,
+	pScreenPriv->pPixSourceGC = CreateGC ((DrawablePtr)pTemp,
 	    GCSubwindowMode|GCGraphicsExposures, gcvals, &status);
 	if (!pScreenPriv->pPixSourceGC)
 	    return FALSE;
@@ -421,13 +425,15 @@ miDCMoveCursor (pScreen, pCursor, x, y, w, h, dx, dy, source, mask)
     {
 	gcvals[0] = IncludeInferiors;
 	gcvals[1] = FALSE;
-	pScreenPriv->pPixMaskGC = CreateGC (pTemp,
+	pScreenPriv->pPixMaskGC = CreateGC ((DrawablePtr)pTemp,
 	    GCSubwindowMode|GCGraphicsExposures, gcvals, &status);
 	if (!pScreenPriv->pPixMaskGC)
 	    return FALSE;
     }
-    miDCPutBits (pTemp, pPriv, pScreenPriv->pPixSourceGC, pScreenPriv->pPixMaskGC,
- 		 dx, dy, pCursor->bits->width, pCursor->bits->height, source, mask);
+    miDCPutBits ((DrawablePtr)pTemp, pPriv,
+		 pScreenPriv->pPixSourceGC, pScreenPriv->pPixMaskGC,
+ 		 dx, dy, pCursor->bits->width, pCursor->bits->height,
+		 source, mask);
 
     /*
      * copy the temporary pixmap onto the screen
@@ -437,7 +443,7 @@ miDCMoveCursor (pScreen, pCursor, x, y, w, h, dx, dy, source, mask)
     {
 	gcvals[0] = IncludeInferiors;
 	gcvals[1] = FALSE;
-	pScreenPriv->pRestoreGC = CreateGC (pWin,
+	pScreenPriv->pRestoreGC = CreateGC ((DrawablePtr)pWin,
 	    GCSubwindowMode|GCGraphicsExposures, gcvals, &status);
 	if (!pScreenPriv->pRestoreGC)
 	    return FALSE;
