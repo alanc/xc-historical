@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XImUtil.c,v 11.28 88/12/28 18:24:58 rws Exp $ */
+/* $XConsortium: XImUtil.c,v 11.29 88/12/31 16:27:51 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -632,11 +632,11 @@ static XImage *_XSubImage (ximage, x, y, width, height)
  *	1. The depths of the source and destination images must be equal.
  *
  *	2. If the height of the source image is too large to fit between
- *	   the specified x starting point and the bottom of the image,
+ *	   the specified y starting point and the bottom of the image,
  *	   then scanlines are truncated on the bottom.
  *
  *	3. If the width of the source image is too large to fit between
- *	   the specified y starting point and the end of the scanline,
+ *	   the specified x starting point and the end of the scanline,
  *	   then pixels are truncated on the right.
  * 
  * The images need not have the same bitmap_bit_order, byte_order,
@@ -653,14 +653,31 @@ int _XSetImage (srcimg, dstimg, x, y)
 {
 	register unsigned long pixel;
 	register int row, col;
+	int width, height, startrow, startcol;
 	if (srcimg->depth != dstimg->depth)
 	    _XReportBadImage ("depth", dstimg->depth, "_XSetImage");
+	if (x < 0) {
+	    startcol = -x;
+	    x = 0;
+	} else
+	    startcol = 0;
+	if (y < 0) {
+	    startrow = -y;
+	    y = 0;
+	} else
+	    startrow = 0;
+	width = dstimg->width - x;
+	if (srcimg->width < width)
+	    width = srcimg->width;
+	height = dstimg->height - y;
+	if (srcimg->height < height)
+	    height = srcimg->height;
 
 	/* this is slow, will do better later */
-	for (row = y; row < dstimg->height; row++) {
-	    for (col = x; col < dstimg->width; col++) {
-		pixel = XGetPixel(srcimg, col - x, row - y);
-		XPutPixel(dstimg, col, row, pixel);
+	for (row = startrow; row < height; row++) {
+	    for (col = startcol; col < width; col++) {
+		pixel = XGetPixel(srcimg, col, row);
+		XPutPixel(dstimg, x + col, y + row, pixel);
 	    }
 	}
 	return 1;
