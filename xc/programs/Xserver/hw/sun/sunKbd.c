@@ -138,8 +138,9 @@ sunKbdProc (pKeyboard, what)
  * The Sun 386i has system include files that preclude this pre SunOS 4.1
  * test for the presence of a type 4 keyboard however it really doesn't
  * matter since no 386i has ever been shipped with a type 3 keyboard.
+ * SunOS 4.1 no longer needs this kludge.
  */
-#ifndef i386
+#if !defined(i386) && !defined(KIOCGKEY)
 #define TYPE4KEYBOARDOVERRIDE
 #endif
 	    if (sysKbPriv.fd >= 0) {
