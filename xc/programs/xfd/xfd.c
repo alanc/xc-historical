@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.14 89/08/07 16:03:11 jim Exp $
+ * $XConsortium: xfd.c,v 1.15 89/08/07 19:38:56 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -44,6 +44,9 @@ static XrmOptionDescRec xfd_options[] = {
 {"-box",	"*grid.boxChars", XrmoptionNoArg,	(caddr_t) "on" },
 {"-bc",		"*grid.boxColor", XrmoptionSepArg, 	(caddr_t) NULL },
 {"-center",	"*grid.centerChars", XrmoptionNoArg,	(caddr_t) "on" },
+{"-rows",	"*grid.cellRows", XrmoptionSepArg,	(caddr_t) NULL },
+{"-columns",	"*grid.cellColumns", XrmoptionSepArg,	(caddr_t) NULL },
+{"-cols",	"*grid.cellColumns", XrmoptionSepArg,	(caddr_t) NULL },
 };
 
 static void do_quit(), do_next(), do_prev();
@@ -92,9 +95,23 @@ static XtResource Resources[] = {
 
 usage()
 {
+    fprintf (stderr, "usage:  %s [-options ...] -fn font\n\n", ProgramName);
+    fprintf (stderr, "where options include:\n");
     fprintf (stderr,
-	     "usage:  %s [-start num] [-box] [-center] -fn font\n",
-	     ProgramName);
+	"    -display dpy           X server to contact\n");
+    fprintf (stderr, 
+	"    -geometry geom         size and location of window\n");
+    fprintf (stderr, 
+	"    -start num             first character to show\n");
+    fprintf (stderr, 
+	"    -box                   show a box around each character\n");
+    fprintf (stderr, 
+	"    -center                center each character inside its grid\n");
+    fprintf (stderr, 
+	"    -rows number           number of rows in grid\n");
+    fprintf (stderr, 
+	"    -columns number        number of columns in grid\n");
+    fprintf (stderr, "\n");
     exit (1);
 }
 
