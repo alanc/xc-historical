@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranslcl.c,v 1.19 94/07/20 10:07:45 mor Exp mor $ */
+/* $XConsortium: Xtranslcl.c,v 1.20 94/12/12 20:14:30 mor Exp mor $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -1771,9 +1771,7 @@ TRANS(LocalGetNextTransport)()
 	
 	typetocheck=workingXLOCAL;
 	workingXLOCAL=strchr(workingXLOCAL,':');
-	if (!workingXLOCAL)
-	    return NULL;
-	if(*workingXLOCAL)
+	if(workingXLOCAL && *workingXLOCAL)
 	    *workingXLOCAL++='\0';
 	
 	for(i=0;i<NUMTRANSPORTS;i++)
