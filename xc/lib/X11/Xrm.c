@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.71 91/12/10 12:13:57 rws Exp $
+ * $XConsortium: Xrm.c,v 1.72 92/01/10 14:21:12 rws Exp $
  */
 
 /***********************************************************
@@ -39,7 +39,7 @@ SOFTWARE.
 #else
 #define Const /**/
 #endif
-#if __STDC__ && !defined(VMS)
+#if __STDC__ && !defined(NORCONST)
 #define RConst const
 #else
 #define RConst /**/

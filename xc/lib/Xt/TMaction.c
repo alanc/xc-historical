@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.15 91/07/31 13:09:21 swick Exp $ */
+/* $XConsortium: TMaction.c,v 1.16 91/07/31 13:12:13 swick Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -32,7 +32,7 @@ SOFTWARE.
 #include "IntrinsicI.h"
 #include "StringDefs.h"
 
-#if __STDC__ && !defined(VMS)
+#if __STDC__ && !defined(NORCONST)
 #define RConst const
 #else
 #define RConst /**/
