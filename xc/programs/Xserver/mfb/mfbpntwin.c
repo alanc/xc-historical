@@ -1,4 +1,4 @@
-/* $XConsortium: mfbpntwin.c,v 1.3 89/03/16 14:46:54 jim Exp $ */
+/* $XConsortium: mfbpntwin.c,v 1.4 89/03/18 12:29:17 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -133,13 +133,19 @@ mfbPaintWindow32(pWin, pRegion, what)
     if (what == PW_BACKGROUND)
     {
 	tileHeight = pWin->backgroundTile->height;
-	psrc = (int *)(pPrivWin->pRotatedBackground->devPrivate);
+	pPixmap = pPrivWin->pRotatedBackground;
     } 
     else
     {
         tileHeight = pWin->borderTile->height;
-	psrc = (int *)(pPrivWin->pRotatedBorder->devPrivate);
+	pPixmap = pPrivWin->pRotatedBorder;
     } 
+    if (!pPixmap)
+    {
+	miPaintWindow(pWin, pRegion, what);
+	return;
+    }
+    psrc = (int *)(pPixmap->devPrivate);
 
     pPixmap = (PixmapPtr)(pWin->drawable.pScreen->devPrivate);
     pbits = (unsigned int *)pPixmap->devPrivate;
