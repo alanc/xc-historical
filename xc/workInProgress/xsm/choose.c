@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.12 94/07/28 14:54:35 mor Exp mor $ */
+/* $XConsortium: choose.c,v 1.13 94/08/25 17:37:40 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -121,6 +121,37 @@ String *names;
 }
 
 
+
+void
+ChooseWindowStructureNotifyXtHandler (w, closure, event, continue_to_dispatch)
+
+Widget w;
+XtPointer closure;
+XEvent *event;
+Boolean *continue_to_dispatch;
+
+{
+    if (event->type == MapNotify)
+    {
+	/*
+	 * Set the input focus to the choose window and direct all keyboard
+	 * events to the list widget.  This way, the user can make selections
+	 * using the keyboard.
+	 */
+
+	XtSetKeyboardFocus (chooseSessionPopup, chooseSessionListWidget);
+
+	XSetInputFocus (XtDisplay (topLevel), XtWindow (chooseSessionPopup),
+	    RevertToPointerRoot, CurrentTime);
+
+	XSync (XtDisplay (topLevel), 0);
+
+	XtRemoveEventHandler (chooseSessionPopup, StructureNotifyMask, False,
+	    ChooseWindowStructureNotifyXtHandler, NULL);
+    }
+}
+
+
 void
 ChooseSession ()
 
@@ -173,23 +204,15 @@ ChooseSession ()
 	XtNforeground, save_message_background,
 	NULL);
 
-
-    /*
-     * Set the input focus to the choose window and direct all keyboard
-     * events to the list widget.  This way, the user can make selections
-     * using the keyboard.  Note that when the choose menu comes up, the
-     * window manager should not be running yet.  So, it is safe for us to
-     * set input focus.
-     */
-
     XtPopup (chooseSessionPopup, XtGrabNone);
 
-    XtSetKeyboardFocus (chooseSessionPopup, chooseSessionListWidget);
 
-    XSetInputFocus (XtDisplay (topLevel), XtWindow (chooseSessionPopup),
-	RevertToPointerRoot, CurrentTime);
+    /*
+     * Wait for a map notify on the popup, then set input focus.
+     */
 
-    XSync (XtDisplay (topLevel), 0);
+    XtAddEventHandler (chooseSessionPopup, StructureNotifyMask, False,
+	ChooseWindowStructureNotifyXtHandler, NULL);
 }
 
 
