@@ -1,4 +1,4 @@
-/* $XConsortium: phigs.h,v 5.8 91/07/19 14:20:34 hersh Exp $ */
+/* $XConsortium: phigs.h,v 5.9 91/07/19 19:25:27 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1270,7 +1270,7 @@ typedef struct {
     Pint	num_colrs;	/* number of colours */
     Pcolr_avail	colr_avail;	/* colour availability */
     Pint	num_pred_inds;	/* number of predefined bundles */
-    Pcieluv	prim_colrs;	/* primary colours */
+    Pcieluv	prim_colrs[3];	/* primary colours */
 } Pcolr_facs;
 
 typedef enum {
