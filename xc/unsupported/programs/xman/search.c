@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.17 91/06/05 14:50:32 dave Exp $
+ * $XConsortium: search.c,v 1.18 91/06/20 09:28:17 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -348,7 +348,8 @@ int number;
 
     tail = rindex(head, '.');
     if (tail == NULL) 
-      PrintError("index failure in BEntrySearch");
+      /* not an error, some systems (e.g. sgi) have only a .z suffix */
+      tail = head + strlen(head);
 
     cmp = strncmp(string, head, (tail - head));
     len_cmp = strlen(string) - (int) (tail - head);
